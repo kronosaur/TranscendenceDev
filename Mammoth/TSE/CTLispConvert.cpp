@@ -263,6 +263,23 @@ ICCItemPtr CTLispConvert::CreatePowerResultMW (int iPower)
 		return ICCItemPtr(iPower / 10);
 	}
 
+ICCItemPtr CTLispConvert::CreateIntegerList (const TArray<int> &List)
+
+//	CreateIntegerList
+//
+//	Creates a list of integers.
+
+	{
+	if (List.GetCount() == 0)
+		return ICCItemPtr::Nil();
+
+	ICCItemPtr pResult(ICCItem::List);
+	for (int i = 0; i < List.GetCount(); i++)
+		pResult->Append(ICCItemPtr(List[i]));
+
+	return pResult;
+	}
+
 ICCItemPtr CTLispConvert::CreateStringList (const TArray<CString> &List)
 
 //	CreateStringList

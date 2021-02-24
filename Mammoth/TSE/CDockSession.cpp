@@ -603,6 +603,14 @@ bool CDockSession::ShowScreen (CSpaceObject &Location, CDesignType *pRoot, const
 		SetAmbientSound(Location.GetDockScreenAmbientSound());
 		}
 
+	//	If not the first frame, then save the selection so we can restore it
+	//	later when we come back.
+
+	else
+		{
+		m_DockFrames.GetCurrent().pSavedSelection = m_pDockScreenUI->GetDisplaySelection();
+		}
+
 	//	Add a new frame.
 	//	Note that pRoot might be NULL and sScreen might be [DefaultScreen] at
 	//	this point.

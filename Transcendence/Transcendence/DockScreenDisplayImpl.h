@@ -182,6 +182,7 @@ class CDockScreenIconList : public IDockScreenDisplay
 		virtual ICCItem *OnGetCurrentListEntry (void) const override;
 		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override;
 		virtual ICCItemPtr OnGetListAsCCItem (void) const override;
+		virtual ICCItemPtr OnGetSelection () const override { return (m_pControl ? m_pControl->SaveSelection() : ICCItemPtr::Nil()); }
 		virtual CSpaceObject *OnGetSource (void) const override { return m_pSource; }
 		virtual DWORD OnGetUIFlags (void) const override { return FLAG_UI_ITEM_SELECTOR; }
 		virtual EResults OnHandleAction (DWORD dwTag, DWORD dwData) override;

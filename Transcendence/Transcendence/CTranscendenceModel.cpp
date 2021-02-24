@@ -2330,7 +2330,7 @@ ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError
 	bool bNewFrame;
 	SDockFrame OldFrame;
 	if (bNewFrame = (!Ctx.bReturn && bNestedScreen && Ctx.sTab.IsBlank()))
-		GetScreenStack().Push(NewFrame);
+		GetDockSession().ShowScreen(*CurFrame.pLocation, Ctx.pRoot, sScreenActual, Ctx.sPane, Ctx.pData);
 	else if (!Ctx.bReturn)
 		GetScreenStack().SetCurrent(NewFrame, &OldFrame);
 	else

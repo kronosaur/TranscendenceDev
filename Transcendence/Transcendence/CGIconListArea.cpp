@@ -437,6 +437,35 @@ void CGIconListArea::PaintEntryIcon (CG32bitImage &Dest, const SEntry &Entry, in
 		}
 	}
 
+void CGIconListArea::RestoreSelection (const ICCItem &Selection)
+
+//	RestoreSelection
+//
+//	Sets a previously saved selection.
+
+	{
+	DeselectAll();
+
+	for (int i = 0; i < Selection.GetCount(); i++)
+		{
+		int iIndex = Selection.GetElement(i)->GetIntegerValue();
+		if (iIndex >= 0 && iIndex < m_List.GetCount())
+			m_List[iIndex].bSelected = true;
+		}
+
+	Invalidate();
+	}
+
+ICCItemPtr CGIconListArea::SaveSelection () const
+
+//	SaveSelection
+//
+//	Returns a selection that can be restored later.
+
+	{
+	return CTLispConvert::CreateIntegerList(GetSelection());
+	}
+
 bool CGIconListArea::SetData (const ICCItem &List, CString *retsError)
 
 //	SetData

@@ -287,6 +287,8 @@ class CGIconListArea : public AGArea
 		ICCItemPtr GetList () const;
 		TArray<int> GetSelection () const;
 		ICCItemPtr GetSelectionAsCCItem () const;
+		void RestoreSelection (const ICCItem &Selection);
+		ICCItemPtr SaveSelection () const;
 		bool SetData (const ICCItem &List, CString *retsError = NULL);
 		void SetTabRegion (int cyHeight) { m_cyTabRegion = cyHeight; }
 

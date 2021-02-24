@@ -145,6 +145,11 @@ ALERROR CDockScreenIconList::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 	if (!EvalList(retsError))
 		return ERR_FAIL;
 
+	//	Set the selection, if saved
+
+	if (Ctx.pSelection)
+		m_pControl->RestoreSelection(*Ctx.pSelection);
+
 	return NOERROR;
 
 	DEBUG_CATCH

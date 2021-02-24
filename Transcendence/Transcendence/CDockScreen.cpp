@@ -1386,6 +1386,7 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	DisplayCtx.pFontTable = m_pFonts;
 	DisplayCtx.pLocation = m_pLocation;
 	DisplayCtx.pScreen = m_pScreen;
+	DisplayCtx.pSelection = Frame.pSavedSelection;
 
 	DisplayCtx.rcScreen = m_Layout.GetContentRect();
 	DisplayCtx.rcRect = m_Layout.GetDisplayRect();

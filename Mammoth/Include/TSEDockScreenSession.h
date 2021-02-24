@@ -32,6 +32,7 @@ class IDockScreenUI
 			};
 
 		virtual const CString &GetDescription () const { return NULL_STR; }
+		virtual ICCItemPtr GetDisplaySelection () const { return ICCItemPtr::Nil(); }
 		virtual void *GetDockScreen () const { return NULL; }
 		virtual ICCItemPtr GetListAsCCItem (void) const { return ICCItemPtr::Nil(); }
 		virtual int GetListCursor (void) const { return -1; }
@@ -40,6 +41,7 @@ class IDockScreenUI
 		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result) { }
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) { }
 		virtual bool SetProperty (const CString &sProperty, const ICCItem &Value) { return false; }
+		virtual void SetSelection (const ICCItem &Selection) { }
 	};
 
 enum class EDockScreenBackground
@@ -84,6 +86,7 @@ struct SDockFrame
 	ICCItemPtr pInitialData;				//	Data for the screen
 	ICCItemPtr pStoredData;					//	Read-write data
 	ICCItemPtr pReturnData;					//	Data returns from a previous screen
+	ICCItemPtr pSavedSelection;				//	Saved selection (for when we return to screen)
 
 	SDockScreenBackgroundDesc BackgroundDesc;
 
