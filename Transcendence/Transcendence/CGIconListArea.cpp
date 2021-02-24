@@ -13,6 +13,22 @@
 #define FIELD_STATUS_BAR_COLOR				CONSTLIT("statusBarColor")
 #define FIELD_TITLE							CONSTLIT("title")
 
+int CGIconListArea::CalcIconSize (int iEntryCount) const
+
+//	CalcIconSize
+//
+//	Computes the appropriate icon size.
+
+	{
+	if (iEntryCount <= 16)
+		return DEFAULT_ICON_SIZE;
+	else
+		{
+		const double rSpace = 4.0 * DEFAULT_ICON_SIZE;
+		return mathRound(rSpace / ceil(sqrt(iEntryCount)));
+		}
+	}
+
 bool CGIconListArea::DeselectAll ()
 
 //	DeselectAll
@@ -54,8 +70,10 @@ bool CGIconListArea::Format (const RECT &rcRect) const
 
 	else
 		{
+		//	Compute the entry size
+
 		const int cxEntry = 2 * m_cxIcon;
-		const int cyEntry = cxEntry;
+		const int cyEntry = mathRound(1.7 * m_cyIcon);
 
 		//	Calc how many icons we can fit per row.
 
@@ -527,6 +545,9 @@ bool CGIconListArea::SetData (const ICCItem &List, CString *retsError)
 				pEntry->sTitle = sError;
 				}
 			}
+
+		m_cxIcon = CalcIconSize(m_List.GetCount());
+		m_cyIcon = m_cxIcon;
 
 		Reformat();
 		return true;

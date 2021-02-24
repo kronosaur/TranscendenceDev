@@ -325,6 +325,7 @@ class CGIconListArea : public AGArea
 			mutable RECT rcRect = { 0 };		//	Location, relative to control rect
 			};
 
+		int CalcIconSize (int iEntryCount) const;
 		bool DeselectAll ();
 		bool Format (const RECT &rcRect) const;
 		int HitTestEntry (int x, int y) const;
