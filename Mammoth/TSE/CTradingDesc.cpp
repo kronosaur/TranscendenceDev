@@ -1049,11 +1049,9 @@ bool CTradingDesc::FindService (ETradeServiceTypes iService, const CItem &Item, 
 //	Finds the given service for the given item.
 
 	{
-	int i;
-
 	//	Loop over the commodity list and find the first entry that matches
 
-	for (i = 0; i < m_List.GetCount(); i++)
+	for (int i = 0; i < m_List.GetCount(); i++)
 		if (m_List[i].iService == iService 
 				&& Matches(Item, m_List[i]))
 			{
@@ -1073,11 +1071,9 @@ bool CTradingDesc::FindService (ETradeServiceTypes iService, const CDesignType *
 //	Finds the given service for the given item.
 
 	{
-	int i;
-
 	//	Loop over the commodity list and find the first entry that matches
 
-	for (i = 0; i < m_List.GetCount(); i++)
+	for (int i = 0; i < m_List.GetCount(); i++)
 		if (m_List[i].iService == iService 
 				&& Matches(pType, m_List[i]))
 			{
@@ -1206,7 +1202,13 @@ bool CTradingDesc::GetArmorInstallPrice (const CSpaceObject *pProvider, const CI
 //	Returns the price to install the given armor
 
 	{
-	int i;
+	//	Look for the service
+
+	const SServiceDesc *pService;
+	if (!FindService(serviceReplaceArmor, Item, &pService))
+		return false;
+
+	//	Compute price
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceReplaceArmor;
@@ -1215,34 +1217,23 @@ bool CTradingDesc::GetArmorInstallPrice (const CSpaceObject *pProvider, const CI
 	Ctx.pItem = &Item;
 	Ctx.iCount = 1;
 
-	//	Loop over the commodity list and find the first entry that matches
+	int iPrice = ComputePrice(Ctx, *pService, dwFlags);
+	if (iPrice < 0)
+		{
+		if (retsReason)
+			*retsReason = pService->sMessageID;
+		return false;
+		}
 
-	for (i = 0; i < m_List.GetCount(); i++)
-		if (m_List[i].iService == serviceReplaceArmor
-				&& Matches(Item, m_List[i]))
-			{
-			//	Compute price
+	//	Done
 
-			int iPrice = ComputePrice(Ctx, m_List[i], dwFlags);
-			if (iPrice < 0)
-				{
-				if (retsReason)
-					*retsReason = m_List[i].sMessageID;
-				return false;
-				}
+	if (retiPrice)
+		*retiPrice = iPrice;
 
-			//	Done
+	if (retsReason)
+		*retsReason = pService->sMessageID;
 
-			if (retiPrice)
-				*retiPrice = iPrice;
-
-			if (retsReason)
-				*retsReason = m_List[i].sMessageID;
-
-			return true;
-			}
-
-	return false;
+	return true;
 	}
 
 bool CTradingDesc::GetArmorRepairPrice (const CSpaceObject *pProvider, CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const
@@ -1252,7 +1243,13 @@ bool CTradingDesc::GetArmorRepairPrice (const CSpaceObject *pProvider, CSpaceObj
 //	Returns the price for repairing the given armor.
 
 	{
-	int i;
+	//	Look for the service
+
+	const SServiceDesc *pService;
+	if (!FindService(serviceRepairArmor, Item, &pService))
+		return false;
+
+	//	Compute price
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceRepairArmor;
@@ -1262,27 +1259,16 @@ bool CTradingDesc::GetArmorRepairPrice (const CSpaceObject *pProvider, CSpaceObj
 	Ctx.pItem = &Item;
 	Ctx.iCount = iHPToRepair;
 
-	//	Loop over the commodity list and find the first entry that matches
+	int iPrice = ComputePrice(Ctx, *pService, dwFlags);
+	if (iPrice < 0)
+		return false;
 
-	for (i = 0; i < m_List.GetCount(); i++)
-		if (m_List[i].iService == serviceRepairArmor
-				&& Matches(Item, m_List[i]))
-			{
-			//	Compute price
+	//	Done
 
-			int iPrice = ComputePrice(Ctx, m_List[i], dwFlags);
-			if (iPrice < 0)
-				return false;
+	if (retiPrice)
+		*retiPrice = iPrice;
 
-			//	Done
-
-			if (retiPrice)
-				*retiPrice = iPrice;
-
-			return true;
-			}
-
-	return false;
+	return true;
 	}
 
 bool CTradingDesc::GetDeviceInstallPrice (const CSpaceObject *pProvider, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason, DWORD *retdwPriceFlags) const
@@ -1292,7 +1278,13 @@ bool CTradingDesc::GetDeviceInstallPrice (const CSpaceObject *pProvider, const C
 //	Returns the price to install the given device
 
 	{
-	int i;
+	//	Look for the service
+
+	const SServiceDesc *pService;
+	if (!FindService(serviceInstallDevice, Item, &pService))
+		return false;
+
+	//	Compute price
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceInstallDevice;
@@ -1301,41 +1293,30 @@ bool CTradingDesc::GetDeviceInstallPrice (const CSpaceObject *pProvider, const C
 	Ctx.pItem = &Item;
 	Ctx.iCount = 1;
 
-	//	Loop over the commodity list and find the first entry that matches
+	int iPrice = ComputePrice(Ctx, *pService, dwFlags);
+	if (iPrice < 0)
+		{
+		if (retsReason)
+			*retsReason = pService->sMessageID;
+		return false;
+		}
 
-	for (i = 0; i < m_List.GetCount(); i++)
-		if (m_List[i].iService == serviceInstallDevice
-				&& Matches(Item, m_List[i]))
-			{
-			//	Compute price
+	//	Done
 
-			int iPrice = ComputePrice(Ctx, m_List[i], dwFlags);
-			if (iPrice < 0)
-				{
-				if (retsReason)
-					*retsReason = m_List[i].sMessageID;
-				return false;
-				}
+	if (retiPrice)
+		*retiPrice = iPrice;
 
-			//	Done
+	if (retsReason)
+		*retsReason = pService->sMessageID;
 
-			if (retiPrice)
-				*retiPrice = iPrice;
+	if (retdwPriceFlags)
+		{
+		(*retdwPriceFlags) = 0;
+		if (pService->dwFlags & FLAG_UPGRADE_INSTALL_ONLY)
+			(*retdwPriceFlags) |= PRICE_UPGRADE_INSTALL_ONLY;
+		}
 
-			if (retsReason)
-				*retsReason = m_List[i].sMessageID;
-
-			if (retdwPriceFlags)
-				{
-				(*retdwPriceFlags) = 0;
-				if (m_List[i].dwFlags & FLAG_UPGRADE_INSTALL_ONLY)
-					(*retdwPriceFlags) |= PRICE_UPGRADE_INSTALL_ONLY;
-				}
-
-			return true;
-			}
-
-	return false;
+	return true;
 	}
 
 bool CTradingDesc::GetDeviceRemovePrice (const CSpaceObject *pProvider, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags) const
@@ -1345,7 +1326,13 @@ bool CTradingDesc::GetDeviceRemovePrice (const CSpaceObject *pProvider, const CI
 //	Returns the price to remove the given device
 
 	{
-	int i;
+	//	Look for the service
+
+	const SServiceDesc *pService;
+	if (!FindService(serviceRemoveDevice, Item, &pService))
+		return false;
+
+	//	Compute price
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceRemoveDevice;
@@ -1354,34 +1341,23 @@ bool CTradingDesc::GetDeviceRemovePrice (const CSpaceObject *pProvider, const CI
 	Ctx.pItem = &Item;
 	Ctx.iCount = 1;
 
-	//	Loop over the commodity list and find the first entry that matches
+	int iPrice = ComputePrice(Ctx, *pService, dwFlags);
+	if (iPrice < 0)
+		return false;
 
-	for (i = 0; i < m_List.GetCount(); i++)
-		if (m_List[i].iService == serviceRemoveDevice
-				&& Matches(Item, m_List[i]))
-			{
-			//	Compute price
+	//	Done
 
-			int iPrice = ComputePrice(Ctx, m_List[i], dwFlags);
-			if (iPrice < 0)
-				return false;
+	if (retiPrice)
+		*retiPrice = iPrice;
 
-			//	Done
+	if (retdwPriceFlags)
+		{
+		(*retdwPriceFlags) = 0;
+		if (pService->dwFlags & FLAG_UPGRADE_INSTALL_ONLY)
+			(*retdwPriceFlags) |= PRICE_UPGRADE_INSTALL_ONLY;
+		}
 
-			if (retiPrice)
-				*retiPrice = iPrice;
-
-			if (retdwPriceFlags)
-				{
-				(*retdwPriceFlags) = 0;
-				if (m_List[i].dwFlags & FLAG_UPGRADE_INSTALL_ONLY)
-					(*retdwPriceFlags) |= PRICE_UPGRADE_INSTALL_ONLY;
-				}
-
-			return true;
-			}
-
-	return false;
+	return true;
 	}
 
 int CTradingDesc::GetMaxLevelMatched (CUniverse &Universe, ETradeServiceTypes iService, bool bDescriptionOnly) const
