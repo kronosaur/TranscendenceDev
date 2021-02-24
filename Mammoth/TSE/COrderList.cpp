@@ -243,6 +243,17 @@ void COrderList::SetCurrentOrderDataInteger (DWORD dwData)
 		m_List[0].SetDataInteger(dwData);
 	}
 
+void COrderList::SetCurrentOrderDataInteger (DWORD dwData1, DWORD dwData2)
+
+//	SetCurrentOrderDataInteger
+//
+//	Sets an integer pair.
+
+	{
+	if (m_List.GetCount() > 0)
+		m_List[0].SetDataInteger(dwData1, dwData2);
+	}
+
 void COrderList::WriteToStream (IWriteStream &Stream, const CShip &Ship)
 
 //	WriteToStream

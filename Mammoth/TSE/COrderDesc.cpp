@@ -860,6 +860,18 @@ void COrderDesc::SetDataInteger (DWORD dwData)
 	m_pData = (void *)dwData;
 	}
 
+void COrderDesc::SetDataInteger (DWORD dwData1, DWORD dwData2)
+
+//	SetDataInteger
+//
+//	Sets an integer pair
+
+	{
+	CleanUp();
+	m_dwDataType = (DWORD)EDataType::Int16Pair;
+	m_pData = (void *)MAKELONG(dwData1, dwData2);
+	}
+
 void COrderDesc::WriteToStream (IWriteStream &Stream, const CShip &Ship) const
 
 //	WriteToStream

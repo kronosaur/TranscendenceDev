@@ -466,6 +466,7 @@ class COrderDesc
 		bool IsVector () const { return (GetDataType() == EDataType::Vector); }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetDataInteger (DWORD dwData);
+		void SetDataInteger (DWORD dwData1, DWORD dwData2);
 		void SetTarget (CSpaceObject *pTarget) { m_pTarget = pTarget; }
 		void WriteToStream (IWriteStream &Stream, const CShip &Ship) const;
 
