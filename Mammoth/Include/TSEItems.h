@@ -292,6 +292,7 @@ class CItem
 		bool FireCanBeUninstalled (CSpaceObject *pSource, CString *retsError) const;
 		bool FireCanEnhanceItem (const CSpaceObject &TargetObj, const CItem &TargetItem, SEnhanceItemResult &retResult, CString *retsError = NULL) const;
 		void FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *pData, ICCItem **retpResult) const;
+		ICCItemPtr FireGetTradeServices (const CSpaceObject &SourceObj) const;
 		void FireOnAddedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEnhanced, EnhanceItemStatus iStatus) const;
 		bool FireOnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, const CDamageSource &Attacker) const;
 		void FireOnDisabled (CSpaceObject *pSource) const;

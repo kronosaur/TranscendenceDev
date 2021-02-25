@@ -88,6 +88,7 @@ class CTradingDesc
 		CTradingDesc (void);
 		~CTradingDesc (void);
 
+		void AddDynamicServices (const CTradingDesc &Trade);
 		void AddOrder (ETradeServiceTypes iService, const CString &sCriteria, CItemType *pItemType, int iPriceAdj);
 		void AddOrders (const CTradingDesc &Trade);
 
@@ -103,6 +104,7 @@ class CTradingDesc
 		bool BuysShip (CSpaceObject *pObj, CSpaceObject *pShip, DWORD dwFlags, int *retiPrice = NULL);
 		int Charge (CSpaceObject *pObj, int iCharge);
 		bool ComposeDescription (CUniverse &Universe, CString *retsDesc) const;
+		void DeleteDynamicServices ();
 		bool GetArmorInstallPrice (const CSpaceObject *pProvider, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL) const;
 		bool GetArmorRepairPrice (const CSpaceObject *pProvider, CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const;
 		bool GetDeviceInstallPrice (const CSpaceObject *pProvider, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL) const;
@@ -120,6 +122,7 @@ class CTradingDesc
 		bool HasServiceUpgradeOnly (ETradeServiceTypes iService) const;
 		bool HasServices (void) const { return (m_List.GetCount() > 0); }
 		void Init (const CTradingDesc &Src);
+		bool InitFromGetTradeServices (const CSpaceObject &ProviderObj);
 		bool RemovesCondition (const CSpaceObject *pProvider, const CShipClass &Class, ECondition iCondition, DWORD dwFlags, int *retiPrice = NULL) const;
 		bool RemovesCondition (const CSpaceObject *pProvider, const CSpaceObject &Ship, ECondition iCondition, DWORD dwFlags, int *retiPrice = NULL) const;
 		bool Sells (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL);
@@ -152,6 +155,7 @@ class CTradingDesc
 			FLAG_INVENTORY_ADJ =		0x00000008,	//	TRUE if we adjust the inventory
 			FLAG_UPGRADE_INSTALL_ONLY =	0x00000020,	//	TRUE if we must purchase an item to install
 			FLAG_NO_DESCRIPTION =       0x00000040, //  If TRUE, we exclude this service from ComposeDescription
+			FLAG_DYNAMIC_SERVICE =		0x00000080,	//	If TRUE, this service was added by <GetTradeServices>
 
 			//	DEPRECATED: We don't store these flags, but we require the values
 			//	for older versions.
@@ -203,8 +207,11 @@ class CTradingDesc
 		void ReadServiceFromFlags (DWORD dwFlags, ETradeServiceTypes *retiService, DWORD *retdwFlags);
 		bool SetInventoryCount (CSpaceObject *pObj, SServiceDesc &Desc, CItemType *pItemType);
 
+		static bool AccumulateServiceDesc (const ICCItem &Value, TArray<SServiceDesc> &retServices);
 		static int AdjustForSystemPrice (STradeServiceCtx &Ctx, int iPrice);
 		static int ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commodity, DWORD dwFlags);
+		static bool FireGetTradeServices (const CSpaceObject &ProviderObj, TArray<SServiceDesc> &retServices);
+		static bool FireGetTradeServices (const CSpaceObject &ProviderObj, const CItem &ProviderItem, TArray<SServiceDesc> &retServices);
 		static bool HasSameCriteria (const SServiceDesc &S1, const SServiceDesc &S2);
 
 		CEconomyTypeRef m_pCurrency;

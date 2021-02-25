@@ -190,6 +190,8 @@ CTradingDesc *CShip::AllocTradeDescOverride (void)
 			{
 			m_pTrade->Init(*pBaseTrade);
 			}
+		else
+			m_pTrade->SetEconomyType(&GetUniverse().GetDefaultCurrency());
 		}
 
 	return m_pTrade;
@@ -461,6 +463,18 @@ void CShip::CalcDeviceBonus (void)
 
 	if (m_pPowerUse)
 		m_pPowerUse->SetMaxFuel(GetMaxFuel());
+
+	//	See if we have any dynamic trade services
+
+	if (m_pTrade)
+		m_pTrade->DeleteDynamicServices();
+
+	CTradingDesc Services;
+	if (Services.InitFromGetTradeServices(*this))
+		{
+		AllocTradeDescOverride();
+		m_pTrade->AddDynamicServices(Services);
+		}
 
 	DEBUG_CATCH
 	}

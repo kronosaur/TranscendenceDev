@@ -116,6 +116,62 @@ CTradingDesc::~CTradingDesc (void)
 	{
 	}
 
+bool CTradingDesc::AccumulateServiceDesc (const ICCItem &Value, TArray<SServiceDesc> &retServices)
+
+//	AccumulateServiceDesc
+//
+//	Parses the value (expecting a struct) and adds it to the services array.
+
+	{
+	const ICCItem *pValue = Value.GetElement(CONSTLIT("service"));
+	if (!pValue)
+		return false;
+
+	ETradeServiceTypes iService = CTradingDesc::ParseService(pValue->GetStringValue());
+	if (iService == serviceNone)
+		return false;
+
+	CString sCriteria = Value.GetStringAt(CONSTLIT("criteria"));
+
+	SDesignLoadCtx LoadCtx;
+	CFormulaText PriceAdj;
+	if (PriceAdj.InitFromString(LoadCtx, Value.GetStringAt(CONSTLIT("priceAdj"))) != NOERROR)
+		return false;
+
+	DWORD dwFlags = 0;
+
+	//	Add the service.
+
+	SServiceDesc *pNewService = retServices.Insert();
+	pNewService->iService = iService;
+	pNewService->ItemCriteria.Init(sCriteria);
+	pNewService->PriceAdj = PriceAdj;
+	pNewService->dwFlags = dwFlags;
+
+	return true;
+	}
+
+void CTradingDesc::AddDynamicServices (const CTradingDesc &Trade)
+
+//	AddDynamicServices
+//
+//	Adds dynamic services.
+
+	{
+	for (int i = 0; i < Trade.m_List.GetCount(); i++)
+		{
+		const SServiceDesc &NewService = Trade.m_List[i];
+
+		//	We always add dynamic services at the front.
+
+		m_List.Insert(NewService, i);
+		
+		//	Mark it as dynamic
+
+		m_List[i].dwFlags |= FLAG_DYNAMIC_SERVICE;
+		}
+	}
+
 void CTradingDesc::AddOrder (ETradeServiceTypes iService, const CString &sCriteria, CItemType *pItemType, int iPriceAdj)
 
 //	AddOrder
@@ -560,7 +616,8 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, DWORD dwFlags) const
 
 		default:
 			{
-			ASSERT(Ctx.pItem);
+			if (!Ctx.pItem)
+				throw CException(ERR_FAIL);
 
 			if (!FindService(Ctx.iService, *Ctx.pItem, &pDesc))
 				return -1;
@@ -1021,6 +1078,21 @@ int CTradingDesc::Charge (CSpaceObject *pObj, int iCharge)
 	return (int)pObj->ChargeMoney(m_pCurrency->GetUNID(), iCharge);
 	}
 
+void CTradingDesc::DeleteDynamicServices ()
+
+//	DeleteDynamicServices
+//
+//	Delete all dynamic services.
+
+	{
+	for (int i = 0; i < m_List.GetCount(); i++)
+		if (m_List[i].dwFlags & FLAG_DYNAMIC_SERVICE)
+			{
+			m_List.Delete(i);
+			i--;
+			}
+	}
+
 bool CTradingDesc::FindByID (const CString &sID, int *retiIndex) const
 
 //	FindByID
@@ -1136,6 +1208,86 @@ bool CTradingDesc::FindServiceToOverride (const SServiceDesc &NewService, int *r
 		}
 
 	return false;
+	}
+
+bool CTradingDesc::InitFromGetTradeServices (const CSpaceObject &ProviderObj)
+
+//	InitFromGetTradeServices
+//
+//	Initialize from a call to <GetTradeServices>. Returns TRUE if any services 
+//	were returned.
+
+	{
+	m_List.DeleteAll();
+
+	FireGetTradeServices(ProviderObj, m_List);
+	return (m_List.GetCount() > 0);
+	}
+
+bool CTradingDesc::FireGetTradeServices (const CSpaceObject &ProviderObj, TArray<SServiceDesc> &retServices)
+
+//	FireGetTradeServices
+//
+//	Allows the provider to provide dynamic services. We use this to implement 
+//	the auton bay, which provides installation services.
+
+	{
+	bool bHasServices = false;
+
+	//	Loop over all installed devices on the provider and see if they have
+	//	services.
+
+	const CItemList &ItemList = ProviderObj.GetItemList();
+	for (int i = 0; i < ItemList.GetCount(); i++)
+		{
+		const CItem &Item = ItemList.GetItem(i);
+		if (!Item.IsInstalled() || !Item.IsDevice())
+			continue;
+
+		if (FireGetTradeServices(ProviderObj, Item, retServices))
+			bHasServices = true;
+		}
+
+	return bHasServices;
+	}
+
+bool CTradingDesc::FireGetTradeServices (const CSpaceObject &ProviderObj, const CItem &ProviderItem, TArray<SServiceDesc> &retServices)
+
+//	FireGetTradeServices
+//
+//	Allows an item to specify trader services (e.g., Auton Bay).
+
+	{
+	//	Fire event. If no results, then no services.
+
+	ICCItemPtr pResult = ProviderItem.FireGetTradeServices(ProviderObj);
+	if (!pResult || pResult->IsNil())
+		return false;
+
+	//	Otherwise, we parse the services.
+
+	if (pResult->IsList())
+		{
+		for (int i = 0; i < pResult->GetCount(); i++)
+			{
+			if (!AccumulateServiceDesc(*pResult->GetElement(i), retServices))
+				return false;
+			}
+
+		return true;
+		}
+	else if (pResult->IsSymbolTable())
+		{
+		if (!AccumulateServiceDesc(*pResult, retServices))
+			return false;
+
+		return true;
+		}
+	else
+		{
+		ProviderObj.GetUniverse().LogOutput(CONSTLIT("GetTradeService: Invalid result."));
+		return false;
+		}
 	}
 
 bool CTradingDesc::HasConsumerService (void) const

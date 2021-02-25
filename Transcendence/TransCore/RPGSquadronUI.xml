@@ -469,7 +469,6 @@
 													)
 													(scrShowScreen gScreen (obj@ autonObj 'shipConfigScreen) {
 														shipObj: autonObj
-														shipConfig: True
 														title: (scrTranslate gScreen 'core.name)
 														dockServicesDesc: (scrTranslate gScreen 'descConfiguration {
 															shipClass: (objGetName autonObj 'generic)
