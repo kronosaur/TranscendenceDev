@@ -1614,6 +1614,8 @@
     </ClCompile>
     <ClCompile Include="CStatusBarPainter.cpp">
       <Filter>Source Files\Painting</Filter>
+    <ClCompile Include="SovereignProperties.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

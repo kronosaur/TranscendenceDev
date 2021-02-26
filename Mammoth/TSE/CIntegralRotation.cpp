@@ -229,6 +229,9 @@ Metric CIntegralRotation::GetRotationSpeedDegrees (const CIntegralRotationDesc &
 //	Negative = counterclockwise.
 
 	{
+	if (Desc.GetFrameCount() == 0)
+		return 0.0;
+
 	int iMaxRotateFrameCount = Desc.GetFrameCount() * CIntegralRotationDesc::ROTATION_FRACTION;
 	return (360.0 * m_iRotationSpeed) / iMaxRotateFrameCount;
 	}
@@ -398,7 +401,7 @@ int CIntegralRotation::UpdateRotationFrame (int iRotationFrame, int iRotationSpe
 //	Returns the new rotation frame based on the current speed.
 
 	{
-	if (iRotationSpeed != 0)
+	if (iRotationSpeed != 0 && Desc.GetFrameCount() > 0)
 		{
 		const int iFrameMax = Desc.GetFrameCount() * CIntegralRotationDesc::ROTATION_FRACTION;
 

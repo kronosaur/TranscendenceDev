@@ -81,6 +81,7 @@ class CSovereign : public CDesignType
 			return true;
 			}
 		void FlushEnemyObjectCache (void) { m_EnemyObjects.DeleteAll(); m_pEnemyObjectsSystem = NULL; }
+		static CString GetAlignmentID (Alignments iAlignment);
 		IPlayerController *GetController (void);
 		Disposition GetDispositionTowards (const CSovereign *pSovereign, bool bCheckParent = true) const;
 		const CSpaceObjectList &GetEnemyObjectList (const CSystem *pSystem) { InitEnemyObjectList(pSystem); return m_EnemyObjects; }
@@ -173,5 +174,9 @@ class CSovereign : public CDesignType
 
 		SEventHandlerDesc m_CachedEvents[CACHED_EVENT_COUNT] = { 0 };
 		static const char *m_CACHED_EVENTS[CACHED_EVENT_COUNT];
+
+		//	Property table
+
+		static TPropertyHandler<CSovereign> m_PropertyTable;
 	};
 

@@ -35,13 +35,6 @@
 
 #define FIELD_NAME								CONSTLIT("name")
 
-#define PROPERTY_ENEMY_OBJECT_CACHE				CONSTLIT("enemyObjectCache")
-#define PROPERTY_NAME							CONSTLIT("name")
-#define PROPERTY_PLAYER_THREAT_LEVEL			CONSTLIT("playerThreatLevel")
-#define PROPERTY_PLURAL							CONSTLIT("plural")
-#define PROPERTY_SHIPS_DESTROYED_BY_PLAYER		CONSTLIT("shipsDestroyedByPlayer")
-#define PROPERTY_STATIONS_DESTROYED_BY_PLAYER	CONSTLIT("stationsDestroyedByPlayer")
-
 static const char *g_DefaultText[] =
 	{
 	//	0
@@ -327,6 +320,20 @@ CSovereign::SRelationship *CSovereign::FindRelationship (const CSovereign *pSove
 	//	Done
 
 	return pRel;
+	}
+
+CString CSovereign::GetAlignmentID (Alignments iAlignment)
+
+//	GetAlignmentID
+//
+//	Returns the ID.
+
+	{
+	if (iAlignment < 0 || iAlignment >= alignCount)
+		return NULL_STR;
+
+
+	return CString(ALIGN_DATA[iAlignment].pszName, ALIGN_DATA[iAlignment].iNameLen, true);
 	}
 
 IPlayerController *CSovereign::GetController (void)
@@ -761,48 +768,6 @@ ALERROR CSovereign::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Done
 
 	return NOERROR;
-	}
-
-ICCItemPtr CSovereign::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
-
-//	OnGetProperty
-//
-//	Returns the given property (or NULL if not found)
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-
-	if (strEquals(sProperty, PROPERTY_ENEMY_OBJECT_CACHE))
-		{
-		const CSystem *pSystem = GetUniverse().GetCurrentSystem();
-		if (!pSystem)
-			return ICCItemPtr::Nil();
-
-		InitEnemyObjectList(pSystem);
-		ICCItemPtr pResult(ICCItem::List);
-		for (int i = 0; i < m_EnemyObjects.GetCount(); i++)
-			pResult->Append(CTLispConvert::CreateObject(m_EnemyObjects.GetObj(i)));
-
-		return pResult;
-		}
-
-	else if (strEquals(sProperty, PROPERTY_NAME))
-		return ICCItemPtr(GetNounPhrase());
-
-	else if (strEquals(sProperty, PROPERTY_PLAYER_THREAT_LEVEL))
-		return ICCItemPtr((int)GetPlayerThreatLevel());
-
-	else if (strEquals(sProperty, PROPERTY_PLURAL))
-		return ICCItemPtr(m_bPluralForm);
-
-	else if (strEquals(sProperty, PROPERTY_SHIPS_DESTROYED_BY_PLAYER))
-		return ICCItemPtr(m_iShipsDestroyedByPlayer);
-
-	else if (strEquals(sProperty, PROPERTY_STATIONS_DESTROYED_BY_PLAYER))
-		return ICCItemPtr(m_iStationsDestroyedByPlayer);
-
-	else
-		return NULL;
 	}
 
 void CSovereign::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx)
