@@ -244,11 +244,44 @@
 							(thisItem (scrRemoveItem gScreen 1))
 							(currencyUsed (objGetDefaultCurrency gSource))
 							(installCost (scrGetData gScreen 'cost))
+
+							armorInCargo
 							)
+							;	If we're not installing on the player ship, then
+							;	we remove any spare armor segments (and add them back
+							;	later.
+
+							(if (!= shipObj gPlayerShip)
+								(block ()
+									(setq armorInCargo (objGetItems shipObj "aU"))
+									(enum armorInCargo theItem (objRemoveItem shipObj theItem))
+									)
+								)
+
+							;	Install
+
 							(objAddItem shipObj thisItem 1)
 							(shpInstallArmor shipObj thisItem (@ gData 'armorSeg))
 							(objCharge shipObj currencyUsed installCost)
 							(objCredit gSource currencyUsed installCost)
+
+							;	Move the uninstalled armor segment to the player
+
+							(if (!= shipObj gPlayerShip)
+								(block ()
+									(enum (objGetItems shipObj "aU") theArmor
+										(block Nil
+											(objRemoveItem shipObj theArmor)
+											(objAddItem gPlayerShip theArmor)
+											)
+										)
+								
+									(enum armorInCargo theItem (objAddItem shipObj theItem))
+									)
+								)
+
+							;	Done
+
 							(scrExitScreen gScreen)
 							)
 					</Action>
@@ -344,6 +377,7 @@
 						)
 						(setq theResult (rpgInstallDevicePrep {
 							item: (scrGetItem gScreen)
+							targetObj: shipObj
 
 							checkMilitaryID: (@ gData 'checkMilitaryID)
 							currencyUsed: (objGetDefaultCurrency gSource)
@@ -385,6 +419,8 @@
 						(if gCanInstall
 							(block (
 								(shipObj (or (@ gData 'shipObj) gPlayerShip))
+								(itemToInstall (itmSetCount (scrGetItem gScreen) 1))
+
 								(recommendedSlot {
 									deviceSlot: 
 										(if (and (@ gData 'replaceItem)
@@ -395,9 +431,26 @@
 											)
 									slotPosIndex: (@ gData 'slotPosIndex)
 									})
+
+								devicesInCargo
 								)
+								;	If we're not installing on the player ship, then we 
+								;	need to move the item to the target object. NOTE: At this
+								;	point we cannot fail, so we don't need to recover.
+
+								(if (!= shipObj gPlayerShip)
+									(block ()
+										(setq devicesInCargo (objGetItems shipObj "dU"))
+										(enum devicesInCargo theItem (objRemoveItem shipObj theItem))
+
+										(objRemoveItem gPlayerShip itemToInstall)
+										(objAddItem shipObj itemToInstall)
+										)
+									)
+
+								;	Install
 								
-								(shpInstallDevice shipObj (scrGetItem gScreen) recommendedSlot)
+								(shpInstallDevice shipObj itemToInstall recommendedSlot)
 								(objCharge shipObj (objGetDefaultCurrency gSource) gCost)
 								(objCredit gSource (objGetDefaultCurrency gSource) gCost)
 								(typSetData &svPlayer; 'tutorialInstalled True)
@@ -410,6 +463,21 @@
 											)
 										)
 									(shpRemoveDevice shipObj (@ gData 'replaceItem))
+									)
+
+								;	If necessary, move old devices to the player ship
+
+								(if (!= shipObj gPlayerShip)
+									(block ()
+										(enum (objGetItems shipObj "dU") theItem
+											(block ()
+												(objRemoveItem shipObj theItem)
+												(objAddItem gPlayerShip theItem)
+												)
+											)
+
+										(enum devicesInCargo theItem (objAddItem shipObj theItem))
+										)
 									)
 								
 								;	Done
@@ -463,13 +531,13 @@
 			nestedScreen=   "true"
 			>
 
-        <List>
+		<List>
 			(@ gData 'itemList)
-        </List>
+		</List>
 
-        <Panes>
-            <Default>
-                <onPaneInit>
+		<Panes>
+			<Default>
+				<onPaneInit>
 					(block (
 						(shipObj (or (@ gData 'shipObj) gPlayerShip))
 						(theItem (scrGetItem gScreen))
@@ -484,6 +552,8 @@
 								)
 								(setq result (rpgInstallDevicePrep {
 									item: theItem
+									targetObj: shipObj
+
 									totalPrice: 
 										(if (@ gData 'priceAdj)
 											(add
@@ -550,15 +620,15 @@
 								)
 							)
 						)
-                </onPaneInit>
+				</onPaneInit>
 
 				<Controls>
 					<ItemDisplay id="currentItem"/>
 					<Text id="desc"/>
 				</Controls>
 
-                <Actions>
-                    <Action id="actionInstall" default="1">
+				<Actions>
+					<Action id="actionInstall" default="1">
 						(block (
 							(shipObj (or (@ gData 'shipObj) gPlayerShip))
 							(theItem (scrGetData gScreen 'theItem))
@@ -572,20 +642,20 @@
 							(scrSetReturnData gScreen 'installed True)
 
 							(if (@ gData 'noSuccessPane)
-		                        (scrExitScreen gScreen)
+								(scrExitScreen gScreen)
 								(scrShowPane gScreen "InstallSuccess")
 								)
 							)
-                    </Action>
+					</Action>
 
-                    <Action name="Cancel" cancel="1" key="C">
+					<Action name="Cancel" cancel="1" key="C">
 						(block ()
 							(scrSetReturnData gScreen 'installed Nil)
 							(scrExitScreen gScreen)
 							)
-                    </Action>
-                </Actions>
-            </Default>
+					</Action>
+				</Actions>
+			</Default>
 
 			<InstallSuccess
 					noListNavigation="true"
@@ -602,16 +672,16 @@
 
 				<Actions>
 					<Action name="Continue" default="1" cancel="1" key="C">
-                        (scrExitScreen gScreen)
+						(scrExitScreen gScreen)
 					</Action>
 				</Actions>
 			</InstallSuccess>
-        </Panes>
+		</Panes>
 
 		<Language>
 			<Text id="actionBuyAndInstall">[B]uy and Install</Text>
 		</Language>
-    </DockScreen>
+	</DockScreen>
 
 <!-- UPGRADE DEVICE SCREEN =====================================================
 
@@ -686,6 +756,7 @@
 						)
 						(setq theResult (rpgInstallDevicePrep {
 							item: (scrGetItem gScreen)
+							targetObj: shipObj
 
 							upgrade: True
 							checkMilitaryID: (scrGetProperty gScreen 'rpg.checkMilitaryID)

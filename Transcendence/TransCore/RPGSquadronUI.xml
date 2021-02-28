@@ -334,13 +334,28 @@
 			>
 		<OnScreenInit>
 			(block (
+				(autonObj (rpgGetSuspendedAuton gPlayerShip))
+				(autonItem (scrGetData gScreen 'autonItem))
 				)
-				;	Remove any suspended autons, in case we return to this 
-				;	screen from a dock services sub-screen. We want to get rid
-				;	of the suspended auton because it stops the Auton Bay from
-				;	working.
+				;	If we come back and we have a suspended auton, then we need 
+				;	need to save it back to the selection.
 
-				(rpgCleanUpSuspendedAuton gPlayerShip)
+				(if (and autonObj autonItem)
+					(block (
+						;	Convert back to item
+						(newAutonItem (objFireEvent autonObj 'ConvertToItem))
+						)
+						(objSet@ gPlayerShip autonItem 'autonConfig (itmGetData newAutonItem 'autonConfig))
+
+						;	Remove any suspended autons, in case we return to this 
+						;	screen from a dock services sub-screen. We want to get rid
+						;	of the suspended auton because it stops the Auton Bay from
+						;	working.
+
+						(rpgCleanUpSuspendedAuton gPlayerShip)
+						(scrSetData gScreen 'autonItem Nil)
+						)
+					)
 				)
 		</OnScreenInit>
 
@@ -467,6 +482,8 @@
 												(block (
 													(autonObj (rpgCreateSuspendedAuton gPlayerShip (@ storedItems 0)))
 													)
+													(scrSetData gScreen 'autonItem (@ storedItems 0))
+
 													(scrShowScreen gScreen (obj@ autonObj 'shipConfigScreen) {
 														shipObj: autonObj
 														title: (scrTranslate gScreen 'core.name)

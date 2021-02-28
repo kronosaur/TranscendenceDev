@@ -1616,10 +1616,20 @@
 					<Action id="actionRemove" default="1">
 						(block (
 							(shipObj (or (@ gData 'shipObj) gPlayerShip))
+							(deviceItem (scrGetItem gScreen))
 							)
-							(shpRemoveDevice shipObj (scrGetItem gScreen))
+							(setq deviceItem (shpRemoveDevice shipObj deviceItem))
 							(objCharge shipObj (objGetDefaultCurrency gSource) (scrGetData gScreen 'costToRemove))
 							(objCredit gSource (objGetDefaultCurrency gSource) (scrGetData gScreen 'costToRemove))
+
+							;	If necessary move the uninstalled device to the player
+
+							(if (!= shipObj gPlayerShip)
+								(block ()
+									(objRemoveItem shipObj deviceItem)
+									(objAddItem gPlayerShip deviceItem)
+									)
+								)
 
 							(scrRefreshScreen gScreen)
 							)
