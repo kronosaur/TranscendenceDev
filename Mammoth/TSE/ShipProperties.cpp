@@ -75,7 +75,7 @@
 #define STR_NEXT								CONSTLIT("next")
 #define STR_PREV								CONSTLIT("prev")
 
-TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CShip>::SPropertyDef, 2> {{
+TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CShip>::SPropertyDef, 3> {{
 		{
 		"squadron",			"Desc of each member of squadron",
 		[](const CShip &ShipObj, const CString &sProperty) 
@@ -200,6 +200,19 @@ TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CSh
 				return ICCItemPtr::Nil();
 			},
 		NULL,
+		},
+
+		{
+		"trackFuel",		"True/Nil if we track and consume fuel",
+		[](const CShip &ShipObj, const CString &sProperty) 
+			{
+			return ICCItemPtr(ShipObj.m_pPowerUse != NULL);
+			},
+		[](CShip &ShipObj, const CString &sProperty, const ICCItem &Value, CString *retsError)
+			{
+			ShipObj.TrackFuel(!Value.IsNil());
+			return true;
+			},
 		},
 
 	}};

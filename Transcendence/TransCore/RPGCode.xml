@@ -112,6 +112,14 @@
 				
 			(setq rpgCalcDockServiceArmorAction (lambda (dockObj shipObj options)
 				(block (
+					(cargoObj
+						(switch
+							(= dockObj gPlayerShip)
+								gPlayerShip
+
+							shipObj
+							)
+						)
 					(armorForSale 
 						(filter (objGetItems dockObj "aUN") theItemToBuy
 							(and (objGetSellPrice dockObj theItemToBuy)
@@ -119,7 +127,7 @@
 									)
 							)
 						)
-					(armorInCargo (objGetItems shipObj "aU"))
+					(armorInCargo (objGetItems cargoObj "aU"))
 					(armorToInstall
 						(filter armorInCargo theItemToInstall
 							(block (
@@ -302,6 +310,15 @@
 			(setq rpgCalcDockServiceInstallAction (lambda (dockObj shipObj options)
 				(block (
 					allItems
+
+					(cargoObj
+						(switch
+							(= dockObj gPlayerShip)
+								gPlayerShip
+
+							shipObj
+							)
+						)
 					)
 					(switch
 						(or (@ options 'shipConfig) (= dockObj shipObj))
@@ -328,7 +345,7 @@
 							
 						;	If no items to install, action is disabled
 					
-						(not (setq allItems (objGetItems shipObj (@ options 'criteria))))
+						(not (setq allItems (objGetItems cargoObj (@ options 'criteria))))
 							{
 								visible: True
 								enabled: Nil
@@ -479,7 +496,7 @@
 					)
 
 					(switch
-						(or (@ options 'shipConfig) (= dockObj shipObj))
+						(or (@ options 'shipConfig) (= dockObj shipObj) (not (obj@ shipObj 'trackFuel)))
 							{
 								visible: Nil
 								}
@@ -606,6 +623,15 @@
 							(itemStatus (shpCanRemoveDevice shipObj theItem))
 							(dockStatus (objGetItemProperty dockObj theItem 'removeItemStatus))
 							(costToRemove (@ dockStatus 'price))
+
+							(cargoObj
+								(switch
+									(= dockObj gPlayerShip)
+										gPlayerShip
+
+									shipObj
+									)
+								)
 							)
 							
 							(switch
@@ -660,7 +686,7 @@
 										desc: (scrTranslate gScreen "actionRemove:cannotRemove" { item:theItem })
 										}
 								
-								(gr (itmGetMass theItem) (objGetCargoSpaceLeft shipObj))
+								(gr (itmGetMass theItem) (objGetCargoSpaceLeft cargoObj))
 									{
 										visible: True
 										enabled: Nil
@@ -785,8 +811,17 @@
 					
 					(itmMatches theItem "aI")
 						(block (
+							(cargoObj
+								(switch
+									(= dockObj gPlayerShip)
+										gPlayerShip
+
+									shipObj
+									)
+								)
+
 							(itemsAvail 
-								(filter (objGetItems shipObj (@ options 'criteria)) theItemInCargo
+								(filter (objGetItems cargoObj (@ options 'criteria)) theItemInCargo
 									(not (itmIsEqual theItemInCargo theItem 'ignoreInstalled))
 									)
 								)
@@ -829,8 +864,17 @@
 					
 					(itmMatches theItem "dI")
 						(block (
+							(cargoObj
+								(switch
+									(= dockObj gPlayerShip)
+										gPlayerShip
+
+									shipObj
+									)
+								)
+
 							(itemsAvail 
-								(filter (objGetItems shipObj (@ options 'criteria)) theItemInCargo
+								(filter (objGetItems cargoObj (@ options 'criteria)) theItemInCargo
 									(not (itmIsEqual theItemInCargo theItem 'ignoreInstalled))
 									)
 								)
@@ -932,7 +976,7 @@
 				
 			(setq rpgCalcDockServiceUpgradeAction (lambda (dockObj shipObj theItem options)
 				(switch
-					(or (@ options 'shipConfig) (= dockObj shipObj))
+					(or (@ options 'shipConfig) (= dockObj shipObj) (= dockObj gPlayerShip))
 						{
 							visible: Nil
 							}
@@ -1857,6 +1901,15 @@
 							(typTranslate &dsRPGDockServicesBase; textID data)
 							)
 						))
+
+					(cargoObj
+						(switch
+							(= installerObj gPlayerShip)
+								gPlayerShip
+
+							targetObj
+							)
+						)
 					)
 
 					(if thisItem
@@ -2177,7 +2230,7 @@
 							; See if the item fits
 
 							(if (and canInstall
-									(gr cargoNeeded (objGetCargoSpaceLeft targetObj))
+									(gr cargoNeeded (objGetCargoSpaceLeft cargoObj))
 									(not (@ data 'noCargoCheck))
 									)
 								(block Nil
