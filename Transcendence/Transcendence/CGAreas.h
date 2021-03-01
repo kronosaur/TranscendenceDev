@@ -665,9 +665,11 @@ class CGSelectorArea : public AGArea
 		bool MoveCursor (EDirections iDir);
 		void Refresh (void);
 		void ResetCursor (void) { m_iCursor = -1; Invalidate(); }
+		void RestoreSelection (const ICCItem &Selection);
+		ICCItemPtr SaveSelection () const { return ICCItemPtr(m_iCursor); }
 		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
 		void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
-		void SetCursor (int iIndex) { m_iCursor = iIndex; Invalidate(); }
+		void SetCursor (int iIndex);
 		void SetRegions (CSpaceObject *pSource, const SOptions &Options);
 		void SetSlotNameAtCursor (const CString &sName);
 		void SetTabRegion (int cyHeight) { m_cyTabRegion = cyHeight; }

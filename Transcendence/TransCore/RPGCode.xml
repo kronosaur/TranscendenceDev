@@ -753,6 +753,13 @@
 										desc: (typTranslate &dsRPGManageArmor; 'descArmorNotDamaged { armorNoun:armorNoun })
 										}
 
+								(@ options 'repairDesc)
+									{
+										Visible: True
+										enabled: Nil
+										desc: (@ options 'repairDesc)
+										}
+
 								(gr (itmGetProperty theItem 'repairLevel) (objGetProperty dockObj 'repairArmorMaxLevel))
 									{
 										visible: True

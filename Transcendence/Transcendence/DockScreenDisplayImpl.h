@@ -246,6 +246,7 @@ class CDockScreenSelector : public IDockScreenDisplay
 		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override;
 		virtual int OnGetListCursor (void) const override { return m_pControl->GetCursor(); }
 		virtual IListData *OnGetListData (void) const override { return m_pControl->GetList(); }
+		virtual ICCItemPtr OnGetSelection () const override { return (m_pControl ? m_pControl->SaveSelection() : ICCItemPtr::Nil()); }
 		virtual CSpaceObject *OnGetSource (void) const override { return m_pControl->GetSource(); }
 		virtual DWORD OnGetUIFlags (void) const override { return FLAG_UI_ITEM_SELECTOR; }
 		virtual EResults OnHandleAction (DWORD dwTag, DWORD dwData) override;

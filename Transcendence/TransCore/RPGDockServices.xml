@@ -508,24 +508,6 @@
 		<ListOptions
 			dataFrom=	"=(or (@ gData 'shipObj) gPlayerShip)"
 			list=		"asI"
-
-			initialItem="=(block (
-				(desiredSeg (scrGetData gScreen 'armorSeg))
-				(seg
-					(switch
-						(not (scrGetItem gScreen))
-							'shields
-							
-						(itmMatches (scrGetItem gScreen) 's)
-							'shields
-							
-						(itmGetArmorInstalledLocation (scrGetItem gScreen))
-						)
-					)
-				)
-
-				(or (not desiredSeg) (eq seg desiredSeg))
-				)"
 			/>
 
 		<Panes>
@@ -655,7 +637,7 @@
 								
 								;	Repair armor action
 								
-								(setq actionStatus (rpgCalcDockServiceRepairAction gSource shipObj theItem { category:'armor shipConfig:isShipConfig }))
+								(setq actionStatus (rpgCalcDockServiceRepairAction gSource shipObj theItem { category:'armor shipConfig:isShipConfig repairDesc:(@ gData 'repairDesc) }))
 								(scrShowAction gScreen 'actionRepair (@ actionStatus 'visible))
 								(scrEnableAction gScreen 'actionRepair (@ actionStatus 'enabled))
 								(scrSetActionDesc gScreen 'actionRepair (@ actionStatus 'desc))
@@ -839,7 +821,6 @@
 		<ListOptions
 			dataFrom=	"=(or (@ gData 'shipObj) gPlayerShip)"
 			list=		"d~wsI"
-			initialItem="=(rpgSelectorInitialItem &quot;d~wsI&quot;)"
 			/>
 
 		<Panes>
@@ -1209,7 +1190,6 @@
 		<ListOptions
 			dataFrom=	"=(or (@ gData 'shipObj) gPlayerShip)"
 			list=		"wI"
-			initialItem="=(rpgSelectorInitialItem &quot;wI&quot;)"
 			/>
 
 		<Panes>

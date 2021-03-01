@@ -490,6 +490,7 @@
 														dockServicesDesc: (scrTranslate gScreen 'descConfiguration {
 															shipClass: (objGetName autonObj 'generic)
 															})
+														repairDesc: (@ entry 'repairDesc)
 														})
 													)
 												)
