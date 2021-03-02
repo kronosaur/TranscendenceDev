@@ -14,11 +14,17 @@
 #define CATEGORY_STATION						CONSTLIT("station")
 
 #define FIELD_ARMOR_INTEGRITY					CONSTLIT("armorIntegrity")
+#define FIELD_DESC								CONSTLIT("desc")
+#define FIELD_DESC_ID							CONSTLIT("descID")
+#define FIELD_CAN_INSTALL						CONSTLIT("canInstall")
+#define FIELD_CAN_REMOVE						CONSTLIT("canRemove")
 #define FIELD_HULL_INTEGRITY					CONSTLIT("hullIntegrity")
 #define FIELD_OBJ_ID							CONSTLIT("objID")
 #define FIELD_POS								CONSTLIT("pos")
+#define FIELD_PRICE								CONSTLIT("price")
 #define FIELD_SHIELD_LEVEL						CONSTLIT("shieldLevel")
 #define FIELD_STATUS							CONSTLIT("status")
+#define FIELD_UPGRADE_INSTALL_ONLY				CONSTLIT("upgradeInstallOnly")
 
 #define PROPERTY_ASCENDED						CONSTLIT("ascended")
 #define PROPERTY_CAN_ATTACK						CONSTLIT("canAttack")
@@ -66,7 +72,7 @@
 #define SCALE_SHIP								CONSTLIT("ship")
 #define SCALE_FLOTSAM							CONSTLIT("flotsam")
 
-TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 11> {{
+TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 12> {{
 		{
 		"ascended",		"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsAscended()); },
@@ -112,6 +118,20 @@ TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TP
 		{
 		"hudColor",		"Color value",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.GetSymbolColor().AsHTMLColor()); },
+		NULL,
+		},
+		
+		{
+		"installDeviceStatus",		"Returns ability to install devices",
+		[](const CSpaceObject &Obj, const CString &sProperty) 
+			{
+			CTradingServices Services(Obj);
+
+			CTradingDesc::SServiceStatus Status;
+			bool bOK = Services.GetServiceStatus(serviceInstallDevice, Status);
+
+			return CTradingDesc::AsCCItem(Status);
+			},
 		NULL,
 		},
 		

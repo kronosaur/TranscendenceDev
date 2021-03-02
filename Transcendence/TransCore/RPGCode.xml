@@ -2051,10 +2051,11 @@
 								;	If not installable at this station, then ignore
 
 								stationCannotInstall
-									(if (@ status 'descID)
-										(setq desc (objTranslate installerObj (@ status 'descID) trData))
-										(setq desc (translate installerObj 'rpg.noTechToInstallDevice trData))
-										)
+									(setq desc (or
+										(@ status 'desc)
+										(objTranslate installerObj (@ status 'descID) trData)
+										(translate installerObj 'rpg.noTechToInstallDevice trData)
+										))
 
 								;   If we exceed the station's tech
 

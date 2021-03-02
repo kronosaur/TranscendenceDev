@@ -25,7 +25,7 @@ CTradingServices::CTradingServices (const CDesignType &Type) :
 	{
 	}
 
-bool CTradingServices::GetArmorInstallPrice (CArmorItem ArmorItem, DWORD dwFlags, int *retiPrice, CString *retsReason) const
+bool CTradingServices::GetArmorInstallPrice (CArmorItem ArmorItem, DWORD dwFlags, int *retiPrice, CTradingDesc::SReasonText *retReason) const
 
 //	GetArmorInstallPrice
 //
@@ -127,7 +127,7 @@ CRegenDesc CTradingServices::GetArmorRepairRate (DWORD dwFlags, const CRegenDesc
 		return CRegenDesc::Null;
 	}
 
-bool CTradingServices::GetDeviceInstallPrice (CDeviceItem DeviceItem, DWORD dwFlags, int *retiPrice, CString *retsReason, DWORD *retdwPriceFlags) const
+bool CTradingServices::GetDeviceInstallPrice (CDeviceItem DeviceItem, DWORD dwFlags, int *retiPrice, CTradingDesc::SReasonText *retReason, DWORD *retdwPriceFlags) const
 
 //	GetDeviceInstallPrice
 //
@@ -136,20 +136,20 @@ bool CTradingServices::GetDeviceInstallPrice (CDeviceItem DeviceItem, DWORD dwFl
 	{
 	//	Defaults to no reason
 
-	if (retsReason)
-		*retsReason = NULL_STR;
+	if (retReason)
+		*retReason = CTradingDesc::SReasonText();
 
 	if (!DeviceItem || (m_pProvider && m_pProvider->IsAbandoned()))
 		return false;
 
 	//	See if we have an override
 
-	if (m_pOverride && m_pOverride->GetDeviceInstallPrice(m_pProvider, DeviceItem, dwFlags, retiPrice, retsReason, retdwPriceFlags))
+	if (m_pOverride && m_pOverride->GetDeviceInstallPrice(m_pProvider, DeviceItem, dwFlags, retiPrice, retReason, retdwPriceFlags))
 		return true;
 
 	//	Otherwise, ask our design type
 
-	if (m_pDesc && m_pDesc->GetDeviceInstallPrice(m_pProvider, DeviceItem, dwFlags, retiPrice, retsReason, retdwPriceFlags))
+	if (m_pDesc && m_pDesc->GetDeviceInstallPrice(m_pProvider, DeviceItem, dwFlags, retiPrice, retReason, retdwPriceFlags))
 		return true;
 
 	//	Otherwise, we do not install
@@ -182,7 +182,7 @@ bool CTradingServices::GetDeviceRemovePrice (CDeviceItem DeviceItem, DWORD dwFla
 	return false;
 	}
 
-bool CTradingServices::GetItemInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason, DWORD *retdwPriceFlags) const
+bool CTradingServices::GetItemInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CTradingDesc::SReasonText *retReason, DWORD *retdwPriceFlags) const
 
 //	GetItemInstallPrice
 //
@@ -194,14 +194,14 @@ bool CTradingServices::GetItemInstallPrice (const CItem &Item, DWORD dwFlags, in
 		if (retdwPriceFlags)
 			*retdwPriceFlags = 0;
 
-		return GetArmorInstallPrice(Item.AsArmorItem(), 0, retiPrice, retsReason);
+		return GetArmorInstallPrice(Item.AsArmorItem(), 0, retiPrice, retReason);
 		}
 	else if (Item.IsDevice())
-		return GetDeviceInstallPrice(Item.AsDeviceItem(), 0, retiPrice, retsReason, retdwPriceFlags);
+		return GetDeviceInstallPrice(Item.AsDeviceItem(), 0, retiPrice, retReason, retdwPriceFlags);
 	else
 		{
-		if (retsReason)
-			*retsReason = NULL_STR;
+		if (retReason)
+			*retReason = CTradingDesc::SReasonText();
 
 		return false;
 		}
@@ -350,6 +350,31 @@ bool CTradingServices::GetRemoveConditionPrice (const CSpaceObject &Ship, ECondi
 		return true;
 
 	//	Otherwise, we do not decontaminate.
+
+	return false;
+	}
+
+bool CTradingServices::GetServiceStatus (ETradeServiceTypes iService, CTradingDesc::SServiceStatus &retStatus) const
+
+//	GetServiceStatus
+//
+//	Returns TRUE if we have this service and returns general properties.
+
+	{
+	if (m_pProvider && m_pProvider->IsAbandoned())
+		return false;
+
+	//	See if we have an override price
+
+	if (m_pOverride && m_pOverride->GetServiceStatus(GetUniverse(), iService, retStatus))
+		return true;
+
+	//	Otherwise, ask our design type
+
+	if (m_pDesc && m_pDesc->GetServiceStatus(GetUniverse(), iService, retStatus))
+		return true;
+
+	//	Otherwise, we do not have the service
 
 	return false;
 	}

@@ -85,6 +85,21 @@ class CTradingDesc
 			bool bFullInstallOnly = false;				//	If TRUE, service must not require purchase to install
 			};
 
+		struct SReasonText
+			{
+			CString sDesc;
+			CString sDescID;
+			};
+
+		struct SServiceStatus
+			{
+			bool bAvailable = false;
+			int iMaxLevel = -1;
+			int iPrice = -1;
+			SReasonText Message;
+			DWORD dwPriceFlags = 0;
+			};
+
 		CTradingDesc (void);
 		~CTradingDesc (void);
 
@@ -105,9 +120,9 @@ class CTradingDesc
 		int Charge (CSpaceObject *pObj, int iCharge);
 		bool ComposeDescription (CUniverse &Universe, CString *retsDesc) const;
 		void DeleteDynamicServices ();
-		bool GetArmorInstallPrice (const CSpaceObject *pProvider, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL) const;
+		bool GetArmorInstallPrice (const CSpaceObject *pProvider, const CItem &Item, DWORD dwFlags, int *retiPrice, SReasonText *retReason = NULL) const;
 		bool GetArmorRepairPrice (const CSpaceObject *pProvider, CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const;
-		bool GetDeviceInstallPrice (const CSpaceObject *pProvider, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL) const;
+		bool GetDeviceInstallPrice (const CSpaceObject *pProvider, const CItem &Item, DWORD dwFlags, int *retiPrice, SReasonText *retReason = NULL, DWORD *retdwPriceFlags = NULL) const;
 		bool GetDeviceRemovePrice (const CSpaceObject *pProvider, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL) const;
 		const CEconomyType *GetEconomyType (void) const { return m_pCurrency; }
 		CurrencyValue GetMaxBalance (CSpaceObject *pObj) const { return CalcMaxBalance(pObj); }
@@ -117,6 +132,7 @@ class CTradingDesc
 		int GetReplenishCurrency (void) { return m_iReplenishCurrency; }
 		int GetServiceCount (void) const { return m_List.GetCount(); }
 		void GetServiceInfo (int iIndex, SServiceInfo &Result) const;
+		bool GetServiceStatus (CUniverse &Universe, ETradeServiceTypes iService, SServiceStatus &retStatus) const;
 		bool HasConsumerService (void) const;
 		bool HasService (CUniverse &Universe, ETradeServiceTypes iService, const SHasServiceOptions &Options = SHasServiceOptions()) const;
 		bool HasServiceUpgradeOnly (ETradeServiceTypes iService) const;
@@ -140,6 +156,7 @@ class CTradingDesc
 		void RefreshInventory (CSpaceObject *pObj, int iPercent = 100);
 		void WriteToStream (IWriteStream *pStream);
 
+		static ICCItemPtr AsCCItem (const SServiceStatus &Status);
 		static int CalcPriceForService (ETradeServiceTypes iService, const CSpaceObject *pProvider, const CItem &Item, int iCount, DWORD dwFlags);
 		static CurrencyValue CalcMaxBalance (int iLevel, const CEconomyType *pCurrency = NULL);
 		static CString ServiceToString (ETradeServiceTypes iService);
@@ -156,6 +173,7 @@ class CTradingDesc
 			FLAG_UPGRADE_INSTALL_ONLY =	0x00000020,	//	TRUE if we must purchase an item to install
 			FLAG_NO_DESCRIPTION =       0x00000040, //  If TRUE, we exclude this service from ComposeDescription
 			FLAG_DYNAMIC_SERVICE =		0x00000080,	//	If TRUE, this service was added by <GetTradeServices>
+			FLAG_MESSAGE_TEXT =			0x00000100,	//	If TRUE, sMessageID is actual text.
 
 			//	DEPRECATED: We don't store these flags, but we require the values
 			//	for older versions.
@@ -199,6 +217,7 @@ class CTradingDesc
 		bool FindService (ETradeServiceTypes iService, const CItem &Item, const SServiceDesc **retpDesc) const;
 		bool FindService (ETradeServiceTypes iService, const CDesignType *pType, const SServiceDesc **retpDesc) const;
 		bool FindServiceToOverride (const SServiceDesc &NewService, int *retiIndex = NULL) const;
+		void GetReason (const SServiceDesc &Service, SReasonText *retReason = NULL) const;
 		bool GetServiceTypeInfo (CUniverse &Universe, ETradeServiceTypes iService, SServiceTypeInfo &Info) const;
 		bool HasServiceDescription (ETradeServiceTypes iService) const;
 		bool Matches (const CItem &Item, const SServiceDesc &Commodity) const;
@@ -292,16 +311,17 @@ class CTradingServices
 		CTradingServices (const CSpaceObject &Source);
 		CTradingServices (const CDesignType &Type);
 		
-		bool GetArmorInstallPrice (CArmorItem ArmorItem, DWORD dwFlags, int *retiPrice = NULL, CString *retsReason = NULL) const;
+		bool GetArmorInstallPrice (CArmorItem ArmorItem, DWORD dwFlags, int *retiPrice = NULL, CTradingDesc::SReasonText *retReason = NULL) const;
 		bool GetArmorRepairPrice (CArmorItem ArmorItem, int iHPToRepair, DWORD dwFlags, int *retiPrice = NULL) const;
 		CRegenDesc GetArmorRepairRate (DWORD dwFlags, const CRegenDesc &Default = CRegenDesc()) const;
-		bool GetDeviceInstallPrice (CDeviceItem DeviceItem, DWORD dwFlags, int *retiPrice = NULL, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL) const;
+		bool GetDeviceInstallPrice (CDeviceItem DeviceItem, DWORD dwFlags, int *retiPrice = NULL, CTradingDesc::SReasonText *retReason = NULL, DWORD *retdwPriceFlags = NULL) const;
 		bool GetDeviceRemovePrice (CDeviceItem DeviceItem, DWORD dwFlags, int *retiPrice = NULL, DWORD *retdwPriceFlags = NULL) const;
-		bool GetItemInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice = NULL, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL) const;
+		bool GetItemInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice = NULL, CTradingDesc::SReasonText *retReason = NULL, DWORD *retdwPriceFlags = NULL) const;
 		bool GetItemRemovePrice (const CItem &Item, DWORD dwFlags, int *retiPrice = NULL, DWORD *retdwPriceFlags = NULL) const;
 		int GetMaxLevel (ETradeServiceTypes iService) const;
 		bool GetRemoveConditionPrice (const CShipClass &Class, ECondition iCondition, DWORD dwFlags, int *retiPrice = NULL) const;
 		bool GetRemoveConditionPrice (const CSpaceObject &Ship, ECondition iCondition, DWORD dwFlags, int *retiPrice = NULL) const;
+		bool GetServiceStatus (ETradeServiceTypes iService, CTradingDesc::SServiceStatus &retStatus) const;
 		bool HasService (ETradeServiceTypes iService, const CTradingDesc::SHasServiceOptions &Options = CTradingDesc::SHasServiceOptions()) const;
 		bool IsEmpty () const { return (!m_pOverride && !m_pDesc); }
 

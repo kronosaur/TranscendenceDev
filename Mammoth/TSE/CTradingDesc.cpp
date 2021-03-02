@@ -140,6 +140,11 @@ bool CTradingDesc::AccumulateServiceDesc (const ICCItem &Value, TArray<SServiceD
 
 	DWORD dwFlags = 0;
 
+	CString sDesc = Value.GetStringAt(CONSTLIT("desc"));
+	CString sDescID = Value.GetStringAt(CONSTLIT("descID"));
+	if (sDescID.IsBlank())
+		sDescID = Value.GetStringAt(CONSTLIT("messageID"));
+
 	//	Add the service.
 
 	SServiceDesc *pNewService = retServices.Insert();
@@ -147,6 +152,14 @@ bool CTradingDesc::AccumulateServiceDesc (const ICCItem &Value, TArray<SServiceD
 	pNewService->ItemCriteria.Init(sCriteria);
 	pNewService->PriceAdj = PriceAdj;
 	pNewService->dwFlags = dwFlags;
+
+	if (!sDesc.IsBlank())
+		{
+		pNewService->dwFlags |= FLAG_MESSAGE_TEXT;
+		pNewService->sMessageID = sDesc;
+		}
+	else if (!sDescID.IsBlank())
+		pNewService->sMessageID = sDescID;
 
 	return true;
 	}
@@ -340,6 +353,30 @@ ICCItemPtr CTradingDesc::AsCCItem (CCodeChainCtx &CCX) const
 
 		pResult->SetAt(Sorted.GetKey(i), pList);
 		}
+
+	return pResult;
+	}
+
+ICCItemPtr CTradingDesc::AsCCItem (const SServiceStatus &Status)
+
+//	AsCCItem
+//
+//	Encodes in a CCItem struct.
+
+	{
+	ICCItemPtr pResult = ICCItemPtr(ICCItem::SymbolTable);
+	pResult->SetBooleanAt(CONSTLIT("available"), Status.bAvailable);
+	if (Status.bAvailable
+			&& (Status.dwPriceFlags & PRICE_UPGRADE_INSTALL_ONLY))
+		pResult->SetBooleanAt(CONSTLIT("upgradeInstallOnly"), true);
+
+	//	NOTE: Message is valid even if we cannot install
+
+	if (!Status.Message.sDesc.IsBlank())
+		pResult->SetStringAt(CONSTLIT("desc"), Status.Message.sDesc);
+
+	else if (!Status.Message.sDescID.IsBlank())
+		pResult->SetStringAt(CONSTLIT("descID"), Status.Message.sDescID);
 
 	return pResult;
 	}
@@ -1347,7 +1384,7 @@ bool CTradingDesc::HasSameCriteria (const SServiceDesc &S1, const SServiceDesc &
 		}
 	}
 
-bool CTradingDesc::GetArmorInstallPrice (const CSpaceObject *pProvider, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason) const
+bool CTradingDesc::GetArmorInstallPrice (const CSpaceObject *pProvider, const CItem &Item, DWORD dwFlags, int *retiPrice, SReasonText *retReason) const
 
 //	GetArmorInstallPrice
 //
@@ -1372,8 +1409,7 @@ bool CTradingDesc::GetArmorInstallPrice (const CSpaceObject *pProvider, const CI
 	int iPrice = ComputePrice(Ctx, *pService, dwFlags);
 	if (iPrice < 0)
 		{
-		if (retsReason)
-			*retsReason = pService->sMessageID;
+		GetReason(*pService, retReason);
 		return false;
 		}
 
@@ -1382,9 +1418,7 @@ bool CTradingDesc::GetArmorInstallPrice (const CSpaceObject *pProvider, const CI
 	if (retiPrice)
 		*retiPrice = iPrice;
 
-	if (retsReason)
-		*retsReason = pService->sMessageID;
-
+	GetReason(*pService, retReason);
 	return true;
 	}
 
@@ -1423,7 +1457,7 @@ bool CTradingDesc::GetArmorRepairPrice (const CSpaceObject *pProvider, CSpaceObj
 	return true;
 	}
 
-bool CTradingDesc::GetDeviceInstallPrice (const CSpaceObject *pProvider, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason, DWORD *retdwPriceFlags) const
+bool CTradingDesc::GetDeviceInstallPrice (const CSpaceObject *pProvider, const CItem &Item, DWORD dwFlags, int *retiPrice, SReasonText *retReason, DWORD *retdwPriceFlags) const
 
 //	GetDeviceInstallPrice
 //
@@ -1448,8 +1482,7 @@ bool CTradingDesc::GetDeviceInstallPrice (const CSpaceObject *pProvider, const C
 	int iPrice = ComputePrice(Ctx, *pService, dwFlags);
 	if (iPrice < 0)
 		{
-		if (retsReason)
-			*retsReason = pService->sMessageID;
+		GetReason(*pService, retReason);
 		return false;
 		}
 
@@ -1458,9 +1491,6 @@ bool CTradingDesc::GetDeviceInstallPrice (const CSpaceObject *pProvider, const C
 	if (retiPrice)
 		*retiPrice = iPrice;
 
-	if (retsReason)
-		*retsReason = pService->sMessageID;
-
 	if (retdwPriceFlags)
 		{
 		(*retdwPriceFlags) = 0;
@@ -1468,6 +1498,7 @@ bool CTradingDesc::GetDeviceInstallPrice (const CSpaceObject *pProvider, const C
 			(*retdwPriceFlags) |= PRICE_UPGRADE_INSTALL_ONLY;
 		}
 
+	GetReason(*pService, retReason);
 	return true;
 	}
 
@@ -1550,6 +1581,22 @@ int CTradingDesc::GetMaxLevelMatched (CUniverse &Universe, ETradeServiceTypes iS
 			}
 	
 	return iMaxLevel;
+	}
+
+void CTradingDesc::GetReason (const SServiceDesc &Service, SReasonText *retReason) const
+
+//	GetReason
+//
+//	Returns the reason text.
+
+	{
+	if (retReason)
+		{
+		if (Service.dwFlags & FLAG_MESSAGE_TEXT)
+			retReason->sDesc = Service.sMessageID;
+		else
+			retReason->sDescID = Service.sMessageID;
+		}
 	}
 
 bool CTradingDesc::GetRefuelItemAndPrice (const CSpaceObject *pProvider, CSpaceObject *pObjToRefuel, DWORD dwFlags, CItemType **retpItemType, int *retiPrice) const
@@ -1662,6 +1709,60 @@ void CTradingDesc::GetServiceInfo (int iIndex, SServiceInfo &Result) const
 
 	Result.bInventoryAdj = ((Service.dwFlags & FLAG_INVENTORY_ADJ) ? true : false);
 	Result.bUpgradeInstallOnly = ((Service.dwFlags & FLAG_UPGRADE_INSTALL_ONLY) ? true : false);
+	}
+
+bool CTradingDesc::GetServiceStatus (CUniverse &Universe, ETradeServiceTypes iService, SServiceStatus &retStatus) const
+
+//	GetServiceStatus
+//
+//	Returns service status.
+
+	{
+	SReasonText UnavailableReason;
+	SReasonText AvailableReason;
+	int iMaxLevel = -1;
+	bool bUpgradeInstallOnly = false;
+
+	//	Loop over the commodity list and find the first entry that matches
+
+	for (int i = 0; i < m_List.GetCount(); i++)
+		if (m_List[i].iService == iService)
+			{
+			CString sPrefix;
+			int iPriceAdj = m_List[i].PriceAdj.EvalAsInteger(NULL, &sPrefix);
+			if (strEquals(sPrefix, UNAVAILABLE_PREFIX))
+				{
+				GetReason(m_List[i], &UnavailableReason);
+				continue;
+				}
+
+			int iLevel;
+			if (m_List[i].pItemType)
+				iLevel = m_List[i].pItemType->GetLevel();
+			else
+				iLevel = m_List[i].ItemCriteria.GetMaxLevelMatched(Universe);
+
+			if (iLevel > iMaxLevel)
+				{
+				iMaxLevel = iLevel;
+
+				bUpgradeInstallOnly = ((m_List[i].dwFlags & FLAG_UPGRADE_INSTALL_ONLY) ? true : false);
+				GetReason(m_List[i], &AvailableReason);
+				}
+			}
+
+	//	Compose result
+
+	retStatus.bAvailable = (iMaxLevel != -1);
+	retStatus.iMaxLevel = iMaxLevel;
+	retStatus.iPrice = -1;
+	retStatus.Message = (iMaxLevel != -1 ? AvailableReason : UnavailableReason);
+
+	retStatus.dwPriceFlags = 0;
+	if (bUpgradeInstallOnly)
+		retStatus.dwPriceFlags |= PRICE_UPGRADE_INSTALL_ONLY;
+
+	return retStatus.bAvailable;
 	}
 
 bool CTradingDesc::GetServiceTypeInfo (CUniverse &Universe, ETradeServiceTypes iService, SServiceTypeInfo &Info) const

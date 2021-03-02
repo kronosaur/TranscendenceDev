@@ -477,23 +477,27 @@
 									(if (and (= (count storedItems) 1)
 											(itmHasAttribute (@ storedItems 0) 'auton)
 											)
-										(scrAddAction gScreen 'actionShowConfiguration (nextActionPos) Nil
-											(lambda ()
-												(block (
-													(autonObj (rpgCreateSuspendedAuton gPlayerShip (@ storedItems 0)))
-													)
-													(scrSetData gScreen 'autonItem (@ storedItems 0))
+										(block ()
+											(scrAddAction gScreen 'actionShowConfiguration (nextActionPos) Nil
+												(lambda ()
+													(block (
+														(autonObj (rpgCreateSuspendedAuton gPlayerShip (@ storedItems 0)))
+														)
+														(scrSetData gScreen 'autonItem (@ storedItems 0))
 
-													(scrShowScreen gScreen (obj@ autonObj 'shipConfigScreen) {
-														shipObj: autonObj
-														title: (scrTranslate gScreen 'core.name)
-														dockServicesDesc: (scrTranslate gScreen 'descConfiguration {
-															shipClass: (objGetName autonObj 'generic)
+														(scrShowScreen gScreen (obj@ autonObj 'shipConfigScreen) {
+															shipObj: autonObj
+															title: (scrTranslate gScreen 'core.name)
+															dockServicesDesc: (scrTranslate gScreen 'descConfiguration {
+																shipClass: (objGetName autonObj 'generic)
+																})
+															repairDesc: (@ entry 'repairDesc)
 															})
-														repairDesc: (@ entry 'repairDesc)
-														})
+														)
 													)
 												)
+
+											(dbgOutput "installDesc: " (obj@ gPlayerShip (itmCreate &itLaserCannon; 1) 'installItemStatus))
 											)
 										)
 

@@ -163,6 +163,7 @@
 
 							(not (@ installStatus 'canInstall))
 								(setq desc (or
+									(@ installStatus 'desc)
 									(objTranslate gSource (@ installStatus 'descID) { item:thisItem itemName:(itmGetName thisItem 'article) targetObj:shipObj })
 									(scrTranslate gScreen 'descNoTech { armorShort:(itmGetName thisItem 'short) })
 									))
