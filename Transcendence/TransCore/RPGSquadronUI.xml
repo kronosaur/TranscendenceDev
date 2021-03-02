@@ -15,6 +15,10 @@
 						(@ theEntry 'status)
 						)
 					)
+					
+				(hasDeployed (find allStatuses 'deployed))
+				(hasStored (find allStatuses 'stored))
+				(hasWaiting (find allStatuses 'waiting))
 				)
 				;	Remove any suspended autons, in case we return to this 
 				;	screen from a dock services sub-screen. We want to get rid
@@ -26,15 +30,13 @@
 				;	Create tab sets as necessary
 
 				(scrSetTabSet gScreen (list
-					(if (find allStatuses 'deployed)
-						{	id: 'squadronDeployed
-							label: (scrTranslate gScreen 'labelDeployed)
-							screen: &dsRPGSquadron;
-							data: gData
-							}
-						)
+					{	id: 'squadronDeployed
+						label: (scrTranslate gScreen 'labelDeployed)
+						screen: &dsRPGSquadron;
+						data: gData
+						}
 
-					(if (find allStatuses 'stored)
+					(if hasStored
 						{	id: 'squadronStored
 							label: (scrTranslate gScreen 'labelInCargo)
 							screen: &dsRPGSquadronInCargoHold;
@@ -42,7 +44,7 @@
 							}
 						)
 
-					(if (find allStatuses 'waiting)
+					(if hasWaiting
 						{	id: 'squadronWaiting
 							label: (scrTranslate gScreen 'labelWaiting)
 							screen: &dsRPGSquadronWaiting;
@@ -50,6 +52,19 @@
 							}
 						)
 					))
+					
+				;	Select the proper tab
+				
+				(switch
+					hasDeployed
+						Nil
+						
+					hasStored
+						(scrShowTab gScreen 'squadronStored)
+						
+					hasWaiting
+						(scrShowTab gScreen 'squadronWaiting)
+					)
 				)
 		</OnScreenInit>
 
