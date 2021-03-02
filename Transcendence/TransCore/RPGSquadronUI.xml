@@ -492,7 +492,11 @@
 									(if (and (= (count storedItems) 1)
 											(itmHasAttribute (@ storedItems 0) 'auton)
 											)
-										(block ()
+										(block (
+											(installArmorStatus (obj@ gPlayerShip 'installArmorStatus))
+											(installDeviceStatus (obj@ gPlayerShip 'installDeviceStatus))
+											(configDesc (or (@ installDeviceStatus 'desc) (@ installArmorStatus 'desc)))
+											)
 											(scrAddAction gScreen 'actionShowConfiguration (nextActionPos) Nil
 												(lambda ()
 													(block (
@@ -511,8 +515,10 @@
 														)
 													)
 												)
-
-											(dbgOutput "installDesc: " (obj@ gPlayerShip (itmCreate &itLaserCannon; 1) 'installItemStatus))
+												
+											(if configDesc
+												(scrSetActionDesc gScreen 'actionShowConfiguration configDesc)
+												)
 											)
 										)
 

@@ -370,6 +370,9 @@ ICCItemPtr CTradingDesc::AsCCItem (const SServiceStatus &Status)
 			&& (Status.dwPriceFlags & PRICE_UPGRADE_INSTALL_ONLY))
 		pResult->SetBooleanAt(CONSTLIT("upgradeInstallOnly"), true);
 
+	if (Status.iMaxLevel != -1)
+		pResult->SetIntegerAt(CONSTLIT("maxLevel"), Status.iMaxLevel);
+
 	//	NOTE: Message is valid even if we cannot install
 
 	if (!Status.Message.sDesc.IsBlank())
