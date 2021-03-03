@@ -637,7 +637,11 @@
 								
 								;	Repair armor action
 								
-								(setq actionStatus (rpgCalcDockServiceRepairAction gSource shipObj theItem { category:'armor shipConfig:isShipConfig repairDesc:(@ gData 'repairDesc) }))
+								(setq actionStatus (rpgCalcDockServiceRepairAction gSource shipObj theItem { 
+									category: 'armor 
+									shipConfig: isShipConfig 
+									repairArmorDesc: (@ gData 'repairArmorDesc)
+									}))
 								(scrShowAction gScreen 'actionRepair (@ actionStatus 'visible))
 								(scrEnableAction gScreen 'actionRepair (@ actionStatus 'enabled))
 								(scrSetActionDesc gScreen 'actionRepair (@ actionStatus 'desc))

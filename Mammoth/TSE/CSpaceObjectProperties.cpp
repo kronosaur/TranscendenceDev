@@ -72,7 +72,7 @@
 #define SCALE_SHIP								CONSTLIT("ship")
 #define SCALE_FLOTSAM							CONSTLIT("flotsam")
 
-TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 12> {{
+TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 13> {{
 		{
 		"ascended",		"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsAscended()); },
@@ -118,6 +118,20 @@ TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TP
 		{
 		"hudColor",		"Color value",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.GetSymbolColor().AsHTMLColor()); },
+		NULL,
+		},
+		
+		{
+		"installArmorStatus",		"Returns ability to install armor",
+		[](const CSpaceObject &Obj, const CString &sProperty) 
+			{
+			CTradingServices Services(Obj);
+
+			CTradingDesc::SServiceStatus Status;
+			bool bOK = Services.GetServiceStatus(serviceReplaceArmor, Status);
+
+			return CTradingDesc::AsCCItem(Status);
+			},
 		NULL,
 		},
 		
