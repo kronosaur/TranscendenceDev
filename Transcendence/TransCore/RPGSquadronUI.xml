@@ -122,12 +122,20 @@
 
 						(selection
 							(switch
+								(not entry)
+									(map squadronList 'excludeNil theEntry
+										(if (= (@ theEntry 'status) 'deployed)
+											theEntry
+											)
+										)
+
 								(= (typeof entry) 'struct)
 									(list entry)
 
 								entry
 								)
 							)
+
 						(selectionDeployed (filter selection theEntry
 							(= (@ theEntry 'status) 'deployed)
 							))
@@ -135,6 +143,12 @@
 						(deployedObjs
 							(map selection theEntry
 								(@ theEntry 'obj)
+								)
+							)
+
+						(distantObjs
+							(filter deployedObjs theObj
+								(not (obj@ theObj 'visibleToPlayer))
 								)
 							)
 
@@ -189,6 +203,20 @@
 
 									(if (find squadronComms 'msgWait)
 										(addAction 'msgWait)
+										)
+
+									(if distantObjs
+										(scrAddAction gScreen 'actionLocate (nextActionPos) Nil
+											(lambda ()
+												(block ()
+													(enum distantObjs theObj
+														(objSetShowAsDestination theObj '(autoClear showDistance))
+														)
+
+													(scrExitScreen gScreen)
+													)
+												)
+											)
 										)
 
 									;	Set the descriptor
@@ -266,6 +294,22 @@
 											)
 										)
 
+									;	Locate
+
+									(if distantObjs
+										(scrAddAction gScreen 'actionLocate (nextActionPos) Nil
+											(lambda ()
+												(block ()
+													(enum distantObjs theObj
+														(objSetShowAsDestination theObj '(autoClear showDistance))
+														)
+
+													(scrExitScreen gScreen)
+													)
+												)
+											)
+										)
+
 									;	Set the description
 
 									(switch
@@ -309,6 +353,7 @@
 			<Text id="labelWaiting">Waiting</Text>
 
 			<Text id="actionShowConfiguration">[C]onfiguration</Text>
+			<Text id="actionLocate">[L]ocate</Text>
 
 			<Text id="msgAttackInFormation">Attack [i]n Formation</Text>
 			<Text id="msgAttackTarget">[A]ttack Target</Text>

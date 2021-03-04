@@ -3427,7 +3427,7 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	//	Calculate visibility
 
-	DWORD byShimmer = CalcSRSVisibility(Ctx);
+	DWORD byShimmer = (Ctx.pCenter ? CalcSRSVisibility(*Ctx.pCenter, Ctx.iPerception) : 0);
 
 	//	Known, immobile objects always have a minimum visibility in SRS.
 

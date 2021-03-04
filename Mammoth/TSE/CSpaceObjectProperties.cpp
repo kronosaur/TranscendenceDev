@@ -72,7 +72,7 @@
 #define SCALE_SHIP								CONSTLIT("ship")
 #define SCALE_FLOTSAM							CONSTLIT("flotsam")
 
-TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 13> {{
+TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 14> {{
 		{
 		"ascended",		"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsAscended()); },
@@ -193,6 +193,20 @@ TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TP
 				return ICCItemPtr(CG32bitPixel(255, 255, 80).AsHTMLColor());
 			else
 				return ICCItemPtr(CG32bitPixel(80, 255, 80).AsHTMLColor());
+			},
+		NULL,
+		},
+		
+		{
+		"visibleToPlayer",		"True if object is in visual range of player",
+		[](const CSpaceObject &Obj, const CString &sProperty) 
+			{
+			const CSpaceObject *pPlayer = Obj.GetPlayerShip();
+			if (!pPlayer)
+				return ICCItemPtr::Nil();
+
+			CPerceptionCalc Perception(pPlayer->GetPerception());
+			return ICCItemPtr(Perception.CanVisuallyScan(Obj, pPlayer->GetDistance2(&Obj)));
 			},
 		NULL,
 		},

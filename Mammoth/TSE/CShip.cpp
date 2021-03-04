@@ -5054,7 +5054,7 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 	//	See if we're invisible in SRS
 
-	DWORD byShimmer = CalcSRSVisibility(Ctx);
+	DWORD byShimmer = (Ctx.pCenter ? CalcSRSVisibility(*Ctx.pCenter, Ctx.iPerception) : 0);
 
 	//	Paint thrusters?
 

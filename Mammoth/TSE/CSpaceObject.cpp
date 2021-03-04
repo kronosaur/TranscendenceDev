@@ -678,7 +678,7 @@ int CSpaceObject::CalcMiningDifficulty (EAsteroidType iType) const
 	return CAsteroidDesc::GetDefaultMiningDifficulty(iType);
 	}
 
-DWORD CSpaceObject::CalcSRSVisibility (SViewportPaintCtx &Ctx) const
+DWORD CSpaceObject::CalcSRSVisibility (const CSpaceObject &ObserverObj, int iObserverPerception) const
 
 //	CalcSRSVisibility
 //
@@ -688,16 +688,8 @@ DWORD CSpaceObject::CalcSRSVisibility (SViewportPaintCtx &Ctx) const
 //	1-255 = varying degrees of visibility (1 = lowest, 255 = highest).
 
 	{
-	int iRangeIndex = GetDetectionRangeIndex(Ctx.iPerception);
-	if (iRangeIndex < 6 || Ctx.pCenter == NULL || Ctx.pCenter == this)
-		return 0;
-
-	Metric rRange = CPerceptionCalc::GetRange(iRangeIndex);
-	Metric rDist = Ctx.pCenter->GetDistance(this);
-	if (rDist <= rRange)
-		return 0;
-
-	return 255 - Min(254, (int)((rDist - rRange) / g_KlicksPerPixel) * 2);
+	CPerceptionCalc Perception(iObserverPerception);
+	return Perception.CalcSRSShimmer(*this, GetDistance(&ObserverObj));
 	}
 
 CSpaceObject *CSpaceObject::CalcTargetToAttack (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver)

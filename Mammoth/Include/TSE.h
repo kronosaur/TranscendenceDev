@@ -1050,11 +1050,12 @@ class CSpaceObject
 
 		virtual bool IsPaintDeferred (SViewportPaintCtx &Ctx) const { return false; }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const { return CSystem::layerStations; }
+		virtual Metric GetVisualMaxRange () const { return CPerceptionCalc::STD_VISUAL_RANGE * LIGHT_SECOND; }
 		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 
 		bool CanBePOV (void) const { return (m_pSystem && !IsDestroyed()); }
-		DWORD CalcSRSVisibility (SViewportPaintCtx &Ctx) const;
+		DWORD CalcSRSVisibility (const CSpaceObject &ObserverObj, int iObserverPerception) const;
 		void ClearPaintNeeded (void) { m_fPaintNeeded = false; }
 		const CImageFilterStack *GetSystemFilters (void) const;
 		bool Is3DExtra (void) const { return (m_f3DExtra ? true : false); }

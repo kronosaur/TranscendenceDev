@@ -11,10 +11,8 @@
 const DWORD LAST_ATTACK_THRESHOLD =					45;
 
 bool CPerceptionCalc::m_bRangeTableInitialized = false;
-
-Metric CPerceptionCalc::m_rRange[RANGE_ARRAY_SIZE];
-
-Metric CPerceptionCalc::m_rRange2[RANGE_ARRAY_SIZE];
+Metric CPerceptionCalc::m_rRange[RANGE_ARRAY_SIZE] = { 0.0 };
+Metric CPerceptionCalc::m_rRange2[RANGE_ARRAY_SIZE] = { 0.0 };
 
 CPerceptionCalc::CPerceptionCalc (int iPerception) :
 		m_iPerception(iPerception)
@@ -48,7 +46,28 @@ int CPerceptionCalc::AdjStealth (int iValue, int iAdj)
 	return Max((int)CSpaceObject::stealthMin, Min(iValue + iAdj, (int)CSpaceObject::stealthMax));
 	}
 
-bool CPerceptionCalc::CanBeTargeted (CSpaceObject *pTarget, Metric rTargetDist2) const
+DWORD CPerceptionCalc::CalcSRSShimmer (const CSpaceObject &TargetObj, Metric rTargetDist) const
+
+//	CalcSRSShimmer
+//
+//	Calculates the SRS opacity to paint with.
+//
+//	0 = Fully visible.
+//	1-255 = varying degrees of visibility (1 = lowest, 255 = highest).
+
+	{
+	int iRangeIndex = GetRangeIndex(TargetObj.GetStealth());
+	if (iRangeIndex < 6)
+		return 0;
+
+	Metric rRange = GetRange(iRangeIndex);
+	if (rTargetDist <= rRange)
+		return 0;
+
+	return 255 - Min(254, (int)((rTargetDist - rRange) / g_KlicksPerPixel) * 2);
+	}
+
+bool CPerceptionCalc::CanBeTargeted (const CSpaceObject *pTarget, Metric rTargetDist2) const
 
 //	CanBeTargeted
 //
@@ -62,18 +81,28 @@ bool CPerceptionCalc::CanBeTargeted (CSpaceObject *pTarget, Metric rTargetDist2)
 		return (rTargetDist2 < GetMaxDist2(pTarget));
 	}
 
-bool CPerceptionCalc::CanBeTargetedAtDist (CSpaceObject *pTarget, Metric rTargetDist) const
+bool CPerceptionCalc::CanVisuallyScan (const CSpaceObject &TargetObj, Metric rTargetDist2) const
 
-//	CanBeTargetedAtDist
+//	CanVisuallyScan
 //
-//	Same as CanBeTargeted, but using a true distance instead of distance 
-//	squared.
+//	Returns TRUE if the given target object is in visual scanning range, for
+//	purposes of setting the scanned flag (etc.).
 
 	{
-	if (IsVisibleDueToAttack(pTarget))
-		return (rTargetDist < m_rRange[GetRangeIndex(Min(pTarget->GetStealth(), (int)CSpaceObject::stealthNormal))]);
+	//	If outside of fixed maximum visual range, then no scan.
+
+	if (rTargetDist2 > GetStdVisualRange2())
+		return false;
+
+	//	If the target is stealthy enough, then we cannot see it even if closer.
+
+	else if (rTargetDist2 > GetMaxDist2(&TargetObj))
+		return false;
+
+	//	Otherwise, it is visible
+
 	else
-		return (rTargetDist < GetMaxDist(pTarget));
+		return true;
 	}
 
 Metric CPerceptionCalc::GetMaxDist (int iPerception)
@@ -87,24 +116,24 @@ Metric CPerceptionCalc::GetMaxDist (int iPerception)
 	return GetRange(GetRangeIndex(CSpaceObject::stealthNormal, iPerception));
 	}
 
-Metric CPerceptionCalc::GetMaxDist (CSpaceObject *pTarget) const
+Metric CPerceptionCalc::GetMaxDist (const CSpaceObject *pTarget) const
 
 //	GetMaxDist
 //
 //	Returns the maximum distance at which we can see the given object.
 
 	{
-	return m_rRange[pTarget->GetDetectionRangeIndex(m_iPerception)];
+	return m_rRange[GetRangeIndex(pTarget->GetStealth())];
 	}
 
-Metric CPerceptionCalc::GetMaxDist2 (CSpaceObject *pTarget) const
+Metric CPerceptionCalc::GetMaxDist2 (const CSpaceObject *pTarget) const
 
 //	GetMaxDist2
 //
 //	Returns the maximum distance (squared) at which we can see the given object.
 
 	{
-	return m_rRange2[pTarget->GetDetectionRangeIndex(m_iPerception)];
+	return m_rRange2[GetRangeIndex(pTarget->GetStealth())];
 	}
 
 int CPerceptionCalc::GetRangeIndex (int iStealth, int iPerception)
@@ -144,7 +173,7 @@ void CPerceptionCalc::InitRangeTable (void)
 	m_bRangeTableInitialized = true;
 	}
 
-bool CPerceptionCalc::IsVisibleDueToAttack (CSpaceObject *pTarget) const
+bool CPerceptionCalc::IsVisibleDueToAttack (const CSpaceObject *pTarget) const
 
 //	IsVisibleDueToAttack
 //
@@ -154,7 +183,7 @@ bool CPerceptionCalc::IsVisibleDueToAttack (CSpaceObject *pTarget) const
 	return ((DWORD)pTarget->GetLastFireTime() >= m_dwLastAttackThreshold);
 	}
 
-bool CPerceptionCalc::IsVisibleInLRS (CSpaceObject *pSource, CSpaceObject *pTarget) const
+bool CPerceptionCalc::IsVisibleInLRS (const CSpaceObject *pSource, const CSpaceObject *pTarget) const
 
 //	IsVisibleInLRS
 //

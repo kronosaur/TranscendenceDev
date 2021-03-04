@@ -652,18 +652,35 @@ struct SVisibleDamage
 class CPerceptionCalc
 	{
 	public:
+		//	This is the maximum range for visual sighting, given equal 
+		//	perception and stealth. We use this for purposes of scanning range,
+		//	etc. (In light-seconds.)
+
+		static constexpr Metric STD_VISUAL_RANGE = 40.0;
+
+		//	This is the maximum range at which we can perceive an object in LRS
+		//	given equal perception and stealth (in light-seconds).
+
+		static constexpr Metric STD_LRS_RANGE = 100.0;
+
+		//	For each point of perception above stealth, we increase the 
+		//	detection range by this factor.
+
+		static constexpr Metric RANGE_FACTOR = 1.2;
+
 		static constexpr int RANGE_ARRAY_SIZE =					256;
 		static constexpr int RANGE_ARRAY_BASE_RANGE_INDEX =		128;
 
 		CPerceptionCalc (int iPerception = -1);
 
-		bool CanBeTargeted (CSpaceObject *pTarget, Metric rTargetDist2) const;
-		bool CanBeTargetedAtDist (CSpaceObject *pTarget, Metric rTargetDist) const;
-		Metric GetMaxDist (CSpaceObject *pTarget) const;
-		Metric GetMaxDist2 (CSpaceObject *pTarget) const;
+		DWORD CalcSRSShimmer (const CSpaceObject &TargetObj, Metric rTargetDist) const;
+		bool CanBeTargeted (const CSpaceObject *pTarget, Metric rTargetDist2) const;
+		bool CanVisuallyScan (const CSpaceObject &TargetObj, Metric rTargetDist2) const;
+		Metric GetMaxDist (const CSpaceObject *pTarget) const;
+		Metric GetMaxDist2 (const CSpaceObject *pTarget) const;
 		int GetPerception (void) const { return m_iPerception; }
 		int GetRangeIndex (int iStealth) const { return GetRangeIndex(iStealth, m_iPerception); }
-		bool IsVisibleInLRS (CSpaceObject *pSource, CSpaceObject *pTarget) const;
+		bool IsVisibleInLRS (const CSpaceObject *pSource, const CSpaceObject *pTarget) const;
 		void SetPerception (int iPerception) { m_iPerception = iPerception; }
 
 		static int AdjPerception (int iValue, int iAdj);
@@ -679,38 +696,21 @@ class CPerceptionCalc
 
 		static constexpr int MAX_DELTA = 65;
 
-		bool IsVisibleDueToAttack (CSpaceObject *pTarget) const;
+		bool IsVisibleDueToAttack (const CSpaceObject *pTarget) const;
 
 		static void InitRangeTable (void);
-		static Metric CalcPerceptionRange (int iStealth, int iPerception) { return 100.0 * std::pow(1.2, Metric(Min(MAX_DELTA, iPerception - iStealth))); };
+
+		//	NOTE: We cannot make this constexpr because std::pow is not 
+		//	currently constexpr (due to it setting errno as a side-effect).
+		static Metric CalcPerceptionRange (int iStealth, int iPerception) { return STD_LRS_RANGE * std::pow(RANGE_FACTOR, Metric(Min(MAX_DELTA, iPerception - iStealth))); };
+		static constexpr Metric GetStdVisualRange2 () { return (STD_VISUAL_RANGE * LIGHT_SECOND) * (STD_VISUAL_RANGE * LIGHT_SECOND); }
 
 		int m_iPerception;
-		DWORD m_dwLastAttackThreshold;			//	Last attack on or after means visible
+		DWORD m_dwLastAttackThreshold = 0;			//	Last attack on or after means visible
 
 		static bool m_bRangeTableInitialized;
 		static Metric m_rRange[RANGE_ARRAY_SIZE];
 		static Metric m_rRange2[RANGE_ARRAY_SIZE];
-	};
-
-class CRandomEntryResults
-	{
-	public:
-		CRandomEntryResults (void);
-		~CRandomEntryResults (void);
-
-		void AddResult (CXMLElement *pElement, int iCount);
-		int GetCount (void) { return m_Results.GetCount(); }
-		CXMLElement *GetResult (int iIndex);
-		int GetResultCount (int iIndex);
-
-	private:
-		struct SResultEntry
-			{
-			int iCount;
-			CXMLElement *pElement;
-			};
-
-		TArray<SResultEntry> m_Results;
 	};
 
 class IElementGenerator
