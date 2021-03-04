@@ -2,7 +2,13 @@
 
 <TranscendenceModule>
 
-<!-- Squadron Management UI -->
+<!-- Squadron Management UI
+
+	DATA
+
+		tabID: start on this tab.
+
+-->
 
 	<DockScreen unid="&dsRPGSquadron;"
 			inherit=		"&dsDockScreenBase;"
@@ -30,11 +36,13 @@
 				;	Create tab sets as necessary
 
 				(scrSetTabSet gScreen (list
-					{	id: 'squadronDeployed
-						label: (scrTranslate gScreen 'labelDeployed)
-						screen: &dsRPGSquadron;
-						data: gData
-						}
+					(if hasDeployed
+						{	id: 'squadronDeployed
+							label: (scrTranslate gScreen 'labelDeployed)
+							screen: &dsRPGSquadron;
+							data: gData
+							}
+						)
 
 					(if hasStored
 						{	id: 'squadronStored
@@ -56,6 +64,9 @@
 				;	Select the proper tab
 				
 				(switch
+					(@ gData 'tabID)
+						(scrShowTab gScreen (@ gData 'tabID))
+
 					hasDeployed
 						Nil
 						
@@ -386,6 +397,7 @@
 
 							(@ theEntry 'item)
 								(block (
+									(autonConfig (rpgGetAutonConfig (@ theEntry 'item)))
 									(damageDesc (rpgGetAutonDamageDesc (@ theEntry 'item)))
 									(visibleDamage (@ damageDesc 'visibleDamage))
 									(integrity (- 100 visibleDamage))
@@ -403,7 +415,7 @@
 									(repairDesc (if (ls integrity 100) (rpgGetAutonRepairDesc gPlayerShip (@ theEntry 'item))))
 									)
 									{
-										title: (@ theEntry 'name)
+										title: (or (@ autonConfig 'name) (@ theEntry 'name))
 										icon: (itmGetImageDesc (@ theEntry 'item))
 										statusBar: integrity
 										statusBarColor: barColor
@@ -487,7 +499,7 @@
 
 									(scrEnableAction gScreen 'actionDeploy canDeploy)
 
-									;	If there is a single item selected, show configuration
+									;	If there is a single item selected, show configuration, etc.
 
 									(if (and (= (count storedItems) 1)
 											(itmHasAttribute (@ storedItems 0) 'auton)
@@ -496,13 +508,16 @@
 											(installArmorStatus (obj@ gPlayerShip 'installArmorStatus))
 											(installDeviceStatus (obj@ gPlayerShip 'installDeviceStatus))
 											(configDesc (or (@ installDeviceStatus 'desc) (@ installArmorStatus 'desc)))
+											(autonItem (@ storedItems 0))
 											)
+											;	Configuration
+
 											(scrAddAction gScreen 'actionShowConfiguration (nextActionPos) Nil
 												(lambda ()
 													(block (
-														(autonObj (rpgCreateSuspendedAuton gPlayerShip (@ storedItems 0)))
+														(autonObj (rpgCreateSuspendedAuton gPlayerShip autonItem))
 														)
-														(scrSetData gScreen 'autonItem (@ storedItems 0))
+														(scrSetData gScreen 'autonItem autonItem)
 
 														(scrShowScreen gScreen (obj@ autonObj 'shipConfigScreen) {
 															shipObj: autonObj
@@ -519,6 +534,14 @@
 												
 											(if configDesc
 												(scrSetActionDesc gScreen 'actionShowConfiguration configDesc)
+												)
+
+											;	Name auton
+
+											(scrAddAction gScreen 'actionNameAuton (nextActionPos) Nil
+												(lambda ()
+													(scrShowPane gScreen 'NameAuton)
+													)
 												)
 											)
 										)
@@ -551,6 +574,42 @@
 					</Action>
 				</Actions>
 			</Default>
+
+			<NameAuton
+				showTextInput=	"true"
+				>
+				<OnPaneInit>
+					(block (
+						(entry (scrGetListEntry gScreen))
+						(autonItem (@ entry 'item))
+						)
+						(scrSetDescTranslate gScreen 'descNameAuton { 
+							itemName:(itmGetName autonItem 0) 
+							})
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionInputName" default="1">
+						(block (
+							(entry (scrGetListEntry gScreen))
+							(autonItem (@ entry 'item))
+							(theName (rpgSanitizeAutonName (scrGetInputText gScreen)))
+							(newConfig (struct
+								(rpgGetAutonConfig autonItem)
+								{ name: theName }
+								))
+							)
+							(objSetItemData gPlayerShip autonItem 'autonConfig newConfig 1)
+							(scrShowPane gScreen 'Default)
+							)
+					</Action>
+					
+					<Action id="actionInputCancel" cancel="1">
+						(scrShowPane gScreen 'Default)
+					</Action>
+				</Actions>
+			</NameAuton>
 		</Panes>
 
 		<Language>
@@ -558,6 +617,9 @@
 
 			<Text id="actionDeploy">[D]eploy</Text>
 			<Text id="actionShowConfiguration">[C]onfiguration</Text>
+			<Text id="actionNameAuton">[N]ame Auton</Text>
+			<Text id="actionInputName">[Enter] Name</Text>
+			<Text id="actionInputCancel">[Esc] Cancel</Text>
 
 			<Text id="descItemsInCargo">
 
@@ -578,6 +640,11 @@
 
 				%ShipClass%.
 			
+			</Text>
+			<Text id="descNameAuton">
+
+				What would you like to name this %itemName%?
+
 			</Text>
 
 			<Text id="nounAuton">auton(s)</Text>
