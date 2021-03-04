@@ -697,6 +697,73 @@
 		</Events>
 		
 		<Language>
+			<Code id="rpg.squadronStatus">
+				(block (
+					(behavior (objGetData gSource 'behavior))
+					)
+					(switch
+						(or (not behavior)
+								(not (obj@ gSource 'playerWingman))
+								)
+							Nil
+
+						(or (= behavior 'attackingAtWill)
+								(= behavior 'attackingTarget)
+								)
+							(block (
+								(orderDesc (shpGetOrderDesc gSource))
+								(order (@ orderDesc 0))
+								(targetObj (@ orderDesc 1))
+								)
+								(switch
+									(= order 'attack)
+										(objTranslate gSource 'rpg.squadronStatus.attackingTarget {
+											objName: (objGetName gSource 'definitePhrase)
+											targetName: (objGetName targetObj 'article)
+											})
+
+									(objTranslate gSource 'rpg.squadronStatus.lookingForTargets {
+										objName: (objGetName gSource 'definitePhrase)
+										})
+									)
+								)
+
+						(= behavior 'returning)
+							(objTranslate gSource 'rpg.squadronStatus.returning {
+								objName: (objGetName gSource 'definitePhrase)
+								})
+
+						(= behavior 'waiting)
+							(objTranslate gSource 'rpg.squadronStatus.waiting {
+								objName: (objGetName gSource 'definitePhrase)
+								})
+
+						;	OK to return Nil. The Squadron UI will default to a 
+						;	generic phrase.
+						)
+					)
+			</Code>
+			<Text id="rpg.squadronStatus.attackingTarget">
+
+				%ObjName% is attacking %targetName%.
+				
+			</Text>
+			<Text id="rpg.squadronStatus.lookingForTargets">
+
+				%ObjName% is looking for targets.
+
+			</Text>
+			<Text id="rpg.squadronStatus.returning">
+
+				%ObjName% is returning to the ship.
+			
+			</Text>
+			<Text id="rpg.squadronStatus.waiting">
+
+				%ObjName% is waiting.
+			
+			</Text>
+
 			<Text id="DeployAck">(objTranslate gSource 'DeployAckString { autonName:(objGetName auton 0x01) } )</Text>
 
 			<String id="AttackTargetAck">		Auton order acknowledged</String>

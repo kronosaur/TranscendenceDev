@@ -1249,7 +1249,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i",	0,	},
 
 		{	"shpGetOrderDesc",				fnShipGet,			FN_SHIP_ORDER_DESC,
-			"(shpGetOrderDesc obj [orderIndex]) -> orderDesc",
+			"(shpGetOrderDesc obj [orderIndex]) -> orderDesc\n\n"
+			
+			"orderDesc\n\n"
+
+			"   (order [targetObj] [data])\n",
+
 			"i*",	0,	},
 
 		{	"shpGetOrderTarget",			fnShipGetOld,		FN_SHIP_ORDER_TARGET,

@@ -238,6 +238,7 @@
 								(block (
 									(squadronComms (objSquadronCommsMessages gPlayerShip deployedObjs))
 									(skipList '(msgFormationAlpha msgFormationBeta msgFormationGamma msgStatus))
+									(objSelected (@ deployedObjs 0))
 
 									;	Generate a list of messages
 
@@ -247,7 +248,7 @@
 												(if (not (find skipList msgID))
 													{
 														msgID: msgID
-														label: (objTranslate (@ deployedObjs 0) (cat "action." msgID))
+														label: (objTranslate objSelected (cat "action." msgID))
 														}
 													)
 												)
@@ -255,7 +256,7 @@
 											)
 										)
 
-									objName objNameGeneric
+									objName objNameGeneric objStatus
 									)
 
 									;	If we only have a single object, then add an action to view
@@ -264,12 +265,12 @@
 									(if (= (count deployedObjs) 1)
 										(scrAddAction gScreen 'actionShowConfiguration (nextActionPos) Nil
 											(lambda ()
-												(scrShowScreen gScreen (obj@ (@ deployedObjs 0) 'shipConfigScreen) {
+												(scrShowScreen gScreen (obj@ objSelected 'shipConfigScreen) {
 													shipObj: (@ deployedObjs 0)
 													shipConfig: True
 													title: (scrTranslate gScreen 'core.name)
 													dockServicesDesc: (scrTranslate gScreen 'descConfiguration {
-														shipClass: (objGetName (@ deployedObjs 0) 'generic)
+														shipClass: (objGetName objSelected 'generic)
 														})
 													})
 												)
@@ -318,12 +319,15 @@
 												shipCount: (fmtNoun (scrTranslate gScreen 'nounShip) (count deployedObjs) 'countAlways)
 												})
 
-										(!= (setq objName (objGetName (@ deployedObjs 0)))
-												(setq objNameGeneric (objGetName (@ deployedObjs 0) 'generic))
+										(setq objStatus (objTranslate objSelected 'rpg.squadronStatus))
+											(scrSetDesc gScreen objStatus)
+
+										(!= (setq objName (objGetName objSelected))
+												(setq objNameGeneric (objGetName objSelected 'generic))
 												)
 											(scrSetDescTranslate gScreen 'descCharacterSelected {
 												name: objName
-												shipClass: (objGetName (@ deployedObjs 0) '(article generic))
+												shipClass: (objGetName objSelected '(article generic))
 												})
 
 										(scrSetDescTranslate gScreen 'descShipSelected {
