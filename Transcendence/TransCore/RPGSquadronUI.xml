@@ -532,15 +532,24 @@
 													)
 												)
 												
-											(if configDesc
-												(scrSetActionDesc gScreen 'actionShowConfiguration configDesc)
+											(switch
+												(not (itm@ autonItem 'known))
+													(block ()
+														(scrSetActionDesc gScreen 'actionShowConfiguration (scrTranslate gScreen 'descNoConfigForUnknown))
+														(scrEnableAction gScreen 'actionShowConfiguration Nil)
+														)
+
+												configDesc
+													(scrSetActionDesc gScreen 'actionShowConfiguration configDesc)
 												)
 
 											;	Name auton
 
-											(scrAddAction gScreen 'actionNameAuton (nextActionPos) Nil
-												(lambda ()
-													(scrShowPane gScreen 'NameAuton)
+											(if (itm@ autonItem 'known)
+												(scrAddAction gScreen 'actionNameAuton (nextActionPos) Nil
+													(lambda ()
+														(scrShowPane gScreen 'NameAuton)
+														)
 													)
 												)
 											)
@@ -639,6 +648,11 @@
 			<Text id="descConfiguration">
 
 				%ShipClass%.
+			
+			</Text>
+			<Text id="descNoConfigForUnknown">
+
+				Cannot determine configuration of unknown autons.
 			
 			</Text>
 			<Text id="descNameAuton">
