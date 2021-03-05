@@ -31,6 +31,14 @@
 
 		<Panes>
 			<Default descID="descWelcome">
+				<OnPaneInit>
+					(block (
+						(squadron (obj@ gPlayerShip 'squadron))
+						)
+						(scrShowAction gScreen 'actionSquadron squadron)
+						)
+				</OnPaneInit>
+				
 				<Actions>
 					<Action id="actionShipConfig">
 						;	Show the appropriate dock services screen based on the ship

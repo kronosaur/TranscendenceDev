@@ -26,55 +26,64 @@
 				(hasStored (find allStatuses 'stored))
 				(hasWaiting (find allStatuses 'waiting))
 				)
-				;	Remove any suspended autons, in case we return to this 
-				;	screen from a dock services sub-screen. We want to get rid
-				;	of the suspended auton because it stops the Auton Bay from
-				;	working.
-
-				(rpgCleanUpSuspendedAuton gPlayerShip)
-
-				;	Create tab sets as necessary
-
-				(scrSetTabSet gScreen (list
-					(if hasDeployed
-						{	id: 'squadronDeployed
-							label: (scrTranslate gScreen 'labelDeployed)
-							screen: &dsRPGSquadron;
-							data: gData
-							}
+				(if (not allStatuses)
+					(block ()
+						(objSendMessage gPlayerShip Nil (scrTranslate gScreen 'descNoSquadron))
+						(scrExitScreen gScreen)
 						)
+						
+					(block ()
+						;	Remove any suspended autons, in case we return to this 
+						;	screen from a dock services sub-screen. We want to get rid
+						;	of the suspended auton because it stops the Auton Bay from
+						;	working.
 
-					(if hasStored
-						{	id: 'squadronStored
-							label: (scrTranslate gScreen 'labelInCargo)
-							screen: &dsRPGSquadronInCargoHold;
-							data: gData
-							}
-						)
+						(rpgCleanUpSuspendedAuton gPlayerShip)
 
-					(if hasWaiting
-						{	id: 'squadronWaiting
-							label: (scrTranslate gScreen 'labelWaiting)
-							screen: &dsRPGSquadronWaiting;
-							data: gData
-							}
-						)
-					))
+						;	Create tab sets as necessary
+
+						(scrSetTabSet gScreen (list
+							(if hasDeployed
+								{	id: 'squadronDeployed
+									label: (scrTranslate gScreen 'labelDeployed)
+									screen: &dsRPGSquadron;
+									data: gData
+									}
+								)
+
+							(if hasStored
+								{	id: 'squadronStored
+									label: (scrTranslate gScreen 'labelInCargo)
+									screen: &dsRPGSquadronInCargoHold;
+									data: gData
+									}
+								)
+
+							(if hasWaiting
+								{	id: 'squadronWaiting
+									label: (scrTranslate gScreen 'labelWaiting)
+									screen: &dsRPGSquadronWaiting;
+									data: gData
+									}
+								)
+							))
 					
-				;	Select the proper tab
+						;	Select the proper tab
 				
-				(switch
-					(@ gData 'tabID)
-						(scrShowTab gScreen (@ gData 'tabID))
+						(switch
+							(@ gData 'tabID)
+								(scrShowTab gScreen (@ gData 'tabID))
 
-					hasDeployed
-						Nil
+							hasDeployed
+								Nil
 						
-					hasStored
-						(scrShowTab gScreen 'squadronStored)
+							hasStored
+								(scrShowTab gScreen 'squadronStored)
 						
-					hasWaiting
-						(scrShowTab gScreen 'squadronWaiting)
+							hasWaiting
+								(scrShowTab gScreen 'squadronWaiting)
+							)
+						)
 					)
 				)
 		</OnScreenInit>
@@ -227,7 +236,7 @@
 												shipCount: (fmtNoun (scrTranslate gScreen 'nounShip) deployedCount 'countAlways)
 												})
 
-										(scrSetDescTranslate gScreen 'descNoSquadron)
+										(scrSetDescTranslate gScreen 'descDeployedShips)
 										)
 									)
 
@@ -375,8 +384,13 @@
 			</Text>
 			<Text id="descNoSquadron">
 			
-				None of your ships are deployed in this system.
+				You do not command any other ships.
 				
+			</Text>
+			<Text id="descNoDeployedShips">
+
+				None of your ships are deployed in this system.
+
 			</Text>
 			<Text id="descShipsSelected">
 
