@@ -1606,6 +1606,15 @@
     <ClCompile Include="CPatrolOrder.cpp">
       <Filter>Source Files\ShipAI</Filter>
     </ClCompile>
+    <ClCompile Include="ShipProperties.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CSquadronCommunications.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CStatusBarPainter.cpp">
+      <Filter>Source Files\Painting</Filter>
+	</ClCompile>
     <ClCompile Include="SovereignProperties.cpp">
       <Filter>Source Files\DesignTypes</Filter>
     </ClCompile>

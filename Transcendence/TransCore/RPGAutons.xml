@@ -697,6 +697,73 @@
 		</Events>
 		
 		<Language>
+			<Code id="rpg.squadronStatus">
+				(block (
+					(behavior (objGetData gSource 'behavior))
+					)
+					(switch
+						(or (not behavior)
+								(not (obj@ gSource 'playerWingman))
+								)
+							Nil
+
+						(or (= behavior 'attackingAtWill)
+								(= behavior 'attackingTarget)
+								)
+							(block (
+								(orderDesc (shpGetOrderDesc gSource))
+								(order (@ orderDesc 0))
+								(targetObj (@ orderDesc 1))
+								)
+								(switch
+									(= order 'attack)
+										(objTranslate gSource 'rpg.squadronStatus.attackingTarget {
+											objName: (objGetName gSource 'definitePhrase)
+											targetName: (objGetName targetObj 'article)
+											})
+
+									(objTranslate gSource 'rpg.squadronStatus.lookingForTargets {
+										objName: (objGetName gSource 'definitePhrase)
+										})
+									)
+								)
+
+						(= behavior 'returning)
+							(objTranslate gSource 'rpg.squadronStatus.returning {
+								objName: (objGetName gSource 'definitePhrase)
+								})
+
+						(= behavior 'waiting)
+							(objTranslate gSource 'rpg.squadronStatus.waiting {
+								objName: (objGetName gSource 'definitePhrase)
+								})
+
+						;	OK to return Nil. The Squadron UI will default to a 
+						;	generic phrase.
+						)
+					)
+			</Code>
+			<Text id="rpg.squadronStatus.attackingTarget">
+
+				%ObjName% is attacking %targetName%.
+				
+			</Text>
+			<Text id="rpg.squadronStatus.lookingForTargets">
+
+				%ObjName% is looking for targets.
+
+			</Text>
+			<Text id="rpg.squadronStatus.returning">
+
+				%ObjName% is returning to the ship.
+			
+			</Text>
+			<Text id="rpg.squadronStatus.waiting">
+
+				%ObjName% is waiting.
+			
+			</Text>
+
 			<Text id="DeployAck">(objTranslate gSource 'DeployAckString { autonName:(objGetName auton 0x01) } )</Text>
 
 			<String id="AttackTargetAck">		Auton order acknowledged</String>
@@ -718,6 +785,13 @@
 			<String id="msgArmorDamage">		Armor integrity at %armorIntegrity%%</String>
 			<String id="msgShieldDamage">		Shields at %shieldLevel%%</String>
 			<String id="msgHullDamage">			Hull integrity at %hullIntegrity%%</String>
+
+			<Text id="action.msgAttackTarget">[A]ttack Target</Text>
+			<Text id="action.msgBreakAndAttack">[B]reak &amp; Attack</Text>
+			<Text id="action.msgFormUp">[F]orm Up</Text>
+			<Text id="action.msgReturnToShip">[R]eturn to Ship</Text>
+			<Text id="action.msgStatus">[S]tatus</Text>
+			<Text id="action.msgWait">[W]ait</Text>
 		</Language>
 	</ShipClass>
 
@@ -956,7 +1030,21 @@
 								
 							;	Remember the suspended auton, in case we need it later.
 							
+							(rpgCleanUpSuspendedAuton sourceObj)
 							(objSetObjRefData sourceObj 'rpgSuspendedAuton auton)
+
+							;	Register an event so that we clean up this auton 
+							;	when we exit dock screen mode.
+
+							(if (scr@ gScreen 'screen)
+								(scrAddUndockCode gScreen (cat 'rpg.cleanUpAuton. (objGetID sourceObj))
+									(lambda ()
+										(block ()
+											(rpgCleanUpSuspendedAuton sourceObj)
+											)
+										)
+									)
+								)
 							
 							;	Done
 							
@@ -999,6 +1087,65 @@
 				
 				(or (itmGetData autonItem 'autonConfig)
 					(rpgGetAutonDefaultConfig autonItem)
+					)
+				))
+
+			(setq rpgGetAutonDamageDesc (lambda (autonItem)
+				(block (
+					(autonConfig (rpgGetAutonConfig autonItem))
+
+					;	Armor integrity is the integrity of the most damaged
+					;	armor segment (this is consistent with how ships show
+					;	damage.
+
+					(armorIntegrity
+						(map (@ autonConfig 'armor) 'reduceMin armorDesc
+							(block (
+								(armorHP (@ armorDesc 'hp))
+								(armorMaxHP (itm@ (@ armorDesc 'item) 'completeHP))
+								)
+								(round (* 100.0 (/ armorHP armorMaxHP)))
+								)
+							)
+						)
+
+					(hullMaxHP (@ autonConfig 'maxHullHP))
+					(hullHP (@ autonConfig 'hullHP))
+					(hullIntegrity (if (gr hullMaxHP 0)
+						(round (* 100.0 (/ hullHP hullMaxHP)))
+						))
+
+					(shieldItem
+						(@ (map (@ autonConfig 'devices) 'excludeNil deviceDesc
+								(if (= (itm@ (@ deviceDesc 'item) 'category) 'shields)
+									(@ deviceDesc 'item)
+									)
+								)
+							0)
+						)
+
+					(shieldDesc (if shieldItem
+						(rpgGetAutonItemShieldStatus autonConfig)
+						))
+
+					(shieldLevel (@ shieldDesc 'percent))
+
+					(visibleIntegrity
+						(if hullIntegrity
+							(round (* (/ hullIntegrity 100.0) armorIntegrity))
+							armorIntegrity
+							)
+						)
+					)
+					(if autonConfig
+						{
+							shieldLevel: shieldLevel
+							armorIntegrity: armorIntegrity
+							hullIntegrity: hullIntegrity
+
+							visibleDamage: (- 100 visibleIntegrity)
+							}
+						)
 					)
 				))
 			
@@ -1273,12 +1420,31 @@
 								)
 							{
 								hp: hp
-								percent: (divide (* hp 100) maxHP)
+								maxHP: maxHP
+								percent: (round (* 100.0 (/ hp maxHP)))
 								}
 							)
 							
 						{ percent: 100 }
 						)
+					)
+				))
+
+			(setq rpgGetAutonRepairDesc (lambda (sourceObj autonItem)
+
+				;	Loop over all installed devices and ask if they repair
+				;	the given item.
+				;
+				;	We return an array of structs. Each struct has the following
+				;	fields:
+				;
+				;		repairDesc: Description of whether we're repairing or 
+				;			not.
+
+				(map (objGetItems sourceObj "dI") 'excludeNil theDevice
+					(objFireItemEvent sourceObj theDevice 'GetAutonRepairDesc {
+						item: autonItem
+						})
 					)
 				))
 			
@@ -1299,6 +1465,10 @@
 						)
 					nextID
 					)
+				))
+			
+			(setq rpgGetSuspendedAuton (lambda (sourceObj)
+				(objGetObjRefData sourceObj 'rpgSuspendedAuton)
 				))
 				
 			(setq rpgSanitizeAutonName (lambda (theName)
@@ -1332,7 +1502,6 @@
 					(if (or (not newName) (eq "" (apply cat (split newName " ")))) Nil (strCapitalize newName))
 					)
 				))
-			
 			)
 	</Globals>
 

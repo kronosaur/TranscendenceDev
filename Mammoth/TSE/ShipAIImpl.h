@@ -333,6 +333,7 @@ class COrderList
 		void OnStationDestroyed (CSpaceObject *pObj, bool *retbCurrentChanged);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetCurrentOrderDataInteger (DWORD dwData);
+		void SetCurrentOrderDataInteger (DWORD dwData1, DWORD dwData2);
 		void WriteToStream (IWriteStream &Stream, const CShip &Ship);
 
 	private:

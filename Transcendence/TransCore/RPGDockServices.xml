@@ -19,28 +19,40 @@
 		dockMasterLabel: Label for talking with dockmaster
 
 		dockMasterDesc: Description for talking with dockmaster
-		
+
+		dockServiceDesc: If non-Nil, the description to show.
+
 		reactorUpgrade: If non-Nil, this must be a list generate with
 				rpgGetReactorUpgradeList. Otherwise, we do not offer a reactor
 				upgrade at this station.
+
+		shipConfig: If True, then we're showing ship configuration and we want
+				to see all screens even if we can't do anything.
+
+		shipObj: If not Nil, show dock services on this ship (defaults to
+				gPlayerShip).
 				
-		'sourceObj: If not Nil, use this as the object for inventory purposes.
+		sourceObj: If not Nil, use this as the object for inventory purposes.
 	
-		'upgradeInstallOnly: If True, we only offer device installation services if
+		title: Title for screen (or Nil for station name)
+
+		upgradeInstallOnly: If True, we only offer device installation services if
 				the player buys an upgrade.
 	
 -->
 	
 	<DockScreen unid="&dsRPGDockServices;"
+			name=				"=(or (@ gData 'title) (objGetName gSource 'titleCapitalize))"
 			inherit=			"&dsRPGDockServicesBase;"
 			nestedScreen=		"true"
 			>
 		<OnScreenInit>
 			(block (
-				(isShipConfig (= gSource gPlayerShip))
-				(armorStatus (rpgCalcDockServiceArmorAction gSource gPlayerShip { }))
-				(weaponsStatus (rpgCalcDockServiceWeaponsAction gSource gPlayerShip { }))
-				(miscDevicesStatus (rpgCalcDockServiceMiscDevicesAction gSource gPlayerShip { }))
+				(shipObj (or (@ gData 'shipObj) gPlayerShip))
+				(isShipConfig (or (@ gData 'shipConfig) (= gSource shipObj)))
+				(armorStatus (rpgCalcDockServiceArmorAction gSource shipObj { shipConfig:isShipConfig }))
+				(weaponsStatus (rpgCalcDockServiceWeaponsAction gSource shipObj { shipConfig:isShipConfig }))
+				(miscDevicesStatus (rpgCalcDockServiceMiscDevicesAction gSource shipObj { shipConfig:isShipConfig }))
 				)
 				(scrSetTabSet gScreen (list 
 					{	id: 'main
@@ -78,6 +90,7 @@
 
 		<InitialPane>
 			(block (
+				(shipObj (or (@ gData 'shipObj) gPlayerShip))
 				(removableOverlays Nil)
 				)
 				
@@ -90,8 +103,8 @@
 				
 					(and (objGetProperty gSource 'repairArmorMaxLevel)
 							(setq removableOverlays
-								(filter (objGetOverlays gPlayerShip) theID
-									(typHasEvent (objGetOverlayType gPlayerShip theID) 'OnRemoveAtDockServices)
+								(filter (objGetOverlays shipObj) theID
+									(typHasEvent (objGetOverlayType shipObj theID) 'OnRemoveAtDockServices)
 									)
 								)
 							)
@@ -109,7 +122,7 @@
 				>
 			<OnDisplayInit>
 				(block (
-					(shipObj gPlayerShip)
+					(shipObj (or (@ gData 'shipObj) gPlayerShip))
 					(shipClass (objGetType shipObj))
 					)
 					{
@@ -126,24 +139,18 @@
 			</OnDisplayInit>
 		</Display>
 
-		<!--
-		<Display>
-			<Text id="leftCol"	left="0" right="0" top="280" bottom="0" align="left" font="Medium" color="#daebff"/>
-			<Text id="rightCol"	left="0" right="0" top="280" bottom="0" align="right" font="Medium" color="#daebff"/>
-		</Display>
-		-->
-		
 		<Panes>
 			<Default>
 				<OnPaneInit>
 					(block (
-						(isShipConfig (= gSource gPlayerShip))
+						(shipObj (or (@ gData 'shipObj) gPlayerShip))
+						(isShipConfig (or (@ gData 'shipConfig) (= gSource shipObj)))
 						(canInstallMiscDevices
 							(or isShipConfig
 								(and
 									(objGetProperty gSource 'installDeviceMaxLevel)
 									(or
-										(filter (objGetItems gPlayerShip "d~ws") theItem (objGetItemProperty gSource theItem 'installDevicePrice))
+										(filter (objGetItems shipObj "d~ws") theItem (objGetItemProperty gSource theItem 'installDevicePrice))
 										(filter (objGetItems gSource "d~ws") theItem (objGetItemProperty gSource theItem 'installDevicePrice))
 										)
 									)
@@ -170,7 +177,7 @@
 						
 						;	Refuel services
 						
-						(setq actionStatus (rpgCalcDockServiceRefuelAction gSource gPlayerShip { }))
+						(setq actionStatus (rpgCalcDockServiceRefuelAction gSource shipObj { shipConfig:isShipConfig }))
 						(scrShowAction gScreen 'actionRefuel (@ actionStatus 'visible))
 						(scrEnableAction gScreen 'actionRefuel (@ actionStatus 'enabled))
 						(scrSetActionDesc gScreen 'actionRefuel (@ actionStatus 'desc))
@@ -182,21 +189,21 @@
 						
 						;	Armor services
 						
-						(setq actionStatus (rpgCalcDockServiceArmorAction gSource gPlayerShip { }))
+						(setq actionStatus (rpgCalcDockServiceArmorAction gSource shipObj { shipConfig:isShipConfig }))
 						(scrShowAction gScreen 'actionRepairArmor (@ actionStatus 'visible))
 						(scrEnableAction gScreen 'actionRepairArmor (@ actionStatus 'enabled))
 						(scrSetActionDesc gScreen 'actionRepairArmor (@ actionStatus 'desc))
 						
 						;	Weapon services
 						
-						(setq actionStatus (rpgCalcDockServiceWeaponsAction gSource gPlayerShip { }))
+						(setq actionStatus (rpgCalcDockServiceWeaponsAction gSource shipObj { shipConfig:isShipConfig }))
 						(scrShowAction gScreen 'actionWeapons (@ actionStatus 'visible))
 						(scrEnableAction gScreen 'actionWeapons (@ actionStatus 'enabled))
 						(scrSetActionDesc gScreen 'actionWeapons (@ actionStatus 'desc))
 
 						;	Misc devices
 						
-						(setq actionStatus (rpgCalcDockServiceMiscDevicesAction gSource gPlayerShip { }))
+						(setq actionStatus (rpgCalcDockServiceMiscDevicesAction gSource shipObj { shipConfig:isShipConfig }))
 						(scrShowAction gScreen 'actionMiscDevices (@ actionStatus 'visible))
 						(scrEnableAction gScreen 'actionMiscDevices (@ actionStatus 'enabled))
 						(scrSetActionDesc gScreen 'actionMiscDevices (@ actionStatus 'desc))
@@ -204,13 +211,14 @@
 						;	Description
 						
 						(scrSetDesc gScreen
-							(or (objTranslate gSource 'core.dockServicesDesc)
-									(objTranslate gPlayerShip "dockServices:shipDesc")
-									(objGetProperty gPlayerShip 'playerDesc)
-									(scrTranslate gScreen 'shipConfigScreenDesc {
-										objName:(objGetName gPlayerShip 'article)
-										})
-									)
+							(or (@ gData 'dockServicesDesc)
+								(objTranslate gSource 'core.dockServicesDesc)
+								(objTranslate shipObj "dockServices:shipDesc")
+								(objGetProperty shipObj 'playerDesc)
+								(scrTranslate gScreen 'shipConfigScreenDesc {
+									objName:(objGetName shipObj 'article)
+									})
+								)
 							)
 						)
 				</OnPaneInit>
@@ -221,14 +229,18 @@
 					</Action>
 
 					<Action id="actionRefuel">
-						(if (= (scrGetData gScreen 'fuelCost) 0)
-							(block Nil
-								(setq itemsToUse (itmCreate (itmGetType (scrGetData gScreen 'fuelItem)) (scrGetData gScreen 'fuelNeeded)))
-								(shpRefuelFromItem gPlayerShip itemsToUse)
-								(scrRefreshScreen gScreen)
-								)
+						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
+							)
+							(if (= (scrGetData gScreen 'fuelCost) 0)
+								(block Nil
+									(setq itemsToUse (itmCreate (itmGetType (scrGetData gScreen 'fuelItem)) (scrGetData gScreen 'fuelNeeded)))
+									(shpRefuelFromItem shipObj itemsToUse)
+									(scrRefreshScreen gScreen)
+									)
 								
-							(scrShowPane gScreen "RefuelShip")
+								(scrShowPane gScreen "RefuelShip")
+								)
 							)
 					</Action>
 
@@ -253,6 +265,7 @@
 			<RemoveOverlays>
 				<OnPaneInit>
 					(block (
+						(shipObj (or (@ gData 'shipObj) gPlayerShip))
 						(removableOverlays (scrGetData gScreen 'removableOverlays))
 						(currencyUsed (objGetDefaultCurrency gSource))
 						
@@ -261,7 +274,7 @@
 						
 						(costPerOverlay
 							(ecoExchange
-								(map (objGetItems gPlayerShip "aI") 'reduceSum theArmor
+								(map (objGetItems shipObj "aI") 'reduceSum theArmor
 									(multiply 25 (itmGetLevel theArmor))
 									)
 								'credit
@@ -274,7 +287,7 @@
 						)
 						
 						(switch
-							(ls (objGetBalance gPlayerShip currencyUsed) totalCost)
+							(ls (objGetBalance shipObj currencyUsed) totalCost)
 								(scrSetDescTranslate gScreen 'descCannotAffordOverlayRemove { removableOverlays:removableOverlays cost:(fmtCurrency currencyUsed totalCost) })
 							
 							(block Nil
@@ -291,16 +304,17 @@
 				<Actions>
 					<Action id="actionRemoveOverlays" default="1">
 						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
 							(removableOverlays (scrGetData gScreen 'removableOverlays))
 							(totalCost (scrGetData gScreen 'totalCost))
 							(currencyUsed (objGetDefaultCurrency gSource))
 							)
 							
 							(enum removableOverlays theID
-								(objFireOverlayEvent gPlayerShip theID 'OnRemoveAtDockServices)
+								(objFireOverlayEvent shipObj theID 'OnRemoveAtDockServices)
 								)
 								
-							(objCharge gPlayerShip currencyUsed totalCost)
+							(objCharge shipObj currencyUsed totalCost)
 							(objCredit gSource currencyUsed totalCost)
 							(scrShowPane gScreen "OverlaysRemoved")
 							)
@@ -485,40 +499,24 @@
 -->
 
 	<DockScreen UNID="&dsRPGManageArmor;"
+			name=				"=(or (@ gData 'title) (objGetName gSource 'titleCapitalize))"
 			type=				"armorSelector"
 			inherit=			"&dsRPGDockServicesBase;"
 			nestedScreen=		"true"
 			>
 
 		<ListOptions
-			dataFrom=	"player"
+			dataFrom=	"=(or (@ gData 'shipObj) gPlayerShip)"
 			list=		"asI"
-
-			initialItem="=(block (
-				(desiredSeg (scrGetData gScreen 'armorSeg))
-				(seg
-					(switch
-						(not (scrGetItem gScreen))
-							'shields
-							
-						(itmMatches (scrGetItem gScreen) 's)
-							'shields
-							
-						(itmGetArmorInstalledLocation (scrGetItem gScreen))
-						)
-					)
-				)
-
-				(or (not desiredSeg) (eq seg desiredSeg))
-				)"
 			/>
 
 		<Panes>
 			<Default>
 				<OnPaneInit>
 					(block (
+						(shipObj (or (@ gData 'shipObj) gPlayerShip))
+						(isShipConfig (or (@ gData 'shipConfig) (= gSource shipObj)))
 						(theItem (scrGetItem gScreen))
-						(theShip gPlayerShip)
 						(actionStatus Nil)
 						)
 						
@@ -532,7 +530,7 @@
 									(scrSetControlValue gScreen 'currentItem {
 										title: (scrTranslate gScreen "slotTitle:shields")
 										desc: (scrTranslate gScreen "slotDesc:shields" {
-											slotsAvail: (objGetProperty theShip 'availableNonWeaponSlots)
+											slotsAvail: (objGetProperty shipObj 'availableNonWeaponSlots)
 											})
 										})
 									
@@ -542,14 +540,14 @@
 									
 									;	Install action
 									
-									(setq actionStatus (rpgCalcDockServiceInstallAction gSource theShip { category:'shields criteria:"sUN" }))
+									(setq actionStatus (rpgCalcDockServiceInstallAction gSource shipObj { category:'shields criteria:"sUN" shipConfig:isShipConfig }))
 									(scrShowAction gScreen 'actionInstall (@ actionStatus 'visible))
 									(scrEnableAction gScreen 'actionInstall (@ actionStatus 'enabled))
 									(scrSetActionDesc gScreen 'actionInstall (@ actionStatus 'desc))
 									
 									;	Upgrade action
 									
-									(setq actionStatus (rpgCalcDockServiceUpgradeAction gSource theShip theItem { category:'shields criteria:"sUN" }))
+									(setq actionStatus (rpgCalcDockServiceUpgradeAction gSource shipObj theItem { category:'shields criteria:"sUN" shipConfig:isShipConfig }))
 									(scrShowAction gScreen 'actionUpgrade (and (not (@ gData 'noUpgrade)) (@ actionStatus 'visible)))
 									(scrEnableAction gScreen 'actionUpgrade (@ actionStatus 'enabled))
 									(scrSetActionDesc gScreen 'actionUpgrade (@ actionStatus 'desc))
@@ -569,7 +567,7 @@
 								(block (
 									;	Shield state
 									
-									(isEnabled (objGetItemProperty theShip theItem 'enabled))
+									(isEnabled (objGetItemProperty shipObj theItem 'enabled))
 									
 									(canEnable Nil)
 									(canDisable Nil)
@@ -578,7 +576,7 @@
 									;	Set the description
 								
 									(scrSetControlValue gScreen 'currentItem {
-										source: gPlayerShip
+										source: shipObj
 										item: theItem
 										})
 									
@@ -588,21 +586,21 @@
 									
 									;	Upgrade action
 									
-									(setq actionStatus (rpgCalcDockServiceUpgradeAction gSource theShip theItem { category:'shields criteria:"sUN" }))
+									(setq actionStatus (rpgCalcDockServiceUpgradeAction gSource shipObj theItem { category:'shields criteria:"sUN" shipConfig:isShipConfig }))
 									(scrShowAction gScreen 'actionUpgrade (and (not (@ gData 'noUpgrade)) (@ actionStatus 'visible)))
 									(scrEnableAction gScreen 'actionUpgrade (@ actionStatus 'enabled))
 									(scrSetActionDesc gScreen 'actionUpgrade (@ actionStatus 'desc))
 									
 									;	Replace action
 									
-									(setq actionStatus (rpgCalcDockServiceReplaceAction gSource theShip theItem { category:'shields criteria:"sUN" }))
+									(setq actionStatus (rpgCalcDockServiceReplaceAction gSource shipObj theItem { category:'shields criteria:"sUN" shipConfig:isShipConfig }))
 									(scrShowAction gScreen 'actionReplace (@ actionStatus 'visible))
 									(scrEnableAction gScreen 'actionReplace (@ actionStatus 'enabled))
 									(scrSetActionDesc gScreen 'actionReplace (@ actionStatus 'desc))
 								
 									;	Remove action
 									
-									(setq actionStatus (rpgCalcDockServiceRemoveAction gSource theShip theItem { category:'shields criteria:"sUN" }))
+									(setq actionStatus (rpgCalcDockServiceRemoveAction gSource shipObj theItem { category:'shields criteria:"sUN" shipConfig:isShipConfig }))
 									(scrShowAction gScreen 'actionRemove (@ actionStatus 'visible))
 									(scrEnableAction gScreen 'actionRemove (@ actionStatus 'enabled))
 									(scrSetActionDesc gScreen 'actionRemove (@ actionStatus 'desc))
@@ -610,7 +608,9 @@
 									
 									;	Enable disable?
 
-									(if (objGetItemProperty theShip theItem 'canBeDisabled)
+									(if (and (objGetItemProperty shipObj theItem 'canBeDisabled)
+											(= shipObj gPlayerShip)
+											)
 										(block Nil
 											(setq canDisable isEnabled)
 											(setq canEnable (not isEnabled))
@@ -637,7 +637,11 @@
 								
 								;	Repair armor action
 								
-								(setq actionStatus (rpgCalcDockServiceRepairAction gSource theShip theItem { category:'armor }))
+								(setq actionStatus (rpgCalcDockServiceRepairAction gSource shipObj theItem { 
+									category: 'armor 
+									shipConfig: isShipConfig 
+									repairArmorDesc: (@ gData 'repairArmorDesc)
+									}))
 								(scrShowAction gScreen 'actionRepair (@ actionStatus 'visible))
 								(scrEnableAction gScreen 'actionRepair (@ actionStatus 'enabled))
 								(scrSetActionDesc gScreen 'actionRepair (@ actionStatus 'desc))
@@ -646,14 +650,14 @@
 								;	Do we have any armor segments in cargo hold that we can use
 								;	to replace this armor?
 								
-								(setq actionStatus (rpgCalcDockServiceReplaceAction gSource theShip theItem { category:'armor criteria:"aU" }))
+								(setq actionStatus (rpgCalcDockServiceReplaceAction gSource shipObj theItem { category:'armor criteria:"aU" shipConfig:isShipConfig }))
 								(scrShowAction gScreen 'actionReplace (@ actionStatus 'visible))
 								(scrEnableAction gScreen 'actionReplace (@ actionStatus 'enabled))
 								(scrSetActionDesc gScreen 'actionReplace (@ actionStatus 'desc))
 								
 								;	Upgrade action
 									
-								(setq actionStatus (rpgCalcDockServiceUpgradeAction gSource theShip theItem { category:'armor criteria:"aU" }))
+								(setq actionStatus (rpgCalcDockServiceUpgradeAction gSource shipObj theItem { category:'armor criteria:"aU" shipConfig:isShipConfig }))
 								(scrShowAction gScreen 'actionUpgrade (and (not (@ gData 'noUpgrade)) (@ actionStatus 'visible)))
 								(scrEnableAction gScreen 'actionUpgrade (@ actionStatus 'enabled))
 								(scrSetActionDesc gScreen 'actionUpgrade (@ actionStatus 'desc))
@@ -661,7 +665,7 @@
 								;	Set the description
 								
 								(scrSetControlValue gScreen 'currentItem {
-									source: gPlayerShip
+									source: shipObj
 									item: theItem
 									})
 								
@@ -684,9 +688,11 @@
 
 				<Actions>
 					<Action id="actionRepair">
-						(block Nil
-							(objRepairArmor gPlayerShip (scrGetItem gScreen))
-							(objCharge gPlayerShip (objGetDefaultCurrency gSource) (scrGetData gScreen 'costToRepair))
+						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
+							)
+							(objRepairArmor shipObj (scrGetItem gScreen))
+							(objCharge shipObj (objGetDefaultCurrency gSource) (scrGetData gScreen 'costToRepair))
 							(objCredit gSource (objGetDefaultCurrency gSource) (scrGetData gScreen 'costToRepair))
 							(typSetData &svPlayer; 'tutorialRepaired True)
 							(scrShowPane gScreen "Default")
@@ -701,7 +707,9 @@
 								(scrShowScreen gScreen &dsRPGUpgradeArmor; {
 									armorSeg: (scrGetData gScreen 'armorSeg)
 									checkMilitaryID: (@ gData 'checkMilitaryID)
+									title: (@ gData 'title)
 									sourceObj: (@ gData 'sourceObj)
+									shipObj: (@ gData 'shipObj)
 									})
 									
 							;	Otherwise, assume shields
@@ -710,7 +718,9 @@
 								criteria: "sUN"
 								checkMilitaryID: (@ gData 'checkMilitaryID)
 								replaceItem: (scrGetItem gScreen)
+								title: (@ gData 'title)
 								sourceObj: (@ gData 'sourceObj)
+								shipObj: (@ gData 'shipObj)
 								})
 							)
 					</Action>
@@ -719,6 +729,8 @@
 						(scrShowScreen gScreen &dsRPGInstallDevice; {
 							criteria: "sUN"
 							checkMilitaryID: (@ gData 'checkMilitaryID)
+							title: (@ gData 'title)
+							shipObj: (@ gData 'shipObj)
 							})
 					</Action>
 					
@@ -730,6 +742,8 @@
 								(scrShowScreen gScreen &dsRPGReplaceArmor; {
 									armorSeg: (scrGetData gScreen 'armorSeg)
 									checkMilitaryID: (@ gData 'checkMilitaryID)
+									title: (@ gData 'title)
+									shipObj: (@ gData 'shipObj)
 									})
 									
 							;	If shields, replace
@@ -738,20 +752,26 @@
 								(scrShowScreen gScreen &dsRPGInstallDevice; {
 									criteria: "sUN"
 									checkMilitaryID: (@ gData 'checkMilitaryID)
+									title: (@ gData 'title)
+									shipObj: (@ gData 'shipObj)
 									})
 							)
 					</Action>
 					
 					<Action id="actionEnable">
-						(block Nil
-							(objSetItemProperty gPlayerShip (scrGetItem gScreen) 'enabled 'silentEnabled)
+						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
+							)
+							(objSetItemProperty shipObj (scrGetItem gScreen) 'enabled 'silentEnabled)
 							(scrShowPane gScreen "Default")
 							)
 					</Action>
 					
 					<Action id="actionDisable">
-						(block Nil
-							(objSetItemProperty gPlayerShip (scrGetItem gScreen) 'enabled 'silentDisabled)
+						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
+							)
+							(objSetItemProperty shipObj (scrGetItem gScreen) 'enabled 'silentDisabled)
 							(scrShowPane gScreen "Default")
 							)
 					</Action>
@@ -796,15 +816,15 @@
 -->
 
 	<DockScreen UNID="&dsRPGManageMiscDevices;"
+			name=				"=(or (@ gData 'title) (objGetName gSource 'titleCapitalize))"
 			type=				"miscSelector"
 			inherit=			"&dsRPGDockServicesBase;"
 			nestedScreen=		"true"
 			>
 
 		<ListOptions
-			dataFrom=	"player"
+			dataFrom=	"=(or (@ gData 'shipObj) gPlayerShip)"
 			list=		"d~wsI"
-			initialItem="=(rpgSelectorInitialItem &quot;d~wsI&quot;)"
 			/>
 
 		<Panes>
@@ -812,7 +832,8 @@
 				<OnPaneInit>
 					(block (
 						(theItem (scrGetItem gScreen))
-						(theShip gPlayerShip)
+						(shipObj (or (@ gData 'shipObj) gPlayerShip))
+						(isShipConfig (or (@ gData 'shipConfig) (= gSource shipObj)))
 						
 						(canDisable Nil)
 						(canEnable Nil)
@@ -841,6 +862,9 @@
 							
 						(category (if theItem (itmGetProperty theItem 'category) (@ (scrGetListEntry gScreen) 'category)))
 						(categoryDesc (@ deviceTable category))
+						(options (struct categoryDesc {
+							shipConfig: isShipConfig
+							}))
 						(actionStatus Nil)
 						)
 						
@@ -853,11 +877,11 @@
 
 							theItem
 								(block (
-									(isEnabled (objGetItemProperty theShip theItem 'enabled))
+									(isEnabled (objGetItemProperty shipObj theItem 'enabled))
 									)
 								
 									(scrSetControlValue gScreen 'currentItem {
-										source: theShip
+										source: shipObj
 										item: theItem
 										})
 										
@@ -867,7 +891,7 @@
 									
 									;	Refuel action
 									
-									(setq actionStatus (rpgCalcReactorRefuelAction gSource theShip theItem categoryDesc))
+									(setq actionStatus (rpgCalcReactorRefuelAction gSource shipObj theItem options))
 									(scrShowAction gScreen 'actionRefuel (@ actionStatus 'visible))
 									(scrEnableAction gScreen 'actionRefuel (@ actionStatus 'enabled))
 									(scrSetActionDesc gScreen 'actionRefuel (@ actionStatus 'desc))
@@ -879,14 +903,14 @@
 									
 									;	Upgrade action
 									
-									(setq actionStatus (rpgCalcDockServiceUpgradeAction gSource theShip theItem categoryDesc))
+									(setq actionStatus (rpgCalcDockServiceUpgradeAction gSource shipObj theItem options))
 									(scrShowAction gScreen 'actionUpgrade (and (not (@ gData 'noUpgrade)) (@ actionStatus 'visible)))
 									(scrEnableAction gScreen 'actionUpgrade (@ actionStatus 'enabled))
 									(scrSetActionDesc gScreen 'actionUpgrade (@ actionStatus 'desc))
 									
 									;	Remove action
 									
-									(setq actionStatus (rpgCalcDockServiceRemoveAction gSource theShip theItem categoryDesc))
+									(setq actionStatus (rpgCalcDockServiceRemoveAction gSource shipObj theItem options))
 									(scrShowAction gScreen 'actionRemove (@ actionStatus 'visible))
 									(scrEnableAction gScreen 'actionRemove (@ actionStatus 'enabled))
 									(scrSetActionDesc gScreen 'actionRemove (@ actionStatus 'desc))
@@ -894,14 +918,16 @@
 									
 									;	Replace action
 									
-									(setq actionStatus (rpgCalcDockServiceReplaceAction gSource theShip theItem categoryDesc))
+									(setq actionStatus (rpgCalcDockServiceReplaceAction gSource shipObj theItem options))
 									(scrShowAction gScreen 'actionReplace (@ actionStatus 'visible))
 									(scrEnableAction gScreen 'actionReplace (@ actionStatus 'enabled))
 									(scrSetActionDesc gScreen 'actionReplace (@ actionStatus 'desc))
 									
 									;	Enable disable?
 
-									(if (objGetItemProperty theShip theItem 'canBeDisabled)
+									(if (and (objGetItemProperty shipObj theItem 'canBeDisabled)
+											(= shipObj gPlayerShip)
+											)
 										(block Nil
 											(setq canDisable isEnabled)
 											(setq canEnable (not isEnabled))
@@ -922,7 +948,7 @@
 								(scrSetControlValue gScreen 'currentItem {
 									title: (scrTranslate gScreen (cat "slotTitle:" category))
 									desc: (scrTranslate gScreen (cat "slotDesc:" category) {
-										slotsAvail: (objGetProperty theShip 'availableNonWeaponSlots)
+										slotsAvail: (objGetProperty shipObj 'availableNonWeaponSlots)
 										})
 									})
 									
@@ -932,14 +958,14 @@
 								
 								;	Upgrade action
 									
-								(setq actionStatus (rpgCalcDockServiceUpgradeAction gSource theShip theItem categoryDesc))
+								(setq actionStatus (rpgCalcDockServiceUpgradeAction gSource shipObj theItem options))
 								(scrShowAction gScreen 'actionUpgrade (and (not (@ gData 'noUpgrade)) (@ actionStatus 'visible)))
 								(scrEnableAction gScreen 'actionUpgrade (@ actionStatus 'enabled))
 								(scrSetActionDesc gScreen 'actionUpgrade (@ actionStatus 'desc))
 								
 								;	Install action
 									
-								(setq actionStatus (rpgCalcDockServiceInstallAction gSource theShip categoryDesc))
+								(setq actionStatus (rpgCalcDockServiceInstallAction gSource shipObj options))
 								(scrShowAction gScreen 'actionInstall (@ actionStatus 'visible))
 								(scrEnableAction gScreen 'actionInstall (@ actionStatus 'enabled))
 								(scrSetActionDesc gScreen 'actionInstall (@ actionStatus 'desc))
@@ -966,33 +992,41 @@
 
 				<Actions>
 					<Action id="actionRefuel">
-						(switch
-							;	If refueling from cargo, bring up the screen
+						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
+							)
+							(switch
+								;	If refueling from cargo, bring up the screen
 							
-							(= gSource gPlayerShip)
-								(scrShowScreen gScreen &dsManualRefuel;)
+								(= gSource shipObj)
+									(scrShowScreen gScreen &dsManualRefuel; {
+										title: (@ gData 'title)
+										})
 								
-							;	If free fuel, refuel now
+								;	If free fuel, refuel now
 							
-							(= (scrGetData gScreen 'fuelCost) 0)
-								(block Nil
-									(setq itemsToUse (itmCreate (itmGetType (scrGetData gScreen 'fuelItem)) (scrGetData gScreen 'fuelNeeded)))
-									(shpRefuelFromItem gPlayerShip itemsToUse)
-									(scrRefreshScreen gScreen)
-									)
+								(= (scrGetData gScreen 'fuelCost) 0)
+									(block Nil
+										(setq itemsToUse (itmCreate (itmGetType (scrGetData gScreen 'fuelItem)) (scrGetData gScreen 'fuelNeeded)))
+										(shpRefuelFromItem shipObj itemsToUse)
+										(scrRefreshScreen gScreen)
+										)
 									
-							;	Otherwise, purchase fuel
+								;	Otherwise, purchase fuel
 								
-							(scrShowPane gScreen "RefuelShip")
+								(scrShowPane gScreen "RefuelShip")
+								)
 							)
 					</Action>
 					
 					<Action id="actionUpgrade">
-						(block Nil
+						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
+							)
 							(if (not (scrGetItem gScreen))
 								(scrSetData gScreen 'deviceSelected 
 									{ 
-										oldSlots: (map (objGetItems gPlayerShip "Id") theItem (itmGetInstallPos theItem))
+										oldSlots: (map (objGetItems shipObj "Id") theItem (itmGetInstallPos theItem))
 										slotPosIndex: (@ (scrGetListEntry gScreen) 'slotPosIndex)
 										}
 									)
@@ -1003,18 +1037,22 @@
 								checkMilitaryID: (@ gData 'checkMilitaryID)
 								replaceItem: (scrGetItem gScreen)
 								slotPosIndex: (@ (scrGetListEntry gScreen) 'slotPosIndex)
+								title: (@ gData 'title)
 								sourceObj: (@ gData 'sourceObj)
+								shipObj: (@ gData 'shipObj)
 								})
 							)
 					</Action>
 					
 					<Action id="actionInstall">
-						(block Nil
+						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
+							)
 							;	On return, select either the newly installed item 
 							;	or the original slot.
 							(scrSetData gScreen 'deviceSelected 
 								{ 
-									oldSlots: (map (objGetItems gPlayerShip "Id") theItem (itmGetInstallPos theItem))
+									oldSlots: (map (objGetItems shipObj "Id") theItem (itmGetInstallPos theItem))
 									slotPosIndex: (@ (scrGetListEntry gScreen) 'slotPosIndex)
 									}
 								)
@@ -1023,6 +1061,8 @@
 								criteria: (scrGetData gScreen 'categoryCriteria)
 								checkMilitaryID: (@ gData 'checkMilitaryID)
 								slotPosIndex: (@ (scrGetListEntry gScreen) 'slotPosIndex)
+								title: (@ gData 'title)
+								shipObj: (@ gData 'shipObj)
 								})
 							)
 					</Action>
@@ -1032,19 +1072,25 @@
 							criteria: (scrGetData gScreen 'categoryCriteria)
 							checkMilitaryID: (@ gData 'checkMilitaryID)
 							replaceItem: (scrGetItem gScreen)
+							title: (@ gData 'title)
+							shipObj: (@ gData 'shipObj)
 							})
 					</Action>
 					
 					<Action id="actionEnable">
-						(block Nil
-							(objSetItemProperty gPlayerShip (scrGetItem gScreen) 'enabled 'silentEnabled)
+						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
+							)
+							(objSetItemProperty shipObj (scrGetItem gScreen) 'enabled 'silentEnabled)
 							(scrShowPane gScreen "Default")
 							)
 					</Action>
 					
 					<Action id="actionDisable">
-						(block Nil
-							(objSetItemProperty gPlayerShip (scrGetItem gScreen) 'enabled 'silentDisabled)
+						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
+							)
+							(objSetItemProperty shipObj (scrGetItem gScreen) 'enabled 'silentDisabled)
 							(scrShowPane gScreen "Default")
 							)
 					</Action>
@@ -1139,15 +1185,15 @@
 -->
 
 	<DockScreen UNID="&dsRPGManageWeapons;"
+			name=				"=(or (@ gData 'title) (objGetName gSource 'titleCapitalize))"
 			type=				"weaponsSelector"
 			inherit=			"&dsRPGDockServicesBase;"
 			nestedScreen=		"true"
 			>
 
 		<ListOptions
-			dataFrom=	"player"
+			dataFrom=	"=(or (@ gData 'shipObj) gPlayerShip)"
 			list=		"wI"
-			initialItem="=(rpgSelectorInitialItem &quot;wI&quot;)"
 			/>
 
 		<Panes>
@@ -1155,7 +1201,8 @@
 				<OnPaneInit>
 					(block (
 						(theItem (scrGetItem gScreen))
-						(theShip gPlayerShip)
+						(shipObj (or (@ gData 'shipObj) gPlayerShip))
+						(isShipConfig (or (@ gData 'shipConfig) (= gSource shipObj)))
 
 						(requiresAmmo Nil)
 						(canBuyAmmo Nil)
@@ -1178,6 +1225,10 @@
 							
 						(category (if theItem (itmGetProperty theItem 'category) (@ (scrGetListEntry gScreen) 'category)))
 						(categoryDesc (@ deviceTable category))
+
+						(options (struct categoryDesc {
+							shipConfig: isShipConfig
+							}))
 						)
 						
 						(scrSetData gScreen 'categoryCriteria (@ categoryDesc 'criteria))
@@ -1189,12 +1240,12 @@
 
 							theItem
 								(block (
-									(isEnabled (objGetItemProperty theShip theItem 'enabled))
+									(isEnabled (objGetItemProperty shipObj theItem 'enabled))
 									(actionStatus Nil)
 									)
 								
 									(scrSetControlValue gScreen 'currentItem {
-										source: theShip
+										source: shipObj
 										item: theItem
 										})
 										
@@ -1204,7 +1255,7 @@
 									
 									;	Buy ammo action
 									
-									(setq actionStatus (rpgCalcDockServiceBuyAmmo gSource theShip theItem categoryDesc))
+									(setq actionStatus (rpgCalcDockServiceBuyAmmo gSource shipObj theItem options))
 									(scrShowAction gScreen 'actionBuyAmmo (@ actionStatus 'visible))
 									(scrEnableAction gScreen 'actionBuyAmmo (@ actionStatus 'enabled))
 									(scrSetActionLabel gScreen 'actionBuyAmmo (scrTranslate gScreen (@ categoryDesc 'ammoLabel)))
@@ -1212,14 +1263,14 @@
 									
 									;	Upgrade action
 									
-									(setq actionStatus (rpgCalcDockServiceUpgradeAction gSource theShip theItem categoryDesc))
+									(setq actionStatus (rpgCalcDockServiceUpgradeAction gSource shipObj theItem options))
 									(scrShowAction gScreen 'actionUpgrade (and (not (@ gData 'noUpgrade)) (@ actionStatus 'visible)))
 									(scrEnableAction gScreen 'actionUpgrade (@ actionStatus 'enabled))
 									(scrSetActionDesc gScreen 'actionUpgrade (@ actionStatus 'desc))
 										
 									;	Remove action
 									
-									(setq actionStatus (rpgCalcDockServiceRemoveAction gSource theShip theItem categoryDesc))
+									(setq actionStatus (rpgCalcDockServiceRemoveAction gSource shipObj theItem options))
 									(scrShowAction gScreen 'actionRemove (@ actionStatus 'visible))
 									(scrEnableAction gScreen 'actionRemove (@ actionStatus 'enabled))
 									(scrSetActionDesc gScreen 'actionRemove (@ actionStatus 'desc))
@@ -1227,14 +1278,16 @@
 									
 									;	Replace action
 									
-									(setq actionStatus (rpgCalcDockServiceReplaceAction gSource theShip theItem categoryDesc))
+									(setq actionStatus (rpgCalcDockServiceReplaceAction gSource shipObj theItem options))
 									(scrShowAction gScreen 'actionReplace (@ actionStatus 'visible))
 									(scrEnableAction gScreen 'actionReplace (@ actionStatus 'enabled))
 									(scrSetActionDesc gScreen 'actionReplace (@ actionStatus 'desc))
 									
 									;	Enable disable?
 
-									(if (objGetItemProperty theShip theItem 'canBeDisabled)
+									(if (and (objGetItemProperty shipObj theItem 'canBeDisabled)
+											(= shipObj gPlayerShip)
+											)
 										(block Nil
 											(setq canDisable isEnabled)
 											(setq canEnable (not isEnabled))
@@ -1255,7 +1308,7 @@
 								(scrSetControlValue gScreen 'currentItem {
 									title: (scrTranslate gScreen (cat "slotTitle:" category))
 									desc: (scrTranslate gScreen (cat "slotDesc:" category) {
-										slotsAvail: (objGetProperty theShip 'availableWeaponSlots)
+										slotsAvail: (objGetProperty shipObj 'availableWeaponSlots)
 										})
 									})
 									
@@ -1269,14 +1322,14 @@
 						
 								;	Upgrade action
 									
-								(setq actionStatus (rpgCalcDockServiceUpgradeAction gSource theShip theItem categoryDesc))
+								(setq actionStatus (rpgCalcDockServiceUpgradeAction gSource shipObj theItem options))
 								(scrShowAction gScreen 'actionUpgrade (and (not (@ gData 'noUpgrade)) (@ actionStatus 'visible)))
 								(scrEnableAction gScreen 'actionUpgrade (@ actionStatus 'enabled))
 								(scrSetActionDesc gScreen 'actionUpgrade (@ actionStatus 'desc))
 
 								;	Install action
 									
-								(setq actionStatus (rpgCalcDockServiceInstallAction gSource theShip categoryDesc))
+								(setq actionStatus (rpgCalcDockServiceInstallAction gSource shipObj options))
 								(scrShowAction gScreen 'actionInstall (@ actionStatus 'visible))
 								(scrEnableAction gScreen 'actionInstall (@ actionStatus 'enabled))
 								(scrSetActionDesc gScreen 'actionInstall (@ actionStatus 'desc))
@@ -1306,15 +1359,18 @@
 							rpg.checkMilitaryID: (@ gData 'checkMilitaryID)
 							rpg.criteria: (cat "m +launchedBy:" (itmGetType (scrGetItem gScreen)) ";")
 							rpg.sourceObj: (@ gData 'sourceObj)
+							title: (@ gData 'title)
 							})
 					</Action>
 					
 					<Action id="actionUpgrade">
-						(block Nil
+						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
+							)
 							(if (not (scrGetItem gScreen))
 								(scrSetData gScreen 'deviceSelected 
 									{ 
-										oldSlots: (map (objGetItems gPlayerShip "Id") theItem (itmGetInstallPos theItem))
+										oldSlots: (map (objGetItems shipObj "Id") theItem (itmGetInstallPos theItem))
 										slotPosIndex: (@ (scrGetListEntry gScreen) 'slotPosIndex)
 										}
 									)
@@ -1325,18 +1381,22 @@
 								checkMilitaryID: (@ gData 'checkMilitaryID)
 								replaceItem: (scrGetItem gScreen)
 								slotPosIndex: (@ (scrGetListEntry gScreen) 'slotPosIndex)
+								title: (@ gData 'title)
 								sourceObj: (@ gData 'sourceObj)
+								shipObj: (@ gData 'shipObj)
 								})
 							)
 					</Action>
 					
 					<Action id="actionInstall">
-						(block Nil
+						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
+							)
 							;	On return, select either the newly installed item 
 							;	or the original slot.
 							(scrSetData gScreen 'deviceSelected 
 								{ 
-									oldSlots: (map (objGetItems gPlayerShip "Id") theItem (itmGetInstallPos theItem))
+									oldSlots: (map (objGetItems shipObj "Id") theItem (itmGetInstallPos theItem))
 									slotPosIndex: (@ (scrGetListEntry gScreen) 'slotPosIndex)
 									}
 								)
@@ -1345,6 +1405,8 @@
 								criteria: (scrGetData gScreen 'categoryCriteria)
 								checkMilitaryID: (@ gData 'checkMilitaryID)
 								slotPosIndex: (@ (scrGetListEntry gScreen) 'slotPosIndex)
+								title: (@ gData 'title)
+								shipObj: (@ gData 'shipObj)
 								})
 							)
 					</Action>
@@ -1354,19 +1416,25 @@
 							criteria: (scrGetData gScreen 'categoryCriteria)
 							checkMilitaryID: (@ gData 'checkMilitaryID)
 							replaceItem: (scrGetItem gScreen)
+							title: (@ gData 'title)
+							shipObj: (@ gData 'shipObj)
 							})
 					</Action>
 					
 					<Action id="actionEnable">
-						(block Nil
-							(objSetItemProperty gPlayerShip (scrGetItem gScreen) 'enabled 'silentEnabled)
+						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
+							)
+							(objSetItemProperty shipObj (scrGetItem gScreen) 'enabled 'silentEnabled)
 							(scrShowPane gScreen "Default")
 							)
 					</Action>
 					
 					<Action id="actionDisable">
-						(block Nil
-							(objSetItemProperty gPlayerShip (scrGetItem gScreen) 'enabled 'silentDisabled)
+						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
+							)
+							(objSetItemProperty shipObj (scrGetItem gScreen) 'enabled 'silentDisabled)
 							(scrShowPane gScreen "Default")
 							)
 					</Action>
@@ -1473,6 +1541,7 @@
 				<Actions>
 					<Action id="actionRefuel" default="1">
 						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
 							(itemCount (scrGetCounter gScreen))
 							(itemCost (scrGetData gScreen 'fuelCost))
 							(currencyUsed (objGetDefaultCurrency gSource))
@@ -1483,7 +1552,7 @@
 								(block (
 									(itemsToUse (itmCreate (itmGetType (scrGetData gScreen 'fuelItem)) itemCount))
 									)
-									(shpRefuelFromItem gPlayerShip itemsToUse)
+									(shpRefuelFromItem shipObj itemsToUse)
 									(if itemCost
 										(rpgBuyItem gSource itemsToUse (* itemCount itemCost) currencyUsed { 'noAddItem:True })
 										)
@@ -1502,6 +1571,7 @@
 			<RemoveDevice>
 				<OnPaneInit>
 					(block (
+						(shipObj (or (@ gData 'shipObj) gPlayerShip))
 						(theItem (scrGetItem gScreen))
 						(descID (if (gr (scrGetData gScreen 'costToRemove) 0)
 							"descRemoveDeviceConfirm"
@@ -1509,7 +1579,7 @@
 							))
 						)
 						(scrSetControlValue gScreen 'currentItem {
-							source: gPlayerShip
+							source: shipObj
 							item: theItem
 							})
 							
@@ -1528,10 +1598,22 @@
 
 				<Actions>
 					<Action id="actionRemove" default="1">
-						(block Nil
-							(shpRemoveDevice gPlayerShip (scrGetItem gScreen))
-							(objCharge gPlayerShip (objGetDefaultCurrency gSource) (scrGetData gScreen 'costToRemove))
+						(block (
+							(shipObj (or (@ gData 'shipObj) gPlayerShip))
+							(deviceItem (scrGetItem gScreen))
+							)
+							(setq deviceItem (shpRemoveDevice shipObj deviceItem))
+							(objCharge shipObj (objGetDefaultCurrency gSource) (scrGetData gScreen 'costToRemove))
 							(objCredit gSource (objGetDefaultCurrency gSource) (scrGetData gScreen 'costToRemove))
+
+							;	If necessary move the uninstalled device to the player
+
+							(if (!= shipObj gPlayerShip)
+								(block ()
+									(objRemoveItem shipObj deviceItem)
+									(objAddItem gPlayerShip deviceItem)
+									)
+								)
 
 							(scrRefreshScreen gScreen)
 							)

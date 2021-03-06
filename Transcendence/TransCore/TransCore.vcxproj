@@ -669,6 +669,7 @@
     <Xml Include="RPGShipBroker.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="RPGSquadronUI.xml" />
     <Xml Include="RPGTradingComputer.xml" />
     <Xml Include="RPGUsefulItems.xml" />
     <Xml Include="RPGViewers.xml" />

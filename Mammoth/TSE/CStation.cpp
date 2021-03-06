@@ -3427,7 +3427,7 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	//	Calculate visibility
 
-	DWORD byShimmer = CalcSRSVisibility(Ctx);
+	DWORD byShimmer = (Ctx.pCenter ? CalcSRSVisibility(*Ctx.pCenter, Ctx.iPerception) : 0);
 
 	//	Known, immobile objects always have a minimum visibility in SRS.
 
@@ -5851,9 +5851,9 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 
 		//	If the player is in range, then she is under attack
 
-		if (Ctx.pPlayer 
-				&& IsAngryAt(Ctx.pPlayer)
-				&& GetDistance2(Ctx.pPlayer) < rAttackRange2)
+		if (Ctx.GetPlayerShip() 
+				&& IsAngryAt(Ctx.GetPlayerShip())
+				&& GetDistance2(Ctx.GetPlayerShip()) < rAttackRange2)
 			Ctx.pSystem->SetPlayerUnderAttack();
 
 		//	Countdown

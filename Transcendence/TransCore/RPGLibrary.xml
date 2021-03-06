@@ -141,6 +141,9 @@
 	<!ENTITY dsRPGShipClassViewer		"0x00010120">
 	<!ENTITY dsRPGUseItemOnShields		"0x00010121">
 	<!ENTITY dsRPGConfiscate			"0x00010122">
+	<!ENTITY dsRPGSquadron				"0x00010123">
+	<!ENTITY dsRPGSquadronInCargoHold	"0x00010124">
+	<!ENTITY dsRPGSquadronWaiting		"0x00010125">
 
 	<!-- 0140-015F MINING -->
 
@@ -208,6 +211,7 @@
 	<Module filename="RPGRumors.xml"/>
 	<Module filename="RPGShipBroker.xml"/>
 	<Module filename="RPGShipScreens.xml"/>
+	<Module filename="RPGSquadronUI.xml"/>
 	<Module filename="RPGTradingComputer.xml"/>
 	<Module filename="RPGTypes.xml"/>
 	<Module filename="RPGUsefulItems.xml"/>

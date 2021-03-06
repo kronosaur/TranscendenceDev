@@ -81,7 +81,7 @@ class CCommunicationsHandler
 		int FindMessageByName (const CString &sMessage) const;
 		void FireInvoke (const CString &sID, CSpaceObject *pObj, CSovereign *pSender, ICCItem *pData);
 		inline int GetCount (void) const { return m_Messages.GetCount(); }
-		inline const SMessage &GetMessage (int iIndex) { return m_Messages[iIndex]; }
+		inline const SMessage &GetMessage (int iIndex) const { return m_Messages[iIndex]; }
 		void Merge (CCommunicationsHandler &New);
 
 	private:
@@ -104,4 +104,51 @@ class CCommunicationsStack
 		CCommunicationsHandler m_CommsHandler;
 		CCommunicationsHandler m_Composite;
 		bool m_bInitialized;
+	};
+
+class CSquadronCommunications
+	{
+	public:
+		CSquadronCommunications (CSpaceObject &LeaderObj);
+		CSquadronCommunications (CSpaceObject &LeaderObj, const TArray<CSpaceObject *> &List);
+
+		TArray<CString> GetMessageList () const;
+		DWORD GetSquadronCommsStatus ();
+		void Send (const CString &sMsg) const;
+
+	private:
+		enum class ESquadronMsg
+			{
+			None,
+
+			Attack,
+			AttackInFormation,
+			BreakAndAttack,
+			FormUp,
+			FormationAlpha,
+			FormationBeta,
+			FormationGamma,
+			Wait
+			};
+
+		struct SSquadronMsgDesc
+			{
+			ESquadronMsg iMsg = ESquadronMsg::None;
+			const char *pszID = "";
+			const char *pszName = "";
+			MessageTypes iSend = msgNone;
+			ResponseTypes iResponse = resNoAnswer;
+			};
+
+		void AccumulateMessageList (CSpaceObject &Obj, TSortMap<CString, int> &retList) const;
+		CUniverse &GetUniverse () const;
+		bool IsMessageValidFor (CSpaceObject &Obj, const SSquadronMsgDesc &MsgDesc, int *retiIndex = NULL) const;
+		void Send (const SSquadronMsgDesc &MsgDesc) const;
+		void Send (CSpaceObject &ReceiverObj, const CString &sMsg) const;
+		bool Send (CSpaceObject &ReceiverObj, const SSquadronMsgDesc &MsgDesc, DWORD dwFormationPos = 0) const;
+
+		CSpaceObject &m_LeaderObj;
+		TArray<CSpaceObject *> m_Squadron;
+
+		static TStaticStringTable<TStaticStringEntry<SSquadronMsgDesc>, 8> m_SquadronMsgTable;
 	};

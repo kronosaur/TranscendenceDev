@@ -343,6 +343,11 @@ void CIntegralRotation::Update (const CIntegralRotationDesc &Desc, EManeuver iMa
 	{
 	DEBUG_TRY
 
+#ifdef DEBUG
+	if (Desc.GetFrameCount() == 0)
+		throw CException(ERR_FAIL);
+#endif
+
 	//	Change the rotation velocity
 
 	switch (iManeuver)

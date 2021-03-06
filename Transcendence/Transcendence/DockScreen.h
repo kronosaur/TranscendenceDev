@@ -28,50 +28,51 @@ class IDockScreenDisplay
 			CDockScreen *pDockScreen = NULL;
 			CDesignType *pRoot = NULL;
 			CXMLElement *pDesc = NULL;
-			CXMLElement *pDisplayDesc = NULL;	//	<Display> element
+			CXMLElement *pDisplayDesc = NULL;		//	<Display> element
 			AGScreen *pScreen = NULL;
-			RECT rcScreen = { 0, 0, 0, 0};		//	Entire screen
-			RECT rcRect = { 0, 0, 0, 0 };		//	Standard area
+			RECT rcScreen = { 0, 0, 0, 0};			//	Entire screen
+			RECT rcRect = { 0, 0, 0, 0 };			//	Standard area
 			DWORD dwFirstID = 0;
 			const CVisualPalette *pVI = NULL;
 			const SFontTable *pFontTable = NULL;
 
 			CSpaceObject *pLocation = NULL;
 			ICCItem *pData = NULL;
+			const ICCItem *pSelection = NULL;		//	Optional saved selection
 			};
 
 		struct SDisplayOptions
 			{
 			SDockScreenBackgroundDesc BackgroundDesc;	//	Background specified by screen
 
-			RECT rcDisplay = { 0 };				//	Rect of full display area
-			RECT rcControl = { 0 };				//	Position of main control
-			int cyTabRegion = 0;				//	Make room for tabs
+			RECT rcDisplay = { 0 };					//	Rect of full display area
+			RECT rcControl = { 0 };					//	Position of main control
+			int cyTabRegion = 0;					//	Make room for tabs
 
-			CString sType;						//	Display type
-			CXMLElement *pOptions = NULL;		//	Element containing options (<List> or <ListOptions> or <Display>)
-												//		May be NULL.
-			CString sDataFrom;					//	Source of display data (may be a function)
-			CString sItemCriteria;				//	Criteria of items to show in list (may be a function)
-			CString sCode;						//	Code to generate list
-			CString sInitialItemCode;			//	Code to select initial item in list
+			CString sType;							//	Display type
+			CXMLElement *pOptions = NULL;			//	Element containing options (<List> or <ListOptions> or <Display>)
+													//		May be NULL.
+			CString sDataFrom;						//	Source of display data (may be a function)
+			CString sItemCriteria;					//	Criteria of items to show in list (may be a function)
+			CString sCode;							//	Code to generate list
+			CString sInitialItemCode;				//	Code to select initial item in list
 
 			//	Item lists
 
-			bool bNoArmorSpeedDisplay = false;	//	Do not show bonus/penalty to speed from armor
-			bool bActualItems = false;			//	Show actual items, even if unknown
+			bool bNoArmorSpeedDisplay = false;		//	Do not show bonus/penalty to speed from armor
+			bool bActualItems = false;				//	Show actual items, even if unknown
 
             //  Custom lists
 
-			CString sRowHeightCode;				//	For custom lists
-			int cxIcon = 96;					//	Icon size
-			int cyIcon = 96;					//	Icon size
-			Metric rIconScale = 1.0;			//	Icon scale
+			CString sRowHeightCode;					//	For custom lists
+			int cxIcon = 96;						//	Icon size
+			int cyIcon = 96;						//	Icon size
+			Metric rIconScale = 1.0;				//	Icon scale
 
             //  Selectors
 
-            CString sSlotNameCode;				//  Code to name each slot
-            bool bNoEmptySlots = false;			//  If TRUE, don't show empty slots
+            CString sSlotNameCode;					//  Code to name each slot
+            bool bNoEmptySlots = false;				//  If TRUE, don't show empty slots
 			};
 
 		IDockScreenDisplay (CDockScreen &DockScreen) :
@@ -92,6 +93,7 @@ class IDockScreenDisplay
 		int GetListCursor (void) const { return OnGetListCursor(); }
 		IListData *GetListData (void) const { return OnGetListData(); }
 		ICCItemPtr GetProperty (const CString &sProperty) const;
+		ICCItemPtr GetSelection () const { return OnGetSelection(); }
 		CSpaceObject *GetSource (void) const { return OnGetSource(); }
 
 		static constexpr DWORD FLAG_UI_ITEM_LIST =			0x00000001;	//	Shows an item list
@@ -113,6 +115,7 @@ class IDockScreenDisplay
 		bool SelectItem (const CItem &Item) { return OnSelectItem(Item); }
 		bool SelectNextItem (void) { return OnSelectNextItem(); }
 		bool SelectPrevItem (void) { return OnSelectPrevItem(); }
+		void SetSelection (const ICCItem &Selection) { OnSetSelection(Selection); }
 		void ShowItem (void) { OnShowItem(); }
 		void ShowPane (bool bNoListNavigation) { OnShowPane(bNoListNavigation); }
 
@@ -131,6 +134,7 @@ class IDockScreenDisplay
 		virtual int OnGetListCursor (void) const { return -1; }
 		virtual IListData *OnGetListData (void) const { return NULL; }
 		virtual ICCItemPtr OnGetProperty (const CString &sProperty) const;
+		virtual ICCItemPtr OnGetSelection () const { return ICCItemPtr::Nil(); }
 		virtual CSpaceObject *OnGetSource (void) const { return NULL; }
 		virtual DWORD OnGetUIFlags (void) const { return 0; }
 		virtual EResults OnHandleAction (DWORD dwTag, DWORD dwData) { return resultNone; }
@@ -146,6 +150,7 @@ class IDockScreenDisplay
 		virtual EResults OnSetListFilter (const CItemCriteria &Filter) { return resultNone; }
 		virtual EResults OnSetLocation (CSpaceObject *pLocation) { return resultNone; }
 		virtual bool OnSetProperty (const CString &sProperty, const ICCItem &Value) { return false; }
+		virtual void OnSetSelection (const ICCItem &Selection) { }
 		virtual void OnShowItem (void) { }
 		virtual void OnShowPane (bool bNoListNavigation);
 
@@ -511,6 +516,7 @@ class CDockScreen : public IScreenController,
 
 		//	IDockScreenUI
 		virtual const CString &GetDescription (void) const override { return m_CurrentPane.GetDescriptionString(); }
+		virtual ICCItemPtr GetDisplaySelection () const override { return (m_pDisplay ? m_pDisplay->GetSelection() : ICCItemPtr::Nil()); }
 		virtual void *GetDockScreen () const override { return (void *)this; }
 		virtual ICCItemPtr GetListAsCCItem (void) const override;
 		virtual int GetListCursor (void) const override { return (m_pDisplay ? m_pDisplay->GetListCursor() : -1); }
@@ -519,6 +525,7 @@ class CDockScreen : public IScreenController,
 		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result) override;
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) override;
 		virtual bool SetProperty (const CString &sProperty, const ICCItem &Value) override;
+		virtual void SetSelection (const ICCItem &Selection) override { if (m_pDisplay) m_pDisplay->SetSelection(Selection); }
 
 	private:
 		enum EControlTypes

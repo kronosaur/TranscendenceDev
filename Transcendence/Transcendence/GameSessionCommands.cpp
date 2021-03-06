@@ -174,6 +174,15 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				}
 			break;
 
+		case CGameKeys::keySquadronUI:
+			if (pPlayer->CanShowShipStatus())
+				{
+				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+				m_Model.ShowShipScreen(UNID_RPG_SQUADRON_SCREEN);
+				pPlayer->SetUIMessageFollowed(uimsgSquadronUIHint);
+				}
+			break;
+
 		case CGameKeys::keyShipStatus:
 			if (pPlayer->CanShowShipStatus())
 				{

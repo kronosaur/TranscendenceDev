@@ -873,7 +873,7 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		Ctx.iRotation = m_iRotation;
 		Ctx.iDestiny = GetDestiny();
 		Ctx.iMaxLength = (int)((g_SecondsPerUpdate * Max(1, m_iTick) * m_pDesc->GetRatedSpeed()) / g_KlicksPerPixel);
-		Ctx.byShimmer = (GetStealth() > CSpaceObject::stealthNormal ? CalcSRSVisibility(Ctx) : 0);
+		Ctx.byShimmer = ((GetStealth() > CSpaceObject::stealthNormal && Ctx.pCenter) ? CalcSRSVisibility(*Ctx.pCenter, Ctx.iPerception) : 0);
 
 		if (!m_fDestroyOnAnimationDone && (m_pHit == NULL || m_fPassthrough))
 			m_pPainter->Paint(Dest, x, y, Ctx);

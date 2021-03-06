@@ -253,6 +253,8 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_MAKE_RADIOACTIVE		146
 #define FN_OBJ_DECONTAMINATE		147
 #define FN_OBJ_GET_REMOVE_CONDITION_PRICE	148
+#define FN_OBJ_SQUADRON_COMMS		149
+#define FN_OBJ_SQUADRON_COMMS_MESSAGES	150
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1247,7 +1249,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i",	0,	},
 
 		{	"shpGetOrderDesc",				fnShipGet,			FN_SHIP_ORDER_DESC,
-			"(shpGetOrderDesc obj [orderIndex]) -> orderDesc",
+			"(shpGetOrderDesc obj [orderIndex]) -> orderDesc\n\n"
+			
+			"orderDesc\n\n"
+
+			"   (order [targetObj] [data])\n",
+
 			"i*",	0,	},
 
 		{	"shpGetOrderTarget",			fnShipGetOld,		FN_SHIP_ORDER_TARGET,
@@ -2246,10 +2253,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objGetVel obj) -> velVector",
 			"i",		0,	},
 
-		{	"objGetVisibleDamage",			fnObjGetOld,		FN_OBJ_VISIBLE_DAMAGE,
-			"(objGetVisibleDamage obj) -> damage %",
-			NULL,	0,	},
-
 		{	"objHasAttribute",				fnObjGetOld,		FN_OBJ_ATTRIBUTE,
 			"(objHasAttribute obj attrib) -> True/Nil",
 			NULL,	0,	},
@@ -2607,6 +2610,39 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objSetVel",					fnObjSet,		FN_OBJ_VELOCITY,
 			"(objSetVel obj velVector)",
 			"il",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objSquadronComms",					fnObjSet,		FN_OBJ_SQUADRON_COMMS,
+			"(objSquadronComms obj receiver msgID [options]) -> Result\n\n"
+			
+			"receiver:\n\n"
+			
+			"   'squadron\n"
+			"   obj\n"
+			"   list of objs\n"
+			"\n"
+			"msgID:\n\n"
+			
+			"   'msgAttackInFormation\n"
+			"   'msgAttackTarget\n"
+			"   'msgBreakAndAttack\n"
+			"   'msgFormationAlpha\n"
+			"   'msgFormationBeta\n"
+			"   'msgFormationGamma\n"
+			"   'msgFormUp\n"
+			"   'msgWait\n",
+
+			"ivs*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objSquadronCommsMessages",			fnObjGet,		FN_OBJ_SQUADRON_COMMS_MESSAGES,
+			"(objSquadronCommsMessages obj receiver) -> List of msgIDs\n\n"
+			
+			"receiver:\n\n"
+			
+			"   'squadron\n"
+			"   obj\n"
+			"   list of objs\n",
+
+			"iv",	0,	},
 
 		{	"objSuspend",					fnObjSet,		FN_OBJ_SUSPEND,
 			"(objSuspend obj)",
@@ -4047,6 +4083,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	DEPRECATED FUNCTIONS
 		//	--------------------
+
+		{	"objGetVisibleDamage",			fnObjGetOld,		FN_OBJ_VISIBLE_DAMAGE,
+			"DEPRECATED: Use (obj@ obj 'visibleDamage)",
+			NULL,	0,	},
 
 		{	"shpMakeRadioactive",			fnObjSet,		FN_OBJ_MAKE_RADIOACTIVE,
 			"DEPRECATED: Use (objApplyCondition ...) instead.",
@@ -6088,7 +6128,7 @@ ICCItem *fnObjComms (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		if (iIndex == -1)
 			return pCC->CreateNil();
 
-		if (!pObj->IsCommsMessageValidFrom(pSender, iIndex))
+		if (!pObj->IsCommsMessageValidFrom(*pSender, iIndex))
 			return pCC->CreateNil();
 
 		//	Invoke the message
@@ -7774,6 +7814,64 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 			}
 
+		case FN_OBJ_SQUADRON_COMMS_MESSAGES:
+			{
+			const ICCItem *pReceiver = pArgs->GetElement(1);
+			TArray<CString> Messages;
+
+			//	If we have a list, then this is a list of squadron members.
+
+			if (pReceiver->IsList())
+				{
+				TArray<CSpaceObject *> List;
+				for (int i = 0; i < pReceiver->GetCount(); i++)
+					{
+					CSpaceObject *pObj = CTLispConvert::AsObject(pReceiver->GetElement(i));
+					if (!pObj)
+						continue;
+
+					List.Insert(pObj);
+					}
+
+				CSquadronCommunications Comms(*pObj, List);
+				Messages = Comms.GetMessageList();
+				}
+
+			//	Otherwise, if this is the keyword "squadron" then it applies to 
+			//	the entire (active) squadron.
+
+			else if (pReceiver->IsIdentifier())
+				{
+				CString sID = pReceiver->GetStringValue();
+				if (strEquals(sID, CONSTLIT("squadron")))
+					{
+					CSquadronCommunications Comms(*pObj);
+					Messages = Comms.GetMessageList();
+					}
+				else
+					return pCC->CreateError(CONSTLIT("Unknown receiver"), pReceiver);
+				}
+
+			//	Otherwise, we expect a single object
+
+			else
+				{
+				CSpaceObject *pReceiverObj = CTLispConvert::AsObject(pReceiver);
+				if (!pReceiverObj)
+					return pCC->CreateError(CONSTLIT("Invalid receiver"), pReceiver);
+
+				TArray<CSpaceObject *> List;
+				List.Insert(pReceiverObj);
+
+				CSquadronCommunications Comms(*pObj, List);
+				Messages = Comms.GetMessageList();
+				}
+
+			//	Return the list of messages
+
+			return CTLispConvert::CreateStringList(Messages)->Reference();
+			}
+
 		case FN_OBJ_TRANSLATE:
 			{
 			//	Get parameters
@@ -9431,6 +9529,66 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			pObj->SetTradeDesc(pEcon, iMaxCurrency, iReplenishCurrency);
 			return pCC->CreateTrue();
+			}
+
+		case FN_OBJ_SQUADRON_COMMS:
+			{
+			const ICCItem *pReceiver = pArgs->GetElement(1);
+			CString sMsg = pArgs->GetElement(2)->GetStringValue();
+
+			//	If we have a list, then this is a list of squadron members.
+
+			if (pReceiver->IsList())
+				{
+				TArray<CSpaceObject *> List;
+				for (int i = 0; i < pReceiver->GetCount(); i++)
+					{
+					CSpaceObject *pObj = CTLispConvert::AsObject(pReceiver->GetElement(i));
+					if (!pObj)
+						continue;
+
+					List.Insert(pObj);
+					}
+
+				CSquadronCommunications Comms(*pObj, List);
+				Comms.Send(sMsg);
+
+				return pCC->CreateTrue();
+				}
+
+			//	Otherwise, if this is the keyword "squadron" then it applies to 
+			//	the entire (active) squadron.
+
+			else if (pReceiver->IsIdentifier())
+				{
+				CString sID = pReceiver->GetStringValue();
+				if (strEquals(sID, CONSTLIT("squadron")))
+					{
+					CSquadronCommunications Comms(*pObj);
+					Comms.Send(sMsg);
+
+					return pCC->CreateTrue();
+					}
+				else
+					return pCC->CreateError(CONSTLIT("Unknown receiver"), pReceiver);
+				}
+
+			//	Otherwise, we expect a single object
+
+			else
+				{
+				CSpaceObject *pReceiverObj = CTLispConvert::AsObject(pReceiver);
+				if (!pReceiverObj)
+					return pCC->CreateError(CONSTLIT("Invalid receiver"), pReceiver);
+
+				TArray<CSpaceObject *> List;
+				List.Insert(pReceiverObj);
+
+				CSquadronCommunications Comms(*pObj, List);
+				Comms.Send(sMsg);
+
+				return pCC->CreateTrue();
+				}
 			}
 
 		case FN_OBJ_SUSPEND:

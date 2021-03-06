@@ -1351,7 +1351,7 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	//	If we've already got a screen set up then we don't need to
 	//	continue (OnScreenInit has navigated to a different screen).
 
-	if (m_pScreen)
+	if (m_pScreen || !DockSession.InSession())
 		return NOERROR;
 
 	//	Create a new screen
@@ -1386,6 +1386,7 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	DisplayCtx.pFontTable = m_pFonts;
 	DisplayCtx.pLocation = m_pLocation;
 	DisplayCtx.pScreen = m_pScreen;
+	DisplayCtx.pSelection = Frame.pSavedSelection;
 
 	DisplayCtx.rcScreen = m_Layout.GetContentRect();
 	DisplayCtx.rcRect = m_Layout.GetDisplayRect();

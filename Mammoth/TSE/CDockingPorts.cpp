@@ -1051,7 +1051,7 @@ void CDockingPorts::UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner)
 
 	int i;
 
-	CSpaceObject *pPlayer = Ctx.pPlayer;
+	CSpaceObject *pPlayer = Ctx.GetPlayerShip();
 	Metric rDist2 = (pPlayer ? pPlayer->GetDistance2(pOwner) : 0.0);
 	Metric rMaxDist = m_iMaxDist * LIGHT_SECOND;
 	Metric rMaxDist2 = rMaxDist * rMaxDist;
@@ -1111,7 +1111,7 @@ void CDockingPorts::UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner)
 		else if (pPlayer && m_pPort[i].iStatus == psEmpty)
 			{
 			CVector vPortPos = GetPortPos(pOwner, m_pPort[i], pPlayer);
-			Ctx.AutoDock.Update(*pPlayer, *pOwner, vPortPos, i, rMaxDist2);
+			Ctx.GetAutoDock().Update(*pPlayer, *pOwner, vPortPos, i, rMaxDist2);
 			}
 		}
 

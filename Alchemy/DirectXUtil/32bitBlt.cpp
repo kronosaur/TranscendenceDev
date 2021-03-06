@@ -1082,11 +1082,19 @@ void CGDraw::BltTiled (CG32bitImage &Dest, int xDest, int yDest, int cxDest, int
 		}
 	}
 
-void CGDraw::BltTransformed (CG32bitImage &Dest, Metric rX, Metric rY, Metric rScaleX, Metric rScaleY, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc)
+void CGDraw::BltTransformed (CG32bitImage &Dest, Metric rX, Metric rY, Metric rScaleX, Metric rScaleY, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity)
 
 	{
-	CFilterNormal Filter;
-	Filter.BltTransformed(Dest, rX, rY, rScaleX, rScaleY, rRotation, Src, xSrc, ySrc, cxSrc, cySrc);
+	if (byOpacity == 0xff)
+		{
+		CFilterNormal Filter;
+		Filter.BltTransformed(Dest, rX, rY, rScaleX, rScaleY, rRotation, Src, xSrc, ySrc, cxSrc, cySrc);
+		}
+	else
+		{
+		CFilterTrans Filter(byOpacity);
+		Filter.BltTransformed(Dest, rX, rY, rScaleX, rScaleY, rRotation, Src, xSrc, ySrc, cxSrc, cySrc);
+		}
 	}
 
 void CGDraw::BltTransformedGray (CG32bitImage &Dest, Metric rX, Metric rY, Metric rScaleX, Metric rScaleY, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity)

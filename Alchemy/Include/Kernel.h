@@ -42,6 +42,7 @@
 
 //	Undefine some common names
 
+#undef DrawText
 #undef PlaySound
 
 //	Explicit placement operator

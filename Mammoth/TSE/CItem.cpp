@@ -13,6 +13,7 @@
 #define CAN_BE_UNINSTALLED_EVENT				CONSTLIT("CanBeUninstalled")
 #define CAN_ENHANCE_ITEM_EVENT					CONSTLIT("CanEnhanceItem")
 #define GET_ENHANCEMENT_EVENT					CONSTLIT("GetEnhancement")
+#define GET_TRADE_SERVICES_EVENT				CONSTLIT("GetTradeServices")
 #define ON_ADDED_AS_ENHANCEMENT_EVENT			CONSTLIT("OnAddedAsEnhancement")
 #define ON_DISABLED_EVENT						CONSTLIT("OnDisable")
 #define ON_ENABLED_EVENT						CONSTLIT("OnEnable")
@@ -790,6 +791,33 @@ void CItem::FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *
 		if (retpResult)
 			*retpResult = Ctx.CreateNil();
 		}
+	}
+
+ICCItemPtr CItem::FireGetTradeServices (const CSpaceObject &SourceObj) const
+
+//	FireGetTradeServices
+//
+//	GetTradeServices event. Returns NULL if none found.
+
+	{
+	CCodeChainCtx CCX(GetUniverse());
+
+	SEventHandlerDesc Event;
+	if (!GetType()->FindEventHandler(GET_TRADE_SERVICES_EVENT, &Event))
+		return NULL;
+
+	CCX.DefineContainingType(GetType());
+	CCX.SaveAndDefineSourceVar(&SourceObj);
+	CCX.SaveAndDefineItemVar(*this);
+
+	ICCItemPtr pResult = CCX.RunCode(Event);
+	if (pResult->IsError())
+		{
+		SourceObj.ReportEventError(strPatternSubst(CONSTLIT("Item %x %s"), GetType()->GetUNID(), GET_TRADE_SERVICES_EVENT), pResult);
+		return NULL;
+		}
+
+	return pResult;
 	}
 
 void CItem::FireOnAddedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEnhanced, EnhanceItemStatus iStatus) const

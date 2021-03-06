@@ -37,8 +37,9 @@ enum UIMessageTypes
 	uimsgMiningDamageTypeHint =		16,
 	uimsgFireWeaponHint =			17,
 	uimsgShipStatusHint =			18,
+	uimsgSquadronUIHint =			19,
 
-	uimsgCount =					19,
+	uimsgCount =					20,
 	};
 
 class CUIMessageController
@@ -200,7 +201,6 @@ class CPlayerShipController : public IShipController
 
 		//	Fleet formation methods
 		DWORD GetCommsStatus (void);
-		bool HasFleet (void);
 
 		//	IShipController virtuals
 
@@ -278,7 +278,7 @@ class CPlayerShipController : public IShipController
 		void DisplayTranslate (const CString &sID, ICCItem *pData = NULL);
 		void DisplayTranslate (const CString &sID, const CString &sVar, const CString &sValue);
 		CSpaceObject *FindDockTarget (void);
-		bool HasCommsTarget (void);
+		bool HasCommsTarget (void) { return m_bHasCommsTarget; }
 		void InitTargetList (ETargetClass iTargetType, bool bUpdate = false);
 		void PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bitImage &Dest) const;
 		void PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bitImage &Dest, CSpaceObject &TargetObj) const;
@@ -332,6 +332,8 @@ class CPlayerShipController : public IShipController
 		CGenericType *m_pCharacterClass = NULL;		//	Character class
 
 		bool m_bUnderAttack = false;				//	TRUE if we're currently under attack
+		bool m_bHasSquadron = false;				//	If TRUE, we have at least one ship in our squadron
+		bool m_bHasCommsTarget = false;				//	If TRUE, we have at least one ship to talk to
 
 		CSpaceObject *m_pAutoDock = NULL;			//	The current station to dock with if we were to 
 													//		press 'D' right now. NULL means no station

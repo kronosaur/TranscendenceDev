@@ -241,6 +241,89 @@
 				%name% refuses to switch ships.
 
 			</Text>
+
+			<Text id="action.msgAttackTarget">[A]ttack Target</Text>
+			<Text id="action.msgBreakAndAttack">[B]reak &amp; Attack</Text>
+			<Text id="action.msgFormUp">[F]orm Up</Text>
+			<Text id="action.msgStatus">[S]tatus</Text>
+			<Text id="action.msgWait">[W]ait</Text>
+
+			<Code id="rpg.squadronStatus">
+				(block (
+					(behavior (objGetData gSource 'behavior))
+					)
+					(switch
+						(or (not behavior)
+								(not (obj@ gSource 'playerWingman))
+								)
+							Nil
+
+						(or (= behavior 'attackingAtWill)
+								(= behavior 'attackingTarget)
+								)
+							(block (
+								(orderDesc (shpGetOrderDesc gSource))
+								(order (@ orderDesc 0))
+								(targetObj (@ orderDesc 1))
+								)
+								(switch
+									(= order 'attack)
+										(objTranslate gSource 'rpg.squadronStatus.attackingTarget {
+											objName: (objGetName gSource 'definitePhrase)
+											targetName: (objGetName targetObj 'article)
+											})
+
+									(objTranslate gSource 'rpg.squadronStatus.lookingForTargets {
+										objName: (objGetName gSource 'definitePhrase)
+										})
+									)
+								)
+
+						(= behavior 'goingHome)
+							(objTranslate gSource 'rpg.squadronStatus.goingHome {
+								objName: (objGetName gSource 'definitePhrase)
+								})
+
+						(= behavior 'repairingArmor)
+							(objTranslate gSource 'rpg.squadronStatus.repairingArmor {
+								objName: (objGetName gSource 'definitePhrase)
+								})
+
+						(= behavior 'waiting)
+							(objTranslate gSource 'rpg.squadronStatus.waiting {
+								objName: (objGetName gSource 'definitePhrase)
+								})
+
+						;	OK to return Nil. The Squadron UI will default to a 
+						;	generic phrase.
+						)
+					)
+			</Code>
+			<Text id="rpg.squadronStatus.attackingTarget">
+
+				%ObjName% is attacking %targetName%.
+				
+			</Text>
+			<Text id="rpg.squadronStatus.lookingForTargets">
+
+				%ObjName% is looking for targets.
+
+			</Text>
+			<Text id="rpg.squadronStatus.goingHome">
+
+				%ObjName% is going home.
+			
+			</Text>
+			<Text id="rpg.squadronStatus.repairingArmor">
+
+				%ObjName% is docking for repairs.
+			
+			</Text>
+			<Text id="rpg.squadronStatus.waiting">
+
+				%ObjName% is waiting.
+			
+			</Text>
 		</Language>
 		
 		<Events>

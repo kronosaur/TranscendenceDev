@@ -238,7 +238,12 @@ ALERROR CDockScreenSelector::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
     //  Otherwise, we start at the first item
 
     else
-        SelectNextItem();
+		{
+		if (Ctx.pSelection)
+			m_pControl->RestoreSelection(*Ctx.pSelection);
+		else
+			SelectNextItem();
+		}
 
 	return NOERROR;
 	}

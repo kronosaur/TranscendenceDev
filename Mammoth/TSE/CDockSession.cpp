@@ -50,6 +50,15 @@ bool CDockSession::ExitScreen (DWORD dwFlags)
 		m_pDockScreenUI = &m_NullUI;
 		m_pDefaultScreensRoot = NULL;
 		m_DockFrames.DeleteAll();
+
+		//	Call exit code, if necessary. We do this before getting rid of 
+		//	session data because we might want to access it.
+
+		RunExitCode();
+
+		//	Done
+
+		m_UndockCode.DeleteAll();
 		m_pStoredData.Delete();
 
 		return false;
@@ -251,8 +260,8 @@ void CDockSession::IncData (const CString &sAttrib, ICCItem *pOptionalInc, ICCIt
 		return;
 		}
 
-    //  If pValue is NULL, we default to 1. We add ref no matter what so that
-    //  we can discard unconditionally.
+	//  If pValue is NULL, we default to 1. We add ref no matter what so that
+	//  we can discard unconditionally.
 
 	ICCItemPtr pInc;
 	if (pOptionalInc)
@@ -260,31 +269,31 @@ void CDockSession::IncData (const CString &sAttrib, ICCItem *pOptionalInc, ICCIt
 	else
 		pInc = ICCItemPtr(1);
 
-    //  If the entry is currently blank, then we just take the increment.
+	//  If the entry is currently blank, then we just take the increment.
 
 	ICCItemPtr pOriginal = GetData(sAttrib);
-    ICCItemPtr pResult;
-    if (pOriginal->IsNil())
-        pResult = pInc;
+	ICCItemPtr pResult;
+	if (pOriginal->IsNil())
+		pResult = pInc;
 
-    //  Otherwise, we need to get the data value
+	//  Otherwise, we need to get the data value
 
-    else
-        {
-        if (pOriginal->IsDouble() || pInc->IsDouble())
-            pResult = ICCItemPtr(pOriginal->GetDoubleValue() + pInc->GetDoubleValue());
-        else
-            pResult = ICCItemPtr(pOriginal->GetIntegerValue() + pInc->GetIntegerValue());
-        }
+	else
+		{
+		if (pOriginal->IsDouble() || pInc->IsDouble())
+			pResult = ICCItemPtr(pOriginal->GetDoubleValue() + pInc->GetDoubleValue());
+		else
+			pResult = ICCItemPtr(pOriginal->GetIntegerValue() + pInc->GetIntegerValue());
+		}
 
-    //  Store
+	//  Store
 
 	SetData(sAttrib, pResult);
 
-    //  Done
+	//  Done
 
-    if (retpResult)
-        *retpResult = pResult;
+	if (retpResult)
+		*retpResult = pResult;
 	}
 
 bool CDockSession::ModifyItemNotificationNeeded (const CSpaceObject &Source) const
@@ -395,6 +404,26 @@ void CDockSession::PlayAmbientSound ()
 	m_pAmbientSoundPlaying = m_pAmbientSound;
 	}
 
+void CDockSession::RunExitCode ()
+
+//	RunExitCode
+//
+//	Runs all exit code.
+
+	{
+	for (int i = 0; i < m_UndockCode.GetCount(); i++)
+		{
+		CCodeChainCtx CCX(GetUniverse());
+
+		ICCItemPtr pResult = CCX.RunLambdaCode(m_UndockCode[i]);
+		if (pResult->IsError())
+			{
+			CString sError = pResult->GetStringValue();
+			::kernelDebugLogString(sError);
+			}
+		}
+	}
+
 void CDockSession::SetAmbientSound (const CSoundResource *pSound)
 
 //	SetAmbientSound
@@ -478,7 +507,7 @@ bool CDockSession::SetScreenSet (const ICCItem &ScreenSet)
 //
 //	Sets the current screen set.
 //
-//	We expect ScreenSet to be an array of structs; each struc has the following
+//	We expect ScreenSet to be an array of structs; each struct has the following
 //	fields:
 //
 //		id: ID of the tab (if Nil, we assign one)
@@ -572,6 +601,14 @@ bool CDockSession::ShowScreen (CSpaceObject &Location, CDesignType *pRoot, const
 		//	Initialize the ambient sound.
 
 		SetAmbientSound(Location.GetDockScreenAmbientSound());
+		}
+
+	//	If not the first frame, then save the selection so we can restore it
+	//	later when we come back.
+
+	else
+		{
+		m_DockFrames.GetCurrent().pSavedSelection = m_pDockScreenUI->GetDisplaySelection();
 		}
 
 	//	Add a new frame.

@@ -46,7 +46,7 @@ SGameKeyData g_GameKeyData[CGameKeys::keyCount] =
 		{	"InvokePower",          "Invoke Power",                 SGameKeyData::FLAG_NO_REPEAT },
 		{	"ShowMap",              "System Map",                   SGameKeyData::FLAG_NO_REPEAT },
 		{	"Pause",                "Pause Game",                   SGameKeyData::FLAG_NO_REPEAT },
-		{	"CommandSquadron",      "Squadron Communications",      SGameKeyData::FLAG_NO_REPEAT },
+		{	"CommandSquadron",      "Squadron Communications",      SGameKeyData::FLAG_NO_REPEAT | SGameKeyData::FLAG_HIDDEN },
 		{	"ClearTarget",          "Clear Target",                 0 },
 		{	"ShipStatus",           "Ship's Status",                SGameKeyData::FLAG_NO_REPEAT },
 		{	"TargetNextEnemy",      "Target Next Enemy",            0 },
@@ -124,6 +124,7 @@ SGameKeyData g_GameKeyData[CGameKeys::keyCount] =
 		{	"AimShip",					"Aim Ship",						SGameKeyData::FLAG_XY_INPUT },
 		{	"Interact",					"Dock or Enter Stargate",		SGameKeyData::FLAG_NO_REPEAT },
 		{	"CycleTarget",				"Cycle Target",					SGameKeyData::FLAG_NO_REPEAT },
+		{	"SquadronUI",				"Squadron Status",				SGameKeyData::FLAG_NO_REPEAT },
 	};
 
 const int GAME_KEY_DATA_COUNT = (sizeof(g_GameKeyData) / sizeof(g_GameKeyData[0]));

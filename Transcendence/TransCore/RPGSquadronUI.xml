@@ -1,0 +1,848 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- Squadron Management UI
+
+	DATA
+
+		tabID: start on this tab.
+
+-->
+
+	<DockScreen unid="&dsRPGSquadron;"
+			inherit=		"&dsDockScreenBase;"
+			nestedScreen=	"true"
+			>
+		<OnScreenInit>
+			(block (
+				(allStatuses
+					(map (obj@ gPlayerShip 'squadron) 'theEntry
+						(@ theEntry 'status)
+						)
+					)
+					
+				(hasDeployed (find allStatuses 'deployed))
+				(hasStored (find allStatuses 'stored))
+				(hasWaiting (find allStatuses 'waiting))
+				)
+				(if (not allStatuses)
+					(block ()
+						(objSendMessage gPlayerShip Nil (scrTranslate gScreen 'descNoSquadron))
+						(scrExitScreen gScreen)
+						)
+						
+					(block ()
+						;	Remove any suspended autons, in case we return to this 
+						;	screen from a dock services sub-screen. We want to get rid
+						;	of the suspended auton because it stops the Auton Bay from
+						;	working.
+
+						(rpgCleanUpSuspendedAuton gPlayerShip)
+
+						;	Create tab sets as necessary
+
+						(scrSetTabSet gScreen (list
+							(if hasDeployed
+								{	id: 'squadronDeployed
+									label: (scrTranslate gScreen 'labelDeployed)
+									screen: &dsRPGSquadron;
+									data: gData
+									}
+								)
+
+							(if hasStored
+								{	id: 'squadronStored
+									label: (scrTranslate gScreen 'labelInCargo)
+									screen: &dsRPGSquadronInCargoHold;
+									data: gData
+									}
+								)
+
+							(if hasWaiting
+								{	id: 'squadronWaiting
+									label: (scrTranslate gScreen 'labelWaiting)
+									screen: &dsRPGSquadronWaiting;
+									data: gData
+									}
+								)
+							))
+					
+						;	Select the proper tab
+				
+						(switch
+							(@ gData 'tabID)
+								(scrShowTab gScreen (@ gData 'tabID))
+
+							hasDeployed
+								Nil
+						
+							hasStored
+								(scrShowTab gScreen 'squadronStored)
+						
+							hasWaiting
+								(scrShowTab gScreen 'squadronWaiting)
+							)
+						)
+					)
+				)
+		</OnScreenInit>
+
+		<Display type="iconList"
+				dataFrom="player"
+				>
+			<OnDisplayInit>
+				(map (obj@ gPlayerShip 'squadron) 'excludeNil theEntry
+					(block (
+						(shipObj (@ theEntry 'obj))
+						(integrity (- 100 (obj@ shipObj 'visibleDamage)))
+						)
+						(switch
+							;	This is an active ship in the system
+
+							(= (@ theEntry 'status) 'deployed)
+								{
+									title: (@ theEntry 'name)
+									icon: (objGetImageDesc shipObj)
+									statusBar: integrity
+									statusBarColor: (obj@ shipObj 'visibleDamageColor)
+
+									status: (@ theEntry 'status)
+									obj: shipObj
+									objID: (@ theEntry 'objID)
+									type: (@ theEntry 'type)
+									}
+							)
+						)
+					)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(squadronList (scrGetList gScreen))
+						(entry (scrGetListEntry gScreen))
+
+						(deployedCount (map squadronList 'reduceSum theEntry
+							(if (= (@ theEntry 'status) 'deployed) 1)
+							))
+
+						(selection
+							(switch
+								(not entry)
+									(map squadronList 'excludeNil theEntry
+										(if (= (@ theEntry 'status) 'deployed)
+											theEntry
+											)
+										)
+
+								(= (typeof entry) 'struct)
+									(list entry)
+
+								entry
+								)
+							)
+
+						(selectionDeployed (filter selection theEntry
+							(= (@ theEntry 'status) 'deployed)
+							))
+
+						(deployedObjs
+							(map selection theEntry
+								(@ theEntry 'obj)
+								)
+							)
+
+						(distantObjs
+							(filter deployedObjs theObj
+								(not (obj@ theObj 'visibleToPlayer))
+								)
+							)
+
+						(actionPos -1)
+						(nextActionPos (lambda () (setq actionPos (+ actionPos 1))))
+						)
+						(switch
+
+							;	If nothing is selected, then we show commands that
+							;	apply to the whole squadron.
+
+							(not entry)
+								(block (
+									(squadronComms (obj@ gPlayerShip 'squadronCommsStatus))
+
+									(addAction (lambda (msgID)
+										(scrAddAction gScreen msgID (nextActionPos) Nil
+											(lambda ()
+												(block ()
+													(objSquadronComms gPlayerShip 'squadron msgID)
+													(scrExitScreen gScreen 'forceUndock)
+													)
+												)
+											)
+										))
+									)
+									;	Add squadon orders
+
+									(if (find squadronComms 'msgAttackTarget)
+										(addAction 'msgAttackTarget)
+										)
+
+									(if (find squadronComms 'msgBreakAndAttack)
+										(addAction 'msgBreakAndAttack)
+										)
+
+									(if (find squadronComms 'msgAttackInFormation)
+										(addAction 'msgAttackInFormation)
+										)
+
+									(if (find squadronComms 'msgFormUp)
+										(addAction 'msgFormUp)
+										)
+
+									(if (find squadronComms 'msgSetFormation)
+										(block ()
+											(addAction 'msgFormationAlpha)
+											(addAction 'msgFormationBeta)
+											(addAction 'msgFormationGamma)
+											)
+										)
+
+									(if (find squadronComms 'msgWait)
+										(addAction 'msgWait)
+										)
+
+									(if distantObjs
+										(scrAddAction gScreen 'actionLocate (nextActionPos) Nil
+											(lambda ()
+												(block ()
+													(enum distantObjs theObj
+														(objSetShowAsDestination theObj '(autoClear showDistance))
+														)
+
+													(scrExitScreen gScreen)
+													)
+												)
+											)
+										)
+
+									;	Set the descriptor
+
+									(switch
+										(gr deployedCount 0)
+											(scrSetDescTranslate gScreen 'descSquadronDeployed {
+												shipCount: (fmtNoun (scrTranslate gScreen 'nounShip) deployedCount 'countAlways)
+												})
+
+										(scrSetDescTranslate gScreen 'descDeployedShips)
+										)
+									)
+
+							;	If we have only deployed objects selected, then we show
+							;	commands that apply to the selection.
+
+							deployedObjs
+								(block (
+									(squadronComms (objSquadronCommsMessages gPlayerShip deployedObjs))
+									(skipList '(msgFormationAlpha msgFormationBeta msgFormationGamma msgStatus))
+									(objSelected (@ deployedObjs 0))
+
+									;	Generate a list of messages
+
+									(squadronActions
+										(sort
+											(map squadronComms 'excludeNil msgID
+												(if (not (find skipList msgID))
+													{
+														msgID: msgID
+														label: (objTranslate objSelected (cat "action." msgID))
+														}
+													)
+												)
+											'label
+											)
+										)
+
+									objName objNameGeneric objStatus
+									)
+
+									;	If we only have a single object, then add an action to view
+									;	configuration.
+
+									(if (= (count deployedObjs) 1)
+										(scrAddAction gScreen 'actionShowConfiguration (nextActionPos) Nil
+											(lambda ()
+												(scrShowScreen gScreen (obj@ objSelected 'shipConfigScreen) {
+													shipObj: (@ deployedObjs 0)
+													shipConfig: True
+													title: (scrTranslate gScreen 'core.name)
+													dockServicesDesc: (scrTranslate gScreen 'descConfiguration {
+														shipClass: (objGetName objSelected 'generic)
+														})
+													})
+												)
+											)
+										)
+
+									;	Add commands
+
+									(enum squadronActions theEntry
+										(block (
+											(msgID (@ theEntry 'msgID))
+											(label (@ theEntry 'label))
+											)
+											(scrAddAction gScreen msgID (nextActionPos) label
+												(lambda ()
+													(block ()
+														(objSquadronComms gPlayerShip deployedObjs msgID)
+														(scrExitScreen gScreen 'forceUndock)
+														)
+													)
+												)
+											)
+										)
+
+									;	Locate
+
+									(if distantObjs
+										(scrAddAction gScreen 'actionLocate (nextActionPos) Nil
+											(lambda ()
+												(block ()
+													(enum distantObjs theObj
+														(objSetShowAsDestination theObj '(autoClear showDistance))
+														)
+
+													(scrExitScreen gScreen)
+													)
+												)
+											)
+										)
+
+									;	Set the description
+
+									(switch
+										(gr (count deployedObjs) 1)
+											(scrSetDescTranslate gScreen 'descShipsSelected {
+												shipCount: (fmtNoun (scrTranslate gScreen 'nounShip) (count deployedObjs) 'countAlways)
+												})
+
+										(setq objStatus (objTranslate objSelected 'rpg.squadronStatus))
+											(scrSetDesc gScreen objStatus)
+
+										(!= (setq objName (objGetName objSelected))
+												(setq objNameGeneric (objGetName objSelected 'generic))
+												)
+											(scrSetDescTranslate gScreen 'descCharacterSelected {
+												name: objName
+												shipClass: (objGetName objSelected '(article generic))
+												})
+
+										(scrSetDescTranslate gScreen 'descShipSelected {
+											shipClass: objNameGeneric
+											})
+										)
+									)
+
+							(scrSetDesc gScreen "LATER: " entry)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDone" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="core.name">Squadron</Text>
+
+			<Text id="labelDeployed">Deployed</Text>
+			<Text id="labelInCargo">Cargo Hold</Text>
+			<Text id="labelWaiting">Waiting</Text>
+
+			<Text id="actionShowConfiguration">[C]onfiguration</Text>
+			<Text id="actionLocate">[L]ocate</Text>
+
+			<Text id="msgAttackInFormation">Attack [i]n Formation</Text>
+			<Text id="msgAttackTarget">[A]ttack Target</Text>
+			<Text id="msgBreakAndAttack">[B]reak &amp; Attack</Text>
+			<Text id="msgFormUp">[F]orm Up</Text>
+			<Text id="msgFormationAlpha">Formation [1] Alpha</Text>
+			<Text id="msgFormationBeta">Formation [2] Beta</Text>
+			<Text id="msgFormationGamma">Formation [3] Gamma</Text>
+			<Text id="msgWait">[W]ait</Text>
+
+			<Text id="descSquadronDeployed">
+			
+				You have %shipCount% deployed in the system.
+				
+			</Text>
+			<Text id="descNoSquadron">
+			
+				You do not command any other ships.
+				
+			</Text>
+			<Text id="descNoDeployedShips">
+
+				None of your ships are deployed in this system.
+
+			</Text>
+			<Text id="descShipsSelected">
+
+				You've selected %shipCount% in your squadron.
+			
+			</Text>
+			<Text id="descShipSelected">
+
+				The %ShipClass% is deployed.
+
+			</Text>
+			<Text id="descCharacterSelected">
+
+				%Name% is flying %shipClass%.
+			
+			</Text>
+			<Text id="descConfiguration">
+
+				%ShipClass%.
+			
+			</Text>
+
+			<Text id="nounShip">ship(s)</Text>
+		</Language>
+	</DockScreen>
+
+	<DockScreen unid="&dsRPGSquadronInCargoHold;"
+			inherit=		"&dsDockScreenBase;"
+			nestedScreen=	"true"
+			>
+		<OnScreenInit>
+			(block (
+				(autonObj (rpgGetSuspendedAuton gPlayerShip))
+				(autonItem (scrGetData gScreen 'autonItem))
+				)
+				;	If we come back and we have a suspended auton, then we need 
+				;	need to save it back to the selection.
+
+				(if (and autonObj autonItem)
+					(block (
+						;	Convert back to item
+						(newAutonItem (objFireEvent autonObj 'ConvertToItem))
+						)
+						(objSetItemData gPlayerShip autonItem 'autonConfig (itmGetData newAutonItem 'autonConfig)))
+
+						;	Remove any suspended autons, in case we return to this 
+						;	screen from a dock services sub-screen. We want to get rid
+						;	of the suspended auton because it stops the Auton Bay from
+						;	working.
+
+						(rpgCleanUpSuspendedAuton gPlayerShip)
+						(scrSetData gScreen 'autonItem Nil)
+						)
+					)
+				)
+		</OnScreenInit>
+
+		<Display type="iconList"
+				dataFrom="player"
+				>
+			<OnDisplayInit>
+				(map (obj@ gPlayerShip 'squadron) 'excludeNil theEntry
+					(block (
+						)
+						(switch
+							;	This is a stored auton
+
+							(@ theEntry 'item)
+								(block (
+									(autonConfig (rpgGetAutonConfig (@ theEntry 'item)))
+									(damageDesc (rpgGetAutonDamageDesc (@ theEntry 'item)))
+									(visibleDamage (@ damageDesc 'visibleDamage))
+									(integrity (- 100 visibleDamage))
+									(barColor
+										(switch
+											(geq visibleDamage 75)
+												"#ff5050"
+
+											(geq visibleDamage 50)
+												"#ffff50"
+
+											"#50ff50"
+											)
+										)
+									(repairDesc (if (ls integrity 100) (rpgGetAutonRepairDesc gPlayerShip (@ theEntry 'item))))
+									)
+									{
+										title: (or (@ autonConfig 'name) (@ theEntry 'name))
+										icon: (itmGetImageDesc (@ theEntry 'item))
+										statusBar: integrity
+										statusBarColor: barColor
+
+										status: (@ theEntry 'status)
+										item: (@ theEntry 'item)
+										repairDesc: (@ (@ repairDesc 0) 'repairText)
+										}
+									)
+							)
+						)
+					)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(squadronList (scrGetList gScreen))
+						(entry (scrGetListEntry gScreen))
+
+						(selection
+							(switch
+								(= (typeof entry) 'struct)
+									(list entry)
+
+								entry
+								)
+							)
+						(storedItems
+							(map selection theEntry
+								(@ theEntry 'item)
+								)
+							)
+
+						(actionPos -1)
+						(nextActionPos (lambda () (setq actionPos (+ actionPos 1))))
+						)
+						(switch
+
+							;	If nothing is selected, then no commands
+
+							(not entry)
+								(block ()
+									(scrSetDescTranslate gScreen 'descItemsInCargo {
+										itemCount: (fmtNoun (scrTranslate gScreen 'nounAuton) (count squadronList) 'countAlways)
+										})
+
+									)
+
+							storedItems
+								(block (
+									(canDeploy (map storedItems 'excludeNil theItem
+										(obj@ gPlayerShip theItem 'canBeUsed)
+										))
+									)
+
+									;	Add action to deploy
+
+									(scrAddAction gScreen 'actionDeploy (nextActionPos) Nil
+										(lambda ()
+											(enum storedItems theItem
+												(switch
+													(not (obj@ gPlayerShip theItem 'canBeUsed))
+														Nil
+
+													(obj@ gPlayerShip theItem 'hasUseScreen)
+														Nil
+
+													(block ()
+														(plyUseItem gPlayer theItem)
+														(scrExitScreen gScreen 'forceUndock)
+														)
+													)
+												)
+											)
+										)
+
+									;	Action is disabled if none of the items can be used.
+
+									(scrEnableAction gScreen 'actionDeploy canDeploy)
+
+									;	If there is a single item selected, show configuration, etc.
+
+									(if (and (= (count storedItems) 1)
+											(itmHasAttribute (@ storedItems 0) 'auton)
+											)
+										(block (
+											(installArmorStatus (obj@ gPlayerShip 'installArmorStatus))
+											(installDeviceStatus (obj@ gPlayerShip 'installDeviceStatus))
+											(configDesc (or (@ installDeviceStatus 'desc) (@ installArmorStatus 'desc)))
+											(autonItem (@ storedItems 0))
+											)
+											;	Configuration
+
+											(scrAddAction gScreen 'actionShowConfiguration (nextActionPos) Nil
+												(lambda ()
+													(block (
+														(autonObj (rpgCreateSuspendedAuton gPlayerShip autonItem))
+														)
+														(scrSetData gScreen 'autonItem autonItem)
+
+														(scrShowScreen gScreen (obj@ autonObj 'shipConfigScreen) {
+															shipObj: autonObj
+															title: (scrTranslate gScreen 'core.name)
+															dockServicesDesc: (scrTranslate gScreen 'descConfiguration {
+																shipClass: (objGetName autonObj 'generic)
+																})
+
+															repairArmorDesc: (@ entry 'repairDesc)
+															})
+														)
+													)
+												)
+												
+											(switch
+												(not (itm@ autonItem 'known))
+													(block ()
+														(scrSetActionDesc gScreen 'actionShowConfiguration (scrTranslate gScreen 'descNoConfigForUnknown))
+														(scrEnableAction gScreen 'actionShowConfiguration Nil)
+														)
+
+												configDesc
+													(scrSetActionDesc gScreen 'actionShowConfiguration configDesc)
+												)
+
+											;	Name auton
+
+											(if (itm@ autonItem 'known)
+												(scrAddAction gScreen 'actionNameAuton (nextActionPos) Nil
+													(lambda ()
+														(scrShowPane gScreen 'NameAuton)
+														)
+													)
+												)
+											)
+										)
+
+									;	Set the description
+
+									(switch
+										(gr (count storedItems) 1)
+											(scrSetDescTranslate gScreen 'descItemsSelected {
+												itemCount: (fmtNoun (scrTranslate gScreen 'nounAuton) (count storedItems) 'countAlways)
+												})
+
+										(@ entry 'repairDesc)
+											(scrSetDesc gScreen (@ entry 'repairDesc))
+
+										(scrSetDescTranslate gScreen 'descItemSelected {
+											itemName: (itmGetName (@ storedItems 0) 0)
+											})
+										)
+									)
+
+							(scrSetDesc gScreen "LATER: " entry)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDone" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+
+			<NameAuton
+				showTextInput=	"true"
+				>
+				<OnPaneInit>
+					(block (
+						(entry (scrGetListEntry gScreen))
+						(autonItem (@ entry 'item))
+						)
+						(scrSetDescTranslate gScreen 'descNameAuton { 
+							itemName:(itmGetName autonItem 0) 
+							})
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionInputName" default="1">
+						(block (
+							(entry (scrGetListEntry gScreen))
+							(autonItem (@ entry 'item))
+							(theName (rpgSanitizeAutonName (scrGetInputText gScreen)))
+							(newConfig (struct
+								(rpgGetAutonConfig autonItem)
+								{ name: theName }
+								))
+							)
+							(objSetItemData gPlayerShip autonItem 'autonConfig newConfig 1)
+							(scrShowPane gScreen 'Default)
+							)
+					</Action>
+					
+					<Action id="actionInputCancel" cancel="1">
+						(scrShowPane gScreen 'Default)
+					</Action>
+				</Actions>
+			</NameAuton>
+		</Panes>
+
+		<Language>
+			<Text id="core.name">Squadron</Text>
+
+			<Text id="actionDeploy">[D]eploy</Text>
+			<Text id="actionShowConfiguration">[C]onfiguration</Text>
+			<Text id="actionNameAuton">[N]ame Auton</Text>
+			<Text id="actionInputName">[Enter] Name</Text>
+			<Text id="actionInputCancel">[Esc] Cancel</Text>
+
+			<Text id="descItemsInCargo">
+
+				You have %itemCount% in your cargo hold.
+			
+			</Text>
+			<Text id="descItemsSelected">
+
+				You've selected %itemCount% in your cargo hold.
+			
+			</Text>
+			<Text id="descItemSelected">
+
+				The %itemName% is in your cargo hold.
+			
+			</Text>
+			<Text id="descConfiguration">
+
+				%ShipClass%.
+			
+			</Text>
+			<Text id="descNoConfigForUnknown">
+
+				Cannot determine configuration of unknown autons.
+			
+			</Text>
+			<Text id="descNameAuton">
+
+				What would you like to name this %itemName%?
+
+			</Text>
+
+			<Text id="nounAuton">auton(s)</Text>
+			<Text id="nounShip">ship(s)</Text>
+		</Language>
+	</DockScreen>
+
+	<DockScreen unid="&dsRPGSquadronWaiting;"
+			inherit=		"&dsDockScreenBase;"
+			nestedScreen=	"true"
+			>
+		<OnScreenInit>
+		</OnScreenInit>
+
+		<Display type="iconList"
+				>
+			<OnDisplayInit>
+				(map (obj@ gPlayerShip 'squadron) 'excludeNil theEntry
+					(block (
+						)
+						(switch
+							;	This is a waiting ship
+
+							(= (@ theEntry 'status) 'waiting)
+								(block (
+									)
+									{
+										title: (@ theEntry 'name)
+										icon: (shpGetImageDesc (@ theEntry 'type))
+
+										status: (@ theEntry 'status)
+										namePattern: (@ theEntry 'namePattern)
+										nodeID: (@ theEntry 'nodeID)
+										}
+									)
+							)
+						)
+					)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(squadronList (scrGetList gScreen))
+						(entry (scrGetListEntry gScreen))
+
+						(selection
+							(switch
+								(= (typeof entry) 'struct)
+									(list entry)
+
+								entry
+								)
+							)
+
+						(actionPos -1)
+						(nextActionPos (lambda () (setq actionPos (+ actionPos 1))))
+						)
+						(switch
+
+							;	If nothing is selected, then no commands
+
+							(not entry)
+								(block ()
+									(scrSetDescTranslate gScreen 'descShipsWaiting {
+										shipCount: (fmtNoun (scrTranslate gScreen 'nounShip) (count squadronList) 'countAlways)
+										})
+									)
+
+							(block (
+								)
+
+								;	Set the description
+
+								(switch
+									(gr (count selection) 1)
+										(scrSetDescTranslate gScreen 'descShipsSelected {
+											shipCount: (fmtNoun (scrTranslate gScreen 'nounShip) (count selection) 'countAlways)
+											})
+
+									(scrSetDescTranslate gScreen 'descShipSelected {
+										shipName: (fmtNoun (@ entry 'namePattern) 1 'definitePhrase)
+										sysName: (sysGetName (@ entry 'nodeID))
+										})
+									)
+								)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDone" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="core.name">Squadron</Text>
+
+			<Text id="descShipsWaiting">
+
+				You have %shipCount% waiting in other systems.
+			
+			</Text>
+			<Text id="descShipsSelected">
+
+				You've selected %shipCount% waiting in other systems.
+			
+			</Text>
+			<Text id="descShipSelected">
+
+				%ShipName% is waiting in the %sysName% System.
+			
+			</Text>
+
+			<Text id="nounShip">ship(s)</Text>
+		</Language>
+	</DockScreen>
+
+</TranscendenceModule>

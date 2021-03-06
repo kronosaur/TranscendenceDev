@@ -29,7 +29,7 @@ const CGameKeys::SKeyMapEntry CGameKeys::DEFAULT_MAP[] =
 		{	'N',				CGameKeys::keyShowGalacticMap },
 		//	'O' unused
 		{	'P',				CGameKeys::keyPause },
-		{	'Q',				CGameKeys::keySquadronCommands },
+		{	'Q',				CGameKeys::keySquadronUI },
 		{	'R',				CGameKeys::keyClearTarget },
 		{	'S',				CGameKeys::keyShipStatus },
 		{	'T',				CGameKeys::keyTargetNextEnemy },
@@ -86,7 +86,7 @@ const CGameKeys::SKeyMapEntry CGameKeys::WASD_MAP[] =
 		{	'R',				CGameKeys::keyInteract },
 		{	'S',				CGameKeys::keyStop },
 		{	'T',				CGameKeys::keyTargetNextEnemy },
-		//	'U' unused
+		{	'U',				CGameKeys::keySquadronUI },
 		{	'V',				CGameKeys::keyCommunications },
 		{	'W',				CGameKeys::keyThrustForward },
 		{	'X',				CGameKeys::keyInvokePower },

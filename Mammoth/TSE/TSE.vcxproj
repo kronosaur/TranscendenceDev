@@ -585,6 +585,7 @@
     <ClCompile Include="CSpaceObjectProperties.cpp" />
     <ClCompile Include="CSpaceObjectTrade.cpp" />
     <ClCompile Include="CSphericalTextureMapper.cpp" />
+    <ClCompile Include="CSquadronCommunications.cpp" />
     <ClCompile Include="CSquadronController.cpp" />
     <ClCompile Include="CSquadronDesc.cpp" />
     <ClCompile Include="CSquadronDescList.cpp" />
@@ -599,6 +600,7 @@
     <ClCompile Include="CStationHull.cpp" />
     <ClCompile Include="CStationHullDesc.cpp" />
     <ClCompile Include="CStationTableCache.cpp" />
+    <ClCompile Include="CStatusBarPainter.cpp" />
     <ClCompile Include="CSystemMapThumbnails.cpp" />
     <ClCompile Include="CSystemSpacePainter.cpp" />
     <ClCompile Include="CSystemEventList.cpp" />
@@ -689,6 +691,7 @@
     <ClCompile Include="SFXParticleSystem.cpp" />
     <ClCompile Include="SFXRay.cpp" />
     <ClCompile Include="ShipClassProperties.cpp" />
+    <ClCompile Include="ShipProperties.cpp" />
     <ClCompile Include="ShipUpdate.cpp" />
     <ClCompile Include="CPhysicsForceDesc.cpp" />
     <ClCompile Include="SovereignProperties.cpp" />
