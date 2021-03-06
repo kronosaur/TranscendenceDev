@@ -285,7 +285,7 @@
 								})
 
 						(= behavior 'repairingArmor)
-							(objTranslate gSource 'rpg.squadronStatus.goingHome {
+							(objTranslate gSource 'rpg.squadronStatus.repairingArmor {
 								objName: (objGetName gSource 'definitePhrase)
 								})
 

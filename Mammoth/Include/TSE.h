@@ -269,20 +269,23 @@ struct SApplyConditionOptions
 struct SUpdateCtx
 	{
 	public:
+		void AddPlayerObj (CSpaceObject &Obj) { m_PlayerObjs.Insert(&Obj); }
 		int GetLightIntensity (CSpaceObject *pObj) const;
+		CAutoDockCalc &GetAutoDock () { return m_AutoDock; }
+		CAutoMiningCalc &GetAutoMining () { return m_AutoMining; }
+		CAutoTargetCalc &GetAutoTarget () { return m_AutoTarget; }
+		CSpaceObject *GetPlayerShip () { return m_pPlayer; }
 		CTargetList &GetTargetList ();
 		bool IsTimeStopped (void) const { return m_bTimeStopped; }
 		void OnEndUpdate () { m_pObj = NULL; }
 		void OnStartUpdate (CSpaceObject &Obj);
+		bool PlayerHasCommsTarget () const { return m_bPlayerHasCommsTarget; }
+		bool PlayerHasSquadron () const { return m_bPlayerHasSquadron; }
+		void SetPlayerShip (CSpaceObject &PlayerObj);
+		void UpdatePlayerCalc (const CSpaceObject &Obj);
 
 		CSystem *pSystem = NULL;					//	Current system
-		CSpaceObject *pPlayer = NULL;				//	The player
-		TArray<CSpaceObject *> PlayerObjs;			//	List of player objects, if pPlayer == NULL
 		SViewportAnnotations *pAnnotations = NULL;	//	Extra structure to deliver to PaintViewport
-
-		CAutoDockCalc AutoDock;						//	Used to compute nearest docking port
-		CAutoMiningCalc AutoMining;					//	Used to compute nearest minable asteroid
-		CAutoTargetCalc AutoTarget;					//	Used to compute player's auto target
 
 		//	Misc flags
 
@@ -292,11 +295,22 @@ struct SUpdateCtx
 
 	private:
 
+		CSpaceObject *m_pPlayer = NULL;				//	The player
+		TArray<CSpaceObject *> m_PlayerObjs;		//	List of player objects, if pPlayer == NULL
+
 		//	About the object being updated
 
 		CSpaceObject *m_pObj = NULL;				//	Object being updated
 		CTargetList m_TargetList;					//	Cached target list
 		bool m_bTimeStopped = false;				//	Object is currently time-stopped (cached for perf).
+
+		//	Cached computations
+
+		CAutoDockCalc m_AutoDock;					//	Used to compute nearest docking port
+		CAutoMiningCalc m_AutoMining;				//	Used to compute nearest minable asteroid
+		CAutoTargetCalc m_AutoTarget;				//	Used to compute player's auto target
+		bool m_bPlayerHasCommsTarget = false;		//	TRUE if there is an object for the player to communicate
+		bool m_bPlayerHasSquadron = false;			//	TRUE if there is at least one ship in the player's squadron
 
 		//	Cached computed values
 

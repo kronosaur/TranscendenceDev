@@ -39,6 +39,7 @@ static SUIMessageData g_MessageData[uimsgCount] =
 		{	CONSTDEF("miningDamageTypeHint"),	FLAG_IS_HINT,	0,	240,	},
 		{	CONSTDEF("fireWeaponHint"),			FLAG_IS_HINT,	1,	240,	},
 		{	CONSTDEF("shipStatusHint"),			FLAG_IS_HINT,	1,	240,	},
+		{	CONSTDEF("squadronUIHint"),			FLAG_IS_HINT,	3,	9000,	},
 	};
 
 CUIMessageController::CUIMessageController (void)

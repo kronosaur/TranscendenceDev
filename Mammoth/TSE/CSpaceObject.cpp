@@ -7760,15 +7760,10 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			m_sHighlightText = NULL_STR;
 		}
 
-	//	See if this is the nearest player target
+	//	Update some player-needed calculations, such as whether this object is the
+	//	nearest target.
 
-	if (Ctx.pPlayer
-			&& !Ctx.pPlayer->IsDestroyed()
-			&& this != Ctx.pPlayer)
-		{
-		Ctx.AutoMining.Update(*Ctx.pPlayer, *this);
-		Ctx.AutoTarget.Update(*Ctx.pPlayer, *this);
-		}
+	Ctx.UpdatePlayerCalc(*this);
 
 	//	See if we have a dock screen. We only check every 20 ticks or so, so this
 	//	information might be stale. Use this for the docking ports animation, but
@@ -7779,7 +7774,7 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 
 	if (IsDestinyTime(21, 8))
 		{
-		m_fHasDockScreenMaybe = (CanObjRequestDock(Ctx.pPlayer) == dockingOK);
+		m_fHasDockScreenMaybe = (CanObjRequestDock(Ctx.GetPlayerShip()) == dockingOK);
 		}
 	}
 

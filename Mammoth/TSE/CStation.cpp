@@ -5851,9 +5851,9 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 
 		//	If the player is in range, then she is under attack
 
-		if (Ctx.pPlayer 
-				&& IsAngryAt(Ctx.pPlayer)
-				&& GetDistance2(Ctx.pPlayer) < rAttackRange2)
+		if (Ctx.GetPlayerShip() 
+				&& IsAngryAt(Ctx.GetPlayerShip())
+				&& GetDistance2(Ctx.GetPlayerShip()) < rAttackRange2)
 			Ctx.pSystem->SetPlayerUnderAttack();
 
 		//	Countdown

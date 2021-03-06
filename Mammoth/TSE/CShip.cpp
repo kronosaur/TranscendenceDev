@@ -213,12 +213,12 @@ void CShip::Behavior (SUpdateCtx &Ctx)
 		//	If we're targeting the player, then the player is under attack
 
 		CSpaceObject *pTarget;
-		if (Ctx.pPlayer 
-				&& Ctx.pPlayer != this
+		if (Ctx.GetPlayerShip() 
+				&& Ctx.GetPlayerShip() != this
 				&& (pTarget = GetTarget())
-				&& Ctx.pPlayer->IsEnemy(this)
+				&& Ctx.GetPlayerShip()->IsEnemy(this)
 				&& (GetUniverse().GetTicks() - GetLastFireTime()) < ATTACK_THRESHOLD
-				&& (pTarget == Ctx.pPlayer || pTarget->IsPlayerEscortTarget(Ctx.pPlayer)))
+				&& (pTarget == Ctx.GetPlayerShip() || pTarget->IsPlayerEscortTarget(Ctx.GetPlayerShip())))
 			Ctx.pSystem->SetPlayerUnderAttack();
 		}
 
