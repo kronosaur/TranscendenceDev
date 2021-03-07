@@ -51,6 +51,7 @@
 #define ON_FIRE_WEAPON_EVENT					CONSTLIT("OnFireWeapon")
 #define GET_AMMO_TO_CONSUME_EVENT				CONSTLIT("GetAmmoToConsume")
 #define GET_AMMO_COUNT_TO_DISPLAY_EVENT			CONSTLIT("GetAmmoCountToDisplay")
+#define ON_CHARGE_WEAPON_EVENT					CONSTLIT("OnChargeWeapon")
 
 #define FIELD_AMMO_TYPE							CONSTLIT("ammoType")
 #define FIELD_AVERAGE_DAMAGE					CONSTLIT("averageDamage")	//	Average damage (1000x hp)
@@ -212,6 +213,7 @@ static const char *CACHED_EVENTS[CWeaponClass::evtCount] =
 		"OnFireWeapon",
 		"GetAmmoToConsume",
 		"GetAmmoCountToDisplay",
+		"OnChargeWeapon",
 	};
 
 CFailureDesc CWeaponClass::g_DefaultFailure(CFailureDesc::profileWeaponFailure);
@@ -2239,7 +2241,6 @@ bool CWeaponClass::FireAllShots (CInstalledDevice &Device, const CWeaponFireDesc
 
 		//	Fire out to event, if the weapon has one.
 		//	Otherwise, we create weapon fire
-		//  TODO(heliogenesis): Add event to fire OnChargeWeapon here
 
 		if (FireOnFireWeapon(ItemCtx, 
 				ShotDesc, 
@@ -2263,7 +2264,7 @@ bool CWeaponClass::FireAllShots (CInstalledDevice &Device, const CWeaponFireDesc
 		//	Create the barrel flash effect, unless canceled
 
 		if (Result.bFireEffect)
-			ShotDesc.CreateFireEffect(Source.GetSystem(), &Source, Shots[i].vPos, CVector(), Shots[i].iDir);
+			ShotDesc.CreateFireEffect(Source.GetSystem(), &Source, Shots[i].vPos, CVector(), Shots[i].iDir, iRepeatingCount);
 
 		//	Create the sound effect, if necessary
 
@@ -2371,6 +2372,68 @@ int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, const CWeaponFireDesc
 		return 1;
 	}
 
+bool CWeaponClass::FireOnChargeWeapon (CItemCtx& ItemCtx,
+									   const CWeaponFireDesc& ShotDesc,
+									   const CVector& vSource,
+									   CSpaceObject* pTarget,
+									   int iFireAngle,
+									   int iRepeatingCount,
+									   SShotFireResult& retResult)
+//	FireOnChargeWeapon
+//
+//	Fires OnChargeWeapon event.
+//
+//	default (or Nil) = charge weapon as normal; sound plays on first frame only and fire effect is drawn on all frames
+//	noEffect = do not consume power or ammo; do not play sound or draw fire effect
+//	effectDrawn (or True) = consume power and ammo normally
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandlerWeaponClass(evtOnChargeWeapon, &Event))
+		return false;
+
+	retResult = SShotFireResult();
+
+	CCodeChainCtx Ctx(GetUniverse());
+	TSharedPtr<CItemEnhancementStack> pEnhancements = ItemCtx.GetEnhancementStack();
+
+	Ctx.DefineContainingType(GetItemType());
+	Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
+	Ctx.SaveAndDefineItemVar(ItemCtx);
+	Ctx.DefineInteger(CONSTLIT("aFireAngle"), iFireAngle);
+	Ctx.DefineVector(CONSTLIT("aFirePos"), vSource);
+	Ctx.DefineInteger(CONSTLIT("aFireCharge"), iRepeatingCount);
+	Ctx.DefineInteger(CONSTLIT("aFireRepeat"), 0);
+	Ctx.DefineSpaceObject(CONSTLIT("aTargetObj"), pTarget);
+	Ctx.DefineInteger(CONSTLIT("aWeaponBonus"), (pEnhancements ? pEnhancements->GetBonus() : 0));
+	Ctx.DefineItemType(CONSTLIT("aWeaponType"), ShotDesc.GetWeaponType());
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+	{
+		ItemCtx.GetSource()->ReportEventError(ON_CHARGE_WEAPON_EVENT, pResult);
+		return true;
+	}
+	else if (pResult->IsNil())
+		return false;
+
+	else if (pResult->IsTrue() || pResult->GetBooleanAt(CONSTLIT("effectDrawn")))
+		return true;
+
+	else
+	{
+		retResult.bShotFired = !pResult->GetBooleanAt(CONSTLIT("noEffect"));
+		retResult.bFireEffect = retResult.bShotFired && !pResult->GetBooleanAt("noFireEffect");
+		retResult.bSoundEffect = retResult.bShotFired && !pResult->GetBooleanAt("noSoundEffect");
+		retResult.bRecoil = retResult.bShotFired && !pResult->GetBooleanAt("noRecoil");
+
+		return true;
+	}
+
+	//	Done
+
+	return true;
+	}
+
 bool CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx, 
 									 const CWeaponFireDesc &ShotDesc,
 									 const CVector &vSource,
@@ -2404,6 +2467,7 @@ bool CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx,
 	Ctx.SaveAndDefineItemVar(ItemCtx);
 	Ctx.DefineInteger(CONSTLIT("aFireAngle"), iFireAngle);
 	Ctx.DefineVector(CONSTLIT("aFirePos"), vSource);
+	Ctx.DefineInteger(CONSTLIT("aFireCharge"), GetChargeTime(ShotDesc));
 	Ctx.DefineInteger(CONSTLIT("aFireRepeat"), iRepeatingCount);
 	Ctx.DefineSpaceObject(CONSTLIT("aTargetObj"), pTarget);
 	Ctx.DefineInteger(CONSTLIT("aWeaponBonus"), (pEnhancements ? pEnhancements->GetBonus() : 0));
@@ -2458,9 +2522,34 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 		return false;
 
 	//	If we're charging, then we don't fire shots - instead we only increment the ship counter (if needed),
-	//	create the fire effect, and return True (so that we consume power).
+	//	create the fire effect, and return True (so that we consume power). Charging does not consume ammo,
+	//	and cannot fail due to damaged or disrupted weapons.
 	if (IsCharging)
 		{
+		for (int i = 0; i < Shots.GetCount(); i++)
+			{
+			CSpaceObject& Source = Device.GetSourceOrThrow();
+			CItemCtx ItemCtx(&Source, &Device);
+			SShotFireResult Result;
+			if (FireOnChargeWeapon(ItemCtx,
+				ShotDesc,
+				Shots[i].vPos,
+				Shots[i].pTarget,
+				Shots[i].iDir,
+				ActivateCtx.iChargeFrame,
+				Result))
+				{
+				if (Source.IsDestroyed())
+					return false;
+				}
+
+			// TODO(heliogenesis): Change to CreateChargeEffect. We will need to call SetFireRepeat in this function, else it is similar to CreateFireEffect.
+			if (Result.bFireEffect)
+				ShotDesc.CreateChargeEffect(Source.GetSystem(), &Source, Shots[i].vPos, CVector(), Shots[i].iDir, ActivateCtx.iChargeFrame);
+
+			if (Result.bSoundEffect)
+				ShotDesc.PlayChargeSound(&Source);
+			}
 		return true;
 		}
 

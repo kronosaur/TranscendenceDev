@@ -670,8 +670,9 @@ class CWeaponFireDesc
 		bool CanDamageSource (void) const { return (m_fCanDamageSource ? true : false); }
 		bool CanHit (const CSpaceObject &Obj) const;
 		bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
+		void CreateChargeEffect (CSystem* pSystem, CSpaceObject* pSource, const CVector& vPos, const CVector& vVel, int iDir, int iFireRepeat) const;
 		IEffectPainter *CreateEffectPainter (SShotCreateCtx &CreateCtx);
-		void CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir) const;
+		void CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir, int iFireRepeat) const;
 		void CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx) const;
 		IEffectPainter *CreateParticlePainter (void);
 		IEffectPainter *CreateSecondaryPainter (bool bTrackingObj = false, bool bUseObjectCenter = false);
@@ -778,6 +779,7 @@ class CWeaponFireDesc
 		void MarkImages (void);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 		void PlayFireSound (CSpaceObject *pSource) const { m_FireSound.PlaySound(pSource); }
+		void PlayChargeSound (CSpaceObject *pSource) const { m_ChargeSound.PlaySound(pSource); }
 		bool ProximityBlast (void) const { return (m_fProximityBlast ? true : false); }
 		bool ShowsHint (EDamageHint iHint) const;
 
@@ -795,6 +797,7 @@ class CWeaponFireDesc
 		int CalcDefaultInteraction (void) const;
 		Metric CalcMaxEffectiveRange (void) const;
 		static Metric CalcSpeed (Metric rPercentOfLight, bool bRelativistic);
+		CEffectCreator* GetChargeEffect (void) const;
 		CEffectCreator *GetFireEffect (void) const;
 		SOldEffects &GetOldEffects (void) const { return (m_pOldEffects ? *m_pOldEffects : m_NullOldEffects); }
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
@@ -843,7 +846,9 @@ class CWeaponFireDesc
 		CEffectCreatorRef m_pEffect;			//	Effect for the actual bullet/missile/beam
 		CEffectCreatorRef m_pHitEffect;			//	Effect when we hit/explode
 		CEffectCreatorRef m_pFireEffect;		//	Effect when we fire (muzzle flash)
+		CEffectCreatorRef m_pChargeEffect;		//	Effect when we charge (muzzle flash)
 		CSoundRef m_FireSound;					//	Sound when weapon is fired
+		CSoundRef m_ChargeSound;				//	Sound when weapon is charged
 		SOldEffects *m_pOldEffects = NULL;		//  Non-painter effects.
 		CWeaponFireDescRef m_pExplosionType;	//	Explosion to create when ship is destroyed
 

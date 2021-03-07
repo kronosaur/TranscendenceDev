@@ -38,8 +38,9 @@ class CWeaponClass : public CDeviceClass
 			evtOnFireWeapon				= 0,
 			evtGetAmmoToConsume			= 1,
 			evtGetAmmoCountToDisplay	= 2,
+			evtOnChargeWeapon			= 3,
 
-			evtCount					= 3,
+			evtCount					= 4,
 			};
 
 		struct SBalance
@@ -252,9 +253,9 @@ class CWeaponClass : public CDeviceClass
 		void FailureExplosion (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, bool *retbSourceDestroyed);
 		bool FireAllShots (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, CShotArray &Shots, int iRepeatingCount, SShotFireResult &retResult);
 		bool FireGetAmmoCountToDisplay (const CDeviceItem &DeviceItem, const CWeaponFireDesc &Shot, int *retiAmmoCount = NULL) const;
-		int FireGetAmmoToConsume(CItemCtx &ItemCtx,
-							  const CWeaponFireDesc &ShotDesc,
-							  int iRepeatingCount) const;
+		int FireGetAmmoToConsume (CItemCtx &ItemCtx,
+								  const CWeaponFireDesc &ShotDesc,
+								  int iRepeatingCount) const;
 		bool FireOnFireWeapon (CItemCtx &ItemCtx, 
 							   const CWeaponFireDesc &ShotDesc,
 							   const CVector &vSource,
@@ -262,6 +263,13 @@ class CWeaponClass : public CDeviceClass
 							   int iFireAngle,
 							   int iRepeatingCount,
 							   SShotFireResult &retResult);
+		bool FireOnChargeWeapon (CItemCtx& ItemCtx,
+								 const CWeaponFireDesc& ShotDesc,
+								 const CVector& vSource,
+								 CSpaceObject* pTarget,
+								 int iFireAngle,
+								 int iRepeatingCount,
+								 SShotFireResult& retResult);
 		bool FireWeapon (CInstalledDevice &Device,
 						 const CWeaponFireDesc &ShotDesc,
 						 SActivateCtx &ActivateCtx,
