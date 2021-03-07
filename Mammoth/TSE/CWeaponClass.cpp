@@ -2268,7 +2268,7 @@ bool CWeaponClass::FireAllShots (CInstalledDevice &Device, const CWeaponFireDesc
 
 		//	Create the sound effect, if necessary
 
-		if (Result.bSoundEffect)
+		if (Result.bSoundEffect && !(ShotDesc.GetPlaySoundOncePerBurst() && iRepeatingCount > 0))
 			retResult.bSoundEffect = true;
 
 		//	Recoil

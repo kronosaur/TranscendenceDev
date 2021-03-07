@@ -75,6 +75,7 @@
 #define PARTICLE_SPREAD_WIDTH_ATTRIB			CONSTLIT("particleSpreadWidth")
 #define PASSTHROUGH_ATTRIB						CONSTLIT("passthrough")
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
+#define PLAY_SOUND_ONCE_PER_BURST_ATTRIB		CONSTLIT("playSoundOncePerBurst")
 #define RANGE_ATTRIB							CONSTLIT("range")
 #define RELATIVISTIC_SPEED_ATTRIB				CONSTLIT("relativisticSpeed")
 #define BEAM_CONTINUOUS_ATTRIB					CONSTLIT("repeating")
@@ -1912,6 +1913,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 
 	m_FireSound = CSoundRef();
 	m_ChargeSound = CSoundRef();
+	m_bPlaySoundOncePerBurst = false;
 
 	//	Compute max effective range
 
@@ -2416,6 +2418,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		return error;
 	if (error = m_ChargeSound.LoadUNID(Ctx, pDesc->GetAttribute(CHARGE_SOUND_ATTRIB)))
 		return error;
+	m_bPlaySoundOncePerBurst = pDesc->GetAttributeBool(PLAY_SOUND_ONCE_PER_BURST_ATTRIB);
 
 	//	Events
 
@@ -2749,6 +2752,7 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	m_pChargeEffect = Src.m_pChargeEffect;
 	m_FireSound = Src.m_FireSound;
 	m_ChargeSound = Src.m_ChargeSound;
+	m_bPlaySoundOncePerBurst = Src.m_bPlaySoundOncePerBurst;
 	m_pOldEffects = (Src.m_pOldEffects ? new SOldEffects(*Src.m_pOldEffects) : NULL);
 	m_pExplosionType = Src.m_pExplosionType;
 

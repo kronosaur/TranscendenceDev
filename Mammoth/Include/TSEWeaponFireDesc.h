@@ -746,6 +746,7 @@ class CWeaponFireDesc
 		const CParticleSystemDesc *GetParticleSystemDesc (void) const { return m_pParticleDesc; }
 		int GetPassthrough (void) const { return m_iPassthrough; }
 		int GetPowerUse (void) const { return m_iPowerUse; }
+		bool GetPlaySoundOncePerBurst (void) const { return m_bPlaySoundOncePerBurst; }
 		int GetProximityFailsafe (void) const { return m_iProximityFailsafe; }
 		Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }
 		CWeaponFireDesc *GetScaledDesc (int iLevel) const;
@@ -851,6 +852,7 @@ class CWeaponFireDesc
 		CSoundRef m_ChargeSound;				//	Sound when weapon is charged
 		SOldEffects *m_pOldEffects = NULL;		//  Non-painter effects.
 		CWeaponFireDescRef m_pExplosionType;	//	Explosion to create when ship is destroyed
+		bool m_bPlaySoundOncePerBurst;			//	If TRUE, play the fire sound only once per burst
 
 		//	Missile stuff (m_iFireType == ftMissile)
 		int m_iAccelerationFactor = 0;			//	% increase in speed per 10 ticks
