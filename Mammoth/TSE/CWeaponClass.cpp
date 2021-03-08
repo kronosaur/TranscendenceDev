@@ -5672,8 +5672,8 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 				if (ActivateCtx.TargetList.IsEmpty())
 					ActivateCtx.TargetList = pSource->GetTargetList();
 
-				ActivateCtx.iRepeatingCount = 1 + iContinuous - min(int(dwContinuous / iContinuousDelay), iContinuous + 1);
-				ActivateCtx.iChargeFrame = 1 + iChargeTime - min((int(dwContinuous) - iBurstLengthInFrames), iChargeTime + 1);
+				ActivateCtx.iRepeatingCount = 1 + iContinuous - min(int(dwContinuous) / iContinuousDelay, iContinuous + 1);
+				ActivateCtx.iChargeFrame = 1 + iChargeTime - min(int(dwContinuous) - iBurstLengthInFrames, iChargeTime + 1);
 
 				FireWeapon(*pDevice, *pShot, ActivateCtx, (int(dwContinuous) > iBurstLengthInFrames + 1));
 
