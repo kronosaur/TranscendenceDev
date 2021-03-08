@@ -260,7 +260,7 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 
 	//	Fire the weapon if it isn't a charging weapon
 
-	bool bSuccess = GetChargeTime(*pShotDesc) > 0 ? true : FireWeapon(Device, *pShotDesc, ActivateCtx);
+	bool bSuccess = FireWeapon(Device, *pShotDesc, ActivateCtx, GetChargeTime(*pShotDesc) > 0);
 
 	//	If firing the weapon destroyed the ship, then we bail out
 
@@ -2549,6 +2549,20 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 
 			if (Result.bSoundEffect)
 				ShotDesc.PlayChargeSound(&Source);
+			}
+
+		//	Set the device angle so that repeating weapons can get access to it.
+		if (ActivateCtx.iChargeFrame == 0)
+			{
+			Device.SetTarget(Shots[0].pTarget);
+			if (bSetFireAngle)
+				{
+				Device.SetFireAngle(iFireAngle);
+				}
+			else if (ActivateCtx.iRepeatingCount == 0)
+				{
+				Device.SetFireAngle(-1);
+				}
 			}
 		return true;
 		}
@@ -5659,7 +5673,7 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 					ActivateCtx.TargetList = pSource->GetTargetList();
 
 				ActivateCtx.iRepeatingCount = 1 + iContinuous - min(int(dwContinuous / iContinuousDelay), iContinuous + 1);
-				ActivateCtx.iChargeFrame = 1 + iChargeTime - min((int(dwContinuous) - iBurstLengthInFrames) + 1, iChargeTime + 1);
+				ActivateCtx.iChargeFrame = 1 + iChargeTime - min((int(dwContinuous) - iBurstLengthInFrames), iChargeTime + 1);
 
 				FireWeapon(*pDevice, *pShot, ActivateCtx, (int(dwContinuous) > iBurstLengthInFrames + 1));
 
