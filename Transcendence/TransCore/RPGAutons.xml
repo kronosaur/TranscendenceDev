@@ -140,6 +140,8 @@
 			<Definition id="core.noBiologicalEffects">True</Definition>
 			<Definition id="core.noRadiationDeath">True</Definition>
 
+			<Data id="autonItemType"></Data>
+
 			<!-- maxHullHP
 			
 				Determines the time that it will take to repair a destroyed 
@@ -246,7 +248,7 @@
 				<OnShow>
 					(and
 						(objGetItems gSender "*IN +AutonBay;")
-						(objGetData gSource 'autonItemType)
+						(obj@ gSource 'autonItemType)
 						(neq (objGetData gSource 'behavior) 'returning)
 						(obj@ gSource 'playerWingman)
 						)
@@ -264,7 +266,7 @@
 							(block nil
 								(setq spaceLeft (objGetCargoSpaceLeft gSender))
 								(enum (sysFindObject nil 's) theShip
-									(if (and (objGetData theShip 'autonItemType)
+									(if (and (obj@ theShip 'autonItemType)
 											(eq (objGetData theShip 'behavior) 'returning)
 											(eq (shpGetOrderTarget theShip) gSender)
 											)
@@ -352,12 +354,9 @@
 		
 		<Events>
 			<CalcMass>
-				(block (autonType)
-					(setq autonType (objGetData gSource 'autonItemType))
-					(if (not autonType)
-						(setq autonType &itAutoSentinel;)
-						)
-
+				(block (
+					(autonType (or (obj@ gSource 'autonItemType) &itAutoSentinel;))
+					)
 					(add
 						(itmGetMass autonType)
 						(map (objGetItems gSource "*U") 'reduceSum theItem 
@@ -371,7 +370,7 @@
 				(block (
 					(includeCargoItems (not (@ gData 'noCargoItems)))
 
-					(autonType (or (objGetData gSource 'autonItemType) &itAutoSentinel;))
+					(autonType (or (obj@ gSource 'autonItemType) &itAutoSentinel;))
 					(autonItem (itmCreate autonType 1))
 					(shieldMaxHP (shpGetShieldMaxHitPoints gSource))
 					(shieldDamage (shpGetShieldDamage gSource))
@@ -543,7 +542,9 @@
 					;	convert it back later.
 					
 					(objSetData auton 'autonItem sourceItem)
-					(objSetData auton 'autonItemType (itmGetType sourceItem))
+					(if (not (obj@ auton 'autonItemType))
+						(objSet@ auton 'autonItemType (itmGetType sourceItem))
+						)
 
 					;	For player autons, set them so they always leave a wreck
 					;	(so the player can repair them).
@@ -595,7 +596,9 @@
 				;	so that installed items (armor devices) are NOT placed on
 				;	the wreck.
 
-				(if aWreckObj
+				(if (and aWreckObj
+						(obj@ gSource 'autonItemType)
+						)
 					(block (
 						(autonItem 
 							(objFireEvent gSource "ConvertToItem" {
