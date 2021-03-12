@@ -271,6 +271,11 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 
 	Device.SetLastActivateSuccessful(bSuccess);
 
+	//	If we did not succeed, then we're done
+
+	if (!bSuccess)
+		return false;
+
 	//  If we have nonzero charge time then set continuous fire device data
 	//	We set to -1 because we skip the first Update after the call
 	//	to Activate (since it happens on the same tick)
@@ -278,16 +283,11 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 	//  bSuccess is false here (we technically didn't fire any shots by charging)
 
 	if (GetChargeTime(*pShotDesc) > 0)
-		{
+	{
 		SetContinuousFire(&Device, CONTINUOUS_START);
 		//  Return true so we consume power
 		return true;
-		}
-
-	//	If we did not succeed, then we're done
-
-	if (!bSuccess)
-		return false;
+	}
 
 	//	If this is a continuous fire weapon then set the device data
 	//	We set to -1 because we skip the first Update after the call
@@ -2552,17 +2552,14 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 			}
 
 		//	Set the device angle so that repeating weapons can get access to it.
-		if (ActivateCtx.iChargeFrame == 0)
+		Device.SetTarget(Shots[0].pTarget);
+		if (bSetFireAngle)
 			{
-			Device.SetTarget(Shots[0].pTarget);
-			if (bSetFireAngle)
-				{
-				Device.SetFireAngle(iFireAngle);
-				}
-			else if (ActivateCtx.iRepeatingCount == 0)
-				{
-				Device.SetFireAngle(-1);
-				}
+			Device.SetFireAngle(iFireAngle);
+			}
+		else if (ActivateCtx.iRepeatingCount == 0)
+			{
+			Device.SetFireAngle(-1);
 			}
 		return true;
 		}
@@ -2785,7 +2782,7 @@ const CConfigurationDesc &CWeaponClass::GetConfiguration (const CWeaponFireDesc 
 
 int CWeaponClass::GetChargeTime (const CWeaponFireDesc &Shot) const
 
-//	GetContinous
+//	GetChargeTime
 //
 //	If this is a weapon with charge time, we return the number of ticks before
 //	shots. 0 means no charge time.
