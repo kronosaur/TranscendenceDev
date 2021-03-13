@@ -872,6 +872,7 @@ struct SShipPerformanceCtx
 	int iCyberDefenseAdj = 0;				//	Accumulated bonus/penalty to cyber defense
 	int iPerceptionAdj = 0;					//	Accumulated bonus/penalty to perception
 	int iStealthFromArmor = 0;
+	int iStealthAdj = 0;					//	Increase or decrease stealth (cannot decrease below stealthNormal).
 
 	bool bShieldInterference = false;		//	Meteorsteel (or something) is interfering
 	};

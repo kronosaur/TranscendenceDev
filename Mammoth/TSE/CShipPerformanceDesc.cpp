@@ -14,7 +14,7 @@ void CShipPerformanceDesc::Init (SShipPerformanceCtx &Ctx)
 //  Initialize the performance descriptor from the parameters accumulated in
 //  the context block.
 
-    {
+	{
 	//	Adjust speed if our armor is too heavy or too light
 
 	Ctx.rArmorSpeedBonus = Ctx.pClass->GetHullDesc().GetArmorLimits().CalcArmorSpeedBonus(Ctx.Armor) * LIGHT_SPEED * 0.01;
@@ -28,20 +28,20 @@ void CShipPerformanceDesc::Init (SShipPerformanceCtx &Ctx)
 
 	m_Abilities = Ctx.Abilities;
 
-    //  Initialize our maneuvering performance
+	//  Initialize our maneuvering performance
 
 	m_RotationDesc = Ctx.RotationDesc;
-    m_IntegralRotationDesc.InitFromDesc(Ctx.RotationDesc);
+	m_IntegralRotationDesc.InitFromDesc(Ctx.RotationDesc);
 
 	//	Initialize reactor desc
 
 	m_ReactorDesc = Ctx.ReactorDesc;
 
-    //  Compute our drive parameters. We start with the core stats
+	//  Compute our drive parameters. We start with the core stats
 
-    m_DriveDesc = Ctx.DriveDesc;
+	m_DriveDesc = Ctx.DriveDesc;
 
-    //  Adjust max speed.
+	//  Adjust max speed.
 
 	if (Ctx.rArmorSpeedBonus != 0.0)
 		m_DriveDesc.AddMaxSpeed(Ctx.rArmorSpeedBonus);
@@ -52,29 +52,39 @@ void CShipPerformanceDesc::Init (SShipPerformanceCtx &Ctx)
 
 	//  If drive damaged, cut thrust in half
 
-    if (Ctx.bDriveDamaged)
-        m_DriveDesc.AdjThrust(0.5);
+	if (Ctx.bDriveDamaged)
+		m_DriveDesc.AdjThrust(0.5);
 
-    //  If we're running at half speed...
+	//  If we're running at half speed...
 
-    if (Ctx.bDriveDamaged)
-        m_DriveDesc.AdjMaxSpeed(Min(Ctx.rOperatingSpeedAdj, 0.5));
+	if (Ctx.bDriveDamaged)
+		m_DriveDesc.AdjMaxSpeed(Min(Ctx.rOperatingSpeedAdj, 0.5));
 	else if (Ctx.rOperatingSpeedAdj != 1.0)
-        m_DriveDesc.AdjMaxSpeed(Ctx.rOperatingSpeedAdj);
+		m_DriveDesc.AdjMaxSpeed(Ctx.rOperatingSpeedAdj);
 
-    //  Cargo space
+	//  Cargo space
 
 	Ctx.CargoDesc.ValidateCargoSpace(Ctx.iMaxCargoSpace);
-    m_CargoDesc = Ctx.CargoDesc;
+	m_CargoDesc = Ctx.CargoDesc;
+
+	//	Stealth
+
+	m_iStealth = Ctx.iStealthFromArmor;
+	if (Ctx.iStealthAdj < 0)
+		{
+		int iMinStealth = Min(m_iStealth, (int)CSpaceObject::stealthNormal);
+		m_iStealth = Max(iMinStealth, m_iStealth + Ctx.iStealthAdj);
+		}
+	else if (Ctx.iStealthAdj > 0)
+		m_iStealth = m_iStealth + Ctx.iStealthAdj;
 
 	//	Other flags
 
 	m_iCyberDefenseAdj = Ctx.iCyberDefenseAdj;
 	m_iPerceptionAdj = Ctx.iPerceptionAdj;
-	m_iStealth = Ctx.iStealthFromArmor;
 	m_fShieldInterference = Ctx.bShieldInterference;
 
 	//	Done
 
 	m_fInitialized = true;
-    }
+	}

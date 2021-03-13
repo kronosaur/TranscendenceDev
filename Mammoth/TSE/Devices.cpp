@@ -205,6 +205,14 @@ bool CDeviceClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx
 	if (ItemCtx.IsDeviceWorking())
 		Ctx.Abilities.Set(m_Equipment);
 
+	//	External devices get a penalty to stealth
+
+	if (IsExternal()
+			|| (ItemCtx.GetDevice() && ItemCtx.GetDevice()->IsExternal()))
+		{
+		Ctx.iStealthAdj -= 1;
+		}
+
 	//  Let sub-classes handle it
 
 	if (OnAccumulatePerformance(ItemCtx, Ctx))
