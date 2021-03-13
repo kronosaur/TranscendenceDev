@@ -61,7 +61,6 @@
 #define PROPERTY_SIZE_PIXELS					CONSTLIT("sizePixels")
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_SQUADRON_ID					CONSTLIT("squadronID")
-#define PROPERTY_STEALTH						CONSTLIT("stealth")
 #define PROPERTY_SUSPENDED						CONSTLIT("suspended")
 #define PROPERTY_TYPE							CONSTLIT("type")
 #define PROPERTY_UNDER_ATTACK					CONSTLIT("underAttack")
@@ -72,7 +71,7 @@
 #define SCALE_SHIP								CONSTLIT("ship")
 #define SCALE_FLOTSAM							CONSTLIT("flotsam")
 
-TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 14> {{
+TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 16> {{
 		{
 		"ascended",		"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsAscended()); },
@@ -107,6 +106,16 @@ TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TP
 		"debug",			"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.InDebugMode()); },
 		[](CSpaceObject &Obj, const CString &sProperty, const ICCItem &Value, CString *retsError) { if (Obj.GetUniverse().InDebugMode()) Obj.m_fDebugMode = !Value.IsNil(); return true; },
+		},
+		
+		{
+		"detectRange",		"Max range at which normal perception can detect us (light-seconds)",
+		[](const CSpaceObject &Obj, const CString &sProperty) 
+			{
+			Metric rRange = CPerceptionCalc::GetRange(CPerceptionCalc::GetRangeIndex(Obj.GetStealth(), perceptNormal));
+			return ICCItemPtr(mathRound(rRange / LIGHT_SECOND));
+			},
+		NULL,
 		},
 		
 		{
@@ -145,6 +154,15 @@ TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TP
 			bool bOK = Services.GetServiceStatus(serviceInstallDevice, Status);
 
 			return CTradingDesc::AsCCItem(Status);
+			},
+		NULL,
+		},
+		
+		{
+		"stealth",			"Returns object stealth level.",
+		[](const CSpaceObject &Obj, const CString &sProperty) 
+			{
+			return ICCItemPtr(Obj.GetStealth());
 			},
 		NULL,
 		},
@@ -595,9 +613,6 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 			return pResult->Reference();
 			}
 		}
-
-	else if (strEquals(sName, PROPERTY_STEALTH))
-		return CC.CreateInteger(GetStealth());
 
 	else if (strEquals(sName, PROPERTY_SUSPENDED))
 		return CC.CreateBool(IsSuspended());
