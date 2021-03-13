@@ -5036,8 +5036,6 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 //	Paint the ship
 
 	{
-	int i;
-
 	//	Figure out which effects we need to paint
 
 	DWORD dwEffects = CalcEffectsMask();
@@ -5109,51 +5107,51 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 		Ctx.bInFront = true;
 		m_Effects.Paint(Ctx, m_pClass->GetEffectsDesc(), dwEffects, Dest, x, y);
-		}
 
-	//	Paint energy fields
+		//	Paint overlays
 
-	m_Overlays.Paint(Dest, m_pClass->GetImageViewportSize(), x, y, Ctx);
+		m_Overlays.Paint(Dest, m_pClass->GetImageViewportSize(), x, y, Ctx);
 
-	//	If paralyzed, draw energy arcs
+		//	If paralyzed, draw energy arcs
 
-	if (ShowParalyzedEffect())
-		{
-		Metric rSize = (Metric)RectWidth(Image.GetImageRect()) / 2;
-		for (i = 0; i < PARALYSIS_ARC_COUNT; i++)
+		if (ShowParalyzedEffect())
 			{
-			//	Compute the beginning of this arc
+			Metric rSize = (Metric)RectWidth(Image.GetImageRect()) / 2;
+			for (int i = 0; i < PARALYSIS_ARC_COUNT; i++)
+				{
+				//	Compute the beginning of this arc
 
-			int iAngle = ((GetDestiny() + Ctx.iTick) * (15 + i * 7)) % 360;
-			Metric rRadius = rSize * (((GetDestiny() + Ctx.iTick) * (i * 3716)) % 1000) / 1000.0;
-			CVector vFrom(PolarToVector(iAngle, rRadius));
+				int iAngle = ((GetDestiny() + Ctx.iTick) * (15 + i * 7)) % 360;
+				Metric rRadius = rSize * (((GetDestiny() + Ctx.iTick) * (i * 3716)) % 1000) / 1000.0;
+				CVector vFrom(PolarToVector(iAngle, rRadius));
 
-			//	Compute the end of the arc
+				//	Compute the end of the arc
 
-			iAngle = ((GetDestiny() + Ctx.iTick + 1) * (15 + i * 7)) % 360;
-			rRadius = rSize * (((GetDestiny() + Ctx.iTick + 1) * (i * 3716)) % 1000) / 1000.0;
-			CVector vTo(PolarToVector(iAngle, rRadius));
+				iAngle = ((GetDestiny() + Ctx.iTick + 1) * (15 + i * 7)) % 360;
+				rRadius = rSize * (((GetDestiny() + Ctx.iTick + 1) * (i * 3716)) % 1000) / 1000.0;
+				CVector vTo(PolarToVector(iAngle, rRadius));
 
-			//	Draw
+				//	Draw
 
-			DrawLightning(Dest,
-					(int)vFrom.GetX() + x,
-					(int)vFrom.GetY() + y,
-					(int)vTo.GetX() + x,
-					(int)vTo.GetY() + y,
-					CG32bitPixel(0x00, 0xa9, 0xff),
-					16,
-					0.4);
+				DrawLightning(Dest,
+						(int)vFrom.GetX() + x,
+						(int)vFrom.GetY() + y,
+						(int)vTo.GetX() + x,
+						(int)vTo.GetY() + y,
+						CG32bitPixel(0x00, 0xa9, 0xff),
+						16,
+						0.4);
+				}
 			}
+
+		//	Known
+
+		m_fKnown = true;
+
+		//	Identified
+
+		m_fIdentified = true;
 		}
-
-	//	Known
-
-	m_fKnown = true;
-
-	//	Identified
-
-	m_fIdentified = true;
 
 	//	Debug info
 
