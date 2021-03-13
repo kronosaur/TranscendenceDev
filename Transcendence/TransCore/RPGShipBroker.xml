@@ -1334,6 +1334,11 @@
 									"{/rtf "
 										"{/f:MediumBold;/c:#79828c; std. armor:} " (obj@ shipObj 'stdArmorClassName) "\n"
 										"{/f:MediumBold;/c:#79828c; max. armor:} " (obj@ shipObj 'maxArmorClassName) "\n"
+										(if (!= (obj@ shipObj 'stealth) 4)
+											(cat
+												"{/f:MediumBold;/c:#79828c; stealth at:} &gt;" (obj@ shipObj 'detectRange) " ls\n"
+												)
+											)
 									"}"
 									)
 							}
