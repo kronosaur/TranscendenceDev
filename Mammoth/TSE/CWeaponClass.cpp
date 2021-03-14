@@ -2528,6 +2528,16 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 		{
 		for (int i = 0; i < Shots.GetCount(); i++)
 			{
+			//	If we're using ship counters, make sure we have enough.
+
+			if (!CanConsumeShipCounter(DeviceItem, ShotDesc))
+				return false;
+
+			//  Update the ship energy/heat counter.
+
+			if (m_iCounterPerShot != 0)
+				ConsumeShipCounter(DeviceItem, ShotDesc);
+
 			CSpaceObject& Source = Device.GetSourceOrThrow();
 			CItemCtx ItemCtx(&Source, &Device);
 			SShotFireResult Result;
