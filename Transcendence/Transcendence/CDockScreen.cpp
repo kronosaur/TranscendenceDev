@@ -481,7 +481,7 @@ ALERROR CDockScreen::CreateBackgroundImage (const SDockScreenBackgroundDesc &Des
 		//	If we have a hero image, then use that
 
 		const CObjectImageArray &HeroImage = Desc.pObj->GetHeroImage();
-		if (!HeroImage.IsEmpty())
+		if (!Desc.pObj->IsAbandoned() && !HeroImage.IsEmpty())
 			{
 			//	Paint the hero image on top of the system space background.
 
