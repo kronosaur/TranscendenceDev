@@ -174,6 +174,7 @@ class CTradingDesc
 			FLAG_NO_DESCRIPTION =       0x00000040, //  If TRUE, we exclude this service from ComposeDescription
 			FLAG_DYNAMIC_SERVICE =		0x00000080,	//	If TRUE, this service was added by <GetTradeServices>
 			FLAG_MESSAGE_TEXT =			0x00000100,	//	If TRUE, sMessageID is actual text.
+			FLAG_DEBUG =				0x00000200,	//	If TRUE, debug inventory
 
 			//	DEPRECATED: We don't store these flags, but we require the values
 			//	for older versions.

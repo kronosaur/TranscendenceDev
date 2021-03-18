@@ -18,6 +18,7 @@
 #define CURRENCY_ATTRIB							CONSTLIT("currency")
 #define CREDIT_CONVERSION_ATTRIB				CONSTLIT("creditConversion")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
+#define DEBUG_ATTRIB							CONSTLIT("debug")
 #define IMPACT_ATTRIB							CONSTLIT("impact")
 #define INVENTORY_ADJ_ATTRIB					CONSTLIT("inventoryAdj")
 #define ITEM_ATTRIB								CONSTLIT("item")
@@ -961,6 +962,9 @@ ALERROR CTradingDesc::CreateFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDe
 
 			if (pLine->GetAttributeBool(NO_DESCRIPTION_ATTRIB))
 				pCommodity->dwFlags |= FLAG_NO_DESCRIPTION;
+
+			if (pLine->GetAttributeBool(DEBUG_ATTRIB))
+				pCommodity->dwFlags |= FLAG_DEBUG;
 
 			//	Set ID
 
@@ -2271,6 +2275,10 @@ void CTradingDesc::RefreshInventory (CSpaceObject *pObj, int iPercent)
 		if (!(Service.dwFlags & FLAG_INVENTORY_ADJ))
 			continue;
 
+		bool bDebug = pObj->GetUniverse().InDebugMode() && (Service.dwFlags & FLAG_DEBUG);
+		if (bDebug)
+			pObj->GetUniverse().DebugOutput("%s (%d): RefreshInventory.", (LPSTR)pObj->GetNounPhrase(), pObj->GetID());
+
 		//	See if we have a level frequency.
 
 		CString sLevelFrequency = Service.sLevelFrequency;
@@ -2320,11 +2328,19 @@ void CTradingDesc::RefreshInventory (CSpaceObject *pObj, int iPercent)
 
 			//	Roll
 
+			bool bAdded = false;
 			if (iChance >= 100 || mathRandom(1, 100) <= iChance)
 				{
 				if (SetInventoryCount(pObj, Service, ItemTable[j]))
+					{
+					bAdded = true;
 					bCargoChanged = true;
+					}
 				}
+
+			if (bDebug)
+				pObj->GetUniverse().DebugOutput("%s (%08x): %d%% chance. %s", (LPSTR)ItemTable[j]->GetNounPhrase(), ItemTable[j]->GetUNID(), iChance,
+						(bAdded ? "ADDED" : ""));
 			}
 		}
 
