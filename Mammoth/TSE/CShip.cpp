@@ -50,6 +50,8 @@ const int MAX_DRIVE_DAMAGE_OVERLAY_COUNT =		3;
 
 const int ATTACK_THRESHOLD =					90;
 
+constexpr int INITIAL_INVENTORY_REFRESH =		300;
+
 const DWORD CONTROLLER_STANDARDAI =				0x100000 + 8;
 const DWORD CONTROLLER_FLEETSHIPAI =			0x100000 + 21;
 const DWORD CONTROLLER_FERIANSHIPAI =			0x100000 + 23;
@@ -1542,6 +1544,11 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 	//	If necessary, create any attached objects
 
 	pShip->m_Interior.CreateAttached(pShip, pClass->GetInteriorDesc());
+
+	//	Refresh inventory, if necessary
+
+	if (CTradingDesc *pTrade = pClass->GetTradingDesc())
+		pTrade->RefreshInventory(pShip, INITIAL_INVENTORY_REFRESH);
 
 	//	NOTE: We need to call SetOverride even if we have NULL for a handler 
 	//	because it also sets event flags (SetEventFlags).
