@@ -31,7 +31,7 @@
 			</Variant>
 			<Variant id="targetDesc">
 				{
-					criteria: "TAE +populated; -questTarget; -uncharted;"
+					criteria: "TAE +populated; -property:questTarget; -uncharted;"
 					}
 			</Variant>
 		</Properties>

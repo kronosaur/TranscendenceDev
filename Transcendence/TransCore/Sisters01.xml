@@ -52,7 +52,7 @@
 						
 					;	Must be an enemy station in the system
 					
-					(not (sysFindObject aOwnerObj "TAE +populated; -questTarget; -uncharted;"))
+					(not (sysFindObject aOwnerObj "TAE +populated; -property:questTarget; -uncharted;"))
 						Nil
 						
 					;	Can create
@@ -76,7 +76,7 @@
 				;	aOwnerObj: Object that created the mission (or nil)
 
 				(block (
-					(enemyStations (sysFindObject aOwnerObj "TAE +populated; -questTarget; -uncharted; -sungSlaveCamp;"))
+					(enemyStations (sysFindObject aOwnerObj "TAE +populated; -property:questTarget; -uncharted; -sungSlaveCamp;"))
 					(enemyStationsWithTreasure (filter enemyStations theObj
 						(objGetItems theObj "*U +communion;")
 						))

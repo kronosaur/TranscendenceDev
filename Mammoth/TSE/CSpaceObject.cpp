@@ -1353,7 +1353,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	else
 		dwLoad = 0;
 
-	//	0x00000001 unused since version 148
+	pObj->m_fQuestTarget =				(((dwLoad & 0x00000001) ? true : false) && Ctx.dwVersion >= 201);
 	pObj->m_fHasGetDockScreenEvent =	((dwLoad & 0x00000002) ? true : false);
 	pObj->m_fHasOnAttackedByPlayerEvent =	((dwLoad & 0x00000004) ? true : false);
 	pObj->m_fHasOnOrderChangedEvent =	((dwLoad & 0x00000008) ? true : false);
@@ -8067,7 +8067,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	//	More flags
 
 	dwSave = 0;
-	//	0x00000001 unused
+	dwSave |= (m_fQuestTarget				? 0x00000001 : 0);
 	dwSave |= (m_fHasGetDockScreenEvent		? 0x00000002 : 0);
 	dwSave |= (m_fHasOnAttackedByPlayerEvent	? 0x00000004 : 0);
 	dwSave |= (m_fHasOnOrderChangedEvent	? 0x00000008 : 0);

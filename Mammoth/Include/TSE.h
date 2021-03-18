@@ -1557,7 +1557,8 @@ class CSpaceObject
 		DWORD m_fAutoCreatedPorts:1 = false;			//	TRUE if we have auto created some docking ports
 		DWORD m_fDebugMode:1 = false;					//	TRUE if we want to show debug info for this object
 
-		DWORD m_dwSpare:16 = 0;
+		DWORD m_fQuestTarget:1 = false;					//	TRUE if this is a quest target.
+		DWORD m_dwSpare:15 = 0;
 
 #ifdef DEBUG_VECTOR
 		CVector m_vDebugVector;			//	Draw a vector

@@ -71,7 +71,7 @@
 #define SCALE_SHIP								CONSTLIT("ship")
 #define SCALE_FLOTSAM							CONSTLIT("flotsam")
 
-TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 16> {{
+TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 17> {{
 		{
 		"ascended",		"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsAscended()); },
@@ -156,6 +156,12 @@ TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TP
 			return CTradingDesc::AsCCItem(Status);
 			},
 		NULL,
+		},
+		
+		{
+		"questTarget",			"True|Nil",
+		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.m_fQuestTarget || Obj.HasAttribute(CONSTLIT("questTarget"))); },
+		[](CSpaceObject &Obj, const CString &sProperty, const ICCItem &Value, CString *retsError) { Obj.m_fQuestTarget = !Value.IsNil(); return true; },
 		},
 		
 		{
