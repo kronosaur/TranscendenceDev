@@ -187,6 +187,11 @@
 
 							(shpCancelOrders stormhoundObj)
 							(shpOrder stormhoundObj 'hold)
+
+							;	Make sure the monastery has the questTarget property 
+							;	set so that another mission doesn't try to destroy it.
+
+							(objSet@ penitentObj 'questTarget True)
 							)
 						)
 					)
