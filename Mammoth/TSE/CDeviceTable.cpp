@@ -181,8 +181,11 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, DeviceNames iDev, SDeviceDesc *retDesc) const override;
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceObject *pObj, const CItem &Item, SDeviceDesc *retDesc) const override;
+		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceObject* pObj, const CString& sID, SDeviceDesc *retDesc) const override;
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const override;
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const override;
+		virtual int GetNumberOfDescs () const override { return m_SlotDesc.GetCount(); }
+		virtual const int GetDescIndexGivenId (const CString& sID) const override { return m_SlotDescIndicesByID.Find(sID) ? *(m_SlotDescIndicesByID.GetAt(sID)) : -1; }
 
 	private:
 		struct SEntry
@@ -204,6 +207,7 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 
 		TArray<SEntry> m_Table;
 		TArray<SSlotDesc> m_SlotDesc;
+		TSortMap<CString, int> m_SlotDescIndicesByID;
 	};
 
 ALERROR IDeviceGenerator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IDeviceGenerator **retpGenerator)
@@ -1208,7 +1212,7 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceO
 			if (!Item.MatchesCriteria(m_SlotDesc[i].Criteria))
 				continue;
 
-			//	If this slot has an ID and maximum counts and if we've already 
+			//	If this slot has an ID and maximum counts and if we've already
 			//	exceeded those counts, then skip.
 
 			if (m_SlotDesc[i].iMaxCount != -1 
@@ -1240,6 +1244,44 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceO
 	//	Done
 
 	return true;
+	}
+
+bool CGroupOfDeviceGenerators::FindDefaultDesc(SDeviceGenerateCtx& Ctx, CSpaceObject* pObj, const CString& sID, SDeviceDesc* retDesc) const
+
+//	FindDefaultDesc
+//
+//	Looks for a slot descriptor that matches the given ID and returns it.
+
+	{
+	int i;
+
+	//	Look for a matching slot
+
+	for (i = 0; i < m_SlotDesc.GetCount(); i++)
+		{
+		//	Skip if not the desired id
+
+		if (!strEquals(m_SlotDesc[i].DefaultDesc.sID, sID))
+			continue;
+
+		//	If this slot has an ID and maximum counts and if we've already
+		//	exceeded those counts, then skip.
+
+		if (m_SlotDesc[i].iMaxCount != -1
+			&& !m_SlotDesc[i].DefaultDesc.sID.IsBlank()
+			&& pObj
+			&& pObj->GetDeviceSystem().GetCountByID(m_SlotDesc[i].DefaultDesc.sID) >= m_SlotDesc[i].iMaxCount)
+			continue;
+
+		//	If we get this far, then this is a valid slot.
+
+		*retDesc = m_SlotDesc[i].DefaultDesc;
+		return true;
+		}
+
+	//	Not found
+
+	return false;
 	}
 
 bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const
@@ -1418,6 +1460,11 @@ ALERROR CGroupOfDeviceGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement 
 
 			if (pSlotDesc->iMaxCount == -1 && !pSlotDesc->DefaultDesc.sID.IsBlank())
 				pSlotDesc->iMaxCount = 1;
+
+			if (!pSlotDesc->DefaultDesc.sID.IsBlank())
+				{
+				m_SlotDescIndicesByID.Insert(pSlotDesc->DefaultDesc.sID, m_SlotDesc.GetCount());
+				}
 			}
 		else
 			{

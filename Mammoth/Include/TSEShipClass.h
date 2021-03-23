@@ -396,6 +396,7 @@ class CShipClass : public CDesignType
 		bool CreateWreck (CShip *pShip, CSpaceObject **retpWreck = NULL);
 		bool FindDeviceSlotDesc (DeviceNames iDev, SDeviceDesc *retDesc) const;
 		bool FindDeviceSlotDesc (CShip *pShip, const CItem &Item, SDeviceDesc *retDesc) const;
+		bool FindDeviceSlotDesc (CShip *pShip, const CString& sID, SDeviceDesc *retDesc) const;
 
 		static const DWORD GDFLAG_NO_DEVICE_SLOT_SEARCH = 0x00000001;
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags = 0) const;

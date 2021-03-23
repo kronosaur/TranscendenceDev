@@ -629,6 +629,7 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FIELD_RADIUS_OFFSET				CONSTLIT("radiusOffset")
 #define FIELD_REMOVE					CONSTLIT("remove")
 #define FIELD_ROTATION					CONSTLIT("rotation")
+#define FIELD_SLOT_ID					CONSTLIT("slotID")
 #define FIELD_SLOT_POS_INDEX			CONSTLIT("slotPosIndex")
 #define FIELD_SOURCE_ONLY				CONSTLIT("sourceOnly")
 #define FIELD_TYPE						CONSTLIT("type")
@@ -1287,7 +1288,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ivi",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpInstallDevice",				fnShipSet,			FN_SHIP_INSTALL_DEVICE,
-			"(shpInstallDevice ship item [deviceSlot]) -> itemStruct (or Nil)",
+			"(shpInstallDevice ship item [deviceSlot]) -> itemStruct (or Nil)\n\n"
+
+			"deviceSlot can be an int or struct with these parameters:\n\n"
+			"    deviceSlot: device slot number\n"
+			"    slotID: device slot ID\n"
+			"    slotPosIndex: device slot pos index\n",
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpIsBlind",					fnShipGetOld,		FN_SHIP_BLINDNESS,
@@ -11100,14 +11106,25 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			int iSlotPosIndex = -1;
 			if (pArgs->GetCount() >= 3)
 				{
+				IDeviceGenerator* pDevSlots = pShip->GetClass()->GetDeviceSlots();
+				int numSlots = pDevSlots->GetNumberOfDescs();
 				ICCItem *pOptions = pArgs->GetElement(2);
 				if (pOptions->IsInteger())
 					iDeviceSlot = pOptions->GetIntegerValue();
 				else
 					{
 					ICCItem *pDeviceSlot = pOptions->GetElement(FIELD_DEVICE_SLOT);
+					ICCItem *pDeviceSlotID = pOptions->GetElement(FIELD_SLOT_ID);
 					if (pDeviceSlot && !pDeviceSlot->IsNil())
 						iDeviceSlot = pDeviceSlot->GetIntegerValue();
+
+					if (pDeviceSlotID && !pDeviceSlotID->IsNil())
+						{
+						CString sDeviceSlotID = pDeviceSlotID->GetStringValue();
+						iDeviceSlot = pDevSlots->GetDescIndexGivenId(sDeviceSlotID);
+						if (iDeviceSlot == -1)
+							return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+						}
 
 					ICCItem *pSlotPosIndex = pOptions->GetElement(FIELD_SLOT_POS_INDEX);
 					if (pSlotPosIndex && !pSlotPosIndex->IsNil())

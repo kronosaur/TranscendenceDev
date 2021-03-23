@@ -2082,6 +2082,30 @@ bool CShipClass::FindDeviceSlotDesc (CShip *pShip, const CItem &Item, SDeviceDes
 	return false;
 	}
 
+bool CShipClass::FindDeviceSlotDesc (CShip *pShip, const CString& sID, SDeviceDesc *retDesc) const
+
+//	FindDeviceSlotDesc
+//
+//	Looks for a device slot descriptor
+
+	{
+	SDeviceGenerateCtx Ctx(GetUniverse());
+
+	//	If we have a dedicated device slot object, then use that.
+
+	if (m_pDeviceSlots)
+		return m_pDeviceSlots->FindDefaultDesc(Ctx, pShip, sID, retDesc);
+
+	//	Otherwise, for backwards compatibility we check the device generator.
+
+	else if (m_pDevices)
+		return m_pDevices->FindDefaultDesc(Ctx, pShip, sID, retDesc);
+
+	//	Otherwise, not found
+
+	return false;
+	}
+
 void CShipClass::GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags) const
 
 //	GenerateDevices
