@@ -25,7 +25,7 @@
 
 <!-- STATION TYPES -->
 
-	<!-- Heliotrope Colony -->
+	<!-- Level 5: Heliotrope Colony -->
 
 	<StationType UNID="&stHeliotropeColony;"
 			name=				"Heliotrope colony|Heliotrope colonies"
@@ -56,7 +56,18 @@
 				enemyExclusionRadius=	"50"
 				/>
 
-		<!-- Trade and Items -->
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&itSunflareCannon;"	posAngle="0" posRadius="0" posZ="70" omnidirectional="true"/>
+			<Device deviceID="&itHeliotropeDefenseGridII;"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+		
+		<Squadron table="&tbHeliotropeDefenders;"	count="challenge:hard"	reinforce="auto"/>
+
+		<!-- Treasure and Items -->
 		
 		<Items value="standard:level=4:x=2.5">
 			<Item count="3d12" item="&itHelium3FuelRod;"/>
@@ -64,33 +75,14 @@
 			<Lookup chance="50" table="&trStdTreasure;"/>
 		</Items>
 
-		<!-- Configuration -->
-
-		<Devices>
-			<Device deviceID="&itSunflareCannon;"	omnidirectional="true"/>
-			<Device deviceID="&itHeliotropeDefenseGridII;"/>
-		</Devices>
-
-		<!-- Ships and Defenses -->
-		
-		<Ships>
-			<Table>
-				<Ship  chance="25"	count="2d6"	class="&scHeliotropeGunship;"	orders="patrol:5"/>
-				<Group chance="60">
-					<Ship			count="2d4"	class="&scHeliotropeGunship;"	orders="guard"/>
-					<Ship			count="1"	class="&scHeliotropeFrigate;"	orders="patrol:5"/>
-				</Group>
-				<Ship  chance="15"	count="1d4"	class="&scHeliotropeFrigate;"	orders="patrol:5"/>
-			</Table>
-		</Ships>
-
 		<!-- Image and Effects -->
 		
-		<Image			imageID="&rsStations4;" imageX="0" imageY="0" imageWidth="192" imageHeight="192"/>
+		<Image	imageID="&rsHeliotropeColony;" imageWidth="300" imageHeight="300" viewportRatio="0.055"/>
 
 		<DockingPorts
+				portAngle=		"-37"
 				portCount=		"8"
-				portRadius=		"115"
+				portRadius=		"170"
 				>
 		</DockingPorts>
 		
@@ -101,7 +93,7 @@
 		</Encounters>
 	</StationType>
 
-	<!-- Heliotrope Outpost -->
+	<!-- Level 3: Heliotrope Outpost -->
 
 	<StationType UNID="&stHeliotropeOutpost;"
 			name=				"Heliotrope outpost"
@@ -145,25 +137,23 @@
 		<!-- Configuration -->
 		
 		<Devices>
-			<Device deviceID="&itSunflareCannon;"	omnidirectional="true"/>
+			<Device deviceID="&itSunflareCannon;"	posAngle="0" posRadius="0" posZ="100" omnidirectional="true"/>
 			<Device deviceID="&itHeliotropeDefenseGridI;"/>
 		</Devices>
 
 		<!-- Ships and Defenses -->
 		
-		<Ships>
-			<Ship count="1d4+1"	class="&scHeliotropeGunship;"	orders="guard"/>
-		</Ships>
+		<Squadron table="&tbHeliotropeDefenders;"	count="challenge:standard"	reinforce="auto"/>
 
 		<!-- Image and Effects -->
 		
-		<Image			imageID="&rsStations3;" imageX="0" imageY="0" imageWidth="128" imageHeight="128"/>
+		<Image			imageID="&rsHeliotropeOutpost;" imageWidth="220" imageHeight="220" viewportRatio="0.029375"/>
 		
 		<DockingPorts
+				portAngle=		"-15"
 				portCount=		"8"
-				portRadius=		"82"
-				>
-		</DockingPorts>
+				portRadius=		"60"
+				/>
 		
 		<!-- Random Encounters -->
 
@@ -466,6 +456,18 @@
 
 <!-- TABLES -->
 
+	<!-- Heliotrope Defenders -->
+
+	<ShipTable unid="&tbHeliotropeDefenders;">
+		<LevelTable>
+			<Ship	levelFrequency="cccur -----"	count="1"		class="&scHeliotropeGunship;"	orders="guard"/>
+			<Ship	levelFrequency="---uc ur---"	count="1"		class="&scHeliotropeGunship;"	orders="patrol:10"/>
+			<Ship	levelFrequency="---rc ccccc"	count="1"		class="&scHeliotropeFrigate;"	orders="patrol:10"/>
+		</LevelTable>
+	</ShipTable>
+
+	<!-- Random Encounters -->
+
 	<ShipTable UNID="&tbHeliotropeEncounters;">
 		<LevelTable>
 			<Ship levelFrequency="--ccu rr---" count="1"	class="&scHeliotropeGunship;" eventHandler="&evStdZoneEncounterBehavior;">
@@ -553,6 +555,9 @@
 	</EffectType>
 
 <!-- RESOURCES -->
+
+	<Image UNID="&rsHeliotropeOutpost;"				bitmap="Resources\HeliotropeOutpost.jpg"		bitmask="Resources\HeliotropeOutpostMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsHeliotropeColony;"				bitmap="Resources\HeliotropeColony.jpg"		bitmask="Resources\HeliotropeColonyMask.bmp"  loadOnUse="true"/>
 
 	<Image UNID="&rsHeliotropeFrigateHD;"			bitmap="Resources\HeliotropeFrigateHD.jpg"		bitmask="Resources\HeliotropeFrigateHDMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsHeliotropeFrigateHero;"			bitmap="Resources\HeliotropeFrigateLarge.jpg"		bitmask="Resources\HeliotropeFrigateLargeMask.bmp"  loadOnUse="true"/>
