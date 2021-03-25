@@ -290,7 +290,7 @@ class CWeaponClass : public CDeviceClass
 		bool IsMIRV (const CWeaponFireDesc &ShotDesc) const { return (m_bMIRV || ShotDesc.IsMIRV()); }
 		bool IsSinglePointOrigin (void) const { return m_Configuration.IsSinglePointOrigin(); }
 		bool IsTemperatureEnabled (void) { return (m_Counter == cntTemperature); }
-		bool IsTargetReachable (const CInstalledDevice &Device, CSpaceObject &Target, int iDefaultFireAngle = -1, int *retiFireAngle = NULL) const;
+		bool IsTargetReachable (const CInstalledDevice &Device, CSpaceObject &Target, int iDefaultFireAngle = -1, int *retiFireAngle = NULL, int *retiAimAngle = NULL) const;
 		bool IsTracking (const CDeviceItem &DeviceItem, const CWeaponFireDesc *pShot) const;
 		bool UpdateTemperature (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, CFailureDesc::EFailureTypes *retiFailureMode, bool *retbSourceDestroyed);
 		bool UsesAmmo (void) const { return (m_ShotData.GetCount() > 0 && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
