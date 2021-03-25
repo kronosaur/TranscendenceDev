@@ -22,7 +22,7 @@
 			name=				"Marauder outpost"
 			sovereign=			"&svMarauders;"
 
-			attributes=			"asteroidBase, enemy, envAir, envAvoidsFire, generic, human, lombardMarauders, pirates, populated"
+			attributes=			"asteroidBase, enemy, envAir, envAvoidsFire, generic, human, lombardMarauders, marauders, pirates, populated"
 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
@@ -61,8 +61,11 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Ship					count="1"	class="&scMarauderRaidPlatform;"	orders="patrol" patrolDist="150"/>
+		<Ships challenge="standard">
+			<Table>
+				<Ship chance="60"		count="1"	class="&scMarauderRaidPlatform;"	orders="patrol:50"/>
+				<Lookup chance="40"		count="1"	table="&tbMarauderDefenders;"/>
+			</Table>
 		</Ships>
 
 		<!-- Treasure -->
@@ -101,7 +104,7 @@
 			name=				"Marauder compound"
 			sovereign=			"&svMarauders;"
 
-			attributes=			"asteroidBase, enemy, envAir, envAvoidsFire, generic, human, lombardMarauders, marauderCompound, pirates, populated"
+			attributes=			"asteroidBase, enemy, envAir, envAvoidsFire, generic, human, lombardMarauders, marauderCompound, marauders, pirates, populated"
 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
@@ -140,29 +143,7 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<LevelTable>
-				<Group levelFrequency="---cc ccccc">
-					<Ship			count="1"	class="&scBarbary;"		orders="guard"/>
-					<Ship			count="1d4"	class="&scViking-II;"	orders="guard"/>
-				</Group>
-				<Group levelFrequency="rrruu uuuuu">
-					<Ship			count="1"	class="&scDrake;"		orders="patrol" patrolDist="15"/>
-					<Ship			count="1d4"	class="&scViking-II;"	orders="guard"/>
-				</Group>
-				<Ship  levelFrequency="vvvrr rrrrr" 	count="2d3"	class="&scViking-II;"	orders="guard"/>
-			</LevelTable>
-
-			<Ship					count="1"	class="&scMarauderRaidPlatform;"	orders="patrol" patrolDist="150"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
-			<Table>
-				<Ship chance="25"	count="1"	class="&scBarbary;"		orders="guard"/>
-				<Ship chance="65"	count="1"	class="&scViking-II;"	orders="guard"/>
-				<Ship chance="10"	count="1"	class="&scDrake;"		orders="guard"/>
-			</Table>
-		</Reinforcements>
+		<Squadron table="&tbMarauderDefenders;"	count="challenge:standard"	reinforce="auto"/>
 
 		<!-- Treasure -->
 
@@ -201,7 +182,7 @@
 			name=				"Marauder stronghold"
 			sovereign=			"&svMarauders;"
 
-			attributes=			"asteroidBase, enemy, envAir, envAvoidsFire, generic, human, lombardMarauders, marauderStronghold, pirates,populated"
+			attributes=			"asteroidBase, enemy, envAir, envAvoidsFire, generic, human, lombardMarauders, marauderStronghold, marauders, pirates,populated"
 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
@@ -240,38 +221,7 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Table>
-				<Group chance="60">
-					<Ship			count="1d4"	class="&scBarbary;"		orders="guard"/>
-					<Ship			count="1d4"	class="&scViking-II;"	orders="guard"/>
-				</Group>
-				<Group chance="40">
-					<Ship			count="1"	class="&scDrake;"		orders="patrol" patrolDist="15">
-						<Escorts>
-							<Ship	count="1d2"	class="&scBarbary;"		orders="escort"/>
-						</Escorts>
-					</Ship>
-					<Ship			count="1d2"	class="&scBarbary;"		orders="guard"/>
-					<Ship			count="1d4"	class="&scViking-II;"	orders="guard"/>
-				</Group>
-			</Table>
-
-			<Ship					count="1d2"	class="&scTripoli;"	orders="patrol" patrolDist="50">
-				<Escorts>
-					<Ship			count="1"	class="&scBarbary;"	orders="escort"/>
-					<Ship			count="1d6"	class="&scViking-II;"	orders="escort"/>
-				</Escorts>
-			</Ship>
-		</Ships>
-
-		<Reinforcements minShips="6">
-			<Table>
-				<Ship chance="25"	count="1"	class="&scBarbary;"		orders="guard"/>
-				<Ship chance="65"	count="1"	class="&scViking-II;"	orders="guard"/>
-				<Ship chance="10"	count="1"	class="&scDrake;"		orders="guard"/>
-			</Table>
-		</Reinforcements>
+		<Squadron table="&tbMarauderDefenders;"	count="challenge:hard"	reinforce="auto"/>
 
 		<!-- Treasure -->
 
@@ -312,7 +262,7 @@
 			type=				"gunship"
 			defaultSovereign=	"&svMarauders;"
 
-			attributes=			"charonPirates, genericClass"
+			attributes=			"charonPirates, genericClass, marauders"
 			   
 			size=				"26"
 			mass=				"50"
@@ -401,10 +351,31 @@
 			rotationAccel=		"0.1"
 			/>
 
+		<Armor
+			armorID=			"&itReinforcedTitanium2;"
+			count=				"8"
+			/>
+		
 		<DeviceSlots>
 			<DeviceSlot id="port1"		criteria="w"	posAngle="90"   posRadius="48"   posZ="35"	fireAngle="90"  fireArc="240"	secondaryWeapon="true"/>
 			<DeviceSlot id="starboard1"	criteria="w"	posAngle="-90"  posRadius="48"   posZ="30"	fireAngle="-90"	fireArc="240"	secondaryWeapon="true"/>
 		</DeviceSlots>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"40"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"50"
+
+					posX=		"-41"
+					posY=		"0"
+					sizeX=		"28"
+					sizeY=		"72"
+					/>
+		</Interior>
 
 		<Wreck
 			explosionType=		"&vtBlastExplosion2;"
@@ -466,7 +437,6 @@
 		
 		<Armor
 			armorID=			"&itReinforcedTitanium2;"
-			count=				"16"
 			/>
 		
 		<Devices>
@@ -578,7 +548,7 @@
 		<!-- Configuration -->
 		
 		<Armor
-			armorID=			"&itBlastPlate;"
+			armorID=			"&itHeavyBlastPlate;"
 			count=				"12"
 			/>
 		
@@ -586,18 +556,18 @@
 			<Device slotID="omni1"		deviceID="&itNAMIMissileLauncher;">
 				<Items>
 					<Table>
-						<Item chance="80" count="10d40" item="&itFragmentationMissile;"/>
+						<Item chance="50" count="10d40" item="&itKM170Missile;"/>
+						<Item chance="30" count="10d40" item="&itKM120Missile;"/>
 						<Item chance="10" count="10d40" item="&itKM500Missile;"/>
 						<Item chance="10" count="10d40" item="&itKM550Missile;"/>
 					</Table>
 				</Items>
 			</Device>
-			<Device slotID="port1"		deviceID="&itTurbolaserCannon;"/>
-			<Device slotID="port2"		deviceID="&itTurbolaserCannon;"/>
-			<Device slotID="starboard1"	deviceID="&itTurbolaserCannon;"/>
-			<Device slotID="starboard2"	deviceID="&itTurbolaserCannon;"/>
+			<Device slotID="port1"		deviceID="&itParticleBeamWeapon;"/>
+			<Device slotID="port2"		deviceID="&itParticleBeamWeapon;"/>
+			<Device slotID="starboard1"	deviceID="&itParticleBeamWeapon;"/>
+			<Device slotID="starboard2"	deviceID="&itParticleBeamWeapon;"/>
 
-			<Device deviceID="&itClass3Deflector;"/>
 			<Device deviceID="&vtStdDamageControl;"		level="6"/>
 			<Device deviceID="&it100MWReactor;"/>
 		</Devices>
@@ -636,6 +606,24 @@
 
 	</ShipClass>
 
+<!-- TABLES -->
+
+	<ShipTable unid="&tbMarauderDefenders;">
+		<LevelTable>
+			<Ship	levelFrequency="cccrv -----"	count="1d4"		class="&scCorsair-II;"			orders="patrol:10"/>
+			<Ship	levelFrequency="-rcrv -----"	count="1"		class="&scDrake;"				orders="patrol:25"/>
+			<Ship	levelFrequency="--ucr v----"	count="1d4"		class="&scViking-II;"			orders="patrol:10"/>
+			<Ship	levelFrequency="---rc rv---"	count="1"		class="&scBarbary;"				orders="patrol:10"/>
+			<Ship	levelFrequency="---uc v----"	count="1"		class="&scMarauderRaidPlatform;"	orders="patrol:50"/>
+			<Ship	levelFrequency="----u ucrvv"	count="1"		class="&scTripoli;"				orders="patrol:50">
+				<Escorts>
+					<Ship			count="1"	class="&scBarbary;"		orders="escort"/>
+					<Ship			count="1d6"	class="&scViking-II;"	orders="escort"/>
+				</Escorts>
+			</Ship>
+		</LevelTable>
+	</ShipTable>
+
 	<ShipTable UNID="&tbMarauderEncounters;">
 		<LevelTable>
 			<Ship levelFrequency="--cur -----" count="1"	class="&scCorsair-II;" eventHandler="&evStdPatrolEncounterBehavior;">
@@ -669,7 +657,7 @@
 		</LevelTable>
 	</ShipTable>
 
-	<!-- Resources -->
+<!-- RESOURCES -->
 
 	<Image UNID="&rsMarauderOutpostIce;"			bitmap="Resources\MarauderOutpostIce.jpg"			bitmask="Resources\MarauderOutpostIceMask.bmp"  	loadOnUse="true"/>
 	<Image UNID="&rsMarauderOutpostMetallic;"		bitmap="Resources\MarauderOutpostMetallic.jpg"		bitmask="Resources\MarauderOutpostMetallicMask.bmp"  	loadOnUse="true"/>
