@@ -2314,6 +2314,7 @@
 	<!ENTITY rsMissileNAMIHeavyHD		"0x001004D0">
 	<!ENTITY itMediumIthaliumArmor		"0x001004D1">
 	<!ENTITY itMassiveIthaliumArmor		"0x001004D2">
+	<!ENTITY itKM170Missile				"0x001004D3">
 
 	<!-- 04F0-050F TAIKON CORPORATION -->
 
