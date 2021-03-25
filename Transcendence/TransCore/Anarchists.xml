@@ -46,6 +46,28 @@
 				locationCriteria=		"+asteroids"
 				/>
 
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&itLaserCannon;"	omnidirectional="true"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Squadron table="&tbAnarchistDefenders;"	count="challenge:standard"	reinforce="auto"/>
+
+		<!-- Treasure and Items -->
+
+		<Items>
+			<RandomItem chance="30"
+					criteria=			"* +Info; -Alien; -NotStandard;"
+					levelFrequency=		"c----"
+					/>
+			<Lookup chance="60" table="&trStdTreasure;"/>
+		</Items>
+
+		<!-- Images and Effects -->
+
 		<ImageVariants>
 			<Image		imageID="&rsAnarchistStations;" imageX="0"   imageY="0"   imageWidth="112" imageHeight="122"/>
 			<Image		imageID="&rsAnarchistStations;" imageX="112" imageY="0"   imageWidth="122" imageHeight="122"/>
@@ -55,27 +77,7 @@
 			<Image		imageID="&rsAnarchistStations;" imageX="228" imageY="122" imageWidth="120" imageHeight="122"/>
 		</ImageVariants>
 
-		<Devices>
-			<Device deviceID="&itLaserCannon;"	omnidirectional="true"/>
-		</Devices>
-
-		<Ships>
-			<Table>
-				<Ship chance="50"	count="1d4"	class="&scHornet;"		orders="guard"/>
-				<Group chance="50">
-					<Ship			count="1d2"	class="&scHornet;"		orders="guard"/>
-					<Ship			count="1"	class="&scEarthzone;"	orders="guard"/>
-				</Group>
-			</Table>
-		</Ships>
-
-		<Items>
-			<RandomItem chance="30"
-					criteria=			"* +Info; -Alien; -NotStandard;"
-					levelFrequency=		"c----"
-					/>
-			<Lookup chance="60" table="&trStdTreasure;"/>
-		</Items>
+		<!-- Random Encounters -->
 
 		<Encounters frequency="common">
 			<Lookup table="&tbAnarchistEncounters;"/>
@@ -111,28 +113,25 @@
 				enemyExclusionRadius=	"50"
 				/>
 
-		<ImageVariants>
-			<Image		imageID="&rsAnarchistStations;" imageX="0"   imageY="0"   imageWidth="112" imageHeight="122"/>
-			<Image		imageID="&rsAnarchistStations;" imageX="112" imageY="0"   imageWidth="122" imageHeight="122"/>
-			<Image		imageID="&rsAnarchistStations;" imageX="234" imageY="0"   imageWidth="102" imageHeight="122"/>
-			<Image		imageID="&rsAnarchistStations;" imageX="0"   imageY="122" imageWidth="100" imageHeight="122"/>
-			<Image		imageID="&rsAnarchistStations;" imageX="100" imageY="122" imageWidth="128" imageHeight="122"/>
-			<Image		imageID="&rsAnarchistStations;" imageX="228" imageY="122" imageWidth="120" imageHeight="122"/>
-		</ImageVariants>
+		<!-- Configuration -->
 
 		<Devices>
 			<Device deviceID="&itLaserCannon;"	omnidirectional="true"/>
 		</Devices>
 
-		<Ships>
-			<Table>
-				<Ship chance="50"	count="1d4"	class="&scHornet;"		orders="guard"/>
-				<Group chance="50">
-					<Ship			count="1d2"	class="&scHornet;"		orders="guard"/>
-					<Ship			count="1"	class="&scEarthzone;"	orders="guard"/>
-				</Group>
-			</Table>
-		</Ships>
+		<!-- Ships and Defenses -->
+
+		<Squadron table="&tbAnarchistDefenders;"	count="challenge:standard"	reinforce="auto"/>
+
+		<!-- Satellites -->
+
+		<Satellites overlapCheck="asteroids">
+			<Orbitals count="1d3+1" distance="1d4+6" angle="random">
+				<Station type="&stAnarchistGatheringSat;"/>
+			</Orbitals>
+		</Satellites>
+
+		<!-- Treasure and Items -->
 
 		<Items>
 			<RandomItem chance="60"
@@ -142,11 +141,18 @@
 			<Lookup chance="50" table="&trStdTreasure;"/>
 		</Items>
 
-		<Satellites overlapCheck="asteroids">
-			<Orbitals count="1d3+1" distance="1d4+6" angle="random">
-				<Station type="&stAnarchistGatheringSat;"/>
-			</Orbitals>
-		</Satellites>
+		<!-- Images and Effects -->
+
+		<ImageVariants>
+			<Image		imageID="&rsAnarchistStations;" imageX="0"   imageY="0"   imageWidth="112" imageHeight="122"/>
+			<Image		imageID="&rsAnarchistStations;" imageX="112" imageY="0"   imageWidth="122" imageHeight="122"/>
+			<Image		imageID="&rsAnarchistStations;" imageX="234" imageY="0"   imageWidth="102" imageHeight="122"/>
+			<Image		imageID="&rsAnarchistStations;" imageX="0"   imageY="122" imageWidth="100" imageHeight="122"/>
+			<Image		imageID="&rsAnarchistStations;" imageX="100" imageY="122" imageWidth="128" imageHeight="122"/>
+			<Image		imageID="&rsAnarchistStations;" imageX="228" imageY="122" imageWidth="120" imageHeight="122"/>
+		</ImageVariants>
+
+		<!-- Random Encounters -->
 
 		<Encounters frequency="common">
 			<Lookup table="&tbAnarchistEncounters;"/>
@@ -172,6 +178,28 @@
 			attributes=			"anarchists, enemy, freeworldAnarchists, human, populated"
 			>
 
+		<!-- Treasure and Items -->
+
+		<Items>
+			<RandomItem chance="30"
+					criteria=			"* +Info; -Alien; -NotStandard; "
+					levelFrequency=		"cu---"
+					/>
+			<Lookup chance="25" table="&trStdTreasure;"/>
+		</Items>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&itLaserCannon;"	omnidirectional="true"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Squadron table="&tbAnarchistDefenders;"	count="challenge:standard"	reinforce="auto"/>
+
+		<!-- Images and Effects -->
+
 		<ImageVariants>
 			<Image		imageID="&rsAnarchistStations;" imageX="0"   imageY="0"   imageWidth="112" imageHeight="122"/>
 			<Image		imageID="&rsAnarchistStations;" imageX="112" imageY="0"   imageWidth="122" imageHeight="122"/>
@@ -181,28 +209,7 @@
 			<Image		imageID="&rsAnarchistStations;" imageX="228" imageY="122" imageWidth="120" imageHeight="122"/>
 		</ImageVariants>
 
-		<Devices>
-			<Device deviceID="&itLaserCannon;"	omnidirectional="true"/>
-		</Devices>
-
-		<Ships>
-			<Table>
-				<Ship chance="50"	count="1d4"	class="&scHornet;"		orders="guard"/>
-				<Group chance="40">
-					<Ship			count="1d2"	class="&scHornet;"		orders="guard"/>
-					<Ship			count="1"	class="&scEarthzone;"	orders="guard"/>
-				</Group>
-				<Ship chance="10"	count="3d6"	class="&scHornet;"		orders="patrol" patrolDist="10"/>
-			</Table>
-		</Ships>
-
-		<Items>
-			<RandomItem chance="30"
-					criteria=			"* +Info; -Alien; -NotStandard; "
-					levelFrequency=		"cu---"
-					/>
-			<Lookup chance="25" table="&trStdTreasure;"/>
-		</Items>
+		<!-- Random Encounters -->
 
 		<Encounters frequency="common">
 			<Lookup table="&tbAnarchistEncounters;"/>
@@ -237,10 +244,6 @@
 				enemyExclusionRadius=	"75"
 				/>
 
-		<Encounters frequency="common">
-			<Lookup table="&tbAnarchistEncounters;"/>
-		</Encounters>
-
 		<!-- Configuration -->
 
 		<Hull 	hullType=		"multiHull"
@@ -259,28 +262,11 @@
 		</Devices>
 
 		<!-- Ships and Defenses -->
-
-		<Ships>
-			<!-- Docked -->
-
-			<Table>
-				<Ship chance="30"	count="2d3"	class="&scHornet;"		orders="guard"/>
-				<Group chance="70">
-					<Ship			count="1d4"	class="&scHornet;"		orders="guard"/>
-					<Ship			count="1d2"	class="&scEarthzone;"	orders="guard"/>
-				</Group>
-			</Table>
-
-			<!-- Patrol -->
-
-			<LevelTable>
-				<Ship levelFrequency="ccurv -----"	count="3d6" class="&scHornet;"		orders="patrol" patrolDist="15"/>
-				<Ship levelFrequency="-ucur v----"	count="4d6" class="&scHornet;"		orders="patrol" patrolDist="15"/>
-				<Ship levelFrequency="--ucu rv---"	count="5d6" class="&scHornet;"		orders="patrol" patrolDist="15"/>
-				<Ship levelFrequency="---uc urv--"	count="6d6" class="&scHornet;"		orders="patrol" patrolDist="15"/>
-				<Ship levelFrequency="----u curvv"	count="8d6" class="&scHornet;"		orders="patrol" patrolDist="15"/>
-			</LevelTable>
-		</Ships>
+		
+		<Squadrons>
+			<Squadron table="&tbAnarchistHorde;"		count="challenge:standard"	reinforce="auto"/>
+			<Squadron table="&tbAnarchistDefenders;"	count="challenge:easy"		reinforce="auto"/>
+		</Squadrons>
 
 		<!-- Treasure -->
 
@@ -318,6 +304,12 @@
 			<Port posAngle="335" posRadius="119" rotation="135"/>
 			<Port posAngle="295" posRadius="119" rotation="135"/>
 		</DockingPorts>
+
+		<!-- Random Encounters -->
+
+		<Encounters frequency="common">
+			<Lookup table="&tbAnarchistEncounters;"/>
+		</Encounters>
 
 	</StationType>
 	
@@ -619,6 +611,28 @@
 	</ShipClass>
 
 <!-- TABLES -->
+
+	<!-- Anarchist Defenders -->
+
+	<ShipTable unid="&tbAnarchistDefenders;">
+		<LevelTable>
+			<Ship	levelFrequency="cur-- -----"	count="1d4"		class="&scHornet;"			orders="patrol:10"/>
+			<Ship	levelFrequency="crv-- -----"	count="1"		class="&scEarthZone;"		orders="guard"/>
+			<Ship	levelFrequency="-rrr- -----"	count="1"		class="&scEarthZone1200;"	orders="guard"/>
+			<Ship	levelFrequency="-rcur -----"	count="1"		class="&scEarthZone1200;"	orders="patrol:10"/>
+			<Ship	levelFrequency="--rcu rvvvv"	count="1"		class="&scEarthZone5000;"	orders="guard"/>
+		</LevelTable>
+	</ShipTable>
+
+	<ShipTable unid="&tbAnarchistHorde;">
+		<LevelTable>
+			<Ship	levelFrequency="ccurv -----"	count="3d6"		class="&scHornet;"			orders="patrol:15" />
+			<Ship	levelFrequency="-ucur v----"	count="4d6"		class="&scHornet;"			orders="patrol:15" />
+			<Ship	levelFrequency="--ucu rv---"	count="5d6"		class="&scHornet;"			orders="patrol:15" />
+			<Ship	levelFrequency="---uc urv--"	count="6d6"		class="&scHornet;"			orders="patrol:15" />
+			<Ship	levelFrequency="----u curvv"	count="8d6"		class="&scHornet;"			orders="patrol:15" />
+		</LevelTable>
+	</ShipTable>
 
 	<!-- Anarchist Random Encounter Table -->
 	

@@ -2229,6 +2229,8 @@
 	<!ENTITY rsEarthZone5000			"0x0010043A">
 	<!ENTITY rsEarthZone5000Hero		"0x0010043B">
 	<!ENTITY rsAnarchistSettlement		"0x0010043C">
+	<!ENTITY tbAnarchistDefenders		"0x0010043D">
+	<!ENTITY tbAnarchistHorde			"0x0010043E">
 
 	<!-- 0450-046F RANX EMPIRE -->
 
