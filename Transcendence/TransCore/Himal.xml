@@ -45,21 +45,11 @@
 		<Encounter
 				systemCriteria=			"+himalSpace;"
 				systemAffinity=			"+envAir; -envFire;"
-				levelFrequency=			"curv- ----- ----- ----- -----"
+				levelFrequency=			"cuv-- ----- ----- ----- -----"
 
 				locationCriteria=		"+outerSystem, -planetary"
 				enemyExclusionRadius="50"
 				/>
-
-		<Encounters frequency="uncommon">
-			<LevelTable>
-				<Ship levelFrequency="ccccc ccccc" count="1"	class="&scHimalInterceptor;" eventHandler="&evStdZoneEncounterBehavior;">
-					<Escorts>
-						<Ship					   count="1d2"	class="&scHimalInterceptor;" orders="escort"/>
-					</Escorts>
-				</Ship>
-			</LevelTable>
-		</Encounters>
 
 		<!-- Configuration -->
 
@@ -75,8 +65,8 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Ship			count="1d3"	class="&scHimalInterceptor;"	orders="patrol" patrolDist="15"/>
+		<Ships challenge="standard">
+			<Ship			count="1"	class="&scHimalInterceptor;"	orders="patrol:15"/>
 		</Ships>
 
 		<!-- Treasure -->
@@ -110,6 +100,19 @@
 				portRadius=		"120"
 				>
 		</DockingPorts>
+
+		<!-- Random Encounters -->
+
+		<Encounters frequency="uncommon">
+			<LevelTable>
+				<Ship levelFrequency="ccccc ccccc" count="1"	class="&scHimalInterceptor;" eventHandler="&evStdZoneEncounterBehavior;">
+					<Escorts>
+						<Ship					   count="1d2"	class="&scHimalInterceptor;" orders="escort"/>
+					</Escorts>
+				</Ship>
+			</LevelTable>
+		</Encounters>
+
 	</StationType>
 
 <!-- SHIP CLASSES -->
