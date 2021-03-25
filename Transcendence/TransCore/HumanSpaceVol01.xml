@@ -2115,6 +2115,8 @@
 	<!ENTITY itBallistaTurret			"0x00100343">
 	<!ENTITY itMarkIHowitzerTurret		"0x00100344">
 	<!ENTITY tbOutlawMineTurrets		"0x00100345">
+	<!ENTITY tbOutlawDefenders			"0x00100346">
+	<!ENTITY tbOutlawTransports			"0x00100347">
 
 	<!-- 0370-038F OMNIDEFENSE SYSTEMS -->
 
