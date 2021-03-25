@@ -170,7 +170,8 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 //	m_rBestWeaponRange
 
 	{
-	ASSERT(pShip);
+	if (!pShip)
+		throw CException(ERR_FAIL);
 
 	//	NOTE: We skip this if the ship is in the middle of firing a repeating
 	//	weapon because this function selects each missile to determine its 
@@ -611,7 +612,8 @@ bool CAIBehaviorCtx::CalcNavPath (CShip *pShip, CSpaceObject *pTo)
 	int i;
 	CSystem *pSystem = pShip->GetSystem();
 
-	ASSERT(pTo);
+	if (!pTo)
+		throw CException(ERR_FAIL);
 
 	//	If the destination moves (e.g., is a ship) then we place a nav path to
 	//	where it is currenly and allow the code to recalc nav paths as
@@ -694,7 +696,8 @@ void CAIBehaviorCtx::CalcNavPath (CShip *pShip, CNavigationPath *pPath, bool bOw
 	{
 	int i;
 
-	ASSERT(pPath);
+	if (!pPath)
+		throw CException(ERR_FAIL);
 
 	//	Figure out which nav position we are closest to
 
