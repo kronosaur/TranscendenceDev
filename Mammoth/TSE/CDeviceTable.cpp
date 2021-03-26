@@ -23,6 +23,7 @@
 #define COUNT_ATTRIB							CONSTLIT("count")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define DAMAGED_ATTRIB							CONSTLIT("damaged")
+#define DESCRIPTION_ATTRIB						CONSTLIT("description")
 #define DEVICE_ID_ATTRIB						CONSTLIT("deviceID")
 #define ENHANCED_ATTRIB							CONSTLIT("enhanced")
 #define ENHANCEMENT_ATTRIB						CONSTLIT("enhancement")
@@ -41,6 +42,9 @@
 #define MAX_FIRE_ARC_ATTRIB						CONSTLIT("maxFireArc")
 #define MIN_FIRE_ARC_ATTRIB						CONSTLIT("minFireArc")
 #define MAX_FIRE_RANGE_ATTRIB					CONSTLIT("maxFireRange")
+#define MAX_MASS_ATTRIB							CONSTLIT("maxMass")
+#define MAX_POWER_ATTRIB						CONSTLIT("maxPower")
+#define MAX_POWER_PERCENT_ATTRIB				CONSTLIT("maxPowerPercentage")
 #define MISSILE_DEFENSE_ATTRIB					CONSTLIT("missileDefense")
 #define OMNIDIRECTIONAL_ATTRIB					CONSTLIT("omnidirectional")
 #define SECONDARY_WEAPON_ATTRIB					CONSTLIT("secondaryWeapon")
@@ -199,9 +203,14 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 			CItemCriteria Criteria;
 			SDeviceDesc DefaultDesc;
 			int iMaxCount;
+			int iMaxMass = -1;
+			CString Description;
+			int iMaxPower = -1;
+			Metric fMaxPowerPercent = -1.0;
 			};
 
 		const SSlotDesc *FindSlotDesc (CSpaceObject *pObj, const CItem &Item) const;
+		bool ItemFitsSlot (CSpaceObject* pObj, const CItem& Item, const int iSlotIndex) const;
 
 		DiceRange m_Count;
 
@@ -253,6 +262,8 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 //	InitDeviceDescFromXML
 //
 //	Loads a device desc from XML.
+//	TODO(heliogenesis): Add support for attribute list, weapon target definition, and description, and possibly max mass?
+//	See https://discord.com/channels/265561663741100043/265561663741100043/823740088294703156
 
 	{
 	ALERROR error;
@@ -1389,6 +1400,25 @@ const CGroupOfDeviceGenerators::SSlotDesc *CGroupOfDeviceGenerators::FindSlotDes
 	return NULL;
 	}
 
+bool CGroupOfDeviceGenerators::ItemFitsSlot (CSpaceObject* pObj, const CItem& Item, const int iSlotIndex) const
+
+//	ItemFitsSlot
+//
+//	Returns TRUE if the item fits the slot specified by iSlotIndex, otherwise FALSE
+
+	{
+	CItemCtx ItemCtx(&Item);
+	int iPowerUse = Item.IsDevice() ? Item.AsDeviceItem().GetDeviceClass().GetPowerRating(ItemCtx) : 0; // TODO: Move this outside of this function; this is a slow operation
+	int iMass = Item.GetMassKg();
+	const SSlotDesc Slot = m_SlotDesc[iSlotIndex];
+	bool bMatchesCriteria = Item.MatchesCriteria(Slot.Criteria);
+	bool bMeetsPowerLimits = Slot.iMaxPower > 0 ? Slot.iMaxPower >= iPowerUse : true;
+	bool bMeetsPowerPercentLimits = Slot.fMaxPowerPercent > 0.0 ? (pObj->GetMaxPower() * Slot.fMaxPowerPercent) >= iPowerUse : true;
+	bool bMeetsMassLimits = Slot.iMaxMass > 0 ? Slot.iMaxMass >= iMass : true;
+
+	return (bMatchesCriteria && bMeetsPowerLimits && bMeetsPowerPercentLimits && bMeetsMassLimits);
+	}
+
 bool CGroupOfDeviceGenerators::HasItemAttribute (const CString &sAttrib) const
 
 //	HasItemAttribute
@@ -1450,6 +1480,10 @@ ALERROR CGroupOfDeviceGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement 
 			SSlotDesc *pSlotDesc = m_SlotDesc.Insert();
 
 			pSlotDesc->Criteria.Init(pEntry->GetAttribute(CRITERIA_ATTRIB));
+			pSlotDesc->Description = pEntry->GetAttribute(DESCRIPTION_ATTRIB);
+			pSlotDesc->iMaxPower = pEntry->GetAttributeInteger(MAX_POWER_ATTRIB);
+			pSlotDesc->fMaxPowerPercent = pEntry->GetAttributeFloat(MAX_POWER_PERCENT_ATTRIB);
+			pSlotDesc->iMaxMass = pEntry->GetAttributeInteger(MAX_MASS_ATTRIB);
 
 			if (error = IDeviceGenerator::InitDeviceDescFromXML(Ctx, pEntry, &pSlotDesc->DefaultDesc))
 				return error;
