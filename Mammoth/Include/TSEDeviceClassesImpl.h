@@ -20,14 +20,14 @@ class CWeaponTargetDefinition
 		bool AimAndFire (CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CDeviceClass::SDeviceUpdateCtx& Ctx) const;
 		bool GetCheckLineOfFire () { return m_bCheckLineOfFire; };
 		CSpaceObjectCriteria GetTargetCriteria () { return m_TargetCriteria; };
-		Kernel::CString GetTargetCriteriaString () { return Kernel::CString(m_CriteriaString.c_str()); };
+		Kernel::CString GetTargetCriteriaString () { return m_CriteriaString; };
 		void SetCheckLineOfFire (bool bCheckLineOfFire) { m_bCheckLineOfFire = bCheckLineOfFire; };
 		void SetTargetCriteria (Kernel::CString sCriteria) { m_TargetCriteria.Init(sCriteria); m_CriteriaString = sCriteria; };
 
 		static std::unique_ptr<CWeaponTargetDefinition> ReadFromStream (SLoadCtx& Ctx);
 		void WriteToStream (IWriteStream* pStream) const;
 	private:
-		std::string m_CriteriaString = "";
+		Kernel::CString m_CriteriaString = "";
 		CSpaceObjectCriteria m_TargetCriteria;
 		bool m_bCheckLineOfFire = false;		//	Check line of fire for friendlies
 	};
