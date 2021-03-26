@@ -515,7 +515,7 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_CAN_TARGET_MISSILES))
 		return (pDevice ? CC.CreateBool(pDevice->CanTargetMissiles()) : CC.CreateNil());
 	else if (strEquals(sName, PROPERTY_CAPACITOR))
-	{
+		{
 		CSpaceObject* pSource = Ctx.GetSource();
 		CounterTypes iType;
 		int iLevel;
@@ -524,7 +524,7 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 			return CC.CreateNil();
 
 		return CC.CreateInteger(iLevel);
-	}
+		}
 
 	else if (strEquals(sName, PROPERTY_CYCLE_FIRE))
 		return (pDevice ? CC.CreateBool(pDevice->GetCycleFireSettings()) : CC.CreateNil());
@@ -539,15 +539,15 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return CC.CreateBool(pDevice ? pDevice->IsExternal() : IsExternal());
 
 	else if (strEquals(sName, PROPERTY_EXTRA_POWER_USE))
-	{
+		{
 		if (pDevice == NULL)
 			return CC.CreateNil();
 
 		return CC.CreateInteger(pDevice->GetExtraPowerUse());
-	}
+		}
 
 	else if (strEquals(sName, PROPERTY_POS))
-	{
+		{
 		if (pDevice == NULL)
 			return CC.CreateNil();
 
@@ -569,15 +569,15 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		//	Done
 
 		return pResult;
-	}
+		}
 
 	else if (strEquals(sName, PROPERTY_POWER))
-	{
+		{
 		if (GetCategory() == itemcatReactor)
 			return CTLispConvert::CreatePowerResultMW(GetPowerOutput(Ctx))->Reference();
 		else
 			return CTLispConvert::CreatePowerResultMW(GetPowerRating(Ctx))->Reference();
-	}
+		}
 
 	else if (strEquals(sName, PROPERTY_POWER_OUTPUT))
 		return CreatePowerResult(GetPowerOutput(Ctx) * 100.0);
