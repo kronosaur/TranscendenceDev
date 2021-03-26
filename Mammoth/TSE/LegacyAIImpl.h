@@ -365,7 +365,7 @@ class CStandardShipAI : public CBaseShipAI
 			stateNone,								//	Ship needs to consult orders
 			stateOnCourseForDocking,				//	Heading for m_pDest to dock
 			stateOnCourseForStargate,				//	Heading for m_pDest to gate out
-			stateOnPatrolOrbit,						//	Orbiting m_pDest at m_rDistance
+			stateObsolete001,						//	Obsolete
 			stateReturningFromThreat,				//	Dock with m_pDest
 			stateWaiting,							//	Waiting for countdown (m_iCountdown)
 			stateWaitingForThreat,					//	Waiting for a threat to m_pDest
@@ -378,7 +378,7 @@ class CStandardShipAI : public CBaseShipAI
 			stateFollowNavPath,						//	Follow current nav path
 			stateReturningViaNavPath,				//	Follow current nav path
 			stateOnCourseForDockingViaNavPath,		//	Follow current nav path
-			stateOnCourseForPatrolViaNavPath,		//	Follow current nav path
+			stateObsolete002,						//	Obsolete
 			stateOnCourseForPoint,					//	Going to a given point
 			stateWaitingForTarget,					//	Waiting for m_pTarget
 			stateWaitingForEnemy,					//	Waiting for an enemy

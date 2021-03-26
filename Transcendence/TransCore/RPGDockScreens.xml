@@ -132,13 +132,146 @@
 		</Language>
 	</DockScreen>
 
+<!-- CONFISCATE ================================================================
+
+	This screen checks for contraband and confiscates it.
+
+	PROPERTIES
+
+		rpg.confiscateContraband: This property is a criteria defining the items
+				that are considered contraband by the station. If set the True, 
+				then we	default to "* +illegal; | * +military;".
+
+	In all cases, if we have a smuggler's cargo hold, we do not confiscate. 
+	And we do not confiscate military items if the player has any valid military
+	ID.
+
+-->
+
+	<DockScreen UNID="&dsRPGConfiscate;"
+			inherit=			"&dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(itemsToConfiscate (@ gData 'itemsToConfiscate))
+						)
+						;	Remove items
+
+						(enum itemsToConfiscate theItem
+							(objRemoveItem gPlayerShip theItem)
+							)
+
+						;	Compose text
+
+						(scrSetDescTranslate gScreen 'core.confiscateDesc {
+							itemList: (join (map itemsToConfiscate theItem (itmGetName theItem 'count)) 'oxfordComma)
+							})
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(block Nil
+							(objFireEvent gSource 'OnItemsConfiscated gData)
+							(scrExitScreen gScreen)
+							)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		
+		<Events>
+			<GetGlobalDockScreen>
+				(block (
+					(confiscateContraband (obj@ gSource 'rpg.confiscateContraband))
+					(contrabandCriteria 
+						(switch
+							(= confiscateContraband True)
+								"*U +illegal; -id; | *U +military; -id;"
+
+							confiscateContraband
+							)
+						)
+
+					hasMilitaryID
+					itemsToConfiscate
+					)
+					(switch
+						;	Station must check for contraband
+
+						(or (not contrabandCriteria)
+								(obj@ gSource 'abandoned)
+								)
+							Nil
+
+						;	If player has a smuggler's cargo hold, then nothing to do.
+
+						(objGetItems gPlayerShip "*I +smugglersHold;")
+							Nil
+
+						;	Remember if we have a military ID
+
+						(block () (setq hasMilitaryID (objGetItems gPlayerShip "* +militaryID;")) nil)
+							Nil
+
+						;	Make a list of items to confiscate
+
+						(not (setq itemsToConfiscate
+								(map (objGetItems gPlayerShip contrabandCriteria) 'excludeNil theItem
+									(switch
+										;	Don't confiscate military items if we have a military ID.
+
+										(and hasMilitaryID
+												(itmHasAttribute theItem 'military)
+												)
+											Nil
+
+										theItem
+										)
+									)
+								))
+							Nil
+						
+						;	Bring up the screen
+					
+						{	screen:&dsRPGConfiscate;
+							priority: 5
+							overrideOnly: True
+
+							itemsToConfiscate: itemsToConfiscate
+							}
+						)
+					)
+			</GetGlobalDockScreen>
+		</Events>
+
+		<Language>
+			<Text id="core.confiscateDesc">
+			
+				Customs has inspected your ship's cargo hold and confiscated
+				%itemList%.
+
+			</Text>
+		</Language>
+	</DockScreen>
+
 <!-- DECONTAMINATION ===========================================================
 
 	This screen allows a station to decontaminate the player's ship.
 	
+	PROPERTIES
+	
+		rpg.checkRadioactive: If a station has this property set to True, then 
+				we check the player ship for contamination before allowing them
+				to dock. If possible, we decontaminate, otherwise, we refuse
+				docking.
+	
 	gData uses the following fields:
 	
-		currency: The currency used (if Nil, we default to credits)
+		currency: The currency used (if Nil, we default to station default)
 		cost: The cost to decontaminate (defaults to 250)
 		descDeconID: ID of language for decon (default to descDecon).
 		descDeconCantAffordID: ID of language for "can't afford" message (defaults to descDeconCantAfford).
@@ -153,28 +286,59 @@
 			<Default>
 				<OnPaneInit>
 					(block (
-						(currency (or (@ gData 'currency) 'credit))
-						(cost (or (@ gData 'cost) 250))
+						(currency (or (@ gData 'currency) (obj@ gSource 'currency)))
+						(cost 
+							(or 
+								(@ gData 'cost)
+								(objGetRemoveConditionPrice gSource gPlayerShip 'radioactive)
+								
+								;	Backwards compatibility: If we bring up this screen
+								;	explicitly, then we always allow it.
+								
+								(if (not (obj@ gSource 'rpg.checkRadioactive)) 250)
+								)
+							)
 
 						(transData {
 							currency:currency
-							cost:cost
+							cost:(fmtCurrency currency cost)
 							deconCost:(fmtCurrency currency cost)
 							})
 						)
-						
-						(if (geq (plyGetCredits gPlayer currency) cost)
-							(scrSetDesc gScreen
-								(or (scrTranslate gScreen (@ gData 'descDeconID) transData)
-									(scrTranslate gScreen 'core.deconDesc transData)
-									(scrTranslate gScreen 'descDecon transData)
+						(switch
+							;	If this station cannot decontaminate, then we refuse dock.
+							
+							(not cost)
+								(scrSetDescTranslate gScreen 'core.cannotDecon transData)
+
+							;	If we cannot afford the decontamination cost, then we 
+							;	refues dock.
+							
+							(ls (plyGetCredits gPlayer currency) cost)
+								(scrSetDesc gScreen
+									(or (scrTranslate gScreen (@ gData 'descDeconCantAffordID) transData)
+										(scrTranslate gScreen 'core.cannotAffordDecon transData)
+										(scrTranslate gScreen 'descDeconCantAfford transData)
+										)
 									)
-								)
-							(scrSetDesc gScreen
-								(or (scrTranslate gScreen (@ gData 'descDeconCantAffordID) transData)
-									(scrTranslate gScreen 'core.cannotAffordDecon transData)
-									(scrTranslate gScreen 'descDeconCantAfford transData)
+
+							;	Decontaminate
+
+							(block ()
+								(if (= cost 0)
+									(scrSetDescTranslate gScreen 'core.deconFree transData)
+
+									(scrSetDesc gScreen
+										(or (scrTranslate gScreen (@ gData 'descDeconID) transData)
+											(scrTranslate gScreen 'core.deconDesc transData)
+											(scrTranslate gScreen 'descDecon transData)
+											)
+										)
 									)
+									
+								(scrSetData gScreen 'decontaminate True)
+								(scrSetData gScreen 'deconCost cost)
+								(scrSetData gScreen 'deconCurrency currency)
 								)
 							)
 						)
@@ -183,41 +347,79 @@
 				<Actions>
 					<Action id="actionContinue" default="1" cancel="1">
 						(block (
-							(currency (if (@ gData 'currency) (@ gData 'currency) 'credit))
-							(cost (if (@ gData 'cost) (@ gData 'cost) 250))
+							(canDecon (scrGetData gScreen 'decontaminate))
+							(currency (scrGetData gScreen 'deconCurrency))
+							(cost (scrGetData gScreen 'deconCost))
 							)
 							
-							(if (geq (plyGetCredits gPlayer currency) cost)
+							(if canDecon
 								(block Nil
 									(objCharge gPlayerShip currency cost)
 									(objCredit gSource currency cost)
-									(shpDecontaminate gPlayerShip)
+									(objRemoveCondition gPlayerShip 'radioactive)
 									)
 								)
 								
 							;	If the ship is still radioactive, force undock.
 							;	Otherwise, we just exit the screen and go back to the default screen
 						
-							(scrExitScreen gScreen (shpIsRadioactive gPlayerShip))
+							(scrExitScreen gScreen (objGetCondition gPlayerShip 'radioactive))
 							)
 					</Action>
 				</Actions>
 			</Default>
 		</Panes>
+		
+		<Events>
+			<GetGlobalDockScreen>
+				(switch
+					;	If the player is not radioactive, then nothing to do.
+					
+					(not (objGetCondition gPlayerShip 'radioactive))
+						Nil
+						
+					;	Must be an active, populated station which checks for
+					;	radiation.
+					
+					(not (objMatches gSource Nil "TAV +populated; +property:rpg.checkRadioactive; | sA +property:rpg.checkRadioactive;"))
+						Nil
+						
+					;	Bring up the screen
+					
+					{	screen:&dsRPGDecontamination;
+						priority: 9
+						overrideOnly: True
+						}
+					)
+			</GetGlobalDockScreen>
+		</Events>
 
 		<Language>
 			<Text id="core.deconDesc">
 
-				The dock master stops your ship due to high radiation levels. 
+				The dockmaster stops your ship due to high radiation levels. 
 				You are automatically charged %deconCost% for decontaminating 
 				your ship.
 
 			</Text>
+			<Text id="core.deconFree">
+
+				The dockmaster decontaminates your ship for free.
+			
+			</Text>
 			<Text id="core.cannotAffordDecon">
 
-				The dock master stops your ship due to high radiation levels. 
+				The dockmaster stops your ship due to high radiation levels. 
 				Unfortunately, you cannot afford %deconCost% for decontamination.
 
+			</Text>
+			<Text id="core.cannotDecon">
+				
+				The dockmaster stops you:
+				
+				"Get that radioactive piece of junk off my dock! We don't have
+				the facilities to deal with it."
+				
 			</Text>
 		</Language>
 	</DockScreen>
@@ -350,7 +552,7 @@
 					</Action>
 
 					<Action id="actionDone" cancel="1">
-                        (scrExitScreen gScreen)
+						(scrExitScreen gScreen)
 					</Action>
 				</Actions>
 			</Default>

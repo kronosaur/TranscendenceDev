@@ -38,6 +38,8 @@ void CDepthPaintList::Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx) const
 			}
 
 		//	Clear destination, if necessary
+		//	LATER: This should be in CSpaceObject::Update, because it touches
+		//	state (painting should be immutable).
 
 		if (pObj->IsAutoClearDestination())
 			pObj->ClearPlayerDestination();

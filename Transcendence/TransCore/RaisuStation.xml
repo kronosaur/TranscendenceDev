@@ -77,6 +77,7 @@
 			<ReplaceArmor	criteria="a L:1-4;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-4;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-4;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 
 		<!-- Ships and Defenses -->

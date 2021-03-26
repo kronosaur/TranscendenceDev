@@ -40,6 +40,7 @@
 #define PROPERTY_CAN_BE_DISRUPTED				CONSTLIT("canBeDisrupted")
 #define PROPERTY_CAN_TARGET_MISSILES			CONSTLIT("canTargetMissiles")
 #define PROPERTY_CAPACITOR      				CONSTLIT("capacitor")
+#define PROPERTY_CYBER_DEFENSE_LEVEL			CONSTLIT("cyberDefenseLevel")
 #define PROPERTY_CYCLE_FIRE 					CONSTLIT("cycleFire")
 #define PROPERTY_DEVICE_SLOTS					CONSTLIT("deviceSlots")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
@@ -131,6 +132,14 @@ void CDeviceClass::AccumulateAttributes (const CDeviceItem &DeviceItem, const CI
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("automatic")));
 		}
 
+	//	If cyberdefense level is not standard, add it.
+
+	int iCyberDefenseLevel = DeviceItem.GetCyberDefenseLevel();
+	if (iCyberDefenseLevel > DeviceItem.GetLevel())
+		retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("cyber defense level %d"), iCyberDefenseLevel)));
+	else if (iCyberDefenseLevel < DeviceItem.GetLevel())
+		retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("cyber defense level %d"), iCyberDefenseLevel)));
+
 	//	Let our subclasses add their own attributes
 
 	OnAccumulateAttributes(DeviceItem, Ammo, retList);
@@ -199,6 +208,14 @@ bool CDeviceClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx
 
 	if (ItemCtx.IsDeviceWorking())
 		Ctx.Abilities.Set(m_Equipment);
+
+	//	External devices get a penalty to stealth
+
+	if (IsExternal()
+			|| (ItemCtx.GetDevice() && ItemCtx.GetDevice()->IsExternal()))
+		{
+		Ctx.iStealthAdj -= 1;
+		}
 
 	//  Let sub-classes handle it
 
@@ -525,6 +542,9 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 		return CC.CreateInteger(iLevel);
 		}
+
+	else if (strEquals(sName, PROPERTY_CYBER_DEFENSE_LEVEL))
+		return CC.CreateInteger(Ctx.GetDeviceItem().GetCyberDefenseLevel());
 
 	else if (strEquals(sName, PROPERTY_CYCLE_FIRE))
 		return (pDevice ? CC.CreateBool(pDevice->GetCycleFireSettings()) : CC.CreateNil());

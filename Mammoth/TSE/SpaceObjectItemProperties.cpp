@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 
+#define FIELD_DESC								CONSTLIT("desc")
 #define FIELD_DESC_ID							CONSTLIT("descID")
 #define FIELD_CAN_INSTALL						CONSTLIT("canInstall")
 #define FIELD_CAN_REMOVE						CONSTLIT("canRemove")
@@ -50,14 +51,17 @@ ICCItemPtr CSpaceObject::GetItemProperty (CCodeChainCtx &CCX, const CItem &Item,
 		}
 	else if (strEquals(sName, PROPERTY_INSTALL_DEVICE_PRICE))
 		{
+		CTradingServices Services(*this);
 		int iPrice;
-		if (!GetDeviceInstallPrice(Item, 0, &iPrice))
+		if (!Services.GetDeviceInstallPrice(Item.AsDeviceItem(), 0, &iPrice))
 			return ICCItemPtr::Nil();
 
 		return ICCItemPtr(iPrice);
 		}
 	else if (strEquals(sName, PROPERTY_INSTALL_DEVICE_STATUS))
 		{
+		CTradingServices Services(*this);
+
 		//	We return a structure with the following fields:
 		//
 		//	canInstall: True or Nil
@@ -65,10 +69,11 @@ ICCItemPtr CSpaceObject::GetItemProperty (CCodeChainCtx &CCX, const CItem &Item,
 		//	descID: Message ID for description of install attempt
 		//	upgradeInstallOnly: True if we only install on upgrade
 
-		CString sMessageID;
 		int iPrice;
 		DWORD dwPriceFlags;
-		bool bCanInstall = GetDeviceInstallPrice(Item, 0, &iPrice, &sMessageID, &dwPriceFlags);
+		CTradingDesc::SReasonText Message;
+
+		bool bCanInstall = Services.GetDeviceInstallPrice(Item.AsDeviceItem(), 0, &iPrice, &Message, &dwPriceFlags);
 
 		//	Create the structure
 
@@ -78,13 +83,18 @@ ICCItemPtr CSpaceObject::GetItemProperty (CCodeChainCtx &CCX, const CItem &Item,
 		if (bCanInstall && (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY))
 			pResult->SetBooleanAt(FIELD_UPGRADE_INSTALL_ONLY, true);
 
-		if (!sMessageID.IsBlank())
-			pResult->SetStringAt(FIELD_DESC_ID, sMessageID);
+		if (!Message.sDesc.IsBlank())
+			pResult->SetStringAt(FIELD_DESC, Message.sDesc);
+
+		else if (!Message.sDescID.IsBlank())
+			pResult->SetStringAt(FIELD_DESC_ID, Message.sDescID);
 
 		return pResult;
 		}
 	else if (strEquals(sName, PROPERTY_INSTALL_ITEM_STATUS))
 		{
+		CTradingServices Services(*this);
+
 		//	We return a structure with the following fields:
 		//
 		//	canInstall: True or Nil
@@ -92,16 +102,11 @@ ICCItemPtr CSpaceObject::GetItemProperty (CCodeChainCtx &CCX, const CItem &Item,
 		//	descID: Message ID for description of install attempt
 		//	upgradeInstallOnly: True if we only install on upgrade
 
-		CString sMessageID;
+		CTradingDesc::SReasonText Message;
 		int iPrice;
-		bool bCanInstall;
-		DWORD dwPriceFlags = 0;
-		if (Item.IsArmor())
-			bCanInstall = GetArmorInstallPrice(Item, 0, &iPrice, &sMessageID);
-		else if (Item.IsDevice())
-			bCanInstall = GetDeviceInstallPrice(Item, 0, &iPrice, &sMessageID, &dwPriceFlags);
-		else
-			bCanInstall = false;
+		DWORD dwPriceFlags;
+
+		bool bCanInstall = Services.GetItemInstallPrice(Item, 0, &iPrice, &Message, &dwPriceFlags);
 
 		//	Create the structure
 
@@ -114,21 +119,28 @@ ICCItemPtr CSpaceObject::GetItemProperty (CCodeChainCtx &CCX, const CItem &Item,
 
 		//	NOTE: Message is valid even if we cannot install
 
-		if (!sMessageID.IsBlank())
-			pResult->SetStringAt(FIELD_DESC_ID, sMessageID);
+		if (!Message.sDesc.IsBlank())
+			pResult->SetStringAt(FIELD_DESC, Message.sDesc);
+
+		else if (!Message.sDescID.IsBlank())
+			pResult->SetStringAt(FIELD_DESC_ID, Message.sDescID);
 
 		return pResult;
 		}
 	else if (strEquals(sName, PROPERTY_REMOVE_DEVICE_PRICE))
 		{
+		CTradingServices Services(*this);
+
 		int iPrice;
-		if (!GetDeviceRemovePrice(Item, 0, &iPrice))
+		if (!Services.GetDeviceRemovePrice(Item.AsDeviceItem(), 0, &iPrice))
 			return ICCItemPtr::Nil();
 
 		return ICCItemPtr(iPrice);
 		}
 	else if (strEquals(sName, PROPERTY_REMOVE_ITEM_STATUS))
 		{
+		CTradingServices Services(*this);
+
 		//	We return a structure with the following fields:
 		//
 		//	canRemove: True or Nil
@@ -138,12 +150,9 @@ ICCItemPtr CSpaceObject::GetItemProperty (CCodeChainCtx &CCX, const CItem &Item,
 
 		CString sMessageID;
 		int iPrice;
-		bool bCanRemove;
 		DWORD dwPriceFlags = 0;
-		if (Item.IsDevice())
-			bCanRemove = GetDeviceRemovePrice(Item, 0, &iPrice, &dwPriceFlags);
-		else
-			bCanRemove = false;
+
+		bool bCanRemove = Services.GetItemRemovePrice(Item, 0, &iPrice, &dwPriceFlags);
 
 		//	Create the structure
 

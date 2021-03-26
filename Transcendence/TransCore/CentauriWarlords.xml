@@ -440,7 +440,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			allowEnemyDocking=	"true"
-			ignoreFriendlyFire=	"true"
 
 			level=				"4"
 			size=				"160"
@@ -501,7 +500,6 @@
 
 		<DockScreens>
 			<Main>
-
 				<InitialPane>
 					(switch
 						(objGetData gSource "Liberated")
@@ -552,17 +550,12 @@
 
 					<Welcome2>
 						<OnPaneInit>
-							(block (theReward)
-								(setq theReward (item (objGetItems gSource "*U") 0))
-								(scrSetDesc gScreen
-									(cat "The leader continues: \"We would like to reward you for liberating our station. Please accept "
-										(itmGetName theReward 0x40)
-										(if (gr (itmGetCount theReward) 1)
-											"; they were left behind by the warlords.\""
-											"; it was left behind by the warlords.\""
-											)
-										)
-									)
+							(block (
+								(theReward (item (objGetItems gSource "*U") 0))
+								)
+								(scrSetDescTranslate gScreen (if (= (itmGetCount theReward) 1) 'descReward.one 'descReward.many) {
+									itemName: (itmGetName theReward 'demonstrative)
+									})
 								)
 						</OnPaneInit>
 
@@ -588,17 +581,33 @@
 
 		<Events>
 			<OnCreate>
-				; Register events for when subordinates are destroyed
-				(enum (sysFindObject gSource "sA O:guard;") tObj
-					(objRegisterForEvents gSource tObj)
+				(block ()
+					;	Register events for when subordinates are destroyed
+
+					(enum (sysFindObject gSource "sA O:guard;") tObj
+						(objRegisterForEvents gSource tObj)
+						)
+
+					;	Ignore friendly fire until all enemies destroyed.
+
+					(objSet@ gSource 'ignoreFriendlyFire True)
 					)
 			</OnCreate>
 
 			<OnObjDestroyed>
-				; If the player destroys any of the warlords then she
-				; counts as the liberator
-				(if (and gPlayerShip (eq aOrderGiver gPlayerShip))
-					(objSetData gSource "LiberatedByPlayer" True)
+				(block ()
+					;	If the player destroys any of the warlords then she
+					;	counts as the liberator
+
+					(if (and gPlayerShip (eq aOrderGiver gPlayerShip))
+						(objSetData gSource "LiberatedByPlayer" True)
+						)
+
+					;	If no more enemies, then we turn on friendly fire.
+
+					(if (not (sysFindObject gSource "sA O:guard;"))
+						(objSet@ gSource 'ignoreFriendlyFire Nil)
+						)
 					)
 			</OnObjDestroyed>
 
@@ -642,6 +651,22 @@
 				"Thank you for killing the warlords! We've been hiding ourselves
 				ever since they took over the station."
 
+			</Text>
+			<Text id="descReward.one">
+
+				The leader continues:
+				
+				"We would like to reward you for liberating our station. Please 
+				accept %itemName%; it was left behind by the warlords."
+			
+			</Text>
+			<Text id="descReward.many">
+
+				The leader continues:
+				
+				"We would like to reward you for liberating our station. Please 
+				accept %itemName%; they were left behind by the warlords."
+			
 			</Text>
 
 			<Text id="rumor.commonwealthPub">

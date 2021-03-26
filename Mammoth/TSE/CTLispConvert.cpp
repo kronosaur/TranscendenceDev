@@ -105,6 +105,19 @@ CSpaceObject *CTLispConvert::AsObject (const ICCItem *pItem)
 		return NULL;
 	}
 
+CG32bitPixel CTLispConvert::AsRGB (const ICCItem *pItem, CG32bitPixel rgbDefault)
+
+//	AsRGB
+//
+//	Converts to an RGB value.
+
+	{
+	if (!pItem || pItem->IsNil())
+		return rgbDefault;
+	else
+		return ::LoadRGBColor(pItem->GetStringValue(), rgbDefault);
+	}
+
 bool CTLispConvert::AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector *retSelector)
 
 //	AsScreen
@@ -248,6 +261,40 @@ ICCItemPtr CTLispConvert::CreatePowerResultMW (int iPower)
 		return ICCItemPtr((double)iPower / 10.0);
 	else
 		return ICCItemPtr(iPower / 10);
+	}
+
+ICCItemPtr CTLispConvert::CreateIntegerList (const TArray<int> &List)
+
+//	CreateIntegerList
+//
+//	Creates a list of integers.
+
+	{
+	if (List.GetCount() == 0)
+		return ICCItemPtr::Nil();
+
+	ICCItemPtr pResult(ICCItem::List);
+	for (int i = 0; i < List.GetCount(); i++)
+		pResult->Append(ICCItemPtr(List[i]));
+
+	return pResult;
+	}
+
+ICCItemPtr CTLispConvert::CreateStringList (const TArray<CString> &List)
+
+//	CreateStringList
+//
+//	Creates a list of strings.
+
+	{
+	if (List.GetCount() == 0)
+		return ICCItemPtr::Nil();
+
+	ICCItemPtr pResult(ICCItem::List);
+	for (int i = 0; i < List.GetCount(); i++)
+		pResult->Append(ICCItemPtr(List[i]));
+
+	return pResult;
 	}
 
 ICCItemPtr CTLispConvert::CreateVector (const CVector &vValue)

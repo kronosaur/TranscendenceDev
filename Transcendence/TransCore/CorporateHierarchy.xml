@@ -34,13 +34,6 @@
 					(not (objMatches gSource Nil "sTAV +corporateCustoms;"))
 						Nil
 						
-					; If the ship is radioactive then we refuse docking
-					(shpIsRadioactive gPlayerShip)
-						(if (objHasAttribute gSource "corporateDecon")
-							{	screen:&dsCommonwealthDecon;	priority:10		overrideOnly:true	}
-							{	screen:&dsRefuseContamination;	priority:10		overrideOnly:true	}
-							)
-						
 					; If the player has committed crimes, then she's in trouble
 					(geq (int (objGetData gPlayerShip "corpCrimeSeverity")) 2)
 						(switch
@@ -1001,6 +994,7 @@
 
 			<Refuel			criteria="f +BasicFuel; L:1-4;" priceAdj="90"/>
 			<Refuel			criteria="f +BasicFuel; L:5-10;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="120"/>
 
 			<ProduceTrade	criteria="{core.fusionFuel}"		impact="20"/>
 		</Trade>
@@ -2011,6 +2005,7 @@
 
 		<Devices>
 			<Device deviceID="&itPlasmaShieldGenerator;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="8"/>
 		</Devices>
 
 		<Items>
@@ -2108,6 +2103,7 @@
 			</Device>
 			<Device slotID="starboardArm1"	deviceID="&itRasiermesserLauncher;"/>
 			<Device deviceID="&itPlasmaShieldGenerator;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="9"/>
 		</Devices>
 
 		<Items>
@@ -2470,6 +2466,11 @@
 			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</Constant>
 
 			<!--
+			Always check if the player is radioactive
+			-->
+			<Definition	id="rpg.checkRadioactive">True</Definition>
+
+			<!--
 			By default we reveal unknown items when they are for sale.
 			-->
 			<Constant	id="rpg.showActualItem">True</Constant>
@@ -2484,17 +2485,26 @@
 		<Language>
 			<Text id="actionOperations">[O]perations Level</Text>
 
-			<Text id="customs.chargedForDecon">
+			<Text id="core.deconDesc">
 
 				Corporate security stops your ship for decontamination.
 				You are automatically charged %cost% for decontaminating your ship.
 
 			</Text>
-			<Text id="customs.cantAffordDecon">
+			<Text id="core.cannotAffordDecon">
 
-				Corporate security stops your ship for decontamination.
-				Unfortunately, you do not have %cost% to pay for decontamination.
+				Corporate security stops your ship.
 
+				"Sorry, your ship is radioactive and you do not have %cost%
+				to pay for decontamination."
+
+			</Text>
+			<Text id="core.cannotDecon">
+				
+				Corporate security stops your ship.
+
+				"Hey! Get that contaminated ship off our dock!"
+				
 			</Text>
 		</Language>
 	</Type>

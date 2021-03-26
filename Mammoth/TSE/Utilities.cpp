@@ -574,7 +574,7 @@ Metric CalcLevelDiffStrength (int iDiff)
 		}
 	}
 
-EManeuverTypes CalcTurnManeuver (int iDesired, int iCurrent, int iRotationAngle)
+EManeuver CalcTurnManeuver (int iDesired, int iCurrent, int iRotationAngle)
 
 //	CalcTurnManeuver
 //
@@ -585,13 +585,13 @@ EManeuverTypes CalcTurnManeuver (int iDesired, int iCurrent, int iRotationAngle)
 
 	if ((iTurn >= (360 - (iRotationAngle / 2)))
 			|| (iTurn <= (iRotationAngle / 2)))
-		return NoRotation;
+		return EManeuver::None;
 	else
 		{
 		if (iTurn >= 180)
-			return RotateRight;
+			return EManeuver::RotateRight;
 		else
-			return RotateLeft;
+			return EManeuver::RotateLeft;
 		}
 	}
 

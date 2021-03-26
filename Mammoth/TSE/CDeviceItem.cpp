@@ -77,6 +77,41 @@ CDeviceItem::ECalcTargetTypes CDeviceItem::CalcTargetType (void) const
 		}
 	}
 
+TArray<const CItemType *> CDeviceItem::GetConsumableTypes () const
+
+//	GetConsumableTypes
+//
+//	Get a list of items that we consume (e.g., ammo).
+
+	{
+	TArray<const CItemType *> Result;
+
+	if (IsWeapon())
+		{
+		const CDeviceClass &Device = GetDeviceClass();
+		for (int i = 0; i < Device.GetWeaponVariantCount(*this); i++)
+			{
+			auto &Desc = Device.GetWeaponFireDescForVariant(*this, i);
+			if (const CItemType *pType = Desc.GetAmmoType())
+				{
+				Result.Insert(pType);
+				}
+			}
+		}
+
+	return Result;
+	}
+
+int CDeviceItem::GetCyberDefenseLevel () const
+
+//	GetCyberDefenseLevel
+//
+//	Returns the cyber defense level of the device.
+
+	{
+	return CProgramDesc::CalcLevel(GetLevel(), GetEnhancements().GetCyberDefenseAdj());
+	}
+
 TSharedPtr<CItemEnhancementStack> CDeviceItem::GetEnhancementStack (void) const
 
 //	GetEnhancementStack

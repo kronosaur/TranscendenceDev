@@ -6,6 +6,7 @@
 
 #define EVENT_GET_DOCK_SCREEN					CONSTLIT("GetDockScreen")
 #define EVENT_ON_OBJ_DOCKED						CONSTLIT("OnObjDocked")
+#define EVENT_ON_REMOVE_AT_DOCK_SERVICES		CONSTLIT("OnRemoveAtDockServices")
 
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
 #define ON_DAMAGE_EVENT							CONSTLIT("OnDamage")
@@ -813,6 +814,11 @@ CConditionSet COverlay::GetConditions (CSpaceObject *pSource) const
 
 	if (StopsTime(pSource))
 		Conditions.Set(ECondition::timeStopped);
+
+	//	Is this a harmful overlay that can be removed at a dock screen?
+
+	if (GetType()->FindEventHandler(EVENT_ON_REMOVE_AT_DOCK_SERVICES))
+		Conditions.Set(ECondition::fouled);
 
 	//	Done
 

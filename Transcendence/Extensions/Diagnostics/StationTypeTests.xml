@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidTestStationType;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(block (
+					)
+					;	Unit Tests for Properties
+
+					(diagEval (list
+						{	test:'(typ@ &stDwargColony; 'abandonedDockScreen)		result:&dsRPGAbandonedStation;	}
+						{	test:'(typ@ &stDwargColony; 'armorClass)				result:"Dwarg chiton armor"	}
+						{	test:'(typ@ &stDwargColony; 'armorLevel)				result:3	}
+						{	test:'(typ@ &stDwargColony; 'balance)					result:216	}
+						{	test:'(typ@ &stDwargColony; 'canAttack)					result:True	}
+						{	test:'(typ@ &stDwargColony; 'category)					result:"02-Enemy"	}
+						{	test:'(typ@ &stDwargColony; 'challengeRating)			result:10	}
+						{	test:'(typ@ &stDwargColony; 'defenderCombatStrengthTarget)			result:	87.807999999999979 }
+						{	test:'(typ@ &stDwargColony; 'defenderStrength)			result:642	}
+						{	test:'(typ@ &stDwargColony; 'dockScreen)				result:Nil	}
+						{	test:'(typ@ &stDwargColony; 'explosionType)				result:"blast explosion 2"	}
+						{	test:'(typ@ &stDwargColony; 'fireRateAdj)				result:200	}
+						{	test:'(typ@ &stDwargColony; 'hitsToDestroy)				result:53	}
+						{	test:'(typ@ &stDwargColony; 'inanimate)					result:Nil	}
+						{	test:'(typ@ &stDwargColony; 'installDeviceMaxLevel)		result:Nil	}
+						{	test:'(typ@ &stDwargColony; 'hp)						result:160	}
+						{	test:'(typ@ &stDwargColony; 'level)						result:4	}
+						{	test:'(typ@ &stDwargColony; 'levelFrequency)			result:"---cu v---- ----- ----- -----"	}
+						{	test:'(typ@ &stDwargColony; 'locationCriteria)			result:"+planetary;"	}
+						{	test:'(typ@ &stDwargColony; 'maxLightRadius)			result:500	}
+						{	test:'(typ@ &stDwargColony; 'name)						result:"Dwarg colony"	}
+						{	test:'(typ@ &stDwargColony; 'regen)						result:2	}
+						{	test:'(typ@ &stDwargColony; 'repairArmorMaxLevel)		result:7	}
+						{	test:'(typ@ &stDwargColony; 'repairArmorRate)			result:1	}
+						{	test:'(typ@ &stDwargColony; 'repairArmorRateExplicit)	result:1	}
+						{	test:'(typ@ &stDwargColony; 'satelliteStrength)			result:0	}
+						{	test:'(typ@ &stDwargColony; 'shipTable)					result:'(&scDwargRaider;)	}
+						{	test:'(typ@ &stDwargColony; 'shipConstructionTable)		result:Nil	}
+						{	test:'(typ@ &stDwargColony; 'shipEncounterTable)		result:Nil	}
+						{	test:'(typ@ &stDwargColony; 'shipReinforcementsTable)	result:'(&scDwargRaider;)	}
+						{	test:'(typ@ &stDwargColony; 'showsUnexploredAnnotation)	result:Nil	}
+						{	test:'(typ@ &stDwargColony; 'size)						result:0	}
+						{	test:'(typ@ &stDwargColony; 'sovereign)					result:&svDwargRaiders;	}
+						{	test:'(typ@ &stDwargColony; 'sovereignName)				result:"Dwarg civilization"	}
+						{	test:'(typ@ &stDwargColony; 'squadronDesc)				result:{ count:'challengeHard id:"0" reinforce:'auto  shipTable:'(&scDwargRaider;) 	} }
+						{	test:'(typ@ &stDwargColony; 'stdTreasure)				result:3437.0	}
+						{	test:'(typ@ &stDwargColony; 'systemCriteria)			result:"+dwargSpace;"	}
+						{	test:'(typ@ &stDwargColony; 'treasureBalance)			result:93	}
+						{	test:'(typ@ &stDwargColony; 'treasureDesiredValue)		result:3200	}
+						{	test:'(typ@ &stDwargColony; 'treasureValue)				result:3200	}
+						{	test:'(typ@ &stDwargColony; 'unid)						result:&stDwargColony;	}
+						{	test:'(typ@ &stDwargColony; 'weaponStrength)			result:80	}
+
+						{	test:'(typ@ &stAresShipyard; 'defenderCombatStrengthTarget)			result:	Nil }
+						{	test:'(typ@ &stAresShipyard; 'shipTable)				result:'(&scSandstorm; &scTundra; &scChasm; &scDeimos; &scPhobos;)	}
+						{	test:'(typ@ &stAresShipyard; 'shipConstructionMaxCount)	result:10	}
+						{	test:'(typ@ &stAresShipyard; 'shipConstructionRate)		result:500	}
+						{	test:'(typ@ &stAresShipyard; 'shipConstructionTable)	result:'(&scSandstorm; &scTundra; &scChasm; &scDeimos; &scPhobos;)	}
+						{	test:'(typ@ &stAresShipyard; 'shipEncounterTable)		result:'(&scSandstorm; &scPolar; &scTundra; &scChasm;)	}
+						{	test:'(typ@ &stAresShipyard; 'shipReinforcementsTable)	result:Nil	}
+						{	test:'(typ@ &stAresShipyard; 'squadronDesc)				result:{ constructionMaxCount:10 constructionRate:500 constructionTable:'(&scSandstorm; &scTundra; &scChasm; &scDeimos; &scPhobos;) count:'auto id:"0" reinforce:'none shipTable:'(&scSandstorm; &scTundra; &scChasm; &scDeimos; &scPhobos;) }	}
+						))
+					)
+			</OnGlobalStartDiagnostics>
+
+			<OnGlobalSystemDiagnostics>
+				(block (
+					(curSystem (sysGetNode))
+					)
+					(switch
+						(= curSystem 'SE)
+							(block (
+								(startonObj (sysFindObject Nil "TN +unid:stStartonEridani;"))
+								)
+								(if (not startonObj)
+									(error "Unable to find Starton Eridani.")
+									)
+
+								;	Test some trade properties on Starton Eridani.
+
+								(diagEval (list
+									{	test:'(objGetName (@ data 'startonObj))		result:"Starton Eridani"	}
+
+									{	test:'(objGetBuyPrice (@ data 'startonObj) (itmCreate &itLaserCannon; 1))
+																					result:190	}
+
+									{	test:'(objGetRemoveConditionPrice (@ data 'startonObj) { shipClass:&scSapphireYacht; } 'radioactive)
+																					result:80	}
+									)
+									{
+										startonObj:startonObj
+									})
+								)
+						)
+					)
+			</OnGlobalSystemDiagnostics>
+		</Events>
+	</Type>
+
+</TranscendenceModule>

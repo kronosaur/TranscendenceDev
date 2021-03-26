@@ -290,6 +290,90 @@ class CStationEncounterOverrideTable
 		TSortMap<DWORD, CStationEncounterDesc> m_Table;
 	};
 
+//	CSquadronDesc -------------------------------------------------------------
+
+class CSquadronDesc
+	{
+	public:
+		static constexpr int DEFAULT_INTERVAL_SECONDS = 20;
+		static constexpr int DEFAULT_INTERVAL_TICKS = DEFAULT_INTERVAL_SECONDS * g_TicksPerSecond;
+
+		CSquadronDesc () { }
+		CSquadronDesc (const CSquadronDesc &Src) = delete;
+		CSquadronDesc (CSquadronDesc &&Src) noexcept { Move(Src); }
+
+		~CSquadronDesc () { CleanUp(); }
+
+		CSquadronDesc &operator= (const CSquadronDesc &Src) = delete;
+		CSquadronDesc &operator= (CSquadronDesc &&Src) noexcept { CleanUp(); Move(Src); return *this; }
+
+		void AddTypesUsed (TSortMap<DWORD, bool> &retTypesUsed) const;
+		bool BindDesign (SDesignLoadCtx &Ctx);
+		bool BuildsReinforcements () const { return m_bBuildReinforcements; }
+		ICCItemPtr GetDesc (CUniverse &Universe) const;
+		Metric CalcDefenderStrength (int iLevel) const;
+		Metric GetChallengeStrength (int iLevel) const { return m_Count.GetChallengeStrength(iLevel); }
+		const CShipChallengeDesc &GetChallengeDesc () const { return m_Count; }
+		const CShipChallengeDesc &GetReinforceDesc () const { return m_Reinforcement; }
+		DWORD GetReinforceInterval () const { return (DWORD)m_iReinforceInterval; }
+		int GetReinforceLimit () const { return m_iReinforceLimit; }
+		const IShipGenerator *GetConstructionTable () const { return m_pConstruction; }
+		const CString &GetID () const { return m_sID; }
+		const IShipGenerator *GetInitialShips () const { return m_pShipTable; }
+		const IShipGenerator *GetReinforcementsTable (void) const;
+		int GetShipConstructionRate () const { return m_iShipConstructionRate; }
+		int GetShipConstructionMax () const { return m_iMaxConstruction; }
+		bool HasShipClass (const CShipClass &ShipClass) const;
+		bool Init (SDesignLoadCtx &Ctx, const CString &sID, const CXMLElement *pShips, const CXMLElement *pReinforcements, const CXMLElement *pConstruction);
+		bool InitFromXML (SDesignLoadCtx &Ctx, const CString &sID, const CXMLElement &Desc);
+
+	private:
+		void CleanUp ();
+		bool InitDefenderCountCompatible (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		void Move (CSquadronDesc &Src) noexcept;
+
+		CString m_sID;									//	Squadron ID
+		CShipChallengeDesc m_Count;						//	Squadron should have this number of ships
+		CShipChallengeDesc m_Reinforcement;				//	Defines when reinforcements are called
+		IShipGenerator *m_pShipTable = NULL;			//	Ships at creation time
+		int m_iReinforceLimit = 0;						//	If >0, we stop after this number of reinforcement calls
+		int m_iReinforceInterval = DEFAULT_INTERVAL_TICKS;
+		bool m_bBuildReinforcements = false;			//	Build instead of gating
+
+		IShipGenerator *m_pReinforcements = NULL;		//	Reinforcements table
+		IShipGenerator *m_pConstruction = NULL;			//	Ships built by station
+		int m_iShipConstructionRate = 0;				//	Ticks between each construction
+		int m_iMaxConstruction = 0;						//	Stop building when we get this many ships
+	};
+
+class CSquadronDescList
+	{
+	public:
+		void AddTypesUsed (TSortMap<DWORD, bool> &retTypesUsed) const;
+		bool BindDesign (SDesignLoadCtx &Ctx);
+		Metric CalcDefenderStrength (int iLevel) const;
+		const CSquadronDesc *FindSquadron (const CString &sID) const { auto pEntry = m_Squadrons.GetAt(sID); if (pEntry) return (*pEntry); else return NULL; }
+		const CSquadronDesc *FindMatchingSquadron (const CShipClass &ShipClass) const;
+		Metric GetChallengeStrength (int iLevel) const;
+		int GetCount () const { return m_Squadrons.GetCount(); }
+		ICCItemPtr GetConstructionShipsReferenced (CUniverse &Universe) const;
+		ICCItemPtr GetDesc (CUniverse &Universe) const;
+		ICCItemPtr GetInitialShipsReferenced (CUniverse &Universe) const;
+		ICCItemPtr GetReinforcementShipsReferenced (CUniverse &Universe) const;
+		int GetConstructionRate () const;
+		int GetConstructionMaxCount () const;
+		const CSquadronDesc &GetSquadron (int iIndex) const { return *m_Squadrons[iIndex]; }
+		bool InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &StationXML);
+		bool IsDebug () const { return m_bDebug; }
+		bool IsEmpty () const { return m_Squadrons.GetCount() == 0; }
+
+	private:
+		bool InsertSquadronFromXML (SDesignLoadCtx &Ctx, const CXMLElement &DescXML);
+
+		TSortMap<CString, TUniquePtr<CSquadronDesc>> m_Squadrons;
+		bool m_bDebug = false;
+	};
+
 //	CStationType --------------------------------------------------------------
 
 const int STATION_REPAIR_FREQUENCY =	30;
@@ -445,7 +529,6 @@ class CStationType : public CDesignType
 
 		bool AlertWhenAttacked (void) { return (mathRandom(1, 100) <= m_iAlertWhenAttacked); }
 		bool AlertWhenDestroyed (void) { return (mathRandom(1, 100) <= m_iAlertWhenDestroyed); }
-		bool BuildsReinforcements (void) const { return (m_fBuildReinforcements ? true : false); }
 		bool CanAttack () const;
 		bool CanAttackIndependently (void) const { return (m_fNoIndependentAttack ? false : true); }
 		bool CanBeEncountered (const CStationEncounterDesc &Desc) const { return m_EncounterRecord.CanBeEncountered(Desc); }
@@ -463,10 +546,8 @@ class CStationType : public CDesignType
 		CurrencyValue GetBalancedTreasure (void) const;
 		CEffectCreator *GetBarrierEffect (void) { return m_pBarrierEffect; }
 		int GetChallengeRating (void) const;
-		IShipGenerator *GetConstructionTable (void) { return m_pConstruction; }
 		CSovereign *GetControllingSovereign (void) const;
 		DWORD GetDefaultBkgnd (void) { return m_dwDefaultBkgnd; }
-		const CShipChallengeDesc &GetDefenderCount (void) const { return m_DefenderCount; }
 		CXMLElement *GetDesc (void) { return m_pDesc; }
 		CString GetDestNodeID (void) const { return m_Stargate.GetDestNodeID(); }
 		CString GetDestEntryPoint (void) const { return m_Stargate.GetDestEntryPoint(); }
@@ -493,27 +574,24 @@ class CStationType : public CDesignType
 		const CCompositeImageDesc &GetImage (void) const { return m_Image; }
 		const CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) const { return m_Image.GetImage(SGetImageCtx(GetUniverse()), Selector, Modifiers, retiRotation); }
 		int GetImageVariants (void) { return m_Image.GetVariantCount(); }
-		IShipGenerator *GetInitialShips (void) const { return m_pInitialShips; }
 		Metric GetLevelStrength (int iLevel) const;
 		Metric GetMass (void) { return m_rMass; }
 		int GetMaxLightDistance (void) const { return m_Star.GetMaxLightDistance(); }
-		int GetMaxShipConstruction (void) { return m_iMaxConstruction; }
 		const CNameDesc &GetNameDesc (void) const { return m_Name; }
 		int GetNumberAppearing (void) const { return m_EncounterRecord.GetTotalMinimum(); }
 		CPaintOrder::Types GetPaintOrder (void) const { return m_iPaintOrder; }
 		Metric GetParallaxDist (void) const { return m_rParallaxDist; }
 		CItem GetPrimaryWeapon (void) const;
 		IItemGenerator *GetRandomItemTable (void) { return m_pItems; }
-		IShipGenerator *GetReinforcementsTable (void);
 		const CIntegralRotationDesc &GetRotationDesc (void);
 		const CXMLElement *GetSatellitesDesc (void) const { return m_pSatellitesDesc; }
 		ScaleTypes GetScale (void) const { return m_iScale; }
 		int GetSize (void) const { return m_iSize; }
-		int GetShipConstructionRate (void) { return m_iShipConstructionRate; }
-		const CRegenDesc &GetShipRegenDesc (void) { return m_ShipRegen; }
+		const CRegenDesc &GetShipRegenDesc (void) const { return m_ShipRegen; }
 		CSovereign *GetSovereign (void) const { return m_pSovereign; }
 		CG32bitPixel GetSpaceColor (void) const { return m_Star.GetSpaceColor(); }
-		int GetStealth (void) const { return m_iStealth; }
+		const CSquadronDescList &GetSquadronDesc () const { return m_Squadrons; }
+		int GetStealth (void) const { return m_iStealthFromArmor; }
 		int GetTempChance (void) const { return m_iChance; }
 		bool HasAnimations (void) const { return (m_pAnimations != NULL); }
 		bool HasGravity (void) const { return m_Star.HasGravity(); }
@@ -592,6 +670,8 @@ class CStationType : public CDesignType
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
+		static constexpr double DEFAULT_SHIP_REGEN_PER_STATION_REGEN = 0.5;
+
 		struct SAnimationSection
 			{
 			int m_x;
@@ -639,7 +719,7 @@ class CStationType : public CDesignType
 
 		//	Armor & Hull
 		CStationHullDesc m_HullDesc;					//	Hull descriptor
-		int m_iStealth = 0;								//	Stealth
+		int m_iStealthFromArmor = 0;					//	Stealth
 
 		//	Devices
 		IDeviceGenerator *m_pDevices = NULL;			//	Devices for the station
@@ -674,9 +754,8 @@ class CStationType : public CDesignType
 		DWORD m_fCommsHandlerInit:1 = false;			//	TRUE if comms handler has been initialized
 		DWORD m_fNoMapDetails:1 = false;                //  If TRUE, do not show in details pane in galactic map
 		DWORD m_fSuppressMapLabel:1 = false;			//	If TRUE, do not show a label on system map
-		DWORD m_fBuildReinforcements:1 = false;			//	If TRUE, reinforcements are built instead of brought in
-
 		DWORD m_fStationEncounter:1 = false;			//	If TRUE, we're just an encounter wrapper that creates stations
+
 		DWORD m_fCalcLevel:1 = false;					//	If TRUE, m_iLevel needs to be computed
 		DWORD m_fBalanceValid:1 = false;				//	If TRUE, m_rCombatBalance is valid
 		DWORD m_fShowsUnexploredAnnotation:1 = false;	//	If TRUE, we show unexplored annotation (used for asteroids)
@@ -684,6 +763,7 @@ class CStationType : public CDesignType
 		DWORD m_fAnonymous:1 = false;					//	If TRUE, object is anonymous world/asteroid/etc.
 		DWORD m_fNoIndependentAttack:1 = false;			//	If TRUE, we only attack if our base is alive.
 		DWORD m_fCannotAttack:1 = false;				//	If TRUE, object cannot attack
+		DWORD m_fSpare8:1 = false;
 
 		//	Images
 		CCompositeImageDesc m_Image;
@@ -711,15 +791,10 @@ class CStationType : public CDesignType
 		CStationEncounterCtx m_EncounterRecord;			//	Record of encounters so far
 
 		//	Ships
-		CShipChallengeDesc m_DefenderCount;				//	Station should have this number of ships
-		IShipGenerator *m_pInitialShips = NULL;			//	Ships at creation time
-		IShipGenerator *m_pReinforcements = NULL;		//	Reinforcements table
+		CSquadronDescList m_Squadrons;					//	Description of squadrons
 		IShipGenerator *m_pEncounters = NULL;			//	Random encounters table
 		int m_iEncounterFrequency = ftNotRandom;		//	Frequency of random encounter
 		CRegenDesc m_ShipRegen;							//	Regen for ships docked with us
-		IShipGenerator *m_pConstruction = NULL;			//	Ships built by station
-		int m_iShipConstructionRate = 0;				//	Ticks between each construction
-		int m_iMaxConstruction = 0;						//	Stop building when we get this many ships
 
 		//	Satellites
 		CXMLElement *m_pSatellitesDesc = NULL;

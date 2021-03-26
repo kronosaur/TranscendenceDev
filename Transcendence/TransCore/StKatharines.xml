@@ -170,6 +170,7 @@
 <!-- St Katharine's Star System -->
 
 	<SystemType UNID="&ssStKatharine;" 
+				name=				"St. Katharine's Star"
 				noRandomEncounters=	"true"
 				noExtraEncounters=	"true"
 				backgroundID=		"&rsBrightStarSpace;"

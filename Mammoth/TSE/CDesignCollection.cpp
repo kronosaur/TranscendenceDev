@@ -302,14 +302,7 @@ ALERROR CDesignCollection::BindDesign (CUniverse &Universe, const TArray<CExtens
 
 	//	Resolve inheritance and overrides types.
 
-	if (error = ResolveTypeHierarchy(Ctx))
-		return BindDesignError(Ctx, retsError);
-
-	m_AllTypes.Merge(m_HierarchyTypes, &m_OverrideTypes);
-
-	//	Now resolve all overrides and inheritance
-
-	if (error = ResolveOverrides(Ctx, TypesUsed))
+	if (error = ResolveTypeHierarchy(Ctx, TypesUsed))
 		return BindDesignError(Ctx, retsError);
 
 	//	Initialize the byType lists
@@ -952,7 +945,7 @@ bool CDesignCollection::FireOnGlobalObjGateCheck (CSpaceObject *pObj, CTopologyN
 	return bResult;
 	}
 
-void CDesignCollection::FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData)
+void CDesignCollection::FireOnGlobalPaneInit (CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData)
 
 //	FireOnGlobalPaneInit
 //
@@ -975,7 +968,6 @@ void CDesignCollection::FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot,
 		CDesignType *pType = m_EventsCache[evtOnGlobalDockPaneInit]->GetEntry(i, &Event);
 
 		if (pType->FireOnGlobalDockPaneInit(Event,
-				pScreen,
 				dwRootUNID,
 				sScreenUNID,
 				sScreen,
@@ -1770,7 +1762,146 @@ void CDesignCollection::Reinit (void)
 	DEBUG_CATCH
 	}
 
-ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType, CDesignType **retpNewType)
+ALERROR CDesignCollection::ResolveType (SDesignLoadCtx &Ctx, CDesignType &Type, const TSortMap<DWORD, bool> &TypesUsed, CDesignType **retpNewType)
+
+//	ResolveType
+//
+//	Recursively resolves the given type so that it inherits from its parents and
+//	is overridden by any overrides.
+
+	{
+	if (Type.IsHierarchyResolved())
+		{
+		if (retpNewType)
+			*retpNewType = &Type;
+		return NOERROR;
+		}
+
+	CDesignType *pNewType = &Type;
+
+	//	Resolve inheritance. NOTE: We might recurse inside of ResolveInheritingType 
+	//	because we need to make sure the ancestor is resolved.
+
+	DWORD dwInheritFrom;
+	if (dwInheritFrom = pNewType->GetInheritFromUNID()
+			&& pNewType->GetInheritFrom() == NULL)
+		{
+		if (ALERROR error = ResolveInheritingType(Ctx, pNewType, TypesUsed, &pNewType))
+			return error;
+		}
+
+	//	Resolve overrides
+
+	for (int i = 0; i < m_OverrideTypes.GetCount(); i++)
+		{
+		CDesignType *pOverrideType = m_OverrideTypes.GetEntry(i);
+		if (pOverrideType->GetUNID() != Type.GetUNID())
+			continue;
+
+		if (ALERROR error = ResolveTypeOverride(Ctx, *pNewType, *pOverrideType, TypesUsed, &pNewType))
+			return error;
+		}
+
+	//	Make sure we add it back to m_AllTypes, because we might look for it.
+
+	pNewType->SetHierarchyResolved(true);
+	if (pNewType != &Type)
+		{
+		if (ALERROR error = m_AllTypes.AddOrReplaceEntry(pNewType))
+			return error;
+		}
+
+	//	Done
+
+	if (retpNewType)
+		*retpNewType = pNewType;
+
+	return NOERROR;
+	}
+
+ALERROR CDesignCollection::ResolveTypeOverride (SDesignLoadCtx &Ctx, CDesignType &Type, CDesignType &Override, const TSortMap<DWORD, bool> &TypesUsed, CDesignType **retpNewType)
+
+//	ResolveTypeOverride
+//
+//	Resolve the override.
+
+	{
+	//	Find the type that we are trying to override. If we can't find it
+	//	then just continue without error (it means we're trying to override
+	//	a type that doesn't currently exist).
+
+	CDesignType *pAncestor = m_AllTypes.FindByUNID(Override.GetUNID());
+	if (pAncestor == NULL)
+		{
+		//	In previous versions, we sometimes saved these overrides, so if
+		//	we find it in TypesUsed, then it means we need it.
+
+		if (TypesUsed.Find(Override.GetUNID()))
+			{
+			m_AllTypes.AddOrReplaceEntry(&Override);
+			}
+
+		if (retpNewType)
+			*retpNewType = &Type;
+
+		return NOERROR;
+		}
+
+	//	If the ancestor is a different type, then this is an error.
+
+	if (pAncestor->GetType() != designGenericType && pAncestor->GetType() != Override.GetType())
+		return Override.ComposeLoadError(Ctx, CONSTLIT("Cannot override a different type."));
+
+	//	Generate a merged XML so that we inherit appropriate XML from our
+	//	ancestor.
+
+	CXMLElement *pNewXML = new CXMLElement;
+	bool bMerged;
+	pNewXML->InitFromMerge(*pAncestor->GetXMLElement(), *Override.GetXMLElement(), Override.GetXMLMergeFlags(), &bMerged);
+
+	//	If we did not merge anything from our ancestor then no need to create
+	//	a new type.
+
+	if (!bMerged)
+		{
+		delete pNewXML;
+		
+		if (retpNewType)
+			*retpNewType = &Type;
+
+		return NOERROR;
+		}
+
+	//	Define the type (m_CreatedTypes takes ownership of pNewXML).
+	//
+	//	NOTE: We need to support the case where we define multiple types for
+	//	the same UNID. We never use m_CreatedTypes to lookup by UNID, so
+	//	this should work as long as DefineType keeps both UNIDs.
+	//
+	//	LATER: m_CreatedTypes should be a normal CDesignList.
+
+	CDesignType *pNewType;
+	if (m_CreatedTypes.DefineType(Ctx, Override.GetExtension(), Override.GetUNID(), pNewXML, &pNewType, &Ctx.sError) != NOERROR)
+		{
+		delete pNewXML;
+		return Override.ComposeLoadError(Ctx, Ctx.sError);
+		}
+
+	//	We set inheritence on the new type
+
+	pNewType->SetModification();
+	pNewType->SetMerged();
+	pNewType->SetInheritFrom(pAncestor);
+
+	//	Now replace the original
+
+	if (retpNewType)
+		*retpNewType = pNewType;
+
+	return NOERROR;
+	}
+
+ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType, const TSortMap<DWORD, bool> &TypesUsed, CDesignType **retpNewType)
 
 //	ResolveInheritingType
 //
@@ -1788,20 +1919,11 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 
 	pType->SetInheritFrom(pType);
 
-	//	Look for the type that we inherit from. We look first in the hierarchical 
-	//	types that we've just created (since they haven't been merged in m_AllTypes
-	//	yet).
+	//	Look for the type that we inherit from.
 
-	CDesignType *pAncestor = m_HierarchyTypes.FindType(dwAncestorUNID);
-
-	//	If we can't find it, then look for it in all types
-
+	CDesignType *pAncestor = m_AllTypes.FindByUNID(dwAncestorUNID);
 	if (pAncestor == NULL)
-		{
-		pAncestor = m_AllTypes.FindByUNID(dwAncestorUNID);
-		if (pAncestor == NULL)
-			return pType->ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown inherit type: %0x8x"), dwAncestorUNID));
-		}
+		return pType->ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown inherit type: %0x8x"), dwAncestorUNID));
 
 	//	If our ancestor inherits from themselves, then it means that we've found
 	//	an inheritance cycle.
@@ -1809,14 +1931,10 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 	if (pAncestor->GetInheritFrom() == pAncestor)
 		return pType->ComposeLoadError(Ctx, CONSTLIT("Cannot inherit from self."));
 
-	//	If our ancestor also inherits from someone and we haven't yet resolved 
-	//	it, then we need recurse.
+	//	Make sure our ancestor is resolved
 
-	if (pAncestor->GetInheritFromUNID() && pAncestor->GetInheritFrom() == NULL)
-		{
-		if (error = ResolveInheritingType(Ctx, pAncestor, &pAncestor))
-			return error;
-		}
+	if (error = ResolveType(Ctx, *pAncestor, TypesUsed, &pAncestor))
+		return error;
 
 	//	If our ancestor is a generic type, then we don't need to do anything 
 	//	else. We just set up the pointer and we're done.
@@ -1877,89 +1995,6 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 	return NOERROR;
 	}
 
-ALERROR CDesignCollection::ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap<DWORD, bool> &TypesUsed)
-
-//	ResolveOverrides
-//
-//	Resolve all overrides
-
-	{
-	//	Apply all overrides
-
-	for (int i = 0; i < m_OverrideTypes.GetCount(); i++)
-		{
-		CDesignType *pOverride = m_OverrideTypes.GetEntry(i);
-
-		//	Find the type that we are trying to override. If we can't find it
-		//	then just continue without error (it means we're trying to override
-		//	a type that doesn't currently exist).
-
-		CDesignType *pAncestor = m_AllTypes.FindByUNID(pOverride->GetUNID());
-		if (pAncestor == NULL)
-			{
-			//	In previous versions, we sometimes saved these overrides, so if
-			//	we find it in TypesUsed, then it means we need it.
-
-			if (TypesUsed.Find(pOverride->GetUNID()))
-				{
-				m_AllTypes.AddOrReplaceEntry(pOverride);
-				}
-
-			continue;
-			}
-
-		//	If the ancestor is a different type, then this is an error.
-
-		if (pAncestor->GetType() != designGenericType && pAncestor->GetType() != pOverride->GetType())
-			return pOverride->ComposeLoadError(Ctx, CONSTLIT("Cannot override a different type."));
-
-		//	Generate a merged XML so that we inherit appropriate XML from our
-		//	ancestor.
-
-		CXMLElement *pNewXML = new CXMLElement;
-		bool bMerged;
-		pNewXML->InitFromMerge(*pAncestor->GetXMLElement(), *pOverride->GetXMLElement(), pOverride->GetXMLMergeFlags(), &bMerged);
-
-		//	If we did not merge anything from our ancestor then no need to create
-		//	a new type.
-
-		if (!bMerged)
-			{
-			delete pNewXML;
-			continue;
-			}
-
-		//	Define the type (m_CreatedTypes takes ownership of pNewXML).
-		//
-		//	NOTE: We need to support the case where we define multiple types for
-		//	the same UNID. We never use m_CreatedTypes to lookup by UNID, so
-		//	this should work as long as DefineType keeps both UNIDs.
-		//
-		//	LATER: m_CreatedTypes should be a normal CDesignList.
-
-		CDesignType *pNewType;
-		if (m_CreatedTypes.DefineType(Ctx, pOverride->GetExtension(), pOverride->GetUNID(), pNewXML, &pNewType, &Ctx.sError) != NOERROR)
-			{
-			delete pNewXML;
-			return pOverride->ComposeLoadError(Ctx, Ctx.sError);
-			}
-
-		//	We set inheritence on the new type
-
-		pNewType->SetModification();
-		pNewType->SetMerged();
-		pNewType->SetInheritFrom(pAncestor);
-
-		//	Now replace the original
-
-		m_AllTypes.AddOrReplaceEntry(pNewType);
-		}
-
-	//	Done
-
-	return NOERROR;
-	}
-
 CDesignType *CDesignCollection::ResolveDockScreen (CDesignType *pLocalScreen, const CString &sScreen, CString *retsScreenActual, bool *retbIsLocal)
 
 //	ResolveDockScreen
@@ -1997,35 +2032,31 @@ CDesignType *CDesignCollection::ResolveDockScreen (CDesignType *pLocalScreen, co
 		}
 	}
 
-ALERROR CDesignCollection::ResolveTypeHierarchy (SDesignLoadCtx &Ctx)
+ALERROR CDesignCollection::ResolveTypeHierarchy (SDesignLoadCtx &Ctx, const TSortMap<DWORD, bool> &TypesUsed)
 
 //	ResolveTypeHierarchy
 //
 //	Creates any new types due to inheritance or override.
 
 	{
-	ALERROR error;
-	int i;
-
 	//	Start fresh
 
 	m_HierarchyTypes.DeleteAll();
 
+	//	Use flags to tell when we've resolved a type.
+
+	m_AllTypes.SetHierarchyResolved(false);
+
 	//	Loop over all types and recursively resolve them.
 
-	for (i = 0; i < m_AllTypes.GetCount(); i++)
+	for (int i = 0; i < m_AllTypes.GetCount(); i++)
 		{
 		CDesignType *pType = m_AllTypes.GetEntry(i);
 
-		//	If we inherit from something, then resolve it.
+		//	Resolve the type. NOTE: This call may recurse.
 
-		DWORD dwInheritFrom;
-		if (dwInheritFrom = pType->GetInheritFromUNID()
-				&& pType->GetInheritFrom() == NULL)
-			{
-			if (error = ResolveInheritingType(Ctx, pType))
-				return error;
-			}
+		if (ALERROR error = ResolveType(Ctx, *pType, TypesUsed))
+			return error;
 		}
 
 	//	Done

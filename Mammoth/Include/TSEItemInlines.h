@@ -116,6 +116,17 @@ inline CString CDifferentiatedItem::GetNounPhrase (DWORD dwFlags) const
 	return m_Item.GetNounPhrase(dwFlags);
 	}
 
+inline ICCItemPtr CDifferentiatedItem::GetProperty (const CString &sProperty) const
+	{
+	CCodeChainCtx CCX(m_Item.GetUniverse());
+	CItemCtx ItemCtx(m_Item);
+	ICCItem *pResult = m_Item.GetItemProperty(CCX, ItemCtx, sProperty, false);
+	if (pResult)
+		return ICCItemPtr(pResult);
+	else
+		return ICCItemPtr::Nil();
+	}
+
 inline int CDifferentiatedItem::GetVariantNumber (void) const
 	{
 	return m_Item.GetVariantNumber();
@@ -271,7 +282,7 @@ inline int CInstalledArmor::GetLevel (void) const
 	return (m_pItem ? m_pItem->GetLevel() : GetClass()->GetItemType()->GetLevel()); 
 	}
 
-inline int CInstalledArmor::GetMaxHP (CSpaceObject *pSource) const 
+inline int CInstalledArmor::GetMaxHP (const CSpaceObject *pSource) const 
 	{
 	return m_pItem->AsArmorItemOrThrow().GetMaxHP();
 	}
@@ -308,6 +319,16 @@ inline const CDeviceClass &CDeviceItem::GetDeviceClass (void) const
 inline CDeviceClass &CDeviceItem::GetDeviceClass (void)
 	{
 	return *GetType().GetDeviceClass();
+	}
+
+inline const CRepairerClass &CDeviceItem::GetDeviceClassRepairer () const
+	{
+	const CDeviceClass &DeviceClass = GetDeviceClass();
+	const CRepairerClass *pRepairerClass = DeviceClass.AsRepairerClass();
+	if (!pRepairerClass)
+		throw CException(ERR_FAIL);
+
+	return *pRepairerClass;
 	}
 
 inline int CDeviceItem::GetDeviceSlot (void) const
@@ -409,6 +430,12 @@ inline bool CDeviceItem::IsWeaponVariantValid (int iVariant) const
 inline bool CDeviceItem::NeedsAutoTarget (int *retiMinFireArc, int *retiMaxFireArc) const
 	{
 	return GetType().GetDeviceClass()->NeedsAutoTarget(*this, retiMinFireArc, retiMaxFireArc);
+	}
+
+inline void CDeviceItem::SetData (DWORD dwData)
+	{
+	if (CInstalledDevice *pDevice = GetInstalledDevice())
+		pDevice->SetData(dwData);
 	}
 
 //	CInstalledDevice Inlines ---------------------------------------------------

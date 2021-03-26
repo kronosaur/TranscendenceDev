@@ -71,11 +71,44 @@ class ITransDataCommand
 class ItemInfo
 	{
 	public:
+		struct SFoundDesc
+			{
+			const CItemType *pItemType = NULL;
+			int iSystemLevel = -1;
+			const CDesignType *pFoundOn = NULL;
+			int iTotalCount = 0;						//	Total item count
+			TSortMap<int, int> Games;					//	Game samples found on
+			};
+
+		void AddFoundOnEntry (const CItem &Item, const CDesignType &FoundOnType, int iSystemLevel, int iSampleIndex)
+			{
+			bool bNew;
+			auto *pFoundOn = FoundOn.SetAt(ItemInfo::MakeFoundOnKey(*Item.GetType(), FoundOnType, iSystemLevel), &bNew);
+			if (bNew)
+				{
+				pFoundOn->pItemType = Item.GetType();
+				pFoundOn->pFoundOn = &FoundOnType;
+				pFoundOn->iSystemLevel = iSystemLevel;
+				}
+
+			pFoundOn->iTotalCount += Item.GetCount();
+
+			auto *pCount = pFoundOn->Games.SetAt(iSampleIndex, &bNew);
+			if (bNew)
+				*pCount = 1;
+			else
+				*pCount += 1;
+			}
+
+		static CString MakeFoundOnKey (const CItemType &ItemType, const CDesignType &Type, int iSystemLevel)
+			{ return strPatternSubst(CONSTLIT("%08x/%08x/%02d"), ItemType.GetUNID(), Type.GetUNID(), iSystemLevel); }
+
 		ItemInfo (void) { }
 
-		CItemType *pType;							//	Item type
-		int iTotalCount;							//	Total times this item type has appeared
-		double rTotalCount;
+		CItemType *pType = NULL;						//	Item type
+		int iTotalCount = 0;							//	Total times this item type has appeared
+		double rTotalCount = 0.0;
+		TSortMap<CString, SFoundDesc> FoundOn;			//	Stats for where items were found
 	};
 
 const int MAX_FREQUENCY_COUNT = 12;
@@ -85,21 +118,21 @@ class StationInfo
 	public:
 		StationInfo (void) { }
 
-		CStationType *pType;
+		CStationType *pType = NULL;
 		CString sCategory;
 
-		int iFreqCount[MAX_FREQUENCY_COUNT];		//	For each count, then number of times that
+		int iFreqCount[MAX_FREQUENCY_COUNT] = { 0 };	//	For each count, then number of times that
 													//	number of stations have appeared in the
 													//	system instance.
 
-		int iTotalCount;							//	Total times this station type has appeared
+		int iTotalCount = 0;						//	Total times this station type has appeared
 													//	the system instance.
-		double rTotalCount;
+		double rTotalCount = 0.0;
 
-		int iSystemCount;							//	Number of system instances with this
+		int iSystemCount = 0;						//	Number of system instances with this
 													//	station type
 
-		int iTempCount;								//	Temp count for a specific system instance
+		int iTempCount = 0;							//	Temp count for a specific system instance
 	};
 
 struct SDesignTypeInfo

@@ -531,6 +531,7 @@
 				<Missile ammoID="&itKM500Missile;"/>
 				<Missile ammoID="&itKM550Missile;"/>
 				<Missile ammoID="&itXM300Missile;"/>
+				<Missile ammoID="&itKM170Missile;"/>
 				<Missile ammoID="&itXM900Missile;"/>
 			</Missiles>
 		</Weapon>
@@ -2643,7 +2644,7 @@
 
 	<!-- Missiles for NAMI Launcher -->
 
-	<!-- KM100 Longbow Missile -->
+	<!-- Level 2: KM100 Longbow Missile -->
 
 	<ItemType UNID="&itKM100Missile;"
 			name=				"KM100 Longbow missile"
@@ -2674,7 +2675,7 @@
 		</Missile>
 	</ItemType>
 
-	<!-- Fragmentation Missile -->
+	<!-- Level 3: KM110 Starburst Missile -->
 
 	<ItemType UNID="&itFragmentationMissile;"
 			name=				"KM110 Starburst missile"
@@ -2715,7 +2716,7 @@
 		</Missile>
 	</ItemType>
 
-	<!-- KM120 Brute Missile -->
+	<!-- Level 3: KM120 Brute Missile -->
 
 	<ItemType UNID="&itKM120Missile;"
 			name=				"KM120 Brute missile"
@@ -2746,7 +2747,7 @@
 		</Missile>
 	</ItemType>
 
-	<!-- KM500 Stiletto Missile -->
+	<!-- Level 3: KM500 Stiletto Missile -->
 
 	<ItemType UNID="&itKM500Missile;"
 			name=				"KM500 Stiletto missile"
@@ -2778,7 +2779,7 @@
 		</Missile>
 	</ItemType>
 
-	<!-- XM300 Reaper Missile -->
+	<!-- Level 4: XM300 Reaper Missile -->
 
 	<ItemType UNID="&itXM300Missile;"
 			name=				":an XM300 Reaper missile"
@@ -2810,7 +2811,7 @@
 		</Missile>
 	</ItemType>
 
-	<!-- KM550 Broadsword Missile -->
+	<!-- Level 4: KM550 Broadsword Missile -->
 
 	<ItemType UNID="&itKM550Missile;"
 			name=				"KM550 Broadsword missile"
@@ -2842,7 +2843,38 @@
 		</Missile>
 	</ItemType>
 
-	<!-- XM900 Lucifer Missile -->
+	<!-- Level 5: KM170 Maul Missile -->
+
+	<ItemType UNID="&itKM170Missile;"
+			name=				"KM170 Maul missile"
+			attributes=			"commonwealth, consumable, missile, NAMI, NAMILauncher"
+			  
+			level=				"5"
+			frequency=			"rare"
+			numberAppearing=	"24-36"
+
+			value=				"70"
+			mass=				"40"
+			  
+			description=		"The KM170 is a non-nuclear siege weapon, with more than double the explosive power of the KM120s."
+			>
+
+		<Image imageID="&rsItemsNAMI2;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Missile
+			type=			"missile"
+			lifetime=		"60"
+			damage=			"blast:20d6; momentum:4; WMD:7"
+			missileSpeed=	"40"
+			hitPoints=		"10"
+						 
+			effect=			"&efMissileNAMI;"
+			sound=			"&snMissileLauncher;"
+			>
+		</Missile>
+	</ItemType>
+
+	<!-- Level 7: XM900 Lucifer Missile -->
 
 	<ItemType UNID="&itXM900Missile;"
 			name=				":an XM900 Lucifer missile"
@@ -3082,7 +3114,7 @@
 
 	<ItemType UNID="&it3KSiegeMAG;"
 			name=				"3K siege MAG"
-			attributes=			"commonwealth, consumable, MAGLauncher, missile, rasiermesser"
+			attributes=			"commonwealth, consumable, MAGLauncher, military, missile, rasiermesser"
 			  
 			level=				"7"
 			frequency=			"uncommon"

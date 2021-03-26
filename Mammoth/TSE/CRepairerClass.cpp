@@ -5,20 +5,19 @@
 #include "PreComp.h"
 
 #define COMPARTMENT_REGEN_ATTRIB	CONSTLIT("compartmentRegen")
+#define LEVEL_ATTRIB				CONSTLIT("level")
 #define POWER_USE_ATTRIB			CONSTLIT("powerUse")
 #define REPAIR_CYCLE_ATTRIB			CONSTLIT("repairCycle")
 #define REGEN_ATTRIB				CONSTLIT("regen")
 
-#define REPAIR_CYCLE_TIME			10
+#define SCALING_TAG                 CONSTLIT("Scaling")
+
+const CRepairerClass::SRepairerDesc CRepairerClass::m_NullDesc;
 
 static const char *CACHED_EVENTS[CRepairerClass::evtCount] =
 	{
 		"GetArmorRegen",
 	};
-
-CRepairerClass::CRepairerClass (void)
-	{
-	}
 
 int CRepairerClass::CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource)
 
@@ -37,42 +36,46 @@ int CRepairerClass::CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, C
 	return (int)pDevice->GetData();
 	}
 
-void CRepairerClass::CalcRegen (CInstalledDevice *pDevice, CShip *pShip, int iSegment, int iTick, int *retiHP, int *retiPower)
+void CRepairerClass::CalcArmorRegen (const CDeviceItem &RepairerItem, int iSegment, int iTick, int *retiHP, int *retiPower) const
 
-//	CalcRegen
+//	CalcArmorRegen
 //
 //	Returns the HP repaired and power consumed to repair the given segment
 
 	{
+	const SRepairerDesc &Desc = GetDesc(RepairerItem);
+
+	//	Only works with installed devices.
+
+	const CSpaceObject *pSource = RepairerItem.GetSource();
+	if (!pSource)
+		throw CException(ERR_FAIL);
+
 	int iRegenHP = 0;
 	int iPower = 0;
 
 	//	Get the armor class for this segment
 
-	const CInstalledArmor *pArmor = pShip->GetArmorSection(iSegment);
-	const CArmorItem ArmorItem = pArmor->AsArmorItem();
-
-	CItemCtx ArmorCtx(pShip, pShip->GetArmorSection(iSegment));
+	const CArmorSystem &Armor = pSource->GetArmorSystem();
+	const CInstalledArmor &Segment = Armor.GetSegment(iSegment);
+	const CArmorItem ArmorItem = Segment.AsArmorItem();
 
 	//	Compute the default regen and power consumption based on descriptor
 
-	int iArmorTech = ArmorItem.GetRepairLevel();
-	if (iArmorTech - 1 < m_Repair.GetCount())
-		{
-		iRegenHP = m_Repair[iArmorTech - 1].GetRegen(iTick, REPAIR_CYCLE_TIME);
-		iPower = (m_Repair[iArmorTech - 1].GetHPPerEra() > 0 ? m_iPowerUse : 0);
-		}
+	const CRegenDesc &ArmorRegen = GetArmorRegen(Desc, ArmorItem);
+	iRegenHP = ArmorRegen.GetRegen(iTick, REPAIR_CYCLE_TIME);
+	iPower = (ArmorRegen.GetHPPerEra() > 0 ? Desc.iPowerUse : 0);
 
 	//	If we have an event to compute regen, then use it.
 
 	SEventHandlerDesc Event;
-	if (FindEventHandlerRepairerClass(evtGetArmorRegen, &Event))
+	if (FindEventHandlerRepairerClass(EEventCache::GetArmorRegen, &Event))
 		{
 		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(GetItemType());
-		Ctx.SaveAndDefineSourceVar(pShip);
-		Ctx.SaveAndDefineItemVar(pShip->GetItemForDevice(pDevice));
+		Ctx.SaveAndDefineSourceVar(pSource);
+		Ctx.SaveAndDefineItemVar(RepairerItem);
 		Ctx.DefineInteger(CONSTLIT("aArmorSeg"), iSegment);
 		Ctx.DefineItem(CONSTLIT("aArmorItem"), ArmorItem);
 		Ctx.DefineItemType(CONSTLIT("aArmorType"), &ArmorItem.GetType());
@@ -82,7 +85,7 @@ void CRepairerClass::CalcRegen (CInstalledDevice *pDevice, CShip *pShip, int iSe
 			{
 			iRegenHP = 0;
 			iPower = 0;
-			pShip->ReportEventError(CONSTLIT("GetArmorRegen"), pResult);
+			pSource->ReportEventError(CONSTLIT("GetArmorRegen"), pResult);
 			}
 		else if (pResult->IsInteger())
 			iRegenHP = pResult->GetIntegerValue();
@@ -121,53 +124,45 @@ ALERROR CRepairerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 //	Creates from an XML element
 
 	{
-	ALERROR error;
-	int i;
-	CRepairerClass *pDevice;
+	if (!pDesc || !pType)
+		return ERR_FAIL;
 
-	pDevice = new CRepairerClass;
-	if (pDevice == NULL)
+	CRepairerClass *pDevice = new CRepairerClass;
+	if (!pDevice)
 		return ERR_MEMORY;
 
-	if (error = pDevice->InitDeviceFromXML(Ctx, pDesc, pType))
+	if (ALERROR error = pDevice->InitDeviceFromXML(Ctx, pDesc, pType))
 		return error;
 
-	pDevice->m_iPowerUse = pDesc->GetAttributeInteger(POWER_USE_ATTRIB);
+	//  Figure out how many levels we need to allocate
 
-	//	Load repair attribute
-	//
-	//	NOTE: It's OK if we don't specify this; it probably means that we have
-	//	an event to calculate it.
+	const int iBaseLevel = pType->GetLevel();
+	const int iLevels = (pType->GetMaxLevel() - iBaseLevel) + 1;
+	pDevice->m_Desc.InsertEmpty(iLevels);
 
-	CString sList;
-	bool bRegen;
-	if (pDesc->FindAttribute(REGEN_ATTRIB, &sList))
-		bRegen = true;
-	else if (pDesc->FindAttribute(REPAIR_CYCLE_ATTRIB, &sList))
-		bRegen = false;
-	else
-		bRegen = false;
+	//	Loop over all levels that we need to initialize.
 
-	//	Parse the list
-
-	TArray<CString> List;
-	ParseStringList(sList, 0, &List);
-	for (i = 0; i < List.GetCount(); i++)
+	const CXMLElement *pScaling = pDesc->GetContentElementByTag(SCALING_TAG);
+	for (int i = 0; i < pDevice->m_Desc.GetCount(); i++)
 		{
-		CRegenDesc *pRegen = pDevice->m_Repair.Insert();
-		if (bRegen)
-			pRegen->InitFromRegenString(Ctx, List[i], REPAIR_CYCLE_TIME);
+		int iLevel = iBaseLevel + i;
+
+		//	Look for this level in the scaling element, if we have it.
+
+		const CXMLElement *pLevelDesc;
+		if (pScaling 
+				&& (pLevelDesc = FindLevelDesc(Ctx, *pScaling, iLevel)))
+			{ }
+
+		//	Otherwise, we use the root.
+
 		else
-			pRegen->InitFromRepairRateString(Ctx, List[i], REPAIR_CYCLE_TIME);
-		}
+			pLevelDesc = pDesc;
 
-	//	Compartment repair
+		//	Initialize this level.
 
-	CString sAttrib;
-	if (pDesc->FindAttribute(COMPARTMENT_REGEN_ATTRIB, &sAttrib))
-		{
-		if (error = pDevice->m_CompartmentRepair.InitFromRegenString(Ctx, sAttrib, REPAIR_CYCLE_TIME))
-			return error;
+		if (!InitDescFromXML(Ctx, iLevel, *pLevelDesc, pDevice->m_Desc[i]))
+			return ERR_FAIL;
 		}
 
 	//	Done
@@ -177,6 +172,83 @@ ALERROR CRepairerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 	return NOERROR;
 	}
 
+bool CRepairerClass::FindEventHandlerRepairerClass (EEventCache iEvent, SEventHandlerDesc *retEvent) const
+
+//	FindEventHandlerRepairerClass
+//
+//	Finds the given event handler.
+
+	{
+	if (!m_CachedEvents[(int)iEvent].pCode)
+		return false;
+
+	if (retEvent)
+		*retEvent = m_CachedEvents[(int)iEvent];
+
+	return true;
+	}
+
+const CXMLElement *CRepairerClass::FindLevelDesc (SDesignLoadCtx &Ctx, const CXMLElement &Scaling, int iLevel)
+
+//	FindLevelDesc
+//
+//	Looks through the scaling XML element for a child element of the given 
+//	level. If not found, we return NULL.
+
+	{
+	for (int i = 0; i < Scaling.GetContentElementCount(); i++)
+		{
+		const CXMLElement *pChild = Scaling.GetContentElement(i);
+		if (iLevel == pChild->GetAttributeInteger(LEVEL_ATTRIB))
+			return pChild;
+		}
+
+	return NULL;
+	}
+
+const CRegenDesc &CRepairerClass::GetArmorRegen (const SRepairerDesc &Desc, const CArmorItem &ArmorItem) const
+
+//	GetArmorRegen
+//
+//	Returns the regen stats for this particular armor segment.
+
+	{
+	//	If we only have a single entry in our array, then it means we apply it
+	//	to all armor levels.
+
+	if (Desc.ArmorRepair.GetCount() == 1)
+		return Desc.ArmorRepair[0];
+
+	//	Otherwise, it is indexed by target armor level
+
+	else
+		{
+		int iArmorTech = ArmorItem.GetRepairLevel();
+		if (iArmorTech >= 1 && iArmorTech - 1 < Desc.ArmorRepair.GetCount())
+			return Desc.ArmorRepair[iArmorTech - 1];
+		else
+			return CRegenDesc::Null;
+		}
+	}
+
+const CRepairerClass::SRepairerDesc &CRepairerClass::GetDesc (const CDeviceItem &RepairerItem) const
+
+//	GetDesc
+//
+//	Returns the appropriate descriptor for the device.
+
+	{
+	if (m_Desc.GetCount() == 0)
+		return m_NullDesc;
+
+	int iBaseLevel = m_Desc[0].iLevel;
+
+	//  Figure out if we want a scaled item
+
+	int iIndex = Max(0, Min(RepairerItem.GetLevel() - iBaseLevel, m_Desc.GetCount() - 1));
+	return m_Desc[iIndex];
+	}
+
 int CRepairerClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 
 //	GetPowerRating
@@ -184,36 +256,40 @@ int CRepairerClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 //	Returns the power used by this device.
 
 	{
+	const CDeviceItem RepairerItem = Ctx.GetDeviceItem();
+	const SRepairerDesc &Desc = GetDesc(RepairerItem);
+
 	//	Idle power is always 0
 
-	if (retiIdlePowerUse) *retiIdlePowerUse = 0;
+	if (retiIdlePowerUse)
+		*retiIdlePowerUse = 0;
 
 	//	We make a list of all armor class types for the ship.
 
 	TArray<CItem> Item;
 	TArray<const CArmorItem> ArmorItem;
-	CSpaceObject *pSource = Ctx.GetSource();
-	CShip *pShip = (pSource ? pSource->AsShip() : NULL);
-	const CShipClass *pClass;
+	const CSpaceObject *pSource = RepairerItem.GetSource();
 
 	//	If we have a real ship, get the armor from it.
 
-	if (pShip)
+	if (pSource)
 		{
-		ArmorItem.GrowToFit(pShip->GetArmorSectionCount());
-		for (int i = 0; i < pShip->GetArmorSectionCount(); i++)
-			ArmorItem.Insert(pShip->GetArmorSection(i)->GetItem()->AsArmorItem());
+		const auto &Armor = pSource->GetArmorSystem();
+		ArmorItem.GrowToFit(Armor.GetSegmentCount());
+		for (int i = 0; i < Armor.GetSegmentCount(); i++)
+			ArmorItem.Insert(Armor.GetSegment(i).AsArmorItem());
 		}
 
 	//	Otherwise, see if we have a ship class
 
-	else if (pClass = Ctx.GetSourceShipClass())
+	else if (const CShipClass *pClass = Ctx.GetSourceShipClass())
 		{
-		Item.InsertEmpty(pShip->GetArmorSectionCount());
-		ArmorItem.GrowToFit(pShip->GetArmorSectionCount());
-		for (int i = 0; i < pClass->GetArmorDesc().GetCount(); i++)
+		const auto &Armor = pClass->GetArmorDesc();
+		Item.InsertEmpty(Armor.GetCount());
+		ArmorItem.GrowToFit(Armor.GetCount());
+		for (int i = 0; i < Armor.GetCount(); i++)
 			{
-			Item[i] = pClass->GetArmorDesc().GetSegment(i).GetArmorItem();
+			Item[i] = Armor.GetSegment(i).GetArmorItem();
 			ArmorItem.Insert(Item[i].AsArmorItem());
 			}
 		}
@@ -222,7 +298,7 @@ int CRepairerClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 
 	else
 		{
-		return 2 * m_iPowerUse;
+		return 2 * Desc.iPowerUse;
 		}
 
 	//	Loop over all armor segments adding up power consumption
@@ -238,21 +314,18 @@ int CRepairerClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 
 		//	First compute the standard power
 
-		int iArmorTech = ArmorItem[i].GetRepairLevel();
-		if (iArmorTech - 1 < m_Repair.GetCount())
-			{
-			iPowerUse = (m_Repair[iArmorTech - 1].GetHPPerEra() > 0 ? m_iPowerUse : 0);
-			}
+		const CRegenDesc &ArmorRegen = GetArmorRegen(Desc, ArmorItem[i]);
+		iPowerUse = (ArmorRegen.GetHPPerEra() > 0 ? Desc.iPowerUse : 0);
 
 		//	Next, if we have an event, we call it to compute power
 
 		SEventHandlerDesc Event;
-		if (FindEventHandlerRepairerClass(evtGetArmorRegen, &Event))
+		if (FindEventHandlerRepairerClass(EEventCache::GetArmorRegen, &Event))
 			{
 			CCodeChainCtx CCCtx(GetUniverse());
 
 			CCCtx.DefineContainingType(GetItemType());
-			CCCtx.SaveAndDefineSourceVar(pShip);
+			CCCtx.SaveAndDefineSourceVar(pSource);
 			CCCtx.SaveAndDefineItemVar(Ctx.GetItem());
 			CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), i);
 			CCCtx.DefineItemType(CONSTLIT("aArmorType"), &ArmorItem[i].GetType());
@@ -284,7 +357,58 @@ int CRepairerClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 	return iTotalPowerUse;
 	}
 
-bool CRepairerClass::RepairShipArmor (CInstalledDevice *pDevice, CShip *pShip, SDeviceUpdateCtx &Ctx)
+bool CRepairerClass::InitDescFromXML (SDesignLoadCtx &Ctx, int iLevel, const CXMLElement &DescXML, SRepairerDesc &retDesc)
+
+//	InitDescFromXML
+//
+//	Initializes a descriptor from XML.
+
+	{
+	retDesc.iLevel = iLevel;
+	retDesc.iPowerUse = DescXML.GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, 0);
+
+	//	Load repair attribute
+	//
+	//	NOTE: It's OK if we don't specify this; it probably means that we have
+	//	an event to calculate it.
+
+	CString sList;
+	bool bRegen;
+	if (DescXML.FindAttribute(REGEN_ATTRIB, &sList))
+		bRegen = true;
+	else if (DescXML.FindAttribute(REPAIR_CYCLE_ATTRIB, &sList))
+		bRegen = false;
+	else
+		bRegen = false;
+
+	//	Parse the list
+
+	TArray<CString> List;
+	ParseStringList(sList, 0, &List);
+	for (int i = 0; i < List.GetCount(); i++)
+		{
+		CRegenDesc *pRegen = retDesc.ArmorRepair.Insert();
+		if (bRegen)
+			pRegen->InitFromRegenString(Ctx, List[i], REPAIR_CYCLE_TIME);
+		else
+			pRegen->InitFromRepairRateString(Ctx, List[i], REPAIR_CYCLE_TIME);
+		}
+
+	//	Compartment repair
+
+	CString sAttrib;
+	if (DescXML.FindAttribute(COMPARTMENT_REGEN_ATTRIB, &sAttrib))
+		{
+		if (ALERROR error = retDesc.CompartmentRepair.InitFromRegenString(Ctx, sAttrib, REPAIR_CYCLE_TIME))
+			return false;
+		}
+
+	//	Success!
+
+	return true;
+	}
+
+bool CRepairerClass::RepairShipArmor (CDeviceItem &RepairerItem, SDeviceUpdateCtx &Ctx)
 
 //	RepairShipArmor
 //
@@ -292,17 +416,30 @@ bool CRepairerClass::RepairShipArmor (CInstalledDevice *pDevice, CShip *pShip, S
 //	is damaged (whether or not it was repaired this tick).
 
 	{
+	CSpaceObject *pSource = RepairerItem.GetSource();
+	if (!pSource)
+		throw CException(ERR_FAIL);
+
+	CShip *pShip = pSource->AsShip();
+	if (!pShip)
+		return false;
+
+	auto pArmor = pSource->GetArmorSystem();
+	if (!pArmor)
+		return false;
+
 	bool bNeedsRepair = false;
 	int iTotalPower = 0;
 
-	for (int i = 0; i < pShip->GetArmorSectionCount(); i++)
+	for (int i = 0; i < pArmor->GetSegmentCount(); i++)
 		{
-		if (pShip->IsArmorDamaged(i))
+		auto &Segment = pArmor->GetSegment(i);
+		if (Segment.IsDamaged())
 			{
 			int iHP;
 			int iPowerPerSegment;
 
-			CalcRegen(pDevice, pShip, i, Ctx.iTick, &iHP, &iPowerPerSegment);
+			CalcArmorRegen(RepairerItem, i, Ctx.iTick, &iHP, &iPowerPerSegment);
 
 			//	Repair armor
 
@@ -319,20 +456,28 @@ bool CRepairerClass::RepairShipArmor (CInstalledDevice *pDevice, CShip *pShip, S
 	//	Store the power consumption on the device itself. We will keep on
 	//	consuming this amount of power per tick until we update again.
 
-	pDevice->SetData(iTotalPower);
+	RepairerItem.SetData(iTotalPower);
 
 	//	Done
 
 	return bNeedsRepair;
 	}
 
-bool CRepairerClass::RepairShipAttachedSections (CInstalledDevice *pDevice, CShip *pShip, SDeviceUpdateCtx &Ctx)
+bool CRepairerClass::RepairShipAttachedSections (CDeviceItem &RepairerItem, SDeviceUpdateCtx &Ctx)
 
 //	RepairShipAttachedSections
 //
 //	Repairs attached sections. Returns TRUE if at least one section needs repairs.
 
 	{
+	CSpaceObject *pSource = RepairerItem.GetSource();
+	if (!pSource)
+		throw CException(ERR_FAIL);
+
+	CShip *pShip = pSource->AsShip();
+	if (!pShip)
+		return false;
+
 	TArray<CShip::SAttachedSectionInfo> Sections;
 	pShip->GetAttachedSectionInfo(Sections);
 
@@ -350,7 +495,7 @@ bool CRepairerClass::RepairShipAttachedSections (CInstalledDevice *pDevice, CShi
 		if (pSection == NULL)
 			continue;
 
-		if (RepairShipArmor(pDevice, pSection, Ctx))
+		if (RepairShipArmor(RepairerItem, Ctx))
 			return true;
 		}
 
@@ -359,16 +504,26 @@ bool CRepairerClass::RepairShipAttachedSections (CInstalledDevice *pDevice, CShi
 	return false;
 	}
 
-bool CRepairerClass::RepairShipInterior (CInstalledDevice *pDevice, CShip *pShip, SDeviceUpdateCtx &Ctx)
+bool CRepairerClass::RepairShipInterior (CDeviceItem &RepairerItem, SDeviceUpdateCtx &Ctx)
 
 //	RepairShipInterior
 //
 //	Repair the ship interior. Returns TRUE if we repaired at least one hp.
 
 	{
-	bool bRepairsNeeded = pShip->RepairInterior(m_CompartmentRepair.GetRegen(Ctx.iTick, REPAIR_CYCLE_TIME));
-	int iPowerUsed = (bRepairsNeeded ? m_iPowerUse : 0);
-	pDevice->SetData(iPowerUsed);
+	CSpaceObject *pSource = RepairerItem.GetSource();
+	if (!pSource)
+		throw CException(ERR_FAIL);
+
+	CShip *pShip = pSource->AsShip();
+	if (!pShip)
+		return false;
+
+	const SRepairerDesc &Desc = GetDesc(RepairerItem);
+
+	bool bRepairsNeeded = pShip->RepairInterior(Desc.CompartmentRepair.GetRegen(Ctx.iTick, REPAIR_CYCLE_TIME));
+	int iPowerUsed = (bRepairsNeeded ? Desc.iPowerUse : 0);
+	RepairerItem.SetData(iPowerUsed);
 
 	return bRepairsNeeded;
 	}
@@ -385,25 +540,32 @@ void CRepairerClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, S
 	//	Short-circuit various cases
 
 	CShip *pShip = pSource->AsShip();
-	if (pShip == NULL
+	if (!pShip
+			|| !pDevice
 			|| (Ctx.iTick % REPAIR_CYCLE_TIME) != 0
 			|| !pDevice->IsWorking())
 		return;
 
+	CDeviceItem RepairerItem = pDevice->GetDeviceItem();
+	const SRepairerDesc &Desc = GetDesc(RepairerItem);
+
 	//	Repair interior compartments first
 
-	if (!m_CompartmentRepair.IsEmpty() && pShip->IsMultiHull() && RepairShipInterior(pDevice, pShip, Ctx))
+	if (!Desc.CompartmentRepair.IsEmpty() && pShip->IsMultiHull() && RepairShipInterior(RepairerItem, Ctx))
 		return;
 
 	//	Armor is repaired next, if necessary
 
-	if (RepairShipArmor(pDevice, pShip, Ctx))
-		return;
+	if (Desc.ArmorRepair.GetCount() > 0)
+		{
+		if (RepairShipArmor(RepairerItem, Ctx))
+			return;
 
-	//	Otherwise, if we have attached objects, try to repair those.
+		//	Otherwise, if we have attached objects, try to repair those.
 
-	if (pShip->HasAttachedSections() && RepairShipAttachedSections(pDevice, pShip, Ctx))
-		return;
+		if (pShip->HasAttachedSections() && RepairShipAttachedSections(RepairerItem, Ctx))
+			return;
+		}
 
 	DEBUG_CATCH
 	}

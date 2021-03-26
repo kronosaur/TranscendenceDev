@@ -22,6 +22,8 @@
 	<!ENTITY itTestWeaponFading			"0xA0010046">
 	<!ENTITY itTestRareInNewBeyond1		"0xA0010047">
 	<!ENTITY itTestRareInNewBeyond2		"0xA0010048">
+	<!ENTITY itTestRepairerScaled		"0xA0010049">
+	<!ENTITY itTestRepairer				"0xA001004A">
 
 	<!-- 0080-00BF TEST FUNCTIONS -->
 
@@ -53,6 +55,8 @@
 	<!ENTITY stTestStation1				"0xA0010106">
 	<!ENTITY stTestStation2				"0xA0010107">
 	<!ENTITY evTestStationOverride		"0xA0010108">
+	<!ENTITY unidTestCriminalSystem		"0xA0010109">
+	<!ENTITY unidCriminalSystemUnitTests	"0xA001010A">
 
 	<!-- 0140-017F TEST OVERLAYS -->
 
@@ -88,23 +92,23 @@
 	<Library unid="&unidRPGLibrary;"/>
 	<Library unid="&unidHumanSpaceLibrary;"/>
 
+	<Module filename="ArmorClassTests.xml"/>
 	<Module filename="DesignTypeTests.xml"/>
 	<Module filename="DockScreenTests.xml"/>
 	<Module filename="FunctionTests.xml"/>
 	<Module filename="ItemEnhancementUnitTests.xml"/>
 	<Module filename="ItemUnitTests.xml"/>
 	<Module filename="MissionUnitTests.xml"/>
+	<Module filename="OverlayTests.xml"/>
 	<Module filename="RadiationTests.xml"/>
 	<Module filename="RPGUnitTests.xml"/>
 	<Module filename="ShipClassTests.xml"/>
+	<Module filename="StationTypeTests.xml"/>
 	<Module filename="SystemFunctionTests.xml"/>
-	<Module filename="TestArmorClasses.xml"/>
 	<Module filename="TestItems.xml"/>
 	<Module filename="TestMissions.xml"/>
-	<Module filename="TestOverlays.xml"/>
-	<Module filename="TestStationTypes.xml"/>
-	<Module filename="TestTSE.xml"/>
 	<Module filename="TopologyTests.xml"/>
+	<Module filename="TSETests.xml"/>
 
 <!-- DIAGNOSTICS -->
 

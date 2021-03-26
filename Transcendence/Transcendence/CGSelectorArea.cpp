@@ -1051,6 +1051,42 @@ void CGSelectorArea::Refresh (void)
 	Invalidate();
 	}
 
+void CGSelectorArea::RestoreSelection (const ICCItem &Selection)
+
+//	RestoreSelection
+//
+//	Restores a previously saved selection.
+
+	{
+	if (!Selection.IsNil())
+		{
+		int iCursor = Selection.GetIntegerValue();
+		if (iCursor >= 0 && iCursor < m_Regions.GetCount())
+			SetCursor(iCursor);
+		else
+			SetCursor(0);
+		}
+	else
+		SetCursor(0);
+	}
+
+void CGSelectorArea::SetCursor (int iIndex)
+
+//	SetCursor
+//
+//	Sets the cursor.
+
+	{
+	if (iIndex >= 0 && iIndex < m_Regions.GetCount())
+		m_iCursor = iIndex;
+	else if (m_Regions.GetCount() == 0)
+		m_iCursor = -1;
+	else
+		m_iCursor = 0;
+
+	Invalidate();
+	}
+
 void CGSelectorArea::SetRegions (CSpaceObject *pSource, const SOptions &Options)
 
 //	SetRegions

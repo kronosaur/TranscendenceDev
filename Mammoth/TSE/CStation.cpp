@@ -60,6 +60,7 @@
 #define PROPERTY_SHIP_REINFORCEMENT_REQUESTED	CONSTLIT("shipReinforcementRequested")
 #define PROPERTY_SHOW_MAP_LABEL					CONSTLIT("showMapLabel")
 #define PROPERTY_SHOW_MAP_ORBIT					CONSTLIT("showMapOrbit")
+#define PROPERTY_SQUADRON_STATUS				CONSTLIT("squadronStatus")
 #define PROPERTY_STARGATE						CONSTLIT("stargate")
 #define PROPERTY_STARGATE_ID					CONSTLIT("stargateID")
 #define PROPERTY_STRUCTURAL_HP					CONSTLIT("structuralHP")
@@ -73,7 +74,6 @@
 const int TRADE_UPDATE_FREQUENCY =		1801;			//	Interval for checking trade
 const int STATION_SCAN_TARGET_FREQUENCY	= 29;
 const int STATION_ATTACK_FREQUENCY =	67;
-const int STATION_REINFORCEMENT_FREQUENCY =	607;
 const int STATION_TARGET_FREQUENCY =	503;
 const int DAYS_TO_REFRESH_INVENTORY =	5;
 const int INVENTORY_REFRESHED_PER_UPDATE = 20;			//	% of inventory refreshed on each update frequency
@@ -1410,9 +1410,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 
 	//	Create any ships registered to this station
 
-	IShipGenerator *pShipGenerator = pType->GetInitialShips();
-	if (pShipGenerator)
-		pStation->CreateRandomDockedShips(pShipGenerator, pType->GetDefenderCount());
+	pStation->m_Squadrons.CreateInitialShips(*pStation, pType->GetSquadronDesc());
 
 	//	If we have a trade descriptor, create appropriate items
 
@@ -1527,7 +1525,7 @@ void CStation::CreateRandomDockedShips (IShipGenerator *pShipGenerator, const CS
 	CShipChallengeCtx CreatedSoFar;
 
 	int iMaxLoops = 20;
-	while (iMaxLoops-- > 0 && Needed.NeedsMoreInitialShips(this, CreatedSoFar))
+	while (iMaxLoops-- > 0 && Needed.NeedsMoreShips(*this, CreatedSoFar))
 		{
 		//	These accumulate, so we need to clear it each time.
 
@@ -2091,13 +2089,16 @@ ICCItem *CStation::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sNa
 		return CC.CreateBool(!m_fNoReinforcements);
 
 	else if (strEquals(sName, PROPERTY_SHIP_REINFORCEMENT_REQUESTED))
-		return (m_iReinforceRequestCount ? CC.CreateInteger(m_iReinforceRequestCount) : CC.CreateNil());
+		return ICCItemPtr::IntegerOrNil(m_Squadrons.GetReinforceRequestCount())->Reference();
 
 	else if (strEquals(sName, PROPERTY_SHOW_MAP_LABEL))
 		return CC.CreateBool(ShowMapLabel());
 
 	else if (strEquals(sName, PROPERTY_SHOW_MAP_ORBIT))
 		return CC.CreateBool(m_pMapOrbit && m_fShowMapOrbit);
+
+	else if (strEquals(sName, PROPERTY_SQUADRON_STATUS))
+		return m_Squadrons.GetStatus(*this)->Reference();
 
 	else if (strEquals(sName, PROPERTY_STARGATE))
 		return CC.CreateBool(IsStargate());
@@ -3031,6 +3032,17 @@ void CStation::OnMove (const CVector &vOldPos, Metric rSeconds)
 	m_DockingPorts.MoveAll(this);
 	}
 
+void CStation::OnSystemLoaded (SLoadCtx &Ctx)
+
+//	OnSystemLoaded
+//
+//	System has just been loaded. This is our change to make some fixes.
+
+	{
+	if (Ctx.dwVersion < 199)
+		m_Squadrons.FixupDefenders(*this, m_pType->GetSquadronDesc(), m_Subordinates);
+	}
+
 void CStation::AvengeAttack (CSpaceObject *pTarget)
 
 //	AvengeAttack
@@ -3079,6 +3091,10 @@ void CStation::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 
 	if (Ctx.Obj == m_pBase)
 		m_pBase = NULL;
+
+	//	Deal with subordinates.
+
+	m_Squadrons.OnObjDestroyed(*this, Ctx);
 
 	//	Remove from the subordinate list. No need to take action because the 
 	//	ship/turret will communicate if we need to avenge.
@@ -3411,7 +3427,7 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	//	Calculate visibility
 
-	DWORD byShimmer = CalcSRSVisibility(Ctx);
+	DWORD byShimmer = (Ctx.pCenter ? CalcSRSVisibility(*Ctx.pCenter, Ctx.iPerception) : 0);
 
 	//	Known, immobile objects always have a minimum visibility in SRS.
 
@@ -3810,7 +3826,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 //
 //	CAttackDetector m_Blacklist
 //	DWORD		m_iAngryCounter
-//	DWORD		m_iReinforceRequestCount
+//	CSquadronController m_Squadrons
 //	CCurrencyBlock	m_pMoney
 //	CTradeDesc	m_pTrade
 //
@@ -4047,10 +4063,15 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	else
 		m_iAngryCounter = 0;
 
-	if (Ctx.dwVersion >= 9)
-		Ctx.pStream->Read(m_iReinforceRequestCount);
-	else
-		m_iReinforceRequestCount = 0;
+	if (Ctx.dwVersion >= 199)
+		m_Squadrons.ReadFromStream(Ctx, m_pType->GetSquadronDesc());
+	else if (Ctx.dwVersion >= 9)
+		{
+		int iCount;
+		Ctx.pStream->Read(iCount);
+
+		m_Squadrons.SetReinforceRequestCount(iCount);
+		}
 
 	//	Money
 
@@ -4406,68 +4427,75 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	bool bCalcBounds = false;
 	bool bCalcDeviceBonus = false;
-	int iTick = GetSystem()->GetTick() + GetDestiny();
 
-	//	If we need to destroy this station, do it now
+	//	This code only happens for non-static stations (i.e., not needed for 
+	//	asteroids).
 
-	if (m_fDestroyIfEmpty 
-			&& GetItemList().GetCount() == 0
-			&& m_DockingPorts.GetPortsInUseCount(this) == 0)
+	if (!m_pType->IsStatic())
 		{
-		Destroy(removedFromSystem, CDamageSource());
-		return;
-		}
+		int iTick = GetSystem()->GetTick() + GetDestiny();
 
-	//	Active station attack, etc.
+		//	If we need to destroy this station, do it now
 
-	if (!IsAbandoned())
-		{
-		//	Update blacklist counter
-		//	NOTE: Once the player is blacklisted by this station, there is
-		//	no way to get off the blacklist. (At least no automatic way).
-
-		m_Blacklist.Update(iTick);
-
-		//	Update attacks
-
-		if (m_fArmed && !m_pType->IsVirtual()
-				&& (m_pType->CanAttackIndependently() || (m_pBase && !m_pBase->IsAbandoned())))
+		if (m_fDestroyIfEmpty 
+				&& GetItemList().GetCount() == 0
+				&& m_DockingPorts.GetPortsInUseCount(this) == 0)
 			{
-			if (!UpdateAttacking(Ctx, iTick))
+			Destroy(removedFromSystem, CDamageSource());
+			return;
+			}
+
+		//	Active station attack, etc.
+
+		if (!IsAbandoned())
+			{
+			//	Update blacklist counter
+			//	NOTE: Once the player is blacklisted by this station, there is
+			//	no way to get off the blacklist. (At least no automatic way).
+
+			m_Blacklist.Update(iTick);
+
+			//	Update attacks
+
+			if (m_fArmed && !m_pType->IsVirtual()
+					&& (m_pType->CanAttackIndependently() || (m_pBase && !m_pBase->IsAbandoned())))
+				{
+				if (!UpdateAttacking(Ctx, iTick))
+					return;
+				}
+
+			//	Update reinforcements
+
+			UpdateReinforcements(iTick);
+
+			//	Update trade
+
+			if ((iTick % TRADE_UPDATE_FREQUENCY) == 0)
+				UpdateTrade(Ctx, INVENTORY_REFRESHED_PER_UPDATE);
+			}
+
+		//	Update docking ports
+
+		m_DockingPorts.UpdateAll(Ctx, this);
+
+		//	Update each device. If updating destroys the station, then we're done.
+
+		if (!m_Devices.IsEmpty())
+			{
+			if (!UpdateDevices(Ctx, iTick, m_WeaponTargets, bCalcDeviceBonus))
 				return;
 			}
 
-		//	Update reinforcements
+		//	Update destroy animation
 
-		UpdateReinforcements(iTick);
+		if (m_iDestroyedAnimation)
+			UpdateDestroyedAnimation();
 
-		//	Update trade
+		//	If we're moving, slow down
 
-		if ((iTick % TRADE_UPDATE_FREQUENCY) == 0)
-			UpdateTrade(Ctx, INVENTORY_REFRESHED_PER_UPDATE);
+		if (!IsAnchored() && !GetVel().IsNull())
+			AddDrag(g_SpaceDragFactor);
 		}
-
-	//	Update docking ports
-
-	m_DockingPorts.UpdateAll(Ctx, this);
-
-	//	Update each device. If updating destroys the station, then we're done.
-
-	if (!m_Devices.IsEmpty())
-		{
-		if (!UpdateDevices(Ctx, iTick, m_WeaponTargets, bCalcDeviceBonus))
-			return;
-		}
-
-	//	Update destroy animation
-
-	if (m_iDestroyedAnimation)
-		UpdateDestroyedAnimation();
-
-	//	If we're moving, slow down
-
-	if (!IsAnchored() && !GetVel().IsNull())
-		AddDrag(g_SpaceDragFactor);
 
 	//	Overlays
 
@@ -4552,7 +4580,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 //
 //	CAttackDetector m_Blacklist
 //	DWORD		m_iAngryCounter
-//	DWORD		m_iReinforceRequestCount
+//	CSquadronController m_Squadrons
 //	CCurrencyBlock	m_pMoney
 //	CTradingDesc	m_pTrade
 //
@@ -4606,7 +4634,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 
 	m_Blacklist.WriteToStream(pStream);
 	pStream->Write(m_iAngryCounter);
-	pStream->Write(m_iReinforceRequestCount);
+	m_Squadrons.WriteToStream(*pStream);
 
 	//	Money
 
@@ -5823,9 +5851,9 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 
 		//	If the player is in range, then she is under attack
 
-		if (Ctx.pPlayer 
-				&& IsAngryAt(Ctx.pPlayer)
-				&& GetDistance2(Ctx.pPlayer) < rAttackRange2)
+		if (Ctx.GetPlayerShip() 
+				&& IsAngryAt(Ctx.GetPlayerShip())
+				&& GetDistance2(Ctx.GetPlayerShip()) < rAttackRange2)
 			Ctx.pSystem->SetPlayerUnderAttack();
 
 		//	Countdown
@@ -5987,75 +6015,17 @@ void CStation::UpdateReinforcements (int iTick)
 
 		//	Repair damage to ships
 
-		if (!m_pType->GetShipRegenDesc().IsEmpty())
-			m_DockingPorts.RepairAll(this, m_pType->GetShipRegenDesc().GetRegen(iTick, STATION_REPAIR_FREQUENCY));
+		if (!m_pType->GetShipRegenDesc().IsEmpty() || HasTradeService(serviceRepairArmor))
+			RefitDockedObjs(iTick, STATION_REPAIR_FREQUENCY);
 		}
 
-	//	Construction
+	//	Reinforcements
 
-	if (m_pType->GetShipConstructionRate()
-			&& !m_fNoConstruction
-			&& (iTick % m_pType->GetShipConstructionRate()) == 0)
-		{
-		//	Iterate over all ships and count the number that are
-		//	associated with the station.
+	CSquadronController::SUpdateCtx SquadronUpdateCtx(*this, iTick);
+	SquadronUpdateCtx.bNoConstruction = m_fNoConstruction;
+	SquadronUpdateCtx.bNoReinforcements = m_fNoReinforcements;
 
-		int iCount = CalcNumberOfShips();
-
-		//	If we already have the maximum number, then don't bother
-
-		if (iCount < m_pType->GetMaxShipConstruction())
-			{
-			SShipCreateCtx Ctx;
-			Ctx.pSystem = GetSystem();
-			Ctx.pBase = this;
-			Ctx.pGate = this;
-			m_pType->GetConstructionTable()->CreateShips(Ctx);
-			}
-		}
-
-	//	Get reinforcements
-
-	if ((iTick % STATION_REINFORCEMENT_FREQUENCY) == 0)
-		{
-		if (!m_fNoReinforcements
-				&& m_pType->GetDefenderCount().NeedsMoreReinforcements(this))
-			{
-			//	If we've requested several rounds of reinforcements but have
-			//	never received any, then it's likely that they are being
-			//	destroyed at the gate, so we stop requesting so many
-
-			if (m_iReinforceRequestCount > 0)
-				{
-				int iLongTick = (iTick / STATION_REINFORCEMENT_FREQUENCY);
-				int iCycle = Min(32, m_iReinforceRequestCount * m_iReinforceRequestCount);
-				if ((iLongTick % iCycle) != 0)
-					return;
-				}
-
-			//	We either bring in ships from the nearest gate or we build
-			//	them ourselves.
-
-			CSpaceObject *pGate;
-			if (m_pType->BuildsReinforcements()
-					|| (pGate = GetNearestStargate(true)) == NULL)
-				pGate = this;
-
-			//	Generate reinforcements
-
-			SShipCreateCtx Ctx;
-			Ctx.pSystem = GetSystem();
-			Ctx.pBase = this;
-			Ctx.pGate = pGate;
-			m_pType->GetReinforcementsTable()->CreateShips(Ctx);
-
-			//	Increment counter
-
-			m_iReinforceRequestCount++;
-			}
-		else
-			m_iReinforceRequestCount = 0;
-		}
+	m_Squadrons.Update(SquadronUpdateCtx, m_pType->GetSquadronDesc());
 
 	//	Attack targets on the target list
 

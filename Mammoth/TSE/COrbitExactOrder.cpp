@@ -60,62 +60,80 @@ void COrbitExactOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 //	Handle behavior
 
 	{
-	constexpr Metric MAX_THRESHOLD_ADJ = 1.1;
-	constexpr Metric MAX_THRESHOLD_ADJ2 = MAX_THRESHOLD_ADJ * MAX_THRESHOLD_ADJ;
+	if (!pShip)
+		throw CException(ERR_FAIL);
 
-	//	If we're too far away, then use a nav path to get closer
+		//	See if our timer has expired
 
-	if ((pShip->GetPos() - m_Objs[OBJ_BASE]->GetPos()).Length2() > m_rNavThreshold2)
+	else if (m_iCountdown != -1 && m_iCountdown-- == 0)
+		{
+		pShip->CancelCurrentOrder();
+		}
+
+	//	If we're too far away, then use a nav path to get closer.
+	//	NOTE: We guarantee that NavThreshold is always greater than orbit 
+	//	radius.
+
+	else if ((pShip->GetPos() - m_Objs[OBJ_BASE]->GetPos()).Length2() > m_rNavThreshold2)
 		{
 		pShip->AddOrder(COrderDesc(IShipController::orderApproach, m_Objs[OBJ_BASE], mathRound(m_Orbit.GetSemiMajorAxis() / LIGHT_SECOND)), true);
-		return;
 		}
 
-	//	Compute the desired position.
+	//	Every once in a while we check to see if we need to dock with our base
+	//	to resupply.
 
-	Metric rAngle = ::mathDegreesToRadians(pShip->GetUniverse().GetTicks() * m_rAngularSpeed) + m_Orbit.GetObjectAngle();
-	CVector vOrbitPos = m_Orbit.GetPoint(rAngle);
-	CVector vPos = m_Objs[OBJ_BASE]->GetPos() + vOrbitPos;
-	CVector vVel = (m_Orbit.GetPoint(rAngle + ::mathDegreesToRadians(m_rAngularSpeed)) - vOrbitPos) / g_SecondsPerUpdate;
+	else if (pShip->IsDestinyTime(RESUPPLY_CHECK_TIME) 
+			&& Ctx.ImplementResupplyCheck(*pShip, *m_Objs[OBJ_BASE]))
+		{ }
 
-	//	If the ship is out of position and needs to be placed back in orbit, 
-	//	then we try to ease in.
+	//	Otherwise, orbit
 
-	const Metric rOrbitSpeed2 = vVel.Length2();
-	const Metric rMaxPosChange2 = rOrbitSpeed2 * MAX_THRESHOLD_ADJ2 * g_SecondsPerUpdate * g_SecondsPerUpdate;
-	const CVector vPosChange = vPos - pShip->GetPos();
-	const Metric rPosChange2 = vPosChange.Length2();
-
-	//	Maneuver
-
-	if (rPosChange2 > rMaxPosChange2)
-		{
-		const Metric rPosChange = sqrt(rPosChange2);
-		const Metric rOrbitSpeed = sqrt(rOrbitSpeed2);
-
-		const Metric EASE_FACTOR = 0.5;
-		const Metric rMaxEaseSpeed = Max(rOrbitSpeed, pShip->GetMaxSpeed());
-		const Metric rEaseSpeed = Min(EASE_FACTOR * rPosChange / g_SecondsPerUpdate, rMaxEaseSpeed);
-
-		const CVector vPosDir = vPosChange / rPosChange;
-
-		CVector vEaseVel = rEaseSpeed * vPosDir;
-		CVector vEasePos = pShip->GetPos() + (g_SecondsPerUpdate * vEaseVel);
-
-		pShip->Place(vEasePos, vEaseVel);
-		}
 	else
-		pShip->Place(vPos, vVel);
-
-	if (!pShip->GetTarget())
 		{
-		Ctx.ImplementTurnTo(pShip, VectorToPolar(vVel));
+		constexpr Metric MAX_THRESHOLD_ADJ = 1.1;
+		constexpr Metric MAX_THRESHOLD_ADJ2 = MAX_THRESHOLD_ADJ * MAX_THRESHOLD_ADJ;
+
+		//	Compute the desired position.
+
+		Metric rAngle = ::mathDegreesToRadians(pShip->GetUniverse().GetTicks() * m_rAngularSpeed) + m_Orbit.GetObjectAngle();
+		CVector vOrbitPos = m_Orbit.GetPoint(rAngle);
+		CVector vPos = m_Objs[OBJ_BASE]->GetPos() + vOrbitPos;
+		CVector vVel = (m_Orbit.GetPoint(rAngle + ::mathDegreesToRadians(m_rAngularSpeed)) - vOrbitPos) / g_SecondsPerUpdate;
+
+		//	If the ship is out of position and needs to be placed back in orbit, 
+		//	then we try to ease in.
+
+		const Metric rOrbitSpeed2 = vVel.Length2();
+		const Metric rMaxPosChange2 = rOrbitSpeed2 * MAX_THRESHOLD_ADJ2 * g_SecondsPerUpdate * g_SecondsPerUpdate;
+		const CVector vPosChange = vPos - pShip->GetPos();
+		const Metric rPosChange2 = vPosChange.Length2();
+
+		//	Maneuver
+
+		if (rPosChange2 > rMaxPosChange2)
+			{
+			const Metric rPosChange = sqrt(rPosChange2);
+			const Metric rOrbitSpeed = sqrt(rOrbitSpeed2);
+
+			const Metric EASE_FACTOR = 0.5;
+			const Metric rMaxEaseSpeed = Max(rOrbitSpeed, pShip->GetMaxSpeed());
+			const Metric rEaseSpeed = Min(EASE_FACTOR * rPosChange / g_SecondsPerUpdate, rMaxEaseSpeed);
+
+			const CVector vPosDir = vPosChange / rPosChange;
+
+			CVector vEaseVel = rEaseSpeed * vPosDir;
+			CVector vEasePos = pShip->GetPos() + (g_SecondsPerUpdate * vEaseVel);
+
+			pShip->Place(vEasePos, vEaseVel);
+			}
+		else
+			pShip->Place(vPos, vVel);
+
+		if (!pShip->GetTarget())
+			{
+			Ctx.ImplementTurnTo(pShip, VectorToPolar(vVel));
+			}
 		}
-
-	//	See if our timer has expired
-
-	if (m_iCountdown != -1 && m_iCountdown-- == 0)
-		pShip->CancelCurrentOrder();
 	}
 
 void COrbitExactOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
@@ -218,6 +236,26 @@ AIReaction COrbitExactOrder::OnGetReactToAttack () const
 
 		case IShipController::orderOrbitPatrol:
 			return AIReaction::Chase;
+
+		default:
+			throw CException(ERR_FAIL);
+		}
+	}
+
+AIReaction COrbitExactOrder::OnGetReactToBaseDestroyed () const
+
+//	OnGetReactToBaseDestroyed
+//
+//	Returns our default reaction to our base getting destroyed.
+
+	{
+	switch (m_iOrder)
+		{
+		case IShipController::orderOrbitExact:
+			return AIReaction::Destroy;
+
+		case IShipController::orderOrbitPatrol:
+			return AIReaction::DestroyAndRetaliate;
 
 		default:
 			throw CException(ERR_FAIL);

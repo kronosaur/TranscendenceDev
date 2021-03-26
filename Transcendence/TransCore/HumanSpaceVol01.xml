@@ -1790,10 +1790,12 @@
 	<!ENTITY rsHeliotropeGunshipHD		"0x001000F1">
 	<!ENTITY smHeliotropeSpace			"0x001000F2">
 	<!ENTITY rsHeliotropeFrigateHero	"0x001000F3">
-
 	<!ENTITY itHeliotropeDefenseGridI	"0x001000F4">
 	<!ENTITY itHeliotropeDefenseGridII	"0x001000F5">
 	<!ENTITY efHeliotropeDefenseGrid	"0x001000F6">
+	<!ENTITY tbHeliotropeDefenders		"0x001000F7">
+	<!ENTITY rsHeliotropeOutpost		"0x001000F8">
+	<!ENTITY rsHeliotropeColony			"0x001000F9">
 	
 	<!-- 0100-011F CHARON PIRATES AND MARAUDERS -->
 	
@@ -1828,6 +1830,7 @@
 	<!ENTITY rsMarauderRaidPlatformHero	"0x0010011C">
 	<!ENTITY scMarauderRaidPlatformStock	"0x0010011D">
 	<!ENTITY rsTripoliHero				"0x0010011E">
+	<!ENTITY tbMarauderDefenders		"0x0010011F">
 
 	<!-- 0120-013F SUNG SLAVERS -->
 	
@@ -2112,6 +2115,8 @@
 	<!ENTITY itBallistaTurret			"0x00100343">
 	<!ENTITY itMarkIHowitzerTurret		"0x00100344">
 	<!ENTITY tbOutlawMineTurrets		"0x00100345">
+	<!ENTITY tbOutlawDefenders			"0x00100346">
+	<!ENTITY tbOutlawTransports			"0x00100347">
 
 	<!-- 0370-038F OMNIDEFENSE SYSTEMS -->
 
@@ -2229,6 +2234,8 @@
 	<!ENTITY rsEarthZone5000			"0x0010043A">
 	<!ENTITY rsEarthZone5000Hero		"0x0010043B">
 	<!ENTITY rsAnarchistSettlement		"0x0010043C">
+	<!ENTITY tbAnarchistDefenders		"0x0010043D">
+	<!ENTITY tbAnarchistHorde			"0x0010043E">
 
 	<!-- 0450-046F RANX EMPIRE -->
 
@@ -2237,6 +2244,13 @@
 	<!ENTITY rsRanxDreadnoughtHero		"0x00100452">
 	<!ENTITY rsRanxOutpost				"0x00100453">
 	<!ENTITY rsRanxFortress				"0x00100454">
+	<!ENTITY tbRanxDefenders			"0x00100455">
+	<!ENTITY tbRanxResupply				"0x00100456">
+	<!ENTITY scRanxFreighter			"0x00100457">
+	<!ENTITY rsRanxFreighter			"0x00100458">
+	<!ENTITY rsRanxFreighterHero		"0x00100459">
+	<!ENTITY tbRanxDreadnoughtPatrol	"0x0010045A">
+	<!ENTITY vtRanxDamageControl		"0x0010045B">
 
 	<!-- 0470-048F FERIANS -->
 
@@ -2303,6 +2317,7 @@
 	<!ENTITY rsMissileNAMIHeavyHD		"0x001004D0">
 	<!ENTITY itMediumIthaliumArmor		"0x001004D1">
 	<!ENTITY itMassiveIthaliumArmor		"0x001004D2">
+	<!ENTITY itKM170Missile				"0x001004D3">
 
 	<!-- 04F0-050F TAIKON CORPORATION -->
 
@@ -2375,6 +2390,7 @@
 	<!ENTITY baCashCard					"0x001005E2">
 	<!ENTITY baAnalyzer					"0x001005E3">
 	<!ENTITY baFieldCrystal				"0x001005E4">
+	<!ENTITY vtStdDamageControl			"0x001005E5">
 
 	<!-- 0600-061F ABBASID -->
 

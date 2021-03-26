@@ -19,10 +19,6 @@
 					(not (objMatches gSource Nil "sTAV +blackMarket;"))
 						Nil
 						
-					; If the ship is radioactive then refuse dock
-					(shpIsRadioactive gPlayerShip)
-						{	screen:&dsRefuseContamination;		priority:10		overrideOnly:true	}
-
 					; If there is a bounty on the player, then the player
 					; has to repay the debt.
 					(objGetData gPlayerShip "blackMarketCrimeCost")
@@ -1118,6 +1114,11 @@ PLAYER DATA
 			-->
 			<Definition	id="rpg.checkMilitaryID">	Nil</Definition>
 			<Definition id="rpg.checkIllegals">		Nil</Definition>
+
+			<!--
+			We don't let the player dock if radioactive
+			-->
+			<Definition id="rpg.checkRadioactive">	True</Definition>
 		</Properties>
 
 		<Events>

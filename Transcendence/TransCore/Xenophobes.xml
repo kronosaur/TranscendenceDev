@@ -11,7 +11,7 @@
 			demonym=":a Xenophobe disciple(s)"
 			plural="true"
 
-			alignment="destructive chaos"
+			alignment="sterilizer"
 			/>
 	
 	<SystemMap unid="&smXenophobeSpace;"
@@ -249,6 +249,8 @@
 			<Device slotID="mainTurret"			deviceID="&itMarkIIIHowitzer;"/>
 			<Device slotID="portTurret"			deviceID="&itLancerCannon;"/>
 			<Device slotID="starboardTurret"	deviceID="&itLancerCannon;"/>
+
+			<Device deviceID="&vtStdDamageControl;"		level="6"/>
 		</Devices>
 
 		<!-- Items -->
@@ -330,6 +332,7 @@
 			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true" minFireArc="180" maxFireArc="285" posAngle="-138" posRadius="49" posZ="0"/>
 
 			<Device deviceID="&itMissileDefense;" omnidirectional="true" />
+			<Device deviceID="&vtStdDamageControl;"		level="8"/>
 			<Device deviceID="&it500MWReactor;"/>
 		</Devices>
 
@@ -380,6 +383,7 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
+			aggressor=			"true"
 			fireRateAdj=		"40"
 			fireAccuracy=		"90"
 			perception=			"6"
@@ -452,6 +456,7 @@
 			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		fireArc="160"  posAngle="-105" posRadius="82" posZ="114"/>
 
 			<Device deviceID="&itMissileDefense;" omnidirectional="true" />
+			<Device deviceID="&vtStdDamageControl;"		level="9"/>
 			<Device deviceID="&it1GWReactor;"/>
 		</Devices>
 

@@ -20,6 +20,7 @@
 						{	test:'(typ@ &scMikeno; 'characterName)				result:Nil	}
 						{	test:'(typ@ &scMikeno; 'currency)					result:&ecCreditEconomy;	}
 						{	test:'(typ@ &scMikeno; 'currencyName)				result:'credit	}
+						{	test:'(typ@ &scMikeno; 'cyberDefenseLevel)			result:5	}
 						{	test:'(typ@ &scMikeno; 'defaultSovereign)			result:&svIndependent;	}
 						{	test:'(typ@ &scMikeno; 'drivePowerUse)				result:108700	}
 						{	test:'(typ@ &scMikeno; 'frequency)					result:'common	}
@@ -53,6 +54,35 @@
 						{	test:'(typ@ &scMikeno; 'wreckType)					result:&stShipwreck;	}
 						{	test:'(typ@ &scMikeno; 'wreckTypeName)				result:"(shipwreck)"	}
 
+						;	Stealth and Perception
+
+						{	test:'(typ@ &scMikeno; 'perception)					result:4	}
+						{	test:'(typ@ &scMikeno; 'stealth)					result:4	}
+
+						{	test:'(tsePerceptionRange 4 1)						result:173	}
+						{	test:'(tsePerceptionRange 4 2)						result:144	}
+						{	test:'(tsePerceptionRange 4 3)						result:120	}
+						{	test:'(tsePerceptionRange 4 4)						result:100	}
+						{	test:'(tsePerceptionRange 4 5)						result:83	}
+						{	test:'(tsePerceptionRange 4 6)						result:69	}
+						{	test:'(tsePerceptionRange 4 7)						result:58	}
+						{	test:'(tsePerceptionRange 4 8)						result:48	}
+						{	test:'(tsePerceptionRange 4 9)						result:40	}
+						{	test:'(tsePerceptionRange 4 10)						result:33	}
+						{	test:'(tsePerceptionRange 4 255)					result:0	}
+
+						{	test:'(tsePerceptionRange 1 4)						result:58	}
+						{	test:'(tsePerceptionRange 2 4)						result:69	}
+						{	test:'(tsePerceptionRange 3 4)						result:83	}
+						{	test:'(tsePerceptionRange 4 4)						result:100	}
+						{	test:'(tsePerceptionRange 5 4)						result:120	}
+						{	test:'(tsePerceptionRange 6 4)						result:144	}
+						{	test:'(tsePerceptionRange 7 4)						result:173	}
+						{	test:'(tsePerceptionRange 8 4)						result:207	}
+						{	test:'(tsePerceptionRange 9 4)						result:249	}
+						{	test:'(tsePerceptionRange 10 4)						result:299	}
+						{	test:'(tsePerceptionRange 255 4)					result:14021065	}
+
 						;	Wrecks
 
 						{	test:'(typ@ &scWindSlaver; 'wreckChance)			result:19	}
@@ -82,7 +112,7 @@
 						(shpOrder gPlayerShip 'hold)
 						)
 
-					;	Some tests
+					;	Some device install tests
 
 					(diagEval (list
 						{	test:'(objAddItem gPlayerShip &itSmartCannon; 1)		result:'ignore }

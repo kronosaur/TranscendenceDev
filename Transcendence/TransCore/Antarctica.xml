@@ -123,6 +123,7 @@
 			<ReplaceArmor	criteria="a L:1-10;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 
 		<Items>
@@ -212,8 +213,8 @@
 				
 				A Fleet officer blocks the door.
 				
-				"I don't know who you think you are, mate, but aren't our crew, so
-				you'd better get off our ship."
+				"I don't know who you think you are, mate, but you aren't our 
+				crew, so you'd better get off our ship."
 				
 			</Text>
 		</Language>

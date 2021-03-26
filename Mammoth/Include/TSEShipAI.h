@@ -39,6 +39,28 @@ struct SPlayerChangedShipsCtx
 	bool bIdentifyInstalled = false;		//	If TRUE, identify installed items in the new ship
 	};
 
+class CSquadronID
+	{
+	public:
+		CSquadronID () { }
+		CSquadronID (DWORD dwLeaderID, const CString &sID) :
+				m_dwLeaderID(dwLeaderID),
+				m_sID(sID)
+			{ }
+
+		const CString &GetID () const { return m_sID; }
+		DWORD GetLeaderID () const { return m_dwLeaderID; }
+		bool IsEmpty () const { return m_dwLeaderID == 0; }
+		void ReadFromStream (SLoadCtx &Ctx);
+		void WriteToStream (IWriteStream &Stream);
+
+		static const CSquadronID Null;
+
+	private:
+		DWORD m_dwLeaderID = 0;				//	Object ID of leader
+		CString m_sID;						//	ID of squadron
+	};
+
 //  CAISettings ----------------------------------------------------------------
 
 //	NOTE: These values are saved; do not change them.
@@ -71,6 +93,7 @@ enum class AIReaction
 	Chase =									4,	//	Chase attacker
 	Destroy =								5,	//	Destroy attacker
 	Gate =									6,	//	Gate out
+	DestroyAndRetaliate =					7,	//	Destroy attacker and attack nearest enemies
 	};
 
 class CAISettings
@@ -251,6 +274,7 @@ class IShipController
 										//		"timer": Seconds left in order (optional)
 			orderAttackOrRetreat,		//	pTarget = target to destroy
 										//		"timer": Seconds left in order (optional)
+			orderResupply,				//	Resupplies from currently docked at object.
 			};
 
 		enum EShipStatusNotifications
@@ -290,7 +314,7 @@ class IShipController
 		virtual CSpaceObject *GetEscortPrincipal (void) const { return NULL; }
 		virtual int GetFireDelay (void) { return 0; }
 		virtual int GetFireRateAdj (void) { return 10; }
-		virtual EManeuverTypes GetManeuver (void) = 0;
+		virtual EManeuver GetManeuver (void) const = 0;
 		virtual CSpaceObject *GetOrderGiver (void) = 0;
 		virtual bool GetReverseThrust (void) = 0;
 		virtual CSpaceObject *GetShip (void) { return NULL; }
@@ -311,7 +335,7 @@ class IShipController
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) { return 0; }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) { return NULL_STR; }
 		virtual void SetCommandCode (ICCItem *pCode) { }
-		virtual void SetManeuver (EManeuverTypes iManeuver) { }
+		virtual void SetManeuver (EManeuver iManeuver) { }
 		virtual void SetShipToControl (CShip *pShip) { }
 		virtual void SetThrust (bool bThrust) { }
 		virtual void SetPlayerBlacklisted (bool bValue) { }
@@ -443,6 +467,7 @@ class COrderDesc
 		bool IsVector () const { return (GetDataType() == EDataType::Vector); }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetDataInteger (DWORD dwData);
+		void SetDataInteger (DWORD dwData1, DWORD dwData2);
 		void SetTarget (CSpaceObject *pTarget) { m_pTarget = pTarget; }
 		void WriteToStream (IWriteStream &Stream, const CShip &Ship) const;
 

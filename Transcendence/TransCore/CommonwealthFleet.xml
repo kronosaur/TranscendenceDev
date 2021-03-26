@@ -107,10 +107,6 @@
 					(not (objMatches gSource Nil "sTAV +commonwealthFleet;"))
 						Nil
 						
-					; If the ship is radioactive then we need to decontaminate
-					(shpIsRadioactive gPlayerShip)
-						{	screen:&dsFleetDecon;		priority:10		overrideOnly:true	}
-						
 					; The remaining screens are only invoked if the ship/station
 					; implements Fleet Law (e.g., CSC Antarctica does not).
 					(not (objHasAttribute gSource "fleetLaw"))
@@ -238,7 +234,9 @@ PLAYER DATA
 
 						;	Refuel is free at level 3 or higher
 
-						(eq aService 'priceToRefuel)
+						(or (= aService 'priceToRefuel)
+								(= aService 'decontaminate)
+								)
 							(switch
 								(geq rank 3)	0
 								Nil
@@ -836,6 +834,7 @@ PLAYER DATA
 				</Items>
 			</Device>
 			<Device deviceID="&itR9Deflector;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="9"/>
 		</Devices>
 
 		<Maneuver
@@ -1317,28 +1316,6 @@ PLAYER DATA
 							)
 					</Action>
 				</Actions>
-			</Default>
-		</Panes>
-	</DockScreen>
-
-	<!-- Fleet Decontamination -->
-
-	<DockScreen UNID="&dsFleetDecon;"	nestedScreen="true">
-		<Panes>
-			<Default>
-				<OnPaneInit>
-					(block Nil
-						(scrSetDesc gScreen "The dockmaster decontaminates your ship before you are allowed to exit the airlock.")
-						(shpDecontaminate gPlayerShip)
-						)
-				</OnPaneInit>
-
-				<Actions>
-					<Action name="Continue" default="1" cancel="1" key="C">
-						(scrExitScreen gScreen (shpIsRadioactive gPlayerShip))
-					</Action>
-				</Actions>
-
 			</Default>
 		</Panes>
 	</DockScreen>

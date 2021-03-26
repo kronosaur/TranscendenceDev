@@ -267,3 +267,14 @@ ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList &Override, 
 
 	return NOERROR;
 	}
+
+void CDesignTable::SetHierarchyResolved (bool bValue)
+
+//	SetHierarchyResolved
+//
+//	Sets the hierarchy resolved flag.
+
+	{
+	for (int i = 0; i < m_Table.GetCount(); i++)
+		m_Table[i]->SetHierarchyResolved(bValue);
+	}

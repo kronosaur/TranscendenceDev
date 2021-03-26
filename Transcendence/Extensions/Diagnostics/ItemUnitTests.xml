@@ -278,6 +278,7 @@
 						{	test:'(itm@ &itLaserCannon; 'balanceCost)				result:385	}
 						{	test:'(itm@ &itLaserCannon; 'balanceExcludeCost)		result:5	}
 						{	test:'(itm@ &itLaserCannon; 'canFireWhenBlind)		result:Nil	}
+						{	test:'(itm@ &itLaserCannon; 'cyberDefenseLevel)		result:1	}
 						{	test:'(itm@ &itLaserCannon; 'damage)					result:90	}
 						{	test:'(itm@ &itLaserCannon; 'damagePerProjectile)		result:2.5	}
 						{	test:'(itm@ &itLaserCannon; 'damageTypeID)			result:'laser	}
@@ -374,6 +375,7 @@
 						{	test:'(itm@ &itNAMIMissileLauncher; 'balanceCost)				result:599	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'balanceExcludeCost)		result:-13	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'canFireWhenBlind)		result:Nil	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'cyberDefenseLevel)			result:3	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damage)					result:168	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damagePerProjectile)		result:14.0	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damageTypeID)			result:'blast	}
@@ -511,7 +513,55 @@
 						{	test:'(itm@ &itQuantumsphereDisintegrator; 'interaction)
 																					result:'always	}
 
+						;	Scaled Repairer Device
 
+						{	test:'(itm@ (itmCreate &itTestRepairer; 1) 'level)		result:5	}
+						{	test:'(itm@ (itmCreate &itTestRepairer; 1) 'regen)		result:{ 1:4 2:3 3:3 4:2 5:2 6:2 7:1 8:1 9:1 10:1 }	}
+						{	test:'(itm@ (itmCreate &itTestRepairer; 1) 'compartmentRegen)
+																					result:10	}
+						;	Power use is per armor segment being repaired. By default
+						;	we return 2x power use.
+						{	test:'(itm@ (itmCreate &itTestRepairer; 1) 'powerUse)
+																					result:1000	}
+
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestRepairerScaled; 1) 'level 3)
+									'level)											result:3	}
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestRepairerScaled; 1) 'level 3)
+									'regen)											result:3	}
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestRepairerScaled; 1) 'level 3)
+									'compartmentRegen)								result:Nil	}
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestRepairerScaled; 1) 'level 3)
+									'powerUse)										result:1000	}
+
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestRepairerScaled; 1) 'level 5)
+									'level)											result:5	}
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestRepairerScaled; 1) 'level 5)
+									'regen)											result:5	}
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestRepairerScaled; 1) 'level 5)
+									'compartmentRegen)								result:Nil	}
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestRepairerScaled; 1) 'level 5)
+									'powerUse)										result:4000	}
+
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestRepairerScaled; 1) 'level 7)
+									'level)											result:7	}
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestRepairerScaled; 1) 'level 7)
+									'regen)											result:8	}
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestRepairerScaled; 1) 'level 7)
+									'compartmentRegen)								result:5	}
+						{	test:'(itm@ 
+									(itmSet@ (itmCreate &itTestRepairerScaled; 1) 'level 7)
+									'powerUse)										result:16000	}
 						))
 
 					;	Unit Tests on Armor Damage -----------------------------

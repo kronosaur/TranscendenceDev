@@ -181,6 +181,46 @@ ALERROR CConfigurationDesc::InitFromWeaponClassXML (SDesignLoadCtx &Ctx, const C
 	return NOERROR;
 	}
 
+bool CConfigurationDesc::IsDualPointOrigin (void) const
+
+//	IsDualPointOrigin
+//
+//	Returns TRUE if all shots emanate from two points
+
+	{
+	switch (m_iType)
+		{
+		case ctSingle:
+			return false;
+
+		case ctDual:
+		case ctDualAlternating:
+			return true;
+
+		case ctWall:
+			return false;
+
+		case ctSpread2:
+		case ctSpread3:
+		case ctSpread5:
+			return false;
+
+		case ctCustom:
+			{
+			if (m_Custom.GetCount() != 2)
+				return false;
+			else
+				return (m_Custom[0].iPosAngle != m_Custom[1].iPosAngle);
+			}
+
+		default:
+			{
+			ASSERT(false);
+			return false;
+			}
+		}
+	}
+
 bool CConfigurationDesc::IsSinglePointOrigin (void) const
 
 //	IsSinglePointOrigin

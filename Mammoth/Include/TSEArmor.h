@@ -64,7 +64,6 @@ class CArmorClass
 		int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
 		inline CString GetName (void) const;
 		CString GetShortName (void);
-		int GetStealth (void) const { return m_iStealth; }
 		DWORD GetUNID (void);
 		bool IsScalable (void) const { return (m_pScalable != NULL); }
 		ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
@@ -151,6 +150,7 @@ class CArmorClass
 		CurrencyValue GetRepairCost (const CArmorItem &ArmorItem, int iHPToRepair = 1) const;
 		int GetRepairLevel (const CArmorItem &ArmorItem) const;
 		const SScalableStats &GetScaledStats (const CArmorItem &ArmorItem) const;
+		int GetStealth (const CItemEnhancementStack *pEnhancements) const;
 		CUniverse &GetUniverse (void) const;
 
 		Metric CalcRegen180 (CItemCtx &ItemCtx) const;
@@ -166,7 +166,7 @@ class CArmorClass
 		int m_iRepairTech;						//	Tech required to repair
 		int m_iArmorCompleteBonus;				//	Extra HP if armor is complete
 		int m_iHPBonusPerCharge;				//	Extra HP for each charge
-		int m_iStealth;							//	Stealth level
+		int m_iStealthFromArmor;				//	Stealth level
 		int m_iPowerUse;						//	Power consumed (1/10th MWs)
 		int m_iIdlePowerUse;					//	Power consumed when not regenerating
 		int m_iPowerGen;						//	Power generation, usually solar (1/10th MWs)
@@ -243,6 +243,7 @@ class CShipArmorDesc
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		Metric CalcMass (void) const;
 		int GetCount (void) const { return m_Segments.GetCount(); }
+		int GetMaxLevel () const;
 		const CShipArmorSegmentDesc &GetSegment (int iIndex) const { ASSERT(iIndex >= 0 && iIndex < m_Segments.GetCount()); return m_Segments[iIndex]; }
 		int GetSegmentAtAngle (int iAngle) const;
 		CString GetSegmentName (int iIndex) const;
@@ -279,13 +280,14 @@ class CInstalledArmor
 		int GetHitPointsPercent (CSpaceObject *pSource);
 		CItem *GetItem (void) const { return m_pItem; }
 		inline int GetLevel (void) const;
-		inline int GetMaxHP (CSpaceObject *pSource) const;
+		inline int GetMaxHP (const CSpaceObject *pSource) const;
 		int GetSect (void) const { return m_iSect; }
 		CSpaceObject *GetSource (void) const { return m_pSource; }
 		int IncCharges (CSpaceObject *pSource, int iChange);
 		int IncHitPoints (int iChange) { m_iHitPoints = Max(0, m_iHitPoints + iChange); return m_iHitPoints; }
 		void Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iSect, bool bInCreate = false);
 		bool IsComplete (void) const { return (m_fComplete ? true : false); }
+		bool IsDamaged () const;
 		bool IsPrime (void) const { return (m_fPrimeSegment ? true : false); }
 		void SetComplete (CSpaceObject *pSource, bool bComplete = true);
 		void SetConsumePower (bool bValue = true) { m_fConsumePower = bValue; }

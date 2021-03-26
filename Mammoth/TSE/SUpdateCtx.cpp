@@ -37,3 +37,42 @@ void SUpdateCtx::OnStartUpdate (CSpaceObject &Obj)
 	m_bTimeStopped = Obj.IsTimeStopped();
 	m_bTargetListValid = false;
 	}
+
+void SUpdateCtx::SetPlayerShip (CSpaceObject &PlayerObj)
+
+//	SetPlayerShip
+//
+//	Sets the player.
+
+	{
+	if (PlayerObj.IsDestroyed())
+		return;
+
+	m_pPlayer = &PlayerObj;
+
+	m_AutoMining.Init(*m_pPlayer);
+	m_AutoTarget.Init(*m_pPlayer);
+	}
+
+void SUpdateCtx::UpdatePlayerCalc (const CSpaceObject &Obj)
+
+//	UpdatePlayerCalc
+//
+//	Updates calculations required by the player UI, etc.
+
+	{
+	if (!m_pPlayer || m_pPlayer->IsDestroyed() || m_pPlayer == Obj)
+		return;
+
+	m_AutoMining.Update(*m_pPlayer, Obj);
+	m_AutoTarget.Update(*m_pPlayer, Obj);
+
+	if (m_pPlayer->IsInOurSquadron(Obj))
+		m_bPlayerHasSquadron = true;
+
+	//	NOTE: Because of the current Squadron UI, ships in our squadron don't
+	//	count for purposes of communications.
+
+	else if (Obj.CanCommunicateWith(*m_pPlayer))
+		m_bPlayerHasCommsTarget = true;
+	}

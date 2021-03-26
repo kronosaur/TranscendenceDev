@@ -118,6 +118,7 @@
 			<Device deviceID="&itTeV9Blaster;"	secondaryWeapon="true" fireAngle="90"  fireArc="200" posAngle="105"  posRadius="60" posZ="0"/>
 			<Device deviceID="&itTeV9Blaster;"	secondaryWeapon="true" fireAngle="-90" fireArc="200" posAngle="-105" posRadius="60" posZ="0"/>
 			<Device deviceID="&itYoroiS500;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="8"/>
 			<Device deviceID="&it250MWReactor;"/>
 		</Devices>
 

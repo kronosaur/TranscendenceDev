@@ -19,7 +19,6 @@ bool CDockScreenDetailsPane::EvalValue (CString *retsError)
 	//	Evaluate the function
 
 	CCodeChainCtx CCX(GetUniverse());
-	CCX.SetScreen(&m_DockScreen);
 	CCX.DefineContainingType(m_DockScreen.GetRoot());
 	CCX.SaveAndDefineSourceVar(m_pLocation);
 	CCX.SaveAndDefineDataVar(m_pData);

@@ -173,6 +173,7 @@ static constexpr DWORD LARGE_STATION_DAMAGE_UNID =		0x0000900E;	//	efLargeStatio
 static constexpr DWORD MEDIUM_STATION_DAMAGE_UNID =		0x0000900F;	//	efMediumStationDamage
 
 static constexpr DWORD DEFAULT_SHIP_SCREEN_UNID =		0x0000A001;	//	dsShipInterior
+static constexpr DWORD COMPATIBLE_SHIP_CONFIG_SCREEN =	0x0000A01B;
 
 static constexpr DWORD g_DamageImageUNID =				0x0000F001;	//	rsMediumDamage
 static constexpr DWORD g_LRSImageUNID =					0x0000F006;	//	rsZubrinLRS
@@ -188,7 +189,7 @@ static constexpr DWORD g_StationExplosionSoundUNID =	0x0000F205;	//	snStationExp
 
 static constexpr DWORD DEFAULT_DOCK_SERVICES_SCREEN =	0x00010029;
 static constexpr DWORD COMPATIBLE_DOCK_SERVICES_SCREEN = 0x0001002A;
-static constexpr DWORD COMPATIBLE_SHIP_CONFIG_SCREEN =	0x0000A01B;
+static constexpr DWORD UNID_RPG_SQUADRON_SCREEN =		0x00010123;
 
 static constexpr DWORD UNID_DEFAULT_SYSTEM_BACKGROUND =	0x00030001;
 static constexpr DWORD UNID_CORE_ICON_BAR			 =	0x00030005;

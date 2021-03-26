@@ -99,6 +99,28 @@
 																				
 						{	test:'(objGetCondition gPlayerShip 'radioactive)
 																				result:True	}
+
+						{	test:'(objRemoveCondition gPlayerShip 'radioactive)
+																				result:{ resultCode:'ok }	}
+
+						;	Test pteravores and fouled condition
+
+						{	test:'(objGetCondition gPlayerShip 'fouled)
+																				result:Nil	}
+
+						{	test:'(objAddOverlay gPlayerShip &ovPteravoreFuelDrain; (objGetPos gPlayerShip) 0)
+																				result:'ignore }
+																				
+						{	test:'(objGetCondition gPlayerShip 'fouled)
+																				result:True	}
+
+						{	test:'(objCanRemoveCondition gPlayerShip 'fouled)
+																				result:{ resultCode:'ok }	}
+						{	test:'(objRemoveCondition gPlayerShip 'fouled)
+																				result:{ resultCode:'ok }	}
+
+						{	test:'(objGetCondition gPlayerShip 'fouled)
+																				result:Nil	}
 						)
 
 						{

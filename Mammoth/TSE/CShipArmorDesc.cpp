@@ -98,6 +98,27 @@ Metric CShipArmorDesc::CalcMass (void) const
 	return rMass;
 	}
 
+int CShipArmorDesc::GetMaxLevel () const
+
+//	GetMaxLevel
+//
+//	Returns the maximum armor level.
+
+	{
+	int iMaxLevel = -1;
+
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CItem ArmorItem;
+		GetSegment(i).CreateArmorItem(&ArmorItem);
+		
+		if (ArmorItem.GetLevel() > iMaxLevel)
+			iMaxLevel = ArmorItem.GetLevel();
+		}
+
+	return iMaxLevel;
+	}
+
 int CShipArmorDesc::GetSegmentAtAngle (int iAngle) const
 
 //  GetSegmentAtAngle

@@ -78,7 +78,7 @@
 					;	can destroy it (e.g., has WMD if needed).
 
 					(enemyStations 
-						(filter (sysFindObject aOwnerObj "TAE +populated; -questTarget; -uncharted; N:450;") theObj
+						(filter (sysFindObject aOwnerObj "TAE +populated; -property:questTarget; -uncharted; N:450;") theObj
 							(objCanDestroyTarget gPlayerShip theObj)
 							)
 						)

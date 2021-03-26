@@ -473,7 +473,7 @@ void CPlayerShipController::Dock (void)
 	SetActivate(false);
 	SetFireMain(false);
 	SetFireMissile(false);
-	SetManeuver(NoRotation);
+	SetManeuver(EManeuver::None);
 	SetThrust(false);
 
 	SetUIMessageFollowed(uimsgDockHint);
@@ -728,52 +728,6 @@ const COrderDesc &CPlayerShipController::GetOrderDesc (int iIndex) const
 		default:
 			return COrderDesc::Null;
 		}
-	}
-
-bool CPlayerShipController::HasCommsTarget (void)
-
-//	HasCommsTarget
-//
-//	Returns TRUE if we have at least one comms target to communicate with
-
-	{
-	int i;
-	CSystem *pSystem = m_pShip->GetSystem();
-
-	for (i = 0; i < pSystem->GetObjectCount(); i++)
-		{
-		CSpaceObject *pObj = pSystem->GetObject(i);
-
-		if (pObj 
-				&& pObj->CanCommunicateWith(m_pShip)
-				&& pObj != m_pShip)
-			return true;
-		}
-
-	return false;
-	}
-
-bool CPlayerShipController::HasFleet (void)
-
-//	HasFleet
-//
-//	Returns TRUE if the player has a fleet of ships to command
-
-	{
-	int i;
-	CSystem *pSystem = m_pShip->GetSystem();
-
-	for (i = 0; i < pSystem->GetObjectCount(); i++)
-		{
-		CSpaceObject *pObj = pSystem->GetObject(i);
-
-		if (pObj 
-				&& (m_pShip->Communicate(pObj, msgQueryFleetStatus, m_pShip) == resAck)
-				&& pObj != m_pShip)
-			return true;
-		}
-
-	return false;
 	}
 
 void CPlayerShipController::Init (CTranscendenceWnd *pTrans)
@@ -1184,7 +1138,7 @@ void CPlayerShipController::OnDestroyed (SDestroyCtx &Ctx)
 
 	//	Reset everything else
 
-	m_iManeuver = NoRotation;
+	m_iManeuver = EManeuver::None;
 	m_bThrust = false;
 	m_bStopThrust = false;
 	SetFireMain(false);
@@ -1486,7 +1440,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 				//	Stop
 
 				SetThrust(false);
-				SetManeuver(NoRotation);
+				SetManeuver(EManeuver::None);
 				SetFireMain(false);
 				SetFireMissile(false);
 				}
@@ -1566,7 +1520,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 			DisplayTranslate(CONSTLIT("msgReactorNoPower"));
 
 			SetThrust(false);
-			SetManeuver(NoRotation);
+			SetManeuver(EManeuver::None);
 			SetFireMain(false);
 			SetFireMissile(false);
 			break;
@@ -1586,7 +1540,7 @@ void CPlayerShipController::OnStartGame (void)
 //	Game (either new or loaded) has just started
 
 	{
-	m_iManeuver = NoRotation;
+	m_iManeuver = EManeuver::None;
 	m_bThrust = false;
 	m_bStopThrust = false;
 	SetFireMain(false);
@@ -1933,7 +1887,7 @@ bool CPlayerShipController::ToggleEnableDevice (int iDeviceIndex)
 	return false;
 	}
 
-EManeuverTypes CPlayerShipController::GetManeuver (void)
+EManeuver CPlayerShipController::GetManeuver (void) const
 	{
 	if (m_ManeuverController.IsManeuverActive())
 		return m_ManeuverController.GetManeuver(m_pShip);
@@ -2276,13 +2230,13 @@ void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 
 	//	Remember the AutoTarget.
 
-	m_pAutoTarget = const_cast<CSpaceObject *>(Ctx.AutoTarget.GetAutoTarget());
-	m_bShowAutoTarget = Ctx.AutoTarget.IsAutoTargetNeeded();
-	m_bTargetOutOfRange = Ctx.AutoTarget.IsPlayerTargetOutOfRange();
+	m_pAutoTarget = const_cast<CSpaceObject *>(Ctx.GetAutoTarget().GetAutoTarget());
+	m_bShowAutoTarget = Ctx.GetAutoTarget().IsAutoTargetNeeded();
+	m_bTargetOutOfRange = Ctx.GetAutoTarget().IsPlayerTargetOutOfRange();
 
 	//	Remember auto mining, if necessary
 
-	m_pAutoMining = Ctx.AutoMining.GetAutoTarget();
+	m_pAutoMining = Ctx.GetAutoMining().GetAutoTarget();
 
 	//	Compute the AutoDock target.
 	//
@@ -2311,10 +2265,10 @@ void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 
 	//	Otherwise, if we are close to a port then we use that.
 
-	else if (m_pAutoDock = const_cast<CSpaceObject *>(Ctx.AutoDock.GetDockObj()))
+	else if (m_pAutoDock = const_cast<CSpaceObject *>(Ctx.GetAutoDock().GetDockObj()))
 		{
-		m_iAutoDockPort = Ctx.AutoDock.GetDockingPortIndex();
-		m_vAutoDockPort = Ctx.AutoDock.GetDockingPortPos();
+		m_iAutoDockPort = Ctx.GetAutoDock().GetDockingPortIndex();
+		m_vAutoDockPort = Ctx.GetAutoDock().GetDockingPortPos();
 		}
 
 	//	Notify the game controller when we transition in/out of combat.
@@ -2373,6 +2327,11 @@ void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 
 		m_bSignalDock = false;
 		}
+
+	//	Remember some other state
+
+	m_bHasSquadron = Ctx.PlayerHasSquadron();
+	m_bHasCommsTarget = Ctx.PlayerHasCommsTarget();
 
 	DEBUG_CATCH
 	}
@@ -2458,7 +2417,7 @@ void CPlayerShipController::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 		m_OrderDesc = COrderDesc();
 
 	Ctx.pStream->Read(dwLoad);
-	m_iManeuver = (EManeuverTypes)dwLoad;
+	m_iManeuver = (EManeuver)dwLoad;
 
 	if (Ctx.dwVersion >= 49)
 		m_Credits.ReadFromStream(Ctx);
@@ -3078,7 +3037,7 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 	SetTarget(NULL);
 	SetDestination(NULL);
 	m_pAutoDock = NULL;
-	m_iManeuver = NoRotation;
+	m_iManeuver = EManeuver::None;
 	m_bThrust = false;
 	m_bStopThrust = false;
 	SetFireMain(false);
@@ -3246,6 +3205,20 @@ void CPlayerShipController::UpdateHelp (int iTick)
 		return;
 		}
 
+	//	Squadron UI
+
+	if (m_UIMsgs.IsEnabled(uimsgSquadronUIHint))
+		{
+		if (m_bHasSquadron
+				&& m_UIMsgs.ShowMessage(m_Universe, uimsgSquadronUIHint)
+				&& CanShowShipStatus())
+			{
+			DisplayCommandHint(CGameKeys::keySquadronUI, Translate(CONSTLIT("hintSquadronUI")));
+			m_iLastHelpTick = iTick;
+			return;
+			}
+		}
+
 	//	If we've never used an item, and we've got a usable item in cargo
 	//	and we're not in the middle of anything, then tell the player.
 
@@ -3272,7 +3245,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 	if (m_UIMsgs.IsEnabled(uimsgShipStatusHint) && !bEnemiesInRange)
 		{
 		CItemListManipulator ItemList(m_pShip->GetItemList());
-		CItemCriteria NonFuelItems(CONSTLIT("*~fU"));
+		CItemCriteria NonFuelItems(CONSTLIT("*~fU -noUseItemHint;"));
 		ItemList.SetFilter(NonFuelItems);
 		bool bHasNonFuelItems = ItemList.MoveCursorForward();
 

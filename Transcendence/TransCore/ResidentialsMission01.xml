@@ -11,6 +11,7 @@
 			maxAppearing=		"1-3"
 			>
 		<Properties>
+			<Definition id="extraTime">700</Definition>
 			<Data id="casualtiesReported"></Data>
 			<Data id="hasCasualties"></Data>
 			<Data id="reward"></Data>
@@ -30,7 +31,7 @@
 			</Variant>
 			<Variant id="targetDesc">
 				{
-					criteria: "TAE +populated; -questTarget; -uncharted;"
+					criteria: "TAE +populated; -property:questTarget; -uncharted;"
 					}
 			</Variant>
 		</Properties>
@@ -57,11 +58,11 @@
 					(dist (objGetDistance stationObj targetObj))
 					(travelTime (sysCalcTravelTime dist (obj@ gPlayerShip 'maxSpeed)))
 
-					;	Calculate how much time before casualties (assume 300 ticks
-					;	to destroy the station.
+					;	Calculate how much time before casualties
 
-					(casualtiesOn (+ (unvGetTick) travelTime 450 travelTime))
-					(failureOn (+ casualtiesOn 450))
+					(extraTime (typ@ gType 'extraTime))
+					(casualtiesOn (+ (unvGetTick) travelTime extraTime travelTime))
+					(failureOn (+ casualtiesOn extraTime))
 					)
 					(msnSet@ gSource 'reward reward)
 					(msnSet@ gSource 'casualtiesOn casualtiesOn)

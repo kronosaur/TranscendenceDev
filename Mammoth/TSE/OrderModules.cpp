@@ -120,6 +120,9 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderOrbitPatrol:
 			return new COrbitExactOrder(iOrder);
 
+		case IShipController::orderPatrol:
+			return new CPatrolOrder;
+
 		case IShipController::orderDock:
 		case IShipController::orderGate:
 		case IShipController::orderGoTo:
@@ -134,6 +137,7 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 			return new CSentryOrder;
 
 		case IShipController::orderFireWeapon:
+		case IShipController::orderResupply:
 		case IShipController::orderUseItem:
 			return new CSimpleOrder(iOrder);
 
@@ -146,23 +150,22 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderWaitForUndock:
 			return new CWaitOrder(iOrder);
 
-		case IShipController::orderGuard:
-		case IShipController::orderGateOnThreat:
-		case IShipController::orderGateOnStationDestroyed:
-		case IShipController::orderPatrol:
-		case IShipController::orderScavenge:
+		case IShipController::orderAimAtTarget:
+		case IShipController::orderBombard:
+		case IShipController::orderDestroyPlayerOnReturn:
+		case IShipController::orderDestroyTargetHold:
 		case IShipController::orderFollowPlayerThroughGate:
-		case IShipController::orderTradeRoute:
-		case IShipController::orderWander:
+		case IShipController::orderGateOnStationDestroyed:
+		case IShipController::orderGateOnThreat:
+		case IShipController::orderGuard:
+		case IShipController::orderHoldCourse:
 		case IShipController::orderLoot:
 		case IShipController::orderMine:
-		case IShipController::orderDestroyPlayerOnReturn:
-		case IShipController::orderBombard:
-		case IShipController::orderAimAtTarget:
 		case IShipController::orderOrbit:
-		case IShipController::orderHoldCourse:
+		case IShipController::orderScavenge:
+		case IShipController::orderTradeRoute:
 		case IShipController::orderTurnTo:
-		case IShipController::orderDestroyTargetHold:
+		case IShipController::orderWander:
 			return NULL;
 
 		default:

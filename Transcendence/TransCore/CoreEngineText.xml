@@ -103,6 +103,7 @@
 			<Text id="hintShipStatus">				View ship status and cargo hold contents</Text>
 			<Text id="hintShowGalacticMap">			See the stargate network</Text>
 			<Text id="hintShowMap">					See a map of the system</Text>
+			<Text id="hintSquadronUI">				Command ships in your squadron</Text>
 			<Text id="hintThrust">					Thrust forward</Text>
 			<Text id="hintUseItem">					Use an item in your cargo hold</Text>
 

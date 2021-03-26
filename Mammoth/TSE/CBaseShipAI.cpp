@@ -93,6 +93,7 @@ AIReaction CBaseShipAI::AdjReaction (AIReaction iReaction) const
 		{
 		case AIReaction::Chase:
 		case AIReaction::Destroy:
+		case AIReaction::DestroyAndRetaliate:
 			if (m_AICtx.IsNonCombatant())
 				return AIReaction::None;
 			else if (m_AICtx.IsImmobile())
@@ -650,7 +651,22 @@ CSpaceObject *CBaseShipAI::GetBase (void) const
 	if (m_pOrderModule)
 		return m_pOrderModule->GetBase();
 	else
-		return OnGetBase();
+		{
+		switch (GetCurrentOrder())
+			{
+			//	There are some edge conditions in which we don't have an order
+			//	module, but no longer handle the orders in the base class
+			//	(this mostly happens when upgrading save file versions).
+			//	In that case, we handle it here.
+
+			case IShipController::orderDock:
+			case IShipController::orderPatrol:
+				return GetCurrentOrderTarget();
+
+			default:
+				return OnGetBase();
+			}
+		}
 	}
 
 int CBaseShipAI::GetCombatPower (void)
@@ -854,7 +870,8 @@ CTargetList CBaseShipAI::GetTargetList (void) const
 	//	If we are aggressive, then include ships that haven't fired 
 	//	their weapons recently
 
-	if (m_AICtx.IsAggressor())
+	DWORD dwTypes = GetThreatTargetTypes();
+	if (dwTypes & (DWORD)CTargetList::ETargetType::NonAggressiveShip)
 		Options.bIncludeNonAggressors = true;
 
 	//	Include the player if they are blacklisted
@@ -876,6 +893,34 @@ CTargetList CBaseShipAI::GetTargetList (void) const
 	//	Done
 
 	return CTargetList(*m_pShip, Options);
+	}
+
+DWORD CBaseShipAI::GetThreatTargetTypes () const
+
+//	GetThreatTargetTypes
+//
+//	Returns the set of targets that we consider threatening.
+
+	{
+	//	See if the order module defines this.
+
+	DWORD dwTypes;
+	if (m_pOrderModule
+			&& (dwTypes = m_pOrderModule->GetThreatTargetTypes()))
+		{
+		return dwTypes;
+		}
+
+	//	Otherwise, default threat
+
+	else
+		{
+		DWORD dwTypes = (DWORD)CTargetList::ETargetType::AggressiveShip;
+		if (m_AICtx.IsAggressor())
+			dwTypes |= (DWORD)CTargetList::ETargetType::NonAggressiveShip;
+
+		return dwTypes;
+		}
 	}
 
 void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver)
@@ -938,7 +983,8 @@ bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
 		case IShipController::orderSentry:
 		case IShipController::orderDeterChase:
 			{
-			CSpaceObject *pBase = GetCurrentOrderTarget();
+			CSpaceObject *pBase = GetBase();
+
 			return (pBase && pBase->IsAngryAt(pObj));
 			}
 
@@ -1489,6 +1535,7 @@ bool CBaseShipAI::React (AIReaction iReaction, CSpaceObject &TargetObj)
 			}
 
 		case AIReaction::Destroy:
+		case AIReaction::DestroyAndRetaliate:
 			AddOrder(COrderDesc(IShipController::orderDestroyTarget, &TargetObj), true);
 			return true;
 
@@ -1520,9 +1567,15 @@ void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Da
 
 		case AIReaction::Chase:
 		case AIReaction::Destroy:
+		case AIReaction::DestroyAndRetaliate:
 		case AIReaction::Deter:
 		case AIReaction::DeterWithSecondaries:
 			{
+			//	Continue attacks.
+
+			if (iReaction == AIReaction::DestroyAndRetaliate)
+				AddOrder(COrderDesc(IShipController::orderAttackNearestEnemy));
+
 			//	If the attacker is a valid threat, then add an order
 
 			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
@@ -1556,12 +1609,18 @@ bool CBaseShipAI::ReactToBaseDestroyed (CSpaceObject &AttackerObj)
 
 		case AIReaction::Chase:
 		case AIReaction::Destroy:
+		case AIReaction::DestroyAndRetaliate:
 		case AIReaction::Deter:
 		case AIReaction::DeterWithSecondaries:
 			{
+			//	Continue attacks.
+
+			if (iReaction == AIReaction::DestroyAndRetaliate)
+				AddOrder(COrderDesc(IShipController::orderAttackNearestEnemy));
+
 			//	Enable deter module
 
-			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+			if (m_AICtx.CalcIsPossibleTarget(*m_pShip, AttackerObj))
 				{
 				React(iReaction, AttackerObj);
 				return true;
@@ -1594,9 +1653,15 @@ bool CBaseShipAI::ReactToDeterMessage (CSpaceObject &AttackerObj)
 
 		case AIReaction::Chase:
 		case AIReaction::Destroy:
+		case AIReaction::DestroyAndRetaliate:
 		case AIReaction::Deter:
 		case AIReaction::DeterWithSecondaries:
 			{
+			//	Continue attacks.
+
+			if (iReaction == AIReaction::DestroyAndRetaliate)
+				AddOrder(COrderDesc(IShipController::orderAttackNearestEnemy));
+
 			//	If the attacker is a valid threat, then react
 
 			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
@@ -1660,13 +1725,13 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 	if (Ctx.dwVersion < 75)
 		{
 		Ctx.pStream->Read(dwLoad);
-		m_AICtx.SetManeuver((EManeuverTypes)dwLoad);
+		m_AICtx.SetManeuver((EManeuver)dwLoad);
 
 		Ctx.pStream->Read(dwLoad);
 		m_AICtx.SetThrustDir((int)dwLoad);
 
 		Ctx.pStream->Read(dwLoad);
-		m_AICtx.SetLastTurn((EManeuverTypes)dwLoad);
+		m_AICtx.SetLastTurn((EManeuver)dwLoad);
 
 		Ctx.pStream->Read(dwLoad);
 		m_AICtx.SetLastTurnCount(dwLoad);
@@ -1780,30 +1845,23 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 	m_fIsPlayerWingman =		((dwLoad & 0x00000020) ? true : false);
 	m_fIsPlayerEscort =			((dwLoad & 0x00000040) ? true : false);
 
-	//	Before version 75 we always used old style behaviors
+	//	Unfortunately, the only way to tell if we're using an order
+	//	modules it to try to create one. [There is an edge condition
+	//	if we saved the game before we got to create an order module,
+	//	which happens when saving missions.]
 
-	if (Ctx.dwVersion < 75)
-		m_fOldStyleBehaviors = true;
+	if (m_pOrderModule)
+		m_fOldStyleBehaviors = false;
 	else
 		{
-		//	Unfortunately, the only way to tell if we're using an order
-		//	modules it to try to create one. [There is an edge condition
-		//	if we saved the game before we got to create an order module,
-		//	which happens when saving missions.]
-
-		if (m_pOrderModule)
-			m_fOldStyleBehaviors = false;
-		else
+		IOrderModule *pDummy = IOrderModule::Create(GetCurrentOrder());
+		if (pDummy)
 			{
-			IOrderModule *pDummy = IOrderModule::Create(GetCurrentOrder());
-			if (pDummy)
-				{
-				m_fOldStyleBehaviors = false;
-				delete pDummy;
-				}
-			else
-				m_fOldStyleBehaviors = true;
+			m_fOldStyleBehaviors = false;
+			delete pDummy;
 			}
+		else
+			m_fOldStyleBehaviors = true;
 		}
 
 	//	In version 75 some flags were moved to the AI context
@@ -1924,6 +1982,7 @@ void CBaseShipAI::UpdateReactions (SUpdateCtx &Ctx)
 
 			case AIReaction::Chase:
 			case AIReaction::Destroy:
+			case AIReaction::DestroyAndRetaliate:
 			case AIReaction::Deter:
 			case AIReaction::DeterWithSecondaries:
 			case AIReaction::Gate:
@@ -1932,11 +1991,7 @@ void CBaseShipAI::UpdateReactions (SUpdateCtx &Ctx)
 
 				if (m_pShip->IsDestinyTime(11))
 					{
-					DWORD dwTypes = (DWORD)CTargetList::ETargetType::AggressiveShip;
-					if (m_AICtx.IsAggressor())
-						dwTypes |= (DWORD)CTargetList::ETargetType::NonAggressiveShip;
-
-					if (CSpaceObject *pTarget = Ctx.GetTargetList().FindBestTarget(dwTypes))
+					if (CSpaceObject *pTarget = Ctx.GetTargetList().FindBestTarget(GetThreatTargetTypes()))
 						{
 						React(iReaction, *pTarget);
 						}

@@ -5,6 +5,7 @@
 <!-- ETA CETI SYSTEM -->
 	
 	<SystemType UNID="&ssEtaCeti;"
+				name=				"Eta Ceti"
 				attributes=			"envAir"
 				backgroundID=		"&rsRedGiantSpace;"
 				spaceColor=			"#200f0a"

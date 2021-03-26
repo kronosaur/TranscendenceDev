@@ -139,7 +139,7 @@ void CTranscendenceWnd::DoCommsSquadronMenu (const CString &sName, MessageTypes 
 
 			int iIndex;
 			if ((iIndex = pObj->FindCommsMessageByName(sName)) != -1
-					&& pObj->IsCommsMessageValidFrom(pShip, iIndex))
+					&& pObj->IsCommsMessageValidFrom(*pShip, iIndex))
 				pObj->CommsMessageFrom(pShip, iIndex);
 
 			//	Otherwise, we send the old-style way
@@ -157,65 +157,11 @@ DWORD CTranscendenceWnd::GetCommsStatus (void)
 //	Returns the messages accepted by the squadron
 
 	{
-	int i;
 	CSpaceObject *pShip = GetPlayer()->GetShip();
-	CSystem *pSystem = pShip->GetSystem();
-	DWORD dwStatus = 0;
+	if (!pShip)
+		return 0;
 
-	//	First add all the messages accepted by ships using the
-	//	old-style "fleet" controller
-
-	for (i = 0; i < pSystem->GetObjectCount(); i++)
-		{
-		CSpaceObject *pObj = pSystem->GetObject(i);
-
-		if (pObj 
-				&& pObj != pShip)
-			dwStatus |= pShip->Communicate(pObj, msgQueryCommunications);
-		}
-
-	//	Next add in messages accepted through the communications struct
-
-	for (i = 0; i < pSystem->GetObjectCount(); i++)
-		{
-		CSpaceObject *pObj = pSystem->GetObject(i);
-
-		if (pObj 
-				&& pObj->CanCommunicateWith(pShip)
-				&& pObj != pShip)
-			{
-			int iIndex;
-			if ((iIndex = pObj->FindCommsMessageByName(SO_ATTACK_IN_FORMATION)) != -1
-					&& pObj->IsCommsMessageValidFrom(pShip, iIndex))
-				dwStatus |= resCanAttackInFormation;
-
-			if ((iIndex = pObj->FindCommsMessageByName(SO_BREAK_AND_ATTACK)) != -1
-					&& pObj->IsCommsMessageValidFrom(pShip, iIndex))
-				dwStatus |= resCanBreakAndAttack;
-
-			if ((iIndex = pObj->FindCommsMessageByName(SO_FORM_UP)) != -1
-					&& pObj->IsCommsMessageValidFrom(pShip, iIndex))
-				dwStatus |= resCanFormUp;
-
-			if ((iIndex = pObj->FindCommsMessageByName(SO_ATTACK_TARGET)) != -1
-					&& pObj->IsCommsMessageValidFrom(pShip, iIndex))
-				dwStatus |= resCanAttack;
-
-			if ((iIndex = pObj->FindCommsMessageByName(SO_WAIT)) != -1
-					&& pObj->IsCommsMessageValidFrom(pShip, iIndex))
-				dwStatus |= resCanWait;
-
-			if ((iIndex = pObj->FindCommsMessageByName(SO_CANCEL_ATTACK)) != -1
-					&& pObj->IsCommsMessageValidFrom(pShip, iIndex))
-				dwStatus |= resCanAbortAttack;
-
-			if ((iIndex = pObj->FindCommsMessageByName(SO_ALPHA_FORMATION)) != -1
-					&& pObj->IsCommsMessageValidFrom(pShip, iIndex))
-				dwStatus |= resCanBeInFormation;
-			}
-		}
-
-	return dwStatus;
+	return pShip->GetSquadronCommsStatus();
 	}
 
 void CTranscendenceWnd::HideCommsMenu (void)
@@ -370,7 +316,7 @@ void CTranscendenceWnd::ShowCommsMenu (CSpaceObject *pObj)
 			CString sName;
 			CString sKey;
 
-			if (m_pMenuObj->IsCommsMessageValidFrom(pShip, i, &sName, &sKey))
+			if (m_pMenuObj->IsCommsMessageValidFrom(*pShip, i, &sName, &sKey))
 				m_MenuData.AddMenuItem(NULL_STR,
 						sKey,
 						sName,
@@ -466,7 +412,7 @@ bool CTranscendenceWnd::ShowCommsTargetMenu (void)
 		CSpaceObject *pObj = pSystem->GetObject(i);
 
 		if (pObj 
-				&& pObj->CanCommunicateWith(pShip)
+				&& pObj->CanCommunicateWith(*pShip)
 				&& pObj->GetEscortPrincipal() == pShip
 				&& pObj != pShip)
 			{
@@ -498,7 +444,7 @@ bool CTranscendenceWnd::ShowCommsTargetMenu (void)
 		CSpaceObject *pObj = pSystem->GetObject(i);
 
 		if (pObj 
-				&& pObj->CanCommunicateWith(pShip)
+				&& pObj->CanCommunicateWith(*pShip)
 				&& pObj->GetEscortPrincipal() != pShip
 				&& pObj != pShip)
 			{
@@ -522,12 +468,6 @@ bool CTranscendenceWnd::ShowCommsTargetMenu (void)
 				}
 			}
 		}
-
-	//	Add the squadron option, if necessary
-
-	if ((m_MenuData.GetCount() > 1 && GetCommsStatus() != 0) 
-			|| GetPlayer()->HasFleet())
-		m_MenuData.AddMenuItem(NULL_STR, SQUADRON_KEY, SQUADRON_LABEL, 0, 0);
 
 	//	Done
 

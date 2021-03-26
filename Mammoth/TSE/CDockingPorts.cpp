@@ -917,31 +917,6 @@ void CDockingPorts::ReadFromStream (CSpaceObject *pOwner, SLoadCtx &Ctx)
 		}
 	}
 
-void CDockingPorts::RepairAll (CSpaceObject *pOwner, int iRepairRate)
-
-//	RepairAll
-//
-//	RepairAll 
-
-	{
-	DEBUG_TRY
-
-	if (iRepairRate > 0)
-		{
-		for (int i = 0; i < m_iPortCount; i++)
-			if (m_pPort[i].iStatus == psInUse
-					&& !m_pPort[i].pObj->IsPlayer()
-					&& !pOwner->IsEnemy(m_pPort[i].pObj))
-				{
-				m_pPort[i].pObj->RepairDamage(iRepairRate);
-				m_pPort[i].pObj->RemoveCondition(ECondition::radioactive, SApplyConditionOptions());
-				m_pPort[i].pObj->ScrapeOverlays();
-				}
-		}
-
-	DEBUG_CATCH
-	}
-
 bool CDockingPorts::RequestDock (CSpaceObject *pOwner, CSpaceObject *pObj, int iPort)
 
 //	RequestDock
@@ -1076,7 +1051,7 @@ void CDockingPorts::UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner)
 
 	int i;
 
-	CSpaceObject *pPlayer = Ctx.pPlayer;
+	CSpaceObject *pPlayer = Ctx.GetPlayerShip();
 	Metric rDist2 = (pPlayer ? pPlayer->GetDistance2(pOwner) : 0.0);
 	Metric rMaxDist = m_iMaxDist * LIGHT_SECOND;
 	Metric rMaxDist2 = rMaxDist * rMaxDist;
@@ -1136,7 +1111,7 @@ void CDockingPorts::UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner)
 		else if (pPlayer && m_pPort[i].iStatus == psEmpty)
 			{
 			CVector vPortPos = GetPortPos(pOwner, m_pPort[i], pPlayer);
-			Ctx.AutoDock.Update(*pPlayer, *pOwner, vPortPos, i, rMaxDist2);
+			Ctx.GetAutoDock().Update(*pPlayer, *pOwner, vPortPos, i, rMaxDist2);
 			}
 		}
 
@@ -1176,7 +1151,7 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 		pShip->Place(vDest);
 		pShip->OnDockingStop();
 		IShipController *pController = pShip->GetController();
-		pController->SetManeuver(NoRotation);
+		pController->SetManeuver(EManeuver::None);
 
 		Port.iStatus = psInUse;
 

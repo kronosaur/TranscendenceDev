@@ -57,7 +57,7 @@
 					;		they don't want to make the Ringers mad).
 
 					(enemyStations 
-						(filter	(sysFindObject aOwnerObj "TA N:800; +location:asteroids; +populated; -questTarget; -uncharted;") theObj
+						(filter	(sysFindObject aOwnerObj "TA N:800; +location:asteroids; +populated; -property:questTarget; -uncharted;") theObj
 							(= (sovGetDisposition &svRingers; (objGetProperty theObj 'sovereign)) 'enemy)
 							)
 						)

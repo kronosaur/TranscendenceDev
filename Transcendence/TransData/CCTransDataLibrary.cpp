@@ -12,6 +12,11 @@ static constexpr DWORD FN_TSE_UPDATE_SYSTEM =			4;
 static constexpr DWORD FN_TSE_AFFINITY_CRITERIA =		5;
 static constexpr DWORD FN_TSE_SET_PLAYER_SHIP =			6;
 static constexpr DWORD FN_TSE_REGEN_DESC =				7;
+static constexpr DWORD FN_TSE_PERCEPTION_RANGE =		8;
+static constexpr DWORD FN_TSE_ROTATION_TEST =			9;
+static constexpr DWORD FN_TSE_ROTATION_FRAME_INDEX =	10;
+static constexpr DWORD FN_TSE_ROTATION_FRAME_VAR =		11;
+static constexpr DWORD FN_TSE_ROTATION_ANGLE_FROM_FRAME_VAR =		12;
 
 ICCItem *fnNil (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -51,9 +56,29 @@ static PRIMITIVEPROCDEF g_Library[] =
 			"(tsePattern pattern ...) -> string",
 			"s*",	0,	},
 
+		{	"tsePerceptionRange",			fnTransEngine,		FN_TSE_PERCEPTION_RANGE,
+			"(tsePerceptionRange perception stealth) -> range (light-seconds)",
+			"ii",	0,	},
+
 		{	"tseRegenDesc",					fnTransEngine,		FN_TSE_REGEN_DESC,
 			"(tseRegenDesc regen [ticksPerCycle]) -> desc of hp to regen",
 			"n*",	0,	},
+
+		{	"tseRotationAngleFromFrameVar",		fnTransEngine,		FN_TSE_ROTATION_ANGLE_FROM_FRAME_VAR,
+			"(tseRotationAngleFromFrameVar frameCount frameVar) -> angle",
+			"ii",	0,	},
+
+		{	"tseRotationFrameIndex",		fnTransEngine,		FN_TSE_ROTATION_FRAME_INDEX,
+			"(tseRotationFrameIndex frameCount angle) -> frameIndex",
+			"in",	0,	},
+
+		{	"tseRotationFrameVar",			fnTransEngine,		FN_TSE_ROTATION_FRAME_VAR,
+			"(tseRotationFrameIndex frameCount angle) -> frameVar",
+			"in",	0,	},
+
+		{	"tseRotationTest",				fnTransEngine,		FN_TSE_ROTATION_TEST,
+			"(tseRotationTest frameCount maxRotationSpeed accel accelStop) -> test output",
+			"nnnn",	0,	},
 	};
 
 static constexpr int FUNCTION_COUNT	=	((sizeof g_Library) / (sizeof g_Library[0]));
@@ -209,6 +234,49 @@ ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 
 			return pCC->CreateString(sResult);
+			}
+
+		case FN_TSE_PERCEPTION_RANGE:
+			{
+			int iPerception = pArgs->GetElement(0)->GetIntegerValue();
+			int iStealth = pArgs->GetElement(1)->GetIntegerValue();
+			Metric rDist = CPerceptionCalc::GetRange(CPerceptionCalc::GetRangeIndex(iStealth, iPerception));
+			return pCC->CreateInteger(mathRound(rDist / LIGHT_SECOND));
+			}
+
+		case FN_TSE_ROTATION_ANGLE_FROM_FRAME_VAR:
+			{
+			int iFrameCount = pArgs->GetElement(0)->GetIntegerValue();
+			int iFrameVar = pArgs->GetElement(1)->GetIntegerValue();
+
+			return pCC->CreateInteger(CIntegralRotationDesc::GetRotationAngleExact(iFrameCount, iFrameVar));
+			}
+
+		case FN_TSE_ROTATION_FRAME_INDEX:
+			{
+			int iFrameCount = pArgs->GetElement(0)->GetIntegerValue();
+			Metric rAngleDegrees = pArgs->GetElement(1)->GetDoubleValue();
+
+			return pCC->CreateInteger(CIntegralRotationDesc::GetFrameIndex(iFrameCount, mathRound(rAngleDegrees)));
+			}
+
+		case FN_TSE_ROTATION_FRAME_VAR:
+			{
+			int iFrameCount = pArgs->GetElement(0)->GetIntegerValue();
+			Metric rAngleDegrees = pArgs->GetElement(1)->GetDoubleValue();
+
+			return pCC->CreateInteger(CIntegralRotationDesc::GetRotationFrameExact(iFrameCount, mathRound(rAngleDegrees)));
+			}
+
+		case FN_TSE_ROTATION_TEST:
+			{
+			int iFrameCount = pArgs->GetElement(0)->GetIntegerValue();
+			Metric rMaxRotationSpeed = pArgs->GetElement(1)->GetDoubleValue();
+			Metric rAccel = pArgs->GetElement(2)->GetDoubleValue();
+			Metric rAccelStop = pArgs->GetElement(3)->GetDoubleValue();
+
+			ICCItemPtr pResult = CIntegralRotation::Diagnostics(iFrameCount, rMaxRotationSpeed, rAccel, rAccelStop);
+			return pResult->Reference();
 			}
 
 		case FN_TSE_SET_PLAYER_SHIP:

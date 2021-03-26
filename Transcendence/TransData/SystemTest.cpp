@@ -6,13 +6,17 @@
 #include "PreComp.h"
 
 const int MAX_LEVEL = 26;
+static constexpr int DEFAULT_SYSTEM_UPDATES =		60;
 
 #define NO_LOGO_SWITCH						CONSTLIT("nologo")
 #define FIELD_NAME							CONSTLIT("shortName")
 
+#define BY_ITEM_ATTRIB						CONSTLIT("byItem")
 #define BY_LEVEL_ATTRIB						CONSTLIT("byLevel")
 #define BY_SYSTEM_ATTRIB					CONSTLIT("bySystem")
 #define COUNT_ATTRIB						CONSTLIT("count")
+#define CRITERIA_ATTRIB						CONSTLIT("criteria")
+#define OBJ_CRITERIA_ATTRIB					CONSTLIT("objCriteria")
 
 class CSystemTestGenerator
 	{
@@ -28,10 +32,11 @@ class CSystemTestGenerator
 		void RunSystemTest (void);
 
 	private:
-		enum EOutputType
+		enum class EOutput
 			{
-			outputByLevel,
-			outputBySystem,
+			ByLevel,
+			BySystem,
+			ByItemType,
 			};
 
 		struct SShipClassInfo
@@ -61,18 +66,24 @@ class CSystemTestGenerator
 		void ComputeStationStats (const TSortMap<CString, SSystemInfo> &AllSystems, TArray<TSortMap<CString, StationInfo>> &retAllStations) const;
 		CString GenerateStationKey (CStationType *pType, CString *retsCategory = NULL) const;
 		void Init (void);
+		static void PrintItemStats (const TSortMap<CString, SSystemInfo> &AllSystems, int iSampleCount);
 		void PrintStationStats (const TArray<TSortMap<CString, StationInfo>> &AllStations) const;
 		void PrintStats (const TSortMap<CString, SSystemInfo> &AllSystems) const;
 		void PrintSystemStats (const SSystemInfo &SystemInfo) const;
-		bool RunItemFrequencyTestGame (TSortMap<CString, SSystemInfo> &AllSystems);
+		static void PrintSystemItemStats (const TSortMap<CString, SSystemInfo> &AllSystems, int iSampleCount);
+		bool RunItemFrequencyTestGame (TSortMap<CString, SSystemInfo> &AllSystems, int iSampleIndex);
 		bool RunSystemTestGame (TSortMap<CString, SSystemInfo> &AllSystems);
+		void UpdateSystem (CSystem &System, int iUpdateCount);
 
 		CUniverse &m_Universe;
 		const CXMLElement &m_CmdLine;
 
 		bool m_bLogo = false;
 		int m_iSystemSample = 0;
-		EOutputType m_iOutput = outputBySystem;
+		EOutput m_iOutput = EOutput::BySystem;
+
+		CSpaceObjectCriteria m_ObjCriteria;
+		CItemCriteria m_ItemCriteria;
 
 		CSovereign *m_pPlayer = NULL;
 		CString m_sInitError;
@@ -202,17 +213,90 @@ void CSystemTestGenerator::Init (void)
 	m_iSystemSample = m_CmdLine.GetAttributeIntegerBounded(COUNT_ATTRIB, 1, -1, 1);
 
 	if (m_CmdLine.GetAttributeBool(BY_SYSTEM_ATTRIB))
-		m_iOutput = outputBySystem;
+		m_iOutput = EOutput::BySystem;
 	else if (m_CmdLine.GetAttributeBool(BY_LEVEL_ATTRIB))
-		m_iOutput = outputByLevel;
+		m_iOutput = EOutput::ByLevel;
+	else if (m_CmdLine.GetAttributeBool(BY_ITEM_ATTRIB))
+		m_iOutput = EOutput::ByItemType;
 	else
-		m_iOutput = outputBySystem;
+		m_iOutput = EOutput::BySystem;
 
 	m_pPlayer = m_Universe.FindSovereign(g_PlayerSovereignUNID);
 	if (m_pPlayer == NULL)
 		{
 		m_sInitError = CONSTLIT("Unable to find player sovereign.");
 		return;
+		}
+
+	CString sCriteria;
+	if (m_CmdLine.FindAttribute(OBJ_CRITERIA_ATTRIB, &sCriteria))
+		m_ObjCriteria = CSpaceObjectCriteria(sCriteria);
+	else
+		m_ObjCriteria = CSpaceObjectCriteria(CONSTLIT("*"));
+
+	m_ItemCriteria = CItemCriteria(m_CmdLine.GetAttribute(CRITERIA_ATTRIB), CItemCriteria::ALL);
+	}
+
+void CSystemTestGenerator::PrintItemStats (const TSortMap<CString, SSystemInfo> &AllSystems, int iSampleCount)
+	{
+	printf("Level\tItem\tLocation\tCount\t%% Games\n");
+
+	//	Aggregate counts for each unique type and level.
+
+	TSortMap<CString, ItemInfo::SFoundDesc> AllEntries;
+	for (int i = 0; i < AllSystems.GetCount(); i++)
+		{
+		for (int j = 0; j < AllSystems[i].Items.GetCount(); j++)
+			{
+			for (int k = 0; k < AllSystems[i].Items[j].FoundOn.GetCount(); k++)
+				{
+				const auto &Entry = AllSystems[i].Items[j].FoundOn[k];
+
+				bool bNew;
+				auto *pNewEntry = AllEntries.SetAt(AllSystems[i].Items[j].FoundOn.GetKey(k), &bNew);
+				if (bNew)
+					*pNewEntry = Entry;
+				else
+					{
+					pNewEntry->iTotalCount += Entry.iTotalCount;
+
+					for (int l = 0; l < Entry.Games.GetCount(); l++)
+						{
+						bool bNew;
+						auto *pGames = pNewEntry->Games.SetAt(Entry.Games.GetKey(l), &bNew);
+						if (bNew)
+							*pGames = Entry.Games[l];
+						else
+							*pGames += Entry.Games[l];
+						}
+					}
+				}
+			}
+		}
+
+	//	Now sort by item name and then system level
+
+	TSortMap<CString, int> Sort;
+	for (int i = 0; i < AllEntries.GetCount(); i++)
+		{
+		Sort.Insert(strPatternSubst(CONSTLIT("%s/%02d"), AllEntries[i].pItemType->GetNounPhrase(), AllEntries[i].iSystemLevel), i);
+		}
+
+	//	Output
+
+	for (int i = 0; i < Sort.GetCount(); i++)
+		{
+		const auto &Entry = AllEntries[Sort[i]];
+
+		double rGames = 100.0 * Entry.Games.GetCount() / (double)iSampleCount;
+
+		printf("%d\t%s\t%s\t%s\t%s%%\n",
+			Entry.iSystemLevel,
+			(LPSTR)Entry.pItemType->GetNounPhrase(),
+			(LPSTR)Entry.pFoundOn->GetNounPhrase(),
+			(LPSTR)strFromDouble((double)Entry.iTotalCount / (double)iSampleCount, 2),
+			(LPSTR)strFromDouble(rGames, 1)
+			);
 		}
 	}
 
@@ -255,6 +339,27 @@ void CSystemTestGenerator::PrintStats (const TSortMap<CString, SSystemInfo> &All
 		{
 		const SSystemInfo &SystemEntry = AllSystems[i];
 		PrintSystemStats(SystemEntry);
+		}
+	}
+
+void CSystemTestGenerator::PrintSystemItemStats (const TSortMap<CString, SSystemInfo> &AllSystems, int iSampleCount)
+	{
+	printf("Level\tSystem\tItem\tCount\n");
+
+	for (int i = 0; i < AllSystems.GetCount(); i++)
+		{
+		const SSystemInfo SystemEntry = AllSystems[i];
+
+		for (int j = 0; j < SystemEntry.Items.GetCount(); j++)
+			{
+			const ItemInfo &Entry = SystemEntry.Items[j];
+
+			printf("%d\t%s\t%s\t%.2f\n",
+					SystemEntry.iLevel,
+					SystemEntry.sName.GetASCIIZPointer(),
+					Entry.pType->GetDataField(FIELD_NAME).GetASCIIZPointer(),
+					(double)Entry.iTotalCount / (double)iSampleCount);
+			}
 		}
 	}
 
@@ -313,7 +418,7 @@ void CSystemTestGenerator::PrintSystemStats (const SSystemInfo &SystemInfo) cons
 		}
 	}
 
-void CSystemTestGenerator::RunItemFrequencyTest (void)
+void CSystemTestGenerator::RunItemFrequencyTest ()
 	{
 	CString sError;
 
@@ -328,7 +433,7 @@ void CSystemTestGenerator::RunItemFrequencyTest (void)
 		{
 		printf("pass %d...\n", i + 1);
 
-		if (!RunItemFrequencyTestGame(AllSystems))
+		if (!RunItemFrequencyTestGame(AllSystems, i))
 			return;
 
 		m_Universe.Reinit();
@@ -339,33 +444,29 @@ void CSystemTestGenerator::RunItemFrequencyTest (void)
 			}
 		}
 
-	if (m_bLogo)
-		printf("FINAL SYSTEM STATISTICS\n\n");
-
-	printf("Level\tSystem\tItem\tCount\n");
-
 	//	Output all items
 
 	MarkItemsKnown(m_Universe);
 
-	for (int i = 0; i < AllSystems.GetCount(); i++)
+	switch (m_iOutput)
 		{
-		SSystemInfo *pSystemEntry = &AllSystems[i];
+		case EOutput::ByItemType:
+			if (m_bLogo)
+				printf("FINAL ITEM STATISTICS\n\n");
 
-		for (int j = 0; j < pSystemEntry->Items.GetCount(); j++)
-			{
-			ItemInfo *pEntry = &pSystemEntry->Items[j];
+			PrintItemStats(AllSystems, m_iSystemSample);
+			break;
 
-			printf("%d\t%s\t%s\t%.2f\n",
-					pSystemEntry->iLevel,
-					pSystemEntry->sName.GetASCIIZPointer(),
-					pEntry->pType->GetDataField(FIELD_NAME).GetASCIIZPointer(),
-					(double)pEntry->iTotalCount / (double)m_iSystemSample);
-			}
+		default:
+			if (m_bLogo)
+				printf("FINAL SYSTEM STATISTICS\n\n");
+
+			PrintSystemItemStats(AllSystems, m_iSystemSample);
+			break;
 		}
 	}
 
-bool CSystemTestGenerator::RunItemFrequencyTestGame (TSortMap<CString, SSystemInfo> &AllSystems)
+bool CSystemTestGenerator::RunItemFrequencyTestGame (TSortMap<CString, SSystemInfo> &AllSystems, int iSampleIndex)
 	{
 	ALERROR error;
 
@@ -387,6 +488,8 @@ bool CSystemTestGenerator::RunItemFrequencyTestGame (TSortMap<CString, SSystemIn
 			return false;
 			}
 
+		UpdateSystem(*pSystem, DEFAULT_SYSTEM_UPDATES);
+
 		//	Find this system in the table.
 
 		bool bNew;
@@ -406,29 +509,43 @@ bool CSystemTestGenerator::RunItemFrequencyTestGame (TSortMap<CString, SSystemIn
 		for (int j = 0; j < pSystem->GetObjectCount(); j++)
 			{
 			CSpaceObject *pObj = pSystem->GetObject(j);
+			if (pObj == NULL)
+				continue;
 
-			if (pObj)
+			if (!pObj->MatchesCriteria(m_ObjCriteria))
+				continue;
+
+			//	Enumerate the items in this object
+
+			CItemListManipulator ItemList(pObj->GetItemList());
+			ItemList.ResetCursor();
+			while (ItemList.MoveCursorForward())
 				{
-				//	Enumerate the items in this object
+				const CItem &Item(ItemList.GetItemAtCursor());
 
-				CItemListManipulator ItemList(pObj->GetItemList());
-				ItemList.ResetCursor();
-				while (ItemList.MoveCursorForward())
+				if (!Item.MatchesCriteria(m_ItemCriteria))
+					continue;
+
+				if (Item.IsInstalled() || Item.IsDamaged())
+					continue;
+
+				bool bNew;
+				ItemInfo *pEntry = pSystemEntry->Items.SetAt(Item.GetType()->GetUNID(), &bNew);
+				if (bNew)
 					{
-					const CItem &Item(ItemList.GetItemAtCursor());
+					pEntry->pType = Item.GetType();
+					pEntry->iTotalCount = Item.GetCount();
+					}
+				else
+					pEntry->iTotalCount += Item.GetCount();
 
-					if (!Item.IsInstalled() && !Item.IsDamaged())
-						{
-						bool bNew;
-						ItemInfo *pEntry = pSystemEntry->Items.SetAt(Item.GetType()->GetUNID(), &bNew);
-						if (bNew)
-							{
-							pEntry->pType = Item.GetType();
-							pEntry->iTotalCount = Item.GetCount();
-							}
-						else
-							pEntry->iTotalCount += Item.GetCount();
-						}
+				if (const CDesignType *pType = pObj->GetType())
+					{
+					pEntry->AddFoundOnEntry(Item, *pType, pNode->GetLevel(), iSampleIndex);
+
+					//	Also add an entry representing all systems.
+
+					pEntry->AddFoundOnEntry(Item, *pType, 0, iSampleIndex);
 					}
 				}
 			}
@@ -469,7 +586,7 @@ void CSystemTestGenerator::RunSystemTest (void)
 
 	switch (m_iOutput)
 		{
-		case outputByLevel:
+		case EOutput::ByLevel:
 			{
 			TArray<TSortMap<CString, StationInfo>> AllStations;
 			ComputeStationStats(AllSystems, AllStations);
@@ -597,3 +714,29 @@ bool CSystemTestGenerator::RunSystemTestGame (TSortMap<CString, SSystemInfo> &Al
 	return true;
 	}
 
+void CSystemTestGenerator::UpdateSystem (CSystem &System, int iUpdateCount)
+	{
+	SSystemUpdateCtx UpdateCtx;
+	UpdateCtx.bForceEventFiring = true;
+	UpdateCtx.bForcePainted = true;
+
+	//	Set the POV
+
+	CSpaceObject *pPOV = System.GetObject(0);
+	m_Universe.SetPOV(pPOV);
+	System.SetPOVLRS(pPOV);
+
+	//	Prepare system
+
+	m_Universe.UpdateExtended();
+	m_Universe.GarbageCollectLibraryBitmaps();
+
+	//	Run diagnostics start
+
+	//	Update for a while
+
+	for (int i = 0; i < iUpdateCount; i++)
+		{
+		m_Universe.Update(UpdateCtx);
+		}
+	}
