@@ -3694,14 +3694,24 @@ bool CShip::IsSingletonDevice (ItemCategories iItemCat)
 		}
 	}
 
-bool CShip::IsWeaponAligned (DeviceNames iDev, CSpaceObject *pTarget, int *retiAimAngle, int *retiFireAngle, int *retiFacingAngle)
+bool CShip::IsWeaponAligned (DeviceNames iDev, CSpaceObject* pTarget, int* retiAimAngle, int* retiFireAngle, int* retiFacingAngle)
 
 //	IsWeaponAligned
 //
 //	Returns TRUE if the weapon is aligned on target
 
 	{
-	CInstalledDevice *pWeapon = GetNamedDevice(iDev);
+	CInstalledDevice* pWeapon = GetNamedDevice(iDev);
+	return CShip::IsWeaponAligned(pWeapon, pTarget, retiAimAngle, retiFireAngle, retiFacingAngle);
+	}
+
+bool CShip::IsWeaponAligned (CInstalledDevice* pWeapon, CSpaceObject *pTarget, int *retiAimAngle, int *retiFireAngle, int *retiFacingAngle)
+
+//	IsWeaponAligned
+//
+//	Returns TRUE if the weapon is aligned on target
+
+	{
 	if (pWeapon)
 		{
 		int iAimAngle;
@@ -7443,7 +7453,7 @@ void CShip::SetWeaponTriggered (DeviceNames iDev, bool bTriggered)
 		//	is linked to the primary device, then activate it.
 
 		if (&Device == pPrimaryDevice
-				|| (Device.IsLinkedFire(iCat)))
+				|| (Device.IsLinkedFire(iCat, pPrimaryDevice) && !Device.IsAutomatedWeapon()))
 			Device.SetTriggered(bTriggered);
 		}
 	}
@@ -7466,9 +7476,9 @@ void CShip::SetWeaponTriggered (CInstalledDevice *pWeapon, bool bTriggered)
 
 		//	If this is the primary device, or if it is a device that
 		//	is linked to the primary device, then activate it.
-
-		if (&Device == pWeapon
-				|| (Device.IsLinkedFire(iCat)))
+		CInstalledDevice* pDevice = &Device;
+		if (pDevice == pWeapon
+				|| (Device.IsLinkedFire(iCat, pWeapon) && !Device.IsAutomatedWeapon()))
 			Device.SetTriggered(bTriggered);
 		}
 	}

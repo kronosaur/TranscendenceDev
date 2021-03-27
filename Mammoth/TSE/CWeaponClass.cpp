@@ -3955,6 +3955,16 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 			return -100;
 		}
 
+	//	If we have a weapon target definition, the target must fit this definition.
+	if (pTarget && DeviceItem.GetInstalledDevice())
+		{
+		auto pWeaponTargetDefinition = DeviceItem.GetInstalledDevice()->GetWeaponTargetDefinition();
+		if ((pWeaponTargetDefinition && !pWeaponTargetDefinition->MatchesTarget(pSource, pTarget)))
+			{
+			return -100;
+			}
+		}
+
 	//	Check our state
 
 	if (const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice())
@@ -5321,6 +5331,22 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 	if (!pDevice->IsEnabled())
 		return;
 
+	if (pDevice->GetWeaponTargetDefinition() && pSource->IsPlayer() && pDevice->IsSecondaryWeapon())
+		{
+		//  If the weapon is not ready, do not autofire.
+		//	If the ship is disarmed or paralyzed, then we also do not autofire.
+
+		if (!(!pDevice->IsReady() || pSource->GetCondition(ECondition::paralyzed)
+			|| pSource->GetCondition(ECondition::disarmed)))
+			{
+			bool bActivateResult = pDevice->GetWeaponTargetDefinition()->AimAndFire(this, pDevice, pSource, Ctx);
+			if (bActivateResult)
+				{
+				pDevice->SetTimeUntilReady(CalcActivateDelay(ItemCtx));
+				}
+			}
+		}
+
 	//	See if we continue to fire
 
 	DWORD dwContinuous = GetContinuousFire(pDevice);
@@ -5386,7 +5412,6 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 	else if (pDevice->HasLastShots()
 			&& (!pDevice->IsTriggered() || pDevice->GetTimeUntilReady() > 1))
 		pDevice->SetLastShotCount(0);
-
 	DEBUG_CATCH
 	}
 

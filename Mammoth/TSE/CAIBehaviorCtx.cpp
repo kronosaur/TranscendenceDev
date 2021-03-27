@@ -181,7 +181,7 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 	//	inquire about each missile.
 
 	if (!m_fRecalcBestWeapon
-			|| pShip->IsWeaponRepeating(devMissileWeapon))
+			|| pShip->IsWeaponRepeating())
 		return;
 
 	//	Recompute everything
@@ -235,7 +235,17 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 		//	Skip linked-fire weapons
 
 		else if (Weapon.IsLinkedFire())
-			continue;
+			{
+			if (UsesAllPrimaryWeapons())
+				{
+				auto linkedFireOptions = Weapon.GetItem()->AsDeviceItemOrThrow().GetLinkedFireOptions();
+				if (!(linkedFireOptions & CDeviceClass::LinkedFireOptions::lkfSelected)
+					&& !(linkedFireOptions & CDeviceClass::LinkedFireOptions::lkfSelectedVariant))
+					continue;
+				}
+			else
+				continue;
+			}
 
 		//	Otherwise, this is a primary weapon or launcher
 
@@ -770,7 +780,7 @@ void CAIBehaviorCtx::CalcShieldState (CShip *pShip)
 		}
 	}
 
-int CAIBehaviorCtx::CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInstalledDevice *pWeapon, Metric rTargetDist2)
+int CAIBehaviorCtx::CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInstalledDevice *pWeapon, Metric rTargetDist2, bool avoidAnyNonReadyWeapons)
 
 //	CalcWeaponScore
 //
@@ -802,7 +812,7 @@ int CAIBehaviorCtx::CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInsta
 	//	If this weapon will take a while to get ready, then 
 	//	lower the score.
 
-	if (pWeapon->GetTimeUntilReady() >= 15)
+	if (pWeapon->GetTimeUntilReady() >= (avoidAnyNonReadyWeapons ? 1 : 15))
 		return 1;
 
 	//	Get the item for the selected variant (either the weapon

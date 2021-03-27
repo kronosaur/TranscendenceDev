@@ -55,6 +55,7 @@
 #define PROPERTY_POWER_USE						CONSTLIT("powerUse")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 #define PROPERTY_SLOT_ID						CONSTLIT("slotID")
+#define PROPERTY_TARGET_CRITERIA     			CONSTLIT("targetCriteria")
 #define PROPERTY_TEMPERATURE      				CONSTLIT("temperature")
 #define PROPERTY_SHOT_SEPARATION_SCALE			CONSTLIT("shotSeparationScale")
 
@@ -126,6 +127,9 @@ void CDeviceClass::AccumulateAttributes (const CDeviceItem &DeviceItem, const CI
 		DWORD dwOptions = DeviceItem.GetLinkedFireOptions();
 		if ((dwOptions != 0) && (dwOptions != CDeviceClass::lkfNever))
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("linked-fire")));
+
+		if (IsAutomatedWeapon())
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("automatic")));
 		}
 
 	//	If cyberdefense level is not standard, add it.
@@ -529,7 +533,7 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return (pDevice ? CC.CreateBool(pDevice->CanTargetMissiles()) : CC.CreateNil());
 	else if (strEquals(sName, PROPERTY_CAPACITOR))
 		{
-		CSpaceObject *pSource = Ctx.GetSource();
+		CSpaceObject* pSource = Ctx.GetSource();
 		CounterTypes iType;
 		int iLevel;
 		GetCounter(pDevice, pSource, &iType, &iLevel);
@@ -569,11 +573,11 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 		//	Create a list
 
-		ICCItem *pResult = CC.CreateLinkedList();
+		ICCItem* pResult = CC.CreateLinkedList();
 		if (pResult->IsError())
 			return pResult;
 
-		CCLinkedList *pList = (CCLinkedList *)pResult;
+		CCLinkedList* pList = (CCLinkedList*)pResult;
 
 		//	List contains angle, radius, and optional z
 
@@ -606,6 +610,9 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_SLOT_ID))
 		return (pDevice ? CC.CreateString(pDevice->GetID()) : CC.CreateNil());
+
+	else if (strEquals(sName, PROPERTY_TARGET_CRITERIA))
+		return (pDevice ? (pDevice->GetWeaponTargetDefinition() ? CC.CreateString(pDevice->GetWeaponTargetDefinition()->GetTargetCriteriaString()) : CC.CreateNil()) : CC.CreateNil());
 
 	else if (strEquals(sName, PROPERTY_TEMPERATURE))
 		{
