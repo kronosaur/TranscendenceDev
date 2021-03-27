@@ -250,7 +250,7 @@ class CDeviceClass
 				}
 
 			CTargetList &GetTargetList ();
-			void SetTargetList (CTargetList &TargetListArg)
+			void SetTargetList (CTargetList TargetListArg)
 				{
 				m_pTargetList = &TargetListArg;
 				}
