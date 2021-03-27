@@ -24,23 +24,20 @@
 
 <!-- STATION TYPES -->
 
-	<!-- Kobol Warlord Camp -->
+	<!-- Level 7: Kobol Warlord Camp -->
 
 	<StationType UNID="&stKobolWarlordCamp;"
-			name=				"Kobol warlord camp"
+			name=				"Kobol warlord outpost(s)"
 			sovereign=			"&svKobolWarlords;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
 
-			multiHull=			"true"
-			armorID=			"&itAdvancedCeralloyArmor;"
-			hitPoints=			"450"
-            regen=              "4"
+			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, kobol, populated, warlords"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			size=				"322"
 			fireRateAdj=		"20"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, kobol, populated, warlords"
 			>
 
 		<!-- Encounter Info -->
@@ -51,30 +48,34 @@
 				levelFrequency=			"----- -cur- ----- ----- -----"
 
 				locationCriteria=		"+planetary"
-				enemyExclusionRadius=	"50"
+				enemyExclusionRadius=	"100"
 				/>
 
-		<Image			imageID="&rsStations8;" imageX="0" imageY="896" imageWidth="128" imageHeight="128"/>
+		<!-- Configuration -->
 
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&itAdvancedCeralloyArmor;"
+				hitPoints=		"470"
+				regen=			"5"
+				/>
+		
 		<Devices>
-			<Device deviceID="&itTeV9Blaster;"	omnidirectional="true" posAngle="45" posRadius="49"/>
-			<Device deviceID="&itTeV9Blaster;"	omnidirectional="true" posAngle="130" posRadius="50"/>
-			<Device deviceID="&itTeV9Blaster;"	omnidirectional="true" posAngle="215" posRadius="50"/>
-			<Device deviceID="&itTeV9Blaster;"	omnidirectional="true" posAngle="325" posRadius="50"/>
+			<Device deviceID="&itTeV9Blaster;"	posAngle="15"  posRadius="105" posZ="35"	fireArc="210"/>
+			<Device deviceID="&itTeV9Blaster;"	posAngle="105" posRadius="105" posZ="35"	fireArc="210"/>
+			<Device deviceID="&itTeV9Blaster;"	posAngle="195" posRadius="105" posZ="35"	fireArc="210"/>
+			<Device deviceID="&itTeV9Blaster;"	posAngle="285" posRadius="105" posZ="35"	fireArc="210"/>
+
+			<Device deviceID="&itTeV9Blaster;"	posAngle="60"  posRadius="60"  posZ="35"	omnidirectional="true" missileDefense="true" maxFireRange="6"/>
+			<Device deviceID="&itTeV9Blaster;"	posAngle="150" posRadius="60"  posZ="35"	omnidirectional="true" missileDefense="true" maxFireRange="6"/>
+			<Device deviceID="&itTeV9Blaster;"	posAngle="240" posRadius="60"  posZ="35"	omnidirectional="true" missileDefense="true" maxFireRange="6"/>
+			<Device deviceID="&itTeV9Blaster;"	posAngle="330" posRadius="60"  posZ="35"	omnidirectional="true" missileDefense="true" maxFireRange="6"/>
 		</Devices>
 
-		<Ships>
-			<Table count="1d3">
-				<Ship	chance="40"	class="&scKobolGunshipDualTeV9;" orders="patrol" patrolDist="20"/>
-				<Ship	chance="40"	class="&scKobolGunshipOmniTeV9;" orders="patrol" patrolDist="20"/>
-				<Ship	chance="20"	class="&scKobolGunshipMissiles;" orders="patrol" patrolDist="20"/>
-			</Table>
-			<Table count="1d3">
-				<Ship	chance="40"	class="&scKobolGunshipDualTeV9;" orders="guard" />
-				<Ship	chance="40"	class="&scKobolGunshipOmniTeV9;" orders="guard" />
-				<Ship	chance="20"	class="&scKobolGunshipMissiles;" orders="guard" />
-			</Table>
-		</Ships>
+		<!-- Ships and Defenses -->
+
+		<Squadron table="&tbKobolDefenders;"	count="challenge:standard"	reinforce="auto"/>
+
+		<!-- Treasure and Items -->
 
 		<Items>
 			<Item count="1d12"	  item="&itGotha400Seeker;"/>
@@ -85,6 +86,22 @@
 				<Lookup chance="20" count="1" table="&trMajorItem8;"/>
 			</Table>
 		</Items>
+
+		<!-- Images and Effects -->
+
+		<Image			imageID="&rsKobolOutpost;" imageWidth="250" imageHeight="250" viewportRatio="0.04"/>
+
+		<DockingPorts
+				portAngle=		"-30"
+				portCount=		"8"
+				portRadius=		"136"
+				/>
+
+		<!-- Random Encounters -->
+
+		<Encounters frequency="common">
+			<Lookup table="&tbKobolEncounters;"/>
+		</Encounters>
 
 	</StationType>
 
@@ -102,7 +119,7 @@
 			thrustRatio=		"9"
 			maxSpeed=			"20"
 
-			attributes=			"genericClass,kobolWarlords"
+			attributes=			"genericClass, kobol, kobolWarlords"
 			>
 
 		<Armor>
@@ -155,7 +172,7 @@
 			thrustRatio=		"9"
 			maxSpeed=			"20"
 
-			attributes=			"genericClass,kobolWarlords"
+			attributes=			"genericClass, kobol, kobolWarlords"
 			>
 
 		<Armor>
@@ -209,7 +226,7 @@
 			thrustRatio=		"9"
 			maxSpeed=			"20"
 
-			attributes=			"genericClass,kobolWarlords"
+			attributes=			"genericClass, kobol, kobolWarlords"
 			>
 
 		<Armor>
@@ -255,7 +272,44 @@
 
 	</ShipClass>
 
+<!-- TABLES -->
+
+	<ShipTable unid="&tbKobolDefenders;">
+		<LevelTable>
+			<Ship levelFrequency="vvvvv ucrv-"	count="1"	class="&scKobolGunshipDualTeV9;"		orders="guard"/>
+			<Ship levelFrequency="vvvvv ucrv-"	count="1"	class="&scKobolGunshipDualTeV9;"		orders="patrol:20"/>
+
+			<Ship levelFrequency="----- rcrv-"	count="1"	class="&scKobolGunshipOmniTeV9;"		orders="guard"/>
+			<Ship levelFrequency="----- rcrv-"	count="1"	class="&scKobolGunshipOmniTeV9;"		orders="patrol:20"/>
+
+			<Ship levelFrequency="----- --rcr"	count="1"	class="&scKobolGunshipMissiles;"		orders="guard"/>
+			<Ship levelFrequency="----- --rcr"	count="1"	class="&scKobolGunshipMissiles;"		orders="patrol:20"/>
+		</LevelTable>
+	</ShipTable>
+
+	<ShipTable unid="&tbKobolEncounters;">
+		<LevelTable>
+			<Ship levelFrequency="vvvvv ucrv-"	count="1"	class="&scKobolGunshipOmniTeV9;"	eventHandler="&evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Ship count="1d4"	class="&scKobolGunshipDualTeV9;"		orders="escort"/>
+				</Escorts>
+			</Ship>
+			<Ship levelFrequency="----- -ucrv"	count="1"	class="&scKobolGunshipMissiles;"	eventHandler="&evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Ship count="1d4"	class="&scKobolGunshipOmniTeV9;"		orders="escort"/>
+				</Escorts>
+			</Ship>
+			<Ship levelFrequency="----- --ucr"	count="1"	class="&scKobolGunshipMissiles;"	eventHandler="&evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Ship count="1d4"	class="&scKobolGunshipMissiles;"		orders="escort"/>
+				</Escorts>
+			</Ship>
+		</LevelTable>
+	</ShipTable>
+
 <!-- RESOURCES -->
+
+	<Image UNID="&rsKobolOutpost;"				bitmap="Resources\KobolOutpost.jpg"		bitmask="Resources\KobolOutpostMask.bmp"  	loadOnUse="true"/>
 
 	<Image UNID="&rsKobolGunshipDualHD;"		bitmap="Resources\KobolGunshipDualHD.jpg"		bitmask="Resources\KobolGunshipDualHDMask.bmp"  	loadOnUse="true"/>
 	<Image UNID="&rsKobolGunshipDualHero;"		bitmap="Resources\KobolGunshipDualLarge.jpg"		bitmask="Resources\KobolGunshipDualLargeMask.bmp"  	loadOnUse="true"/>

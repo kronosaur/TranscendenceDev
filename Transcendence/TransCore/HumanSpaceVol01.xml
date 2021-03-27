@@ -2218,6 +2218,9 @@
 	<!ENTITY rsKobolGunshipDualHero		"0x00100414">
 	<!ENTITY rsKobolGunshipMissilesHero	"0x00100415">
 	<!ENTITY rsKobolGunshipOmniHero		"0x00100416">
+	<!ENTITY tbKobolDefenders			"0x00100417">
+	<!ENTITY tbKobolEncounters			"0x00100418">
+	<!ENTITY rsKobolOutpost				"0x00100419">
 
 	<!-- 0430-044F ANARCHISTS -->
 
