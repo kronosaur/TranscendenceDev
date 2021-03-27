@@ -666,7 +666,7 @@
 			defaultSovereign=	"&svPirates;"
 			level=				"3"
 
-			attributes=			"charonPirates, genericClass"
+			attributes=			"charonPirates, genericClass, marauders"
 			   
 			size=				"26"
 			mass=				"25"
@@ -733,7 +733,7 @@
 			defaultSovereign=	"&svPirates;"
 
 			level=				"3"
-			attributes=			"capitalShip, charonPirates, genericClass"
+			attributes=			"capitalShip, charonPirates, genericClass, marauders"
 			inherit=			"&baHumanTechShip;"
 			>
 
@@ -918,7 +918,7 @@
 			type=				"gunship"
 			defaultSovereign=	"&svPirates;"
 
-			attributes=			"charonPirates, genericClass"
+			attributes=			"charonPirates, genericClass, marauders"
 			inherit=			"&baHumanTechShip;"
 			>
 
@@ -1156,6 +1156,7 @@
 			type=				""
 			defaultSovereign=	"&svPirates;"
 
+			level=				"5"
 			attributes=			"capitalShip, charonPirates, charonFrigate, genericClass"
 			inherit=			"&scCharonFrigateStock;"
 			>

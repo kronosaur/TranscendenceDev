@@ -53,6 +53,44 @@
 					)
 				))
 
+			(setq rpgCalcSuppliesNeeded (lambda (sourceObj supplyList)
+				(block (
+					;	This is the minimum items needed
+
+					(supplyList (map supplyList theEntry
+						(itmCreate 
+							(@ theEntry 'itemType)
+							(* (itm@ (@ theEntry 'itemType) 'averageCount) 
+								(@ theEntry 'multiplier)
+								)
+							)
+						))
+
+					;	This is how much we actually have
+
+					(itemList
+						(map supplyList theItem {
+							theItem: theItem
+							needed: (itmGetCount theItem)
+							avail: (or (objHasItem sourceObj theItem 1) 0)
+							})
+						)
+
+					;	Now make a list of all items that we have less than half 
+					;	the needed amount.
+
+					(resupplyList (map itemList 'excludeNil theEntry
+						(if (ls (@ theEntry 'avail) (/ (@ theEntry 'needed) 2))
+							(@ theEntry 'theItem)
+							)
+						))
+					)
+					;(dbgOutput (objGetID sourceObj) ": " itemList)
+
+					resupplyList
+					)
+				))
+
 			(setq rpgDockServices (lambda (targetObj options)
 				(block Nil
 				
@@ -74,6 +112,14 @@
 				
 			(setq rpgCalcDockServiceArmorAction (lambda (dockObj shipObj options)
 				(block (
+					(cargoObj
+						(switch
+							(= dockObj gPlayerShip)
+								gPlayerShip
+
+							shipObj
+							)
+						)
 					(armorForSale 
 						(filter (objGetItems dockObj "aUN") theItemToBuy
 							(and (objGetSellPrice dockObj theItemToBuy)
@@ -81,7 +127,7 @@
 									)
 							)
 						)
-					(armorInCargo (objGetItems shipObj "aU"))
+					(armorInCargo (objGetItems cargoObj "aU"))
 					(armorToInstall
 						(filter armorInCargo theItemToInstall
 							(block (
@@ -122,7 +168,7 @@
 					)
 					
 					(switch
-						(= dockObj shipObj)
+						(or (@ options 'shipConfig) (= dockObj shipObj))
 							{
 								visible: True
 								enabled: True
@@ -218,7 +264,7 @@
 						})
 					)
 					(switch
-						(= dockObj shipObj)
+						(or (@ options 'shipConfig) (= dockObj shipObj))
 							{
 								visible: Nil
 								}
@@ -264,9 +310,18 @@
 			(setq rpgCalcDockServiceInstallAction (lambda (dockObj shipObj options)
 				(block (
 					allItems
+
+					(cargoObj
+						(switch
+							(= dockObj gPlayerShip)
+								gPlayerShip
+
+							shipObj
+							)
+						)
 					)
 					(switch
-						(= dockObj shipObj)
+						(or (@ options 'shipConfig) (= dockObj shipObj))
 							{
 								visible: Nil
 								}
@@ -290,7 +345,7 @@
 							
 						;	If no items to install, action is disabled
 					
-						(not (setq allItems (objGetItems shipObj (@ options 'criteria))))
+						(not (setq allItems (objGetItems cargoObj (@ options 'criteria))))
 							{
 								visible: True
 								enabled: Nil
@@ -362,7 +417,7 @@
 					)
 					
 					(switch
-						(= dockObj shipObj)
+						(or (@ options 'shipConfig) (= dockObj shipObj))
 							{
 								visible: True
 								enabled: True
@@ -441,7 +496,7 @@
 					)
 
 					(switch
-						(= dockObj shipObj)
+						(or (@ options 'shipConfig) (= dockObj shipObj) (not (obj@ shipObj 'trackFuel)))
 							{
 								visible: Nil
 								}
@@ -555,7 +610,7 @@
 				
 			(setq rpgCalcDockServiceRemoveAction (lambda (dockObj shipObj theItem options)
 				(switch
-					(= dockObj shipObj)
+					(or (@ options 'shipConfig) (= dockObj shipObj))
 						{
 							visible: Nil
 							}
@@ -568,6 +623,15 @@
 							(itemStatus (shpCanRemoveDevice shipObj theItem))
 							(dockStatus (objGetItemProperty dockObj theItem 'removeItemStatus))
 							(costToRemove (@ dockStatus 'price))
+
+							(cargoObj
+								(switch
+									(= dockObj gPlayerShip)
+										gPlayerShip
+
+									shipObj
+									)
+								)
 							)
 							
 							(switch
@@ -622,7 +686,7 @@
 										desc: (scrTranslate gScreen "actionRemove:cannotRemove" { item:theItem })
 										}
 								
-								(gr (itmGetMass theItem) (objGetCargoSpaceLeft shipObj))
+								(gr (itmGetMass theItem) (objGetCargoSpaceLeft cargoObj))
 									{
 										visible: True
 										enabled: Nil
@@ -665,7 +729,7 @@
 				
 			(setq rpgCalcDockServiceRepairAction (lambda (dockObj shipObj theItem options)
 				(switch
-					(= dockObj shipObj)
+					(or (@ options 'shipConfig) (= dockObj shipObj))
 						{
 							visible: Nil
 							}
@@ -687,6 +751,13 @@
 										visible: True
 										enabled: Nil
 										desc: (typTranslate &dsRPGManageArmor; 'descArmorNotDamaged { armorNoun:armorNoun })
+										}
+
+								(@ options 'repairArmorDesc)
+									{
+										Visible: True
+										enabled: Nil
+										desc: (@ options 'repairArmorDesc)
 										}
 
 								(gr (itmGetProperty theItem 'repairLevel) (objGetProperty dockObj 'repairArmorMaxLevel))
@@ -738,7 +809,7 @@
 				
 			(setq rpgCalcDockServiceReplaceAction (lambda (dockObj shipObj theItem options)
 				(switch
-					(= dockObj shipObj)
+					(or (@ options 'shipConfig) (= dockObj shipObj))
 						{
 							visible: Nil
 							}
@@ -747,8 +818,17 @@
 					
 					(itmMatches theItem "aI")
 						(block (
+							(cargoObj
+								(switch
+									(= dockObj gPlayerShip)
+										gPlayerShip
+
+									shipObj
+									)
+								)
+
 							(itemsAvail 
-								(filter (objGetItems shipObj (@ options 'criteria)) theItemInCargo
+								(filter (objGetItems cargoObj (@ options 'criteria)) theItemInCargo
 									(not (itmIsEqual theItemInCargo theItem 'ignoreInstalled))
 									)
 								)
@@ -791,8 +871,17 @@
 					
 					(itmMatches theItem "dI")
 						(block (
+							(cargoObj
+								(switch
+									(= dockObj gPlayerShip)
+										gPlayerShip
+
+									shipObj
+									)
+								)
+
 							(itemsAvail 
-								(filter (objGetItems shipObj (@ options 'criteria)) theItemInCargo
+								(filter (objGetItems cargoObj (@ options 'criteria)) theItemInCargo
 									(not (itmIsEqual theItemInCargo theItem 'ignoreInstalled))
 									)
 								)
@@ -894,7 +983,7 @@
 				
 			(setq rpgCalcDockServiceUpgradeAction (lambda (dockObj shipObj theItem options)
 				(switch
-					(= dockObj shipObj)
+					(or (@ options 'shipConfig) (= dockObj shipObj) (= dockObj gPlayerShip))
 						{
 							visible: Nil
 							}
@@ -1206,7 +1295,7 @@
 					)
 					
 					(switch
-						(= dockObj shipObj)
+						(or (@ options 'shipConfig) (= dockObj shipObj))
 							{
 								visible: True
 								enabled: True
@@ -1308,6 +1397,13 @@
 						;	If not a reactor, then this doesn't apply
 						
 						(not (itmMatches theItem "rI"))
+							{
+								visible: Nil
+								}
+
+						;	Only the player ship can be refueled
+
+						(!= shipObj gPlayerShip)
 							{
 								visible: Nil
 								}
@@ -1777,6 +1873,7 @@
 					(militaryCheck (rpgCheckMilitaryIDPolicy installerObj (@ data 'checkMilitaryID)))
 					(illegalCheck 
 						(or (@ data 'checkMilitaryID)
+							(obj@ installerObj 'rpg.checkMilitaryID)
 							(obj@ installerObj 'rpg.checkIllegals)
 							)
 						)
@@ -1811,6 +1908,15 @@
 							(typTranslate &dsRPGDockServicesBase; textID data)
 							)
 						))
+
+					(cargoObj
+						(switch
+							(= installerObj gPlayerShip)
+								gPlayerShip
+
+							targetObj
+							)
+						)
 					)
 
 					(if thisItem
@@ -1945,10 +2051,11 @@
 								;	If not installable at this station, then ignore
 
 								stationCannotInstall
-									(if (@ status 'descID)
-										(setq desc (objTranslate installerObj (@ status 'descID) trData))
-										(setq desc (translate installerObj 'rpg.noTechToInstallDevice trData))
-										)
+									(setq desc (or
+										(@ status 'desc)
+										(objTranslate installerObj (@ status 'descID) trData)
+										(translate installerObj 'rpg.noTechToInstallDevice trData)
+										))
 
 								;   If we exceed the station's tech
 
@@ -2131,7 +2238,7 @@
 							; See if the item fits
 
 							(if (and canInstall
-									(gr cargoNeeded (objGetCargoSpaceLeft targetObj))
+									(gr cargoNeeded (objGetCargoSpaceLeft cargoObj))
 									(not (@ data 'noCargoCheck))
 									)
 								(block Nil
@@ -2195,6 +2302,15 @@
 							;	See if we need warning
 
 							(switch
+								;	If this is a damaged device, we warn the player.
+
+								(and canInstall
+										(itm@ thisItem 'damaged)
+										)
+									(setq descWarning (translate installerObj 'rpg.warningDamagedItem {
+										itemName: (itmGetName thisItem '(demonstrative escapeQuotes noModifiers))
+										}))
+
 								;	If we're installing a device that is lower level than the current,
 								;	then warn the player.
 

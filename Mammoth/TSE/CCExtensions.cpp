@@ -252,6 +252,9 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_REMOVE_CONDITION		145
 #define FN_OBJ_MAKE_RADIOACTIVE		146
 #define FN_OBJ_DECONTAMINATE		147
+#define FN_OBJ_GET_REMOVE_CONDITION_PRICE	148
+#define FN_OBJ_SQUADRON_COMMS		149
+#define FN_OBJ_SQUADRON_COMMS_MESSAGES	150
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1248,7 +1251,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i",	0,	},
 
 		{	"shpGetOrderDesc",				fnShipGet,			FN_SHIP_ORDER_DESC,
-			"(shpGetOrderDesc obj [orderIndex]) -> orderDesc",
+			"(shpGetOrderDesc obj [orderIndex]) -> orderDesc\n\n"
+			
+			"orderDesc\n\n"
+
+			"   (order [targetObj] [data])\n",
+
 			"i*",	0,	},
 
 		{	"shpGetOrderTarget",			fnShipGetOld,		FN_SHIP_ORDER_TARGET,
@@ -1825,6 +1833,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'blind\n"
 			"   'disarmed\n"
+			"   'fouled\n"
 			"   'lrsBlind\n"
 			"   'paralyzed\n"
 			"   'radioactive\n"
@@ -2111,6 +2120,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'selectedWeapon\n"
 			"   'shatterImmune\n"
 			"   'showMapLabel\n"
+			"   'stealthAdj\n"
+			"   'stealthAdjAtMaxHeat\n"
 			"   'target\n"
 			"   'thrust -> in GN\n"
 			"   'thrustToWeight -> acceleration, 1 = 500 m/s^2 (ships stats show this / 1000)\n"
@@ -2195,6 +2206,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objGetRefuelItemAndPrice obj objToRefuel) -> (item price)",
 			"ii",		0,	},
 
+		{	"objGetRemoveConditionPrice",			fnObjGet,		FN_OBJ_GET_REMOVE_CONDITION_PRICE,	
+			"(objGetRemoveConditionPrice obj shipObj condition) -> price (at which obj restores ship)",
+			"ivs",		0,	},
+
 		{	"objGetSellPrice",				fnObjGet,		FN_OBJ_GET_SELL_PRICE,	
 			"(objGetSellPrice obj item [options]) -> price (at which obj sells item)\n\n"
 			
@@ -2241,10 +2256,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objGetVel",					fnObjGet,		FN_OBJ_VELOCITY,	
 			"(objGetVel obj) -> velVector",
 			"i",		0,	},
-
-		{	"objGetVisibleDamage",			fnObjGetOld,		FN_OBJ_VISIBLE_DAMAGE,
-			"(objGetVisibleDamage obj) -> damage %",
-			NULL,	0,	},
 
 		{	"objHasAttribute",				fnObjGetOld,		FN_OBJ_ATTRIBUTE,
 			"(objHasAttribute obj attrib) -> True/Nil",
@@ -2603,6 +2614,39 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objSetVel",					fnObjSet,		FN_OBJ_VELOCITY,
 			"(objSetVel obj velVector)",
 			"il",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objSquadronComms",					fnObjSet,		FN_OBJ_SQUADRON_COMMS,
+			"(objSquadronComms obj receiver msgID [options]) -> Result\n\n"
+			
+			"receiver:\n\n"
+			
+			"   'squadron\n"
+			"   obj\n"
+			"   list of objs\n"
+			"\n"
+			"msgID:\n\n"
+			
+			"   'msgAttackInFormation\n"
+			"   'msgAttackTarget\n"
+			"   'msgBreakAndAttack\n"
+			"   'msgFormationAlpha\n"
+			"   'msgFormationBeta\n"
+			"   'msgFormationGamma\n"
+			"   'msgFormUp\n"
+			"   'msgWait\n",
+
+			"ivs*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objSquadronCommsMessages",			fnObjGet,		FN_OBJ_SQUADRON_COMMS_MESSAGES,
+			"(objSquadronCommsMessages obj receiver) -> List of msgIDs\n\n"
+			
+			"receiver:\n\n"
+			
+			"   'squadron\n"
+			"   obj\n"
+			"   list of objs\n",
+
+			"iv",	0,	},
 
 		{	"objSuspend",					fnObjSet,		FN_OBJ_SUSPEND,
 			"(objSuspend obj)",
@@ -3096,7 +3140,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   O:escort;   Ships ordered to escort source\n"
 			"   O:guard;    Ships ordered to guard source\n"
 			"   P           Only objects that can be detected (perceived) by source\n"
-			//"   Q           (unused)\n"
+			"   Q           Only objects that can perceive the source\n"
 			"   R           Return only the farthest object from the source\n"
 			"   R:nn;       Return only objects greater than nn light-seconds away\n"
 			"   S:sort;     Sort order ('d' = distance ascending; 'D' = distance descending\n"
@@ -4044,6 +4088,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	DEPRECATED FUNCTIONS
 		//	--------------------
 
+		{	"objGetVisibleDamage",			fnObjGetOld,		FN_OBJ_VISIBLE_DAMAGE,
+			"DEPRECATED: Use (obj@ obj 'visibleDamage)",
+			NULL,	0,	},
+
 		{	"shpMakeRadioactive",			fnObjSet,		FN_OBJ_MAKE_RADIOACTIVE,
 			"DEPRECATED: Use (objApplyCondition ...) instead.",
 			"i",	PPFLAG_SIDEEFFECTS,	},
@@ -4392,6 +4440,7 @@ ALERROR CUniverse::InitCodeChainPrimitives (void)
 	m_CC.DefineGlobal(CONSTLIT("gPlayerShip"), m_CC.GetNil());
 	m_CC.DefineGlobal(CONSTLIT("gSource"), m_CC.GetNil());
 	m_CC.DefineGlobal(CONSTLIT("gItem"), m_CC.GetNil());
+	m_CC.DefineGlobal(CONSTLIT("gScreen"), m_CC.GetNil());
 	m_CC.DefineGlobal(CONSTLIT("gType"), m_CC.GetNil());
 
 	//	Register primitives
@@ -6083,7 +6132,7 @@ ICCItem *fnObjComms (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		if (iIndex == -1)
 			return pCC->CreateNil();
 
-		if (!pObj->IsCommsMessageValidFrom(pSender, iIndex))
+		if (!pObj->IsCommsMessageValidFrom(*pSender, iIndex))
 			return pCC->CreateNil();
 
 		//	Invoke the message
@@ -6604,8 +6653,9 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Ask the object
 
+			CTradingServices Services(*pObj);
 			int iPrice;
-			if (!pObj->GetArmorRepairPrice(pSource, Item, iHPToRepair, 0, &iPrice))
+			if (!Services.GetArmorRepairPrice(Item.AsArmorItem(), iHPToRepair, 0, &iPrice))
 				return pCC->CreateNil();
 
 			//	Done
@@ -6621,8 +6671,9 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Ask the object
 
+			CTradingServices Services(*pObj);
 			int iPrice;
-			if (!pObj->GetArmorInstallPrice(Item, 0, &iPrice))
+			if (!Services.GetArmorInstallPrice(Item.AsArmorItem(), 0, &iPrice))
 				return pCC->CreateNil();
 
 			//	Done
@@ -7378,6 +7429,58 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pResult;
 			}
 
+		case FN_OBJ_GET_REMOVE_CONDITION_PRICE:
+			{
+			auto sCondition = pArgs->GetElement(2)->GetStringValue();
+			auto iCondition = CConditionSet::ParseCondition(sCondition);
+			if (iCondition == ECondition::none)
+				return pCC->CreateError(CONSTLIT("Unknown condition"), pArgs->GetElement(2));
+
+			ICCItem *pArg;
+			switch (CTLispConvert::ArgType(pArgs->GetElement(1), CTLispConvert::typeSpaceObject, &pArg))
+				{
+				case CTLispConvert::typeShipClass:
+					{
+					CShipClass *pClass = pCtx->GetUniverse().FindShipClass(pArg->GetIntegerValue());
+					if (pClass == NULL)
+						return pCC->CreateError(CONSTLIT("Invalid ship class"), pArg);
+
+					//	Get the value from the station that is selling
+
+					CTradingServices Services(*pObj);
+
+					int iValue;
+					if (!Services.GetRemoveConditionPrice(*pClass, iCondition, 0, &iValue))
+						return pCC->CreateNil();
+
+					return pCC->CreateInteger(iValue);
+					}
+
+				case CTLispConvert::typeSpaceObject:
+					{
+					CSpaceObject *pShip = CreateObjFromItem(pArg);
+					if (pShip == NULL)
+						return pCC->CreateError(CONSTLIT("Invalid ship"), pArg);
+
+					//	Get the value from the station that is selling
+
+					CTradingServices Services(*pObj);
+
+					int iValue;
+					if (!Services.GetRemoveConditionPrice(*pShip, iCondition, 0, &iValue))
+						return pCC->CreateNil();
+
+					return pCC->CreateInteger(iValue);
+					}
+
+				case CTLispConvert::typeNil:
+					return pCC->CreateNil();
+
+				default:
+					return pCC->CreateError(CONSTLIT("Invalid ship"), pArg);
+				}
+			}
+
 		case FN_OBJ_GET_SELL_PRICE:
 			{
 			CItem Item = pCtx->AsItem(pArgs->GetElement(1));
@@ -7713,6 +7816,64 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateInteger(pType->GetUNID());
 			else
 				return pCC->CreateNil();
+			}
+
+		case FN_OBJ_SQUADRON_COMMS_MESSAGES:
+			{
+			const ICCItem *pReceiver = pArgs->GetElement(1);
+			TArray<CString> Messages;
+
+			//	If we have a list, then this is a list of squadron members.
+
+			if (pReceiver->IsList())
+				{
+				TArray<CSpaceObject *> List;
+				for (int i = 0; i < pReceiver->GetCount(); i++)
+					{
+					CSpaceObject *pObj = CTLispConvert::AsObject(pReceiver->GetElement(i));
+					if (!pObj)
+						continue;
+
+					List.Insert(pObj);
+					}
+
+				CSquadronCommunications Comms(*pObj, List);
+				Messages = Comms.GetMessageList();
+				}
+
+			//	Otherwise, if this is the keyword "squadron" then it applies to 
+			//	the entire (active) squadron.
+
+			else if (pReceiver->IsIdentifier())
+				{
+				CString sID = pReceiver->GetStringValue();
+				if (strEquals(sID, CONSTLIT("squadron")))
+					{
+					CSquadronCommunications Comms(*pObj);
+					Messages = Comms.GetMessageList();
+					}
+				else
+					return pCC->CreateError(CONSTLIT("Unknown receiver"), pReceiver);
+				}
+
+			//	Otherwise, we expect a single object
+
+			else
+				{
+				CSpaceObject *pReceiverObj = CTLispConvert::AsObject(pReceiver);
+				if (!pReceiverObj)
+					return pCC->CreateError(CONSTLIT("Invalid receiver"), pReceiver);
+
+				TArray<CSpaceObject *> List;
+				List.Insert(pReceiverObj);
+
+				CSquadronCommunications Comms(*pObj, List);
+				Messages = Comms.GetMessageList();
+				}
+
+			//	Return the list of messages
+
+			return CTLispConvert::CreateStringList(Messages)->Reference();
 			}
 
 		case FN_OBJ_TRANSLATE:
@@ -9374,6 +9535,66 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			pObj->SetTradeDesc(pEcon, iMaxCurrency, iReplenishCurrency);
 			return pCC->CreateTrue();
+			}
+
+		case FN_OBJ_SQUADRON_COMMS:
+			{
+			const ICCItem *pReceiver = pArgs->GetElement(1);
+			CString sMsg = pArgs->GetElement(2)->GetStringValue();
+
+			//	If we have a list, then this is a list of squadron members.
+
+			if (pReceiver->IsList())
+				{
+				TArray<CSpaceObject *> List;
+				for (int i = 0; i < pReceiver->GetCount(); i++)
+					{
+					CSpaceObject *pObj = CTLispConvert::AsObject(pReceiver->GetElement(i));
+					if (!pObj)
+						continue;
+
+					List.Insert(pObj);
+					}
+
+				CSquadronCommunications Comms(*pObj, List);
+				Comms.Send(sMsg);
+
+				return pCC->CreateTrue();
+				}
+
+			//	Otherwise, if this is the keyword "squadron" then it applies to 
+			//	the entire (active) squadron.
+
+			else if (pReceiver->IsIdentifier())
+				{
+				CString sID = pReceiver->GetStringValue();
+				if (strEquals(sID, CONSTLIT("squadron")))
+					{
+					CSquadronCommunications Comms(*pObj);
+					Comms.Send(sMsg);
+
+					return pCC->CreateTrue();
+					}
+				else
+					return pCC->CreateError(CONSTLIT("Unknown receiver"), pReceiver);
+				}
+
+			//	Otherwise, we expect a single object
+
+			else
+				{
+				CSpaceObject *pReceiverObj = CTLispConvert::AsObject(pReceiver);
+				if (!pReceiverObj)
+					return pCC->CreateError(CONSTLIT("Invalid receiver"), pReceiver);
+
+				TArray<CSpaceObject *> List;
+				List.Insert(pReceiverObj);
+
+				CSquadronCommunications Comms(*pObj, List);
+				Comms.Send(sMsg);
+
+				return pCC->CreateTrue();
+				}
 			}
 
 		case FN_OBJ_SUSPEND:

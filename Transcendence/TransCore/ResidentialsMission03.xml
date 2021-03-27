@@ -17,7 +17,7 @@
 
 			<Variant id="targetDesc">
 				{
-					criteria: "TAE +outlawSmugglers; +populated; -questTarget; -uncharted;"
+					criteria: "TAE +outlawSmugglers; +populated; -property:questTarget; -uncharted;"
 					}
 			</Variant>
 		</Properties>

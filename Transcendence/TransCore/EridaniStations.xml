@@ -48,6 +48,7 @@
 			<ReplaceArmor	criteria="a L:1-7;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-6;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-6;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<BalanceTrade	criteria="{core.fusionFuel}"		impact="20"/>
 			<BalanceTrade	criteria="{human.basicFood}"	impact="20"/>
@@ -79,19 +80,12 @@
 		</Items>
 
 		<!-- Ships and Defenses -->
+
+		<Squadrons>
+			<Squadron table="&tbCommEliteDefenders;"	count="2-4"/>
+			<Squadron table="&tbCommPrivateCrafts;"		count="1-4"/>
+		</Squadrons>
 		
-		<Ships>
-			<Lookup count="3" table="&tbCommEliteDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="5">
-			<Table>
-				<Lookup chance="75" table="&tbCommEliteDefenders;"/>
-				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
-			</Table>
-		</Reinforcements>
-
 		<!-- Image and Effects -->
 
 		<Image			imageID="&rsCommonwealthMetropolis;" imageWidth="480" imageHeight="480"/>

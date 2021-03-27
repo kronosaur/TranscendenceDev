@@ -71,16 +71,19 @@ class CDockScreenVisuals
 class CDockScreenPainter
 	{
 	public:
-		CDockScreenPainter (const CDockScreenVisuals &Visuals) :
-				m_Visuals(Visuals)
+		CDockScreenPainter (const CDockScreenVisuals &Theme, int cyTabRegion = 0) :
+				m_Theme(Theme),
+				m_cyTabRegion(cyTabRegion)
 			{ }
 
+		void PaintDisplayBackground (CG32bitImage &Dest, const RECT &rcRect) const;
 		void PaintDisplayFrame (CG32bitImage &Dest, const RECT &rcRect) const;
 
 	private:
 		static constexpr int BORDER_RADIUS = 4;
 
-		const CDockScreenVisuals &m_Visuals;
+		const CDockScreenVisuals &m_Theme;
+		int m_cyTabRegion = 0;
 	};
 
 class CPlayerSettings

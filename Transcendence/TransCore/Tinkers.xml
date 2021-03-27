@@ -445,7 +445,7 @@
 
 	<ItemType UNID="&itDualMarkIIIHowitzer;"
 			name=				"dual mark III howitzer"
-			attributes=			"cannotOrder, commonwealth, howitzer, majorItem, tinkers"
+			attributes=			"cannotOrder, commonwealth, howitzer, majorItem, makayev, tinkers"
 
 			level=				"7"
 			value=				"47000"
@@ -480,7 +480,7 @@
 
 	<ItemType UNID="&itOmniXRayLaserCannon;"
 			name=				"omnidirectional x-ray laser"
-			attributes=			"cannotOrder, commonwealth, energyWeapon, majorItem, tinkers"
+			attributes=			"bushido, cannotOrder, commonwealth, energyWeapon, majorItem, tinkers"
 			  
 			level=				"5"
 			value=				"10000"

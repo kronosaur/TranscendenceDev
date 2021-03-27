@@ -59,6 +59,24 @@ int CArmorSystem::CalcTotalHitPoints (int *retiMaxHP) const
 	return iTotalHP;
 	}
 
+int CArmorSystem::GetMaxLevel () const
+
+//	GetMaxLevel
+//
+//	Returns the maximum level of armor.
+
+	{
+	int iMaxLevel = -1;
+
+	for (const CArmorItem ArmorItem : *this)
+		{
+		if (ArmorItem.GetLevel() > iMaxLevel)
+			iMaxLevel = ArmorItem.GetLevel();
+		}
+
+	return iMaxLevel;
+	}
+
 void CArmorSystem::Install (CSpaceObject &Source, const CShipArmorDesc &Desc, bool bInCreate)
 
 //  Install

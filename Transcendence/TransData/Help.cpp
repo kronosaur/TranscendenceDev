@@ -176,6 +176,10 @@ void ShowHelp (CXMLElement *pCmdLine)
 		printf("  /itemsim              Simulation of items encountered.\n");
 		printf("      [/adventure:n]        Load the given adventure (by UNID).\n");
 		printf("      [/count:n]            n iterations.\n");
+		printf("\n");
+		printf("      [/byItem]             Show stats per item.\n");
+		printf("      [/criteria:n]         Only list item that match criteria.\n");
+		printf("      [/objCriteria:n]      Only sample objects that match criteria.\n");
 		}
 	else if (pCmdLine->GetAttributeBool(ITEM_TABLE_SWITCH))
 		{

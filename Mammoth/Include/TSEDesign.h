@@ -289,7 +289,7 @@ class CDesignType
 		int FireGetGlobalResurrectPotential (void);
 		void FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj, ICCItem *pData = NULL, ICCItem **retpResult = NULL);
 		ICCItemPtr FireObjItemCustomEvent (const CString &sEvent, CSpaceObject *pObj, const CItem &Item, ICCItem *pData = NULL);
-		ALERROR FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, void *pScreen, DWORD dwScreenUNID, const CString &sScreen, const CString &sScreenName, const CString &sPane, ICCItem *pData, CString *retsError);
+		ALERROR FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, DWORD dwScreenUNID, const CString &sScreen, const CString &sScreenName, const CString &sPane, ICCItem *pData, CString *retsError);
 		bool FireOnGlobalEndDiagnostics (const SEventHandlerDesc &Event);
 		void FireOnGlobalIntroCommand (const SEventHandlerDesc &Event, const CString &sCommand);
 		void FireOnGlobalIntroStarted (const SEventHandlerDesc &Event);
@@ -362,12 +362,14 @@ class CDesignType
 		void InitItemData (CItem &Item) const;
 		void InitObjectData (CSpaceObject &Obj, CAttributeDataBlock &Data) const;
 		void InitTypeData (CDesignType &Type) const;
+		bool IsHierarchyResolved () const { return m_bHierarchyResolved; }
 		bool IsMerged (void) const { return m_bIsMerged; }
 		bool IsModification (void) const { return m_bIsModification; }
 		bool IsOptional (void) const { return (m_dwObsoleteVersion > 0) || (m_dwMinVersion > 0) || (m_pExtra && (m_pExtra->Excludes.GetCount() > 0 || m_pExtra->Extends.GetCount() > 0)); }
 		void MarkImages (void) { OnMarkImages(); }
 		void ReportEventError (const CString &sEvent, const ICCItem *pError) const;
 		void SetGlobalData (const CString &sAttrib, const ICCItem *pData) { SetExtra()->GlobalData.SetData(sAttrib, pData); }
+		void SetHierarchyResolved (bool bValue = true) { m_bHierarchyResolved = bValue; }
 		void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
 		void SetMerged (bool bValue = true) { m_bIsMerged = true; }
 		void SetModification (bool bValue = true) { m_bIsModification = true; }
@@ -394,7 +396,7 @@ class CDesignType
 		virtual CTradingDesc *GetTradingDesc (void) const { return NULL; }
 		virtual const CCompositeImageDesc &GetTypeImage (void) const;
 		virtual const CObjectImageArray &GetTypeSimpleImage (void) const;
-		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return GetDataField(CONSTLIT("name")); }
+		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const;
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const { if (retiMinLevel) *retiMinLevel = -1; if (retiMaxLevel) *retiMaxLevel = -1; return -1; }
 		virtual DesignTypes GetType (void) const = 0;
 		virtual bool IsVirtual (void) const { return false; }
@@ -484,6 +486,7 @@ class CDesignType
 		bool m_bBindCalled = false;						//	TRUE if we've bound this type
 		bool m_bIsModification = false;					//	TRUE if this modifies the type it overrides
 		bool m_bIsMerged = false;						//	TRUE if we created this type by merging (inheritance)
+		bool m_bHierarchyResolved = false;				//	TRUE if we've resolved the inheritance hierarchy
 
 		DWORD m_fHasCustomMapDescLang:1;				//	Cached for efficiency
 	};
@@ -882,6 +885,7 @@ class CDesignTable
 		CDesignType *GetEntry (int iIndex) const { return m_Table.GetValue(iIndex); }
 		ALERROR Merge (const CDesignTable &Source, CDesignList &Override, const TArray<DWORD> &ExtensionsIncluded, const TSortMap<DWORD, bool> &TypesUsed, DWORD dwAPIVersion);
 		ALERROR Merge (const CDynamicDesignTable &Source, CDesignList *ioOverride = NULL);
+		void SetHierarchyResolved (bool bValue = true);
 
 	private:
 		TSortMap<DWORD, CDesignType *> m_Table;
@@ -1375,7 +1379,7 @@ class CDesignCollection
 		void FireOnGlobalMarkImages (void);
 		void FireOnGlobalObjDestroyed (SDestroyCtx &Ctx);
 		bool FireOnGlobalObjGateCheck (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj);
-		void FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData);
+		void FireOnGlobalPaneInit (CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData);
 		void FireOnGlobalPlayerBoughtItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		void FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip);
 		void FireOnGlobalPlayerEnteredSystem (void);
@@ -1438,9 +1442,10 @@ class CDesignCollection
 		bool InitAdventure (SDesignLoadCtx &Ctx);
 		bool InitEconomyTypes (SDesignLoadCtx &Ctx);
 		bool OverrideEncounterDesc (SDesignLoadCtx &Ctx, const CXMLElement &OverridesXML);
-		ALERROR ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType, CDesignType **retpNewType = NULL);
-		ALERROR ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap<DWORD, bool> &TypesUsed);
-		ALERROR ResolveTypeHierarchy (SDesignLoadCtx &Ctx);
+		ALERROR ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType, const TSortMap<DWORD, bool> &TypesUsed, CDesignType **retpNewType = NULL);
+		ALERROR ResolveTypeHierarchy (SDesignLoadCtx &Ctx, const TSortMap<DWORD, bool> &TypesUsed);
+		ALERROR ResolveType (SDesignLoadCtx &Ctx, CDesignType &Type, const TSortMap<DWORD, bool> &TypesUsed, CDesignType **retpNewType = NULL);
+		ALERROR ResolveTypeOverride (SDesignLoadCtx &Ctx, CDesignType &Type, CDesignType &Override, const TSortMap<DWORD, bool> &TypesUsed, CDesignType **retpNewType = NULL);
 		void Unbind (void);
 
 		//	Loaded types. These are initialized at load-time and never change.

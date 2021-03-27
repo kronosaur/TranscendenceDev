@@ -103,6 +103,8 @@
 			By default we accept any military ID (even ones from APD or ED).
 			-->
 			<Definition	id="rpg.checkMilitaryID">"* +militaryID;"</Definition>
+
+			<Definition	id="rpg.checkRadioactive">True</Definition>
 		</Properties>
 
 		<!-- Trade and Items -->
@@ -113,6 +115,7 @@
 			<ReplaceArmor	criteria="a L:1-6;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-6;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-6;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<ConsumeTrade	criteria="{human.armor}"		impact="25"/>
 			<ConsumeTrade	criteria="{human.shields}"		impact="25"/>
@@ -980,6 +983,7 @@
 	<!-- Rigel Aurelius system -->
 
 	<SystemType UNID="&ssBattleArena;" 
+				name="Rigel Aurelius"
 				noRandomEncounters=	"true"
 				noExtraEncounters=	"true"
 				>

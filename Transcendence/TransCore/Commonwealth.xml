@@ -82,19 +82,17 @@
 					; If customs is temporarily disabled, then we don't do anything.
 					(= (objFireEvent gSource 'GetCommonwealthCustomsStatus) 'disabled)
 						Nil
-
-					; If the player ship is radioactive, then we need to
-					; decontaminate.
-					(shpIsRadioactive gPlayerShip)
-						{	screen:&dsCommonwealthDecon;		priority:10		overrideOnly:true	}
+						
+					;	NOTE: No need to check for radiation because it is handled
+					;	by dsRPGDecontamination because we set rpg.checkRadioactive
 
 					; If the player has sold slaves then he/she is arrested.
 					(geq (int (objGetData gPlayerShip "commonCrimeSeverity")) 2)
 						{	screen:&dsCommonwealthImprison;		priority:8		overrideOnly:true	}
 						
 					; If the player has slaves then free them
-					(and (objGetItems gPlayerShip "*+Slaves;")
-							(not (objGetData gPlayerShip "00001002_ConfiscateSlaves"))
+					(and (objGetItems gPlayerShip "* +slaves;")
+							(not (scrGetSessionData gScreen 'commonwealth.noSlaveConfiscation))
 							)
 						{	screen:&dsCommonwealthFreeSlaves;	priority:8		overrideOnly:true	}
 						
@@ -114,8 +112,8 @@
 					; If we have illegal items in the cargo hold then we need
 					; to confiscate them
 					(and (not (objGetItems gPlayerShip "*I+SmugglersHold"))
-							(or (objGetItems gPlayerShip "*U+Illegal; -ID")
-								(and (objGetItems gPlayerShip "*U+Military") (not (objGetItems gPlayerShip "*+MilitaryID")))))
+							(or (objGetItems gPlayerShip "*U +Illegal; -ID; -slaves;")
+								(and (objGetItems gPlayerShip "*U +Military") (not (objGetItems gPlayerShip "* +MilitaryID")))))
 						{	screen:&dsCommonwealthConfiscate;	priority:6		overrideOnly:true	}
 
 					Nil
@@ -232,6 +230,7 @@
 			<ReplaceArmor	criteria="a L:1-5;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-5;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-5;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<ConsumeTrade	criteria="{core.fusionFuel}"		impact="2"/>
 			<ConsumeTrade	criteria="{human.basicFood}"	impact="5"/>
@@ -464,6 +463,7 @@
 			<ReplaceArmor	criteria="a L:1-7;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-7;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-7;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<ConsumeTrade	criteria="{core.antimatterFuel}"	impact="2"/>
 			<ConsumeTrade	criteria="{human.basicFood}"	impact="5"/>
@@ -651,6 +651,7 @@
 			<ReplaceArmor	criteria="a L:1-8;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-7;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-7;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<SellShip		criteria="s -notForSale;" priceAdj="100"/>
 			<BuyShip		criteria="s L:1-10; -notForSale;" priceAdj="80"/>
@@ -810,6 +811,7 @@
 			<Sell	criteria="*NU +Meds; -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="*NU +Food; -Illegal;"	priceAdj="100"/>
 			<Buy	criteria="*NU +Lux; -Illegal;"	priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<ConsumeTrade	criteria="{core.fusionFuel}"		impact="2"/>
 			<ConsumeTrade	criteria="{human.basicFood}"	impact="3"/>
@@ -972,6 +974,8 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+			
 			<ConsumeTrade	criteria="{core.fusionFuel}"		impact="1"/>
 			<ConsumeTrade	criteria="{human.basicFood}"	impact="5"/>
 			<ConsumeTrade	criteria="{human.lux}"		impact="2"/>
@@ -1075,6 +1079,8 @@
 		<!-- Trade and Items -->
 
 		<Trade>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+			
 			<ConsumeTrade	criteria="{core.fusionFuel}"		impact="1"/>
 			<ConsumeTrade	criteria="{human.basicFood}"	impact="2"/>
 			<ConsumeTrade	criteria="{human.meds}"		impact="2"/>
@@ -1307,6 +1313,7 @@
 			<ReplaceArmor	criteria="a L:1-8;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-8;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-8;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<ConsumeTrade	criteria="{core.antimatterFuel}"	impact="2"/>
 			<ConsumeTrade	criteria="{human.basicFood}"	impact="5"/>
@@ -1537,7 +1544,7 @@
 				
 				(if
 					(and (objGetData gPlayerShip "slaveSales")
-							(objGetItems gPlayerShip "* +Slaves;"))
+							(objGetItems gPlayerShip "* +slaves;"))
 						(objSetData gPlayerShip "00001002_ConfiscateSlaves" True)
 						
 					(objSetData gPlayerShip "00001002_ConfiscateSlaves" Nil)
@@ -1642,81 +1649,60 @@
 		</Language>
 	</DockScreen>
 
-	<!-- Commonwealth Decontamination -->
-
-	<DockScreen UNID="&dsCommonwealthDecon;"
-			nestedScreen=	"true"
-			inherit=		"&dsDockScreenBase;"
-			>
-		<Panes>
-			<Default>
-				<OnPaneInit>
-					(block (
-						(currencyUsed (objGetProperty gSource 'currency))
-						(cost (ecoExchange 250 'credit currencyUsed))
-						)
-						(if (geq (objGetBalance gPlayerShip currencyUsed) cost)
-							(block Nil
-								(scrSetDescTranslate gScreen 'customs.chargedForDecon { cost:(fmtCurrency currencyUsed cost) })
-								(objCharge gPlayerShip currencyUsed cost)
-								(shpDecontaminate gPlayerShip)
-								)
-							(scrSetDescTranslate gScreen 'customs.cantAffordDecon { cost:(fmtCurrency currencyUsed cost) })
-							)
-						)
-				</OnPaneInit>
-
-				<Actions>
-					<Action id="actionContinue" default="1" cancel="1">
-						; If the ship is still radioactive, force undock.
-						; Otherwise, we just exit the screen and go back to the default screen
-						
-						(scrExitScreen gScreen (shpIsRadioactive gPlayerShip))
-					</Action>
-				</Actions>
-			</Default>
-		</Panes>
-		
-		<Language>
-			<Text id="customs.chargedForDecon">
-
-				Commonwealth Customs stops your ship for decontamination. You 
-				are automatically charged %cost% for decontaminating your ship.
-
-			</Text>
-			<Text id="customs.cantAffordDecon">
-
-				Commonwealth Customs stops your ship for decontamination.
-				Unfortunately, you do not have %cost% to pay for 
-				decontamination.
-
-			</Text>
-		</Language>
-	</DockScreen>
-
 	<!-- Commonwealth Free Slaves -->
 
 	<DockScreen UNID="&dsCommonwealthFreeSlaves;"
 			nestedScreen="true"
 			inherit=		"&dsDockScreenBase;"
 			>
+		<InitialPane>
+			(block (
+				;	This is a list of all slaves we carry.
+
+				(allSlaves (objGetItems gPlayerShip "* +slaves;"))
+				(totalSlaves (map allSlaves 'reduceSum theItem (itmGetCount theItem)))
+				)
+				;	Remember these values. It's OK to do this here since they
+				;	are just cached values.
+
+				(scrSetData gScreen 'allSlaves allSlaves)
+				(scrSetData gScreen 'totalSlaves totalSlaves)
+
+				(switch
+					;	If we have a smuggler's cargo hold then we get the option of
+					;	not declaring the slaves
+
+					(objGetItems gPlayerShip "*I +smugglersHold;")
+						"FreeSlavesAsk"
+
+					;	Otherwise, we always free them.
+
+					"Default"
+					)
+				)
+		</InitialPane>
+
 		<Panes>
 			<Default>
 				<OnPaneInit>
-					(block (desc itemToRemove)
+					(block (
+						(allSlaves (scrGetData gScreen 'allSlaves))
+						(totalSlaves (scrGetData gScreen 'totalSlaves))
+
+						desc
+						)
 						; Free the slaves
-						(setq totalSlaves 0)
-						(enum (objGetItems gPlayerShip "*+Slaves;") itemToRemove
-							(block Nil
-								(setq totalSlaves (add totalSlaves (itmGetCount itemToRemove)))
-								(objRemoveItem gPlayerShip itemToRemove)
-								)
+
+						(enum allSlaves itemToRemove
+							(objRemoveItem gPlayerShip itemToRemove)
 							)
 
 						; Keep track of how many we have freed in total
-						(objIncData gPlayerShip "slavesFreed" totalSlaves)
+
+						(objIncData gPlayerShip 'slavesFreed totalSlaves)
 
 						; Create description
+
 						(switch
 							(= totalSlaves 1)
 								(scrSetDescTranslate gScreen 'descRescue.1)
@@ -1731,10 +1717,10 @@
 
 				<Actions>
 					<Action id="actionContinue" default="1" cancel="1">
-						(block (freed rewarded)
-							(setq freed (objGetData gPlayerShip "slavesFreed"))
-							(setq rewarded (objGetData gPlayerShip "slaveReward"))
-
+						(block (
+							(freed (objGetData gPlayerShip "slavesFreed"))
+							(rewarded (objGetData gPlayerShip "slaveReward"))
+							)
 							(switch
 								(and (geq freed 12) (ls rewarded 12))
 									(scrShowPane gScreen "Reward1")
@@ -1747,8 +1733,29 @@
 							)
 					</Action>
 				</Actions>
-
 			</Default>
+
+			<FreeSlavesAsk>
+				<OnPaneInit>
+					(scrSetDescTranslate gScreen 'descDeclareSlaves {
+						itemName: (itmGetName (@ (scrGetData gScreen 'allSlaves) 0) 'count)
+						})
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDeclareSlaves" default="1">
+						(scrShowPane gScreen 'Default)
+					</Action>
+
+					<Action id="actionNothingToDeclare" cancel="1">
+						(block ()
+							;	Set a flag for the remainder of the session.
+							(scrSetSessionData gScreen 'commonwealth.noSlaveConfiscation True)
+							(scrExitScreen gScreen)
+							)
+					</Action>
+				</Actions>
+			</FreeSlavesAsk>
 
 			<Reward1>
 				<OnPaneInit>
@@ -1785,10 +1792,22 @@
 		</Panes>
 
 		<Language>
+			<String id="actionDeclareSlaves">"[Y]es, I do."</String>
+			<String id="actionNothingToDeclare">"[N]o.</String>
+
+			<Text id="descDeclareSlaves">
+
+				You approach the customs podium, an officer asks you:
+
+				"Anything to declare?"
+
+				You remember that you have %itemName% in your cargo hold.
+
+			</Text>
 			<Text id="descRescue.1">
 
-				As soon as you dock you inform the Commonwealth authorities that
-				you have rescued a slave.
+				You inform the Commonwealth authorities that you have rescued 
+				a slave.
 				
 				The jaded officer takes the slave coffin and files a routine 
 				report.
@@ -1796,8 +1815,8 @@
 			</Text>
 			<Text id="descRescue.2">
 			
-				As soon as you dock you inform the Commonwealth authorities that
-				you have rescued a couple of slaves.
+				You inform the Commonwealth authorities that you have rescued a
+				couple of slaves.
 				
 				The jaded officer takes the	two slave coffins and files a 
 				routine report.
@@ -1805,9 +1824,8 @@
 			</Text>
 			<Text id="descRescue.several">
 
-				As soon as you dock you inform the Commonwealth authorities that
-				you have rescued several slaves. The officer in charge thanks 
-				you:
+				You inform the Commonwealth authorities that you have rescued 
+				several slaves. The officer in charge thanks you:
 
 				"You must have a pretty good ship to have survived a fight 
 				against Slavers!"
@@ -2259,6 +2277,13 @@
 			By default we accept any military ID (even ones from APD or ED).
 			-->
 			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</Constant>
+			
+			<!--
+			Check radioactive status when player docks. If the player is 
+			radioactive, we check to see if the station decontaminates (using
+			trade descriptions). If not, we refuse dock.
+			-->
+			<Definition	id="rpg.checkRadioactive">True</Definition>
 
 			<!--
 			By default we reveal unknown items when they are for sale.
@@ -2342,6 +2367,29 @@
 
 			<Text id="strDestroyedStationCrime">
 				the destruction of %objName%
+			</Text>
+
+			<Text id="core.deconDesc">
+
+				Commonwealth Customs stops your ship for decontamination. You 
+				are automatically charged %cost% for decontaminating your ship.
+
+			</Text>
+			<Text id="core.cannotAffordDecon">
+
+				Commonwealth Customs stops your ship.
+
+				"Sorry, your ship is radioactive and you do not have %cost%
+				to pay for decontamination."
+
+			</Text>
+			<Text id="core.cannotDecon">
+				
+				Commonwealth Customs stops your ship.
+
+				"Sorry, we don't have the facilities to deal with a radioactive
+				ship!"
+				
 			</Text>
 		</Language>
 	</Type>

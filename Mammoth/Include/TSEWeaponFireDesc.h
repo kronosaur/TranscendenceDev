@@ -24,8 +24,10 @@ enum class ECondition
 	shipScreenDisabled =	0x00000080,		//	Source cannot bring up ship screen
 	LRSBlind =				0x00000100,		//	LRS-blind
 	shieldBlocked =			0x00000200,		//	Shields disabled
+	fouled =				0x00000400,		//	Harmful object attached
 
-	count =					10,
+
+	count =					11,
 	};
 
 enum class EConditionChange
@@ -546,6 +548,7 @@ class CConfigurationDesc
 		bool IncPolarity (int iPolarity, int *retiNewPolarity = NULL) const;
 		ALERROR InitFromWeaponClassXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc, ETypes iDefault = ctSingle);
 		bool IsAlternating (void) const { return (m_bCustomAlternating || m_iType == ctDualAlternating); }
+		bool IsDualPointOrigin (void) const;
 		bool IsEmpty (void) const { return m_iType == ctUnknown; }
 		bool IsSinglePointOrigin (void) const;
 
@@ -751,7 +754,7 @@ class CWeaponFireDesc
 		Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }
 		CWeaponFireDesc *GetScaledDesc (int iLevel) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
-		int GetStealth (void) const { return m_iStealth; }
+		int GetStealth (void) const { return m_iStealthFromArmor; }
 		bool GetTargetable (void) const { return m_fTargetable; }
 		FireTypes GetType (void) const { return m_iFireType; }
 		const CString &GetUNID (void) const { return m_sUNID; }
@@ -857,7 +860,7 @@ class CWeaponFireDesc
 		//	Missile stuff (m_iFireType == ftMissile)
 		int m_iAccelerationFactor = 0;			//	% increase in speed per 10 ticks
 		Metric m_rMaxMissileSpeed = 0.0;		//	Max speed.
-		int m_iStealth = 0;						//	Missile stealth
+		int m_iStealthFromArmor = 0;			//	Missile stealth
 		int m_iHitPoints = 0;					//	HP before dissipating (0 = destroyed by any hit)
 		CInteractionLevel m_Interaction;		//	Interaction opacity (0-100; -1 = always interact)
 		int m_iManeuverability = 0;				//	Tracking maneuverability (0 = none)

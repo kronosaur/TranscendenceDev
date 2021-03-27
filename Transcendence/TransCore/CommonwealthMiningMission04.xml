@@ -19,7 +19,7 @@
 			<Variant id="targetDesc">
 				{
 					;	We only want asteroid station enemies.
-					criteria: "TAE +populated; -property:hullType=singleHull; -property:hullType=multiHull; -questTarget; -uncharted;"
+					criteria: "TAE +populated; -property:hullType=singleHull; -property:hullType=multiHull; -property:questTarget; -uncharted;"
 					}
 			</Variant>
 		</Properties>

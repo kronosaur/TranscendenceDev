@@ -32,9 +32,6 @@
 //			stateReturningFromThreat		oT
 //			stateAttackingThreat			oT
 //
-//		orderDock
-//			stateOnCourseForDocking
-//
 //		orderDestroyTarget
 //			stateAttackingTarget
 //
@@ -49,10 +46,6 @@
 //
 //		orderGateOnStationDestroyed
 //			stateNone
-//
-//		orderPatrol
-//			stateOnPatrolOrbit				oT
-//			stateAttackingOnPatrol			oT
 //
 //		orderEscort
 //			stateEscorting					oT
@@ -816,31 +809,6 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 			break;
 			}
 
-		case stateOnCourseForPatrolViaNavPath:
-			{
-			m_AICtx.ImplementAttackNearestTarget(m_pShip, m_AICtx.GetBestWeaponRange(), &m_pTarget);
-			m_AICtx.ImplementFireOnTargetsOfOpportunity(m_pShip, m_pTarget);
-
-			bool bAtDest;
-			m_AICtx.ImplementFollowNavPath(m_pShip, &bAtDest);
-
-			//	We stop navigation when we are inside the patrol radius
-
-			Metric rPatrolRadius = LIGHT_SECOND * GetCurrentOrderDesc().GetDataInteger();
-			Metric rPatrolRadius2 = rPatrolRadius * rPatrolRadius;
-			Metric rDist2 = GetDistance2(GetCurrentOrderTarget());
-
-			if (bAtDest || rDist2 < rPatrolRadius2)
-				{
-				m_AICtx.ClearNavPath();
-				SetState(stateOnPatrolOrbit);
-				m_pDest = GetCurrentOrderTarget();
-				m_rDistance = rPatrolRadius;
-				}
-
-			break;
-			}
-
 		case stateOnCourseForPoint:
 			{
 			m_AICtx.ImplementAttackNearestTarget(m_pShip, m_AICtx.GetBestWeaponRange(), &m_pTarget);
@@ -893,47 +861,6 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 			m_AICtx.ImplementGating(m_pShip, m_pDest);
 			m_AICtx.ImplementAttackNearestTarget(m_pShip, m_AICtx.GetBestWeaponRange(), &m_pTarget);
 			m_AICtx.ImplementFireOnTargetsOfOpportunity(m_pShip, m_pTarget);
-			break;
-			}
-
-		case stateOnPatrolOrbit:
-			{
-			ASSERT(m_pDest);
-			CVector vTarget = m_pDest->GetPos() - m_pShip->GetPos();
-			Metric rTargetDist2 = vTarget.Dot(vTarget);
-
-			Metric rMaxDist = m_rDistance * 1.1;
-			Metric rMinDist = m_rDistance * 0.9;
-
-			if (rTargetDist2 > (rMaxDist * rMaxDist))
-				m_AICtx.ImplementSpiralIn(m_pShip, vTarget);
-			else if (rTargetDist2 < (rMinDist * rMinDist))
-				m_AICtx.ImplementSpiralOut(m_pShip, vTarget);
-			else
-				m_AICtx.ImplementSpiralOut(m_pShip, vTarget, 0);
-
-			m_AICtx.ImplementAttackNearestTarget(m_pShip, m_AICtx.GetMaxWeaponRange(), &m_pTarget, m_pDest);
-			m_AICtx.ImplementFireOnTargetsOfOpportunity(m_pShip, m_pTarget, m_pDest);
-
-			//	Check to see if any enemy ships appear
-
-			if (m_pShip->IsDestinyTime(30))
-				{
-				DEBUG_TRY
-				
-				CSpaceObject *pPrincipal = GetCurrentOrderTarget();
-				CSpaceObject *pTarget = m_pShip->GetVisibleEnemyInRange(pPrincipal, PATROL_SENSOR_RANGE, false, m_pDest);
-				if (pTarget)
-					{
-					SetState(stateAttackingOnPatrol);
-					m_pTarget = pTarget;
-					ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
-					DEBUG_COMBAT_OUTPUT("Patrol: Attack target");
-					}
-
-				DEBUG_CATCH
-				}
-
 			break;
 			}
 
@@ -1131,30 +1058,6 @@ void CStandardShipAI::BehaviorStart (void)
 			break;
 			}
 
-		case IShipController::orderAttackNearestEnemy:
-			{
-			//	Look for the nearest target (if we can't find one, then
-			//	just gate out).
-
-			CSpaceObject *pTarget = m_pShip->GetNearestVisibleEnemy();
-			if (pTarget)
-				{
-				//	Note: We don't switch to stateAttackingTargetAndAvoiding because
-				//	we really should create a new state that switches to a different
-				//	enemy if one hide over a station.
-
-				SetState(stateAttackingTarget);
-				m_pTarget = pTarget;
-				ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
-				}
-			else
-				{
-				CancelCurrentOrder();
-				}
-
-			break;
-			}
-
 		case IShipController::orderDestroyPlayerOnReturn:
 			{
 			CSpaceObject *pGate = m_pShip->GetNearestStargate();
@@ -1164,22 +1067,6 @@ void CStandardShipAI::BehaviorStart (void)
 				m_pDest = pGate;
 				}
 			
-			break;
-			}
-
-		case IShipController::orderDestroyTarget:
-			{
-			SetState(stateAttackingTargetAndAvoiding);
-			m_pTarget = GetCurrentOrderTarget();
-			ASSERT(m_pTarget);
-			ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
-
-			//	See if we have a time limit
-
-			if (GetCurrentOrderDataInteger() > 0)
-				m_iCountdown = 1 + (g_TicksPerSecond * GetCurrentOrderDataInteger());
-			else
-				m_iCountdown = -1;
 			break;
 			}
 
@@ -1199,152 +1086,10 @@ void CStandardShipAI::BehaviorStart (void)
 			break;
 			}
 
-		case IShipController::orderDock:
-			{
-			CSpaceObject *pDest = GetCurrentOrderTarget();
-			ASSERT(pDest);
-
-			//	If we're docked with our destination then we're done.
-
-			if (m_pShip->GetDockedObj() == pDest)
-				{
-				CancelCurrentOrder();
-				}
-
-			//	Otherwise, see if we should take a nav path
-
-			else if (GetDistance2(pDest) > NAV_PATH_THRESHOLD2
-					&& m_AICtx.CalcNavPath(m_pShip, pDest))
-				{
-				SetState(stateOnCourseForDockingViaNavPath);
-				}
-
-			//	Otherwise, try to dock
-
-			else
-				{
-				SetState(stateOnCourseForDocking);
-				m_pDest = pDest;
-				}
-
-			break;
-			}
-
-		case IShipController::orderEscort:
-			{
-			//	If this is a support ship, then we follow. Otherwise we
-			//	are an armed escort.
-
-			if (m_AICtx.IsNonCombatant())
-				SetState(stateFollowing);
-			else
-				SetState(stateEscorting);
-
-			m_pDest = GetCurrentOrderTarget();
-			ASSERT(m_pDest);
-
-			m_pShip->Communicate(m_pDest, msgEscortReportingIn, m_pShip);
-			break;
-			}
-
-		case IShipController::orderFollow:
-			{
-			SetState(stateFollowing);
-			m_pDest = GetCurrentOrderTarget();
-			ASSERT(m_pDest);
-
-			m_pShip->Communicate(m_pDest, msgEscortReportingIn, m_pShip);
-			break;
-			}
-
 		case IShipController::orderFollowPlayerThroughGate:
 			{
 			SetState(stateOnCourseForStargate);
 			m_pDest = m_pShip->GetNearestStargate();
-			break;
-			}
-
-		case IShipController::orderGate:
-			{
-			//	Look for the gate
-
-			CSpaceObject *pGate = GetCurrentOrderTarget();
-			if (pGate == NULL)
-				pGate = m_pShip->GetNearestStargate(true);
-
-			//	Head for the gate
-
-			if (pGate)
-				{
-				if (GetDistance2(pGate) > NAV_PATH_THRESHOLD2
-						&& !m_AICtx.NoNavPaths()
-						&& m_AICtx.CalcNavPath(m_pShip, pGate))
-					{
-					SetState(stateOnCourseForPointViaNavPath);
-					}
-				else
-					{
-					SetState(stateOnCourseForStargate);
-					m_pDest = pGate;
-					}
-				}
-
-			break;
-			}
-
-		case IShipController::orderGoTo:
-			{
-			CSpaceObject *pDest = GetCurrentOrderTarget();
-			ASSERT(pDest);
-
-			//	See if we should take a nav path
-
-			if (GetDistance2(pDest) > NAV_PATH_THRESHOLD2
-					&& m_AICtx.CalcNavPath(m_pShip, pDest))
-				{
-				SetState(stateOnCourseForPointViaNavPath);
-				}
-
-			//	Otherwise, go there
-
-			else
-				{
-				SetState(stateOnCourseForPoint);
-				m_pDest = pDest;
-
-				//	Use m_iCountdown to store the desired rotation
-
-				CVector vBearing = m_pDest->GetPos() - m_pShip->GetPos();
-				m_iCountdown = m_pShip->AlignToRotationAngle(VectorToPolar(vBearing));
-				}
-
-			break;
-			}
-
-		case IShipController::orderApproach:
-			{
-			CSpaceObject *pDest = GetCurrentOrderTarget();
-			ASSERT(pDest);
-
-			//	See if we should take a nav path
-
-			if (GetDistance2(pDest) > NAV_PATH_THRESHOLD2
-					&& m_AICtx.CalcNavPath(m_pShip, pDest))
-				{
-				SetState(stateOnCourseForPointViaNavPath);
-				}
-
-			//	Otherwise, go there
-
-			else
-				{
-				SetState(stateApproaching);
-				m_pDest = GetCurrentOrderTarget();
-				m_rDistance = LIGHT_SECOND * GetCurrentOrderDataInteger();
-				if (m_rDistance < LIGHT_SECOND)
-					m_rDistance = LIGHT_SECOND;
-				}
-
 			break;
 			}
 
@@ -1386,14 +1131,6 @@ void CStandardShipAI::BehaviorStart (void)
 
 		case IShipController::orderGateOnThreat:
 			SetState(stateWaitingUnarmed);
-			break;
-
-		case IShipController::orderHold:
-			SetState(stateHolding);
-			if (GetCurrentOrderDataInteger())
-				m_iCountdown = 1 + (g_TicksPerSecond * GetCurrentOrderDataInteger());
-			else
-				m_iCountdown = -1;
 			break;
 
 		case IShipController::orderHoldCourse:
@@ -1442,20 +1179,6 @@ void CStandardShipAI::BehaviorStart (void)
 			break;
 			}
 
-		case IShipController::orderNavPath:
-			{
-			CNavigationPath *pPath = m_pShip->GetSystem()->GetNavPathByID(GetCurrentOrderDataInteger());
-			if (pPath)
-				{
-				SetState(stateFollowNavPath);
-				m_AICtx.CalcNavPath(m_pShip, pPath);
-				}
-			else
-				CancelCurrentOrder();
-
-			break;
-			}
-
 		case IShipController::orderOrbit:
 			{
 			CSpaceObject *pBase = GetCurrentOrderTarget();
@@ -1477,29 +1200,6 @@ void CStandardShipAI::BehaviorStart (void)
 				m_rDistance = rPatrolRadius;
 				DWORD dwTimer = GetCurrentOrderDesc().GetDataInteger2();
 				m_iCountdown = (dwTimer > 0 ? (g_TicksPerSecond * dwTimer) : -1);
-				}
-
-			break;
-			}
-
-		case IShipController::orderPatrol:
-			{
-			CSpaceObject *pBase = GetCurrentOrderTarget();
-			Metric rPatrolRadius = LIGHT_SECOND * GetCurrentOrderDataInteger();
-			ASSERT(pBase);
-
-			Metric rDist2 = GetDistance2(pBase);
-			if (rDist2 > NAV_PATH_THRESHOLD2
-					&& rDist2 > (rPatrolRadius * rPatrolRadius)
-					&& m_AICtx.CalcNavPath(m_pShip, pBase))
-				{
-				SetState(stateOnCourseForPatrolViaNavPath);
-				}
-			else
-				{
-				SetState(stateOnPatrolOrbit);
-				m_pDest = pBase;
-				m_rDistance = rPatrolRadius;
 				}
 
 			break;
@@ -1576,53 +1276,6 @@ void CStandardShipAI::BehaviorStart (void)
 			break;
 			}
 
-		case IShipController::orderWait:
-			{
-			SetState(stateWaiting);
-			if (GetCurrentOrderDataInteger())
-				m_iCountdown = 1 + (g_TicksPerSecond * GetCurrentOrderDataInteger());
-			else
-				m_iCountdown = -1;
-			break;
-			}
-
-		case IShipController::orderWaitForPlayer:
-			{
-			SetState(stateWaiting);
-			break;
-			}
-
-		case IShipController::orderWaitForEnemy:
-			{
-			SetState(stateWaitingForEnemy);
-			if (GetCurrentOrderDataInteger())
-				m_iCountdown = 1 + (g_TicksPerSecond * GetCurrentOrderDataInteger());
-			else
-				m_iCountdown = -1;
-			break;
-			}
-
-		case IShipController::orderWaitForTarget:
-			{
-			const COrderDesc &OrderDesc = GetCurrentOrderDesc();
-			if (!OrderDesc.GetTarget())
-				throw CException(ERR_FAIL);
-
-			//	If we have a pair of numbers, then the first is the range at 
-			//	which to react (which must be less than detection range).
-
-			m_rDistance = LIGHT_SECOND * OrderDesc.GetDataInteger();
-			DWORD dwTimer = OrderDesc.GetDataInteger2();
-
-			SetState(stateWaitingForTarget);
-			m_pDest = OrderDesc.GetTarget();
-			if (dwTimer)
-				m_iCountdown = 1 + (g_TicksPerSecond * dwTimer);
-			else
-				m_iCountdown = -1;
-			break;
-			}
-
 		case IShipController::orderWander:
 			{
 			int i;
@@ -1675,6 +1328,26 @@ void CStandardShipAI::BehaviorStart (void)
 			m_iCountdown = 150 + mathRandom(0, 50);
 			break;
 			}
+
+		//	These orders are now handled by order modules, so we should never
+		//	get here.
+
+		case IShipController::orderApproach:
+		case IShipController::orderAttackNearestEnemy:
+		case IShipController::orderDestroyTarget:
+		case IShipController::orderDock:
+		case IShipController::orderEscort:
+		case IShipController::orderFollow:
+		case IShipController::orderGate:
+		case IShipController::orderGoTo:
+		case IShipController::orderHold:
+		case IShipController::orderNavPath:
+		case IShipController::orderPatrol:
+		case IShipController::orderWait:
+		case IShipController::orderWaitForPlayer:
+		case IShipController::orderWaitForEnemy:
+		case IShipController::orderWaitForTarget:
+			throw CException(ERR_FAIL);
 		}
 	}
 
@@ -1775,12 +1448,6 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCt
 					ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
 					break;
 
-				case stateOnPatrolOrbit:
-					SetState(stateAttackingOnPatrol);
-					m_pTarget = pAttacker;
-					ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
-					break;
-
 				case stateWaitingUnarmed:
 					CancelCurrentOrder();
 					AddOrder(COrderDesc(IShipController::orderGate));
@@ -1821,7 +1488,6 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCt
 			switch (GetCurrentOrder())
 				{
 				case IShipController::orderGuard:
-				case IShipController::orderPatrol:
 					{
 					//	If we were attacked twice (excluding multi-shot weapons)
 					//	then we tell our station about this
@@ -1859,6 +1525,9 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCt
 						CancelCurrentOrder();
 					break;
 					}
+
+				case IShipController::orderPatrol:
+					throw CException(ERR_FAIL);
 				}
 			}
 		}
@@ -1879,7 +1548,6 @@ DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes 
 				{
 				case stateAttackingThreat:
 				case stateAttackingPrincipalThreat:
-				case stateOnPatrolOrbit:
 					if (pParam1 == NULL || pParam1 == m_pTarget)
 						SetState(stateNone);
 					return resAck;
@@ -1915,12 +1583,6 @@ DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes 
 
 				case stateLookingForLoot:
 					SetState(stateDeterTarget);
-					m_pTarget = pParam1;
-					ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
-					return resAck;
-
-				case stateOnPatrolOrbit:
-					SetState(stateAttackingOnPatrol);
 					m_pTarget = pParam1;
 					ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
 					return resAck;
@@ -1965,17 +1627,6 @@ DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes 
 					ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
 					return resAck;
 
-				case stateOnPatrolOrbit:
-					if (m_pShip->GetDistance2(pParam1) < PATROL_DETER_RANGE2)
-						{
-						SetState(stateAttackingOnPatrol);
-						m_pTarget = pParam1;
-						ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
-						return resAck;
-						}
-					else
-						return resNoAnswer;
-
 				default:
 					return resNoAnswer;
 				}
@@ -1991,7 +1642,6 @@ DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes 
 			switch (GetCurrentOrder())
 				{
 				case orderGuard:
-				case orderPatrol:
 					m_pShip->GetController()->AddOrder(COrderDesc(IShipController::orderDestroyTarget, pParam1), true);
 					return resAck;
 
@@ -2008,7 +1658,6 @@ DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes 
 				case stateReturningFromThreat:
 				case stateReturningViaNavPath:
 				case stateWaitingForThreat:
-				case stateOnPatrolOrbit:
 				case stateReturningToEscort:
 					if (pParam1)
 						{
@@ -2156,7 +1805,6 @@ void CStandardShipAI::OnDestroyedNotify (SDestroyCtx &Ctx)
 		//	If we've been destroyed, then ask our station to avenge us
 
 		case orderGuard:
-		case orderPatrol:
 		case orderGateOnThreat:
 		case orderGateOnStationDestroyed:
 			{
@@ -2168,6 +1816,9 @@ void CStandardShipAI::OnDestroyedNotify (SDestroyCtx &Ctx)
 
 			break;
 			}
+
+		case orderPatrol:
+			throw CException(ERR_FAIL);
 		}
 	}
 
@@ -2190,14 +1841,16 @@ CSpaceObject *CStandardShipAI::OnGetBase (void) const
 	{
 	switch (GetCurrentOrder())
 		{
-		case IShipController::orderDock:
 		case IShipController::orderGuard:
 		case IShipController::orderOrbit:
-		case IShipController::orderPatrol:
 			return GetCurrentOrderTarget();
 
 		case IShipController::orderGateOnThreat:
 			return m_pShip->GetDockedObj();
+
+		case IShipController::orderDock:
+		case IShipController::orderPatrol:
+			throw CException(ERR_FAIL);
 
 		default:
 			return NULL;
@@ -2239,12 +1892,10 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 		{
 		switch (m_State)
 			{
-			case stateOnPatrolOrbit:
 			case stateEscorting:
 			case stateOnCourseForDocking:
 			case stateOnCourseForDockingViaNavPath:
 			case stateOnCourseForLootDocking:
-			case stateOnCourseForPatrolViaNavPath:
 			case stateOnCourseForOrbitViaNavPath:
 			case stateDeterTargetWhileLootDocking:
 			case stateReturningFromThreat:
@@ -2346,7 +1997,6 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 			//	because the target is out of range or already dead.
 
 			case orderGuard:
-			case orderPatrol:
 				CancelCurrentOrder();
 				AddOrder(COrderDesc(orderAttackNearestEnemy));
 				break;
@@ -2358,6 +2008,9 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 				CancelCurrentOrder();
 				AddOrder(COrderDesc(IShipController::orderGate));
 				break;
+
+			case orderPatrol:
+				throw CException(ERR_FAIL);
 
 			default:
 				CancelCurrentOrder();

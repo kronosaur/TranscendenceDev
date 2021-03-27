@@ -77,7 +77,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		//	Rotate wildly
 
 		if (!IsAnchored())
-			m_Rotation.Update(m_Perf.GetIntegralRotationDesc(), ((GetDestiny() % 2) ? RotateLeft : RotateRight));
+			m_Rotation.Update(m_Perf.GetIntegralRotationDesc(), ((GetDestiny() % 2) ? EManeuver::RotateLeft : EManeuver::RotateRight));
 
 		//	Slow down
 
@@ -94,7 +94,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		//	Spin wildly
 
 		if (!IsAnchored() && m_Overlays.GetConditions().IsSet(ECondition::spinning))
-			m_Rotation.Update(m_Perf.GetIntegralRotationDesc(), ((GetDestiny() % 2) ? RotateLeft : RotateRight));
+			m_Rotation.Update(m_Perf.GetIntegralRotationDesc(), ((GetDestiny() % 2) ? EManeuver::RotateLeft : EManeuver::RotateRight));
 		}
 
 	//	Slow down if an overlay is imposing drag

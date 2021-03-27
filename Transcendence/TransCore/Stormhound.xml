@@ -186,6 +186,7 @@
 				</Items>
 			</Device>
 			<Device deviceID="&itR9Deflector;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="9"/>
 		</Devices>
 
 		<Maneuver

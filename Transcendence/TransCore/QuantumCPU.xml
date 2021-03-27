@@ -23,7 +23,44 @@
 
 		<MiscellaneousDevice
 				powerUse=		"20"
-				/>
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"quantumCPU"
+						 criteria=		"ws"
+						 enhancement=	"+cyberDefense:4;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+
+		<Events>
+			<OnGlobalRunDiagnostics>
+				(block (
+					)
+					;	Set up a player ship
+
+					(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
+					(if (not gPlayerShip)
+						(error "Unable to create player ship.")
+						)
+					(shpOrder gPlayerShip 'hold)
+					(objAddItem gPlayerShip (itmCreate &itMnemonicProcessor; 1))
+					(shpInstallDevice gPlayerShip (itmCreate &itMnemonicProcessor; 1))
+
+					;	Unit Tests for Quantum CPU
+
+					(diagEval (list
+
+						{	test:'(itm@ (@ (objGetItems gPlayerShip "s") 0) 'cyberDefenseLevel)
+																							result:5	}
+						))
+
+					;	Done
+
+					(objDestroy gPlayerShip)
+					(setq gPlayerShip Nil)
+					)
+			</OnGlobalRunDiagnostics>
+		</Events>
 	</ItemType>
 
 <!-- PROGRAMS -->

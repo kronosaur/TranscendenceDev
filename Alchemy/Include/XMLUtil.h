@@ -83,7 +83,7 @@ class CXMLElement
 										   CString *retsError);
 		static ALERROR ParseEntityTable (IReadBlock *pStream, CExternalEntityTable *retEntityTable, CString *retsError);
 		static ALERROR ParseRootElement (IReadBlock *pStream, CXMLElement **retpRoot, CExternalEntityTable *retEntityTable, CString *retsError);
-		static ALERROR ParseRootTag (IReadBlock *pStream, CString *retsTag);
+		static ALERROR ParseRootTag (IReadBlock *pStream, CString *retsTag, CString *retsError = NULL);
 
 		ALERROR AddAttribute (const CString &sAttribute, const CString &sValue);
 		ALERROR AppendContent (const CString &sContent, int iIndex = -1);

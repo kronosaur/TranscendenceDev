@@ -66,21 +66,44 @@
 		<!-- Ships and Defenses -->
 
 		<Ships>
-			<Ship	count="1"	class="&scT31ArmedTransport;" orders="tradeRoute"	sovereign="&svBlackMarket;">
-				<Items>
-					<Item chance="50"		count="8d20" item="&itSmartCannonShell;"/>
-					<Lookup					count="1d2+1" table="&trIllegalItems2;"/>
-					<Table>
-						<Lookup chance="40" count="1" table="&trConsumables2;"/>
-						<Lookup chance="40" count="1" table="&trMinorItem2;"/>
-						<Lookup chance="20" count="1" table="&trMajorItem2;"/>
-					</Table>
-				</Items>
+			<LevelTable>
+				<Ship	levelFrequence="ccuv- -----"	count="1"	class="&scT31ArmedTransport;"	orders="tradeRoute"	sovereign="&svBlackMarket;">
+					<Items>
+						<Table value="standard:level=2">
+							<Lookup	chance="60"	count="1"	table="&trIllegalItems2;"/>
+							<Lookup chance="30"	count="1"	table="&trStdTreasure;"/>
+						</Table>
+					</Items>
 
-				<Escorts>
-					<Ship     count="1d4"	class="&scZulu;"	orders="escort"/>
-				</Escorts>
-			</Ship>
+					<Escorts>
+						<Ship     count="1d4"	class="&scZulu;"	orders="escort"/>
+					</Escorts>
+				</Ship>
+				<Ship	levelFrequence="-rcuv -----"	count="1"	class="&scT31ArmedTransport;"	orders="tradeRoute"	sovereign="&svBlackMarket;">
+					<Items>
+						<Table value="standard:level=3">
+							<Lookup	chance="60"	count="1"	table="&trIllegalItems2;"/>
+							<Lookup chance="30"	count="1"	table="&trStdTreasure;"/>
+						</Table>
+					</Items>
+
+					<Escorts>
+						<Ship     count="1d4"	class="&scZulu-II;"	orders="escort"/>
+					</Escorts>
+				</Ship>
+				<Ship	levelFrequence="--rcu vvvvv"	count="1"	class="&scT55ArmedTransport;"	orders="tradeRoute"	sovereign="&svBlackMarket;">
+					<Items>
+						<Table value="standard:level=3">
+							<Lookup	chance="60"	count="1"	table="&trIllegalItems3;"/>
+							<Lookup chance="30"	count="1"	table="&trStdTreasure;"/>
+						</Table>
+					</Items>
+
+					<Escorts>
+						<Ship     count="2d4"	class="&scZulu-II;"	orders="escort"/>
+					</Escorts>
+				</Ship>
+			</LevelTable>
 		</Ships>
 
 		<!-- Image and Effects
@@ -173,21 +196,7 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Table>
-				<Ship chance="50"	count="1d4"	class="&scZulu;"		orders="guard"/>
-				<Group chance="25">
-					<Ship			count="1"	class="&scZulu;"		orders="guard"/>
-					<Ship			count="1"	class="&scZulu-II;"		orders="guard"/>
-				</Group>
-				<Ship chance="20"	count="1"	class="&scOromo;"		orders="guard"/>
-				<Ship chance="5"	count="1d2"	class="&scZulu-II;"		orders="guard"/>
-			</Table>
-		</Ships>
-
-		<Encounters frequency="common">
-			<Lookup table="&tbOutlawEncounters;"/>
-		</Encounters>
+		<Squadron table="&tbOutlawDefenders;"	count="challenge:standard"	reinforce="auto"/>
 
 		<!-- Images and Effects -->
 
@@ -198,6 +207,12 @@
 				portCount=		"8"
 				portRadius=		"60"
 				/>
+
+		<!-- Random Encounters -->
+
+		<Encounters frequency="common">
+			<Lookup table="&tbOutlawEncounters;"/>
+		</Encounters>
 
 		<!-- Events and Data -->
 
@@ -272,25 +287,7 @@
 
 		<!-- Ships and Defense -->
 
-		<Ships>
-			<Table>
-				<Ship chance="20"	count="2d3"	class="&scZulu;"		orders="guard"/>
-				<Group chance="35">
-					<Ship			count="1d4"	class="&scZulu;"		orders="guard"/>
-					<Ship			count="1"	class="&scZulu-II;"		orders="guard"/>
-				</Group>
-				<Group chance="25">
-					<Ship			count="1d2"	class="&scZulu;"		orders="guard"/>
-					<Ship			count="1"	class="&scOromo;"		orders="guard"/>
-				</Group>
-				<Ship chance="10"	count="1d4"	class="&scZulu-II;"		orders="guard"/>
-				<Ship chance="10"	count="1d3"	class="&scOromo;"		orders="guard"/>
-			</Table>
-		</Ships>
-
-		<Encounters frequency="common">
-			<Lookup table="&tbOutlawEncounters;"/>
-		</Encounters>
+		<Squadron table="&tbOutlawDefenders;"	count="challenge:standard"	reinforce="auto"/>
 
 		<!-- Images and Effects -->
 
@@ -301,6 +298,13 @@
 				portCount=		"8"
 				portRadius=		"110"
 				/>
+
+		<!-- Random Encounters -->
+
+		<Encounters frequency="common">
+			<Lookup table="&tbOutlawEncounters;"/>
+		</Encounters>
+
 	</StationType>
 
 	<!-- Level 3: Outlaw Haven -->
@@ -357,51 +361,10 @@
 
 		<!-- Ships and Defense -->
 
-		<Ships>
-			<Table>
-				<Group chance="20">
-					<Ship			count="1d4"	class="&scZulu-II;"		orders="guard"/>
-					<Ship			count="1"	class="&scOromo;"		orders="guard"/>
-				</Group>
-				<Group chance="20">
-					<Ship			count="1d4"	class="&scZulu;"		orders="guard"/>
-					<Ship			count="1d2"	class="&scOromo;"		orders="guard"/>
-				</Group>
-				<Group chance="20">
-					<Ship			count="1d4"	class="&scZulu-II;"		orders="guard"/>
-					<Ship			count="1"	class="&scOromoII;"		orders="guard"/>
-				</Group>
-				<Group chance="20">
-					<Ship			count="1d2"	class="&scOromo;"		orders="guard"/>
-					<Ship			count="1d2"	class="&scOromoII;"		orders="guard"/>
-				</Group>
-				<Ship chance="10"	count="1d4"	class="&scOromo;"		orders="guard"/>
-				<Ship chance="10"	count="1d4"	class="&scOromoII;"		orders="guard"/>
-			</Table>
-
-			<Ship class="&scT31ArmedTransport;" count="1d2" orders="gateOnThreat">
-				<Items>
-					<Item chance="50"	count="6d20" item="&itSmartCannonShell;"/>
-					<Group value="standard:level=3:x=1.3">
-						<Lookup				count="1d2+1" table="&trIllegalItems2;"/>
-						<Lookup chance="50"	count="1"	table="&trStdTreasure;"/>
-					</Group>
-				</Items>
-			</Ship>
-		</Ships>
-
-		<Reinforcements minShips="6">
-			<Table>
-				<Ship chance="25"	count="1d6"	class="&scZulu;"		orders="guard"/>
-				<Ship chance="35"	count="1d3"	class="&scZulu-II;"		orders="guard"/>
-				<Ship chance="20"	count="1d2"	class="&scOromo;"		orders="guard"/>
-				<Ship chance="20"	count="1d4"	class="&scOromoII;"		orders="guard"/>
-			</Table>
-		</Reinforcements>
-
-		<Encounters frequency="common">
-			<Lookup table="&tbOutlawEncounters;"/>
-		</Encounters>
+		<Squadrons>
+			<Squadron table="&tbOutlawDefenders;"		count="challenge:standard"		reinforce="auto"/>
+			<Squadron table="&tbOutlawTransports;"		count="1d2"						reinforce="auto"/>
+		</Squadrons>
 
 		<!-- Images and Effects -->
 
@@ -412,6 +375,13 @@
 				portCount=		"8"
 				portRadius=		"115"
 				/>
+
+		<!-- Random Encounters -->
+
+		<Encounters frequency="common">
+			<Lookup table="&tbOutlawEncounters;"/>
+		</Encounters>
+
 	</StationType>
 
 <!-- SHIP CLASSES -->
@@ -890,7 +860,7 @@
 		<Devices>
 			<Device deviceID="&itSmartCannon;">
 				<Items>
-					<Item count="3d20" item="&itSmartCannonShell;"/>
+					<Item count="10d20" item="&itSmartCannonShell;"/>
 				</Items>
 			</Device>
 			<Device deviceID="&itRecoillessCannon;"/>
@@ -1078,6 +1048,50 @@
 
 <!-- TABLES -->
 
+	<ShipTable unid="&tbOutlawDefenders;">
+		<LevelTable>
+			<Ship levelFrequency="cv--- -----"	count="1"	class="&scZulu;"		orders="guard"/>
+			<Ship levelFrequency="ucv-- -----"	count="1"	class="&scZulu-II;"		orders="guard"/>
+			<Ship levelFrequency="-ucv- -----"	count="1"	class="&scOromo;"		orders="guard"/>
+			<Ship levelFrequency="--ucv -----"	count="1"	class="&scOromoII;"		orders="guard"/>
+			<Ship levelFrequency="---uc v----"	count="1"	class="&scSotho;"		orders="guard"/>
+			<Ship levelFrequency="----u cv---"	count="1"	class="&scSothoII;"		orders="guard"/>
+		</LevelTable>
+	</ShipTable>
+
+	<ShipTable unid="&tbOutlawTransports;">
+		<LevelTable>
+			<Ship levelFrequency="cccur -----" class="&scT31ArmedTransport;"	count="1" orders="gateOnThreat">
+				<Items>
+					<Group value="standard:level=3:x=1.3">
+						<Lookup				count="1d2+1" table="&trIllegalItems2;"/>
+						<Lookup chance="50"	count="1"	table="&trStdTreasure;"/>
+					</Group>
+				</Items>
+			</Ship>
+			<Ship levelFrequency="--ucu r----" class="&scT55ArmedTransport;"	count="1" orders="gateOnThreat">
+				<Items>
+					<Group value="standard:level=4:x=1.3">
+						<Lookup				count="1d2+1" table="&trIllegalItems3;"/>
+						<Lookup chance="50"	count="1"	table="&trStdTreasure;"/>
+					</Group>
+				</Items>
+			</Ship>
+			<Ship levelFrequency="---uc ur---" class="&scT55ArmedTransport;"	count="1" orders="gateOnThreat">
+				<Escorts>
+					<Ship					   count="1d4"	class="&scOromo;" orders="escort"/>
+				</Escorts>
+
+				<Items>
+					<Group value="standard:level=4:x=1.3">
+						<Lookup				count="1d2+1" table="&trIllegalItems3;"/>
+						<Lookup chance="50"	count="1"	table="&trStdTreasure;"/>
+					</Group>
+				</Items>
+			</Ship>
+		</LevelTable>
+	</ShipTable>
+
 	<ShipTable UNID="&tbOutlawEncounters;">
 		<LevelTable>
 			<Ship levelFrequency="ucv-- -----" count="1"	class="&scZulu;" eventHandler="&evStdPatrolEncounterBehavior;">
@@ -1132,7 +1146,6 @@
 			
 			<Ship levelFrequency="ccurr -----" count="1"	class="&scT31ArmedTransport;" eventHandler="&evStdConvoyEncounterBehavior;">
 				<Items>
-					<Item chance="50"		count="8d20" item="&itSmartCannonShell;"/>
 					<Lookup					count="1d2+1" table="&trIllegalItems2;"/>
 					<Table>
 						<Lookup chance="40" count="1" table="&trConsumables2;"/>
@@ -1148,7 +1161,6 @@
 
 			<Ship levelFrequency="ruccc -----" count="1"	class="&scT31ArmedTransport;" eventHandler="&evStdConvoyEncounterBehavior;">
 				<Items>
-					<Item					count="8d20" item="&itSmartCannonShell;"/>
 					<Lookup					count="1d8+1" table="&trIllegalItems2;"/>
 					<Table count="1d2">
 						<Lookup chance="40" count="1" table="&trConsumables2;"/>

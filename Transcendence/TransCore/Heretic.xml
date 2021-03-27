@@ -324,6 +324,7 @@
 			<ReplaceArmor	criteria="a L:1-10;" priceAdj="120"/>
 			<InstallDevice	criteria="d L:1-10;" priceAdj="120"/>
 			<RemoveDevice	criteria="d L:1-10;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 
 		<Items>
@@ -465,6 +466,7 @@
 			<ReplaceArmor	criteria="a L:1-10;" priceAdj="120"/>
 			<InstallDevice	criteria="d L:1-10;" priceAdj="120"/>
 			<RemoveDevice	criteria="d L:1-10;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 		
 		<Items>
@@ -1710,6 +1712,8 @@
 	-->
 
 	<SystemType UNID="&ssHeretic;" 
+			name=				"Heretic"
+			attributes=			"nonExtensible"
 			backgroundID=		"&rsLightNebulaSpace;"
 			spaceColor=			"#282a3c"
 			spaceEnvironmentTileSize=	"large"

@@ -150,8 +150,7 @@ void CWeaponTargetDefinition::WriteToStream(IWriteStream *pStream) const
 //	DWORD				flags
 
 	{
-	int iStrLength = m_CriteriaString.size();
-	Kernel::CString(m_CriteriaString.c_str()).WriteToStream(pStream);
+	m_CriteriaString.WriteToStream(pStream);
 	
 	DWORD dwSave = 0;
 	dwSave |= (m_bCheckLineOfFire ? 0x00000001 : 0);

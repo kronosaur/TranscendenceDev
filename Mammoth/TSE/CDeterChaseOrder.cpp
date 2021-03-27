@@ -66,17 +66,16 @@ void CDeterChaseOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 //	Handle behavior
 
 	{
-	if (!m_Objs[OBJ_TARGET] || !m_Objs[OBJ_BASE])
+	if (!m_Objs[OBJ_TARGET])
 		throw CException(ERR_FAIL);
 
 	//	See if it's time to stop chasing.
 
-	if (pShip->IsDestinyTime(19)) 
+	if (pShip->IsDestinyTime(19) && m_Objs[OBJ_BASE]) 
 		{
 		//	If we're too far from our base, then we're done.
 
-		if (m_Objs[OBJ_BASE] 
-				&& m_rMaxRange2 > 0.0
+		if (m_rMaxRange2 > 0.0
 				&& pShip->GetDistance2(m_Objs[OBJ_BASE]) > m_rMaxRange2)
 			{
 			pShip->CancelCurrentOrder();

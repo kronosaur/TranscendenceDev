@@ -43,6 +43,7 @@
 			<ReplaceArmor	criteria="a L:1-10;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<SellShip		criteria="s -notForSale;" priceAdj="100"/>
 			<BuyShip		criteria="s L:1-10; -notForSale;" priceAdj="80"/>
@@ -421,6 +422,8 @@
 	<!-- Point Juno System -->
 
 	<SystemType UNID="&ssPointJuno;" 
+				name=				"Point Juno"
+				attributes=			"nonExtensible"
 				backgroundID=		"&rsLightNebulaSpace;"
 				spaceColor=			"#282a3c"
 				spaceEnvironmentTileSize=	"large"
@@ -446,7 +449,7 @@
 					</Primary>
 
 					<Orbitals distance="2d6+10" angle="random">
-						<Lookup table="StargateOutbound"/>
+						<Location attributes="zhelingIOrbit"/>
 					</Orbitals>
 				</Group>
 			</Orbitals>
@@ -459,14 +462,13 @@
 						<Station type="&stDesertTerrestrialSizeH;" name="Zheling II" showOrbit="true"/>
 					</Primary>
 
-					<Orbitals distance="2d6+10" angle="random">
-						<Lookup table="StargateInbound"/>
+					<Orbitals count="2" distance="2d6+10" angle="equidistant">
+						<Location attributes="zhelingIIOrbit"/>
 					</Orbitals>
 
 					<Orbitals distance="2d8+30" angle="random">
 						<Station type="&stRockyPlanetoidSizeF;"/>
 					</Orbitals>
-
 				</Group>
 			</Orbitals>
 
@@ -478,8 +480,8 @@
 						<Station type="&stGreenhouseTerrestrialSizeI;" name="Zheling III" showOrbit="true"/>
 					</Primary>
 
-					<Orbitals distance="2d6+10" angle="random">
-						<Station type="&stAresCommune;"/>
+					<Orbitals count="2-3" distance="2d6+10" angle="equidistant">
+						<Location attributes="zhelingIIIOrbit"/>
 					</Orbitals>
 
 					<!-- Nebula at the third planetary orbit -->
@@ -500,14 +502,13 @@
 								>
 						</SpaceEnvironment>
 					</Trojan>
-
 				</Group>
 			</Orbitals>
 
 			<!-- Point Juno is near close to the orbit of Zheling III -->
 
 			<Orbitals distance="240-270" angle="255-285">
-				<Station type="&stPointJuno;"/>
+				<Location attributes="pointJunoStation" required="true"/>
 			</Orbitals>
 
 			<!-- Zheling IV is a gas giant -->
@@ -522,14 +523,14 @@
 						<Lookup table="AsteroidRing25"/>
 					</ZAdjust>
 
-					<Orbitals distance="24" angle="random">
-						<Station type="&stAresCommune;"/>
+					<Orbitals count="2-3" distance="24" angle="equidistant">
+						<Location attributes="zhelingIVOrbit" required="true"/>
 					</Orbitals>
 
 					<!-- Wreck of CSC Europa is near the gas giant -->
 
 					<Siblings angleInc="15-25">
-						<Station type="&stCSCEuropaWreck;"/>
+						<Location attributes="cscEuropaWreck" required="true"/>
 					</Siblings>
 
 					<Lookup table="AsteroidTrojans50"/>
@@ -537,7 +538,7 @@
 					<Lookup table="AsteroidAntiTrojans50"/>
 
 					<AntiTrojan>
-						<Marker objName="stagingBeta"/>
+						<Location attributes="zhelingIVAntiTrojan" required="true"/>
 					</AntiTrojan>
 
 					<!-- Nebula at the fourth planetary orbit -->
@@ -586,19 +587,69 @@
 						<Station type="&stMethaneGasGiantSizeK;" name="Zheling V" showOrbit="true"/>
 					</Primary>
 
-					<Orbitals distance="18-20" angle="random">
+					<Orbitals count="1-2" distance="2d6+18" angle="equidistant">
+						<Location attributes="zhelingVOrbit"/>
+					</Orbitals>
+
+					<!-- Moons -->
+
+					<Orbitals distance="2d8+30" angle="random">
 						<Station type="&stRockyOuterAsteroidSizeB;"/>
 					</Orbitals>
 
-					<Orbitals distance="28-32" angle="random">
+					<Orbitals distance="2d8+70" angle="random">
 						<Station type="&stRockyPlanetoidSizeE;"/>
 					</Orbitals>
 
-					<Orbitals distance="40-44" angle="random">
+					<Orbitals distance="2d7+110" angle="random">
 						<Station type="&stRockyOuterAsteroidSizeD;"/>
 					</Orbitals>
+
+					<!-- Asteroid Belt -->
+
+					<LocationAttributes attributes="zhelingVRegion">
+						<Lookup table="AsteroidIceBelt100"/>
+					</LocationAttributes>
 				</Group>
 			</Orbitals>
+
+			<!-- Place the outbound stargate at the inner world -->
+
+			<RandomLocation locationCriteria="*zhelingIOrbit">
+				<Lookup table="StargateOutbound"/>
+			</RandomLocation>
+
+			<!-- Place the inbound stargate at the second world -->
+
+			<RandomLocation locationCriteria="*zhelingIIOrbit">
+				<Lookup table="StargateInbound"/>
+			</RandomLocation>
+
+			<!-- Place Point Juno and the CSC Europa Wreck -->
+
+			<RandomLocation locationCriteria="*pointJunoStation">
+				<Station type="&stPointJuno;"/>
+			</RandomLocation>
+
+			<RandomLocation locationCriteria="*cscEuropaWreck">
+				<Station type="&stCSCEuropaWreck;"/>
+			</RandomLocation>
+
+			<!-- Place some Ares Communes -->
+
+			<RandomLocation locationCriteria="*zhelingIIIOrbit">
+				<Station type="&stAresCommune;"/>
+			</RandomLocation>
+
+			<RandomLocation locationCriteria="*zhelingIVOrbit">
+				<Station type="&stAresCommune;"/>
+			</RandomLocation>
+
+			<!-- Place the staging area -->
+
+			<RandomLocation locationCriteria="*zhelingIVAntiTrojan">
+				<Marker objName="stagingBeta"/>
+			</RandomLocation>
 
 			<!-- Create more stargates in case an extension added more links -->
 

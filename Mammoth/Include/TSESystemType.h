@@ -69,10 +69,12 @@ class CSystemType : public CDesignType
 		//	CDesignType overrides
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual void OnMarkImages (void) override;
 
 	private:
 
+		CString m_sName;					//	Name of template
 		DWORD m_dwBackgroundUNID;
 		Metric m_rSpaceScale;				//	Klicks per pixel
 		Metric m_rTimeScale;				//	Seconds of game time per real time
@@ -91,5 +93,9 @@ class CSystemType : public CDesignType
 											//		satisfy minimums.
 
 		SEventHandlerDesc m_CachedEvents[evtCount];
+
+		//	Property table
+
+		static TPropertyHandler<CSystemType> m_PropertyTable;
 	};
 

@@ -53,6 +53,84 @@ void CSpaceObject::AddTradeOrder (ETradeServiceTypes iService, const CString &sC
 	pTrade->AddOrder(iService, sCriteria, pItemType, iPriceAdj);
 	}
 
+CSpaceObject::SRefitObjCtx CSpaceObject::CalcRefitObjCtx (int iTick, int iRepairCycle) const
+
+//	CalcRefitObjCtx
+//
+//	Returns the object's ability to refit docked ships.
+
+	{
+	SRefitObjCtx Ctx;
+
+	CTradingServices Services(*this);
+	const CRegenDesc &DefaultRepair = GetDefaultShipRepair();
+	if (Services.IsEmpty() && DefaultRepair.IsEmpty())
+		return Ctx;
+
+	//	Figure out the max armor level that we repair. For now we don't handle 
+	//	the case where stations repair a subset of armor types.
+
+	Ctx.iMaxRepairLevel = Services.GetMaxLevel(serviceRepairArmor);
+
+	//	Figure out our repair rate.
+
+	CRegenDesc Repair = Services.GetArmorRepairRate(0, DefaultRepair);
+	if (iRepairCycle == 0)
+		{
+		//	iRepairCycle == 0 means that we want to repair all damage. In that
+		//	case we initialize it if and only if we repair any damage at all.
+
+		Ctx.iMaxHPToRepair = (!Repair.IsEmpty() ? -1 : 0);
+		}
+	else
+		Ctx.iMaxHPToRepair = Repair.GetRegen(iTick, iRepairCycle);
+
+	//	Conditions
+
+	Ctx.bDecontaminate = !DefaultRepair.IsEmpty() || Services.HasService(serviceDecontaminate);
+	Ctx.bScrapeOverlays = true;
+
+	//	Consumables
+
+	Ctx.bResupplyAmmo = true;
+
+	//	Done
+
+	return Ctx;
+	}
+
+bool CSpaceObject::CanRefitObj (const CSpaceObject &ShipObj, const SRefitObjCtx &Ctx, int iMinDamage) const
+
+//	CanRefitObj
+//
+//	Returns TRUE if the station can refit the ship. We return FALSE if we cannot
+//	or if the ship does not need refitting.
+
+	{
+	if (Ctx.bDecontaminate
+			&& ShipObj.GetCondition(ECondition::radioactive))
+		return true;
+
+	const CArmorSystem &Armor = ShipObj.GetArmorSystem();
+	if (Armor.GetMaxLevel() <= Ctx.iMaxRepairLevel
+			&& (Ctx.iMaxHPToRepair > 0 || Ctx.iMaxHPToRepair == -1)
+			&& ShipObj.GetVisibleDamage() > iMinDamage)
+		return true;
+
+	if (Ctx.bScrapeOverlays
+			&& ShipObj.GetCondition(ECondition::fouled))
+		return true;
+
+	if (Ctx.bResupplyAmmo)
+		{
+		CItemList ConsumablesNeeded = ShipObj.GetConsumablesNeeded(*this);
+		if (ConsumablesNeeded.GetCount())
+			return true;
+		}
+
+	return false;
+	}
+
 CurrencyValue CSpaceObject::ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue)
 
 //	ChargeMoney
@@ -93,92 +171,6 @@ CurrencyValue CSpaceObject::CreditMoney (DWORD dwEconomyUNID, CurrencyValue iVal
 		return pMoney->IncCredits(dwEconomyUNID, iValue);
 	else
 		return pMoney->GetCredits(dwEconomyUNID);
-	}
-
-bool CSpaceObject::GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason) const
-
-//	GetArmorInstallPrice
-//
-//	Returns the price to install the given armor
-
-	{
-	if (IsAbandoned())
-		return false;
-
-	//	See if we have an override
-
-	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->GetArmorInstallPrice(*this, Item, dwFlags, retiPrice))
-		return true;
-
-	//	Otherwise, ask our design type
-
-	CDesignType *pType = GetType();
-	if (pType == NULL)
-		return false;
-
-	CTradingDesc *pTrade = pType->GetTradingDesc();
-	if (pTrade && pTrade->GetArmorInstallPrice(*this, Item, dwFlags, retiPrice, retsReason))
-		return true;
-
-	//	For compatibility, any ship prior to version 23 has a default.
-	//	[For API Version 23 and above, ships must have a <Trade> descriptor.]
-
-	if (pType->GetAPIVersion() < 23
-			&& pType->GetType() == designShipClass)
-		{
-		if (retiPrice)
-			*retiPrice = CTradingDesc::CalcPriceForService(serviceReplaceArmor, this, Item, 1, dwFlags);
-
-		return true;
-		}
-
-	//	Otherwise, we do not repair
-
-	return false;
-	}
-
-bool CSpaceObject::GetArmorRepairPrice (CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice)
-
-//	GetArmorRepairPrice
-//
-//	Returns the price to repair the given number of HP for the given armor item.
-
-	{
-	if (IsAbandoned())
-		return false;
-
-	//	See if we have an override
-
-	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->GetArmorRepairPrice(*this, pSource, Item, iHPToRepair, dwFlags, retiPrice))
-		return true;
-
-	//	Otherwise, ask our design type
-
-	CDesignType *pType = GetType();
-	if (pType == NULL)
-		return false;
-
-	CTradingDesc *pTrade = pType->GetTradingDesc();
-	if (pTrade && pTrade->GetArmorRepairPrice(*this, pSource, Item, iHPToRepair, dwFlags, retiPrice))
-		return true;
-
-	//	For compatibility, any ship prior to version 23 has a default.
-	//	[For API Version 23 and above, ships must have a <Trade> descriptor.]
-
-	if (pType->GetAPIVersion() < 23
-			&& pType->GetType() == designShipClass)
-		{
-		if (retiPrice)
-			*retiPrice = CTradingDesc::CalcPriceForService(serviceRepairArmor, this, Item, iHPToRepair, dwFlags);
-
-		return true;
-		}
-
-	//	Otherwise, we do not repair
-
-	return false;
 	}
 
 CurrencyValue CSpaceObject::GetBalance (DWORD dwEconomyUNID) const
@@ -235,6 +227,62 @@ int CSpaceObject::GetBuyPrice (const CItem &Item, DWORD dwFlags, int *retiMaxCou
 	return -1;
 	}
 
+CItemList CSpaceObject::GetConsumablesNeeded (const CSpaceObject &Base) const
+
+//	GetConsumablesNeeded
+//
+//	Returns a list of consumable items that we need (e.g., ammo) and that we're 
+//	able to acquire from the base.
+
+	{
+	CItemList Needed;
+
+	const CItemList &ItemList = GetItemList();
+	for (int i = 0; i < ItemList.GetCount(); i++)
+		{
+		const CItem &Item = ItemList.GetItem(i);
+		if (!Item.IsInstalled())
+			continue;
+
+		else if (Item.IsDevice())
+			{
+			//	If this is an ammo weapon, then we see how much ammo we have.
+
+			CDeviceItem DeviceItem = Item.AsDeviceItemOrThrow();
+			auto ConsumableTypes = DeviceItem.GetConsumableTypes();
+
+			for (int i = 0; i < ConsumableTypes.GetCount(); i++)
+				{
+				int iAvail = ItemList.GetCountOf(*ConsumableTypes[i]);
+
+				//	If we have any amount of ammo, then we don't need any more
+
+				if (iAvail > 0)
+					continue;
+
+				//	For ammo, we can resupply from a station regardless of 
+				//	whether the station has any.
+
+				else if (ConsumableTypes[i]->IsAmmunition())
+					{
+					Needed.AddItem(CItem(const_cast<CItemType *>(ConsumableTypes[i]), ConsumableTypes[i]->GetNumberAppearing().GetAveValue()));
+					}
+
+				//	For missiles, we resupply only if the station has some,
+				//	and if we're high enough level.
+
+				else if (Base.GetItemList().GetCountOf(*ConsumableTypes[i])
+						&& GetLevel() >= ConsumableTypes[i]->GetLevel())
+					{
+					Needed.AddItem(CItem(const_cast<CItemType *>(ConsumableTypes[i]), ConsumableTypes[i]->GetNumberAppearing().GetAveValue()));
+					}
+				}
+			}
+		}
+
+	return Needed;
+	}
+
 const CEconomyType *CSpaceObject::GetDefaultEconomy (void) const
 
 //	GetDefaultEconomy
@@ -267,77 +315,6 @@ DWORD CSpaceObject::GetDefaultEconomyUNID (void) const
 	return DEFAULT_ECONOMY_UNID;
 	}
 
-bool CSpaceObject::GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason, DWORD *retdwPriceFlags) const
-
-//	GetDeviceInstallPrice
-//
-//	Returns the price to install the given device
-
-	{
-	//	Defaults to no reason
-
-	if (retsReason)
-		*retsReason = NULL_STR;
-
-	if (IsAbandoned())
-		return false;
-
-	//	See if we have an override
-
-	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->GetDeviceInstallPrice(*this, Item, dwFlags, retiPrice, retsReason, retdwPriceFlags))
-		return true;
-
-	//	Otherwise, ask our design type
-
-	CDesignType *pType = GetType();
-	if (pType == NULL)
-		{
-		if (retsReason)
-			*retsReason = CONSTLIT("Unknown item.");
-		return false;
-		}
-
-	CTradingDesc *pTrade = pType->GetTradingDesc();
-	if (pTrade && pTrade->GetDeviceInstallPrice(*this, Item, dwFlags, retiPrice, retsReason, retdwPriceFlags))
-		return true;
-
-	//	Otherwise, we do not install
-
-	return false;
-	}
-
-bool CSpaceObject::GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags) const
-
-//	GetDeviceRemovePrice
-//
-//	Returns the price to install the given device
-
-	{
-	if (IsAbandoned())
-		return false;
-
-	//	See if we have an override
-
-	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->GetDeviceRemovePrice(*this, Item, dwFlags, retiPrice, retdwPriceFlags))
-		return true;
-
-	//	Otherwise, ask our design type
-
-	CDesignType *pType = GetType();
-	if (pType == NULL)
-		return false;
-
-	CTradingDesc *pTrade = pType->GetTradingDesc();
-	if (pTrade && pTrade->GetDeviceRemovePrice(*this, Item, dwFlags, retiPrice, retdwPriceFlags))
-		return true;
-
-	//	Otherwise, we do not remove
-
-	return false;
-	}
-
 bool CSpaceObject::GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType **retpItemType, int *retiPrice)
 
 //	GetRefuelItemAndPrice
@@ -354,7 +331,7 @@ bool CSpaceObject::GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType 
 	//	See if we have an override
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->GetRefuelItemAndPrice(*this, pObjToRefuel, 0, retpItemType, retiPrice))
+	if (pTradeOverride && pTradeOverride->GetRefuelItemAndPrice(this, pObjToRefuel, 0, retpItemType, retiPrice))
 		return true;
 
 	//	Otherwise, ask our design type
@@ -364,7 +341,7 @@ bool CSpaceObject::GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType 
 		return false;
 
 	CTradingDesc *pTrade = pType->GetTradingDesc();
-	if (pTrade && pTrade->GetRefuelItemAndPrice(*this, pObjToRefuel, 0, retpItemType, retiPrice))
+	if (pTrade && pTrade->GetRefuelItemAndPrice(this, pObjToRefuel, 0, retpItemType, retiPrice))
 		return true;
 
 	//	For compatibility, any ship prior to version 23 has a default.
@@ -630,39 +607,6 @@ bool CSpaceObject::GetShipSellPrice (CSpaceObject *pShip, DWORD dwFlags, int *re
 	return false;
 	}
 
-int CSpaceObject::GetTradeMaxLevel (ETradeServiceTypes iService) const
-
-//	GetTradeMaxLevel
-//
-//	Returns the max tech level for this service.
-
-	{
-	int iMaxLevel = -1;
-
-	//	See if we have an override
-
-	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride)
-		{
-		int iLevel = pTradeOverride->GetMaxLevelMatched(GetUniverse(), iService);
-		if (iLevel > iMaxLevel)
-			iMaxLevel = iLevel;
-		}
-
-	//	Ask base type
-
-	CDesignType *pType = GetType();
-	CTradingDesc *pTrade = (pType ? pType->GetTradingDesc() : NULL);
-	if (pTrade)
-		{
-		int iLevel = pTrade->GetMaxLevelMatched(GetUniverse(), iService);
-		if (iLevel > iMaxLevel)
-			iMaxLevel = iLevel;
-		}
-
-	return iMaxLevel;
-	}
-
 bool CSpaceObject::HasTradeService (ETradeServiceTypes iService, const CTradingDesc::SHasServiceOptions &Options)
 
 //	HasTradeService
@@ -670,22 +614,8 @@ bool CSpaceObject::HasTradeService (ETradeServiceTypes iService, const CTradingD
 //	Returns TRUE if we provide the given service.
 
 	{
-	//	See if we have an override
-
-	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->HasService(GetUniverse(), iService, Options))
-		return true;
-
-	//	Ask base type
-
-	CDesignType *pType = GetType();
-	CTradingDesc *pTrade = (pType ? pType->GetTradingDesc() : NULL);
-	if (pTrade && pTrade->HasService(GetUniverse(), iService, Options))
-		return true;
-
-	//	No service
-
-	return false;
+	CTradingServices Services(*this);
+	return Services.HasService(iService, Options);
 	}
 
 bool CSpaceObject::HasTradeUpgradeOnly (ETradeServiceTypes iService) const
@@ -711,6 +641,111 @@ bool CSpaceObject::HasTradeUpgradeOnly (ETradeServiceTypes iService) const
 	//	No service
 
 	return false;
+	}
+
+void CSpaceObject::RefitDockedObjs (int iTick, int iRepairCycle)
+
+//	RefitDockedObjs
+//
+//	Repairs and resupplies all docked objects based on our capabilities.
+
+	{
+	const CDockingPorts *pPorts = GetDockingPorts();
+	if (!pPorts)
+		return;
+
+	SRefitObjCtx RefitCtx(CalcRefitObjCtx(iTick, iRepairCycle));
+	if (RefitCtx.bIsEmpty())
+		return;
+
+	//	Loop over all ports and repair docked ships.
+
+	for (int i = 0; i < pPorts->GetPortCount(); i++)
+		{
+		CSpaceObject *pObj = pPorts->GetObjAtPort(*this, i);
+		if (!pObj 
+				|| IsEnemy(pObj)
+				|| pObj->IsPlayer())
+			continue;
+
+		//	We restock ammo only if the same sovereign.
+
+		RefitCtx.bResupplyAmmo = (pObj->GetSovereign() == GetSovereign());
+
+		//	Refit the object
+
+		RefitObj(*pObj, RefitCtx);
+		}
+	}
+
+void CSpaceObject::RefitObj (CSpaceObject &ShipObj, const SRefitObjCtx &Ctx)
+
+//	RefitObject
+//
+//	Refits the given object (usually a ship).
+
+	{
+	//	Decontaminate, if necessary
+
+	if (Ctx.bDecontaminate)
+		ShipObj.RemoveCondition(ECondition::radioactive, SApplyConditionOptions());
+
+	//	See if we can repair the armor. If not, skip
+
+	const CArmorSystem *pArmor = ShipObj.GetArmorSystem();
+	if (pArmor 
+			&& pArmor->GetMaxLevel() <= Ctx.iMaxRepairLevel
+			&& (Ctx.iMaxHPToRepair > 0 || Ctx.iMaxHPToRepair == -1))
+		{
+		ShipObj.RepairDamage(Ctx.iMaxHPToRepair);
+		if (Ctx.bScrapeOverlays)
+			ShipObj.ScrapeOverlays();
+		}
+
+	//	Resupply ammo
+
+	if (Ctx.bResupplyAmmo)
+		{
+		CItemList ConsumablesNeeded = ShipObj.GetConsumablesNeeded(*this);
+
+		for (int i = 0; i < ConsumablesNeeded.GetCount(); i++)
+			{
+			const CItem &Consumable = ConsumablesNeeded.GetItem(i);
+			int iCountToAdd = Consumable.GetCount();
+
+			//	See how much space we have on the ship.
+
+			if (Consumable.GetMass() > 0.0)
+				{
+				Metric rCargoSpaceLeft = ShipObj.GetCargoSpaceLeft();
+				int iFit = (int)(rCargoSpaceLeft / (Consumable.GetMass()));
+				if (iFit < iCountToAdd)
+					iCountToAdd = iFit;
+				}
+
+			//	If this is ammunition, then the station doesn't need to have a
+			//	stock. Otherwise, we can't take more than the station has.
+
+			if (!Consumable.GetType()->IsAmmunition())
+				{
+				int iCountOnStation = GetItemList().GetCountOf(*Consumable.GetType());
+				if (iCountOnStation < iCountToAdd)
+					iCountToAdd = iCountOnStation;
+				}
+
+			//	Add to ship.
+
+			if (iCountToAdd > 0)
+				{
+				ShipObj.AddItem(CItem(Consumable.GetType(), iCountToAdd));
+
+				//	Remove from station
+
+				if (!Consumable.GetType()->IsAmmunition())
+					RemoveItem(CItem(Consumable.GetType(), iCountToAdd), 0);
+				}
+			}
+		}
 	}
 
 void CSpaceObject::SetTradeDesc (const CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency)

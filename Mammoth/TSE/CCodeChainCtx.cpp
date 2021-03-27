@@ -21,22 +21,7 @@ TArray<CCodeChainCtx::SInvokeFrame> CCodeChainCtx::g_Invocations;
 
 CCodeChainCtx::CCodeChainCtx (CUniverse &Universe) :
 		m_Universe(Universe),
-		m_CC(Universe.GetCC()),
-		m_iEvent(eventNone),
-		m_pScreen(NULL),
-		m_pCanvas(NULL),
-		m_pItemType(NULL),
-		m_pScreensRoot(NULL),
-		m_pSysCreateCtx(NULL),
-		m_pExtension(NULL),
-		m_pListData(NULL),
-		m_pOldData(NULL),
-		m_pOldSource(NULL),
-		m_pOldItem (NULL),
-		m_pOldOverlayID(NULL),
-		m_pOldType(NULL),
-		m_bRestoreGlobalDefineHook(false),
-		m_pOldGlobalDefineHook(NULL)
+		m_CC(Universe.GetCC())
 
 //	CCodeChainCtx constructor
 
@@ -618,6 +603,16 @@ DWORD CCodeChainCtx::GetAPIVersion (void) const
 	
 	{
 	return (m_pExtension ? m_pExtension->GetAPIVersion() : API_VERSION);
+	}
+
+void *CCodeChainCtx::GetScreen () const
+
+//	GetScreen
+//
+//	Returns wormhole to CDockScreen (may be NULL).
+
+	{
+	return m_Universe.GetDockSession().GetUI().GetDockScreen();
 	}
 
 bool CCodeChainCtx::InEvent (ECodeChainEvents iEvent)

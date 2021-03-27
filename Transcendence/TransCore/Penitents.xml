@@ -460,6 +460,7 @@
 			<Device deviceID="&itAbsolutionCannon;" secondaryWeapon="true" minFireArc="340" maxFireArc="160" posAngle="25"  posRadius="35"  posZ="25"/>
 			<Device deviceID="&itAbsolutionCannon;" secondaryWeapon="true" minFireArc="200" maxFireArc="20"	 posAngle="-25" posRadius="35"  posZ="25"/>
 			<Device deviceID="&itClass3Deflector;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="9"/>
 			<Device deviceID="&it100MWReactor;"/>
 		</Devices>
 

@@ -629,7 +629,7 @@ DWORD CFleetShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage,
 			if (GetCurrentOrder() == IShipController::orderEscort)
 				{
 				if (dwParam2 != 0xffffffff)
-					m_Orders.SetCurrentOrderDataInteger(dwParam2);
+					m_Orders.SetCurrentOrderDataInteger(LOWORD(dwParam2), HIWORD(dwParam2));
 
 				SetState(stateNone);
 				return resAck;

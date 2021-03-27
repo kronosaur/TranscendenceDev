@@ -93,6 +93,22 @@ void CItemList::DeleteItem (int iIndex)
 	m_List.Delete(iIndex);
 	}
 
+int CItemList::GetCountOf (const CItemType &Type) const
+
+//	GetCountOf
+//
+//	Returns the total number of items of the given type.
+
+	{
+	int iTotal = 0;
+
+	for (int i = 0; i < m_List.GetCount(); i++)
+		if (m_List[i]->GetType() == &Type)
+			iTotal += m_List[i]->GetCount();
+
+	return iTotal;
+	}
+
 void CItemList::ReadFromStream (SLoadCtx &Ctx)
 
 //	ReadFromStream

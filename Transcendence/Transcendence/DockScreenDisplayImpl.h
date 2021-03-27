@@ -169,6 +169,37 @@ class CDockScreenCustomList : public CDockScreenList
 		virtual ALERROR OnInitList (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError) override;
 	};
 
+class CDockScreenIconList : public IDockScreenDisplay
+	{
+	public:
+		CDockScreenIconList (CDockScreen &DockScreen) : IDockScreenDisplay(DockScreen)
+			{ }
+
+	protected:
+
+		//	IDockScreenDisplay
+
+		virtual ICCItem *OnGetCurrentListEntry (void) const override;
+		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override;
+		virtual ICCItemPtr OnGetListAsCCItem (void) const override;
+		virtual ICCItemPtr OnGetSelection () const override { return (m_pControl ? m_pControl->SaveSelection() : ICCItemPtr::Nil()); }
+		virtual CSpaceObject *OnGetSource (void) const override { return m_pSource; }
+		virtual DWORD OnGetUIFlags (void) const override { return FLAG_UI_ITEM_SELECTOR; }
+		virtual EResults OnHandleAction (DWORD dwTag, DWORD dwData) override;
+		virtual ALERROR OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError) override;
+		virtual EResults OnResetList (CSpaceObject *pLocation) override;
+		virtual void OnShowItem (void) override;
+		virtual void OnShowPane (bool bNoListNavigation) override;
+
+	private:
+		bool EvalList (CString *retsError = NULL);
+
+		ICCItemPtr m_pExp;
+		CSpaceObject *m_pSource = NULL;
+		CGIconListArea *m_pControl = NULL;
+		DWORD m_dwID = 0;
+	};
+
 class CDockScreenItemList : public CDockScreenList
 	{
 	public:
@@ -215,8 +246,9 @@ class CDockScreenSelector : public IDockScreenDisplay
 		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override;
 		virtual int OnGetListCursor (void) const override { return m_pControl->GetCursor(); }
 		virtual IListData *OnGetListData (void) const override { return m_pControl->GetList(); }
+		virtual ICCItemPtr OnGetSelection () const override { return (m_pControl ? m_pControl->SaveSelection() : ICCItemPtr::Nil()); }
 		virtual CSpaceObject *OnGetSource (void) const override { return m_pControl->GetSource(); }
-		virtual DWORD OnGetUIFlags (void) const { return FLAG_UI_ITEM_SELECTOR; }
+		virtual DWORD OnGetUIFlags (void) const override { return FLAG_UI_ITEM_SELECTOR; }
 		virtual EResults OnHandleAction (DWORD dwTag, DWORD dwData) override;
 		virtual EResults OnHandleKeyDown (int iVirtKey) override;
 		virtual ALERROR OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError) override;

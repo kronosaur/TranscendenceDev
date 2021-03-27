@@ -325,6 +325,8 @@
 				without a military ID. But we add it here for completeness. -->
 
 			<Definition id="rpg.checkMilitaryID">"* +militaryID;"</Definition>
+
+			<Definition id="rpg.checkRadioactive">True</Definition>
 		</Properties>
 
 		<!-- Hull -->
@@ -476,6 +478,7 @@
 			<ReplaceArmor	criteria="a L:1-9;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 		
 		<Items>
@@ -586,13 +589,16 @@
 					<Default descID="descInfirmary">
 						<Actions>
 							<Action id="actionTalkMedical" default="1">
-								(block Nil
+								(block (
 									; See if the player has any medical supplies
-									(setq gItem (objGetItems gPlayerShip "*U +Meds; -questItem; -notForSale;"))
+									(medicalSupplies (objGetItems gPlayerShip "*U +Meds; -questItem; -notForSale;"))
+									)
 
-									(if gItem
-										(scrShowPane gScreen "SellMedicalItems")
-										(scrShowPane gScreen "NoMedicalItems")
+									(scrSetData gScreen 'medicalSupplies medicalSupplies)
+
+									(if medicalSupplies
+										(scrShowPane gScreen 'SellMedicalItems)
+										(scrShowPane gScreen 'NoMedicalItems)
 										)
 									)
 							</Action>
@@ -619,30 +625,32 @@
 
 					<SellMedicalItems>
 						<OnPaneInit>
-							(block (medicalItem)
+							(block (
+								(medicalSupplies (scrGetData gScreen 'medicalSupplies))
+
 								; Figure out how much all the supplies cost
-								(setq gCost 0)
-								(enum gItem medicalItem
-									(setq gCost 
-										(add gCost 
-											; Offer 25% more
-											(divide (multiply 125 (itmGetPrice medicalItem 'credit) (itmGetCount medicalItem)) 100)
-											)
-										)
-									)
+
+								(totalCost (map medicalSupplies 'reduceSum theItem
+									; Offer 25% more
+									(divide (multiply 125 (itmGetPrice theItem 'credit) (itmGetCount theItem)) 100)
+									))
+								)
+								(scrSetData gScreen 'totalCost totalCost)
 
 								; Set the description
-								(if (eq (count gItem) 1)
+
+								(if (= (count medicalSupplies) 1)
+
 									; Only one item
 									(scrSetDescTranslate gScreen 'descOffer {
-										cost: (fmtCurrency 'credit gCost)
-										itemName: (itmGetName (item gItem 0) 'countOnly)
+										cost: (fmtCurrency 'credit totalCost)
+										itemName: (itmGetName (item medicalSupplies 0) 'countOnly)
 										})
 
 									; Multiple items
 									(scrSetDescTranslate gScreen 'descOfferMultiple {
-										cost: (fmtCurrency 'credit gCost)
-										itemListDesc: (strItemList gItem 'count)
+										cost: (fmtCurrency 'credit totalCost)
+										itemListDesc: (strItemList medicalSupplies 'count)
 										})
 									)
 								)
@@ -650,37 +658,43 @@
 
 						<Actions>
 							<Action id="actionSellItems" default="1">
-								(block (medicalItem)
+								(block (
+									(medicalSupplies (scrGetData gScreen 'medicalSupplies))
+									(totalCost (scrGetData gScreen 'totalCost))
+									)
 									; Remove the items from the cargo hold
-									(enum gItem medicalItem
-										(block Nil
-											(objRemoveItem gPlayerShip medicalItem)
-											(plyRecordSellItem gPlayer medicalItem 
-												(divide (multiply 125 (itmGetPrice medicalItem 'credit) (itmGetCount medicalItem)) 100)
+									(enum medicalSupplies theItem
+										(block ()
+											(objRemoveItem gPlayerShip theItem)
+											(plyRecordSellItem gPlayer theItem
+												(divide (multiply 125 (itmGetPrice theItem 'credit) (itmGetCount theItem)) 100)
 												)
 											)
 										)
 
 									; Pay the player
-									(plyCredit gPlayer gCost)
+									(plyCredit gPlayer totalCost)
 
 									; Done
-									(scrShowPane gScreen "DoneSelling")
+									(scrShowPane gScreen 'DoneSelling)
 									)
 							</Action>
 
 							<Action id="actionDonate">
-								(block (medicalItems)
+								(block (
+									(medicalSupplies (scrGetData gScreen 'medicalSupplies))
+									(totalCost (scrGetData gScreen 'totalCost))
+									)
 									; Remove the items from the cargo hold
-									(enum gItem medicalItem
-										(objRemoveItem gPlayerShip medicalItem)
+									(enum medicalSupplies theItem
+										(objRemoveItem gPlayerShip theItem)
 										)
 										
 									; Keep track of how much we donate
-									(typIncGlobalData &svCommonwealthFleet; "medsDonated" gCost)
+									(typIncGlobalData &svCommonwealthFleet; 'medsDonated totalCost)
 
 									; Player gets a gift depending on how much she donated
-									(scrShowPane gScreen "Donate")
+									(scrShowPane gScreen 'Donate)
 									)
 							</Action>
 
@@ -700,16 +714,22 @@
 
 					<Donate>
 						<OnPaneInit>
-							(block (gift giftTable fleetXP xpGain maxGain)
+							(block (
+								(totalCost (scrGetData gScreen 'totalCost))
+
 								; Get the gift table
-								(setq giftTable (objGetStaticData gSource 'csc.giftTable))
+								(giftTable (objGetStaticData gSource 'csc.giftTable))
+
+								gift fleetXP xpGain maxGain
+								)
 
 								; Find the appropriate gift based on the donation. The donation amount
 								; must be greater than the minimum for the gift and the gift must have
 								; not been given before (or the gift must not be unique).
+
 								(setq gift Nil)
 								(enumwhile giftTable (not gift) thisEntry
-									(if (and (geq gCost (item thisEntry 0))
+									(if (and (geq totalCost (item thisEntry 0))
 											(or (not (item thisEntry 3)) (not (objGetData gSource (item thisEntry 3))))
 											)
 										(block Nil
@@ -746,7 +766,7 @@
 
 								; Player gains experience at the rate of 1 xp per 10 credits
 								; up to a maximum
-								(setq xpGain (divide gCost 10))
+								(setq xpGain (divide totalCost 10))
 								(if (gr xpGain maxGain)
 									(setq xpGain maxGain)
 									)
@@ -909,6 +929,7 @@
 			<ReplaceArmor	criteria="a L:1-10;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 
 		<Items>
@@ -1367,6 +1388,25 @@
 		</Events>
 
 		<Language>
+			<Text id="core.deconDesc">
+
+				The dockmaster automatically charges you %cost% for 
+				decontaminating your ship.
+
+			</Text>
+			<Text id="core.deconFree">
+
+				The dockmaster decontaminates your ship for free.
+			
+			</Text>
+			<Text id="core.cannotAffordDecon">
+
+				The dockmaster stops your ship due to high radiation levels. 
+				
+				"Sorry, you cannot afford %cost% for decontamination."
+
+			</Text>
+
 			<Text id="csc.info">
 				(list
 					{	id: 'welcome

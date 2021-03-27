@@ -404,6 +404,7 @@
     <ClCompile Include="CDockScreenCustomItemList.cpp" />
     <ClCompile Include="CDockScreenCustomList.cpp" />
     <ClCompile Include="CDockScreenDetailsPane.cpp" />
+    <ClCompile Include="CDockScreenIconList.cpp" />
     <ClCompile Include="CDockScreenItemList.cpp" />
     <ClCompile Include="CDockScreenLayout.cpp" />
     <ClCompile Include="CDockScreenList.cpp" />
@@ -413,6 +414,7 @@
     <ClCompile Include="CGameSession.cpp" />
     <ClCompile Include="CGCarouselArea.cpp" />
     <ClCompile Include="CGDetailsArea.cpp" />
+    <ClCompile Include="CGIconListArea.cpp" />
     <ClCompile Include="CGItemDisplayArea.cpp" />
     <ClCompile Include="CGItemListDisplayArea.cpp" />
     <ClCompile Include="CGSelectorArea.cpp" />

@@ -307,6 +307,7 @@
     <ClInclude Include="..\Include\TSESovereign.h" />
     <ClInclude Include="..\Include\TSESpaceEnvironment.h" />
     <ClInclude Include="..\Include\TSESpaceObjectsEnum.h" />
+    <ClInclude Include="..\Include\TSEStationImpl.h" />
     <ClInclude Include="..\Include\TSEStationType.h" />
     <ClInclude Include="..\Include\TSESystem.h" />
     <ClInclude Include="..\Include\TSESystemCreate.h" />
@@ -498,6 +499,7 @@
     <ClCompile Include="CIntegralRotation.cpp" />
     <ClCompile Include="COverlayUndergroundDesc.cpp" />
     <ClCompile Include="CPaintOrder.cpp" />
+    <ClCompile Include="CPatrolOrder.cpp" />
     <ClCompile Include="CPerceptionCalc.cpp" />
     <ClCompile Include="CPerformanceCounters.cpp" />
     <ClCompile Include="CPhysicsContact.cpp" />
@@ -505,6 +507,7 @@
     <ClCompile Include="CPhysicsForceResolver.cpp" />
     <ClCompile Include="CPlayerGameStats.cpp" />
     <ClCompile Include="CPowerConsumption.cpp" />
+    <ClCompile Include="CProgramDesc.cpp" />
     <ClCompile Include="CPropertyCompare.cpp" />
     <ClCompile Include="CRandomEncounterDesc.cpp" />
     <ClCompile Include="CRandomEncounterObjTable.cpp" />
@@ -582,6 +585,11 @@
     <ClCompile Include="CSpaceObjectProperties.cpp" />
     <ClCompile Include="CSpaceObjectTrade.cpp" />
     <ClCompile Include="CSphericalTextureMapper.cpp" />
+    <ClCompile Include="CSquadronCommunications.cpp" />
+    <ClCompile Include="CSquadronController.cpp" />
+    <ClCompile Include="CSquadronDesc.cpp" />
+    <ClCompile Include="CSquadronDescList.cpp" />
+    <ClCompile Include="CSquadronID.cpp" />
     <ClCompile Include="CStarDesc.cpp" />
     <ClCompile Include="CStargateDesc.cpp" />
     <ClCompile Include="CStationCreateOptions.cpp" />
@@ -592,6 +600,7 @@
     <ClCompile Include="CStationHull.cpp" />
     <ClCompile Include="CStationHullDesc.cpp" />
     <ClCompile Include="CStationTableCache.cpp" />
+    <ClCompile Include="CStatusBarPainter.cpp" />
     <ClCompile Include="CSystemMapThumbnails.cpp" />
     <ClCompile Include="CSystemSpacePainter.cpp" />
     <ClCompile Include="CSystemEventList.cpp" />
@@ -605,6 +614,7 @@
     <ClCompile Include="CTradingComputer.cpp" />
     <ClCompile Include="CTradingDesc.cpp" />
     <ClCompile Include="CTradingEconomy.cpp" />
+    <ClCompile Include="CTradingServices.cpp" />
     <ClCompile Include="CTreePathStagateGenerator.cpp" />
     <ClCompile Include="CUniverse.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
@@ -673,6 +683,7 @@
     <ClCompile Include="MissionProperties.cpp" />
     <ClCompile Include="ObjectImageProperties.cpp" />
     <ClCompile Include="PowerProperties.cpp" />
+    <ClCompile Include="RepairerClassProperties.cpp" />
     <ClCompile Include="SDamageCtx.cpp" />
     <ClCompile Include="SFXDisintegrate.cpp" />
     <ClCompile Include="SFXGlow.cpp" />
@@ -680,11 +691,15 @@
     <ClCompile Include="SFXOrb.cpp" />
     <ClCompile Include="SFXParticleSystem.cpp" />
     <ClCompile Include="SFXRay.cpp" />
+    <ClCompile Include="ShipClassProperties.cpp" />
+    <ClCompile Include="ShipProperties.cpp" />
     <ClCompile Include="ShipUpdate.cpp" />
     <ClCompile Include="CPhysicsForceDesc.cpp" />
+    <ClCompile Include="SovereignProperties.cpp" />
     <ClCompile Include="SpaceObjectItemProperties.cpp" />
     <ClCompile Include="SUpdateCtx.cpp" />
     <ClCompile Include="SystemProperties.cpp" />
+    <ClCompile Include="SystemTypeProperties.cpp" />
     <ClCompile Include="XMLLoader.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>

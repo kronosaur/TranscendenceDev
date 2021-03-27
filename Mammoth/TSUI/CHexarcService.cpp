@@ -123,7 +123,7 @@
 
 //	NOTE: We keep the actual private key in HexarcKeys.h.
 
-#ifndef HEXARC_SANDBOX
+#ifdef HEXARC_SANDBOX
 
 const int KEY_SIZE = 64;
 

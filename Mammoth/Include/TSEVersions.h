@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							51;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					197;
+constexpr DWORD SYSTEM_SAVE_VERSION =					201;
 
 //	Uncomment out the following define when building a stable release
 
@@ -132,7 +132,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					197;
 //		m_iCountdown in CStandardShipAI
 //
 //	 5: 0.97
-//		m_iStealth in CShip
+//		m_iStealthFromArmor in CShip
 //
 //	 6-14: 0.98
 //		m_Blacklist in CBaseShipAI
@@ -714,3 +714,15 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					197;
 //	197: 1.9 Beta 4
 //		Add fields to CAISettings
 //		Add m_DeterModule to CBaseShipAI
+//
+//	198: 1.9 Beta 4
+//		Remove m_iStealth from CShip
+//
+//	199: 1.9 Beta 4
+//		Added m_SquadronID for CShip
+//
+//	200: 1.9 Beta 4
+//		Changed CIntegralRotationDesc::ROTATION_FRACTION
+//
+//	201: 1.9 Beta 4
+//		Added m_iInstalledIndex to CItem::SExtra

@@ -86,7 +86,7 @@
 							(lambda ()
 								(block (
 									(allDests
-										(map (sysFindObject gPlayerShip "TE -questTarget; -uncharted; | T +shipwreck; -questTarget; -uncharted;") 'excludeNil theObj
+										(map (sysFindObject gPlayerShip "TE -property:questTarget; -uncharted; | T +shipwreck; -questTarget; -uncharted;") 'excludeNil theObj
 											(block (
 												(all (objGetItems theObj "dUN"))
 												(bestItem (map all '(reduceMax original) theItem
@@ -140,7 +140,7 @@
 									)
 									(if (and (= (sysGetNode) 'SE)
 											(setq targetObj 
-												(random (sysFindObject gPlayerShip "TAN +centauriWarlords; +populated; -occupation; -questTarget; -uncharted;"))
+												(random (sysFindObject gPlayerShip "TAN +centauriWarlords; +populated; -occupation; -property:questTarget; -uncharted;"))
 												)
 											)
 										{

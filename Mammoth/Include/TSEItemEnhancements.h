@@ -58,6 +58,9 @@ enum ItemEnhancementTypes
 												//		B = max level (0 = all levels)
 	etMissileDefense =					0x1c00,	//	weapon gains missile defense
 	etNoAmmo =							0x1d00,	//	Non-launcher Weapon no longer requires ammo
+	etCyberDefense =					0x1e00,	//	Bonus to cyberdefense (A = increase)
+	etStealth =							0x1f00,	//	Bonus to stealth (A = increase)
+	etPerception =						0x2000,	//	Bonus to perception (A = increate)
 
 	etData1Mask =						0x000f,	//	4-bits of data (generally for damage adj)
 	etData2Mask =						0x00f0,	//	4-bits of data (generally for damage type)
@@ -125,6 +128,7 @@ class CItemEnhancement
 		EnhanceItemStatus Combine (const CItem &Item, const CItemEnhancement &Enhancement);
 		int GetAbsorbAdj (const DamageDesc &Damage) const;
 		int GetActivateRateAdj (int *retiMinDelay = NULL, int *retiMaxDelay = NULL) const;
+		int GetCyberDefenseAdj () const;
 		int GetDamageAdj (void) const;
 		int GetDamageAdj (const DamageDesc &Damage) const;
 		DamageTypes GetDamageType (void) const;
@@ -144,6 +148,7 @@ class CItemEnhancement
 		DWORD GetLinkedFireOptions (void) const;
 		int GetManeuverRate (void) const;
 		DWORD GetModCode (void) const { return m_dwMods; }
+		int GetPerceptionAdj () const;
 		int GetPowerAdj (void) const;
 		int GetReflectChance (DamageTypes iDamage) const;
 		Metric GetRegen180 (CItemCtx &Ctx, int iTicksPerUpdate) const;
@@ -151,6 +156,7 @@ class CItemEnhancement
 		int GetResistHPBonus (void) const;
 		int GetResistMatterAdj (void) const { return (GetType() == etResistMatter ? Level2DamageAdj(GetLevel(), IsDisadvantage()) : 100); }
 		SpecialDamageTypes GetSpecialDamage (int *retiLevel = NULL) const;
+		int GetStealthAdj () const;
 		ItemEnhancementTypes GetType (void) const { return (ItemEnhancementTypes)(m_dwMods & etTypeMask); }
 		int GetValueAdj (const CItem &Item) const;
 		bool HasCustomDamageAdj (void) const;
@@ -256,17 +262,20 @@ class CItemEnhancementStack
 		int GetActivateDelayAdj (void) const;
 		int GetBonus (void) const;
 		int GetCount (void) const { return m_Stack.GetCount(); }
+		int GetCyberDefenseAdj () const;
 		const DamageDesc &GetDamage (void) const;
 		int GetDamageAdj (const DamageDesc &Damage) const;
 		const CItemEnhancement &GetEnhancement (int iIndex) const { return m_Stack[iIndex]; }
 		int GetFireArc (void) const;
 		DWORD GetLinkedFireOptions (void) const;
 		int GetManeuverRate (void) const;
+		int GetPerceptionAdj () const;
 		int GetPowerAdj (void) const;
 		int GetResistDamageAdj (DamageTypes iDamage) const;
 		int GetResistEnergyAdj (void) const;
 		int GetResistMatterAdj (void) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial) const;
+		int GetStealthAdj () const;
 		bool HasSpecialDamage (SpecialDamageTypes iSpecial) const;
 		void Insert (const CItemEnhancement &Mods);
 		void InsertActivateAdj (CItemType *pEnhancerType, int iAdj, int iMin, int iMax);

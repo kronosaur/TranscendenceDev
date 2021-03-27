@@ -1427,6 +1427,7 @@
 			<ReplaceArmor	criteria="a L:1-8;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-6" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-6;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 		
 		<Items>
@@ -1874,6 +1875,7 @@
 			<Refuel			criteria="f +BasicFuel; L:1-7;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-8;" priceAdj="100"/>
 			<ReplaceArmor	criteria="a L:1-8;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 
 		<Items>
@@ -3192,6 +3194,7 @@
 			<Device deviceID="&itRasiermesserLauncher;" secondaryWeapon="true" minFireArc="340" maxFireArc="200"	posAngle="110" posRadius="60" posZ="0"/>
 			<Device deviceID="&itRasiermesserLauncher;" secondaryWeapon="true" minFireArc="160" maxFireArc="20"		posAngle="250" posRadius="60" posZ="0"/>
 			<Device deviceID="&itPlasmaShieldGenerator;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="9"/>
 		</Devices>
 
 		<Maneuver
@@ -3880,6 +3883,7 @@
 			<ReplaceArmor	criteria="a L:1-9;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-8;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-8;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 		
 		<StaticData>
@@ -4374,6 +4378,7 @@
 			<ReplaceArmor	criteria="a L:1-10;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 
 		<DockScreens>
@@ -5098,6 +5103,10 @@
 			ejectaType=			"&vtWreckEjecta;"
 			>
 		
+		<Trade currency="credit">
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+		</Trade>
+		
 		<!-- Ships and Defenses -->
 
 		<Ships>
@@ -5518,6 +5527,7 @@
 
 		<Properties>
 			<Constant		id="rpg.checkMilitaryID">"* +militaryID;"</Constant>
+			<Constant		id="rpg.checkRadioactive">True</Constant>
 			<Constant		id="rpg.showActualItem">True</Constant>
 			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
 			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
@@ -5553,6 +5563,7 @@
 			<ReplaceArmor	criteria="a L:1-7;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-7;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-7;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<SellShip		criteria="s -notForSale;" priceAdj="100"/>
 			<BuyShip		criteria="s L:1-10; -notForSale;" priceAdj="80"/>
@@ -6777,6 +6788,84 @@
 				imageFrameCount="16"
 				imageTicksPerFrame="2"/>
 	</Effect>
+
+	<!-- Fleet Decontamination -->
+
+	<DockScreen UNID="&dsFleetDecon;"	
+			obsoleteVersion="52"
+			nestedScreen="true"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block Nil
+						(scrSetDesc gScreen "The dockmaster decontaminates your ship before you are allowed to exit the airlock.")
+						(shpDecontaminate gPlayerShip)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Continue" default="1" cancel="1" key="C">
+						(scrExitScreen gScreen (shpIsRadioactive gPlayerShip))
+					</Action>
+				</Actions>
+
+			</Default>
+		</Panes>
+	</DockScreen>
+
+	<!-- Commonwealth Decontamination -->
+
+	<DockScreen UNID="&dsCommonwealthDecon;"
+			obsoleteVersion="52"
+			nestedScreen=	"true"
+			inherit=		"&dsDockScreenBase;"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(currencyUsed (objGetProperty gSource 'currency))
+						(cost (ecoExchange 250 'credit currencyUsed))
+						)
+						(if (geq (objGetBalance gPlayerShip currencyUsed) cost)
+							(block Nil
+								(scrSetDescTranslate gScreen 'customs.chargedForDecon { cost:(fmtCurrency currencyUsed cost) })
+								(objCharge gPlayerShip currencyUsed cost)
+								(shpDecontaminate gPlayerShip)
+								)
+							(scrSetDescTranslate gScreen 'customs.cantAffordDecon { cost:(fmtCurrency currencyUsed cost) })
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						; If the ship is still radioactive, force undock.
+						; Otherwise, we just exit the screen and go back to the default screen
+						
+						(scrExitScreen gScreen (shpIsRadioactive gPlayerShip))
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		
+		<Language>
+			<Text id="customs.chargedForDecon">
+
+				Commonwealth Customs stops your ship for decontamination. You 
+				are automatically charged %cost% for decontaminating your ship.
+
+			</Text>
+			<Text id="customs.cantAffordDecon">
+
+				Commonwealth Customs stops your ship for decontamination.
+				Unfortunately, you do not have %cost% to pay for 
+				decontamination.
+
+			</Text>
+		</Language>
+	</DockScreen>
 
 	<!-- Old Image -->
 

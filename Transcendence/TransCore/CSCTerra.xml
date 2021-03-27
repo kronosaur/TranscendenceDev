@@ -58,6 +58,7 @@
 			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
 			<InstallDevice	criteria="d +unid:&itLamplighter;;" priceAdj="100"/>
 			<RemoveDevice	criteria="d +unid:&itLamplighter;;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 
 		<Items>

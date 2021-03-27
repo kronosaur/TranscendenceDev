@@ -1060,8 +1060,14 @@ ALERROR CExtensionCollection::ComputeFilesToLoad (const CString &sFilespec, CExt
 
 		//	If this is a module, then skip it
 
-		CString sDOCTYPERootTag = ExtDb.GetRootTag();
-		if (strEquals(sDOCTYPERootTag, TRANSCENDENCE_MODULE_TAG))
+		CString sError;
+		CString sDOCTYPERootTag = ExtDb.GetRootTag(&sError);
+		if (sDOCTYPERootTag.IsBlank())
+			{
+			*retsError = strPatternSubst(CONSTLIT("%s: %s"), sFilepath, sError);
+			return ERR_FAIL;
+			}
+		else if (strEquals(sDOCTYPERootTag, TRANSCENDENCE_MODULE_TAG))
 			continue;
 		else if (!strEquals(sDOCTYPERootTag, TRANSCENDENCE_EXTENSION_TAG)
 				&& !strEquals(sDOCTYPERootTag, TRANSCENDENCE_ADVENTURE_TAG)

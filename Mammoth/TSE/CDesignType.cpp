@@ -94,6 +94,7 @@
 #define SPECIAL_EXTENSION						CONSTLIT("extension:")
 #define SPECIAL_INHERIT							CONSTLIT("inherit:")
 #define SPECIAL_PROPERTY						CONSTLIT("property:")
+#define SPECIAL_SERVICE							CONSTLIT("service:")
 #define SPECIAL_SYSTEM_LEVEL					CONSTLIT("systemLevel:")
 #define SPECIAL_UNID							CONSTLIT("unid:")
 
@@ -104,6 +105,7 @@
 #define PROPERTY_DEFAULT_CURRENCY_EXCHANGE		CONSTLIT("defaultCurrencyExchange")
 #define PROPERTY_EXTENSION						CONSTLIT("extension")
 #define PROPERTY_GLOBAL_DATA					CONSTLIT("globalData")
+#define PROPERTY_INHERIT_FROM					CONSTLIT("inheritFrom")
 #define PROPERTY_MAP_DESCRIPTION				CONSTLIT("mapDescription")
 #define PROPERTY_MAX_BALANCE					CONSTLIT("maxBalance")
 #define PROPERTY_MERGED							CONSTLIT("merged")
@@ -532,6 +534,14 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 		{
 		if (m_pExtra)
 			return m_pExtra->GlobalData.GetDataAsItem(CONSTLIT("*"))->Reference();
+		else
+			return CC.CreateNil();
+		}
+
+	else if (strEquals(sProperty, PROPERTY_INHERIT_FROM))
+		{
+		if (m_pInheritFrom)
+			return CC.CreateInteger(m_pInheritFrom->GetUNID());
 		else
 			return CC.CreateNil();
 		}
@@ -1183,7 +1193,7 @@ ICCItemPtr CDesignType::FireObjItemCustomEvent (const CString &sEvent, CSpaceObj
 		}
 	}
 
-ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, void *pScreen, DWORD dwScreenUNID, const CString &sScreen, const CString &sScreenName, const CString &sPane, ICCItem *pData, CString *retsError)
+ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, DWORD dwScreenUNID, const CString &sScreen, const CString &sScreenName, const CString &sPane, ICCItem *pData, CString *retsError)
 
 //	FireOnGlobalDockPaneInit
 //
@@ -1196,7 +1206,6 @@ ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, v
 
 	//	Set up
 
-	Ctx.SetScreen(pScreen);
 	Ctx.DefineInteger(CONSTLIT("aType"), dwScreenUNID);
 	Ctx.DefineInteger(CONSTLIT("aScreenUNID"), dwScreenUNID);
 	Ctx.DefineString(CONSTLIT("aScreen"), sScreen);
@@ -1978,6 +1987,21 @@ TSortMap<DWORD, DWORD> CDesignType::GetXMLMergeFlags (void) const
 	return MergeFlags;
 	}
 
+CString CDesignType::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) const
+
+//	GetNamePattern
+//
+//	Default implementation
+
+	{
+	CCodeChainCtx CCX(GetUniverse());
+	
+	if (retdwFlags)
+		*retdwFlags = 0;
+
+	return GetProperty(CCX, CONSTLIT("name"))->GetStringValue();
+	}
+
 CString CDesignType::GetNounPhrase (DWORD dwFlags) const
 
 //  GetNounPhrase
@@ -2534,6 +2558,16 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 
 		ICCItemPtr pValue = GetProperty(CCX, Compare.GetProperty());
 		return Compare.Eval(pValue);
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_SERVICE))
+		{
+		CString sValue = strSubString(sAttrib, SPECIAL_SERVICE.GetLength());
+		ETradeServiceTypes iService = CTradingDesc::ParseService(sValue);
+		if (iService == serviceNone)
+			return false;
+
+		CTradingServices Services(*this);
+		return Services.HasService(iService);
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_SYSTEM_LEVEL))
 		{

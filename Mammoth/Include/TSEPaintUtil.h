@@ -165,6 +165,38 @@ class CRTFText
 		mutable int m_cxFormatted = -1;
 	};
 
+class CStatusBarPainter
+	{
+	public:
+		static constexpr int DEFAULT_BAR_HEIGHT = 15;
+		static constexpr int DEFAULT_BAR_WIDTH = 100;
+
+		CStatusBarPainter (CUniverse &Universe) : 
+				m_Universe(Universe)
+			{ }
+
+		struct SOptions
+			{
+			int iMaxStatus = 100;
+			int cxBar = DEFAULT_BAR_WIDTH;
+			int cyBar = DEFAULT_BAR_HEIGHT;
+			BYTE byFillOpacity = 128;
+			BYTE byOutlineOpacity = 220;
+			const CG16bitFont *pLabelFont = NULL;
+			};
+
+		int GetHeight () const { return m_Options.cyBar; }
+		void Init (int iStatus, const CString &sLabel, CG32bitPixel rgbColor, const SOptions &Options);
+		void Paint (CG32bitImage &Dest, int x, int y) const;
+
+	private:
+		CUniverse &m_Universe;
+		int m_iStatus = 0;
+		CString m_sLabel;
+		CG32bitPixel m_rgbColor = CG32bitPixel(255, 255, 255);
+		SOptions m_Options;
+	};
+
 class CVolumetricShadowPainter
 	{
 	public:

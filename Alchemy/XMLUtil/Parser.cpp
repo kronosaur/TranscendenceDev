@@ -1438,7 +1438,7 @@ ALERROR CXMLElement::ParseRootElement (IReadBlock *pStream, CXMLElement **retpRo
 	return ParseXML(*pStream, Options, retpRoot, retsError);
 	}
 
-ALERROR CXMLElement::ParseRootTag (IReadBlock *pStream, CString *retsTag)
+ALERROR CXMLElement::ParseRootTag (IReadBlock *pStream, CString *retsTag, CString *retsError)
 
 //	ParseRootTag
 //
@@ -1454,7 +1454,10 @@ ALERROR CXMLElement::ParseRootTag (IReadBlock *pStream, CString *retsTag)
 	//	Open the stream
 
 	if (error = pStream->Open())
+		{
+		if (retsError) *retsError = CONSTLIT("Unable to open stream.");
 		return error;
+		}
 
 	//	Initialize context
 
@@ -1466,6 +1469,7 @@ ALERROR CXMLElement::ParseRootTag (IReadBlock *pStream, CString *retsTag)
 	if (error = ParsePrologue(&Ctx))
 		{
 		pStream->Close();
+		if (retsError) *retsError = Ctx.sError;
 		return error;
 		}
 
@@ -1481,6 +1485,7 @@ ALERROR CXMLElement::ParseRootTag (IReadBlock *pStream, CString *retsTag)
 	if (Ctx.iToken != tkTagOpen)
 		{
 		pStream->Close();
+		if (retsError) *retsError = CONSTLIT("Expected element open tag.");
 		return ERR_FAIL;
 		}
 
@@ -1489,6 +1494,7 @@ ALERROR CXMLElement::ParseRootTag (IReadBlock *pStream, CString *retsTag)
 	if (ParseToken(&Ctx) != tkText)
 		{
 		pStream->Close();
+		if (retsError) *retsError = CONSTLIT("Expected element name.");
 		return ERR_FAIL;
 		}
 

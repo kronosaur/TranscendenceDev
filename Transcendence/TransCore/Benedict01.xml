@@ -83,8 +83,8 @@
 					;	Find an enemy station to attack
 
 					(hiddenObj 
-						(or (sysFindObject sourceObj "TAN +enemy; +property:challengeRating[6]; -questTarget;")
-							(sysFindObject sourceObj "TAN +enemy; +property:challengeRating[7]; -questTarget;")
+						(or (sysFindObject sourceObj "TAN +enemy; +property:challengeRating[6]; -property:questTarget;")
+							(sysFindObject sourceObj "TAN +enemy; +property:challengeRating[7]; -property:questTarget;")
 							)
 						)
 					)

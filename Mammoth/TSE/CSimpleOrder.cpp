@@ -14,10 +14,17 @@ void CSimpleOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	{
 	DEBUG_TRY
 
+	if (!pShip)
+		throw CException(ERR_FAIL);
+
 	switch (m_iOrder)
 		{
 		case IShipController::orderFireWeapon:
 			OrderFireWeapon(pShip, Ctx);
+			break;
+
+		case IShipController::orderResupply:
+			OrderResupply(*pShip, Ctx);
 			break;
 
 		case IShipController::orderUseItem:
@@ -81,6 +88,33 @@ void CSimpleOrder::OrderFireWeapon (CShip *pShip, CAIBehaviorCtx &Ctx) const
 	//	Done
 
 	pShip->CancelCurrentOrder();
+	}
+
+void CSimpleOrder::OrderResupply (CShip &Ship, CAIBehaviorCtx &Ctx) const
+
+//	OrderResupply
+//
+//	Resupply from the object we're currently docked at.
+
+	{
+	CSpaceObject *pSupplier = Ship.GetDockedObj();
+	if (!pSupplier || pSupplier->IsDestroyed() || pSupplier->IsAbandoned())
+		{
+		Ship.CancelCurrentOrder();
+		return;
+		}
+
+	//	Refit the ship
+
+	CSpaceObject::SRefitObjCtx RefitCtx(pSupplier->CalcRefitObjCtx(0, 0));
+
+	//	Do it.
+
+	pSupplier->RefitObj(Ship, RefitCtx);
+
+	//	Success!
+
+	Ship.CancelCurrentOrder();
 	}
 
 void CSimpleOrder::OrderUseItem (CShip *pShip, CAIBehaviorCtx &Ctx) const

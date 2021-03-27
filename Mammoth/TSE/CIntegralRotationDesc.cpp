@@ -10,17 +10,6 @@ const Metric MAX_INERTIA_RATIO =				9.0;
 
 CIntegralRotationDesc::SFacingsData CIntegralRotationDesc::m_FacingsData[360 + 1];
 
-CIntegralRotationDesc::CIntegralRotationDesc (void) :
-        m_iCount(20),
-        m_iMaxRotationRate(0),
-        m_iRotationAccel(0),
-        m_iRotationAccelStop(0)
-
-//  CIntegralRotationDesc constructor
-
-    {
-    }
-
 int CIntegralRotationDesc::CalcFinalRotationFrame (int iRotationFrame, int iRotationSpeed) const
 
 //	CalcFinalRotationFrame
@@ -29,6 +18,9 @@ int CIntegralRotationDesc::CalcFinalRotationFrame (int iRotationFrame, int iRota
 //	thrusting and turned on inertia only.
 
 	{
+	if (m_iCount == 0)
+		return iRotationFrame;
+
 	while (iRotationSpeed > m_iRotationAccelStop || iRotationSpeed < -m_iRotationAccelStop)
 		{
 		if (iRotationSpeed > 0)
@@ -80,7 +72,7 @@ void CIntegralRotationDesc::Init (int iFrameCount, Metric rMaxRotation, Metric r
 //	Initialize from constants
 
 	{
-    m_iCount = iFrameCount;
+	m_iCount = iFrameCount;
 	m_iMaxRotationRate = Max(1, mathRound(ROTATION_FRACTION * rMaxRotation * m_iCount / 360.0));
 	m_iRotationAccel = Max(1, mathRound(ROTATION_FRACTION * rAccel * m_iCount / 360.0));
 	m_iRotationAccelStop = Max(1, mathRound(ROTATION_FRACTION * rAccelStop * m_iCount / 360.0));
@@ -123,6 +115,6 @@ void CIntegralRotationDesc::InitFromDesc (const CRotationDesc &Desc)
 //
 //  Initialize from a descriptor (which uses double precision)
 
-    {
+	{
 	Init(Desc.GetFrameCount(), Desc.GetMaxRotationPerTick(), Desc.GetRotationAccelPerTick(), Desc.GetRotationAccelStopPerTick());
-    }
+	}

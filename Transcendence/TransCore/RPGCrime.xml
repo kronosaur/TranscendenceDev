@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- RPG Criminal Record 
+
+	USAGE
+
+	This is a base class used to implement a criminal system for a sovereign.
+	Each sovereign should create a type that inherits from this class and 
+	provide the appropriate properties, events, and language.
+
+	The sovereign should define the property rpg.criminalSystem to point to the
+	appropriate type.
+
+	Stations that implement the criminal justice system should have the property
+	rpg.criminalSystem pointing to the appropriate type.
+
+-->
+
+	<Type unid="&baRPGCriminalRecord;"
+			inherit="&unidCommonText;"
+			>
+		<Properties>
+			<!-- Subclasses must define this to be the sovereign running the
+				criminal justice system. If Nil, then we assume the sovereign
+				is a subclass of this base class.
+			-->
+			<Definition id="justice.sovereign"></Definition>
+			<Definition id="justice.currency"></Definition>
+
+			<!-- Subclasses may override these definition to customize the 
+				criminal justice system.
+
+				The values can be 1, 2, or 3, indicating the severity at which
+				we carry out the given consequence.
+
+				Or they can be one of the following values:
+
+					'secondImprisonCrime: Consequence happens the second time
+						the player commits a crime that causes imprisonment.
+
+			-->
+			<Definition id="justice.imprisonOn">2</Definition>
+			<Definition id="justice.makeEnemyOn">3</Definition>
+			<Definition id="justice.makeNeutralOn">2</Definition>
+
+			<!-- We keep track of each crime as a struct with the following fields:
+			
+				severity: The severity of the crime is a number:
+
+					1: Misdemeanor
+					2: Felony
+					3: Capital
+
+				desc: A description of the crime that completes the sentence,
+					"You are charged with...". E.g.,
+
+					"smuggling illegal goods"
+					"the destruction of the planet Alderan"
+
+				time: The tick on which the crime was committed.
+
+				penalty: Optional penalty required to make up for the crime.
+
+			-->
+
+			<Global id="keyCrime"></Global>
+			<Global id="criminalRecord"></Global>
+
+			<!-- This is the amount of money (in local currency) required to 
+				make up for the current criminal record.
+			-->
+
+			<Global id="penaltyOwed"></Global>
+			<Global id="penaltyPaid"></Global>
+		</Properties>
+
+		<Events>
+			<GetGlobalDockScreen>
+				(switch
+					;	Station must use this criminal justice system.
+
+					(or (!= (obj@ gSource 'rpg.criminalSystem) gType)
+							(obj@ gSource 'abandoned)
+							)
+						Nil
+
+					;	If no key crime, then nothing to do. Note that we also
+					;	clear keyCrime if the player has paid all penalties.
+
+					(not (typ@ gType 'keyCrime))
+						Nil
+
+					;	Bring up the arrest screen
+
+					{	screen: &dsRPGCriminalArrest;
+						priority: 7
+						overrideOnly: True
+
+						crimeSystem: gType
+						sovereignID: (or (typ@ gType 'justice.sovereign) gType)
+						}
+					)
+			</GetGlobalDockScreen>
+
+			<OnCrimeCommitted>
+				;	gData is the crimeDesc
+
+				(block (
+					(sovereignID (or (typ@ gType 'justice.sovereign) gType))
+
+					;	Prepare the record
+
+					(crimeRecord (struct gData {
+						time: (unvGetTick)
+						}))
+
+					(oldSeverity (@ (typ@ gType 'keyCrime) 'severity))
+					(newSeverity (max (@ crimeRecord 'severity) oldSeverity))
+
+					(makeEnemyOn (typ@ gType 'justice.makeEnemyOn))
+					(makeNeutralOn (typ@ gType 'justice.makeNeutralOn))
+					(imprisonOn (typ@ gType 'justice.imprisonOn))
+					)
+					;	Always append to the record
+
+					(typSet@ gType 'criminalRecord 
+						(append (typ@ gType 'criminalRecord) (list crimeRecord))
+						)
+
+					;	Remember the key crime
+
+					(if (geq (@ crimeRecord 'severity) oldSeverity)
+						(typSet@ gType 'keyCrime crimeRecord)
+						)
+
+					;	Increment penalty owed, if necessary.
+
+					(if (@ crimeRecord 'penalty)
+						(typInc@ gType 'penaltyOwed (@ crimeRecord 'penalty))
+						)
+
+					;	See if we change disposition
+
+					(switch
+						(and (= makeEnemyOn 'secondImprisonCrime)
+								(isint imprisonOn)
+								(geq (@ crimeRecord 'severity) imprisonOn)
+								(geq (@ (@ gType 'keyCrime) 'severity) imprisonOn)
+								(!= (sovGetDisposition sovereignID &svPlayer;) 'enemy)
+								)
+							(block ()
+								(sovSetDisposition sovereignID &svPlayer; 'enemy)
+								(sovSetDisposition &svPlayer; sovereignID 'enemy)
+								)
+
+						(and (isint makeEnemyOn)
+								(geq newSeverity makeEnemyOn)
+								(!= oldSeverity newSeverity)
+								)
+							(block ()
+								(sovSetDisposition sovereignID &svPlayer; 'enemy)
+								(sovSetDisposition &svPlayer; sovereignID 'enemy)
+								)
+
+						(and (= makeNeutralOn 'secondImprisonCrime)
+								(isint imprisonOn)
+								(geq (@ crimeRecord 'severity) imprisonOn)
+								(geq (@ (@ gType 'keyCrime) 'severity) imprisonOn)
+								(= (sovGetDisposition sovereignID &svPlayer;) 'friend)
+								)
+							(block ()
+								(sovSetDisposition sovereignID &svPlayer; 'neutral)
+								(sovSetDisposition &svPlayer; sovereignID 'neutral)
+								)
+
+						(and (isint makeNeutralOn)
+								(geq newSeverity makeNeutralOn)
+								(!= oldSeverity newSeverity)
+								)
+							(block ()
+								(sovSetDisposition sovereignID &svPlayer; 'neutral)
+								(sovSetDisposition &svPlayer; sovereignID 'neutral)
+								)
+						)
+
+					;	Done
+
+					(typ@ gType 'keyCrime)
+					)
+			</OnCrimeCommitted>
+
+			<OnCrimeJudged>
+
+				;	This is called when the player docks at a stations with the
+				;	rpg.criminalSystem property set.
+				;
+				;	We return a struct with the following:
+				;
+				;	status: One of the following:
+				;
+				;		'imprisonedForLife: Player is imprisoned
+				;		'lostShip: Player loses ship to pay penalty
+				;		'paidPenalty: Player paid a penalty
+				;		'warned: Player warned, but record cleared.
+				;
+				;	desc: Description of judgement.
+				;
+				;	epitaph: If set, then the player must be killed and this is 
+				;		the epitaph to show.
+				;
+				;	penalty: If set, then this is the amount of money to charge
+				;		the player to settle the judgement.
+				;
+				;	currency: If set, this is the currency to use.
+				;
+				;	We expect gData to be set with the following values:
+				;
+				;	sourceObj: The object on which the trial is happening.
+
+				(block (
+					(sourceObj (@ gData 'sourceObj))
+					(sovereignID (or (typ@ gType 'justice.sovereign) gType))
+
+					(keyCrime (typ@ gType 'keyCrime))
+
+					(currency (obj@ sourceObj 'currency))
+					(penaltyOwed 
+						(ecoExchange (typ@ gType 'penaltyOwed) (or (typ@ gType 'currency) currency) currency)
+						)
+					)
+					(switch
+						;	If the crime is serious, we imprison the player
+
+						(geq (@ keyCrime 'severity) (typ@ gType 'justice.imprisonOn))
+							{
+								status: 'imprisonedForLife
+
+								desc: (typTranslate gType 'justice.verdictImprison {
+									severity: (@ keyCrime 'severity)
+									crimeDesc: (@ keyCrime 'desc)
+									})
+
+								epitaph: (typTranslate gType 'epitaph.imprisoned {
+									crimeDesc: (@ keyCrime 'desc)
+									})
+								}
+
+						;	If we owe a fine but we don't have enough money, 
+						;	player is imprisoned.
+
+						(ls (objGetBalance gPlayerShip currency) penaltyOwed)
+							{
+								status: 'lostShip
+
+								desc: (typTranslate gType 'justice.verdictTakeShip {
+									penalty: (fmtCurrency currency penaltyOwed)
+									severity: (@ keyCrime 'severity)
+									crimeDesc: (@ keyCrime 'desc)
+									})
+
+								epitaph: (typTranslate gType 'epitaph.lostShip {
+									crimeDesc: (@ keyCrime 'desc)
+									})
+
+								penalty: penaltyOwed
+								currency: currency
+								}
+
+						;	Otherwise, pay the fine.
+
+						(gr penaltyOwed 0)
+							{
+								status: 'paidPenalty
+
+								desc: (typTranslate gType 'justice.verdictPenalty {
+									penalty: (fmtCurrency currency penaltyOwed)
+									severity: (@ keyCrime 'severity)
+									crimeDesc: (@ keyCrime 'desc)
+									})
+
+								penalty: penaltyOwed
+								currency: currency
+								}
+
+						;	If no fine, then this is just a warning.
+
+						{
+							status: 'warned
+
+							desc: (typTranslate gType 'justice.verdictWarning {
+								severity: (@ keyCrime 'severity)
+								crimeDesc: (@ keyCrime 'desc)
+								})
+							}
+						)
+					)
+
+			</OnCrimeJudged>
+
+			<OnCrimeConsequence>
+
+				;	This is called to resolve a judgement. gData is the judgement.
+
+				(block (
+					(status (@ gData 'status))
+					(epitaph (@ gData 'epitaph))
+					)
+					(switch
+						(or (= status 'imprisonedForLife)
+								(= status 'lostShip)
+								)
+							(block ()
+								(plyDestroyed gPlayer epitaph)
+								'forceUndock
+								)
+
+						(= status 'paidPenalty)
+							(block (
+								(currency (@ gData 'currency))
+								(penalty (@ gData 'penalty))
+								)
+								(objCharge gPlayerShip currency penalty)
+
+								(typInc@ gType 'penaltyPaid (typ@ gType 'penaltyOwed))
+								(typSet@ gType 'keyCrime Nil)
+								(typSet@ gType 'penaltyOwed 0)
+
+								True
+								)
+
+						True
+						)
+					)
+			</OnCrimeConsequence>
+
+			<OnCrimeRecordCleared>
+				(block ()
+					(typSet@ gType 'keyCrime Nil)
+					(typSet@ gType 'criminalRecord Nil)
+					(typSet@ gType 'penaltyOwed Nil)
+					(typSet@ gType 'penaltyPaid Nil)
+					)
+			</OnCrimeRecordCleared>
+		</Events>
+
+		<Language>
+			<Text id="justice.arrestedDesc">
+
+				As you enter the station you are surrounded by heavily armed 
+				soldiers. An official approaches you:
+
+				"You are under arrest for %crimeDesc%."
+			
+			</Text>
+			<Text id="justice.verdictImprison">
+
+				"In view of the seriousness of your crimes, we hereby sentence
+				you to life in prison."
+			
+			</Text>
+			<Text id="justice.verdictTakeShip">
+
+				"You are hereby fined %penalty% to make up for your crimes.
+				You do not have enough money to pay, so we will sell your ship
+				to compensate."
+			
+			</Text>
+			<Text id="justice.verdictPenalty">
+
+				"You are hereby fined %penalty% to make up for your crimes."
+			
+			</Text>
+			<Text id="justice.verdictWarning">
+
+				"In view of your record, we will let you go with a warning."
+			
+			</Text>
+			<Text id="crime.shipDestroyed">the destruction of %name%</Text>
+			<Text id="crime.stationDestroyed">the destruction of %name%</Text>
+
+			<Text id="epitaph.imprisoned">was imprisoned for %crimeDesc%</Text>
+			<Text id="epitaph.lostShip">lost %his% ship after a criminal conviction</Text>
+		</Language>
+	</Type>
+
+<!-- DOCK SCREENS -->
+
+	<!-- RPG Criminal Arrest
+	
+		gData has the following fields:
+
+			crimeSystem: The criminal justice system type
+			sovereignID: The sovereign that the justice system belongs to.
+	-->
+
+	<DockScreen UNID="&dsRPGCriminalArrest;"	
+			nestedScreen=	"true"
+			inherit=		"&dsDockScreenBase;"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(crimeSystem (@ gData 'crimeSystem))
+						(sovereignID (@ gData 'sovereignID))
+						(keyCrime (typ@ crimeSystem 'keyCrime))
+						)
+						(scrSetDesc gScreen
+							(typTranslate crimeSystem 'justice.arrestedDesc {
+								severity: (@ keyCrime 'severity)
+								crimeDesc: (@ keyCrime 'desc)
+								})
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(block (
+							(crimeSystem (@ gData 'crimeSystem))
+							(judgement (typFireEvent crimeSystem 'OnCrimeJudged {
+								sourceObj: gSource
+								}))
+							)
+							(scrSetData gScreen 'judgement judgement)
+							(scrShowPane gScreen 'Judgement)
+							)
+					</Action>
+				</Actions>
+			</Default>
+
+			<Judgement>
+				<OnPaneInit>
+					(block (
+						(crimeSystem (@ gData 'crimeSystem))
+						(judgement (scrGetData gScreen 'judgement))
+						result
+						)
+						(scrSetDesc gScreen (@ judgement 'desc))
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(block (
+							(crimeSystem (@ gData 'crimeSystem))
+							(judgement (scrGetData gScreen 'judgement))
+							(result (typFireEvent crimeSystem 'OnCrimeConsequence judgement))
+							)
+							(switch
+								(= result 'forceUndock)
+									(scrExitScreen gScreen 'forceUndock)
+
+								(scrExitScreen gScreen)
+								)
+							)
+					</Action>
+				</Actions>
+			</Judgement>
+		</Panes>
+
+		<Language>
+		</Language>
+	</DockScreen>
+
+<!-- GLOBALS -->
+
+	<Globals>
+		(block Nil
+
+			(setq rpgCrimeCommitted (lambda (sovereignID crimeDesc)
+				(block (
+					(criminalSystem (or (typ@ sovereignID 'rpg.criminalSystem) sovereignID))
+					)
+					(if criminalSystem
+						(typFireEvent 
+							criminalSystem
+							'OnCrimeCommitted
+							crimeDesc
+							)
+						)
+					)
+				))
+			)
+	</Globals>
+
+</TranscendenceModule>

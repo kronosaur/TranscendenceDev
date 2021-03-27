@@ -25,6 +25,8 @@
 	</SystemMap>
 
 	<SystemType UNID="&ssHuaramarca;"
+			name=				"Huaramarca"
+			attributes=			"nonExtensible"
 			noRandomEncounters=	"true"
 			noExtraEncounters=	"true"
 			backgroundID=		"&rsRedGiantSpace;"

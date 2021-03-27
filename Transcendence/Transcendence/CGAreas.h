@@ -269,6 +269,90 @@ class CGDrawArea : public AGArea
 		bool m_bTransBackground;
 	};
 
+class CGIconListArea : public AGArea
+	{
+	public:
+		static constexpr DWORD NOTIFY_SELECTION_CHANGED =		1;
+
+		CGIconListArea (CUniverse &Universe, const CVisualPalette &VI, const CDockScreenVisuals &Theme) :
+				m_Universe(Universe),
+				m_VI(VI),
+				m_Theme(Theme)
+			{
+			InitFromTheme(VI, Theme);
+			}
+
+		int GetCount () const { return m_List.GetCount(); }
+		ICCItemPtr GetEntry (int iIndex) const { if (iIndex < 0 || iIndex >= m_List.GetCount()) throw CException(ERR_FAIL); return m_List[iIndex].pData; }
+		ICCItemPtr GetList () const;
+		TArray<int> GetSelection () const;
+		ICCItemPtr GetSelectionAsCCItem () const;
+		void RestoreSelection (const ICCItem &Selection);
+		ICCItemPtr SaveSelection () const;
+		bool SetData (const ICCItem &List, CString *retsError = NULL);
+		void SetTabRegion (int cyHeight) { m_cyTabRegion = cyHeight; }
+
+		//	AGArea virtuals
+
+		virtual bool LButtonDown (int x, int y) override;
+		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect) override;
+
+	private:
+		static constexpr int DEFAULT_ICON_SIZE = 64;
+		static constexpr int FRAME_PADDING_HORZ = 20;
+		static constexpr int FRAME_PADDING_VERT = 20;
+		static constexpr int ENTRY_SPACING = 10;
+		static constexpr int ENTRY_PADDING_TOP = 2;
+		static constexpr int ENTRY_PADDING_LEFT = 4;
+		static constexpr int ENTRY_PADDING_RIGHT = 4;
+
+		struct SEntry
+			{
+			ICCItemPtr pData;
+
+			bool bSelected = false;
+
+			CString sTitle;						//	Entry label
+			const CG32bitImage *pIcon = NULL;	//	Icon for entry
+			RECT rcIconSrc = { 0 };				//	Source RECT for entry
+			int iStatusBar = -1;				//	Status bar position (0-100) or -1 = not used.
+			CG32bitPixel rgbStatusBar;			//	Status bar color.
+			CString sStatusBarLabel;			//	Label for status bar.
+			bool bMinor = false;				//	Draw faded
+
+			//	Computed in Format
+
+			mutable RECT rcRect = { 0 };		//	Location, relative to control rect
+			};
+
+		int CalcIconSize (int iEntryCount) const;
+		bool DeselectAll ();
+		bool Format (const RECT &rcRect) const;
+		int HitTestEntry (int x, int y) const;
+		bool InitEntry (SEntry &Entry, const ICCItem &Data, CString *retsError = NULL);
+		void InitFromTheme (const CVisualPalette &VI, const CDockScreenVisuals &Theme);
+		void PaintEntry (CG32bitImage &Dest, const SEntry &Entry) const;
+		void PaintEntryIcon (CG32bitImage &Dest, const SEntry &Entry, int x, int y) const;
+		void Reformat () { m_bFormatted = false; Invalidate(); }
+
+		CUniverse &m_Universe;
+		const CVisualPalette &m_VI;
+		const CDockScreenVisuals &m_Theme;
+		TArray<SEntry> m_List;
+
+		int m_cxIcon = DEFAULT_ICON_SIZE;
+		int m_cyIcon = DEFAULT_ICON_SIZE;
+		int m_cyTabRegion = 0;
+		CG32bitPixel m_rgbText = CG32bitPixel(0, 0, 0);
+		CG32bitPixel m_rgbBack = CG32bitPixel(255, 255, 255);
+		int m_iBorderRadius = 0;
+
+		//	These are computed in Format
+
+		mutable bool m_bFormatted = false;
+		mutable RECT m_rcFrame = { 0 };
+	};
+
 class CGItemDisplayArea : public AGArea
 	{
 	public:
@@ -581,9 +665,11 @@ class CGSelectorArea : public AGArea
 		bool MoveCursor (EDirections iDir);
 		void Refresh (void);
 		void ResetCursor (void) { m_iCursor = -1; Invalidate(); }
+		void RestoreSelection (const ICCItem &Selection);
+		ICCItemPtr SaveSelection () const { return ICCItemPtr(m_iCursor); }
 		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
 		void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
-		void SetCursor (int iIndex) { m_iCursor = iIndex; Invalidate(); }
+		void SetCursor (int iIndex);
 		void SetRegions (CSpaceObject *pSource, const SOptions &Options);
 		void SetSlotNameAtCursor (const CString &sName);
 		void SetTabRegion (int cyHeight) { m_cyTabRegion = cyHeight; }

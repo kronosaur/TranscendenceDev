@@ -292,6 +292,7 @@ class CWeaponClass : public CDeviceClass
 		int GetSelectVariantCount (void) const;
 		bool HasAmmoLeft (CItemCtx &ItemCtx, const CWeaponFireDesc *pShot) const;
 		ALERROR InitVariantsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType);
+		bool IsDualPointOrigin (void) const { return m_Configuration.IsDualPointOrigin(); }
 		bool IsCapacitorEnabled (void) { return (m_Counter == cntCapacitor); }
 		bool IsCounterEnabled (void) { return (m_Counter != cntNone); }
 		bool IsLauncher (void) const { return (m_iVariantType == varLauncher); }
@@ -299,7 +300,7 @@ class CWeaponClass : public CDeviceClass
 		bool IsMIRV (const CWeaponFireDesc &ShotDesc) const { return (m_bMIRV || ShotDesc.IsMIRV()); }
 		bool IsSinglePointOrigin (void) const { return m_Configuration.IsSinglePointOrigin(); }
 		bool IsTemperatureEnabled (void) { return (m_Counter == cntTemperature); }
-		bool IsTargetReachable (const CInstalledDevice &Device, CSpaceObject &Target, int iDefaultFireAngle = -1, int *retiFireAngle = NULL) const;
+		bool IsTargetReachable (const CInstalledDevice &Device, CSpaceObject &Target, int iDefaultFireAngle = -1, int *retiFireAngle = NULL, int *retiAimAngle = NULL) const;
 		bool IsTracking (const CDeviceItem &DeviceItem, const CWeaponFireDesc *pShot) const;
 		bool UpdateTemperature (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, CFailureDesc::EFailureTypes *retiFailureMode, bool *retbSourceDestroyed);
 		bool UsesAmmo (void) const { return (m_ShotData.GetCount() > 0 && m_ShotData[0].pDesc->GetAmmoType() != NULL); }

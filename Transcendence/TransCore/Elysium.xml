@@ -9,6 +9,8 @@
 	<!-- Elysium -->
 
 	<SystemType UNID="&ssElysium;" 
+				name="Elysium"
+				attributes="nonExtensible"
 				noRandomEncounters=	"true"
 				noExtraEncounters=	"true"
 				>

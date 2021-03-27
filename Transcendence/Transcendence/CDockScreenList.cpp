@@ -481,7 +481,6 @@ IDockScreenDisplay::EResults CDockScreenList::OnResetList (CSpaceObject *pLocati
 		//	that the filter code expects.
 
 		CCodeChainCtx Ctx(GetUniverse());
-		Ctx.SetScreen(&m_DockScreen);
 		Ctx.SaveAndDefineSourceVar(m_pLocation);
 		Ctx.SaveAndDefineDataVar(m_pData);
 

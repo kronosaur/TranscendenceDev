@@ -189,7 +189,7 @@ void CReactorHUDCircular::PaintCounterGauge(CShip *pShip)
 
 	Metric rCounterValue = ((Metric)pShip->GetCounterValue() / (Metric)pShip->GetMaxCounterValue());
 	Metric rBoundedCounterValue = Min(1.0, ((Metric)pShip->GetCounterValue() / (Metric)pShip->GetMaxCounterValue()));
-	bool rCounterIsHeat = (pShip->GetCounterIncrementRate() < 0 ? true : false);
+	bool rCounterIsHeat = (pShip->GetCounterIsHeat());
 
 	//	Paint the background
 

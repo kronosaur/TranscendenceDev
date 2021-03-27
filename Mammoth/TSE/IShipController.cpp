@@ -64,6 +64,7 @@ const IShipController::SOrderTypeData IShipController::m_OrderTypes[] =
 		{	"orbitPatrol",				"o",	"?",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
 		{	"deterChase",				"o",	"?",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
 		{	"attackOrRetreat",			"o",	"i",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP | ORDER_FLAG_DELETE_ON_OLD_SHIP_WAITS },
+		{	"resupply",					"-",	"-",	0 },
 	};
 
 const int IShipController::ORDER_TYPES_COUNT = (sizeof(m_OrderTypes) / sizeof(m_OrderTypes[0]));
