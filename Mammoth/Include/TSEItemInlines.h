@@ -444,7 +444,7 @@ inline bool CInstalledDevice::IsSecondaryWeapon (void) const
 	{
 	DWORD dwLinkedFire;
 	const CDeviceItem DeviceItem = m_pItem->AsDeviceItemOrThrow();
-	return (m_fSecondaryWeapon 
+	return (m_fSecondaryWeapon
 			|| (dwLinkedFire = DeviceItem.GetLinkedFireOptions()) == CDeviceClass::lkfEnemyInRange
 			|| dwLinkedFire == CDeviceClass::lkfTargetInRange);
 	}

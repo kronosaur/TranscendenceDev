@@ -1561,6 +1561,9 @@
     <ClCompile Include="COrbitExactOrder.cpp">
       <Filter>Source Files\ShipAI</Filter>
     </ClCompile>
+    <ClCompile Include="CWeaponTargetDefinition.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
     <ClCompile Include="CInteractionLevel.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>

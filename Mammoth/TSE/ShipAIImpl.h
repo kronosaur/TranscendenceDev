@@ -127,6 +127,7 @@ class CAIBehaviorCtx
 		void SetWaitingForShieldsToRegen (bool bValue = true) { m_fWaitForShieldsToRegen = bValue; }
 		bool ThrustsThroughTurn (void) const { return m_fThrustThroughTurn; }
 		void Update (CShip *pShip);
+		bool UsesAllPrimaryWeapons (void) const { return m_AISettings.UseAllPrimaryWeapons(); }
 		void WriteToStream (IWriteStream *pStream);
 
 		//	Maneuvers
@@ -145,6 +146,8 @@ class CAIBehaviorCtx
 		void ImplementFireOnTargetsOfOpportunity (CShip *pShip, CSpaceObject *pTarget = NULL, CSpaceObject *pExcludeObj = NULL);
 		void ImplementFireWeapon (CShip *pShip, DeviceNames iDev = devNone);
 		void ImplementFireWeaponOnTarget (CShip *pShip, int iWeapon, int iWeaponVariant, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2, int *retiFireDir = NULL, bool bDoNotShoot = false);
+		void ImplementFireSingleWeaponOnTarget (CShip *pShip, int iWeapon, int iWeaponVariant, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2, int *retiFireDir = NULL, bool bDoNotShoot = false);
+		void ImplementFireAllWeaponsOnTarget (CShip *pShip, int iWeapon, int iWeaponVariant, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2, int *retiFireDir = NULL, bool bDoNotShoot = false);
 		void ImplementFollowNavPath (CShip *pShip, bool *retbAtDestination = NULL);
 		void ImplementFormationManeuver (CShip *pShip, const CVector vDest, const CVector vDestVel, int iDestFacing, bool *retbInFormation = NULL);
 		void ImplementGating (CShip *pShip, CSpaceObject *pTarget);
@@ -173,7 +176,7 @@ class CAIBehaviorCtx
 		void CalcNavPath (CShip *pShip, CSpaceObject *pFrom, CSpaceObject *pTo);
 		void CalcNavPath (CShip *pShip, CNavigationPath *pPath, bool bOwned = false);
 		void CalcShieldState (CShip *pShip);
-		int CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInstalledDevice *pWeapon, Metric rTargetDist2);
+		int CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInstalledDevice *pWeapon, Metric rTargetDist2, bool avoidAnyNonReadyWeapons = false);
 		void CancelDocking (CShip *pShip, CSpaceObject *pBase);
 		bool CheckForFriendsInLineOfFire (CShip *pShip, const CInstalledDevice *pDevice, CSpaceObject *pTarget, int iFireAngle, Metric rMaxRange)
 			{ return (NoFriendlyFireCheck() || pShip->IsLineOfFireClear(pDevice, pTarget, iFireAngle, rMaxRange)); }
@@ -189,6 +192,8 @@ class CAIBehaviorCtx
 		bool CalcFlockingFormationCloud (CShip *pShip, CSpaceObject *pLeader, Metric rFOVRange, Metric rSeparationRange, CVector *retvPos, CVector *retvVel, int *retiFacing);
 		bool CalcFlockingFormationRandom (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing);
 		bool ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2);
+		void GetPrimaryWeaponsToFire (CShip* pShip, CSpaceObject *pTarget, Metric rTargetDist2, TArray<CInstalledDevice*> &pWeaponsToFire, TArray<Metric> &rWeaponRanges);
+		void FireWeaponIfOnTarget (CShip* pShip, CSpaceObject *pTarget, CInstalledDevice *pWeaponToFire, Metric rWeaponRange, Metric rTargetDist2, bool bDoNotShoot, int *retiFacingAngle, int *retiAngleToTarget);
 
 		CAISettings m_AISettings;					//	Settings
 

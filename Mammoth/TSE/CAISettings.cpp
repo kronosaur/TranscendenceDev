@@ -30,6 +30,7 @@
 #define REACT_TO_THREAT_ATTRIB					CONSTLIT("reactToThreat")
 #define STAND_OFF_COMBAT_ATTRIB					CONSTLIT("standOffCombat")
 #define THREAT_RANGE_ATTRIB						CONSTLIT("threatRange")
+#define USE_ALL_PRIMARY_WEAPONS_ATTRIB			CONSTLIT("useAllPrimaryWeapons")
 
 #define COMBAT_STYLE_ADVANCED					CONSTLIT("advanced")
 #define COMBAT_STYLE_CHASE						CONSTLIT("chase")
@@ -221,6 +222,8 @@ CString CAISettings::GetValue (const CString &sSetting)
 		return (m_fNonCombatant ? STR_TRUE : NULL_STR);
 	else if (strEquals(sSetting, PERCEPTION_ATTRIB))
 		return strFromInt(m_iPerception);
+	else if (strEquals(sSetting, USE_ALL_PRIMARY_WEAPONS_ATTRIB))
+		return (m_fUseAllPrimaryWeapons ? STR_TRUE : NULL_STR);
 	else if (strEquals(sSetting, REACT_TO_ATTACK_ATTRIB))
 		return ConvertToID(m_iReactToAttack);
 	else if (strEquals(sSetting, REACT_TO_THREAT_ATTRIB))
@@ -309,6 +312,7 @@ ALERROR CAISettings::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fNoNavPaths = pDesc->GetAttributeBool(NO_NAV_PATHS_ATTRIB);
 	m_fNoOrderGiver = pDesc->GetAttributeBool(NO_ORDER_GIVER_ATTRIB);
 	m_fIsPlayer = false;
+	m_fUseAllPrimaryWeapons = pDesc->GetAttributeBool(USE_ALL_PRIMARY_WEAPONS_ATTRIB);
 
 	return NOERROR;
 	}
@@ -393,6 +397,7 @@ void CAISettings::ReadFromStream (SLoadCtx &Ctx)
 		}
 	else
 		m_fIsPlayer =			((dwLoad & 0x00000800) ? true : false);
+	m_fUseAllPrimaryWeapons =	((dwLoad & 0x00001000) ? true : false);
 	}
 
 CString CAISettings::SetValue (const CString &sSetting, const CString &sValue)
@@ -442,6 +447,8 @@ CString CAISettings::SetValue (const CString &sSetting, const CString &sValue)
 		m_fNonCombatant = !sValue.IsBlank();
 	else if (strEquals(sSetting, PERCEPTION_ATTRIB))
 		m_iPerception = Max((int)CSpaceObject::perceptMin, Min(strToInt(sValue, CSpaceObject::perceptNormal), (int)CSpaceObject::perceptMax));
+	else if (strEquals(sSetting, USE_ALL_PRIMARY_WEAPONS_ATTRIB))
+		m_fUseAllPrimaryWeapons = !sValue.IsBlank();
 	else if (strEquals(sSetting, REACT_TO_ATTACK_ATTRIB))
 		m_iReactToAttack = ConvertToAIReaction(sValue);
 	else if (strEquals(sSetting, REACT_TO_THREAT_ATTRIB))
@@ -501,6 +508,7 @@ void CAISettings::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fNoAttackOnThreat ?		0x00000200 : 0);
 	dwSave |= (m_fNoTargetsOfOpportunity ?	0x00000400 : 0);
 	dwSave |= (m_fIsPlayer ?				0x00000800 : 0);
+	dwSave |= (m_fUseAllPrimaryWeapons ?	0x00001000 : 0);
 
 	pStream->Write(dwSave);
 	}

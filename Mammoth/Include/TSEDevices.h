@@ -7,6 +7,7 @@
 
 class CCargoDesc;
 class CTargetList;
+class CWeaponTargetDefinition;
 struct SShipPerformanceCtx;
 struct SUpdateCtx;
 
@@ -374,7 +375,7 @@ class CDeviceClass
 		virtual int GetWeaponVariantCount (const CDeviceItem &DeviceItem) const { return 0; }
 		virtual bool IsAmmoWeapon (void) { return false; }
 		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const { return false; }
-		virtual bool IsAutomatedWeapon (void) { return false; }
+		virtual bool IsAutomatedWeapon (void) const { return false; }
 		virtual bool IsExternal (void) const { return (m_fExternal ? true : false); }
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
 		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) { return false; }
@@ -662,6 +663,9 @@ class CInstalledDevice
 		void SetTimeUntilReady (int iDelay) { m_iTimeUntilReady = iDelay; }
 		void SetTriggered (bool bTriggered) { m_fTriggered = bTriggered; }
 		void SetWaiting (bool bWaiting) const { m_fWaiting = bWaiting; }
+		void SetWeaponTargetDefinition (Kernel::CString sCriteria) { m_pWeaponTargetDefinition = std::make_unique<CWeaponTargetDefinition>(sCriteria, true); }
+		void ClearWeaponTargetDefinition () { m_pWeaponTargetDefinition.reset(); }
+
 
 		//	These are wrapper methods for a CDeviceClass method of the same name.
 		//	We add our object pointer as a parameter to the call.
@@ -705,13 +709,14 @@ class CInstalledDevice
 		void GetStatus (const CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) const { m_pClass->GetStatus(this, pSource, retiStatus, retiMaxStatus); }
 		CSpaceObject *GetTarget (CSpaceObject *pSource) const;
 		int GetValidVariantCount (CSpaceObject *pSource) { return m_pClass->GetValidVariantCount(pSource, this); }
+		CWeaponTargetDefinition *GetWeaponTargetDefinition (void) const { return (m_pWeaponTargetDefinition.get()); }
 		bool HasLastShots (void) const { return (m_LastShotIDs.GetCount() > 0); }
 		int IncCharges (CSpaceObject *pSource, int iChange);
-		bool IsAutomatedWeapon (void) { return m_pClass->IsAutomatedWeapon(); }
+		bool IsAutomatedWeapon (void) const { return m_pClass->IsAutomatedWeapon() || (IsSecondaryWeapon() && m_pWeaponTargetDefinition != nullptr); }
 		bool IsFirstVariantSelected(CSpaceObject *pSource) { return (m_pClass ? m_pClass->IsFirstVariantSelected(pSource, this) : true); }
 		bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) { return m_pClass->IsFuelCompatible(Ctx, FuelItem); }
 		bool IsLastVariantSelected(CSpaceObject *pSource) { return (m_pClass ? m_pClass->IsLastVariantSelected(pSource, this) : true); }
-		bool IsLinkedFire (ItemCategories iTriggerCat = itemcatNone) const;
+		bool IsLinkedFire (ItemCategories iTriggerCat = itemcatNone, CInstalledDevice *pWeapon = nullptr) const;
 		bool IsSecondaryWeapon (void) const;
 		bool IsSelectable (void) const;
 		bool IsVariantSelected (CSpaceObject *pSource) { return (m_pClass ? m_pClass->IsVariantSelected(pSource, this) : true); }
@@ -750,6 +755,7 @@ class CInstalledDevice
 		CEnhancementDesc m_SlotEnhancements;		//	Enhancements conferred by the slot
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	List of enhancements (may be NULL)
 		TArray<DWORD> m_LastShotIDs;				//	ObjID of last shots (only for continuous beams)
+		std::unique_ptr<CWeaponTargetDefinition> m_pWeaponTargetDefinition = nullptr;  //  Target definition for autofire weapons
 
 		DWORD m_dwData = 0;							//	Data specific to device class
 
@@ -803,5 +809,5 @@ class CInstalledDevice
 		DWORD m_fOnSegment:1 = false;				//	If TRUE, then device logically belongs to the segment specified by m_sID.
 		DWORD m_fOnUsedLastAmmo:1 = false;			//	If TRUE, remember the send statusUsedLastAmmo when done firing
 
-		DWORD m_dwSpare2:5;
+		DWORD m_dwSpare2:3;
 	};

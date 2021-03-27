@@ -5,6 +5,33 @@
 
 #pragma once
 
+class CWeaponTargetDefinition
+	{
+	//  Weapon target definition that is attached to installed weapon devices.
+	//  Written and read from stream independently using a similar manner to item data.
+	//  Should only be attached to weapon devices through a unique_ptr.
+	//  Note that we use the range, fire arc, and all other property of the attached weapon, since all this does
+	//  is tell our attached weapon what to shoot at.
+	public:
+		class CWeaponTargetDefinition () { };
+		class CWeaponTargetDefinition (Kernel::CString sCriteria, bool bCheckLineOfFire = false) : m_bCheckLineOfFire(bCheckLineOfFire), m_CriteriaString(sCriteria) { m_TargetCriteria.Init(sCriteria); };
+		bool MatchesTarget (CSpaceObject* pSource, CSpaceObject* pTarget) const;
+		CSpaceObject* FindTarget (CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CItemCtx& ItemCtx) const;
+		bool AimAndFire (CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CDeviceClass::SDeviceUpdateCtx& Ctx) const;
+		bool GetCheckLineOfFire () { return m_bCheckLineOfFire; };
+		CSpaceObjectCriteria GetTargetCriteria () { return m_TargetCriteria; };
+		Kernel::CString GetTargetCriteriaString () { return m_CriteriaString; };
+		void SetCheckLineOfFire (bool bCheckLineOfFire) { m_bCheckLineOfFire = bCheckLineOfFire; };
+		void SetTargetCriteria (Kernel::CString sCriteria) { m_TargetCriteria.Init(sCriteria); m_CriteriaString = sCriteria; };
+
+		static std::unique_ptr<CWeaponTargetDefinition> ReadFromStream (SLoadCtx& Ctx);
+		void WriteToStream (IWriteStream* pStream) const;
+	private:
+		Kernel::CString m_CriteriaString = "";
+		CSpaceObjectCriteria m_TargetCriteria;
+		bool m_bCheckLineOfFire = false;		//	Check line of fire for friendlies
+	};
+
 class CAutoDefenseClass : public CDeviceClass
 	{
 	public:
@@ -22,7 +49,7 @@ class CAutoDefenseClass : public CDeviceClass
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const override;
 		virtual DWORD GetTargetTypes (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const override;
-		virtual bool IsAutomatedWeapon (void) override { return true; }
+		virtual bool IsAutomatedWeapon (void) const override { return true; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 
