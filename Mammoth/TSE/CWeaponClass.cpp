@@ -5508,8 +5508,6 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 				}
 			}
 		}
-	//  TODO(heliogenesis): If we have charge frames, and are in charge frames, create a charge effect
-	//  instead of firing. We assume a delay of 0 when dealing with charge frames.
 
 	//	See if we continue to fire
 	//  dwContinouous starts at maximum repeating count and counts backwards towards zero; it represents

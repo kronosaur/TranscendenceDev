@@ -368,7 +368,7 @@
 						{	test:'(itm@ &itSmartCannonShell; 'range)				result:60	}
 						{	test:'(itm@ &itSmartCannonShell; 'speed)				result:50	}
 
-						{	test:'(itm@ &itNAMIMissileLauncher; 'ammoTypes)				result:'(&itKM100Missile; &itFragmentationMissile; &itKM120Missile;	&itKM500Missile; &itKM550Missile; &itXM300Missile; &itXM900Missile;)	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'ammoTypes)				result:'(&itKM100Missile; &itFragmentationMissile; &itKM120Missile;	&itKM500Missile; &itKM550Missile; &itXM300Missile; &itKM170Missile; &itXM900Missile;)	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'averageDamage)			result:14.0	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'balance)					result:-56	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'balanceDamage)			result:241	}
