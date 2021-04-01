@@ -188,6 +188,7 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceObject* pObj, const CString& sID, SDeviceDesc *retDesc) const override;
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const override;
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const override;
+		virtual bool ItemFitsSlot (CSpaceObject* pObj, const CItem& Item, const int iSlotIndex) const override;
 		virtual int GetNumberOfDescs () const override { return m_SlotDesc.GetCount(); }
 		virtual const int GetDescIndexGivenId (const CString& sID) const override { return m_SlotDescIndicesByID.Find(sID) ? *(m_SlotDescIndicesByID.GetAt(sID)) : -1; }
 
@@ -210,7 +211,6 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 			};
 
 		const SSlotDesc *FindSlotDesc (CSpaceObject *pObj, const CItem &Item) const;
-		bool ItemFitsSlot (CSpaceObject* pObj, const CItem& Item, const int iSlotIndex) const;
 
 		DiceRange m_Count;
 
@@ -1220,7 +1220,7 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceO
 			{
 			//	Skip if this slot does not meet criteria
 
-			if (!Item.MatchesCriteria(m_SlotDesc[i].Criteria))
+			if (!ItemFitsSlot(pObj, Item, i))
 				continue;
 
 			//	If this slot has an ID and maximum counts and if we've already
@@ -1257,7 +1257,7 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceO
 	return true;
 	}
 
-bool CGroupOfDeviceGenerators::FindDefaultDesc(SDeviceGenerateCtx& Ctx, CSpaceObject* pObj, const CString& sID, SDeviceDesc* retDesc) const
+bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx& Ctx, CSpaceObject* pObj, const CString& sID, SDeviceDesc* retDesc) const
 
 //	FindDefaultDesc
 //
@@ -1394,7 +1394,7 @@ const CGroupOfDeviceGenerators::SSlotDesc *CGroupOfDeviceGenerators::FindSlotDes
 	int i;
 
 	for (i = 0; i < m_SlotDesc.GetCount(); i++)
-		if (Item.MatchesCriteria(m_SlotDesc[i].Criteria))
+		if (ItemFitsSlot(pObj, Item, i))
 			return &m_SlotDesc[i];
 
 	return NULL;

@@ -1019,6 +1019,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		bool FindDeviceAtPos (const CVector &vPos, CInstalledDevice **retpDevice);
 		int GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice);
 		DeviceNames GetDeviceNameForCategory (ItemCategories iCategory);
+		ICCItem* GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const CString& sName) const;
 		int GetItemDeviceName (const CItem &Item) const;
 		CItem GetNamedItem (DeviceNames iDev) const;
 		bool HasNamedDevice (DeviceNames iDev) const;
@@ -1345,6 +1346,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		Metric GetItemMass (void) const;
 		int GetTotalArmorHP (int *retiMaxHP = NULL) const;
 		void InvalidateItemMass (void) const { m_fRecalcItemMass = true; }
+		bool IsDeviceSlotProperty (const CString& sName) const;
 		bool IsSingletonDevice (ItemCategories iItemCat);
 		void PaintMapShipCompartments (CG32bitImage &Dest, int x, int y, CMapViewportCtx &Ctx);
 		void PaintShipCompartments (CG32bitImage &Dest, SViewportPaintCtx &Ctx);

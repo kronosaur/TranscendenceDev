@@ -287,7 +287,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 #define FN_SHIP_DEVICE_SLOT_AVAIL	1
 #define FN_SHIP_INSTALL_AUTOPILOT	2
 #define FN_SHIP_HAS_AUTOPILOT		3
-//	spare
+#define FN_SHIP_DEV_SLOT_PROPERTY	4
 #define FN_SHIP_INSTALL_TARGETING	5
 #define FN_SHIP_HAS_TARGETING		6
 #define FN_SHIP_CLASS				7
@@ -1210,6 +1210,32 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(shpGetClassName class flags) -> class name",
 			"ii",	0,	},
 
+		{	"shpGetDeviceSlotProperty",		fnShipGet,		FN_SHIP_DEV_SLOT_PROPERTY,
+			"(shpGetDeviceSlotProperty ship property [deviceSlot]) -> angle\n\n"
+
+			"deviceSlot can be an int or struct with these parameters:\n\n"
+			"    deviceSlot: device slot number\n"
+			"    slotID: device slot ID\n"
+			"    slotPosIndex: device slot pos index\n"
+
+			"property:\n\n"
+			"    'deviceSlotAttributes\n"
+			"    'deviceSlotCount\n"
+			"    'deviceSlotCriteria\n"
+			"    'deviceSlotFireArc\n"
+			"    'deviceSlotIDs\n"
+			"    'deviceSlotMaxMass\n"
+			"    'deviceSlotMaxPower\n"
+			"    'deviceSlotMaxPowerPercent\n"
+			"    'deviceSlotOmnidirectional\n"
+			"    'deviceSlotPos\n"
+			"    'deviceSlotPosAngle\n"
+			"    'deviceSlotPosRadius\n"
+			"    'deviceSlotSecondaryWeapon\n"
+			"    'deviceSlotTargetCriteria\n",
+
+			"is*",	0,	},
+
 		{	"shpGetDirection",				fnShipGetOld,		FN_SHIP_DIRECTION,
 			"(shpGetDirection ship) -> angle",
 			NULL,	0,	},
@@ -1288,7 +1314,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ivi",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpInstallDevice",				fnShipSet,			FN_SHIP_INSTALL_DEVICE,
-			"(shpInstallDevice ship item [deviceSlot]) -> itemStruct (or Nil)\n\n"
+			"(shpInstallDevice ship item [deviceSlot] [forceUseOfDeviceSlot]) -> itemStruct (or Nil)\n\n"
 
 			"deviceSlot can be an int or struct with these parameters:\n\n"
 			"    deviceSlot: device slot number\n"
@@ -1594,7 +1620,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii",	0,	},
 
 		{	"objCanInstallItem",				fnObjGet,			FN_OBJ_CAN_INSTALL_ITEM,
-			"(objCanInstallItem obj item [armorSeg|deviceSlot]) -> (True/Nil resultCode resultString [itemToReplace])\n\n"
+			"(objCanInstallItem obj item [armorSeg|deviceSlot] [forceUseOfDeviceSlot]) -> (True/Nil resultCode resultString [itemToReplace])\n\n"
 			
 			"resultCode\n\n"
 			
@@ -6843,24 +6869,52 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_CAN_INSTALL_ITEM:
 			{
-			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
+			CItem Item = (pCtx->AsItem(pArgs->GetElement(1)));
 			if (Item.GetType() == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid item"), pArgs->GetElement(1));
 
-			int iSlot = ((pArgs->GetCount() > 2 && !pArgs->GetElement(2)->IsNil()) ? pArgs->GetElement(2)->GetIntegerValue() : -1);
+			int iSlot = -1;
+			if (pArgs->GetCount() > 2 && !pArgs->GetElement(2)->IsNil())
+				{
+				ICCItem* pOptions = pArgs->GetElement(2);
+				CShip* pShip = pObj->AsShip();
+				if (pOptions->IsInteger())
+					iSlot = pOptions->GetIntegerValue();
+				else if (pShip != nullptr)
+					{
+					IDeviceGenerator* pDevSlots = pShip->GetClass()->GetDeviceSlots();
+					ICCItem* pDeviceSlot = pOptions->GetElement(FIELD_DEVICE_SLOT);
+					ICCItem* pDeviceSlotID = pOptions->GetElement(FIELD_SLOT_ID);
+					if (pDeviceSlot && !pDeviceSlot->IsNil())
+						iSlot = pDeviceSlot->GetIntegerValue();
+
+					if (pDeviceSlotID && !pDeviceSlotID->IsNil())
+						{
+						CString sDeviceSlotID = pDeviceSlotID->GetStringValue();
+						iSlot = pDevSlots->GetDescIndexGivenId(sDeviceSlotID);
+						if (iSlot == -1)
+							return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+						}
+					}
+				}
+
+			bool bForceUseOfDeviceSlot = pArgs->GetCount() > 3 ? !(pArgs->GetElement(3)->IsNil()) : false;
 
 			//	Validate the slot
-
+			//	TODO(heliogenesis): Add an option to force use of device slot - see https://github.com/kronosaur/TranscendenceDev/pull/75
+			bool bCanInstallToDeviceSlot = true;
 			if (iSlot != -1)
 				{
 				CShip *pShip = pObj->AsShip();
+				IDeviceGenerator* pDevSlots = pShip->GetClass()->GetDeviceSlots();
+				bCanInstallToDeviceSlot = bForceUseOfDeviceSlot ? pDevSlots->ItemFitsSlot(pObj, Item, iSlot) : true;
 				if (Item.IsArmor() 
 						&& pShip 
 						&& (iSlot < 0 || iSlot >= pShip->GetArmorSectionCount()))
 					return pCC->CreateError(CONSTLIT("Invalid armor segment"), pArgs->GetElement(2));
 				if (Item.IsDevice()
 						&& pShip
-						&& (iSlot < 0 || iSlot >= pShip->GetDeviceCount() || pShip->GetDevice(iSlot)->IsEmpty()))
+						&& (iSlot < 0 || iSlot >= pShip->GetDeviceCount() || (!(bForceUseOfDeviceSlot) && pShip->GetDevice(iSlot)->IsEmpty())))
 					return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
 				}
 
@@ -6869,7 +6923,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CSpaceObject::InstallItemResults iResult;
 			CString sResult;
 			CItem ItemToReplace;
-			bool bCanInstall = pObj->CanInstallItem(Item, iSlot, &iResult, &sResult, &ItemToReplace);
+			bool bCanInstall = pObj->CanInstallItem(Item, iSlot, &iResult, &sResult, &ItemToReplace) && bCanInstallToDeviceSlot; // TODO(heliogenesis): Move this into CanInstallItem in ShipClass
 
 			//	Generate the result
 
@@ -10574,6 +10628,13 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 			}
 
+		case FN_SHIP_DEV_SLOT_PROPERTY:
+			{
+			IDeviceGenerator* pDevSlots = pShip->GetClass()->GetDeviceSlots();
+			CString sProperty = pArgs->GetElement(1)->GetStringValue();
+			return pShip->GetDeviceSlotProperty(pCC, *pCtx, sProperty);
+			}
+
 		case FN_SHIP_DOCK_OBJ:
 			{
 			CSpaceObject *pObj = pShip->GetDockedObj();
@@ -11101,7 +11162,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 
 			//	See if we passed in a device slot
-
+			//	TODO(heliogenesis): Add option to force use of device slot - see https://github.com/kronosaur/TranscendenceDev/pull/75
 			int iDeviceSlot = -1;
 			int iSlotPosIndex = -1;
 			if (pArgs->GetCount() >= 3)
@@ -11109,6 +11170,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				IDeviceGenerator* pDevSlots = pShip->GetClass()->GetDeviceSlots();
 				int numSlots = pDevSlots->GetNumberOfDescs();
 				ICCItem *pOptions = pArgs->GetElement(2);
+				bool bForceUseOfDeviceSlot = pArgs->GetCount() >= 4 ? !(pArgs->GetElement(3)->IsNil()) : false;
 				if (pOptions->IsInteger())
 					iDeviceSlot = pOptions->GetIntegerValue();
 				else
@@ -11134,8 +11196,12 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (iDeviceSlot != -1)
 					{
 					if (Item.IsDevice()
-							&& (iDeviceSlot < 0 || iDeviceSlot >= pShip->GetDeviceCount() || pShip->GetDevice(iDeviceSlot)->IsEmpty()))
+							&& (iDeviceSlot < 0 || iDeviceSlot >= pShip->GetDeviceCount() || (!(bForceUseOfDeviceSlot) && pShip->GetDevice(iDeviceSlot)->IsEmpty())))
 						return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+					}
+				else if (iDeviceSlot == -1 && bForceUseOfDeviceSlot)
+					{
+					return pCC->CreateNil();
 					}
 				}
 

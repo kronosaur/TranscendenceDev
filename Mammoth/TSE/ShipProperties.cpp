@@ -4,6 +4,7 @@
 //	Copyright (c) 2021 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
+#include <set>
 
 #define PROPERTY_ALWAYS_LEAVE_WRECK				CONSTLIT("alwaysLeaveWreck")
 #define PROPERTY_ARMOR_COUNT					CONSTLIT("armorCount")
@@ -25,6 +26,7 @@
 #define PROPERTY_CHARACTER_NAME					CONSTLIT("characterName")
 #define PROPERTY_DEVICE_DAMAGE_IMMUNE			CONSTLIT("deviceDamageImmune")
 #define PROPERTY_DEVICE_DISRUPT_IMMUNE			CONSTLIT("deviceDisruptImmune")
+#define PROPERTY_DEVICE_SLOT_ATTRIBUTES			CONSTLIT("deviceSlotAttributes")
 #define PROPERTY_DEVICE_SLOT_COUNT				CONSTLIT("deviceSlotCount")
 #define PROPERTY_DEVICE_SLOT_CRITERIA			CONSTLIT("deviceSlotCriteria")
 #define PROPERTY_DEVICE_SLOT_FIREARC			CONSTLIT("deviceSlotFireArc")
@@ -37,6 +39,7 @@
 #define PROPERTY_DEVICE_SLOT_POS_ANGLE			CONSTLIT("deviceSlotPosAngle")
 #define PROPERTY_DEVICE_SLOT_POS_RADIUS			CONSTLIT("deviceSlotPosRadius")
 #define PROPERTY_DEVICE_SLOT_SECONDARY_WEAPON	CONSTLIT("deviceSlotSecondaryWeapon")
+#define PROPERTY_DEVICE_SLOT_TARGET_CRITERIA	CONSTLIT("deviceSlotTargetCriteria")
 #define PROPERTY_DISINTEGRATION_IMMUNE			CONSTLIT("disintegrationImmune")
 #define PROPERTY_DOCKED_AT_ID					CONSTLIT("dockedAtID")
 #define PROPERTY_DOCKING_ENABLED				CONSTLIT("dockingEnabled")
@@ -248,6 +251,44 @@ ICCItemPtr CShip::OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) 
 		return ICCItemPtr();
 	}
 
+bool CShip::IsDeviceSlotProperty(const CString& sName) const
+
+//	IsDeviceSlotProperty
+//
+//	Returns TRUE if the property is a device slot property
+
+	{
+	std::set<CString> deviceSlotProperties = {
+		PROPERTY_DEVICE_SLOT_ATTRIBUTES,
+		PROPERTY_DEVICE_SLOT_COUNT,
+		PROPERTY_DEVICE_SLOT_CRITERIA,
+		PROPERTY_DEVICE_SLOT_FIREARC,
+		PROPERTY_DEVICE_SLOT_IDS,
+		PROPERTY_DEVICE_SLOT_MAX_MASS,
+		PROPERTY_DEVICE_SLOT_MAX_POWER,
+		PROPERTY_DEVICE_SLOT_MAX_POWER_PERCENT,
+		PROPERTY_DEVICE_SLOT_OMNIDIRECTIONAL,
+		PROPERTY_DEVICE_SLOT_POS,
+		PROPERTY_DEVICE_SLOT_POS_ANGLE,
+		PROPERTY_DEVICE_SLOT_POS_RADIUS,
+		PROPERTY_DEVICE_SLOT_SECONDARY_WEAPON,
+		PROPERTY_DEVICE_SLOT_TARGET_CRITERIA
+	};
+	return deviceSlotProperties.find(sName) != deviceSlotProperties.end();
+	}
+
+ICCItem* CShip::GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const CString& sName) const
+
+//	GetDeviceSlotProperty
+//
+//	Returns a device slot property
+//	TODO(heliogenesis): Complete this function
+
+	{
+	//	Device slot properties
+	return pCC->CreateError(CONSTLIT("Unimplemented function"));
+	}
+
 ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const
 
 //	GetProperty
@@ -257,6 +298,8 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult;
+
+	//	Device slot properties
 
 	if (strEquals(sName, PROPERTY_ALWAYS_LEAVE_WRECK))
 		return CC.CreateBool(m_fAlwaysLeaveWreck || m_pClass->GetWreckChance() >= 100);
