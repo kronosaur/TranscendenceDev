@@ -2524,6 +2524,9 @@
 	<!ENTITY rsBlackMarketShipyard			"0x00100820">
 	<!ENTITY msBlackMarketMission02			"0x00100821">
 	<!ENTITY msBlackMarketSmuggle01			"0x00100822">
+	<!ENTITY scT31PlayerL5					"0x00100823">
+	<!ENTITY scMolotokBPlayerL8				"0x00100824">
+	<!ENTITY scMolotokAPlayerL6				"0x00100825">
 
 	<!-- 0840-085F TENHOVE DEFENSE SYSTEM -->
 
@@ -2577,6 +2580,7 @@
 	<Module filename="BlackMarketMission01.xml"/>
 	<Module filename="BlackMarketMission02.xml"/>
 	<Module filename="BlackMarketMissionSmuggle01.xml"/>
+	<Module filename="BlackMarketPlayerShips.xml"/>
 
 	<!-- Characters -->
 		

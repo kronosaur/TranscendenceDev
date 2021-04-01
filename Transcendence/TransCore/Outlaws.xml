@@ -830,11 +830,12 @@
 		<Hull
 			size=				"60"
 			mass=				"600"
-			cargoSpace=			"1000"
+			cargoSpace=			"600"
 
 			maxReactorPower=	"10000"
-			maxCargoSpace=		"1000"
-			maxDevices=			"6"
+			maxCargoSpace=		"600"
+			maxDevices=			"10"
+			maxWeapons=			"4"
 
 			maxArmor=			"superHeavy"
 			stdArmor=			"medium"
@@ -850,6 +851,11 @@
 			rotationAccel=		"1.0"
 			/>
 
+		<DeviceSlots>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="20"/>
+			<DeviceSlot criteria="c" cannotBeEmpty="true"/>
+		</DeviceSlots>
+
 		<!-- Configuration -->
 
 		<Armor
@@ -864,6 +870,7 @@
 				</Items>
 			</Device>
 			<Device deviceID="&itRecoillessCannon;"/>
+			<Device deviceID="&itCargoHoldExpansion;"/>
 		</Devices>
 
 		<!-- Treasure -->
