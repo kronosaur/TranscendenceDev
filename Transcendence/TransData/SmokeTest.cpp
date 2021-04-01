@@ -51,7 +51,7 @@ void DoSmokeTest (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	Ctx.iSystemSample = pCmdLine->GetAttributeIntegerBounded(CONSTLIT("count"), 1, -1, DEFAULT_SYSTEM_SAMPLE);
 	Ctx.iSystemUpdateTime = pCmdLine->GetAttributeIntegerBounded(CONSTLIT("updates"), 0, -1, DEFAULT_UPDATES);
-	Ctx.bNoDiagnostics = pCmdLine->GetAttributeBool(CONSTLIT("noDiagnostics"));
+	Ctx.bNoDiagnostics = !pCmdLine->GetAttributeBool(CONSTLIT("diagnostics"));
 
 	//	Update context
 

@@ -12,6 +12,8 @@ void CGDraw::Arc (CG32bitImage &Dest, const CVector &vCenter, Metric rRadius, Me
 //	Draws an arc
 
 	{
+	DEBUG_TRY
+
 	//	Create the shape
 
 	CGPath ArcPath;
@@ -26,6 +28,8 @@ void CGDraw::Arc (CG32bitImage &Dest, const CVector &vCenter, Metric rRadius, Me
 	//	Draw the region
 
 	CGDraw::Region(Dest, (int)vCenter.GetX(), (int)vCenter.GetY(), ArcRegion, rgbColor, iMode);
+
+	DEBUG_CATCH
 	}
 
 void CGDraw::Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor, EBlendModes iMode, int iSpacing, DWORD dwFlags)
