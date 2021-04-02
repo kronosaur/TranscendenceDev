@@ -2358,6 +2358,7 @@
 	<!ENTITY scEI500PlayerL3			"0x00100541">
 	<!ENTITY scSapphirePlayerL3			"0x00100542">
 	<!ENTITY scWolfenPlayerL3			"0x00100543">
+	<!ENTITY scBritanniaPlayerL9		"0x00100544">
 
 	<!-- 0580-059F ROGUE FLEET -->
 
@@ -2437,6 +2438,8 @@
 	<!ENTITY vtMinotaurTurretSlot		"0x0010066E">
 	<!ENTITY rsCommonwealthFleetInsignia	"0x0010066F">
 	<!ENTITY etCSCSupportEncounter		"0x00100670">
+	<!ENTITY scBritanniaStock			"0x00100671">
+	<!ENTITY rsBritanniaHero			"0x00100672">
 
 	<!-- 06C0-06FF STANDARD ITEMS -->
 
