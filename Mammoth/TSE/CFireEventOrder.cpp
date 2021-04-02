@@ -14,11 +14,12 @@ void CFireEventOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	{
 	DEBUG_TRY
 
-	//	Get the current order data
+	//	Get the current order data (we need to make copies because we're about
+	//	to delete the order).
 
 	auto &OrderDesc = pShip->GetCurrentOrderDesc();
 	CSpaceObject *pListener = OrderDesc.GetTarget();
-	const CString &sEvent = OrderDesc.GetDataString();
+	CString sEvent = OrderDesc.GetDataString();
 
 	//	Done with the order.
 	//
