@@ -176,6 +176,8 @@ int CInstalledDevice::GetHitPointsPercent (const CSpaceObject *pSource) const
 //	Returns the integrity of the device (usually a shield) as a percent of max hp.
 
 	{
+	DEBUG_TRY
+
 	int iHP;
 	int iMaxHP;
 	GetStatus(pSource, &iHP, &iMaxHP);
@@ -184,6 +186,8 @@ int CInstalledDevice::GetHitPointsPercent (const CSpaceObject *pSource) const
 		return -1;
 	else
 		return CArmorClass::CalcIntegrity(iHP, iMaxHP);
+
+	DEBUG_CATCH
 	}
 
 CSpaceObject *CInstalledDevice::GetLastShot (CSpaceObject *pSource, int iIndex) const

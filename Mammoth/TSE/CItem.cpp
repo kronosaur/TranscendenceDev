@@ -205,6 +205,8 @@ bool CItem::AccumulateEnhancementDisplayAttributes (TArray<SDisplayAttribute> &r
 //	item. Returns FALSE if there are none.
 
 	{
+	DEBUG_TRY
+
 	int iOriginalCount = retList.GetCount();
 
 	TSharedPtr<CItemEnhancementStack> pEnhancements = GetEnhancementStack();
@@ -215,6 +217,8 @@ bool CItem::AccumulateEnhancementDisplayAttributes (TArray<SDisplayAttribute> &r
 		retList.Insert(SDisplayAttribute(attribPositive, CONSTLIT("+enhanced"), true));
 
 	return (retList.GetCount() != iOriginalCount);
+
+	DEBUG_CATCH
 	}
 
 DWORD CItem::AddEnhancement (const CItemEnhancement &Enhancement)

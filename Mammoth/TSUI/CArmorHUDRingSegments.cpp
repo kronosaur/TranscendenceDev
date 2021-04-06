@@ -344,6 +344,8 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 //	Paints to the buffer if invalid
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	Skip if we don't have a ship
@@ -496,4 +498,6 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 				m_rgbShieldsTextBack,
 				rgbText);
 		}
+
+	DEBUG_CATCH
 	}

@@ -840,6 +840,8 @@ int CShip::CalcPowerUsed (SUpdateCtx &Ctx, int *retiPowerGenerated)
 //	reactor sources.
 
 	{
+	DEBUG_TRY
+
 	int iPowerUsed = 0;
 	int iPowerGenerated = 0;
 
@@ -866,6 +868,8 @@ int CShip::CalcPowerUsed (SUpdateCtx &Ctx, int *retiPowerGenerated)
 		*retiPowerGenerated = iPowerGenerated;
 
 	return iPowerUsed;
+
+	DEBUG_CATCH
 	}
 
 bool CShip::CanAttack (void) const
