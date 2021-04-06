@@ -470,7 +470,8 @@ const TArray<COrbit> &CObjectTracker::GetSystemOrbits (const CTopologyNode *pNod
 
     {
     const SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
-    ASSERT(pNodeData);
+	if (!pNodeData)
+		throw CException(ERR_FAIL);
 
     return pNodeData->Orbits;
     }

@@ -1301,7 +1301,8 @@ void CAIBehaviorCtx::ImplementFireOnTarget (CShip *pShip, CSpaceObject *pTarget,
 	{
 	bool bOutOfRange;
 
-	ASSERT(pTarget);
+	if (!pTarget)
+		throw CException(ERR_FAIL);
 
 	CVector vTarget = pTarget->GetPos() - pShip->GetPos();
 	Metric rTargetDist2 = vTarget.Dot(vTarget);

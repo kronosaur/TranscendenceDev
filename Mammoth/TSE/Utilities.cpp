@@ -1061,13 +1061,10 @@ CString GetDamageResultsName (EDamageResults iResult)
 //	Returns the name of the damage result
 
 	{
-	if (iResult < damageResultCount)
-		return CString(g_pszDamageResults[iResult]);
-	else
-		{
-		ASSERT(false);
-		return NULL_STR;
-		}
+	if (iResult < 0 || iResult >= damageResultCount)
+		throw CException(ERR_FAIL);
+
+	return CString(g_pszDamageResults[iResult]);
 	}
 
 Metric *GetDestinyToBellCurveArray (void)

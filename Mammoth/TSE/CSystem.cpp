@@ -3762,7 +3762,8 @@ void CSystem::PlaceInGate (CSpaceObject *pObj, CSpaceObject *pGate)
 	{
 	DEBUG_TRY
 
-	ASSERT(pGate);
+	if (!pGate || !pObj)
+		throw CException(ERR_FAIL);
 
 	CShip *pShip = pObj->AsShip();
 	if (pShip == NULL)

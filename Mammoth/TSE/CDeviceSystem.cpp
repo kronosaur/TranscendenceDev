@@ -1019,8 +1019,8 @@ void CDeviceSystem::ReadyNextMissile (CSpaceObject *pObj, int iDir, bool bUsedLa
 //	Selects the next missile
 
 	{
-	bool lastSelected;
-	bool firstSelected;
+	bool lastSelected = false;
+	bool firstSelected = false;
 	CInstalledDevice *pDevice = GetNamedDevice(devMissileWeapon);
 	if (pDevice)
 		{

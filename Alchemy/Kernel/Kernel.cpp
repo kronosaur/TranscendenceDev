@@ -114,8 +114,6 @@ void Kernel::kernelCleanUp (void)
 
 		DeleteCriticalSection(&g_csKernel);
 		}
-
-	ASSERT(g_iGlobalInit >= 0);
 	}
 
 DWORD Kernel::sysGetAPIFlags (void)

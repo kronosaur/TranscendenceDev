@@ -190,10 +190,10 @@ class CNamedEffects
 
 		CNamedEffects (void) { }
 		CNamedEffects (const CNamedEffects &Src) = delete;
-		CNamedEffects (CNamedEffects &&Src);
+		CNamedEffects (CNamedEffects &&Src) noexcept;
 		~CNamedEffects (void) { CleanUp(); }
 		CNamedEffects &operator= (const CNamedEffects &Src) = delete;
-		CNamedEffects &operator= (CNamedEffects &&Src);
+		CNamedEffects &operator= (CNamedEffects &&Src) noexcept;
 
 		void CleanUp (void);
 		CEffectCreator &GetFireEffect (CDesignCollection &Design, DamageTypes iDamage) const;

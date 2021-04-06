@@ -17,6 +17,9 @@ CSpaceObject* CWeaponTargetDefinition::FindTarget(CWeaponClass* pWeapon, CInstal
 //	Returns an appropriate target (or NULL).
 
 	{
+	if (!pDevice)
+		throw CException(ERR_FAIL);
+
 	//	Look for a target
 
 	bool isOmniDirectional = false;
