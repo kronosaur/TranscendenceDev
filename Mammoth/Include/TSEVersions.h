@@ -6,7 +6,7 @@
 #pragma once
 
 constexpr DWORD API_VERSION =							51;
-constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
+constexpr DWORD UNIVERSE_SAVE_VERSION =					39;
 constexpr DWORD SYSTEM_SAVE_VERSION =					201;
 
 //	Uncomment out the following define when building a stable release
@@ -113,6 +113,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					201;
 //
 //	38: 1.9 Alpha 3
 //		Added m_Difficulty to CUniverse
+//
+//	39: 1.9 Beta 4
+//		Added extra type and extension information
 
 
 //	SYSTEM VERSION HISTORY -----------------------------------------------------

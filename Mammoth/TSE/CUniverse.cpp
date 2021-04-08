@@ -21,12 +21,6 @@
 #define PROPERTY_DIFFICULTY					CONSTLIT("difficulty")
 #define PROPERTY_MIN_API_VERSION			CONSTLIT("minAPIVersion")
 
-struct SExtensionSaveDesc
-	{
-	DWORD dwUNID = 0;
-	DWORD dwRelease = 0;
-	};
-
 #define STR_G_PLAYER						CONSTLIT("gPlayer")
 #define STR_G_PLAYER_SHIP					CONSTLIT("gPlayerShip")
 
@@ -1826,36 +1820,15 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 	//	Prepare a universe initialization context
 	//	NOTE: Caller has set debug mode based on game file header flag.
 
-	CString sError;
 	CUniverse::SInitDesc InitCtx;
 	InitCtx.bDebugMode = InDebugMode();
 	InitCtx.bInLoadGame = true;
 
 	//	Load list of extensions used in this game
 
-	TArray<SExtensionSaveDesc> ExtensionList;
-	if (Ctx.dwVersion >= 14)
-		{
-		pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		ExtensionList.InsertEmpty(dwLoad);
-		if (dwLoad > 0)
-			pStream->Read((char *)&ExtensionList[0], dwLoad * sizeof(SExtensionSaveDesc));
-		}
-	else if (Ctx.dwVersion >= 8)
-		{
-		TArray<DWORD> CompatibleExtensionList;
-
-		pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		CompatibleExtensionList.InsertEmpty(dwLoad);
-		pStream->Read((char *)&CompatibleExtensionList[0], dwLoad * sizeof(DWORD));
-
-		ExtensionList.InsertEmpty(CompatibleExtensionList.GetCount());
-		for (i = 0; i < CompatibleExtensionList.GetCount(); i++)
-			{
-			ExtensionList[i].dwUNID = CompatibleExtensionList[i];
-			ExtensionList[i].dwRelease = 0;
-			}
-		}
+	TArray<CExtension::SReference> ExtensionList;
+	if (!CExtension::ReadReference(Ctx, ExtensionList, retsError))
+		return ERR_FAIL;
 
 	//	Previous versions did not save the compatibility library, so we need to
 	//	calculate that here.
@@ -1883,22 +1856,37 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 	//	Get the actual extensions
 
+	DWORD dwFlags = CExtensionCollection::FLAG_ALLOW_DIFFERENT_RELEASE;
+	dwFlags |= (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0);
+
 	for (i = 0; i < ExtensionList.GetCount(); i++)
 		{
 		CExtension *pExtension;
 
 		if (!m_Extensions.FindBestExtension(ExtensionList[i].dwUNID,
 				ExtensionList[i].dwRelease,
-				(InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
+				dwFlags,
 				&pExtension))
 			{
-			*retsError = strPatternSubst(CONSTLIT("Unable to find extension: %08x"), ExtensionList[i]);
+			if (ExtensionList[i].sName.IsBlank())
+				*retsError = strPatternSubst(CONSTLIT("Unable to find extension: %08x"), ExtensionList[i].dwUNID);
+			else
+				*retsError = strPatternSubst(CONSTLIT("Unable to find extension %s (%08x)."), ExtensionList[i].sName, ExtensionList[i].dwUNID);
+
+			return ERR_FAIL;
+			}
+
+		//	If this extension is the wrong release, then say so.
+
+		if (ExtensionList[i].dwRelease && ExtensionList[i].dwRelease != pExtension->GetRelease())
+			{
+			*retsError = strPatternSubst(CONSTLIT("Unable to load %s (%08x): Release %d required (found release %d)."), pExtension->GetName(), pExtension->GetUNID(), ExtensionList[i].dwRelease, pExtension->GetRelease());
 			return ERR_FAIL;
 			}
 
 		//	Make sure this extension is enabled
 
-		if (pExtension->IsDisabled())
+		else if (pExtension->IsDisabled())
 			{
 			*retsError = strPatternSubst(CONSTLIT("Unable to load %s (%08x): %s"), pExtension->GetName(), pExtension->GetUNID(), pExtension->GetDisabledReason());
 			return ERR_FAIL;
@@ -1916,15 +1904,19 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 	if (Ctx.dwVersion >= 14)
 		{
-		SExtensionSaveDesc Desc;
-		pStream->Read((char *)&Desc, sizeof(SExtensionSaveDesc));
+		CExtension::SReference Desc;
+		if (!CExtension::ReadReference(Ctx, Desc, retsError))
+			return ERR_FAIL;
 
 		if (!m_Extensions.FindBestExtension(Desc.dwUNID,
 				Desc.dwRelease,
 				CExtensionCollection::FLAG_ADVENTURE_ONLY | (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
 				&InitCtx.pAdventure))
 			{
-			*retsError = strPatternSubst(CONSTLIT("Unable to find adventure: %08x"), Desc.dwUNID);
+			if (Desc.sName.IsBlank())
+				*retsError = strPatternSubst(CONSTLIT("Unable to find adventure: %08x"), Desc.dwUNID);
+			else
+				*retsError = strPatternSubst(CONSTLIT("Unable to find adventure %s (%08x)."), Desc.sName, Desc.dwUNID);
 			return ERR_FAIL;
 			}
 		else if (InitCtx.pAdventure->IsDisabled())
@@ -1985,6 +1977,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 	//	Select the proper adventure and extensions and bind design.
 
+	CString sError;
 	if (Init(InitCtx, &sError) != NOERROR)
 		{
 		*retsError = strPatternSubst(CONSTLIT("Unable to load universe: %s"), sError);
@@ -2501,23 +2494,13 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 
 	for (i = 0; i < ExtensionList.GetCount(); i++)
 		{
-		SExtensionSaveDesc Desc;
-
-		Desc.dwUNID = ExtensionList[i]->GetUNID();
-		Desc.dwRelease = ExtensionList[i]->GetRelease();
-
-		pStream->Write((char *)&Desc, sizeof(SExtensionSaveDesc));
+		ExtensionList[i]->WriteReference(*pStream);
 		}
 
 	//	Adventure UNID
+	//	NOTE: WriteReference handles the case where the adventure is NULL.
 
-	SExtensionSaveDesc Desc;
-	if (const CExtension *pExtension = GetCurrentAdventureDesc().GetExtension())
-		{
-		Desc.dwUNID = pExtension->GetUNID();
-		Desc.dwRelease = pExtension->GetRelease();
-		}
-	pStream->Write((char *)&Desc, sizeof(SExtensionSaveDesc));
+	CExtension::WriteReference(*pStream, GetCurrentAdventureDesc().GetExtension());
 
 	//	CDynamicDesignTable
 
