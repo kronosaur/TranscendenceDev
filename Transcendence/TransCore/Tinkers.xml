@@ -916,7 +916,7 @@
 						(map theComponents 'reduceSum theComponent
 							;	For devices we assume a damaged device
 							(if (itmMatches theComponent "d")
-								(* (itmGetCount theComponent) (itmGetPrice (itmSetProperty theComponent 'damaged True) currencyUsed))
+								(* (itmGetCount theComponent) (itmGetPrice (itmSet@ theComponent 'damaged True) currencyUsed))
 								(* (itmGetCount theComponent) (itmGetPrice theComponent currencyUsed))
 								)
 							)
