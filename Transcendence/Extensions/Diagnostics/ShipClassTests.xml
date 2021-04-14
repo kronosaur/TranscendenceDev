@@ -102,7 +102,7 @@
 						{	test:'(typ@ &scAutoSentinel; 'wreckType)			result:&stAutonWreck;	}
 						))
 
-					;	Device Slots
+					;	Ship Tests
 
 					(block ()
 						(setq gPlayerShip (sysCreateShip &scTestShipClassSlots; Nil &svPlayer;))
@@ -112,23 +112,97 @@
 						(shpOrder gPlayerShip 'hold)
 						)
 
-					;	Some device install tests
-
 					(diagEval (list
+
+						;	Some device install tests
+
 						{	test:'(objAddItem gPlayerShip &itSmartCannon; 1)		result:'ignore }
-						{	test:'(shpInstallDevice gPlayerShip (itmCreate &itSmartCannon; 1))		result:'ignore }
-						{	test:'(itmGetType (@ (objGetItems gPlayerShip "pI +rasiermesser;") 0))
+						{	test:'(shpInstallDevice gPlayerShip 
+									(itmCreate &itSmartCannon; 1)
+									)		
+																					result:'ignore }
+						{	test:'(itmGetType 
+									(@ (objGetItems gPlayerShip "pI +rasiermesser;") 0)
+									)
 																					result:&itSmartCannon; }
-						{	test:'(itm@ (@ (objGetItems gPlayerShip "pI +rasiermesser;") 0) 'omnidirectional)
+						{	test:'(itm@ 
+									(@ (objGetItems gPlayerShip "pI +rasiermesser;") 0)
+									'omnidirectional
+									)
 																					result:True }
-						{	test:'(itm@ (@ (objGetItems gPlayerShip "pI +rasiermesser;") 0) 'slotIndex)
+						{	test:'(itm@ 
+									(@ (objGetItems gPlayerShip "pI +rasiermesser;") 0)
+									'slotIndex
+									)
 																					result:2 }
 						{	test:'(objAddItem gPlayerShip &itFlenserCannon; 1)		result:'ignore }
-						{	test:'(shpInstallDevice gPlayerShip (itmCreate &itFlenserCannon; 1) 2)		result:'ignore }
-						{	test:'(itmGetType (@ (objGetItems gPlayerShip "pI +rasiermesser;") 0))
+						{	test:'(shpInstallDevice 
+									gPlayerShip 
+									(itmCreate &itFlenserCannon; 1)
+									2
+									)
+																					result:'ignore }
+						{	test:'(itmGetType 
+									(@ (objGetItems gPlayerShip "pI +rasiermesser;") 0)
+									)
 																					result:&itFlenserCannon; }
-						{	test:'(itm@ (@ (objGetItems gPlayerShip "pI +rasiermesser;") 0) 'omnidirectional)
+						{	test:'(itm@ 
+									(@ (objGetItems gPlayerShip "pI +rasiermesser;") 0)
+									'omnidirectional
+									)
 																					result:True }
+
+						;	Installed Armor
+
+						{	test:'(itm@ 
+									(@ (objGetItems gPlayerShip "aI") 0)
+									'hp
+									)
+																					result:35 }
+						{	test:'(itm@
+									(itmSet@ 
+										(@ (objGetItems gPlayerShip "aI") 0)
+										'hp
+										10
+										)
+									'hp
+									)
+																					result:10 }
+						{	test:'(itm@ 
+									(@ (objGetItems gPlayerShip "aI") 0)
+									'hp
+									)
+																					result:35 }
+						{	test:'(obj@ gPlayerShip
+									(@ (objGetItems gPlayerShip "aI") 0)
+									'hp
+									)
+																					result:35 }
+						{	test:'(itm@
+									(itmSet@ 
+										(@ (objGetItems gPlayerShip "aI") 0)
+										'hp
+										100
+										)
+									'hp
+									)
+																					result:35 }
+						{	test:'(objSet@ gPlayerShip
+									(@ (objGetItems gPlayerShip "aI") 0)
+									'hp
+									10
+									)
+																					result:'ignore }
+						{	test:'(itm@ 
+									(@ (objGetItems gPlayerShip "aI") 0)
+									'hp
+									)
+																					result:10 }
+						{	test:'(obj@ gPlayerShip
+									(@ (objGetItems gPlayerShip "aI") 0)
+									'hp
+									)
+																					result:10 }
 						))
 
 					;	Clean up

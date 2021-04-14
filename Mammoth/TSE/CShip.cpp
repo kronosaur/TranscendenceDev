@@ -6962,6 +6962,17 @@ bool CShip::SetAbility (Abilities iAbility, AbilityModifications iModification, 
 		}
 	}
 
+void CShip::SetArmorHP (int iSect, int iHP)
+
+//	SetArmorHP
+//
+//	Sets armor hit points.
+
+	{
+	m_Armor.SetSegmentHP(*this, iSect, iHP);
+	m_pController->OnShipStatus(IShipController::statusArmorRepaired, iSect);
+	}
+
 void CShip::SetAsShipSection (CShip *pMain)
 
 //	SetAsShipSection

@@ -226,6 +226,23 @@ bool CArmorSystem::RepairSegment (CSpaceObject *pSource, int iSeg, int iHPToRepa
 	return true;
 	}
 
+void CArmorSystem::SetSegmentHP (CSpaceObject &SourceObj, int iSeg, int iHP)
+
+//	SetSegmentHP
+//
+//	Sets the segment to the given hit points.
+
+	{
+	if (iSeg < 0 || iSeg >= m_Segments.GetCount())
+		throw CException(ERR_FAIL);
+
+	CInstalledArmor &Armor = GetSegment(iSeg);
+	int iMaxHP = Armor.GetMaxHP(&SourceObj);
+	int iNewHP = Max(0, Min(iHP, iMaxHP));
+
+	Armor.SetHitPoints(iNewHP);
+	}
+
 void CArmorSystem::SetTotalHitPoints (CSpaceObject *pSource, int iNewHP)
 
 //	SetTotalHitPoints

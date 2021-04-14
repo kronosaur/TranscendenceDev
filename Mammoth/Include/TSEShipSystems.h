@@ -135,6 +135,7 @@ class CArmorSystem
 		bool RepairAll (CSpaceObject *pSource);
 		bool RepairSegment (CSpaceObject *pSource, int iSeg, int iHPToRepair, int *retiHPRepaired = NULL);
 		void SetHealerLeft (int iValue) { m_iHealerLeft = Max(0, iValue); }
+		void SetSegmentHP (CSpaceObject &SourceObj, int iSeg, int iHP);
 		void SetTotalHitPoints (CSpaceObject *pSource, int iNewHP);
 		bool Update (SUpdateCtx &Ctx, CSpaceObject *pSource, int iTick);
 		void WriteToStream (IWriteStream *pStream) const;

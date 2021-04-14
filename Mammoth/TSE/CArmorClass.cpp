@@ -2699,16 +2699,9 @@ ESetPropertyResult CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, con
 				return ESetPropertyResult::error;
 				}
 
-			iHP = Max(0, Min(iHP, ArmorItem.GetMaxHP()));
+			//	SetArmorHP checks to make sure iHP is in range.
 
-			if (iHP < pArmor->GetHitPoints())
-				{
-				DamageDesc Damage(damageGeneric, DiceRange(0, 0, pArmor->GetHitPoints() - iHP));
-				Damage.SetNoSRSFlash();
-				pShip->DamageArmor(pArmor->GetSect(), Damage);
-				}
-			else if (iHP > pArmor->GetHitPoints())
-				pShip->RepairArmor(pArmor->GetSect(), iHP - pArmor->GetHitPoints());
+			pShip->SetArmorHP(pArmor->GetSect(), iHP);
 			}
 		else
 			{
@@ -2716,6 +2709,11 @@ ESetPropertyResult CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, con
 			iHP = Max(0, Min(iHP, iMaxHP));
 			
 			Item.SetDamaged(iMaxHP - iHP);
+
+			//	Clear installed. Otherwise, we'll diverge from the HP stored in 
+			//	CInstalledArmor.
+
+			Item.ClearInstalled();
 			}
 		}
 	else if (strEquals(sProperty, PROPERTY_INC_HP))
@@ -2731,14 +2729,7 @@ ESetPropertyResult CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, con
 				return ESetPropertyResult::error;
 				}
 
-			if (iChange < 0)
-				{
-				DamageDesc Damage(damageGeneric, DiceRange(0, 0, -iChange));
-				Damage.SetNoSRSFlash();
-				pShip->DamageArmor(pArmor->GetSect(), Damage);
-				}
-			else if (iChange > 0)
-				pShip->RepairArmor(pArmor->GetSect(), iChange);
+			pShip->SetArmorHP(pArmor->GetSect(), pArmor->GetHitPoints() + iChange);
 			}
 		else
 			{
@@ -2747,6 +2738,7 @@ ESetPropertyResult CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, con
 			int iNewHP = Max(0, Min(iHP + iChange, iMaxHP));
 			
 			Item.SetDamaged(iMaxHP - iNewHP);
+			Item.ClearInstalled();
 			}
 		}
 	else if (strEquals(sProperty, PROPERTY_LEVEL))
@@ -2771,7 +2763,10 @@ ESetPropertyResult CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, con
 		if (pArmor)
 			pArmor->SetHitPoints(iNewHP);
 		else
+			{
 			Item.SetDamaged(iNewMaxHP - iNewHP);
+			Item.ClearInstalled();
+			}
 		}
 	else
 		{
