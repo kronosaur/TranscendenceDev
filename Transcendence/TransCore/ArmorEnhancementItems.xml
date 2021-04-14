@@ -17,7 +17,7 @@
 			attributes=			"armorEnhance, humanTech, minorItem"
 			unknownType=		"&itUnknownBarrel;"
 
-			description=		"This coating is used to protect a ship's armor against laser and particle beam weapons."
+			description=		"This coating is used to protect a ship's armor against laser weapons."
 
 			useScreen=			"&dsRPGUseItemOnArmor;"
 			data=				"ablative"
@@ -28,7 +28,7 @@
 		<Properties>
 			<Definition id="rpg.enhancementTable">
 				'(
-					{	criteria:"a L:1-10"		enhancement:"+resistDamageClass:laser:50"	}
+					{	criteria:"a L:1-10"		enhancement:"+hpBonus:laser:100"	}
 					{	criteria:"a L:11-"		descID:'tooAdvanced	}
 					)
 			</Definition>
@@ -38,7 +38,7 @@
 
 		<Language>
 			<Text id="rpg.useResultIntro">
-				The paste is an ablative coating that resists laser and particle damage.
+				The paste is an ablative coating that resists laser damage.
 			</Text>
 		</Language>
 	</ItemType>
@@ -56,7 +56,7 @@
 			unknownType=		"&itUnknownBarrel;"
 			attributes=			"armorEnhance, humanTech, minorItem"
 
-			description=		"This coating reacts when hit by kinetic or chemical explosives and produces an opposite reaction that protect the underlying armor and hull."
+			description=		"This coating reacts when hit by kinetic weapons and produces an opposite reaction that protect the underlying armor and hull."
 
 			useScreen=			"&dsRPGUseItemOnArmor;"
 			data=				"reactive"
@@ -67,7 +67,7 @@
 		<Properties>
 			<Definition id="rpg.enhancementTable">
 				'(
-					{	criteria:"a L:1-10"		enhancement:"+resistDamageClass:kinetic:50"	}
+					{	criteria:"a L:1-10"		enhancement:"+hpBonus:kinetic:100"	}
 					{	criteria:"a L:11-"		descID:'tooAdvanced	}
 					)
 			</Definition>
@@ -77,7 +77,7 @@
 
 		<Language>
 			<Text id="rpg.useResultIntro">
-				The paste is a reactive coating that resists kinetic and chemical explosion damage.
+				The paste is a reactive coating that resists kinetic damage.
 			</Text>
 		</Language>
 	</ItemType>
@@ -344,7 +344,7 @@
 		<Properties>
 			<Definition id="rpg.enhancementTable">
 				'(
-					{	criteria:"a L:1-10"		enhancement:"+resist:particle:50"	}
+					{	criteria:"a L:1-10"		enhancement:"+hpBonus:particle:100"	}
 					{	criteria:"a L:11-"		descID:'tooAdvanced	}
 					)
 			</Definition>
@@ -813,7 +813,7 @@
 		<Properties>
 			<Definition id="rpg.enhancementTable">
 				'(
-					{	criteria:"a L:1-10"		enhancement:"+resist:ion:50"	}
+					{	criteria:"a L:1-10"		enhancement:"+hpBonus:ion:100"	}
 					{	criteria:"a L:11-"		descID:'TooAdvanced	}
 					)
 			</Definition>
@@ -970,7 +970,7 @@
 		<Properties>
 			<Definition id="rpg.enhancementTable">
 				'(
-					{	criteria:"a L:1-10"		enhancement:"+resist:thermo:50"	}
+					{	criteria:"a L:1-10"		enhancement:"+hpBonus:thermo:100"	}
 					{	criteria:"a L:11-"		descID:'TooAdvanced	}
 					)
 			</Definition>
@@ -1069,7 +1069,7 @@
 										(@ (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;;") 0)
 										'damageAdj
 										)
-									'particle)										result:75	}
+									'particle)										result:100	}
 
 						{	test:'(enum (objGetItems gPlayerShip "*U +unid:&itPlasteelPlate;") theItem
 										(objRemoveItem gPlayerShip theItem)

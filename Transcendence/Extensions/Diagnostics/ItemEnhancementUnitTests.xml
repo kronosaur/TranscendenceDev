@@ -72,8 +72,15 @@
 										(@ (objGetItems gPlayerShip "aI") 0)
 										'damageAdj
 										)
+									'laser
+									)												result:40	}
+
+						{	test:'(@ (itmGetProperty 
+										(@ (objGetItems gPlayerShip "aI") 0)
+										'damageAdj
+										)
 									'particle
-									)												result:75	}
+									)												result:100	}
 
 						;	Enhance harderned reactive armor with anti-radiation -------------------
 
