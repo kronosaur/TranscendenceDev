@@ -15,6 +15,24 @@
 
 			<Data id="destID"></Data>
 			<Data id="destNodeID"></Data>
+
+			<!-- reward
+			
+				Override this to compute a reward when the mission is created.
+				Nil means no reward. In general this should be a Variant 
+				property (that is, a value initialized when the mission is
+				created).
+
+				-->
+			<Definition id="reward"></Definition>
+
+			<!-- rewardCurrency
+			
+				This is the currency in which the reward is given.
+
+				-->
+			<Constant id="rewardCurrency">(unv@ 'defaultCurrency)</Constant>
+
 		</Properties>
 
 		<Events>
@@ -42,6 +60,17 @@
 						(msnSuccess gSource)
 					)
 			</OnObjDocked>
+
+			<OnReward>
+				(block (
+					(reward (msn@ gSource 'reward))
+					(currency (msn@ gSource 'rewardCurrency))
+					)
+					(if reward
+						(rpgMissionRewardPayment reward currency)
+						)
+					)
+			</OnReward>
 		</Events>
 	</MissionType>
 

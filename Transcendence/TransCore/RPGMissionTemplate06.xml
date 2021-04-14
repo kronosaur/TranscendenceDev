@@ -188,6 +188,17 @@
 						(msnSuccess gSource)
 					)
 			</OnObjDocked>
+
+			<OnReward>
+				(block (
+					(reward (msn@ gSource 'reward))
+					(currency (msn@ gSource 'rewardCurrency))
+					)
+					(if reward
+						(rpgMissionRewardPayment reward currency)
+						)
+					)
+			</OnReward>
 		</Events>
 
 		<Language>
