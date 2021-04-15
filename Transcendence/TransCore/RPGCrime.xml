@@ -68,6 +68,22 @@
 			<Global id="keyCrime"></Global>
 			<Global id="criminalRecord"></Global>
 
+			<!-- We track any punishment enacted. This is a struct with the 
+				following fields:
+
+				type: The type of punishment
+
+					'fine: Player paid fine
+					'enemy: Sovereign is now an enemy
+					'neutral: Sovereign is now neutral
+					'terminal: Game over
+
+				desc: A sentence describing what happened.
+
+			-->
+
+			<Global id="punishment"></Global>
+
 			<!-- This is the amount of money (in local currency) required to 
 				make up for the current criminal record.
 			-->
@@ -103,6 +119,36 @@
 						}
 					)
 			</GetGlobalDockScreen>
+
+			<GetGlobalAchievements>
+				(block (
+					(sovereignID (or (typ@ gType 'justice.sovereign) gType))
+					(keyCrime (typ@ gType 'keyCrime))
+					(punishment (typ@ gType 'punishment))
+					)
+					(append
+						(switch
+							keyCrime
+								{
+									desc: (typTranslate gType 'stats.wantedFor { 
+										sovereign: (sovGetName sovereignID 'article)
+										crimeDesc: (@ keyCrime 'desc)
+										})
+
+									sectionID: 'criminalRecord
+									}
+							)
+
+						(switch
+							punishment
+								{
+									desc: (@ punishment 'desc)
+									sectionID: 'criminalRecord
+									}
+							)
+						)
+					)
+			</GetGlobalAchievements>
 
 			<OnCrimeCommitted>
 				;	gData is the crimeDesc
@@ -153,6 +199,13 @@
 							(block ()
 								(sovSetDisposition sovereignID &svPlayer; 'enemy)
 								(sovSetDisposition &svPlayer; sovereignID 'enemy)
+
+								(typSet@ gType 'punishment {
+									type: 'enemy
+									desc: (typTranslate gType 'stats.declaredEnemy {
+										sovereign: (sovGetName sovereignID 'article)
+										})
+									})
 								)
 
 						(and (isint makeEnemyOn)
@@ -162,6 +215,13 @@
 							(block ()
 								(sovSetDisposition sovereignID &svPlayer; 'enemy)
 								(sovSetDisposition &svPlayer; sovereignID 'enemy)
+
+								(typSet@ gType 'punishment {
+									type: 'enemy
+									desc: (typTranslate gType 'stats.declaredEnemy {
+										sovereign: (sovGetName sovereignID 'article)
+										})
+									})
 								)
 
 						(and (= makeNeutralOn 'secondImprisonCrime)
@@ -173,6 +233,13 @@
 							(block ()
 								(sovSetDisposition sovereignID &svPlayer; 'neutral)
 								(sovSetDisposition &svPlayer; sovereignID 'neutral)
+
+								(typSet@ gType 'punishment {
+									type: 'enemy
+									desc: (typTranslate gType 'stats.declaredNeutral {
+										sovereign: (sovGetName sovereignID 'article)
+										})
+									})
 								)
 
 						(and (isint makeNeutralOn)
@@ -182,6 +249,13 @@
 							(block ()
 								(sovSetDisposition sovereignID &svPlayer; 'neutral)
 								(sovSetDisposition &svPlayer; sovereignID 'neutral)
+
+								(typSet@ gType 'punishment {
+									type: 'enemy
+									desc: (typTranslate gType 'stats.declaredNeutral {
+										sovereign: (sovGetName sovereignID 'article)
+										})
+									})
 								)
 						)
 
@@ -304,6 +378,7 @@
 				;	This is called to resolve a judgement. gData is the judgement.
 
 				(block (
+					(sovereignID (or (typ@ gType 'justice.sovereign) gType))
 					(status (@ gData 'status))
 					(epitaph (@ gData 'epitaph))
 					)
@@ -312,6 +387,13 @@
 								(= status 'lostShip)
 								)
 							(block ()
+								(typSet@ gType 'punishment {
+									type: 'enemy
+									desc: (typTranslate gType 'stats.imprisoned {
+										sovereign: (sovGetName sovereignID 'article)
+										})
+									})
+								
 								(plyDestroyed gPlayer epitaph)
 								'forceUndock
 								)
@@ -327,6 +409,14 @@
 								(typSet@ gType 'keyCrime Nil)
 								(typSet@ gType 'penaltyOwed 0)
 
+								(typSet@ gType 'punishment {
+									type: 'enemy
+									desc: (typTranslate gType 'stats.charged {
+										sovereign: (sovGetName sovereignID 'article)
+										penaltyPaid: (fmtCurrency currency (typ@ gType 'penaltyPaid))
+										})
+									})
+								
 								True
 								)
 
@@ -379,6 +469,12 @@
 			</Text>
 			<Text id="crime.shipDestroyed">the destruction of %name%</Text>
 			<Text id="crime.stationDestroyed">the destruction of %name%</Text>
+
+			<Text id="stats.wantedFor">Wanted by %sovereign% for %crimeDesc%</Text>
+			<Text id="stats.declaredEnemy">Declared an enemy combatant by %sovereign%.</Text>
+			<Text id="stats.declaredNeutral">Declared a foreign agent by %sovereign%</Text>
+			<Text id="stats.imprisoned">Imprisoned by %sovereign%</Text>
+			<Text id="stats.charged">Fined %penaltyPaid% by %sovereign%</Text>
 
 			<Text id="epitaph.imprisoned">was imprisoned for %crimeDesc%</Text>
 			<Text id="epitaph.lostShip">lost %his% ship after a criminal conviction</Text>
