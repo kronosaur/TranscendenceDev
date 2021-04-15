@@ -2994,7 +2994,7 @@ ALERROR CDesignType::PrepareBindDesign (SDesignLoadCtx &Ctx)
 	return OnPrepareBindDesign(Ctx);
 	}
 
-void CDesignType::ReadFromStream (SUniverseLoadCtx &Ctx)
+bool CDesignType::ReadFromStream (SUniverseLoadCtx &Ctx, CString *retsError)
 
 //	ReadFromStream
 //
@@ -3013,6 +3013,18 @@ void CDesignType::ReadFromStream (SUniverseLoadCtx &Ctx)
 
 	bool bHasGlobalData = ((dwFlags & 0x00000001) ? true : false);
 
+	//	In later versions we store the type in the flags.
+
+	if (Ctx.dwVersion >= 40)
+		{
+		DesignTypes iSavedType = (DesignTypes)(dwFlags >> 24);
+		if (iSavedType != GetType())
+			{
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to load %s (%08x) because its type changed."), GetEntityName(), GetUNID());
+			return false;
+			}
+		}
+
 	//	Read global data
 
 	if (bHasGlobalData)
@@ -3021,6 +3033,8 @@ void CDesignType::ReadFromStream (SUniverseLoadCtx &Ctx)
 	//	Allow sub-classes to load
 
 	OnReadFromStream(Ctx);
+
+	return true;
 	}
 
 void CDesignType::ReadGlobalData (SUniverseLoadCtx &Ctx)
@@ -3277,6 +3291,11 @@ void CDesignType::WriteToStream (IWriteStream *pStream)
 
 	DWORD dwFlags = 0;
 	dwFlags |= (m_pExtra ? 0x00000001 : 0);
+
+	//	Include type as the high byte
+
+	DWORD dwType = (GetType() & 0xff) << 24;
+	dwFlags |= dwType;
 
 	pStream->Write(dwFlags);
 

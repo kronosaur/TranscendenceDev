@@ -256,7 +256,7 @@ class CDesignType
 		bool MatchesCriteria (const CDesignTypeCriteria &Criteria) const;
 		ALERROR PrepareBindDesign (SDesignLoadCtx &Ctx);
 		void PrepareReinit (void) { OnPrepareReinit(); }
-		void ReadFromStream (SUniverseLoadCtx &Ctx);
+		bool ReadFromStream (SUniverseLoadCtx &Ctx, CString *retsError = NULL);
 		void Reinit (void);
 		void UnbindDesign (void) { m_pInheritFrom = NULL; m_bBindCalled = false; OnUnbindDesign(); }
 		void WriteToStream (IWriteStream *pStream);

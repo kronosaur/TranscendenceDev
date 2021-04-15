@@ -2090,7 +2090,8 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 			try
 				{
-				pType->ReadFromStream(Ctx);
+				if (!pType->ReadFromStream(Ctx, retsError))
+					return ERR_FAIL;
 				}
 			catch (...)
 				{
