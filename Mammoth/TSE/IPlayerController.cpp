@@ -30,6 +30,20 @@ CSovereign *IPlayerController::GetSovereign (void) const
 	return m_pSovereign;
 	}
 
+void IPlayerController::OnPowerInvoked (const CPower &Power)
+
+//	OnPowerInvoked
+//
+//	Keep track of powers invoked in stats.
+
+	{
+	auto *pStats = GetGameStats();
+	if (!pStats)
+		return;
+
+	pStats->OnPowerInvoked(Power);
+	}
+
 void IPlayerController::ReadFromStream (SUniverseLoadCtx &Ctx)
 
 //	ReadFromStream

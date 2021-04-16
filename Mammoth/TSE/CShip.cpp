@@ -6851,9 +6851,8 @@ void CShip::SendMessage (const CSpaceObject *pSender, const CString &sMsg) const
 
 	if (IsPlayer())
 		{
-		IPlayerController *pPlayer = GetUniverse().GetPlayer();
-		if (pPlayer)
-			pPlayer->OnMessageFromObj(pSender, sMsg);
+		IPlayerController &Player = GetUniverse().GetPlayer();
+		Player.OnMessageFromObj(pSender, sMsg);
 		}
 	}
 

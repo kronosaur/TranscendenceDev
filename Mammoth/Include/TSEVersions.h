@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							51;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
-constexpr DWORD SYSTEM_SAVE_VERSION =					201;
+constexpr DWORD SYSTEM_SAVE_VERSION =					202;
 
 //	Uncomment out the following define when building a stable release
 
@@ -732,3 +732,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					201;
 //
 //	201: 1.9 Beta 4
 //		Added m_iInstalledIndex to CItem::SExtra
+//
+//	202: 1.9 Beta 4
+//		Added m_PowerStats to CPlayerGameStats

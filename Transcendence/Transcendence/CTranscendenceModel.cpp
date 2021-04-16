@@ -1377,7 +1377,7 @@ ALERROR CTranscendenceModel::LoadGame (const CString &sSignedInUsername, const C
 
 		//	Connect the player ship controller to the controller
 
-		CTranscendencePlayer *pPlayerController = dynamic_cast<CTranscendencePlayer *>(m_Universe.GetPlayer());
+		CTranscendencePlayer *pPlayerController = dynamic_cast<CTranscendencePlayer *>(&m_Universe.GetPlayer());
 		if (pPlayerController == NULL)
 			{
 			*retsError = CONSTLIT("Save file corruption: No player controller found.");

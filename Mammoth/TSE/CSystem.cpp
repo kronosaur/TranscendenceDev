@@ -4864,9 +4864,8 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 
 	//	Update the player controller
 
-	IPlayerController *pPlayerController = m_Universe.GetPlayer();
-	if (pPlayerController)
-		pPlayerController->Update(Ctx);
+	IPlayerController PlayerController = m_Universe.GetPlayer();
+	PlayerController.Update(Ctx);
 
 	//	Give the player ship a chance to do something with data that we've
 	//	accumulated during update. For example, we use this to set the nearest

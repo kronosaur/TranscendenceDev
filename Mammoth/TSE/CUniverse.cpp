@@ -43,6 +43,7 @@ DWORD g_dwPerformanceTimer;
 #endif
 
 static CUniverse::IHost g_DefaultHost;
+IPlayerController CUniverse::m_DefaultPlayer;
 
 static const char *FONT_TABLE[CUniverse::fontCount] = 
 	{

@@ -510,7 +510,8 @@ class CUniverse
 		DWORD GetFrameTicks (void) const { return m_dwFrame; }
 		int GetPaintTick (void) { return m_iPaintTick; }
 		CSpaceObject *GetPOV (void) const { return m_pPOV; }
-		IPlayerController *GetPlayer (void) const { return m_pPlayer; }
+		IPlayerController &GetPlayer (void) { return (m_pPlayer ? *m_pPlayer : m_DefaultPlayer); }
+		const IPlayerController &GetPlayer (void) const { return (m_pPlayer ? *m_pPlayer : m_DefaultPlayer); }
 		GenomeTypes GetPlayerGenome (void) const;
 		CString GetPlayerName (void) const;
 		CSpaceObject *GetPlayerShip (void) const { return m_pPlayerShip; }
@@ -661,5 +662,7 @@ class CUniverse
 		bool m_bDebugMode = false;
 		bool m_bNoSound = false;
 		int m_iLogImageLoad = 0;				//	If >0 we disable image load logging
+
+		static IPlayerController m_DefaultPlayer;
 	};
 

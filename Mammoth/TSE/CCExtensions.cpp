@@ -8183,9 +8183,8 @@ ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (pObj == NULL)
 				{
-				IPlayerController *pPlayer = pCtx->GetUniverse().GetPlayer();
-				if (pPlayer)
-					pPlayer->OnMessageFromObj(pSender, sMessage);
+				IPlayerController &Player = pCtx->GetUniverse().GetPlayer();
+				Player.OnMessageFromObj(pSender, sMessage);
 				}
 
 			//	Otherwise, send to object (which might send it to the player or
@@ -8235,9 +8234,8 @@ ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (pObj == NULL)
 				{
-				IPlayerController *pPlayer = pCtx->GetUniverse().GetPlayer();
-				if (pPlayer)
-					pPlayer->OnMessageFromObj(pSender, sMessage);
+				IPlayerController &Player = pCtx->GetUniverse().GetPlayer();
+				Player.OnMessageFromObj(pSender, sMessage);
 				}
 
 			//	Otherwise, send to object (which might send it to the player or
