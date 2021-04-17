@@ -15,6 +15,7 @@
 #define UNID_ATTRIB								CONSTLIT("UNID")
 #define COST_ATTRIB								CONSTLIT("cost")
 #define KEY_ATTRIB								CONSTLIT("key")
+#define LEVEL_ATTRIB							CONSTLIT("level")
 #define NAME_ATTRIB								CONSTLIT("name")
 
 #define PROPERTY_NAME							CONSTLIT("name")
@@ -107,6 +108,9 @@ void CPower::InvokeByPlayer (CSpaceObject *pSource, CSpaceObject *pTarget, CStri
 //	Invoke the power for a player
 
 	{
+	if (!pSource)
+		throw CException(ERR_FAIL);
+
 	if (retsError) *retsError = NULL_STR;
 
 	CCodeChainCtx Ctx(GetUniverse());
@@ -148,6 +152,11 @@ void CPower::InvokeByPlayer (CSpaceObject *pSource, CSpaceObject *pTarget, CStri
 				*retsError = pResult->GetStringValue();
 			}
 		}
+
+	//	Notify player that we were invoked
+
+	if (pSource->IsPlayer())
+		GetUniverse().GetPlayer().OnPowerInvoked(*this);
 	}
 
 void CPower::InvokeByNonPlayer(CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError)
@@ -251,6 +260,7 @@ ALERROR CPower::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Load basic stuff
 
 	m_sName = pDesc->GetAttribute(NAME_ATTRIB);
+	m_iLevel = pDesc->GetAttributeIntegerBounded(LEVEL_ATTRIB, 1, MAX_SYSTEM_LEVEL);
 	m_iInvokeCost = pDesc->GetAttributeInteger(COST_ATTRIB);
 	m_sInvokeKey = pDesc->GetAttribute(KEY_ATTRIB);
 
@@ -315,6 +325,9 @@ bool CPower::OnDestroyCheck (CSpaceObject *pSource, DestructionTypes iCause, con
 //	Returns TRUE if ship can be destroyed; otherwise, FALSE
 
 	{
+	if (!pSource)
+		throw CException(ERR_FAIL);
+
 	SEventHandlerDesc Event;
 	if (!FindEventHandler(EEvent::OnDestroyCheck, &Event))
 		return true;
@@ -330,7 +343,17 @@ bool CPower::OnDestroyCheck (CSpaceObject *pSource, DestructionTypes iCause, con
 	//	Invoke
 
 	ICCItemPtr pResult = Ctx.RunCode(Event);
-	return (pResult->IsNil() ? false : true);
+	if (!pResult->IsNil())
+		return true;
+
+	//	This counts as an invocation.
+
+	if (pSource->IsPlayer())
+		GetUniverse().GetPlayer().OnPowerInvoked(*this);
+
+	//	Cancel destruction
+
+	return false;
 	}
 
 void CPower::OnMarkImages (void)

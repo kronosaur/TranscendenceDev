@@ -972,6 +972,8 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 			CG32bitPixel rgbInsideColor = CG32bitPixel::Blend(0, rgbColor, (BYTE)192);
 			DrawDot(x, y, rgbInsideColor, markerRoundDot);
 			DrawDot(x, y, rgbColor, markerSmallCircle);
+
+			[[fallthrough]];
 			}
 
 		case markerTinyCircle:

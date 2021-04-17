@@ -256,7 +256,7 @@ class CDesignType
 		bool MatchesCriteria (const CDesignTypeCriteria &Criteria) const;
 		ALERROR PrepareBindDesign (SDesignLoadCtx &Ctx);
 		void PrepareReinit (void) { OnPrepareReinit(); }
-		void ReadFromStream (SUniverseLoadCtx &Ctx);
+		bool ReadFromStream (SUniverseLoadCtx &Ctx, CString *retsError = NULL);
 		void Reinit (void);
 		void UnbindDesign (void) { m_pInheritFrom = NULL; m_bBindCalled = false; OnUnbindDesign(); }
 		void WriteToStream (IWriteStream *pStream);
@@ -940,6 +940,13 @@ class CExtension
 			error,
 			};
 
+		struct SReference
+			{
+			DWORD dwUNID = 0;
+			DWORD dwRelease = 0;
+			CString sName;
+			};
+
 		struct SLibraryDesc
 			{
 			DWORD dwUNID = 0;				//	UNID of library that we use
@@ -1026,12 +1033,15 @@ class CExtension
 		void SweepImages (void);
 		bool UsesCompatibilityLibrary (void) const { return m_bUsesCompatibilityLibrary; }
 		bool UsesXML (void) const { return m_bUsesXML; }
+		void WriteReference (IWriteStream &Stream) const { WriteReference(Stream, this); }
 
 		static ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, CString *retsError);
 		static void DebugDump (CExtension *pExtension, bool bFull = false);
 		static CString GetTypeName (EExtensionTypes iType);
 		static EUsage ParseUsage (const CString &sValue);
-
+		static bool ReadReference (SUniverseLoadCtx &Ctx, SReference &Reference, CString *retsError = NULL);
+		static bool ReadReference (SUniverseLoadCtx &Ctx, TArray<SReference> &retList, CString *retsError = NULL);
+		static void WriteReference (IWriteStream &Stream, const CExtension *pExtension);
 
 	private:
 		struct SGlobalsEntry
@@ -1139,7 +1149,11 @@ class CExtensionCollection
 
 			//	ComputeBindOrder
 
-			FLAG_FORCE_COMPATIBILITY_LIBRARY = 0x00001000,
+			FLAG_FORCE_COMPATIBILITY_LIBRARY =	0x00001000,
+
+			//	FindBestExtension
+
+			FLAG_ALLOW_DIFFERENT_RELEASE =		0x00002000,
 			};
 
 		struct SCollectionStatusOptions

@@ -26,7 +26,7 @@ CStackBase::~CStackBase (void)
 	{
 	if (m_pBlock)
 		{
-        ::VirtualFree(m_pBlock, m_iCommittedSize, MEM_DECOMMIT);
+		//	This will decommit and free
         ::VirtualFree(m_pBlock, 0, MEM_RELEASE);
 		}
 	}

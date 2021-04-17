@@ -769,9 +769,9 @@ CString DamageDesc::GetDesc (DWORD dwFlags)
 			{
 			int iLen;
 			if (iMin == iMax)
-				iLen = wsprintf(szBuffer, "%s%d", sDamageType, iMax);
+				iLen = wsprintf(szBuffer, "%s%d", (LPSTR)sDamageType, iMax);
 			else
-				iLen = wsprintf(szBuffer, "%s%d-%d", sDamageType, iMin, iMax);
+				iLen = wsprintf(szBuffer, "%s%d-%d", (LPSTR)sDamageType, iMin, iMax);
 
 			return CString(szBuffer, iLen);
 			}
@@ -779,9 +779,9 @@ CString DamageDesc::GetDesc (DWORD dwFlags)
 			{
 			int iLen;
 			if (iMin == iMax)
-				iLen = wsprintf(szBuffer, "%s%d (+%d%%)", sDamageType, iMax, m_iBonus);
+				iLen = wsprintf(szBuffer, "%s%d (+%d%%)", (LPSTR)sDamageType, iMax, m_iBonus);
 			else
-				iLen = wsprintf(szBuffer, "%s%d-%d (+%d%%)", sDamageType, iMin, iMax, m_iBonus);
+				iLen = wsprintf(szBuffer, "%s%d-%d (+%d%%)", (LPSTR)sDamageType, iMin, iMax, m_iBonus);
 
 			return CString(szBuffer, iLen);
 			}
@@ -789,9 +789,9 @@ CString DamageDesc::GetDesc (DWORD dwFlags)
 			{
 			int iLen;
 			if (iMin == iMax)
-				iLen = wsprintf(szBuffer, "%s%d (-%d%%)", sDamageType, iMax, -m_iBonus);
+				iLen = wsprintf(szBuffer, "%s%d (-%d%%)", (LPSTR)sDamageType, iMax, -m_iBonus);
 			else
-				iLen = wsprintf(szBuffer, "%s%d-%d (-%d%%)", sDamageType, iMin, iMax, -m_iBonus);
+				iLen = wsprintf(szBuffer, "%s%d-%d (-%d%%)", (LPSTR)sDamageType, iMin, iMax, -m_iBonus);
 
 			return CString(szBuffer, iLen);
 			}

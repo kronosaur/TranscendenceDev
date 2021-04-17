@@ -42,7 +42,7 @@ template <class OBJ> class TSharedPtr
 				m_pPtr = NULL;
 			}
 
-		TSharedPtr (TSharedPtr<OBJ> &&Src) : m_pPtr(Src.m_pPtr)
+		TSharedPtr (TSharedPtr<OBJ> &&Src) noexcept : m_pPtr(Src.m_pPtr)
 			{
 			Src.m_pPtr = NULL;
 			}

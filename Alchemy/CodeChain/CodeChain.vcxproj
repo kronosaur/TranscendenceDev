@@ -201,6 +201,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>26495; 26812</DisableSpecificWarnings>
     </ClCompile>
     <Lib>
       <OutputFile>Debug\CodeChain.lib</OutputFile>

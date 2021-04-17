@@ -263,6 +263,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>26495; 26812</DisableSpecificWarnings>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>MULTIVERSE_BUILD;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

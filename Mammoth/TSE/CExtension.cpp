@@ -1667,6 +1667,53 @@ CExtension::EUsage CExtension::ParseUsage (const CString &sValue)
 		return EUsage::error;
 	}
 
+bool CExtension::ReadReference (SUniverseLoadCtx &Ctx, TArray<SReference> &retList, CString *retsError)
+
+//	ReadReference
+//
+//	Reads a list of extension references.
+
+	{
+	if (Ctx.dwVersion >= 8)
+		{
+		DWORD dwLoad;
+		Ctx.pStream->Read(dwLoad);
+		retList.InsertEmpty(dwLoad);
+		for (int i = 0; i < (int)dwLoad; i++)
+			{
+			if (!ReadReference(Ctx, retList[i], retsError))
+				return false;
+			}
+		}
+
+	return true;
+	}
+
+bool CExtension::ReadReference (SUniverseLoadCtx &Ctx, SReference &Reference, CString *retsError)
+
+//	ReadReference
+//
+//	Reads a single reference.
+
+	{
+	if (Ctx.dwVersion >= 8)
+		Ctx.pStream->Read(Reference.dwUNID);
+	else
+		Reference.dwUNID = 0;
+
+	if (Ctx.dwVersion >= 14)
+		Ctx.pStream->Read(Reference.dwRelease);
+	else
+		Reference.dwRelease = 0;
+
+	if (Ctx.dwVersion >= 39)
+		Reference.sName.ReadFromStream(Ctx.pStream);
+	else
+		Reference.sName = NULL_STR;
+
+	return true;
+	}
+
 void CExtension::SweepImages (void)
 
 //	SweepImages
@@ -1679,4 +1726,22 @@ void CExtension::SweepImages (void)
 		delete m_pCoverImage;
 		m_pCoverImage = NULL;
 		}
+	}
+
+void CExtension::WriteReference (IWriteStream &Stream, const CExtension *pExtension)
+
+//	WriteReference
+//
+//	Writes a reference to the extension
+
+	{
+	Stream.Write(pExtension ? pExtension->GetUNID() : 0);
+	Stream.Write(pExtension ? pExtension->GetRelease() : 0);
+
+	//	We write the name so that we can show a proper error message.
+
+	if (pExtension)
+		pExtension->GetName().WriteToStream(&Stream);
+	else
+		NULL_STR.WriteToStream(&Stream);
 	}

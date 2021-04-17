@@ -465,7 +465,7 @@ void CParticleDamage::OnReadFromStream (SLoadCtx &Ctx)
 			{
 			char *pDummy = new char [5 * sizeof(DWORD) * dwCount];
 			Ctx.pStream->Read(pDummy, 5 * sizeof(DWORD) * dwCount);
-			delete pDummy;
+			delete [] pDummy;
 			}
 
 		m_iEmitTime = 0;

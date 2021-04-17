@@ -287,7 +287,7 @@
 							;	before damage transfers to the item (which limits the station to half hp)
 
 							(if (ls (/ hpLeft hpMax) 0.70)
-								(setq recovered (itmSetProperty recovered 'damaged True))
+								(setq recovered (itmSet@ recovered 'damaged True))
 								)
 
 							;	But we also store the structural HP on the item, in case 

@@ -6942,5 +6942,6 @@
 	<Image UNID="&rsPlagueHD;"			obsoleteVersion="52"				bitmap="Resources\PlagueHD.jpg"			bitmask="Resources\PlagueHDMask.bmp"		loadOnUse="true"/>
 	<Image UNID="&rsRevelationsHD;"			obsoleteVersion="52" bitmap="Resources\RevelationsHD.jpg"	bitmask="Resources\RevelationsHDMask.bmp"	loadOnUse="true"/>
 	<Image UNID="&rsEarthzoneHD;"		obsoleteVersion="52"			bitmap="Resources\EarthzoneHD.jpg"				bitmask="Resources\EarthzoneHDMask.bmp"  		loadOnUse="true"/>
+	<Image UNID="&rsBritannia;"		obsoleteVersion="52"			bitmap="Resources\Britannia.jpg" bitmask="Resources\BritanniaMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>

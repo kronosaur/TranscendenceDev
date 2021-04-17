@@ -6,8 +6,8 @@
 #pragma once
 
 constexpr DWORD API_VERSION =							51;
-constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					201;
+constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
+constexpr DWORD SYSTEM_SAVE_VERSION =					202;
 
 //	Uncomment out the following define when building a stable release
 
@@ -113,6 +113,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					201;
 //
 //	38: 1.9 Alpha 3
 //		Added m_Difficulty to CUniverse
+//
+//	39: 1.9 Beta 4
+//		Added extra type and extension information
+//
+//	40: 1.9 Beta 4
+//		Added design type in dwFlags or CDesignType.
 
 
 //	SYSTEM VERSION HISTORY -----------------------------------------------------
@@ -726,3 +732,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					201;
 //
 //	201: 1.9 Beta 4
 //		Added m_iInstalledIndex to CItem::SExtra
+//
+//	202: 1.9 Beta 4
+//		Added m_PowerStats to CPlayerGameStats

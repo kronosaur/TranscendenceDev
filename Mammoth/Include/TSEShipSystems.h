@@ -135,6 +135,7 @@ class CArmorSystem
 		bool RepairAll (CSpaceObject *pSource);
 		bool RepairSegment (CSpaceObject *pSource, int iSeg, int iHPToRepair, int *retiHPRepaired = NULL);
 		void SetHealerLeft (int iValue) { m_iHealerLeft = Max(0, iValue); }
+		void SetSegmentHP (CSpaceObject &SourceObj, int iSeg, int iHP);
 		void SetTotalHitPoints (CSpaceObject *pSource, int iNewHP);
 		bool Update (SUpdateCtx &Ctx, CSpaceObject *pSource, int iTick);
 		void WriteToStream (IWriteStream *pStream) const;
@@ -172,9 +173,9 @@ class CDeviceSystem
 		void FinishInstall (void);
 		int GetCount (void) const { return m_Devices.GetCount(); }
 		int GetCountByID (const CString &sID) const;
-		CInstalledDevice &GetDevice (int iIndex) { return m_Devices[iIndex]; }
-		CDeviceItem GetDeviceItem (int iIndex) const { if (!m_Devices[iIndex].IsEmpty()) return m_Devices[iIndex].GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }
-		const CInstalledDevice &GetDevice (int iIndex) const { return m_Devices[iIndex]; }
+		CInstalledDevice &GetDevice (int iIndex) { return *m_Devices[iIndex]; }
+		CDeviceItem GetDeviceItem (int iIndex) const { if (!m_Devices[iIndex]->IsEmpty()) return m_Devices[iIndex]->GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }
+		const CInstalledDevice &GetDevice (int iIndex) const { return *m_Devices[iIndex]; }
 		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
 		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
 		CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return GetDevice(m_NamedDevices[iDev]).GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }
@@ -210,7 +211,7 @@ class CDeviceSystem
 				using iterator_category = std::forward_iterator_tag;
 
 				iterator (void) { }
-				iterator (CInstalledDevice *pPos, CInstalledDevice *pEnd);
+				iterator (TUniquePtr<CInstalledDevice> *pPos, TUniquePtr<CInstalledDevice> *pEnd);
 
 				iterator &operator= (const iterator &Src) { m_pPos = Src.m_pPos; return *this; }
 				friend bool operator== (const iterator &lhs, const iterator &rhs) { return lhs.m_pPos == rhs.m_pPos; }
@@ -219,14 +220,14 @@ class CDeviceSystem
 				iterator &operator++ ();
 				iterator operator++ (int) {	iterator Old = *this; ++(*this); return Old; }
 
-				CInstalledDevice &operator* () const { return *m_pPos; }
-				CInstalledDevice *operator-> () const { return m_pPos; }
+				CInstalledDevice &operator* () const { return *(*m_pPos); }
+				CInstalledDevice *operator-> () const { return *m_pPos; }
 
 				friend void swap (iterator &lhs, iterator &rhs)	{ Swap(lhs.m_pPos, rhs.m_pPos);	Swap(lhs.m_pEnd, rhs.m_pEnd); }
 
 			private:
-				CInstalledDevice *m_pPos = NULL;
-				CInstalledDevice *m_pEnd = NULL;
+				TUniquePtr<CInstalledDevice> *m_pPos = NULL;
+				TUniquePtr<CInstalledDevice> *m_pEnd = NULL;
 			};
 
 		class const_iterator
@@ -235,7 +236,7 @@ class CDeviceSystem
 				using iterator_category = std::forward_iterator_tag;
 
 				const_iterator (void) { }
-				const_iterator (const CInstalledDevice *pPos, const CInstalledDevice *pEnd);
+				const_iterator (const TUniquePtr<CInstalledDevice> *pPos, const TUniquePtr<CInstalledDevice> *pEnd);
 
 				const_iterator &operator= (const const_iterator &Src) { m_pPos = Src.m_pPos; return *this; }
 				friend bool operator== (const const_iterator &lhs, const const_iterator &rhs) { return lhs.m_pPos == rhs.m_pPos; }
@@ -244,14 +245,14 @@ class CDeviceSystem
 				const_iterator &operator++ ();
 				const_iterator operator++ (int) { const_iterator Old = *this; ++(*this); return Old; }
 
-				const CInstalledDevice &operator* () const { return *m_pPos; }
-				const CInstalledDevice *operator-> () const { return m_pPos; }
+				const CInstalledDevice &operator* () const { return *(*m_pPos); }
+				const CInstalledDevice *operator-> () const { return *m_pPos; }
 
 				friend void swap (const_iterator &lhs, const_iterator &rhs)	{ Swap(lhs.m_pPos, rhs.m_pPos);	Swap(lhs.m_pEnd, rhs.m_pEnd); }
 
 			private:
-				const CInstalledDevice *m_pPos = NULL;
-				const CInstalledDevice *m_pEnd = NULL;
+				const TUniquePtr<CInstalledDevice> *m_pPos = NULL;
+				const TUniquePtr<CInstalledDevice> *m_pEnd = NULL;
 			};
 
 		const_iterator begin (void) const {	return cbegin(); }
@@ -266,8 +267,9 @@ class CDeviceSystem
 
 	private:
 		DeviceNames GetNamedFromDeviceIndex (int iIndex) const;
+		void InsertEmpty (int iCount = 1);
 
-		TArray<CInstalledDevice> m_Devices;
+		TArray<TUniquePtr<CInstalledDevice>> m_Devices;
 		TArray<int> m_NamedDevices;
 	};
 

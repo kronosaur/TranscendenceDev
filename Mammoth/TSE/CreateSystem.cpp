@@ -508,6 +508,8 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 //	of the system and to the given criteria.
 
 	{
+	DEBUG_TRY
+
 	CUsePerformanceCounter PerfCounter(pCtx->GetUniverse(), CONSTLIT("create.function.ChooseRandomStation"));
 
 	//	Generate a description of the table that we are about to generate
@@ -636,6 +638,8 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 		}
 
 	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 const COrbit *ComputeOffsetOrbit (CXMLElement *pObj, const COrbit &Original, COrbit *retOrbit)
@@ -1956,6 +1960,8 @@ ALERROR CreateRandomStation (SSystemCreateCtx *pCtx,
 //	Creates a random station at the given location
 
 	{
+	DEBUG_TRY
+
 	ALERROR error;
 
 	CString sStationCriteria = pDesc->GetAttribute(STATION_CRITERIA_ATTRIB);
@@ -2027,6 +2033,8 @@ ALERROR CreateRandomStation (SSystemCreateCtx *pCtx,
 
 	PopDebugStack(pCtx);
 	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 ALERROR CreateRandomStationFromTable (SSystemCreateCtx &Ctx, const CXMLElement &Desc, const CXMLElement &TableXML, const COrbit &OrbitDesc)
@@ -3748,6 +3756,8 @@ bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric r
 
 ALERROR ApplyStationCreateOptions (SSystemCreateCtx &Ctx, const COrbit &OrbitDesc, CStation &Station, const CStationCreateOptions &StationCreate)
 	{
+	DEBUG_TRY
+
 	//	Set the name of the station, if specified by the system
 
 	if (!StationCreate.GetNameDesc().IsEmpty())
@@ -3864,6 +3874,8 @@ ALERROR ApplyStationCreateOptions (SSystemCreateCtx &Ctx, const COrbit &OrbitDes
 	//	Done
 
 	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 ALERROR ModifyCreatedStation (SSystemCreateCtx &Ctx, CStation &Station, const CXMLElement &XMLDesc, const COrbit &OrbitDesc)
@@ -3874,6 +3886,8 @@ ALERROR ModifyCreatedStation (SSystemCreateCtx &Ctx, CStation &Station, const CX
 //	descriptor.
 
 	{
+	DEBUG_TRY
+
 	//	Load any station modifications on top of the station options.
 
 	CStationCreateOptions StationCreate;
@@ -3898,6 +3912,8 @@ ALERROR ModifyCreatedStation (SSystemCreateCtx &Ctx, CStation &Station, const CX
 	//	Done
 
 	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 //	CSystem methods
@@ -4432,6 +4448,8 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 //	Creates a station from a type
 
 	{
+	DEBUG_TRY
+
 	ALERROR error;
 	CSpaceObject *pStation = NULL;
 
@@ -4617,6 +4635,8 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 		*retpStation = pStation;
 
 	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx, 
@@ -4629,6 +4649,8 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 //	Creates a station of the given type
 
 	{
+	DEBUG_TRY
+
 	CUsePerformanceCounter PerfCounter(pCtx->GetUniverse(), CONSTLIT("create.function.Station"));
 
 	ALERROR error;
@@ -4731,6 +4753,8 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 		*retpStation = pStation;
 
 	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, const CXMLElement *pDesc, const COrbit &OrbitDesc, CStation **retpStation)

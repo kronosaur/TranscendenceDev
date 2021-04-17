@@ -181,12 +181,8 @@ PLAYER DATA
 								(scrShowScreen gScreen &dsBlackMarketBoss;)
 							</Action>
 
-							<Action id="actionBuyItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
-							</Action>
-
-							<Action id="actionSellItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
+							<Action id="actionCommoditiesExchange">
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -358,6 +354,11 @@ PLAYER DATA
 			ejectaType=			"&vtWreckEjecta;"
 			>
 
+		<Properties>
+			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +blackMarket; -notStandard; +shipBroker;"</Constant>
+			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
+		</Properties>
+
 		<!-- Encounter Info -->
 
 		<Encounter
@@ -388,6 +389,9 @@ PLAYER DATA
 			<ReplaceArmor	criteria="a L:1-9;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+
+			<SellShip		criteria="s -notForSale;" priceAdj="100"/>
+			<BuyShip		criteria="s L:1-10; -notForSale;" priceAdj="80"/>
 		</Trade>
 			
 		<Items>
@@ -479,16 +483,16 @@ PLAYER DATA
 								(scrShowScreen gScreen &dsBlackMarketBoss;)
 							</Action>
 
-							<Action id="actionBuyItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
-							</Action>
-
-							<Action id="actionSellItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
+							<Action id="actionCommoditiesExchange">
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionDockServices">
 								(rpgDockServices gPlayerShip)
+							</Action>
+
+							<Action id="actionBuyShip">
+								(scrShowScreen gScreen &dsRPGShipBroker;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -693,11 +697,11 @@ PLAYER DATA
 			cargoSpace=			"50"
 
 			maxReactorPower=	"10000"
-			maxCargoSpace=		"100"
+			maxCargoSpace=		"150"
 			maxDevices=			"8"
 
 			maxArmor=			"massive"
-			stdArmor=			"medium"
+			stdArmor=			"heavy"
 			/>
 
 		<Drive
@@ -710,6 +714,11 @@ PLAYER DATA
 			rotationAccel=		"1.0"
 			/>
 
+		<DeviceSlots>
+			<DeviceSlot criteria="l" posAngle="0" posRadius="16" posZ="0"/>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="20" posZ="0"/>
+		</DeviceSlots>
+
 		<!-- Configuration -->
 
 		<Armor
@@ -719,7 +728,7 @@ PLAYER DATA
 
 		<Devices>
 			<Device deviceID="&itMarkIHowitzer;"/>
-			<Device deviceID="&itMAGLauncher;" posAngle="0" posRadius="16" posZ="0">
+			<Device deviceID="&itMAGLauncher;">
 				<Items>
 					<Item count="20d6" item="&it600HexageneMAG;"/>
 				</Items>
@@ -769,11 +778,11 @@ PLAYER DATA
 			cargoSpace=			"50"
 
 			maxReactorPower=	"10000"
-			maxCargoSpace=		"100"
-			maxDevices=			"8"
+			maxCargoSpace=		"200"
+			maxDevices=			"9"
 
 			maxArmor=			"massive"
-			stdArmor=			"medium"
+			stdArmor=			"heavy"
 			/>
 
 		<Drive

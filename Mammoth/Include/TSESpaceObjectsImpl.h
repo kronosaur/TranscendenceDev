@@ -995,6 +995,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void InstallItemAsArmor (CItemListManipulator &ItemList, int iSect);
 		bool IsArmorDamaged (int iSect);
 		void RepairArmor (int iSect, int iHitPoints, int *retiHPRepaired = NULL);
+		void SetArmorHP (int iSect, int iHP);
 		bool SetCursorAtArmor (CItemListManipulator &ItemList, int iSect) const;
 		void UninstallArmor (CItemListManipulator &ItemList);
 

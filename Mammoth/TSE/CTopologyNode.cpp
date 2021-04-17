@@ -473,8 +473,7 @@ DWORD CTopologyNode::GetLastVisitedTime (void) const
 //  is currently in the system, we return the current tick.
 
     {
-    IPlayerController *pPlayer = m_Topology.GetUniverse().GetPlayer();
-    CPlayerGameStats *pStats = (pPlayer ? pPlayer->GetGameStats() : NULL);
+    CPlayerGameStats *pStats = m_Topology.GetUniverse().GetPlayer().GetGameStats();
     return (pStats ? pStats->GetSystemLastVisitedTime(GetID()) : 0xffffffff);
     }
 

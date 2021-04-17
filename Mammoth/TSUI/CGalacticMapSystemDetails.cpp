@@ -46,14 +46,14 @@ static const CG32bitPixel RGB_MODIFIER_NORMAL_BACKGROUND =		CG32bitPixel(101,101
 static const CG32bitPixel RGB_MODIFIER_NORMAL_TEXT =			CG32bitPixel(220,220,220);	//	H:0   S:0   B:86
 
 CGalacticMapSystemDetails::CGalacticMapSystemDetails (const CVisualPalette &VI, CReanimator &Reanimator, const RECT &rcPane) :
-        m_VI(VI),
-        m_Reanimator(Reanimator),
-        m_rcPane(rcPane)
+		m_VI(VI),
+		m_Reanimator(Reanimator),
+		m_rcPane(rcPane)
 
 //  CGalacticMapSystemDetails constructor
 
-    {
-    }
+	{
+	}
 
 bool CGalacticMapSystemDetails::CreateDetailsPane (const CTopologyNode &Node, const SOptions &Options, IAnimatron **retpAni, IAnimatron **retpList)
 
@@ -62,31 +62,31 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (const CTopologyNode &Node, co
 //  Creates an animation showing the details for a given system. Returns FALSE 
 //  if we fail to create the pane.
 
-    {
+	{
 	DEBUG_TRY
 
-    //  Get the list of objects at this node
+	//  Get the list of objects at this node
 
-    TSortMap<CString, SObjDesc> Objs;
-    GetObjList(Node, Objs, Options);
+	TSortMap<CString, SObjDesc> Objs;
+	GetObjList(Node, Objs, Options);
 
-    //  Create a sequencer which will be the root pane.
+	//  Create a sequencer which will be the root pane.
 
-    CAniSequencer *pRoot = new CAniSequencer;
+	CAniSequencer *pRoot = new CAniSequencer;
 	pRoot->SetPropertyVector(PROP_POSITION, CVector(m_rcPane.left, m_rcPane.top));
 
-    //  Create a background for the whole pane
+	//  Create a background for the whole pane
 
 	IAnimatron *pFrame;
-    m_VI.CreateFrame(pRoot, NULL_STR, 0, 0, RectWidth(m_rcPane), RectHeight(m_rcPane), CVisualPalette::OPTION_FRAME_TRANS, &pFrame);
+	m_VI.CreateFrame(pRoot, NULL_STR, 0, 0, RectWidth(m_rcPane), RectHeight(m_rcPane), CVisualPalette::OPTION_FRAME_TRANS, &pFrame);
 
 	IAnimatron *pHeaderBack;
-    m_VI.CreateFrameHeader(pRoot, NULL_STR, 0, 0, 0, 0, 0, &pHeaderBack);
+	m_VI.CreateFrameHeader(pRoot, NULL_STR, 0, 0, 0, 0, 0, &pHeaderBack);
 
-    //  Add system information
+	//  Add system information
 
-    int cyHeader;
-    CreateSystemHeader(pRoot, Node, Options, &cyHeader);
+	int cyHeader;
+	CreateSystemHeader(pRoot, Node, Options, &cyHeader);
 
 	//	Now that we know the size of the text, resize
 
@@ -100,7 +100,7 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (const CTopologyNode &Node, co
 	rcList.left = LIST_PADDING_X;
 	rcList.right = RectWidth(m_rcPane) - LIST_PADDING_X;
 
-    //  Create a listbox which will hold all stations in the system.
+	//  Create a listbox which will hold all stations in the system.
 
 	if (Objs.GetCount() > 0 && Node.IsKnown())
 		{
@@ -147,14 +147,14 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (const CTopologyNode &Node, co
 			*retpList = NULL;
 		}
 
-    //  Done
+	//  Done
 
-    *retpAni = pRoot;
+	*retpAni = pRoot;
 
-    return true;
+	return true;
 
 	DEBUG_CATCH
-    }
+	}
 
 void CGalacticMapSystemDetails::CreateObjEntry (const SObjDesc &Obj, int yPos, int cxWidth, IAnimatron **retpAni, int *retcyHeight)
 
@@ -162,7 +162,7 @@ void CGalacticMapSystemDetails::CreateObjEntry (const SObjDesc &Obj, int yPos, i
 //
 //  Creates an entry for the station.
 
-    {
+	{
 	const CG16bitFont &HeaderFont = m_VI.GetFont(fontHeader);
 	const CG16bitFont &TextFont = m_VI.GetFont(fontMedium);
 
@@ -170,34 +170,34 @@ void CGalacticMapSystemDetails::CreateObjEntry (const SObjDesc &Obj, int yPos, i
 
 	CAniSequencer *pRoot = new CAniSequencer;
 	pRoot->SetPropertyVector(PROP_POSITION, CVector(0, yPos));
-    int x = 0;
-    int y = 0;
+	int x = 0;
+	int y = 0;
 
-    //  Create the icon for the object
+	//  Create the icon for the object
 
-    IAnimatron *pIconAni = NULL;
-    CG32bitImage *pIcon = NULL;
-    int xIcon = 0;
-    if (CreateObjIcon(Obj.ObjData, &pIcon))
-        {
+	IAnimatron *pIconAni = NULL;
+	CG32bitImage *pIcon = NULL;
+	int xIcon = 0;
+	if (CreateObjIcon(Obj.ObjData, &pIcon))
+		{
 		xIcon = x + ((MAX_ICON_SIZE - pIcon->GetWidth()) / 2);
 		pIconAni = new CAniRect;
 		pIconAni->SetPropertyVector(PROP_SCALE, CVector(pIcon->GetWidth(), pIcon->GetHeight()));
 		pIconAni->SetFillMethod(new CAniImageFill(pIcon, true));
 
 		pRoot->AddTrack(pIconAni, 0);
-        }
+		}
 
-    //  Keep track of the total height of the text part so we can vertically
-    //  center it.
+	//  Keep track of the total height of the text part so we can vertically
+	//  center it.
 
-    int cyText = 0;
+	int cyText = 0;
 
-    //  Add the object name
+	//  Add the object name
 
-    CString sHeading = CLanguage::ComposeNounPhrase(Obj.ObjData.sName, Obj.iCount, NULL_STR, Obj.ObjData.dwNameFlags, nounCountOnly | nounTitleCapitalize);
+	CString sHeading = CLanguage::ComposeNounPhrase(Obj.ObjData.sName, Obj.iCount, NULL_STR, Obj.ObjData.dwNameFlags, nounCountOnly | nounTitleCapitalize);
 	int xText = x + MAX_ICON_SIZE + ICON_SPACING_HORZ;
-    int cxText = cxWidth - (MAX_ICON_SIZE + ICON_SPACING_HORZ);
+	int cxText = cxWidth - (MAX_ICON_SIZE + ICON_SPACING_HORZ);
 
 	IAnimatron *pName = new CAniText;
 	pName->SetPropertyVector(PROP_SCALE, CVector(10000, 1000));
@@ -206,7 +206,7 @@ void CGalacticMapSystemDetails::CreateObjEntry (const SObjDesc &Obj, int yPos, i
 	pName->SetPropertyString(PROP_TEXT, sHeading);
 
 	pRoot->AddTrack(pName, 0);
-    cyText += HeaderFont.GetHeight();
+	cyText += HeaderFont.GetHeight();
 
 	//	Add attributes, if necessary
 
@@ -218,31 +218,31 @@ void CGalacticMapSystemDetails::CreateObjEntry (const SObjDesc &Obj, int yPos, i
 		cyText += cyAttribs + ATTRIB_SPACING_Y;
 		}
 
-    //  Add description
+	//  Add description
 
-    IAnimatron *pDesc = NULL;
-    if (!Obj.ObjData.sNotes.IsBlank())
-        {
-        pDesc = new CAniText;
-        pDesc->SetPropertyVector(PROP_SCALE, CVector(cxText, 1000));
+	IAnimatron *pDesc = NULL;
+	if (!Obj.ObjData.sNotes.IsBlank())
+		{
+		pDesc = new CAniText;
+		pDesc->SetPropertyVector(PROP_SCALE, CVector(cxText, 1000));
 		if (Obj.ObjData.fEnemy)
 			pDesc->SetPropertyColor(PROP_COLOR, m_VI.GetColor(colorTextDisadvantage));
 		else
 			pDesc->SetPropertyColor(PROP_COLOR, m_VI.GetColor(colorTextNormal));
-        pDesc->SetPropertyFont(PROP_FONT, &TextFont);
-        pDesc->SetPropertyString(PROP_TEXT, Obj.ObjData.sNotes);
+		pDesc->SetPropertyFont(PROP_FONT, &TextFont);
+		pDesc->SetPropertyString(PROP_TEXT, Obj.ObjData.sNotes);
 
-        RECT rcLine;
-        pDesc->GetSpacingRect(&rcLine);
+		RECT rcLine;
+		pDesc->GetSpacingRect(&rcLine);
 
-        pRoot->AddTrack(pDesc, 0);
-        cyText += RectHeight(rcLine);
-        }
+		pRoot->AddTrack(pDesc, 0);
+		cyText += RectHeight(rcLine);
+		}
 
-    //  Center the text
+	//  Center the text
 
-    int cyEntry = Max((pIcon ? pIcon->GetHeight() : 0), cyText);
-    int yText = (cyEntry - cyText) / 2;
+	int cyEntry = Max((pIcon ? pIcon->GetHeight() : 0), cyText);
+	int yText = (cyEntry - cyText) / 2;
 	pName->SetPropertyVector(PROP_POSITION, CVector(xText, yText));
 	yText += HeaderFont.GetHeight();
 
@@ -252,24 +252,24 @@ void CGalacticMapSystemDetails::CreateObjEntry (const SObjDesc &Obj, int yPos, i
 		yText += cyAttribs + ATTRIB_SPACING_Y;
 		}
 
-    if (pDesc)
-	    pDesc->SetPropertyVector(PROP_POSITION, CVector(xText, yText));
+	if (pDesc)
+		pDesc->SetPropertyVector(PROP_POSITION, CVector(xText, yText));
 
-    //  Center the icon
+	//  Center the icon
 
-    if (pIconAni)
-        {
-        int yIcon = (cyEntry - pIcon->GetHeight()) / 2;
+	if (pIconAni)
+		{
+		int yIcon = (cyEntry - pIcon->GetHeight()) / 2;
 		pIconAni->SetPropertyVector(PROP_POSITION, CVector(xIcon, yIcon));
-        }
+		}
 
-    //  Done
+	//  Done
 
-    *retpAni = pRoot;
+	*retpAni = pRoot;
 
-    if (retcyHeight)
-        *retcyHeight = cyEntry;
-    }
+	if (retcyHeight)
+		*retcyHeight = cyEntry;
+	}
 
 bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &Obj, CG32bitImage **retpIcon)
 
@@ -278,7 +278,7 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
 //  Creates an icon for the object. Returns FALSE if we could not create the 
 //  icon.
 
-    {
+	{
 	DEBUG_TRY
 
 	if (Obj.pType == NULL)
@@ -287,8 +287,8 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
 	SGetImageCtx ImageCtx(Obj.pType->GetUniverse());
 
 	CCompositeImageModifiers Modifiers;
-    if (Obj.fShowDestroyed)
-        Modifiers.SetStationDamage(true);
+	if (Obj.fShowDestroyed)
+		Modifiers.SetStationDamage(true);
 
 	TSharedPtr<CG32bitImage> pBmpImage;
 	RECT rcBmpImage;
@@ -320,18 +320,18 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
 		rcBmpImage = FullImage.GetImageRect(0, iVariant);
 		}
 
-    int iSize = Max(RectWidth(rcBmpImage), RectHeight(rcBmpImage));
-    if (iSize <= 0)
-        return false;
+	int iSize = Max(RectWidth(rcBmpImage), RectHeight(rcBmpImage));
+	if (iSize <= 0)
+		return false;
 
-    //  Compute scale
+	//  Compute scale
 
-    int iScaleSize = Max(MIN_ICON_SIZE, Min((int)(ICON_SCALE * iSize), MAX_ICON_SIZE));
-    Metric rScale = (Metric)iScaleSize / (Metric)iSize;
+	int iScaleSize = Max(MIN_ICON_SIZE, Min((int)(ICON_SCALE * iSize), MAX_ICON_SIZE));
+	Metric rScale = (Metric)iScaleSize / (Metric)iSize;
 
-    //  Create a small version
+	//  Create a small version
 
-    CG32bitImage *pIcon = new CG32bitImage;
+	CG32bitImage *pIcon = new CG32bitImage;
 	if (!pIcon->CreateFromImageTransformed(*pBmpImage,
 			rcBmpImage.left,
 			rcBmpImage.top,
@@ -340,18 +340,18 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
 			rScale,
 			rScale,
 			0.0))
-        {
-        delete pIcon;
-        return false;
-        }
+		{
+		delete pIcon;
+		return false;
+		}
 
-    //  Done
+	//  Done
 
-    *retpIcon = pIcon;
-    return true;
+	*retpIcon = pIcon;
+	return true;
 
 	DEBUG_CATCH
-    }
+	}
 
 void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, const CTopologyNode &Node, const SOptions &Options, int *retcyHeight) const
 
@@ -359,32 +359,32 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, c
 //
 //  Creates info about the system.
 
-    {
+	{
 	SSystemHeader Header;
 	GetSystemHeaderData(Node, Options, Header);
 
-    const CG16bitFont &TitleFont = m_VI.GetFont(fontHeader);
-    const CG16bitFont &DescFont = m_VI.GetFont(fontMedium);
+	const CG16bitFont &TitleFont = m_VI.GetFont(fontHeader);
+	const CG16bitFont &DescFont = m_VI.GetFont(fontMedium);
 
-    int x = HEADER_PADDING_X;
-    int y = HEADER_PADDING_Y;
-    int cxWidth = RectWidth(m_rcPane) - (2 * HEADER_PADDING_X);
+	int x = HEADER_PADDING_X;
+	int y = HEADER_PADDING_Y;
+	int cxWidth = RectWidth(m_rcPane) - (2 * HEADER_PADDING_X);
 
-    //  System name
+	//  System name
 
-    int cyText;
-    m_VI.CreateTextArea(pContainer, 
-            NULL_STR,
-            x,
-            y,
-            cxWidth,
-            1000,
-            Header.sTitle,
-            m_VI.GetColor(colorTextHighlight),
-            TitleFont,
-            NULL,
-            &cyText);
-    y += cyText;
+	int cyText;
+	m_VI.CreateTextArea(pContainer, 
+			NULL_STR,
+			x,
+			y,
+			cxWidth,
+			1000,
+			Header.sTitle,
+			m_VI.GetColor(colorTextHighlight),
+			TitleFont,
+			NULL,
+			&cyText);
+	y += cyText;
 
 	//	Attributes
 
@@ -404,24 +404,24 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, c
 
 	//	Details
 
-    m_VI.CreateTextArea(pContainer, 
-            NULL_STR,
-            x,
-            y,
-            cxWidth,
-            1000,
-            Header.sDetails,
-            m_VI.GetColor(colorTextNormal),
-            DescFont,
-            NULL,
-            &cyText);
-    y += cyText;
+	m_VI.CreateTextArea(pContainer, 
+			NULL_STR,
+			x,
+			y,
+			cxWidth,
+			1000,
+			Header.sDetails,
+			m_VI.GetColor(colorTextNormal),
+			DescFont,
+			NULL,
+			&cyText);
+	y += cyText;
 
 	y += HEADER_PADDING_Y;
 
 	if (retcyHeight)
 		*retcyHeight = y;
-    }
+	}
 
 void CGalacticMapSystemDetails::GetObjAttribs (const CObjectTracker::SObjEntry &Obj, TArray<CCartoucheBlock::SCartoucheDesc> &retAttribs) const
 
@@ -464,32 +464,32 @@ bool CGalacticMapSystemDetails::GetObjList (const CTopologyNode &Node, TSortMap<
 //  Returns an ordered list of objects to show in the details pane for this 
 //  node. We return FALSE if there are no objects in the list.
 
-    {
-    int i;
+	{
+	int i;
 
-    //  Initialize
+	//  Initialize
 
-    Results.DeleteAll();
+	Results.DeleteAll();
 
-    //  Get the list of objects at this node
+	//  Get the list of objects at this node
 
-    TArray<CObjectTracker::SObjEntry> Objs;
-    g_pUniverse->GetGlobalObjects().GetGalacticMapObjects(Node, Objs);
-    if (Objs.GetCount() == 0)
-        return false;
+	TArray<CObjectTracker::SObjEntry> Objs;
+	g_pUniverse->GetGlobalObjects().GetGalacticMapObjects(Node, Objs);
+	if (Objs.GetCount() == 0)
+		return false;
 
-    //  Now add them to our result sorted and collated
+	//  Now add them to our result sorted and collated
 
-    for (i = 0; i < Objs.GetCount(); i++)
-        {
+	for (i = 0; i < Objs.GetCount(); i++)
+		{
 		//	Skip stargates unless we want them.
 
 		if (!Options.bIncludeStargates && Objs[i].fIsStargate)
 			continue;
 
-        //  Sort stations into groups
+		//  Sort stations into groups
 
-        int iDispSort;
+		int iDispSort;
 
 		//	Abandoned enemy stations always show last
 
@@ -510,44 +510,44 @@ bool CGalacticMapSystemDetails::GetObjList (const CTopologyNode &Node, TSortMap<
 		else
 			iDispSort = 3;
 
-        //  Higher level stations go first (but only for enemy stations)
+		//  Higher level stations go first (but only for enemy stations)
 
-        int iLevelSort = (iDispSort == 1 ? 0 : (MAX_ITEM_LEVEL + 1 - Objs[i].pType->GetLevel()));
+		int iLevelSort = (iDispSort == 1 ? 0 : (MAX_ITEM_LEVEL + 1 - Objs[i].pType->GetLevel()));
 
 		//	Size is next
 
 		int iSizeSort = 10000 - Min(10000, Objs[i].pType->GetPropertyInteger(CONSTLIT("size")));
 
-        //  Abandoned stations are separate
+		//  Abandoned stations are separate
 
-        CString sAbandoned;
-        if (Objs[i].fShowDestroyed)
-            sAbandoned = CONSTLIT("-A");
+		CString sAbandoned;
+		if (Objs[i].fShowDestroyed)
+			sAbandoned = CONSTLIT("-A");
 
-        //  Generate a sort string. We want stations with the same type and name
-        //  to be collapsed into a single entry.
+		//  Generate a sort string. We want stations with the same type and name
+		//  to be collapsed into a single entry.
 
-        CString sSort;
+		CString sSort;
 		if (Options.bNoCollapseByType)
 			sSort = strPatternSubst(CONSTLIT("%d-%02d-%05d-%s-%08x-%s-%s"), iDispSort, iLevelSort, iSizeSort, Objs[i].sName, Objs[i].dwObjID, sAbandoned, Objs[i].sNotes);
 		else
 			sSort = strPatternSubst(CONSTLIT("%d-%02d-%05d-%s-%08x-%s-%s"), iDispSort, iLevelSort, iSizeSort, Objs[i].sName, Objs[i].pType->GetUNID(), sAbandoned, Objs[i].sNotes);
 
-        //  Add to our result list
+		//  Add to our result list
 
-        SObjDesc *pEntry = Results.SetAt(sSort);
-        pEntry->iCount++;
+		SObjDesc *pEntry = Results.SetAt(sSort);
+		pEntry->iCount++;
 		if (pEntry->iCount == 1)
 			{
 			pEntry->ObjData = Objs[i];
 			GetObjAttribs(Objs[i], pEntry->Attribs);
 			}
-        }
+		}
 
-    //  Done
+	//  Done
 
-    return true;
-    }
+	return true;
+	}
 
 void CGalacticMapSystemDetails::GetSystemHeaderData (const CTopologyNode &Node, const SOptions &Options, SSystemHeader &Header) const
 
@@ -569,9 +569,9 @@ void CGalacticMapSystemDetails::GetSystemHeaderData (const CTopologyNode &Node, 
 	if (Node.IsKnown())
 		Header.sDetails = Node.GetTradingEconomy().GetDescription();
 
-    //  Compose a string indicating when we visited.
+	//  Compose a string indicating when we visited.
 
-    CString sVisit;
+	CString sVisit;
 	if (!Options.bNoLastVisitTime)
 		{
 		DWORD dwLastVisit = Node.GetLastVisitedTime();

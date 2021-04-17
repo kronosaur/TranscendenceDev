@@ -344,7 +344,7 @@ IPlayerController *CSovereign::GetController (void)
 
 	{
 	if (GetUNID() == g_PlayerSovereignUNID)
-		return GetUniverse().GetPlayer();
+		return &GetUniverse().GetPlayer();
 	else
 		return NULL;
 	}
@@ -648,11 +648,8 @@ void CSovereign::MessageFromObj (CSpaceObject *pSender, const CString &sText)
 
 	if (GetUNID() == g_PlayerSovereignUNID)
 		{
-		IPlayerController *pPlayer = GetUniverse().GetPlayer();
-		if (pPlayer == NULL)
-			return;
-
-		pPlayer->OnMessageFromObj(pSender, sText);
+		IPlayerController &Player = GetUniverse().GetPlayer();
+		Player.OnMessageFromObj(pSender, sText);
 		}
 
 	//	Otherwise...

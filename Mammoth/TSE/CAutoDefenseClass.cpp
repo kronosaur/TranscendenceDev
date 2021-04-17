@@ -340,7 +340,7 @@ int CAutoDefenseClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) con
 	else
 		{
 		if (retiIdlePowerUse)
-			*retiIdlePowerUse;
+			*retiIdlePowerUse = 0;
 
 		return 0;
 		}

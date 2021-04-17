@@ -1065,5 +1065,8 @@
     <Xml Include="RPGSquadronUI.xml">
       <Filter>RPG Library</Filter>
     </Xml>
+    <Xml Include="BlackMarketPlayerShips.xml">
+      <Filter>Human Space Library\Black Market</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

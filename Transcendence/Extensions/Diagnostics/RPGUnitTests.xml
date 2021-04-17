@@ -25,7 +25,7 @@
 								;	Add some components
 
 								(objAddItem gPlayerShip (itmCreate &itTurbolaserCannon; 4))
-								(objAddItem gPlayerShip (itmSetProperty (itmCreate &itTurbolaserCannon; 4) 'damaged True))
+								(objAddItem gPlayerShip (itmSet@ (itmCreate &itTurbolaserCannon; 4) 'damaged True))
 								(objAddItem gPlayerShip (itmSetEnhanced (itmCreate &itTurbolaserCannon; 2) "+hpBonus:20"))
 								)
 							)

@@ -18,18 +18,18 @@
 		<GlobalData>
 			<Recipes>
 				(
-					{ item:&itYoroiS500;				enhancement:"+resist:thermo:60"		components:( { item:&itHolmiumFiber; count:4 } { item:&itYoroiS100; count:2 } )	extraCost:0 }
-					{ item:&itSuperconductingShields;	enhancement:"+resistMatter:60"		components:( { item:&itSuperconductingCoil; count:4 } { item:&itHeavySungArmor; count:2 } )	extraCost:0 }
-					{ item:&itCyclotronDeflectorIV;		enhancement:"+resistDamageClass:blast:60"	components:( { item:&itBlastUpgrade; count:1 } { item:&itCyclotronDeflectorIII; count:2 })	extraCost:0 }
-					{ item:&itSolonShieldGenerator;		enhancement:"+resist:blast:60"		components:( { item:&itMonopoleDeflector; count:2 })	extraCost:0 }
+					{ item:&itYoroiS500;				enhancement:"+hpBonus:thermo:100"	components:( { item:&itHolmiumFiber; count:4 } { item:&itYoroiS100; count:2 } )	extraCost:0 }
+					{ item:&itSuperconductingShields;	enhancement:"+resistMatter:66"		components:( { item:&itSuperconductingCoil; count:4 } { item:&itHeavySungArmor; count:2 } )	extraCost:0 }
+					{ item:&itCyclotronDeflectorIV;		enhancement:"+resistDamageClass:blast:66"	components:( { item:&itBlastUpgrade; count:1 } { item:&itCyclotronDeflectorIII; count:2 })	extraCost:0 }
+					{ item:&itSolonShieldGenerator;		enhancement:"+hpBonus:blast:100"	components:( { item:&itMonopoleDeflector; count:2 })	extraCost:0 }
 					
 					{ item:&itOrthoSteel;				enhancement:"+regen"				components:( { item:&itDuralloyOre; count:4 } { item:&itOrthoSteelOre; count:4 })	extraCost:0 }
-					{ item:&itHeavyBlastPlate;			enhancement:"+resist:ion:60"		components:( { item:&itUrakArmorHeavy; count:2 } { item:&itPteracniumOre; count:4 })	extraCost:0 }
+					{ item:&itHeavyBlastPlate;			enhancement:"+hpBonus:ion:100"		components:( { item:&itUrakArmorHeavy; count:2 } { item:&itPteracniumOre; count:4 })	extraCost:0 }
 					{ item:&itDuralloyArmor;			enhancement:"+immunity:EMP"			components:( { item:&itNeodymiumMagnet; count:2 } { item:&itDuralloyOre; count:4 })	extraCost:0 }
 					{ item:&itStealthPlate;				enhancement:"+regen"				components:( { item:&itDuralloyOre; count:3 } { item:&itHyperfiberRoll; count:4 })	extraCost:0 }
 					{ item:&itLightBlastPlate;			enhancement:"+reflect:particle"		components:( { item:&itDwargChitonArmor; count:1 } { item:&itCeralloyOre; count:4 })	extraCost:0 }
 					{ item:&itCeralloyArmor;			enhancement:"+immunity:ionEffects"	components:( { item:&itHyperfiberRoll; count:2 } { item:&itCeralloyOre; count:4 })	extraCost:0 }
-					{ item:&itAdvancedReactiveArmor;	enhancement:"+resist:particle:60"	components:( { item:&it400HexageneMAG; count:2 } { item:&itPlasteelOre; count:6 })	extraCost:0 }
+					{ item:&itAdvancedReactiveArmor;	enhancement:"+hpBonus:particle:100"	components:( { item:&it400HexageneMAG; count:2 } { item:&itPlasteelOre; count:6 })	extraCost:0 }
 					{ item:&itSolarArmor;				enhancement:"+reflect:laser"		components:( { item:&itLanthanumGlass; count:1 } { item:&itPalladiumOre; count:3 })	extraCost:0 }
 					
 					{ item:&itDualMarkIIIHowitzer;		enhancement:Nil						components:( { item:&itMakayevBlastEnhancer; count:1 } { item:&itMarkIIIHowitzer; count:2 })	extraCost:0 }
@@ -916,7 +916,7 @@
 						(map theComponents 'reduceSum theComponent
 							;	For devices we assume a damaged device
 							(if (itmMatches theComponent "d")
-								(* (itmGetCount theComponent) (itmGetPrice (itmSetProperty theComponent 'damaged True) currencyUsed))
+								(* (itmGetCount theComponent) (itmGetPrice (itmSet@ theComponent 'damaged True) currencyUsed))
 								(* (itmGetCount theComponent) (itmGetPrice theComponent currencyUsed))
 								)
 							)

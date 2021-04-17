@@ -440,6 +440,26 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 			}
 		}
 
+	//	Stats for powers used
+
+	CounterArray.DeleteAll();
+	for (int i = 0; i < m_PowerStats.GetCount(); i++)
+		{
+		const CPower *pPower = m_Universe.FindPower(m_PowerStats.GetKey(i));
+		if (!pPower)
+			continue;
+
+		auto &Stats = m_PowerStats[i];
+
+		if (Stats.dwInvoked > 0)
+			{
+			CString sSort = strPatternSubst(CONSTLIT("%03d-%s"), 99 - pPower->GetLevel(), pPower->GetName());
+			CounterArray.Insert(pPower->GetName(), Stats.dwInvoked, CONSTLIT("Powers invoked"), sSort);
+			}
+		}
+
+	CounterArray.GenerateGameStats(Stats);
+
 	//	Stats for player equipment (but only if the game is done)
 
 	if (bGameOver)
@@ -777,7 +797,7 @@ CString CPlayerGameStats::GetItemStat (const CString &sStat, ICCItem *pItemCrite
 		for (j = 0; j < List.GetCount(); j++)
 			{
 			CItem Ore(List[j].pType, 1);
-			iTotal += Ore.GetRawPrice(true) * List[j].pStats->iCountMined;
+			iTotal += (CurrencyValue)Ore.GetRawPrice(true) * List[j].pStats->iCountMined;
 			}
 		return ::strFromInt((int)iTotal);
 		}
@@ -1480,7 +1500,8 @@ void CPlayerGameStats::OnKeyEvent (EEventTypes iType, CSpaceObject *pObj, DWORD 
 //	Adds a key event involving an object
 
 	{
-	ASSERT(pObj);
+	if (!pObj)
+		throw CException(ERR_FAIL);
 
 	CSystem *pSystem = pObj->GetSystem();
 	if (pSystem == NULL)
@@ -1585,6 +1606,17 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 				pSovereign->OnObjDestroyedByPlayer(Ctx);
 			}
 		}
+	}
+
+void CPlayerGameStats::OnPowerInvoked (const CPower &Power)
+
+//	OnPowerInvoked
+//
+//	Player has invoked a power.
+
+	{
+	SPowerStats *pStats = m_PowerStats.SetAt(Power.GetUNID());
+	pStats->dwInvoked++;
 	}
 
 void CPlayerGameStats::OnSwitchPlayerShip (const CShip &NewShip, const CShip *pOldShip)
@@ -1747,6 +1779,10 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 //	DWORD				dwCauseUNID
 //	DWORD				dwObjNameFlags
 //	CString				sObjName
+//
+//	DWORD		Count of powers
+//	DWORD			UNID
+//	DWORD			dwInvoked
 
 	{
 	DWORD dwLoad, dwCount;
@@ -1904,6 +1940,21 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 			Ctx.pStream->Read(pStats->dwTotalTime);
 			}
 		}
+
+	//	Read m_PowerStats
+
+	if (Ctx.dwVersion >= 202)
+		{
+		Ctx.pStream->Read(dwCount);
+		for (int i = 0; i < (int)dwCount; i++)
+			{
+			DWORD dwUNID;
+			Ctx.pStream->Read(dwUNID);
+			auto *pStats = m_PowerStats.SetAt(dwUNID);
+
+			Ctx.pStream->Read(pStats->dwInvoked);
+			}
+		}
 	}
 
 void CPlayerGameStats::SetStat (const CString &sStat, const CString &sValue)
@@ -2005,6 +2056,10 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 //	DWORD				dwCauseUNID
 //	DWORD				dwObjNameFlags
 //	CString				sObjName
+//
+//	DWORD		Count of powers
+//	DWORD			UNID
+//	DWORD			dwInvoked
 
 	{
 	DWORD dwSave;
@@ -2118,6 +2173,13 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 		pStream->Write(Stats.dwLastEntered);
 		pStream->Write(Stats.dwLastLeft);
 		pStream->Write(Stats.dwTotalTime);
+		}
+
+	pStream->Write(m_PowerStats.GetCount());
+	for (int i = 0; i < m_PowerStats.GetCount(); i++)
+		{
+		pStream->Write(m_PowerStats.GetKey(i));
+		pStream->Write(m_PowerStats[i].dwInvoked);
 		}
 	}
 

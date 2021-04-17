@@ -2,6 +2,46 @@
 
 <TranscendenceModule>
 
+<!-- BRITANNIA-CLASS HEAVY GUNSHIP -->
+
+	<!-- Level 9: Britannia-class Heavy Gunship -->
+
+	<ShipClass UNID="&scBritanniaPlayerL9;"
+			manufacturer=		"Pacific Defense"
+			class=				"Britannia"
+			type=				"heavy gunship"
+			defaultSovereign=	"&svCommonwealthFleet;"
+
+			attributes=			"commonwealth, military, pacificDefense, playerClass, shipBroker"
+			inherit=			"&scBritanniaStock;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itP210HexphaseArmor;"
+			/>
+
+		<Devices>
+			<Device deviceID="&itHeavyIonBlaster;"/>
+			<Device deviceID="&itNAMIHeavyLauncher;">
+				<Items>
+					<Item	count="50-100" item="&itS3Missile;"/>
+				</Items>
+			</Device>
+
+			<Device deviceID="&itR9Deflector;"/>
+			<Device deviceID="&it1GWReactor;"/>
+		</Devices>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The Britannia class benefits from Pacific Defense's deep experience creating space-superiority gunships."
+			/>
+		
+	</ShipClass>
+
 <!-- CENTURION-CLASS HEAVY GUNSHIP -->
 
 	<!-- Level 6: Centurion-class Heavy Gunship Block 2 -->

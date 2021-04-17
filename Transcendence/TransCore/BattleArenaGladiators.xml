@@ -879,6 +879,7 @@
 			</Table>
 
 			<Device item="&itCyclotronDeflectorIII;"/>
+			<Device deviceID="&itCargoHoldExpansion;"/>
 		</Devices>
 
 		<!-- AI and Behavior -->

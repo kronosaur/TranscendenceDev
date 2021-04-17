@@ -27,19 +27,17 @@ void CDeviceSystem::AccumulateEnhancementsToArmor (CSpaceObject *pObj, CInstalle
 //	Adds enhancements to the given armor segment.
 
 	{
-	int i;
-
-	for (i = 0; i < m_Devices.GetCount(); i++)
-		if (!m_Devices[i].IsEmpty())
+	for (int i = 0; i < m_Devices.GetCount(); i++)
+		if (!m_Devices[i]->IsEmpty())
 			{
 			//	See if this device enhances us
 
-			if (m_Devices[i].AccumulateEnhancements(pObj, pArmor, EnhancementIDs, pEnhancements))
+			if (m_Devices[i]->AccumulateEnhancements(pObj, pArmor, EnhancementIDs, pEnhancements))
 				{
 				//	If the device affected something, then we now know what it is
 
 				if (pObj->IsPlayer())
-					m_Devices[i].GetItem()->SetKnown();
+					m_Devices[i]->GetItem()->SetKnown();
 				}
 			}
 	}
@@ -51,12 +49,10 @@ void CDeviceSystem::AccumulatePerformance (SShipPerformanceCtx &Ctx) const
 //	Accumulate performance metrics.
 
 	{
-	int i;
-
-    for (i = 0; i < m_Devices.GetCount(); i++)
-        if (!m_Devices[i].IsEmpty())
+    for (int i = 0; i < m_Devices.GetCount(); i++)
+        if (!m_Devices[i]->IsEmpty())
             {
-            CItemCtx ItemCtx(Ctx.pShip, &m_Devices[i]);
+            CItemCtx ItemCtx(Ctx.pShip, m_Devices[i]);
             ItemCtx.GetDevice()->AccumulatePerformance(ItemCtx, Ctx);
             }
 	}
@@ -68,11 +64,9 @@ void CDeviceSystem::AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, in
 //	Increments power used and power generated for all devices.
 
 	{
-	int i;
-
-	for (i = 0; i < m_Devices.GetCount(); i++)
+	for (int i = 0; i < m_Devices.GetCount(); i++)
 		{
-		int iDevicePower = m_Devices[i].CalcPowerUsed(Ctx, pObj);
+		int iDevicePower = m_Devices[i]->CalcPowerUsed(Ctx, pObj);
 		if (iDevicePower >= 0)
 			iPowerUsed += iDevicePower;
 		else
@@ -97,7 +91,7 @@ int CDeviceSystem::CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon, int
 
 	for (i = 0; i < m_Devices.GetCount(); i++)
 		{
-		const CInstalledDevice &Device = m_Devices[i];
+		const CInstalledDevice &Device = *m_Devices[i];
 		if (!Device.IsEmpty())
 			{
 			int iSlots = Device.GetClass()->GetSlotsRequired();
@@ -154,7 +148,7 @@ CInstalledDevice *CDeviceSystem::FindDevice (const CItem &Item)
 	if (Item.IsInstalled() && Item.GetType()->IsDevice())
 		{
 		int iDevSlot = Item.GetInstalled();
-		return &m_Devices[iDevSlot];
+		return m_Devices[iDevSlot];
 		}
 	else
 		return NULL;
@@ -186,10 +180,10 @@ int CDeviceSystem::FindDeviceIndex (const CItem &Item, DWORD dwFlags) const
 
 		if (dwFlags & FLAG_VALIDATE_ITEM)
 			{
-			if (iDevSlot < 0 || iDevSlot >= m_Devices.GetCount() || m_Devices[iDevSlot].IsEmpty() || m_Devices[iDevSlot].GetItem() == NULL)
+			if (iDevSlot < 0 || iDevSlot >= m_Devices.GetCount() || m_Devices[iDevSlot]->IsEmpty() || m_Devices[iDevSlot]->GetItem() == NULL)
 				return -1;
 
-			if (!Item.IsEqual(*m_Devices[iDevSlot].GetItem()))
+			if (!Item.IsEqual(*m_Devices[iDevSlot]->GetItem()))
 				return -1;
 			}
 
@@ -229,16 +223,14 @@ int CDeviceSystem::FindFreeSlot (void)
 //	Returns the index of a free device slot; -1 if none left
 
 	{
-	int i;
-
-	for (i = 0; i < m_Devices.GetCount(); i++)
-		if (m_Devices[i].IsEmpty())
+	for (int i = 0; i < m_Devices.GetCount(); i++)
+		if (m_Devices[i]->IsEmpty())
 			return i;
 
 	//	We need to allocate a new slot
 
 	int iNewSlot = m_Devices.GetCount();
-	m_Devices.InsertEmpty();
+	InsertEmpty();
 	return iNewSlot;
 	}
 
@@ -300,13 +292,13 @@ int CDeviceSystem::FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories
 		{
 		for (int i = 0; i < GetCount(); i++)
 			{
-			LONGLONG iTypeAndVariant = (m_Devices[i].GetSlotLinkedFireOptions() &
-				CDeviceClass::lkfSelectedVariant ? CItemCtx(pObj, &m_Devices[i]).GetItemVariantNumber() : 0xffffffff);
-			iTypeAndVariant = m_Devices[i].GetUNID() | (iTypeAndVariant << 32);
-			if (!m_Devices[i].IsEmpty()
-				&& m_Devices[i].GetCategory() == Category
-				&& m_Devices[i].GetSlotLinkedFireOptions() & dwLinkedFireSelected
-				&& m_Devices[i].IsEnabled()
+			LONGLONG iTypeAndVariant = (m_Devices[i]->GetSlotLinkedFireOptions() &
+				CDeviceClass::lkfSelectedVariant ? CItemCtx(pObj, m_Devices[i]).GetItemVariantNumber() : 0xffffffff);
+			iTypeAndVariant = m_Devices[i]->GetUNID() | (iTypeAndVariant << 32);
+			if (!m_Devices[i]->IsEmpty()
+				&& m_Devices[i]->GetCategory() == Category
+				&& m_Devices[i]->GetSlotLinkedFireOptions() & dwLinkedFireSelected
+				&& m_Devices[i]->IsEnabled()
 				&& !FireWhenSelectedDeviceTypes.Find(iTypeAndVariant))
 				FireWhenSelectedDeviceTypes.Insert(iTypeAndVariant, i);
 			}
@@ -315,15 +307,15 @@ int CDeviceSystem::FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories
 	for (int i = 0; i < GetCount(); i++)
 		{
 		int iDevice = ((iDir * i) + iStartingSlot) % GetCount();
-		LONGLONG iTypeAndVariant = (m_Devices[iDevice].GetSlotLinkedFireOptions() &
-			CDeviceClass::lkfSelectedVariant ? CItemCtx(pObj, &m_Devices[iDevice]).GetItemVariantNumber() : 0xffffffff);
-		iTypeAndVariant = m_Devices[iDevice].GetUNID() | (iTypeAndVariant << 32);
+		LONGLONG iTypeAndVariant = (m_Devices[iDevice]->GetSlotLinkedFireOptions() &
+			CDeviceClass::lkfSelectedVariant ? CItemCtx(pObj, m_Devices[iDevice]).GetItemVariantNumber() : 0xffffffff);
+		iTypeAndVariant = m_Devices[iDevice]->GetUNID() | (iTypeAndVariant << 32);
 		int iEarliestLkfSelectedItem = -1;
 		FireWhenSelectedDeviceTypes.Find(iTypeAndVariant, &iEarliestLkfSelectedItem);
-		if (!m_Devices[iDevice].IsEmpty() 
-				&& m_Devices[iDevice].GetCategory() == Category
-				&& m_Devices[iDevice].IsSelectable()
-				&& (switchWeapons ? (m_Devices[iDevice].GetSlotLinkedFireOptions() & dwLinkedFireSelected ?
+		if (!m_Devices[iDevice]->IsEmpty() 
+				&& m_Devices[iDevice]->GetCategory() == Category
+				&& m_Devices[iDevice]->IsSelectable()
+				&& (switchWeapons ? (m_Devices[iDevice]->GetSlotLinkedFireOptions() & dwLinkedFireSelected ?
 					iDevice == iEarliestLkfSelectedItem : true) : true))
 			return iDevice;
 		}
@@ -338,14 +330,12 @@ int CDeviceSystem::FindRandomIndex (bool bEnabledOnly) const
 //	Returns a random device
 
 	{
-	int i;
-
 	//	Count the number of valid devices
 
 	int iCount = 0;
-	for (i = 0; i < GetCount(); i++)
-		if (!m_Devices[i].IsEmpty() 
-				&& (!bEnabledOnly || m_Devices[i].IsEnabled()))
+	for (int i = 0; i < GetCount(); i++)
+		if (!m_Devices[i]->IsEmpty() 
+				&& (!bEnabledOnly || m_Devices[i]->IsEnabled()))
 			iCount++;
 
 	if (iCount == 0)
@@ -355,9 +345,9 @@ int CDeviceSystem::FindRandomIndex (bool bEnabledOnly) const
 
 	//	Return the device
 
-	for (i = 0; i < GetCount(); i++)
-		if (!m_Devices[i].IsEmpty()
-				&& (!bEnabledOnly || m_Devices[i].IsEnabled()))
+	for (int i = 0; i < GetCount(); i++)
+		if (!m_Devices[i]->IsEmpty()
+				&& (!bEnabledOnly || m_Devices[i]->IsEnabled()))
 			{
 			if (--iDev == 0)
 				return i;
@@ -460,13 +450,11 @@ int CDeviceSystem::GetCountByID (const CString &sID) const
 //	Returns the number of installed devices with the given ID.
 
 	{
-	int i;
-
 	int iCount = 0;
-	for (i = 0; i < m_Devices.GetCount(); i++)
+	for (int i = 0; i < m_Devices.GetCount(); i++)
 		{
-		if (!m_Devices[i].IsEmpty() 
-				&& strEquals(sID, m_Devices[i].GetID()))
+		if (!m_Devices[i]->IsEmpty() 
+				&& strEquals(sID, m_Devices[i]->GetID()))
 			iCount++;
 		}
 
@@ -571,12 +559,10 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, in
 //	Initialize based on a list of device descriptor.
 
 	{
-	int i;
-
 	//	Allocate devices
 
 	CleanUp();
-	m_Devices.InsertEmpty(Max(Devices.GetCount(), iMaxDevices));
+	InsertEmpty(Max(Devices.GetCount(), iMaxDevices));
 
 	//	Add items to the object, as specified.
 
@@ -584,7 +570,7 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, in
 
 	//	Install devices.
 
-	for (i = 0; i < Devices.GetCount(); i++)
+	for (int i = 0; i < Devices.GetCount(); i++)
 		{
 		const SDeviceDesc &NewDevice = Devices.GetDeviceDesc(i);
 
@@ -594,24 +580,24 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, in
 
 		//	Install the device
 
-		m_Devices[i].InitFromDesc(NewDevice);
-		m_Devices[i].Install(*pObj, ObjItems, i, true);
+		m_Devices[i]->InitFromDesc(NewDevice);
+		m_Devices[i]->Install(*pObj, ObjItems, i, true);
 
 		//	Assign to named devices
 
 		if (HasNamedDevices())
 			{
-			switch (m_Devices[i].GetCategory())
+			switch (m_Devices[i]->GetCategory())
 				{
 				case itemcatWeapon:
 					if (m_NamedDevices[devPrimaryWeapon] == -1
-							&& m_Devices[i].IsSelectable())
+							&& m_Devices[i]->IsSelectable())
 						m_NamedDevices[devPrimaryWeapon] = i;
 					break;
 
 				case itemcatLauncher:
 					if (m_NamedDevices[devMissileWeapon] == -1
-							&& m_Devices[i].IsSelectable())
+							&& m_Devices[i]->IsSelectable())
 						m_NamedDevices[devMissileWeapon] = i;
 					break;
 
@@ -648,6 +634,19 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, in
 	return true;
 	}
 
+void CDeviceSystem::InsertEmpty (int iCount)
+
+//	InsertEmpty
+//
+//	Inserts empty devices.
+
+	{
+	int iFirst = m_Devices.GetCount();
+	m_Devices.InsertEmpty(iCount);
+	for (int i = iFirst; i < iFirst + iCount; i++)
+		m_Devices[i].Set(new CInstalledDevice);
+	}
+
 bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iDeviceSlot, int iSlotPosIndex, bool bInCreate, int *retiDeviceSlot)
 
 //	Install
@@ -667,7 +666,7 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 			}
 		}
 
-	CInstalledDevice &Device = m_Devices[iDeviceSlot];
+	CInstalledDevice &Device = *m_Devices[iDeviceSlot];
     CItemCtx ItemCtx(pObj, &Device);
 
 	//	Update the structure
@@ -704,7 +703,7 @@ void CDeviceSystem::RefreshNamedDevice (int iDeviceSlot)
 //	Update the named device.
 
 	{
-	CInstalledDevice &Device = m_Devices[iDeviceSlot];
+	CInstalledDevice &Device = *m_Devices[iDeviceSlot];
 
 	if (HasNamedDevices())
 		{
@@ -752,8 +751,6 @@ bool CDeviceSystem::IsSlotAvailable (ItemCategories iItemCat, int *retiSlot) con
 //	then we return the device slot that we need to replace.
 
 	{
-	int i;
-
 	switch (iItemCat)
 		{
 		case itemcatLauncher:
@@ -764,9 +761,9 @@ bool CDeviceSystem::IsSlotAvailable (ItemCategories iItemCat, int *retiSlot) con
 			{
 			//	Look for a device of the given slot category.
 
-			for (i = 0; i < m_Devices.GetCount(); i++)
-				if (!m_Devices[i].IsEmpty()
-						&& m_Devices[i].GetCategory() == iItemCat)
+			for (int i = 0; i < m_Devices.GetCount(); i++)
+				if (!m_Devices[i]->IsEmpty()
+						&& m_Devices[i]->GetCategory() == iItemCat)
 					{
 					if (retiSlot)
 						*retiSlot = i;
@@ -794,10 +791,10 @@ bool CDeviceSystem::IsWeaponRepeating (DeviceNames iDev) const
 	if (iDev == devNone)
 		{
 		for (int i = 0; i < m_Devices.GetCount(); i++)
-			if (!m_Devices[i].IsEmpty() 
-					&& (m_Devices[i].GetCategory() == itemcatWeapon || m_Devices[i].GetCategory() == itemcatLauncher))
+			if (!m_Devices[i]->IsEmpty() 
+					&& (m_Devices[i]->GetCategory() == itemcatWeapon || m_Devices[i]->GetCategory() == itemcatLauncher))
 				{
-				if (m_Devices[i].GetContinuousFire() != 0)
+				if (m_Devices[i]->GetContinuousFire() != 0)
 					return true;
 				}
 
@@ -817,11 +814,9 @@ void CDeviceSystem::MarkImages (void)
 //	Marks images
 
 	{
-	int i;
-
-	for (i = 0; i < m_Devices.GetCount(); i++)
-		if (!m_Devices[i].IsEmpty())
-			m_Devices[i].GetClass()->MarkImages();
+	for (int i = 0; i < m_Devices.GetCount(); i++)
+		if (!m_Devices[i]->IsEmpty())
+			m_Devices[i]->GetClass()->MarkImages();
 	}
 
 bool CDeviceSystem::OnDestroyCheck (CSpaceObject *pObj, DestructionTypes iCause, const CDamageSource &Attacker)
@@ -832,14 +827,12 @@ bool CDeviceSystem::OnDestroyCheck (CSpaceObject *pObj, DestructionTypes iCause,
 //	Returns TRUE if the ship is destroyed; FALSE otherwise
 
 	{
-	int i;
-
 	//	Check to see if any devices can prevent the destruction
 
-	for (i = 0; i < m_Devices.GetCount(); i++)
-		if (!m_Devices[i].IsEmpty())
+	for (int i = 0; i < m_Devices.GetCount(); i++)
+		if (!m_Devices[i]->IsEmpty())
 			{
-			if (!m_Devices[i].OnDestroyCheck(pObj, iCause, Attacker))
+			if (!m_Devices[i]->OnDestroyCheck(pObj, iCause, Attacker))
 				return false;
 			}
 
@@ -856,7 +849,7 @@ void CDeviceSystem::OnSubordinateDestroyed (CSpaceObject &SubordinateObj, const 
 	{
 	for (int i = 0; i < m_Devices.GetCount(); i++)
 		{
-		CInstalledDevice &Device = m_Devices[i];
+		CInstalledDevice &Device = *m_Devices[i];
 		if (!Device.IsEmpty() && Device.IsOnSegment() && strEquals(sSubordinateID, Device.GetSegmentID()))
 			{
 			Device.SetEnabled(Device.GetSource(), false);
@@ -880,10 +873,10 @@ void CDeviceSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj)
 
 	//	Load the devices
 
-	m_Devices.InsertEmpty(iCount);
+	InsertEmpty(iCount);
 	for (int i = 0; i < iCount; i++)
 		{
-		m_Devices[i].ReadFromStream(*pObj, Ctx);
+		m_Devices[i]->ReadFromStream(*pObj, Ctx);
 
 		if (HasNamedDevices())
 			{
@@ -893,7 +886,7 @@ void CDeviceSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj)
 			}
 
 		if (Ctx.dwVersion < 29)
-			m_Devices[i].SetDeviceSlot(i);
+			m_Devices[i]->SetDeviceSlot(i);
 		}
 	}
 
@@ -1019,8 +1012,8 @@ void CDeviceSystem::ReadyNextMissile (CSpaceObject *pObj, int iDir, bool bUsedLa
 //	Selects the next missile
 
 	{
-	bool lastSelected;
-	bool firstSelected;
+	bool lastSelected = false;
+	bool firstSelected = false;
 	CInstalledDevice *pDevice = GetNamedDevice(devMissileWeapon);
 	if (pDevice)
 		{
@@ -1214,7 +1207,7 @@ bool CDeviceSystem::Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemLis
 	//	Get the device slot that this item is at
 
 	int iDevSlot = Item.GetInstalled();
-	CInstalledDevice *pDevice = &m_Devices[iDevSlot];
+	CInstalledDevice *pDevice = m_Devices[iDevSlot];
 	ItemCategories DevCat = pDevice->GetCategory();
 
 	//	Clear the device
@@ -1270,14 +1263,12 @@ void CDeviceSystem::WriteToStream (IWriteStream *pStream)
 //	Write the list of devices to the stream.
 
 	{
-	int i;
-
 	DWORD dwSave = m_Devices.GetCount();
 	pStream->Write(dwSave);
 
-	for (i = 0; i < m_Devices.GetCount(); i++)
+	for (int i = 0; i < m_Devices.GetCount(); i++)
 		{
-		m_Devices[i].WriteToStream(pStream);
+		m_Devices[i]->WriteToStream(pStream);
 
 		if (HasNamedDevices())
 			{
@@ -1290,13 +1281,13 @@ void CDeviceSystem::WriteToStream (IWriteStream *pStream)
 
 //	CDeviceSystem::iterator ----------------------------------------------------
 
-CDeviceSystem::iterator::iterator (CInstalledDevice *pPos, CInstalledDevice *pEnd) :
+CDeviceSystem::iterator::iterator (TUniquePtr<CInstalledDevice> *pPos, TUniquePtr<CInstalledDevice> *pEnd) :
 		m_pPos(pPos),
 		m_pEnd(pEnd)
 	{
 	if (m_pPos && m_pEnd)
 		{
-		while (m_pPos < m_pEnd && m_pPos->IsEmpty())
+		while (m_pPos < m_pEnd && (*m_pPos)->IsEmpty())
 			m_pPos++;
 		}
 	}
@@ -1307,20 +1298,20 @@ CDeviceSystem::iterator &CDeviceSystem::iterator::operator++ ()
 		{
 		m_pPos++;
 		}
-	while (m_pPos < m_pEnd && m_pPos->IsEmpty());
+	while (m_pPos < m_pEnd && (*m_pPos)->IsEmpty());
 
 	return *this;
 	}
 
 //	CDeviceSystem::const_iterator ----------------------------------------------------
 
-CDeviceSystem::const_iterator::const_iterator (const CInstalledDevice *pPos, const CInstalledDevice *pEnd) :
+CDeviceSystem::const_iterator::const_iterator (const TUniquePtr<CInstalledDevice> *pPos, const TUniquePtr<CInstalledDevice> *pEnd) :
 		m_pPos(pPos),
 		m_pEnd(pEnd)
 	{
 	if (m_pPos && m_pEnd)
 		{
-		while (m_pPos < m_pEnd && m_pPos->IsEmpty())
+		while (m_pPos < m_pEnd && (*m_pPos)->IsEmpty())
 			m_pPos++;
 		}
 	}
@@ -1331,8 +1322,7 @@ CDeviceSystem::const_iterator &CDeviceSystem::const_iterator::operator++ ()
 		{
 		m_pPos++;
 		}
-	while (m_pPos < m_pEnd && m_pPos->IsEmpty());
+	while (m_pPos < m_pEnd && (*m_pPos)->IsEmpty());
 
 	return *this;
 	}
-

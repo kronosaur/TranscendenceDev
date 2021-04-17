@@ -2358,6 +2358,7 @@
 	<!ENTITY scEI500PlayerL3			"0x00100541">
 	<!ENTITY scSapphirePlayerL3			"0x00100542">
 	<!ENTITY scWolfenPlayerL3			"0x00100543">
+	<!ENTITY scBritanniaPlayerL9		"0x00100544">
 
 	<!-- 0580-059F ROGUE FLEET -->
 
@@ -2437,6 +2438,8 @@
 	<!ENTITY vtMinotaurTurretSlot		"0x0010066E">
 	<!ENTITY rsCommonwealthFleetInsignia	"0x0010066F">
 	<!ENTITY etCSCSupportEncounter		"0x00100670">
+	<!ENTITY scBritanniaStock			"0x00100671">
+	<!ENTITY rsBritanniaHero			"0x00100672">
 
 	<!-- 06C0-06FF STANDARD ITEMS -->
 
@@ -2524,6 +2527,9 @@
 	<!ENTITY rsBlackMarketShipyard			"0x00100820">
 	<!ENTITY msBlackMarketMission02			"0x00100821">
 	<!ENTITY msBlackMarketSmuggle01			"0x00100822">
+	<!ENTITY scT31PlayerL5					"0x00100823">
+	<!ENTITY scMolotokBPlayerL8				"0x00100824">
+	<!ENTITY scMolotokAPlayerL6				"0x00100825">
 
 	<!-- 0840-085F TENHOVE DEFENSE SYSTEM -->
 
@@ -2577,6 +2583,7 @@
 	<Module filename="BlackMarketMission01.xml"/>
 	<Module filename="BlackMarketMission02.xml"/>
 	<Module filename="BlackMarketMissionSmuggle01.xml"/>
+	<Module filename="BlackMarketPlayerShips.xml"/>
 
 	<!-- Characters -->
 		

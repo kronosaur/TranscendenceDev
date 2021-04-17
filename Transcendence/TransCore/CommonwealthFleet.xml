@@ -572,20 +572,15 @@ PLAYER DATA
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealthFleet;"
 
-			mass=				"120"
-			cargoSpace=			"50"
-			thrustRatio=		"9.0"
-			maxSpeed=			"22"
-
 			attributes=			"commonwealth, commonwealthMilitary, commonMilitary, commonwealthFleet, genericClass, pacificDefense"
+			inherit=			"&scBritanniaStock;"
 			>
 
-		<Armor>
-			<ArmorSection start="315" span="90" armorID="&itP120HexphaseArmor;"/>
-			<ArmorSection start="225" span="90" armorID="&itP120HexphaseArmor;"/>
-			<ArmorSection start="135" span="90" armorID="&itP120HexphaseArmor;"/>
-			<ArmorSection start="45"  span="90" armorID="&itP120HexphaseArmor;"/>
-		</Armor>
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itP120HexphaseArmor;"
+			/>
 
 		<Devices>
 			<Device deviceID="&itStarCannon;"/>
@@ -593,25 +588,13 @@ PLAYER DATA
 			<Device deviceID="&itNM900MissilePod;"/>
 		</Devices>
 
-		<Maneuver
-			maxRotationRate=	"9.0"
-			rotationAccel=		"2.0"
-			/>
+		<!-- Treasure -->
 
 		<Items>
 			<Item count="2d6" item="&itHeliumAssembly;"/>
 		</Items>
 
-		<Image imageID="&rsBritanniaHD;" imageX="0" imageY="0" imageWidth="80" imageHeight="80" rotationCount="120" rotationColumns="12" />
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="154"	posRadius="26"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-154"	posRadius="26"	posZ="0"	rotation="180"/>
-			<Effect type="rotateRight"		posAngle="82"	posRadius="23"	posZ="0"	rotation="0"/>
-			<Effect type="rotateRight"		posAngle="-98"	posRadius="23"	posZ="0"	rotation="180"/>
-			<Effect type="rotateLeft"		posAngle="-82"	posRadius="23"	posZ="0"	rotation="0"/>
-			<Effect type="rotateLeft"		posAngle="98"	posRadius="23"	posZ="0"	rotation="180"/>
-		</Effects>
+		<!-- AI and Behavior -->
 
 		<Events>
 			<Reload>
@@ -624,6 +607,74 @@ PLAYER DATA
 					)
 			</Reload>
 		</Events>
+	</ShipClass>
+
+	<ShipClass UNID="&scBritanniaStock;"
+			manufacturer=		"Pacific Defense"
+			class=				"Britannia"
+			type=				"heavy gunship"
+			defaultSovereign=	"&svCommonwealthFleet;"
+
+			attributes=			""
+			inherit=			"&baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"30"
+			mass=				"120"
+			cargoSpace=			"100"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"200"
+			maxDevices=			"9"
+			maxNonWeapons=		"6"
+
+			maxArmor=			"massive"
+			stdArmor=			"heavy"
+			/>
+
+		<Drive
+			maxSpeed=			"22"
+			thrust=				"1500"
+			powerUse=			"90"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"12.0"
+			rotationAccel=		"1.0"
+			rotationStopAccel=	"9.0"
+			/>
+
+		<Armor
+			armorID=			"&itP120HexphaseArmor;"
+			count=				"4"
+			/>
+		
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&itStarCannon;"/>
+			<Device deviceID="&itR5BDeflector;"/>
+			<Device deviceID="&itNM900MissilePod;"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsBritanniaHD;" imageWidth="80" imageHeight="80" rotationCount="120" rotationColumns="12" viewportRatio="0.006"/>
+		<HeroImage imageID="&rsBritanniaHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="154"	posRadius="26"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-154"	posRadius="26"	posZ="0"	rotation="180"/>
+			<Effect type="rotateRight"		posAngle="82"	posRadius="23"	posZ="0"	rotation="0"/>
+			<Effect type="rotateRight"		posAngle="-98"	posRadius="23"	posZ="0"	rotation="180"/>
+			<Effect type="rotateLeft"		posAngle="-82"	posRadius="23"	posZ="0"	rotation="0"/>
+			<Effect type="rotateLeft"		posAngle="98"	posRadius="23"	posZ="0"	rotation="180"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
 
 		<AISettings
 			fireRateAdj=		"15"
@@ -1702,8 +1753,9 @@ PLAYER DATA
 	<Image UNID="&rsMinotaurM;"				bitmap="Resources\MinotaurM.jpg" bitmask="Resources\MinotaurMMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsMinotaurMHero;"			bitmap="Resources\MinotaurMLarge.jpg" bitmask="Resources\MinotaurMLargeMask.bmp" loadOnUse="true"/>
 
-	<Image UNID="&rsBritannia;"				bitmap="Resources\Britannia.jpg" bitmask="Resources\BritanniaMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsBritanniaHD;"			bitmap="Resources\BritanniaHD.jpg" bitmask="Resources\BritanniaHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsBritanniaHero;"			bitmap="Resources\BritanniaLarge.jpg" bitmask="Resources\BritanniaLargeMask.bmp" loadOnUse="true"/>
+
 	<Image UNID="&rsCenturionHD;"			bitmap="Resources\CenturionHD.jpg"	bitmask="Resources\CenturionHDMask.bmp" 	loadOnUse="true" />
 
 </TranscendenceModule>

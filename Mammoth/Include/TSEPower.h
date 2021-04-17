@@ -45,6 +45,7 @@ class CPower : public CDesignType
 
 		//	CDesignType overrides
 		static CPower *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designPower) ? (CPower *)pType : NULL); }
+		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override { if (retiMinLevel) *retiMinLevel = m_iLevel; if (retiMaxLevel) *retiMaxLevel = m_iLevel; return m_iLevel; }
 		virtual DesignTypes GetType (void) const override { return designPower; }
 		virtual const CObjectImageArray &GetTypeSimpleImage (void) const override { return m_Image; }
 
@@ -60,6 +61,7 @@ class CPower : public CDesignType
 		void InitOldStyleEvent (EEvent iEvent, ICCItem *pCode);
 
 		CString m_sName;
+		int m_iLevel = 0;
 		int m_iInvokeCost = 0;
 		CString m_sInvokeKey;
 		CObjectImageArray m_Image;				//	Image of power

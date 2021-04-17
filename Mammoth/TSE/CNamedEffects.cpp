@@ -11,7 +11,7 @@ DWORD CNamedEffects::m_NamedPainterUNID[painterCount] =
 	LARGE_STATION_DAMAGE_UNID,
 	};
 
-CNamedEffects::CNamedEffects (CNamedEffects &&Src)
+CNamedEffects::CNamedEffects (CNamedEffects &&Src) noexcept
 
 //	CNamedEffects move constructor
 
@@ -19,7 +19,7 @@ CNamedEffects::CNamedEffects (CNamedEffects &&Src)
 	Move(Src);
 	}
 
-CNamedEffects &CNamedEffects::operator= (CNamedEffects &&Src)
+CNamedEffects &CNamedEffects::operator= (CNamedEffects &&Src) noexcept
 
 //	CNamedEffects move operator
 

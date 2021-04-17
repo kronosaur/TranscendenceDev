@@ -48,6 +48,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Sustain"
+			level=		"1"
 			key=		"A"
 			attributes=	"Domina"
 			>
@@ -87,6 +88,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Restore"
+			level=		"3"
 			key=		"B"
 			attributes=	"Domina"
 			>
@@ -161,6 +163,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Strengthen"
+			level=		"3"
 			key=		"C"
 			attributes=	"Domina"
 			>
@@ -199,6 +202,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Defend"
+			level=		"5"
 			key=		"D"
 			attributes=	"Domina"
 			>
@@ -243,6 +247,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Nebular Sight"
+			level=		"5"
 			key=		"E"
 			attributes=	"Domina"
 			>
@@ -298,6 +303,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Circle of Wrath"
+			level=		"7"
 			key=		"F"
 			attributes=	"Domina"
 			>
@@ -341,6 +347,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Ingenuity"
+			level=		"7"
 			key=		"G"
 			attributes=	"Domina"
 			>
@@ -531,6 +538,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Desperate Escape"
+			level=		"9"
 			key=		"H"
 			attributes=	"Domina"
 			>
@@ -590,6 +598,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Shatter"
+			level=		"9"
 			key=		"I"
 			attributes=	"Domina"
 			>

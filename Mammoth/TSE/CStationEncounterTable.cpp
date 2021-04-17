@@ -14,6 +14,8 @@ bool CStationEncounterTable::Init (CSystem &System, const CStationEncounterOverr
 //	Initializes an encounter table given the criteria in Options.
 
 	{
+	DEBUG_TRY
+
 	CUniverse &Universe = System.GetUniverse();
 	CTopologyNode *pNode = System.GetTopology();
 
@@ -138,4 +140,6 @@ bool CStationEncounterTable::Init (CSystem &System, const CStationEncounterOverr
 	*retbAddToCache = !bPrioritizeRequiredEncounters;
 
 	return true;
+
+	DEBUG_CATCH
 	}

@@ -556,9 +556,9 @@ void CCLinkedList::QuickSort (int iLeft, int iRight, int iOrder)
 //	iOrder -1 = ascending
 
 	{
-	int i;
+	if (!m_pIndex)
+		throw CException(ERR_FAIL);
 
-	ASSERT(m_pIndex);
 	ASSERT(iLeft < iRight);
 	ASSERT(iLeft >= 0 && iRight < m_iCount);
 
@@ -597,7 +597,7 @@ void CCLinkedList::QuickSort (int iLeft, int iRight, int iOrder)
 		//	Partition around the pivot
 
 		int iStoreIndex = iLeft;
-		for (i = iLeft; i < iRight; i++)
+		for (int i = iLeft; i < iRight; i++)
 			if (iOrder * HelperCompareItems(m_pIndex[i]->m_pItem, pPivot) > 0)
 				{
 				Swap(m_pIndex[iStoreIndex], m_pIndex[i]);
@@ -994,13 +994,12 @@ void CCLinkedList::UpdateLinksFromIndex (void)
 //	(The caller has modified the index)
 
 	{
-	int i;
-
-	ASSERT(m_pIndex);
+	if (!m_pIndex)
+		throw CException(ERR_FAIL);
 
 	//	Fixup all the pointers
 
-	for (i = 0; i < m_iCount - 1; i++)
+	for (int i = 0; i < m_iCount - 1; i++)
 		m_pIndex[i]->m_pNext = m_pIndex[i + 1];
 
 	m_pIndex[m_iCount - 1]->m_pNext = NULL;

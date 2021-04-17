@@ -1205,6 +1205,12 @@ void COverlay::PaintCounterFlag (CG32bitImage &Dest, int x, int y, const CString
 //	Paints a counter flag.
 
 	{
+	if (!Ctx.pObj)
+		{
+		ASSERT(false);
+		return;
+		}
+
 	const CG16bitFont &CounterFont = g_pUniverse->GetNamedFont(CUniverse::fontSRSMessage);
 	const CG16bitFont &LabelFont = g_pUniverse->GetNamedFont(CUniverse::fontSRSObjCounter);
 
