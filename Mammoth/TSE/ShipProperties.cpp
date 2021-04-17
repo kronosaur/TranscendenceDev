@@ -6,6 +6,9 @@
 #include "PreComp.h"
 #include <set>
 
+#define FIELD_DEVICE_SLOT				CONSTLIT("deviceSlot")
+#define FIELD_SLOT_ID					CONSTLIT("slotID")
+
 #define PROPERTY_ALWAYS_LEAVE_WRECK				CONSTLIT("alwaysLeaveWreck")
 #define PROPERTY_ARMOR_COUNT					CONSTLIT("armorCount")
 #define PROPERTY_AUTO_TARGET					CONSTLIT("autoTarget")
@@ -26,20 +29,7 @@
 #define PROPERTY_CHARACTER_NAME					CONSTLIT("characterName")
 #define PROPERTY_DEVICE_DAMAGE_IMMUNE			CONSTLIT("deviceDamageImmune")
 #define PROPERTY_DEVICE_DISRUPT_IMMUNE			CONSTLIT("deviceDisruptImmune")
-#define PROPERTY_DEVICE_SLOT_ATTRIBUTES			CONSTLIT("deviceSlotAttributes")
-#define PROPERTY_DEVICE_SLOT_COUNT				CONSTLIT("deviceSlotCount")
-#define PROPERTY_DEVICE_SLOT_CRITERIA			CONSTLIT("deviceSlotCriteria")
-#define PROPERTY_DEVICE_SLOT_FIREARC			CONSTLIT("deviceSlotFireArc")
 #define PROPERTY_DEVICE_SLOT_IDS				CONSTLIT("deviceSlotIDs")
-#define PROPERTY_DEVICE_SLOT_MAX_MASS			CONSTLIT("deviceSlotMaxMass")
-#define PROPERTY_DEVICE_SLOT_MAX_POWER			CONSTLIT("deviceSlotMaxPower")
-#define PROPERTY_DEVICE_SLOT_MAX_POWER_PERCENT	CONSTLIT("deviceSlotMaxPowerPercent")
-#define PROPERTY_DEVICE_SLOT_OMNIDIRECTIONAL	CONSTLIT("deviceSlotOmnidirectional")
-#define PROPERTY_DEVICE_SLOT_POS				CONSTLIT("deviceSlotPos")
-#define PROPERTY_DEVICE_SLOT_POS_ANGLE			CONSTLIT("deviceSlotPosAngle")
-#define PROPERTY_DEVICE_SLOT_POS_RADIUS			CONSTLIT("deviceSlotPosRadius")
-#define PROPERTY_DEVICE_SLOT_SECONDARY_WEAPON	CONSTLIT("deviceSlotSecondaryWeapon")
-#define PROPERTY_DEVICE_SLOT_TARGET_CRITERIA	CONSTLIT("deviceSlotTargetCriteria")
 #define PROPERTY_DISINTEGRATION_IMMUNE			CONSTLIT("disintegrationImmune")
 #define PROPERTY_DOCKED_AT_ID					CONSTLIT("dockedAtID")
 #define PROPERTY_DOCKING_ENABLED				CONSTLIT("dockingEnabled")
@@ -255,29 +245,13 @@ bool CShip::IsDeviceSlotProperty(const CString& sName) const
 
 //	IsDeviceSlotProperty
 //
-//	Returns TRUE if the property is a device slot property
+//	Returns TRUE if the property is a device slot property tied to a specific device slot.
 
 	{
-	std::set<CString> deviceSlotProperties = {
-		PROPERTY_DEVICE_SLOT_ATTRIBUTES,
-		PROPERTY_DEVICE_SLOT_COUNT,
-		PROPERTY_DEVICE_SLOT_CRITERIA,
-		PROPERTY_DEVICE_SLOT_FIREARC,
-		PROPERTY_DEVICE_SLOT_IDS,
-		PROPERTY_DEVICE_SLOT_MAX_MASS,
-		PROPERTY_DEVICE_SLOT_MAX_POWER,
-		PROPERTY_DEVICE_SLOT_MAX_POWER_PERCENT,
-		PROPERTY_DEVICE_SLOT_OMNIDIRECTIONAL,
-		PROPERTY_DEVICE_SLOT_POS,
-		PROPERTY_DEVICE_SLOT_POS_ANGLE,
-		PROPERTY_DEVICE_SLOT_POS_RADIUS,
-		PROPERTY_DEVICE_SLOT_SECONDARY_WEAPON,
-		PROPERTY_DEVICE_SLOT_TARGET_CRITERIA
-	};
-	return deviceSlotProperties.find(sName) != deviceSlotProperties.end();
+	return true;
 	}
 
-ICCItem* CShip::GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const CString& sName) const
+ICCItem* CShip::GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const CString& sName, const ICCItem* pArgs) const
 
 //	GetDeviceSlotProperty
 //
@@ -285,8 +259,40 @@ ICCItem* CShip::GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const
 //	TODO(heliogenesis): Complete this function
 
 	{
-	//	Device slot properties
+	//	Device slot properties tied to specific device slots
+		int iDeviceSlot = -1;
+		if (pArgs->GetCount() >= 3)
+			{
+			IDeviceGenerator* pDevSlots = this->GetClass().GetDeviceSlots();
+			int numSlots = pDevSlots->GetNumberOfDescs();
+			ICCItem* pOptions = pArgs->GetElement(2);
+			if (pOptions->IsInteger())
+				iDeviceSlot = pOptions->GetIntegerValue();
+			else
+				{
+				ICCItem* pDeviceSlot = pOptions->GetElement(FIELD_DEVICE_SLOT);
+				ICCItem* pDeviceSlotID = pOptions->GetElement(FIELD_SLOT_ID);
+				if (pDeviceSlot && !pDeviceSlot->IsNil())
+					iDeviceSlot = pDeviceSlot->GetIntegerValue();
+
+				if (pDeviceSlotID && !pDeviceSlotID->IsNil())
+					{
+					CString sDeviceSlotID = pDeviceSlotID->GetStringValue();
+					iDeviceSlot = pDevSlots->GetDescIndexGivenId(sDeviceSlotID);
+					if (iDeviceSlot == -1)
+						return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+					}
+				}
+			if (iDeviceSlot != -1)
+				{
+				if (iDeviceSlot < 0 || iDeviceSlot >= this->GetDeviceCount())
+					return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+				}
+			}
+		else
+			return pCC->CreateError(CONSTLIT("Insufficient arguments"));
 	return pCC->CreateError(CONSTLIT("Unimplemented function"));
+
 	}
 
 ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const
@@ -366,7 +372,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_CHALLENGE_RATING))
 		return CC.CreateInteger(CChallengeRatingCalculator::CalcChallengeRating(*this));
-		
+
 	else if (strEquals(sName, PROPERTY_CHARACTER))
 		return (m_pCharacter ? CC.CreateInteger(m_pCharacter->GetUNID()) : CC.CreateNil());
 
@@ -378,6 +384,10 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_DEVICE_DISRUPT_IMMUNE))
 		return CC.CreateBool(m_Armor.IsImmune(specialDeviceDisrupt));
+
+	// TODO(heliogenesis): Create new function to get all slot IDs from a slot struct
+	//else if (strEquals(sName, PROPERTY_DEVICE_SLOT_IDS))
+	//	return;
 
 	else if (strEquals(sName, PROPERTY_DISINTEGRATION_IMMUNE))
 		return CC.CreateBool(m_Armor.IsImmune(specialDisintegration));

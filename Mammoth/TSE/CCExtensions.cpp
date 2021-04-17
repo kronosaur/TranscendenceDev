@@ -6878,11 +6878,11 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				ICCItem* pOptions = pArgs->GetElement(2);
 				CShip* pShip = pObj->AsShip();
+				const IDeviceGenerator* pDevSlots = pShip->GetClass()->GetDeviceSlots();
 				if (pOptions->IsInteger())
 					iSlot = pOptions->GetIntegerValue();
 				else if (pShip != nullptr)
 					{
-					IDeviceGenerator* pDevSlots = pShip->GetClass()->GetDeviceSlots();
 					ICCItem* pDeviceSlot = pOptions->GetElement(FIELD_DEVICE_SLOT);
 					ICCItem* pDeviceSlotID = pOptions->GetElement(FIELD_SLOT_ID);
 					if (pDeviceSlot && !pDeviceSlot->IsNil())
@@ -6901,13 +6901,11 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			bool bForceUseOfDeviceSlot = pArgs->GetCount() > 3 ? !(pArgs->GetElement(3)->IsNil()) : false;
 
 			//	Validate the slot
-			//	TODO(heliogenesis): Add an option to force use of device slot - see https://github.com/kronosaur/TranscendenceDev/pull/75
 			bool bCanInstallToDeviceSlot = true;
 			if (iSlot != -1)
 				{
 				CShip *pShip = pObj->AsShip();
 				IDeviceGenerator* pDevSlots = pShip->GetClass()->GetDeviceSlots();
-				bCanInstallToDeviceSlot = bForceUseOfDeviceSlot ? pDevSlots->ItemFitsSlot(pObj, Item, iSlot) : true;
 				if (Item.IsArmor() 
 						&& pShip 
 						&& (iSlot < 0 || iSlot >= pShip->GetArmorSectionCount()))
@@ -6923,7 +6921,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CSpaceObject::InstallItemResults iResult;
 			CString sResult;
 			CItem ItemToReplace;
-			bool bCanInstall = pObj->CanInstallItem(Item, iSlot, &iResult, &sResult, &ItemToReplace) && bCanInstallToDeviceSlot; // TODO(heliogenesis): Move this into CanInstallItem in ShipClass
+			bool bCanInstall = pObj->CanInstallItem(Item, iSlot, bForceUseOfDeviceSlot, &iResult, &sResult, &ItemToReplace);
 
 			//	Generate the result
 
@@ -10632,7 +10630,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			IDeviceGenerator* pDevSlots = pShip->GetClass()->GetDeviceSlots();
 			CString sProperty = pArgs->GetElement(1)->GetStringValue();
-			return pShip->GetDeviceSlotProperty(pCC, *pCtx, sProperty);
+			return pShip->GetDeviceSlotProperty(pCC, *pCtx, sProperty, pArgs);
 			}
 
 		case FN_SHIP_DOCK_OBJ:
@@ -10949,7 +10947,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			CSpaceObject::InstallItemResults iResult;
 			CString sResult;
-			pShip->CanInstallItem(Item, iSlot, &iResult, &sResult);
+			pShip->CanInstallItem(Item, iSlot, false, &iResult, &sResult);
 
 			if (!sResult.IsBlank())
 				return pCC->CreateString(sResult);
@@ -11162,7 +11160,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 
 			//	See if we passed in a device slot
-			//	TODO(heliogenesis): Add option to force use of device slot - see https://github.com/kronosaur/TranscendenceDev/pull/75
+			//	TODO(heliogenesis): Prevent installation if we fail the "can install" check e.g. if we force use of dev slot??
 			int iDeviceSlot = -1;
 			int iSlotPosIndex = -1;
 			if (pArgs->GetCount() >= 3)

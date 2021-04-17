@@ -929,7 +929,7 @@ bool CShip::CanBeDestroyedBy (CSpaceObject &Attacker) const
 	return false;
 	}
 
-bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
+bool CShip::CanInstallItem (const CItem &Item, int iSlot, bool bForceUseOfDeviceSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
 
 //	CanInstallItem
 //
@@ -941,6 +941,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 	CString sResult;
 	CItem ItemToReplace;
 	const CHullDesc &Hull = m_pClass->GetHullDesc();
+	const IDeviceGenerator *pDevSlots = GetClass()->GetDeviceSlots();
 
 	//	If this is an armor item, see if we can install it.
 
@@ -1023,6 +1024,11 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 		//	See if we're compatible
 
 		if (!Item.MatchesCriteria(Hull.GetDeviceCriteria()))
+			iResult = insNotCompatible;
+
+		//	If we force use of a device slot, and that device slot doesn't fit, then we cannot install
+
+		if (bForceUseOfDeviceSlot && !pDevSlots->ItemFitsSlot(this, Item, iSlot))
 			iResult = insNotCompatible;
 
 		//	Ask the object if we can install this item

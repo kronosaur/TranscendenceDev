@@ -966,7 +966,7 @@ bool CSpaceObject::CanFireOnObjHelper (CSpaceObject *pObj) const
 		);
 	}
 
-bool CSpaceObject::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
+bool CSpaceObject::CanInstallItem (const CItem &Item, int iSlot, bool bForceUseOfDeviceSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
 
 //	CanInstallItem
 //

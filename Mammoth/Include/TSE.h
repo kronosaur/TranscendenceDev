@@ -628,7 +628,7 @@ class CSpaceObject
 
 		//	Devices
 
-		virtual bool CanInstallItem (const CItem &Item, int iSlot = -1, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL);
+		virtual bool CanInstallItem (const CItem &Item, int iSlot = -1, bool bForceUseOfDeviceSlot = false, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL);
 		virtual void DamageExternalDevice (int iDev, SDamageCtx &Ctx) { }
 		virtual void DisableDevice (CInstalledDevice *pDevice) { }
 		bool FindDevice (const CItem &Item, CInstalledDevice **retpDevice, CString *retsError);

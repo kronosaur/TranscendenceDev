@@ -54,6 +54,19 @@
 #define TABLE_ATTRIB							CONSTLIT("table")
 #define UNID_ATTRIB								CONSTLIT("unid")
 
+#define PROPERTY_DEVICE_SLOT_ATTRIBUTES			CONSTLIT("deviceSlotAttributes")
+#define PROPERTY_DEVICE_SLOT_CRITERIA			CONSTLIT("deviceSlotCriteria")
+#define PROPERTY_DEVICE_SLOT_FIREARC			CONSTLIT("deviceSlotFireArc")
+#define PROPERTY_DEVICE_SLOT_MAX_MASS			CONSTLIT("deviceSlotMaxMass")
+#define PROPERTY_DEVICE_SLOT_MAX_POWER			CONSTLIT("deviceSlotMaxPower")
+#define PROPERTY_DEVICE_SLOT_MAX_POWER_PERCENT	CONSTLIT("deviceSlotMaxPowerPercent")
+#define PROPERTY_DEVICE_SLOT_OMNIDIRECTIONAL	CONSTLIT("deviceSlotOmnidirectional")
+#define PROPERTY_DEVICE_SLOT_POS				CONSTLIT("deviceSlotPos")
+#define PROPERTY_DEVICE_SLOT_POS_ANGLE			CONSTLIT("deviceSlotPosAngle")
+#define PROPERTY_DEVICE_SLOT_POS_RADIUS			CONSTLIT("deviceSlotPosRadius")
+#define PROPERTY_DEVICE_SLOT_SECONDARY_WEAPON	CONSTLIT("deviceSlotSecondaryWeapon")
+#define PROPERTY_DEVICE_SLOT_TARGET_CRITERIA	CONSTLIT("deviceSlotTargetCriteria")
+
 class CNullDevice : public IDeviceGenerator
 	{
 	public:
@@ -1497,7 +1510,7 @@ ALERROR CGroupOfDeviceGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement 
 
 			if (!pSlotDesc->DefaultDesc.sID.IsBlank())
 				{
-				m_SlotDescIndicesByID.Insert(pSlotDesc->DefaultDesc.sID, m_SlotDesc.GetCount());
+				m_SlotDescIndicesByID.Insert(pSlotDesc->DefaultDesc.sID, m_SlotDesc.GetCount() - 1);
 				}
 			}
 		else
