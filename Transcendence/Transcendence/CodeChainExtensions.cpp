@@ -696,8 +696,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	(scrRefreshItemListCursor screen item)
 
 		{	"uiKeyLabel",							fnUISet,		FN_UI_KEY_LABEL,
-			"(uiKeyLabel command) -> text",
-			"DEPRECATED: Use uiGetKeyName instead.",	0,	},
+			"DEPRECATED: Use uiGetKeyName instead.",
+			"s",	0,	},
 
 	};
 
