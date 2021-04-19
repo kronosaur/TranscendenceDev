@@ -2608,6 +2608,7 @@
 
 	<!-- Commonwealth -->
 		
+	<Module filename="AgriculturalMission01.xml"/>
 	<Module filename="Commonwealth.xml"/>
 	<Module filename="CommonwealthAgricultural.xml"/>
 	<Module filename="CommonwealthCenturions.xml"/>
