@@ -32,7 +32,7 @@ CEscortOrder::CEscortOrder (IShipController::OrderTypes iOrder) : IOrderModule(o
 		}
 	}
 
-void CEscortOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
+void CEscortOrder::OnAttacked (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &AttackerObj, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	OnAttacked
 //
@@ -41,14 +41,13 @@ void CEscortOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *
 	{
 	DEBUG_TRY
 
-	if (pAttacker
-			&& !bFriendlyFire
-			&& pAttacker->CanAttack())
+	if (!bFriendlyFire
+			&& AttackerObj.CanAttack())
 		{
 		//	Tell our principal that we were attacked
 
 		if (!m_Objs[objPrincipal]->FireOnSubordinateAttacked(Damage))
-			pShip->Communicate(m_Objs[objPrincipal], msgEscortAttacked, pAttacker);
+			Ship.Communicate(m_Objs[objPrincipal], msgEscortAttacked, &AttackerObj);
 
 		//	Attack the target
 
@@ -57,7 +56,7 @@ void CEscortOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *
 				&& (m_iState == stateEscorting
 					|| m_iState == stateAttackingThreat))
 			{
-			m_Objs[objTarget] = pAttacker;
+			m_Objs[objTarget] = &AttackerObj;
 			m_iState = stateAttackingThreat;
 			}
 		}

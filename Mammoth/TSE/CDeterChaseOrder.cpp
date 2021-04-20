@@ -26,7 +26,7 @@ COrderDesc CDeterChaseOrder::Create (CSpaceObject &TargetObj, CSpaceObject *pBas
 	return COrderDesc(IShipController::orderDeterChase, &TargetObj, *pData);
 	}
 
-void CDeterChaseOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
+void CDeterChaseOrder::OnAttacked (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &AttackerObj, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	OnAttacked
 //
@@ -36,16 +36,15 @@ void CDeterChaseOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObje
 	//	If we have a valid attacker, then we try to respond. We ignore friendly
 	//	fire because that's handled by CBaseShipAI.
 
-	if (pAttacker == NULL
-			|| !pAttacker->CanAttack()
+	if (!AttackerObj.CanAttack()
 			|| bFriendlyFire)
 		return;
 
 	//	See if the attacker is a better target.
 
-	if (Ctx.CalcIsBetterTarget(pShip, m_Objs[OBJ_TARGET], pAttacker))
+	if (Ctx.CalcIsBetterTarget(&Ship, m_Objs[OBJ_TARGET], &AttackerObj))
 		{
-		m_Objs[OBJ_TARGET] = pAttacker;
+		m_Objs[OBJ_TARGET] = &AttackerObj;
 		}
 
 	//	Tell our base, if necessary.
@@ -54,9 +53,9 @@ void CDeterChaseOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObje
 	CSpaceObject *pTarget;
 	if (Ctx.IsSecondAttack()
 			&& m_Objs[OBJ_BASE]
-			&& m_Objs[OBJ_BASE]->IsAngryAt(pAttacker)
-			&& (pTarget = m_Objs[OBJ_BASE]->CalcTargetToAttack(pAttacker, pOrderGiver)))
-		pShip->Communicate(m_Objs[OBJ_BASE], msgAttackDeter, pTarget);
+			&& m_Objs[OBJ_BASE]->IsAngryAt(&AttackerObj)
+			&& (pTarget = m_Objs[OBJ_BASE]->CalcTargetToAttack(&AttackerObj, pOrderGiver)))
+		Ship.Communicate(m_Objs[OBJ_BASE], msgAttackDeter, pTarget);
 	}
 
 void CDeterChaseOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)

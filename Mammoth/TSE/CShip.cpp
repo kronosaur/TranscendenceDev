@@ -311,6 +311,62 @@ void CShip::CalcArmorBonus (void)
 	DEBUG_CATCH
 	}
 
+EAttackResponse CShip::CalcAttackResponse (SDamageCtx &Ctx)
+
+//	CalcAttackResponse
+//
+//	Figures out whether to call <OnAttackedByPlayer>, etc.
+
+	{
+	//	Ignore automated weapons
+	
+	if (Ctx.Damage.IsAutomatedWeapon())
+		return EAttackResponse::Ignore;
+
+	//	If no order giver then it means our attacker got destroyed, so nothing
+	//	to do.
+
+	CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
+	if (!pOrderGiver)
+		return EAttackResponse::Ignore;
+
+	//	If our attacker is not a friend, then we always call either OnAttacked
+	//	or OnAttackedByPlayer, depending.
+
+	if (!IsFriend(pOrderGiver) || IsAngryAt(pOrderGiver))
+		{
+		if (HasOnAttackedByPlayerEvent() && pOrderGiver->IsPlayer())
+			return EAttackResponse::OnAttackedByPlayer;
+		else
+			return EAttackResponse::OnAttacked;
+		}
+
+	//	If the order giver is not the player, then ignore.
+
+	if (!pOrderGiver->IsPlayer())
+		return EAttackResponse::Ignore;
+
+	//	If the actual attacker is an NPC, and they are not deliberately 
+	//	targeting us, then ignore.
+
+	CSpaceObject *pAttacker = Ctx.Attacker.GetObj();
+	if (!pAttacker ||
+			(!pAttacker->IsPlayer() && pAttacker->GetTarget() != this))
+		return EAttackResponse::Ignore;
+
+	//	If we're sure the player is deliberately attacking us, then we call
+	//	<OnAttackedByPlayer>
+
+	if (HasOnAttackedByPlayerEvent() && m_pController->UpdatePlayerAttackTrigger(GetSystem()->GetTick()))
+		return EAttackResponse::OnAttackedByPlayer;
+
+	//	Otherwise, we warn.
+	//	NOTE: At this point we can guarantee that both pAttacker and order giver
+	//	are non-NULL.
+
+	return EAttackResponse::WarnAttacker;
+	}
+
 void CShip::CalcBounds (void)
 
 //	CalcBounds
@@ -4236,17 +4292,32 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	Ctx.iSectHit = m_pClass->GetHullSectionAtAngle(iHitAngle);
 	CInstalledArmor *pArmor = ((Ctx.iSectHit != -1 && Ctx.iSectHit < GetArmorSectionCount()) ? GetArmorSection(Ctx.iSectHit) : NULL);
 
-	//	Tell our controller that someone hit us
+	//	Handle consequences of attack.
 
-	m_pController->OnAttacked(Ctx.Attacker.GetObj(), Ctx);
-
-	//	OnAttacked event
-
-	if (HasOnAttackedEvent())
+	if (CSpaceObject *pAttacker = Ctx.Attacker.GetObj())
 		{
-		FireOnAttacked(Ctx);
-		if (IsDestroyed())
-			return damageDestroyed;
+		m_pController->OnAttacked(*pAttacker, Ctx);
+
+		//	Figure out whether to call <OnAttackedByPlayer>, etc.
+
+		switch (CalcAttackResponse(Ctx))
+			{
+			case EAttackResponse::WarnAttacker:
+				Communicate(pAttacker, msgWatchTargets);
+				break;
+
+			case EAttackResponse::OnAttacked:
+				FireOnAttacked(Ctx);
+				if (IsDestroyed())
+					return damageDestroyed;
+				break;
+
+			case EAttackResponse::OnAttackedByPlayer:
+				FireOnAttackedByPlayer();
+				if (IsDestroyed())
+					return damageDestroyed;
+				break;
+			}
 		}
 
 	GetSystem()->FireOnSystemObjAttacked(Ctx);

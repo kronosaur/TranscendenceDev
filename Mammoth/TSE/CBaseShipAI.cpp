@@ -923,33 +923,6 @@ DWORD CBaseShipAI::GetThreatTargetTypes () const
 		}
 	}
 
-void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver)
-
-//	HandleFriendlyFire
-//
-//	Ship has been hit by friendly fire
-
-	{
-	//	If an NPC attacked us, then we don't count it as a deliberate attack
-	//	unless they were targeting us.
-
-	if (!pAttacker->IsPlayer() 
-			&& pAttacker->GetTarget() != m_pShip)
-		NULL;
-
-	//	If the player hit us (and it seems to be on purpose) then raise an event
-
-	else if (pOrderGiver->IsPlayer() 
-			&& m_Blacklist.Hit(m_pShip->GetSystem()->GetTick())
-			&& m_pShip->HasOnAttackedByPlayerEvent())
-		m_pShip->FireOnAttackedByPlayer();
-
-	//	Otherwise, send the standard message
-
-	else
-		m_pShip->Communicate(pOrderGiver, msgWatchTargets);
-	}
-
 bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
 
 //	IsAngryAt
@@ -1030,7 +1003,7 @@ bool CBaseShipAI::IsPlayerOrPlayerFollower (CSpaceObject *pObj, int iRecursions)
 	return false;
 	}
 
-void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
+void CBaseShipAI::OnAttacked (CSpaceObject &AttackerObj, const SDamageCtx &Damage)
 
 //	OnAttacked
 //
@@ -1040,44 +1013,33 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 	{
 	DEBUG_TRY
 
+	if (!m_pShip)
+		throw CException(ERR_FAIL);
+
+	CSpaceObject *pOrderGiver = Damage.GetOrderGiver();
 	bool bFriendlyFire = false;
 
-	if (pAttacker)
+	//	If we were attacked by a friend, then warn them off
+	//	(Unless we're explicitly targeting the friend)
+
+	if (pOrderGiver 
+			&& m_pShip->IsFriend(pOrderGiver) 
+			&& !m_pShip->IsAngryAt(pOrderGiver))
 		{
-		CSpaceObject *pOrderGiver = Damage.GetOrderGiver();
-
-		//	If we were attacked by a friend, then warn them off
-		//	(Unless we're explicitly targeting the friend)
-
-		if (pOrderGiver 
-				&& m_pShip->IsFriend(pOrderGiver) 
-				&& !m_pShip->IsAngryAt(pOrderGiver))
-			{
-			//	We deal with the order giver instead of the attacker because we want to get
-			//	at the root problem (the player instead of her autons)
-			//
-			//	Also, we ignore damage from automated weapons
-			//	[LATER: If we could pass CDamageSource instead of pAttacker, we could
-			//	use the source to figure out if this is an automated weapon.]
-
-			if (!Damage.Damage.IsAutomatedWeapon())
-				HandleFriendlyFire(pAttacker, pOrderGiver);
-
-			bFriendlyFire = true;
-			}
-
-		//	Otherwise, react to an attack
-
-		else
-			ReactToAttack(*pAttacker, Damage);
+		bFriendlyFire = true;
 		}
+
+	//	Otherwise, react to an attack
+
+	else
+		ReactToAttack(AttackerObj, Damage);
 
 	//	Notify our order module (or derived class if we're doing it old-style)
 
 	if (m_pOrderModule)
-		m_pOrderModule->Attacked(m_pShip, m_AICtx, pAttacker, Damage, bFriendlyFire);
+		m_pOrderModule->Attacked(*m_pShip, m_AICtx, AttackerObj, Damage, bFriendlyFire);
 	else
-		OnAttackedNotify(pAttacker, Damage);
+		OnAttackedNotify(AttackerObj, Damage);
 
 	//	Remember the last time we were attacked (debounce quick hits)
 

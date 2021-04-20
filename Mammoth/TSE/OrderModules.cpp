@@ -26,7 +26,7 @@ IOrderModule::~IOrderModule (void)
 	{
 	}
 
-void IOrderModule::Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
+void IOrderModule::Attacked (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &AttackerObj, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	Attacked
 //
@@ -37,14 +37,13 @@ void IOrderModule::Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pA
 
 	//	Tell our escorts that we were attacked, if necessary
 
-	if (pAttacker
-			&& !bFriendlyFire
-			&& pAttacker->CanAttack())
-		Ctx.CommunicateWithEscorts(pShip, msgAttackDeter, pAttacker);
+	if (!bFriendlyFire
+			&& AttackerObj.CanAttack())
+		Ctx.CommunicateWithEscorts(&Ship, msgAttackDeter, &AttackerObj);
 
 	//	Let our subclass handle it.
 
-	OnAttacked(pShip, Ctx, pAttacker, Damage, bFriendlyFire);
+	OnAttacked(Ship, Ctx, AttackerObj, Damage, bFriendlyFire);
 
 	DEBUG_CATCH
 	}
@@ -62,8 +61,11 @@ DWORD IOrderModule::Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject
 			{
 			//	Treat this as an attack on ourselves
 
-			SDamageCtx Dummy;
-			pShip->GetController()->OnAttacked(pParam1, Dummy);
+			if (pParam1)
+				{
+				SDamageCtx Dummy;
+				pShip->GetController()->OnAttacked(*pParam1, Dummy);
+				}
 			return resAck;
 			}
 

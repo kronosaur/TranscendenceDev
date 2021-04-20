@@ -351,12 +351,13 @@ class IShipController
 		virtual const COrderDesc &GetCurrentOrderDesc () const;
 		virtual const COrderDesc &GetOrderDesc (int iIndex) const;
 		virtual int GetOrderCount (void) const { return 0; }
+		virtual bool UpdatePlayerAttackTrigger (int iTick) { return false; }
 
 		//	Events
 
 		virtual void OnAbilityChanged (Abilities iAbility, AbilityModifications iChange, bool bNoMessage = false) { }
 		virtual void OnAcceptedMission (CMission &MissionObj) { }
-		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) { }
+		virtual void OnAttacked (CSpaceObject &AttackerObj, const SDamageCtx &Damage) { }
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) { return resNoAnswer; }
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) { }
 		virtual void OnDamaged (const CDamageSource &Cause, CInstalledArmor *pArmor, const DamageDesc &Damage, int iDamage) { }

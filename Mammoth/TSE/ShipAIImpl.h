@@ -275,7 +275,7 @@ class IOrderModule
 		IOrderModule (int iObjCount);
 		virtual ~IOrderModule (void);
 
-		void Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire);
+		void Attacked (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &AttackerObj, const SDamageCtx &Damage, bool bFriendlyFire);
 		void Behavior (CShip *pShip, CAIBehaviorCtx &Ctx) { OnBehavior(pShip, Ctx); }
 		void BehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc) { OnBehaviorStart(Ship, Ctx, OrderDesc); }
 		DWORD Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData);
@@ -298,7 +298,7 @@ class IOrderModule
 	protected:
 		//	IOrderModule virtuals
 		virtual bool IsAttacking (void) { return false; }
-		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire) { }
+		virtual void OnAttacked (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &AttackerObj, const SDamageCtx &Damage, bool bFriendlyFire) { }
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) = 0;
 		virtual void OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc) { }
 		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) { return resNoAnswer; }
@@ -384,7 +384,7 @@ class CBaseShipAI : public IShipController
 		virtual bool IsPlayerBlacklisted (void) const override { return (m_fPlayerBlacklisted ? true : false); }
 		virtual bool IsPlayerEscort (void) const override { return (m_fIsPlayerEscort ? true : false) || IsPlayerWingman(); }
 		virtual bool IsPlayerWingman (void) const override { return (m_fIsPlayerWingman ? true : false); }
-		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;
+		virtual void OnAttacked (CSpaceObject &AttackerObj, const SDamageCtx &Damage) override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
 		virtual void OnDocked (CSpaceObject *pObj) override;
@@ -410,6 +410,7 @@ class CBaseShipAI : public IShipController
 		virtual void SetPlayerEscort (bool bValue) override { m_fIsPlayerEscort = bValue; }
 		virtual void SetPlayerWingman (bool bIsWingman) override { m_fIsPlayerWingman = bIsWingman; }
 		virtual void ReadFromStream (SLoadCtx &Ctx, CShip *pShip) override;
+		virtual bool UpdatePlayerAttackTrigger (int iTick) override { return m_Blacklist.Hit(iTick);}
 		virtual void WriteToStream (IWriteStream *pStream) override;
 
 		virtual void AddOrder (const COrderDesc &OrderDesc, bool bAddBefore = false) override;
@@ -445,7 +446,6 @@ class CBaseShipAI : public IShipController
 		bool IsImmobile (void) const { return m_AICtx.IsImmobile(); }
 		bool IsPlayerOrPlayerFollower (CSpaceObject *pObj, int iRecursions = 0);
 		bool IsWaitingForShieldsToRegen (void) { return m_AICtx.IsWaitingForShieldsToRegen(); }
-		void HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		bool IsDockingRequested (void) { return m_AICtx.IsDockingRequested(); }
 		bool React (AIReaction iReaction);
 		bool React (AIReaction iReaction, CSpaceObject &TargetObj);
@@ -460,7 +460,7 @@ class CBaseShipAI : public IShipController
 
 		//	CBaseShipAI virtuals
 
-		virtual void OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCtx &Damage) { }
+		virtual void OnAttackedNotify (CSpaceObject &AttackerObj, const SDamageCtx &Damage) { }
 		virtual void OnBehavior (SUpdateCtx &Ctx) { }
 		virtual void OnCleanUp (void) { }
 		virtual DWORD OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) { return resNoAnswer; }

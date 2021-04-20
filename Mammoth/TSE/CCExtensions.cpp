@@ -8893,6 +8893,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			DWORD dwPowerUNID = pArgs->GetElement(1)->GetIntegerValue();
 			CPower *pPower = pCtx->GetUniverse().FindPower(dwPowerUNID);
+			if (!pPower)
+				return pCC->CreateError(CONSTLIT("Invalid power UNID"), pArgs->GetElement(1));
 
 			//If we don't specify a target, get the object's target
 			CSpaceObject *pTarget;

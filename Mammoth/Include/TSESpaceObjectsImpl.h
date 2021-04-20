@@ -948,6 +948,14 @@ class CRadiusDamage : public TSpaceObjectImpl<OBJID_CRADIUSDAMAGE>
 		CSovereign *m_pSovereign;				//	Sovereign
 	};
 
+enum class EAttackResponse
+	{
+	Ignore,									//	Ignore the attack
+	WarnAttacker,							//	"Watch your targets!"
+	OnAttackedByPlayer,						//	Call <OnAttackedByPlayer>
+	OnAttacked								//	Call <OnAttacked>
+	};
+
 class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 	{
 	public:
@@ -1327,6 +1335,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 
 		void AccumulateDeviceEnhancementsToArmor (CInstalledArmor *pArmor, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		void CalcArmorBonus (void);
+		EAttackResponse CalcAttackResponse (SDamageCtx &Ctx);
 		void CalcBounds (void);
 		int CalcMaxCargoSpace (void) const;
 		void CalcDeviceBonus (void);

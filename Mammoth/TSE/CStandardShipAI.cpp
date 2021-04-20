@@ -1361,7 +1361,7 @@ void CStandardShipAI::CommunicateWithEscorts (MessageTypes iMessage, CSpaceObjec
 	m_AICtx.CommunicateWithEscorts(m_pShip, iMessage, pParam1, dwParam2);
 	}
 
-void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCtx &Damage)
+void CStandardShipAI::OnAttackedNotify (CSpaceObject &AttackerObj, const SDamageCtx &Damage)
 
 //	OnAttackedNotify
 //
@@ -1371,164 +1371,161 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCt
 	{
 	CSpaceObject *pOrderGiver = Damage.GetOrderGiver();
 
-	if (pAttacker)
+	//	If we were attacked by a friend, then warn them off
+	//	(Unless we're explicitly targeting the friend)
+
+	if (pOrderGiver && m_pShip->IsFriend(pOrderGiver) 
+			&& pOrderGiver != m_pTarget
+			&& !IsAngryAt(&AttackerObj))
 		{
-		//	If we were attacked by a friend, then warn them off
-		//	(Unless we're explicitly targeting the friend)
+		//	Leave if necessary
 
-		if (pOrderGiver && m_pShip->IsFriend(pOrderGiver) 
-				&& pOrderGiver != m_pTarget
-				&& !IsAngryAt(pAttacker))
+		switch (GetCurrentOrder())
 			{
-			//	Leave if necessary
+			case IShipController::orderGateOnThreat:
+				CancelCurrentOrder();
+				AddOrder(COrderDesc(IShipController::orderGate));
+				break;
 
-			switch (GetCurrentOrder())
-				{
-				case IShipController::orderGateOnThreat:
-					CancelCurrentOrder();
-					AddOrder(COrderDesc(IShipController::orderGate));
-					break;
-
-				case IShipController::orderGuard:
-					if (pAttacker->GetBase() == GetBase())
+			case IShipController::orderGuard:
+				if (AttackerObj.GetBase() == GetBase())
+					{
+					CSpaceObject *pTarget = AttackerObj.GetTarget();
+					if (pTarget)
 						{
-						CSpaceObject *pTarget = pAttacker->GetTarget();
-						if (pTarget)
-							{
-							SetState(stateAttackingThreat);
-							m_pTarget = pTarget;
-							ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
-							}
+						SetState(stateAttackingThreat);
+						m_pTarget = pTarget;
+						ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
 						}
-					break;
+					}
+				break;
+			}
+		}
+
+	//	Else if we were attacked by an enemy/neutral, see if we need
+	//	to attack them (or flee). In this case, we take care of the immediate
+	//	problem (attackers) instead of the order giver.
+
+	else if (AttackerObj.CanAttack())
+		{
+		//	Tell our escorts that we were attacked
+
+		CommunicateWithEscorts(msgAttackDeter, &AttackerObj);
+
+		//	Tell others that we were attacked
+
+		switch (m_State)
+			{
+			case stateEscorting:
+			case stateReturningToEscort:
+				{
+				m_pShip->Communicate(m_pDest, msgEscortAttacked, &AttackerObj);
+				break;
 				}
 			}
 
-		//	Else if we were attacked by an enemy/neutral, see if we need
-		//	to attack them (or flee). In this case, we take care of the immediate
-		//	problem (attackers) instead of the order giver.
+		//	Change state to deal with the attack
 
-		else if (pAttacker->CanAttack())
+		switch (m_State)
 			{
-			//	Tell our escorts that we were attacked
-
-			CommunicateWithEscorts(msgAttackDeter, pAttacker);
-
-			//	Tell others that we were attacked
-
-			switch (m_State)
+			case stateEscorting:
+			case stateReturningFromThreat:
+			case stateReturningViaNavPath:
+			case stateWaitingForThreat:
 				{
-				case stateEscorting:
-				case stateReturningToEscort:
-					{
-					m_pShip->Communicate(m_pDest, msgEscortAttacked, pAttacker);
-					break;
-					}
+				SetState(stateAttackingThreat);
+				m_pTarget = &AttackerObj;
+				ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
+				break;
 				}
 
-			//	Change state to deal with the attack
+			case stateLookingForLoot:
+			case stateMaintainBearing:
+				SetState(stateDeterTarget);
+				m_pTarget = &AttackerObj;
+				ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
+				break;
 
-			switch (m_State)
+			case stateWaitingUnarmed:
+				CancelCurrentOrder();
+				AddOrder(COrderDesc(IShipController::orderGate));
+				break;
+
+			case stateOnCourseForLootDocking:
 				{
-				case stateEscorting:
-				case stateReturningFromThreat:
-				case stateReturningViaNavPath:
-				case stateWaitingForThreat:
+				CSpaceObject *pDest = m_pDest;
+				SetState(stateDeterTargetWhileLootDocking);
+				m_pDest = pDest;
+				m_pTarget = &AttackerObj;
+				ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
+				break;
+				}
+
+			case stateOnCourseForPointViaNavPath:
+			case stateOnCourseForStargate:
+				{
+				if (m_pTarget == NULL)
+					m_pTarget = &AttackerObj;
+				break;
+				}
+
+			case stateHolding:
+				{
+				if (m_pTarget == NULL && mathRandom(1, 3) == 1)
 					{
-					SetState(stateAttackingThreat);
-					m_pTarget = pAttacker;
+					SetState(stateDeterTargetNoChase);
+					m_pTarget = &AttackerObj;
 					ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
-					break;
 					}
+				break;
+				}
+			}
 
-				case stateLookingForLoot:
-				case stateMaintainBearing:
-					SetState(stateDeterTarget);
-					m_pTarget = pAttacker;
-					ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
-					break;
+		//	Handle based on orders
 
-				case stateWaitingUnarmed:
+		switch (GetCurrentOrder())
+			{
+			case IShipController::orderGuard:
+				{
+				//	If we were attacked twice (excluding multi-shot weapons)
+				//	then we tell our station about this
+
+				CSpaceObject *pBase;
+				CSpaceObject *pTarget;
+				if (m_AICtx.IsSecondAttack()
+						&& (pBase = GetCurrentOrderTarget())
+						&& pBase->IsAngryAt(&AttackerObj)
+						&& (pTarget = pBase->CalcTargetToAttack(&AttackerObj, pOrderGiver)))
+					m_pShip->Communicate(pBase, msgAttackDeter, pTarget);
+
+				break;
+				}
+
+			case IShipController::orderWaitForEnemy:
+				{
+				//	If we're waiting for an enemy, then we've found one
+
+				if (m_AICtx.IsSecondAttack())
 					CancelCurrentOrder();
-					AddOrder(COrderDesc(IShipController::orderGate));
-					break;
-
-				case stateOnCourseForLootDocking:
-					{
-					CSpaceObject *pDest = m_pDest;
-					SetState(stateDeterTargetWhileLootDocking);
-					m_pDest = pDest;
-					m_pTarget = pAttacker;
-					ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
-					break;
-					}
-
-				case stateOnCourseForPointViaNavPath:
-				case stateOnCourseForStargate:
-					{
-					if (m_pTarget == NULL)
-						m_pTarget = pAttacker;
-					break;
-					}
-
-				case stateHolding:
-					{
-					if (m_pTarget == NULL && mathRandom(1, 3) == 1)
-						{
-						SetState(stateDeterTargetNoChase);
-						m_pTarget = pAttacker;
-						ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
-						}
-					break;
-					}
+				break;
 				}
 
-			//	Handle based on orders
-
-			switch (GetCurrentOrder())
+			case IShipController::orderWaitForTarget:
 				{
-				case IShipController::orderGuard:
-					{
-					//	If we were attacked twice (excluding multi-shot weapons)
-					//	then we tell our station about this
+				//	If we're waiting for a target and the target attacked us
+				//	then we've found it
+				//
+				//	We don't debouce hits (with IsSecondAttack) because even
+				//	a stray shot from the target means that the target is here.
 
-					CSpaceObject *pBase;
-					CSpaceObject *pTarget;
-					if (m_AICtx.IsSecondAttack()
-							&& (pBase = GetCurrentOrderTarget())
-							&& pBase->IsAngryAt(pAttacker)
-							&& (pTarget = pBase->CalcTargetToAttack(pAttacker, pOrderGiver)))
-						m_pShip->Communicate(pBase, msgAttackDeter, pTarget);
-
-					break;
-					}
-
-				case IShipController::orderWaitForEnemy:
-					{
-					//	If we're waiting for an enemy, then we've found one
-
-					if (m_AICtx.IsSecondAttack())
-						CancelCurrentOrder();
-					break;
-					}
-
-				case IShipController::orderWaitForTarget:
-					{
-					//	If we're waiting for a target and the target attacked us
-					//	then we've found it
-					//
-					//	We don't debouce hits (with IsSecondAttack) because even
-					//	a stray shot from the target means that the target is here.
-
-					if (pAttacker == GetCurrentOrderTarget()
-							|| pOrderGiver == GetCurrentOrderTarget())
-						CancelCurrentOrder();
-					break;
-					}
-
-				case IShipController::orderPatrol:
-					throw CException(ERR_FAIL);
+				if (AttackerObj == GetCurrentOrderTarget()
+						|| pOrderGiver == GetCurrentOrderTarget())
+					CancelCurrentOrder();
+				break;
 				}
+
+			case IShipController::orderPatrol:
+				throw CException(ERR_FAIL);
 			}
 		}
 	}
@@ -1676,8 +1673,12 @@ DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes 
 			{
 			//	Treat this as an attack on ourselves
 
-			SDamageCtx Dummy;
-			OnAttacked(pParam1, Dummy);
+			if (pParam1)
+				{
+				SDamageCtx Dummy;
+				OnAttacked(*pParam1, Dummy);
+				}
+
 			return resAck;
 			}
 

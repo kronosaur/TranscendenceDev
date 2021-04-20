@@ -332,7 +332,7 @@ class CStandardShipAI : public CBaseShipAI
 
 	protected:
 		//	CBaseShipAI overrides
-		virtual void OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;
+		virtual void OnAttackedNotify (CSpaceObject &AttackerObj, const SDamageCtx &Damage) override;
 		virtual void OnBehavior (SUpdateCtx &Ctx) override;
 		virtual void OnCleanUp (void) override { m_State = stateNone; m_pTarget = NULL; m_pDest = NULL; }
 		virtual DWORD OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
@@ -438,7 +438,7 @@ class CZoanthropeAI : public CBaseShipAI
 		virtual CSpaceObject *GetBase (void) const override;
 		virtual CString GetClass (void) override { return CONSTLIT("zoanthrope"); }
 		virtual CSpaceObject *GetTarget (const CDeviceItem *pDeviceItem = NULL, DWORD dwFlags = 0) const override;
-		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;
+		virtual void OnAttacked (CSpaceObject &AttackerObj, const SDamageCtx &Damage) override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 
 	protected:
