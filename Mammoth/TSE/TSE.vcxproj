@@ -361,6 +361,7 @@
     <ClInclude Include="WeaponClassImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BaseShipAIProperties.cpp" />
     <ClCompile Include="C3DObjectPos.cpp" />
     <ClCompile Include="CAbilitySet.cpp" />
     <ClCompile Include="CAccessibilitySettings.cpp" />

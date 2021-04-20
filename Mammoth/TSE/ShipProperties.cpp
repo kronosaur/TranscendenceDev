@@ -208,6 +208,7 @@ TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CSh
 			{
 			return ICCItemPtr(ShipObj.m_pPowerUse != NULL);
 			},
+		//	LATER: This is not actually hooked up
 		[](CShip &ShipObj, const CString &sProperty, const ICCItem &Value, CString *retsError)
 			{
 			ShipObj.TrackFuel(!Value.IsNil());
@@ -540,6 +541,10 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 	ESetPropertyResult iResult;
+
+	//	LATER: Call m_PropertyTable
+	//	LATER: Custom properties should override engine properties (otherwise,
+	//		new engine properties could break existing extensions).
 
 	if (strEquals(sName, PROPERTY_ALWAYS_LEAVE_WRECK))
 		{

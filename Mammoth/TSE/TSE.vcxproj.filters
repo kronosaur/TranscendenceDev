@@ -1617,9 +1617,12 @@
     </ClCompile>
     <ClCompile Include="CStatusBarPainter.cpp">
       <Filter>Source Files\Painting</Filter>
-	</ClCompile>
+    </ClCompile>
     <ClCompile Include="SovereignProperties.cpp">
       <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseShipAIProperties.cpp">
+      <Filter>Source Files\ShipAI</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

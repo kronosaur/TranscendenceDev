@@ -362,6 +362,7 @@ class CBaseShipAI : public IShipController
 		virtual bool CanObjRequestDock (CSpaceObject *pObj = NULL) const override;
 		virtual CString DebugCrashInfo (void) override;
 		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
+		virtual ICCItem *FindProperty (const CString &sProperty) override;
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) override;
 		virtual int GetAISettingInteger (const CString &sSetting) override;
 		virtual CString GetAISettingString (const CString &sSetting) override;
@@ -410,6 +411,7 @@ class CBaseShipAI : public IShipController
 		virtual void SetPlayerEscort (bool bValue) override { m_fIsPlayerEscort = bValue; }
 		virtual void SetPlayerWingman (bool bIsWingman) override { m_fIsPlayerWingman = bIsWingman; }
 		virtual void ReadFromStream (SLoadCtx &Ctx, CShip *pShip) override;
+		virtual ESetPropertyResult SetProperty (const CString &sProperty, const ICCItem &Value, CString *retsError = NULL) override;
 		virtual bool UpdatePlayerAttackTrigger (int iTick) override { return m_Blacklist.Hit(iTick);}
 		virtual void WriteToStream (IWriteStream *pStream) override;
 
@@ -506,6 +508,8 @@ class CBaseShipAI : public IShipController
 		DWORD m_fIsPlayerEscort:1 = false;			//	TRUE if we're escorting the player (but not necessarily a wingmate).
 
 		DWORD m_fSpare:22;
+
+		static TPropertyHandler<CBaseShipAI> m_PropertyTable;
 	};
 
 //	Inlines --------------------------------------------------------------------
