@@ -1071,5 +1071,11 @@
     <Xml Include="AgriculturalMission01.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </Xml>
+    <Xml Include="Sisters03.xml">
+      <Filter>Human Space Library\Sisters</Filter>
+    </Xml>
+    <Xml Include="NPCPilgrims.xml">
+      <Filter>Human Space Library\Pilgrim</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

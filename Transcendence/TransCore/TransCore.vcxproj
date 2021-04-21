@@ -626,6 +626,7 @@
     <Xml Include="MRAD.xml" />
     <Xml Include="MuhammadCondi.xml" />
     <Xml Include="NewVictoria.xml" />
+    <Xml Include="NPCPilgrims.xml" />
     <Xml Include="Ore.xml" />
     <Xml Include="OreStone.xml" />
     <Xml Include="Outlaws.xml" />
@@ -681,6 +682,7 @@
     <Xml Include="Scoria.xml" />
     <Xml Include="ShieldEnhancementItems.xml" />
     <Xml Include="Sisters01.xml" />
+    <Xml Include="Sisters03.xml" />
     <Xml Include="SistersDonate.xml" />
     <Xml Include="SistersPilgrimsAid.xml" />
     <Xml Include="SistersSanctum.xml" />
