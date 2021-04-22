@@ -258,7 +258,7 @@ class CDesignType
 		void PrepareReinit (void) { OnPrepareReinit(); }
 		bool ReadFromStream (SUniverseLoadCtx &Ctx, CString *retsError = NULL);
 		void Reinit (void);
-		void UnbindDesign (void) { m_pInheritFrom = NULL; m_bBindCalled = false; OnUnbindDesign(); }
+		void UnbindDesign (void) { if (m_pInheritFrom) m_pInheritFrom->UnbindDesign(); m_pInheritFrom = NULL; m_bBindCalled = false; OnUnbindDesign(); }
 		void WriteToStream (IWriteStream *pStream);
 
 		void AccumulateScript (const CString &sScript, TSortMap<CString, CScript::SScriptEntry> &Script) const { if (m_pExtra) m_pExtra->Language.AccumulateScript(this, sScript, Script); }
