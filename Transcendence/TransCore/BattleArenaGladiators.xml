@@ -242,24 +242,17 @@
 
 	<ShipClass UNID="&scEarthzoneG2;"
 			manufacturer=		"Revolution Designs"
-			class=				"Earthzone"
+			class=				"Earthzone 100"
 			type=				"armed shuttle"
+
 			level=				"2"
-
-			mass=				"50"
-			cargoSpace=			"50"
-			thrustRatio=		"4"
-			maxSpeed=			"20"
-
 			attributes=			"battleArena, melee2"
+			inherit=			"&scEarthzone;"
 			>
 
-		<Armor>
-			<ArmorSection start="315" span="90" armorID="&itLightTitaniumArmor;"/>
-			<ArmorSection start="225" span="90" armorID="&itLightTitaniumArmor;"/>
-			<ArmorSection start="135" span="90" armorID="&itLightTitaniumArmor;"/>
-			<ArmorSection start="45"  span="90" armorID="&itLightTitaniumArmor;"/>
-		</Armor>
+		<Armor
+			armorID=			"&itLightTitaniumArmor;"
+			/>
 
 		<Devices>
 			<Table>
@@ -279,18 +272,6 @@
 			</Table>
 		</Devices>
 
-		<Maneuver
-			maxRotationRate=	"9.0"
-			rotationAccel=		"1.0"
-			/>
-
-		<Image imageID="&rsEarthzoneHD;" imageX="0" imageY="0" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" />
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="158"	posRadius="18"	posZ="0"	rotation="180"	sendToBack="*"/>
-			<Effect type="thrustMain"		posAngle="-158"	posRadius="18"	posZ="0"	rotation="180"	sendToBack="*"/>
-		</Effects>
-		
 		<AISettings
 			aggressor=			"true"
 			fireRateAdj=		"20"
@@ -304,7 +285,6 @@
 				0
 			</arenaSkillBase>
 		</StaticData>
-
 	</ShipClass>
 
 	<!-- EI100 Freighter -->
