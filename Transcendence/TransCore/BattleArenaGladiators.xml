@@ -140,19 +140,16 @@
 			class=				"light IAV"
 			type=				""
 
-			mass=				"25"
-			cargoSpace=			"5"
-			thrustRatio=		"6"
-			maxSpeed=			"13"
-
 			attributes=			"battleArena, melee1"
+			inherit=			"&scIAVLight;"
 			>
 
-		<Armor>
-			<ArmorSection start="270" span="180" armorID="&itUltraLightTitaniumArmor;" />
-			<ArmorSection start="90"  span="180" armorID="&itUltraLightTitaniumArmor;" />
-		</Armor>
+		<!-- Configuration -->
 
+		<Armor
+			armorID=			"&itUltraLightTitaniumArmor;"
+			/>
+		
 		<Devices>
 			<Table>
 				<Device chance="30" item="&itLightRecoillessCannon;" enhanced="10"/>
@@ -160,19 +157,6 @@
 				<Device chance="25" item="&itRecoillessCannon;" enhanced="5"/>
 			</Table>
 		</Devices>
-
-		<Maneuver
-			maxRotationRate=	"5.0"
-			rotationAccel=		"1.0"
-			/>
-
-		<Image imageID="&rsIAVLightHD;" imageX="0" imageY="0" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" />
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="160"	posRadius="22"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="21"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-160"	posRadius="22"	posZ="0"	rotation="180"/>
-		</Effects>
 
 		<AISettings
 			aggressor=			"true"
@@ -187,7 +171,6 @@
 				0
 			</arenaSkillBase>
 		</StaticData>
-
 	</ShipClass>
 
 	<!-- Ronin A-class Gunship -->

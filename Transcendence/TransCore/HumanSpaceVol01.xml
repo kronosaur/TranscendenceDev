@@ -2478,6 +2478,8 @@
 	<!ENTITY msResidentials02			"0x0010070F">
 	<!ENTITY msResidentials03			"0x00100710">
 	<!ENTITY scBorerIIIStock			"0x00100711">
+	<!ENTITY rsIAVLight120				"0x00100712">
+	<!ENTITY rsIAVLightHero				"0x00100713">
 
 	<!-- 0740-075F RASIERMESSER -->
 

@@ -6943,5 +6943,7 @@
 	<Image UNID="&rsRevelationsHD;"			obsoleteVersion="52" bitmap="Resources\RevelationsHD.jpg"	bitmask="Resources\RevelationsHDMask.bmp"	loadOnUse="true"/>
 	<Image UNID="&rsEarthzoneHD;"		obsoleteVersion="52"			bitmap="Resources\EarthzoneHD.jpg"				bitmask="Resources\EarthzoneHDMask.bmp"  		loadOnUse="true"/>
 	<Image UNID="&rsBritannia;"		obsoleteVersion="52"			bitmap="Resources\Britannia.jpg" bitmask="Resources\BritanniaMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsIAVLight;"			obsoleteVersion="52"			bitmap="Resources\IAVLight.jpg" bitmask="Resources\IAVLightMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsIAVLightHD;"		obsoleteVersion="52"		bitmap="Resources\IAVLightHD.jpg" bitmask="Resources\IAVLightHDMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>
