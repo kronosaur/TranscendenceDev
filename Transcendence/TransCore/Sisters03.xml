@@ -373,7 +373,10 @@
 
 			<Code id="dlgPilgrimWreck">
 				(list
-					{	descID: 'textPilgrimEpilogue1
+					{	descID: 'textPilgrimEpilogue1		labelID:'actionPilgrimEpilogue1	}
+					{	descID: 'textPilgrimEpilogue2		labelID:'actionPilgrimEpilogue2	}
+					{	descID: 'textPilgrimEpilogue3		labelID:'actionPilgrimEpilogue3	}
+					{	descID: 'textPilgrimEpilogue4
 						code: (lambda ()
 							(block (
 								(missionObj (@ (msnFind "a +unid:&msSisters03;;") 0))
@@ -386,8 +389,45 @@
 			</Code>
 			<Text id="textPilgrimEpilogue1">
 
-				LATER: Hey, fellow pilgrim!
+				You enter the wreckage and see the crumpled body of a woman. She looks up at
+				you with a blank expression. Blood drips out of a wound on the back of her
+				head. She coughs out a laugh.
+				
+				"Domina's puppet! Have you reached the core yet?"
 			
+			</Text>
+			<String id="actionPilgrimEpilogue1">"[N]ot yet."</String>
+			<Text id="textPilgrimEpilogue2">
+				
+				"Every day of your journey you become more like them. Like her. Cold. 
+				Unfeeling. Inhuman."
+				
+				She grabs your arm.
+				
+				"Hang on to your humanity! Renounce Domina and accept the truth!"
+				
+			</Text>
+			<String id="actionPilgrimEpilogue2">"[W]hat truth?"</String>
+			<Text id="textPilgrimEpilogue3">
+				
+				"We're the enemy! The pilgrims are being controlled by Domina to
+				destroy humanity, and the Sisters are helping. By the time you 
+				reach the core you will have gained all the power of the Ancient
+				Races.
+				
+				"When you return, you'll be as powerful as a god. And Domina 
+				will use you to destroy us all!"
+			
+			</Text>
+			<String id="actionPilgrimEpilogue3">"[N]o, you're wrong."</String>
+			<Text id="textPilgrimEpilogue4">
+				
+				Anna Janko coughs out a spray of blood. Her head tilts down.
+				
+				"Don't go," she whispers. "Don't go."
+				
+				Her body goes limp.
+				
 			</Text>
 		</Language>
 	</MissionType>
