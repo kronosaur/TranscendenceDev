@@ -682,6 +682,7 @@
     <Xml Include="Scoria.xml" />
     <Xml Include="ShieldEnhancementItems.xml" />
     <Xml Include="Sisters01.xml" />
+    <Xml Include="Sisters02.xml" />
     <Xml Include="Sisters03.xml" />
     <Xml Include="SistersDonate.xml" />
     <Xml Include="SistersPilgrimsAid.xml" />

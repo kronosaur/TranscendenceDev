@@ -4,21 +4,6 @@
 	
 	<!-- Confront Fallen Pilgrim ===============================================
 	
-	OUTLINE
-
-		Fallen Pilgrim wants to destroy Sisters station, and player must defend
-		it.
-
-		Fallen Pilgrim has Domina powers (Sustain at minimum)
-
-		If possible, Fallen Pilgrim escapes (which still counts as success).
-
-		If Fallen Pilgrim succeeds, she docks and takes a crystal (or something).
-
-		Reward is random.
-
-	PROPERTIES
-	
 	======================================================================== -->
 	
 	<MissionType UNID="&msSisters03;"
@@ -27,8 +12,6 @@
 
 			level=						"3-7"
 			maxAppearing=				"1"
-
-			priority="10"
 			>
 		<Properties>
 			<!-- status

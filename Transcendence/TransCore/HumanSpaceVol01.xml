@@ -2517,6 +2517,8 @@
 	<!ENTITY tbSisters03FallenPilgrims	"0x001007AB">
 	<!ENTITY evSisters03Wreck			"0x001007AC">
 	<!ENTITY tbSisters03PilgrimTreasure	"0x001007AD">
+	<!ENTITY msSisters02				"0x001007AE">
+	<!ENTITY tbSisters02Attackers		"0x001007AF">
 
 	<!-- 07D0-07FF JIANG'S STAR -->
 
@@ -2812,6 +2814,7 @@
 
 	<Module filename="Sanctuary.xml"/>
 	<Module filename="Sisters01.xml"/>
+	<Module filename="Sisters02.xml"/>
 	<Module filename="Sisters03.xml"/>
 	<Module filename="SistersDonate.xml"/>
 	<Module filename="SistersOfDomina.xml"/>

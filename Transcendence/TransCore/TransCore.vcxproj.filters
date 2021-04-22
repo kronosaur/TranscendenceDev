@@ -1077,5 +1077,8 @@
     <Xml Include="NPCPilgrims.xml">
       <Filter>Human Space Library\Pilgrim</Filter>
     </Xml>
+    <Xml Include="Sisters02.xml">
+      <Filter>Human Space Library\Sisters</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

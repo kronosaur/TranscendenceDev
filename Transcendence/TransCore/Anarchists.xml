@@ -528,7 +528,7 @@
 			manufacturer=		"Revolution Designs"
 			class=				"Earthzone 5000"
 			type=				"missileship"
-			defaultSovereign=	"&svSapiens;"
+			defaultSovereign=	"&svAnarchists;"
 
 			attributes=			"anarchists, genericClass"
 			inherit=			"&baHumanTechShip;"
