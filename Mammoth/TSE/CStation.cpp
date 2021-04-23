@@ -4946,7 +4946,7 @@ void CStation::PaintMarkerIcon (CG32bitImage& Dest, int x, int y)
 					}
 				}
 			}
-		else if (IsWreck())
+		else if (IsAbandoned() && m_pType->IsMobile() && m_DockingPorts.GetPortCount() > 0)
 			{
 			//	Handle explored
 

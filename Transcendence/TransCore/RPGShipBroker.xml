@@ -810,12 +810,12 @@
 
 			<Text id="descOffer">
 				(if (ls (@ gData 'price) 0)
-					(scrTranslate gScreen 'descOfferRebate {
+					(typTranslate gType 'descOfferRebate {
 						wingmanName:(@ gData 'wingmanName) 
 						newShipName:(@ gData 'newShipName) 
 						price:(fmtCurrency (@ gData 'currency) (- (@ gData 'price)))
 						})
-					(scrTranslate gScreen 'descOfferPay {
+					(typTranslate gType 'descOfferPay {
 						wingmanName:(@ gData 'wingmanName) 
 						newShipName:(@ gData 'newShipName) 
 						price:(fmtCurrency (@ gData 'currency) (@ gData 'price))

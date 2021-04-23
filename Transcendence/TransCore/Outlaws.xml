@@ -27,7 +27,7 @@
 
 			attributes=			"debris, envWater, envAvoidsEarth, friendly, outlaw"
 
-			dockScreen=			"&dsRPGAbandonedStation;"
+			abandonedScreen=			"&dsRPGAbandonedStation;"
 
 			scale=				"ship"
 			size=				"20"

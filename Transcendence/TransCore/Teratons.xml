@@ -361,7 +361,7 @@
 			<Text id="actionDropThis">[D]rop this Item</Text>
 			<Text id="actionDropAnother">
 				(block (text)
-					(setq text (scrTranslate gScreen 'actionDropAnotherText {
+					(setq text (typTranslate gType 'actionDropAnotherText {
 						itemName:(itmGetName (scrGetData gScreen 'lastItemDrop) 0x400)
 						}))
 					(if (gr (count text) 46)

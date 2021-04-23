@@ -360,13 +360,13 @@
 					;	If we only sell one item, say so
 					
 					(= (count (@ gData 'items)) 1)
-						(scrTranslate gScreen "actionMiscDevices:defaultUpgrade:OnlyOne" {
+						(typTranslate gType "actionMiscDevices:defaultUpgrade:OnlyOne" {
 							itemName: (itmGetName (@ (@ gData 'items) 0) 'plural)
 							})
 
 					;	Otherwise, describe the upgrade based on a category
 					
-					(scrTranslate gScreen "actionUpgrade:defaultAbility" {
+					(typTranslate gType "actionUpgrade:defaultAbility" {
 						maxLevel: (@ gData 'maxLevel)
 						category:
 							(switch
@@ -428,8 +428,8 @@
 			
 			<Text id="descOverlayRemove">
 				(if (= (count (@ gData 'removableOverlays)) 1)
-					(scrTranslate gScreen 'descOverlayRemoveSingle)
-					(scrTranslate gScreen 'descOverlayRemoveMultiple)
+					(typTranslate gType 'descOverlayRemoveSingle)
+					(typTranslate gType 'descOverlayRemoveMultiple)
 					)
 			</Text>
 			<Text id="descOverlayRemoveSingle">
@@ -446,8 +446,8 @@
 			</Text>
 			<Text id="descCannotAffordOverlayRemove">
 				(if (= (count (@ gData 'removableOverlays)) 1)
-					(scrTranslate gScreen 'descCannotAffordOverlayRemoveSingle)
-					(scrTranslate gScreen 'descCannotAffordOverlayRemoveMultiple)
+					(typTranslate gType 'descCannotAffordOverlayRemoveSingle)
+					(typTranslate gType 'descCannotAffordOverlayRemoveMultiple)
 					)
 			</Text>
 			<Text id="descCannotAffordOverlayRemoveSingle">
@@ -466,8 +466,8 @@
 			</Text>
 			<Text id="descOverlaysRemoved">
 				(if (= (count (@ gData 'removableOverlays)) 1)
-					(scrTranslate gScreen 'descOverlaysRemovedSingle)
-					(scrTranslate gScreen 'descOverlaysRemovedMultiple)
+					(typTranslate gType 'descOverlaysRemovedSingle)
+					(typTranslate gType 'descOverlaysRemovedMultiple)
 					)
 			</Text>
 			<Text id="descOverlaysRemovedSingle">
@@ -1107,7 +1107,7 @@
 
 			<Text id="slotTitle:cargoHold">Cargo Expansion Slot</Text>
 			<Text id="slotDesc:cargoHold">
-				(scrTranslate gScreen (switch
+				(typTranslate gType (switch
 					(= (@ gData 'slotsAvail) 0)	"slotDesc:cargoHold:0"
 												"slotDesc:cargoHold:1"
 					)
@@ -1126,7 +1126,7 @@
 			
 			<Text id="slotTitle:device">Device Slot</Text>
 			<Text id="slotDesc:device">
-				(scrTranslate gScreen (switch
+				(typTranslate gType (switch
 					(= (@ gData 'slotsAvail) 0)	"slotDesc:device:0"
 					(= (@ gData 'slotsAvail) 1)	"slotDesc:device:1"
 												"slotDesc:device:2"
@@ -1147,7 +1147,7 @@
 
 			<Text id="slotTitle:drive">Drive Upgrade Slot</Text>
 			<Text id="slotDesc:drive">
-				(scrTranslate gScreen (switch
+				(typTranslate gType (switch
 					(= (@ gData 'slotsAvail) 0)	"slotDesc:drive:0"
 												"slotDesc:drive:1"
 					)
@@ -1452,7 +1452,7 @@
 			
 			<Text id="slotTitle:launcher">Launcher Slot</Text>
 			<Text id="slotDesc:launcher">
-				(scrTranslate gScreen (switch
+				(typTranslate gType (switch
 					(= (@ gData 'slotsAvail) 0)	"slotDesc:launcher:0"
 												"slotDesc:launcher:1"
 					)
@@ -1469,7 +1469,7 @@
 			
 			<Text id="slotTitle:weapon">Weapon Slot</Text>
 			<Text id="slotDesc:weapon">
-				(scrTranslate gScreen (switch
+				(typTranslate gType (switch
 					(= (@ gData 'slotsAvail) 0)	"slotDesc:weapon:0"
 					(= (@ gData 'slotsAvail) 1)	"slotDesc:weapon:1"
 												"slotDesc:weapon:2"
