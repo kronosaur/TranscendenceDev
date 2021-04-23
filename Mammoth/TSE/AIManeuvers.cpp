@@ -1795,12 +1795,10 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 //	Fires the given weapon (if aligned) on target
 
 	{
-
 	if (UsesAllPrimaryWeapons())
 		ImplementFireAllWeaponsOnTarget(pShip, iWeapon, iWeaponVariant, pTarget, vTarget, rTargetDist2, retiFireDir, bDoNotShoot);
 	else
 		ImplementFireSingleWeaponOnTarget(pShip, iWeapon, iWeaponVariant, pTarget, vTarget, rTargetDist2, retiFireDir, bDoNotShoot);
-
 	}
 
 void CAIBehaviorCtx::ImplementFollowNavPath (CShip *pShip, bool *retbAtDestination)

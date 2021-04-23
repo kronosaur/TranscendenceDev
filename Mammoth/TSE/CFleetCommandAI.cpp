@@ -578,10 +578,10 @@ void CFleetCommandAI::ImplementChargeInFormation (void)
 
 		//	Order fleet to break and attack targets
 
-		SetState(stateAttackAtWill);
-		m_pObjective = GetCurrentOrderTarget();
-		UpdateTargetList();
-		UpdateAttackTargets();
+		OrderBreakAndAttack();
+
+		//	Any ships with no target should attack the objective 
+
 		OrderAttackTarget(m_pObjective);
 		}
 
@@ -831,6 +831,17 @@ void CFleetCommandAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 		if ((pTarget = FindTarget(Ctx.Obj.GetTarget())) != NULL)
 			pTarget->iAssignedTo -= Ctx.Obj.GetCombatPower();
+
+		//	There's a chance that we will break and attack in response to this.
+
+		if (m_State == stateChargeInFormation
+				|| m_State == stateFormAtRallyPoint
+				|| m_State == stateWaitingForThreat
+				|| m_State == stateAttackFromRallyPoint)
+			{
+			if (mathRandom(1, 100) <= 50)
+				OrderBreakAndAttack();
+			}
 		}
 
 	//	Otherwise, check to see if a target was destroyed
@@ -1060,6 +1071,19 @@ void CFleetCommandAI::OrderAttackTarget (CSpaceObject *pTarget)
 			m_pShip->Communicate(m_pAssets[i].pAsset, msgAttack, pTarget);
 			m_pAssets[i].pTarget = pTarget;
 			}
+	}
+
+void CFleetCommandAI::OrderBreakAndAttack ()
+
+//	OrderBreakAndAttack
+//
+//	Attack at will.
+
+	{
+	SetState(stateAttackAtWill);
+	m_pObjective = GetCurrentOrderTarget();
+	UpdateTargetList();
+	UpdateAttackTargets();
 	}
 
 void CFleetCommandAI::RemoveAsset (int iIndex)

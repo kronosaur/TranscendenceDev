@@ -617,7 +617,8 @@ DWORD CFleetShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage,
 			{
 			if (GetCurrentOrder() == IShipController::orderEscort)
 				{
-				SetState(stateAttackAtWill);
+				if (m_State != stateAttackAtWill)
+					SetState(stateAttackAtWill);
 				return resAck;
 				}
 			else

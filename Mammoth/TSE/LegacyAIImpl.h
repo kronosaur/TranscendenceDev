@@ -154,6 +154,7 @@ class CFleetCommandAI : public CBaseShipAI
 		void OrderAllFormUp (bool bResetFormation = false);
 		void OrderAllOpenFire (void);
 		void OrderAttackTarget (CSpaceObject *pTarget);
+		void OrderBreakAndAttack ();
 		void RemoveAsset (int iIndex);
 		bool RemoveAssetObj (CSpaceObject *pObj);
 		void RemoveTarget (int iIndex);
