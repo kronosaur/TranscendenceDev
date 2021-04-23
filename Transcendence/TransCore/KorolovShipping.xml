@@ -3,7 +3,9 @@
 <TranscendenceModule>
 
 	<!-- Korolov Shipping
+
 	Type holds all global data associated with Korolov Escort missions
+
 	GLOBAL DATA
 	
 	level:				Player's level:
@@ -13,11 +15,16 @@
 							2	= Journeyman
 							3	= Master
 							4	= Legend
+
 	opsIntroDone:		If True, no need for ops intro.
+
 	record{shipUNID}:	Escort record for given freighter
 							({successful} {unsuccessful})
+
 	recordStrongholds:	Number of Charon primary strongholds destroyed
+
 	xp:					Number of experience points.
+
 	-->
 
 	<Type UNID="&unidKorolovShipping;">
@@ -280,8 +287,11 @@
 	</Type>
 
 	<!-- Korolov Shipping
+
 	EXTRA DATA
+
 	charonStronghold:	Primary Charon base in the system
+
 	-->
 
 	<StationType UNID="&stKorolovShipping;"
