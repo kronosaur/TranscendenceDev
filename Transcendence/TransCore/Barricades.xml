@@ -33,7 +33,7 @@
 
 		<InitialData>
 			<Data id="SourceItem">
-				(itmCreate &itReinforcedTitanium1; 1)
+				(&itReinforcedTitanium1; 1)
 			</Data>
 		</InitialData>
 	</StationType>
@@ -67,7 +67,7 @@
 
 		<InitialData>
 			<Data id="SourceItem">
-				(itmCreate &itReinforcedTitanium2; 1)
+				(&itReinforcedTitanium2; 1)
 			</Data>
 		</InitialData>
 	</StationType>
@@ -101,7 +101,7 @@
 
 		<InitialData>
 			<Data id="SourceItem">
-				(itmCreate &itReinforcedTitanium3; 1)
+				(&itReinforcedTitanium3; 1)
 			</Data>
 		</InitialData>
 	</StationType>
