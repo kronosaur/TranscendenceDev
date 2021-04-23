@@ -75,12 +75,12 @@
 		<Ships>
 			<Ship					count="1"	class="&scBritannia;"	orders="guard" controller="fleetcommand">
 				<Escorts>
-					<Ship			count="12"	class="&scCenturionM;"	orders="escort" controller="fleet"/>
+					<Ship			count="8"	class="&scCenturionM;"	orders="escort" controller="fleet"/>
 				</Escorts>
 			</Ship>
 			<Ship					count="1"	class="&scBritannia;"	orders="guard" controller="fleetcommand">
 				<Escorts>
-					<Ship			count="12"	class="&scCenturionM;"	orders="escort" controller="fleet"/>
+					<Ship			count="8"	class="&scCenturionM;"	orders="escort" controller="fleet"/>
 				</Escorts>
 			</Ship>
 		</Ships>
