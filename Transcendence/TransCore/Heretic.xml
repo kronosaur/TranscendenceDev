@@ -997,6 +997,7 @@
 			dockScreen=			"DisplayLog"
 			noMapLabel=			"true"
 			mass=				"1000"
+			mobile=				"true"
 			>
 
 		<ImageVariants>

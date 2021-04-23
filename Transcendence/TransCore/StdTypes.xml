@@ -979,7 +979,6 @@
 			scale=				"ship"
 			mobile=				"true"
 			mass=				"1"
-			immutable=			"true"
 			destroyWhenEmpty=	"true"
 			noMapIcon=			"true"
 			>
