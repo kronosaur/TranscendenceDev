@@ -572,7 +572,7 @@ PLAYER DATA
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealthFleet;"
 
-			attributes=			"commonwealth, commonwealthMilitary, commonMilitary, commonwealthFleet, genericClass, pacificDefense"
+			attributes=			"commonwealth, commonwealthMilitary, commonMilitary, commonwealthFleet, genericClass, military, pacificDefense"
 			inherit=			"&scBritanniaStock;"
 			>
 
@@ -584,7 +584,7 @@ PLAYER DATA
 
 		<Devices>
 			<Device deviceID="&itStarCannon;"/>
-			<Device deviceID="&itR5BDeflector;"/>
+			<Device deviceID="&itR5Deflector;"/>
 			<Device deviceID="&itNM900MissilePod;"/>
 		</Devices>
 
@@ -656,7 +656,7 @@ PLAYER DATA
 
 		<Devices>
 			<Device deviceID="&itStarCannon;"/>
-			<Device deviceID="&itR5BDeflector;"/>
+			<Device deviceID="&itR5Deflector;"/>
 			<Device deviceID="&itNM900MissilePod;"/>
 		</Devices>
 
@@ -677,7 +677,7 @@ PLAYER DATA
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"15"
+			fireRateAdj=		"25"
 			fireAccuracy=		"90"
 			perception=			"4"
 			
@@ -693,7 +693,7 @@ PLAYER DATA
 			type=				"corvette"
 			defaultSovereign=	"&svCommonwealthFleet;"
 
-			attributes=			"commonwealth, commonwealthFleet, genericClass, nami"
+			attributes=			"commonwealth, commonwealthFleet, genericClass, military, nami"
 			inherit=			"&baHumanTechShip;"
 			>
 
@@ -810,7 +810,7 @@ PLAYER DATA
 			type=				"corvette"
 			defaultSovereign=	"&svCommonwealthFleet;"
 
-			attributes=			"commonwealth, commonwealthFleet, genericClass, nami"
+			attributes=			"commonwealth, commonwealthFleet, genericClass, military, nami"
 			inherit=			"&scMinotaur;"
 			>
 
@@ -962,7 +962,7 @@ PLAYER DATA
 			frequency=			"rare"
 			attributes=			"MajorItem; Military; Specialty"
 
-			description=		"Commonwealth Fleet labs created this variant of the R5 for its new Britannia-class gunships."
+			description=		"Commonwealth Fleet labs created this variant of the R5, but it proved too expensive for widespread deployment."
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>

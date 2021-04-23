@@ -339,7 +339,7 @@
 							(switch
 								;	See if we've killed enough escorts
 
-								(ls (msnInc@ gSource 'betaEscortsDestroyed 1) 4)
+								(ls (msnInc@ gSource 'betaEscortsDestroyed 1) 2)
 									Nil
 
 								;	Make sure we're in the right state
@@ -839,9 +839,10 @@
 	</MissionType>
 
 	<ShipTable unid="&tbCSCPointJunoAlphaFleet;">
-		<Ship count="1" class="&scTundra;" orders="hold" controller="fleetcommand">
+		<Ship count="1" class="&scChasm;" orders="hold" controller="fleetcommand">
 			<Escorts>
-				<Ship count="36" class="&scSandstorm;" orders="escort" controller="fleet"/>
+				<Ship count="6" class="&scTundra;" orders="escort" controller="fleet"/>
+				<Ship count="32" class="&scSandstorm;" orders="escort" controller="fleet"/>
 			</Escorts>
 		</Ship>
 	</ShipTable>

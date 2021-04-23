@@ -784,13 +784,8 @@
 			/>
 
 		<Devices>
-			<Device deviceID="&itDualTurbolaserCannon;"/>
-			<Device deviceID="&itNAMIMissileLauncher;">
-				<Items>
-					<Item count="4d6" item="&itKM500Missile;"/>
-				</Items>
-			</Device>
-			<Device deviceID="&itMonopoleDeflector;"/>
+			<Device deviceID="&itDualLaserCannon;"/>
+			<Device deviceID="&itClass1Deflector;"/>
 		</Devices>
 
 		<!-- Treasure -->

@@ -1936,7 +1936,7 @@
 			level=				"7"
 			frequency=			"common"
 
-			value=				"50000"
+			value=				"45000"
 			mass=				"5000"
 			  
 			description=		"After the Ares onslaught of 2372, the Fleet upgraded its Centurion gunships to this thermonuclear cannon."
@@ -1949,7 +1949,7 @@
 				configuration=		"dual"
 
 				damage=				"thermo:2d8; momentum:1; WMD:1"
-				fireRate=			"12"
+				fireRate=			"14"
 				missileSpeed=		"70"
 				hitPoints=			"5"
 				lifetime=			"60"
@@ -1970,7 +1970,7 @@
 			level=				"7"
 			frequency=			"uncommon"
 
-			value=				"55000"
+			value=				"48000"
 			mass=				"5000"
 			  
 			description=		"This is a heavier version of the SAR/10 thermonuclear cannon."
@@ -1982,7 +1982,7 @@
 				type=				"missile"
 
 				damage=				"thermo:3d10; momentum:1; WMD:4"
-				fireRate=			"12"
+				fireRate=			"14"
 				missileSpeed=		"70"
 				hitPoints=			"10"
 				lifetime=			"60"
@@ -2466,7 +2466,7 @@
 			level=				"9"
 			frequency=			"rare"
 
-			value=				"160000"
+			value=				"200000"
 			mass=				"15000"
 			  
 			description=		"The recently introduced SAR/200 cannon is designed to defend carriers against Ares gunships."
