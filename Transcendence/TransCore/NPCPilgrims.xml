@@ -626,7 +626,7 @@
 														(@ (obj@ gSource 'pilgrim.coolDown) (@ thePower 'power))
 														)
 													(leq playerDist (@ thePower 'minTargetDist))
-													(or (not (obj@ gSource 'waitingForShields))
+													(or (not (obj@ gSource 'ai.waitingForShields))
 														(@ thePower 'useWhileWaitingForShields)
 														)
 													)
