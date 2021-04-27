@@ -75,7 +75,20 @@
 #define STR_NEXT								CONSTLIT("next")
 #define STR_PREV								CONSTLIT("prev")
 
-TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CShip>::SPropertyDef, 3> {{
+TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CShip>::SPropertyDef, 4> {{
+		{
+		"inPlayerSquadron",		"True/Nil if we're part of the player's squadron",
+		[](const CShip &ShipObj, const CString &sProperty) 
+			{
+			const CSpaceObject *pPlayerShip = ShipObj.GetPlayerShip();
+			if (!pPlayerShip)
+				return ICCItemPtr::Nil();
+
+			return ICCItemPtr(pPlayerShip->IsInOurSquadron(ShipObj));
+			},
+		NULL,
+		},
+
 		{
 		"squadron",			"Desc of each member of squadron",
 		[](const CShip &ShipObj, const CString &sProperty) 
