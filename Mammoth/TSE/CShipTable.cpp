@@ -829,6 +829,21 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 			}
 		}
 
+	//	For escort orders, we need to initialize the escort position.
+
+	if (GeneratorCtx.OrderDesc.GetOrder() == IShipController::orderEscort
+			&& GeneratorCtx.pBase)
+		{
+		bool bFirst;
+		int *pPos = Ctx.EscortPos.SetAt(GeneratorCtx.pBase->GetID(), &bFirst);
+		if (bFirst)
+			*pPos = 0;
+		else
+			(*pPos)++;
+
+		GeneratorCtx.OrderDesc.SetDataInteger(*pPos);
+		}
+
 	//	Get the controller
 
 	IShipController *pController = Ctx.GetUniverse().CreateShipController(m_sController);
