@@ -1680,6 +1680,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'AbortAttack\n"
 			"   'AttackTarget\n"
+			"   'BreakAndAttack\n"
 			"   'FormUp\n"
 			"   'QueryAttackStatus\n"
 			"   'Wait",
@@ -2066,6 +2067,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"\n"
 			"property (ships)\n\n"
 			
+			"   'ai.waitingForShields\n"
 			"   'alwaysLeaveWreck\n"
 			"   'armorCount\n"
 			"   'autoTarget\n"
@@ -2127,7 +2129,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'thrust -> in GN\n"
 			"   'thrustToWeight -> acceleration, 1 = 500 m/s^2 (ships stats show this / 1000)\n"
 			"   'trackFuel\n"
-			"   'waitingForShields\n"
 			"\n"
 			"property (stations)\n\n"
 
