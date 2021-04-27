@@ -5,9 +5,31 @@
 
 #include "PreComp.h"
 
-TPropertyHandler<CBaseShipAI> CBaseShipAI::m_PropertyTable = std::array<TPropertyHandler<CBaseShipAI>::SPropertyDef, 1> {{
+TPropertyHandler<CBaseShipAI> CBaseShipAI::m_PropertyTable = std::array<TPropertyHandler<CBaseShipAI>::SPropertyDef, 3> {{
 		{
-		"waitingForShields",			"True/Nil is we're waiting for shields to regenerate",
+		"ai.combatStyle",			"Combat style",
+		[](const CBaseShipAI &BaseShipAI, const CString &sProperty) 
+			{
+			return ICCItemPtr(CAISettings::ConvertToID(BaseShipAI.m_AICtx.GetAISettings().GetCombatStyle()));
+			},
+		NULL,
+		},
+
+		{
+		"ai.flockingStyle",			"Nil or flocking style",
+		[](const CBaseShipAI &BaseShipAI, const CString &sProperty) 
+			{
+			AIFlockingStyle iStyle = BaseShipAI.m_AICtx.GetAISettings().GetFlockingStyle();
+			if (iStyle == AIFlockingStyle::None)
+				return ICCItemPtr::Nil();
+			else
+				return ICCItemPtr(CAISettings::ConvertToID(iStyle));
+			},
+		NULL,
+		},
+
+		{
+		"ai.waitingForShields",			"True/Nil is we're waiting for shields to regenerate",
 		[](const CBaseShipAI &BaseShipAI, const CString &sProperty) 
 			{
 			return ICCItemPtr(BaseShipAI.m_AICtx.IsWaitingForShieldsToRegen());
