@@ -86,6 +86,7 @@ class CAIBehaviorCtx
 		bool GetThrust (CShip *pShip) const { return m_ShipControls.GetThrust(pShip); }
 		int GetThrustDir (void) const { return m_ShipControls.GetThrustDir(); }
 		bool HasEscorts (void) const { return m_fHasEscorts; }
+		bool HasLowManeuverability () const { return m_fLowManeuverability; }
 		bool HasMultipleWeapons (void) const { return m_fHasMultipleWeapons; }
 		bool HasSecondaryWeapons (void) const { return m_fHasSecondaryWeapons; }
 		bool HasSuperconductingShields (void) const { return m_fSuperconductingShields; }
@@ -243,7 +244,7 @@ class CAIBehaviorCtx
 		DWORD m_fHasAvoidPotential:1 = false;		//	TRUE if there is something to avoid
 		DWORD m_fShootTargetableMissiles:1 = false;	//	TRUE if we try to hit targetable missiles with secondaries
 		DWORD m_fShootAllMissiles:1 = false;		//	TRUE if we try to hit all missiles with secondaries
-		DWORD m_fSpare6:1 = false;
+		DWORD m_fLowManeuverability:1 = false;		//	TRUE if we maneuver at less than or equal to 12 degrees per second
 		DWORD m_fSpare7:1 = false;
 		DWORD m_fSpare8:1 = false;
 

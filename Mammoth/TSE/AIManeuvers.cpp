@@ -701,15 +701,11 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				{
 				int iClock = pShip->GetUniverse().GetTicks() / (170 + pShip->GetDestiny() / 3);
 				int iAngle = pShip->AlignToRotationAngle((pShip->GetDestiny() + (iClock * 141 * (1 + pShip->GetDestiny()))) % 360);
-				Metric rRadius = Max(MIN_STATION_TARGET_DIST, pTarget->GetHitSize()) + (LIGHT_SECOND * (pShip->GetDestiny() % 100) / 10.0);
+				Metric rRadius = pTarget->GetHitSize() + MIN_STATION_TARGET_DIST + (LIGHT_SECOND * (pShip->GetDestiny() % 100) / 10.0);
 
 				//	This is the position that we want to go to
 
-				CVector vPos;
-				if (m_fHasAvoidPotential)
-					vPos = pShip->GetPos() + (POTENTIAL_TO_POS_ADJ * GetPotential());
-				else
-					vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius);
+				CVector vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius);
 
 				//	We don't want to thrust unless we're in position
 
@@ -818,15 +814,11 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				{
 				int iClock = pShip->GetUniverse().GetTicks() / (170 + pShip->GetDestiny() / 3);
 				int iAngle = pShip->AlignToRotationAngle((pShip->GetDestiny() + (iClock * 141 * (1 + pShip->GetDestiny()))) % 360);
-				Metric rRadius = Max(MIN_STATION_TARGET_DIST, pTarget->GetHitSize()) + (LIGHT_SECOND * (pShip->GetDestiny() % 100) / 10.0);
+				Metric rRadius = pTarget->GetHitSize() + MIN_STATION_TARGET_DIST + (LIGHT_SECOND * (pShip->GetDestiny() % 100) / 10.0);
 
 				//	This is the position that we want to go to
 
-				CVector vPos;
-				if (m_fHasAvoidPotential)
-					vPos = pShip->GetPos() + (POTENTIAL_TO_POS_ADJ * GetPotential());
-				else
-					vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius);
+				CVector vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius);
 
 				//	We don't want to thrust unless we're in position
 

@@ -385,11 +385,16 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 		rAimRange = 1.5 * MIN_TARGET_DIST;
 	m_rPrimaryAimRange2 = rAimRange * rAimRange;
 
+	//	Maneuverability
+
+	Metric rMaxRotationSpeed = pShip->GetRotationDesc().GetMaxRotationSpeedDegrees();
+	m_fLowManeuverability = (rMaxRotationSpeed <= 6.0);
+
 	//	Compute the minimum flanking distance. If we're very maneuverable,
 	//	can get in closer because we can turn faster to adjust for the target's
 	//	motion.
-
-	Metric rDegreesPerTick = Max(1.0, Min(pShip->GetRotationDesc().GetMaxRotationSpeedDegrees(), 60.0));
+	
+	Metric rDegreesPerTick = Max(1.0, Min(rMaxRotationSpeed, 60.0));
 	Metric rTanRot = tan(PI * rDegreesPerTick / 180.0);
 	Metric rMinFlankDist = Max(MIN_TARGET_DIST, MAX_TARGET_SPEED / rTanRot);
 
