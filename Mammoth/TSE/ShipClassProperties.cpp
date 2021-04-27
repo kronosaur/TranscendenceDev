@@ -55,7 +55,16 @@
 #define PROPERTY_WRECK_TYPE						CONSTLIT("wreckType")
 #define PROPERTY_WRECK_TYPE_NAME				CONSTLIT("wreckTypeName")
 
-TPropertyHandler<CShipClass> CShipClass::m_PropertyTable = std::array<TPropertyHandler<CShipClass>::SPropertyDef, 2> {{
+TPropertyHandler<CShipClass> CShipClass::m_PropertyTable = std::array<TPropertyHandler<CShipClass>::SPropertyDef, 4> {{
+		{
+		"ai.combatStyle",			"Combat style",
+		[](const CShipClass &ShipClass, const CString &sProperty) 
+			{
+			return ICCItemPtr(CAISettings::ConvertToID(ShipClass.m_AISettings.GetCombatStyle()));
+			},
+		NULL,
+		},
+
 		{
 		"character",			"UNID of associated character",
 		[](const CShipClass &ShipClass, const CString &sProperty) 
@@ -81,6 +90,17 @@ TPropertyHandler<CShipClass> CShipClass::m_PropertyTable = std::array<TPropertyH
 			},
 		NULL,
 		},
+
+		{
+		"maneuver",				"Max rotation (degrees/second)",
+		[](const CShipClass &ShipClass, const CString &sProperty) 
+			{
+			Metric rManeuver = g_SecondsPerUpdate * ShipClass.GetIntegralRotationDesc().GetMaxRotationSpeedDegrees();
+			return ICCItemPtr(rManeuver);
+			},
+		NULL,
+		},
+
 	}};
 
 ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
@@ -351,7 +371,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		{
 		const CObjectEffectDesc &Effects = GetEffectsDesc();
 		int iThrustersPerSide = Max(1, Effects.GetEffectCount(CObjectEffectDesc::effectThrustLeft));
-		int iThrusterPower = Max(1, mathRound((m_Hull.GetMass() / iThrustersPerSide) * m_RotationDesc.GetRotationAccelPerTick()));
+		int iThrusterPower = Max(1, mathRound(((double)m_Hull.GetMass() / iThrustersPerSide) * m_RotationDesc.GetRotationAccelPerTick()));
 		return ICCItemPtr(iThrusterPower);
 		}
 	else if (strEquals(sProperty, PROPERTY_TREASURE_ITEM_NAMES))
