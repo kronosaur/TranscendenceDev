@@ -581,6 +581,7 @@ ICCItem *fnSystemOrbit (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_VECTOR_POLAR_VELOCITY		8
 #define FN_VECTOR_PIXEL_OFFSET			9
 #define FN_VECTOR_DISTANCE_EXACT		10
+#define FN_VECTOR_IN_POLYGON			11
 
 ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -3461,6 +3462,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysVectorDivide",				fnSystemVectorMath,		FN_VECTOR_DIVIDE,
 			"(sysVectorDivide vector scalar) -> vector",
 			"vn",	0,	},
+
+		{	"sysVectorInPolygon",			fnSystemVectorMath,		FN_VECTOR_IN_POLYGON,
+			"(sysVectorInPolygon vector list-of-points) -> True/Nil",
+			"vl",	0,	},
 
 		{	"sysVectorMultiply",			fnSystemVectorMath,		FN_VECTOR_MULTIPLY,
 			"(sysVectorMultiply vector scalar) -> vector",
@@ -15070,6 +15075,30 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 				return pCC->CreateError(CONSTLIT("division by zero"), NULL);
 
 			return CreateListFromVector(vPos1 / rFactor);
+			}
+
+		case FN_VECTOR_IN_POLYGON:
+			{
+			CVector vPos1;
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos1) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
+
+			ICCItem *pPoints = pArgs->GetElement(1);
+			if (pPoints->GetCount() < 3)
+				return pCC->CreateError(CONSTLIT("Polygon must have at least 3 points"), pPoints);
+
+			TArray<CVector> PolygonPoints;
+			for (int i = 0; i < pPoints->GetCount(); i++)
+				{
+				CVector vPos2;
+				if (GetPosOrObject(pEvalCtx, pPoints->GetElement(i), &vPos2) != NOERROR)
+					return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
+
+				PolygonPoints.Insert(vPos2);
+				}
+
+			CPolygon Polygon(std::move(PolygonPoints));
+			return pCC->CreateBool(Polygon.PointIntersects(vPos1));
 			}
 
 		case FN_VECTOR_MULTIPLY:

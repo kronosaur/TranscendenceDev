@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <utility>
 #include <math.h>
 
 typedef double Metric;
@@ -175,6 +176,28 @@ class CLine
 	private:
 		CVector m_vFrom;
 		CVector m_vTo;
+	};
+
+//	Polygon
+
+class CPolygon
+	{
+	public:
+		CPolygon (const TArray<CVector> &vPoints) :
+				m_vPoints(vPoints)
+			{ }
+
+		CPolygon (TArray<CVector> &&vPoints) noexcept :
+				m_vPoints(std::move(vPoints))
+			{ }
+
+		bool PointIntersects (const CVector &vA, bool bIncludeHoles = true) const;
+		
+	private:
+		bool PointIntersectsHole (const CVector &vA) const;
+
+		TArray<CVector> m_vPoints;
+		TArray<TUniquePtr<CPolygon>> m_Holes;
 	};
 
 //	Geometry

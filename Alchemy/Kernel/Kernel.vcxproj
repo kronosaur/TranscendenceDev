@@ -473,6 +473,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CPeriodicWaiter.cpp" />
+    <ClCompile Include="CPolygon.cpp" />
     <ClCompile Include="CProjection3D.cpp" />
     <ClCompile Include="CRegKey.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
