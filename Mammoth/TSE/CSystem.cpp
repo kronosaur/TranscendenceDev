@@ -170,19 +170,6 @@ ALERROR CSystem::AddTimedEvent (CSystemEvent *pEvent)
 	return NOERROR;
 	}
 
-void CSystem::AddToDeleteList (CSpaceObject *pObj)
-
-//	AddToDeleteList
-//
-//	Adds the object to a list to be deleted later.
-
-	{
-	ASSERT(pObj->IsDestroyed());
-	ASSERT(pObj->GetID() != 0xdddddddd);
-
-	m_DeletedObjects.FastAdd(pObj);
-	}
-
 ALERROR CSystem::AddToSystem (CSpaceObject *pObj, int *retiIndex)
 
 //	AddToSystem
@@ -1630,6 +1617,43 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 	return NOERROR;
 
 	DEBUG_CATCH
+	}
+
+void CSystem::DeleteObject (SDestroyCtx &Ctx)
+
+//	DeleteObject
+//
+//	This is called by CSpaceObject::Destroy to remove the object from our lists.
+
+	{
+	ASSERT(Ctx.Obj.IsDestroyed());
+	ASSERT(Ctx.Obj.GetID() != 0xdddddddd);
+
+	if (!Ctx.bResurrectPending)
+		{
+		//	If this was the player, remove ship variables
+
+		if (Ctx.Obj.IsPlayer())
+			{
+			//	Clean up these variables since the player is out
+			//	of the system. We need to do this because otherwise
+			//	an event might set a target for the player and if the
+			//	target is destroyed, we would never get an OnObjDestroyed message
+
+			GetUniverse().SetPlayerShip(NULL);
+
+			//	The player will be deleted at higher layers, but
+			//	it is out of the system now, so we need to remove it from the
+			//	object grid.
+
+			m_ObjGrid.Delete(&Ctx.Obj);
+			}
+
+		//	The objects get deleted at the end of the update
+
+		else
+			m_DeletedObjects.FastAdd(&Ctx.Obj);
+		}
 	}
 
 bool CSystem::DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **retpObj, CString *retsError)

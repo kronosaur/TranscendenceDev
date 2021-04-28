@@ -1630,28 +1630,7 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 
 		//	Delete
 
-		if (!Ctx.bResurrectPending)
-			{
-			//	If this was the player, remove ship variables
-
-			if (IsPlayer())
-				{
-				//	Clean up these variables since the player is out
-				//	of the system. We need to do this because otherwise
-				//	an event might set a target for the player and if the
-				//	target is destroyed, we would never get an OnObjDestroyed message
-
-				GetUniverse().SetPlayerShip(NULL);
-
-				//	The player will be deleted at higher layers, but
-				//	it is out of the system now.
-				}
-
-			//	The objects get deleted at the end of the update
-
-			else
-				pSystem->AddToDeleteList(this);
-			}
+		pSystem->DeleteObject(Ctx);
 		}
 
 	//	Return wreck
