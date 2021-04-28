@@ -492,6 +492,7 @@ class CSystem
 		bool FindObjectName (const CSpaceObject *pObj, CString *retsName = NULL);
 		void FireOnSystemExplosion (CSpaceObject *pExplosion, CWeaponFireDesc *pDesc, const CDamageSource &Source);
 		void FireOnSystemObjAttacked (SDamageCtx &Ctx);
+		void FireOnSystemObjCreated (const CSpaceObject &Obj);
 		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx);
 		void FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, int iRepeatingCount);
 		void FireSystemWeaponEvents (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, int iRepeatingCount, DWORD dwFlags);
@@ -656,6 +657,7 @@ class CSystem
 								  SObjCreateCtx &CreateCtx,
 								  CSpaceObject **retpStation,
 								  CString *retsError = NULL);
+		int FindEmptyObjSlot () const;
 		const SStarDesc *FindNearestStar (const CVector &vPos, int *retiDist = NULL) const;
 		void FlushDeletedObjects (void);
 		int GetTimedEventCount (void) { return m_TimedEvents.GetCount(); }

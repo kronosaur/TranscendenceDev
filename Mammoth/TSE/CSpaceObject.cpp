@@ -81,6 +81,7 @@ const Metric g_rMaxCommsRange2 =				(g_rMaxCommsRange * g_rMaxCommsRange);
 #define ON_SELECTED_EVENT						CONSTLIT("OnSelected")
 #define ON_SUBORDINATE_ATTACKED_EVENT			CONSTLIT("OnSubordinateAttacked")
 #define ON_SYSTEM_EXPLOSION_EVENT				CONSTLIT("OnSystemExplosion")
+#define ON_SYSTEM_OBJ_CREATED_EVENT				CONSTLIT("OnSystemObjCreated")
 #define ON_SYSTEM_OBJ_DESTROYED_EVENT			CONSTLIT("OnSystemObjDestroyed")
 #define ON_SYSTEM_STARTED_EVENT					CONSTLIT("OnSystemStarted")
 #define ON_SYSTEM_STOPPED_EVENT					CONSTLIT("OnSystemStopped")
@@ -3545,6 +3546,28 @@ void CSpaceObject::FireOnSystemObjAttacked (SDamageCtx &Ctx)
 		}
 	}
 
+void CSpaceObject::FireOnSystemObjCreated (const CSpaceObject &Obj)
+
+//	FireOnSystemObjCreated
+//
+//	Fire OnSystemObjCreated event
+
+	{
+	SEventHandlerDesc Event;
+
+	if (FindEventHandler(ON_SYSTEM_OBJ_CREATED_EVENT, &Event))
+		{
+		CCodeChainCtx CCX(GetUniverse());
+		CCX.DefineContainingType(this);
+		CCX.SaveAndDefineSourceVar(this);
+		CCX.DefineSpaceObject(CONSTLIT("aObjCreated"), Obj);
+
+		ICCItemPtr pResult = CCX.RunCode(Event);
+		if (pResult->IsError())
+			ReportEventError(ON_SYSTEM_OBJ_CREATED_EVENT, pResult);
+		}
+	}
+
 void CSpaceObject::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 
 //	FireOnSystemObjDestroyed
@@ -3568,7 +3591,7 @@ void CSpaceObject::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 
 		ICCItem *pResult = CCCtx.Run(Event);
 		if (pResult->IsError())
-			ReportEventError(ON_OBJ_DESTROYED_EVENT, pResult);
+			ReportEventError(ON_SYSTEM_OBJ_DESTROYED_EVENT, pResult);
 		CCCtx.Discard(pResult);
 		}
 	}

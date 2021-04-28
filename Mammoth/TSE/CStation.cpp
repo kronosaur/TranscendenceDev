@@ -1721,6 +1721,10 @@ void CStation::FinishCreation (SSystemCreateCtx *pSysCreateCtx)
 	//	OnCreate ends up setting the name (or something).
 
 	GetUniverse().GetGlobalObjects().InsertIfTracked(this);
+
+	//	System-level notifications
+
+	GetSystem()->FireOnSystemObjCreated(*this);
 	}
 
 Metric CStation::CalcMaxAttackDist (void) const

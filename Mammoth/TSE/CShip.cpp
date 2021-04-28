@@ -2292,6 +2292,10 @@ void CShip::FinishCreation (SShipGeneratorCtx *pCtx, SSystemCreateCtx *pSysCreat
 
 	GetUniverse().GetGlobalObjects().InsertIfTracked(this);
 
+	//	System-level notifications
+
+	GetSystem()->FireOnSystemObjCreated(*this);
+
 	DEBUG_CATCH
 	}
 

@@ -190,8 +190,6 @@ ALERROR CSystem::AddToSystem (CSpaceObject *pObj, int *retiIndex)
 //	Adds an object to the system
 
 	{
-	int i;
-
 	//	If this object affects the enemy object cache, then
 	//	flush the cache
 
@@ -206,26 +204,37 @@ ALERROR CSystem::AddToSystem (CSpaceObject *pObj, int *retiIndex)
 		pDesc->pStarObj = pObj;
 		}
 
-	//	Reuse a slot first
+	//	Add to array
 
-	for (i = 0; i < m_AllObjects.GetCount(); i++)
+	int iSlot = FindEmptyObjSlot();
+	if (iSlot != -1)
+		m_AllObjects[iSlot] = pObj;
+	else
 		{
-		if (m_AllObjects[i] == NULL)
-			{
-			m_AllObjects[i] = pObj;
-			if (retiIndex)
-				*retiIndex = i;
-			return NOERROR;
-			}
+		iSlot = m_AllObjects.GetCount();
+		m_AllObjects.Insert(pObj);
 		}
 
-	//	If we could not find a free place, add a new object
-
 	if (retiIndex)
-		*retiIndex = m_AllObjects.GetCount();
+		*retiIndex = iSlot;
 
-	m_AllObjects.Insert(pObj);
 	return NOERROR;
+	}
+
+int CSystem::FindEmptyObjSlot () const
+
+//	FindEmptyObjSlot
+//
+//	Finds an empty slot.
+
+	{
+	for (int i = 0; i < m_AllObjects.GetCount(); i++)
+		{
+		if (m_AllObjects[i] == NULL)
+			return i;
+		}
+
+	return -1;
 	}
 
 bool CSystem::AscendObject (CSpaceObject *pObj, CString *retsError)
@@ -1668,6 +1677,14 @@ bool CSystem::DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **
 	pObj->NotifyOnNewSystem(this);
 	pObj->Resume();
 
+	//	Notify that an object appeared
+
+	CSpaceObject::Categories iObjCat = pObj->GetCategory();
+	if (iObjCat == CSpaceObject::catShip || iObjCat == CSpaceObject::catStation)
+		{
+		FireOnSystemObjCreated(*pObj);
+		}
+
 	//	Done
 
 	if (retpObj)
@@ -1864,6 +1881,23 @@ void CSystem::FireOnSystemObjAttacked (SDamageCtx &Ctx)
 		}
 
 	DEBUG_CATCH
+	}
+
+void CSystem::FireOnSystemObjCreated (const CSpaceObject &Obj)
+
+//	FireOnSystemObjCreated
+//
+//	Fires OnSystemObjCreated event to all handlers.
+
+	{
+	CSystemEventHandler *pHandler = m_EventHandlers.GetNext();
+	while (pHandler)
+		{
+		if (pHandler->InRange(Obj.GetPos()))
+			pHandler->GetObj()->FireOnSystemObjCreated(Obj);
+
+		pHandler = pHandler->GetNext();
+		}
 	}
 
 void CSystem::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)

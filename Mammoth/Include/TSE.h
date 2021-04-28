@@ -853,6 +853,7 @@ class CSpaceObject
 		bool FireOnSubordinateAttacked (const SDamageCtx &Ctx);
 		void FireOnSystemExplosion (CSpaceObject *pExplosion, CSpaceObject *pSource, DWORD dwItemUNID);
 		void FireOnSystemObjAttacked (SDamageCtx &Ctx);
+		void FireOnSystemObjCreated (const CSpaceObject &Obj);
 		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx);
 		void FireOnSystemStarted (DWORD dwElapsedTime);
 		void FireOnSystemStopped (void);
