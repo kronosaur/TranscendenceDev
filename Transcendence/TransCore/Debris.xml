@@ -705,7 +705,7 @@
 			noMapIcon=			"true"
 			destroyWhenEmpty=	"true"
 
-			attributes=			"enemy, envEarth, envAvoidsAir, noSalvage"
+			attributes=			"crate, enemy, envEarth, envAvoidsAir, noSalvage"
 			>
 
 		<Properties>
@@ -783,7 +783,7 @@
 			sovereign=			"&svOutlaw;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
-			attributes=			"noSalvage"
+			attributes=			"crate, noSalvage"
 
 			structuralHitPoints="15"
 			ejectaType=			"&vtWreckEjecta;"
