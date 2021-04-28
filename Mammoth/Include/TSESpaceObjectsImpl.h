@@ -1174,6 +1174,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CStationType *GetEncounterInfo (void) override { return m_pEncounterInfo; }
 		virtual CSpaceObject *GetEscortPrincipal (void) const override;
 		virtual const CObjectImageArray &GetHeroImage (void) const override { return m_pClass->GetHeroImage(); }
+		virtual void GetHUDTimers (TArray<SHUDTimerDesc> &retTimers) const override;
 		virtual const CObjectImageArray &GetImage (int *retiRotationFrameIndex = NULL) const override;
 		virtual CString GetInstallationPhrase (const CItem &Item) const override;
 		virtual Metric GetInvMass (void) const override;

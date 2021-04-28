@@ -1057,12 +1057,6 @@ void CPlayerShipController::OnComponentChanged (ObjectComponentTypes iComponent)
 //	Component has changed
 
 	{
-	switch (iComponent)
-		{
-		case comDeviceCounter:
-			m_pTrans->UpdateDeviceCounterDisplay();
-			break;
-		}
 	}
 
 void CPlayerShipController::OnDamaged (const CDamageSource &Cause, CInstalledArmor *pArmor, const DamageDesc &Damage, int iDamage)

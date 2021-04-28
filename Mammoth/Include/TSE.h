@@ -1112,6 +1112,7 @@ class CSpaceObject
 
 		//	Ships
 
+		virtual void GetHUDTimers (TArray<SHUDTimerDesc> &retTimers) const { }
 		virtual const CShipPerformanceDesc &GetShipPerformance (void) const { return CShipPerformanceDesc::Null(); }
 
 		//	Stargates (object is a stargate)

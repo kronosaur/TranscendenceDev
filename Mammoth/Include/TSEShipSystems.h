@@ -49,6 +49,22 @@ class CProgramDesc
 		static int CalcLevel (int iLevel, int iAdj);
 	};
 
+enum class EHUDTimerStyle
+	{
+	Default,							//	Normal bar
+
+	Danger,								//	Red color
+	Warning,							//	Yellow color
+	};
+
+struct SHUDTimerDesc
+	{
+	const CObjectImageArray *pIcon = NULL;
+	CString sLabel;
+	int iBar = 0;									//	0-100
+	EHUDTimerStyle iStyle = EHUDTimerStyle::Default;
+	};
+
 //	Armor ----------------------------------------------------------------------
 
 class CArmorSystem
@@ -154,6 +170,7 @@ class CDeviceSystem
 		CDeviceSystem (DWORD dwFlags = 0);
 
 		void AccumulateEnhancementsToArmor (CSpaceObject *pObj, CInstalledArmor *pArmor, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
+		void AccumulateHUDTimers (const CSpaceObject &Source, TArray<SHUDTimerDesc> &retTimers) const;
 		void AccumulatePerformance (SShipPerformanceCtx &Ctx) const;
 		void AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, int &iPowerUsed, int &iPowerGenerated);
 		int CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon, int *retiLauncherSlots) const;

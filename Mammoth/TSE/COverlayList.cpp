@@ -95,6 +95,15 @@ void COverlayList::AccumulateBounds (CSpaceObject *pSource, int iScale, int iRot
 		}
 	}
 
+void COverlayList::AccumulateHUDTimers (const CSpaceObject &Source, TArray<SHUDTimerDesc> &retTimers) const
+
+//	AccumulateHUDTimers
+//
+//	Adds HUD timers to the list.
+
+	{
+	}
+
 bool COverlayList::AccumulateEnhancements (CSpaceObject &Source, CDeviceItem &Device, TArray<CString> &EnhancementIDs, CItemEnhancementStack &Enhancements)
 
 //	AccumulateEnhancements

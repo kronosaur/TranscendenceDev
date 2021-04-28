@@ -1057,7 +1057,7 @@ ESetPropertyResult CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &
 	else if (strEquals(sName, PROPERTY_CAPACITOR))
 		{
 		CSpaceObject *pSource = Ctx.GetSource();
-		if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntCapacitor, pValue->GetIntegerValue()))
+		if (!m_pClass->SetCounter(this, pSource, EDeviceCounterType::Capacitor, pValue->GetIntegerValue()))
 			{
 			if (retsError) *retsError = CONSTLIT("Unable to set capacitor value.");
 			return ESetPropertyResult::error;
@@ -1213,7 +1213,7 @@ ESetPropertyResult CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &
 	else if (strEquals(sName, PROPERTY_TEMPERATURE))
 		{
 		CSpaceObject *pSource = Ctx.GetSource();
-		if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntTemperature, pValue->GetIntegerValue()))
+		if (!m_pClass->SetCounter(this, pSource, EDeviceCounterType::Temperature, pValue->GetIntegerValue()))
 			{
 			if (retsError) *retsError = CONSTLIT("Unable to set temperature value.");
 			return ESetPropertyResult::error;

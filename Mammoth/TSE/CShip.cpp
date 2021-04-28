@@ -2763,6 +2763,25 @@ CSpaceObject *CShip::GetEscortPrincipal (void) const
 	return m_pController->GetEscortPrincipal();
 	}
 
+void CShip::GetHUDTimers (TArray<SHUDTimerDesc> &retTimers) const
+
+//	GetHUDTimers
+//
+//	Returns timers to display on HUD.
+
+	{
+	if (!GetSystem())
+		return;
+
+	//	Start with overlay timers
+
+	m_Overlays.AccumulateHUDTimers(*this, retTimers);
+
+	//	Add device timers
+
+	m_Devices.AccumulateHUDTimers(*this, retTimers);
+	}
+
 CCurrencyAndValue CShip::GetHullValue (void) const
 
 //	GetHullValue

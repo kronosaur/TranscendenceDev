@@ -42,6 +42,57 @@ void CDeviceSystem::AccumulateEnhancementsToArmor (CSpaceObject *pObj, CInstalle
 			}
 	}
 
+void CDeviceSystem::AccumulateHUDTimers (const CSpaceObject &Source, TArray<SHUDTimerDesc> &retTimers) const
+
+//	AccumulateHUDTimers
+//
+//	Adds HUD timers to the list.
+
+	{
+	for (CDeviceItem DeviceItem : *this)
+		{
+		if (!DeviceItem.IsEnabled())
+			continue;
+
+		EDeviceCounterType iType = EDeviceCounterType::None;
+		int iLevel = DeviceItem.GetCounterLevel(&iType);
+
+		if (iLevel == 0)
+			continue;
+
+		SHUDTimerDesc *pNewTimer = retTimers.Insert();
+		pNewTimer->pIcon = &DeviceItem.GetImage();
+		pNewTimer->iBar = iLevel;
+
+		switch (iType)
+			{
+			case EDeviceCounterType::Temperature:
+				{
+				pNewTimer->sLabel = strPatternSubst(CONSTLIT("%s Temperature"), DeviceItem.GetNounPhrase(nounShort | nounNoModifiers | nounTitleCapitalize));
+				if (iLevel > 80)
+					pNewTimer->iStyle = EHUDTimerStyle::Danger;
+				else
+					pNewTimer->iStyle = EHUDTimerStyle::Warning;
+				break;
+				}
+
+			case EDeviceCounterType::Capacitor:
+				{
+				pNewTimer->sLabel = strPatternSubst(CONSTLIT("%s Charge"), DeviceItem.GetNounPhrase(nounShort | nounNoModifiers | nounTitleCapitalize));
+				if (iLevel < 20)
+					pNewTimer->iStyle = EHUDTimerStyle::Warning;
+				else
+					pNewTimer->iStyle = EHUDTimerStyle::Default;
+				break;
+				}
+
+			default:
+				pNewTimer->iStyle = EHUDTimerStyle::Default;
+				break;
+			}
+		}
+	}
+
 void CDeviceSystem::AccumulatePerformance (SShipPerformanceCtx &Ctx) const
 
 //	AccumulatePerformance

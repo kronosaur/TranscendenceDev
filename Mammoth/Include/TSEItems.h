@@ -148,6 +148,14 @@ class CArmorItem : public CDifferentiatedItem
 	friend class CItem;
 	};
 
+enum class EDeviceCounterType
+	{
+	None,							//	No counter
+	Temperature,					//	Current device temperature (0-100)
+	Recharge,						//	Current recharge level (0-100)
+	Capacitor,						//	Current capacitor level (0-100)
+	};
+
 class CDeviceItem : public CDifferentiatedItem
 	{
 	public:
@@ -166,6 +174,7 @@ class CDeviceItem : public CDifferentiatedItem
 		void AccumulateAttributes (const CItem &Ammo, TArray<SDisplayAttribute> *retList) const;
 		ECalcTargetTypes CalcTargetType (void) const;
 		TArray<const CItemType *> GetConsumableTypes () const;
+		int GetCounterLevel (EDeviceCounterType *retiCounter = NULL, int *retiLevel = NULL) const;
 		int GetCyberDefenseLevel () const;
 		inline const CDeviceClass &GetDeviceClass (void) const;
 		inline CDeviceClass &GetDeviceClass (void);

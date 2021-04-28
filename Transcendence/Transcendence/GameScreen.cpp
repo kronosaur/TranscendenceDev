@@ -216,13 +216,6 @@ ALERROR CTranscendenceWnd::InitDisplays (void)
 	m_MenuDisplay.SetFontTable(&m_Fonts);
 	m_MenuDisplay.Init(&m_MenuData, rcRect);
 
-	rcRect.left = m_rcScreen.left + (RectWidth(m_rcScreen) - DEVICE_DISPLAY_WIDTH) / 2;
-	rcRect.right = rcRect.left + DEVICE_DISPLAY_WIDTH;
-	rcRect.top = m_rcScreen.bottom - DEVICE_DISPLAY_HEIGHT;
-	rcRect.bottom = m_rcScreen.bottom;
-	m_DeviceDisplay.SetFontTable(&m_Fonts);
-	m_DeviceDisplay.Init(GetPlayer(), rcRect);
-
 	return NOERROR;
 	}
 

@@ -534,10 +534,10 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_CAPACITOR))
 		{
 		CSpaceObject* pSource = Ctx.GetSource();
-		CounterTypes iType;
+		EDeviceCounterType iType;
 		int iLevel;
 		GetCounter(pDevice, pSource, &iType, &iLevel);
-		if (iType != cntCapacitor || pDevice == NULL || pSource == NULL)
+		if (iType != EDeviceCounterType::Capacitor || pDevice == NULL || pSource == NULL)
 			return CC.CreateNil();
 
 		return CC.CreateInteger(iLevel);
@@ -617,10 +617,10 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_TEMPERATURE))
 		{
 		CSpaceObject *pSource = Ctx.GetSource();
-		CounterTypes iType;
+		EDeviceCounterType iType;
 		int iLevel;
 		GetCounter(pDevice, pSource, &iType, &iLevel);
-		if (iType != cntTemperature || pDevice == NULL || pSource == NULL)
+		if (iType != EDeviceCounterType::Temperature || pDevice == NULL || pSource == NULL)
 			return CC.CreateNil();
 
 		return CC.CreateInteger(iLevel);

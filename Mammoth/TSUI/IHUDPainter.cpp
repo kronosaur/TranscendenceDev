@@ -109,6 +109,10 @@ IHUDPainter *IHUDPainter::Create (EHUDTypes iType, CUniverse &Universe, const CV
 			break;
 			}
 
+		case hudTimers:
+			pPainter = new CTimersHUD;
+			break;
+
 		default:
 			ASSERT(false);
 			return NULL;
@@ -201,6 +205,9 @@ DWORD IHUDPainter::GetDefaultLocation (EHUDTypes iType)
 
 		case hudTargeting:
 			return locAlignBottom | locAlignLeft;
+
+		case hudTimers:
+			return locAlignBottom | locAlignCenter;
 
 		default:
 			ASSERT(false);

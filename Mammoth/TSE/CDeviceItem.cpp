@@ -102,6 +102,21 @@ TArray<const CItemType *> CDeviceItem::GetConsumableTypes () const
 	return Result;
 	}
 
+int CDeviceItem::GetCounterLevel (EDeviceCounterType *retiCounter, int *retiLevel) const
+
+//	GetCounterLevel
+//
+//	Returns the counter level and type for the device.
+
+	{
+	if (const CInstalledDevice *pInstalled = m_Item.GetInstalledDevice())
+		{
+		return pInstalled->GetCounter(*GetSource(), retiCounter, retiLevel);
+		}
+	else
+		return 0;
+	}
+
 int CDeviceItem::GetCyberDefenseLevel () const
 
 //	GetCyberDefenseLevel

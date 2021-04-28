@@ -550,7 +550,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		void PlayerEnteredGate (CSystem *pSystem, 
 								CTopologyNode *pDestNode,
 								const CString &sDestEntryPoint);
-		void UpdateDeviceCounterDisplay (void) { m_DeviceDisplay.Invalidate(); }
 
 		//	CUniverse::IHost
 		virtual void ConsoleOutput (const CString &sLine) override;
@@ -730,7 +729,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 
 		CG32bitImage *m_pSRSSnow;			//	SRS snow image
 
-		CDeviceCounterDisplay m_DeviceDisplay;	//	Device counter display
 		CMenuDisplayOld m_MenuDisplay;			//	Menu display
 
 		CGameStats m_LastStats;				//	Last game stats

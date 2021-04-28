@@ -55,9 +55,6 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 					{
                     m_HUD.Update(g_pUniverse->GetFrameTicks());
                     m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
-
-					SetProgramState(psPaintingDeviceDisplay);
-					g_pTrans->m_DeviceDisplay.Paint(Screen);
 					}
 
 				if (!m_bShowingSystemMap && g_pTrans->m_State != CTranscendenceWnd::gsDestroyed)
@@ -288,7 +285,6 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
                 m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
 
 				m_MessageDisplay.Paint(Screen);
-				g_pTrans->m_DeviceDisplay.Paint(Screen);
 
 				//	Debug information
 
@@ -351,7 +347,6 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
                 m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
 
 				m_MessageDisplay.Paint(Screen);
-				g_pTrans->m_DeviceDisplay.Paint(Screen);
 
 				//	Debug information
 

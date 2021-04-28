@@ -253,6 +253,40 @@ class CShieldHUDDefault : public IHUDPainter
 		TArray<STextPaint> m_Text;
 	};
 
+class CTimersHUD : public IHUDPainter
+	{
+	public:
+		virtual void GetBounds (int *retWidth, int *retHeight) const override;
+		virtual void Invalidate (void) override { m_bInvalid = true; }
+
+	protected:
+		virtual bool OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError = NULL) override { return true; }
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
+		virtual void OnUpdate (SHUDUpdateCtx &Ctx) override;
+
+	private:
+		static constexpr int ICON_HEIGHT = 32;
+		static constexpr int ICON_WIDTH = 32;
+		static constexpr int SPACING_X = 8;
+		static constexpr int SPACING_Y = 8;
+
+		static constexpr int TIMER_HEIGHT = ICON_HEIGHT;
+		static constexpr int TIMER_WIDTH = 300;
+
+		static constexpr int MAX_TIMERS = 8;
+
+		static constexpr int DISPLAY_HEIGHT = (TIMER_HEIGHT + SPACING_Y) * MAX_TIMERS;
+		static constexpr int DISPLAY_WIDTH = TIMER_WIDTH;
+
+		static void PaintTimer (SHUDPaintCtx &Ctx, CG32bitImage &Dest, SHUDTimerDesc &Timer, int x, int y);
+		void Realize (SHUDPaintCtx &Ctx);
+
+		bool m_bInvalid = true;				//	Need to refresh from player ship
+		CG32bitImage m_Buffer;
+
+		int m_iTimerCount = 0;				//	Number of timers realized
+	};
+
 class CWeaponHUDDefault : public IHUDPainter
 	{
 	public:

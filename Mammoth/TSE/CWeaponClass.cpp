@@ -843,7 +843,7 @@ Metric CWeaponClass::CalcDamage (const CWeaponFireDesc &ShotDesc, const CItemEnh
 
 	switch (m_Counter)
 		{
-		case cntCapacitor:
+		case EDeviceCounterType::Capacitor:
 			{
 			//	Compute the number of ticks until we discharge the capacitor
 
@@ -863,7 +863,7 @@ Metric CWeaponClass::CalcDamage (const CWeaponFireDesc &ShotDesc, const CItemEnh
 			break;
 			}
 
-		case cntTemperature:
+		case EDeviceCounterType::Temperature:
 			{
 			//  Compute the number of ticks until we reach max temp
 
@@ -1593,7 +1593,7 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 
 	//	Update capacitor counters
 
-	if (m_Counter == cntCapacitor)
+	if (m_Counter == EDeviceCounterType::Capacitor)
 		{
 		if (!ConsumeCapacitor(ItemCtx, ShotDesc))
 			return resFailure;
@@ -1601,7 +1601,7 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 
 	//	Update temperature counters
 
-	else if (m_Counter == cntTemperature)
+	else if (m_Counter == EDeviceCounterType::Temperature)
 		{
 		bool bSourceDestroyed;
 		if (!UpdateTemperature(ItemCtx, ShotDesc, &iFailureMode, &bSourceDestroyed))
@@ -1937,9 +1937,9 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	if (!sConfig.IsBlank())
 		{
 		if (strEquals(sConfig, COUNTER_TYPE_TEMPERATURE))
-			pWeapon->m_Counter = cntTemperature;
+			pWeapon->m_Counter = EDeviceCounterType::Temperature;
 		else if (strEquals(sConfig, COUNTER_TYPE_CAPACITOR))
-			pWeapon->m_Counter = cntCapacitor;
+			pWeapon->m_Counter = EDeviceCounterType::Capacitor;
 		else
 			{
 			Ctx.sError = CONSTLIT("Invalid weapon counter type");
@@ -1956,7 +1956,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 		{
 		//	Backward compatibility
 
-		pWeapon->m_Counter = cntTemperature;
+		pWeapon->m_Counter = EDeviceCounterType::Temperature;
 		pWeapon->m_iCounterUpdate = TEMP_DECREASE;
 		pWeapon->m_iCounterUpdateRate = pDesc->GetAttributeInteger(COOLING_RATE_ATTRIB);
 		if (pWeapon->m_iCounterUpdateRate <= 0)
@@ -1964,7 +1964,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 		}
 	else
 		{
-		pWeapon->m_Counter = cntNone;
+		pWeapon->m_Counter = EDeviceCounterType::None;
 		pWeapon->m_iCounterActivate = 0;
 		pWeapon->m_iCounterUpdate = 0;
 		pWeapon->m_iCounterUpdateRate = 0;
@@ -1990,7 +1990,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 			return error;
 		}
 
-	if (pWeapon->m_Counter == cntTemperature)
+	if (pWeapon->m_Counter == EDeviceCounterType::Temperature)
 		{
 		if (error = pWeapon->m_OverheatFailure.InitFromXML(Ctx, pDesc->GetContentElementByTag(OVERHEAT_FAILURE_TAG), CFailureDesc::profileWeaponOverheat))
 			return error;
@@ -3141,7 +3141,7 @@ ItemCategories CWeaponClass::GetImplCategory (void) const
 		return itemcatWeapon;
 	}
 
-int CWeaponClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType, int *retiLevel)
+int CWeaponClass::GetCounter (const CInstalledDevice *pDevice, const CSpaceObject *pSource, EDeviceCounterType *retiType, int *retiLevel) const
 
 //	GetCounter
 //
@@ -3153,7 +3153,7 @@ int CWeaponClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 	if (retiType)
 		*retiType = m_Counter;
 
-	if (m_Counter == cntNone || pDevice == NULL || pSource == NULL)
+	if (m_Counter == EDeviceCounterType::None || pDevice == NULL || pSource == NULL)
 		{
 		if (retiLevel)
 			*retiLevel = 0;
@@ -3163,7 +3163,7 @@ int CWeaponClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 
 	//	If we're a capacitor, then don't show the counter if we are full
 
-	if (m_Counter == cntCapacitor && pDevice->GetTemperature() >= MAX_COUNTER)
+	if (m_Counter == EDeviceCounterType::Capacitor && pDevice->GetTemperature() >= MAX_COUNTER)
 		{
 		if (retiLevel)
 			*retiLevel = MAX_COUNTER;
@@ -3973,7 +3973,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 			{
 			//	If we're overheating, we will not be effective
 
-			case cntTemperature:
+			case EDeviceCounterType::Temperature:
 				if (pDevice->IsWaiting() && pDevice->GetTemperature() > 0)
 					return -100;
 
@@ -3988,7 +3988,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 
 			//	If our capacitor is discharged, we will not be effective
 
-			case cntCapacitor:
+			case EDeviceCounterType::Capacitor:
 				if (pDevice->IsWaiting() && pDevice->GetTemperature() < MAX_COUNTER)
 					return -100;
 
@@ -5259,7 +5259,7 @@ void CWeaponClass::SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinu
 	pDevice->SetData((pDevice->GetData() & 0xFFFFFF00) | (dwContinuous & 0xFF));
 	}
 
-bool CWeaponClass::SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes iCounter, int iLevel)
+bool CWeaponClass::SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, EDeviceCounterType iCounter, int iLevel)
 
 //  SetCounter
 //

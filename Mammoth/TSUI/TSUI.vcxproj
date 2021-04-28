@@ -210,6 +210,7 @@
     <ClCompile Include="CAutomataEffectPainter.cpp" />
     <ClCompile Include="CStargateEffectPainter.cpp" />
     <ClCompile Include="CTimerRegistry.cpp" />
+    <ClCompile Include="CTimersHUD.cpp" />
     <ClCompile Include="CUserSettings.cpp" />
     <ClCompile Include="CVisualPalette.cpp" />
     <ClCompile Include="CWeaponHUDCircular.cpp" />

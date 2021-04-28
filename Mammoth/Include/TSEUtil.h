@@ -92,7 +92,6 @@ enum ProgramStates
 	psPaintingMessageDisplay,			//	In CMessageDisplay::Paint
 	psPaintingReactorDisplay,			//	In CReactorDisplay::Paint
 	psPaintingTargetDisplay,			//	In CTargetDisplay::Paint
-	psPaintingDeviceDisplay,			//	In CDeviceCounterDisplay::Paint
 	psStargateEnter,					//	In CTranscendenceWnd::EnterStargate
 	psStargateEndGame,					//	In EnterStargate, end game
 	psStargateLoadingSystem,			//	In EnterStargate, loading system
