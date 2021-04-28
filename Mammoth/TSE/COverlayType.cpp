@@ -10,6 +10,7 @@
 #define EFFECT_TAG								CONSTLIT("Effect")
 #define ENHANCE_ABILITIES_TAG					CONSTLIT("EnhancementAbilities")
 #define HIT_EFFECT_TAG							CONSTLIT("HitEffect")
+#define IMAGE_TAG								CONSTLIT("Image")
 #define SHIP_ENERGY_FIELD_TYPE_TAG				CONSTLIT("ShipEnergyFieldType")
 #define UNDERGROUND_TAG							CONSTLIT("Underground")
 
@@ -19,9 +20,11 @@
 #define DISARM_ATTRIB							CONSTLIT("disarm")
 #define DRAG_ATTRIB								CONSTLIT("drag")
 #define IGNORE_SHIP_ROTATION_ATTRIB				CONSTLIT("ignoreSourceRotation")
+#define NAME_ATTRIB								CONSTLIT("name")
 #define PARALYZE_ATTRIB							CONSTLIT("paralyze")
 #define ROTATE_WITH_SOURCE_ATTRIB				CONSTLIT("rotateWithSource")
 #define SHIELD_OVERLAY_ATTRIB					CONSTLIT("shieldOverlay")
+#define SHOW_IN_HUD_ATTRIB						CONSTLIT("showInHUD")
 #define SPIN_ATTRIB								CONSTLIT("spin")
 #define TIME_STOP_ATTRIB						CONSTLIT("timeStop")
 #define UNID_ATTRIB								CONSTLIT("UNID")
@@ -190,6 +193,11 @@ ALERROR COverlayType::OnBindDesign (SDesignLoadCtx &Ctx)
 		if (error = m_pHitEffect->BindDesign(Ctx))
 			return error;
 
+	//	Images
+
+	if (ALERROR error = m_Image.OnDesignLoadComplete(Ctx))
+		return error;
+
 	return NOERROR;
 	}
 
@@ -201,6 +209,17 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	{
 	ALERROR error;
+
+	//	Basics
+
+	m_sNamePattern = pDesc->GetAttribute(NAME_ATTRIB);
+	m_fShowInHUD = pDesc->GetAttributeBool(SHOW_IN_HUD_ATTRIB);
+
+	if (const CXMLElement *pImage = pDesc->GetContentElementByTag(IMAGE_TAG))
+		{
+		if (ALERROR error = m_Image.InitFromXML(Ctx, *pImage))
+			return ComposeLoadError(Ctx, CONSTLIT("Unable to load image"));
+		}
 
 	//	Effect
 
@@ -336,6 +355,16 @@ CEffectCreator *COverlayType::OnFindEffectCreator (const CString &sUNID)
 		default:
 			return NULL;
 		}
+	}
+
+void COverlayType::OnMarkImages (void)
+
+//	OnMarkImages
+//
+//	Make sure images are loaded.
+
+	{
+	m_Image.MarkImage();
 	}
 
 bool COverlayType::RotatesWithSource (const CSpaceObject &Source) const

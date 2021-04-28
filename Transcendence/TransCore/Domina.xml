@@ -728,11 +728,16 @@
 	</ItemType>
 
 	<OverlayType UNID="&sfSustain;"
+			name=			"Sustain"
 			attributes=     "dominaPower, energyField, temporary"
 
 			absorbAdj=		"100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100"
 			weaponSuppress=	"*"
+
+			showInHUD=		"true"
 			>
+		<Image imageID="&rsDominaPowers;"	imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+
 		<Effect>
 			<Image imageID="&rsDominaEffects1;" 
 					imageX="0" 
@@ -758,10 +763,15 @@
 	</OverlayType>
 
 	<OverlayType UNID="&sfStrengthen;"
+			name=			"Strengthen"
 			attributes=     "dominaPower, effect, temporary"
 				 
 			weaponBonusAdj=	"100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100"
+
+			showInHUD=		"true"
 			>
+		<Image imageID="&rsDominaPowers;"	imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
+
 		<Effect>
 			<Starburst
 					spikeCount=		"20"
@@ -773,10 +783,15 @@
 	</OverlayType>
 
 	<OverlayType UNID="&sfDefend;"
+			name=			"Defend"
 			attributes=     "dominaPower, energyField, temporary"
 				 
 			absorbAdj=		"100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100"
+
+			showInHUD=		"true"
 			>
+		<Image imageID="&rsDominaPowers;"	imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
+
 		<Effect>
 			<Image imageID="&rsDominaEffects1;" 
 					imageX="0" 

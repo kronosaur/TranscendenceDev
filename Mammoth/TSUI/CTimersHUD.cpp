@@ -60,7 +60,7 @@ void CTimersHUD::PaintTimer (SHUDPaintCtx &Ctx, CG32bitImage &Dest, SHUDTimerDes
 
 	int xPos = x;
 	int yPos = y;
-	if (Timer.pIcon)
+	if (Timer.pIcon && !Timer.pIcon->IsEmpty())
 		{
 		Timer.pIcon->PaintScaledImage(Dest, xPos, yPos, 0, 0, ICON_WIDTH, ICON_HEIGHT, CObjectImageArray::FLAG_UPPER_LEFT);
 		xPos += ICON_WIDTH + SPACING_X;

@@ -232,6 +232,29 @@ bool COverlay::AccumulateEnhancements (CSpaceObject &Source, CDeviceItem &Device
 		}
 	}
 
+void COverlay::AccumulateHUDTimers (const CSpaceObject &Source, TArray<SHUDTimerDesc> &retTimers) const
+
+//	AccumulateHUDTimers
+//
+//	Show timer for when the overlay expires on the UI.
+
+	{
+	if (!m_pType->ShowsInHUD())
+		return;
+
+	if (m_iLifeLeft < 0)
+		return;
+
+	int iLifetime = m_iTick + m_iLifeLeft;
+	if (iLifetime <= 0)
+		return;
+
+	auto *pEntry = retTimers.Insert();
+	pEntry->pIcon = &m_pType->GetTypeSimpleImage();
+	pEntry->sLabel = m_pType->GetNounPhrase(nounShort | nounTitleCapitalize | nounNoModifiers);
+	pEntry->iBar = 100 * m_iLifeLeft / iLifetime;
+	}
+
 void COverlay::CalcOffset (const CSpaceObject &Source, int iScale, int iRotation, int *retxOffset, int *retyOffset, int *retiRotationOrigin) const
 
 //	CalcOffset

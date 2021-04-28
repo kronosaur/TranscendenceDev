@@ -102,6 +102,14 @@ void COverlayList::AccumulateHUDTimers (const CSpaceObject &Source, TArray<SHUDT
 //	Adds HUD timers to the list.
 
 	{
+	const COverlay *pField = m_pFirst;
+	while (pField)
+		{
+		if (!pField->IsDestroyed())
+			pField->AccumulateHUDTimers(Source, retTimers);
+
+		pField = pField->GetNext();
+		}
 	}
 
 bool COverlayList::AccumulateEnhancements (CSpaceObject &Source, CDeviceItem &Device, TArray<CString> &EnhancementIDs, CItemEnhancementStack &Enhancements)

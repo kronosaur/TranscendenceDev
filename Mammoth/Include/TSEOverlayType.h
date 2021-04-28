@@ -85,13 +85,16 @@ class COverlayType : public CDesignType
 		bool IsUnderground (void) const { return !m_Underground.IsEmpty(); }
 		bool Paralyzes (void) const { return m_fParalyzeShip; }
 		bool RotatesWithSource (const CSpaceObject &Source) const;
+		bool ShowsInHUD () const { return m_fShowInHUD; }
 		bool Spins (void) const { return m_fSpinShip; }
 		bool StopsTime (void) const { return m_fTimeStop; }
 
 		//	CDesignType overrides
 		static COverlayType *AsType(CDesignType *pType) { return ((pType && pType->GetType() == designOverlayType) ? (COverlayType *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
+		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_sNamePattern; }
 		virtual DesignTypes GetType (void) const override { return designOverlayType; }
+		virtual const CObjectImageArray &GetTypeSimpleImage (void) const override { return m_Image; }
 
 	protected:
 		//	CDesignType overrides
@@ -99,8 +102,12 @@ class COverlayType : public CDesignType
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
+		virtual void OnMarkImages (void) override;
 
 	private:
+		CString m_sNamePattern;					//	Name of overlay (optional)
+		CObjectImageArray m_Image;				//	Image to show on HUD (optional)
+
 		CEnhancementDesc m_Enhancements;		//	Enhancements conferred
 		CDamageAdjDesc m_AbsorbAdj;				//	Damage absorbed by the field
 		DamageTypeSet m_WeaponSuppress;			//	Types of weapons suppressed
@@ -113,17 +120,17 @@ class COverlayType : public CDesignType
 		COverlayCounterDesc m_Counter;			//	Counter descriptor
 		COverlayUndergroundDesc m_Underground;	//	Underground (mining) descriptor
 
-		DWORD m_fAltHitEffect:1;				//	If TRUE, hit effect replaces normal effect
-		DWORD m_fRotateWithShip:1;				//	If TRUE, we rotate along with source rotation
-		DWORD m_fShieldOverlay:1;				//	If TRUE, we are above hull/armor
-		DWORD m_fParalyzeShip:1;				//	If TRUE, ship is paralyzed
-		DWORD m_fDisarmShip:1;					//	If TRUE, ship is disarmed
-		DWORD m_fDisableShipScreen:1;			//	If TRUE, player cannot bring up ship screen
-		DWORD m_fSpinShip:1;					//	If TRUE, ship spins uncontrollably
-		DWORD m_fTimeStop:1;					//	If TRUE, ship is time-stopped
+		DWORD m_fAltHitEffect:1 = false;		//	If TRUE, hit effect replaces normal effect
+		DWORD m_fRotateWithShip:1 = false;		//	If TRUE, we rotate along with source rotation
+		DWORD m_fShieldOverlay:1 = false;		//	If TRUE, we are above hull/armor
+		DWORD m_fParalyzeShip:1 = false;		//	If TRUE, ship is paralyzed
+		DWORD m_fDisarmShip:1 = false;			//	If TRUE, ship is disarmed
+		DWORD m_fDisableShipScreen:1 = false;	//	If TRUE, player cannot bring up ship screen
+		DWORD m_fSpinShip:1 = false;			//	If TRUE, ship spins uncontrollably
+		DWORD m_fTimeStop:1 = false;			//	If TRUE, ship is time-stopped
 
-		DWORD m_fRotateWithSource:1;			//	If TRUE, we rotate along with source
-		DWORD m_fSpare2:1;
+		DWORD m_fRotateWithSource:1 = false;	//	If TRUE, we rotate along with source
+		DWORD m_fShowInHUD:1 = false;			//	If TRUE, show time remaining on HUD
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
