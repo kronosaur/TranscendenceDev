@@ -481,6 +481,7 @@ struct SDeviceDesc
 	CEnhancementDesc Enhancements;				//	Slot enhancements to installed device
 	int iSlotBonus = 0;
 	double rShotSeparationScale = 1.;			//	Governs scaling of shot separation for dual etc weapons
+
 	};
 
 class CDeviceDescList
@@ -552,7 +553,7 @@ class IDeviceGenerator
 		virtual bool ItemFitsSlot (CSpaceObject* pObj, const CItem& Item, const int iSlotIndex) const { return false; };
 		virtual int GetNumberOfDescs () const { return 1; }
 		virtual const int GetDescIndexGivenId (const CString& sID) const { return -1; }
-		virtual ICCItem* GetDeviceSlotProperty (const int iSlotIndex, CCodeChain* pCC, const CString& Property) const { return pCC->CreateNil(); };
+		virtual ICCItem* GetDeviceSlotProperty (const int iSlotIndex, CCodeChain* pCC, const CString& Property, const ICCItem* pArgs) const { return pCC->CreateNil(); };
 		virtual TArray<CString> GetDeviceSlotIds() const { return TArray<CString>(); }
 
 		static ALERROR InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, SDeviceDesc *retDesc);

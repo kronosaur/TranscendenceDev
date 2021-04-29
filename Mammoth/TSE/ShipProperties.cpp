@@ -288,7 +288,7 @@ ICCItem* CShip::GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const
 					return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
 				}
 
-			return pDevSlots->GetDeviceSlotProperty(iDeviceSlot, pCC, sProperty);
+			return pDevSlots->GetDeviceSlotProperty(iDeviceSlot, pCC, sProperty, pArgs);
 			}
 		else
 			return pCC->CreateError(CONSTLIT("Insufficient arguments"));

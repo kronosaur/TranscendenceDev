@@ -1227,6 +1227,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"    'attributes\n"
 			"    'criteria\n"
 			"    'fireArc\n"
+			"    'hasAttribute\n"
 			"    'maxMass\n"
 			"    'maxPower\n"
 			"    'maxPowerPercent\n"
@@ -1235,8 +1236,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"    'posAngle\n"
 			"    'posCartesian\n"
 			"    'posRadius\n"
-			"    'secondaryWeapon\n"
-			"    'targetCriteria\n",
+			"    'secondaryWeapon\n",
 
 			"i*s",	0,	},
 
