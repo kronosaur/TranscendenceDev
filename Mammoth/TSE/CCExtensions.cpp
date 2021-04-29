@@ -300,7 +300,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 #define FN_SHIP_BLINDNESS			14
 #define FN_SHIP_ENHANCE_ITEM		15
 #define FN_SHIP_CAN_INSTALL_DEVICE	16
-//	spare
+#define FN_SHIP_DEV_SLOT_IDS		17
 #define FN_SHIP_IS_RADIOACTIVE		18
 #define FN_SHIP_CANCEL_ORDERS		19
 #define FN_SHIP_ADD_ENERGY_FIELD	20
@@ -1210,8 +1210,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(shpGetClassName class flags) -> class name",
 			"ii",	0,	},
 
+		{	"shpGetDeviceSlotIds",		fnShipGet,		FN_SHIP_DEV_SLOT_IDS,
+			"(shpGetDeviceSlotProperty ship) -> list of IDs",
+
+			"i",	0, },
+
 		{	"shpGetDeviceSlotProperty",		fnShipGet,		FN_SHIP_DEV_SLOT_PROPERTY,
-			"(shpGetDeviceSlotProperty ship property [deviceSlot]) -> angle\n\n"
+			"(shpGetDeviceSlotProperty ship [deviceSlot] property) -> angle\n\n"
 
 			"deviceSlot can be an int or struct with these parameters:\n\n"
 			"    deviceSlot: device slot number\n"
@@ -1219,22 +1224,21 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"    slotPosIndex: device slot pos index\n"
 
 			"property:\n\n"
-			"    'deviceSlotAttributes\n"
-			"    'deviceSlotCount\n"
-			"    'deviceSlotCriteria\n"
-			"    'deviceSlotFireArc\n"
-			"    'deviceSlotIDs\n"
-			"    'deviceSlotMaxMass\n"
-			"    'deviceSlotMaxPower\n"
-			"    'deviceSlotMaxPowerPercent\n"
-			"    'deviceSlotOmnidirectional\n"
-			"    'deviceSlotPos\n"
-			"    'deviceSlotPosAngle\n"
-			"    'deviceSlotPosRadius\n"
-			"    'deviceSlotSecondaryWeapon\n"
-			"    'deviceSlotTargetCriteria\n",
+			"    'attributes\n"
+			"    'criteria\n"
+			"    'fireArc\n"
+			"    'maxMass\n"
+			"    'maxPower\n"
+			"    'maxPowerPercent\n"
+			"    'omnidirectional\n"
+			"    'pos\n"
+			"    'posAngle\n"
+			"    'posCartesian\n"
+			"    'posRadius\n"
+			"    'secondaryWeapon\n"
+			"    'targetCriteria\n",
 
-			"is*",	0,	},
+			"i*s",	0,	},
 
 		{	"shpGetDirection",				fnShipGetOld,		FN_SHIP_DIRECTION,
 			"(shpGetDirection ship) -> angle",
@@ -10624,11 +10628,18 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 			}
 
+		case FN_SHIP_DEV_SLOT_IDS:
+			{
+			TArray<CString> ids = pShip->GetClass()->GetDeviceSlots()->GetDeviceSlotIds();
+			ICCItem* pIDs = pCC->CreateLinkedList();
+			for (int i = 0; i < ids.GetCount(); i++)
+				pIDs->AppendString(ids[i]);
+			return pIDs;
+			}
+
 		case FN_SHIP_DEV_SLOT_PROPERTY:
 			{
-			IDeviceGenerator* pDevSlots = pShip->GetClass()->GetDeviceSlots();
-			CString sProperty = pArgs->GetElement(1)->GetStringValue();
-			return pShip->GetDeviceSlotProperty(pCC, *pCtx, sProperty, pArgs);
+			return pShip->GetDeviceSlotProperty(pCC, *pCtx, pArgs);
 			}
 
 		case FN_SHIP_DOCK_OBJ:

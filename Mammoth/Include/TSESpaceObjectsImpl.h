@@ -1020,7 +1020,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		bool FindDeviceAtPos (const CVector &vPos, CInstalledDevice **retpDevice);
 		int GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice);
 		DeviceNames GetDeviceNameForCategory (ItemCategories iCategory);
-		ICCItem* GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const CString& sName, const ICCItem* pArgs) const;
+		ICCItem* GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const ICCItem* pArgs) const;
 		int GetItemDeviceName (const CItem &Item) const;
 		CItem GetNamedItem (DeviceNames iDev) const;
 		bool HasNamedDevice (DeviceNames iDev) const;

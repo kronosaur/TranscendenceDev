@@ -54,18 +54,19 @@
 #define TABLE_ATTRIB							CONSTLIT("table")
 #define UNID_ATTRIB								CONSTLIT("unid")
 
-#define PROPERTY_DEVICE_SLOT_ATTRIBUTES			CONSTLIT("deviceSlotAttributes")
-#define PROPERTY_DEVICE_SLOT_CRITERIA			CONSTLIT("deviceSlotCriteria")
-#define PROPERTY_DEVICE_SLOT_FIREARC			CONSTLIT("deviceSlotFireArc")
-#define PROPERTY_DEVICE_SLOT_MAX_MASS			CONSTLIT("deviceSlotMaxMass")
-#define PROPERTY_DEVICE_SLOT_MAX_POWER			CONSTLIT("deviceSlotMaxPower")
-#define PROPERTY_DEVICE_SLOT_MAX_POWER_PERCENT	CONSTLIT("deviceSlotMaxPowerPercent")
-#define PROPERTY_DEVICE_SLOT_OMNIDIRECTIONAL	CONSTLIT("deviceSlotOmnidirectional")
-#define PROPERTY_DEVICE_SLOT_POS				CONSTLIT("deviceSlotPos")
-#define PROPERTY_DEVICE_SLOT_POS_ANGLE			CONSTLIT("deviceSlotPosAngle")
-#define PROPERTY_DEVICE_SLOT_POS_RADIUS			CONSTLIT("deviceSlotPosRadius")
-#define PROPERTY_DEVICE_SLOT_SECONDARY_WEAPON	CONSTLIT("deviceSlotSecondaryWeapon")
-#define PROPERTY_DEVICE_SLOT_TARGET_CRITERIA	CONSTLIT("deviceSlotTargetCriteria")
+#define PROPERTY_DEVICE_SLOT_ATTRIBUTES			CONSTLIT("attributes")
+#define PROPERTY_DEVICE_SLOT_CRITERIA			CONSTLIT("criteria")
+#define PROPERTY_DEVICE_SLOT_FIRE_ARC			CONSTLIT("fireArc")
+#define PROPERTY_DEVICE_SLOT_MAX_MASS			CONSTLIT("maxMass")
+#define PROPERTY_DEVICE_SLOT_MAX_POWER			CONSTLIT("maxPower")
+#define PROPERTY_DEVICE_SLOT_MAX_POWER_PERCENT	CONSTLIT("maxPowerPercent")
+#define PROPERTY_DEVICE_SLOT_OMNIDIRECTIONAL	CONSTLIT("omnidirectional")
+#define PROPERTY_DEVICE_SLOT_POS				CONSTLIT("pos")
+#define PROPERTY_DEVICE_SLOT_POS_ANGLE			CONSTLIT("posAngle")
+#define PROPERTY_DEVICE_SLOT_POS_CARTESIAN		CONSTLIT("posCartesian")
+#define PROPERTY_DEVICE_SLOT_POS_RADIUS			CONSTLIT("posRadius")
+#define PROPERTY_DEVICE_SLOT_SECONDARY_WEAPON	CONSTLIT("secondaryWeapon")
+#define PROPERTY_DEVICE_SLOT_TARGET_CRITERIA	CONSTLIT("targetCriteria")
 
 class CNullDevice : public IDeviceGenerator
 	{
@@ -203,7 +204,9 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const override;
 		virtual bool ItemFitsSlot (CSpaceObject* pObj, const CItem& Item, const int iSlotIndex) const override;
 		virtual int GetNumberOfDescs () const override { return m_SlotDesc.GetCount(); }
-		virtual const int GetDescIndexGivenId (const CString& sID) const override { return m_SlotDescIndicesByID.Find(sID) ? *(m_SlotDescIndicesByID.GetAt(sID)) : -1; }
+		virtual const int GetDescIndexGivenId (const CString& sID) const override { return m_SlotDescIndicesByID.Find(sID) ? *m_SlotDescIndicesByID.GetAt(sID) : -1; }
+		virtual ICCItem* GetDeviceSlotProperty (const int iSlotIndex, CCodeChain* pCC, const CString& Property) const override;
+		virtual TArray<CString> GetDeviceSlotIds() const override { TArray<CString> ids; for (int i = 0; i < m_SlotDescIndicesByID.GetCount(); i++) { ids.Insert(m_SlotDescIndicesByID.GetKey(i)); } return ids; }
 
 	private:
 		struct SEntry
@@ -1411,6 +1414,67 @@ const CGroupOfDeviceGenerators::SSlotDesc *CGroupOfDeviceGenerators::FindSlotDes
 			return &m_SlotDesc[i];
 
 	return NULL;
+	}
+
+ICCItem* CGroupOfDeviceGenerators::GetDeviceSlotProperty (const int iSlotIndex, CCodeChain* pCC, const CString& Property) const
+
+//	GetDeviceSlotProperty
+//
+//	Return the value of the property requested
+//	TODO(heliogenesis): Complete unimplemented fields
+	{
+	const SSlotDesc &Slot = m_SlotDesc[iSlotIndex];
+	const SDeviceDesc &DefaultDesc = Slot.DefaultDesc;
+	if (Property == PROPERTY_DEVICE_SLOT_ATTRIBUTES)
+		return pCC->CreateError("Unimplemented function");
+	else if (Property == PROPERTY_DEVICE_SLOT_CRITERIA)
+		return pCC->CreateString(Slot.Criteria.AsString());
+	else if (Property == PROPERTY_DEVICE_SLOT_FIRE_ARC)
+	{
+		if (DefaultDesc.bOmnidirectional)
+			return pCC->CreateString(OMNIDIRECTIONAL_ATTRIB);
+		else if (DefaultDesc.iMaxFireArc != DefaultDesc.iMinFireArc)
+		{
+			ICCItem* pResult = pCC->CreateLinkedList();
+			pResult->Append(pCC->CreateInteger(DefaultDesc.iMinFireArc));
+			pResult->Append(pCC->CreateInteger(DefaultDesc.iMaxFireArc));
+			return pResult;
+		}
+		else
+			return (DefaultDesc.iMinFireArc == 0) ? pCC->CreateNil() : pCC->CreateInteger(DefaultDesc.iMinFireArc);
+	}
+	else if (Property == PROPERTY_DEVICE_SLOT_MAX_MASS)
+		return pCC->CreateInteger(Slot.iMaxMass);
+	else if (Property == PROPERTY_DEVICE_SLOT_MAX_POWER)
+		return pCC->CreateInteger(Slot.iMaxPower);
+	else if (Property == PROPERTY_DEVICE_SLOT_MAX_POWER_PERCENT)
+		return pCC->CreateDouble(Slot.fMaxPowerPercent);
+	else if (Property == PROPERTY_DEVICE_SLOT_OMNIDIRECTIONAL)
+		return pCC->CreateBool(DefaultDesc.bOmnidirectional);
+	else if (Property == PROPERTY_DEVICE_SLOT_POS)
+	{
+		ICCItem* pResult = pCC->CreateLinkedList();
+		pResult->Append(pCC->CreateInteger(DefaultDesc.iPosAngle));
+		pResult->Append(pCC->CreateInteger(DefaultDesc.iPosRadius));
+		return pResult;
+	}
+	else if (Property == PROPERTY_DEVICE_SLOT_POS_ANGLE)
+		return pCC->CreateInteger(DefaultDesc.iPosAngle);
+	else if (Property == PROPERTY_DEVICE_SLOT_POS_CARTESIAN)
+	{
+		ICCItem* pResult = pCC->CreateLinkedList();
+		pResult->Append(pCC->CreateInteger(int(sin((DefaultDesc.iPosAngle + 90) * PI / 2.0) * DefaultDesc.iPosRadius)));
+		pResult->Append(pCC->CreateInteger(int(cos((DefaultDesc.iPosAngle + 90) * PI / 2.0) * DefaultDesc.iPosRadius)));
+		return pResult;
+	}
+	else if (Property == PROPERTY_DEVICE_SLOT_POS_RADIUS)
+		return pCC->CreateInteger(DefaultDesc.iPosRadius);
+	else if (Property == PROPERTY_DEVICE_SLOT_SECONDARY_WEAPON)
+		return pCC->CreateBool(DefaultDesc.bSecondary);
+	else if (Property == PROPERTY_DEVICE_SLOT_TARGET_CRITERIA)
+		return pCC->CreateInteger("Unimplemented function");
+	else
+		return pCC->CreateError("Unknown device slot property", pCC->CreateString(Property));
 	}
 
 bool CGroupOfDeviceGenerators::ItemFitsSlot (CSpaceObject* pObj, const CItem& Item, const int iSlotIndex) const

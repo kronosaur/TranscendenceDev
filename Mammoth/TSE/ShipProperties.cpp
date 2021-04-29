@@ -251,21 +251,20 @@ bool CShip::IsDeviceSlotProperty(const CString& sName) const
 	return true;
 	}
 
-ICCItem* CShip::GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const CString& sName, const ICCItem* pArgs) const
+ICCItem* CShip::GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const ICCItem* pArgs) const
 
 //	GetDeviceSlotProperty
 //
 //	Returns a device slot property
-//	TODO(heliogenesis): Complete this function
 
 	{
-	//	Device slot properties tied to specific device slots
 		int iDeviceSlot = -1;
 		if (pArgs->GetCount() >= 3)
 			{
+			CString sProperty = pArgs->GetElement(2)->GetStringValue();
 			IDeviceGenerator* pDevSlots = this->GetClass().GetDeviceSlots();
 			int numSlots = pDevSlots->GetNumberOfDescs();
-			ICCItem* pOptions = pArgs->GetElement(2);
+			ICCItem* pOptions = pArgs->GetElement(1);
 			if (pOptions->IsInteger())
 				iDeviceSlot = pOptions->GetIntegerValue();
 			else
@@ -288,10 +287,11 @@ ICCItem* CShip::GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const
 				if (iDeviceSlot < 0 || iDeviceSlot >= this->GetDeviceCount())
 					return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
 				}
+
+			return pDevSlots->GetDeviceSlotProperty(iDeviceSlot, pCC, sProperty);
 			}
 		else
 			return pCC->CreateError(CONSTLIT("Insufficient arguments"));
-	return pCC->CreateError(CONSTLIT("Unimplemented function"));
 
 	}
 
