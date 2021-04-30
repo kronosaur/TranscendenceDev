@@ -60,6 +60,7 @@
 
 #define PROPERTY_DEVICE_SLOT_ATTRIBUTES			CONSTLIT("attributes")
 #define PROPERTY_DEVICE_SLOT_CRITERIA			CONSTLIT("criteria")
+#define PROPERTY_DEVICE_SLOT_DESCRIPTION		CONSTLIT("description")
 #define PROPERTY_DEVICE_SLOT_FIRE_ARC			CONSTLIT("fireArc")
 #define PROPERTY_DEVICE_SLOT_HAS_ATTRIBUTE		CONSTLIT("hasAttribute")
 #define PROPERTY_DEVICE_SLOT_MAX_MASS			CONSTLIT("maxMass")
@@ -206,10 +207,10 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceObject* pObj, const CString& sID, SDeviceDesc *retDesc) const override;
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const override;
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const override;
-		virtual bool ItemFitsSlot (CSpaceObject* pObj, const CItem& Item, const int iSlotIndex) const override;
+		virtual bool ItemFitsSlot (CSpaceObject *pObj, const CItem &Item, const int iSlotIndex) const override;
 		virtual int GetNumberOfDescs () const override { return m_SlotDesc.GetCount(); }
-		virtual const int GetDescIndexGivenId (const CString& sID) const override { return m_SlotDescIndicesByID.Find(sID) ? *m_SlotDescIndicesByID.GetAt(sID) : -1; }
-		virtual ICCItem* GetDeviceSlotProperty (const int iSlotIndex, CCodeChain* pCC, const CString& Property, const ICCItem* pArgs) const override;
+		virtual const int GetDescIndexGivenId (const CString &sID) const override { return m_SlotDescIndicesByID.Find(sID) ? *m_SlotDescIndicesByID.GetAt(sID) : -1; }
+		virtual ICCItem* GetDeviceSlotProperty (const int iSlotIndex, CCodeChain *pCC, const CString &Property, const ICCItem *pArgs) const override;
 		virtual TArray<CString> GetDeviceSlotIds() const override { TArray<CString> ids; for (int i = 0; i < m_SlotDescIndicesByID.GetCount(); i++) { ids.Insert(m_SlotDescIndicesByID.GetKey(i)); } return ids; }
 
 	private:
@@ -1421,7 +1422,7 @@ const CGroupOfDeviceGenerators::SSlotDesc *CGroupOfDeviceGenerators::FindSlotDes
 	return NULL;
 	}
 
-ICCItem* CGroupOfDeviceGenerators::GetDeviceSlotProperty (const int iSlotIndex, CCodeChain* pCC, const CString& Property, const ICCItem* pArgs) const
+ICCItem* CGroupOfDeviceGenerators::GetDeviceSlotProperty (const int iSlotIndex, CCodeChain *pCC, const CString &Property, const ICCItem *pArgs) const
 
 //	GetDeviceSlotProperty
 //
@@ -1441,6 +1442,8 @@ ICCItem* CGroupOfDeviceGenerators::GetDeviceSlotProperty (const int iSlotIndex, 
 		}
 	else if (Property == PROPERTY_DEVICE_SLOT_CRITERIA)
 		return pCC->CreateString(Slot.Criteria.AsString());
+	else if (Property == PROPERTY_DEVICE_SLOT_DESCRIPTION)
+		return pCC->CreateString(Slot.Description);
 	else if (Property == PROPERTY_DEVICE_SLOT_FIRE_ARC)
 		{
 		if (DefaultDesc.bOmnidirectional)
@@ -1489,7 +1492,7 @@ ICCItem* CGroupOfDeviceGenerators::GetDeviceSlotProperty (const int iSlotIndex, 
 		return pCC->CreateError("Unknown device slot property", pCC->CreateString(Property));
 	}
 
-bool CGroupOfDeviceGenerators::ItemFitsSlot (CSpaceObject* pObj, const CItem& Item, const int iSlotIndex) const
+bool CGroupOfDeviceGenerators::ItemFitsSlot (CSpaceObject *pObj, const CItem &Item, const int iSlotIndex) const
 
 //	ItemFitsSlot
 //
