@@ -839,11 +839,6 @@
 						(!= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
 							'notPilgrim
 
-						;	Sustain is always available
-
-						(= gType &pwSustain;)
-							'ready
-
 						;	Do not show powers that are above our level
 
 						(gr rank (domInitRelationship))
@@ -854,10 +849,14 @@
 						(not (setq lastInvokeTime (typGetData &stDomina; (cat 'lastInvokeTime rank))))
 							'ready
 
-						;	Do not show powers for levels that have been recently invoked
+						;	If we're in cooldown, then return status
 
 						(ls (- (unvGetTick) lastInvokeTime) (domGetTimeRequired rank))
-							'cooldown
+							{
+								onShow: True
+								cooldownStart: lastInvokeTime
+								cooldownEnd: (+ lastInvokeTime (domGetTimeRequired rank))
+								}
 
 						;	Can be invoked
 
@@ -867,7 +866,19 @@
 			</GetInvokeStatus>
 
 			<OnShow>
-				(= (typFireEvent gType 'GetInvokeStatus) 'ready)
+				(block (
+					(status (typFireEvent gType 'GetInvokeStatus))
+					)
+					(switch
+						(= status 'ready)
+							True
+
+						(= (typeof status) 'struct)
+							status
+
+						Nil
+						)
+					)
 			</OnShow>
 
 			<OnInvokedByPlayer>
@@ -1057,47 +1068,14 @@
 				))
 
 			(setq domInvokePower (lambda (levelReq)
-				(if (eq levelReq 1)
-					; Sustain can always be invoked, but doesn't always work
-					(block (lastInvokeTime timeReq timeWaited)
-						(setq lastInvokeTime (typGetGlobalData &stDomina; "lastInvokeTime1"))
-						(if (not lastInvokeTime) (setq lastInvokeTime 0))
-						(setq timeReq (domGetTimeRequired 1))
-						(setq timeWaited (subtract (unvGetTick) lastInvokeTime))
-
-						(switch
-							; If we've waited long enough, it works
-							(geq timeWaited timeReq)
-								(block Nil
-									(typSetGlobalData &stDomina; "lastInvokeTime1" (unvGetTick))
-									(typIncGlobalData &stDomina; "invokeCount")
-									True
-									)
-
-							; If the player has no experience, then warn
-							(not (typGetGlobalData &stDomina; "xp"))
-								(block Nil
-									(plyMessage gPlayer "\"Allowing you to struggle is the best help I can offer\"")
-									Nil
-									)
-
-							; Otherwise warn
-							(block Nil
-								(plyMessage gPlayer "\"Do not rely on my powers, child\"")
-								Nil
-								)
-							)
-						)
-
-					; All other powers only show up on the menu if they can be invoked
-					(block Nil
-						(typSetGlobalData &stDomina; (cat "lastInvokeTime" levelReq) (unvGetTick))
-						(typIncGlobalData &stDomina; "invokeCount")
-						True
-						)
+				(block Nil
+					(typSetGlobalData &stDomina; (cat "lastInvokeTime" levelReq) (unvGetTick))
+					(typIncGlobalData &stDomina; "invokeCount")
+					True
 					)
 				))
 
+			;	DEPRECATED. Use OnShow instead.
 			(setq domShowPower (lambda (levelReq)
 				(block (lastInvokeTime)
 					(switch

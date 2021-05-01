@@ -291,7 +291,9 @@ bool CGameSession::ShowInvokeMenu ()
 		CPower *pPower = GetUniverse().GetPower(i);
 
 		CString sError;
-		if (pPower->OnShow(pPlayerShip, NULL, &sError))
+		DWORD dwCooldownStart;
+		DWORD dwCooldownEnd;
+		if (pPower->OnShow(*pPlayerShip, NULL, dwCooldownStart, dwCooldownEnd, &sError))
 			{
 			CString sKey = pPower->GetInvokeKey();
 			if (sKey.IsBlank())
@@ -347,15 +349,24 @@ bool CGameSession::ShowInvokeMenu ()
 
 			if (!sKey.IsBlank())
 				{
-				g_pTrans->m_MenuData.AddMenuItem(NULL_STR,
+				DWORD dwFlags = CMenuData::FLAG_SORT_BY_KEY;
+				if (dwCooldownStart != dwCooldownEnd)
+					{
+					dwFlags |= CMenuData::FLAG_SHOW_COOLDOWN;
+					}
+
+				int iEntry = g_pTrans->m_MenuData.AddMenuItem(NULL_STR,
 						sKey,
 						pPower->GetName(),
 						&pPower->GetImage(),
 						0,
 						NULL_STR,
 						sHelp,
-						CMenuData::FLAG_SORT_BY_KEY,
+						dwFlags,
 						(DWORD)pPower);
+				
+				if (dwCooldownStart != dwCooldownEnd)
+					g_pTrans->m_MenuData.SetItemCooldown(iEntry, dwCooldownStart, dwCooldownEnd);
 
 				KeyMap.Insert(sKey, true);
 				}

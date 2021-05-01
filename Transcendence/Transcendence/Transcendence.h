@@ -197,6 +197,7 @@ class CPickerDisplay
 		int GetSelection (void);
 		ALERROR Init (CMenuData *pMenu, const RECT &rcRect);
 		void Invalidate (void) { m_bInvalid = true; }
+		bool IsSelectionEnabled () const;
 		bool LButtonDown (int x, int y);
 		bool MouseMove (int x, int y);
 		bool MouseWheel (int iDelta, int x, int y);
@@ -208,24 +209,29 @@ class CPickerDisplay
 		void SetHelpText (const CString &sText) { m_sHelpText = sText; }
 
 	private:
+		static constexpr int COOLDOWN_BAR_HEIGHT = 10;
+		static constexpr CG32bitPixel RGB_COOLDOWN_BAR = CG32bitPixel(0, 255, 0);
+		static constexpr CG32bitPixel RGB_COOLDOWN_BAR_BACKGROUND = CG32bitPixel(64, 64, 64);
+
 		int HitTest (int x, int y) const;
 		void PaintSelection (CG32bitImage &Dest, int x, int y);
+		void PaintTile (CG32bitImage &Dest, int iTile, int x, int y);
 		void Update (void);
 
-		CMenuData *m_pMenu;
+		CMenuData *m_pMenu = NULL;
 
-		RECT m_rcRect;
+		RECT m_rcRect = { 0 };
 		CG32bitImage m_Buffer;
-		const SFontTable *m_pFonts;
-		int m_iSelection;
-		int m_iHover;
-		int m_cxSmoothScroll;
+		const SFontTable *m_pFonts = NULL;
+		int m_iSelection = -1;
+		int m_iHover = -1;
+		int m_cxSmoothScroll = 0;
 
-		RECT m_rcView;
-		int m_iFirstInView;
-		int m_iCountInView;
+		RECT m_rcView = { 0 };
+		int m_iFirstInView = 0;
+		int m_iCountInView = 0;
 
-		bool m_bInvalid;
+		bool m_bInvalid = false;
 		CString m_sHelpText;
 	};
 
