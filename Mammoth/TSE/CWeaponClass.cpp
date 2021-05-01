@@ -5005,6 +5005,21 @@ ALERROR CWeaponClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 			if (error = m_ShotData[i].pAmmoType.Bind(Ctx))
 				return error;
 			}
+
+		//	If the number of repeat shots don't fit within the fire delay, then
+		//	warn.
+
+		if (int iRepeating = GetContinuous(*m_ShotData[i].pDesc))
+			{
+			int iDelay = GetContinuousFireDelay(*m_ShotData[i].pDesc);
+			int iTotalTicks = (iRepeating * (iDelay + 1));
+			int iFireDelay = GetFireDelay(*m_ShotData[i].pDesc);
+
+			if (iTotalTicks > iFireDelay)
+				{
+				GetUniverse().DebugOutput("WARNING: %s (%08x) takes %d ticks to fire all shots, but has only %d ticks fire delay.", (LPSTR)GetName(), GetUNID(), iTotalTicks, iFireDelay);
+				}
+			}
 		}
 
 	//	Events
