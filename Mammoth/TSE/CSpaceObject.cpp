@@ -5026,6 +5026,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 											  Metric rMinThreshold, 
 											  Metric rMaxThreshold, 
 											  const DamageDesc &Damage, 
+											  const CTargetList::STargetOptions &TargetOptions,
 											  const CSpaceObject *pTarget,
 											  CVector *retvHitPos, 
 											  int *retiHitDir)
@@ -5094,11 +5095,8 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 
 		//	Do we need to calculate proximity detonation for this object?
 
-		bool bCanTriggerDetonation = (pObj->GetScale() == scaleShip
-					|| pObj->GetScale() == scaleStructure)
-				&& IsAngryAt(pObj) 
-				&& (pObj->CanBeAttacked() || pObj == pTarget);
-
+		bool bCanTriggerDetonation = CTargetList::CanDetonate(*this, pTarget, TargetOptions, *pObj);
+		
 		//	Compute the size of the object, if we're doing proximity computations
 
 		Metric rObjRadius;

@@ -576,6 +576,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		void CreateFragments (const CVector &vPos);
 		Metric GetAge (void) const;
 		int GetManeuverRate (void) const;
+		bool IsDetonatingOnMining () const;
 		bool IsTracking (void) const;
 		bool IsTrackingTime (int iTick) const;
 		bool SetMissileFade (void);
