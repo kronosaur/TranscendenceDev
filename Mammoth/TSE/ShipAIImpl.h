@@ -126,6 +126,7 @@ class CAIBehaviorCtx
 		void SetThrust (bool bThrust) { m_ShipControls.SetThrust(bThrust); }
 		void SetThrustDir (int iDir) { m_ShipControls.SetThrustDir(iDir); }
 		void SetWaitingForShieldsToRegen (bool bValue = true) { m_fWaitForShieldsToRegen = bValue; }
+		bool TargetsStations (void) const { return m_AISettings.TargetsStations(); }
 		bool ThrustsThroughTurn (void) const { return m_fThrustThroughTurn; }
 		void Update (CShip *pShip);
 		bool UsesAllPrimaryWeapons (void) const { return m_AISettings.UseAllPrimaryWeapons(); }

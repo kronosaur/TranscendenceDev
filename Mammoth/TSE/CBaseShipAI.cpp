@@ -874,6 +874,9 @@ CTargetList CBaseShipAI::GetTargetList (void) const
 	if (dwTypes & (DWORD)CTargetList::ETargetType::NonAggressiveShip)
 		Options.bIncludeNonAggressors = true;
 
+	if (dwTypes & (DWORD)CTargetList::ETargetType::Station)
+		Options.bIncludeStations = true;
+
 	//	Include the player if they are blacklisted
 
 	if (m_fPlayerBlacklisted)
@@ -908,6 +911,9 @@ DWORD CBaseShipAI::GetThreatTargetTypes () const
 	if (m_pOrderModule
 			&& (dwTypes = m_pOrderModule->GetThreatTargetTypes()))
 		{
+		if (m_AICtx.TargetsStations())
+			dwTypes |= (DWORD)CTargetList::ETargetType::Station;
+
 		return dwTypes;
 		}
 
@@ -918,6 +924,9 @@ DWORD CBaseShipAI::GetThreatTargetTypes () const
 		DWORD dwTypes = (DWORD)CTargetList::ETargetType::AggressiveShip;
 		if (m_AICtx.IsAggressor())
 			dwTypes |= (DWORD)CTargetList::ETargetType::NonAggressiveShip;
+
+		if (m_AICtx.TargetsStations())
+			dwTypes |= (DWORD)CTargetList::ETargetType::Station;
 
 		return dwTypes;
 		}

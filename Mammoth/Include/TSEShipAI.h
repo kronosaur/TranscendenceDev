@@ -132,6 +132,7 @@ class CAISettings
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetMinCombatSeparation (Metric rValue) { m_rMinCombatSeparation = rValue; }
 		CString SetValue (const CString &sSetting, const CString &sValue);
+		bool TargetsStations () const { return m_fTargetsStations; }
 		bool UseAllPrimaryWeapons (void) const { return m_fUseAllPrimaryWeapons; }
 		void WriteToStream (IWriteStream *pStream);
 
@@ -170,8 +171,8 @@ class CAISettings
 		DWORD m_fNoTargetsOfOpportunity:1 = false;	//	If TRUE, do not attack targets of opportunity
 		DWORD m_fIsPlayer:1 = false;				//	If TRUE, we're controlling the player ship (this is usually
 													//		for debugging only).
-		DWORD m_fUseAllPrimaryWeapons:1;		//  If TRUE, we try to shoot all primary weapons at the same time
-		DWORD m_fSpare6:1 = false;
+		DWORD m_fUseAllPrimaryWeapons:1;			//  If TRUE, we try to shoot all primary weapons at the same time
+		DWORD m_fTargetsStations:1 = false;			//	If TRUE, we target stations as targets of opportunity/threats
 		DWORD m_fSpare7:1 = false;
 		DWORD m_fSpare8:1 = false;
 
