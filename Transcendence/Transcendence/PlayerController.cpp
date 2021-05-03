@@ -1698,7 +1698,8 @@ void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bi
 		int iWeaponMinFireArc, iWeaponMaxFireArc;
 		switch (pWeapon->GetRotationType(DeviceItem, &iWeaponMinFireArc, &iWeaponMaxFireArc))
 			{
-			case CDeviceRotationDesc::rotSwivel:
+			case CDeviceRotationDesc::rotSwivelAlways:
+			case CDeviceRotationDesc::rotSwivelIfTargetInArc:
 				iDir = AngleMiddle(iWeaponMinFireArc, iWeaponMaxFireArc);
 				break;
 			}

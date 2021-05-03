@@ -132,7 +132,8 @@ class CDeviceRotationDesc
 			rotUnknown,
 
 			rotNone,							//	Cannot rotate
-			rotSwivel,							//	Can swivel but not 360 degrees
+			rotSwivelIfTargetInArc,				//	Swivels < 360 degrees, if target reachable
+			rotSwivelAlways,					//	Swivels < 360 degrees, always (e.g., tracking weapons)
 			rotOmnidirectional,					//	Omnidirectional
 			};
 

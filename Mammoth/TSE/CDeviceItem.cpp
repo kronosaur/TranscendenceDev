@@ -169,7 +169,8 @@ int CDeviceItem::GetFireArc (void) const
 		case CDeviceRotationDesc::rotOmnidirectional:
 			return 360;
 
-		case CDeviceRotationDesc::rotSwivel:
+		case CDeviceRotationDesc::rotSwivelAlways:
+		case CDeviceRotationDesc::rotSwivelIfTargetInArc:
 			return AngleRange(iMinArc, iMaxArc);
 
 		default:

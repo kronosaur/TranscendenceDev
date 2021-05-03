@@ -39,7 +39,9 @@ CSpaceObject* CWeaponTargetDefinition::FindTarget(CWeaponClass* pWeapon, CInstal
 	//  If not omnidirectional, check directional. If not, then
 	//  our device points in one direction
 
-	else if (!((pDevice->IsDirectional() || rotationType == CDeviceRotationDesc::rotSwivel)))
+	else if (!((pDevice->IsDirectional() 
+			|| rotationType == CDeviceRotationDesc::rotSwivelAlways
+			|| rotationType == CDeviceRotationDesc::rotSwivelIfTargetInArc)))
 		{
 		iMinFireArc = AngleMod((pDevice ? pDevice->GetRotation() : 0)
 			+ AngleMiddle(iMinFireArc, iMaxFireArc));

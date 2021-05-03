@@ -942,49 +942,12 @@ int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject 
 
 	else
 		{
+		int iDefaultFireAngle = AngleMod(pSource->GetRotation() + AngleMiddle(iMinFireArc, iMaxFireArc));
+
+		//	Compute the fire angle, based on target position.
+
 		int iFireAngle;
-
-		CVector vSource = pDevice->GetPos(pSource);
-
-		//	Get the position and velocity of the target
-
-		CVector vTarget = pTarget->GetPos() - vSource;
-		CVector vTargetVel = pTarget->GetVel() - pSource->GetVel();
-
-		//	Figure out which direction to fire in
-
-		Metric rTimeToIntercept = CalcInterceptTime(vTarget, vTargetVel, rSpeed);
-		CVector vInterceptPoint = (rTimeToIntercept > 0.0 ? vTarget + vTargetVel * rTimeToIntercept : vTarget);
-		iFireAngle = VectorToPolar(vInterceptPoint, NULL);
-
-		//	If this is a directional weapon make sure we are in-bounds
-
-		if (iType == CDeviceRotationDesc::rotSwivel)
-			{
-			int iMin = AngleMod(pSource->GetRotation() + iMinFireArc);
-			int iMax = AngleMod(pSource->GetRotation() + iMaxFireArc);
-
-			if (iMin < iMax)
-				{
-				if (iFireAngle < iMin)
-					iFireAngle = iMin;
-				else if (iFireAngle > iMax)
-					iFireAngle = iMax;
-				}
-			else
-				{
-				if (iFireAngle < iMin && iFireAngle > iMax)
-					{
-					int iToMax = iFireAngle - iMax;
-					int iToMin = iMin - iFireAngle;
-
-					if (iToMax > iToMin)
-						iFireAngle = iMin;
-					else
-						iFireAngle = iMax;
-					}
-				}
-			}
+		IsTargetReachable(*pDevice, *pTarget, iDefaultFireAngle, &iFireAngle);
 
 		//	Remember the fire angle (we need it later if this is a continuous
 		//	fire device)
@@ -2942,7 +2905,8 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 			case CDeviceRotationDesc::rotOmnidirectional:
 				return CC.CreateString(PROPERTY_OMNIDIRECTIONAL);
 
-			case CDeviceRotationDesc::rotSwivel:
+			case CDeviceRotationDesc::rotSwivelAlways:
+			case CDeviceRotationDesc::rotSwivelIfTargetInArc:
 				{
 				//	Create a list
 
@@ -3672,7 +3636,10 @@ CDeviceRotationDesc::ETypes CWeaponClass::GetRotationType (const CDeviceItem &De
 			*retiMaxArc = AngleMod(iFireAngle + iHalfFireArc);
 			}
 
-		return CDeviceRotationDesc::rotSwivel;
+		if (IsTrackingWeapon(DeviceItem))
+			return CDeviceRotationDesc::rotSwivelAlways;
+		else
+			return CDeviceRotationDesc::rotSwivelIfTargetInArc;
 		}
 	}
 
@@ -4587,15 +4554,18 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 
 //	IsTargetReachable
 //
-//	Returns TRUE if we can hit the given target. If we return TRUE, 
-//	retiFireAngle is initialized with the weapon's best fire angle to hit the
-//	target.
+//	Returns TRUE if we can hit the given target. In either case, retiFireAngle 
+//	is initialized with the weapon's best fire angle to hit the target.
 
 	{
 	const CWeaponFireDesc *pShotDesc = GetWeaponFireDesc(Device);
 	const CSpaceObject *pSource = Device.GetSource();
 	if (pShotDesc == NULL || pSource == NULL)
+		{
+		if (retiFireAngle)
+			*retiFireAngle = iDefaultFireAngle;
 		return false;
+		}
 
 	//	Get rotation info
 
@@ -4631,7 +4601,7 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 
 	//	Tracking weapons are always aligned.
 
-	else if (IsTracking(Device, pShotDesc))
+	else if (iType == CDeviceRotationDesc::rotSwivelAlways)
 		return true;
 
 	//	Figure out our aim tolerance
@@ -4657,7 +4627,18 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 		//	If we're facing in the direction that we want to fire, 
 		//	then we're aligned...
 
-		return (iAimOffset <= Max(iAimTolerance, iHalfAngularSize));
+		if (iAimOffset <= Max(iAimTolerance, iHalfAngularSize))
+			return true;
+
+		//	Otherwise, we cannot reach the target, so fire the default direction.
+
+		else
+			{
+			if (retiFireAngle)
+				*retiFireAngle = iDefaultFireAngle;
+
+			return false;
+			}
 		}
 	}
 
@@ -4775,7 +4756,8 @@ bool CWeaponClass::NeedsAutoTarget (const CDeviceItem &DeviceItem, int *retiMinF
 			return true;
 			}
 
-		case CDeviceRotationDesc::rotSwivel:
+		case CDeviceRotationDesc::rotSwivelAlways:
+		case CDeviceRotationDesc::rotSwivelIfTargetInArc:
 			{
 			if (const CSpaceObject *pSource = DeviceItem.GetSource())
 				{
@@ -4808,7 +4790,8 @@ void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("omnidirectional")));
 			break;
 
-		case CDeviceRotationDesc::rotSwivel:
+		case CDeviceRotationDesc::rotSwivelAlways:
+		case CDeviceRotationDesc::rotSwivelIfTargetInArc:
 			int iArc = AngleRange(iMinArc, iMaxArc);
 			if (iArc >= 150)
 				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("hemi-directional")));
