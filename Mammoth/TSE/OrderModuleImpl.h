@@ -231,27 +231,38 @@ class CEscortOrder : public IOrderModule
 class CGuardOrder : public IOrderModule
 	{
 	public:
-		CGuardOrder (void) : IOrderModule(0)
+		static constexpr Metric DEFAULT_THREAT_RANGE_LS = 30.0;
+		static constexpr Metric DEFAULT_THREAT_STOP_RANGE_LS = 120.0;
+
+		CGuardOrder (void) : IOrderModule(OBJ_COUNT)
 			{ }
 
 	protected:
 		//	IOrderModule virtuals
+
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
 		virtual void OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc) override;
+		virtual void OnDestroyed (CShip *pShip, SDestroyCtx &Ctx) override;
+		virtual CSpaceObject *OnGetBase (void) override { return m_Objs[OBJ_BASE]; }
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderGuard; }
-		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
-		virtual void OnWriteToStream (IWriteStream *pStream) const override;
+		virtual AIReaction OnGetReactToAttack () const override { return AIReaction::Chase; }
+		virtual AIReaction OnGetReactToBaseDestroyed () const override { return AIReaction::DestroyAndRetaliate; }
+		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::Chase; }
+		virtual Metric OnGetThreatStopRange (void) const override { return m_rThreatStopRange; }
+		virtual DWORD OnGetThreatTargetTypes () const { return ((DWORD)CTargetList::ETargetType::AggressiveShip | (DWORD)CTargetList::ETargetType::NonAggressiveShip); }
 
 	private:
-		enum States
-			{
-			stateWaitingForThreat,
-			stateReturningViaNavPath,
-			stateReturningFromThreat,
-			};
+		static constexpr int OBJ_BASE =		0;
+		static constexpr int OBJ_COUNT =	1;
 
-		States m_iState;						//	Current behavior state
-		CSpaceObject *m_pBase;					//	Object that we're guarding
+		static constexpr int NAV_PATH_THRESHOLD_LS =		60;
+		static constexpr Metric NAV_PATH_THRESHOLD =		NAV_PATH_THRESHOLD_LS * LIGHT_SECOND;
+		static constexpr Metric NAV_PATH_THRESHOLD2 =		(NAV_PATH_THRESHOLD * NAV_PATH_THRESHOLD);
+
+		void Init (const COrderDesc &OrderDesc);
+
+		Metric m_rThreatRange = 0.0;			//	Range at which we attack threats
+		Metric m_rThreatStopRange = 0.0;		//	Range at which we stop chasing threats
 	};
 
 class CNavigateOrder : public IOrderModule

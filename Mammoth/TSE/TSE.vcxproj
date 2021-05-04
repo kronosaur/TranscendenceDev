@@ -456,6 +456,7 @@
     <ClCompile Include="CGalacticMapPainter.cpp" />
     <ClCompile Include="CGateTimerManager.cpp" />
     <ClCompile Include="CGenericType.cpp" />
+    <ClCompile Include="CGuardOrder.cpp" />
     <ClCompile Include="CHitCtx.cpp" />
     <ClCompile Include="CHullDesc.cpp" />
     <ClCompile Include="CHullPointsCalculator.cpp" />

@@ -81,6 +81,7 @@ void CDeterChaseOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 			return;
 			}
 
+#if 0
 		//	Otherwise, if we should stop deterring, then we're done.
 
 		else if (!Ctx.CalcIsDeterNeeded(*pShip, *m_Objs[OBJ_BASE]))
@@ -88,6 +89,7 @@ void CDeterChaseOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 			pShip->CancelCurrentOrder();
 			return;
 			}
+#endif
 		}
 
 	//	See if our timer has expired
