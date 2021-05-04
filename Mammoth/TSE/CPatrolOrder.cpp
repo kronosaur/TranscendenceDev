@@ -5,7 +5,7 @@
 
 #include "PreComp.h"
 
-void CPatrolOrder::CalcIntermediates ()
+void CPatrolOrder::CalcIntermediates (const COrderDesc &OrderDesc)
 
 //	CalcIntermediates
 //
@@ -14,6 +14,9 @@ void CPatrolOrder::CalcIntermediates ()
 //	m_rNavThreshold2
 
 	{
+	m_rThreatRange = OrderDesc.GetDataDouble(CONSTLIT("threatRange"), DEFAULT_THREAT_RANGE_LS) * LIGHT_SECOND;
+	m_rThreatStopRange = OrderDesc.GetDataDouble(CONSTLIT("threatStopRange"), DEFAULT_THREAT_STOP_RANGE_LS) * LIGHT_SECOND;
+
 	const Metric rPatrolRadiusThreshold = 1.25 * m_rPatrolRadius;
 	const Metric rPatrolRadiusThreshold2 = rPatrolRadiusThreshold * rPatrolRadiusThreshold;
 	m_rNavThreshold2 = Max(rPatrolRadiusThreshold2, NAV_PATH_THRESHOLD2);
@@ -86,9 +89,12 @@ void CPatrolOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrd
 		return;
 		}
 
-	m_rPatrolRadius = LIGHT_SECOND * Max(1, (int)OrderDesc.GetDataInteger());
+	if (OrderDesc.IsCCItem())
+		m_rPatrolRadius = Max(1.0, OrderDesc.GetDataDouble(CONSTLIT("radius"), DEFAULT_RADIUS_LS)) * LIGHT_SECOND;
+	else
+		m_rPatrolRadius = LIGHT_SECOND * Max(1, (int)OrderDesc.GetDataInteger());
 
-	CalcIntermediates();
+	CalcIntermediates(OrderDesc);
 
 	DEBUG_CATCH
 	}
@@ -117,7 +123,7 @@ void CPatrolOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 	{
 	Ctx.pStream->Read(m_rPatrolRadius);
 
-	CalcIntermediates();
+	CalcIntermediates(OrderDesc);
 	}
 
 void CPatrolOrder::OnWriteToStream (IWriteStream *pStream) const

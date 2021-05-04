@@ -366,6 +366,10 @@ class COrbitExactOrder : public IOrderModule
 class CPatrolOrder : public IOrderModule
 	{
 	public:
+		static constexpr int DEFAULT_RADIUS_LS = 10;
+		static constexpr Metric DEFAULT_THREAT_RANGE_LS = 30.0;
+		static constexpr Metric DEFAULT_THREAT_STOP_RANGE_LS = 120.0;
+
 		CPatrolOrder () : IOrderModule(OBJ_COUNT)
 			{ }
 
@@ -383,7 +387,7 @@ class CPatrolOrder : public IOrderModule
 		virtual AIReaction OnGetReactToBaseDestroyed () const override { return AIReaction::DestroyAndRetaliate; }
 		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::Chase; }
 		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
-		virtual Metric OnGetThreatStopRange (void) const override { return Max(m_rPatrolRadius + PATROL_SENSOR_RANGE, STOP_ATTACK_RANGE); }
+		virtual Metric OnGetThreatStopRange (void) const override { return Max(m_rPatrolRadius + m_rThreatRange, m_rThreatStopRange); }
 		virtual DWORD OnGetThreatTargetTypes () const { return ((DWORD)CTargetList::ETargetType::AggressiveShip | (DWORD)CTargetList::ETargetType::NonAggressiveShip); }
 		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
@@ -392,18 +396,17 @@ class CPatrolOrder : public IOrderModule
 		static constexpr int OBJ_TARGET =	1;
 		static constexpr int OBJ_COUNT =	2;
 
-		static constexpr Metric PATROL_SENSOR_RANGE =		30.0 * LIGHT_SECOND;
-		static constexpr Metric STOP_ATTACK_RANGE =			120.0 * LIGHT_SECOND;
-		static constexpr Metric PATROL_DETER_RANGE =		80.0 * LIGHT_SECOND;
-		static constexpr Metric PATROL_DETER_RANGE2 =		PATROL_DETER_RANGE * PATROL_DETER_RANGE;
-		static constexpr Metric NAV_PATH_THRESHOLD =		(4.0 * PATROL_SENSOR_RANGE);
+		static constexpr Metric NAV_PATH_THRESHOLD =		60.0 * LIGHT_SECOND;
 		static constexpr Metric NAV_PATH_THRESHOLD2 =		(NAV_PATH_THRESHOLD * NAV_PATH_THRESHOLD);
 
 		static constexpr int RESUPPLY_CHECK_TIME =			151;
 
-		void CalcIntermediates ();
+		void CalcIntermediates (const COrderDesc &OrderDesc);
 
 		Metric m_rPatrolRadius = 0.0;
+
+		Metric m_rThreatRange = 0.0;			//	Range at which we attack threats
+		Metric m_rThreatStopRange = 0.0;		//	Range at which we stop chasing threats
 
 		Metric m_rNavThreshold2 = 0.0;			//	If further that this from center, nav back
 	};
