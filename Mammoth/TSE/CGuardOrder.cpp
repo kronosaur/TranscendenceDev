@@ -35,14 +35,14 @@ void CGuardOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 	else if ((pShip->GetPos() - m_Objs[OBJ_BASE]->GetPos()).Length2() > NAV_PATH_THRESHOLD2)
 		{
-		pShip->AddOrder(COrderDesc(IShipController::orderApproach, m_Objs[OBJ_BASE], NAV_PATH_THRESHOLD_LS), true);
+		pShip->AddOrder(CApproachOrder::Create(*m_Objs[OBJ_BASE], NAV_PATH_THRESHOLD_LS, CReactionImpl(*this)), true);
 		}
 
 	//	Dock with base
 
 	else
 		{
-		pShip->AddOrder(COrderDesc(IShipController::orderDock, m_Objs[OBJ_BASE]), true);
+		pShip->AddOrder(CNavigateOrder::CreateDock(*m_Objs[OBJ_BASE], CReactionImpl(*this)), true);
 		}
 	}
 

@@ -188,6 +188,31 @@ bool CTLispConvert::AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector 
 		return false;
 	}
 
+CVector CTLispConvert::AsVector (const ICCItem *pItem)
+
+//	AsVector
+//
+//	Converts to vector (or null).
+
+	{
+	if (!pItem)
+		return NullVector;
+	else if (pItem->IsList())
+		{
+		CVector vVec;
+		CreateBinaryFromList(NULL_STR, *pItem, &vVec);
+		return vVec;
+		}
+	else if (pItem->IsInteger())
+		{
+		CSpaceObject *pObj = CreateObjFromItem(pItem);
+		if (pObj)
+			return pObj->GetPos();
+		}
+
+	return NullVector;
+	}
+
 ICCItemPtr CTLispConvert::CreateCurrencyValue (CurrencyValue Value)
 
 //	CreateCurrencyValue

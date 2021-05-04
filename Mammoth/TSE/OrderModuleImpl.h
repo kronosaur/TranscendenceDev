@@ -13,12 +13,23 @@ class CReactionImpl
 				m_iReactToBaseDestroyed(iReactToBaseDestroyed),
 				m_iReactToThreat(iReactToThreat)
 			{ }
+				
+		CReactionImpl (const IOrderModule &CurrentOrder) :
+				m_iReactToAttack(CurrentOrder.GetReactToAttack()),
+				m_iReactToBaseDestroyed(CurrentOrder.GetReactToBaseDestroyed()),
+				m_iReactToThreat(CurrentOrder.GetReactToThreat()),
+				m_rThreatRange(CurrentOrder.GetThreatRange()),
+				m_rThreatStopRange(CurrentOrder.GetThreatStopRange())
+			{ }
 
 		void Init (const COrderDesc &OrderDesc);
 
 		AIReaction GetReactToAttack () const { return m_iReactToAttack; }
 		AIReaction GetReactToBaseDestroyed () const { return m_iReactToBaseDestroyed; }
 		AIReaction GetReactToThreat () const { return m_iReactToThreat; }
+		Metric GetThreatRange () const { return m_rThreatRange; }
+		Metric GetThreatStopRange () const { return m_rThreatStopRange; }
+		void SetOptions (ICCItem &Data) const;
 
 	private:
 		static AIReaction InitFromOrderDesc (const COrderDesc &OrderDesc, const CString &sField, AIReaction iDefault);
@@ -26,6 +37,9 @@ class CReactionImpl
 		AIReaction m_iReactToAttack = AIReaction::None;
 		AIReaction m_iReactToBaseDestroyed = AIReaction::None;
 		AIReaction m_iReactToThreat = AIReaction::None;
+
+		Metric m_rThreatRange = CAISettings::DEFAULT_THREAT_RANGE * LIGHT_SECOND;
+		Metric m_rThreatStopRange = CAISettings::DEFAULT_THREAT_RANGE * LIGHT_SECOND;
 	};
 
 class CApproachOrder : public IOrderModule
@@ -34,6 +48,8 @@ class CApproachOrder : public IOrderModule
 		CApproachOrder (void) : IOrderModule(objCount),
 				m_Reaction(AIReaction::DeterWithSecondaries, AIReaction::None, AIReaction::None)
 			{ }
+
+		static COrderDesc Create (CSpaceObject &Dest, int iDist, const CReactionImpl &Reactions);
 
 	protected:
 		//	IOrderModule virtuals
@@ -44,6 +60,8 @@ class CApproachOrder : public IOrderModule
 		virtual AIReaction OnGetReactToAttack () const override { return m_Reaction.GetReactToAttack(); }
 		virtual AIReaction OnGetReactToBaseDestroyed () const override { return m_Reaction.GetReactToBaseDestroyed(); }
 		virtual AIReaction OnGetReactToThreat () const override { return m_Reaction.GetReactToThreat(); }
+		virtual Metric OnGetThreatRange (void) const override { return m_Reaction.GetThreatRange(); }
+		virtual Metric OnGetThreatStopRange (void) const override { return m_Reaction.GetThreatStopRange(); }
 		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
@@ -275,8 +293,10 @@ class CGuardOrder : public IOrderModule
 		virtual AIReaction OnGetReactToAttack () const override { return AIReaction::Chase; }
 		virtual AIReaction OnGetReactToBaseDestroyed () const override { return AIReaction::DestroyAndRetaliate; }
 		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::Chase; }
+		virtual Metric OnGetThreatRange (void) const override { return m_rThreatRange; }
 		virtual Metric OnGetThreatStopRange (void) const override { return m_rThreatStopRange; }
-		virtual DWORD OnGetThreatTargetTypes () const { return ((DWORD)CTargetList::ETargetType::AggressiveShip | (DWORD)CTargetList::ETargetType::NonAggressiveShip); }
+		virtual DWORD OnGetThreatTargetTypes () const override { return ((DWORD)CTargetList::ETargetType::AggressiveShip | (DWORD)CTargetList::ETargetType::NonAggressiveShip); }
+		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override { Init(OrderDesc); }
 
 	private:
 		static constexpr int OBJ_BASE =		0;
@@ -297,6 +317,8 @@ class CNavigateOrder : public IOrderModule
 	public:
 		CNavigateOrder (IShipController::OrderTypes iOrder);
 
+		static COrderDesc CreateDock (CSpaceObject &Dest, const CReactionImpl &Reactions);
+
 	protected:
 
 		//	IOrderModule virtuals
@@ -306,9 +328,11 @@ class CNavigateOrder : public IOrderModule
 		virtual CSpaceObject *OnGetBase (void) override;
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return m_iOrder; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
-		virtual AIReaction OnGetReactToAttack () const override { return AIReaction::DeterWithSecondaries; }
-		virtual AIReaction OnGetReactToBaseDestroyed () const override { return AIReaction::None; }
-		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::None; }
+		virtual AIReaction OnGetReactToAttack () const override { return m_Reaction.GetReactToAttack(); }
+		virtual AIReaction OnGetReactToBaseDestroyed () const override { return m_Reaction.GetReactToBaseDestroyed(); }
+		virtual AIReaction OnGetReactToThreat () const override { return m_Reaction.GetReactToThreat(); }
+		virtual Metric OnGetThreatRange (void) const override { return m_Reaction.GetThreatRange(); }
+		virtual Metric OnGetThreatStopRange (void) const override { return m_Reaction.GetThreatStopRange(); }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) const override;
@@ -326,6 +350,8 @@ class CNavigateOrder : public IOrderModule
 		CVector m_vDest;						//	Destination
 		int m_iDestFacing = -1;					//	Ship should face at this angle
 		Metric m_rMinDist2 = 0.0;				//	Minimum distance to target
+
+		CReactionImpl m_Reaction;
 
 		DWORD m_fTargetVector:1 = false;		//	Destination is m_vDest
 		DWORD m_fTargetObj:1 = false;			//	Destination is objDest
@@ -425,8 +451,9 @@ class CPatrolOrder : public IOrderModule
 		virtual AIReaction OnGetReactToBaseDestroyed () const override { return AIReaction::DestroyAndRetaliate; }
 		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::Chase; }
 		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
+		virtual Metric OnGetThreatRange (void) const override { return m_rThreatRange; }
 		virtual Metric OnGetThreatStopRange (void) const override { return Max(m_rPatrolRadius + m_rThreatRange, m_rThreatStopRange); }
-		virtual DWORD OnGetThreatTargetTypes () const { return ((DWORD)CTargetList::ETargetType::AggressiveShip | (DWORD)CTargetList::ETargetType::NonAggressiveShip); }
+		virtual DWORD OnGetThreatTargetTypes () const override { return ((DWORD)CTargetList::ETargetType::AggressiveShip | (DWORD)CTargetList::ETargetType::NonAggressiveShip); }
 		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:

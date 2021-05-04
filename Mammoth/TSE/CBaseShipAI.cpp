@@ -980,7 +980,12 @@ bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
 			{
 			CSpaceObject *pBase = GetBase();
 
-			return (pBase && pBase->IsAngryAt(pObj));
+			//	If our base is not the same sovereign as us, then we ignore.
+			//	This can happen with occupation scenarios.
+
+			return (pBase 
+					&& pBase->GetSovereign() == m_pShip->GetSovereign()
+					&& pBase->IsAngryAt(pObj));
 			}
 
 		default:
@@ -1513,6 +1518,18 @@ bool CBaseShipAI::React (AIReaction iReaction, CSpaceObject &TargetObj)
 
 		case AIReaction::Chase:
 			{
+			//	If the target is outside the threat radius of the base, then ignore.
+
+			if (const CSpaceObject *pBase = GetBase())
+				{
+				const Metric rMaxDist = CalcThreatRange();
+				const Metric rMaxDist2 = rMaxDist * rMaxDist;
+				if (pBase->GetDistance2(&TargetObj) > rMaxDist2)
+					return false;
+				}
+
+			//	Add a chase order
+
 			int iMaxTime = (GetBase() ? 0 : CAIBehaviorCtx::DETER_CHASE_MAX_TIME);
 			AddOrder(CDeterChaseOrder::Create(TargetObj, GetBase(), CalcThreatStopRange(), iMaxTime), true);
 			return true;

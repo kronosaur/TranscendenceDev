@@ -500,6 +500,28 @@ int COrderDesc::GetDataTicksLeft () const
 		return -1;
 	}
 
+CVector COrderDesc::GetDataVector (const CString &sField, bool bDefaultField, const CVector &vDefault) const
+
+//	GetDataVector
+//
+//	Returns a vector.
+
+	{
+	if (IsCCItem())
+		{
+		ICCItemPtr pData = GetDataCCItem();
+
+		if (const ICCItem *pValue = pData->GetElement(sField))
+			return CTLispConvert::AsVector(pValue);
+		else
+			return vDefault;
+		}
+	else if (bDefaultField && IsVector())
+		return GetDataVector();
+	else
+		return vDefault;
+	}
+
 void COrderDesc::Move (COrderDesc &Src)
 
 //	Move

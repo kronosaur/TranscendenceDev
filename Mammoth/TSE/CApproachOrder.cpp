@@ -15,6 +15,21 @@ const Metric NAV_PATH_THRESHOLD2 =		(NAV_PATH_THRESHOLD * NAV_PATH_THRESHOLD);
 const Metric NAV_PATH_RECALC_THRESHOLD = (50.0 * LIGHT_SECOND);
 const Metric NAV_PATH_RECALC_THRESHOLD2 = (NAV_PATH_RECALC_THRESHOLD * NAV_PATH_RECALC_THRESHOLD);
 
+COrderDesc CApproachOrder::Create (CSpaceObject &Dest, int iDist, const CReactionImpl &Reactions)
+
+//	Create
+//
+//	Creates the order
+
+	{
+	ICCItemPtr pData(ICCItem::SymbolTable);
+
+	pData->SetIntegerAt(CONSTLIT("radius"), iDist);
+	Reactions.SetOptions(*pData);
+
+	return COrderDesc(IShipController::orderDeterChase, &Dest, *pData);
+	}
+
 void CApproachOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 //	OnBehavior
@@ -119,8 +134,10 @@ void CApproachOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const CO
 	//	Set our basic data
 
 	m_Objs[objDest] = OrderDesc.GetTarget();
-	m_rMinDist2 = LIGHT_SECOND * Max(1, (int)OrderDesc.GetDataInteger());
+	m_rMinDist2 = LIGHT_SECOND * Max(1, (int)OrderDesc.GetDataInteger(CONSTLIT("radius"), true, 1));
 	m_rMinDist2 *= m_rMinDist2;
+
+	m_Reaction.Init(OrderDesc);
 
 	//	See if we should take a nav path
 
@@ -149,6 +166,8 @@ void CApproachOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDes
 	m_iState = (EState)dwLoad;
 
 	Ctx.pStream->Read((char *)&m_rMinDist2, sizeof(Metric));
+
+	m_Reaction.Init(OrderDesc);
 	}
 
 void CApproachOrder::OnWriteToStream (IWriteStream *pStream) const

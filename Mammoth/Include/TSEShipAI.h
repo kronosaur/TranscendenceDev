@@ -462,6 +462,7 @@ class COrderDesc
 		CString GetDataString (const CString &sField) const;
 		int GetDataTicksLeft () const;
 		const CVector &GetDataVector () const { if (GetDataType() == EDataType::Vector) return *(CVector *)m_pData; else return NullVector; }
+		CVector GetDataVector (const CString &sField, bool bDefaultField = false, const CVector &vDefault = NullVector) const;
 		IShipController::OrderTypes GetOrder () const { return (IShipController::OrderTypes)m_dwOrderType; }
 		CSpaceObject *GetTarget () const { return m_pTarget; }
 		bool IsCCItem () const { return (GetDataType() == EDataType::CCItem); }
