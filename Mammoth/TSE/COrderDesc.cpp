@@ -439,6 +439,26 @@ CSpaceObject *COrderDesc::GetDataObject (CSpaceObject &SourceObj, const CString 
 	return pSystem->FindObject(dwObjID);
 	}
 
+CString COrderDesc::GetDataString (const CString &sField) const
+
+//	GetDataString
+//
+//	Gets a string value of the given field.
+
+	{
+	if (IsCCItem())
+		{
+		ICCItemPtr pData = GetDataCCItem();
+
+		if (const ICCItem *pValue = pData->GetElement(sField))
+			return pValue->GetStringValue();
+		else
+			return NULL_STR;
+		}
+	else
+		return NULL_STR;
+	}
+
 int COrderDesc::GetDataTicksLeft () const
 
 //	GetDataTicksLeft

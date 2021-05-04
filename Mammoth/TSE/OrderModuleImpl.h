@@ -5,10 +5,34 @@
 
 #pragma once
 
+class CReactionImpl
+	{
+	public:
+		CReactionImpl (AIReaction iReactToAttack = AIReaction::None, AIReaction iReactToBaseDestroyed = AIReaction::None, AIReaction iReactToThreat = AIReaction::None) :
+				m_iReactToAttack(iReactToAttack),
+				m_iReactToBaseDestroyed(iReactToBaseDestroyed),
+				m_iReactToThreat(iReactToThreat)
+			{ }
+
+		void Init (const COrderDesc &OrderDesc);
+
+		AIReaction GetReactToAttack () const { return m_iReactToAttack; }
+		AIReaction GetReactToBaseDestroyed () const { return m_iReactToBaseDestroyed; }
+		AIReaction GetReactToThreat () const { return m_iReactToThreat; }
+
+	private:
+		static AIReaction InitFromOrderDesc (const COrderDesc &OrderDesc, const CString &sField, AIReaction iDefault);
+
+		AIReaction m_iReactToAttack = AIReaction::None;
+		AIReaction m_iReactToBaseDestroyed = AIReaction::None;
+		AIReaction m_iReactToThreat = AIReaction::None;
+	};
+
 class CApproachOrder : public IOrderModule
 	{
 	public:
-		CApproachOrder (void) : IOrderModule(objCount)
+		CApproachOrder (void) : IOrderModule(objCount),
+				m_Reaction(AIReaction::DeterWithSecondaries, AIReaction::None, AIReaction::None)
 			{ }
 
 	protected:
@@ -17,8 +41,9 @@ class CApproachOrder : public IOrderModule
 		virtual void OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderApproach; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
-		virtual AIReaction OnGetReactToAttack () const override { return AIReaction::DeterWithSecondaries; }
-		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::None; }
+		virtual AIReaction OnGetReactToAttack () const override { return m_Reaction.GetReactToAttack(); }
+		virtual AIReaction OnGetReactToBaseDestroyed () const override { return m_Reaction.GetReactToBaseDestroyed(); }
+		virtual AIReaction OnGetReactToThreat () const override { return m_Reaction.GetReactToThreat(); }
 		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
@@ -40,6 +65,8 @@ class CApproachOrder : public IOrderModule
 
 		EState m_iState = EState::None;			//	Current behavior state
 		Metric m_rMinDist2 = 0.0;				//	Minimum distance to target
+
+		CReactionImpl m_Reaction;
 	};
 
 class CAttackOrder : public IOrderModule
