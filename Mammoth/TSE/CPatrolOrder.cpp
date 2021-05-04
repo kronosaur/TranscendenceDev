@@ -108,7 +108,7 @@ void CPatrolOrder::OnDestroyed (CShip *pShip, SDestroyCtx &Ctx)
 		m_Objs[OBJ_BASE]->OnSubordinateDestroyed(Ctx);
 	}
 
-void CPatrolOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CPatrolOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //

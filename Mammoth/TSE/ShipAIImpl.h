@@ -291,9 +291,10 @@ class IOrderModule
 		AIReaction GetReactToThreat () const { return OnGetReactToThreat(); }
 		CSpaceObject *GetTarget (void) { return OnGetTarget(); }
 		Metric GetThreatRange () const { return OnGetThreatRange(); }
+		Metric GetThreatStopRange () const { return OnGetThreatStopRange(); }
 		DWORD GetThreatTargetTypes () const { return OnGetThreatTargetTypes(); }
 		void ObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx);
-		void ReadFromStream (SLoadCtx &Ctx);
+		void ReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc);
 		bool SupportsReactions () const { return (OnGetReactToThreat() != AIReaction::Default); }
 		void WriteToStream (IWriteStream *pStream) const;
 
@@ -312,10 +313,11 @@ class IOrderModule
 		virtual AIReaction OnGetReactToBaseDestroyed () const { return AIReaction::None; }
 		virtual AIReaction OnGetReactToThreat () const { return AIReaction::Default; }
 		virtual CSpaceObject *OnGetTarget (void) { return NULL; }
-		virtual Metric OnGetThreatRange (void) const { return 0.0; }
+		virtual Metric OnGetThreatRange (void) const { return CAISettings::DEFAULT_THREAT_RANGE * LIGHT_SECOND; }
+		virtual Metric OnGetThreatStopRange (void) const { return 0.0; }
 		virtual DWORD OnGetThreatTargetTypes () const { return 0; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) { }
-		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
+		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) { }
 		virtual void OnWriteToStream (IWriteStream *pStream) const { }
 
 		int m_iObjCount;
@@ -429,6 +431,7 @@ class CBaseShipAI : public IShipController
 		AIReaction AdjReaction (AIReaction iReaction) const;
 		Metric CalcShipIntercept (const CVector &vRelPos, const CVector &vAbsVel, Metric rMaxSpeed);
 		Metric CalcThreatRange () const;
+		Metric CalcThreatStopRange () const;
 		void CancelDocking (CSpaceObject *pTarget);
 		bool CheckForEnemiesInRange (CSpaceObject *pCenter, Metric rRange, int iInterval, CSpaceObject **retpTarget);
 		bool CheckOutOfRange (CSpaceObject *pTarget, Metric rRange, int iInterval);

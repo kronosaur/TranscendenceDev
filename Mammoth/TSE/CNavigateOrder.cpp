@@ -264,7 +264,7 @@ void CNavigateOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int i
 		*retbCancelOrder = true;
 	}
 
-void CNavigateOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CNavigateOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //

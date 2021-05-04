@@ -337,7 +337,7 @@ void CEscortOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iOb
 		}
 	}
 
-void CEscortOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CEscortOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //

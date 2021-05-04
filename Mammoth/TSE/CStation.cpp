@@ -2538,6 +2538,8 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 			return damageNoDamage;
 		}
 
+	m_dwLastHitTime = GetUniverse().GetTicks();
+
 	//	OnAttacked event
 
 	if (HasOnAttackedEvent())
@@ -3830,6 +3832,8 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 //
 //	CAttackDetector m_Blacklist
 //	DWORD		m_iAngryCounter
+//	DWORD		m_dwLastFireTime
+//	DWORD		m_dwLastHitTime
 //	CSquadronController m_Squadrons
 //	CCurrencyBlock	m_pMoney
 //	CTradeDesc	m_pTrade
@@ -4066,6 +4070,12 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read(m_iAngryCounter);
 	else
 		m_iAngryCounter = 0;
+
+	if (Ctx.dwVersion >= 204)
+		{
+		Ctx.pStream->Read(m_dwLastFireTime);
+		Ctx.pStream->Read(m_dwLastHitTime);
+		}
 
 	if (Ctx.dwVersion >= 199)
 		m_Squadrons.ReadFromStream(Ctx, m_pType->GetSquadronDesc());
@@ -4584,6 +4594,8 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 //
 //	CAttackDetector m_Blacklist
 //	DWORD		m_iAngryCounter
+//	DWORD		m_dwLastFireTime
+//	DWORD		m_dwLastHitTime
 //	CSquadronController m_Squadrons
 //	CCurrencyBlock	m_pMoney
 //	CTradingDesc	m_pTrade
@@ -4638,6 +4650,8 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 
 	m_Blacklist.WriteToStream(pStream);
 	pStream->Write(m_iAngryCounter);
+	pStream->Write(m_dwLastFireTime);
+	pStream->Write(m_dwLastHitTime);
 	m_Squadrons.WriteToStream(*pStream);
 
 	//	Money
@@ -5895,6 +5909,12 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 			Weapon.Activate(ActivateCtx);
 			if (IsDestroyed())
 				return false;
+
+			//	Remember the last time we fired a weapon
+
+			m_dwLastFireTime = GetUniverse().GetTicks();
+
+			//	Fire delay
 
 			Weapon.SetTimeUntilReady(m_pType->GetFireRateAdj() * Weapon.GetActivateDelay(this) / 10);
 			}

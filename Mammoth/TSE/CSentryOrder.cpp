@@ -217,7 +217,7 @@ void CSentryOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iOb
 		m_fIsAttacking = false;
 	}
 
-void CSentryOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CSentryOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //

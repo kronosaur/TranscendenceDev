@@ -251,7 +251,7 @@ void IOrderModule::ObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx)
 			}
 	}
 
-void IOrderModule::ReadFromStream (SLoadCtx &Ctx)
+void IOrderModule::ReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	ReadFromStream
 //
@@ -277,7 +277,7 @@ void IOrderModule::ReadFromStream (SLoadCtx &Ctx)
 
 	//	Let our derived class load
 
-	OnReadFromStream(Ctx); 
+	OnReadFromStream(Ctx, OrderDesc);
 	}
 
 void IOrderModule::WriteToStream (IWriteStream *pStream) const
@@ -340,7 +340,7 @@ void CGuardOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrde
 #endif
 	}
 
-void CGuardOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CGuardOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //

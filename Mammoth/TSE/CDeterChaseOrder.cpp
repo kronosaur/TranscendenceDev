@@ -220,7 +220,7 @@ void CDeterChaseOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int
 		}
 	}
 
-void CDeterChaseOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CDeterChaseOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //

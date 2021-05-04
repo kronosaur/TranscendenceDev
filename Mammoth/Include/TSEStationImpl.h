@@ -160,6 +160,8 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual const CObjectImageArray &GetImage (int *retiRotationFrameIndex = NULL) const override { if (retiRotationFrameIndex) *retiRotationFrameIndex = 0; return m_pType->GetImage(m_ImageSelector, CCompositeImageModifiers()); }
 		virtual const CCompositeImageSelector &GetImageSelector (void) const override { return m_ImageSelector; }
 		virtual Metric GetInvMass (void) const override;
+		virtual int GetLastFireTime (void) const override { return (int)m_dwLastFireTime; }
+		virtual int GetLastHitTime (void) const override { return (int)m_dwLastHitTime; }
 		virtual int GetLevel (void) const override { return m_pType->GetLevel(); }
 		virtual const COrbit *GetMapOrbit (void) const override { return m_pMapOrbit; }
 		virtual Metric GetMass (void) const override { return m_rMass; }
@@ -363,6 +365,8 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 
 		CAttackDetector m_Blacklist;					//	Player blacklisted
 		int m_iAngryCounter = 0;						//	Attack cycles until station is not angry
+		DWORD m_dwLastFireTime = 0;						//	Tick when we last fired a weapon
+		DWORD m_dwLastHitTime = 0;						//	Tick when we last got hit with something
 
 		CCurrencyBlock *m_pMoney = NULL;				//	Money left (may be NULL)
 		CTradingDesc *m_pTrade = NULL;					//	Override of trading desc (may be NULL)

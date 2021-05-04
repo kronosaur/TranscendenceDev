@@ -215,11 +215,24 @@ Metric CBaseShipAI::CalcThreatRange () const
 
 //	CalcThreatRange
 //
+//	Computes the range at which we attack targets.
+
+	{
+	if (m_pOrderModule)
+		return m_pOrderModule->GetThreatRange();
+	else
+		return m_AICtx.GetAISettings().GetThreatRange();
+	}
+
+Metric CBaseShipAI::CalcThreatStopRange () const
+
+//	CalcThreatRange
+//
 //	Computes the range at which we stop chasing threats.
 
 	{
 	if (m_pOrderModule)
-		return Max(m_pOrderModule->GetThreatRange(), m_AICtx.GetAISettings().GetThreatRange());
+		return Max(m_pOrderModule->GetThreatStopRange(), m_AICtx.GetAISettings().GetThreatRange());
 	else
 		return m_AICtx.GetAISettings().GetThreatRange();
 	}
@@ -861,7 +874,7 @@ CTargetList CBaseShipAI::GetTargetList (void) const
 	
 	//	Range
 
-	Options.rMaxDist = Max(m_AICtx.GetBestWeaponRange(), m_AICtx.GetAISettings().GetThreatRange());
+	Options.rMaxDist = Max(m_AICtx.GetBestWeaponRange(), CalcThreatRange());
 
 	//	Include our target
 
@@ -1501,7 +1514,7 @@ bool CBaseShipAI::React (AIReaction iReaction, CSpaceObject &TargetObj)
 		case AIReaction::Chase:
 			{
 			int iMaxTime = (GetBase() ? 0 : CAIBehaviorCtx::DETER_CHASE_MAX_TIME);
-			AddOrder(CDeterChaseOrder::Create(TargetObj, GetBase(), CalcThreatRange(), iMaxTime), true);
+			AddOrder(CDeterChaseOrder::Create(TargetObj, GetBase(), CalcThreatStopRange(), iMaxTime), true);
 			return true;
 			}
 
@@ -1751,12 +1764,12 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 
 	//	Order module
 
-	if (Ctx.dwVersion >= 75)
+	if (Ctx.dwVersion >= 75 && Ctx.dwVersion < 203)
 		{
 		Ctx.pStream->Read(dwLoad);
 		m_pOrderModule = IOrderModule::Create((IShipController::OrderTypes)dwLoad);
 		if (m_pOrderModule)
-			m_pOrderModule->ReadFromStream(Ctx);
+			m_pOrderModule->ReadFromStream(Ctx, COrderDesc());
 		}
 
 	//	Deter module
@@ -1790,6 +1803,16 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 	//	Read orders
 
 	m_Orders.ReadFromStream(Ctx);
+
+	//	Order module
+
+	if (Ctx.dwVersion >= 203)
+		{
+		Ctx.pStream->Read(dwLoad);
+		m_pOrderModule = IOrderModule::Create((IShipController::OrderTypes)dwLoad);
+		if (m_pOrderModule)
+			m_pOrderModule->ReadFromStream(Ctx, m_Orders.GetCurrentOrderDesc());
+		}
 
 	//	Command code
 
@@ -1962,7 +1985,7 @@ void CBaseShipAI::UpdateReactions (SUpdateCtx &Ctx)
 
 				if (m_pShip->IsDestinyTime(11))
 					{
-					if (CSpaceObject *pTarget = Ctx.GetTargetList().FindBestTarget(GetThreatTargetTypes()))
+					if (CSpaceObject *pTarget = Ctx.GetTargetList().FindBestTarget(GetThreatTargetTypes(), CalcThreatRange()))
 						{
 						React(iReaction, *pTarget);
 						}
@@ -2177,14 +2200,15 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 //	DWORD		m_pShip (CSpaceObject ref)
 //	DWORD		m_Blacklist
 //
-//	DWORD		order (for order module)
-//	IOrderModule
 //	CDeterModule	m_DeterModule
 //
 //	DWORD		No of orders
 //	DWORD		order: Order
 //	DWORD		order: pTarget
 //	DWORD		order: dwData
+//
+//	DWORD		order (for order module)
+//	IOrderModule
 //
 //	CString		m_pCommandCode (unlinked)
 //
@@ -2207,13 +2231,6 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 
 	m_AICtx.WriteToStream(pStream);
 
-	//	Order module
-
-	dwSave = (DWORD)(m_pOrderModule ? m_pOrderModule->GetOrder() : IShipController::orderNone);
-	pStream->Write(dwSave);
-	if (m_pOrderModule)
-		m_pOrderModule->WriteToStream(pStream);
-
 	//	Deter module
 
 	m_DeterModule.WriteToStream(*pStream);
@@ -2221,6 +2238,13 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 	//	Orders
 
 	m_Orders.WriteToStream(*pStream, *m_pShip);
+
+	//	Order module
+
+	dwSave = (DWORD)(m_pOrderModule ? m_pOrderModule->GetOrder() : IShipController::orderNone);
+	pStream->Write(dwSave);
+	if (m_pOrderModule)
+		m_pOrderModule->WriteToStream(pStream);
 
 	//	Command code
 

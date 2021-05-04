@@ -19,7 +19,7 @@ class CApproachOrder : public IOrderModule
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
 		virtual AIReaction OnGetReactToAttack () const override { return AIReaction::DeterWithSecondaries; }
 		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::None; }
-		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
@@ -57,7 +57,7 @@ class CAttackOrder : public IOrderModule
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return m_iOrder; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[OBJ_TARGET]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
-		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
@@ -111,7 +111,7 @@ class CAttackStationOrder : public IOrderModule
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderAttackStation; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
-		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
@@ -155,7 +155,7 @@ class CDeterChaseOrder : public IOrderModule
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderDeterChase; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[OBJ_TARGET]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
-		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
@@ -194,7 +194,7 @@ class CEscortOrder : public IOrderModule
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderEscort; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
-		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
@@ -239,7 +239,7 @@ class CGuardOrder : public IOrderModule
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
 		virtual void OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderGuard; }
-		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
@@ -272,7 +272,7 @@ class CNavigateOrder : public IOrderModule
 		virtual AIReaction OnGetReactToBaseDestroyed () const override { return AIReaction::None; }
 		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::None; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
-		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
@@ -307,6 +307,8 @@ class COrbitExactOrder : public IOrderModule
 		static constexpr DWORD AUTO_ANGLE = 0xffff;
 		static constexpr int DEFAULT_RADIUS = 10;
 		static constexpr Metric DEFAULT_SPEED = 1.0;
+		static constexpr Metric DEFAULT_THREAT_RANGE_LS = 30.0;
+		static constexpr Metric DEFAULT_THREAT_STOP_RANGE_LS = 120.0;
 
 		COrbitExactOrder (IShipController::OrderTypes iOrder) : IOrderModule(OBJ_COUNT),
 				m_iOrder(iOrder)
@@ -331,9 +333,10 @@ class COrbitExactOrder : public IOrderModule
 		virtual AIReaction OnGetReactToBaseDestroyed () const override;
 		virtual AIReaction OnGetReactToThreat () const override;
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[OBJ_TARGET]; }
-		virtual Metric OnGetThreatRange (void) const override;
+		virtual Metric OnGetThreatRange (void) const override { return m_rThreatRange; }
+		virtual Metric OnGetThreatStopRange (void) const override;
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
-		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
@@ -341,21 +344,21 @@ class COrbitExactOrder : public IOrderModule
 		static constexpr int OBJ_TARGET =	1;
 		static constexpr int OBJ_COUNT =	2;
 
-		static constexpr Metric PATROL_SENSOR_RANGE =		(30.0 * LIGHT_SECOND);
-		static constexpr Metric STOP_ATTACK_RANGE =			(120.0 * LIGHT_SECOND);
-
 		static constexpr Metric NAV_PATH_THRESHOLD =		(50.0 * LIGHT_SECOND);
 		static constexpr Metric NAV_PATH_THRESHOLD2 =		(NAV_PATH_THRESHOLD * NAV_PATH_THRESHOLD);
 
 		static constexpr int RESUPPLY_CHECK_TIME =			151;
 
-		void CalcIntermediates ();
+		void CalcIntermediates (const COrderDesc &OrderDesc);
 
 		IShipController::OrderTypes m_iOrder = IShipController::orderNone;
 		COrbit m_Orbit;							//	Orbit definition
 		DWORD m_dwStartTick = 0;				//	Tick at start angle
 		Metric m_rAngularSpeed = DEFAULT_SPEED;	//	Orbit speed (degrees per tick)
 		int m_iCountdown = 0;					//	Stop after this time.
+
+		Metric m_rThreatRange = 0.0;			//	Range at which we attack threats
+		Metric m_rThreatStopRange = 0.0;		//	Range at which we stop chasing threats
 
 		Metric m_rNavThreshold2 = 0.0;			//	If further that this from center, nav back
 	};
@@ -379,8 +382,8 @@ class CPatrolOrder : public IOrderModule
 		virtual AIReaction OnGetReactToAttack () const override { return AIReaction::Chase; }
 		virtual AIReaction OnGetReactToBaseDestroyed () const override { return AIReaction::DestroyAndRetaliate; }
 		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::Chase; }
-		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
-		virtual Metric OnGetThreatRange (void) const override { return Max(m_rPatrolRadius + PATROL_SENSOR_RANGE, STOP_ATTACK_RANGE); }
+		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
+		virtual Metric OnGetThreatStopRange (void) const override { return Max(m_rPatrolRadius + PATROL_SENSOR_RANGE, STOP_ATTACK_RANGE); }
 		virtual DWORD OnGetThreatTargetTypes () const { return ((DWORD)CTargetList::ETargetType::AggressiveShip | (DWORD)CTargetList::ETargetType::NonAggressiveShip); }
 		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
@@ -435,7 +438,7 @@ class CSentryOrder : public IOrderModule
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderSentry; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
-		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:
@@ -505,7 +508,7 @@ class CWaitOrder : public IOrderModule
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return m_iOrder; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
-		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) const override;
 
 	private:

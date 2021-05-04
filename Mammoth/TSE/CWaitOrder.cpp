@@ -351,7 +351,7 @@ void CWaitOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj,
 		*retbCancelOrder = true;
 	}
 
-void CWaitOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CWaitOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //

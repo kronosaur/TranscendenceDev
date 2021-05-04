@@ -498,7 +498,7 @@ void CAttackOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iOb
 		}
 	}
 
-void CAttackOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CAttackOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //

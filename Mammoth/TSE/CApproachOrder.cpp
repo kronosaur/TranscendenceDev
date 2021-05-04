@@ -136,7 +136,7 @@ void CApproachOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const CO
 	DEBUG_CATCH
 	}
 
-void CApproachOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CApproachOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //
