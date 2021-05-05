@@ -5305,15 +5305,12 @@ void CShip::OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaint
 
 	if (Ctx.bShowFacingsAngle)
 		{
-		const CG16bitFont &MessageFont = GetUniverse().GetNamedFont(CUniverse::fontSRSMessage);
 		CString sText = strPatternSubst(CONSTLIT("Facing: %d Angle: %d"), m_Rotation.GetFrameIndex(), GetRotation());
-		MessageFont.DrawText(Dest,
-				x,
-				Ctx.yAnnotations,
-				GetSymbolColor(),
-				sText,
-				CG16bitFont::AlignCenter);
+		PaintAnnotationText(Dest, x, y, sText, Ctx);
 		}
+
+	if (Ctx.bShowOrderInfo)
+		m_pController->DebugPaintAnnotations(Dest, x, y, Ctx);
 	}
 
 void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)

@@ -299,6 +299,7 @@ class IShipController
 		virtual void CancelDocking (void) { }
 		virtual bool CanObjRequestDock (CSpaceObject *pObj = NULL) const { return true; }
 		virtual CString DebugCrashInfo (void) { return NULL_STR; }
+		virtual void DebugPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) const { }
 		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
 		virtual ICCItem *FindProperty (const CString &sProperty) { return NULL; }
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) { return false; }

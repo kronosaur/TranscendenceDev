@@ -680,7 +680,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'showFacingsAngle\n"
 			"   'showLineOfFire\n"
 			"   'showNavPaths\n"
-			"   'showNodeInfo\n",
+			"   'showNodeInfo\n"
+			"   'showOrderInfo\n",
 
 			"s",	0, },
 
@@ -706,7 +707,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'showFacingsAngle True/Nil\n"
 			"   'showLineOfFire True/Nil\n"
 			"   'showNavPaths True/Nil\n"
-			"   'showNodeInfo True/Nil\n",
+			"   'showNodeInfo True/Nil\n"
+			"   'showOrderInfo True/Nil\n",
 
 			"sv",	PPFLAG_SIDEEFFECTS, },
 

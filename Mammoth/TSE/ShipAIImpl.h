@@ -365,6 +365,7 @@ class CBaseShipAI : public IShipController
 		virtual void Behavior (SUpdateCtx &Ctx) override;
 		virtual bool CanObjRequestDock (CSpaceObject *pObj = NULL) const override;
 		virtual CString DebugCrashInfo (void) override;
+		virtual void DebugPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) const override;
 		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual ICCItem *FindProperty (const CString &sProperty) override;
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) override;
