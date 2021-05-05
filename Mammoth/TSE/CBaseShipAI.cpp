@@ -1550,7 +1550,11 @@ bool CBaseShipAI::React (AIReaction iReaction, CSpaceObject &TargetObj)
 
 			if (const CSpaceObject *pBase = GetBase())
 				{
-				const Metric rMaxDist = CalcThreatRange();
+				//	NOTE: This needs to be ThreatStopRange (not just ThreatRange) 
+				//	because otherwise we won't try to chase a ship that destroyed
+				//	a guard just outside the threat range.
+
+				const Metric rMaxDist = CalcThreatStopRange();
 				const Metric rMaxDist2 = rMaxDist * rMaxDist;
 				if (pBase->GetDistance2(&TargetObj) > rMaxDist2)
 					{
@@ -1597,12 +1601,22 @@ void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Da
 		case AIReaction::None:
 			break;
 
+		case AIReaction::Deter:
+		case AIReaction::DeterWithSecondaries:
+			{
+			//	If the attacker is a valid threat, then add an order
+
+			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+				React(iReaction, AttackerObj);
+
+			m_AICtx.CommunicateWithBaseAttackDeter(*m_pShip, AttackerObj, Damage.GetOrderGiver());
+			break;
+			}
+
 		case AIReaction::Chase:
 		case AIReaction::ChaseFromBase:
 		case AIReaction::Destroy:
 		case AIReaction::DestroyAndRetaliate:
-		case AIReaction::Deter:
-		case AIReaction::DeterWithSecondaries:
 			{
 			//	Continue attacks.
 
@@ -1611,7 +1625,7 @@ void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Da
 
 			//	If the attacker is a valid threat, then add an order
 
-			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+			if (m_AICtx.CalcIsPossibleTarget(*m_pShip, AttackerObj))
 				React(iReaction, AttackerObj);
 
 			m_AICtx.CommunicateWithBaseAttackDeter(*m_pShip, AttackerObj, Damage.GetOrderGiver());
@@ -1685,12 +1699,24 @@ bool CBaseShipAI::ReactToDeterMessage (CSpaceObject &AttackerObj)
 		case AIReaction::None:
 			return false;
 
+		case AIReaction::Deter:
+		case AIReaction::DeterWithSecondaries:
+			{
+			//	If the attacker is a valid threat, then react
+
+			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+				{
+				React(iReaction, AttackerObj);
+				return true;
+				}
+			else
+				return false;
+			}
+
 		case AIReaction::Chase:
 		case AIReaction::ChaseFromBase:
 		case AIReaction::Destroy:
 		case AIReaction::DestroyAndRetaliate:
-		case AIReaction::Deter:
-		case AIReaction::DeterWithSecondaries:
 			{
 			//	Continue attacks.
 
@@ -1699,7 +1725,7 @@ bool CBaseShipAI::ReactToDeterMessage (CSpaceObject &AttackerObj)
 
 			//	If the attacker is a valid threat, then react
 
-			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+			if (m_AICtx.CalcIsPossibleTarget(*m_pShip, AttackerObj))
 				{
 				React(iReaction, AttackerObj);
 				return true;
