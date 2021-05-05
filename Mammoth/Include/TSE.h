@@ -356,6 +356,7 @@ class CSpaceObject
 	{
 	public:
 		static constexpr DWORD AGGRESSOR_THRESHOLD = 30 * 30;
+		static constexpr int ANNOTATION_INNER_SPACING_Y =			2;
 
 		enum Categories
 			{
@@ -1077,6 +1078,7 @@ class CSpaceObject
 		bool IsOutOfPlaneObj (void) const { return m_fOutOfPlaneObj; }
 		bool IsPaintNeeded (void) { return m_fPaintNeeded; }
 		void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintAnnotationText (CG32bitImage &Dest, int x, int y, const CString &sText, SViewportPaintCtx &Ctx) const;
 		void PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx, AlignmentStyles iAlign, CG32bitPixel rgbColor, int *retcyHeight = NULL);
 		void PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
 		void PaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { OnPaintSRSEnhancements(Dest, Ctx); }

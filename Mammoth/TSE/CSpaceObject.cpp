@@ -20,8 +20,6 @@ const int HIGHLIGHT_TIMER =						200;
 const int HIGHLIGHT_BLINK =						110;
 const int HIGHLIGHT_FADE =						30;
 
-const int ANNOTATION_INNER_SPACING_Y =			2;
-
 const int DAMAGE_BAR_WIDTH =					100;
 const int DAMAGE_BAR_HEIGHT =					12;
 
@@ -6787,6 +6785,24 @@ void CSpaceObject::PaintHighlight (CG32bitImage &Dest, int x, int y, SViewportPa
 		PaintHighlightText(Dest, x, Ctx.yAnnotations, Ctx, alignCenter, rgbColor, &cyHeight);
 		Ctx.yAnnotations += cyHeight + ANNOTATION_INNER_SPACING_Y;
 		}
+	}
+
+void CSpaceObject::PaintAnnotationText (CG32bitImage &Dest, int x, int y, const CString &sText, SViewportPaintCtx &Ctx) const
+
+//	PaintAnnotationText
+//
+//	Paints an annotation.
+
+	{
+	const CG16bitFont &MessageFont = GetUniverse().GetNamedFont(CUniverse::fontSRSMessage);
+	MessageFont.DrawText(Dest,
+			x,
+			Ctx.yAnnotations,
+			GetSymbolColor(),
+			sText,
+			CG16bitFont::AlignCenter);
+
+	Ctx.yAnnotations += MessageFont.GetHeight() + ANNOTATION_INNER_SPACING_Y;
 	}
 
 void CSpaceObject::PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx, AlignmentStyles iAlign, CG32bitPixel rgbColor, int *retcyHeight)

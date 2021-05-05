@@ -29,7 +29,6 @@
 #define PROPERTY_ROTATION						CONSTLIT("rotation")
 #define PROPERTY_TYPE							CONSTLIT("type")
 
-const int ANNOTATION_INNER_SPACING_Y =			2;
 const int FLAG_INNER_SPACING_X =				4;
 
 COverlay::COverlay (void) : 
@@ -1125,7 +1124,7 @@ void COverlay::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPain
 					iMaxHP,
 					&cyHeight);
 
-			Ctx.yAnnotations += cyHeight + ANNOTATION_INNER_SPACING_Y;
+			Ctx.yAnnotations += cyHeight + CSpaceObject::ANNOTATION_INNER_SPACING_Y;
 			}
 		}
 
@@ -1172,7 +1171,7 @@ void COverlay::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPain
 						Counter.GetMaxValue(),
 						&cyHeight);
 
-				Ctx.yAnnotations += cyHeight + ANNOTATION_INNER_SPACING_Y;
+				Ctx.yAnnotations += cyHeight + CSpaceObject::ANNOTATION_INNER_SPACING_Y;
 				break;
 				}
 			}

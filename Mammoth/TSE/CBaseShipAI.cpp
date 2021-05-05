@@ -534,6 +534,26 @@ CString CBaseShipAI::DebugCrashInfo (void)
 		return OnDebugCrashInfo();
 	}
 
+void CBaseShipAI::DebugPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) const
+
+//	DebugPaintAnnotations
+//
+//	Paint debug info.
+
+	{
+	if (Ctx.bShowOrderInfo)
+		{
+		CString sText;
+		int iOrderCount = GetOrderCount();
+		if (iOrderCount > 1)
+			sText = strPatternSubst(CONSTLIT("%s (+%d)"), GetOrderName(GetCurrentOrder()), iOrderCount - 1);
+		else
+			sText = GetOrderName(GetCurrentOrder());
+
+		m_pShip->PaintAnnotationText(Dest, x, y, sText, Ctx);
+		}
+	}
+
 void CBaseShipAI::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	DebugPaintInfo

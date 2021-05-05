@@ -537,6 +537,7 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 
 	Ctx.bShowBounds = m_Universe.GetDebugOptions().IsShowBoundsEnabled();
 	Ctx.bShowFacingsAngle = m_Universe.GetDebugOptions().IsShowFacingsAngleEnabled();
+	Ctx.bShowOrderInfo = m_Universe.GetDebugOptions().IsShowOrderInfoEnabled();
 
 	//	Figure out what color space should be. Space gets lighter as we get
 	//	near the central star

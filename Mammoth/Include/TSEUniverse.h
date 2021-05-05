@@ -61,6 +61,7 @@ class CDebugOptions
 		bool IsShowLineOfFireEnabled (void) const { return m_bShowLineOfFire; }
 		bool IsShowNavPathsEnabled (void) const { return m_bShowNavPaths; }
 		bool IsShowNodeAttributesEnabled (void) const { return m_bShowNodeAttributes; }
+		bool IsShowOrderInfoEnabled () const { return m_bShowOrderInfo; }
 		bool IsVerboseCreate (void) const { return m_bVerboseCreate; }
 		bool SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
 		void SetVerboseCreate (bool bValue = true) { m_bVerboseCreate = bValue; }
@@ -75,6 +76,7 @@ class CDebugOptions
 		bool m_bShowFacingsAngle = false;
 		bool m_bShowNodeAttributes = false;
 		bool m_bVerboseCreate = false;
+		bool m_bShowOrderInfo = false;
 	};
 
 class CPerformanceCounters
