@@ -94,6 +94,8 @@ enum class AIReaction
 	Destroy =								5,	//	Destroy attacker
 	Gate =									6,	//	Gate out
 	DestroyAndRetaliate =					7,	//	Destroy attacker and attack nearest enemies
+	ChaseFromBase =							8,	//	Chase if target is withing threat range of base
+												//		(otherwise, Deter).
 	};
 
 class CAISettings
@@ -450,6 +452,7 @@ class COrderDesc
 		explicit operator bool () const { return !IsEmpty(); }
 
 		ICCItemPtr AsCCItemList () const;
+		bool GetDataBoolean (const CString &sField, bool bDefault = false) const;
 		DiceRange GetDataDiceRange (const CString &sField, int iDefault = 0, CString *retsSuffix = NULL) const;
 		Metric GetDataDouble (const CString &sField, Metric rDefault = 0.0) const;
 		ICCItemPtr GetDataCCItem () const { if (GetDataType() == EDataType::CCItem) return ICCItemPtr(((ICCItem *)m_pData)->Reference()); else return ICCItemPtr::Nil(); }

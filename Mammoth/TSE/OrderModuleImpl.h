@@ -55,6 +55,7 @@ class CApproachOrder : public IOrderModule
 		//	IOrderModule virtuals
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
 		virtual void OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc) override;
+		virtual CSpaceObject *OnGetBase (void) override { return (m_bDestIsBase ? m_Objs[objDest] : NULL); }
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderApproach; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
 		virtual AIReaction OnGetReactToAttack () const override { return m_Reaction.GetReactToAttack(); }
@@ -81,10 +82,14 @@ class CApproachOrder : public IOrderModule
 			Approaching =				1,
 			};
 
+		void Init (const COrderDesc &OrderDesc);
+
 		EState m_iState = EState::None;			//	Current behavior state
 		Metric m_rMinDist2 = 0.0;				//	Minimum distance to target
 
 		CReactionImpl m_Reaction;
+
+		bool m_bDestIsBase = false;
 	};
 
 class CAttackOrder : public IOrderModule
@@ -290,9 +295,9 @@ class CGuardOrder : public IOrderModule
 		virtual void OnDestroyed (CShip *pShip, SDestroyCtx &Ctx) override;
 		virtual CSpaceObject *OnGetBase (void) override { return m_Objs[OBJ_BASE]; }
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderGuard; }
-		virtual AIReaction OnGetReactToAttack () const override { return AIReaction::Chase; }
+		virtual AIReaction OnGetReactToAttack () const override { return AIReaction::ChaseFromBase; }
 		virtual AIReaction OnGetReactToBaseDestroyed () const override { return AIReaction::DestroyAndRetaliate; }
-		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::Chase; }
+		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::ChaseFromBase; }
 		virtual Metric OnGetThreatRange (void) const override { return m_rThreatRange; }
 		virtual Metric OnGetThreatStopRange (void) const override { return m_rThreatStopRange; }
 		virtual DWORD OnGetThreatTargetTypes () const override { return ((DWORD)CTargetList::ETargetType::AggressiveShip | (DWORD)CTargetList::ETargetType::NonAggressiveShip); }
@@ -447,9 +452,9 @@ class CPatrolOrder : public IOrderModule
 		virtual CSpaceObject *OnGetBase (void) override { return m_Objs[OBJ_BASE]; }
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderPatrol; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[OBJ_TARGET]; }
-		virtual AIReaction OnGetReactToAttack () const override { return AIReaction::Chase; }
+		virtual AIReaction OnGetReactToAttack () const override { return AIReaction::ChaseFromBase; }
 		virtual AIReaction OnGetReactToBaseDestroyed () const override { return AIReaction::DestroyAndRetaliate; }
-		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::Chase; }
+		virtual AIReaction OnGetReactToThreat () const override { return AIReaction::ChaseFromBase; }
 		virtual void OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual Metric OnGetThreatRange (void) const override { return m_rThreatRange; }
 		virtual Metric OnGetThreatStopRange (void) const override { return Max(m_rPatrolRadius + m_rThreatRange, m_rThreatStopRange); }

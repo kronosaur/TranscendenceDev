@@ -285,6 +285,26 @@ DiceRange COrderDesc::GetDataDiceRange (const CString &sField, int iDefault, CSt
 		}
 	}
 
+bool COrderDesc::GetDataBoolean (const CString &sField, bool bDefault) const
+
+//	GetDataBoolean
+//
+//	Gets a boolean field value.
+
+	{
+	if (IsCCItem())
+		{
+		ICCItemPtr pData = GetDataCCItem();
+
+		if (const ICCItem *pValue = pData->GetElement(sField))
+			return !pValue->IsNil();
+		else
+			return bDefault;
+		}
+	else
+		return bDefault;
+	}
+
 Metric COrderDesc::GetDataDouble (const CString &sField, Metric rDefault) const
 
 //	GetDataDouble

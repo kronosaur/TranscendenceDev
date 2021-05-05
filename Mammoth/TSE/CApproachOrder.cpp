@@ -27,7 +27,25 @@ COrderDesc CApproachOrder::Create (CSpaceObject &Dest, int iDist, const CReactio
 	pData->SetIntegerAt(CONSTLIT("radius"), iDist);
 	Reactions.SetOptions(*pData);
 
-	return COrderDesc(IShipController::orderDeterChase, &Dest, *pData);
+	//	We assume that dest should be treated as a base because we use this
+	//	for guard and patrol. If we ever need to change that, we should pass in
+	//	a parameter.
+
+	pData->SetBooleanAt(CONSTLIT("destIsBase"), true);
+
+	return COrderDesc(IShipController::orderApproach, &Dest, *pData);
+	}
+
+void CApproachOrder::Init (const COrderDesc &OrderDesc)
+
+//	Init
+//
+//	Initialize from order desc
+
+	{
+	m_Reaction.Init(OrderDesc);
+
+	m_bDestIsBase = OrderDesc.GetDataBoolean(CONSTLIT("destIsBase"));
 	}
 
 void CApproachOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
@@ -137,7 +155,7 @@ void CApproachOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const CO
 	m_rMinDist2 = LIGHT_SECOND * Max(1, (int)OrderDesc.GetDataInteger(CONSTLIT("radius"), true, 1));
 	m_rMinDist2 *= m_rMinDist2;
 
-	m_Reaction.Init(OrderDesc);
+	Init(OrderDesc);
 
 	//	See if we should take a nav path
 
@@ -167,7 +185,7 @@ void CApproachOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDes
 
 	Ctx.pStream->Read((char *)&m_rMinDist2, sizeof(Metric));
 
-	m_Reaction.Init(OrderDesc);
+	Init(OrderDesc);
 	}
 
 void CApproachOrder::OnWriteToStream (IWriteStream *pStream) const

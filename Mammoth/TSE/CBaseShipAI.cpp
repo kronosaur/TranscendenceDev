@@ -92,6 +92,7 @@ AIReaction CBaseShipAI::AdjReaction (AIReaction iReaction) const
 	switch (iReaction)
 		{
 		case AIReaction::Chase:
+		case AIReaction::ChaseFromBase:
 		case AIReaction::Destroy:
 		case AIReaction::DestroyAndRetaliate:
 			if (m_AICtx.IsNonCombatant())
@@ -1538,14 +1539,24 @@ bool CBaseShipAI::React (AIReaction iReaction, CSpaceObject &TargetObj)
 
 		case AIReaction::Chase:
 			{
-			//	If the target is outside the threat radius of the base, then ignore.
+			int iMaxTime = (GetBase() ? 0 : CAIBehaviorCtx::DETER_CHASE_MAX_TIME);
+			AddOrder(CDeterChaseOrder::Create(TargetObj, GetBase(), CalcThreatStopRange(), iMaxTime), true);
+			return true;
+			}
+
+		case AIReaction::ChaseFromBase:
+			{
+			//	If target is outside base radius, then deter instead.
 
 			if (const CSpaceObject *pBase = GetBase())
 				{
 				const Metric rMaxDist = CalcThreatRange();
 				const Metric rMaxDist2 = rMaxDist * rMaxDist;
 				if (pBase->GetDistance2(&TargetObj) > rMaxDist2)
-					return false;
+					{
+					m_DeterModule.BehaviorStart(*m_pShip, m_AICtx, TargetObj, false);
+					return true;
+					}
 				}
 
 			//	Add a chase order
@@ -1587,6 +1598,7 @@ void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Da
 			break;
 
 		case AIReaction::Chase:
+		case AIReaction::ChaseFromBase:
 		case AIReaction::Destroy:
 		case AIReaction::DestroyAndRetaliate:
 		case AIReaction::Deter:
@@ -1629,6 +1641,7 @@ bool CBaseShipAI::ReactToBaseDestroyed (CSpaceObject &AttackerObj)
 			return false;
 
 		case AIReaction::Chase:
+		case AIReaction::ChaseFromBase:
 		case AIReaction::Destroy:
 		case AIReaction::DestroyAndRetaliate:
 		case AIReaction::Deter:
@@ -1673,6 +1686,7 @@ bool CBaseShipAI::ReactToDeterMessage (CSpaceObject &AttackerObj)
 			return false;
 
 		case AIReaction::Chase:
+		case AIReaction::ChaseFromBase:
 		case AIReaction::Destroy:
 		case AIReaction::DestroyAndRetaliate:
 		case AIReaction::Deter:
@@ -2012,6 +2026,7 @@ void CBaseShipAI::UpdateReactions (SUpdateCtx &Ctx)
 				break;
 
 			case AIReaction::Chase:
+			case AIReaction::ChaseFromBase:
 			case AIReaction::Destroy:
 			case AIReaction::DestroyAndRetaliate:
 			case AIReaction::Deter:

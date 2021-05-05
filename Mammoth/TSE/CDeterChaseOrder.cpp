@@ -21,7 +21,7 @@ COrderDesc CDeterChaseOrder::Create (CSpaceObject &TargetObj, CSpaceObject *pBas
 		pData->SetIntegerAt(CONSTLIT("radius"), mathRound(rMaxRange / LIGHT_SECOND));
 
 	if (iTimer > 0)
-		pData->SetIntegerAt(CONSTLIT("timer"), iTimer);
+		pData->SetIntegerAt(CONSTLIT("timer"), iTimer / g_TicksPerSecond);
 
 	return COrderDesc(IShipController::orderDeterChase, &TargetObj, *pData);
 	}
