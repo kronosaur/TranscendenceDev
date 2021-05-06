@@ -46,8 +46,9 @@
 
 #define STR_TRUE								CONSTLIT("True")
 
-static TStaticStringTable<TStaticStringEntry<AIReaction>, 8> REACTION_TABLE = {
+static TStaticStringTable<TStaticStringEntry<AIReaction>, 9> REACTION_TABLE = {
 	"chase",				AIReaction::Chase,
+	"chaseFromBase",		AIReaction::ChaseFromBase,
 	"default",				AIReaction::Default,
 	"destroy",				AIReaction::Destroy,
 	"destroyAndRetaliate",	AIReaction::DestroyAndRetaliate,

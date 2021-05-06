@@ -274,6 +274,8 @@ const int MAX_OBJS =	4;
 class IOrderModule
 	{
 	public:
+		static constexpr DWORD FLAG_CANCEL_ON_REACTION_ORDER = 0x00000001;
+
 		IOrderModule (int iObjCount);
 		virtual ~IOrderModule (void);
 

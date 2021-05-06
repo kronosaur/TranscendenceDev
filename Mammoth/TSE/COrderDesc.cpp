@@ -205,6 +205,8 @@ void COrderDesc::Copy (const COrderDesc &Src)
 	m_dwDataType = Src.m_dwDataType;
 	m_pTarget = Src.m_pTarget;
 
+	m_fCancelOnReactionOrder = Src.m_fCancelOnReactionOrder;
+
 	switch (GetDataType())
 		{
 		case EDataType::None:
@@ -283,6 +285,26 @@ DiceRange COrderDesc::GetDataDiceRange (const CString &sField, int iDefault, CSt
 
 		return DiceRange(0, 0, iDefault);
 		}
+	}
+
+bool COrderDesc::GetDataBoolean (const CString &sField, bool bDefault) const
+
+//	GetDataBoolean
+//
+//	Gets a boolean field value.
+
+	{
+	if (IsCCItem())
+		{
+		ICCItemPtr pData = GetDataCCItem();
+
+		if (const ICCItem *pValue = pData->GetElement(sField))
+			return !pValue->IsNil();
+		else
+			return bDefault;
+		}
+	else
+		return bDefault;
 	}
 
 Metric COrderDesc::GetDataDouble (const CString &sField, Metric rDefault) const
@@ -439,6 +461,26 @@ CSpaceObject *COrderDesc::GetDataObject (CSpaceObject &SourceObj, const CString 
 	return pSystem->FindObject(dwObjID);
 	}
 
+CString COrderDesc::GetDataString (const CString &sField) const
+
+//	GetDataString
+//
+//	Gets a string value of the given field.
+
+	{
+	if (IsCCItem())
+		{
+		ICCItemPtr pData = GetDataCCItem();
+
+		if (const ICCItem *pValue = pData->GetElement(sField))
+			return pValue->GetStringValue();
+		else
+			return NULL_STR;
+		}
+	else
+		return NULL_STR;
+	}
+
 int COrderDesc::GetDataTicksLeft () const
 
 //	GetDataTicksLeft
@@ -480,6 +522,28 @@ int COrderDesc::GetDataTicksLeft () const
 		return -1;
 	}
 
+CVector COrderDesc::GetDataVector (const CString &sField, bool bDefaultField, const CVector &vDefault) const
+
+//	GetDataVector
+//
+//	Returns a vector.
+
+	{
+	if (IsCCItem())
+		{
+		ICCItemPtr pData = GetDataCCItem();
+
+		if (const ICCItem *pValue = pData->GetElement(sField))
+			return CTLispConvert::AsVector(pValue);
+		else
+			return vDefault;
+		}
+	else if (bDefaultField && IsVector())
+		return GetDataVector();
+	else
+		return vDefault;
+	}
+
 void COrderDesc::Move (COrderDesc &Src)
 
 //	Move
@@ -491,6 +555,8 @@ void COrderDesc::Move (COrderDesc &Src)
 	m_dwDataType = Src.m_dwDataType;
 	m_pTarget = Src.m_pTarget;
 	m_pData = Src.m_pData;
+
+	m_fCancelOnReactionOrder = Src.m_fCancelOnReactionOrder;
 
 	Src.m_dwDataType = (DWORD)EDataType::None;
 	Src.m_pData = NULL;
@@ -698,6 +764,14 @@ void COrderDesc::ReadFromStream (SLoadCtx &Ctx)
 		m_dwOrderType = LOWORD(dwLoad);
 		m_dwDataType = HIWORD(dwLoad);
 
+		if (Ctx.dwVersion >= 205)
+			{
+			DWORD dwFlags;
+			Ctx.pStream->Read(dwFlags);
+
+			m_fCancelOnReactionOrder = ((dwFlags & 0x00000001) ? true : false);
+			}
+
 		CSystem::ReadObjRefFromStream(Ctx, &m_pTarget);
 
 		switch (GetDataType())
@@ -881,6 +955,10 @@ void COrderDesc::WriteToStream (IWriteStream &Stream, const CShip &Ship) const
 	{
 	DWORD dwSave = MAKELONG(m_dwOrderType, m_dwDataType);
 	Stream.Write(dwSave);
+
+	DWORD dwFlags = 0;
+	dwFlags |= (m_fCancelOnReactionOrder ? 0x00000001 : 0);
+	Stream.Write(dwFlags);
 
 	Ship.WriteObjRefToStream(m_pTarget, &Stream);
 

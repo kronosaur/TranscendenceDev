@@ -92,6 +92,7 @@ AIReaction CBaseShipAI::AdjReaction (AIReaction iReaction) const
 	switch (iReaction)
 		{
 		case AIReaction::Chase:
+		case AIReaction::ChaseFromBase:
 		case AIReaction::Destroy:
 		case AIReaction::DestroyAndRetaliate:
 			if (m_AICtx.IsNonCombatant())
@@ -543,6 +544,8 @@ void CBaseShipAI::DebugPaintAnnotations (CG32bitImage &Dest, int x, int y, SView
 	{
 	if (Ctx.bShowOrderInfo)
 		{
+		//	Current order
+
 		CString sText;
 		int iOrderCount = GetOrderCount();
 		if (iOrderCount > 1)
@@ -551,6 +554,11 @@ void CBaseShipAI::DebugPaintAnnotations (CG32bitImage &Dest, int x, int y, SView
 			sText = GetOrderName(GetCurrentOrder());
 
 		m_pShip->PaintAnnotationText(Dest, x, y, sText, Ctx);
+
+		//	Deter module
+
+		if (m_DeterModule.IsEnabled())
+			m_pShip->PaintAnnotationText(Dest, x, y, CONSTLIT("DeterModule Enabled"), Ctx);
 		}
 	}
 
@@ -1000,7 +1008,12 @@ bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
 			{
 			CSpaceObject *pBase = GetBase();
 
-			return (pBase && pBase->IsAngryAt(pObj));
+			//	If our base is not the same sovereign as us, then we ignore.
+			//	This can happen with occupation scenarios.
+
+			return (pBase 
+					&& pBase->GetSovereign() == m_pShip->GetSovereign()
+					&& pBase->IsAngryAt(pObj));
 			}
 
 		default:
@@ -1511,6 +1524,9 @@ bool CBaseShipAI::React (AIReaction iReaction)
 			return false;
 
 		case AIReaction::Gate:
+			if (GetCurrentOrderDesc().IsCancelOnReactionOrder())
+				CancelCurrentOrder();
+
 			AddOrder(COrderDesc(IShipController::orderGate), true);
 			return true;
 
@@ -1533,13 +1549,53 @@ bool CBaseShipAI::React (AIReaction iReaction, CSpaceObject &TargetObj)
 
 		case AIReaction::Chase:
 			{
+			if (GetCurrentOrderDesc().IsCancelOnReactionOrder())
+				CancelCurrentOrder();
+
 			int iMaxTime = (GetBase() ? 0 : CAIBehaviorCtx::DETER_CHASE_MAX_TIME);
-			AddOrder(CDeterChaseOrder::Create(TargetObj, GetBase(), CalcThreatStopRange(), iMaxTime), true);
+			AddOrder(CDeterChaseOrder::Create(TargetObj, GetBase(), CalcThreatStopRange(), iMaxTime, IOrderModule::FLAG_CANCEL_ON_REACTION_ORDER), true);
+			return true;
+			}
+
+		case AIReaction::ChaseFromBase:
+			{
+			//	If target is outside base radius, then deter instead.
+
+			if (const CSpaceObject *pBase = GetBase())
+				{
+				//	NOTE: This needs to be ThreatStopRange (not just ThreatRange) 
+				//	because otherwise we won't try to chase a ship that destroyed
+				//	a guard just outside the threat range.
+
+				const Metric rMaxDist = CalcThreatStopRange();
+				const Metric rMaxDist2 = rMaxDist * rMaxDist;
+				if (pBase->GetDistance2(&TargetObj) > rMaxDist2)
+					{
+					if (!m_DeterModule.IsEnabled() && m_AICtx.HasSecondaryWeapons())
+						{
+						m_DeterModule.BehaviorStart(*m_pShip, m_AICtx, TargetObj, true);
+						return true;
+						}
+					else
+						return false;
+					}
+				}
+
+			if (GetCurrentOrderDesc().IsCancelOnReactionOrder())
+				CancelCurrentOrder();
+
+			//	Add a chase order
+
+			int iMaxTime = (GetBase() ? 0 : CAIBehaviorCtx::DETER_CHASE_MAX_TIME);
+			AddOrder(CDeterChaseOrder::Create(TargetObj, GetBase(), CalcThreatStopRange(), iMaxTime, IOrderModule::FLAG_CANCEL_ON_REACTION_ORDER), true);
 			return true;
 			}
 
 		case AIReaction::Destroy:
 		case AIReaction::DestroyAndRetaliate:
+			if (GetCurrentOrderDesc().IsCancelOnReactionOrder())
+				CancelCurrentOrder();
+
 			AddOrder(COrderDesc(IShipController::orderDestroyTarget, &TargetObj), true);
 			return true;
 
@@ -1569,11 +1625,22 @@ void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Da
 		case AIReaction::None:
 			break;
 
-		case AIReaction::Chase:
-		case AIReaction::Destroy:
-		case AIReaction::DestroyAndRetaliate:
 		case AIReaction::Deter:
 		case AIReaction::DeterWithSecondaries:
+			{
+			//	If the attacker is a valid threat, then add an order
+
+			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+				React(iReaction, AttackerObj);
+
+			m_AICtx.CommunicateWithBaseAttackDeter(*m_pShip, AttackerObj, Damage.GetOrderGiver());
+			break;
+			}
+
+		case AIReaction::Chase:
+		case AIReaction::ChaseFromBase:
+		case AIReaction::Destroy:
+		case AIReaction::DestroyAndRetaliate:
 			{
 			//	Continue attacks.
 
@@ -1582,7 +1649,7 @@ void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Da
 
 			//	If the attacker is a valid threat, then add an order
 
-			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+			if (m_AICtx.CalcIsPossibleTarget(*m_pShip, AttackerObj))
 				React(iReaction, AttackerObj);
 
 			m_AICtx.CommunicateWithBaseAttackDeter(*m_pShip, AttackerObj, Damage.GetOrderGiver());
@@ -1612,6 +1679,7 @@ bool CBaseShipAI::ReactToBaseDestroyed (CSpaceObject &AttackerObj)
 			return false;
 
 		case AIReaction::Chase:
+		case AIReaction::ChaseFromBase:
 		case AIReaction::Destroy:
 		case AIReaction::DestroyAndRetaliate:
 		case AIReaction::Deter:
@@ -1655,11 +1723,24 @@ bool CBaseShipAI::ReactToDeterMessage (CSpaceObject &AttackerObj)
 		case AIReaction::None:
 			return false;
 
-		case AIReaction::Chase:
-		case AIReaction::Destroy:
-		case AIReaction::DestroyAndRetaliate:
 		case AIReaction::Deter:
 		case AIReaction::DeterWithSecondaries:
+			{
+			//	If the attacker is a valid threat, then react
+
+			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+				{
+				React(iReaction, AttackerObj);
+				return true;
+				}
+			else
+				return false;
+			}
+
+		case AIReaction::Chase:
+		case AIReaction::ChaseFromBase:
+		case AIReaction::Destroy:
+		case AIReaction::DestroyAndRetaliate:
 			{
 			//	Continue attacks.
 
@@ -1668,7 +1749,7 @@ bool CBaseShipAI::ReactToDeterMessage (CSpaceObject &AttackerObj)
 
 			//	If the attacker is a valid threat, then react
 
-			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+			if (m_AICtx.CalcIsPossibleTarget(*m_pShip, AttackerObj))
 				{
 				React(iReaction, AttackerObj);
 				return true;
@@ -1995,6 +2076,7 @@ void CBaseShipAI::UpdateReactions (SUpdateCtx &Ctx)
 				break;
 
 			case AIReaction::Chase:
+			case AIReaction::ChaseFromBase:
 			case AIReaction::Destroy:
 			case AIReaction::DestroyAndRetaliate:
 			case AIReaction::Deter:

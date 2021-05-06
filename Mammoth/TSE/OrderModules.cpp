@@ -118,6 +118,9 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderFireEvent:
 			return new CFireEventOrder;
 
+		case IShipController::orderGuard:
+			return new CGuardOrder;
+
 		case IShipController::orderOrbitExact:
 		case IShipController::orderOrbitPatrol:
 			return new COrbitExactOrder(iOrder);
@@ -159,7 +162,6 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderFollowPlayerThroughGate:
 		case IShipController::orderGateOnStationDestroyed:
 		case IShipController::orderGateOnThreat:
-		case IShipController::orderGuard:
 		case IShipController::orderHoldCourse:
 		case IShipController::orderLoot:
 		case IShipController::orderMine:
@@ -258,13 +260,11 @@ void IOrderModule::ReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 //	Load save file
 	
 	{
-	int i;
-
 	//	Load the objects
 
 	DWORD dwCount;
 	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
-	for (i = 0; i < (int)dwCount; i++)
+	for (int i = 0; i < (int)dwCount; i++)
 		{
 		if (i < m_iObjCount)
 			CSystem::ReadObjRefFromStream(Ctx, &m_Objs[i]);
@@ -299,73 +299,3 @@ void IOrderModule::WriteToStream (IWriteStream *pStream) const
 	OnWriteToStream(pStream);
 	}
 
-//	CGuardOrder ----------------------------------------------------------------
-
-void CGuardOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
-
-//	OnBehavior
-//
-//	Do it
-
-	{
-	}
-
-void CGuardOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
-
-//	OnBehaviorStart
-//
-//	Start/restart behavior
-
-	{
-#if 0
-	ASSERT(pOrderTarget);
-	m_pBase = pOrderTarget;
-
-	//	If we're docked, wait for threat
-
-	if (pShip->GetDockedObj())
-		m_iState = stateWaitingForThreat;
-
-	//	If we're very far from our principal and we can use a nav
-	//	path, do it
-
-	else if (pShip->GetDistance2(m_pBase) > NAV_PATH_THRESHOLD2
-			&& CalcNavPath(m_pBase))
-		m_iState = stateReturningViaNavPath;
-
-	//	Otherwise, return directly to base
-
-	else
-		m_iState = stateReturningFromThreat;
-#endif
-	}
-
-void CGuardOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
-
-//	OnReadFromStream
-//
-//	Load from stream
-
-	{
-	DWORD dwLoad;
-
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_iState = (States)dwLoad;
-
-	CSystem::ReadObjRefFromStream(Ctx, &m_pBase);
-	}
-
-void CGuardOrder::OnWriteToStream (IWriteStream *pStream) const
-
-//	OnWriteToStream
-//
-//	Save to stream
-
-	{
-	DWORD dwSave;
-
-	dwSave = (DWORD)m_iState;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
-
-	CSystem::WriteObjRefToStream(*pStream, m_pBase);
-	}
