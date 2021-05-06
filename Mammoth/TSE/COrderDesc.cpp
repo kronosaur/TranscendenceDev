@@ -205,6 +205,8 @@ void COrderDesc::Copy (const COrderDesc &Src)
 	m_dwDataType = Src.m_dwDataType;
 	m_pTarget = Src.m_pTarget;
 
+	m_fCancelOnReactionOrder = Src.m_fCancelOnReactionOrder;
+
 	switch (GetDataType())
 		{
 		case EDataType::None:
@@ -554,6 +556,8 @@ void COrderDesc::Move (COrderDesc &Src)
 	m_pTarget = Src.m_pTarget;
 	m_pData = Src.m_pData;
 
+	m_fCancelOnReactionOrder = Src.m_fCancelOnReactionOrder;
+
 	Src.m_dwDataType = (DWORD)EDataType::None;
 	Src.m_pData = NULL;
 	}
@@ -760,6 +764,14 @@ void COrderDesc::ReadFromStream (SLoadCtx &Ctx)
 		m_dwOrderType = LOWORD(dwLoad);
 		m_dwDataType = HIWORD(dwLoad);
 
+		if (Ctx.dwVersion >= 205)
+			{
+			DWORD dwFlags;
+			Ctx.pStream->Read(dwFlags);
+
+			m_fCancelOnReactionOrder = ((dwFlags & 0x00000001) ? true : false);
+			}
+
 		CSystem::ReadObjRefFromStream(Ctx, &m_pTarget);
 
 		switch (GetDataType())
@@ -943,6 +955,10 @@ void COrderDesc::WriteToStream (IWriteStream &Stream, const CShip &Ship) const
 	{
 	DWORD dwSave = MAKELONG(m_dwOrderType, m_dwDataType);
 	Stream.Write(dwSave);
+
+	DWORD dwFlags = 0;
+	dwFlags |= (m_fCancelOnReactionOrder ? 0x00000001 : 0);
+	Stream.Write(dwFlags);
 
 	Ship.WriteObjRefToStream(m_pTarget, &Stream);
 

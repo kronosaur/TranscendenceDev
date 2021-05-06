@@ -469,11 +469,13 @@ class COrderDesc
 		CVector GetDataVector (const CString &sField, bool bDefaultField = false, const CVector &vDefault = NullVector) const;
 		IShipController::OrderTypes GetOrder () const { return (IShipController::OrderTypes)m_dwOrderType; }
 		CSpaceObject *GetTarget () const { return m_pTarget; }
+		bool IsCancelOnReactionOrder () const { return m_fCancelOnReactionOrder; }
 		bool IsCCItem () const { return (GetDataType() == EDataType::CCItem); }
 		bool IsEmpty () const { return GetOrder() == IShipController::orderNone; }
 		bool IsIntegerOrPair () const { return (GetDataType() == EDataType::Int32 || GetDataType() == EDataType::Int16Pair); }
 		bool IsVector () const { return (GetDataType() == EDataType::Vector); }
 		void ReadFromStream (SLoadCtx &Ctx);
+		void SetCancelOnReactionOrder (bool bValue = true) { m_fCancelOnReactionOrder = bValue; }
 		void SetDataInteger (DWORD dwData);
 		void SetDataInteger (DWORD dwData1, DWORD dwData2);
 		void SetTarget (CSpaceObject *pTarget) { m_pTarget = pTarget; }
@@ -511,7 +513,9 @@ class COrderDesc
 
 		DWORD m_dwOrderType:8 = 0;		//	IShipController::OrderTypes
 		DWORD m_dwDataType:8 = 0;		//	EDataType
-		DWORD m_dwSpare:16 = 0;
+
+		DWORD m_fCancelOnReactionOrder:1 = false;
+		DWORD m_dwSpare:15 = 0;
 
 		CSpaceObject *m_pTarget = NULL;	//	Order target
 		void *m_pData = NULL;			//	Depends on dwDataType

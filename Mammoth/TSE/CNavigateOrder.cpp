@@ -53,7 +53,7 @@ CNavigateOrder::CNavigateOrder (IShipController::OrderTypes iOrder) : IOrderModu
 		}
 	}
 
-COrderDesc CNavigateOrder::CreateDock (CSpaceObject &Dest, const CReactionImpl &Reactions)
+COrderDesc CNavigateOrder::CreateDock (CSpaceObject &Dest, const CReactionImpl &Reactions, DWORD dwFlags)
 
 //	CreateDock
 //
@@ -63,7 +63,14 @@ COrderDesc CNavigateOrder::CreateDock (CSpaceObject &Dest, const CReactionImpl &
 	ICCItemPtr pData(ICCItem::SymbolTable);
 	Reactions.SetOptions(*pData);
 
-	return COrderDesc(IShipController::orderDock, &Dest, *pData);
+	COrderDesc Result(IShipController::orderDock, &Dest, *pData);
+
+	//	Set some flags
+
+	if (dwFlags & FLAG_CANCEL_ON_REACTION_ORDER)
+		Result.SetCancelOnReactionOrder();
+
+	return Result;
 	}
 
 void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)

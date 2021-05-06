@@ -39,7 +39,7 @@ void CPatrolOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	else if ((pShip->GetPos() - m_Objs[OBJ_BASE]->GetPos()).Length2() > m_rNavThreshold2)
 		{
 		int iRadius = mathRound(m_rPatrolRadius / LIGHT_SECOND);
-		pShip->AddOrder(CApproachOrder::Create(*m_Objs[OBJ_BASE], iRadius, CReactionImpl(*this)), true);
+		pShip->AddOrder(CApproachOrder::Create(*m_Objs[OBJ_BASE], iRadius, CReactionImpl(*this), FLAG_CANCEL_ON_REACTION_ORDER), true);
 		}
 
 	//	Every once in a while we check to see if we need to dock with our base

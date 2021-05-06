@@ -15,7 +15,7 @@ const Metric NAV_PATH_THRESHOLD2 =		(NAV_PATH_THRESHOLD * NAV_PATH_THRESHOLD);
 const Metric NAV_PATH_RECALC_THRESHOLD = (50.0 * LIGHT_SECOND);
 const Metric NAV_PATH_RECALC_THRESHOLD2 = (NAV_PATH_RECALC_THRESHOLD * NAV_PATH_RECALC_THRESHOLD);
 
-COrderDesc CApproachOrder::Create (CSpaceObject &Dest, int iDist, const CReactionImpl &Reactions)
+COrderDesc CApproachOrder::Create (CSpaceObject &Dest, int iDist, const CReactionImpl &Reactions, DWORD dwFlags)
 
 //	Create
 //
@@ -33,7 +33,14 @@ COrderDesc CApproachOrder::Create (CSpaceObject &Dest, int iDist, const CReactio
 
 	pData->SetBooleanAt(CONSTLIT("destIsBase"), true);
 
-	return COrderDesc(IShipController::orderApproach, &Dest, *pData);
+	COrderDesc Result(IShipController::orderApproach, &Dest, *pData);
+
+	//	Set some flags
+
+	if (dwFlags & FLAG_CANCEL_ON_REACTION_ORDER)
+		Result.SetCancelOnReactionOrder();
+
+	return Result;
 	}
 
 void CApproachOrder::Init (const COrderDesc &OrderDesc)

@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							51;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
-constexpr DWORD SYSTEM_SAVE_VERSION =					204;
+constexpr DWORD SYSTEM_SAVE_VERSION =					205;
 
 //	Uncomment out the following define when building a stable release
 
@@ -741,3 +741,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					204;
 //
 //	204: 1.9 Beta 4
 //		Added m_dwLastFireTime and m_dwLastHitTime to CStation
+//
+//	205: 1.9 Beta 4
+//		Added flags to COrderDesc

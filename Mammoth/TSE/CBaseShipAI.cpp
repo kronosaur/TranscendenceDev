@@ -544,6 +544,8 @@ void CBaseShipAI::DebugPaintAnnotations (CG32bitImage &Dest, int x, int y, SView
 	{
 	if (Ctx.bShowOrderInfo)
 		{
+		//	Current order
+
 		CString sText;
 		int iOrderCount = GetOrderCount();
 		if (iOrderCount > 1)
@@ -552,6 +554,11 @@ void CBaseShipAI::DebugPaintAnnotations (CG32bitImage &Dest, int x, int y, SView
 			sText = GetOrderName(GetCurrentOrder());
 
 		m_pShip->PaintAnnotationText(Dest, x, y, sText, Ctx);
+
+		//	Deter module
+
+		if (m_DeterModule.IsEnabled())
+			m_pShip->PaintAnnotationText(Dest, x, y, CONSTLIT("DeterModule Enabled"), Ctx);
 		}
 	}
 
@@ -1517,6 +1524,9 @@ bool CBaseShipAI::React (AIReaction iReaction)
 			return false;
 
 		case AIReaction::Gate:
+			if (GetCurrentOrderDesc().IsCancelOnReactionOrder())
+				CancelCurrentOrder();
+
 			AddOrder(COrderDesc(IShipController::orderGate), true);
 			return true;
 
@@ -1539,8 +1549,11 @@ bool CBaseShipAI::React (AIReaction iReaction, CSpaceObject &TargetObj)
 
 		case AIReaction::Chase:
 			{
+			if (GetCurrentOrderDesc().IsCancelOnReactionOrder())
+				CancelCurrentOrder();
+
 			int iMaxTime = (GetBase() ? 0 : CAIBehaviorCtx::DETER_CHASE_MAX_TIME);
-			AddOrder(CDeterChaseOrder::Create(TargetObj, GetBase(), CalcThreatStopRange(), iMaxTime), true);
+			AddOrder(CDeterChaseOrder::Create(TargetObj, GetBase(), CalcThreatStopRange(), iMaxTime, IOrderModule::FLAG_CANCEL_ON_REACTION_ORDER), true);
 			return true;
 			}
 
@@ -1558,20 +1571,31 @@ bool CBaseShipAI::React (AIReaction iReaction, CSpaceObject &TargetObj)
 				const Metric rMaxDist2 = rMaxDist * rMaxDist;
 				if (pBase->GetDistance2(&TargetObj) > rMaxDist2)
 					{
-					m_DeterModule.BehaviorStart(*m_pShip, m_AICtx, TargetObj, false);
-					return true;
+					if (!m_DeterModule.IsEnabled() && m_AICtx.HasSecondaryWeapons())
+						{
+						m_DeterModule.BehaviorStart(*m_pShip, m_AICtx, TargetObj, true);
+						return true;
+						}
+					else
+						return false;
 					}
 				}
+
+			if (GetCurrentOrderDesc().IsCancelOnReactionOrder())
+				CancelCurrentOrder();
 
 			//	Add a chase order
 
 			int iMaxTime = (GetBase() ? 0 : CAIBehaviorCtx::DETER_CHASE_MAX_TIME);
-			AddOrder(CDeterChaseOrder::Create(TargetObj, GetBase(), CalcThreatStopRange(), iMaxTime), true);
+			AddOrder(CDeterChaseOrder::Create(TargetObj, GetBase(), CalcThreatStopRange(), iMaxTime, IOrderModule::FLAG_CANCEL_ON_REACTION_ORDER), true);
 			return true;
 			}
 
 		case AIReaction::Destroy:
 		case AIReaction::DestroyAndRetaliate:
+			if (GetCurrentOrderDesc().IsCancelOnReactionOrder())
+				CancelCurrentOrder();
+
 			AddOrder(COrderDesc(IShipController::orderDestroyTarget, &TargetObj), true);
 			return true;
 

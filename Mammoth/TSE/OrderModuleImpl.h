@@ -49,7 +49,10 @@ class CApproachOrder : public IOrderModule
 				m_Reaction(AIReaction::DeterWithSecondaries, AIReaction::None, AIReaction::None)
 			{ }
 
-		static COrderDesc Create (CSpaceObject &Dest, int iDist, const CReactionImpl &Reactions);
+		//	dwFlags:
+		//		FLAG_CANCEL_ON_REACTION_ORDER
+
+		static COrderDesc Create (CSpaceObject &Dest, int iDist, const CReactionImpl &Reactions, DWORD dwFlags = 0);
 
 	protected:
 		//	IOrderModule virtuals
@@ -190,7 +193,10 @@ class CDeterChaseOrder : public IOrderModule
 		CDeterChaseOrder () : IOrderModule(OBJ_COUNT)
 			{ }
 
-		static COrderDesc Create (CSpaceObject &TargetObj, CSpaceObject *pBase, Metric rMaxRange = 0.0, int iTimer = 0);
+		//	dwFlags:
+		//		FLAG_CANCEL_ON_REACTION_ORDER
+
+		static COrderDesc Create (CSpaceObject &TargetObj, CSpaceObject *pBase, Metric rMaxRange = 0.0, int iTimer = 0, DWORD dwFlags = 0);
 
 	protected:
 
@@ -322,7 +328,10 @@ class CNavigateOrder : public IOrderModule
 	public:
 		CNavigateOrder (IShipController::OrderTypes iOrder);
 
-		static COrderDesc CreateDock (CSpaceObject &Dest, const CReactionImpl &Reactions);
+		//	dwFlags:
+		//		FLAG_CANCEL_ON_REACTION_ORDER
+
+		static COrderDesc CreateDock (CSpaceObject &Dest, const CReactionImpl &Reactions, DWORD dwFlags = 0);
 
 	protected:
 

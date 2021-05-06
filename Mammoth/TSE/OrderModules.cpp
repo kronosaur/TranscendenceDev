@@ -260,13 +260,11 @@ void IOrderModule::ReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 //	Load save file
 	
 	{
-	int i;
-
 	//	Load the objects
 
 	DWORD dwCount;
 	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
-	for (i = 0; i < (int)dwCount; i++)
+	for (int i = 0; i < (int)dwCount; i++)
 		{
 		if (i < m_iObjCount)
 			CSystem::ReadObjRefFromStream(Ctx, &m_Objs[i]);

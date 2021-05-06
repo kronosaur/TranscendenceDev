@@ -5,7 +5,7 @@
 
 #include "PreComp.h"
 
-COrderDesc CDeterChaseOrder::Create (CSpaceObject &TargetObj, CSpaceObject *pBase, Metric rMaxRange, int iTimer)
+COrderDesc CDeterChaseOrder::Create (CSpaceObject &TargetObj, CSpaceObject *pBase, Metric rMaxRange, int iTimer, DWORD dwFlags)
 
 //	Create
 //
@@ -23,7 +23,14 @@ COrderDesc CDeterChaseOrder::Create (CSpaceObject &TargetObj, CSpaceObject *pBas
 	if (iTimer > 0)
 		pData->SetIntegerAt(CONSTLIT("timer"), iTimer / g_TicksPerSecond);
 
-	return COrderDesc(IShipController::orderDeterChase, &TargetObj, *pData);
+	COrderDesc Result(IShipController::orderDeterChase, &TargetObj, *pData);
+
+	//	Set some flags
+
+	if (dwFlags & FLAG_CANCEL_ON_REACTION_ORDER)
+		Result.SetCancelOnReactionOrder();
+
+	return Result;
 	}
 
 void CDeterChaseOrder::OnAttacked (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &AttackerObj, const SDamageCtx &Damage, bool bFriendlyFire)
