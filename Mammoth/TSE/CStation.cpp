@@ -748,7 +748,7 @@ void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *
 
 	if (retiTick)
 		{
-		if (m_fActive && !IsTimeStopped())
+		if (m_fActive && !IsTimeStopped() && !ShowStationDamage())
 			*retiTick = GetSystem()->GetTick() + GetDestiny();
 		else
 			*retiTick = 0;
