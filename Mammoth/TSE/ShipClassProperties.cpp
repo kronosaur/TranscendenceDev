@@ -55,7 +55,7 @@
 #define PROPERTY_WRECK_TYPE						CONSTLIT("wreckType")
 #define PROPERTY_WRECK_TYPE_NAME				CONSTLIT("wreckTypeName")
 
-TPropertyHandler<CShipClass> CShipClass::m_PropertyTable = std::array<TPropertyHandler<CShipClass>::SPropertyDef, 4> {{
+TPropertyHandler<CShipClass> CShipClass::m_PropertyTable = std::array<TPropertyHandler<CShipClass>::SPropertyDef, 5> {{
 		{
 		"ai.combatStyle",			"Combat style",
 		[](const CShipClass &ShipClass, const CString &sProperty) 
@@ -97,6 +97,19 @@ TPropertyHandler<CShipClass> CShipClass::m_PropertyTable = std::array<TPropertyH
 			{
 			Metric rManeuver = g_SecondsPerUpdate * ShipClass.GetIntegralRotationDesc().GetMaxRotationSpeedDegrees();
 			return ICCItemPtr(rManeuver);
+			},
+		NULL,
+		},
+
+		{
+		"maxAcceleration",		"Maximum acceleration (klicks/second)",
+		[](const CShipClass &ShipClass, const CString &sProperty) 
+			{
+			Metric rMass = ShipClass.GetHullDesc().GetMass();
+			if (rMass <= 0.0)
+				return ICCItemPtr::Nil();
+
+			return ICCItemPtr(ShipClass.m_Perf.GetDriveDesc().GetThrust() * 1000.0 / rMass);
 			},
 		NULL,
 		},
