@@ -555,6 +555,45 @@ void CBaseShipAI::DebugPaintAnnotations (CG32bitImage &Dest, int x, int y, SView
 
 		m_pShip->PaintAnnotationText(Dest, x, y, sText, Ctx);
 
+		//	Extra
+
+		switch (GetCurrentOrder())
+			{
+			case IShipController::orderDestroyTarget:
+				{
+				const CSpaceObject *pTarget = GetCurrentOrderTarget();
+				if (!pTarget->CanThrust())
+					{
+					int iClock = m_pShip->GetUniverse().GetTicks() / (170 + m_pShip->GetDestiny() / 3);
+					int iAngle = m_pShip->AlignToRotationAngle((m_pShip->GetDestiny() + (iClock * 141 * (1 + m_pShip->GetDestiny()))) % 360);
+
+					CString sText = strPatternSubst(CONSTLIT("iClock = %d iAngle = %d"), iClock, iAngle);
+					m_pShip->PaintAnnotationText(Dest, x, y, sText, Ctx);
+
+					int iAimAngle;
+					int iFireAngle;
+					int iFacingAngle;
+					bool bAligned = m_pShip->IsWeaponAligned(devPrimaryWeapon,
+						(CSpaceObject *)pTarget,
+						&iAimAngle,
+						&iFireAngle,
+						&iFacingAngle);
+
+					sText = strPatternSubst(CONSTLIT("iAim = %d iFacing = %d"), iAimAngle, iFacingAngle);
+					m_pShip->PaintAnnotationText(Dest, x, y, sText, Ctx);
+
+					constexpr Metric MIN_POTENTIAL2 = (KLICKS_PER_PIXEL* KLICKS_PER_PIXEL * 25.0);
+					constexpr Metric MIN_STATION_TARGET_DIST =	(10.0 * LIGHT_SECOND);
+					Metric rRadius = pTarget->GetHitSize() + MIN_STATION_TARGET_DIST + (LIGHT_SECOND * (m_pShip->GetDestiny() % 100) / 10.0);
+					CVector vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius);
+					CVector vDirection = m_AICtx.CalcManeuverFormation(m_pShip, vPos, CVector(), iAngle);
+
+					if (vDirection.Length2() < MIN_POTENTIAL2)
+						m_pShip->PaintAnnotationText(Dest, x, y, CONSTLIT("Aim"), Ctx);
+					}
+				}
+			}
+
 		//	Deter module
 
 		if (m_DeterModule.IsEnabled())

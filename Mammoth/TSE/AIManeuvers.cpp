@@ -304,7 +304,7 @@ bool CAIBehaviorCtx::CalcFormationParams (CShip *pShip,
 										  int iDestAngle, 
 										  CVector *retvRecommendedVel, 
 										  Metric *retrDeltaPos2,
-										  Metric *retrDeltaVel2)
+										  Metric *retrDeltaVel2) const
 
 //	CalcFormationParams
 //
@@ -417,7 +417,7 @@ CVector CAIBehaviorCtx::CalcManeuverCloseOnTarget (CShip *pShip,
 	return vInterceptPoint;
 	}
 
-CVector CAIBehaviorCtx::CalcManeuverFormation (CShip *pShip, const CVector vDest, const CVector vDestVel, int iDestFacing)
+CVector CAIBehaviorCtx::CalcManeuverFormation (CShip *pShip, const CVector vDest, const CVector vDestVel, int iDestFacing) const
 
 //	CalcManeuverFormation
 //
