@@ -80,6 +80,11 @@
 								(msnSetData gSource 'state 'survivedAttack)
 								(msnSetProperty gSource 'summary (msnTranslate gSource 'Summary))
 
+								;	Make sure we're at least members
+								(if (not (typGetData &unidKorolovShipping; 'level))
+									(typSetData &unidKorolovShipping; 'level 1)
+									)
+
 								;	We've managed to save the station so save the game
 								(msnSetData gSource 'missionCheckpoint True)
 								)
