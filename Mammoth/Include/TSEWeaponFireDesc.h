@@ -772,6 +772,7 @@ class CWeaponFireDesc
 		bool IsFragment (void) const { return m_fFragment; }
 		bool IsMIRV (void) const { return (m_fMIRV ? true : false); }
 		bool IsMIRVFragment (void) const { return (m_pFirstFragment ? m_pFirstFragment->pDesc->IsMIRV(): false); }
+		bool IsMIRVOrHasMIRVFragments () const { return IsMIRV() || IsMIRVFragment(); }
 		bool IsScalable (void) const { return (m_pScalable != NULL); }
 		bool IsTargetRequired (void) const { return (m_fTargetRequired ? true : false); }
 		bool IsTracking (void) const { return m_iManeuverability != 0; }

@@ -129,6 +129,7 @@ const Metric BALANCE_OMNI_POWER =       0.5;                //  f(x) = factor * 
 const Metric BALANCE_OMNI_FACTOR =      100.0;              //      This function maps from a swivel
 															//      arc (0-360) to its effect on weapon
 															//      balance: 0 = none; 100.0 = +100%
+const Metric BALANCE_MIRV_FACTOR =		75.0;				//	Bonus to balance if MIRVed
 
 const Metric BALANCE_TRACKING_BONUS =   90.0;               //  Bonus to balance if weapon has tracking.
 const Metric BALANCE_LINKED_FIRE_BONUS = 25.0;              //  Bonus to balance if weapon is linked-fire.
@@ -448,6 +449,14 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 		//	NOTE: If we have tracking, then omni is less important.
 
 		retBalance.rOmni = Max(0.0, rOmni - retBalance.rTracking);
+		retBalance.rBalance += retBalance.rOmni;
+		}
+
+	//	Multitarget (only if not already omni)
+
+	if (pShotDesc->IsMIRVOrHasMIRVFragments() && retBalance.rOmni == 0.0)
+		{
+		retBalance.rOmni = BALANCE_MIRV_FACTOR;
 		retBalance.rBalance += retBalance.rOmni;
 		}
 
