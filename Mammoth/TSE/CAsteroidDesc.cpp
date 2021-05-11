@@ -91,31 +91,31 @@ int CAsteroidDesc::CalcMaxOreLevel (DamageTypes iDamageType)
 		{
 		case damageLaser:
 		case damageKinetic:
-			return 4;
+			return 5;
 
 		case damageParticle:
 		case damageBlast:
-			return 7;
+			return 8;
 
 		case damageIonRadiation:
 		case damageThermonuclear:
-			return 10;
+			return 11;
 
 		case damagePositron:
 		case damagePlasma:
-			return 13;
+			return 14;
 
 		case damageAntiMatter:
 		case damageNano:
-			return 16;
+			return 17;
 
 		case damageGravitonBeam:
 		case damageSingularity:
-			return 19;
+			return 20;
 
 		case damageDarkAcid:
 		case damageDarkSteel:
-			return 22;
+			return 23;
 
 		case damageDarkLightning:
 		case damageDarkFire:
