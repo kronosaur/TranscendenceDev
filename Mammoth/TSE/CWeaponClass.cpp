@@ -119,7 +119,7 @@ const int MAX_COUNTER =					100;
 const Metric STD_FIRE_RATE_SECS =		16.0;				//	Standard fire rate (secs)
 const Metric STD_FIRE_DELAY_TICKS =     8.0;
 
-const Metric STD_AMMO_BALANCE =         -100.0;             //  Balance adj from having ammo
+const Metric STD_AMMO_BALANCE =         -90.0;				//  Balance adj from having ammo
 const Metric STD_AMMO_MASS =            10.0;               //  Std ammo mass (kg)
 const Metric BALANCE_AMMO_COST_RATIO =  -0.25;              //  Each percent of ammo price above std is
 															//      0.25% balance penalty.
@@ -144,7 +144,7 @@ const Metric BALANCE_SPEED_FACTOR =     -25.0;
 
 const Metric BALANCE_INTERACTION_FACTOR = 5.0;              //  Bonus to balance for 0 interaction (linear
 															//      decrease as interaction reaches 100).
-const Metric BALANCE_HP_FACTOR =        25.0;               //  Bonus to balance if double standard HPs.
+const Metric BALANCE_HP_FACTOR =        20.0;               //  Bonus to balance if double standard HPs.
 const Metric BALANCE_POWER_AMMO_FACTOR = 0.1;               //  Power used by ammo weapons relative to non-ammo
 const Metric BALANCE_POWER_RATIO =      -0.5;               //  Each percent of power consumption above standard
 															//      is 0.5% balance penalty.
