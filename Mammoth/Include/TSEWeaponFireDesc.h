@@ -797,6 +797,7 @@ class CWeaponFireDesc
 
 		int CalcDefaultInteraction (void) const;
 		Metric CalcMaxEffectiveRange (void) const;
+		Metric CalcShotsPerAmmoItem () const;
 		static Metric CalcSpeed (Metric rPercentOfLight, bool bRelativistic);
 		CEffectCreator *GetFireEffect (void) const;
 		SOldEffects &GetOldEffects (void) const { return (m_pOldEffects ? *m_pOldEffects : m_NullOldEffects); }

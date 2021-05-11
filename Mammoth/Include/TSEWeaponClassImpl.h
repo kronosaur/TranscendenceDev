@@ -109,6 +109,9 @@ class CWeaponClass : public CDeviceClass
 
 		CItemType *GetAmmoItem (int iIndex) const;
 		int GetAmmoItemCount (void) const;
+		const CConfigurationDesc &GetConfiguration (const CWeaponFireDesc &ShotDesc) const;
+		int GetContinuous (const CWeaponFireDesc &Shot) const;
+		bool GetContinuousConsumePerShot (const CWeaponFireDesc &Shot) const { return m_bContinuousConsumePerShot; }
 		int GetIdlePowerUse (void) const { return m_iIdlePowerUse; }
 		CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem &Ammo = CItem()) const;
 
@@ -274,8 +277,6 @@ class CWeaponClass : public CDeviceClass
 							 CSpaceObject *pTarget,
 							 int iRepeatingCount,
 							 int iShotNumber);
-		const CConfigurationDesc &GetConfiguration (const CWeaponFireDesc &ShotDesc) const;
-		int GetContinuous (const CWeaponFireDesc &Shot) const;
 		int GetContinuousFireDelay (const CWeaponFireDesc &Shot) const;
 		int GetFireDelay (const CWeaponFireDesc &ShotDesc) const;
 		const CWeaponFireDesc *GetReferenceShotData (const CWeaponFireDesc *pShot, int *retiFragments = NULL) const;
