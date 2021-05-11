@@ -80,13 +80,13 @@
 					
 					particleLifetime=	"30"
 					>
-			    <ParticleEffect>
-				    <Particle
-						    style=			"flame"
-                            minWidth=       "1"
-						    maxWidth=		"5-10"
-						    />
-			    </ParticleEffect>
+				<ParticleEffect>
+					<Particle
+							style=			"flame"
+							minWidth=       "1"
+							maxWidth=		"5-10"
+							/>
+				</ParticleEffect>
 			</ParticleSystem>
 		</Weapon>
 	</ItemType>
