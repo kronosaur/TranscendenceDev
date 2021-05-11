@@ -370,10 +370,10 @@
 
 						{	test:'(itm@ &itNAMIMissileLauncher; 'ammoTypes)				result:'(&itKM100Missile; &itFragmentationMissile; &itKM120Missile;	&itKM500Missile; &itKM550Missile; &itXM300Missile; &itKM170Missile; &itXM900Missile;)	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'averageDamage)			result:14.0	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'balance)					result:-56	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'balanceDamage)			result:241	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'balanceCost)				result:599	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'balanceExcludeCost)		result:-13	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'balance)					result:-29	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'balanceDamage)			result:210	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'balanceCost)				result:1033	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'balanceExcludeCost)		result:15	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'canFireWhenBlind)		result:Nil	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'cyberDefenseLevel)			result:3	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'damage)					result:168	}
@@ -385,7 +385,7 @@
 						{	test:'(itm@ &itNAMIMissileLauncher; 'fireArc)					result:Nil	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'fireDelay)				result:15	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'fireRate)				result:67	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'hp)						result:10	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'hp)						result:20	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'interaction)				result:100	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'lifetime)				result:90	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'linkedFireOptions)		result:Nil	}
@@ -426,10 +426,10 @@
 
 						{	test:'(itm@ &itKM500Missile; 'ammoTypes)				result:Nil	}
 						{	test:'(itm@ &itKM500Missile; 'averageDamage)			result:17.5	}
-						{	test:'(itm@ &itKM500Missile; 'balance)				result:15	}
-						{	test:'(itm@ &itKM500Missile; 'balanceDamage)			result:199	}
-						{	test:'(itm@ &itKM500Missile; 'balanceCost)			result:2410	}
-						{	test:'(itm@ &itKM500Missile; 'balanceExcludeCost)		result:15	}
+						{	test:'(itm@ &itKM500Missile; 'balance)				result:24	}
+						{	test:'(itm@ &itKM500Missile; 'balanceDamage)			result:185	}
+						{	test:'(itm@ &itKM500Missile; 'balanceCost)			result:2745	}
+						{	test:'(itm@ &itKM500Missile; 'balanceExcludeCost)		result:24	}
 						{	test:'(itm@ &itKM500Missile; 'canFireWhenBlind)		result:Nil	}
 						{	test:'(itm@ &itKM500Missile; 'damage)					result:210	}
 						{	test:'(itm@ &itKM500Missile; 'damagePerProjectile)	result:17.5	}
@@ -440,7 +440,7 @@
 						{	test:'(itm@ &itKM500Missile; 'fireArc)				result:Nil	}
 						{	test:'(itm@ &itKM500Missile; 'fireDelay)				result:15	}
 						{	test:'(itm@ &itKM500Missile; 'fireRate)				result:67	}
-						{	test:'(itm@ &itKM500Missile; 'hp)						result:10	}
+						{	test:'(itm@ &itKM500Missile; 'hp)						result:20	}
 						{	test:'(itm@ &itKM500Missile; 'interaction)			result:100	}
 						{	test:'(itm@ &itKM500Missile; 'lifetime)				result:120	}
 						{	test:'(itm@ &itKM500Missile; 'linkedFireOptions)		result:Nil	}
