@@ -669,6 +669,7 @@ class CWeaponFireDesc
 		void ApplyAcceleration (CSpaceObject *pMissile) const;
 		Metric CalcDamage (DWORD dwDamageFlags = 0) const;
 		DamageDesc CalcDamageDesc (const CItemEnhancementStack *pEnhancements, const CDamageSource &Attacker, Metric rAge) const;
+		int CalcDefaultHitPoints (void) const;
 		bool CanAutoTarget (void) const { return (m_fAutoTarget ? true : false); }
 		bool CanDamageSource (void) const { return (m_fCanDamageSource ? true : false); }
 		bool CanHit (const CSpaceObject &Obj) const;
@@ -793,7 +794,6 @@ class CWeaponFireDesc
 			SVaporTrailDesc VaporTrail;			//  Vapor trail effect
 			};
 
-		int CalcDefaultHitPoints (void) const;
 		int CalcDefaultInteraction (void) const;
 		Metric CalcMaxEffectiveRange (void) const;
 		static Metric CalcSpeed (Metric rPercentOfLight, bool bRelativistic);

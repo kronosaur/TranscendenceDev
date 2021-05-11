@@ -143,9 +143,7 @@ const Metric BALANCE_SPEED_FACTOR =     -25.0;
 
 const Metric BALANCE_INTERACTION_FACTOR = 5.0;              //  Bonus to balance for 0 interaction (linear
 															//      decrease as interaction reaches 100).
-const Metric BALANCE_HP_FACTOR =        10.0;               //  Bonus to balance for projectile HP equal to
-															//      standard weapon damage for the level
-															//      (linear decrease with fewer HP).
+const Metric BALANCE_HP_FACTOR =        25.0;               //  Bonus to balance if double standard HPs.
 const Metric BALANCE_POWER_AMMO_FACTOR = 0.1;               //  Power used by ammo weapons relative to non-ammo
 const Metric BALANCE_POWER_RATIO =      -0.5;               //  Each percent of power consumption above standard
 															//      is 0.5% balance penalty.
@@ -474,8 +472,12 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 	if (!pShotDesc->GetInteraction().InteractsAtMaxLevel())
 		retBalance.rProjectileHP += BALANCE_INTERACTION_FACTOR * (100.0 - (int)pShotDesc->GetInteraction()) / 100.0;
 
-	if (pShotDesc->GetHitPoints() > 0)
-		retBalance.rProjectileHP += BALANCE_HP_FACTOR * pShotDesc->GetHitPoints() / (Metric)Stats.iDamage;
+	int iDefaultHP = pShotDesc->CalcDefaultHitPoints();
+	if (iDefaultHP > 0)
+		{
+		Metric rDelta = BALANCE_HP_FACTOR * ((Metric)pShotDesc->GetHitPoints() - iDefaultHP) / (Metric)iDefaultHP;
+		retBalance.rProjectileHP += rDelta;
+		}
 
 	retBalance.rBalance += retBalance.rProjectileHP;
 
