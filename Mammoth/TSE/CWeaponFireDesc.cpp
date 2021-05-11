@@ -321,6 +321,14 @@ int CWeaponFireDesc::CalcDefaultHitPoints (void) const
 		Metric rStdHP = CWeaponClass::HP_ARMOR_RATIO * CArmorClass::GetStdHP(AmmoItem.GetLevel());
 		Metric rMassAdj = AmmoItem.GetMassKg() / CWeaponClass::STD_AMMO_MASS;
 
+		//	Compute how many of these shots are created by one ammo item.
+
+		Metric rShotsPerAmmoItem = CalcShotsPerAmmoItem();
+		if (rShotsPerAmmoItem > 0.0)
+			rMassAdj /= rShotsPerAmmoItem;
+
+		//	Return hit points
+
 		return mathRound(rMassAdj * rStdHP);
 		}
 

@@ -456,7 +456,7 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 
 	if (pShotDesc->IsMIRVOrHasMIRVFragments() && retBalance.rOmni == 0.0)
 		{
-		retBalance.rOmni = BALANCE_MIRV_FACTOR;
+		retBalance.rOmni = Max(0.0, BALANCE_MIRV_FACTOR - retBalance.rTracking);
 		retBalance.rBalance += retBalance.rOmni;
 		}
 
