@@ -362,7 +362,6 @@
 				type=				"missile"
 				repeating=			"3"
 
-				hitPoints=			"5"
 				lifetime=			"60"
 				damage=				"blast:1d8; radiation1; WMD1"
 				powerUse=			"60"

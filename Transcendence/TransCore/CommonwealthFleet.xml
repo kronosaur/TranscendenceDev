@@ -1006,7 +1006,7 @@ PLAYER DATA
 				external=			"true"
 				
 				missileSpeed=		"40"
-				hitPoints=			"20"
+				hitPoints=			"30"
 				lifetime=			"120"
 				maneuverRate=		"9"
 
@@ -1067,7 +1067,6 @@ PLAYER DATA
 				fireRate=			"16"
 				missileSpeed=		"50"
 				lifetime=			"60"
-				hitPoints=			"30"
 				powerUse=			"2000"
 
 				effect=				"&efLamplighterProjectile;"
@@ -1101,7 +1100,6 @@ PLAYER DATA
 				fireRate=			"15"
 				missileSpeed=		"60"
 				lifetime=			"40"
-				hitPoints=			"15"
 				powerUse=			"3000"
 
 				effect=				"&efLamplighterProjectile;"

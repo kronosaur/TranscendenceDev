@@ -552,7 +552,6 @@
 
 				fireRate=			"36"
 				missileSpeed=		"50"
-				hitPoints=			"10"
 				lifetime=			"90"
 				powerUse=			"200"
 				recoil=				"2"

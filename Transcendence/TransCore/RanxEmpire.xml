@@ -601,7 +601,6 @@
 
 						missileSpeed=	"50"
 						lifetime=		"120"
-						hitPoints=		"15"
 
 						failsafe=		"10"
 
