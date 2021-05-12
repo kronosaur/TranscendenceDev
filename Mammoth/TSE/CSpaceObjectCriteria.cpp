@@ -244,7 +244,7 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 //		O:escort;	Ships ordered to escort source
 //		O:guard;	Ships ordered to guard source
 //		P			Only objects that can be detected (perceived) by source
-//		Q			(unused)
+//		Q			Can perceive source only
 //		R			Return only the farthest object to the source
 //		R:nn;		Return only objects greater than nn light-seconds away
 //		S:sort		Sort order ('d' = distance ascending; 'D' = distance descending

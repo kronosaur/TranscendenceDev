@@ -1025,6 +1025,7 @@ void CStation::CreateDestructionEffect (void)
 			}
 
 		Ctx.Source = CDamageSource(this, Explosion.iCause);
+		Ctx.Source.SetExplosion();
 		Ctx.vPos = GetPos();
 		Ctx.vVel = GetVel();
 		Ctx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
@@ -1120,6 +1121,7 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 
 				Ctx.pDesc = pEjectaType;
 				Ctx.Source = CDamageSource(this, killedByEjecta);
+				Ctx.Source.SetEjecta();
 				Ctx.iDirection = AngleMod(iDirection 
 						+ (mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12))
 						+ (360 - 30));
@@ -1585,6 +1587,7 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 			}
 
 		Ctx.Source = CDamageSource(this, Explosion.iCause);
+		Ctx.Source.SetExplosion();
 		Ctx.vPos = GetPos();
 		Ctx.vVel = GetVel();
 		Ctx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;

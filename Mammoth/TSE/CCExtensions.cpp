@@ -2169,9 +2169,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (missiles)\n\n"
 
 			"   'lifeLeft\n"
+			"   'reaction\n"
 			"   'rotation\n"
-			"   'sourceObj\n"
+			"   'source\n"
 			"   'target\n"
+			"   'tracking\n"
 			"\n"
 			"property (markers)\n\n"
 
