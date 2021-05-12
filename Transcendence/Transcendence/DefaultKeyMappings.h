@@ -57,6 +57,7 @@ const CGameKeys::SKeyMapEntry CGameKeys::DEFAULT_MAP[] =
 
 		{	VK_F1,				CGameKeys::keyShowHelp },
 		{	VK_F2,				CGameKeys::keyShowGameStats },
+		{	VK_F6,				CGameKeys::keyToggleHUD	},
 		{	VK_F7,				CGameKeys::keyVolumeDown },
 		{	VK_F8,				CGameKeys::keyVolumeUp },
 		{	VK_F9,				CGameKeys::keyShowConsole },
@@ -111,6 +112,7 @@ const CGameKeys::SKeyMapEntry CGameKeys::WASD_MAP[] =
 
 		{	VK_F1,				CGameKeys::keyShowHelp },
 		{	VK_F2,				CGameKeys::keyShowGameStats },
+		{	VK_F6,				CGameKeys::keyToggleHUD	},
 		{	VK_F7,				CGameKeys::keyVolumeDown },
 		{	VK_F8,				CGameKeys::keyVolumeUp },
 		{	VK_F9,				CGameKeys::keyShowConsole },

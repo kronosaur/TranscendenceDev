@@ -164,6 +164,7 @@ class CGameSession : public IHISession
 		int m_iDamageFlash = 0;					//	0 = no flash; odd = recover; even = flash;
 		bool m_bIgnoreButtonUp = false;			//	If we closed a menu on button down, ignore button up
 		bool m_bIgnoreMouseMove = false;		//	Ignore mouse move, for purposes of enabling mouse flight
+		bool m_bHideHUD = false;				//	Hide the HUD
 
 		//	Map state
 

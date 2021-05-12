@@ -51,13 +51,13 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				SetProgramState(psPaintingLRS);
 
 				bool bShowMapHUD = (pPlayer && pPlayer->IsMapHUDActive());
-				if (!m_bShowingSystemMap || bShowMapHUD)
+				if (!m_bHideHUD && (!m_bShowingSystemMap || bShowMapHUD))
 					{
                     m_HUD.Update(g_pUniverse->GetFrameTicks());
                     m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
 					}
 
-				if (!m_bShowingSystemMap && g_pTrans->m_State != CTranscendenceWnd::gsDestroyed)
+				if (!m_bHideHUD && !m_bShowingSystemMap && g_pTrans->m_State != CTranscendenceWnd::gsDestroyed)
 					{
 					m_Narrative.Update(g_pUniverse->GetFrameTicks());
 					m_Narrative.Paint(Screen, g_pUniverse->GetFrameTicks());
@@ -97,6 +97,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				//	Paint soundtrack info
 
 				if (m_Settings.GetBoolean(CGameSettings::debugSoundtrack)
+						&& !m_bHideHUD
 						&& !m_bShowingSystemMap)
 					PaintSoundtrackTitles(Screen);
 
@@ -241,8 +242,11 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
                 //  Paint displays
 
-                m_HUD.Update(g_pUniverse->GetFrameTicks());
-                m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks(), true);
+				if (!m_bHideHUD)
+					{
+					m_HUD.Update(g_pUniverse->GetFrameTicks());
+					m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks(), true);
+					}
 
 				//	Debug console
 
@@ -281,8 +285,11 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 				g_pUniverse->PaintPOV(Screen, m_rcScreen, 0);
 
-                m_HUD.Update(g_pUniverse->GetFrameTicks());
-                m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
+				if (!m_bHideHUD)
+					{
+					m_HUD.Update(g_pUniverse->GetFrameTicks());
+					m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
+					}
 
 				m_MessageDisplay.Paint(Screen);
 
@@ -343,8 +350,11 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 				g_pUniverse->PaintPOV(Screen, m_rcScreen, 0);
 
-                m_HUD.Update(g_pUniverse->GetFrameTicks());
-                m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
+				if (!m_bHideHUD)
+					{
+					m_HUD.Update(g_pUniverse->GetFrameTicks());
+					m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
+					}
 
 				m_MessageDisplay.Paint(Screen);
 
@@ -457,13 +467,11 @@ void CGameSession::PaintSRS (CG32bitImage &Screen)
 
 	DWORD dwViewportFlags = 0;
 	bool bBlind = false;
-	bool bShowMapHUD = false;
 	CShip *pShip = NULL;
 	if (auto pPlayer = m_Model.GetPlayer())
 		{
 		pShip = pPlayer->GetShip();
 		bBlind = pShip->IsBlind();
-		bShowMapHUD = pPlayer->IsMapHUDActive();
 
 		if (pShip->IsSRSEnhanced())
 			dwViewportFlags |= CSystem::VWP_ENHANCED_DISPLAY;
