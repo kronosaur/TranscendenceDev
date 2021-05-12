@@ -39,6 +39,7 @@
 #define ALERT_WHEN_DESTROYED_ATTRIB				CONSTLIT("alertWhenDestroyed")
 #define ALLOW_ENEMY_DOCKING_ATTRIB				CONSTLIT("allowEnemyDocking")
 #define ANONYMOUS_ATTRIB						CONSTLIT("anonymous")
+#define AUTO_LOOT_CRITERIA_ATTRIB				CONSTLIT("autoLootCriteria")
 #define BACKGROUND_PLANE_ATTRIB					CONSTLIT("backgroundPlane")
 #define BARRIER_EFFECT_ATTRIB					CONSTLIT("barrierEffect")
 #define BEACON_ATTRIB							CONSTLIT("beacon")
@@ -1879,6 +1880,12 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		}
 	else
 		m_iEjectaAdj = 0;
+
+	//	Auto loot
+
+	CString sAutoLootCriteria = pDesc->GetAttribute(AUTO_LOOT_CRITERIA_ATTRIB);
+	if (!sAutoLootCriteria.IsBlank())
+		m_AutoLootCriteria.Init(sAutoLootCriteria);
 
 	//	Special object descriptors
 

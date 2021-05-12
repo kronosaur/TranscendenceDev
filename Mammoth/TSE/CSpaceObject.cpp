@@ -1018,7 +1018,9 @@ void CSpaceObject::CommsMessageFrom (CSpaceObject *pSender, int iIndex)
 
 	{
 	CCommunicationsHandler *pHandler = GetCommsHandler();
-	ASSERT(pHandler && iIndex < pHandler->GetCount());
+	if (!pHandler || iIndex >= pHandler->GetCount())
+		throw CException(ERR_FAIL);
+
 	const CCommunicationsHandler::SMessage &Msg = pHandler->GetMessage(iIndex);
 
 	if (Msg.InvokeEvent.pCode)
@@ -5582,7 +5584,9 @@ bool CSpaceObject::IsCommsMessageValidFrom (const CSpaceObject &SenderObj, int i
 
 	{
 	const CCommunicationsHandler *pHandler = GetCommsHandler();
-	ASSERT(pHandler && iIndex < pHandler->GetCount());
+	if (!pHandler || iIndex >= pHandler->GetCount())
+		throw CException(ERR_FAIL);
+
 	const CCommunicationsHandler::SMessage &Msg = pHandler->GetMessage(iIndex);
 
 	//	If we have an OnShow code block then see if it evaluates to TRUE. If not,
@@ -7057,8 +7061,12 @@ void CSpaceObject::RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, c
 //	NOTE: This does not transfer the item.
 
 	{
-	ASSERT(pSellerObj);
-	ASSERT(Price.GetCurrencyType());
+	if (!pSellerObj)
+		throw CException(ERR_FAIL);
+
+	if (!Price.GetCurrencyType())
+		throw CException(ERR_FAIL);
+
 	//	NOTE: It is OK if the Item is null.
 
 	//	Charge the buyer (us)

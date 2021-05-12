@@ -139,6 +139,7 @@ static constexpr DWORD UNID_DEFAULT_SHIELDS_DOWN_ALRAM =	0x000000A5;
 static constexpr DWORD UNID_DEFAULT_BUTTON_CLICK =		0x000000A6;
 static constexpr DWORD UNID_DEFAULT_SELECT =			0x000000A7;
 static constexpr DWORD UNID_DEFAULT_GRAVITY_ALARM =		0x000000A8;
+static constexpr DWORD UNID_DEFAULT_CANT_DO_IT =		0x000000A4;	//	For now, we reuse overloard alarm
 
 static constexpr DWORD g_PlayerSovereignUNID =			0x00001001;	//	svPlayer
 static constexpr DWORD DEFAULT_ECONOMY_UNID =			0x00001017;	//	ecCreditEconomy

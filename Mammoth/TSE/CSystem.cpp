@@ -4962,9 +4962,7 @@ void CSystem::UpdateCollisionTesting (SUpdateCtx &Ctx)
 //	contacts for every unique pair of collisions detected.
 
 	{
-	int i;
-
-	for (i = 0; i < GetObjectCount(); i++)
+	for (int i = 0; i < GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = GetObject(i);
 		if (pObj == NULL || !pObj->IsCollisionTestNeeded())

@@ -4459,6 +4459,50 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			return;
 			}
 
+		//	If auto looting, see if we intersect the player ship
+
+		if (m_pType->IsAutoLoot() 
+				&& Ctx.GetPlayerShip()
+				&& Ctx.GetPlayerShip()->GetItemList().MatchesCriteria(m_pType->GetAutoLootCriteria())
+				&& Ctx.GetPlayerShip()->PointInObject(Ctx.GetPlayerShip()->GetPos(), GetPos()))
+			{
+			//	See if all items fit.
+
+			int iTotalMassKg = 0;
+			const auto &ItemList = GetItemList();
+			for (int i = 0; i < ItemList.GetCount(); i++)
+				iTotalMassKg += ItemList.GetItem(i).GetMassKg() * ItemList.GetItem(i).GetCount();
+
+			Metric rSpaceLeftInTons = Ctx.GetPlayerShip()->GetCargoSpaceLeft();
+			if (iTotalMassKg <= 1000.0 * rSpaceLeftInTons)
+				{
+				//	Take all items
+
+				for (int i = 0; i < ItemList.GetCount(); i++)
+					Ctx.GetPlayerShip()->AddItem(ItemList.GetItem(i));
+
+				//	Leave a marker telling the player what they took.
+
+
+
+				//	Sound
+
+				GetUniverse().PlaySound(this, GetUniverse().FindSound(UNID_DEFAULT_SELECT));
+
+				//	Destroy station and return.
+
+				Destroy(removedFromSystem, CDamageSource());
+				return;
+				}
+
+			//	If they don't fit, we just beep
+
+			else
+				{
+				GetUniverse().PlaySound(this, GetUniverse().FindSound(UNID_DEFAULT_CANT_DO_IT));
+				}
+			}
+
 		//	Active station attack, etc.
 
 		if (!IsAbandoned())

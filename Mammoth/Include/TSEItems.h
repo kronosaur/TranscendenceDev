@@ -535,6 +535,7 @@ class CItemList
 		int GetCountOf (const CItemType &Type) const;
 		CItem &GetItem (int iIndex) { return *m_List[iIndex]; }
 		const CItem &GetItem (int iIndex) const { return *m_List[iIndex]; }
+		bool MatchesCriteria (const CItemCriteria &Criteria) const;
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SortItems (void);
 		void SortItems (const CItemCriteria &SortFirst);
