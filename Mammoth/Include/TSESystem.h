@@ -494,6 +494,8 @@ class CSystem
 		void FireOnSystemObjAttacked (SDamageCtx &Ctx);
 		void FireOnSystemObjCreated (const CSpaceObject &Obj);
 		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx);
+		void FireOnSystemStarted (DWORD dwElapsedTime) { if (m_pType) m_pType->FireOnSystemStarted(dwElapsedTime); }
+		void FireOnSystemStopped () { if (m_pType) m_pType->FireOnSystemStopped(); }
 		void FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, int iRepeatingCount);
 		void FireSystemWeaponEvents (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, int iRepeatingCount, DWORD dwFlags);
 		void FlushAllCaches (void);

@@ -2712,6 +2712,7 @@ void CUniverse::SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV)
 
 		GetMissions().FireOnSystemStopped();
 		GetDesignCollection().FireOnGlobalSystemStopped();
+		m_pCurrentSystem->FireOnSystemStopped();
 
 		//  Make sure we've updated current system data to global data.
 
@@ -2785,6 +2786,7 @@ void CUniverse::SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV)
 	//	Let all types know that we have a new system. Again, this is called 
 	//	before the player has entered the system.
 
+	NewSystem.FireOnSystemStarted(dwElapsedTime);
 	GetDesignCollection().FireOnGlobalSystemStarted(dwElapsedTime);
 	GetMissions().FireOnSystemStarted(dwElapsedTime);
 	}
@@ -2889,7 +2891,10 @@ void CUniverse::StartGame (bool bNewGame)
 		//	updated this system).
 
 		if (GetCurrentSystem())
+			{
+			GetCurrentSystem()->FireOnSystemStarted(0);
 			m_Design.FireOnGlobalSystemStarted(0);
+			}
 
 		//	If we have a player then tell objects that the player has entered
 		//	the system.

@@ -371,12 +371,8 @@
 							Nil
 						
 						;	See if the player has been promoted.
-						;	NOTE: Can't advance beyond wildcatter at a mining
-						;	colony; must join IMU.
 
-						(and (ls (typ@ &unidMiningSkill; 'rpg.miningRank) 3)
-								(setq newRankDesc (typFireEvent &unidMiningSkill; 'CheckPromotion))
-								)
+						(setq newRankDesc (typFireEvent &unidMiningSkill; 'CheckPromotion))
 							{
 								screen: &dsCommonwealthMiningPromotion;
 								priority: 5
