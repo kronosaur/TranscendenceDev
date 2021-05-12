@@ -450,15 +450,26 @@ class CFractureEffect : public TSpaceObjectImpl<OBJID_CFRACTUREEFFECT>
 class CMarker : public TSpaceObjectImpl<OBJID_CMARKER>
 	{
 	public:
+		enum class EStyle
+			{
+			None =							0,  //  Invisible
+			SmallCross =					1,  //  Paint small cross
+			};
+
+		struct SCreateOptions
+			{
+			CString sName;
+			CSovereign *pSovereign = NULL;
+			};
+
 		CMarker (CUniverse &Universe);
 		~CMarker (void);
 
 		static ALERROR Create (CSystem &System,
-							   CSovereign *pSovereign,
 							   const CVector &vPos,
 							   const CVector &vVel,
-							   const CString &sName,
-							   CMarker **retpMarker);
+							   const SCreateOptions &Options,
+							   CMarker **retpMarker = NULL);
 
 		void SetOrbit (const COrbit &Orbit);
 
@@ -486,17 +497,11 @@ class CMarker : public TSpaceObjectImpl<OBJID_CMARKER>
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override { }
 
 	private:
-		enum EStyles
-			{
-			styleNone =                     0,  //  Invisible
-			styleSmallCross =               1,  //  Paint small cross
-			};
-
 		CString m_sName;						//	Name
-		CSovereign *m_pSovereign;				//	Sovereign
-		EStyles m_iStyle;                       //  Paint style
+		CSovereign *m_pSovereign = NULL;		//	Sovereign
+		EStyle m_iStyle = EStyle::None;			//  Paint style
 
-		COrbit *m_pMapOrbit;					//	Orbit to draw on map (may be NULL)
+		COrbit *m_pMapOrbit = NULL;				//	Orbit to draw on map (may be NULL)
 	};
 
 class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>

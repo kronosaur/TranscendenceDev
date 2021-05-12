@@ -13077,6 +13077,10 @@ ICCItem *fnSystemCreateMarker (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 
 	pArgs->Discard();
 
+	CMarker::SCreateOptions Options;
+	Options.pSovereign = pSovereign;
+	Options.sName = sName;
+
 	//	Create
 
 	CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
@@ -13085,10 +13089,9 @@ ICCItem *fnSystemCreateMarker (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 
 	CMarker *pObj;
 	if (error = CMarker::Create(*pSystem,
-			pSovereign,
 			vPos,
 			NullVector,
-			sName,
+			Options,
 			&pObj))
 		return pCC->CreateError(CONSTLIT("Error creating marker"), pCC->CreateInteger(error));
 

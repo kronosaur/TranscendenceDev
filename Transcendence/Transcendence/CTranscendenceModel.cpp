@@ -1887,10 +1887,9 @@ void CTranscendenceModel::OnPlayerTraveledThroughGate (void)
 			{
 			CMarker *pMarker;
 			if (CMarker::Create(*pNewSystem,
-					NULL,
 					NullVector,
 					NullVector,
-					NULL_STR,
+					CMarker::SCreateOptions(),
 					&pMarker) != NOERROR)
 				throw CException(ERR_FAIL, CONSTLIT("Unable to create marker."));
 

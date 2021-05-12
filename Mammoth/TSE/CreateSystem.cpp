@@ -4380,10 +4380,9 @@ ALERROR CSystem::CreateMarker (CXMLElement *pDesc, const COrbit &oOrbit, CMarker
 
 	CMarker *pMarker;
 	if (error = CMarker::Create(*this,
-			NULL,
 			oOrbit.GetObjectPos(),
 			NullVector,
-			NULL_STR,
+			CMarker::SCreateOptions(),
 			&pMarker))
 		return error;
 
