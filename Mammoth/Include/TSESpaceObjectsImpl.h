@@ -452,14 +452,19 @@ class CMarker : public TSpaceObjectImpl<OBJID_CMARKER>
 	public:
 		enum class EStyle
 			{
+			Error =							-1,
+
 			None =							0,  //  Invisible
 			SmallCross =					1,  //  Paint small cross
+			Message =						2,	//	Paint a message
 			};
 
 		struct SCreateOptions
 			{
 			CString sName;
+			EStyle iStyle = EStyle::None;
 			CSovereign *pSovereign = NULL;
+			int iLifetime = -1;
 			};
 
 		CMarker (CUniverse &Universe);
@@ -486,6 +491,9 @@ class CMarker : public TSpaceObjectImpl<OBJID_CMARKER>
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
 		virtual bool ShowMapOrbit (void) const override { return (m_pMapOrbit != NULL); }
 
+		static CString GetStyleID (EStyle iStyle);
+		static EStyle ParseStyle (const CString &sValue);
+
 	protected:
 		virtual bool CanHit (CSpaceObject *pObj) const override { return false; }
 		virtual CSovereign *GetSovereign (void) const override;
@@ -493,13 +501,17 @@ class CMarker : public TSpaceObjectImpl<OBJID_CMARKER>
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual void OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override { }
+		void PaintMessage (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) const;
 
 	private:
 		CString m_sName;						//	Name
 		CSovereign *m_pSovereign = NULL;		//	Sovereign
 		EStyle m_iStyle = EStyle::None;			//  Paint style
+		DWORD m_dwCreatedOn = 0;				//	Tick on which we were created
+		DWORD m_dwDestroyOn = 0;				//	If non-zero, we destroy the marker on the given tick
 
 		COrbit *m_pMapOrbit = NULL;				//	Orbit to draw on map (may be NULL)
 	};

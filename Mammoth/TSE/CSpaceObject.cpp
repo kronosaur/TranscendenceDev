@@ -6821,7 +6821,6 @@ void CSpaceObject::PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewpo
 	const int KEY_BOX_SIZE = 18;
 	const CG16bitFont &NameFont = GetUniverse().GetNamedFont(CUniverse::fontSRSObjName);
 	const CG16bitFont &MessageFont = GetUniverse().GetNamedFont(CUniverse::fontSRSMessage);
-	const RECT &rcClip = Dest.GetClipRect();
 
 	if (iAlign & alignBottom)
 		{

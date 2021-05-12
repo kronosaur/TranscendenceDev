@@ -13057,11 +13057,12 @@ ICCItem *fnSystemCreateMarker (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 
 	//	Evaluate the arguments and validate them
 
-	ICCItem *pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("svi"));
+	ICCItemPtr pArgs(pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("svv")));
 	if (pArgs->IsError())
-		return pArgs;
+		return pArgs->Reference();
 
-	CString sName = pArgs->GetElement(0)->GetStringValue();
+	CMarker::SCreateOptions Options;
+	Options.sName = pArgs->GetElement(0)->GetStringValue();
 
 	//	The position can be either a list (in which case it is a position)
 	//	or an integer (in which case it is a gate object)
@@ -13070,16 +13071,26 @@ ICCItem *fnSystemCreateMarker (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 	if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos) != NOERROR)
 		return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
 
-	//	Sovereign
+	//	Options
 
-	DWORD dwSovereignID = pArgs->GetElement(2)->GetIntegerValue();
-	CSovereign *pSovereign = pCtx->GetUniverse().FindSovereign(dwSovereignID);
+	ICCItem *pOptions = pArgs->GetElement(2);
+	if (pOptions->IsSymbolTable())
+		{
+		DWORD dwSovereignID = pOptions->GetIntegerAt(CONSTLIT("sovereign"));
+		if (dwSovereignID)
+			Options.pSovereign = pCtx->GetUniverse().FindSovereign(dwSovereignID);
 
-	pArgs->Discard();
+		Options.iLifetime = pOptions->GetIntegerAt(CONSTLIT("lifetime"), -1);
 
-	CMarker::SCreateOptions Options;
-	Options.pSovereign = pSovereign;
-	Options.sName = sName;
+		Options.iStyle = CMarker::ParseStyle(pOptions->GetStringAt(CONSTLIT("style")));
+		if (Options.iStyle == CMarker::EStyle::Error)
+			return pCC->CreateError(CONSTLIT("Unknown style"), pOptions);
+		}
+	else
+		{
+		DWORD dwSovereignID = pOptions->GetIntegerValue();
+		Options.pSovereign = pCtx->GetUniverse().FindSovereign(dwSovereignID);
+		}
 
 	//	Create
 

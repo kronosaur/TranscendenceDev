@@ -4478,12 +4478,27 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 				{
 				//	Take all items
 
+				CString sMsg;
 				for (int i = 0; i < ItemList.GetCount(); i++)
+					{
 					Ctx.GetPlayerShip()->AddItem(ItemList.GetItem(i));
+
+					CString sItemName = ItemList.GetItem(i).GetNounPhrase(nounCountAlways | nounTitleCapitalize | nounShort);
+					if (i == 0)
+						sMsg = sItemName;
+					else
+						sMsg.Append(strPatternSubst(CONSTLIT("\n%s"), sItemName));
+					}
 
 				//	Leave a marker telling the player what they took.
 
+				CMarker::SCreateOptions Options;
+				Options.pSovereign = GetSovereign();
+				Options.iLifetime = 150;
+				Options.iStyle = CMarker::EStyle::Message;
+				Options.sName = sMsg;
 
+				CMarker::Create(*GetSystem(), GetPos(), NullVector, Options);
 
 				//	Sound
 

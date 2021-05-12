@@ -12,6 +12,11 @@ const CG32bitPixel RGB_ORBIT_LINE =		        CG32bitPixel(115, 149, 229);
 
 //	CMarker -------------------------------------------------------------------
 
+static TStaticStringTable<TStaticStringEntry<CMarker::EStyle>, 2> STYLE_TABLE = {
+	"message",				CMarker::EStyle::Message,
+	"smallCross",			CMarker::EStyle::SmallCross,
+	};
+
 CMarker::CMarker (CUniverse &Universe) : TSpaceObjectImpl(Universe)
 
 //	CMarker constructor
@@ -54,8 +59,13 @@ ALERROR CMarker::Create (CSystem &System,
 
 	pMarker->m_sName = Options.sName;
 	pMarker->m_pSovereign = Options.pSovereign;
+	pMarker->m_iStyle = Options.iStyle;
 	if (pMarker->m_pSovereign == NULL)
 		pMarker->m_pSovereign = System.GetUniverse().FindSovereign(g_PlayerSovereignUNID);
+
+	pMarker->m_dwCreatedOn = System.GetUniverse().GetTicks();
+	if (Options.iLifetime > 0)
+		pMarker->m_dwDestroyOn = System.GetUniverse().GetTicks() + Options.iLifetime;
 
 	//	Add to system
 
@@ -105,6 +115,19 @@ CSovereign *CMarker::GetSovereign (void) const
 	return m_pSovereign;
 	}
 
+CString CMarker::GetStyleID (EStyle iStyle)
+	{
+	switch (iStyle)
+		{
+		case EStyle::None:
+		case EStyle::Error:
+			return NULL_STR;
+
+		default:
+			return STYLE_TABLE.FindKey(iStyle);
+		}
+	}
+
 void CMarker::OnObjLeaveGate (CSpaceObject *pObj)
 
 //	OnObjLeaveGate
@@ -133,6 +156,10 @@ void CMarker::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
         case EStyle::SmallCross:
             Dest.DrawDot(x, y, CG32bitPixel(255, 255, 0), markerSmallCross);
             break;
+
+		case EStyle::Message:
+			PaintMessage(Dest, x, y, Ctx);
+			break;
         }
 	}
 
@@ -179,6 +206,14 @@ void CMarker::OnReadFromStream (SLoadCtx &Ctx)
 
     bool bHasMapOrbit = ((dwFlags & 0x00000001) ? true : false);
 
+	//	Other fields
+
+	if (Ctx.dwVersion >= 206)
+		{
+		Ctx.pStream->Read(m_dwCreatedOn);
+		Ctx.pStream->Read(m_dwDestroyOn);
+		}
+
     //  Read map orbit, if we have it.
 
     if (bHasMapOrbit)
@@ -188,6 +223,21 @@ void CMarker::OnReadFromStream (SLoadCtx &Ctx)
         }
     else
         m_pMapOrbit = NULL;
+	}
+
+void CMarker::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
+
+//	OnUpdate
+//
+//	Updates
+
+	{
+	if (m_dwDestroyOn
+			&& GetUniverse().GetTicks() >= m_dwDestroyOn)
+		{
+		Destroy(removedFromSystem, CDamageSource());
+		return;
+		}
 	}
 
 void CMarker::OnWriteToStream (IWriteStream *pStream)
@@ -200,6 +250,8 @@ void CMarker::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		m_pSovereign (CSovereign ref)
 //  DWORD       m_iStyle
 //  DWORD       Flags
+//	DWORD		m_dwCreatedOn
+//	DWORD		m_dwDestroyOn
 //  COrbit      (optional)
 
 	{
@@ -214,10 +266,70 @@ void CMarker::OnWriteToStream (IWriteStream *pStream)
 
     pStream->Write(dwFlags);
 
+	pStream->Write(m_dwCreatedOn);
+	pStream->Write(m_dwDestroyOn);
+
     //  Write map orbit, if we have one
 
     if (m_pMapOrbit)
         m_pMapOrbit->WriteToStream(*pStream);
+	}
+
+void CMarker::PaintMessage (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) const
+
+//	PaintMessage
+//
+//	Paint a message marker
+
+	{
+	constexpr DWORD FADE_OUT_TIME = 30;
+	constexpr DWORD FADE_IN_TIME = 30;
+	constexpr int MESSAGE_WIDTH = 600;
+	const CG16bitFont &MessageFont = GetUniverse().GetNamedFont(CUniverse::fontSRSMessage);
+
+	DWORD dwFontFlags = CG16bitFont::AlignCenter;
+
+	RECT rcRect;
+	rcRect.left = x - MESSAGE_WIDTH / 2;
+	rcRect.right = x + MESSAGE_WIDTH / 2;
+	rcRect.top = y;
+	rcRect.bottom = y + 1000;
+
+	CG32bitPixel rgbColor = GetSymbolColor();
+	if (m_dwDestroyOn)
+		{
+		DWORD dwTimeAlive = GetUniverse().GetTicks() - m_dwCreatedOn;
+		DWORD dwTimeLeft = m_dwDestroyOn - GetUniverse().GetTicks();
+
+		if (dwTimeLeft < FADE_OUT_TIME)
+			{
+			BYTE byAlpha = (BYTE)(255 * dwTimeLeft / FADE_OUT_TIME);
+			rgbColor = CG32bitPixel(rgbColor, byAlpha);
+			}
+		else if (dwTimeAlive < FADE_IN_TIME)
+			{
+			rgbColor = CG32bitPixel::Blend(rgbColor, 0xffff, (BYTE)(255 * (FADE_IN_TIME - dwTimeAlive) / FADE_IN_TIME));
+			}
+		}
+
+	MessageFont.DrawText(Dest,
+			rcRect,
+			rgbColor,
+			m_sName,
+			0,
+			dwFontFlags);
+	}
+
+CMarker::EStyle CMarker::ParseStyle (const CString &sValue)
+	{
+	if (sValue.IsBlank())
+		return EStyle::None;
+
+	auto pEntry = STYLE_TABLE.GetAt(sValue);
+	if (!pEntry)
+		return EStyle::Error;
+
+	return pEntry->Value;
 	}
 
 void CMarker::SetOrbit (const COrbit &Orbit)
