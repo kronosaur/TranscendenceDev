@@ -111,6 +111,7 @@
 #define PROPERTY_DAMAGE_DESC_AT_PREFIX			CONSTLIT("damageDescAt:")
 #define PROPERTY_INTERACTION					CONSTLIT("interaction")
 #define PROPERTY_LIFETIME						CONSTLIT("lifetime")
+#define PROPERTY_MINING_TYPE					CONSTLIT("miningType")
 #define PROPERTY_SHOTS_PER_AMMO_ITEM			CONSTLIT("shotsPerAmmoItem")
 #define PROPERTY_STD_HP							CONSTLIT("stdHP")
 #define PROPERTY_STD_INTERACTION				CONSTLIT("stdInteraction")
@@ -892,6 +893,17 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 			return CC.CreateString(CONSTLIT("always"));
 		else
 			return CC.CreateInteger(GetInteraction());
+		}
+
+	else if (strEquals(sProperty, PROPERTY_MINING_TYPE))
+		{
+		if (m_Damage.HasMiningDamage())
+			{
+			EMiningMethod iMethod = CAsteroidDesc::CalcMiningMethod(*this);
+			return CC.CreateString(CAsteroidDesc::MiningMethodID(iMethod));
+			}
+		else
+			return CC.CreateNil();
 		}
 
 	else if (strEquals(sProperty, PROPERTY_LIFETIME))

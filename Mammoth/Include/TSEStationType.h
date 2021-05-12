@@ -438,6 +438,7 @@ class CAsteroidDesc
 		static EMiningMethod CalcMiningMethod (const CWeaponFireDesc &Desc);
 		static CString CompositionID (EAsteroidType iType);
 		static int GetDefaultMiningDifficulty (EAsteroidType iType);
+		static CString MiningMethodID (EMiningMethod iType);
 		static const CAsteroidDesc &Null (void) { return m_Null; }
 		static EAsteroidType ParseComposition (const CString &sValue);
 
@@ -460,6 +461,7 @@ class CAsteroidDesc
 
 		static TStaticStringTable<TStaticStringEntry<EAsteroidType>, 5> COMPOSITION_INDEX;
 		static SCompositionDesc COMPOSITION_TABLE[EAsteroidTypeCount];
+		static TStaticStringTable<TStaticStringEntry<EMiningMethod>, 4> MINING_METHOD_INDEX;
 
 		static const CAsteroidDesc m_Null;
 	};

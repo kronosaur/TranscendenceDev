@@ -61,6 +61,13 @@ CAsteroidDesc::SCompositionDesc CAsteroidDesc::COMPOSITION_TABLE[EAsteroidTypeCo
 		},
 	};
 
+TStaticStringTable<TStaticStringEntry<EMiningMethod>, 4> CAsteroidDesc::MINING_METHOD_INDEX = {
+	"ablation",				EMiningMethod::ablation,
+	"drill",				EMiningMethod::drill,
+	"explosion",			EMiningMethod::explosion,
+	"shockwave",			EMiningMethod::shockwave,
+	};
+
 const CAsteroidDesc CAsteroidDesc::m_Null;
 
 Metric CAsteroidDesc::CalcBaseMiningSuccess (int iMiningLevel, int iMiningDifficulty)
@@ -196,6 +203,16 @@ CString CAsteroidDesc::CompositionID (EAsteroidType iType)
 		return CONSTLIT("unknown");
 
 	return CString(GetCompositionDesc(iType).pszID, -1, TRUE);
+	}
+
+CString CAsteroidDesc::MiningMethodID (EMiningMethod iType)
+
+//	MiningMethodID
+//
+//	Returns an ID string for the mining method.
+
+	{
+	return MINING_METHOD_INDEX.FindKey(iType);
 	}
 
 int CAsteroidDesc::GetDefaultMiningDifficulty (EAsteroidType iType)
