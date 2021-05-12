@@ -15,6 +15,7 @@
 #define OMNIDIRECTIONAL_ATTRIB					CONSTLIT("omnidirectional")
 #define TARGET_ATTRIB							CONSTLIT("target")
 #define TARGET_CRITERIA_ATTRIB					CONSTLIT("targetCriteria")
+#define TARGET_REACTIONS_ATTRIB					CONSTLIT("targetReactions")
 #define WEAPON_ATTRIB							CONSTLIT("weapon")
 
 #define MISSILES_TARGET							CONSTLIT("missiles")
@@ -94,9 +95,14 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 						|| pObj->GetCategory() != CSpaceObject::catMissile
 						|| pObj->GetDamageSource().IsEqual(pSource)
 						|| pObj->IsIntangible()
+						|| pObj->GetDamageSource().IsAutomatedWeapon()
 						|| !pSource->IsAngryAt(pObj->GetDamageSource())
 						|| (!isOmniDirectional
 								&& !AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc)))
+					continue;
+
+				if (!m_bTargetReactions
+						&& (pObj->GetDamageSource().IsEjecta() || pObj->GetDamageSource().IsExplosion()))
 					continue;
 
 				//	Is this closer than our previous best. If not, skip.
@@ -151,6 +157,8 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 						&& pObj->MatchesCriteria(Ctx, m_TargetCriteria)
 						&& !pObj->IsIntangible()
 						&& pObj != pSource
+						&& !pObj->GetDamageSource().IsAutomatedWeapon()
+						&& (m_bTargetReactions || (!pObj->GetDamageSource().IsEjecta() && !pObj->GetDamageSource().IsExplosion()))
 						&& (isOmniDirectional
 								|| AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc)))
 					{
@@ -641,6 +649,8 @@ ALERROR CAutoDefenseClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 			return ERR_FAIL;
 			}
 		}
+
+	pDevice->m_bTargetReactions = pDesc->GetAttribute(TARGET_REACTIONS_ATTRIB);
 
 	//	Intercept range
 

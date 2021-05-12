@@ -79,6 +79,7 @@ class CAutoDefenseClass : public CDeviceClass
 		Metric m_rInterceptRange = 0.0;
 		Metric m_rMinSourceRange2 = 0.0;
 		bool m_bCheckLineOfFire = false;		//	Check line of fire for friendlies
+		bool m_bTargetReactions = false;		//	Target ejecta and explosions
 
 		bool m_bOmnidirectional = false;		//	Omnidirectional
 		int m_iMinFireArc = 0;					//	Min angle of fire arc (degrees)
