@@ -139,7 +139,6 @@ ALERROR CParticleDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CParticle
 
 	CVector vInitialVel;
 	if (!Ctx.Source.IsEmpty() 
-			&& !pParticles->IsTracking()
 			&& !(Ctx.dwFlags & SShotCreateCtx::CWF_FRAGMENT))
 		vInitialVel = Ctx.Source.GetObj()->GetVel();
 
