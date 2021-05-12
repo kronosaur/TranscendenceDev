@@ -80,7 +80,7 @@
 
 	<ItemType UNID="&itSeismicScannerPod;"
 			name=				"seismic scanner pod"
-			attributes=			"commonwealth, miningEquipment"
+			attributes=			"commonwealth, essentialMiningEquipment, miningEquipment"
 			inherit=			"&baMiningPodItem;"
 			  
 			level=				"2"
@@ -154,7 +154,7 @@
 	
 	<ItemType UNID="&itClassAExcavationPod;"
 			name=				"class A excavation pod"
-			attributes=			"commonwealth, miningEquipment"
+			attributes=			"commonwealth, essentialMiningEquipment, miningEquipment"
 			inherit=			"&baMiningPodItem;"
 			  
 			level=				"3"
@@ -239,7 +239,7 @@
 	
 	<ItemType UNID="&itClassBExcavationPod;"
 			name=				"class B excavation pod"
-			attributes=			"commonwealth, miningEquipment"
+			attributes=			"commonwealth, essentialMiningEquipment, miningEquipment"
 			inherit=			"&baMiningPodItem;"
 			  
 			level=				"5"
