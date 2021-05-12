@@ -1086,15 +1086,14 @@ void COrbEffectPainter::CompositeFlares (CG32bitImage &Dest, int xCenter, int yC
 //	Paints flares
 
 	{
-	int i;
+	int iSpikeCount = m_SpikeCount.Roll();
+	if (iSpikeCount <= 0)
+		return;
 
-	int iFlareCount = m_SpikeCount.Roll() / 2;
-	if (iFlareCount <= 0)
-		iFlareCount = DEFAULT_FLARE_COUNT;
+	int iFlareCount = Max(1, iSpikeCount / 2);
+	int iAngle = 360 / (iFlareCount * 2);
 
-	int iAngle = 360 / iFlareCount;
-
-	for (i = 0; i < iFlareCount; i++)
+	for (int i = 0; i < iFlareCount; i++)
 		CompositeFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, AngleMod(FLARE_ANGLE + (iAngle * i)), m_iIntensity, Ctx);
 	}
 
@@ -1366,15 +1365,14 @@ void COrbEffectPainter::PaintFlares (CG32bitImage &Dest, int xCenter, int yCente
 //	Paints flares
 
 	{
-	int i;
+	int iSpikeCount = m_SpikeCount.Roll();
+	if (iSpikeCount <= 0)
+		return;
 
-	int iFlareCount = m_SpikeCount.Roll() / 2;
-	if (iFlareCount <= 0)
-		iFlareCount = DEFAULT_FLARE_COUNT;
+	int iFlareCount = Max(1, iSpikeCount / 2);
+	int iAngle = 360 / (iFlareCount * 2);
 
-	int iAngle = 360 / iFlareCount;
-
-	for (i = 0; i < iFlareCount; i++)
+	for (int i = 0; i < iFlareCount; i++)
 		PaintFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, AngleMod(FLARE_ANGLE + (iAngle * i)), m_iIntensity, Ctx);
 	}
 
@@ -1385,16 +1383,14 @@ void COrbEffectPainter::PaintLightning (CG32bitImage &Dest, int xCenter, int yCe
 //	Paints lightning spikes
 
 	{
-	int i;
+	int iSpikeCount = m_SpikeCount.Roll();
+	if (iSpikeCount <= 0)
+		return;
 
-	int iFlareCount = m_SpikeCount.Roll();
-	if (iFlareCount <= 0)
-		iFlareCount = 2 * DEFAULT_FLARE_COUNT;
-
-	int iSeparation = 360 / iFlareCount;
+	int iSeparation = 360 / iSpikeCount;
 	int iAngle = Ctx.iTick * 3;
 
-	for (i = 0; i < iFlareCount; i++)
+	for (int i = 0; i < iSpikeCount; i++)
 		{
 		int xDest, yDest;
 		IntPolarToVector(iAngle, FlareDesc.iLength, &xDest, &yDest);
@@ -1465,7 +1461,7 @@ bool COrbEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 		m_bySecondaryOpacity = Value.EvalOpacity(255);
 
 	else if (strEquals(sParam, SPIKE_COUNT_ATTRIB))
-		m_SpikeCount = Value.EvalDiceRange(0);
+		m_SpikeCount = Value.EvalDiceRange(DEFAULT_FLARE_COUNT * 2);
 	
 	else if (strEquals(sParam, STYLE_ATTRIB))
 		m_iStyle = (EOrbStyles)Value.EvalIdentifier(STYLE_TABLE, styleMax, styleSmooth);
