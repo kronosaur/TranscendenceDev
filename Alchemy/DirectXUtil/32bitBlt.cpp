@@ -564,6 +564,8 @@ void CG32bitImage::Composite (int xSrc, int ySrc, int cxWidth, int cyHeight, BYT
 //	Composites the source onto the destination
 
 	{
+	DEBUG_TRY
+
 	if (byOpacity == 0xff)
 		{
 		CFilterNormal Filter;
@@ -574,6 +576,8 @@ void CG32bitImage::Composite (int xSrc, int ySrc, int cxWidth, int cyHeight, BYT
 		CFilterTrans Filter(byOpacity);
 		Filter.Composite(*this, xDest, yDest, Source, xSrc, ySrc, cxWidth, cyHeight);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CG32bitImage::Copy (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG32bitImage &Source, int xDest, int yDest)
