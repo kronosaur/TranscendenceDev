@@ -17,7 +17,7 @@
 			sovereign=			"&svCommonwealth;"
 			inherit=			"&unidCommonText;"
 
-			attributes=			"arcology, commonwealthCustoms, generic, human, majorStation, populated, stKatsArcology"
+			attributes=			"arcology, commonwealthCustoms, friendly, generic, human, majorStation, populated, stKatsArcology"
 
 			dockScreen=			"&dsStKatsArcology;"
 
