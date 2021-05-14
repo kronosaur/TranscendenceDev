@@ -39,7 +39,7 @@
 						(shipClass (objGetType shipObj))
 						)
 						{
-						title: (objGetName shipObj 'generic)
+						title: (objGetName shipObj '(generic titleCapitalize))
 						icon: (shpGetImageDesc shipClass { rotation:90 })
 
 						largeIcon: (shpGetImageDesc shipClass { type:'schematic })
@@ -365,7 +365,7 @@
 						(shipClass (objGetType shipObj))
 						)
 						{
-						title: (objGetName shipObj 'generic)
+						title: (objGetName shipObj '(generic titleCapitalize))
 						icon: (shpGetImageDesc shipClass { rotation:90 })
 
 						largeIcon: (shpGetImageDesc shipClass { type:'schematic })
@@ -685,7 +685,7 @@
 						(wingmanPrice (or (objGetShipBuyPrice gSource wingmanObj) 0))
 						)
 						{
-						title: (objGetName wingmanObj 0)
+						title: (objGetName wingmanObj 'titleCapitalize)
 						icon: (shpGetImageDesc wingmanObj { rotation:90 })
 						desc: 
 							(scrTranslate gScreen 'descWingmanPrice {
@@ -1178,7 +1178,7 @@
 					;	Reactor stats
 					
 					(reactorItem (@ (objGetItems shipObj "rI") 0))
-					(reactorText (if reactorItem (itmGetName reactorItem) (cat (objGetName shipObj '(short generic)) " reactor")))
+					(reactorText (if reactorItem (itmGetName reactorItem 'titleCapitalize) (cat (objGetName shipObj '(short generic titleCapitalize)) " Reactor")))
 					(reactorIcon (if reactorItem (itmGetImageDesc reactorItem) (resCreateImageDesc &rsItems1; 288 288 96 96)))
 					(reactorPowerText (fmtNumber 'power (obj@ shipObj 'power)))
 					(reactorEfficiency (obj@ shipObj 'fuelEfficiencyBonus))
@@ -1209,7 +1209,7 @@
 					;	Drive Stats
 					
 					(driveItem (@ (objGetItems shipObj "vI") 0))
-					(driveText (if driveItem (itmGetName driveItem) (cat (objGetName shipObj '(short generic)) " drive")))
+					(driveText (if driveItem (itmGetName driveItem 'titleCapitalize) (cat (objGetName shipObj '(short generic titleCapitalize)) " Drive")))
 					(driveIcon (if driveItem (itmGetImageDesc driveItem) (resCreateImageDesc &rsItems1; 96 384 96 96)))
 					
 					;	Cargo Stats
@@ -1303,7 +1303,7 @@
 								)
 							{
 							icon: cargoIcon
-							title: (if cargoItem (itmGetName cargoItem))
+							title: (if cargoItem (itmGetName cargoItem 'titleCapitalize))
 							desc:
 								(cat
 									"{/rtf "
@@ -1317,7 +1317,7 @@
 						(if showDevices
 							{
 							icon: (itmGetImageDesc armorItem)
-							title: (cat (itmGetName armorItem '(short actual)) " (&times;" (obj@ shipObj 'armorCount) ")")
+							title: (cat (itmGetName armorItem '(short actual titleCapitalize)) " (&times;" (obj@ shipObj 'armorCount) ")")
 							desc:
 								(cat
 									"{/rtf "
@@ -1346,7 +1346,7 @@
 
 						(if (and shieldItem showDevices) {
 							icon: (itmGetImageDesc shieldItem)
-							title: (itmGetName shieldItem '(short actual))
+							title: (itmGetName shieldItem '(short actual titleCapitalize))
 							desc:
 								(cat
 									"{/rtf "
@@ -1357,7 +1357,7 @@
 
 						(if (and weaponItem1 showDevices) {
 							icon: (itmGetImageDesc weaponItem1)
-							title: (itmGetName weaponItem1 '(short actual))
+							title: (itmGetName weaponItem1 '(short actual titleCapitalize))
 							desc:
 								(cat
 									"{/rtf "
@@ -1368,7 +1368,7 @@
 
 						(if (and weaponItem2 showDevices) {
 							icon: (itmGetImageDesc weaponItem2)
-							title: (itmGetName weaponItem2 '(short actual))
+							title: (itmGetName weaponItem2 '(short actual titleCapitalize))
 							desc:
 								(cat
 									"{/rtf "
@@ -1379,7 +1379,7 @@
 
 						(if (and launcherItem showDevices) {
 							icon: (itmGetImageDesc launcherItem)
-							title: (itmGetName launcherItem '(short actual))
+							title: (itmGetName launcherItem '(short actual titleCapitalize))
 							desc:
 								(cat
 									"{/rtf "
@@ -1390,7 +1390,7 @@
 
 						(if (and miscItem1 showDevices) {
 							icon: (itmGetImageDesc miscItem1)
-							title: (itmGetName miscItem1 '(short actual))
+							title: (itmGetName miscItem1 '(short actual titleCapitalize))
 							desc:
 								(cat
 									"{/rtf "
@@ -1436,7 +1436,7 @@
 					;	Reactor stats
 					
 					(reactorItem (@ (objGetItems shipObj "rI") 0))
-					(reactorText (if reactorItem (itmGetName reactorItem 0x00) (cat (objGetName shipObj 0x80) " reactor")))
+					(reactorText (if reactorItem (itmGetName reactorItem 'titleCapitalize) (cat (objGetName shipObj '(short titleCapitalize)) " Reactor")))
 					(reactorPowerText (fmtNumber 'power (obj@ shipObj 'power)))
 					(reactorEfficiency (obj@ shipObj 'fuelEfficiencyBonus))
 					(reactorEfficiencyText
@@ -1466,7 +1466,7 @@
 					;	Drive Stats
 					
 					(driveItem (@ (objGetItems shipObj "vI") 0))
-					(driveText (if driveItem (itmGetName driveItem 0x00) (cat (objGetName shipObj 0x80) " drive")))
+					(driveText (if driveItem (itmGetName driveItem 'titleCapitalize) (cat (objGetName shipObj '(short titleCapitalize)) " Drive")))
 					
 					;	Cargo Stats
 					
@@ -1513,7 +1513,7 @@
 					(scrSetDisplayText gScreen 'rightCol
 						(cat
 							"{/rtf "
-								(if cargoItem (cat "{/f:MediumBold;/c:#79828c; cargo:} " (itmGetName cargoItem 0x00) "\n"))
+								(if cargoItem (cat "{/f:MediumBold;/c:#79828c; cargo:} " (itmGetName cargoItem 'titleCapitalize) "\n"))
 								"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'massTons (obj@ shipObj 'cargoSpace)) "\n"
 								"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'massTons (obj@ shipObj 'maxCargoSpace)) "\n"
 								"\n"

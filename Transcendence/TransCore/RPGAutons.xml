@@ -1199,13 +1199,13 @@
 
 					;	Reactor stats
 					
-					(reactorText (cat (typGetName autonClass '(short generic)) " reactor"))
+					(reactorText (cat (typGetName autonClass '(short generic titleCapitalize)) " Reactor"))
 					(reactorIcon (resCreateImageDesc &rsItems1; 288 288 96 96))
 					(reactorPowerText (fmtNumber 'power (typ@ autonClass 'power)))
 
 					;	Drive Stats
 					
-					(driveText (cat (typGetName autonClass '(short generic)) " drive"))
+					(driveText (cat (typGetName autonClass '(short generic titleCapitalize)) " Drive"))
 					(driveIcon (resCreateImageDesc &rsItems1; 96 384 96 96))
 					
 					;	Cargo Stats
@@ -1313,7 +1313,7 @@
 						(if showDevices
 							{
 							icon: (itmGetImageDesc firstArmorItem)
-							title: (cat (itmGetName firstArmorItem '(short actual)) " (&times;" armorCount ")")
+							title: (cat (itmGetName firstArmorItem '(short actual titleCapitalize)) " (&times;" armorCount ")")
 							desc:
 								(cat
 									"{/rtf "
@@ -1337,7 +1337,7 @@
 
 						(if (and shieldItem showDevices) {
 							icon: (itmGetImageDesc shieldItem)
-							title: (itmGetName shieldItem '(short actual))
+							title: (itmGetName shieldItem '(short actual titleCapitalize))
 							desc:
 								(cat
 									"{/rtf "
@@ -1348,7 +1348,7 @@
 
 						(if (and weaponItem1 showDevices) {
 							icon: (itmGetImageDesc weaponItem1)
-							title: (itmGetName weaponItem1 '(short actual))
+							title: (itmGetName weaponItem1 '(short actual titleCapitalize))
 							desc:
 								(cat
 									"{/rtf "
@@ -1359,7 +1359,7 @@
 
 						(if (and weaponItem2 showDevices) {
 							icon: (itmGetImageDesc weaponItem2)
-							title: (itmGetName weaponItem2 '(short actual))
+							title: (itmGetName weaponItem2 '(short actual titleCapitalize))
 							desc:
 								(cat
 									"{/rtf "
@@ -1370,7 +1370,7 @@
 
 						(if (and launcherItem showDevices) {
 							icon: (itmGetImageDesc launcherItem)
-							title: (itmGetName launcherItem '(short actual))
+							title: (itmGetName launcherItem '(short actual titleCapitalize))
 							desc:
 								(cat
 									"{/rtf "
@@ -1381,7 +1381,7 @@
 
 						(if (and miscItem1 showDevices) {
 							icon: (itmGetImageDesc miscItem1)
-							title: (itmGetName miscItem1 '(short actual))
+							title: (itmGetName miscItem1 '(short actual titleCapitalize))
 							desc:
 								(cat
 									"{/rtf "

@@ -16,7 +16,7 @@
 						(shipClass (@ entry 'shipClass))
 						)
 						{
-						title: (typGetName shipClass '(generic))
+						title: (typGetName shipClass '(generic titleCapitalize))
 						icon: (shpGetImageDesc shipClass { rotation:0 })
 
 						largeIcon: (shpGetImageDesc shipClass { rotation:0 })
@@ -110,7 +110,7 @@
 
 					;	Drive Stats
 					
-					(driveText (cat (typGetName shipClass '(short generic)) " drive"))
+					(driveText (cat (typGetName shipClass '(short generic titleCapitalize)) " Drive"))
 					(driveIcon (resCreateImageDesc &rsItems1; 96 384 96 96))
 					
 					;	Cargo Stats
@@ -160,7 +160,7 @@
 							{
 							icon: (itmGetImageDesc armorItem)
 							desc: (typTranslate &dsRPGShipClassViewer; 'rtfArmor {
-								itemName: (itmGetName armorItem '(short actual))
+								itemName: (itmGetName armorItem '(short actual titleCapitalize))
 								level: (itmGetLevel armorItem)
 								})
 							})
@@ -168,7 +168,7 @@
 						(if (and shieldItem showDevices) {
 							icon: (itmGetImageDesc shieldItem)
 							desc: (typTranslate &dsRPGShipClassViewer; 'rtfDevice {
-								itemName: (itmGetName shieldItem '(short actual))
+								itemName: (itmGetName shieldItem '(short actual titleCapitalize))
 								count: ""
 								level: (itmGetLevel shieldItem)
 								})
@@ -177,7 +177,7 @@
 						(if (and weaponItem1 showDevices) {
 							icon: (itmGetImageDesc weaponItem1)
 							desc: (typTranslate &dsRPGShipClassViewer; 'rtfDevice {
-								itemName: (itmGetName weaponItem1 '(short actual))
+								itemName: (itmGetName weaponItem1 '(short actual titleCapitalize))
 								count: (if (gr (itmGetCount weaponItem1) 1) (cat " (&times;" (itmGetCount weaponItem1) ")") "")
 								level: (itmGetLevel weaponItem1)
 								})
@@ -186,7 +186,7 @@
 						(if (and weaponItem2 showDevices) {
 							icon: (itmGetImageDesc weaponItem2)
 							desc: (typTranslate &dsRPGShipClassViewer; 'rtfDevice {
-								itemName: (itmGetName weaponItem2 '(short actual))
+								itemName: (itmGetName weaponItem2 '(short actual titleCapitalize))
 								count: (if (gr (itmGetCount weaponItem2) 1) (cat " (&times;" (itmGetCount weaponItem2) ")") "")
 								level: (itmGetLevel weaponItem2)
 								})
@@ -195,7 +195,7 @@
 						(if (and weaponItem3 (not launcherItem) showDevices) {
 							icon: (itmGetImageDesc weaponItem3)
 							desc: (typTranslate &dsRPGShipClassViewer; 'rtfDevice {
-								itemName: (itmGetName weaponItem3 '(short actual))
+								itemName: (itmGetName weaponItem3 '(short actual titleCapitalize))
 								count: (if (gr (itmGetCount weaponItem3) 1) (cat " (&times;" (itmGetCount weaponItem3) ")") "")
 								level: (itmGetLevel weaponItem3)
 								})
@@ -204,7 +204,7 @@
 						(if (and launcherItem showDevices) {
 							icon: (itmGetImageDesc launcherItem)
 							desc: (typTranslate &dsRPGShipClassViewer; 'rtfDevice {
-								itemName: (itmGetName launcherItem '(short actual))
+								itemName: (itmGetName launcherItem '(short actual titleCapitalize))
 								count: ""
 								level: (itmGetLevel launcherItem)
 								})
@@ -213,7 +213,7 @@
 						(if (and miscItem1 showDevices) {
 							icon: (itmGetImageDesc miscItem1)
 							desc: (typTranslate &dsRPGShipClassViewer; 'rtfDevice {
-								itemName: (itmGetName miscItem1 '(short actual))
+								itemName: (itmGetName miscItem1 '(short actual titleCapitalize))
 								count: ""
 								level: (itmGetLevel miscItem1)
 								})
