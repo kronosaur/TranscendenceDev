@@ -32,6 +32,7 @@ class CDetailList
 		struct SDetailEntry
 			{
 			CString sTitle;
+			int cyTitle = 0;
 			CG32bitImage *pIcon = NULL;
 			RECT rcIconSrc = { 0 };
 			CRTFText Desc;

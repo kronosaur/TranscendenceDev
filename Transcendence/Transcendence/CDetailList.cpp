@@ -214,7 +214,7 @@ void CDetailList::FormatColumn (int iStart, int iEnd, const RECT &rcRect, DWORD 
 		if (!m_List[i].sTitle.IsBlank())
 			{
 			m_List[i].rcTitle = rcText;
-			m_List[i].rcTitle.bottom = rcText.top + MediumBold.GetHeight();
+			m_List[i].rcTitle.bottom = rcText.top + m_List[i].cyTitle;
 
 			m_List[i].rcDesc = rcText;
 			m_List[i].rcDesc.top = m_List[i].rcTitle.bottom;
@@ -251,7 +251,10 @@ void CDetailList::FormatDoubleColumns (int cxWidth, int cyHeight, DWORD dwFlags,
 
 	for (int i = 0; i < m_List.GetCount(); i++)
 		{
-		int cyDetails = (!m_List[i].sTitle.IsBlank() ? MediumBold.GetHeight() : 0);
+		int cxTitle = cxColumn - SPACING_X - DETAIL_ICON_WIDTH;
+		m_List[i].cyTitle = MediumBold.CalcHeight(m_List[i].sTitle, cxTitle);
+
+		int cyDetails = m_List[i].cyTitle;
 
 		//	Compute height of description
 
@@ -363,7 +366,10 @@ void CDetailList::FormatSingleColumn (int cxWidth, int cyHeight, DWORD dwFlags, 
 			Entry.cyRect = Max(Entry.cyRect, DETAIL_ICON_HEIGHT);
 
 		if (!Entry.sTitle.IsBlank())
-			Entry.cyRect = Max(Entry.cyRect, MediumBold.GetHeight());
+			{
+			Entry.cyTitle = MediumBold.CalcHeight(Entry.sTitle, cxColumn);
+			Entry.cyRect = Max(Entry.cyRect, Entry.cyTitle);
+			}
 
 		//	Compute the total height
 
