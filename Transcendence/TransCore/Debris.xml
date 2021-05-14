@@ -124,13 +124,13 @@
 										(block (allItems itemCount)
 											(setq allItems (objGetItems gSource "*"))
 											(setq itemCount (count allItems))
-											(scrSetData gScreen 'itemName (itmGetName (@ allItems 0) 8))
+											(scrSetData gScreen 'itemName (itmGetName (@ allItems 0) '(count escapeQuotes)))
 											(switch
 												(eq itemCount 0)
 													(scrTranslate gScreen 'core.noItemsHereDesc)
 												(eq itemCount 1)
 													(scrTranslate gScreen 'descOpenedOneItem {
-														itemName: (itmGetName (@ allItems 0) 8)
+														itemName: (itmGetName (@ allItems 0) '(count escapeQuotes))
 														})
 												(scrTranslate gScreen 'descOpenedSeveralItems)
 												)
@@ -172,13 +172,13 @@
 							(block (allItems itemCount)
 								(setq allItems (objGetItems gSource "*"))
 								(setq itemCount (count allItems))
-								(scrSetData gScreen 'itemName (itmGetName (@ allItems 0) 8))
+								(scrSetData gScreen 'itemName (itmGetName (@ allItems 0) '(count escapeQuotes)))
 								(switch
 									(eq itemCount 0)
 										(scrSetDescTranslate gScreen 'descContentsEmpty)
 									(eq itemCount 1)
 										(scrSetDescTranslate gScreen 'descContents2OneItem {
-											itemName: (itmGetName (@ allItems 0) 8)
+											itemName: (itmGetName (@ allItems 0) '(count escapeQuotes))
 											})
 									(scrSetDescTranslate gScreen 'descContents2VariousItems)
 									)
