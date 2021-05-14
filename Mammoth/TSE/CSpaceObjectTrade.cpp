@@ -692,7 +692,7 @@ void CSpaceObject::RefitObj (CSpaceObject &ShipObj, const SRefitObjCtx &Ctx)
 
 	//	See if we can repair the armor. If not, skip
 
-	const CArmorSystem *pArmor = ShipObj.GetArmorSystem();
+	const CArmorSystem *pArmor = &ShipObj.GetArmorSystem();
 	if (pArmor 
 			&& pArmor->GetMaxLevel() <= Ctx.iMaxRepairLevel
 			&& (Ctx.iMaxHPToRepair > 0 || Ctx.iMaxHPToRepair == -1))

@@ -339,37 +339,38 @@ class CArmorHUDRingSegments : public IHUDPainter
 
 	private:
 		ALERROR Bind (SDesignLoadCtx &Ctx);
-		void DrawArmorName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CInstalledArmor *pArmor, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
+		void DrawArmorName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CArmorItem ArmorItem, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
 		void DrawIntegrityBox (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sText, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
 		void DrawItemBox (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sName, const TArray<SDisplayAttribute> &Attribs, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
-		void DrawShieldsName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CInstalledDevice *pShields, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
+		void DrawShieldsName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CDeviceItem ShieldItem, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
 		void Realize (SHUDPaintCtx &Ctx);
 
 		//	Definitions
 
-		CG32bitPixel m_rgbArmor;			//	Color of armor segment
-		CG32bitPixel m_rgbArmorText;		//	Color of text
-		CG32bitPixel m_rgbArmorTextBack;	//	Armor text background color
-		CG32bitPixel m_rgbShields;			//	Color of shields
-		CG32bitPixel m_rgbShieldsText;		//	Shield text color
-		CG32bitPixel m_rgbShieldsTextBack;	//	Shield text background color
+		CG32bitPixel m_rgbArmor = CG32bitPixel(0xff, 0xff, 0xff);			//	Color of armor segment
+		CG32bitPixel m_rgbArmorText = CG32bitPixel(0x00, 0x00, 0x00);		//	Color of text
+		CG32bitPixel m_rgbArmorTextBack = CG32bitPixel(0xff, 0xff, 0xff);	//	Armor text background color
+		CG32bitPixel m_rgbShields = CG32bitPixel(0xff, 0xff, 0xff);			//	Color of shields
+		CG32bitPixel m_rgbShieldsText = CG32bitPixel(0x00, 0x00, 0x00);		//	Shield text color
+		CG32bitPixel m_rgbShieldsTextBack = CG32bitPixel(0xff, 0xff, 0xff);	//	Shield text background color
 
-		int m_iArmorRingRadius;
-		int m_iArmorRingWidth;
-		int m_iShieldRingWidth;
+		int m_iArmorRingRadius = 100;
+		int m_iArmorRingWidth = 10;
+		int m_iShieldRingWidth = 10;
+		CLanguage::SHPDisplayOptions m_HPDisplay;
 
 		//	Metrics
 
-		int m_cxDisplay;					//	Total width of display
-		int m_cyDisplay;					//	Total height of display
-		int m_xCenter;						//	Center of ring
-		int m_yCenter;						//	Center of ring
-		int m_cxMaxValue;					//	Size of text showing max integrity value (100%)
-		int m_cyMaxValue;
+		int m_cxDisplay = 0;					//	Total width of display
+		int m_cyDisplay = 0;					//	Total height of display
+		int m_xCenter = 0;						//	Center of ring
+		int m_yCenter = 0;						//	Center of ring
+		int m_cxMaxValue = 0;					//	Size of text showing max integrity value (100%)
+		int m_cyMaxValue = 0;
 		
 		//	Runtime State
 
-		bool m_bInvalid;
+		bool m_bInvalid = true;
 		CG32bitImage m_Buffer;
 	};
 

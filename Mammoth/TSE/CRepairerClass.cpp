@@ -424,7 +424,7 @@ bool CRepairerClass::RepairShipArmor (CDeviceItem &RepairerItem, SDeviceUpdateCt
 	if (!pShip)
 		return false;
 
-	auto pArmor = pSource->GetArmorSystem();
+	auto pArmor = &pSource->GetArmorSystem();
 	if (!pArmor)
 		return false;
 

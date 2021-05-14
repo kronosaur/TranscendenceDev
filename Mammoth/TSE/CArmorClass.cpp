@@ -599,7 +599,7 @@ bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx 
 			&& pSource 
 			&& pArmor 
 			&& pArmor->IsPrime()
-			&& (pArmorSet = pSource->GetArmorSystem())
+			&& (pArmorSet = &pSource->GetArmorSystem())
 			&& pArmorSet->GetSegmentCount() > 0)
 		{
 		//	Count how many armor segments of this type
@@ -3103,7 +3103,7 @@ bool CArmorClass::UpdateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, const C
 		case regenFromHealer:
 			{
 			CSpaceObject *pRoot = pObj->GetAttachedRoot();
-			CArmorSystem *pHealerSystem = (pRoot ? pRoot->GetArmorSystem() : pObj->GetArmorSystem());
+			CArmorSystem *pHealerSystem = (pRoot ? &pRoot->GetArmorSystem() : &pObj->GetArmorSystem());
 			if (pHealerSystem)
 				{
 				iHP = Min(iHP, pHealerSystem->GetHealerLeft());

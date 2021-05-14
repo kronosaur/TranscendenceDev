@@ -1136,6 +1136,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		using CSpaceObject::AddOverlay;
 		virtual CTradingDesc *AllocTradeDescOverride (void) override;
 		virtual CShip *AsShip (void) override { return this; }
+		virtual const CShip *AsShip (void) const override { return this; }
 		virtual void Behavior (SUpdateCtx &Ctx) override;
 		virtual bool CanAttack (void) const override;
 		virtual bool CanBeAttacked (void) const override { return CanAttack(); }
@@ -1161,7 +1162,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual int GetAISettingInteger (const CString &sSetting) override { return m_pController->GetAISettingInteger(sSetting); }
 		virtual CString GetAISettingString (const CString &sSetting) override { return m_pController->GetAISettingString(sSetting); }
 		virtual const CArmorSystem &GetArmorSystem (void) const override { return m_Armor; }
-		virtual CArmorSystem *GetArmorSystem (void) override { return &m_Armor; }
+		virtual CArmorSystem &GetArmorSystem (void) override { return m_Armor; }
 		virtual CSpaceObject *GetAttachedRoot (void) const;
 		virtual CSpaceObject *GetBase (void) const override;
 		virtual Metric GetCargoSpaceLeft (void) const override;

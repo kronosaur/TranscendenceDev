@@ -1198,6 +1198,7 @@ class CSpaceObject
 		virtual CMissile *AsMissile (void) { return NULL; }
 		virtual CMission *AsMission (void) { return NULL; }
 		virtual CShip *AsShip (void) { return NULL; }
+		virtual const CShip *AsShip (void) const { return NULL; }
 		virtual CStation *AsStation (void) { return NULL; }
 		virtual bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength) { return false; }
 		virtual bool CanAttack (void) const { return false; }
@@ -1258,7 +1259,7 @@ class CSpaceObject
 		virtual int GetAISettingInteger (const CString &sSetting) { return 0; }
 		virtual CString GetAISettingString (const CString &sSetting) { return NULL_STR; }
 		virtual const CArmorSystem &GetArmorSystem (void) const { return CArmorSystem::m_Null; }
-		virtual CArmorSystem *GetArmorSystem (void) { return NULL; }
+		virtual CArmorSystem &GetArmorSystem (void) { return CArmorSystem::m_Null; }
 		virtual CurrencyValue GetBalancedTreasure (void) const { return 0; }
 		virtual Metric GetCargoSpaceLeft (void) const { return 1000000.0; }
 		virtual int GetCombatPower (void) { return 0; }

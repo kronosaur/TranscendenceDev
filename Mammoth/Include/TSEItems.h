@@ -10,6 +10,7 @@ class CInstalledDevice;
 class CItemList;
 class CRepairerClass;
 class CShipClass;
+class CShipArmorSegmentDesc;
 
 //	ITEM -----------------------------------------------------------------------
 //
@@ -51,6 +52,7 @@ class CShipClass;
 class CDifferentiatedItem
 	{
 	public:
+		inline bool AccumulateEnhancementDisplayAttributes (TArray<SDisplayAttribute> &retList) const;
 		inline ItemCategories GetCategory (void) const;
 		inline int GetCharges (void) const;
 		inline CCurrencyAndValue GetCurrencyAndValue (bool bActual = false) const;
@@ -127,12 +129,15 @@ class CArmorItem : public CDifferentiatedItem
 		inline int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) const;
 		inline const CItemEnhancementStack &GetEnhancements (void) const;
 		int GetHP (int *retiMaxHP = NULL, bool bUninstalled = false) const;
+		CString GetHPDisplay (const CLanguage::SHPDisplayOptions &Options, int *retiIntegrity = NULL) const;
 		inline int GetInstallCost (void) const;
 		inline const CInstalledArmor *GetInstalledArmor (void) const;
 		inline int GetMaxHP (bool bForceComplete = false) const;
 		inline bool GetReferenceDamageAdj (int *retiHP, int *retArray) const;
 		inline CurrencyValue GetRepairCost (int iHPToRepair = 1) const;
 		inline int GetRepairLevel (void) const;
+		const CShipArmorSegmentDesc &GetSegmentDesc () const;
+		int GetSegmentIndex () const;
 		inline CSpaceObject *GetSource (void) const;
 		inline bool IsImmune (SpecialDamageTypes iSpecialDamage) const;
 
@@ -183,6 +188,7 @@ class CDeviceItem : public CDifferentiatedItem
 		inline const CItemEnhancementStack &GetEnhancements (void) const;
 		int GetFireArc (void) const;
 		int GetHP (int *retiMaxHP = NULL, bool bUninstalled = false) const;
+		CString GetHPDisplay (const CLanguage::SHPDisplayOptions &Options, int *retiIntegrity = NULL) const;
 		inline const CInstalledDevice *GetInstalledDevice (void) const;
 		inline CInstalledDevice *GetInstalledDevice (void);
 		DWORD GetLinkedFireOptions (void) const;
@@ -202,6 +208,7 @@ class CDeviceItem : public CDifferentiatedItem
 		inline bool IsTrackingWeapon (void) const;
 		bool IsWeaponAligned (CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const;
 		inline bool IsWeaponVariantValid (int iVariant) const;
+		inline bool IsWorking () const;
 		inline bool NeedsAutoTarget (int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const;
 		void ReportEventError (const CString &sEvent, const ICCItem &ErrorItem) const { CDifferentiatedItem::ReportEventError(GetSource(), sEvent, ErrorItem); }
 		inline void SetData (DWORD dwData);

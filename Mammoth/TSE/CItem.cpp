@@ -2930,7 +2930,7 @@ void CItem::ReadFromCCItem (CDesignCollection &Design, const CSystem *pSystem, c
 						{
 						CArmorSystem *pArmorSys;
 						if (IsArmor() 
-								&& (pArmorSys = pSource->GetArmorSystem())
+								&& (pArmorSys = &pSource->GetArmorSystem())
 								&& iInstalledIndex >= 0 && iInstalledIndex < pArmorSys->GetSegmentCount())
 							{
 							m_pExtra->m_iInstalled = EInstalled::Armor;

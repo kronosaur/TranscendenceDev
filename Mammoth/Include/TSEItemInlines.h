@@ -66,6 +66,11 @@ inline CDesignType *CItemType::GetUseScreen (CString *retsName) const
 
 //	CDifferentiatedItem Inlines ------------------------------------------------
 
+inline bool CDifferentiatedItem::AccumulateEnhancementDisplayAttributes (TArray<SDisplayAttribute> &retList) const
+	{
+	return m_Item.AccumulateEnhancementDisplayAttributes(retList);
+	}
+
 inline ItemCategories CDifferentiatedItem::GetCategory (void) const
 	{
 	return m_Item.GetCategory();
@@ -425,6 +430,14 @@ inline bool CDeviceItem::IsTrackingWeapon (void) const
 inline bool CDeviceItem::IsWeaponVariantValid (int iVariant) const
 	{
 	return GetType().GetDeviceClass()->IsWeaponVariantValid(*this, iVariant);
+	}
+
+inline bool CDeviceItem::IsWorking () const
+	{
+	if (const CInstalledDevice *pDevice = GetInstalledDevice())
+		return pDevice->IsWorking();
+	else
+		return false;
 	}
 
 inline bool CDeviceItem::NeedsAutoTarget (int *retiMinFireArc, int *retiMaxFireArc) const

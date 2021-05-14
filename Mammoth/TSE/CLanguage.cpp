@@ -379,6 +379,29 @@ CString CLanguage::ComposeGenderedWordHelper (CUniverse &Universe, const CString
 		return ComposeGenderedWord(sWord, Universe.GetPlayerGenome());
 	}
 
+CString CLanguage::ComposeHitPointValue (int iHP, const SHPDisplayOptions &Options)
+
+//	ComposeHitPointValue
+//
+//	Composes a hit point value, depending on options.
+
+	{
+	switch (Options.iType)
+		{
+		case EHPDisplay::HitPoints:
+			return strFormatInteger(iHP, -1, FORMAT_THOUSAND_SEPARATOR);
+
+		case EHPDisplay::Percent:
+			return strPatternSubst(CONSTLIT("%d%%"), iHP);
+
+		case EHPDisplay::Scaled:
+			return strFormatInteger(mathRound((double)iHP / (Options.iReference ? Options.iReference : 1)), -1, FORMAT_THOUSAND_SEPARATOR);
+			
+		default:
+			return NULL_STR;
+		}
+	}
+
 CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CString &sModifier, DWORD dwNounFlags, DWORD dwComposeFlags)
 
 //	ComposeNounPhrase
