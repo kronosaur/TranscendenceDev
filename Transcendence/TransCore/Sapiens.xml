@@ -459,6 +459,18 @@
 
 		<Image imageID="&rsItems4;" imageX="0" imageY="384" imageWidth="96" imageHeight="96"/>
 		
+		<Invoke>
+			(sysCreateWeaponFire &itSapiensRadiationMine; 
+					{
+						obj: gSource
+						namePattern: (typ@ &itSapiensRadiationMine; 'namePattern)
+						}
+					gSource 
+					(random 0 359)
+					5 
+					nil)
+		</Invoke>
+
 		<Missile
 				type=			"missile"
 

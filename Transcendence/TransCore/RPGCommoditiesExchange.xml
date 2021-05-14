@@ -323,6 +323,7 @@
 						(switch
 							(and (itmMatches thisItem "M")
 									(not (objGetItemProperty gPlayerShip thisItem 'canBeFired))
+									(itmGetProperty thisItem 'weaponTypes)
 									)
 								(scrSetControlValueTranslate gScreen 'descWarning 'warningLauncherNeeded {
 									itemName: (itmGetName thisItem '(short plural))
@@ -331,6 +332,7 @@
 
 							(and (itmMatches thisItem "m")
 									(not (objGetItemProperty gPlayerShip thisItem 'canBeFired))
+									(itmGetProperty thisItem 'weaponTypes)
 									)
 								(scrSetControlValueTranslate gScreen 'descWarning 'warningWeaponNeeded {
 									itemName: (itmGetName thisItem '(short plural))
