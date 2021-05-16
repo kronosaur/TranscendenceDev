@@ -19,6 +19,8 @@
 			structuralHitPoints="100"
 			destroyWhenEmpty=	"true"
 			noMapIcon=			"true"
+
+			autoLootCriteria=	"*I +autoLootOre;"
 			>
 
 		<ImageVariants>

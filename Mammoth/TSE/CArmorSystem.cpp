@@ -59,6 +59,24 @@ int CArmorSystem::CalcTotalHitPoints (int *retiMaxHP) const
 	return iTotalHP;
 	}
 
+int CArmorSystem::GetMaxLevel () const
+
+//	GetMaxLevel
+//
+//	Returns the maximum level of armor.
+
+	{
+	int iMaxLevel = -1;
+
+	for (const CArmorItem ArmorItem : *this)
+		{
+		if (ArmorItem.GetLevel() > iMaxLevel)
+			iMaxLevel = ArmorItem.GetLevel();
+		}
+
+	return iMaxLevel;
+	}
+
 void CArmorSystem::Install (CSpaceObject &Source, const CShipArmorDesc &Desc, bool bInCreate)
 
 //  Install
@@ -206,6 +224,23 @@ bool CArmorSystem::RepairSegment (CSpaceObject *pSource, int iSeg, int iHPToRepa
 
 	Armor.SetHitPoints(iNewHP);
 	return true;
+	}
+
+void CArmorSystem::SetSegmentHP (CSpaceObject &SourceObj, int iSeg, int iHP)
+
+//	SetSegmentHP
+//
+//	Sets the segment to the given hit points.
+
+	{
+	if (iSeg < 0 || iSeg >= m_Segments.GetCount())
+		throw CException(ERR_FAIL);
+
+	CInstalledArmor &Armor = GetSegment(iSeg);
+	int iMaxHP = Armor.GetMaxHP(&SourceObj);
+	int iNewHP = Max(0, Min(iHP, iMaxHP));
+
+	Armor.SetHitPoints(iNewHP);
 	}
 
 void CArmorSystem::SetTotalHitPoints (CSpaceObject *pSource, int iNewHP)

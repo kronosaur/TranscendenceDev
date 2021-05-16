@@ -163,7 +163,7 @@ class CIntroShipController : public IShipController
 		virtual CSpaceObject *GetEscortPrincipal (void) const override { return m_pDelegate->GetEscortPrincipal(); }
 		virtual int GetFireDelay (void) override { return m_pDelegate->GetFireDelay(); }
 		virtual int GetFireRateAdj (void) override { return m_pDelegate->GetFireRateAdj(); }
-		virtual EManeuverTypes GetManeuver (void) override { return m_pDelegate->GetManeuver(); }
+		virtual EManeuver GetManeuver (void) const override { return m_pDelegate->GetManeuver(); }
 		virtual CSpaceObject *GetOrderGiver (void) override { return m_pShip; }
 		virtual bool GetReverseThrust (void) override { return m_pDelegate->GetReverseThrust(); }
 		virtual CSpaceObject *GetShip (void) override { return m_pShip; }
@@ -175,22 +175,22 @@ class CIntroShipController : public IShipController
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) override { return m_pDelegate->SetAISettingInteger(sSetting, iValue); }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) override { return m_pDelegate->SetAISettingString(sSetting, sValue); }
 		virtual void SetCommandCode (ICCItem *pCode) override { m_pDelegate->SetCommandCode(pCode); }
-		virtual void SetManeuver (EManeuverTypes iManeuver) override { m_pDelegate->SetManeuver(iManeuver); }
+		virtual void SetManeuver (EManeuver iManeuver) override { m_pDelegate->SetManeuver(iManeuver); }
 		virtual void SetThrust (bool bThrust) override { m_pDelegate->SetThrust(bThrust); }
 
-		virtual void AddOrder (OrderTypes Order, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore = false) override { m_pDelegate->AddOrder(Order, pTarget, Data, bAddBefore); }
+		virtual void AddOrder (const COrderDesc &Order, bool bAddBefore = false) override { m_pDelegate->AddOrder(Order, bAddBefore); }
 		virtual void CancelAllOrders (void) override { m_pDelegate->CancelAllOrders(); }
 		virtual void CancelCurrentOrder (void) override { m_pDelegate->CancelCurrentOrder(); }
 		virtual bool CancelOrder (int iIndex) override { return m_pDelegate->CancelOrder(iIndex); }
-		virtual OrderTypes GetCurrentOrderEx (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) override { return m_pDelegate->GetCurrentOrderEx(retpTarget, retData); }
-		virtual OrderTypes GetOrder (int iIndex, CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const override { return m_pDelegate->GetOrder(iIndex, retpTarget, retData); }
+		virtual const COrderDesc &GetCurrentOrderDesc () const override { return m_pDelegate->GetCurrentOrderDesc(); }
+		virtual const COrderDesc &GetOrderDesc (int iIndex) const override { return m_pDelegate->GetOrderDesc(iIndex); }
 		virtual int GetOrderCount (void) const override { return m_pDelegate->GetOrderCount(); }
 
 		//	Events
 
 		virtual void OnAbilityChanged (Abilities iAbility, AbilityModifications iChange, bool bNoMessage = false) override { m_pDelegate->OnAbilityChanged(iAbility, iChange, bNoMessage); }
 		virtual void OnAcceptedMission (CMission &MissionObj) override { m_pDelegate->OnAcceptedMission(MissionObj); }
-		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) override { m_pDelegate->OnAttacked(pAttacker, Damage); }
+		virtual void OnAttacked (CSpaceObject &AttackerObj, const SDamageCtx &Damage) override { m_pDelegate->OnAttacked(AttackerObj, Damage); }
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override { return m_pDelegate->OnCommunicate(pSender, iMessage, pParam1, dwParam2, pData); }
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) override { m_pDelegate->OnComponentChanged(iComponent); }
 		virtual void OnDamaged (const CDamageSource &Cause, CInstalledArmor *pArmor, const DamageDesc &Damage, int iDamage) override { m_pDelegate->OnDamaged(Cause, pArmor, Damage, iDamage); }

@@ -23,7 +23,44 @@
 
 		<MiscellaneousDevice
 				powerUse=		"20"
-				/>
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"quantumCPU"
+						 criteria=		"ws"
+						 enhancement=	"+cyberDefense:4;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+
+		<Events>
+			<OnGlobalRunDiagnostics>
+				(block (
+					)
+					;	Set up a player ship
+
+					(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
+					(if (not gPlayerShip)
+						(error "Unable to create player ship.")
+						)
+					(shpOrder gPlayerShip 'hold)
+					(objAddItem gPlayerShip (itmCreate &itMnemonicProcessor; 1))
+					(shpInstallDevice gPlayerShip (itmCreate &itMnemonicProcessor; 1))
+
+					;	Unit Tests for Quantum CPU
+
+					(diagEval (list
+
+						{	test:'(itm@ (@ (objGetItems gPlayerShip "s") 0) 'cyberDefenseLevel)
+																							result:5	}
+						))
+
+					;	Done
+
+					(objDestroy gPlayerShip)
+					(setq gPlayerShip Nil)
+					)
+			</OnGlobalRunDiagnostics>
+		</Events>
 	</ItemType>
 
 <!-- PROGRAMS -->
@@ -80,18 +117,18 @@
 			<!-- We can't guarantee the outcome, so all possibilities use the
 				same message. -->
 
-			<Text id="rpg.canUse.ok">						You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.alreadyEnhanced">			You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.cantReplaceDefect">		You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.cantReplaceEnhancement">	You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.defectOK">					You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.defectRemoved">			You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.defectReplaced">			You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.degraded">					You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.enhancementRemoved">		You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.enhancementReplaced">		You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.improved">					You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
-			<Text id="rpg.canUse.noEffect">					You can run %useItem% on %dstItem%, but we cannot guarantee succeess.</Text>
+			<Text id="rpg.canUse.ok">						You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.alreadyEnhanced">			You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.cantReplaceDefect">		You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.cantReplaceEnhancement">	You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.defectOK">					You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.defectRemoved">			You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.defectReplaced">			You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.degraded">					You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.enhancementRemoved">		You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.enhancementReplaced">		You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.improved">					You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
+			<Text id="rpg.canUse.noEffect">					You can run %useItem% on %dstItem%, but we cannot guarantee success.</Text>
 		</Language>
 	</ItemType>
 

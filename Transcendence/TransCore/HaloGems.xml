@@ -189,7 +189,7 @@
 <!-- OVERLAY TYPES -->
 	
 	<OverlayType UNID="&ovGemOfFury;"
-            attributes=     "dominaPower, effect, temporary"
+			attributes=     "dominaPower, effect, temporary"
 			>
 		<EnhancementAbilities>
 			<Enhancement type="&itGemOfFury;" criteria="w" enhancement="+hpBonus:100;"/>
@@ -223,6 +223,17 @@
 				The structure glows and hums with power, and you feel your
 				connection to Domina strengthen. When you open your eyes, the
 				vision, and the gem, are gone.
+
+			</Text>
+			<Text id="sisters.donateDesc.plural">
+				
+				You see the gems through Domina's eyes and watch as they unwrap
+				themselves, like a tightly wound balls of paper unfolding into
+				complex three-dimensional structures.
+
+				The structures glows and hum with power, and you feel your
+				connection to Domina strengthen. When you open your eyes, the
+				vision, and the gems, are gone.
 
 			</Text>
 		</Language>

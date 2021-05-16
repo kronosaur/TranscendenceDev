@@ -31,8 +31,8 @@
 const int DIGEST_SIZE = 20;
 static BYTE g_BaseFileDigest[] =
 	{
-	101, 186, 127, 180, 118, 159, 120,  46,  84, 208,
-	163, 223,  79, 113, 199,  15, 188, 122,  81,  74,
+	203, 204,  51, 200, 190, 102, 136,  56,  42, 207,
+	 67,  56, 216, 193,  77, 180, 176, 223,  93, 104,
 	};
 
 class CLibraryResolver : public IXMLParserController
@@ -271,7 +271,7 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 		//	Find the extension
 
 		CExtension *pLibrary;
-		if (!FindBestExtension(LibraryDesc.dwUNID, LibraryDesc.dwRelease, dwFlags, &pLibrary))
+		if (!FindBestExtension(LibraryDesc.dwUNID, LibraryDesc.dwRelease, dwFlags | FLAG_ALLOW_DIFFERENT_RELEASE, &pLibrary))
 			{
 			//	If this is an optional library, then it is OK if we cannot find it.
 
@@ -287,9 +287,17 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 			continue;
 			}
 
+		//	If the library is the wrong release, then we cannot load it.
+
+		if (LibraryDesc.dwRelease && LibraryDesc.dwRelease != pLibrary->GetRelease())
+			{
+			pExtension->SetDisabled(strPatternSubst(CONSTLIT("Library %s (%08x) must be release %d (release %d found)."), pLibrary->GetName(), pLibrary->GetUNID(), LibraryDesc.dwRelease, pLibrary->GetRelease()));
+			continue;
+			}
+
 		//	If the library is disabled, then the extension is also disabled.
 
-		if (pLibrary->IsDisabled())
+		else if (pLibrary->IsDisabled())
 			{
 			pExtension->SetDisabled(strPatternSubst(CONSTLIT("Required library disabled: %s (%08x)"), pLibrary->GetName(), pLibrary->GetUNID()));
 			continue;
@@ -297,7 +305,7 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 
 		//	Make sure it is a library
 
-		if (pLibrary->GetType() != extLibrary)
+		else if (pLibrary->GetType() != extLibrary)
 			{
 			*retsError = strPatternSubst(CONSTLIT("UNID referenced by %s (%08x) is not a library: %08x"), pExtension->GetName(), pExtension->GetUNID(), LibraryDesc.dwUNID);
 			return ERR_FAIL;
@@ -1060,8 +1068,14 @@ ALERROR CExtensionCollection::ComputeFilesToLoad (const CString &sFilespec, CExt
 
 		//	If this is a module, then skip it
 
-		CString sDOCTYPERootTag = ExtDb.GetRootTag();
-		if (strEquals(sDOCTYPERootTag, TRANSCENDENCE_MODULE_TAG))
+		CString sError;
+		CString sDOCTYPERootTag = ExtDb.GetRootTag(&sError);
+		if (sDOCTYPERootTag.IsBlank())
+			{
+			*retsError = strPatternSubst(CONSTLIT("%s: %s"), sFilepath, sError);
+			return ERR_FAIL;
+			}
+		else if (strEquals(sDOCTYPERootTag, TRANSCENDENCE_MODULE_TAG))
 			continue;
 		else if (!strEquals(sDOCTYPERootTag, TRANSCENDENCE_EXTENSION_TAG)
 				&& !strEquals(sDOCTYPERootTag, TRANSCENDENCE_ADVENTURE_TAG)
@@ -1167,17 +1181,18 @@ bool CExtensionCollection::FindBestExtension (DWORD dwUNID, DWORD dwRelease, DWO
 
 	{
 	CSmartLock Lock(m_cs);
-	int i;
 
 	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	bool bAllowAltRelease = ((dwFlags & FLAG_ALLOW_DIFFERENT_RELEASE) == FLAG_ALLOW_DIFFERENT_RELEASE);
 
 	int iPos;
 	if (!m_ByUNID.FindPos(dwUNID, &iPos))
 		return false;
 
 	CExtension *pBest = NULL;
+	CExtension *pBestAltRelease = NULL;
 	const TArray<CExtension *> &List = m_ByUNID.GetValue(iPos);
-	for (i = 0; i < List.GetCount(); i++)
+	for (int i = 0; i < List.GetCount(); i++)
 		{
 		//	If this is debug only and we're not in debug mode then skip.
 
@@ -1187,13 +1202,22 @@ bool CExtensionCollection::FindBestExtension (DWORD dwUNID, DWORD dwRelease, DWO
 		//	If we're looking for a specific release, then check
 
 		if (dwRelease && dwRelease != List[i]->GetRelease())
+			{
+			if (bAllowAltRelease && Compare(List[i], pBestAltRelease, bDebugMode) == 1)
+				pBestAltRelease = List[i];
 			continue;
+			}
 
 		//	Compute the best extension out of the list.
 
 		if (Compare(List[i], pBest, bDebugMode) == 1)
 			pBest = List[i];
 		}
+
+	//	If no best, then use the alternate (if any)
+
+	if (pBest == NULL)
+		pBest = pBestAltRelease;
 
 	//	Not found
 

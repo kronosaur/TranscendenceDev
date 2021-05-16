@@ -8,7 +8,7 @@
 
 	<ItemType UNID="&itMiningLaser;"
 			name=				"mining laser"
-			attributes=			"commonwealth, EI, energyWeapon, majorItem, miningEquipment, specialty"
+			attributes=			"commonwealth, EI, energyWeapon, essentialMiningEquipment, majorItem, miningEquipment, specialty"
 			  
 			level=				"2"
 			frequency=			"rare"
@@ -25,7 +25,7 @@
 				type=				"beam"
 
 				repeating=			"4"
-				damage=				"laser:1d4+1; mining:3;"
+				damage=				"laser:1d4+1; mining:5;"
 				fireRate=			"30"
 				lifetime=			"15"
 				powerUse=			"30"
@@ -48,7 +48,7 @@
 
 	<ItemType UNID="&itMagmaCutter;"
 			name=				"magma cutter(s)"
-			attributes=			"commonwealth, majorItem, miningEquipment, NAMI, specialty"
+			attributes=			"commonwealth, essentialMiningEquipment, majorItem, miningEquipment, NAMI, specialty"
 			  
 			level=				"3"
 			frequency=			"rare"
@@ -80,13 +80,13 @@
 					
 					particleLifetime=	"30"
 					>
-			    <ParticleEffect>
-				    <Particle
-						    style=			"flame"
-                            minWidth=       "1"
-						    maxWidth=		"5-10"
-						    />
-			    </ParticleEffect>
+				<ParticleEffect>
+					<Particle
+							style=			"flame"
+							minWidth=       "1"
+							maxWidth=		"5-10"
+							/>
+				</ParticleEffect>
 			</ParticleSystem>
 		</Weapon>
 	</ItemType>
@@ -95,7 +95,7 @@
 
 	<ItemType UNID="&itMinersCargoHold;"
 			name=				"miner's cargo hold"
-			attributes=			"commonwealth, majorItem, minersHold, miningEquipment"
+			attributes=			"autoLootOre, commonwealth, essentialMiningEquipment, majorItem, minersHold, miningEquipment"
 			  
 			level=				"3"
 			frequency=			"rare"
@@ -122,7 +122,7 @@
 
 	<ItemType UNID="&itProtonDrill;"
 			name=				"proton drill"
-			attributes=			"commonwealth, EI, energyWeapon, majorItem, miningEquipment, specialty"
+			attributes=			"commonwealth, EI, energyWeapon, essentialMiningEquipment, majorItem, miningEquipment, specialty"
 			  
 			level=				"4"
 			frequency=			"rare"
@@ -154,7 +154,7 @@
 
 	<ItemType UNID="&itPlasmaTorch;"
 			name=				"plasma torch(es)"
-			attributes=			"commonwealth, majorItem, miningEquipment, NAMI, specialty"
+			attributes=			"commonwealth, essentialMiningEquipment, majorItem, miningEquipment, NAMI, specialty"
 			  
 			level=				"6"
 			frequency=			"rare"

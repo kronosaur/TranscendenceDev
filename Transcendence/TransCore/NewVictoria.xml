@@ -17,7 +17,7 @@
 			sovereign=			"&svCommonwealth;"
 			inherit=			"&unidCommonText;"
 
-			attributes=			"arcology, commonwealthCustoms, generic, human, majorStation, populated, stKatsArcology"
+			attributes=			"arcology, commonwealthCustoms, friendly, generic, human, majorStation, populated, stKatsArcology"
 
 			dockScreen=			"&dsStKatsArcology;"
 
@@ -28,6 +28,7 @@
 
 		<Properties>
 			<Constant		id="rpg.checkMilitaryID">"* +militaryID;"</Constant>
+			<Constant		id="rpg.checkRadioactive">True</Constant>
 			<Constant		id="rpg.showActualItem">True</Constant>
 			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
 			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
@@ -47,6 +48,7 @@
 			<ReplaceArmor	criteria="a L:1-7;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-7;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-7;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<SellShip		criteria="s -notForSale;" priceAdj="100"/>
 			<BuyShip		criteria="s L:1-10; -notForSale;" priceAdj="80"/>
@@ -350,9 +352,7 @@
 					</Action>
 
 					<Action id="actionDockServices">
-						(rpgDockServices gPlayerShip {
-							checkMilitaryID: True
-							})
+						(rpgDockServices gPlayerShip)
 					</Action>
 
 					<Action id="actionUndock" cancel="1">
@@ -413,6 +413,7 @@
 									displayCriteria: "n +stKatsMilitia;"
 									noMissionTextID: 'descNoMissions
 									maxPerStation: (+ 3 (modulo (objGetDestiny gSource) 3))
+									rankDetails: (typTranslate &unidCommonwealthMilitia; 'rankDetails)
 									})
 								)
 							)
@@ -722,7 +723,7 @@
 			<Text id="descHospitalEmpty">
 
 				You enter the brightly lit central garden of the New Victoria University Hospital.
-				Recovering patients sit on articulated gurneys, while doctors and medtechs pass through,
+				Recovering patients sit on articulated gurneys, while medtechs pass through,
 				heads buried in datapads.
 
 			</Text>

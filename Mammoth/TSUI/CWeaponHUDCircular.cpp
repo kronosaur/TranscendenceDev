@@ -401,8 +401,8 @@ void CWeaponHUDCircular::Realize (SHUDPaintCtx &Ctx)
 
 	//	If we have a primary and launcher, put the launcher below the primary
 
-	Metric rSpacingAngle = mathDegreesToRadians(9);
-	Metric rTopAngle = mathDegreesToRadians(340);
+	constexpr Metric rSpacingAngle = mathDegreesToRadians(9);
+	constexpr Metric rTopAngle = mathDegreesToRadians(340);
 	if (pPrimary && pLauncher)
 		{
 		PaintWeaponStatus(pShip, pPrimary, rSpacingAngle);

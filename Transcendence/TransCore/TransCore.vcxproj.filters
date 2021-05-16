@@ -169,9 +169,6 @@
     <None Include="Benedict02.xml">
       <Filter>Part I</Filter>
     </None>
-    <None Include="Benedict03.xml">
-      <Filter>Part I</Filter>
-    </None>
     <None Include="BenedictStoryArc.xml">
       <Filter>Part I</Filter>
     </None>
@@ -402,6 +399,9 @@
     </None>
     <None Include="CommonwealthMetropolis.xml">
       <Filter>Human Space Library\Commonwealth Metropolis</Filter>
+    </None>
+    <None Include="Part1Compatibility.xml">
+      <Filter>Part I</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -846,20 +846,8 @@
     <Xml Include="..\Extensions\Diagnostics\DesignTypeTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
-    <Xml Include="..\Extensions\Diagnostics\TestStationTypes.xml">
-      <Filter>Extensions\Diagnostics</Filter>
-    </Xml>
-    <Xml Include="..\Extensions\Diagnostics\TestArmorClasses.xml">
-      <Filter>Extensions\Diagnostics</Filter>
-    </Xml>
     <Xml Include="CommonwealthMissionRevenge01.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
-    </Xml>
-    <Xml Include="..\Extensions\Diagnostics\TestOverlays.xml">
-      <Filter>Extensions\Diagnostics</Filter>
-    </Xml>
-    <Xml Include="..\Extensions\Diagnostics\TestTSE.xml">
-      <Filter>Extensions\Diagnostics</Filter>
     </Xml>
     <Xml Include="..\Extensions\Diagnostics\ItemEnhancementUnitTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
@@ -1022,6 +1010,75 @@
     </Xml>
     <Xml Include="BlackMarketMissionSmuggle01.xml">
       <Filter>Human Space Library\Black Market</Filter>
+    </Xml>
+    <Xml Include="RaisuMission01.xml">
+      <Filter>Human Space Library\Eridani</Filter>
+    </Xml>
+    <Xml Include="RaisuMission02.xml">
+      <Filter>Human Space Library\Eridani</Filter>
+    </Xml>
+    <Xml Include="RPGMissionTemplate04.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="RaisuMission03.xml">
+      <Filter>Human Space Library\Eridani</Filter>
+    </Xml>
+    <Xml Include="ResidentialsMission01.xml">
+      <Filter>Human Space Library\Commonwealth</Filter>
+    </Xml>
+    <Xml Include="RPGMissionTemplate05.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="RPGMissionTemplate06.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="ResidentialsMission02.xml">
+      <Filter>Human Space Library\Commonwealth</Filter>
+    </Xml>
+    <Xml Include="RPGMissionTemplate07.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="ResidentialsMission03.xml">
+      <Filter>Human Space Library\Commonwealth</Filter>
+    </Xml>
+    <Xml Include="..\Extensions\Diagnostics\RadiationTests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
+    <Xml Include="Tenhove.xml">
+      <Filter>Human Space Library\Corporate Hierarchy</Filter>
+    </Xml>
+    <Xml Include="RPGCrime.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="..\Extensions\Diagnostics\StationTypeTests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
+    <Xml Include="..\Extensions\Diagnostics\ArmorClassTests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
+    <Xml Include="..\Extensions\Diagnostics\OverlayTests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
+    <Xml Include="..\Extensions\Diagnostics\TSETests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
+    <Xml Include="RPGSquadronUI.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="BlackMarketPlayerShips.xml">
+      <Filter>Human Space Library\Black Market</Filter>
+    </Xml>
+    <Xml Include="AgriculturalMission01.xml">
+      <Filter>Human Space Library\Commonwealth</Filter>
+    </Xml>
+    <Xml Include="Sisters03.xml">
+      <Filter>Human Space Library\Sisters</Filter>
+    </Xml>
+    <Xml Include="NPCPilgrims.xml">
+      <Filter>Human Space Library\Pilgrim</Filter>
+    </Xml>
+    <Xml Include="Sisters02.xml">
+      <Filter>Human Space Library\Sisters</Filter>
     </Xml>
   </ItemGroup>
 </Project>

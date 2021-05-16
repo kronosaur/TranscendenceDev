@@ -113,9 +113,6 @@
     <ClCompile Include="CCommandLineDisplay.cpp">
       <Filter>Source Files\Displays</Filter>
     </ClCompile>
-    <ClCompile Include="CDeviceCounterDisplay.cpp">
-      <Filter>Source Files\Displays</Filter>
-    </ClCompile>
     <ClCompile Include="CGDrawArea.cpp">
       <Filter>Source Files\Displays</Filter>
     </ClCompile>
@@ -147,9 +144,6 @@
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="CHighScoreList.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="CMenuData.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="CUIResources.cpp">
@@ -324,6 +318,12 @@
       <Filter>Source Files\Displays</Filter>
     </ClCompile>
     <ClCompile Include="CGameIconBarData.cpp">
+      <Filter>Source Files\Displays</Filter>
+    </ClCompile>
+    <ClCompile Include="CDockScreenIconList.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="CGIconListArea.cpp">
       <Filter>Source Files\Displays</Filter>
     </ClCompile>
   </ItemGroup>

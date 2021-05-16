@@ -8,6 +8,71 @@
 class CParticleSystemDesc;
 class CWeaponFireDesc;
 
+//	Conditions -----------------------------------------------------------------
+
+enum class ECondition
+	{
+	none =					0x00000000,
+
+	blind =					0x00000001,		//	SRS-blind
+	paralyzed =				0x00000002,		//	EMP
+	radioactive =			0x00000004,		//	Radioactive
+	disarmed =				0x00000008,		//	Unable to fire weapons
+	dragged =				0x00000010,		//	Subject to drag
+	spinning =				0x00000020,		//	Spinning uncontrollably
+	timeStopped =			0x00000040,		//	Time-stopped
+	shipScreenDisabled =	0x00000080,		//	Source cannot bring up ship screen
+	LRSBlind =				0x00000100,		//	LRS-blind
+	shieldBlocked =			0x00000200,		//	Shields disabled
+	fouled =				0x00000400,		//	Harmful object attached
+
+
+	count =					11,
+	};
+
+enum class EConditionChange
+	{
+	unknown =				-1,
+
+	added =					0,
+	removed =				1,
+	};
+
+enum class EConditionResult
+	{
+	unknown,
+
+	ok,						//	Success
+	noEffect,				//	Unable to apply or remove
+	alreadyApplied,			//	Condition already applied
+	alreadyRemoved,			//	Condition already removed
+	stillApplied,			//	Removed, but condition still exists
+	};
+
+class CConditionSet
+	{
+	public:
+		void Clear (ECondition iCondition) { m_dwSet &= ~(DWORD)iCondition; }
+		void ClearAll (void) { m_dwSet = 0; }
+		bool Diff (const CConditionSet &OldSet, TArray<ECondition> &Added, TArray<ECondition> &Removed) const;
+		bool IsEmpty (void) const { return (m_dwSet == 0); }
+		bool IsSet (ECondition iCondition) const { return ((m_dwSet & (DWORD)iCondition) ? true : false); }
+		void ReadFromStream (SLoadCtx &Ctx) { Ctx.pStream->Read(m_dwSet); }
+		void Set (ECondition iCondition) { m_dwSet |= (DWORD)iCondition; }
+		void Set (const CConditionSet &Conditions);
+		ICCItemPtr WriteAsCCItem (void) const;
+		void WriteToStream (IWriteStream *pStream) const { pStream->Write(m_dwSet); }
+
+		static CString AsID (EConditionResult iResult);
+		static bool IsSuccessResult (EConditionResult iResult);
+		static ECondition ParseCondition (const CString &sCondition);
+
+	private:
+		DWORD m_dwSet = 0;
+	};
+
+//	Damage ---------------------------------------------------------------------
+
 enum SpecialDamageTypes
 	{
 	specialNone				= -1,
@@ -150,6 +215,7 @@ class DamageDesc
 		static SpecialDamageTypes ConvertToSpecialDamageTypes (const CString &sValue);
 		static int GetDamageLevel (DamageTypes iType);
 		static int GetDamageTier (DamageTypes iType);
+		static SpecialDamageTypes GetSpecialDamageFromCondition (ECondition iCondition);
 		static CString GetSpecialDamageName (SpecialDamageTypes iSpecial);
 		static int GetMassDestructionAdjFromValue (int iValue);
 		static int GetMassDestructionLevelFromValue (int iValue);
@@ -193,6 +259,8 @@ class DamageDesc
 		BYTE m_TimeStopDamage = 0;				//	Time stop (level)
 		INT8 m_MomentumDamage = 0;				//	Impulse/Tractor (100 to -100)
 	};
+
+//	SDamageCtx -----------------------------------------------------------------
 
 enum EDamageResults
 	{
@@ -328,6 +396,8 @@ struct SDamageCtx
 		bool m_bFreeDesc = false;					//	If TRUE, we own pDesc.
 	};
 
+//	SDestroyCtx ----------------------------------------------------------------
+
 struct SDestroyCtx
 	{
 	SDestroyCtx (CSpaceObject &ObjArg) :
@@ -362,6 +432,36 @@ class DamageTypeSet
 	private:
 		DWORD m_dwSet;
 	};
+
+//	Interaction ----------------------------------------------------------------
+
+class CInteractionLevel
+	{
+	public:
+		CInteractionLevel () { }
+
+		CInteractionLevel (int iInteraction) :
+				m_iInteraction(iInteraction)
+			{
+			ASSERT(m_iInteraction == -1 || (m_iInteraction >= 0 && m_iInteraction <= 100));
+			}
+
+		operator int () const { return (m_iInteraction == -1 ? 100 : m_iInteraction); }
+
+		bool AlwaysInteracts () const { return m_iInteraction == -1; }
+		bool CalcCanInteractWith (const CInteractionLevel &Other, bool bTargetingOther, int *retiChance = NULL) const;
+		int CalcInteractionChanceWith (const CInteractionLevel &Other, bool bTargetingOther) const;
+		bool InteractsLikeBeam () const { return (m_iInteraction >= 0 && m_iInteraction < MIN_MISSILE_INTERACTION); }
+		bool InteractsAtMaxLevel () const { return (m_iInteraction == -1 || m_iInteraction == 100); }
+		bool NeverInteracts () const { return m_iInteraction == 0; }
+
+	private:
+		static constexpr int MIN_MISSILE_INTERACTION = 10;
+
+		int m_iInteraction = 0;						//	0-100; -1 = always interact
+	};
+
+//	Shots ----------------------------------------------------------------------
 
 struct SShotCreateCtx
 	{
@@ -448,6 +548,7 @@ class CConfigurationDesc
 		bool IncPolarity (int iPolarity, int *retiNewPolarity = NULL) const;
 		ALERROR InitFromWeaponClassXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc, ETypes iDefault = ctSingle);
 		bool IsAlternating (void) const { return (m_bCustomAlternating || m_iType == ctDualAlternating); }
+		bool IsDualPointOrigin (void) const;
 		bool IsEmpty (void) const { return m_iType == ctUnknown; }
 		bool IsSinglePointOrigin (void) const;
 
@@ -468,7 +569,7 @@ class CConfigurationDesc
 
 #include "TSEConfigurationDescInlines.h"
 
-//	WeaponFireDesc
+//	WeaponFireDesc -------------------------------------------------------------
 
 struct SExplosionType
 	{
@@ -568,9 +669,10 @@ class CWeaponFireDesc
 		void ApplyAcceleration (CSpaceObject *pMissile) const;
 		Metric CalcDamage (DWORD dwDamageFlags = 0) const;
 		DamageDesc CalcDamageDesc (const CItemEnhancementStack *pEnhancements, const CDamageSource &Attacker, Metric rAge) const;
+		int CalcDefaultHitPoints (void) const;
 		bool CanAutoTarget (void) const { return (m_fAutoTarget ? true : false); }
 		bool CanDamageSource (void) const { return (m_fCanDamageSource ? true : false); }
-		bool CanHit (CSpaceObject *pObj) const;
+		bool CanHit (const CSpaceObject &Obj) const;
 		bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
 		IEffectPainter *CreateEffectPainter (SShotCreateCtx &CreateCtx);
 		void CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir) const;
@@ -633,7 +735,7 @@ class CWeaponFireDesc
 		const CObjectImageArray &GetImage (void) const { return GetOldEffects().Image; }
 		int GetInitialDelay (void) const { return m_InitialDelay.Roll(); }
 		Metric GetInitialSpeed (void) const;
-		int GetInteraction (void) const { return m_iInteraction; }
+		const CInteractionLevel &GetInteraction () const { return m_Interaction; }
 		int GetLevel (void) const;
 		int GetLifetime (void) const { return m_Lifetime.Roll(); }
 		int GetManeuverRate (void) const { return m_iManeuverRate; }
@@ -650,7 +752,7 @@ class CWeaponFireDesc
 		Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }
 		CWeaponFireDesc *GetScaledDesc (int iLevel) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
-		int GetStealth (void) const { return m_iStealth; }
+		int GetStealth (void) const { return m_iStealthFromArmor; }
 		bool GetTargetable (void) const { return m_fTargetable; }
 		FireTypes GetType (void) const { return m_iFireType; }
 		const CString &GetUNID (void) const { return m_sUNID; }
@@ -664,11 +766,13 @@ class CWeaponFireDesc
 		ALERROR InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pMissile, const SInitOptions &Options);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const SInitOptions &Options);
 		ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem, CWeaponClass *pWeapon);
+		bool IsDetonatingOnEndOfLife () const { return (ProximityBlast() && !m_fNoDetonationOnEndOfLife); }
 		bool IsCurvedBeam (void) const { return false; }
 		bool IsDirectionalImage (void) const { return m_fDirectional; }
 		bool IsFragment (void) const { return m_fFragment; }
 		bool IsMIRV (void) const { return (m_fMIRV ? true : false); }
 		bool IsMIRVFragment (void) const { return (m_pFirstFragment ? m_pFirstFragment->pDesc->IsMIRV(): false); }
+		bool IsMIRVOrHasMIRVFragments () const { return IsMIRV() || IsMIRVFragment(); }
 		bool IsScalable (void) const { return (m_pScalable != NULL); }
 		bool IsTargetRequired (void) const { return (m_fTargetRequired ? true : false); }
 		bool IsTracking (void) const { return m_iManeuverability != 0; }
@@ -691,9 +795,9 @@ class CWeaponFireDesc
 			SVaporTrailDesc VaporTrail;			//  Vapor trail effect
 			};
 
-		int CalcDefaultHitPoints (void) const;
 		int CalcDefaultInteraction (void) const;
 		Metric CalcMaxEffectiveRange (void) const;
+		Metric CalcShotsPerAmmoItem () const;
 		static Metric CalcSpeed (Metric rPercentOfLight, bool bRelativistic);
 		CEffectCreator *GetFireEffect (void) const;
 		SOldEffects &GetOldEffects (void) const { return (m_pOldEffects ? *m_pOldEffects : m_NullOldEffects); }
@@ -749,9 +853,9 @@ class CWeaponFireDesc
 		//	Missile stuff (m_iFireType == ftMissile)
 		int m_iAccelerationFactor = 0;			//	% increase in speed per 10 ticks
 		Metric m_rMaxMissileSpeed = 0.0;		//	Max speed.
-		int m_iStealth = 0;						//	Missile stealth
+		int m_iStealthFromArmor = 0;			//	Missile stealth
 		int m_iHitPoints = 0;					//	HP before dissipating (0 = destroyed by any hit)
-		int m_iInteraction = 0;					//	Interaction opacity (0-100)
+		CInteractionLevel m_Interaction;		//	Interaction opacity (0-100; -1 = always interact)
 		int m_iManeuverability = 0;				//	Tracking maneuverability (0 = none)
 		int m_iManeuverRate = 0;				//	Angle turned at each maneuverability point
 
@@ -807,7 +911,7 @@ class CWeaponFireDesc
 		DWORD m_fMIRV:1 = false;				//	If TRUE, shots require their own target.
 		DWORD m_fNoWMDHint:1 = false;			//	If TRUE, do not show WMD-needed hint
 		DWORD m_fNoMiningHint:1 = false;		//	If TRUE, do not show mining-needed hint
-		DWORD m_fSpare5:1;
+		DWORD m_fNoDetonationOnEndOfLife:1 = false;	//	If TRUE, do not detonate when life expires
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;

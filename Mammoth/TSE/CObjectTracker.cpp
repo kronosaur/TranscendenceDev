@@ -60,6 +60,9 @@ bool CObjectTracker::AccumulateEntries (TArray<SObjList *> &Table, const CObject
 			if (Criteria.SelectsUnknownOnly() && Basics.fKnown)
 				continue;
 
+			if (Criteria.SelectsInPlayerSquadronOnly() && !Basics.fInPlayerSquadron)
+				continue;
+
 			//	Otherwise, add
 
             AccumulateEntry(*pList, pList->Objects.GetKey(j), Basics, dwFlags, *retResult);
@@ -90,6 +93,7 @@ void CObjectTracker::AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, co
 	pEntry->fInactive = ObjData.fInactive;
 	pEntry->fPlayerBlacklisted = ObjData.fPlayerBlacklisted;
 	pEntry->fIsStargate = ObjData.fIsStargate;
+	pEntry->fInPlayerSquadron = ObjData.fInPlayerSquadron;
 
 	if (ObjData.pExtra)
 		{
@@ -466,7 +470,8 @@ const TArray<COrbit> &CObjectTracker::GetSystemOrbits (const CTopologyNode *pNod
 
     {
     const SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
-    ASSERT(pNodeData);
+	if (!pNodeData)
+		throw CException(ERR_FAIL);
 
     return pNodeData->Orbits;
     }
@@ -668,6 +673,8 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
 							pObjData->fIsStargate =		((dwLoad & 0x00000100) ? true : false);
 						else
 							pObjData->fIsStargate = pType->HasAttribute(CONSTLIT("stargate"));
+
+                        pObjData->fInPlayerSquadron = ((dwLoad & 0x00000200) ? true : false);
 
                         //  Extra, if we've got it
 
@@ -962,6 +969,7 @@ void CObjectTracker::Refresh (const CSpaceObject &Obj, SObjBasics &ObjData, cons
 	ObjData.fInactive = Obj.IsInactive();
 	ObjData.fPlayerBlacklisted = (pPlayer && !Obj.IsEnemy(pPlayer) && Obj.IsAngryAt(pPlayer));
 	ObjData.fIsStargate = Obj.IsStargate();
+	ObjData.fInPlayerSquadron = (pPlayer && pPlayer->IsInOurSquadron(Obj));
 
     //  Track our disposition relative to the player
 
@@ -1304,6 +1312,7 @@ void CObjectTracker::WriteToStream (IWriteStream *pStream)
                 dwSave |= (ObjData.fInactive			? 0x00000040 : 0);
                 dwSave |= (ObjData.fPlayerBlacklisted	? 0x00000080 : 0);
 				dwSave |= (ObjData.fIsStargate			? 0x00000100 : 0);
+				dwSave |= (ObjData.fInPlayerSquadron	? 0x00000200 : 0);
 			    pStream->Write((char *)&dwSave, sizeof(DWORD));
 
                 //  If we have extra data, save that
@@ -1343,4 +1352,3 @@ void CObjectTracker::WriteToStream (IWriteStream *pStream)
 			}
         }
 	}
-

@@ -32,6 +32,7 @@ bool CAttackDetector::Hit (int iTick)
 
 		if (m_iCounter > HIT_LIMIT)
 			{
+			//	Black listed
 			m_iCounter = -1;
 			return true;
 			}

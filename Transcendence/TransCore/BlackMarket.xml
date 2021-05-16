@@ -19,10 +19,6 @@
 					(not (objMatches gSource Nil "sTAV +blackMarket;"))
 						Nil
 						
-					; If the ship is radioactive then refuse dock
-					(shpIsRadioactive gPlayerShip)
-						{	screen:&dsRefuseContamination;		priority:10		overrideOnly:true	}
-
 					; If there is a bounty on the player, then the player
 					; has to repay the debt.
 					(objGetData gPlayerShip "blackMarketCrimeCost")
@@ -133,8 +129,15 @@ PLAYER DATA
 		<!-- Configuration -->
 		
 		<Devices>
-			<Device deviceID="&itSlamCannon;"	omnidirectional="true" posAngle="45"  posRadius="60"/>
-			<Device deviceID="&itSlamCannon;"	omnidirectional="true" posAngle="215" posRadius="60"/>
+			<Device deviceID="&itSlamCannon;"	posAngle="60"   posRadius="60"	posZ="35"	fireAngle="60"   fireArc="120" />
+			<Device deviceID="&itSlamCannon;"	posAngle="150"  posRadius="60"	posZ="35"	fireAngle="150"  fireArc="120" />
+			<Device deviceID="&itSlamCannon;"	posAngle="-30"  posRadius="60"	posZ="35"	fireAngle="-30"  fireArc="120" />
+			<Device deviceID="&itSlamCannon;"	posAngle="-120" posRadius="60"	posZ="35"	fireAngle="-120" fireArc="120" />
+
+			<Device deviceID="&itArbalestCannon;"	posAngle="15"  posRadius="110" posZ="10"		fireAngle="15"   fireArc="180"	missileDefense="true" />
+			<Device deviceID="&itArbalestCannon;"	posAngle="105" posRadius="110" posZ="10"		fireAngle="105"  fireArc="180"	missileDefense="true" />
+			<Device deviceID="&itArbalestCannon;"	posAngle="195" posRadius="110" posZ="10"		fireAngle="195"  fireArc="180"	missileDefense="true" />
+			<Device deviceID="&itArbalestCannon;"	posAngle="285" posRadius="110" posZ="10"		fireAngle="285"  fireArc="180"	missileDefense="true" />
 		</Devices>
 
 		<!-- Ships and Defenses -->
@@ -178,12 +181,8 @@ PLAYER DATA
 								(scrShowScreen gScreen &dsBlackMarketBoss;)
 							</Action>
 
-							<Action id="actionBuyItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
-							</Action>
-
-							<Action id="actionSellItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
+							<Action id="actionCommoditiesExchange">
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -326,6 +325,9 @@ PLAYER DATA
 				Buys and sells illegal and military items
 
 			</Text>
+			<Code id="rpg.statusDetails">
+				(typTranslate &unidBlackMarketMember; 'rankDetails)
+			</Code>
 		</Language>
 	</StationType>
 
@@ -351,6 +353,11 @@ PLAYER DATA
 			explosionType=		"&vtBlastExplosion4;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
+
+		<Properties>
+			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +blackMarket; -notStandard; +shipBroker;"</Constant>
+			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
+		</Properties>
 
 		<!-- Encounter Info -->
 
@@ -382,6 +389,9 @@ PLAYER DATA
 			<ReplaceArmor	criteria="a L:1-9;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+
+			<SellShip		criteria="s -notForSale;" priceAdj="100"/>
+			<BuyShip		criteria="s L:1-10; -notForSale;" priceAdj="80"/>
 		</Trade>
 			
 		<Items>
@@ -415,8 +425,15 @@ PLAYER DATA
 		<!-- Configuration -->
 		
 		<Devices>
-			<Device deviceID="&itSlamCannon;"	omnidirectional="true" posAngle="45"  posRadius="60"/>
-			<Device deviceID="&itSlamCannon;"	omnidirectional="true" posAngle="215" posRadius="60"/>
+			<Device deviceID="&itSlamCannon;"	posAngle="15"   posRadius="60"	posZ="30"	fireAngle="15"   fireArc="180" />
+			<Device deviceID="&itSlamCannon;"	posAngle="105"  posRadius="60"	posZ="30"	fireAngle="105"  fireArc="180" />
+			<Device deviceID="&itSlamCannon;"	posAngle="195"  posRadius="60"	posZ="30"	fireAngle="195"  fireArc="180" />
+			<Device deviceID="&itSlamCannon;"	posAngle="285"  posRadius="60"	posZ="30"	fireAngle="285"  fireArc="180" />
+
+			<Device deviceID="&itArbalestCannon;"	posAngle="15"  posRadius="110" posZ="10"		fireAngle="15"   fireArc="180"	missileDefense="true" />
+			<Device deviceID="&itArbalestCannon;"	posAngle="105" posRadius="110" posZ="10"		fireAngle="105"  fireArc="180"	missileDefense="true" />
+			<Device deviceID="&itArbalestCannon;"	posAngle="195" posRadius="110" posZ="10"		fireAngle="195"  fireArc="180"	missileDefense="true" />
+			<Device deviceID="&itArbalestCannon;"	posAngle="285" posRadius="110" posZ="10"		fireAngle="285"  fireArc="180"	missileDefense="true" />
 		</Devices>
 
 		<!-- Ships and Defenses -->
@@ -466,16 +483,16 @@ PLAYER DATA
 								(scrShowScreen gScreen &dsBlackMarketBoss;)
 							</Action>
 
-							<Action id="actionBuyItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
-							</Action>
-
-							<Action id="actionSellItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
+							<Action id="actionCommoditiesExchange">
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionDockServices">
 								(rpgDockServices gPlayerShip)
+							</Action>
+
+							<Action id="actionBuyShip">
+								(scrShowScreen gScreen &dsRPGShipBroker;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -497,12 +514,6 @@ PLAYER DATA
 		</StaticData>
 		
 		<Language>
-			<Text id="rpg.stationWillNotBuy">
-
-				%StationName% buys illegal and military items. We are not 
-				interested in buying %itemName%.
-
-			</Text>
 			<Text id="core.mapDesc">
 
 				Refuels up to level 7 &mdash; Repairs/installs armor up to 
@@ -510,6 +521,15 @@ PLAYER DATA
 				sells illegal and military items
 
 			</Text>
+			<Text id="rpg.stationWillNotBuy">
+
+				%StationName% buys illegal and military items. We are not 
+				interested in buying %itemName%.
+
+			</Text>
+			<Code id="rpg.statusDetails">
+				(typTranslate &unidBlackMarketMember; 'rankDetails)
+			</Code>
 		</Language>
 	</StationType>
 
@@ -649,6 +669,9 @@ PLAYER DATA
 			<Text id="core.mapDesc">
 				"Sells illegal items"
 			</Text>
+			<Code id="rpg.statusDetails">
+				(typTranslate &unidBlackMarketMember; 'rankDetails)
+			</Code>
 		</Language>
 	</StationType>
 	
@@ -674,11 +697,11 @@ PLAYER DATA
 			cargoSpace=			"50"
 
 			maxReactorPower=	"10000"
-			maxCargoSpace=		"100"
+			maxCargoSpace=		"150"
 			maxDevices=			"8"
 
 			maxArmor=			"massive"
-			stdArmor=			"medium"
+			stdArmor=			"heavy"
 			/>
 
 		<Drive
@@ -691,6 +714,11 @@ PLAYER DATA
 			rotationAccel=		"1.0"
 			/>
 
+		<DeviceSlots>
+			<DeviceSlot criteria="l" posAngle="0" posRadius="16" posZ="0"/>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="20" posZ="0"/>
+		</DeviceSlots>
+
 		<!-- Configuration -->
 
 		<Armor
@@ -700,7 +728,7 @@ PLAYER DATA
 
 		<Devices>
 			<Device deviceID="&itMarkIHowitzer;"/>
-			<Device deviceID="&itMAGLauncher;" posAngle="0" posRadius="16" posZ="0">
+			<Device deviceID="&itMAGLauncher;">
 				<Items>
 					<Item count="20d6" item="&it600HexageneMAG;"/>
 				</Items>
@@ -750,11 +778,11 @@ PLAYER DATA
 			cargoSpace=			"50"
 
 			maxReactorPower=	"10000"
-			maxCargoSpace=		"100"
-			maxDevices=			"8"
+			maxCargoSpace=		"200"
+			maxDevices=			"9"
 
 			maxArmor=			"massive"
-			stdArmor=			"medium"
+			stdArmor=			"heavy"
 			/>
 
 		<Drive
@@ -1095,6 +1123,11 @@ PLAYER DATA
 			-->
 			<Definition	id="rpg.checkMilitaryID">	Nil</Definition>
 			<Definition id="rpg.checkIllegals">		Nil</Definition>
+
+			<!--
+			We don't let the player dock if radioactive
+			-->
+			<Definition id="rpg.checkRadioactive">	True</Definition>
 		</Properties>
 
 		<Events>

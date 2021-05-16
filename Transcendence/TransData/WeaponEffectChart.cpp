@@ -124,7 +124,7 @@ void GenerateWeaponEffectChart (CUniverse &Universe, CXMLElement *pCmdLine)
 		return;
 		}
 
-	pController->AddOrder(IShipController::orderHold, NULL, IShipController::SData());
+	pController->AddOrder(COrderDesc(IShipController::orderHold));
 	pPlatform->SetControllerEnabled(false);
 
 	//	Install the largest possible reactor on the ship

@@ -16,6 +16,7 @@
 	
 	<MissionType UNID="&msBenedictToKorolov;"
 			name=				"Benedict 03: Visit Korolov Shipping"
+			obsoleteVersion=	"51"
 			attributes=			""
 
 			level=				"1"

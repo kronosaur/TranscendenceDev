@@ -1427,6 +1427,7 @@
 			<ReplaceArmor	criteria="a L:1-8;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-6" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-6;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 		
 		<Items>
@@ -1599,9 +1600,7 @@
 									(if (leq xp 0)
 										(scrShowPane gScreen "CantUseDockServices")
 										
-										(rpgDockServices gPlayerShip {
-											checkMilitaryID: True
-											})
+										(rpgDockServices gPlayerShip)
 										)
 									)
 							</Action>
@@ -1783,7 +1782,7 @@
 
 				<Panes>
 					<Default
-							desc=	"You are docked at the lifeless ruins of a destroyed station. Amid wrecked machinery and smouldering bodies you find a woman who is still alive.&#x0a;&#x0a;She grabs your hand, &quot;Avenge us...the Fortress is in the system...kill them all...&quot;">
+							desc=	"You are docked at the lifeless ruins of a destroyed station. Amid wrecked machinery and smoldering bodies you find a woman who is still alive.&#x0a;&#x0a;She grabs your hand, &quot;Avenge us...the Fortress is in the system...kill them all...&quot;">
 
 						<Actions>
 							<Action name="Continue" default="1" cancel="1" key="C">
@@ -1876,6 +1875,7 @@
 			<Refuel			criteria="f +BasicFuel; L:1-7;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-8;" priceAdj="100"/>
 			<ReplaceArmor	criteria="a L:1-8;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 
 		<Items>
@@ -1959,9 +1959,7 @@
 							</Action>
 
 							<Action name="Dock Services" key="D">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action name="Undock" cancel="1" key="U">
@@ -2973,9 +2971,7 @@
 			<Default descID="descWelcome">
 				<Actions>
 					<Action id="actionDockServices" default="1">
-						(rpgDockServices gPlayerShip {
-							checkMilitaryID: True
-							})
+						(rpgDockServices gPlayerShip)
 					</Action>
 					
 					<Action id="actionUndock" cancel="1">
@@ -3106,9 +3102,7 @@
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: Nil
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -3200,6 +3194,7 @@
 			<Device deviceID="&itRasiermesserLauncher;" secondaryWeapon="true" minFireArc="340" maxFireArc="200"	posAngle="110" posRadius="60" posZ="0"/>
 			<Device deviceID="&itRasiermesserLauncher;" secondaryWeapon="true" minFireArc="160" maxFireArc="20"		posAngle="250" posRadius="60" posZ="0"/>
 			<Device deviceID="&itPlasmaShieldGenerator;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="9"/>
 		</Devices>
 
 		<Maneuver
@@ -3888,6 +3883,7 @@
 			<ReplaceArmor	criteria="a L:1-9;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-8;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-8;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 		
 		<StaticData>
@@ -3955,9 +3951,7 @@
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -4384,6 +4378,7 @@
 			<ReplaceArmor	criteria="a L:1-10;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 
 		<DockScreens>
@@ -4410,9 +4405,7 @@
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -5110,6 +5103,10 @@
 			ejectaType=			"&vtWreckEjecta;"
 			>
 		
+		<Trade currency="credit">
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+		</Trade>
+		
 		<!-- Ships and Defenses -->
 
 		<Ships>
@@ -5530,6 +5527,7 @@
 
 		<Properties>
 			<Constant		id="rpg.checkMilitaryID">"* +militaryID;"</Constant>
+			<Constant		id="rpg.checkRadioactive">True</Constant>
 			<Constant		id="rpg.showActualItem">True</Constant>
 			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
 			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
@@ -5565,6 +5563,7 @@
 			<ReplaceArmor	criteria="a L:1-7;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-7;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-7;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<SellShip		criteria="s -notForSale;" priceAdj="100"/>
 			<BuyShip		criteria="s L:1-10; -notForSale;" priceAdj="80"/>
@@ -6790,6 +6789,84 @@
 				imageTicksPerFrame="2"/>
 	</Effect>
 
+	<!-- Fleet Decontamination -->
+
+	<DockScreen UNID="&dsFleetDecon;"	
+			obsoleteVersion="52"
+			nestedScreen="true"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block Nil
+						(scrSetDesc gScreen "The dockmaster decontaminates your ship before you are allowed to exit the airlock.")
+						(shpDecontaminate gPlayerShip)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Continue" default="1" cancel="1" key="C">
+						(scrExitScreen gScreen (shpIsRadioactive gPlayerShip))
+					</Action>
+				</Actions>
+
+			</Default>
+		</Panes>
+	</DockScreen>
+
+	<!-- Commonwealth Decontamination -->
+
+	<DockScreen UNID="&dsCommonwealthDecon;"
+			obsoleteVersion="52"
+			nestedScreen=	"true"
+			inherit=		"&dsDockScreenBase;"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(currencyUsed (objGetProperty gSource 'currency))
+						(cost (ecoExchange 250 'credit currencyUsed))
+						)
+						(if (geq (objGetBalance gPlayerShip currencyUsed) cost)
+							(block Nil
+								(scrSetDescTranslate gScreen 'customs.chargedForDecon { cost:(fmtCurrency currencyUsed cost) })
+								(objCharge gPlayerShip currencyUsed cost)
+								(shpDecontaminate gPlayerShip)
+								)
+							(scrSetDescTranslate gScreen 'customs.cantAffordDecon { cost:(fmtCurrency currencyUsed cost) })
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						; If the ship is still radioactive, force undock.
+						; Otherwise, we just exit the screen and go back to the default screen
+						
+						(scrExitScreen gScreen (shpIsRadioactive gPlayerShip))
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		
+		<Language>
+			<Text id="customs.chargedForDecon">
+
+				Commonwealth Customs stops your ship for decontamination. You 
+				are automatically charged %cost% for decontaminating your ship.
+
+			</Text>
+			<Text id="customs.cantAffordDecon">
+
+				Commonwealth Customs stops your ship for decontamination.
+				Unfortunately, you do not have %cost% to pay for 
+				decontamination.
+
+			</Text>
+		</Language>
+	</DockScreen>
+
 	<!-- Old Image -->
 
 	<Image UNID="&rsEI100Image;"	obsoleteVersion="40" bitmap="Resources\EI100.jpg" 		bitmask="Resources\EI100Mask.bmp" loadOnUse="true"/>
@@ -6860,5 +6937,13 @@
 
 	<Image UNID="&rsCentauriHeavyRaiderImage;"	obsoleteVersion="51" bitmap="Resources\CentauriHeavyRaider.jpg" bitmask="Resources\CentauriHeavyRaiderMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsCentauriRaiderImage;"		obsoleteVersion="51" bitmap="Resources\CentauriRaider.jpg" bitmask="Resources\CentauriRaiderMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsTenhoveHD;"			obsoleteVersion="51" bitmap="Resources\TenhoveHD.jpg" 	bitmask="Resources\TenhoveHDMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&rsPlagueHD;"			obsoleteVersion="52"				bitmap="Resources\PlagueHD.jpg"			bitmask="Resources\PlagueHDMask.bmp"		loadOnUse="true"/>
+	<Image UNID="&rsRevelationsHD;"			obsoleteVersion="52" bitmap="Resources\RevelationsHD.jpg"	bitmask="Resources\RevelationsHDMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&rsEarthzoneHD;"		obsoleteVersion="52"			bitmap="Resources\EarthzoneHD.jpg"				bitmask="Resources\EarthzoneHDMask.bmp"  		loadOnUse="true"/>
+	<Image UNID="&rsBritannia;"		obsoleteVersion="52"			bitmap="Resources\Britannia.jpg" bitmask="Resources\BritanniaMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsIAVLight;"			obsoleteVersion="52"			bitmap="Resources\IAVLight.jpg" bitmask="Resources\IAVLightMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsIAVLightHD;"		obsoleteVersion="52"		bitmap="Resources\IAVLightHD.jpg" bitmask="Resources\IAVLightHDMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>

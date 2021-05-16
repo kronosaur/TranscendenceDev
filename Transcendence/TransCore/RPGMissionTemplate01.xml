@@ -3,6 +3,7 @@
 <TranscendenceModule>
 
 	<MissionType unid="&baInterceptMission;"
+			inherit=			"&unidCommonText;"
 			expireTime=			"5400"
 			failureAfterOutOfSystem="1800"
 			>
@@ -176,6 +177,17 @@
 							)
 					)
 			</OnObjDestroyed>
+
+			<OnReward>
+				(block (
+					(reward (msn@ gSource 'reward))
+					(currency (msn@ gSource 'rewardCurrency))
+					)
+					(if reward
+						(rpgMissionRewardPayment reward currency)
+						)
+					)
+			</OnReward>
 		</Events>
 	</MissionType>
 

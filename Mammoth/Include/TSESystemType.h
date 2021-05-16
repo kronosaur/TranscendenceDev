@@ -44,6 +44,8 @@ class CSystemType : public CDesignType
 
 		ALERROR FireOnCreate (SSystemCreateCtx &SysCreateCtx, CString *retsError = NULL);
 		bool FireOnObjJumpPosAdj (CSpaceObject *pPos, CVector *iovPos);
+		void FireOnSystemStarted (DWORD dwElapsedTime);
+		void FireOnSystemStopped ();
 		ALERROR FireSystemCreateCode (SSystemCreateCtx &SysCreateCtx, ICCItem *pCode, const COrbit &OrbitDesc, CString *retsError);
 		DWORD GetBackgroundUNID (void) { return m_dwBackgroundUNID; }
 		CXMLElement *GetDesc (void) { return m_pDesc; }
@@ -63,14 +65,18 @@ class CSystemType : public CDesignType
 		static CSystemType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSystemType) ? (CSystemType *)pType : NULL); }
 		virtual DesignTypes GetType (void) const override { return designSystemType; }
 
+		static Metric ParseScale (const CString &sValue);
+
 	protected:
 		//	CDesignType overrides
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual void OnMarkImages (void) override;
 
 	private:
 
+		CString m_sName;					//	Name of template
 		DWORD m_dwBackgroundUNID;
 		Metric m_rSpaceScale;				//	Klicks per pixel
 		Metric m_rTimeScale;				//	Seconds of game time per real time
@@ -89,5 +95,9 @@ class CSystemType : public CDesignType
 											//		satisfy minimums.
 
 		SEventHandlerDesc m_CachedEvents[evtCount];
+
+		//	Property table
+
+		static TPropertyHandler<CSystemType> m_PropertyTable;
 	};
 

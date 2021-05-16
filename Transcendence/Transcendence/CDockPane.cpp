@@ -986,7 +986,7 @@ ALERROR CDockPane::InitPane (CDockSession &DockSession, CDockScreen &DockScreen,
 
 	CString sResolvedScreen;
 	CDesignType *pResolvedRoot = m_DockScreen.GetResolvedRoot(&sResolvedScreen);
-	g_pUniverse->FireOnGlobalPaneInit(&m_DockScreen, pResolvedRoot, sResolvedScreen, m_pPaneDesc->GetTag(), pData);
+	g_pUniverse->FireOnGlobalPaneInit(pResolvedRoot, sResolvedScreen, m_pPaneDesc->GetTag(), pData);
 	if (m_DockScreen.GetScreen() == NULL)
 		return NOERROR;
 

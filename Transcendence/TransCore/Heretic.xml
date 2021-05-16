@@ -41,7 +41,6 @@
 				fireRate=			"15"
 				missileSpeed=		"50"
 				lifetime=			"60"
-				hitPoints=			"30"
 				powerUse=			"2000"
 
 				sound=				"&snRecoillessCannon;"
@@ -324,6 +323,7 @@
 			<ReplaceArmor	criteria="a L:1-10;" priceAdj="120"/>
 			<InstallDevice	criteria="d L:1-10;" priceAdj="120"/>
 			<RemoveDevice	criteria="d L:1-10;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 
 		<Items>
@@ -409,9 +409,7 @@
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -467,6 +465,7 @@
 			<ReplaceArmor	criteria="a L:1-10;" priceAdj="120"/>
 			<InstallDevice	criteria="d L:1-10;" priceAdj="120"/>
 			<RemoveDevice	criteria="d L:1-10;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 		</Trade>
 		
 		<Items>
@@ -519,9 +518,7 @@
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -691,7 +688,7 @@
 
 			<Text id="descWelcome">
 
-				You are docked at a Ringers Collective. Ringer neo-humans float
+				You are docked at a Ringers Collective. Ringer neohumans float
 				through the vast volume of the station, perfectly adapted to
 				zero-gravity and space.
 
@@ -703,7 +700,7 @@
 
 				"Earthican, welcome! We seek answers to questions unrelated to
 				Earthicans. Return here later and perhaps we have questions for
-				all human-descendents."
+				all human-descendants."
 
 			</Text>
 			<Text id="core.commoditiesExchangeDesc">
@@ -809,9 +806,7 @@
 							</Action>
 
 							<Action id="actionDockServices">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -1001,6 +996,7 @@
 			dockScreen=			"DisplayLog"
 			noMapLabel=			"true"
 			mass=				"1000"
+			mobile=				"true"
 			>
 
 		<ImageVariants>
@@ -1716,6 +1712,8 @@
 	-->
 
 	<SystemType UNID="&ssHeretic;" 
+			name=				"Heretic"
+			attributes=			"nonExtensible"
 			backgroundID=		"&rsLightNebulaSpace;"
 			spaceColor=			"#282a3c"
 			spaceEnvironmentTileSize=	"large"
@@ -2020,8 +2018,9 @@
 
 <!-- Resources -->
 
-	<Image UNID="&rsIocrymManipulator;"	bitmap="Resources\IocrymManipulator.jpg" bitmask="Resources\IocrymManipulatorMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsIocrymManipulator;"		bitmap="Resources\IocrymManipulator.jpg" bitmask="Resources\IocrymManipulatorMask.bmp" loadOnUse="true"/>
 	
-	<Image UNID="&rsHereticItems;"		bitmap="Resources\HereticItems.jpg" bitmask="Resources\HereticItemsMask.bmp" />
+	<Image UNID="&rsHereticItems;"			bitmap="Resources\HereticItems.jpg" bitmask="Resources\HereticItemsMask.bmp" />
+	<Image UNID="&rsHereticMissionTile;"	bitmap="Resources\HereticMissionTile.jpg" />
 
 </TranscendenceModule>

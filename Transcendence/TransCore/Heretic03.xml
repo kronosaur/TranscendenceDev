@@ -12,7 +12,7 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msHereticSettlement;"
-			name=			"Heretic Settlement"
+			name=			"Heretic 03: Settlement Rumors"
 			attributes=		"commonwealthSettlement"
 
 			level=			"10"
@@ -20,6 +20,8 @@
 
 			maxAppearing=	"1"
 			>
+
+		<Image imageID="&rsHereticMissionTile;"	imageWidth="384" imageHeight="192"/>
 
 		<Events>
 			<OnCreate>

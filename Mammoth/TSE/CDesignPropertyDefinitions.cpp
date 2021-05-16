@@ -34,21 +34,24 @@ ALERROR CDesignPropertyDefinitions::BindDesign (SDesignLoadCtx &Ctx)
 //	Evaluate any properties that need to be evaluated at bind-time.
 
 	{
-	for (int i = 0; i < m_Defs.GetCount(); i++)
-		if (m_Defs[i].iType == EPropertyType::propDefinitionEvalNeeded)
+	for (int i = 0; i < m_InitOrder.GetCount(); i++)
+		{
+		SDef &Def = m_Defs[m_InitOrder[i]];
+		if (Def.iType == EPropertyType::propDefinitionEvalNeeded)
 			{
 			CCodeChainCtx CCCtx(Ctx.GetUniverse());
 
-			ICCItemPtr pResult = CCCtx.RunCode(m_Defs[i].pCode);
+			ICCItemPtr pResult = CCCtx.RunCode(Def.pCode);
 			if (pResult->IsError())
 				{
-				Ctx.sError = strPatternSubst(CONSTLIT("Property %s: %s"), m_Defs.GetKey(i), pResult->GetStringValue());
+				Ctx.sError = strPatternSubst(CONSTLIT("Property %s: %s"), m_Defs.GetKey(m_InitOrder[i]), pResult->GetStringValue());
 				return ERR_FAIL;
 				}
 
-			m_Defs[i].iType = EPropertyType::propDefinition;
-			m_Defs[i].pCode = pResult;
+			Def.iType = EPropertyType::propDefinition;
+			Def.pCode = pResult;
 			}
+		}
 
 	return NOERROR;
 	}
@@ -141,6 +144,7 @@ ALERROR CDesignPropertyDefinitions::InitFromXML (SDesignLoadCtx &Ctx, const CXML
 
 	//	Load all properties
 
+	TArray<CString> InitOrder;
 	for (int i = 0; i < Desc.GetContentElementCount(); i++)
 		{
 		const CXMLElement &Item = *Desc.GetContentElement(i);
@@ -240,6 +244,21 @@ ALERROR CDesignPropertyDefinitions::InitFromXML (SDesignLoadCtx &Ctx, const CXML
 
 		pNewDef->iType = iType;
 		pNewDef->pCode = pCode;
+
+		InitOrder.Insert(sID);
+		}
+
+	//	We evaluate properties in the order that they are defined, in case some
+	//	properties refer to others.
+
+	m_InitOrder.InsertEmpty(InitOrder.GetCount());
+	for (int i = 0; i < m_InitOrder.GetCount(); i++)
+		{
+		if (!m_Defs.FindPos(InitOrder[i], &m_InitOrder[i]))
+			{
+			Ctx.sError = CONSTLIT("This cannot have happened.");
+			return ERR_FAIL;
+			}
 		}
 
 	return NOERROR;
@@ -252,29 +271,36 @@ void CDesignPropertyDefinitions::InitItemData (CUniverse &Universe, CItem &Item)
 //	Initializes item-level properties.
 
 	{
-	for (int i = 0; i < m_Defs.GetCount(); i++)
+	CCodeChainCtx CCX(Universe);
+	bool bVarsDefined = false;
+
+	for (int i = 0; i < m_InitOrder.GetCount(); i++)
 		{
-		switch (m_Defs[i].iType)
+		const SDef &Def = m_Defs[m_InitOrder[i]];
+		switch (Def.iType)
 			{
 			case EPropertyType::propData:
 			case EPropertyType::propItemData:
 			case EPropertyType::propVariant:
 				{
-				if (m_Defs[i].pCode)
+				if (Def.pCode)
 					{
-					CCodeChainCtx CCCtx(Universe);
-					CCCtx.DefineContainingType(Item);
-					CCCtx.DefineItem(Item);
+					if (!bVarsDefined)
+						{
+						CCX.DefineContainingType(Item);
+						CCX.SaveAndDefineItemVar(Item);
+						bVarsDefined = true;
+						}
 
-					ICCItemPtr pResult = CCCtx.RunCode(m_Defs[i].pCode);
+					ICCItemPtr pResult = CCX.RunCode(Def.pCode);
 					if (pResult->IsError())
 						{
-						::kernelDebugLogPattern("ERROR: Evaluating property %s: %s", m_Defs.GetKey(i), pResult->GetStringValue());
+						::kernelDebugLogPattern("ERROR: Evaluating property %s: %s", m_Defs.GetKey(m_InitOrder[i]), pResult->GetStringValue());
 						continue;
 						}
 
 					if (!pResult->IsNil())
-						Item.SetData(m_Defs.GetKey(i), pResult);
+						Item.SetData(m_Defs.GetKey(m_InitOrder[i]), pResult);
 					}
 
 				break;
@@ -293,15 +319,16 @@ void CDesignPropertyDefinitions::InitObjectData (CUniverse &Universe, CSpaceObje
 	CCodeChainCtx CCCtx(Universe);
 	bool bInitialized = false;
 
-	for (int i = 0; i < m_Defs.GetCount(); i++)
+	for (int i = 0; i < m_InitOrder.GetCount(); i++)
 		{
-		switch (m_Defs[i].iType)
+		const SDef &Def = m_Defs[m_InitOrder[i]];
+		switch (Def.iType)
 			{
 			case EPropertyType::propData:
 			case EPropertyType::propObjData:
 			case EPropertyType::propVariant:
 				{
-				if (m_Defs[i].pCode)
+				if (Def.pCode)
 					{
 					if (!bInitialized)
 						{
@@ -310,15 +337,15 @@ void CDesignPropertyDefinitions::InitObjectData (CUniverse &Universe, CSpaceObje
 						bInitialized = true;
 						}
 
-					ICCItemPtr pResult = CCCtx.RunCode(m_Defs[i].pCode);
+					ICCItemPtr pResult = CCCtx.RunCode(Def.pCode);
 					if (pResult->IsError())
 						{
-						::kernelDebugLogPattern("ERROR: Evaluating property %s: %s", m_Defs.GetKey(i), pResult->GetStringValue());
+						::kernelDebugLogPattern("ERROR: Evaluating property %s: %s", m_Defs.GetKey(m_InitOrder[i]), pResult->GetStringValue());
 						continue;
 						}
 
 					if (!pResult->IsNil())
-						Dest.SetData(m_Defs.GetKey(i), pResult);
+						Dest.SetData(m_Defs.GetKey(m_InitOrder[i]), pResult);
 					}
 
 				break;
@@ -337,24 +364,25 @@ void CDesignPropertyDefinitions::InitTypeData (CUniverse &Universe, CDesignType 
 	CCodeChainCtx CCCtx(Universe);
 	CCCtx.DefineContainingType(&Type);
 
-	for (int i = 0; i < m_Defs.GetCount(); i++)
+	for (int i = 0; i < m_InitOrder.GetCount(); i++)
 		{
-		switch (m_Defs[i].iType)
+		const SDef &Def = m_Defs[m_InitOrder[i]];
+		switch (Def.iType)
 			{
 			case EPropertyType::propConstant:
 			case EPropertyType::propGlobal:
 				{
-				if (m_Defs[i].pCode)
+				if (Def.pCode)
 					{
-					ICCItemPtr pResult = CCCtx.RunCode(m_Defs[i].pCode);
+					ICCItemPtr pResult = CCCtx.RunCode(Def.pCode);
 					if (pResult->IsError())
 						{
-						::kernelDebugLogPattern("ERROR: Evaluating property %s: %s", m_Defs.GetKey(i), pResult->GetStringValue());
+						::kernelDebugLogPattern("ERROR: Evaluating property %s: %s", m_Defs.GetKey(m_InitOrder[i]), pResult->GetStringValue());
 						continue;
 						}
 
 					if (!pResult->IsNil())
-						Type.SetGlobalData(m_Defs.GetKey(i), pResult);
+						Type.SetGlobalData(m_Defs.GetKey(m_InitOrder[i]), pResult);
 					}
 
 				break;

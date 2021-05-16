@@ -22,6 +22,7 @@ class CDockingPorts
 		int FindNearestEmptyPort (CSpaceObject *pOwner, CSpaceObject *pRequestingObj, CVector *retvDistance = NULL, int *retiEmptyPortCount = NULL);
 		int GetPortCount (const CSpaceObject *pOwner = NULL) const { return m_iPortCount; }
 		CSpaceObject *GetPortObj (const CSpaceObject *pOwner, int iPort) const { ASSERT(m_pPort[iPort].pObj == NULL || m_pPort[iPort].iStatus != psEmpty); return m_pPort[iPort].pObj; }
+		CSpaceObject *GetObjAtPort (const CSpaceObject &Owner, int iPort) const { if (m_pPort[iPort].iStatus == psInUse) return m_pPort[iPort].pObj; else return NULL; }
 		CVector GetPortPos (const CSpaceObject *pOwner, int iPort, CSpaceObject *pShip, bool *retbPaintInFront = NULL, int *retiRotation = NULL) const { return GetPortPos(pOwner, m_pPort[iPort], pShip, retbPaintInFront, retiRotation); }
 		int GetPortsInUseCount (const CSpaceObject *pOwner) const;
 		void InitPorts (CSpaceObject *pOwner, int iCount, Metric rRadius);
@@ -36,7 +37,6 @@ class CDockingPorts
 		void OnNewSystem (CSystem *pNewSystem);
 		void OnObjDestroyed (CSpaceObject *pOwner, CSpaceObject *pObj, bool *retbDestroyed = NULL);
 		void ReadFromStream (CSpaceObject *pOwner, SLoadCtx &Ctx);
-		void RepairAll (CSpaceObject *pOwner, int iRepairRate);
 		bool RequestDock (CSpaceObject *pOwner, CSpaceObject *pObj, int iPort = -1);
 		void SetMaxDockingDist (int iDist) { m_iMaxDist = iDist; }
 		void Undock (CSpaceObject *pOwner, CSpaceObject *pObj, bool *retbWasDocked = NULL);

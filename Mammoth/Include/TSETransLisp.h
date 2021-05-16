@@ -5,6 +5,7 @@
 
 #pragma once
 
+class CDockSession;
 class CInstalledArmor;
 class CInstalledDevice;
 class CItemCtx;
@@ -71,6 +72,7 @@ class CCodeChainCtx
 		CCodeChain &GetCC (void) { return m_CC; }
 		CExtension *GetExtension (void) const { return m_pExtension; }
 		CItemType *GetItemType (void) const { return m_pItemType; }
+		void *GetScreen () const;
 		CDesignType *GetScreensRoot (void) const { return m_pScreensRoot; }
 		SSystemCreateCtx *GetSystemCreateCtx (void) const { return m_pSysCreateCtx; }
 		CUniverse &GetUniverse (void) const { return m_Universe; }
@@ -99,7 +101,6 @@ class CCodeChainCtx
 		void SetExtension (CExtension *pExtension) { m_pExtension = pExtension; }
 		void SetGlobalDefineWrapper (CExtension *pExtension);
 		void SetItemType (CItemType *pType) { m_pItemType = pType; }
-		void SetScreen (void *pScreen) { m_pScreen = pScreen; }
 		void SetScreensRoot (CDesignType *pRoot) { m_pScreensRoot = pRoot; }
 		void SetSystemCreateCtx (SSystemCreateCtx *pCtx) { m_pSysCreateCtx = pCtx; }
 
@@ -107,7 +108,7 @@ class CCodeChainCtx
 		bool AsArc (ICCItem *pItem, int *retiMinArc, int *retiMaxArc, bool *retbOmnidirectional = NULL);
 		CInstalledArmor *AsInstalledArmor (CSpaceObject *pObj, ICCItem *pItem) const;
 		CInstalledDevice *AsInstalledDevice (CSpaceObject *pObj, ICCItem *pItem) const;
-		CItem AsItem (ICCItem *pItem, bool *retbItemType = NULL) const;
+		CItem AsItem (const ICCItem *pItem, bool *retbItemType = NULL) const;
 		CItemType *AsItemType (ICCItem *pItem) const;
 		DWORD AsNameFlags (ICCItem *pItem);
 		CSpaceObject *AsSpaceObject (ICCItem *pItem);
@@ -131,7 +132,6 @@ class CCodeChainCtx
 		CUniverse &m_Universe;						//	Universe
 		CCodeChain &m_CC;							//	CodeChain
 		ECodeChainEvents m_iEvent = eventNone;		//	Event raised
-		void *m_pScreen = NULL;						//	Cast to CDockScreen by upper-levels (may be NULL)
 		CG32bitImage *m_pCanvas = NULL;				//	Used for dock screen canvas (may be NULL)
 		CItemType *m_pItemType = NULL;				//	Used for item events (may be NULL)
 		CDesignType *m_pScreensRoot = NULL;			//	Used to resolve local screens (may be NULL)

@@ -233,4 +233,53 @@
 		</ItemEncounterDesc>
 	</ItemType>
 
+	<ItemType UNID="&itTestRepairer;"
+			name=				"repairer item"
+			attributes=			"testItem"
+
+			level=				"5"
+			frequency=			"uncommon"
+
+			value=				"1000"
+			mass=				"3000"
+
+			description=		"Test repairer"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+
+		<RepairerDevice
+				regen=			" 4, 3, 3, 2, 2,  2, 1, 1, 1, 1"
+				compartmentRegen=	"10"
+				powerUse=		"5"
+				/>
+	</ItemType>
+
+	<ItemType UNID="&itTestRepairerScaled;"
+			name=				"repairer item scaled"
+			attributes=			"testItem"
+
+			level=				"3-8"
+			frequency=			"uncommon"
+
+			value=				"1000"
+			mass=				"3000"
+
+			description=		"Test repairer: scaled"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+
+		<RepairerDevice>
+			<Scaling>
+				<Stage level="3"	regen="3"							powerUse="5"/>
+				<Stage level="4"	regen="4"							powerUse="10"/>
+				<Stage level="5"	regen="5"							powerUse="20"/>
+				<Stage level="6"	regen="6"							powerUse="40"/>
+				<Stage level="7"	regen="8"	compartmentRegen="5"	powerUse="80"/>
+				<Stage level="8"	regen="10"	compartmentRegen="10"	powerUse="160"/>
+			</Scaling>
+		</RepairerDevice>
+	</ItemType>
+
 </TranscendenceModule>

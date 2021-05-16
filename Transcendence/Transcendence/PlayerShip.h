@@ -5,10 +5,10 @@
 
 #pragma once
 
-enum TargetTypes
+enum class ETargetClass
 	{
-	targetEnemies,
-	targetFriendlies,
+	enemies,
+	friendlies,
 	};
 
 enum UIMessageTypes
@@ -36,8 +36,10 @@ enum UIMessageTypes
 	uimsgStationDamageHint =		15,
 	uimsgMiningDamageTypeHint =		16,
 	uimsgFireWeaponHint =			17,
+	uimsgShipStatusHint =			18,
+	uimsgSquadronUIHint =			19,
 
-	uimsgCount =					18,
+	uimsgCount =					20,
 	};
 
 class CUIMessageController
@@ -90,14 +92,14 @@ class CManeuverController
 		bool CmdCancel (void);
 		bool CmdMouseAim (int iAngle);
 		bool CmdMoveTo (const CVector &vPos);
-		EManeuverTypes GetManeuver (CShip *pShip) const;
+		EManeuver GetManeuver (CShip *pShip) const;
 		bool GetThrust (CShip *pShip) const;
 		bool IsActive (void) const { return m_iCommand != cmdNone; }
 		bool IsManeuverActive (void) const { return m_iCommand != cmdNone; }
 		bool IsThrustActive (void) const;
 		void ReadFromStream (SLoadCtx &Ctx);
 		void Update (SUpdateCtx &Ctx, CShip *pShip);
-		void WriteToStream (IWriteStream &Stream, CSystem *pSystem);
+		void WriteToStream (IWriteStream &Stream);
 
 	private:
 		void UpdateMoveTo (SUpdateCtx &Ctx, CShip *pShip);
@@ -109,7 +111,7 @@ class CManeuverController
 
 		//	Temporary variables during update (no need to save)
 
-		EManeuverTypes m_iManeuver;
+		EManeuver m_iManeuver;
 		bool m_bThrust;
 	};
 
@@ -199,11 +201,10 @@ class CPlayerShipController : public IShipController
 
 		//	Fleet formation methods
 		DWORD GetCommsStatus (void);
-		bool HasFleet (void);
 
 		//	IShipController virtuals
 
-		virtual void AddOrder (OrderTypes Order, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore = false) override;
+		virtual void AddOrder (const COrderDesc &OrderDesc, bool bAddBefore = false) override;
 		virtual void Behavior (SUpdateCtx &Ctx) override;
 		virtual void CancelAllOrders (void) override;
 		virtual void CancelCurrentOrder (void) override;
@@ -217,13 +218,13 @@ class CPlayerShipController : public IShipController
 		virtual int GetCombatPower (void) override;
 		virtual const CCurrencyBlock *GetCurrencyBlock (void) const override { return &m_Credits; }
 		virtual CCurrencyBlock *GetCurrencyBlock (void) override { return &m_Credits; }
-		virtual OrderTypes GetCurrentOrderEx (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) override;
+		virtual const COrderDesc &GetCurrentOrderDesc () const override;
 		virtual CSpaceObject *GetDestination (void) const override { return m_pDestination; }
 		virtual bool GetDeviceActivate (void) override;
 		virtual int GetFireDelay (void) override { return mathRound(5.0 / STD_SECONDS_PER_UPDATE); }
-		virtual EManeuverTypes GetManeuver (void) override;
-		virtual OrderTypes GetOrder (int iIndex, CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const override;
-		virtual int GetOrderCount (void) const override { return (m_iOrder == IShipController::orderNone ? 0 : 1); }
+		virtual EManeuver GetManeuver (void) const override;
+		virtual const COrderDesc &GetOrderDesc (int iIndex) const override;
+		virtual int GetOrderCount (void) const override { return (m_OrderDesc.GetOrder() == IShipController::orderNone ? 0 : 1); }
 		virtual CSpaceObject *GetOrderGiver (void) override { return m_pShip; }
 		virtual bool GetReverseThrust (void) override;
 		virtual bool GetStopThrust (void) override;
@@ -233,7 +234,7 @@ class CPlayerShipController : public IShipController
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsPlayer (void) const override { return true; }
 		virtual void ReadFromStream (SLoadCtx &Ctx, CShip *pShip) override;
-		virtual void SetManeuver (EManeuverTypes iManeuver) override { m_iManeuver = iManeuver; }
+		virtual void SetManeuver (EManeuver iManeuver) override { m_iManeuver = iManeuver; }
 		virtual ESetPropertyResult SetProperty (const CString &sProperty, const ICCItem &Value, CString *retsError = NULL) override;
 		virtual void SetThrust (bool bThrust) override { m_bThrust = bThrust; }
 		virtual void WriteToStream (IWriteStream *pStream) override;
@@ -277,8 +278,8 @@ class CPlayerShipController : public IShipController
 		void DisplayTranslate (const CString &sID, ICCItem *pData = NULL);
 		void DisplayTranslate (const CString &sID, const CString &sVar, const CString &sValue);
 		CSpaceObject *FindDockTarget (void);
-		bool HasCommsTarget (void);
-		void InitTargetList (TargetTypes iTargetType, bool bUpdate = false);
+		bool HasCommsTarget (void) { return m_bHasCommsTarget; }
+		void InitTargetList (ETargetClass iTargetType, bool bUpdate = false);
 		void PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bitImage &Dest) const;
 		void PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bitImage &Dest, CSpaceObject &TargetObj) const;
 		void PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bitImage &Dest, CSpaceObject &TargetObj, CInstalledDevice &Weapon) const;
@@ -297,7 +298,7 @@ class CPlayerShipController : public IShipController
 		CGameSession *m_pSession = NULL;            //  Game session
 		CShip *m_pShip = NULL;
 
-		OrderTypes m_iOrder = orderNone;			//	Last order
+		COrderDesc m_OrderDesc;						//	Last order
 		CSpaceObject *m_pTarget = NULL;
 		CSpaceObject *m_pDestination = NULL;
 		TSortMap<CString, CSpaceObject *> m_TargetList;
@@ -310,7 +311,7 @@ class CPlayerShipController : public IShipController
 		int m_iLastHelpTick = 0;
 
 		CManeuverController m_ManeuverController;
-		EManeuverTypes m_iManeuver = NoRotation;
+		EManeuver m_iManeuver = EManeuver::None;
 		bool m_bThrust = false;
 		bool m_bActivate = false;
 		bool m_bStopThrust = false;
@@ -331,6 +332,8 @@ class CPlayerShipController : public IShipController
 		CGenericType *m_pCharacterClass = NULL;		//	Character class
 
 		bool m_bUnderAttack = false;				//	TRUE if we're currently under attack
+		bool m_bHasSquadron = false;				//	If TRUE, we have at least one ship in our squadron
+		bool m_bHasCommsTarget = false;				//	If TRUE, we have at least one ship to talk to
 
 		CSpaceObject *m_pAutoDock = NULL;			//	The current station to dock with if we were to 
 													//		press 'D' right now. NULL means no station

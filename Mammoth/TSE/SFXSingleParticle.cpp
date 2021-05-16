@@ -61,14 +61,6 @@ static LPCSTR STYLE_TABLE[] =
 
 //	CSingleParticleEffectCreator object
 
-CSingleParticleEffectCreator::CSingleParticleEffectCreator (void) :
-		m_pSingleton(NULL)
-
-//	CShockwaveEffectCreator constructor
-
-	{
-	}
-
 CSingleParticleEffectCreator::~CSingleParticleEffectCreator (void)
 
 //	CShockwaveEffectCreator destructor

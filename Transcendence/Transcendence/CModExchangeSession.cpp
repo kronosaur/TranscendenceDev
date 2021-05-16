@@ -471,7 +471,7 @@ ALERROR CModExchangeSession::OnInit (CString *retsError)
 #endif
 
 	IAnimatron *pTitle;
-	Helper.CreateSessionTitle(this, m_Service, CONSTLIT("Mod Collection"), &CreateMenu(), dwOptions, &pTitle);
+	Helper.CreateSessionTitle(this, m_Service, CONSTLIT("Mod Collection"), CreateMenu(), dwOptions, &pTitle);
 	StartPerformance(pTitle, ID_CTRL_TITLE, CReanimator::SPR_FLAG_DELETE_WHEN_DONE);
 
 	//	Create a wait animation

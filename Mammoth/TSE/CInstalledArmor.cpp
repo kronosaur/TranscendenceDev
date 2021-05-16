@@ -142,6 +142,20 @@ void CInstalledArmor::Install (CSpaceObject &Source, CItemListManipulator &ItemL
 		FinishInstall(Source);
 	}
 
+bool CInstalledArmor::IsDamaged () const
+
+//	IsDamaged
+//
+//	Returns TRUE if armor is damaged.
+
+	{
+	const CSpaceObject *pSource = GetSource();
+	if (!pSource)
+		throw CException(ERR_FAIL);
+
+	return GetHitPoints() < GetMaxHP(pSource);
+	}
+
 void CInstalledArmor::ReadFromStream (CSpaceObject &Source, int iSect, SLoadCtx &Ctx)
 
 //	ReadFromStream

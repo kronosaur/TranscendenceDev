@@ -130,7 +130,7 @@ CTranscendenceModel::CTranscendenceModel (CHumanInterface &HI) :
 		m_bForceTDB(false),
 		m_bNoSound(false),
 		m_bNoMissionCheckpoint(false),
-        m_bNoCollectionLoad(false),
+		m_bNoCollectionLoad(false),
 		m_pPlayer(NULL),
 		m_pResurrectType(NULL),
 		m_pCrawlImage(NULL),
@@ -817,43 +817,20 @@ ALERROR CTranscendenceModel::EnterScreenSession (CSpaceObject *pLocation, CDesig
 //	If pRoot is NULL then we attempt to resolve it using sScreen
 //	and m_pDefaultScreensRoot
 //
-//	NOTE: Eventually thes function should probably move to the game session (maybe).
+//	NOTE: Eventually these function should probably move to the game session (maybe).
 
 	{
 	ALERROR error;
-	ASSERT(pLocation);
+	if (!pLocation)
+		throw CException(ERR_FAIL);
 
 	CGameSession *pSession  = GetPlayer()->GetGameSession();
 	if (pSession == NULL)
 		return ERR_FAIL;
-			
-	bool bFirstFrame = GetScreenStack().IsEmpty();
 
-	//	Mark the object so that it knows that the player is docked with it.
-	//	We need this so that the object can tell us if its items change.
+	//	Add to the stack
 
-	bool bOldPlayerDocked = pLocation->IsPlayerDocked();
-	pLocation->SetPlayerDocked();
-
-	//	If this is our first frame, then this is the first OnInit
-
-	if (bFirstFrame)
-		pSession->GetDockScreen().ResetFirstOnInit();
-
-	//	Add a new frame.
-	//	Note that pRoot might be NULL and sScreen might be [DefaultScreen] at
-	//	this point.
-
-	SDockFrame NewFrame;
-	NewFrame.pLocation = pLocation;
-	NewFrame.pRoot = pRoot;
-	NewFrame.sScreen = sScreen;
-	NewFrame.sPane = sPane;
-	if (pData)
-		NewFrame.pInitialData = ICCItemPtr(pData->Reference());
-	NewFrame.pResolvedRoot = pRoot;
-	NewFrame.sResolvedScreen = (pRoot ? sScreen : NULL_STR);
-	GetScreenStack().Push(NewFrame);
+	bool bFirstFrame = GetDockSession().ShowScreen(*pLocation, pRoot, sScreen, sPane, pData);
 
 	//	From this point forward we are considered in a screen session.
 	//	[We use this to determine whether a call to scrShowScreen switches
@@ -871,13 +848,7 @@ ALERROR CTranscendenceModel::EnterScreenSession (CSpaceObject *pLocation, CDesig
 
 	if (error = ShowScreen(Ctx, retsError))
 		{
-		//	Undo
-
-		GetScreenStack().Pop();
-
-		if (!bOldPlayerDocked)
-			pLocation->ClearPlayerDocked();
-
+		GetDockSession().ExitScreen();
 		return error;
 		}
 
@@ -888,15 +859,17 @@ ALERROR CTranscendenceModel::EnterScreenSession (CSpaceObject *pLocation, CDesig
 
 	//	Switch state
 
-    if (bFirstFrame)
-        {
-        //  NOTE: Eventually, EnterScreenSession should be part of CGameSession
-        //  instead of the model.
+	if (bFirstFrame)
+		{
+		GetDockSession().PlayAmbientSound();
 
-        CGameSession *pSession = GetPlayer()->GetGameSession();
-        if (pSession)
-            pSession->OnShowDockScreen(true);
-        }
+		//  NOTE: Eventually, EnterScreenSession should be part of CGameSession
+		//  instead of the model.
+
+		CGameSession *pSession = GetPlayer()->GetGameSession();
+		if (pSession)
+			pSession->OnShowDockScreen(true);
+		}
 
 	return NOERROR;
 	}
@@ -973,6 +946,10 @@ void CTranscendenceModel::ExitScreenSession (bool bForceUndock)
 			else
 				SaveGame(CGameFile::FLAG_CHECKPOINT);
 			}
+
+		//	Stop playing ambient sound.
+
+		GetDockSession().StopAmbientSound();
 		}
 
 	DEBUG_CATCH
@@ -1113,7 +1090,7 @@ ALERROR CTranscendenceModel::Init (const CGameSettings &Settings)
 	m_bForceTDB = Settings.GetBoolean(CGameSettings::useTDB);
 	m_bNoMissionCheckpoint = Settings.GetBoolean(CGameSettings::noMissionCheckpoint);
 	m_bNoSound = Settings.GetBoolean(CGameSettings::noSound);
-    m_bNoCollectionLoad = Settings.GetBoolean(CGameSettings::noCollectionLoad);
+	m_bNoCollectionLoad = Settings.GetBoolean(CGameSettings::noCollectionLoad);
 	m_bForcePermadeath = Settings.GetBoolean(CGameSettings::forcePermadeath);
 	m_sAccessibilityColorPlayer = Settings.GetString(CGameSettings::colorIFFPlayer);
 	m_sAccessibilityColorEscort = Settings.GetString(CGameSettings::colorIFFEscort);
@@ -1164,14 +1141,17 @@ ALERROR CTranscendenceModel::InitBackground (const CGameSettings &Settings, cons
 	if (Settings.GetBoolean(CGameSettings::no3DExtras))
 		m_Universe.GetSFXOptions().Set3DExtrasEnabled(false);
 
+	if (Settings.GetBoolean(CGameSettings::noSpaceBackground))
+		m_Universe.GetSFXOptions().SetSpaceBackground(false);
+
 	DWORD dwAdventure = Settings.GetInteger(CGameSettings::lastAdventure);
 	if (dwAdventure == 0)
 		dwAdventure = DEFAULT_ADVENTURE_EXTENSION_UNID;
 
-    //  Get the default list of extensions for the default adventure
+	//  Get the default list of extensions for the default adventure
 
-    TArray<DWORD> Extensions;
-    Settings.GetDefaultExtensions(dwAdventure, m_bDebugMode, &Extensions);
+	TArray<DWORD> Extensions;
+	Settings.GetDefaultExtensions(dwAdventure, m_bDebugMode, &Extensions);
 
 	//	Load the universe
 
@@ -1397,7 +1377,7 @@ ALERROR CTranscendenceModel::LoadGame (const CString &sSignedInUsername, const C
 
 		//	Connect the player ship controller to the controller
 
-		CTranscendencePlayer *pPlayerController = dynamic_cast<CTranscendencePlayer *>(m_Universe.GetPlayer());
+		CTranscendencePlayer *pPlayerController = dynamic_cast<CTranscendencePlayer *>(&m_Universe.GetPlayer());
 		if (pPlayerController == NULL)
 			{
 			*retsError = CONSTLIT("Save file corruption: No player controller found.");
@@ -1489,9 +1469,9 @@ ALERROR CTranscendenceModel::LoadUniverse (const CString &sCollectionFolder,
 		Ctx.pHost = g_pTrans;
 		Ctx.bDebugMode = m_bDebugMode;
 		Ctx.dwAdventure = dwAdventure;
-        Ctx.ExtensionUNIDs = Extensions;
+		Ctx.ExtensionUNIDs = Extensions;
 		Ctx.bForceTDB = m_bForceTDB;
-        Ctx.bNoCollectionLoad = m_bNoCollectionLoad;
+		Ctx.bNoCollectionLoad = m_bNoCollectionLoad;
 		Ctx.DisabledExtensions = DisabledExtensions;
 
 		//	Try to recover if loading the adventure or its extensions runs into
@@ -1907,10 +1887,9 @@ void CTranscendenceModel::OnPlayerTraveledThroughGate (void)
 			{
 			CMarker *pMarker;
 			if (CMarker::Create(*pNewSystem,
-					NULL,
 					NullVector,
 					NullVector,
-					NULL_STR,
+					CMarker::SCreateOptions(),
 					&pMarker) != NOERROR)
 				throw CException(ERR_FAIL, CONSTLIT("Unable to create marker."));
 
@@ -2101,10 +2080,10 @@ ALERROR CTranscendenceModel::SaveGame (DWORD dwFlags, CString *retsError)
 	ASSERT(m_GameFile.IsOpen());
 	m_Universe.FireOnGlobalUniverseSave();
 
-    //  Make sure we've updated current system data to global data.
+	//  Make sure we've updated current system data to global data.
 
 	CSystem *pSystem = m_pPlayer->GetShip()->GetSystem();
-    m_Universe.GetGlobalObjects().Refresh(pSystem);
+	m_Universe.GetGlobalObjects().Refresh(pSystem);
 
 	//	Generate and save game stats
 
@@ -2350,7 +2329,7 @@ ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError
 	bool bNewFrame;
 	SDockFrame OldFrame;
 	if (bNewFrame = (!Ctx.bReturn && bNestedScreen && Ctx.sTab.IsBlank()))
-		GetScreenStack().Push(NewFrame);
+		GetDockSession().ShowScreen(*CurFrame.pLocation, Ctx.pRoot, sScreenActual, Ctx.sPane, Ctx.pData);
 	else if (!Ctx.bReturn)
 		GetScreenStack().SetCurrent(NewFrame, &OldFrame);
 	else
@@ -2407,7 +2386,7 @@ ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError
 	DEBUG_CATCH
 	}
 
-void CTranscendenceModel::ShowShipScreen (void)
+void CTranscendenceModel::ShowShipScreen (DWORD dwUNID)
 
 //	ShowShipScreen
 //
@@ -2425,7 +2404,15 @@ void CTranscendenceModel::ShowShipScreen (void)
 		return;
 
 	CString sScreen;
-	CDesignType *pRoot = pSettings->GetShipScreen().GetDockScreen(pShip->GetClass(), &sScreen);
+	CDesignType *pRoot;
+	if (dwUNID)
+		{
+		pRoot = m_Universe.FindDesignType(dwUNID);
+		if (!pRoot || pRoot->GetType() != designDockScreen)
+			return;
+		}
+	else
+		pRoot = pSettings->GetShipScreen().GetDockScreen(pShip->GetClass(), &sScreen);
 
 	CString sError;
 	if (!ShowShipScreen(NULL, pRoot, sScreen, NULL_STR, NULL, &sError))
@@ -2542,9 +2529,9 @@ ALERROR CTranscendenceModel::StartGame (bool bNewGame)
 		m_pPlayer->GetGameStats().OnSwitchPlayerShip(*m_pPlayer->GetShip());
 		}
 
-    //  Initialize some thumbnails
+	//  Initialize some thumbnails
 
-    m_SystemMapThumbnails.Init(m_Universe.GetGlobalObjects());
+	m_SystemMapThumbnails.Init(m_Universe.GetGlobalObjects());
 
 	//	Done
 

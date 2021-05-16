@@ -40,6 +40,11 @@
 //#define DEBUG_ARRAY_STATS
 #endif
 
+//	Undefine some common names
+
+#undef DrawText
+#undef PlaySound
+
 //	Explicit placement operator
 struct placement_new_class { };
 extern placement_new_class placement_new;

@@ -112,6 +112,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>26495; 26812</DisableSpecificWarnings>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -472,6 +473,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CPeriodicWaiter.cpp" />
+    <ClCompile Include="CPolygon.cpp" />
     <ClCompile Include="CProjection3D.cpp" />
     <ClCompile Include="CRegKey.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
@@ -563,6 +565,7 @@
     </ClCompile>
     <ClCompile Include="CThreadPool.cpp" />
     <ClCompile Include="CVoronoiTessellation.cpp" />
+    <ClCompile Include="CWordParser.cpp" />
     <ClCompile Include="CXForm3D.cpp" />
     <ClCompile Include="ILog.cpp" />
     <ClCompile Include="Kernel.cpp">

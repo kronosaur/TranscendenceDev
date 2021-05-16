@@ -40,6 +40,8 @@ void CArmorHUDRingSegments::DrawArmorName (CG32bitImage &Dest, int iAngle, int i
 	//	Draws the name of the given armor segment (and any enhancements).
 
 	{
+	DEBUG_TRY
+
 	//	We scale down the angle because we want the name to fit on the sides
 	//	(not on top or below the circle).
 
@@ -65,6 +67,8 @@ void CArmorHUDRingSegments::DrawArmorName (CG32bitImage &Dest, int iAngle, int i
 	//	Draw it
 
 	DrawItemBox(Dest, iAngle, iRadius, sName, Attribs, rgbBack, rgbColor);
+
+	DEBUG_CATCH
 	}
 
 void CArmorHUDRingSegments::DrawIntegrityBox (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sText, CG32bitPixel rgbBack, CG32bitPixel rgbColor)
@@ -74,6 +78,8 @@ void CArmorHUDRingSegments::DrawIntegrityBox (CG32bitImage &Dest, int iAngle, in
 //	Draws the armor integrity value on an arc background.
 
 	{
+	DEBUG_TRY
+
 	const CVisualPalette &VI = g_pHI->GetVisuals();
 	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
 
@@ -178,6 +184,8 @@ void CArmorHUDRingSegments::DrawIntegrityBox (CG32bitImage &Dest, int iAngle, in
 				CGDraw::blendNormal,
 				rTextRot,
 				CGDraw::TEXT_ALIGN_CENTER);
+
+	DEBUG_CATCH
 	}
 
 void CArmorHUDRingSegments::DrawItemBox (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sName, const TArray<SDisplayAttribute> &Attribs, CG32bitPixel rgbBack, CG32bitPixel rgbColor)
@@ -187,6 +195,8 @@ void CArmorHUDRingSegments::DrawItemBox (CG32bitImage &Dest, int iAngle, int iRa
 	//	Draws a box with an item name and (optionally) enhancement information.
 
 	{
+	DEBUG_TRY
+
 	const CVisualPalette &VI = g_pHI->GetVisuals();
 	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
 	CVector vCenter(m_xCenter, m_yCenter);
@@ -225,6 +235,8 @@ void CArmorHUDRingSegments::DrawItemBox (CG32bitImage &Dest, int iAngle, int iRa
 
 		Helper.PaintDisplayAttribs(Dest, (int)vTextPos.GetX(), (int)vTextPos.GetY() + cyText, Attribs, dwOptions);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CArmorHUDRingSegments::DrawShieldsName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CInstalledDevice *pShields, CG32bitPixel rgbBack, CG32bitPixel rgbColor)
@@ -234,6 +246,8 @@ void CArmorHUDRingSegments::DrawShieldsName (CG32bitImage &Dest, int iAngle, int
 //	Draws the name and mods for the shields
 
 	{
+	DEBUG_TRY
+
 	CItemCtx ItemCtx(pShip, pShields);
 
 	CString sName = pShields->GetClass()->GetName();
@@ -242,6 +256,8 @@ void CArmorHUDRingSegments::DrawShieldsName (CG32bitImage &Dest, int iAngle, int
 	pShields->GetItem()->AccumulateEnhancementDisplayAttributes(Attribs);
 
 	DrawItemBox(Dest, iAngle, iRadius, sName, Attribs, rgbBack, rgbColor);
+
+	DEBUG_CATCH
 	}
 
 void CArmorHUDRingSegments::GetBounds (int *retWidth, int *retHeight) const
@@ -328,6 +344,8 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 //	Paints to the buffer if invalid
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	Skip if we don't have a ship
@@ -480,4 +498,6 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 				m_rgbShieldsTextBack,
 				rgbText);
 		}
+
+	DEBUG_CATCH
 	}

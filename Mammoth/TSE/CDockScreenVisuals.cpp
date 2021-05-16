@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 
+#define AMBIENT_ATTRIB							CONSTLIT("ambient")
 #define BACKGROUND_IMAGE_ATTRIB					CONSTLIT("backgroundImage")
 #define CONTENT_MASK_ATTRIB		    			CONSTLIT("contentMask")
 #define TEXT_COLOR_ATTRIB     					CONSTLIT("textColor")
@@ -47,6 +48,9 @@ ALERROR CDockScreenVisuals::Bind (SDesignLoadCtx &Ctx)
 
     if (error = m_ContentMask.OnDesignLoadComplete(Ctx))
         return error;
+
+	if (error = m_Ambient.Bind(Ctx))
+		return error;
 
     return NOERROR;
     }
@@ -95,7 +99,7 @@ ALERROR CDockScreenVisuals::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
     //  Images
 
     DWORD dwImageUNID;
-	if ((::LoadUNID(Ctx, pDesc->GetAttribute(BACKGROUND_IMAGE_ATTRIB), &dwImageUNID) != NOERROR)
+	if ((::LoadUNID(Ctx, pDesc->GetAttribute(BACKGROUND_IMAGE_ATTRIB), &dwImageUNID, DEFAULT_DOCK_SCREEN_IMAGE_UNID) != NOERROR)
             || (dwImageUNID != 0 
                 && (m_Background.Init(Ctx.GetUniverse(), dwImageUNID, 1, 1) != NOERROR)))
         {
@@ -103,7 +107,7 @@ ALERROR CDockScreenVisuals::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
         return ERR_FAIL;
         }
 
-	if ((::LoadUNID(Ctx, pDesc->GetAttribute(CONTENT_MASK_ATTRIB), &dwImageUNID) != NOERROR)
+	if ((::LoadUNID(Ctx, pDesc->GetAttribute(CONTENT_MASK_ATTRIB), &dwImageUNID, DEFAULT_DOCK_SCREEN_MASK_UNID) != NOERROR)
             || (dwImageUNID != 0 
                 && (m_ContentMask.Init(Ctx.GetUniverse(), dwImageUNID, 1, 1) != NOERROR)))
         {
@@ -123,6 +127,11 @@ ALERROR CDockScreenVisuals::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 	m_pStatusFont = &Ctx.GetUniverse().GetFont(FONT_MEDIUM_HEAVY_BOLD);
 
+	//	Sounds
+
+	if (ALERROR error = m_Ambient.LoadUNID(Ctx, pDesc->GetAttribute(AMBIENT_ATTRIB)))
+		return error;
+
     return NOERROR;
     }
 
@@ -135,4 +144,5 @@ void CDockScreenVisuals::MarkImages (void) const
     {
     m_Background.MarkImage();
     m_ContentMask.MarkImage();
+	m_Ambient.Mark();
     }

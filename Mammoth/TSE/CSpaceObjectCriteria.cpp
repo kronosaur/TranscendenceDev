@@ -117,14 +117,13 @@ bool CSpaceObjectCriteria::MatchesOrder (const CSpaceObject *pSource, const CSpa
 
 		default:
 			{
-			IShipController::OrderTypes iOrder = IShipController::orderNone;
-			CSpaceObject *pTarget = NULL;
+			const COrderDesc *pOrderDesc = NULL;
 
 			CShip *pShip = const_cast<CSpaceObject *>(&Obj)->AsShip();
-			if (pShip && pShip->GetController())
-				iOrder = pShip->GetController()->GetCurrentOrderEx(&pTarget);
+			if (pShip)
+				pOrderDesc = &pShip->GetCurrentOrderDesc();
 
-			return (m_iOrder == iOrder && pSource == pTarget);
+			return (pOrderDesc && m_iOrder == pOrderDesc->GetOrder() && pSource == pOrderDesc->GetTarget());
 			}
 		}
 	}
@@ -221,6 +220,7 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 //		s			Include ships
 //		t			Include stations (including planets)
 //		v			Include intangible objects
+//		x			Include missiles where targetable='true'
 //		z			Include the player
 //
 //		A			Active objects only (i.e., objects that can attack)
@@ -244,7 +244,7 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 //		O:escort;	Ships ordered to escort source
 //		O:guard;	Ships ordered to guard source
 //		P			Only objects that can be detected (perceived) by source
-//		Q			(unused)
+//		Q			Can perceive source only
 //		R			Return only the farthest object to the source
 //		R:nn;		Return only objects greater than nn light-seconds away
 //		S:sort		Sort order ('d' = distance ascending; 'D' = distance descending
@@ -421,6 +421,10 @@ void CSpaceObjectCriteria::ParseSubExpression (const char *pPos)
 				m_bPerceivableOnly = true;
 				break;
 
+			case 'Q':
+				m_bCanPerceiveSourceOnly = true;
+				break;
+
 			case 'R':
 				sParam = ParseCriteriaParam(&pPos);
 				if (sParam.IsBlank())
@@ -485,10 +489,15 @@ void CSpaceObjectCriteria::ParseSubExpression (const char *pPos)
 				m_bIncludeVirtual = true;
 				break;
 
+			case 'x':
+				m_dwCategories |= CSpaceObject::catMissile;
+				m_bTargetableMissilesOnly = true;
+				break;
+			
 			case 'X':
 				m_bTargetIsSource = true;
 				break;
-
+			
 			case 'Y':
 				m_bAngryObjectsOnly = true;
 				break;
@@ -598,6 +607,11 @@ CSpaceObjectCriteria::SCtx::SCtx (CSpaceObject *pSourceArg, const CSpaceObjectCr
 		iSourcePerception = (pSource ? pSource->GetPerception() : 0);
 	else
 		iSourcePerception = 0;
+
+	if (Crit.NeedsSourceStealth())
+		iSourceStealth = (pSource ? pSource->GetStealth() : 0);
+	else
+		iSourceStealth = 0;
 
 	if (Crit.NeedsSourceSovereign())
 		dwSourceSovereignUNID = (pSource ? pSource->GetSovereignUNID() : 0);

@@ -139,7 +139,6 @@ ALERROR CParticleDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CParticle
 
 	CVector vInitialVel;
 	if (!Ctx.Source.IsEmpty() 
-			&& !pParticles->IsTracking()
 			&& !(Ctx.dwFlags & SShotCreateCtx::CWF_FRAGMENT))
 		vInitialVel = Ctx.Source.GetObj()->GetVel();
 
@@ -194,7 +193,7 @@ CSpaceObject::Categories CParticleDamage::GetCategory (void) const
 	{
 	//	We count as a beam if have low interaction levels
 
-	return ((m_pDesc->GetInteraction() < MIN_MISSILE_INTERACTION) ? catBeam : catMissile);
+	return (m_pDesc->GetInteraction().InteractsLikeBeam() ? catBeam : catMissile);
 	}
 
 CString CParticleDamage::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const
@@ -465,7 +464,7 @@ void CParticleDamage::OnReadFromStream (SLoadCtx &Ctx)
 			{
 			char *pDummy = new char [5 * sizeof(DWORD) * dwCount];
 			Ctx.pStream->Read(pDummy, 5 * sizeof(DWORD) * dwCount);
-			delete pDummy;
+			delete [] pDummy;
 			}
 
 		m_iEmitTime = 0;
@@ -629,8 +628,8 @@ void CParticleDamage::OnWriteToStream (IWriteStream *pStream)
 	DWORD dwSave;
 	m_pDesc->GetUNID().WriteToStream(pStream);
 	pStream->Write((char *)&m_iLifeLeft, sizeof(m_iLifeLeft));
-	m_Source.WriteToStream(GetSystem(), pStream);
-	GetSystem()->WriteSovereignRefToStream(m_pSovereign, pStream);
+	m_Source.WriteToStream(pStream);
+	CSystem::WriteSovereignRefToStream(m_pSovereign, pStream);
 	pStream->Write((char *)&m_iTick, sizeof(m_iTick));
 	pStream->Write((char *)&m_iRotation, sizeof(m_iRotation));
 	pStream->Write((char *)&m_iDamage, sizeof(m_iDamage));

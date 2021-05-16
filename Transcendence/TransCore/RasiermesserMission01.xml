@@ -9,7 +9,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msRasiermesserFindDvalin;"
-			name=				"Find Dvalin"
+			name=				"Rasiermesser 01: Find Dvalin"
 			attributes=			"rasiermesser, rasiermesserArmsDealer"
 
 			level=				"1-10"
@@ -24,6 +24,8 @@
 			<Data id="dvalinNodeID"></Data>
 			<Data id="dvalinObjID"></Data>
 		</Properties>
+
+		<Image imageID="&rsRasiermesserFactory;" imageWidth="320" imageHeight="580"/>
 
 		<Events>
 			<OnCreate>

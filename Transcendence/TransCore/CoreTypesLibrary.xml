@@ -214,6 +214,9 @@
 
 	<!ENTITY svPlayerAlly				"0x00030180">
 
+	<!-- 01D0-01FF SOUND EFFECTS -->
+
+	<!ENTITY snDefaultShipScreenAmbient	"0x000301D0">
 	]>
 	
 <CoreLibrary

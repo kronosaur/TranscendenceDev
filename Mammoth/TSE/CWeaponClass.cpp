@@ -84,6 +84,7 @@
 #define PROPERTY_DAMAGE_TYPE_ID					CONSTLIT("damageTypeID")
 #define PROPERTY_DAMAGE_WMD_180					CONSTLIT("damageWMD180")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
+#define PROPERTY_DUAL_POINT_ORIGIN				CONSTLIT("dualPointOrigin")
 #define PROPERTY_EFFECTIVE_RANGE				CONSTLIT("effectiveRange")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
 #define PROPERTY_FIRE_DELAY						CONSTLIT("fireDelay")
@@ -118,7 +119,7 @@ const int MAX_COUNTER =					100;
 const Metric STD_FIRE_RATE_SECS =		16.0;				//	Standard fire rate (secs)
 const Metric STD_FIRE_DELAY_TICKS =     8.0;
 
-const Metric STD_AMMO_BALANCE =         -100.0;             //  Balance adj from having ammo
+const Metric STD_AMMO_BALANCE =         -90.0;				//  Balance adj from having ammo
 const Metric STD_AMMO_MASS =            10.0;               //  Std ammo mass (kg)
 const Metric BALANCE_AMMO_COST_RATIO =  -0.25;              //  Each percent of ammo price above std is
 															//      0.25% balance penalty.
@@ -128,6 +129,7 @@ const Metric BALANCE_OMNI_POWER =       0.5;                //  f(x) = factor * 
 const Metric BALANCE_OMNI_FACTOR =      100.0;              //      This function maps from a swivel
 															//      arc (0-360) to its effect on weapon
 															//      balance: 0 = none; 100.0 = +100%
+const Metric BALANCE_MIRV_FACTOR =		75.0;				//	Bonus to balance if MIRVed
 
 const Metric BALANCE_TRACKING_BONUS =   90.0;               //  Bonus to balance if weapon has tracking.
 const Metric BALANCE_LINKED_FIRE_BONUS = 25.0;              //  Bonus to balance if weapon is linked-fire.
@@ -142,9 +144,7 @@ const Metric BALANCE_SPEED_FACTOR =     -25.0;
 
 const Metric BALANCE_INTERACTION_FACTOR = 5.0;              //  Bonus to balance for 0 interaction (linear
 															//      decrease as interaction reaches 100).
-const Metric BALANCE_HP_FACTOR =        10.0;               //  Bonus to balance for projectile HP equal to
-															//      standard weapon damage for the level
-															//      (linear decrease with fewer HP).
+const Metric BALANCE_HP_FACTOR =        20.0;               //  Bonus to balance if double standard HPs.
 const Metric BALANCE_POWER_AMMO_FACTOR = 0.1;               //  Power used by ammo weapons relative to non-ammo
 const Metric BALANCE_POWER_RATIO =      -0.5;               //  Each percent of power consumption above standard
 															//      is 0.5% balance penalty.
@@ -452,6 +452,14 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 		retBalance.rBalance += retBalance.rOmni;
 		}
 
+	//	Multitarget (only if not already omni)
+
+	if (pShotDesc->IsMIRVOrHasMIRVFragments() && retBalance.rOmni == 0.0)
+		{
+		retBalance.rOmni = Max(0.0, BALANCE_MIRV_FACTOR - retBalance.rTracking);
+		retBalance.rBalance += retBalance.rOmni;
+		}
+
 	//  Range
 
 	Metric rRange = Min(MAX_BALANCE_RANGE, pShotDesc->GetMaxRange());
@@ -470,11 +478,15 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 	//  Projectile HP and interaction
 
 	retBalance.rProjectileHP = 0.0;
-	if (pShotDesc->GetInteraction() < 100)
-		retBalance.rProjectileHP += BALANCE_INTERACTION_FACTOR * (100.0 - pShotDesc->GetInteraction()) / 100.0;
+	if (!pShotDesc->GetInteraction().InteractsAtMaxLevel())
+		retBalance.rProjectileHP += BALANCE_INTERACTION_FACTOR * (100.0 - (int)pShotDesc->GetInteraction()) / 100.0;
 
-	if (pShotDesc->GetHitPoints() > 0)
-		retBalance.rProjectileHP += BALANCE_HP_FACTOR * pShotDesc->GetHitPoints() / (Metric)Stats.iDamage;
+	int iDefaultHP = pShotDesc->CalcDefaultHitPoints();
+	if (iDefaultHP > 0)
+		{
+		Metric rDelta = BALANCE_HP_FACTOR * ((Metric)pShotDesc->GetHitPoints() - iDefaultHP) / (Metric)iDefaultHP;
+		retBalance.rProjectileHP += rDelta;
+		}
 
 	retBalance.rBalance += retBalance.rProjectileHP;
 
@@ -650,6 +662,11 @@ CSpaceObject *CWeaponClass::CalcBestTarget (CInstalledDevice &Device, const CTar
 	bool bCheckLineOfFire = !TargetList.NoLineOfFireCheck();
 	bool bCheckRange = !TargetList.NoRangeCheck() || (Device.GetMaxFireRangeLS() != 0);
 	DWORD dwTargetTypes = DeviceItem.GetTargetTypes();
+	if (dwTargetTypes & CTargetList::SELECT_MISSILE)
+		{
+		//  If we can target missiles, then we can target targetable missiles as well
+		dwTargetTypes |= CTargetList::SELECT_TARGETABLE_MISSILE;
+		}
 
 	Metric rMaxRange = DeviceItem.GetMaxEffectiveRange();
 	Metric rMaxRange2 = rMaxRange * rMaxRange;
@@ -662,7 +679,7 @@ CSpaceObject *CWeaponClass::CalcBestTarget (CInstalledDevice &Device, const CTar
 		Metric rDist2 = TargetList.GetTargetDist2(i);
 
 		if ((!bCheckRange || rDist2 < rMaxRange2)
-				&& (TargetList.GetTargetType(i) & dwTargetTypes)
+				&& ((DWORD)TargetList.GetTargetType(i) & dwTargetTypes)
 				&& DeviceItem.GetWeaponEffectiveness(pTarget) >= 0
 				&& IsTargetReachable(Device, *pTarget, -1, &iFireAngle)
 				&& (!bCheckLineOfFire || SourceObj.IsLineOfFireClear(&Device, pTarget, iFireAngle, rMaxRange)))
@@ -705,7 +722,7 @@ TArray<CTargetList::STargetResult> CWeaponClass::CalcMIRVTargets (CInstalledDevi
 		Metric rDist2 = TargetList.GetTargetDist2(i);
 
 		if ((!bCheckRange || rDist2 < rMaxRange2)
-				&& (TargetList.GetTargetType(i) & dwTargetTypes)
+				&& ((DWORD)TargetList.GetTargetType(i) & dwTargetTypes)
 				&& DeviceItem.GetWeaponEffectiveness(pTarget) >= 0
 				&& IsTargetReachable(Device, *pTarget, -1, &iFireAngle)
 				&& (!bCheckLineOfFire || SourceObj.IsLineOfFireClear(&Device, pTarget, iFireAngle, rMaxRange)))
@@ -837,7 +854,7 @@ Metric CWeaponClass::CalcDamage (const CWeaponFireDesc &ShotDesc, const CItemEnh
 
 	switch (m_Counter)
 		{
-		case cntCapacitor:
+		case EDeviceCounterType::Capacitor:
 			{
 			//	Compute the number of ticks until we discharge the capacitor
 
@@ -857,7 +874,7 @@ Metric CWeaponClass::CalcDamage (const CWeaponFireDesc &ShotDesc, const CItemEnh
 			break;
 			}
 
-		case cntTemperature:
+		case EDeviceCounterType::Temperature:
 			{
 			//  Compute the number of ticks until we reach max temp
 
@@ -936,49 +953,12 @@ int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject 
 
 	else
 		{
+		int iDefaultFireAngle = AngleMod(pSource->GetRotation() + AngleMiddle(iMinFireArc, iMaxFireArc));
+
+		//	Compute the fire angle, based on target position.
+
 		int iFireAngle;
-
-		CVector vSource = pDevice->GetPos(pSource);
-
-		//	Get the position and velocity of the target
-
-		CVector vTarget = pTarget->GetPos() - vSource;
-		CVector vTargetVel = pTarget->GetVel() - pSource->GetVel();
-
-		//	Figure out which direction to fire in
-
-		Metric rTimeToIntercept = CalcInterceptTime(vTarget, vTargetVel, rSpeed);
-		CVector vInterceptPoint = (rTimeToIntercept > 0.0 ? vTarget + vTargetVel * rTimeToIntercept : vTarget);
-		iFireAngle = VectorToPolar(vInterceptPoint, NULL);
-
-		//	If this is a directional weapon make sure we are in-bounds
-
-		if (iType == CDeviceRotationDesc::rotSwivel)
-			{
-			int iMin = AngleMod(pSource->GetRotation() + iMinFireArc);
-			int iMax = AngleMod(pSource->GetRotation() + iMaxFireArc);
-
-			if (iMin < iMax)
-				{
-				if (iFireAngle < iMin)
-					iFireAngle = iMin;
-				else if (iFireAngle > iMax)
-					iFireAngle = iMax;
-				}
-			else
-				{
-				if (iFireAngle < iMin && iFireAngle > iMax)
-					{
-					int iToMax = iFireAngle - iMax;
-					int iToMin = iMin - iFireAngle;
-
-					if (iToMax > iToMin)
-						iFireAngle = iMin;
-					else
-						iFireAngle = iMax;
-					}
-				}
-			}
+		IsTargetReachable(*pDevice, *pTarget, iDefaultFireAngle, &iFireAngle);
 
 		//	Remember the fire angle (we need it later if this is a continuous
 		//	fire device)
@@ -1219,7 +1199,7 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 
 		//	Get a list of targets
 
-		auto Targets = CalcMIRVTargets(Device, ActivateCtx.TargetList, Shots.GetCount());
+		auto Targets = CalcMIRVTargets(Device, ActivateCtx.GetTargetList(), Shots.GetCount());
 
 		//	Depending on our linked-fire state, we might not fire if we have no
 		//	targets.
@@ -1340,7 +1320,7 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 					if (ShotDesc.CanAutoTarget())
 						{
-						retpTarget = CalcBestTarget(Device, ActivateCtx.TargetList, NULL, &retiFireAngle);
+						retpTarget = CalcBestTarget(Device, ActivateCtx.GetTargetList(), NULL, &retiFireAngle);
 						if (!retpTarget)
 							retiFireAngle = -1;
 						}
@@ -1395,7 +1375,7 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 			case CDeviceItem::calcWeaponTarget:
 				{
-				retpTarget = CalcBestTarget(Device, ActivateCtx.TargetList, NULL, &retiFireAngle);
+				retpTarget = CalcBestTarget(Device, ActivateCtx.GetTargetList(), NULL, &retiFireAngle);
 				if (retpTarget == NULL)
 					return false;
 
@@ -1411,6 +1391,141 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 		}
 
 	//	Fire!
+
+	return true;
+	}
+
+bool CWeaponClass::CanConsumeAmmo (const CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc, int iRepeatingCount, int &retiAmmoToConsume) const
+
+//	CanConsumeAmmo
+//
+//	Return TRUE if we can consume ammo (i.e., if we have enough ammo to shoot).
+//	If we don't consume ammo we always return TRUE.
+
+	{
+	retiAmmoToConsume = 0;
+
+	//	Get source and device
+
+	const CSpaceObject *pSource = DeviceItem.GetSource();
+	if (!pSource)
+		throw CException(ERR_FAIL);
+
+	const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice();
+	if (!pDevice)
+		throw CException(ERR_FAIL);
+
+	//	If this is a repeating weapon then we only consume ammo on the first
+	//	shot (unless otherwise specified).
+
+	if (iRepeatingCount > 0 && !m_bContinuousConsumePerShot)
+		return true;
+
+	//	Figure out how much ammo we consume per shot.
+
+	CItemCtx ItemCtx(pSource, pDevice);
+	retiAmmoToConsume = FireGetAmmoToConsume(ItemCtx, ShotDesc, iRepeatingCount);
+	if (retiAmmoToConsume == 0)
+		return true;
+
+	//	Check based on the type of ammo
+
+	if (ShotDesc.GetAmmoType())
+		{
+		//	If we're enhanced to no require ammo, then we always succeed.
+
+		const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
+		if (Enhancements.IsNoAmmo())
+			return true;
+
+		CItemListManipulator ItemList(const_cast<CSpaceObject *>(pSource)->GetItemList());
+		CItem Item(ShotDesc.GetAmmoType(), retiAmmoToConsume);
+
+		//	We look for the ammo item. If we're using magazines, then look for
+		//	the item with the least charges (use those up first).
+
+		DWORD dwFlags = CItem::FLAG_IGNORE_CHARGES;
+		if (ShotDesc.GetAmmoType()->AreChargesAmmo())
+			dwFlags |= CItem::FLAG_FIND_MIN_CHARGES;
+
+		//	Select the ammo. If we could not select it, then it means that we
+		//	have none, so we fail.
+
+		if (!ItemList.SetCursorAtItem(Item, dwFlags))
+			return false;
+
+		//	If the ammo uses charges, then we need a different algorithm.
+
+		if (ShotDesc.GetAmmoType()->AreChargesAmmo())
+			{
+			const CItem &AmmoItem = ItemList.GetItemAtCursor();
+
+			//	If we only have 1 charge left, we need to delete the item
+			//
+			//	(We should never have 0 charges because we delete items when we 
+			//	use up the last charge. But if somehow we get it, we destroy it
+			//	here too.)
+
+			if (AmmoItem.GetCharges() < retiAmmoToConsume)
+				return false;
+			}
+
+		//	Otherwise, consume an item
+
+		else
+			{
+			if (ItemList.GetItemAtCursor().GetCount() < retiAmmoToConsume)
+				return false;
+			}
+		}
+	else if (m_bCharges)
+		{
+		//	If no charges left, then we cannot consume
+
+		if (pDevice->GetCharges(pSource) < retiAmmoToConsume)
+			return false;
+		}
+
+	//	Success!
+
+	return true;
+	}
+
+bool CWeaponClass::CanConsumeShipCounter (const CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc) const
+
+//	CanConsumeShipCounter
+//
+//	Returns TRUE if we can consume/increment ship counter.
+
+	{
+	//	Short-circuit.
+
+	if (!m_iCounterPerShot)
+		return true;
+
+	//	Get source and device
+
+	const CSpaceObject *pSource = DeviceItem.GetSource();
+	if (!pSource)
+		return false;
+
+	//  If changing the ship counter leaves us out of range, then we cannot
+	//	consume.
+
+	if (m_iCounterPerShot > 0)
+		{
+		if (pSource->GetCounterValue() + m_iCounterPerShot > pSource->GetMaxCounterValue())
+			{
+			return false;
+			}
+		}
+	else if (m_iCounterPerShot < 0)
+		{
+		if (pSource->GetCounterValue() + m_iCounterPerShot < 0)
+			{
+			return false;
+			}
+		}
 
 	return true;
 	}
@@ -1439,9 +1554,20 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 
 	CFailureDesc::EFailureTypes iFailureMode = CFailureDesc::failNone;
 
+	//	If we're using ship counters, make sure we have enough.
+
+	if (!CanConsumeShipCounter(DeviceItem, ShotDesc))
+		return resFailure;
+
+	//	See if we have enough ammo/charges to fire
+
+	int iAmmoToConsume;
+	if (!CanConsumeAmmo(DeviceItem, ShotDesc, iRepeatingCount, iAmmoToConsume))
+		return resFailure;
+
 	//	Update capacitor counters
 
-	if (m_Counter == cntCapacitor)
+	if (m_Counter == EDeviceCounterType::Capacitor)
 		{
 		if (!ConsumeCapacitor(ItemCtx, ShotDesc))
 			return resFailure;
@@ -1449,7 +1575,7 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 
 	//	Update temperature counters
 
-	else if (m_Counter == cntTemperature)
+	else if (m_Counter == EDeviceCounterType::Temperature)
 		{
 		bool bSourceDestroyed;
 		if (!UpdateTemperature(ItemCtx, ShotDesc, &iFailureMode, &bSourceDestroyed))
@@ -1462,25 +1588,24 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 			}
 		}
 
+	//	If we get this far, then we're going to consume resources (ammo,
+	//	etc.) and iFailureMode is set correctly.
+
 	//  Update the ship energy/heat counter.
 
 	if (m_iCounterPerShot != 0)
-		{
-		if (!UpdateShipCounter(ItemCtx, ShotDesc))
-			return resFailure;
-		}
+		ConsumeShipCounter(DeviceItem, ShotDesc);
 	
+	//	Consume ammo/charges
+
+	if (iAmmoToConsume != 0)
+		ConsumeAmmo(ItemCtx, ShotDesc, iRepeatingCount, iAmmoToConsume, retbConsumedItems);
+
 	//	We can fail to fire but still update temperature and consume power.
 
 	if (iFailureMode == CFailureDesc::failNoFire)
 		return resNoEffect;
 	
-	//	See if we have enough ammo/charges to proceed. If we don't then we 
-	//	cannot continue.
-
-	if (!ConsumeAmmo(ItemCtx, ShotDesc, iRepeatingCount, retbConsumedItems))
-		return resFailure;
-
 	//	If we're damaged, disabled, or badly designed, we have a chance of 
 	//	failure.
 
@@ -1531,12 +1656,12 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 		return resNormal;
 	}
 
-bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, int iRepeatingCount, bool *retbConsumed)
+void CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, int iRepeatingCount, int iAmmoToConsume, bool *retbConsumed)
 
 //	ConsumeAmmo
 //
-//	Consumes ammunition from the source. Returns TRUE if we were able to consume
-//	all ammo. If no ammo needs to be consumed, we still return TRUE.
+//	Consumes ammunition from the source. We assume that we've already called
+//	CanConsumeAmmo.
 //
 //	retbConsumed is set to TRUE if we consumed either ammo or charges.
 
@@ -1550,29 +1675,31 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 
 	CSpaceObject *pSource = ItemCtx.GetSource();
 	if (pSource == NULL)
-		return false;
+		return;
 
 	CInstalledDevice *pDevice = ItemCtx.GetDevice();
 	if (pDevice == NULL)
-		return false;
+		return;
 
 	//	If this is a repeating weapon then we only consume ammo on the first
 	//	shot (unless otherwise specified).
 
 	if (iRepeatingCount > 0 && !m_bContinuousConsumePerShot)
-		return true;
-
-	//	Figure out how much ammo we consume per shot.
-
-	int iAmmoConsumed = FireGetAmmoToConsume(ItemCtx, ShotDesc, iRepeatingCount);
+		return;
 
 	//	Check based on the type of ammo
 
 	bool bNextVariant = false;
 	if (ShotDesc.GetAmmoType())
 		{
+		//	If we're enhanced to no require ammo, then we always succeed.
+
+		const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+		if (Enhancements.IsNoAmmo())
+			return;
+
 		CItemListManipulator ItemList(pSource->GetItemList());
-		CItem Item(ShotDesc.GetAmmoType(), iAmmoConsumed);
+		CItem Item(ShotDesc.GetAmmoType(), iAmmoToConsume);
 
 		//	We look for the ammo item. If we're using magazines, then look for
 		//	the item with the least charges (use those up first).
@@ -1582,13 +1709,10 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 			dwFlags |= CItem::FLAG_FIND_MIN_CHARGES;
 
 		//	Select the ammo. If we could not select it, then it means that we
-		//	have none, so we fail.
+		//	have none, which means we forgot to call CanConsumeAmmo.
 
 		if (!ItemList.SetCursorAtItem(Item, dwFlags))
-			return false;
-
-		if (ItemList.GetItemAtCursor().GetCount() < iAmmoConsumed)
-			return false;
+			throw CException(ERR_FAIL);
 
 		//	If the ammo uses charges, then we need a different algorithm.
 
@@ -1602,7 +1726,7 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 			//	use up the last charge. But if somehow we get it, we destroy it
 			//	here too.)
 
-			if (AmmoItem.GetCharges() <= iAmmoConsumed)
+			if (AmmoItem.GetCharges() <= iAmmoToConsume)
 				{
 				ItemList.DeleteAtCursor(AmmoItem.GetCharges());
 
@@ -1616,20 +1740,23 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 			//	Otherwise, we decrement.
 
 			else
-				ItemList.SetChargesAtCursor(AmmoItem.GetCharges() - iAmmoConsumed);
+				ItemList.SetChargesAtCursor(AmmoItem.GetCharges() - iAmmoToConsume);
 			}
 
 		//	Otherwise, consume an item
 
 		else
 			{
+			if (ItemList.GetItemAtCursor().GetCount() < iAmmoToConsume)
+				throw CException(ERR_FAIL);
+
 			//	If we've exhausted our ammunition, remember to
 			//	select the next variant
 
-			if (ItemList.GetItemAtCursor().GetCount() == iAmmoConsumed)
+			if (ItemList.GetItemAtCursor().GetCount() == iAmmoToConsume)
 				bNextVariant = true;
 
-			ItemList.DeleteAtCursor(iAmmoConsumed);
+			ItemList.DeleteAtCursor(iAmmoToConsume);
 			}
 
 		//	We consumed an item
@@ -1641,12 +1768,12 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 		{
 		//	If no charges left, then we cannot consume
 
-		if (pDevice->GetCharges(pSource) < iAmmoConsumed)
-			return false;
+		if (pDevice->GetCharges(pSource) < iAmmoToConsume)
+			throw CException(ERR_FAIL);
 
 		//	Consume charges
 
-		pDevice->IncCharges(pSource, -iAmmoConsumed);
+		pDevice->IncCharges(pSource, -iAmmoToConsume);
 		if (retbConsumed)
 			*retbConsumed = true;
 		}
@@ -1666,10 +1793,6 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDe
 		else
 			pSource->OnDeviceStatus(pDevice, statusUsedLastAmmo);
 		}
-
-	//	Success!
-
-	return true;
 	}
 
 bool CWeaponClass::ConsumeCapacitor (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc)
@@ -1701,6 +1824,26 @@ bool CWeaponClass::ConsumeCapacitor (CItemCtx &ItemCtx, const CWeaponFireDesc &S
 	pSource->OnComponentChanged(comDeviceCounter);
 
 	return true;
+	}
+
+void CWeaponClass::ConsumeShipCounter (CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc)
+
+//	ConsumeShipCounter
+//
+//	Updates ship counter. We assume that we've already called 
+//	CanConsumeShipCounter.
+
+	{
+	if (!m_iCounterPerShot)
+		return;
+
+	//	Get source and device
+
+	CSpaceObject *pSource = DeviceItem.GetSource();
+	if (pSource == NULL)
+		return;
+
+	pSource->IncCounterValue(m_iCounterPerShot);
 	}
 
 ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpWeapon)
@@ -1768,9 +1911,9 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	if (!sConfig.IsBlank())
 		{
 		if (strEquals(sConfig, COUNTER_TYPE_TEMPERATURE))
-			pWeapon->m_Counter = cntTemperature;
+			pWeapon->m_Counter = EDeviceCounterType::Temperature;
 		else if (strEquals(sConfig, COUNTER_TYPE_CAPACITOR))
-			pWeapon->m_Counter = cntCapacitor;
+			pWeapon->m_Counter = EDeviceCounterType::Capacitor;
 		else
 			{
 			Ctx.sError = CONSTLIT("Invalid weapon counter type");
@@ -1787,7 +1930,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 		{
 		//	Backward compatibility
 
-		pWeapon->m_Counter = cntTemperature;
+		pWeapon->m_Counter = EDeviceCounterType::Temperature;
 		pWeapon->m_iCounterUpdate = TEMP_DECREASE;
 		pWeapon->m_iCounterUpdateRate = pDesc->GetAttributeInteger(COOLING_RATE_ATTRIB);
 		if (pWeapon->m_iCounterUpdateRate <= 0)
@@ -1795,7 +1938,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 		}
 	else
 		{
-		pWeapon->m_Counter = cntNone;
+		pWeapon->m_Counter = EDeviceCounterType::None;
 		pWeapon->m_iCounterActivate = 0;
 		pWeapon->m_iCounterUpdate = 0;
 		pWeapon->m_iCounterUpdateRate = 0;
@@ -1821,7 +1964,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 			return error;
 		}
 
-	if (pWeapon->m_Counter == cntTemperature)
+	if (pWeapon->m_Counter == EDeviceCounterType::Temperature)
 		{
 		if (error = pWeapon->m_OverheatFailure.InitFromXML(Ctx, pDesc->GetContentElementByTag(OVERHEAT_FAILURE_TAG), CFailureDesc::profileWeaponOverheat))
 			return error;
@@ -2136,7 +2279,7 @@ bool CWeaponClass::FireGetAmmoCountToDisplay (const CDeviceItem &DeviceItem, con
 		return false;
 	}
 
-int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, int iRepeatingCount)
+int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, int iRepeatingCount) const
 
 //	FireOnFireWeapon
 //
@@ -2552,7 +2695,7 @@ DWORD CWeaponClass::GetTargetTypes (const CDeviceItem &DeviceItem) const
 
 	//	We can always hit ships, etc.
 
-	DWORD dwTargetTypes = CTargetList::typeAttacker | CTargetList::typeFortification;
+	DWORD dwTargetTypes = CTargetList::SELECT_ATTACKERS | CTargetList::SELECT_FORTIFICATION;
 
 	//	If we swivel or have tracking, then check to see if there are other
 	//	targets that we need.
@@ -2565,21 +2708,21 @@ DWORD CWeaponClass::GetTargetTypes (const CDeviceItem &DeviceItem) const
 
 		const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
 		if (Enhancements.IsMissileDefense())
-			dwTargetTypes |= CTargetList::typeMissile;
+			dwTargetTypes |= CTargetList::SELECT_MISSILE;
 
 		//	Check targetable missiles (compatibility)
 
 		if (const CInstalledDevice *pInstalled = DeviceItem.GetInstalledDevice())
 			{
 			if (pInstalled->CanTargetMissiles())
-				dwTargetTypes |= CTargetList::typeTargetableMissile;
+				dwTargetTypes |= CTargetList::SELECT_TARGETABLE_MISSILE;
 			}
 
 		//	See if we have mining capability
 
 		if (pShotDesc->GetDamage().GetMiningDamage() > 0
 				|| Enhancements.HasSpecialDamage(specialMining))
-			dwTargetTypes |= CTargetList::typeMinable;
+			dwTargetTypes |= CTargetList::SELECT_MINABLE;
 		}
 
 	return dwTargetTypes;
@@ -2604,6 +2747,14 @@ bool CWeaponClass::HasAmmoLeft (CItemCtx &ItemCtx, const CWeaponFireDesc *pShot)
 
 	if (pShot->GetAmmoType())
 		{
+		//	If we're enhanced to not require ammo, then we always succeed.
+
+		const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+		if (Enhancements.IsNoAmmo())
+			return true;
+
+		//	Look for ammo
+
 		CItemListManipulator ItemList(pSource->GetItemList());
 		CItem Item(pShot->GetAmmoType(), 1);
 		if (!ItemList.SetCursorAtItem(Item, CItem::FLAG_IGNORE_CHARGES))
@@ -2749,6 +2900,9 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		return CC.CreateInteger(iDelay > 0 ? mathRound(rDamagePerShot * 180.0 / iDelay) : mathRound(rDamagePerShot));
 		}
 
+	else if (strEquals(sProperty, PROPERTY_DUAL_POINT_ORIGIN))
+		return CC.CreateBool(IsDualPointOrigin());
+
 	else if (strEquals(sProperty, PROPERTY_EFFECTIVE_RANGE))
 		return CC.CreateInteger(mathRound(pShot->GetEffectiveRange() / LIGHT_SECOND));
 
@@ -2762,7 +2916,8 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 			case CDeviceRotationDesc::rotOmnidirectional:
 				return CC.CreateString(PROPERTY_OMNIDIRECTIONAL);
 
-			case CDeviceRotationDesc::rotSwivel:
+			case CDeviceRotationDesc::rotSwivelAlways:
+			case CDeviceRotationDesc::rotSwivelIfTargetInArc:
 				{
 				//	Create a list
 
@@ -2961,7 +3116,7 @@ ItemCategories CWeaponClass::GetImplCategory (void) const
 		return itemcatWeapon;
 	}
 
-int CWeaponClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType, int *retiLevel)
+int CWeaponClass::GetCounter (const CInstalledDevice *pDevice, const CSpaceObject *pSource, EDeviceCounterType *retiType, int *retiLevel) const
 
 //	GetCounter
 //
@@ -2973,7 +3128,7 @@ int CWeaponClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 	if (retiType)
 		*retiType = m_Counter;
 
-	if (m_Counter == cntNone || pDevice == NULL || pSource == NULL)
+	if (m_Counter == EDeviceCounterType::None || pDevice == NULL || pSource == NULL)
 		{
 		if (retiLevel)
 			*retiLevel = 0;
@@ -2983,7 +3138,7 @@ int CWeaponClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 
 	//	If we're a capacitor, then don't show the counter if we are full
 
-	if (m_Counter == cntCapacitor && pDevice->GetTemperature() >= MAX_COUNTER)
+	if (m_Counter == EDeviceCounterType::Capacitor && pDevice->GetTemperature() >= MAX_COUNTER)
 		{
 		if (retiLevel)
 			*retiLevel = MAX_COUNTER;
@@ -3492,7 +3647,10 @@ CDeviceRotationDesc::ETypes CWeaponClass::GetRotationType (const CDeviceItem &De
 			*retiMaxArc = AngleMod(iFireAngle + iHalfFireArc);
 			}
 
-		return CDeviceRotationDesc::rotSwivel;
+		if (IsTrackingWeapon(DeviceItem))
+			return CDeviceRotationDesc::rotSwivelAlways;
+		else
+			return CDeviceRotationDesc::rotSwivelIfTargetInArc;
 		}
 	}
 
@@ -3547,14 +3705,20 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 	else if (pShot->GetAmmoType())
 		{
 		CItem Item(pShot->GetAmmoType(), 1);
+		const CItemEnhancementStack &Enhancements = Ctx.GetEnhancements();
 
 		//	Calc ammo left
 
 		if (retiAmmoLeft)
 			{
+			//	If we no longer use ammo, set to -1.
+
+			if (Enhancements.IsNoAmmo())
+				*retiAmmoLeft = -1;
+
 			//	See if we use an event
 
-			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetDeviceItem(), *pShot, retiAmmoLeft))
+			else if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetDeviceItem(), *pShot, retiAmmoLeft))
 				{ }
 
 			//	If each ammo item uses charges, then we need a different method.
@@ -3743,9 +3907,11 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 	if (pShot == NULL)
 		return -100;
 
+	const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
+
 	//	If we don't enough ammo, clearly we will not be effective
 
-	if (pSource && pShot->GetAmmoType())
+	if (pSource && pShot->GetAmmoType() && !Enhancements.IsNoAmmo())
 		{
 		CItemListManipulator ItemList(pSource->GetItemList());
 		CItem Item(pShot->GetAmmoType(), 1);
@@ -3763,8 +3929,18 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 
 	if (pTarget && pTarget->GetCategory() == CSpaceObject::catMissile)
 		{
-		if (!(DeviceItem.GetTargetTypes() & (CTargetList::typeMissile | CTargetList::typeTargetableMissile)))
+		if (!(DeviceItem.GetTargetTypes() & CTargetList::SELECT_ANY_MISSILE))
 			return -100;
+		}
+
+	//	If we have a weapon target definition, the target must fit this definition.
+	if (pTarget && DeviceItem.GetInstalledDevice())
+		{
+		auto pWeaponTargetDefinition = DeviceItem.GetInstalledDevice()->GetWeaponTargetDefinition();
+		if ((pWeaponTargetDefinition && !pWeaponTargetDefinition->MatchesTarget(pSource, pTarget)))
+			{
+			return -100;
+			}
 		}
 
 	//	Check our state
@@ -3775,7 +3951,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 			{
 			//	If we're overheating, we will not be effective
 
-			case cntTemperature:
+			case EDeviceCounterType::Temperature:
 				if (pDevice->IsWaiting() && pDevice->GetTemperature() > 0)
 					return -100;
 
@@ -3790,7 +3966,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 
 			//	If our capacitor is discharged, we will not be effective
 
-			case cntCapacitor:
+			case EDeviceCounterType::Capacitor:
 				if (pDevice->IsWaiting() && pDevice->GetTemperature() < MAX_COUNTER)
 					return -100;
 
@@ -4385,19 +4561,22 @@ bool CWeaponClass::IsStdDamageType (DamageTypes iDamageType, int iLevel)
 	return (iLevel >= iTierLevel && iLevel < iTierLevel + 3);
 	}
 
-bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObject &Target, int iDefaultFireAngle, int *retiFireAngle) const
+bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObject &Target, int iDefaultFireAngle, int *retiFireAngle, int *retiAimAngle) const
 
 //	IsTargetReachable
 //
-//	Returns TRUE if we can hit the given target. If we return TRUE, 
-//	retiFireAngle is initialized with the weapon's best fire angle to hit the
-//	target.
+//	Returns TRUE if we can hit the given target. In either case, retiFireAngle 
+//	is initialized with the weapon's best fire angle to hit the target.
 
 	{
 	const CWeaponFireDesc *pShotDesc = GetWeaponFireDesc(Device);
 	const CSpaceObject *pSource = Device.GetSource();
 	if (pShotDesc == NULL || pSource == NULL)
+		{
+		if (retiFireAngle)
+			*retiFireAngle = iDefaultFireAngle;
 		return false;
+		}
 
 	//	Get rotation info
 
@@ -4410,6 +4589,9 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 	int iAim;
 	Metric rDist;
 	bool bNoFireSolution = !CalcFireSolution(Device, Target, &iAim, &rDist);
+	if (retiAimAngle)
+		//	iAim is initialized, even if we can't get a fire solution
+		*retiAimAngle = iAim;
 
 	//	Figure out how close we can get
 
@@ -4417,16 +4599,10 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 	if (retiFireAngle)
 		*retiFireAngle = iFireAngle;
 
-	//	Area weapons are always aligned (we try even if we don't have a
-	//	firing solution).
-
-	if (pShotDesc->GetType() == CWeaponFireDesc::ftArea)
-		return true;
-
 	//	If we get this far and we don't have a firing solution, then we cannot
 	//	reach the target.
 
-	else if (bNoFireSolution)
+	if (bNoFireSolution)
 		return false;
 
 	//	Omnidirectional weapons are always aligned.
@@ -4436,7 +4612,7 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 
 	//	Tracking weapons are always aligned.
 
-	else if (IsTracking(Device, pShotDesc))
+	else if (iType == CDeviceRotationDesc::rotSwivelAlways)
 		return true;
 
 	//	Figure out our aim tolerance
@@ -4444,6 +4620,11 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 	else
 		{
 		int iAimTolerance = GetConfiguration(*pShotDesc).GetAimTolerance(GetFireDelay(*pShotDesc));
+
+		//	Area weapons have 60 degree aim tolerance
+
+		if (pShotDesc->GetType() == CWeaponFireDesc::ftArea)
+			iAimTolerance = Max(iAimTolerance, 60);
 
 		//	Compute the angular size of the target
 
@@ -4457,7 +4638,18 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 		//	If we're facing in the direction that we want to fire, 
 		//	then we're aligned...
 
-		return (iAimOffset <= Max(iAimTolerance, iHalfAngularSize));
+		if (iAimOffset <= Max(iAimTolerance, iHalfAngularSize))
+			return true;
+
+		//	Otherwise, we cannot reach the target, so fire the default direction.
+
+		else
+			{
+			if (retiFireAngle)
+				*retiFireAngle = iDefaultFireAngle;
+
+			return false;
+			}
 		}
 	}
 
@@ -4514,134 +4706,10 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 //	Note: If the weapon is invalid, we return an aim angle of -1
 
 	{
-	CItemCtx Ctx(pShip, pDevice);
-	const CDeviceItem DeviceItem = Ctx.GetDeviceItem();
+	if (!pDevice || !pTarget)
+		throw CException(ERR_FAIL);
 
-	const CWeaponFireDesc *pShot = GetWeaponFireDesc(DeviceItem);
-	if (pShot == NULL || pShip == NULL || pDevice == NULL)
-		{
-		if (retiAimAngle) *retiAimAngle = -1;
-		if (retiFireAngle) *retiFireAngle = -1;
-		return false;
-		}
-
-	ASSERT(pTarget);
-	if (!pTarget)
-		return false;
-
-	//	Get rotation info
-
-	int iMinFireArc, iMaxFireArc;
-	CDeviceRotationDesc::ETypes iType = GetRotationType(DeviceItem, &iMinFireArc, &iMaxFireArc);
-
-	int iFacingAngle = AngleMod(pShip->GetRotation() + AngleMiddle(iMinFireArc, iMaxFireArc));
-
-	//	Compute the fire solution
-
-	int iAim;
-	Metric rDist;
-	if (!CalcFireSolution(*pDevice, *pTarget, &iAim, &rDist))
-		{
-		if (retiAimAngle) *retiAimAngle = iAim;
-		if (retiFireAngle) *retiFireAngle = iFacingAngle;
-		return false;
-		}
-
-	if (retiAimAngle)
-		*retiAimAngle = iAim;
-
-	//	Omnidirectional weapons are always aligned
-
-	if (iType == CDeviceRotationDesc::rotOmnidirectional)
-		{
-		if (retiFireAngle)
-			*retiFireAngle = iAim;
-		return true;
-		}
-
-	//	Area weapons are always aligned
-
-	if (pShot->GetType() == CWeaponFireDesc::ftArea)
-		{
-		if (retiFireAngle)
-			*retiFireAngle = iFacingAngle;
-		return true;
-		}
-
-	//	Figure out our aim tolerance
-
-	int iAimTolerance = GetConfiguration(*pShot).GetAimTolerance(GetFireDelay(*pShot));
-
-	//	Tracking weapons behave like directional weapons with 120 degree field
-
-	if (iType != CDeviceRotationDesc::rotSwivel && IsTracking(DeviceItem, pShot))
-		{
-		int iDeviceAngle = AngleMiddle(iMinFireArc, iMaxFireArc);
-		iMinFireArc = AngleMod(iDeviceAngle - 60);
-		iMaxFireArc = AngleMod(iDeviceAngle + 60);
-		iType = CDeviceRotationDesc::rotSwivel;
-		}
-
-	if (iType == CDeviceRotationDesc::rotSwivel)
-		{
-		int iMin = AngleMod(pShip->GetRotation() + iMinFireArc - iAimTolerance);
-		int iMax = AngleMod(pShip->GetRotation() + iMaxFireArc + iAimTolerance);
-
-		//	Are we in the fire arc?
-
-		bool bInArc;
-		if (iMin < iMax)
-			{
-			//	e.g., iMin == 0; iMax == 180
-
-			bInArc = (iAim >= iMin && iAim <= iMax);
-			}
-		else
-			{
-			//	e.g., iMin == 315; iMax == 45
-
-			bInArc = (iAim >= iMin || iAim <= iMax);
-			}
-
-		//	Compute the fire direction
-
-		if (retiFireAngle)
-			{
-			if (bInArc)
-				*retiFireAngle = iAim;
-			else if (AngleOffset(iAim, iMin) < AngleOffset(iAim, iMax))
-				*retiFireAngle = iMin;
-			else
-				*retiFireAngle = iMax;
-			}
-
-		return bInArc;
-		}
-
-	//	Fire angle
-
-	if (retiFireAngle)
-		*retiFireAngle = iFacingAngle;
-
-	//	Compute the angular size of the target
-
-	int iHalfAngularSize = (int)(20.0 * pTarget->GetHitSize() / Max(1.0, rDist));
-
-	//	Figure out how far off we are from the direction that we
-	//	want to fire in.
-
-	int iAimOffset = AngleOffset(iFacingAngle, iAim);
-
-	//	If we're facing in the direction that we want to fire, 
-	//	then we're aligned...
-
-	if (iAimOffset <= Max(iAimTolerance, iHalfAngularSize))
-		return true;
-
-	//	Otherwise, we're not and we need to return the aim direction
-
-	else
-		return false;
+	return IsTargetReachable(*pDevice, *pTarget, -1, retiFireAngle, retiAimAngle);
 	}
 
 bool CWeaponClass::IsWeaponVariantValid (const CDeviceItem &DeviceItem, int iVariant) const
@@ -4699,7 +4767,8 @@ bool CWeaponClass::NeedsAutoTarget (const CDeviceItem &DeviceItem, int *retiMinF
 			return true;
 			}
 
-		case CDeviceRotationDesc::rotSwivel:
+		case CDeviceRotationDesc::rotSwivelAlways:
+		case CDeviceRotationDesc::rotSwivelIfTargetInArc:
 			{
 			if (const CSpaceObject *pSource = DeviceItem.GetSource())
 				{
@@ -4732,7 +4801,8 @@ void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("omnidirectional")));
 			break;
 
-		case CDeviceRotationDesc::rotSwivel:
+		case CDeviceRotationDesc::rotSwivelAlways:
+		case CDeviceRotationDesc::rotSwivelIfTargetInArc:
 			int iArc = AngleRange(iMinArc, iMaxArc);
 			if (iArc >= 150)
 				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("hemi-directional")));
@@ -4928,6 +4998,21 @@ ALERROR CWeaponClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 			if (error = m_ShotData[i].pAmmoType.Bind(Ctx))
 				return error;
+			}
+
+		//	If the number of repeat shots don't fit within the fire delay, then
+		//	warn.
+
+		if (int iRepeating = GetContinuous(*m_ShotData[i].pDesc))
+			{
+			int iDelay = GetContinuousFireDelay(*m_ShotData[i].pDesc);
+			int iTotalTicks = (iRepeating * (iDelay + 1));
+			int iFireDelay = GetFireDelay(*m_ShotData[i].pDesc);
+
+			if (iTotalTicks > iFireDelay)
+				{
+				GetUniverse().DebugOutput("WARNING: %s (%08x) takes %d ticks to fire all shots, but has only %d ticks fire delay.", (LPSTR)GetName(), GetUNID(), iTotalTicks, iFireDelay);
+				}
 			}
 		}
 
@@ -5183,7 +5268,7 @@ void CWeaponClass::SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinu
 	pDevice->SetData((pDevice->GetData() & 0xFFFFFF00) | (dwContinuous & 0xFF));
 	}
 
-bool CWeaponClass::SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes iCounter, int iLevel)
+bool CWeaponClass::SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, EDeviceCounterType iCounter, int iLevel)
 
 //  SetCounter
 //
@@ -5255,6 +5340,22 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 	if (!pDevice->IsEnabled())
 		return;
 
+	if (pDevice->GetWeaponTargetDefinition() && pSource->IsPlayer() && pDevice->IsSecondaryWeapon())
+		{
+		//  If the weapon is not ready, do not autofire.
+		//	If the ship is disarmed or paralyzed, then we also do not autofire.
+
+		if (!(!pDevice->IsReady() || pSource->GetCondition(ECondition::paralyzed)
+			|| pSource->GetCondition(ECondition::disarmed)))
+			{
+			bool bActivateResult = pDevice->GetWeaponTargetDefinition()->AimAndFire(this, pDevice, pSource, Ctx);
+			if (bActivateResult)
+				{
+				pDevice->SetTimeUntilReady(CalcActivateDelay(ItemCtx));
+				}
+			}
+		}
+
 	//	See if we continue to fire
 
 	DWORD dwContinuous = GetContinuousFire(pDevice);
@@ -5292,13 +5393,10 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 			int iContinuous = GetContinuous(*pShot);
 			int iContinuousDelay = Max(1, GetContinuousFireDelay(*pShot) + 1);
 
-			SActivateCtx ActivateCtx(NULL, Ctx.TargetList);
+			SActivateCtx ActivateCtx(Ctx);
 
 			if ((dwContinuous % iContinuousDelay) == 0)
 				{
-				if (ActivateCtx.TargetList.IsEmpty())
-					ActivateCtx.TargetList = pSource->GetTargetList();
-
 				ActivateCtx.iRepeatingCount = 1 + iContinuous - (dwContinuous / iContinuousDelay);
 
 				FireWeapon(*pDevice, *pShot, ActivateCtx);
@@ -5323,48 +5421,8 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 	else if (pDevice->HasLastShots()
 			&& (!pDevice->IsTriggered() || pDevice->GetTimeUntilReady() > 1))
 		pDevice->SetLastShotCount(0);
-
 	DEBUG_CATCH
 	}
-
-bool CWeaponClass::UpdateShipCounter(CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc)
-
-//	UpdateShipCounter
-//
-//	If ship counter is within bounds, we update it and return TRUE. Otherwise,
-//	we return FALSE.
-
-{
-	//	Get source and device
-
-	CSpaceObject *pSource = ItemCtx.GetSource();
-	if (pSource == NULL)
-		return false;
-
-	CInstalledDevice *pDevice = ItemCtx.GetDevice();
-	if (pDevice == NULL)
-		return false;
-
-	//  If we update the ship's counter, make sure that after increase/decrease we're
-	//  below/above the maximum/minimum counter, respectively.
-
-	if (m_iCounterPerShot > 0)
-	{
-		if (pSource->GetCounterValue() + m_iCounterPerShot > pSource->GetMaxCounterValue())
-		{
-			return false;
-		}
-	}
-	else if (m_iCounterPerShot < 0)
-	{
-		if (pSource->GetCounterValue() + m_iCounterPerShot < 0)
-		{
-			return false;
-		}
-	}
-	pSource->IncCounterValue(m_iCounterPerShot);
-	return true;
-}
 
 bool CWeaponClass::UpdateTemperature (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, CFailureDesc::EFailureTypes *retiFailureMode, bool *retbSourceDestroyed)
 

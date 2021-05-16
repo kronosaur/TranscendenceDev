@@ -6,7 +6,7 @@
 #include "PreComp.h"
 
 CAIShipControls::CAIShipControls (void) : 
-		m_iManeuver(NoRotation),
+		m_iManeuver(EManeuver::None),
 		m_iThrustDir(constNeverThrust)
 
 //	CAIShipControls constructor
@@ -21,17 +21,20 @@ void CAIShipControls::ReadFromStream (SLoadCtx &Ctx)
 //	Load from stream
 
 	{
-	Ctx.pStream->Read((char *)&m_iManeuver, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&m_iThrustDir, sizeof(DWORD));
+	DWORD dwLoad;
+	Ctx.pStream->Read(dwLoad);
+	m_iManeuver = (EManeuver)dwLoad;
+
+	Ctx.pStream->Read(m_iThrustDir);
 	}
 
-void CAIShipControls::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CAIShipControls::WriteToStream (IWriteStream *pStream)
 
 //	WriteToStream
 //
 //	Write to stream
 
 	{
-	pStream->Write((char *)&m_iManeuver, sizeof(DWORD));
-	pStream->Write((char *)&m_iThrustDir, sizeof(DWORD));
+	pStream->Write((DWORD)m_iManeuver);
+	pStream->Write(m_iThrustDir);
 	}

@@ -5,6 +5,33 @@
 
 #pragma once
 
+class CWeaponTargetDefinition
+	{
+	//  Weapon target definition that is attached to installed weapon devices.
+	//  Written and read from stream independently using a similar manner to item data.
+	//  Should only be attached to weapon devices through a unique_ptr.
+	//  Note that we use the range, fire arc, and all other property of the attached weapon, since all this does
+	//  is tell our attached weapon what to shoot at.
+	public:
+		class CWeaponTargetDefinition () { };
+		class CWeaponTargetDefinition (Kernel::CString sCriteria, bool bCheckLineOfFire = false) : m_bCheckLineOfFire(bCheckLineOfFire), m_CriteriaString(sCriteria) { m_TargetCriteria.Init(sCriteria); };
+		bool MatchesTarget (CSpaceObject* pSource, CSpaceObject* pTarget) const;
+		CSpaceObject* FindTarget (CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CItemCtx& ItemCtx) const;
+		bool AimAndFire (CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CDeviceClass::SDeviceUpdateCtx& Ctx) const;
+		bool GetCheckLineOfFire () { return m_bCheckLineOfFire; };
+		CSpaceObjectCriteria GetTargetCriteria () { return m_TargetCriteria; };
+		Kernel::CString GetTargetCriteriaString () { return m_CriteriaString; };
+		void SetCheckLineOfFire (bool bCheckLineOfFire) { m_bCheckLineOfFire = bCheckLineOfFire; };
+		void SetTargetCriteria (Kernel::CString sCriteria) { m_TargetCriteria.Init(sCriteria); m_CriteriaString = sCriteria; };
+
+		static std::unique_ptr<CWeaponTargetDefinition> ReadFromStream (SLoadCtx& Ctx);
+		void WriteToStream (IWriteStream* pStream) const;
+	private:
+		Kernel::CString m_CriteriaString = "";
+		CSpaceObjectCriteria m_TargetCriteria;
+		bool m_bCheckLineOfFire = false;		//	Check line of fire for friendlies
+	};
+
 class CAutoDefenseClass : public CDeviceClass
 	{
 	public:
@@ -22,7 +49,7 @@ class CAutoDefenseClass : public CDeviceClass
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const override;
 		virtual DWORD GetTargetTypes (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const override;
-		virtual bool IsAutomatedWeapon (void) override { return true; }
+		virtual bool IsAutomatedWeapon (void) const override { return true; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 
@@ -52,6 +79,7 @@ class CAutoDefenseClass : public CDeviceClass
 		Metric m_rInterceptRange = 0.0;
 		Metric m_rMinSourceRange2 = 0.0;
 		bool m_bCheckLineOfFire = false;		//	Check line of fire for friendlies
+		bool m_bTargetReactions = false;		//	Target ejecta and explosions
 
 		bool m_bOmnidirectional = false;		//	Omnidirectional
 		int m_iMinFireArc = 0;					//	Min angle of fire arc (degrees)
@@ -107,7 +135,7 @@ class CCyberDeckClass : public CDeviceClass
 											 int *retiAmmoLeft,
 											 CItemType **retpType = NULL,
 											 bool bUseCustomAmmoCountHandler = false) override;
-		virtual DWORD GetTargetTypes (const CDeviceItem &DeviceItem) const override { return CTargetList::typeAttacker | CTargetList::typeFortification; }
+		virtual DWORD GetTargetTypes (const CDeviceItem &DeviceItem) const override { return CTargetList::SELECT_ATTACKERS | CTargetList::SELECT_FORTIFICATION; }
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return 1; }
 		virtual int GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const override;
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }
@@ -256,9 +284,9 @@ class CMiscellaneousClass : public CDeviceClass
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual int GetActivateDelay (CItemCtx &ItemCtx) const override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
-		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL, int *retiLevel = NULL) override;
+		virtual int GetCounter (const CInstalledDevice *pDevice, const CSpaceObject *pSource, EDeviceCounterType *retiType = NULL, int *retiLevel = NULL) const override;
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
-		virtual bool SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes iCounter, int iLevel) override;
+		virtual bool SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, EDeviceCounterType iCounter, int iLevel) override;
 		virtual bool ShowActivationDelayCounter (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 
@@ -328,26 +356,15 @@ class CReactorClass : public CDeviceClass
 class CRepairerClass : public CDeviceClass
 	{
 	public:
-		enum ECachedHandlers
-			{
-			evtGetArmorRegen			= 0,
-
-			evtCount					= 1,
-			};
+		static constexpr int REPAIR_CYCLE_TIME =			10;
 
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice);
-		bool FindEventHandlerRepairerClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
-			{
-			if (!m_CachedEvents[iEvent].pCode)
-				return false;
-
-			if (retEvent) *retEvent = m_CachedEvents[iEvent];
-			return true;
-			}
 
 		//	CDeviceClass virtuals
 
+		virtual const CRepairerClass *AsRepairerClass (void) const override { return this; }
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sProperty) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
@@ -355,18 +372,42 @@ class CRepairerClass : public CDeviceClass
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 
 	private:
-		CRepairerClass (void);
 
-		void CalcRegen (CInstalledDevice *pDevice, CShip *pShip, int iSegment, int iTick, int *retiHP, int *retiPower);
-		bool RepairShipArmor (CInstalledDevice *pDevice, CShip *pShip, SDeviceUpdateCtx &Ctx);
-		bool RepairShipAttachedSections (CInstalledDevice *pDevice, CShip *pShip, SDeviceUpdateCtx &Ctx);
-		bool RepairShipInterior (CInstalledDevice *pDevice, CShip *pShip, SDeviceUpdateCtx &Ctx);
+		enum class EEventCache
+			{
+			GetArmorRegen			= 0,
 
-		TArray<CRegenDesc> m_Repair;			//	Repair descriptor (by level)
-		CRegenDesc m_CompartmentRepair;			//	Repair compartments
-		int m_iPowerUse;						//	Power used while repairing
+			Count					= 1,
+			};
 
-		SEventHandlerDesc m_CachedEvents[evtCount];		//	Cached events
+		struct SRepairerDesc
+			{
+			int iLevel = 0;
+			TArray<CRegenDesc> ArmorRepair;		//	Armor repair by armor level.
+			CRegenDesc CompartmentRepair;		//	Compartment repair
+			int iPowerUse = 0;					//	Power used per armor repair
+			};
+
+		CRepairerClass (void) { }
+
+		void CalcArmorRegen (const CDeviceItem &RepairerItem, int iSegment, int iTick, int *retiHP, int *retiPower) const;
+		bool FindEventHandlerRepairerClass (EEventCache iEvent, SEventHandlerDesc *retEvent = NULL) const;
+		static const CXMLElement *FindLevelDesc (SDesignLoadCtx &Ctx, const CXMLElement &Scaling, int iLevel);
+		const CRegenDesc &GetArmorRegen (const SRepairerDesc &Desc, const CArmorItem &ArmorItem) const;
+		const SRepairerDesc &GetDesc (const CDeviceItem &RepairerItem) const;
+		static bool InitDescFromXML (SDesignLoadCtx &Ctx, int iLevel, const CXMLElement &DescXML, SRepairerDesc &retDesc);
+		bool RepairShipArmor (CDeviceItem &RepairerItem, SDeviceUpdateCtx &Ctx);
+		bool RepairShipAttachedSections (CDeviceItem &RepairerItem, SDeviceUpdateCtx &Ctx);
+		bool RepairShipInterior (CDeviceItem &RepairerItem, SDeviceUpdateCtx &Ctx);
+
+		TArray<SRepairerDesc> m_Desc;			//	Descriptors by scaled level.
+
+		SEventHandlerDesc m_CachedEvents[(int)EEventCache::Count];		//	Cached events
+
+		//	Property table
+
+		static TPropertyHandler<CDeviceItem> m_PropertyTable;
+		static const SRepairerDesc m_NullDesc;
 	};
 
 class CShieldClass : public CDeviceClass
@@ -471,7 +512,6 @@ class CShieldClass : public CDeviceClass
 		static int GetStdPower (int iLevel);
 		static int GetStdRegen (int iLevel);
 
-
 	protected:
 		virtual void OnAccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const override;
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
@@ -489,6 +529,7 @@ class CShieldClass : public CDeviceClass
 		static const DWORD FLAG_IGNORE_DISABLED = 0x00000001;
 		Metric CalcRegen180 (CItemCtx &Ctx, DWORD dwFlags = 0) const;
 
+		void CreateHitEffect (CInstalledDevice &Device, CSpaceObject &Ship, SDamageCtx &DamageCtx, CEffectCreator &Effect, const CVector &vPos) const;
 		bool IsDepleted (CInstalledDevice *pDevice);
 		int FireGetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource, int iMaxHP) const;
 		void FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
@@ -499,9 +540,9 @@ class CShieldClass : public CDeviceClass
 		int GetMaxHP (CItemCtx &Ctx) const;
 		int GetReferenceDepletionDelay (void) const;
 		int GetReflectChance (const CDeviceItem &DeviceItem, const CItemEnhancementStack &Enhancements, const DamageDesc &Damage, int iHP, int iMaxHP) const;
-		bool UpdateDepleted (CInstalledDevice *pDevice);
 		void SetDepleted (CInstalledDevice *pDevice, CSpaceObject *pSource);
 		void SetHPLeft (CInstalledDevice *pDevice, CSpaceObject *pSource, int iHP, bool bConsumeCharges = false);
+		bool UpdateDepleted (CInstalledDevice *pDevice);
 
 		int m_iHitPoints;						//	Max HP
 		int m_iArmorShield;						//	If non-zero then this is the
@@ -517,6 +558,7 @@ class CShieldClass : public CDeviceClass
 		int m_iIdlePowerUse;					//	Power used to maintain shields
 		DamageTypeSet m_WeaponSuppress;			//	Types of weapons suppressed
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
+		int m_iTimeBetweenFlashEffects;			//  Minimum time between flash effects in ticks
 
 		int m_iExtraHPPerCharge;				//	Extra HP for each point of charge
 		int m_iExtraPowerPerCharge;				//	Extra power use for each point of charge (1/10 megawatt)
@@ -534,7 +576,8 @@ class CShieldClass : public CDeviceClass
 
 		SEventHandlerDesc m_CachedEvents[evtCount];		//	Cached events
 
-		CEffectCreatorRef m_pHitEffect;			//	Effect when shield is hit
+		CEffectCreatorRef m_pHitEffect;				//	Effect when shield is hit, appearing at hit location
+		CEffectCreatorRef m_pFlashEffect;			//	Effect when shield is hit, appearing on ship
 	};
 
 class CSolarDeviceClass : public CDeviceClass

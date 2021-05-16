@@ -18,10 +18,12 @@
 			<Data id="rewardXP"></Data>
 			<Variant id="targetDesc">
 				{
-					criteria: "TAE +populated; -questTarget; -uncharted;"
+					criteria: "TAE +populated; -property:questTarget; -uncharted;"
 					}
 			</Variant>
 		</Properties>
+
+		<Image	imageID="&rsBlackMarketInsignia;" imageX="0" imageY="0" imageWidth="256" imageHeight="256"/>
 
 		<Events>
 			<OnTargetChosen>
@@ -119,7 +121,7 @@
 				to destroy the station.
 
 				System: %systemName%\n
-				Payment: %reward%
+				Payment: None
 
 			</Text>
 			<Text id="textIntro1">

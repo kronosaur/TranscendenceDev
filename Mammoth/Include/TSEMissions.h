@@ -5,6 +5,8 @@
 
 #pragma once
 
+class CMissionCriteria;
+
 class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 	{
 	public:
@@ -17,25 +19,6 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 			playerFailure,					//	Player failed mission
 			success,						//	Mission succeeded without player
 			failure,						//	Mission failed without player
-			};
-
-		struct SCriteria
-			{
-			bool bIncludeOpen = false;			//	Include open missions
-			bool bIncludeUnavailable = false;	//	Include unavailable missions
-			bool bIncludeActive = false;		//	Include active missions
-			bool bIncludeCompleted = false;		//	Include completed (but not necessarily debriefed missions)
-			bool bIncludeRecorded = false;		//	Include recorded missions
-
-			bool bOnlySourceOwner = false;		//	Source must be owner
-			bool bOnlySourceDebriefer = false;	//	Source must be debriefer
-			bool bPriorityOnly = false;			//	Return highest priority mission
-			bool bOnlyMissionArcs = false;		//	Only mission arc missions (latest only)
-
-			TArray<CString> AttribsRequired;	//	Required attributes
-			TArray<CString> AttribsNotAllowed;	//	Exclude objects with these attributes
-			TArray<CString> SpecialRequired;	//	Special required attributes
-			TArray<CString> SpecialNotAllowed;	//	Special excluding attributes
 			};
 
 		CMission (CUniverse &Universe);
@@ -63,7 +46,7 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 		bool IsSuccess (void) const { return (m_iStatus == Status::success || m_iStatus == Status::playerSuccess); }
 		bool IsUnavailable (void) const { return (m_iStatus == Status::closed || m_iStatus == Status::success || m_iStatus == Status::failure); }
 		bool KeepsStats (void) const { return m_pType->KeepsStats(); }
-		bool MatchesCriteria (const CSpaceObject *pSource, const SCriteria &Criteria) const;
+		bool MatchesCriteria (const CSpaceObject *pSource, const CMissionCriteria &Criteria) const;
 		void OnPlayerEnteredSystem (CSpaceObject *pPlayer);
 		bool RefreshSummary (void);
 		bool Reward (ICCItem *pData, ICCItem **retpResult = NULL);
@@ -74,8 +57,6 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 		bool SetSuccess (ICCItem *pData);
 		bool SetUnavailable (void);
 		void UpdateExpiration (int iTick);
-
-		static bool ParseCriteria (const CString &sCriteria, SCriteria *retCriteria);
 
 		//	CSpaceObject virtuals
 
@@ -94,7 +75,7 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 	protected:
 		//	CSpaceObject virtuals
 
-		virtual CString GetObjClassName (void) override { return CONSTLIT("CMission"); }
+		virtual CString GetObjClassName (void) const override { return CONSTLIT("CMission"); }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
 		virtual ICCItemPtr OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) const override;
 		virtual void OnObjDestroyedNotify (SDestroyCtx &Ctx) override;
@@ -163,12 +144,12 @@ class CMissionList
 		const CMission &operator [] (int iIndex) const { return *m_List[iIndex]; }
 		CMission &operator [] (int iIndex) { return *m_List[iIndex]; }
 
-		bool CanCreateMissionInArc (const CMissionType &NewMissionType, const CSpaceObject *pSource, const CMission::SCriteria &CreateCriteria) const;
+		bool CanCreateMissionInArc (const CMissionType &NewMissionType, const CSpaceObject *pSource, const CMissionCriteria &CreateCriteria) const;
 		void CloseMissionsInArc (const CMissionType &NewMissionType);
-		void Delete (int iIndex);
-		void Delete (CMission *pMission);
+		void DeleteMission (int iIndex);
+		void DeleteMission (CMission *pMission);
 		void DeleteAll (void);
-		CMissionList Filter (const CSpaceObject *pSource, const CMission::SCriteria &Criteria) const;
+		CMissionList Filter (const CSpaceObject *pSource, const CMissionCriteria &Criteria) const;
 		CMissionList FilterByArc (void) const;
 		CMissionList FilterByType (CMissionType &Type) const;
 		CMission *FindAcceptedArcChapter (const CString &sTargetArc, const CString &sTargetTitle, CMission *pExclude = NULL) const;
@@ -181,7 +162,7 @@ class CMissionList
 		CMission *GetMission (int iIndex) const { return m_List[iIndex]; }
 		CMission *GetMissionByID (DWORD dwID) const;
 		void Insert (CMission *pMission);
-		bool Matches (const CSpaceObject *pSource, const CMission::SCriteria &Criteria) const;
+		bool Matches (const CSpaceObject *pSource, const CMissionCriteria &Criteria) const;
 		void NotifyOnNewSystem (CSystem *pSystem);
 		void NotifyOnPlayerEnteredSystem (CSpaceObject *pPlayerShip);
 		ALERROR ReadFromStream (SLoadCtx &Ctx, CString *retsError);
@@ -192,6 +173,53 @@ class CMissionList
 	private:
 		TArray<CMission *> m_List;
 		bool m_bFree;						//	If TRUE, free missions when removed
+	};
+
+class CMissionCriteria
+	{
+	public:
+		CMissionCriteria () { }
+		explicit CMissionCriteria (const CString &sCriteria) { Parse(sCriteria); }
+
+		const TArray<CString> &GetAttribsNotAllowed () const { return m_AttribsNotAllowed; }
+		const TArray<CString> &GetAttribsRequired () const { return m_AttribsRequired; }
+		const CMissionCriteria &GetORExpression (void) const { return (m_pOr ? *m_pOr : m_Null); }
+		const TArray<CString> &GetSpecialNotAllowed () const { return m_SpecialNotAllowed; }
+		const TArray<CString> &GetSpecialRequired () const { return m_SpecialRequired; }
+		bool HasORExpression (void) const { return (m_pOr ? true : false); }
+		bool IncludesActive () const { return m_bIncludeActive; }
+		bool IncludesCompleted () const { return m_bIncludeCompleted; }
+		bool IncludesOpen () const { return m_bIncludeOpen; }
+		bool IncludesRecorded () const { return m_bIncludeRecorded; }
+		bool IncludesUnavailable () const { return m_bIncludeUnavailable; }
+		bool MatchesOnlyMissionArcs () const { return m_bOnlyMissionArcs; }
+		bool MatchesOnlySourceDebriefer () const { return m_bOnlySourceDebriefer; }
+		bool MatchesOnlySourceOwner () const { return m_bOnlySourceOwner; }
+		bool ReturnHighestPriority () const { return m_bPriorityOnly; }
+
+	private:
+		void Parse (const CString &sCriteria);
+		void ParseSubExpression (const char *pPos);
+		
+		bool m_bIncludeOpen = false;			//	Include open missions
+		bool m_bIncludeUnavailable = false;	//	Include unavailable missions
+		bool m_bIncludeActive = false;		//	Include active missions
+		bool m_bIncludeCompleted = false;		//	Include completed (but not necessarily debriefed missions)
+		bool m_bIncludeRecorded = false;		//	Include recorded missions
+
+		bool m_bOnlySourceOwner = false;		//	Source must be owner
+		bool m_bOnlySourceDebriefer = false;	//	Source must be debriefer
+		bool m_bPriorityOnly = false;			//	Return highest priority mission
+		bool m_bOnlyMissionArcs = false;		//	Only mission arc missions (latest only)
+
+		TArray<CString> m_AttribsRequired;	//	Required attributes
+		TArray<CString> m_AttribsNotAllowed;	//	Exclude objects with these attributes
+		TArray<CString> m_SpecialRequired;	//	Special required attributes
+		TArray<CString> m_SpecialNotAllowed;	//	Special excluding attributes
+
+		TUniquePtr<CMissionCriteria> m_pOr;
+
+		static const CMissionCriteria m_Null;
 	};
 
 class CTimedMissionEvent : public CSystemEvent

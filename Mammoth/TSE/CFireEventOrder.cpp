@@ -14,11 +14,12 @@ void CFireEventOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	{
 	DEBUG_TRY
 
-	//	Get the current order data
+	//	Get the current order data (we need to make copies because we're about
+	//	to delete the order).
 
-	CSpaceObject *pListener;
-	IShipController::SData Data;
-	pShip->GetCurrentOrder(&pListener, &Data);
+	auto &OrderDesc = pShip->GetCurrentOrderDesc();
+	CSpaceObject *pListener = OrderDesc.GetTarget();
+	CString sEvent = OrderDesc.GetDataString();
 
 	//	Done with the order.
 	//
@@ -28,8 +29,8 @@ void CFireEventOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 	//	Fire the event
 
-	if (pListener && !Data.sData.IsBlank())
-		pListener->FireCustomShipOrderEvent(Data.sData, pShip);
+	if (pListener && !sEvent.IsBlank())
+		pListener->FireCustomShipOrderEvent(sEvent, pShip);
 
 	DEBUG_CATCH
 	}

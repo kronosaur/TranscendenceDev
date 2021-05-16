@@ -1,0 +1,723 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Sovereign UNID="&svFallenPilgrim;"
+			name=":a fallen pilgrim"
+			adjective="fallen pilgrim"
+			demonym=":a fallen pilgrim"
+
+			alignment="destructive chaos"
+			/>
+
+<!-- SHIP CLASSES -->
+
+	<!-- Level 4: Sapphire Yacht -->
+
+	<ShipClass UNID="&scNPCPilgrimSapphireL4;"
+			manufacturer=		"Zubrin Systems"
+			class=				"Sapphire"
+			type=				"yacht"
+
+			level=				"4"
+			attributes=			"fallenPilgrim"
+			inherit=			"&scSapphireYacht;"
+			>
+		<Properties>
+			<Constant id="pilgrim.powers">
+				(filter (typ@ &evFallenPilgrim; 'pilgrim.allPowers) thePower
+					(leq (@ thePower 'level) 4)
+					)
+			</Constant>
+		</Properties>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itTevlarCompositeArmor;"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="20" item="&itSlamCannon;"/>
+				<Device chance="20" item="&itFlenserCannon;"/>
+				<Device chance="20" item="&itOmniTurbolaserCannon;"/>
+				<Device chance="20" item="&itMorningStarCannon;"/>
+				<Device chance="20" item="&itWasteCannon;"/>
+			</Table>
+
+			<Device item="&itMAGLauncher;">
+				<Items>
+					<Item chance="60" item="&it600HexageneMAG;" count="50-100"/>
+					<Item chance="30" item="&itPX3HexageneMAG;" count="50-100"/>
+					<Item chance="10" item="&it800HexageneMAG;" count="50-100"/>
+				</Items>
+			</Device>
+
+			<Table>
+				<Device chance="60" item="&itCeratopsQuasiArmor1;"/>
+				<Device chance="30" item="&itClass3Deflector;"/>
+				<Device chance="10" item="&itR1Deflector;"/>
+			</Table>
+
+			<Device item="&it50MWReactor;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"10"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+	</ShipClass>
+
+	<!-- Level 5: EI500 Freighter -->
+
+	<ShipClass UNID="&scNPCPilgrimEI500L5;"
+			manufacturer=		"Earth Industries"
+			class=				"EI500"
+			type=				"freighter"
+
+			level=				"5"
+			attributes=			"fallenPilgrim"
+			inherit=			"&scEI500Stock;"
+			>
+		<Properties>
+			<Constant id="pilgrim.powers">
+				(filter (typ@ &evFallenPilgrim; 'pilgrim.allPowers) thePower
+					(leq (@ thePower 'level) 5)
+					)
+			</Constant>
+		</Properties>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itHeavyPlasteelPlate;"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="20" item="&itBallistaTurret;"/>
+				<Device chance="20" item="&itDualParticleBeamWeapon;"/>
+				<Device chance="20" item="&itNeutronBlaster;"/>
+				<Device chance="20" item="&itLancerCannon;"/>
+				<Device chance="20" item="&itXRayLaserCannon;"/>
+			</Table>
+
+			<Device item="&itNAMIMissileLauncher;">
+				<Items>
+					<Item chance="60" item="&itKM550Missile;" count="50-100"/>
+					<Item chance="30" item="&itXM300Missile;" count="50-100"/>
+					<Item chance="10" item="&itKM170Missile;" count="50-100"/>
+				</Items>
+			</Device>
+
+			<Table>
+				<Device chance="60" item="&itYoroiS100;"/>
+				<Device chance="30" item="&itNephrenP25;"/>
+				<Device chance="10" item="&itClass5Deflector;"/>
+			</Table>
+
+			<Device item="&it100MWReactor;"/>
+			<Device item="&itMissileDefense;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"10"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 5: Wolfen-class Gunship -->
+
+	<ShipClass UNID="&scNPCPilgrimWolfenL5;"
+			manufacturer=		"Pacific Defense"
+			class=				"Wolfen/C"
+			type=				"gunship"
+
+			level=				"5"
+			attributes=			"fallenPilgrim"
+			inherit=			"&scWolfenC;"
+			>
+		<Properties>
+			<Constant id="pilgrim.powers">
+				(filter (typ@ &evFallenPilgrim; 'pilgrim.allPowers) thePower
+					(leq (@ thePower 'level) 5)
+					)
+			</Constant>
+		</Properties>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itLightBlastPlate;"
+			/>
+
+		<Devices>
+			<Table>
+				<Device chance="20" item="&itMarkIHowitzer;"/>
+				<Device chance="20" item="&itDualParticleBeamWeapon;"/>
+				<Device chance="20" item="&itNeutronBlaster;"/>
+				<Device chance="20" item="&itXRayLaserCannon;"/>
+				<Device chance="20" item="&itDualFlenserCannon;"/>
+			</Table>
+
+			<Device item="&itNAMIMissileLauncher;">
+				<Items>
+					<Item chance="60" item="&itKM550Missile;" count="50-100"/>
+					<Item chance="30" item="&itXM300Missile;" count="50-100"/>
+					<Item chance="10" item="&itKM170Missile;" count="50-100"/>
+				</Items>
+			</Device>
+
+			<Table>
+				<Device chance="60" item="&itYoroiS100;"/>
+				<Device chance="30" item="&itNephrenP25;"/>
+				<Device chance="10" item="&itClass5Deflector;"/>
+			</Table>
+
+			<Device item="&it100MWReactor;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"10"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 6: Sapphire Yacht -->
+
+	<ShipClass UNID="&scNPCPilgrimSapphireL6;"
+			manufacturer=		"Zubrin Systems"
+			class=				"Sapphire"
+			type=				"yacht"
+
+			level=				"6"
+			attributes=			"fallenPilgrim"
+			inherit=			"&scSapphireYacht;"
+			>
+		<Properties>
+			<Constant id="pilgrim.powers">
+				(filter (typ@ &evFallenPilgrim; 'pilgrim.allPowers) thePower
+					(leq (@ thePower 'level) 6)
+					)
+			</Constant>
+		</Properties>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itAdvancedPlasteelPlate;"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="25" item="&itMarkIIIHowitzer;"/>
+				<Device chance="25" item="&itTeV9Blaster;"/>
+				<Device chance="25" item="&itPlasmaTorch;"/>
+				<Device chance="25" item="&itSAR10Cannon;"/>
+			</Table>
+
+			<Device item="&itMakayevLauncher;">
+				<Items>
+					<Item chance="60" item="&itStrelkaWhite;" count="50-100"/>
+					<Item chance="30" item="&itStrelkaGreen;" count="50-100"/>
+					<Item chance="10" item="&itStrelkaRed;" count="50-100"/>
+				</Items>
+			</Device>
+
+			<Table>
+				<Device chance="60" item="&itR5Deflector;"/>
+				<Device chance="30" item="&itInvincibleDeflector;"/>
+				<Device chance="10" item="&itCydonianShields;"/>
+			</Table>
+
+			<Device item="&it150MWReactor;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"10"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+	</ShipClass>
+
+	<!-- Level 6: Wolfen-class Gunship -->
+
+	<ShipClass UNID="&scNPCPilgrimWolfenL6;"
+			manufacturer=		"Pacific Defense"
+			class=				"Wolfen/C"
+			type=				"gunship"
+
+			level=				"6"
+			attributes=			"fallenPilgrim"
+			inherit=			"&scWolfenC;"
+			>
+		<Properties>
+			<Constant id="pilgrim.powers">
+				(filter (typ@ &evFallenPilgrim; 'pilgrim.allPowers) thePower
+					(leq (@ thePower 'level) 6)
+					)
+			</Constant>
+		</Properties>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itV70PoweredArmor;"
+			/>
+
+		<Devices>
+			<Table>
+				<Device chance="40" item="&itSAR10Cannon;"/>
+				<Device chance="30" item="&itMarkIIIHowitzer;"/>
+				<Device chance="30" item="&itTeV9Blaster;"/>
+			</Table>
+
+			<Device item="&itMakayevLauncher;">
+				<Items>
+					<Item chance="60" item="&itStrelkaWhite;" count="50-100"/>
+					<Item chance="30" item="&itStrelkaGreen;" count="50-100"/>
+					<Item chance="10" item="&itStrelkaRed;" count="50-100"/>
+				</Items>
+			</Device>
+
+			<Table>
+				<Device chance="60" item="&itR5Deflector;"/>
+				<Device chance="30" item="&itInvincibleDeflector;"/>
+				<Device chance="10" item="&itCydonianShields;"/>
+			</Table>
+
+			<Device item="&it150MWReactor;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"10"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 7: EI500 Freighter -->
+
+	<ShipClass UNID="&scNPCPilgrimEI500L7;"
+			manufacturer=		"Earth Industries"
+			class=				"EI500"
+			type=				"freighter"
+
+			level=				"7"
+			attributes=			"fallenPilgrim"
+			inherit=			"&scEI500Stock;"
+			>
+		<Properties>
+			<Constant id="pilgrim.powers">
+				(filter (typ@ &evFallenPilgrim; 'pilgrim.allPowers) thePower
+					(leq (@ thePower 'level) 7)
+					)
+			</Constant>
+		</Properties>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itHeavyBlastPlate;"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="20" item="&itOmniTev9Blaster;"/>
+				<Device chance="20" item="&itXenophobeLancer;"/>
+				<Device chance="20" item="&itStarCannon;"/>
+				<Device chance="20" item="&itDualSAR10Cannon;"/>
+				<Device chance="20" item="&itTritiumCannon;"/>
+			</Table>
+
+			<Device item="&itNAMIMissileLauncher;">
+				<Items>
+					<Item chance="100" item="&itXM900Missile;" count="50-100"/>
+				</Items>
+			</Device>
+
+			<Table>
+				<Device chance="60" item="&itYoroiMX;"/>
+				<Device chance="30" item="&itNephrenB700;"/>
+				<Device chance="10" item="&itTrentonFieldGenerator;"/>
+			</Table>
+
+			<Device item="&it250MWReactor;"/>
+			<Device item="&itLongreachIAutocannon;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"10"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 7: Wolfen-class Gunship -->
+
+	<ShipClass UNID="&scNPCPilgrimWolfenL7;"
+			manufacturer=		"Pacific Defense"
+			class=				"Wolfen/C"
+			type=				"gunship"
+
+			level=				"7"
+			attributes=			"fallenPilgrim"
+			inherit=			"&scWolfenC;"
+			>
+		<Properties>
+			<Constant id="pilgrim.powers">
+				(filter (typ@ &evFallenPilgrim; 'pilgrim.allPowers) thePower
+					(leq (@ thePower 'level) 7)
+					)
+			</Constant>
+		</Properties>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itLightGusokuArmor;"
+			/>
+
+		<Devices>
+			<Table>
+				<Device chance="40" item="&itDualSAR10Cannon;"/>
+				<Device chance="30" item="&itDualMarkIIIHowitzer;"/>
+				<Device chance="30" item="&itLightningCannon;"/>
+				<Device chance="30" item="&itDualTeV9Blaster;"/>
+				<Device chance="30" item="&itHanzoBlaster;"/>
+			</Table>
+
+			<Device item="&itMAGLauncher;">
+				<Items>
+					<Item chance="60" item="&itZG24ClusterMAG;" count="50-100"/>
+					<Item chance="30" item="&it3KSiegeMAG;" count="50-100"/>
+					<Item chance="10" item="&itJB2ShieldBusterMAG;" count="50-100"/>
+				</Items>
+			</Device>
+
+			<Table>
+				<Device chance="60" item="&itYoroiMX;"/>
+				<Device chance="30" item="&itNephrenB700;"/>
+				<Device chance="10" item="&itMammoth50Deflector;"/>
+			</Table>
+
+			<Device item="&it250MWReactor;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"10"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 8: Sapphire Yacht -->
+
+	<ShipClass UNID="&scNPCPilgrimSapphireL8;"
+			manufacturer=		"Zubrin Systems"
+			class=				"Sapphire"
+			type=				"yacht"
+
+			level=				"8"
+			attributes=			"fallenPilgrim"
+			inherit=			"&scSapphireYacht;"
+			>
+		<Properties>
+			<Constant id="pilgrim.powers">
+				(filter (typ@ &evFallenPilgrim; 'pilgrim.allPowers) thePower
+					(leq (@ thePower 'level) 8)
+					)
+			</Constant>
+		</Properties>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itOrthoSteel;"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="25" item="&itFusionfireHowitzer;"/>
+				<Device chance="25" item="&itIonBlaster;"/>
+				<Device chance="25" item="&itLightningTurret;"/>
+				<Device chance="25" item="&itLuminousIonBlaster;"/>
+			</Table>
+
+			<Device item="&itRasiermesserLauncher;">
+				<Items>
+					<Item chance="100" item="&itGotha10Missile;" count="50-100"/>
+				</Items>
+			</Device>
+
+			<Table>
+				<Device chance="60" item="&itPlasmaShieldGenerator;"/>
+				<Device chance="30" item="&itMammoth100Deflector;"/>
+				<Device chance="10" item="&itIonReflector;"/>
+			</Table>
+
+			<Device item="&it500MWReactor;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"10"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+	</ShipClass>
+
+<!-- BEHAVIOR -->
+
+	<Type unid="&evFallenPilgrim;">
+		<Properties>
+			<Definition id="pilgrim.allPowers">
+				(list
+					{	power: &pwSustain;
+						level: 1
+						coolDown: 1800
+
+						invokeOnCriticalDamage: True
+						gateOnInvoke: True
+						}
+
+					{	power: &pwHeal;
+						level: 3
+						coolDown: 3600
+
+						invokeOnCriticalDamage: True
+						}
+
+					{	power: &pwStrengthen;
+						level: 3
+						coolDown: 3600
+
+						invokeOnAttackPlayer: True
+						minTargetDist: 50
+						useWhileWaitingForShields: Nil
+						}
+
+					{	power: &pwDefend;
+						level: 5
+						coolDown: 9000
+
+						invokeOnAttackPlayer: True
+						minTargetDist: 50
+						useWhileWaitingForShields: Nil
+						}
+
+					{	power: &pwCircleOfWrath;
+						level: 7
+						coolDown: 18000
+
+						invokeOnAttackPlayer: True
+						minTargetDist: 10
+						useWhileWaitingForShields: True
+						}
+					)
+			</Definition>
+
+			<Definition id="pilgrim.invokeCheckInterval">300</Definition>
+
+			<Data id="pilgrim.nextInvokeCheck"></Data>
+			<Data id="pilgrim.coolDown">
+				;	NOTE: We need an entry here so that when we do set@ below it 
+				;	is treated as a struct instead of an array.
+				{ type:'cooldown }
+			</Data>
+			<Data id="pilgrim.attackWithPowers"></Data>
+		</Properties>
+
+		<Events>
+			<OnUpdate>
+				(if (geq (unvGetTick) (obj@ gSource 'pilgrim.nextInvokeCheck))
+					(block (
+						(orderDesc (shpGetOrderDesc gSource))
+						(isAttackingPlayer (and (= (@ orderDesc 0) 'attack) (= (@ orderDesc 1) gPlayerShip)))
+						(damageLevel (obj@ gSource 'visibleDamage))
+
+						(nextCheckInterval 
+							(switch
+								(gr damageLevel 0)
+									0
+
+								isAttackingPlayer
+									0
+
+								(obj@ gSource 'pilgrim.invokeCheckInterval)
+								)
+							)
+
+						(powerToInvoke Nil)
+						(targetObj Nil)
+						)
+						(switch
+							;	Are we damaged?
+
+							(geq damageLevel 75)
+								(block (
+									(allPowers (obj@ gSource 'pilgrim.powers))
+									(bestPower
+										(map allPowers '(excludeNil reduceMax original) thePower
+											(if (and (@ thePower 'invokeOnCriticalDamage)
+													(geq (unvGetTick) 
+														(@ (obj@ gSource 'pilgrim.coolDown) (@ thePower 'power))
+														)
+													)
+												(@ thePower 'level)
+												)
+											)
+										)
+									)
+									(setq powerToInvoke bestPower)
+
+									;	If we took this much damage, then we also attack with Domina
+									;	powers.
+
+									(objSet@ gSource 'pilgrim.attackWithPowers True)
+									(setq nextCheckInterval 0)
+									)
+
+							;	If we're attacking the player, then see if we need to use
+							;	powers.
+
+							(and isAttackingPlayer
+									(obj@ gSource 'pilgrim.attackWithPowers)
+									)
+								(block (
+									(playerDist (objGetDistance gSource gPlayerShip))
+									(allPowers (obj@ gSource 'pilgrim.powers))
+									(bestPower
+										(map allPowers '(excludeNil reduceMax original) thePower
+											(if (and (@ thePower 'invokeOnAttackPlayer)
+													(geq (unvGetTick) 
+														(@ (obj@ gSource 'pilgrim.coolDown) (@ thePower 'power))
+														)
+													(leq playerDist (@ thePower 'minTargetDist))
+													(or (not (obj@ gSource 'ai.waitingForShields))
+														(@ thePower 'useWhileWaitingForShields)
+														)
+													)
+												(@ thePower 'level)
+												)
+											)
+										)
+									)
+									(setq powerToInvoke bestPower)
+									)
+
+							;	If we're damaged then we can use attack powers.
+
+							(geq damageLevel 50)
+								(block ()
+									(objSet@ gSource 'pilgrim.attackWithPowers True)
+									)
+							)
+
+						;	Invoke?
+
+						(if powerToInvoke
+							(block (
+								(coolDown (obj@ gSource 'pilgrim.coolDown))
+								)
+								;	Invoke power
+
+								(objFirePowerInvoke gSource (@ powerToInvoke 'power) targetObj)
+
+								;	Message, if we're dealing with the player
+
+								(if (= (@ orderDesc 1) gPlayerShip)
+									(objSendMessage gPlayerShip gSource (objTranslate gSource 'pilgrim.msgInvokePower))
+									)
+
+								;	Set cool down
+
+								(set@ coolDown (@ powerToInvoke 'power) (+ (unvGetTick) (@ powerToInvoke 'coolDown)))
+								(objSet@ gSource 'pilgrim.coolDown coolDown)
+
+								;	Handle special cases
+
+								(switch
+									(@ powerToInvoke 'gateOnInvoke)
+										(block ()
+											(shpCancelOrders gSource)
+											(shpOrder gSource 'gate)
+											)
+									)
+								)
+							)
+
+						;	Set next check
+
+						(objSet@ gSource 'pilgrim.nextInvokeCheck (+ (unvGetTick) nextCheckInterval))
+						)
+					)
+			</OnUpdate>
+
+			<OnAttackedByPlayer>
+				(block (
+					(orderDesc (shpGetOrderDesc gSource))
+					)
+					(switch
+						;	If we're already attacking the player, then nothing to do.
+
+						(and (= (@ orderDesc 0) 'attack)
+								(= (@ orderDesc 1) gPlayerShip)
+								)
+							Nil
+
+						;	Attack the player.
+
+						(block ()
+							(objSendMessage gPlayerShip gSource (objTranslate gSource 'pilgrim.msgAttackPlayer))
+							(shpCancelOrders gSource)
+							(shpOrder gSource 'attack gPlayerShip)
+
+							;	Make the next invoke check sooner
+
+							(objSet@ gSource 'pilgrim.nextInvokeCheck 0)
+							)
+						)
+					)
+			</OnAttackedByPlayer>
+		</Events>
+
+		<Language>
+			<Text id="pilgrim.msgAttackPlayer">You cannot stop me!</Text>
+			<Text id="pilgrim.msgInvokePower">Domina, I call on your powers!</Text>
+		</Language>
+	</Type>
+
+</TranscendenceModule>

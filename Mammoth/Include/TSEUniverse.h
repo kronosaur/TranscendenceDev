@@ -61,6 +61,7 @@ class CDebugOptions
 		bool IsShowLineOfFireEnabled (void) const { return m_bShowLineOfFire; }
 		bool IsShowNavPathsEnabled (void) const { return m_bShowNavPaths; }
 		bool IsShowNodeAttributesEnabled (void) const { return m_bShowNodeAttributes; }
+		bool IsShowOrderInfoEnabled () const { return m_bShowOrderInfo; }
 		bool IsVerboseCreate (void) const { return m_bVerboseCreate; }
 		bool SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
 		void SetVerboseCreate (bool bValue = true) { m_bVerboseCreate = bValue; }
@@ -75,6 +76,7 @@ class CDebugOptions
 		bool m_bShowFacingsAngle = false;
 		bool m_bShowNodeAttributes = false;
 		bool m_bVerboseCreate = false;
+		bool m_bShowOrderInfo = false;
 	};
 
 class CPerformanceCounters
@@ -137,6 +139,7 @@ class CSFXOptions
 		void SetManeuveringEffectEnabled (bool bEnabled = true) { m_bManeuveringEffect = bEnabled; }
 		void SetSFXQuality (ESFXQuality iQuality);
 		void SetSFXQualityAuto (void);
+		void SetSpaceBackground (bool bEnabled = true) { m_bSpaceBackground = bEnabled; }
 
 	private:
 		ESFXQuality m_iQuality;
@@ -189,10 +192,10 @@ class CNamedEffects
 
 		CNamedEffects (void) { }
 		CNamedEffects (const CNamedEffects &Src) = delete;
-		CNamedEffects (CNamedEffects &&Src);
+		CNamedEffects (CNamedEffects &&Src) noexcept;
 		~CNamedEffects (void) { CleanUp(); }
 		CNamedEffects &operator= (const CNamedEffects &Src) = delete;
-		CNamedEffects &operator= (CNamedEffects &&Src);
+		CNamedEffects &operator= (CNamedEffects &&Src) noexcept;
 
 		void CleanUp (void);
 		CEffectCreator &GetFireEffect (CDesignCollection &Design, DamageTypes iDamage) const;
@@ -362,7 +365,7 @@ class CUniverse
 		CSpaceObject *FindObject (DWORD dwID);
 		void FireOnGlobalIntroCommand (const CString &sCommand) { m_Design.FireOnGlobalIntroCommand(sCommand); }
 		void FireOnGlobalIntroStarted (void) { m_Design.FireOnGlobalIntroStarted(); }
-		void FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData) { m_Design.FireOnGlobalPaneInit(pScreen, pRoot, sScreen, sPane, pData); }
+		void FireOnGlobalPaneInit (CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData) { m_Design.FireOnGlobalPaneInit(pRoot, sScreen, sPane, pData); }
 		void FireOnGlobalPlayerBoughtItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price) { m_Design.FireOnGlobalPlayerBoughtItem(pSellerObj, Item, Price); }
 		void FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip) { m_Design.FireOnGlobalPlayerChangedShips(pOldShip); }
 		void FireOnGlobalPlayerEnteredSystem (void) { m_Design.FireOnGlobalPlayerEnteredSystem(); }
@@ -458,6 +461,7 @@ class CUniverse
 		void SetSound (bool bSound = true) { m_bNoSound = !bSound; }
 		void SetSoundMgr (CSoundMgr *pSoundMgr) { m_pSoundMgr = pSoundMgr; }
 		void StartGameTime (void);
+		void StopSound (int iChannel);
 		CTimeSpan StopGameTime (void);
 		CString TranslateEngineText (const CString &sID, ICCItem *pData = NULL) const { return m_Language.Translate(sID, pData); }
 		void UnregisterForNotifications (INotifications *pSubscriber) { m_Subscribers.DeleteValue(pSubscriber); }
@@ -508,7 +512,8 @@ class CUniverse
 		DWORD GetFrameTicks (void) const { return m_dwFrame; }
 		int GetPaintTick (void) { return m_iPaintTick; }
 		CSpaceObject *GetPOV (void) const { return m_pPOV; }
-		IPlayerController *GetPlayer (void) const { return m_pPlayer; }
+		IPlayerController &GetPlayer (void) { return (m_pPlayer ? *m_pPlayer : m_DefaultPlayer); }
+		const IPlayerController &GetPlayer (void) const { return (m_pPlayer ? *m_pPlayer : m_DefaultPlayer); }
 		GenomeTypes GetPlayerGenome (void) const;
 		CString GetPlayerName (void) const;
 		CSpaceObject *GetPlayerShip (void) const { return m_pPlayerShip; }
@@ -659,5 +664,7 @@ class CUniverse
 		bool m_bDebugMode = false;
 		bool m_bNoSound = false;
 		int m_iLogImageLoad = 0;				//	If >0 we disable image load logging
+
+		static IPlayerController m_DefaultPlayer;
 	};
 

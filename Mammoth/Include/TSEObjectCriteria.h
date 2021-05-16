@@ -32,6 +32,7 @@ class CSpaceObjectCriteria
 			//	Computed from source
 			DWORD dwSourceSovereignUNID;
 			int iSourcePerception;
+			int iSourceStealth = 0;
 
 			//	Nearest/farthest object
 			bool bNearestOnly;
@@ -67,6 +68,7 @@ class CSpaceObjectCriteria
 		bool MatchesActiveOnly (void) const { return m_bActiveObjectsOnly; }
 		bool MatchesAngryOnly (void) const { return m_bAngryObjectsOnly; }
 		bool MatchesAttributes (const CSpaceObject &Obj) const;
+		bool MatchesCanPerceiveSourceOnly () const { return m_bCanPerceiveSourceOnly; }
 		bool MatchesCategory (DWORD dwCat) const { return (m_dwCategories & dwCat) != 0; }
 		const CString &MatchesData (void) const { return m_sData; }
 		bool MatchesDockedWithSource (void) const { return m_bDockedWithSource; }
@@ -94,14 +96,17 @@ class CSpaceObjectCriteria
 		bool MatchesStargate (const CString &sID) const { return (m_sStargateID.IsBlank() || strEquals(m_sStargateID, sID)); }
 		bool MatchesStargatesOnly (void) const { return m_bStargatesOnly; }
 		bool MatchesStructureScaleOnly (void) const { return m_bStructureScaleOnly; }
+		bool MatchesTargetableMissilesOnly (void) const { return m_bTargetableMissilesOnly; }
 		bool MatchesTargetIsSource (void) const { return m_bTargetIsSource; }
 		bool NeedsDistCalc (void) const { return (MatchesNearerThan() || MatchesFartherThan() || MatchesPerceivableOnly() || m_iSort == sortByDistance || (m_pOr && m_pOr->NeedsDistCalc()));  }
 		bool NeedsPolarCalc (void) const { return (MatchesIntersectAngle() != -1 || (m_pOr && m_pOr->NeedsPolarCalc())); }
 		bool NeedsSourcePerception (void) const { return (m_bPerceivableOnly || (m_pOr && m_pOr->NeedsSourcePerception())); }
 		bool NeedsSourceSovereign (void) const { return (m_bSourceSovereignOnly || (m_pOr && m_pOr->NeedsSourceSovereign())); }
+		bool NeedsSourceStealth () const { return (m_bCanPerceiveSourceOnly || (m_pOr && m_pOr->NeedsSourceStealth())); }
 		void SetIncludeIntangible (bool bValue = true) { m_bIncludeIntangible = bValue; }
 		void SetLineIntersect (const CVector &vPos1, const CVector &vPos2) { m_iPosCheck = checkLineIntersect; m_vPos1 = vPos1; m_vPos2 = vPos2; }
 		void SetPosIntersect (const CVector &vPos) { m_iPosCheck = checkPosIntersect; m_vPos1 = vPos; }
+		void SetSource (CSpaceObject *pSource);
 
 	private:
 		void Parse (CSpaceObject *pSource, const CString &sCriteria);
@@ -125,10 +130,12 @@ class CSpaceObjectCriteria
 		bool m_bHomeBaseIsSource = false;			//	Only objects whose home base is the source
 		bool m_bDockedWithSource = false;			//	Only objects currently docked with source
 		bool m_bExcludePlayer = false;				//	Exclude the player
+		bool m_bTargetableMissilesOnly = false;		//	Only include those missiles that have targetable='true'
 		bool m_bTargetIsSource = false;				//	Only objects whose target is the source
 		bool m_bIncludeIntangible = false;			//	Include intangible objects
 
 		bool m_bPerceivableOnly = false;			//	Only objects that can be perceived by the source
+		bool m_bCanPerceiveSourceOnly = false;		//	Only objects that can perceive the source
 
 		bool m_bSourceSovereignOnly = false;		//	Only objects the same sovereign as source
 		DWORD m_dwSovereignUNID = 0;				//	Only objects with this sovereign UNID

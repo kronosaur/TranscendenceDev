@@ -2759,7 +2759,9 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Done
 
-	if (bReduceMax || bReduceMin)
+	if (pResult->IsError())
+		return pResult;
+	else if (bReduceMax || bReduceMin)
 		{
 		pResult->Discard();
 		if (iBestItem == -1)
@@ -3440,7 +3442,7 @@ ICCItem *fnMathOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			break;
 
 		default:
-			ASSERT(false);
+			throw CException(ERR_FAIL);
 		}
 
 	//	Done

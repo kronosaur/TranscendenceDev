@@ -10,7 +10,7 @@ const Metric PATROL_SENSOR_RANGE2 =		(PATROL_SENSOR_RANGE * PATROL_SENSOR_RANGE)
 const Metric NAV_PATH_THRESHOLD =		(4.0 * PATROL_SENSOR_RANGE);
 const Metric NAV_PATH_THRESHOLD2 =		(NAV_PATH_THRESHOLD * NAV_PATH_THRESHOLD);
 
-void CAttackStationOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
+void CAttackStationOrder::OnAttacked (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &AttackerObj, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	OnAttacked
 //
@@ -19,15 +19,10 @@ void CAttackStationOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 	{
 	DEBUG_TRY
 
-	//	Nothing to do if no attacker
-
-	if (pAttacker == NULL)
-		;
-
 	//	If we're currently attacking the station, see if we should switch our
 	//	attention to this defender.
 
-	else if (m_iState == stateAttackingTarget
+	if (m_iState == stateAttackingTarget
 			
 			&& !bFriendlyFire
 
@@ -37,17 +32,17 @@ void CAttackStationOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 
 			//	If the attacker is too low level, then we concentrate on the
 			//	station (we assume that we can ignore their attacks).
-			&& pAttacker->GetLevel() >= pShip->GetLevel() - 3
+			&& AttackerObj.GetLevel() >= Ship.GetLevel() - 3
 
 			//	If the station is about to be destroyed, then we keep up
 			//	the attack.
 			&& m_Objs[objTarget]->GetVisibleDamage() < 75
 			
 			//	Make sure this is a valid target otherwise
-			&& Ctx.CalcIsBetterTarget(pShip, NULL, pAttacker))
+			&& Ctx.CalcIsBetterTarget(&Ship, NULL, &AttackerObj))
 		{
 		m_iState = stateAttackingDefender;
-		m_Objs[objDefender] = pAttacker;
+		m_Objs[objDefender] = &AttackerObj;
 		}
 
 	//	If we're attacking a defender and some other defender attack us,
@@ -55,11 +50,11 @@ void CAttackStationOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 
 	else if (m_iState == stateAttackingDefender
 			&& !bFriendlyFire
-			&& pAttacker != m_Objs[objTarget]
-			&& pAttacker != m_Objs[objDefender]
-			&& Ctx.CalcIsBetterTarget(pShip, m_Objs[objDefender], pAttacker))
+			&& AttackerObj != m_Objs[objTarget]
+			&& AttackerObj != m_Objs[objDefender]
+			&& Ctx.CalcIsBetterTarget(&Ship, m_Objs[objDefender], &AttackerObj))
 		{
-		m_Objs[objDefender] = pAttacker;
+		m_Objs[objDefender] = &AttackerObj;
 		}
 
 	DEBUG_CATCH
@@ -138,7 +133,7 @@ void CAttackStationOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CAttackStationOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
+void CAttackStationOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnBehaviorStart
 //
@@ -149,15 +144,16 @@ void CAttackStationOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CS
 
 	//	Make sure we're undocked because we're going flying
 
-	Ctx.Undock(pShip);
+	Ctx.Undock(&Ship);
 
 	//	If our target is already destroyed, then we're done
 
+	CSpaceObject *pOrderTarget = OrderDesc.GetTarget();
 	if (pOrderTarget == NULL 
 			|| pOrderTarget->IsDestroyed() 
 			|| pOrderTarget->IsAbandoned())
 		{
-		pShip->CancelCurrentOrder();
+		Ship.CancelCurrentOrder();
 		return;
 		}
 
@@ -171,15 +167,15 @@ void CAttackStationOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CS
 	//	Set our state. If we are too far away from the target then we need to use
 	//	a nav path.
 
-	if (pShip->GetDistance2(pOrderTarget) > NAV_PATH_THRESHOLD2
-			&& Ctx.CalcNavPath(pShip, pOrderTarget))
+	if (Ship.GetDistance2(pOrderTarget) > NAV_PATH_THRESHOLD2
+			&& Ctx.CalcNavPath(&Ship, pOrderTarget))
 		m_iState = stateFollowingNavPath;
 	else
 		m_iState = stateAttackingTarget;
 
 	//	See if we have a time limit
 
-	DWORD dwTimer = Data.AsInteger();
+	DWORD dwTimer = OrderDesc.GetDataInteger();
 	m_iCountdown = (dwTimer ? 1 + (g_TicksPerSecond * dwTimer) : -1);
 
 	DEBUG_CATCH
@@ -217,7 +213,7 @@ void CAttackStationOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, 
 		}
 	}
 
-void CAttackStationOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CAttackStationOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //
@@ -246,7 +242,7 @@ void CAttackStationOrder::OnReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read((char *)&m_iCountdown, sizeof(DWORD));
 	}
 
-void CAttackStationOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CAttackStationOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //

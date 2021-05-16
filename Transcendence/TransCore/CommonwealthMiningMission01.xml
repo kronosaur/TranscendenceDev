@@ -20,8 +20,8 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msSaveMiningShip;"
-			name=				"Rescue Mining Ship"
-			attributes=			"commonwealthMining"
+			name=				"Commonwealth Mining 01: Rescue Mining Ship"
+			attributes=			"commonwealthMining, eridaniScript"
 
 			level=				"1-4"
 
@@ -44,6 +44,8 @@
 				(@ (typ@ &unidIndependentMiner; 'missionRewardTable) (min (sysGetLevel) 10))
 			</Variant>
 		</Properties>
+
+		<Image imageID="&rsMiningColonyRocky;"	imageWidth="260" imageHeight="260"/>
 
 		<Events>
 			<OnCreate>

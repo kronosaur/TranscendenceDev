@@ -382,13 +382,7 @@
 		</ImageVariants>
 		
 		<Items>
-			<Table>
-				<Null	chance="20"/>
-				<Lookup chance="30" count="1d3" table="&trConsumables1;"/>
-				<Lookup chance="15" count="1"	table="&trConsumables2;"/>
-				<Lookup chance="25" count="1"	table="&trMinorItem2;"/>
-				<Lookup chance="10" count="1"	table="&trMajorItem2;"/>
-			</Table>
+			<Lookup count="1" table="&trStdTreasure;"/>
 		</Items>
 
 		<Events>
@@ -441,16 +435,7 @@
 		</ImageVariants>
 		
 		<Items>
-			<Table count="2">
-				<Null	chance="10"/>
-				<Lookup chance="15" count="1d3" table="&trConsumables1;"/>
-				<Lookup chance="20" count="1"	table="&trConsumables2;"/>
-				<Lookup chance="15" count="1"	table="&trConsumables3;"/>
-				<Lookup chance="15" count="1"	table="&trMinorItem2;"/>
-				<Lookup chance="10" count="1"	table="&trMinorItem3;"/>
-				<Lookup chance="10" count="1"	table="&trMajorItem2;"/>
-				<Lookup chance="5"  count="1"	table="&trMajorItem3;"/>
-			</Table>
+			<Lookup count="1" table="&trStdTreasure;"/>
 		</Items>
 
 		<Events>
@@ -502,19 +487,7 @@
 		</ImageVariants>
 		
 		<Items>
-			<Table count="1d4">
-				<Null	chance="5"/>
-				<Lookup chance="5"  count="1d3" table="&trConsumables2;"/>
-				<Lookup chance="15" count="1"	table="&trConsumables3;"/>
-				<Lookup chance="16" count="1"	table="&trConsumables4;"/>
-				<Lookup chance="10" count="1"	table="&trConsumables5;"/>
-				<Lookup chance="10" count="1"	table="&trMinorItem2;"/>
-				<Lookup chance="15" count="1"	table="&trMinorItem3;"/>
-				<Lookup chance="8"  count="1"	table="&trMinorItem4;"/>
-				<Lookup chance="8"  count="1"	table="&trMajorItem2;"/>
-				<Lookup chance="5"  count="1"	table="&trMajorItem3;"/>
-				<Lookup chance="3"  count="1"	table="&trMajorItem4;"/>
-			</Table>
+			<Lookup count="1" table="&trStdTreasure;"/>
 		</Items>
 
 		<Events>
@@ -732,7 +705,7 @@
 			noMapIcon=			"true"
 			destroyWhenEmpty=	"true"
 
-			attributes=			"enemy, envEarth, envAvoidsAir, noSalvage"
+			attributes=			"crate, enemy, envEarth, envAvoidsAir, noSalvage"
 			>
 
 		<Properties>
@@ -810,7 +783,7 @@
 			sovereign=			"&svOutlaw;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
-			attributes=			"noSalvage"
+			attributes=			"crate, noSalvage"
 
 			structuralHitPoints="15"
 			ejectaType=			"&vtWreckEjecta;"

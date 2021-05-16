@@ -241,7 +241,7 @@ void CFleetCommandAI::BehaviorStart (void)
 		{
 		case IShipController::orderNone:
 			if (m_pShip->GetDockedObj() == NULL)
-				AddOrder(IShipController::orderGate, NULL, IShipController::SData());
+				AddOrder(COrderDesc(IShipController::orderGate));
 			break;
 
 		case IShipController::orderDestroyTarget:
@@ -288,7 +288,7 @@ void CFleetCommandAI::BehaviorStart (void)
 
 		case IShipController::orderWait:
 			{
-			DWORD dwWaitTime = GetCurrentOrderData();
+			DWORD dwWaitTime = GetCurrentOrderDataInteger();
 
 			SetState(stateWaiting);
 			if (dwWaitTime == 0)
@@ -387,7 +387,7 @@ CVector CFleetCommandAI::ComputeRallyPointEx (int iBearing, CSpaceObject *pTarge
 	//	rally inside of our weapon range.
 
 	Metric rDistance;
-	if (m_AICtx.GetCombatStyle() == aicombatStandOff)
+	if (m_AICtx.GetCombatStyle() == AICombatStyle::StandOff)
 		{
 		m_AICtx.CalcBestWeapon(m_pShip, NULL, 0.0);
 		CInstalledDevice *pBestWeapon = m_AICtx.GetBestWeapon();
@@ -578,10 +578,10 @@ void CFleetCommandAI::ImplementChargeInFormation (void)
 
 		//	Order fleet to break and attack targets
 
-		SetState(stateAttackAtWill);
-		m_pObjective = GetCurrentOrderTarget();
-		UpdateTargetList();
-		UpdateAttackTargets();
+		OrderBreakAndAttack();
+
+		//	Any ships with no target should attack the objective 
+
 		OrderAttackTarget(m_pObjective);
 		}
 
@@ -637,7 +637,7 @@ void CFleetCommandAI::ImplementFormAtRallyPoint (void)
 		//	We are at the rally point, do the appropriate action based on 
 		//	the kind of ship that we are.
 
-		if (m_AICtx.GetCombatStyle() == aicombatStandOff)
+		if (m_AICtx.GetCombatStyle() == AICombatStyle::StandOff)
 			{
 			SetState(stateAttackFromRallyPoint);
 			m_pObjective = GetCurrentOrderTarget();
@@ -772,7 +772,7 @@ void CFleetCommandAI::OnNewSystemNotify (void)
 		{
 		if (m_pAssets[i].pAsset->GetSystem() != pNewSystem)
 			{
-			IShipController::OrderTypes iOrder = m_pAssets[i].pAsset->AsShip()->GetController()->GetCurrentOrderEx();
+			IShipController::OrderTypes iOrder = m_pAssets[i].pAsset->AsShip()->GetController()->GetCurrentOrderDesc().GetOrder();
 			m_pAssets[i].pAsset = NULL;
 			iNewCount--;
 			}
@@ -831,6 +831,17 @@ void CFleetCommandAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 		if ((pTarget = FindTarget(Ctx.Obj.GetTarget())) != NULL)
 			pTarget->iAssignedTo -= Ctx.Obj.GetCombatPower();
+
+		//	There's a chance that we will break and attack in response to this.
+
+		if (m_State == stateChargeInFormation
+				|| m_State == stateFormAtRallyPoint
+				|| m_State == stateWaitingForThreat
+				|| m_State == stateAttackFromRallyPoint)
+			{
+			if (mathRandom(1, 100) <= 50)
+				OrderBreakAndAttack();
+			}
 		}
 
 	//	Otherwise, check to see if a target was destroyed
@@ -1060,6 +1071,19 @@ void CFleetCommandAI::OrderAttackTarget (CSpaceObject *pTarget)
 			m_pShip->Communicate(m_pAssets[i].pAsset, msgAttack, pTarget);
 			m_pAssets[i].pTarget = pTarget;
 			}
+	}
+
+void CFleetCommandAI::OrderBreakAndAttack ()
+
+//	OrderBreakAndAttack
+//
+//	Attack at will.
+
+	{
+	SetState(stateAttackAtWill);
+	m_pObjective = GetCurrentOrderTarget();
+	UpdateTargetList();
+	UpdateAttackTargets();
 	}
 
 void CFleetCommandAI::RemoveAsset (int iIndex)

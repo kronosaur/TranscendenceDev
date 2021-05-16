@@ -31,7 +31,7 @@
 
 				damage=				"blast:4d6; momentum4; WMD5"
 				fireRate=			"30"
-				hitPoints=			"7"
+				hitPoints=			"20"
 				lifetime=			"90"
 				powerUse=			"1"
 				charges=			"true"
@@ -208,7 +208,7 @@
 
 				damage=				"blast:5d6; momentum4; WMD5"
 				fireRate=			"30"
-				hitPoints=			"12"
+				hitPoints=			"20"
 				lifetime=			"120"
 				powerUse=			"2"
 				charges=			"true"
@@ -531,6 +531,7 @@
 				<Missile ammoID="&itKM500Missile;"/>
 				<Missile ammoID="&itKM550Missile;"/>
 				<Missile ammoID="&itXM300Missile;"/>
+				<Missile ammoID="&itKM170Missile;"/>
 				<Missile ammoID="&itXM900Missile;"/>
 			</Missiles>
 		</Weapon>
@@ -739,7 +740,6 @@
 				damage=				"kinetic:14d8; momentum:5; WMD:5"
 				fireRate=			"46"
 				missileSpeed=		"45"
-				hitPoints=			"5"
 				lifetime=			"67"
 				powerUse=			"160"
 
@@ -992,7 +992,6 @@
 				damage=				"blast:2d6+2; momentum:2; WMD:5"
 				fireRate=			"20"
 				missileSpeed=		"50"
-				hitPoints=			"10"
 				lifetime=			"60"
 				powerUse=			"100"
 
@@ -1098,7 +1097,6 @@
 						damage=			"blast:3d12; momentum:2; WMD:5"
 						missileSpeed=	"50"
 						lifetime=		"120"
-						hitPoints=		"4"
 
 						effect=			"&efAkanCannonShell;"
 						sound=			"&snRecoillessCannon;"
@@ -1262,7 +1260,6 @@
 				fireRate=			"40"
 				missileSpeed=		"50"
 				lifetime=			"120"
-				hitPoints=			"6"
 				powerUse=			"240"
 				recoil=				"2"
 
@@ -1431,7 +1428,6 @@
 				fireRate=			"20"
 				missileSpeed=		"50"
 				lifetime=			"60"
-				hitPoints=			"25"
 				powerUse=			"240"
 
 				effect=				"&efSlamCannonShell;"
@@ -1505,7 +1501,7 @@
 						damage=			"blast:3d12; momentum:2; WMD:5"
 						missileSpeed=	"50"
 						lifetime=		"120"
-						hitPoints=		"4"
+						hitPoints=		"10"
 
 						effect=			"&efAkanCannonShell;"
 						sound=			"&snRecoillessCannon;"
@@ -1545,7 +1541,6 @@
 						lifetime=		"120"
 						damage=			"blast:5d6; momentum:2; WMD:6"
 						missileSpeed=	"50"
-						hitPoints=		"3"
 						maneuverRate=	"18"
 						 
 						effect=			"&efBlastShellDefault;"
@@ -1622,7 +1617,6 @@
 				fireRate=			"40"
 				missileSpeed=		"50"
 				lifetime=			"120"
-				hitPoints=			"6"
 				powerUse=			"360"
 				recoil=				"2"
 
@@ -1655,7 +1649,6 @@
 				damage=				"thermo:2d8; momentum:1; WMD:1"
 				fireRate=			"10"
 				missileSpeed=		"70"
-				hitPoints=			"5"
 				lifetime=			"60"
 				powerUse=			"300"
 
@@ -1821,7 +1814,6 @@
 				fireRate=			"40"
 				missileSpeed=		"50"
 				lifetime=			"120"
-				hitPoints=			"10"
 				powerUse=			"600"
 				recoil=				"2"
 
@@ -1935,7 +1927,7 @@
 			level=				"7"
 			frequency=			"common"
 
-			value=				"50000"
+			value=				"45000"
 			mass=				"5000"
 			  
 			description=		"After the Ares onslaught of 2372, the Fleet upgraded its Centurion gunships to this thermonuclear cannon."
@@ -1948,9 +1940,8 @@
 				configuration=		"dual"
 
 				damage=				"thermo:2d8; momentum:1; WMD:1"
-				fireRate=			"12"
+				fireRate=			"14"
 				missileSpeed=		"70"
-				hitPoints=			"5"
 				lifetime=			"60"
 				powerUse=			"600"
 
@@ -1969,7 +1960,7 @@
 			level=				"7"
 			frequency=			"uncommon"
 
-			value=				"55000"
+			value=				"48000"
 			mass=				"5000"
 			  
 			description=		"This is a heavier version of the SAR/10 thermonuclear cannon."
@@ -1981,9 +1972,8 @@
 				type=				"missile"
 
 				damage=				"thermo:3d10; momentum:1; WMD:4"
-				fireRate=			"12"
+				fireRate=			"14"
 				missileSpeed=		"70"
-				hitPoints=			"10"
 				lifetime=			"60"
 				powerUse=			"600"
 
@@ -2021,7 +2011,7 @@
 
 						damage=			"thermo:6d12; momentum2; WMD5"
 						missileSpeed=	"60"
-						hitPoints=		"20"
+						hitPoints=		"30"
 						lifetime=		"100"
 
 						effect=			"&efThermoCannonShell;"
@@ -2057,7 +2047,6 @@
 				damage=				"thermo:5d12; momentum:2; WMD:3"
 				fireRate=			"20"
 				missileSpeed=		"40"
-				hitPoints=			"5"
 				lifetime=			"60"
 				powerUse=			"500"
 
@@ -2094,7 +2083,6 @@
 				fireRate=			"40"
 				missileSpeed=		"50"
 				lifetime=			"120"
-				hitPoints=			"10"
 				powerUse=			"1200"
 				recoil=				"2"
 
@@ -2238,7 +2226,7 @@
 
 						damage=			"thermo:6d12; momentum2; WMD5"
 						missileSpeed=	"60"
-						hitPoints=		"20"
+						hitPoints=		"30"
 						lifetime=		"100"
 
 						effect=			"&efThermoCannonShell;"
@@ -2465,7 +2453,7 @@
 			level=				"9"
 			frequency=			"rare"
 
-			value=				"160000"
+			value=				"200000"
 			mass=				"15000"
 			  
 			description=		"The recently introduced SAR/200 cannon is designed to defend carriers against Ares gunships."
@@ -2479,7 +2467,6 @@
 				damage=				"thermo:7d12; momentum:2; WMD:2"
 				fireRate=			"12"
 				missileSpeed=		"70"
-				hitPoints=			"25"
 				lifetime=			"60"
 				powerUse=			"2000"
 				deviceSlots=		"2"
@@ -2513,7 +2500,6 @@
 				damage=				"thermo:5d12; momentum:2; WMD:3"
 				fireRate=			"6"
 				missileSpeed=		"40"
-				hitPoints=			"5"
 				lifetime=			"60"
 				powerUse=			"2000"
 
@@ -2591,7 +2577,6 @@
 				damage=				"plasma:60; WMD:4"
 				
 				fireRate=			"20"
-				hitPoints=			"10"
 
 				powerUse=			"3000"
 				sound=				"&snRecoillessCannon;"
@@ -2643,7 +2628,7 @@
 
 	<!-- Missiles for NAMI Launcher -->
 
-	<!-- KM100 Longbow Missile -->
+	<!-- Level 2: KM100 Longbow Missile -->
 
 	<ItemType UNID="&itKM100Missile;"
 			name=				"KM100 Longbow missile"
@@ -2666,7 +2651,7 @@
 				lifetime=		"90"
 				damage=			"blast:4d6; momentum4; WMD5"
 				missileSpeed=	"60"
-				hitPoints=		"10"
+				hitPoints=		"20"
 						 
 				effect=			"&efMissileNAMI;"
 				sound=			"&snMissileLauncher;"
@@ -2674,7 +2659,7 @@
 		</Missile>
 	</ItemType>
 
-	<!-- Fragmentation Missile -->
+	<!-- Level 3: KM110 Starburst Missile -->
 
 	<ItemType UNID="&itFragmentationMissile;"
 			name=				"KM110 Starburst missile"
@@ -2696,7 +2681,7 @@
 				type=			"missile"
 				lifetime=		"90"
 				missileSpeed=	"60"
-				hitPoints=		"10"
+				hitPoints=		"20"
 
 				effect=			"&efMissileNAMI;"
 				sound=			"&snMissileLauncher;"
@@ -2715,7 +2700,7 @@
 		</Missile>
 	</ItemType>
 
-	<!-- KM120 Brute Missile -->
+	<!-- Level 3: KM120 Brute Missile -->
 
 	<ItemType UNID="&itKM120Missile;"
 			name=				"KM120 Brute missile"
@@ -2738,7 +2723,7 @@
 			lifetime=		"60"
 			damage=			"blast:9d6; momentum:4; WMD:7"
 			missileSpeed=	"60"
-			hitPoints=		"10"
+			hitPoints=		"30"
 						 
 			effect=			"&efMissileNAMI;"
 			sound=			"&snMissileLauncher;"
@@ -2746,7 +2731,7 @@
 		</Missile>
 	</ItemType>
 
-	<!-- KM500 Stiletto Missile -->
+	<!-- Level 3: KM500 Stiletto Missile -->
 
 	<ItemType UNID="&itKM500Missile;"
 			name=				"KM500 Stiletto missile"
@@ -2769,7 +2754,7 @@
 				lifetime=		"120"
 				damage=			"blast:5d6; momentum4; WMD5"
 				missileSpeed=	"40"
-				hitPoints=		"10"
+				hitPoints=		"20"
 				maneuverRate=	"9"
 						 
 				effect=			"&efMissileNAMI;"
@@ -2778,7 +2763,7 @@
 		</Missile>
 	</ItemType>
 
-	<!-- XM300 Reaper Missile -->
+	<!-- Level 4: XM300 Reaper Missile -->
 
 	<ItemType UNID="&itXM300Missile;"
 			name=				":an XM300 Reaper missile"
@@ -2801,7 +2786,7 @@
 				lifetime=		"90"
 				damage=			"blast:6d6; radiation1; momentum4; WMD4"
 				missileSpeed=	"60"
-				hitPoints=		"10"
+				hitPoints=		"20"
 						 
 				effect=			"&efMissileNAMI;"
 				hitEffect=		"&efRadioactiveHitEffect;"
@@ -2810,7 +2795,7 @@
 		</Missile>
 	</ItemType>
 
-	<!-- KM550 Broadsword Missile -->
+	<!-- Level 4: KM550 Broadsword Missile -->
 
 	<ItemType UNID="&itKM550Missile;"
 			name=				"KM550 Broadsword missile"
@@ -2833,7 +2818,7 @@
 				lifetime=		"120"
 				damage=			"blast:9d6; momentum:4; WMD:7"
 				missileSpeed=	"40"
-				hitPoints=		"15"
+				hitPoints=		"30"
 				maneuverRate=	"9"
 						 
 				sound=			"&snMissileLauncher;"
@@ -2842,7 +2827,38 @@
 		</Missile>
 	</ItemType>
 
-	<!-- XM900 Lucifer Missile -->
+	<!-- Level 5: KM170 Maul Missile -->
+
+	<ItemType UNID="&itKM170Missile;"
+			name=				"KM170 Maul missile"
+			attributes=			"commonwealth, consumable, missile, NAMI, NAMILauncher"
+			  
+			level=				"5"
+			frequency=			"rare"
+			numberAppearing=	"24-36"
+
+			value=				"70"
+			mass=				"40"
+			  
+			description=		"The KM170 is a non-nuclear siege weapon, with more than double the explosive power of the KM120s."
+			>
+
+		<Image imageID="&rsItemsNAMI2;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Missile
+			type=			"missile"
+			lifetime=		"60"
+			damage=			"blast:20d6; momentum:4; WMD:7"
+			missileSpeed=	"40"
+			hitPoints=		"50"
+						 
+			effect=			"&efMissileNAMI;"
+			sound=			"&snMissileLauncher;"
+			>
+		</Missile>
+	</ItemType>
+
+	<!-- Level 7: XM900 Lucifer Missile -->
 
 	<ItemType UNID="&itXM900Missile;"
 			name=				":an XM900 Lucifer missile"
@@ -2864,7 +2880,7 @@
 				type=			"missile"
 
 				missileSpeed=	"40"
-				hitPoints=		"20"
+				hitPoints=		"30"
 				lifetime=		"120"
 
 				maneuverRate=	"9"
@@ -2981,7 +2997,7 @@
 				lifetime=		"80"
 				missileSpeed=	"30"
 						
-				hitPoints=		"20"
+				hitPoints=		"40"
 				failsafe=		"6"
 						 
 				effect=			"&efMissileMAG;"
@@ -3026,7 +3042,7 @@
 				lifetime=		"80"
 				missileSpeed=	"30"
 						
-				hitPoints=		"20"
+				hitPoints=		"40"
 						 
 				effect=			"&efMissileMAG;"
 				sound=			"&snMissileLauncher;"
@@ -3058,7 +3074,7 @@
 				lifetime=		"80"
 				missileSpeed=	"30"
 						
-				hitPoints=		"20"
+				hitPoints=		"60"
 				failsafe=		"6"
 						 
 				effect=			"&efMissileMAG;"
@@ -3082,7 +3098,7 @@
 
 	<ItemType UNID="&it3KSiegeMAG;"
 			name=				"3K siege MAG"
-			attributes=			"commonwealth, consumable, MAGLauncher, missile, rasiermesser"
+			attributes=			"commonwealth, consumable, MAGLauncher, military, missile, rasiermesser"
 			  
 			level=				"7"
 			frequency=			"uncommon"
@@ -3103,7 +3119,7 @@
 				lifetime=		"160"
 				missileSpeed=	"15"
 						
-				hitPoints=		"30"
+				hitPoints=		"60"
 						 
 				effect=			"&efMissileMAG;"
 				sound=			"&snMissileLauncher;"
@@ -3135,7 +3151,7 @@
 				lifetime=		"120"
 				missileSpeed=	"30"
 						
-				hitPoints=		"30"
+				hitPoints=		"100"
 						 
 				effect=			"&efMissileMAG;"
 				hitEffect=		"&efThermoFragmentExplosion;"
@@ -3182,7 +3198,6 @@
 				lifetime=		"60"
 				damage=			"blast:3d6; momentum:2; WMD:5"
 				missileSpeed=	"60"
-				hitPoints=		"5"
 
 				effect=			"&efMissileStrelka;"
 				sound=			"&snRecoillessCannon;"
@@ -3213,7 +3228,6 @@
 				lifetime=		"60"
 				damage=			"blast:5d6; momentum:2; WMD:5"
 				missileSpeed=	"60"
-				hitPoints=		"5"
 
 				effect=			"&efMissileStrelka;"
 				sound=			"&snRecoillessCannon;"
@@ -3244,7 +3258,6 @@
 				lifetime=		"60"
 				damage=			"thermo:3d12; momentum:3; WMD:5"
 				missileSpeed=	"60"
-				hitPoints=		"5"
 
 				effect=			"&efMissileStrelka;"
 				sound=			"&snRecoillessCannon;"
@@ -3274,7 +3287,6 @@
 				type=			"missile"
 				lifetime=		"60"
 				missileSpeed=	"60"
-				hitPoints=		"5"
 
 				effect=			"&efMissileStrelka;"
 				hitEffect=		"&efThermoFragmentExplosion;"
@@ -3320,7 +3332,6 @@
 				missileSpeed=	"10"
 				accelerationFactor="60"
 				lifetime=		"4800"
-				hitPoints=		"20"
 				stealth=		"15"
 
 				failSafe=		"10"
@@ -3372,7 +3383,6 @@
 				missileSpeed=	"10"
 				maneuverRate=	"9"
 				lifetime=		"2400"
-				hitPoints=		"20"
 				stealth=		"12"
 
 				failSafe=		"10"
@@ -3425,7 +3435,7 @@
 				lifetime=		"120"
 				damage=			"thermo:10d20; momentum3; WMD7"
 				missileSpeed=	"70"
-				hitPoints=		"20"
+				hitPoints=		"40"
 
 				effect=			"&efMissileRasiermesser;"
 				sound=			"&snMissileLauncher;"
@@ -3456,7 +3466,7 @@
 				lifetime=		"120"
 				damage=			"thermo:10d20; momentum3; WMD7"
 				missileSpeed=	"65"
-				hitPoints=		"20"
+				hitPoints=		"40"
 				maneuverRate=	"9"
 						 
 				effect=			"&efMissileRasiermesser;"
@@ -3489,7 +3499,7 @@
 				type=			"missile"
 				lifetime=		"120"
 				missileSpeed=	"55"
-				hitPoints=		"40"
+				hitPoints=		"150"
 
 				effect=			"&efMissileNAMIHeavy;"
 				hitEffect=		"&efThermoFragmentExplosion;"
@@ -3561,7 +3571,7 @@
 
 				missileSpeed=	"30"
 				lifetime=		"20"
-				hitPoints=		"40"
+				hitPoints=		"150"
 
 				failsafe=		"5"
 
@@ -3654,7 +3664,7 @@
 				type=			"missile"
 				lifetime=		"120"
 				missileSpeed=	"55"
-				hitPoints=		"40"
+				hitPoints=		"150"
 
 				effect=			"&efMissileNAMIHeavy;"
 				hitEffect=		"&efThermoFragmentExplosion;"

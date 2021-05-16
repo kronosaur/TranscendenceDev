@@ -138,7 +138,7 @@
 		</Reinforcements>
 
 		<Encounters frequency="uncommon">
-			<Ship count="1"	class="&scHurinDestroyer;" orders="wander"	maxShips="4"/>
+			<Ship count="1"	class="&scHurinDestroyer;" eventHandler="&evStdWanderBehavior;"	maxShips="4"/>
 		</Encounters>
 
 		<Events>
@@ -293,7 +293,7 @@
 		</Reinforcements>
 
 		<Encounters frequency="uncommon">
-			<Ship count="1"	class="&scHurinDestroyer;" orders="wander"	maxShips="4"/>
+			<Ship count="1"	class="&scHurinDestroyer;" eventHandler="&evStdWanderBehavior;"	maxShips="4"/>
 		</Encounters>
 
 		<StaticData>
@@ -596,6 +596,7 @@
 			<Device deviceID="&itSlamCannon;" secondaryWeapon="true" minFireArc="190" maxFireArc="60"  posAngle="-25" posRadius="89" posZ="0"/>
 
 			<Device deviceID="&itSuperconductingShields;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="7"/>
 			<Device deviceID="&it250MWReactor;"/>
 		</Devices>
 

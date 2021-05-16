@@ -232,7 +232,7 @@
 			<Text id="rpg.useResult.tooAdvanced">			Hiro: Shield tech too high. ROM abort.</Text>
 			<Text id="rpg.useResult.cannotEnhance">			Hiro: Non-energy shield found. ROM abort.</Text>
 
-			<Text id="rpg.canUse.ok">						Hiro: Shield is compatible. Ready to perform optimizaiton.</Text>
+			<Text id="rpg.canUse.ok">						Hiro: Shield is compatible. Ready to perform optimization.</Text>
 			<Text id="rpg.canUse.alreadyEnhanced">			Hiro: Shield already enhanced. ROM abort.</Text>
 			<Text id="rpg.canUse.improved">					Hiro: Shield is compatible. Ready to perform optimization.</Text>
 

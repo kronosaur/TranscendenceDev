@@ -26,7 +26,7 @@ IOrderModule::~IOrderModule (void)
 	{
 	}
 
-void IOrderModule::Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
+void IOrderModule::Attacked (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &AttackerObj, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	Attacked
 //
@@ -37,14 +37,13 @@ void IOrderModule::Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pA
 
 	//	Tell our escorts that we were attacked, if necessary
 
-	if (pAttacker
-			&& !bFriendlyFire
-			&& pAttacker->CanAttack())
-		Ctx.CommunicateWithEscorts(pShip, msgAttackDeter, pAttacker);
+	if (!bFriendlyFire
+			&& AttackerObj.CanAttack())
+		Ctx.CommunicateWithEscorts(&Ship, msgAttackDeter, &AttackerObj);
 
 	//	Let our subclass handle it.
 
-	OnAttacked(pShip, Ctx, pAttacker, Damage, bFriendlyFire);
+	OnAttacked(Ship, Ctx, AttackerObj, Damage, bFriendlyFire);
 
 	DEBUG_CATCH
 	}
@@ -62,8 +61,11 @@ DWORD IOrderModule::Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject
 			{
 			//	Treat this as an attack on ourselves
 
-			SDamageCtx Dummy;
-			pShip->GetController()->OnAttacked(pParam1, Dummy);
+			if (pParam1)
+				{
+				SDamageCtx Dummy;
+				pShip->GetController()->OnAttacked(*pParam1, Dummy);
+				}
 			return resAck;
 			}
 
@@ -96,14 +98,18 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderApproach:
 			return new CApproachOrder;
 
-		case IShipController::orderDestroyTarget:
-		case IShipController::orderAttackNearestEnemy:
 		case IShipController::orderAttackArea:
+		case IShipController::orderAttackNearestEnemy:
+		case IShipController::orderAttackOrRetreat:
+		case IShipController::orderDestroyTarget:
 		case IShipController::orderHoldAndAttack:
 			return new CAttackOrder(iOrder);
 
 		case IShipController::orderAttackStation:
 			return new CAttackStationOrder;
+
+		case IShipController::orderDeterChase:
+			return new CDeterChaseOrder;
 
 		case IShipController::orderEscort:
 		case IShipController::orderFollow:
@@ -111,6 +117,16 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 
 		case IShipController::orderFireEvent:
 			return new CFireEventOrder;
+
+		case IShipController::orderGuard:
+			return new CGuardOrder;
+
+		case IShipController::orderOrbitExact:
+		case IShipController::orderOrbitPatrol:
+			return new COrbitExactOrder(iOrder);
+
+		case IShipController::orderPatrol:
+			return new CPatrolOrder;
 
 		case IShipController::orderDock:
 		case IShipController::orderGate:
@@ -126,6 +142,7 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 			return new CSentryOrder;
 
 		case IShipController::orderFireWeapon:
+		case IShipController::orderResupply:
 		case IShipController::orderUseItem:
 			return new CSimpleOrder(iOrder);
 
@@ -138,23 +155,21 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderWaitForUndock:
 			return new CWaitOrder(iOrder);
 
-		case IShipController::orderGuard:
-		case IShipController::orderGateOnThreat:
-		case IShipController::orderGateOnStationDestroyed:
-		case IShipController::orderPatrol:
-		case IShipController::orderScavenge:
+		case IShipController::orderAimAtTarget:
+		case IShipController::orderBombard:
+		case IShipController::orderDestroyPlayerOnReturn:
+		case IShipController::orderDestroyTargetHold:
 		case IShipController::orderFollowPlayerThroughGate:
-		case IShipController::orderTradeRoute:
-		case IShipController::orderWander:
+		case IShipController::orderGateOnStationDestroyed:
+		case IShipController::orderGateOnThreat:
+		case IShipController::orderHoldCourse:
 		case IShipController::orderLoot:
 		case IShipController::orderMine:
-		case IShipController::orderDestroyPlayerOnReturn:
-		case IShipController::orderBombard:
-		case IShipController::orderAimAtTarget:
 		case IShipController::orderOrbit:
-		case IShipController::orderHoldCourse:
+		case IShipController::orderScavenge:
+		case IShipController::orderTradeRoute:
 		case IShipController::orderTurnTo:
-		case IShipController::orderDestroyTargetHold:
+		case IShipController::orderWander:
 			return NULL;
 
 		default:
@@ -177,7 +192,7 @@ CString IOrderModule::DebugCrashInfo (CShip *pShip)
 	CString sResult;
 
 	sResult.Append(CONSTLIT("IOrderModule\r\n"));
-	sResult.Append(strPatternSubst(CONSTLIT("Order: %d\r\n"), (int)pShip->GetCurrentOrder()));
+	sResult.Append(strPatternSubst(CONSTLIT("Order: %d\r\n"), (int)pShip->GetCurrentOrderDesc().GetOrder()));
 
 	for (i = 0; i < m_iObjCount; i++)
 		sResult.Append(strPatternSubst(CONSTLIT("m_Objs[%d]: %s\r\n"), i, CSpaceObject::DebugDescribe(m_Objs[i])));
@@ -238,20 +253,18 @@ void IOrderModule::ObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx)
 			}
 	}
 
-void IOrderModule::ReadFromStream (SLoadCtx &Ctx)
+void IOrderModule::ReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	ReadFromStream
 //
 //	Load save file
 	
 	{
-	int i;
-
 	//	Load the objects
 
 	DWORD dwCount;
 	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
-	for (i = 0; i < (int)dwCount; i++)
+	for (int i = 0; i < (int)dwCount; i++)
 		{
 		if (i < m_iObjCount)
 			CSystem::ReadObjRefFromStream(Ctx, &m_Objs[i]);
@@ -264,97 +277,25 @@ void IOrderModule::ReadFromStream (SLoadCtx &Ctx)
 
 	//	Let our derived class load
 
-	OnReadFromStream(Ctx); 
+	OnReadFromStream(Ctx, OrderDesc);
 	}
 
-void IOrderModule::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void IOrderModule::WriteToStream (IWriteStream *pStream) const
 
 //	WriteToStream
 //
 //	Write to save file
 	
 	{
-	int i;
-
 	//	Save the objects
 
 	DWORD dwCount = m_iObjCount;
 	pStream->Write((char *)&dwCount, sizeof(DWORD));
-	for (i = 0; i < (int)dwCount; i++)
-		pSystem->WriteObjRefToStream(m_Objs[i], pStream);
+	for (int i = 0; i < (int)dwCount; i++)
+		CSystem::WriteObjRefToStream(*pStream, m_Objs[i]);
 
 	//	Let our derived class save
 
-	OnWriteToStream(pSystem, pStream);
+	OnWriteToStream(pStream);
 	}
 
-//	CGuardOrder ----------------------------------------------------------------
-
-void CGuardOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
-
-//	OnBehavior
-//
-//	Do it
-
-	{
-	}
-
-void CGuardOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
-
-//	OnBehaviorStart
-//
-//	Start/restart behavior
-
-	{
-#if 0
-	ASSERT(pOrderTarget);
-	m_pBase = pOrderTarget;
-
-	//	If we're docked, wait for threat
-
-	if (pShip->GetDockedObj())
-		m_iState = stateWaitingForThreat;
-
-	//	If we're very far from our principal and we can use a nav
-	//	path, do it
-
-	else if (pShip->GetDistance2(m_pBase) > NAV_PATH_THRESHOLD2
-			&& CalcNavPath(m_pBase))
-		m_iState = stateReturningViaNavPath;
-
-	//	Otherwise, return directly to base
-
-	else
-		m_iState = stateReturningFromThreat;
-#endif
-	}
-
-void CGuardOrder::OnReadFromStream (SLoadCtx &Ctx)
-
-//	OnReadFromStream
-//
-//	Load from stream
-
-	{
-	DWORD dwLoad;
-
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_iState = (States)dwLoad;
-
-	CSystem::ReadObjRefFromStream(Ctx, &m_pBase);
-	}
-
-void CGuardOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
-
-//	OnWriteToStream
-//
-//	Save to stream
-
-	{
-	DWORD dwSave;
-
-	dwSave = (DWORD)m_iState;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
-
-	pSystem->WriteObjRefToStream(m_pBase, pStream);
-	}

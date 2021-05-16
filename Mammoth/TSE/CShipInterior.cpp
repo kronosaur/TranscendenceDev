@@ -756,6 +756,6 @@ void CShipInterior::WriteToStream (CShip *pShip, IWriteStream *pStream)
 	for (i = 0; i < m_Compartments.GetCount(); i++)
 		{
 		pStream->Write(m_Compartments[i].iHP);
-		pShip->GetSystem()->WriteObjRefToStream(m_Compartments[i].pAttached, pStream);
+		pShip->WriteObjRefToStream(m_Compartments[i].pAttached, pStream);
 		}
 	}

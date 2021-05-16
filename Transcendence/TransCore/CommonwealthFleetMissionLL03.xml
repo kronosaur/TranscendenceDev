@@ -19,12 +19,14 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msCSCLamplighterPrototype;"
-			name=			"Lamplighter prototype"
+			name=			"Lamplighter 03: Prototype"
 			attributes=		"commonwealthFleet, cscPointJuno, rank4, rank5, rank6, lamplighter"
 
 			level=			"8"
 			maxAppearing=	"1"
 			>
+
+		<Image imageID="&rsFleetEmblems;" imageX="960" imageY="480"	imageWidth="320" imageHeight="240"/>
 
 		<Events>
 			<OnCreate>

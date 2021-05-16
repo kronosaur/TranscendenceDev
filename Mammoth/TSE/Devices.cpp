@@ -40,6 +40,7 @@
 #define PROPERTY_CAN_BE_DISRUPTED				CONSTLIT("canBeDisrupted")
 #define PROPERTY_CAN_TARGET_MISSILES			CONSTLIT("canTargetMissiles")
 #define PROPERTY_CAPACITOR      				CONSTLIT("capacitor")
+#define PROPERTY_CYBER_DEFENSE_LEVEL			CONSTLIT("cyberDefenseLevel")
 #define PROPERTY_CYCLE_FIRE 					CONSTLIT("cycleFire")
 #define PROPERTY_DEVICE_SLOTS					CONSTLIT("deviceSlots")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
@@ -54,6 +55,7 @@
 #define PROPERTY_POWER_USE						CONSTLIT("powerUse")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 #define PROPERTY_SLOT_ID						CONSTLIT("slotID")
+#define PROPERTY_TARGET_CRITERIA     			CONSTLIT("targetCriteria")
 #define PROPERTY_TEMPERATURE      				CONSTLIT("temperature")
 #define PROPERTY_SHOT_SEPARATION_SCALE			CONSTLIT("shotSeparationScale")
 
@@ -125,7 +127,18 @@ void CDeviceClass::AccumulateAttributes (const CDeviceItem &DeviceItem, const CI
 		DWORD dwOptions = DeviceItem.GetLinkedFireOptions();
 		if ((dwOptions != 0) && (dwOptions != CDeviceClass::lkfNever))
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("linked-fire")));
+
+		if (IsAutomatedWeapon())
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("automatic")));
 		}
+
+	//	If cyberdefense level is not standard, add it.
+
+	int iCyberDefenseLevel = DeviceItem.GetCyberDefenseLevel();
+	if (iCyberDefenseLevel > DeviceItem.GetLevel())
+		retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("cyber defense level %d"), iCyberDefenseLevel)));
+	else if (iCyberDefenseLevel < DeviceItem.GetLevel())
+		retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("cyber defense level %d"), iCyberDefenseLevel)));
 
 	//	Let our subclasses add their own attributes
 
@@ -195,6 +208,14 @@ bool CDeviceClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx
 
 	if (ItemCtx.IsDeviceWorking())
 		Ctx.Abilities.Set(m_Equipment);
+
+	//	External devices get a penalty to stealth
+
+	if (IsExternal()
+			|| (ItemCtx.GetDevice() && ItemCtx.GetDevice()->IsExternal()))
+		{
+		Ctx.iStealthAdj -= 1;
+		}
 
 	//  Let sub-classes handle it
 
@@ -512,15 +533,18 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return (pDevice ? CC.CreateBool(pDevice->CanTargetMissiles()) : CC.CreateNil());
 	else if (strEquals(sName, PROPERTY_CAPACITOR))
 		{
-		CSpaceObject *pSource = Ctx.GetSource();
-		CounterTypes iType;
+		CSpaceObject* pSource = Ctx.GetSource();
+		EDeviceCounterType iType;
 		int iLevel;
 		GetCounter(pDevice, pSource, &iType, &iLevel);
-		if (iType != cntCapacitor || pDevice == NULL || pSource == NULL)
+		if (iType != EDeviceCounterType::Capacitor || pDevice == NULL || pSource == NULL)
 			return CC.CreateNil();
 
 		return CC.CreateInteger(iLevel);
 		}
+
+	else if (strEquals(sName, PROPERTY_CYBER_DEFENSE_LEVEL))
+		return CC.CreateInteger(Ctx.GetDeviceItem().GetCyberDefenseLevel());
 
 	else if (strEquals(sName, PROPERTY_CYCLE_FIRE))
 		return (pDevice ? CC.CreateBool(pDevice->GetCycleFireSettings()) : CC.CreateNil());
@@ -549,11 +573,11 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 		//	Create a list
 
-		ICCItem *pResult = CC.CreateLinkedList();
+		ICCItem* pResult = CC.CreateLinkedList();
 		if (pResult->IsError())
 			return pResult;
 
-		CCLinkedList *pList = (CCLinkedList *)pResult;
+		CCLinkedList* pList = (CCLinkedList*)pResult;
 
 		//	List contains angle, radius, and optional z
 
@@ -587,13 +611,16 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_SLOT_ID))
 		return (pDevice ? CC.CreateString(pDevice->GetID()) : CC.CreateNil());
 
+	else if (strEquals(sName, PROPERTY_TARGET_CRITERIA))
+		return (pDevice ? (pDevice->GetWeaponTargetDefinition() ? CC.CreateString(pDevice->GetWeaponTargetDefinition()->GetTargetCriteriaString()) : CC.CreateNil()) : CC.CreateNil());
+
 	else if (strEquals(sName, PROPERTY_TEMPERATURE))
 		{
 		CSpaceObject *pSource = Ctx.GetSource();
-		CounterTypes iType;
+		EDeviceCounterType iType;
 		int iLevel;
 		GetCounter(pDevice, pSource, &iType, &iLevel);
-		if (iType != cntTemperature || pDevice == NULL || pSource == NULL)
+		if (iType != EDeviceCounterType::Temperature || pDevice == NULL || pSource == NULL)
 			return CC.CreateNil();
 
 		return CC.CreateInteger(iLevel);
@@ -899,3 +926,20 @@ ESetPropertyResult CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString &
 	return ESetPropertyResult::notFound;
 	}
 
+//	SActivateCtx ---------------------------------------------------------------
+
+CTargetList &CDeviceClass::SActivateCtx::GetTargetList ()
+	{
+	if (!m_pTargetList)
+		m_pTargetList = &m_ObjCtx.GetTargetList();
+
+	return *m_pTargetList;
+	}
+
+CTargetList &CDeviceClass::SDeviceUpdateCtx::GetTargetList ()
+	{
+	if (!m_pTargetList)
+		m_pTargetList = &m_ObjCtx.GetTargetList();
+
+	return *m_pTargetList;
+	}

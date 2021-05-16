@@ -105,6 +105,19 @@ CSpaceObject *CTLispConvert::AsObject (const ICCItem *pItem)
 		return NULL;
 	}
 
+CG32bitPixel CTLispConvert::AsRGB (const ICCItem *pItem, CG32bitPixel rgbDefault)
+
+//	AsRGB
+//
+//	Converts to an RGB value.
+
+	{
+	if (!pItem || pItem->IsNil())
+		return rgbDefault;
+	else
+		return ::LoadRGBColor(pItem->GetStringValue(), rgbDefault);
+	}
+
 bool CTLispConvert::AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector *retSelector)
 
 //	AsScreen
@@ -175,6 +188,31 @@ bool CTLispConvert::AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector 
 		return false;
 	}
 
+CVector CTLispConvert::AsVector (const ICCItem *pItem)
+
+//	AsVector
+//
+//	Converts to vector (or null).
+
+	{
+	if (!pItem)
+		return NullVector;
+	else if (pItem->IsList())
+		{
+		CVector vVec;
+		CreateBinaryFromList(NULL_STR, *pItem, &vVec);
+		return vVec;
+		}
+	else if (pItem->IsInteger())
+		{
+		CSpaceObject *pObj = CreateObjFromItem(pItem);
+		if (pObj)
+			return pObj->GetPos();
+		}
+
+	return NullVector;
+	}
+
 ICCItemPtr CTLispConvert::CreateCurrencyValue (CurrencyValue Value)
 
 //	CreateCurrencyValue
@@ -188,6 +226,19 @@ ICCItemPtr CTLispConvert::CreateCurrencyValue (CurrencyValue Value)
 		return ICCItemPtr((int)Value);
 	}
 
+ICCItemPtr CTLispConvert::CreateItem (const CItem &Value)
+
+//	CreateItem
+//
+//	Creates an item value.
+
+	{
+	if (!Value.IsEmpty())
+		return ICCItemPtr(::CreateListFromItem(Value));
+	else
+		return ICCItemPtr::Nil();
+	}
+
 ICCItemPtr CTLispConvert::CreateObject (const CSpaceObject *pObj)
 
 //	CreateObject
@@ -195,7 +246,10 @@ ICCItemPtr CTLispConvert::CreateObject (const CSpaceObject *pObj)
 //	Returns an object pointer.
 
 	{
-	return ICCItemPtr((int)pObj);
+	if (pObj)
+		return ICCItemPtr((int)pObj);
+	else
+		return ICCItemPtr::Nil();
 	}
 
 ICCItemPtr CTLispConvert::CreateObjectList (const CSpaceObjectList &List)
@@ -232,6 +286,50 @@ ICCItemPtr CTLispConvert::CreatePowerResultMW (int iPower)
 		return ICCItemPtr((double)iPower / 10.0);
 	else
 		return ICCItemPtr(iPower / 10);
+	}
+
+ICCItemPtr CTLispConvert::CreateIntegerList (const TArray<int> &List)
+
+//	CreateIntegerList
+//
+//	Creates a list of integers.
+
+	{
+	if (List.GetCount() == 0)
+		return ICCItemPtr::Nil();
+
+	ICCItemPtr pResult(ICCItem::List);
+	for (int i = 0; i < List.GetCount(); i++)
+		pResult->Append(ICCItemPtr(List[i]));
+
+	return pResult;
+	}
+
+ICCItemPtr CTLispConvert::CreateStringList (const TArray<CString> &List)
+
+//	CreateStringList
+//
+//	Creates a list of strings.
+
+	{
+	if (List.GetCount() == 0)
+		return ICCItemPtr::Nil();
+
+	ICCItemPtr pResult(ICCItem::List);
+	for (int i = 0; i < List.GetCount(); i++)
+		pResult->Append(ICCItemPtr(List[i]));
+
+	return pResult;
+	}
+
+ICCItemPtr CTLispConvert::CreateVector (const CVector &vValue)
+
+//	CreateVector
+//
+//	Create vector value.
+
+	{
+	return ICCItemPtr(::CreateListFromVector(vValue));
 	}
 
 ICCItemPtr CTLispConvert::GetElementAt (ICCItem *pItem, const CString &sField)

@@ -10,7 +10,7 @@
 			inherit=			"&baCommonwealthStation;"
 				 
 			level=				"4"
-			attributes=			"commonwealth, commonwealthCustoms, friendly, human, majorStation, populated, startonEridani"
+			attributes=			"commonwealth, commonwealthCustoms, eridaniScript, friendly, human, majorStation, populated, startonEridani"
 				 
 			dockScreen=			"&dsCommonwealthStation;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
@@ -48,6 +48,7 @@
 			<ReplaceArmor	criteria="a L:1-7;" priceAdj="100"/>
 			<InstallDevice	criteria="d L:1-6;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-6;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
 
 			<BalanceTrade	criteria="{core.fusionFuel}"		impact="20"/>
 			<BalanceTrade	criteria="{human.basicFood}"	impact="20"/>
@@ -79,19 +80,12 @@
 		</Items>
 
 		<!-- Ships and Defenses -->
+
+		<Squadrons>
+			<Squadron table="&tbCommEliteDefenders;"	count="2-4"/>
+			<Squadron table="&tbCommPrivateCrafts;"		count="1-4"/>
+		</Squadrons>
 		
-		<Ships>
-			<Lookup count="3" table="&tbCommEliteDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="5">
-			<Table>
-				<Lookup chance="75" table="&tbCommEliteDefenders;"/>
-				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
-			</Table>
-		</Reinforcements>
-
 		<!-- Image and Effects -->
 
 		<Image			imageID="&rsCommonwealthMetropolis;" imageWidth="480" imageHeight="480"/>
@@ -152,12 +146,15 @@
 			
 			<Text id="textInfo1">
 				
-				Welcome to the Eridani system and to Starton Eridani! Settled in
-				2176, our small star system is one of the most friendly in all 
-				the Commonwealth. Whatever your purpose here, whether business or
-				pleasure, we're sure that you will enjoy your stay!
+				Welcome to the Eridani system and to Starton Eridani! Settled 
+				more than two-hundred years ago, our small star system blends
+				the relaxed pace of the New Beyond with the amenities of a major
+				metropolis.
+
+				Whether seeking business or	pleasure, we're sure you'll enjoy 
+				your stay!
 				
-				Please select your topic of interest:
+				Please select a topic of interest:
 				
 			</Text>
 			<Text id="textTouristInfo1">
@@ -208,11 +205,12 @@
 			</Text>
 			
 			<Text id="textRandomFunFact">
-				(scrTranslate gScreen (cat "funFact." (random 1 7)))
+				(typTranslate gType (cat "funFact." (random 1 7)))
 			</Text>
 			<Text id="funFact.1">
 				
-				Starton is more than seven stargates away from St. Katharine's Star.
+				Starton is more than seven stargates away from St. Katharine's
+				Star.
 				
 			</Text>
 			<Text id="funFact.2">

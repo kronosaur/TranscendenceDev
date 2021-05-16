@@ -189,7 +189,7 @@ ALERROR CContinuousBeam::Create (CSystem &System, SShotCreateCtx &Ctx, CContinuo
 	return NOERROR;
 	}
 
-CString CContinuousBeam::DebugCrashInfo (void)
+CString CContinuousBeam::DebugCrashInfo (void) const
 
 //	DebugCrashInfo
 //
@@ -276,7 +276,6 @@ bool CContinuousBeam::HitTestSegment (SSegment &Segment, CVector *retvHitPos)
 //	we return TRUE and retvHitPos is where the segment got stopped.
 
 	{
-	int iInteraction = m_pDesc->GetInteraction();
 	CVector vNewPos = Segment.vPos + Segment.vDeltaPos;
 
 	//	Get our bounds
@@ -753,8 +752,8 @@ void CContinuousBeam::OnWriteToStream (IWriteStream *pStream)
 	DWORD dwSave;
 	m_pDesc->GetUNID().WriteToStream(pStream);
 	pStream->Write((char *)&m_iLifetime, sizeof(m_iLifetime));
-	m_Source.WriteToStream(GetSystem(), pStream);
-	GetSystem()->WriteSovereignRefToStream(m_pSovereign, pStream);
+	m_Source.WriteToStream(pStream);
+	CSystem::WriteSovereignRefToStream(m_pSovereign, pStream);
 	WriteObjRefToStream(m_pTarget, pStream);
 	pStream->Write((char *)&m_iTick, sizeof(m_iTick));
 	pStream->Write((char *)&m_iLastDirection, sizeof(DWORD));
@@ -813,7 +812,7 @@ void CContinuousBeam::OnWriteToStream (IWriteStream *pStream)
 		pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 		for (i = 0; i < m_Hits.GetCount(); i++)
-			m_Hits[i].WriteToStream(GetSystem(), pStream);
+			m_Hits[i].WriteToStream(pStream);
 		}
 	}
 

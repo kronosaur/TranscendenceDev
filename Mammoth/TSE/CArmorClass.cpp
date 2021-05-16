@@ -637,6 +637,12 @@ bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx 
 		bModified = true;
 		}
 
+	//	Stealth
+
+	int iStealth = GetStealth(&Enhancements);
+	if (iStealth < Ctx.iStealthFromArmor)
+		Ctx.iStealthFromArmor = iStealth;
+
 	//  Done
 
 	return bModified;
@@ -901,13 +907,13 @@ int CArmorClass::CalcBalance (const CArmorItem &ArmorItem, CArmorItem::SBalance 
 
 	//	Stealth
 
-	if (m_iStealth >= 12)
+	if (m_iStealthFromArmor >= 12)
 		retBalance.rStealth = 4.0 * STEALTH_BALANCE_BONUS;
-	else if (m_iStealth >= 10)
+	else if (m_iStealthFromArmor >= 10)
 		retBalance.rStealth = 3.0 * STEALTH_BALANCE_BONUS;
-	else if (m_iStealth >= 8)
+	else if (m_iStealthFromArmor >= 8)
 		retBalance.rStealth = 2.0 * STEALTH_BALANCE_BONUS;
-	else if (m_iStealth >= 6)
+	else if (m_iStealthFromArmor >= 6)
 		retBalance.rStealth = 1.0 * STEALTH_BALANCE_BONUS;
 	else
 		retBalance.rStealth = 0.0;
@@ -1628,9 +1634,9 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 
 	//	Stealth
 
-	pArmor->m_iStealth = pDesc->GetAttributeInteger(STEALTH_ATTRIB);
-	if (pArmor->m_iStealth == 0)
-		pArmor->m_iStealth = CSpaceObject::stealthNormal;
+	pArmor->m_iStealthFromArmor = pDesc->GetAttributeInteger(STEALTH_ATTRIB);
+	if (pArmor->m_iStealthFromArmor == 0)
+		pArmor->m_iStealthFromArmor = CSpaceObject::stealthNormal;
 
 	pArmor->m_iMaxHPBonus = pDesc->GetAttributeIntegerBounded(MAX_HP_BONUS_ATTRIB, 0, -1, 150);
 
@@ -2152,7 +2158,7 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 
 	else if (strEquals(sName, PROPERTY_STEALTH))
 		{
-		int iStealth = GetStealth();
+		int iStealth = GetStealth(&Enhancements);
 		if (iStealth <= CSpaceObject::stealthNormal)
 			return ICCItemPtr(ICCItem::Nil);
 		else
@@ -2494,6 +2500,19 @@ const CArmorClass::SStdStats &CArmorClass::GetStdStats (int iLevel)
 	return STD_STATS[iLevel - 1];
 	}
 
+int CArmorClass::GetStealth (const CItemEnhancementStack *pEnhancements) const
+
+//	GetStealth
+//
+//	Returns the armor's stealth.
+
+	{
+	if (pEnhancements)
+		return CPerceptionCalc::AdjStealth(m_iStealthFromArmor, pEnhancements->GetStealthAdj());
+	else
+		return m_iStealthFromArmor;
+	}
+
 CUniverse &CArmorClass::GetUniverse (void) const
 
 //	GetUniverse
@@ -2680,16 +2699,9 @@ ESetPropertyResult CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, con
 				return ESetPropertyResult::error;
 				}
 
-			iHP = Max(0, Min(iHP, ArmorItem.GetMaxHP()));
+			//	SetArmorHP checks to make sure iHP is in range.
 
-			if (iHP < pArmor->GetHitPoints())
-				{
-				DamageDesc Damage(damageGeneric, DiceRange(0, 0, pArmor->GetHitPoints() - iHP));
-				Damage.SetNoSRSFlash();
-				pShip->DamageArmor(pArmor->GetSect(), Damage);
-				}
-			else if (iHP > pArmor->GetHitPoints())
-				pShip->RepairArmor(pArmor->GetSect(), iHP - pArmor->GetHitPoints());
+			pShip->SetArmorHP(pArmor->GetSect(), iHP);
 			}
 		else
 			{
@@ -2697,6 +2709,11 @@ ESetPropertyResult CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, con
 			iHP = Max(0, Min(iHP, iMaxHP));
 			
 			Item.SetDamaged(iMaxHP - iHP);
+
+			//	Clear installed. Otherwise, we'll diverge from the HP stored in 
+			//	CInstalledArmor.
+
+			Item.ClearInstalled();
 			}
 		}
 	else if (strEquals(sProperty, PROPERTY_INC_HP))
@@ -2712,14 +2729,7 @@ ESetPropertyResult CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, con
 				return ESetPropertyResult::error;
 				}
 
-			if (iChange < 0)
-				{
-				DamageDesc Damage(damageGeneric, DiceRange(0, 0, -iChange));
-				Damage.SetNoSRSFlash();
-				pShip->DamageArmor(pArmor->GetSect(), Damage);
-				}
-			else if (iChange > 0)
-				pShip->RepairArmor(pArmor->GetSect(), iChange);
+			pShip->SetArmorHP(pArmor->GetSect(), pArmor->GetHitPoints() + iChange);
 			}
 		else
 			{
@@ -2728,6 +2738,7 @@ ESetPropertyResult CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, con
 			int iNewHP = Max(0, Min(iHP + iChange, iMaxHP));
 			
 			Item.SetDamaged(iMaxHP - iNewHP);
+			Item.ClearInstalled();
 			}
 		}
 	else if (strEquals(sProperty, PROPERTY_LEVEL))
@@ -2752,7 +2763,10 @@ ESetPropertyResult CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, con
 		if (pArmor)
 			pArmor->SetHitPoints(iNewHP);
 		else
+			{
 			Item.SetDamaged(iNewMaxHP - iNewHP);
+			Item.ClearInstalled();
+			}
 		}
 	else
 		{

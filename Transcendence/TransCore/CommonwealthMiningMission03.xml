@@ -8,7 +8,7 @@
 
 	<MissionType UNID="&msCommonwealthMining03;"
 			name=				"Commonwealth Mining 03: Excavate Ore Cavern"
-			attributes=			"commonwealthMining"
+			attributes=			"commonwealthMining, eridaniScript"
 
 			level=				"1-4"
 			maxAppearing=		"3-5"
@@ -32,6 +32,8 @@
 			<Data id="targetID"></Data>
 			<Data id="totalValue"></Data>
 		</Properties>
+
+		<Image imageID="&rsMiningColonyRocky;"	imageWidth="260" imageHeight="260"/>
 
 		<Events>
 			<CanCreate>

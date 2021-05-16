@@ -26,7 +26,12 @@
 #define NO_TARGETS_OF_OPPORTUNITY_ATTRIB		CONSTLIT("noTargetsOfOpportunity")
 #define NON_COMBATANT_ATTRIB					CONSTLIT("nonCombatant")
 #define PERCEPTION_ATTRIB						CONSTLIT("perception")
+#define REACT_TO_ATTACK_ATTRIB					CONSTLIT("reactToAttack")
+#define REACT_TO_THREAT_ATTRIB					CONSTLIT("reactToThreat")
+#define TARGETS_STATIONS_ATTRIB					CONSTLIT("targetsStations")
 #define STAND_OFF_COMBAT_ATTRIB					CONSTLIT("standOffCombat")
+#define THREAT_RANGE_ATTRIB						CONSTLIT("threatRange")
+#define USE_ALL_PRIMARY_WEAPONS_ATTRIB			CONSTLIT("useAllPrimaryWeapons")
 
 #define COMBAT_STYLE_ADVANCED					CONSTLIT("advanced")
 #define COMBAT_STYLE_CHASE						CONSTLIT("chase")
@@ -41,14 +46,19 @@
 
 #define STR_TRUE								CONSTLIT("True")
 
-CAISettings::CAISettings (void)
+static TStaticStringTable<TStaticStringEntry<AIReaction>, 9> REACTION_TABLE = {
+	"chase",				AIReaction::Chase,
+	"chaseFromBase",		AIReaction::ChaseFromBase,
+	"default",				AIReaction::Default,
+	"destroy",				AIReaction::Destroy,
+	"destroyAndRetaliate",	AIReaction::DestroyAndRetaliate,
+	"deter",				AIReaction::Deter,
+	"deterNoManeuvers",		AIReaction::DeterWithSecondaries,
+	"gate",					AIReaction::Gate,
+	"none",					AIReaction::None,
+	};
 
-//	CAISettings constructor
-
-	{
-	}
-
-AICombatStyles CAISettings::ConvertToAICombatStyle (const CString &sValue)
+AICombatStyle CAISettings::ConvertToAICombatStyle (const CString &sValue)
 
 //	ConvertToAICombatStyle
 //
@@ -56,22 +66,22 @@ AICombatStyles CAISettings::ConvertToAICombatStyle (const CString &sValue)
 
 	{
 	if (strEquals(sValue, COMBAT_STYLE_ADVANCED))
-		return aicombatAdvanced;
+		return AICombatStyle::Advanced;
 	else if (strEquals(sValue, COMBAT_STYLE_CHASE))
-		return aicombatChase;
+		return AICombatStyle::Chase;
 	else if (strEquals(sValue, COMBAT_STYLE_FLYBY))
-		return aicombatFlyby;
+		return AICombatStyle::Flyby;
 	else if (strEquals(sValue, COMBAT_STYLE_NO_RETREAT))
-		return aicombatNoRetreat;
+		return AICombatStyle::NoRetreat;
 	else if (strEquals(sValue, COMBAT_STYLE_STANDARD))
-		return aicombatStandOff;
+		return AICombatStyle::StandOff;
 	else if (strEquals(sValue, COMBAT_STYLE_STAND_OFF))
-		return aicombatStandOff;
+		return AICombatStyle::StandOff;
 	else
-		return aicombatStandard;
+		return AICombatStyle::Standard;
 	}
 
-CAISettings::EFlockingStyles CAISettings::ConvertToFlockingStyle (const CString &sValue)
+AIFlockingStyle CAISettings::ConvertToFlockingStyle (const CString &sValue)
 
 //	ConvertToFlockingStyle
 //
@@ -79,16 +89,30 @@ CAISettings::EFlockingStyles CAISettings::ConvertToFlockingStyle (const CString 
 
 	{
 	if (strEquals(sValue, FLOCKING_STYLE_CLOUD))
-		return flockCloud;
+		return AIFlockingStyle::Cloud;
 	else if (strEquals(sValue, FLOCKING_STYLE_COMPACT))
-		return flockCompact;
+		return AIFlockingStyle::Compact;
 	else if (strEquals(sValue, FLOCKING_STYLE_RANDOM))
-		return flockRandom;
+		return AIFlockingStyle::Random;
 	else
-		return flockNone;
+		return AIFlockingStyle::None;
 	}
 
-CString CAISettings::ConvertToID (AICombatStyles iStyle)
+AIReaction CAISettings::ConvertToAIReaction (const CString &sValue)
+
+//	ConvertToAIReaction
+//
+//	Converts a string to an AIReaction
+
+	{
+	auto pEntry = REACTION_TABLE.GetAt(sValue);
+	if (pEntry)
+		return pEntry->Value;
+	else
+		return AIReaction::Default;
+	}
+
+CString CAISettings::ConvertToID (AICombatStyle iStyle)
 
 //	ConvertToID
 //
@@ -97,22 +121,22 @@ CString CAISettings::ConvertToID (AICombatStyles iStyle)
 	{
 	switch (iStyle)
 		{
-		case aicombatStandard:
+		case AICombatStyle::Standard:
 			return COMBAT_STYLE_STANDARD;
 
-		case aicombatStandOff:
+		case AICombatStyle::StandOff:
 			return COMBAT_STYLE_STAND_OFF;
 
-		case aicombatFlyby:
+		case AICombatStyle::Flyby:
 			return COMBAT_STYLE_FLYBY;
 
-		case aicombatNoRetreat:
+		case AICombatStyle::NoRetreat:
 			return COMBAT_STYLE_NO_RETREAT;
 
-		case aicombatChase:
+		case AICombatStyle::Chase:
 			return COMBAT_STYLE_CHASE;
 
-		case aicombatAdvanced:
+		case AICombatStyle::Advanced:
 			return COMBAT_STYLE_ADVANCED;
 
 		default:
@@ -120,7 +144,7 @@ CString CAISettings::ConvertToID (AICombatStyles iStyle)
 		}
 	}
 
-CString CAISettings::ConvertToID (EFlockingStyles iStyle)
+CString CAISettings::ConvertToID (AIFlockingStyle iStyle)
 
 //	ConvertToID
 //
@@ -129,18 +153,28 @@ CString CAISettings::ConvertToID (EFlockingStyles iStyle)
 	{
 	switch (iStyle)
 		{
-		case flockCloud:
+		case AIFlockingStyle::Cloud:
 			return FLOCKING_STYLE_CLOUD;
 
-		case flockCompact:
+		case AIFlockingStyle::Compact:
 			return FLOCKING_STYLE_COMPACT;
 
-		case flockRandom:
+		case AIFlockingStyle::Random:
 			return FLOCKING_STYLE_RANDOM;
 
 		default:
 			return NULL_STR;
 		}
+	}
+
+CString CAISettings::ConvertToID (AIReaction iStyle)
+
+//	ConvertToID
+//
+//	Converts to an ID.
+
+	{
+	return REACTION_TABLE.FindKey(iStyle);
 	}
 
 CString CAISettings::GetValue (const CString &sSetting)
@@ -167,7 +201,7 @@ CString CAISettings::GetValue (const CString &sSetting)
 	else if (strEquals(sSetting, FLOCKING_STYLE_ATTRIB))
 		return ConvertToID(m_iFlockingStyle);
 	else if (strEquals(sSetting, FLOCK_FORMATION_ATTRIB))
-		return (m_iFlockingStyle == flockCloud ? STR_TRUE : NULL_STR);
+		return (m_iFlockingStyle == AIFlockingStyle::Cloud ? STR_TRUE : NULL_STR);
 	else if (strEquals(sSetting, IS_PLAYER_ATTRIB))
 		return (m_fIsPlayer ? STR_TRUE : NULL_STR);
 	else if (strEquals(sSetting, NO_ATTACK_ON_THREAT_ATTRIB))
@@ -190,6 +224,16 @@ CString CAISettings::GetValue (const CString &sSetting)
 		return (m_fNonCombatant ? STR_TRUE : NULL_STR);
 	else if (strEquals(sSetting, PERCEPTION_ATTRIB))
 		return strFromInt(m_iPerception);
+	else if (strEquals(sSetting, USE_ALL_PRIMARY_WEAPONS_ATTRIB))
+		return (m_fUseAllPrimaryWeapons ? STR_TRUE : NULL_STR);
+	else if (strEquals(sSetting, REACT_TO_ATTACK_ATTRIB))
+		return ConvertToID(m_iReactToAttack);
+	else if (strEquals(sSetting, REACT_TO_THREAT_ATTRIB))
+		return ConvertToID(m_iReactToThreat);
+	else if (strEquals(sSetting, TARGETS_STATIONS_ATTRIB))
+		return (m_fTargetsStations ? STR_TRUE : NULL_STR);
+	else if (strEquals(sSetting, THREAT_RANGE_ATTRIB))
+		return strFromInt(mathRound(m_rThreatRange / LIGHT_SECOND));
 	else
 		return NULL_STR;
 	}
@@ -211,11 +255,11 @@ ALERROR CAISettings::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		//	Compatibility with version < 0.97
 
 		if (pDesc->GetAttributeBool(FLYBY_COMBAT_ATTRIB))
-			m_iCombatStyle = aicombatFlyby;
+			m_iCombatStyle = AICombatStyle::Flyby;
 		else if (pDesc->GetAttributeBool(STAND_OFF_COMBAT_ATTRIB))
-			m_iCombatStyle = aicombatStandOff;
+			m_iCombatStyle = AICombatStyle::StandOff;
 		else
-			m_iCombatStyle = aicombatStandard;
+			m_iCombatStyle = AICombatStyle::Standard;
 		}
 
 	//	Flocking style
@@ -227,10 +271,15 @@ ALERROR CAISettings::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		{
 		bool bValue;
 		if (pDesc->FindAttributeBool(FLOCK_FORMATION_ATTRIB, &bValue) && bValue)
-			m_iFlockingStyle = flockCloud;
+			m_iFlockingStyle = AIFlockingStyle::Cloud;
 		else
-			m_iFlockingStyle = flockNone;
+			m_iFlockingStyle = AIFlockingStyle::None;
 		}
+
+	//	Reactions
+
+	m_iReactToAttack = ConvertToAIReaction(pDesc->GetAttribute(REACT_TO_ATTACK_ATTRIB));
+	m_iReactToThreat = ConvertToAIReaction(pDesc->GetAttribute(REACT_TO_THREAT_ATTRIB));
 
 	//	Parameters
 
@@ -248,6 +297,11 @@ ALERROR CAISettings::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		//	A negative value means that we compute it based on the image size
 		m_rMinCombatSeparation = -1.0;
 
+	//	Threat range
+
+	int iValue = pDesc->GetAttributeIntegerBounded(THREAT_RANGE_ATTRIB, 0, -1, DEFAULT_THREAT_RANGE);
+	m_rThreatRange = iValue * LIGHT_SECOND;
+
 	//	Flags
 
 	m_fAscendOnGate = pDesc->GetAttributeBool(ASCEND_ON_GATE_ATTRIB);
@@ -262,6 +316,8 @@ ALERROR CAISettings::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fNoNavPaths = pDesc->GetAttributeBool(NO_NAV_PATHS_ATTRIB);
 	m_fNoOrderGiver = pDesc->GetAttributeBool(NO_ORDER_GIVER_ATTRIB);
 	m_fIsPlayer = false;
+	m_fUseAllPrimaryWeapons = pDesc->GetAttributeBool(USE_ALL_PRIMARY_WEAPONS_ATTRIB);
+	m_fTargetsStations = pDesc->GetAttributeBool(TARGETS_STATIONS_ATTRIB);
 
 	return NOERROR;
 	}
@@ -273,27 +329,7 @@ void CAISettings::InitToDefault (void)
 //	Initialize to default settings
 
 	{
-	m_iCombatStyle = aicombatStandard;
-	m_iFlockingStyle = flockNone;
-	m_iFireRateAdj = 10;					//	Normal fire rate
-	m_iFireRangeAdj = 100;					//	100% of fire range
-	m_iFireAccuracy = 100;					//	100% accuracy
-	m_iPerception = CSpaceObject::perceptNormal;
-	m_rMinCombatSeparation = -1.0;			//	Compute based on image size
-
-	m_fNoShieldRetreat = false;
-	m_fNoDogfights = false;
-	m_fNonCombatant = false;
-	m_fNoFriendlyFire = false;
-	m_fAggressor = false;
-	m_fNoFriendlyFireCheck = false;
-	m_fNoOrderGiver = false;
-	m_fAscendOnGate = false;
-
-	m_fNoNavPaths = false;
-	m_fNoAttackOnThreat = false;
-	m_fNoTargetsOfOpportunity = false;
-	m_fIsPlayer = false;
+	*this = CAISettings();
 	}
 
 void CAISettings::ReadFromStream (SLoadCtx &Ctx)
@@ -305,37 +341,48 @@ void CAISettings::ReadFromStream (SLoadCtx &Ctx)
 //	DWORD		LO = m_iCombatStyle; HI = m_iFlockingStyle
 //	DWORD		LO = m_iFireRateAdj; HI = m_iFireRangeAdj
 //	DWORD		LO = m_iFireAccuracy; HI = m_iPerception
+//	DWORD		LO = m_iReactToAttack; HI = m_iReactToThreat
+//	Metric		m_rThreatRange
 //	Metric		m_rMinCombatSeparation
 //	DWORD		flags
 
 	{
 	DWORD dwLoad;
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	if (Ctx.dwVersion >= 125)
 		{
-		m_iCombatStyle = (AICombatStyles)LOWORD(dwLoad);
-		m_iFlockingStyle = (EFlockingStyles)HIWORD(dwLoad);
+		m_iCombatStyle = (AICombatStyle)LOWORD(dwLoad);
+		m_iFlockingStyle = (AIFlockingStyle)HIWORD(dwLoad);
 		}
 	else
 		{
-		m_iCombatStyle = (AICombatStyles)dwLoad;
-		m_iFlockingStyle = flockNone;
+		m_iCombatStyle = (AICombatStyle)dwLoad;
+		m_iFlockingStyle = AIFlockingStyle::None;
 		}
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_iFireRateAdj = (int)LOWORD(dwLoad);
 	m_iFireRangeAdj = (int)HIWORD(dwLoad);
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_iFireAccuracy = (int)LOWORD(dwLoad);
 	m_iPerception = (int)HIWORD(dwLoad);
 
-	Ctx.pStream->Read((char *)&m_rMinCombatSeparation, sizeof(Metric));
+	if (Ctx.dwVersion >= 197)
+		{
+		Ctx.pStream->Read(dwLoad);
+		m_iReactToAttack = (AIReaction)LOWORD(dwLoad);
+		m_iReactToThreat = (AIReaction)HIWORD(dwLoad);
+
+		Ctx.pStream->Read(m_rThreatRange);
+		}
+
+	Ctx.pStream->Read(m_rMinCombatSeparation);
 
 	//	Flags
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_fNoShieldRetreat =		((dwLoad & 0x00000001) ? true : false);
 	m_fNoDogfights =			((dwLoad & 0x00000002) ? true : false);
 	m_fNonCombatant =			((dwLoad & 0x00000004) ? true : false);
@@ -350,11 +397,13 @@ void CAISettings::ReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion < 125)
 		{
 		if (dwLoad & 0x00000800)
-			m_iFlockingStyle = flockCloud;
+			m_iFlockingStyle = AIFlockingStyle::Cloud;
 		m_fIsPlayer = false;
 		}
 	else
 		m_fIsPlayer =			((dwLoad & 0x00000800) ? true : false);
+	m_fUseAllPrimaryWeapons =	((dwLoad & 0x00001000) ? true : false);
+	m_fTargetsStations =		((dwLoad & 0x00002000) ? true : false);
 	}
 
 CString CAISettings::SetValue (const CString &sSetting, const CString &sValue)
@@ -381,7 +430,7 @@ CString CAISettings::SetValue (const CString &sSetting, const CString &sValue)
 	else if (strEquals(sSetting, FLOCKING_STYLE_ATTRIB))
 		m_iFlockingStyle = ConvertToFlockingStyle(sValue);
 	else if (strEquals(sSetting, FLOCK_FORMATION_ATTRIB))
-		m_iFlockingStyle = (!sValue.IsBlank() ? flockCloud : flockNone);
+		m_iFlockingStyle = (!sValue.IsBlank() ? AIFlockingStyle::Cloud : AIFlockingStyle::None);
 	else if (strEquals(sSetting, IS_PLAYER_ATTRIB))
 		m_fIsPlayer = !sValue.IsBlank();
 	else if (strEquals(sSetting, NO_ATTACK_ON_THREAT_ATTRIB))
@@ -404,6 +453,16 @@ CString CAISettings::SetValue (const CString &sSetting, const CString &sValue)
 		m_fNonCombatant = !sValue.IsBlank();
 	else if (strEquals(sSetting, PERCEPTION_ATTRIB))
 		m_iPerception = Max((int)CSpaceObject::perceptMin, Min(strToInt(sValue, CSpaceObject::perceptNormal), (int)CSpaceObject::perceptMax));
+	else if (strEquals(sSetting, USE_ALL_PRIMARY_WEAPONS_ATTRIB))
+		m_fUseAllPrimaryWeapons = !sValue.IsBlank();
+	else if (strEquals(sSetting, REACT_TO_ATTACK_ATTRIB))
+		m_iReactToAttack = ConvertToAIReaction(sValue);
+	else if (strEquals(sSetting, REACT_TO_THREAT_ATTRIB))
+		m_iReactToThreat = ConvertToAIReaction(sValue);
+	else if (strEquals(sSetting, TARGETS_STATIONS_ATTRIB))
+		m_fTargetsStations = !sValue.IsBlank();
+	else if (strEquals(sSetting, THREAT_RANGE_ATTRIB))
+		m_rThreatRange = Max(0, strToInt(sValue, DEFAULT_THREAT_RANGE)) * LIGHT_SECOND;
 	else
 		return NULL_STR;
 
@@ -419,6 +478,8 @@ void CAISettings::WriteToStream (IWriteStream *pStream)
 //	DWORD		LO = m_iCombatStyle; HI = m_iFlockingStyle
 //	DWORD		LO = m_iFireRateAdj; HI = m_iFireRangeAdj
 //	DWORD		LO = m_iFireAccuracy; HI = m_iPerception
+//	DWORD		LO = m_iReactToAttack; HI = m_iReactToThreat
+//	Metric		m_rThreatRange
 //	Metric		m_rMinCombatSeparation
 //	DWORD		flags
 
@@ -426,15 +487,19 @@ void CAISettings::WriteToStream (IWriteStream *pStream)
 	DWORD dwSave;
 
 	dwSave = MAKELONG((DWORD)m_iCombatStyle, (DWORD)m_iFlockingStyle);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	dwSave = MAKELONG(m_iFireRateAdj, m_iFireRangeAdj);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	dwSave = MAKELONG(m_iFireAccuracy, m_iPerception);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
-	pStream->Write((char *)&m_rMinCombatSeparation, sizeof(Metric));
+	dwSave = MAKELONG((DWORD)m_iReactToAttack, (DWORD)m_iReactToThreat);
+	pStream->Write(dwSave);
+
+	pStream->Write(m_rThreatRange);
+	pStream->Write(m_rMinCombatSeparation);
 
 	//	Flags
 
@@ -451,6 +516,8 @@ void CAISettings::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fNoAttackOnThreat ?		0x00000200 : 0);
 	dwSave |= (m_fNoTargetsOfOpportunity ?	0x00000400 : 0);
 	dwSave |= (m_fIsPlayer ?				0x00000800 : 0);
+	dwSave |= (m_fUseAllPrimaryWeapons ?	0x00001000 : 0);
+	dwSave |= (m_fTargetsStations ?			0x00002000 : 0);
 
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	}

@@ -246,6 +246,15 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_ENHANCE_ITEM			139
 #define FN_OBJ_CAN_DESTROY_TARGET	140
 #define FN_OBJ_CAN_HIT_TARGET		141
+#define FN_OBJ_CAN_APPLY_CONDITION	142
+#define FN_OBJ_APPLY_CONDITION		143
+#define FN_OBJ_CAN_REMOVE_CONDITION	144
+#define FN_OBJ_REMOVE_CONDITION		145
+#define FN_OBJ_MAKE_RADIOACTIVE		146
+#define FN_OBJ_DECONTAMINATE		147
+#define FN_OBJ_GET_REMOVE_CONDITION_PRICE	148
+#define FN_OBJ_SQUADRON_COMMS		149
+#define FN_OBJ_SQUADRON_COMMS_MESSAGES	150
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -291,7 +300,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 #define FN_SHIP_BLINDNESS			14
 #define FN_SHIP_ENHANCE_ITEM		15
 #define FN_SHIP_CAN_INSTALL_DEVICE	16
-#define FN_SHIP_DECONTAMINATE		17
+//	spare
 #define FN_SHIP_IS_RADIOACTIVE		18
 #define FN_SHIP_CANCEL_ORDERS		19
 #define FN_SHIP_ADD_ENERGY_FIELD	20
@@ -304,7 +313,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 #define FN_SHIP_SHIELD_DAMAGE		27
 #define FN_SHIP_SHIELD_MAX_HP		28
 #define FN_SHIP_RECHARGE_SHIELD		29
-#define FN_SHIP_MAKE_RADIOACTIVE	30
+//	spare
 #define FN_SHIP_ORDER_GATE			31
 #define FN_SHIP_ORDER_ESCORT		32
 #define FN_SHIP_ORDER_LOOT			33
@@ -572,6 +581,7 @@ ICCItem *fnSystemOrbit (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_VECTOR_POLAR_VELOCITY		8
 #define FN_VECTOR_PIXEL_OFFSET			9
 #define FN_VECTOR_DISTANCE_EXACT		10
+#define FN_VECTOR_IN_POLYGON			11
 
 ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -670,7 +680,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'showFacingsAngle\n"
 			"   'showLineOfFire\n"
 			"   'showNavPaths\n"
-			"   'showNodeInfo\n",
+			"   'showNodeInfo\n"
+			"   'showOrderInfo\n",
 
 			"s",	0, },
 
@@ -696,7 +707,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'showFacingsAngle True/Nil\n"
 			"   'showLineOfFire True/Nil\n"
 			"   'showNavPaths True/Nil\n"
-			"   'showNodeInfo True/Nil\n",
+			"   'showNodeInfo True/Nil\n"
+			"   'showOrderInfo True/Nil\n",
 
 			"sv",	PPFLAG_SIDEEFFECTS, },
 
@@ -839,7 +851,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   0x1000 'countAlways     always prefix with count\n"
 			"  0x40000 'noDeterminer    no prefix, but pluralize if necessary\n"
 			"  0x80000 'noQuotes        replace double-quotes with single-quotes\n"
-			" 0x100000 'escapeQuotes    use for dock screens",
+			" 0x100000 'escapeQuotes    use for dock screens\n",
 
 			"v*",	0,	},
 
@@ -896,6 +908,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'repeating\n"
 			"	'shipCounterPerShot\n"
 			"   'stdCost\n"
+			"   'targetCriteria\n"
 			"\n"
 			"property (armor)\n\n"
 			"   'blindingImmune\n"
@@ -936,7 +949,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"vs",	0,	},
 
 		{	"itmGetProperty",				fnItemGet,		FN_ITEM_PROPERTY,
-			"RENAMED: Use (itm@ ...) instead.",
+			"DEPRECATED: Use (itm@ ...) instead.",
 			"vs",	0,	},
 
 		{	"itmGetStaticData",				fnItemGet,		FN_ITEM_GET_STATIC_DATA,
@@ -985,7 +998,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"comparison criteria supported: < <= = => >\n"
 			"   < x                Only items with level less than x\n"
 			"   <$ x               Only items costing less than x\n"
-			"   <# x               Only items massing less than x",
+			"   <# x               Only items massing less than x\n",
 
 			"s",	0,	},
 
@@ -1014,7 +1027,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'ignoreData\n"
 			"   'ignoreDisruption\n"
 			"   'ignoreEnhancements\n"
-			"   'ignoreInstalled",
+			"   'ignoreInstalled\n",
 
 			"vv*",	0,	},
 
@@ -1058,14 +1071,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'damaged [True|Nil]\n"
 			"   'disrupted [True|Nil|ticks]\n"
 			"   'incCharges charges\n"
-			"   'installed [True|Nil]"
-			"   'level level"
+			"   'installed [True|Nil]\n"
+			"   'level level\n"
 			"   'shotSeparationScale separation\n",
 
 			"vs*",	0,	},
 
 		{	"itmSetProperty",				fnItemSet,		FN_ITEM_PROPERTY,
-			"RENAMED: Use (itmSet@ ...) instead.",
+			"DEPRECATED: Use (itmSet@ ...) instead.",
 			"vs*",	0,	},
 
 		{	"itmSetReference",				fnItemGet,		FN_ITEM_SET_REFERENCE,
@@ -1102,7 +1115,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'power\n"
 			"   'real\n"
 			"   'regenRate\n"
-			"   'speed",
+			"   'speed\n",
 
 			"v*",	0, },
 
@@ -1142,7 +1155,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   1        Too much cargo to remove cargo hold\n"
 			"   2        Device not installed\n"
 			"   3        Replace only\n"
-			"   string   custom fail reason",
+			"   string   custom fail reason\n",
 			"iv",	0,	},
 
 		{	"shpConsumeFuel",				fnShipSet,			FN_SHIP_CONSUME_FUEL,
@@ -1151,17 +1164,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"useType:\n\n"
 			
 			"   'consume\n"
-			"   'drain",
+			"   'drain\n",
 
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpDamageArmor",				fnShipSet,			FN_SHIP_DAMAGE_ARMOR,
 			"(shpDamageArmor ship armorSegment damageType damage ['noSRSFlash]) -> damage done",
 			"ivvi*",	PPFLAG_SIDEEFFECTS,	},
-
-		{	"shpDecontaminate",				fnShipGetOld,		FN_SHIP_DECONTAMINATE,
-			"(shpDecontaminate ship) -> True/Nil",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpGetAISetting",				fnShipGet,			FN_SHIP_AI_SETTING,
 			"(shpGetAISetting ship setting)",
@@ -1244,7 +1253,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i",	0,	},
 
 		{	"shpGetOrderDesc",				fnShipGet,			FN_SHIP_ORDER_DESC,
-			"(shpGetOrderDesc obj [orderIndex]) -> orderDesc",
+			"(shpGetOrderDesc obj [orderIndex]) -> orderDesc\n\n"
+			
+			"orderDesc\n\n"
+
+			"   (order [targetObj] [data])\n",
+
 			"i*",	0,	},
 
 		{	"shpGetOrderTarget",			fnShipGetOld,		FN_SHIP_ORDER_TARGET,
@@ -1311,10 +1325,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"shpMakeRadioactive",			fnShipGetOld,		FN_SHIP_MAKE_RADIOACTIVE,
-			"(shpMakeRadioactive ship) -> True/Nil",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
-
 		{	"shpOrder",						fnShipSet,		FN_SHIP_ORDER,
 			"(shpOrder ship order [target] [count]) -> True/Nil\n\n"
 
@@ -1346,6 +1356,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'mine           obj               Mine asteroids [base]\n"
 			"   'navPath        navID             Follow nav path ID\n"
 			"   'orbit          obj dist [time]   Orbit target\n"
+			"   'orbitExact     obj [options]     Orbit target\n"
 			"   'patrol         obj [dist]        Patrol around target\n"
 			"   'scavenge                         Scavenge for scraps\n"
 			"   'sendMessage    obj msg           Send message to target\n"
@@ -1358,7 +1369,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'waitForTarget  obj [dist] [time] Wait until target in range\n"
 			"   'waitForThreat  [time]\n"
 			"   'waitForUndock  obj [time]        Wait for target to undock\n"
-			"   'wander                           Wander, avoiding enemies",
+			"   'wander                           Wander, avoiding enemies\n",
 
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -1410,12 +1421,26 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'noNavPaths (True/Nil)\n"
 			"   'noOrderGiver (True/Nil)\n"
 			"   'noTargetsOfOpportunity (True/Nil)\n"
+			"   'targetsStations (True/Nil)\n"
+			"   'useAllPrimaryWeapons (True/Nil)\n"
 			"\n"
 			"   'combatSeparation {pixels}\n"
 			"   'fireAccuracy {percent}\n"
 			"   'fireRangeAdj {percent}\n"
 			"   'fireRateAdj {value; 10 = normal; 20 = twice as slow}\n"
-			"   'perception {value}",
+			"   'perception {value}\n"
+			"\n"
+			"   'reactToAttack\n"
+			"      = 'chase\n"
+			"      = 'default\n"
+			"      = 'deter\n"
+			"      = 'deterNoManeuvers\n"
+			"      = 'none\n"
+			"\n"
+			"   'reactToThreat\n"
+			"      = {same as reactToAttack}\n"
+			"\n"
+			"   'threatRange {light-seconds}\n",
 
 			"isv",	0,	},
 
@@ -1445,8 +1470,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'hinge\n"
 			"   'rod\n"
-			"   'spine\n\n"
-			
+			"   'spine\n"
+			"\n"
 			"options:\n\n"
 			
 			"   'pos1: position relative to obj1\n"
@@ -1480,9 +1505,50 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objAddTradeOrder obj service criteria priceAdj) -> True/Nil",
 			"isvi",		PPFLAG_SIDEEFFECTS,	},
 
+		{	"objApplyCondition",				fnObjSet,		FN_OBJ_APPLY_CONDITION,
+			"(objApplyCondition obj condition [options]) -> result\n\n"
+			
+			"options:\n\n"
+			
+			"   applyTo: 'interior (optional)\n"
+			"   applyToItem: Item to apply to (optional)\n"
+			"   duration: Duration in ticks (optional)\n"
+			"\n"
+			"result:\n\n"
+			
+			"   resultCode: Result of applying condition\n"
+			"\n"
+			"resultCode:\n\n"
+			
+			"   'ok: Condition applied\n"
+			"   'alreadyApplied: Already in this condition\n"
+			"   'noEffect: Could not apply condition\n",
+
+			"is*",		PPFLAG_SIDEEFFECTS,	},
+
 		{	"objCalcBestTarget",				fnObjGet,		FN_OBJ_CALC_BEST_TARGET,
 			"(objCalcBestTarget obj [objList]) -> targetObj (or Nil)",
 			"i*",	0,	},
+
+		{	"objCanApplyCondition",				fnObjGet,		FN_OBJ_CAN_APPLY_CONDITION,
+			"(objCanApplyCondition obj condition [options]) -> result\n\n"
+			
+			"options:\n\n"
+			
+			"   applyTo: 'interior (optional)\n"
+			"   applyToItem: Item to apply to (optional)\n"
+			"\n"
+			"result:\n\n"
+			
+			"   resultCode: Result of applying condition\n"
+			"\n"
+			"resultCode:\n\n"
+			
+			"   'ok: Condition applied\n"
+			"   'alreadyApplied: Already in this condition\n"
+			"   'noEffect: Could not apply condition\n",
+
+			"is*",		0,	},
 
 		{	"objCanAttack",					fnObjGetOld,		FN_OBJ_CAN_ATTACK,
 			"(objCanAttack obj) -> True/Nil",
@@ -1543,9 +1609,30 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'reactorOverloaded\n"
 			"   'reactorTooWeak\n"
 			"   'replacementRequired\n"
-			"   'tooMuchCargo",
+			"   'tooMuchCargo\n",
 
 			"iv*",	0,	},
+
+		{	"objCanRemoveCondition",				fnObjGet,		FN_OBJ_CAN_REMOVE_CONDITION,
+			"(objCanRemoveCondition obj condition [options]) -> result\n\n"
+
+			"options:\n\n"
+
+			"   applyTo: 'interior (optional)\n"
+			"   applyToItem: Item to apply to (optional)\n"
+			"\n"
+			"result:\n\n"
+			
+			"   resultCode: Result of applying condition\n"
+			"\n"
+			"resultCode:\n\n"
+			
+			"   'ok: Condition removed\n"
+			"   'alreadyRemoved: Does not have this condition\n"
+			"   'noEffect: Could not remove condition\n"
+			"   'stillApplied: Removed condition, but still affected\n",
+
+			"is*",		0,	},
 
 		{	"objChangeEquipmentStatus",		fnObjSet,		FN_OBJ_SET_ABILITY,
 			"(objChangeEquipmentStatus obj equipment command [duration] [options]) -> True/Nil\n\n"
@@ -1562,20 +1649,20 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'SRSEnhancer\n"
 			"   'SystemMap\n"
 			"   'TargetingComputer\n"
-			"   'TradingComputer\n\n"
-			
+			"   'TradingComputer\n"
+			"\n"
 			"command\n\n"
 			
 			"   'damage\n"
 			"   'install\n"
 			"   'remove\n"
-			"   'repair\n\n"
-			
+			"   'repair\n"
+			"\n"
 			"duration is in ticks\n\n"
 			
 			"options\n\n"
 			
-			"   'noMessage",
+			"   'noMessage\n",
 
 			"iss*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -1598,9 +1685,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'AbortAttack\n"
 			"   'AttackTarget\n"
+			"   'BreakAndAttack\n"
 			"   'FormUp\n"
 			"   'QueryAttackStatus\n"
-			"   'Wait",
+			"   'Wait\n",
 
 			"iiv*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -1621,14 +1709,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'absorbedByShields\n"
 			"   'armorHit\n"
 			"   'structuralHit\n"
-			"   'destroyed\n\n"
-
+			"   'destroyed\n"
+			"\n"
 			"options:\n\n"
 
 			"   'fullResult           Return result as struct\n"
 			"   'ignoreOverlays       Hit shields and below\n"
 			"   'ignoreShields        Hit armor and below\n"
-			"   'noHitEffect          No hit effect created",
+			"   'noHitEffect          No hit effect created\n",
 
 			"ivv*",		PPFLAG_SIDEEFFECTS,	},
 
@@ -1706,10 +1794,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objFireWeapon obj weapon target [fireDelay] [checkFireDelay]) -> True/Nil",
 			"ivi*",	PPFLAG_SIDEEFFECTS, },
 
-		{	"objFixParalysis",				fnObjSet,		FN_OBJ_FIX_PARALYSIS,
-			"(objFixParalysis obj) -> True/Nil",
-			"i",	PPFLAG_SIDEEFFECTS,	},
-
 		{	"objGateTo",					fnObjGateTo,	0,
 			"(objGateTo obj node entrypoint [effectID]) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
@@ -1731,7 +1815,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"options:\n\n"
 			
-			"   'noDonations",
+			"   'noDonations\n",
 
 			"il*",	0,	},
 
@@ -1754,12 +1838,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'blind\n"
 			"   'disarmed\n"
+			"   'fouled\n"
 			"   'lrsBlind\n"
 			"   'paralyzed\n"
 			"   'radioactive\n"
 			"   'shieldBlocked\n"
 			"   'spinning\n"
-			"   'timeStopped",
+			"   'timeStopped\n",
 
 			"i*",	0,	},
 
@@ -1786,7 +1871,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'enemy\n"
 			"   'friend\n"
-			"   'neutral",
+			"   'neutral\n",
 
 			"ii",	0,	},
 
@@ -1809,13 +1894,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'SRSEnhancer\n"
 			"   'SystemMap\n"
 			"   'TargetingComputer\n"
-			"   'TradingComputer\n\n"
-			
+			"   'TradingComputer\n"
+			"\n"
 			"status\n\n"
 			
 			"   'damaged\n"
 			"   'notInstalled\n"
-			"   'ready",
+			"   'ready\n",
 
 			"is",	0,	},
 
@@ -1836,7 +1921,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	0,	},
 
 		{	"objGetItemProperty",			fnObjGet,		FN_OBJ_GET_ITEM_PROPERTY,
-			"RENAMED: Use (obj@ obj item property) instead.",
+			"DEPRECATED: Use (obj@ obj item property) instead.",
 			"ivs",	0,	},
 
 		{	"objGetItems",					fnObjItemOld,		FN_OBJ_ENUM_ITEMS,
@@ -1848,7 +1933,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   D                  Only damaged items\n"
 			"   N                  Only undamaged items\n"
 			"   S                  Only usable items\n"
-			"   U                  Only uninstalled items",
+			"   U                  Only uninstalled items\n",
 
 			NULL,	0,	},
 
@@ -1873,7 +1958,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   0x020 'noModifiers   no modifiers ('damaged' etc)\n"
 			"   0x040 'demonstrative prefix with 'the' or 'this' or 'these'\n"
 			"   0x080 'short         use short name\n"
-			"   0x100 'actual        actual name (not unidentified name)",
+			"   0x100 'actual        actual name (not unidentified name)\n",
 
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -1919,7 +2004,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iis",	0,	},
 
 		{	"objGetOverlayProperty",			fnObjGet,		FN_OBJ_GET_OVERLAY_PROPERTY,
-			"RENAMED: Use (ovr@ ...) instead.",
+			"DEPRECATED: Use (ovr@ ...) instead.",
 			"iis",	0,	},
 
 		{	"objGetOverlayRotation",	fnObjGet,		FN_OBJ_GET_OVERLAY_ROTATION,
@@ -1987,6 +2072,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"\n"
 			"property (ships)\n\n"
 			
+			"   'ai.waitingForShields\n"
 			"   'alwaysLeaveWreck\n"
 			"   'armorCount\n"
 			"   'autoTarget\n"
@@ -2040,9 +2126,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'selectedWeapon\n"
 			"   'shatterImmune\n"
 			"   'showMapLabel\n"
+			"   'squadron\n"
+			"   'squadronCommsStatus\n"
+			"   'stealthAdj\n"
+			"   'stealthAdjAtMaxHeat\n"
 			"   'target\n"
 			"   'thrust -> in GN\n"
 			"   'thrustToWeight -> acceleration, 1 = 500 m/s^2 (ships stats show this / 1000)\n"
+			"   'trackFuel\n"
 			"\n"
 			"property (stations)\n\n"
 
@@ -2078,9 +2169,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (missiles)\n\n"
 
 			"   'lifeLeft\n"
+			"   'reaction\n"
 			"   'rotation\n"
-			"   'sourceObj\n"
+			"   'source\n"
 			"   'target\n"
+			"   'tracking\n"
 			"\n"
 			"property (markers)\n\n"
 
@@ -2104,6 +2197,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'pos\n"
 			"   'secondary\n"
 			"   'temperature\n"
+			"   'targetCriteria\n"
 			"\n"
 			"property (armor)\n\n"
 
@@ -2116,12 +2210,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i*s",	0,	},
 
 		{	"objGetProperty",				fnObjGet,		FN_OBJ_GET_ITEM_PROPERTY,
-			"RENAMED: Use (obj@ ...) instead.",
+			"DEPRECATED: Use (obj@ ...) instead.",
 			"is",	0,	},
 
 		{	"objGetRefuelItemAndPrice",		fnObjGet,		FN_OBJ_GET_REFUEL_ITEM,	
 			"(objGetRefuelItemAndPrice obj objToRefuel) -> (item price)",
 			"ii",		0,	},
+
+		{	"objGetRemoveConditionPrice",			fnObjGet,		FN_OBJ_GET_REMOVE_CONDITION_PRICE,	
+			"(objGetRemoveConditionPrice obj shipObj condition) -> price (at which obj restores ship)",
+			"ivs",		0,	},
 
 		{	"objGetSellPrice",				fnObjGet,		FN_OBJ_GET_SELL_PRICE,	
 			"(objGetSellPrice obj item [options]) -> price (at which obj sells item)\n\n"
@@ -2130,7 +2228,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'actual\n"
 			"   'allowFree\n"
-			"   'noInventoryCheck",
+			"   'noInventoryCheck\n",
 
 			"il*",		PPFLAG_SIDEEFFECTS,	},
 
@@ -2169,10 +2267,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objGetVel",					fnObjGet,		FN_OBJ_VELOCITY,	
 			"(objGetVel obj) -> velVector",
 			"i",		0,	},
-
-		{	"objGetVisibleDamage",			fnObjGetOld,		FN_OBJ_VISIBLE_DAMAGE,
-			"(objGetVisibleDamage obj) -> damage %",
-			NULL,	0,	},
 
 		{	"objHasAttribute",				fnObjGetOld,		FN_OBJ_ATTRIBUTE,
 			"(objHasAttribute obj attrib) -> True/Nil",
@@ -2214,7 +2308,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iis*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objIncOverlayProperty",		fnObjGet,		FN_OBJ_INC_OVERLAY_PROPERTY,
-			"RENAMED: Use (ovrInc@ ...) instead.",
+			"DEPRECATED: Use (ovrInc@ ...) instead.",
 			"iis*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objInc@",				fnObjSet,		FN_OBJ_INC_PROPERTY,
@@ -2223,7 +2317,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objIncProperty",				fnObjSet,		FN_OBJ_INC_PROPERTY,
-			"RENAMED: Use (objInc@ ...) instead.",
+			"DEPRECATED: Use (objInc@ ...) instead.",
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objIncVel",					fnObjSet,		FN_OBJ_INCREMENT_VELOCITY,	
@@ -2269,10 +2363,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objLowerShields obj) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"objMakeParalyzed",				fnObjSetOld,		FN_OBJ_PARALYSIS,
-			"(objMakeParalyzed obj ticks) -> True/Nil",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
-
 		{	"objMatches",					fnObjGet,			FN_OBJ_MATCHES,
 			"(objMatches obj source filter) -> True/Nil\n\n"
 
@@ -2298,6 +2388,27 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objRegisterForSystemEvents",	fnObjSet,		FN_OBJ_REGISTER_SYSTEM_EVENTS,
 			"(objRegisterForSystemEvents target range) -> True/Nil",
 			"ii",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objRemoveCondition",				fnObjSet,		FN_OBJ_REMOVE_CONDITION,
+			"(objRemoveCondition obj condition [options]) -> result\n\n"
+
+			"options:\n\n"
+
+			"   applyTo: 'interior (optional)\n"
+			"   applyToItem: Item to apply to (optional)\n"
+			"\n"
+			"result:\n\n"
+			
+			"   resultCode: Result of applying condition\n"
+			"\n"
+			"resultCode:\n\n"
+			
+			"   'ok: Condition removed\n"
+			"   'alreadyRemoved: Does not have this condition\n"
+			"   'noEffect: Could not remove condition\n"
+			"   'stillApplied: Removed condition, but still affected\n",
+
+			"is*",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objRemoveItem",				fnObjItem,		FN_OBJ_REMOVE_ITEM,
 			"(objRemoveItem obj item [count] [options]) -> True/Nil\n\n"
@@ -2357,7 +2468,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ivsv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetItemProperty",			fnObjSet,		FN_OBJ_SET_ITEM_PROPERTY,
-			"RENAMED: Use (objSet@ obj item ...) instead.",
+			"DEPRECATED: Use (objSet@ obj item ...) instead.",
 			"ivs*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetKnown",					fnObjGetOld,		FN_OBJ_SET_KNOWN,
@@ -2376,7 +2487,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   0x0010 Pluralize second word\n"
 			"   0x0020 Reverse 'a' vs 'an'\n"
 			"   0x0040 No article\n"
-			"   0x0080 Personal name",
+			"   0x0080 Personal name\n",
 
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
@@ -2404,12 +2515,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'counter\n"
 			"   'counterLabel\n"
 			"   'pos position\n"
-			"   'rotation angle",
+			"   'rotation angle\n",
 
 			"iisv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetOverlayProperty",			fnObjGet,		FN_OBJ_SET_OVERLAY_PROPERTY,
-			"RENAMED: Use (ovrSet@ ...) instead.",
+			"DEPRECATED: Use (ovrSet@ ...) instead.",
 			"iisv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetOverlayRotation",		fnObjGet,		FN_OBJ_SET_OVERLAY_ROTATION,
@@ -2471,7 +2582,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property\n\n"
 
 			"   'charges charges\n"
-			"   'cycleFire [True|Nil]"
+			"   'cycleFire [True|Nil]\n"
 			"   'damaged [True|Nil]\n"
 			"   'disrupted [True|Nil|ticks]\n"
 			"   'enabled [True|Nil|'silentDisabled|'silentEnabled]\n"
@@ -2480,13 +2591,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'incCharges charges\n"
 			"   'linkedFireOptions list-of-options\n"
 			"   'pos (angle radius [z])\n"
-			"   'secondary [True|Nil]"
-			"   'unknownTypeIndex [integer|Nil]",
+			"   'secondary [True|Nil]\n"
+			"   'unknownTypeIndex [integer|Nil]\n",
 
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetProperty",				fnObjSet,		FN_OBJ_SET_ITEM_PROPERTY,
-			"RENAMED: Use (objSet@ ...) instead.",
+			"DEPRECATED: Use (objSet@ ...) instead.",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetShowAsDestination",			fnObjSet,		FN_OBJ_SET_AS_DESTINATION,
@@ -2499,7 +2610,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'autoClearOnDock      Clear when player docks\n"
 			"   'autoClearOnGate      Clear when player gates into object\n"
 			"   'showDistance         Show distance\n"
-			"   'showHighlight        Show target highlight",
+			"   'showHighlight        Show target highlight\n",
 
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2514,6 +2625,39 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objSetVel",					fnObjSet,		FN_OBJ_VELOCITY,
 			"(objSetVel obj velVector)",
 			"il",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objSquadronComms",					fnObjSet,		FN_OBJ_SQUADRON_COMMS,
+			"(objSquadronComms obj receiver msgID [options]) -> Result\n\n"
+			
+			"receiver:\n\n"
+			
+			"   'squadron\n"
+			"   obj\n"
+			"   list of objs\n"
+			"\n"
+			"msgID:\n\n"
+			
+			"   'msgAttackInFormation\n"
+			"   'msgAttackTarget\n"
+			"   'msgBreakAndAttack\n"
+			"   'msgFormationAlpha\n"
+			"   'msgFormationBeta\n"
+			"   'msgFormationGamma\n"
+			"   'msgFormUp\n"
+			"   'msgWait\n",
+
+			"ivs*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objSquadronCommsMessages",			fnObjGet,		FN_OBJ_SQUADRON_COMMS_MESSAGES,
+			"(objSquadronCommsMessages obj receiver) -> List of msgIDs\n\n"
+			
+			"receiver:\n\n"
+			
+			"   'squadron\n"
+			"   obj\n"
+			"   list of objs\n",
+
+			"iv",	0,	},
 
 		{	"objSuspend",					fnObjSet,		FN_OBJ_SUSPEND,
 			"(objSuspend obj)",
@@ -2658,7 +2802,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   S                  Only missions owned by source\n"
 			"   +/-{attrib}        Require/exclude missions with given attribute\n"
 			"   +/-ownerID:{id}    Require/exclude missions with given owner\n"
-			"   +/-unid:{unid}     Require/exclude missions of given unid",
+			"   +/-unid:{unid}     Require/exclude missions of given unid\n",
 			"*s",	0,	},
 
 		{	"msnFireEvent",					fnObjSet,		FN_OBJ_FIRE_EVENT,
@@ -2706,12 +2850,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'summary           A summary description of the mission\n"
 			"   'totalAccepted     Count of this type accepted by player\n"
 			"   'totalExisting     Count of this type currently existing in universe\n"
-			"   'unid              Mission type UNID",
+			"   'unid              Mission type UNID\n",
 
 			"is",	0,	},
 
 		{	"msnGetProperty",				fnObjGet,		FN_OBJ_GET_ITEM_PROPERTY,
-			"RENAMED: Use (msn@ ...) instead.",
+			"DEPRECATED: Use (msn@ ...) instead.",
 			"is",	0,	},
 
 		{	"msnGetStaticData",				fnObjData,		FN_OBJ_GET_STATIC_DATA,
@@ -2731,7 +2875,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnIncProperty",				fnObjSet,		FN_OBJ_INC_PROPERTY,
-			"RENAMED: Use (msnInc@ ...) instead.",
+			"DEPRECATED: Use (msnInc@ ...) instead.",
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnRefreshSummary",			fnMissionSet,		FN_MISSION_REFRESH_SUMMARY,
@@ -2768,12 +2912,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'isDeclined True|Nil\n"
 			"   'isIntroShown True|Nil\n"
 			"   'name newName\n"
-			"   'summary newSummary",
+			"   'summary newSummary\n",
 
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnSetProperty",				fnObjSet,		FN_OBJ_SET_ITEM_PROPERTY,
-			"RENAMED: Use (msnSet@ ...) instead.",
+			"DEPRECATED: Use (msnSet@ ...) instead.",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnSetTypeData",				fnObjData,		FN_OBJ_SET_GLOBAL_DATA,
@@ -2799,7 +2943,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysAddEncounterEvent delay target encounterID gateObj|pos)\n\n"
 
 			"target: obj or list of objs\n"
-			"delay: in ticks",
+			"delay: in ticks\n",
 
 			"iviv",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2807,7 +2951,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysAddEncounterEventAtDist delay target encounterID distance)\n\n"
 
 			"target: obj or list of objs\n"
-			"delay: in ticks",
+			"delay: in ticks\n",
 
 			"ivii",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2832,7 +2976,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 				
 			"   'center            Fire event when target gets close to this point\n"
 			"   'radius            Within this radius (light-seconds)\n"
-			"   'criteria          Objects that will trigger. If Nil, player triggers",
+			"   'criteria          Objects that will trigger. If Nil, player triggers\n",
 
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2890,7 +3034,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 				
 				"   'distance      Encounter distance (light-seconds), if gate is Nil\n"
 				"   'gate          Gate to appear at (if Nil, use distance)\n"
-				"   'target        Target of encounter",
+				"   'target        Target of encounter\n",
 
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2929,7 +3073,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'ferian           Ferian\n"
 			"   'fleet            fleet member\n"
 			"   'fleetcommand     fleet squad leader\n"
-			"   'gaianprocessor   Gaian processor",
+			"   'gaianprocessor   Gaian processor\n",
 
 			"ivi*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2959,7 +3103,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'detonateNow\n"
 			"   'fireEffect\n"
-			"   'soundEffect",
+			"   'soundEffect\n",
 
 			"vvviii*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2983,8 +3127,9 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   T           Include structure-scale stations\n"
 			"   t:xyz;      Same as \"t +xyz;\"\n"
 			"   T:xyz;      Same as \"T +xyz;\"\n"
-			"   z           Include the player\n\n"
-			
+			"   x           Include missiles where targetable='true'\n"
+			"   z           Include the player\n"
+			"\n"
 			"and may contain any number of the following options:\n\n"
 			
 			"   A           Active objects only (i.e., objects that can attack)\n"
@@ -3006,7 +3151,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   O:escort;   Ships ordered to escort source\n"
 			"   O:guard;    Ships ordered to guard source\n"
 			"   P           Only objects that can be detected (perceived) by source\n"
-			//"   Q           (unused)\n"
+			"   Q           Only objects that can perceive the source\n"
 			"   R           Return only the farthest object from the source\n"
 			"   R:nn;       Return only objects greater than nn light-seconds away\n"
 			"   S:sort;     Sort order ('d' = distance ascending; 'D' = distance descending\n"
@@ -3019,15 +3164,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   +xyz;       Only objects with attribute 'xyz'\n"
 			"   -xyz;       Exclude objects with attribute 'xyz'\n"
 			"   =n;         Only objects of level n. You can also replace = with >, <, >=, or <=,\n"
-			"				but they need to be escaped in XML.\n\n"
-			
+			"				but they need to be escaped in XML.\n"
+			"\n"
 			"   +/-data:xyz;        Include only/exclude objects with data 'xyz'\n"
 			"   +/-isPlanet:true;   Include only/exclude planets\n"
 			"   +/-property:xyz;    Include only/exclude objects with property 'xyz'\n"
-			"   +/-unid:xyz;        Include only/exclude objects with UNID 'xyz'\n\n"
-			
+			"   +/-unid:xyz;        Include only/exclude objects with UNID 'xyz'\n"
+			"\n"
 			"Order doesn't matter as long as multi-character items end with semicolons.\n"
-			"If the source is nil, the center of the system is used for position, "
+			"If the source is nil, the center of the system is used for position,\n"
 			"and other criteria related to the source are ignored.",
 
 			"is",	0,	},
@@ -3108,13 +3253,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'level               The level of the system\n"
 			"   'name                The name of the system\n"
 			"   'pos                 Node position on map (x y)\n"
-			"   'stdChallengeRating  Standard challenge rating for level"
-			"	'stdTreasureValue    Std treasure value for level (default currency)",
+			"   'stdChallengeRating  Standard challenge rating for level\n"
+			"	'stdTreasureValue    Std treasure value for level (default currency)\n",
 
 			"*s",	0,	},
 
 		{	"sysGetProperty",	fnSystemGet,	FN_SYS_GET_PROPERTY,
-			"RENAMED: Use (sys@ ...) instead.",
+			"DEPRECATED: Use (sys@ ...) instead.",
 			"*s",	0,	},
 
 		{	"sysGetPOV",					fnSystemGet,	FN_SYS_GET_POV,
@@ -3127,13 +3272,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"options:\n\n"
 			
 			"   'objType           Type (UNID) of object to place (optional)\n"
-			"   'remove            If True, remove location\n\n"
-			
+			"   'remove            If True, remove location\n"
+			"\n"
 			"location:\n\n"
 			
 			"   'attribs           The attributes for the location\n"
 			"   'orbit             The orbital parameters\n"
-			"   'pos               The location position",
+			"   'pos               The location position\n",
 
 			"s*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -3183,7 +3328,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 				
 			"options\n\n"
 				
-			"   'excludeWorlds",
+			"   'excludeWorlds\n",
 
 			"ivv*",	0,	},
 
@@ -3193,7 +3338,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"options\n\n"
 				
 			"   'excludeWorlds\n"
-			"   'sourceOnly",
+			"   'sourceOnly\n",
 
 			"iv*",	0,	},
 
@@ -3221,12 +3366,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'angleOffset:n              +/- n degrees along orbit arc\n"
 			"   'arcOffset:n                +/- n light-seconds along orbit arc\n"
-			"   'radiusOffset:n             +/- n light-seconds radius\n\n"
-			
+			"   'radiusOffset:n             +/- n light-seconds radius\n"
+			"\n"
 			"For arcOffset and radiusOffset, n may also be a list with the following"
 			"formats:\n\n"
 			
-			"   (list 'gaussian min max)",
+			"   (list 'gaussian min max)\n",
 
 			"v*",	0,	},
 
@@ -3268,7 +3413,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"         'center: The center position of the patch.\n"
 			"         'height: The height of the patch (in light-seconds).\n"
-			"         'width: The width of the patch (in light-seconds).",
+			"         'width: The width of the patch (in light-seconds).\n",
 
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
@@ -3286,12 +3431,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property:\n\n"
 
 			"   'known             Known to player\n"
-			"   'pos               Node position on map (x y)",
+			"   'pos               Node position on map (x y)\n",
 
 			"*sv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysSetProperty",	fnSystemGet,	FN_SYS_SET_PROPERTY,
-			"RENAMED: Use (sysSet@ ...) instead.",
+			"DEPRECATED: Use (sysSet@ ...) instead.",
 			"*sv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysStartTime",					fnSystemMisc,	FN_SYS_START_TIME,
@@ -3324,6 +3469,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysVectorDivide vector scalar) -> vector",
 			"vn",	0,	},
 
+		{	"sysVectorInPolygon",			fnSystemVectorMath,		FN_VECTOR_IN_POLYGON,
+			"(sysVectorInPolygon vector list-of-points) -> True/Nil",
+			"vl",	0,	},
+
 		{	"sysVectorMultiply",			fnSystemVectorMath,		FN_VECTOR_MULTIPLY,
 			"(sysVectorMultiply vector scalar) -> vector",
 			"vn",	0,	},
@@ -3339,7 +3488,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysVectorPolarOffset center angle radius) -> vector\n\n"
 
 			"center is either Nil, an object, or a vector\n"
-			"radius in light-seconds",
+			"radius in light-seconds\n",
 
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
@@ -3353,7 +3502,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"center is either Nil, an object, or a vector\n"
 			"radius in light-seconds from center (or a function)\n"
 			"minSeparation is the min distance from other objects (in light-seconds)\n"
-			"filter defines the set of objects to be away from",
+			"filter defines the set of objects to be away from\n",
 
 			"vv*",	0,	},
 
@@ -3427,7 +3576,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   +/-{attrib}        Require/exclude types with given attribute\n"
 			"   +/-event:xyz;      Require/exclude types with given event\n"
 			"   +/-isEnemyOf:xyz;  Require/exclude types which are enemy of sovereign\n"
-			"   =n;                Level comparisons (also supports < etc.)",
+			"   =n;                Level comparisons (also supports < etc.)\n",
 
 			"s",	0,	},
 
@@ -3593,8 +3742,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"field (missions):\n\n"
 			"   'level\n"
 			"   'maxLevel\n"
-			"   'minLevel\n\n"
-
+			"   'minLevel\n"
 			"",
 			"is",	0,	},
 
@@ -3626,8 +3774,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'playerThreatLevel     0 to 4 representing: None minorPiracy minorRaiding major existential\n"
 			"   'plural\n"
 			"   'shipsDestroyedByPlayer\n"
-			"   'stationsDestroyedByPlayer\n\n"
-
+			"   'stationsDestroyedByPlayer\n"
+			"\n"
 			"property (ships):\n\n"
 
 			"   'currency\n"
@@ -3653,20 +3801,20 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'thrustRatio\n"
 			"   'thrustToWeight\n"
 			"   'thrusterPower\n"
-			"   'wreckStructuralHP\n\n"
-
+			"   'wreckStructuralHP\n"
+			"\n"
 			"property (stations):\n\n"
 
 			"   'challengeRating\n"
 			"   'sovereign\n"
-			"   'sovereignName\n\n"
-
+			"   'sovereignName\n"
+			"\n"
 			"NOTE: All data fields (accessed via typGetDataField) are also valid properties.",
 
 			"is",	0,	},
 
 		{	"typGetProperty",				fnDesignGet,		FN_DESIGN_GET_PROPERTY,
-			"RENAMED: Use (typ@ ...) instead.",
+			"DEPRECATED: Use (typ@ ...) instead.",
 			"is",	0,	},
 
 		{	"typGetStaticData",				fnDesignGet,		FN_DESIGN_GET_STATIC_DATA,
@@ -3709,7 +3857,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"typIncProperty",			fnDesignGet,		FN_DESIGN_INC_PROPERTY,
-			"RENAMED: Use (typInc@ ...) instead.",
+			"DEPRECATED: Use (typInc@ ...) instead.",
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"typMarkImages",				fnDesignGet,		FN_DESIGN_MARK_IMAGES,
@@ -3729,7 +3877,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"typSetProperty",			fnDesignGet,		FN_DESIGN_SET_PROPERTY,
-			"RENAMED: Use (typSet@ ...) instead.",
+			"DEPRECATED: Use (typSet@ ...) instead.",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"typTranslate",				fnDesignGet,		FN_DESIGN_TRANSLATE,
@@ -3756,7 +3904,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'enemy\n"
 			"   'neutral\n"
-			"   'friend",
+			"   'friend\n",
 
 			"ii",	0,	},
 
@@ -3779,7 +3927,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 				"   0 / 'enemy\n"
 				"   1 / 'neutral\n"
-				"   2 / 'friend",
+				"   2 / 'friend\n",
 
 			"iiv",	PPFLAG_SIDEEFFECTS,	},
 
@@ -3800,7 +3948,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property\n\n"
 			
 			"   'height\n"
-			"   'width",
+			"   'width\n",
 
 			"vs",	0,	},
 
@@ -3825,11 +3973,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   V                  Include virtual objects\n"
 			"   +/-{attrib}        Require/exclude types with given attribute\n"
 			"   +/-unid:{unid}     Require/exclude types of given unid\n"
-			"   =n;                Level comparisons (also supports < etc.)\n\n"
-
+			"   =n;                Level comparisons (also supports < etc.)\n"
+			"\n"
 			"entry\n\n"
 			
-			"   ({objID} {type} {nodeID} {objName} {objNameFlags})",
+			"   ({objID} {type} {nodeID} {objName} {objNameFlags})\n",
 
 			"*s",	0,	},
 
@@ -3843,7 +3991,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"format\n\n"
 			
 			"   display:           Elapsed time in display format.\n"
-			"   seconds:           Elapsed time in game seconds.",
+			"   seconds:           Elapsed time in game seconds.\n",
 
 			"*is",	0,	},
 
@@ -3861,7 +4009,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"s",	0,	},
 
 		{	"unvGetProperty",				fnUniverseGet,	FN_UNIVERSE_GET_PROPERTY,
-			"RENAMED: Use (unv@ ...) instead.",
+			"DEPRECATED: Use (unv@ ...) instead.",
 			"s",	0,	},
 
 		{	"unvGetRealDate",				fnUniverseGet,	FN_UNIVERSE_REAL_DATE,
@@ -3879,7 +4027,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'local\n"
 			"   'serviceExtension\n"
-			"   'serviceUser",
+			"   'serviceUser\n",
 
 			"ssv",	0,	},
 
@@ -3953,6 +4101,26 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	DEPRECATED FUNCTIONS
 		//	--------------------
+
+		{	"objGetVisibleDamage",			fnObjGetOld,		FN_OBJ_VISIBLE_DAMAGE,
+			"DEPRECATED: Use (obj@ obj 'visibleDamage)",
+			NULL,	0,	},
+
+		{	"shpMakeRadioactive",			fnObjSet,		FN_OBJ_MAKE_RADIOACTIVE,
+			"DEPRECATED: Use (objApplyCondition ...) instead.",
+			"i",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objMakeParalyzed",				fnObjSet,			FN_OBJ_PARALYSIS,
+			"DEPRECATED: Use (objApplyCondition ...) instead.",
+			"ii",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"shpDecontaminate",				fnObjSet,			FN_OBJ_DECONTAMINATE,
+			"DEPRECATED: Use (objRemoveCondition ...) instead.",
+			"i",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objFixParalysis",				fnObjSet,		FN_OBJ_FIX_PARALYSIS,
+			"DEPRECATED: Use (objRemoveCondition ...) instead.",
+			"i",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetSovereign",				fnObjSetOld,		FN_OBJ_SOVEREIGN,
 			"DEPRECATED: Use (objSet@ obj 'sovereign sovereign) instead.",
@@ -4286,6 +4454,7 @@ ALERROR CUniverse::InitCodeChainPrimitives (void)
 	m_CC.DefineGlobal(CONSTLIT("gPlayerShip"), m_CC.GetNil());
 	m_CC.DefineGlobal(CONSTLIT("gSource"), m_CC.GetNil());
 	m_CC.DefineGlobal(CONSTLIT("gItem"), m_CC.GetNil());
+	m_CC.DefineGlobal(CONSTLIT("gScreen"), m_CC.GetNil());
 	m_CC.DefineGlobal(CONSTLIT("gType"), m_CC.GetNil());
 
 	//	Register primitives
@@ -5516,6 +5685,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		default:
 			ASSERT(FALSE);
+			return NULL;
 		}
 
 	return pResult;
@@ -5829,6 +5999,9 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 		case FN_OBJ_GET_STATIC_DATA_FOR_STATION_TYPE:
 			{
+			if (!pStationType)
+				throw CException(ERR_FAIL);
+
 			pResult = pStationType->GetStaticData(sAttrib)->Reference();
 			pArgs->Discard();
 			break;
@@ -5912,7 +6085,7 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -5973,7 +6146,7 @@ ICCItem *fnObjComms (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		if (iIndex == -1)
 			return pCC->CreateNil();
 
-		if (!pObj->IsCommsMessageValidFrom(pSender, iIndex))
+		if (!pObj->IsCommsMessageValidFrom(*pSender, iIndex))
 			return pCC->CreateNil();
 
 		//	Invoke the message
@@ -6377,7 +6550,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 			break;
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -6494,8 +6667,9 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Ask the object
 
+			CTradingServices Services(*pObj);
 			int iPrice;
-			if (!pObj->GetArmorRepairPrice(pSource, Item, iHPToRepair, 0, &iPrice))
+			if (!Services.GetArmorRepairPrice(Item.AsArmorItem(), iHPToRepair, 0, &iPrice))
 				return pCC->CreateNil();
 
 			//	Done
@@ -6511,8 +6685,9 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Ask the object
 
+			CTradingServices Services(*pObj);
 			int iPrice;
-			if (!pObj->GetArmorInstallPrice(Item, 0, &iPrice))
+			if (!Services.GetArmorInstallPrice(Item.AsArmorItem(), 0, &iPrice))
 				return pCC->CreateNil();
 
 			//	Done
@@ -6573,6 +6748,54 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				else
 					return pCC->CreateNil();
 				}
+			}
+
+		case FN_OBJ_CAN_APPLY_CONDITION:
+			{
+			auto sCondition = pArgs->GetElement(1)->GetStringValue();
+			auto iCondition = CConditionSet::ParseCondition(sCondition);
+			if (iCondition == ECondition::none)
+				return pCC->CreateError(CONSTLIT("Unknown condition"), pArgs->GetElement(1));
+
+			ICCItemPtr pOptions;
+			if (pArgs->GetElement(2))
+				pOptions = ICCItemPtr(pArgs->GetElement(2)->Reference());
+			else
+				pOptions = ICCItemPtr(pCC->CreateNil());
+
+			SApplyConditionOptions Options;
+			if (!pObj->ParseConditionOptions(*pOptions, Options))
+				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
+
+			auto iResult = pObj->CanApplyCondition(iCondition, Options);
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			pResult->SetStringAt(CONSTLIT("resultCode"), CConditionSet::AsID(iResult));
+
+			return pResult->Reference();
+			}
+
+		case FN_OBJ_CAN_REMOVE_CONDITION:
+			{
+			auto sCondition = pArgs->GetElement(1)->GetStringValue();
+			auto iCondition = CConditionSet::ParseCondition(sCondition);
+			if (iCondition == ECondition::none)
+				return pCC->CreateError(CONSTLIT("Unknown condition"), pArgs->GetElement(1));
+
+			ICCItemPtr pOptions;
+			if (pArgs->GetElement(2))
+				pOptions = ICCItemPtr(pArgs->GetElement(2)->Reference());
+			else
+				pOptions = ICCItemPtr(pCC->CreateNil());
+
+			SApplyConditionOptions Options;
+			if (!pObj->ParseConditionOptions(*pOptions, Options))
+				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
+
+			auto iResult = pObj->CanRemoveCondition(iCondition, Options);
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			pResult->SetStringAt(CONSTLIT("resultCode"), CConditionSet::AsID(iResult));
+
+			return pResult->Reference();
 			}
 
 		case FN_OBJ_CAN_DESTROY_TARGET:
@@ -7220,6 +7443,58 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pResult;
 			}
 
+		case FN_OBJ_GET_REMOVE_CONDITION_PRICE:
+			{
+			auto sCondition = pArgs->GetElement(2)->GetStringValue();
+			auto iCondition = CConditionSet::ParseCondition(sCondition);
+			if (iCondition == ECondition::none)
+				return pCC->CreateError(CONSTLIT("Unknown condition"), pArgs->GetElement(2));
+
+			ICCItem *pArg;
+			switch (CTLispConvert::ArgType(pArgs->GetElement(1), CTLispConvert::typeSpaceObject, &pArg))
+				{
+				case CTLispConvert::typeShipClass:
+					{
+					CShipClass *pClass = pCtx->GetUniverse().FindShipClass(pArg->GetIntegerValue());
+					if (pClass == NULL)
+						return pCC->CreateError(CONSTLIT("Invalid ship class"), pArg);
+
+					//	Get the value from the station that is selling
+
+					CTradingServices Services(*pObj);
+
+					int iValue;
+					if (!Services.GetRemoveConditionPrice(*pClass, iCondition, 0, &iValue))
+						return pCC->CreateNil();
+
+					return pCC->CreateInteger(iValue);
+					}
+
+				case CTLispConvert::typeSpaceObject:
+					{
+					CSpaceObject *pShip = CreateObjFromItem(pArg);
+					if (pShip == NULL)
+						return pCC->CreateError(CONSTLIT("Invalid ship"), pArg);
+
+					//	Get the value from the station that is selling
+
+					CTradingServices Services(*pObj);
+
+					int iValue;
+					if (!Services.GetRemoveConditionPrice(*pShip, iCondition, 0, &iValue))
+						return pCC->CreateNil();
+
+					return pCC->CreateInteger(iValue);
+					}
+
+				case CTLispConvert::typeNil:
+					return pCC->CreateNil();
+
+				default:
+					return pCC->CreateError(CONSTLIT("Invalid ship"), pArg);
+				}
+			}
+
 		case FN_OBJ_GET_SELL_PRICE:
 			{
 			CItem Item = pCtx->AsItem(pArgs->GetElement(1));
@@ -7557,6 +7832,64 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 			}
 
+		case FN_OBJ_SQUADRON_COMMS_MESSAGES:
+			{
+			const ICCItem *pReceiver = pArgs->GetElement(1);
+			TArray<CString> Messages;
+
+			//	If we have a list, then this is a list of squadron members.
+
+			if (pReceiver->IsList())
+				{
+				TArray<CSpaceObject *> List;
+				for (int i = 0; i < pReceiver->GetCount(); i++)
+					{
+					CSpaceObject *pObj = CTLispConvert::AsObject(pReceiver->GetElement(i));
+					if (!pObj)
+						continue;
+
+					List.Insert(pObj);
+					}
+
+				CSquadronCommunications Comms(*pObj, List);
+				Messages = Comms.GetMessageList();
+				}
+
+			//	Otherwise, if this is the keyword "squadron" then it applies to 
+			//	the entire (active) squadron.
+
+			else if (pReceiver->IsIdentifier())
+				{
+				CString sID = pReceiver->GetStringValue();
+				if (strEquals(sID, CONSTLIT("squadron")))
+					{
+					CSquadronCommunications Comms(*pObj);
+					Messages = Comms.GetMessageList();
+					}
+				else
+					return pCC->CreateError(CONSTLIT("Unknown receiver"), pReceiver);
+				}
+
+			//	Otherwise, we expect a single object
+
+			else
+				{
+				CSpaceObject *pReceiverObj = CTLispConvert::AsObject(pReceiver);
+				if (!pReceiverObj)
+					return pCC->CreateError(CONSTLIT("Invalid receiver"), pReceiver);
+
+				TArray<CSpaceObject *> List;
+				List.Insert(pReceiverObj);
+
+				CSquadronCommunications Comms(*pObj, List);
+				Messages = Comms.GetMessageList();
+				}
+
+			//	Return the list of messages
+
+			return CTLispConvert::CreateStringList(Messages)->Reference();
+			}
+
 		case FN_OBJ_TRANSLATE:
 			{
 			//	Get parameters
@@ -7626,7 +7959,7 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Evaluate the arguments and validate them
 
-	if (dwData == FN_OBJ_DISTANCE || dwData == FN_OBJ_NAME || FN_OBJ_INSTALLED_ITEM_DESC || FN_OBJ_ENEMY)
+	if (dwData == FN_OBJ_DISTANCE || dwData == FN_OBJ_NAME || dwData == FN_OBJ_INSTALLED_ITEM_DESC || dwData == FN_OBJ_ENEMY)
 		pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("i*"));
 	else if (dwData == FN_OBJ_ATTRIBUTE)
 		pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("is"));
@@ -7825,7 +8158,7 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -7865,9 +8198,8 @@ ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (pObj == NULL)
 				{
-				IPlayerController *pPlayer = pCtx->GetUniverse().GetPlayer();
-				if (pPlayer)
-					pPlayer->OnMessageFromObj(pSender, sMessage);
+				IPlayerController &Player = pCtx->GetUniverse().GetPlayer();
+				Player.OnMessageFromObj(pSender, sMessage);
 				}
 
 			//	Otherwise, send to object (which might send it to the player or
@@ -7917,9 +8249,8 @@ ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (pObj == NULL)
 				{
-				IPlayerController *pPlayer = pCtx->GetUniverse().GetPlayer();
-				if (pPlayer)
-					pPlayer->OnMessageFromObj(pSender, sMessage);
+				IPlayerController &Player = pCtx->GetUniverse().GetPlayer();
+				Player.OnMessageFromObj(pSender, sMessage);
 				}
 
 			//	Otherwise, send to object (which might send it to the player or
@@ -8212,6 +8543,30 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 			}
 
+		case FN_OBJ_APPLY_CONDITION:
+			{
+			auto sCondition = pArgs->GetElement(1)->GetStringValue();
+			auto iCondition = CConditionSet::ParseCondition(sCondition);
+			if (iCondition == ECondition::none)
+				return pCC->CreateError(CONSTLIT("Unknown condition"), pArgs->GetElement(1));
+
+			ICCItemPtr pOptions;
+			if (pArgs->GetElement(2))
+				pOptions = ICCItemPtr(pArgs->GetElement(2)->Reference());
+			else
+				pOptions = ICCItemPtr(pCC->CreateNil());
+
+			SApplyConditionOptions Options;
+			if (!pObj->ParseConditionOptions(*pOptions, Options))
+				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
+
+			auto iResult = pObj->ApplyCondition(iCondition, Options);
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			pResult->SetStringAt(CONSTLIT("resultCode"), CConditionSet::AsID(iResult));
+
+			return pResult->Reference();
+			}
+
 		case FN_OBJ_CHARGE:
 			{
 			DWORD dwEconomyUNID;
@@ -8268,6 +8623,15 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			int iValue = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : pArgs->GetElement(1))->GetIntegerValue();
 			int iRemaining = (int)pObj->CreditMoney(dwEconomyUNID, iValue);
 			return pCC->CreateInteger(iRemaining);
+			}
+
+		case FN_OBJ_DECONTAMINATE:
+			{
+			SApplyConditionOptions Options;
+			Options.bNoImmunityCheck = true;
+
+			auto iResult = pObj->RemoveCondition(ECondition::radioactive, Options);
+			return pCC->CreateBool(CConditionSet::IsSuccessResult(iResult));
 			}
 
 		case FN_OBJ_DEPLETE_SHIELDS:
@@ -8544,6 +8908,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			DWORD dwPowerUNID = pArgs->GetElement(1)->GetIntegerValue();
 			CPower *pPower = pCtx->GetUniverse().FindPower(dwPowerUNID);
+			if (!pPower)
+				return pCC->CreateError(CONSTLIT("Invalid power UNID"), pArgs->GetElement(1));
 
 			//If we don't specify a target, get the object's target
 			CSpaceObject *pTarget;
@@ -8613,9 +8979,11 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *p_OldWeaponBonus = pCC->LookupGlobal(CONSTLIT("aWeaponBonus"), pCtx);
 				ICCItem *p_OldWeaponType = pCC->LookupGlobal(CONSTLIT("aWeaponType"), pCtx);
 
+				SUpdateCtx ObjCtx;
+
 				// Set the weapon's linked fire option to lkfAlways before firing, then set it back so that it will fire regardless of linked fire options.
 				pDevice->SetLinkedFireOptions(CDeviceClass::lkfAlways);
-				CDeviceClass::SActivateCtx ActivateCtx(pTarget, TargetList);
+				CDeviceClass::SActivateCtx ActivateCtx(ObjCtx, pTarget, TargetList);
 				bSuccess = pDevice->Activate(ActivateCtx);
 
 				pCtx->DefineInteger(CONSTLIT("aFireAngle"), p_OldFireAngle->GetIntegerValue());
@@ -8651,8 +9019,11 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_FIX_PARALYSIS:
 			{
-			pObj->ClearCondition(ECondition::paralyzed);
-			return pCC->CreateTrue();
+			SApplyConditionOptions Options;
+			Options.bNoImmunityCheck = true;
+
+			auto iResult = pObj->RemoveCondition(ECondition::paralyzed, Options);
+			return pCC->CreateBool(CConditionSet::IsSuccessResult(iResult));
 			}
 
 		case FN_OBJ_IDENTIFIED:
@@ -8686,6 +9057,15 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Return the newly changed item
 
 			return CreateListFromItem(Item);
+			}
+
+		case FN_OBJ_MAKE_RADIOACTIVE:
+			{
+			SApplyConditionOptions Options;
+			Options.bNoImmunityCheck = true;
+
+			auto iResult = pObj->ApplyCondition(ECondition::radioactive, Options);
+			return pCC->CreateBool(CConditionSet::IsSuccessResult(iResult));
 			}
 
 		case FN_OBJ_INC_PROPERTY:
@@ -8731,6 +9111,16 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Return the resulting speed
 
 			return CreateListFromVector(vNewVel);
+			}
+
+		case FN_OBJ_PARALYSIS:
+			{
+			SApplyConditionOptions Options;
+			Options.iTimer = pArgs->GetElement(1)->GetIntegerValue();
+			Options.bNoImmunityCheck = true;
+
+			auto iResult = pObj->ApplyCondition(ECondition::paralyzed, Options);
+			return pCC->CreateBool(CConditionSet::IsSuccessResult(iResult));
 			}
 
 		case FN_OBJ_POSITION:
@@ -8825,6 +9215,30 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			pObj->GetSystem()->RegisterEventHandler(pObj, pArgs->GetElement(1)->GetIntegerValue() * LIGHT_SECOND);
 			return pCC->CreateTrue();
+
+		case FN_OBJ_REMOVE_CONDITION:
+			{
+			auto sCondition = pArgs->GetElement(1)->GetStringValue();
+			auto iCondition = CConditionSet::ParseCondition(sCondition);
+			if (iCondition == ECondition::none)
+				return pCC->CreateError(CONSTLIT("Unknown condition"), pArgs->GetElement(1));
+
+			ICCItemPtr pOptions;
+			if (pArgs->GetElement(2))
+				pOptions = ICCItemPtr(pArgs->GetElement(2)->Reference());
+			else
+				pOptions = ICCItemPtr(pCC->CreateNil());
+
+			SApplyConditionOptions Options;
+			if (!pObj->ParseConditionOptions(*pOptions, Options))
+				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
+
+			auto iResult = pObj->RemoveCondition(iCondition, Options);
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			pResult->SetStringAt(CONSTLIT("resultCode"), CConditionSet::AsID(iResult));
+
+			return pResult->Reference();
+			}
 
 		case FN_OBJ_REMOVE_ITEM_ENHANCEMENT:
 			{
@@ -9135,6 +9549,66 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 			}
 
+		case FN_OBJ_SQUADRON_COMMS:
+			{
+			const ICCItem *pReceiver = pArgs->GetElement(1);
+			CString sMsg = pArgs->GetElement(2)->GetStringValue();
+
+			//	If we have a list, then this is a list of squadron members.
+
+			if (pReceiver->IsList())
+				{
+				TArray<CSpaceObject *> List;
+				for (int i = 0; i < pReceiver->GetCount(); i++)
+					{
+					CSpaceObject *pObj = CTLispConvert::AsObject(pReceiver->GetElement(i));
+					if (!pObj)
+						continue;
+
+					List.Insert(pObj);
+					}
+
+				CSquadronCommunications Comms(*pObj, List);
+				Comms.Send(sMsg);
+
+				return pCC->CreateTrue();
+				}
+
+			//	Otherwise, if this is the keyword "squadron" then it applies to 
+			//	the entire (active) squadron.
+
+			else if (pReceiver->IsIdentifier())
+				{
+				CString sID = pReceiver->GetStringValue();
+				if (strEquals(sID, CONSTLIT("squadron")))
+					{
+					CSquadronCommunications Comms(*pObj);
+					Comms.Send(sMsg);
+
+					return pCC->CreateTrue();
+					}
+				else
+					return pCC->CreateError(CONSTLIT("Unknown receiver"), pReceiver);
+				}
+
+			//	Otherwise, we expect a single object
+
+			else
+				{
+				CSpaceObject *pReceiverObj = CTLispConvert::AsObject(pReceiver);
+				if (!pReceiverObj)
+					return pCC->CreateError(CONSTLIT("Invalid receiver"), pReceiver);
+
+				TArray<CSpaceObject *> List;
+				List.Insert(pReceiverObj);
+
+				CSquadronCommunications Comms(*pObj, List);
+				Comms.Send(sMsg);
+
+				return pCC->CreateTrue();
+				}
+			}
+
 		case FN_OBJ_SUSPEND:
 			if (pObj->IsDestroyed())
 				return pCC->CreateNil();
@@ -9265,16 +9739,6 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			break;
 			}
 
-		case FN_OBJ_PARALYSIS:
-			{
-			int iTime = pArgs->GetElement(1)->GetIntegerValue();
-			pArgs->Discard();
-
-			pObj->SetCondition(ECondition::paralyzed, iTime);
-			pResult = pCC->CreateTrue();
-			break;
-			}
-
 		case FN_OBJ_POSITION:
 			{
 			//	Second param is vector
@@ -9324,7 +9788,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -9484,7 +9948,7 @@ ICCItem *fnObjItemOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -9688,9 +10152,7 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Parse criteria
 
-			CMission::SCriteria Criteria;
-			if (!CMission::ParseCriteria(sCriteria, &Criteria))
-				return pCC->CreateError(CONSTLIT("Unable to parse criteria"), pArgs->GetElement(1));
+			CMissionCriteria Criteria(sCriteria);
 
 			//	Get list of missions that match criteria
 
@@ -9700,7 +10162,7 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Return a single mission
 
-			if (Criteria.bPriorityOnly)
+			if (Criteria.ReturnHighestPriority())
 				{
 				CMission *pBestMission = List.FindHighestPriority();
 				return pCC->CreateInteger((int)pBestMission);
@@ -10075,7 +10537,7 @@ ICCItem *fnShipClass (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -10176,78 +10638,9 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SHIP_ORDER_DESC:
 			{
-			IShipController *pController = pShip->GetController();
-			if (pController == NULL)
-				return pCC->CreateNil();
-
 			int iIndex = (pArgs->GetCount() > 1 ? pArgs->GetElement(1)->GetIntegerValue() : 0);
-
-			CSpaceObject *pTarget;
-			IShipController::SData Data;
-			IShipController::OrderTypes iOrder = pController->GetOrder(iIndex, &pTarget, &Data);
-			if (iOrder == IShipController::orderNone)
-				return pCC->CreateNil();
-
-			//	Create result list
-
-			ICCItem *pResult = pCC->CreateLinkedList();
-			if (pResult->IsError())
-				return pResult;
-
-			CCLinkedList *pList = (CCLinkedList *)pResult;
-
-			//	Add order name
-
-			ICCItem *pItem = pCC->CreateString(IShipController::GetOrderName(iOrder));
-			pList->Append(pItem);
-			pItem->Discard();
-
-			//	Add the target
-
-			if (IShipController::OrderHasTarget(iOrder))
-				{
-				pItem = pCC->CreateInteger((int)pTarget);
-				pList->Append(pItem);
-				pItem->Discard();
-				}
-
-			//	Add order data
-
-			switch (Data.iDataType)
-				{
-				case IShipController::dataInteger:
-					pList->AppendInteger(Data.dwData1);
-					break;
-
-				case IShipController::dataItem:
-					{
-					ICCItem *pItem = ::CreateListFromItem(Data.Item);
-					pList->Append(pItem);
-					pItem->Discard();
-					break;
-					}
-
-				case IShipController::dataPair:
-					pList->AppendInteger(Data.dwData1);
-					pList->AppendInteger(Data.dwData2);
-					break;
-
-				case IShipController::dataString:
-					pList->AppendString(Data.sData);
-					break;
-
-				case IShipController::dataVector:
-					{
-					ICCItem *pVector = ::CreateListFromVector(Data.vData);
-					pList->Append(pVector);
-					pVector->Discard();
-					break;
-					}
-				}
-
-			//	Done
-
-			return pResult;
+			const COrderDesc &OrderDesc = pShip->GetOrderDesc(iIndex);
+			return OrderDesc.AsCCItemList()->Reference();
 			}
 
 		default:
@@ -10318,16 +10711,6 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 		case FN_SHIP_INSTALL_TARGETING:
 			pShip->SetAbility(ablTargetingSystem, ablInstall, -1, 0);
-			pResult = pCC->CreateTrue();
-			break;
-
-		case FN_SHIP_DECONTAMINATE:
-			pShip->ClearCondition(ECondition::radioactive);
-			pResult = pCC->CreateTrue();
-			break;
-
-		case FN_SHIP_MAKE_RADIOACTIVE:
-			pShip->SetCondition(ECondition::radioactive);
 			pResult = pCC->CreateTrue();
 			break;
 
@@ -10416,7 +10799,7 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			IShipController *pController = pShip->GetController();
 			if (pController)
 				{
-				CString sOrder = IShipController::GetOrderName(pController->GetCurrentOrderEx());
+				CString sOrder = IShipController::GetOrderName(pController->GetCurrentOrderDesc().GetOrder());
 				if (!sOrder.IsBlank())
 					pResult = pCC->CreateString(sOrder);
 				else
@@ -10429,23 +10812,20 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 		case FN_SHIP_ORDER_TARGET:
 			{
-			IShipController *pController = pShip->GetController();
-			if (pController)
-				{
-				CSpaceObject *pTarget;
-				IShipController::OrderTypes iOrder = pController->GetCurrentOrderEx(&pTarget);
-				if (IShipController::OrderHasTarget(iOrder) && pTarget)
-					pResult = pCC->CreateInteger((int)pTarget);
-				else
-					pResult = pCC->CreateNil();
-				}
+			const COrderDesc &OrderDesc = pShip->GetCurrentOrderDesc();
+
+			CSpaceObject *pTarget = OrderDesc.GetTarget();
+			IShipController::OrderTypes iOrder = OrderDesc.GetOrder();
+
+			if (IShipController::OrderHasTarget(iOrder) && pTarget)
+				pResult = pCC->CreateInteger((int)pTarget);
 			else
 				pResult = pCC->CreateNil();
 			break;
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -10816,56 +11196,13 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get the data
 
-			IShipController::SData Data;
-			if (pArgs->GetCount() > (iArg + 1))
-				{
-				if (pArgs->GetElement(iArg)->IsNil() && pArgs->GetElement(iArg+1)->IsNil())
-					{
-					//	If both arguments are Nil, then we omit them both. We do this
-					//	because some orders (like escort) behave differently depending
-					//	on whether arguments are nil or not.
-					}
-				else
-					{
-					Data.iDataType = IShipController::dataPair;
-					Data.dwData1 = pArgs->GetElement(iArg)->GetIntegerValue();
-					Data.dwData2 = pArgs->GetElement(iArg+1)->GetIntegerValue();
-					}
-				}
-			else if (pArgs->GetCount() > iArg)
-				{
-				IShipController::EDataTypes iDataType = IShipController::GetOrderDataType(iOrder);
-
-				if (pArgs->GetElement(iArg)->IsNil())
-					{
-					//	Nil argument is empty. We treat this the same as if the
-					//	caller specified no argument.
-					}
-				else if (iDataType == IShipController::dataItem)
-					{
-					Data.iDataType = iDataType;
-					Data.Item = pCtx->AsItem(pArgs->GetElement(iArg));
-					}
-				else if (iDataType == IShipController::dataString)
-					{
-					Data.iDataType = iDataType;
-					Data.sData = pArgs->GetElement(iArg)->GetStringValue();
-					}
-				else if (iDataType == IShipController::dataVector)
-					{
-					Data.iDataType = iDataType;
-					Data.vData = ::CreateVectorFromList(*pCC, pArgs->GetElement(iArg));
-					}
-				else
-					{
-					Data.iDataType = IShipController::dataInteger;
-					Data.dwData1 = pArgs->GetElement(iArg)->GetIntegerValue();
-					}
-				}
+			COrderDesc OrderDesc = COrderDesc::ParseFromCCItem(*pCtx, iOrder, pTarget, *pArgs, iArg);
+			if (!OrderDesc)
+				return pCC->CreateNil();
 
 			//	Done
 
-			pShip->GetController()->AddOrder(iOrder, pTarget, Data, (dwData == FN_SHIP_ORDER_IMMEDIATE));
+			pShip->GetController()->AddOrder(OrderDesc, (dwData == FN_SHIP_ORDER_IMMEDIATE));
 			return pCC->CreateTrue();
 			}
 
@@ -10875,7 +11212,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderGoTo, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderGoTo, pObj));
 				return pCC->CreateTrue();
 				}
 			else
@@ -11128,7 +11465,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderDestroyTarget, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderDestroyTarget, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11143,7 +11480,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderDock, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderDock, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11161,7 +11498,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderEscort, pObj, IShipController::SData(dwFormation));
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderEscort, pObj, (int)dwFormation));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11176,7 +11513,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderFollow, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderFollow, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11194,7 +11531,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			if (pGate == NULL || !pGate->IsDestroyed())
 				{
 				//	Note: OK if pGate == NULL.
-				pShip->GetController()->AddOrder(IShipController::orderGate, pGate, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderGate, pGate));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11210,7 +11547,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderGuard, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderGuard, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11225,7 +11562,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderLoot, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderLoot, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11240,7 +11577,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pObj && !pObj->IsDestroyed())
 				{
-				pShip->GetController()->AddOrder(IShipController::orderMine, pObj, IShipController::SData());
+				pShip->GetController()->AddOrder(COrderDesc(IShipController::orderMine, pObj));
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -11258,7 +11595,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 				if (pCenter && !pCenter->IsDestroyed())
 					{
-					pShip->GetController()->AddOrder(IShipController::orderPatrol, pCenter, IShipController::SData(iRadius));
+					pShip->GetController()->AddOrder(COrderDesc(IShipController::orderPatrol, pCenter, iRadius));
 					pResult = pCC->CreateTrue();
 					}
 				else
@@ -11274,7 +11611,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			{
 			int iWaitTime = pArgs->GetElement(1)->GetIntegerValue();
 			pArgs->Discard();
-			pShip->GetController()->AddOrder(IShipController::orderWait, NULL, IShipController::SData(iWaitTime));
+			pShip->GetController()->AddOrder(COrderDesc(IShipController::orderWait, NULL, iWaitTime));
 			pResult = pCC->CreateTrue();
 			break;
 			}
@@ -11285,7 +11622,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			if (pArgs->GetCount() >= 2)
 				iWaitTime = pArgs->GetElement(1)->GetIntegerValue();
 			pArgs->Discard();
-			pShip->GetController()->AddOrder(IShipController::orderHold, NULL, IShipController::SData(iWaitTime));
+			pShip->GetController()->AddOrder(COrderDesc(IShipController::orderHold, NULL, iWaitTime));
 			pResult = pCC->CreateTrue();
 			break;
 			}
@@ -11405,7 +11742,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -11444,8 +11781,7 @@ ICCItem *fnSovereignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		default:
-			ASSERT(false);
-			return NULL;
+			throw CException(ERR_FAIL);
 		}
 	}
 
@@ -11539,7 +11875,7 @@ ICCItem *fnSovereignSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		default:
-			ASSERT(false);
+			throw CException(ERR_FAIL);
 		}
 
 	return pCC->CreateNil();
@@ -11707,7 +12043,7 @@ ICCItem *fnStationGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -11755,7 +12091,7 @@ ICCItem *fnStationSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pCC->CreateNil();
@@ -11815,7 +12151,7 @@ ICCItem *fnStationSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -11861,7 +12197,7 @@ ICCItem *fnStationType (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -12622,7 +12958,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		default:
-			ASSERT(false);
+			throw CException(ERR_FAIL);
 		}
 
 	return pCC->CreateNil();
@@ -12722,11 +13058,12 @@ ICCItem *fnSystemCreateMarker (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 
 	//	Evaluate the arguments and validate them
 
-	ICCItem *pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("svi"));
+	ICCItemPtr pArgs(pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("svv")));
 	if (pArgs->IsError())
-		return pArgs;
+		return pArgs->Reference();
 
-	CString sName = pArgs->GetElement(0)->GetStringValue();
+	CMarker::SCreateOptions Options;
+	Options.sName = pArgs->GetElement(0)->GetStringValue();
 
 	//	The position can be either a list (in which case it is a position)
 	//	or an integer (in which case it is a gate object)
@@ -12735,12 +13072,26 @@ ICCItem *fnSystemCreateMarker (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 	if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos) != NOERROR)
 		return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
 
-	//	Sovereign
+	//	Options
 
-	DWORD dwSovereignID = pArgs->GetElement(2)->GetIntegerValue();
-	CSovereign *pSovereign = pCtx->GetUniverse().FindSovereign(dwSovereignID);
+	ICCItem *pOptions = pArgs->GetElement(2);
+	if (pOptions->IsSymbolTable())
+		{
+		DWORD dwSovereignID = pOptions->GetIntegerAt(CONSTLIT("sovereign"));
+		if (dwSovereignID)
+			Options.pSovereign = pCtx->GetUniverse().FindSovereign(dwSovereignID);
 
-	pArgs->Discard();
+		Options.iLifetime = pOptions->GetIntegerAt(CONSTLIT("lifetime"), -1);
+
+		Options.iStyle = CMarker::ParseStyle(pOptions->GetStringAt(CONSTLIT("style")));
+		if (Options.iStyle == CMarker::EStyle::Error)
+			return pCC->CreateError(CONSTLIT("Unknown style"), pOptions);
+		}
+	else
+		{
+		DWORD dwSovereignID = pOptions->GetIntegerValue();
+		Options.pSovereign = pCtx->GetUniverse().FindSovereign(dwSovereignID);
+		}
 
 	//	Create
 
@@ -12750,10 +13101,9 @@ ICCItem *fnSystemCreateMarker (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 
 	CMarker *pObj;
 	if (error = CMarker::Create(*pSystem,
-			pSovereign,
 			vPos,
 			NullVector,
-			sName,
+			Options,
 			&pObj))
 		return pCC->CreateError(CONSTLIT("Error creating marker"), pCC->CreateInteger(error));
 
@@ -14746,6 +15096,30 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			return CreateListFromVector(vPos1 / rFactor);
 			}
 
+		case FN_VECTOR_IN_POLYGON:
+			{
+			CVector vPos1;
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos1) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
+
+			ICCItem *pPoints = pArgs->GetElement(1);
+			if (pPoints->GetCount() < 3)
+				return pCC->CreateError(CONSTLIT("Polygon must have at least 3 points"), pPoints);
+
+			TArray<CVector> PolygonPoints;
+			for (int i = 0; i < pPoints->GetCount(); i++)
+				{
+				CVector vPos2;
+				if (GetPosOrObject(pEvalCtx, pPoints->GetElement(i), &vPos2) != NOERROR)
+					return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
+
+				PolygonPoints.Insert(vPos2);
+				}
+
+			CPolygon Polygon(std::move(PolygonPoints));
+			return pCC->CreateBool(Polygon.PointIntersects(vPos1));
+			}
+
 		case FN_VECTOR_MULTIPLY:
 			{
 			CVector vPos1;
@@ -14853,6 +15227,10 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 				return CreateListFromVector(vTry);
 				}
+
+			//	Should never get there.
+
+			throw CException(ERR_FAIL);
 			}
 
 		case FN_VECTOR_SUBTRACT:
@@ -14917,8 +15295,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			}
 
 		default:
-			ASSERT(false);
-			return NULL;
+			throw CException(ERR_FAIL);
 		}
 	}
 
@@ -15331,7 +15708,7 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					sName = pFoundShip->GetNounPhrase();
 					}
 				else
-					ASSERT(false);
+					throw CException(ERR_FAIL);
 
 				ICCItem *pValue = pCC->CreateInteger(dwUNID);
 				pList->Append(pValue);
@@ -15352,7 +15729,7 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;

@@ -320,7 +320,7 @@ ALERROR CG16bitFont::CreateFromFont (HFONT hFont)
 	HFONT hOldFont = (HFONT)SelectObject(hDC, hFont);
 	HBITMAP hTempBmp = NULL;
 	HBITMAP hFontBmp = NULL;
-	HBITMAP hOldBitmap;
+	HBITMAP hOldBitmap = NULL;
 	int i, y;
 
 	//	Get some metrics. For some reason we need to recreate the DC after

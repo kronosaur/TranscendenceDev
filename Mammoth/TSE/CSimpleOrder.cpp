@@ -14,10 +14,17 @@ void CSimpleOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	{
 	DEBUG_TRY
 
+	if (!pShip)
+		throw CException(ERR_FAIL);
+
 	switch (m_iOrder)
 		{
 		case IShipController::orderFireWeapon:
 			OrderFireWeapon(pShip, Ctx);
+			break;
+
+		case IShipController::orderResupply:
+			OrderResupply(*pShip, Ctx);
 			break;
 
 		case IShipController::orderUseItem:
@@ -42,20 +49,31 @@ void CSimpleOrder::OrderFireWeapon (CShip *pShip, CAIBehaviorCtx &Ctx) const
 	{
 	//	Get the current order data
 
-	CSpaceObject *pTarget;
-	IShipController::SData Data;
-	pShip->GetCurrentOrder(&pTarget, &Data);
-	const CItem &WeaponItem = Data.AsItem();
+	const COrderDesc &OrderDesc = pShip->GetCurrentOrderDesc();
 
 	//	Select the specified weapon.
 
-	DeviceNames iDev = pShip->SelectWeapon(WeaponItem);
 	CInstalledDevice *pWeapon;
-	if (iDev == devNone
-			|| (pWeapon = pShip->GetNamedDevice(iDev)) == NULL)
+
+	const CItem &WeaponItem = OrderDesc.GetDataItem();
+	if (!WeaponItem.IsEmpty())
 		{
-		pShip->CancelCurrentOrder();
-		return;
+		DeviceNames iDev = pShip->SelectWeapon(WeaponItem);
+		if (iDev == devNone
+				|| (pWeapon = pShip->GetNamedDevice(iDev)) == NULL)
+			{
+			pShip->CancelCurrentOrder();
+			return;
+			}
+		}
+	else
+		{
+		pWeapon = pShip->GetNamedDevice(devPrimaryWeapon);
+		if (!pWeapon)
+			{
+			pShip->CancelCurrentOrder();
+			return;
+			}
 		}
 
 	//	If the weapon is not yet ready, then wait
@@ -72,6 +90,33 @@ void CSimpleOrder::OrderFireWeapon (CShip *pShip, CAIBehaviorCtx &Ctx) const
 	pShip->CancelCurrentOrder();
 	}
 
+void CSimpleOrder::OrderResupply (CShip &Ship, CAIBehaviorCtx &Ctx) const
+
+//	OrderResupply
+//
+//	Resupply from the object we're currently docked at.
+
+	{
+	CSpaceObject *pSupplier = Ship.GetDockedObj();
+	if (!pSupplier || pSupplier->IsDestroyed() || pSupplier->IsAbandoned())
+		{
+		Ship.CancelCurrentOrder();
+		return;
+		}
+
+	//	Refit the ship
+
+	CSpaceObject::SRefitObjCtx RefitCtx(pSupplier->CalcRefitObjCtx(0, 0));
+
+	//	Do it.
+
+	pSupplier->RefitObj(Ship, RefitCtx);
+
+	//	Success!
+
+	Ship.CancelCurrentOrder();
+	}
+
 void CSimpleOrder::OrderUseItem (CShip *pShip, CAIBehaviorCtx &Ctx) const
 
 //	OrderUseItem
@@ -81,10 +126,8 @@ void CSimpleOrder::OrderUseItem (CShip *pShip, CAIBehaviorCtx &Ctx) const
 	{
 	//	Get the current order data
 
-	CSpaceObject *pTarget;
-	IShipController::SData Data;
-	pShip->GetCurrentOrder(&pTarget, &Data);
-	const CItem &Item = Data.AsItem();
+	const COrderDesc &OrderDesc = pShip->GetCurrentOrderDesc();
+	const CItem &Item = OrderDesc.GetDataItem();
 
 	//	Validate the item
 

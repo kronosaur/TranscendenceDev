@@ -9,7 +9,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msHuaramarcaRevelation;"
-			name=				"Huaramarca Revelation"
+			name=				"Huaramarca 07: Revelation"
 			attributes=			"huariEmpire, huariTemple"
 			inherit=			"&unidCommonText;"
 
@@ -18,6 +18,8 @@
 			priority=			"70"
 			noStats=			"true"
 			>
+
+		<Image	imageID="&rsHuariTemple;" imageWidth="330" imageHeight="330"/>
 
 		<Events>
 			<OnCreate>

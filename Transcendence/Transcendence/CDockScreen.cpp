@@ -481,7 +481,7 @@ ALERROR CDockScreen::CreateBackgroundImage (const SDockScreenBackgroundDesc &Des
 		//	If we have a hero image, then use that
 
 		const CObjectImageArray &HeroImage = Desc.pObj->GetHeroImage();
-		if (!HeroImage.IsEmpty())
+		if (!Desc.pObj->IsAbandoned() && !HeroImage.IsEmpty())
 			{
 			//	Paint the hero image on top of the system space background.
 
@@ -762,7 +762,7 @@ ICCItemPtr CDockScreen::GetProperty (const CString &sProperty) const
 		return ICCItemPtr(GetDescription());
 
 	else if (strEquals(sProperty, PROPERTY_IN_FIRST_ON_INIT))
-		return ICCItemPtr(IsFirstOnInit());
+		return ICCItemPtr(GetUniverse().GetDockSession().IsFirstOnInit());
 
 	else if (strEquals(sProperty, PROPERTY_INPUT))
 		return ICCItemPtr(GetTextInput());
@@ -831,7 +831,6 @@ bool CDockScreen::EvalBool (const CString &sCode)
 
 	{
 	CCodeChainCtx Ctx(GetUniverse());
-	Ctx.SetScreen(this);
 	Ctx.DefineContainingType(m_pRoot);
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
 	Ctx.SaveAndDefineDataVar(m_pData);
@@ -878,7 +877,6 @@ CString CDockScreen::EvalInitialPane (CSpaceObject *pSource, ICCItem *pData)
 		//	Execute
 
 		CCodeChainCtx Ctx(GetUniverse());
-		Ctx.SetScreen(this);
 		Ctx.DefineContainingType(m_pRoot);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineDataVar(pData);
@@ -911,7 +909,6 @@ bool CDockScreen::EvalString (const CString &sString, ICCItem *pData, bool bPlai
 	{
 	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.SetEvent(iEvent);
-	Ctx.SetScreen(this);
 	Ctx.DefineContainingType(m_pRoot);
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
 	Ctx.SaveAndDefineDataVar(pData);
@@ -963,7 +960,6 @@ ALERROR CDockScreen::FireOnScreenInit (CSpaceObject *pSource, ICCItem *pData, CS
 		//	Execute
 
 		CCodeChainCtx Ctx(GetUniverse());
-		Ctx.SetScreen(this);
 		Ctx.DefineContainingType(m_pRoot);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineDataVar(pData);
@@ -982,7 +978,7 @@ ALERROR CDockScreen::FireOnScreenInit (CSpaceObject *pSource, ICCItem *pData, CS
 		m_bInOnInit = false;
 		}
 
-	m_bFirstOnInit = false;
+	GetUniverse().GetDockSession().OnInitCalled();
 
 	return NOERROR;
 
@@ -1355,7 +1351,7 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	//	If we've already got a screen set up then we don't need to
 	//	continue (OnScreenInit has navigated to a different screen).
 
-	if (m_pScreen)
+	if (m_pScreen || !DockSession.InSession())
 		return NOERROR;
 
 	//	Create a new screen
@@ -1390,6 +1386,7 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	DisplayCtx.pFontTable = m_pFonts;
 	DisplayCtx.pLocation = m_pLocation;
 	DisplayCtx.pScreen = m_pScreen;
+	DisplayCtx.pSelection = Frame.pSavedSelection;
 
 	DisplayCtx.rcScreen = m_Layout.GetContentRect();
 	DisplayCtx.rcRect = m_Layout.GetDisplayRect();
@@ -1625,7 +1622,6 @@ void CDockScreen::OnObjDestroyed (const SDestroyCtx &Ctx)
 			{
 			CCodeChainCtx CCCtx(GetUniverse());
 			CCCtx.SetExtension(Event.pExtension);
-			CCCtx.SetScreen(this);
 			CCCtx.DefineContainingType(m_pRoot);
 			CCCtx.SaveAndDefineSourceVar(m_pLocation);
 			CCCtx.SaveAndDefineDataVar(m_pData);
@@ -1702,7 +1698,6 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 				if (m_Controls[i].pCode)
 					{
 					CCodeChainCtx Ctx(GetUniverse());
-					Ctx.SetScreen(this);
 					Ctx.DefineContainingType(m_pRoot);
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
@@ -1744,7 +1739,6 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 				if (m_Controls[i].pCode)
 					{
 					CCodeChainCtx Ctx(GetUniverse());
-					Ctx.SetScreen(this);
 					Ctx.DefineContainingType(m_pRoot);
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
@@ -1787,7 +1781,6 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 				if (m_Controls[i].pCode)
 					{
 					CCodeChainCtx Ctx(GetUniverse());
-					Ctx.SetScreen(this);
 					Ctx.DefineContainingType(m_pRoot);
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
@@ -1831,7 +1824,6 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 				if (m_Controls[i].pCode)
 					{
 					CCodeChainCtx Ctx(GetUniverse());
-					Ctx.SetScreen(this);
 					Ctx.DefineContainingType(m_pRoot);
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
@@ -2181,7 +2173,6 @@ void CDockScreen::Update (int iTick)
 		//	Execute
 
 		CCodeChainCtx Ctx(GetUniverse());
-		Ctx.SetScreen(this);
 		Ctx.DefineContainingType(m_pRoot);
 		Ctx.SaveAndDefineSourceVar(m_pLocation);
 		Ctx.SaveAndDefineDataVar(m_pData);

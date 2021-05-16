@@ -57,6 +57,7 @@ struct SViewportPaintCtx
 			pFrame->iVariant = iVariant;
 			pFrame->yAnnotations = yAnnotations;
 			pFrame->rcObjBounds = rcObjBounds;
+			pFrame->byShimmer = byShimmer;
 			}
 
 		void Restore (void)
@@ -75,6 +76,7 @@ struct SViewportPaintCtx
 				iVariant = pFrame->iVariant;
 				yAnnotations = pFrame->yAnnotations;
 				rcObjBounds = pFrame->rcObjBounds;
+				byShimmer = pFrame->byShimmer;
 
 				m_SaveStack.Delete(iLastIndex);
 				}
@@ -124,6 +126,7 @@ struct SViewportPaintCtx
 		bool bShowFacingsAngle = false;
 		bool bNo3DExtras = false;
 		bool bInPaintSubordinate = false;
+		bool bShowOrderInfo = false;
 
 		CSpaceObject *pObj = NULL;				//	Current object being painted
 		RECT rcObjBounds;						//	Object bounds in screen coordinates.
@@ -142,6 +145,7 @@ struct SViewportPaintCtx
 		int iMaxLength = -1;					//	Max length of object (used for projectiles); -1 == no limit
 		int iStartFade = 0;						//	If bFade is TRUE this is the tick on which we started fading
 		Metric rOffsetScale = 1.0;				//	Scale of Group offsets
+		DWORD byShimmer = 0;					//	If 1-255, paint stealth shimmer
 
 	private:
 		struct SVariants
@@ -155,6 +159,7 @@ struct SViewportPaintCtx
 			int iMaxLength;
 			int yAnnotations;
 			RECT rcObjBounds;
+			DWORD byShimmer;
 			};
 
 		//	Stack of modifications
@@ -190,6 +195,8 @@ class CMapViewportCtx
 		int GetCenterX (void) const { return m_xCenter; }
 		int GetCenterY (void) const { return m_yCenter; }
 		CLabelPainter &GetLabelPainter (void) { return m_Labels; }
+		const CVector &GetLL () const { return m_vLL; }
+		const CVector &GetUR () const { return m_vUR; }
 		const RECT &GetViewportRect (void) const { return m_rcView; }
 		ViewportTransform &GetXform (void) { return m_Trans; }
 		bool IsInViewport (CSpaceObject *pObj) const;

@@ -1,6 +1,7 @@
 //	CSystemType.cpp
 //
 //	CSystemType class
+//	Copyright (c) 2021 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -12,6 +13,7 @@
 
 #define BACKGROUND_ID_ATTRIB					CONSTLIT("backgroundID")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
+#define NAME_ATTRIB								CONSTLIT("name")
 #define NO_EXTRA_ENCOUNTERS_ATTRIB				CONSTLIT("noExtraEncounters")
 #define NO_RANDOM_ENCOUNTERS_ATTRIB				CONSTLIT("noRandomEncounters")
 #define SPACE_COLOR_ATTRIB						CONSTLIT("spaceColor")
@@ -20,6 +22,8 @@
 #define TIME_SCALE_ATTRIB						CONSTLIT("timeScale")
 
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
+#define ON_SYSTEM_STARTED_EVENT					CONSTLIT("OnSystemStarted")
+#define ON_SYSTEM_STOPPED_EVENT					CONSTLIT("OnSystemStopped")
 
 #define SIZE_SMALL								CONSTLIT("small")
 #define SIZE_MEDIUM								CONSTLIT("medium")
@@ -31,6 +35,16 @@
 static const char *CACHED_EVENTS[CSystemType::evtCount] =
 	{
 		"OnObjJumpPosAdj",
+	};
+
+static TStaticStringTable<TStaticStringEntry<Metric>, 7> SCALE_TABLE = {
+	"au",					g_AU,
+	"light-minute",			LIGHT_MINUTE,
+	"light-second",			LIGHT_SECOND,
+	"lm",					LIGHT_MINUTE,
+	"ls",					LIGHT_SECOND,
+	"mls",					LIGHT_SECOND / 1000.0,
+	"pixel",				g_KlicksPerPixel,
 	};
 
 CSystemType::CSystemType (void) : 
@@ -122,6 +136,51 @@ bool CSystemType::FireOnObjJumpPosAdj (CSpaceObject *pObj, CVector *iovPos)
 	return false;
 	}
 
+void CSystemType::FireOnSystemStarted (DWORD dwElapsedTime)
+
+//	FireOnSystemStarted
+//
+//	Fires <OnSystemStarted> event.
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(ON_SYSTEM_STARTED_EVENT, &Event))
+		return;
+
+	CCodeChainCtx CCX(GetUniverse());
+
+	CCX.DefineContainingType(this);
+	CCX.DefineInteger(CONSTLIT("aElapsedTime"), dwElapsedTime);
+
+	//	Run code
+
+	ICCItemPtr pResult = CCX.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_SYSTEM_STARTED_EVENT, pResult);
+	}
+
+void CSystemType::FireOnSystemStopped ()
+
+//	FireOnSystemStopped
+//
+//	Fires <OnSystemStopped> event.
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(ON_SYSTEM_STOPPED_EVENT, &Event))
+		return;
+
+	CCodeChainCtx CCX(GetUniverse());
+
+	CCX.DefineContainingType(this);
+
+	//	Run code
+
+	ICCItemPtr pResult = CCX.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_SYSTEM_STOPPED_EVENT, pResult);
+	}
+
 ALERROR CSystemType::FireSystemCreateCode (SSystemCreateCtx &SysCreateCtx, ICCItem *pCode, const COrbit &OrbitDesc, CString *retsError)
 
 //	FireSystemCreateCode
@@ -169,6 +228,9 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	{
 	ALERROR error;
+
+	if (!pDesc->FindAttribute(NAME_ATTRIB, &m_sName))
+		m_sName = strPatternSubst(CONSTLIT("SystemType %08x"), GetUNID());
 
 	//	Load the background image UNID. If we have an explicit definition, then
 	//	take it, even if it is 0. Otherwise, we default to the core background.
@@ -269,5 +331,23 @@ void CSystemType::OnMarkImages (void)
 		TSharedPtr<CObjectImage> pImage = GetUniverse().FindLibraryImage(m_dwBackgroundUNID);
 		if (pImage)
 			pImage->Mark();
+		}
+	}
+
+Metric CSystemType::ParseScale (const CString &sValue)
+
+//	ParseScale
+//
+//	Parses a scale unit and returns the unit length in kilometers.
+
+	{
+	if (sValue.IsBlank())
+		return LIGHT_SECOND;
+	else
+		{
+		if (auto pEntry = SCALE_TABLE.GetAt(sValue))
+			return pEntry->Value;
+		else
+			return LIGHT_SECOND;
 		}
 	}

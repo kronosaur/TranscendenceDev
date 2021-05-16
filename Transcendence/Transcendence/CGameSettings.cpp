@@ -86,6 +86,7 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"no3DSystemMap",			optionBoolean,	"false",	0	},
 		{	"maxResolution",			optionInteger,	"1200",		0	},
 		{	"noGPUAcceleration",		optionBoolean,	"false",	0	},
+		{	"noSpaceBackground",		optionBoolean,	"false",	0	},
 
 		//	Sounds options
 		{	"noSound",					optionBoolean,	"false",	0	},

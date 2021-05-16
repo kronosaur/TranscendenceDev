@@ -73,14 +73,19 @@ class CSovereign : public CDesignType
 		void DeleteRelationships (void);
 		bool FindEventHandlerSovereign (int iEvent, SEventHandlerDesc *retEvent = NULL) const 
 			{
-			ASSERT(iEvent >= 0 && iEvent < CACHED_EVENT_COUNT);
-			if (m_CachedEvents[iEvent].pCode == NULL)
-				return false;
+			if (iEvent >= 0 && iEvent < CACHED_EVENT_COUNT)
+				{
+				if (m_CachedEvents[iEvent].pCode == NULL)
+					return false;
 
-			if (retEvent) *retEvent = m_CachedEvents[iEvent];
-			return true;
+				if (retEvent) *retEvent = m_CachedEvents[iEvent];
+				return true;
+				}
+			else
+				throw CException(ERR_FAIL);
 			}
 		void FlushEnemyObjectCache (void) { m_EnemyObjects.DeleteAll(); m_pEnemyObjectsSystem = NULL; }
+		static CString GetAlignmentID (Alignments iAlignment);
 		IPlayerController *GetController (void);
 		Disposition GetDispositionTowards (const CSovereign *pSovereign, bool bCheckParent = true) const;
 		const CSpaceObjectList &GetEnemyObjectList (const CSystem *pSystem) { InitEnemyObjectList(pSystem); return m_EnemyObjects; }
@@ -173,5 +178,9 @@ class CSovereign : public CDesignType
 
 		SEventHandlerDesc m_CachedEvents[CACHED_EVENT_COUNT] = { 0 };
 		static const char *m_CACHED_EVENTS[CACHED_EVENT_COUNT];
+
+		//	Property table
+
+		static TPropertyHandler<CSovereign> m_PropertyTable;
 	};
 

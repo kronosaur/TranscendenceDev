@@ -228,7 +228,7 @@
 		<Language>
 			<Text id="descWelcome">
 
-				You are docked at a Ringers Collective. Ringer neo-humans float
+				You are docked at a Ringers Collective. Ringer neohumans float
 				through the vast volume of the station, perfectly adapted to
 				zero-gravity and space.
 
@@ -376,9 +376,7 @@
 									(= (objGetBalance gPlayerShip 'rin) 0)
 										(scrShowPane gScreen 'DockServicesGreeter)
 
-									(rpgDockServices gPlayerShip {
-										checkMilitaryID: Nil
-										})
+									(rpgDockServices gPlayerShip)
 									)
 							</Action>
 
@@ -405,9 +403,7 @@
 								(block Nil
 									(scrShowPane gScreen 'Default)
 									
-									(rpgDockServices gPlayerShip {
-										checkMilitaryID: Nil
-										})
+									(rpgDockServices gPlayerShip)
 									)
 							</Action>
 						</Actions>
@@ -419,7 +415,7 @@
 		<Language>
 			<Text id="descWelcome">
 
-				You are docked at a Ringer Shipyard. Ringer neo-humans float
+				You are docked at a Ringer Shipyard. Ringer neohumans float
 				through the vast volume of the station, perfectly adapted to
 				zero-gravity and space.
 

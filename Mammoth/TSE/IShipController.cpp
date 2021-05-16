@@ -60,40 +60,41 @@ const IShipController::SOrderTypeData IShipController::m_OrderTypes[] =
 
 		{	"fireWeapon",				"-",	"I",	0 },
 		{	"useItem",					"-",	"I",	0 },
+		{	"orbitExact",				"o",	"?",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
+		{	"orbitPatrol",				"o",	"?",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
+		{	"deterChase",				"o",	"?",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
+		{	"attackOrRetreat",			"o",	"i",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP | ORDER_FLAG_DELETE_ON_OLD_SHIP_WAITS },
+		{	"resupply",					"-",	"-",	0 },
 	};
 
 const int IShipController::ORDER_TYPES_COUNT = (sizeof(m_OrderTypes) / sizeof(m_OrderTypes[0]));
 
-IShipController::EDataTypes IShipController::GetOrderDataType (OrderTypes iOrder)
+const COrderDesc &IShipController::GetCurrentOrderDesc () const
+	{
+	return COrderDesc::Null;
+	}
+
+const COrderDesc &IShipController::GetOrderDesc (int iIndex) const
+	{
+	return COrderDesc::Null;
+	}
+
+char IShipController::GetOrderDataType (OrderTypes iOrder)
 
 //	GetOrderDataType
 //
-//	Returns the data type used by the order.
+//	Expected data type:
+//
+//	'-'	None
+//	'?' CCItem
+//	'i' 32-bit integer
+//	'I' CItem
+//	's' CString
+//	'v' CVector
+//	'2' Pair of 16-bit integers
 
 	{
-	switch (m_OrderTypes[iOrder].szData[0])
-		{
-		case '-':
-			return dataNone;
-
-		case 'i':
-			return dataInteger;
-
-		case 'I':
-			return dataItem;
-
-		case 's':
-			return dataString;
-
-		case 'v':
-			return dataVector;
-
-		case '2':
-			return dataPair;
-
-		default:
-			return dataNone;
-		}
+	return m_OrderTypes[iOrder].szData[0];
 	}
 
 IShipController::OrderTypes IShipController::GetOrderType (const CString &sString)
@@ -124,80 +125,3 @@ bool IShipController::OrderHasTarget (IShipController::OrderTypes iOrder, bool *
 
 	return (*m_OrderTypes[iOrder].szTarget != '-');
 	}
-
-bool IShipController::ParseOrderString (const CString &sValue, OrderTypes *retiOrder, IShipController::SData *retData)
-
-//	ParseOrderString
-//
-//	Parses an order string of the form:
-//
-//	{order}:{d1}:{d2}
-
-	{
-	char *pPos = sValue.GetASCIIZPointer();
-
-	//	Parse the order name
-
-	char *pStart = pPos;
-	while (*pPos != '\0' && *pPos != ':')
-		pPos++;
-
-	CString sOrder(pStart, (int)(pPos - pStart));
-
-	//	For backwards compatibility we handle some special names.
-
-	IShipController::OrderTypes iOrder;
-	if (strEquals(sOrder, CONSTLIT("trade route")))
-		iOrder = orderTradeRoute;
-	else
-		{
-		iOrder = GetOrderType(sOrder);
-
-		//	Check for error
-
-		if (iOrder == orderNone && !sOrder.IsBlank())
-			return false;
-		}
-
-	//	Get additional data
-
-	if (retData)
-		{
-		DWORD dwData1 = 0;
-		DWORD dwData2 = 0;
-
-		if (*pPos != ':')
-			*retData = SData();
-		else
-			{
-			pPos++;
-			pStart = pPos;
-			while (*pPos != '\0' && *pPos != ':')
-				pPos++;
-
-			CString sData(pStart, (int)(pPos - pStart));
-			dwData1 = strToInt(sData, 0);
-
-			if (*pPos != ':')
-				*retData = SData(dwData1);
-			else
-				{
-				pPos++;
-				pStart = pPos;
-				while (*pPos != '\0')
-					pPos++;
-
-				CString sData(pStart, (int)(pPos - pStart));
-				dwData2 = strToInt(sData, 0);
-
-				*retData = SData(dwData1, dwData2);
-				}
-			}
-		}
-
-	//	Done
-
-	*retiOrder = iOrder;
-	return true;
-	}
-

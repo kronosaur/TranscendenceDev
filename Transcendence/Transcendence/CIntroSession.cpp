@@ -245,11 +245,8 @@ void CIntroSession::CreateIntroShips (DWORD dwNewShipClass, DWORD dwSovereign, C
 			CShip *pShip = pObj->AsShip();
 			if (pShip)
 				{
-				IShipController *pController = pShip->GetController();
-
-				CSpaceObject *pTarget;
-				IShipController::OrderTypes iOrder = pController->GetCurrentOrderEx(&pTarget);
-				if ((pShipDestroyed && pTarget == pShipDestroyed) || iOrder == IShipController::orderNone)
+				const COrderDesc &OrderDesc = pShip->GetCurrentOrderDesc();
+				if ((pShipDestroyed && OrderDesc.GetTarget() == pShipDestroyed) || OrderDesc.GetOrder() == IShipController::orderNone)
 					{
 					if (pShip->GetSovereign() == pSovereign1)
 						OrderAttack(pShip, pShip2);
@@ -1405,12 +1402,12 @@ void CIntroSession::OrderAttack (CShip *pShip, CSpaceObject *pTarget)
 	//	If this is a turret, then we use the sentinel order
 
 	if (pShip->IsAnchored())
-		pController->AddOrder(IShipController::orderSentry, NULL, IShipController::SData());
+		pController->AddOrder(COrderDesc(IShipController::orderSentry));
 
 	//	Otherwise, we attack
 
 	else
-		pController->AddOrder(IShipController::orderDestroyTarget, pTarget, IShipController::SData());
+		pController->AddOrder(COrderDesc(IShipController::orderDestroyTarget, pTarget));
 	}
 
 void CIntroSession::Paint (CG32bitImage &Screen, bool bTopMost)

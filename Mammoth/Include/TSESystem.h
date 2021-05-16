@@ -36,7 +36,7 @@ class CNavigationPath : public TSEListNode<CNavigationPath>
 		CVector GetPathEnd (void) const { return GetNavPoint(GetNavPointCount() - 1); }
 		bool Matches (CSovereign *pSovereign, CSpaceObject *pStart, CSpaceObject *pEnd);
 		void OnReadFromStream (SLoadCtx &Ctx);
-		void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) const;
+		void OnWriteToStream (IWriteStream *pStream) const;
 
 	private:
 		static constexpr Metric DEFAULT_NAV_POINT_RADIUS = 24.0 * LIGHT_SECOND;
@@ -84,7 +84,7 @@ class CSystemEventHandler : public TSEListNode<CSystemEventHandler>
 		bool OnObjDestroyed (CSpaceObject *pObjDestroyed);
 		void OnReadFromStream (SLoadCtx &Ctx);
 		bool OnUnregister (CSpaceObject *pObj);
-		void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) const;
+		void OnWriteToStream (IWriteStream *pStream) const;
 		void SetRange (Metric rMaxRange) { m_rMaxRange2 = rMaxRange * rMaxRange; }
 
 	private:
@@ -464,7 +464,6 @@ class CSystem
 		bool AddJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo, CObjectJoint **retpJoint = NULL);
 		bool AddJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo, ICCItem *pOptions, DWORD *retdwID = NULL);
 		ALERROR AddTimedEvent (CSystemEvent *pEvent);
-		void AddToDeleteList (CSpaceObject *pObj);
 		ALERROR AddToSystem (CSpaceObject *pObj, int *retiIndex);
 		bool AscendObject (CSpaceObject *pObj, CString *retsError = NULL);
 		int CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar = NULL, const CG8bitSparseImage **retpVolumetricMask = NULL) const;
@@ -472,6 +471,7 @@ class CSystem
 		void CancelTimedEvent (CSpaceObject *pSource, bool bInDoEvent = false);
 		void CancelTimedEvent (CSpaceObject *pSource, const CString &sEvent, bool bInDoEvent = false);
 		void CancelTimedEvent (CDesignType *pSource, const CString &sEvent, bool bInDoEvent = false);
+		void DeleteObject (SDestroyCtx &Ctx);
 		bool DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **retpObj = NULL, CString *retsError = NULL);
 		bool EnemiesInLRS (void) const { return m_fEnemiesInLRS; }
 		void EnumObjectsInBoxStart (SSpaceObjectGridEnumerator &i, const CVector &vUR, const CVector &vLL, DWORD dwFlags = 0) const { m_ObjGrid.EnumStart(i, vUR, vLL, dwFlags); }
@@ -492,7 +492,10 @@ class CSystem
 		bool FindObjectName (const CSpaceObject *pObj, CString *retsName = NULL);
 		void FireOnSystemExplosion (CSpaceObject *pExplosion, CWeaponFireDesc *pDesc, const CDamageSource &Source);
 		void FireOnSystemObjAttacked (SDamageCtx &Ctx);
+		void FireOnSystemObjCreated (const CSpaceObject &Obj);
 		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx);
+		void FireOnSystemStarted (DWORD dwElapsedTime) { if (m_pType) m_pType->FireOnSystemStarted(dwElapsedTime); }
+		void FireOnSystemStopped () { if (m_pType) m_pType->FireOnSystemStopped(); }
 		void FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, int iRepeatingCount);
 		void FireSystemWeaponEvents (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, int iRepeatingCount, DWORD dwFlags);
 		void FlushAllCaches (void);
@@ -587,8 +590,9 @@ class CSystem
 		void ValidateExclusionRadius (void) const;
 		void ValidateExclusionRadius (CSpaceObject *pObj, const CStationEncounterDesc::SExclusionDesc &Exclusion) const;
 		void VectorToTile (const CVector &vPos, int *retx, int *rety) const;
-		void WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream, CSpaceObject *pReferrer = NULL);
-		void WriteSovereignRefToStream (CSovereign *pSovereign, IWriteStream *pStream);
+		void WriteObjRefToStream (const CSpaceObject *pObj, IWriteStream *pStream, const CSpaceObject *pReferrer = NULL) const;
+		static void WriteObjRefToStream (IWriteStream &Stream, const CSpaceObject *pObj);
+		static void WriteSovereignRefToStream (CSovereign *pSovereign, IWriteStream *pStream);
 
 		//	Locations & Territories
 		ALERROR AddTerritory (CTerritoryDef *pTerritory);
@@ -655,6 +659,7 @@ class CSystem
 								  SObjCreateCtx &CreateCtx,
 								  CSpaceObject **retpStation,
 								  CString *retsError = NULL);
+		int FindEmptyObjSlot () const;
 		const SStarDesc *FindNearestStar (const CVector &vPos, int *retiDist = NULL) const;
 		void FlushDeletedObjects (void);
 		int GetTimedEventCount (void) { return m_TimedEvents.GetCount(); }

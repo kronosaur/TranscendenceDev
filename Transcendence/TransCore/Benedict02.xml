@@ -27,7 +27,7 @@
 	
 	<MissionType UNID="&msBenedictAndFiona;"
 			name=				"Benedict 02: Benedict and Fiona"
-			attributes=			"benedictStoryArc, sistersMission"
+			attributes=			"benedictStoryArc, eridaniScript, sistersMission"
 			inherit=			"&baBenedictMission;"
 
 			level=				"1"
@@ -507,23 +507,23 @@
 			</Text>
 			<Text id="SuccessDebrief1">
 
-				The docking bay swarms with activity. Techs hook up
-				cables and equipment to the docked freighter while
-				Benedict and the abbess talk with the freighter's captain.
+				The docking bay swarms with activity. Techs hook up cables and 
+				equipment to the docked freighter while Benedict and the abbess
+				talk with the freighter's captain.
 
-				"...the Penitents hit them hard," says the captain.
-				"There was no trace of the patrol ship; we just found
-				her drifting in space. She must have ejected..."
+				"...the Penitents hit them hard," says the captain. "There was 
+				no trace of the patrol ship; we just found her drifting in 
+				space. She must have ejected..."
 
-				Behind them you see cardinal-robed medics maneuver a
-				rejuv tank through the bay. Inside you see an unconscious
-				woman, her long black hair waving in the tank's fluid.
+				Behind them you see cardinal-robed medtechs maneuver a rejuv 
+				tank through the bay. Inside you see an unconscious woman, her
+				long black hair waving in the tank's fluid.
 
 			</Text>
 			<Text id="SuccessDebrief1a">
 
 				The docking bay swarms with activity. Benedict rushes to look
-				at the woman in her rejuv tank until cardinal-robed medics pry 
+				at the woman in her rejuv tank until cardinal-robed medtechs pry
 				him	away.
 
 				The captain of the doomed freighter sits on the deck talking to
@@ -545,14 +545,15 @@
 			<String id="actionSuccess2">"[W]ho is the woman in the tank?"</String>
 			<Text id="SuccessDebrief3">
 
-				Benedict looks across the docking bay at the rejuv tank
-				and for the first time you see tears in his eyes.
+				Benedict looks across the docking bay at the rejuv tank and for
+				the first time you see tears in his eyes.
 
-				"That's Fiona. I should've never let her go alone," he says, mostly to himself.
+				"That's Fiona. I should've never let her go alone," he says, 
+				mostly to himself.
 
-				"Penitents attacked her patrol ship, just as she
-				was about to make a critical discovery. Now her data
-				is lost along with the ship and crew. She's all we have left."
+				"Penitents attacked her patrol ship, just as she was about to 
+				make a critical discovery. Now her data is lost along with the 
+				ship and crew. She's all we have left."
 
 			</Text>
 			<String id="actionSuccess3">"[W]ho are the Penitents?"</String>
@@ -561,9 +562,9 @@
 				Anger flashes across Benedict's face.
 
 				"Domina is not the only god, you know? The Penitents worship
-				Oracus, their god of death. But they've gotten stronger
-				in the last few years. I've never seen them come all the
-				way to %systemName% before.
+				Oracus, their god of death. But they've gotten stronger in the 
+				last few years. I've never seen them come all the way to 
+				%systemName% before.
 
 				"They've got my attention now."
 

@@ -49,6 +49,7 @@
 	<!-- EarthSpace (Standard) -->
 
 	<SystemType UNID="&ssEarthSpaceStandard;"
+				name=		"Human Space G-Class"
 				attributes="envWater"
 				>
 		<SystemGroup>
@@ -101,6 +102,7 @@
 	<!-- EarthSpace (Asteroids) -->
 
 	<SystemType UNID="&ssEarthSpaceAsteroids;"
+				name=				"Human Space Asteroids"
 				attributes=			"envEarth"
 				backgroundID=		"&rsRockyAsteroidSpace;"
 				spaceColor=			"#1e1912"
@@ -155,6 +157,7 @@
 	<!-- EarthSpace (Asteroid Arcs) -->
 
 	<SystemType UNID="&ssEarthSpaceAsteroidArcs;"
+				name=				"Human Space Asteroid Arcs"
 				attributes=			"envEarth"
 				backgroundID=		"&rsRockyAsteroidSpace;"
 				spaceColor=			"#1e1912"
@@ -209,6 +212,7 @@
 	<!-- EarthSpace (Binary) -->
 
 	<SystemType UNID="&ssEarthSpaceBinary;"
+				name=		"Human Space Binary"
 				attributes="envWater"
 				>
 		<SystemGroup>
@@ -263,6 +267,7 @@
 	<!-- EarthSpace (Desert) -->
 
 	<SystemType UNID="&ssEarthSpaceDesert;"
+				name=				"Human Space Desert"
 				attributes=			"envFire"
 				backgroundID=		"&rsBrightStarSpace;"
 				spaceColor=			"#1c150f"
@@ -317,6 +322,7 @@
 	<!-- EarthSpace (Ice Asteroids) -->
 
 	<SystemType UNID="&ssEarthSpaceIceAsteroids;"
+				name=				"Human Space Ice Asteroids"
 				attributes=			"envAir"
 				backgroundID=		"&rsRedDwarfSpace;"
 				spaceColor=			"#10131d"
@@ -371,6 +377,7 @@
 	<!-- EarthSpace (Metallic) -->
 
 	<SystemType UNID="&ssEarthSpaceMetallic;"
+				name=				"Human Space Metallic Asteroids"
 				attributes=			"envEarth"
 				backgroundID=		"&rsRockyAsteroidSpace;"
 				spaceColor=			"#1e1912"
@@ -425,6 +432,7 @@
 	<!-- EarthSpace (Nebulae) -->
 
 	<SystemType UNID="&ssEarthSpaceNebulae;"
+				name=				"Human Space Nebula"
 				attributes=			"envAir"
 				backgroundID=		"&rsLightNebulaSpace;"
 				spaceColor=			"#282a3c"
@@ -480,6 +488,7 @@
 	<!-- EarthSpace (Primordial) -->
 
 	<SystemType UNID="&ssEarthSpacePrimordial;"
+				name=				"Human Space Primordial"
 				attributes=			"envWater"
 				backgroundID=		"&rsPrimordialNebulaSpace;"
 				spaceColor=			"#2f2d18"
@@ -534,6 +543,7 @@
 	<!-- EarthSpace (Red Dwarf) -->
 
 	<SystemType UNID="&ssEarthSpaceRedDwarf;"
+				name=				"Human Space Red Dwarf"
 				attributes=			"envAir"
 				backgroundID=		"&rsRedDwarfSpace;"
 				spaceColor=			"#10131d"
@@ -588,6 +598,7 @@
 	<!-- EarthSpace (Volcanic) -->
 
 	<SystemType UNID="&ssEarthSpaceVolcanic;"
+				name=				"Human Space Red Giant"
 				attributes=			"envFire"
 				backgroundID=		"&rsRedGiantSpace;"
 				spaceColor=			"#200f0a"
@@ -642,6 +653,7 @@
 	<!-- EarthSpace (Volcanic Asteroids) -->
 
 	<SystemType UNID="&ssEarthSpaceVolcanicAsteroids;"
+				name=				"Human Space Volcanic Asteroids"
 				attributes=			"envFire"
 				backgroundID=		"&rsRedGiantSpace;"
 				spaceColor=			"#200f0a"

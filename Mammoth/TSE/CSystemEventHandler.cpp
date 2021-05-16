@@ -88,7 +88,7 @@ bool CSystemEventHandler::OnUnregister (CSpaceObject *pObj)
 		return false;
 	}
 
-void CSystemEventHandler::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) const
+void CSystemEventHandler::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //
@@ -96,6 +96,6 @@ void CSystemEventHandler::OnWriteToStream (CSystem *pSystem, IWriteStream *pStre
 //	Metric			m_rMaxRange2
 
 	{
-	pSystem->WriteObjRefToStream(m_pHandler, pStream);
+	CSystem::WriteObjRefToStream(*pStream, m_pHandler);
 	pStream->Write((char *)&m_rMaxRange2, sizeof(Metric));
 	}

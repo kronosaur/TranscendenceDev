@@ -170,7 +170,8 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 //	m_rBestWeaponRange
 
 	{
-	ASSERT(pShip);
+	if (!pShip)
+		throw CException(ERR_FAIL);
 
 	//	NOTE: We skip this if the ship is in the middle of firing a repeating
 	//	weapon because this function selects each missile to determine its 
@@ -180,7 +181,7 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 	//	inquire about each missile.
 
 	if (!m_fRecalcBestWeapon
-			|| pShip->IsWeaponRepeating(devMissileWeapon))
+			|| pShip->IsWeaponRepeating())
 		return;
 
 	//	Recompute everything
@@ -209,10 +210,10 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 		//	See if this weapon shoots missiles.
 
 		DWORD dwTargetTypes = DeviceItem.GetTargetTypes();
-		if (dwTargetTypes & CTargetList::typeMissile)
+		if (dwTargetTypes & CTargetList::SELECT_MISSILE)
 			m_fShootAllMissiles = true;
 
-		else if (dwTargetTypes & CTargetList::typeTargetableMissile)
+		else if (dwTargetTypes & CTargetList::SELECT_TARGETABLE_MISSILE)
 			m_fShootTargetableMissiles = true;
 
 		//	If this is a secondary weapon, remember that we have some and 
@@ -234,7 +235,17 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 		//	Skip linked-fire weapons
 
 		else if (Weapon.IsLinkedFire())
-			continue;
+			{
+			if (UsesAllPrimaryWeapons())
+				{
+				auto linkedFireOptions = Weapon.GetItem()->AsDeviceItemOrThrow().GetLinkedFireOptions();
+				if (!(linkedFireOptions & CDeviceClass::LinkedFireOptions::lkfSelected)
+					&& !(linkedFireOptions & CDeviceClass::LinkedFireOptions::lkfSelectedVariant))
+					continue;
+				}
+			else
+				continue;
+			}
 
 		//	Otherwise, this is a primary weapon or launcher
 
@@ -374,11 +385,16 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 		rAimRange = 1.5 * MIN_TARGET_DIST;
 	m_rPrimaryAimRange2 = rAimRange * rAimRange;
 
+	//	Maneuverability
+
+	Metric rMaxRotationSpeed = pShip->GetRotationDesc().GetMaxRotationSpeedDegrees();
+	m_fLowManeuverability = (rMaxRotationSpeed <= 6.0);
+
 	//	Compute the minimum flanking distance. If we're very maneuverable,
 	//	can get in closer because we can turn faster to adjust for the target's
 	//	motion.
-
-	Metric rDegreesPerTick = Max(1.0, Min(pShip->GetRotationDesc().GetMaxRotationSpeedDegrees(), 60.0));
+	
+	Metric rDegreesPerTick = Max(1.0, Min(rMaxRotationSpeed, 60.0));
 	Metric rTanRot = tan(PI * rDegreesPerTick / 180.0);
 	Metric rMinFlankDist = Max(MIN_TARGET_DIST, MAX_TARGET_SPEED / rTanRot);
 
@@ -471,6 +487,7 @@ bool CAIBehaviorCtx::CalcIsBetterTarget (CShip *pShip, CSpaceObject *pCurTarget,
 	//	The new target must be a real target
 
 	if (pNewTarget == NULL 
+			|| pCurTarget == pNewTarget
 			|| pNewTarget->IsDestroyed()
 			|| !pNewTarget->CanAttack()
 			|| !pShip->IsEnemy(pNewTarget))
@@ -518,6 +535,69 @@ bool CAIBehaviorCtx::CalcIsBetterTarget (CShip *pShip, CSpaceObject *pCurTarget,
 		}
 	}
 
+bool CAIBehaviorCtx::CalcIsDeterNeeded (CShip &Ship, CSpaceObject &Target) const
+
+//	CalcIsDeterNeeded
+//
+//	Returns TRUE if we should continue to deter this target.
+
+	{
+	//	Must be a valid target
+
+	if (Target.IsDestroyed()
+			|| !Target.CanAttack()
+			|| IsNonCombatant())
+		return false;
+
+	//	If the target is beyond our weapon range, then stop.
+
+	Metric rDist2 = (Target.GetPos() - Ship.GetPos()).Length2();
+	if (rDist2 > GetMaxWeaponRange2())
+		return false;
+
+	//	If the target is no longer visible, then stop.
+
+	CPerceptionCalc Perception(Ship.GetPerception());
+	if (!Perception.CanBeTargeted(&Target, rDist2))
+		return false;
+
+	//	If we haven't been attacked in a while, then we can stop deterring.
+
+	if (!IsBeingAttacked(DETER_ATTACK_TIME_THRESHOLD))
+		return false;
+
+	//	Otherwise, continue deterring.
+
+	return true;
+	}
+
+bool CAIBehaviorCtx::CalcIsPossibleTarget (CShip &Ship, CSpaceObject &Target) const
+
+//	CalcIsPossibleTarget
+//
+//	Returns TRUE if we can target and destroy the object.
+
+	{
+	//	Must be a valid target
+
+	if (Target.IsDestroyed()
+			|| !Target.CanAttack()
+			|| IsNonCombatant())
+		return false;
+
+	//	If the target is no longer visible, then stop.
+
+	Metric rDist2 = (Target.GetPos() - Ship.GetPos()).Length2();
+
+	CPerceptionCalc Perception(Ship.GetPerception());
+	if (!Perception.CanBeTargeted(&Target, rDist2))
+		return false;
+
+	//	Otherwise, valid target
+
+	return true;
+	}
+
 bool CAIBehaviorCtx::CalcNavPath (CShip *pShip, const CVector &vTo)
 
 //	CalcNavPath
@@ -547,7 +627,8 @@ bool CAIBehaviorCtx::CalcNavPath (CShip *pShip, CSpaceObject *pTo)
 	int i;
 	CSystem *pSystem = pShip->GetSystem();
 
-	ASSERT(pTo);
+	if (!pTo)
+		throw CException(ERR_FAIL);
 
 	//	If the destination moves (e.g., is a ship) then we place a nav path to
 	//	where it is currenly and allow the code to recalc nav paths as
@@ -630,7 +711,8 @@ void CAIBehaviorCtx::CalcNavPath (CShip *pShip, CNavigationPath *pPath, bool bOw
 	{
 	int i;
 
-	ASSERT(pPath);
+	if (!pPath)
+		throw CException(ERR_FAIL);
 
 	//	Figure out which nav position we are closest to
 
@@ -703,7 +785,7 @@ void CAIBehaviorCtx::CalcShieldState (CShip *pShip)
 		}
 	}
 
-int CAIBehaviorCtx::CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInstalledDevice *pWeapon, Metric rTargetDist2)
+int CAIBehaviorCtx::CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInstalledDevice *pWeapon, Metric rTargetDist2, bool avoidAnyNonReadyWeapons)
 
 //	CalcWeaponScore
 //
@@ -735,7 +817,7 @@ int CAIBehaviorCtx::CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInsta
 	//	If this weapon will take a while to get ready, then 
 	//	lower the score.
 
-	if (pWeapon->GetTimeUntilReady() >= 15)
+	if (pWeapon->GetTimeUntilReady() >= (avoidAnyNonReadyWeapons ? 1 : 15))
 		return 1;
 
 	//	Get the item for the selected variant (either the weapon
@@ -882,6 +964,25 @@ void CAIBehaviorCtx::ClearNavPath (void)
 		}
 	}
 
+void CAIBehaviorCtx::CommunicateWithBaseAttackDeter (CShip &Ship, CSpaceObject &AttackerObj, CSpaceObject *pOrderGiver)
+
+//	CommunicateWithBaseAttackDeter
+//
+//	Sends a message to our base that we were attacked.
+
+	{
+	//	If we were attacked twice (excluding multi-shot weapons)
+	//	then we tell our station about this
+
+	CSpaceObject *pBase;
+	CSpaceObject *pTarget;
+	if (IsSecondAttack()
+			&& (pBase = Ship.GetBase())
+			&& pBase->IsAngryAt(&AttackerObj)
+			&& (pTarget = pBase->CalcTargetToAttack(&AttackerObj, pOrderGiver)))
+		Ship.Communicate(pBase, msgAttackDeter, pTarget);
+	}
+
 void CAIBehaviorCtx::CommunicateWithEscorts (CShip *pShip, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
 
 //	CommunicateWithEscorts
@@ -999,7 +1100,7 @@ void CAIBehaviorCtx::ReadFromStream (SLoadCtx &Ctx)
 
 	int iValue;
 	Ctx.pStream->Read(iValue);
-	m_iLastTurn = (EManeuverTypes)iValue;
+	m_iLastTurn = (EManeuver)iValue;
 
 	Ctx.pStream->Read(m_iLastTurnCount);
 	Ctx.pStream->Read(m_iManeuverCounter);
@@ -1117,7 +1218,7 @@ void CAIBehaviorCtx::Update (CShip *pShip)
 	{
 	if (!IsDockingRequested())
 		{
-		SetManeuver(NoRotation);
+		SetManeuver(EManeuver::None);
 		SetThrustDir(CAIShipControls::constNeverThrust);
 		}
 
@@ -1130,7 +1231,7 @@ void CAIBehaviorCtx::Update (CShip *pShip)
 		pShip->Highlight();
 	}
 
-void CAIBehaviorCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CAIBehaviorCtx::WriteToStream (IWriteStream *pStream)
 
 //	WriteToStream
 //
@@ -1156,11 +1257,11 @@ void CAIBehaviorCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 	//	CAISettings
 
 	m_AISettings.WriteToStream(pStream);
-	m_ShipControls.WriteToStream(pSystem, pStream);
+	m_ShipControls.WriteToStream(pStream);
 
 	//	State
 
-	pStream->Write(m_iLastTurn);
+	pStream->Write((DWORD)m_iLastTurn);
 	pStream->Write(m_iLastTurnCount);
 	pStream->Write(m_iManeuverCounter);
 	pStream->Write(m_iLastAttack);
@@ -1198,7 +1299,7 @@ void CAIBehaviorCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 		dwSave = m_iNavPathPos;
 		pStream->Write(dwSave);
 
-		m_pNavPath->OnWriteToStream(pSystem, pStream);
+		m_pNavPath->OnWriteToStream(pStream);
 		}
 
 	//	Flags

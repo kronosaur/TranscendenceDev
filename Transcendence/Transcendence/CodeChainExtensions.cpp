@@ -95,6 +95,8 @@ ICCItem *fnPlySetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 #define FN_SCR_SCREEN_SET			35
 #define FN_SCR_SHOW_TAB				36
 #define FN_SCR_LIST					37
+#define FN_SCR_SESSION_DATA			38
+#define FN_SCR_ADD_UNDOCK_EVENT		39
 
 ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnScrGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
@@ -150,7 +152,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"options:\n\n"
 			
 			"   'checkpoint (or Nil)\n"
-			"   'missionCheckpoint",
+			"   'missionCheckpoint\n",
 
 			"*",	PPFLAG_SIDEEFFECTS, },
 
@@ -202,7 +204,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"alignment:\n\n"
 			"   'left\n"
 			"   'center\n"
-			"   'right",
+			"   'right\n",
 
 			"ii*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -220,6 +222,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"scrAddMinorAction",			fnScrSet,		FN_SCR_ADD_MINOR_ACTION,
 			"(scrAddMinorAction screen actionID pos label [key] [special] code) -> True/Nil",
 			"isis*c",	PPFLAG_SIDEEFFECTS, },
+
+		{	"scrAddUndockCode",				fnScrSet,		FN_SCR_ADD_UNDOCK_EVENT,
+			"(scrAddUndockCode screen id code) -> True/Nil",
+			"isc",	PPFLAG_SIDEEFFECTS, },
 
 		{	"scrEnableAction",				fnScrSet,		FN_SCR_ENABLE_ACTION,
 			"(scrEnableAction screen actionID enabled) -> True/Nil",
@@ -264,12 +270,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"scr@",							fnScrGet,		FN_SCR_GET_PROPERTY,
 			"(scr@ screen property) -> value\n\n"
 			
-			"property\n\n"
+			"property:\n\n"
 			
-			"   'counter"
-			"   'description"
-			"   'inFirstOnInit"
-			"   'input",
+			"   'counter\n"
+			"   'description\n"
+			"   'inFirstOnInit\n"
+			"   'input\n"
+			"   'screen\n"
+			"   'stack\n",
 
 			"is",	0,	},
 
@@ -285,12 +293,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
             "   'type: UNID of screen or root type\n"
             "   'screenName: Screen name, if type is not a dock screen\n"
             "   'pane: Current pane\n"
-            "   'data: Associated data",
+            "   'data: Associated data\n",
 
             "i",	0,	},
 
 		{	"scrGetReturnData",				fnScrGet,		FN_SCR_RETURN_DATA,
 			"(scrGetReturnData screen attrib) -> data",
+			"is",	0,	},
+
+		{	"scrGetSessionData",			fnScrGet,		FN_SCR_SESSION_DATA,
+			"(scrGetSessionData screen attrib) -> data",
 			"is",	0,	},
 
 		{	"scrIncData",					fnScrSet,		FN_SCR_INC_DATA,
@@ -388,6 +400,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(scrSetReturnData screen attrib data) -> True/Nil",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"scrSetSessionData",				fnScrSet,		FN_SCR_SESSION_DATA,
+			"(scrSetSessionData screen attrib data) -> True/Nil",
+			"isv",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"scrSetTabSet",					fnScrSet,		FN_SCR_SCREEN_SET,
 			"(scrSetTabSet screen tabSet) -> True/Nil\n\n"
 			
@@ -460,7 +476,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   %son%          son or daughter (matching case)\n"
 			"   %%             %\n"
 			"   %1%            arg1\n"
-			"   %2%            ...",
+			"   %2%            ...\n",
 
 			"is*",	0, },
 
@@ -487,7 +503,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'mapHint\n"
 			"   'refuelHint\n"
 			"   'switchMissileHint\n"
-			"   'useItemHint",
+			"   'useItemHint\n",
 
 			"is",	0, },
 
@@ -511,7 +527,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'itemsMinedCount\n"
 			"   'itemsMinedValue\n"
 			"   'itemsSoldCount\n"
-			"   'itemsSoldValue",
+			"   'itemsSoldValue\n",
 
 			"isv",	0,	},
 
@@ -525,7 +541,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'missionCompleted\n"
 			"   'missionFailure\n"
 			"   'missionSuccess\n"
-			"   'objsDestroyed",
+			"   'objsDestroyed\n",
 
 			"isvs",	0,	},
 
@@ -537,7 +553,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'allHints\n"
 			"   'allMessages\n"
 			"   'enabledHints\n"
-			"   (plus all messageIDs for plyIsMessageEnabled)",
+			"   (plus all messageIDs for plyIsMessageEnabled)\n",
 
 			"isv",	PPFLAG_SIDEEFFECTS, },
 
@@ -559,7 +575,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'resurrectCount\n"
 			"   'score\n"
 			"   'systemData\n"
-			"   'systemsVisited",
+			"   'systemsVisited\n",
 
 			"is",	0,	},
 
@@ -583,7 +599,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'itemsFiredCount\n"
 			"   'itemsMinedCount\n"
 			"   'itemsSoldCount\n"
-			"   'itemsSoldValue",
+			"   'itemsSoldValue\n",
 
 			"isv*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -596,7 +612,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"stat:\n\n"
 			
-			"   'asteroidsMined",
+			"   'asteroidsMined\n",
 
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -680,8 +696,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	(scrRefreshItemListCursor screen item)
 
 		{	"uiKeyLabel",							fnUISet,		FN_UI_KEY_LABEL,
-			"(uiKeyLabel command) -> text",
-			"DEPRECATED: Use uiGetKeyName instead.",	0,	},
+			"DEPRECATED: Use uiGetKeyName instead.",
+			"s",	0,	},
 
 	};
 
@@ -689,7 +705,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 inline CShip *GetShipArg (ICCItem *pArg) { return ((CSpaceObject *)(pArg->GetIntegerValue()))->AsShip(); }
 inline CStation *GetStationArg (ICCItem *pArg) { return (CStation *)pArg->GetIntegerValue(); }
-inline CDockScreen *GetDockScreenArg (ICCItem *pArg) { return (CDockScreen *)pArg->GetIntegerValue(); }
+inline CDockScreen *GetDockScreenArg (CCodeChainCtx &CCX, ICCItem *pArg) { return (CCX.GetScreen() ? (CDockScreen *)CCX.GetScreen() : (CDockScreen *)pArg->GetIntegerValue()); }
 inline CArmorClass *GetArmorClassArg (ICCItem *pArg) { return (CArmorClass *)pArg->GetIntegerValue(); }
 inline CPlayerShipController *GetPlayerArg (ICCItem *pArg) { return (CPlayerShipController *)pArg->GetIntegerValue(); }
 
@@ -991,7 +1007,7 @@ ICCItem *fnScrItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Convert the first argument into a dock screen object
 
-	CDockScreen *pScreen = GetDockScreenArg(pArgs->GetElement(0));
+	CDockScreen *pScreen = GetDockScreenArg(*pCtx, pArgs->GetElement(0));
 	if (pScreen == NULL)
 		{
 		pArgs->Discard();
@@ -1046,7 +1062,7 @@ ICCItem *fnScrItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	//	Create the result
@@ -1141,9 +1157,7 @@ ICCItem *fnPlyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
-			pResult = pCC->CreateNil();
-			break;
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -1213,7 +1227,7 @@ ICCItem *fnPlyGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			break;
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -1404,7 +1418,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pArgs->GetCount() > 3)
 				{
 				pCurrency = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(iArg));
-				if (pCurrency == NULL)
+				if (!pCurrency)
 					return pCC->CreateError(CONSTLIT("Invalid economy type"), pArgs->GetElement(iArg));
 
 				iArg++;
@@ -1412,7 +1426,8 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else
 				{
 				pCurrency = CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
-				ASSERT(pCurrency);
+				if (!pCurrency)
+					throw CException(ERR_FAIL);
 				}
 
 			//	The value
@@ -1450,8 +1465,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
-			pResult = pCC->CreateNil();
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -1542,7 +1556,7 @@ ICCItem *fnPlySetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -1560,10 +1574,6 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Convert the first argument into a dock screen object
 
-	CDockScreen *pScreen = GetDockScreenArg(pArgs->GetElement(0));
-	if (pScreen == NULL)
-		return pCC->CreateError(CONSTLIT("Screen expected"), pArgs->GetElement(0));
-
 	CDockSession &DockSession = pCtx->GetUniverse().GetDockSession();
 
 	//	Do the appropriate command
@@ -1571,17 +1581,17 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	switch (dwData)
 		{
 		case FN_SCR_LIST:
-			return pScreen->GetListAsCCItem()->Reference();
+			return DockSession.GetUI().GetListAsCCItem()->Reference();
 
 		case FN_SCR_LIST_CURSOR:
-			return pCC->CreateInteger(pScreen->GetListCursor());
+			return pCC->CreateInteger(DockSession.GetUI().GetListCursor());
 
 		case FN_SCR_DATA:
 			return DockSession.GetData(pArgs->GetElement(1)->GetStringValue())->Reference();
 
 		case FN_SCR_DESC:
 			{
-			const CString &sDesc = pScreen->GetDescription();
+			const CString &sDesc = DockSession.GetUI().GetDescription();
 			if (sDesc.IsBlank())
 				return pCC->CreateNil();
 
@@ -1605,7 +1615,8 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			//	Only if valid
 
-			if (!pScreen->IsValid())
+			CDockScreen *pScreen = (CDockScreen *)DockSession.GetUI().GetDockScreen();
+			if (!pScreen || !pScreen->IsValid())
 				return pCC->CreateNil();
 
 			//	Parameters
@@ -1620,6 +1631,9 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SCR_RETURN_DATA:
 			return DockSession.GetReturnData(pArgs->GetElement(1)->GetStringValue())->Reference();
+
+		case FN_SCR_SESSION_DATA:
+			return DockSession.GetSessionData(pArgs->GetElement(1)->GetStringValue())->Reference();
 
 		case FN_SCR_TRANSLATE:
 			{
@@ -1640,8 +1654,7 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		default:
-			ASSERT(false);
-			return pCC->CreateNil();
+			throw CException(ERR_FAIL);
 		}
 	}
 
@@ -1655,6 +1668,7 @@ ICCItem *fnScrGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 	ICCItem *pArgs;
 	ICCItem *pResult;
 
@@ -1666,7 +1680,7 @@ ICCItem *fnScrGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Convert the first argument into a dock screen object
 
-	CDockScreen *pScreen = GetDockScreenArg(pArgs->GetElement(0));
+	CDockScreen *pScreen = GetDockScreenArg(*pCtx, pArgs->GetElement(0));
 	if (pScreen == NULL)
 		{
 		pArgs->Discard();
@@ -1690,7 +1704,7 @@ ICCItem *fnScrGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			break;
 
 		case FN_SCR_IS_FIRST_ON_INIT:
-			pResult = pCC->CreateBool(pScreen->IsFirstOnInit());
+			pResult = pCC->CreateBool(pCtx->GetUniverse().GetDockSession().IsFirstOnInit());
 			break;
 
 		case FN_SCR_LIST_ENTRY:
@@ -1698,7 +1712,7 @@ ICCItem *fnScrGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			break;
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -1722,7 +1736,7 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Convert the first argument into a dock screen object
 
-	CDockScreen *pScreen = GetDockScreenArg(pArgs->GetElement(0));
+	CDockScreen *pScreen = GetDockScreenArg(*pCtx, pArgs->GetElement(0));
     if (pScreen == NULL)
         return pCC->CreateError(CONSTLIT("Screen expected"), pArgs->GetElement(0));
     else if (!pScreen->InOnInit() && !pScreen->IsValid())
@@ -1750,8 +1764,9 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SCR_ACTION_LABEL:
 			{
-			int iAction;
 			CDockScreenActions &Actions = pScreen->GetActions();
+
+			int iAction;
 			if (!Actions.FindByID(pArgs->GetElement(1), &iAction))
 				return pCC->CreateError(CONSTLIT("Invalid action ID"), pArgs->GetElement(1));
 
@@ -1786,7 +1801,7 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CDockScreenActions &Actions = pScreen->GetActions();
 			CString sID = pArgs->GetElement(1)->GetStringValue();
 			int iPos = (pArgs->GetElement(2)->IsNil() ? -1 : pArgs->GetElement(2)->GetIntegerValue());
-			CString sLabel = pArgs->GetElement(3)->GetStringValue();
+			CString sLabel = (pArgs->GetElement(3)->IsNil() ? NULL_STR : pArgs->GetElement(3)->GetStringValue());
             bool bMinor = (dwData == FN_SCR_ADD_MINOR_ACTION);
 			
 			int iArg = 4;
@@ -1848,6 +1863,14 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			pScreen->AddListFilter(sID, sLabel, Filter);
 
+			return pCC->CreateTrue();
+			}
+
+		case FN_SCR_ADD_UNDOCK_EVENT:
+			{
+			CString sID = pArgs->GetElement(1)->GetStringValue();
+			ICCItem *pCode = pArgs->GetElement(2);
+			DockSession.AddUndockCode(sID, *pCode);
 			return pCC->CreateTrue();
 			}
 
@@ -2018,6 +2041,9 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateBool(DockSession.SetScreenSet(*pScreenSet));
 			}
 
+		case FN_SCR_SESSION_DATA:
+			return pCC->CreateBool(DockSession.SetSessionData(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2)));
+
 		case FN_SCR_SHOW_TAB:
 			{
 			if (!g_pTrans->GetModel().InScreenSession())
@@ -2104,8 +2130,7 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		default:
-			ASSERT(false);
-			return pCC->CreateNil();
+			throw CException(ERR_FAIL);
 		}
 	}
 
@@ -2139,7 +2164,7 @@ ICCItem *fnScrSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Convert the first argument into a dock screen object
 
-	CDockScreen *pScreen = GetDockScreenArg(pArgs->GetElement(0));
+	CDockScreen *pScreen = GetDockScreenArg(*pCtx, pArgs->GetElement(0));
 	if (pScreen == NULL)
 		{
 		pArgs->Discard();
@@ -2212,7 +2237,7 @@ ICCItem *fnScrSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 		}
 
 	return pResult;
@@ -2233,7 +2258,7 @@ ICCItem *fnScrShowScreen (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Get the arguments
 
-	CDockScreen *pScreen = GetDockScreenArg(pArgs->GetElement(0));
+	CDockScreen *pScreen = GetDockScreenArg(*pCtx, pArgs->GetElement(0));
 	CString sScreen;
 	CString sPane;
 	ICCItem *pData = NULL;
@@ -2444,8 +2469,7 @@ ICCItem *fnUISet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
-			return pCC->CreateNil();
+			throw CException(ERR_FAIL);
 		}
 	}
 

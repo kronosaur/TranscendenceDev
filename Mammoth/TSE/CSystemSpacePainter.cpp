@@ -329,7 +329,8 @@ void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, int xCenter,
 //	Paints the background image
 
 	{
-	ASSERT(m_pBackground);
+	if (!m_pBackground)
+		throw CException(ERR_FAIL);
 
 	CSpaceBackgroundPainter::SCtx PainterCtx;
 	PainterCtx.xDest = Ctx.rcView.left;

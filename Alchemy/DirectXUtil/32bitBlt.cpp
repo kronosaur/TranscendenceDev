@@ -564,6 +564,8 @@ void CG32bitImage::Composite (int xSrc, int ySrc, int cxWidth, int cyHeight, BYT
 //	Composites the source onto the destination
 
 	{
+	DEBUG_TRY
+
 	if (byOpacity == 0xff)
 		{
 		CFilterNormal Filter;
@@ -574,6 +576,8 @@ void CG32bitImage::Composite (int xSrc, int ySrc, int cxWidth, int cyHeight, BYT
 		CFilterTrans Filter(byOpacity);
 		Filter.Composite(*this, xDest, yDest, Source, xSrc, ySrc, cxWidth, cyHeight);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CG32bitImage::Copy (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG32bitImage &Source, int xDest, int yDest)
@@ -1082,11 +1086,19 @@ void CGDraw::BltTiled (CG32bitImage &Dest, int xDest, int yDest, int cxDest, int
 		}
 	}
 
-void CGDraw::BltTransformed (CG32bitImage &Dest, Metric rX, Metric rY, Metric rScaleX, Metric rScaleY, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc)
+void CGDraw::BltTransformed (CG32bitImage &Dest, Metric rX, Metric rY, Metric rScaleX, Metric rScaleY, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity)
 
 	{
-	CFilterNormal Filter;
-	Filter.BltTransformed(Dest, rX, rY, rScaleX, rScaleY, rRotation, Src, xSrc, ySrc, cxSrc, cySrc);
+	if (byOpacity == 0xff)
+		{
+		CFilterNormal Filter;
+		Filter.BltTransformed(Dest, rX, rY, rScaleX, rScaleY, rRotation, Src, xSrc, ySrc, cxSrc, cySrc);
+		}
+	else
+		{
+		CFilterTrans Filter(byOpacity);
+		Filter.BltTransformed(Dest, rX, rY, rScaleX, rScaleY, rRotation, Src, xSrc, ySrc, cxSrc, cySrc);
+		}
 	}
 
 void CGDraw::BltTransformedGray (CG32bitImage &Dest, Metric rX, Metric rY, Metric rScaleX, Metric rScaleY, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity)

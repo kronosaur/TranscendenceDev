@@ -184,6 +184,11 @@ CString CLanguage::Compose (const CString &sString, const ICCItem *pArgs)
 					sVar = pArg->GetStringValue();
 				}
 
+			//	If we have an error, then show it.
+
+			else if (pArgs && pArgs->IsError())
+				sVar = pArgs->GetStringValue();
+
 			//	If we could not find a valid var, then we assume a
 			//	single % sign.
 

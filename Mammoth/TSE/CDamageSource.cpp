@@ -20,7 +20,7 @@ CDamageSource::CDamageSource (CSpaceObject *pSource, DestructionTypes iCause, CS
 	m_pSecondarySource = (pSecondarySource && !pSecondarySource->IsDestroyed() ? pSecondarySource : NULL);
 	}
 
-bool CDamageSource::CanHit (CSpaceObject *pTarget) const
+bool CDamageSource::CanHit (const CSpaceObject &Target) const
 
 //	CanHit
 //
@@ -40,7 +40,7 @@ bool CDamageSource::CanHit (CSpaceObject *pTarget) const
 	//	If this is not a player escort then we allow the hit. NOTE: We check for
 	//	player escort, not player wingman, which is more restrictive.
 
-	if (!pTarget->IsPlayerEscort())
+	if (!Target.IsPlayerEscort())
 		return true;
 
 	//	If we don't protect wingmen, then we allow a hit
@@ -50,7 +50,7 @@ bool CDamageSource::CanHit (CSpaceObject *pTarget) const
 
 	//	If we're deliberately targeting pTarget, then we allow the hit.
 
-	if (pObj->GetTarget(IShipController::FLAG_ACTUAL_TARGET) == pTarget)
+	if (pObj->GetTarget(IShipController::FLAG_ACTUAL_TARGET) == Target)
 		return true;
 
 	//	Otherwise, pTarget should not be hit by us.
@@ -89,10 +89,14 @@ CString CDamageSource::GetDamageCauseNounPhrase (DWORD dwFlags)
 //	Returns the name of the damage source
 
 	{
-	if (IsObjPointer())
-		return m_pSource->GetDamageCauseNounPhrase(dwFlags);
-	else if (!m_sSourceName.IsBlank())
+	//	If we have a source name, we always use that, even if we have a pointer.
+	//	This allows us to have both a real object (for purposes of friendly 
+	//	fire) AND a custom epitaph string.
+
+	if (!m_sSourceName.IsBlank())
 		return CLanguage::ComposeNounPhrase(m_sSourceName, 1, NULL_STR, m_dwSourceNameFlags, dwFlags);
+	else if (IsObjPointer())
+		return m_pSource->GetDamageCauseNounPhrase(dwFlags);
 	else
 		return CONSTLIT("damage");
 	}
@@ -377,7 +381,7 @@ bool CDamageSource::IsEqual (const CDamageSource &Src) const
 			&& (GetCause() == killedByExplosion || GetCause() == killedByPlayerCreatedExplosion));
 	}
 
-bool CDamageSource::IsEqual (CSpaceObject *pSrc) const
+bool CDamageSource::IsEqual (const CSpaceObject &Src) const
 
 //	IsEqual
 //
@@ -386,7 +390,7 @@ bool CDamageSource::IsEqual (CSpaceObject *pSrc) const
 	{
 	//	If pSrc is equal to our secondary source, then we match
 
-	if (pSrc == m_pSecondarySource)
+	if (Src == m_pSecondarySource)
 		return true;
 
 	//	Otherwise, see if we match the primary source
@@ -397,7 +401,7 @@ bool CDamageSource::IsEqual (CSpaceObject *pSrc) const
 
 		//	If we have an ID, and it's the same as the given one, then we're equal.
 
-		return (dwID != OBJID_NULL && pSrc && dwID == pSrc->GetID());
+		return (dwID != OBJID_NULL && dwID == Src.GetID());
 		}
 	}
 
@@ -557,7 +561,7 @@ void CDamageSource::SetObj (CSpaceObject *pSource)
 		}
 	}
 
-void CDamageSource::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CDamageSource::WriteToStream (IWriteStream *pStream)
 
 //	WriteToStream
 //
@@ -584,11 +588,11 @@ void CDamageSource::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 	//	Otherwise, save a reference
 
 	else
-		pSystem->WriteObjRefToStream(m_pSource, pStream);
+		CSystem::WriteObjRefToStream(*pStream, m_pSource);
 
 	m_sSourceName.WriteToStream(pStream);
 	pStream->Write((char *)&m_dwSourceNameFlags, sizeof(DWORD));
-	pSystem->WriteObjRefToStream(m_pSecondarySource, pStream);
+	CSystem::WriteObjRefToStream(*pStream, m_pSecondarySource);
 
 	dwSave = m_iCause;
 	pStream->Write((char *)&dwSave, sizeof(DWORD));

@@ -144,6 +144,19 @@ void ICCItemPtr::Delete (void)
 	m_pPtr = NULL;
 	}
 
+ICCItemPtr ICCItemPtr::DoubleOrInt (double rValue)
+
+//	DoubleOrInt
+//
+//	Returns either a double or an integer.
+
+	{
+	if ((double)(int)rValue == rValue)
+		return ICCItemPtr((int)rValue);
+	else
+		return ICCItemPtr(rValue);
+	}
+
 ICCItemPtr ICCItemPtr::Error (const CString &sError, const ICCItem *pData)
 
 //	Error

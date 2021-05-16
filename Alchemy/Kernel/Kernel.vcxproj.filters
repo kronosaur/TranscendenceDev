@@ -247,6 +247,12 @@
     <ClCompile Include="ILog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CWordParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CPolygon.cpp">
+      <Filter>Source Files\Euclid</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Crypto.h">

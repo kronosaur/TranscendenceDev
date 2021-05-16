@@ -20,6 +20,7 @@
 #define PROPERTY_POS							CONSTLIT("pos")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 #define PROPERTY_TEMPERATURE      				CONSTLIT("temperature")
+#define PROPERTY_TARGET_CRITERIA    			CONSTLIT("targetCriteria")
 #define PROPERTY_SHOT_SEPARATION_SCALE			CONSTLIT("shotSeparationScale")
 
 bool CInstalledDevice::AccumulateSlotEnhancements (CSpaceObject *pSource, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const
@@ -175,6 +176,8 @@ int CInstalledDevice::GetHitPointsPercent (const CSpaceObject *pSource) const
 //	Returns the integrity of the device (usually a shield) as a percent of max hp.
 
 	{
+	DEBUG_TRY
+
 	int iHP;
 	int iMaxHP;
 	GetStatus(pSource, &iHP, &iMaxHP);
@@ -183,6 +186,8 @@ int CInstalledDevice::GetHitPointsPercent (const CSpaceObject *pSource) const
 		return -1;
 	else
 		return CArmorClass::CalcIntegrity(iHP, iMaxHP);
+
+	DEBUG_CATCH
 	}
 
 CSpaceObject *CInstalledDevice::GetLastShot (CSpaceObject *pSource, int iIndex) const
@@ -364,6 +369,24 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	m_fLastActivateSuccessful = false;
 	m_fDuplicate = false;
 
+	//	Initialize based on slot definitions. We need to do this before the item
+	//	is actually installed (otherwise, the slot criteria may pick up 
+	//	definitions from the previous device).
+
+	if (!bInCreate)
+		{
+		//	Desc is initialized to defaults even if FindDeviceSlotDesc fails.
+
+		SDeviceDesc Desc;
+		m_pSource->FindDeviceSlotDesc(Item, &Desc);
+		if (m_pClass->IsExternal())
+			Desc.bExternal = true;
+
+		//	Set the device slot properties
+
+		InitFromDesc(Desc);
+		}
+
 	//	Call the class
 
 	m_pClass->OnInstall(this, m_pSource, ItemList);
@@ -388,57 +411,20 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 
 	m_iActivateDelay = m_pClass->GetActivateDelay(ItemCtx);
 
-	//	If we're installing a device after creation then we
-	//	zero-out the device position, etc. If necessary the
-	//	caller or the device can set these fields later.
-	//
-	//	Note: This will overwrite whatever values were set
-	//	at creation time.
+	//	Finish install, if necessary
 
 	if (!bInCreate)
 		{
-		//	Desc is initialized to defaults even if FindDeviceSlotDesc fails.
+		//	Event (when creating a ship we wait until the
+		//	whole ship is created before firing the event)
 
-		SDeviceDesc Desc;
-		m_pSource->FindDeviceSlotDesc(Item, &Desc);
-
-		//	Set the device slot properties
-
-		m_sID = Desc.sID;
-		m_iPosAngle = Desc.iPosAngle;
-		m_iPosRadius = Desc.iPosRadius;
-		m_iPosZ = Desc.iPosZ;
-		m_f3DPosition = Desc.b3DPosition;
-		m_fCannotBeEmpty = Desc.bCannotBeEmpty;
-		m_iShotSeparationScale = (unsigned int)(Desc.rShotSeparationScale * 32767);
-		m_iMaxFireRange = Desc.iMaxFireRange;
-
-		SetFate(Desc.iFate);
-
-		m_fExternal = (Desc.bExternal || m_pClass->IsExternal());
-
-		m_fOmniDirectional = Desc.bOmnidirectional;
-		m_iMinFireArc = Desc.iMinFireArc;
-		m_iMaxFireArc = Desc.iMaxFireArc;
-
-		SetLinkedFireOptions(Desc.dwLinkedFireOptions);
-		m_fSecondaryWeapon = Desc.bSecondary;
-
-		m_SlotEnhancements = Desc.Enhancements;
-		if (Desc.iSlotBonus != 0)
-			m_SlotEnhancements.InsertHPBonus(Desc.iSlotBonus);
-		}
-
-	//	Event (when creating a ship we wait until the
-	//	whole ship is created before firing the event)
-
-	if (!bInCreate)
 		FinishInstall();
+		}
 
 	DEBUG_CATCH
 	}
 
-bool CInstalledDevice::IsLinkedFire (ItemCategories iTriggerCat) const
+bool CInstalledDevice::IsLinkedFire (ItemCategories iTriggerCat, CInstalledDevice *pWeapon) const
 
 //	IsLinkedFire
 //
@@ -452,11 +438,29 @@ bool CInstalledDevice::IsLinkedFire (ItemCategories iTriggerCat) const
 		return true;
 	else
 		{
+		bool bWeaponMatchesSelected = true;
+		if (pWeapon)
+			{
+			auto linkedFireOptions = GetItem()->AsDeviceItemOrThrow().GetLinkedFireOptions();
+			auto bLinkedFireSelected = (linkedFireOptions & CDeviceClass::LinkedFireOptions::lkfSelected);
+			auto bLinkedFireSelectedVariant = (linkedFireOptions & CDeviceClass::LinkedFireOptions::lkfSelectedVariant);
+			if (bLinkedFireSelected || bLinkedFireSelectedVariant)
+				{
+				bWeaponMatchesSelected = pWeapon->GetUNID() == GetUNID();
+				}
+			if (bLinkedFireSelectedVariant)
+				{
+				int iGunVariantType = CItemCtx(GetSource(), pWeapon).GetItemVariantNumber();
+				int iOtherGunVariantType = CItemCtx(GetSource(), this).GetItemVariantNumber();
+				bWeaponMatchesSelected = bWeaponMatchesSelected && (iGunVariantType == iOtherGunVariantType);
+				}
+			}
+
 		ItemCategories iNewItemCategory = GetClass()->GetCategory();
 		if (GetClass()->UsesLauncherControls() && iNewItemCategory == itemcatWeapon)
 			iNewItemCategory = itemcatLauncher;
 
-		return (iNewItemCategory == iTriggerCat);
+		return (iNewItemCategory == iTriggerCat) && bWeaponMatchesSelected;
 		}
 	}
 
@@ -524,7 +528,8 @@ void CInstalledDevice::PaintDevicePos (const SDeviceDesc &Device, CG32bitImage &
 				bWeaponIsOmnidirectional = true;
 				break;
 
-			case CDeviceRotationDesc::rotSwivel:
+			case CDeviceRotationDesc::rotSwivelAlways:
+			case CDeviceRotationDesc::rotSwivelIfTargetInArc:
 				break;
 
 			default:
@@ -733,35 +738,36 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 		}
 
 	Ctx.pStream->Read(dwLoad);
-	m_fOmniDirectional =	((dwLoad & 0x00000001) ? true : false);
-	m_f3DPosition =			(((dwLoad & 0x00000002) ? true : false) && (Ctx.dwVersion >= 73));
-	m_fFateSurvives =		(((dwLoad & 0x00000004) ? true : false) && (Ctx.dwVersion >= 58));
-	m_fOverdrive =			((dwLoad & 0x00000008) ? true : false);
-	m_fOptimized =			((dwLoad & 0x00000010) ? true : false);
-	m_fSecondaryWeapon =	((dwLoad & 0x00000020) ? true : false);
-	m_fFateDamaged =		(((dwLoad & 0x00000040) ? true : false) && (Ctx.dwVersion >= 58));
-	m_fEnabled =			((dwLoad & 0x00000080) ? true : false);
-	m_fWaiting =			((dwLoad & 0x00000100) ? true : false);
-	m_fTriggered =			((dwLoad & 0x00000200) ? true : false);
-	m_fRegenerating =		((dwLoad & 0x00000400) ? true : false);
-	m_fLastActivateSuccessful = ((dwLoad & 0x00000800) ? true : false);
+	m_fOmniDirectional =				((dwLoad & 0x00000001) ? true : false);
+	m_f3DPosition =						(((dwLoad & 0x00000002) ? true : false) && (Ctx.dwVersion >= 73));
+	m_fFateSurvives =					(((dwLoad & 0x00000004) ? true : false) && (Ctx.dwVersion >= 58));
+	m_fOverdrive =						((dwLoad & 0x00000008) ? true : false);
+	m_fOptimized =						((dwLoad & 0x00000010) ? true : false);
+	m_fSecondaryWeapon =				((dwLoad & 0x00000020) ? true : false);
+	m_fFateDamaged =					(((dwLoad & 0x00000040) ? true : false) && (Ctx.dwVersion >= 58));
+	m_fEnabled =						((dwLoad & 0x00000080) ? true : false);
+	m_fWaiting =						((dwLoad & 0x00000100) ? true : false);
+	m_fTriggered =						((dwLoad & 0x00000200) ? true : false);
+	m_fRegenerating =					((dwLoad & 0x00000400) ? true : false);
+	m_fLastActivateSuccessful =			((dwLoad & 0x00000800) ? true : false);
 
-	m_fLinkedFireAlways =	((dwLoad & 0x00001000) ? true : false);
-	m_fLinkedFireTarget =	((dwLoad & 0x00002000) ? true : false);
-	m_fLinkedFireEnemy =	((dwLoad & 0x00004000) ? true : false);
-	m_fExternal =			((dwLoad & 0x00008000) ? true : false);
-	m_fDuplicate =			((dwLoad & 0x00010000) ? true : false);
-	m_fCannotBeEmpty =		((dwLoad & 0x00020000) ? true : false);
-	m_fFateDestroyed =		((dwLoad & 0x00040000) ? true : false);
-	m_fFateComponetized =	((dwLoad & 0x00080000) ? true : false);
-	bool bSlotEnhancements =((dwLoad & 0x00100000) ? true : false);
-	m_fLinkedFireSelected = ((dwLoad & 0x00200000) ? true : false);
-	m_fLinkedFireNever =	((dwLoad & 0x00400000) ? true : false);
-	m_fLinkedFireSelectedVariants = ((dwLoad & 0x00800000) ? true : false);
-	m_fCycleFire =		((dwLoad & 0x01000000) ? true : false);
-	m_fCanTargetMissiles =	((dwLoad & 0x02000000) ? true : false);
-	m_fOnSegment =			((dwLoad & 0x04000000) ? true : false);
-	m_fOnUsedLastAmmo =		((dwLoad & 0x08000000) ? true : false);
+	m_fLinkedFireAlways =				((dwLoad & 0x00001000) ? true : false);
+	m_fLinkedFireTarget =				((dwLoad & 0x00002000) ? true : false);
+	m_fLinkedFireEnemy =				((dwLoad & 0x00004000) ? true : false);
+	m_fExternal =						((dwLoad & 0x00008000) ? true : false);
+	m_fDuplicate =						((dwLoad & 0x00010000) ? true : false);
+	m_fCannotBeEmpty =					((dwLoad & 0x00020000) ? true : false);
+	m_fFateDestroyed =					((dwLoad & 0x00040000) ? true : false);
+	m_fFateComponetized =				((dwLoad & 0x00080000) ? true : false);
+	bool bSlotEnhancements =			((dwLoad & 0x00100000) ? true : false);
+	m_fLinkedFireSelected =				((dwLoad & 0x00200000) ? true : false);
+	m_fLinkedFireNever =				((dwLoad & 0x00400000) ? true : false);
+	m_fLinkedFireSelectedVariants =		((dwLoad & 0x00800000) ? true : false);
+	m_fCycleFire =						((dwLoad & 0x01000000) ? true : false);
+	m_fCanTargetMissiles =				((dwLoad & 0x02000000) ? true : false);
+	m_fOnSegment =						((dwLoad & 0x04000000) ? true : false);
+	m_fOnUsedLastAmmo =					((dwLoad & 0x08000000) ? true : false);
+	bool bLoadWeaponTargetDefinition =	((dwLoad & 0x10000000) ? true : false);
 
 	//	Previous versions did not save this flag
 
@@ -775,12 +781,27 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	if (m_pClass != NULL && m_iDeviceSlot != -1)
 		{
 		CItemListManipulator ItemList(Source.GetItemList());
-		Source.SetCursorAtDevice(ItemList, this);
-		if (ItemList.IsCursorValid())
+		if (Source.SetCursorAtDevice(ItemList, this))
 			{
 			m_pSource = &Source;
 			m_pItem = ItemList.GetItemPointerAtCursor();
 			m_pItem->SetInstalled(*this);
+			}
+		else
+			{
+			//	If we can't find the item, then the save file is corrupt,
+			//	because it must be there at save time. But we try to fix it up
+			//	anyway.
+
+			if (Source.GetUniverse().InDebugMode())
+				throw CException(ERR_FAIL);
+			else
+				{
+				ItemList.AddItem(CItem(*m_pClass->GetItemType(), 1));
+				ItemList.SetInstalledAtCursor(*this);
+				m_pSource = &Source;
+				m_pItem = ItemList.GetItemPointerAtCursor();
+				}
 			}
 
 		//	In previous versions we automatically offset weapon positions.
@@ -810,6 +831,9 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 
 	if (iSlotBonus != 0)
 		m_SlotEnhancements.InsertHPBonus(iSlotBonus);
+
+	if (bLoadWeaponTargetDefinition)
+		m_pWeaponTargetDefinition = CWeaponTargetDefinition::ReadFromStream(Ctx);
 	}
 
 int CInstalledDevice::IncCharges (CSpaceObject *pSource, int iChange)
@@ -1034,7 +1058,7 @@ ESetPropertyResult CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &
 	else if (strEquals(sName, PROPERTY_CAPACITOR))
 		{
 		CSpaceObject *pSource = Ctx.GetSource();
-		if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntCapacitor, pValue->GetIntegerValue()))
+		if (!m_pClass->SetCounter(this, pSource, EDeviceCounterType::Capacitor, pValue->GetIntegerValue()))
 			{
 			if (retsError) *retsError = CONSTLIT("Unable to set capacitor value.");
 			return ESetPropertyResult::error;
@@ -1179,10 +1203,18 @@ ESetPropertyResult CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &
 			SetSecondary(false);
 		}
 
+	else if (strEquals(sName, PROPERTY_TARGET_CRITERIA))
+		{
+		if (pValue == NULL || pValue->IsNil())
+			ClearWeaponTargetDefinition();
+		else
+			SetWeaponTargetDefinition(pValue->GetStringValue());
+		}
+
 	else if (strEquals(sName, PROPERTY_TEMPERATURE))
 		{
 		CSpaceObject *pSource = Ctx.GetSource();
-		if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntTemperature, pValue->GetIntegerValue()))
+		if (!m_pClass->SetCounter(this, pSource, EDeviceCounterType::Temperature, pValue->GetIntegerValue()))
 			{
 			if (retsError) *retsError = CONSTLIT("Unable to set temperature value.");
 			return ESetPropertyResult::error;
@@ -1329,6 +1361,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 //
 //	CItemEnhancementStack
 //	CEnhancementDesc
+//	CWeaponTargetDefinition
 
 	{
 	DWORD dwSave;
@@ -1398,10 +1431,15 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fCanTargetMissiles ?	0x02000000 : 0);
 	dwSave |= (m_fOnSegment ?			0x04000000 : 0);
 	dwSave |= (m_fOnUsedLastAmmo ?		0x08000000 : 0);
+	dwSave |= ((m_pWeaponTargetDefinition != nullptr) ?		0x10000000 : 0);
 	pStream->Write(dwSave);
 
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
 
 	if (!m_SlotEnhancements.IsEmpty())
 		m_SlotEnhancements.WriteToStream(*pStream);
+
+	if (m_pWeaponTargetDefinition)
+		m_pWeaponTargetDefinition->WriteToStream(pStream);
+
 	}

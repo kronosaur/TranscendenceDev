@@ -29,7 +29,7 @@ CVirtualKeyData::SVirtKeyData CVirtualKeyData::m_VirtKeyData[] =
 		//	0x10 - 0x1F
 		{	"Shift",			"Shift",	NULL,				0	},
 		{	"Control",			"Ctrl",		NULL,				0	},
-		{	"Menu",				NULL,		NULL,				FLAG_NON_STANDARD	},
+		{	"Menu",				"Alt",		NULL,				FLAG_NON_STANDARD	},
 		{	"Pause",			NULL,		NULL,				FLAG_NON_STANDARD	},
 		{	"Capital",			NULL,		NULL,				0	},
 		{	"Kana",				NULL,		NULL,				FLAG_NON_STANDARD	},

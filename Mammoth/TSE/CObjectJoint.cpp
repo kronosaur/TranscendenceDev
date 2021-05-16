@@ -384,18 +384,18 @@ void CObjectJoint::WriteToStream (CSystem *pSystem, IWriteStream &Stream)
 
 	Stream.Write(m_iMaxLength);
 
-	WriteToStream(pSystem, Stream, m_P1);
-	WriteToStream(pSystem, Stream, m_P2);
+	WriteToStream(Stream, m_P1);
+	WriteToStream(Stream, m_P2);
 	}
 
-void CObjectJoint::WriteToStream (CSystem *pSystem, IWriteStream &Stream, const SAttachPoint &Point)
+void CObjectJoint::WriteToStream (IWriteStream &Stream, const SAttachPoint &Point)
 
 //	WriteToStream
 //
 //	Writes an attach point
 
 	{
-	pSystem->WriteObjRefToStream(Point.pObj, &Stream);
+	CSystem::WriteObjRefToStream(Stream, Point.pObj);
 
 	Point.Pos.WriteToStream(Stream);
 

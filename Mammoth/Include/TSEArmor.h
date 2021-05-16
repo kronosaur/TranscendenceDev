@@ -64,7 +64,6 @@ class CArmorClass
 		int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
 		inline CString GetName (void) const;
 		CString GetShortName (void);
-		int GetStealth (void) const { return m_iStealth; }
 		DWORD GetUNID (void);
 		bool IsScalable (void) const { return (m_pScalable != NULL); }
 		ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
@@ -151,6 +150,7 @@ class CArmorClass
 		CurrencyValue GetRepairCost (const CArmorItem &ArmorItem, int iHPToRepair = 1) const;
 		int GetRepairLevel (const CArmorItem &ArmorItem) const;
 		const SScalableStats &GetScaledStats (const CArmorItem &ArmorItem) const;
+		int GetStealth (const CItemEnhancementStack *pEnhancements) const;
 		CUniverse &GetUniverse (void) const;
 
 		Metric CalcRegen180 (CItemCtx &ItemCtx) const;
@@ -166,7 +166,7 @@ class CArmorClass
 		int m_iRepairTech;						//	Tech required to repair
 		int m_iArmorCompleteBonus;				//	Extra HP if armor is complete
 		int m_iHPBonusPerCharge;				//	Extra HP for each charge
-		int m_iStealth;							//	Stealth level
+		int m_iStealthFromArmor;				//	Stealth level
 		int m_iPowerUse;						//	Power consumed (1/10th MWs)
 		int m_iIdlePowerUse;					//	Power consumed when not regenerating
 		int m_iPowerGen;						//	Power generation, usually solar (1/10th MWs)
@@ -211,6 +211,7 @@ class CShipArmorSegmentDesc
 	{
 	public:
 		bool AngleInSegment (int iAngle) const;
+		void ApplyOverride (const CShipArmorSegmentDesc &Override);
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		bool CreateArmorItem (CItem *retItem, CString *retsError = NULL) const;
 		CArmorClass *GetArmorClass (void) const { return m_pArmor; }
@@ -221,7 +222,7 @@ class CShipArmorSegmentDesc
 		int GetSpan (void) const { return m_iSpan; }
 		int GetStartAngle (void) const { return m_iStartAt; }
 		ALERROR Init (int iStartAt, int iSpan, DWORD dwArmorUNID, int iLevel, const CRandomEnhancementGenerator &Enhancement);
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc, DWORD dwDefaultUNID, int iDefaultLevel, int iDefaultAngle, const CRandomEnhancementGenerator &DefaultEnhancement, int *retiSpan = NULL);
 
 	private:
 		static DWORD ParseNonCritical (const CString &sList);
@@ -238,9 +239,11 @@ class CShipArmorDesc
 	{
 	public:
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
+		void ApplyOverride (SDesignLoadCtx &Ctx, const CShipArmorDesc &Override);
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		Metric CalcMass (void) const;
 		int GetCount (void) const { return m_Segments.GetCount(); }
+		int GetMaxLevel () const;
 		const CShipArmorSegmentDesc &GetSegment (int iIndex) const { ASSERT(iIndex >= 0 && iIndex < m_Segments.GetCount()); return m_Segments[iIndex]; }
 		int GetSegmentAtAngle (int iAngle) const;
 		CString GetSegmentName (int iIndex) const;
@@ -277,13 +280,14 @@ class CInstalledArmor
 		int GetHitPointsPercent (CSpaceObject *pSource);
 		CItem *GetItem (void) const { return m_pItem; }
 		inline int GetLevel (void) const;
-		inline int GetMaxHP (CSpaceObject *pSource) const;
+		inline int GetMaxHP (const CSpaceObject *pSource) const;
 		int GetSect (void) const { return m_iSect; }
 		CSpaceObject *GetSource (void) const { return m_pSource; }
 		int IncCharges (CSpaceObject *pSource, int iChange);
 		int IncHitPoints (int iChange) { m_iHitPoints = Max(0, m_iHitPoints + iChange); return m_iHitPoints; }
 		void Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iSect, bool bInCreate = false);
 		bool IsComplete (void) const { return (m_fComplete ? true : false); }
+		bool IsDamaged () const;
 		bool IsPrime (void) const { return (m_fPrimeSegment ? true : false); }
 		void SetComplete (CSpaceObject *pSource, bool bComplete = true);
 		void SetConsumePower (bool bValue = true) { m_fConsumePower = bValue; }

@@ -12,6 +12,8 @@ void CGDraw::Arc (CG32bitImage &Dest, const CVector &vCenter, Metric rRadius, Me
 //	Draws an arc
 
 	{
+	DEBUG_TRY
+
 	//	Create the shape
 
 	CGPath ArcPath;
@@ -26,6 +28,8 @@ void CGDraw::Arc (CG32bitImage &Dest, const CVector &vCenter, Metric rRadius, Me
 	//	Draw the region
 
 	CGDraw::Region(Dest, (int)vCenter.GetX(), (int)vCenter.GetY(), ArcRegion, rgbColor, iMode);
+
+	DEBUG_CATCH
 	}
 
 void CGDraw::Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor, EBlendModes iMode, int iSpacing, DWORD dwFlags)
@@ -54,6 +58,8 @@ void CGDraw::ArcCorner (CG32bitImage &Dest, int xCenter, int yCenter, int iRadiu
 //	Draw an arc (90 degrees). 
 
 	{
+	DEBUG_TRY
+
 	//	Temporaries
 
 	int iHalfWidth = iLineWidth / 2;
@@ -148,6 +154,8 @@ void CGDraw::ArcCorner (CG32bitImage &Dest, int xCenter, int yCenter, int iRadiu
 		iRow++;
 		rRow = (Metric)iRow + 0.5;
 		}
+
+	DEBUG_CATCH
 	}
 
 void CGDraw::ArcSegment (CG32bitImage &Dest, const CVector &vCenter, Metric rRadius, Metric rAngle, Metric rWidth, CG32bitPixel rgbColor, EBlendModes iMode)
@@ -157,6 +165,8 @@ void CGDraw::ArcSegment (CG32bitImage &Dest, const CVector &vCenter, Metric rRad
 //	Draws a circle segment (the area defined by a chord).
 
 	{
+	DEBUG_TRY
+
 	CGPath ArcPath;
 	if (!CGShape::ArcSegment(CVector(), rRadius, rAngle, rWidth, &ArcPath))
 		return;
@@ -169,6 +179,8 @@ void CGDraw::ArcSegment (CG32bitImage &Dest, const CVector &vCenter, Metric rRad
 	//	Draw the region
 
 	CGDraw::Region(Dest, (int)vCenter.GetX(), (int)vCenter.GetY(), ArcRegion, rgbColor, iMode);
+
+	DEBUG_CATCH
 	}
 
 void CGDraw::ArcQuadrilateral (CG32bitImage &Dest, const CVector &vCenter, const CVector &vInnerPos, const CVector &vOuterPos, Metric rWidth, CG32bitPixel rgbColor, EBlendModes iMode)
@@ -179,6 +191,8 @@ void CGDraw::ArcQuadrilateral (CG32bitImage &Dest, const CVector &vCenter, const
 //	curved with respect to a center point.
 
 	{
+	DEBUG_TRY
+
 	CGPath ArcPath;
 	if (!CGShape::ArcQuadrilateral(CVector(), vInnerPos, vOuterPos, rWidth, &ArcPath))
 		return;
@@ -191,6 +205,8 @@ void CGDraw::ArcQuadrilateral (CG32bitImage &Dest, const CVector &vCenter, const
 	//	Draw the region
 
 	CGDraw::Region(Dest, (int)vCenter.GetX(), (int)vCenter.GetY(), ArcRegion, rgbColor, iMode);
+
+	DEBUG_CATCH
 	}
 
 void CGDraw::LineBresenham (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor)

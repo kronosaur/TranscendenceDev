@@ -282,7 +282,9 @@ class ICCItemPtr
 			*this = Src;
 			}
 
+		static ICCItemPtr DoubleOrInt (double rValue);
 		static ICCItemPtr Error (const CString &sError, const ICCItem *pData = NULL);
+		static ICCItemPtr IntegerOrNil (int iValue) { if (iValue == 0) return ICCItemPtr::Nil(); else return ICCItemPtr(iValue); }
 		static ICCItemPtr Nil (void) { return ICCItemPtr(ICCItem::Nil); }
 		static ICCItemPtr True (void) { return ICCItemPtr(ICCItem::True); }
 

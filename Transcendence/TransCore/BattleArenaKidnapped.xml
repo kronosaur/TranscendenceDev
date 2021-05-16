@@ -19,7 +19,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msKatamiKidnapped;"
-			name=				"Katami Kidnapped"
+			name=				"Battle Arena 03: Katami Kidnapped"
 			attributes=			"battleArena, paneInitMission, deliveryMission"
 
 			level=				"3"
@@ -27,6 +27,8 @@
 			priority=			"10"
 			maxAppearing=		"1"
 			>
+
+		<Image imageID="&rsBattleArenaMissionTile;"	imageWidth="384" imageHeight="192"/>
 
 		<Events>
 			<OnCreate>

@@ -94,6 +94,7 @@
 #define SPECIAL_EXTENSION						CONSTLIT("extension:")
 #define SPECIAL_INHERIT							CONSTLIT("inherit:")
 #define SPECIAL_PROPERTY						CONSTLIT("property:")
+#define SPECIAL_SERVICE							CONSTLIT("service:")
 #define SPECIAL_SYSTEM_LEVEL					CONSTLIT("systemLevel:")
 #define SPECIAL_UNID							CONSTLIT("unid:")
 
@@ -103,12 +104,16 @@
 #define PROPERTY_DEFAULT_CURRENCY				CONSTLIT("defaultCurrency")
 #define PROPERTY_DEFAULT_CURRENCY_EXCHANGE		CONSTLIT("defaultCurrencyExchange")
 #define PROPERTY_EXTENSION						CONSTLIT("extension")
+#define PROPERTY_GLOBAL_DATA					CONSTLIT("globalData")
+#define PROPERTY_INHERIT_FROM					CONSTLIT("inheritFrom")
 #define PROPERTY_MAP_DESCRIPTION				CONSTLIT("mapDescription")
 #define PROPERTY_MAX_BALANCE					CONSTLIT("maxBalance")
 #define PROPERTY_MERGED							CONSTLIT("merged")
 #define PROPERTY_NAME_PATTERN					CONSTLIT("namePattern")
 #define PROPERTY_OBSOLETE_VERSION				CONSTLIT("obsoleteVersion")
 #define PROPERTY_REQUIRED_VERSION				CONSTLIT("requiredVersion")
+#define PROPERTY_STATIC_DATA					CONSTLIT("staticData")
+#define PROPERTY_TRADE_DESC						CONSTLIT("tradeDesc")
 #define PROPERTY_UNID							CONSTLIT("unid")
 
 #define FIELD_ENTITY							CONSTLIT("entity")
@@ -254,6 +259,7 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 
 	//	Bind. Set the flag so that we do not recurse.
 
+	CDesignType *pOldType = Ctx.pType;
 	Ctx.pType = this;
 	m_bBindCalled = true;
 
@@ -263,7 +269,7 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 		{
 		if (ALERROR error = m_pExtra->PropertyDefs.BindDesign(Ctx))
 			{
-			Ctx.pType = NULL;
+			Ctx.pType = pOldType;
 			return error;
 			}
 		}
@@ -299,14 +305,14 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 		{
 		if (ALERROR error = OnBindDesign(Ctx))
 			{
-			Ctx.pType = NULL;
+			Ctx.pType = pOldType;
 			return error;
 			}
 		}
 	catch (...)
 		{
 		::kernelDebugLogPattern("Crash in OnBindDesign [UNID: %08x]", m_dwUNID);
-		Ctx.pType = NULL;
+		Ctx.pType = pOldType;
 		throw;
 		}
 
@@ -315,7 +321,7 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 	if (Ctx.bTraceBind)
 		Ctx.iBindNesting--;
 
-	Ctx.pType = NULL;
+	Ctx.pType = pOldType;
 	return NOERROR;
 	}
 
@@ -524,6 +530,22 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 	else if (strEquals(sProperty, PROPERTY_CLASS))
 		return CC.CreateString(GetTypeClassName());
 
+	else if (strEquals(sProperty, PROPERTY_GLOBAL_DATA))
+		{
+		if (m_pExtra)
+			return m_pExtra->GlobalData.GetDataAsItem(CONSTLIT("*"))->Reference();
+		else
+			return CC.CreateNil();
+		}
+
+	else if (strEquals(sProperty, PROPERTY_INHERIT_FROM))
+		{
+		if (m_pInheritFrom)
+			return CC.CreateInteger(m_pInheritFrom->GetUNID());
+		else
+			return CC.CreateNil();
+		}
+
 	else if (strEquals(sProperty, PROPERTY_DEFAULT_CURRENCY))
 		{
 		const CTradingDesc *pTrade = GetTradingDesc();
@@ -589,6 +611,24 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	else if (strEquals(sProperty, PROPERTY_REQUIRED_VERSION))
 		return (m_dwMinVersion > 0 ? CC.CreateInteger(m_dwMinVersion) : CC.CreateNil());
+
+	else if (strEquals(sProperty, PROPERTY_STATIC_DATA))
+		{
+		if (m_pExtra)
+			return m_pExtra->StaticData.GetDataAsItem(CONSTLIT("*"))->Reference();
+		else
+			return CC.CreateNil();
+		}
+
+	else if (strEquals(sProperty, PROPERTY_TRADE_DESC))
+		{
+		const CTradingDesc *pTrade = GetTradingDesc();
+		if (pTrade)
+			return pTrade->AsCCItem(Ctx)->Reference();
+		else
+			return CC.CreateNil();
+			
+		}
 
 	else if (strEquals(sProperty, PROPERTY_UNID))
 		return CC.CreateInteger(GetUNID());
@@ -1153,7 +1193,7 @@ ICCItemPtr CDesignType::FireObjItemCustomEvent (const CString &sEvent, CSpaceObj
 		}
 	}
 
-ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, void *pScreen, DWORD dwScreenUNID, const CString &sScreen, const CString &sScreenName, const CString &sPane, ICCItem *pData, CString *retsError)
+ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, DWORD dwScreenUNID, const CString &sScreen, const CString &sScreenName, const CString &sPane, ICCItem *pData, CString *retsError)
 
 //	FireOnGlobalDockPaneInit
 //
@@ -1166,7 +1206,6 @@ ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, v
 
 	//	Set up
 
-	Ctx.SetScreen(pScreen);
 	Ctx.DefineInteger(CONSTLIT("aType"), dwScreenUNID);
 	Ctx.DefineInteger(CONSTLIT("aScreenUNID"), dwScreenUNID);
 	Ctx.DefineString(CONSTLIT("aScreen"), sScreen);
@@ -1948,6 +1987,21 @@ TSortMap<DWORD, DWORD> CDesignType::GetXMLMergeFlags (void) const
 	return MergeFlags;
 	}
 
+CString CDesignType::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) const
+
+//	GetNamePattern
+//
+//	Default implementation
+
+	{
+	CCodeChainCtx CCX(GetUniverse());
+	
+	if (retdwFlags)
+		*retdwFlags = 0;
+
+	return GetProperty(CCX, CONSTLIT("name"))->GetStringValue();
+	}
+
 CString CDesignType::GetNounPhrase (DWORD dwFlags) const
 
 //  GetNounPhrase
@@ -2505,6 +2559,16 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 		ICCItemPtr pValue = GetProperty(CCX, Compare.GetProperty());
 		return Compare.Eval(pValue);
 		}
+	else if (strStartsWith(sAttrib, SPECIAL_SERVICE))
+		{
+		CString sValue = strSubString(sAttrib, SPECIAL_SERVICE.GetLength());
+		ETradeServiceTypes iService = CTradingDesc::ParseService(sValue);
+		if (iService == serviceNone)
+			return false;
+
+		CTradingServices Services(*this);
+		return Services.HasService(iService);
+		}
 	else if (strStartsWith(sAttrib, SPECIAL_SYSTEM_LEVEL))
 		{
 		//	Must have a current system.
@@ -2821,6 +2885,20 @@ bool CDesignType::InSelfReference (CDesignType *pType)
 	return false;
 	}
 
+void CDesignType::LogOutput (SDesignLoadCtx &Ctx, const CString &sError) const
+
+//	LogOutput
+//
+//	Output a log entry.
+
+	{
+	CString sEntity = GetEntityName();
+	if (sEntity.IsBlank())
+		sEntity = strPatternSubst("%08x", GetUNID());
+
+	Ctx.GetUniverse().LogOutput(strPatternSubst(CONSTLIT("%s: %s"), sEntity, sError));
+	}
+
 bool CDesignType::MatchesCriteria (const CDesignTypeCriteria &Criteria) const
 
 //	MatchesCriteria
@@ -2916,7 +2994,7 @@ ALERROR CDesignType::PrepareBindDesign (SDesignLoadCtx &Ctx)
 	return OnPrepareBindDesign(Ctx);
 	}
 
-void CDesignType::ReadFromStream (SUniverseLoadCtx &Ctx)
+bool CDesignType::ReadFromStream (SUniverseLoadCtx &Ctx, CString *retsError)
 
 //	ReadFromStream
 //
@@ -2935,6 +3013,18 @@ void CDesignType::ReadFromStream (SUniverseLoadCtx &Ctx)
 
 	bool bHasGlobalData = ((dwFlags & 0x00000001) ? true : false);
 
+	//	In later versions we store the type in the flags.
+
+	if (Ctx.dwVersion >= 40)
+		{
+		DesignTypes iSavedType = (DesignTypes)(dwFlags >> 24);
+		if (iSavedType != GetType())
+			{
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to load %s (%08x) because its type changed."), GetEntityName(), GetUNID());
+			return false;
+			}
+		}
+
 	//	Read global data
 
 	if (bHasGlobalData)
@@ -2943,6 +3033,8 @@ void CDesignType::ReadFromStream (SUniverseLoadCtx &Ctx)
 	//	Allow sub-classes to load
 
 	OnReadFromStream(Ctx);
+
+	return true;
 	}
 
 void CDesignType::ReadGlobalData (SUniverseLoadCtx &Ctx)
@@ -3008,10 +3100,7 @@ bool CDesignType::SetTypeProperty (const CString &sProperty, const ICCItem &Valu
 	ICCItemPtr pDummy;
 	EPropertyType iType;
 
-	if (OnSetTypeProperty(sProperty, Value))
-		return true;
-
-	else if (FindCustomPropertyRaw(sProperty, pDummy, &iType))
+	if (FindCustomPropertyRaw(sProperty, pDummy, &iType))
 		{
 		switch (iType)
 			{
@@ -3022,6 +3111,14 @@ bool CDesignType::SetTypeProperty (const CString &sProperty, const ICCItem &Valu
 			default:
 				return false;
 			}
+		}
+	else if (OnSetTypeProperty(sProperty, Value))
+		return true;
+
+	else if (strEquals(sProperty, PROPERTY_GLOBAL_DATA))
+		{
+		SetGlobalData(CONSTLIT("*"), &Value);
+		return true;
 		}
 	else
 		return false;
@@ -3194,6 +3291,11 @@ void CDesignType::WriteToStream (IWriteStream *pStream)
 
 	DWORD dwFlags = 0;
 	dwFlags |= (m_pExtra ? 0x00000001 : 0);
+
+	//	Include type as the high byte
+
+	DWORD dwType = (GetType() & 0xff) << 24;
+	dwFlags |= dwType;
 
 	pStream->Write(dwFlags);
 

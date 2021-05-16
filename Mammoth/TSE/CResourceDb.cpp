@@ -206,7 +206,7 @@ CString CResourceDb::GetResourceFilespec (int iIndex)
 		return NULL_STR;
 	}
 
-CString CResourceDb::GetRootTag (void)
+CString CResourceDb::GetRootTag (CString *retsError)
 
 //	GetRootTag
 //
@@ -219,14 +219,17 @@ CString CResourceDb::GetRootTag (void)
 
 		CString sGameFile;
 		if (m_pDb->ReadEntryPartial(m_iGameFile, 0, iReadSize, &sGameFile) != NOERROR)
+			{
+			if (retsError) *retsError = CONSTLIT("Unable to find game file in TDB.");
 			return NULL_STR;
+			}
 
 		//	Parse the XML file from the buffer
 
 		CBufferReadBlock GameFile(sGameFile);
 		CString sTag;
 
-		if (CXMLElement::ParseRootTag(&GameFile, &sTag) != NOERROR)
+		if (CXMLElement::ParseRootTag(&GameFile, &sTag, retsError) != NOERROR)
 			return NULL_STR;
 
 		return sTag;
@@ -238,7 +241,7 @@ CString CResourceDb::GetRootTag (void)
 		CFileReadBlock DataFile(pathAddComponent(m_sRoot, m_sGameFile));
 		CString sTag;
 
-		if (CXMLElement::ParseRootTag(&DataFile, &sTag) != NOERROR)
+		if (CXMLElement::ParseRootTag(&DataFile, &sTag, retsError) != NOERROR)
 			return NULL_STR;
 
 		return sTag;

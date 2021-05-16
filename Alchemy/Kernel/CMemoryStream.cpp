@@ -35,7 +35,7 @@ CMemoryWriteStream::~CMemoryWriteStream (void)
 
 	if (m_pBlock)
 		{
-        VirtualFree(m_pBlock, m_iCommittedSize, MEM_DECOMMIT);
+		//	This will decommit and free
         VirtualFree(m_pBlock, 0, MEM_RELEASE);
 		}
 	}
@@ -148,13 +148,9 @@ ALERROR CMemoryWriteStream::Write (const char *pData, int iLength, int *retiByte
 				//	Copy over to the new block
 
 				utlMemCopy(m_pBlock, pNewBlock, m_iCommittedSize);
-
-				//	Free the old block
-
-				::VirtualFree(m_pBlock, m_iCommittedSize, MEM_DECOMMIT);
 				}
 
-			//	Free original
+			//	Free original (NOTE: This will decommit and free)
 
 			::VirtualFree(m_pBlock, 0, MEM_RELEASE);
 

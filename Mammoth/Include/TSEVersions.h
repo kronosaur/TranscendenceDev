@@ -5,9 +5,9 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							50;
-constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					194;
+constexpr DWORD API_VERSION =							51;
+constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
+constexpr DWORD SYSTEM_SAVE_VERSION =					206;
 
 //	Uncomment out the following define when building a stable release
 
@@ -113,6 +113,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					194;
 //
 //	38: 1.9 Alpha 3
 //		Added m_Difficulty to CUniverse
+//
+//	39: 1.9 Beta 4
+//		Added extra type and extension information
+//
+//	40: 1.9 Beta 4
+//		Added design type in dwFlags or CDesignType.
 
 
 //	SYSTEM VERSION HISTORY -----------------------------------------------------
@@ -132,7 +138,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					194;
 //		m_iCountdown in CStandardShipAI
 //
 //	 5: 0.97
-//		m_iStealth in CShip
+//		m_iStealthFromArmor in CShip
 //
 //	 6-14: 0.98
 //		m_Blacklist in CBaseShipAI
@@ -704,3 +710,40 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					194;
 //
 //	194: 1.9 Beta 2
 //		m_fAllowEnemyDocking in CStation
+//
+//	195: 1.9 Beta 4
+//		COrderDesc
+//
+//	196: 1.9 Beta 4
+//		m_Overlays in CMissile
+//
+//	197: 1.9 Beta 4
+//		Add fields to CAISettings
+//		Add m_DeterModule to CBaseShipAI
+//
+//	198: 1.9 Beta 4
+//		Remove m_iStealth from CShip
+//
+//	199: 1.9 Beta 4
+//		Added m_SquadronID for CShip
+//
+//	200: 1.9 Beta 4
+//		Changed CIntegralRotationDesc::ROTATION_FRACTION
+//
+//	201: 1.9 Beta 4
+//		Added m_iInstalledIndex to CItem::SExtra
+//
+//	202: 1.9 Beta 4
+//		Added m_PowerStats to CPlayerGameStats
+//
+//	203: 1.9 Beta 4
+//		Move loading of order modules
+//
+//	204: 1.9 Beta 4
+//		Added m_dwLastFireTime and m_dwLastHitTime to CStation
+//
+//	205: 1.9 Beta 4
+//		Added flags to COrderDesc
+//
+//	206: 1.9 Beta 4
+//		Added fields to CMarker

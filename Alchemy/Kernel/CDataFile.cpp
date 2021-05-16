@@ -848,7 +848,7 @@ ALERROR CDataFile::OpenInt (void)
 
 		//	Done
 
-		delete pOldEntryTable;
+		delete [] pOldEntryTable;
 
 		//	New version
 

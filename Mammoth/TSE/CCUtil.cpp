@@ -445,7 +445,7 @@ CStation *CreateStationObjFromItem (CCodeChain &CC, ICCItem *pArg)
 	return (pObj ? pObj->AsStation() : NULL);
 	}
 
-CVector CreateVectorFromList (CCodeChain &CC, ICCItem *pList)
+CVector CreateVectorFromList (CCodeChain &CC, const ICCItem *pList)
 
 //	CreateVectorFromList
 //
@@ -557,18 +557,29 @@ CDamageSource GetDamageSourceArg (CCodeChain &CC, ICCItem *pArg)
 		CSpaceObject *pSecondarySource = CreateObjFromItem(pArg->GetElement(CONSTLIT("secondaryObj")));
 
 		CString sSourceName;
-		ICCItem *pValue = pArg->GetElement(CONSTLIT("sourceName"));
-		if (pValue)
-			sSourceName = pValue->GetStringValue();
-
 		DWORD dwSourceFlags = 0;
-		pValue = pArg->GetElement(CONSTLIT("sourceNameFlags"));
-		if (pValue)
-			dwSourceFlags = pValue->GetIntegerValue();
+
+		if (const ICCItem *pNamePattern = pArg->GetElement((CONSTLIT("namePattern"))))
+			{
+			if (const ICCItem *pPattern = pNamePattern->GetElement(CONSTLIT("pattern")))
+				sSourceName = pPattern->GetStringValue();
+
+			if (const ICCItem *pFlags = pNamePattern->GetElement(CONSTLIT("flags")))
+				dwSourceFlags = pFlags->GetIntegerValue();
+			}
+		else
+			{
+			const ICCItem *pValue = pArg->GetElement(CONSTLIT("sourceName"));
+			if (pValue)
+				sSourceName = pValue->GetStringValue();
+
+			pValue = pArg->GetElement(CONSTLIT("sourceNameFlags"));
+			if (pValue)
+				dwSourceFlags = pValue->GetIntegerValue();
+			}
 
 		DestructionTypes iCause = killedByDamage;
-		pValue = pArg->GetElement(CONSTLIT("cause"));
-		if (pValue)
+		if (const ICCItem *pValue = pArg->GetElement(CONSTLIT("cause")))
 			iCause = ::GetDestructionCause(pValue->GetStringValue());
 
 		return CDamageSource(pSource, iCause, pSecondarySource, sSourceName, dwSourceFlags);

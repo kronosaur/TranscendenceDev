@@ -4,7 +4,7 @@
 
 	<MissionType UNID="&msCMVolunteer02;"
 			name=				"Commonwealth Volunteer 02: Destroy Enemy Station"
-			attributes=			"commonwealthMilitia, commonwealthVolunteer, metropolisMilitia, rank0"
+			attributes=			"commonwealthMilitia, commonwealthVolunteer, eridaniScript, metropolisMilitia, rank0"
 			inherit=			"&baDestroyStationMission;"
 
 			level=				"1-5"
@@ -17,10 +17,12 @@
 			<Data id="reward"></Data>
 			<Variant id="targetDesc">
 				{
-					criteria: "TAE +populated; -questTarget; -uncharted;"
+					criteria: "TAE +populated; -property:questTarget; -uncharted;"
 					}
 			</Variant>
 		</Properties>
+
+		<Image imageID="&rsCommonwealthMilitiaInsignia;" imageX="0" imageY="0" imageWidth="256" imageHeight="256"/>
 
 		<Events>
 			<OnTargetChosen>

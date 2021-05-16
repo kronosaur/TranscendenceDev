@@ -6,6 +6,7 @@
 
 #define EVENT_GET_DOCK_SCREEN					CONSTLIT("GetDockScreen")
 #define EVENT_ON_OBJ_DOCKED						CONSTLIT("OnObjDocked")
+#define EVENT_ON_REMOVE_AT_DOCK_SERVICES		CONSTLIT("OnRemoveAtDockServices")
 
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
 #define ON_DAMAGE_EVENT							CONSTLIT("OnDamage")
@@ -28,7 +29,6 @@
 #define PROPERTY_ROTATION						CONSTLIT("rotation")
 #define PROPERTY_TYPE							CONSTLIT("type")
 
-const int ANNOTATION_INNER_SPACING_Y =			2;
 const int FLAG_INNER_SPACING_X =				4;
 
 COverlay::COverlay (void) : 
@@ -229,6 +229,29 @@ bool COverlay::AccumulateEnhancements (CSpaceObject &Source, CDeviceItem &Device
 
 		return bEnhanced;
 		}
+	}
+
+void COverlay::AccumulateHUDTimers (const CSpaceObject &Source, TArray<SHUDTimerDesc> &retTimers) const
+
+//	AccumulateHUDTimers
+//
+//	Show timer for when the overlay expires on the UI.
+
+	{
+	if (!m_pType->ShowsInHUD())
+		return;
+
+	if (m_iLifeLeft < 0)
+		return;
+
+	int iLifetime = m_iTick + m_iLifeLeft;
+	if (iLifetime <= 0)
+		return;
+
+	auto *pEntry = retTimers.Insert();
+	pEntry->pIcon = &m_pType->GetTypeSimpleImage();
+	pEntry->sLabel = m_pType->GetNounPhrase(nounShort | nounTitleCapitalize | nounNoModifiers);
+	pEntry->iBar = 100 * m_iLifeLeft / iLifetime;
 	}
 
 void COverlay::CalcOffset (const CSpaceObject &Source, int iScale, int iRotation, int *retxOffset, int *retyOffset, int *retiRotationOrigin) const
@@ -814,6 +837,11 @@ CConditionSet COverlay::GetConditions (CSpaceObject *pSource) const
 	if (StopsTime(pSource))
 		Conditions.Set(ECondition::timeStopped);
 
+	//	Is this a harmful overlay that can be removed at a dock screen?
+
+	if (GetType()->FindEventHandler(EVENT_ON_REMOVE_AT_DOCK_SERVICES))
+		Conditions.Set(ECondition::fouled);
+
 	//	Done
 
 	return Conditions;
@@ -1096,7 +1124,7 @@ void COverlay::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPain
 					iMaxHP,
 					&cyHeight);
 
-			Ctx.yAnnotations += cyHeight + ANNOTATION_INNER_SPACING_Y;
+			Ctx.yAnnotations += cyHeight + CSpaceObject::ANNOTATION_INNER_SPACING_Y;
 			}
 		}
 
@@ -1143,7 +1171,7 @@ void COverlay::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPain
 						Counter.GetMaxValue(),
 						&cyHeight);
 
-				Ctx.yAnnotations += cyHeight + ANNOTATION_INNER_SPACING_Y;
+				Ctx.yAnnotations += cyHeight + CSpaceObject::ANNOTATION_INNER_SPACING_Y;
 				break;
 				}
 			}
@@ -1199,6 +1227,12 @@ void COverlay::PaintCounterFlag (CG32bitImage &Dest, int x, int y, const CString
 //	Paints a counter flag.
 
 	{
+	if (!Ctx.pObj)
+		{
+		ASSERT(false);
+		return;
+		}
+
 	const CG16bitFont &CounterFont = g_pUniverse->GetNamedFont(CUniverse::fontSRSMessage);
 	const CG16bitFont &LabelFont = g_pUniverse->GetNamedFont(CUniverse::fontSRSObjCounter);
 

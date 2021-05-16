@@ -57,7 +57,8 @@ bool CArtifactProgram::Init (EProgramTypes iType, int iLocus, CItemType *pItem, 
 	{
 	int i;
 
-	ASSERT(pItem);
+	if (!pItem)
+		throw CException(ERR_FAIL);
 
 	m_iType = iType;
 	m_iStatus = (iType == typeDaimon ? statusRunning : statusArchived);

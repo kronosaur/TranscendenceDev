@@ -3,6 +3,7 @@
 <TranscendenceModule>
 
 	<MissionType unid="&baDestroyStationMission;"
+			inherit=			"&unidCommonText;"
 			expireTime=			"5400"
 			>
 		<Properties>
@@ -30,7 +31,7 @@
 				-->
 			<Constant id="targetDesc">
 				{
-					criteria: "TAE +populated; -questTarget; -uncharted;"
+					criteria: "TAE +populated; -property:questTarget; -uncharted;"
 					}
 			</Constant>
 

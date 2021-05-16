@@ -810,12 +810,12 @@
 
 			<Text id="descOffer">
 				(if (ls (@ gData 'price) 0)
-					(scrTranslate gScreen 'descOfferRebate {
+					(typTranslate gType 'descOfferRebate {
 						wingmanName:(@ gData 'wingmanName) 
 						newShipName:(@ gData 'newShipName) 
 						price:(fmtCurrency (@ gData 'currency) (- (@ gData 'price)))
 						})
-					(scrTranslate gScreen 'descOfferPay {
+					(typTranslate gType 'descOfferPay {
 						wingmanName:(@ gData 'wingmanName) 
 						newShipName:(@ gData 'newShipName) 
 						price:(fmtCurrency (@ gData 'currency) (@ gData 'price))
@@ -1334,6 +1334,11 @@
 									"{/rtf "
 										"{/f:MediumBold;/c:#79828c; std. armor:} " (obj@ shipObj 'stdArmorClassName) "\n"
 										"{/f:MediumBold;/c:#79828c; max. armor:} " (obj@ shipObj 'maxArmorClassName) "\n"
+										(if (!= (obj@ shipObj 'stealth) 4)
+											(cat
+												"{/f:MediumBold;/c:#79828c; stealth at:} &gt;" (obj@ shipObj 'detectRange) " ls\n"
+												)
+											)
 									"}"
 									)
 							}

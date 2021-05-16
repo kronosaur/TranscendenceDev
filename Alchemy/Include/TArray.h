@@ -48,7 +48,7 @@ class CArrayBase
 			};
 
 		CArrayBase (HANDLE hHeap, int iGranularity);
-		CArrayBase (SHeader *pBlock) : m_pBlock(pBlock)
+		CArrayBase (SHeader *pBlock) noexcept : m_pBlock(pBlock) 
 			{ }
 
 		~CArrayBase (void);
@@ -163,7 +163,7 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 				VALUE *pElement = new(placement_new, GetBytes() + (i * sizeof(VALUE))) VALUE(Obj[i]);
 				}
 			}
-		TArray (TArray<VALUE> &&Src) : CArrayBase(Src.m_pBlock)
+		TArray (TArray<VALUE> &&Src) noexcept : CArrayBase(Src.m_pBlock)
 			{
 			Src.m_pBlock = NULL;
 			}
@@ -185,7 +185,7 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 			return *this;
 			}
 
-		TArray<VALUE> &operator= (TArray<VALUE> &&Src)
+		TArray<VALUE> &operator= (TArray<VALUE> &&Src) noexcept
 			{
 			DeleteAll();
 			m_pBlock = Src.m_pBlock;

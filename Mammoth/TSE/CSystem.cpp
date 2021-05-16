@@ -170,19 +170,6 @@ ALERROR CSystem::AddTimedEvent (CSystemEvent *pEvent)
 	return NOERROR;
 	}
 
-void CSystem::AddToDeleteList (CSpaceObject *pObj)
-
-//	AddToDeleteList
-//
-//	Adds the object to a list to be deleted later.
-
-	{
-	ASSERT(pObj->IsDestroyed());
-	ASSERT(pObj->GetID() != 0xdddddddd);
-
-	m_DeletedObjects.FastAdd(pObj);
-	}
-
 ALERROR CSystem::AddToSystem (CSpaceObject *pObj, int *retiIndex)
 
 //	AddToSystem
@@ -190,8 +177,6 @@ ALERROR CSystem::AddToSystem (CSpaceObject *pObj, int *retiIndex)
 //	Adds an object to the system
 
 	{
-	int i;
-
 	//	If this object affects the enemy object cache, then
 	//	flush the cache
 
@@ -206,26 +191,37 @@ ALERROR CSystem::AddToSystem (CSpaceObject *pObj, int *retiIndex)
 		pDesc->pStarObj = pObj;
 		}
 
-	//	Reuse a slot first
+	//	Add to array
 
-	for (i = 0; i < m_AllObjects.GetCount(); i++)
+	int iSlot = FindEmptyObjSlot();
+	if (iSlot != -1)
+		m_AllObjects[iSlot] = pObj;
+	else
 		{
-		if (m_AllObjects[i] == NULL)
-			{
-			m_AllObjects[i] = pObj;
-			if (retiIndex)
-				*retiIndex = i;
-			return NOERROR;
-			}
+		iSlot = m_AllObjects.GetCount();
+		m_AllObjects.Insert(pObj);
 		}
 
-	//	If we could not find a free place, add a new object
-
 	if (retiIndex)
-		*retiIndex = m_AllObjects.GetCount();
+		*retiIndex = iSlot;
 
-	m_AllObjects.Insert(pObj);
 	return NOERROR;
+	}
+
+int CSystem::FindEmptyObjSlot () const
+
+//	FindEmptyObjSlot
+//
+//	Finds an empty slot.
+
+	{
+	for (int i = 0; i < m_AllObjects.GetCount(); i++)
+		{
+		if (m_AllObjects[i] == NULL)
+			return i;
+		}
+
+	return -1;
 	}
 
 bool CSystem::AscendObject (CSpaceObject *pObj, CString *retsError)
@@ -541,6 +537,7 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 
 	Ctx.bShowBounds = m_Universe.GetDebugOptions().IsShowBoundsEnabled();
 	Ctx.bShowFacingsAngle = m_Universe.GetDebugOptions().IsShowFacingsAngleEnabled();
+	Ctx.bShowOrderInfo = m_Universe.GetDebugOptions().IsShowOrderInfoEnabled();
 
 	//	Figure out what color space should be. Space gets lighter as we get
 	//	near the central star
@@ -1016,7 +1013,7 @@ ALERROR CSystem::CreateFromStream (CUniverse &Universe,
 		if (pObj)
 			{
 			pObj->LoadObjReferences(Ctx.pSystem);
-			pObj->OnSystemLoaded();
+			pObj->OnSystemLoaded(Ctx);
 
 			pObj->FireOnLoad(Ctx);
 			}
@@ -1431,6 +1428,17 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 		return NOERROR;
 		}
 
+	//	Set debug mode.
+	//
+	//	LATER: Instead of doing this here we should probably handle it in the
+	//	CSpaceObject base class.
+
+	if (CSpaceObject *pSource = Ctx.Source.GetObj())
+		{
+		if (pSource->InDebugMode())
+			pShot->SetDebugMode(true);
+		}
+
 	//	Fire OnCreateShot event
 
 	Ctx.pDesc->FireOnCreateShot(Ctx.Source, pShot, Ctx.pTarget);
@@ -1612,6 +1620,43 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 	DEBUG_CATCH
 	}
 
+void CSystem::DeleteObject (SDestroyCtx &Ctx)
+
+//	DeleteObject
+//
+//	This is called by CSpaceObject::Destroy to remove the object from our lists.
+
+	{
+	ASSERT(Ctx.Obj.IsDestroyed());
+	ASSERT(Ctx.Obj.GetID() != 0xdddddddd);
+
+	if (!Ctx.bResurrectPending)
+		{
+		//	If this was the player, remove ship variables
+
+		if (Ctx.Obj.IsPlayer())
+			{
+			//	Clean up these variables since the player is out
+			//	of the system. We need to do this because otherwise
+			//	an event might set a target for the player and if the
+			//	target is destroyed, we would never get an OnObjDestroyed message
+
+			GetUniverse().SetPlayerShip(NULL);
+
+			//	The player will be deleted at higher layers, but
+			//	it is out of the system now, so we need to remove it from the
+			//	object grid.
+
+			m_ObjGrid.Delete(&Ctx.Obj);
+			}
+
+		//	The objects get deleted at the end of the update
+
+		else
+			m_DeletedObjects.FastAdd(&Ctx.Obj);
+		}
+	}
+
 bool CSystem::DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **retpObj, CString *retsError)
 
 //	DescendObject
@@ -1656,6 +1701,14 @@ bool CSystem::DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **
 	pObj->AddToSystem(*this);
 	pObj->NotifyOnNewSystem(this);
 	pObj->Resume();
+
+	//	Notify that an object appeared
+
+	CSpaceObject::Categories iObjCat = pObj->GetCategory();
+	if (iObjCat == CSpaceObject::catShip || iObjCat == CSpaceObject::catStation)
+		{
+		FireOnSystemObjCreated(*pObj);
+		}
 
 	//	Done
 
@@ -1853,6 +1906,23 @@ void CSystem::FireOnSystemObjAttacked (SDamageCtx &Ctx)
 		}
 
 	DEBUG_CATCH
+	}
+
+void CSystem::FireOnSystemObjCreated (const CSpaceObject &Obj)
+
+//	FireOnSystemObjCreated
+//
+//	Fires OnSystemObjCreated event to all handlers.
+
+	{
+	CSystemEventHandler *pHandler = m_EventHandlers.GetNext();
+	while (pHandler)
+		{
+		if (pHandler->InRange(Obj.GetPos()))
+			pHandler->GetObj()->FireOnSystemObjCreated(Obj);
+
+		pHandler = pHandler->GetNext();
+		}
 	}
 
 void CSystem::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
@@ -3751,7 +3821,8 @@ void CSystem::PlaceInGate (CSpaceObject *pObj, CSpaceObject *pGate)
 	{
 	DEBUG_TRY
 
-	ASSERT(pGate);
+	if (!pGate || !pObj)
+		throw CException(ERR_FAIL);
 
 	CShip *pShip = pObj->AsShip();
 	if (pShip == NULL)
@@ -4280,12 +4351,12 @@ ALERROR CSystem::SaveToStream (IWriteStream *pStream)
 
 	//	Save navigation paths
 
-	m_NavPaths.WriteToStream(this, pStream);
+	m_NavPaths.WriteToStream(pStream);
 
 	//	Save event handlers
 
 	m_EventHandlers.FlushDeletedObjs();
-	m_EventHandlers.WriteToStream(this, pStream);
+	m_EventHandlers.WriteToStream(pStream);
 
 	//	Save all objects in the system
 
@@ -4695,17 +4766,13 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 
 	SUpdateCtx Ctx;
 	Ctx.pSystem = this;
-	Ctx.pPlayer = GetPlayerShip();
 	Ctx.pAnnotations = pAnnotations;
 
 	//	Initialize the player weapon context so that we can select the auto-
 	//	target.
 
-	if (Ctx.pPlayer)
-		{
-		Ctx.AutoMining.Init(*Ctx.pPlayer);
-		Ctx.AutoTarget.Init(*Ctx.pPlayer);
-		}
+	if (CSpaceObject *pPlayerShip = GetPlayerShip())
+		Ctx.SetPlayerShip(*pPlayerShip);
 
 	//	Add all objects to the grid so that we can do faster
 	//	hit tests
@@ -4760,6 +4827,8 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 		iUpdateObj++;
 #endif
 		}
+
+	Ctx.OnEndUpdate();
 	DebugStopTimer("Updating objects");
 
 	//	Initialize a structure that holds context for motion
@@ -4788,7 +4857,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 					&& pSovereign->GetUNID() == g_PlayerSovereignUNID
 					&& (pObj->GetCategory() == CSpaceObject::catShip
 							|| pObj->GetCategory() == CSpaceObject::catStation))
-				Ctx.PlayerObjs.Insert(pObj);
+				Ctx.AddPlayerObj(*pObj);
 			}
 		}
 
@@ -4854,9 +4923,8 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 
 	//	Update the player controller
 
-	IPlayerController *pPlayerController = m_Universe.GetPlayer();
-	if (pPlayerController)
-		pPlayerController->Update(Ctx);
+	IPlayerController PlayerController = m_Universe.GetPlayer();
+	PlayerController.Update(Ctx);
 
 	//	Give the player ship a chance to do something with data that we've
 	//	accumulated during update. For example, we use this to set the nearest
@@ -4894,9 +4962,7 @@ void CSystem::UpdateCollisionTesting (SUpdateCtx &Ctx)
 //	contacts for every unique pair of collisions detected.
 
 	{
-	int i;
-
-	for (i = 0; i < GetObjectCount(); i++)
+	for (int i = 0; i < GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = GetObject(i);
 		if (pObj == NULL || !pObj->IsCollisionTestNeeded())
@@ -5075,7 +5141,7 @@ void CSystem::UpdateGravity (SUpdateCtx &Ctx, CSpaceObject *pGravityObj)
 
 		//	If this is the player, then gravity warning
 
-		if (pObj == Ctx.pPlayer && rAccel > GRAVITY_WARNING_THRESHOLD)
+		if (pObj == Ctx.GetPlayerShip() && rAccel > GRAVITY_WARNING_THRESHOLD)
 			Ctx.bGravityWarning = true;
 		}
 	}
@@ -5133,7 +5199,25 @@ void CSystem::VectorToTile (const CVector &vPos, int *retx, int *rety) const
 	m_pEnvironment->VectorToTile(vPos, retx, rety);
 	}
 
-void CSystem::WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream, CSpaceObject *pReferrer)
+void CSystem::WriteObjRefToStream (IWriteStream &Stream, const CSpaceObject *pObj)
+
+//	WriteObjRefToStream
+//
+//	DWORD		0xffffffff if NULL
+//				Otherwise, index of object in system
+
+	{
+	DWORD dwSave = OBJID_NULL;
+	if (pObj)
+		{
+		dwSave = pObj->GetID();
+		ASSERT(dwSave != 0xDDDDDDDD);
+		}
+
+	Stream.Write(dwSave);
+	}
+
+void CSystem::WriteObjRefToStream (const CSpaceObject *pObj, IWriteStream *pStream, const CSpaceObject *pReferrer) const
 
 //	WriteObjRefToStream
 //
@@ -5174,7 +5258,7 @@ void CSystem::WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream, CS
 			}
 		}
 
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	}
 
 void CSystem::WriteSovereignRefToStream (CSovereign *pSovereign, IWriteStream *pStream)

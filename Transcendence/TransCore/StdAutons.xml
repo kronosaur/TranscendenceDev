@@ -15,6 +15,9 @@
 			attributes=			"auton, combatAuton, genericClass, omniDefense"
 			inherit=			"&baStdAutonBase;"
 			>
+		<Properties>
+			<Definition id="autonItemType">&itAutoSentinel;</Definition>
+		</Properties>
 
 		<!-- Hull -->
 
@@ -88,6 +91,9 @@
 			attributes=			"auton, combatAuton, genericClass, omniDefense"
 			inherit=			"&baStdAutonBase;"
 			>
+		<Properties>
+			<Definition id="autonItemType">&itDefectiveAuton;</Definition>
+		</Properties>
 
 		<!-- Hull -->
 
@@ -188,6 +194,9 @@
 			attributes=			"auton, combatAuton, genericClass, omniDefense"
 			inherit=			"&baStdAutonBase;"
 			>
+		<Properties>
+			<Definition id="autonItemType">&it300DDefenderAuton;</Definition>
+		</Properties>
 
 		<!-- Hull -->
 
@@ -280,6 +289,9 @@
 			attributes=			"auton, combatAuton, genericClass, omniDefense"
 			inherit=			"&baStdAutonBase;"
 			>
+		<Properties>
+			<Definition id="autonItemType">&it310AAegisAuton;</Definition>
+		</Properties>
 
 		<!-- Hull -->
 
@@ -358,6 +370,9 @@
 
 			dockScreen=			"Main"
 			>
+		<Properties>
+			<Definition id="autonItemType">&itMuleAuton;</Definition>
+		</Properties>
 
 		<!-- Hull -->
 
@@ -508,6 +523,9 @@
 			attributes=			"auton, combatAuton, genericClass, omniDefense"
 			inherit=			"&baStdAutonBase;"
 			>
+		<Properties>
+			<Definition id="autonItemType">&it1MBattleAuton;</Definition>
+		</Properties>
 
 		<!-- Hull -->
 
@@ -611,6 +629,9 @@
 			attributes=			"auton, combatAuton, genericClass, omniDefense"
 			inherit=			"&baStdAutonBase;"
 			>
+		<Properties>
+			<Definition id="autonItemType">&it1MiBattleAuton;</Definition>
+		</Properties>
 
 		<!-- Hull -->
 
@@ -686,6 +707,9 @@
 			attributes=			"auton, explorerAuton, genericClass, taikon, utilityAuton"
 			inherit=			"&baStdAutonBase;"
 			>
+		<Properties>
+			<Definition id="autonItemType">&itExplorerAuton;</Definition>
+		</Properties>
 
 		<!-- Hull -->
 

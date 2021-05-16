@@ -48,6 +48,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Sustain"
+			level=		"1"
 			key=		"A"
 			attributes=	"Domina"
 			>
@@ -55,6 +56,8 @@
 		<StaticData>
 			<Data id="rank">1</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnInvoke>
@@ -66,8 +69,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Impenetrable shield protects ship</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Impenetrable shield protects ship</Text>
+			<Text id="core.desc">
 			
 				When invoked, an impenetrable shield protects you ship
 				from damage, but it also prevents you from firing your
@@ -85,6 +88,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Restore"
+			level=		"3"
 			key=		"B"
 			attributes=	"Domina"
 			>
@@ -92,6 +96,8 @@
 		<StaticData>
 			<Data id="rank">2</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnInvoke>
@@ -138,8 +144,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Restores shields and armor</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Restores shields and armor</Text>
+			<Text id="core.desc">
 			
 				This power will recharge your shields if needed. If your shields do not need
 				recharging, it will repair your armor.
@@ -157,6 +163,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Strengthen"
+			level=		"3"
 			key=		"C"
 			attributes=	"Domina"
 			>
@@ -164,6 +171,8 @@
 		<StaticData>
 			<Data id="rank">2</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnInvoke>
@@ -175,8 +184,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Temporarily increases weapon damage</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Temporarily increases weapon damage</Text>
+			<Text id="core.desc">
 			
 				When invoked, Strengthen will increase the damage dealt by your
 				weapons.
@@ -193,6 +202,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Defend"
+			level=		"5"
 			key=		"D"
 			attributes=	"Domina"
 			>
@@ -200,6 +210,8 @@
 		<StaticData>
 			<Data id="rank">3</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnInvoke>
@@ -216,8 +228,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Invulnerable shield protects ship</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Invulnerable shield protects ship</Text>
+			<Text id="core.desc">
 			
 				Invoking Defend creates an invulnerable shield that protects
 				your ship from damage. Unlike Sustain, however, you are still
@@ -235,6 +247,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Nebular Sight"
+			level=		"5"
 			key=		"E"
 			attributes=	"Domina"
 			>
@@ -242,6 +255,8 @@
 		<StaticData>
 			<Data id="rank">3</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="384" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnInvoke>
@@ -269,8 +284,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Reveals stations hidden in nebulae</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Reveals stations hidden in nebulae</Text>
+			<Text id="core.desc">
 			
 				Domina reveals the location of ships and stations hidden among 
 				the nebulae	of the system.
@@ -288,6 +303,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Circle of Wrath"
+			level=		"7"
 			key=		"F"
 			attributes=	"Domina"
 			>
@@ -295,6 +311,8 @@
 		<StaticData>
 			<Data id="rank">4</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="0" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnInvoke>
@@ -313,8 +331,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Damages ships and stations in range</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Damages ships and stations in range</Text>
+			<Text id="core.desc">
 			
 				This power creates an expanding circle of dark energy that
 				damages all ships caught in its path.
@@ -329,6 +347,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Ingenuity"
+			level=		"7"
 			key=		"G"
 			attributes=	"Domina"
 			>
@@ -336,6 +355,8 @@
 		<StaticData>
 			<Data id="rank">4</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnInvoke>
@@ -494,8 +515,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Reveals improvements to ship</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Reveals improvements to ship</Text>
+			<Text id="core.desc">
 			
 				Ingenuity channels Domina's superior knowledge to enhance and
 				upgrade your devices.
@@ -517,6 +538,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Desperate Escape"
+			level=		"9"
 			key=		"H"
 			attributes=	"Domina"
 			>
@@ -524,6 +546,8 @@
 		<StaticData>
 			<Data id="rank">5</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnDestroyCheck>
@@ -555,8 +579,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Saves ship from destruction</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Saves ship from destruction</Text>
+			<Text id="core.desc">
 			
 				When available, Desperate Escape invokes automatically to prevent
 				your ship from being destroyed by enemy damage.
@@ -574,6 +598,7 @@
 			inherit=	"&baDominaPower;"
 
 			name=		"Shatter"
+			level=		"9"
 			key=		"I"
 			attributes=	"Domina"
 			>
@@ -581,6 +606,8 @@
 		<StaticData>
 			<Data id="rank">5</Data>
 		</StaticData>
+
+		<Image imageID="&rsDominaPowers;"	imageX="288" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnInvoke>
@@ -599,8 +626,8 @@
 		</Events>
 
 		<Language>
-			<Text id="power.lineDesc">Shatters ships in range</Text>
-			<Text id="power.desc">
+			<Text id="core.help">Shatters ships in range</Text>
+			<Text id="core.desc">
 			
 				Shatter releases an expanding circle of dark matter causing heavy
 				damage to anything it touches.
@@ -701,11 +728,16 @@
 	</ItemType>
 
 	<OverlayType UNID="&sfSustain;"
-            attributes=     "dominaPower, energyField, temporary"
+			name=			"Sustain"
+			attributes=     "dominaPower, energyField, temporary"
 
 			absorbAdj=		"100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100"
 			weaponSuppress=	"*"
+
+			showInHUD=		"true"
 			>
+		<Image imageID="&rsDominaPowers;"	imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+
 		<Effect>
 			<Image imageID="&rsDominaEffects1;" 
 					imageX="0" 
@@ -731,25 +763,35 @@
 	</OverlayType>
 
 	<OverlayType UNID="&sfStrengthen;"
-            attributes=     "dominaPower, effect, temporary"
-                 
+			name=			"Strengthen"
+			attributes=     "dominaPower, effect, temporary"
+				 
 			weaponBonusAdj=	"100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100"
+
+			showInHUD=		"true"
 			>
+		<Image imageID="&rsDominaPowers;"	imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
+
 		<Effect>
 			<Starburst
 					spikeCount=		"20"
 					spikeLength=	"4d8"
-					primaryColor=	"0x80, 0xff, 0xff"
-					secondaryColor=	"0x00, 0xff, 0xff"
+					primaryColor=	"#80ffbf"
+					secondaryColor=	"#00ff80"
 					/>
 		</Effect>
 	</OverlayType>
 
 	<OverlayType UNID="&sfDefend;"
-            attributes=     "dominaPower, energyField, temporary"
-                 
+			name=			"Defend"
+			attributes=     "dominaPower, energyField, temporary"
+				 
 			absorbAdj=		"100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100"
+
+			showInHUD=		"true"
 			>
+		<Image imageID="&rsDominaPowers;"	imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
+
 		<Effect>
 			<Image imageID="&rsDominaEffects1;" 
 					imageX="0" 
@@ -797,11 +839,6 @@
 						(!= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
 							'notPilgrim
 
-						;	Sustain is always available
-
-						(= gType &pwSustain;)
-							'ready
-
 						;	Do not show powers that are above our level
 
 						(gr rank (domInitRelationship))
@@ -812,10 +849,14 @@
 						(not (setq lastInvokeTime (typGetData &stDomina; (cat 'lastInvokeTime rank))))
 							'ready
 
-						;	Do not show powers for levels that have been recently invoked
+						;	If we're in cooldown, then return status
 
 						(ls (- (unvGetTick) lastInvokeTime) (domGetTimeRequired rank))
-							'cooldown
+							{
+								onShow: True
+								cooldownStart: lastInvokeTime
+								cooldownEnd: (+ lastInvokeTime (domGetTimeRequired rank))
+								}
 
 						;	Can be invoked
 
@@ -825,7 +866,19 @@
 			</GetInvokeStatus>
 
 			<OnShow>
-				(= (typFireEvent gType 'GetInvokeStatus) 'ready)
+				(block (
+					(status (typFireEvent gType 'GetInvokeStatus))
+					)
+					(switch
+						(= status 'ready)
+							True
+
+						(= (typeof status) 'struct)
+							status
+
+						Nil
+						)
+					)
 			</OnShow>
 
 			<OnInvokedByPlayer>
@@ -874,7 +927,7 @@
 	
 	<DockScreen UNID="&dsPilgrimBeringStation;">
 		<Panes>
-			<Default descID="descWelcome">
+			<Default descID="descPilgrimWelcome">
 				<Actions>
 					<Action name="Go to Level 5" key="G" default="1">
 						(scrShowPane gScreen "Level5")
@@ -920,12 +973,14 @@
 		</Panes>
 
 		<Language>
-			<Text id="descWelcome">
+			<Text id="descPilgrimWelcome">
 
-				You are docked with a Commonwealth residential station.
+				You are in the docking bay of a residential station. You see a
+				mix of dockworkers, professionals, and families boarding 
+				shuttles and starships.
 
-				You feel nervous and uneasy as you walk through the familiar 
-				halls of the station.
+				You feel nervous and uneasy as you walk through its familiar 
+				halls.
 
 			</Text>
 			<Text id="descLevel5">
@@ -1013,47 +1068,14 @@
 				))
 
 			(setq domInvokePower (lambda (levelReq)
-				(if (eq levelReq 1)
-					; Sustain can always be invoked, but doesn't always work
-					(block (lastInvokeTime timeReq timeWaited)
-						(setq lastInvokeTime (typGetGlobalData &stDomina; "lastInvokeTime1"))
-						(if (not lastInvokeTime) (setq lastInvokeTime 0))
-						(setq timeReq (domGetTimeRequired 1))
-						(setq timeWaited (subtract (unvGetTick) lastInvokeTime))
-
-						(switch
-							; If we've waited long enough, it works
-							(geq timeWaited timeReq)
-								(block Nil
-									(typSetGlobalData &stDomina; "lastInvokeTime1" (unvGetTick))
-									(typIncGlobalData &stDomina; "invokeCount")
-									True
-									)
-
-							; If the player has no experience, then warn
-							(not (typGetGlobalData &stDomina; "xp"))
-								(block Nil
-									(plyMessage gPlayer "\"Allowing you to struggle is the best help I can offer\"")
-									Nil
-									)
-
-							; Otherwise warn
-							(block Nil
-								(plyMessage gPlayer "\"Do not rely on my powers, child\"")
-								Nil
-								)
-							)
-						)
-
-					; All other powers only show up on the menu if they can be invoked
-					(block Nil
-						(typSetGlobalData &stDomina; (cat "lastInvokeTime" levelReq) (unvGetTick))
-						(typIncGlobalData &stDomina; "invokeCount")
-						True
-						)
+				(block Nil
+					(typSetGlobalData &stDomina; (cat "lastInvokeTime" levelReq) (unvGetTick))
+					(typIncGlobalData &stDomina; "invokeCount")
+					True
 					)
 				))
 
+			;	DEPRECATED. Use OnShow instead.
 			(setq domShowPower (lambda (levelReq)
 				(block (lastInvokeTime)
 					(switch
@@ -1088,6 +1110,7 @@
 
 	<!-- Resources -->
 
+	<Image UNID="&rsDominaPowers;"		bitmap="Resources\DominaPowers.jpg"		bitmask="Resources\DominaPowersMask.bmp"/>
 	<Image UNID="&rsDominaEffects1;"	bitmap="Resources\MediumEffects.jpg"	bitmask="Resources\MediumEffectsMask.bmp"/>
 	<Image UNID="&rsShatterShockwave;"	bitmap="Resources\ShatterShockwave.jpg"	bitmask="Resources\ShatterShockwaveMask.bmp"/>
 

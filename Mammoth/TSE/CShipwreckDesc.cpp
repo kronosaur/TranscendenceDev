@@ -239,6 +239,11 @@ ItemFates CShipwreckDesc::CalcDeviceFate (CShip *pSource, const CItem &Item, CSp
 	if (pDevice && (iFate = pDevice->GetFate()) != fateNone)
 		return iFate;
 
+	//	Device slots that cannot be empty never drop (it counts as built-in)
+
+	else if (pDevice && !pDevice->CanBeEmpty())
+		return fateDestroyed;
+
 	//	There's a chance that we'll be destroyed outright.
 
 	else if (mathRandom(1, 100) <= CalcDeviceDestroyChance())
@@ -347,7 +352,12 @@ bool CShipwreckDesc::CreateEmptyWreck (CSystem &System, CShipClass *pClass, CShi
 	//	ship class always has radioactive wrecks)
 
 	if ((pShip && pShip->IsRadioactive()) || IsRadioactive())
-		pWreck->SetCondition(ECondition::radioactive);
+		{
+		SApplyConditionOptions Options;
+		Options.bNoImmunityCheck = true;
+
+		pWreck->ApplyCondition(ECondition::radioactive, Options);
+		}
 
 	//	If the ship has been explicitly set to leave a wreck, then we assume
 	//	that it has something important, so we set the wreck to have the flag
@@ -447,6 +457,11 @@ bool CShipwreckDesc::CreateWreckImage (const CShipClass *pClass, int iRotationFr
 	//	Add some destruction
 
 	InitDamageImage();
+
+	//	Must have damage effect image
+
+	if (!m_pDamageBitmap)
+		return false;
 
 	int iCount = cxWidth * 2;
 	for (i = 0; i < iCount; i++)

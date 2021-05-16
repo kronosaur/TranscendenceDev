@@ -182,18 +182,20 @@
     <Xml Include="..\Extensions\Diagnostics\FunctionTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\ItemUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\MissionUnitTests.xml" />
+    <Xml Include="..\Extensions\Diagnostics\RadiationTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\RPGUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\ShipClassTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\SystemFunctionTests.xml" />
-    <Xml Include="..\Extensions\Diagnostics\TestArmorClasses.xml" />
+    <Xml Include="..\Extensions\Diagnostics\ArmorClassTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\ItemEnhancementUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TestItems.xml" />
     <Xml Include="..\Extensions\Diagnostics\TestMissions.xml" />
-    <Xml Include="..\Extensions\Diagnostics\TestOverlays.xml" />
-    <Xml Include="..\Extensions\Diagnostics\TestStationTypes.xml" />
-    <Xml Include="..\Extensions\Diagnostics\TestTSE.xml" />
+    <Xml Include="..\Extensions\Diagnostics\OverlayTests.xml" />
+    <Xml Include="..\Extensions\Diagnostics\StationTypeTests.xml" />
+    <Xml Include="..\Extensions\Diagnostics\TSETests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TopologyTests.xml" />
     <Xml Include="Abbasid.xml" />
+    <Xml Include="AgriculturalMission01.xml" />
     <Xml Include="Analyzers.xml" />
     <Xml Include="Anarchists.xml" />
     <Xml Include="Antarctica01.xml" />
@@ -371,7 +373,7 @@
     <None Include="Benedict02.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Benedict03.xml">
+    <None Include="Part1Compatibility.xml">
       <SubType>Designer</SubType>
     </None>
     <None Include="Benedict01.xml">
@@ -486,6 +488,7 @@
     <Xml Include="BlackMarketMission01.xml" />
     <Xml Include="BlackMarketMission02.xml" />
     <Xml Include="BlackMarketMissionSmuggle01.xml" />
+    <Xml Include="BlackMarketPlayerShips.xml" />
     <Xml Include="CommonwealthCenturions.xml" />
     <Xml Include="CommonwealthCharacters.xml" />
     <Xml Include="CommonwealthFleetMission01.xml" />
@@ -623,6 +626,7 @@
     <Xml Include="MRAD.xml" />
     <Xml Include="MuhammadCondi.xml" />
     <Xml Include="NewVictoria.xml" />
+    <Xml Include="NPCPilgrims.xml" />
     <Xml Include="Ore.xml" />
     <Xml Include="OreStone.xml" />
     <Xml Include="Outlaws.xml" />
@@ -635,16 +639,23 @@
     <Xml Include="Psych01.xml" />
     <Xml Include="Pteravores.xml" />
     <Xml Include="QuantumCPU.xml" />
+    <Xml Include="RaisuMission01.xml" />
+    <Xml Include="RaisuMission02.xml" />
+    <Xml Include="RaisuMission03.xml" />
     <Xml Include="RaisuStation.xml" />
     <Xml Include="Rama.xml" />
     <Xml Include="RanxEmpire.xml" />
     <Xml Include="RasiermesserMission01.xml" />
     <Xml Include="RejuvTank.xml" />
+    <Xml Include="ResidentialsMission01.xml" />
+    <Xml Include="ResidentialsMission02.xml" />
+    <Xml Include="ResidentialsMission03.xml" />
     <Xml Include="RPGCommoditiesExchange.xml" />
     <Xml Include="RPGCommonText.xml" />
     <Xml Include="RPGComponents.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="RPGCrime.xml" />
     <Xml Include="RPGDockManagement.xml" />
     <Xml Include="RPGLibrary.xml" />
     <Xml Include="GalaxyLibrary.xml" />
@@ -653,10 +664,15 @@
     <Xml Include="RPGMissionTemplate01.xml" />
     <Xml Include="RPGMissionTemplate02.xml" />
     <Xml Include="RPGMissionTemplate03.xml" />
+    <Xml Include="RPGMissionTemplate04.xml" />
+    <Xml Include="RPGMissionTemplate05.xml" />
+    <Xml Include="RPGMissionTemplate06.xml" />
+    <Xml Include="RPGMissionTemplate07.xml" />
     <Xml Include="RPGRumors.xml" />
     <Xml Include="RPGShipBroker.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="RPGSquadronUI.xml" />
     <Xml Include="RPGTradingComputer.xml" />
     <Xml Include="RPGUsefulItems.xml" />
     <Xml Include="RPGViewers.xml" />
@@ -666,6 +682,8 @@
     <Xml Include="Scoria.xml" />
     <Xml Include="ShieldEnhancementItems.xml" />
     <Xml Include="Sisters01.xml" />
+    <Xml Include="Sisters02.xml" />
+    <Xml Include="Sisters03.xml" />
     <Xml Include="SistersDonate.xml" />
     <Xml Include="SistersPilgrimsAid.xml" />
     <Xml Include="SistersSanctum.xml" />
@@ -678,6 +696,7 @@
     <Xml Include="SungCitadel.xml" />
     <Xml Include="SungFortress.xml" />
     <Xml Include="SungSlaveCamp.xml" />
+    <Xml Include="Tenhove.xml" />
     <Xml Include="TeratonResearch.xml" />
     <Xml Include="UndergroundCaverns.xml" />
     <Xml Include="UndergroundStructures.xml" />

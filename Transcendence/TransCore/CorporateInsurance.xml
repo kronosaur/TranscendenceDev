@@ -45,8 +45,11 @@
 
 		<Image			imageID="&rsStations2;" imageX="0" imageY="0" imageWidth="128" imageHeight="256"/>
 
-		<Ships>
-			<Lookup count="1d4+2" table="&tbCommPrivateCrafts;"/>
+		<Ships standingCount="3-4">
+			<Table>
+				<Lookup chance="50" table="&tbCorpDefenders;"/>
+				<Lookup chance="50" table="&tbCommPrivateCrafts;"/>
+			</Table>
 		</Ships>
 
 		<Events>

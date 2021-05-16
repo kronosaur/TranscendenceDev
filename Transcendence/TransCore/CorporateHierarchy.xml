@@ -34,13 +34,6 @@
 					(not (objMatches gSource Nil "sTAV +corporateCustoms;"))
 						Nil
 						
-					; If the ship is radioactive then we refuse docking
-					(shpIsRadioactive gPlayerShip)
-						(if (objHasAttribute gSource "corporateDecon")
-							{	screen:&dsCommonwealthDecon;	priority:10		overrideOnly:true	}
-							{	screen:&dsRefuseContamination;	priority:10		overrideOnly:true	}
-							)
-						
 					; If the player has committed crimes, then she's in trouble
 					(geq (int (objGetData gPlayerShip "corpCrimeSeverity")) 2)
 						(switch
@@ -192,17 +185,12 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
+		<Ships standingCount="4-5">
 			<Table>
 				<Lookup chance="75" table="&tbCorpDefenders;"/>
 				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
 			</Table>
-		</Reinforcements>
+		</Ships>
 
 		<!-- Image and Effects -->
 
@@ -231,7 +219,6 @@
 						<Actions>
 							<Action id="actionDockServices" default="1">
 								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
 									upgradeInstallOnly: True
 									})
 							</Action>
@@ -355,7 +342,7 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships standingCount="3">
+		<Ships standingCount="3-4">
 			<Table>
 				<Lookup chance="75" table="&tbCorpDefenders;"/>
 				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
@@ -382,7 +369,6 @@
 						<Actions>
 							<Action name="Armor and Shields" key="A" default="1">
 								(scrShowScreen gScreen &dsRPGManageArmor; {
-									checkMilitaryID: True
 									upgradeInstallOnly: True
 									})
 							</Action>
@@ -505,17 +491,12 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
+		<Ships standingCount="3-4">
 			<Table>
 				<Lookup chance="75" table="&tbCorpDefenders;"/>
 				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
 			</Table>
-		</Reinforcements>
+		</Ships>
 
 		<!-- Image and Effects -->
 
@@ -537,7 +518,6 @@
 						<Actions>
 							<Action id="actionWeapons" default="1">
 								(scrShowScreen gScreen &dsRPGManageWeapons; {
-									checkMilitaryID: True
 									upgradeInstallOnly: True
 									})
 							</Action>
@@ -617,17 +597,12 @@
 				>
 		</DockingPorts>
 		
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
+		<Ships standingCount="4-5">
 			<Table>
 				<Lookup chance="75" table="&tbCorpDefenders;"/>
 				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
 			</Table>
-		</Reinforcements>
+		</Ships>
 
 		<Devices>
 			<Device deviceID="&itNeutronBlaster;"	omnidirectional="true"/>
@@ -756,8 +731,11 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Lookup count="1d4+2" table="&tbCommPrivateCrafts;"/>
+		<Ships standingCount="4-6">
+			<Table>
+				<Lookup chance="50" table="&tbCorpDefenders;"/>
+				<Lookup chance="50" table="&tbCommPrivateCrafts;"/>
+			</Table>
 		</Ships>
 
 		<!-- Image and Effects -->
@@ -777,15 +755,15 @@
 				<Panes>
 					<Default descID="descWelcome">
 						<Actions>
-							<Action name="Corporate Level" default="1" key="C">
+							<Action id="actionCorporateLevel" default="1">
 								<Navigate screen="CorporateLevel" />
 							</Action>
 
-							<Action name="Residential Level" key="R" id="residentialLevel">
+							<Action id="actionResidentialLevel">
 								<ShowPane pane="ResidentialLevel"/>
 							</Action>
 
-							<Action name="Maintenance Level" key="M">
+							<Action id="actionMaintenanceLevel">
 								(if (objGetItems gPlayerShip "*NU +Illegal; -ID; +property:known;")
 									(scrShowPane gScreen "Illegals")
 									(scrShowPane gScreen "MaintenanceLevel")
@@ -802,7 +780,7 @@
 
 					<Illegals descID="descIllegals">
 						<Actions>
-							<Action name="Enter Maintenance Shop" default="1" key="E">
+							<Action id="actionEnterMaintenanceShop" default="1">
 								<ShowPane pane="MaintenanceShop"/>
 							</Action>
 
@@ -858,7 +836,7 @@
 									)
 							</Action>
 
-							<Action id="actionIllegalsDecline" name="&quot;Sorry, you have me confused with someone else.&quot;" cancel="1" key="S">
+							<Action id="actionIllegalsDecline" cancel="1">
 								<ShowPane pane="Illegals"/>
 							</Action>
 						</Actions>
@@ -898,6 +876,11 @@
 		<!-- Events and Data -->
 
 		<Language>
+			<Text id="actionCorporateLevel">[C]orporate Level</Text>
+			<Text id="actionResidentialLevel">[R]esidential Level</Text>
+			<Text id="actionMaintenanceLevel">[M]aintenance Level</Text>
+			<Text id="actionEnterMaintenanceShop">[E]nter Maintenance Shop</Text>
+
 			<Text id="descWelcome">
 
 				You are in the docking level of a corporate enclave. The 
@@ -953,6 +936,7 @@
 				resources. We are not interested in buying %itemName%.
 
 			</Text>
+
 			<String id="actionIllegalsAccept">"[S]ure, the merchandise is in my cargo hold."</String>
 			<String id="actionIllegalsDecline">"You've co[n]fused me with someone else, sorry."</String>
 
@@ -1010,6 +994,7 @@
 
 			<Refuel			criteria="f +BasicFuel; L:1-4;" priceAdj="90"/>
 			<Refuel			criteria="f +BasicFuel; L:5-10;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="120"/>
 
 			<ProduceTrade	criteria="{core.fusionFuel}"		impact="20"/>
 		</Trade>
@@ -1035,17 +1020,12 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Lookup count="1d2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="3">
+		<Ships standingCount="3-4">
 			<Table>
-				<Lookup chance="75" table="&tbCorpDefenders;"/>
-				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
+				<Lookup chance="50" table="&tbCorpDefenders;"/>
+				<Lookup chance="50" table="&tbCommPrivateCrafts;"/>
 			</Table>
-		</Reinforcements>
+		</Ships>
 
 		<!-- Image and Effects -->
 
@@ -1173,8 +1153,11 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Lookup count="1d4+2" table="&tbCommPrivateCrafts;"/>
+		<Ships standingCount="4-6">
+			<Table>
+				<Lookup chance="50" table="&tbCorpDefenders;"/>
+				<Lookup chance="50" table="&tbCommPrivateCrafts;"/>
+			</Table>
 		</Ships>
 
 		<!-- Image and Effects -->
@@ -1426,9 +1409,11 @@
 
 		<Image			imageID="&rsStations2;" imageX="0" imageY="256" imageWidth="192" imageHeight="256"/>
 
-		<Ships>
-			<Lookup count="1d2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
+		<Ships standingCount="4-5">
+			<Table>
+				<Lookup chance="25" table="&tbCorpDefenders;"/>
+				<Lookup chance="75" table="&tbCommPrivateCrafts;"/>
+			</Table>
 		</Ships>
 
 		<Trade currency="credit">
@@ -1617,8 +1602,9 @@
 		
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Ship			count="1d3+1"	class="&scTenhoveSentinel;"	orders="patrol" patrolDist="5"/>
+		<Ships standingCount="3-4">
+			<Lookup chance="50" table="&tbCorpAutonDefenders;"/>
+			<Lookup chance="50" table="&tbCommPrivateCrafts;"/>
 		</Ships>
 
 		<!-- Image and Effects -->
@@ -1785,18 +1771,12 @@
 
 		<!-- Ships and Defenses -->
 
-		<Ships>
-			<Ship chance="75" class="&scBritannia;" orders="guard"/>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
+		<Ships standingCount="4-5">
 			<Table>
 				<Lookup chance="75" table="&tbCorpDefenders;"/>
 				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
 			</Table>
-		</Reinforcements>
+		</Ships>
 
 		<!-- Image and Effects -->
 
@@ -1825,9 +1805,7 @@
 							</Action>
 
 							<Action id="actionDockServices" default="1">
-								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
-									})
+								(rpgDockServices gPlayerShip)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -1883,17 +1861,12 @@
 
 		<Image			imageID="&rsStations5;" imageX="128" imageY="384" imageWidth="128" imageHeight="256"/>
 
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
+		<Ships standingCount="4-5">
 			<Table>
 				<Lookup chance="75" table="&tbCorpDefenders;"/>
 				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
 			</Table>
-		</Reinforcements>
+		</Ships>
 
 		<Items>
 			<RandomItem count="20-30" 
@@ -1930,7 +1903,6 @@
 						<Actions>
 							<Action id="actionDockServices" default="1">
 								(rpgDockServices gPlayerShip {
-									checkMilitaryID: True
 									upgradeInstallOnly: True
 									})
 							</Action>
@@ -2033,6 +2005,7 @@
 
 		<Devices>
 			<Device deviceID="&itPlasmaShieldGenerator;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="8"/>
 		</Devices>
 
 		<Items>
@@ -2130,6 +2103,7 @@
 			</Device>
 			<Device slotID="starboardArm1"	deviceID="&itRasiermesserLauncher;"/>
 			<Device deviceID="&itPlasmaShieldGenerator;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="9"/>
 		</Devices>
 
 		<Items>
@@ -2432,9 +2406,7 @@
 
 				<Actions>
 					<Action id="actionDockServices" default="1">
-						(rpgDockServices gPlayerShip {
-							checkMilitaryID: True
-							})
+						(rpgDockServices gPlayerShip)
 					</Action>
 
 					<Action id="actionBuyItems">
@@ -2491,12 +2463,17 @@
 			<!--
 			By default we accept any military ID (even ones from APD or ED).
 			-->
-			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</COnstant>
+			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</Constant>
+
+			<!--
+			Always check if the player is radioactive
+			-->
+			<Definition	id="rpg.checkRadioactive">True</Definition>
 
 			<!--
 			By default we reveal unknown items when they are for sale.
 			-->
-			<Constant	id="rpg.showActualItem">True</COnstant>
+			<Constant	id="rpg.showActualItem">True</Constant>
 		</Properties>
 
 		<Events>
@@ -2508,32 +2485,52 @@
 		<Language>
 			<Text id="actionOperations">[O]perations Level</Text>
 
-			<Text id="customs.chargedForDecon">
+			<Text id="core.deconDesc">
 
 				Corporate security stops your ship for decontamination.
 				You are automatically charged %cost% for decontaminating your ship.
 
 			</Text>
-			<Text id="customs.cantAffordDecon">
+			<Text id="core.cannotAffordDecon">
 
-				Corporate security stops your ship for decontamination.
-				Unfortunately, you do not have %cost% to pay for decontamination.
+				Corporate security stops your ship.
 
+				"Sorry, your ship is radioactive and you do not have %cost%
+				to pay for decontamination."
+
+			</Text>
+			<Text id="core.cannotDecon">
+				
+				Corporate security stops your ship.
+
+				"Hey! Get that contaminated ship off our dock!"
+				
 			</Text>
 		</Language>
 	</Type>
 
 <!-- TABLES -->
 
+	<ShipTable unid="&tbCorpAutonDefenders;">
+		<LevelTable>
+			<Ship levelFrequency="uccr- -----" class="&scAutoSentinel;"			orders="orbitExact:radius=8:speed=1"	buildReinforcements="true"/>
+			<Ship levelFrequency="-uccr -----" class="&sc300DDefenderAuton;"	orders="orbitExact:radius=8:speed=1"	buildReinforcements="true"/>
+			<Ship levelFrequency="--ucc rvvvv" class="&sc1MBattleAuton;"		orders="orbitExact:radius=8:speed=1"	buildReinforcements="true"/>
+		</LevelTable>
+	</ShipTable>
+	
 	<ShipTable unid="&tbCorpDefenders;">
 		<LevelTable>
-			<Ship levelFrequency="cccr- -----" count="1" class="&scRoninA;" orders="guard"/>
-			<Ship levelFrequency="ruucc cr---" count="1" class="&scRoninB;" orders="guard"/>
-			<Ship levelFrequency="uuucc cur--" count="1" class="&scWolfen;" orders="guard"/>
-			<Ship levelFrequency="---uu ccccu" count="1" class="&scRoninC;" orders="guard"/>
-			<Ship levelFrequency="ccccc ccccc" count="1" class="&scCenturionBlock2;" orders="guard"/>
-			<Ship levelFrequency="--ruc cuuuu" count="1" class="&scManticore;" orders="guard"/>
-			<Ship levelFrequency="----- -uuuu" count="1" class="&scBritannia;" orders="guard"/>
+			<Ship levelFrequency="ccccc crvvv" count="1" class="&scCenturionBlock2;" orders="guard"/>
+
+			<Ship levelFrequency="ucrv- -----" count="1" class="&scRoninA;" orders="guard"/>
+			<Ship levelFrequency="rucrv -----" count="1" class="&scRoninB;" orders="guard"/>
+			<Ship levelFrequency="-rucr v----" count="1" class="&scRoninC;" orders="guard"/>
+			<Ship levelFrequency="--ruc rv---" count="1" class="&scWolfenC;" orders="guard"/>
+			<Ship levelFrequency="----r ucrv-" count="1" class="&scManticore;" orders="guard"/>
+			<Ship levelFrequency="----r ucrvv" count="1" class="&scBritannia;" orders="guard"/>
+
+			<Ship levelFrequency="----- --uur" count="1" class="&scCorporateCruiser;" orders="guard" maxCount="1"/>
 		</LevelTable>
 	</ShipTable>
 	

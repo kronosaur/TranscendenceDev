@@ -33,7 +33,7 @@
 
 		<InitialData>
 			<Data id="SourceItem">
-				(itmCreate &itReinforcedTitanium1; 1)
+				(&itReinforcedTitanium1; 1)
 			</Data>
 		</InitialData>
 	</StationType>
@@ -67,7 +67,7 @@
 
 		<InitialData>
 			<Data id="SourceItem">
-				(itmCreate &itReinforcedTitanium2; 1)
+				(&itReinforcedTitanium2; 1)
 			</Data>
 		</InitialData>
 	</StationType>
@@ -101,7 +101,7 @@
 
 		<InitialData>
 			<Data id="SourceItem">
-				(itmCreate &itReinforcedTitanium3; 1)
+				(&itReinforcedTitanium3; 1)
 			</Data>
 		</InitialData>
 	</StationType>
@@ -287,7 +287,7 @@
 							;	before damage transfers to the item (which limits the station to half hp)
 
 							(if (ls (/ hpLeft hpMax) 0.70)
-								(setq recovered (itmSetProperty recovered 'damaged True))
+								(setq recovered (itmSet@ recovered 'damaged True))
 								)
 
 							;	But we also store the structural HP on the item, in case 

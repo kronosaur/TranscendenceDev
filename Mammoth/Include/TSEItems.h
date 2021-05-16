@@ -8,6 +8,7 @@
 class CInstalledArmor;
 class CInstalledDevice;
 class CItemList;
+class CRepairerClass;
 class CShipClass;
 
 //	ITEM -----------------------------------------------------------------------
@@ -59,6 +60,7 @@ class CDifferentiatedItem
 		inline int GetMassKg (void) const;
 		inline int GetMinLevel (void) const;
 		inline CString GetNounPhrase (DWORD dwFlags = 0) const;
+		inline ICCItemPtr GetProperty (const CString &sProperty) const;
 		inline const CItemType &GetType (void) const;
 		inline CItemType &GetType (void);
 		inline int GetVariantNumber (void) const;
@@ -146,6 +148,14 @@ class CArmorItem : public CDifferentiatedItem
 	friend class CItem;
 	};
 
+enum class EDeviceCounterType
+	{
+	None,							//	No counter
+	Temperature,					//	Current device temperature (0-100)
+	Recharge,						//	Current recharge level (0-100)
+	Capacitor,						//	Current capacitor level (0-100)
+	};
+
 class CDeviceItem : public CDifferentiatedItem
 	{
 	public:
@@ -163,8 +173,12 @@ class CDeviceItem : public CDifferentiatedItem
 
 		void AccumulateAttributes (const CItem &Ammo, TArray<SDisplayAttribute> *retList) const;
 		ECalcTargetTypes CalcTargetType (void) const;
+		TArray<const CItemType *> GetConsumableTypes () const;
+		int GetCounterLevel (EDeviceCounterType *retiCounter = NULL, int *retiLevel = NULL) const;
+		int GetCyberDefenseLevel () const;
 		inline const CDeviceClass &GetDeviceClass (void) const;
 		inline CDeviceClass &GetDeviceClass (void);
+		inline const CRepairerClass &GetDeviceClassRepairer () const;
 		inline int GetDeviceSlot (void) const;
 		inline const CItemEnhancementStack &GetEnhancements (void) const;
 		int GetFireArc (void) const;
@@ -190,6 +204,7 @@ class CDeviceItem : public CDifferentiatedItem
 		inline bool IsWeaponVariantValid (int iVariant) const;
 		inline bool NeedsAutoTarget (int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const;
 		void ReportEventError (const CString &sEvent, const ICCItem &ErrorItem) const { CDifferentiatedItem::ReportEventError(GetSource(), sEvent, ErrorItem); }
+		inline void SetData (DWORD dwData);
 
 	private:
 		CDeviceItem (CItem &Item) : CDifferentiatedItem(Item)
@@ -262,7 +277,9 @@ class CItem
 
 		CItem (void);
 		CItem (const CItem &Copy);
+		CItem (CItemType &ItemType, int iCount);
 		CItem (CItemType *pItemType, int iCount);
+
 		~CItem (void);
 		CItem &operator= (const CItem &Copy);
 
@@ -284,6 +301,7 @@ class CItem
 		bool FireCanBeUninstalled (CSpaceObject *pSource, CString *retsError) const;
 		bool FireCanEnhanceItem (const CSpaceObject &TargetObj, const CItem &TargetItem, SEnhanceItemResult &retResult, CString *retsError = NULL) const;
 		void FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *pData, ICCItem **retpResult) const;
+		ICCItemPtr FireGetTradeServices (const CSpaceObject &SourceObj) const;
 		void FireOnAddedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEnhanced, EnhanceItemStatus iStatus) const;
 		bool FireOnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, const CDamageSource &Attacker) const;
 		void FireOnDisabled (CSpaceObject *pSource) const;
@@ -313,11 +331,11 @@ class CItem
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
 		inline const CObjectImageArray &GetImage (void) const;
 		int GetInstallCost (void) const;
-		int GetInstalled (void) const { return (int)(char)m_dwInstalled; }
-		const CInstalledArmor *GetInstalledArmor (void) const { if (m_pExtra && m_pExtra->m_iInstalled == installedArmor) return (const CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
-		CInstalledArmor *GetInstalledArmor (void) { if (m_pExtra && m_pExtra->m_iInstalled == installedArmor) return (CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
-		const CInstalledDevice *GetInstalledDevice (void) const { if (m_pExtra && m_pExtra->m_iInstalled == installedDevice) return (const CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
-		CInstalledDevice *GetInstalledDevice (void) { if (m_pExtra && m_pExtra->m_iInstalled == installedDevice) return (CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
+		int GetInstalled (void) const { return (m_pExtra ? m_pExtra->m_iInstalledIndex : -1); }
+		const CInstalledArmor *GetInstalledArmor (void) const { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Armor) return (const CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
+		CInstalledArmor *GetInstalledArmor (void) { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Armor) return (CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
+		const CInstalledDevice *GetInstalledDevice (void) const { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Device) return (const CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
+		CInstalledDevice *GetInstalledDevice (void) { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Device) return (CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
 		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty, bool bOnType) const;
 		Metric GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		int GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
@@ -356,7 +374,16 @@ class CItem
 		bool IsEnhanced (void) const { return (m_dwFlags & flagEnhanced ? true : false); }
 		bool IsEnhancementEffective (const CItemEnhancement &Enhancement) const;
 		bool IsExtraEmpty (DWORD dwFlags = 0);
-		bool IsInstalled (void) const { return (m_dwInstalled != 0xff); }
+
+		//	NOTE: We use installed index instead of m_iInstalled because during 
+		//	load the index is set up, but the enum has not yet been initialized
+		//	(because that happens later). In the future we could initialized 
+		//	m_iInstalled at load time based on m_iInstalledIndex to some value
+		//	that means "in the process of being fixed up". Note that we also 
+		//	might want to use a similar technique for SetPreprareUninstalled.
+
+		bool IsInstalled (void) const { return (m_pExtra && m_pExtra->m_iInstalledIndex != -1); }
+
 		bool IsKnown (int *retiUnknownIndex = NULL) const;
 		bool IsMarkedForDelete (void) { return (m_dwCount == 0xffff); }
 		bool IsVirtual (void) const;
@@ -431,16 +458,16 @@ class CItem
 		void ReadFromStream (SLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream) const;
 
-		void ReadFromCCItem (CDesignCollection &Design, const CSystem *pSystem, ICCItem *pBuffer);
+		void ReadFromCCItem (CDesignCollection &Design, const CSystem *pSystem, const ICCItem *pBuffer);
 		ICCItem *WriteToCCItem (void) const;
 
 	private:
-		enum EInstallTypes
+		enum class EInstalled
 			{
-			installedNone,
+			None,
 
-			installedArmor,
-			installedDevice,
+			Armor,
+			Device,
 			};
 
 		static constexpr DWORD UNKNOWN_INDEX_LOWER_MASK = (flagUnknownBit0 | flagUnknownBit1 | flagUnknownBit2);
@@ -450,8 +477,9 @@ class CItem
 
 		struct SExtra
 			{
-			EInstallTypes m_iInstalled = installedNone;
+			EInstalled m_iInstalled = EInstalled::None;
 			void *m_pInstalled = NULL;			//	Pointer to either CInstalledArmor or CInstalledDevice
+			int m_iInstalledIndex = -1;			//	Install location
 
 			DWORD m_dwCharges = 0;				//	Charges for items
 			DWORD m_dwLevel = 0;				//	For scalable items, this stores the level
@@ -479,9 +507,9 @@ class CItem
 
 		CItemType *m_pItemType = NULL;
 
-		DWORD m_dwCount:16;						//	Number of items
-		DWORD m_dwFlags:8;						//	Miscellaneous flags
-		DWORD m_dwInstalled:8;					//	Location where item is installed
+		DWORD m_dwCount:16 = 0;					//	Number of items
+		DWORD m_dwFlags:8 = 0;					//	Miscellaneous flags
+		DWORD m_dwUnused:8 = 0;					//	Spare
 
 		SExtra *m_pExtra = NULL;				//	Extra data (may be NULL)
 
@@ -504,8 +532,10 @@ class CItemList
 		void DeleteAll (void);
 		void DeleteItem (int iIndex);
 		int GetCount (void) const { return m_List.GetCount(); }
+		int GetCountOf (const CItemType &Type) const;
 		CItem &GetItem (int iIndex) { return *m_List[iIndex]; }
 		const CItem &GetItem (int iIndex) const { return *m_List[iIndex]; }
+		bool MatchesCriteria (const CItemCriteria &Criteria) const;
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SortItems (void);
 		void SortItems (const CItemCriteria &SortFirst);

@@ -8,22 +8,21 @@
 class CShipChallengeCtx
 	{
 	public:
-		CShipChallengeCtx (void) :
-				m_iTotalCount(0),
-				m_iTotalScore(0),
-				m_rTotalCombat(0.0)
+		CShipChallengeCtx (void)
 			{ }
 
+		CShipChallengeCtx (const CSpaceObjectList &List) { AddShips(List); }
+
 		void AddShip (CSpaceObject *pObj);
-		void AddShips (CSpaceObjectList &List);
-		inline Metric GetTotalCombat (void) const { return m_rTotalCombat; }
-		inline int GetTotalCount (void) const { return m_iTotalCount; }
-		inline int GetTotalScore (void) const { return m_iTotalScore; }
+		void AddShips (const CSpaceObjectList &List);
+		Metric GetTotalCombat (void) const { return m_rTotalCombat; }
+		int GetTotalCount (void) const { return m_iTotalCount; }
+		int GetTotalScore (void) const { return m_iTotalScore; }
 
 	private:
-		int m_iTotalCount;
-		int m_iTotalScore;
-		Metric m_rTotalCombat;
+		int m_iTotalCount = 0;
+		int m_iTotalScore = 0;
+		Metric m_rTotalCombat = 0.0;
 	};
 
 class CShipChallengeDesc
@@ -32,10 +31,11 @@ class CShipChallengeDesc
 		enum ECountTypes
 			{
 			countNone,
+			countAuto,						//	Default
 
-			countReinforcements,			//	Use m_Count as minimum number
+			countShips,						//	Use m_Count as number of ships
 			countScore,						//	Use m_Count as desired total score
-			countStanding,					//	Use m_Count as minimum number
+			countProperty,					//	Count comes from property
 
 			countChallengeEasy,				//	1.5x ships of system level (by score)
 			countChallengeStandard,			//	2.5x
@@ -47,13 +47,17 @@ class CShipChallengeDesc
 				m_iType(countNone)
 			{ }
 
-		inline ECountTypes GetCountType (void) const { return m_iType; }
+		ECountTypes GetCountType (void) const { return m_iType; }
+		Metric GetChallengeStrength (int iLevel) const { return CalcChallengeStrength(m_iType, iLevel); }
+		ICCItemPtr GetDesc (const CSpaceObject *pBase = NULL) const;
 		bool Init (ECountTypes iType, int iCount = 0);
 		bool Init (ECountTypes iType, const CString &sCount);
 		bool InitFromChallengeRating (const CString &sChallenge);
-		inline bool IsEmpty (void) const { return m_iType == countNone; }
-		bool NeedsMoreInitialShips (CSpaceObject *pBase, const CShipChallengeCtx &Ctx) const;
-		bool NeedsMoreReinforcements (CSpaceObject *pBase) const;
+		bool InitFromXML (const CString &sValue);
+		bool IsEmpty (void) const { return m_iType == countNone; }
+		bool NeedsMoreShips (CSpaceObject &Base, const CShipChallengeCtx &Ctx) const;
+		bool NeedsMoreReinforcements (CSpaceObject &Base, const CSpaceObjectList &Current, const CShipChallengeDesc &Reinforce) const;
+		bool NeedsMoreReinforcements (CSpaceObject &Base, const CShipChallengeCtx &Ctx, const CShipChallengeDesc &Reinforce) const;
 
 	private:
 		static Metric CalcChallengeStrength (ECountTypes iType, int iLevel);
@@ -61,6 +65,7 @@ class CShipChallengeDesc
 
 		ECountTypes m_iType;				//	Method for determining ships numbers
 		DiceRange m_Count;
+		CString m_sValue;					//	Used for property-based reinforce
 	};
 
 //	IShipGenerator
@@ -76,6 +81,7 @@ struct SShipCreateCtx
 	CSpaceObject *pGate = NULL;					//	Gate where ship will appear (may be NULL)
 	CVector vPos;								//	Position where ship will appear (only if pGate is NULL)
 	DiceRange PosSpread;						//	Distance from vPos (in light-seconds)
+	CSquadronID SquadronID;						//	Set squadron ID (for principals only)
 	CSpaceObject *pBase = NULL;					//	Base for this ship (may be NULL)
 	CSovereign *pBaseSovereign = NULL;			//	Only if pBase is NULL
 	IShipController::OrderTypes iDefaultOrder = IShipController::orderNone;
@@ -86,6 +92,8 @@ struct SShipCreateCtx
 	DWORD dwFlags = 0;							//	Flags
 
 	CSpaceObjectList Result;					//	List of ships created
+
+	TSortMap<DWORD, int> EscortPos;				//	Tracks escort position by principle ObjID.
 
 	enum Flags
 		{
@@ -99,41 +107,37 @@ struct SShipCreateCtx
 class IShipGenerator
 	{
 	public:
+		static ALERROR CreateAsLookup (SDesignLoadCtx &Ctx, const CString &sTable, IShipGenerator **retpGenerator);
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IShipGenerator **retpGenerator);
 		static ALERROR CreateFromXMLAsGroup (SDesignLoadCtx &Ctx, const CXMLElement *pDesc, IShipGenerator **retpGenerator);
 
 		virtual ~IShipGenerator (void) { }
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
+
+		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const { }
 		virtual void CreateShips (SShipCreateCtx &Ctx) const { }
 		virtual Metric GetAverageLevelStrength (int iLevel) const { return 0.0; }
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) { return NOERROR; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual ALERROR ValidateForRandomEncounter (void) { return NOERROR; }
+
+		ICCItemPtr GetShipsReferenced (CUniverse &Universe) const;
+		bool HasType (const CDesignType &Type) const;
+		static ICCItemPtr GetShipsReferenced (CUniverse &Universe, const TSortMap<DWORD, bool> &AllTypes);
 	};
 
 struct SShipGeneratorCtx
 	{
-	SShipGeneratorCtx (void) :
-			pItems(NULL),
-			pOnCreate(NULL),
-			iOrder(IShipController::orderNone),
-			pBase(NULL),
-			pTarget(NULL),
-			dwCreateFlags(0)
-		{ }
-
 	CString sName;								//	If not blank, use as name of ship
-	DWORD dwNameFlags;							//	Name flags (only if sName is not blank)
-	IItemGenerator *pItems;						//	Items to add to ship (may be NULL)
+	DWORD dwNameFlags = 0;						//	Name flags (only if sName is not blank)
+	IItemGenerator *pItems = NULL;				//	Items to add to ship (may be NULL)
 	CAttributeDataBlock InitialData;			//	Initial data
-	ICCItem *pOnCreate;							//	Additional OnCreate code (may be NULL)
-	DWORD dwCreateFlags;
+	ICCItem *pOnCreate = NULL;					//	Additional OnCreate code (may be NULL)
+	DWORD dwCreateFlags = 0;
 
-	IShipController::OrderTypes iOrder;			//	Order for ship
-	IShipController::SData OrderData;			//	Order data
+	COrderDesc OrderDesc;						//	Order for ship
 
-	CSpaceObject *pBase;						//	Base for ship (may be NULL)
-	CSpaceObject *pTarget;						//	Target for ship (may be NULL)
+	CSpaceObject *pBase = NULL;					//	Base for ship (may be NULL)
+	CSpaceObject *pTarget = NULL;				//	Target for ship (may be NULL)
 	};
 
 //	CShipTable ----------------------------------------------------------------
@@ -144,8 +148,8 @@ class CShipTable : public CDesignType
 		CShipTable (void);
 		virtual ~CShipTable (void);
 
-		inline void CreateShips (SShipCreateCtx &Ctx) { if (m_pGenerator) m_pGenerator->CreateShips(Ctx); }
-		inline Metric GetAverageLevelStrength (int iLevel) { return (m_pGenerator ? m_pGenerator->GetAverageLevelStrength(iLevel) : 0.0); }
+		void CreateShips (SShipCreateCtx &Ctx) { if (m_pGenerator) m_pGenerator->CreateShips(Ctx); }
+		Metric GetAverageLevelStrength (int iLevel) { return (m_pGenerator ? m_pGenerator->GetAverageLevelStrength(iLevel) : 0.0); }
 		ALERROR ValidateForRandomEncounter (void) { if (m_pGenerator) return m_pGenerator->ValidateForRandomEncounter(); }
 
 		//	CDesignType overrides

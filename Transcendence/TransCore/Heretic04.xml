@@ -10,7 +10,7 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msHereticMaryamsArchive;"
-			name=			"Sister Maryam's Archive"
+			name=			"Heretic 04: Sister Maryam's Archive"
 			attributes=		"sistersMission, hereticMission"
 
 			level=			"10"
@@ -18,6 +18,8 @@
 
 			maxAppearing=	"1"
 			>
+
+		<Image imageID="&rsHereticMissionTile;"	imageWidth="384" imageHeight="192"/>
 
 		<Events>
 			<OnCreate>

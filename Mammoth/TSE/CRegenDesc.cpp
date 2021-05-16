@@ -10,6 +10,8 @@
 const int CYCLES_PER_ERA =						360;
 const int STANDARD_REGEN_PERIOD =				180;	//	In ticks
 
+const CRegenDesc CRegenDesc::Null;
+
 CRegenDesc::CRegenDesc (int iHPPerEra)
 
 //	CRegenDesc constructor
@@ -68,7 +70,7 @@ int CRegenDesc::GetRegen (int iTick, int iTicksPerCycle) const
 //	once per cycle (and no more).
 
 	{
-	if (m_bEmpty)
+	if (m_bEmpty || iTicksPerCycle <= 0)
 		return 0;
 
 	//	In normal mode we trickle out HPs evenly over time.

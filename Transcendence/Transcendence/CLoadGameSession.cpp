@@ -227,7 +227,7 @@ ALERROR CLoadGameSession::OnInit (CString *retsError)
 	pEntry->dwFlags |= CUIHelper::MENU_IGNORE_DOUBLE_CLICK;
 
 	IAnimatron *pTitle;
-	Helper.CreateSessionTitle(this, m_Service, CONSTLIT("Load Game"), &Menu, CUIHelper::OPTION_SESSION_OK_BUTTON, &pTitle);
+	Helper.CreateSessionTitle(this, m_Service, CONSTLIT("Load Game"), Menu, CUIHelper::OPTION_SESSION_OK_BUTTON, &pTitle);
 	StartPerformance(pTitle, ID_CTRL_TITLE, CReanimator::SPR_FLAG_DELETE_WHEN_DONE);
 
 	//	Disable the delete file button. We enable it again after we load.

@@ -24,13 +24,15 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msBattleArenaMelee;"
-			name=				"Battle Arena Melee"
+			name=				"Battle Arena 01: Melee"
 			attributes=			"battleArena, arenaCombat"
 
 			level=				"3"
 
 			maxAppearing=		"5"
 			>
+
+		<Image imageID="&rsBattleArenaMissionTile;"	imageWidth="384" imageHeight="192"/>
 
 		<Events>
 			<OnCreate>

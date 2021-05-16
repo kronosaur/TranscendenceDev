@@ -4,24 +4,9 @@
 
 #include "PreComp.h"
 
-#define BOLT_TAG								CONSTLIT("Bolt")
 #define DAMAGE_TAG								CONSTLIT("Damage")
 #define EFFECT_TAG								CONSTLIT("Effect")
 #define EVENTS_TAG								CONSTLIT("Events")
-#define FLARE_TAG								CONSTLIT("Flare")
-#define IMAGE_TAG								CONSTLIT("Image")
-#define IMAGE_AND_TAIL_TAG						CONSTLIT("ImageAndTail")
-#define MOLTEN_BOLT_TAG							CONSTLIT("MoltenBolt")
-#define NULL_TAG								CONSTLIT("Null")
-#define PARTICLE_TAG							CONSTLIT("Particle")
-#define PARTICLE_COMET_TAG						CONSTLIT("ParticleComet")
-#define PARTICLE_EXPLOSION_TAG					CONSTLIT("ParticleExplosion")
-#define PLASMA_SPHERE_TAG						CONSTLIT("PlasmaSphere")
-#define POLYFLASH_TAG							CONSTLIT("Polyflash")
-#define SHAPE_TAG								CONSTLIT("Shape")
-#define SHOCKWAVE_TAG							CONSTLIT("Shockwave")
-#define SMOKE_TRAIL_TAG							CONSTLIT("SmokeTrail")
-#define STARBURST_TAG							CONSTLIT("Starburst")
 
 #define INSTANCE_ATTRIB							CONSTLIT("instance")
 #define LENGTH_ATTRIB							CONSTLIT("length")
@@ -41,16 +26,6 @@ static const char *CACHED_EVENTS[CEffectCreator::evtCount] =
 	{
 		"GetParameters",
 	};
-
-CEffectCreator::CEffectCreator (void) : 
-		m_iInstance(instCreator),
-		m_pDamage(NULL)
-
-//	CEffectCreator constructor
-
-	{
-	utlMemSet(m_CachedEvents, sizeof(m_CachedEvents), 0);
-	}
 
 CEffectCreator::~CEffectCreator (void)
 
@@ -914,6 +889,14 @@ void IEffectPainter::GetBounds (const CVector &vPos, CVector *retvUR, CVector *r
 
 	*retvUR = vPos + CVector(rcRect.right * g_KlicksPerPixel, -rcRect.top * g_KlicksPerPixel);
 	*retvLL = vPos + CVector(rcRect.left * g_KlicksPerPixel, -rcRect.bottom * g_KlicksPerPixel);
+	}
+
+const CObjectImageArray &IEffectPainter::GetImage (int iRotation, int *retiRotationFrameIndex) const
+	{
+	if (retiRotationFrameIndex)
+		*retiRotationFrameIndex = 0;
+
+	return CObjectImageArray::Null();
 	}
 
 int IEffectPainter::GetInitialLifetime (void)

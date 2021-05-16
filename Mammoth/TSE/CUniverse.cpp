@@ -21,12 +21,6 @@
 #define PROPERTY_DIFFICULTY					CONSTLIT("difficulty")
 #define PROPERTY_MIN_API_VERSION			CONSTLIT("minAPIVersion")
 
-struct SExtensionSaveDesc
-	{
-	DWORD dwUNID = 0;
-	DWORD dwRelease = 0;
-	};
-
 #define STR_G_PLAYER						CONSTLIT("gPlayer")
 #define STR_G_PLAYER_SHIP					CONSTLIT("gPlayerShip")
 
@@ -49,6 +43,7 @@ DWORD g_dwPerformanceTimer;
 #endif
 
 static CUniverse::IHost g_DefaultHost;
+IPlayerController CUniverse::m_DefaultPlayer;
 
 static const char *FONT_TABLE[CUniverse::fontCount] = 
 	{
@@ -176,7 +171,10 @@ void CUniverse::AdjustDamage (SDamageCtx &Ctx) const
 
 	//	Otherwise, if the attacker is the player, then adjust
 
-	else if ((pOrderGiver = Ctx.Attacker.GetOrderGiver()) && pOrderGiver->IsPlayer() && pOrderGiver->IsAngryAt(Ctx.pObj))
+	else if ((pOrderGiver = Ctx.Attacker.GetOrderGiver()) 
+			&& pOrderGiver->IsPlayer() 
+			&& pOrderGiver->IsAngryAt(Ctx.pObj)
+			&& !Ctx.pObj->IsWreck())
 		rAdjust = m_Difficulty.GetEnemyDamageAdj();
 
 	//	Otherwise, no adjustment.
@@ -1823,36 +1821,15 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 	//	Prepare a universe initialization context
 	//	NOTE: Caller has set debug mode based on game file header flag.
 
-	CString sError;
 	CUniverse::SInitDesc InitCtx;
 	InitCtx.bDebugMode = InDebugMode();
 	InitCtx.bInLoadGame = true;
 
 	//	Load list of extensions used in this game
 
-	TArray<SExtensionSaveDesc> ExtensionList;
-	if (Ctx.dwVersion >= 14)
-		{
-		pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		ExtensionList.InsertEmpty(dwLoad);
-		if (dwLoad > 0)
-			pStream->Read((char *)&ExtensionList[0], dwLoad * sizeof(SExtensionSaveDesc));
-		}
-	else if (Ctx.dwVersion >= 8)
-		{
-		TArray<DWORD> CompatibleExtensionList;
-
-		pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		CompatibleExtensionList.InsertEmpty(dwLoad);
-		pStream->Read((char *)&CompatibleExtensionList[0], dwLoad * sizeof(DWORD));
-
-		ExtensionList.InsertEmpty(CompatibleExtensionList.GetCount());
-		for (i = 0; i < CompatibleExtensionList.GetCount(); i++)
-			{
-			ExtensionList[i].dwUNID = CompatibleExtensionList[i];
-			ExtensionList[i].dwRelease = 0;
-			}
-		}
+	TArray<CExtension::SReference> ExtensionList;
+	if (!CExtension::ReadReference(Ctx, ExtensionList, retsError))
+		return ERR_FAIL;
 
 	//	Previous versions did not save the compatibility library, so we need to
 	//	calculate that here.
@@ -1880,22 +1857,37 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 	//	Get the actual extensions
 
+	DWORD dwFlags = CExtensionCollection::FLAG_ALLOW_DIFFERENT_RELEASE;
+	dwFlags |= (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0);
+
 	for (i = 0; i < ExtensionList.GetCount(); i++)
 		{
 		CExtension *pExtension;
 
 		if (!m_Extensions.FindBestExtension(ExtensionList[i].dwUNID,
 				ExtensionList[i].dwRelease,
-				(InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
+				dwFlags,
 				&pExtension))
 			{
-			*retsError = strPatternSubst(CONSTLIT("Unable to find extension: %08x"), ExtensionList[i]);
+			if (ExtensionList[i].sName.IsBlank())
+				*retsError = strPatternSubst(CONSTLIT("Unable to find extension: %08x"), ExtensionList[i].dwUNID);
+			else
+				*retsError = strPatternSubst(CONSTLIT("Unable to find extension %s (%08x)."), ExtensionList[i].sName, ExtensionList[i].dwUNID);
+
+			return ERR_FAIL;
+			}
+
+		//	If this extension is the wrong release, then say so.
+
+		if (ExtensionList[i].dwRelease && ExtensionList[i].dwRelease != pExtension->GetRelease())
+			{
+			*retsError = strPatternSubst(CONSTLIT("Unable to load %s (%08x): Release %d required (found release %d)."), pExtension->GetName(), pExtension->GetUNID(), ExtensionList[i].dwRelease, pExtension->GetRelease());
 			return ERR_FAIL;
 			}
 
 		//	Make sure this extension is enabled
 
-		if (pExtension->IsDisabled())
+		else if (pExtension->IsDisabled())
 			{
 			*retsError = strPatternSubst(CONSTLIT("Unable to load %s (%08x): %s"), pExtension->GetName(), pExtension->GetUNID(), pExtension->GetDisabledReason());
 			return ERR_FAIL;
@@ -1913,15 +1905,19 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 	if (Ctx.dwVersion >= 14)
 		{
-		SExtensionSaveDesc Desc;
-		pStream->Read((char *)&Desc, sizeof(SExtensionSaveDesc));
+		CExtension::SReference Desc;
+		if (!CExtension::ReadReference(Ctx, Desc, retsError))
+			return ERR_FAIL;
 
 		if (!m_Extensions.FindBestExtension(Desc.dwUNID,
 				Desc.dwRelease,
 				CExtensionCollection::FLAG_ADVENTURE_ONLY | (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
 				&InitCtx.pAdventure))
 			{
-			*retsError = strPatternSubst(CONSTLIT("Unable to find adventure: %08x"), Desc.dwUNID);
+			if (Desc.sName.IsBlank())
+				*retsError = strPatternSubst(CONSTLIT("Unable to find adventure: %08x"), Desc.dwUNID);
+			else
+				*retsError = strPatternSubst(CONSTLIT("Unable to find adventure %s (%08x)."), Desc.sName, Desc.dwUNID);
 			return ERR_FAIL;
 			}
 		else if (InitCtx.pAdventure->IsDisabled())
@@ -1982,6 +1978,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 	//	Select the proper adventure and extensions and bind design.
 
+	CString sError;
 	if (Init(InitCtx, &sError) != NOERROR)
 		{
 		*retsError = strPatternSubst(CONSTLIT("Unable to load universe: %s"), sError);
@@ -2094,7 +2091,8 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 			try
 				{
-				pType->ReadFromStream(Ctx);
+				if (!pType->ReadFromStream(Ctx, retsError))
+					return ERR_FAIL;
 				}
 			catch (...)
 				{
@@ -2498,23 +2496,13 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 
 	for (i = 0; i < ExtensionList.GetCount(); i++)
 		{
-		SExtensionSaveDesc Desc;
-
-		Desc.dwUNID = ExtensionList[i]->GetUNID();
-		Desc.dwRelease = ExtensionList[i]->GetRelease();
-
-		pStream->Write((char *)&Desc, sizeof(SExtensionSaveDesc));
+		ExtensionList[i]->WriteReference(*pStream);
 		}
 
 	//	Adventure UNID
+	//	NOTE: WriteReference handles the case where the adventure is NULL.
 
-	SExtensionSaveDesc Desc;
-	if (const CExtension *pExtension = GetCurrentAdventureDesc().GetExtension())
-		{
-		Desc.dwUNID = pExtension->GetUNID();
-		Desc.dwRelease = pExtension->GetRelease();
-		}
-	pStream->Write((char *)&Desc, sizeof(SExtensionSaveDesc));
+	CExtension::WriteReference(*pStream, GetCurrentAdventureDesc().GetExtension());
 
 	//	CDynamicDesignTable
 
@@ -2539,7 +2527,7 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 	dwSave = OBJID_NULL;
 	if (m_pPOV && m_pPOV->GetSystem())
 		{
-		m_pPOV->GetSystem()->WriteObjRefToStream(m_pPOV, pStream);
+		m_pPOV->WriteObjRefToStream(m_pPOV, pStream);
 
 		if (!m_pPOV->IsPlayer())
 			kernelDebugLogPattern("ERROR: Saving without player ship.");
@@ -2724,6 +2712,7 @@ void CUniverse::SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV)
 
 		GetMissions().FireOnSystemStopped();
 		GetDesignCollection().FireOnGlobalSystemStopped();
+		m_pCurrentSystem->FireOnSystemStopped();
 
 		//  Make sure we've updated current system data to global data.
 
@@ -2740,7 +2729,22 @@ void CUniverse::SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV)
 
 		if ((pMission->IsCompletedNonPlayer() && pMission->CleanNonPlayer()) || pMission->IsDestroyed())
 			{
-			m_AllMissions.Delete(i);
+			if (!pMission->IsDestroyed())
+				{
+				if (m_Events.CancelEvent(pMission, false))
+					{
+					kernelDebugLogPattern("DEBUG: Canceled event for mission %s", pMission->GetNounPhrase());
+					}
+				}
+			else
+				{
+				if (m_Events.CancelEvent(pMission, false))
+					{
+					kernelDebugLogPattern("DEBUG: Canceled event for a destroyed mission %s", pMission->GetNounPhrase());
+					}
+				}
+
+			m_AllMissions.DeleteMission(i);
 			i--;
 			}
 		}
@@ -2782,6 +2786,7 @@ void CUniverse::SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV)
 	//	Let all types know that we have a new system. Again, this is called 
 	//	before the player has entered the system.
 
+	NewSystem.FireOnSystemStarted(dwElapsedTime);
 	GetDesignCollection().FireOnGlobalSystemStarted(dwElapsedTime);
 	GetMissions().FireOnSystemStarted(dwElapsedTime);
 	}
@@ -2886,7 +2891,10 @@ void CUniverse::StartGame (bool bNewGame)
 		//	updated this system).
 
 		if (GetCurrentSystem())
+			{
+			GetCurrentSystem()->FireOnSystemStarted(0);
 			m_Design.FireOnGlobalSystemStarted(0);
+			}
 
 		//	If we have a player then tell objects that the player has entered
 		//	the system.
@@ -2934,6 +2942,19 @@ CTimeSpan CUniverse::StopGameTime (void)
 	{
 	CTimeDate StopTime(CTimeDate::Now);
 	return timeSpan(m_StartTime, StopTime);
+	}
+
+void CUniverse::StopSound (int iChannel)
+
+//	StopSound
+//
+//	Stops playing the given sound.
+
+	{
+	if (m_bNoSound || !m_pSoundMgr || iChannel == -1)
+		return;
+
+	m_pSoundMgr->Stop(iChannel);
 	}
 
 bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)

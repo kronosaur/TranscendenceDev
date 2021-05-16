@@ -10,7 +10,7 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msHuaramarcaDefendTemple;"
-			name=				"Huaramarca Defend Huari Temple"
+			name=				"Huaramarca 03: Defend Huari Temple"
 			attributes=			"huariEmpire, huariTemple, huariDreamChoice, deliveryMission"
 
 			level=				"6"
@@ -19,6 +19,8 @@
 			
 			noDecline=			"True"
 			>
+
+		<Image	imageID="&rsHuariTemple;" imageWidth="330" imageHeight="330"/>
 
 		<Events>
 			<OnCreate>

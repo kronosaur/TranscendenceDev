@@ -47,11 +47,6 @@
 #define INTER_SYSTEM_FOLLOW_PLAYER			CONSTLIT("followPlayer")
 #define INTER_SYSTEM_WAIT_FOR_PLAYER		CONSTLIT("waitForPlayer")
 
-#define SCALE_AU							CONSTLIT("AU")
-#define SCALE_LIGHT_MINUTE					CONSTLIT("light-minute")
-#define SCALE_LIGHT_SECOND					CONSTLIT("light-second")
-#define SCALE_PIXEL							CONSTLIT("pixel")
-
 #define STORAGE_DEVICE						CONSTLIT("local")
 #define STORAGE_SERVICE_EXTENSION			CONSTLIT("serviceExtension")
 #define STORAGE_SERVICE_USER				CONSTLIT("serviceUser")
@@ -579,7 +574,7 @@ Metric CalcLevelDiffStrength (int iDiff)
 		}
 	}
 
-EManeuverTypes CalcTurnManeuver (int iDesired, int iCurrent, int iRotationAngle)
+EManeuver CalcTurnManeuver (int iDesired, int iCurrent, int iRotationAngle)
 
 //	CalcTurnManeuver
 //
@@ -590,13 +585,13 @@ EManeuverTypes CalcTurnManeuver (int iDesired, int iCurrent, int iRotationAngle)
 
 	if ((iTurn >= (360 - (iRotationAngle / 2)))
 			|| (iTurn <= (iRotationAngle / 2)))
-		return NoRotation;
+		return EManeuver::None;
 	else
 		{
 		if (iTurn >= 180)
-			return RotateRight;
+			return EManeuver::RotateRight;
 		else
-			return RotateLeft;
+			return EManeuver::RotateLeft;
 		}
 	}
 
@@ -1066,13 +1061,10 @@ CString GetDamageResultsName (EDamageResults iResult)
 //	Returns the name of the damage result
 
 	{
-	if (iResult < damageResultCount)
-		return CString(g_pszDamageResults[iResult]);
-	else
-		{
-		ASSERT(false);
-		return NULL_STR;
-		}
+	if (iResult < 0 || iResult >= damageResultCount)
+		throw CException(ERR_FAIL);
+
+	return CString(g_pszDamageResults[iResult]);
 	}
 
 Metric *GetDestinyToBellCurveArray (void)
@@ -1298,17 +1290,7 @@ Metric GetScale (CXMLElement *pObj)
 //	Returns the scale for this element
 
 	{
-	CString sScale = pObj->GetAttribute(SCALE_ATTRIB);
-	if (sScale.IsBlank())
-		return LIGHT_SECOND;
-	else if (strEquals(sScale, SCALE_AU))
-		return g_AU;
-	else if (strEquals(sScale, SCALE_LIGHT_MINUTE))
-		return LIGHT_MINUTE;
-	else if (strEquals(sScale, SCALE_PIXEL))
-		return g_KlicksPerPixel;
-	else
-		return LIGHT_SECOND;
+	return CSystemType::ParseScale(pObj->GetAttribute(SCALE_ATTRIB));
 	}
 
 CSpaceObject::InterSystemResults GetInterSystemResult (const CString &sString)
@@ -1787,7 +1769,7 @@ CG32bitPixel LoadRGBColor (const CString &sString, CG32bitPixel rgbDefault)
 		}
 	}
 
-ALERROR LoadUNID (SDesignLoadCtx &Ctx, const CString &sString, DWORD *retdwUNID)
+ALERROR LoadUNID (SDesignLoadCtx &Ctx, const CString &sString, DWORD *retdwUNID, DWORD dwDefaultUNID)
 
 //	LoadUNID
 //
@@ -1800,7 +1782,7 @@ ALERROR LoadUNID (SDesignLoadCtx &Ctx, const CString &sString, DWORD *retdwUNID)
 
 	if (*pPos == '\0')
 		{
-		*retdwUNID = 0;
+		*retdwUNID = dwDefaultUNID;
 		return NOERROR;
 		}
 
@@ -2438,7 +2420,7 @@ void ParseUNIDList (const CString &sList, DWORD dwFlags, TArray<DWORD> *retList)
 		}
 	}
 
-void ReportCrashObj (CString *retsMessage, CSpaceObject *pCrashObj)
+void ReportCrashObj (CString *retsMessage, const CSpaceObject *pCrashObj)
 
 //	ReportCrashObj
 //

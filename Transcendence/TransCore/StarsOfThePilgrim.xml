@@ -19,6 +19,7 @@
 	<!-- UNUSED 0x0020000A -->
 	<!ENTITY msBenedictToKorolov		"0x0020000B">
 	<!ENTITY msBenedictTraining			"0x0020000C">
+	<!ENTITY rsGalacticCoreMissionTile	"0x0020000D">
 	
 	<!-- 0010-005F BENEDICT MISSION ARC -->
 	
@@ -240,7 +241,7 @@
 	<Module filename="Benedict00.xml"/>
 	<Module filename="Benedict01.xml"/>
 	<Module filename="Benedict02.xml"/>
-	<Module filename="Benedict03.xml"/>
+	<!-- Benedict03 is obsolete. -->
 	<Module filename="Benedict04.xml"/>
 	<Module filename="Benedict05.xml"/>
 	<Module filename="Benedict05A.xml"/>
@@ -266,6 +267,7 @@
 	<Module filename="HuaramarcaMission05.xml"/>
 	<Module filename="HuaramarcaMission06.xml"/>
 	<Module filename="HuaramarcaMission07.xml"/>
+	<Module filename="Part1Compatibility.xml"/>
 	<Module filename="PlayerShips.xml"/>
 	<Module filename="Psych00.xml"/>
 	<Module filename="Psych01.xml"/>
@@ -347,6 +349,8 @@
 			noStats=			"true"
 			>
 		
+		<Image imageID="&rsGalacticCoreMissionTile;"	imageWidth="384" imageHeight="192"/>
+
 		<Language>
 			<Text id="Name">
 				Reach the Galactic Core
@@ -370,7 +374,8 @@
 
 <!-- RESOURCES -->
 
-	<Image UNID="&rsPart1Cover;"		bitmap="Resources\Part1Cover.jpg"			loadOnUse="true" />
-	<Image UNID="&rsProlog1;"			bitmap="Resources\Prolog1.jpg"				loadOnUse="true" />
+	<Image UNID="&rsPart1Cover;"				bitmap="Resources\Part1Cover.jpg"			loadOnUse="true" />
+	<Image UNID="&rsProlog1;"					bitmap="Resources\Prolog1.jpg"				loadOnUse="true" />
+	<Image UNID="&rsGalacticCoreMissionTile;"	bitmap="Resources\GalacticCoreMissionTile.jpg"				loadOnUse="true" />
 
 </TranscendenceAdventure>

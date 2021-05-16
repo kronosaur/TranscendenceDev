@@ -135,7 +135,7 @@ bool CWaitOrder::IsLeaderInRange (CShip *pShip)
 			&& Perception.CanBeTargeted(m_Objs[objLeader], rRange2));
 	}
 
-void CWaitOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
+void CWaitOrder::OnAttacked (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &AttackerObj, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	OnAttacked
 //
@@ -148,19 +148,17 @@ void CWaitOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pA
 	//	waiting.
 
 	if (m_fWaitForThreat
-			&& pAttacker
-			&& pAttacker->CanAttack())
-		pShip->CancelCurrentOrder();
+			&& AttackerObj.CanAttack())
+		Ship.CancelCurrentOrder();
 
 	//	If we're waiting for enemies and someone deliberately hits us, then 
 	//	that counts.
 
 	else if (m_fWaitForEnemy
 			&& Ctx.IsSecondAttack()
-			&& pAttacker
-			&& pAttacker->CanAttack()
+			&& AttackerObj.CanAttack()
 			&& !bFriendlyFire)
-		pShip->CancelCurrentOrder();
+		Ship.CancelCurrentOrder();
 
 	//	If we're waiting for a target, and if we get hit (and it's not friendly) 
 	//	then the target is here.
@@ -169,22 +167,21 @@ void CWaitOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pA
 	//	shot from the target means that the target is here.
 
 	else if (m_fWaitForLeaderToApproach
-			&& pAttacker == m_Objs[objLeader]
+			&& AttackerObj == m_Objs[objLeader]
 			&& !bFriendlyFire)
-		pShip->CancelCurrentOrder();
+		Ship.CancelCurrentOrder();
 
 	//	If we're deterring enemies and we don't already have a target, and we
 	//	feel like it, then attack this target.
 
 	else if (m_fDeterEnemies
 			&& m_Objs[objTarget] == NULL
-			&& pAttacker
-			&& pAttacker->CanAttack()
+			&& AttackerObj.CanAttack()
 			&& !bFriendlyFire
 			&& mathRandom(1, 3) == 1)
 		{
 		m_fIsDeterring = true;
-		m_Objs[objTarget] = pAttacker;
+		m_Objs[objTarget] = &AttackerObj;
 		ASSERT(m_Objs[objTarget]->DebugIsValid() && m_Objs[objTarget]->NotifyOthersWhenDestroyed());
 		}
 
@@ -248,7 +245,7 @@ void CWaitOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CWaitOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
+void CWaitOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnBehaviorStart
 //
@@ -262,16 +259,16 @@ void CWaitOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObjec
 	//	If we're attacking enemies, then we can't be docked.
 
 	if (m_fAttackEnemies)
-		Ctx.Undock(pShip);
+		Ctx.Undock(&Ship);
 
 	//	Waiting for leader to undock: we need a leader and an optional timer.
 
 	if (m_fWaitUntilLeaderUndocks)
 		{
-		m_Objs[objLeader] = pOrderTarget;
+		m_Objs[objLeader] = OrderDesc.GetTarget();
 		ASSERT(m_Objs[objLeader]->DebugIsValid() && m_Objs[objLeader]->NotifyOthersWhenDestroyed());
 
-		dwTimer = Data.AsInteger();
+		dwTimer = OrderDesc.GetDataInteger();
 		}
 
 	//	Waiting for leader to approach: we need a leader, a distance (which may be 0)
@@ -279,17 +276,17 @@ void CWaitOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObjec
 
 	else if (m_fWaitForLeaderToApproach)
 		{
-		m_Objs[objLeader] = pOrderTarget;
+		m_Objs[objLeader] = OrderDesc.GetTarget();
 		ASSERT(m_Objs[objLeader]->DebugIsValid() && m_Objs[objLeader]->NotifyOthersWhenDestroyed());
 
-		m_rDistance = LIGHT_SECOND * Data.AsInteger();
-		dwTimer = Data.AsInteger2();
+		m_rDistance = LIGHT_SECOND * OrderDesc.GetDataInteger();
+		dwTimer = OrderDesc.GetDataInteger2();
 		}
 
 	//	Otherwise, just get a timer.
 
 	else
-		dwTimer = Data.AsInteger();
+		dwTimer = OrderDesc.GetDataInteger();
 
 	//	Set the timer in ticks
 
@@ -354,7 +351,7 @@ void CWaitOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj,
 		*retbCancelOrder = true;
 	}
 
-void CWaitOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CWaitOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //
@@ -380,7 +377,7 @@ void CWaitOrder::OnReadFromStream (SLoadCtx &Ctx)
 	m_fIsDeterring = ((dwLoad & 0x00000001) ? true : false);
 	}
 
-void CWaitOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CWaitOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //

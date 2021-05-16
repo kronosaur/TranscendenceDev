@@ -101,10 +101,12 @@ class COrbEffectPainter : public IEffectPainter
 		void CalcShellColorTable (int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable) const;
 		void CalcShellOpacity (int iRadius, int iShellMaxRadius, int iIntensity, BYTE byOpacity, TArray<BYTE> &retOpacity) const;
 		void CalcSphericalColorTable (EOrbStyles iStyle, int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable);
+		int CalcSpikeCount () const;
 		void CalcStyleIntermediates (void);
 		void CompositeFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx);
 		void CompositeFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx);
-		inline bool HasFlares (void) const { return (m_iStyle == styleFlare || m_iStyle == styleDiffraction || m_iStyle == styleFireblast || !m_SpikeCount.IsEmpty()); }
+		bool HasDefaultFlares (void) const { return (m_iStyle == styleFlare || m_iStyle == styleDiffraction || m_iStyle == styleFireblast); }
+		bool HasFlares (void) const { return (HasDefaultFlares() || m_SpikeCount.GetBonus() > 0 || !m_SpikeCount.IsConstant()); }
 		void Invalidate (void);
 		void PaintFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx);
 		void PaintFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx);
@@ -176,14 +178,6 @@ static LPCSTR STYLE_TABLE[] =
 
 		NULL,
 	};
-
-COrbEffectCreator::COrbEffectCreator (void) :
-			m_pSingleton(NULL)
-
-//	COrbEffectCreator constructor
-
-	{
-	}
 
 COrbEffectCreator::~COrbEffectCreator (void)
 
@@ -962,6 +956,25 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 		}
 	}
 
+int COrbEffectPainter::CalcSpikeCount () const
+
+//	CalcSpikeCount
+//
+//	Computes number of spikes to create.
+
+	{
+	int iSpikeCount = m_SpikeCount.Roll();
+	if (iSpikeCount != -1)
+		return iSpikeCount;
+	else
+		{
+		if (HasDefaultFlares())
+			return DEFAULT_FLARE_COUNT * 2;
+		else
+			return 0;
+		}
+	}
+
 void COrbEffectPainter::CalcStyleIntermediates (void)
 
 //	CalcStyleIntermediates
@@ -1081,10 +1094,10 @@ void COrbEffectPainter::CompositeFlareRay (CG32bitImage &Dest, int xCenter, int 
 	int xOffset = (int)vHalf.GetX();
 	int yOffset = (int)vHalf.GetY();
 
-    //  Paint the line
+	//  Paint the line
 
-    CFlareRayRasterizer<CGBlendComposite> Flare;
-    Flare.Draw(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth);
+	CFlareRayRasterizer<CGBlendComposite> Flare;
+	Flare.Draw(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth);
 	}
 
 void COrbEffectPainter::CompositeFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx)
@@ -1094,15 +1107,14 @@ void COrbEffectPainter::CompositeFlares (CG32bitImage &Dest, int xCenter, int yC
 //	Paints flares
 
 	{
-	int i;
+	int iSpikeCount = CalcSpikeCount();
+	if (iSpikeCount <= 0)
+		return;
 
-	int iFlareCount = m_SpikeCount.Roll() / 2;
-	if (iFlareCount <= 0)
-		iFlareCount = DEFAULT_FLARE_COUNT;
+	int iFlareCount = Max(1, iSpikeCount / 2);
+	int iAngle = 360 / (iFlareCount * 2);
 
-	int iAngle = 360 / iFlareCount;
-
-	for (i = 0; i < iFlareCount; i++)
+	for (int i = 0; i < iFlareCount; i++)
 		CompositeFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, AngleMod(FLARE_ANGLE + (iAngle * i)), m_iIntensity, Ctx);
 	}
 
@@ -1361,10 +1373,10 @@ void COrbEffectPainter::PaintFlareRay (CG32bitImage &Dest, int xCenter, int yCen
 	int xOffset = (int)vHalf.GetX();
 	int yOffset = (int)vHalf.GetY();
 
-    //  Paint the line
+	//  Paint the line
 
-    CFlareRayRasterizer<CGBlendBlend> Flare;
-    Flare.Draw(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth);
+	CFlareRayRasterizer<CGBlendBlend> Flare;
+	Flare.Draw(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth);
 	}
 
 void COrbEffectPainter::PaintFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx)
@@ -1374,15 +1386,14 @@ void COrbEffectPainter::PaintFlares (CG32bitImage &Dest, int xCenter, int yCente
 //	Paints flares
 
 	{
-	int i;
+	int iSpikeCount = CalcSpikeCount();
+	if (iSpikeCount <= 0)
+		return;
 
-	int iFlareCount = m_SpikeCount.Roll() / 2;
-	if (iFlareCount <= 0)
-		iFlareCount = DEFAULT_FLARE_COUNT;
+	int iFlareCount = Max(1, iSpikeCount / 2);
+	int iAngle = 360 / (iFlareCount * 2);
 
-	int iAngle = 360 / iFlareCount;
-
-	for (i = 0; i < iFlareCount; i++)
+	for (int i = 0; i < iFlareCount; i++)
 		PaintFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, AngleMod(FLARE_ANGLE + (iAngle * i)), m_iIntensity, Ctx);
 	}
 
@@ -1393,16 +1404,14 @@ void COrbEffectPainter::PaintLightning (CG32bitImage &Dest, int xCenter, int yCe
 //	Paints lightning spikes
 
 	{
-	int i;
+	int iSpikeCount = CalcSpikeCount();
+	if (iSpikeCount <= 0)
+		return;
 
-	int iFlareCount = m_SpikeCount.Roll();
-	if (iFlareCount <= 0)
-		iFlareCount = 2 * DEFAULT_FLARE_COUNT;
-
-	int iSeparation = 360 / iFlareCount;
+	int iSeparation = 360 / iSpikeCount;
 	int iAngle = Ctx.iTick * 3;
 
-	for (i = 0; i < iFlareCount; i++)
+	for (int i = 0; i < iSpikeCount; i++)
 		{
 		int xDest, yDest;
 		IntPolarToVector(iAngle, FlareDesc.iLength, &xDest, &yDest);
@@ -1473,7 +1482,7 @@ bool COrbEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 		m_bySecondaryOpacity = Value.EvalOpacity(255);
 
 	else if (strEquals(sParam, SPIKE_COUNT_ATTRIB))
-		m_SpikeCount = Value.EvalDiceRange(0);
+		m_SpikeCount = Value.EvalDiceRange(-1);
 	
 	else if (strEquals(sParam, STYLE_ATTRIB))
 		m_iStyle = (EOrbStyles)Value.EvalIdentifier(STYLE_TABLE, styleMax, styleSmooth);

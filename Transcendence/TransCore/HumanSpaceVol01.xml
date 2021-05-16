@@ -1621,6 +1621,8 @@
 	<!ENTITY dsSistersOffer				"0x0010003B">
 	<!ENTITY dsSistersPromotion			"0x0010003C">
 	<!ENTITY rsSistersAbbey				"0x0010003D">
+	<!ENTITY svFallenPilgrim			"0x0010003E">
+	<!ENTITY evFallenPilgrim			"0x0010003F">
 	
 	<!-- 0040-005F CORPORATE HIERARCHY -->
 	
@@ -1646,6 +1648,9 @@
 	<!ENTITY rsAdventurerOutfitters		"0x00100053">
 	<!ENTITY dsCorporateAutonManage		"0x00100054">
 	<!ENTITY rsCorporateAutonDealer		"0x00100055">
+	<!ENTITY tbCorpAutonDefenders		"0x00100056">
+	<!ENTITY tbCorpMakayevDefenders		"0x00100057">
+	<!ENTITY tbCorpRasiermesserDefenders	"0x00100058">
 	
 	<!-- 0060-007F COMMONWEALTH FLEET -->
 	
@@ -1761,6 +1766,12 @@
 	<!ENTITY smUrakSpace				"0x001000D2">
 	<!ENTITY rsUrakSentinelHero			"0x001000D3">
 	<!ENTITY rsUrakDestroyerHero		"0x001000D4">
+
+	<!ENTITY rsUrakMineIcy				"0x001000D5">
+	<!ENTITY rsUrakMineMetallic			"0x001000D6">
+	<!ENTITY rsUrakMinePrimordial		"0x001000D7">
+	<!ENTITY rsUrakMineRocky			"0x001000D8">
+	<!ENTITY rsUrakMineVolcanic			"0x001000D9">
 	
 	<!-- 00E0-00EF BATTLE ARENA MAXIMUS -->
 	
@@ -1773,6 +1784,7 @@
 	<!ENTITY dsBattleArenaOpponentList	"0x001000E6">
 	<!ENTITY msBattleArenaFight			"0x001000E7">
 	<!ENTITY msBattleArenaChallenger	"0x001000E8">
+	<!ENTITY rsBattleArenaMissionTile	"0x001000E9">
 
 	<!-- 00F0-00FF HELIOTROPES -->
 	
@@ -1780,6 +1792,12 @@
 	<!ENTITY rsHeliotropeGunshipHD		"0x001000F1">
 	<!ENTITY smHeliotropeSpace			"0x001000F2">
 	<!ENTITY rsHeliotropeFrigateHero	"0x001000F3">
+	<!ENTITY itHeliotropeDefenseGridI	"0x001000F4">
+	<!ENTITY itHeliotropeDefenseGridII	"0x001000F5">
+	<!ENTITY efHeliotropeDefenseGrid	"0x001000F6">
+	<!ENTITY tbHeliotropeDefenders		"0x001000F7">
+	<!ENTITY rsHeliotropeOutpost		"0x001000F8">
+	<!ENTITY rsHeliotropeColony			"0x001000F9">
 	
 	<!-- 0100-011F CHARON PIRATES AND MARAUDERS -->
 	
@@ -1814,6 +1832,7 @@
 	<!ENTITY rsMarauderRaidPlatformHero	"0x0010011C">
 	<!ENTITY scMarauderRaidPlatformStock	"0x0010011D">
 	<!ENTITY rsTripoliHero				"0x0010011E">
+	<!ENTITY tbMarauderDefenders		"0x0010011F">
 
 	<!-- 0120-013F SUNG SLAVERS -->
 	
@@ -2030,6 +2049,7 @@
 	<!ENTITY dsKorolovEscortList		"0x0010029B">
 	<!ENTITY rsEI100HD					"0x0010029C">
 	<!ENTITY chKorolovAssistantDirectors	"0x0010029D">
+	<!ENTITY tbKorolovEscorts			"0x0010029E">
 
 	<!-- 02B0-02CF COMMONWEALTH MILITIA -->
 
@@ -2056,6 +2076,9 @@
 	<!ENTITY smDwargSpace				"0x001002D4">
 	<!ENTITY rsDwargMasterHero			"0x001002D5">
 	<!ENTITY rsZoanthropeRaiderHero		"0x001002D6">
+	<!ENTITY vtDwargMissileDefense		"0x001002D7">
+	<!ENTITY vtDwargMissileDefenseWeapon	"0x001002D8">
+	<!ENTITY efDwargMissileDefense		"0x001002D9">
 
 	<!-- 02F0-030F RINGERS -->
 
@@ -2085,8 +2108,19 @@
 	<!ENTITY rsHammerheadHero			"0x0010033A">
 	<!ENTITY rsHammerhead2Hero			"0x0010033B">
 	<!ENTITY rsBorerHero				"0x0010033C">
+	<!ENTITY tbOutlawMineTreasure		"0x0010033D">
+	<!ENTITY tbOutlawMineDefenders		"0x0010033E">
+	<!ENTITY stOutlawHowitzer			"0x0010033F">
+	<!ENTITY scBorer-III				"0x00100340">
+	<!ENTITY scOromoII					"0x00100341">
+	<!ENTITY scSothoII					"0x00100342">
+	<!ENTITY itBallistaTurret			"0x00100343">
+	<!ENTITY itMarkIHowitzerTurret		"0x00100344">
+	<!ENTITY tbOutlawMineTurrets		"0x00100345">
+	<!ENTITY tbOutlawDefenders			"0x00100346">
+	<!ENTITY tbOutlawTransports			"0x00100347">
 
-	<!-- 0370-038F AUTONS -->
+	<!-- 0370-038F OMNIDEFENSE SYSTEMS -->
 
 	<!ENTITY rsAutosentinelHD			"0x00100370">
 	<!ENTITY rsMediumAutonHD			"0x00100371">
@@ -2121,7 +2155,8 @@
 	<!ENTITY rsEI100Hero				"0x00100398">
 	<!ENTITY rsSapphire					"0x00100399">
 	<!ENTITY rsEI500					"0x0010039A">
-	<!ENTITY msRaisuStation				"0x0010039B">
+	<!ENTITY msRaisuStation				"0x0010039B">	<!-- Backwards Compatible -->
+	<!ENTITY msRaisuStation01			"0x0010039B">
 	<!ENTITY rsRoninAHero				"0x0010039C">
 	<!ENTITY rsRoninB					"0x0010039D">
 	<!ENTITY rsRoninBHero				"0x0010039E">
@@ -2148,6 +2183,15 @@
 	<!ENTITY rsPlagueHD					"0x001003B0">
 	<!ENTITY rsRevelationsHD			"0x001003B1">
 	<!ENTITY smSapiensSpace				"0x001003B2">
+	<!ENTITY rsSapiensOutpost			"0x001003B3">
+	<!ENTITY rsSapiensCompound			"0x001003B4">
+	<!ENTITY rsPlague					"0x001003B5">
+	<!ENTITY rsPlagueHero				"0x001003B6">
+	<!ENTITY rsRevelations				"0x001003B7">
+	<!ENTITY rsRevelationsHero			"0x001003B8">
+	<!ENTITY itSapiensRadiationMine		"0x001003B9">
+	<!ENTITY vtSapiensMineLauncher		"0x001003BA">
+	<!ENTITY rsSapiensRadiationMine		"0x001003BB">
 
 	<!-- 03D0-03EF DEATH DRUGS CARTEL -->
 
@@ -2163,6 +2207,9 @@
 	<!ENTITY smCentauriWarlordsSpace	"0x001003F4">
 	<!ENTITY rsCentauriRaiderHero		"0x001003F5">
 	<!ENTITY rsCentauriHeavyRaiderHero	"0x001003F6">
+	<!ENTITY svCentauriWarlordCivilians	"0x001003F7">
+	<!ENTITY stCentauriSettlement		"0x001003F8">
+	<!ENTITY rsCentauriSettlement		"0x001003F9">
 
 	<!-- 0410-042F KOBOL WARLORDS -->
 
@@ -2173,6 +2220,9 @@
 	<!ENTITY rsKobolGunshipDualHero		"0x00100414">
 	<!ENTITY rsKobolGunshipMissilesHero	"0x00100415">
 	<!ENTITY rsKobolGunshipOmniHero		"0x00100416">
+	<!ENTITY tbKobolDefenders			"0x00100417">
+	<!ENTITY tbKobolEncounters			"0x00100418">
+	<!ENTITY rsKobolOutpost				"0x00100419">
 
 	<!-- 0430-044F ANARCHISTS -->
 
@@ -2180,12 +2230,32 @@
 	<!ENTITY rsHornetHD					"0x00100431">
 	<!ENTITY smAnarchistSpace			"0x00100432">
 	<!ENTITY rsHornetHero				"0x00100433">
+	<!ENTITY rsEarthZone100				"0x00100434">
+	<!ENTITY rsEarthZone100Hero			"0x00100435">
+	<!ENTITY scEarthZone1200			"0x00100436">
+	<!ENTITY rsEarthZone1200			"0x00100437">
+	<!ENTITY rsEarthZone1200Hero		"0x00100438">
+	<!ENTITY scEarthZone5000			"0x00100439">
+	<!ENTITY rsEarthZone5000			"0x0010043A">
+	<!ENTITY rsEarthZone5000Hero		"0x0010043B">
+	<!ENTITY rsAnarchistSettlement		"0x0010043C">
+	<!ENTITY tbAnarchistDefenders		"0x0010043D">
+	<!ENTITY tbAnarchistHorde			"0x0010043E">
 
 	<!-- 0450-046F RANX EMPIRE -->
 
 	<!ENTITY rsRanxGunshipHD			"0x00100450">
 	<!ENTITY smRanxSpace				"0x00100451">
 	<!ENTITY rsRanxDreadnoughtHero		"0x00100452">
+	<!ENTITY rsRanxOutpost				"0x00100453">
+	<!ENTITY rsRanxFortress				"0x00100454">
+	<!ENTITY tbRanxDefenders			"0x00100455">
+	<!ENTITY tbRanxResupply				"0x00100456">
+	<!ENTITY scRanxFreighter			"0x00100457">
+	<!ENTITY rsRanxFreighter			"0x00100458">
+	<!ENTITY rsRanxFreighterHero		"0x00100459">
+	<!ENTITY tbRanxDreadnoughtPatrol	"0x0010045A">
+	<!ENTITY vtRanxDamageControl		"0x0010045B">
 
 	<!-- 0470-048F FERIANS -->
 
@@ -2252,6 +2322,7 @@
 	<!ENTITY rsMissileNAMIHeavyHD		"0x001004D0">
 	<!ENTITY itMediumIthaliumArmor		"0x001004D1">
 	<!ENTITY itMassiveIthaliumArmor		"0x001004D2">
+	<!ENTITY itKM170Missile				"0x001004D3">
 
 	<!-- 04F0-050F TAIKON CORPORATION -->
 
@@ -2289,6 +2360,7 @@
 	<!ENTITY scEI500PlayerL3			"0x00100541">
 	<!ENTITY scSapphirePlayerL3			"0x00100542">
 	<!ENTITY scWolfenPlayerL3			"0x00100543">
+	<!ENTITY scBritanniaPlayerL9		"0x00100544">
 
 	<!-- 0580-059F ROGUE FLEET -->
 
@@ -2324,6 +2396,7 @@
 	<!ENTITY baCashCard					"0x001005E2">
 	<!ENTITY baAnalyzer					"0x001005E3">
 	<!ENTITY baFieldCrystal				"0x001005E4">
+	<!ENTITY vtStdDamageControl			"0x001005E5">
 
 	<!-- 0600-061F ABBASID -->
 
@@ -2346,6 +2419,7 @@
 	<!ENTITY baHaloGem					"0x00100642">
 	<!ENTITY itGemOfFury				"0x00100643">
 	<!ENTITY ovGemOfFury				"0x00100644">
+	<!ENTITY rsDominaPowers				"0x00100645">
 
 	<!-- 0660-06BF COMMONWEALTH FLEET III -->
 
@@ -2366,6 +2440,8 @@
 	<!ENTITY vtMinotaurTurretSlot		"0x0010066E">
 	<!ENTITY rsCommonwealthFleetInsignia	"0x0010066F">
 	<!ENTITY etCSCSupportEncounter		"0x00100670">
+	<!ENTITY scBritanniaStock			"0x00100671">
+	<!ENTITY rsBritanniaHero			"0x00100672">
 
 	<!-- 06C0-06FF STANDARD ITEMS -->
 
@@ -2395,6 +2471,15 @@
 	<!ENTITY scBorerStock				"0x00100708">
 	<!ENTITY scBorerIIStock				"0x00100709">
 	<!ENTITY itRejuvTankPatient			"0x0010070A">
+	<!ENTITY rsCommonwealthHabitat		"0x0010070B">
+	<!ENTITY rsContainerHabitat			"0x0010070C">
+	<!ENTITY msResidentials01			"0x0010070D">
+	<!ENTITY itCarbonScrubbers			"0x0010070E">
+	<!ENTITY msResidentials02			"0x0010070F">
+	<!ENTITY msResidentials03			"0x00100710">
+	<!ENTITY scBorerIIIStock			"0x00100711">
+	<!ENTITY rsIAVLight120				"0x00100712">
+	<!ENTITY rsIAVLightHero				"0x00100713">
 
 	<!-- 0740-075F RASIERMESSER -->
 
@@ -2408,6 +2493,12 @@
 	<!ENTITY stHydrogenGasGiantStJohns	"0x00100762">
 	<!ENTITY rsHydrogenGasGiantStJohns	"0x00100763">
 
+	<!ENTITY msRaisuStation02			"0x00100764">
+	<!ENTITY tbRaisuStation02Revenge	"0x00100765">
+	<!ENTITY msRaisuStation03			"0x00100766">
+	<!ENTITY evRaisuStation03Settlement	"0x00100767">
+	<!ENTITY rsRaisuStation				"0x00100768">
+
 	<!-- 0780-079F QUANTUM CPU -->
 
 	<!ENTITY baQuantumCPUShieldProgram	"0x00100780">
@@ -2415,6 +2506,21 @@
 	<!-- 07A0-07CF SISTERS OF DOMINA MISSIONS -->
 	
 	<!ENTITY msSisters01				"0x001007A0">
+	<!ENTITY msSisters03				"0x001007A1">
+	<!ENTITY scNPCPilgrimSapphireL4		"0x001007A2">
+	<!ENTITY scNPCPilgrimSapphireL6		"0x001007A3">
+	<!ENTITY scNPCPilgrimSapphireL8		"0x001007A4">
+	<!ENTITY scNPCPilgrimEI500L5		"0x001007A5">
+	<!ENTITY scNPCPilgrimEI500L7		"0x001007A6">
+	<!ENTITY scNPCPilgrimWolfenL5		"0x001007A7">
+	<!ENTITY scNPCPilgrimWolfenL6		"0x001007A8">
+	<!ENTITY scNPCPilgrimWolfenL7		"0x001007A9">
+	<!ENTITY scNPCPilgrimCenturionL8	"0x001007AA">
+	<!ENTITY tbSisters03FallenPilgrims	"0x001007AB">
+	<!ENTITY evSisters03Wreck			"0x001007AC">
+	<!ENTITY tbSisters03PilgrimTreasure	"0x001007AD">
+	<!ENTITY msSisters02				"0x001007AE">
+	<!ENTITY tbSisters02Attackers		"0x001007AF">
 
 	<!-- 07D0-07FF JIANG'S STAR -->
 
@@ -2440,6 +2546,24 @@
 	<!ENTITY rsBlackMarketShipyard			"0x00100820">
 	<!ENTITY msBlackMarketMission02			"0x00100821">
 	<!ENTITY msBlackMarketSmuggle01			"0x00100822">
+	<!ENTITY scT31PlayerL5					"0x00100823">
+	<!ENTITY scMolotokBPlayerL8				"0x00100824">
+	<!ENTITY scMolotokAPlayerL6				"0x00100825">
+
+	<!-- 0840-085F TENHOVE DEFENSE SYSTEM -->
+
+	<!ENTITY rsTA3Sentinel					"0x00100840">
+	<!ENTITY rsTA3SentinelHero				"0x00100841">
+	<!ENTITY scTR200Defender				"0x00100842">
+	<!ENTITY scTMA9BattleAuton				"0x00100843">
+	<!ENTITY rsTR200Defender				"0x00100844">
+	<!ENTITY rsTR200DefenderHero			"0x00100845">
+	<!ENTITY rsTMA9BattleAuton				"0x00100846">
+	<!ENTITY rsTMA9BattleAutonHero			"0x00100847">
+
+	<!-- 0860-087F HERETIC SYSTEM -->
+
+	<!ENTITY rsHereticMissionTile			"0x00100860">
 
 	<!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>
@@ -2478,6 +2602,7 @@
 	<Module filename="BlackMarketMission01.xml"/>
 	<Module filename="BlackMarketMission02.xml"/>
 	<Module filename="BlackMarketMissionSmuggle01.xml"/>
+	<Module filename="BlackMarketPlayerShips.xml"/>
 
 	<!-- Characters -->
 		
@@ -2502,6 +2627,7 @@
 
 	<!-- Commonwealth -->
 		
+	<Module filename="AgriculturalMission01.xml"/>
 	<Module filename="Commonwealth.xml"/>
 	<Module filename="CommonwealthAgricultural.xml"/>
 	<Module filename="CommonwealthCenturions.xml"/>
@@ -2511,6 +2637,9 @@
 	<Module filename="CommonwealthRonins.xml"/>
 	<Module filename="CommonwealthShips.xml"/>
 	<Module filename="ContainerHabitat.xml"/>
+	<Module filename="ResidentialsMission01.xml"/>
+	<Module filename="ResidentialsMission02.xml"/>
+	<Module filename="ResidentialsMission03.xml"/>
 
 	<!-- Commonwealth Fleet -->
 
@@ -2574,6 +2703,7 @@
 	<Module filename="Makayev.xml"/>
 	<Module filename="Rasiermesser.xml"/>
 	<Module filename="RasiermesserMission01.xml"/>
+	<Module filename="Tenhove.xml"/>
 
 	<!-- Encounters -->
 
@@ -2608,6 +2738,9 @@
 
 	<Module filename="Eridani.xml"/>
 	<Module filename="EridaniStations.xml"/>
+	<Module filename="RaisuMission01.xml"/>
+	<Module filename="RaisuMission02.xml"/>
+	<Module filename="RaisuMission03.xml"/>
 	<Module filename="RaisuStation.xml"/>
 
 	<!-- Ferians -->
@@ -2676,12 +2809,15 @@
 	<!-- Pilgrim -->
 
 	<Module filename="Domina.xml"/>
+	<Module filename="NPCPilgrims.xml"/>
 	<Module filename="Pilgrim.xml"/>
 	
 	<!-- Sisters of Domina -->
 
 	<Module filename="Sanctuary.xml"/>
 	<Module filename="Sisters01.xml"/>
+	<Module filename="Sisters02.xml"/>
+	<Module filename="Sisters03.xml"/>
 	<Module filename="SistersDonate.xml"/>
 	<Module filename="SistersOfDomina.xml"/>
 	<Module filename="SistersPilgrimsAid.xml"/>

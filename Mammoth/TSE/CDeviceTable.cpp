@@ -1556,3 +1556,15 @@ CDeviceClass *CDeviceDescList::GetNamedDevice (DeviceNames iDev) const
 	return NULL;
 	}
 
+void CDeviceDescList::SetSecondary (bool bValue)
+
+//	SetSecondary
+//
+//	Sets all weapons as secondary.
+
+	{
+	for (int i = 0; i < GetCount(); i++)
+		if (m_List[i].Item.IsWeapon())
+			m_List[i].bSecondary = bValue;
+	}
+

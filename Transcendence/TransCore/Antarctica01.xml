@@ -16,13 +16,15 @@
 	======================================================================== -->
 	
 	<MissionType UNID="&msDantalionInformant;"
-			name=				"Dantalion Informant"
+			name=				"Antarctica 01: Dantalion Informant"
 			attributes=			"commonwealthSettlement"
 
 			level=				"9"
 
 			maxAppearing=		"1"
 			>
+
+		<Image imageID="&rsFleetEmblems;" imageX="960" imageY="480"	imageWidth="320" imageHeight="240"/>
 
 		<Events>
 			<OnCreate>

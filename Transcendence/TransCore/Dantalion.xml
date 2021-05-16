@@ -5,6 +5,7 @@
 	<!-- Dantalion star system -->
 
 	<SystemType UNID="&ssDantalion;"
+				name="Dantalion"
 				attributes="envEarth"
 				>
 		<SystemGroup>

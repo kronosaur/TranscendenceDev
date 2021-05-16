@@ -79,10 +79,7 @@ CGameRecord &CAdventureRecord::GetRecordAt (DWORD dwID)
 	//	Otherwise, this is an error
 
 	else
-		{
-		ASSERT(false);
-		return m_Special[specialIDFirst];
-		}
+		throw CException(ERR_FAIL);
 	}
 
 void CAdventureRecord::Init (DWORD dwAdventure)

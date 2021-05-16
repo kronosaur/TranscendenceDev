@@ -31,11 +31,17 @@ class IDockScreenUI
 			int iOriginalCursor = -1;
 			};
 
+		virtual const CString &GetDescription () const { return NULL_STR; }
+		virtual ICCItemPtr GetDisplaySelection () const { return ICCItemPtr::Nil(); }
+		virtual void *GetDockScreen () const { return NULL; }
+		virtual ICCItemPtr GetListAsCCItem (void) const { return ICCItemPtr::Nil(); }
+		virtual int GetListCursor (void) const { return -1; }
 		virtual ICCItemPtr GetProperty (const CString &sProperty) const { return NULL; }
 		virtual void OnModifyItemBegin (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const { }
 		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result) { }
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) { }
 		virtual bool SetProperty (const CString &sProperty, const ICCItem &Value) { return false; }
+		virtual void SetSelection (const ICCItem &Selection) { }
 	};
 
 enum class EDockScreenBackground
@@ -80,6 +86,7 @@ struct SDockFrame
 	ICCItemPtr pInitialData;				//	Data for the screen
 	ICCItemPtr pStoredData;					//	Read-write data
 	ICCItemPtr pReturnData;					//	Data returns from a previous screen
+	ICCItemPtr pSavedSelection;				//	Saved selection (for when we return to screen)
 
 	SDockScreenBackgroundDesc BackgroundDesc;
 
@@ -139,9 +146,12 @@ class CDockSession
 	public:
 		static constexpr DWORD FLAG_FORCE_UNDOCK =	0x00000001;
 
-		//	FLAG_FORCE_UNDOCK
+		void AddUndockCode (const CString &sID, ICCItem &Code) { *m_UndockCode.SetAt(sID) = ICCItemPtr(Code); }
+		void ClearOnInitFlag () { m_bOnInitCalled = false; }
 
+		//	FLAG_FORCE_UNDOCK
 		bool ExitScreen (DWORD dwFlags = 0);
+
 		bool FindScreenRoot (const CString &sScreen, CDesignType **retpRoot, CString *retsScreen, ICCItemPtr *retpData) const;
 		const SScreenSetTab *FindTab (const CString &sID) const;
 		const SDockFrame &GetCurrentFrame (void) const { return m_DockFrames.GetCurrent(); }
@@ -151,30 +161,45 @@ class CDockSession
 		ICCItemPtr GetProperty (const CString &sProperty) const;
 		ICCItemPtr GetPropertyFrameStack (void) const;
 		ICCItemPtr GetReturnData (const CString &sAttrib) const;
+		ICCItemPtr GetSessionData (const CString &sAttrib) const;
 		IDockScreenUI &GetUI (void) const { return *m_pDockScreenUI; }
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		void IncData (const CString &sAttrib, ICCItem *pOptionalInc, ICCItemPtr *retpResult);
 		void InitCustomProperties (void);
 		bool InSession (void) const { return !m_DockFrames.IsEmpty(); }
+		bool IsFirstOnInit () const { return !m_bOnInitCalled; }
+		void OnInitCalled () { m_bOnInitCalled = true; }
 		void OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const { if (ModifyItemNotificationNeeded(Source)) m_pDockScreenUI->OnModifyItemBegin(Ctx, Source, Item); }
 		void OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result) { if (ModifyItemNotificationNeeded(Source)) m_pDockScreenUI->OnModifyItemComplete(Ctx, Source, Result); }
 		CSpaceObject *OnPlayerDocked (IDockScreenUI &DockScreenUI, CSpaceObject *pObj);
 		void OnPlayerShowShipScreen (IDockScreenUI &DockScreenUI, CDesignType *pDefaultScreensRoot);
+		void PlayAmbientSound ();
 		void SetBackgroundDesc (const SDockScreenBackgroundDesc &BackgroundDesc) { m_DockFrames.SetBackgroundDesc(BackgroundDesc); }
 		void SetCurrentPane (const CString &sPane) { m_DockFrames.SetCurrentPane(sPane); }
 		bool SetData (const CString &sAttrib, const ICCItem *pValue);
 		bool SetProperty (const CString &sProperty, const ICCItem &Value, CString *retsError = NULL);
 		bool SetReturnData (const CString &sAttrib, ICCItem *pValues);
 		bool SetScreenSet (const ICCItem &ScreenSet);
+		bool SetSessionData (const CString &sAttrib, ICCItem *pValues);
+		bool ShowScreen (CSpaceObject &Location, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData);
+		void StopAmbientSound () { PlayAmbientSound(); }
 		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &pResult, CString *retsError = NULL) const;
 
 	private:
+		void ClearAmbientSound () { SetAmbientSound(NULL); }
 		void InitCustomProperties (const CDesignType &Type, const SDockFrame &Frame);
 		bool ModifyItemNotificationNeeded (const CSpaceObject &Source) const;
+		void RunExitCode ();
+		void SetAmbientSound (const CSoundResource *pSound);
 
 		IDockScreenUI *m_pDockScreenUI = &m_NullUI;		//	Wormhole to dockscreen UI
 		CDesignType *m_pDefaultScreensRoot = NULL;		//	Default root to look for local screens
 		CDockScreenStack m_DockFrames;					//	Stack of dock screens
+		ICCItemPtr m_pStoredData;						//	Session data
+		TSortMap<CString, ICCItemPtr> m_UndockCode;		//	Code to run when undocking
+		const CSoundResource *m_pAmbientSound = NULL;	//	Current ambient sound
+		const CSoundResource *m_pAmbientSoundPlaying = NULL;
+		bool m_bOnInitCalled = false;					//	TRUE if we've already called OnInit
 
 		static TPropertyHandler<CDockSession> m_PropertyTable;
 		static IDockScreenUI m_NullUI;

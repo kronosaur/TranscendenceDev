@@ -124,6 +124,7 @@
 			<DeviceSlot criteria="w" secondaryWeapon="true" omnidirectional="true" posAngle="0" posRadius="0" posZ="60"/>
 			
 			<Device deviceID="&itTurbolaserCannon;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="3"/>
 		</Devices>
 
 		<Maneuver

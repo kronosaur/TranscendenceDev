@@ -92,7 +92,6 @@ enum ProgramStates
 	psPaintingMessageDisplay,			//	In CMessageDisplay::Paint
 	psPaintingReactorDisplay,			//	In CReactorDisplay::Paint
 	psPaintingTargetDisplay,			//	In CTargetDisplay::Paint
-	psPaintingDeviceDisplay,			//	In CDeviceCounterDisplay::Paint
 	psStargateEnter,					//	In CTranscendenceWnd::EnterStargate
 	psStargateEndGame,					//	In EnterStargate, end game
 	psStargateLoadingSystem,			//	In EnterStargate, loading system
@@ -390,7 +389,7 @@ class CIntegerRangeCriteria
 class DiceRange
 	{
 	public:
-		DiceRange (void) : m_iFaces(0), m_iCount(0), m_iBonus(0) { }
+		DiceRange (void) { }
 		DiceRange (int iFaces, int iCount, int iBonus);
 
 		int GetAveValue (void) const { return (m_iCount * (m_iFaces + 1) / 2) + m_iBonus; }
@@ -415,9 +414,9 @@ class DiceRange
 		static bool LoadIfValid (const CString &sAttrib, DiceRange *retValue);
 
 	private:
-		int m_iFaces;
-		int m_iCount;
-		int m_iBonus;
+		int m_iFaces = 0;
+		int m_iCount = 0;
+		int m_iBonus = 0;
 	};
 
 class CCurrencyBlock
@@ -529,7 +528,7 @@ class CDamageSource
 		CDamageSource (void) { }
 		CDamageSource (CSpaceObject *pSource, DestructionTypes iCause = killedByDamage, CSpaceObject *pSecondarySource = NULL, const CString &sSourceName = NULL_STR, DWORD dwSourceFlags = 0);
 
-		bool CanHit (CSpaceObject *pTarget) const;
+		bool CanHit (const CSpaceObject &Target) const;
 		bool CanHitFriends (void) const;
 		DestructionTypes GetCause (void) const { return m_iCause; }
 		CString GetDamageCauseNounPhrase (DWORD dwFlags);
@@ -547,10 +546,12 @@ class CDamageSource
 		bool IsCausedByFriendOf (CSpaceObject *pObj) const;
 		bool IsCausedByNonFriendOf (CSpaceObject *pObj) const;
 		bool IsCausedByPlayer (void) const { return ((m_dwFlags & FLAG_IS_PLAYER_CAUSED) ? true : false); }
+		bool IsEjecta () const { return ((m_dwFlags & FLAG_IS_EJECTA) ? true : false); }
 		bool IsEmpty (void) const { return (GetObj() == NULL); }
 		bool IsEnemy (CDamageSource &Src) const;
 		bool IsEqual (const CDamageSource &Src) const;
-		bool IsEqual (CSpaceObject *pSrc) const;
+		bool IsEqual (const CSpaceObject &Src) const;
+		bool IsExplosion () const { return ((m_dwFlags & FLAG_IS_EXPLOSION) ? true : false); }
 		bool IsFriend (CSovereign *pSovereign) const;
 		bool IsPlayer (void) const { return ((m_dwFlags & FLAG_IS_PLAYER) ? true : false); }
 		void OnLeaveSystem (void);
@@ -558,8 +559,10 @@ class CDamageSource
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetAutomatedWeapon (bool bValue = true) { if (bValue) m_dwFlags |= FLAG_IS_AUTOMATED_WEAPON; else m_dwFlags &= FLAG_IS_AUTOMATED_WEAPON; }
 		void SetCause (DestructionTypes iCause) { m_iCause = iCause; }
+		void SetEjecta (bool bValue = true) { if (bValue) m_dwFlags |= FLAG_IS_EJECTA; else m_dwFlags &= ~FLAG_IS_EJECTA; }
+		void SetExplosion (bool bValue = true) { if (bValue) m_dwFlags |= FLAG_IS_EXPLOSION; else m_dwFlags &= ~FLAG_IS_EXPLOSION; }
 		void SetObj (CSpaceObject *pSource);
-		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
+		void WriteToStream (IWriteStream *pStream);
 
 		static const CDamageSource &Null (void) { return m_Null; }
 		
@@ -573,6 +576,8 @@ class CDamageSource
 
 			FLAG_IS_AUTOMATED_WEAPON		= 0x00000010,	//	Source is a missile-defense system.
 			FLAG_CANNOT_HIT_FRIENDS			= 0x00000020,	//	Source cannot hit friends
+			FLAG_IS_EXPLOSION				= 0x00000040,	//	Source is an explosion
+			FLAG_IS_EJECTA					= 0x00000080,	//	Source is ejecta
 			};
 
 		DWORD GetObjID (void) const;
@@ -603,8 +608,10 @@ class CDamageAdjDesc
 		ALERROR Bind (SDesignLoadCtx &Ctx, const CDamageAdjDesc *pDefault);
 		int GetAbsorbAdj (DamageTypes iDamageType) const;
 		int GetAdj (DamageTypes iDamageType) const { return (iDamageType == damageGeneric ? 100 : m_iDamageAdj[iDamageType]); }
+		int GetAdj (DamageTypes iDamageType, const CItemEnhancementStack *pEnhancements) const;
 		void GetAdjAndDefault (DamageTypes iDamageType, int *retiAdj, int *retiDefault) const;
 		int GetHPBonus (DamageTypes iDamageType) const;
+		int GetHPBonus (DamageTypes iDamageType, const CItemEnhancementStack *pEnhancements) const;
 		ICCItem *GetDamageAdjProperty (const CItemEnhancementStack *pEnhancements = NULL) const;
 		ICCItem *GetHPBonusProperty (const CItemEnhancementStack *pEnhancements = NULL) const;
 		ALERROR InitFromArray (int *pTable);
@@ -616,6 +623,7 @@ class CDamageAdjDesc
 		static int GetBonusFromAdj (int iDamageAdj, int iDefault = 100);
 		static int GetDamageAdjFromHPBonus (int iBonus);
 		static Metric GetDamageTypeFraction (int iLevel, DamageTypes iDamageType);
+		static DamageTypes ParseDamageTypeFromProperty (const CString &sProperty);
 
 	private:
 		enum EAdjustmentTypes
@@ -641,73 +649,73 @@ class CDamageAdjDesc
 
 struct SVisibleDamage
 	{
-	SVisibleDamage (void) :
-			iShieldLevel(-1),
-			iArmorLevel(-1),
-			iHullLevel(-1)
-		{ }
-
-	int iShieldLevel;				//	0-100: shield level; -1 = no shields
-	int iArmorLevel;				//	0-100: armor integrity; -1 = no armor
-	int iHullLevel;					//	0-100: hull integrity; -1 = no interior compartments
+	int iShieldLevel = -1;				//	0-100: shield level; -1 = no shields
+	int iArmorLevel = -1;				//	0-100: armor integrity; -1 = no armor
+	int iHullLevel = -1;				//	0-100: hull integrity; -1 = no interior compartments
 	};
 
 class CPerceptionCalc
 	{
 	public:
-		enum EConstants
-			{
-			RANGE_ARRAY_SIZE = 16,
-			};
+		//	This is the maximum range for visual sighting, given equal 
+		//	perception and stealth. We use this for purposes of scanning range,
+		//	etc. (In light-seconds.)
+
+		static constexpr Metric STD_VISUAL_RANGE = 40.0;
+
+		//	This is the maximum range at which we can perceive an object in LRS
+		//	given equal perception and stealth (in light-seconds).
+
+		static constexpr Metric STD_LRS_RANGE = 100.0;
+
+		//	For each point of perception above stealth, we increase the 
+		//	detection range by this factor.
+
+		static constexpr Metric RANGE_FACTOR = 1.2;
+
+		static constexpr int RANGE_ARRAY_SIZE =					256;
+		static constexpr int RANGE_ARRAY_BASE_RANGE_INDEX =		128;
 
 		CPerceptionCalc (int iPerception = -1);
 
-		bool CanBeTargeted (CSpaceObject *pTarget, Metric rTargetDist2) const;
-		bool CanBeTargetedAtDist (CSpaceObject *pTarget, Metric rTargetDist) const;
-		Metric GetMaxDist (CSpaceObject *pTarget) const;
-		Metric GetMaxDist2 (CSpaceObject *pTarget) const;
+		DWORD CalcSRSShimmer (const CSpaceObject &TargetObj, Metric rTargetDist) const;
+		bool CanBeTargeted (const CSpaceObject *pTarget, Metric rTargetDist2) const;
+		bool CanVisuallyScan (const CSpaceObject &TargetObj, Metric rTargetDist2) const;
+		Metric GetMaxDist (const CSpaceObject *pTarget) const;
+		Metric GetMaxDist2 (const CSpaceObject *pTarget) const;
 		int GetPerception (void) const { return m_iPerception; }
 		int GetRangeIndex (int iStealth) const { return GetRangeIndex(iStealth, m_iPerception); }
-		bool IsVisibleInLRS (CSpaceObject *pSource, CSpaceObject *pTarget) const;
+		bool IsVisibleInLRS (const CSpaceObject *pSource, const CSpaceObject *pTarget) const;
 		void SetPerception (int iPerception) { m_iPerception = iPerception; }
 
+		static int AdjPerception (int iValue, int iAdj);
+		static int AdjStealth (int iValue, int iAdj);
 		static Metric GetMaxDist (int iPerception);
 		static Metric GetRange (int iIndex) { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange[iIndex])); }
 		static Metric GetRange2 (int iIndex) { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange2[iIndex])); }
 		static int GetRangeIndex (int iStealth, int iPerception);
 
 	private:
-		bool IsVisibleDueToAttack (CSpaceObject *pTarget) const;
+		//	Perception cannot be too much higher than stealth or else we will
+		//	overflow a 32-bit integer. At 65 we're at 1.4 billion light-seconds.
+
+		static constexpr int MAX_DELTA = 65;
+
+		bool IsVisibleDueToAttack (const CSpaceObject *pTarget) const;
 
 		static void InitRangeTable (void);
 
+		//	NOTE: We cannot make this constexpr because std::pow is not 
+		//	currently constexpr (due to it setting errno as a side-effect).
+		static Metric CalcPerceptionRange (int iStealth, int iPerception) { return STD_LRS_RANGE * std::pow(RANGE_FACTOR, Metric(Min(MAX_DELTA, iPerception - iStealth))); };
+		static constexpr Metric GetStdVisualRange2 () { return (STD_VISUAL_RANGE * LIGHT_SECOND) * (STD_VISUAL_RANGE * LIGHT_SECOND); }
+
 		int m_iPerception;
-		DWORD m_dwLastAttackThreshold;			//	Last attack on or after means visible
+		DWORD m_dwLastAttackThreshold = 0;			//	Last attack on or after means visible
 
 		static bool m_bRangeTableInitialized;
 		static Metric m_rRange[RANGE_ARRAY_SIZE];
 		static Metric m_rRange2[RANGE_ARRAY_SIZE];
-	};
-
-class CRandomEntryResults
-	{
-	public:
-		CRandomEntryResults (void);
-		~CRandomEntryResults (void);
-
-		void AddResult (CXMLElement *pElement, int iCount);
-		int GetCount (void) { return m_Results.GetCount(); }
-		CXMLElement *GetResult (int iIndex);
-		int GetResultCount (int iIndex);
-
-	private:
-		struct SResultEntry
-			{
-			int iCount;
-			CXMLElement *pElement;
-			};
-
-		TArray<SResultEntry> m_Results;
 	};
 
 class IElementGenerator
@@ -805,7 +813,7 @@ class CSpaceObjectList
 		void SetAllocSize (int iNewCount);
 		void SetObj (int iIndex, CSpaceObject *pObj) { m_List[iIndex] = pObj; }
 		void Subtract (const CSpaceObjectList &List);
-		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
+		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
 		static void ResolveObjProc (void *pCtx, DWORD dwObjID, CSpaceObject *pObj);
@@ -1131,14 +1139,14 @@ template <class TYPE> class TSEListNode
 				}
 			}
 
-		void WriteToStream (CSystem *pSystem, IWriteStream *pStream)
+		void WriteToStream (IWriteStream *pStream)
 			{
 			DWORD dwCount = GetCount();
 			pStream->Write((char *)&dwCount, sizeof(DWORD));
 			TYPE *pNext = GetNext();
 			while (pNext)
 				{
-				pNext->OnWriteToStream(pSystem, pStream);
+				pNext->OnWriteToStream(pStream);
 				pNext = pNext->GetNext();
 				}
 			}
@@ -1152,7 +1160,7 @@ template <class TYPE> class TSEListNode
 class CRegenDesc
 	{
 	public:
-		CRegenDesc (void) : m_bEmpty(true), m_iHPPerCycle(0), m_iHPPerEraRemainder(0), m_iCyclesPerBurst(1) { }
+		CRegenDesc (void) { }
 		CRegenDesc (int iHPPerEra);
 
 		void Add (const CRegenDesc &Desc);
@@ -1175,13 +1183,15 @@ class CRegenDesc
 							 int iTicksPerCycle = 1);
 		bool IsEmpty (void) const { return m_bEmpty; }
 
+		static const CRegenDesc Null;
+
 	private:
-		int m_iHPPerCycle;					//	HP gained per cycle
-		int m_iHPPerEraRemainder;			//	Extra HP to gain per era (1 era = 360 cycles)
+		int m_iHPPerCycle = 0;					//	HP gained per cycle
+		int m_iHPPerEraRemainder = 0;			//	Extra HP to gain per era (1 era = 360 cycles)
 
-		int m_iCyclesPerBurst;				//	Regen in bursts; each burst is this many cycles
+		int m_iCyclesPerBurst = 1;				//	Regen in bursts; each burst is this many cycles
 
-		bool m_bEmpty;						//	If TRUE, no regen
+		bool m_bEmpty = true;					//	If TRUE, no regen
 	};
 
 //	CZoneGrid ------------------------------------------------------------------

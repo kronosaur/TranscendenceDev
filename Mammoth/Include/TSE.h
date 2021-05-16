@@ -170,6 +170,7 @@ extern CUniverse *g_pUniverse;
 #include "TSEStorage.h"
 #include "TSEMultiverse.h"
 #include "TSEPaintUtil.h"
+#include "TSESpaceObjectDefs.h"
 #include "TSESystem.h"
 #include "TSEDockScreenSession.h"
 
@@ -180,7 +181,7 @@ CString ComposeDamageAdjReference (int *AdjRow, int *StdRow);
 int NLCompare (TArray<CString> &Input, TArray<CString> &Pattern);
 void NLSplit (const CString &sPhrase, TArray<CString> *retArray);
 
-void ReportCrashObj (CString *retsMessage, CSpaceObject *pCrashObj = NULL);
+void ReportCrashObj (CString *retsMessage, const CSpaceObject *pCrashObj = NULL);
 
 //	Miscellaneous Structures & Classes
 
@@ -213,7 +214,7 @@ class CHitCtx
 		const CVector &GetHitPos (void) const { return m_vHitPos; }
 
 		void ReadFromStream (SLoadCtx &Ctx);
-		void WriteToStream (CSystem *pSystem, IWriteStream *pStream) const;
+		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
 		CSpaceObject *m_pHit;
@@ -255,21 +256,37 @@ class CAttackDetector
 #include "TSESpaceObjectUtil.h"
 #include "TSEOverlays.h"
 
+struct SApplyConditionOptions
+	{
+	CDamageSource Cause;
+
+	SObjectPartDesc ApplyTo;
+	int iTimer = -1;
+
+	bool bNoImmunityCheck = false;
+	bool bNoMessage = false;
+	};
+
 struct SUpdateCtx
 	{
 	public:
+		void AddPlayerObj (CSpaceObject &Obj) { m_PlayerObjs.Insert(&Obj); }
 		int GetLightIntensity (CSpaceObject *pObj) const;
+		CAutoDockCalc &GetAutoDock () { return m_AutoDock; }
+		CAutoMiningCalc &GetAutoMining () { return m_AutoMining; }
+		CAutoTargetCalc &GetAutoTarget () { return m_AutoTarget; }
+		CSpaceObject *GetPlayerShip () { return m_pPlayer; }
+		CTargetList &GetTargetList ();
 		bool IsTimeStopped (void) const { return m_bTimeStopped; }
+		void OnEndUpdate () { m_pObj = NULL; }
 		void OnStartUpdate (CSpaceObject &Obj);
+		bool PlayerHasCommsTarget () const { return m_bPlayerHasCommsTarget; }
+		bool PlayerHasSquadron () const { return m_bPlayerHasSquadron; }
+		void SetPlayerShip (CSpaceObject &PlayerObj);
+		void UpdatePlayerCalc (const CSpaceObject &Obj);
 
 		CSystem *pSystem = NULL;					//	Current system
-		CSpaceObject *pPlayer = NULL;				//	The player
-		TArray<CSpaceObject *> PlayerObjs;			//	List of player objects, if pPlayer == NULL
 		SViewportAnnotations *pAnnotations = NULL;	//	Extra structure to deliver to PaintViewport
-
-		CAutoDockCalc AutoDock;						//	Used to compute nearest docking port
-		CAutoMiningCalc AutoMining;					//	Used to compute nearest minable asteroid
-		CAutoTargetCalc AutoTarget;					//	Used to compute player's auto target
 
 		//	Misc flags
 
@@ -279,14 +296,28 @@ struct SUpdateCtx
 
 	private:
 
+		CSpaceObject *m_pPlayer = NULL;				//	The player
+		TArray<CSpaceObject *> m_PlayerObjs;		//	List of player objects, if pPlayer == NULL
+
 		//	About the object being updated
 
+		CSpaceObject *m_pObj = NULL;				//	Object being updated
+		CTargetList m_TargetList;					//	Cached target list
 		bool m_bTimeStopped = false;				//	Object is currently time-stopped (cached for perf).
+
+		//	Cached computations
+
+		CAutoDockCalc m_AutoDock;					//	Used to compute nearest docking port
+		CAutoMiningCalc m_AutoMining;				//	Used to compute nearest minable asteroid
+		CAutoTargetCalc m_AutoTarget;				//	Used to compute player's auto target
+		bool m_bPlayerHasCommsTarget = false;		//	TRUE if there is an object for the player to communicate
+		bool m_bPlayerHasSquadron = false;			//	TRUE if there is at least one ship in the player's squadron
 
 		//	Cached computed values
 
 		mutable CSpaceObject *m_pCacheObj = NULL;	//	Cached values apply to this object.
 		mutable int m_iLightIntensity = -1;			//	Light intensity at pCacheObj (-1 if not computed).
+		mutable bool m_bTargetListValid = false;	//	TRUE if m_TargetList is initialized
 	};
 
 //	CSpaceObject ---------------------------------------------------------------
@@ -326,6 +357,7 @@ class CSpaceObject
 	{
 	public:
 		static constexpr DWORD AGGRESSOR_THRESHOLD = 30 * 30;
+		static constexpr int ANNOTATION_INNER_SPACING_Y =			2;
 
 		enum Categories
 			{
@@ -345,11 +377,11 @@ class CSpaceObject
 			{
 			stealthMin =			0,
 			stealthNormal =			4,
-			stealthMax =			15,			//	Cloaked
+			stealthMax = CPerceptionCalc::RANGE_ARRAY_SIZE - 1,			//	Cloaked
 
 			perceptMin =			0,
 			perceptNormal =			4,
-			perceptMax =			15,
+			perceptMax = CPerceptionCalc::RANGE_ARRAY_SIZE - 1,
 			};
 
 		enum InterSystemResults
@@ -426,6 +458,26 @@ class CSpaceObject
 			bool bShowHighlight = false;
 			};
 
+		struct SRefitObjCtx
+			{
+			bool bIsEmpty () const
+				{
+				return (iMaxHPToRepair == 0 && !bDecontaminate && !bResupplyAmmo);
+				}
+
+			int iMaxRepairLevel = 0;
+			int iMaxHPToRepair = 0;			//	-1 = repair all damage
+
+			bool bDecontaminate = false;
+			bool bResupplyAmmo = false;
+			bool bScrapeOverlays = false;
+			};
+
+		struct SUsableItemOptions
+			{
+			char chUseKey = '\0';
+			};
+
 		//	Creation and Lifetime
 
 		CSpaceObject (CUniverse &Universe);
@@ -456,6 +508,60 @@ class CSpaceObject
 		virtual CDesignType *GetType (void) const { return NULL; }
 		void SetSovereign (CSovereign *pSovereign);
 
+		//	Bounds
+
+		void GetBoundingRect (CVector *retvUR, CVector *retvLL) const;
+		const Metric &GetBounds (void) { return m_rBoundsX; }
+		CVector GetBoundsDiag (void) const { return CVector(m_rBoundsX, m_rBoundsY); }
+		Metric GetBoundsRadius (void) const { return Max(m_rBoundsX, m_rBoundsY); }
+
+		void GetHitRect (CVector *retvUR, CVector *retvLL) const;
+		Metric GetHitSize (void) const { return GetHitSizePixels() * g_KlicksPerPixel; }
+		int GetHitSizePixels (void) const;
+		int GetHitSizeHalfAngle (Metric rDist) const { return Max((int)(180.0 * atan(0.5 * GetHitSize() / rDist) / PI), 1); }
+
+		bool InBox (const CVector &vUR, const CVector &vLL) const 
+			{ return (vUR.GetX() > m_vPos.GetX() - m_rBoundsX) 
+					&& (vUR.GetY() > m_vPos.GetY() - m_rBoundsY)
+					&& (vLL.GetX() < m_vPos.GetX() + m_rBoundsX)
+					&& (vLL.GetY() < m_vPos.GetY() + m_rBoundsY); }
+		bool InBoxPoint (const CVector &vUR, const CVector &vLL) const
+			{ return (vUR.GetX() > m_vPos.GetX()) 
+					&& (vUR.GetY() > m_vPos.GetY())
+					&& (vLL.GetX() < m_vPos.GetX())
+					&& (vLL.GetY() < m_vPos.GetY()); }
+		bool IsPartlyVisibleInBox (const CVector &vUR, const CVector &vLL)
+			{
+			Metric rHalfSize = 0.25 * GetHitSize();
+			return (vUR.GetX() > m_vPos.GetX() - rHalfSize) 
+				&& (vUR.GetY() > m_vPos.GetY() - rHalfSize)
+				&& (vLL.GetX() < m_vPos.GetX() + rHalfSize)
+				&& (vLL.GetY() < m_vPos.GetY() + rHalfSize);
+			}
+		bool PointInBounds (const CVector &vPos) const
+			{
+			return (vPos.GetX() < m_vPos.GetX() + m_rBoundsX)
+					&& (vPos.GetY() < m_vPos.GetY() + m_rBoundsY)
+					&& (vPos.GetX() > m_vPos.GetX() - m_rBoundsX)
+					&& (vPos.GetY() > m_vPos.GetY() - m_rBoundsY);
+			}
+
+		virtual void RefreshBounds (void) { }
+
+		void SetBounds (Metric rBounds) { m_rBoundsX = rBounds; m_rBoundsY = rBounds; }
+		void SetBounds (Metric rBoundsX, Metric rBoundsY) { m_rBoundsX = rBoundsX; m_rBoundsY = rBoundsY; }
+		void SetBounds (const RECT &rcRect, Metric rParallaxDist = 1.0)
+			{
+			m_rBoundsX = Max(1.0, rParallaxDist) * g_KlicksPerPixel * (RectWidth(rcRect) / 2);
+			m_rBoundsY = Max(1.0, rParallaxDist) * g_KlicksPerPixel * (RectHeight(rcRect) / 2);
+			}
+		void SetBounds (IEffectPainter *pPainter)
+			{
+			RECT rcRect;
+			pPainter->GetBounds(&rcRect);
+			SetBounds(rcRect);
+			}
+
 		//	Characters
 
 		virtual CDesignType *GetCharacter (void) const { return NULL; }
@@ -464,7 +570,6 @@ class CSpaceObject
 
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const { return NULL; }
 		virtual CTargetList GetTargetList (void) const { return CTargetList(); }
-		virtual bool IsTargetableProjectile (void) const { return true; }
 
 		int CalcFireSolution (CSpaceObject *pTarget, Metric rMissileSpeed) const;
 		CSpaceObject *CalcTargetToAttack (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
@@ -472,10 +577,29 @@ class CSpaceObject
 		bool IsPlayerTarget (void) const { return m_fPlayerTarget; }
 		void SetPlayerTarget (void) { m_fPlayerTarget = true; }
 
+		//	Communications
+
+		bool CanCommunicateWith (const CSpaceObject &SenderObj) const;
+		void CommsMessageFrom (CSpaceObject *pSender, int iIndex);
+		DWORD Communicate (CSpaceObject *pReceiver, MessageTypes iMessage, CSpaceObject *pParam1 = NULL, DWORD dwParam2 = 0, ICCItem *pData = NULL) const { return pReceiver->OnCommunicate(const_cast<CSpaceObject *>(this), iMessage, pParam1, dwParam2, pData); }
+		int FindCommsMessage (const CString &sID);
+		int FindCommsMessageByName (const CString &sName);
+		CCommunicationsHandler *GetCommsHandler (void);
+		const CCommunicationsHandler *GetCommsHandler (void) const;
+		int GetCommsMessageCount (void);
+		CString GetDesiredCommsKey (void) const;
+		DWORD GetSquadronCommsStatus () const;
+		bool IsCommsMessageValidFrom (const CSpaceObject &SenderObj, int iIndex, CString *retsMsg = NULL, CString *retsKey = NULL) const;
+		void SendSquadronMessage (const CString &sMsg);
+		void SendSquadronMessage (CSpaceObject &ReceiverObj, const CString &sMsg);
+
 		//	Conditions
 
-		static constexpr DWORD FLAG_NO_MESSAGE = 0x00000001;
-		void ClearCondition (ECondition iCondition, DWORD dwFlags = 0);
+		EConditionResult ApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options);
+		EConditionResult CanApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) const;
+		EConditionResult CanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const;
+		EConditionResult RemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options);
+
 		bool GetCondition (ECondition iCondition) const;
 		CConditionSet GetConditions (void) const;
 		bool IsBlind (void) const { return GetCondition(ECondition::blind); }
@@ -485,20 +609,47 @@ class CSpaceObject
 		bool IsParalyzed (void) const { return GetCondition(ECondition::paralyzed); }
 		bool IsRadioactive (void) const { return GetCondition(ECondition::radioactive); }
 		bool IsTimeStopped (void) const { return GetCondition(ECondition::timeStopped); }
-		void SetCondition (ECondition iCondition, int iTimer = -1);
 		void SetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition);
 
 		//	Data
 
+		void ClearObjReferences (void) { m_Data.OnSystemChanged(NULL); }
 		CAttributeDataBlock &GetData (void) { return m_Data; }
 		const CAttributeDataBlock &GetData (void) const { return m_Data; }
+		ICCItemPtr GetData (const CString &sAttrib) const { return m_Data.GetDataAsItem(sAttrib); }
+		CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		ICCItemPtr GetGlobalData (const CString &sAttribute) const;
+		CSpaceObject *GetObjRefData (const CString &sAttrib) { return m_Data.GetObjRefData(sAttrib); }
+		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
+		void LoadObjReferences (CSystem *pSystem) { m_Data.LoadObjReferences(pSystem); }
+		void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
+		void SetDataFromDataBlock (const CAttributeDataBlock &Block) { m_Data.MergeFrom(Block); }
+		void SetDataFromXML (CXMLElement *pData) { m_Data.SetFromXML(pData); }
 		void SetGlobalData (const CString &sAttribute, ICCItem *pData);
+		void SetObjRefData (const CString &sAttrib, CSpaceObject *pObj) { m_Data.SetObjRefData(sAttrib, pObj); }
 
 		//	Devices
 
+		virtual bool CanInstallItem (const CItem &Item, int iSlot = -1, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL);
+		virtual void DamageExternalDevice (int iDev, SDamageCtx &Ctx) { }
+		virtual void DisableDevice (CInstalledDevice *pDevice) { }
+		bool FindDevice (const CItem &Item, CInstalledDevice **retpDevice, CString *retsError);
+		virtual CInstalledDevice *FindDevice (const CItem &Item) { return NULL; }
+		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return false; }
+		bool FireCanInstallItem (const CItem &Item, int iSlot, CString *retsResult);
+		bool FireCanRemoveItem (const CItem &Item, int iSlot, CString *retsResult);
+		virtual CInstalledDevice *GetDevice (int iDev) { return NULL; }
+		virtual int GetDeviceCount (void) const { return 0; }
+		virtual CDeviceItem GetDeviceItem (int iDev) const { return CItem().AsDeviceItem(); }
 		virtual CDeviceSystem &GetDeviceSystem (void) { return CDeviceSystem::m_Null; }
 		virtual const CDeviceSystem &GetDeviceSystem (void) const { return CDeviceSystem::m_Null; }
+		CItem GetItemForDevice (CInstalledDevice *pDevice);
+		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return NULL; }
+		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }
+		virtual CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { return CItem().AsDeviceItem(); }
+		virtual void OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass::DeviceNotificationTypes iEvent) { }
+		bool SetCursorAtDevice (CItemListManipulator &ItemList, int iDevSlot);
+		bool SetCursorAtDevice (CItemListManipulator &ItemList, CInstalledDevice *pDevice);
 
 		//	Docking
 
@@ -531,6 +682,7 @@ class CSpaceObject
 		//	Dock Screens
 
 		virtual DWORD GetDefaultBkgnd (void) { return 0; }
+		virtual const CSoundResource *GetDockScreenAmbientSound () const { return NULL; }
 		virtual CXMLElement *GetScreen (const CString &sName);
 
 		CDesignType *GetFirstDockScreen (CString *retsScreen = NULL, ICCItemPtr *retpData = NULL);
@@ -560,6 +712,11 @@ class CSpaceObject
 
 		bool HasFuelItem (void);
 
+		//	Groups
+
+		virtual const CSquadronID &GetSquadronID () const { return CSquadronID::Null; }
+		virtual void SetSquadronID (const CSquadronID &ID) { }
+
 		//	Images
 
 		virtual const CObjectImageArray &GetHeroImage (void) const { static CObjectImageArray NullImage; return NullImage; }
@@ -584,17 +741,15 @@ class CSpaceObject
 		void DisruptItem (CItemListManipulator &ItemList, DWORD dwDuration);
 		EnhanceItemStatus EnhanceItem (CItemListManipulator &ItemList, const CItemEnhancement &Mods, DWORD *retdwID = NULL);
 		bool EnhanceItem (CItemListManipulator &ItemList, const CItem &EnhancementItem, CItem::SEnhanceItemResult &retResult, CString *retsError = NULL);
-		CItem GetItemForDevice (CInstalledDevice *pDevice);
 		const CItemList &GetItemList (void) const { return m_ItemList; }
 		CItemList &GetItemList (void) { return m_ItemList; }
 		ICCItemPtr GetItemProperty (CCodeChainCtx &CCX, const CItem &Item, const CString &sName) const;
+		CMenuData GetUsableItems (const SUsableItemOptions &Options) const;
 		bool IncItemProperty (const CItem &Item, const CString &sProperty, const ICCItem &Value, int iCount, CItem *retItem = NULL, ICCItemPtr *retNewValue = NULL, CString *retsError = NULL);
 		bool RemoveItem (const CItem &Item, DWORD dwItemMatchFlags, int iCount = -1, int *retiCountRemoved = NULL, CString *retsError = NULL);
 		void RemoveItemEnhancement (const CItem &itemToEnhance, DWORD dwID, bool bExpiredOnly = false);
 		void RepairItem (CItemListManipulator &ItemList);
 		void SetCursorAtArmor (CItemListManipulator &ItemList, CInstalledArmor *pArmor);
-		bool SetCursorAtDevice (CItemListManipulator &ItemList, int iDevSlot);
-		bool SetCursorAtDevice (CItemListManipulator &ItemList, CInstalledDevice *pDevice);
 		void SetCursorAtRandomItem (CItemListManipulator &ItemList, const CItemCriteria &Crit);
 		bool SetItemData (const CItem &Item, const CString &sField, ICCItem *pValue, int iCount, CItem *retItem = NULL, CString *retsError = NULL);
 		bool SetItemProperty (const CItem &Item, const CString &sName, ICCItem *pValue, int iCount, CItem *retItem, CString *retsError);
@@ -635,7 +790,6 @@ class CSpaceObject
 		bool CanBeHit (void) const { return (!m_fCannotBeHit && !m_fOutOfPlaneObj); }
 		bool CanBeHitByFriends (void) const { return !m_fNoFriendlyTarget; }
 		bool CanDetect (int Perception, CSpaceObject *pObj);
-		bool CanCommunicateWith (CSpaceObject *pSender);
 		bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
 		void ClearNoFriendlyTarget (void) { m_fNoFriendlyTarget = false; }
 		void ClearPlayerDocked (void) { m_fPlayerDocked = false; }
@@ -643,8 +797,6 @@ class CSpaceObject
 		void ClearPOVLRS (void) { m_fInPOVLRS = false; }
 		void ClearSelection (void) { m_fSelected = false; }
 		void ClearShowDamageBar (void) { m_fShowDamageBar = false; }
-		void CommsMessageFrom (CSpaceObject *pSender, int iIndex);
-		DWORD Communicate (CSpaceObject *pReceiver, MessageTypes iMessage, CSpaceObject *pParam1 = NULL, DWORD dwParam2 = 0, ICCItem *pData = NULL) { return pReceiver->OnCommunicate(this, iMessage, pParam1, dwParam2, pData); }
 		void CopyDataFromObj (CSpaceObject *pSource);
 		ALERROR CreateRandomItems (CXMLElement *pItems, CSystem *pSystem);
 		ALERROR CreateRandomItems (IItemGenerator *pItems, CSystem *pSystem);
@@ -653,12 +805,7 @@ class CSpaceObject
 		bool DebugIsValid (void) { return (DWORD)m_pSystem != 0xdddddddd; }
 		static CString DebugLoadError (SLoadCtx &Ctx);
 		void EnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend = false);
-		int FindCommsMessage (const CString &sID);
-		int FindCommsMessageByName (const CString &sName);
-		bool FindDevice (const CItem &Item, CInstalledDevice **retpDevice, CString *retsError);
 		bool FireCanDockAsPlayer (CSpaceObject *pDockTarget, CString *retsError);
-		bool FireCanInstallItem (const CItem &Item, int iSlot, CString *retsResult);
-		bool FireCanRemoveItem (const CItem &Item, int iSlot, CString *retsResult);
 		void FireCustomEvent (const CString &sEvent, ECodeChainEvents iEvent = eventNone, ICCItem *pData = NULL, ICCItem **retpResult = NULL);
 		void FireCustomItemEvent (const CString &sEvent, const CItem &Item, ICCItem *pData, ICCItem **retpResult = NULL);
 		void FireCustomOverlayEvent (const CString &sEvent, DWORD dwID, ICCItem *pData, ICCItem **retpResult = NULL);
@@ -708,6 +855,7 @@ class CSpaceObject
 		bool FireOnSubordinateAttacked (const SDamageCtx &Ctx);
 		void FireOnSystemExplosion (CSpaceObject *pExplosion, CSpaceObject *pSource, DWORD dwItemUNID);
 		void FireOnSystemObjAttacked (SDamageCtx &Ctx);
+		void FireOnSystemObjCreated (const CSpaceObject &Obj);
 		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx);
 		void FireOnSystemStarted (DWORD dwElapsedTime);
 		void FireOnSystemStopped (void);
@@ -715,15 +863,6 @@ class CSpaceObject
 		bool FireOnTranslateMessage (const CString &sMessage, CString *retsMessage);
 		void FireOnUpdate (void);
 		DWORD GetAPIVersion (void) const { CDesignType *pType = GetType(); return (pType ? pType->GetAPIVersion() : API_VERSION); }
-		void GetBoundingRect (CVector *retvUR, CVector *retvLL);
-		CVector GetBoundsDiag (void) const { return CVector(m_rBoundsX, m_rBoundsY); }
-		Metric GetBoundsRadius (void) const { return Max(m_rBoundsX, m_rBoundsY); }
-		CCommunicationsHandler *GetCommsHandler (void);
-		int GetCommsMessageCount (void);
-		ICCItemPtr GetData (const CString &sAttrib) const { return m_Data.GetDataAsItem(sAttrib); }
-		CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
-		int GetDataInteger (const CString &sAttrib) const;
-		CString GetDesiredCommsKey (void) const;
 		int GetDestiny (void) const { return m_iDestiny; }
 		Metric GetDetectionRange (int iPerception) const { return CPerceptionCalc::GetRange(GetDetectionRangeIndex(iPerception)); }
 		Metric GetDetectionRange2 (int iPerception) const;
@@ -733,10 +872,6 @@ class CSpaceObject
 		Metric GetDistance (const CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length(); }
 		Metric GetDistance2 (const CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length2(); }
 		const CString &GetHighlightText (void) const { return m_sHighlightText; }
-		void GetHitRect (CVector *retvUR, CVector *retvLL) const;
-		Metric GetHitSize (void) const { return GetHitSizePixels() * g_KlicksPerPixel; }
-		int GetHitSizePixels (void) const;
-		int GetHitSizeHalfAngle (Metric rDist) const { return Max((int)(180.0 * atan(0.5 * GetHitSize() / rDist) / PI), 1); }
 		DWORD GetID (void) const { return m_dwID; }
 		int GetIndex (void) const { return m_iIndex; }
 		CSpaceObject *GetNearestEnemyStation (Metric rMaxRange = g_InfiniteDistance);
@@ -744,7 +879,6 @@ class CSpaceObject
 		CSpaceObject *GetNearestVisibleEnemy (Metric rMaxRange = g_InfiniteDistance, bool bIncludeStations = false, CSpaceObject *pExcludeObj = NULL);
 		CSpaceObject *GetNearestVisibleEnemyInArc (int iMinFireArc, int iMaxFireArc, Metric rMaxRange = g_InfiniteDistance, bool bIncludeStations = false, CSpaceObject *pExcludeObj = NULL);
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
-		CSpaceObject *GetObjRefData (const CString &sAttrib) { return m_Data.GetObjRefData(sAttrib); }
 		CSpaceObject *GetOrderGiver (DestructionTypes iCause = killedNone);
 		CDesignType *GetOverride (void) { return m_pOverride; }
 		CSpaceObject *GetPlayerShip (void) const { return (m_pSystem ? m_pSystem->GetPlayerShip() : NULL); }
@@ -752,7 +886,7 @@ class CSpaceObject
 		CSovereign *GetSovereignToDefend (void) const;
 		DWORD GetSovereignUNID (void) const { CSovereign *pSovereign = GetSovereign(); return (pSovereign ? pSovereign->GetUNID() : 0); }
 		ICCItemPtr GetStaticData (const CString &sAttrib);
-		CG32bitPixel GetSymbolColor (void);
+		CG32bitPixel GetSymbolColor (void) const;
 		void GetVisibleEnemies (DWORD dwFlags, TArray<CSpaceObject *> *retList, CSpaceObject *pExcludeObj = NULL);
 		CSpaceObject *GetVisibleEnemyInRange (CSpaceObject *pCenter, Metric rMaxRange = g_InfiniteDistance, bool bIncludeStations = false, CSpaceObject *pExcludeObj = NULL);
 		bool HasBeenHitLately (int iTicks = 30);
@@ -772,21 +906,10 @@ class CSpaceObject
 		void Highlight (const CString &sText = NULL_STR);
 		void HighlightAppend (const CString &sText = NULL_STR);
 		bool InBarrier (const CVector &vPos);
-		bool InBox (const CVector &vUR, const CVector &vLL) const 
-			{ return (vUR.GetX() > m_vPos.GetX() - m_rBoundsX) 
-					&& (vUR.GetY() > m_vPos.GetY() - m_rBoundsY)
-					&& (vLL.GetX() < m_vPos.GetX() + m_rBoundsX)
-					&& (vLL.GetY() < m_vPos.GetY() + m_rBoundsY); }
-		bool InBoxPoint (const CVector &vUR, const CVector &vLL) const
-			{ return (vUR.GetX() > m_vPos.GetX()) 
-					&& (vUR.GetY() > m_vPos.GetY())
-					&& (vLL.GetX() < m_vPos.GetX())
-					&& (vLL.GetY() < m_vPos.GetY()); }
-		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
+		bool InDebugMode () const { return (m_fDebugMode ? true : false); }
 		bool IsAngryAt (const CDamageSource &Obj) const;
 		bool IsBarrier (void) const { return (m_fIsBarrier ? true : false); }
 		bool IsCollisionTestNeeded (void) const { return m_fCollisionTestNeeded; }
-		bool IsCommsMessageValidFrom (CSpaceObject *pSender, int iIndex, CString *retsMsg = NULL, CString *retsKey = NULL);
 		bool IsCovering (CSpaceObject *pObj);
 		bool IsCreated (void) const { return m_fOnCreateCalled; }
 		bool IsDestinyTime (int iCycle, int iOffset = 0);
@@ -805,14 +928,6 @@ class CSpaceObject
 		bool IsInDamageCode (void) const { return (m_fInDamage ? true : false); }
 		bool IsMarked (void) const { return m_fMarked; }
 		bool IsNamed (void) const { return m_fHasName; }
-		bool IsPartlyVisibleInBox (const CVector &vUR, const CVector &vLL)
-			{
-			Metric rHalfSize = 0.25 * GetHitSize();
-			return (vUR.GetX() > m_vPos.GetX() - rHalfSize) 
-				&& (vUR.GetY() > m_vPos.GetY() - rHalfSize)
-				&& (vLL.GetX() < m_vPos.GetX() + rHalfSize)
-				&& (vLL.GetY() < m_vPos.GetY() + rHalfSize);
-			}
 		bool IsPlayerAttackJustified (void) const;
 		bool IsPlayerDocked (void) { return m_fPlayerDocked; }
 		bool IsPlayerEscortTarget (CSpaceObject *pPlayer = NULL);
@@ -820,13 +935,13 @@ class CSpaceObject
 		bool IsShowingDamageBar (void) const { return m_fShowDamageBar; }
 		bool IsStargateInRange (Metric rMaxRange);
 		bool IsUnderAttack (void) const;
-		void LoadObjReferences (CSystem *pSystem) { m_Data.LoadObjReferences(pSystem); }
 		void NotifyOnNewSystem (CSystem *pNewSystem);
 		void NotifyOnObjDestroyed (SDestroyCtx &Ctx);
 		void NotifyOnObjDocked (CSpaceObject *pDockTarget);
 		bool NotifyOnObjGateCheck (CSpaceObject *pGatingObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj);
 		bool NotifyOthersWhenDestroyed (void) { return (m_fNoObjectDestructionNotify ? false : true); }
 		void OnObjDestroyed (const SDestroyCtx &Ctx);
+		bool ParseConditionOptions (const ICCItem &Options, SApplyConditionOptions &retOptions) const;
 		bool PointInHitSizeBox (const CVector &vPos, Metric rRadius = 0.0) const
 			{ 
 			CVector vRelPos = vPos - GetPos();
@@ -841,10 +956,7 @@ class CSpaceObject
 		void Reconned (void);
 		void RestartTime (void) { m_fTimeStop = false; }
 		void SetCollisionTestNeeded (bool bNeeded = true) { m_fCollisionTestNeeded = bNeeded; }
-		void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
-		void SetDataFromDataBlock (const CAttributeDataBlock &Block) { m_Data.MergeFrom(Block); }
-		void SetDataFromXML (CXMLElement *pData) { m_Data.SetFromXML(pData); }
-		void SetDataInteger (const CString &sAttrib, int iValue);
+		void SetDebugMode (bool bValue = true) { m_fDebugMode = bValue; }
 		void SetDestructionNotify (bool bNotify = true) { m_fNoObjectDestructionNotify = !bNotify; }
 		void SetHasGetDockScreenEvent (bool bHasEvent) { m_fHasGetDockScreenEvent = bHasEvent; }
 		void SetHasOnAttackedEvent (bool bHasEvent) { m_fHasOnAttackedEvent = bHasEvent; }
@@ -859,7 +971,6 @@ class CSpaceObject
 		void SetMarked (bool bMarked = true) { m_fMarked = bMarked; }
 		void SetNamed (bool bNamed = true) { m_fHasName = bNamed; }
 		void SetNoFriendlyTarget (bool bValue = true) { m_fNoFriendlyTarget = bValue; }
-		void SetObjRefData (const CString &sAttrib, CSpaceObject *pObj) { m_Data.SetObjRefData(sAttrib, pObj); }
 		void SetOverride (CDesignType *pOverride);
 
 		void SetPlayerDocked (void) { m_fPlayerDocked = true; }
@@ -878,7 +989,7 @@ class CSpaceObject
 		void UpdateExtended (const CTimeSpan &ExtraTime);
 		void UpdatePlayer (SUpdateCtx &Ctx) { OnUpdatePlayer(Ctx); }
 		void WriteToStream (IWriteStream *pStream);
-		void WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream) { GetSystem()->WriteObjRefToStream(pObj, pStream, this); }
+		void WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream) const;
 
 		bool MatchesCriteria (const CSpaceObjectCriteria &Crit) const { CSpaceObjectCriteria::SCtx Ctx(NULL, Crit); return MatchesCriteria(Ctx, Crit); }
 		bool MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpaceObjectCriteria &Crit) const;
@@ -956,17 +1067,19 @@ class CSpaceObject
 
 		virtual bool IsPaintDeferred (SViewportPaintCtx &Ctx) const { return false; }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const { return CSystem::layerStations; }
+		virtual Metric GetVisualMaxRange () const { return CPerceptionCalc::STD_VISUAL_RANGE * LIGHT_SECOND; }
 		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 
 		bool CanBePOV (void) const { return (m_pSystem && !IsDestroyed()); }
-		DWORD CalcSRSVisibility (SViewportPaintCtx &Ctx) const;
+		DWORD CalcSRSVisibility (const CSpaceObject &ObserverObj, int iObserverPerception) const;
 		void ClearPaintNeeded (void) { m_fPaintNeeded = false; }
 		const CImageFilterStack *GetSystemFilters (void) const;
 		bool Is3DExtra (void) const { return (m_f3DExtra ? true : false); }
 		bool IsOutOfPlaneObj (void) const { return m_fOutOfPlaneObj; }
 		bool IsPaintNeeded (void) { return m_fPaintNeeded; }
 		void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintAnnotationText (CG32bitImage &Dest, int x, int y, const CString &sText, SViewportPaintCtx &Ctx) const;
 		void PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx, AlignmentStyles iAlign, CG32bitPixel rgbColor, int *retcyHeight = NULL);
 		void PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
 		void PaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { OnPaintSRSEnhancements(Dest, Ctx); }
@@ -989,6 +1102,10 @@ class CSpaceObject
 		bool IsShowingHighlight (void) const { return m_fShowHighlight; }
 		void SetPlayerDestination (const SPlayerDestinationOptions &Options);
 
+		//	Powers
+
+		bool InvokePower (CPower &Power, CSpaceObject *pTarget);
+
 		//	Properties
 
 		ICCItemPtr GetProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
@@ -996,42 +1113,9 @@ class CSpaceObject
 		bool IncProperty (const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 
-		//	Trade
-
-		virtual CTradingDesc *AllocTradeDescOverride (void) { return NULL; }
-		virtual const CCurrencyBlock *GetCurrencyBlock (void) const { return NULL; }
-		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) { return NULL; }
-		virtual CTradingDesc *GetTradeDescOverride (void) const { return NULL; }
-		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pProvider) const { return CCurrencyAndValue(0, GetDefaultEconomy()); }
-
-		void AddBuyOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj);
-		void AddSellOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj);
-		void AddTradeDesc (const CTradingDesc &Trade);
-		void AddTradeOrder (ETradeServiceTypes iService, const CString &sCriteria, CItemType *pItemType, int iPriceAdj);
-		CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
-		CurrencyValue CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
-		bool GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL) const;
-		bool GetArmorRepairPrice (CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice);
-		CurrencyValue GetBalance (DWORD dwEconomyUNID) const;
-		int GetBuyPrice (const CItem &Item, DWORD dwFlags, int *retiMaxCount = NULL);
-		const CEconomyType *GetDefaultEconomy (void) const;
-		DWORD GetDefaultEconomyUNID (void) const;
-		bool GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL) const;
-		bool GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL) const;
-		bool GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType **retpItemType, int *retiPrice);
-		int GetSellPrice (const CItem &Item, DWORD dwFlags);
-		bool GetShipBuyPrice (CShipClass *pClass, DWORD dwFlags, int *retiPrice);
-		bool GetShipBuyPrice (CSpaceObject *pShip, DWORD dwFlags, int *retiPrice);
-		bool GetShipSellPrice (CShipClass *pClass, DWORD dwFlags, int *retiPrice);
-		bool GetShipSellPrice (CSpaceObject *pShip, DWORD dwFlags, int *retiPrice);
-		int GetTradeMaxLevel (ETradeServiceTypes iService) const;
-		bool HasTradeService (ETradeServiceTypes iService, const CTradingDesc::SHasServiceOptions &Options = CTradingDesc::SHasServiceOptions());
-		bool HasTradeUpgradeOnly (ETradeServiceTypes iService) const;
-		void RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
-		void SetTradeDesc (const CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency);
-
 		//	Ships
 
+		virtual void GetHUDTimers (TArray<SHUDTimerDesc> &retTimers) const { }
 		virtual const CShipPerformanceDesc &GetShipPerformance (void) const { return CShipPerformanceDesc::Null(); }
 
 		//	Stargates (object is a stargate)
@@ -1053,14 +1137,51 @@ class CSpaceObject
 
 		virtual const CAsteroidDesc &GetAsteroidDesc (void) const { return CAsteroidDesc::Null(); }
 
+		//	Trade
+
+		virtual CTradingDesc *AllocTradeDescOverride (void) { return NULL; }
+		virtual const CCurrencyBlock *GetCurrencyBlock (void) const { return NULL; }
+		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) { return NULL; }
+		virtual const CRegenDesc &GetDefaultShipRepair () const { return CRegenDesc::Null; }
+		virtual CTradingDesc *GetTradeDescOverride (void) const { return NULL; }
+		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pProvider) const { return CCurrencyAndValue(0, GetDefaultEconomy()); }
+
+		CTradingServices GetTradeServices () const { return CTradingServices(*this); }
+		void AddBuyOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj);
+		void AddSellOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj);
+		void AddTradeDesc (const CTradingDesc &Trade);
+		void AddTradeOrder (ETradeServiceTypes iService, const CString &sCriteria, CItemType *pItemType, int iPriceAdj);
+		SRefitObjCtx CalcRefitObjCtx (int iTick, int iRepairCycle) const;
+		bool CanRefitObj (const CSpaceObject &ShipObj, const SRefitObjCtx &Ctx, int iMinDamage = 0) const;
+		CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
+		CurrencyValue CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
+		CurrencyValue GetBalance (DWORD dwEconomyUNID) const;
+		int GetBuyPrice (const CItem &Item, DWORD dwFlags, int *retiMaxCount = NULL);
+		CItemList GetConsumablesNeeded (const CSpaceObject &Base) const;
+		const CEconomyType *GetDefaultEconomy (void) const;
+		DWORD GetDefaultEconomyUNID (void) const;
+		bool GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType **retpItemType, int *retiPrice);
+		int GetSellPrice (const CItem &Item, DWORD dwFlags);
+		bool GetShipBuyPrice (CShipClass *pClass, DWORD dwFlags, int *retiPrice);
+		bool GetShipBuyPrice (CSpaceObject *pShip, DWORD dwFlags, int *retiPrice);
+		bool GetShipSellPrice (CShipClass *pClass, DWORD dwFlags, int *retiPrice);
+		bool GetShipSellPrice (CSpaceObject *pShip, DWORD dwFlags, int *retiPrice);
+		bool HasTradeService (ETradeServiceTypes iService, const CTradingDesc::SHasServiceOptions &Options = CTradingDesc::SHasServiceOptions());
+		bool HasTradeUpgradeOnly (ETradeServiceTypes iService) const;
+		void RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
+		void RefitDockedObjs (int iTick, int iRepairCycle);
+		void RefitObj (CSpaceObject &ShipObj, const SRefitObjCtx &Ctx);
+		void SetTradeDesc (const CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency);
+
 		//	Wingmen
 
+		bool IsInOurSquadron (const CSpaceObject &Obj) const;
 		virtual bool IsPlayerEscort (void) const { return false; }
 		virtual bool IsPlayerWingman (void) const { return false; }
 
 		//	DEBUG
 
-		virtual CString DebugCrashInfo (void) { return NULL_STR; }
+		virtual CString DebugCrashInfo (void) const { return NULL_STR; }
 
 #ifdef DEBUG_VECTOR
 		void PaintDebugVector (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
@@ -1090,12 +1211,12 @@ class CSpaceObject
 		virtual Categories GetCategory (void) const { return catOther; }
 		virtual DWORD GetClassUNID (void) { return 0; }
 		virtual Metric GetGravity (Metric *retrRadius) const { return 0.0; }
-		virtual int GetInteraction (void) const { return -1; }
+		CInteractionLevel GetInteraction (void) const { const CWeaponFireDesc *pDesc = GetWeaponFireDesc(); return (pDesc ? pDesc->GetInteraction() : CInteractionLevel(-1)); }
 		virtual Metric GetInvMass (void) const { return 0.0; }
 		virtual const COrbit *GetMapOrbit (void) const { return NULL; }
 		virtual Metric GetMass (void) const { return 0.0; }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return LITERAL("unknown object"); }
-		virtual CString GetObjClassName (void) { return CONSTLIT("unknown"); }
+		virtual CString GetObjClassName (void) const { return CONSTLIT("unknown"); }
 		virtual Metric GetParallaxDist (void) { return 0.0; }
 		virtual EDamageResults GetPassthroughDefault (void) { return damageNoDamage; }
 		virtual int GetPlanetarySize (void) const { return 0; }
@@ -1116,11 +1237,10 @@ class CSpaceObject
 		virtual bool IsWreck (void) const { return false; }
 		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedShipsCtx &Options) { }
 		virtual void OnSystemCreated (SSystemCreateCtx &CreateCtx) { }
-		virtual void OnSystemLoaded (void) { }
+		virtual void OnSystemLoaded (SLoadCtx &Ctx) { }
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const { return false; }
 		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos) const { return PointInObject(vObjPos, vPointPos); }
 		virtual void PointInObjectInit (SPointInObjectCtx &Ctx) const { }
-		virtual void RefreshBounds (void) { }
 		virtual void SetExplored (bool bExplored = true) { }
 		virtual void SetKnown (bool bKnown = true) { }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) { }
@@ -1133,14 +1253,9 @@ class CSpaceObject
 
 		//	...for active/intelligent objects (ships, stations, etc.)
 
-		virtual bool CanInstallItem (const CItem &Item, int iSlot = -1, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL);
-		virtual void DamageExternalDevice (int iDev, SDamageCtx &Ctx) { }
 		virtual void DeactivateShields (void) { }
 		virtual void DepleteShields (void) { }
-		virtual void DisableDevice (CInstalledDevice *pDevice) { }
 		virtual CInstalledArmor *FindArmor (const CItem &Item) { return NULL; }
-		virtual CInstalledDevice *FindDevice (const CItem &Item) { return NULL; }
-		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return false; }
 		virtual int GetAISettingInteger (const CString &sSetting) { return 0; }
 		virtual CString GetAISettingString (const CString &sSetting) { return NULL_STR; }
 		virtual const CArmorSystem &GetArmorSystem (void) const { return CArmorSystem::m_Null; }
@@ -1149,32 +1264,29 @@ class CSpaceObject
 		virtual Metric GetCargoSpaceLeft (void) const { return 1000000.0; }
 		virtual int GetCombatPower (void) { return 0; }
 		virtual int GetCounterIncrementRate (void) const { return 0; }
+		virtual bool GetCounterIsHeat (void) const { return false; }
 		virtual int GetCounterValue (void) const { return 0; }
 		virtual int GetCyberDefenseLevel (void) const { return GetLevel(); }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
 		virtual DamageTypes GetDamageType (void) { return damageGeneric; }
 		virtual CSpaceObject *GetDestination (void) const { return NULL; }
-		virtual CInstalledDevice *GetDevice (int iDev) { return NULL; }
-		virtual int GetDeviceCount (void) const { return 0; }
-		virtual CDeviceItem GetDeviceItem (int iDev) const { return CItem().AsDeviceItem(); }
 		virtual CStationType *GetEncounterInfo (void) { return NULL; }
 		virtual CSpaceObject *GetEscortPrincipal (void) const { return NULL; }
 		virtual int GetLastFireTime (void) const { return 0; }
 		virtual int GetLastHitTime (void) const { return 0; }
 		virtual int GetLevel (void) const { return 1; }
-		virtual int GetMaxCounterValue(void) { return 0; }
+		virtual int GetMaxCounterValue (void) const { return 0; }
 		virtual int GetMaxPower (void) const { return 0; }
 		virtual int GetMaxLightDistance (void) const { return 0; }
 		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
-		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return NULL; }
-		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }
-		virtual CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { return CItem().AsDeviceItem(); }
 		virtual int GetPerception (void) const { return perceptNormal; }
 		virtual int GetScore (void) { return 0; }
 		virtual int GetShieldLevel (void) const { return -1; }
 		virtual CG32bitPixel GetSpaceColor (void) { return 0; }
 		virtual int GetStealth (void) const { return stealthNormal; }
-		virtual int GetVisibleDamage (void) { return 0; }
+		virtual int GetStealthAdj (void) const { return 0; }
+		virtual int GetStealthAdjAtMaxHeat (void) const { return 0; }
+		virtual int GetVisibleDamage (void) const { return 0; }
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) const { Damage = SVisibleDamage(); }
 		virtual void IncCounterValue(int iCounterValue) { }
 		virtual bool IsAngry (void) { return false; }
@@ -1184,7 +1296,6 @@ class CSpaceObject
 		virtual bool IsPlayer (void) const { return false; }
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) { }
 		virtual bool OnDestroyCheck (DestructionTypes iCause, const CDamageSource &Attacker) { return true; }
-		virtual void OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass::DeviceNotificationTypes iEvent) { }
 		virtual bool OnGateCheck (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj) { return true; }
 		virtual void OnHitByDeviceDamage (void) { }
 		virtual void OnHitByDeviceDisruptDamage (DWORD dwDuration) { }
@@ -1197,7 +1308,7 @@ class CSpaceObject
 		virtual void OnSubordinateDestroyed (SDestroyCtx &Ctx) { }
 		virtual void OnSubordinateHit (SDamageCtx &Ctx) { }
 		virtual void ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program) { }
-		virtual void SendMessage (const CSpaceObject *pSender, const CString &sMsg) { }
+		virtual void SendMessage (const CSpaceObject *pSender, const CString &sMsg) const { }
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) { return 0; }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) { return NULL_STR; }
 		virtual void SetCounterValue(int iCounterValue) { }
@@ -1226,8 +1337,9 @@ class CSpaceObject
 		virtual void DetonateNow (CSpaceObject *pHit) { }
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) { return GetNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const { return CDamageSource::Null(); }
-		virtual CWeaponFireDesc *GetWeaponFireDesc (void) { return NULL; }
+		virtual const CWeaponFireDesc *GetWeaponFireDesc (void) const { return NULL; }
 		virtual CSpaceObject *GetSecondarySource (void) const { return NULL; }
+		virtual bool IsTargetableProjectile (void) const { return false; }
 
 		//	...for ships
 
@@ -1239,7 +1351,7 @@ class CSpaceObject
 		virtual void RepairDamage (int iHitPoints) { }
 		virtual void Resume (void) { }
 		virtual void Suspend (void) { }
-		void ScrapeOverlays (void);
+		void ScrapeOverlays ();
 
 		//	...for stations
 
@@ -1275,8 +1387,10 @@ class CSpaceObject
 		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const;
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) { }
 		virtual void ObjectEnteredGateHook (CSpaceObject *pObjEnteredGate) { }
+		virtual EConditionResult OnApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) { return EConditionResult::noEffect; }
 		virtual void OnAscended (void) { }
-		virtual void OnClearCondition (ECondition iCondition, DWORD dwFlags) { }
+		virtual EConditionResult OnCanApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) const { return EConditionResult::noEffect; }
+		virtual EConditionResult OnCanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const { return EConditionResult::noEffect; }
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) { return resNoAnswer; }
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damageNoDamage; }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) { }
@@ -1295,9 +1409,8 @@ class CSpaceObject
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { }
 		virtual void OnPlace (const CVector &vOldPos) { }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
+		virtual EConditionResult OnRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) { return EConditionResult::noEffect; }
 		virtual void OnRemoved (SDestroyCtx &Ctx) { }
-		virtual void OnSetCondition (ECondition iCondition, int iTimer = -1) { }
-		virtual void OnSetConditionDueToDamage (SDamageCtx &DamageCtx, ECondition iCondition) { }
 		virtual void OnSetEventFlags (void) { }
 		virtual void OnSetSovereign (CSovereign *pSovereign) { }
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) { }
@@ -1321,20 +1434,17 @@ class CSpaceObject
 		void ClearCannotBeHit (void) { m_fCannotBeHit = false; }
 		void ClearInDamageCode (void) { m_fInDamage = false; }
 		void ClearNoFriendlyFire(void) { m_fNoFriendlyFire = false; }
-		void ClearObjReferences (void) { m_Data.OnSystemChanged(NULL); }
 		void ClearPainted (void) { m_fPainted = false; }
 		void DisableObjectDestructionNotify (void) { m_fNoObjectDestructionNotify = true; }
-		const Metric &GetBounds (void) { return m_rBoundsX; }
 		const CEnhancementDesc *GetSystemEnhancements (void) const;
 		ICCItemPtr GetTypeProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
 		CSpaceObject *HitTest (const CVector &vStart, const DamageDesc &Damage, CVector *retvHitPos, int *retiHitDir);
-		CSpaceObject *HitTestProximity (const CVector &vStart, Metric rMinThreshold, Metric rMaxThreshold, const DamageDesc &Damage, const CSpaceObject *pTarget, CVector *retvHitPos, int *retiHitDir);
+		CSpaceObject *HitTestProximity (const CVector &vStart, Metric rMinThreshold, Metric rMaxThreshold, const DamageDesc &Damage, const CTargetList::STargetOptions &TargetOptions, const CSpaceObject *pTarget, CVector *retvHitPos, int *retiHitDir);
 		bool ImagesIntersect (const CObjectImageArray &Image1, int iTick1, int iRotation1, const CVector &vPos1,
 				const CObjectImageArray &Image2, int iTick2, int iRotation2, const CVector &vPos2);
 		bool IsObjectDestructionHooked (void) { return (m_fHookObjectDestruction ? true : false); }
 		void ItemEnhancementModified (CItemListManipulator &ItemList) { OnItemEnhanced(ItemList); }
-		bool MissileCanHitObj (CSpaceObject *pObj, const CDamageSource &Source, CWeaponFireDesc *pDesc) const;
-		static bool MissileCanInteract (const CSpaceObject &Obj, int iInteraction, const CSpaceObject *pTarget = NULL);
+		bool MissileCanHitObj (const CSpaceObject &Obj, const CDamageSource &Source, const CWeaponFireDesc &Desc, CSpaceObject *pTarget = NULL) const;
 		void PaintEffects (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintTargetHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
@@ -1342,19 +1452,6 @@ class CSpaceObject
 		void SetObjectDestructionHook (void) { m_fHookObjectDestruction = true; }
 		void SetCannotBeHit (void) { m_fCannotBeHit = true; }
 		void SetCanBounce (void) { m_fCanBounce = true; }
-		void SetBounds (Metric rBounds) { m_rBoundsX = rBounds; m_rBoundsY = rBounds; }
-		void SetBounds (Metric rBoundsX, Metric rBoundsY) { m_rBoundsX = rBoundsX; m_rBoundsY = rBoundsY; }
-		void SetBounds (const RECT &rcRect, Metric rParallaxDist = 1.0)
-			{
-			m_rBoundsX = Max(1.0, rParallaxDist) * g_KlicksPerPixel * (RectWidth(rcRect) / 2);
-			m_rBoundsY = Max(1.0, rParallaxDist) * g_KlicksPerPixel * (RectHeight(rcRect) / 2);
-			}
-		void SetBounds (IEffectPainter *pPainter)
-			{
-			RECT rcRect;
-			pPainter->GetBounds(&rcRect);
-			SetBounds(rcRect);
-			}
 		void SetDestroyed (bool bValue = true) { m_fDestroyed = bValue; }
 		void SetHasGravity (bool bGravity = true) { m_fHasGravity = bGravity; }
 		void SetIsBarrier (void) { m_fIsBarrier = true; }
@@ -1383,89 +1480,90 @@ class CSpaceObject
 
 		static CSpaceObject *CreateFromClassID (CUniverse &Universe, DWORD dwClass);
 
-		CUniverse &m_Universe;					//	Our universe
-		CSystem *m_pSystem;						//	Current system (may be NULL)
-		int m_iIndex;							//	Index in system
-		DWORD m_dwID;							//	Universal ID
-		int m_iDestiny;							//	Random number 0..DestinyRange-1
-		CVector m_vPos;							//	Position of object in system
-		CVector m_vVel;							//	Velocity of object
-		CVector m_vOldPos;						//	Position last tick
-		Metric m_rBoundsX;						//	Object bounds
-		Metric m_rBoundsY;						//	Object bounds
+		CUniverse &m_Universe;							//	Our universe
+		CSystem *m_pSystem = NULL;						//	Current system (may be NULL)
+		int m_iIndex = -1;								//	Index in system
+		DWORD m_dwID = 0;								//	Universal ID
+		int m_iDestiny = 0;								//	Random number 0..DestinyRange-1
+		CVector m_vPos;									//	Position of object in system
+		CVector m_vVel;									//	Velocity of object
+		CVector m_vOldPos;								//	Position last tick
+		Metric m_rBoundsX = 0.0;						//	Object bounds
+		Metric m_rBoundsY = 0.0;						//	Object bounds
 
-		CString m_sHighlightText;				//	Show message text when highlighting
-		int m_iHighlightCountdown:16;			//	Frames left to highlight
-		int m_iHighlightChar:8;					//	Show character when painting (0 = none)
-		int m_iDesiredHighlightChar:8;			//	Desired character
+		CString m_sHighlightText;						//	Show message text when highlighting
+		int m_iHighlightCountdown:16 = 0;				//	Frames left to highlight
+		int m_iHighlightChar:8 = 0;						//	Show character when painting (0 = none)
+		int m_iDesiredHighlightChar:8 = 0;				//	Desired character
 
-		CItemList m_ItemList;					//	List of items
-		CAttributeDataBlock m_Data;				//	Opaque data
-		SEffectNode *m_pFirstEffect;			//	List of effects
-		CItemEventDispatcher m_ItemEvents;		//	Item event dispatcher
-		CDesignType *m_pOverride;				//	Override event handler
-		CSpaceObjectList m_SubscribedObjs;		//	List of objects to notify when something happens
-		CObjectJoint *m_pFirstJoint;			//	List of joints
-		CPhysicsForceDesc m_ForceDesc;			//	Temporary; valid only inside Update.
+		CItemList m_ItemList;							//	List of items
+		CAttributeDataBlock m_Data;						//	Opaque data
+		SEffectNode *m_pFirstEffect = NULL;				//	List of effects
+		CItemEventDispatcher m_ItemEvents;				//	Item event dispatcher
+		CDesignType *m_pOverride = NULL;				//	Override event handler
+		CSpaceObjectList m_SubscribedObjs;				//	List of objects to notify when something happens
+		CObjectJoint *m_pFirstJoint = NULL;				//	List of joints
+		CPhysicsForceDesc m_ForceDesc;					//	Temporary; valid only inside Update.
 
-		int m_iControlsFrozen:8;				//	Object will not respond to controls
-		int m_iSpare:24;
+		int m_iControlsFrozen:8 = 0;					//	Object will not respond to controls
+		int m_iSpare:24 = 0;
 
-		DWORD m_fHookObjectDestruction:1;		//	Call the object when another object is destroyed
-		DWORD m_fNoObjectDestructionNotify:1;	//	Do not call other objects when this one is destroyed
-		DWORD m_fCannotBeHit:1;					//	TRUE if it cannot be hit by other objects
-		DWORD m_fSelected:1;					//	TRUE if selected
-		DWORD m_fInPOVLRS:1;					//	TRUE if object appears in POV's LRS
-		DWORD m_fCanBounce:1;					//	TRUE if object can bounce off others
-		DWORD m_fIsBarrier:1;					//	TRUE if objects bounce off this object
-		DWORD m_fNoFriendlyFire:1;				//	TRUE if object cannot hit friendly objects
+		DWORD m_fHookObjectDestruction:1 = false;		//	Call the object when another object is destroyed
+		DWORD m_fNoObjectDestructionNotify:1 = false;	//	Do not call other objects when this one is destroyed
+		DWORD m_fCannotBeHit:1 = false;					//	TRUE if it cannot be hit by other objects
+		DWORD m_fSelected:1 = false;					//	TRUE if selected
+		DWORD m_fInPOVLRS:1 = false;					//	TRUE if object appears in POV's LRS
+		DWORD m_fCanBounce:1 = false;					//	TRUE if object can bounce off others
+		DWORD m_fIsBarrier:1 = false;					//	TRUE if objects bounce off this object
+		DWORD m_fNoFriendlyFire:1 = false;				//	TRUE if object cannot hit friendly objects
 
-		DWORD m_fTimeStop:1;					//	TRUE if time has stopped for this object
-		DWORD m_fPlayerTarget:1;				//	TRUE if this is a target for the player
-		DWORD m_fHasOnObjDockedEvent:1;			//	TRUE if this object has an OnObjDocked event
-		DWORD m_fOnCreateCalled:1;				//	TURE if OnCreate event has already been called
-		DWORD m_fNoFriendlyTarget:1;			//	TRUE if object cannot be hit by friends
-		DWORD m_fItemEventsValid:1;				//	TRUE if item event dispatcher is up to date
-		DWORD m_fHasOnDamageEvent:1;			//	TRUE if object has OnDamage event
-		DWORD m_fHasOnAttackedEvent:1;			//	TRUE if object has OnAttacked event
+		DWORD m_fTimeStop:1 = false;					//	TRUE if time has stopped for this object
+		DWORD m_fPlayerTarget:1 = false;				//	TRUE if this is a target for the player
+		DWORD m_fHasOnObjDockedEvent:1 = false;			//	TRUE if this object has an OnObjDocked event
+		DWORD m_fOnCreateCalled:1 = false;				//	TURE if OnCreate event has already been called
+		DWORD m_fNoFriendlyTarget:1 = false;			//	TRUE if object cannot be hit by friends
+		DWORD m_fItemEventsValid:1 = false;				//	TRUE if item event dispatcher is up to date
+		DWORD m_fHasOnDamageEvent:1 = false;			//	TRUE if object has OnDamage event
+		DWORD m_fHasOnAttackedEvent:1 = false;			//	TRUE if object has OnAttacked event
 
-		DWORD m_fInDamage:1;					//	TRUE if object is inside Damage call
-		DWORD m_fDestroyed:1;					//	TRUE if object is destroyed (but not yet deleted)
-		DWORD m_fPlayerDestination:1;			//	TRUE if object is a destination for the player
-		DWORD m_fShowDistanceAndBearing:1;		//	TRUE if we should show distance and bearing when a player destination
-		DWORD m_fHasInterSystemEvent:1;			//	TRUE if object has OnPlayerEnteredSystem or OnPlayerLeftSystem event
-		DWORD m_fAutoClearDestination:1;		//	TRUE if m_fPlayerDestination is cleared when object in SRS
-		DWORD m_fHasOnOrdersCompletedEvent:1;	//	TRUE if object has OnOrdersCompleted event
-		DWORD m_fPlayerDocked:1;				//	TRUE if player is docked with this object
+		DWORD m_fInDamage:1 = false;					//	TRUE if object is inside Damage call
+		DWORD m_fDestroyed:1 = false;					//	TRUE if object is destroyed (but not yet deleted)
+		DWORD m_fPlayerDestination:1 = false;			//	TRUE if object is a destination for the player
+		DWORD m_fShowDistanceAndBearing:1 = false;		//	TRUE if we should show distance and bearing when a player destination
+		DWORD m_fHasInterSystemEvent:1 = false;			//	TRUE if object has OnPlayerEnteredSystem or OnPlayerLeftSystem event
+		DWORD m_fAutoClearDestination:1 = false;		//	TRUE if m_fPlayerDestination is cleared when object in SRS
+		DWORD m_fHasOnOrdersCompletedEvent:1 = false;	//	TRUE if object has OnOrdersCompleted event
+		DWORD m_fPlayerDocked:1 = false;				//	TRUE if player is docked with this object
 
-		DWORD m_fPaintNeeded:1;					//	TRUE if object needs to be painted
-		DWORD m_fNonLinearMove:1;				//	TRUE if object updates its position inside OnMove
-		DWORD m_fHasName:1;						//	TRUE if object has been named (this is an optimization--it may have false positives)
-		DWORD m_fMarked:1;						//	Temporary marker for processing lists (not persistent)
-		DWORD m_fAscended:1;					//	TRUE if object is ascended (i.e., stored outside a system)
-		DWORD m_fOutOfPlaneObj:1;				//	TRUE if object is out of plane
-		DWORD m_fPainted:1;						//	TRUE if we painted the object last tick
-		DWORD m_fAutoClearDestinationOnDock:1;	//	TRUE if we should clear the destination when player docks
+		DWORD m_fPaintNeeded:1 = false;					//	TRUE if object needs to be painted
+		DWORD m_fNonLinearMove:1 = false;				//	TRUE if object updates its position inside OnMove
+		DWORD m_fHasName:1 = false;						//	TRUE if object has been named (this is an optimization--it may have false positives)
+		DWORD m_fMarked:1 = false;						//	Temporary marker for processing lists (not persistent)
+		DWORD m_fAscended:1 = false;					//	TRUE if object is ascended (i.e., stored outside a system)
+		DWORD m_fOutOfPlaneObj:1 = false;				//	TRUE if object is out of plane
+		DWORD m_fPainted:1 = false;						//	TRUE if we painted the object last tick
+		DWORD m_fAutoClearDestinationOnDock:1 = false;	//	TRUE if we should clear the destination when player docks
 
-		DWORD m_fShowHighlight:1;				//	TRUE if we should paint a target highlight in SRS
-		DWORD m_fAutoClearDestinationOnDestroy:1;//	TRUE if we should clear the destination when station is destroyed
-		DWORD m_fShowDamageBar:1;				//	TRUE if we should show damage bar
-		DWORD m_fHasGravity:1;					//	TRUE if object has gravity
-		DWORD m_fInsideBarrier:1;				//	TRUE if we got created inside a barrier
-		DWORD m_fHasOnSubordinateAttackedEvent:1;	//	TRUE if we have a <OnSubordinateAttacked> event
-		DWORD m_fHasGetDockScreenEvent:1;		//	TRUE if we have a <GetDockScreen> event
-		DWORD m_fHasOnAttackedByPlayerEvent:1;	//	TRUE if we have an <OnAttackedByPlayer> event
+		DWORD m_fShowHighlight:1 = false;				//	TRUE if we should paint a target highlight in SRS
+		DWORD m_fAutoClearDestinationOnDestroy:1 = false;//	TRUE if we should clear the destination when station is destroyed
+		DWORD m_fShowDamageBar:1 = false;				//	TRUE if we should show damage bar
+		DWORD m_fHasGravity:1 = false;					//	TRUE if object has gravity
+		DWORD m_fInsideBarrier:1 = false;				//	TRUE if we got created inside a barrier
+		DWORD m_fHasOnSubordinateAttackedEvent:1 = false;	//	TRUE if we have a <OnSubordinateAttacked> event
+		DWORD m_fHasGetDockScreenEvent:1 = false;		//	TRUE if we have a <GetDockScreen> event
+		DWORD m_fHasOnAttackedByPlayerEvent:1 = false;	//	TRUE if we have an <OnAttackedByPlayer> event
 
-		DWORD m_fHasOnOrderChangedEvent:1;		//	TRUE if we have an <OnOrderChanged> event
-		DWORD m_fManualAnchor:1;				//	TRUE if object is temporarily anchored
-		DWORD m_fCollisionTestNeeded:1;			//	TRUE if object needs to check collisions with barriers
-		DWORD m_fHasDockScreenMaybe:1;			//	TRUE if object has a dock screen for player (may be stale)
-		DWORD m_fAutoClearDestinationOnGate:1;	//	TRUE if we should clear the destination when player gates
-		DWORD m_f3DExtra:1;						//	TRUE if object is an optional 3D extra
-		DWORD m_fAutoCreatedPorts:1;			//	TRUE if we have auto created some docking ports
-		DWORD m_fSpare8:1;
+		DWORD m_fHasOnOrderChangedEvent:1 = false;		//	TRUE if we have an <OnOrderChanged> event
+		DWORD m_fManualAnchor:1 = false;				//	TRUE if object is temporarily anchored
+		DWORD m_fCollisionTestNeeded:1 = false;			//	TRUE if object needs to check collisions with barriers
+		DWORD m_fHasDockScreenMaybe:1 = false;			//	TRUE if object has a dock screen for player (may be stale)
+		DWORD m_fAutoClearDestinationOnGate:1 = false;	//	TRUE if we should clear the destination when player gates
+		DWORD m_f3DExtra:1 = false;						//	TRUE if object is an optional 3D extra
+		DWORD m_fAutoCreatedPorts:1 = false;			//	TRUE if we have auto created some docking ports
+		DWORD m_fDebugMode:1 = false;					//	TRUE if we want to show debug info for this object
 
-		DWORD m_dwSpare:16;
+		DWORD m_fQuestTarget:1 = false;					//	TRUE if this is a quest target.
+		DWORD m_dwSpare:15 = 0;
 
 #ifdef DEBUG_VECTOR
 		CVector m_vDebugVector;			//	Draw a vector
@@ -1522,11 +1620,12 @@ class CObjectTrackerCriteria
 	{
 	public:
 		const CDesignTypeCriteria &GetTypeCriteria (void) const { return m_TypeCriteria; }
-		bool NeedsRefresh (void) const { return (m_bActiveOnly || m_bKilledOnly); }
+		bool NeedsRefresh (void) const { return (m_bActiveOnly || m_bKilledOnly || m_bInPlayerSquadronOnly); }
 		bool ParseCriteria (const CString &sCriteria);
 		bool SelectsActiveOnly (void) const { return m_bActiveOnly; }
 		bool SelectsKilledOnly (void) const { return m_bKilledOnly; }
 		bool SelectsKnownOnly (void) const { return m_bKnownOnly; }
+		bool SelectsInPlayerSquadronOnly () const { return m_bInPlayerSquadronOnly; }
 		bool SelectsUnknownOnly (void) const { return m_bUnknownOnly; }
 		
 	private:
@@ -1535,6 +1634,7 @@ class CObjectTrackerCriteria
 		bool m_bKilledOnly = false;
 		bool m_bKnownOnly = false;
 		bool m_bUnknownOnly = false;
+		bool m_bInPlayerSquadronOnly = false;
 	};
 
 class CObjectTracker
@@ -1542,17 +1642,6 @@ class CObjectTracker
 	public:
 		struct SObjEntry
 			{
-			SObjEntry (void) :
-					fKnown(false),
-					fShowDestroyed(false),
-					fShowInMap(false),
-					fFriendly(false),
-					fEnemy(false),
-					fInactive(false),
-					fPlayerBlacklisted(false),
-					fIsStargate(false)
-				{ }
-
 			CTopologyNode *pNode = NULL;
 			CDesignType *pType = NULL;
 			DWORD dwObjID = 0;
@@ -1561,21 +1650,22 @@ class CObjectTracker
 			CCompositeImageSelector ImageSel;
 			CString sNotes;
 
-			DWORD fKnown:1;
-			DWORD fShowDestroyed:1;
-			DWORD fShowInMap:1;
-			DWORD fFriendly:1;              //  If neither friend or enemy, then neutral
-			DWORD fEnemy:1;
-			DWORD fInactive:1;				//	pObj->IsInactive()
-			DWORD fPlayerBlacklisted:1;		//	TRUE if player is blacklisted
-			DWORD fIsStargate:1;			//	TRUE if this is a stargate
+			DWORD fKnown:1 = false;
+			DWORD fShowDestroyed:1 = false;
+			DWORD fShowInMap:1 = false;
+			DWORD fFriendly:1 = false;          //  If neither friend or enemy, then neutral
+			DWORD fEnemy:1 = false;
+			DWORD fInactive:1 = false;			//	pObj->IsInactive()
+			DWORD fPlayerBlacklisted:1 = false;	//	TRUE if player is blacklisted
+			DWORD fIsStargate:1 = false;		//	TRUE if this is a stargate
+			DWORD fInPlayerSquadron:1 = false;	//	TRUE if part of player's squadron
 			};
 
 		struct SBackgroundObjEntry
 			{
-			CStationType *pType;
+			CStationType *pType = NULL;
 			CVector vPos;
-			CCompositeImageSelector *pImageSel;
+			CCompositeImageSelector *pImageSel = NULL;
 			};
 
 		~CObjectTracker (void);
@@ -1627,17 +1717,6 @@ class CObjectTracker
 
 		struct SObjBasics
 			{
-			SObjBasics (void) :
-					fKnown(false),
-					fShowDestroyed(false),
-					fShowInMap(false),
-					fFriendly(false),
-					fEnemy(false),
-					fInactive(false),
-					fPlayerBlacklisted(false),
-					fIsStargate(false)
-				{ }
-
 			void DeleteExtra (void)
 				{
 				pExtra.Delete();
@@ -1651,18 +1730,19 @@ class CObjectTracker
 				return *pExtra;
 				}
 
-			CVector vPos;                   //  Position of object in its system
+			CVector vPos;						//  Position of object in its system
 
-			DWORD fKnown:1;                 //  TRUE if player knows about this obj
-			DWORD fShowDestroyed:1;         //  TRUE if we need to paint station as destroyed
-			DWORD fShowInMap:1;             //  TRUE if we can dock with the obj
-			DWORD fFriendly:1;              //  If neither friend or enemy, then neutral
-			DWORD fEnemy:1;
-			DWORD fInactive:1;				//	TRUE if pObj->IsInactive()
-			DWORD fPlayerBlacklisted:1;		//	TRUE if player is blacklisted
-			DWORD fIsStargate:1;			//	TRUE if this is a stargate
+			DWORD fKnown:1 = false;             //  TRUE if player knows about this obj
+			DWORD fShowDestroyed:1 = false;     //  TRUE if we need to paint station as destroyed
+			DWORD fShowInMap:1 = false;         //  TRUE if we can dock with the obj
+			DWORD fFriendly:1 = false;          //  If neither friend or enemy, then neutral
+			DWORD fEnemy:1 = false;
+			DWORD fInactive:1 = false;			//	TRUE if pObj->IsInactive()
+			DWORD fPlayerBlacklisted:1 = false;	//	TRUE if player is blacklisted
+			DWORD fIsStargate:1 = false;		//	TRUE if this is a stargate
+			DWORD fInPlayerSquadron:1 = false;	//	TRUE if part of player's squadron
 
-			DWORD dwSpare:24;
+			DWORD dwSpare:23 = 0;
 
 			TUniquePtr<SObjExtra> pExtra;
 			};
@@ -1748,7 +1828,9 @@ class CAscendedObjectList
 #include "TSEListImpl.h"
 #include "TSEDeviceClassesImpl.h"
 #include "TSESpaceObjectsImpl.h"
+#include "TSEStationImpl.h"
 #include "TSEMissions.h"
+
 #include "TSEPlayer.h"
 #include "TSEArtifactAwakening.h"
 #include "TSEEventsImpl.h"
@@ -1803,7 +1885,7 @@ ICCItem *CreateItemFromDamageEffects (CCodeChain &CC, SDamageCtx &Ctx);
 int GetDamageTypeLevel (DamageTypes iDamage);
 Metric *GetDestinyToBellCurveArray (void);
 void LoadDamageEffectsFromItem (ICCItem *pItem, SDamageCtx &Ctx);
-EManeuverTypes CalcTurnManeuver (int iDesired, int iCurrent, int iRotationAngle);
+EManeuver CalcTurnManeuver (int iDesired, int iCurrent, int iRotationAngle);
 CString ParseCriteriaParam (const char **ioPos, bool bExpectColon = true, bool *retbBinaryParam = NULL);
 bool ParseCriteriaParamLevelRange (const char **ioPos, int *retiLow = NULL, int *retiHigh = NULL);
 Metric ParseDistance (const CString &sValue, Metric rDefaultScale);
@@ -1830,7 +1912,7 @@ bool CreateOrbitFromList (CCodeChain &CC, ICCItem *pList, COrbit *retOrbitDesc);
 ICCItem *CreateResultFromDataField (CCodeChain &CC, const CString &sValue);
 CShip *CreateShipObjFromItem (CCodeChain &CC, ICCItem *pArg);
 CStation *CreateStationObjFromItem (CCodeChain &CC, ICCItem *pArg);
-CVector CreateVectorFromList (CCodeChain &CC, ICCItem *pList);
+CVector CreateVectorFromList (CCodeChain &CC, const ICCItem *pList);
 CCXMLWrapper *CreateXMLElementFromItem (CCodeChain &CC, ICCItem *pItem);
 void DefineGlobalItem (CCodeChain &CC, const CString &sVar, const CItem &Item);
 void DefineGlobalSpaceObject (CCodeChain &CC, const CString &sVar, const CSpaceObject *pObj);

@@ -15,10 +15,12 @@
 
 						{	test:'(typ@ &scMikeno; 'armorItem)					result:(itmCreate &itHeavyPlasteelPlate; 1)	}
 						{	test:'(typ@ &scMikeno; 'armorSpeedAdj)				result:Nil	}
+						{	test:'(typ@ &scEI500; 'cargoSpace)					result:200	}
 						{	test:'(typ@ &scMikeno; 'character)					result:Nil	}
 						{	test:'(typ@ &scMikeno; 'characterName)				result:Nil	}
 						{	test:'(typ@ &scMikeno; 'currency)					result:&ecCreditEconomy;	}
 						{	test:'(typ@ &scMikeno; 'currencyName)				result:'credit	}
+						{	test:'(typ@ &scMikeno; 'cyberDefenseLevel)			result:5	}
 						{	test:'(typ@ &scMikeno; 'defaultSovereign)			result:&svIndependent;	}
 						{	test:'(typ@ &scMikeno; 'drivePowerUse)				result:108700	}
 						{	test:'(typ@ &scMikeno; 'frequency)					result:'common	}
@@ -26,6 +28,7 @@
 						{	test:'(typ@ &scMikeno; 'fuelEfficiency)				result:295	}
 						{	test:'(typ@ &scMikeno; 'hasTradeDesc)				result:Nil	}
 						{	test:'(typ@ &scMikeno; 'hasVariants)				result:Nil	}
+						{	test:'(typ@ &scEI500; 'hullCargoSpace)				result:50	}
 						{	test:'(typ@ &scMikeno; 'hullPoints)					result:30	}
 						{	test:'(typ@ &scMikeno; 'hullValue)					result:2000	}
 						{	test:'(typ@ &scMikeno; 'imageRotationCount)			result:20	}
@@ -51,6 +54,35 @@
 						{	test:'(typ@ &scMikeno; 'wreckType)					result:&stShipwreck;	}
 						{	test:'(typ@ &scMikeno; 'wreckTypeName)				result:"(shipwreck)"	}
 
+						;	Stealth and Perception
+
+						{	test:'(typ@ &scMikeno; 'perception)					result:4	}
+						{	test:'(typ@ &scMikeno; 'stealth)					result:4	}
+
+						{	test:'(tsePerceptionRange 4 1)						result:173	}
+						{	test:'(tsePerceptionRange 4 2)						result:144	}
+						{	test:'(tsePerceptionRange 4 3)						result:120	}
+						{	test:'(tsePerceptionRange 4 4)						result:100	}
+						{	test:'(tsePerceptionRange 4 5)						result:83	}
+						{	test:'(tsePerceptionRange 4 6)						result:69	}
+						{	test:'(tsePerceptionRange 4 7)						result:58	}
+						{	test:'(tsePerceptionRange 4 8)						result:48	}
+						{	test:'(tsePerceptionRange 4 9)						result:40	}
+						{	test:'(tsePerceptionRange 4 10)						result:33	}
+						{	test:'(tsePerceptionRange 4 255)					result:0	}
+
+						{	test:'(tsePerceptionRange 1 4)						result:58	}
+						{	test:'(tsePerceptionRange 2 4)						result:69	}
+						{	test:'(tsePerceptionRange 3 4)						result:83	}
+						{	test:'(tsePerceptionRange 4 4)						result:100	}
+						{	test:'(tsePerceptionRange 5 4)						result:120	}
+						{	test:'(tsePerceptionRange 6 4)						result:144	}
+						{	test:'(tsePerceptionRange 7 4)						result:173	}
+						{	test:'(tsePerceptionRange 8 4)						result:207	}
+						{	test:'(tsePerceptionRange 9 4)						result:249	}
+						{	test:'(tsePerceptionRange 10 4)						result:299	}
+						{	test:'(tsePerceptionRange 255 4)					result:14021065	}
+
 						;	Wrecks
 
 						{	test:'(typ@ &scWindSlaver; 'wreckChance)			result:19	}
@@ -69,9 +101,244 @@
 						{	test:'(typ@ &scAutoSentinel; 'wreckStructuralHP)	result:24	}
 						{	test:'(typ@ &scAutoSentinel; 'wreckType)			result:&stAutonWreck;	}
 						))
+
+					;	Ship Tests
+
+					(block ()
+						(setq gPlayerShip (sysCreateShip &scTestShipClassSlots; Nil &svPlayer;))
+						(if (not gPlayerShip)
+							(error "Unable to create player ship.")
+							)
+						(shpOrder gPlayerShip 'hold)
+						)
+
+					(diagEval (list
+
+						;	Some device install tests
+
+						{	test:'(objAddItem gPlayerShip &itSmartCannon; 1)		result:'ignore }
+						{	test:'(shpInstallDevice gPlayerShip 
+									(itmCreate &itSmartCannon; 1)
+									)		
+																					result:'ignore }
+						{	test:'(itmGetType 
+									(@ (objGetItems gPlayerShip "pI +rasiermesser;") 0)
+									)
+																					result:&itSmartCannon; }
+						{	test:'(itm@ 
+									(@ (objGetItems gPlayerShip "pI +rasiermesser;") 0)
+									'omnidirectional
+									)
+																					result:True }
+						{	test:'(itm@ 
+									(@ (objGetItems gPlayerShip "pI +rasiermesser;") 0)
+									'slotIndex
+									)
+																					result:2 }
+						{	test:'(objAddItem gPlayerShip &itFlenserCannon; 1)		result:'ignore }
+						{	test:'(shpInstallDevice 
+									gPlayerShip 
+									(itmCreate &itFlenserCannon; 1)
+									2
+									)
+																					result:'ignore }
+						{	test:'(itmGetType 
+									(@ (objGetItems gPlayerShip "pI +rasiermesser;") 0)
+									)
+																					result:&itFlenserCannon; }
+						{	test:'(itm@ 
+									(@ (objGetItems gPlayerShip "pI +rasiermesser;") 0)
+									'omnidirectional
+									)
+																					result:True }
+
+						;	Installed Armor
+
+						{	test:'(itm@ 
+									(@ (objGetItems gPlayerShip "aI") 0)
+									'hp
+									)
+																					result:35 }
+						{	test:'(itm@
+									(itmSet@ 
+										(@ (objGetItems gPlayerShip "aI") 0)
+										'hp
+										10
+										)
+									'hp
+									)
+																					result:10 }
+						{	test:'(itm@ 
+									(@ (objGetItems gPlayerShip "aI") 0)
+									'hp
+									)
+																					result:35 }
+						{	test:'(obj@ gPlayerShip
+									(@ (objGetItems gPlayerShip "aI") 0)
+									'hp
+									)
+																					result:35 }
+						{	test:'(itm@
+									(itmSet@ 
+										(@ (objGetItems gPlayerShip "aI") 0)
+										'hp
+										100
+										)
+									'hp
+									)
+																					result:35 }
+						{	test:'(objSet@ gPlayerShip
+									(@ (objGetItems gPlayerShip "aI") 0)
+									'hp
+									10
+									)
+																					result:'ignore }
+						{	test:'(itm@ 
+									(@ (objGetItems gPlayerShip "aI") 0)
+									'hp
+									)
+																					result:10 }
+						{	test:'(obj@ gPlayerShip
+									(@ (objGetItems gPlayerShip "aI") 0)
+									'hp
+									)
+																					result:10 }
+						))
+
+					;	Clean up
+
+					(objDestroy gPlayerShip)
+					(setq gPlayerShip Nil)
 					)
 			</OnGlobalStartDiagnostics>
 		</Events>
 	</Type>
+
+	<ShipClass UNID="&scTestShipClassSlots;"
+			manufacturer=		""
+			class=				"Test Ship"
+			type=				""
+			defaultSovereign=	"&svCommonwealth;"
+
+			attributes=			"commonwealth"
+			inherit=			"&baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"31"
+			mass=				"30"
+			cargoSpace=			"50"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"150"
+			maxDevices=			"8"
+
+			maxArmor=			"heavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"300"
+			powerUse=			"20"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"9.0"
+			rotationAccel=		"2.0"
+			rotationStopAccel=	"9.0"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot criteria="w +property:omnidirectional;" posAngle="0" posRadius="13"/>
+			<DeviceSlot criteria="p +rasiermesser; +property:singlePointOrigin; -AuxMountDevice;" posRadius="13" posAngle="0" posZ="0">
+				<EnhancementAbilities>
+					<Enhance enhancement=	"+omnidirectional"
+							 />
+				</EnhancementAbilities>
+			</DeviceSlot>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="22"/>
+		</DeviceSlots>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itReactiveArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&itRecoillessCannon;"/>
+			<Device deviceID="&itClass1Deflector;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="4d6" item="&itHelium3FuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsSapphire;" imageWidth="62" imageHeight="62"	rotationCount="120" rotationColumns="12" viewportRatio="0.00475"/>
+		<HeroImage imageID="&rsZubrinLarge;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="160"	posRadius="7"	posZ="0"	rotation="180"	bringToFront="*"/>
+			<Effect type="thrustMain"		posAngle="-160"	posRadius="7"	posZ="0"	rotation="180"	bringToFront="*"/>
+		</Effects>
+
+		<!-- Player Settings -->
+
+		<PlayerSettings>
+			<ArmorDisplay>
+				<ShipImage imageID="&rsArmorHUDShip_Sapphire;" imageWidth="136" imageHeight="136"/>
+				
+				<ArmorSection name="forward"
+						segment="0"
+						imageID="&rsZubrinArmor;" 
+						imageX="0" imageY="0" imageWidth="52" imageHeight="29"
+						destX="42" destY="15" hpX="55" hpY="14"
+						nameY="8" nameBreakWidth="200" nameDestX="0" nameDestY="10" />
+
+				<ArmorSection name="starboard"
+						segment="3"
+						imageID="&rsZubrinArmor;" 
+						imageX="52" imageY="0" imageWidth="22" imageHeight="59"
+						destX="92" destY="45" hpX="95" hpY="60"
+						nameY="30" nameBreakWidth="360" nameDestX="12" nameDestY="0" />
+
+				<ArmorSection name="port"
+						segment="1"
+						imageID="&rsZubrinArmor;" 
+						imageX="142" imageY="0" imageWidth="22" imageHeight="59"
+						destX="22" destY="45" hpX="15" hpY="60"
+						nameY="52" nameBreakWidth="200" nameDestX="0" nameDestY="8" />
+
+				<ArmorSection name="aft"
+						segment="2"
+						imageID="&rsZubrinArmor;" 
+						imageX="74" imageY="0" imageWidth="68" imageHeight="14"
+						destX="34" destY="103" hpX="55" hpY="105"
+						nameY="74" nameBreakWidth="360" nameDestX="12" nameDestY="0" />
+			</ArmorDisplay>
+
+			<ShieldDisplay shieldLevelEffect="&efShieldHUDDefault;">
+			</ShieldDisplay>
+		</PlayerSettings>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"30"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
 
 </TranscendenceModule>

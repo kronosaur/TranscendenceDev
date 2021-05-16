@@ -35,6 +35,10 @@
 	-->
 
 	<Type UNID="&unidKateMorgental;">
+		<Properties>
+			<Definition id="core.namePattern">": Kate Morgental"</Definition>
+		</Properties>
+
 		<StaticData>
 			<MissionAttribute>"kateMorgentalMission"</MissionAttribute>
 			<Name>"Kate Morgental"</Name>

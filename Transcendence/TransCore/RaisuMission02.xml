@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType UNID="&msRaisuStation02;"
+			name=				"Raisu 02: Defend Raisu Station"
+			attributes=			"commonwealth, eridaniScript, raisuStation"
+			inherit=			"&baDefendStationMission;"
+
+			level=				"1"
+			maxAppearing=		"1"
+			>
+		<Properties>
+			<Definition id="encounterDesc">
+				(list
+					{
+						type: &tbRaisuStation02Revenge;
+						sovereign: &svCentauriWarlords;
+						dist: 100
+						}
+					{
+						type: &tbRaisuStation02Revenge;
+						sovereign: &svCentauriWarlords;
+						target: 'player
+						dist: 100
+						}
+					)
+			</Definition>
+		</Properties>
+
+		<Image imageID="&rsRaisuStation;"	imageWidth="170" imageHeight="170"/>
+
+		<Events>
+			<OnCompleted>
+				(switch
+					;	On success, we set state for the station.
+
+					(= aReason 'success)
+						(block (
+							(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+							)
+							(if (not (obj@ stationObj 'abandoned))
+								(objSet@ stationObj 'status 'defended)
+								)
+							)
+					)
+			</OnCompleted>
+			
+			<OnGetNextScreen>
+				(switch
+					(= aScreenType 'SuccessFollowUp)
+						(block (
+							(missionObj (@ (msnFind "o +unid:&msRaisuStation03;;") 0))
+							)
+							(if missionObj
+								{
+									nextScreen: &dsRPGMission;
+									nextScreenData: { 
+										missionObj:missionObj
+										}
+									}
+								)
+							)
+					)
+			</OnGetNextScreen>
+
+			<OnReward>
+			</OnReward>
+		</Events>
+		
+		<Language>
+			<Text id="Name">
+				Defend Raisu Station
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					systemName: (sysGetName)
+					})
+			</Text>
+			<Text id="Intro">
+				(list
+					{	descID: 'textIntro1							}
+					)
+			</Text>
+			<Text id="Briefing">
+				(list
+					{	descID: 'textBriefing1			acceptLabelID:'actionAccept		declineLabelID:'actionDecline			}
+					)
+			</Text>
+			<Text id="AcceptReply">
+				(list
+					{	descID: 'textAcceptReply1					}
+					)
+			</Text>
+			<Text id="DeclineReply">
+				(list
+					{	descID: 'textDeclineReply1					}
+					)
+			</Text>
+			<Text id="InProgress">
+				(list
+					{	descID: 'textInProgress1					}
+					)
+			</Text>
+			<Text id="SuccessDebrief">
+				(block (
+					(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+					)
+					(switch
+						;	Try to create the next mission. If we succeed, then 
+						;	we show the appropriate text.
+
+						(msnCreate &msRaisuStation03; stationObj)
+							(list
+								{	descID: 'textSuccessDebrief1		labelID:'actionSuccessDebrief1		}
+								)
+
+						;	Otherwise, we're done
+
+						(= (plyGetGenome gPlayer) 'humanMale)
+							(list
+								{	descID: 'textSuccessDebrief1.whisper	}
+								)
+
+						(list
+							{	descID: 'textSuccessDebrief1.hug	}
+							)
+						)
+					)
+			</Text>
+			<Text id="FailureDebrief">
+				(list
+					{	descID: 'textFailureDebrief1				}
+					)
+			</Text>
+
+			<Text id="textSummary">
+			
+				Defend Raisu Station from Centauri warlords.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textIntro1">
+
+				The station master climbs up to her central console and raises
+				her voice to address the crowd.
+
+				"Friends! The pilgrim has given us a fighting chance! Now we 
+				must rise to the challenge. The warlords will not free us 
+				willingly. Even now they are planning to retaliate.
+
+				"We must endure their attack and finish them once and for all!"
+
+			</Text>
+			<Text id="textBriefing1">
+
+				The station master turns to you:
+
+				"The warlords are coming to take Raisu Station. Will you help
+				defend us?"
+			
+			</Text>
+			<String id="actionAccept">"[I]'ll defend you."</String>
+			<String id="actionDecline">"[L]et me prepare first."</String>
+			<Text id="textAcceptReply1">
+
+				The citizens cheer, and the station master nods.
+
+				"All right, everyone! Get ready!"
+
+			</Text>
+			<Text id="textDeclineReply1">
+
+				The citizens grumble, but the station master calms them:
+
+				"All right, everyone! Don't worry, we've got time."
+
+			</Text>
+			<Text id="textInProgress1">
+
+				The station master is at her console monitoring the battle.
+
+				"Get back out there, %name%, the warlords are getting ready for
+				more attacks!"
+
+			</Text>
+			<Text id="textSuccessDebrief1">
+
+				The halls of Raisu Station are filled with citizens on various
+				tasks. Some are repairing damage from the battle, others are
+				caring for the wounded.
+
+				The station master greets you with a smile:
+
+				"You've done it! The station is out of danger. But we'll never
+				be truly safe until the warlords are defeated."
+
+			</Text>
+			<String id="actionSuccessDebrief1">"[W]hat do you mean?"</String>
+			<Text id="textSuccessDebrief1.whisper">
+
+				The halls of Raisu Station are filled with citizens on various
+				tasks. Some are repairing damage from the battle, others are
+				caring for the wounded.
+
+				The station master runs towards you:
+			
+				"You've done it! The station is out of danger!"
+
+				She hugs you and whispers her name in your ear.
+
+			</Text>
+			<Text id="textSuccessDebrief1.hug">
+
+				The halls of Raisu Station are filled with citizens on various
+				tasks. Some are repairing damage from the battle, others are
+				caring for the wounded.
+
+				The station master runs towards you:
+			
+				"You've done it! The station is out of danger!"
+
+				She beams a smile and hugs you.
+			
+			</Text>
+			<Text id="textFailureDebrief1">
+
+				LATER: We're all dead.
+
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+		</Language>
+	</MissionType>
+
+<!-- TABLES -->
+
+	<ShipTable unid="&tbRaisuStation02Revenge;">
+		<Ship count="1-2" class="&scCentauriHeavyRaider;"	sovereign="&svCentauriWarlords;">
+			<Escorts>
+				<Ship					   count="1d4-1" class="&scCentauriRaider;" orders="escort"/>
+			</Escorts>
+		</Ship>
+	</ShipTable>
+
+</TranscendenceModule>

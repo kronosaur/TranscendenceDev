@@ -290,6 +290,7 @@
 
 			<Device deviceID="&itCyberDeckLowerShields;"/>
 			<Device deviceID="&itYoroiS100;"/>
+			<Device deviceID="&vtStdDamageControl;"		level="6"/>
 		</Devices>
 
 		<Items>
@@ -679,7 +680,6 @@
 				damage=				"antimatter:8d12; WMD:7"
 				fireRate=			"16"
 				missileSpeed=		"40"
-				hitPoints=			"5"
 				lifetime=			"113"
 				powerUse=			"100"
 				charges=			"true"
@@ -931,7 +931,6 @@
 
 						lifetime=		"80"
 						damage=			"particle:15d8; WMD:4"
-						hitPoints=		"15"
 
 						missileSpeed=	"60"
 						sound=			"&snRecoillessCannon;"

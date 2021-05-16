@@ -5,6 +5,10 @@
 	<!-- Fiona -->
 	
 	<Type UNID="&unidFiona;">
+		<Properties>
+			<Definition id="core.namePattern">": Fiona"</Definition>
+		</Properties>
+
 		<StaticData>
 			<Data id="MissionAttribute">"fionaMission"</Data>
 			<Data id="Name">"Fiona"</Data>
@@ -63,7 +67,7 @@
 		</Devices>
 
 		<Maneuver
-			maxRotationRate=	"9.0"
+			maxRotationRate=	"12.0"
 			rotationAccel=		"3.0"
 			/>
 

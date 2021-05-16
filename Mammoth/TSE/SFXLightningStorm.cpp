@@ -46,13 +46,13 @@ class CLightningStormEffectPainter : public IEffectPainter
 		virtual bool OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
 
 	private:
-		enum EStyles
+		enum class EStyle
 			{
-			styleUnknown =			0,
+			Unknown =			0,
 
-			styleObjectArcs =		1,
+			ObjectArcs =		1,
 
-			styleMax =				1,
+			Count =				1,
 			};
 
 		struct SBoltDesc
@@ -67,19 +67,19 @@ class CLightningStormEffectPainter : public IEffectPainter
 		void PaintObjectArcs (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void Reset (void);
 
-		CEffectCreator *m_pCreator;
+		CEffectCreator *m_pCreator = NULL;
 
-		EStyles m_iStyle;
-		int m_iIntensity;
-		CG32bitPixel m_rgbPrimaryColor;
-		CG32bitPixel m_rgbSecondaryColor;
+		EStyle m_iStyle = EStyle::ObjectArcs;
+		int m_iIntensity = 50;
+		CG32bitPixel m_rgbPrimaryColor = CG32bitPixel(255, 255, 255);
+		CG32bitPixel m_rgbSecondaryColor = CG32bitPixel(128, 128, 128);
 
-		int m_iLifetime;
+		int m_iLifetime = 0;
 
 		//	Temporary variables based on shape/style/etc.
 
-		bool m_bInitialized;				//	TRUE if values are valid
-		int m_iComputedRadius;				//	Radius of object
+		bool m_bInitialized = false;		//	TRUE if values are valid
+		int m_iComputedRadius = 0;			//	Radius of object
 		TArray<SBoltDesc> m_Bolts;			//	Bolt state
 	};
 
@@ -92,14 +92,6 @@ static LPCSTR STYLE_TABLE[] =
 
 		NULL,
 	};
-
-CLightningStormEffectCreator::CLightningStormEffectCreator (void) :
-			m_pSingleton(NULL)
-
-//	CLightningStormEffectCreator constructor
-
-	{
-	}
 
 CLightningStormEffectCreator::~CLightningStormEffectCreator (void)
 
@@ -199,13 +191,7 @@ ALERROR CLightningStormEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 //	CLightningStormEffectPainter -----------------------------------------------
 
 CLightningStormEffectPainter::CLightningStormEffectPainter (CEffectCreator *pCreator) : 
-		m_pCreator(pCreator),
-		m_iStyle(styleObjectArcs),
-		m_iIntensity(50),
-		m_rgbPrimaryColor(CG32bitPixel(255, 255, 255)),
-		m_rgbSecondaryColor(CG32bitPixel(128, 128, 128)),
-		m_iLifetime(0),
-		m_bInitialized(false)
+		m_pCreator(pCreator)
 
 //	CLightningStormEffectCreator constructor
 
@@ -235,12 +221,17 @@ void CLightningStormEffectPainter::CalcMetrics (CG32bitImage &Dest, int x, int y
 
 	switch (m_iStyle)
 		{
-		case styleObjectArcs:
+		case EStyle::ObjectArcs:
 			{
 			//	Compute the object size (as a radius).
 
 			if (Ctx.pObj)
+				{
+				//	LATER: Handle the case where the object doesn't have a 
+				//	bitmap image.
+
 				m_iComputedRadius = RectWidth(Ctx.pObj->GetImage().GetImageRect()) / 2;
+				}
 			else
 				m_iComputedRadius = DEFAULT_OBJ_RADIUS;
 
@@ -290,7 +281,7 @@ bool CLightningStormEffectPainter::GetParam (const CString &sParam, CEffectParam
 		retValue->InitColor(m_rgbSecondaryColor);
 	
 	else if (strEquals(sParam, STYLE_ATTRIB))
-		retValue->InitInteger(m_iStyle);
+		retValue->InitInteger((int)m_iStyle);
 
 	else
 		return false;
@@ -346,7 +337,7 @@ void CLightningStormEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SVie
 
 	switch (m_iStyle)
 		{
-		case styleObjectArcs:
+		case EStyle::ObjectArcs:
 			PaintObjectArcs(Dest, x, y, Ctx);
 			break;
 		}
@@ -481,7 +472,7 @@ bool CLightningStormEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CSt
 		m_rgbSecondaryColor = Value.EvalColor();
 	
 	else if (strEquals(sParam, STYLE_ATTRIB))
-		m_iStyle = (EStyles)Value.EvalIdentifier(STYLE_TABLE, styleMax, styleObjectArcs);
+		m_iStyle = (EStyle)Value.EvalIdentifier(STYLE_TABLE, (int)EStyle::Count, (int)EStyle::ObjectArcs);
 
 	else
 		return false;

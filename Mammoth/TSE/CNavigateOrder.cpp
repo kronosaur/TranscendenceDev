@@ -17,13 +17,7 @@ const Metric NAV_PATH_MOVE_THRESHOLD2 =	(NAV_PATH_MOVE_THRESHOLD * NAV_PATH_MOVE
 
 CNavigateOrder::CNavigateOrder (IShipController::OrderTypes iOrder) : IOrderModule(objCount),
 		m_iOrder(iOrder),
-		m_fTargetObj(false),
-		m_fTargetVector(false),
-		m_fIsFollowingNavPath(false),
-		m_fDockAtDestination(false),
-		m_fVariableMinDist(false),
-		m_fNavPathOnly(false),
-		m_fGateAtDestination(false)
+		m_Reaction(AIReaction::DeterWithSecondaries, AIReaction::None, AIReaction::None)
 
 //	CNavigateOrder constructor
 
@@ -59,24 +53,24 @@ CNavigateOrder::CNavigateOrder (IShipController::OrderTypes iOrder) : IOrderModu
 		}
 	}
 
-void CNavigateOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
+COrderDesc CNavigateOrder::CreateDock (CSpaceObject &Dest, const CReactionImpl &Reactions, DWORD dwFlags)
 
-//	OnAttacked
+//	CreateDock
 //
-//	Deal with attacks.
+//	Create dock order
 
 	{
-	DEBUG_TRY
+	ICCItemPtr pData(ICCItem::SymbolTable);
+	Reactions.SetOptions(*pData);
 
-	//	If we get attacked, at least attack back.
+	COrderDesc Result(IShipController::orderDock, &Dest, *pData);
 
-	if (pAttacker
-			&& pAttacker->CanAttack()
-			&& !bFriendlyFire
-			&& m_Objs[objTarget] == NULL)
-		m_Objs[objTarget] = pAttacker;
+	//	Set some flags
 
-	DEBUG_CATCH
+	if (dwFlags & FLAG_CANCEL_ON_REACTION_ORDER)
+		Result.SetCancelOnReactionOrder();
+
+	return Result;
 	}
 
 void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
@@ -92,9 +86,6 @@ void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 	if (m_fIsFollowingNavPath)
 		{
-		Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
-		Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
-
 		//	Check to see if our destination has moved. If it has, then we stop
 		//	following the nav path. This can happen if we pick a ship as a 
 		//	destination.
@@ -137,8 +128,6 @@ void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 		else
 			{
 			Ctx.ImplementDocking(pShip, m_Objs[objDest]);
-			Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget], m_Objs[objDest]);
-			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget], m_Objs[objDest]);
 			}
 		}
 
@@ -154,8 +143,6 @@ void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 		if (m_Objs[objDest] != NULL)
 			{
 			Ctx.ImplementGating(pShip, m_Objs[objDest]);
-			Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
-			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
 			}
 		}
 
@@ -163,9 +150,6 @@ void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 	else
 		{
-		Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
-		Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
-
 		//	Maneuver
 
 		CVector vTarget = m_vDest - pShip->GetPos();
@@ -185,7 +169,7 @@ void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CNavigateOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
+void CNavigateOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnBehaviorStart
 //
@@ -196,16 +180,17 @@ void CNavigateOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 
 	//	If we want to dock and are already docked, then nothing else to do.
 
+	CSpaceObject *pOrderTarget = OrderDesc.GetTarget();
 	if (m_fDockAtDestination
-			&& pShip->GetDockedObj() == pOrderTarget)
+			&& Ship.GetDockedObj() == pOrderTarget)
 		{
-		pShip->CancelCurrentOrder();
+		Ship.CancelCurrentOrder();
 		return;
 		}
 
 	//	Make sure we're undocked because we're going flying
 
-	Ctx.Undock(pShip);
+	Ctx.Undock(&Ship);
 
 	//	Set our basic data. We initialize the following:
 	//
@@ -216,15 +201,12 @@ void CNavigateOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 	Metric rMinDist;
 	if (m_fTargetVector)
 		{
-		if (Data.iDataType == IShipController::dataVector)
-			m_vDest = Data.vData;
-		else
-			m_vDest = pShip->GetPos();
+		m_vDest = OrderDesc.GetDataVector(CONSTLIT("pos"), true, Ship.GetPos());
 		}
 	else
 		{
 		if (pOrderTarget == NULL && m_fGateAtDestination)
-			pOrderTarget = pShip->GetNearestStargate(true);
+			pOrderTarget = Ship.GetNearestStargate(true);
 
 		if (pOrderTarget)
 			{
@@ -232,34 +214,36 @@ void CNavigateOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 			m_vDest = pOrderTarget->GetPos();
 			}
 		else
-			m_vDest = pShip->GetPos();
+			m_vDest = Ship.GetPos();
 		}
 
 	//	Get the minimum distance
 
 	if (m_fVariableMinDist)
-		rMinDist = LIGHT_SECOND * Max(1, (int)Data.AsInteger());
+		rMinDist = LIGHT_SECOND * Max(1, (int)OrderDesc.GetDataInteger(CONSTLIT("radius"), true, 1));
 	else
 		rMinDist = LIGHT_SECOND;
 
 	m_rMinDist2 = (rMinDist * rMinDist);
-	m_iDestFacing = ::VectorToPolar(m_vDest - pShip->GetPos());
+	m_iDestFacing = ::VectorToPolar(m_vDest - Ship.GetPos());
+
+	m_Reaction.Init(OrderDesc);
 
 	//	See if we should take a nav path
 
-	Metric rCurDist2 = (m_vDest - pShip->GetPos()).Length2();
+	Metric rCurDist2 = (m_vDest - Ship.GetPos()).Length2();
 	if (rCurDist2 > NAV_PATH_THRESHOLD2)
 		{
 		//	If we have a destination object, then calculate a nav path to it.
 
 		if (m_Objs[objDest])
-			m_fIsFollowingNavPath = Ctx.CalcNavPath(pShip, m_Objs[objDest]);
+			m_fIsFollowingNavPath = Ctx.CalcNavPath(&Ship, m_Objs[objDest]);
 
 		//	If we don't have a destination object, then we calculate a nav path
 		//	based on a position
 
 		else
-			m_fIsFollowingNavPath = Ctx.CalcNavPath(pShip, m_vDest);
+			m_fIsFollowingNavPath = Ctx.CalcNavPath(&Ship, m_vDest);
 		}
 
 	DEBUG_CATCH
@@ -293,7 +277,7 @@ void CNavigateOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int i
 		*retbCancelOrder = true;
 	}
 
-void CNavigateOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CNavigateOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //
@@ -310,9 +294,11 @@ void CNavigateOrder::OnReadFromStream (SLoadCtx &Ctx)
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	m_fIsFollowingNavPath = ((dwLoad & 0x00000001) ? true : false);
+
+	m_Reaction.Init(OrderDesc);
 	}
 
-void CNavigateOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CNavigateOrder::OnWriteToStream (IWriteStream *pStream) const
 
 //	OnWriteToStream
 //

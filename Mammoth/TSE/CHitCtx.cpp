@@ -19,7 +19,7 @@ void CHitCtx::ReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read((char *)&m_iHitDir, sizeof(DWORD));
 	}
 
-void CHitCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream) const
+void CHitCtx::WriteToStream (IWriteStream *pStream) const
 
 //	WriteToStream
 //
@@ -28,7 +28,7 @@ void CHitCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream) const
 //	DWORD				m_iHitDir
 
 	{
-	pSystem->WriteObjRefToStream(m_pHit, pStream);
+	CSystem::WriteObjRefToStream(*pStream, m_pHit);
 	pStream->Write((char *)&m_vHitPos, sizeof(CVector));
 	pStream->Write((char *)&m_iHitDir, sizeof(DWORD));
 	}

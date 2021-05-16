@@ -19,7 +19,7 @@ class CTargetListSelector
 		CSpaceObject *GetIncludePlayer (void) const { return (m_Options.bIncludePlayer ? m_Source.GetPlayerShip() : NULL); }
 		Metric GetMaxRange (void) const	{ return m_Perception.GetRange(0); }
 
-		bool Matches (CSpaceObject &Obj, Metric rDist2, CTargetList::ETargetTypes *retiType = NULL) const
+		bool Matches (CSpaceObject &Obj, Metric rDist2, CTargetList::ETargetType *retiType = NULL) const
 			{
 			if (Obj.GetCategory() == CSpaceObject::catMissile)
 				{
@@ -28,7 +28,8 @@ class CTargetListSelector
 						&& m_Source.IsAngryAt(&Obj)
 						&& Obj != m_Options.pExcludeObj)
 					{
-					if (retiType) *retiType = CTargetList::typeMissile;
+					CTargetList::ETargetType missileType = Obj.IsTargetableProjectile() ? CTargetList::ETargetType::TargetableMissile : CTargetList::ETargetType::Missile;
+					if (retiType) *retiType = missileType;
 					return true;
 					}
 				}
@@ -38,7 +39,7 @@ class CTargetListSelector
 						&& !Obj.IsUnreal()
 						&& Obj != m_Options.pExcludeObj)
 					{
-					if (retiType) *retiType = CTargetList::typeMinable;
+					if (retiType) *retiType = CTargetList::ETargetType::Minable;
 					return true;
 					}
 				}
@@ -52,7 +53,7 @@ class CTargetListSelector
 						&& Obj != m_Options.pExcludeObj
 						&& !Obj.IsEscortingFriendOf(&m_Source))
 					{
-					if (retiType) *retiType = CTargetList::typeAttacker;
+					if (retiType) *retiType = CTargetList::CalcType(Obj);
 					return true;
 					}
 				}
@@ -65,7 +66,7 @@ class CTargetListSelector
 						&& Obj != m_Options.pExcludeObj
 						&& !Obj.IsEscortingFriendOf(&m_Source))
 					{
-					if (retiType) *retiType = CTargetList::typeFortification;
+					if (retiType) *retiType = CTargetList::ETargetType::Fortification;
 					return true;
 					}
 				}
@@ -73,14 +74,14 @@ class CTargetListSelector
 			return false;
 			}
 
-		bool MatchesCanBeTargeted (CSpaceObject &Obj, Metric rDist2, CTargetList::ETargetTypes *retiType = NULL) const
+		bool MatchesCanBeTargeted (CSpaceObject &Obj, Metric rDist2, CTargetList::ETargetType *retiType = NULL) const
 			{
 			if (Obj.GetCategory() == CSpaceObject::catMissile)
 				{
 				if (m_Perception.CanBeTargeted(&Obj, rDist2)
 						&& !Obj.IsUnreal())
 					{
-					if (retiType) *retiType = CTargetList::typeMissile;
+					if (retiType) *retiType = CTargetList::ETargetType::Missile;
 					return true;
 					}
 				}
@@ -88,7 +89,7 @@ class CTargetListSelector
 				{
 				if (!Obj.IsUnreal())
 					{
-					if (retiType) *retiType = CTargetList::typeMinable;
+					if (retiType) *retiType = CTargetList::ETargetType::Minable;
 					return true;
 					}
 				}
@@ -98,7 +99,7 @@ class CTargetListSelector
 						&& !Obj.IsUnreal()
 						&& Obj != m_Source)
 					{
-					if (retiType) *retiType = CTargetList::typeAttacker;
+					if (retiType) *retiType = CTargetList::CalcType(Obj);
 					return true;
 					}
 				}
@@ -108,7 +109,7 @@ class CTargetListSelector
 						&& !Obj.IsUnreal()
 						&& Obj != m_Source)
 					{
-					if (retiType) *retiType = CTargetList::typeFortification;
+					if (retiType) *retiType = CTargetList::ETargetType::Fortification;
 					return true;
 					}
 				}

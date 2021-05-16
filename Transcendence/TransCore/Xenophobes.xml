@@ -11,7 +11,7 @@
 			demonym=":a Xenophobe disciple(s)"
 			plural="true"
 
-			alignment="destructive chaos"
+			alignment="sterilizer"
 			/>
 	
 	<SystemMap unid="&smXenophobeSpace;"
@@ -45,7 +45,7 @@
 				/>
 
 		<Ships>
-			<Ship	count="1"	class="&scXenophobeDefender;" orders="wander" eventHandler="&evXenophobeFleetBehavior;">
+			<Ship	count="1"	class="&scXenophobeDefender;" eventHandler="&evXenophobeFleetBehavior;">
 				<Escorts>
 					<Ship		count="1d4+1"	class="&scXenophobeFighter;"	orders="escort"/>
 				</Escorts>
@@ -101,7 +101,7 @@
 		</DockingPorts>
 		
 		<Ships>
-			<Ship	count="1"	class="&scXenophobeWorldship;" orders="wander" sovereign="&svXenophobes;" eventHandler="&evXenophobeFleetBehavior;">
+			<Ship	count="1"	class="&scXenophobeWorldship;" sovereign="&svXenophobes;" eventHandler="&evXenophobeFleetBehavior;">
 				<Escorts>
 					<Ship		count="1d3+1"	class="&scXenophobeDefender;"	orders="escort">
 						<Escorts>
@@ -168,7 +168,6 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			aggressor=			"true"
 			fireRateAdj=		"30"
 			fireAccuracy=		"90"
 			perception=			"4"
@@ -250,6 +249,8 @@
 			<Device slotID="mainTurret"			deviceID="&itMarkIIIHowitzer;"/>
 			<Device slotID="portTurret"			deviceID="&itLancerCannon;"/>
 			<Device slotID="starboardTurret"	deviceID="&itLancerCannon;"/>
+
+			<Device deviceID="&vtStdDamageControl;"		level="6"/>
 		</Devices>
 
 		<!-- Items -->
@@ -283,7 +284,6 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			aggressor=			"true"
 			fireRateAdj=		"40"
 			fireAccuracy=		"90"
 			perception=			"4"
@@ -332,6 +332,7 @@
 			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true" minFireArc="180" maxFireArc="285" posAngle="-138" posRadius="49" posZ="0"/>
 
 			<Device deviceID="&itMissileDefense;" omnidirectional="true" />
+			<Device deviceID="&vtStdDamageControl;"		level="8"/>
 			<Device deviceID="&it500MWReactor;"/>
 		</Devices>
 
@@ -455,6 +456,7 @@
 			<Device deviceID="&itXenophobeLancer;" secondaryWeapon="true"		fireArc="160"  posAngle="-105" posRadius="82" posZ="114"/>
 
 			<Device deviceID="&itMissileDefense;" omnidirectional="true" />
+			<Device deviceID="&vtStdDamageControl;"		level="9"/>
 			<Device deviceID="&it1GWReactor;"/>
 		</Devices>
 
@@ -758,7 +760,8 @@
 
 <!-- BEHAVIORS -->
 
-	<Type unid="&evXenophobeFleetBehavior;">
+	<Type unid="&evXenophobeFleetBehavior;"
+			inherit="&evStdWanderBehavior;">
 		<Events>
 			<GetRumors>
 				{

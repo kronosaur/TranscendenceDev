@@ -42,7 +42,7 @@
 	
 	<MissionType UNID="&msBenedictTraining;"
 			name=				"Benedict 01: Benedict Training"
-			attributes=			"benedictStoryArc, sistersMission"
+			attributes=			"benedictStoryArc, eridaniScript, sistersMission"
 			inherit=			"&baBenedictMission;"
 
 			level=				"1"
@@ -83,8 +83,8 @@
 					;	Find an enemy station to attack
 
 					(hiddenObj 
-						(or (sysFindObject sourceObj "TAN +enemy; +property:challengeRating[6]; -questTarget;")
-							(sysFindObject sourceObj "TAN +enemy; +property:challengeRating[7]; -questTarget;")
+						(or (sysFindObject sourceObj "TAN +enemy; +property:challengeRating[6]; -property:questTarget;")
+							(sysFindObject sourceObj "TAN +enemy; +property:challengeRating[7]; -property:questTarget;")
 							)
 						)
 					)
@@ -263,7 +263,7 @@
 								;	Send the player to explore all friendly stations (until they are all explored)
 								
 								(and (eq (sysGetNode) 'SE)
-										(filter (sysFindObject gPlayerShip "TAF +populated; -uncharted;") theObj 
+										(filter (sysFindObject gPlayerShip "TAF +populated; -enemy; -uncharted;") theObj 
 												(not (objIsKnown theObj))
 												)
 										)
@@ -475,7 +475,7 @@
 						;	Check if we've explored everything
 						
 						(eq state 'exploreSystem)
-							(if (not (filter (sysFindObject gPlayerShip "TAF +populated; -uncharted;") theObj
+							(if (not (filter (sysFindObject gPlayerShip "TAF +populated; -enemy; -uncharted;") theObj
 									(not (objIsKnown theObj))
 									))
 								(setq taskDone True)

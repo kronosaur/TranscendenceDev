@@ -6,7 +6,7 @@
 #include "PreComp.h"
 
 const Metric MAX_DISTANCE =				(400 * KLICKS_PER_PIXEL);
-const Metric CLOSE_DELTA_V_RATIO =		0.12;
+const Metric CLOSE_DELTA_V_RATIO =		4.0;
 
 bool CShipAIHelper::CalcFormationParams (CShip *pShip, 
 										 const CVector &vDestPos, 
@@ -69,7 +69,7 @@ bool CShipAIHelper::CalcFormationParams (CShip *pShip,
 	//	If we're close enough to the velocity, cheat a little by
 	//	accelerating without using the main engine
 
-	Metric rCloseV = CLOSE_DELTA_V_RATIO * pShip->GetMaxSpeed();
+	Metric rCloseV = CLOSE_DELTA_V_RATIO * pShip->GetMaxAcceleration();
 	Metric rCloseV2 = (rCloseV * rCloseV);
 
 	return (rDiff2 < rCloseV2);

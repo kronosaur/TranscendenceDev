@@ -29,7 +29,7 @@ const CGameKeys::SKeyMapEntry CGameKeys::DEFAULT_MAP[] =
 		{	'N',				CGameKeys::keyShowGalacticMap },
 		//	'O' unused
 		{	'P',				CGameKeys::keyPause },
-		{	'Q',				CGameKeys::keySquadronCommands },
+		{	'Q',				CGameKeys::keySquadronUI },
 		{	'R',				CGameKeys::keyClearTarget },
 		{	'S',				CGameKeys::keyShipStatus },
 		{	'T',				CGameKeys::keyTargetNextEnemy },
@@ -57,6 +57,7 @@ const CGameKeys::SKeyMapEntry CGameKeys::DEFAULT_MAP[] =
 
 		{	VK_F1,				CGameKeys::keyShowHelp },
 		{	VK_F2,				CGameKeys::keyShowGameStats },
+		{	VK_F6,				CGameKeys::keyToggleHUD	},
 		{	VK_F7,				CGameKeys::keyVolumeDown },
 		{	VK_F8,				CGameKeys::keyVolumeUp },
 		{	VK_F9,				CGameKeys::keyShowConsole },
@@ -86,7 +87,7 @@ const CGameKeys::SKeyMapEntry CGameKeys::WASD_MAP[] =
 		{	'R',				CGameKeys::keyInteract },
 		{	'S',				CGameKeys::keyStop },
 		{	'T',				CGameKeys::keyTargetNextEnemy },
-		//	'U' unused
+		{	'U',				CGameKeys::keySquadronUI },
 		{	'V',				CGameKeys::keyCommunications },
 		{	'W',				CGameKeys::keyThrustForward },
 		{	'X',				CGameKeys::keyInvokePower },
@@ -111,6 +112,7 @@ const CGameKeys::SKeyMapEntry CGameKeys::WASD_MAP[] =
 
 		{	VK_F1,				CGameKeys::keyShowHelp },
 		{	VK_F2,				CGameKeys::keyShowGameStats },
+		{	VK_F6,				CGameKeys::keyToggleHUD	},
 		{	VK_F7,				CGameKeys::keyVolumeDown },
 		{	VK_F8,				CGameKeys::keyVolumeUp },
 		{	VK_F9,				CGameKeys::keyShowConsole },

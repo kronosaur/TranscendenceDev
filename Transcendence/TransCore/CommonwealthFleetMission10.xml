@@ -18,7 +18,7 @@
 	======================================================================== -->
 
 	<MissionType UNID="&msCSCDestroyAresConvoy;"
-			name=			"Destroy Ares Convoy"
+			name=			"Commonwealth Fleet 10: Destroy Ares Convoy"
 			attributes=		"commonwealthFleet, cscTaskForce, rank4"
 
 			level=			"5-10"
@@ -26,6 +26,8 @@
 			expireTime=			"5400"
 			failureAfterOutOfSystem="5400"
 			>
+
+		<Image imageID="&rsFleetEmblems;" imageX="960" imageY="480"	imageWidth="320" imageHeight="240"/>
 
 		<StaticData>
 			<Data id="convoy">

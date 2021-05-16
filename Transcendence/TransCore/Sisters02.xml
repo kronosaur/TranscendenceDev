@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType UNID="&msSisters02;"
+			name=				"Sisters 02: Escort Medical Ship"
+			attributes=			"sistersMission"
+			inherit=			"&baEscortMission;"
+
+			level=				"3-7"
+			>
+		<Properties>
+			<Variant id="escortType">
+				&scHandOfDomina;
+			</Variant>
+			<Variant id="escortDesc">
+				{
+					type: (msn@ gSource 'escortType)
+
+					startDesc: 'owner
+					endDesc: {
+						criteria: "TAF R:500; +populated; -occupation; -uncharted; -outlaws;"
+						}
+					}
+			</Variant>
+			<Variant id="encounterDesc">
+				(list
+					{	type: &tbSisters02Attackers;
+						interceptOn: (random 300 500)
+						}
+					{	type: &tbSisters02Attackers;
+						interceptOn: (random 800 1000)
+						}
+					)
+			</Variant>
+			<Variant id="reward">
+				(@ '(0 125 250 500 1000 2000 4000 8000 15000) (sysGetLevel))
+			</Variant>
+		</Properties>
+
+		<Image	imageID="&rsSistersAbbey;" imageWidth="224" imageHeight="330"/>
+
+		<Events>
+			<OnReward>
+				(block (
+					(reward (msn@ gSource 'reward))
+					)
+					(if reward
+						(typFireEvent &svSistersOfDomina; 'OnMoneyDonatedToSisters {
+							value: reward
+							})
+						)
+					)
+			</OnReward>
+		</Events>
+		
+		<Language>
+			<Text id="Name">
+				Escort Medical Ship
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					destName: (objGetName (objGetObjByID (msn@ gSource 'destID)) 'article)
+					escortName: (typGetName (msn@ gSource 'escortType) '(generic article))
+					systemName: (sysGetName)
+					})
+			</Text>
+			<Text id="Intro">
+				(block (
+					(destObj (objGetObjByID (msn@ gSource 'destID)))
+					(destNodeID (obj@ destObj 'destNodeID))
+
+					(trData {
+						destSystem: (sysGetName destNodeID)
+						})
+					)
+					(list
+						{	descID:'textIntro1					data:trData	}
+						)
+					)
+			</Text>
+			<Text id="Briefing">
+				(block (
+					(trData {
+						destName: (objGetName (objGetObjByID (msn@ gSource 'destID)) 'article)
+						escortName: (typGetName (msn@ gSource 'escortType) '(generic article))
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(list
+						{	descID:'textBriefing1				data:trData	}
+						)
+					)
+			</Text>
+			<Text id="AcceptReply">
+				(list
+					{	descID:'textAcceptReply1	}
+					)
+			</Text>
+			<Text id="DeclineReply">
+				(list
+					{	descID:'textDeclineReply1	}
+					)
+			</Text>
+			<Text id="InProgress">
+				(list
+					{	descID:'textInProgress1		}
+					)
+			</Text>
+			<Text id="SuccessDebrief">
+				(block (
+					(trData {
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(list
+						{	descID:'textSuccess1				data:trData	}
+						)
+					)
+			</Text>
+			<Text id="FailureDebrief">
+				(list
+					{	descID:'textFailure1	}
+					)
+			</Text>
+
+			<Text id="textSummary">
+			
+				Your mission is to escort %escortName% to %destName%.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textIntro1">
+
+				The abbess greets you:
+
+				"Welcome, pilgrim! Your exploits are known to us, and we take
+				pride in your strength. If you're willing, we could use that
+				strength now."
+
+			</Text>
+			<Text id="textBriefing1">
+
+				"A sickness has broken out on %destName%, and we wish to send
+				a medical team to help. But the skies are filled with danger and
+				we need someone to escort our ship to its destination.
+
+				"Will you help us?"
+
+			</Text>
+			<Text id="textAcceptReply1">
+
+				"Thank you, pilgrim! Domina is truly in your heart."
+
+			</Text>
+			<Text id="textDeclineReply1">
+
+				The abbess looks disappointed.
+
+				"I understand: An escort mission will not further your quest. 
+				But helping others is part of Domina's plan too."
+
+			</Text>
+			<Text id="textInProgress1">
+
+				The abbess looks confused.
+
+				"Why have you abandoned your charge? That medical ship is 
+				counting on your protection!"
+
+			</Text>
+			<Text id="textSuccess1">
+
+				The abbess smiles:
+
+				"Your power are great indeed, pilgrim! We thank you for your 
+				efforts.
+
+				"We have deposited %reward% in the Pilgrims' Aid fund in your
+				name."
+
+			</Text>
+			<Text id="textFailure1">
+
+				You find the abbess praying in the sanctum.
+
+				"Such horror! My heart bleeds for those lost. I hope they find
+				peace with Domina."
+
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+		</Language>
+	</MissionType>
+
+<!-- TABLES -->
+
+	<ShipTable unid="&tbSisters02Attackers;">
+		<LevelTable>
+			<Ship	levelFrequency="ccurv -----"	class="&scHornet;"			count="3d6"		orders="attack" sovereign="&svAnarchists;"/>
+
+			<Ship	levelFrequency="--vcr -----"	class="&scMethEnforcer;"	count="3-4"		orders="attack"	sovereign="&svDeathDrugsCartel;"/>
+
+			<Ship	levelFrequency="--ccu r----"	class="&scPlague;"			count="1"		orders="attack"	sovereign="&svSapiens;">
+				<Escorts>
+					<Ship							class="&scPlague;"			count="1d4-1"	orders="escort"/>
+				</Escorts>
+			</Ship>
+			<Ship	levelFrequency="---cr v----"	class="&scViking;"			count="2d6+1"	orders="attack"	sovereign="&svPirates;"/>
+			<Ship	levelFrequency="---cr v----"	class="&scCorsair-II;"		count="2d3"		orders="attack"	sovereign="&svPirates;"/>
+			<Group	levelFrequency="---cr v----">
+				<Ship								class="&scCorsair-II;"		count="1d6"		orders="attack"	sovereign="&svPirates;"/>
+				<Ship								class="&scViking;"			count="1d6"		orders="attack"	sovereign="&svPirates;"/>
+			</Group>
+
+			<Ship	levelFrequency="---uc ur---"	class="&scBarbary;"			count="1"		orders="attack"	sovereign="&svMarauders;">
+				<Escorts>
+					<Table>
+						<Ship chance="50"			class="&scCorsair-II;"		count="1d3"		orders="escort"/>
+						<Ship chance="50"			class="&scViking-II;"		count="1d4"		orders="escort"/>
+					</Table>
+				</Escorts>
+			</Ship>
+
+			<Ship	levelFrequency="---rc ur---"	class="&scAtonement;"		count="1"		orders="attack"	sovereign="&svPenitents;">
+				<Escorts>
+					<Ship							class="&scRepentant;"		count="2-4"		orders="escort"/>
+				</Escorts>
+			</Ship>
+		</LevelTable>
+	</ShipTable>
+
+</TranscendenceModule>

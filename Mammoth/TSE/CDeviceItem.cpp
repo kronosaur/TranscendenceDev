@@ -53,36 +53,17 @@ CDeviceItem::ECalcTargetTypes CDeviceItem::CalcTargetType (void) const
 		CInstalledDevice *pPrimaryWeapon = pSource->GetNamedDevice(devPrimaryWeapon);
 		CInstalledDevice *pSelectedLauncher = pSource->GetNamedDevice(devMissileWeapon);
 
-		//  If our options is "never fire", or if our options is "fire if selected" and this is the player ship,
-		//  but the primary weapon or launcher isn't both "fire if selected" AND of the same type, then don't fire.
-		//  If a weapon is "fire if selected and same variant", then it only fires if the primary weapon is of the
-		//  same variant and type.
-
 		DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
-		bool bPrimaryWeaponCheckVariant = pPrimaryWeapon != NULL ? (dwLinkedFireOptions
-			& CDeviceClass::lkfSelectedVariant ? GetVariantNumber() == CItemCtx(pSource, pPrimaryWeapon).GetItemVariantNumber() : true) : false;
-		bool bSelectedLauncherCheckVariant = pSelectedLauncher != NULL ? (dwLinkedFireOptions
-			& CDeviceClass::lkfSelectedVariant ? GetVariantNumber() == CItemCtx(pSource, pSelectedLauncher).GetItemVariantNumber() : true) : false;
-
-		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) || (
-			((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) &&
-			(pPrimaryWeapon != NULL ? ((pPrimaryWeapon->GetUNID() == Weapon.GetUNID()) && bPrimaryWeaponCheckVariant) : false))
-				&& ((Weapon.GetCategory() == itemcatWeapon) && !Weapon.UsesLauncherControls())) ||
-				(!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) &&
-			(pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == Weapon.GetUNID()) && bSelectedLauncherCheckVariant) : false))
-				&& ((Weapon.GetCategory() == itemcatLauncher) || Weapon.UsesLauncherControls()))) &&
-			(dwLinkedFireOptions & dwLinkedFireSelected) &&
-			pSource->IsPlayer()
-			))
+		if ((dwLinkedFireOptions & CDeviceClass::lkfNever))
 			{
 			return calcNoTarget;
 			}
 
 		//	If our options is "fire always" or "fire if selected" then our target is always the same
-		//	as the primary target.
+		//	as the primary target. Same if we have auto fire enabled
 
-		else if ((dwLinkedFireOptions & CDeviceClass::lkfAlways) || (dwLinkedFireOptions & dwLinkedFireSelected))
+		else if ((dwLinkedFireOptions & CDeviceClass::lkfAlways) || (dwLinkedFireOptions & dwLinkedFireSelected) || (pSource->IsPlayer() && Device.IsAutomatedWeapon()))
 			{
 			return calcControllerTarget;
 			}
@@ -94,6 +75,56 @@ CDeviceItem::ECalcTargetTypes CDeviceItem::CalcTargetType (void) const
 			return calcWeaponTarget;
 			}
 		}
+	}
+
+TArray<const CItemType *> CDeviceItem::GetConsumableTypes () const
+
+//	GetConsumableTypes
+//
+//	Get a list of items that we consume (e.g., ammo).
+
+	{
+	TArray<const CItemType *> Result;
+
+	if (IsWeapon())
+		{
+		const CDeviceClass &Device = GetDeviceClass();
+		for (int i = 0; i < Device.GetWeaponVariantCount(*this); i++)
+			{
+			auto &Desc = Device.GetWeaponFireDescForVariant(*this, i);
+			if (const CItemType *pType = Desc.GetAmmoType())
+				{
+				Result.Insert(pType);
+				}
+			}
+		}
+
+	return Result;
+	}
+
+int CDeviceItem::GetCounterLevel (EDeviceCounterType *retiCounter, int *retiLevel) const
+
+//	GetCounterLevel
+//
+//	Returns the counter level and type for the device.
+
+	{
+	if (const CInstalledDevice *pInstalled = m_Item.GetInstalledDevice())
+		{
+		return pInstalled->GetCounter(*GetSource(), retiCounter, retiLevel);
+		}
+	else
+		return 0;
+	}
+
+int CDeviceItem::GetCyberDefenseLevel () const
+
+//	GetCyberDefenseLevel
+//
+//	Returns the cyber defense level of the device.
+
+	{
+	return CProgramDesc::CalcLevel(GetLevel(), GetEnhancements().GetCyberDefenseAdj());
 	}
 
 TSharedPtr<CItemEnhancementStack> CDeviceItem::GetEnhancementStack (void) const
@@ -138,7 +169,8 @@ int CDeviceItem::GetFireArc (void) const
 		case CDeviceRotationDesc::rotOmnidirectional:
 			return 360;
 
-		case CDeviceRotationDesc::rotSwivel:
+		case CDeviceRotationDesc::rotSwivelAlways:
+		case CDeviceRotationDesc::rotSwivelIfTargetInArc:
 			return AngleRange(iMinArc, iMaxArc);
 
 		default:

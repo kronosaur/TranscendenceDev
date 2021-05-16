@@ -119,7 +119,7 @@ CG32bitImage *CCompositeImageModifiers::CreateCopy (CObjectImageArray *pImage, R
 //	Creates a copy of the given image. Caller is reponsible for freeing.
 
 	{
-	if (m_bFullImage || pImage->IsAnimated())
+	if (m_bFullImage || (pImage->IsAnimated() && !m_bStationDamage))
 		{
 		CG32bitImage *pNewImage = new CG32bitImage(pImage->GetImage(NULL_STR));
 

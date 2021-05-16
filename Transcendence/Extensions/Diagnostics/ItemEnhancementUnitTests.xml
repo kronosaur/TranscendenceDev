@@ -72,8 +72,15 @@
 										(@ (objGetItems gPlayerShip "aI") 0)
 										'damageAdj
 										)
+									'laser
+									)												result:40	}
+
+						{	test:'(@ (itmGetProperty 
+										(@ (objGetItems gPlayerShip "aI") 0)
+										'damageAdj
+										)
 									'particle
-									)												result:75	}
+									)												result:100	}
 
 						;	Enhance harderned reactive armor with anti-radiation -------------------
 
@@ -611,7 +618,7 @@
 						;	Longzhu sphere: repair shields -----------------------------------------
 
 						{	test:'(objAddItem gPlayerShip 
-									(itmSetProperty
+									(itmSet@
 										(itmCreate &itClass1Deflector; 1)
 										'damaged True
 										)
@@ -619,7 +626,7 @@
 
 						{	test:'(@ (objEnhanceItem 
 										gPlayerShip
-										(itmSetProperty
+										(itmSet@
 											(itmCreate &itClass1Deflector; 1)
 											'damaged True
 											)
@@ -637,7 +644,7 @@
 						;	Longzhu sphere: repair weapon -----------------------------------------
 
 						{	test:'(objAddItem gPlayerShip 
-									(itmSetProperty
+									(itmSet@
 										(itmCreate &itLaserCannon; 1)
 										'damaged True
 										)
@@ -645,7 +652,7 @@
 
 						{	test:'(@ (objEnhanceItem 
 										gPlayerShip
-										(itmSetProperty
+										(itmSet@
 											(itmCreate &itLaserCannon; 1)
 											'damaged True
 											)
@@ -663,7 +670,7 @@
 						;	Longzhu sphere: repair drive -------------------------------------------
 
 						{	test:'(objAddItem gPlayerShip 
-									(itmSetProperty
+									(itmSet@
 										(itmCreate &itTritiumPropulsionUpgrade; 1)
 										'damaged True
 										)
@@ -671,7 +678,7 @@
 
 						{	test:'(@ (objEnhanceItem 
 										gPlayerShip
-										(itmSetProperty
+										(itmSet@
 											(itmCreate &itTritiumPropulsionUpgrade; 1)
 											'damaged True
 											)
