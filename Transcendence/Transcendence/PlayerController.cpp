@@ -1522,6 +1522,11 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 		case statusReactorRestored:
 			DisplayTranslate(CONSTLIT("msgReactorPowerRestored"));
 			break;
+
+		case statusRotationSet:
+			if (m_pSession && m_pSession->IsMouseAimEnabled())
+				m_pSession->SetMouseAimEnabled(false);
+			break;
 		}
 
 	DEBUG_CATCH

@@ -687,7 +687,14 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		}
 	else if (strEquals(sName, PROPERTY_ROTATION))
 		{
-		SetRotation(pValue->GetIntegerValue());
+		int iNewRotation = pValue->GetIntegerValue();
+		SetRotation(iNewRotation);
+
+		//	Notify controller that the rotation has been set manually. This is
+		//	necessary to turn off mouse move on the player ship (otherwise, we
+		//	will just rotate back to where the mouse points).
+
+		m_pController->OnShipStatus(IShipController::statusRotationSet, iNewRotation);
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_ROTATION_SPEED))

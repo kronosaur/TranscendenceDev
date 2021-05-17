@@ -290,6 +290,7 @@ class IShipController
 			statusReactorOverloadWarning,	//	dwData = sequence
 			statusReactorPowerFailure,		//	Reactor is dead
 			statusReactorRestored,			//	Reactor is functioning normally
+			statusRotationSet,				//	Ship rotation has been set externally
 			statusTimeStopped,				//	Time stopped
 			statusTimeRestored,				//	Time continues
 			};
