@@ -432,6 +432,13 @@ void CAttackOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrd
 		return;
 		}
 
+#ifdef DEBUG
+	if (pOrderTarget->GetSovereign() == Ship.GetSovereign())
+		{
+		ASSERT(false);
+		}
+#endif
+
 	//	Set our state
 
 	m_iState = (m_fHold ? EState::AttackingTargetAndHolding : EState::AttackingTargetAndAvoiding);

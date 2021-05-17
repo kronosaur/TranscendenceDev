@@ -90,6 +90,80 @@ COrderDesc::COrderDesc (IShipController::OrderTypes iOrder, CSpaceObject *pTarge
 	{
 	}
 
+ICCItemPtr COrderDesc::AsCCItem () const
+
+//	AsCCItem
+//
+//	Export order desc as a struct.
+
+	{
+	if (GetOrder() == IShipController::orderNone)
+		return ICCItemPtr::Nil();
+
+	//	Create result 
+
+	ICCItemPtr pResult(ICCItem::SymbolTable);
+
+	//	Add order name
+
+	pResult->SetStringAt(CONSTLIT("order"), IShipController::GetOrderName(GetOrder()));
+
+	//	Add the target
+
+	if (IShipController::OrderHasTarget(GetOrder()))
+		{
+		CSpaceObject *pTarget = GetTarget();
+		if (pTarget)
+			pResult->SetIntegerAt(CONSTLIT("targetID"), pTarget->GetID());
+		}
+
+	//	Add order data
+
+	switch (GetDataType())
+		{
+		case EDataType::None:
+			break;
+
+		case EDataType::Int32:
+			pResult->SetStringAt(CONSTLIT("dataType"), "int32");
+			pResult->SetIntegerAt(CONSTLIT("data"), GetDataInteger());
+			break;
+
+		case EDataType::Int16Pair:
+			pResult->SetStringAt(CONSTLIT("dataType"), "int16Pair");
+			pResult->SetIntegerAt(CONSTLIT("data1"), GetDataInteger());
+			pResult->SetIntegerAt(CONSTLIT("data2"), GetDataInteger2());
+			break;
+
+		case EDataType::Item:
+			pResult->SetStringAt(CONSTLIT("dataType"), "item");
+			pResult->SetAt(CONSTLIT("data"), CTLispConvert::CreateItem(GetDataItem()));
+			break;
+
+		case EDataType::String:
+			pResult->SetStringAt(CONSTLIT("dataType"), "string");
+			pResult->SetStringAt(CONSTLIT("data"), GetDataString());
+			break;
+
+		case EDataType::Vector:
+			pResult->SetStringAt(CONSTLIT("dataType"), "vector");
+			pResult->SetAt(CONSTLIT("data"), CTLispConvert::CreateVector(GetDataVector()));
+			break;
+
+		case EDataType::CCItem:
+			pResult->SetStringAt(CONSTLIT("dataType"), "ccItem");
+			pResult->SetAt(CONSTLIT("data"), GetDataCCItem());
+			break;
+
+		default:
+			throw CException(ERR_FAIL);
+		}
+
+	//	Done
+
+	return pResult;
+	}
+
 ICCItemPtr COrderDesc::AsCCItemList () const
 
 //	AsCCItem

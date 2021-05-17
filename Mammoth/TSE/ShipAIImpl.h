@@ -259,6 +259,7 @@ class CAIDeterModule
 		void BehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &TargetObj, bool bNoTurn);
 		void Cancel () { m_pTarget = NULL; }
 		bool IsEnabled () const { return m_pTarget != NULL; }
+		ICCItemPtr GetAIStatus () const;
 		CSpaceObject *GetTarget () const { return m_pTarget; }
 		void OnObjDestroyed (CShip &Ship, const SDestroyCtx &Ctx);
 		void ReadFromStream (SLoadCtx &Ctx);
@@ -286,6 +287,7 @@ class IOrderModule
 		static IOrderModule *Create (IShipController::OrderTypes iOrder);
 		CString DebugCrashInfo (CShip *pShip);
 		void Destroyed (CShip *pShip, SDestroyCtx &Ctx);
+		ICCItemPtr GetAIStatus (const CShip &Ship, const CAIBehaviorCtx &Ctx) const;
 		CSpaceObject *GetBase (void) { return OnGetBase(); }
 		IShipController::OrderTypes GetOrder (void) { return OnGetOrder(); }
 		AIReaction GetReactToAttack () const { return OnGetReactToAttack(); }
@@ -303,6 +305,7 @@ class IOrderModule
 	protected:
 		//	IOrderModule virtuals
 		virtual bool IsAttacking (void) { return false; }
+		virtual void OnAccumulateAIStatus (const CShip &Ship, const CAIBehaviorCtx &Ctx, ICCItem &Result) const { }
 		virtual void OnAttacked (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &AttackerObj, const SDamageCtx &Damage, bool bFriendlyFire) { }
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) = 0;
 		virtual void OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc) { }
@@ -441,6 +444,7 @@ class CBaseShipAI : public IShipController
 		bool CheckOutOfZone (CSpaceObject *pBase, Metric rInnerRadius, Metric rOuterRadius, int iInterval);
 		void FireOnOrderChanged (void);
 		void FireOnOrdersCompleted (void);
+		ICCItemPtr GetAIStatus () const;
 		IShipController::OrderTypes GetCurrentOrder (void) const { return m_Orders.GetCurrentOrder(); }
 		CSpaceObject *GetCurrentOrderTarget (void) const { return m_Orders.GetCurrentOrderTarget(); }
 		DWORD GetCurrentOrderDataInteger (void) const { return m_Orders.GetCurrentOrderDesc().GetDataInteger(); }

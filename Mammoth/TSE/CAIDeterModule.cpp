@@ -64,6 +64,23 @@ void CAIDeterModule::BehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObje
 	m_bNoTurn = bNoTurn;
 	}
 
+ICCItemPtr CAIDeterModule::GetAIStatus () const
+
+//	GetAIStatus
+//
+//	Returns current status.
+
+	{
+	if (!m_pTarget)
+		return ICCItemPtr::Nil();
+
+	ICCItemPtr pResult(ICCItem::SymbolTable);
+	pResult->SetIntegerAt(CONSTLIT("targetID"), m_pTarget->GetID());
+	pResult->SetBooleanAt(CONSTLIT("noTurn"), m_bNoTurn);
+
+	return pResult;
+	}
+
 void CAIDeterModule::OnObjDestroyed (CShip &Ship, const SDestroyCtx &Ctx)
 
 //	OnObjDestroy

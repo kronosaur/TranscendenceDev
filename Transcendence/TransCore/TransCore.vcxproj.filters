@@ -1080,5 +1080,8 @@
     <Xml Include="Sisters02.xml">
       <Filter>Human Space Library\Sisters</Filter>
     </Xml>
+    <Xml Include="..\Extensions\Diagnostics\CombatAI.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

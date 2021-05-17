@@ -16,6 +16,16 @@ void CGuardOrder::Init (const COrderDesc &OrderDesc)
 	m_rThreatStopRange = OrderDesc.GetDataDouble(CONSTLIT("threatStopRange"), DEFAULT_THREAT_STOP_RANGE_LS) * LIGHT_SECOND;
 	}
 
+void CGuardOrder::OnAccumulateAIStatus (const CShip &Ship, const CAIBehaviorCtx &Ctx, ICCItem &Result) const
+
+//	OnAccumulateAIStatus
+//
+//	Sets AI status.
+
+	{
+	Result.SetStringAt(CONSTLIT("class"), CONSTLIT("CGuardOrder"));
+	}
+
 void CGuardOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 //	OnBehavior

@@ -226,11 +226,13 @@ class CHitCtx
 class CAttackDetector
 	{
 	public:
-		CAttackDetector (void);
+		CAttackDetector (void) { }
 
+		ICCItemPtr AsCCItem () const;
 		void Blacklist (void) { m_iCounter = -1; }
 		void ClearBlacklist (void) { m_iCounter = 0; }
 		bool IsBlacklisted (void) const { return m_iCounter == -1; }
+		bool IsEmpty () const { return (m_iCounter == 0 && m_iLastHit == 0); }
 		bool Hit (int iTick);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void Update (int iTick) { if ((iTick % DECAY_RATE) == 0) OnUpdate(); }
@@ -246,8 +248,8 @@ class CAttackDetector
 
 		void OnUpdate (void);
 
-		int m_iCounter;
-		int m_iLastHit;
+		int m_iCounter = 0;
+		int m_iLastHit = 0;
 	};
 
 //	CSpaceObject Definitions ---------------------------------------------------

@@ -721,6 +721,38 @@ CString CBaseShipAI::GetAISettingString (const CString &sSetting)
 	return m_AICtx.GetAISetting(sSetting); 
 	}
 
+ICCItemPtr CBaseShipAI::GetAIStatus () const
+
+//	GetAIStatus
+//
+//	Returns AI status, mostly for debugging.
+
+	{
+	ICCItemPtr pResult(ICCItem::SymbolTable);
+
+	if (m_Orders.GetCount() > 0)
+		{
+		pResult->SetAt(CONSTLIT("order"), GetCurrentOrderDesc().AsCCItem());
+		}
+
+	if (m_pOrderModule)
+		{
+		pResult->SetAt(CONSTLIT("orderModule"), m_pOrderModule->GetAIStatus(*m_pShip, m_AICtx));
+		}
+
+	if (m_DeterModule.IsEnabled())
+		{
+		pResult->SetAt(CONSTLIT("deterModule"), m_DeterModule.GetAIStatus());
+		}
+
+	if (!m_Blacklist.IsEmpty())
+		{
+		pResult->SetAt(CONSTLIT("blacklistModule"), m_Blacklist.AsCCItem());
+		}
+
+	return pResult;
+	}
+
 CSpaceObject *CBaseShipAI::GetBase (void) const
 
 //	GetBase

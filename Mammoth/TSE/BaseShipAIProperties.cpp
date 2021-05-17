@@ -5,7 +5,7 @@
 
 #include "PreComp.h"
 
-TPropertyHandler<CBaseShipAI> CBaseShipAI::m_PropertyTable = std::array<TPropertyHandler<CBaseShipAI>::SPropertyDef, 3> {{
+TPropertyHandler<CBaseShipAI> CBaseShipAI::m_PropertyTable = std::array<TPropertyHandler<CBaseShipAI>::SPropertyDef, 4> {{
 		{
 		"ai.combatStyle",			"Combat style",
 		[](const CBaseShipAI &BaseShipAI, const CString &sProperty) 
@@ -24,6 +24,15 @@ TPropertyHandler<CBaseShipAI> CBaseShipAI::m_PropertyTable = std::array<TPropert
 				return ICCItemPtr::Nil();
 			else
 				return ICCItemPtr(CAISettings::ConvertToID(iStyle));
+			},
+		NULL,
+		},
+
+		{
+		"ai.status",				"Current status of AI systems",
+		[](const CBaseShipAI &BaseShipAI, const CString &sProperty) 
+			{
+			return BaseShipAI.GetAIStatus();
 			},
 		NULL,
 		},

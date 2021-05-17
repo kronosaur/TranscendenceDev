@@ -451,6 +451,7 @@ class COrderDesc
 		COrderDesc &operator= (COrderDesc &&Src) noexcept { CleanUp(); Move(Src); return *this; }
 		explicit operator bool () const { return !IsEmpty(); }
 
+		ICCItemPtr AsCCItem () const;
 		ICCItemPtr AsCCItemList () const;
 		bool GetDataBoolean (const CString &sField, bool bDefault = false) const;
 		DiceRange GetDataDiceRange (const CString &sField, int iDefault = 0, CString *retsSuffix = NULL) const;

@@ -212,6 +212,26 @@ void IOrderModule::Destroyed (CShip *pShip, SDestroyCtx &Ctx)
 	OnDestroyed(pShip, Ctx);
 	}
 
+ICCItemPtr IOrderModule::GetAIStatus (const CShip &Ship, const CAIBehaviorCtx &Ctx) const
+
+//	GetAIStatus
+//
+//	Returns status (mostly for debugging).
+
+	{
+	ICCItemPtr pResult(ICCItem::SymbolTable);
+
+	for (int i = 0; i < m_iObjCount; i++)
+		{
+		if (m_Objs[i])
+			pResult->SetIntegerAt(strPatternSubst(CONSTLIT("obj%dID"), i), m_Objs[i]->GetID());
+		}
+
+	OnAccumulateAIStatus(Ship, Ctx, *pResult);
+
+	return pResult;
+	}
+
 void IOrderModule::ObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx)
 
 //	ObjDestroyed
