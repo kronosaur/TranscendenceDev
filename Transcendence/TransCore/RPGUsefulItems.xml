@@ -355,8 +355,8 @@
 								(scrSetDesc gScreen (@ useInfo 'desc))
 
 							(scrSetDescTranslate gScreen 'descCanNotUse {
-								useItem: (itmGetName useItem 'article)
-								dstItem: (itmGetName dstItem 'article)
+								useItem: (itmGetName useItem '(article escapeQuotes))
+								dstItem: (itmGetName dstItem '(article escapeQuotes))
 								})
 							)
 						(scrEnableAction gScreen 'actionUse (@ useInfo 'canUse))
@@ -489,7 +489,7 @@
 			<Text id="labelDevicesCargo">Devices Cargo</Text>
 			<Text id="labelAmmoCargo">Ammo Cargo</Text>
 
-			<Text id="descCanNotUse">You cannot use %useItem% on this %dstItem%.</Text>
+			<Text id="descCanNotUse">You cannot use %useItem% on %dstItem%.</Text>
 		</Language>
 	</DockScreen>
 
