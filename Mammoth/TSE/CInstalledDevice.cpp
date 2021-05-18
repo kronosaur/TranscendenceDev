@@ -342,7 +342,7 @@ ALERROR CInstalledDevice::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
-void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iDeviceSlot, const SDeviceDesc &Desc, bool bInCreate)
+void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iDeviceSlot, const SDeviceDesc &Desc)
 
 //	Install
 //
@@ -398,16 +398,6 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	//	based on enhancements later.
 
 	m_iActivateDelay = m_pClass->GetActivateDelay(ItemCtx);
-
-	//	Finish install, if necessary
-
-	if (!bInCreate)
-		{
-		//	Event (when creating a ship we wait until the
-		//	whole ship is created before firing the event)
-
-		FinishInstall();
-		}
 
 	DEBUG_CATCH
 	}

@@ -563,7 +563,7 @@ class CInstalledDevice
 		DWORD GetUNID (void) const { return m_pClass.GetUNID(); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitFromDesc (const SDeviceDesc &Desc);
-		void Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iDeviceSlot, const SDeviceDesc &Desc, bool bInCreate = false);
+		void Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iDeviceSlot, const SDeviceDesc &Desc);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 		void ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx);
 		void SetClass (CDeviceClass *pClass) { m_pClass.Set(pClass); }

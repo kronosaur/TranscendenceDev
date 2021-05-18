@@ -153,6 +153,12 @@
 																					result:True }
 
 						{	test:'(objAddItem gPlayerShip &itLaserCannon; 1)		result:'ignore }
+						{	test:'(objCanInstallItem
+									gPlayerShip 
+									(itmCreate &itLaserCannon; 1)
+									'turret01
+									)
+																					result:(list True 'ok "") }
 						{	test:'(shpInstallDevice 
 									gPlayerShip 
 									(itmCreate &itLaserCannon; 1)
@@ -173,6 +179,12 @@
 									'slotID
 									)
 																					result:'turret01 }
+						{	test:'(@ (objCanInstallItem
+									gPlayerShip 
+									(itmCreate &itRecoillessCannon; 1)
+									'turret01
+									) 1)
+																					result:'replacementRequired }
 
 						;	Installed Armor
 

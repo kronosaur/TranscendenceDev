@@ -100,12 +100,12 @@ void CDeviceSystem::AccumulatePerformance (SShipPerformanceCtx &Ctx) const
 //	Accumulate performance metrics.
 
 	{
-    for (int i = 0; i < m_Devices.GetCount(); i++)
-        if (!m_Devices[i]->IsEmpty())
-            {
-            CItemCtx ItemCtx(Ctx.pShip, m_Devices[i]);
-            ItemCtx.GetDevice()->AccumulatePerformance(ItemCtx, Ctx);
-            }
+	for (int i = 0; i < m_Devices.GetCount(); i++)
+		if (!m_Devices[i]->IsEmpty())
+			{
+			CItemCtx ItemCtx(Ctx.pShip, m_Devices[i]);
+			ItemCtx.GetDevice()->AccumulatePerformance(ItemCtx, Ctx);
+			}
 	}
 
 void CDeviceSystem::AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, int &iPowerUsed, int &iPowerGenerated)
@@ -654,7 +654,10 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, in
 
 		//	Install the device
 
-		m_Devices[i]->Install(*pObj, ObjItems, i, NewDevice, true);
+		m_Devices[i]->Install(*pObj, ObjItems, i, NewDevice);
+
+		//	NOTE: FinishInstall is called at the end, after the ship is been
+		//	created.
 
 		//	Assign to named devices
 
@@ -744,7 +747,7 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 		}
 
 	CInstalledDevice &Device = *m_Devices[iDeviceSlot];
-    CItemCtx ItemCtx(pObj, &Device);
+	CItemCtx ItemCtx(pObj, &Device);
 	const CItem &Item = ItemList.GetItemAtCursor();
 	const CDeviceClass *pClass = Item.GetType()->GetDeviceClass();
 	if (!pClass)
@@ -768,6 +771,7 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 	//	Update the structure
 
 	Device.Install(*pObj, ItemList, iDeviceSlot, Desc);
+	Device.FinishInstall();
 
 	//	If we have a slot positing index, set it now
 
