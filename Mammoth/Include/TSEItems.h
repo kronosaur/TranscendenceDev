@@ -520,6 +520,7 @@ class CItem
 
 		SExtra *m_pExtra = NULL;				//	Extra data (may be NULL)
 
+		static TPropertyHandler<CItem> m_PropertyTable;
 		static CItem m_NullItem;
 		static CItemEnhancement m_NullMod;
 	};
