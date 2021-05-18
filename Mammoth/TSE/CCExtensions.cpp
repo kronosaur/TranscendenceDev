@@ -619,7 +619,6 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FIELD_ARC_OFFSET				CONSTLIT("arcOffset")
 #define FIELD_ATTRIBS					CONSTLIT("attribs")
 #define FIELD_CENTER					CONSTLIT("center")
-#define FIELD_DEVICE_SLOT				CONSTLIT("deviceSlot")
 #define FIELD_ERODE						CONSTLIT("erode")
 #define FIELD_EXCLUDE_WORLDS			CONSTLIT("excludeWorlds")
 #define FIELD_HEIGHT					CONSTLIT("height")
@@ -630,7 +629,6 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FIELD_RADIUS_OFFSET				CONSTLIT("radiusOffset")
 #define FIELD_REMOVE					CONSTLIT("remove")
 #define FIELD_ROTATION					CONSTLIT("rotation")
-#define FIELD_SLOT_POS_INDEX			CONSTLIT("slotPosIndex")
 #define FIELD_SOURCE_ONLY				CONSTLIT("sourceOnly")
 #define FIELD_TYPE						CONSTLIT("type")
 #define FIELD_WIDTH						CONSTLIT("width")
@@ -6857,21 +6855,27 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Invalid item"), pArgs->GetElement(1));
 
 			CDeviceSystem::SSlotDesc Slot;
-			Slot.iIndex = ((pArgs->GetCount() > 2 && !pArgs->GetElement(2)->IsNil()) ? pArgs->GetElement(2)->GetIntegerValue() : -1);
-
-			//	Validate the slot
-
-			if (Slot.iIndex != -1)
+			if (pArgs->GetCount() > 2)
 				{
-				CShip *pShip = pObj->AsShip();
-				if (Item.IsArmor() 
-						&& pShip 
-						&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetArmorSectionCount()))
-					return pCC->CreateError(CONSTLIT("Invalid armor segment"), pArgs->GetElement(2));
-				if (Item.IsDevice()
-						&& pShip
-						&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetDeviceCount() || pShip->GetDevice(Slot.iIndex)->IsEmpty()))
-					return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+				if (!CTLispConvert::AsSlotDesc(*pArgs->GetElement(2), Slot))
+					{
+					return pCC->CreateError(CONSTLIT("Invalid slot desc"), pArgs->GetElement(2));
+					}
+
+				//	Validate the slot
+
+				if (Slot.iIndex != -1)
+					{
+					CShip *pShip = pObj->AsShip();
+					if (Item.IsArmor() 
+							&& pShip 
+							&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetArmorSectionCount()))
+						return pCC->CreateError(CONSTLIT("Invalid armor segment"), pArgs->GetElement(2));
+					if (Item.IsDevice()
+							&& pShip
+							&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetDeviceCount() || pShip->GetDevice(Slot.iIndex)->IsEmpty()))
+						return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+					}
 				}
 
 			//	Ask the object
@@ -11114,20 +11118,11 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	See if we passed in a device slot
 
 			CDeviceSystem::SSlotDesc Slot;
-			if (pArgs->GetCount() >= 3)
+			if (pArgs->GetCount() > 2)
 				{
-				ICCItem *pOptions = pArgs->GetElement(2);
-				if (pOptions->IsInteger())
-					Slot.iIndex = pOptions->GetIntegerValue();
-				else
+				if (!CTLispConvert::AsSlotDesc(*pArgs->GetElement(2), Slot))
 					{
-					ICCItem *pDeviceSlot = pOptions->GetElement(FIELD_DEVICE_SLOT);
-					if (pDeviceSlot && !pDeviceSlot->IsNil())
-						Slot.iIndex = pDeviceSlot->GetIntegerValue();
-
-					ICCItem *pSlotPosIndex = pOptions->GetElement(FIELD_SLOT_POS_INDEX);
-					if (pSlotPosIndex && !pSlotPosIndex->IsNil())
-						Slot.iPos = pSlotPosIndex->GetIntegerValue();
+					return pCC->CreateError(CONSTLIT("Invalid slot desc"), pArgs->GetElement(2));
 					}
 
 				if (Slot.iIndex != -1)
