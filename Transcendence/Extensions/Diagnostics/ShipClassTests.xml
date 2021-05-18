@@ -152,6 +152,28 @@
 									)
 																					result:True }
 
+						{	test:'(objAddItem gPlayerShip &itLaserCannon; 1)		result:'ignore }
+						{	test:'(shpInstallDevice 
+									gPlayerShip 
+									(itmCreate &itLaserCannon; 1)
+									'turret01
+									)
+																					result:'ignore }
+						{	test:'(itmGetType 
+									(@ (objGetItems gPlayerShip "pI +unid:&itLaserCannon;;") 0)
+									)
+																					result:&itLaserCannon; }
+						{	test:'(itm@ 
+									(@ (objGetItems gPlayerShip "pI +unid:&itLaserCannon;;") 0)
+									'omnidirectional
+									)
+																					result:True }
+						{	test:'(itm@ 
+									(@ (objGetItems gPlayerShip "pI +unid:&itLaserCannon;;") 0)
+									'slotID
+									)
+																					result:'turret01 }
+
 						;	Installed Armor
 
 						{	test:'(itm@ 
@@ -260,6 +282,13 @@
 				</EnhancementAbilities>
 			</DeviceSlot>
 			<DeviceSlot criteria="w" posAngle="0" posRadius="22"/>
+
+			<DeviceSlot id="turret01">
+				<EnhancementAbilities>
+					<Enhance enhancement=	"+omnidirectional"
+							 />
+				</EnhancementAbilities>
+			</DeviceSlot>
 		</DeviceSlots>
 
 		<!-- Configuration -->
