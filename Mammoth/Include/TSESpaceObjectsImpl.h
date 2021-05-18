@@ -590,7 +590,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 			};
 
 		int ComputeVaporTrail (void);
-		void CreateFragments (const CVector &vPos);
+		void CreateFragments (const CVector &vPos, const CVector &vVel = NullVector);
 		Metric GetAge (void) const;
 		int GetManeuverRate (void) const;
 		bool IsDetonatingOnMining () const;

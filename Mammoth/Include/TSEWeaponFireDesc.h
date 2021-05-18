@@ -607,10 +607,14 @@ class CWeaponFireDesc
 			evtCount					= 8,
 			};
 
+		static constexpr int DEFAULT_FRAGMENT_DIRECTION = 360;
+
 		struct SFragmentDesc
 			{
 			CWeaponFireDesc *pDesc;			//	Data for fragments
 			DiceRange Count;				//	Number of fragments
+			DiceRange Direction;			//	Fragmentation direction relative to trigger (or path) (360 = random)
+			DiceRange FragmentArc;			//	Angle of arc of fragmentation (0 = omnidirectional).
 
 			SFragmentDesc *pNext;
 			};

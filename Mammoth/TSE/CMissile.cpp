@@ -319,7 +319,7 @@ ALERROR CMissile::Create (CSystem &System, SShotCreateCtx &Ctx, CMissile **retpM
 	return NOERROR;
 	}
 
-void CMissile::CreateFragments (const CVector &vPos)
+void CMissile::CreateFragments (const CVector &vPos, const CVector &vVel)
 
 //	CreateFragments
 //
@@ -362,6 +362,17 @@ void CMissile::CreateFragments (const CVector &vPos)
 		FragCtx.Source = m_Source;
 		FragCtx.pTarget = m_pTarget;
 		FragCtx.vPos = vPos;
+		FragCtx.vVel = vVel;
+
+		//	The direction is either towards the object that triggered us, or
+		//	along the direction of travel.
+
+		if (m_pHit)
+			FragCtx.iDirection = VectorToPolar(m_pHit->GetPos() - vPos);
+		else
+			FragCtx.iDirection = VectorToPolar(GetVel());
+
+		//	Create all fragments
 
 		GetSystem()->CreateWeaponFragments(FragCtx,	this, iFraction);
 		}
@@ -1323,7 +1334,15 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		if (m_iNextDetonation != -1 && m_iTick >= m_iNextDetonation)
 			{
-			CreateFragments(GetPos());
+			//	For recurring fragmentation, we inherit the original source
+			//	velocity.
+
+			CVector vStdVel = PolarToVector(m_iRotation, m_pDesc->GetInitialSpeed());
+			CVector vVel = GetVel() - vStdVel;
+			
+			//	Do it
+
+			CreateFragments(GetPos(), vVel);
 
 			int iNext;
 			if (m_pDesc->HasFragmentInterval(&iNext))

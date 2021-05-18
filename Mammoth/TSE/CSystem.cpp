@@ -1478,9 +1478,31 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 			TArray<CSpaceObject *> Targets;
 			Targets.InsertEmpty(iFragmentCount);
 
+			//	If we have a shaped charge, then distribute
+
+			if (!pFragDesc->FragmentArc.IsEmpty())
+				{
+				int iArc = pFragDesc->FragmentArc.Roll();
+				int iHalfArc = iArc / 2;
+
+				for (int i = 0; i < iFragmentCount; i++)
+					{
+					int iDirOffset = pFragDesc->Direction.Roll();
+					int iCenterAngle = Ctx.iDirection;
+					if (iDirOffset != CWeaponFireDesc::DEFAULT_FRAGMENT_DIRECTION)
+						iCenterAngle += iDirOffset;
+
+					int iMinAngle = iCenterAngle - iHalfArc;
+					int iMaxAngle = iMinAngle + iArc;
+
+					Angles[i] = AngleMod(mathRandom(iMinAngle, iMaxAngle));
+					Targets[i] = Ctx.pTarget;
+					}
+				}
+
 			//	If we have lots of fragments then we just pick random angles
 
-			if (iFragmentCount > 90)
+			else if (iFragmentCount > 90)
 				{
 				for (i = 0; i < iFragmentCount; i++)
 					{
@@ -1493,8 +1515,19 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 
 			else
 				{
-				int iAngleOffset = mathRandom(0, 359);
-				int iAngleVar = 90 / iFragmentCount;
+				int iDirOffset = pFragDesc->Direction.Roll();
+				int iAngleOffset;
+				int iAngleVar;
+				if (iDirOffset == CWeaponFireDesc::DEFAULT_FRAGMENT_DIRECTION)
+					{
+					iAngleOffset = mathRandom(0, 359);
+					iAngleVar = 90 / iFragmentCount;
+					}
+				else
+					{
+					iAngleOffset = Ctx.iDirection + iDirOffset;
+					iAngleVar = 0;
+					}
 
 				//	Compute angles for each fragment
 

@@ -18,6 +18,7 @@
 
 #define ACCELERATION_FACTOR_ATTRIB				CONSTLIT("accelerationFactor")
 #define AMMO_ID_ATTRIB							CONSTLIT("ammoID")
+#define ARC_ANGLE_ATTRIB						CONSTLIT("arcAngle")
 #define AREA_DAMAGE_DENSITY_ATTRIB				CONSTLIT("areaDamageDensity")
 #define AUTO_TARGET_ATTRIB						CONSTLIT("autoAcquireTarget")
 #define CAN_HIT_SOURCE_ATTRIB					CONSTLIT("canHitSource")
@@ -26,6 +27,7 @@
 #define DAMAGE_ATTRIB							CONSTLIT("damage")
 #define DAMAGE_AT_MAX_RANGE_ATTRIB				CONSTLIT("damageAtMaxRange")
 #define DIRECTIONAL_ATTRIB						CONSTLIT("directional")
+#define DIRECTION_ATTRIB						CONSTLIT("direction")
 #define EXHAUST_DRAG_ATTRIB						CONSTLIT("drag")
 #define EFFECT_ATTRIB							CONSTLIT("effect")
 #define EXPANSION_SPEED_ATTRIB					CONSTLIT("expansionSpeed")
@@ -2313,6 +2315,11 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		if (sCount.IsBlank())
 			sCount = pDesc->GetAttribute(FRAGMENT_COUNT_ATTRIB);
 		pNewDesc->Count.LoadFromXML(sCount, 1);
+
+		//	Fragmentation Arc
+
+		pNewDesc->Direction.LoadFromXML(pFragDesc->GetAttribute(DIRECTION_ATTRIB), DEFAULT_FRAGMENT_DIRECTION);
+		pNewDesc->FragmentArc.LoadFromXML(pFragDesc->GetAttribute(ARC_ANGLE_ATTRIB), 0);
 
 		//	Set MIRV flag
 
