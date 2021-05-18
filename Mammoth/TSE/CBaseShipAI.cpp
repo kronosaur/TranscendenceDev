@@ -2304,17 +2304,18 @@ void CBaseShipAI::UpgradeWeaponBehavior (void)
 
 			if (!BestItem.IsEmpty())
 				{
-				int iSlot = DeviceItem.GetInstalledDevice()->GetDeviceSlot();
+				CDeviceSystem::SSlotDesc Slot;
+				Slot.iIndex = DeviceItem.GetInstalledDevice()->GetDeviceSlot();
 
 				//	Uninstall the previous weapon
 
-				m_pShip->SetCursorAtDevice(ItemList, iSlot);
+				m_pShip->SetCursorAtDevice(ItemList, Slot.iIndex);
 				m_pShip->RemoveItemAsDevice(ItemList);
 
 				//	Install the new item
 
 				ItemList.SetCursorAtItem(BestItem);
-				m_pShip->InstallItemAsDevice(ItemList, iSlot);
+				m_pShip->InstallItemAsDevice(ItemList, Slot);
 
 				bWeaponsInstalled = true;
 				}

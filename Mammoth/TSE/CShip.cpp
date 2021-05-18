@@ -644,6 +644,8 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 			case itemcatLauncher:
 				if (Hull.GetMaxLaunchers() == 1)
 					return insReplaceLauncher;
+				else
+					break;
 
 			case itemcatReactor:
 				return insReplaceReactor;
@@ -989,7 +991,7 @@ bool CShip::CanBeDestroyedBy (CSpaceObject &Attacker) const
 	return false;
 	}
 
-bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
+bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
 
 //	CanInstallItem
 //
@@ -1001,6 +1003,8 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 	CString sResult;
 	CItem ItemToReplace;
 	const CHullDesc &Hull = m_pClass->GetHullDesc();
+
+	int iSlot = Slot.iIndex;
 
 	//	If this is an armor item, see if we can install it.
 
@@ -1015,7 +1019,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 		//	Ask the object if we can install this item
 
-		else if (!FireCanInstallItem(Item, iSlot, &sResult))
+		else if (!FireCanInstallItem(Item, Slot, &sResult))
 			iResult = insCannotInstall;
 
 		//	See if the armor is too heavy
@@ -1025,7 +1029,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 		//	Fire CanBeInstalled to check for custom conditions
 
-		else if (!Item.FireCanBeInstalled(this, iSlot, &sResult))
+		else if (!Item.FireCanBeInstalled(this, Slot.iIndex, &sResult))
 			iResult = insCannotInstall;
 
 		//	Otherwise, we're OK
@@ -1036,7 +1040,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 			//	replaced.
 
 			CItemListManipulator ItemList(GetItemList());
-			if (iSlot != -1 && SetCursorAtArmor(ItemList, iSlot))
+			if (Slot.iIndex != -1 && SetCursorAtArmor(ItemList, Slot.iIndex))
 				{
 				ItemToReplace = ItemList.GetItemAtCursor();
 
@@ -1047,7 +1051,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 				//	Check to see if we are allowed to remove the item
 
-				else if (!FireCanRemoveItem(ItemToReplace, iSlot, &sResult))
+				else if (!FireCanRemoveItem(ItemToReplace, Slot.iIndex, &sResult))
 					iResult = insCannotInstall;
 
 				//	Otherwise, OK.
@@ -1087,12 +1091,12 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 		//	Ask the object if we can install this item
 
-		else if (!FireCanInstallItem(Item, iSlot, &sResult))
+		else if (!FireCanInstallItem(Item, Slot, &sResult))
 			iResult = insCannotInstall;
 
 		//	Fire CanBeInstalled to check for custom conditions
 
-		else if (!Item.FireCanBeInstalled(this, iSlot, &sResult))
+		else if (!Item.FireCanBeInstalled(this, Slot.iIndex, &sResult))
 			iResult = insCannotInstall;
 
 		//	See if the ship's engine core is powerful enough
@@ -1119,7 +1123,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 		else
 			{
 			int iRecommendedSlot;
-			iResult = CalcDeviceToReplace(Item, iSlot, &iRecommendedSlot);
+			iResult = CalcDeviceToReplace(Item, Slot.iIndex, &iRecommendedSlot);
 			switch (iResult)
 				{
 				case insOK:
@@ -3593,7 +3597,7 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 	m_pController->OnShipStatus(IShipController::statusArmorRepaired, iSect);
 	}
 
-void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot, int iSlotPosIndex)
+void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSystem::SSlotDesc &Slot)
 
 //	InstallItemAsDevice
 //
@@ -3607,9 +3611,11 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 
 	//	If necessary, remove previous item in a slot
 
+	int iDeviceSlot = Slot.iIndex;
+	int iSlotPosIndex = Slot.iPos;
 	Metric rOldFuel = -1.0;
 	int iSlotToReplace;
-	CalcDeviceToReplace(ItemList.GetItemAtCursor(), iDeviceSlot, &iSlotToReplace);
+	CalcDeviceToReplace(ItemList.GetItemAtCursor(), Slot.iIndex, &iSlotToReplace);
 	if (iSlotToReplace != -1)
 		{
 		const CInstalledDevice &ToReplace = m_Devices.GetDevice(iSlotToReplace);
@@ -3637,7 +3643,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 
 	//	Install
 
-	if (!m_Devices.Install(this, ItemList, iDeviceSlot, iSlotPosIndex, false, &iDeviceSlot))
+	if (!m_Devices.Install(this, ItemList, Slot.iIndex, iSlotPosIndex, false, &iDeviceSlot))
 		return;
 
 	//	Recalc bonuses

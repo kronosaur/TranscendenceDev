@@ -6856,20 +6856,21 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (Item.GetType() == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid item"), pArgs->GetElement(1));
 
-			int iSlot = ((pArgs->GetCount() > 2 && !pArgs->GetElement(2)->IsNil()) ? pArgs->GetElement(2)->GetIntegerValue() : -1);
+			CDeviceSystem::SSlotDesc Slot;
+			Slot.iIndex = ((pArgs->GetCount() > 2 && !pArgs->GetElement(2)->IsNil()) ? pArgs->GetElement(2)->GetIntegerValue() : -1);
 
 			//	Validate the slot
 
-			if (iSlot != -1)
+			if (Slot.iIndex != -1)
 				{
 				CShip *pShip = pObj->AsShip();
 				if (Item.IsArmor() 
 						&& pShip 
-						&& (iSlot < 0 || iSlot >= pShip->GetArmorSectionCount()))
+						&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetArmorSectionCount()))
 					return pCC->CreateError(CONSTLIT("Invalid armor segment"), pArgs->GetElement(2));
 				if (Item.IsDevice()
 						&& pShip
-						&& (iSlot < 0 || iSlot >= pShip->GetDeviceCount() || pShip->GetDevice(iSlot)->IsEmpty()))
+						&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetDeviceCount() || pShip->GetDevice(Slot.iIndex)->IsEmpty()))
 					return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
 				}
 
@@ -6878,7 +6879,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CSpaceObject::InstallItemResults iResult;
 			CString sResult;
 			CItem ItemToReplace;
-			bool bCanInstall = pObj->CanInstallItem(Item, iSlot, &iResult, &sResult, &ItemToReplace);
+			bool bCanInstall = pObj->CanInstallItem(Item, Slot, &iResult, &sResult, &ItemToReplace);
 
 			//	Generate the result
 
@@ -10891,13 +10892,14 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_SHIP_CAN_INSTALL_DEVICE:
 			{
 			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
-			int iSlot = (pArgs->GetCount() > 2 ? pArgs->GetElement(2)->GetIntegerValue() : -1);
+			CDeviceSystem::SSlotDesc Slot;
+			Slot.iIndex = (pArgs->GetCount() > 2 ? pArgs->GetElement(2)->GetIntegerValue() : -1);
 
 			//	Check standard conditions
 
 			CSpaceObject::InstallItemResults iResult;
 			CString sResult;
-			pShip->CanInstallItem(Item, iSlot, &iResult, &sResult);
+			pShip->CanInstallItem(Item, Slot, &iResult, &sResult);
 
 			if (!sResult.IsBlank())
 				return pCC->CreateString(sResult);
@@ -11111,35 +11113,34 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	See if we passed in a device slot
 
-			int iDeviceSlot = -1;
-			int iSlotPosIndex = -1;
+			CDeviceSystem::SSlotDesc Slot;
 			if (pArgs->GetCount() >= 3)
 				{
 				ICCItem *pOptions = pArgs->GetElement(2);
 				if (pOptions->IsInteger())
-					iDeviceSlot = pOptions->GetIntegerValue();
+					Slot.iIndex = pOptions->GetIntegerValue();
 				else
 					{
 					ICCItem *pDeviceSlot = pOptions->GetElement(FIELD_DEVICE_SLOT);
 					if (pDeviceSlot && !pDeviceSlot->IsNil())
-						iDeviceSlot = pDeviceSlot->GetIntegerValue();
+						Slot.iIndex = pDeviceSlot->GetIntegerValue();
 
 					ICCItem *pSlotPosIndex = pOptions->GetElement(FIELD_SLOT_POS_INDEX);
 					if (pSlotPosIndex && !pSlotPosIndex->IsNil())
-						iSlotPosIndex = pSlotPosIndex->GetIntegerValue();
+						Slot.iPos = pSlotPosIndex->GetIntegerValue();
 					}
 
-				if (iDeviceSlot != -1)
+				if (Slot.iIndex != -1)
 					{
 					if (Item.IsDevice()
-							&& (iDeviceSlot < 0 || iDeviceSlot >= pShip->GetDeviceCount() || pShip->GetDevice(iDeviceSlot)->IsEmpty()))
+							&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetDeviceCount() || pShip->GetDevice(Slot.iIndex)->IsEmpty()))
 						return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
 					}
 				}
 
 			//	Otherwise, install or remove
 
-			pShip->InstallItemAsDevice(ItemList, iDeviceSlot, iSlotPosIndex);
+			pShip->InstallItemAsDevice(ItemList, Slot);
 
 			//	Make sure the cursor is still valid
 

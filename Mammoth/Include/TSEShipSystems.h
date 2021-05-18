@@ -166,6 +166,13 @@ class CArmorSystem
 class CDeviceSystem
 	{
 	public:
+		struct SSlotDesc
+			{
+			int iIndex = -1;						//	If not -1, this refers to the given slot index.
+			CString sID;							//	If not blank, this refers to the given slot ID.
+			int iPos = -1;							//	If not -1, this is the UI slot position.
+			};
+
 		static constexpr DWORD FLAG_NO_NAMED_DEVICES = 0x00000001;
 		CDeviceSystem (DWORD dwFlags = 0);
 
