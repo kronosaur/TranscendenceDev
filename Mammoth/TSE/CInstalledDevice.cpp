@@ -342,7 +342,7 @@ ALERROR CInstalledDevice::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
-void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iDeviceSlot, bool bInCreate)
+void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iDeviceSlot, const SDeviceDesc &Desc, bool bInCreate)
 
 //	Install
 //
@@ -373,19 +373,7 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	//	is actually installed (otherwise, the slot criteria may pick up 
 	//	definitions from the previous device).
 
-	if (!bInCreate)
-		{
-		//	Desc is initialized to defaults even if FindDeviceSlotDesc fails.
-
-		SDeviceDesc Desc;
-		m_pSource->FindDeviceSlotDesc(Item, &Desc);
-		if (m_pClass->IsExternal())
-			Desc.bExternal = true;
-
-		//	Set the device slot properties
-
-		InitFromDesc(Desc);
-		}
+	InitFromDesc(Desc);
 
 	//	Call the class
 

@@ -1049,7 +1049,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		int GetItemDeviceName (const CItem &Item) const;
 		CItem GetNamedItem (DeviceNames iDev) const;
 		bool HasNamedDevice (DeviceNames iDev) const;
-		void InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSystem::SSlotDesc &Slot = CDeviceSystem::SSlotDesc());
+		void InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSystem::SSlotDesc &RecommendedSlot = CDeviceSystem::SSlotDesc());
 		bool IsDeviceSlotAvailable (ItemCategories iItemCat = itemcatNone, int *retiSlot = NULL);
 		void ReadyFirstWeapon (void);
 		void ReadyNextWeapon (int iDir = 1);
@@ -1156,6 +1156,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CInstalledArmor *FindArmor (const CItem &Item) override;
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
 		virtual CInstalledDevice *FindDevice (const CItem &Item) override;
+		virtual bool FindDeviceSlotDesc (const CString &sID, SDeviceDesc *retDesc) const override;
 		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) override { return m_pClass->FindDeviceSlotDesc(this, Item, retDesc); }
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) override;
 		virtual AbilityStatus GetAbility (Abilities iAbility) const override;
@@ -1359,7 +1360,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void CalcBounds (void);
 		int CalcMaxCargoSpace (void) const;
 		void CalcDeviceBonus (void);
-		InstallItemResults CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot = NULL);
+		InstallItemResults CalcDeviceToReplace (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, int *retiSlot = NULL);
 		DWORD CalcEffectsMask (void);
 		void CalcPerformance (void);
 		int CalcPowerUsed (SUpdateCtx &Ctx, int *retiPowerGenerated = NULL);

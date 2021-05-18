@@ -188,6 +188,7 @@ class CDeviceSystem
 		static constexpr DWORD FLAG_MATCH_BY_TYPE =	0x00000002;
 		int FindDeviceIndex (const CItem &Item, DWORD dwFlags = 0) const;
 
+		bool FindDevicesByID (const CString &sID, TArray<int> *retIndices = NULL) const;
 		int FindFreeSlot (void);
 		int FindNamedIndex (const CItem &Item) const;
 		int FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir = 1, bool switchWeapons = false) const;
@@ -208,7 +209,7 @@ class CDeviceSystem
 		bool HasNamedDevices (void) const { return (m_NamedDevices.GetCount() > 0); }
 		bool HasShieldsUp (void) const;
 		bool Init (CSpaceObject *pObj, const CDeviceDescList &Devices, int iMaxDevices = 0);
-		bool Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iDeviceSlot = -1, int iSlotPosIndex = -1, bool bInCreate = false, int *retiDeviceSlot = NULL);
+		bool Install (CSpaceObject *pObj, CItemListManipulator &ItemList, const SSlotDesc &Slot, int *retiDeviceSlot = NULL);
 		bool IsEmpty (void) const { return (m_Devices.GetCount() == 0); }
 		bool IsSlotAvailable (ItemCategories iItemCat, int *retiSlot = NULL) const;
 		bool IsWeaponRepeating (DeviceNames iDev = devNone) const;

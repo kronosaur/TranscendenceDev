@@ -183,6 +183,7 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceObject *pObj, const CItem &Item, SDeviceDesc *retDesc) const override;
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const override;
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const override;
+		virtual bool FindDeviceSlot (const CString &sID, SDeviceDesc *retDesc = NULL, int *retiMaxCount = NULL) const override;
 
 	private:
 		struct SEntry
@@ -1322,6 +1323,38 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, const C
 		//	If we get this far, then this is a valid slot.
 
 		*retDesc = m_SlotDesc[i].DefaultDesc;
+		return true;
+		}
+
+	//	Not found
+
+	return false;
+	}
+
+bool CGroupOfDeviceGenerators::FindDeviceSlot (const CString &sID, SDeviceDesc *retDesc, int *retiMaxCount) const
+
+//	FindDefaultDesc
+//
+//	Looks for the given slot descriptor by ID.
+
+	{
+	for (int i = 0; i < m_SlotDesc.GetCount(); i++)
+		{
+		//	Skip if not the desired id
+
+		if (!strEquals(m_SlotDesc[i].DefaultDesc.sID, sID))
+			continue;
+
+		//	Return max count
+
+		if (retiMaxCount)
+			*retiMaxCount = m_SlotDesc[i].iMaxCount;
+
+		//	If we get this far, then this is a valid slot.
+
+		if (retDesc)
+			*retDesc = m_SlotDesc[i].DefaultDesc;
+
 		return true;
 		}
 

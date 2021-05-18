@@ -541,6 +541,7 @@ class IDeviceGenerator
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceObject *pSource, const CItem &Item, SDeviceDesc *retDesc) const { return false; }
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const { return false; }
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const { return false; }
+		virtual bool FindDeviceSlot (const CString &sID, SDeviceDesc *retDesc = NULL, int *retiMaxCount = NULL) const { return false; }
 
 		static ALERROR InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, SDeviceDesc *retDesc);
 	};
@@ -562,7 +563,7 @@ class CInstalledDevice
 		DWORD GetUNID (void) const { return m_pClass.GetUNID(); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitFromDesc (const SDeviceDesc &Desc);
-		void Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iDeviceSlot, bool bInCreate = false);
+		void Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iDeviceSlot, const SDeviceDesc &Desc, bool bInCreate = false);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 		void ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx);
 		void SetClass (CDeviceClass *pClass) { m_pClass.Set(pClass); }

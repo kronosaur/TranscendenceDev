@@ -5578,8 +5578,16 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_PROPERTY:
 			{
-			CItemCtx ItemCtx(Item);
-			return Item.GetItemProperty(*pCtx, ItemCtx, pArgs->GetElement(1)->GetStringValue(), bOnType);
+			if (CSpaceObject *pSource = Item.GetSource())
+				{
+				CItemCtx ItemCtx(&Item, pSource);
+				return Item.GetItemProperty(*pCtx, ItemCtx, pArgs->GetElement(1)->GetStringValue(), bOnType);
+				}
+			else
+				{
+				CItemCtx ItemCtx(Item);
+				return Item.GetItemProperty(*pCtx, ItemCtx, pArgs->GetElement(1)->GetStringValue(), bOnType);
+				}
 			}
 
 		case FN_ITEM_DAMAGED:

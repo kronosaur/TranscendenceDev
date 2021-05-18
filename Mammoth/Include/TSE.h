@@ -636,6 +636,7 @@ class CSpaceObject
 		virtual void DisableDevice (CInstalledDevice *pDevice) { }
 		bool FindDevice (const CItem &Item, CInstalledDevice **retpDevice, CString *retsError);
 		virtual CInstalledDevice *FindDevice (const CItem &Item) { return NULL; }
+		virtual bool FindDeviceSlotDesc (const CString &sID, SDeviceDesc *retDesc) const { return false; }
 		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return false; }
 		bool FireCanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, CString *retsResult);
 		bool FireCanRemoveItem (const CItem &Item, int iSlot, CString *retsResult);

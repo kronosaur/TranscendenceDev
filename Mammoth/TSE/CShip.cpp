@@ -547,7 +547,7 @@ int CShip::CalcDeviceSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon, int *
 	return m_Devices.CalcSlotsInUse(retiWeaponSlots, retiNonWeapon, retiLauncherSlots);
 	}
 
-CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot)
+CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, int *retiSlot)
 
 //	CalcDeviceToReplace
 //
@@ -665,10 +665,38 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 			}
 		}
 
+	int iSlotToReplace = Slot.iIndex;
+
+	//	If we have a slot ID, see if we're replacing something.
+
+	if (Slot.iIndex == -1 && !Slot.sID.IsBlank())
+		{
+		const IDeviceGenerator *pDeviceSlots = m_pClass->GetDeviceSlots();
+
+		int iMaxCount;
+		if (pDeviceSlots && pDeviceSlots->FindDeviceSlot(Slot.sID, NULL, &iMaxCount))
+			{
+			//	If the max count is not unlimited, then we need to see if there
+			//	are existing devices at that ID.
+
+			if (iMaxCount != -1)
+				{
+				TArray<int> ExistingDevices;
+				if (m_Devices.FindDevicesByID(Slot.sID, &ExistingDevices)
+						&& ExistingDevices.GetCount() >= iMaxCount)
+					{
+					//	Pick the first device to replace.
+
+					iSlotToReplace = ExistingDevices[0];
+					}
+				}
+			}
+		}
+
 	//	If we have no limitation on slots, then we can continue.
 
 	if (Hull.GetMaxDevices() == -1
-			&& iSuggestedSlot == -1)
+			&& iSlotToReplace == -1)
 		return insOK;
 
 	//	If we have enough space, then we're done
@@ -677,17 +705,15 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 			&& iWeaponSlotsNeeded <= 0
 			&& iNonWeaponSlotsNeeded <= 0
 			&& iLauncherSlotsNeeded <= 0
-			&& iSuggestedSlot == -1)
+			&& iSlotToReplace == -1)
 		return insOK;
-
-	int iSlotToReplace = -1;
 
 	//	If we passed in a slot to replace, see if freeing that device gives us
 	//	enough room.
 
-	if (iSuggestedSlot != -1)
+	if (iSlotToReplace != -1)
 		{
-		CInstalledDevice *pDevice = GetDevice(iSuggestedSlot);
+		CInstalledDevice *pDevice = GetDevice(iSlotToReplace);
 		if (!pDevice->IsEmpty())
 			{
 			bool bThisIsWeapon = (pDevice->GetCategory() == itemcatWeapon || pDevice->GetCategory() == itemcatLauncher);
@@ -702,7 +728,9 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 					&& iWeaponSlotsFreed >= iWeaponSlotsNeeded
 					&& iNonWeaponSlotsFreed >= iNonWeaponSlotsNeeded
 					&& iLauncherSlotsFreed >= iLauncherSlotsNeeded)
-				iSlotToReplace = iSuggestedSlot;
+				{ }
+			else
+				iSlotToReplace = -1;
 			}
 		}
 
@@ -1123,7 +1151,7 @@ bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &S
 		else
 			{
 			int iRecommendedSlot;
-			iResult = CalcDeviceToReplace(Item, Slot.iIndex, &iRecommendedSlot);
+			iResult = CalcDeviceToReplace(Item, Slot, &iRecommendedSlot);
 			switch (iResult)
 				{
 				case insOK:
@@ -2191,6 +2219,20 @@ int CShip::FindDeviceIndex (CInstalledDevice *pDevice) const
 		return pDevice->GetDeviceSlot();
 
 	return -1;
+	}
+
+bool CShip::FindDeviceSlotDesc (const CString &sID, SDeviceDesc *retDesc) const
+
+//	FindDeviceSlotDesc
+//
+//	Finds the descriptor for a slot by ID.
+
+	{
+	const IDeviceGenerator *pSlots = m_pClass->GetDeviceSlots();
+	if (!pSlots)
+		return false;
+
+	return pSlots->FindDeviceSlot(sID, retDesc);
 	}
 
 int CShip::FindFreeDeviceSlot (void)
@@ -3597,7 +3639,7 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 	m_pController->OnShipStatus(IShipController::statusArmorRepaired, iSect);
 	}
 
-void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSystem::SSlotDesc &Slot)
+void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSystem::SSlotDesc &RecommendedSlot)
 
 //	InstallItemAsDevice
 //
@@ -3611,11 +3653,10 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSy
 
 	//	If necessary, remove previous item in a slot
 
-	int iDeviceSlot = Slot.iIndex;
-	int iSlotPosIndex = Slot.iPos;
+	CDeviceSystem::SSlotDesc Slot = RecommendedSlot;
 	Metric rOldFuel = -1.0;
 	int iSlotToReplace;
-	CalcDeviceToReplace(ItemList.GetItemAtCursor(), Slot.iIndex, &iSlotToReplace);
+	CalcDeviceToReplace(ItemList.GetItemAtCursor(), Slot, &iSlotToReplace);
 	if (iSlotToReplace != -1)
 		{
 		const CInstalledDevice &ToReplace = m_Devices.GetDevice(iSlotToReplace);
@@ -3625,7 +3666,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSy
 		//	(But only if we're the same kind of device).
 
 		if (ToReplace.GetCategory() == ItemList.GetItemAtCursor().GetType()->GetCategory())
-			iSlotPosIndex = ToReplace.GetSlotPosIndex();
+			Slot.iPos = ToReplace.GetSlotPosIndex();
 
 		//	If we're upgrading/downgrading a reactor, then remember the old fuel level
 
@@ -3643,7 +3684,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSy
 
 	//	Install
 
-	if (!m_Devices.Install(this, ItemList, Slot.iIndex, iSlotPosIndex, false, &iDeviceSlot))
+	if (!m_Devices.Install(this, ItemList, Slot, &Slot.iIndex))
 		return;
 
 	//	Recalc bonuses
@@ -3658,9 +3699,9 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSy
 	//	the new enhancement stack, since we might have a linked-fire setting
 	//	conferred by a device slot.
 
-	m_Devices.RefreshNamedDevice(iDeviceSlot);
+	m_Devices.RefreshNamedDevice(Slot.iIndex);
 
-	switch (m_Devices.GetDevice(iDeviceSlot).GetCategory())
+	switch (m_Devices.GetDevice(Slot.iIndex).GetCategory())
 		{
 		case itemcatWeapon:
 			m_pController->OnWeaponStatusChanged();
