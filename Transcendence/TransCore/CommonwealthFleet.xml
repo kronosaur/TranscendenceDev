@@ -430,11 +430,10 @@ PLAYER DATA
 
 						(cscToCreate (or (random cscLeft) 'arctica))
 						)
-
 						;	Return the CSC class
 
 						{
-							class: (@ (@ allCSCs cscToCreate) 'class)
+							class: (@ (@ cscStatus cscToCreate) 'class)
 							}
 						)
 				</GetParameters>
