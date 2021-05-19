@@ -671,10 +671,8 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 
 	if (Slot.iIndex == -1 && !Slot.sID.IsBlank())
 		{
-		const IDeviceGenerator *pDeviceSlots = m_pClass->GetDeviceSlots();
-
 		int iMaxCount;
-		if (pDeviceSlots && pDeviceSlots->FindDeviceSlot(Slot.sID, NULL, &iMaxCount))
+		if (m_Devices.FindSlotDesc(Slot.sID, NULL, &iMaxCount))
 			{
 			//	If the max count is not unlimited, then we need to see if there
 			//	are existing devices at that ID.
@@ -1548,7 +1546,7 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 	CDeviceDescList Devices;
 	pClass->GenerateDevices(System.GetLevel(), Devices);
 
-	pShip->m_Devices.Init(pShip, Devices, pClass->GetHullDesc().GetMaxDevices());
+	pShip->m_Devices.Init(pShip, Devices, pClass->GetDeviceSlots(), pClass->GetHullDesc().GetMaxDevices());
 
 	//	Install equipment
 
@@ -2219,20 +2217,6 @@ int CShip::FindDeviceIndex (CInstalledDevice *pDevice) const
 		return pDevice->GetDeviceSlot();
 
 	return -1;
-	}
-
-bool CShip::FindDeviceSlotDesc (const CString &sID, SDeviceDesc *retDesc) const
-
-//	FindDeviceSlotDesc
-//
-//	Finds the descriptor for a slot by ID.
-
-	{
-	const IDeviceGenerator *pSlots = m_pClass->GetDeviceSlots();
-	if (!pSlots)
-		return false;
-
-	return pSlots->FindDeviceSlot(sID, retDesc);
 	}
 
 int CShip::FindFreeDeviceSlot (void)

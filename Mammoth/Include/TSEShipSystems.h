@@ -193,6 +193,7 @@ class CDeviceSystem
 		int FindNamedIndex (const CItem &Item) const;
 		int FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir = 1, bool switchWeapons = false) const;
 		int FindRandomIndex (bool bEnabledOnly) const;
+		bool FindSlotDesc (const CString &sID, SDeviceDesc *retDesc = NULL, int *retiMaxCount = NULL) const;
 		bool FindWeapon (int *retiIndex = NULL) const;
 		bool FindWeaponByItem (const CItem &Item, int *retiIndex = NULL, int *retiVariant = NULL) const;
 		void FinishInstall (void);
@@ -208,7 +209,7 @@ class CDeviceSystem
 		DWORD GetTargetTypes (void) const;
 		bool HasNamedDevices (void) const { return (m_NamedDevices.GetCount() > 0); }
 		bool HasShieldsUp (void) const;
-		bool Init (CSpaceObject *pObj, const CDeviceDescList &Devices, int iMaxDevices = 0);
+		bool Init (CSpaceObject *pObj, const CDeviceDescList &Devices, const IDeviceGenerator *pSlots = NULL, int iMaxDevices = 0);
 		bool Install (CSpaceObject *pObj, CItemListManipulator &ItemList, const SSlotDesc &Slot, int *retiDeviceSlot = NULL);
 		bool IsEmpty (void) const { return (m_Devices.GetCount() == 0); }
 		bool IsSlotAvailable (ItemCategories iItemCat, int *retiSlot = NULL) const;
@@ -296,6 +297,7 @@ class CDeviceSystem
 
 		TArray<TUniquePtr<CInstalledDevice>> m_Devices;
 		TArray<int> m_NamedDevices;
+		const IDeviceGenerator *m_pSlots = NULL;
 	};
 
 //	Ship Structure and Compartments --------------------------------------------

@@ -430,6 +430,19 @@ int CDeviceSystem::FindRandomIndex (bool bEnabledOnly) const
 	return -1;
 	}
 
+bool CDeviceSystem::FindSlotDesc (const CString &sID, SDeviceDesc *retDesc, int *retiMaxCount) const
+
+//	FindSlotDesc
+//
+//	Finds a slot by ID.
+
+	{
+	if (!m_pSlots)
+		return false;
+
+	return m_pSlots->FindDeviceSlot(sID, retDesc, retiMaxCount);
+	}
+
 bool CDeviceSystem::FindWeapon (int *retiIndex) const
 
 //	FindWeapon
@@ -626,7 +639,7 @@ bool CDeviceSystem::HasShieldsUp (void) const
 		return false;
 	}
 
-bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, int iMaxDevices)
+bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, const IDeviceGenerator *pSlots, int iMaxDevices)
 
 //	Init
 //
@@ -637,6 +650,13 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, in
 
 	CleanUp();
 	InsertEmpty(Max(Devices.GetCount(), iMaxDevices));
+
+	//	Slots
+
+	if (pSlots)
+		m_pSlots = pSlots;
+	else
+		m_pSlots = &IDeviceGenerator::Null();
 
 	//	Add items to the object, as specified.
 
@@ -758,7 +778,7 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 	SDeviceDesc Desc;
 	if (Slot.sID)
 		{
-		pObj->FindDeviceSlotDesc(Slot.sID, &Desc);
+		FindSlotDesc(Slot.sID, &Desc);
 		}
 	else
 		{

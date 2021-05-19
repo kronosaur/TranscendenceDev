@@ -1156,7 +1156,6 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CInstalledArmor *FindArmor (const CItem &Item) override;
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
 		virtual CInstalledDevice *FindDevice (const CItem &Item) override;
-		virtual bool FindDeviceSlotDesc (const CString &sID, SDeviceDesc *retDesc) const override;
 		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) override { return m_pClass->FindDeviceSlotDesc(this, Item, retDesc); }
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) override;
 		virtual AbilityStatus GetAbility (Abilities iAbility) const override;

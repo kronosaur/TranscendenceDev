@@ -525,6 +525,7 @@ class IDeviceGenerator
 	{
 	public:
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IDeviceGenerator **retpGenerator);
+		static const IDeviceGenerator &Null ();
 
 		virtual ~IDeviceGenerator (void) { }
 		virtual void AddDevices (SDeviceGenerateCtx &Ctx) { }

@@ -6887,9 +6887,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				if (!Slot.sID.IsBlank())
 					{
-					CShip *pShip = pObj->AsShip();
-					const IDeviceGenerator *pSlots = (pShip ? pShip->GetClass()->GetDeviceSlots() : NULL);
-					if (!pSlots || !pSlots->FindDeviceSlot(Slot.sID))
+					if (!pObj->GetDeviceSystem().FindSlotDesc(Slot.sID))
 						return pCC->CreateError(CONSTLIT("Unkown slot ID"), pArgs->GetElement(2));
 					}
 				}
@@ -11150,8 +11148,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				if (!Slot.sID.IsBlank())
 					{
-					const IDeviceGenerator *pSlots = pShip->GetClass()->GetDeviceSlots();
-					if (!pSlots || !pSlots->FindDeviceSlot(Slot.sID))
+					if (!pShip->GetDeviceSystem().FindSlotDesc(Slot.sID))
 						return pCC->CreateError(CONSTLIT("Unkown slot ID"), pArgs->GetElement(2));
 					}
 				}

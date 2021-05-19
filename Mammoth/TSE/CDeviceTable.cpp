@@ -54,6 +54,8 @@ class CNullDevice : public IDeviceGenerator
 	{
 	public:
 		virtual bool IsVariant (void) const override { return false; }
+
+		static const CNullDevice m_Null;
 	};
 
 class CSingleDevice : public IDeviceGenerator
@@ -207,6 +209,8 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 		TArray<SSlotDesc> m_SlotDesc;
 	};
 
+const CNullDevice CNullDevice::m_Null;
+
 ALERROR IDeviceGenerator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IDeviceGenerator **retpGenerator)
 
 //	CreateFromXML
@@ -328,6 +332,11 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 		retDesc->Enhancements.InsertMissileDefense();
 
 	return NOERROR;
+	}
+
+const IDeviceGenerator &IDeviceGenerator::Null ()
+	{
+	return CNullDevice::m_Null;
 	}
 
 //	CSingleDevice -------------------------------------------------------------
