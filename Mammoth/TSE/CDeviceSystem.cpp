@@ -100,12 +100,12 @@ void CDeviceSystem::AccumulatePerformance (SShipPerformanceCtx &Ctx) const
 //	Accumulate performance metrics.
 
 	{
-    for (int i = 0; i < m_Devices.GetCount(); i++)
-        if (!m_Devices[i]->IsEmpty())
-            {
-            CItemCtx ItemCtx(Ctx.pShip, m_Devices[i]);
-            ItemCtx.GetDevice()->AccumulatePerformance(ItemCtx, Ctx);
-            }
+	for (int i = 0; i < m_Devices.GetCount(); i++)
+		if (!m_Devices[i]->IsEmpty())
+			{
+			CItemCtx ItemCtx(Ctx.pShip, m_Devices[i]);
+			ItemCtx.GetDevice()->AccumulatePerformance(ItemCtx, Ctx);
+			}
 	}
 
 void CDeviceSystem::AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, int &iPowerUsed, int &iPowerGenerated)
@@ -267,6 +267,29 @@ int CDeviceSystem::FindDeviceIndex (const CItem &Item, DWORD dwFlags) const
 		return -1;
 	}
 
+bool CDeviceSystem::FindDevicesByID (const CString &sID, TArray<int> *retIndices) const
+
+//	FindDevicesByID
+//
+//	Returns a list of device indices for all devices with the given ID.
+
+	{
+	for (int i = 0; i < m_Devices.GetCount(); i++)
+		if (!m_Devices[i]->IsEmpty() 
+				&& strEquals(sID, m_Devices[i]->GetID()))
+			{
+			if (retIndices)
+				retIndices->Insert(i);
+			else
+				return true;
+			}
+
+	if (retIndices)
+		return retIndices->GetCount() > 0;
+	else
+		return false;
+	}
+
 int CDeviceSystem::FindFreeSlot (void)
 
 //	FindFreeSlot
@@ -405,6 +428,19 @@ int CDeviceSystem::FindRandomIndex (bool bEnabledOnly) const
 			}
 
 	return -1;
+	}
+
+bool CDeviceSystem::FindSlotDesc (const CString &sID, SDeviceDesc *retDesc, int *retiMaxCount) const
+
+//	FindSlotDesc
+//
+//	Finds a slot by ID.
+
+	{
+	if (!m_pSlots)
+		return false;
+
+	return m_pSlots->FindDeviceSlot(sID, retDesc, retiMaxCount);
 	}
 
 bool CDeviceSystem::FindWeapon (int *retiIndex) const
@@ -603,7 +639,7 @@ bool CDeviceSystem::HasShieldsUp (void) const
 		return false;
 	}
 
-bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, int iMaxDevices)
+bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, const IDeviceGenerator *pSlots, int iMaxDevices)
 
 //	Init
 //
@@ -614,6 +650,13 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, in
 
 	CleanUp();
 	InsertEmpty(Max(Devices.GetCount(), iMaxDevices));
+
+	//	Slots
+
+	if (pSlots)
+		m_pSlots = pSlots;
+	else
+		m_pSlots = &IDeviceGenerator::Null();
 
 	//	Add items to the object, as specified.
 
@@ -631,8 +674,10 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, in
 
 		//	Install the device
 
-		m_Devices[i]->InitFromDesc(NewDevice);
-		m_Devices[i]->Install(*pObj, ObjItems, i, true);
+		m_Devices[i]->Install(*pObj, ObjItems, i, NewDevice);
+
+		//	NOTE: FinishInstall is called at the end, after the ship is been
+		//	created.
 
 		//	Assign to named devices
 
@@ -698,15 +743,19 @@ void CDeviceSystem::InsertEmpty (int iCount)
 		m_Devices[i].Set(new CInstalledDevice);
 	}
 
-bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iDeviceSlot, int iSlotPosIndex, bool bInCreate, int *retiDeviceSlot)
+bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList, const SSlotDesc &Slot, int *retiDeviceSlot)
 
 //	Install
 //
 //	Installs a new item.
 
 	{
+	if (!pObj)
+		throw CException(ERR_FAIL);
+
 	//	Look for a free slot to install to
 
+	int iDeviceSlot = Slot.iIndex;
 	if (iDeviceSlot == -1)
 		{
 		iDeviceSlot = FindFreeSlot();
@@ -718,16 +767,36 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 		}
 
 	CInstalledDevice &Device = *m_Devices[iDeviceSlot];
-    CItemCtx ItemCtx(pObj, &Device);
+	CItemCtx ItemCtx(pObj, &Device);
+	const CItem &Item = ItemList.GetItemAtCursor();
+	const CDeviceClass *pClass = Item.GetType()->GetDeviceClass();
+	if (!pClass)
+		throw CException(ERR_FAIL);
+
+	//	Get the slot info
+
+	SDeviceDesc Desc;
+	if (Slot.sID)
+		{
+		FindSlotDesc(Slot.sID, &Desc);
+		}
+	else
+		{
+		pObj->FindDeviceSlotDesc(Item, &Desc);
+		}
+
+	if (pClass->IsExternal())
+		Desc.bExternal = true;
 
 	//	Update the structure
 
-	Device.Install(*pObj, ItemList, iDeviceSlot);
+	Device.Install(*pObj, ItemList, iDeviceSlot, Desc);
+	Device.FinishInstall();
 
 	//	If we have a slot positing index, set it now
 
-	if (iSlotPosIndex != -1)
-		Device.SetSlotPosIndex(iSlotPosIndex);
+	if (Slot.iPos!= -1)
+		Device.SetSlotPosIndex(Slot.iPos);
 
 	//	Special initialization depending on device type
 

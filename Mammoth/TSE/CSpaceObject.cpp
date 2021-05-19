@@ -965,7 +965,7 @@ bool CSpaceObject::CanFireOnObjHelper (CSpaceObject *pObj) const
 		);
 	}
 
-bool CSpaceObject::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
+bool CSpaceObject::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
 
 //	CanInstallItem
 //
@@ -1999,7 +1999,7 @@ bool CSpaceObject::FireCanDockAsPlayer (CSpaceObject *pDockTarget, CString *rets
 		return true;
 	}
 
-bool CSpaceObject::FireCanInstallItem (const CItem &Item, int iSlot, CString *retsResult)
+bool CSpaceObject::FireCanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, CString *retsResult)
 
 //	FireCanInstallItem
 //
@@ -2014,20 +2014,20 @@ bool CSpaceObject::FireCanInstallItem (const CItem &Item, int iSlot, CString *re
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineItemVar(Item);
 
-		if (iSlot == -1)
+		if (Slot.iIndex == -1)
 			{
 			Ctx.DefineNil(CONSTLIT("aArmorSeg"));
 			Ctx.DefineNil(CONSTLIT("aItemToReplace"));
 			}
 		else if (Item.IsArmor())
 			{
-			Ctx.DefineInteger(CONSTLIT("aArmorSeg"), iSlot);
+			Ctx.DefineInteger(CONSTLIT("aArmorSeg"), Slot.iIndex);
 			Ctx.DefineNil(CONSTLIT("aItemToReplace"));
 			}
 		else
 			{
 			CItemListManipulator ItemList(GetItemList());
-			if (SetCursorAtDevice(ItemList, iSlot))
+			if (SetCursorAtDevice(ItemList, Slot.iIndex))
 				{
 				const CItem &ItemToReplace = ItemList.GetItemAtCursor();
 				Ctx.DefineItem(CONSTLIT("aItemToReplace"), ItemToReplace);
