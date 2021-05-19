@@ -1630,5 +1630,8 @@
     <ClCompile Include="CReactionImpl.cpp">
       <Filter>Source Files\ShipAI</Filter>
     </ClCompile>
+    <ClCompile Include="ItemProperties.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

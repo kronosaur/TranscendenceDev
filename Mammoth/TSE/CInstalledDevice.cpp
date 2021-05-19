@@ -342,7 +342,7 @@ ALERROR CInstalledDevice::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
-void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iDeviceSlot, bool bInCreate)
+void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iDeviceSlot, const SDeviceDesc &Desc)
 
 //	Install
 //
@@ -373,19 +373,7 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	//	is actually installed (otherwise, the slot criteria may pick up 
 	//	definitions from the previous device).
 
-	if (!bInCreate)
-		{
-		//	Desc is initialized to defaults even if FindDeviceSlotDesc fails.
-
-		SDeviceDesc Desc;
-		m_pSource->FindDeviceSlotDesc(Item, &Desc);
-		if (m_pClass->IsExternal())
-			Desc.bExternal = true;
-
-		//	Set the device slot properties
-
-		InitFromDesc(Desc);
-		}
+	InitFromDesc(Desc);
 
 	//	Call the class
 
@@ -410,16 +398,6 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	//	based on enhancements later.
 
 	m_iActivateDelay = m_pClass->GetActivateDelay(ItemCtx);
-
-	//	Finish install, if necessary
-
-	if (!bInCreate)
-		{
-		//	Event (when creating a ship we wait until the
-		//	whole ship is created before firing the event)
-
-		FinishInstall();
-		}
 
 	DEBUG_CATCH
 	}
