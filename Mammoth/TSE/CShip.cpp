@@ -665,7 +665,9 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 			}
 		}
 
-	int iSlotToReplace = Slot.iIndex;
+	int iSlotToReplace = -1;
+	if (Slot.iIndex != -1 && !GetDevice(Slot.iIndex)->IsEmpty())
+		iSlotToReplace = Slot.iIndex;
 
 	//	If we have a slot ID, see if we're replacing something.
 
