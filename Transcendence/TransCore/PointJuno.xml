@@ -75,12 +75,12 @@
 		<Ships>
 			<Ship					count="1"	class="&scBritannia;"	orders="guard" controller="fleetcommand">
 				<Escorts>
-					<Ship			count="12"	class="&scCenturionM;"	orders="escort" controller="fleet"/>
+					<Ship			count="8"	class="&scCenturionM;"	orders="escort" controller="fleet"/>
 				</Escorts>
 			</Ship>
 			<Ship					count="1"	class="&scBritannia;"	orders="guard" controller="fleetcommand">
 				<Escorts>
-					<Ship			count="12"	class="&scCenturionM;"	orders="escort" controller="fleet"/>
+					<Ship			count="8"	class="&scCenturionM;"	orders="escort" controller="fleet"/>
 				</Escorts>
 			</Ship>
 		</Ships>
@@ -535,6 +535,10 @@
 
 					<Lookup table="AsteroidTrojans50"/>
 
+					<Trojan>
+						<Location attributes="zhelingIVTrojan" required="true"/>
+					</Trojan>
+
 					<Lookup table="AsteroidAntiTrojans50"/>
 
 					<AntiTrojan>
@@ -635,6 +639,16 @@
 				<Station type="&stCSCEuropaWreck;"/>
 			</RandomLocation>
 
+			<!-- Place the staging area -->
+
+			<RandomLocation locationCriteria="*zhelingIVTrojan">
+				<Marker objName="stagingAlpha"/>
+			</RandomLocation>
+
+			<RandomLocation locationCriteria="*zhelingIVAntiTrojan">
+				<Marker objName="stagingBeta"/>
+			</RandomLocation>
+
 			<!-- Place some Ares Communes -->
 
 			<RandomLocation locationCriteria="*zhelingIIIOrbit">
@@ -643,12 +657,6 @@
 
 			<RandomLocation locationCriteria="*zhelingIVOrbit">
 				<Station type="&stAresCommune;"/>
-			</RandomLocation>
-
-			<!-- Place the staging area -->
-
-			<RandomLocation locationCriteria="*zhelingIVAntiTrojan">
-				<Marker objName="stagingBeta"/>
 			</RandomLocation>
 
 			<!-- Create more stargates in case an extension added more links -->

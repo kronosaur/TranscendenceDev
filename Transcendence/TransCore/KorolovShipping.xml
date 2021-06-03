@@ -756,15 +756,15 @@
 					(level (korGetPlayerLevel))
 					)
 					(cat
-						(scrTranslate gScreen 'descWelcomeStart) "\n\n"
+						(typTranslate gType 'descWelcomeStart) "\n\n"
 						(switch
 							(= level -1)
-								(scrTranslate gScreen 'descWelcome.blacklisted)
+								(typTranslate gType 'descWelcome.blacklisted)
 
 							(and (geq level 1) (leq level 4))
-								(scrTranslate gScreen (cat "descWelcome." level))
+								(typTranslate gType (cat "descWelcome." level))
 
-							(scrTranslate gScreen 'descWelcome.1)
+							(typTranslate gType 'descWelcome.1)
 							)
 						)
 					)

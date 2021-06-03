@@ -93,6 +93,8 @@ struct SShipCreateCtx
 
 	CSpaceObjectList Result;					//	List of ships created
 
+	TSortMap<DWORD, int> EscortPos;				//	Tracks escort position by principle ObjID.
+
 	enum Flags
 		{
 		SHIPS_FOR_STATION =			0x00000001,	//	Create ships at station creation time

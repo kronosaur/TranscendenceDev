@@ -304,7 +304,7 @@ bool CAIBehaviorCtx::CalcFormationParams (CShip *pShip,
 										  int iDestAngle, 
 										  CVector *retvRecommendedVel, 
 										  Metric *retrDeltaPos2,
-										  Metric *retrDeltaVel2)
+										  Metric *retrDeltaVel2) const
 
 //	CalcFormationParams
 //
@@ -417,7 +417,7 @@ CVector CAIBehaviorCtx::CalcManeuverCloseOnTarget (CShip *pShip,
 	return vInterceptPoint;
 	}
 
-CVector CAIBehaviorCtx::CalcManeuverFormation (CShip *pShip, const CVector vDest, const CVector vDestVel, int iDestFacing)
+CVector CAIBehaviorCtx::CalcManeuverFormation (CShip *pShip, const CVector vDest, const CVector vDestVel, int iDestFacing) const
 
 //	CalcManeuverFormation
 //
@@ -701,15 +701,11 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				{
 				int iClock = pShip->GetUniverse().GetTicks() / (170 + pShip->GetDestiny() / 3);
 				int iAngle = pShip->AlignToRotationAngle((pShip->GetDestiny() + (iClock * 141 * (1 + pShip->GetDestiny()))) % 360);
-				Metric rRadius = Max(MIN_STATION_TARGET_DIST, pTarget->GetHitSize()) + (LIGHT_SECOND * (pShip->GetDestiny() % 100) / 10.0);
+				Metric rRadius = pTarget->GetHitSize() + MIN_STATION_TARGET_DIST + (LIGHT_SECOND * (pShip->GetDestiny() % 100) / 10.0);
 
 				//	This is the position that we want to go to
 
-				CVector vPos;
-				if (m_fHasAvoidPotential)
-					vPos = pShip->GetPos() + (POTENTIAL_TO_POS_ADJ * GetPotential());
-				else
-					vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius);
+				CVector vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius);
 
 				//	We don't want to thrust unless we're in position
 
@@ -818,15 +814,11 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				{
 				int iClock = pShip->GetUniverse().GetTicks() / (170 + pShip->GetDestiny() / 3);
 				int iAngle = pShip->AlignToRotationAngle((pShip->GetDestiny() + (iClock * 141 * (1 + pShip->GetDestiny()))) % 360);
-				Metric rRadius = Max(MIN_STATION_TARGET_DIST, pTarget->GetHitSize()) + (LIGHT_SECOND * (pShip->GetDestiny() % 100) / 10.0);
+				Metric rRadius = pTarget->GetHitSize() + MIN_STATION_TARGET_DIST + (LIGHT_SECOND * (pShip->GetDestiny() % 100) / 10.0);
 
 				//	This is the position that we want to go to
 
-				CVector vPos;
-				if (m_fHasAvoidPotential)
-					vPos = pShip->GetPos() + (POTENTIAL_TO_POS_ADJ * GetPotential());
-				else
-					vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius);
+				CVector vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius);
 
 				//	We don't want to thrust unless we're in position
 
@@ -1795,12 +1787,10 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 //	Fires the given weapon (if aligned) on target
 
 	{
-
 	if (UsesAllPrimaryWeapons())
 		ImplementFireAllWeaponsOnTarget(pShip, iWeapon, iWeaponVariant, pTarget, vTarget, rTargetDist2, retiFireDir, bDoNotShoot);
 	else
 		ImplementFireSingleWeaponOnTarget(pShip, iWeapon, iWeaponVariant, pTarget, vTarget, rTargetDist2, retiFireDir, bDoNotShoot);
-
 	}
 
 void CAIBehaviorCtx::ImplementFollowNavPath (CShip *pShip, bool *retbAtDestination)

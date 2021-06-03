@@ -206,7 +206,7 @@ class CObjectImageArray
 			FLAG_CACHED =		0x00000004,	//	Cache scaled image
 			};
 
-		CObjectImageArray (void);
+		CObjectImageArray (void) { }
 		CObjectImageArray (const CObjectImageArray &Source);
 		~CObjectImageArray (void);
 
@@ -312,31 +312,29 @@ class CObjectImageArray
 		CG32bitImage *GetHitMask (void) const;
 		bool ValidateImageSize (int cxWidth, int cyHeight) const;
 
-		DWORD m_dwBitmapUNID;				//	UNID of bitmap (0 if none)
+		DWORD m_dwBitmapUNID = 0;				//	UNID of bitmap (0 if none)
 		TSharedPtr<CObjectImage> m_pImage;	//	Image
-		RECT m_rcImage;
-		int m_iFrameCount;
-		int m_iTicksPerFrame;
-		int m_iFlashTicks;
-		int m_iRotationCount;
-		int m_iRotationOffset;
-		OffsetStruct *m_pRotationOffset;
-		int m_iBlending;
-		int m_iViewportSize;				//	Size of 3D viewport in pixels (default to image width)
-		int m_iFramesPerColumn;				//	Rotation frames spread out over multiple columns
-		int m_iFramesPerRow;				//	Animation frames spread out over multiple rows
-		bool m_bDefaultSize;				//	If TRUE, get size from image.
+		RECT m_rcImage = { 0 };
+		int m_iFrameCount = 0;
+		int m_iTicksPerFrame = 0;
+		int m_iFlashTicks = 0;
+		int m_iRotationCount = 0;
+		int m_iRotationOffset = 0;
+		OffsetStruct *m_pRotationOffset = NULL;
+		int m_iBlending = 0;
+		int m_iViewportSize = 0;			//	Size of 3D viewport in pixels (default to image width)
+		int m_iFramesPerColumn = 0;			//	Rotation frames spread out over multiple columns
+		int m_iFramesPerRow = 0;			//	Animation frames spread out over multiple rows
+		bool m_bDefaultSize = false;		//	If TRUE, get size from image.
 
 		//	Cached images
 
-		mutable CG8bitImage *m_pGlowImages;
-		mutable CG32bitImage *m_pScaledImages;
-		mutable int m_cxScaledImage;
+		mutable CG8bitImage *m_pGlowImages = NULL;
+		mutable CG32bitImage *m_pScaledImages = NULL;
+		mutable int m_cxScaledImage = -1;
 
 		static CObjectImageArray m_Null;
 		static CG32bitImage m_NullImage;
-
-	friend CObjectClass<CObjectImageArray>;
 	};
 
 const DWORD DEFAULT_SELECTOR_ID = 0;

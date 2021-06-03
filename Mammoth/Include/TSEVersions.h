@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							51;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
-constexpr DWORD SYSTEM_SAVE_VERSION =					202;
+constexpr DWORD SYSTEM_SAVE_VERSION =					206;
 
 //	Uncomment out the following define when building a stable release
 
@@ -735,3 +735,15 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					202;
 //
 //	202: 1.9 Beta 4
 //		Added m_PowerStats to CPlayerGameStats
+//
+//	203: 1.9 Beta 4
+//		Move loading of order modules
+//
+//	204: 1.9 Beta 4
+//		Added m_dwLastFireTime and m_dwLastHitTime to CStation
+//
+//	205: 1.9 Beta 4
+//		Added flags to COrderDesc
+//
+//	206: 1.9 Beta 4
+//		Added fields to CMarker

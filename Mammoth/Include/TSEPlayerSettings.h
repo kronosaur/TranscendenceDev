@@ -23,8 +23,9 @@ enum EHUDTypes
 	hudReactor =					3,
 	hudShields =					4,
 	hudTargeting =					5,
+	hudTimers =						6,
 
-	hudCount =						6,
+	hudCount =						7,
 	};
 
 class CDockScreenVisuals

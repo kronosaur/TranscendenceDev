@@ -135,7 +135,7 @@ bool CWaitOrder::IsLeaderInRange (CShip *pShip)
 			&& Perception.CanBeTargeted(m_Objs[objLeader], rRange2));
 	}
 
-void CWaitOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
+void CWaitOrder::OnAttacked (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &AttackerObj, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	OnAttacked
 //
@@ -148,19 +148,17 @@ void CWaitOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pA
 	//	waiting.
 
 	if (m_fWaitForThreat
-			&& pAttacker
-			&& pAttacker->CanAttack())
-		pShip->CancelCurrentOrder();
+			&& AttackerObj.CanAttack())
+		Ship.CancelCurrentOrder();
 
 	//	If we're waiting for enemies and someone deliberately hits us, then 
 	//	that counts.
 
 	else if (m_fWaitForEnemy
 			&& Ctx.IsSecondAttack()
-			&& pAttacker
-			&& pAttacker->CanAttack()
+			&& AttackerObj.CanAttack()
 			&& !bFriendlyFire)
-		pShip->CancelCurrentOrder();
+		Ship.CancelCurrentOrder();
 
 	//	If we're waiting for a target, and if we get hit (and it's not friendly) 
 	//	then the target is here.
@@ -169,22 +167,21 @@ void CWaitOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pA
 	//	shot from the target means that the target is here.
 
 	else if (m_fWaitForLeaderToApproach
-			&& pAttacker == m_Objs[objLeader]
+			&& AttackerObj == m_Objs[objLeader]
 			&& !bFriendlyFire)
-		pShip->CancelCurrentOrder();
+		Ship.CancelCurrentOrder();
 
 	//	If we're deterring enemies and we don't already have a target, and we
 	//	feel like it, then attack this target.
 
 	else if (m_fDeterEnemies
 			&& m_Objs[objTarget] == NULL
-			&& pAttacker
-			&& pAttacker->CanAttack()
+			&& AttackerObj.CanAttack()
 			&& !bFriendlyFire
 			&& mathRandom(1, 3) == 1)
 		{
 		m_fIsDeterring = true;
-		m_Objs[objTarget] = pAttacker;
+		m_Objs[objTarget] = &AttackerObj;
 		ASSERT(m_Objs[objTarget]->DebugIsValid() && m_Objs[objTarget]->NotifyOthersWhenDestroyed());
 		}
 
@@ -354,7 +351,7 @@ void CWaitOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj,
 		*retbCancelOrder = true;
 	}
 
-void CWaitOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CWaitOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //

@@ -52,6 +52,19 @@
 
 						{	test:'(itm@ (@ (objGetItems gPlayerShip "s") 0) 'cyberDefenseLevel)
 																							result:5	}
+
+						{	test:'(objAddItem gPlayerShip 
+								(itmSet@ (itmCreate &itPlasmaShieldGenerator; 1) 'damaged True)
+								)
+																							result:'ignore	}
+						{	test:'(objAddItem gPlayerShip (itmCreate &itShieldOptimizer; 1))
+																							result:'ignore	}
+
+						{	test:'(objCanEnhanceItem gPlayerShip
+								(@ (objGetItems gPlayerShip "sUD") 0)
+								(itmCreate &itShieldOptimizer; 1)
+								)
+																							result:{ enhancement:"0x00001b00" resultCode:'repaired }	}
 						))
 
 					;	Done

@@ -90,6 +90,80 @@ COrderDesc::COrderDesc (IShipController::OrderTypes iOrder, CSpaceObject *pTarge
 	{
 	}
 
+ICCItemPtr COrderDesc::AsCCItem () const
+
+//	AsCCItem
+//
+//	Export order desc as a struct.
+
+	{
+	if (GetOrder() == IShipController::orderNone)
+		return ICCItemPtr::Nil();
+
+	//	Create result 
+
+	ICCItemPtr pResult(ICCItem::SymbolTable);
+
+	//	Add order name
+
+	pResult->SetStringAt(CONSTLIT("order"), IShipController::GetOrderName(GetOrder()));
+
+	//	Add the target
+
+	if (IShipController::OrderHasTarget(GetOrder()))
+		{
+		CSpaceObject *pTarget = GetTarget();
+		if (pTarget)
+			pResult->SetIntegerAt(CONSTLIT("targetID"), pTarget->GetID());
+		}
+
+	//	Add order data
+
+	switch (GetDataType())
+		{
+		case EDataType::None:
+			break;
+
+		case EDataType::Int32:
+			pResult->SetStringAt(CONSTLIT("dataType"), "int32");
+			pResult->SetIntegerAt(CONSTLIT("data"), GetDataInteger());
+			break;
+
+		case EDataType::Int16Pair:
+			pResult->SetStringAt(CONSTLIT("dataType"), "int16Pair");
+			pResult->SetIntegerAt(CONSTLIT("data1"), GetDataInteger());
+			pResult->SetIntegerAt(CONSTLIT("data2"), GetDataInteger2());
+			break;
+
+		case EDataType::Item:
+			pResult->SetStringAt(CONSTLIT("dataType"), "item");
+			pResult->SetAt(CONSTLIT("data"), CTLispConvert::CreateItem(GetDataItem()));
+			break;
+
+		case EDataType::String:
+			pResult->SetStringAt(CONSTLIT("dataType"), "string");
+			pResult->SetStringAt(CONSTLIT("data"), GetDataString());
+			break;
+
+		case EDataType::Vector:
+			pResult->SetStringAt(CONSTLIT("dataType"), "vector");
+			pResult->SetAt(CONSTLIT("data"), CTLispConvert::CreateVector(GetDataVector()));
+			break;
+
+		case EDataType::CCItem:
+			pResult->SetStringAt(CONSTLIT("dataType"), "ccItem");
+			pResult->SetAt(CONSTLIT("data"), GetDataCCItem());
+			break;
+
+		default:
+			throw CException(ERR_FAIL);
+		}
+
+	//	Done
+
+	return pResult;
+	}
+
 ICCItemPtr COrderDesc::AsCCItemList () const
 
 //	AsCCItem
@@ -205,6 +279,8 @@ void COrderDesc::Copy (const COrderDesc &Src)
 	m_dwDataType = Src.m_dwDataType;
 	m_pTarget = Src.m_pTarget;
 
+	m_fCancelOnReactionOrder = Src.m_fCancelOnReactionOrder;
+
 	switch (GetDataType())
 		{
 		case EDataType::None:
@@ -283,6 +359,26 @@ DiceRange COrderDesc::GetDataDiceRange (const CString &sField, int iDefault, CSt
 
 		return DiceRange(0, 0, iDefault);
 		}
+	}
+
+bool COrderDesc::GetDataBoolean (const CString &sField, bool bDefault) const
+
+//	GetDataBoolean
+//
+//	Gets a boolean field value.
+
+	{
+	if (IsCCItem())
+		{
+		ICCItemPtr pData = GetDataCCItem();
+
+		if (const ICCItem *pValue = pData->GetElement(sField))
+			return !pValue->IsNil();
+		else
+			return bDefault;
+		}
+	else
+		return bDefault;
 	}
 
 Metric COrderDesc::GetDataDouble (const CString &sField, Metric rDefault) const
@@ -439,6 +535,26 @@ CSpaceObject *COrderDesc::GetDataObject (CSpaceObject &SourceObj, const CString 
 	return pSystem->FindObject(dwObjID);
 	}
 
+CString COrderDesc::GetDataString (const CString &sField) const
+
+//	GetDataString
+//
+//	Gets a string value of the given field.
+
+	{
+	if (IsCCItem())
+		{
+		ICCItemPtr pData = GetDataCCItem();
+
+		if (const ICCItem *pValue = pData->GetElement(sField))
+			return pValue->GetStringValue();
+		else
+			return NULL_STR;
+		}
+	else
+		return NULL_STR;
+	}
+
 int COrderDesc::GetDataTicksLeft () const
 
 //	GetDataTicksLeft
@@ -480,6 +596,28 @@ int COrderDesc::GetDataTicksLeft () const
 		return -1;
 	}
 
+CVector COrderDesc::GetDataVector (const CString &sField, bool bDefaultField, const CVector &vDefault) const
+
+//	GetDataVector
+//
+//	Returns a vector.
+
+	{
+	if (IsCCItem())
+		{
+		ICCItemPtr pData = GetDataCCItem();
+
+		if (const ICCItem *pValue = pData->GetElement(sField))
+			return CTLispConvert::AsVector(pValue);
+		else
+			return vDefault;
+		}
+	else if (bDefaultField && IsVector())
+		return GetDataVector();
+	else
+		return vDefault;
+	}
+
 void COrderDesc::Move (COrderDesc &Src)
 
 //	Move
@@ -491,6 +629,8 @@ void COrderDesc::Move (COrderDesc &Src)
 	m_dwDataType = Src.m_dwDataType;
 	m_pTarget = Src.m_pTarget;
 	m_pData = Src.m_pData;
+
+	m_fCancelOnReactionOrder = Src.m_fCancelOnReactionOrder;
 
 	Src.m_dwDataType = (DWORD)EDataType::None;
 	Src.m_pData = NULL;
@@ -698,6 +838,14 @@ void COrderDesc::ReadFromStream (SLoadCtx &Ctx)
 		m_dwOrderType = LOWORD(dwLoad);
 		m_dwDataType = HIWORD(dwLoad);
 
+		if (Ctx.dwVersion >= 205)
+			{
+			DWORD dwFlags;
+			Ctx.pStream->Read(dwFlags);
+
+			m_fCancelOnReactionOrder = ((dwFlags & 0x00000001) ? true : false);
+			}
+
 		CSystem::ReadObjRefFromStream(Ctx, &m_pTarget);
 
 		switch (GetDataType())
@@ -881,6 +1029,10 @@ void COrderDesc::WriteToStream (IWriteStream &Stream, const CShip &Ship) const
 	{
 	DWORD dwSave = MAKELONG(m_dwOrderType, m_dwDataType);
 	Stream.Write(dwSave);
+
+	DWORD dwFlags = 0;
+	dwFlags |= (m_fCancelOnReactionOrder ? 0x00000001 : 0);
+	Stream.Write(dwFlags);
 
 	Ship.WriteObjRefToStream(m_pTarget, &Stream);
 

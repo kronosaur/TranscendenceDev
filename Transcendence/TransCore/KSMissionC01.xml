@@ -28,34 +28,45 @@
 			noDecline=		"true"
 			noFailureOnOwnerDestroyed=	"true"
 			>
-
 		<Events>
-			<OnCreate>
+			<CanCreate>
 				(switch
 					;	Only in Charon system
+
 					(!= (sysGetNode) 'CP)
-						(msnDestroy gSource)
+						Nil
 
-					(block (
-						(pirateStations (sysFindObject gSource "TA +charonPirates;"))
-						)
-						(enum pirateStations theObj (msnRegisterForEvents gSource theObj))
-						(msnSetData gSource 'stationsLeft (count pirateStations))
+					;	Fortress must exist
 
-						;	Timer fires in all systems because the attack happens whether or
-						;	not the player is in the system.
+					(not (sysFindObject Nil "TA +charonFortress;"))
+						Nil
 
-						(msnAddTimerEvent gSource 500 'OnTimerAttack1 { allSystems:True })
-						(msnAddTimerEvent gSource 850 'OnTimerAttack2 { allSystems:True })
+					;	Can create
 
-						;	Choose a random mission reward
-						(msnSetData gSource 'rewardItem (randomTable
-							30 (itmCreate &itXRayLaserCannon; 1)
-							30 (itmCreate &itOmniParticleCannon; 1)
-							20 (itmCreate &itMarkIHowitzer; 1)
-							20 (itmCreate &itClass5Deflector; 1)
-							))
-						)
+					True
+					)
+			</CanCreate>
+
+			<OnCreate>
+				(block (
+					(pirateStations (sysFindObject gSource "TA +charonPirates;"))
+					)
+					(enum pirateStations theObj (msnRegisterForEvents gSource theObj))
+					(msnSetData gSource 'stationsLeft (count pirateStations))
+
+					;	Timer fires in all systems because the attack happens whether or
+					;	not the player is in the system.
+
+					(msnAddTimerEvent gSource 500 'OnTimerAttack1 { allSystems:True })
+					(msnAddTimerEvent gSource 850 'OnTimerAttack2 { allSystems:True })
+
+					;	Choose a random mission reward
+					(msnSetData gSource 'rewardItem (randomTable
+						30 (itmCreate &itXRayLaserCannon; 1)
+						30 (itmCreate &itOmniParticleCannon; 1)
+						20 (itmCreate &itMarkIHowitzer; 1)
+						20 (itmCreate &itClass5Deflector; 1)
+						))
 					)
 			</OnCreate>
 
@@ -79,6 +90,11 @@
 							(block Nil
 								(msnSetData gSource 'state 'survivedAttack)
 								(msnSetProperty gSource 'summary (msnTranslate gSource 'Summary))
+
+								;	Make sure we're at least members
+								(if (not (typGetData &unidKorolovShipping; 'level))
+									(typSetData &unidKorolovShipping; 'level 1)
+									)
 
 								;	We've managed to save the station so save the game
 								(msnSetData gSource 'missionCheckpoint True)
@@ -144,7 +160,43 @@
 					;	One of the Charon stations
 					(and (objHasAttribute aObjDestroyed 'charonPirates) (not (objIsShip aObjDestroyed)))
 						(if (= (msnIncData gSource 'stationsLeft -1) 0)
-							(msnSuccess gSource)
+							(block (
+								(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+								)
+								;	Call off the attack, if any
+
+								(enum (sysFindObject Nil "sA +charonPirates") shipObj
+									(block ()
+										(shpCancelOrders shipObj)
+										(shpOrder shipObj 'gate)
+										)
+									)
+
+								;	Make sure we're at least members
+
+								(if (not (typGetData &unidKorolovShipping; 'level))
+									(typSetData &unidKorolovShipping; 'level 1)
+									)
+
+								;	If Korolov station is destroyed, we rebuild it.
+
+								(if (and stationObj (obj@ stationObj 'abandoned))
+									(block (
+										(newStation (sysCreateStation &stKorolovAtCharonCons; (objGetPos stationObj)))
+										)
+										;	Replace the destroyed korolov with new construction
+										(objSetKnown newStation)
+										(objDestroy stationObj)
+
+										;	Debrief at the new station
+										(msnSet@ gSource 'debrieferID (objGetID newStation))
+										)
+
+									;	Otherwise, mission success
+
+									(msnSuccess gSource)
+									)
+								)
 							)
 					)
 			</OnObjDestroyed>
@@ -291,7 +343,9 @@
 			
 			<OnDebriefed>
 				(switch
-					(msnGetProperty gSource 'isFailure)
+					(and (msnGetProperty gSource 'isFailure)
+							(gr (msnGetData gSource 'stationsLeft) 0)
+							)
 						(block (
 							(korolovObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
 							theMission
@@ -353,7 +407,7 @@
 				the display table.
 
 				Her face goes white as she sees the mass of signals approaching 
-				the stations...
+				the station...
 
 			</Text>
 			<Text id="InProgress">
@@ -447,14 +501,27 @@
 
 			</Text>
 			<Text id="FailureDebrief">
-				(list
-					{
-						descID: 'textFailureDebrief1
-						}
-					{
-						descID: 'textFailureDebrief2
-						data: { item: (itmGetName (msnGetData gSource 'rewardItem) '(count escapeQuotes)) }
-						}
+				(switch
+					;	If no pirate stations left, then that means the player 
+					;	destroyed then between the time Korolov was destroyed
+					;	and they docked back at Korolov.
+
+					(= (msnGetData gSource 'stationsLeft) 0)
+						(list
+							{	descID: 'textFailureDebrief.avenged	}
+							)
+
+					;	Otherwise, normal revenge
+
+					(list
+						{
+							descID: 'textFailureDebrief1
+							}
+						{
+							descID: 'textFailureDebrief2
+							data: { item: (itmGetName (msnGetData gSource 'rewardItem) '(count escapeQuotes)) }
+							}
+						)
 					)
 			</Text>
 			<Text id="textFailureDebrief1">
@@ -471,6 +538,15 @@
 
 				You take the ROM with you, hoping that it will contain some useful information.
 
+			</Text>
+			<Text id="textFailureDebrief.avenged">
+
+				You are docked at a station under construction. The manager
+				of the station walks up to you to shake your hand.
+
+				"What do you think? We'll have this old station rebuilt in a
+				few months. And we owe it all to you for destroying the pirates."
+			
 			</Text>
 			<Text id="SuccessDebrief">
 				(msnTranslate gSource 'textSuccessDebrief {

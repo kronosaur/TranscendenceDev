@@ -466,7 +466,6 @@
 				fireRate=			"40"
 				missileSpeed=		"50"
 				lifetime=			"120"
-				hitPoints=			"6"
 				powerUse=			"720"
 				recoil=				"4"
 
@@ -972,7 +971,7 @@
 					(spaceNeeded
 						(-
 							(* (itmGetMass theItem) (itmGetCount theItem))
-							(map theComponents theComponent
+							(map theComponents 'reduceSum theComponent
 								(* (itmGetMass (@ theComponent 'item)) (@ theComponent 'count))
 								)
 							)

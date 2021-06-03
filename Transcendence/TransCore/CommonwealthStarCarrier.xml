@@ -59,6 +59,16 @@
 		<Names>:the CSC Arctica</Names>
 
 		<Properties>
+			<Definition id="csc.giftTable">
+				'(	; donation	item						count		unique
+					(10000		&itPlasmaShieldGenerator;	1			'Gift1)
+					(5000		&itInvincibleDeflector;		1			'Gift2)
+					(2500		&itR5Deflector;				1			'Gift3)
+					(1250		&itEMPImmuneCoating;		'armor		'Gift4)
+					(0			&itKobeWater;				1			Nil)
+					)
+			</Definition>
+
 			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 960 0 320 240)
 			</Definition>
@@ -66,18 +76,6 @@
 				'arctica
 			</Definition>
 		</Properties>
-
-		<StaticData>
-			<Data id="csc.giftTable">
-				(	; donation	item						count	unique
-					(10000		&itPlasmaShieldGenerator;	1		'Gift1)
-					(5000		&itInvincibleDeflector;		1		'Gift2)
-					(2500		&itR5Deflector;				1		'Gift3)
-					(1250		&itEMPImmuneCoating;		4		'Gift4)
-					(0			&itKobeWater;				1		Nil)
-					)
-			</Data>
-		</StaticData>
 
 		<Language>
 			<Text id="csc.captainsWelcome">
@@ -260,6 +258,16 @@
 		<Names>:the CSC Sahara</Names>
 
 		<Properties>
+			<Definition id="csc.giftTable">
+				'(	; donation	item						count	unique
+					(10000		&itMammoth100Deflector;		1		'Gift1)
+					(5000		&itBlueEtheriumCrystal;		1		'Gift2)
+					(2500		&itPatchSpider;				1		'Gift3)
+					(1250		&itR1Deflector;				1		'Gift4)
+					(0			&itEuropanIceVodka;			1		Nil)
+					)
+			</Definition>
+
 			<Definition id="csc.emblem">
 				(resCreateImageDesc &rsFleetEmblems; 640 480 320 240)
 			</Definition>
@@ -267,18 +275,6 @@
 				'sahara
 			</Definition>
 		</Properties>
-
-		<StaticData>
-			<Data id="csc.giftTable">
-				(	; donation	item						count	unique
-					(10000		&itMammoth100Deflector;		1		'Gift1)
-					(5000		&itBlueEtheriumCrystal;		1		'Gift2)
-					(2500		&itPatchSpider;				1		'Gift3)
-					(1250		&itR1Deflector;				1		'Gift4)
-					(0			&itEuropanIceVodka;			1		Nil)
-					)
-			</Data>
-		</StaticData>
 
 		<Language>
 			<Text id="csc.captainsWelcome">
@@ -449,6 +445,17 @@
 
 			dockScreen=			"Main"
 			>
+		<Properties>
+			<Definition id="csc.giftTable">
+				'(	; donation	item						count		unique
+					(10000		&itPlasmaShieldGenerator;	1			'Gift1)
+					(5000		&itInvincibleDeflector;		1			'Gift2)
+					(2500		&itR5Deflector;				1			'Gift3)
+					(1250		&itEMPImmuneCoating;		'armor		'Gift4)
+					(0			&itKobeWater;				1			Nil)
+					)
+			</Definition>
+		</Properties>
 
 		<!-- Configuration -->
 		
@@ -718,7 +725,7 @@
 								(totalCost (scrGetData gScreen 'totalCost))
 
 								; Get the gift table
-								(giftTable (objGetStaticData gSource 'csc.giftTable))
+								(giftTable (obj@ gSource 'csc.giftTable))
 
 								gift fleetXP xpGain maxGain
 								)
@@ -732,12 +739,26 @@
 									(if (and (geq totalCost (item thisEntry 0))
 											(or (not (item thisEntry 3)) (not (objGetData gSource (item thisEntry 3))))
 											)
-										(block Nil
-											(setq gift (itmCreate (item thisEntry 1) (item thisEntry 2)))
+										(block (
+											(theType (@ thisEntry 1))
+											(countField (@ thisEntry 2))
+											(uniqueField (@ thisEntry 3))
 
-											; Do not give this gift again
-											(if (item thisEntry 3)
-												(objSetData gSource (item thisEntry 3) True)
+											(theCount
+												(switch
+													(= countField 'armor)
+														(obj@ gPlayerShip 'armorCount)
+
+													countField
+													)
+												)
+											)
+											(setq gift (itmCreate theType theCount))
+
+											; Remember that we gave this gift
+
+											(if uniqueField
+												(objSetData gSource uniqueField True)
 												)
 											)
 										)
@@ -745,11 +766,12 @@
 
 								; Describe the gift
 								(scrSetDescTranslate gScreen 'descGift {
-									itemName: (itmGetName gift 'count)
+									itemName: (itmGetName gift '(actual count))
 									})
 
 								; Give the gift to the player
 								(objAddItem gPlayerShip gift)
+								(itmSetKnown gift)
 
 								; Figure out how much experience we could gain. We cannot gain more than
 								; 200xp or xp beyond 600 (Master Sergeant).
@@ -784,18 +806,6 @@
 				</Panes>
 			</Infirmary>
 		</DockScreens>
-
-		<StaticData>
-			<Data id="csc.giftTable">
-				(	; donation	item						count	unique
-					(10000		&itPlasmaShieldGenerator;	1		'Gift1)
-					(5000		&itInvincibleDeflector;		1		'Gift2)
-					(2500		&itR5Deflector;				1		'Gift3)
-					(1250		&itEMPImmuneCoating;		4		'Gift4)
-					(0			&itKobeWater;				1		Nil)
-					)
-			</Data>
-		</StaticData>
 
 		<Language>
 			<Text id="actionInformation">[I]nformation</Text>

@@ -61,6 +61,13 @@ CAsteroidDesc::SCompositionDesc CAsteroidDesc::COMPOSITION_TABLE[EAsteroidTypeCo
 		},
 	};
 
+TStaticStringTable<TStaticStringEntry<EMiningMethod>, 4> CAsteroidDesc::MINING_METHOD_INDEX = {
+	"ablation",				EMiningMethod::ablation,
+	"drill",				EMiningMethod::drill,
+	"explosion",			EMiningMethod::explosion,
+	"shockwave",			EMiningMethod::shockwave,
+	};
+
 const CAsteroidDesc CAsteroidDesc::m_Null;
 
 Metric CAsteroidDesc::CalcBaseMiningSuccess (int iMiningLevel, int iMiningDifficulty)
@@ -91,31 +98,31 @@ int CAsteroidDesc::CalcMaxOreLevel (DamageTypes iDamageType)
 		{
 		case damageLaser:
 		case damageKinetic:
-			return 4;
+			return 5;
 
 		case damageParticle:
 		case damageBlast:
-			return 7;
+			return 8;
 
 		case damageIonRadiation:
 		case damageThermonuclear:
-			return 10;
+			return 11;
 
 		case damagePositron:
 		case damagePlasma:
-			return 13;
+			return 14;
 
 		case damageAntiMatter:
 		case damageNano:
-			return 16;
+			return 17;
 
 		case damageGravitonBeam:
 		case damageSingularity:
-			return 19;
+			return 20;
 
 		case damageDarkAcid:
 		case damageDarkSteel:
-			return 22;
+			return 23;
 
 		case damageDarkLightning:
 		case damageDarkFire:
@@ -196,6 +203,16 @@ CString CAsteroidDesc::CompositionID (EAsteroidType iType)
 		return CONSTLIT("unknown");
 
 	return CString(GetCompositionDesc(iType).pszID, -1, TRUE);
+	}
+
+CString CAsteroidDesc::MiningMethodID (EMiningMethod iType)
+
+//	MiningMethodID
+//
+//	Returns an ID string for the mining method.
+
+	{
+	return MINING_METHOD_INDEX.FindKey(iType);
 	}
 
 int CAsteroidDesc::GetDefaultMiningDifficulty (EAsteroidType iType)

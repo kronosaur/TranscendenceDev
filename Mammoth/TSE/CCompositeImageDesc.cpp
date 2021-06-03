@@ -407,6 +407,8 @@ CObjectImageArray &CCompositeImageDesc::GetImage (const SGetImageCtx &Ctx, const
 //	Returns the image
 
 	{
+	DEBUG_TRY
+
 	CCompositeImageSelector::ETypes iType = Selector.GetType(DEFAULT_SELECTOR_ID);
 
 	//	If we have a root descriptor, then we let it generate an image
@@ -476,6 +478,8 @@ CObjectImageArray &CCompositeImageDesc::GetImage (const SGetImageCtx &Ctx, const
 		}
 	else
 		return EMPTY_IMAGE;
+
+	DEBUG_CATCH
 	}
 
 int CCompositeImageDesc::GetMaxLifetime (void) const

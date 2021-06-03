@@ -450,15 +450,31 @@ class CFractureEffect : public TSpaceObjectImpl<OBJID_CFRACTUREEFFECT>
 class CMarker : public TSpaceObjectImpl<OBJID_CMARKER>
 	{
 	public:
+		enum class EStyle
+			{
+			Error =							-1,
+
+			None =							0,  //  Invisible
+			SmallCross =					1,  //  Paint small cross
+			Message =						2,	//	Paint a message
+			};
+
+		struct SCreateOptions
+			{
+			CString sName;
+			EStyle iStyle = EStyle::None;
+			CSovereign *pSovereign = NULL;
+			int iLifetime = -1;
+			};
+
 		CMarker (CUniverse &Universe);
 		~CMarker (void);
 
 		static ALERROR Create (CSystem &System,
-							   CSovereign *pSovereign,
 							   const CVector &vPos,
 							   const CVector &vVel,
-							   const CString &sName,
-							   CMarker **retpMarker);
+							   const SCreateOptions &Options,
+							   CMarker **retpMarker = NULL);
 
 		void SetOrbit (const COrbit &Orbit);
 
@@ -475,6 +491,9 @@ class CMarker : public TSpaceObjectImpl<OBJID_CMARKER>
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
 		virtual bool ShowMapOrbit (void) const override { return (m_pMapOrbit != NULL); }
 
+		static CString GetStyleID (EStyle iStyle);
+		static EStyle ParseStyle (const CString &sValue);
+
 	protected:
 		virtual bool CanHit (CSpaceObject *pObj) const override { return false; }
 		virtual CSovereign *GetSovereign (void) const override;
@@ -482,21 +501,19 @@ class CMarker : public TSpaceObjectImpl<OBJID_CMARKER>
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual void OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override { }
+		void PaintMessage (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) const;
 
 	private:
-		enum EStyles
-			{
-			styleNone =                     0,  //  Invisible
-			styleSmallCross =               1,  //  Paint small cross
-			};
-
 		CString m_sName;						//	Name
-		CSovereign *m_pSovereign;				//	Sovereign
-		EStyles m_iStyle;                       //  Paint style
+		CSovereign *m_pSovereign = NULL;		//	Sovereign
+		EStyle m_iStyle = EStyle::None;			//  Paint style
+		DWORD m_dwCreatedOn = 0;				//	Tick on which we were created
+		DWORD m_dwDestroyOn = 0;				//	If non-zero, we destroy the marker on the given tick
 
-		COrbit *m_pMapOrbit;					//	Orbit to draw on map (may be NULL)
+		COrbit *m_pMapOrbit = NULL;				//	Orbit to draw on map (may be NULL)
 	};
 
 class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
@@ -573,9 +590,10 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 			};
 
 		int ComputeVaporTrail (void);
-		void CreateFragments (const CVector &vPos);
+		void CreateFragments (const CVector &vPos, const CVector &vVel = NullVector);
 		Metric GetAge (void) const;
 		int GetManeuverRate (void) const;
+		bool IsDetonatingOnMining () const;
 		bool IsTracking (void) const;
 		bool IsTrackingTime (int iTick) const;
 		bool SetMissileFade (void);
@@ -948,6 +966,14 @@ class CRadiusDamage : public TSpaceObjectImpl<OBJID_CRADIUSDAMAGE>
 		CSovereign *m_pSovereign;				//	Sovereign
 	};
 
+enum class EAttackResponse
+	{
+	Ignore,									//	Ignore the attack
+	WarnAttacker,							//	"Watch your targets!"
+	OnAttackedByPlayer,						//	Call <OnAttackedByPlayer>
+	OnAttacked								//	Call <OnAttacked>
+	};
+
 class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 	{
 	public:
@@ -1024,7 +1050,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		int GetItemDeviceName (const CItem &Item) const;
 		CItem GetNamedItem (DeviceNames iDev) const;
 		bool HasNamedDevice (DeviceNames iDev) const;
-		void InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot = -1, int iSlotPosIndex = -1);
+		void InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSystem::SSlotDesc &RecommendedSlot = CDeviceSystem::SSlotDesc());
 		bool IsDeviceSlotAvailable (ItemCategories iItemCat = itemcatNone, int *retiSlot = NULL);
 		void ReadyFirstWeapon (void);
 		void ReadyNextWeapon (int iDir = 1);
@@ -1111,11 +1137,12 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		using CSpaceObject::AddOverlay;
 		virtual CTradingDesc *AllocTradeDescOverride (void) override;
 		virtual CShip *AsShip (void) override { return this; }
+		virtual const CShip *AsShip (void) const override { return this; }
 		virtual void Behavior (SUpdateCtx &Ctx) override;
 		virtual bool CanAttack (void) const override;
 		virtual bool CanBeAttacked (void) const override { return CanAttack(); }
 		virtual bool CanBeDestroyedBy (CSpaceObject &Attacker) const override;
-		virtual bool CanInstallItem (const CItem& Item, int iSlot = -1, bool bForceUseOfDeviceSlot = false, InstallItemResults* retiResult = NULL, CString* retsResult = NULL, CItem* retItemToReplace = NULL) override;
+		virtual bool CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot = CDeviceSystem::SSlotDesc(), bool bForceUseOfDeviceSlot = false, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL) override;
 		virtual bool CanMove (void) const override { return true; }
 		virtual RequestDockResults CanObjRequestDock (CSpaceObject *pObj = NULL) const override;
 		virtual bool CanThrust (void) const override { return (GetThrust() > 0.0); }
@@ -1136,7 +1163,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual int GetAISettingInteger (const CString &sSetting) override { return m_pController->GetAISettingInteger(sSetting); }
 		virtual CString GetAISettingString (const CString &sSetting) override { return m_pController->GetAISettingString(sSetting); }
 		virtual const CArmorSystem &GetArmorSystem (void) const override { return m_Armor; }
-		virtual CArmorSystem *GetArmorSystem (void) override { return &m_Armor; }
+		virtual CArmorSystem &GetArmorSystem (void) override { return m_Armor; }
 		virtual CSpaceObject *GetAttachedRoot (void) const;
 		virtual CSpaceObject *GetBase (void) const override;
 		virtual Metric GetCargoSpaceLeft (void) const override;
@@ -1167,6 +1194,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CStationType *GetEncounterInfo (void) override { return m_pEncounterInfo; }
 		virtual CSpaceObject *GetEscortPrincipal (void) const override;
 		virtual const CObjectImageArray &GetHeroImage (void) const override { return m_pClass->GetHeroImage(); }
+		virtual void GetHUDTimers (TArray<SHUDTimerDesc> &retTimers) const override;
 		virtual const CObjectImageArray &GetImage (int *retiRotationFrameIndex = NULL) const override;
 		virtual CString GetInstallationPhrase (const CItem &Item) const override;
 		virtual Metric GetInvMass (void) const override;
@@ -1328,10 +1356,11 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 
 		void AccumulateDeviceEnhancementsToArmor (CInstalledArmor *pArmor, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		void CalcArmorBonus (void);
+		EAttackResponse CalcAttackResponse (SDamageCtx &Ctx);
 		void CalcBounds (void);
 		int CalcMaxCargoSpace (void) const;
 		void CalcDeviceBonus (void);
-		InstallItemResults CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot = NULL);
+		InstallItemResults CalcDeviceToReplace (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, int *retiSlot = NULL);
 		DWORD CalcEffectsMask (void);
 		void CalcPerformance (void);
 		int CalcPowerUsed (SUpdateCtx &Ctx, int *retiPowerGenerated = NULL);

@@ -39,6 +39,7 @@
 #define ALERT_WHEN_DESTROYED_ATTRIB				CONSTLIT("alertWhenDestroyed")
 #define ALLOW_ENEMY_DOCKING_ATTRIB				CONSTLIT("allowEnemyDocking")
 #define ANONYMOUS_ATTRIB						CONSTLIT("anonymous")
+#define AUTO_LOOT_CRITERIA_ATTRIB				CONSTLIT("autoLootCriteria")
 #define BACKGROUND_PLANE_ATTRIB					CONSTLIT("backgroundPlane")
 #define BARRIER_EFFECT_ATTRIB					CONSTLIT("barrierEffect")
 #define BEACON_ATTRIB							CONSTLIT("beacon")
@@ -670,6 +671,8 @@ TArray<CStationType::SSatImageDesc> CStationType::CalcSegmentDesc (void) const
 //	Returns an array of segment images.
 
 	{
+	DEBUG_TRY
+
 	if (const CXMLElement *pSatellites = GetSatellitesDesc())
 		{
 		SSelectorInitCtx InitCtx;
@@ -725,6 +728,8 @@ TArray<CStationType::SSatImageDesc> CStationType::CalcSegmentDesc (void) const
 		{
 		return TArray<SSatImageDesc>();
 		}
+
+	DEBUG_CATCH
 	}
 
 Metric CStationType::CalcTreasureValue (int iLevel) const
@@ -829,7 +834,7 @@ TSharedPtr<CG32bitImage> CStationType::CreateFullImage (SGetImageCtx &ImageCtx, 
 	//	Get the main image
 
 	int iVariant;
-	const CObjectImageArray *pMainImage = &GetImage(Selector, Modifiers, &iVariant);
+	const CObjectImageArray &MainImage = GetImage(Selector, Modifiers, &iVariant);
 
 	//	Compute any segment images
 
@@ -844,11 +849,11 @@ TSharedPtr<CG32bitImage> CStationType::CreateFullImage (SGetImageCtx &ImageCtx, 
 		//	it is possible to not have a main image but to have satellites
 		//	(e.g., St. Kats).
 
-		if (!pMainImage->IsLoaded())
+		if (!MainImage.IsLoaded())
 			return NULL;
 
-		CG32bitImage *pBmpImage = &pMainImage->GetImage(CONSTLIT("CStationType::CreateFullImage"));
-		retrcImage = pMainImage->GetImageRect(0, iVariant, &retxCenter, &retyCenter);
+		CG32bitImage *pBmpImage = &MainImage.GetImage(CONSTLIT("CStationType::CreateFullImage"));
+		retrcImage = MainImage.GetImageRect(0, iVariant, &retxCenter, &retyCenter);
 
 		//	AddRef because we don't want callers to free this bitmap, since it
 		//	is owned by the type.
@@ -863,7 +868,7 @@ TSharedPtr<CG32bitImage> CStationType::CreateFullImage (SGetImageCtx &ImageCtx, 
 		{
 		//	Loop over all satellites and get metrics
 
-		RECT rcMainImage = pMainImage->GetImageRect();
+		RECT rcMainImage = MainImage.GetImageRect();
 		RECT rcBounds;
 		rcBounds.left = -(RectWidth(rcMainImage) / 2);
 		rcBounds.top = -(RectHeight(rcMainImage) / 2);
@@ -900,7 +905,7 @@ TSharedPtr<CG32bitImage> CStationType::CreateFullImage (SGetImageCtx &ImageCtx, 
 
 		//	Paint the main image
 
-		pMainImage->PaintImage(*pCompositeImage, xCenter, yCenter, 0, Modifiers.GetRotation(), true);
+		MainImage.PaintImage(*pCompositeImage, xCenter, yCenter, 0, Modifiers.GetRotation(), true);
 
 		//	Paint all the satellites
 
@@ -1879,6 +1884,12 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		}
 	else
 		m_iEjectaAdj = 0;
+
+	//	Auto loot
+
+	CString sAutoLootCriteria = pDesc->GetAttribute(AUTO_LOOT_CRITERIA_ATTRIB);
+	if (!sAutoLootCriteria.IsBlank())
+		m_AutoLootCriteria.Init(sAutoLootCriteria);
 
 	//	Special object descriptors
 

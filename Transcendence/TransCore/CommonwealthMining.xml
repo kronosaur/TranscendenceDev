@@ -189,7 +189,7 @@
 		<!-- Trade and Items -->
 		
 		<Trade currency="credit">
-			<Sell	criteria="*NU +miningEquipment; -advanced; -defective; -Illegal; -NotForSale; -notStandard;" priceAdj="100" inventoryAdj="100" levelFrequency="systemLevel:ru|c|cur"/>
+			<Sell	criteria="*NU +essentialMiningEquipment; -advanced; -defective; -Illegal; -NotForSale; -notStandard;" priceAdj="100" inventoryAdj="100" levelFrequency="systemLevel:ru|c|cur"/>
 			<Sell	criteria="*NU +ore; -defective; -notForSale;"	priceAdj="100"/>
 			<Sell	criteria="*NU +minable; -defective; -notForSale;"	priceAdj="100"/>
 			<Buy	criteria="*NU +food; -illegal; -notForSale;"	priceAdj="100"/>
@@ -222,7 +222,12 @@
 			<Item count="1"	item="&itMinersCargoHold;"/>
 			<Item count="1"	item="&itMiningLaser;"/>
 
-			<RandomItem 
+			<RandomItem count="10"
+					criteria=		"* +miningEquipment; -advanced; -defective; -illegal; -notForSale; -notStandard;"
+					levelFrequency= "systemLevel:ru|c|cur"
+					/>
+
+			<RandomItem count="10"
 					criteria=		"* +ore; -notStandard; -notForSale; | * +minable; -notStandard; -notForSale;"
 					levelFrequency= "systemLevel:ru|c|ur"
 					/>
@@ -371,12 +376,8 @@
 							Nil
 						
 						;	See if the player has been promoted.
-						;	NOTE: Can't advance beyond wildcatter at a mining
-						;	colony; must join IMU.
 
-						(and (ls (typ@ &unidMiningSkill; 'rpg.miningRank) 3)
-								(setq newRankDesc (typFireEvent &unidMiningSkill; 'CheckPromotion))
-								)
+						(setq newRankDesc (typFireEvent &unidMiningSkill; 'CheckPromotion))
 							{
 								screen: &dsCommonwealthMiningPromotion;
 								priority: 5

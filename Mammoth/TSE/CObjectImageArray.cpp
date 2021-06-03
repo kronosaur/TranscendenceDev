@@ -50,18 +50,6 @@ static char g_ImageTicksPerFrameAttrib[] = "imageTicksPerFrame";
 CG32bitImage CObjectImageArray::m_NullImage;
 CObjectImageArray CObjectImageArray::m_Null;
 
-CObjectImageArray::CObjectImageArray (void) : 
-		m_pRotationOffset(NULL),
-		m_pGlowImages(NULL),
-		m_pScaledImages(NULL),
-		m_cxScaledImage(-1),
-		m_dwBitmapUNID(0)
-
-//	CObjectImageArray constructor
-
-	{
-	}
-
 CObjectImageArray::CObjectImageArray (const CObjectImageArray &Source)
 
 //	CObjectImageArray copy constructor
@@ -436,6 +424,13 @@ void CObjectImageArray::ComputeRotationOffsets (void)
 			m_pRotationOffset[i].y = (int)vOffset.GetY();
 			}
 		}
+	else
+		{
+		if (m_pRotationOffset)
+			delete [] m_pRotationOffset;
+
+		m_pRotationOffset = NULL;
+		}
 	}
 
 void CObjectImageArray::ComputeRotationOffsets (int xOffset, int yOffset)
@@ -463,25 +458,23 @@ void CObjectImageArray::CopyFrom (const CObjectImageArray &Source)
 
 //	CopyFrom
 //
-//	Copy image
+//	Copy image. NOTE: We expect the object to be initialized to be empty.
 
 	{
 	m_dwBitmapUNID = Source.m_dwBitmapUNID;
 	m_pImage = Source.m_pImage;
 	m_rcImage = Source.m_rcImage;
 	m_iFrameCount = Source.m_iFrameCount;
-	m_iRotationCount = Source.m_iRotationCount;
-	m_iFramesPerColumn = Source.m_iFramesPerColumn;
-	m_iFramesPerRow = Source.m_iFramesPerRow;
 	m_iTicksPerFrame = Source.m_iTicksPerFrame;
 	m_iFlashTicks = Source.m_iFlashTicks;
+
 	m_iBlending = Source.m_iBlending;
 	m_iViewportSize = Source.m_iViewportSize;
-	m_pGlowImages = NULL;
-	m_pScaledImages = NULL;
-	m_cxScaledImage = -1;
+	m_iFramesPerColumn = Source.m_iFramesPerColumn;
+	m_iFramesPerRow = Source.m_iFramesPerRow;
 	m_bDefaultSize = Source.m_bDefaultSize;
 
+	m_iRotationCount = Source.m_iRotationCount;
 	m_iRotationOffset = Source.m_iRotationOffset;
 	if (Source.m_pRotationOffset)
 		{
@@ -491,6 +484,10 @@ void CObjectImageArray::CopyFrom (const CObjectImageArray &Source)
 		}
 	else
 		m_pRotationOffset = NULL;
+
+	m_pGlowImages = NULL;
+	m_pScaledImages = NULL;
+	m_cxScaledImage = -1;
 	}
 
 void CObjectImageArray::CopyImage (CG32bitImage &Dest, int x, int y, int iFrame, int iRotation) const
@@ -989,7 +986,8 @@ ALERROR CObjectImageArray::Init (CObjectImage *pImage, const RECT &rcImage, int 
 //	Create from parameters
 
 	{
-	ASSERT(pImage);
+	if (!pImage)
+		throw CException(ERR_FAIL);
 
 	CleanUp();
 
@@ -1097,7 +1095,6 @@ ALERROR CObjectImageArray::InitFromFrame (const CObjectImageArray &Source, int i
 	m_pImage = Source.m_pImage;
 	m_rcImage = Source.GetImageRect(iTick, iRotationIndex);
 	m_iFrameCount = 1;
-	m_iRotationCount = 1;
 	m_iFramesPerColumn = 1;
 	m_iFramesPerRow = 1;
 	m_iTicksPerFrame = 0;
@@ -1365,6 +1362,8 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 //	Paints the image on the destination
 
 	{
+	DEBUG_TRY
+
 	if (m_pImage)
 		{
 		CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
@@ -1415,6 +1414,8 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 					y - (RectHeight(m_rcImage) / 2));
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CObjectImageArray::PaintImageShimmering (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, DWORD byOpacity) const

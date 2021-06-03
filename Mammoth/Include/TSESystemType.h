@@ -44,6 +44,8 @@ class CSystemType : public CDesignType
 
 		ALERROR FireOnCreate (SSystemCreateCtx &SysCreateCtx, CString *retsError = NULL);
 		bool FireOnObjJumpPosAdj (CSpaceObject *pPos, CVector *iovPos);
+		void FireOnSystemStarted (DWORD dwElapsedTime);
+		void FireOnSystemStopped ();
 		ALERROR FireSystemCreateCode (SSystemCreateCtx &SysCreateCtx, ICCItem *pCode, const COrbit &OrbitDesc, CString *retsError);
 		DWORD GetBackgroundUNID (void) { return m_dwBackgroundUNID; }
 		CXMLElement *GetDesc (void) { return m_pDesc; }

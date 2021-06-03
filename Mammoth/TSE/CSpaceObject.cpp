@@ -20,8 +20,6 @@ const int HIGHLIGHT_TIMER =						200;
 const int HIGHLIGHT_BLINK =						110;
 const int HIGHLIGHT_FADE =						30;
 
-const int ANNOTATION_INNER_SPACING_Y =			2;
-
 const int DAMAGE_BAR_WIDTH =					100;
 const int DAMAGE_BAR_HEIGHT =					12;
 
@@ -81,6 +79,7 @@ const Metric g_rMaxCommsRange2 =				(g_rMaxCommsRange * g_rMaxCommsRange);
 #define ON_SELECTED_EVENT						CONSTLIT("OnSelected")
 #define ON_SUBORDINATE_ATTACKED_EVENT			CONSTLIT("OnSubordinateAttacked")
 #define ON_SYSTEM_EXPLOSION_EVENT				CONSTLIT("OnSystemExplosion")
+#define ON_SYSTEM_OBJ_CREATED_EVENT				CONSTLIT("OnSystemObjCreated")
 #define ON_SYSTEM_OBJ_DESTROYED_EVENT			CONSTLIT("OnSystemObjDestroyed")
 #define ON_SYSTEM_STARTED_EVENT					CONSTLIT("OnSystemStarted")
 #define ON_SYSTEM_STOPPED_EVENT					CONSTLIT("OnSystemStopped")
@@ -966,7 +965,7 @@ bool CSpaceObject::CanFireOnObjHelper (CSpaceObject *pObj) const
 		);
 	}
 
-bool CSpaceObject::CanInstallItem (const CItem &Item, int iSlot, bool bForceUseOfDeviceSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
+bool CSpaceObject::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, bool bForceUseOfDeviceSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
 
 //	CanInstallItem
 //
@@ -1019,7 +1018,9 @@ void CSpaceObject::CommsMessageFrom (CSpaceObject *pSender, int iIndex)
 
 	{
 	CCommunicationsHandler *pHandler = GetCommsHandler();
-	ASSERT(pHandler && iIndex < pHandler->GetCount());
+	if (!pHandler || iIndex >= pHandler->GetCount())
+		throw CException(ERR_FAIL);
+
 	const CCommunicationsHandler::SMessage &Msg = pHandler->GetMessage(iIndex);
 
 	if (Msg.InvokeEvent.pCode)
@@ -1629,28 +1630,7 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 
 		//	Delete
 
-		if (!Ctx.bResurrectPending)
-			{
-			//	If this was the player, remove ship variables
-
-			if (IsPlayer())
-				{
-				//	Clean up these variables since the player is out
-				//	of the system. We need to do this because otherwise
-				//	an event might set a target for the player and if the
-				//	target is destroyed, we would never get an OnObjDestroyed message
-
-				GetUniverse().SetPlayerShip(NULL);
-
-				//	The player will be deleted at higher layers, but
-				//	it is out of the system now.
-				}
-
-			//	The objects get deleted at the end of the update
-
-			else
-				pSystem->AddToDeleteList(this);
-			}
+		pSystem->DeleteObject(Ctx);
 		}
 
 	//	Return wreck
@@ -2019,7 +1999,7 @@ bool CSpaceObject::FireCanDockAsPlayer (CSpaceObject *pDockTarget, CString *rets
 		return true;
 	}
 
-bool CSpaceObject::FireCanInstallItem (const CItem &Item, int iSlot, CString *retsResult)
+bool CSpaceObject::FireCanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, CString *retsResult)
 
 //	FireCanInstallItem
 //
@@ -2034,20 +2014,20 @@ bool CSpaceObject::FireCanInstallItem (const CItem &Item, int iSlot, CString *re
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineItemVar(Item);
 
-		if (iSlot == -1)
+		if (Slot.iIndex == -1)
 			{
 			Ctx.DefineNil(CONSTLIT("aArmorSeg"));
 			Ctx.DefineNil(CONSTLIT("aItemToReplace"));
 			}
 		else if (Item.IsArmor())
 			{
-			Ctx.DefineInteger(CONSTLIT("aArmorSeg"), iSlot);
+			Ctx.DefineInteger(CONSTLIT("aArmorSeg"), Slot.iIndex);
 			Ctx.DefineNil(CONSTLIT("aItemToReplace"));
 			}
 		else
 			{
 			CItemListManipulator ItemList(GetItemList());
-			if (SetCursorAtDevice(ItemList, iSlot))
+			if (SetCursorAtDevice(ItemList, Slot.iIndex))
 				{
 				const CItem &ItemToReplace = ItemList.GetItemAtCursor();
 				Ctx.DefineItem(CONSTLIT("aItemToReplace"), ItemToReplace);
@@ -3545,6 +3525,28 @@ void CSpaceObject::FireOnSystemObjAttacked (SDamageCtx &Ctx)
 		}
 	}
 
+void CSpaceObject::FireOnSystemObjCreated (const CSpaceObject &Obj)
+
+//	FireOnSystemObjCreated
+//
+//	Fire OnSystemObjCreated event
+
+	{
+	SEventHandlerDesc Event;
+
+	if (FindEventHandler(ON_SYSTEM_OBJ_CREATED_EVENT, &Event))
+		{
+		CCodeChainCtx CCX(GetUniverse());
+		CCX.DefineContainingType(this);
+		CCX.SaveAndDefineSourceVar(this);
+		CCX.DefineSpaceObject(CONSTLIT("aObjCreated"), Obj);
+
+		ICCItemPtr pResult = CCX.RunCode(Event);
+		if (pResult->IsError())
+			ReportEventError(ON_SYSTEM_OBJ_CREATED_EVENT, pResult);
+		}
+	}
+
 void CSpaceObject::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 
 //	FireOnSystemObjDestroyed
@@ -3568,7 +3570,7 @@ void CSpaceObject::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 
 		ICCItem *pResult = CCCtx.Run(Event);
 		if (pResult->IsError())
-			ReportEventError(ON_OBJ_DESTROYED_EVENT, pResult);
+			ReportEventError(ON_SYSTEM_OBJ_DESTROYED_EVENT, pResult);
 		CCCtx.Discard(pResult);
 		}
 	}
@@ -5024,6 +5026,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 											  Metric rMinThreshold, 
 											  Metric rMaxThreshold, 
 											  const DamageDesc &Damage, 
+											  const CTargetList::STargetOptions &TargetOptions,
 											  const CSpaceObject *pTarget,
 											  CVector *retvHitPos, 
 											  int *retiHitDir)
@@ -5092,11 +5095,8 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 
 		//	Do we need to calculate proximity detonation for this object?
 
-		bool bCanTriggerDetonation = (pObj->GetScale() == scaleShip
-					|| pObj->GetScale() == scaleStructure)
-				&& IsAngryAt(pObj) 
-				&& (pObj->CanBeAttacked() || pObj == pTarget);
-
+		bool bCanTriggerDetonation = CTargetList::CanDetonate(*this, pTarget, TargetOptions, *pObj);
+		
 		//	Compute the size of the object, if we're doing proximity computations
 
 		Metric rObjRadius;
@@ -5584,7 +5584,9 @@ bool CSpaceObject::IsCommsMessageValidFrom (const CSpaceObject &SenderObj, int i
 
 	{
 	const CCommunicationsHandler *pHandler = GetCommsHandler();
-	ASSERT(pHandler && iIndex < pHandler->GetCount());
+	if (!pHandler || iIndex >= pHandler->GetCount())
+		throw CException(ERR_FAIL);
+
 	const CCommunicationsHandler::SMessage &Msg = pHandler->GetMessage(iIndex);
 
 	//	If we have an OnShow code block then see if it evaluates to TRUE. If not,
@@ -6789,6 +6791,24 @@ void CSpaceObject::PaintHighlight (CG32bitImage &Dest, int x, int y, SViewportPa
 		}
 	}
 
+void CSpaceObject::PaintAnnotationText (CG32bitImage &Dest, int x, int y, const CString &sText, SViewportPaintCtx &Ctx) const
+
+//	PaintAnnotationText
+//
+//	Paints an annotation.
+
+	{
+	const CG16bitFont &MessageFont = GetUniverse().GetNamedFont(CUniverse::fontSRSMessage);
+	MessageFont.DrawText(Dest,
+			x,
+			Ctx.yAnnotations,
+			GetSymbolColor(),
+			sText,
+			CG16bitFont::AlignCenter);
+
+	Ctx.yAnnotations += MessageFont.GetHeight() + ANNOTATION_INNER_SPACING_Y;
+	}
+
 void CSpaceObject::PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx, AlignmentStyles iAlign, CG32bitPixel rgbColor, int *retcyHeight)
 
 //	PaintHighlightText
@@ -6801,7 +6821,6 @@ void CSpaceObject::PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewpo
 	const int KEY_BOX_SIZE = 18;
 	const CG16bitFont &NameFont = GetUniverse().GetNamedFont(CUniverse::fontSRSObjName);
 	const CG16bitFont &MessageFont = GetUniverse().GetNamedFont(CUniverse::fontSRSMessage);
-	const RECT &rcClip = Dest.GetClipRect();
 
 	if (iAlign & alignBottom)
 		{
@@ -7041,8 +7060,12 @@ void CSpaceObject::RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, c
 //	NOTE: This does not transfer the item.
 
 	{
-	ASSERT(pSellerObj);
-	ASSERT(Price.GetCurrencyType());
+	if (!pSellerObj)
+		throw CException(ERR_FAIL);
+
+	if (!Price.GetCurrencyType())
+		throw CException(ERR_FAIL);
+
 	//	NOTE: It is OK if the Item is null.
 
 	//	Charge the buyer (us)

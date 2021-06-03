@@ -263,7 +263,7 @@
 								;	Send the player to explore all friendly stations (until they are all explored)
 								
 								(and (eq (sysGetNode) 'SE)
-										(filter (sysFindObject gPlayerShip "TAF +populated; -uncharted;") theObj 
+										(filter (sysFindObject gPlayerShip "TAF +populated; -enemy; -uncharted;") theObj 
 												(not (objIsKnown theObj))
 												)
 										)
@@ -475,7 +475,7 @@
 						;	Check if we've explored everything
 						
 						(eq state 'exploreSystem)
-							(if (not (filter (sysFindObject gPlayerShip "TAF +populated; -uncharted;") theObj
+							(if (not (filter (sysFindObject gPlayerShip "TAF +populated; -enemy; -uncharted;") theObj
 									(not (objIsKnown theObj))
 									))
 								(setq taskDone True)

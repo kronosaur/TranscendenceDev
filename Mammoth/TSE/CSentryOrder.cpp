@@ -64,7 +64,7 @@ void CSentryOrder::AttackEnemies (CShip *pShip, CAIBehaviorCtx &Ctx)
 		}
 	}
 
-void CSentryOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
+void CSentryOrder::OnAttacked (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &AttackerObj, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	OnAttacked
 //
@@ -76,8 +76,7 @@ void CSentryOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *
 	//	If we have a valid attacker, then we try to respond. We ignore friendly
 	//	fire because that's handled by CBaseShipAI.
 
-	if (pAttacker == NULL
-			|| !pAttacker->CanAttack()
+	if (!AttackerObj.CanAttack()
 			|| bFriendlyFire)
 		return;
 
@@ -86,7 +85,7 @@ void CSentryOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *
 	if (m_Objs[objTarget] == NULL || mathRandom(1, 3) == 1)
 		{
 		m_fIsAttacking = true;
-		m_Objs[objTarget] = pAttacker;
+		m_Objs[objTarget] = &AttackerObj;
 		ASSERT(m_Objs[objTarget]->DebugIsValid() && m_Objs[objTarget]->NotifyOthersWhenDestroyed());
 		}
 
@@ -98,9 +97,9 @@ void CSentryOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *
 	CSpaceObject *pOrderGiver = Damage.GetOrderGiver();
 	if (Ctx.IsSecondAttack()
 			&& (pBase = m_Objs[objBase])
-			&& pBase->IsAngryAt(pAttacker)
-			&& (pTarget = pBase->CalcTargetToAttack(pAttacker, pOrderGiver)))
-		pShip->Communicate(pBase, msgAttackDeter, pTarget);
+			&& pBase->IsAngryAt(&AttackerObj)
+			&& (pTarget = pBase->CalcTargetToAttack(&AttackerObj, pOrderGiver)))
+		Ship.Communicate(pBase, msgAttackDeter, pTarget);
 
 	DEBUG_CATCH
 	}
@@ -218,7 +217,7 @@ void CSentryOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iOb
 		m_fIsAttacking = false;
 	}
 
-void CSentryOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CSentryOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //

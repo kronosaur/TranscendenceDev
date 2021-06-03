@@ -17,13 +17,7 @@ const Metric NAV_PATH_MOVE_THRESHOLD2 =	(NAV_PATH_MOVE_THRESHOLD * NAV_PATH_MOVE
 
 CNavigateOrder::CNavigateOrder (IShipController::OrderTypes iOrder) : IOrderModule(objCount),
 		m_iOrder(iOrder),
-		m_fTargetObj(false),
-		m_fTargetVector(false),
-		m_fIsFollowingNavPath(false),
-		m_fDockAtDestination(false),
-		m_fVariableMinDist(false),
-		m_fNavPathOnly(false),
-		m_fGateAtDestination(false)
+		m_Reaction(AIReaction::DeterWithSecondaries, AIReaction::None, AIReaction::None)
 
 //	CNavigateOrder constructor
 
@@ -57,6 +51,26 @@ CNavigateOrder::CNavigateOrder (IShipController::OrderTypes iOrder) : IOrderModu
 		default:
 			ASSERT(false);
 		}
+	}
+
+COrderDesc CNavigateOrder::CreateDock (CSpaceObject &Dest, const CReactionImpl &Reactions, DWORD dwFlags)
+
+//	CreateDock
+//
+//	Create dock order
+
+	{
+	ICCItemPtr pData(ICCItem::SymbolTable);
+	Reactions.SetOptions(*pData);
+
+	COrderDesc Result(IShipController::orderDock, &Dest, *pData);
+
+	//	Set some flags
+
+	if (dwFlags & FLAG_CANCEL_ON_REACTION_ORDER)
+		Result.SetCancelOnReactionOrder();
+
+	return Result;
 	}
 
 void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
@@ -187,10 +201,7 @@ void CNavigateOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const CO
 	Metric rMinDist;
 	if (m_fTargetVector)
 		{
-		if (OrderDesc.IsVector())
-			m_vDest = OrderDesc.GetDataVector();
-		else
-			m_vDest = Ship.GetPos();
+		m_vDest = OrderDesc.GetDataVector(CONSTLIT("pos"), true, Ship.GetPos());
 		}
 	else
 		{
@@ -209,12 +220,14 @@ void CNavigateOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const CO
 	//	Get the minimum distance
 
 	if (m_fVariableMinDist)
-		rMinDist = LIGHT_SECOND * Max(1, (int)OrderDesc.GetDataInteger());
+		rMinDist = LIGHT_SECOND * Max(1, (int)OrderDesc.GetDataInteger(CONSTLIT("radius"), true, 1));
 	else
 		rMinDist = LIGHT_SECOND;
 
 	m_rMinDist2 = (rMinDist * rMinDist);
 	m_iDestFacing = ::VectorToPolar(m_vDest - Ship.GetPos());
+
+	m_Reaction.Init(OrderDesc);
 
 	//	See if we should take a nav path
 
@@ -264,7 +277,7 @@ void CNavigateOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int i
 		*retbCancelOrder = true;
 	}
 
-void CNavigateOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CNavigateOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //
@@ -281,6 +294,8 @@ void CNavigateOrder::OnReadFromStream (SLoadCtx &Ctx)
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	m_fIsFollowingNavPath = ((dwLoad & 0x00000001) ? true : false);
+
+	m_Reaction.Init(OrderDesc);
 	}
 
 void CNavigateOrder::OnWriteToStream (IWriteStream *pStream) const

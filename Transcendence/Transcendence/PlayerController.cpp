@@ -1057,12 +1057,6 @@ void CPlayerShipController::OnComponentChanged (ObjectComponentTypes iComponent)
 //	Component has changed
 
 	{
-	switch (iComponent)
-		{
-		case comDeviceCounter:
-			m_pTrans->UpdateDeviceCounterDisplay();
-			break;
-		}
 	}
 
 void CPlayerShipController::OnDamaged (const CDamageSource &Cause, CInstalledArmor *pArmor, const DamageDesc &Damage, int iDamage)
@@ -1528,6 +1522,11 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 		case statusReactorRestored:
 			DisplayTranslate(CONSTLIT("msgReactorPowerRestored"));
 			break;
+
+		case statusRotationSet:
+			if (m_pSession && m_pSession->IsMouseAimEnabled())
+				m_pSession->SetMouseAimEnabled(false);
+			break;
 		}
 
 	DEBUG_CATCH
@@ -1704,7 +1703,8 @@ void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bi
 		int iWeaponMinFireArc, iWeaponMaxFireArc;
 		switch (pWeapon->GetRotationType(DeviceItem, &iWeaponMinFireArc, &iWeaponMaxFireArc))
 			{
-			case CDeviceRotationDesc::rotSwivel:
+			case CDeviceRotationDesc::rotSwivelAlways:
+			case CDeviceRotationDesc::rotSwivelIfTargetInArc:
 				iDir = AngleMiddle(iWeaponMinFireArc, iWeaponMaxFireArc);
 				break;
 			}

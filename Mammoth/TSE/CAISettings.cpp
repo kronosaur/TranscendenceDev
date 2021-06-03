@@ -28,6 +28,7 @@
 #define PERCEPTION_ATTRIB						CONSTLIT("perception")
 #define REACT_TO_ATTACK_ATTRIB					CONSTLIT("reactToAttack")
 #define REACT_TO_THREAT_ATTRIB					CONSTLIT("reactToThreat")
+#define TARGETS_STATIONS_ATTRIB					CONSTLIT("targetsStations")
 #define STAND_OFF_COMBAT_ATTRIB					CONSTLIT("standOffCombat")
 #define THREAT_RANGE_ATTRIB						CONSTLIT("threatRange")
 #define USE_ALL_PRIMARY_WEAPONS_ATTRIB			CONSTLIT("useAllPrimaryWeapons")
@@ -45,8 +46,9 @@
 
 #define STR_TRUE								CONSTLIT("True")
 
-static TStaticStringTable<TStaticStringEntry<AIReaction>, 8> REACTION_TABLE = {
+static TStaticStringTable<TStaticStringEntry<AIReaction>, 9> REACTION_TABLE = {
 	"chase",				AIReaction::Chase,
+	"chaseFromBase",		AIReaction::ChaseFromBase,
 	"default",				AIReaction::Default,
 	"destroy",				AIReaction::Destroy,
 	"destroyAndRetaliate",	AIReaction::DestroyAndRetaliate,
@@ -228,6 +230,8 @@ CString CAISettings::GetValue (const CString &sSetting)
 		return ConvertToID(m_iReactToAttack);
 	else if (strEquals(sSetting, REACT_TO_THREAT_ATTRIB))
 		return ConvertToID(m_iReactToThreat);
+	else if (strEquals(sSetting, TARGETS_STATIONS_ATTRIB))
+		return (m_fTargetsStations ? STR_TRUE : NULL_STR);
 	else if (strEquals(sSetting, THREAT_RANGE_ATTRIB))
 		return strFromInt(mathRound(m_rThreatRange / LIGHT_SECOND));
 	else
@@ -313,6 +317,7 @@ ALERROR CAISettings::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fNoOrderGiver = pDesc->GetAttributeBool(NO_ORDER_GIVER_ATTRIB);
 	m_fIsPlayer = false;
 	m_fUseAllPrimaryWeapons = pDesc->GetAttributeBool(USE_ALL_PRIMARY_WEAPONS_ATTRIB);
+	m_fTargetsStations = pDesc->GetAttributeBool(TARGETS_STATIONS_ATTRIB);
 
 	return NOERROR;
 	}
@@ -398,6 +403,7 @@ void CAISettings::ReadFromStream (SLoadCtx &Ctx)
 	else
 		m_fIsPlayer =			((dwLoad & 0x00000800) ? true : false);
 	m_fUseAllPrimaryWeapons =	((dwLoad & 0x00001000) ? true : false);
+	m_fTargetsStations =		((dwLoad & 0x00002000) ? true : false);
 	}
 
 CString CAISettings::SetValue (const CString &sSetting, const CString &sValue)
@@ -453,6 +459,8 @@ CString CAISettings::SetValue (const CString &sSetting, const CString &sValue)
 		m_iReactToAttack = ConvertToAIReaction(sValue);
 	else if (strEquals(sSetting, REACT_TO_THREAT_ATTRIB))
 		m_iReactToThreat = ConvertToAIReaction(sValue);
+	else if (strEquals(sSetting, TARGETS_STATIONS_ATTRIB))
+		m_fTargetsStations = !sValue.IsBlank();
 	else if (strEquals(sSetting, THREAT_RANGE_ATTRIB))
 		m_rThreatRange = Max(0, strToInt(sValue, DEFAULT_THREAT_RANGE)) * LIGHT_SECOND;
 	else
@@ -509,6 +517,7 @@ void CAISettings::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fNoTargetsOfOpportunity ?	0x00000400 : 0);
 	dwSave |= (m_fIsPlayer ?				0x00000800 : 0);
 	dwSave |= (m_fUseAllPrimaryWeapons ?	0x00001000 : 0);
+	dwSave |= (m_fTargetsStations ?			0x00002000 : 0);
 
 	pStream->Write(dwSave);
 	}

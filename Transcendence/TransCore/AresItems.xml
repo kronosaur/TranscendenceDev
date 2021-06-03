@@ -327,7 +327,6 @@
 				fireRate=			"50"
 				missileSpeed=		"50"
 				lifetime=			"120"
-				hitPoints=			"10"
 				powerUse=			"1200"
 				recoil=				"2"
 
@@ -388,7 +387,6 @@
 				damage=				"plasma:300; WMD:7"
 				
 				fireRate=			"80"
-				hitPoints=			"30"
 
 				deviceSlots=		"2"
 				powerUse=			"3000"
@@ -460,7 +458,6 @@
 				type=			"missile"
 				lifetime=		"180"
 				missileSpeed=	"60"
-				hitPoints=		"20"
 
 				fragmentCount=	"1"
 				failsafe=		"6"
@@ -537,7 +534,6 @@
 				type=			"missile"
 				lifetime=		"480"
 				missileSpeed=	"30"
-				hitPoints=		"30"
 
 				fragmentCount=	"1"
 				failsafe=		"15"

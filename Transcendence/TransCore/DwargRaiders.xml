@@ -778,7 +778,6 @@
 				fireRate=			"20"
 				missileSpeed=		"50"
 				lifetime=			"60"
-				hitPoints=			"25"
 				powerUse=			"300"
 
 				effect=				"&efThermoShellDefault;"

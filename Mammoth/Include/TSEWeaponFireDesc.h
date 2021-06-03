@@ -607,10 +607,14 @@ class CWeaponFireDesc
 			evtCount					= 8,
 			};
 
+		static constexpr int DEFAULT_FRAGMENT_DIRECTION = 360;
+
 		struct SFragmentDesc
 			{
 			CWeaponFireDesc *pDesc;			//	Data for fragments
 			DiceRange Count;				//	Number of fragments
+			DiceRange Direction;			//	Fragmentation direction relative to trigger (or path) (360 = random)
+			DiceRange FragmentArc;			//	Angle of arc of fragmentation (0 = omnidirectional).
 
 			SFragmentDesc *pNext;
 			};
@@ -669,6 +673,7 @@ class CWeaponFireDesc
 		void ApplyAcceleration (CSpaceObject *pMissile) const;
 		Metric CalcDamage (DWORD dwDamageFlags = 0) const;
 		DamageDesc CalcDamageDesc (const CItemEnhancementStack *pEnhancements, const CDamageSource &Attacker, Metric rAge) const;
+		int CalcDefaultHitPoints (void) const;
 		bool CanAutoTarget (void) const { return (m_fAutoTarget ? true : false); }
 		bool CanDamageSource (void) const { return (m_fCanDamageSource ? true : false); }
 		bool CanHit (const CSpaceObject &Obj) const;
@@ -771,6 +776,7 @@ class CWeaponFireDesc
 		bool IsFragment (void) const { return m_fFragment; }
 		bool IsMIRV (void) const { return (m_fMIRV ? true : false); }
 		bool IsMIRVFragment (void) const { return (m_pFirstFragment ? m_pFirstFragment->pDesc->IsMIRV(): false); }
+		bool IsMIRVOrHasMIRVFragments () const { return IsMIRV() || IsMIRVFragment(); }
 		bool IsScalable (void) const { return (m_pScalable != NULL); }
 		bool IsTargetRequired (void) const { return (m_fTargetRequired ? true : false); }
 		bool IsTracking (void) const { return m_iManeuverability != 0; }
@@ -793,9 +799,9 @@ class CWeaponFireDesc
 			SVaporTrailDesc VaporTrail;			//  Vapor trail effect
 			};
 
-		int CalcDefaultHitPoints (void) const;
 		int CalcDefaultInteraction (void) const;
 		Metric CalcMaxEffectiveRange (void) const;
+		Metric CalcShotsPerAmmoItem () const;
 		static Metric CalcSpeed (Metric rPercentOfLight, bool bRelativistic);
 		CEffectCreator *GetFireEffect (void) const;
 		SOldEffects &GetOldEffects (void) const { return (m_pOldEffects ? *m_pOldEffects : m_NullOldEffects); }

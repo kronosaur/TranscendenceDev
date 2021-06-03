@@ -5,7 +5,7 @@
 
 #include "PreComp.h"
 
-void COrbitExactOrder::CalcIntermediates ()
+void COrbitExactOrder::CalcIntermediates (const COrderDesc &OrderDesc)
 
 //	CalcIntermediates
 //
@@ -17,6 +17,9 @@ void COrbitExactOrder::CalcIntermediates ()
 	static constexpr Metric RADIUS_LIMIT_ADJ = 5.0 * LIGHT_SECOND;
 	Metric rRadiusLimit = m_Orbit.GetSemiMajorAxis() + RADIUS_LIMIT_ADJ;
 	Metric rRadiusLimit2 = rRadiusLimit * rRadiusLimit;
+
+	m_rThreatRange = OrderDesc.GetDataDouble(CONSTLIT("threatRange"), DEFAULT_THREAT_RANGE_LS) * LIGHT_SECOND;
+	m_rThreatStopRange = OrderDesc.GetDataDouble(CONSTLIT("threatStopRange"), DEFAULT_THREAT_STOP_RANGE_LS) * LIGHT_SECOND;
 
 	m_rNavThreshold2 = Max(rRadiusLimit2, NAV_PATH_THRESHOLD2);
 	}
@@ -182,7 +185,7 @@ void COrbitExactOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const 
 
 	//	Cache some calculations
 
-	CalcIntermediates();
+	CalcIntermediates(OrderDesc);
 	}
 
 DWORD COrbitExactOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData)
@@ -282,14 +285,14 @@ AIReaction COrbitExactOrder::OnGetReactToThreat () const
 		}
 	}
 
-Metric COrbitExactOrder::OnGetThreatRange (void) const
+Metric COrbitExactOrder::OnGetThreatStopRange (void) const
 
-//	OnGetThreatRange
+//	OnGetThreatStopRange
 //
 //	Returns the range at which we should stop chasing threats.
 
 	{
-	return Max(m_Orbit.GetSemiMajorAxis() + PATROL_SENSOR_RANGE, STOP_ATTACK_RANGE);
+	return Max(m_Orbit.GetSemiMajorAxis() + GetThreatRange(), m_rThreatStopRange);
 	}
 
 void COrbitExactOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder)
@@ -301,7 +304,7 @@ void COrbitExactOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int
 	{
 	}
 
-void COrbitExactOrder::OnReadFromStream (SLoadCtx &Ctx)
+void COrbitExactOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //
@@ -313,7 +316,7 @@ void COrbitExactOrder::OnReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read(m_rAngularSpeed);
 	Ctx.pStream->Read(m_iCountdown);
 
-	CalcIntermediates();
+	CalcIntermediates(OrderDesc);
 	}
 
 void COrbitExactOrder::OnWriteToStream (IWriteStream *pStream) const

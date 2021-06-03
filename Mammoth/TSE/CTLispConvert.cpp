@@ -5,6 +5,10 @@
 
 #include "PreComp.h"
 
+#define FIELD_DEVICE_SLOT						CONSTLIT("deviceSlot")
+#define FIELD_SLOT_ID							CONSTLIT("slotID")
+#define FIELD_SLOT_POS_INDEX					CONSTLIT("slotPosIndex")
+
 #define TYPE_SHIP_CLASS							CONSTLIT("shipClass")
 #define TYPE_SPACE_OBJECT						CONSTLIT("spaceObject")
 
@@ -186,6 +190,62 @@ bool CTLispConvert::AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector 
 		}
 	else
 		return false;
+	}
+
+bool CTLispConvert::AsSlotDesc (const ICCItem &Value, CDeviceSystem::SSlotDesc &retSlot)
+
+//	AsSlotDesc
+//
+//	Interprets the value as a SSlotDesc. Return TRUE if no error.
+
+	{
+	retSlot = CDeviceSystem::SSlotDesc();
+
+	if (Value.IsNil())
+		{ }
+	else if (Value.IsInteger())
+		{
+		retSlot.iIndex = Value.GetIntegerValue();
+		}
+	else if (Value.IsIdentifier())
+		{
+		retSlot.sID = Value.GetStringValue();
+		}
+	else if (Value.IsSymbolTable())
+		{
+		retSlot.iIndex = Value.GetIntegerAt(FIELD_DEVICE_SLOT, -1);
+		retSlot.sID = Value.GetStringAt(FIELD_SLOT_ID);
+		retSlot.iPos = Value.GetIntegerAt(FIELD_SLOT_POS_INDEX, -1);
+		}
+	else
+		return false;
+
+	return true;
+	}
+
+CVector CTLispConvert::AsVector (const ICCItem *pItem)
+
+//	AsVector
+//
+//	Converts to vector (or null).
+
+	{
+	if (!pItem)
+		return NullVector;
+	else if (pItem->IsList())
+		{
+		CVector vVec;
+		CreateBinaryFromList(NULL_STR, *pItem, &vVec);
+		return vVec;
+		}
+	else if (pItem->IsInteger())
+		{
+		CSpaceObject *pObj = CreateObjFromItem(pItem);
+		if (pObj)
+			return pObj->GetPos();
+		}
+
+	return NullVector;
 	}
 
 ICCItemPtr CTLispConvert::CreateCurrencyValue (CurrencyValue Value)

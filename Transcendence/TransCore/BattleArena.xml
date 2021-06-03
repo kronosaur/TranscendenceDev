@@ -105,6 +105,36 @@
 			<Definition	id="rpg.checkMilitaryID">"* +militaryID;"</Definition>
 
 			<Definition	id="rpg.checkRadioactive">True</Definition>
+
+			<Definition id="arenaPolygonPoints">
+				(list
+					{	angle:270	radius:1.0	}
+
+					{	angle:192	radius:21.4	}
+					{	angle:181	radius:23.5	}
+					{	angle:191	radius:42.3	}
+					{	angle:197	radius:58.0	}
+					{	angle:213	radius:66.0	}
+					{	angle:232	radius:60.2	}
+					{	angle:257	radius:60.0	}
+
+					{	angle:-77	radius:60.0	}
+					{	angle:-52	radius:60.2	}
+					{	angle:-33	radius:66.0	}
+					{	angle:-17	radius:58.0	}
+					{	angle:-11	radius:42.3	}
+					{	angle:-1	radius:23.5	}
+					{	angle:-12	radius:21.4 }
+					)
+			</Definition>
+			<Variant id="arenaPolygon">
+				(map (typ@ gType 'arenaPolygonPoints) thePoint
+					(sysVectorPolarOffset gSource (@ thePoint 'angle) (@ thePoint 'radius))
+					)
+			</Variant>
+
+			<Data id="firedMilitaryMissileOn"></Data>
+			<Data id="usedAutonOn"></Data>
 		</Properties>
 
 		<!-- Trade and Items -->
@@ -112,8 +142,8 @@
 		<Trade currency="credit">
 			<Refuel			criteria="f +BasicFuel; L:1-5;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-6;" priceAdj="100"/>
-			<ReplaceArmor	criteria="a L:1-6;" priceAdj="100"/>
-			<InstallDevice	criteria="d L:1-6;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a L:1-6; -military;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-6; -military;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-6;" priceAdj="100"/>
 			<Decontaminate	criteria="*"		priceAdj="100"/>
 
@@ -271,6 +301,22 @@
 					)
 			</OnCreate>
 
+			<OnSystemObjCreated>
+				;	LATER: These system events are registered in msBattleArenaFight.
+				;	In the future, they should be handled by the mission object.
+
+				(switch
+					(and (obj@ aObjCreated 'inPlayerSquadron)
+							(sysVectorInPolygon aObjCreated (obj@ gSource 'arenaPolygon))
+							)
+						(block (
+							)
+							(plyMessage gPlayer (objTranslate gSource 'msgBooAuton))
+							(objSet@ gSource 'usedAutonOn (unvGetTick))
+							)
+					)
+			</OnSystemObjCreated>
+
 			<OnSystemWeaponFire>
 				(switch
 					;	If this is a repeat, then ignore
@@ -282,8 +328,23 @@
 						(block (
 							(theLevel (itmGetLevel aWeaponUNID))
 							)
-							(if (itmMatches aWeaponUNID "m &gt;=$5")
-								(objIncData gSource "missileRep" (multiply theLevel (subtract theLevel 1)))
+							(switch
+								;	Boos for military missiles
+
+								(itmMatches aWeaponUNID "m +military; | m +illegal;")
+									(block (
+										(lastBoo (obj@ gSource 'firedMilitaryMissileOn))
+										)
+										(if (ls (+ lastBoo 150) (unvGetTick))
+											(plyMessage gPlayer (objTranslate gSource 'msgBooMilitaryMissile))
+											)
+										(objSet@ gSource 'firedMilitaryMissileOn (unvGetTick))
+										)
+
+								;	Bonus for powerful missiles
+
+								(itmMatches aWeaponUNID "m &gt;=$4")
+									(objIncData gSource 'missileRep (* theLevel (- theLevel 1)))
 								)
 							)
 
@@ -310,6 +371,16 @@
 									'StillFighting
 									)
 
+							;	If there are crates with banned items in the Arena,
+							;	then warn that they'll get confiscated.
+
+							(filter (sysFindObject gSource "T +crate;") theObj
+									(and (sysVectorInPolygon theObj (obj@ gSource 'arenaPolygon))
+										(objGetItems theObj "m +military; | m +illegal; | * +auton;")
+										)
+									)
+								'ConfiscateWarning
+
 							'Default
 							)
 						)
@@ -327,9 +398,47 @@
 								(block (
 									(arenaRank (objGetTypeData gSource "arenaRank"))
 									(matchCount (count (msnFind gSource "rS +gladiatorFight;")))
+									(wingmatesInArena
+										(filter (sysFindObject gPlayerShip "sA +property:inPlayerSquadron;") theObj
+											(sysVectorInPolygon theObj (obj@ gSource 'arenaPolygon))
+											)
+										)
+
 									theMission
 									)
 									(switch
+										;	No illegal equipment (except cargo hold)
+
+										(objGetItems gPlayerShip "ad~cI +illegal;")
+											(scrShowPane gScreen 'NoIllegalEquipment)
+
+										;	No illegal missiles
+
+										(objGetItems gPlayerShip "m +illegal;")
+											(scrShowPane gScreen 'NoIllegalMissiles)
+
+										;	Don't let the player in with military equipment
+
+										(objGetItems gPlayerShip "adI +military;")
+											(scrShowPane gScreen 'NoMilitaryEquipment)
+
+										;	No military missiles
+
+										(objGetItems gPlayerShip "m +military;")
+											(scrShowPane gScreen 'NoMilitaryMissiles)
+
+										;	No autons
+
+										(objGetItems gPlayerShip "* +auton;")
+											(scrShowPane gScreen 'NoAutons)
+
+										;	Don't let the player in with wingmates
+
+										wingmatesInArena
+											(scrShowPane gScreen 'NoWingmates)
+
+										;	Get a fight
+
 										(setq theMission (rpgMissionGetAssignment {
 												missionCriteria: "n +battleArena;"
 												}))
@@ -380,6 +489,62 @@
 							</Action>
 						</Actions>
 					</NoMoreMelees>
+
+					<NoIllegalEquipment descID="descNoIllegalEquipment">
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(scrShowPane gScreen "Default")
+							</Action>
+						</Actions>
+					</NoIllegalEquipment>
+
+					<NoIllegalMissiles descID="descNoIllegalMissiles">
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(scrShowPane gScreen "Default")
+							</Action>
+						</Actions>
+					</NoIllegalMissiles>
+
+					<NoMilitaryEquipment descID="descNoMilitaryEquipment">
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(scrShowPane gScreen "Default")
+							</Action>
+						</Actions>
+					</NoMilitaryEquipment>
+
+					<NoMilitaryMissiles descID="descNoMilitaryMissiles">
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(scrShowPane gScreen "Default")
+							</Action>
+						</Actions>
+					</NoMilitaryMissiles>
+
+					<NoAutons descID="descNoAutons">
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(scrShowPane gScreen "Default")
+							</Action>
+						</Actions>
+					</NoAutons>
+
+					<NoWingmates descID="descNoWingmates">
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(scrShowPane gScreen "Default")
+							</Action>
+						</Actions>
+					</NoWingmates>
+
+					<ConfiscateWarning descID="descConfiscateWarning">
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(scrShowPane gScreen "Default")
+							</Action>
+						</Actions>
+					</ConfiscateWarning>
 
 					<KatamiIntro descID="descKatamiIntro1">
 						<Actions>
@@ -601,6 +766,52 @@
 				I'm afraid you'll just have to watch the matches on the 3DV like everyone else."
 
 			</Text>
+			<Text id="descNoWingmates">
+
+				"If you're going to fight a battle, you'll do it alone! 
+				Wingmates and autons must wait outside the arena."
+			
+			</Text>
+			<Text id="descNoIllegalEquipment">
+
+				"You cannot fight with illegal equipment installed. If you want 
+				to fight, you'll have to get rid of it."
+			
+			</Text>
+			<Text id="descNoIllegalMissiles">
+
+				"You cannot use illegal missile! You'll have to get rid of them 
+				if you want to fight."
+			
+			</Text>
+			<Text id="descNoMilitaryEquipment">
+
+				"Battle Arena rules forbid military equipment. If you want to 
+				fight, you'll have to get rid of it."
+			
+			</Text>
+			<Text id="descNoMilitaryMissiles">
+
+				"Battle Arena rules forbid use of military-grade missiles.
+				You'll have to get rid of them if you want to fight."
+			
+			</Text>
+			<Text id="descNoAutons">
+
+				"Autons are not allowed inside the Battle Arena. You'll have to
+				get rid of them if you want to fight."
+			
+			</Text>
+			<Text id="descConfiscateWarning">
+
+				As you enter the Battle Arena, a gladiator grabs your arm:
+
+				"Hey meat, you're not as clever as you think! That crate full of
+				banned items is gonna get confiscated before the game.
+
+				"I'd pick it up, unless you want to lose it."
+			
+			</Text>
 			<Text id="descKatamiIntro1">
 
 				As you enter the gladiators' quarters, a short man wearing a simple suit approaches you:
@@ -723,6 +934,9 @@
 				a knife through Salmonite!"
 			</Text>
 
+			<Text id="msgBooAuton">The crowd boos you for deploying an auton</Text>
+			<Text id="msgBooMilitaryMissile">The crowd boos you for using banned missiles</Text>
+
 			<Text id="achievement.arena.gladiator">Became a gladiator in the Arena</Text>
 			<Text id="achievement.arena.challenger">Earned the right to challenge The Slicer in the Arena</Text>
 			<Text id="achievement.arena.champion">Became Legendary Hero of the Arena</Text>
@@ -735,9 +949,9 @@
 
 			<Text id="rpg.missionTypeDesc">Gladiator fights</Text>
 
-            <Text id="core.mapDescMain">
-                Gladiatorial combat
-            </Text>
+			<Text id="core.mapDescMain">
+				Gladiatorial combat
+			</Text>
 		</Language>
 	</StationType>
 
@@ -1507,8 +1721,19 @@
 					)
 					
 					(staSetImageVariant doorObj 20)
-					(objSetProperty doorObj 'barrier True)
-					(objSetProperty doorObj 'paintLayer 'overhang)
+					(objSet@ doorObj 'barrier True)
+					(objSet@ doorObj 'paintLayer 'overhang)
+
+					;	Clean up any crates in the arena, in case the player 
+					;	tried to stash something.
+
+					(enum (sysFindObject gSource "T +crate;") theObj
+						(if (and (sysVectorInPolygon theObj (obj@ arenaObj 'arenaPolygon))
+								(objGetItems theObj "m +military; | m +illegal; | * +auton;")
+								)
+							(objDestroy theObj)
+							)
+						)
 					)
 				))
 

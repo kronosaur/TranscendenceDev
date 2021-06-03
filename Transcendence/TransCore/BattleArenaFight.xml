@@ -156,6 +156,8 @@
 					(objSetData arenaObj 'explosionRep 0)
 					(objSetData arenaObj 'opponentShots 0)
 					(objSetData arenaObj 'Opponent1 (msnGetData gSource 'opponentID))
+					(objSet@ arenaObj 'firedMilitaryMissileOn Nil)
+					(objSet@ arenaObj 'usedAutonOn Nil)
 
 					;	Events
 					(msnRegisterForEvents gSource theShip)
@@ -453,6 +455,9 @@
 									(leq (msnGetData gSource 'timeTo25) 30)	50
 									(leq (msnGetData gSource 'timeTo10) 45)	25
 									))
+								;	Cheated?
+								(firedMilitaryMissileOn (obj@ arenaObj 'firedMilitaryMissileOn))
+								(usedAutonOn (obj@ arenaObj 'usedAutonOn))
 								)
 								; (dbgOutput "missiles fired: +" repMissiles)
 								; (dbgOutput "shots fired: +" repShots)
@@ -461,8 +466,17 @@
 								; (dbgOutput "fast shields down: +" repShields)
 								; (dbgOutput "fast kill: +" repFastKill)
 								; (dbgOutput "time bonus: " (if (geq repTime 0) "+" "") repTime)
-								(setq repGain (+ repGain repMissiles repShots repPlayerShields repPlayerArmor repShields repFastKill repTime))
-								(setq repGain (min repGain 200))
+
+								(setq repGain 
+									(switch
+										(or usedAutonOn firedMilitaryMissileOn)
+											-30
+
+										(min 200
+											(+ repGain repMissiles repShots repPlayerShields repPlayerArmor repShields repFastKill repTime)
+											)
+										)
+									)
 								; (dbgOutput (if (gr repGain 0) "total rep: +" "total rep: ") repGain)
 								(msnSetData gSource 'repGain repGain)
 
@@ -471,6 +485,7 @@
 									(geq repGain 100)	'msgSuccess4
 									(geq repGain 50)	'msgSuccess3
 									(geq repGain 1)		'msgSuccess2
+									(ls repGain 0)		'msgSuccessCheated
 														'msgSuccess1
 									))
 
@@ -525,9 +540,14 @@
 					(arenaObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
 					(totalScore (objGetData arenaObj 'rookieScore))
 					resultList
+					newRep
 					)
-					;	Add to reputation
-					(typIncData &stBattleArena; 'arenaRep (msnGetData gSource 'repGain))
+					;	Add to reputation.
+					;	NOTE: repGain can be negative in certain cases.
+					(setq newRep (typIncData &stBattleArena; 'arenaRep (msnGetData gSource 'repGain)))
+					(if (ls newRep 0)
+						(typSetData &stBattleArena; 'arenaRep 0)
+						)
 
 					;	Add record of win
 					(setq resultList (append (subset (objGetData arenaObj 'results) 1) (msnGetData gSource 'opponentSkill)))
@@ -640,6 +660,7 @@
 					(outcome (switch
 						(geq repGain 200)	'good
 						(geq repGain 50)	'average
+						(ls repGain 0)		'cheated
 											'poor
 						))
 					katamiMsg
@@ -665,6 +686,9 @@
 								(geq (msnGetData gSource 'fightTime) 300)		'time
 																				'default
 								)
+
+						(= outcome 'cheated)
+							'default
 						))
 
 					(msnTranslate gSource (cat "SuccessDebrief:" outcome) {
@@ -753,6 +777,22 @@
 			<String id="SuccessDebrief:poor:default">
 				"Winning isn't enough! You have to give the crowd a good show! Make the match exciting and the crowd will love you for it."
 			</String>
+			<Text id="SuccessDebrief:cheated">
+			
+				Katami glares at you:
+
+				"%katamiSays%
+
+				Winning this match has earned you %reward%
+
+			</Text>
+			<Text id="SuccessDebrief:cheated:default">
+			
+				"Listen to me now, %name%. You will never succeed by cheating. 
+				Short cuts and tricks will always fail in the end. Do that again
+				and the crowd will turn on you!"
+
+			</Text>
 
 			<Text id="FailureDebrief">
 				(if (= (msnGetData gSource 'status) 'playerLeft)
@@ -798,6 +838,7 @@
 			<Text id="msgSuccess3">The crowd cheers!</Text>
 			<Text id="msgSuccess2">The crowd is pleased</Text>
 			<Text id="msgSuccess1">The crowd is bored by the match</Text>
+			<Text id="msgSuccessCheated">The crowd is angered by your behavior</Text>
 
 			<Text id="FailureMsg">The crowd boos in disappointment!</Text>
 

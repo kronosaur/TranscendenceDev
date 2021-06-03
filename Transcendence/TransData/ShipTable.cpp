@@ -134,8 +134,7 @@ void GenerateShipTable (CUniverse &Universe, CXMLElement *pCmdLine)
 			const CString &sField = Cols[j];
 			ICCItemPtr pResult = pClass->GetProperty(CCCtx, sField);
 
-			if (strEquals(sField, FIELD_MANEUVER) 
-					|| strEquals(sField, FIELD_THRUST_TO_WEIGHT))
+			if (strEquals(sField, FIELD_THRUST_TO_WEIGHT))
 				printf("%.1f", pResult->GetIntegerValue() / 1000.0);
 			else if (strEquals(sField, FIELD_SCORE_CALC))
 				printf("%d", pClass->CalcScore());

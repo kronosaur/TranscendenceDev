@@ -182,12 +182,15 @@ void GenerateSystemImages (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		//	Create a POV marker
 
+		CMarker::SCreateOptions Options;
+		Options.pSovereign = Universe.FindSovereign(g_PlayerSovereignUNID);
+		Options.sName = CONSTLIT("POV");
+
 		CMarker *pPOV;
 		if (CMarker::Create(*pSystem,
-				Universe.FindSovereign(g_PlayerSovereignUNID),
 				NullVector,
 				NullVector,
-				CONSTLIT("POV"),
+				Options,
 				&pPOV) != NOERROR)
 			{
 			printf("ERROR: Unable to create marker\n");

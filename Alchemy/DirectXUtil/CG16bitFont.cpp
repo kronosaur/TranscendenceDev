@@ -259,6 +259,20 @@ int CG16bitFont::BreakText (const CString &sText, int cxWidth, TArray<CString> *
 	return iLines;
 	}
 
+int CG16bitFont::CalcHeight (const CString &sText, int cxWidth, DWORD dwFlags) const
+
+//	CalcHeight
+//
+//	Returns the height in pixels.
+
+	{
+	if (sText.IsBlank())
+		return 0;
+
+	int iLines = BreakText(sText, cxWidth, NULL, dwFlags);
+	return iLines * GetHeight();
+	}
+
 ALERROR CG16bitFont::Create (const CString &sTypeface, int iSize, bool bBold, bool bItalic, bool bUnderline)
 
 //	Create

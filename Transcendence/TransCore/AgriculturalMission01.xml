@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Mission: Defend Agricultural Station ==================================
+
+	EXTRA DATA
+
+	attackDesc:			Attack descriptor
+	destID:				Id of station to defend
+	nextWave:			Next wave
+	reward:				Reward (in credits) for completing mission
+
+	======================================================================== -->
+
+	<MissionType UNID="&msCommAgriDefend;"
+			name=				"Commonwealth Agricultural 01: Defend Station"
+			attributes=			"commonwealthAgricultural, deliveryMission"
+
+			level=				"1-5"
+
+			maxAppearing=		"1"
+			noDebrief=			"true"
+			failureAfterOutOfSystem="0"
+			>
+		<Properties>
+			<!-- status:
+			
+				Nil: Mission has not started.
+				'defending: Defending against waves.
+				'done: All waves destroyed.
+				'dead: Station is dead.
+
+			-->
+			<Data id="status"></Data>
+		</Properties>
+
+		<Image imageID="&rsCommonwealthAgriculturalColony;" imageWidth="320" imageHeight="290"/>
+
+		<StaticData>
+			<Attackers>
+				(
+					{	id: "pirate"
+						minLevel: 1
+						maxLevel: 4
+						reward: 5000
+						waveInterval: 900
+
+						waves: (
+							; Note: Timer is currently ignored. If the OnNextWave event is changed to create
+							; the ships with a delay, move the second group of each wave closer.
+						
+							; Wave 1
+							(
+								{ table: &etPirateAmbush1;	timer: 0   distance:120 }
+								{ table: &etPirateAmbush2;	timer: 30  distance:135 }
+								)
+
+							; Wave 2
+							(
+								{ table: &etPirateAmbush2;	timer: 0   distance:120 }
+								{ table: &etPirateAmbush2;	timer: 90  distance:165 }
+								)
+
+							; Wave 3
+							(
+								{ table: &etPirateAmbush3;	timer: 0   distance:120 }
+								{ table: &etPirateAmbush3;	timer: 300 distance:270 }
+								)
+							)
+						}
+					)
+			</Attackers>
+		</StaticData>
+
+		<Events>
+			<OnGlobalUniverseCreated>
+				(block (
+					;	Make a list of all agricultural stations in the universe that 
+					;	could have this mission. We pick one at the beginning of the
+					;	universe and remember it.
+
+					(stationList 
+						(map (unvFindObject "t +unid:&stAgriculturalStation;;") 'excludeNil theEntry 
+
+							;	Mission cannot appear in a set-piece system (Eridani, SK, CD)
+
+							(if (not (find '(SE SK CD) (@ theEntry 2)))
+								(@ theEntry 0)
+								)
+							)
+						)
+					)
+
+					;	Pick a random station to be the one that gets attacked by pirates.
+					;	This mission only shows up once, so we only need to pick one.
+					;
+					;	NOTE: It is OK if this list is Nil. In that case, the mission never
+					;	shows up.
+
+					(typSetData &msCommAgriDefend; 'stationID (random stationList))
+					)
+			</OnGlobalUniverseCreated>
+
+			<OnCreate>
+				(block (attackDesc)
+					(switch
+						;	Only one station in the universe gets this mission, so if we're not
+						;	it, skip it.
+
+						(!= (typGetData &msCommAgriDefend; 'stationID) (objGetID aOwnerObj))
+							(msnDestroy gSource)
+
+						;	Pick a random attack profile
+
+						(not (setq attackDesc
+								(random
+									(filter (typGetStaticData &msCommAgriDefend; 'Attackers) theDesc
+										(and (geq (sysGetLevel) (@ theDesc 'minLevel))
+											(leq (sysGetLevel) (@ theDesc 'maxLevel))
+											)
+										)
+									)
+								))
+							(msnDestroy gSource)
+
+						;	Set up the mission
+
+						(block Nil
+
+							; Copy owner to destID so we can override dockscreens with deliveryMission
+							(msnSetData gSource 'destID (objGetID aOwnerObj))
+
+							; Remember the attack profile
+							(msnSetData gSource 'attackDesc attackDesc)
+
+							; Set the wave counter
+							(msnSetData gSource 'nextWave 0)
+
+							; Register for events
+							(msnRegisterForEvents gSource aOwnerObj)
+
+							; Set the reward
+							(msnSetData gSource 'reward (@ attackDesc 'reward))
+							)
+						)
+					)
+			</OnCreate>
+
+			<OnAcceptedUndock>
+				(block (
+					(ownerObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+					)
+					(msnAddTimerEvent gSource (random 120 270) 'OnNextWave)
+					(objSetProperty ownerObj 'ignoreFriendlyFire True)
+					)
+			</OnAcceptedUndock>
+
+			<OnSetPlayerTarget>
+				(block (
+					(status (msn@ gSource 'status))
+					(destObj (objGetObjByID (msnGetData gSource 'destID)))
+					)
+					(switch
+						(= status 'done)
+							(rpgSetTarget gSource aReason destObj 'dock)
+						)
+					)
+			</OnSetPlayerTarget>
+
+			<OnNextWave>
+				(block (
+					(destObj (objGetObjByID (msnGetData gSource 'destID)))
+					(attackDesc (msnGetData gSource 'attackDesc))
+					(nextWave (msnGetData gSource 'nextWave))
+					(waveDesc (@ (@ attackDesc 'waves) nextWave))
+					(desc (msnTranslate gSource (cat (@ attackDesc 'id) ":Wave:" nextWave)))
+					)
+
+					; Cancel any timer event
+					(msnCancelTimerEvent gSource 'OnNextWave)
+
+					(enum waveDesc theEncounter
+						(block (enemyObjs)
+							(setq enemyObjs 
+								(sysCreateEncounter (@ theEncounter 'table) {
+									target: destObj
+									distance: (@ theEncounter 'distance)
+									})
+								)
+
+							;	Mark the objects so that we know when we've killed 
+							;	everyone.
+
+							(enum enemyObjs theObj
+								(block ()
+									(objSetData theObj 'rpg.missionTarget (objGetID gSource))
+									(msnRegisterForEvents gSource theObj)
+									)
+								)
+
+							)
+						)
+
+					(objSendMessage gPlayerShip destObj 
+						(msnTranslate gSource 
+							(cat 'msgWaveApproaching "." 
+								(switch
+									(= nextWave 0)
+										'first
+
+									(@ (@ attackDesc 'waves) (+ nextWave 1))
+										'next
+
+									'last
+									)
+								)
+							)
+						)
+
+					; Increment next wave
+					(setq nextWave (+ nextWave 1))
+					(if (@ (@ attackDesc 'waves) nextWave)
+						(msnSetData gSource 'nextWave nextWave)
+						(msnSetData gSource 'nextWave Nil)
+						)
+
+					; If the waves are on a timer then start the next one.
+					(if (and (msnGetData gSource 'nextWave) (@ attackDesc 'waveInterval))
+						(msnAddTimerEvent gSource (@ attackDesc 'waveInterval) 'OnNextWave)
+						)
+
+					;	In progress
+
+					(msnSet@ gSource 'status 'defending)
+					)
+			</OnNextWave>
+
+			<OnDeliveryMissionCompleted>
+				(switch
+					; If there are ships attacking the station, then we can't do anything yet.
+					(objGetProperty (objGetObjByID (msnGetData gSource 'destID)) 'underAttack)
+						{
+							desc: (msnTranslate gSource "InProgress")
+							forceUndock: True
+							}
+
+					; If no more waves, then we've won
+					(not (msnGetData gSource 'nextWave))
+						(block Nil
+							(msnSuccess gSource)
+							(msnReward gSource)
+							{
+								desc: (msnTranslate gSource "SuccessDebrief")
+								forceUndock: Nil
+								}
+							)
+
+					; Otherwise, describe the next wave
+					(block (
+						(attackDesc (msnGetData gSource 'attackDesc))
+						(nextWave (msnGetData gSource 'nextWave))
+						)
+						{
+							desc: (msnTranslate gSource (cat (@ attackDesc 'id) ":Wave:" nextWave))
+							forceUndock: True
+							}
+						)
+					)
+			</OnDeliveryMissionCompleted>
+
+			<OnObjDestroyed>
+				(switch
+					;	Station destroyed
+
+					(= (objGetID aObjDestroyed) (msnGetData gSource 'destID))
+						(block (looter)
+							; Create a transport to come and loot the remains
+							(setq looter 
+								(sysCreateShip 
+									&scCharonFrigateRaider;
+									(sysVectorRandom aObjDestroyed 110 100 'ztAF)
+									&svPirates;
+									)
+								)
+
+							(shpOrder looter 'loot aObjDestroyed)
+							(shpOrder looter 'gate)
+
+							; Assign some of the attackers to defend the transport and the rest to attack the player
+							(enum (sysFindObject aObjDestroyed "sAXE N:300; -capitalShip;") shipObj
+								(if (and
+										(!= shipObj looter)
+										(= (objGetSovereign shipObj) (objGetSovereign looter))
+										)
+									(block Nil
+										(shpCancelOrders shipObj)
+										(if (= (random 1 2) 1)
+											(shpOrder shipObj 'escort looter)
+											(shpOrder shipObj 'attack gPlayerShip)
+											)
+										)
+									)
+								)
+
+							; Send out more pirates to attack the player
+							(sysCreateShip &etPirateAmbush3; (sysVectorRandom gPlayerShip 105 100 'ztAF) &svPirates; { target:gPlayerShip })
+
+							; Cancel timer
+							(msnCancelTimerEvent gSource 'OnNextWave)
+
+							; And set failure
+							(msnSet@ gSource 'status 'dead)
+							(msnFailure gSource)
+							)
+
+					;	Attacker destroyed
+
+					(and aDestroy 
+							(= (objGetData aObjDestroyed 'rpg.missionTarget) (objGetID gSource))
+							)
+						(block (
+							(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+							(attackersLeft 
+								(filter (sysFindObject stationObj "sA D:rpg.missionTarget;") theObj
+									(= (objGetData theObj 'rpg.missionTarget) (objGetID gSource))
+									)
+								)
+							)
+							(if (not attackersLeft)
+								(block (
+									(attackDesc (msnGetData gSource 'attackDesc))
+									(nextWave (msnGetData gSource 'nextWave))
+									)
+									(if (@ (@ attackDesc 'waves) nextWave)
+										(objSendMessage gPlayerShip stationObj (msnTranslate gSource 'msgWaveDestroyed))
+
+										(block ()
+											(msnSet@ gSource 'status 'done)
+											(objSendMessage gPlayerShip stationObj (msnTranslate gSource 'msgAllAttackersDestroyed))
+											(msnSetPlayerTarget gSource)
+											)
+										)
+									)
+								)
+							)
+
+					)
+			</OnObjDestroyed>
+
+			<OnCompleted>
+				(block (
+					(ownerObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+					)
+					(objSetProperty ownerObj 'ignoreFriendlyFire Nil)
+					)
+			</OnCompleted>
+
+			<OnReward>
+				(block (
+					(ownerObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+					)
+
+					(rpgMissionRewardPayment (msnGetData gSource 'reward))
+
+					;	Station gets a plaque commemorating the battle
+
+					(objSetData ownerObj 'core.missionCommemoration (msnTranslate gSource 'textDuralloyPlaque))
+					)
+			</OnReward>
+		</Events>
+
+		<Language>
+			<!-- Code Points -->
+
+			<Text id="Name">
+				(msnTranslate gSource 'textName {
+					stationName: (objGetName (objGetObjByID (msnGetProperty gSource 'ownerID)) 0x04)
+					})
+			</Text>
+			<Text id="Summary">
+				(cat
+					(msnTranslate gSource (cat (@ (msnGetData gSource 'attackDesc) 'id) ":Summary") {
+						stationName: (objGetName (objGetObjByID (msnGetProperty gSource 'ownerID)) 0x04)
+						}) 
+					"\n\n"
+					(typTranslate &dsRPGMission; 'mission.rewardSummary {
+						systemName: (sysGetName)
+						payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+						})
+					)
+			</Text>
+			<Text id="FirstIntro">
+				(msnTranslate gSource 'textFirstIntro {
+					stationName: (objGetName (objGetObjByID (msnGetProperty gSource 'ownerID)))
+					})
+			</Text>
+			<Text id="Briefing">
+				(msnTranslate gSource 'textBriefing {
+					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					})
+			</Text>
+			<Text id="SuccessDebrief">
+				(msnTranslate gSource 'textSuccessDebrief {
+					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					})
+			</Text>
+
+			<!-- Text -->
+
+			<Text id="textName">Defend %stationName%</Text>
+			<Text id="textFirstIntro">
+
+				As you enter the meeting hall, you people talking excitedly. One
+				of them approaches you:
+
+				"Welcome to %stationName%, captain. I hope you don't mind if we 
+				skip the tour and get right to the point: we've received news 
+				that a Charon raiding party is heading for this station.
+
+				"We saw your ship come in, and frankly, we thought that you 
+				might be able to help us..."
+
+			</Text>
+			<Text id="Intro">
+
+				"You're back! Look, we're desperate. No one else has a powerful 
+				ship or the skills to fly it. Please reconsider our offer."
+
+			</Text>
+			<Text id="textBriefing">
+
+				"If you can defend our station, we're prepared to offer you 
+				%payment% in compensation, which is all we've been able to 
+				collect on short notice.
+				
+				"What do you say?"
+
+			</Text>
+			<Text id="textSuccessDebrief">
+
+				"You've done it! I haven't seen fighting like that since the 
+				videos of the Marineris War! As promised, we've deposited 
+				%payment% into your account."
+
+			</Text>
+			<Text id="AcceptReply">
+
+				"Thank you, you won't regret it! We believe the first wave will
+				be mostly gunships; the heavier ships won't show up til the end.
+				You should have no problem at all!
+				
+				Well, we better get to the shelters. Thanks again!"
+
+			</Text>
+			<Text id="DeclineReply">
+
+				"Well, I suppose I shouldn't have expected you to risk your life
+				for us."
+
+				He offers you his hand, "Thanks, anyways. And wish us luck."
+
+			</Text>
+			<Text id="InProgress">
+
+				"Whoa, what are you doing here!? The station is still under 
+				attack! Just get out there are finish the job, you've got them 
+				on the run now."
+
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+
+			<Text id="pirate:Summary">
+
+				Your mission is to defend %stationName% from a Charon pirate 
+				raid.
+
+			</Text>
+			<Text id="pirate:Wave:0">
+
+				"The first wave will be light gunships, although there could be
+				a Viking class mixed in.
+
+				"Don't worry, you'll have no trouble."
+
+			</Text>
+			<Text id="pirate:Wave:1">
+
+				"If the pirates are following their usual strategy, the next 
+				wave will be slightly larger. Watch out for the leaders: they'll
+				be using heavy Viking gunships."
+
+			</Text>
+			<Text id="pirate:Wave:2">
+
+				"OK, this is it. If we can hold out through this last wave, 
+				they'll likely give up. Plan on heavy gunships with missiles."
+
+			</Text>
+
+			<Text id="msgWaveApproaching.first">Here comes the first wave!</Text>
+			<Text id="msgWaveApproaching.next">Stay sharp! Here comes the next wave!</Text>
+			<Text id="msgWaveApproaching.last">Multiple heavy ships inbound! This is it!</Text>
+
+			<Text id="msgWaveDestroyed">Nice work! Scanning for the next wave...</Text>
+			<Text id="msgAllAttackersDestroyed">All attackers destroyed! You've done it!</Text>
+
+			<Text id="textDuralloyPlaque">
+			
+				a small Duralloy plaque commemorating a battle against pirates
+				
+			</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

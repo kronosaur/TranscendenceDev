@@ -94,6 +94,8 @@ enum class AIReaction
 	Destroy =								5,	//	Destroy attacker
 	Gate =									6,	//	Gate out
 	DestroyAndRetaliate =					7,	//	Destroy attacker and attack nearest enemies
+	ChaseFromBase =							8,	//	Chase if target is withing threat range of base
+												//		(otherwise, Deter).
 	};
 
 class CAISettings
@@ -132,6 +134,7 @@ class CAISettings
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetMinCombatSeparation (Metric rValue) { m_rMinCombatSeparation = rValue; }
 		CString SetValue (const CString &sSetting, const CString &sValue);
+		bool TargetsStations () const { return m_fTargetsStations; }
 		bool UseAllPrimaryWeapons (void) const { return m_fUseAllPrimaryWeapons; }
 		void WriteToStream (IWriteStream *pStream);
 
@@ -170,8 +173,8 @@ class CAISettings
 		DWORD m_fNoTargetsOfOpportunity:1 = false;	//	If TRUE, do not attack targets of opportunity
 		DWORD m_fIsPlayer:1 = false;				//	If TRUE, we're controlling the player ship (this is usually
 													//		for debugging only).
-		DWORD m_fUseAllPrimaryWeapons:1;		//  If TRUE, we try to shoot all primary weapons at the same time
-		DWORD m_fSpare6:1 = false;
+		DWORD m_fUseAllPrimaryWeapons:1;			//  If TRUE, we try to shoot all primary weapons at the same time
+		DWORD m_fTargetsStations:1 = false;			//	If TRUE, we target stations as targets of opportunity/threats
 		DWORD m_fSpare7:1 = false;
 		DWORD m_fSpare8:1 = false;
 
@@ -287,6 +290,7 @@ class IShipController
 			statusReactorOverloadWarning,	//	dwData = sequence
 			statusReactorPowerFailure,		//	Reactor is dead
 			statusReactorRestored,			//	Reactor is functioning normally
+			statusRotationSet,				//	Ship rotation has been set externally
 			statusTimeStopped,				//	Time stopped
 			statusTimeRestored,				//	Time continues
 			};
@@ -298,6 +302,7 @@ class IShipController
 		virtual void CancelDocking (void) { }
 		virtual bool CanObjRequestDock (CSpaceObject *pObj = NULL) const { return true; }
 		virtual CString DebugCrashInfo (void) { return NULL_STR; }
+		virtual void DebugPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) const { }
 		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
 		virtual ICCItem *FindProperty (const CString &sProperty) { return NULL; }
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) { return false; }
@@ -351,12 +356,13 @@ class IShipController
 		virtual const COrderDesc &GetCurrentOrderDesc () const;
 		virtual const COrderDesc &GetOrderDesc (int iIndex) const;
 		virtual int GetOrderCount (void) const { return 0; }
+		virtual bool UpdatePlayerAttackTrigger (int iTick) { return false; }
 
 		//	Events
 
 		virtual void OnAbilityChanged (Abilities iAbility, AbilityModifications iChange, bool bNoMessage = false) { }
 		virtual void OnAcceptedMission (CMission &MissionObj) { }
-		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) { }
+		virtual void OnAttacked (CSpaceObject &AttackerObj, const SDamageCtx &Damage) { }
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) { return resNoAnswer; }
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) { }
 		virtual void OnDamaged (const CDamageSource &Cause, CInstalledArmor *pArmor, const DamageDesc &Damage, int iDamage) { }
@@ -446,7 +452,9 @@ class COrderDesc
 		COrderDesc &operator= (COrderDesc &&Src) noexcept { CleanUp(); Move(Src); return *this; }
 		explicit operator bool () const { return !IsEmpty(); }
 
+		ICCItemPtr AsCCItem () const;
 		ICCItemPtr AsCCItemList () const;
+		bool GetDataBoolean (const CString &sField, bool bDefault = false) const;
 		DiceRange GetDataDiceRange (const CString &sField, int iDefault = 0, CString *retsSuffix = NULL) const;
 		Metric GetDataDouble (const CString &sField, Metric rDefault = 0.0) const;
 		ICCItemPtr GetDataCCItem () const { if (GetDataType() == EDataType::CCItem) return ICCItemPtr(((ICCItem *)m_pData)->Reference()); else return ICCItemPtr::Nil(); }
@@ -457,15 +465,19 @@ class COrderDesc
 		const CItem &GetDataItem () const { if (GetDataType() == EDataType::Item) return *(CItem *)m_pData; else return CItem::NullItem(); }
 		CSpaceObject *GetDataObject (CSpaceObject &SourceObj, const CString &sField) const;
 		const CString &GetDataString () const { if (GetDataType() == EDataType::String) return *(CString *)m_pData; else return NULL_STR; }
+		CString GetDataString (const CString &sField) const;
 		int GetDataTicksLeft () const;
 		const CVector &GetDataVector () const { if (GetDataType() == EDataType::Vector) return *(CVector *)m_pData; else return NullVector; }
+		CVector GetDataVector (const CString &sField, bool bDefaultField = false, const CVector &vDefault = NullVector) const;
 		IShipController::OrderTypes GetOrder () const { return (IShipController::OrderTypes)m_dwOrderType; }
 		CSpaceObject *GetTarget () const { return m_pTarget; }
+		bool IsCancelOnReactionOrder () const { return m_fCancelOnReactionOrder; }
 		bool IsCCItem () const { return (GetDataType() == EDataType::CCItem); }
 		bool IsEmpty () const { return GetOrder() == IShipController::orderNone; }
 		bool IsIntegerOrPair () const { return (GetDataType() == EDataType::Int32 || GetDataType() == EDataType::Int16Pair); }
 		bool IsVector () const { return (GetDataType() == EDataType::Vector); }
 		void ReadFromStream (SLoadCtx &Ctx);
+		void SetCancelOnReactionOrder (bool bValue = true) { m_fCancelOnReactionOrder = bValue; }
 		void SetDataInteger (DWORD dwData);
 		void SetDataInteger (DWORD dwData1, DWORD dwData2);
 		void SetTarget (CSpaceObject *pTarget) { m_pTarget = pTarget; }
@@ -503,7 +515,9 @@ class COrderDesc
 
 		DWORD m_dwOrderType:8 = 0;		//	IShipController::OrderTypes
 		DWORD m_dwDataType:8 = 0;		//	EDataType
-		DWORD m_dwSpare:16 = 0;
+
+		DWORD m_fCancelOnReactionOrder:1 = false;
+		DWORD m_dwSpare:15 = 0;
 
 		CSpaceObject *m_pTarget = NULL;	//	Order target
 		void *m_pData = NULL;			//	Depends on dwDataType

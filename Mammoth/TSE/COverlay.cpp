@@ -29,7 +29,6 @@
 #define PROPERTY_ROTATION						CONSTLIT("rotation")
 #define PROPERTY_TYPE							CONSTLIT("type")
 
-const int ANNOTATION_INNER_SPACING_Y =			2;
 const int FLAG_INNER_SPACING_X =				4;
 
 COverlay::COverlay (void) : 
@@ -230,6 +229,29 @@ bool COverlay::AccumulateEnhancements (CSpaceObject &Source, CDeviceItem &Device
 
 		return bEnhanced;
 		}
+	}
+
+void COverlay::AccumulateHUDTimers (const CSpaceObject &Source, TArray<SHUDTimerDesc> &retTimers) const
+
+//	AccumulateHUDTimers
+//
+//	Show timer for when the overlay expires on the UI.
+
+	{
+	if (!m_pType->ShowsInHUD())
+		return;
+
+	if (m_iLifeLeft < 0)
+		return;
+
+	int iLifetime = m_iTick + m_iLifeLeft;
+	if (iLifetime <= 0)
+		return;
+
+	auto *pEntry = retTimers.Insert();
+	pEntry->pIcon = &m_pType->GetTypeSimpleImage();
+	pEntry->sLabel = m_pType->GetNounPhrase(nounShort | nounTitleCapitalize | nounNoModifiers);
+	pEntry->iBar = 100 * m_iLifeLeft / iLifetime;
 	}
 
 void COverlay::CalcOffset (const CSpaceObject &Source, int iScale, int iRotation, int *retxOffset, int *retyOffset, int *retiRotationOrigin) const
@@ -1102,7 +1124,7 @@ void COverlay::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPain
 					iMaxHP,
 					&cyHeight);
 
-			Ctx.yAnnotations += cyHeight + ANNOTATION_INNER_SPACING_Y;
+			Ctx.yAnnotations += cyHeight + CSpaceObject::ANNOTATION_INNER_SPACING_Y;
 			}
 		}
 
@@ -1149,7 +1171,7 @@ void COverlay::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPain
 						Counter.GetMaxValue(),
 						&cyHeight);
 
-				Ctx.yAnnotations += cyHeight + ANNOTATION_INNER_SPACING_Y;
+				Ctx.yAnnotations += cyHeight + CSpaceObject::ANNOTATION_INNER_SPACING_Y;
 				break;
 				}
 			}

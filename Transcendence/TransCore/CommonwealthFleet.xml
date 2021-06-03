@@ -430,11 +430,10 @@ PLAYER DATA
 
 						(cscToCreate (or (random cscLeft) 'arctica))
 						)
-
 						;	Return the CSC class
 
 						{
-							class: (@ (@ allCSCs cscToCreate) 'class)
+							class: (@ (@ cscStatus cscToCreate) 'class)
 							}
 						)
 				</GetParameters>
@@ -572,7 +571,7 @@ PLAYER DATA
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealthFleet;"
 
-			attributes=			"commonwealth, commonwealthMilitary, commonMilitary, commonwealthFleet, genericClass, pacificDefense"
+			attributes=			"commonwealth, commonwealthMilitary, commonMilitary, commonwealthFleet, genericClass, military, pacificDefense"
 			inherit=			"&scBritanniaStock;"
 			>
 
@@ -584,7 +583,7 @@ PLAYER DATA
 
 		<Devices>
 			<Device deviceID="&itStarCannon;"/>
-			<Device deviceID="&itR5BDeflector;"/>
+			<Device deviceID="&itR5Deflector;"/>
 			<Device deviceID="&itNM900MissilePod;"/>
 		</Devices>
 
@@ -656,7 +655,7 @@ PLAYER DATA
 
 		<Devices>
 			<Device deviceID="&itStarCannon;"/>
-			<Device deviceID="&itR5BDeflector;"/>
+			<Device deviceID="&itR5Deflector;"/>
 			<Device deviceID="&itNM900MissilePod;"/>
 		</Devices>
 
@@ -677,7 +676,7 @@ PLAYER DATA
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"15"
+			fireRateAdj=		"25"
 			fireAccuracy=		"90"
 			perception=			"4"
 			
@@ -693,7 +692,7 @@ PLAYER DATA
 			type=				"corvette"
 			defaultSovereign=	"&svCommonwealthFleet;"
 
-			attributes=			"commonwealth, commonwealthFleet, genericClass, nami"
+			attributes=			"commonwealth, commonwealthFleet, genericClass, military, nami"
 			inherit=			"&baHumanTechShip;"
 			>
 
@@ -810,7 +809,7 @@ PLAYER DATA
 			type=				"corvette"
 			defaultSovereign=	"&svCommonwealthFleet;"
 
-			attributes=			"commonwealth, commonwealthFleet, genericClass, nami"
+			attributes=			"commonwealth, commonwealthFleet, genericClass, military, nami"
 			inherit=			"&scMinotaur;"
 			>
 
@@ -962,7 +961,7 @@ PLAYER DATA
 			frequency=			"rare"
 			attributes=			"MajorItem; Military; Specialty"
 
-			description=		"Commonwealth Fleet labs created this variant of the R5 for its new Britannia-class gunships."
+			description=		"Commonwealth Fleet labs created this variant of the R5, but it proved too expensive for widespread deployment."
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
@@ -1006,7 +1005,7 @@ PLAYER DATA
 				external=			"true"
 				
 				missileSpeed=		"40"
-				hitPoints=			"20"
+				hitPoints=			"30"
 				lifetime=			"120"
 				maneuverRate=		"9"
 
@@ -1067,7 +1066,6 @@ PLAYER DATA
 				fireRate=			"16"
 				missileSpeed=		"50"
 				lifetime=			"60"
-				hitPoints=			"30"
 				powerUse=			"2000"
 
 				effect=				"&efLamplighterProjectile;"
@@ -1101,7 +1099,6 @@ PLAYER DATA
 				fireRate=			"15"
 				missileSpeed=		"60"
 				lifetime=			"40"
-				hitPoints=			"15"
 				powerUse=			"3000"
 
 				effect=				"&efLamplighterProjectile;"

@@ -562,7 +562,6 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CCommandLineDisplay.cpp" />
-    <ClCompile Include="CDeviceCounterDisplay.cpp" />
     <ClCompile Include="CGDrawArea.cpp" />
     <ClCompile Include="CGItemListArea.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>

@@ -1621,6 +1621,8 @@
 	<!ENTITY dsSistersOffer				"0x0010003B">
 	<!ENTITY dsSistersPromotion			"0x0010003C">
 	<!ENTITY rsSistersAbbey				"0x0010003D">
+	<!ENTITY svFallenPilgrim			"0x0010003E">
+	<!ENTITY evFallenPilgrim			"0x0010003F">
 	
 	<!-- 0040-005F CORPORATE HIERARCHY -->
 	
@@ -2476,6 +2478,8 @@
 	<!ENTITY msResidentials02			"0x0010070F">
 	<!ENTITY msResidentials03			"0x00100710">
 	<!ENTITY scBorerIIIStock			"0x00100711">
+	<!ENTITY rsIAVLight120				"0x00100712">
+	<!ENTITY rsIAVLightHero				"0x00100713">
 
 	<!-- 0740-075F RASIERMESSER -->
 
@@ -2502,6 +2506,21 @@
 	<!-- 07A0-07CF SISTERS OF DOMINA MISSIONS -->
 	
 	<!ENTITY msSisters01				"0x001007A0">
+	<!ENTITY msSisters03				"0x001007A1">
+	<!ENTITY scNPCPilgrimSapphireL4		"0x001007A2">
+	<!ENTITY scNPCPilgrimSapphireL6		"0x001007A3">
+	<!ENTITY scNPCPilgrimSapphireL8		"0x001007A4">
+	<!ENTITY scNPCPilgrimEI500L5		"0x001007A5">
+	<!ENTITY scNPCPilgrimEI500L7		"0x001007A6">
+	<!ENTITY scNPCPilgrimWolfenL5		"0x001007A7">
+	<!ENTITY scNPCPilgrimWolfenL6		"0x001007A8">
+	<!ENTITY scNPCPilgrimWolfenL7		"0x001007A9">
+	<!ENTITY scNPCPilgrimCenturionL8	"0x001007AA">
+	<!ENTITY tbSisters03FallenPilgrims	"0x001007AB">
+	<!ENTITY evSisters03Wreck			"0x001007AC">
+	<!ENTITY tbSisters03PilgrimTreasure	"0x001007AD">
+	<!ENTITY msSisters02				"0x001007AE">
+	<!ENTITY tbSisters02Attackers		"0x001007AF">
 
 	<!-- 07D0-07FF JIANG'S STAR -->
 
@@ -2608,6 +2627,7 @@
 
 	<!-- Commonwealth -->
 		
+	<Module filename="AgriculturalMission01.xml"/>
 	<Module filename="Commonwealth.xml"/>
 	<Module filename="CommonwealthAgricultural.xml"/>
 	<Module filename="CommonwealthCenturions.xml"/>
@@ -2789,12 +2809,15 @@
 	<!-- Pilgrim -->
 
 	<Module filename="Domina.xml"/>
+	<Module filename="NPCPilgrims.xml"/>
 	<Module filename="Pilgrim.xml"/>
 	
 	<!-- Sisters of Domina -->
 
 	<Module filename="Sanctuary.xml"/>
 	<Module filename="Sisters01.xml"/>
+	<Module filename="Sisters02.xml"/>
+	<Module filename="Sisters03.xml"/>
 	<Module filename="SistersDonate.xml"/>
 	<Module filename="SistersOfDomina.xml"/>
 	<Module filename="SistersPilgrimsAid.xml"/>

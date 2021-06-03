@@ -6,7 +6,11 @@
 #include "stdafx.h"
 
 #define ARMOR_COLOR_ATTRIB						CONSTLIT("armorColor")
+#define SCALE_ATTRIB							CONSTLIT("scale")
 #define SHIELDS_COLOR_ATTRIB					CONSTLIT("shieldsColor")
+
+#define SCALE_HP								CONSTLIT("hp")
+#define SCALE_PERCENT							CONSTLIT("percent")
 
 const int RING_SPACING = 2;
 const int INTER_SEGMENT_SPACING = 2;
@@ -33,7 +37,7 @@ ALERROR CArmorHUDRingSegments::Bind (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-void CArmorHUDRingSegments::DrawArmorName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CInstalledArmor *pArmor, CG32bitPixel rgbBack, CG32bitPixel rgbColor)
+void CArmorHUDRingSegments::DrawArmorName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CArmorItem ArmorItem, CG32bitPixel rgbBack, CG32bitPixel rgbColor)
 
 	//	DrawArmorName
 	//
@@ -56,13 +60,12 @@ void CArmorHUDRingSegments::DrawArmorName (CG32bitImage &Dest, int iAngle, int i
 
 	//	Get the armor name and mods
 
-	CItemCtx ItemCtx(pShip, pArmor);
-	CString sName = pArmor->GetClass()->GetShortName();
+	CString sName = ArmorItem.GetNounPhrase(nounNoModifiers | nounShort);
 	CItemListManipulator ItemList(pShip->GetItemList());
-	pShip->SetCursorAtArmor(ItemList, pArmor->GetSect());
+	pShip->SetCursorAtArmor(ItemList, ArmorItem.GetSegmentIndex());
 
 	TArray<SDisplayAttribute> Attribs;
-	pArmor->GetItem()->AccumulateEnhancementDisplayAttributes(Attribs);
+	ArmorItem.AccumulateEnhancementDisplayAttributes(Attribs);
 
 	//	Draw it
 
@@ -239,7 +242,7 @@ void CArmorHUDRingSegments::DrawItemBox (CG32bitImage &Dest, int iAngle, int iRa
 	DEBUG_CATCH
 	}
 
-void CArmorHUDRingSegments::DrawShieldsName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CInstalledDevice *pShields, CG32bitPixel rgbBack, CG32bitPixel rgbColor)
+void CArmorHUDRingSegments::DrawShieldsName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CDeviceItem ShieldItem, CG32bitPixel rgbBack, CG32bitPixel rgbColor)
 
 //	DrawShieldsName
 //
@@ -248,12 +251,10 @@ void CArmorHUDRingSegments::DrawShieldsName (CG32bitImage &Dest, int iAngle, int
 	{
 	DEBUG_TRY
 
-	CItemCtx ItemCtx(pShip, pShields);
-
-	CString sName = pShields->GetClass()->GetName();
+	CString sName = ShieldItem.GetNounPhrase(nounNoModifiers);
 
 	TArray<SDisplayAttribute> Attribs;
-	pShields->GetItem()->AccumulateEnhancementDisplayAttributes(Attribs);
+	ShieldItem.AccumulateEnhancementDisplayAttributes(Attribs);
 
 	DrawItemBox(Dest, iAngle, iRadius, sName, Attribs, rgbBack, rgbColor);
 
@@ -284,6 +285,17 @@ bool CArmorHUDRingSegments::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsErr
 	m_rgbShields = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(SHIELDS_COLOR_ATTRIB), CG32bitPixel(103, 204, 0));
 	m_rgbShieldsText = CG32bitPixel::Fade(m_rgbShields, CG32bitPixel(255, 255, 255), 80);
 	m_rgbShieldsTextBack = CG32bitPixel::Darken(m_rgbShields, 128);
+
+	CString sScale = CreateCtx.Desc.GetAttribute(SCALE_ATTRIB);
+	if (sScale.IsBlank() || strEquals(sScale, SCALE_PERCENT))
+		m_HPDisplay = CLanguage::SHPDisplayOptions(CLanguage::EHPDisplay::Percent);
+	else if (strEquals(sScale, SCALE_HP))
+		m_HPDisplay = CLanguage::SHPDisplayOptions(CLanguage::EHPDisplay::HitPoints);
+	else
+		{
+		if (retsError) *retsError = strPatternSubst(CONSTLIT("Invalid scale: %s"), sScale);
+		return false;
+		}
 
 	//	LATER: Load this from definition
 
@@ -346,15 +358,11 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 	{
 	DEBUG_TRY
 
-	int i;
-
 	//	Skip if we don't have a ship
 
 	CShip *pShip = Ctx.Source.AsShip();
 	if (pShip == NULL)
 		return;
-
-	CInstalledDevice *pShield = pShip->GetNamedDevice(devShields);
 
 	//	Set up some metrics
 
@@ -383,12 +391,13 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 
 	//	Paint each of the armor segments, one at a time.
 
-	for (i = 0; i < pShip->GetArmorSectionCount(); i++)
+	for (CArmorItem ArmorItem : pShip->GetArmorSystem())
 		{
-		const CShipArmorSegmentDesc &Sect = pShip->GetClass()->GetHullSection(i);
-		CInstalledArmor *pArmor = pShip->GetArmorSection(i);
-		int iIntegrity = pArmor->GetHitPointsPercent(pShip);
+		const CShipArmorSegmentDesc &Sect = ArmorItem.GetSegmentDesc();
+		int iIntegrity;
+		CString sHP = ArmorItem.GetHPDisplay(m_HPDisplay, &iIntegrity);
 		int iWidth = (iIntegrity * m_iArmorRingWidth) / 100;
+		bool bSelected = (ArmorItem.GetSegmentIndex() == Ctx.iSegmentSelected);
 
 		//	Draw the full armor size
 
@@ -424,8 +433,8 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 		DrawIntegrityBox(m_Buffer, 
 				iCenterAngle, 
 				iArmorInnerRadius + RING_SPACING, 
-				strPatternSubst(CONSTLIT("%d%%"), iIntegrity), 
-				(i == Ctx.iSegmentSelected ? rgbSelectionBack : m_rgbArmorTextBack),
+				sHP, 
+				(bSelected ? rgbSelectionBack : m_rgbArmorTextBack),
 				m_rgbArmorText);
 
 		//	Draw armor text
@@ -434,16 +443,19 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 				iCenterAngle, 
 				iArmorNameRadius, 
 				pShip, 
-				pArmor,
-				(i == Ctx.iSegmentSelected ? rgbSelectionBack : m_rgbArmorTextBack),
+				ArmorItem,
+				(bSelected ? rgbSelectionBack : m_rgbArmorTextBack),
 				m_rgbArmorText);
 		}
 
 	//	Paint shield level
 
-	int iShieldIntegrity = (pShield ? pShield->GetHitPointsPercent(pShip) : -1);
-	if (iShieldIntegrity != -1)
+	CDeviceItem ShieldItem = pShip->GetNamedDeviceItem(devShields);
+	if (ShieldItem)
 		{
+		int iShieldIntegrity;
+		CString sHP = ShieldItem.GetHPDisplay(m_HPDisplay, &iShieldIntegrity);
+
 		int iShieldInnerRadius = m_iArmorRingRadius + RING_SPACING;
 		int iWidth = (iShieldIntegrity * m_iShieldRingWidth) / 100;
 
@@ -480,12 +492,12 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 		DrawIntegrityBox(m_Buffer, 
 				90, 
 				iShieldInnerRadius + m_iShieldRingWidth, 
-				strPatternSubst(CONSTLIT("%d%%"), iShieldIntegrity), 
+				sHP, 
 				m_rgbShieldsTextBack,
 				m_rgbShieldsText);
 
 		CG32bitPixel rgbText;
-		if (pShield->IsWorking())
+		if (ShieldItem.IsWorking())
 			rgbText = m_rgbShieldsText;
 		else
 			rgbText = DISABLED_LABEL_COLOR;
@@ -494,7 +506,7 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 				298,
 				iShieldInnerRadius + m_iShieldRingWidth + RING_SPACING,
 				pShip,
-				pShield,
+				ShieldItem,
 				m_rgbShieldsTextBack,
 				rgbText);
 		}

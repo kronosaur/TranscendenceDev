@@ -204,7 +204,6 @@
 				fireRate=			"60"
 				lifetime=			"30"
                 missileSpeed=       "50"
-				hitPoints=			"20"
 				powerUse=			"200"
 				charges=			"true"
 

@@ -311,6 +311,62 @@ void CShip::CalcArmorBonus (void)
 	DEBUG_CATCH
 	}
 
+EAttackResponse CShip::CalcAttackResponse (SDamageCtx &Ctx)
+
+//	CalcAttackResponse
+//
+//	Figures out whether to call <OnAttackedByPlayer>, etc.
+
+	{
+	//	Ignore automated weapons
+	
+	if (Ctx.Damage.IsAutomatedWeapon())
+		return EAttackResponse::Ignore;
+
+	//	If no order giver then it means our attacker got destroyed, so nothing
+	//	to do.
+
+	CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
+	if (!pOrderGiver)
+		return EAttackResponse::Ignore;
+
+	//	If our attacker is not a friend, then we always call either OnAttacked
+	//	or OnAttackedByPlayer, depending.
+
+	if (!IsFriend(pOrderGiver) || IsAngryAt(pOrderGiver))
+		{
+		if (HasOnAttackedByPlayerEvent() && pOrderGiver->IsPlayer())
+			return EAttackResponse::OnAttackedByPlayer;
+		else
+			return EAttackResponse::OnAttacked;
+		}
+
+	//	If the order giver is not the player, then ignore.
+
+	if (!pOrderGiver->IsPlayer())
+		return EAttackResponse::Ignore;
+
+	//	If the actual attacker is an NPC, and they are not deliberately 
+	//	targeting us, then ignore.
+
+	CSpaceObject *pAttacker = Ctx.Attacker.GetObj();
+	if (!pAttacker ||
+			(!pAttacker->IsPlayer() && pAttacker->GetTarget() != this))
+		return EAttackResponse::Ignore;
+
+	//	If we're sure the player is deliberately attacking us, then we call
+	//	<OnAttackedByPlayer>
+
+	if (HasOnAttackedByPlayerEvent() && m_pController->UpdatePlayerAttackTrigger(GetSystem()->GetTick()))
+		return EAttackResponse::OnAttackedByPlayer;
+
+	//	Otherwise, we warn.
+	//	NOTE: At this point we can guarantee that both pAttacker and order giver
+	//	are non-NULL.
+
+	return EAttackResponse::WarnAttacker;
+	}
+
 void CShip::CalcBounds (void)
 
 //	CalcBounds
@@ -491,7 +547,7 @@ int CShip::CalcDeviceSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon, int *
 	return m_Devices.CalcSlotsInUse(retiWeaponSlots, retiNonWeapon, retiLauncherSlots);
 	}
 
-CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot)
+CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, int *retiSlot)
 
 //	CalcDeviceToReplace
 //
@@ -588,6 +644,8 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 			case itemcatLauncher:
 				if (Hull.GetMaxLaunchers() == 1)
 					return insReplaceLauncher;
+				else
+					break;
 
 			case itemcatReactor:
 				return insReplaceReactor;
@@ -607,10 +665,36 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 			}
 		}
 
+	int iSlotToReplace = Slot.iIndex;
+
+	//	If we have a slot ID, see if we're replacing something.
+
+	if (Slot.iIndex == -1 && !Slot.sID.IsBlank())
+		{
+		int iMaxCount;
+		if (m_Devices.FindSlotDesc(Slot.sID, NULL, &iMaxCount))
+			{
+			//	If the max count is not unlimited, then we need to see if there
+			//	are existing devices at that ID.
+
+			if (iMaxCount != -1)
+				{
+				TArray<int> ExistingDevices;
+				if (m_Devices.FindDevicesByID(Slot.sID, &ExistingDevices)
+						&& ExistingDevices.GetCount() >= iMaxCount)
+					{
+					//	Pick the first device to replace.
+
+					iSlotToReplace = ExistingDevices[0];
+					}
+				}
+			}
+		}
+
 	//	If we have no limitation on slots, then we can continue.
 
 	if (Hull.GetMaxDevices() == -1
-			&& iSuggestedSlot == -1)
+			&& iSlotToReplace == -1)
 		return insOK;
 
 	//	If we have enough space, then we're done
@@ -619,17 +703,15 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 			&& iWeaponSlotsNeeded <= 0
 			&& iNonWeaponSlotsNeeded <= 0
 			&& iLauncherSlotsNeeded <= 0
-			&& iSuggestedSlot == -1)
+			&& iSlotToReplace == -1)
 		return insOK;
-
-	int iSlotToReplace = -1;
 
 	//	If we passed in a slot to replace, see if freeing that device gives us
 	//	enough room.
 
-	if (iSuggestedSlot != -1)
+	if (iSlotToReplace != -1)
 		{
-		CInstalledDevice *pDevice = GetDevice(iSuggestedSlot);
+		CInstalledDevice *pDevice = GetDevice(iSlotToReplace);
 		if (!pDevice->IsEmpty())
 			{
 			bool bThisIsWeapon = (pDevice->GetCategory() == itemcatWeapon || pDevice->GetCategory() == itemcatLauncher);
@@ -644,7 +726,9 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 					&& iWeaponSlotsFreed >= iWeaponSlotsNeeded
 					&& iNonWeaponSlotsFreed >= iNonWeaponSlotsNeeded
 					&& iLauncherSlotsFreed >= iLauncherSlotsNeeded)
-				iSlotToReplace = iSuggestedSlot;
+				{ }
+			else
+				iSlotToReplace = -1;
 			}
 		}
 
@@ -933,7 +1017,7 @@ bool CShip::CanBeDestroyedBy (CSpaceObject &Attacker) const
 	return false;
 	}
 
-bool CShip::CanInstallItem (const CItem &Item, int iSlot, bool bForceUseOfDeviceSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
+bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, bool bForceUseOfDeviceSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
 
 //	CanInstallItem
 //
@@ -946,6 +1030,8 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, bool bForceUseOfDevice
 	CItem ItemToReplace;
 	const CHullDesc &Hull = m_pClass->GetHullDesc();
 	const IDeviceGenerator *pDevSlots = GetClass()->GetDeviceSlots();
+
+	int iSlot = Slot.iIndex;
 
 	//	If this is an armor item, see if we can install it.
 
@@ -960,7 +1046,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, bool bForceUseOfDevice
 
 		//	Ask the object if we can install this item
 
-		else if (!FireCanInstallItem(Item, iSlot, &sResult))
+		else if (!FireCanInstallItem(Item, Slot, &sResult))
 			iResult = insCannotInstall;
 
 		//	See if the armor is too heavy
@@ -970,7 +1056,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, bool bForceUseOfDevice
 
 		//	Fire CanBeInstalled to check for custom conditions
 
-		else if (!Item.FireCanBeInstalled(this, iSlot, &sResult))
+		else if (!Item.FireCanBeInstalled(this, Slot.iIndex, &sResult))
 			iResult = insCannotInstall;
 
 		//	Otherwise, we're OK
@@ -981,7 +1067,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, bool bForceUseOfDevice
 			//	replaced.
 
 			CItemListManipulator ItemList(GetItemList());
-			if (iSlot != -1 && SetCursorAtArmor(ItemList, iSlot))
+			if (Slot.iIndex != -1 && SetCursorAtArmor(ItemList, Slot.iIndex))
 				{
 				ItemToReplace = ItemList.GetItemAtCursor();
 
@@ -992,7 +1078,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, bool bForceUseOfDevice
 
 				//	Check to see if we are allowed to remove the item
 
-				else if (!FireCanRemoveItem(ItemToReplace, iSlot, &sResult))
+				else if (!FireCanRemoveItem(ItemToReplace, Slot.iIndex, &sResult))
 					iResult = insCannotInstall;
 
 				//	Otherwise, OK.
@@ -1037,12 +1123,12 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, bool bForceUseOfDevice
 
 		//	Ask the object if we can install this item
 
-		else if (!FireCanInstallItem(Item, iSlot, &sResult))
+		else if (!FireCanInstallItem(Item, Slot, &sResult))
 			iResult = insCannotInstall;
 
 		//	Fire CanBeInstalled to check for custom conditions
 
-		else if (!Item.FireCanBeInstalled(this, iSlot, &sResult))
+		else if (!Item.FireCanBeInstalled(this, Slot.iIndex, &sResult))
 			iResult = insCannotInstall;
 
 		//	See if the ship's engine core is powerful enough
@@ -1069,7 +1155,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, bool bForceUseOfDevice
 		else
 			{
 			int iRecommendedSlot;
-			iResult = CalcDeviceToReplace(Item, iSlot, &iRecommendedSlot);
+			iResult = CalcDeviceToReplace(Item, Slot, &iRecommendedSlot);
 			switch (iResult)
 				{
 				case insOK:
@@ -1371,6 +1457,7 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 		}
 
 	ShotCtx.Source = CDamageSource(this, Explosion.iCause, Ctx.pWreck);
+	ShotCtx.Source.SetExplosion();
 	ShotCtx.vPos = GetPos();
 	ShotCtx.vVel = GetVel();
 	ShotCtx.iDirection = GetRotation();
@@ -1465,7 +1552,7 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 	CDeviceDescList Devices;
 	pClass->GenerateDevices(System.GetLevel(), Devices);
 
-	pShip->m_Devices.Init(pShip, Devices, pClass->GetHullDesc().GetMaxDevices());
+	pShip->m_Devices.Init(pShip, Devices, pClass->GetDeviceSlots(), pClass->GetHullDesc().GetMaxDevices());
 
 	//	Install equipment
 
@@ -2242,6 +2329,10 @@ void CShip::FinishCreation (SShipGeneratorCtx *pCtx, SSystemCreateCtx *pSysCreat
 
 	GetUniverse().GetGlobalObjects().InsertIfTracked(this);
 
+	//	System-level notifications
+
+	GetSystem()->FireOnSystemObjCreated(*this);
+
 	DEBUG_CATCH
 	}
 
@@ -2707,6 +2798,25 @@ CSpaceObject *CShip::GetEscortPrincipal (void) const
 
 	{
 	return m_pController->GetEscortPrincipal();
+	}
+
+void CShip::GetHUDTimers (TArray<SHUDTimerDesc> &retTimers) const
+
+//	GetHUDTimers
+//
+//	Returns timers to display on HUD.
+
+	{
+	if (!GetSystem())
+		return;
+
+	//	Start with overlay timers
+
+	m_Overlays.AccumulateHUDTimers(*this, retTimers);
+
+	//	Add device timers
+
+	m_Devices.AccumulateHUDTimers(*this, retTimers);
 	}
 
 CCurrencyAndValue CShip::GetHullValue (void) const
@@ -3519,7 +3629,7 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 	m_pController->OnShipStatus(IShipController::statusArmorRepaired, iSect);
 	}
 
-void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot, int iSlotPosIndex)
+void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSystem::SSlotDesc &RecommendedSlot)
 
 //	InstallItemAsDevice
 //
@@ -3533,9 +3643,10 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 
 	//	If necessary, remove previous item in a slot
 
+	CDeviceSystem::SSlotDesc Slot = RecommendedSlot;
 	Metric rOldFuel = -1.0;
 	int iSlotToReplace;
-	CalcDeviceToReplace(ItemList.GetItemAtCursor(), iDeviceSlot, &iSlotToReplace);
+	CalcDeviceToReplace(ItemList.GetItemAtCursor(), Slot, &iSlotToReplace);
 	if (iSlotToReplace != -1)
 		{
 		const CInstalledDevice &ToReplace = m_Devices.GetDevice(iSlotToReplace);
@@ -3545,7 +3656,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 		//	(But only if we're the same kind of device).
 
 		if (ToReplace.GetCategory() == ItemList.GetItemAtCursor().GetType()->GetCategory())
-			iSlotPosIndex = ToReplace.GetSlotPosIndex();
+			Slot.iPos = ToReplace.GetSlotPosIndex();
 
 		//	If we're upgrading/downgrading a reactor, then remember the old fuel level
 
@@ -3563,7 +3674,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 
 	//	Install
 
-	if (!m_Devices.Install(this, ItemList, iDeviceSlot, iSlotPosIndex, false, &iDeviceSlot))
+	if (!m_Devices.Install(this, ItemList, Slot, &Slot.iIndex))
 		return;
 
 	//	Recalc bonuses
@@ -3578,9 +3689,9 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 	//	the new enhancement stack, since we might have a linked-fire setting
 	//	conferred by a device slot.
 
-	m_Devices.RefreshNamedDevice(iDeviceSlot);
+	m_Devices.RefreshNamedDevice(Slot.iIndex);
 
-	switch (m_Devices.GetDevice(iDeviceSlot).GetCategory())
+	switch (m_Devices.GetDevice(Slot.iIndex).GetCategory())
 		{
 		case itemcatWeapon:
 			m_pController->OnWeaponStatusChanged();
@@ -4242,17 +4353,32 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	Ctx.iSectHit = m_pClass->GetHullSectionAtAngle(iHitAngle);
 	CInstalledArmor *pArmor = ((Ctx.iSectHit != -1 && Ctx.iSectHit < GetArmorSectionCount()) ? GetArmorSection(Ctx.iSectHit) : NULL);
 
-	//	Tell our controller that someone hit us
+	//	Handle consequences of attack.
 
-	m_pController->OnAttacked(Ctx.Attacker.GetObj(), Ctx);
-
-	//	OnAttacked event
-
-	if (HasOnAttackedEvent())
+	if (CSpaceObject *pAttacker = Ctx.Attacker.GetObj())
 		{
-		FireOnAttacked(Ctx);
-		if (IsDestroyed())
-			return damageDestroyed;
+		m_pController->OnAttacked(*pAttacker, Ctx);
+
+		//	Figure out whether to call <OnAttackedByPlayer>, etc.
+
+		switch (CalcAttackResponse(Ctx))
+			{
+			case EAttackResponse::WarnAttacker:
+				Communicate(pAttacker, msgWatchTargets);
+				break;
+
+			case EAttackResponse::OnAttacked:
+				FireOnAttacked(Ctx);
+				if (IsDestroyed())
+					return damageDestroyed;
+				break;
+
+			case EAttackResponse::OnAttackedByPlayer:
+				FireOnAttackedByPlayer();
+				if (IsDestroyed())
+					return damageDestroyed;
+				break;
+			}
 		}
 
 	GetSystem()->FireOnSystemObjAttacked(Ctx);
@@ -5217,15 +5343,12 @@ void CShip::OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaint
 
 	if (Ctx.bShowFacingsAngle)
 		{
-		const CG16bitFont &MessageFont = GetUniverse().GetNamedFont(CUniverse::fontSRSMessage);
 		CString sText = strPatternSubst(CONSTLIT("Facing: %d Angle: %d"), m_Rotation.GetFrameIndex(), GetRotation());
-		MessageFont.DrawText(Dest,
-				x,
-				Ctx.yAnnotations,
-				GetSymbolColor(),
-				sText,
-				CG16bitFont::AlignCenter);
+		PaintAnnotationText(Dest, x, y, sText, Ctx);
 		}
+
+	if (Ctx.bShowOrderInfo)
+		m_pController->DebugPaintAnnotations(Dest, x, y, Ctx);
 	}
 
 void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)

@@ -78,11 +78,17 @@
 							(= endDesc 'stargate)
 								(sysFindObject aOwnerObj "GR -uncharted")
 
+							(@ endDesc 'criteria)
+								(random (sysFindObject aOwnerObj (@ endDesc 'criteria)))
+
 							aOwnerObj
 							)
 						)
 					)
-					(msnSet@ gSource 'destID (objGetID destObj))
+					(if destObj
+						(msnSet@ gSource 'destID (objGetID destObj))
+						(msnDestroy gSource)
+						)
 					)
 			</OnCreate>
 
@@ -130,6 +136,7 @@
 						(shpOrder escortObj 'gate destObj)
 						(block ()
 							(shpOrder escortObj 'dock destObj)
+							(shpOrder escortObj 'wait (random 5 10))
 							(shpOrder escortObj 'gate)
 							)
 						)

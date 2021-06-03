@@ -27,7 +27,7 @@
 
 			attributes=			"debris, envWater, envAvoidsEarth, friendly, outlaw"
 
-			dockScreen=			"&dsRPGAbandonedStation;"
+			abandonedScreen=			"&dsRPGAbandonedStation;"
 
 			scale=				"ship"
 			size=				"20"
@@ -1007,7 +1007,6 @@
 				damage=				"kinetic:14d8; momentum:5; WMD:5"
 				fireRate=			"50"
 				missileSpeed=		"45"
-				hitPoints=			"5"
 				lifetime=			"67"
 				powerUse=			"200"
 
@@ -1042,7 +1041,6 @@
 				fireRate=			"50"
 				missileSpeed=		"50"
 				lifetime=			"120"
-				hitPoints=			"6"
 				powerUse=			"280"
 				recoil=				"2"
 

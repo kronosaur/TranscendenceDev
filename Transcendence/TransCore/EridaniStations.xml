@@ -205,7 +205,7 @@
 			</Text>
 			
 			<Text id="textRandomFunFact">
-				(scrTranslate gScreen (cat "funFact." (random 1 7)))
+				(typTranslate gType (cat "funFact." (random 1 7)))
 			</Text>
 			<Text id="funFact.1">
 				

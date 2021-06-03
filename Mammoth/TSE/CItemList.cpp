@@ -109,6 +109,21 @@ int CItemList::GetCountOf (const CItemType &Type) const
 	return iTotal;
 	}
 
+bool CItemList::MatchesCriteria (const CItemCriteria &Criteria) const
+
+//	MatchesCriteria
+//
+//	Returns TRUE if at least one of the items in our list matches the given
+//	criteria.
+
+	{
+	for (int i = 0; i < m_List.GetCount(); i++)
+		if (m_List[i]->MatchesCriteria(Criteria))
+			return true;
+
+	return false;
+	}
+
 void CItemList::ReadFromStream (SLoadCtx &Ctx)
 
 //	ReadFromStream

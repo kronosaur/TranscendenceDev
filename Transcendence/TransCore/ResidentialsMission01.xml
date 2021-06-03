@@ -17,7 +17,7 @@
 			<Data id="reward"></Data>
 
 			<!-- If the player does not return the scrubbers before this tick, 
-				the station will suffer casualties, and the reward wil be 
+				the station will suffer casualties, and the reward will be 
 				decreased. After failureOn, then mission fails. -->
 
 			<Data id="casualtiesOn"></Data>
@@ -264,8 +264,9 @@
 
 				The woman frowns as she sees you.
 
-				"Your late! We've already got a hundred people in the infirmary.
-				I'm going to withhold half your reward for taking too long.
+				"You're late! We've already got a hundred people in the 
+				infirmary. I'm going to withhold half your reward for taking too
+				long.
 
 				"But at least we can recover now."
 

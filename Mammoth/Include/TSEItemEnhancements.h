@@ -160,7 +160,7 @@ class CItemEnhancement
 		ItemEnhancementTypes GetType (void) const { return (ItemEnhancementTypes)(m_dwMods & etTypeMask); }
 		int GetValueAdj (const CItem &Item) const;
 		bool HasCustomDamageAdj (void) const;
-		ALERROR InitFromDesc (CUniverse &Universe, const ICCItem &Item, CString *retsError);
+		ALERROR InitFromDesc (CUniverse &Universe, const ICCItem &Value, CString *retsError);
 		ALERROR InitFromDesc (const CString &sDesc, CString *retsError);
 		ALERROR InitFromDesc (SDesignLoadCtx &Ctx, const CString &sDesc);
 		bool IsBlindingImmune (void) const { return IsIonEffectImmune() || ((GetType() == etSpecialDamage) && GetLevel2() == specialBlinding && !IsDisadvantage()); }

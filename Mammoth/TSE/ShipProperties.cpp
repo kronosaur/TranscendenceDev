@@ -80,7 +80,20 @@
 #define STR_NEXT								CONSTLIT("next")
 #define STR_PREV								CONSTLIT("prev")
 
-TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CShip>::SPropertyDef, 3> {{
+TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CShip>::SPropertyDef, 4> {{
+		{
+		"inPlayerSquadron",		"True/Nil if we're part of the player's squadron",
+		[](const CShip &ShipObj, const CString &sProperty) 
+			{
+			const CSpaceObject *pPlayerShip = ShipObj.GetPlayerShip();
+			if (!pPlayerShip)
+				return ICCItemPtr::Nil();
+
+			return ICCItemPtr(pPlayerShip->IsInOurSquadron(ShipObj));
+			},
+		NULL,
+		},
+
 		{
 		"squadron",			"Desc of each member of squadron",
 		[](const CShip &ShipObj, const CString &sProperty) 
@@ -213,6 +226,7 @@ TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CSh
 			{
 			return ICCItemPtr(ShipObj.m_pPowerUse != NULL);
 			},
+		//	LATER: This is not actually hooked up
 		[](CShip &ShipObj, const CString &sProperty, const ICCItem &Value, CString *retsError)
 			{
 			ShipObj.TrackFuel(!Value.IsNil());
@@ -606,6 +620,10 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 	CCodeChain &CC = GetUniverse().GetCC();
 	ESetPropertyResult iResult;
 
+	//	LATER: Call m_PropertyTable
+	//	LATER: Custom properties should override engine properties (otherwise,
+	//		new engine properties could break existing extensions).
+
 	if (strEquals(sName, PROPERTY_ALWAYS_LEAVE_WRECK))
 		{
 		m_fAlwaysLeaveWreck = !pValue->IsNil();
@@ -734,7 +752,14 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		}
 	else if (strEquals(sName, PROPERTY_ROTATION))
 		{
-		SetRotation(pValue->GetIntegerValue());
+		int iNewRotation = pValue->GetIntegerValue();
+		SetRotation(iNewRotation);
+
+		//	Notify controller that the rotation has been set manually. This is
+		//	necessary to turn off mouse move on the player ship (otherwise, we
+		//	will just rotate back to where the mouse points).
+
+		m_pController->OnShipStatus(IShipController::statusRotationSet, iNewRotation);
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_ROTATION_SPEED))

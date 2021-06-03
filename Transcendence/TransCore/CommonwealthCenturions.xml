@@ -52,7 +52,7 @@
 		
 		<Devices>
 			<Device deviceID="&itNeutronBlaster;"/>
-			<Device deviceID="&itR1Deflector;"/>
+			<Device deviceID="&itMonopoleDeflector;"/>
 		</Devices>
 
 		<!-- Treasure -->
@@ -74,7 +74,7 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"20"
+			fireRateAdj=		"25"
 			fireAccuracy=		"85"
 			perception=			"4"
 			
@@ -154,7 +154,7 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"20"
+			fireRateAdj=		"25"
 			fireAccuracy=		"85"
 			perception=			"4"
 			
@@ -171,7 +171,7 @@
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealthFleet;"
 
-			attributes=			"commonwealth, genericClass, military, pacificDefense"
+			attributes=			"commonwealth, commonwealthMilitary, genericClass, military, pacificDefense"
 			inherit=			"&baHumanTechShip;"
 			>
 
@@ -234,7 +234,7 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"15"
+			fireRateAdj=		"25"
 			fireAccuracy=		"90"
 			perception=			"4"
 			
@@ -251,7 +251,7 @@
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealthFleet;"
 
-			attributes=			"commonwealth, commonwealthMilitary, commonMilitary, genericClass, pacificDefense"
+			attributes=			"commonwealth, commonwealthMilitary, commonMilitary, genericClass, military, pacificDefense"
 			inherit=			"&baHumanTechShip;"
 			>
 
@@ -314,7 +314,7 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"15"
+			fireRateAdj=		"25"
 			fireAccuracy=		"90"
 			perception=			"4"
 			

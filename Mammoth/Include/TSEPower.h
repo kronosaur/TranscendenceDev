@@ -40,7 +40,7 @@ class CPower : public CDesignType
 		void Invoke (CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError = NULL);
 		void InvokeByPlayer (CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError = NULL);
 		void InvokeByNonPlayer (CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError = NULL);
-		bool OnShow (CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError = NULL);
+		bool OnShow (CSpaceObject &SourceObj, CSpaceObject *pTarget, DWORD &retdwCooldownStart, DWORD &retdwCooldownEnd, CString *retsError = NULL);
 		bool OnDestroyCheck (CSpaceObject *pSource, DestructionTypes iCause, const CDamageSource &Attacker);
 
 		//	CDesignType overrides

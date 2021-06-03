@@ -5,7 +5,7 @@
 
 #include "PreComp.h"
 
-COrderDesc CDeterChaseOrder::Create (CSpaceObject &TargetObj, CSpaceObject *pBase, Metric rMaxRange, int iTimer)
+COrderDesc CDeterChaseOrder::Create (CSpaceObject &TargetObj, CSpaceObject *pBase, Metric rMaxRange, int iTimer, DWORD dwFlags)
 
 //	Create
 //
@@ -21,12 +21,19 @@ COrderDesc CDeterChaseOrder::Create (CSpaceObject &TargetObj, CSpaceObject *pBas
 		pData->SetIntegerAt(CONSTLIT("radius"), mathRound(rMaxRange / LIGHT_SECOND));
 
 	if (iTimer > 0)
-		pData->SetIntegerAt(CONSTLIT("timer"), iTimer);
+		pData->SetIntegerAt(CONSTLIT("timer"), iTimer / g_TicksPerSecond);
 
-	return COrderDesc(IShipController::orderDeterChase, &TargetObj, *pData);
+	COrderDesc Result(IShipController::orderDeterChase, &TargetObj, *pData);
+
+	//	Set some flags
+
+	if (dwFlags & FLAG_CANCEL_ON_REACTION_ORDER)
+		Result.SetCancelOnReactionOrder();
+
+	return Result;
 	}
 
-void CDeterChaseOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
+void CDeterChaseOrder::OnAttacked (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &AttackerObj, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	OnAttacked
 //
@@ -36,16 +43,15 @@ void CDeterChaseOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObje
 	//	If we have a valid attacker, then we try to respond. We ignore friendly
 	//	fire because that's handled by CBaseShipAI.
 
-	if (pAttacker == NULL
-			|| !pAttacker->CanAttack()
+	if (!AttackerObj.CanAttack()
 			|| bFriendlyFire)
 		return;
 
 	//	See if the attacker is a better target.
 
-	if (Ctx.CalcIsBetterTarget(pShip, m_Objs[OBJ_TARGET], pAttacker))
+	if (Ctx.CalcIsBetterTarget(&Ship, m_Objs[OBJ_TARGET], &AttackerObj))
 		{
-		m_Objs[OBJ_TARGET] = pAttacker;
+		m_Objs[OBJ_TARGET] = &AttackerObj;
 		}
 
 	//	Tell our base, if necessary.
@@ -54,9 +60,9 @@ void CDeterChaseOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObje
 	CSpaceObject *pTarget;
 	if (Ctx.IsSecondAttack()
 			&& m_Objs[OBJ_BASE]
-			&& m_Objs[OBJ_BASE]->IsAngryAt(pAttacker)
-			&& (pTarget = m_Objs[OBJ_BASE]->CalcTargetToAttack(pAttacker, pOrderGiver)))
-		pShip->Communicate(m_Objs[OBJ_BASE], msgAttackDeter, pTarget);
+			&& m_Objs[OBJ_BASE]->IsAngryAt(&AttackerObj)
+			&& (pTarget = m_Objs[OBJ_BASE]->CalcTargetToAttack(&AttackerObj, pOrderGiver)))
+		Ship.Communicate(m_Objs[OBJ_BASE], msgAttackDeter, pTarget);
 	}
 
 void CDeterChaseOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
@@ -82,6 +88,7 @@ void CDeterChaseOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 			return;
 			}
 
+#if 0
 		//	Otherwise, if we should stop deterring, then we're done.
 
 		else if (!Ctx.CalcIsDeterNeeded(*pShip, *m_Objs[OBJ_BASE]))
@@ -89,6 +96,7 @@ void CDeterChaseOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 			pShip->CancelCurrentOrder();
 			return;
 			}
+#endif
 		}
 
 	//	See if our timer has expired
@@ -221,7 +229,7 @@ void CDeterChaseOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int
 		}
 	}
 
-void CDeterChaseOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CDeterChaseOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //
