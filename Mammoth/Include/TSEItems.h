@@ -256,6 +256,7 @@ class CItem
 		static constexpr DWORD FLAG_IGNORE_DATA =				0x00000004;
 		static constexpr DWORD FLAG_IGNORE_DISRUPTED =			0x00000008;
 		static constexpr DWORD FLAG_IGNORE_ENHANCEMENTS =		0x00000010;
+		static constexpr DWORD FLAG_KNOWN_ONLY =				0x00000020;
 
 		static constexpr DWORD FLAG_FIND_MIN_CHARGES =			0x00010000;	//	Item with least number of charges
 		static constexpr DWORD FLAG_ACTUAL =					0x00020000;	//	Ignore unknown status

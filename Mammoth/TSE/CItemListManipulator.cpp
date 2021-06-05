@@ -370,6 +370,10 @@ int CItemListManipulator::FindItem (const CItem &Item, DWORD dwFlags) const
 			{
 			CItem &ThisItem = m_ItemList.GetItem(m_ViewMap[i]);
 
+			if ((dwFlags & CItem::FLAG_KNOWN_ONLY)
+					&& !ThisItem.IsKnown())
+				continue;
+
 			if (ThisItem.IsEqual(Item, dwFlags)
 					&& (iBestItem == -1 || ThisItem.GetCharges() < iBestCharges))
 				{
@@ -385,6 +389,10 @@ int CItemListManipulator::FindItem (const CItem &Item, DWORD dwFlags) const
 		for (int i = 0; i < m_ViewMap.GetCount(); i++)
 			{
 			CItem &ThisItem = m_ItemList.GetItem(m_ViewMap[i]);
+
+			if ((dwFlags & CItem::FLAG_KNOWN_ONLY)
+					&& !ThisItem.IsKnown())
+				continue;
 
 			if (ThisItem.IsEqual(Item, dwFlags))
 				return i;

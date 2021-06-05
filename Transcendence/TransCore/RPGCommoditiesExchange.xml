@@ -240,7 +240,7 @@
 
 						;	How many of this item do we already have?
 
-						(countInCargo (objHasItem gPlayerShip thisItem 1))
+						(countInCargo (objHasItem gPlayerShip thisItem 1 'knownOnly))
 						
 						;	Can this item be installed?
 						
