@@ -1105,6 +1105,7 @@ bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &S
 	else if (Item.IsDevice())
 		{
 		CItemCtx ItemCtx(&Item);
+		int iSlotFromId = pDevSlots->GetDescIndexGivenId(Slot.sID);
 
 		//	Get the item type
 
@@ -1118,7 +1119,7 @@ bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &S
 
 		//	If we force use of a device slot, and that device slot doesn't fit, then we cannot install
 
-		if (bForceUseOfDeviceSlot && !pDevSlots->ItemFitsSlot(this, Item, iSlot))
+		if (bForceUseOfDeviceSlot && !pDevSlots->ItemFitsSlot(this, Item, iSlotFromId != -1 ? iSlotFromId : iSlot))
 			iResult = insNotCompatible;
 
 		//	Ask the object if we can install this item
@@ -1128,7 +1129,7 @@ bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &S
 
 		//	Fire CanBeInstalled to check for custom conditions
 
-		else if (!Item.FireCanBeInstalled(this, Slot.iIndex, &sResult))
+		else if (!Item.FireCanBeInstalled(this, bForceUseOfDeviceSlot && (iSlotFromId != -1) ? iSlotFromId : Slot.iIndex, &sResult))
 			iResult = insCannotInstall;
 
 		//	See if the ship's engine core is powerful enough

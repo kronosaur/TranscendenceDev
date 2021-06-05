@@ -778,7 +778,12 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 	SDeviceDesc Desc;
 	if (Slot.sID)
 		{
-		FindSlotDesc(Slot.sID, &Desc);
+		pObj->FindDeviceSlotDesc(Slot.sID, &Desc);
+		auto pObjAsShip = pObj->AsShip();
+		if (Slot.iIndex == -1 && pObjAsShip)
+			{
+			iDeviceSlot = pObjAsShip->GetClass()->GetDeviceSlots()->GetDescIndexGivenId(Slot.sID);
+			}
 		}
 	else
 		{

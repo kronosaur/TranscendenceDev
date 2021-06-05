@@ -6926,8 +6926,10 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				if (!Slot.sID.IsBlank())
 					{
-					if (!pObj->GetDeviceSystem().FindSlotDesc(Slot.sID))
-						return pCC->CreateError(CONSTLIT("Unkown slot ID"), pArgs->GetElement(2));
+					CShip* pShip = pObj->AsShip();
+					const bool bDeviceSlotExists = bForceUseOfDeviceSlot ? pShip->GetClass()->GetDeviceSlots()->FindDeviceSlot(Slot.sID) : pShip->GetDeviceSystem().FindSlotDesc(Slot.sID);
+					if (!bDeviceSlotExists)
+						return pCC->CreateError(CONSTLIT("Unknown slot ID"), pArgs->GetElement(2));
 					}
 				}
 
@@ -11198,15 +11200,17 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 							&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetDeviceCount() || (!(bForceUseOfDeviceSlot) && pShip->GetDevice(Slot.iIndex)->IsEmpty())))
 						return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
 					}
-				else if (Slot.iIndex == -1 && bForceUseOfDeviceSlot)
-					{
-					return pCC->CreateNil();
-					}
 
 				if (!Slot.sID.IsBlank())
 					{
-					if (!pShip->GetDeviceSystem().FindSlotDesc(Slot.sID))
-						return pCC->CreateError(CONSTLIT("Unkown slot ID"), pArgs->GetElement(2));
+					const bool bDeviceSlotExists = bForceUseOfDeviceSlot ? pShip->GetClass()->GetDeviceSlots()->FindDeviceSlot(Slot.sID) : pShip->GetDeviceSystem().FindSlotDesc(Slot.sID);
+					if (!bDeviceSlotExists)
+						return pCC->CreateError(CONSTLIT("Unknown slot ID"), pArgs->GetElement(2));
+					}
+
+				else if (Slot.iIndex == -1 && Slot.sID.IsBlank() && bForceUseOfDeviceSlot)
+					{
+					return pCC->CreateNil();
 					}
 				}
 
