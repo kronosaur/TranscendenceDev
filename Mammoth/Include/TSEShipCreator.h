@@ -47,6 +47,8 @@ class CShipChallengeDesc
 				m_iType(countNone)
 			{ }
 
+		CShipChallengeDesc (ECountTypes iType, int iCount = 0) { if (!Init(iType, iCount)) throw CException(ERR_FAIL); }
+
 		ECountTypes GetCountType (void) const { return m_iType; }
 		Metric GetChallengeStrength (int iLevel) const { return CalcChallengeStrength(m_iType, iLevel); }
 		ICCItemPtr GetDesc (const CSpaceObject *pBase = NULL) const;
