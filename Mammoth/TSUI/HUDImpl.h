@@ -269,6 +269,7 @@ class CTimersHUD : public IHUDPainter
 		static constexpr int ICON_WIDTH = 32;
 		static constexpr int SPACING_X = 8;
 		static constexpr int SPACING_Y = 8;
+		static constexpr int BAR_SPACING_Y = 4;
 
 		static constexpr int TIMER_HEIGHT = ICON_HEIGHT;
 		static constexpr int TIMER_WIDTH = 300;
