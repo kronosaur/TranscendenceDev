@@ -639,7 +639,7 @@ bool CDeviceSystem::HasShieldsUp (void) const
 		return false;
 	}
 
-bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, const IDeviceGenerator *pSlots, int iMaxDevices)
+bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, const IDeviceGenerator &Slots, int iMaxDevices)
 
 //	Init
 //
@@ -653,10 +653,7 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, co
 
 	//	Slots
 
-	if (pSlots)
-		m_pSlots = pSlots;
-	else
-		m_pSlots = &IDeviceGenerator::Null();
+	m_pSlots = &Slots;
 
 	//	Add items to the object, as specified.
 
@@ -977,7 +974,7 @@ void CDeviceSystem::OnSubordinateDestroyed (CSpaceObject &SubordinateObj, const 
 		}
 	}
 
-void CDeviceSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj)
+void CDeviceSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj, const IDeviceGenerator &Slots)
 
 //	ReadFromStream
 //
@@ -985,6 +982,9 @@ void CDeviceSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj)
 
 	{
 	DWORD dwLoad;
+
+	CleanUp();
+	m_pSlots = &Slots;
 
 	//	Load count
 

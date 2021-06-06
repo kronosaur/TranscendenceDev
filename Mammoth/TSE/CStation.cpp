@@ -1367,7 +1367,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 
 	//	Install devices
 
-	pStation->m_Devices.Init(pStation, Devices);
+	pStation->m_Devices.Init(pStation, Devices, IDeviceGenerator::Null());
 	pStation->CalcDeviceBonus();
 
 	//	Get notifications when other objects are destroyed
@@ -3989,7 +3989,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Devices
 
-	m_Devices.ReadFromStream(Ctx, this);
+	m_Devices.ReadFromStream(Ctx, this, IDeviceGenerator::Null());
 
 	//	Prior to version 180 we didn't automatically set devices to be
 	//	secondary.

@@ -209,7 +209,7 @@ class CDeviceSystem
 		DWORD GetTargetTypes (void) const;
 		bool HasNamedDevices (void) const { return (m_NamedDevices.GetCount() > 0); }
 		bool HasShieldsUp (void) const;
-		bool Init (CSpaceObject *pObj, const CDeviceDescList &Devices, const IDeviceGenerator *pSlots = NULL, int iMaxDevices = 0);
+		bool Init (CSpaceObject *pObj, const CDeviceDescList &Devices, const IDeviceGenerator &Slots, int iMaxDevices = 0);
 		bool Install (CSpaceObject *pObj, CItemListManipulator &ItemList, const SSlotDesc &Slot, int *retiDeviceSlot = NULL);
 		bool IsEmpty (void) const { return (m_Devices.GetCount() == 0); }
 		bool IsSlotAvailable (ItemCategories iItemCat, int *retiSlot = NULL) const;
@@ -217,7 +217,7 @@ class CDeviceSystem
 		void MarkImages (void);
 		bool OnDestroyCheck (CSpaceObject *pObj, DestructionTypes iCause, const CDamageSource &Attacker);
 		void OnSubordinateDestroyed (CSpaceObject &SubordinateObj, const CString &sSubordinateID);
-		void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj);
+		void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj, const IDeviceGenerator &Slots);
 		void ReadyFirstMissile (CSpaceObject *pObj);
 		void ReadyFirstWeapon (CSpaceObject *pObj);
 		void ReadyNextLauncher (CSpaceObject *pObj, int iDir = 1);

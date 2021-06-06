@@ -5765,7 +5765,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Load devices
 
-	m_Devices.ReadFromStream(Ctx, this);
+	m_Devices.ReadFromStream(Ctx, this, m_pClass->GetDeviceSlots());
 
 	//	Previous versions stored drive desc UNID
 

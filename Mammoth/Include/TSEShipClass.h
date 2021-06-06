@@ -413,7 +413,7 @@ class CShipClass : public CDesignType
 		CDesignType *GetDefaultEventHandler (void) const { return m_EventHandler; }
 		CSovereign *GetDefaultSovereign (void) const { return m_pDefaultSovereign; }
 		CString GetDesc (void) const;
-		IDeviceGenerator *GetDeviceSlots (void) const { return m_pDeviceSlots; }
+		const IDeviceGenerator &GetDeviceSlots (void) const;
 		const CDockingPorts &GetDockingPorts (void) { return m_DockingPorts; }
 		CVector GetDockingPortOffset (int iRotation);
 		const CDriveDesc &GetDriveDesc (const CItem **retpDriveItem = NULL) const;

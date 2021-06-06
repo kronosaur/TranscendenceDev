@@ -2233,6 +2233,19 @@ CString CShipClass::GetDesc (void) const
 	return NULL_STR;
 	}
 
+const IDeviceGenerator &CShipClass::GetDeviceSlots (void) const
+
+//	GetDeviceSlots
+//
+//	Returns device slot definitions.
+
+	{
+	if (m_pDeviceSlots)
+		return *m_pDeviceSlots;
+	else
+		return IDeviceGenerator::Null();
+	}
+
 CVector CShipClass::GetDockingPortOffset (int iRotation)
 
 //	GetDockingPortOffset
