@@ -10646,7 +10646,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SHIP_DEV_SLOT_IDS:
 			{
-			TArray<CString> ids = pShip->GetClass()->GetDeviceSlots()->GetDeviceSlotIds();
+			TArray<CString> ids = pShip->GetDeviceSystem().GetSlots()->GetDeviceSlotIds();
 			ICCItem* pIDs = pCC->CreateLinkedList();
 			for (int i = 0; i < ids.GetCount(); i++)
 				pIDs->AppendString(ids[i]);

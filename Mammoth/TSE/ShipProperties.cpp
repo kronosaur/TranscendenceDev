@@ -276,15 +276,15 @@ ICCItem* CShip::GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const
 		if (pArgs->GetCount() >= 3)
 			{
 			CString sProperty = pArgs->GetElement(2)->GetStringValue();
-			IDeviceGenerator* pDevSlots = this->GetClass().GetDeviceSlots();
+			const IDeviceGenerator *pDevSlots = this->GetDeviceSystem().GetSlots();
 			int numSlots = pDevSlots->GetNumberOfDescs();
-			ICCItem* pOptions = pArgs->GetElement(1);
+			ICCItem *pOptions = pArgs->GetElement(1);
 			if (pOptions->IsInteger())
 				iDeviceSlot = pOptions->GetIntegerValue();
 			else
 				{
-				ICCItem* pDeviceSlot = pOptions->GetElement(FIELD_DEVICE_SLOT);
-				ICCItem* pDeviceSlotID = pOptions->GetElement(FIELD_SLOT_ID);
+				ICCItem *pDeviceSlot = pOptions->GetElement(FIELD_DEVICE_SLOT);
+				ICCItem *pDeviceSlotID = pOptions->GetElement(FIELD_SLOT_ID);
 				if (pDeviceSlot && !pDeviceSlot->IsNil())
 					iDeviceSlot = pDeviceSlot->GetIntegerValue();
 

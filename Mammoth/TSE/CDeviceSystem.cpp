@@ -758,7 +758,7 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 		auto pObjAsShip = pObj->AsShip();
 		if (!Slot.sID.IsBlank() && pObjAsShip)
 			{
-			iDeviceSlot = pObjAsShip->GetClass()->GetDeviceSlots()->GetDescIndexGivenId(Slot.sID);
+			iDeviceSlot = pObjAsShip->GetDeviceSystem().GetSlots()->GetDescIndexGivenId(Slot.sID);
 			}
 		else
 			{
@@ -1016,10 +1016,6 @@ void CDeviceSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj, const IDe
 		if (Ctx.dwVersion < 29)
 			m_Devices[i]->SetDeviceSlot(i);
 		}
-
-	CShip *pObjAsShip = pObj->AsShip();
-	if (pObjAsShip)
-		m_pSlots = pObjAsShip->GetClass()->GetDeviceSlots();
 	}
 
 void CDeviceSystem::ReadyFirstMissile (CSpaceObject *pObj)
