@@ -110,6 +110,7 @@ class CWeaponClass : public CDeviceClass
 
 		CItemType *GetAmmoItem (int iIndex) const;
 		int GetAmmoItemCount (void) const;
+		int GetChargeTime (const CWeaponFireDesc& Shot) const;
 		const CConfigurationDesc &GetConfiguration (const CWeaponFireDesc &ShotDesc) const;
 		int GetContinuous (const CWeaponFireDesc &Shot) const;
 		bool GetContinuousConsumePerShot (const CWeaponFireDesc &Shot) const { return m_bContinuousConsumePerShot; }
@@ -286,7 +287,6 @@ class CWeaponClass : public CDeviceClass
 							 CSpaceObject *pTarget,
 							 int iRepeatingCount,
 							 int iShotNumber);
-		int GetChargeTime (const CWeaponFireDesc& Shot) const;
 		int GetContinuousFireDelay (const CWeaponFireDesc &Shot) const;
 		int GetFireDelay (const CWeaponFireDesc &ShotDesc) const;
 		const CWeaponFireDesc *GetReferenceShotData (const CWeaponFireDesc *pShot, int *retiFragments = NULL) const;
