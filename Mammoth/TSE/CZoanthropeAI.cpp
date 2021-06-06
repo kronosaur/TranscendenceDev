@@ -390,7 +390,7 @@ void CZoanthropeAI::ImplementCombatManeuvers (CSpaceObject *pTarget)
 		}
 	}
 
-void CZoanthropeAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
+void CZoanthropeAI::OnAttacked (CSpaceObject &AttackerObj, const SDamageCtx &Damage)
 
 //	OnAttacked
 //
@@ -400,50 +400,47 @@ void CZoanthropeAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damag
 	{
 	DEBUG_TRY
 
-	if (pAttacker)
+	//	If we were attacked by a friend, then warn them off
+	//	(Unless we're explicitly targeting the friend)
+
+	if (m_pShip->IsFriend(&AttackerObj) && AttackerObj != m_pTarget)
 		{
-		//	If we were attacked by a friend, then warn them off
-		//	(Unless we're explicitly targeting the friend)
+		//	Note: In this case, we include automated attacks, since
+		//	zoanthropes can't tell the difference.
 
-		if (m_pShip->IsFriend(pAttacker) && pAttacker != m_pTarget)
+		m_pShip->Communicate(&AttackerObj, msgWatchTargets);
+		}
+
+	//	Else if we were attacked by an enemy/neutral, see if we need
+	//	to attack them (or flee)
+
+	else if (AttackerObj.CanAttack())
+		{
+		//	Change state to deal with the attack
+
+		switch (m_State)
 			{
-			//	Note: In this case, we include automated attacks, since
-			//	zoanthropes can't tell the difference.
-
-			m_pShip->Communicate(pAttacker, msgWatchTargets);
-			}
-
-		//	Else if we were attacked by an enemy/neutral, see if we need
-		//	to attack them (or flee)
-
-		else if (pAttacker->CanAttack())
-			{
-			//	Change state to deal with the attack
-
-			switch (m_State)
+			case stateReturningFromThreat:
+			case stateWaitingForThreat:
 				{
-				case stateReturningFromThreat:
-				case stateWaitingForThreat:
-					{
-					SetState(stateAttackingThreat, m_pBase, pAttacker);
-					ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
-					break;
-					}
+				SetState(stateAttackingThreat, m_pBase, &AttackerObj);
+				ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
+				break;
+				}
 
-				case stateOnEscortCourse:
-					{
-					SetState(stateAttackingThreat, m_pBase, pAttacker);
-					m_pShip->Communicate(m_pBase, msgEscortAttacked, pAttacker);
-					ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
-					break;
-					}
+			case stateOnEscortCourse:
+				{
+				SetState(stateAttackingThreat, m_pBase, &AttackerObj);
+				m_pShip->Communicate(m_pBase, msgEscortAttacked, &AttackerObj);
+				ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
+				break;
+				}
 
-				case stateOnPatrolOrbit:
-					{
-					SetState(stateAttackingOnPatrol, m_pBase, pAttacker);
-					ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
-					break;
-					}
+			case stateOnPatrolOrbit:
+				{
+				SetState(stateAttackingOnPatrol, m_pBase, &AttackerObj);
+				ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
+				break;
 				}
 			}
 		}

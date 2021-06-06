@@ -89,6 +89,7 @@ class CGameSession : public IHISession
 		bool IsMouseAimEnabled (void) const { return m_bMouseAim; }
 		void PaintInfoText (CG32bitImage &Dest, const CString &sTitle, const TArray<CString> &Body, bool bAboveTargeting = true);
 		void PaintSoundtrackTitles (CG32bitImage &Dest);
+		void SetMouseAimEnabled (bool bEnabled = true);
 
 	private:
 
@@ -125,7 +126,6 @@ class CGameSession : public IHISession
 
 		void PaintMenu (CG32bitImage &Screen);
 		void PaintSRS (CG32bitImage &Screen);
-		void SetMouseAimEnabled (bool bEnabled = true);
 		bool ShowMenu (EMenuTypes iMenu);
 		void SyncMouseToPlayerShip (void);
 
@@ -164,6 +164,7 @@ class CGameSession : public IHISession
 		int m_iDamageFlash = 0;					//	0 = no flash; odd = recover; even = flash;
 		bool m_bIgnoreButtonUp = false;			//	If we closed a menu on button down, ignore button up
 		bool m_bIgnoreMouseMove = false;		//	Ignore mouse move, for purposes of enabling mouse flight
+		bool m_bHideHUD = false;				//	Hide the HUD
 
 		//	Map state
 

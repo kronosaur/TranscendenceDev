@@ -183,6 +183,18 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				}
 			break;
 
+		case CGameKeys::keyToggleHUD:
+			if (m_bShowingSystemMap)
+				{
+				if (pPlayer)
+					pPlayer->SetMapHUD(!pPlayer->IsMapHUDActive());
+				}
+			else
+				m_bHideHUD = !m_bHideHUD;
+
+			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+			break;
+
 		case CGameKeys::keyShipStatus:
 			if (pPlayer->CanShowShipStatus())
 				{

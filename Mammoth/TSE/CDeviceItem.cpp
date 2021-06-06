@@ -102,6 +102,21 @@ TArray<const CItemType *> CDeviceItem::GetConsumableTypes () const
 	return Result;
 	}
 
+int CDeviceItem::GetCounterLevel (EDeviceCounterType *retiCounter, int *retiLevel) const
+
+//	GetCounterLevel
+//
+//	Returns the counter level and type for the device.
+
+	{
+	if (const CInstalledDevice *pInstalled = m_Item.GetInstalledDevice())
+		{
+		return pInstalled->GetCounter(*GetSource(), retiCounter, retiLevel);
+		}
+	else
+		return 0;
+	}
+
 int CDeviceItem::GetCyberDefenseLevel () const
 
 //	GetCyberDefenseLevel
@@ -154,7 +169,8 @@ int CDeviceItem::GetFireArc (void) const
 		case CDeviceRotationDesc::rotOmnidirectional:
 			return 360;
 
-		case CDeviceRotationDesc::rotSwivel:
+		case CDeviceRotationDesc::rotSwivelAlways:
+		case CDeviceRotationDesc::rotSwivelIfTargetInArc:
 			return AngleRange(iMinArc, iMaxArc);
 
 		default:
@@ -179,6 +195,30 @@ int CDeviceItem::GetHP (int *retiMaxHP, bool bUninstalled) const
 		{
 		CItemCtx ItemCtx(*this);
 		return GetDeviceClass().GetHitPoints(ItemCtx, retiMaxHP);
+		}
+	}
+
+CString CDeviceItem::GetHPDisplay (const CLanguage::SHPDisplayOptions &Options, int *retiIntegrity) const
+
+//	GetHPDisplay
+//
+//	Returns a string representing the armor integrity.
+
+	{
+	int iMaxHP;
+	int iHP = GetHP(&iMaxHP);
+
+	int iIntegrity = (iMaxHP ? mathRound(100.0 * iHP / iMaxHP) : 0);
+	if (retiIntegrity)
+		*retiIntegrity = iIntegrity;
+
+	switch (Options.iType)
+		{
+		case CLanguage::EHPDisplay::Percent:
+			return CLanguage::ComposeHitPointValue(iIntegrity, Options);
+
+		default:
+			return CLanguage::ComposeHitPointValue(GetHP(), Options);
 		}
 	}
 

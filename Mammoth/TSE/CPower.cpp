@@ -15,6 +15,7 @@
 #define UNID_ATTRIB								CONSTLIT("UNID")
 #define COST_ATTRIB								CONSTLIT("cost")
 #define KEY_ATTRIB								CONSTLIT("key")
+#define LEVEL_ATTRIB							CONSTLIT("level")
 #define NAME_ATTRIB								CONSTLIT("name")
 
 #define PROPERTY_NAME							CONSTLIT("name")
@@ -107,6 +108,9 @@ void CPower::InvokeByPlayer (CSpaceObject *pSource, CSpaceObject *pTarget, CStri
 //	Invoke the power for a player
 
 	{
+	if (!pSource)
+		throw CException(ERR_FAIL);
+
 	if (retsError) *retsError = NULL_STR;
 
 	CCodeChainCtx Ctx(GetUniverse());
@@ -148,6 +152,11 @@ void CPower::InvokeByPlayer (CSpaceObject *pSource, CSpaceObject *pTarget, CStri
 				*retsError = pResult->GetStringValue();
 			}
 		}
+
+	//	Notify player that we were invoked
+
+	if (pSource->IsPlayer())
+		GetUniverse().GetPlayer().OnPowerInvoked(*this);
 	}
 
 void CPower::InvokeByNonPlayer(CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError)
@@ -251,6 +260,7 @@ ALERROR CPower::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Load basic stuff
 
 	m_sName = pDesc->GetAttribute(NAME_ATTRIB);
+	m_iLevel = pDesc->GetAttributeIntegerBounded(LEVEL_ATTRIB, 1, MAX_SYSTEM_LEVEL);
 	m_iInvokeCost = pDesc->GetAttributeInteger(COST_ATTRIB);
 	m_sInvokeKey = pDesc->GetAttribute(KEY_ATTRIB);
 
@@ -315,6 +325,9 @@ bool CPower::OnDestroyCheck (CSpaceObject *pSource, DestructionTypes iCause, con
 //	Returns TRUE if ship can be destroyed; otherwise, FALSE
 
 	{
+	if (!pSource)
+		throw CException(ERR_FAIL);
+
 	SEventHandlerDesc Event;
 	if (!FindEventHandler(EEvent::OnDestroyCheck, &Event))
 		return true;
@@ -330,7 +343,17 @@ bool CPower::OnDestroyCheck (CSpaceObject *pSource, DestructionTypes iCause, con
 	//	Invoke
 
 	ICCItemPtr pResult = Ctx.RunCode(Event);
-	return (pResult->IsNil() ? false : true);
+	if (!pResult->IsNil())
+		return true;
+
+	//	This counts as an invocation.
+
+	if (pSource->IsPlayer())
+		GetUniverse().GetPlayer().OnPowerInvoked(*this);
+
+	//	Cancel destruction
+
+	return false;
 	}
 
 void CPower::OnMarkImages (void)
@@ -343,13 +366,17 @@ void CPower::OnMarkImages (void)
 	m_Image.MarkImage();
 	}
 
-bool CPower::OnShow (CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError)
+bool CPower::OnShow (CSpaceObject &SourceObj, CSpaceObject *pTarget, DWORD &retdwCooldownStart, DWORD &retdwCooldownEnd, CString *retsError)
 
 //	OnShow
 //
 //	Returns TRUE if we should show this power on the menu
 
 	{
+	if (retsError) *retsError = NULL_STR;
+	retdwCooldownStart = 0;
+	retdwCooldownEnd = 0;
+
 	SEventHandlerDesc Event;
 	if (!FindEventHandler(EEvent::OnShow, &Event))
 		return true;
@@ -358,17 +385,23 @@ bool CPower::OnShow (CSpaceObject *pSource, CSpaceObject *pTarget, CString *rets
 
 	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
-	Ctx.SaveAndDefineSourceVar(pSource);
+	Ctx.SaveAndDefineSourceVar(&SourceObj);
 	Ctx.DefineSpaceObject(CONSTLIT("gTarget"), pTarget);
 
 	ICCItemPtr pResult = Ctx.RunCode(Event);
-	if (retsError)
+	if (pResult->IsError())
 		{
-		if (pResult->IsError())
+		if (retsError)
 			*retsError = pResult->GetStringValue();
-		else
-			*retsError = NULL_STR;
-		}
 
-	return !pResult->IsNil();
+		return true;
+		}
+	else if (pResult->IsSymbolTable())
+		{
+		retdwCooldownStart = pResult->GetIntegerAt(CONSTLIT("cooldownStart"));
+		retdwCooldownEnd = pResult->GetIntegerAt(CONSTLIT("cooldownEnd"));
+		return true;
+		}
+	else
+		return !pResult->IsNil();
 	}

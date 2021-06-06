@@ -224,15 +224,17 @@ class CShipArmorSegmentDesc
 		ALERROR Init (int iStartAt, int iSpan, DWORD dwArmorUNID, int iLevel, const CRandomEnhancementGenerator &Enhancement);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc, DWORD dwDefaultUNID, int iDefaultLevel, int iDefaultAngle, const CRandomEnhancementGenerator &DefaultEnhancement, int *retiSpan = NULL);
 
+		static const CShipArmorSegmentDesc m_Null;
+
 	private:
 		static DWORD ParseNonCritical (const CString &sList);
 
-		int m_iStartAt;						//	Start of section in degrees
-		int m_iSpan;						//	Size of section in degrees
+		int m_iStartAt = 0;					//	Start of section in degrees
+		int m_iSpan = 360;					//	Size of section in degrees
 		CArmorClassRef m_pArmor;			//	Type of armor for hull
-		int m_iLevel;                       //  For scalable armor
+		int m_iLevel = 1;					//  For scalable armor
 		CRandomEnhancementGenerator m_Enhanced;//	Mods
-		DWORD m_dwAreaSet;					//	Areas that this section protects
+		DWORD m_dwAreaSet = 0;				//	Areas that this section protects
 	};
 
 class CShipArmorDesc

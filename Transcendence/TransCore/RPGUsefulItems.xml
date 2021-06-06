@@ -355,8 +355,8 @@
 								(scrSetDesc gScreen (@ useInfo 'desc))
 
 							(scrSetDescTranslate gScreen 'descCanNotUse {
-								useItem: (itmGetName useItem 'article)
-								dstItem: (itmGetName dstItem 'article)
+								useItem: (itmGetName useItem '(article escapeQuotes))
+								dstItem: (itmGetName dstItem '(article escapeQuotes))
 								})
 							)
 						(scrEnableAction gScreen 'actionUse (@ useInfo 'canUse))
@@ -489,7 +489,7 @@
 			<Text id="labelDevicesCargo">Devices Cargo</Text>
 			<Text id="labelAmmoCargo">Ammo Cargo</Text>
 
-			<Text id="descCanNotUse">You cannot use %useItem% on this %dstItem%.</Text>
+			<Text id="descCanNotUse">You cannot use %useItem% on %dstItem%.</Text>
 		</Language>
 	</DockScreen>
 
@@ -1125,9 +1125,9 @@
 			<Text id="rpg.noTargetItemUnknown">				This appears to be some kind of device upgrade, but no appropriate device could be found.</Text>
 
 			<Text id="rpg.canUse.ok">						You can use %useItem% on this %dstItem%.</Text>
-			<Text id="rpg.canUse.alreadyEnhanced">			This %dstItem% is already enhanced; %UseItem% will have no effect.</Text>
-			<Text id="rpg.canUse.cantReplaceDefect">		This %dstItem% is defective; %UseItem% will have no effect.</Text>
-			<Text id="rpg.canUse.cantReplaceEnhancement">	This %dstItem% is already enhanced; %UseItem% will have no effect.</Text>
+			<Text id="rpg.canUse.alreadyEnhanced">			This %dstItem% is already enhanced; %useItem% will have no effect.</Text>
+			<Text id="rpg.canUse.cantReplaceDefect">		This %dstItem% is defective; %useItem% will have no effect.</Text>
+			<Text id="rpg.canUse.cantReplaceEnhancement">	This %dstItem% is already enhanced; %useItem% will have no effect.</Text>
 			<Text id="rpg.canUse.damaged">					You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>
 			<Text id="rpg.canUse.defectImproved">			You can use %useItem% on this %dstItem%.</Text>
 			<Text id="rpg.canUse.defectOK">					You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>
@@ -1460,9 +1460,9 @@
 
 		<Language>
 			<Text id="rpg.canUse.ok">						You can use %useItem% on this %dstItem%.</Text>
-			<Text id="rpg.canUse.alreadyEnhanced">			This %dstItem% is already enhanced; %UseItem% will have no effect.</Text>
+			<Text id="rpg.canUse.alreadyEnhanced">			This %dstItem% is already enhanced; %useItem% will have no effect.</Text>
 			<Text id="rpg.canUse.cantReplaceDefect">		This %dstItem% is defective; %useItem% will have no effect.</Text>
-			<Text id="rpg.canUse.cantReplaceEnhancement">	This %dstItem% is already enhanced; %UseItem% will have no effect.</Text>
+			<Text id="rpg.canUse.cantReplaceEnhancement">	This %dstItem% is already enhanced; %useItem% will have no effect.</Text>
 			<Text id="rpg.canUse.damaged">					You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>
 			<Text id="rpg.canUse.defectImproved">			You can use %useItem% on this %dstItem%.</Text>
 			<Text id="rpg.canUse.defectOK">					You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>

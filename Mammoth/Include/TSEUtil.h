@@ -92,7 +92,6 @@ enum ProgramStates
 	psPaintingMessageDisplay,			//	In CMessageDisplay::Paint
 	psPaintingReactorDisplay,			//	In CReactorDisplay::Paint
 	psPaintingTargetDisplay,			//	In CTargetDisplay::Paint
-	psPaintingDeviceDisplay,			//	In CDeviceCounterDisplay::Paint
 	psStargateEnter,					//	In CTranscendenceWnd::EnterStargate
 	psStargateEndGame,					//	In EnterStargate, end game
 	psStargateLoadingSystem,			//	In EnterStargate, loading system
@@ -547,10 +546,12 @@ class CDamageSource
 		bool IsCausedByFriendOf (CSpaceObject *pObj) const;
 		bool IsCausedByNonFriendOf (CSpaceObject *pObj) const;
 		bool IsCausedByPlayer (void) const { return ((m_dwFlags & FLAG_IS_PLAYER_CAUSED) ? true : false); }
+		bool IsEjecta () const { return ((m_dwFlags & FLAG_IS_EJECTA) ? true : false); }
 		bool IsEmpty (void) const { return (GetObj() == NULL); }
 		bool IsEnemy (CDamageSource &Src) const;
 		bool IsEqual (const CDamageSource &Src) const;
 		bool IsEqual (const CSpaceObject &Src) const;
+		bool IsExplosion () const { return ((m_dwFlags & FLAG_IS_EXPLOSION) ? true : false); }
 		bool IsFriend (CSovereign *pSovereign) const;
 		bool IsPlayer (void) const { return ((m_dwFlags & FLAG_IS_PLAYER) ? true : false); }
 		void OnLeaveSystem (void);
@@ -558,6 +559,8 @@ class CDamageSource
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetAutomatedWeapon (bool bValue = true) { if (bValue) m_dwFlags |= FLAG_IS_AUTOMATED_WEAPON; else m_dwFlags &= FLAG_IS_AUTOMATED_WEAPON; }
 		void SetCause (DestructionTypes iCause) { m_iCause = iCause; }
+		void SetEjecta (bool bValue = true) { if (bValue) m_dwFlags |= FLAG_IS_EJECTA; else m_dwFlags &= ~FLAG_IS_EJECTA; }
+		void SetExplosion (bool bValue = true) { if (bValue) m_dwFlags |= FLAG_IS_EXPLOSION; else m_dwFlags &= ~FLAG_IS_EXPLOSION; }
 		void SetObj (CSpaceObject *pSource);
 		void WriteToStream (IWriteStream *pStream);
 
@@ -573,6 +576,8 @@ class CDamageSource
 
 			FLAG_IS_AUTOMATED_WEAPON		= 0x00000010,	//	Source is a missile-defense system.
 			FLAG_CANNOT_HIT_FRIENDS			= 0x00000020,	//	Source cannot hit friends
+			FLAG_IS_EXPLOSION				= 0x00000040,	//	Source is an explosion
+			FLAG_IS_EJECTA					= 0x00000080,	//	Source is ejecta
 			};
 
 		DWORD GetObjID (void) const;

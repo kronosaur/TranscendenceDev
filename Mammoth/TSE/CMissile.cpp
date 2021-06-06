@@ -319,7 +319,7 @@ ALERROR CMissile::Create (CSystem &System, SShotCreateCtx &Ctx, CMissile **retpM
 	return NOERROR;
 	}
 
-void CMissile::CreateFragments (const CVector &vPos)
+void CMissile::CreateFragments (const CVector &vPos, const CVector &vVel)
 
 //	CreateFragments
 //
@@ -362,6 +362,17 @@ void CMissile::CreateFragments (const CVector &vPos)
 		FragCtx.Source = m_Source;
 		FragCtx.pTarget = m_pTarget;
 		FragCtx.vPos = vPos;
+		FragCtx.vVel = vVel;
+
+		//	The direction is either towards the object that triggered us, or
+		//	along the direction of travel.
+
+		if (m_pHit)
+			FragCtx.iDirection = VectorToPolar(m_pHit->GetPos() - vPos);
+		else
+			FragCtx.iDirection = VectorToPolar(GetVel());
+
+		//	Create all fragments
 
 		GetSystem()->CreateWeaponFragments(FragCtx,	this, iFraction);
 		}
@@ -635,6 +646,29 @@ bool CMissile::IsAngryAt (const CSpaceObject *pObj) const
 	return false;
 	}
 
+bool CMissile::IsDetonatingOnMining () const
+
+//	IsDetonatingOnMining
+//
+//	Returns TRUE if this missile detonates when in proximity to minable objects.
+
+	{
+	if (m_pDesc->HasFragments())
+		return false;
+
+	if (m_pDesc->GetDamage().GetMiningDamage() > 0
+			|| m_pDesc->GetFirstFragment()->pDesc->GetDamage().GetMiningDamage() > 0)
+		return true;
+
+	if (m_pEnhancements)
+		{
+		if (m_pEnhancements->HasSpecialDamage(specialMining))
+			return true;
+		}
+
+	return false;
+	}
+
 bool CMissile::IsTracking (void) const
 
 //	IsTracking
@@ -793,9 +827,13 @@ void CMissile::OnMove (const CVector &vOldPos, Metric rSeconds)
 		Metric rMaxThreshold = m_pDesc->GetFragmentationMaxThreshold();
 		Metric rMinThreshold = m_pDesc->GetFragmentationMinThreshold();
 
+		CTargetList::STargetOptions TargetOptions;
+		TargetOptions.bIncludeStations = true;
+		TargetOptions.bIncludeMinable = IsDetonatingOnMining();
+
 		//	Hit test
 
-		m_pHit = HitTestProximity(vOldPos, rMinThreshold, rMaxThreshold, m_pDesc->GetDamage(), m_pTarget, &m_vHitPos, &m_iHitDir);
+		m_pHit = HitTestProximity(vOldPos, rMinThreshold, rMaxThreshold, m_pDesc->GetDamage(), TargetOptions, m_pTarget, &m_vHitPos, &m_iHitDir);
 
 		//	Make sure we are not too close to the source when we trigger
 		//	a proximity blast.
@@ -1296,7 +1334,15 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		if (m_iNextDetonation != -1 && m_iTick >= m_iNextDetonation)
 			{
-			CreateFragments(GetPos());
+			//	For recurring fragmentation, we inherit the original source
+			//	velocity.
+
+			CVector vStdVel = PolarToVector(m_iRotation, m_pDesc->GetInitialSpeed());
+			CVector vVel = GetVel() - vStdVel;
+			
+			//	Do it
+
+			CreateFragments(GetPos(), vVel);
 
 			int iNext;
 			if (m_pDesc->HasFragmentInterval(&iNext))

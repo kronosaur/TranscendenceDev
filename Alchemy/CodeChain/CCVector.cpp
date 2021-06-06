@@ -806,7 +806,6 @@ ICCItem *CCVector::SetShapeArraySize (CCodeChain *pCC, int iNewSize)
 //	Sets the size of the shape vector, preserving any previous data
 
 	{
-	ALERROR allocationError;
 	int iExpansion;
 
 	int iCurrentSize = m_vShape.GetCount();
@@ -822,14 +821,8 @@ ICCItem *CCVector::SetShapeArraySize (CCodeChain *pCC, int iNewSize)
 
 	//  confirm that this is the right function to use
 	m_vShape.InsertEmpty(iExpansion);
-	if (allocationError = NOERROR)
-		{
-		return pCC->CreateTrue();
-		}
-	else
-		{
-		throw CException(ERR_MEMORY);
-		}
+	//	LATER: Initialize new entries
+	return pCC->CreateTrue();
 	}
 
 ICCItem *CCVectorOld::Tail(CCodeChain *pCC)

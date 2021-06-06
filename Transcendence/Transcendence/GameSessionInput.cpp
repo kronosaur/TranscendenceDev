@@ -140,8 +140,7 @@ void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 			else if (IsInPickerCompatible())
 				{
 				CString sKey = CString(&chChar, 1);
-				DWORD dwData;
-				bool bHotKey = g_pTrans->m_MenuData.FindItemData(sKey, &dwData);
+				int iEntry = g_pTrans->m_MenuData.FindItemByKey(sKey);
 
 				if (chChar == ']')
 					{
@@ -153,8 +152,11 @@ void CGameSession::OnChar (char chChar, DWORD dwKeyData)
 					g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 					m_PickerDisplay.SelectPrev();
 					}
-				else if (bHotKey)
+				else if (iEntry != -1
+						&& g_pTrans->m_MenuData.IsItemEnabled(iEntry, g_pUniverse->GetTicks()))
 					{
+					DWORD dwData = g_pTrans->m_MenuData.GetItemData(iEntry);
+
 					switch (m_CurrentMenu)
 						{
 						case menuUseItem:
@@ -332,9 +334,12 @@ void CGameSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 							break;
 
 						case menuInvoke:
-							GetUniverse().PlaySound(NULL, GetUniverse().FindSound(UNID_DEFAULT_BUTTON_CLICK));
-							DoInvokeMenu(g_pTrans->m_MenuData.GetItemData(m_PickerDisplay.GetSelection()));
-							DismissMenu();
+							if (m_PickerDisplay.IsSelectionEnabled())
+								{
+								GetUniverse().PlaySound(NULL, GetUniverse().FindSound(UNID_DEFAULT_BUTTON_CLICK));
+								DoInvokeMenu(g_pTrans->m_MenuData.GetItemData(m_PickerDisplay.GetSelection()));
+								DismissMenu();
+								}
 							break;
 						}
 					}
@@ -625,9 +630,12 @@ void CGameSession::OnLButtonDblClick (int x, int y, DWORD dwFlags)
 					case menuInvoke:
 						if (m_PickerDisplay.LButtonDown(x, y))
 							{
-							g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
-							DoInvokeMenu(g_pTrans->m_MenuData.GetItemData(m_PickerDisplay.GetSelection()));
-							DismissMenu();
+							if (m_PickerDisplay.IsSelectionEnabled())
+								{
+								g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_BUTTON_CLICK));
+								DoInvokeMenu(g_pTrans->m_MenuData.GetItemData(m_PickerDisplay.GetSelection()));
+								DismissMenu();
+								}
 
 							m_bIgnoreButtonUp = true;
 							}

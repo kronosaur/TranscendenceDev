@@ -50,6 +50,7 @@ class CPlayerGameStats
 		void OnItemUninstalled (const CItem &Item);
 		void OnKeyEvent (EEventTypes iType, CSpaceObject *pObj, DWORD dwCauseUNID);
 		void OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObject *pPlayer);
+		void OnPowerInvoked (const CPower &Power);
 		void OnSwitchPlayerShip (const CShip &NewShip, const CShip *pOldShip = NULL);
 		void OnSystemEntered (CSystem *pSystem, int *retiLastVisit = NULL);
 		void OnSystemLeft (CSystem *pSystem);
@@ -104,6 +105,11 @@ class CPlayerGameStats
 			DWORD dwTotalTime = 0;					//	Total time using ship
 			};
 
+		struct SPowerStats
+			{
+			DWORD dwInvoked = 0;					//	Number of times player invoked a power
+			};
+
 		struct SShipClassStats
 			{
 			int iEnemyDestroyed = 0;				//	Number of enemy ships destroyed
@@ -146,6 +152,7 @@ class CPlayerGameStats
 
 		TMap<DWORD, SItemTypeStats> m_ItemStats;
 		TSortMap<CString, SPlayerShipStats> m_PlayerShipStats;
+		TSortMap<DWORD, SPowerStats> m_PowerStats;
 		TMap<DWORD, SShipClassStats> m_ShipStats;
 		TMap<DWORD, SStationTypeStats> m_StationStats;
 		TMap<CString, SSystemStats> m_SystemStats;
@@ -170,6 +177,7 @@ class IPlayerController
 		IPlayerController (void);
 		virtual ~IPlayerController (void) { }
 
+		void OnPowerInvoked (const CPower &Power);
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void Update (SUpdateCtx &UpdateCtx) { OnUpdate(UpdateCtx); }
 		void WriteToStream (IWriteStream *pStream);

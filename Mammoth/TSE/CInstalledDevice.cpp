@@ -176,6 +176,8 @@ int CInstalledDevice::GetHitPointsPercent (const CSpaceObject *pSource) const
 //	Returns the integrity of the device (usually a shield) as a percent of max hp.
 
 	{
+	DEBUG_TRY
+
 	int iHP;
 	int iMaxHP;
 	GetStatus(pSource, &iHP, &iMaxHP);
@@ -184,6 +186,8 @@ int CInstalledDevice::GetHitPointsPercent (const CSpaceObject *pSource) const
 		return -1;
 	else
 		return CArmorClass::CalcIntegrity(iHP, iMaxHP);
+
+	DEBUG_CATCH
 	}
 
 CSpaceObject *CInstalledDevice::GetLastShot (CSpaceObject *pSource, int iIndex) const
@@ -338,7 +342,7 @@ ALERROR CInstalledDevice::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
-void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iDeviceSlot, bool bInCreate)
+void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iDeviceSlot, const SDeviceDesc &Desc)
 
 //	Install
 //
@@ -369,19 +373,7 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	//	is actually installed (otherwise, the slot criteria may pick up 
 	//	definitions from the previous device).
 
-	if (!bInCreate)
-		{
-		//	Desc is initialized to defaults even if FindDeviceSlotDesc fails.
-
-		SDeviceDesc Desc;
-		m_pSource->FindDeviceSlotDesc(Item, &Desc);
-		if (m_pClass->IsExternal())
-			Desc.bExternal = true;
-
-		//	Set the device slot properties
-
-		InitFromDesc(Desc);
-		}
+	InitFromDesc(Desc);
 
 	//	Call the class
 
@@ -406,16 +398,6 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	//	based on enhancements later.
 
 	m_iActivateDelay = m_pClass->GetActivateDelay(ItemCtx);
-
-	//	Finish install, if necessary
-
-	if (!bInCreate)
-		{
-		//	Event (when creating a ship we wait until the
-		//	whole ship is created before firing the event)
-
-		FinishInstall();
-		}
 
 	DEBUG_CATCH
 	}
@@ -524,7 +506,8 @@ void CInstalledDevice::PaintDevicePos (const SDeviceDesc &Device, CG32bitImage &
 				bWeaponIsOmnidirectional = true;
 				break;
 
-			case CDeviceRotationDesc::rotSwivel:
+			case CDeviceRotationDesc::rotSwivelAlways:
+			case CDeviceRotationDesc::rotSwivelIfTargetInArc:
 				break;
 
 			default:
@@ -1053,7 +1036,7 @@ ESetPropertyResult CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &
 	else if (strEquals(sName, PROPERTY_CAPACITOR))
 		{
 		CSpaceObject *pSource = Ctx.GetSource();
-		if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntCapacitor, pValue->GetIntegerValue()))
+		if (!m_pClass->SetCounter(this, pSource, EDeviceCounterType::Capacitor, pValue->GetIntegerValue()))
 			{
 			if (retsError) *retsError = CONSTLIT("Unable to set capacitor value.");
 			return ESetPropertyResult::error;
@@ -1209,7 +1192,7 @@ ESetPropertyResult CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &
 	else if (strEquals(sName, PROPERTY_TEMPERATURE))
 		{
 		CSpaceObject *pSource = Ctx.GetSource();
-		if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntTemperature, pValue->GetIntegerValue()))
+		if (!m_pClass->SetCounter(this, pSource, EDeviceCounterType::Temperature, pValue->GetIntegerValue()))
 			{
 			if (retsError) *retsError = CONSTLIT("Unable to set temperature value.");
 			return ESetPropertyResult::error;

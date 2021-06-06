@@ -274,6 +274,8 @@ void CSystemCreateStats::AddStationTable (CSystem *pSystem, const CString &sStat
 //	Adds the station table.
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	See if we already have an entry for this table.
@@ -321,6 +323,8 @@ void CSystemCreateStats::AddStationTable (CSystem *pSystem, const CString &sStat
 			i--;
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 bool CSystemCreateStats::FindEncounterTable (const CStationEncounterTable &Src, SEncounterTable **retpTable)

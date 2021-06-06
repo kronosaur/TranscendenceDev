@@ -96,9 +96,30 @@ class CLanguage
 			bool bHasQuotes;				//	Noun has embedded quotes
 			};
 
+		enum class EHPDisplay
+			{
+			None,
+
+			HitPoints,
+			Percent,
+			Scaled,
+			};
+
+		struct SHPDisplayOptions
+			{
+			SHPDisplayOptions (EHPDisplay iTypeArg = EHPDisplay::None, int iReferenceArg = 0) :
+					iType(iTypeArg),
+					iReference(iReferenceArg)
+				{ }
+
+			EHPDisplay iType = EHPDisplay::None;
+			int iReference = 0;
+			};
+
 		static int CalcMetricNumber (Metric rNumber, int *retiWhole, int *retiDecimal);
 		static CString Compose (const CString &sString, const ICCItem *pArgs);
 		static CString ComposeGenderedWord (const CString &sWord, GenomeTypes iGender);
+		static CString ComposeHitPointValue (int iHP, const SHPDisplayOptions &Options);
 		static CString ComposeNounPhrase (const CString &sNoun, int iCount, const CString &sModifier, DWORD dwNounFlags, DWORD dwComposeFlags);
 		static CString ComposeNumber (ENumberFormatTypes iFormat, int iNumber);
 		static CString ComposeNumber (ENumberFormatTypes iFormat, DWORD dwNumber) { return ComposeNumber(iFormat, (int)dwNumber); }

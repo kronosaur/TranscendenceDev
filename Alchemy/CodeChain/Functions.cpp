@@ -3442,7 +3442,7 @@ ICCItem *fnMathOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			break;
 
 		default:
-			ASSERT(false);
+			throw CException(ERR_FAIL);
 		}
 
 	//	Done

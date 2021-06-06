@@ -23,8 +23,9 @@ enum EHUDTypes
 	hudReactor =					3,
 	hudShields =					4,
 	hudTargeting =					5,
+	hudTimers =						6,
 
-	hudCount =						6,
+	hudCount =						7,
 	};
 
 class CDockScreenVisuals
@@ -102,7 +103,7 @@ class CPlayerSettings
 		const CString &GetDesc (void) const { return m_sDesc; }
 		const CDockScreenTypeRef &GetDockServicesScreen (void) const { return m_pDockServicesScreen; }
 		const CDockScreenVisuals &GetDockScreenVisuals (CUniverse &Universe) const { return (m_pDockScreenDesc ? *m_pDockScreenDesc : CDockScreenVisuals::GetDefault(Universe)); }
-		CXMLElement *GetHUDDesc (EHUDTypes iType) const { ASSERT(iType >= 0 && iType < hudCount); return m_HUDDesc[iType].pDesc; }
+		CXMLElement *GetHUDDesc (EHUDTypes iType) const { if (iType >= 0 && iType < hudCount) return m_HUDDesc[iType].pDesc; else throw CException(ERR_FAIL); }
 		DWORD GetLargeImage (void) const { return m_dwLargeImage; }
 		const CDockScreenTypeRef &GetShipConfigScreen (void) const { return m_pShipConfigScreen; }
 		const CDockScreenTypeRef &GetShipScreen (void) const { return m_pShipScreen; }

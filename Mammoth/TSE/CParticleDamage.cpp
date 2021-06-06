@@ -139,7 +139,6 @@ ALERROR CParticleDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CParticle
 
 	CVector vInitialVel;
 	if (!Ctx.Source.IsEmpty() 
-			&& !pParticles->IsTracking()
 			&& !(Ctx.dwFlags & SShotCreateCtx::CWF_FRAGMENT))
 		vInitialVel = Ctx.Source.GetObj()->GetVel();
 
@@ -465,7 +464,7 @@ void CParticleDamage::OnReadFromStream (SLoadCtx &Ctx)
 			{
 			char *pDummy = new char [5 * sizeof(DWORD) * dwCount];
 			Ctx.pStream->Read(pDummy, 5 * sizeof(DWORD) * dwCount);
-			delete pDummy;
+			delete [] pDummy;
 			}
 
 		m_iEmitTime = 0;

@@ -10,13 +10,19 @@
 #define PROPERTY_SOURCE							CONSTLIT("source")
 #define PROPERTY_TARGET							CONSTLIT("target")
 
-TPropertyHandler<CMissile> CMissile::m_PropertyTable = std::array<TPropertyHandler<CMissile>::SPropertyDef, 5> {{
+TPropertyHandler<CMissile> CMissile::m_PropertyTable = std::array<TPropertyHandler<CMissile>::SPropertyDef, 6> {{
 		{
 		"lifeLeft",			"ticks",
 		[](const CMissile &Obj, const CString &sProperty) 
 			{
 			return (Obj.m_fDestroyOnAnimationDone ? ICCItemPtr(0) : ICCItemPtr(Obj.m_iLifeLeft));
 			},
+		NULL,
+		},
+
+		{
+		"reaction",			"True if caused by explosion or ejecta",
+		[](const CMissile &Obj, const CString &sProperty) { return ICCItemPtr(Obj.m_Source.IsEjecta() || Obj.m_Source.IsExplosion()); },
 		NULL,
 		},
 

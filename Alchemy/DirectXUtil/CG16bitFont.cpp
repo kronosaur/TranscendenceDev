@@ -259,6 +259,20 @@ int CG16bitFont::BreakText (const CString &sText, int cxWidth, TArray<CString> *
 	return iLines;
 	}
 
+int CG16bitFont::CalcHeight (const CString &sText, int cxWidth, DWORD dwFlags) const
+
+//	CalcHeight
+//
+//	Returns the height in pixels.
+
+	{
+	if (sText.IsBlank())
+		return 0;
+
+	int iLines = BreakText(sText, cxWidth, NULL, dwFlags);
+	return iLines * GetHeight();
+	}
+
 ALERROR CG16bitFont::Create (const CString &sTypeface, int iSize, bool bBold, bool bItalic, bool bUnderline)
 
 //	Create
@@ -320,7 +334,7 @@ ALERROR CG16bitFont::CreateFromFont (HFONT hFont)
 	HFONT hOldFont = (HFONT)SelectObject(hDC, hFont);
 	HBITMAP hTempBmp = NULL;
 	HBITMAP hFontBmp = NULL;
-	HBITMAP hOldBitmap;
+	HBITMAP hOldBitmap = NULL;
 	int i, y;
 
 	//	Get some metrics. For some reason we need to recreate the DC after

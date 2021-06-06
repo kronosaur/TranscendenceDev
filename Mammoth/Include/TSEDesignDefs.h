@@ -86,9 +86,9 @@ class CDifficultyOptions
 			lvlCount			= 4,
 			};
 
-		Metric GetEnemyDamageAdj (void) const { ASSERT(m_iLevel != lvlUnknown); return m_Table[m_iLevel].rEnemyDamageAdj; }
+		Metric GetEnemyDamageAdj (void) const { if (m_iLevel >= 0 && m_iLevel < lvlCount) return m_Table[m_iLevel].rEnemyDamageAdj; else throw CException(ERR_FAIL); }
 		ELevels GetLevel (void) const { return m_iLevel; }
-		Metric GetPlayerDamageAdj (void) const { ASSERT(m_iLevel != lvlUnknown); return m_Table[m_iLevel].rPlayerDamageAdj; }
+		Metric GetPlayerDamageAdj (void) const { if (m_iLevel >= 0 && m_iLevel < lvlCount) return m_Table[m_iLevel].rPlayerDamageAdj; else throw CException(ERR_FAIL); }
 		Metric GetScoreAdj (void) const;
 		void ReadFromStream (IReadStream &Stream);
 		bool SaveOnUndock (void) const;

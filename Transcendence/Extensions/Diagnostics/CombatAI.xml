@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidCombatAITests;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(block (
+					baseObj
+					)
+					;	Set up
+
+					(setq baseObj (sysCreateStation &stTestBase; (sysVectorRandom Nil 2000 100)))
+					(if (not baseObj)
+						(error "Unable to create test station.")
+						)
+
+					(setq gPlayerShip (sysCreateShip &scSapphirePlayer; (sysVectorPolarOffset baseObj 0 25) &svPlayer;))
+					(if (not gPlayerShip)
+						(error "Unable to create player ship.")
+						)
+					(shpOrder gPlayerShip 'hold)
+
+					;	Test Guard Order
+
+					(diagEval (list
+						{	test:'(shpCancelOrders gPlayerShip)					result:True		}
+						{	test:'(shpOrder gPlayerShip 'guard (@ data 'baseObj))
+																				result:True		}
+						{	test:'(diagUpdateSystem 5)							result:True		}
+						{	test:'(obj@ gPlayerShip 'ai.status)					result:{
+																						order: {
+																							order: 'dock
+																							targetID: (objGetID baseObj)
+																							dataType: 'ccItem
+																							data: {
+																								reactToAttack:'chaseFromBase
+																								reactToBaseDestroyed:'destroyAndRetaliate
+																								reactToThreat:'chaseFromBase
+																								threatRange:8993775.0
+																								threatStopRange:35975100.0
+																								}
+																							}
+
+																						orderModule: {
+																							obj0ID: (objGetID baseObj)
+																							}
+																						}}
+						)
+						{
+						baseObj: baseObj
+						})
+
+					;	Clean up
+
+					(objDestroy gPlayerShip)
+					(setq gPlayerShip Nil)
+
+					(objDestroy baseObj)
+					)
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
+<!-- TEST OBJECTS -->
+
+	<StationType UNID="&stTestBase;"
+			name=				"Commonwealth colony"
+			sovereign=			"&svCommonwealth;"
+				 
+			attributes=			"testStation"
+				 
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			armorID=			"&itPlasteelPlate;"
+			hitPoints=			"320"
+			multiHull=			"true"
+			regen=              "6"
+			shipRegen=			"4"
+				 
+			explosionType=		"&vtBlastExplosion2;"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+		
+		<!-- Image and Effects -->
+		
+		<Image imageID="&rsCommonwealthColony;" imageWidth="320" imageHeight="290" viewportRatio="0.05"/>
+
+		<DockingPorts
+				portCount=		"10"
+				portRadius=		"175"
+				>
+		</DockingPorts>
+	</StationType>
+
+</TranscendenceModule>

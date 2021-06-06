@@ -15,6 +15,46 @@ const Metric NAV_PATH_THRESHOLD2 =		(NAV_PATH_THRESHOLD * NAV_PATH_THRESHOLD);
 const Metric NAV_PATH_RECALC_THRESHOLD = (50.0 * LIGHT_SECOND);
 const Metric NAV_PATH_RECALC_THRESHOLD2 = (NAV_PATH_RECALC_THRESHOLD * NAV_PATH_RECALC_THRESHOLD);
 
+COrderDesc CApproachOrder::Create (CSpaceObject &Dest, int iDist, const CReactionImpl &Reactions, DWORD dwFlags)
+
+//	Create
+//
+//	Creates the order
+
+	{
+	ICCItemPtr pData(ICCItem::SymbolTable);
+
+	pData->SetIntegerAt(CONSTLIT("radius"), iDist);
+	Reactions.SetOptions(*pData);
+
+	//	We assume that dest should be treated as a base because we use this
+	//	for guard and patrol. If we ever need to change that, we should pass in
+	//	a parameter.
+
+	pData->SetBooleanAt(CONSTLIT("destIsBase"), true);
+
+	COrderDesc Result(IShipController::orderApproach, &Dest, *pData);
+
+	//	Set some flags
+
+	if (dwFlags & FLAG_CANCEL_ON_REACTION_ORDER)
+		Result.SetCancelOnReactionOrder();
+
+	return Result;
+	}
+
+void CApproachOrder::Init (const COrderDesc &OrderDesc)
+
+//	Init
+//
+//	Initialize from order desc
+
+	{
+	m_Reaction.Init(OrderDesc);
+
+	m_bDestIsBase = OrderDesc.GetDataBoolean(CONSTLIT("destIsBase"));
+	}
+
 void CApproachOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 //	OnBehavior
@@ -119,8 +159,10 @@ void CApproachOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const CO
 	//	Set our basic data
 
 	m_Objs[objDest] = OrderDesc.GetTarget();
-	m_rMinDist2 = LIGHT_SECOND * Max(1, (int)OrderDesc.GetDataInteger());
+	m_rMinDist2 = LIGHT_SECOND * Max(1, (int)OrderDesc.GetDataInteger(CONSTLIT("radius"), true, 1));
 	m_rMinDist2 *= m_rMinDist2;
+
+	Init(OrderDesc);
 
 	//	See if we should take a nav path
 
@@ -136,7 +178,7 @@ void CApproachOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const CO
 	DEBUG_CATCH
 	}
 
-void CApproachOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CApproachOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //
@@ -149,6 +191,8 @@ void CApproachOrder::OnReadFromStream (SLoadCtx &Ctx)
 	m_iState = (EState)dwLoad;
 
 	Ctx.pStream->Read((char *)&m_rMinDist2, sizeof(Metric));
+
+	Init(OrderDesc);
 	}
 
 void CApproachOrder::OnWriteToStream (IWriteStream *pStream) const

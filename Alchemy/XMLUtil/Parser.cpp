@@ -1340,7 +1340,7 @@ CString ResolveEntity (ParserCtx *pCtx, const CString &sName, bool *retbFound)
 		pPos++;
 		if (*pPos == 'x' || *pPos == 'X')
 			{
-			*pPos++;
+			pPos++;
 			char chChar = (char)strParseIntOfBase(pPos, 16, 0x20, NULL, NULL);
 			return CString(&chChar, 1);
 			}

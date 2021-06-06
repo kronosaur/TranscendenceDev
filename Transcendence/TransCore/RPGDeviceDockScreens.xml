@@ -812,6 +812,9 @@
 								})
 							(sourceObj (if (@ gData 'sourceObj) (@ gData 'sourceObj) gSource))
 							)
+							(if (scr@ gScreen 'rpg.showActualItem)
+								(itmSetKnown theItem)
+								)
 							
 							(rpgBuyItem gSource theItem (scrGetData gScreen 'cost) (objGetDefaultCurrency gSource))
 							(shpInstallDevice shipObj theItem recommendedSlot)
@@ -888,7 +891,7 @@
 						(if thisItem
 							(block (desc stdRepairCost)
 								; Compute the standard repair cost
-								(setq stdRepairCost (subtract (itmGetPrice (itmSetProperty thisItem 'damaged Nil) currencyUsed) (itmGetPrice thisItem currencyUsed)))
+								(setq stdRepairCost (subtract (itmGetPrice (itmSet@ thisItem 'damaged Nil) currencyUsed) (itmGetPrice thisItem currencyUsed)))
 
 								; Compute the cost to repair the item
 								(setq gCost (divide (multiply stdRepairCost (@ gData 'priceAdj)) 100))

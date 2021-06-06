@@ -438,6 +438,7 @@ class CAsteroidDesc
 		static EMiningMethod CalcMiningMethod (const CWeaponFireDesc &Desc);
 		static CString CompositionID (EAsteroidType iType);
 		static int GetDefaultMiningDifficulty (EAsteroidType iType);
+		static CString MiningMethodID (EMiningMethod iType);
 		static const CAsteroidDesc &Null (void) { return m_Null; }
 		static EAsteroidType ParseComposition (const CString &sValue);
 
@@ -460,6 +461,7 @@ class CAsteroidDesc
 
 		static TStaticStringTable<TStaticStringEntry<EAsteroidType>, 5> COMPOSITION_INDEX;
 		static SCompositionDesc COMPOSITION_TABLE[EAsteroidTypeCount];
+		static TStaticStringTable<TStaticStringEntry<EMiningMethod>, 4> MINING_METHOD_INDEX;
 
 		static const CAsteroidDesc m_Null;
 	};
@@ -543,6 +545,7 @@ class CStationType : public CDesignType
 		CXMLElement *GetAbandonedScreen (void) { return m_pAbandonedDockScreen.GetDesc(); }
 		CDesignType *GetAbandonedScreen (CString *retsName) { return m_pAbandonedDockScreen.GetDockScreen(this, retsName); }
 		const CAsteroidDesc &GetAsteroidDesc (void) const;
+		const CItemCriteria &GetAutoLootCriteria () const { return m_AutoLootCriteria; }
 		CurrencyValue GetBalancedTreasure (void) const;
 		CEffectCreator *GetBarrierEffect (void) { return m_pBarrierEffect; }
 		int GetChallengeRating (void) const;
@@ -599,6 +602,7 @@ class CStationType : public CDesignType
 		void IncEncounterMinimum (CTopologyNode &Node, int iInc = 1) { m_EncounterRecord.IncMinimumForNode(Node, iInc); }
 		bool IsActive (void) const { return (m_fInactive ? false : true); }
 		bool IsAnonymous (void) const { return (m_fAnonymous ? true : false); }
+		bool IsAutoLoot () const { return !m_AutoLootCriteria.IsEmpty(); }
 		bool IsOutOfPlaneObject (void) { return (m_fOutOfPlane ? true : false); }
 		bool IsBeacon (void) { return (m_fBeacon ? true : false); }
 		bool IsBlacklistEnabled (void) { return (m_fNoBlacklist ? false : true); }
@@ -815,6 +819,7 @@ class CStationType : public CDesignType
 		CStargateDesc m_Stargate;						//	Stargate parameters
 
 		//	Miscellaneous
+		CItemCriteria m_AutoLootCriteria;				//	If a ship passing over has the given equipment, auto loot
 		CEffectCreatorRef m_pBarrierEffect;				//	Effect when object hits station
 		CSovereignRef m_pControllingSovereign;			//	If controlled by different sovereign
 														//	(e.g., centauri occupation)

@@ -5,7 +5,7 @@
 
 #include "PreComp.h"
 
-void CPatrolOrder::CalcIntermediates ()
+void CPatrolOrder::CalcIntermediates (const COrderDesc &OrderDesc)
 
 //	CalcIntermediates
 //
@@ -14,6 +14,9 @@ void CPatrolOrder::CalcIntermediates ()
 //	m_rNavThreshold2
 
 	{
+	m_rThreatRange = OrderDesc.GetDataDouble(CONSTLIT("threatRange"), DEFAULT_THREAT_RANGE_LS) * LIGHT_SECOND;
+	m_rThreatStopRange = OrderDesc.GetDataDouble(CONSTLIT("threatStopRange"), DEFAULT_THREAT_STOP_RANGE_LS) * LIGHT_SECOND;
+
 	const Metric rPatrolRadiusThreshold = 1.25 * m_rPatrolRadius;
 	const Metric rPatrolRadiusThreshold2 = rPatrolRadiusThreshold * rPatrolRadiusThreshold;
 	m_rNavThreshold2 = Max(rPatrolRadiusThreshold2, NAV_PATH_THRESHOLD2);
@@ -35,7 +38,8 @@ void CPatrolOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 	else if ((pShip->GetPos() - m_Objs[OBJ_BASE]->GetPos()).Length2() > m_rNavThreshold2)
 		{
-		pShip->AddOrder(COrderDesc(IShipController::orderApproach, m_Objs[OBJ_BASE], mathRound(m_rPatrolRadius / LIGHT_SECOND)), true);
+		int iRadius = mathRound(m_rPatrolRadius / LIGHT_SECOND);
+		pShip->AddOrder(CApproachOrder::Create(*m_Objs[OBJ_BASE], iRadius, CReactionImpl(*this), FLAG_CANCEL_ON_REACTION_ORDER), true);
 		}
 
 	//	Every once in a while we check to see if we need to dock with our base
@@ -86,9 +90,12 @@ void CPatrolOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrd
 		return;
 		}
 
-	m_rPatrolRadius = LIGHT_SECOND * Max(1, (int)OrderDesc.GetDataInteger());
+	if (OrderDesc.IsCCItem())
+		m_rPatrolRadius = Max(1.0, OrderDesc.GetDataDouble(CONSTLIT("radius"), DEFAULT_RADIUS_LS)) * LIGHT_SECOND;
+	else
+		m_rPatrolRadius = LIGHT_SECOND * Max(1, (int)OrderDesc.GetDataInteger());
 
-	CalcIntermediates();
+	CalcIntermediates(OrderDesc);
 
 	DEBUG_CATCH
 	}
@@ -108,7 +115,7 @@ void CPatrolOrder::OnDestroyed (CShip *pShip, SDestroyCtx &Ctx)
 		m_Objs[OBJ_BASE]->OnSubordinateDestroyed(Ctx);
 	}
 
-void CPatrolOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CPatrolOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //
@@ -117,7 +124,7 @@ void CPatrolOrder::OnReadFromStream (SLoadCtx &Ctx)
 	{
 	Ctx.pStream->Read(m_rPatrolRadius);
 
-	CalcIntermediates();
+	CalcIntermediates(OrderDesc);
 	}
 
 void CPatrolOrder::OnWriteToStream (IWriteStream *pStream) const

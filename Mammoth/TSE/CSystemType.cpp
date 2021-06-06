@@ -22,6 +22,8 @@
 #define TIME_SCALE_ATTRIB						CONSTLIT("timeScale")
 
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
+#define ON_SYSTEM_STARTED_EVENT					CONSTLIT("OnSystemStarted")
+#define ON_SYSTEM_STOPPED_EVENT					CONSTLIT("OnSystemStopped")
 
 #define SIZE_SMALL								CONSTLIT("small")
 #define SIZE_MEDIUM								CONSTLIT("medium")
@@ -132,6 +134,51 @@ bool CSystemType::FireOnObjJumpPosAdj (CSpaceObject *pObj, CVector *iovPos)
 		}
 
 	return false;
+	}
+
+void CSystemType::FireOnSystemStarted (DWORD dwElapsedTime)
+
+//	FireOnSystemStarted
+//
+//	Fires <OnSystemStarted> event.
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(ON_SYSTEM_STARTED_EVENT, &Event))
+		return;
+
+	CCodeChainCtx CCX(GetUniverse());
+
+	CCX.DefineContainingType(this);
+	CCX.DefineInteger(CONSTLIT("aElapsedTime"), dwElapsedTime);
+
+	//	Run code
+
+	ICCItemPtr pResult = CCX.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_SYSTEM_STARTED_EVENT, pResult);
+	}
+
+void CSystemType::FireOnSystemStopped ()
+
+//	FireOnSystemStopped
+//
+//	Fires <OnSystemStopped> event.
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(ON_SYSTEM_STOPPED_EVENT, &Event))
+		return;
+
+	CCodeChainCtx CCX(GetUniverse());
+
+	CCX.DefineContainingType(this);
+
+	//	Run code
+
+	ICCItemPtr pResult = CCX.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_SYSTEM_STOPPED_EVENT, pResult);
 	}
 
 ALERROR CSystemType::FireSystemCreateCode (SSystemCreateCtx &SysCreateCtx, ICCItem *pCode, const COrbit &OrbitDesc, CString *retsError)

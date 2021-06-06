@@ -122,6 +122,22 @@ ALERROR CPickerDisplay::Init (CMenuData *pMenu, const RECT &rcRect)
 	return NOERROR;
 	}
 
+bool CPickerDisplay::IsSelectionEnabled () const
+
+//	IsSelectionEnabled
+//
+//	Returns TRUE if the selection is enabled.
+
+	{
+	if (m_iSelection == -1 || !m_pMenu || m_iSelection >= m_pMenu->GetCount())
+		return false;
+
+	if (!m_pMenu->IsItemEnabled(m_iSelection, g_pUniverse->GetTicks()))
+		return false;
+
+	return true;
+	}
+
 bool CPickerDisplay::LButtonDown (int x, int y)
 
 //	LButtonDown
@@ -239,6 +255,105 @@ void CPickerDisplay::PaintSelection (CG32bitImage &Dest, int x, int y)
 			rgbSelectColor);
 	}
 
+void CPickerDisplay::PaintTile (CG32bitImage &Dest, int iTile, int x, int y)
+
+//	PaintTile
+//
+//	Paints the given tile.
+
+	{
+	DWORD dwFlags = m_pMenu->GetItemFlags(iTile);
+	bool bGrayed = ((dwFlags & CMenuData::FLAG_GRAYED) ? true : false);
+	bool bShowCooldown = ((dwFlags & CMenuData::FLAG_SHOW_COOLDOWN) ? true : false);
+	int iCooldown = m_pMenu->GetItemCooldown(iTile, g_pUniverse->GetTicks());
+
+	bool bDisabled = (iCooldown != -1);
+
+	//	Paint a background, if selected
+
+	if (iTile == m_iHover)
+		Dest.Fill(x, y, TILE_WIDTH, TILE_HEIGHT, RGB_HOVER_BACKGROUND);
+
+	//	Paint the image
+
+	if (const CObjectImageArray *pImage = m_pMenu->GetItemImage(iTile))
+		{
+		if (bGrayed || bDisabled)
+			pImage->PaintImageGrayed(Dest,
+					x + (TILE_WIDTH / 2),
+					y + (TILE_HEIGHT / 2),
+					0,
+					0);
+		else
+			pImage->PaintImage(Dest,
+					x + (TILE_WIDTH / 2),
+					y + (TILE_HEIGHT / 2),
+					0,
+					0);
+		}
+
+	//	Paint the number of items
+
+	if (int iCount = m_pMenu->GetItemCount(iTile))
+		{
+		CString sCount = strFromInt(iCount);
+		int cyExtra;
+		int cxExtra = m_pFonts->LargeBold.MeasureText(sCount, &cyExtra);
+
+		m_pFonts->LargeBold.DrawText(Dest,
+				x + TILE_WIDTH - cxExtra - TILE_SPACING_X,
+				y + TILE_HEIGHT - cyExtra,
+				RGB_EXTRA,
+				sCount);
+		}
+
+	//	Paint extra tags
+
+	CString sExtra = m_pMenu->GetItemExtra(iTile);
+	if (!sExtra.IsBlank())
+		{
+		CCartoucheBlock::SCartoucheDesc Desc;
+		Desc.sText = sExtra;
+		Desc.rgbBack = CItemPainter::RGB_MODIFIER_NORMAL_BACKGROUND;
+		Desc.rgbColor = CItemPainter::RGB_MODIFIER_NORMAL_TEXT;
+
+		CCartoucheBlock::PaintCartouche(Dest, x + TILE_SPACING_X, y + TILE_HEIGHT, Desc, m_pFonts->Medium, alignBottom);
+		}
+
+	//	Paint the hotkey
+
+	if (!bDisabled)
+		{
+		CString sKey = m_pMenu->GetItemKey(iTile);
+		if (!sKey.IsBlank())
+			{
+			CCartoucheBlock::SCartoucheDesc Desc;
+			Desc.sText = sKey;
+			Desc.rgbBack = m_pFonts->rgbTitleColor;
+			Desc.rgbColor = m_pFonts->rgbBackground;
+
+			CCartoucheBlock::PaintCartouche(Dest, x + TILE_SPACING_X, y + TILE_SPACING_Y, Desc, m_pFonts->LargeBold);
+			}
+		}
+
+	//	If we have cooldown, paint it.
+
+	if (iCooldown != -1)
+		{
+		int xBar = x;
+		int yBar = y + TILE_HEIGHT - COOLDOWN_BAR_HEIGHT;
+		int iPos = iCooldown * TILE_WIDTH / 100;
+
+		Dest.Fill(xBar, yBar, iPos, COOLDOWN_BAR_HEIGHT, RGB_COOLDOWN_BAR);
+		Dest.Fill(xBar + iPos, yBar, TILE_WIDTH - iPos, COOLDOWN_BAR_HEIGHT, RGB_COOLDOWN_BAR_BACKGROUND);
+		}
+
+	//	If this item is selected, paint the selection
+
+	if (iTile == m_iSelection)
+		PaintSelection(Dest, x, y);
+	}
+
 void CPickerDisplay::SelectNext (void)
 
 //	SelectNext
@@ -274,8 +389,6 @@ void CPickerDisplay::Update (void)
 //	Update the off-screen buffer
 
 	{
-	int i;
-
 	if (!m_bInvalid || m_pMenu == NULL)
 		return;
 
@@ -343,73 +456,9 @@ void CPickerDisplay::Update (void)
 	//	Paint the items
 
 	int x = m_rcView.left + m_cxSmoothScroll;
-	for (i = iLeft; i <= iRight; i++)
+	for (int i = iLeft; i <= iRight; i++)
 		{
-		//	Paint a background, if selected
-
-		if (i == m_iHover)
-			m_Buffer.Fill(x, m_rcView.top, TILE_WIDTH, TILE_HEIGHT, RGB_HOVER_BACKGROUND);
-
-		//	Paint the item
-
-		if (m_pMenu->GetItemFlags(i) & CMenuData::FLAG_GRAYED)
-			m_pMenu->GetItemImage(i)->PaintImageGrayed(m_Buffer,
-					x + (TILE_WIDTH / 2),
-					m_rcView.top + (TILE_HEIGHT / 2),
-					0,
-					0);
-		else
-			m_pMenu->GetItemImage(i)->PaintImage(m_Buffer,
-					x + (TILE_WIDTH / 2),
-					m_rcView.top + (TILE_HEIGHT / 2),
-					0,
-					0);
-
-		//	Paint the number of items
-
-		if (int iCount = m_pMenu->GetItemCount(i))
-			{
-			CString sCount = strFromInt(iCount);
-			int cyExtra;
-			int cxExtra = m_pFonts->LargeBold.MeasureText(sCount, &cyExtra);
-
-			m_pFonts->LargeBold.DrawText(m_Buffer,
-					x + TILE_WIDTH - cxExtra - TILE_SPACING_X,
-					m_rcView.top + TILE_HEIGHT - cyExtra,
-					RGB_EXTRA,
-					sCount);
-			}
-
-		//	Paint extra tags
-
-		CString sExtra = m_pMenu->GetItemExtra(i);
-		if (!sExtra.IsBlank())
-			{
-			CCartoucheBlock::SCartoucheDesc Desc;
-			Desc.sText = sExtra;
-			Desc.rgbBack = CItemPainter::RGB_MODIFIER_NORMAL_BACKGROUND;
-			Desc.rgbColor = CItemPainter::RGB_MODIFIER_NORMAL_TEXT;
-
-			CCartoucheBlock::PaintCartouche(m_Buffer, x + TILE_SPACING_X, m_rcView.top + TILE_HEIGHT, Desc, m_pFonts->Medium, alignBottom);
-			}
-
-		//	Paint the hotkey
-
-		CString sKey = m_pMenu->GetItemKey(i);
-		if (!sKey.IsBlank())
-			{
-			CCartoucheBlock::SCartoucheDesc Desc;
-			Desc.sText = sKey;
-			Desc.rgbBack = m_pFonts->rgbTitleColor;
-			Desc.rgbColor = m_pFonts->rgbBackground;
-
-			CCartoucheBlock::PaintCartouche(m_Buffer, x + TILE_SPACING_X, m_rcView.top + TILE_SPACING_Y, Desc, m_pFonts->LargeBold);
-			}
-
-		//	If this item is selected, paint the selection
-
-		if (i == m_iSelection)
-			PaintSelection(m_Buffer, x, m_rcView.top);
+		PaintTile(m_Buffer, i, x, m_rcView.top);
 
 		x += TILE_WIDTH + TILE_SPACING_X;
 		}

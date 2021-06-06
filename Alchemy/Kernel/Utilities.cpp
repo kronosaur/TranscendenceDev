@@ -128,17 +128,17 @@ DWORD Kernel::utlHashFunctionCase (BYTE *pKey, int iKeyLen)
 	c += iKeyLen;
 	switch(len)				//	all the case statements fall through
 		{
-		case 11: c+=((DWORD)k[10]<<24);
-		case 10: c+=((DWORD)k[9]<<16);
-		case 9 : c+=((DWORD)k[8]<<8);
+		case 11: c+=((DWORD)k[10]<<24); [[fallthrough]];
+		case 10: c+=((DWORD)k[9]<<16); [[fallthrough]];
+		case 9 : c+=((DWORD)k[8]<<8); [[fallthrough]];
 		//	the first byte of c is reserved for the length */
-		case 8 : b+=((DWORD)k[7]<<24);
-		case 7 : b+=((DWORD)k[6]<<16);
-		case 6 : b+=((DWORD)k[5]<<8);
-		case 5 : b+=k[4];
-		case 4 : a+=((DWORD)k[3]<<24);
-		case 3 : a+=((DWORD)k[2]<<16);
-		case 2 : a+=((DWORD)k[1]<<8);
+		case 8 : b+=((DWORD)k[7]<<24); [[fallthrough]];
+		case 7 : b+=((DWORD)k[6]<<16); [[fallthrough]];
+		case 6 : b+=((DWORD)k[5]<<8); [[fallthrough]];
+		case 5 : b+=k[4]; [[fallthrough]];
+		case 4 : a+=((DWORD)k[3]<<24); [[fallthrough]];
+		case 3 : a+=((DWORD)k[2]<<16); [[fallthrough]];
+		case 2 : a+=((DWORD)k[1]<<8); [[fallthrough]];
 		case 1 : a+=k[0];
 		//	case 0: nothing left to add */
 		}

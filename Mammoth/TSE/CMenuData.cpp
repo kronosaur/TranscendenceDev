@@ -5,7 +5,7 @@
 
 #include "PreComp.h"
 
-void CMenuData::AddMenuItem (const CString &sID,
+int CMenuData::AddMenuItem (const CString &sID,
 							 const CString &sKey,
 							 const CString &sLabel,
 							 const CObjectImageArray *pImage,
@@ -65,6 +65,8 @@ void CMenuData::AddMenuItem (const CString &sID,
 	m_List[iPos].sHelp = sHelp;
 	m_List[iPos].dwFlags = dwFlags;
 	m_List[iPos].pImage = pImage;
+
+	return iPos;
 	}
 
 int CMenuData::FindItemByKey (const CString &sKey)
@@ -103,4 +105,54 @@ bool CMenuData::FindItemData (const CString &sKey, DWORD *retdwData, DWORD *retd
 		}
 
 	return false;
+	}
+
+int CMenuData::GetItemCooldown (int iIndex, DWORD dwNow) const
+
+//	GetItemCooldown
+//
+//	Returns the cooldown from 0 (just started) to 100 (done). If we're not in
+//	cooldown, then we return -1.
+
+	{
+	if (m_List[iIndex].dwCooldownEndsOn <= m_List[iIndex].dwCooldownStartedOn)
+		return -1;
+
+	else if (dwNow < m_List[iIndex].dwCooldownStartedOn)
+		return 0;
+
+	else if (dwNow >= m_List[iIndex].dwCooldownEndsOn)
+		return -1;
+
+	int iRange = m_List[iIndex].dwCooldownEndsOn - m_List[iIndex].dwCooldownStartedOn;
+	int iPos = dwNow - m_List[iIndex].dwCooldownStartedOn;
+
+	return 100 * iPos / iRange;
+	}
+
+bool CMenuData::IsItemEnabled (int iIndex, DWORD dwNow) const
+
+//	IsItemEnabled
+//
+//	Returns whether the item is enabled (not in cooldown).
+
+	{
+	if (m_List[iIndex].dwFlags & FLAG_SHOW_COOLDOWN)
+		{
+		if (GetItemCooldown(iIndex, dwNow) != -1)
+			return false;
+		}
+		
+	return true;
+	}
+
+void CMenuData::SetItemCooldown (int iIndex, DWORD dwStartedOn, DWORD dwEndsOn)
+
+//	SetItemCooldown
+//
+//	Sets the cooldown.
+
+	{
+	m_List[iIndex].dwCooldownStartedOn = dwStartedOn;
+	m_List[iIndex].dwCooldownEndsOn = dwEndsOn;
 	}

@@ -748,7 +748,7 @@ void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *
 
 	if (retiTick)
 		{
-		if (m_fActive && !IsTimeStopped())
+		if (m_fActive && !IsTimeStopped() && !ShowStationDamage())
 			*retiTick = GetSystem()->GetTick() + GetDestiny();
 		else
 			*retiTick = 0;
@@ -1025,6 +1025,7 @@ void CStation::CreateDestructionEffect (void)
 			}
 
 		Ctx.Source = CDamageSource(this, Explosion.iCause);
+		Ctx.Source.SetExplosion();
 		Ctx.vPos = GetPos();
 		Ctx.vVel = GetVel();
 		Ctx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
@@ -1120,6 +1121,7 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 
 				Ctx.pDesc = pEjectaType;
 				Ctx.Source = CDamageSource(this, killedByEjecta);
+				Ctx.Source.SetEjecta();
 				Ctx.iDirection = AngleMod(iDirection 
 						+ (mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12))
 						+ (360 - 30));
@@ -1365,7 +1367,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 
 	//	Install devices
 
-	pStation->m_Devices.Init(pStation, Devices);
+	pStation->m_Devices.Init(pStation, Devices, IDeviceGenerator::Null());
 	pStation->CalcDeviceBonus();
 
 	//	Get notifications when other objects are destroyed
@@ -1585,6 +1587,7 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 			}
 
 		Ctx.Source = CDamageSource(this, Explosion.iCause);
+		Ctx.Source.SetExplosion();
 		Ctx.vPos = GetPos();
 		Ctx.vVel = GetVel();
 		Ctx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
@@ -1721,6 +1724,10 @@ void CStation::FinishCreation (SSystemCreateCtx *pSysCreateCtx)
 	//	OnCreate ends up setting the name (or something).
 
 	GetUniverse().GetGlobalObjects().InsertIfTracked(this);
+
+	//	System-level notifications
+
+	GetSystem()->FireOnSystemObjCreated(*this);
 	}
 
 Metric CStation::CalcMaxAttackDist (void) const
@@ -2533,6 +2540,8 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 		else
 			return damageNoDamage;
 		}
+
+	m_dwLastHitTime = GetUniverse().GetTicks();
 
 	//	OnAttacked event
 
@@ -3826,6 +3835,8 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 //
 //	CAttackDetector m_Blacklist
 //	DWORD		m_iAngryCounter
+//	DWORD		m_dwLastFireTime
+//	DWORD		m_dwLastHitTime
 //	CSquadronController m_Squadrons
 //	CCurrencyBlock	m_pMoney
 //	CTradeDesc	m_pTrade
@@ -3978,7 +3989,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Devices
 
-	m_Devices.ReadFromStream(Ctx, this);
+	m_Devices.ReadFromStream(Ctx, this, IDeviceGenerator::Null());
 
 	//	Prior to version 180 we didn't automatically set devices to be
 	//	secondary.
@@ -4062,6 +4073,12 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read(m_iAngryCounter);
 	else
 		m_iAngryCounter = 0;
+
+	if (Ctx.dwVersion >= 204)
+		{
+		Ctx.pStream->Read(m_dwLastFireTime);
+		Ctx.pStream->Read(m_dwLastHitTime);
+		}
 
 	if (Ctx.dwVersion >= 199)
 		m_Squadrons.ReadFromStream(Ctx, m_pType->GetSquadronDesc());
@@ -4445,6 +4462,65 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			return;
 			}
 
+		//	If auto looting, see if we intersect the player ship
+
+		if (m_pType->IsAutoLoot() 
+				&& Ctx.GetPlayerShip()
+				&& Ctx.GetPlayerShip()->GetItemList().MatchesCriteria(m_pType->GetAutoLootCriteria())
+				&& Ctx.GetPlayerShip()->PointInObject(Ctx.GetPlayerShip()->GetPos(), GetPos()))
+			{
+			//	See if all items fit.
+
+			int iTotalMassKg = 0;
+			const auto &ItemList = GetItemList();
+			for (int i = 0; i < ItemList.GetCount(); i++)
+				iTotalMassKg += ItemList.GetItem(i).GetMassKg() * ItemList.GetItem(i).GetCount();
+
+			Metric rSpaceLeftInTons = Ctx.GetPlayerShip()->GetCargoSpaceLeft();
+			if (iTotalMassKg <= 1000.0 * rSpaceLeftInTons)
+				{
+				//	Take all items
+
+				CString sMsg;
+				for (int i = 0; i < ItemList.GetCount(); i++)
+					{
+					Ctx.GetPlayerShip()->AddItem(ItemList.GetItem(i));
+
+					CString sItemName = ItemList.GetItem(i).GetNounPhrase(nounCountAlways | nounTitleCapitalize | nounShort);
+					if (i == 0)
+						sMsg = sItemName;
+					else
+						sMsg.Append(strPatternSubst(CONSTLIT("\n%s"), sItemName));
+					}
+
+				//	Leave a marker telling the player what they took.
+
+				CMarker::SCreateOptions Options;
+				Options.pSovereign = GetSovereign();
+				Options.iLifetime = 150;
+				Options.iStyle = CMarker::EStyle::Message;
+				Options.sName = sMsg;
+
+				CMarker::Create(*GetSystem(), GetPos(), NullVector, Options);
+
+				//	Sound
+
+				GetUniverse().PlaySound(this, GetUniverse().FindSound(UNID_DEFAULT_SELECT));
+
+				//	Destroy station and return.
+
+				Destroy(removedFromSystem, CDamageSource());
+				return;
+				}
+
+			//	If they don't fit, we just beep
+
+			else
+				{
+				GetUniverse().PlaySound(this, GetUniverse().FindSound(UNID_DEFAULT_CANT_DO_IT));
+				}
+			}
+
 		//	Active station attack, etc.
 
 		if (!IsAbandoned())
@@ -4580,6 +4656,8 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 //
 //	CAttackDetector m_Blacklist
 //	DWORD		m_iAngryCounter
+//	DWORD		m_dwLastFireTime
+//	DWORD		m_dwLastHitTime
 //	CSquadronController m_Squadrons
 //	CCurrencyBlock	m_pMoney
 //	CTradingDesc	m_pTrade
@@ -4634,6 +4712,8 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 
 	m_Blacklist.WriteToStream(pStream);
 	pStream->Write(m_iAngryCounter);
+	pStream->Write(m_dwLastFireTime);
+	pStream->Write(m_dwLastHitTime);
 	m_Squadrons.WriteToStream(*pStream);
 
 	//	Money
@@ -4946,7 +5026,7 @@ void CStation::PaintMarkerIcon (CG32bitImage& Dest, int x, int y)
 					}
 				}
 			}
-		else if (IsWreck())
+		else if (IsAbandoned() && m_pType->IsMobile() && m_DockingPorts.GetPortCount() > 0)
 			{
 			//	Handle explored
 
@@ -5891,6 +5971,12 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 			Weapon.Activate(ActivateCtx);
 			if (IsDestroyed())
 				return false;
+
+			//	Remember the last time we fired a weapon
+
+			m_dwLastFireTime = GetUniverse().GetTicks();
+
+			//	Fire delay
 
 			Weapon.SetTimeUntilReady(m_pType->GetFireRateAdj() * Weapon.GetActivateDelay(this) / 10);
 			}

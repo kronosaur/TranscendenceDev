@@ -27,7 +27,7 @@ static PRIMITIVEPROCDEF g_Library[] =
 		//	implemented in Transcendence (above TSE).
 
 		{	"scrTranslate",					fnNil,		0,
-			"PLACEHOLDER",
+			NULL,
 			"iv*",	0,	},
 
 		//	These are engine diagnostic functions

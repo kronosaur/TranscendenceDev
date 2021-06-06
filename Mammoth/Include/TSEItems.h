@@ -10,6 +10,7 @@ class CInstalledDevice;
 class CItemList;
 class CRepairerClass;
 class CShipClass;
+class CShipArmorSegmentDesc;
 
 //	ITEM -----------------------------------------------------------------------
 //
@@ -51,6 +52,7 @@ class CShipClass;
 class CDifferentiatedItem
 	{
 	public:
+		inline bool AccumulateEnhancementDisplayAttributes (TArray<SDisplayAttribute> &retList) const;
 		inline ItemCategories GetCategory (void) const;
 		inline int GetCharges (void) const;
 		inline CCurrencyAndValue GetCurrencyAndValue (bool bActual = false) const;
@@ -127,12 +129,15 @@ class CArmorItem : public CDifferentiatedItem
 		inline int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) const;
 		inline const CItemEnhancementStack &GetEnhancements (void) const;
 		int GetHP (int *retiMaxHP = NULL, bool bUninstalled = false) const;
+		CString GetHPDisplay (const CLanguage::SHPDisplayOptions &Options, int *retiIntegrity = NULL) const;
 		inline int GetInstallCost (void) const;
 		inline const CInstalledArmor *GetInstalledArmor (void) const;
 		inline int GetMaxHP (bool bForceComplete = false) const;
 		inline bool GetReferenceDamageAdj (int *retiHP, int *retArray) const;
 		inline CurrencyValue GetRepairCost (int iHPToRepair = 1) const;
 		inline int GetRepairLevel (void) const;
+		const CShipArmorSegmentDesc &GetSegmentDesc () const;
+		int GetSegmentIndex () const;
 		inline CSpaceObject *GetSource (void) const;
 		inline bool IsImmune (SpecialDamageTypes iSpecialDamage) const;
 
@@ -146,6 +151,14 @@ class CArmorItem : public CDifferentiatedItem
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
 
 	friend class CItem;
+	};
+
+enum class EDeviceCounterType
+	{
+	None,							//	No counter
+	Temperature,					//	Current device temperature (0-100)
+	Recharge,						//	Current recharge level (0-100)
+	Capacitor,						//	Current capacitor level (0-100)
 	};
 
 class CDeviceItem : public CDifferentiatedItem
@@ -166,6 +179,7 @@ class CDeviceItem : public CDifferentiatedItem
 		void AccumulateAttributes (const CItem &Ammo, TArray<SDisplayAttribute> *retList) const;
 		ECalcTargetTypes CalcTargetType (void) const;
 		TArray<const CItemType *> GetConsumableTypes () const;
+		int GetCounterLevel (EDeviceCounterType *retiCounter = NULL, int *retiLevel = NULL) const;
 		int GetCyberDefenseLevel () const;
 		inline const CDeviceClass &GetDeviceClass (void) const;
 		inline CDeviceClass &GetDeviceClass (void);
@@ -174,6 +188,7 @@ class CDeviceItem : public CDifferentiatedItem
 		inline const CItemEnhancementStack &GetEnhancements (void) const;
 		int GetFireArc (void) const;
 		int GetHP (int *retiMaxHP = NULL, bool bUninstalled = false) const;
+		CString GetHPDisplay (const CLanguage::SHPDisplayOptions &Options, int *retiIntegrity = NULL) const;
 		inline const CInstalledDevice *GetInstalledDevice (void) const;
 		inline CInstalledDevice *GetInstalledDevice (void);
 		DWORD GetLinkedFireOptions (void) const;
@@ -193,6 +208,7 @@ class CDeviceItem : public CDifferentiatedItem
 		inline bool IsTrackingWeapon (void) const;
 		bool IsWeaponAligned (CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const;
 		inline bool IsWeaponVariantValid (int iVariant) const;
+		inline bool IsWorking () const;
 		inline bool NeedsAutoTarget (int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const;
 		void ReportEventError (const CString &sEvent, const ICCItem &ErrorItem) const { CDifferentiatedItem::ReportEventError(GetSource(), sEvent, ErrorItem); }
 		inline void SetData (DWORD dwData);
@@ -240,6 +256,7 @@ class CItem
 		static constexpr DWORD FLAG_IGNORE_DATA =				0x00000004;
 		static constexpr DWORD FLAG_IGNORE_DISRUPTED =			0x00000008;
 		static constexpr DWORD FLAG_IGNORE_ENHANCEMENTS =		0x00000010;
+		static constexpr DWORD FLAG_KNOWN_ONLY =				0x00000020;
 
 		static constexpr DWORD FLAG_FIND_MIN_CHARGES =			0x00010000;	//	Item with least number of charges
 		static constexpr DWORD FLAG_ACTUAL =					0x00020000;	//	Ignore unknown status
@@ -504,6 +521,7 @@ class CItem
 
 		SExtra *m_pExtra = NULL;				//	Extra data (may be NULL)
 
+		static TPropertyHandler<CItem> m_PropertyTable;
 		static CItem m_NullItem;
 		static CItemEnhancement m_NullMod;
 	};
@@ -526,6 +544,7 @@ class CItemList
 		int GetCountOf (const CItemType &Type) const;
 		CItem &GetItem (int iIndex) { return *m_List[iIndex]; }
 		const CItem &GetItem (int iIndex) const { return *m_List[iIndex]; }
+		bool MatchesCriteria (const CItemCriteria &Criteria) const;
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SortItems (void);
 		void SortItems (const CItemCriteria &SortFirst);

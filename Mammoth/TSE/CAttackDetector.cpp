@@ -4,11 +4,18 @@
 
 #include "PreComp.h"
 
-CAttackDetector::CAttackDetector (void) : m_iCounter(0), m_iLastHit(0)
+ICCItemPtr CAttackDetector::AsCCItem () const
 
-//	CAttackDetector constructor
+//	AsCCItem
+//
+//	Returns as a structure (mostly for debugging).
 
 	{
+	ICCItemPtr pResult(ICCItem::SymbolTable);
+	pResult->SetIntegerAt(CONSTLIT("counter"), m_iCounter);
+	pResult->SetIntegerAt(CONSTLIT("lastHit"), m_iLastHit);
+
+	return pResult;
 	}
 
 bool CAttackDetector::Hit (int iTick)
@@ -32,6 +39,7 @@ bool CAttackDetector::Hit (int iTick)
 
 		if (m_iCounter > HIT_LIMIT)
 			{
+			//	Black listed
 			m_iCounter = -1;
 			return true;
 			}

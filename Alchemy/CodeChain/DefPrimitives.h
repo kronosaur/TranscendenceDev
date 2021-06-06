@@ -381,7 +381,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"sort",				fnSort,			FN_SORT,
 			"(sort list-of-atoms ['ascending|'descending]) -> sorted list\n"
 			"(sort list-of-lists ['ascending|'descending] [index to sort on]) -> sorted list\n"
-			"(sort list-of-structs ['ascending|'descending] [field to sort on]) -> sorted list\n",
+			"(sort list-of-structs ['ascending|'descending] [field to sort on]) -> sorted list",
 			"v*",	0,	},
 
 		{	"split",			fnSplit,		0,

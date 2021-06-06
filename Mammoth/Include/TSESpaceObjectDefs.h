@@ -48,21 +48,19 @@ struct SObjectPartDesc
 class CMenuData
 	{
 	public:
-		enum Flags
-			{
-			FLAG_GRAYED =			0x00000001,
-			FLAG_SORT_BY_KEY =		0x00000002,
-			};
+		static constexpr DWORD FLAG_GRAYED =				0x00000001;
+		static constexpr DWORD FLAG_SORT_BY_KEY =			0x00000002;
+		static constexpr DWORD FLAG_SHOW_COOLDOWN =			0x00000004;
 
 		CMenuData (void) { }
 
-		void AddMenuItem (const CString &sID,
+		int AddMenuItem (const CString &sID,
 						  const CString &sKey,
 						  const CString &sLabel,
 						  DWORD dwFlags = 0,
 						  DWORD dwData = 0,
-						  DWORD dwData2 = 0) { AddMenuItem(sID, sKey, sLabel, NULL, 0, NULL_STR, NULL_STR, dwFlags, dwData, dwData2); }
-		void AddMenuItem (const CString &sID,
+						  DWORD dwData2 = 0) { return AddMenuItem(sID, sKey, sLabel, NULL, 0, NULL_STR, NULL_STR, dwFlags, dwData, dwData2); }
+		int AddMenuItem (const CString &sID,
 						  const CString &sKey,
 						  const CString &sLabel,
 						  const CObjectImageArray *pImage,
@@ -81,6 +79,7 @@ class CMenuData
 		int GetItemAcceleratorPos (int iIndex) const { return m_List[iIndex].iAcceleratorPos; }
 		DWORD GetItemData (int iIndex) const { return m_List[iIndex].dwData; }
 		DWORD GetItemData2 (int iIndex) const { return m_List[iIndex].dwData2; }
+		int GetItemCooldown (int iIndex, DWORD dwNow) const;
 		int GetItemCount (int iIndex) const { return m_List[iIndex].iCount; }
 		const CString &GetItemExtra (int iIndex) const { return m_List[iIndex].sExtra; }
 		const CString &GetItemHelpText (int iIndex) const { return m_List[iIndex].sHelp; }
@@ -91,6 +90,8 @@ class CMenuData
 		const CString &GetItemLabel (int iIndex) const { return m_List[iIndex].sLabel; }
 		const CString &GetTitle (void) const { return m_sTitle; }
 		bool IsEmpty (void) const { return m_List.GetCount() == 0; }
+		bool IsItemEnabled (int iIndex, DWORD dwNow) const;
+		void SetItemCooldown (int iIndex, DWORD dwStartedOn, DWORD dwEndsOn);
 
 	private:
 		struct Entry
@@ -102,6 +103,8 @@ class CMenuData
 			int iAcceleratorPos = -1;
 			const CObjectImageArray *pImage = NULL;
 			int iCount = 0;
+			DWORD dwCooldownStartedOn = 0;
+			DWORD dwCooldownEndsOn = 0;
 			CString sExtra;
 			CString sHelp;
 			DWORD dwFlags = 0;

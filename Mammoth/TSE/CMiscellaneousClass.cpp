@@ -112,7 +112,7 @@ int CMiscellaneousClass::GetCapacitorPowerUse (CInstalledDevice *pDevice, CSpace
 		return 0;
 	}
 
-int CMiscellaneousClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType, int *retiLevel)
+int CMiscellaneousClass::GetCounter (const CInstalledDevice *pDevice, const CSpaceObject *pSource, EDeviceCounterType *retiType, int *retiLevel) const
 
 //	GetCounter
 //
@@ -124,7 +124,7 @@ int CMiscellaneousClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pS
 	if (m_iPowerToActivate == 0)
 		{
 		if (retiType)
-			*retiType = cntNone;
+			*retiType = EDeviceCounterType::None;
 
 		if (retiLevel)
 			*retiLevel = 0;
@@ -135,7 +135,7 @@ int CMiscellaneousClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pS
 	//  We're always a capacitor
 
 	if (retiType)
-		*retiType = cntCapacitor;
+		*retiType = EDeviceCounterType::Capacitor;
 
 	//  If no device or source, we don't know the level
 
@@ -198,14 +198,14 @@ int CMiscellaneousClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) c
 		return m_iPowerUse + (1000 * (-m_iPowerForCapacitor) / 100);
 	}
 
-bool CMiscellaneousClass::SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes iCounter, int iLevel)
+bool CMiscellaneousClass::SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, EDeviceCounterType iCounter, int iLevel)
 
 //  SetCounter
 //
 //  Sets the counter to the given level. Returns FALSE if we cannot set it.
 
 	{
-	if (iCounter != cntCapacitor || m_iPowerToActivate == 0 || pDevice == NULL || pSource == NULL)
+	if (iCounter != EDeviceCounterType::Capacitor || m_iPowerToActivate == 0 || pDevice == NULL || pSource == NULL)
 		return false;
 
 	CItemCtx ItemCtx(pSource, pDevice);

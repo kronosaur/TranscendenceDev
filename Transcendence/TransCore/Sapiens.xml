@@ -362,7 +362,6 @@
 				type=				"missile"
 				repeating=			"3"
 
-				hitPoints=			"5"
 				lifetime=			"60"
 				damage=				"blast:1d8; radiation1; WMD1"
 				powerUse=			"60"
@@ -460,6 +459,18 @@
 
 		<Image imageID="&rsItems4;" imageX="0" imageY="384" imageWidth="96" imageHeight="96"/>
 		
+		<Invoke>
+			(sysCreateWeaponFire &itSapiensRadiationMine; 
+					{
+						obj: gSource
+						namePattern: (typ@ &itSapiensRadiationMine; 'namePattern)
+						}
+					gSource 
+					(random 0 359)
+					5 
+					nil)
+		</Invoke>
+
 		<Missile
 				type=			"missile"
 

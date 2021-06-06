@@ -123,7 +123,7 @@ const int MAX_COUNTER =					100;
 const Metric STD_FIRE_RATE_SECS =		16.0;				//	Standard fire rate (secs)
 const Metric STD_FIRE_DELAY_TICKS =     8.0;
 
-const Metric STD_AMMO_BALANCE =         -100.0;             //  Balance adj from having ammo
+const Metric STD_AMMO_BALANCE =         -90.0;				//  Balance adj from having ammo
 const Metric STD_AMMO_MASS =            10.0;               //  Std ammo mass (kg)
 const Metric BALANCE_AMMO_COST_RATIO =  -0.25;              //  Each percent of ammo price above std is
 															//      0.25% balance penalty.
@@ -133,6 +133,7 @@ const Metric BALANCE_OMNI_POWER =       0.5;                //  f(x) = factor * 
 const Metric BALANCE_OMNI_FACTOR =      100.0;              //      This function maps from a swivel
 															//      arc (0-360) to its effect on weapon
 															//      balance: 0 = none; 100.0 = +100%
+const Metric BALANCE_MIRV_FACTOR =		75.0;				//	Bonus to balance if MIRVed
 
 const Metric BALANCE_TRACKING_BONUS =   90.0;               //  Bonus to balance if weapon has tracking.
 const Metric BALANCE_LINKED_FIRE_BONUS = 25.0;              //  Bonus to balance if weapon is linked-fire.
@@ -147,9 +148,7 @@ const Metric BALANCE_SPEED_FACTOR =     -25.0;
 
 const Metric BALANCE_INTERACTION_FACTOR = 5.0;              //  Bonus to balance for 0 interaction (linear
 															//      decrease as interaction reaches 100).
-const Metric BALANCE_HP_FACTOR =        10.0;               //  Bonus to balance for projectile HP equal to
-															//      standard weapon damage for the level
-															//      (linear decrease with fewer HP).
+const Metric BALANCE_HP_FACTOR =        20.0;               //  Bonus to balance if double standard HPs.
 const Metric BALANCE_POWER_AMMO_FACTOR = 0.1;               //  Power used by ammo weapons relative to non-ammo
 const Metric BALANCE_POWER_RATIO =      -0.5;               //  Each percent of power consumption above standard
 															//      is 0.5% balance penalty.
@@ -472,6 +471,14 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 		retBalance.rBalance += retBalance.rOmni;
 		}
 
+	//	Multitarget (only if not already omni)
+
+	if (pShotDesc->IsMIRVOrHasMIRVFragments() && retBalance.rOmni == 0.0)
+		{
+		retBalance.rOmni = Max(0.0, BALANCE_MIRV_FACTOR - retBalance.rTracking);
+		retBalance.rBalance += retBalance.rOmni;
+		}
+
 	//  Range
 
 	Metric rRange = Min(MAX_BALANCE_RANGE, pShotDesc->GetMaxRange());
@@ -493,8 +500,12 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 	if (!pShotDesc->GetInteraction().InteractsAtMaxLevel())
 		retBalance.rProjectileHP += BALANCE_INTERACTION_FACTOR * (100.0 - (int)pShotDesc->GetInteraction()) / 100.0;
 
-	if (pShotDesc->GetHitPoints() > 0)
-		retBalance.rProjectileHP += BALANCE_HP_FACTOR * pShotDesc->GetHitPoints() / (Metric)Stats.iDamage;
+	int iDefaultHP = pShotDesc->CalcDefaultHitPoints();
+	if (iDefaultHP > 0)
+		{
+		Metric rDelta = BALANCE_HP_FACTOR * ((Metric)pShotDesc->GetHitPoints() - iDefaultHP) / (Metric)iDefaultHP;
+		retBalance.rProjectileHP += rDelta;
+		}
 
 	retBalance.rBalance += retBalance.rProjectileHP;
 
@@ -862,7 +873,7 @@ Metric CWeaponClass::CalcDamage (const CWeaponFireDesc &ShotDesc, const CItemEnh
 
 	switch (m_Counter)
 		{
-		case cntCapacitor:
+		case EDeviceCounterType::Capacitor:
 			{
 			//	Compute the number of ticks until we discharge the capacitor
 
@@ -882,7 +893,7 @@ Metric CWeaponClass::CalcDamage (const CWeaponFireDesc &ShotDesc, const CItemEnh
 			break;
 			}
 
-		case cntTemperature:
+		case EDeviceCounterType::Temperature:
 			{
 			//  Compute the number of ticks until we reach max temp
 
@@ -961,49 +972,12 @@ int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject 
 
 	else
 		{
+		int iDefaultFireAngle = AngleMod(pSource->GetRotation() + AngleMiddle(iMinFireArc, iMaxFireArc));
+
+		//	Compute the fire angle, based on target position.
+
 		int iFireAngle;
-
-		CVector vSource = pDevice->GetPos(pSource);
-
-		//	Get the position and velocity of the target
-
-		CVector vTarget = pTarget->GetPos() - vSource;
-		CVector vTargetVel = pTarget->GetVel() - pSource->GetVel();
-
-		//	Figure out which direction to fire in
-
-		Metric rTimeToIntercept = CalcInterceptTime(vTarget, vTargetVel, rSpeed);
-		CVector vInterceptPoint = (rTimeToIntercept > 0.0 ? vTarget + vTargetVel * rTimeToIntercept : vTarget);
-		iFireAngle = VectorToPolar(vInterceptPoint, NULL);
-
-		//	If this is a directional weapon make sure we are in-bounds
-
-		if (iType == CDeviceRotationDesc::rotSwivel)
-			{
-			int iMin = AngleMod(pSource->GetRotation() + iMinFireArc);
-			int iMax = AngleMod(pSource->GetRotation() + iMaxFireArc);
-
-			if (iMin < iMax)
-				{
-				if (iFireAngle < iMin)
-					iFireAngle = iMin;
-				else if (iFireAngle > iMax)
-					iFireAngle = iMax;
-				}
-			else
-				{
-				if (iFireAngle < iMin && iFireAngle > iMax)
-					{
-					int iToMax = iFireAngle - iMax;
-					int iToMin = iMin - iFireAngle;
-
-					if (iToMax > iToMin)
-						iFireAngle = iMin;
-					else
-						iFireAngle = iMax;
-					}
-				}
-			}
+		IsTargetReachable(*pDevice, *pTarget, iDefaultFireAngle, &iFireAngle);
 
 		//	Remember the fire angle (we need it later if this is a continuous
 		//	fire device)
@@ -1612,7 +1586,7 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 
 	//	Update capacitor counters
 
-	if (m_Counter == cntCapacitor)
+	if (m_Counter == EDeviceCounterType::Capacitor)
 		{
 		if (!ConsumeCapacitor(ItemCtx, ShotDesc))
 			return resFailure;
@@ -1620,7 +1594,7 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 
 	//	Update temperature counters
 
-	else if (m_Counter == cntTemperature)
+	else if (m_Counter == EDeviceCounterType::Temperature)
 		{
 		bool bSourceDestroyed;
 		if (!UpdateTemperature(ItemCtx, ShotDesc, &iFailureMode, &bSourceDestroyed))
@@ -1957,9 +1931,9 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	if (!sConfig.IsBlank())
 		{
 		if (strEquals(sConfig, COUNTER_TYPE_TEMPERATURE))
-			pWeapon->m_Counter = cntTemperature;
+			pWeapon->m_Counter = EDeviceCounterType::Temperature;
 		else if (strEquals(sConfig, COUNTER_TYPE_CAPACITOR))
-			pWeapon->m_Counter = cntCapacitor;
+			pWeapon->m_Counter = EDeviceCounterType::Capacitor;
 		else
 			{
 			Ctx.sError = CONSTLIT("Invalid weapon counter type");
@@ -1976,7 +1950,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 		{
 		//	Backward compatibility
 
-		pWeapon->m_Counter = cntTemperature;
+		pWeapon->m_Counter = EDeviceCounterType::Temperature;
 		pWeapon->m_iCounterUpdate = TEMP_DECREASE;
 		pWeapon->m_iCounterUpdateRate = pDesc->GetAttributeInteger(COOLING_RATE_ATTRIB);
 		if (pWeapon->m_iCounterUpdateRate <= 0)
@@ -1984,7 +1958,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 		}
 	else
 		{
-		pWeapon->m_Counter = cntNone;
+		pWeapon->m_Counter = EDeviceCounterType::None;
 		pWeapon->m_iCounterActivate = 0;
 		pWeapon->m_iCounterUpdate = 0;
 		pWeapon->m_iCounterUpdateRate = 0;
@@ -2010,7 +1984,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 			return error;
 		}
 
-	if (pWeapon->m_Counter == cntTemperature)
+	if (pWeapon->m_Counter == EDeviceCounterType::Temperature)
 		{
 		if (error = pWeapon->m_OverheatFailure.InitFromXML(Ctx, pDesc->GetContentElementByTag(OVERHEAT_FAILURE_TAG), CFailureDesc::profileWeaponOverheat))
 			return error;
@@ -3103,7 +3077,8 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 			case CDeviceRotationDesc::rotOmnidirectional:
 				return CC.CreateString(PROPERTY_OMNIDIRECTIONAL);
 
-			case CDeviceRotationDesc::rotSwivel:
+			case CDeviceRotationDesc::rotSwivelAlways:
+			case CDeviceRotationDesc::rotSwivelIfTargetInArc:
 				{
 				//	Create a list
 
@@ -3302,7 +3277,7 @@ ItemCategories CWeaponClass::GetImplCategory (void) const
 		return itemcatWeapon;
 	}
 
-int CWeaponClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType, int *retiLevel)
+int CWeaponClass::GetCounter (const CInstalledDevice *pDevice, const CSpaceObject *pSource, EDeviceCounterType *retiType, int *retiLevel) const
 
 //	GetCounter
 //
@@ -3314,7 +3289,7 @@ int CWeaponClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 	if (retiType)
 		*retiType = m_Counter;
 
-	if (m_Counter == cntNone || pDevice == NULL || pSource == NULL)
+	if (m_Counter == EDeviceCounterType::None || pDevice == NULL || pSource == NULL)
 		{
 		if (retiLevel)
 			*retiLevel = 0;
@@ -3324,7 +3299,7 @@ int CWeaponClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 
 	//	If we're a capacitor, then don't show the counter if we are full
 
-	if (m_Counter == cntCapacitor && pDevice->GetTemperature() >= MAX_COUNTER)
+	if (m_Counter == EDeviceCounterType::Capacitor && pDevice->GetTemperature() >= MAX_COUNTER)
 		{
 		if (retiLevel)
 			*retiLevel = MAX_COUNTER;
@@ -3833,7 +3808,10 @@ CDeviceRotationDesc::ETypes CWeaponClass::GetRotationType (const CDeviceItem &De
 			*retiMaxArc = AngleMod(iFireAngle + iHalfFireArc);
 			}
 
-		return CDeviceRotationDesc::rotSwivel;
+		if (IsTrackingWeapon(DeviceItem))
+			return CDeviceRotationDesc::rotSwivelAlways;
+		else
+			return CDeviceRotationDesc::rotSwivelIfTargetInArc;
 		}
 	}
 
@@ -4134,7 +4112,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 			{
 			//	If we're overheating, we will not be effective
 
-			case cntTemperature:
+			case EDeviceCounterType::Temperature:
 				if (pDevice->IsWaiting() && pDevice->GetTemperature() > 0)
 					return -100;
 
@@ -4149,7 +4127,7 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 
 			//	If our capacitor is discharged, we will not be effective
 
-			case cntCapacitor:
+			case EDeviceCounterType::Capacitor:
 				if (pDevice->IsWaiting() && pDevice->GetTemperature() < MAX_COUNTER)
 					return -100;
 
@@ -4748,15 +4726,18 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 
 //	IsTargetReachable
 //
-//	Returns TRUE if we can hit the given target. If we return TRUE, 
-//	retiFireAngle is initialized with the weapon's best fire angle to hit the
-//	target.
+//	Returns TRUE if we can hit the given target. In either case, retiFireAngle 
+//	is initialized with the weapon's best fire angle to hit the target.
 
 	{
 	const CWeaponFireDesc *pShotDesc = GetWeaponFireDesc(Device);
 	const CSpaceObject *pSource = Device.GetSource();
 	if (pShotDesc == NULL || pSource == NULL)
+		{
+		if (retiFireAngle)
+			*retiFireAngle = iDefaultFireAngle;
 		return false;
+		}
 
 	//	Get rotation info
 
@@ -4792,7 +4773,7 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 
 	//	Tracking weapons are always aligned.
 
-	else if (IsTracking(Device, pShotDesc))
+	else if (iType == CDeviceRotationDesc::rotSwivelAlways)
 		return true;
 
 	//	Figure out our aim tolerance
@@ -4818,7 +4799,18 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 		//	If we're facing in the direction that we want to fire, 
 		//	then we're aligned...
 
-		return (iAimOffset <= Max(iAimTolerance, iHalfAngularSize));
+		if (iAimOffset <= Max(iAimTolerance, iHalfAngularSize))
+			return true;
+
+		//	Otherwise, we cannot reach the target, so fire the default direction.
+
+		else
+			{
+			if (retiFireAngle)
+				*retiFireAngle = iDefaultFireAngle;
+
+			return false;
+			}
 		}
 	}
 
@@ -4936,7 +4928,8 @@ bool CWeaponClass::NeedsAutoTarget (const CDeviceItem &DeviceItem, int *retiMinF
 			return true;
 			}
 
-		case CDeviceRotationDesc::rotSwivel:
+		case CDeviceRotationDesc::rotSwivelAlways:
+		case CDeviceRotationDesc::rotSwivelIfTargetInArc:
 			{
 			if (const CSpaceObject *pSource = DeviceItem.GetSource())
 				{
@@ -4969,7 +4962,8 @@ void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("omnidirectional")));
 			break;
 
-		case CDeviceRotationDesc::rotSwivel:
+		case CDeviceRotationDesc::rotSwivelAlways:
+		case CDeviceRotationDesc::rotSwivelIfTargetInArc:
 			int iArc = AngleRange(iMinArc, iMaxArc);
 			if (iArc >= 150)
 				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("hemi-directional")));
@@ -5165,6 +5159,21 @@ ALERROR CWeaponClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 			if (error = m_ShotData[i].pAmmoType.Bind(Ctx))
 				return error;
+			}
+
+		//	If the number of repeat shots don't fit within the fire delay, then
+		//	warn.
+
+		if (int iRepeating = GetContinuous(*m_ShotData[i].pDesc))
+			{
+			int iDelay = GetContinuousFireDelay(*m_ShotData[i].pDesc);
+			int iTotalTicks = (iRepeating * (iDelay + 1));
+			int iFireDelay = GetFireDelay(*m_ShotData[i].pDesc);
+
+			if (iTotalTicks > iFireDelay)
+				{
+				GetUniverse().DebugOutput("WARNING: %s (%08x) takes %d ticks to fire all shots, but has only %d ticks fire delay.", (LPSTR)GetName(), GetUNID(), iTotalTicks, iFireDelay);
+				}
 			}
 		}
 
@@ -5420,7 +5429,7 @@ void CWeaponClass::SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinu
 	pDevice->SetData((pDevice->GetData() & 0xFFFFFF00) | (dwContinuous & 0xFF));
 	}
 
-bool CWeaponClass::SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes iCounter, int iLevel)
+bool CWeaponClass::SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, EDeviceCounterType iCounter, int iLevel)
 
 //  SetCounter
 //

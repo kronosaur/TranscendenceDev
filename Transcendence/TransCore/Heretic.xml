@@ -41,7 +41,6 @@
 				fireRate=			"15"
 				missileSpeed=		"50"
 				lifetime=			"60"
-				hitPoints=			"30"
 				powerUse=			"2000"
 
 				sound=				"&snRecoillessCannon;"
@@ -997,6 +996,7 @@
 			dockScreen=			"DisplayLog"
 			noMapLabel=			"true"
 			mass=				"1000"
+			mobile=				"true"
 			>
 
 		<ImageVariants>

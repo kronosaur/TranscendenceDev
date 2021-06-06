@@ -55,7 +55,6 @@ void CTranscendenceWnd::CleanUpPlayerShip (void)
 	{
 	DEBUG_TRY
 
-	m_DeviceDisplay.CleanUp();
 	m_MenuDisplay.CleanUp();
 
 	m_bPaused = false;
@@ -407,11 +406,6 @@ void CTranscendenceWnd::ReportCrash (void)
 			m_sCrashInfo.Append(CONSTLIT("program state: painting target display\r\n"));
 			ReportCrashSystem(&m_sCrashInfo);
 			ReportCrashObj(&m_sCrashInfo, (GetPlayer() ? GetPlayer()->GetShip() : NULL));
-			break;
-
-		case psPaintingDeviceDisplay:
-			m_sCrashInfo.Append(CONSTLIT("program state: painting device display\r\n"));
-			ReportCrashSystem(&m_sCrashInfo);
 			break;
 
 		case psStargateEnter:

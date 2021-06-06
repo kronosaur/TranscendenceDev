@@ -22,31 +22,43 @@
 			>
 
 		<Events>
-			<OnCreate>
+			<CanCreate>
 				(switch
 					;	Only in Charon system
-					(!= (sysGetNode) 'CP)
-						(msnDestroy gSource)
 
-					(block (
-						(pirateStations (sysFindObject gSource "TA +charonPirates;"))
-						)
-						(enum pirateStations theObj (msnRegisterForEvents gSource theObj))
-						(msnSetData gSource 'stationsLeft (count pirateStations))
-						;(dbgOutput "creating mission")
+					(!= (sysGetNode) 'CP)
+						Nil
+
+					;	Pirate stations must exist
+
+					(not (sysFindObject gSource "TA +charonPirates;"))
+						Nil
+
+					;	OK
+
+					True
+					)
+			</CanCreate>
+
+			<OnCreate>
+				(block (
+					(pirateStations (sysFindObject gSource "TA +charonPirates;"))
+					)
+					(enum pirateStations theObj (msnRegisterForEvents gSource theObj))
+					(msnSetData gSource 'stationsLeft (count pirateStations))
+					;(dbgOutput "creating mission")
 						
-						(msnSetData gSource 'reward 0)
-						(msnSetData gSource 'missionXP 500)
+					(msnSetData gSource 'reward 0)
+					(msnSetData gSource 'missionXP 500)
 						
-						;	Choose a random mission reward
-						(msnSetData gSource 'rewardItem (randomTable
-							25 (itmCreate &itTargetingComputerROM; 1)
-							25 (itmCreate &itMilitaryID; 1)
-							25 (itmCreate &itMuleAuton; 1)
-							15 (itmCreate &itGreenEtheriumCrystal; 1)
-							10 (itmCreate &itRegeneratingNanos; 4)
-							))
-						)
+					;	Choose a random mission reward
+					(msnSetData gSource 'rewardItem (randomTable
+						25 (itmCreate &itTargetingComputerROM; 1)
+						25 (itmCreate &itMilitaryID; 1)
+						25 (itmCreate &itMuleAuton; 1)
+						15 (itmCreate &itGreenEtheriumCrystal; 1)
+						10 (itmCreate &itRegeneratingNanos; 4)
+						))
 					)
 			</OnCreate>
 

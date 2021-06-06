@@ -113,6 +113,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>26495; 26812</DisableSpecificWarnings>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -360,6 +361,7 @@
     <ClInclude Include="WeaponClassImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BaseShipAIProperties.cpp" />
     <ClCompile Include="C3DObjectPos.cpp" />
     <ClCompile Include="CAbilitySet.cpp" />
     <ClCompile Include="CAccessibilitySettings.cpp" />
@@ -454,6 +456,7 @@
     <ClCompile Include="CGalacticMapPainter.cpp" />
     <ClCompile Include="CGateTimerManager.cpp" />
     <ClCompile Include="CGenericType.cpp" />
+    <ClCompile Include="CGuardOrder.cpp" />
     <ClCompile Include="CHitCtx.cpp" />
     <ClCompile Include="CHullDesc.cpp" />
     <ClCompile Include="CHullPointsCalculator.cpp" />
@@ -515,6 +518,7 @@
     <ClCompile Include="CRandomItems.cpp" />
     <ClCompile Include="CRandomTopologyCreator.cpp" />
     <ClCompile Include="CRangeTypeEvent.cpp" />
+    <ClCompile Include="CReactionImpl.cpp" />
     <ClCompile Include="CRotationDesc.cpp" />
     <ClCompile Include="CItemCtx.cpp" />
     <ClCompile Include="CItemEnhancementStack.cpp" />
@@ -679,6 +683,7 @@
     <ClCompile Include="IPaintList.cpp" />
     <ClCompile Include="IPlayerController.cpp" />
     <ClCompile Include="IShipController.cpp" />
+    <ClCompile Include="ItemProperties.cpp" />
     <ClCompile Include="MissileProperties.cpp" />
     <ClCompile Include="MissionProperties.cpp" />
     <ClCompile Include="ObjectImageProperties.cpp" />

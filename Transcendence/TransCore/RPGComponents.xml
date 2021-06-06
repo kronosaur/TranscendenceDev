@@ -25,7 +25,7 @@
 				(block (
 					(leftToAdd (itmGetCount theComponent))
 					(availCount 0)
-					(damagedComponent (itmSetProperty theComponent 'damaged True))
+					(damagedComponent (itmSet@ theComponent 'damaged True))
 
 					;	When looking for components, we ignore attributes of the item that 
 					;	we don't care about.
@@ -113,7 +113,7 @@
 						(map componentsNeeded 'reduceSum theComponent
 							;	For devices we assume a damaged device
 							(if (itmMatches theComponent "d")
-								(* (itmGetCount theComponent) (itmGetPrice (itmSetProperty theComponent 'damaged True) currencyUsed))
+								(* (itmGetCount theComponent) (itmGetPrice (itmSet@ theComponent 'damaged True) currencyUsed))
 								(* (itmGetCount theComponent) (itmGetPrice theComponent currencyUsed))
 								)
 							)

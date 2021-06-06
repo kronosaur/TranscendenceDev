@@ -697,7 +697,14 @@ bool CRTFParser::ParseCode (CString *retsCode, CString *retsParam, CString *rets
 	//	Parse the code
 
 	char *pStart = m_pInput;
-	while (*m_pInput != ' ' && *m_pInput != '\\' && *m_pInput != '/' && *m_pInput != '}' && *m_pInput != '}' && *m_pInput != ';' && *m_pInput != ':' && *m_pInput != '\0')
+	while (*m_pInput != ' ' 
+			&& *m_pInput != '\\' 
+			&& *m_pInput != '/' 
+			&& *m_pInput != '{' 
+			&& *m_pInput != '}' 
+			&& *m_pInput != ';' 
+			&& *m_pInput != ':' 
+			&& *m_pInput != '\0')
 		m_pInput++;
 
 	*retsCode = CString(pStart, (int)(m_pInput - pStart));
@@ -714,7 +721,13 @@ bool CRTFParser::ParseCode (CString *retsCode, CString *retsParam, CString *rets
 		m_pInput++;
 
 		pStart = m_pInput;
-		while (*m_pInput != ';' && *m_pInput != '}' && *m_pInput != '}' && *m_pInput != '\\' && *m_pInput != '/' && *m_pInput != ':' && *m_pInput != '\0')
+		while (*m_pInput != ';' 
+				&& *m_pInput != '{' 
+				&& *m_pInput != '}' 
+				&& *m_pInput != '\\' 
+				&& *m_pInput != '/' 
+				&& *m_pInput != ':' 
+				&& *m_pInput != '\0')
 			m_pInput++;
 
 		if (*m_pInput++ != ';')

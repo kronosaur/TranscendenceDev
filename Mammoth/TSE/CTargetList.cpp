@@ -64,6 +64,28 @@ CTargetList::ETargetType CTargetList::CalcType (const CSpaceObject &Obj)
 		}
 	}
 
+bool CTargetList::CanDetonate (const CSpaceObject &SourceObj, const CSpaceObject *pTarget, const STargetOptions &Options, const CSpaceObject &Obj)
+
+//	CanDetonate
+//
+//	Returns TRUE if Obj can detonate a missile.
+
+	{
+	if (Options.bIncludeMinable && Obj.CanBeMined())
+		{
+		return (!Obj.IsExplored() || Obj.HasMinableItem())
+				&& !Obj.IsUnreal()
+				&& Obj != Options.pExcludeObj;
+		}
+	else if (Obj.GetScale() == scaleShip || (Options.bIncludeStations && Obj.GetScale() == scaleStructure))
+		{
+		return SourceObj.IsAngryAt(&Obj)	
+				&& (Obj.CanBeAttacked() || Obj == pTarget);
+		}
+	else
+		return false;
+	}
+
 void CTargetList::Delete (CSpaceObject &Obj)
 
 //	Delete

@@ -154,6 +154,7 @@ class CFleetCommandAI : public CBaseShipAI
 		void OrderAllFormUp (bool bResetFormation = false);
 		void OrderAllOpenFire (void);
 		void OrderAttackTarget (CSpaceObject *pTarget);
+		void OrderBreakAndAttack ();
 		void RemoveAsset (int iIndex);
 		bool RemoveAssetObj (CSpaceObject *pObj);
 		void RemoveTarget (int iIndex);
@@ -332,7 +333,7 @@ class CStandardShipAI : public CBaseShipAI
 
 	protected:
 		//	CBaseShipAI overrides
-		virtual void OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;
+		virtual void OnAttackedNotify (CSpaceObject &AttackerObj, const SDamageCtx &Damage) override;
 		virtual void OnBehavior (SUpdateCtx &Ctx) override;
 		virtual void OnCleanUp (void) override { m_State = stateNone; m_pTarget = NULL; m_pDest = NULL; }
 		virtual DWORD OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
@@ -349,13 +350,13 @@ class CStandardShipAI : public CBaseShipAI
 	private:
 		enum StateTypes
 			{
-			stateAttackingOnPatrol,					//	Attacking m_pTarget while on patrol
+			stateObsolete001,						//	Was: Attacking m_pTarget while on patrol
 
 			stateAttackingTarget,					//	Attacking m_pTarget
 			stateAttackingThreat,					//	Attacking m_pTarget to protect principal
 			stateDeterTarget,						//	Attack m_pTarget, but stop if target doesn't attack back
 			stateDeterTargetNoChase,				//	Attack m_pTarget, but don't chase it
-			stateEscorting,							//	Escorting m_pDest
+			stateObsolete002,						//	Was: Escorting m_pDest
 			stateHolding,							//	Doing nothing indefinitely
 			stateLookingForLoot,					//	Looking for loot in the system
 			stateLooting,							//	Looting stuff from station
@@ -365,10 +366,10 @@ class CStandardShipAI : public CBaseShipAI
 			stateNone,								//	Ship needs to consult orders
 			stateOnCourseForDocking,				//	Heading for m_pDest to dock
 			stateOnCourseForStargate,				//	Heading for m_pDest to gate out
-			stateObsolete001,						//	Obsolete
-			stateReturningFromThreat,				//	Dock with m_pDest
+			stateObsolete003,						//	Obsolete
+			stateObsolete004,						//	Was: Dock with m_pDest
 			stateWaiting,							//	Waiting for countdown (m_iCountdown)
-			stateWaitingForThreat,					//	Waiting for a threat to m_pDest
+			stateObsolete005,						//	Was: Waiting for a threat to m_pDest
 			stateWaitingUnarmed,					//	If threat shows up, we gate out
 			stateWaitForPlayerAtGate,				//	Waiting for player at gate
 			stateFollowing,
@@ -376,9 +377,9 @@ class CStandardShipAI : public CBaseShipAI
 			stateOnCourseForLootDocking,			//	Going to dock with loot
 			stateDeterTargetWhileLootDocking,		//	Attack the target, but continue towards loot
 			stateFollowNavPath,						//	Follow current nav path
-			stateReturningViaNavPath,				//	Follow current nav path
+			stateObsolete006,						//	Was: Follow current nav path
 			stateOnCourseForDockingViaNavPath,		//	Follow current nav path
-			stateObsolete002,						//	Obsolete
+			stateObsolete007,						//	Obsolete
 			stateOnCourseForPoint,					//	Going to a given point
 			stateWaitingForTarget,					//	Waiting for m_pTarget
 			stateWaitingForEnemy,					//	Waiting for an enemy
@@ -438,7 +439,7 @@ class CZoanthropeAI : public CBaseShipAI
 		virtual CSpaceObject *GetBase (void) const override;
 		virtual CString GetClass (void) override { return CONSTLIT("zoanthrope"); }
 		virtual CSpaceObject *GetTarget (const CDeviceItem *pDeviceItem = NULL, DWORD dwFlags = 0) const override;
-		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;
+		virtual void OnAttacked (CSpaceObject &AttackerObj, const SDamageCtx &Damage) override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 
 	protected:

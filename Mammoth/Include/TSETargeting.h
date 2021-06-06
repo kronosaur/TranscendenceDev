@@ -66,6 +66,7 @@ class CTargetList
 			{ Init(SourceObj, Options);	}
 
 		static ETargetType CalcType (const CSpaceObject &Obj);
+		static bool CanDetonate (const CSpaceObject &SourceObj, const CSpaceObject *pTarget, const STargetOptions &Options, const CSpaceObject &Obj);
 		void Delete (CSpaceObject &Obj);
 		CSpaceObject *FindBestTarget (DWORD dwTargetTypes = SELECT_ALL, Metric rMaxRange = -1.0) const;
 		int GetCount (void) const { return m_Targets.GetCount(); }
@@ -79,6 +80,7 @@ class CTargetList
 		void ReadFromStream (SLoadCtx &Ctx);
 		void Realize (void) const;
 		void WriteToStream (IWriteStream &Stream) const;
+
 
 	private:
 		static constexpr DWORD SPECIAL_INVALID_COUNT = 0xffffffff;

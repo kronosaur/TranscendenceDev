@@ -26,7 +26,7 @@
 
 			useScreen=			"Main"
 			useKey=				"X"
-			useInstalledOnly=	"true"
+			useEnabledOnly=		"true"
 			>
 
 		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
@@ -37,23 +37,27 @@
 				/>
 
 		<Events>
-			<OnInstall>
-				;	If we're reinstalling then restore any probe markers
-				(enum (sysFindObject Nil "T +mradProbe;") probeObj
-					(if (= (objGetData probeObj 'mradID) (itmGetData gItem 'mradID))
-						(objSetShowAsDestination probeObj 'showDistance)
-						)
-					)
-			</OnInstall>
+			<OnEnable>
+				;	When enabling or reinstalling, restore any probe markers
+				(if (eq (sysGetNode) 'G2) (mradShowProbes True))
+			</OnEnable>
 			
-			<OnUninstall>
+			<OnDisable>
 				;	Remove any probe markers
-				(enum (sysFindObject Nil "T +mradProbe;") probeObj
-					(if (= (objGetData probeObj 'mradID) (itmGetData gItem 'mradID))
-						(objClearShowAsDestination probeObj)
+				(if (eq (sysGetNode) 'G2) (mradShowProbes Nil))
+			</OnDisable>
+			
+			<OnGlobalPlayerEnteredSystem>
+				(if (eq (sysGetNode) 'G2)
+					(mradShowProbes
+						;	Check for installed, enabled MRAD device
+						(obj@ gPlayerShip
+							(@ (objGetItems gPlayerShip "dI +UNID:&itMRADExperiment;;") 0)
+							'enabled
+							)
 						)
 					)
-			</OnUninstall>
+			</OnGlobalPlayerEnteredSystem>
 		</Events>
 
 		<DockScreens>
@@ -270,6 +274,9 @@
 
 									(= charges 0)
 										(scrSetDescTranslate gScreen 'descDefaultFailed)
+									
+									(!= (sysGetNode) 'G2)
+										(scrSetDescTranslate gScreen 'descHereticOnly)
 
 									(scrSetDesc gScreen (cat
 										(scrTranslate gScreen 'descDefault)
@@ -285,8 +292,8 @@
 										))
 									)
 
-								;	Deploy probe command only available if probes left
-								(scrEnableAction gScreen 'actionDeployProbe (and (not status) (gr charges 0)))
+								;	Deploy probe command only available if probes left and we're in Heretic
+								(scrEnableAction gScreen 'actionDeployProbe (and (not status) (gr charges 0) (= (sysGetNode) 'G2)))
 								)
 						</OnPaneInit>
 
@@ -308,6 +315,9 @@
 
 									;	Remember the probe for the next pane
 									(scrSetData gScreen 'currentProbe (objGetID theProbe))
+									
+									;	Save probe object IDs
+									(typSetData &itMRADExperiment; 'probeIDs (append (typGetData &itMRADExperiment; 'probeIDs) (objGetID theProbe)))
 
 									;	Consume charges
 									(setq gItem (objSetItemProperty gPlayerShip gItem 'incCharges -1))
@@ -419,6 +429,11 @@
 
 				You must deploy a probe within 10 light-seconds of the anomaly to gather data 
 				and to successfully complete the experiment.
+			</Text>
+			<Text id="descHereticOnly">
+				MRAD experiment online.
+				
+				Error: Incorrect star system. Return to the Heretic system to proceed.
 			</Text>
 			<Text id="descLastProbe">You have 1 probe left.</Text>
 			<Text id="descProbesLeft">You have %number% probes left. Deploy a probe to continue the experiment.</Text>
@@ -564,6 +579,30 @@
 						)
 					)
 				))
+				
+				(setq mradShowProbes (lambda (show)
+					(block Nil
+						;	Search the system if we haven't already, in case it's an old save.
+						(if (not (typGetData &itMRADExperiment; 'searched))
+							(block Nil
+								(typSetData &itMRADExperiment; 'probeIDs
+									(append (typGetData &itMRADExperiment; 'probeIDs)
+										(map (sysFindObject Nil "T +mradProbe;") theProbe (objGetID theProbe))
+										)
+									)
+								(typSetData &itMRADExperiment; 'searched True)
+								)
+							)
+						
+						; Show or hide probe indicators
+						(enum (typGetData &itMRADExperiment; 'probeIDs) theID
+							(if show
+								(objSetShowAsDestination (objGetObjByID theID) 'showDistance)
+								(objClearShowAsDestination (objGetObjByID theID))
+								)
+							)
+						)
+					))
 			)
 	</Globals>
 

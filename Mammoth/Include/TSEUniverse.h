@@ -61,6 +61,7 @@ class CDebugOptions
 		bool IsShowLineOfFireEnabled (void) const { return m_bShowLineOfFire; }
 		bool IsShowNavPathsEnabled (void) const { return m_bShowNavPaths; }
 		bool IsShowNodeAttributesEnabled (void) const { return m_bShowNodeAttributes; }
+		bool IsShowOrderInfoEnabled () const { return m_bShowOrderInfo; }
 		bool IsVerboseCreate (void) const { return m_bVerboseCreate; }
 		bool SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
 		void SetVerboseCreate (bool bValue = true) { m_bVerboseCreate = bValue; }
@@ -75,6 +76,7 @@ class CDebugOptions
 		bool m_bShowFacingsAngle = false;
 		bool m_bShowNodeAttributes = false;
 		bool m_bVerboseCreate = false;
+		bool m_bShowOrderInfo = false;
 	};
 
 class CPerformanceCounters
@@ -190,10 +192,10 @@ class CNamedEffects
 
 		CNamedEffects (void) { }
 		CNamedEffects (const CNamedEffects &Src) = delete;
-		CNamedEffects (CNamedEffects &&Src);
+		CNamedEffects (CNamedEffects &&Src) noexcept;
 		~CNamedEffects (void) { CleanUp(); }
 		CNamedEffects &operator= (const CNamedEffects &Src) = delete;
-		CNamedEffects &operator= (CNamedEffects &&Src);
+		CNamedEffects &operator= (CNamedEffects &&Src) noexcept;
 
 		void CleanUp (void);
 		CEffectCreator &GetFireEffect (CDesignCollection &Design, DamageTypes iDamage) const;
@@ -510,7 +512,8 @@ class CUniverse
 		DWORD GetFrameTicks (void) const { return m_dwFrame; }
 		int GetPaintTick (void) { return m_iPaintTick; }
 		CSpaceObject *GetPOV (void) const { return m_pPOV; }
-		IPlayerController *GetPlayer (void) const { return m_pPlayer; }
+		IPlayerController &GetPlayer (void) { return (m_pPlayer ? *m_pPlayer : m_DefaultPlayer); }
+		const IPlayerController &GetPlayer (void) const { return (m_pPlayer ? *m_pPlayer : m_DefaultPlayer); }
 		GenomeTypes GetPlayerGenome (void) const;
 		CString GetPlayerName (void) const;
 		CSpaceObject *GetPlayerShip (void) const { return m_pPlayerShip; }
@@ -661,5 +664,7 @@ class CUniverse
 		bool m_bDebugMode = false;
 		bool m_bNoSound = false;
 		int m_iLogImageLoad = 0;				//	If >0 we disable image load logging
+
+		static IPlayerController m_DefaultPlayer;
 	};
 

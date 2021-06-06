@@ -361,7 +361,7 @@
 			<Text id="actionDropThis">[D]rop this Item</Text>
 			<Text id="actionDropAnother">
 				(block (text)
-					(setq text (scrTranslate gScreen 'actionDropAnotherText {
+					(setq text (typTranslate gType 'actionDropAnotherText {
 						itemName:(itmGetName (scrGetData gScreen 'lastItemDrop) 0x400)
 						}))
 					(if (gr (count text) 46)
@@ -817,7 +817,6 @@
 				damage=				"plasma:40; WMD5"
 				
 				fireRate=			"16"
-				hitPoints=			"15"
 
 				powerUse=			"3000"
 				sound=				"&snRecoillessCannon;"
@@ -887,7 +886,6 @@
 				type=			"missile"
 				lifetime=		"480"
 				missileSpeed=	"30"
-				hitPoints=		"50"
 
 				failsafe=		"6"
 

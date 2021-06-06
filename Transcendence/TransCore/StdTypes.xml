@@ -684,23 +684,24 @@
 
 	<ItemTable UNID="&trCargoContainer;">
 		<Table>
-			<Item chance="10" count="6d6"	item="&itHelium3FuelRod;" />
-			<Item chance="10" count="3d6"	item="&itSiliconArmorPatch;" />
-			<Item chance="5" count="3d6"	item="&itOrganicAcid;" />
-			<Item chance="10" count="3d12"	item="&itTitaniumOre;" />
-			<Item chance="10" count="2d12"	item="&itDuralloyOre;" />
-			<Item chance="10" count="3d12"	item="&itHydrocarbons;" />
-			<Item chance="10" count="1d12"	item="&itPteracniumOre;" />
-			<Group chance="5">
-				<Item count="3d6"	item="&itKM100Missile;" />
-				<Item count="2d6"	item="&itKM500Missile;" />
+			<Group chance="60" value="standard">
+				<RandomItem chance="60"
+						criteria=			"* +res; -notStandard;"
+						levelFrequency=		"systemLevel:vu|c|uv"
+						/>
 			</Group>
-			<Group chance="15">
-				<Lookup count="1d4" table="&trMiscItems1;"/>
-				<Lookup count="1" table="&trUsefulItems1;"/>
+			<Group chance="60" value="standard">
+				<RandomItem chance="30"
+						criteria=			"f -notStandard;"
+						levelFrequency=		"systemLevel:vu|c|uv"
+						/>
 			</Group>
-			<Lookup chance="10" count="1d6" table="&trMiscItems1;"/>
-			<Lookup chance="5" count="1d6" table="&trMiscItems2;"/>
+			<Group chance="10" value="standard">
+				<RandomItem chance="10"
+						criteria=			"m -notStandard;"
+						levelFrequency=		"systemLevel:vu|c|uv"
+						/>
+			</Group>
 		</Table>
 	</ItemTable>
 
@@ -979,7 +980,6 @@
 			scale=				"ship"
 			mobile=				"true"
 			mass=				"1"
-			immutable=			"true"
 			destroyWhenEmpty=	"true"
 			noMapIcon=			"true"
 			>

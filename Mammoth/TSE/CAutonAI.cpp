@@ -50,7 +50,9 @@ void CAutonAI::Behavior (SUpdateCtx &Ctx)
 
 		case stateFollowing:
 			{
-			ASSERT(m_pDest);
+			if (!m_pDest)
+				throw CException(ERR_FAIL);
+
 			CVector vTarget = m_pDest->GetPos() - m_pShip->GetPos();
 			Metric rTargetDist2 = vTarget.Dot(vTarget);
 			Metric rMaxDist = (MAX_FOLLOW_DISTANCE) + (g_KlicksPerPixel * (m_pShip->GetDestiny() % 120));

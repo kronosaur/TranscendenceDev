@@ -575,7 +575,7 @@
 				lifetime=		"80"
 				missileSpeed=	"30"
 						
-				hitPoints=		"20"
+				hitPoints=		"30"
 				maneuverRate=	"18"
 						 
 				effect=			"&efMissileMAG;"
@@ -640,7 +640,7 @@
 				lifetime=		"80"
 				missileSpeed=	"30"
 						
-				hitPoints=		"20"
+				hitPoints=		"60"
 						 
 				effect=			"&efMissileMAG;"
 				sound=			"&snMissileLauncher;"

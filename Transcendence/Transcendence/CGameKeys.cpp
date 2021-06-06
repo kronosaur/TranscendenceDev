@@ -125,6 +125,7 @@ SGameKeyData g_GameKeyData[CGameKeys::keyCount] =
 		{	"Interact",					"Dock or Enter Stargate",		SGameKeyData::FLAG_NO_REPEAT },
 		{	"CycleTarget",				"Cycle Target",					SGameKeyData::FLAG_NO_REPEAT },
 		{	"SquadronUI",				"Squadron Status",				SGameKeyData::FLAG_NO_REPEAT },
+		{	"ToggleHUD",				"Show/Hide HUD",				SGameKeyData::FLAG_NO_REPEAT },
 	};
 
 const int GAME_KEY_DATA_COUNT = (sizeof(g_GameKeyData) / sizeof(g_GameKeyData[0]));

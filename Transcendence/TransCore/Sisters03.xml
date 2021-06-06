@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+	<!-- Confront Fallen Pilgrim ===============================================
+	
+	======================================================================== -->
+	
+	<MissionType UNID="&msSisters03;"
+			name=						"Sisters 03: Fallen Pilgrim"
+			attributes=					"sistersMission"
+
+			level=						"3-7"
+			maxAppearing=				"1"
+			>
+		<Properties>
+			<!-- status
+			
+				Nil: Not started
+				'combat: Confronting the fallen pilgrim
+				'pilgrimDestroyed: Fallen pilgrim destroyed
+				'pilgrimLeft: Fallen pilgrim left
+				'sistersDestroyed: Station destroyed.
+
+			-->
+			<Data id="status"></Data>
+
+			<Data id="targetID"></Data>
+
+			<Data id="epilogueCompleted"></Data>
+		</Properties>
+
+		<Events>
+
+			<!-- CREATE MISSION -->
+
+			<CanCreate>
+
+				;	Mission is available even if you are not a pilgrim.
+					
+				True
+
+			</CanCreate>
+
+			<!-- BRIEFING, ACCEPTING, DECLINING -->
+
+			<OnAcceptedUndock>
+
+				;	Called after the player undocks after having accepted the
+				;	mission. 
+				;
+				;	gSource: Mission object.
+				;	aDockTarget: Object that we were docked with.
+
+				(block (
+					(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+
+					pilgrimObj
+					)
+					;	Create the pilgrim
+
+					(setq pilgrimObj (sysCreateEncounter &tbSisters03FallenPilgrims; {
+						distance: (random 120 150)
+						target: stationObj
+						}))
+
+					;	Make sure wreck survives
+
+					(objSet@ pilgrimObj 'alwaysLeaveWreck True)
+
+					;	No friendly fire
+
+					(objSet@ stationObj 'ignoreFriendlyFire True)
+
+					;	Register
+
+					(msnRegisterForEvents gSource pilgrimObj)
+					(msnSet@ gSource 'targetID (objGetID pilgrimObj))
+					(msnSet@ gSource 'status 'combat)
+					(msnSetPlayerTarget gSource)
+					)
+			</OnAcceptedUndock>
+
+			<!-- RUNNING THE MISSION -->
+
+			<OnSetPlayerTarget>
+
+				;	Called to refresh the player's target. Always called right 
+				;	after the player accepts the mission. May be called at 
+				;	other times (e.g., after the player returns to the system).
+				;
+				;	gSource: Mission object.
+				;	aReason:
+				;		'accepted: Mission has been accepted
+				;		'debriefed: Player has been debriefed
+				;		'failure: Mission failed
+				;		'inProgress: Player visited station while mission in progress
+				;		'newSystem: Player is in a new system
+				;		'success: Mission completed successfully
+
+				(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'targetID)) 'attack)
+
+			</OnSetPlayerTarget>
+
+			<OnObjDestroyed>
+
+				;	Called when an object is destroyed, but only if we have 
+				;	called msnRegisterForEvents on the object.
+				;
+				;	gSource: Mission object.
+				;	aObjDestroyed: Object that was destroyed
+				;	aDestroy: True if object was destroyed (as opposed to left 
+				;		system)
+				;	aDestroyReason:
+				;		'ascended
+				;		'custom
+				;		'damage
+				;		'disintegration
+				;		'ejecta
+				;		'enteredStargate
+				;		'explosion
+				;		'gravity
+				;		'playerCreatedExplosion
+				;		'powerFailure
+				;		'radiationPoisoning
+				;		'removedFromSystem
+				;		'runningOutOfFuel
+				;		'self
+				;		'shatter
+				;		'weaponMalfunction
+				;	aDestroyer: Object that destroyed it.
+				;	aOrderGiver: Object that controlled destroyer, e.g.,
+				;		if destroyer is an auton.
+				;	aWreckObj: Wreck left behind (may be nil)
+				
+				(switch
+					;	If our station got destroyed, then we fail.
+
+					(= (objGetID aObjDestroyed) (msn@ gSource 'ownerID))
+						(block ()
+							(msnSet@ gSource 'status 'sistersDestroyed)
+							(msnFailure gSource)
+							)
+
+					;	If this is the fallen pilgrim, then we win
+
+					(= (objGetID aObjDestroyed) (msn@ gSource 'targetID))
+						(block ()
+							(if aDestroy
+								(msnSet@ gSource 'status 'pilgrimDestroyed)
+								(msnSet@ gSource 'status 'pilgrimLeft)
+								)
+
+							;	If the mission hasn't failed, and we destroyed the 
+							;	fallen pilgrim, then place treasure on the wreck.
+
+							(if (and aWreckObj 
+									(not (msn@ gSource 'isFailure))
+									)
+								(block ()
+									(objSetEventHandler aWreckObj &evSisters03Wreck;)
+									(objAddRandomItems aWreckObj &tbSisters03PilgrimTreasure; 1)
+									(objSet@ aWreckObj 'maxStructuralHP 500)
+									(objSet@ aWreckObj 'structuralHP 500)
+									)
+								)
+
+							;	Mission always succeeds, even if pilgrim gates out
+
+							(msnSuccess gSource)
+							)
+					)
+			</OnObjDestroyed>
+
+			<!-- MISSION COMPLETE -->
+
+			<OnCompleted>
+
+				;	Called when the mission ends (generally because msnSuccess 
+				;	or msnFailure were called).
+				;
+				;	gSource: Mission object.
+				;	gData: Arbitrary data passed in to msnSuccess or msnFailure
+				;	aReason:
+				;		'failure: Mission failed
+				;		'success: Mission completed successfully
+
+				(block (
+					(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+					)
+					(objSet@ stationObj 'ignoreFriendlyFire Nil)
+					)
+			</OnCompleted>
+		</Events>
+
+		<Language>
+			<Text id="Name">
+				Confront Fallen Pilgrim
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					systemName: (sysGetName)
+					})
+			</Text>
+			<Text id="Intro">
+				(list
+					{	descID: 'textIntro1				labelID:'actionIntro1			}
+					)
+			</Text>
+			<Text id="Briefing">
+				(list
+					{	descID: 'textBriefing1			labelID:'actionBriefing1		}
+					{	descID: 'textBriefing2			labelID:'actionBriefing2		}
+					{	descID: 'textBriefing3			acceptLabelID:'actionAccept		declineLabelID:'actionDecline			}
+					)
+			</Text>
+			<Text id="AcceptReply">
+				(list
+					{	descID: 'textAcceptReply1					}
+					)
+			</Text>
+			<Text id="DeclineReply">
+				(list
+					{	descID: 'textDeclineReply1					}
+					)
+			</Text>
+			<Text id="InProgress">
+				(list
+					{	descID: 'textInProgress1					}
+					)
+			</Text>
+			<Text id="SuccessDebrief">
+				(block (
+					(status (msn@ gSource 'status))
+					)
+					(switch
+						(= status 'pilgrimLeft)
+							(list
+								{	descID: 'textSuccessDebrief.pilgrimLeft1	}
+								)
+
+						(list
+							{	descID: 'textSuccessDebrief.pilgrimDestroyed1	}
+							)
+						)
+					)
+			</Text>
+			<Text id="FailureDebrief">
+				(list
+					{	descID: 'textFailureDebrief1				}
+					)
+			</Text>
+
+			<Text id="textSummary">
+			
+				Your mission is to defend the Sisters from a fallen pilgrim.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textIntro1">
+
+				The abbess greets you:
+
+				"Welcome, pilgrim! I must burden you with a terrible task. Are 
+				you ready to fulfill Domina's will?"
+
+			</Text>
+			<String id="actionIntro1">"[D]epends, I guess."</String>
+			<Text id="textBriefing1">
+
+				The abbess examines your face for a second.
+
+				"Not all pilgrims are as resilient as you. Some strain under
+				the immense pressure of their journey.
+
+				"Some break.
+
+				"One such pilgrim has returned. Her name is Anna Janko, and she
+				has fallen from Domina's grace. Her thoughts are of violence and
+				death."
+			
+			</Text>
+			<String id="actionBriefing1">"[W]hat happened?"</String>
+			<Text id="textBriefing2">
+
+				"I don't know. Even Domina cannot straighten the crooked timber
+				of humanity. We are imperfect beings, and imperfect beings 
+				fail.
+
+				"Anna Janko has the powers of Domina, but her mind is corrupted.
+				She means to destroy us, and will do so easily, if she is not
+				stopped."
+			
+			</Text>
+			<String id="actionBriefing2">"[W]hat do you want me to do?"</String>
+			<Text id="textBriefing3">
+
+				The abbess keeps her eyes on you, then looks away.
+
+				"I want you to kill her. Kill her before she kills us."
+			
+			</Text>
+			<String id="actionAccept">"[I]'ll defend you."</String>
+			<String id="actionDecline">"Let me [p]repare first."</String>
+			<Text id="textAcceptReply1">
+
+				"Thank you! We are counting on you!
+
+				"Anna Janko is only a hundred light-seconds out. When she gets
+				here, she'll try to kill us all.
+
+				"Only you can stop her!"
+
+			</Text>
+			<Text id="textDeclineReply1">
+
+				"You may do so, but there isn't much time. Please return as soon
+				as you can. Don't abandon us!"
+
+			</Text>
+			<Text id="textInProgress1">
+
+				The abbess is in the sanctum praying. You cannot get her 
+				attention.
+
+			</Text>
+			<Text id="textSuccessDebrief.pilgrimLeft1">
+
+				The abbess looks at you in awe.
+
+				"You're truly Domina's child! You have defended us without 
+				killing Anna Janko. Like all dark creatures, she has fled rather
+				than face justice.
+
+				"But I worry that your conflict is only postponed."
+
+			</Text>
+			<Text id="textSuccessDebrief.pilgrimDestroyed1">
+
+				The abbess is sad.
+
+				"Every life lost is a tragedy, but you saved many more today.
+				Thank you."
+
+			</Text>
+			<Text id="textFailureDebrief1">
+
+				LATER: We're all dead.
+
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+
+			<Code id="dlgPilgrimWreck">
+				(list
+					{	descID: 'textPilgrimEpilogue1		labelID:'actionPilgrimEpilogue1	}
+					{	descID: 'textPilgrimEpilogue2		labelID:'actionPilgrimEpilogue2	}
+					{	descID: 'textPilgrimEpilogue3		labelID:'actionPilgrimEpilogue3	}
+					{	descID: 'textPilgrimEpilogue4
+						code: (lambda ()
+							(block (
+								(missionObj (@ (msnFind "a +unid:&msSisters03;;") 0))
+								)
+								(msnSet@ missionObj 'epilogueCompleted True)
+								)
+							)
+						}
+					)
+			</Code>
+			<Text id="textPilgrimEpilogue1">
+
+				You enter the wreckage and see the crumpled body of a woman. She looks up at
+				you with a blank expression. Blood drips out of a wound on the back of her
+				head. She coughs out a laugh.
+				
+				"Domina's puppet! Have you reached the core yet?"
+			
+			</Text>
+			<String id="actionPilgrimEpilogue1">"[N]ot yet."</String>
+			<Text id="textPilgrimEpilogue2">
+				
+				"Every day of your journey you become more like them. Like her. Cold. 
+				Unfeeling. Inhuman."
+				
+				She grabs your arm.
+				
+				"Hang on to your humanity! Renounce Domina and accept the truth!"
+				
+			</Text>
+			<String id="actionPilgrimEpilogue2">"[W]hat truth?"</String>
+			<Text id="textPilgrimEpilogue3">
+				
+				"We're the enemy! The pilgrims are being controlled by Domina to
+				destroy humanity, and the Sisters are helping. By the time you 
+				reach the core you will have gained all the power of the Ancient
+				Races.
+				
+				"When you return, you'll be as powerful as a god. And Domina 
+				will use you to destroy us all!"
+			
+			</Text>
+			<String id="actionPilgrimEpilogue3">"[N]o, you're wrong."</String>
+			<Text id="textPilgrimEpilogue4">
+				
+				Anna Janko coughs out a spray of blood. Her head tilts down.
+				
+				"Don't go," she whispers. "Don't go."
+				
+				Her body goes limp.
+				
+			</Text>
+		</Language>
+	</MissionType>
+
+<!-- BEHAVIORS -->
+
+	<Type UNID="&evSisters03Wreck;">
+		<Events>
+			<GetDockScreen>
+				(block (
+					(missionObj (@ (msnFind "a +unid:&msSisters03;;") 0))
+					)
+				
+					(switch
+						;	If we already completed this conversation, then nothing to do.
+						
+						(msn@ missionObj 'epilogueCompleted)
+							Nil
+							
+						;	Script
+						
+						(list &dsRPGDialog; { translateType:&msSisters03; dialogID:'dlgPilgrimWreck } 10)
+						)
+					)
+			</GetDockScreen>
+		</Events>
+	</Type>
+
+<!-- TABLES -->
+
+	<ShipTable UNID="&tbSisters03FallenPilgrims;">
+		<LevelTable>
+			<Ship levelFrequency="cccc- -----" count="1" class="&scNPCPilgrimSapphireL4;"	eventHandler="&evFallenPilgrim;" sovereign="&svFallenPilgrim;"/>
+			<Ship levelFrequency="---rc -----" count="1" class="&scNPCPilgrimEI500L5;"		eventHandler="&evFallenPilgrim;" sovereign="&svFallenPilgrim;"/>
+			<Ship levelFrequency="---rc -----" count="1" class="&scNPCPilgrimWolfenL5;"		eventHandler="&evFallenPilgrim;" sovereign="&svFallenPilgrim;"/>
+			<Ship levelFrequency="----r c----" count="1" class="&scNPCPilgrimSapphireL6;"	eventHandler="&evFallenPilgrim;" sovereign="&svFallenPilgrim;"/>
+			<Ship levelFrequency="----r c----" count="1" class="&scNPCPilgrimWolfenL6;"		eventHandler="&evFallenPilgrim;" sovereign="&svFallenPilgrim;"/>
+			<Ship levelFrequency="----- rc---" count="1" class="&scNPCPilgrimEI500L7;"		eventHandler="&evFallenPilgrim;" sovereign="&svFallenPilgrim;"/>
+			<Ship levelFrequency="----- rc---" count="1" class="&scNPCPilgrimWolfenL7;"		eventHandler="&evFallenPilgrim;" sovereign="&svFallenPilgrim;"/>
+			<Ship levelFrequency="----- -rc--" count="1" class="&scNPCPilgrimSapphireL8;"	eventHandler="&evFallenPilgrim;" sovereign="&svFallenPilgrim;"/>
+		</LevelTable>
+	</ShipTable>
+
+	<ItemTable unid="&tbSisters03PilgrimTreasure;">
+		<RandomItem count="1d4" 
+				criteria=		"* +communion;"
+				levelFrequency=	"systemLevel:r|u|crv"
+				/>
+	</ItemTable>
+
+</TranscendenceModule>

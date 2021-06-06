@@ -239,6 +239,11 @@ ItemFates CShipwreckDesc::CalcDeviceFate (CShip *pSource, const CItem &Item, CSp
 	if (pDevice && (iFate = pDevice->GetFate()) != fateNone)
 		return iFate;
 
+	//	Device slots that cannot be empty never drop (it counts as built-in)
+
+	else if (pDevice && !pDevice->CanBeEmpty())
+		return fateDestroyed;
+
 	//	There's a chance that we'll be destroyed outright.
 
 	else if (mathRandom(1, 100) <= CalcDeviceDestroyChance())

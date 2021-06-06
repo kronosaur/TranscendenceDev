@@ -152,7 +152,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"options:\n\n"
 			
 			"   'checkpoint (or Nil)\n"
-			"   'missionCheckpoint",
+			"   'missionCheckpoint\n",
 
 			"*",	PPFLAG_SIDEEFFECTS, },
 
@@ -204,7 +204,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"alignment:\n\n"
 			"   'left\n"
 			"   'center\n"
-			"   'right",
+			"   'right\n",
 
 			"ii*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -270,14 +270,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"scr@",							fnScrGet,		FN_SCR_GET_PROPERTY,
 			"(scr@ screen property) -> value\n\n"
 			
-			"property\n\n"
+			"property:\n\n"
 			
-			"   'counter"
-			"   'description"
-			"   'inFirstOnInit"
-			"   'input"
-			"   'screen"
-			"   'stack",
+			"   'counter\n"
+			"   'description\n"
+			"   'inFirstOnInit\n"
+			"   'input\n"
+			"   'screen\n"
+			"   'stack\n",
 
 			"is",	0,	},
 
@@ -293,7 +293,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
             "   'type: UNID of screen or root type\n"
             "   'screenName: Screen name, if type is not a dock screen\n"
             "   'pane: Current pane\n"
-            "   'data: Associated data",
+            "   'data: Associated data\n",
 
             "i",	0,	},
 
@@ -476,7 +476,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   %son%          son or daughter (matching case)\n"
 			"   %%             %\n"
 			"   %1%            arg1\n"
-			"   %2%            ...",
+			"   %2%            ...\n",
 
 			"is*",	0, },
 
@@ -503,7 +503,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'mapHint\n"
 			"   'refuelHint\n"
 			"   'switchMissileHint\n"
-			"   'useItemHint",
+			"   'useItemHint\n",
 
 			"is",	0, },
 
@@ -527,7 +527,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'itemsMinedCount\n"
 			"   'itemsMinedValue\n"
 			"   'itemsSoldCount\n"
-			"   'itemsSoldValue",
+			"   'itemsSoldValue\n",
 
 			"isv",	0,	},
 
@@ -541,7 +541,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'missionCompleted\n"
 			"   'missionFailure\n"
 			"   'missionSuccess\n"
-			"   'objsDestroyed",
+			"   'objsDestroyed\n",
 
 			"isvs",	0,	},
 
@@ -553,7 +553,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'allHints\n"
 			"   'allMessages\n"
 			"   'enabledHints\n"
-			"   (plus all messageIDs for plyIsMessageEnabled)",
+			"   (plus all messageIDs for plyIsMessageEnabled)\n",
 
 			"isv",	PPFLAG_SIDEEFFECTS, },
 
@@ -575,7 +575,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'resurrectCount\n"
 			"   'score\n"
 			"   'systemData\n"
-			"   'systemsVisited",
+			"   'systemsVisited\n",
 
 			"is",	0,	},
 
@@ -599,7 +599,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'itemsFiredCount\n"
 			"   'itemsMinedCount\n"
 			"   'itemsSoldCount\n"
-			"   'itemsSoldValue",
+			"   'itemsSoldValue\n",
 
 			"isv*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -612,7 +612,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"stat:\n\n"
 			
-			"   'asteroidsMined",
+			"   'asteroidsMined\n",
 
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -696,8 +696,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	(scrRefreshItemListCursor screen item)
 
 		{	"uiKeyLabel",							fnUISet,		FN_UI_KEY_LABEL,
-			"(uiKeyLabel command) -> text",
-			"DEPRECATED: Use uiGetKeyName instead.",	0,	},
+			"DEPRECATED: Use uiGetKeyName instead.",
+			"s",	0,	},
 
 	};
 

@@ -2233,6 +2233,19 @@ CString CShipClass::GetDesc (void) const
 	return NULL_STR;
 	}
 
+const IDeviceGenerator &CShipClass::GetDeviceSlots (void) const
+
+//	GetDeviceSlots
+//
+//	Returns device slot definitions.
+
+	{
+	if (m_pDeviceSlots)
+		return *m_pDeviceSlots;
+	else
+		return IDeviceGenerator::Null();
+	}
+
 CVector CShipClass::GetDockingPortOffset (int iRotation)
 
 //	GetDockingPortOffset
@@ -4130,6 +4143,8 @@ void CShipClass::PaintScaled (CG32bitImage &Dest,
 	//	Paints a scaled image, including any attached compartments.
 
 	{
+	DEBUG_TRY
+
 	if (m_Interior.HasAttached())
 		{
 		CG32bitImage Image;
@@ -4139,6 +4154,8 @@ void CShipClass::PaintScaled (CG32bitImage &Dest,
 		}
 	else
 		m_Image.GetSimpleImage().PaintScaledImage(Dest, x, y, iTick, GetIntegralRotationDesc().GetFrameIndex(iRotation), cxWidth, cyHeight, CObjectImageArray::FLAG_CACHED);
+
+	DEBUG_CATCH
 	}
 
 void CShipClass::PaintThrust (CG32bitImage &Dest, 

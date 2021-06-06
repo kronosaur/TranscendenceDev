@@ -1623,7 +1623,7 @@
 
 						; Compose text
 						(scrSetDescTranslate gScreen 'descConfiscate {
-							itemList: (join (map itemsToConfiscate theItem (itmGetName theItem 'count)) 'oxfordComma)
+							itemList: (join (map itemsToConfiscate theItem (itmGetName theItem '(count escapeQuotes))) 'oxfordComma)
 							})
 						)
 				</OnPaneInit>

@@ -135,7 +135,7 @@ bool CIntegerRangeCriteria::Parse (const char *pPos, const char **retpPos, char 
 			int iHighValue = -1;
 			if (*pPos == '-')
 				{
-				*pPos++;
+				pPos++;
 
 				iHighValue = strParseInt(pPos, 0, &pPos, &bFailed);
 				if (bFailed)

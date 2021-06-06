@@ -226,11 +226,13 @@ class CHitCtx
 class CAttackDetector
 	{
 	public:
-		CAttackDetector (void);
+		CAttackDetector (void) { }
 
+		ICCItemPtr AsCCItem () const;
 		void Blacklist (void) { m_iCounter = -1; }
 		void ClearBlacklist (void) { m_iCounter = 0; }
 		bool IsBlacklisted (void) const { return m_iCounter == -1; }
+		bool IsEmpty () const { return (m_iCounter == 0 && m_iLastHit == 0); }
 		bool Hit (int iTick);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void Update (int iTick) { if ((iTick % DECAY_RATE) == 0) OnUpdate(); }
@@ -246,8 +248,8 @@ class CAttackDetector
 
 		void OnUpdate (void);
 
-		int m_iCounter;
-		int m_iLastHit;
+		int m_iCounter = 0;
+		int m_iLastHit = 0;
 	};
 
 //	CSpaceObject Definitions ---------------------------------------------------
@@ -356,6 +358,7 @@ class CSpaceObject
 	{
 	public:
 		static constexpr DWORD AGGRESSOR_THRESHOLD = 30 * 30;
+		static constexpr int ANNOTATION_INNER_SPACING_Y =			2;
 
 		enum Categories
 			{
@@ -628,13 +631,13 @@ class CSpaceObject
 
 		//	Devices
 
-		virtual bool CanInstallItem (const CItem &Item, int iSlot = -1, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL);
+		virtual bool CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot = CDeviceSystem::SSlotDesc(), InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL);
 		virtual void DamageExternalDevice (int iDev, SDamageCtx &Ctx) { }
 		virtual void DisableDevice (CInstalledDevice *pDevice) { }
 		bool FindDevice (const CItem &Item, CInstalledDevice **retpDevice, CString *retsError);
 		virtual CInstalledDevice *FindDevice (const CItem &Item) { return NULL; }
 		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return false; }
-		bool FireCanInstallItem (const CItem &Item, int iSlot, CString *retsResult);
+		bool FireCanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, CString *retsResult);
 		bool FireCanRemoveItem (const CItem &Item, int iSlot, CString *retsResult);
 		virtual CInstalledDevice *GetDevice (int iDev) { return NULL; }
 		virtual int GetDeviceCount (void) const { return 0; }
@@ -853,6 +856,7 @@ class CSpaceObject
 		bool FireOnSubordinateAttacked (const SDamageCtx &Ctx);
 		void FireOnSystemExplosion (CSpaceObject *pExplosion, CSpaceObject *pSource, DWORD dwItemUNID);
 		void FireOnSystemObjAttacked (SDamageCtx &Ctx);
+		void FireOnSystemObjCreated (const CSpaceObject &Obj);
 		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx);
 		void FireOnSystemStarted (DWORD dwElapsedTime);
 		void FireOnSystemStopped (void);
@@ -1076,6 +1080,7 @@ class CSpaceObject
 		bool IsOutOfPlaneObj (void) const { return m_fOutOfPlaneObj; }
 		bool IsPaintNeeded (void) { return m_fPaintNeeded; }
 		void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintAnnotationText (CG32bitImage &Dest, int x, int y, const CString &sText, SViewportPaintCtx &Ctx) const;
 		void PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx, AlignmentStyles iAlign, CG32bitPixel rgbColor, int *retcyHeight = NULL);
 		void PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
 		void PaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { OnPaintSRSEnhancements(Dest, Ctx); }
@@ -1111,6 +1116,7 @@ class CSpaceObject
 
 		//	Ships
 
+		virtual void GetHUDTimers (TArray<SHUDTimerDesc> &retTimers) const { }
 		virtual const CShipPerformanceDesc &GetShipPerformance (void) const { return CShipPerformanceDesc::Null(); }
 
 		//	Stargates (object is a stargate)
@@ -1194,6 +1200,7 @@ class CSpaceObject
 		virtual CMissile *AsMissile (void) { return NULL; }
 		virtual CMission *AsMission (void) { return NULL; }
 		virtual CShip *AsShip (void) { return NULL; }
+		virtual const CShip *AsShip (void) const { return NULL; }
 		virtual CStation *AsStation (void) { return NULL; }
 		virtual bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength) { return false; }
 		virtual bool CanAttack (void) const { return false; }
@@ -1254,7 +1261,7 @@ class CSpaceObject
 		virtual int GetAISettingInteger (const CString &sSetting) { return 0; }
 		virtual CString GetAISettingString (const CString &sSetting) { return NULL_STR; }
 		virtual const CArmorSystem &GetArmorSystem (void) const { return CArmorSystem::m_Null; }
-		virtual CArmorSystem *GetArmorSystem (void) { return NULL; }
+		virtual CArmorSystem &GetArmorSystem (void) { return CArmorSystem::m_Null; }
 		virtual CurrencyValue GetBalancedTreasure (void) const { return 0; }
 		virtual Metric GetCargoSpaceLeft (void) const { return 1000000.0; }
 		virtual int GetCombatPower (void) { return 0; }
@@ -1434,7 +1441,7 @@ class CSpaceObject
 		const CEnhancementDesc *GetSystemEnhancements (void) const;
 		ICCItemPtr GetTypeProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
 		CSpaceObject *HitTest (const CVector &vStart, const DamageDesc &Damage, CVector *retvHitPos, int *retiHitDir);
-		CSpaceObject *HitTestProximity (const CVector &vStart, Metric rMinThreshold, Metric rMaxThreshold, const DamageDesc &Damage, const CSpaceObject *pTarget, CVector *retvHitPos, int *retiHitDir);
+		CSpaceObject *HitTestProximity (const CVector &vStart, Metric rMinThreshold, Metric rMaxThreshold, const DamageDesc &Damage, const CTargetList::STargetOptions &TargetOptions, const CSpaceObject *pTarget, CVector *retvHitPos, int *retiHitDir);
 		bool ImagesIntersect (const CObjectImageArray &Image1, int iTick1, int iRotation1, const CVector &vPos1,
 				const CObjectImageArray &Image2, int iTick2, int iRotation2, const CVector &vPos2);
 		bool IsObjectDestructionHooked (void) { return (m_fHookObjectDestruction ? true : false); }

@@ -203,7 +203,7 @@ bool CAttackOrder::MustRetreat (CShip &Ship) const
 	return (Damage.iArmorLevel < 25);
 	}
 
-void CAttackOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
+void CAttackOrder::OnAttacked (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObject &AttackerObj, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	OnAttacked
 //
@@ -216,11 +216,10 @@ void CAttackOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *
 	//	current target, then switch to attack it.
 
 	if (m_fNearestTarget 
-			&& pAttacker
 			&& !bFriendlyFire
-			&& pAttacker != m_Objs[OBJ_TARGET]
-			&& IsBetterTarget(pShip, Ctx, m_Objs[OBJ_TARGET], pAttacker))
-		m_Objs[OBJ_TARGET] = pAttacker;
+			&& AttackerObj != m_Objs[OBJ_TARGET]
+			&& IsBetterTarget(&Ship, Ctx, m_Objs[OBJ_TARGET], &AttackerObj))
+		m_Objs[OBJ_TARGET] = &AttackerObj;
 
 	DEBUG_CATCH
 	}
@@ -433,6 +432,14 @@ void CAttackOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrd
 		return;
 		}
 
+#ifdef DEBUG
+	if (pOrderTarget->GetSovereign() == Ship.GetSovereign()
+			&& !Ship.GetSovereign()->IsEnemy(Ship.GetSovereign()))
+		{
+		ASSERT(false);
+		}
+#endif
+
 	//	Set our state
 
 	m_iState = (m_fHold ? EState::AttackingTargetAndHolding : EState::AttackingTargetAndAvoiding);
@@ -499,7 +506,7 @@ void CAttackOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iOb
 		}
 	}
 
-void CAttackOrder::OnReadFromStream (SLoadCtx &Ctx)
+void CAttackOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)
 
 //	OnReadFromStream
 //

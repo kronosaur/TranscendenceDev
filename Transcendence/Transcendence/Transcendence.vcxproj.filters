@@ -113,9 +113,6 @@
     <ClCompile Include="CCommandLineDisplay.cpp">
       <Filter>Source Files\Displays</Filter>
     </ClCompile>
-    <ClCompile Include="CDeviceCounterDisplay.cpp">
-      <Filter>Source Files\Displays</Filter>
-    </ClCompile>
     <ClCompile Include="CGDrawArea.cpp">
       <Filter>Source Files\Displays</Filter>
     </ClCompile>

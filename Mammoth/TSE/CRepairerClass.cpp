@@ -424,7 +424,7 @@ bool CRepairerClass::RepairShipArmor (CDeviceItem &RepairerItem, SDeviceUpdateCt
 	if (!pShip)
 		return false;
 
-	auto pArmor = pSource->GetArmorSystem();
+	auto pArmor = &pSource->GetArmorSystem();
 	if (!pArmor)
 		return false;
 
@@ -556,7 +556,8 @@ void CRepairerClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, S
 
 	//	Armor is repaired next, if necessary
 
-	if (Desc.ArmorRepair.GetCount() > 0)
+	if (Desc.ArmorRepair.GetCount() > 0 
+			|| FindEventHandlerRepairerClass(EEventCache::GetArmorRegen))
 		{
 		if (RepairShipArmor(RepairerItem, Ctx))
 			return;

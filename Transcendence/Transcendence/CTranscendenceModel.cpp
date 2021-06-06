@@ -1377,7 +1377,7 @@ ALERROR CTranscendenceModel::LoadGame (const CString &sSignedInUsername, const C
 
 		//	Connect the player ship controller to the controller
 
-		CTranscendencePlayer *pPlayerController = dynamic_cast<CTranscendencePlayer *>(m_Universe.GetPlayer());
+		CTranscendencePlayer *pPlayerController = dynamic_cast<CTranscendencePlayer *>(&m_Universe.GetPlayer());
 		if (pPlayerController == NULL)
 			{
 			*retsError = CONSTLIT("Save file corruption: No player controller found.");
@@ -1887,10 +1887,9 @@ void CTranscendenceModel::OnPlayerTraveledThroughGate (void)
 			{
 			CMarker *pMarker;
 			if (CMarker::Create(*pNewSystem,
-					NULL,
 					NullVector,
 					NullVector,
-					NULL_STR,
+					CMarker::SCreateOptions(),
 					&pMarker) != NOERROR)
 				throw CException(ERR_FAIL, CONSTLIT("Unable to create marker."));
 

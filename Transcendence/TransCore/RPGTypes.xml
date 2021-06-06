@@ -9,6 +9,8 @@
 			sovereign=			"&svNeutral;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
+			attributes=			"crate"
+
 			structuralHitPoints="10"
 			ejectaType=			"&vtWreckEjecta;"
 

@@ -1871,10 +1871,10 @@ ALERROR CG16bitImage::CreateFromBitmap (HBITMAP hBitmap, HBITMAP hBitmask, DWORD
 
 		//	Figure out the width and height of the bitmap first
 
-		int cxWidth;
-		int cyHeight;
-		void *pBase;
-		int iStride;
+		int cxWidth = 0;
+		int cyHeight = 0;
+		void *pBase = NULL;
+		int iStride = 0;
 
 		if (hBitmap)
 			{

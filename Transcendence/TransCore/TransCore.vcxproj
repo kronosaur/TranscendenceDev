@@ -176,6 +176,7 @@
     <None Include="Antarctica.xml">
       <SubType>Designer</SubType>
     </None>
+    <Xml Include="..\Extensions\Diagnostics\CombatAI.xml" />
     <Xml Include="..\Extensions\Diagnostics\DesignTypeTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\Diagnostics.xml" />
     <Xml Include="..\Extensions\Diagnostics\DockScreenTests.xml" />
@@ -195,6 +196,7 @@
     <Xml Include="..\Extensions\Diagnostics\TSETests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TopologyTests.xml" />
     <Xml Include="Abbasid.xml" />
+    <Xml Include="AgriculturalMission01.xml" />
     <Xml Include="Analyzers.xml" />
     <Xml Include="Anarchists.xml" />
     <Xml Include="Antarctica01.xml" />
@@ -487,6 +489,7 @@
     <Xml Include="BlackMarketMission01.xml" />
     <Xml Include="BlackMarketMission02.xml" />
     <Xml Include="BlackMarketMissionSmuggle01.xml" />
+    <Xml Include="BlackMarketPlayerShips.xml" />
     <Xml Include="CommonwealthCenturions.xml" />
     <Xml Include="CommonwealthCharacters.xml" />
     <Xml Include="CommonwealthFleetMission01.xml" />
@@ -624,6 +627,7 @@
     <Xml Include="MRAD.xml" />
     <Xml Include="MuhammadCondi.xml" />
     <Xml Include="NewVictoria.xml" />
+    <Xml Include="NPCPilgrims.xml" />
     <Xml Include="Ore.xml" />
     <Xml Include="OreStone.xml" />
     <Xml Include="Outlaws.xml" />
@@ -679,6 +683,8 @@
     <Xml Include="Scoria.xml" />
     <Xml Include="ShieldEnhancementItems.xml" />
     <Xml Include="Sisters01.xml" />
+    <Xml Include="Sisters02.xml" />
+    <Xml Include="Sisters03.xml" />
     <Xml Include="SistersDonate.xml" />
     <Xml Include="SistersPilgrimsAid.xml" />
     <Xml Include="SistersSanctum.xml" />

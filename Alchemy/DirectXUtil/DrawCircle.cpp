@@ -69,6 +69,8 @@ void CGDraw::Circle (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, 
 //	Draws a filled circle
 
 	{
+	DEBUG_TRY
+
 	//	Deal with edge-conditions
 
 	if (iRadius <= 0)
@@ -147,6 +149,8 @@ void CGDraw::Circle (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, 
 			break;
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CGDraw::Circle (CG32bitImage &Dest, int x, int y, int iRadius, const TArray<CG32bitPixel> &ColorRamp, EBlendModes iMode, bool bPreMult)
