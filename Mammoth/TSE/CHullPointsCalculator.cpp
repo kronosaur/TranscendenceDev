@@ -138,9 +138,7 @@ CHullPointsCalculator::CHullPointsCalculator (const CShipClass &Class, const CSh
 
 	//	Loop over all slots and see if we have special slots
 
-	IDeviceGenerator *pDeviceSlots = Class.GetDeviceSlots();
-	if (pDeviceSlots)
-		m_Data[fieldDeviceSlots] = pDeviceSlots->CalcHullPoints();
+	m_Data[fieldDeviceSlots] = Class.GetDeviceSlots().CalcHullPoints();
 
 	//	Add any extra points added manually.
 

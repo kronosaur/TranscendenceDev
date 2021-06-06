@@ -433,7 +433,8 @@ void CAttackOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrd
 		}
 
 #ifdef DEBUG
-	if (pOrderTarget->GetSovereign() == Ship.GetSovereign())
+	if (pOrderTarget->GetSovereign() == Ship.GetSovereign()
+			&& !Ship.GetSovereign()->IsEnemy(Ship.GetSovereign()))
 		{
 		ASSERT(false);
 		}

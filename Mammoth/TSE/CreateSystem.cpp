@@ -2547,7 +2547,7 @@ ALERROR CreateShipsForStation (SSystemCreateCtx &CreateCtx, CSpaceObject *pStati
 
 	//	Create the ships
 
-	pStation->CreateRandomDockedShips(pGenerator);
+	pStation->CreateRandomDockedShips(pGenerator, CShipChallengeDesc(CShipChallengeDesc::countOnce));
 
 	//	Done
 

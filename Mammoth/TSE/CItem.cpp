@@ -2465,6 +2465,7 @@ DWORD CItem::ParseFlags (ICCItem *pItem)
 		dwFlags |= (pItem->GetBooleanAt(CONSTLIT("ignoreDisrupted")) ? CItem::FLAG_IGNORE_DISRUPTED : 0);
 		dwFlags |= (pItem->GetBooleanAt(CONSTLIT("ignoreEnhancements")) ? CItem::FLAG_IGNORE_ENHANCEMENTS : 0);
 		dwFlags |= (pItem->GetBooleanAt(CONSTLIT("ignoreInstalled")) ? CItem::FLAG_IGNORE_INSTALLED : 0);
+		dwFlags |= (pItem->GetBooleanAt(CONSTLIT("knownOnly")) ? CItem::FLAG_KNOWN_ONLY : 0);
 		}
 
 	return dwFlags;

@@ -110,6 +110,7 @@
 				levelFrequency=			"----c uv--- ----- ----- -----"
 
 				locationCriteria=		"+planetary"
+				exclusionRadius=		"50"
 				enemyExclusionRadius=	"100"
 				/>
 

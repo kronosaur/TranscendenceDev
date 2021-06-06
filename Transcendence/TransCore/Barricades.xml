@@ -282,20 +282,7 @@
 							recovered
 							)
 							(setq recovered (objGetData gSource 'SourceItem))
-
-							;	We allow the barricade station to be somewhat damaged 
-							;	before damage transfers to the item (which limits the station to half hp)
-
-							(if (ls (/ hpLeft hpMax) 0.70)
-								(setq recovered (itmSet@ recovered 'damaged True))
-								)
-
-							;	But we also store the structural HP on the item, in case 
-							;	it gets deployed again.
-
-							(if (ls hpLeft hpMax)
-								(setq recovered (itmSetData recovered 'structuralHP hpLeft))
-								)
+							(setq recovered (itmSet@ recovered 'hp hpLeft))
 
 							(objAddItem gPlayerShip recovered)
 							(objDestroy gSource)
@@ -415,29 +402,28 @@
 	<Globals>
 		(block ()
 			(setq intBarricadeUse (lambda (barricadeClass)
-				(block (barricade orientation)
-				
-					(setq orientation (shpGetDirection gPlayerShip))
-					
-					; Create a barricade
+				(block (
+					(orientation (shpGetDirection gPlayerShip))
+					(hp (itm@ gItem 'hp))
+
+					barricade
+					)
+					;	Create a barricade
+
 					(setq barricade (sysCreateStation barricadeClass (sysVectorPolarOffset gPlayerShip orientation 2)))
 					
-					(objSetProperty barricade 'rotation orientation)
-					
-					; If the item is damaged, then the barricade is damaged
-
-					(switch
-						(itmGetData gItem 'structuralHP)
-							(objSetProperty barricade 'structuralHP (itmGetData gItem 'structuralHP))
-
-						(itmIsDamaged gItem)
-							(objSetProperty barricade 'structuralHP (divide (objGetProperty barricade 'maxStructuralHP) 2))
+					(objSet@ barricade 'rotation orientation)
+					(if (ls (obj@ barricade 'maxStructuralHP) hp)
+						(objSet@ barricade 'maxStructuralHP hp)
 						)
+					(objSet@ barricade 'structuralHP hp)
 					
-					; Remember the item we used so we can recover it
+					;	Remember the item we used so we can recover it
+
 					(objSetData barricade 'SourceItem (itmSetCount gItem 1))
 
-					; Use up the item
+					;	Use up the item
+
 					(objRemoveItem gSource gItem 1)
 					)
 				))

@@ -2317,7 +2317,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'ignoreData\n"
 			"   'ignoreDisruption\n"
 			"   'ignoreEnhancements\n"
-			"   'ignoreInstalled\n",
+			"   'ignoreInstalled\n"
+			"   'knownOnly\n",
 
 			"iv*",	0,	},
 

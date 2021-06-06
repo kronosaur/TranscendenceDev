@@ -66,7 +66,7 @@ void CTimersHUD::PaintTimer (SHUDPaintCtx &Ctx, CG32bitImage &Dest, SHUDTimerDes
 		xPos += ICON_WIDTH + SPACING_X;
 		}
 
-	int cyBar = TIMER_HEIGHT - MediumFont.GetHeight();
+	int cyBar = (TIMER_HEIGHT - MediumFont.GetHeight()) - BAR_SPACING_Y;
 	int cxBar = (x + TIMER_WIDTH) - xPos;
 	int xBarPos = Min(cxBar, cxBar * Timer.iBar / 100);
 
@@ -98,7 +98,7 @@ void CTimersHUD::PaintTimer (SHUDPaintCtx &Ctx, CG32bitImage &Dest, SHUDTimerDes
 
 	Dest.Fill(xPos, yPos, xBarPos, cyBar, rgbBar);
 	Dest.Fill(xPos + xBarPos, yPos, cxBar - xBarPos, cyBar, rgbBarBackground);
-	yPos += cyBar;
+	yPos += cyBar + BAR_SPACING_Y;
 
 	//	Label
 

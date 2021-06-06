@@ -812,6 +812,9 @@
 								})
 							(sourceObj (if (@ gData 'sourceObj) (@ gData 'sourceObj) gSource))
 							)
+							(if (scr@ gScreen 'rpg.showActualItem)
+								(itmSetKnown theItem)
+								)
 							
 							(rpgBuyItem gSource theItem (scrGetData gScreen 'cost) (objGetDefaultCurrency gSource))
 							(shpInstallDevice shipObj theItem recommendedSlot)
