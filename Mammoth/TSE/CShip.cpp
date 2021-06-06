@@ -430,7 +430,9 @@ void CShip::CalcDeviceBonus (void)
 
 	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
-		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice();
+		if (!pDevice) continue;
+		CInstalledDevice &Device = *pDevice;
 		CItemCtx ItemCtx(this, &Device);
 
 		//	Keep track of device types to see if we have duplicates
@@ -461,7 +463,9 @@ void CShip::CalcDeviceBonus (void)
 
 		for (CDeviceItem OtherDevItem : GetDeviceSystem())
 			{
-			CInstalledDevice &OtherDev = *OtherDevItem.GetInstalledDevice();
+			CInstalledDevice *pOtherDev = OtherDevItem.GetInstalledDevice();
+			if (!pOtherDev) continue;
+			CInstalledDevice &OtherDev = *pOtherDev;
 			if (OtherDev.GetDeviceSlot() != Device.GetDeviceSlot())
 				{
 				//	See if this device enhances us
@@ -511,7 +515,9 @@ void CShip::CalcDeviceBonus (void)
 
 	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
-		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice();
+		if (!pDevice) continue;
+		CInstalledDevice &Device = *pDevice;
 
 		int *pCount = DeviceTypes.GetAt(Device.GetClass()->GetUNID());
 		Device.SetDuplicate(*pCount > 1);
@@ -1029,7 +1035,7 @@ bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &S
 	CString sResult;
 	CItem ItemToReplace;
 	const CHullDesc &Hull = m_pClass->GetHullDesc();
-	const IDeviceGenerator *pDevSlots = GetClass()->GetDeviceSlots();
+	const IDeviceGenerator *pDevSlots = GetDeviceSystem().GetSlots();
 
 	int iSlot = Slot.iIndex;
 
@@ -1129,7 +1135,7 @@ bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &S
 
 		//	Fire CanBeInstalled to check for custom conditions
 
-		else if (!Item.FireCanBeInstalled(this, bForceUseOfDeviceSlot && (iSlotFromId != -1) ? iSlotFromId : Slot.iIndex, &sResult))
+		else if (!Item.FireCanBeInstalled(this, Slot.iIndex, &sResult))
 			iResult = insCannotInstall;
 
 		//	See if the ship's engine core is powerful enough

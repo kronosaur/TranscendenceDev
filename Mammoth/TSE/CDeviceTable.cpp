@@ -289,8 +289,6 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 //	InitDeviceDescFromXML
 //
 //	Loads a device desc from XML.
-//	TODO(heliogenesis): Add support for attribute list, weapon target definition, and description, and possibly max mass?
-//	See https://discord.com/channels/265561663741100043/265561663741100043/823740088294703156
 
 	{
 	ALERROR error;

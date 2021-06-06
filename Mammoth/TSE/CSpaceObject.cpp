@@ -2032,7 +2032,7 @@ bool CSpaceObject::FireCanInstallItem (const CItem &Item, const CDeviceSystem::S
 				const CItem &ItemToReplace = ItemList.GetItemAtCursor();
 				Ctx.DefineItem(CONSTLIT("aItemToReplace"), ItemToReplace);
 				}
-			if (AsShip() ? SetCursorAtDevice(ItemList, AsShip()->GetClass()->GetDeviceSlots()->GetDescIndexGivenId(Slot.sID)) : false)
+			if (AsShip() ? SetCursorAtDevice(ItemList, AsShip()->GetDeviceSystem().GetSlots()->GetDescIndexGivenId(Slot.sID)) : false)
 				{
 				const CItem & ItemToReplace = ItemList.GetItemAtCursor();
 				Ctx.DefineItem(CONSTLIT("aItemToReplace"), ItemToReplace);

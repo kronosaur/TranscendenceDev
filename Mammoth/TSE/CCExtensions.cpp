@@ -6920,14 +6920,14 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 						return pCC->CreateError(CONSTLIT("Invalid armor segment"), pArgs->GetElement(2));
 					if (Item.IsDevice()
 							&& pShip
-							&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetDeviceCount() || (!(bForceUseOfDeviceSlot) && pShip->GetDevice(Slot.iIndex)->IsEmpty())))
+							&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetDeviceCount()))
 						return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
 					}
 
 				if (!Slot.sID.IsBlank())
 					{
 					CShip* pShip = pObj->AsShip();
-					const bool bDeviceSlotExists = bForceUseOfDeviceSlot ? pShip->GetClass()->GetDeviceSlots()->FindDeviceSlot(Slot.sID) : pShip->GetDeviceSystem().FindSlotDesc(Slot.sID);
+					const bool bDeviceSlotExists = pShip->GetDeviceSystem().FindSlotDesc(Slot.sID);
 					if (!bDeviceSlotExists)
 						return pCC->CreateError(CONSTLIT("Unknown slot ID"), pArgs->GetElement(2));
 					}
@@ -11197,13 +11197,13 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (Slot.iIndex != -1)
 					{
 					if (Item.IsDevice()
-							&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetDeviceCount() || (!(bForceUseOfDeviceSlot) && pShip->GetDevice(Slot.iIndex)->IsEmpty())))
+							&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetDeviceCount()))
 						return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
 					}
 
 				if (!Slot.sID.IsBlank())
 					{
-					const bool bDeviceSlotExists = bForceUseOfDeviceSlot ? pShip->GetClass()->GetDeviceSlots()->FindDeviceSlot(Slot.sID) : pShip->GetDeviceSystem().FindSlotDesc(Slot.sID);
+					const bool bDeviceSlotExists = pShip->GetDeviceSystem().FindSlotDesc(Slot.sID);
 					if (!bDeviceSlotExists)
 						return pCC->CreateError(CONSTLIT("Unknown slot ID"), pArgs->GetElement(2));
 					}
