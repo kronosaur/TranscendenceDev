@@ -1321,7 +1321,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ivi",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpInstallDevice",				fnShipSet,			FN_SHIP_INSTALL_DEVICE,
-			"(shpInstallDevice ship item [deviceSlot] [forceUseOfDeviceSlot]) -> itemStruct (or Nil)\n\n"
+			"(shpInstallDevice ship item [deviceSlot]) -> itemStruct (or Nil)\n\n"
 
 			"deviceSlot can be an int or struct with these parameters:\n\n"
 			"    deviceSlot: device slot number\n"
@@ -11186,7 +11186,6 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 
 			//	See if we passed in a device slot
-			bool bForceUseOfDeviceSlot = pArgs->GetCount() >= 4 ? !(pArgs->GetElement(3)->IsNil()) : false;
 			CDeviceSystem::SSlotDesc Slot;
 			if (pArgs->GetCount() > 2)
 				{
@@ -11207,11 +11206,6 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					const bool bDeviceSlotExists = pShip->GetDeviceSystem().FindSlotDesc(Slot.sID);
 					if (!bDeviceSlotExists)
 						return pCC->CreateError(CONSTLIT("Unknown slot ID"), pArgs->GetElement(2));
-					}
-
-				else if (Slot.iIndex == -1 && Slot.sID.IsBlank() && bForceUseOfDeviceSlot)
-					{
-					return pCC->CreateNil();
 					}
 				}
 
