@@ -202,7 +202,7 @@
 								)
 
 							;	Player never gets this mission again
-							(msnSet@ gType 'blacklisted True)
+							(typSet@ gType 'blacklisted True)
 							)
 					)
 			</OnCompleted>
