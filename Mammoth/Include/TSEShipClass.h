@@ -155,6 +155,7 @@ class CHullDesc
 		int GetCyberDefenseLevel (void) const { return m_iCyberDefenseLevel; }
 		const CItemCriteria &GetDeviceCriteria (void) const { return m_DeviceCriteria; }
 		Metric GetExtraPoints (void) const { return m_rExtraPoints; }
+		int GetLifeSupportPowerUse () const { return m_iLifeSupportPowerUse; }
 		int GetMass (void) const { return m_iMass; }
 		int GetMaxCargoSpace (void) const { return m_iMaxCargoSpace; }
 		int GetMaxCounter(void) const { return m_iMaxCounter; }
@@ -191,6 +192,7 @@ class CHullDesc
 		int m_iCounterIncrementRate = 0;	//  Value by which temperature/capacitor counter is updated every tick
 		int m_iStealthAdj = 0;				//  Stealth value of the ship at zero heat to add to armor/nebula stealth value
 		int m_iStealthAdjAtMaxHeat = 0;		//  Stealth value of the ship at max heat to add to armor/nebula stealth value
+		int m_iLifeSupportPowerUse = 0;		//	Power used for life-support (in 1/10th MW).
 
 		CItemCriteria m_DeviceCriteria;		//	Allowable devices
 		CArmorLimits m_ArmorLimits;			//	Adjustments based on armor

@@ -933,7 +933,7 @@ int CShip::CalcPowerUsed (SUpdateCtx &Ctx, int *retiPowerGenerated)
 
 	//	We always consume some power for life-support
 
-	iPowerUsed += CPowerConsumption::DEFAULT_LIFESUPPORT_POWER_USE;
+	iPowerUsed += m_pClass->GetHullDesc().GetLifeSupportPowerUse();
 
 	//	If we're thrusting, then we consume power
 
