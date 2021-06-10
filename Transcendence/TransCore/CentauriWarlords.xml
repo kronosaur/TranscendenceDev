@@ -273,6 +273,10 @@
 			ejectaType=			"&vtWreckEjecta;"
 			>
 
+		<Properties>
+			<Definition	id="rpg.checkRadioactive">True</Definition>
+		</Properties>
+
 		<!-- Encounter Info -->
 
 		<Encounter
@@ -423,6 +427,13 @@
 				"I think you're lost, %boy%. No one wants to trade with you 
 				here."
 
+			</Text>
+			<Text id="core.cannotDecon">
+				
+				Armed men stop you from entering:
+				
+				"Get off our dock, %boy%, you're too hot!"
+				
 			</Text>
 		</Language>
 	</StationType>
