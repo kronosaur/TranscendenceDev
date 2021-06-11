@@ -1594,6 +1594,11 @@ void CDockScreen::OnModifyItemComplete (SModifyItemCtx &Ctx, const CSpaceObject 
 		{
 		const SDockFrame &CurFrame = g_pUniverse->GetDockSession().GetCurrentFrame();
 
+		//	Save the control value in the dock session frame. Otherwise, we 
+		//	might overwrite something the player typed.
+
+		m_CurrentPane.SaveControlValue(g_pUniverse->GetDockSession());
+
 		//	NOTE: We defer the actual recalc of the pane until after any action
 		//	is done. We need to do this because we don't want to execute
 		//	<OnPaneInit> in the middle of processing an action (since that might

@@ -298,6 +298,7 @@ class CDockPane
 		bool HandleKeyDown (int iVirtKey);
 		bool InExecuteAction (void) const { return m_bInExecuteAction; }
 		ALERROR InitPane (CDockSession &DockSession, CDockScreen &DockScreen, CXMLElement *pPaneDesc, const RECT &rcFullRect);
+		void SaveControlValue (CDockSession &DockSession) const;
 		bool SetControlValue (const CString &sID, ICCItem *pValue);
 		void SetCounterValue (int iValue);
 		void SetDescription (const CString &sDesc);
@@ -318,37 +319,28 @@ class CDockPane
 
 		struct SControl
 			{
-			SControl (void) :
-					iType(controlNone),
-					pArea(NULL),
-					cyHeight(0),
-					cyMinHeight(0),
-					cyMaxHeight(0),
-					bReplaceInput(false)
-				{ }
-
 			const CGTextArea *AsTextArea (void) const { return (const CGTextArea *)pArea; }
 			CGTextArea *AsTextArea (void) { return (CGTextArea *)pArea; }
 			CGItemDisplayArea *AsItemDisplayArea (void) { return (iType == controlItemDisplay ? (CGItemDisplayArea *)pArea : NULL); }
 			CGItemListDisplayArea *AsItemListDisplayArea (void) { return (iType == controlItemListDisplay ? (CGItemListDisplayArea *)pArea : NULL); }
 
-			EControlTypes iType;
-			CString sID;					//	Control ID
+			EControlTypes iType = controlNone;
+			CString sID;						//	Control ID
 
-			AGArea *pArea;
+			AGArea *pArea = NULL;
 
-			int cyHeight;					//	Computed height of control
-			int cyMinHeight;				//	Minimum control height
-			int cyMaxHeight;				//	Desired control height
+			int cyHeight = 0;					//	Computed height of control
+			int cyMinHeight = 0;				//	Minimum control height
+			int cyMaxHeight = 0;				//	Desired control height
 
-			bool bReplaceInput;				//	Keeps track of counter state
+			bool bReplaceInput = false;			//	Keeps track of counter state
 			};
 
 		struct SControlStyle
 			{
 			CG32bitPixel BackColor;
 
-			const CG16bitFont *pTextFont;
+			const CG16bitFont *pTextFont = NULL;
 			CG32bitPixel TextColor;
 			};
 
@@ -367,6 +359,7 @@ class CDockPane
 		void RenderControlsBottomBar (void);
 		void RenderControlsColumn (void);
 		ALERROR ReportError (const CString &sError);
+		void RestoreControlValue (CDockSession &DockSession);
 
 		CDockScreen &m_DockScreen;			//	Dock screen object
 		CXMLElement *m_pPaneDesc = NULL;	//	XML describing pane

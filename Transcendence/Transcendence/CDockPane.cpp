@@ -1004,6 +1004,10 @@ ALERROR CDockPane::InitPane (CDockSession &DockSession, CDockScreen &DockScreen,
 			break;
 		}
 
+	//	If necessary, restore a saved control value.
+
+	RestoreControlValue(DockSession);
+
 	//	Done
 
 	m_bInShowPane = false;
@@ -1201,6 +1205,81 @@ ALERROR CDockPane::ReportError (const CString &sError)
 	//	eventually call us back at SetDescription.
 
 	return m_DockScreen.ReportError(sError);
+	}
+
+void CDockPane::RestoreControlValue (CDockSession &DockSession)
+
+//	RestoreControlValue
+//
+//	Restores the control value saved in the session frame.
+
+	{
+	auto &Frame = DockSession.GetCurrentFrame();
+	if (Frame.sSavedControlText.IsBlank())
+		return;
+
+	for (int i = 0; i < m_Controls.GetCount(); i++)
+		{
+		switch (m_Controls[i].iType)
+			{
+			case controlCounter:
+			case controlTextInput:
+				{
+				auto *pControl = m_Controls[i].AsTextArea();
+				if (pControl)
+					pControl->SetText(Frame.sSavedControlText);
+
+				//	Clear out the saved text.
+
+				DockSession.SetSavedControlText(NULL_STR);
+
+				//	We only handle a single control.
+
+				return;
+				}
+			}
+		}
+	}
+
+void CDockPane::SaveControlValue (CDockSession &DockSession) const
+
+//	SaveControlValue
+//
+//	Saves the current control value to the session frame.
+
+	{
+	//	If we're already inside ShowPane, then we don't need to do anything.
+	//	This can happen if we're inside of OnPaneInit and we do something that
+	//	might normally force us to recalc the pane (such as delete an item).
+
+	if (m_bInShowPane)
+		return;
+
+	//	If we're in the middle of executing an action, then we don't bother with
+	//	this since the action might change it anyway.
+
+	if (m_bInExecuteAction)
+		return;
+
+	//	Save it.
+
+	for (int i = 0; i < m_Controls.GetCount(); i++)
+		{
+		switch (m_Controls[i].iType)
+			{
+			case controlCounter:
+			case controlTextInput:
+				{
+				auto *pControl = m_Controls[i].AsTextArea();
+				if (pControl)
+					DockSession.SetSavedControlText(pControl->GetText());
+
+				//	We only handle a single control.
+
+				return;
+				}
+			}
+		}
 	}
 
 bool CDockPane::SetControlValue (const CString &sID, ICCItem *pValue)
