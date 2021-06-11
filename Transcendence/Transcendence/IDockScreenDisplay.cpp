@@ -170,10 +170,10 @@ bool IDockScreenDisplay::GetDisplayOptions (SInitCtx &Ctx, SDisplayOptions *retO
 		else if (strEquals(sBackgroundID, TYPE_OBJECT))
 			{
 			retOptions->BackgroundDesc.pObj = Ctx.pLocation;
-            if (Ctx.pLocation->IsPlayer())
-			    retOptions->BackgroundDesc.iType = EDockScreenBackground::objSchematicImage;
-            else
-			    retOptions->BackgroundDesc.iType = EDockScreenBackground::objHeroImage;
+			if (Ctx.pLocation->IsPlayer())
+				retOptions->BackgroundDesc.iType = EDockScreenBackground::objSchematicImage;
+			else
+				retOptions->BackgroundDesc.iType = EDockScreenBackground::objHeroImage;
 			}
 
 		else if (strEquals(sBackgroundID, TYPE_SCHEMATIC))
@@ -266,10 +266,10 @@ bool IDockScreenDisplay::GetDisplayOptions (SInitCtx &Ctx, SDisplayOptions *retO
 	retOptions->cyIcon = pOptions->GetAttributeIntegerBounded(ICON_HEIGHT_ATTRIB, 0, -1, ICON_HEIGHT);
 	retOptions->rIconScale = pOptions->GetAttributeDoubleBounded(ICON_SCALE_ATTRIB, 0.0, -1.0, 1.0);
 
-    //  Selector options
+	//  Selector options
 
-    retOptions->bNoEmptySlots = pOptions->GetAttributeBool(NO_EMPTY_SLOTS_ATTRIB);
-    retOptions->sSlotNameCode = pOptions->GetAttribute(SLOT_NAME_ATTRIB);
+	retOptions->bNoEmptySlots = pOptions->GetAttributeBool(NO_EMPTY_SLOTS_ATTRIB);
+	retOptions->sSlotNameCode = pOptions->GetAttribute(SLOT_NAME_ATTRIB);
 
 	//	See if we have control position
 
@@ -671,10 +671,10 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SDockScreenBackgrou
 			if (retDesc->pObj == NULL)
 				return false;
 
-            if (retDesc->pObj->IsPlayer())
-    			retDesc->iType = EDockScreenBackground::objSchematicImage;
-            else
-    			retDesc->iType = EDockScreenBackground::objHeroImage;
+			if (retDesc->pObj->IsPlayer())
+				retDesc->iType = EDockScreenBackground::objSchematicImage;
+			else
+				retDesc->iType = EDockScreenBackground::objHeroImage;
 			}
 		else if (strEquals(sType, TYPE_SCHEMATIC))
 			{
@@ -728,6 +728,6 @@ void IDockScreenDisplay::SelectArmor (int iSelection)
 //
 //  Selects the given armor segment in the HUD.
 
-    {
-    m_DockScreen.GetGameSession().OnArmorSelected(iSelection);
-    }
+	{
+	m_DockScreen.GetGameSession().OnArmorSelected(iSelection);
+	}

@@ -114,7 +114,7 @@ void CDockPane::CreateControl (EControlTypes iType, const CString &sID, const CX
 
 	{
 	const CVisualPalette &VI = g_pHI->GetVisuals();
-    const CDockScreenVisuals &DockScreenVisuals = m_DockScreen.GetDockScreenVisuals();
+	const CDockScreenVisuals &DockScreenVisuals = m_DockScreen.GetDockScreenVisuals();
 
 	switch (iType)
 		{
@@ -191,8 +191,8 @@ void CDockPane::CreateControl (EControlTypes iType, const CString &sID, const CX
 			pControl->cyMaxHeight = 0;
 
 			CGItemDisplayArea *pItemDisplayArea = new CGItemDisplayArea;
-            pItemDisplayArea->SetColor(DockScreenVisuals.GetTitleTextColor());
-            pItemDisplayArea->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
+			pItemDisplayArea->SetColor(DockScreenVisuals.GetTitleTextColor());
+			pItemDisplayArea->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
 
 			pControl->pArea = pItemDisplayArea;
 			m_pContainer->AddArea(pControl->pArea, rcPane, 0);
@@ -209,8 +209,8 @@ void CDockPane::CreateControl (EControlTypes iType, const CString &sID, const CX
 			pControl->cyMaxHeight = 0;
 
 			CGItemListDisplayArea *pItemDisplayArea = new CGItemListDisplayArea;
-            pItemDisplayArea->SetColor(DockScreenVisuals.GetTitleTextColor());
-            pItemDisplayArea->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
+			pItemDisplayArea->SetColor(DockScreenVisuals.GetTitleTextColor());
+			pItemDisplayArea->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
 			pItemDisplayArea->SetDisplayAsKnown(ControlDesc.GetAttributeBool(SHOW_ACTUAL_ITEM_ATTRIB));
 
 			pControl->pArea = pItemDisplayArea;
@@ -265,7 +265,7 @@ ALERROR CDockPane::CreateControls (RECT rcPane, CString *retsError)
 	CXMLElement *pControls = m_pPaneDesc->GetContentElementByTag(CONTROLS_TAG);
 	if (pControls)
 		{
-        bool bDescCreated = false;
+		bool bDescCreated = false;
 
 		for (i = 0; i < pControls->GetContentElementCount(); i++)
 			{
@@ -299,22 +299,22 @@ ALERROR CDockPane::CreateControls (RECT rcPane, CString *retsError)
 				return ERR_FAIL;
 				}
 
-            //  Keep track of default controls created
+			//  Keep track of default controls created
 
-            if (strEquals(sID, DEFAULT_DESC_ID))
-                bDescCreated = true;
+			if (strEquals(sID, DEFAULT_DESC_ID))
+				bDescCreated = true;
 
 			//	Create the control
 
 			CreateControl(iType, sID, *pControlDef, rcPane);
 			}
 
-        //  If we don't have a default description control, create it. NOTE: It 
-        //  is safe to create controls that we never use, since empty ones get
-        //  collapsed.
+		//  If we don't have a default description control, create it. NOTE: It 
+		//  is safe to create controls that we never use, since empty ones get
+		//  collapsed.
 
-        if (!bDescCreated)
-            CreateControl(controlDesc, DEFAULT_DESC_ID, CXMLElement(), rcPane);
+		if (!bDescCreated)
+			CreateControl(controlDesc, DEFAULT_DESC_ID, CXMLElement(), rcPane);
 		}
 
 	//	Otherwise we create default controls
@@ -465,21 +465,21 @@ const CDockPane::SControl *CDockPane::GetControlByType (EControlTypes iType) con
 	{
 	int i;
 
-    //  If we're looking for the desc control, look by default ID also, since
-    //  we might have multiple descriptor controls.
+	//  If we're looking for the desc control, look by default ID also, since
+	//  we might have multiple descriptor controls.
 
 	const SControl *pControl = NULL;
-    switch (iType)
-        {
-        case controlDesc:
-            {
-            if (FindControl(DEFAULT_DESC_ID, &pControl))
-                return pControl;
-            break;
-            }
-        }
+	switch (iType)
+		{
+		case controlDesc:
+			{
+			if (FindControl(DEFAULT_DESC_ID, &pControl))
+				return pControl;
+			break;
+			}
+		}
 
-    //  Look for the first control that matches the type
+	//  Look for the first control that matches the type
 
 	for (i = 0; i < m_Controls.GetCount(); i++)
 		if (m_Controls[i].iType == iType)
@@ -497,21 +497,21 @@ CDockPane::SControl *CDockPane::GetControlByType (EControlTypes iType)
 	{
 	int i;
 
-    //  If we're looking for the desc control, look by default ID also, since
-    //  we might have multiple descriptor controls.
+	//  If we're looking for the desc control, look by default ID also, since
+	//  we might have multiple descriptor controls.
 
-    SControl *pControl = NULL;
-    switch (iType)
-        {
-        case controlDesc:
-            {
-            if (FindControl(DEFAULT_DESC_ID, &pControl))
-                return pControl;
-            break;
-            }
-        }
+	SControl *pControl = NULL;
+	switch (iType)
+		{
+		case controlDesc:
+			{
+			if (FindControl(DEFAULT_DESC_ID, &pControl))
+				return pControl;
+			break;
+			}
+		}
 
-    //  Look for the first control that matches the type
+	//  Look for the first control that matches the type
 
 	for (i = 0; i < m_Controls.GetCount(); i++)
 		if (m_Controls[i].iType == iType)
@@ -562,7 +562,7 @@ void CDockPane::GetControlStyle (const CString &sStyle, SControlStyle *retStyle)
 
 	{
 	const CVisualPalette &VI = g_pHI->GetVisuals();
-    const CDockScreenVisuals &DockScreenVisuals = m_DockScreen.GetDockScreenVisuals();
+	const CDockScreenVisuals &DockScreenVisuals = m_DockScreen.GetDockScreenVisuals();
 
 	if (strEquals(sStyle, STYLE_WARNING))
 		{
@@ -573,8 +573,8 @@ void CDockPane::GetControlStyle (const CString &sStyle, SControlStyle *retStyle)
 	else
 		{
 		retStyle->pTextFont = &VI.GetFont(fontLarge);
-        retStyle->TextColor = DockScreenVisuals.GetTextColor();
-        retStyle->BackColor = DockScreenVisuals.GetTextBackgroundColor();
+		retStyle->TextColor = DockScreenVisuals.GetTextColor();
+		retStyle->BackColor = DockScreenVisuals.GetTextBackgroundColor();
 		}
 	}
 
@@ -590,11 +590,11 @@ const CGTextArea *CDockPane::GetTextControlByType (EControlTypes iType) const
 		case controlCounter:
 		case controlDesc:
 		case controlTextInput:
-            const SControl *pControl = GetControlByType(iType);
-            if (pControl == NULL)
-                return NULL;
+			const SControl *pControl = GetControlByType(iType);
+			if (pControl == NULL)
+				return NULL;
 
-            return pControl->AsTextArea();
+			return pControl->AsTextArea();
 		}
 
 	return NULL;

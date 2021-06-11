@@ -62,17 +62,17 @@ class IDockScreenDisplay
 			bool bNoArmorSpeedDisplay = false;		//	Do not show bonus/penalty to speed from armor
 			bool bActualItems = false;				//	Show actual items, even if unknown
 
-            //  Custom lists
+			//  Custom lists
 
 			CString sRowHeightCode;					//	For custom lists
 			int cxIcon = 96;						//	Icon size
 			int cyIcon = 96;						//	Icon size
 			Metric rIconScale = 1.0;				//	Icon scale
 
-            //  Selectors
+			//  Selectors
 
-            CString sSlotNameCode;					//  Code to name each slot
-            bool bNoEmptySlots = false;				//  If TRUE, don't show empty slots
+			CString sSlotNameCode;					//  Code to name each slot
+			bool bNoEmptySlots = false;				//  If TRUE, don't show empty slots
 			};
 
 		IDockScreenDisplay (CDockScreen &DockScreen) :
@@ -161,7 +161,7 @@ class IDockScreenDisplay
 		bool EvalString (const CString &sString, bool bPlain, ECodeChainEvents iEvent, CString *retsResult);
 		CDockScreenStack &GetScreenStack (void) const;
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
-        void SelectArmor (int iSelection);
+		void SelectArmor (int iSelection);
 
 		CDockScreen &m_DockScreen;
 		CSpaceObject *m_pLocation = NULL;
@@ -485,9 +485,9 @@ class CDockScreen : public IScreenController,
 		CDockSession *GetDockSession (void) const { return m_pDockSession; }
 		CItemListManipulator &GetItemListManipulator (void) { return m_pDisplay->GetItemListManipulator(); }
 		IListData *GetListData (void) const { return m_pDisplay->GetListData(); }
-        CGameSession &GetGameSession (void) { return m_Session; }
+		CGameSession &GetGameSession (void) { return m_Session; }
 		CString GetTextInput (void) const { return m_CurrentPane.GetTextInputValue(); }
-        const CDockScreenVisuals &GetDockScreenVisuals (void) const;
+		const CDockScreenVisuals &GetDockScreenVisuals (void) const;
 		const CVisualPalette &GetVisuals (void) const { return g_pHI->GetVisuals(); }
 		bool IsCurrentItemValid (void) const { return m_pDisplay->IsCurrentItemValid(); }
 		void OnExecuteActionDone (void);
@@ -576,7 +576,7 @@ class CDockScreen : public IScreenController,
 		void InitDisplayControlRect (CXMLElement *pDesc, const RECT &rcFrame, RECT *retrcRect);
 
 		const SFontTable *m_pFonts = NULL;
-        CGameSession &m_Session;
+		CGameSession &m_Session;
 		CDockSession *m_pDockSession = NULL;			//	Guaranteed to be valid after InitScreen is called.
 		CPlayerShipController *m_pPlayer = NULL;
 		CDesignType *m_pRoot = NULL;

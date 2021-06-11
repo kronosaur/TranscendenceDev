@@ -139,7 +139,7 @@ ALERROR CDockScreenSelector::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 //	Initialize
 
 	{
-    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetDockScreenVisuals();
+	const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetDockScreenVisuals();
 
 	m_dwID = Ctx.dwFirstID;
 
@@ -150,19 +150,19 @@ ALERROR CDockScreenSelector::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 	if (pListSource == NULL)
 		return ERR_FAIL;
 
-    //  Generate options for selector control
+	//  Generate options for selector control
 
-    CGSelectorArea::SOptions SelOptions;
-    SelOptions.iConfig = m_iConfig;
+	CGSelectorArea::SOptions SelOptions;
+	SelOptions.iConfig = m_iConfig;
 	SelOptions.ItemCriteria.Init(Options.sItemCriteria);
-    SelOptions.bNoEmptySlots = Options.bNoEmptySlots;
+	SelOptions.bNoEmptySlots = Options.bNoEmptySlots;
 
-    //  If we're on API < 30, then we always show shields on armor selectors
-    //  (for backwards compatibility). Otherwise, we will rely on the item
-    //  criteria.
+	//  If we're on API < 30, then we always show shields on armor selectors
+	//  (for backwards compatibility). Otherwise, we will rely on the item
+	//  criteria.
 
-    if (Ctx.pRoot && Ctx.pRoot->GetAPIVersion() < 30)
-        SelOptions.bAlwaysShowShields = true;
+	if (Ctx.pRoot && Ctx.pRoot->GetAPIVersion() < 30)
+		SelOptions.bAlwaysShowShields = true;
 
 	//	Calculate some basic metrics
 
@@ -181,8 +181,8 @@ ALERROR CDockScreenSelector::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 		return ERR_MEMORY;
 		}
 
-    m_pControl->SetColor(DockScreenVisuals.GetTitleTextColor());
-    m_pControl->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
+	m_pControl->SetColor(DockScreenVisuals.GetTitleTextColor());
+	m_pControl->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
 	m_pControl->SetTabRegion(Options.cyTabRegion);
 
 	//	Create. NOTE: Once we add it to the screen, it takes ownership of it. 
@@ -194,50 +194,50 @@ ALERROR CDockScreenSelector::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 
 	m_pControl->SetRegions(pListSource, SelOptions);
 
-    //  If we have code to set slot names, then execute now.
+	//  If we have code to set slot names, then execute now.
 
-    if (!Options.sSlotNameCode.IsBlank())
-        {
-        m_pControl->ResetCursor();
-        while (SelectNextItem())
-            {
-            //  We only care about empty slots
+	if (!Options.sSlotNameCode.IsBlank())
+		{
+		m_pControl->ResetCursor();
+		while (SelectNextItem())
+			{
+			//  We only care about empty slots
 
-            if (m_pControl->GetItemAtCursor().IsEmpty())
-                {
-                CString sName;
-                if (!EvalString(Options.sSlotNameCode, false, eventNone, &sName))
-                    {
-                    if (retsError) *retsError = sName;
-                    return ERR_FAIL;
-                    }
+			if (m_pControl->GetItemAtCursor().IsEmpty())
+				{
+				CString sName;
+				if (!EvalString(Options.sSlotNameCode, false, eventNone, &sName))
+					{
+					if (retsError) *retsError = sName;
+					return ERR_FAIL;
+					}
 
-                m_pControl->SetSlotNameAtCursor(sName);
-                }
-            }
+				m_pControl->SetSlotNameAtCursor(sName);
+				}
+			}
 
-        m_pControl->ResetCursor();
-        }
+		m_pControl->ResetCursor();
+		}
 
 	//	Give the screen a chance to start at a different item (other
 	//	than the first)
 
-    if (!Options.sInitialItemCode.IsBlank())
-        {
-        while (SelectNextItem())
-            {
-            bool bResult;
-            if (!EvalBool(Options.sInitialItemCode, &bResult, retsError))
-                return ERR_FAIL;
+	if (!Options.sInitialItemCode.IsBlank())
+		{
+		while (SelectNextItem())
+			{
+			bool bResult;
+			if (!EvalBool(Options.sInitialItemCode, &bResult, retsError))
+				return ERR_FAIL;
 
-            if (bResult)
-                break;
-            }
-        }
+			if (bResult)
+				break;
+			}
+		}
 
-    //  Otherwise, we start at the first item
+	//  Otherwise, we start at the first item
 
-    else
+	else
 		{
 		if (Ctx.pSelection)
 			m_pControl->RestoreSelection(*Ctx.pSelection);
