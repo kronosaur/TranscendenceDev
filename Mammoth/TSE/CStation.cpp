@@ -701,6 +701,12 @@ void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *
 //	CalcImageModifier
 //
 //	Compute the modifiers for the station
+//
+//	NOTE: We cannot assume that the given object is in the system. In some 
+//	cases, such as when we remove an object with a volumetric shadow, we need
+//	to compute the object image while it is out of a system.
+//
+//	Always handle the case where GetSystem() returns NULL.
 
 	{
 	constexpr BYTE FADE_OPACITY = 0x80;
@@ -748,7 +754,7 @@ void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *
 
 	if (retiTick)
 		{
-		if (m_fActive && !IsTimeStopped() && !ShowStationDamage())
+		if (m_fActive && !IsTimeStopped() && !ShowStationDamage() && GetSystem())
 			*retiTick = GetSystem()->GetTick() + GetDestiny();
 		else
 			*retiTick = 0;
