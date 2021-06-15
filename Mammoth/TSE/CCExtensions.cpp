@@ -31,6 +31,7 @@ ICCItem *fnEnvironmentGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_DEBUG_SET				8
 #define FN_DEBUG_BREAK				9
 #define FN_DEBUG_SET_PERFORMANCE_COUNTER	10
+#define FN_DEBUG_CLEAR_OUTPUT		11
 
 ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -663,6 +664,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"dbgBreak",						fnDebug,		FN_DEBUG_BREAK,
 			"(dbgBreak)",
+			
+			"*",	PPFLAG_SIDEEFFECTS, },
+
+		{	"dbgClear",						fnDebug,		FN_DEBUG_CLEAR_OUTPUT,
+			"(dbgClear)",
 			
 			"*",	PPFLAG_SIDEEFFECTS, },
 
@@ -4579,6 +4585,12 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #else
 			return pCC->CreateNil();
 #endif
+			}
+
+		case FN_DEBUG_CLEAR_OUTPUT:
+			{
+			pCtx->GetUniverse().GetHost()->ConsoleClear();
+			return pCC->CreateString(NULL_STR);
 			}
 
 		case FN_DEBUG_GET:

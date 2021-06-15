@@ -245,6 +245,7 @@ class CUniverse
 		class IHost
 			{
 			public:
+				virtual void ConsoleClear () { }
 				virtual void ConsoleOutput (const CString &sLine) { }
 				virtual IPlayerController *CreatePlayerController (void) { return NULL; }
 				virtual IShipController *CreateShipController (const CString &sController) { return NULL; }

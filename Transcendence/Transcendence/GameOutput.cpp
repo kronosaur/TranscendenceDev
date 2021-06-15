@@ -6,6 +6,16 @@
 #include "Transcendence.h"
 #include "XMLUtil.h"
 
+void CTranscendenceWnd::ConsoleClear ()
+
+//	ConsoleClear
+//
+//	Clear the console
+
+	{
+	m_pTC->GetDebugConsole().ClearOutput();
+	}
+
 void CTranscendenceWnd::ConsoleOutput (const CString &sLine)
 
 //	ConsoleOutput
