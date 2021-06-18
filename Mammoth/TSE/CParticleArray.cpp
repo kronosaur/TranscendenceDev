@@ -1290,8 +1290,12 @@ void CParticleArray::PaintGaseous (CG32bitImage &Dest,
 
 			//	Compute the position of the particle
 
-			int x = xPos + pParticle->x / FIXED_POINT;
-			int y = yPos + pParticle->y / FIXED_POINT;
+			CVector vPos(pParticle->x, pParticle->y);
+			CVector vOldPos(pParticle->x - pParticle->xVel, pParticle->y - pParticle->yVel);
+			CVector vIntPos= Ctx.InterpolateForDrawing(vOldPos, vPos);
+
+			int x = xPos + int(vIntPos.GetX() / FIXED_POINT);
+			int y = yPos + int(vIntPos.GetY() / FIXED_POINT);
 
 			//	Paint the particle
 
