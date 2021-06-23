@@ -219,7 +219,7 @@
 			<Text id="Summary">
 				(msnTranslate gSource 'textSummary {
 					systemName: (sysGetName)
-					reward: (msn@ gSource 'maxReward)
+					reward: (fmtCurrency 'credit (msn@ gSource 'maxReward))
 					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)))
 					})
 			</Text>
@@ -260,7 +260,7 @@
 						targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)))
 						minersTrapped: minersTrapped
 						minersRescued: minersRescued
-						reward: (msn@ gSource 'reward)
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
 						})
 					)
 					(switch
