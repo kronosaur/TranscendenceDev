@@ -12,7 +12,7 @@ CItemCriteria::CItemCriteria (DWORD dwSpecial)
 //	CItemCriteria constructor
 
 	{
-	switch (dwSpecial)
+	switch (dwSpecial & DEFAULT_MASK)
 		{
 		case NONE:
 			break;
@@ -26,7 +26,7 @@ CItemCriteria::CItemCriteria (DWORD dwSpecial)
 		}
 	}
 
-CItemCriteria::CItemCriteria (const CString &sCriteria, DWORD dwDefault)
+CItemCriteria::CItemCriteria (const CString &sCriteria, DWORD dwFlags)
 
 //	CItemCriteria constructor
 
@@ -37,14 +37,14 @@ CItemCriteria::CItemCriteria (const CString &sCriteria, DWORD dwDefault)
 
 	if (*pPos == '\0')
 		{
-		*this = CItemCriteria(dwDefault);
+		*this = CItemCriteria(dwFlags);
 		}
 
 	//	Otherwise, parse
 
 	else
 		{
-		ParseSubExpression(pPos);
+		ParseSubExpression(pPos, dwFlags);
 		}
 	}
 
@@ -94,32 +94,12 @@ bool CItemCriteria::GetExplicitLevelMatched (int *retiMin, int *retiMax) const
 
 		return pCriteria->GetExplicitLevelMatched(retiMin, retiMax);
 		}
-	else if (m_iEqualToLevel != -1)
-		{
-		*retiMin = m_iEqualToLevel;
-		*retiMax = m_iEqualToLevel;
-		return true;
-		}
-	else if (m_iLessThanLevel == -1 && m_iGreaterThanLevel == -1)
-		{ 
-		*retiMin = -1;
-		*retiMax = -1;
-		return false;
-		}
+	else if (!m_LevelRange.IsEmpty())
+		return m_LevelRange.GetRange(retiMin, retiMax);
+	else if (!m_RepairLevelRange.IsEmpty())
+		return m_RepairLevelRange.GetRange(retiMin, retiMax);
 	else
-		{
-		if (m_iLessThanLevel != -1)
-			*retiMax = m_iLessThanLevel - 1;
-		else
-			*retiMax = -1;
-
-		if (m_iGreaterThanLevel != -1)
-			*retiMin = m_iGreaterThanLevel + 1;
-		else
-			*retiMin = -1;
-
-		return true;
-		}
+		return false;
 	}
 
 int CItemCriteria::GetMaxLevelMatched (CUniverse &Universe) const
@@ -146,11 +126,17 @@ int CItemCriteria::GetMaxLevelMatched (CUniverse &Universe) const
 		return pCriteria->GetMaxLevelMatched(Universe);
 		}
 
-	if (m_iEqualToLevel != -1)
-		return m_iEqualToLevel;
+	if (m_LevelRange.GetEqualToValue() != -1)
+		return m_LevelRange.GetEqualToValue();
 
-	if (m_iLessThanLevel != -1)
-		return m_iLessThanLevel - 1;
+	if (m_LevelRange.GetLessThanValue() != -1)
+		return m_LevelRange.GetLessThanValue() - 1;
+
+	if (m_RepairLevelRange.GetEqualToValue() != -1)
+		return m_RepairLevelRange.GetEqualToValue();
+
+	if (m_RepairLevelRange.GetLessThanValue() != -1)
+		return m_RepairLevelRange.GetLessThanValue() - 1;
 
 	//	Look at every single item that might match
 
@@ -434,64 +420,7 @@ bool CItemCriteria::MatchesItemCategory (const CItemType &ItemType) const
 	return true;
 	}
 
-bool CItemCriteria::MatchesLevel (int iLevel) const
-
-//	MatchesLevel
-//
-//	Returns TRUE if we match the given level.
-
-	{
-	if (m_iEqualToLevel != -1 && iLevel != m_iEqualToLevel)
-		return false;
-
-	if (m_iGreaterThanLevel != -1 && iLevel <= m_iGreaterThanLevel)
-		return false;
-
-	if (m_iLessThanLevel != -1 && iLevel >= m_iLessThanLevel)
-		return false;
-
-	return true;
-	}
-
-bool CItemCriteria::MatchesMass (int iMassKg) const
-
-//	MatchesMass
-//
-//	Returns TRUE if we match the given mass.
-
-	{
-	if (m_iEqualToMass != -1 && iMassKg != m_iEqualToMass)
-		return false;
-
-	if (m_iGreaterThanMass != -1 && iMassKg <= m_iGreaterThanMass)
-		return false;
-
-	if (m_iLessThanMass != -1 && iMassKg >= m_iLessThanMass)
-		return false;
-
-	return true;
-	}
-
-bool CItemCriteria::MatchesPrice (CurrencyValue iValue) const
-
-//	MatchesPrice
-//
-//	Returns TRUE if we match the given price.
-
-	{
-	if (m_iEqualToPrice != -1 && iValue != m_iEqualToPrice)
-		return false;
-
-	if (m_iGreaterThanPrice != -1 && iValue <= m_iGreaterThanPrice)
-		return false;
-
-	if (m_iLessThanPrice != -1 && iValue >= m_iLessThanPrice)
-		return false;
-
-	return true;
-	}
-
-void CItemCriteria::ParseSubExpression (const char *pPos)
+void CItemCriteria::ParseSubExpression (const char *pPos, DWORD dwFlags)
 
 //	ParseSubExpression
 //
@@ -705,20 +634,10 @@ void CItemCriteria::ParseSubExpression (const char *pPos)
 
 				case 'L':
 					{
-					int iHigh;
-					int iLow;
-
-					if (ParseCriteriaParamLevelRange(&pPos, &iLow, &iHigh))
-						{
-						if (iHigh == -1)
-							m_iEqualToLevel = iLow;
-						else
-							{
-							m_iGreaterThanLevel = iLow - 1;
-							m_iLessThanLevel = iHigh + 1;
-							}
-						}
-
+					if (dwFlags & FLAG_REPAIR_LEVEL)
+						m_RepairLevelRange.Parse(pPos, &pPos);
+					else
+						m_LevelRange.Parse(pPos, &pPos);
 					break;
 					}
 
@@ -801,73 +720,32 @@ void CItemCriteria::ParseSubExpression (const char *pPos)
 				case '>':
 				case '<':
 					{
-					char chChar = *pPos;
-					pPos++;
+					CIntegerRangeCriteria Range;
+					char chModifier;
 
-					//	<= or >=
-
-					int iEqualAdj;
-					if (*pPos == '=')
+					if (Range.Parse(pPos, &pPos, &chModifier))
 						{
-						pPos++;
-						iEqualAdj = 1;
-						}
-					else
-						iEqualAdj = 0;
+						switch (chModifier)
+							{
+							case '\0':
+								if (dwFlags & FLAG_REPAIR_LEVEL)
+									m_RepairLevelRange = Range;
+								else
+									m_LevelRange = Range;
+								break;
 
-					//	Is this price?
+							case '$':
+								m_PriceRange = Range;
+								break;
 
-					char comparison;
-					if (*pPos == '$' || *pPos == '#')
-						comparison = *pPos++;
-					else
-						comparison = '\0';
+							case '#':
+								m_MassRange = Range;
+								break;
 
-					//	Get the number
-
-					const char *pNewPos;
-					int iValue = strParseInt(pPos, 0, &pNewPos);
-
-					//	Back up one because we will increment at the bottom
-					//	of the loop.
-
-					if (pPos != pNewPos)
-						pPos = pNewPos - 1;
-
-					//	Price limits
-
-					if (comparison == '$')
-						{
-						if (chChar == '=')
-							m_iEqualToPrice = iValue;
-						else if (chChar == '>')
-							m_iGreaterThanPrice = iValue - iEqualAdj;
-						else if (chChar == '<')
-							m_iLessThanPrice = iValue + iEqualAdj;
-						}
-
-					//	Mass limits
-
-					else if (comparison == '#')
-						{
-						if (chChar == '=')
-							m_iEqualToMass = iValue;
-						else if (chChar == '>')
-							m_iGreaterThanMass = iValue - iEqualAdj;
-						else if (chChar == '<')
-							m_iLessThanMass = iValue + iEqualAdj;
-						}
-
-					//	Level limits
-
-					else
-						{
-						if (chChar == '=')
-							m_iEqualToLevel = iValue;
-						else if (chChar == '>')
-							m_iGreaterThanLevel = iValue - iEqualAdj;
-						else if (chChar == '<')
-							m_iLessThanLevel = iValue + iEqualAdj;
+							case 'R':
+								m_RepairLevelRange = Range;
+								break;
+							}
 						}
 
 					break;
@@ -885,7 +763,7 @@ void CItemCriteria::ParseSubExpression (const char *pPos)
 		pPos++;
 
 		m_pOr.Set(new CItemCriteria);
-		m_pOr->ParseSubExpression(pPos);
+		m_pOr->ParseSubExpression(pPos, dwFlags);
 		}
 	}
 
@@ -999,47 +877,19 @@ void CItemCriteria::WriteSubExpression (CMemoryWriteStream &Output) const
 			Output.Write(sTerm.GetPointer(), sTerm.GetLength());
 			}
 
-		sTerm = NULL_STR;
-		if (m_iEqualToLevel != -1)
-			sTerm = strPatternSubst(CONSTLIT(" =%d"), m_iEqualToLevel);
-		else if (m_iGreaterThanLevel != -1 && m_iLessThanLevel != -1)
-			sTerm = strPatternSubst(CONSTLIT(" L:%d-%d;"), m_iGreaterThanLevel + 1, m_iLessThanLevel - 1);
-		else
-			{
-			if (m_iGreaterThanLevel != -1)
-				sTerm = strPatternSubst(CONSTLIT(" >%d"), m_iGreaterThanLevel);
-			if (m_iLessThanLevel != -1)
-				sTerm = strPatternSubst(CONSTLIT(" <%d"), m_iLessThanLevel);
-			}
-
+		sTerm = m_LevelRange.AsString();
 		if (!sTerm.IsBlank())
 			Output.Write(sTerm.GetPointer(), sTerm.GetLength());
 
-		sTerm = NULL_STR;
-		if (m_iEqualToPrice != -1)
-			sTerm = strPatternSubst(CONSTLIT(" =$%d"), m_iEqualToPrice);
-		else
-			{
-			if (m_iGreaterThanPrice != -1)
-				sTerm = strPatternSubst(CONSTLIT(" >=$%d"), m_iGreaterThanPrice + 1);
-			if (m_iLessThanPrice != -1)
-				sTerm = strPatternSubst(CONSTLIT(" <=$%d"), m_iLessThanPrice - 1);
-			}
-
+		sTerm = m_PriceRange.AsString('$');
 		if (!sTerm.IsBlank())
 			Output.Write(sTerm.GetPointer(), sTerm.GetLength());
 
-		sTerm = NULL_STR;
-		if (m_iEqualToMass != -1)
-			sTerm = strPatternSubst(CONSTLIT(" =#%d"), m_iEqualToMass);
-		else
-			{
-			if (m_iGreaterThanMass != -1)
-				sTerm = strPatternSubst(CONSTLIT(" >=#%d"), m_iGreaterThanMass + 1);
-			if (m_iLessThanMass != -1)
-				sTerm = strPatternSubst(CONSTLIT(" <=#%d"), m_iLessThanMass - 1);
-			}
+		sTerm = m_MassRange.AsString('#');
+		if (!sTerm.IsBlank())
+			Output.Write(sTerm.GetPointer(), sTerm.GetLength());
 
+		sTerm = m_RepairLevelRange.AsString('R');
 		if (!sTerm.IsBlank())
 			Output.Write(sTerm.GetPointer(), sTerm.GetLength());
 		}

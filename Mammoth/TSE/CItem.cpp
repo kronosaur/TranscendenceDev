@@ -1864,6 +1864,19 @@ bool CItem::GetReferenceSpeedBonus (CItemCtx &Ctx, DWORD dwFlags, int *retiSpeed
 		return false;
 	}
 
+int CItem::GetRepairLevel () const
+
+//	GetRepairLevel
+//
+//	Returns the repair level.
+
+	{
+	if (const CArmorItem ArmorItem = AsArmorItem())
+		return ArmorItem.GetRepairLevel();
+	else
+		return GetLevel();
+	}
+
 CSpaceObject *CItem::GetSource (void) const
 
 //	GetSource
@@ -2441,6 +2454,11 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 		//	Check for mass modifiers
 
 		if (!Criteria.MatchesMass(GetMassKg()))
+			return false;
+
+		//	Check for repair level
+
+		if (!Criteria.MatchesRepairLevel(GetRepairLevel()))
 			return false;
 
 		//	Otherwise, we match completely

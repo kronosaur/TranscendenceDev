@@ -363,6 +363,7 @@ class CItem
 		CString GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) const;
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		int GetRawPrice (bool bActual = false) const { return GetValue(bActual); }
+		int GetRepairLevel () const;
 		int GetTradePrice (const CSpaceObject *pObj = NULL, bool bActual = false) const;
 		CItemType *GetType (void) const { return m_pItemType; }
 		CUniverse &GetUniverse (void) const;

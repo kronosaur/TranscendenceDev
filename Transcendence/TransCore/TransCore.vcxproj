@@ -193,6 +193,7 @@
     <Xml Include="..\Extensions\Diagnostics\TestMissions.xml" />
     <Xml Include="..\Extensions\Diagnostics\OverlayTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\StationTypeTests.xml" />
+    <Xml Include="..\Extensions\Diagnostics\TradingTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TSETests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TopologyTests.xml" />
     <Xml Include="Abbasid.xml" />
