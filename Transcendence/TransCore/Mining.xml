@@ -45,6 +45,25 @@
 				maxDist=		"3"
 				/>
 
+		<Events>
+			<OnAutoLoot>
+
+				;	gSource: This object
+				;	aLootedBy: The object looting (usually the player ship).
+				;	aLoot: A list of items looted.
+
+				(switch
+					(!= aLootedBy gPlayerShip)
+						Nil
+
+					(enum aLoot itemLooted
+						(plyIncItemStat gPlayer 'itemsMinedCount itemLooted (itmGetCount itemLooted))
+						)
+					)
+
+			</OnAutoLoot>
+		</Events>
+
 	</StationType>
 
 <!-- TABLES -->

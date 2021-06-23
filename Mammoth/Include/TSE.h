@@ -820,6 +820,7 @@ class CSpaceObject
 		void FireItemOnUpdate (void);
 		void FireOnAttacked (const SDamageCtx &Ctx);
 		void FireOnAttackedByPlayer (void);
+		void FireOnAutoLoot (CSpaceObject &LootedBy, const CItemList &Loot);
 		void FireOnCreate (void);
 		void FireOnCreate (const SOnCreate &OnCreate);
 		void FireOnCreateOrders (CSpaceObject *pBase, CSpaceObject *pTarget);

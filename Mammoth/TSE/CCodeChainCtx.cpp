@@ -532,6 +532,28 @@ void CCodeChainCtx::DefineItem (const CString &sVar, const CItem &Item)
 		m_CC.DefineGlobal(sVar, m_CC.GetNil());
 	}
 
+void CCodeChainCtx::DefineItemList (const CString &sVar, const CItemList &ItemList)
+
+//	DefineItemList
+//
+//	Defines a list of items.
+
+	{
+	if (ItemList.GetCount() == 0)
+		m_CC.DefineGlobal(sVar, m_CC.GetNil());
+	else
+		{
+		ICCItemPtr pValue(ICCItem::List);
+		for (int i = 0; i < ItemList.GetCount(); i++)
+			{
+			ICCItemPtr pItem(CreateListFromItem(ItemList.GetItem(i)));
+			pValue->Append(pItem);
+			}
+
+		m_CC.DefineGlobal(sVar, pValue);
+		}
+	}
+
 void CCodeChainCtx::DefineItemType (const CString &sVar, const CItemType *pType)
 
 //	DefineItemType

@@ -41,6 +41,7 @@ const Metric g_rMaxCommsRange2 =				(g_rMaxCommsRange * g_rMaxCommsRange);
 #define GET_PLAYER_PRICE_ADJ_EVENT				CONSTLIT("GetPlayerPriceAdj")
 #define ON_ATTACKED_EVENT						CONSTLIT("OnAttacked")
 #define ON_ATTACKED_BY_PLAYER_EVENT				CONSTLIT("OnAttackedByPlayer")
+#define ON_AUTO_LOOT_EVENT						CONSTLIT("OnAutoLoot")
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
 #define ON_CREATE_ORDERS_EVENT					CONSTLIT("OnCreateOrders")
 #define ON_DAMAGE_EVENT							CONSTLIT("OnDamage")
@@ -2485,6 +2486,28 @@ void CSpaceObject::FireOnAttackedByPlayer (void)
 			ReportEventError(ON_ATTACKED_BY_PLAYER_EVENT, pResult);
 		Ctx.Discard(pResult);
 		}
+	}
+
+void CSpaceObject::FireOnAutoLoot (CSpaceObject &LootedBy, const CItemList &Loot)
+
+//	FireOnAutoLoot
+//
+//	Fire OnAutoLoot event
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(ON_AUTO_LOOT_EVENT, &Event))
+		return;
+
+	CCodeChainCtx Ctx(GetUniverse());
+	Ctx.DefineContainingType(this);
+	Ctx.SaveAndDefineSourceVar(this);
+	Ctx.DefineSpaceObject(CONSTLIT("aLootedBy"), LootedBy);
+	Ctx.DefineItemList(CONSTLIT("aLoot"), Loot);
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_AUTO_LOOT_EVENT, pResult);
 	}
 
 void CSpaceObject::FireOnCreate (void)

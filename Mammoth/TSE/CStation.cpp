@@ -4513,6 +4513,10 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 				GetUniverse().PlaySound(this, GetUniverse().FindSound(UNID_DEFAULT_SELECT));
 
+				//	Fire event
+
+				FireOnAutoLoot(*Ctx.GetPlayerShip(), ItemList);
+
 				//	Destroy station and return.
 
 				Destroy(removedFromSystem, CDamageSource());
