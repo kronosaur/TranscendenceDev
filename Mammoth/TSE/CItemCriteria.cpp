@@ -752,7 +752,8 @@ void CItemCriteria::ParseSubExpression (const char *pPos, DWORD dwFlags)
 					}
 				}
 
-			pPos++;
+			if (*pPos != '\0')
+				pPos++;
 			}
 		}
 
