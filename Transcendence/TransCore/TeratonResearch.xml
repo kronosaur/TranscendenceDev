@@ -172,6 +172,7 @@
 				his work on the human subjects.
 			</Text>
 			<Text id="SuccessMsg"></Text>
+			<Text id="FailureMsg"></Text>
 			<Text id="mutilation:start">
 				The Teraton takes you to an empty bed and straps you down so that
 				you cannot move. It then takes a scalpel and slices open both
