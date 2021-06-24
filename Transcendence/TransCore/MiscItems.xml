@@ -1388,7 +1388,7 @@
 			mass=				"500"
 			frequency=			"uncommon"
 			numberAppearing=	"3d6"
-			attributes=			"consumable, fuel, humanTech, notStandardFuel, res"
+			attributes=			"consumable, fissionFuel, fuel, humanTech, notStandardFuel, res"
 			
 			data=				"5000"
 
