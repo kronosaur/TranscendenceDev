@@ -300,20 +300,18 @@ bool CGSelectorArea::FindLayoutForPos (const CVector &vPos, const TArray<bool> &
 	return true;
 	}
 
-bool CGSelectorArea::FindNearestRegion (int xCur, int yCur, EDirections iDir, bool bDiagOnly, int *retiIndex) const
+bool CGSelectorArea::FindNearestRegion (int iCur, int xCur, int yCur, EDirections iDir, bool bDiagOnly, int *retiIndex) const
 
 //	FindNearestRegion
 //
 //	Finds the nearest region to the given position in the given direction.
 
 	{
-	int i;
-
 	int iBest = -1;
-	int xBestDist;
-	int yBestDist;
-	for (i = 0; i < m_Regions.GetCount(); i++)
-		if (i != m_iCursor)
+	int xBestDist = 0;
+	int yBestDist = 0;
+	for (int i = 0; i < m_Regions.GetCount(); i++)
+		if (i != iCur)
 			{
 			const SEntry &Entry = m_Regions[i];
 			int xDist = Absolute((int)Entry.rcRect.left + (RectWidth(Entry.rcRect) / 2) - xCur);
@@ -436,12 +434,12 @@ bool CGSelectorArea::FindRegionInDirection (EDirections iDir, int *retiIndex) co
 
 	//	Look for a region in the given direction, restricting to diagonal.
 
-	if (FindNearestRegion(xCur, yCur, iDir, true, retiIndex))
+	if (FindNearestRegion(m_iCursor, xCur, yCur, iDir, true, retiIndex))
 		return true;
 
 	//	If not found, then don't restrict.
 
-	return FindNearestRegion(xCur, yCur, iDir, false, retiIndex);
+	return FindNearestRegion(m_iCursor, xCur, yCur, iDir, false, retiIndex);
 	}
 
 ICCItem *CGSelectorArea::GetEntryAtCursor (void)
@@ -1105,6 +1103,63 @@ void CGSelectorArea::SetRegions (CSpaceObject *pSource, const SOptions &Options)
 	Refresh();
 	}
 
+void CGSelectorArea::FixRegionOverlaps ()
+
+//	FixRegionOverlaps
+//
+//	Fixes some kinds of overlaps.
+
+	{
+	struct SOverlaps
+		{
+		int iLeft = -1;
+		int iRight = -1;
+		};
+
+	//	First calculate any overlaps.
+
+	TArray<SOverlaps> Overlaps;
+	Overlaps.InsertEmpty(m_Regions.GetCount());
+	for (int i = 0; i < m_Regions.GetCount(); i++)
+		{
+		const SEntry &Entry = m_Regions[i];
+		int xCur = Entry.rcRect.left + (RectWidth(Entry.rcRect) / 2);
+		int yCur = Entry.rcRect.top + (RectHeight(Entry.rcRect) / 2);
+
+		int iOverlap;
+		if (FindNearestRegion(i, xCur, yCur, moveLeft, false, &iOverlap))
+			{
+			const SEntry &Other = m_Regions[iOverlap];
+			if (::RectsIntersect(Entry.rcRect, Other.rcRect))
+				Overlaps[i].iLeft = iOverlap;
+			}
+
+		if (FindNearestRegion(i, xCur, yCur, moveRight, false, &iOverlap))
+			{
+			const SEntry &Other = m_Regions[iOverlap];
+			if (::RectsIntersect(Entry.rcRect, Other.rcRect))
+				Overlaps[i].iRight = iOverlap;
+			}
+		}
+
+	//	Fix overlaps.
+	
+	for (int i = 0; i < m_Regions.GetCount(); i++)
+		{
+		SEntry &Entry = m_Regions[i];
+		if (Overlaps[i].iLeft != -1 && Overlaps[i].iRight == -1 && Entry.rcRect.left < SPACING_X / 2)
+			{
+			Entry.rcRect.left = SPACING_X / 2;
+			Entry.rcRect.right = Entry.rcRect.left + ITEM_ENTRY_WIDTH;
+			}
+		else if (Overlaps[i].iRight != -1 && Overlaps[i].iLeft == -1 && Entry.rcRect.right > -(SPACING_X / 2))
+			{
+			Entry.rcRect.right = -SPACING_X / 2;
+			Entry.rcRect.left = Entry.rcRect.right - ITEM_ENTRY_WIDTH;
+			}
+		}
+	}
+
 void CGSelectorArea::SetRegionsFromArmor (const CSpaceObject &Source)
 
 //	SetRegionsFromArmor
@@ -1154,6 +1209,10 @@ void CGSelectorArea::SetRegionsFromArmor (const CSpaceObject &Source)
 		pEntry->rcRect.right = pEntry->rcRect.left + ITEM_ENTRY_WIDTH;
 		pEntry->rcRect.bottom = pEntry->rcRect.top + ITEM_ENTRY_HEIGHT;
 		}
+
+	//	See if there are any overlaps that we can fix
+
+	FixRegionOverlaps();
 
 	//	Add the shield generator last
 
