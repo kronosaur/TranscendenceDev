@@ -443,7 +443,7 @@ class CShipClass : public CDesignType
 		int GetMaxStructuralHitPoints (void) const;
 		const CPlayerSettings *GetPlayerSettings (void) const;
 		CString GetPlayerSortString (void) const;
-		CVector GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos = true);
+		CVector GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos = true) const;
 		IItemGenerator *GetRandomItemTable (void) const { return m_pItems; }
 		const CReactorDesc &GetReactorDesc (const CItem **retpReactorItem = NULL) const;
 		int GetRotationAngle (void) { return m_Perf.GetIntegralRotationDesc().GetFrameAngle(); }

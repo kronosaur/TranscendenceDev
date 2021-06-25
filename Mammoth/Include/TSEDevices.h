@@ -691,7 +691,7 @@ class CInstalledDevice
 		Metric GetMaxRange (CItemCtx &ItemCtx) const { return m_pClass->GetMaxRange(ItemCtx); }
 		CString GetName (void) { return m_pClass->GetName(); }
 		CVector GetPos (const CSpaceObject *pSource) const;
-		CVector GetPosOffset (CSpaceObject *pSource);
+		CVector GetPosOffset (const CSpaceObject *pSource) const;
 		int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const { return m_pClass->GetPowerRating(Ctx, retiIdlePowerUse); }
 		void GetSelectedVariantInfo (const CSpaceObject *pSource, 
 											CString *retsLabel,

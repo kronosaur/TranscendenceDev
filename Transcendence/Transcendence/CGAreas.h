@@ -726,10 +726,10 @@ class CGSelectorArea : public AGArea
 		void PaintEmptySlot (CG32bitImage &Dest, const RECT &rcRect, const SEntry &Entry);
 		void PaintInstalledItem (CG32bitImage &Dest, const RECT &rcRect, const SEntry &Entry);
 		void PaintModifier (CG32bitImage &Dest, int x, int y, const CString &sText, CG32bitPixel rgbColor, CG32bitPixel rgbBackColor, int *rety);
-		void SetRegionsFromArmor (CSpaceObject *pSource);
-		void SetRegionsFromDevices (CSpaceObject *pSource);
-		void SetRegionsFromMiscDevices (CSpaceObject *pSource);
-		void SetRegionsFromWeapons (CSpaceObject *pSource);
+		void SetRegionsFromArmor (const CSpaceObject &Source);
+		void SetRegionsFromDevices (const CSpaceObject &Source);
+		void SetRegionsFromMiscDevices (const CSpaceObject &Source);
+		void SetRegionsFromWeapons (const CSpaceObject &Source);
 
 		const CVisualPalette &m_VI;
 		const CDockScreenVisuals &m_Theme;
