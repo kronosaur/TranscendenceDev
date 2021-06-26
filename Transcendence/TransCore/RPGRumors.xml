@@ -74,6 +74,31 @@
 										(typTranslate sourceTyp (@ gData 'dialogID) translateData)
 									)
 
+							;	For scanning we create a more complex dialog
+							(and (= (@ gData 'special) 'scan) sourceObj (not (obj@ sourceObj 'known)))
+								(list
+									{	descID: (@ gData 'textID)
+										actions: (list
+											{	nextPage: 'addCoords	labelID: 'actionAddCoords	}
+											{	nextPage: 'exitPane		labelID: 'actionDone		}
+											)
+										}
+									{	id: 'addCoords
+										desc: (scrTranslate gScreen 'descCoordsAdded {
+											destName: (objGetName sourceObj 'definitePhrase)
+											})
+										sourceObj: sourceObj
+										code: (lambda (pageDesc)
+											(block (
+												(sourceObj (@ pageDesc 'sourceObj))
+												)
+												(objSetKnown sourceObj)
+												(objSetShowAsDestination sourceObj 'autoClear)
+												)
+											)
+										}
+									)
+
 							;	If the station showing the rumor has an intro then prepend it
 							rumorIntro
 								{
@@ -127,6 +152,15 @@
 				</Actions>
 			</Default>
 		</Panes>
+
+		<Language>
+			<Text id="actionAddCoords">[R]emember Coordinates</Text>
+			<Text id="descCoordsAdded">
+			
+				You add the coordinates of %destName% to your ship's computer.
+
+			</Text>
+		</Language>
 	</DockScreen>
 
 <!-- GLOBALS -->
@@ -152,21 +186,12 @@
 						attributes: attrib
 						priority: (or priority 10)
 						textID: (cat "rumor." attrib (if suf ".") suf)
+						special: (if (= special 'scan) special)
 						data: data
 						onExitRumor: 
 							(switch
 								(isfunction special) 
 									special
-
-								(= special 'scan) 
-									(lambda (theRumor) 
-										(if (not (objGetProperty (@ theRumor 'sourceObj) 'known))
-											(block ()
-												(objSetKnown (@ theRumor 'sourceObj))
-												(objSetShowAsDestination (@ theRumor 'sourceObj) 'autoClear)
-												)
-											)
-										)
 								)
 						}
 					)
