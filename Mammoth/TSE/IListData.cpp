@@ -35,6 +35,22 @@ CItemListWrapper::CItemListWrapper (CItemList &ItemList) :
 	{
 	}
 
+void CItemListWrapper::DeleteAtCursor (int iCount)
+
+//	DeleteAtCursor
+//
+//	Delete the given number of items at the cursor.
+
+	{
+	m_ItemList.DeleteAtCursor(iCount);
+	
+	if (m_pSource)
+		{
+		m_pSource->InvalidateItemListAddRemove();
+		m_pSource->OnComponentChanged(comCargo);
+		}
+	}
+
 //	CListWrapper ---------------------------------------------------------------
 //
 //	This class handles arbitrary lists. We expect the data to be a CC list. Each

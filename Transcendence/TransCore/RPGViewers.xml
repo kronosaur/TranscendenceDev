@@ -151,7 +151,7 @@
 							mass: (fmtNumber (typGetProperty shipClass 'mass))
 							maxSpeed: (fmtNumber 'speed (typGetProperty shipClass 'maxSpeed))
 							thrust: (fmtNumber 'real (/ (typGetProperty shipClass 'thrustToWeight) 1000))
-							maneuver: (fmtNumber 'real (/ (typGetProperty shipClass 'maneuver) 1000))
+							maneuver: (fmtNumber 'real (typGetProperty shipClass 'maneuver))
 							cargoSpace: (fmtNumber (typGetProperty shipClass 'cargoSpace))
 							})
 						}
