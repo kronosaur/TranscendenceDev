@@ -243,6 +243,21 @@
 										)
 								}
 								
+						;	If we can install something without an upgrade, then we
+						;	advertise that.
+								
+						(objHasTradeService dockObj 'installDevice {
+								itemCriteria: "s"
+								fullInstallOnly: true
+								})
+							{
+								visible: True
+								enabled: True
+								desc: (or (scrTranslate gScreen "actionArmor:defaultShieldsInstall" { items:shieldsToInstall maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
+										(typTranslate &dsRPGDockServicesBase; "actionArmor:defaultShieldsInstall" { items:shieldsToInstall maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
+										)
+								}
+
 						;	Otherwise, nothing
 						
 						{
