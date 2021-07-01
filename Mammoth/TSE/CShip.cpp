@@ -3520,6 +3520,8 @@ bool CShip::ImageInObject (const CVector &vObjPos, const CObjectImageArray &Imag
 //	object
 
 	{
+	DEBUG_TRY
+
 	return ImagesIntersect(Image,
 			iTick,
 			iRotation, 
@@ -3528,6 +3530,8 @@ bool CShip::ImageInObject (const CVector &vObjPos, const CObjectImageArray &Imag
 			GetSystem()->GetTick(), 
 			m_Rotation.GetFrameIndex(), 
 			vObjPos);
+
+	DEBUG_CATCH
 	}
 
 void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)

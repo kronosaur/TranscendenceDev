@@ -709,6 +709,8 @@ void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *
 //	Always handle the case where GetSystem() returns NULL.
 
 	{
+	DEBUG_TRY
+
 	constexpr BYTE FADE_OPACITY = 0x80;
 
 	//	Modifiers (such as station damage)
@@ -759,6 +761,8 @@ void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *
 		else
 			*retiTick = 0;
 		}
+
+	DEBUG_CATCH
 	}
 
 int CStation::CalcNumberOfShips (void)
@@ -2328,11 +2332,15 @@ bool CStation::ImageInObject (const CVector &vObjPos, const CObjectImageArray &I
 //	station
 
 	{
+	DEBUG_TRY
+
 	int iDestTick, iDestVariant;
 	const CObjectImageArray &DestImage = GetImage(false, &iDestTick, &iDestVariant);
 
 	return ImagesIntersect(Image, iTick, iRotation, vImagePos,
 			DestImage, iDestTick, iDestVariant, vObjPos);
+
+	DEBUG_CATCH
 	}
 
 bool CStation::IsBlacklisted (const CSpaceObject *pObj) const
