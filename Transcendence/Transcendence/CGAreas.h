@@ -24,6 +24,7 @@ class CDetailList
 
 		void CleanUp (void) { m_List.DeleteAll(); }
 		void Format (int cxWidth, int cyHeight = 0, DWORD dwFlags = 0, int *retcyHeight = NULL);
+		int GetHeight () const { return m_cyFormattedHeight; }
 		void Load (ICCItem *pDetails);
 		void Paint (CG32bitImage &Dest, int x, int y) const;
 		void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
@@ -66,6 +67,8 @@ class CDetailList
 		const CVisualPalette &m_VI;
 		CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
 		TArray<SDetailEntry> m_List;
+
+		int m_cyFormattedHeight = 0;
 	};
 
 class CDetailArea
@@ -113,7 +116,7 @@ class CDetailArea
 		void PaintBackgroundImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc, int cyExtraMargin = 0) const;
 		void PaintBadgeImage (CG32bitImage &Dest, const RECT &rcDest) const;
 		void PaintScaledImage (CG32bitImage &Dest, const RECT &rcDest, const ICCItem &ImageDesc) const;
-		void PaintStackedImage (CG32bitImage &Dest, int x, int y, ICCItem *pImageDesc, Metric rScale = 1.0) const;
+		void PaintStackedImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc, Metric rScale = 1.0) const;
 
 		CUniverse &m_Universe;
 		const CVisualPalette &m_VI;

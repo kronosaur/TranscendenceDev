@@ -331,6 +331,7 @@ void CDetailList::FormatDoubleColumns (int cxWidth, int cyHeight, DWORD dwFlags,
 
 	//	Return the max column height.
 
+	m_cyFormattedHeight = cyMax;
 	if (retcyHeight)
 		*retcyHeight = cyMax;
 	}
