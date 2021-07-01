@@ -1213,6 +1213,7 @@ class CSpaceObject
 		virtual bool FindDataField (const CString &sField, CString *retsValue) { return false; }
 		virtual Categories GetCategory (void) const { return catOther; }
 		virtual DWORD GetClassUNID (void) { return 0; }
+		virtual const CSovereign *GetControllingSovereign (void) const { return GetSovereign(); }
 		virtual Metric GetGravity (Metric *retrRadius) const { return 0.0; }
 		CInteractionLevel GetInteraction (void) const { const CWeaponFireDesc *pDesc = GetWeaponFireDesc(); return (pDesc ? pDesc->GetInteraction() : CInteractionLevel(-1)); }
 		virtual Metric GetInvMass (void) const { return 0.0; }

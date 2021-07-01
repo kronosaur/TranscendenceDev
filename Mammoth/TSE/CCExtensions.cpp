@@ -13390,8 +13390,8 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 		CreateCtx.pOrbit = &Loc.GetOrbit();
 		CreateCtx.bCreateSatellites = true;
 
-		if (pSystem->CreateStation(pSysCreateCtx,
-				pType,
+		if (pSystem->CreateStation(*pSysCreateCtx,
+				*pType,
 				CreateCtx,
 				&pStation) != NOERROR)
 			return pCC->CreateError(CONSTLIT("Unable to create station"), NULL);
@@ -13539,8 +13539,8 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 		CreateCtx.bCreateSatellites = true;
 		CreateCtx.pEventHandler = pEventHandler;
 
-		if (pSystem->CreateStation(pSysCreateCtx,
-				pType,
+		if (pSystem->CreateStation(*pSysCreateCtx,
+				*pType,
 				CreateCtx,
 				&pStation) != NOERROR)
 			return pCC->CreateError(CONSTLIT("Unable to create station"), NULL);

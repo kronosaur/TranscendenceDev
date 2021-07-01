@@ -142,6 +142,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual CSpaceObject *GetBase (void) const override { return m_pBase; }
 		virtual Categories GetCategory (void) const override { return catStation; }
 		virtual DWORD GetClassUNID (void) override { return m_pType->GetUNID(); }
+		virtual const CSovereign *GetControllingSovereign (void) const override { return m_pType->GetControllingSovereign(); }
 		virtual const CCurrencyBlock *GetCurrencyBlock (void) const override;
 		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) override;
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) override;

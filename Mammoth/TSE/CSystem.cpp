@@ -1329,8 +1329,8 @@ ALERROR CSystem::CreateStation (CStationType *pType,
 	CreateCtx.pEventHandler = pEventHandler;
 
 	CSpaceObject *pStation;
-	if (error = CreateStation(&Ctx,
-			pType,
+	if (error = CreateStation(Ctx,
+			*pType,
 			CreateCtx,
 			&pStation))
 		return error;
