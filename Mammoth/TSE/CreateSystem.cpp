@@ -3707,7 +3707,6 @@ bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric r
 		//	Check to see if we're too close to an active station
 
 		if (rRadius > 0.0
-				&& pObj->GetScale() == scaleStructure
 				&& (pObj->CanAttack() || pObj->IsStargate()))
 			{
 			//	Compute the distance to this obj
