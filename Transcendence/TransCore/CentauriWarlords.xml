@@ -479,7 +479,7 @@
 				levelFrequency=			"uuv-- ----- ----- ----- -----"
 
 				locationCriteria=		"+planetary"
-				enemyExclusionRadius=	"50"
+				exclusionRadius=		"50"
 				/>
 
 		<!-- Trade and Items -->
