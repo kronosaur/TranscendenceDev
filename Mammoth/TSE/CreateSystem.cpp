@@ -946,6 +946,8 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 
 		//	Create the station at the location
 
+		PushDebugStack(pCtx, strPatternSubst(CONSTLIT("Appropriate Station = [%08x] %s"), pType->GetUNID(), pType->GetNounPhrase()));
+
 		SObjCreateCtx CreateCtx(*pCtx);
 		CreateCtx.vPos = Loc.GetOrbit().GetObjectPos();
 		CreateCtx.pLoc = &Loc;
@@ -961,6 +963,8 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 		pCtx->System.SetLocationObjID(iLocID, pCtx->dwLastObjID);
 		pCtx->dwLastObjID = dwSavedLastObjID;
 		LocationTable.Delete(iTablePos);
+
+		PopDebugStack(pCtx);
 
 		break;
 		}
@@ -2245,6 +2249,8 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 
 		//	Create the station at the location
 
+		PushDebugStack(pCtx, strPatternSubst(CONSTLIT("Random Station [%08x] %s"), pType->GetUNID(), pType->GetNounPhrase()));
+
 		Metric rPosZ;
 		SObjCreateCtx CreateCtx(*pCtx);
 		CreateCtx.vPos = OrbitDesc.GetObjectPos(&rPosZ);
@@ -2265,6 +2271,8 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 		//	No more tries
 
 		bSuccess = true;
+
+		PopDebugStack(pCtx);
 		break;
 		}
 
@@ -4809,7 +4817,7 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, const CXMLElement *pDe
 		return ERR_FAIL;
 		}
 
-	PushDebugStack(pCtx, strPatternSubst(CONSTLIT("Station unid=%x"), pStationType->GetUNID()));
+	PushDebugStack(pCtx, strPatternSubst(CONSTLIT("Station [%08x] %s"), pStationType->GetUNID(), pStationType->GetNounPhrase()));
 
 	bool bDebug = pDesc->GetAttributeBool(DEBUG_ATTRIB);
 	bool bOptional = pDesc->GetAttributeBool(OPTIONAL_ATTRIB);
