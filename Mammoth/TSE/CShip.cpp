@@ -4479,6 +4479,15 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	m_pClass->GetHullDesc().AdjustDamage(Ctx);
 
+	//	Show damage
+
+	if (GetUniverse().GetEngineOptions().IsDamageShown()
+			&& Ctx.iDamage > 0
+			&& Ctx.Attacker.IsPlayerOrderGiver())
+		{
+		ShowDamage(Ctx);
+		}
+
 	//	Let the armor handle it
 
 	Ctx.iArmorHitDamage = Ctx.iDamage;

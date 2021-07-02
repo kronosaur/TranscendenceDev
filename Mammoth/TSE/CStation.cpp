@@ -2873,6 +2873,15 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 		Ctx.iDamage = 0;
 		}
 
+	//	Show damage
+
+	if (GetUniverse().GetEngineOptions().IsDamageShown()
+			&& Ctx.iDamage > 0
+			&& Ctx.Attacker.IsPlayerOrderGiver())
+		{
+		ShowDamage(Ctx);
+		}
+
 	//	If we've still got armor left, then we take damage but otherwise
 	//	we're OK.
 

@@ -681,6 +681,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'memoryUse\n"
 			"   'showAIDebug\n"
 			"   'showBounds\n"
+			"   'showDamageDone\n"
 			"   'showFacingsAngle\n"
 			"   'showLineOfFire\n"
 			"   'showNavPaths\n"
@@ -708,6 +709,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'showAIDebug True/Nil\n"
 			"   'showBounds True/Nil\n"
+			"   'showDamageDone True/Nil\n"
 			"   'showFacingsAngle True/Nil\n"
 			"   'showLineOfFire True/Nil\n"
 			"   'showNavPaths True/Nil\n"

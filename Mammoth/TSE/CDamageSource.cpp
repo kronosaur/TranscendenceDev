@@ -422,6 +422,20 @@ bool CDamageSource::IsFriend (CSovereign *pSovereign) const
 	return pOurSovereign->IsFriend(pSovereign);
 	}
 
+bool CDamageSource::IsPlayerOrderGiver () const
+
+//	IsPlayerOrderGiver
+//
+//	Returns TRUE if the order giver is the player.
+
+	{
+	const CSpaceObject *pOrderGiver = GetOrderGiver();
+	if (pOrderGiver && pOrderGiver->IsPlayer())
+		return true;
+	else
+		return false;
+	}
+
 void CDamageSource::OnLeaveSystem (void)
 
 //	OnLeaveSystem

@@ -555,6 +555,7 @@ class CDamageSource
 		bool IsExplosion () const { return ((m_dwFlags & FLAG_IS_EXPLOSION) ? true : false); }
 		bool IsFriend (CSovereign *pSovereign) const;
 		bool IsPlayer (void) const { return ((m_dwFlags & FLAG_IS_PLAYER) ? true : false); }
+		bool IsPlayerOrderGiver () const;
 		void OnLeaveSystem (void);
 		void OnObjDestroyed (CSpaceObject &ObjDestroyed);
 		void ReadFromStream (SLoadCtx &Ctx);

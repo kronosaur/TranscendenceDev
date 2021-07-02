@@ -7671,6 +7671,22 @@ void CSpaceObject::SetSovereign (CSovereign *pSovereign)
 		pSystem->FlushEnemyObjectCache();
 	}
 
+void CSpaceObject::ShowDamage (const SDamageCtx &Ctx)
+
+//	ShowDamage
+//
+//	Shows damage done by the player.
+
+	{
+	CMarker::SCreateOptions Options;
+	Options.pSovereign = GetSovereign();
+	Options.iLifetime = 150;
+	Options.iStyle = CMarker::EStyle::Message;
+	Options.sName = strPatternSubst(CONSTLIT("%d hp %s"), Ctx.iDamage, ::GetDamageName(Ctx.Damage.GetDamageType()));
+
+	CMarker::Create(*GetSystem(), Ctx.vHitPos, NullVector, Options);
+	}
+
 bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
 
 //	Translate
