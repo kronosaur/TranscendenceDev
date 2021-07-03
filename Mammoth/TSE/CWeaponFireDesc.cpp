@@ -2327,16 +2327,6 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			pNewDesc->pDesc->m_fMIRV = true;
 		}
 
-	//	If we have fragments, then set proximity appropriately
-	//	NOTE: We set the fail safe value even if we don't set the proximity
-	//	blast because we might set m_fProximityBlast later if there
-	//	is an OnFragment event.
-
-	m_fProximityBlast = (iFragCount != 0);
-	m_iProximityFailsafe = pDesc->GetAttributeInteger(FAILSAFE_ATTRIB);
-	m_rMaxFragThreshold = LIGHT_SECOND * CWeaponClass::DEFAULT_FRAG_THRESHOLD;
-	m_rMinFragThreshold = 0.5 * LIGHT_SECOND * CWeaponClass::DEFAULT_FRAG_THRESHOLD;
-
 	//	If we've got a fragment interval set, then it means we periodically 
 	//	fragment (instead of fragmenting on proximity).
 
@@ -2349,27 +2339,45 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			return ERR_FAIL;
 			}
 
-		//	Clear proximity blast flag.
-
 		m_fProximityBlast = false;
 		}
 
-	//	See if we have custom fragmentation thresholds
+	//	Otherwise, initialize proximity fragmentation values
+	//
+	//	NOTE: We set these values even if we don't have fragments because we 
+	//	might have an OnFragment event.
 
 	else
 		{
-		Metric rValue;
+		m_fProximityBlast = (iFragCount != 0);
+		m_iProximityFailsafe = pDesc->GetAttributeInteger(FAILSAFE_ATTRIB);
 
-		if (pDesc->FindAttributeDouble(FRAGMENT_MAX_RADIUS_ATTRIB, &rValue)
-				|| pDesc->FindAttributeDouble(FRAGMENT_RADIUS_ATTRIB, &rValue))
+		Metric rMax = pDesc->GetAttributeDoubleBounded(FRAGMENT_MAX_RADIUS_ATTRIB, 0.0, -1.0, -1.0);
+		if (rMax == -1.0)
+			rMax = pDesc->GetAttributeDoubleBounded(FRAGMENT_RADIUS_ATTRIB, 0.0, -1.0, -1.0);
+
+		Metric rMin = pDesc->GetAttributeDoubleBounded(FRAGMENT_MIN_RADIUS_ATTRIB, 0.0, -1.0, -1.0);
+
+		//	Set defaults, based on which values are defined.
+
+		if (rMax == -1.0 && rMin == -1.0)
 			{
-			m_rMaxFragThreshold = LIGHT_SECOND * Max(0.0, rValue);
-
-			if (pDesc->FindAttributeDouble(FRAGMENT_MIN_RADIUS_ATTRIB, &rValue))
-				m_rMinFragThreshold = Min(LIGHT_SECOND * Max(0.0, rValue), m_rMaxFragThreshold);
-			else
-				m_rMinFragThreshold = 0.5 * m_rMaxFragThreshold;
+			rMax = CWeaponClass::DEFAULT_FRAG_THRESHOLD;
+			rMin = CWeaponClass::DEFAULT_FRAG_MIN_THRESHOLD;
 			}
+		else if (rMin == -1.0)
+			{
+			rMin = Min(CWeaponClass::DEFAULT_FRAG_MIN_THRESHOLD, rMax);
+			}
+		else if (rMax == -1.0)
+			{
+			rMax = Max(rMin, CWeaponClass::DEFAULT_FRAG_THRESHOLD);
+			}
+
+		//	Convert to light-seconds
+
+		m_rMaxFragThreshold = LIGHT_SECOND * rMax;
+		m_rMinFragThreshold = LIGHT_SECOND * rMin;
 		}
 
 	//	Compute max effective range
