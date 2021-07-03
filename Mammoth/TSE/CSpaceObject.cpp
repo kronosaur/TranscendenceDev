@@ -5120,14 +5120,9 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 
 		bool bCanTriggerDetonation = CTargetList::CanDetonate(*this, pTarget, TargetOptions, *pObj);
 		
-		//	Compute the size of the object, if we're doing proximity computations
-
-		Metric rObjRadius;
-		if (bCanTriggerDetonation)
-			rObjRadius = OBJ_RADIUS_ADJ * pObj->GetHitSize();
-
 		//	Step
 
+		CVector vPrev = vStart;
 		CVector vTest = vStart;
 		for (k = 0; k < iSteps; k++)
 			{
@@ -5144,7 +5139,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 				if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vTest))
 					{
 					if (retvHitPos)
-						*retvHitPos = vTest;
+						*retvHitPos = vPrev;
 
 					//	Figure out the direction that the hit came from
 
@@ -5160,7 +5155,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 			if (bCanTriggerDetonation)
 				{
 				CVector vDist = vTest - pObj->GetPos();
-				Metric rDist = vDist.Length() - rObjRadius;
+				Metric rDist = vDist.Length();
 
 				if (rDist < rClosestApproach)
 					{
@@ -5172,6 +5167,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 
 			//	Next
 
+			vPrev = vTest;
 			vTest = vTest + vStep;
 			}
 
