@@ -4995,6 +4995,11 @@ void CSystem::UpdateCollisionTesting (SUpdateCtx &Ctx)
 //	contacts for every unique pair of collisions detected.
 
 	{
+	//	This range needs to be large enough to include the largest object that
+	//	can block things.
+
+	constexpr Metric MAX_COLLISION_RANGE = 6.0 * LIGHT_SECOND;
+
 	for (int i = 0; i < GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = GetObject(i);
@@ -5009,7 +5014,7 @@ void CSystem::UpdateCollisionTesting (SUpdateCtx &Ctx)
 		//	Loop over all objects in range.
 
 		SSpaceObjectGridEnumerator j;
-		EnumObjectsInBoxStart(j, pObj->GetPos(), g_SecondsPerUpdate * LIGHT_SECOND);
+		EnumObjectsInBoxStart(j, pObj->GetPos(), MAX_COLLISION_RANGE);
 		while (EnumObjectsInBoxHasMore(j))
 			{
 			CSpaceObject *pContactObj = EnumObjectsInBoxGetNext(j);
