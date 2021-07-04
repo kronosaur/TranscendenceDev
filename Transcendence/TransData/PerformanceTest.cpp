@@ -182,7 +182,7 @@ void TestUpdate (CUniverse &Universe, CXMLElement *pCmdLine)
 	int iTrial;
 
 	TArray<DWORD> Trials;
-	DWORD dwLastAverage;
+	DWORD dwLastAverage = 0;
 
 	//	How many tests
 

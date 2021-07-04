@@ -131,7 +131,8 @@ void CWeaponHUDCircular::PaintTarget (SHUDPaintCtx &Ctx, CShip *pShip, CSpaceObj
 //	Paints the target on the back buffer.
 
 	{
-	ASSERT(pTarget);
+	if (!pTarget)
+		throw CException(ERR_FAIL);
 
 	//	Metrics and resources
 

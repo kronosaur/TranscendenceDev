@@ -138,7 +138,8 @@ void CDockSession::InitCustomProperties (const CDesignType &Type, const SDockFra
 	//	pResolvedRoot is not always equal to Type because we might be 
 	//	initializing an ancestor. But we can always rely on it being non-null.
 
-	ASSERT(Frame.pResolvedRoot);
+	if (!Frame.pResolvedRoot)
+		throw CException(ERR_FAIL);
 
 	//	Initialize our parent, if necessary
 

@@ -64,36 +64,36 @@ CFleetCommandAI::SAsset *CFleetCommandAI::AddAsset (CSpaceObject *pAsset)
 //	Add an asset to our list
 
 	{
-	int i;
-
 	//	Make sure we have enough room in the list
 
-	if (m_iAssetCount + 1 > m_iAssetAlloc)
+	if (!m_pAssets)
 		{
-		if (m_pAssets == NULL)
-			{
-			m_iAssetAlloc = ALLOC_GRANULARITY;
-			m_pAssets = new SAsset [m_iAssetAlloc];
-			}
-		else
-			{
-			m_iAssetAlloc += ALLOC_GRANULARITY;
-			SAsset *pNewAssets = new SAsset [m_iAssetAlloc];
+		m_iAssetAlloc = ALLOC_GRANULARITY;
+		m_pAssets = new SAsset [m_iAssetAlloc];
+		}
+	else if (m_iAssetCount + 1 > m_iAssetAlloc)
+		{
+		m_iAssetAlloc += ALLOC_GRANULARITY;
+		if (m_iAssetAlloc < m_iAssetCount)
+			throw CException(ERR_FAIL);
 
-			for (i = 0; i < m_iAssetCount; i++)
-				pNewAssets[i] = m_pAssets[i];
+		SAsset *pNewAssets = new SAsset [m_iAssetAlloc];
 
-			delete [] m_pAssets;
-			m_pAssets = pNewAssets;
+		for (int i = 0; i < m_iAssetCount; i++)
+			{
+			pNewAssets[i] = m_pAssets[i];
 			}
+
+		delete [] m_pAssets;
+		m_pAssets = pNewAssets;
 		}
 
 	//	Make sure that we are not adding a duplicate
 
 #ifdef DEBUG
-	for (i = 0; i < m_iAssetCount; i++)
+	for (int i = 0; i < m_iAssetCount; i++)
 		if (m_pAssets[i].pAsset == pAsset)
-			ASSERT(false);
+			throw CException(ERR_FAIL);
 #endif
 
 	//	Add the ship

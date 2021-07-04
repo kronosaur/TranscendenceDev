@@ -373,7 +373,8 @@ CSpaceObject *CSpaceObjectGrid::EnumGetNextFast (SSpaceObjectGridEnumerator &i) 
 //	Returns the next object in the enumeration
 
 	{
-	ASSERT(i.pNode != NULL);
+	if (!i.pNode)
+		throw CException(ERR_FAIL);
 
 	CSpaceObject *pCurObj = i.pNode->pObj;
 	i.pNode = i.pNode->pNext;
@@ -494,7 +495,8 @@ void CSpaceObjectGrid::GetObjectsInBox (const CVector &vUR, const CVector &vLL, 
 				bCheckOuter = false;
 				}
 			else
-				pList = NULL;
+				//	Already checked outer
+				continue;
 
 			const CSpaceObjectPool::SNode *pNode = pList->pList;
 			while (pNode)

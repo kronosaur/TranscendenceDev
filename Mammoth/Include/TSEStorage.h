@@ -134,6 +134,7 @@ class CGameFile
 			};
 
 		ALERROR ComposeLoadError (const CString &sError, CString *retsError);
+		static void CopyHeaderString (const CString &sSrc, char *pszDest, int iDestSize);
 		ALERROR LoadGameHeader (SGameHeader *retHeader);
 		void LoadSystemMapFromStream (DWORD dwVersion, const CString &sStream);
 		ALERROR SaveShipImage (CUniverse &Universe, CSpaceObject &ShipObj);

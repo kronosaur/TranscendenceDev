@@ -561,7 +561,8 @@ bool CItem::FireCanBeInstalled (CSpaceObject *pSource, int iSlot, CString *retsE
 		if (pResult->IsError())
 			{
 			*retsError = pResult->GetStringValue();
-			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x CanBeInstalled"), m_pItemType->GetUNID()), pResult);
+			if (pSource)
+				pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x CanBeInstalled"), m_pItemType->GetUNID()), pResult);
 			bCanBeInstalled = false;
 			}
 		else if (!pResult->IsTrue())

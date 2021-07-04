@@ -106,7 +106,8 @@ CString CTextFileLog::GetSessionLog (void)
 //	Returns all output since the start of the session.
 
 	{
-	ASSERT(m_hFile);
+	if (!m_hFile)
+		throw CException(ERR_FAIL);
 
 	//	Figure out the current position of the file pointer
 
@@ -150,9 +151,8 @@ void CTextFileLog::Print (const CString &sLine) const
 //	Outputs a line to the log
 
 	{
-	ASSERT(m_hFile);
-	if (m_hFile == NULL)
-		return;
+	if (!m_hFile)
+		throw CException(ERR_FAIL);
 
 	DWORD dwWritten;
 	WriteFile(m_hFile, sLine.GetASCIIZPointer(), sLine.GetLength(), &dwWritten, NULL);
@@ -181,7 +181,8 @@ void CTextFileLog::SetSessionStart (void)
 //	Sets the start of the session at the current position of the log.
 
 	{
-	ASSERT(m_hFile);
+	if (!m_hFile)
+		throw CException(ERR_FAIL);
 
 	DWORD dwCurPos = ::SetFilePointer(m_hFile, 0, NULL, FILE_CURRENT);
 	if (dwCurPos == INVALID_SET_FILE_POINTER)

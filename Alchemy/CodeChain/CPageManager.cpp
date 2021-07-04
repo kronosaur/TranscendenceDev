@@ -80,7 +80,7 @@ bool CPageManager::IsFileAddress (const CString &sAddress)
 	if (((pPos[0] >= 'a' && pPos[0] <= 'z') || (pPos[0] >= 'A' && pPos[0] <= 'Z'))
 			&& pPos[1] == ':')
 		return true;
-	else if (pPos[0] == '\\' && pPos[0] == '\\')
+	else if (pPos[0] == '\\' && pPos[1] == '\\')
 		return true;
 	else
 		return false;

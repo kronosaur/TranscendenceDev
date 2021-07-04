@@ -1720,7 +1720,8 @@ void CShip::DamageDevice (CInstalledDevice *pDevice, SDamageCtx &Ctx)
 //	Damages the given device
 
 	{
-	ASSERT(pDevice);
+	if (!pDevice)
+		throw CException(ERR_FAIL);
 
 	//	Damage the device
 
@@ -3637,7 +3638,8 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSy
 
 	{
 	CDeviceClass *pNewDevice = ItemList.GetItemAtCursor().GetType()->GetDeviceClass();
-	ASSERT(pNewDevice);
+	if (!pNewDevice)
+		throw CException(ERR_FAIL);
 
 	DeviceNames iNamedSlot = GetDeviceNameForCategory(pNewDevice->GetCategory());
 

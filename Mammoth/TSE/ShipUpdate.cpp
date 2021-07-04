@@ -419,7 +419,8 @@ bool CShip::UpdateFuel (SUpdateCtx &Ctx, int iTick)
 //	NOTE: iTick is a local system tick, not the global universe tick.
 
 	{
-	ASSERT(m_pPowerUse);
+	if (!m_pPowerUse)
+		throw CException(ERR_FAIL);
 
 	DEBUG_TRY
 

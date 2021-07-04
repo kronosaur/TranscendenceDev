@@ -244,8 +244,8 @@ void CNavigationPath::Create (CSystem *pSystem, CSovereign *pSovereign, CSpaceOb
 //	Create a path from pStart to pEnd that avoids enemies of pSovereign
 
 	{
-	ASSERT(pStart);
-	ASSERT(pEnd);
+	if (!pStart || !pEnd)
+		throw CException(ERR_FAIL);
 
 	CUniverse &Universe = pSystem->GetUniverse();
 

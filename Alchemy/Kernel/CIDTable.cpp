@@ -165,7 +165,7 @@ ALERROR CIDTable::LoadHandler (CUnarchiver *pUnarchiver)
 #ifndef LATER
 		//	We need to handle references here.
 		else
-			ASSERT(FALSE);
+			throw CException(ERR_FAIL);
 #endif
 
 		CDictionary::SetEntry(i, iKey, (int)pValue);

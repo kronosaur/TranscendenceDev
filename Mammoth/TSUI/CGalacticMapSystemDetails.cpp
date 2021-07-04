@@ -257,7 +257,7 @@ void CGalacticMapSystemDetails::CreateObjEntry (const SObjDesc &Obj, int yPos, i
 
 	//  Center the icon
 
-	if (pIconAni)
+	if (pIconAni && pIcon)
 		{
 		int yIcon = (cyEntry - pIcon->GetHeight()) / 2;
 		pIconAni->SetPropertyVector(PROP_POSITION, CVector(xIcon, yIcon));

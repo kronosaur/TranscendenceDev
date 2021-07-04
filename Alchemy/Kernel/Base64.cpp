@@ -153,6 +153,9 @@ ALERROR CBase64Encoder::Write (const char *pData, int iLength, int *retiBytesWri
 //	Writes out binary data and encodes it into base64.
 
 	{
+	if (!pData)
+		return ERR_FAIL;
+
 	BYTE *pInput = (BYTE *)pData;
 	BYTE *pInputEnd = pInput + iLength;
 

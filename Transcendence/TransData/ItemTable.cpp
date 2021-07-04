@@ -891,9 +891,6 @@ void SelectByCriteria (SItemTableCtx &Ctx, const CString &sCriteria, TArray<CIte
 
 bool SelectByItemTable (SItemTableCtx &Ctx, const CString &sTable, int iLevel, TArray<CItemType *> *retList)
 	{
-	int i;
-
-	CItemTable *pTable;
 	DWORD dwUNID = strToInt(sTable, 0);
 	if (dwUNID == 0)
 		{
@@ -903,13 +900,13 @@ bool SelectByItemTable (SItemTableCtx &Ctx, const CString &sTable, int iLevel, T
 			printf("Enter UNID or entity: %s\n", (LPSTR)sTable);
 			return false;
 			}
+		}
 
-		pTable = Ctx.pUniverse->FindItemTable(dwUNID);
-		if (pTable == NULL)
-			{
-			printf("Unknown item table: %s\n", (LPSTR)sTable);
-			return false;
-			}
+	CItemTable *pTable = Ctx.pUniverse->FindItemTable(dwUNID);
+	if (pTable == NULL)
+		{
+		printf("Unknown item table: %s\n", (LPSTR)sTable);
+		return false;
 		}
 
 	//	Get the probability table
@@ -926,7 +923,7 @@ bool SelectByItemTable (SItemTableCtx &Ctx, const CString &sTable, int iLevel, T
 	retList->DeleteAll();
 	retList->InsertEmpty(Ctx.ProbTable.GetCount());
 
-	for (i = 0; i < retList->GetCount(); i++)
+	for (int i = 0; i < retList->GetCount(); i++)
 		retList->GetAt(i) = Ctx.ProbTable.GetType(i);
 
 	return true;

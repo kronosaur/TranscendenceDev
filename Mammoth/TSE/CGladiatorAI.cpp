@@ -44,7 +44,9 @@ void CGladiatorAI::Behavior (SUpdateCtx &Ctx)
 
 		case stateAttackingTarget:
 			{
-			ASSERT(m_pTarget);
+			if (!m_pTarget)
+				throw CException(ERR_FAIL);
+
 			int iTick = m_pShip->GetSystem()->GetTick();
 
 			//	Compute the potential

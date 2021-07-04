@@ -366,6 +366,9 @@ bool CSpaceObject::GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType 
 		for (i = 0; i < GetUniverse().GetItemTypeCount(); i++)
 			{
 			CItemType *pType = GetUniverse().GetItemType(i);
+			if (!pType)
+				throw CException(ERR_FAIL);
+
 			CItem Item(pType, 1);
 
 			if (pShipToRefuel->IsFuelCompatible(Item))

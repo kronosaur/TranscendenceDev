@@ -1362,7 +1362,8 @@ CString CExtensionCollection::GetExternalResourceFilespec (CExtension *pExtensio
 //	extensions in the Collection folder.
 
 	{
-	ASSERT(pExtension && pExtension->GetFolderType() == CExtension::folderCollection);
+	if (!pExtension || pExtension->GetFolderType() != CExtension::folderCollection)
+		throw CException(ERR_FAIL);
 
 	//	We look in a subdirectory of the Collection folder
 

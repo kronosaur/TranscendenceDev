@@ -60,7 +60,9 @@ void CFerianShipAI::Behavior (SUpdateCtx &Ctx)
 
 		case stateAttackingTarget:
 			{
-			ASSERT(m_pTarget);
+			if (!m_pTarget)
+				throw CException(ERR_FAIL);
+
 			m_AICtx.ImplementAttackTarget(m_pShip, m_pTarget);
 			m_AICtx.ImplementFireOnTargetsOfOpportunity(m_pShip, m_pTarget);
 			break;
@@ -68,7 +70,8 @@ void CFerianShipAI::Behavior (SUpdateCtx &Ctx)
 
 		case stateAttackingThreat:
 			{
-			ASSERT(m_pBase);
+			if (!m_pBase)
+				throw CException(ERR_FAIL);
 
 			//	In previous versions there was a bug in which m_pTarget could end
 			//	up NULL. We handle it here.
@@ -108,7 +111,8 @@ void CFerianShipAI::Behavior (SUpdateCtx &Ctx)
 
 		case stateAvoidThreat:
 			{
-			ASSERT(m_pTarget);
+			if (!m_pTarget)
+				throw CException(ERR_FAIL);
 
 			//	Pick a direction away from the target
 
@@ -133,7 +137,8 @@ void CFerianShipAI::Behavior (SUpdateCtx &Ctx)
 
 		case stateMining:
 			{
-			ASSERT(m_pTarget);
+			if (!m_pTarget)
+				throw CException(ERR_FAIL);
 
 			//	If there's a threat near-by, scurry away
 
@@ -200,7 +205,8 @@ void CFerianShipAI::Behavior (SUpdateCtx &Ctx)
 
 		case stateOnCourseForMine:
 			{
-			ASSERT(m_pTarget);
+			if (!m_pTarget)
+				throw CException(ERR_FAIL);
 
 			//	If there is a threat near-by, scurry away
 
