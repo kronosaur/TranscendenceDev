@@ -105,7 +105,7 @@ void CCompositeImageModifiers::Apply (const SGetImageCtx &Ctx, CObjectImageArray
 
 	if (pNewDest)
 		{
-		if (m_bFullImage || retImage->IsAnimated())
+		if (m_bFullImage || (retImage->IsAnimated() && !m_bStationDamage))
 			retImage->SetImage(TSharedPtr<CObjectImage>(new CObjectImage(pNewDest, true)));
 		else
 			retImage->InitFromBitmap(pNewDest, rcNewImage, 0, 0, true);
