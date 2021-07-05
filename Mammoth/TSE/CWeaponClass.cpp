@@ -681,9 +681,18 @@ CSpaceObject *CWeaponClass::CalcBestTarget (CInstalledDevice &Device, const CTar
 		if ((!bCheckRange || rDist2 < rMaxRange2)
 				&& ((DWORD)TargetList.GetTargetType(i) & dwTargetTypes)
 				&& DeviceItem.GetWeaponEffectiveness(pTarget) >= 0
-				&& IsTargetReachable(Device, *pTarget, -1, &iFireAngle)
-				&& (!bCheckLineOfFire || SourceObj.IsLineOfFireClear(&Device, pTarget, iFireAngle, rMaxRange)))
+				&& IsTargetReachable(Device, *pTarget, -1, &iFireAngle))
 			{
+			//	If we have a target, but there are friendlies in the way, then
+			//	abort. We don't look for more targets because checking the 
+			//	line-of-fire is expensive. This mostly works because the target
+			//	list is ordered by distance/priority.
+
+			if (bCheckLineOfFire && !SourceObj.IsLineOfFireClear(&Device, pTarget, iFireAngle, rMaxRange))
+				return NULL;
+
+			//	Found target
+
 			if (retiFireAngle) *retiFireAngle = iFireAngle;
 			if (retrDist2) *retrDist2 = rDist2;
 
