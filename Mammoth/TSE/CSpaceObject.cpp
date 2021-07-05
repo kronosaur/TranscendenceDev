@@ -5842,6 +5842,8 @@ bool CSpaceObject::IsLineOfFireClear (const CInstalledDevice *pWeapon,
 	if (!CanHitFriends() || !pWeapon->CanHitFriends())
 		return true;
 
+	CUsePerformanceCounter Counter(GetUniverse(), CONSTLIT("update.lineOfFire"));
+
 	//	Compute some values
 
 	const CDeviceItem WeaponItem = pWeapon->GetDeviceItem();
@@ -7749,6 +7751,8 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 //	Update the object
 
 	{
+	CUsePerformanceCounter Counter(GetUniverse(), strPatternSubst(CONSTLIT("update.%s"), GetCategoryName(GetCategory())));
+
 	//	Update as long as we are not time-stopped.
 
 	if (!Ctx.IsTimeStopped())

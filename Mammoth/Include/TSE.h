@@ -1377,6 +1377,8 @@ class CSpaceObject
 
 		virtual void OnLosePOV (void) { }
 
+		static CString GetCategoryName (Categories iCategory);
+
 	protected:
 
 		//	Virtuals to be overridden

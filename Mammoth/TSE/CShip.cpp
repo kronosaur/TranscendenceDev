@@ -208,6 +208,8 @@ void CShip::Behavior (SUpdateCtx &Ctx)
 	{
 	DEBUG_TRY
 
+	CUsePerformanceCounter Counter(GetUniverse(), CONSTLIT("update.shipBehavior"));
+
 	if (!IsInactive() && !m_fControllerDisabled)
 		{
 		m_pController->Behavior(Ctx);

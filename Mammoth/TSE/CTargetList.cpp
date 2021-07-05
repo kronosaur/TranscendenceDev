@@ -242,6 +242,8 @@ void CTargetList::Realize (void) const
 		}
 	else
 		{
+		CUsePerformanceCounter Counter(m_pSourceObj->GetUniverse(), CONSTLIT("update.realizeTargetList"));
+
 		m_Targets.DeleteAll();
 
 		CNearestInRadiusRange Range(m_pSourceObj->GetPos(), m_Options.rMaxDist);

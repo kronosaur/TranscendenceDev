@@ -89,6 +89,9 @@ class CPerformanceCounters
 			int iTotalCalls = 0;
 			int iTotalTime = 0;
 
+			int iTotalCallsPerUpdate = 0;
+			int iTotalTimePerUpdate = 0;
+
 			bool bEnabled = false;
 			};
 
@@ -99,6 +102,7 @@ class CPerformanceCounters
 		void SetEnabled (bool bEnabled = true) { m_bEnabled = bEnabled; }
 		bool SetEnabled (const CString &sID, bool bEnabled = true);
 		void StartCounter (const CString &sID) { if (m_bEnabled) StartTimer(sID); }
+		void StartUpdate ();
 		void StopCounter (const CString &sID) { if (m_bEnabled) StopTimer(sID); }
 
 	private:

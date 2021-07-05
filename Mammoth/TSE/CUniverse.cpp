@@ -2997,6 +2997,10 @@ bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)
 	{
 	m_iLastUpdateSpeed = iUpdateMode;
 
+#ifdef DEBUG_PERFORMANCE_COUNTERS
+	m_PerformanceCounters.StartUpdate();
+#endif
+
 	switch (iUpdateMode)
 		{
 		case updateAccelerated:
