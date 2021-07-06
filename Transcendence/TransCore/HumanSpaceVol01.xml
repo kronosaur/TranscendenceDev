@@ -2331,6 +2331,7 @@
 	<!ENTITY itMassiveQuadrocarbideArmor	"0x001004F2">
 	<!ENTITY itMassiveHexacarbideArmor	"0x001004F3">
 	<!ENTITY itMassiveOctocarbideArmor	"0x001004F4">
+	<!ENTITY rsExplorerAutonHero		"0x001004F5">
 
 	<!-- 0510-052F LUMINOUS -->
 
