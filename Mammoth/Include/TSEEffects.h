@@ -192,6 +192,8 @@ class CCreatePainterCtx
 		void SetAPIVersion (DWORD dwVersion) { m_dwAPIVersion = dwVersion; }
 		void SetDamageCtx (SDamageCtx &Ctx) { m_pDamageCtx = &Ctx; }
 		void SetDefaultParam (const CString &sParam, const CEffectParamDesc &Value);
+		void SetFireCharge (int iFireCharge) { m_iFireCharge = iFireCharge; };
+		void SetFireRepeat (int iFireRepeat) { m_iFireRepeat = iFireRepeat; };
 		void SetLifetime (int iLifetime) { m_iLifetime = iLifetime; }
 		void SetLoadVersion (DWORD dwVersion) { m_dwLoadVersion = dwVersion; }
 		void SetNoSingleton (bool bValue = true) { m_bNoSingleton = bValue; }
@@ -226,6 +228,8 @@ class CCreatePainterCtx
 		TUniquePtr<CEffectParamSet> m_pDefaultParams;	//	Default parameters (owned by us)
 		DWORD m_dwLoadVersion = SYSTEM_SAVE_VERSION;	//	Optional system version at load time
 		DWORD m_dwAPIVersion = API_VERSION;				//	API version of creator
+		int m_iFireRepeat = 0;							//	Optional fire repeat count
+		int m_iFireCharge = 0;							//	Optional fire charge count
 
 		bool m_bUseObjectCenter = false;				//	If TRUE, particle clouds always use the object as center
 		bool m_bTracking = false;						//	If TRUE, object sets velocity

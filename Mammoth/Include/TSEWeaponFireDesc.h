@@ -678,8 +678,9 @@ class CWeaponFireDesc
 		bool CanDamageSource (void) const { return (m_fCanDamageSource ? true : false); }
 		bool CanHit (const CSpaceObject &Obj) const;
 		bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
+		void CreateChargeEffect (CSystem* pSystem, CSpaceObject* pSource, const CVector& vPos, const CVector& vVel, int iDir, int iFireRepeat) const;
 		IEffectPainter *CreateEffectPainter (SShotCreateCtx &CreateCtx);
-		void CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir) const;
+		void CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir, int iFireRepeat) const;
 		void CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx) const;
 		IEffectPainter *CreateParticlePainter (void);
 		IEffectPainter *CreateSecondaryPainter (bool bTrackingObj = false, bool bUseObjectCenter = false);
@@ -718,6 +719,7 @@ class CWeaponFireDesc
 		int GetAveLifetime (void) const { return m_Lifetime.GetAveValue(); }
 		Metric GetAveParticleCount (void) const;
 		Metric GetAveSpeed (void) const { return 0.5 * (GetRatedSpeed() + m_rMaxMissileSpeed); }
+		int GetChargeTime (void) const { return m_iChargeTime; }
 		int GetContinuous (void) const { return m_iContinuous; }
 		int GetContinuousFireDelay (void) const { return (m_iContinuous != -1 ? m_iContinuousFireDelay : -1); }
 		const DamageDesc &GetDamage (void) const { return m_Damage; }
@@ -752,6 +754,7 @@ class CWeaponFireDesc
 		const CParticleSystemDesc *GetParticleSystemDesc (void) const { return m_pParticleDesc; }
 		int GetPassthrough (void) const { return m_iPassthrough; }
 		int GetPowerUse (void) const { return m_iPowerUse; }
+		bool GetPlaySoundOncePerBurst (void) const { return m_bPlaySoundOncePerBurst; }
 		int GetProximityFailsafe (void) const { return m_iProximityFailsafe; }
 		Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }
 		CWeaponFireDesc *GetScaledDesc (int iLevel) const;
@@ -786,6 +789,7 @@ class CWeaponFireDesc
 		void MarkImages (void);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 		void PlayFireSound (CSpaceObject *pSource) const { m_FireSound.PlaySound(pSource); }
+		void PlayChargeSound (CSpaceObject *pSource) const { m_ChargeSound.PlaySound(pSource); }
 		bool ProximityBlast (void) const { return (m_fProximityBlast ? true : false); }
 		bool ShowsHint (EDamageHint iHint) const;
 
@@ -803,6 +807,7 @@ class CWeaponFireDesc
 		Metric CalcMaxEffectiveRange (void) const;
 		Metric CalcShotsPerAmmoItem () const;
 		static Metric CalcSpeed (Metric rPercentOfLight, bool bRelativistic);
+		CEffectCreator* GetChargeEffect (void) const;
 		CEffectCreator *GetFireEffect (void) const;
 		SOldEffects &GetOldEffects (void) const { return (m_pOldEffects ? *m_pOldEffects : m_NullOldEffects); }
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
@@ -832,6 +837,7 @@ class CWeaponFireDesc
 		CConfigurationDesc m_Configuration;		//	Configuration (empty = default)
 		int m_iContinuous = -1;					//	repeat for this number of frames (-1 = default)
 		int m_iContinuousFireDelay = -1;		//	Ticks between continuous fire shots (-1 = default)
+		int m_iChargeTime = -1;					//	Ticks before firing (-1 = default)
 		int m_iFireRate = -1;					//	Ticks between shots (-1 = default to weapon class)
 		int m_iPowerUse = -1;					//	Power use in 1/10th MWs (-1 = default to weapon class)
 		int m_iIdlePowerUse = -1;				//	Power use while idle (-1 = default to weapon class)
@@ -850,9 +856,12 @@ class CWeaponFireDesc
 		CEffectCreatorRef m_pEffect;			//	Effect for the actual bullet/missile/beam
 		CEffectCreatorRef m_pHitEffect;			//	Effect when we hit/explode
 		CEffectCreatorRef m_pFireEffect;		//	Effect when we fire (muzzle flash)
+		CEffectCreatorRef m_pChargeEffect;		//	Effect when we charge (muzzle flash)
 		CSoundRef m_FireSound;					//	Sound when weapon is fired
+		CSoundRef m_ChargeSound;				//	Sound when weapon is charged
 		SOldEffects *m_pOldEffects = NULL;		//  Non-painter effects.
 		CWeaponFireDescRef m_pExplosionType;	//	Explosion to create when ship is destroyed
+		bool m_bPlaySoundOncePerBurst;			//	If TRUE, play the fire sound only once per burst
 
 		//	Missile stuff (m_iFireType == ftMissile)
 		int m_iAccelerationFactor = 0;			//	% increase in speed per 10 ticks

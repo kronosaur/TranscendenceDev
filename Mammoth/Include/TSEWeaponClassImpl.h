@@ -39,8 +39,9 @@ class CWeaponClass : public CDeviceClass
 			evtOnFireWeapon				= 0,
 			evtGetAmmoToConsume			= 1,
 			evtGetAmmoCountToDisplay	= 2,
+			evtOnChargeWeapon			= 3,
 
-			evtCount					= 3,
+			evtCount					= 4,
 			};
 
 		struct SBalance
@@ -110,6 +111,7 @@ class CWeaponClass : public CDeviceClass
 
 		CItemType *GetAmmoItem (int iIndex) const;
 		int GetAmmoItemCount (void) const;
+		int GetChargeTime (const CWeaponFireDesc& Shot) const;
 		const CConfigurationDesc &GetConfiguration (const CWeaponFireDesc &ShotDesc) const;
 		int GetContinuous (const CWeaponFireDesc &Shot) const;
 		bool GetContinuousConsumePerShot (const CWeaponFireDesc &Shot) const { return m_bContinuousConsumePerShot; }
@@ -256,9 +258,9 @@ class CWeaponClass : public CDeviceClass
 		void FailureExplosion (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, bool *retbSourceDestroyed);
 		bool FireAllShots (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, CShotArray &Shots, int iRepeatingCount, SShotFireResult &retResult);
 		bool FireGetAmmoCountToDisplay (const CDeviceItem &DeviceItem, const CWeaponFireDesc &Shot, int *retiAmmoCount = NULL) const;
-		int FireGetAmmoToConsume(CItemCtx &ItemCtx,
-							  const CWeaponFireDesc &ShotDesc,
-							  int iRepeatingCount) const;
+		int FireGetAmmoToConsume (CItemCtx &ItemCtx,
+								  const CWeaponFireDesc &ShotDesc,
+								  int iRepeatingCount) const;
 		bool FireOnFireWeapon (CItemCtx &ItemCtx, 
 							   const CWeaponFireDesc &ShotDesc,
 							   const CVector &vSource,
@@ -266,9 +268,17 @@ class CWeaponClass : public CDeviceClass
 							   int iFireAngle,
 							   int iRepeatingCount,
 							   SShotFireResult &retResult);
-		bool FireWeapon (CInstalledDevice &Device, 
-						 const CWeaponFireDesc &ShotDesc, 
-						 SActivateCtx &ActivateCtx);
+		bool FireOnChargeWeapon (CItemCtx& ItemCtx,
+								 const CWeaponFireDesc& ShotDesc,
+								 const CVector& vSource,
+								 CSpaceObject* pTarget,
+								 int iFireAngle,
+								 int iRepeatingCount,
+								 SShotFireResult& retResult);
+		bool FireWeapon (CInstalledDevice &Device,
+						 const CWeaponFireDesc &ShotDesc,
+						 SActivateCtx &ActivateCtx,
+						 const bool IsCharging = false);
 		void FireWeaponShot (CSpaceObject *pSource, 
 							 CInstalledDevice *pDevice, 
 							 const CWeaponFireDesc &ShotDesc, 
@@ -337,6 +347,7 @@ class CWeaponClass : public CDeviceClass
 		int m_iCounterUpdate;					//	Inc/dec value per update
 		int m_iCounterActivate;					//	Inc/dec value per shot
 		int m_iCounterPerShot;					//	How much to increment the ship's counter by per shot
+		int m_iChargeTime;						//  Charge time before firing
 
 		bool m_bTargetStationsOnly;				//	Do not target ships
 

@@ -10,15 +10,19 @@
 #define FIELD_ARMOR_SEG					CONSTLIT("armorSeg")
 #define FIELD_AVERAGE_DAMAGE_HP			CONSTLIT("averageDamageHP")
 #define FIELD_CAUSE						CONSTLIT("cause")
+#define FIELD_CHARGE_TIME				CONSTLIT("chargeTime")
 #define FIELD_DAMAGE_HP					CONSTLIT("damageHP")
 #define FIELD_DAMAGE_PER_PROJECTILE		CONSTLIT("damagePerProjectile")
 #define FIELD_DAMAGE_TYPE				CONSTLIT("damageType")
+#define FIELD_FIRE_CHARGE				CONSTLIT("fireCharge")
+#define FIELD_FIRE_REPEAT				CONSTLIT("fireRepeat")
 #define FIELD_HIT_DIR					CONSTLIT("hitDir")
 #define FIELD_HIT_POS					CONSTLIT("hitPos")
 #define FIELD_OBJ_HIT					CONSTLIT("objHit")
 #define FIELD_ORDER_GIVER				CONSTLIT("orderGiver")
 #define FIELD_OVERLAY_TYPE				CONSTLIT("overlayType")
 #define FIELD_PARTICLE_COUNT			CONSTLIT("particleCount")
+#define FIELD_REPEATING					CONSTLIT("repeating")
 #define FIELD_SPEED						CONSTLIT("speed")
 #define FIELD_WEAPON_UNID				CONSTLIT("weaponUNID")
 
@@ -158,8 +162,12 @@ void CCreatePainterCtx::SetWeaponFireDescData (ICCItem *pTable, const CWeaponFir
 //	Sets the data from a weapon fire desc to the data block.
 
 	{
+	pTable->SetIntegerAt(FIELD_CHARGE_TIME, mathRound(Desc.GetChargeTime()));
 	pTable->SetIntegerAt(FIELD_DAMAGE_HP, mathRound(Desc.GetAveDamage()));
 	pTable->SetStringAt(FIELD_DAMAGE_TYPE, GetDamageShortName(Desc.GetDamageType()));
+	pTable->SetIntegerAt(FIELD_FIRE_CHARGE, m_iFireCharge);
+	pTable->SetIntegerAt(FIELD_FIRE_REPEAT, m_iFireRepeat);
+	pTable->SetIntegerAt(FIELD_REPEATING, mathRound(Desc.GetContinuous()));
 	pTable->SetIntegerAt(FIELD_SPEED, mathRound(100.0 * Desc.GetAveInitialSpeed() / LIGHT_SPEED));
 	if (Desc.GetType() == CWeaponFireDesc::ftParticles)
 		pTable->SetIntegerAt(FIELD_PARTICLE_COUNT, mathRound(Desc.GetAveParticleCount()));

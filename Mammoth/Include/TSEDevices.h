@@ -243,7 +243,7 @@ class CDeviceClass
 				}
 
 			CTargetList &GetTargetList ();
-			void SetTargetList (CTargetList &TargetListArg)
+			void SetTargetList (CTargetList TargetListArg)
 				{
 				m_pTargetList = &TargetListArg;
 				}
@@ -256,6 +256,7 @@ class CDeviceClass
 			//	Used internally
 
 			int iRepeatingCount = 0;
+			int iChargeFrame = 0;
 
 			//	Status results
 
