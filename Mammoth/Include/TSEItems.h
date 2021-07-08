@@ -66,6 +66,9 @@ class CDifferentiatedItem
 		inline const CItemType &GetType (void) const;
 		inline CItemType &GetType (void);
 		inline int GetVariantNumber (void) const;
+		inline bool IsDamaged (int *retiDamagedHP = NULL) const;
+		inline bool IsDisrupted (void) const;
+		inline bool IsEnhanced (void) const;
 		inline bool IsLauncher (void) const;
 		inline bool IsWeapon (void) const;
 		void ReportEventError (const CSpaceObject *pSource, const CString &sEvent, const ICCItem &ErrorItem) const;

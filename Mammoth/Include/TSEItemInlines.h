@@ -147,6 +147,21 @@ inline CItemType &CDifferentiatedItem::GetType (void)
 	return *m_Item.GetType();
 	}
 
+inline bool CDifferentiatedItem::IsDamaged (int *retiDamagedHP) const
+	{
+	return m_Item.IsDamaged(retiDamagedHP);
+	}
+
+inline bool CDifferentiatedItem::IsDisrupted (void) const
+	{
+	return m_Item.IsDisrupted();
+	}
+
+inline bool CDifferentiatedItem::IsEnhanced (void) const
+	{
+	return m_Item.IsEnhanced();
+	}
+
 inline bool CDifferentiatedItem::IsLauncher (void) const
 	{
 	return m_Item.IsLauncher();

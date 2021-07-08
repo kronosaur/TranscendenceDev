@@ -415,7 +415,10 @@
 							(not (itmIsEnhanced theItem))
 								(block Nil
 									(objSendMessage gSource Nil (cat "Your " (itmGetName theItem 0) " has been enhanced."))
-									(shpEnhanceItem gSource theItem)
+									(objEnhanceItem gSource theItem {
+										enhancement: "+bonus"
+										type: &itHeliotropeFuel;
+										})
 									)
 							)
 						)

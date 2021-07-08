@@ -214,35 +214,28 @@ const CDriveClass::SScalableStats *CDriveClass::GetDesc (const CDeviceItem &Devi
 	if (m_pDesc == NULL)
 		return NULL;
 
-	const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice();
-	int iBaseLevel = m_pDesc[0].iLevel;
-
 	//  Figure out if we want a scaled item
 
+	int iBaseLevel = m_pDesc[0].iLevel;
 	int iIndex = Min(Max(0, (!DeviceItem ? 0 : DeviceItem.GetLevel() - iBaseLevel)), m_iLevels - 1);
-
-	//  If no device, then standard descriptor
-
-	if (pDevice == NULL)
-		return &m_pDesc[iIndex];
 
 	//  If the device is damaged, then return damaged descriptor
 
-	else if (pDevice->IsDamaged() || pDevice->IsDisrupted())
+	if (DeviceItem.IsDamaged() || DeviceItem.IsDisrupted())
 		{
 		InitDamagedDesc();
 		return &m_pDamagedDesc[iIndex];
 		}
 
-	//  If enhanced, then return enhanced descriptor
+	//	If enhanced
 
-	else if (pDevice->IsEnhanced())
+	else if (DeviceItem.GetEnhancements().IsBonus() || DeviceItem.IsEnhanced())
 		{
 		InitEnhancedDesc();
 		return &m_pEnhancedDesc[iIndex];
 		}
 
-	//  Otherwise, standard descriptor.
+	//	Otherwise, standard
 
 	else
 		return &m_pDesc[iIndex];
@@ -255,41 +248,7 @@ const CDriveClass::SScalableStats *CDriveClass::GetDesc (CItemCtx &Ctx) const
 //	Returns the drive descriptor
 
 	{
-	if (m_pDesc == NULL)
-		return NULL;
-
-	CInstalledDevice *pDevice = Ctx.GetDevice();
-	int iBaseLevel = m_pDesc[0].iLevel;
-
-	//  Figure out if we want a scaled item
-
-	int iIndex = Min(Max(0, (Ctx.GetItem().IsEmpty() ? 0 : Ctx.GetItem().GetLevel() - iBaseLevel)), m_iLevels - 1);
-
-	//  If no device, then standard descriptor
-
-	if (pDevice == NULL)
-		return &m_pDesc[iIndex];
-
-	//  If the device is damaged, then return damaged descriptor
-
-	else if (pDevice->IsDamaged() || pDevice->IsDisrupted())
-		{
-		InitDamagedDesc();
-		return &m_pDamagedDesc[iIndex];
-		}
-
-	//  If enhanced, then return enhanced descriptor
-
-	else if (pDevice->IsEnhanced())
-		{
-		InitEnhancedDesc();
-		return &m_pEnhancedDesc[iIndex];
-		}
-
-	//  Otherwise, standard descriptor.
-
-	else
-		return &m_pDesc[iIndex];
+	return GetDesc(Ctx.GetDeviceItem());
 	}
 
 ICCItem *CDriveClass::FindItemProperty (CItemCtx &Ctx, const CString &sProperty)
