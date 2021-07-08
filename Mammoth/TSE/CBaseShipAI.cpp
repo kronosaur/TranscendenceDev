@@ -1574,6 +1574,10 @@ void CBaseShipAI::OnStationDestroyed (const SDestroyCtx &Ctx)
 			OnObjDestroyedNotify(Ctx);
 		}
 
+	//	Deter module
+
+	m_DeterModule.OnObjDestroyed(*m_pShip, Ctx);
+
 	//	Remove orders as appropriate
 
 	bool bChanged;
