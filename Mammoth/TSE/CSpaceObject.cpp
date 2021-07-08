@@ -966,7 +966,7 @@ bool CSpaceObject::CanFireOnObjHelper (CSpaceObject *pObj) const
 		);
 	}
 
-bool CSpaceObject::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
+bool CSpaceObject::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, bool bForceUseOfDeviceSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
 
 //	CanInstallItem
 //
@@ -2031,6 +2031,11 @@ bool CSpaceObject::FireCanInstallItem (const CItem &Item, const CDeviceSystem::S
 			if (SetCursorAtDevice(ItemList, Slot.iIndex))
 				{
 				const CItem &ItemToReplace = ItemList.GetItemAtCursor();
+				Ctx.DefineItem(CONSTLIT("aItemToReplace"), ItemToReplace);
+				}
+			if (AsShip() ? SetCursorAtDevice(ItemList, AsShip()->GetDeviceSystem().GetSlots()->GetDescIndexGivenId(Slot.sID)) : false)
+				{
+				const CItem & ItemToReplace = ItemList.GetItemAtCursor();
 				Ctx.DefineItem(CONSTLIT("aItemToReplace"), ItemToReplace);
 				}
 			else
