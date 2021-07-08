@@ -89,6 +89,7 @@
 #define EXCLUSION_RADIUS_ATTRIB			CONSTLIT("exclusionRadius")
 #define GAP_WIDTH_ATTRIB				CONSTLIT("gapWidth")
 #define ID_ATTRIB						CONSTLIT("id")
+#define IGNORE_LIMITS_ATTRIB			CONSTLIT("ignoreLimits")
 #define IMAGE_VARIANT_ATTRIB			CONSTLIT("imageVariant")
 #define INCLINATION_ATTRIB				CONSTLIT("inclination")
 #define INCLUDE_ALL_ATTRIB				CONSTLIT("includeAll")
@@ -2075,6 +2076,7 @@ ALERROR CreateRandomStationFromTable (SSystemCreateCtx &Ctx, const CXMLElement &
 	for (int i = 0; i < TableXML.GetContentElementCount(); i++)
 		{
 		const CXMLElement &Entry = *TableXML.GetContentElement(i);
+		bool bIgnoreLimits = Entry.GetAttributeBool(IGNORE_LIMITS_ATTRIB);
 
 		//	Parse the station type
 
@@ -2087,7 +2089,7 @@ ALERROR CreateRandomStationFromTable (SSystemCreateCtx &Ctx, const CXMLElement &
 
 		//	Make sure we can still encounter this type.
 
-		if (!pStationType->CanBeEncountered(Ctx.System, Ctx.StationEncounterOverrides.GetEncounterDesc(*pStationType)))
+		if (!bIgnoreLimits && !pStationType->CanBeEncountered(Ctx.System, Ctx.StationEncounterOverrides.GetEncounterDesc(*pStationType)))
 			continue;
 
 		//	If we have limits, check them now.
