@@ -7363,6 +7363,7 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			case IShipController::orderNone:
 				//	If a ship has no orders and it has a base, then dock with the base
 				if (Ctx.pBase 
+						&& !Ctx.pBase->IsDestroyed()
 						&& Ctx.pBase->CanObjRequestDock(this)
 						&& GetCurrentOrderDesc().GetOrder() == IShipController::orderNone)
 					{
@@ -7372,14 +7373,23 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 				break;
 
 			case IShipController::orderDock:
-				Ctx.OrderDesc.SetTarget((Ctx.pBase && Ctx.pBase->CanObjRequestDock(this)) ? Ctx.pBase : NULL);
-				bDockWithBase = true;
+				if (Ctx.pBase
+						&& !Ctx.pBase->IsDestroyed()
+						&& Ctx.pBase->CanObjRequestDock(this))
+					{
+					Ctx.OrderDesc.SetTarget(Ctx.pBase);
+					bDockWithBase = true;
+					}
 				break;
 
 			case IShipController::orderGuard:
-				Ctx.OrderDesc.SetTarget(Ctx.pBase);
-				bIsSubordinate = true;
-				bDockWithBase = true;
+				if (Ctx.pBase
+						&& !Ctx.pBase->IsDestroyed())
+					{
+					Ctx.OrderDesc.SetTarget(Ctx.pBase);
+					bIsSubordinate = true;
+					bDockWithBase = true;
+					}
 				break;
 
 			case IShipController::orderMine:
@@ -7387,35 +7397,44 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			case IShipController::orderOrbitExact:
 			case IShipController::orderOrbitPatrol:
 			case IShipController::orderSentry:
-				Ctx.OrderDesc.SetTarget(Ctx.pBase);
-				bIsSubordinate = true;
+				if (Ctx.pBase && !Ctx.pBase->IsDestroyed())
+					{
+					Ctx.OrderDesc.SetTarget(Ctx.pBase);
+					bIsSubordinate = true;
+					}
 				break;
 
 			case IShipController::orderGateOnThreat:
-				Ctx.OrderDesc.SetTarget(Ctx.pBase);
-				bNeedsDockOrder = true;
-				bDockWithBase = true;
+				if (Ctx.pBase && !Ctx.pBase->IsDestroyed())
+					{
+					Ctx.OrderDesc.SetTarget(Ctx.pBase);
+					bNeedsDockOrder = true;
+					bDockWithBase = true;
+					}
 				break;
 
 			case IShipController::orderGate:
 				//	For backwards compatibility...
-				if (Ctx.pBase)
+				if (Ctx.pBase && !Ctx.pBase->IsDestroyed())
 					{
 					Ctx.OrderDesc = COrderDesc(IShipController::orderGateOnThreat, Ctx.pBase);
 					bNeedsDockOrder = true;
 					bDockWithBase = true;
 					}
-				else
+				else if (Ctx.pTarget && !Ctx.pTarget->IsDestroyed())
 					{
-					//	OK if this is NULL...we just go to closest gate
 					Ctx.OrderDesc.SetTarget(Ctx.pTarget);
 					}
+				else
+					//	Go to nearest gate
+					Ctx.OrderDesc.SetTarget(NULL);
 
 				break;
 
 			case IShipController::orderEscort:
 			case IShipController::orderFollow:
-				Ctx.OrderDesc.SetTarget(Ctx.pBase);
+				if (Ctx.pBase && !Ctx.pBase->IsDestroyed())
+					Ctx.OrderDesc.SetTarget(Ctx.pBase);
 				break;
 
 			case IShipController::orderDestroyTarget:
@@ -7423,7 +7442,8 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			case IShipController::orderDestroyTargetHold:
 			case IShipController::orderAttackStation:
 			case IShipController::orderBombard:
-				Ctx.OrderDesc.SetTarget(Ctx.pTarget);
+				if (Ctx.pTarget && !Ctx.pTarget->IsDestroyed())
+					Ctx.OrderDesc.SetTarget(Ctx.pTarget);
 				break;
 			}
 
