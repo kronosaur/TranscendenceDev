@@ -101,6 +101,8 @@
 				<OnPaneInit>
 					(block (
 						(shipObj (or (@ gData 'shipObj) gPlayerShip))
+						(sourceObj (or (@ gData 'sourceObj) gPlayerShip))
+
 						(armorSeg (@ gData 'armorSeg))
 						(thisItem (scrGetItem gScreen))
 						(oldItem (shpGetArmor shipObj armorSeg))
@@ -168,7 +170,7 @@
 									(scrTranslate gScreen 'descNoTech { armorShort:(itmGetName thisItem 'short) })
 									))
 
-							(gr cargoNeeded (objGetCargoSpaceLeft shipObj))
+							(gr cargoNeeded (objGetCargoSpaceLeft sourceObj))
 								(setq descID 'descNotEnoughRoom)
 							
 							(gr totalCost (objGetBalance shipObj currencyUsed))
