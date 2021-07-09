@@ -503,6 +503,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_TOPOLOGY_DISTANCE_TO_CRITERIA		40
 #define FN_SYS_GET_ASCENDED_OBJECTS		41
 #define FN_SYS_ITEM_FREQUENCY			42
+#define FN_SYS_NEXT_NODE_TO				43
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -3227,6 +3228,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysGetNavPathPoint",			fnSystemGet,	FN_SYS_NAV_PATH_POINT,
 			"(sysGetNavPathPoint sovereignID objFrom objTo %path) -> vector",
 			"iiii",	0,	},
+
+		{	"sysGetNextNodeTo",			fnSystemGet,		FN_SYS_NEXT_NODE_TO,
+			"(sysGetNextNodeTo [fromNodeID] toNodeID) -> nodeID",
+			"*s",	0,	},
 
 		{	"sysGetNode",					fnSystemGet,	FN_SYS_NODE,
 			"(sysGetNode) -> nodeID",
@@ -14087,6 +14092,48 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Done
 
 			return pCC->CreateInteger(iFreq);
+			}
+
+		case FN_SYS_NEXT_NODE_TO:
+			{
+			int iArg = 0;
+
+			//	If we have more than 1 args, then the first arg is the fromID
+
+			const CTopologyNode *pFromNode;
+			if (pArgs->GetCount() > 1 && pArgs->GetElement(0)->IsIdentifier())
+				{
+				pFromNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				if (pFromNode == NULL)
+					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
+				}
+
+			//	Otherwise, we assume the current system.
+
+			else
+				{
+				const CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
+				if (pSystem == NULL)
+					return StdErrorNoSystem(*pCC);
+
+				pFromNode = pSystem->GetTopology();
+				if (pFromNode == NULL)
+					return pCC->CreateError(CONSTLIT("No topology node"));
+				}
+
+			//	Get the destination node.
+
+			const CTopologyNode *pToNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+			if (pToNode == NULL)
+				return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(iArg - 1));
+
+			//	Compute
+
+			const CTopologyNode *pNextNode = pCtx->GetUniverse().GetTopology().GetNextNodeTo(*pFromNode, *pToNode);
+			if (!pNextNode)
+				return pCC->CreateNil();
+
+			return pCC->CreateString(pNextNode->GetID());
 			}
 
 		case FN_SYS_LOCATIONS:
