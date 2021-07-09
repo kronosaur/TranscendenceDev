@@ -240,7 +240,14 @@
 
 						;	How many of this item do we already have?
 
-						(countInCargo (objHasItem gPlayerShip thisItem 1 'knownOnly))
+						(matchingInCargo (filter (objGetItems gPlayerShip (cat "*U +unid:" (itmGetType thisItem))) theItem
+							(and (itmIsKnown thisItem)
+								(itmIsKnown theItem)
+								(= (itmIsDamaged thisItem) (itmIsDamaged theItem))
+								)
+							))
+
+						(countInCargo (map matchingInCargo 'reduceSum theItem (itmGetCount theItem)))
 						
 						;	Can this item be installed?
 						
