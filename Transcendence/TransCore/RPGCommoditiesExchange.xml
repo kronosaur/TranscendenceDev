@@ -1065,9 +1065,9 @@
 			(setq rpgBuyItem (lambda (theObj theItem thePrice theCurrency options)
 				(block Nil
 					; Add to player ship
-                    (if (not (@ options 'noAddItem))
-					    (objAddItem gPlayerShip theItem)
-                        )
+					(if (not (@ options 'noAddItem))
+						(objAddItem gPlayerShip theItem)
+						)
 					
 					; Record the transaction
 					(objRecordBuyItem gPlayerShip theObj theItem theCurrency thePrice)
