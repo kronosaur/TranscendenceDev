@@ -2710,6 +2710,7 @@ DWORD CWeaponClass::GetTargetTypes (const CDeviceItem &DeviceItem) const
 	//	targets that we need.
 
 	if (GetRotationType(DeviceItem) != CDeviceRotationDesc::rotNone
+			|| pShotDesc->GetFireType() == CWeaponFireDesc::ftArea
 			|| IsTracking(DeviceItem, pShotDesc)
 			|| IsMIRV(*pShotDesc))
 		{
@@ -4522,6 +4523,23 @@ bool CWeaponClass::IsAreaWeapon (const CDeviceItem &DeviceItem) const
 	return false;
 	}
 
+bool CWeaponClass::IsShockwaveWeapon (const CDeviceItem &DeviceItem) const
+
+//	IsShockwaveWeapon
+//
+//	Returns TRUE if this is a shockwave weapon like the Oracus HARASS weapon.
+
+	{
+	const CWeaponFireDesc *pShot = GetWeaponFireDesc(DeviceItem);
+	if (pShot == NULL)
+		return false;
+
+	if (pShot->GetType() == CWeaponFireDesc::ftArea)
+		return true;
+
+	return false;
+	}
+
 bool CWeaponClass::IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice)
 
 //	IsVariantSelected
@@ -4585,6 +4603,20 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 		if (retiFireAngle)
 			*retiFireAngle = iDefaultFireAngle;
 		return false;
+		}
+
+	//	Shockwave weapons get special code.
+
+	if (pShotDesc->GetFireType() == CWeaponFireDesc::ftArea)
+		{
+		const Metric rMaxRange = REACHABLE_RANGE_ADJ * pShotDesc->GetMaxRange();
+		const Metric rMaxRange2 = rMaxRange * rMaxRange;
+
+		const Metric rTargetDist2 = pSource->GetDistance2(&Target);
+		if (retiFireAngle) *retiFireAngle = iDefaultFireAngle;
+		if (retiAimAngle) *retiAimAngle = VectorToPolar(Target.GetPos() - pSource->GetPos());
+
+		return (rTargetDist2 <= rMaxRange2);
 		}
 
 	//	Get rotation info

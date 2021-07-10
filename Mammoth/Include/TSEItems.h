@@ -208,6 +208,7 @@ class CDeviceItem : public CDifferentiatedItem
 		inline bool IsAreaWeapon (void) const;
 		inline bool IsEnabled (void) const;
 		inline bool IsMiningWeapon (void) const;
+		inline bool IsShockwaveWeapon (void) const;
 		inline bool IsTrackingWeapon (void) const;
 		bool IsWeaponAligned (CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const;
 		inline bool IsWeaponVariantValid (int iVariant) const;

@@ -34,6 +34,11 @@ class CWeaponClass : public CDeviceClass
 		static constexpr Metric DEFAULT_INTERACTION_MIN_RATIO = 0.5;		//	Ratio at which default interaction is 0.
 		static constexpr Metric DEFAULT_INTERACTION_EXP = 0.7;				//	Exponent for computing default interaction
 																			//		See: CWeaponFireDesc::CalcDefaultInteraction
+
+		//	Shockwave
+
+		static constexpr Metric REACHABLE_RANGE_ADJ = 4.0;
+
 		enum ECachedHandlers
 			{
 			evtOnFireWeapon				= 0,
@@ -163,6 +168,7 @@ class CWeaponClass : public CDeviceClass
 		virtual bool IsAmmoWeapon (void) override;
 		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) override;
+		virtual bool IsShockwaveWeapon (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsTrackingWeapon (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual bool IsLastVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override;

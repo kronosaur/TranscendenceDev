@@ -5849,6 +5849,7 @@ bool CSpaceObject::IsLineOfFireClear (const CInstalledDevice *pWeapon,
 	const CDeviceItem WeaponItem = pWeapon->GetDeviceItem();
 	CVector vSource = pWeapon->GetPos(this);
 	bool bAreaWeapon = WeaponItem.IsAreaWeapon();
+	bool bShockwaveWeapon = WeaponItem.IsShockwaveWeapon();
 
 	//	We need to adjust the angle to compensate for the fact that the shot
 	//	will take on the velocity of the ship.
@@ -5949,6 +5950,16 @@ bool CSpaceObject::IsLineOfFireClear (const CInstalledDevice *pWeapon,
 			Metric rCurDist2 = vCurDist.Length2();
 			if (rCurDist2 > rMaxDist2)
 				continue;
+
+			//	If this is a shockwave weapon and a friendly is in range, then 
+			//	we always abort.
+
+			if (bShockwaveWeapon)
+				{
+				if (retpFriend) *retpFriend = pObj;
+				bResult = false;
+				break;
+				}
 
 			//	Get the current distance. Because this is all a heuristic, we
 			//	assume that this is not too different from the object distance

@@ -437,6 +437,11 @@ inline bool CDeviceItem::IsMiningWeapon (void) const
 		return false;
 	}
 
+inline bool CDeviceItem::IsShockwaveWeapon (void) const
+	{
+	return GetType().GetDeviceClass()->IsShockwaveWeapon(*this);
+	}
+
 inline bool CDeviceItem::IsTrackingWeapon (void) const
 	{
 	return GetType().GetDeviceClass()->IsTrackingWeapon(*this);
