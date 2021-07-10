@@ -949,7 +949,7 @@ int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject 
 
 	//	If we're firing straight, then we just fire straight
 
-	if (iType == CDeviceRotationDesc::rotNone)
+	if (iType == CDeviceRotationDesc::rotNone || iType == CDeviceRotationDesc::rotTracking)
 		return AngleMod(pSource->GetRotation() + iMinFireArc);
 
 	//	If we don't have a target, then we fire straight also, but we need to 
@@ -1137,7 +1137,7 @@ int CWeaponClass::CalcReachableFireAngle (const CInstalledDevice &Device, int iD
 
 	//	If we're firing straight, then we just fire straight
 
-	if (iType == CDeviceRotationDesc::rotNone)
+	if (iType == CDeviceRotationDesc::rotNone || iType == CDeviceRotationDesc::rotTracking)
 		return (iDefaultAngle == -1 ? AngleMod(Source.GetRotation() + iMinFireArc) : iDefaultAngle);
 
 	//	If we're omni, then we can always hit the desired angle.
@@ -1236,7 +1236,8 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 
 		if (Targets.GetCount() > 0)
 			{
-			bool bCanRotate = (GetRotationType(DeviceItem) != CDeviceRotationDesc::rotNone);
+			auto iRotationType = GetRotationType(DeviceItem);
+			bool bCanRotate = (iRotationType != CDeviceRotationDesc::rotNone && iRotationType != CDeviceRotationDesc::rotTracking);
 
 			for (int i = 0; i < Shots.GetCount(); i++)
 				{
@@ -3611,7 +3612,10 @@ CDeviceRotationDesc::ETypes CWeaponClass::GetRotationType (const CDeviceItem &De
 			*retiMaxArc = iFireAngle;
 			}
 
-		return CDeviceRotationDesc::rotNone;
+		if (IsTrackingWeapon(DeviceItem))
+			return CDeviceRotationDesc::rotTracking;
+		else
+			return CDeviceRotationDesc::rotNone;
 		}
 
 	//	If the weapon is omnidirectional then we don't need directional 
@@ -3640,7 +3644,10 @@ CDeviceRotationDesc::ETypes CWeaponClass::GetRotationType (const CDeviceItem &De
 			*retiMaxArc = iFireAngle;
 			}
 
-		return CDeviceRotationDesc::rotNone;
+		if (IsTrackingWeapon(DeviceItem))
+			return CDeviceRotationDesc::rotTracking;
+		else
+			return CDeviceRotationDesc::rotNone;
 		}
 
 	//	Otherwise, we try to figure out the largest fire arc and use that.
@@ -4653,7 +4660,7 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 
 	//	Tracking weapons are always aligned.
 
-	else if (iType == CDeviceRotationDesc::rotSwivelAlways)
+	else if (iType == CDeviceRotationDesc::rotSwivelAlways || iType == CDeviceRotationDesc::rotTracking)
 		return true;
 
 	//	Figure out our aim tolerance

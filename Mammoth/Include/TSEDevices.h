@@ -132,6 +132,7 @@ class CDeviceRotationDesc
 			rotUnknown,
 
 			rotNone,							//	Cannot rotate
+			rotTracking,						//	Cannot rotate, but has tracking (so always fire)
 			rotSwivelIfTargetInArc,				//	Swivels < 360 degrees, if target reachable
 			rotSwivelAlways,					//	Swivels < 360 degrees, always (e.g., tracking weapons)
 			rotOmnidirectional,					//	Omnidirectional
