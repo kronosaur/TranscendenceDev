@@ -851,31 +851,29 @@ bool CSpaceObject::CanCommunicateWith (const CSpaceObject &SenderObj) const
 	for (int i = 0; i < pHandler->GetCount(); i++)
 		{
 		if (pHandler->GetMessage(i).OnShowEvent.pCode == NULL)
-			return true;
-		else
+			continue;
+
+		CCodeChainCtx Ctx(GetUniverse());
+
+		//	Define parameters
+
+		Ctx.DefineContainingType(this);
+		Ctx.SaveAndDefineSourceVar(this);
+		Ctx.DefineSpaceObject(CONSTLIT("gSender"), SenderObj);
+
+		//	Execute
+
+		ICCItemPtr pResult = Ctx.RunCode(pHandler->GetMessage(i).OnShowEvent);
+
+		if (pResult->IsNil())
+			continue;
+		else if (pResult->IsError())
 			{
-			CCodeChainCtx Ctx(GetUniverse());
-
-			//	Define parameters
-
-			Ctx.DefineContainingType(this);
-			Ctx.SaveAndDefineSourceVar(this);
-			Ctx.DefineSpaceObject(CONSTLIT("gSender"), SenderObj);
-
-			//	Execute
-
-			ICCItemPtr pResult = Ctx.RunCode(pHandler->GetMessage(i).OnShowEvent);
-
-			if (pResult->IsNil())
-				return false;
-			else if (pResult->IsError())
-				{
-				SenderObj.SendMessage(this, pResult->GetStringValue());
-				return false;
-				}
-			else
-				return true;
+			SenderObj.SendMessage(this, pResult->GetStringValue());
+			return false;
 			}
+		else
+			return true;
 		}
 
 	return false;
