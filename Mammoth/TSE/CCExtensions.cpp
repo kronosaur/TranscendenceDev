@@ -1709,7 +1709,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"objDamage",					fnObjGet,		FN_OBJ_DAMAGE,	
 			"(objDamage obj weaponType objSource [pos] [options]) -> result\n\n"
-				
+
+			"objSource:\n\n"
+
+			"   cause: Cause type\n"
+			"   obj: Object that caused the damage [optional]\n"
+			"   secondaryObj: Another object that caused damage [optional]\n"
+			"   namePattern: Noun pattern for what caused damage [optional]\n"
+			"   sourceName: Alternative to namePattern [optional]\n"
+			"   sourceNameFlags: Alternative to namePattern [optional]\n"
+			"\n"
 			"result:\n\n"
 
 			"   'noDamage\n"
@@ -3060,7 +3069,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"sv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateMarker",				fnSystemCreateMarker,	0,
-			"(sysCreateMarker name pos sovereignID) -> marker",
+			"(sysCreateMarker name pos sovereignID|options) -> marker\n\n"
+			
+			"options:\n\n"
+			
+			"   lifetime: Lifetime in ticks\n"
+			"   sovereign: Marker sovereign\n"
+			"   style: Marker style\n",
+
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateShip",				fnSystemCreateShip,	0,
