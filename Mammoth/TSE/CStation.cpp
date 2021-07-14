@@ -2282,6 +2282,18 @@ CSpaceObject *CStation::GetTarget (DWORD dwFlags) const
 	return NULL;
 	}
 
+void CStation::GetVisibleDamageDesc (SVisibleDamage &Damage) const
+
+//	GetVisibleDamageDesc
+//
+//	Returns the amount of damage (%) that the object has taken
+
+	{
+	m_Hull.GetVisibleDamageDesc(Damage);
+
+	Damage.iShieldLevel = GetShieldLevel();
+	}
+
 CDesignType *CStation::GetWreckType (void) const
 
 //	GetWreckType

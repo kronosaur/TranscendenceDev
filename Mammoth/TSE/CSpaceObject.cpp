@@ -4304,6 +4304,20 @@ CXMLElement *CSpaceObject::GetScreen (const CString &sName)
 	return Screen.GetDesc();
 	}
 
+int CSpaceObject::GetShieldLevel (void) const
+
+//	GetShieldLevel
+//
+//	Returns the % shield level of the ship (or -1 if the ship has no shields)
+
+	{
+	const CInstalledDevice *pShields = GetNamedDevice(devShields);
+	if (pShields == NULL)
+		return -1;
+
+	return pShields->GetHitPointsPercent(this);
+	}
+
 CSovereign *CSpaceObject::GetSovereignToDefend (void) const
 
 //	GetSovereignToDefend

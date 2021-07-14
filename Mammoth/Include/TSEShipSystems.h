@@ -202,12 +202,11 @@ class CDeviceSystem
 		CInstalledDevice &GetDevice (int iIndex) { if (iIndex < 0 || iIndex >= GetCount()) throw CException(ERR_FAIL); return *m_Devices[iIndex]; }
 		CDeviceItem GetDeviceItem (int iIndex) const { if (iIndex < 0 || iIndex >= GetCount()) throw CException(ERR_FAIL); if (!m_Devices[iIndex]->IsEmpty()) return m_Devices[iIndex]->GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }
 		const CInstalledDevice &GetDevice (int iIndex) const { if (iIndex < 0 || iIndex >= GetCount()) throw CException(ERR_FAIL); return *m_Devices[iIndex]; }
-		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
-		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
+		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return GetNamedDeviceHelper(iDev); }
+		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return const_cast<CInstalledDevice *>(GetNamedDeviceHelper(iDev)); }
 		CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return GetDevice(m_NamedDevices[iDev]).GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }
 		int GetNamedIndex (DeviceNames iDev) const { return (HasNamedDevices() ? m_NamedDevices[iDev] : -1); }
 		DWORD GetTargetTypes (void) const;
-		bool HasNamedDevices (void) const { return (m_NamedDevices.GetCount() > 0); }
 		bool HasShieldsUp (void) const;
 		bool Init (CSpaceObject *pObj, const CDeviceDescList &Devices, const IDeviceGenerator &Slots, int iMaxDevices = 0);
 		bool Install (CSpaceObject *pObj, CItemListManipulator &ItemList, const SSlotDesc &Slot, int *retiDeviceSlot = NULL);
@@ -292,7 +291,9 @@ class CDeviceSystem
 		static CDeviceSystem m_Null;
 
 	private:
+		const CInstalledDevice *GetNamedDeviceHelper (DeviceNames iDev) const;
 		DeviceNames GetNamedFromDeviceIndex (int iIndex) const;
+		bool HasNamedDevices (void) const { return (m_NamedDevices.GetCount() > 0); }
 		void InsertEmpty (int iCount = 1);
 
 		TArray<TUniquePtr<CInstalledDevice>> m_Devices;

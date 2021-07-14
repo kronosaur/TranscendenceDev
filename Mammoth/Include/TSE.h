@@ -648,6 +648,7 @@ class CSpaceObject
 		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return GetDeviceSystem().GetNamedDevice(iDev); }
 		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return GetDeviceSystem().GetNamedDevice(iDev); }
 		CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { return GetDeviceSystem().GetNamedDeviceItem(iDev); }
+		int GetShieldLevel (void) const;
 		virtual void OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass::DeviceNotificationTypes iEvent) { }
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, int iDevSlot);
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, CInstalledDevice *pDevice);
@@ -1285,7 +1286,6 @@ class CSpaceObject
 		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
 		virtual int GetPerception (void) const { return perceptNormal; }
 		virtual int GetScore (void) { return 0; }
-		virtual int GetShieldLevel (void) const { return -1; }
 		virtual CG32bitPixel GetSpaceColor (void) { return 0; }
 		virtual int GetStealth (void) const { return stealthNormal; }
 		virtual int GetStealthAdj (void) const { return 0; }

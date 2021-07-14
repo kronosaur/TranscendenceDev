@@ -1211,7 +1211,6 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual ScaleTypes GetScale (void) const override { return scaleShip; }
 		virtual int GetScore (void) override { return m_pClass->GetScore(); }
 		virtual CXMLElement *GetScreen (const CString &sName) override { return m_pClass->GetScreen(sName); }
-		virtual int GetShieldLevel (void) const override;
 		virtual const CShipPerformanceDesc &GetShipPerformance (void) const override { return m_Perf; }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual const CSquadronID &GetSquadronID () const override { return m_SquadronID; }
