@@ -1705,7 +1705,7 @@ void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Da
 			{
 			//	If the attacker is a valid threat, then add an order
 
-			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+			if (m_AICtx.CalcIsPossibleTarget(*m_pShip, AttackerObj))
 				React(iReaction, AttackerObj);
 
 			m_AICtx.CommunicateWithBaseAttackDeter(*m_pShip, AttackerObj, Damage.GetOrderGiver());
@@ -1803,7 +1803,7 @@ bool CBaseShipAI::ReactToDeterMessage (CSpaceObject &AttackerObj)
 			{
 			//	If the attacker is a valid threat, then react
 
-			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+			if (m_AICtx.CalcIsPossibleTarget(*m_pShip, AttackerObj))
 				{
 				React(iReaction, AttackerObj);
 				return true;
