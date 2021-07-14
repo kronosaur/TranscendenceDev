@@ -199,9 +199,9 @@ class CDeviceSystem
 		void FinishInstall (void);
 		int GetCount (void) const { return m_Devices.GetCount(); }
 		int GetCountByID (const CString &sID) const;
-		CInstalledDevice &GetDevice (int iIndex) { return *m_Devices[iIndex]; }
-		CDeviceItem GetDeviceItem (int iIndex) const { if (!m_Devices[iIndex]->IsEmpty()) return m_Devices[iIndex]->GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }
-		const CInstalledDevice &GetDevice (int iIndex) const { return *m_Devices[iIndex]; }
+		CInstalledDevice &GetDevice (int iIndex) { if (iIndex < 0 || iIndex >= GetCount()) throw CException(ERR_FAIL); return *m_Devices[iIndex]; }
+		CDeviceItem GetDeviceItem (int iIndex) const { if (iIndex < 0 || iIndex >= GetCount()) throw CException(ERR_FAIL); if (!m_Devices[iIndex]->IsEmpty()) return m_Devices[iIndex]->GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }
+		const CInstalledDevice &GetDevice (int iIndex) const { if (iIndex < 0 || iIndex >= GetCount()) throw CException(ERR_FAIL); return *m_Devices[iIndex]; }
 		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
 		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
 		CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return GetDevice(m_NamedDevices[iDev]).GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }

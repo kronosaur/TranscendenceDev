@@ -453,7 +453,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_SELECTED_LAUNCHER))
 		{
-		CItem theItem = GetNamedItem(devMissileWeapon);
+		CItem theItem = GetNamedDeviceItem(devMissileWeapon);
 		if (theItem.GetType() == NULL)
 			return CC.CreateNil();
 
@@ -485,7 +485,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 
 		else
 			{
-			CItem theItem = GetNamedItem(devMissileWeapon);
+			CItem theItem = GetNamedDeviceItem(devMissileWeapon);
 			if (theItem.GetType() == NULL)
 				return CC.CreateNil();
 
@@ -494,7 +494,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		}
 	else if (strEquals(sName, PROPERTY_SELECTED_WEAPON))
 		{
-		CItem theItem = GetNamedItem(devPrimaryWeapon);
+		CItem theItem = GetNamedDeviceItem(devPrimaryWeapon);
 		if (theItem.GetType() == NULL)
 			return CC.CreateNil();
 

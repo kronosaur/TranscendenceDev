@@ -7282,7 +7282,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				if (strEquals(sName, NAMED_ITEM_SELECTED_WEAPON))
 					{
-					CItem theItem = pShip->GetNamedItem(devPrimaryWeapon);
+					CItem theItem = pShip->GetNamedDeviceItem(devPrimaryWeapon);
 					if (theItem.GetType())
 						{
 						ICCItem *pItem = CreateListFromItem(theItem);
@@ -7292,7 +7292,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					}
 				else if (strEquals(sName, NAMED_ITEM_SELECTED_LAUNCHER))
 					{
-					CItem theItem = pShip->GetNamedItem(devMissileWeapon);
+					CItem theItem = pShip->GetNamedDeviceItem(devMissileWeapon);
 					if (theItem.GetType())
 						{
 						ICCItem *pItem = CreateListFromItem(theItem);
@@ -7322,7 +7322,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 								}
 							else
 								{
-								CItem theItem = pShip->GetNamedItem(devMissileWeapon);
+								CItem theItem = pShip->GetNamedDeviceItem(devMissileWeapon);
 								if (theItem.GetType())
 									{
 									ICCItem *pItem = CreateListFromItem(theItem);

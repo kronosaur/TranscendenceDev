@@ -639,15 +639,15 @@ class CSpaceObject
 		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return false; }
 		bool FireCanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, CString *retsResult);
 		bool FireCanRemoveItem (const CItem &Item, int iSlot, CString *retsResult);
-		virtual CInstalledDevice *GetDevice (int iDev) { return NULL; }
-		virtual int GetDeviceCount (void) const { return 0; }
-		virtual CDeviceItem GetDeviceItem (int iDev) const { return CItem().AsDeviceItem(); }
+		CInstalledDevice *GetDevice (int iDev) { return &GetDeviceSystem().GetDevice(iDev); }
+		int GetDeviceCount (void) const { return GetDeviceSystem().GetCount(); }
+		CDeviceItem GetDeviceItem (int iDev) const { return GetDeviceSystem().GetDeviceItem(iDev); }
 		virtual CDeviceSystem &GetDeviceSystem (void) { return CDeviceSystem::m_Null; }
 		virtual const CDeviceSystem &GetDeviceSystem (void) const { return CDeviceSystem::m_Null; }
 		CItem GetItemForDevice (CInstalledDevice *pDevice);
-		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return NULL; }
-		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }
-		virtual CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { return CItem().AsDeviceItem(); }
+		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return GetDeviceSystem().GetNamedDevice(iDev); }
+		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return GetDeviceSystem().GetNamedDevice(iDev); }
+		CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { return GetDeviceSystem().GetNamedDeviceItem(iDev); }
 		virtual void OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass::DeviceNotificationTypes iEvent) { }
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, int iDevSlot);
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, CInstalledDevice *pDevice);

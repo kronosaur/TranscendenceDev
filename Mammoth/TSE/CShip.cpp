@@ -3049,24 +3049,6 @@ CString CShip::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const
 		}
 	}
 
-CInstalledDevice *CShip::GetNamedDevice (DeviceNames iDev)
-	{
-	int iIndex = m_Devices.GetNamedIndex(iDev);
-	if (iIndex == -1)
-		return NULL;
-	else
-		return &m_Devices.GetDevice(iIndex);
-	}
-
-const CInstalledDevice *CShip::GetNamedDevice (DeviceNames iDev) const
-	{
-	int iIndex = m_Devices.GetNamedIndex(iDev);
-	if (iIndex == -1)
-		return NULL;
-	else
-		return &m_Devices.GetDevice(iIndex);
-	}
-
 CDeviceClass *CShip::GetNamedDeviceClass (DeviceNames iDev)
 	{
 	CInstalledDevice *pDev = GetNamedDevice(iDev);
@@ -3074,24 +3056,6 @@ CDeviceClass *CShip::GetNamedDeviceClass (DeviceNames iDev)
 		return NULL;
 	else
 		return pDev->GetClass(); 
-	}
-
-CItem CShip::GetNamedItem (DeviceNames iDev) const
-
-//	GetNamedItem
-//
-//	Returns the item for the named device
-
-	{
-	int iIndex = m_Devices.GetNamedIndex(iDev);
-	if (iIndex == -1)
-		return CItem();
-	else
-		{
-		CItemListManipulator ItemList(const_cast<CShip *>(this)->GetItemList());
-		SetCursorAtNamedDevice(ItemList, iDev);
-		return ItemList.GetItemAtCursor();
-		}
 	}
 
 int CShip::GetPerception (void) const
