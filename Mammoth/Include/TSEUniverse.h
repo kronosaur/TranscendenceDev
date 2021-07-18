@@ -89,6 +89,9 @@ class CPerformanceCounters
 			int iTotalCalls = 0;
 			int iTotalTime = 0;
 
+			int iTotalCallsPerUpdate = 0;
+			int iTotalTimePerUpdate = 0;
+
 			bool bEnabled = false;
 			};
 
@@ -99,6 +102,7 @@ class CPerformanceCounters
 		void SetEnabled (bool bEnabled = true) { m_bEnabled = bEnabled; }
 		bool SetEnabled (const CString &sID, bool bEnabled = true);
 		void StartCounter (const CString &sID) { if (m_bEnabled) StartTimer(sID); }
+		void StartUpdate ();
 		void StopCounter (const CString &sID) { if (m_bEnabled) StopTimer(sID); }
 
 	private:
@@ -245,6 +249,7 @@ class CUniverse
 		class IHost
 			{
 			public:
+				virtual void ConsoleClear () { }
 				virtual void ConsoleOutput (const CString &sLine) { }
 				virtual IPlayerController *CreatePlayerController (void) { return NULL; }
 				virtual IShipController *CreateShipController (const CString &sController) { return NULL; }
@@ -389,7 +394,7 @@ class CUniverse
 		const CDisplayAttributeDefinitions &GetAttributeDesc (void) const { return m_Design.GetDisplayAttributes(); }
 		const CEconomyType &GetCreditCurrency (void) const;
 		const CDebugOptions &GetDebugOptions (void) const { return m_DebugOptions; }
-		ICCItemPtr GetDebugProperty (const CString &sProperty) const { return m_DebugOptions.GetProperty(sProperty); }
+		ICCItemPtr GetDebugProperty (const CString &sProperty) const;
 		const CEconomyType &GetDefaultCurrency (void) const { return GetCurrentAdventureDesc().GetDefaultCurrency(); }
 		CEffectCreator &GetDefaultFireEffect (DamageTypes iDamage);
 		CEffectCreator &GetDefaultHitEffect (DamageTypes iDamage);

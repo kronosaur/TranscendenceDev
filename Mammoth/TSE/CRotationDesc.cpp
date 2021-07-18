@@ -174,7 +174,7 @@ ALERROR CRotationDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		//	Convert that to degrees per tick
 
-		m_rDegreesPerTick = (m_iCount > 0 ? (STD_SECONDS_PER_UPDATE * 360.0) / (m_iCount * m_iManeuverability) : 0.0);
+		m_rDegreesPerTick = (m_iCount > 0 ? (STD_SECONDS_PER_UPDATE * 360.0) / ((Metric)m_iCount * m_iManeuverability) : 0.0);
 
 		//	Default acceleration is equal to rotation rate
 
@@ -205,7 +205,7 @@ void CRotationDesc::InitRotationCount (int iCount)
 
 	if (m_iManeuverability && iCount != m_iCount && iCount > 0)
 		{
-		m_rDegreesPerTick = (STD_SECONDS_PER_UPDATE * 360.0) / (iCount * m_iManeuverability);
+		m_rDegreesPerTick = (STD_SECONDS_PER_UPDATE * 360.0) / ((Metric)iCount * m_iManeuverability);
 		m_rAccelPerTick = m_rDegreesPerTick;
 		m_rAccelPerTickStop = m_rDegreesPerTick;
 		}

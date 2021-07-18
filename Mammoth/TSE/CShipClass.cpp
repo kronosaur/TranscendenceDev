@@ -2793,7 +2793,7 @@ CString CShipClass::GetPlayerSortString (void) const
 			GetUNID());
 	}
 
-CVector CShipClass::GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos)
+CVector CShipClass::GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos) const
 
 //	GetPosOffset
 //

@@ -261,8 +261,10 @@ const CReactorDesc::SStdStats &CReactorDesc::GetStdStats (int iLevel)
 //  Returns standard stats for the level.
 
 	{
-	ASSERT(iLevel >= 0 && iLevel <= MAX_ITEM_LEVEL);
-	return m_Stats[iLevel];
+	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
+		throw CException(ERR_FAIL);
+
+	return m_Stats[iLevel - 1];
 	}
 
 ALERROR CReactorDesc::InitFromShipClassXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID)

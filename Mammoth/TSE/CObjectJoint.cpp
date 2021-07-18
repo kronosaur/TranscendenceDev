@@ -44,7 +44,9 @@ CObjectJoint::CObjectJoint (ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo
 
 	//	Set some flags
 
-	ASSERT(pFrom && pTo);
+	if (!pFrom || !pTo)
+		throw CException(ERR_FAIL);
+
 	m_fShipCompartment = (pFrom->IsAttached() || pTo->IsAttached());
 
 	//	Some defaults

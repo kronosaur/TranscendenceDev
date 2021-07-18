@@ -501,6 +501,21 @@ bool CDockSession::SetReturnData (const CString &sAttrib, ICCItem *pData)
 	return true;
 	}
 
+bool CDockSession::SetSavedControlText (const CString &sValue)
+
+//	SetSavedControlText
+//
+//	Saves the current text.
+
+	{
+	if (!InSession())
+		return false;
+
+	SDockFrame &Frame = m_DockFrames.GetCurrent();
+	Frame.sSavedControlText = sValue;
+	return true;
+	}
+
 bool CDockSession::SetScreenSet (const ICCItem &ScreenSet)
 
 //	SetScreenSet

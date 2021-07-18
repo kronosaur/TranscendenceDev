@@ -42,12 +42,13 @@ enum ItemFates
 class CItemCriteria
 	{
 	public:
-		static constexpr DWORD NONE = 0x00000000;
-		static constexpr DWORD ALL = 0x00000001;
+		static constexpr DWORD NONE					= 0x00000000;
+		static constexpr DWORD ALL					= 0x00000001;
+		static constexpr DWORD FLAG_REPAIR_LEVEL	= 0x00000010;
 
 		CItemCriteria (void) { }
 		explicit CItemCriteria (DWORD dwSpecial);
-		explicit CItemCriteria (const CString &sCriteria, DWORD dwDefault = NONE);
+		explicit CItemCriteria (const CString &sCriteria, DWORD dwFlags = NONE);
 
 		bool operator== (const CItemCriteria &Src) const;
 		bool operator!= (const CItemCriteria &Src) const { return !(*this == Src); }
@@ -72,16 +73,19 @@ class CItemCriteria
 		bool MatchesItemCategory (ItemCategories iCategory) const { return ((m_dwItemCategories & iCategory) && !(m_dwExcludeCategories & iCategory)); }
 		bool MatchesItemCategory (const CItemType &ItemType) const;
 		bool MatchesLauncherMissilesOnly (void) const { return m_bLauncherMissileOnly; }
-		bool MatchesLevel (int iLevel) const;
-		bool MatchesMass (int iMassKg) const;
+		bool MatchesLevel (int iLevel) const { return m_LevelRange.Matches(iLevel); }
+		bool MatchesMass (int iMassKg) const { return m_MassRange.Matches(iMassKg); }
 		bool MatchesNotInstalledOnly (void) const { return m_bNotInstalledOnly; }
-		bool MatchesPrice (CurrencyValue iValue) const;
+		bool MatchesPrice (CurrencyValue iValue) const { return m_PriceRange.Matches((int)iValue); }
+		bool MatchesRepairLevel (int iLevel) const { return m_RepairLevelRange.Matches(iLevel); }
 		bool MatchesUsableOnly (void) const { return m_bUsableItemsOnly; }
 		void SetExcludeVirtual (bool bExclude = true) { m_bExcludeVirtual = bExclude; }
 		void SetFilter (ICCItemPtr pFilter) { m_pFilter = pFilter; }
 
 	private:
-		void ParseSubExpression (const char *pPos);
+		static constexpr DWORD DEFAULT_MASK			= 0x0000000F;
+
+		void ParseSubExpression (const char *pPos, DWORD dwFlags);
 		void WriteSubExpression (CMemoryWriteStream &Output) const;
 		static void WriteCategoryFlags (CMemoryWriteStream &Output, DWORD dwCategories);
 
@@ -104,15 +108,10 @@ class CItemCriteria
 		TArray<CString> m_SpecialAttribNotAllowed;	//	Exclude these special attributes
 		CString m_Frequency;						//	If not blank, only items with these frequencies
 
-		int m_iEqualToLevel = -1;					//	If not -1, only items of this level
-		int m_iGreaterThanLevel = -1;				//	If not -1, only items greater than this level
-		int m_iLessThanLevel = -1;					//	If not -1, only items less than this level
-		int m_iEqualToPrice = -1;					//	If not -1, only items at this price
-		int m_iGreaterThanPrice = -1;				//	If not -1, only items greater than this price
-		int m_iLessThanPrice = -1;					//	If not -1, only items less than this price
-		int m_iEqualToMass = -1;					//	If not -1, only items of this mass (in kg)
-		int m_iGreaterThanMass = -1;				//	If not -1, only items greater than this mass (in kg)
-		int m_iLessThanMass = -1;					//	If not -1, only items less than this mass (in kg)
+		CIntegerRangeCriteria m_LevelRange;			//	Only items of this level
+		CIntegerRangeCriteria m_PriceRange;			//	Only items of this price
+		CIntegerRangeCriteria m_MassRange;			//	Only items of this mass (in kg)
+		CIntegerRangeCriteria m_RepairLevelRange;	//	Only items of this repair level
 
 		CString m_sLookup;							//	Look up a shared criteria
 		ICCItemPtr m_pFilter;						//	Filter returns Nil for excluded items

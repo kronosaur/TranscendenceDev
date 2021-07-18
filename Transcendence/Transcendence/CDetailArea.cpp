@@ -263,16 +263,15 @@ void CDetailArea::Paint (CG32bitImage &Dest, const RECT &rcRect) const
 
 			//	Paint the icon first
 
-			int x = rcRect.left + RectWidth(rcRect) / 2;
-			int y = rcRect.top + RectHeight(rcRect) / 4;
 			ICCItem *pLargeIcon = m_pData->GetElement(FIELD_LARGE_ICON);
 			Metric rScale = m_pData->GetDoubleAt(FIELD_LARGE_ICON_SCALE, 1.0);
 
-			PaintStackedImage(Dest, x, y, pLargeIcon, rScale);
+			PaintStackedImage(Dest, rcRect, pLargeIcon, rScale);
 
 			//	Paint the title
 
-			y = rcRect.top + SPACING_Y;
+			int x = rcRect.left + RectWidth(rcRect) / 2;
+			int y = rcRect.top + SPACING_Y;
 			const CG16bitFont &SubTitle = m_VI.GetFont(fontSubTitle);
 			SubTitle.DrawText(Dest, x, y, m_rgbText, m_sTitle, CG16bitFont::AlignCenter);
 
@@ -442,7 +441,7 @@ void CDetailArea::PaintScaledImage (CG32bitImage &Dest, const RECT &rcDest, cons
 		CGDraw::BltScaled(Dest, rcDest.left, rcDest.top, RectWidth(rcDest), RectHeight(rcDest), *pImage, rcImage.left, rcImage.top, RectWidth(rcImage), RectHeight(rcImage));
 	}
 
-void CDetailArea::PaintStackedImage (CG32bitImage &Dest, int x, int y, ICCItem *pImageDesc, Metric rScale) const
+void CDetailArea::PaintStackedImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc, Metric rScale) const
 
 //	PaintStackedImage
 //
@@ -460,6 +459,16 @@ void CDetailArea::PaintStackedImage (CG32bitImage &Dest, int x, int y, ICCItem *
 
 	int cxImage = RectWidth(rcImage);
 	int cyImage = RectHeight(rcImage);
+
+	//	Center the image in the available area
+
+	const CG16bitFont &SubTitle = m_VI.GetFont(fontSubTitle);
+	int yTitle = rcRect.top + SPACING_Y + SubTitle.GetHeight();
+	int yStats = rcRect.bottom - m_Details.GetHeight();
+	int cyCenterArea = yStats - yTitle;
+
+	int x = rcRect.left + (RectWidth(rcRect) / 2);
+	int y = yTitle + (cyCenterArea / 2);
 
 	//	Scale, if necessary
 

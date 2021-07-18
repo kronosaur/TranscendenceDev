@@ -129,7 +129,8 @@ ALERROR CFileWriteStream::Write (const char *pData, int iLength, int *retiBytesW
 	int iBytesWritten = 0;
 	DWORD dwWritten;
 
-	ASSERT(m_hFile);
+	if (!m_hFile)
+		throw CException(ERR_FAIL);
 
 	//	Pass through the filters
 

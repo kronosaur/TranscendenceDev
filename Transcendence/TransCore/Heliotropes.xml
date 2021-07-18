@@ -391,7 +391,7 @@
 			mass=				"200"
 			frequency=			"rare"
 			numberAppearing=	"3d6"
-			attributes=			"consumable, fuel, heliotropes, notStandard"
+			attributes=			"antimatterFuel, consumable, fuel, heliotropes, notStandard"
 
 			data=				"50000"
 
@@ -415,7 +415,10 @@
 							(not (itmIsEnhanced theItem))
 								(block Nil
 									(objSendMessage gSource Nil (cat "Your " (itmGetName theItem 0) " has been enhanced."))
-									(shpEnhanceItem gSource theItem)
+									(objEnhanceItem gSource theItem {
+										enhancement: "+bonus"
+										type: &itHeliotropeFuel;
+										})
 									)
 							)
 						)

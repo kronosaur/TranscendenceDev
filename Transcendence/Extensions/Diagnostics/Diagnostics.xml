@@ -79,6 +79,12 @@
 	<!ENTITY unidCombatAITests			"0xA0010200">
 	<!ENTITY stTestBase					"0xA0010201">
 
+	<!-- 0240-027F TEST TRADING -->
+
+	<!ENTITY unidTradingTests			"0xA0010240">
+	<!ENTITY stTestShop1				"0xA0010241">
+	<!ENTITY itTestArmorLowRepairLevel	"0xA0010242">
+
 	<!-- OTHER -->
 
 	<!ENTITY unidStarsOfThePilgrim		"0x00200000">
@@ -114,6 +120,7 @@
 	<Module filename="TestItems.xml"/>
 	<Module filename="TestMissions.xml"/>
 	<Module filename="TopologyTests.xml"/>
+	<Module filename="TradingTests.xml"/>
 	<Module filename="TSETests.xml"/>
 
 <!-- DIAGNOSTICS -->

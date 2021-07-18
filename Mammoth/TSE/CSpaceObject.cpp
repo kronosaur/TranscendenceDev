@@ -41,6 +41,7 @@ const Metric g_rMaxCommsRange2 =				(g_rMaxCommsRange * g_rMaxCommsRange);
 #define GET_PLAYER_PRICE_ADJ_EVENT				CONSTLIT("GetPlayerPriceAdj")
 #define ON_ATTACKED_EVENT						CONSTLIT("OnAttacked")
 #define ON_ATTACKED_BY_PLAYER_EVENT				CONSTLIT("OnAttackedByPlayer")
+#define ON_AUTO_LOOT_EVENT						CONSTLIT("OnAutoLoot")
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
 #define ON_CREATE_ORDERS_EVENT					CONSTLIT("OnCreateOrders")
 #define ON_DAMAGE_EVENT							CONSTLIT("OnDamage")
@@ -850,31 +851,29 @@ bool CSpaceObject::CanCommunicateWith (const CSpaceObject &SenderObj) const
 	for (int i = 0; i < pHandler->GetCount(); i++)
 		{
 		if (pHandler->GetMessage(i).OnShowEvent.pCode == NULL)
-			return true;
-		else
+			continue;
+
+		CCodeChainCtx Ctx(GetUniverse());
+
+		//	Define parameters
+
+		Ctx.DefineContainingType(this);
+		Ctx.SaveAndDefineSourceVar(this);
+		Ctx.DefineSpaceObject(CONSTLIT("gSender"), SenderObj);
+
+		//	Execute
+
+		ICCItemPtr pResult = Ctx.RunCode(pHandler->GetMessage(i).OnShowEvent);
+
+		if (pResult->IsNil())
+			continue;
+		else if (pResult->IsError())
 			{
-			CCodeChainCtx Ctx(GetUniverse());
-
-			//	Define parameters
-
-			Ctx.DefineContainingType(this);
-			Ctx.SaveAndDefineSourceVar(this);
-			Ctx.DefineSpaceObject(CONSTLIT("gSender"), SenderObj);
-
-			//	Execute
-
-			ICCItemPtr pResult = Ctx.RunCode(pHandler->GetMessage(i).OnShowEvent);
-
-			if (pResult->IsNil())
-				return false;
-			else if (pResult->IsError())
-				{
-				SenderObj.SendMessage(this, pResult->GetStringValue());
-				return false;
-				}
-			else
-				return true;
+			SenderObj.SendMessage(this, pResult->GetStringValue());
+			return false;
 			}
+		else
+			return true;
 		}
 
 	return false;
@@ -2485,6 +2484,28 @@ void CSpaceObject::FireOnAttackedByPlayer (void)
 			ReportEventError(ON_ATTACKED_BY_PLAYER_EVENT, pResult);
 		Ctx.Discard(pResult);
 		}
+	}
+
+void CSpaceObject::FireOnAutoLoot (CSpaceObject &LootedBy, const CItemList &Loot)
+
+//	FireOnAutoLoot
+//
+//	Fire OnAutoLoot event
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(ON_AUTO_LOOT_EVENT, &Event))
+		return;
+
+	CCodeChainCtx Ctx(GetUniverse());
+	Ctx.DefineContainingType(this);
+	Ctx.SaveAndDefineSourceVar(this);
+	Ctx.DefineSpaceObject(CONSTLIT("aLootedBy"), LootedBy);
+	Ctx.DefineItemList(CONSTLIT("aLoot"), Loot);
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_AUTO_LOOT_EVENT, pResult);
 	}
 
 void CSpaceObject::FireOnCreate (void)
@@ -4283,6 +4304,20 @@ CXMLElement *CSpaceObject::GetScreen (const CString &sName)
 	return Screen.GetDesc();
 	}
 
+int CSpaceObject::GetShieldLevel (void) const
+
+//	GetShieldLevel
+//
+//	Returns the % shield level of the ship (or -1 if the ship has no shields)
+
+	{
+	const CInstalledDevice *pShields = GetNamedDevice(devShields);
+	if (pShields == NULL)
+		return -1;
+
+	return pShields->GetHitPointsPercent(this);
+	}
+
 CSovereign *CSpaceObject::GetSovereignToDefend (void) const
 
 //	GetSovereignToDefend
@@ -5097,14 +5132,9 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 
 		bool bCanTriggerDetonation = CTargetList::CanDetonate(*this, pTarget, TargetOptions, *pObj);
 		
-		//	Compute the size of the object, if we're doing proximity computations
-
-		Metric rObjRadius;
-		if (bCanTriggerDetonation)
-			rObjRadius = OBJ_RADIUS_ADJ * pObj->GetHitSize();
-
 		//	Step
 
+		CVector vPrev = vStart;
 		CVector vTest = vStart;
 		for (k = 0; k < iSteps; k++)
 			{
@@ -5121,7 +5151,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 				if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vTest))
 					{
 					if (retvHitPos)
-						*retvHitPos = vTest;
+						*retvHitPos = vPrev;
 
 					//	Figure out the direction that the hit came from
 
@@ -5137,7 +5167,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 			if (bCanTriggerDetonation)
 				{
 				CVector vDist = vTest - pObj->GetPos();
-				Metric rDist = vDist.Length() - rObjRadius;
+				Metric rDist = vDist.Length();
 
 				if (rDist < rClosestApproach)
 					{
@@ -5149,6 +5179,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 
 			//	Next
 
+			vPrev = vTest;
 			vTest = vTest + vStep;
 			}
 
@@ -5823,11 +5854,14 @@ bool CSpaceObject::IsLineOfFireClear (const CInstalledDevice *pWeapon,
 	if (!CanHitFriends() || !pWeapon->CanHitFriends())
 		return true;
 
+	CUsePerformanceCounter Counter(GetUniverse(), CONSTLIT("update.lineOfFire"));
+
 	//	Compute some values
 
 	const CDeviceItem WeaponItem = pWeapon->GetDeviceItem();
 	CVector vSource = pWeapon->GetPos(this);
 	bool bAreaWeapon = WeaponItem.IsAreaWeapon();
+	bool bShockwaveWeapon = WeaponItem.IsShockwaveWeapon();
 
 	//	We need to adjust the angle to compensate for the fact that the shot
 	//	will take on the velocity of the ship.
@@ -5928,6 +5962,16 @@ bool CSpaceObject::IsLineOfFireClear (const CInstalledDevice *pWeapon,
 			Metric rCurDist2 = vCurDist.Length2();
 			if (rCurDist2 > rMaxDist2)
 				continue;
+
+			//	If this is a shockwave weapon and a friendly is in range, then 
+			//	we always abort.
+
+			if (bShockwaveWeapon)
+				{
+				if (retpFriend) *retpFriend = pObj;
+				bResult = false;
+				break;
+				}
 
 			//	Get the current distance. Because this is all a heuristic, we
 			//	assume that this is not too different from the object distance
@@ -7648,6 +7692,22 @@ void CSpaceObject::SetSovereign (CSovereign *pSovereign)
 		pSystem->FlushEnemyObjectCache();
 	}
 
+void CSpaceObject::ShowDamage (const SDamageCtx &Ctx)
+
+//	ShowDamage
+//
+//	Shows damage done by the player.
+
+	{
+	CMarker::SCreateOptions Options;
+	Options.pSovereign = GetSovereign();
+	Options.iLifetime = 150;
+	Options.iStyle = CMarker::EStyle::Message;
+	Options.sName = strPatternSubst(CONSTLIT("%d hp %s"), Ctx.iDamage, ::GetDamageName(Ctx.Damage.GetDamageType()));
+
+	CMarker::Create(*GetSystem(), Ctx.vHitPos, NullVector, Options);
+	}
+
 bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
 
 //	Translate
@@ -7714,6 +7774,8 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 //	Update the object
 
 	{
+	CUsePerformanceCounter Counter(GetUniverse(), strPatternSubst(CONSTLIT("update.%s"), GetCategoryName(GetCategory())));
+
 	//	Update as long as we are not time-stopped.
 
 	if (!Ctx.IsTimeStopped())

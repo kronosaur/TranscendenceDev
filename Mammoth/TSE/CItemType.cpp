@@ -1027,7 +1027,9 @@ const CItemType::SStdStats &CItemType::GetStdStats (int iLevel)
 //  Returns standard stats for the level.
 
 	{
-	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
+	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
+		throw CException(ERR_FAIL);
+
 	return m_Stats[iLevel - 1];
 	}
 

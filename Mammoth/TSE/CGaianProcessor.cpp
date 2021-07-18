@@ -120,7 +120,8 @@ void CGaianProcessorAI::Behavior (SUpdateCtx &Ctx)
 
 		case statePulverizingWreck:
 			{
-			ASSERT(m_pDest);
+			if (!m_pDest)
+				throw CException(ERR_FAIL);
 
 			CVector vTarget = m_pDest->GetPos() - m_pShip->GetPos();
 			Metric rTargetDist2 = vTarget.Dot(vTarget);
@@ -161,7 +162,8 @@ void CGaianProcessorAI::Behavior (SUpdateCtx &Ctx)
 
 		case stateConsumingWreck:
 			{
-			ASSERT(m_pDest);
+			if (!m_pDest)
+				throw CException(ERR_FAIL);
 
 			CVector vTarget = m_pDest->GetPos() - m_pShip->GetPos();
 			Metric rTargetDist2 = vTarget.Dot(vTarget);

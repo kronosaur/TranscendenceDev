@@ -19,13 +19,54 @@ CString CIntegerRangeCriteria::AsString (char chModifier) const
 	if (IsEmpty())
 		return NULL_STR;
 	else if (m_iEqualToValue != -1)
-		return strPatternSubst(CONSTLIT("=%s%d;"), sModifier, m_iEqualToValue);
+		return strPatternSubst(CONSTLIT(" =%s%d;"), sModifier, m_iEqualToValue);
 	else if (m_iLessThanValue == -1)
-		return strPatternSubst(CONSTLIT(">%s%d;"), sModifier, m_iGreaterThanValue);
+		return strPatternSubst(CONSTLIT(" >%s%d;"), sModifier, m_iGreaterThanValue);
 	else if (m_iGreaterThanValue == -1)
-		return strPatternSubst(CONSTLIT("<%s%d;"), sModifier, m_iLessThanValue);
+		return strPatternSubst(CONSTLIT(" <%s%d;"), sModifier, m_iLessThanValue);
 	else
-		return strPatternSubst(CONSTLIT(">%s%d; <%s%d;"), sModifier, m_iGreaterThanValue, m_iLessThanValue);
+		return strPatternSubst(CONSTLIT(" >%s%d; <%s%d;"), sModifier, m_iGreaterThanValue, sModifier, m_iLessThanValue);
+	}
+
+bool CIntegerRangeCriteria::GetRange (int *retiMin, int *retiMax) const
+
+//	GetRange
+//
+//	Returns the match range.
+
+	{
+	if (m_iEqualToValue != -1)
+		{
+		if (retiMin) *retiMin = m_iEqualToValue;
+		if (retiMax) *retiMax = m_iEqualToValue;
+		return true;
+		}
+	else if (m_iLessThanValue == -1 && m_iGreaterThanValue == -1)
+		{ 
+		if (retiMin) *retiMin = -1;
+		if (retiMax) *retiMax = -1;
+		return false;
+		}
+	else
+		{
+		if (retiMax)
+			{
+			if (m_iLessThanValue != -1)
+				*retiMax = m_iLessThanValue - 1;
+			else
+				*retiMax = -1;
+			}
+
+		if (retiMin)
+			{
+			if (m_iGreaterThanValue != -1)
+				*retiMin = m_iGreaterThanValue + 1;
+			else
+				*retiMin = -1;
+			}
+
+		return true;
+		}
 	}
 
 bool CIntegerRangeCriteria::Matches (int iValue) const

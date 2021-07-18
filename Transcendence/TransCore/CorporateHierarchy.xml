@@ -279,6 +279,7 @@
 				levelFrequency=			"ccuv- ----- ----- ----- -----"
 
 				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"50"
 				/>
 
 		<Names noArticle="true">Armor United; Brentano Armor; Carbellium Armor Systems;
@@ -436,6 +437,7 @@
 				levelFrequency=			"uccr- ----- ----- ----- -----"
 
 				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"50"
 				/>
 
 		<Names noArticle="true">Azure Protection Systems; Bixbie Arms; Chiba Arms Dealers; 
@@ -975,6 +977,7 @@
 				levelFrequency=			"cccuu rv--- ----- ----- -----"
 
 				locationCriteria=		"-outerSystem, +planetary"
+				enemyExclusionRadius=	"50"
 				/>
 
 		<Names noArticle="true">Antares Fuel; Bapco Fuel; Cerulean Energy;
@@ -1400,6 +1403,7 @@
 				levelFrequency=			"uuurr v---- ----- ----- -----"
 
 				locationCriteria=		"*"
+				enemyExclusionRadius=	"50"
 				unique=					"inSystem"
 				/>
 
@@ -1565,6 +1569,7 @@
 				levelFrequency=			"rccuu rv--- ----- ----- -----"
 
 				locationCriteria=		"++outerSystem"
+				enemyExclusionRadius=	"50"
 				/>
 
 		<!-- Trade and Items -->

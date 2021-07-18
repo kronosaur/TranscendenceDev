@@ -376,6 +376,7 @@ class CIntegerRangeCriteria
 		int GetEqualToValue (void) const { return m_iEqualToValue; }
 		int GetGreaterThanValue (void) const { return m_iGreaterThanValue; }
 		int GetLessThanValue (void) const { return m_iLessThanValue; }
+		bool GetRange (int *retiMin = NULL, int *retiMax = NULL) const;
 		bool IsEmpty (void) const { return (m_iEqualToValue == -1 && m_iGreaterThanValue == -1 && m_iLessThanValue == -1); }
 		bool Matches (int iValue) const;
 		bool Parse (const char *pPos, const char **retpPos = NULL, char *retchModifier = NULL);
@@ -554,6 +555,7 @@ class CDamageSource
 		bool IsExplosion () const { return ((m_dwFlags & FLAG_IS_EXPLOSION) ? true : false); }
 		bool IsFriend (CSovereign *pSovereign) const;
 		bool IsPlayer (void) const { return ((m_dwFlags & FLAG_IS_PLAYER) ? true : false); }
+		bool IsPlayerOrderGiver () const;
 		void OnLeaveSystem (void);
 		void OnObjDestroyed (CSpaceObject &ObjDestroyed);
 		void ReadFromStream (SLoadCtx &Ctx);

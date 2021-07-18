@@ -31,6 +31,7 @@ ICCItem *fnEnvironmentGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_DEBUG_SET				8
 #define FN_DEBUG_BREAK				9
 #define FN_DEBUG_SET_PERFORMANCE_COUNTER	10
+#define FN_DEBUG_CLEAR_OUTPUT		11
 
 ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -502,6 +503,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_TOPOLOGY_DISTANCE_TO_CRITERIA		40
 #define FN_SYS_GET_ASCENDED_OBJECTS		41
 #define FN_SYS_ITEM_FREQUENCY			42
+#define FN_SYS_NEXT_NODE_TO				43
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -666,6 +668,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"*",	PPFLAG_SIDEEFFECTS, },
 
+		{	"dbgClear",						fnDebug,		FN_DEBUG_CLEAR_OUTPUT,
+			"(dbgClear)",
+			
+			"*",	PPFLAG_SIDEEFFECTS, },
+
 		{	"dbgGet",						fnDebug,		FN_DEBUG_GET,
 			"(dbgGet property) -> value\n\n"
 			
@@ -675,6 +682,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'memoryUse\n"
 			"   'showAIDebug\n"
 			"   'showBounds\n"
+			"   'showDamageDone\n"
 			"   'showFacingsAngle\n"
 			"   'showLineOfFire\n"
 			"   'showNavPaths\n"
@@ -702,6 +710,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'showAIDebug True/Nil\n"
 			"   'showBounds True/Nil\n"
+			"   'showDamageDone True/Nil\n"
 			"   'showFacingsAngle True/Nil\n"
 			"   'showLineOfFire True/Nil\n"
 			"   'showNavPaths True/Nil\n"
@@ -1701,7 +1710,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"objDamage",					fnObjGet,		FN_OBJ_DAMAGE,	
 			"(objDamage obj weaponType objSource [pos] [options]) -> result\n\n"
-				
+
+			"objSource:\n\n"
+
+			"   cause: Cause type\n"
+			"   obj: Object that caused the damage [optional]\n"
+			"   secondaryObj: Another object that caused damage [optional]\n"
+			"   namePattern: Noun pattern for what caused damage [optional]\n"
+			"   sourceName: Alternative to namePattern [optional]\n"
+			"   sourceNameFlags: Alternative to namePattern [optional]\n"
+			"\n"
 			"result:\n\n"
 
 			"   'noDamage\n"
@@ -3052,7 +3070,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"sv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateMarker",				fnSystemCreateMarker,	0,
-			"(sysCreateMarker name pos sovereignID) -> marker",
+			"(sysCreateMarker name pos sovereignID|options) -> marker\n\n"
+			
+			"options:\n\n"
+			
+			"   lifetime: Lifetime in ticks\n"
+			"   sovereign: Marker sovereign\n"
+			"   style: Marker style\n",
+
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateShip",				fnSystemCreateShip,	0,
@@ -3220,6 +3245,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysGetNavPathPoint",			fnSystemGet,	FN_SYS_NAV_PATH_POINT,
 			"(sysGetNavPathPoint sovereignID objFrom objTo %path) -> vector",
 			"iiii",	0,	},
+
+		{	"sysGetNextNodeTo",			fnSystemGet,		FN_SYS_NEXT_NODE_TO,
+			"(sysGetNextNodeTo [fromNodeID] toNodeID) -> nodeID",
+			"*s",	0,	},
 
 		{	"sysGetNode",					fnSystemGet,	FN_SYS_NODE,
 			"(sysGetNode) -> nodeID",
@@ -4580,6 +4609,12 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #else
 			return pCC->CreateNil();
 #endif
+			}
+
+		case FN_DEBUG_CLEAR_OUTPUT:
+			{
+			pCtx->GetUniverse().GetHost()->ConsoleClear();
+			return pCC->CreateString(NULL_STR);
 			}
 
 		case FN_DEBUG_GET:
@@ -7248,7 +7283,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				if (strEquals(sName, NAMED_ITEM_SELECTED_WEAPON))
 					{
-					CItem theItem = pShip->GetNamedItem(devPrimaryWeapon);
+					CItem theItem = pShip->GetNamedDeviceItem(devPrimaryWeapon);
 					if (theItem.GetType())
 						{
 						ICCItem *pItem = CreateListFromItem(theItem);
@@ -7258,7 +7293,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					}
 				else if (strEquals(sName, NAMED_ITEM_SELECTED_LAUNCHER))
 					{
-					CItem theItem = pShip->GetNamedItem(devMissileWeapon);
+					CItem theItem = pShip->GetNamedDeviceItem(devMissileWeapon);
 					if (theItem.GetType())
 						{
 						ICCItem *pItem = CreateListFromItem(theItem);
@@ -7288,7 +7323,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 								}
 							else
 								{
-								CItem theItem = pShip->GetNamedItem(devMissileWeapon);
+								CItem theItem = pShip->GetNamedDeviceItem(devMissileWeapon);
 								if (theItem.GetType())
 									{
 									ICCItem *pItem = CreateListFromItem(theItem);
@@ -13381,8 +13416,8 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 		CreateCtx.pOrbit = &Loc.GetOrbit();
 		CreateCtx.bCreateSatellites = true;
 
-		if (pSystem->CreateStation(pSysCreateCtx,
-				pType,
+		if (pSystem->CreateStation(*pSysCreateCtx,
+				*pType,
 				CreateCtx,
 				&pStation) != NOERROR)
 			return pCC->CreateError(CONSTLIT("Unable to create station"), NULL);
@@ -13530,8 +13565,8 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 		CreateCtx.bCreateSatellites = true;
 		CreateCtx.pEventHandler = pEventHandler;
 
-		if (pSystem->CreateStation(pSysCreateCtx,
-				pType,
+		if (pSystem->CreateStation(*pSysCreateCtx,
+				*pType,
 				CreateCtx,
 				&pStation) != NOERROR)
 			return pCC->CreateError(CONSTLIT("Unable to create station"), NULL);
@@ -14076,6 +14111,48 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Done
 
 			return pCC->CreateInteger(iFreq);
+			}
+
+		case FN_SYS_NEXT_NODE_TO:
+			{
+			int iArg = 0;
+
+			//	If we have more than 1 args, then the first arg is the fromID
+
+			const CTopologyNode *pFromNode;
+			if (pArgs->GetCount() > 1 && pArgs->GetElement(0)->IsIdentifier())
+				{
+				pFromNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				if (pFromNode == NULL)
+					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
+				}
+
+			//	Otherwise, we assume the current system.
+
+			else
+				{
+				const CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
+				if (pSystem == NULL)
+					return StdErrorNoSystem(*pCC);
+
+				pFromNode = pSystem->GetTopology();
+				if (pFromNode == NULL)
+					return pCC->CreateError(CONSTLIT("No topology node"));
+				}
+
+			//	Get the destination node.
+
+			const CTopologyNode *pToNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+			if (pToNode == NULL)
+				return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(iArg - 1));
+
+			//	Compute
+
+			const CTopologyNode *pNextNode = pCtx->GetUniverse().GetTopology().GetNextNodeTo(*pFromNode, *pToNode);
+			if (!pNextNode)
+				return pCC->CreateNil();
+
+			return pCC->CreateString(pNextNode->GetID());
 			}
 
 		case FN_SYS_LOCATIONS:

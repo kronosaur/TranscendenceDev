@@ -390,6 +390,8 @@ CString::PSTORESTRUCT CString::AllocStore (int iSize, BOOL bAllocString)
 		//	Add the new storage blocks to the free list
 
 		AddToFreeList(g_pStore + g_iStoreSize, STORE_SIZE_INCREMENT);
+		if (!g_pFreeStore)
+			throw CException(ERR_FAIL);
 
 		g_iStoreSize += STORE_SIZE_INCREMENT;
 		}
@@ -837,28 +839,20 @@ void CString::Size (int iLength, DWORD dwFlags)
 
 	if (IsExternalStorage() || m_pStore->iAllocSize < iLength)
 		{
-		char *pNewString;
-
 		int iNewAlloc;
 		if (dwFlags & FLAG_GEOMETRIC_GROWTH)
 			iNewAlloc = Max(iLength, m_pStore->iAllocSize * 2);
 		else
 			iNewAlloc = iLength;
 
-		pNewString = (char *)HeapAlloc(GetProcessHeap(), 0, iNewAlloc);
+		char *pNewString = (char *)HeapAlloc(GetProcessHeap(), 0, iNewAlloc);
 		if (pNewString == NULL)
 			throw CException(ERR_MEMORY);
 
 		//	If we're supposed to preserve contents, copy the content over
 
 		if (dwFlags & FLAG_PRESERVE_CONTENTS)
-			{
-			int i;
-			int iCopyLen = Min(m_pStore->iLength, iLength);
-
-			for (i = 0; i < iCopyLen; i++)
-				pNewString[i] = m_pStore->pString[i];
-			}
+			utlMemCopy(m_pStore->pString, pNewString, Min(m_pStore->iLength, iLength));
 
 		//	Only free if this is our storage
 

@@ -232,6 +232,7 @@ struct SSystemCreateCtx
 	SZAdjust ZAdjust;						//	Adjust Z
 	EOverlapCheck iOverlapCheck = checkOverlapNone;	//	If TRUE, we adjust locations to avoid overlapping an existing object
 	bool bIs3DExtra = false;				//	Objects are optional 3D extras
+	bool bVerbose = false;					//	Verbose debug output
 
 	//	Stats
 

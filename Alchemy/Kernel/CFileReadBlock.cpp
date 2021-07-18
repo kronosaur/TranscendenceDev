@@ -96,7 +96,7 @@ ALERROR CFileReadBlock::Open (void)
 			0,
 			0,
 			NULL);
-	if (m_hFileMap == INVALID_HANDLE_VALUE)
+	if (!m_hFileMap)
 		{
 		CloseHandle(m_hFile);
 		m_hFile = NULL;

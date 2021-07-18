@@ -111,14 +111,51 @@
 								(setq startPos (@ theEntry 0))
 								(setq endGate (random (@ theEntry 1)))
 								)
-							(block Nil
-								(setq endGate (random stargates))
-								(setq startPos (sysVectorRandom 
-									endGate
-									(/ (* (random 110 150) (objGetDistance aOwnerObj endGate)) 100)
-									150
-									"AT -sungSlavers;"
+
+							;	Otherwise, pick a starting pos relative to the gate
+
+							(block (
+								(destObj (random stargates))
+								(distToGate 300)
+
+								;	Compute the angle from the gate to our station
+
+								(angleToStation (sysVectorAngle (sysVectorSubtract aOwnerObj destObj)))
+
+								;	Pick a random course angle (from the perspective of the destination)
+
+								(courseAngle (mod 'degrees 
+									(+ angleToStation 
+										(* (random '(-1 1))	(random 30 60))
+										)
+									360
 									))
+
+								;	Pick a point a specific distance away from the destination along the course
+								;	angle. This is the projected interception point; the distance away from
+								;	the destination is proportional to the time that the player will have to
+								;	destroy the transport.
+
+								(interceptPos (sysVectorPolarOffset destObj courseAngle distToGate))
+
+								;	Compute the time that it will take the player to reach the intercept
+								;	position from the mission station.
+
+								(playerTravelTime 
+									(round (* 1.5
+										(sysCalcTravelTime (sysVectorDistance interceptPos aOwnerObj) (shpGetMaxSpeed gPlayerShip))
+										))
+									)
+
+								;	Compute the distance that the target will travel in that time
+
+								(targetSpeed (typ@ &scSungTransport; 'maxSpeed))
+								(freighterDist (sysCalcTravelDistance targetSpeed playerTravelTime))
+								)
+								(setq endGate destObj)
+								(setq startPos
+									(sysVectorPolarOffset endGate courseAngle (+ distToGate freighterDist))
+									)
 								)
 							)
 

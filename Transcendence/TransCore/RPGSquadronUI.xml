@@ -434,7 +434,7 @@
 						;	Convert back to item
 						(newAutonItem (objFireEvent autonObj 'ConvertToItem))
 						)
-						(objSetItemData gPlayerShip autonItem 'autonConfig (itmGetData newAutonItem 'autonConfig)))
+						(objSetItemData gPlayerShip autonItem 'autonConfig (itmGetData newAutonItem 'autonConfig))
 
 						;	Remove any suspended autons, in case we return to this 
 						;	screen from a dock services sub-screen. We want to get rid

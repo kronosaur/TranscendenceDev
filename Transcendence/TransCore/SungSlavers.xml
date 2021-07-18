@@ -823,7 +823,7 @@
 			mass=				"1"
 			frequency=			"rare"
 			numberAppearing=	"1"
-			attributes=			"antiMatter, confirmRefuel, consumable, fuel, 100MW, longzhuSphere, notStandardFuel, sungSlavers"
+			attributes=			"antiMatterFuel, confirmRefuel, consumable, fuel, 100MW, longzhuSphere, notStandardFuel, sungSlavers"
 
 			useScreen=			"&dsRPGUseItemOnDevice;"
 			data=				"500000"

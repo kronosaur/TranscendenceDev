@@ -342,7 +342,7 @@ ALERROR CDockScreenList::OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, 
 
 	int i;
 	ALERROR error;
-    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetDockScreenVisuals();
+	const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetDockScreenVisuals();
 
 	m_dwID = Ctx.dwFirstID;
 
@@ -365,8 +365,8 @@ ALERROR CDockScreenList::OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, 
 
 	m_pItemListControl->SetUIRes(&g_pTrans->GetUIRes());
 	m_pItemListControl->SetFontTable(Ctx.pFontTable);
-    m_pItemListControl->SetColor(DockScreenVisuals.GetTitleTextColor());
-    m_pItemListControl->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
+	m_pItemListControl->SetColor(DockScreenVisuals.GetTitleTextColor());
+	m_pItemListControl->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
 	m_pItemListControl->SetNoArmorSpeedDisplay(Options.bNoArmorSpeedDisplay);
 	m_pItemListControl->SetDisplayAsKnown(Options.bActualItems);
 	m_pItemListControl->SetTabRegion(Options.cyTabRegion);

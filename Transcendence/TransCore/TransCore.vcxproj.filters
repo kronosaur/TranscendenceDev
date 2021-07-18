@@ -1083,5 +1083,8 @@
     <Xml Include="..\Extensions\Diagnostics\CombatAI.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
+    <Xml Include="..\Extensions\Diagnostics\TradingTests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

@@ -76,7 +76,7 @@ bool CDockScreenLayout::Init (const RECT &rcScreen, const CDockScreenVisuals &Vi
 
 	m_rcScreen = rcScreen;
 
-    CG32bitImage &FrameImage = Visuals.GetBackground().GetImage(CONSTLIT("ShowScreen"));
+	CG32bitImage &FrameImage = Visuals.GetBackground().GetImage(CONSTLIT("ShowScreen"));
 	int cxMaxFrame = (FrameImage.IsEmpty() ? MAX_FRAME_IMAGE_WIDTH : FrameImage.GetWidth());
 	int cyMaxFrame = (FrameImage.IsEmpty() ? MAX_FRAME_IMAGE_HEIGHT : FrameImage.GetHeight() + TITLE_HEIGHT);
 

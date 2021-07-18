@@ -169,7 +169,7 @@ CG32bitImage *CObjectImage::GetHitMask (void)
 	if (m_pHitMask)
 		return m_pHitMask;
 
-	//	If no shadow mask, nothing to do
+	//	If no hit mask, nothing to do
 
 	if (m_sHitMask.IsBlank())
 		return NULL;

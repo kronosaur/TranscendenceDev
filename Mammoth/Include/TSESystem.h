@@ -454,8 +454,8 @@ class CSystem
 							   CDesignType *pEventHandler,
 							   const CVector &vPos,
 							   CSpaceObject **retpStation = NULL);
-		ALERROR CreateStation (SSystemCreateCtx *pCtx, 
-							   CStationType *pType, 
+		ALERROR CreateStation (SSystemCreateCtx &Ctx, 
+							   CStationType &Type, 
 							   SObjCreateCtx &CreateCtx,
 							   CSpaceObject **retpStation = NULL);
 		ALERROR CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot = NULL);

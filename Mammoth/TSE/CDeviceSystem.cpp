@@ -548,6 +548,49 @@ int CDeviceSystem::GetCountByID (const CString &sID) const
 	return iCount;
 	}
 
+const CInstalledDevice *CDeviceSystem::GetNamedDeviceHelper (DeviceNames iDev) const
+	{
+	if (HasNamedDevices())
+		{
+		if (m_NamedDevices[iDev] != -1)
+			return &GetDevice(m_NamedDevices[iDev]);
+		else
+			return NULL;
+		}
+
+	//	To save memory on stations (including asteroids), we don't allocate the
+	//	named devices array for stations. If someone really wants it (e.g., to
+	//	get a shield device for a station) then we need to search for it.
+
+	else
+		{
+		ItemCategories iCategory = CItemType::GetCategoryForNamedDevice(iDev);
+		if (iCategory == itemcatMiscDevice)
+			return NULL;
+
+		for (int i = 0; i < m_Devices.GetCount(); i++)
+			{
+			if (!m_Devices[i]->IsEmpty()
+					&& m_Devices[i]->GetCategory() == iCategory)
+				{
+				switch (iDev)
+					{
+					case itemcatWeapon:
+					case itemcatLauncher:
+						if (m_Devices[i]->IsSelectable())
+							return m_Devices[i];
+						break;
+
+					default:
+						return m_Devices[i];
+					}
+				}
+			}
+
+		return NULL;
+		}
+	}
+
 DeviceNames CDeviceSystem::GetNamedFromDeviceIndex (int iIndex) const
 
 //	GetIndexFromDeviceIndex

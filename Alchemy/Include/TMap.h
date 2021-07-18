@@ -130,7 +130,9 @@ template <class KEY, class VALUE> class TMap : public CMapBase
 		const KEY &GetNext (CMapIterator &Iterator, VALUE **retpValue) const
 			{
 			Entry *pEntryFound = (Entry *)CMapBase::GetNext(Iterator);
-			ASSERT(pEntryFound);
+			if (!pEntryFound)
+				throw CException(ERR_FAIL);
+
 			if (retpValue)
 				*retpValue = &pEntryFound->m_Value;
 			return pEntryFound->m_Key;
@@ -662,7 +664,13 @@ template <class KEY, class VALUE> class TSortMap
 template <class ENTRY, size_t N> class TStaticStringTable
 	{
 	public:
-		ENTRY &operator [] (int iIndex) { ASSERT(iIndex >= 0 && iIndex < N); return m_Array[iIndex]; }
+		ENTRY &operator [] (int iIndex) 
+			{
+			if (iIndex < 0 || iIndex >= N)
+				throw CException(ERR_FAIL);
+
+			return m_Array[iIndex];
+			}
 
 		const ENTRY &operator [] (int iIndex) const { ASSERT(iIndex >= 0 && iIndex < N); return m_Array[iIndex]; }
 

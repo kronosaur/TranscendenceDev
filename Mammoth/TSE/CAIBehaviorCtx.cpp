@@ -550,9 +550,11 @@ bool CAIBehaviorCtx::CalcIsDeterNeeded (CShip &Ship, CSpaceObject &Target) const
 		return false;
 
 	//	If the target is beyond our weapon range, then stop.
+	//	NOTE: Sometimes our weapon range is 0 if all we have is secondaries.
+	//	In those cases we still want to fight.
 
 	Metric rDist2 = (Target.GetPos() - Ship.GetPos()).Length2();
-	if (rDist2 > GetMaxWeaponRange2())
+	if (GetMaxWeaponRange2() > 0 && rDist2 > GetMaxWeaponRange2())
 		return false;
 
 	//	If the target is no longer visible, then stop.

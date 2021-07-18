@@ -639,15 +639,16 @@ class CSpaceObject
 		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return false; }
 		bool FireCanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, CString *retsResult);
 		bool FireCanRemoveItem (const CItem &Item, int iSlot, CString *retsResult);
-		virtual CInstalledDevice *GetDevice (int iDev) { return NULL; }
-		virtual int GetDeviceCount (void) const { return 0; }
-		virtual CDeviceItem GetDeviceItem (int iDev) const { return CItem().AsDeviceItem(); }
+		CInstalledDevice *GetDevice (int iDev) { return &GetDeviceSystem().GetDevice(iDev); }
+		int GetDeviceCount (void) const { return GetDeviceSystem().GetCount(); }
+		CDeviceItem GetDeviceItem (int iDev) const { return GetDeviceSystem().GetDeviceItem(iDev); }
 		virtual CDeviceSystem &GetDeviceSystem (void) { return CDeviceSystem::m_Null; }
 		virtual const CDeviceSystem &GetDeviceSystem (void) const { return CDeviceSystem::m_Null; }
 		CItem GetItemForDevice (CInstalledDevice *pDevice);
-		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return NULL; }
-		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }
-		virtual CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { return CItem().AsDeviceItem(); }
+		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return GetDeviceSystem().GetNamedDevice(iDev); }
+		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return GetDeviceSystem().GetNamedDevice(iDev); }
+		CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { return GetDeviceSystem().GetNamedDeviceItem(iDev); }
+		int GetShieldLevel (void) const;
 		virtual void OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass::DeviceNotificationTypes iEvent) { }
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, int iDevSlot);
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, CInstalledDevice *pDevice);
@@ -820,6 +821,7 @@ class CSpaceObject
 		void FireItemOnUpdate (void);
 		void FireOnAttacked (const SDamageCtx &Ctx);
 		void FireOnAttackedByPlayer (void);
+		void FireOnAutoLoot (CSpaceObject &LootedBy, const CItemList &Loot);
 		void FireOnCreate (void);
 		void FireOnCreate (const SOnCreate &OnCreate);
 		void FireOnCreateOrders (CSpaceObject *pBase, CSpaceObject *pTarget);
@@ -1212,6 +1214,7 @@ class CSpaceObject
 		virtual bool FindDataField (const CString &sField, CString *retsValue) { return false; }
 		virtual Categories GetCategory (void) const { return catOther; }
 		virtual DWORD GetClassUNID (void) { return 0; }
+		virtual const CSovereign *GetControllingSovereign (void) const { return GetSovereign(); }
 		virtual Metric GetGravity (Metric *retrRadius) const { return 0.0; }
 		CInteractionLevel GetInteraction (void) const { const CWeaponFireDesc *pDesc = GetWeaponFireDesc(); return (pDesc ? pDesc->GetInteraction() : CInteractionLevel(-1)); }
 		virtual Metric GetInvMass (void) const { return 0.0; }
@@ -1283,7 +1286,6 @@ class CSpaceObject
 		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
 		virtual int GetPerception (void) const { return perceptNormal; }
 		virtual int GetScore (void) { return 0; }
-		virtual int GetShieldLevel (void) const { return -1; }
 		virtual CG32bitPixel GetSpaceColor (void) { return 0; }
 		virtual int GetStealth (void) const { return stealthNormal; }
 		virtual int GetStealthAdj (void) const { return 0; }
@@ -1375,6 +1377,8 @@ class CSpaceObject
 
 		virtual void OnLosePOV (void) { }
 
+		static CString GetCategoryName (Categories iCategory);
+
 	protected:
 
 		//	Virtuals to be overridden
@@ -1460,6 +1464,7 @@ class CSpaceObject
 		void SetInDamageCode (void) { m_fInDamage = true; }
 		void SetNoFriendlyFire (void) { m_fNoFriendlyFire = true; }
 		void SetNonLinearMove (bool bValue = true) { m_fNonLinearMove = bValue; }
+		void ShowDamage (const SDamageCtx &Ctx);
 		void UpdateTrade (SUpdateCtx &Ctx, int iInventoryRefreshed);
 		void UpdateTradeExtended (const CTimeSpan &ExtraTime);
 

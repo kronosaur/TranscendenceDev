@@ -10,7 +10,7 @@ bool CWeaponTargetDefinition::MatchesTarget(CSpaceObject* pSource, CSpaceObject*
 	return pTarget ? pTarget->MatchesCriteria(Ctx, m_TargetCriteria) : false;
 	}
 
-CSpaceObject* CWeaponTargetDefinition::FindTarget(CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CItemCtx& ItemCtx) const
+CSpaceObject* CWeaponTargetDefinition::FindTarget (CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CItemCtx& ItemCtx) const
 
 //	FindTarget
 //
@@ -53,17 +53,18 @@ CSpaceObject* CWeaponTargetDefinition::FindTarget(CWeaponClass* pWeapon, CInstal
 	iMinFireArc = (pSource->GetRotation() + iMinFireArc) % 360;
 	iMaxFireArc = (pSource->GetRotation() + iMaxFireArc) % 360;
 
-		//	Compute the range
+	//	Compute the range
 
-		Metric rBestDist2;
-		if (m_TargetCriteria.MatchesMaxRadius() < g_InfiniteDistance)
-			rBestDist2 = (m_TargetCriteria.MatchesMaxRadius() * m_TargetCriteria.MatchesMaxRadius());
-		else
-			rBestDist2 = pDevice->GetMaxRange(ItemCtx) * pDevice->GetMaxRange(ItemCtx);
+	Metric rBestDist2;
+	if (m_TargetCriteria.MatchesMaxRadius() < g_InfiniteDistance)
+		rBestDist2 = (m_TargetCriteria.MatchesMaxRadius() * m_TargetCriteria.MatchesMaxRadius());
+	else
+		rBestDist2 = pDevice->GetMaxRange(ItemCtx) * pDevice->GetMaxRange(ItemCtx);
 
-		//	Now look for the nearest object
+	//	Now look for the nearest object
 
-		CSpaceObjectCriteria::SCtx Ctx(pSource, m_TargetCriteria);
+	CSpaceObjectCriteria::SCtx Ctx(pSource, m_TargetCriteria);
+
 	for (int i = 0; i < pSystem->GetObjectCount(); i++)
 		{
 		CSpaceObject* pObj = pSystem->GetObject(i);

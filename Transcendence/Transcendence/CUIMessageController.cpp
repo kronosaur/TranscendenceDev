@@ -104,7 +104,7 @@ bool CUIMessageController::IsHint (UIMessageTypes iMsg)
 //	Returns TRUE if the message is a hint
 
 	{
-	if (iMsg < 0)
+	if (iMsg < 0 || iMsg >= uimsgCount)
 		return false;
 
 	return ((g_MessageData[iMsg].dwFlags & FLAG_IS_HINT) ? true : false);
@@ -121,7 +121,7 @@ void CUIMessageController::OnHintFollowed (UIMessageTypes iMsg, DWORD dwTick)
 //	the proper number of commands, we disable the hint and store that fact.
 
 	{
-	if (iMsg < 0 || !m_Messages[iMsg].bEnabled || !(g_MessageData[iMsg].dwFlags & FLAG_IS_HINT))
+	if (iMsg < 0 || iMsg >= uimsgCount || !m_Messages[iMsg].bEnabled || !(g_MessageData[iMsg].dwFlags & FLAG_IS_HINT))
 		return;
 
 	m_Messages[iMsg].iHintFollowedCount++;
@@ -145,6 +145,9 @@ void CUIMessageController::OnMessageShown (CUniverse &Universe, UIMessageTypes i
 //	Message has been shown to player, so we update our timer.
 
 	{
+	if (iMsg < 0 || iMsg >uimsgCount)
+		return;
+
 	m_Messages[iMsg].dwLastShown = Universe.GetFrameTicks();
 	m_Messages[iMsg].dwLastObjID = (pMsgObj ? pMsgObj->GetID() : 0);
 	}

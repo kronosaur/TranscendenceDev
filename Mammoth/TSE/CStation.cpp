@@ -701,8 +701,16 @@ void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *
 //	CalcImageModifier
 //
 //	Compute the modifiers for the station
+//
+//	NOTE: We cannot assume that the given object is in the system. In some 
+//	cases, such as when we remove an object with a volumetric shadow, we need
+//	to compute the object image while it is out of a system.
+//
+//	Always handle the case where GetSystem() returns NULL.
 
 	{
+	DEBUG_TRY
+
 	constexpr BYTE FADE_OPACITY = 0x80;
 
 	//	Modifiers (such as station damage)
@@ -748,11 +756,13 @@ void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *
 
 	if (retiTick)
 		{
-		if (m_fActive && !IsTimeStopped() && !ShowStationDamage())
+		if (m_fActive && !IsTimeStopped() && !ShowStationDamage() && GetSystem())
 			*retiTick = GetSystem()->GetTick() + GetDestiny();
 		else
 			*retiTick = 0;
 		}
+
+	DEBUG_CATCH
 	}
 
 int CStation::CalcNumberOfShips (void)
@@ -2272,6 +2282,18 @@ CSpaceObject *CStation::GetTarget (DWORD dwFlags) const
 	return NULL;
 	}
 
+void CStation::GetVisibleDamageDesc (SVisibleDamage &Damage) const
+
+//	GetVisibleDamageDesc
+//
+//	Returns the amount of damage (%) that the object has taken
+
+	{
+	m_Hull.GetVisibleDamageDesc(Damage);
+
+	Damage.iShieldLevel = GetShieldLevel();
+	}
+
 CDesignType *CStation::GetWreckType (void) const
 
 //	GetWreckType
@@ -2322,11 +2344,15 @@ bool CStation::ImageInObject (const CVector &vObjPos, const CObjectImageArray &I
 //	station
 
 	{
+	DEBUG_TRY
+
 	int iDestTick, iDestVariant;
 	const CObjectImageArray &DestImage = GetImage(false, &iDestTick, &iDestVariant);
 
 	return ImagesIntersect(Image, iTick, iRotation, vImagePos,
 			DestImage, iDestTick, iDestVariant, vObjPos);
+
+	DEBUG_CATCH
 	}
 
 bool CStation::IsBlacklisted (const CSpaceObject *pObj) const
@@ -2857,6 +2883,15 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 		//	No damage
 
 		Ctx.iDamage = 0;
+		}
+
+	//	Show damage
+
+	if (GetUniverse().GetEngineOptions().IsDamageShown()
+			&& Ctx.iDamage > 0
+			&& Ctx.Attacker.IsPlayerOrderGiver())
+		{
+		ShowDamage(Ctx);
 		}
 
 	//	If we've still got armor left, then we take damage but otherwise
@@ -4506,6 +4541,10 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 				//	Sound
 
 				GetUniverse().PlaySound(this, GetUniverse().FindSound(UNID_DEFAULT_SELECT));
+
+				//	Fire event
+
+				FireOnAutoLoot(*Ctx.GetPlayerShip(), ItemList);
 
 				//	Destroy station and return.
 
