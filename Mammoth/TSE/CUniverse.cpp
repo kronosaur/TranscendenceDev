@@ -20,6 +20,7 @@
 #define PROPERTY_DEFAULT_CURRENCY			CONSTLIT("defaultCurrency")
 #define PROPERTY_DIFFICULTY					CONSTLIT("difficulty")
 #define PROPERTY_MIN_API_VERSION			CONSTLIT("minAPIVersion")
+#define PROPERTY_SHOW_DAMAGE_DONE			CONSTLIT("showDamageDone")
 
 #define STR_G_PLAYER						CONSTLIT("gPlayer")
 #define STR_G_PLAYER_SHIP					CONSTLIT("gPlayerShip")
@@ -845,6 +846,17 @@ const CEconomyType &CUniverse::GetCreditCurrency (void) const
 		}
 
 	return *m_pCreditCurrency;
+	}
+
+ICCItemPtr CUniverse::GetDebugProperty (const CString &sProperty) const
+
+//	GetDebugProperty
+
+	{
+	if (strEquals(sProperty, PROPERTY_SHOW_DAMAGE_DONE))
+		return ICCItemPtr(m_EngineOptions.IsDamageShown());
+	else
+		return m_DebugOptions.GetProperty(sProperty);
 	}
 
 CEffectCreator &CUniverse::GetDefaultFireEffect (DamageTypes iDamage)
@@ -2633,35 +2645,54 @@ bool CUniverse::SetDebugProperty (const CString &sProperty, ICCItem *pValue, CSt
 	{
 #ifdef DEBUG
 	if (strEquals(sProperty, CONSTLIT("hudColorPlayer")))
+		{
 		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::player);
+		return true;
+		}
 
 	else if (strEquals(sProperty, CONSTLIT("hudColorEscort")))
+		{
 		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::escort);
+		return true;
+		}
 
 	else if (strEquals(sProperty, CONSTLIT("hudColorFriendly")))
+		{
 		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::friendly);
+		return true;
+		}
 
 	else if (strEquals(sProperty, CONSTLIT("hudColorNeutral")))
+		{
 		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::neutral);
+		return true;
+		}
 
 	else if (strEquals(sProperty, CONSTLIT("hudColorEnemy")))
+		{
 		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::enemy);
+		return true;
+		}
 
 	else if (strEquals(sProperty, CONSTLIT("hudColorAngry")))
+		{
 		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::angry);
+		return true;
+		}
 
 	else if (strEquals(sProperty, CONSTLIT("hudColorProjectile")))
+		{
 		m_AccessabilitySettings.SetIFFColor(pValue->GetStringValue(), CAccessibilitySettings::IFFType::projectile);
+		return true;
+		}
+#endif
 
+	if (strEquals(sProperty, PROPERTY_SHOW_DAMAGE_DONE))
+		m_EngineOptions.SetShowDamageDone(pValue && !pValue->IsNil());
 	else
 		return m_DebugOptions.SetProperty(sProperty, pValue, retsError);
 
 	return true;
-#else
-
-	return m_DebugOptions.SetProperty(sProperty, pValue, retsError);
-
-#endif
 	}
 
 bool CUniverse::SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData)
@@ -2965,6 +2996,10 @@ bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)
 
 	{
 	m_iLastUpdateSpeed = iUpdateMode;
+
+#ifdef DEBUG_PERFORMANCE_COUNTERS
+	m_PerformanceCounters.StartUpdate();
+#endif
 
 	switch (iUpdateMode)
 		{

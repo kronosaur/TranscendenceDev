@@ -172,35 +172,30 @@ const CReactorDesc *CReactorClass::GetReactorDesc (CItemCtx &Ctx, DWORD dwFlags)
 //	Returns the reactor descriptor
 
 	{
-	CInstalledDevice *pDevice = Ctx.GetDevice();
+	CDeviceItem DeviceItem = Ctx.GetDeviceItem();
 	bool bNormalOnly = ((dwFlags & GPO_FLAG_NORMAL_POWER) ? true : false);
 
 	//  Figure out if we want a scaled item
 
-	int iIndex = Min(Max(0, (Ctx.GetItem().IsEmpty() ? 0 : Ctx.GetItem().GetLevel() - m_iBaseLevel)), m_iLevels - 1);
+	int iIndex = Min(Max(0, (DeviceItem ? 0 : DeviceItem.GetLevel() - m_iBaseLevel)), m_iLevels - 1);
 
-	//  If no device, then standard descriptor
+	//	If damaged or disrupted.
 
-	if (pDevice == NULL)
-		return &m_pDesc[iIndex];
-
-	//  If the device is damaged, then return damaged descriptor
-
-	else if (!bNormalOnly && (pDevice->IsDamaged() || pDevice->IsDisrupted()))
+	if (!bNormalOnly && (DeviceItem.IsDamaged() || DeviceItem.IsDisrupted()))
 		{
 		InitDamagedDesc();
 		return &m_pDamagedDesc[iIndex];
 		}
 
-	//  If enhanced, then return enhanced descriptor
+	//	If enhanced
 
-	else if (!bNormalOnly && pDevice->IsEnhanced())
+	else if (!bNormalOnly && (DeviceItem.GetEnhancements().IsBonus() || DeviceItem.IsEnhanced()))
 		{
 		InitEnhancedDesc();
 		return &m_pEnhancedDesc[iIndex];
 		}
 
-	//  Otherwise, standard descriptor.
+	//	Otherwise normal
 
 	else
 		return &m_pDesc[iIndex];

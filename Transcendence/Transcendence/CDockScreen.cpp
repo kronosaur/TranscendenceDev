@@ -61,7 +61,7 @@ const int EXTRA_BACKGROUND_IMAGE =	128;
 #define ALIGN_MIDDLE				CONSTLIT("middle")
 
 CDockScreen::CDockScreen (CGameSession &Session) : 
-        m_Session(Session),
+		m_Session(Session),
 		m_CurrentPane(*this)
 
 //	CDockScreen constructor
@@ -306,7 +306,7 @@ void CDockScreen::BltToBackgroundImage (const RECT &rcRect, CG32bitImage *pImage
 	int cxAvail = (RectWidth(rcRect) / 2) + EXTRA_BACKGROUND_IMAGE;
 	int xImage = -Max(0, cxSrc - cxAvail);
 
-    CG32bitImage &ScreenMask = GetDockScreenVisuals().GetContentMask().GetImage(CONSTLIT("ShowScreen"));
+	CG32bitImage &ScreenMask = GetDockScreenVisuals().GetContentMask().GetImage(CONSTLIT("ShowScreen"));
 	if (!ScreenMask.IsEmpty())
 		{
 		//	Center the mask and align it with the position of the background.
@@ -323,15 +323,15 @@ void CDockScreen::BltToBackgroundImage (const RECT &rcRect, CG32bitImage *pImage
 		//	the image we want to blt.
 
 		CG32bitImage Mask;
-        CG32bitImage *pScreenMask;
-        if (xAlpha != 0)
-            {
-            Mask.Create(pImage->GetWidth(), pImage->GetHeight(), CG32bitImage::alpha8);
-            Mask.CopyChannel(channelAlpha, xAlpha, 0, pImage->GetWidth(), pImage->GetHeight(), ScreenMask, 0, 0);
-            pScreenMask = &Mask;
-            }
-        else
-            pScreenMask = &ScreenMask;
+		CG32bitImage *pScreenMask;
+		if (xAlpha != 0)
+			{
+			Mask.Create(pImage->GetWidth(), pImage->GetHeight(), CG32bitImage::alpha8);
+			Mask.CopyChannel(channelAlpha, xAlpha, 0, pImage->GetWidth(), pImage->GetHeight(), ScreenMask, 0, 0);
+			pScreenMask = &Mask;
+			}
+		else
+			pScreenMask = &ScreenMask;
 
 		m_pBackgroundImage->BltMask(xSrc, ySrc, cxSrc, cySrc, *pScreenMask, *pImage, xImage, 0);
 		}
@@ -401,7 +401,7 @@ ALERROR CDockScreen::CreateBackgroundImage (const SDockScreenBackgroundDesc &Des
 //	m_pBackgroundImage and m_bFreeBackgroundImage
 
 	{
-    const CDockScreenVisuals &DockScreenVisuals = GetDockScreenVisuals();
+	const CDockScreenVisuals &DockScreenVisuals = GetDockScreenVisuals();
 
 	RECT rcFrameImage = m_Layout.GetFrameImageRect();
 	int cxBackground = RectWidth(rcFrameImage);
@@ -441,7 +441,7 @@ ALERROR CDockScreen::CreateBackgroundImage (const SDockScreenBackgroundDesc &Des
 
 	//	Load and blt the dock screen background based on the player ship class
 
-    CG32bitImage &ScreenImage = DockScreenVisuals.GetBackground().GetImage(CONSTLIT("ShowScreen"));
+	CG32bitImage &ScreenImage = DockScreenVisuals.GetBackground().GetImage(CONSTLIT("ShowScreen"));
 	if (!ScreenImage.IsEmpty())
 		{
 		//	Right-align the image on the screen
@@ -497,39 +497,39 @@ ALERROR CDockScreen::CreateBackgroundImage (const SDockScreenBackgroundDesc &Des
 
 		else
 			{
-            //  Our image is only as wide as the space allotted for it (which is
-            //  less than the entire background).
+			//  Our image is only as wide as the space allotted for it (which is
+			//  less than the entire background).
 
-            int cxObjImage = (RectWidth(rcRect) / 2) + EXTRA_BACKGROUND_IMAGE;
-            int cyObjImage = cyBackground;
+			int cxObjImage = (RectWidth(rcRect) / 2) + EXTRA_BACKGROUND_IMAGE;
+			int cyObjImage = cyBackground;
 
-            //  Create a temporary image
+			//  Create a temporary image
 
-            CG32bitImage ObjImage;
-	        ObjImage.Create(cxObjImage, cyObjImage);
+			CG32bitImage ObjImage;
+			ObjImage.Create(cxObjImage, cyObjImage);
 
 			//	Paint the system background
 
-	        CSystemType *pSystemType = Desc.pObj->GetSystem()->GetType();
-	        DWORD dwSpaceID = pSystemType->GetBackgroundUNID();
-	        CG32bitImage *pSpaceImage;
-	        if (dwSpaceID
-			        && (pSpaceImage = g_pUniverse->GetLibraryBitmap(dwSpaceID)))
-        		ObjImage.Blt(0, 0, ObjImage.GetWidth(), ObjImage.GetHeight(), *pSpaceImage, 0, 0);
+			CSystemType *pSystemType = Desc.pObj->GetSystem()->GetType();
+			DWORD dwSpaceID = pSystemType->GetBackgroundUNID();
+			CG32bitImage *pSpaceImage;
+			if (dwSpaceID
+					&& (pSpaceImage = g_pUniverse->GetLibraryBitmap(dwSpaceID)))
+				ObjImage.Blt(0, 0, ObjImage.GetWidth(), ObjImage.GetHeight(), *pSpaceImage, 0, 0);
 
-            //  Prepare to paint the object
+			//  Prepare to paint the object
 
 			SViewportPaintCtx Ctx;
-            Ctx.pCenter = Desc.pObj;
-            Ctx.vCenterPos = Desc.pObj->GetPos();
-            Ctx.xCenter = xOffset + m_Layout.GetFrameImageFocusX();
-            Ctx.yCenter = m_Layout.GetFrameImageFocusY();
+			Ctx.pCenter = Desc.pObj;
+			Ctx.vCenterPos = Desc.pObj->GetPos();
+			Ctx.xCenter = xOffset + m_Layout.GetFrameImageFocusX();
+			Ctx.yCenter = m_Layout.GetFrameImageFocusY();
 			Ctx.fNoSelection = true;
-            Ctx.fNoDockedShips = true;
-            Ctx.fShowSatellites = true;
+			Ctx.fNoDockedShips = true;
+			Ctx.fShowSatellites = true;
 
-	        Ctx.XForm = ViewportTransform(Ctx.vCenterPos, g_KlicksPerPixel, Ctx.xCenter, Ctx.yCenter);
-	        Ctx.XFormRel = Ctx.XForm;
+			Ctx.XForm = ViewportTransform(Ctx.vCenterPos, g_KlicksPerPixel, Ctx.xCenter, Ctx.yCenter);
+			Ctx.XFormRel = Ctx.XForm;
 
 			//	If we've docked with a satellite of a composite object, then we 
 			//	figure out the parent so that we can paint the entire composite.
@@ -548,27 +548,27 @@ ALERROR CDockScreen::CreateBackgroundImage (const SDockScreenBackgroundDesc &Des
 				yPaint = Ctx.yCenter;
 				}
 
-            //  Now paint the object
+			//  Now paint the object
 
 			Ctx.pObj->Paint(ObjImage,
 					xPaint,
 					yPaint,
 					Ctx);
 
-            //  Blt using the appropriate mask
+			//  Blt using the appropriate mask
 
-    		BltToBackgroundImage(rcRect, &ObjImage, 0, 0, ObjImage.GetWidth(), ObjImage.GetHeight());
+			BltToBackgroundImage(rcRect, &ObjImage, 0, 0, ObjImage.GetWidth(), ObjImage.GetHeight());
 			}
 		}
 
-    //  Paint a schematic (top-down) image
+	//  Paint a schematic (top-down) image
 
-    else if (Desc.iType == EDockScreenBackground::objSchematicImage)
-        {
-        //  LATER: We should call a separate method and allow the developer
-        //  to specify separate images.
+	else if (Desc.iType == EDockScreenBackground::objSchematicImage)
+		{
+		//  LATER: We should call a separate method and allow the developer
+		//  to specify separate images.
 
-        const CObjectImageArray &HeroImage = Desc.pObj->GetHeroImage();
+		const CObjectImageArray &HeroImage = Desc.pObj->GetHeroImage();
 		if (!HeroImage.IsEmpty())
 			{
 			HeroImage.PaintImage(*m_pBackgroundImage,
@@ -577,7 +577,7 @@ ALERROR CDockScreen::CreateBackgroundImage (const SDockScreenBackgroundDesc &Des
 					0,
 					0);
 			}
-        }
+		}
 
 	//	If we have an image with a mask, just blt the masked image
 
@@ -608,7 +608,7 @@ void CDockScreen::CreateScreenSetTabs (const IDockScreenDisplay::SInitCtx &Ctx, 
 
 	{
 	const CVisualPalette &VI = GetVisuals();
-    const CDockScreenVisuals &DockScreenVisuals = GetDockScreenVisuals();
+	const CDockScreenVisuals &DockScreenVisuals = GetDockScreenVisuals();
 
 	RECT rcRect = Ctx.rcRect;
 	rcRect.left += Options.rcControl.left;
@@ -617,8 +617,8 @@ void CDockScreen::CreateScreenSetTabs (const IDockScreenDisplay::SInitCtx &Ctx, 
 	rcRect.bottom = rcRect.top + DockScreenVisuals.GetTabHeight();
 
 	m_pTabs = new CGTabArea(VI);
-    m_pTabs->SetColor(DockScreenVisuals.GetTitleTextColor());
-    m_pTabs->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
+	m_pTabs->SetColor(DockScreenVisuals.GetTitleTextColor());
+	m_pTabs->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
 
 	for (int i = 0; i < ScreenSet.GetCount(); i++)
 		m_pTabs->AddTab(ScreenSet[i].sID, ScreenSet[i].sName);
@@ -644,7 +644,7 @@ ALERROR CDockScreen::CreateTitleArea (CDockSession &DockSession, CXMLElement *pD
 	DEBUG_TRY
 
 	const CVisualPalette &VI = GetVisuals();
-    const CDockScreenVisuals &DockScreenVisuals = GetDockScreenVisuals();
+	const CDockScreenVisuals &DockScreenVisuals = GetDockScreenVisuals();
 
 	//	Add a background bar to the title part
 
@@ -817,11 +817,11 @@ const CDockScreenVisuals &CDockScreen::GetDockScreenVisuals (void) const
 //  GetDockScreenVisuals
 //
 //  Returns the visuals for this dock screen (from the ship class)
-    
-    {
-    ASSERT(m_pPlayer);
-    return m_pPlayer->GetShip()->GetClass()->GetPlayerSettings()->GetDockScreenVisuals(GetUniverse());
-    }
+	
+	{
+	ASSERT(m_pPlayer);
+	return m_pPlayer->GetShip()->GetClass()->GetPlayerSettings()->GetDockScreenVisuals(GetUniverse());
+	}
 
 bool CDockScreen::EvalBool (const CString &sCode)
 
@@ -1594,6 +1594,11 @@ void CDockScreen::OnModifyItemComplete (SModifyItemCtx &Ctx, const CSpaceObject 
 		{
 		const SDockFrame &CurFrame = g_pUniverse->GetDockSession().GetCurrentFrame();
 
+		//	Save the control value in the dock session frame. Otherwise, we 
+		//	might overwrite something the player typed.
+
+		m_CurrentPane.SaveControlValue(g_pUniverse->GetDockSession());
+
 		//	NOTE: We defer the actual recalc of the pane until after any action
 		//	is done. We need to do this because we don't want to execute
 		//	<OnPaneInit> in the middle of processing an action (since that might
@@ -1892,10 +1897,10 @@ void CDockScreen::SetBackground (const SDockScreenBackgroundDesc &Desc)
 		else
 			{
 			DefaultDesc.pObj = m_pLocation;
-            if (m_pLocation->IsPlayer())
-			    DefaultDesc.iType = EDockScreenBackground::objSchematicImage;
-            else
-			    DefaultDesc.iType = EDockScreenBackground::objHeroImage;
+			if (m_pLocation->IsPlayer())
+				DefaultDesc.iType = EDockScreenBackground::objSchematicImage;
+			else
+				DefaultDesc.iType = EDockScreenBackground::objHeroImage;
 			}
 
 		CreateBackgroundImage(DefaultDesc, m_Layout.GetFrameImageRect(), m_Layout.GetContentRect().left - m_Layout.GetFrameImageRect().left);
@@ -1924,7 +1929,7 @@ void CDockScreen::SetBackground (const SDockScreenBackgroundDesc &Desc)
 		rcImage.right = m_pBackgroundImage->GetWidth();
 		rcImage.bottom = m_pBackgroundImage->GetHeight();
 		pImage->SetImage(m_pBackgroundImage, rcImage);
-        pImage->SetTransBackground(true);
+		pImage->SetTransBackground(true);
 
 		//	bSendToBack = true because we may have created other areas before 
 		//	this and we need the background to be in back.

@@ -51,9 +51,16 @@ void CPerformanceCounters::Paint (CG32bitImage &Dest, const RECT &rcRect, const 
 		else
 			rTime = (Metric)Counter.iTotalTime / Counter.iTotalCalls;
 
-		CString sLine = strPatternSubst(CONSTLIT("%s: %s ms [%s calls]"), m_Counters.GetKey(i), strFromDouble(rTime, 2), strFormatInteger(Counter.iTotalCalls, -1, FORMAT_THOUSAND_SEPARATOR));
-		Font.DrawText(Dest, x, y, RGB_TEXT_COLOR, sLine);
+		if (rTime > 0.01)
+			{
+			CString sLine = strPatternSubst(CONSTLIT("%s: %s ms [%s calls]"), m_Counters.GetKey(i), strFromDouble(rTime, 2), strFormatInteger(Counter.iTotalCalls, -1, FORMAT_THOUSAND_SEPARATOR));
+			Font.DrawText(Dest, x, y, RGB_TEXT_COLOR, sLine);
 
+			y += Font.GetHeight();
+			}
+
+		CString sLine = strPatternSubst(CONSTLIT("%s (per update): %s ms [%s calls]"), m_Counters.GetKey(i), strFromDouble((Metric)Counter.iTotalTimePerUpdate, 2), strFormatInteger(Counter.iTotalCallsPerUpdate, -1, FORMAT_THOUSAND_SEPARATOR));
+		Font.DrawText(Dest, x, y, RGB_TEXT_COLOR, sLine);
 		y += Font.GetHeight();
 		}
 
@@ -100,6 +107,21 @@ void CPerformanceCounters::StartTimer (const CString &sID)
 	pCounter->dwStartTime = ::GetTickCount();
 	}
 
+void CPerformanceCounters::StartUpdate ()
+
+//	StartUpdate
+//
+//	Result counts
+
+	{
+	for (int i = 0; i < m_Counters.GetCount(); i++)
+		if (m_Counters[i].bEnabled)
+			{
+			m_Counters[i].iTotalCallsPerUpdate = 0;
+			m_Counters[i].iTotalTimePerUpdate = 0;
+			}
+	}
+
 void CPerformanceCounters::StopTimer (const CString &sID)
 
 //	StopTimer
@@ -113,7 +135,11 @@ void CPerformanceCounters::StopTimer (const CString &sID)
 	if (pCounter->dwStartTime == 0)
 		return;
 
+	DWORD dwTotalTime = (dwStopTime - pCounter->dwStartTime);
+
 	pCounter->iTotalCalls++;
-	pCounter->iTotalTime += (dwStopTime - pCounter->dwStartTime);
+	pCounter->iTotalTime += dwTotalTime;
+	pCounter->iTotalCallsPerUpdate++;
+	pCounter->iTotalTimePerUpdate += dwTotalTime;
 	pCounter->dwStartTime = 0;
 	}

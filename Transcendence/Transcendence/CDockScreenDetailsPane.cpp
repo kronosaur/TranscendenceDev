@@ -84,7 +84,7 @@ ALERROR CDockScreenDetailsPane::OnInit (SInitCtx &Ctx, const SDisplayOptions &Op
 	{
 	DEBUG_TRY
 
-    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetDockScreenVisuals();
+	const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetDockScreenVisuals();
 
 	m_dwID = Ctx.dwFirstID;
 
@@ -105,8 +105,8 @@ ALERROR CDockScreenDetailsPane::OnInit (SInitCtx &Ctx, const SDisplayOptions &Op
 		return ERR_MEMORY;
 		}
 
-    m_pControl->SetColor(DockScreenVisuals.GetTitleTextColor());
-    m_pControl->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
+	m_pControl->SetColor(DockScreenVisuals.GetTitleTextColor());
+	m_pControl->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
 	m_pControl->SetTabRegion(Options.cyTabRegion);
 
 	//	Create. NOTE: Once we add it to the screen, it takes ownership of it. 

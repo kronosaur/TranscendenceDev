@@ -45,7 +45,7 @@ int Kernel::mathAdjustRound (int iValue, int iPercent)
 	if (iPercent == 100)
 		return iValue;
 	else
-		return mathRound((iValue * iPercent) / 100.0);
+		return mathRound(((double)iValue * iPercent) / 100.0);
 	}
 
 DWORD Kernel::mathGetSeed (void)

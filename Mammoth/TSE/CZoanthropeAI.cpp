@@ -85,7 +85,8 @@ void CZoanthropeAI::Behavior (SUpdateCtx &Ctx)
 
 		case stateOnEscortCourse:
 			{
-			ASSERT(m_pBase);
+			if (!m_pBase)
+				throw CException(ERR_FAIL);
 
 			CVector vFlockPos;
 			CVector vFlockVel;

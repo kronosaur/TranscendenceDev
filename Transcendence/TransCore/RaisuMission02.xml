@@ -32,17 +32,21 @@
 
 		<Events>
 			<OnCompleted>
-				(switch
-					;	On success, we set state for the station.
+				(block ()
+					(switch
+						;	On success, we set state for the station.
 
-					(= aReason 'success)
-						(block (
-							(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
-							)
-							(if (not (obj@ stationObj 'abandoned))
-								(objSet@ stationObj 'status 'defended)
+						(= aReason 'success)
+							(block (
+								(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
 								)
-							)
+								(if (not (obj@ stationObj 'abandoned))
+									(objSet@ stationObj 'status 'defended)
+									)
+								)
+						)
+						
+					(typFireObjEvent &baDefendStationMission; gSource 'OnCompleted gData)
 					)
 			</OnCompleted>
 			

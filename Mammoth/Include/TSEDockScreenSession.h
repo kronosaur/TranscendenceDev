@@ -87,6 +87,7 @@ struct SDockFrame
 	ICCItemPtr pStoredData;					//	Read-write data
 	ICCItemPtr pReturnData;					//	Data returns from a previous screen
 	ICCItemPtr pSavedSelection;				//	Saved selection (for when we return to screen)
+	CString sSavedControlText;				//	Saved control text when refreshing a pane
 
 	SDockScreenBackgroundDesc BackgroundDesc;
 
@@ -179,6 +180,7 @@ class CDockSession
 		bool SetData (const CString &sAttrib, const ICCItem *pValue);
 		bool SetProperty (const CString &sProperty, const ICCItem &Value, CString *retsError = NULL);
 		bool SetReturnData (const CString &sAttrib, ICCItem *pValues);
+		bool SetSavedControlText (const CString &sValue);
 		bool SetScreenSet (const ICCItem &ScreenSet);
 		bool SetSessionData (const CString &sAttrib, ICCItem *pValues);
 		bool ShowScreen (CSpaceObject &Location, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData);

@@ -1849,9 +1849,8 @@ void CArmorClass::GenerateScaledStats (void)
 //  Generate parameters for all levels.
 
 	{
-	int i;
-
-	ASSERT(m_pScalable == NULL);
+	if (m_pScalable)
+		throw CException(ERR_FAIL);
 
 	int iBaseLevel = m_pItemType->GetLevel();
 	m_iScaledLevels = 1 + m_pItemType->GetMaxLevel() - iBaseLevel;
@@ -1862,7 +1861,7 @@ void CArmorClass::GenerateScaledStats (void)
 
 	const SStdStats &BaseStd = GetStdStats(iBaseLevel);
 
-	for (i = 1; i < m_iScaledLevels; i++)
+	for (int i = 1; i < m_iScaledLevels; i++)
 		{
 		SScalableStats &Stats = m_pScalable[i - 1];
 		Stats.iLevel = iBaseLevel + i;
@@ -2432,7 +2431,9 @@ int CArmorClass::GetStdCost (int iLevel)
 //	Returns standard cost by level
 
 	{
-	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
+	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
+		throw CException(ERR_FAIL);
+
 	return STD_STATS[iLevel - 1].iCost;
 	}
 
@@ -2474,7 +2475,9 @@ int CArmorClass::GetStdHP (int iLevel)
 //	Returns standard hp by level
 
 	{
-	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
+	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
+		throw CException(ERR_FAIL);
+
 	return STD_STATS[iLevel - 1].iHP;
 	}
 
@@ -2485,7 +2488,9 @@ int CArmorClass::GetStdMass (int iLevel)
 //	Returns standard mass by level (in kg)
 
 	{
-	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
+	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
+		throw CException(ERR_FAIL);
+
 	return STD_STATS[iLevel - 1].iMass;
 	}
 
@@ -2496,7 +2501,9 @@ const CArmorClass::SStdStats &CArmorClass::GetStdStats (int iLevel)
 //  Returns standard stats
 
 	{
-	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
+	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
+		throw CException(ERR_FAIL);
+
 	return STD_STATS[iLevel - 1];
 	}
 

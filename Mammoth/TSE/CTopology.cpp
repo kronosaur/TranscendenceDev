@@ -1466,6 +1466,36 @@ int CTopology::GetDistanceToCriteriaNoMatch (const CTopologyNode *pSrc, const CT
 	return iBestDist;
 	}
 
+const CTopologyNode *CTopology::GetNextNodeTo (const CTopologyNode &From, const CTopologyNode &To) const
+
+//	GetNextNodeTo
+//
+//	Return the node that is adjacent to From and on the nearest path to To. If 
+//	there is no path, we return NULL.
+
+	{
+	//	Compute distance in reverse direction (To -> From). This will initialize
+	//	the m_iCalcDistance on each node with a distance.
+
+	if (GetDistance(&To, &From) == UNKNOWN_DISTANCE)
+		return NULL;
+
+	//	Now loop over all nodes adjacent to From and pick the shortest path.
+
+	const CTopologyNode *pBestNode = NULL;
+	for (int i = 0; i < From.GetStargateCount(); i++)
+		{
+		const CTopologyNode *pNode = From.GetStargateDest(i);
+		if (pNode->GetCalcDistance() == UNKNOWN_DISTANCE)
+			continue;
+
+		if (pBestNode == NULL || pNode->GetCalcDistance() < pBestNode->GetCalcDistance())
+			pBestNode = pNode;
+		}
+
+	return pBestNode;
+	}
+
 ALERROR CTopology::GetOrAddTopologyNode (STopologyCreateCtx &Ctx, 
 										 const CString &sID, 
 										 CTopologyNode **retpNode)

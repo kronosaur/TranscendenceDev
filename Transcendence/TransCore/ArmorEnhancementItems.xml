@@ -524,7 +524,7 @@
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"consumable, humanTech, cannotOrder"
+			attributes=			"cannotOrder, consumable, defective, humanTech, notForSale"
 			unknownType=		"&itUnknownBarrel;"
 
 			description=		"This is a titanium barrel filled with low and medium-level radioactive waste."

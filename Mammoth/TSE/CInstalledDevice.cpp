@@ -256,7 +256,7 @@ CVector CInstalledDevice::GetPos (const CSpaceObject *pSource) const
 		return pSource->GetPos();
 	}
 
-CVector CInstalledDevice::GetPosOffset (CSpaceObject *pSource)
+CVector CInstalledDevice::GetPosOffset (const CSpaceObject *pSource) const
 
 //	GetPosOffset
 //

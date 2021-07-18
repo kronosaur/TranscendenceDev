@@ -955,8 +955,8 @@ int CShieldClass::FireGetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource
 	SEventHandlerDesc Event;
 	if (FindEventHandlerShieldClass(evtGetMaxHP, &Event))
 		{
-		ASSERT(pSource);
-		ASSERT(pDevice);
+		if (!pSource || !pDevice)
+			throw CException(ERR_FAIL);
 
 		if (pDevice->GetCachedMaxHP(iMaxHP))
 			return iMaxHP;

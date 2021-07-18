@@ -9,39 +9,46 @@
 
 		<Events>
 			<GetGlobalRumors>
-				(block (
-					;	Find the nearest Commonwealth Fortress to the player.
+				(switch
+					;	Only in Eridani
 
-					(allFortresses (unvFindObject "TA +unid:&stCommonwealthFortress;;"))
-					(bestEntry
-						(map allFortresses '(original reduceMin excludeNil) theEntry
-							(block (
-								(nodeID (@ theEntry 2))
-								)
-								(if (!= nodeID (sysGetNode))
-									(sysGetTopologyDistance (sysGetNode) nodeID)
+					(!= (sysGetNode) 'SE)
+						Nil
+
+					(block (
+						;	Find the nearest Commonwealth Fortress to the player.
+
+						(allFortresses (unvFindObject "TA +unid:&stCommonwealthFortress;;"))
+						(bestEntry
+							(map allFortresses '(original reduceMin excludeNil) theEntry
+								(block (
+									(nodeID (@ theEntry 2))
+									)
+									(if (!= nodeID (sysGetNode))
+										(sysGetTopologyDistance (sysGetNode) nodeID)
+										)
 									)
 								)
 							)
 						)
-					)
-					(append
-						(if bestEntry
-							(block (
-								(nodeID (@ bestEntry 2))
-								)
-								(rpgRumorAdd 'metropolisMilitia 'nearestFortress nil 
+						(append
+							(if bestEntry
+								(block (
+									(nodeID (@ bestEntry 2))
+									)
+									(rpgRumorAdd 'metropolisMilitia 'nearestFortress nil 
 
-									(lambda (theRumor)
-										(block ()
-											(sysSetKnown nodeID)
-											(unvSetObjectKnown nodeID "* +unid:&stCommonwealthFortress;;")
+										(lambda (theRumor)
+											(block ()
+												(sysSetKnown nodeID)
+												(unvSetObjectKnown nodeID "* +unid:&stCommonwealthFortress;;")
+												)
 											)
-										)
 
-									{
-									systemName: (sysGetName nodeID)
-									})
+										{
+										systemName: (sysGetName nodeID)
+										})
+									)
 								)
 							)
 						)

@@ -20,7 +20,9 @@ class CEngineOptions
 		bool InitArmorDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomArmorDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ArmorDamageAdj); }
 		bool InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType &Type);
 		bool InitShieldDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomShieldDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ShieldDamageAdj); }
+		bool IsDamageShown () const { return m_bShowDamageDone; }
 		void Merge (const CEngineOptions &Src);
+		void SetShowDamageDone (bool bValue = true) { m_bShowDamageDone = bValue; }
 
 	private:
 		bool InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable);
@@ -39,6 +41,8 @@ class CEngineOptions
 		bool m_bHideIonizeImmune = false;
 		bool m_bHideRadiationImmune = false;
 		bool m_bHideShatterImmune = false;
+
+		bool m_bShowDamageDone = false;
 	};
 
 //	CAdventureDesc -------------------------------------------------------------

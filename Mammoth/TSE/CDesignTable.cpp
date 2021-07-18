@@ -12,7 +12,8 @@ ALERROR CDesignTable::AddEntry (CDesignType *pEntry)
 //	entry with that UNID.
 
 	{
-	ASSERT(pEntry);
+	if (!pEntry)
+		throw CException(ERR_FAIL);
 
 	bool bNew;
 	m_Table.SetAt(pEntry->GetUNID(), pEntry, &bNew);

@@ -907,7 +907,17 @@ ALERROR CTradingDesc::CreateFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDe
 
 				default:
 					{
-					pCommodity->ItemCriteria.Init(sCriteria, CItemCriteria::ALL);
+					DWORD dwFlags = CItemCriteria::ALL;
+
+					//	For armor repair, we treat level ranges as repair level
+					//	criteria.
+
+					if (pCommodity->iService == serviceRepairArmor)
+						dwFlags |= CItemCriteria::FLAG_REPAIR_LEVEL;
+
+					//	Parse
+
+					pCommodity->ItemCriteria.Init(sCriteria, dwFlags);
 
 					//	Item
 

@@ -321,6 +321,33 @@ ICCItemPtr CSpaceObject::GetProperty (CCodeChainCtx &CCX, const CString &sProper
 		}
 	}
 
+CString CSpaceObject::GetCategoryName (Categories iCategory)
+	{
+	switch (iCategory)
+		{
+		case catShip:
+			return CATEGORY_SHIP;
+
+		case catStation:
+			return CATEGORY_STATION;
+
+		case catBeam:
+			return CATEGORY_BEAM;
+
+		case catMissile:
+			return CATEGORY_MISSILE;
+
+		case catMission:
+			return CATEGORY_MISSION;
+
+		case catMarker:
+			return CATEGORY_MARKER;
+
+		default:
+			return CATEGORY_EFFECT;
+		}
+	}
+
 ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const
 
 //	GetProperty
@@ -331,31 +358,8 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 	CCodeChain &CC = GetUniverse().GetCC();
 
 	if (strEquals(sName, PROPERTY_CATEGORY))
-		{
-		switch (GetCategory())
-			{
-			case catShip:
-				return CC.CreateString(CATEGORY_SHIP);
+		return CC.CreateString(GetCategoryName(GetCategory()));
 
-			case catStation:
-				return CC.CreateString(CATEGORY_STATION);
-
-			case catBeam:
-				return CC.CreateString(CATEGORY_BEAM);
-
-			case catMissile:
-				return CC.CreateString(CATEGORY_MISSILE);
-
-			case catMission:
-				return CC.CreateString(CATEGORY_MISSION);
-
-			case catMarker:
-				return CC.CreateString(CATEGORY_MARKER);
-
-			default:
-				return CC.CreateString(CATEGORY_EFFECT);
-			}
-		}
 	else if (strEquals(sName, PROPERTY_COMMS_KEY))
 		{
 		if (m_iHighlightChar)

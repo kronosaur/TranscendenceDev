@@ -242,7 +242,7 @@ void CParticleDamage::OnMove (const CVector &vOldPos, Metric rSeconds)
 	//	Note that we do this even if we're destroyed because we might have
 	//	some fading particles.
 
-	RECT rcEffectBounds;
+	RECT rcEffectBounds = { 0 };
 	if (m_pEffectPainter
 			&& WasPainted())
 		{

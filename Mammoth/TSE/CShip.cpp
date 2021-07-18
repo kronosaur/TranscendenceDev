@@ -208,6 +208,8 @@ void CShip::Behavior (SUpdateCtx &Ctx)
 	{
 	DEBUG_TRY
 
+	CUsePerformanceCounter Counter(GetUniverse(), CONSTLIT("update.shipBehavior"));
+
 	if (!IsInactive() && !m_fControllerDisabled)
 		{
 		m_pController->Behavior(Ctx);
@@ -939,7 +941,7 @@ int CShip::CalcPowerUsed (SUpdateCtx &Ctx, int *retiPowerGenerated)
 
 	//	We always consume some power for life-support
 
-	iPowerUsed += CPowerConsumption::DEFAULT_LIFESUPPORT_POWER_USE;
+	iPowerUsed += m_pClass->GetHullDesc().GetLifeSupportPowerUse();
 
 	//	If we're thrusting, then we consume power
 
@@ -1733,7 +1735,8 @@ void CShip::DamageDevice (CInstalledDevice *pDevice, SDamageCtx &Ctx)
 //	Damages the given device
 
 	{
-	ASSERT(pDevice);
+	if (!pDevice)
+		throw CException(ERR_FAIL);
 
 	//	Damage the device
 
@@ -3059,24 +3062,6 @@ CString CShip::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const
 		}
 	}
 
-CInstalledDevice *CShip::GetNamedDevice (DeviceNames iDev)
-	{
-	int iIndex = m_Devices.GetNamedIndex(iDev);
-	if (iIndex == -1)
-		return NULL;
-	else
-		return &m_Devices.GetDevice(iIndex);
-	}
-
-const CInstalledDevice *CShip::GetNamedDevice (DeviceNames iDev) const
-	{
-	int iIndex = m_Devices.GetNamedIndex(iDev);
-	if (iIndex == -1)
-		return NULL;
-	else
-		return &m_Devices.GetDevice(iIndex);
-	}
-
 CDeviceClass *CShip::GetNamedDeviceClass (DeviceNames iDev)
 	{
 	CInstalledDevice *pDev = GetNamedDevice(iDev);
@@ -3084,24 +3069,6 @@ CDeviceClass *CShip::GetNamedDeviceClass (DeviceNames iDev)
 		return NULL;
 	else
 		return pDev->GetClass(); 
-	}
-
-CItem CShip::GetNamedItem (DeviceNames iDev) const
-
-//	GetNamedItem
-//
-//	Returns the item for the named device
-
-	{
-	int iIndex = m_Devices.GetNamedIndex(iDev);
-	if (iIndex == -1)
-		return CItem();
-	else
-		{
-		CItemListManipulator ItemList(const_cast<CShip *>(this)->GetItemList());
-		SetCursorAtNamedDevice(ItemList, iDev);
-		return ItemList.GetItemAtCursor();
-		}
 	}
 
 int CShip::GetPerception (void) const
@@ -3189,20 +3156,6 @@ void CShip::GetReactorStats (SReactorStats &Stats) const
 
 		Stats.iMaxCharges = Max(1, Max(Stats.iChargesLeft, pReactor->GetItem()->GetType()->GetMaxCharges()));
 		}
-	}
-
-int CShip::GetShieldLevel (void) const
-
-//	GetShieldLevel
-//
-//	Returns the % shield level of the ship (or -1 if the ship has no shields)
-
-	{
-	const CInstalledDevice *pShields = GetNamedDevice(devShields);
-	if (pShields == NULL)
-		return -1;
-
-	return pShields->GetHitPointsPercent(this);
 	}
 
 int CShip::GetStealth (void) const
@@ -3533,6 +3486,8 @@ bool CShip::ImageInObject (const CVector &vObjPos, const CObjectImageArray &Imag
 //	object
 
 	{
+	DEBUG_TRY
+
 	return ImagesIntersect(Image,
 			iTick,
 			iRotation, 
@@ -3541,6 +3496,8 @@ bool CShip::ImageInObject (const CVector &vObjPos, const CObjectImageArray &Imag
 			GetSystem()->GetTick(), 
 			m_Rotation.GetFrameIndex(), 
 			vObjPos);
+
+	DEBUG_CATCH
 	}
 
 void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
@@ -3646,7 +3603,8 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSy
 
 	{
 	CDeviceClass *pNewDevice = ItemList.GetItemAtCursor().GetType()->GetDeviceClass();
-	ASSERT(pNewDevice);
+	if (!pNewDevice)
+		throw CException(ERR_FAIL);
 
 	DeviceNames iNamedSlot = GetDeviceNameForCategory(pNewDevice->GetCategory());
 
@@ -4487,6 +4445,15 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	EMP, etc.).
 
 	m_pClass->GetHullDesc().AdjustDamage(Ctx);
+
+	//	Show damage
+
+	if (GetUniverse().GetEngineOptions().IsDamageShown()
+			&& Ctx.iDamage > 0
+			&& Ctx.Attacker.IsPlayerOrderGiver())
+		{
+		ShowDamage(Ctx);
+		}
 
 	//	Let the armor handle it
 
@@ -7359,6 +7326,7 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			case IShipController::orderNone:
 				//	If a ship has no orders and it has a base, then dock with the base
 				if (Ctx.pBase 
+						&& !Ctx.pBase->IsDestroyed()
 						&& Ctx.pBase->CanObjRequestDock(this)
 						&& GetCurrentOrderDesc().GetOrder() == IShipController::orderNone)
 					{
@@ -7368,14 +7336,23 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 				break;
 
 			case IShipController::orderDock:
-				Ctx.OrderDesc.SetTarget((Ctx.pBase && Ctx.pBase->CanObjRequestDock(this)) ? Ctx.pBase : NULL);
-				bDockWithBase = true;
+				if (Ctx.pBase
+						&& !Ctx.pBase->IsDestroyed()
+						&& Ctx.pBase->CanObjRequestDock(this))
+					{
+					Ctx.OrderDesc.SetTarget(Ctx.pBase);
+					bDockWithBase = true;
+					}
 				break;
 
 			case IShipController::orderGuard:
-				Ctx.OrderDesc.SetTarget(Ctx.pBase);
-				bIsSubordinate = true;
-				bDockWithBase = true;
+				if (Ctx.pBase
+						&& !Ctx.pBase->IsDestroyed())
+					{
+					Ctx.OrderDesc.SetTarget(Ctx.pBase);
+					bIsSubordinate = true;
+					bDockWithBase = true;
+					}
 				break;
 
 			case IShipController::orderMine:
@@ -7383,35 +7360,44 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			case IShipController::orderOrbitExact:
 			case IShipController::orderOrbitPatrol:
 			case IShipController::orderSentry:
-				Ctx.OrderDesc.SetTarget(Ctx.pBase);
-				bIsSubordinate = true;
+				if (Ctx.pBase && !Ctx.pBase->IsDestroyed())
+					{
+					Ctx.OrderDesc.SetTarget(Ctx.pBase);
+					bIsSubordinate = true;
+					}
 				break;
 
 			case IShipController::orderGateOnThreat:
-				Ctx.OrderDesc.SetTarget(Ctx.pBase);
-				bNeedsDockOrder = true;
-				bDockWithBase = true;
+				if (Ctx.pBase && !Ctx.pBase->IsDestroyed())
+					{
+					Ctx.OrderDesc.SetTarget(Ctx.pBase);
+					bNeedsDockOrder = true;
+					bDockWithBase = true;
+					}
 				break;
 
 			case IShipController::orderGate:
 				//	For backwards compatibility...
-				if (Ctx.pBase)
+				if (Ctx.pBase && !Ctx.pBase->IsDestroyed())
 					{
 					Ctx.OrderDesc = COrderDesc(IShipController::orderGateOnThreat, Ctx.pBase);
 					bNeedsDockOrder = true;
 					bDockWithBase = true;
 					}
-				else
+				else if (Ctx.pTarget && !Ctx.pTarget->IsDestroyed())
 					{
-					//	OK if this is NULL...we just go to closest gate
 					Ctx.OrderDesc.SetTarget(Ctx.pTarget);
 					}
+				else
+					//	Go to nearest gate
+					Ctx.OrderDesc.SetTarget(NULL);
 
 				break;
 
 			case IShipController::orderEscort:
 			case IShipController::orderFollow:
-				Ctx.OrderDesc.SetTarget(Ctx.pBase);
+				if (Ctx.pBase && !Ctx.pBase->IsDestroyed())
+					Ctx.OrderDesc.SetTarget(Ctx.pBase);
 				break;
 
 			case IShipController::orderDestroyTarget:
@@ -7419,7 +7405,8 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			case IShipController::orderDestroyTargetHold:
 			case IShipController::orderAttackStation:
 			case IShipController::orderBombard:
-				Ctx.OrderDesc.SetTarget(Ctx.pTarget);
+				if (Ctx.pTarget && !Ctx.pTarget->IsDestroyed())
+					Ctx.OrderDesc.SetTarget(Ctx.pTarget);
 				break;
 			}
 

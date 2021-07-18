@@ -266,7 +266,7 @@ void CDockScreenActions::CreateButtons (const CDockScreenVisuals &DockScreenVisu
 	const CG16bitFont &MajorLabelFont = VI.GetFont(fontMediumHeavyBold);
 	const CG16bitFont &MinorLabelFont = VI.GetFont(fontMedium);
 
-    CG32bitPixel rgbActionBackground = CG32bitPixel::Darken(DockScreenVisuals.GetTextBackgroundColor(), 175);
+	CG32bitPixel rgbActionBackground = CG32bitPixel::Darken(DockScreenVisuals.GetTextBackgroundColor(), 175);
 
 	//	Arrange the buttons. This will justify and initialize rcRect for all
 	//	actions.

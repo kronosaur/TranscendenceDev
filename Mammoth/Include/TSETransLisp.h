@@ -9,6 +9,7 @@ class CDockSession;
 class CInstalledArmor;
 class CInstalledDevice;
 class CItemCtx;
+class CItemList;
 class COrbit;
 struct SDamageCtx;
 struct SSystemCreateCtx;
@@ -56,6 +57,7 @@ class CCodeChainCtx
 		void DefineItem (const CItem &Item);
 		void DefineItem (const CString &sVar, const CItem &Item);
 		void DefineItem (const CString &sVar, CItemCtx &ItemCtx);
+		void DefineItemList (const CString &sVar, const CItemList &ItemList);
 		void DefineItemType (const CString &sVar, const CItemType *pType);
 		void DefineNil (const CString &sVar) { m_CC.DefineGlobal(sVar, m_CC.GetNil()); }
 		void DefineOrbit (const CString &sVar, const COrbit &OrbitDesc);

@@ -66,6 +66,9 @@ class CDifferentiatedItem
 		inline const CItemType &GetType (void) const;
 		inline CItemType &GetType (void);
 		inline int GetVariantNumber (void) const;
+		inline bool IsDamaged (int *retiDamagedHP = NULL) const;
+		inline bool IsDisrupted (void) const;
+		inline bool IsEnhanced (void) const;
 		inline bool IsLauncher (void) const;
 		inline bool IsWeapon (void) const;
 		void ReportEventError (const CSpaceObject *pSource, const CString &sEvent, const ICCItem &ErrorItem) const;
@@ -205,6 +208,7 @@ class CDeviceItem : public CDifferentiatedItem
 		inline bool IsAreaWeapon (void) const;
 		inline bool IsEnabled (void) const;
 		inline bool IsMiningWeapon (void) const;
+		inline bool IsShockwaveWeapon (void) const;
 		inline bool IsTrackingWeapon (void) const;
 		bool IsWeaponAligned (CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const;
 		inline bool IsWeaponVariantValid (int iVariant) const;
@@ -363,6 +367,7 @@ class CItem
 		CString GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) const;
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		int GetRawPrice (bool bActual = false) const { return GetValue(bActual); }
+		int GetRepairLevel () const;
 		int GetTradePrice (const CSpaceObject *pObj = NULL, bool bActual = false) const;
 		CItemType *GetType (void) const { return m_pItemType; }
 		CUniverse &GetUniverse (void) const;

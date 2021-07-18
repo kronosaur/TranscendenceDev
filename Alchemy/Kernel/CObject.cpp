@@ -806,10 +806,11 @@ IObjectClass *CObjectClassFactory::GetClass (OBJCLASSID ObjID)
 	int iModule = OBJCLASSIDGetModule(ObjID);
 	int iID = OBJCLASSIDGetID(ObjID);
 
-	ASSERT(iModule >= 0 && iModule < OBJCLASS_MODULE_COUNT);
-	ASSERT(iID >= 0 && iID < MAX_OBJCLASS_COUNT);
-
-	return g_Classes[iModule][iID];
+	if ((iModule >= 0 && iModule < OBJCLASS_MODULE_COUNT)
+			&& (iID >= 0 && iID < MAX_OBJCLASS_COUNT))
+		return g_Classes[iModule][iID];
+	else
+		throw CException(ERR_FAIL);
 	}
 
 bool CObject::IsValidPointer (CObject *pObj)

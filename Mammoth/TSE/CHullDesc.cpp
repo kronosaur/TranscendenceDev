@@ -13,6 +13,7 @@
 #define CYBER_DEFENSE_LEVEL_ATTRIB				CONSTLIT("cyberDefenseLevel")
 #define DEVICE_CRITERIA_ATTRIB					CONSTLIT("deviceCriteria")
 #define HULL_VALUE_ATTRIB						CONSTLIT("hullValue")
+#define LIFE_SUPPORT_POWER_USER_ATTRIB			CONSTLIT("lifeSupportPowerUse")
 #define MASS_ATTRIB								CONSTLIT("mass")
 #define MAX_CARGO_SPACE_ATTRIB					CONSTLIT("maxCargoSpace")
 #define MAX_COUNTER_ATTRIB						CONSTLIT("maxCounter")
@@ -75,6 +76,7 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 	m_iMass = pHull->GetAttributeInteger(MASS_ATTRIB);
 	m_iSize = pHull->GetAttributeIntegerBounded(SIZE_ATTRIB, 1, -1, 0);
     m_iCargoSpace = pHull->GetAttributeIntegerBounded(CARGO_SPACE_ATTRIB, 0, -1, 0);
+	m_iLifeSupportPowerUse = pHull->GetAttributeIntegerBounded(LIFE_SUPPORT_POWER_USER_ATTRIB, 0, -1, CPowerConsumption::DEFAULT_LIFESUPPORT_POWER_USE);
 
 	//	Hull value
 

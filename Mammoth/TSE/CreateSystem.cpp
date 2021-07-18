@@ -89,6 +89,7 @@
 #define EXCLUSION_RADIUS_ATTRIB			CONSTLIT("exclusionRadius")
 #define GAP_WIDTH_ATTRIB				CONSTLIT("gapWidth")
 #define ID_ATTRIB						CONSTLIT("id")
+#define IGNORE_LIMITS_ATTRIB			CONSTLIT("ignoreLimits")
 #define IMAGE_VARIANT_ATTRIB			CONSTLIT("imageVariant")
 #define INCLINATION_ATTRIB				CONSTLIT("inclination")
 #define INCLUDE_ALL_ATTRIB				CONSTLIT("includeAll")
@@ -946,6 +947,8 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 
 		//	Create the station at the location
 
+		PushDebugStack(pCtx, strPatternSubst(CONSTLIT("Appropriate Station = [%08x] %s"), pType->GetUNID(), pType->GetNounPhrase()));
+
 		SObjCreateCtx CreateCtx(*pCtx);
 		CreateCtx.vPos = Loc.GetOrbit().GetObjectPos();
 		CreateCtx.pLoc = &Loc;
@@ -953,7 +956,7 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 		CreateCtx.bCreateSatellites = true;
 		CreateCtx.bIs3DExtra = pCtx->bIs3DExtra;
 
-		if (error = pCtx->System.CreateStation(pCtx, pType, CreateCtx))
+		if (error = pCtx->System.CreateStation(*pCtx, *pType, CreateCtx))
 			return error;
 
 		//	Remove the location so it doesn't match again
@@ -961,6 +964,8 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 		pCtx->System.SetLocationObjID(iLocID, pCtx->dwLastObjID);
 		pCtx->dwLastObjID = dwSavedLastObjID;
 		LocationTable.Delete(iTablePos);
+
+		PopDebugStack(pCtx);
 
 		break;
 		}
@@ -1790,17 +1795,17 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 
 		//	Log error
 
-#ifdef DEBUG_STATION_EXCLUSION_ZONE
-		if (!bConfigurationOK)
+		if (!bConfigurationOK && pCtx->bVerbose)
 			{
 			if (iExclusionRadius != 0)
-				kernelDebugLogPattern("<Orbitals>: Unable to find clear exclusion zone: %d ls radius.", iExclusionRadius);
+				pCtx->GetUniverse().LogOutput(strPatternSubst(CONSTLIT("<Orbitals>: Unable to find clear exclusion zone: %d ls radius."), iExclusionRadius));
 			else if (bNoOverlap)
-				kernelDebugLogPattern("<Orbitals>: Unable to find non-overlapping configuration.");
+				pCtx->GetUniverse().LogOutput(CONSTLIT("<Orbitals>: Unable to find non-overlapping configuration."));
 			else
-				kernelDebugLogPattern("<Orbitals>: Unable to find valid configuration.");
+				pCtx->GetUniverse().LogOutput(CONSTLIT("<Orbitals>: Unable to find valid configuration."));
+
+			DumpDebugStack(pCtx);
 			}
-#endif
 
 		//	Create each object
 
@@ -1826,9 +1831,8 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 				{
 				//	Skip
 
-#ifdef DEBUG_STATION_EXCLUSION_ZONE
-				::kernelDebugLogPattern("[%s]: Skipped creating %s due to overlap.", pCtx->System.GetName(), pObj->GetContentElement(iObj)->GetTag());
-#endif
+				if (pCtx->bVerbose)
+					pCtx->GetUniverse().LogOutput(strPatternSubst(CONSTLIT("[%s]: Skipped creating %s due to overlap."), pCtx->System.GetName(), pObj->GetContentElement(iObj)->GetTag()));
 				}
 
 			//	Otherwise, create the object
@@ -2013,8 +2017,8 @@ ALERROR CreateRandomStation (SSystemCreateCtx *pCtx,
 	CreateCtx.bIs3DExtra = pCtx->bIs3DExtra;
 
 	CSpaceObject *pObj;
-	if (error = pCtx->System.CreateStation(pCtx,
-			pType,
+	if (error = pCtx->System.CreateStation(*pCtx,
+			*pType,
 			CreateCtx,
 			&pObj))
 		return error;
@@ -2072,6 +2076,7 @@ ALERROR CreateRandomStationFromTable (SSystemCreateCtx &Ctx, const CXMLElement &
 	for (int i = 0; i < TableXML.GetContentElementCount(); i++)
 		{
 		const CXMLElement &Entry = *TableXML.GetContentElement(i);
+		bool bIgnoreLimits = Entry.GetAttributeBool(IGNORE_LIMITS_ATTRIB);
 
 		//	Parse the station type
 
@@ -2084,7 +2089,7 @@ ALERROR CreateRandomStationFromTable (SSystemCreateCtx &Ctx, const CXMLElement &
 
 		//	Make sure we can still encounter this type.
 
-		if (!pStationType->CanBeEncountered(Ctx.System, Ctx.StationEncounterOverrides.GetEncounterDesc(*pStationType)))
+		if (!bIgnoreLimits && !pStationType->CanBeEncountered(Ctx.System, Ctx.StationEncounterOverrides.GetEncounterDesc(*pStationType)))
 			continue;
 
 		//	If we have limits, check them now.
@@ -2246,6 +2251,8 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 
 		//	Create the station at the location
 
+		PushDebugStack(pCtx, strPatternSubst(CONSTLIT("Random Station [%08x] %s"), pType->GetUNID(), pType->GetNounPhrase()));
+
 		Metric rPosZ;
 		SObjCreateCtx CreateCtx(*pCtx);
 		CreateCtx.vPos = OrbitDesc.GetObjectPos(&rPosZ);
@@ -2255,7 +2262,7 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 		CreateCtx.bCreateSatellites = true;
 		CreateCtx.bIs3DExtra = pCtx->bIs3DExtra;
 
-		if (error = pCtx->System.CreateStation(pCtx, pType, CreateCtx))
+		if (error = pCtx->System.CreateStation(*pCtx, *pType, CreateCtx))
 			return error;
 
 		//	Remember that we filled this location
@@ -2266,6 +2273,8 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 		//	No more tries
 
 		bSuccess = true;
+
+		PopDebugStack(pCtx);
 		break;
 		}
 
@@ -3700,7 +3709,6 @@ bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric r
 		//	Check to see if we're too close to an active station
 
 		if (rRadius > 0.0
-				&& pObj->GetScale() == scaleStructure
 				&& (pObj->CanAttack() || pObj->IsStargate()))
 			{
 			//	Compute the distance to this obj
@@ -3725,7 +3733,8 @@ bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric r
 			if (pObj->PointInHitSizeBox(vPos, rObjRadius))
 				{
 #ifdef DEBUG_STATION_EXCLUSION_ZONE
-				::kernelDebugLogPattern("[%s]: Point overlaps planet: %s.", pCtx->System.GetName(), pObj->GetNounPhrase(0));
+				if (pCtx->bVerbose)
+					pCtx->GetUniverse().LogOutput(strPatternSubst(CONSTLIT("[%s]: Point overlaps planet: %s."), pCtx->System.GetName(), pObj->GetNounPhrase(0)));
 #endif
 				return false;
 				}
@@ -3967,7 +3976,6 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 
 	{
 	ALERROR error;
-	bool bVerbose = Universe.GetDebugOptions().IsVerboseCreate();
 
 #ifdef DEBUG_STATION_PLACEMENT
 	{
@@ -4015,6 +4023,11 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 
 	SSystemCreateCtx Ctx(*pSystem);
 	Ctx.pStats = pStats;
+
+	//	Set the verbose flag. This will output debug information when creating
+	//	the system. In TransData, use the /debugCreate flag to turn this on.
+
+	Ctx.bVerbose = Universe.GetDebugOptions().IsVerboseCreate();
 
 	//	Load any overrides
 
@@ -4090,7 +4103,7 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 
 		//	Debug
 
-		if (bVerbose)
+		if (Ctx.bVerbose)
 			Universe.LogOutput(strPatternSubst(CONSTLIT("[%08x] %s: Creating %d required objects."), pType->GetUNID(), pType->GetNounPhrase(), iToCreate));
 
 		//	Create each of the required objects.
@@ -4139,7 +4152,7 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 			CreateCtx.pOrbit = &OrbitDesc;
 			CreateCtx.bCreateSatellites = true;
 
-			if (error = pSystem->CreateStation(&Ctx, pType, CreateCtx))
+			if (error = pSystem->CreateStation(Ctx, *pType, CreateCtx))
 				{
 				Universe.SetCurrentSystem(pOldSystem);
 				return error;
@@ -4638,8 +4651,8 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 	DEBUG_CATCH
 	}
 
-ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx, 
-								CStationType *pType,
+ALERROR CSystem::CreateStation (SSystemCreateCtx &Ctx, 
+								CStationType &Type,
 								SObjCreateCtx &CreateCtx,
 								CSpaceObject **retpStation)
 
@@ -4650,7 +4663,7 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 	{
 	DEBUG_TRY
 
-	CUsePerformanceCounter PerfCounter(pCtx->GetUniverse(), CONSTLIT("create.function.Station"));
+	CUsePerformanceCounter PerfCounter(Ctx.GetUniverse(), CONSTLIT("create.function.Station"));
 
 	ALERROR error;
 	CSpaceObject *pStation = NULL;
@@ -4666,11 +4679,11 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 	static DWORD g_ValuesOld[10000];
 #endif
 
-	if (error = CreateStationInt(pCtx,
-			pType,
+	if (error = CreateStationInt(&Ctx,
+			&Type,
 			CreateCtx,
 			&pStation,
-			&pCtx->sError))
+			&Ctx.sError))
 		return ERR_FAIL;
 
 #ifdef DEBUG_RANDOM_SEED
@@ -4704,16 +4717,16 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 #endif
 
 	if (pStation)
-		pCtx->dwLastObjID = pStation->GetID();
+		Ctx.dwLastObjID = pStation->GetID();
 
 	//	If this is a satellite, then add it as a subordinate
 
-	if (pStation && pCtx->pStation && (pStation->CanAttack() || CreateCtx.bIsSegment))
-		pCtx->pStation->AddSubordinate(*pStation, CreateCtx.sID);
+	if (pStation && Ctx.pStation && (pStation->CanAttack() || CreateCtx.bIsSegment))
+		Ctx.pStation->AddSubordinate(*pStation, CreateCtx.sID);
 
 	//	Create any satellites of the station
 
-	const CXMLElement *pSatellites = pType->GetSatellitesDesc();
+	const CXMLElement *pSatellites = Type.GetSatellitesDesc();
 	if (pSatellites 
 			&& CreateCtx.bCreateSatellites
 			&& CreateCtx.pOrbit)
@@ -4723,13 +4736,43 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 		//	(If it were, then we would need to get the extension that the
 		//	satellite desc came from).
 
-		CExtension *pOldExtension = pCtx->pExtension;
-		pCtx->pExtension = pType->GetExtension();
+		CExtension *pOldExtension = Ctx.pExtension;
+		Ctx.pExtension = Type.GetExtension();
 
-		if (error = CreateSatellites(pCtx, pStation, pSatellites, *CreateCtx.pOrbit))
+		if (error = CreateSatellites(&Ctx, pStation, pSatellites, *CreateCtx.pOrbit))
 			return error;
 
-		pCtx->pExtension = pOldExtension;
+		Ctx.pExtension = pOldExtension;
+		}
+
+	//	Debug placement
+
+	if (Ctx.bVerbose && pStation && pStation->CanBeAttacked())
+		{
+		static constexpr Metric MAX_DIST_THRESHOLD = 50.0 * LIGHT_SECOND;
+		static constexpr Metric MAX_DIST_THRESHOLD2 = MAX_DIST_THRESHOLD * MAX_DIST_THRESHOLD;
+
+		for (int i = 0; i < GetObjectCount(); i++)
+			{
+			const CSpaceObject *pObj = GetObject(i);
+			if (pObj 
+					&& pObj->CanAttack() 
+					&& pObj->IsEnemy(pStation)
+					&& pObj->GetControllingSovereign() != pStation->GetControllingSovereign()
+					&& pObj->GetDistance2(pStation) <= MAX_DIST_THRESHOLD2
+					&& (pObj->GetScale() == scaleStructure || pObj->HasDockScreen()))
+				{
+				int iDist = mathRound(pObj->GetDistance(pStation) / LIGHT_SECOND);
+				Ctx.GetUniverse().LogOutput(strPatternSubst(CONSTLIT("[%08x] %s: Created at %d light-seconds from [%08x] %s."), 
+						pStation->GetType()->GetUNID(), 
+						pStation->GetNounPhrase(), 
+						iDist,
+						pObj->GetType()->GetUNID(), 
+						pObj->GetNounPhrase()));
+
+				DumpDebugStack(&Ctx);
+				}
+			}
 		}
 
 #ifdef DEBUG_STATION_PLACEMENT2
@@ -4775,7 +4818,7 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, const CXMLElement *pDe
 		return ERR_FAIL;
 		}
 
-	PushDebugStack(pCtx, strPatternSubst(CONSTLIT("Station unid=%x"), pStationType->GetUNID()));
+	PushDebugStack(pCtx, strPatternSubst(CONSTLIT("Station [%08x] %s"), pStationType->GetUNID(), pStationType->GetNounPhrase()));
 
 	bool bDebug = pDesc->GetAttributeBool(DEBUG_ATTRIB);
 	bool bOptional = pDesc->GetAttributeBool(OPTIONAL_ATTRIB);
@@ -4861,8 +4904,8 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, const CXMLElement *pDe
 
 	CStation *pStation = NULL;
 	CSpaceObject *pObj;
-	if (error = pCtx->System.CreateStation(pCtx,
-			pStationType,
+	if (error = pCtx->System.CreateStation(*pCtx,
+			*pStationType,
 			CreateCtx,
 			&pObj))
 		return error;

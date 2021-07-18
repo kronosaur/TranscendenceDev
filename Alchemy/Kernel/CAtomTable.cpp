@@ -112,7 +112,8 @@ CSymbolTable *CAtomTable::Hash (const CString &sString)
 	int iHash;
 	char *pPos;
 
-	ASSERT(m_pBackbone);
+	if (!m_pBackbone)
+		throw CException(ERR_FAIL);
 
 	//	Compute the hash value
 

@@ -52,7 +52,7 @@ bool ItemInTable (CItemType *pType, TableTypes iTable, int iLevel, int *retiScor
 			break;
 
 		default:
-			ASSERT(false);
+			throw CException(ERR_FAIL);
 		}
 
 	//	Now adjust for the type of table
@@ -173,9 +173,12 @@ void GenerateRandomItemTables (CUniverse &Universe, CXMLElement *pCmdLine)
 						iBestEntry = i;
 						}
 
-				Table[iBestEntry].iChance++;
-				Table[iBestEntry].iRemainder = 0;
-				iTotalChance++;
+				if (iBestEntry != -1)
+					{
+					Table[iBestEntry].iChance++;
+					Table[iBestEntry].iRemainder = 0;
+					iTotalChance++;
+					}
 				}
 
 			//	Title

@@ -46,11 +46,13 @@ bool arcDecompressFile (const CString &sArchive, const CString &sFilename, IWrit
 		return false;
 		}
 
+
+	CString sBuffer;
+	char *pszBuffer = sBuffer.GetWritePointer(BUFFER_SIZE);
+
 	while (true)
 		{
-		char szBuffer[BUFFER_SIZE];
-
-		int iRead = unzReadCurrentFile(theZipFile, szBuffer, BUFFER_SIZE);
+		int iRead = unzReadCurrentFile(theZipFile, pszBuffer, BUFFER_SIZE);
 		if (iRead == 0)
 			break;
 		else if (iRead < 0)
@@ -61,7 +63,7 @@ bool arcDecompressFile (const CString &sArchive, const CString &sFilename, IWrit
 			return false;
 			}
 
-		Output.Write(szBuffer, iRead);
+		Output.Write(pszBuffer, iRead);
 		}
 
 	//	Returns UNZ_CRCERROR if the file failed its CRC check.

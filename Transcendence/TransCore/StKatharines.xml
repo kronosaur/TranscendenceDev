@@ -205,7 +205,7 @@
 					<Station chance="10" type="&stCommonwealthSlums;"/>
 					<Station chance="10" type="&stArmorDealer;"/>
 					<Station chance="10" type="&stArmsDealer;"/>
-					<Station chance="10" type="&stManufacturingPlant;"/>
+					<Station chance="10" type="&stManufacturingPlant;"	ignoreLimits="true"/>
 					<Station chance="5"  type="&stTinkerGathering;"/>
 					<Station chance="5"  type="&stCommonwealthDryDock;"/>
 					<Station chance="5"  type="&stArmsDealerRasiermesser;"/>
@@ -312,7 +312,7 @@
 							<Station chance="5"  type="&stArmsDealerBushido;"/>
 							<Station chance="5"  type="&stAutonDealer;"/>
 							<Station chance="10" type="&stContainerHabitat;" noMapLabel="true"/>
-							<Station chance="10" type="&stManufacturingPlant;"/>
+							<Station chance="10" type="&stManufacturingPlant;" ignoreLimits="true"/>
 						</RandomStationTable>
 					</Orbitals>
 					
@@ -320,7 +320,7 @@
 						<RandomStationTable>
 							<Station chance="40" type="&stContainerHabitat;" noMapLabel="true"/>
 							<Station chance="30" type="&stCommonwealthSlums;" noMapLabel="true"/>
-							<Station chance="30" type="&stManufacturingPlant;"/>
+							<Station chance="30" type="&stManufacturingPlant;" ignoreLimits="true"/>
 						</RandomStationTable>
 					</Orbitals>
 				</Group>

@@ -132,6 +132,7 @@ class CDeviceRotationDesc
 			rotUnknown,
 
 			rotNone,							//	Cannot rotate
+			rotTracking,						//	Cannot rotate, but has tracking (so always fire)
 			rotSwivelIfTargetInArc,				//	Swivels < 360 degrees, if target reachable
 			rotSwivelAlways,					//	Swivels < 360 degrees, always (e.g., tracking weapons)
 			rotOmnidirectional,					//	Omnidirectional
@@ -373,6 +374,7 @@ class CDeviceClass
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
 		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) { return false; }
 		virtual bool IsLastVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
+		virtual bool IsShockwaveWeapon (const CDeviceItem &DeviceItem) const { return false; }
 		virtual bool IsTrackingWeapon (const CDeviceItem &DeviceItem) const { return false; }
 		virtual bool IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
 		virtual bool IsWeaponAligned (CSpaceObject *pShip, const CInstalledDevice *pDevice, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const { return false; }
@@ -698,7 +700,7 @@ class CInstalledDevice
 		Metric GetMaxRange (CItemCtx &ItemCtx) const { return m_pClass->GetMaxRange(ItemCtx); }
 		CString GetName (void) { return m_pClass->GetName(); }
 		CVector GetPos (const CSpaceObject *pSource) const;
-		CVector GetPosOffset (CSpaceObject *pSource);
+		CVector GetPosOffset (const CSpaceObject *pSource) const;
 		int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const { return m_pClass->GetPowerRating(Ctx, retiIdlePowerUse); }
 		void GetSelectedVariantInfo (const CSpaceObject *pSource, 
 											CString *retsLabel,

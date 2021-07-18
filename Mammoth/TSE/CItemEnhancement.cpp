@@ -39,6 +39,10 @@ void CItemEnhancement::AccumulateAttributes (const CItem &Item, TArray<SDisplayA
 		case etNone:
 			break;
 
+		case etBonus:
+			retList->Insert(SDisplayAttribute(iDisplayType, (IsDisadvantage() ? CONSTLIT("-degraded") : CONSTLIT("+enhanced")), true));
+			break;
+
 		case etHPBonus:
 		case etStrengthen:
 			if (dwFlags & FLAG_INCLUDE_HP_BONUS)
@@ -535,7 +539,8 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, const CItemEnhan
 
 	//	For binary enhancements we check the status of the item.
 
-	else if (Enhancement.m_dwMods == etBinaryEnhancement)
+	else if (Enhancement.m_dwMods == etBinaryEnhancement
+			|| Enhancement.m_dwMods == etBonus)
 		{
 		//	If the item is damaged, then enhancing it repairs it
 
@@ -1722,6 +1727,7 @@ int CItemEnhancement::GetValueAdj (const CItem &Item) const
 			case etResistHPBonus:
 				return Max(-80, -GetDataX());
 
+			case etBonus:
 			case etPhotoRegenerate:
 			case etPhotoRecharge:
 			case etRepairOnHit:
@@ -1769,6 +1775,7 @@ int CItemEnhancement::GetValueAdj (const CItem &Item) const
 			case etResistHPBonus:
 				return GetDataX();
 
+			case etBonus:
 			case etPhotoRegenerate:
 			case etPhotoRecharge:
 			case etRepairOnHit:
@@ -2259,6 +2266,17 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 
 	else if (strEquals(sID, CONSTLIT("enhance")))
 		m_dwMods = etBinaryEnhancement;
+
+	else if (strEquals(sID, CONSTLIT("bonus")))
+		{
+		if (bDisadvantage)
+			{
+			if (retsError) *retsError = CONSTLIT("Bonus disadvantage not supported.");
+			return ERR_FAIL;
+			}
+
+		m_dwMods = EncodeAX(etBonus);
+		}
 
 	//	Otherwise, see if this is a special damage 
 

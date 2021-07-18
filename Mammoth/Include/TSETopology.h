@@ -399,6 +399,7 @@ class CTopology
 		int GetDistance (const CString &sSourceID, const CString &sDestID) const;
 		int GetDistanceToCriteria (const CTopologyNode *pSrc, const CTopologyAttributeCriteria &Criteria) const;
 		int GetDistanceToCriteriaNoMatch (const CTopologyNode *pSrc, const CTopologyAttributeCriteria &Criteria) const;
+		const CTopologyNode *GetNextNodeTo (const CTopologyNode &From, const CTopologyNode &To) const;
 		CTopologyNodeList &GetTopologyNodeList (void) { return m_Topology; }
 		CTopologyNode *GetTopologyNode (int iIndex) { return &m_Topology[iIndex]; }
 		const CTopologyNode *GetTopologyNode (int iIndex) const { return &m_Topology[iIndex]; }

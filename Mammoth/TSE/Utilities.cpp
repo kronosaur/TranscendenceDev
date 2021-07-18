@@ -1226,7 +1226,9 @@ int GetFrequencyByLevel (const CString &sLevelFrequency, int iLevel)
 
 	{
 	char *pTable = sLevelFrequency.GetPointer();
-	if (pTable && pTable[0] == '*')
+	if (!pTable)
+		return ftNotRandom;
+	else if (pTable[0] == '*')
 		return ftCommon;
 
 	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
