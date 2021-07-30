@@ -326,7 +326,7 @@ class CDeviceClass
 		virtual const CRepairerClass *AsRepairerClass (void) const { return NULL; }
 		virtual CShieldClass *AsShieldClass (void) { return NULL; }
 		virtual CWeaponClass *AsWeaponClass (void) { return NULL; }
-		virtual bool CalcFireSolution (const CInstalledDevice &Device, CSpaceObject &Target, int *retiAimAngle = NULL, Metric *retrDist = NULL) const { return false; }
+		virtual bool CalcFireSolution (const CInstalledDevice &Device, const CSpaceObject &Target, int *retiAimAngle = NULL, Metric *retrDist = NULL) const { return false; }
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }
 		virtual bool CanHitFriends (void) const { return true; }
 		virtual void Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource) { }
@@ -362,6 +362,9 @@ class CDeviceClass
 											 bool bUseCustomAmmoCountHandler = false) { if (retsLabel) *retsLabel = NULL_STR; if (retiAmmoLeft) *retiAmmoLeft = -1; if (retpType) *retpType = NULL; }
 		virtual Metric GetShotSpeed (CItemCtx &Ctx) const { return 0.0; }
 		virtual void GetStatus (const CInstalledDevice *pDevice, const CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) { *retiStatus = 0; *retiMaxStatus = 0; }
+		virtual int GetSwivelPivotPerTick (const CInstalledDevice* pDevice) const { return 360; }
+		virtual float GetSwivelPivotPerTickExact (const CInstalledDevice* pDevice) const { return 360.0; }
+		virtual int GetSwivelUpdateRate (const CInstalledDevice* pDevice) const { return 0; }
 		virtual DWORD GetTargetTypes (const CDeviceItem &DeviceItem) const { return 0; }
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) { return 0; }
 		virtual int GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const { return 0; }
@@ -690,6 +693,7 @@ class CInstalledDevice
 		int GetDefaultFireAngle (void) const { return m_pClass->GetDefaultFireAngle(*this); }
 		int GetHitPoints (CItemCtx &ItemCtx, int *retiMaxHP = NULL) const { return m_pClass->GetHitPoints(ItemCtx, retiMaxHP); }
 		CSpaceObject *GetLastShot (CSpaceObject *pSource, int iIndex) const;
+		int GetLastSwivelTime (void) const { return m_iLastSwivelTime; }
 		Metric GetMaxEffectiveRange (CSpaceObject *pSource, CSpaceObject *pTarget = NULL) const { return m_pClass->GetMaxEffectiveRange(pSource, this, pTarget); }
 		Metric GetMaxRange (CItemCtx &ItemCtx) const { return m_pClass->GetMaxRange(ItemCtx); }
 		CString GetName (void) { return m_pClass->GetName(); }
@@ -705,6 +709,9 @@ class CInstalledDevice
 		CSpaceObject *GetSource (void) const { return m_pSource; }
 		CSpaceObject &GetSourceOrThrow (void) const { if (m_pSource) return *m_pSource; else throw CException(ERR_FAIL); }
 		void GetStatus (const CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) const { m_pClass->GetStatus(this, pSource, retiStatus, retiMaxStatus); }
+		int GetSwivelPivotPerTick (void) const { return m_iSwivelPivotPerTick; }
+		float GetSwivelPivotPerTickExact (void) { return m_iSwivelUpdateRate == 0 ? 360 : float(m_iSwivelPivotPerTick) / float(m_iSwivelUpdateRate); }
+		int GetSwivelUpdateRate (void) const { return m_iSwivelUpdateRate; }
 		CSpaceObject *GetTarget (CSpaceObject *pSource) const;
 		int GetValidVariantCount (CSpaceObject *pSource) { return m_pClass->GetValidVariantCount(pSource, this); }
 		CWeaponTargetDefinition *GetWeaponTargetDefinition (void) const { return (m_pWeaponTargetDefinition.get()); }
@@ -727,6 +734,10 @@ class CInstalledDevice
 		void SetHitPoints (CItemCtx &ItemCtx, int iHP) { m_pClass->SetHitPoints(ItemCtx, iHP); }
 		void SetLastShot (CSpaceObject *pObj, int iIndex);
 		void SetLastShotCount (int iCount);
+		void SetLastSwivelTime (int iLastSwivelTime) { m_iLastSwivelTime = iLastSwivelTime; }
+		void SetSwivelPivotPerTick (int iSwivelPivotPerTick) { m_iSwivelPivotPerTick = iSwivelPivotPerTick; }
+		void SetSwivelPivotPerTick (float fSwivelPivotPerTick) { m_iSwivelPivotPerTick = fSwivelPivotPerTick >= 1.0 ? int(fSwivelPivotPerTick) : 1; m_iSwivelUpdateRate = fSwivelPivotPerTick >= 1.0 ? 1 : int(1.0 / fSwivelPivotPerTick); }
+		void SetSwivelUpdateRate (int iSwivelUpdateRate) { m_iSwivelUpdateRate = iSwivelUpdateRate; }
 		inline void SetTarget (CSpaceObject *pObj);
 		bool ShowActivationDelayCounter (CSpaceObject *pSource) { return m_pClass->ShowActivationDelayCounter(pSource, this); }
 
@@ -764,6 +775,10 @@ class CInstalledDevice
 		int m_iPosZ:16 = 0;							//	Position of installation (height)
 		int m_iMinFireArc:16 = 0;					//	Min angle of fire arc (degrees)
 		int m_iMaxFireArc:16 = 0;					//	Max angle of fire arc (degrees)
+		int m_iSwivelPivotPerTick : 16 = -1;			//	Max angle the weapon can pivot during a single tick (degrees)
+		int m_iSwivelUpdateRate : 16 = -1;			//	Update weapon firing angle every Nth tick during a burst (ticks)
+		// TODO(heliogenesis): Save swivel values in the save file, and add support for it in device slots and property functions
+		int m_iLastSwivelTime : 16 = 32767;			//	Last tick that the weapon updated its firing angle during (tick)
 
 		int m_iShotSeparationScale:16 = 32767;		//	Scaled by 32767. Governs scaling of shot separation for dual etc weapons
 		int m_iMaxFireRange:16 = 0;					//	Max effective fire range (in light-seconds); 0 = no limit

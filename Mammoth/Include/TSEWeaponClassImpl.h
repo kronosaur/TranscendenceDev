@@ -133,7 +133,7 @@ class CWeaponClass : public CDeviceClass
 
 		virtual bool Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx) override;
 		virtual CWeaponClass *AsWeaponClass (void) override { return this; }
-		virtual bool CalcFireSolution (const CInstalledDevice &Device, CSpaceObject &Target, int *retiAimAngle = NULL, Metric *retrDist = NULL) const override;
+		virtual bool CalcFireSolution (const CInstalledDevice &Device, const CSpaceObject &Target, int *retiAimAngle = NULL, Metric *retrDist = NULL) const override;
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ICCItem *FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) override;
 		virtual int GetActivateDelay (CItemCtx &ItemCtx) const override;
@@ -161,6 +161,9 @@ class CWeaponClass : public CDeviceClass
 											 CItemType **retpType = NULL,
 											 bool bUseCustomAmmoCountHandler = false) override;
 		virtual Metric GetShotSpeed (CItemCtx &Ctx) const override;
+		virtual int GetSwivelPivotPerTick (const CInstalledDevice* pDevice) const override;
+		virtual float GetSwivelPivotPerTickExact (const CInstalledDevice* pDevice) const override;
+		virtual int GetSwivelUpdateRate (const CInstalledDevice* pDevice) const override;
 		virtual DWORD GetTargetTypes (const CDeviceItem &DeviceItem) const override;
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual int GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const override;
@@ -249,7 +252,8 @@ class CWeaponClass : public CDeviceClass
 		Metric CalcConfigurationMultiplier (const CWeaponFireDesc *pShot = NULL, bool bIncludeFragments = true) const;
 		Metric CalcDamage (const CWeaponFireDesc &ShotDesc, const CItemEnhancementStack *pEnhancements = NULL, DWORD dwDamageFlags = 0) const;
 		Metric CalcDamagePerShot (const CWeaponFireDesc &ShotDesc, const CItemEnhancementStack *pEnhancements = NULL, DWORD dwDamageFlags = 0) const;
-		int CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject *pTarget, bool *retbSetDeviceAngle = NULL) const;
+		int CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, const CSpaceObject *pTarget, bool *retbSetDeviceAngle = NULL) const;
+		int CalcFireAngleRestrictedBySwivelRate (const int iFireAngle, const CInstalledDevice* pDevice, const CSpaceObject* pSource) const;
 		int CalcLevel (const CWeaponFireDesc &ShotDesc) const;
 		TArray<CTargetList::STargetResult> CalcMIRVTargets (CInstalledDevice &Device, const CTargetList &TargetList, int iMaxCount) const;
 		int CalcReachableFireAngle (const CInstalledDevice &Device, int iDesiredAngle, int iDefaultAngle = -1) const;
@@ -308,7 +312,7 @@ class CWeaponClass : public CDeviceClass
 		bool IsMIRV (const CWeaponFireDesc &ShotDesc) const { return (m_bMIRV || ShotDesc.IsMIRV()); }
 		bool IsSinglePointOrigin (void) const { return m_Configuration.IsSinglePointOrigin(); }
 		bool IsTemperatureEnabled (void) { return (m_Counter == EDeviceCounterType::Temperature); }
-		bool IsTargetReachable (const CInstalledDevice &Device, CSpaceObject &Target, int iDefaultFireAngle = -1, int *retiFireAngle = NULL, int *retiAimAngle = NULL) const;
+		bool IsTargetReachable (const CInstalledDevice &Device, const CSpaceObject &Target, int iDefaultFireAngle = -1, int *retiFireAngle = NULL, int *retiAimAngle = NULL) const;
 		bool IsTracking (const CDeviceItem &DeviceItem, const CWeaponFireDesc *pShot) const;
 		bool UpdateTemperature (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, CFailureDesc::EFailureTypes *retiFailureMode, bool *retbSourceDestroyed);
 		bool UsesAmmo (void) const { return (m_ShotData.GetCount() > 0 && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
@@ -344,6 +348,8 @@ class CWeaponClass : public CDeviceClass
 		int m_iContinuousFireDelay = 0;			//	Delay between shots
 		bool m_bContinuousConsumePerShot;		//	If a continuous weapon, consume ammunition for every shot in burst
 		bool m_bBurstTracksTargets;				//  If the weapon is continuous, whether or not to track the target during the entire burst
+		int m_iSwivelPivotPerTick = 0;			//	Max angle the weapon can pivot during a single tick (degrees)
+		int m_iSwivelUpdateRate = 0;			//	Update weapon firing angle every Nth tick during a burst (ticks)
 
 		bool m_bCharges;						//	TRUE if weapon has charges instead of ammo
 		bool m_bUsesLauncherControls;			//  TRUE if weapon is selected/fired as a launcher instead of as a primary gun
