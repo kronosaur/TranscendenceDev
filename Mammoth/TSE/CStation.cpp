@@ -1231,11 +1231,6 @@ ALERROR CStation::CreateFromType (CSystem &System,
 		pStation->m_pRotation = new CIntegralRotation;
 		pStation->m_pRotation->SetRotationAngle(pType->GetRotationDesc(), CreateCtx.iRotation);
 		}
-	else if (pType->GetImage().IsRotatable())
-		{
-		pStation->m_pRotation = new CIntegralRotation;
-		pStation->m_pRotation->SetRotationAngle(pType->GetRotationDesc(), mathRandom(0, 359));
-		}
 	else
 		pStation->m_pRotation = NULL;
 
@@ -1349,6 +1344,21 @@ ALERROR CStation::CreateFromType (CSystem &System,
 		//	Set the parameters
 
 		pStation->SetWreckParams(CreateCtx.pWreckClass, CreateCtx.pWreckShip);
+		}
+
+	//	Make sure the rotation is aligned on an image facing.
+
+	if (!pStation->m_pRotation && pType->GetImage().IsRotatable())
+		{
+		pStation->m_pRotation = new CIntegralRotation;
+		pStation->m_pRotation->SetRotationAngle(pType->GetRotationDesc(), mathRandom(0, 359));
+
+		//	Make sure the rotation is aligned on an image facing
+
+		CCompositeImageModifiers Modifiers;
+		pStation->CalcImageModifiers(&Modifiers);
+		int iAlignedRotation = pType->GetImage().GetActualRotation(pStation->m_ImageSelector, Modifiers);
+		pStation->m_pRotation->SetRotationAngle(pType->GetRotationDesc(), iAlignedRotation);
 		}
 
 	//	Now that we have an image, set the bound
