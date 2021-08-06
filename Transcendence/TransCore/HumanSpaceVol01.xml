@@ -2079,6 +2079,8 @@
 	<!ENTITY vtDwargMissileDefense		"0x001002D7">
 	<!ENTITY vtDwargMissileDefenseWeapon	"0x001002D8">
 	<!ENTITY efDwargMissileDefense		"0x001002D9">
+	<!ENTITY rsDwargColony				"0x001002DA">
+	<!ENTITY rsDwargColonyComposite		"0x001002DB">
 
 	<!-- 02F0-030F RINGERS -->
 

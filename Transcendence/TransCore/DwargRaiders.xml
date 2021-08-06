@@ -35,17 +35,20 @@
 	<StationType UNID="&stDwargColony;"
 			name=				"Dwarg colony|Dwarg colonies"
 			sovereign=			"&svDwargRaiders;"
+
+			attributes=			"dwarg, dwargColony, dwargRaiders, enemy, envWater, envAvoidsEarth, generic, neoHuman, populated"
+
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
-			multiHull=			"true"
+			size=				"189"
 			armorID=			"&itDwargChitonArmor;"
 			hitPoints=			"160"
+			multiHull=			"true"
 			regen=              "2"
+
 			fireRateAdj=		"50"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"dwarg, dwargColony, dwargRaiders, enemy, envWater, envAvoidsEarth, generic, neoHuman, populated"
 			>
 
 		<!-- Encounter Info -->
@@ -59,21 +62,29 @@
 				enemyExclusionRadius=	"50"
 				/>
 
-		<Image			imageID="&rsStations4;" imageX="128" imageY="640" imageWidth="128" imageHeight="128"/>
+		<!-- Configuration -->
 
 		<Devices>
 			<Device deviceID="&itDwargXiphonCannon;"	omnidirectional="true"/>
 		</Devices>
 
+		<!-- Ships and Defenses -->
+
 		<Ships challenge="hard">
 			<Ship				count="1d4+4"	class="&scDwargRaider;"		orders="orbitPatrol:radius=8000-12000mls:angle=0-359"/>
 		</Ships>
+
+		<!-- Treasure -->
 
 		<Items value="standard:level=4:x=1.6">
 			<Lookup table="&trStdTreasure;"/>
 		</Items>
 
-		<DockingPorts>
+		<!-- Image and Effects -->
+
+		<ImageLookup imageID="&rsDwargColonyComposite;"/>
+
+		<DockingPorts	rotation="0">
 			<Port x="-82"	y="35" />
 			<Port x="-33"	y="71" />
 			<Port x="76"	y="44" />
@@ -81,7 +92,6 @@
 			<Port x="0"		y="-86" />
 			<Port x="-49"	y="-70" />
 		</DockingPorts>
-
 	</StationType>
 
 	<!-- Dwarg Gathering -->
@@ -89,17 +99,20 @@
 	<StationType UNID="&stDwargGathering;"
 			name=				"Dwarg colony|Dwarg colonies"
 			sovereign=			"&svDwargRaiders;"
+
+			attributes=			"dwarg, dwargColony, dwargRaiders, enemy, envWater, envAvoidsEarth, generic, neoHuman, populated"
+
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
-			multiHull=			"true"
+			size=				"189"
 			armorID=			"&itDwargCatoptricArmor;"
 			hitPoints=			"210"
+			multiHull=			"true"
 			regen=              "2"
+
 			fireRateAdj=		"50"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"dwarg, dwargColony, dwargRaiders, enemy, envWater, envAvoidsEarth, generic, neoHuman, populated"
 			>
 
 		<!-- Encounter Info -->
@@ -114,12 +127,14 @@
 				enemyExclusionRadius=	"100"
 				/>
 
-		<Image			imageID="&rsStations4;" imageX="128" imageY="640" imageWidth="128" imageHeight="128"/>
+		<!-- Configuration -->
 
 		<Devices>
 			<Device deviceID="&itDwargXiphonCannon;"	omnidirectional="true"/>
 			<Device deviceID="&vtDwargMissileDefense;"/>
 		</Devices>
+
+		<!-- Ships and Defenses -->
 
 		<Ships challenge="standard">
 			<Ship				count="1"		class="&scDwargMaster;" orders="patrol" patrolDist="10">
@@ -129,9 +144,7 @@
 			</Ship>
 		</Ships>
 
-		<Items value="standard:level=5">
-			<Lookup table="&trStdTreasure;"/>
-		</Items>
+		<!-- Satellites -->
 
 		<Satellites overlapCheck="planetoids">
 			<Table>
@@ -157,7 +170,17 @@
 			</Table>
 		</Satellites>
 
-		<DockingPorts>
+		<!-- Treasure -->
+
+		<Items value="standard:level=5">
+			<Lookup table="&trStdTreasure;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<ImageLookup imageID="&rsDwargColonyComposite;"/>
+
+		<DockingPorts	rotation="0">
 			<Port x="-82"	y="35" />
 			<Port x="-33"	y="71" />
 			<Port x="76"	y="44" />
@@ -165,6 +188,8 @@
 			<Port x="0"		y="-86" />
 			<Port x="-49"	y="-70" />
 		</DockingPorts>
+
+		<!-- Random Encounters -->
 
 		<Encounters frequency="uncommon">
 			<Ship				count="1"		class="&scDwargMaster;"		eventHandler="&evStdWanderBehavior;"	maxShips="3">
@@ -173,7 +198,6 @@
 				</Escorts>
 			</Ship>
 		</Encounters>
-
 	</StationType>
 
 	<!-- Dwarg Gathering Satellite -->
@@ -181,36 +205,47 @@
 	<StationType UNID="&stDwargGatheringSat;"
 			name=				"Dwarg colony|Dwarg colonies"
 			sovereign=			"&svDwargRaiders;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-			noMapLabel=			"true"
 
-			multiHull=			"true"
+			attributes=			"dwarg, dwargRaiders, enemy, envWater, envAvoidsEarth, neoHuman, populated"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			size=				"189"
 			armorID=			"&itDwargCatoptricArmor;"
 			hitPoints=			"210"
+			multiHull=			"true"
 			regen=              "2"
+
 			fireRateAdj=		"50"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"dwarg, dwargRaiders, enemy, envWater, envAvoidsEarth, neoHuman, populated"
+			noMapLabel=			"true"
 			enemyExclusionRadius="50"
 			>
 
-		<Image			imageID="&rsStations4;" imageX="128" imageY="640" imageWidth="128" imageHeight="128"/>
+		<!-- Configuration -->
 
 		<Devices>
 			<Device deviceID="&itDwargXiphonCannon;"	omnidirectional="true"/>
 		</Devices>
 
+		<!-- Ships and Defenses -->
+
 		<Ships challenge="standard">
 			<Ship				count="1d4+4"	class="&scDwargRaider;"		orders="orbitPatrol:radius=8000-12000mls:angle=0-359"/>
 		</Ships>
+
+		<!-- Treasure -->
 
 		<Items value="standard:level=5">
 			<Lookup table="&trStdTreasure;"/>
 		</Items>
 
-		<DockingPorts>
+		<!-- Image and Effects -->
+
+		<ImageLookup imageID="&rsDwargColonyComposite;"/>
+
+		<DockingPorts	rotation="0">
 			<Port x="-82"	y="35" />
 			<Port x="-33"	y="71" />
 			<Port x="76"	y="44" />
@@ -218,7 +253,6 @@
 			<Port x="0"		y="-86" />
 			<Port x="-49"	y="-70" />
 		</DockingPorts>
-
 	</StationType>
 
 	<!-- Dwarg Fortress -->
@@ -922,6 +956,41 @@
 
 <!-- RESOURCES -->
 	
+	<ImageComposite unid="&rsDwargColonyComposite;">
+		<Image>
+			<RotationTable>
+				<Image rotation="0"   imageID="&rsDwargColony;" imageX="0"   imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="15"  imageID="&rsDwargColony;" imageX="630" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="30"  imageID="&rsDwargColony;" imageX="420" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="45"  imageID="&rsDwargColony;" imageX="210" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="60"  imageID="&rsDwargColony;" imageX="0"   imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="75"  imageID="&rsDwargColony;" imageX="630" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="90"  imageID="&rsDwargColony;" imageX="420" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="105" imageID="&rsDwargColony;" imageX="210" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+
+				<Image rotation="120" imageID="&rsDwargColony;" imageX="0"   imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="135" imageID="&rsDwargColony;" imageX="630" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="150" imageID="&rsDwargColony;" imageX="420" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="165" imageID="&rsDwargColony;" imageX="210" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="180" imageID="&rsDwargColony;" imageX="0"   imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="195" imageID="&rsDwargColony;" imageX="630" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="210" imageID="&rsDwargColony;" imageX="420" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="225" imageID="&rsDwargColony;" imageX="210" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+
+				<Image rotation="240" imageID="&rsDwargColony;" imageX="0"   imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="255" imageID="&rsDwargColony;" imageX="630" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="270" imageID="&rsDwargColony;" imageX="420" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="285" imageID="&rsDwargColony;" imageX="210" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="300" imageID="&rsDwargColony;" imageX="0"   imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="315" imageID="&rsDwargColony;" imageX="630" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="330" imageID="&rsDwargColony;" imageX="420" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="345" imageID="&rsDwargColony;" imageX="210" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+			</RotationTable>
+		</Image>
+	</ImageComposite>
+	
+	<Image UNID="&rsDwargColony;"			bitmap="Resources\DwargColony.jpg"	bitmask="Resources\DwargColonyMask.bmp" 	loadOnUse="true" />
+
 	<Image UNID="&rsDwargBehemothHD;"		bitmap="Resources\DwargBehemothHD.jpg"	bitmask="Resources\DwargBehemothHDMask.bmp" 	loadOnUse="true" />
 	<Image UNID="&rsDwargBehemothHero;"		bitmap="Resources\DwargBehemothLarge.jpg"	bitmask="Resources\DwargBehemothLargeMask.bmp" 	loadOnUse="true" />
 

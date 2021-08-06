@@ -41,7 +41,7 @@
 						{	test:'(typ@ &stDwargColony; 'shipEncounterTable)		result:Nil	}
 						{	test:'(typ@ &stDwargColony; 'shipReinforcementsTable)	result:'(&scDwargRaider;)	}
 						{	test:'(typ@ &stDwargColony; 'showsUnexploredAnnotation)	result:Nil	}
-						{	test:'(typ@ &stDwargColony; 'size)						result:0	}
+						{	test:'(typ@ &stDwargColony; 'size)						result:189	}
 						{	test:'(typ@ &stDwargColony; 'sovereign)					result:&svDwargRaiders;	}
 						{	test:'(typ@ &stDwargColony; 'sovereignName)				result:"Dwarg civilization"	}
 						{	test:'(typ@ &stDwargColony; 'squadronDesc)				result:{ count:'challengeHard id:"0" reinforce:'auto  shipTable:'(&scDwargRaider;) 	} }
