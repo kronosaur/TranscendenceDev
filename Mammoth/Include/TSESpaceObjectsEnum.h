@@ -668,9 +668,45 @@ class CSpaceObjectEnum
 				CSpaceObject *pObj = Grid.EnumGetNextFast(i);
 
 				Metric rDist2;
-				if (Selector.MatchesCategory(pObj)
-						&& Range.Matches(pObj, &rDist2)
-						&& Selector.Matches(pObj, rDist2))
+				if (Selector.MatchesCategory(*pObj)
+						&& Range.Matches(*pObj, &rDist2)
+						&& Selector.Matches(*pObj, rDist2))
+					{
+					Range.SetBestDist2(rDist2);
+					pBestObj = pObj;
+					}
+				}
+
+			return pBestObj;
+			}
+
+		template <class RANGE, class SELECTOR>
+		static CSpaceObject *FindNearestTangibleObjInArc (const CSystem &System, const CSpaceObject *pSource, const CVector vCenter, const int iMinAngle, const int iMaxAngle, RANGE &Range, SELECTOR &Selector)
+			{
+			const CSpaceObjectGrid &Grid = System.GetObjectGrid();
+
+			Range.ReduceRadius(Selector.GetMaxRange());
+
+			CSpaceObject *pBestObj = NULL;
+
+			SSpaceObjectGridEnumerator i;
+			Grid.EnumStart(i, Range.GetUR(), Range.GetLL(), gridNoBoxCheck);
+
+			bool bOmnidirectional = (iMinAngle == -1 && iMaxAngle == -1);
+
+			while (Grid.EnumHasMore(i))
+				{
+				CSpaceObject *pObj = Grid.EnumGetNextFast(i);
+
+				Metric rDist2;
+				if (pObj // TODO(heliogenesis): Is this necessary? If not we can remove this.
+						&& Selector.MatchesCategory(*pObj)
+						&& Range.Matches(*pObj, &rDist2)
+						&& Selector.Matches(*pObj, rDist2)
+						&& !pObj->IsIntangible()
+						&& pObj != pSource
+						&& (bOmnidirectional
+							|| AngleInArc(VectorToPolar((pObj->GetPos() - vCenter)), iMinAngle, iMaxAngle)))
 					{
 					Range.SetBestDist2(rDist2);
 					pBestObj = pObj;

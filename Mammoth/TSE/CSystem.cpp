@@ -1802,6 +1802,63 @@ CSpaceObject *CSystem::FindObject (DWORD dwID) const
 	return NULL;
 	}
 
+CSpaceObject *CSystem::FindNearestObject (CSpaceObject *pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria) const
+
+//	FindNearestObject
+//
+//	Returns the nearest object in range of the given position.
+
+	{
+	//	If we have a criteria, we need to check.
+
+	if (!Criteria.IsEmpty())
+		{
+		CCriteriaObjSelector Selector(pSource, Criteria);
+		CNearestInRadiusRange Range(vCenter, rRange);
+
+		return CSpaceObjectEnum::FindNearestObj(*this, Range, Selector);
+		}
+
+	//	If we don't have a criteria, then we can do this faster.
+
+	else
+		{
+		CAnyObjSelector Selector;
+		CNearestInRadiusRange Range(vCenter, rRange);
+
+		return CSpaceObjectEnum::FindNearestObj(*this, Range, Selector);
+		}
+	}
+
+CSpaceObject *CSystem::FindNearestTangibleObjectInArc (CSpaceObject *pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria, int iMinAngle, int iMaxAngle) const
+
+//	FindNearestObject
+//
+//	Returns the nearest object in range of the given position, within the angle defined by iMinAngle and iMaxAngle.
+//	If both iMinAngle and iMaxAngle are -1, then we ignore the angle of the object.
+
+	{
+	//	If we have a criteria, we need to check.
+
+	if (!Criteria.IsEmpty())
+		{
+		CCriteriaObjSelector Selector(pSource, Criteria);
+		CNearestInRadiusRange Range(vCenter, rRange);
+
+		return CSpaceObjectEnum::FindNearestTangibleObjInArc(*this, pSource, vCenter, iMinAngle, iMaxAngle, Range, Selector);
+		}
+
+	//	If we don't have a criteria, then we can do this faster.
+
+	else
+		{
+		CAnyObjSelector Selector;
+		CNearestInRadiusRange Range(vCenter, rRange);
+
+		return CSpaceObjectEnum::FindNearestTangibleObjInArc(*this, pSource, vCenter, iMinAngle, iMaxAngle, Range, Selector);
+		}
+	}
+
 CSpaceObject *CSystem::FindObjectInRange (CSpaceObject *pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria) const
 
 //	FindObjectInRange
