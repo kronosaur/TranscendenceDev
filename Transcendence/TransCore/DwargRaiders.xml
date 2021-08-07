@@ -855,7 +855,7 @@
 		(block Nil
 			(setq intZoanthropeOnObjDestroyed (lambda Nil
 				; If our leader got destroyed, then find a new leader or gate out
-				
+
 				(if (eq aObjDestroyed (objGetObjRefData gSource "leader"))
 					(block (newLeader)
 						; Note: We don't call objGetOrderGiver because the Zoanthropes
@@ -883,21 +883,26 @@
 				))
 
 			(setq intZoanthropeOnOrderChanged (lambda Nil
-				(block (order)
-				
+				(block (
+					(order (shpGetOrder gSource))
+
+					(prevLeader (objGetObjRefData gSource "leader"))
+					(newLeader (shpGetOrderTarget gSource))
+					)
+
 					; If we are patrolling, guarding, or escorting something, register that object
 					; so that we can tell if it gets destroyed
 
-					(setq order (shpGetOrder gSource))
-					(if (or (eq order 'guard) (eq order 'patrol) (eq order 'escort))
-						(block (prevLeader newLeader)
-						
+					(if (and (find '(guard escort patrol orbitExact orbitPatrol) order)
+							(!= prevLeader newLeader)
+							)
+						(block ()
+
 							; If we've got a previous registration, cancel it
 							; NOTE: OnOrderChanged gets called before OnObjDestroyed, so 
 							; we only unregister if we've got a new leader (otherwise we would
 							; unregister and never get an OnObjDestroyed event).
 							
-							(setq prevLeader (objGetObjRefData gSource "leader"))
 							(if prevLeader
 								(block Nil
 									(objUnregisterForEvents gSource prevLeader)
@@ -907,7 +912,6 @@
 
 							; Register for the new leader
 							
-							(setq newLeader (shpGetOrderTarget gSource))
 							(objSetObjRefData gSource "leader" newLeader)
 							(objRegisterForEvents gSource newLeader)
 							)
