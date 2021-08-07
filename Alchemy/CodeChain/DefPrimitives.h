@@ -234,7 +234,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"vv*",	0,	},
 
 		{	"loop",				fnLoop,			0,
-			"(loop condition exp) -> Evaluate exp until condition is Nil",
+			"DEPRECATED: Use while instead.",
 			NULL,	0,	},
 
 		{	"link",				fnLink,			0,						"",		"s",	0,	},
@@ -487,7 +487,11 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{ "v^", fnVecMath, FN_VECTOR_EMUL, "(v^ vec1 vec2) -> result of element-wise multiplication of vec1 and vec2", NULL, 0, },
 		{ "v<-", fnVector, FN_VECTOR_SET, "(v<- vec1 indexlist datalist) -> set the elements of vec1 with datalist based on the indices in indexlist", NULL, PPFLAG_SIDEEFFECTS, },
 		{ "v->", fnVector, FN_VECTOR_GET, "(v-> vec1 indexlist) -> get the elements of vec1 based on indexlist", NULL, 0, },
-		{ "v=", fnVecMath, FN_VECTOR_EQ, "(v= vec1 vec2) -> compare vec1 and vec2 for equality", NULL, 0, }
+		{ "v=", fnVecMath, FN_VECTOR_EQ, "(v= vec1 vec2) -> compare vec1 and vec2 for equality", NULL, 0, },
+
+		{	"while",				fnLoop,			0,
+			"(while condition exp) -> Evaluate exp until condition is Nil",
+			NULL,	0,	},
 	};
 
 #define DEFPRIMITIVES_COUNT		(sizeof(g_DefPrimitives) / sizeof(g_DefPrimitives[0]))
