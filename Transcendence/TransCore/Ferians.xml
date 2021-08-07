@@ -115,6 +115,10 @@
 				locationCriteria=		"++asteroids"
 				/>
 
+		<Properties>
+			<Constant		id="maxFerianMissions">(random 1 3)</Constant>
+		</Properties>
+
 		<!-- Trade and Items -->
 
 		<Trade currency="rin">
@@ -190,6 +194,7 @@
 										(rpgMissionAssignment {
 											missionCriteria: "n +ferianColony;"
 											noMissionTextID: 'descNoMissions
+											maxPerStation: (or (obj@ gSource 'maxFerianMissions) 1)
 											})
 										)
 									)
@@ -211,6 +216,7 @@
 									(rpgMissionAssignment {
 										missionCriteria: "n +ferianColony;"
 										noMissionTextID: 'descNoMissions
+										maxPerStation: (or (obj@ gSource 'maxFerianMissions) 1)
 										})
 									)
 							</Action>
@@ -703,15 +709,21 @@
 					(storageObj (objGetObjByID (objGetData gSource 'storageID)))
 					(rewardValue (@ gData 'value))
 
-					;	Pick three random ore types
+					;	Pick several random ore types
 
-					(oreList (list (sysGetRandomOreType) (sysGetRandomOreType) (sysGetRandomOreType)))
+					(oreList (list (sysGetRandomOreType) (sysGetRandomOreType) (sysGetRandomOreType) (sysGetRandomOreType)))
 
 					;	Choose the highest priced one (to minimize the amount
 					;	that the player has to carry).
 
 					(bestOreType 
 						(map oreList '(reduceMax original) theOreType
+							(itmGetPrice theOreType 'rin)
+							)
+						)
+
+					(cheapestOreType
+						(map oreList '(reduceMin original) theOreType
 							(itmGetPrice theOreType 'rin)
 							)
 						)
@@ -727,7 +739,18 @@
 
 					;	Add ore to storage appropriate to the system
 
-					(objAddItemByValue storageObj (itmCreate bestOreType 1) rewardValue 'credit)
+					(while (gr rewardValue 0)
+						(block (itemAdded)
+							(if (gr rewardValue (itmGetPrice bestOreType))
+								(setq itemAdded (objAddItemByValue storageObj (itmCreate bestOreType 1) rewardValue 'credit))
+								(setq itemAdded (objAddItemByValue storageObj (itmCreate cheapestOreType 1) (max rewardValue (itmGetPrice cheapestOreType)) 'credit))
+								)
+
+							(setq rewardValue
+								(- rewardValue (* (itmGetPrice itemAdded) (itmGetCount itemAdded)))
+								)
+							)
+						)
 
 					;	Return data appropriate for a mission to navigate to the
 					;	loot screen.
