@@ -699,8 +699,7 @@ class CSpaceObjectEnum
 				CSpaceObject *pObj = Grid.EnumGetNextFast(i);
 
 				Metric rDist2;
-				if (pObj // TODO(heliogenesis): Is this necessary? If not we can remove this.
-						&& Selector.MatchesCategory(*pObj)
+				if (Selector.MatchesCategory(*pObj)
 						&& Range.Matches(*pObj, &rDist2)
 						&& Selector.Matches(*pObj, rDist2)
 						&& !pObj->IsIntangible()
