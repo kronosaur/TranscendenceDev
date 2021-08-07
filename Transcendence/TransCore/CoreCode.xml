@@ -625,11 +625,14 @@
 								(objAddItem theObj theItem 1)
 								)
 								
-						(block Nil
-							(objAddItem theObj theItem (divide theValue itemPrice))
-							(if (leq (random 1 itemPrice) (modulo theValue itemPrice))
-								(objAddItem theObj theItem 1)
-								)
+						(block (
+							(countToAdd (+ (divide theValue itemPrice)
+								(if (leq (random 1 itemPrice) (modulo theValue itemPrice))
+									1
+									0)
+								))
+							)
+							(objAddItem theObj theItem countToAdd)
 							)
 						)
 					)
