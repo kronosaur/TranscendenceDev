@@ -1751,6 +1751,8 @@
 	<!ENTITY rsAresShipyard				"0x001000B8">
 	<!ENTITY rsTundraHero				"0x001000B9">
 	<!ENTITY rsChasmHero				"0x001000BA">
+	<!ENTITY rsSandstorm				"0x001000BB">
+	<!ENTITY rsSandstormHero			"0x001000BC">
 	
 	<!-- 00C0-00CF SALVAGERS -->
 	

@@ -6946,4 +6946,6 @@
 	<Image UNID="&rsIAVLight;"			obsoleteVersion="52"			bitmap="Resources\IAVLight.jpg" bitmask="Resources\IAVLightMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsIAVLightHD;"		obsoleteVersion="52"		bitmap="Resources\IAVLightHD.jpg" bitmask="Resources\IAVLightHDMask.bmp" loadOnUse="true"/>
 
+	<Image UNID="&rsSandstormHD;"		obsoleteVersion="53"		bitmap="Resources\SandstormHD.jpg" bitmask="Resources\SandstormHDMask.bmp" loadOnUse="true" />
+
 </TranscendenceModule>
