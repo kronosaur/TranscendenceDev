@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 
+#define ACHIEVEMENTS_TAG						CONSTLIT("Achievements")
 #define ADVENTURE_DESC_TAG						CONSTLIT("AdventureDesc")
 #define ARMOR_MASS_DESC_TAG						CONSTLIT("ArmorMassDesc")
 #define ATTRIBUTE_DESC_TAG						CONSTLIT("AttributeDesc")
@@ -268,6 +269,12 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 	if (m_pExtra)
 		{
 		if (ALERROR error = m_pExtra->PropertyDefs.BindDesign(Ctx))
+			{
+			Ctx.pType = pOldType;
+			return error;
+			}
+
+		if (ALERROR error = m_pExtra->Achievements.BindDesign(Ctx))
 			{
 			Ctx.pType = pOldType;
 			return error;
@@ -2814,6 +2821,11 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 		else if (strEquals(pItem->GetTag(), LANGUAGE_TAG))
 			{
 			if (error = SetExtra()->Language.InitFromXML(Ctx, pItem))
+				return ComposeLoadError(Ctx, Ctx.sError);
+			}
+		else if (strEquals(pItem->GetTag(), ACHIEVEMENTS_TAG))
+			{
+			if (error = SetExtra()->Achievements.InitFromXML(Ctx, *pItem))
 				return ComposeLoadError(Ctx, Ctx.sError);
 			}
 		else if (strEquals(pItem->GetTag(), DISPLAY_ATTRIBUTES_TAG)

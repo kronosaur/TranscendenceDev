@@ -253,6 +253,24 @@
 					)
 			</OnGlobalEndDiagnostics>
 		</Events>
+
+		<Achievements>
+			<Achievement id="sotp.finishedTraining"
+					sortOrder="10"
+					steamID="SOTP_FINISHED_TRAINING=0"
+					>
+				<Image imageID="&rsBenedictMission;"	imageWidth="384" imageHeight="192"/>
+			</Achievement>
+		</Achievements>
+
+		<Language>
+			<Text id="sotp.finishedTraining.name">Benedict's Pupil</Text>
+			<Text id="sotp.finishedTraining.desc">
+
+				Completed Benedict's training sessions in Eridani.
+			
+			</Text>
+		</Language>
 	</Type>
 	
 <!-- DOCK SCREENS -->

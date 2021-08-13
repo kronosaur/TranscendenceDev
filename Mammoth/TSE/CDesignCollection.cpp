@@ -336,6 +336,13 @@ ALERROR CDesignCollection::BindDesign (CUniverse &Universe, const TArray<CExtens
 		const auto &ItemEncounterDefinitions = pEntry->GetItemEncounterDefinitions();
 		if (!ItemEncounterDefinitions.IsEmpty())
 			m_ItemEncounterDefinitions.Append(ItemEncounterDefinitions);
+
+		const auto &AchievementDefinitions = pEntry->GetAchievementDefinitions();
+		if (!AchievementDefinitions.IsEmpty())
+			{
+			if (m_AchievementDefinitions.AddDefinitions(Ctx, AchievementDefinitions) != NOERROR)
+				return BindDesignError(Ctx, retsError);
+			}
 		}
 
 	//	Tell our armor mass definitions that we're done so that we can calculate

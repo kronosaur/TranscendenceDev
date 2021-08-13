@@ -5,6 +5,7 @@
 
 #pragma once
 
+class CAchievementDef;
 class CCommunicationsHandler;
 class CCompositeImageDesc;
 class CCreatePainterCtx;
@@ -208,6 +209,23 @@ class CDesignTypeCriteria
 		static const CDesignTypeCriteria m_Null;
 	};
 
+class CAchievementDataBlock
+	{
+	public:
+		ALERROR BindDesign (SDesignLoadCtx &Ctx);
+		const CAchievementDef &GetAchievementDef (int iIndex) const { if (iIndex < 0 || iIndex >= m_Achievements.GetCount()) throw CException(ERR_FAIL); return *m_Achievements[iIndex]; }
+		int GetCount () const { return m_Achievements.GetCount(); }
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		bool IsEmpty () const { return GetCount() == 0; }
+
+		static const CAchievementDataBlock &Null () { return m_Null; }
+		
+	private:
+		TArray<TUniquePtr<CAchievementDef>> m_Achievements;
+
+		static CAchievementDataBlock m_Null;
+	};
+
 //	CDesignType
 
 class CDesignType
@@ -317,6 +335,7 @@ class CDesignType
 		void FireOnRandomEncounter (CSpaceObject *pObj = NULL);
 		size_t GetAllocMemoryUsage (void) const;
 		DWORD GetAPIVersion (void) const { return m_dwVersion; }
+		const CAchievementDataBlock &GetAchievementDefinitions () const { return (m_pExtra ? m_pExtra->Achievements : CAchievementDataBlock::Null()); }
 		const CArmorMassDefinitions &GetArmorMassDefinitions (void) const { return (m_pExtra ? m_pExtra->ArmorDefinitions : CArmorMassDefinitions::Null); }
 		const CString &GetAttributes (void) const { return m_sAttributes; }
 		CString GetDataField (const CString &sField) const { CString sValue; FindDataField(sField, &sValue); return sValue; }
@@ -452,6 +471,7 @@ class CDesignType
 			CArmorMassDefinitions ArmorDefinitions;		//	Armor mass definitions
 			CDisplayAttributeDefinitions DisplayAttribs;	//	Display attribute definitions
 			CItemEncounterDefinitions ItemEncounterDefinitions;	//	Item encounter definitions
+			CAchievementDataBlock Achievements;			//	Achievements defined by this type
 
 			SEventHandlerDesc EventsCache[evtCount];	//	Cached events
 			};
@@ -748,6 +768,7 @@ class CSystemMapRef : public CDesignTypeRef<CSystemMap>
 #include "TSEImages.h"
 #include "TSESounds.h"
 #include "TSEComms.h"
+#include "TSEAchievements.h"
 
 //	Items ----------------------------------------------------------------------
 
@@ -1410,6 +1431,7 @@ class CDesignCollection
 		void FireOnGlobalUniverseLoad (void);
 		void FireOnGlobalUniverseSave (void);
 		void FireOnGlobalUpdate (int iTick);
+		const CAchievementDefinitions &GetAchievementDefinitions () const { return m_AchievementDefinitions; }
 		const CAdventureDesc &GetAdventureDesc (void) const { return (m_pAdventureDesc ? *m_pAdventureDesc : m_EmptyAdventure); }
 		CAdventureDesc &GetAdventureDesc (void) { return (m_pAdventureDesc ? *m_pAdventureDesc : m_EmptyAdventure); }
 		DWORD GetAdventureUNID (void) const { return (m_pAdventureExtension ? m_pAdventureExtension->GetUNID() : 0); }
@@ -1479,6 +1501,7 @@ class CDesignCollection
 		CExtension *m_pAdventureExtension = NULL;
 		CAdventureDesc *m_pAdventureDesc = NULL;
 		TSortMap<CString, const CEconomyType *> m_EconomyIndex;
+		CAchievementDefinitions m_AchievementDefinitions;
 		CArmorMassDefinitions m_ArmorDefinitions;
 		CDisplayAttributeDefinitions m_DisplayAttribs;
 		CItemEncounterDefinitions m_ItemEncounterDefinitions;

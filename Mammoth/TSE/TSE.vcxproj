@@ -258,6 +258,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\TSEAccessibilitySettings.h" />
+    <ClInclude Include="..\Include\TSEAchievements.h" />
     <ClInclude Include="..\Include\TSEEngineDefs.h" />
     <ClInclude Include="..\Include\TSEListImpl.h" />
     <ClInclude Include="..\Include\TSEOverlays.h" />
@@ -365,6 +366,10 @@
     <ClCompile Include="C3DObjectPos.cpp" />
     <ClCompile Include="CAbilitySet.cpp" />
     <ClCompile Include="CAccessibilitySettings.cpp" />
+    <ClCompile Include="CAchievementDataBlock.cpp" />
+    <ClCompile Include="CAchievementDef.cpp" />
+    <ClCompile Include="CAchievementDefinitions.cpp" />
+    <ClCompile Include="CAchievementRecord.cpp" />
     <ClCompile Include="CAdventureHighScoreList.cpp" />
     <ClCompile Include="CAdventureRecord.cpp" />
     <ClCompile Include="CAIDeterModule.cpp" />
