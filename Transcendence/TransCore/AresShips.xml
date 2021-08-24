@@ -121,7 +121,8 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rsSandstormHD;" imageX="0" imageY="0" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rsSandstorm;" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" viewportRatio="0.005"/>
+		<HeroImage imageID="&rsSandstormHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="150"	posRadius="8"	posZ="0"	rotation="180"/>
@@ -799,6 +800,7 @@
 	<Image UNID="&rsChasmHD;"					bitmap="Resources\ChasmHD.jpg" bitmask="Resources\ChasmHDMask.bmp" loadOnUse="true" />
 	<Image UNID="&rsChasmHero;"					bitmap="Resources\ChasmLarge.jpg" bitmask="Resources\ChasmLargeMask.bmp" loadOnUse="true" />
 
-	<Image UNID="&rsSandstormHD;"				bitmap="Resources\SandstormHD.jpg" bitmask="Resources\SandstormHDMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsSandstorm;"					bitmap="Resources\Sandstorm.jpg" bitmask="Resources\SandstormMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsSandstormHero;"				bitmap="Resources\SandstormLarge.jpg" bitmask="Resources\SandstormLargeMask.bmp" loadOnUse="true" />
 	
 </TranscendenceModule>
