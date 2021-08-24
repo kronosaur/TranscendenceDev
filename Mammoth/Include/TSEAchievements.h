@@ -15,7 +15,10 @@ class CAchievementDef
 		ALERROR BindDesign (SDesignLoadCtx &Ctx);
 		const CString &GetID () const { return m_sID; }
 		const CObjectImageArray &GetImage () const { return m_Image; }
+		CString GetName (const ICCItem *pData = NULL) const;
 		int GetSortOrder () const { return m_iSortOrder; }
+		const CString &GetSteamID () const { return m_sSteamID; }
+		int GetSteamIDCode () const { return m_iSteamID; }
 		const CDesignType &GetType () const { return m_Type; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Entry);
 
@@ -33,6 +36,8 @@ class CAchievementDefinitions
 	{
 	public:
 		ALERROR AddDefinitions (SDesignLoadCtx &Ctx, const CAchievementDataBlock &Def);
+		int GetCount () const { return m_List.GetCount(); }
+		const CAchievementDef &GetDefinition (int iIndex) const { if (iIndex < 0 || iIndex >= m_List.GetCount()) throw CException(ERR_FAIL); return *m_List[iIndex]; }
 
 	private:
 		TSortMap<CString, const CAchievementDef *> m_List;
@@ -54,7 +59,7 @@ class CAchievementRecord
 		const SAchievement &GetAchievement (int iIndex) const { if (iIndex < 0 || iIndex >= m_Achievements.GetCount()) throw CException(ERR_FAIL); return m_Achievements[iIndex]; }
 		int GetCount () const { return m_Achievements.GetCount(); }
 		void Init (const CAchievementDefinitions &Defs);
-		void RegisterAchievement (const CString &sID, ICCItem *pData = NULL);
+		void RegisterAchievement (const CString &sID, const ICCItem *pData = NULL);
 
 	private:
 		TSortMap<CString, SAchievement> m_Achievements;

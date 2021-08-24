@@ -9,6 +9,12 @@
 
 #define ID_ATTRIB								CONSTLIT("id")
 #define SORT_ORDER_ATTRIB						CONSTLIT("sortOrder")
+#define STEAM_ID_ATTRIB							CONSTLIT("steamID")
+
+#define STR_UNTITLED							CONSTLIT("Untitled: %s")
+
+#define LANGID_DESC								CONSTLIT("%s.desc")
+#define LANGID_NAME								CONSTLIT("%s.name")
 
 ALERROR CAchievementDef::BindDesign (SDesignLoadCtx &Ctx)
 
@@ -21,6 +27,20 @@ ALERROR CAchievementDef::BindDesign (SDesignLoadCtx &Ctx)
 		return error;
 
 	return NOERROR;
+	}
+
+CString CAchievementDef::GetName (const ICCItem *pData) const
+
+//	GetName
+//
+//	Translates the achievement name.
+
+	{
+	CString sText;
+	if (!m_Type.TranslateText(strPatternSubst(LANGID_NAME, GetID()), pData, &sText))
+		return strPatternSubst(STR_UNTITLED, GetID());
+
+	return sText;
 	}
 
 ALERROR CAchievementDef::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Entry)
@@ -45,5 +65,25 @@ ALERROR CAchievementDef::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &En
 			return error;
 		}
 
+	//	Parse Steam ID
+
+	CString sSteamID;
+	if (Entry.FindAttribute(STEAM_ID_ATTRIB, &sSteamID))
+		{
+		const char *pPos = sSteamID.GetASCIIZPointer();
+		const char *pStart = pPos;
+		while (*pPos != '\0' && *pPos != '=')
+			pPos++;
+
+		m_sSteamID = CString(pStart, pPos - pStart);
+
+		if (*pPos == '=')
+			{
+			pPos++;
+			m_iSteamID = strParseInt(pPos, 0);
+			}
+		}
+
 	return NOERROR;
 	}
+
