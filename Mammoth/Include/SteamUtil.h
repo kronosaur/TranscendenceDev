@@ -21,6 +21,7 @@ class CSteamService : public ICIService
 		virtual bool HasCapability (DWORD dwCapability) override;
 		virtual ALERROR InitFromXML (CXMLElement *pDesc, bool *retbModified) override;
 		virtual ALERROR LoadUserCollection (ITaskProcessor *pProcessor, CExtensionCollection &Extensions, CMultiverseModel &Multiverse, CString *retsResult = NULL) override;
+		virtual ALERROR PostAchievement (ITaskProcessor *pProcessor, const CAchievementDef &Achievement, CString *retsResult = NULL) override;
 		virtual ALERROR PostGameRecord (ITaskProcessor *pProcessor, const CGameRecord &Record, const CGameStats &Stats, CString *retsResult = NULL) override;
 		virtual ALERROR ReadHighScoreList (ITaskProcessor *pProcessor, DWORD dwAdventure, CAdventureHighScoreList *retHighScores, CString *retsResult = NULL) override;
 		virtual ALERROR SignInUser (ITaskProcessor *pProcessor, const CString &sUsername, const CString &sPassword, bool bAutoSignIn, CString *retsResult = NULL) override;

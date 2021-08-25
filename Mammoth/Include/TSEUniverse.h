@@ -261,6 +261,7 @@ class CUniverse
 				virtual const CG16bitFont &GetFont (const CString &sFont) const { const CG16bitFont *pFont; if (!FindFont(sFont, &pFont)) return CG16bitFont::GetDefault(); return *pFont; }
 				virtual void LogOutput (const CString &sLine) const { ::kernelDebugLogString(sLine); }
 				virtual void OnSaveGame (void) const { }
+				virtual void PostAchievement (const CAchievementDef &Def) { }
 			};
 
 		class INotifications
@@ -562,6 +563,7 @@ class CUniverse
 		void PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags);
 		void PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rScale, DWORD dwFlags, bool *retbNewEnemies = NULL);
 		void PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale, DWORD dwFlags = 0);
+		bool SetAchievement (const CString &sID, CString *retsError = NULL);
 		void SetLogImageLoad (bool bLog = true) { CSmartLock Lock(m_cs); m_iLogImageLoad += (bLog ? -1 : +1); }
 		bool Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode = updateNormal);
 		void UpdateExtended (void);
@@ -594,6 +596,7 @@ class CUniverse
 		ALERROR InitFonts (void);
 		ALERROR InitRequiredEncounters (CString *retsError);
 		ALERROR InitTopology (DWORD dwStartingMap, CString *retsError);
+		void PostAchievement (const CAchievementDef &Def) { if (!m_pHost) throw CException(ERR_FAIL); m_pHost->PostAchievement(Def); }
 		void SetHost (IHost *pHost);
 		void SetPlayer (IPlayerController *pPlayer);
 		void UpdateTick (SSystemUpdateCtx &Ctx);

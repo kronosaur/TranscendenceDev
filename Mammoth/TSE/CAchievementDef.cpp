@@ -29,7 +29,46 @@ ALERROR CAchievementDef::BindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-CString CAchievementDef::GetName (const ICCItem *pData) const
+bool CAchievementDef::CanPost () const
+
+//	CanPost
+//
+//	Returns TRUE if we can post to the Multiverse.
+
+	{
+	const CExtension *pExtension = m_Type.GetExtension();
+	if (!pExtension)
+		return false;
+
+	if (!pExtension->IsRegistered())
+		return false;
+
+	return true;
+	}
+
+bool CAchievementDef::CanPostToSteam () const
+
+//	CanPostToSteam
+//
+//	Returns TRUE if we can post to Steam.
+
+	{
+	if (m_sSteamID.IsBlank())
+		return false;
+
+	const CExtension *pExtension = m_Type.GetExtension();
+	if (!pExtension)
+		return false;
+
+#ifndef DEBUG
+	if (!pExtension->IsOfficial())
+		return false;
+#endif
+
+	return true;
+	}
+
+CString CAchievementDef::GetName () const
 
 //	GetName
 //
@@ -37,7 +76,7 @@ CString CAchievementDef::GetName (const ICCItem *pData) const
 
 	{
 	CString sText;
-	if (!m_Type.TranslateText(strPatternSubst(LANGID_NAME, GetID()), pData, &sText))
+	if (!m_Type.TranslateText(strPatternSubst(LANGID_NAME, GetID()), NULL, &sText))
 		return strPatternSubst(STR_UNTITLED, GetID());
 
 	return sText;
@@ -86,4 +125,3 @@ ALERROR CAchievementDef::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &En
 
 	return NOERROR;
 	}
-

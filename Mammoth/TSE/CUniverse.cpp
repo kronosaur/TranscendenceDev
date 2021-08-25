@@ -2602,6 +2602,31 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 	return NOERROR;
 	}
 
+bool CUniverse::SetAchievement (const CString &sID, CString *retsError)
+
+//	SetAchievement
+//
+//	Sets an achievement.
+
+	{
+	//	First look for the achievement definition.
+
+	auto &Achievements = m_Design.GetAchievementDefinitions();
+	auto pDef = Achievements.FindDefinition(sID);
+	if (!pDef)
+		{
+		if (retsError) *retsError = strPatternSubst("Unknown achievement ID: %s.", sID);
+		return false;
+		}
+
+	//	Post to service.
+
+	if (pDef->CanPost())
+		m_pHost->PostAchievement(*pDef);
+
+	return true;
+	}
+
 void CUniverse::SetCurrentSystem (CSystem *pSystem, bool bPlayerHasEntered)
 
 //	SetCurrentSystem

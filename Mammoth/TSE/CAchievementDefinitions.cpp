@@ -45,3 +45,17 @@ ALERROR CAchievementDefinitions::AddDefinitions (SDesignLoadCtx &Ctx, const CAch
 
 	return NOERROR;
 	}
+
+const CAchievementDef *CAchievementDefinitions::FindDefinition (const CString &sID) const
+
+//	FindDefinition
+//
+//	Finds the definition by ID.
+
+	{
+	auto *ppDef = m_List.GetAt(sID);
+	if (!ppDef)
+		return NULL;
+
+	return *ppDef;
+	}

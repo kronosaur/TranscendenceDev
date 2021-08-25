@@ -569,6 +569,7 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		virtual void GameOutput (const CString &sLine) override;
 		virtual CG32bitPixel GetColor (const CString &sColor) const override;
 		virtual const CG16bitFont &GetFont (const CString &sFont) const override;
+		virtual void PostAchievement (const CAchievementDef &Def) override;
 
 		//	IAniCommand
 		virtual void OnAniCommand (const CString &sID, const CString &sEvent, const CString &sCmd, DWORD dwData);

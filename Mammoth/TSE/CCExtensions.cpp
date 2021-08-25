@@ -559,6 +559,7 @@ ICCItem *fnDesignFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_UNIVERSE_SET_OBJECT_KNOWN	8
 #define FN_UNIVERSE_ENTITY				9
 #define FN_UNIVERSE_GET_PROPERTY		10
+#define FN_UNIVERSE_SET_ACHIEVEMENT		11
 
 ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -4047,6 +4048,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"unvGetTick",					fnUniverseGet,	FN_UNIVERSE_TICK,
 			"(unvGetTick) -> time",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{	"unvSetAchievement",			fnUniverseGet,	FN_UNIVERSE_SET_ACHIEVEMENT,
+			"(unvSetAchievement id) -> True/Nil\n\n",
+			"s",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"unvSetExtensionData",			fnUniverseGet,	FN_UNIVERSE_SET_EXTENSION_DATA,
 			"(unvSetExtensionData scope attrib data) -> True/Nil\n\n"
@@ -15659,6 +15664,17 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Unable to store data"), pArgs->GetElement(1));
 
 			//	Result
+
+			return pCC->CreateTrue();
+			}
+
+		case FN_UNIVERSE_SET_ACHIEVEMENT:
+			{
+			CString sID = pArgs->GetElement(0)->GetStringValue();
+
+			CString sError;
+			if (!pCtx->GetUniverse().SetAchievement(sID, &sError))
+				return pCC->CreateError(sError);
 
 			return pCC->CreateTrue();
 			}
