@@ -38,6 +38,7 @@ class CAchievementDefinitions
 	{
 	public:
 		ALERROR AddDefinitions (SDesignLoadCtx &Ctx, const CAchievementDataBlock &Def);
+		void DeleteAll () { m_List.DeleteAll(); }
 		const CAchievementDef *FindDefinition (const CString &sID) const;
 		int GetCount () const { return m_List.GetCount(); }
 		const CAchievementDef &GetDefinition (int iIndex) const { if (iIndex < 0 || iIndex >= m_List.GetCount()) throw CException(ERR_FAIL); return *m_List[iIndex]; }

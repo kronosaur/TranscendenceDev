@@ -2115,6 +2115,7 @@ void CDesignCollection::Unbind (void)
 	m_DisplayAttribs.DeleteAll();
 	m_ItemEncounterDefinitions.DeleteAll();
 	m_EconomyIndex.DeleteAll();
+	m_AchievementDefinitions.DeleteAll();
 
 	//	Reset
 
