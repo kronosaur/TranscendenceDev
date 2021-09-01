@@ -34,10 +34,10 @@ ALERROR CAchievementDef::BindDesign (SDesignLoadCtx &Ctx)
 			&& IsEnabled())
 		{
 		if (!m_Type.TranslateText(strPatternSubst(LANGID_DESC, GetID()), NULL, NULL))
-			Ctx.GetUniverse().DebugOutput(strPatternSubst("WARNING: Expected %s.desc language ID in type %08x.", GetID(), m_Type.GetUNID()));
+			Ctx.GetUniverse().LogOutput(strPatternSubst("WARNING: Expected %s.desc language ID in type %08x.", GetID(), m_Type.GetUNID()));
 
 		if (!m_Type.TranslateText(strPatternSubst(LANGID_NAME, GetID()), NULL, NULL))
-			Ctx.GetUniverse().DebugOutput(strPatternSubst("WARNING: Expected %s.name language ID in type %08x.", GetID(), m_Type.GetUNID()));
+			Ctx.GetUniverse().LogOutput(strPatternSubst("WARNING: Expected %s.name language ID in type %08x.", GetID(), m_Type.GetUNID()));
 		}
 
 	return NOERROR;

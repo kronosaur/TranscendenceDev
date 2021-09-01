@@ -36,7 +36,7 @@ class CPlayerGameStats
         DWORD GetSystemLastVisitedTime (const CString &sNodeID);
 		ICCItemPtr GetSystemStat (const CString &sStat, const CString &sNodeID) const;
 		bool HasVisitedMultipleSystems (void) const;
-		int IncItemStat (const CString &sStat, DWORD dwUNID, int iInc);
+		int IncItemStat (const CString &sStat, const CItemType &ItemType, int iInc);
 		int IncScore (int iScore) { m_iScore = Max(0, m_iScore + iScore); return m_iScore; }
 		int IncStat (const CString &sStat, int iInc = 1);
 		int IncSystemStat (const CString &sStat, const CString &sNodeID, int iInc);
@@ -131,14 +131,22 @@ class CPlayerGameStats
 			int iAsteroidsMined = 0;				//	Count of asteroids explored for resources
 			};
 
+		struct SOreMinedAchievementDesc
+			{
+			CString sAchievementID;
+			int iOreMinedThreshold = 0;				//	Must be less than this value
+			};
+
 		bool AddMatchingKeyEvents (const CString &sNodeID, const CDesignTypeCriteria &Crit, TArray<SKeyEventStats> *pEventList, TArray<SKeyEventStatsResult> *retList) const;
 		bool FindItemStats (DWORD dwUNID, SItemTypeStats **retpStats) const;
+		bool FireMineOreAchievement (int iLastValue, int iCurrentValue);
 		CString GenerateKeyEventStat (TArray<SKeyEventStatsResult> &List) const;
 		SItemTypeStats *GetItemStats (DWORD dwUNID);
 		bool GetMatchingKeyEvents (const CString &sNodeID, const CDesignTypeCriteria &Crit, TArray<SKeyEventStatsResult> *retList) const;
 		SShipClassStats *GetShipStats (DWORD dwUNID);
 		SStationTypeStats *GetStationStats (DWORD dwUNID);
 		const SSystemStats *GetSystemStats (const CString &sNodeID) const;
+		void OnOreMined (const CItemType &ItemType, int iTonsMined);
 		SSystemStats *SetSystemStats (const CString &sNodeID);
 
 		static void WriteTimeValue (CMemoryWriteStream &Output, DWORD dwTime);
@@ -149,6 +157,7 @@ class CPlayerGameStats
 		CTimeSpan m_PlayTime;					//	Total time spent playing the game
 		CTimeSpan m_GameTime;					//	Total elapsed time in the game
         Metric m_rFuelConsumed = 0.0;			//  Total fuel consumed (fuel units)
+		int m_iTonsOfOreMined = 0;				//	Total tons of ore mined
 
 		TMap<DWORD, SItemTypeStats> m_ItemStats;
 		TSortMap<CString, SPlayerShipStats> m_PlayerShipStats;
@@ -160,6 +169,8 @@ class CPlayerGameStats
 
 		int m_iExtraSystemsVisited = 0;			//	For backwards compatibility
 		int m_iExtraEnemyShipsDestroyed = 0;	//	For backwards compatibility
+
+		static std::initializer_list<SOreMinedAchievementDesc> m_OreMinedAchievements;
 	};
 
 class IPlayerController

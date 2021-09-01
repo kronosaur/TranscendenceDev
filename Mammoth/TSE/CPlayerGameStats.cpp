@@ -5,6 +5,8 @@
 
 #include "PreComp.h"
 
+#define ATTRIB_ORE								CONSTLIT("ore")
+
 #define ASTEROIDS_MINED_STAT					CONSTLIT("asteroidsMined")
 #define BEST_ENEMY_SHIPS_DESTROYED_STAT			CONSTLIT("bestEnemyShipsDestroyed")
 #define ENEMY_OBJS_DESTROYED_STAT				CONSTLIT("enemyObjsDestroyed")
@@ -29,6 +31,7 @@
 #define SCORE_STAT								CONSTLIT("score")
 #define SYSTEM_DATA_STAT						CONSTLIT("systemData")
 #define SYSTEMS_VISITED_STAT					CONSTLIT("systemsVisited")
+#define TONS_OF_ORE_MINED_STAT					CONSTLIT("tonsOfOreMined")
 
 #define NIL_VALUE								CONSTLIT("Nil")
 
@@ -42,6 +45,15 @@
 #define STR_MISSION_FAILURE						CONSTLIT("missionFailure")
 #define STR_MISSION_SUCCESS						CONSTLIT("missionSuccess")
 #define STR_SAVED								CONSTLIT("saved")
+
+std::initializer_list<CPlayerGameStats::SOreMinedAchievementDesc> CPlayerGameStats::m_OreMinedAchievements = {
+	{	"",										1			},
+	{	"core.mineOre1",						100			},
+	{	"core.mineOre100",						1000		},
+	{	"core.mineOre1000",						10000		},
+	{	"core.mineOre10000",					100000		},
+	{	"core.mineOre100000",					100000000	},
+};
 
 class CStatCounterArray
 	{
@@ -286,6 +298,40 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
 		}
 	else
 		return NULL;
+	}
+
+bool CPlayerGameStats::FireMineOreAchievement (int iLastValue, int iCurrentValue)
+
+//	FireMineOreAchievement
+//
+//	Fires an achievement if the new value crosses a threshold.
+
+	{
+	if (iLastValue >= iCurrentValue)
+		return false;
+
+	int iLastThreshold = -1;
+
+	for (const auto &Entry : m_OreMinedAchievements)
+		{
+		if (iLastThreshold == -1 && iLastValue < Entry.iOreMinedThreshold)
+			iLastThreshold = Entry.iOreMinedThreshold;
+
+		if (iCurrentValue < Entry.iOreMinedThreshold)
+			{
+			//	If we're at the same level still, then nothing to do.
+
+			if (iLastThreshold == Entry.iOreMinedThreshold)
+				return false;
+
+			//	Otherwise, fire an achievement.
+
+			m_Universe.SetAchievement(Entry.sAchievementID);
+			return true;
+			}
+		}
+
+	return false;
 	}
 
 void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlayerShip, bool bGameOver) const
@@ -994,6 +1040,13 @@ ICCItemPtr CPlayerGameStats::GetStat (const CString &sStat) const
 		else
 			return ICCItemPtr(iCount);
 		}
+	else if (strEquals(sStat, TONS_OF_ORE_MINED_STAT))
+		{
+		if (m_iTonsOfOreMined == 0)
+			return ICCItemPtr::Nil();
+		else
+			return ICCItemPtr(m_iTonsOfOreMined);
+		}
 	else
 		{
 		CString sResult = GetStatString(sStat);
@@ -1287,14 +1340,14 @@ ICCItemPtr CPlayerGameStats::GetSystemStat (const CString &sStat, const CString 
 		return ICCItemPtr::Nil();
 	}
 
-int CPlayerGameStats::IncItemStat (const CString &sStat, DWORD dwUNID, int iInc)
+int CPlayerGameStats::IncItemStat (const CString &sStat, const CItemType &ItemType, int iInc)
 
 //	IncItemStat
 //
 //	Increments a stat for the given item.
 
 	{
-	SItemTypeStats *pStats = GetItemStats(dwUNID);
+	SItemTypeStats *pStats = GetItemStats(ItemType.GetUNID());
 
 	if (strEquals(sStat, ITEMS_BOUGHT_COUNT_STAT))
 		{
@@ -1319,6 +1372,13 @@ int CPlayerGameStats::IncItemStat (const CString &sStat, DWORD dwUNID, int iInc)
 	else if (strEquals(sStat, ITEMS_MINED_COUNT_STAT))
 		{
 		pStats->iCountMined += Max(0, iInc);
+
+		//	For ore, we track some other values and potentially fire 
+		//	achievements.
+
+		if (ItemType.HasAttribute(ATTRIB_ORE) && iInc > 0)
+			OnOreMined(ItemType, iInc);
+
 		return pStats->iCountMined;
 		}
 	else if (strEquals(sStat, ITEMS_SOLD_COUNT_STAT))
@@ -1608,6 +1668,23 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 		}
 	}
 
+void CPlayerGameStats::OnOreMined (const CItemType &ItemType, int iTonsMined)
+
+//	OnOreMined
+//
+//	Ore has been mined.
+
+	{
+	//	Add to our running count.
+
+	int iPrevValue = m_iTonsOfOreMined;
+	m_iTonsOfOreMined += iTonsMined;
+
+	//	See if we've reached various achievements, and if so, then fire.
+
+	FireMineOreAchievement(iPrevValue, m_iTonsOfOreMined);
+	}
+
 void CPlayerGameStats::OnPowerInvoked (const CPower &Power)
 
 //	OnPowerInvoked
@@ -1737,6 +1814,7 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 //	CTimeSpan	m_PlayTime
 //	CTimeSpan	m_GameTime
 //  Metric      m_rFuelConsumed
+//	DWORD		m_iTonsOfOreMined
 //
 //	DWORD		Count of item types
 //	DWORD			UNID
@@ -1834,6 +1912,9 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 129)
 		Ctx.pStream->Read(m_rFuelConsumed);
+
+	if (Ctx.dwVersion >= 207)
+		Ctx.pStream->Read(m_iTonsOfOreMined);
 
 	Ctx.pStream->Read(dwCount);
 	for (int i = 0; i < (int)dwCount; i++)
@@ -2014,6 +2095,7 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 //	CTimeSpan	m_PlayTime
 //	CTimeSpan	m_GameTime
 //  Metric      m_rFuelConsumed
+//	DWORD		m_iTonsOfOreMined
 //
 //	DWORD		Count of item types
 //	DWORD			UNID
@@ -2071,6 +2153,7 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 	m_PlayTime.WriteToStream(pStream);
 	m_GameTime.WriteToStream(pStream);
 	pStream->Write(m_rFuelConsumed);
+	pStream->Write(m_iTonsOfOreMined);
 
 	dwSave = m_ItemStats.GetCount();
 	pStream->Write(dwSave);

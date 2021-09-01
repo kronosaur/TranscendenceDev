@@ -237,7 +237,7 @@ struct SLoadCtx
 
 	CUniverse &GetUniverse (void) { return m_Universe; }
 
-	DWORD dwVersion;					//	See CSystem.cpp for version history
+	DWORD dwVersion;					//	See SYSTEM_SAVE_VERSION in TSEVersions.h for history
 
 	IReadStream *pStream;				//	Stream to load from
 	CSystem *pSystem;					//	System to load into

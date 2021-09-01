@@ -2619,7 +2619,7 @@ bool CUniverse::SetAchievement (const CString &sID, CString *retsError)
 		//	because an adventure might not define the achievement.
 
 		if (InDebugMode())
-			DebugOutput(strPatternSubst("WARNING: Unknown achievement ID: %s.", sID));
+			LogOutput(strPatternSubst("WARNING: Unknown achievement ID: %s.", sID));
 
 		return true;
 		}

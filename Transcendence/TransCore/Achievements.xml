@@ -26,7 +26,7 @@
 					>
 			</Achievement>
 
-			<Achievement id="core.sampleReturn"
+			<Achievement id="core.mineOre1"
 					sortOrder="01|50"
 					steamID="SOTP_SAMPLE_RETURN=3"
 					>
@@ -64,6 +64,27 @@
 					>
 			</Achievement>
 
+			<!-- LEVEL 3 -->
+
+			<Achievement id="core.mineOre100"
+					sortOrder="03|20"
+					steamID="SOTP_INCREASING_RETURNS=3"
+					>
+			</Achievement>
+
+			<!-- LEVEL 5 -->
+
+			<Achievement id="core.mineOre1000"
+					sortOrder="05|30"
+					steamID="SOTP_ORE_RUSH=3"
+					>
+			</Achievement>
+
+			<!-- DISABLED ACHIEVEMENTS -->
+
+			<Achievement id="core.mineOre10000"		disabled="true"/>
+			<Achievement id="core.mineOre100000"	disabled="true"/>
+
 		</Achievements>
 
 		<Language>
@@ -87,8 +108,8 @@
 				Make peace between Raisu Station and Centauri Warlords.
 			
 			</Text>
-			<Text id="core.sampleReturn.name">Sample Return</Text>
-			<Text id="core.sampleReturn.desc">
+			<Text id="core.mineOre1.name">Sample Return</Text>
+			<Text id="core.mineOre1.desc">
 
 				Mine at least 1 ton of ore.
 			
@@ -129,6 +150,23 @@
 			
 			</Text>
 
+			<!-- LEVEL 3 ACHIEVEMENTS -->
+
+			<Text id="core.mineOre100.name">Increasing Returns</Text>
+			<Text id="core.mineOre100.desc">
+
+				Mine at least 100 tons of ore.
+			
+			</Text>
+
+			<!-- LEVEL 5 ACHIEVEMENTS -->
+
+			<Text id="core.mineOre1000.name">Ore Rush</Text>
+			<Text id="core.mineOre1000.desc">
+
+				Mine at least 1,000 tons of ore.
+			
+			</Text>
 		</Language>
 	</Type>
 

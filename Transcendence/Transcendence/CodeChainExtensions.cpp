@@ -575,7 +575,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'resurrectCount\n"
 			"   'score\n"
 			"   'systemData\n"
-			"   'systemsVisited\n",
+			"   'systemsVisited\n"
+			"   'tonsOfOreMined\n",
 
 			"is",	0,	},
 
@@ -1367,7 +1368,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Increment
 
-			int iResult = pPlayer->GetGameStats().IncItemStat(sStat, pType->GetUNID(), iInc);
+			int iResult = pPlayer->GetGameStats().IncItemStat(sStat, *pType, iInc);
 
 			//	Return
 
