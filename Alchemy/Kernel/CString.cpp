@@ -126,7 +126,7 @@ CString::CString (CharacterSets iCharSet, const char *pString) :
 
 			//	Now convert back to system code page
 
-			Size(iUnicodeLen);
+			Size(iUnicodeLen+1);
 			iResult = ::WideCharToMultiByte(CP_ACP, 0, szUnicode, iUnicodeLen, m_pStore->pString, iUnicodeLen, NULL, NULL);
 
 			//	Deal with failure
@@ -146,7 +146,7 @@ CString::CString (CharacterSets iCharSet, const char *pString) :
 						return;
 						}
 
-					Size(iSystemLen);
+					Size(iSystemLen+1);
 					iResult = ::WideCharToMultiByte(CP_ACP, 0, szUnicode, iUnicodeLen, m_pStore->pString, iSystemLen, NULL, NULL);
 					}
 				else
