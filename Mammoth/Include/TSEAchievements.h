@@ -18,20 +18,23 @@ class CAchievementDef
 		const CString &GetID () const { return m_sID; }
 		const CObjectImageArray &GetImage () const { return m_Image; }
 		CString GetName () const;
-		int GetSortOrder () const { return m_iSortOrder; }
+		const CString &GetSortOrder () const { return m_sSortOrder; }
 		const CString &GetSteamID () const { return m_sSteamID; }
 		int GetSteamIDCode () const { return m_iSteamID; }
 		const CDesignType &GetType () const { return m_Type; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Entry);
+		bool IsEnabled () const { return !m_bDisabled; }
 
 	private:
 		CDesignType &m_Type;					//	Type defining achievement (for translation)
 		CString m_sID;
-		int m_iSortOrder = 0;
+		CString m_sSortOrder;
 		CObjectImageArray m_Image;
 
 		int m_iSteamID = 0;
 		CString m_sSteamID;
+
+		bool m_bDisabled = false;
 	};
 
 class CAchievementDefinitions

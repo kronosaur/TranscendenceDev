@@ -7,6 +7,7 @@
 
 #define IMAGE_TAG								CONSTLIT("Image")
 
+#define DISABLED_ATTRIB							CONSTLIT("disabled")
 #define ID_ATTRIB								CONSTLIT("id")
 #define SORT_ORDER_ATTRIB						CONSTLIT("sortOrder")
 #define STEAM_ID_ATTRIB							CONSTLIT("steamID")
@@ -25,6 +26,19 @@ ALERROR CAchievementDef::BindDesign (SDesignLoadCtx &Ctx)
 	{
 	if (ALERROR error = m_Image.OnDesignLoadComplete(Ctx))
 		return error;
+
+	//	In debug mode, check to make sure we have the appropriate language 
+	//	elements.
+
+	if (Ctx.GetUniverse().InDebugMode()
+			&& IsEnabled())
+		{
+		if (!m_Type.TranslateText(strPatternSubst(LANGID_DESC, GetID()), NULL, NULL))
+			Ctx.GetUniverse().DebugOutput(strPatternSubst("WARNING: Expected %s.desc language ID in type %08x.", GetID(), m_Type.GetUNID()));
+
+		if (!m_Type.TranslateText(strPatternSubst(LANGID_NAME, GetID()), NULL, NULL))
+			Ctx.GetUniverse().DebugOutput(strPatternSubst("WARNING: Expected %s.name language ID in type %08x.", GetID(), m_Type.GetUNID()));
+		}
 
 	return NOERROR;
 	}
@@ -96,7 +110,7 @@ ALERROR CAchievementDef::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &En
 		return ERR_FAIL;
 		}
 
-	m_iSortOrder = Entry.GetAttributeInteger(SORT_ORDER_ATTRIB);
+	m_sSortOrder = Entry.GetAttribute(SORT_ORDER_ATTRIB);
 
 	if (const CXMLElement *pImageXML = Entry.GetContentElementByTag(IMAGE_TAG))
 		{
@@ -122,6 +136,10 @@ ALERROR CAchievementDef::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &En
 			m_iSteamID = strParseInt(pPos, 0);
 			}
 		}
+
+	//	Options
+
+	m_bDisabled = Entry.GetAttributeBool(DISABLED_ATTRIB);
 
 	return NOERROR;
 	}

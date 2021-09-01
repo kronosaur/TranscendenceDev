@@ -2615,9 +2615,20 @@ bool CUniverse::SetAchievement (const CString &sID, CString *retsError)
 	auto pDef = Achievements.FindDefinition(sID);
 	if (!pDef)
 		{
-		if (retsError) *retsError = strPatternSubst("Unknown achievement ID: %s.", sID);
-		return false;
+		//	In debug mode, we report this, but otherwise we fail silently 
+		//	because an adventure might not define the achievement.
+
+		if (InDebugMode())
+			DebugOutput(strPatternSubst("WARNING: Unknown achievement ID: %s.", sID));
+
+		return true;
 		}
+
+	//	If achievement is disabled, then it just means the adventure or 
+	//	extension does not use this achievement.
+
+	if (!pDef->IsEnabled())
+		return true;
 
 	//	Post to service.
 
