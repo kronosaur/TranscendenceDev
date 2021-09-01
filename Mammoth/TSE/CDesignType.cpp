@@ -2701,9 +2701,7 @@ void CDesignType::InitCachedEvents (int iCount, const char **pszEvents, SEventHa
 //	Initializes events cached by subclassess.
 
 	{
-	int i;
-
-	for (i = 0; i < iCount; i++)
+	for (int i = 0; i < iCount; i++)
 		{
 		if (!FindEventHandler(CString(pszEvents[i], -1, true), &retEvents[i]))
 			{
