@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidAchievements;">
+		<Achievements>
+
+			<!-- LEVEL 1 -->
+
+			<Achievement id="sotp.finishedTraining"
+					sortOrder="01|10"
+					steamID="SOTP_FINISHED_TRAINING=0"
+					>
+				<Image imageID="&rsBenedictMission;"	imageWidth="384" imageHeight="192"/>
+			</Achievement>
+
+			<Achievement id="humanSpace.avengerOfRaisu"
+					sortOrder="01|20"
+					steamID="SOTP_AVENGER_OF_RAISU=1"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.peacemakerOfRaisu"
+					sortOrder="01|25"
+					steamID="SOTP_PEACEMAKER_OF_RAISU=2"
+					>
+			</Achievement>
+
+			<Achievement id="core.sampleReturn"
+					sortOrder="01|50"
+					steamID="SOTP_SAMPLE_RETURN=3"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.vigilanteOfEridani"
+					sortOrder="01|80"
+					steamID="SOTP_VIGILANTE_OF_ERIDANI=4"
+					>
+			</Achievement>
+
+			<Achievement id="core.interstellarTraveler"
+					sortOrder="01|90"
+					steamID="SOTP_INTERSTELLAR_TRAVELER=5"
+					>
+			</Achievement>
+
+			<!-- LEVEL 2 -->
+
+			<Achievement id="humanSpace.freighterEscort"
+					sortOrder="02|20"
+					steamID="SOTP_FREIGHTER_ESCORT=5"
+					>
+			</Achievement>
+
+			<Achievement id="core.collateralDamage"
+					sortOrder="02|30"
+					steamID="SOTP_COLLATERAL_DAMAGE=5"
+					>
+			</Achievement>
+
+			<Achievement id="core.peddler"
+					sortOrder="02|50"
+					steamID="SOTP_PEDDLER=5"
+					>
+			</Achievement>
+
+		</Achievements>
+
+		<Language>
+			<!-- LEVEL 1 ACHIEVEMENTS -->
+
+			<Text id="sotp.finishedTraining.name">Benedict's Pupil</Text>
+			<Text id="sotp.finishedTraining.desc">
+
+				Complete Benedict's training session in Eridani.
+			
+			</Text>
+			<Text id="humanSpace.avengerOfRaisu.name">Avenger of Raisu</Text>
+			<Text id="humanSpace.avengerOfRaisu.desc">
+
+				Destroy Centauri settlement in Eridani.
+			
+			</Text>
+			<Text id="humanSpace.peacemakerOfRaisu.name">Peacemaker of Raisu</Text>
+			<Text id="humanSpace.peacemakerOfRaisu.desc">
+
+				Make peace between Raisu Station and Centauri Warlords.
+			
+			</Text>
+			<Text id="core.sampleReturn.name">Sample Return</Text>
+			<Text id="core.sampleReturn.desc">
+
+				Mine at least 1 ton of ore.
+			
+			</Text>
+			<Text id="humanSpace.vigilanteOfEridani.name">Vigilante of Eridani</Text>
+			<Text id="humanSpace.vigilanteOfEridani.desc">
+
+				Destroy all enemy stations in Eridani in Challenge Mode or Permadeath.
+			
+			</Text>
+			<Text id="core.interstellarTraveler.name">Interstellar Traveler</Text>
+			<Text id="core.interstellarTraveler.desc">
+
+				Leave your home star system.
+			
+			</Text>
+
+			<!-- LEVEL 2 ACHIEVEMENTS -->
+
+			<Text id="humanSpace.freighterEscort.name">Freighter Escort</Text>
+			<Text id="humanSpace.freighterEscort.desc">
+
+				Successfully escort at least one Korolov freighter.
+			
+			</Text>
+
+			<Text id="core.collateralDamage.name">Collateral Damage</Text>
+			<Text id="core.collateralDamage.desc">
+
+				Kill an enemy by blowing up a different enemy.
+			
+			</Text>
+
+			<Text id="core.peddler.name">Peddler</Text>
+			<Text id="core.peddler.desc">
+
+				Earn 10,000 credits profit from trading.
+			
+			</Text>
+
+		</Language>
+	</Type>
+
+</TranscendenceModule>

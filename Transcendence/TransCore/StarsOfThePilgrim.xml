@@ -20,6 +20,7 @@
 	<!ENTITY msBenedictToKorolov		"0x0020000B">
 	<!ENTITY msBenedictTraining			"0x0020000C">
 	<!ENTITY rsGalacticCoreMissionTile	"0x0020000D">
+	<!ENTITY unidAchievements			"0x0020000E">
 	
 	<!-- 0010-005F BENEDICT MISSION ARC -->
 	
@@ -238,6 +239,7 @@
 		</Language>
 	</AdventureDesc>
 		
+	<Module filename="Achievements.xml"/>
 	<Module filename="Benedict00.xml"/>
 	<Module filename="Benedict01.xml"/>
 	<Module filename="Benedict02.xml"/>

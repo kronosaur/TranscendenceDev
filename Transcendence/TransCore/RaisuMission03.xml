@@ -60,6 +60,8 @@
 							(if (not (obj@ stationObj 'abandoned))
 								(objSet@ stationObj 'playerStatus 'hero)
 								)
+
+							(unvSetAchievement 'humanSpace.avengerOfRaisu)
 							)
 					)
 			</OnCompleted>
@@ -316,6 +318,8 @@
 									)
 									(objSet@ stationObj 'raisu.showWelcome Nil)
 									(typSet@ &msRaisuStation03; 'settlementSpared True)
+
+									(unvSetAchievement 'humanSpace.peacemakerOfRaisu)
 									)
 								)
 							}
