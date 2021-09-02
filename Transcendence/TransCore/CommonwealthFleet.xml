@@ -990,6 +990,8 @@ PLAYER DATA
 			valueBonusPerCharge="150"
 
 			description=		"This external pod is loaded with thirty-six XM900 nuclear missiles and can be installed without the aid of a station."
+
+			showChargesInUseMenu="true"
 			>
 
 		<Image imageID="&rsItemsNAMI4;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
