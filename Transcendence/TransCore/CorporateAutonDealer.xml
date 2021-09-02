@@ -355,7 +355,7 @@
 									(switch
 										;	Auton has hull damage and armor damage
 
-										(and hullDamage (ls armorHPLeft armorHPMax))
+										(and (gr hullDamage 0) (ls armorHPLeft armorHPMax))
 											(block ()
 												(setq repairArmor True)
 												(setq repairHull True)
@@ -464,6 +464,7 @@
 
 							(if (scrGetData gScreen 'repairHull)
 								(block (
+									(autonConfig (@ theEntry 'autonConfig))
 									)
 									(set@ autonConfig 'maxHullHP Nil)
 									(set@ autonConfig 'hullHP Nil)
