@@ -340,7 +340,7 @@ ALERROR CSteamService::PostAchievement (ITaskProcessor *pProcessor, const CAchie
 	{
 	//	Only post if it's valid for Steam.
 
-	if (!Achievement.CanPostToSteam())
+	if (!m_bConnected || !Achievement.CanPostToSteam())
 		return NOERROR;
 
 	//	Set the achievement

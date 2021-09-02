@@ -279,6 +279,9 @@
 	<SystemMap UNID="&unidPartISystemMap;"
 			displayOn="&smHumanSpace;"
 			>
+		<Properties>
+			<Global id="interstellarTraveler"></Global>
+		</Properties>
 			
 		<TopologyCreator>
 			<Node ID="NewBeyondMainline"/>
@@ -336,6 +339,21 @@
 					(unvSetObjectKnown 'A7 "t +unid:&stCommonwealthSettlement;;")
 					)
 			</OnGlobalUniverseCreated>
+
+			<OnGlobalPlayerEnteredSystem>
+				(switch
+					(typ@ gType 'interstellarTraveler)
+						Nil
+
+					(= (sysGetNode) (obj@ gPlayerShip 'startingSystem))
+						Nil
+
+					(block ()
+						(typSet@ gType 'interstellarTraveler True)
+						(unvSetAchievement 'sotp.interstellarTraveler)
+						)
+					)
+			</OnGlobalPlayerEnteredSystem>
 		</Events>
 	</SystemMap>
 

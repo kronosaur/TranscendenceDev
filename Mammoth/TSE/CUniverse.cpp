@@ -2630,6 +2630,13 @@ bool CUniverse::SetAchievement (const CString &sID, CString *retsError)
 	if (!pDef->IsEnabled())
 		return true;
 
+	//	If this is not a registered game, then we can't post.
+
+#ifndef DEBUG
+	if (!IsRegistered())
+		return true;
+#endif
+
 	//	Post to service.
 
 	if (pDef->CanPost())

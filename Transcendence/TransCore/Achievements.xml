@@ -46,7 +46,7 @@
 
 			<!-- LEVEL 2 -->
 
-			<Achievement id="humanSpace.freighterEscort"
+			<Achievement id="humanSpace.korolovEscort"
 					sortOrder="02|20"
 					steamID="SOTP_FREIGHTER_ESCORT=5"
 					>
@@ -129,8 +129,8 @@
 
 			<!-- LEVEL 2 ACHIEVEMENTS -->
 
-			<Text id="humanSpace.freighterEscort.name">Freighter Escort</Text>
-			<Text id="humanSpace.freighterEscort.desc">
+			<Text id="humanSpace.korolovEscort.name">Freighter Escort</Text>
+			<Text id="humanSpace.korolovEscort.desc">
 
 				Successfully escort at least one Korolov freighter.
 			

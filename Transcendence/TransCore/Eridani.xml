@@ -9,6 +9,11 @@
 				attributes=		"envWater, eridaniScript"
 				noExtraEncounters=	"true"
 				>
+		<Properties>
+			<!-- Set to TRUE when all enemy stations have been destroyed -->
+			<Global id="allEnemiesDestroyed"></Global>
+		</Properties>
+
 		<EncounterOverrides>
 			<Encounter unid="&stMiningColony;"		unique="inSystem"/>
 		</EncounterOverrides>
@@ -535,6 +540,34 @@
 						)
 					)
 			</OnCreate>
+
+			<OnSystemObjDestroyed>
+				(switch
+					;	If all enemy stations are already dead, then nothing to do.
+
+					(typ@ gType 'allEnemiesDestroyed)
+						Nil
+
+					;	If this is not an enemy station, then skip
+
+					(not (objMatches aObjDestroyed gPlayerShip "TE +populated;"))
+						Nil
+
+					;	Count remaining enemy stations. If some are still left, then 
+					;	we're done (we exclude objects that cannot attack, like Arco
+					;	Vaughn's habitat).
+
+					(sysFindObject gPlayerShip "TAE +populated; +property:canAttack;")
+						(dbgOutput (count (sysFindObject gPlayerShip "TAE +populated; +property:canAttack;")) " enemy station(s) remaining")
+
+					;	If we get this far, then all enemy stations have been destroyed.
+
+					(block ()
+						(typSet@ gType 'allEnemiesDestroyed True)
+						(unvSetAchievement 'humanSpace.vigilanteOfEridani)
+						)
+					)
+			</OnSystemObjDestroyed>
 		</Events>
 
 		<Language>

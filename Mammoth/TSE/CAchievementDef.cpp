@@ -74,10 +74,8 @@ bool CAchievementDef::CanPostToSteam () const
 	if (!pExtension)
 		return false;
 
-#ifndef DEBUG
 	if (!pExtension->IsOfficial())
 		return false;
-#endif
 
 	return true;
 	}
