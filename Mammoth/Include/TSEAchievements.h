@@ -17,6 +17,7 @@ class CAchievementDef
 		bool CanPostToSteam () const;
 		const CString &GetID () const { return m_sID; }
 		const CObjectImageArray &GetImage () const { return m_Image; }
+		CDifficultyOptions::ELevel GetMinDifficulty () const { return m_iMinDifficulty; }
 		CString GetName () const;
 		const CString &GetSortOrder () const { return m_sSortOrder; }
 		const CString &GetSteamID () const { return m_sSteamID; }
@@ -29,6 +30,7 @@ class CAchievementDef
 		CDesignType &m_Type;					//	Type defining achievement (for translation)
 		CString m_sID;
 		CString m_sSortOrder;
+		CDifficultyOptions::ELevel m_iMinDifficulty = CDifficultyOptions::ELevel::Unknown;
 		CObjectImageArray m_Image;
 
 		int m_iSteamID = 0;

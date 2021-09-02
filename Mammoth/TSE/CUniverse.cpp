@@ -2630,6 +2630,14 @@ bool CUniverse::SetAchievement (const CString &sID, CString *retsError)
 	if (!pDef->IsEnabled())
 		return true;
 
+	//	If this achievement has a minimum difficulty, then make sure we're at 
+	//	least that level.
+
+	CDifficultyOptions::ELevel iMinDifficulty = pDef->GetMinDifficulty();
+	if ((iMinDifficulty != CDifficultyOptions::ELevel::Unknown)
+			&& (GetDifficultyLevel() < iMinDifficulty))
+		return true;
+
 	//	If this is not a registered game, then we can't post.
 
 #ifndef DEBUG

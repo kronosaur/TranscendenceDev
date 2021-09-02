@@ -33,6 +33,7 @@
 			</Achievement>
 
 			<Achievement id="humanSpace.vigilanteOfEridani"
+					minDifficulty="challenge"
 					sortOrder="01|80"
 					steamID="HS_VIGILANTE_OF_ERIDANI=4"
 					>
@@ -53,6 +54,7 @@
 			</Achievement>
 
 			<Achievement id="core.collateralDamage"
+					minDifficulty="normal"
 					sortOrder="02|30"
 					steamID="CORE_COLLATERAL_DAMAGE=5"
 					>

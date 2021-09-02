@@ -9,6 +9,7 @@
 
 #define DISABLED_ATTRIB							CONSTLIT("disabled")
 #define ID_ATTRIB								CONSTLIT("id")
+#define MIN_DIFFICULTY_ATTRIB					CONSTLIT("minDifficulty")
 #define SORT_ORDER_ATTRIB						CONSTLIT("sortOrder")
 #define STEAM_ID_ATTRIB							CONSTLIT("steamID")
 
@@ -138,6 +139,17 @@ ALERROR CAchievementDef::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &En
 	//	Options
 
 	m_bDisabled = Entry.GetAttributeBool(DISABLED_ATTRIB);
+
+	CString sMinDifficulty = Entry.GetAttribute(MIN_DIFFICULTY_ATTRIB);
+	if (!sMinDifficulty.IsBlank())
+		{
+		m_iMinDifficulty = CDifficultyOptions::ParseID(sMinDifficulty);
+		if (m_iMinDifficulty == CDifficultyOptions::ELevel::Unknown)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Unknown difficulty level: %s."), sMinDifficulty);
+			return ERR_FAIL;
+			}
+		}
 
 	return NOERROR;
 	}
