@@ -1433,22 +1433,14 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	The value
 
-			CurrencyValue iPrice = pArgs->GetElement(iArg)->GetIntegerValue();
-
-			//	Convert to credits, if necessary
-
-			if (!pCurrency->IsCreditEquivalent())
-				{
-				const CEconomyType *pCreditEcon = CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
-				iPrice = pCreditEcon->Exchange(pCurrency, iPrice);
-				}
+			CCurrencyAndValue Price(pArgs->GetElement(iArg)->GetIntegerValue(), pCurrency);
 
 			//	Record
 
 			if (dwData == FN_PLY_RECORD_BUY_ITEM)
-				pPlayer->OnItemBought(Item, iPrice);
+				pPlayer->OnItemBought(Item, Price);
 			else
-				pPlayer->OnItemSold(Item, iPrice);
+				pPlayer->OnItemSold(Item, Price);
 
 			pResult = pCC->CreateTrue();
 			break;

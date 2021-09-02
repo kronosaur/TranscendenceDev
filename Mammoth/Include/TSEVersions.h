@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							52;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
-constexpr DWORD SYSTEM_SAVE_VERSION =					207;
+constexpr DWORD SYSTEM_SAVE_VERSION =					208;
 
 //	Uncomment out the following define when building a stable release
 
@@ -750,3 +750,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					207;
 //
 //	207: 1.9
 //		Added m_iTonsOfOreMined to CPlayerGameStats
+//
+//	208: 1.9
+//		Added m_TotalValueSold and m_TotalValueBought to CPlayerGameStats

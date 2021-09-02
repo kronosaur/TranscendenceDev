@@ -16,31 +16,31 @@
 
 			<Achievement id="humanSpace.avengerOfRaisu"
 					sortOrder="01|20"
-					steamID="SOTP_AVENGER_OF_RAISU=1"
+					steamID="HS_AVENGER_OF_RAISU=1"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.peacemakerOfRaisu"
 					sortOrder="01|25"
-					steamID="SOTP_PEACEMAKER_OF_RAISU=2"
+					steamID="HS_PEACEMAKER_OF_RAISU=2"
 					>
 			</Achievement>
 
 			<Achievement id="core.mineOre1"
 					sortOrder="01|50"
-					steamID="SOTP_SAMPLE_RETURN=3"
+					steamID="CORE_SAMPLE_RETURN=3"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.vigilanteOfEridani"
 					sortOrder="01|80"
-					steamID="SOTP_VIGILANTE_OF_ERIDANI=4"
+					steamID="HS_VIGILANTE_OF_ERIDANI=4"
 					>
 			</Achievement>
 
 			<Achievement id="core.interstellarTraveler"
 					sortOrder="01|90"
-					steamID="SOTP_INTERSTELLAR_TRAVELER=5"
+					steamID="CORE_INTERSTELLAR_TRAVELER=5"
 					>
 			</Achievement>
 
@@ -48,19 +48,19 @@
 
 			<Achievement id="humanSpace.korolovEscort"
 					sortOrder="02|20"
-					steamID="SOTP_FREIGHTER_ESCORT=5"
+					steamID="HS_FREIGHTER_ESCORT=5"
 					>
 			</Achievement>
 
 			<Achievement id="core.collateralDamage"
 					sortOrder="02|30"
-					steamID="SOTP_COLLATERAL_DAMAGE=5"
+					steamID="CORE_COLLATERAL_DAMAGE=5"
 					>
 			</Achievement>
 
-			<Achievement id="core.peddler"
+			<Achievement id="core.trade10K"
 					sortOrder="02|50"
-					steamID="SOTP_PEDDLER=5"
+					steamID="CORE_PEDDLER=5"
 					>
 			</Achievement>
 
@@ -68,7 +68,15 @@
 
 			<Achievement id="core.mineOre100"
 					sortOrder="03|20"
-					steamID="SOTP_INCREASING_RETURNS=3"
+					steamID="CORE_INCREASING_RETURNS=3"
+					>
+			</Achievement>
+
+			<!-- LEVEL 4 -->
+
+			<Achievement id="core.trade50K"
+					sortOrder="04|40"
+					steamID="CORE_BROKER=3"
 					>
 			</Achievement>
 
@@ -76,7 +84,31 @@
 
 			<Achievement id="core.mineOre1000"
 					sortOrder="05|30"
-					steamID="SOTP_ORE_RUSH=3"
+					steamID="CORE_ORE_RUSH=3"
+					>
+			</Achievement>
+
+			<!-- LEVEL 6 -->
+
+			<Achievement id="core.trade150K"
+					sortOrder="06|50"
+					steamID="CORE_ENTREPRENEUR=3"
+					>
+			</Achievement>
+
+			<!-- LEVEL 8 -->
+
+			<Achievement id="core.trade500K"
+					sortOrder="08|50"
+					steamID="CORE_TYCOON=3"
+					>
+			</Achievement>
+
+			<!-- LEVEL 9 -->
+
+			<Achievement id="core.trade1M"
+					sortOrder="09|30"
+					steamID="CORE_MERCHANT_PRINCE=3"
 					>
 			</Achievement>
 
@@ -143,8 +175,8 @@
 			
 			</Text>
 
-			<Text id="core.peddler.name">Peddler</Text>
-			<Text id="core.peddler.desc">
+			<Text id="core.trade10K.name">Peddler</Text>
+			<Text id="core.trade10K.desc">
 
 				Earn 10,000 credits profit from trading.
 			
@@ -159,6 +191,15 @@
 			
 			</Text>
 
+			<!-- LEVEL 4 ACHIEVEMENTS -->
+
+			<Text id="core.trade50K.name">Broker</Text>
+			<Text id="core.trade50K.desc">
+
+				Earn 50,000 credits profit from trading.
+			
+			</Text>
+
 			<!-- LEVEL 5 ACHIEVEMENTS -->
 
 			<Text id="core.mineOre1000.name">Ore Rush</Text>
@@ -167,6 +208,34 @@
 				Mine at least 1,000 tons of ore.
 			
 			</Text>
+
+			<!-- LEVEL 6 ACHIEVEMENTS -->
+
+			<Text id="core.trade150K.name">Entrepreneur</Text>
+			<Text id="core.trade150K.desc">
+
+				Earn 150,000 credits profit from trading.
+			
+			</Text>
+
+			<!-- LEVEL 8 ACHIEVEMENTS -->
+
+			<Text id="core.trade500K.name">Tycoon</Text>
+			<Text id="core.trade500K.desc">
+
+				Earn 500,000 credits profit from trading.
+			
+			</Text>
+
+			<!-- LEVEL 9 ACHIEVEMENTS -->
+
+			<Text id="core.trade1M.name">Merchant Prince</Text>
+			<Text id="core.trade1M.desc">
+
+				Earn 1 million credits profit from trading.
+			
+			</Text>
+
 		</Language>
 	</Type>
 

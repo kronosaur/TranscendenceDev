@@ -4033,6 +4033,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 				
 			"   'apiVersion        Engine API version\n"
 			"   'defaultCurrency   Default currency\n"
+			"   'difficulty        Difficulty level\n"
 			"   'minAPIVersion     Lowest API version used by extensions\n",
 
 			"s",	0,	},

@@ -53,7 +53,17 @@ std::initializer_list<CPlayerGameStats::SOreMinedAchievementDesc> CPlayerGameSta
 	{	"core.mineOre1000",						10000		},
 	{	"core.mineOre10000",					100000		},
 	{	"core.mineOre100000",					100000000	},
-};
+	};
+
+std::initializer_list<CPlayerGameStats::SProfitAchievementDesc> CPlayerGameStats::m_ProfitAchievements = {
+	{	"",										10'000			},
+	{	"core.trade10K",						50'000			},
+	{	"core.trade50K",						150'000			},
+	{	"core.trade150K",						500'000			},
+	{	"core.trade500K",						1'000'000		},
+	{	"core.trade1M",							5'000'000		},
+	{	"core.trade5M",							1'000'000'000	},
+	};
 
 class CStatCounterArray
 	{
@@ -322,6 +332,40 @@ bool CPlayerGameStats::FireMineOreAchievement (int iLastValue, int iCurrentValue
 			//	If we're at the same level still, then nothing to do.
 
 			if (iLastThreshold == Entry.iOreMinedThreshold)
+				return false;
+
+			//	Otherwise, fire an achievement.
+
+			m_Universe.SetAchievement(Entry.sAchievementID);
+			return true;
+			}
+		}
+
+	return false;
+	}
+
+bool CPlayerGameStats::FireProfitAchievement (CurrencyValue LastValue, CurrencyValue CurrentValue)
+
+//	FireProfitAchievement
+//
+//	Fires an achievement if the new value crosses a threshold.
+
+	{
+	if (CurrentValue <= 0 || LastValue >= CurrentValue)
+		return false;
+
+	CurrencyValue LastThreshold = -1;
+
+	for (const auto &Entry : m_ProfitAchievements)
+		{
+		if (LastThreshold == -1 && LastValue < Entry.ProfitThreshold)
+			LastThreshold = Entry.ProfitThreshold;
+
+		if (CurrentValue < Entry.ProfitThreshold)
+			{
+			//	If we're at the same level still, then nothing to do.
+
+			if (LastThreshold == Entry.ProfitThreshold)
 				return false;
 
 			//	Otherwise, fire an achievement.
@@ -1356,7 +1400,10 @@ int CPlayerGameStats::IncItemStat (const CString &sStat, const CItemType &ItemTy
 		}
 	else if (strEquals(sStat, ITEMS_BOUGHT_VALUE_STAT))
 		{
+		//	NOTE: We assume default currency
 		pStats->iValueBought += (CurrencyValue)Max(0, iInc);
+		m_TotalValueBought += (CurrencyValue)Max(0, iInc);
+
 		return (int)pStats->iValueBought;
 		}
 	else if (strEquals(sStat, ITEMS_DAMAGED_HP_STAT))
@@ -1388,7 +1435,10 @@ int CPlayerGameStats::IncItemStat (const CString &sStat, const CItemType &ItemTy
 		}
 	else if (strEquals(sStat, ITEMS_SOLD_VALUE_STAT))
 		{
+		//	NOTE: We assume default currency
 		pStats->iValueSold += (CurrencyValue)Max(0, iInc);
+		m_TotalValueSold += (CurrencyValue)Max(0, iInc);
+
 		return (int)pStats->iValueSold;
 		}
 	else
@@ -1451,19 +1501,24 @@ void CPlayerGameStats::OnGameEnd (CSpaceObject *pPlayer)
 	DEBUG_CATCH
 	}
 
-void CPlayerGameStats::OnItemBought (const CItem &Item, CurrencyValue iTotalPrice)
+void CPlayerGameStats::OnItemBought (const CItem &Item, const CCurrencyAndValue &TotalValue)
 
 //	OnItemBought
 //
 //	Player bought an item
 
 	{
-	if (iTotalPrice <= 0)
+	//	Convert to default currency.
+
+	CurrencyValue iTotalValue = m_Universe.GetDefaultCurrency().Exchange(TotalValue);
+	if (iTotalValue <= 0)
 		return;
 
 	SItemTypeStats *pStats = GetItemStats(Item.GetType()->GetUNID());
 	pStats->iCountBought += Item.GetCount();
-	pStats->iValueBought += iTotalPrice;
+	pStats->iValueBought += iTotalValue;
+
+	m_TotalValueBought += iTotalValue;
 	}
 
 void CPlayerGameStats::OnItemDamaged (const CItem &Item, int iHP)
@@ -1508,19 +1563,33 @@ void CPlayerGameStats::OnItemInstalled (const CItem &Item)
 	pStats->iCountInstalled++;
 	}
 
-void CPlayerGameStats::OnItemSold (const CItem &Item, CurrencyValue iTotalPrice)
+void CPlayerGameStats::OnItemSold (const CItem &Item, const CCurrencyAndValue &TotalValue)
 
 //	OnItemSold
 //
 //	Player sold an item
 
 	{
-	if (iTotalPrice <= 0)
+	//	Convert to default currency.
+
+	CurrencyValue iTotalValue = m_Universe.GetDefaultCurrency().Exchange(TotalValue);
+	if (iTotalValue <= 0)
 		return;
+
+	//	Add item stats
 
 	SItemTypeStats *pStats = GetItemStats(Item.GetType()->GetUNID());
 	pStats->iCountSold += Item.GetCount();
-	pStats->iValueSold += iTotalPrice;
+	pStats->iValueSold += iTotalValue;
+
+	//	Compute profit
+
+	CurrencyValue PrevProfit = m_TotalValueSold - m_TotalValueBought;
+	m_TotalValueSold += iTotalValue;
+	CurrencyValue CurProfit = PrevProfit + iTotalValue;
+
+	if (CurProfit > 0)
+		FireProfitAchievement(PrevProfit, CurProfit);
 	}
 
 void CPlayerGameStats::OnItemUninstalled (const CItem &Item)
@@ -1815,6 +1884,8 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 //	CTimeSpan	m_GameTime
 //  Metric      m_rFuelConsumed
 //	DWORD		m_iTonsOfOreMined
+//	CurrencyValue	m_TotalValueSold
+//	CurrencyValue	m_TotalValueBought
 //
 //	DWORD		Count of item types
 //	DWORD			UNID
@@ -1915,6 +1986,12 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 207)
 		Ctx.pStream->Read(m_iTonsOfOreMined);
+
+	if (Ctx.dwVersion >= 208)
+		{
+		Ctx.pStream->Read(m_TotalValueSold);
+		Ctx.pStream->Read(m_TotalValueBought);
+		}
 
 	Ctx.pStream->Read(dwCount);
 	for (int i = 0; i < (int)dwCount; i++)
@@ -2096,6 +2173,8 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 //	CTimeSpan	m_GameTime
 //  Metric      m_rFuelConsumed
 //	DWORD		m_iTonsOfOreMined
+//	CurrencyValue	m_TotalValueSold
+//	CurrencyValue	m_TotalValueBought
 //
 //	DWORD		Count of item types
 //	DWORD			UNID
@@ -2154,6 +2233,8 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 	m_GameTime.WriteToStream(pStream);
 	pStream->Write(m_rFuelConsumed);
 	pStream->Write(m_iTonsOfOreMined);
+	pStream->Write(m_TotalValueSold);
+	pStream->Write(m_TotalValueBought);
 
 	dwSave = m_ItemStats.GetCount();
 	pStream->Write(dwSave);

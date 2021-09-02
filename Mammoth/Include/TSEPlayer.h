@@ -42,11 +42,11 @@ class CPlayerGameStats
 		int IncSystemStat (const CString &sStat, const CString &sNodeID, int iInc);
         void OnFuelConsumed (CSpaceObject *pPlayer, Metric rFuel) { m_rFuelConsumed += rFuel; }
 		void OnGameEnd (CSpaceObject *pPlayer);
-		void OnItemBought (const CItem &Item, CurrencyValue iTotalPrice);
+		void OnItemBought (const CItem &Item, const CCurrencyAndValue &TotalValue);
 		void OnItemDamaged (const CItem &Item, int iHP);
 		void OnItemFired (const CItem &Item);
 		void OnItemInstalled (const CItem &Item);
-		void OnItemSold (const CItem &Item, CurrencyValue iTotalPrice);
+		void OnItemSold (const CItem &Item, const CCurrencyAndValue &TotalValue);
 		void OnItemUninstalled (const CItem &Item);
 		void OnKeyEvent (EEventTypes iType, CSpaceObject *pObj, DWORD dwCauseUNID);
 		void OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObject *pPlayer);
@@ -137,9 +137,16 @@ class CPlayerGameStats
 			int iOreMinedThreshold = 0;				//	Must be less than this value
 			};
 
+		struct SProfitAchievementDesc
+			{
+			CString sAchievementID;
+			CurrencyValue ProfitThreshold = 0;		//	Must be less than this value
+			};
+
 		bool AddMatchingKeyEvents (const CString &sNodeID, const CDesignTypeCriteria &Crit, TArray<SKeyEventStats> *pEventList, TArray<SKeyEventStatsResult> *retList) const;
 		bool FindItemStats (DWORD dwUNID, SItemTypeStats **retpStats) const;
 		bool FireMineOreAchievement (int iLastValue, int iCurrentValue);
+		bool FireProfitAchievement (CurrencyValue LastValue, CurrencyValue CurrentValue);
 		CString GenerateKeyEventStat (TArray<SKeyEventStatsResult> &List) const;
 		SItemTypeStats *GetItemStats (DWORD dwUNID);
 		bool GetMatchingKeyEvents (const CString &sNodeID, const CDesignTypeCriteria &Crit, TArray<SKeyEventStatsResult> *retList) const;
@@ -158,6 +165,8 @@ class CPlayerGameStats
 		CTimeSpan m_GameTime;					//	Total elapsed time in the game
         Metric m_rFuelConsumed = 0.0;			//  Total fuel consumed (fuel units)
 		int m_iTonsOfOreMined = 0;				//	Total tons of ore mined
+		CurrencyValue m_TotalValueSold = 0;		//	Total value of items bought
+		CurrencyValue m_TotalValueBought = 0;	//	Total value of items sold
 
 		TMap<DWORD, SItemTypeStats> m_ItemStats;
 		TSortMap<CString, SPlayerShipStats> m_PlayerShipStats;
@@ -171,6 +180,7 @@ class CPlayerGameStats
 		int m_iExtraEnemyShipsDestroyed = 0;	//	For backwards compatibility
 
 		static std::initializer_list<SOreMinedAchievementDesc> m_OreMinedAchievements;
+		static std::initializer_list<SProfitAchievementDesc> m_ProfitAchievements;
 	};
 
 class IPlayerController
