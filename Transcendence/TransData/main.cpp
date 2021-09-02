@@ -300,7 +300,7 @@ void AlchemyMain (CXMLElement *pCmdLine)
 		else
 			printf("Unregistered game.\n");
 
-		if (Game.IsGameResurrect() && Game.GetDifficulty() == CDifficultyOptions::ELevels::lvlPermadeath)
+		if (Game.IsGameResurrect() && Game.GetDifficulty() == CDifficultyOptions::ELevel::Permadeath)
 			{
 			if (error = Game.ClearGameResurrect())
 				{

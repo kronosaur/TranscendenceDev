@@ -1286,7 +1286,7 @@ ALERROR CTranscendenceModel::LoadGame (const CString &sSignedInUsername, const C
 		//	If this game is in end game state OR if we are forcing permadeath and this game is over then we just load the stats.
 
 		if (m_GameFile.IsEndGame() 
-				|| (m_GameFile.GetDifficulty() == CDifficultyOptions::lvlPermadeath && m_GameFile.IsGameResurrect())
+				|| (m_GameFile.GetDifficulty() == CDifficultyOptions::ELevel::Permadeath && m_GameFile.IsGameResurrect())
 				|| (m_bForcePermadeath && m_GameFile.IsGameResurrect() && m_GameFile.GetResurrectCount() == 0))
 			{
 			error = m_GameFile.LoadGameStats(&m_GameStats);
@@ -2065,7 +2065,7 @@ ALERROR CTranscendenceModel::SaveGame (DWORD dwFlags, CString *retsError)
 	if ((dwFlags & CGameFile::FLAG_ACCEPT_MISSION) 
 			&& (m_Universe.InDebugMode()
 				|| m_bNoMissionCheckpoint
-				|| m_Universe.GetDifficultyLevel() == CDifficultyOptions::lvlPermadeath))
+				|| m_Universe.GetDifficultyLevel() == CDifficultyOptions::ELevel::Permadeath))
 		return NOERROR;
 
 	//	If this is a mission check point and we've already quit the game, then

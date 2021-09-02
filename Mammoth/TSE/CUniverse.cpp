@@ -1468,8 +1468,8 @@ ALERROR CUniverse::InitGame (DWORD dwStartingMap, CString *retsError)
 	{
 	ALERROR error;
 
-	if (m_Difficulty.GetLevel() == CDifficultyOptions::lvlUnknown)
-		SetDifficultyLevel(CDifficultyOptions::lvlChallenge);
+	if (m_Difficulty.GetLevel() == CDifficultyOptions::ELevel::Unknown)
+		SetDifficultyLevel(CDifficultyOptions::ELevel::Challenge);
 
 	//	If starting map is 0, see if we can get it from the adventure
 
@@ -1828,7 +1828,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 	if (Ctx.dwVersion >= 38)
 		m_Difficulty.ReadFromStream(*pStream);
 	else
-		m_Difficulty.SetLevel(CDifficultyOptions::lvlChallenge);
+		m_Difficulty.SetLevel(CDifficultyOptions::ELevel::Challenge);
 
 	//	Prepare a universe initialization context
 	//	NOTE: Caller has set debug mode based on game file header flag.

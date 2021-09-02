@@ -103,7 +103,7 @@ struct SNewGameSettings
 	{
 	CString sPlayerName;						//	Character name
 	GenomeTypes iPlayerGenome = genomeUnknown;	//	Genome
-	CDifficultyOptions::ELevels iDifficulty = CDifficultyOptions::lvlUnknown;
+	CDifficultyOptions::ELevel iDifficulty = CDifficultyOptions::ELevel::Unknown;
 	DWORD dwPlayerShip = 0;						//	Starting ship class
 
 	bool bFullCreate = false;					//	If TRUE, create all systems

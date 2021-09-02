@@ -226,7 +226,7 @@ ALERROR CGameFile::Create (const CString &sFilename, const CString &sUsername)
 	return NOERROR;
 	}
 
-DWORD CGameFile::EncodeDifficulty (CDifficultyOptions::ELevels iLevel)
+DWORD CGameFile::EncodeDifficulty (CDifficultyOptions::ELevel iLevel)
 
 //	EncodeDifficulty
 //
@@ -237,16 +237,16 @@ DWORD CGameFile::EncodeDifficulty (CDifficultyOptions::ELevels iLevel)
 		{
 		//	Challenge level is the default
 
-		case CDifficultyOptions::lvlChallenge:
+		case CDifficultyOptions::ELevel::Challenge:
 			return 0;
 
-		case CDifficultyOptions::lvlNormal:
+		case CDifficultyOptions::ELevel::Normal:
 			return (1 << GAME_FLAG_DIFFICULTY_SHIFT);
 
-		case CDifficultyOptions::lvlStory:
+		case CDifficultyOptions::ELevel::Story:
 			return (2 << GAME_FLAG_DIFFICULTY_SHIFT);
 
-		case CDifficultyOptions::lvlPermadeath:
+		case CDifficultyOptions::ELevel::Permadeath:
 			return (3 << GAME_FLAG_DIFFICULTY_SHIFT);
 
 		default:
@@ -295,7 +295,7 @@ CString CGameFile::GetCreateVersion (DWORD dwFlags) const
 		return CString(m_Header.szCreateVersion);
 	}
 
-CDifficultyOptions::ELevels CGameFile::GetDifficulty (void) const
+CDifficultyOptions::ELevel CGameFile::GetDifficulty (void) const
 
 //	GetDifficulty
 //
@@ -307,19 +307,19 @@ CDifficultyOptions::ELevels CGameFile::GetDifficulty (void) const
 	switch (dwFlags)
 		{
 		case 0:
-			return CDifficultyOptions::lvlChallenge;
+			return CDifficultyOptions::ELevel::Challenge;
 
 		case 1:
-			return CDifficultyOptions::lvlNormal;
+			return CDifficultyOptions::ELevel::Normal;
 
 		case 2:
-			return CDifficultyOptions::lvlStory;
+			return CDifficultyOptions::ELevel::Story;
 
 		case 3:
-			return CDifficultyOptions::lvlPermadeath;
+			return CDifficultyOptions::ELevel::Permadeath;
 
 		default:
-			return CDifficultyOptions::lvlChallenge;
+			return CDifficultyOptions::ELevel::Challenge;
 		}
 	}
 

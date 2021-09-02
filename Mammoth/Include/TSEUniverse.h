@@ -456,7 +456,7 @@ class CUniverse
 		void SetCurrentSystem (CSystem *pSystem, bool bPlayerHasEntered = false);
 		void SetDebugMode (bool bDebug = true) { m_bDebugMode = bDebug; }
 		bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
-		void SetDifficultyLevel (CDifficultyOptions::ELevels iLevel) { m_Difficulty.SetLevel(iLevel); }
+		void SetDifficultyLevel (CDifficultyOptions::ELevel iLevel) { m_Difficulty.SetLevel(iLevel); }
 		void SetEngineOptions (const CEngineOptions &Options) { m_EngineOptions.Merge(Options); }
 		bool SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData);
 		void SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV = NULL);
@@ -514,7 +514,7 @@ class CUniverse
 		CSystem *GetCurrentSystem (void) { return m_pCurrentSystem; }
 		IPlayerController::EUIMode GetCurrentUIMode (void) const { return (m_pPlayer ? m_pPlayer->GetUIMode() : IPlayerController::uimodeUnknown); }
 		const CDifficultyOptions &GetDifficulty (void) const { return m_Difficulty; }
-		CDifficultyOptions::ELevels GetDifficultyLevel (void) const { return m_Difficulty.GetLevel(); }
+		CDifficultyOptions::ELevel GetDifficultyLevel (void) const { return m_Difficulty.GetLevel(); }
 		DWORD GetFrameTicks (void) const { return m_dwFrame; }
 		int GetPaintTick (void) { return m_iPaintTick; }
 		CSpaceObject *GetPOV (void) const { return m_pPOV; }
