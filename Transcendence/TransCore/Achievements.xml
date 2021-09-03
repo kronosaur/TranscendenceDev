@@ -49,20 +49,20 @@
 
 			<Achievement id="humanSpace.korolovEscort"
 					sortOrder="02|20"
-					steamID="HS_FREIGHTER_ESCORT=5"
+					steamID="HS_FREIGHTER_ESCORT=6"
 					>
 			</Achievement>
 
 			<Achievement id="core.collateralDamage"
 					minDifficulty="normal"
 					sortOrder="02|30"
-					steamID="CORE_COLLATERAL_DAMAGE=5"
+					steamID="CORE_COLLATERAL_DAMAGE=7"
 					>
 			</Achievement>
 
 			<Achievement id="core.trade10K"
 					sortOrder="02|50"
-					steamID="CORE_PEDDLER=5"
+					steamID="CORE_PEDDLER=8"
 					>
 			</Achievement>
 

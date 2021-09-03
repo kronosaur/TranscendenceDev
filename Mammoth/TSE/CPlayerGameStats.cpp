@@ -5,6 +5,8 @@
 
 #include "PreComp.h"
 
+#define ACHIEVEMENT_CORE_COLLATERAL_DAMAGE		CONSTLIT("core.collateralDamage")
+
 #define ATTRIB_ORE								CONSTLIT("ore")
 
 #define ASTEROIDS_MINED_STAT					CONSTLIT("asteroidsMined")
@@ -1704,8 +1706,14 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 			//	Adjust score for difficulty
 
 			int iScore = Max(1, mathRound(pClass->GetScore() * m_Universe.GetDifficulty().GetScoreAdj()));
-
 			m_iScore += iScore;
+
+			//	If this was caused by an explosion, then we get an achievement.
+
+			if (Ctx.Attacker.IsExplosion())
+				{
+				m_Universe.SetAchievement(ACHIEVEMENT_CORE_COLLATERAL_DAMAGE);
+				}
 			}
 		else
 			pStats->iFriendDestroyed++;

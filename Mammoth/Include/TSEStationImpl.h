@@ -299,8 +299,9 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		int CalcNumberOfShips (void);
 		bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !IsImmutable() && !m_fNoBlacklist); }
 		void ClearBlacklist (CSpaceObject *pObj);
-		void CreateDestructionEffect (void);
+		void CreateDestructionEffect (const CDamageSource &Attacker);
 		void CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int iDirection, const DamageDesc &Damage);
+		bool CreateExplosion (const CDamageSource &Attacker);
 		void CreateStructuralDestructionEffect (SDestroyCtx &Ctx);
 		ALERROR CreateMapImage (void) const;
 		void DeterAttack (CSpaceObject *pTarget);

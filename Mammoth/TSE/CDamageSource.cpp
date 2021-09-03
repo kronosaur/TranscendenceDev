@@ -7,7 +7,6 @@
 CDamageSource CDamageSource::m_Null;
 
 CDamageSource::CDamageSource (CSpaceObject *pSource, DestructionTypes iCause, CSpaceObject *pSecondarySource, const CString &sSourceName, DWORD dwSourceFlags) : 
-		m_iCause(iCause),
 		m_dwFlags(0),
 		m_sSourceName(sSourceName),
 		m_dwSourceNameFlags(dwSourceFlags)
@@ -16,6 +15,7 @@ CDamageSource::CDamageSource (CSpaceObject *pSource, DestructionTypes iCause, CS
 
 	{
 	SetObj(pSource);
+	SetCause(iCause);
 
 	m_pSecondarySource = (pSecondarySource && !pSecondarySource->IsDestroyed() ? pSecondarySource : NULL);
 	}
@@ -526,6 +526,28 @@ void CDamageSource::ReadFromStream (SLoadCtx &Ctx)
 
 	else
 		CSystem::GetObjRefFromID(Ctx, dwObjID, &m_pSource);
+	}
+
+void CDamageSource::SetCause (DestructionTypes iCause)
+
+//	SetCause
+//
+//	Sets the cause.
+
+	{
+	m_iCause = iCause;
+
+	switch (m_iCause)
+		{
+		case killedByExplosion:
+			m_dwFlags |= FLAG_IS_EXPLOSION;
+			break;
+
+		case killedByPlayerCreatedExplosion:
+			m_dwFlags |= FLAG_IS_EXPLOSION;
+			m_dwFlags |= FLAG_IS_PLAYER_CAUSED;
+			break;
+		}
 	}
 
 void CDamageSource::SetObj (CSpaceObject *pSource)

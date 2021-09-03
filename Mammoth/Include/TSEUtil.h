@@ -560,9 +560,8 @@ class CDamageSource
 		void OnObjDestroyed (CSpaceObject &ObjDestroyed);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetAutomatedWeapon (bool bValue = true) { if (bValue) m_dwFlags |= FLAG_IS_AUTOMATED_WEAPON; else m_dwFlags &= FLAG_IS_AUTOMATED_WEAPON; }
-		void SetCause (DestructionTypes iCause) { m_iCause = iCause; }
+		void SetCause (DestructionTypes iCause);
 		void SetEjecta (bool bValue = true) { if (bValue) m_dwFlags |= FLAG_IS_EJECTA; else m_dwFlags &= ~FLAG_IS_EJECTA; }
-		void SetExplosion (bool bValue = true) { if (bValue) m_dwFlags |= FLAG_IS_EXPLOSION; else m_dwFlags &= ~FLAG_IS_EXPLOSION; }
 		void SetObj (CSpaceObject *pSource);
 		void WriteToStream (IWriteStream *pStream);
 

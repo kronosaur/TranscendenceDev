@@ -1443,6 +1443,12 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 			return;
 		}
 
+	//	If the player caused this destruction, then mark it as player-created
+	//	explosion.
+
+	if (Ctx.Attacker.IsPlayerOrderGiver() && Explosion.iCause == killedByExplosion)
+		Explosion.iCause = killedByPlayerCreatedExplosion;
+
 	//	Explosion
 
 	SShotCreateCtx ShotCtx;
@@ -1455,7 +1461,6 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 		}
 
 	ShotCtx.Source = CDamageSource(this, Explosion.iCause, Ctx.pWreck);
-	ShotCtx.Source.SetExplosion();
 	ShotCtx.vPos = GetPos();
 	ShotCtx.vVel = GetVel();
 	ShotCtx.iDirection = GetRotation();
