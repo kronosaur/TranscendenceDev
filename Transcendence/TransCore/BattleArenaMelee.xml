@@ -285,6 +285,8 @@
 							(objSetGlobalData arenaObj 'arenaSkill 200)
 							(objSetData arenaObj 'matchCount 0)
 							(objSetData arenaObj 'results '(0 0 0 0))
+
+							(unvSetAchievement 'humanSpace.gladiator)
 							)
 						)
 					)

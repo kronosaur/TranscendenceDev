@@ -68,9 +68,66 @@
 
 			<!-- LEVEL 3 -->
 
+			<Achievement id="humanSpace.gladiator"
+					sortOrder="03|10"
+					steamID="HS_GLADIATOR=3"
+					>
+			</Achievement>
+
 			<Achievement id="core.mineOre100"
 					sortOrder="03|20"
 					steamID="CORE_INCREASING_RETURNS=3"
+					>
+			</Achievement>
+
+			<Achievement id="core.zeroHP"
+					sortOrder="03|25"
+					steamID="CORE_ZERO_HP=3"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.shadyDealings"
+					sortOrder="03|30"
+					steamID="HS_SHADY_DEALINGS=3"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.blackTrafficker"
+					sortOrder="03|55"
+					steamID="HS_BLACK_TRAFFICKER=3"
+					>
+			</Achievement>
+
+			<Achievement id="core.armorEnhanced"
+					sortOrder="03|40"
+					steamID="CORE_ARMOR_ENHANCED=3"
+					>
+			</Achievement>
+
+			<Achievement id="core.reactorUpgrade"
+					sortOrder="03|45"
+					steamID="CORE_REACTOR_UPGRADE=3"
+					>
+			</Achievement>
+
+			<Achievement id="core.newShip"
+					sortOrder="03|50"
+					steamID="CORE_NEW_SHIP=3"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.heroOfTheArena"
+					minDifficulty="normal"
+					sortOrder="03|80"
+					steamID="HS_HERO_OF_THE_ARENA=3"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.noWinScenario"
+					minDifficulty="challenge"
+					hidden="true"
+					sortOrder="03|90"
+					steamID="HS_NO_WIN_SCENARIO=3"
 					>
 			</Achievement>
 
@@ -186,10 +243,73 @@
 
 			<!-- LEVEL 3 ACHIEVEMENTS -->
 
+			<Text id="humanSpace.gladiator.name">Gladiator</Text>
+			<Text id="humanSpace.gladiator.desc">
+
+				Become a gladiator at the Battle Arena Maximus.
+			
+			</Text>
+
 			<Text id="core.mineOre100.name">Increasing Returns</Text>
 			<Text id="core.mineOre100.desc">
 
 				Mine at least 100 tons of ore.
+			
+			</Text>
+
+			<Text id="core.zeroHP.name">Lucky, Lucky, Lucky!</Text>
+			<Text id="core.zeroHP.desc">
+
+				Survive damage that reduces an armor segment to 0 hit points.
+			
+			</Text>
+
+			<Text id="humanSpace.shadyDealings.name">Shady Dealings</Text>
+			<Text id="humanSpace.shadyDealings.desc">
+
+				Gain an introduction to the Black Market.
+			
+			</Text>
+
+			<Text id="humanSpace.blackTrafficker.name">Black Trafficker</Text>
+			<Text id="humanSpace.blackTrafficker.desc">
+
+				Sell an illegal item to a Commonwealth station.
+			
+			</Text>
+
+			<Text id="core.armorEnhanced.name">Armorer</Text>
+			<Text id="core.armorEnhanced.desc">
+
+				Enhance all armor segments on your ship.
+			
+			</Text>
+
+			<Text id="core.reactorUpgrade.name">Power Up</Text>
+			<Text id="core.reactorUpgrade.desc">
+
+				Upgrade the reactor on your ship.
+			
+			</Text>
+
+			<Text id="core.newShip.name">That New Ship Smell</Text>
+			<Text id="core.newShip.desc">
+
+				Buy a new ship for yourself.
+			
+			</Text>
+
+			<Text id="humanSpace.heroOfTheArena.name">Hero of the Arena</Text>
+			<Text id="humanSpace.heroOfTheArena.desc">
+
+				Defeat The Slicer at the Battle Arena Maximus in Normal Mode or higher.
+			
+			</Text>
+
+			<Text id="humanSpace.noWinScenario.name">No Win Scenario</Text>
+			<Text id="humanSpace.noWinScenario.desc">
+
+				Save Korolov station in the Charon System in Challenge Mode or Permadeath.
 			
 			</Text>
 
