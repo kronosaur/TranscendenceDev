@@ -488,7 +488,9 @@ class CSystem
 		CSpaceObject *EnumObjectsInBoxPointGetNext (SSpaceObjectGridEnumerator &i) const { return m_ObjGrid.EnumGetNextInBoxPoint(i); }
 		CSpaceObject *FindObject (DWORD dwID) const;
 		CSpaceObject *FindNearestObject (CSpaceObject* pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria = CSpaceObjectCriteria()) const;
-		CSpaceObject *FindNearestTangibleObjectInArc (CSpaceObject* pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria = CSpaceObjectCriteria(), int iMinAngle = -1, int iMaxAngle = -1) const;
+		CSpaceObject *FindNearestObjectInArc (CSpaceObject* pSource, const CVector &vCenter, Metric rRange,
+			const std::function<bool(const CSpaceObject*, const CSpaceObject*, const CVector, const int, const int)> fnExclude,
+			const CSpaceObjectCriteria &Criteria = CSpaceObjectCriteria(), int iMinAngle = -1, int iMaxAngle = -1) const;
 		CSpaceObject *FindObjectInRange (CSpaceObject *pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria = CSpaceObjectCriteria()) const;
 		CSpaceObject *FindObjectWithOrbit (const COrbit &Orbit) const;
 		bool FindObjectName (const CSpaceObject *pObj, CString *retsName = NULL);

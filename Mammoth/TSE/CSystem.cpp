@@ -1830,7 +1830,9 @@ CSpaceObject *CSystem::FindNearestObject (CSpaceObject *pSource, const CVector &
 		}
 	}
 
-CSpaceObject *CSystem::FindNearestTangibleObjectInArc (CSpaceObject *pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria, int iMinAngle, int iMaxAngle) const
+CSpaceObject *CSystem::FindNearestObjectInArc (CSpaceObject *pSource, const CVector &vCenter, Metric rRange,
+	const std::function<bool(const CSpaceObject*, const CSpaceObject*, const CVector, const int, const int)> fnExclude,
+	const CSpaceObjectCriteria &Criteria, int iMinAngle, int iMaxAngle) const
 
 //	FindNearestObject
 //
@@ -1845,7 +1847,7 @@ CSpaceObject *CSystem::FindNearestTangibleObjectInArc (CSpaceObject *pSource, co
 		CCriteriaObjSelector Selector(pSource, Criteria);
 		CNearestInRadiusRange Range(vCenter, rRange);
 
-		return CSpaceObjectEnum::FindNearestTangibleObjInArc(*this, pSource, vCenter, iMinAngle, iMaxAngle, Range, Selector);
+		return CSpaceObjectEnum::FindNearestObjInArc(*this, pSource, vCenter, iMinAngle, iMaxAngle, fnExclude, Range, Selector);
 		}
 
 	//	If we don't have a criteria, then we can do this faster.
@@ -1855,7 +1857,7 @@ CSpaceObject *CSystem::FindNearestTangibleObjectInArc (CSpaceObject *pSource, co
 		CAnyObjSelector Selector;
 		CNearestInRadiusRange Range(vCenter, rRange);
 
-		return CSpaceObjectEnum::FindNearestTangibleObjInArc(*this, pSource, vCenter, iMinAngle, iMaxAngle, Range, Selector);
+		return CSpaceObjectEnum::FindNearestObjInArc(*this, pSource, vCenter, iMinAngle, iMaxAngle, fnExclude, Range, Selector);
 		}
 	}
 

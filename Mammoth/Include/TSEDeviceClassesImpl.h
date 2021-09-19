@@ -27,6 +27,11 @@ class CWeaponTargetDefinition
 		static std::unique_ptr<CWeaponTargetDefinition> ReadFromStream (SLoadCtx& Ctx);
 		void WriteToStream (IWriteStream* pStream) const;
 	private:
+		 const std::function<bool(const CSpaceObject*, const CSpaceObject*, const CVector, const int, const int)> fnExclude =
+			[](const CSpaceObject* pSource, const CSpaceObject* pObj, const CVector vCenter, const int iMinAngle, const int iMaxAngle) {
+			return pObj->IsIntangible();
+		};
+
 		Kernel::CString m_CriteriaString = "";
 		CSpaceObjectCriteria m_TargetCriteria;
 		bool m_bCheckLineOfFire = false;		//	Check line of fire for friendlies
