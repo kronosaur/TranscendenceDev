@@ -22,6 +22,8 @@ const Metric MAX_SPEED_FOR_DOCKING2 =			(0.04 * 0.04 * LIGHT_SPEED * LIGHT_SPEED
 
 const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 
+#define ACHIEVEMENT_CORE_ZERO_HP				CONSTLIT("core.zeroHP")
+
 #define FIELD_CARGO_SPACE						CONSTLIT("cargoSpace")
 #define FIELD_COUNTER_INCREMENT_RATE			CONSTLIT("counterIncrementRate")
 #define FIELD_LAUNCHER							CONSTLIT("launcher")
@@ -4548,6 +4550,15 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		//	Tell the controller that we were damaged
 
 		m_pController->OnDamaged(Ctx.Attacker, pArmor, Ctx.Damage, Ctx.iArmorDamage);
+
+		//	If we took damage that left our armor at exactly 0 hp, then that's
+		//	an achievement.
+
+		if (bIsPlayer && pArmor && pArmor->GetHitPoints() == 0 && Ctx.iArmorDamage > 0)
+			{
+			GetUniverse().SetAchievement(ACHIEVEMENT_CORE_ZERO_HP);
+			}
+
 		return damageArmorHit;
 		}
 
