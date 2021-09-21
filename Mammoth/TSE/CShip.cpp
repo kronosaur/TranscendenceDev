@@ -22,6 +22,7 @@ const Metric MAX_SPEED_FOR_DOCKING2 =			(0.04 * 0.04 * LIGHT_SPEED * LIGHT_SPEED
 
 const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 
+#define ACHIEVEMENT_CORE_REACTOR_UPGRADE		CONSTLIT("core.reactorUpgrade")
 #define ACHIEVEMENT_CORE_ZERO_HP				CONSTLIT("core.zeroHP")
 
 #define FIELD_CARGO_SPACE						CONSTLIT("cargoSpace")
@@ -3660,6 +3661,14 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSy
 
 		case itemcatLauncher:
 			m_pController->OnWeaponStatusChanged();
+			break;
+
+		case itemcatReactor:
+			//	If the player installed a new reactor, then this counts as an
+			//	achievement.
+
+			if (IsPlayer())
+				GetUniverse().SetAchievement(ACHIEVEMENT_CORE_REACTOR_UPGRADE);
 			break;
 		}
 

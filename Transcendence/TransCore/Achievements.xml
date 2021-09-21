@@ -70,56 +70,56 @@
 
 			<Achievement id="humanSpace.gladiator"
 					sortOrder="03|10"
-					steamID="HS_GLADIATOR=3"
+					steamID="HS_GLADIATOR=9"
 					>
 			</Achievement>
 
 			<Achievement id="core.mineOre100"
 					sortOrder="03|20"
-					steamID="CORE_INCREASING_RETURNS=3"
+					steamID="CORE_INCREASING_RETURNS=10"
 					>
 			</Achievement>
 
 			<Achievement id="core.zeroHP"
 					sortOrder="03|25"
-					steamID="CORE_ZERO_HP=3"
+					steamID="CORE_ZERO_HP=11"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.shadyDealings"
 					sortOrder="03|30"
-					steamID="HS_SHADY_DEALINGS=3"
+					steamID="HS_SHADY_DEALINGS=12"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.blackTrafficker"
 					sortOrder="03|55"
-					steamID="HS_BLACK_TRAFFICKER=3"
+					steamID="HS_BLACK_TRAFFICKER=13"
 					>
 			</Achievement>
 
 			<Achievement id="core.armorEnhanced"
 					sortOrder="03|40"
-					steamID="CORE_ARMOR_ENHANCED=3"
+					steamID="CORE_ARMOR_ENHANCED=14"
 					>
 			</Achievement>
 
 			<Achievement id="core.reactorUpgrade"
 					sortOrder="03|45"
-					steamID="CORE_REACTOR_UPGRADE=3"
+					steamID="CORE_REACTOR_UPGRADE=15"
 					>
 			</Achievement>
 
 			<Achievement id="core.newShip"
 					sortOrder="03|50"
-					steamID="CORE_NEW_SHIP=3"
+					steamID="CORE_NEW_SHIP=16"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.heroOfTheArena"
 					minDifficulty="normal"
 					sortOrder="03|80"
-					steamID="HS_HERO_OF_THE_ARENA=3"
+					steamID="HS_HERO_OF_THE_ARENA=17"
 					>
 			</Achievement>
 
@@ -127,15 +127,41 @@
 					minDifficulty="challenge"
 					hidden="true"
 					sortOrder="03|90"
-					steamID="HS_NO_WIN_SCENARIO=3"
+					steamID="HS_NO_WIN_SCENARIO=18"
 					>
 			</Achievement>
 
 			<!-- LEVEL 4 -->
 
+			<Achievement id="humanSpace.visitStKats"
+					sortOrder="04|10"
+					steamID="HS_VISIT_ST_KATS=19"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.insuranceResurrect"
+					hidden="true"
+					sortOrder="04|20"
+					steamID="HS_INSURANCE_RESURRECT=20"
+					>
+			</Achievement>
+
+			<Achievement id="core.autons10"
+					sortOrder="04|30"
+					steamID="CORE_AUTONS_10=21"
+					>
+			</Achievement>
+
 			<Achievement id="core.trade50K"
 					sortOrder="04|40"
-					steamID="CORE_BROKER=3"
+					steamID="CORE_BROKER=22"
+					>
+			</Achievement>
+
+			<Achievement id="core.radiationKill"
+					minDifficulty="normal"
+					sortOrder="04|50"
+					steamID="CORE_RADIATION_KILL=23"
 					>
 			</Achievement>
 
@@ -315,10 +341,38 @@
 
 			<!-- LEVEL 4 ACHIEVEMENTS -->
 
+			<Text id="humanSpace.visitStKats.name">Capital Tourist</Text>
+			<Text id="humanSpace.visitStKats.desc">
+
+				Visit the capital of the Commonwealth.
+			
+			</Text>
+
+			<Text id="humanSpace.insuranceResurrect.name">You Only Live Twice</Text>
+			<Text id="humanSpace.insuranceResurrect.desc">
+
+				Use insurance policy to resurrect.
+			
+			</Text>
+
+			<Text id="core.autons10.name">Auton Armada</Text>
+			<Text id="core.autons10.desc">
+
+				Deploy at least 10 autons at one time.
+			
+			</Text>
+
 			<Text id="core.trade50K.name">Broker</Text>
 			<Text id="core.trade50K.desc">
 
 				Earn 50,000 credits profit from trading.
+			
+			</Text>
+
+			<Text id="core.radiationKill.name">Nuke 'em 'til they Glow</Text>
+			<Text id="core.radiationKill.desc">
+
+				Kill an enemy ship by radioactive contamination in Normal Mode or higher.
 			
 			</Text>
 

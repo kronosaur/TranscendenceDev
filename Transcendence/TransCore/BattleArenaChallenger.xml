@@ -93,6 +93,9 @@
 					(switch
 						(and (= aReason 'failure) (!= gData 'playerLeft))
 							(typSetData &stBattleArena; 'arenaRank 'loser)
+
+						(= aReason 'success)
+							(unvSetAchievement 'humanSpace.heroOfTheArena)
 						)
 					)
 			</OnCompleted>
