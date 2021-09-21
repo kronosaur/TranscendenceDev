@@ -89,6 +89,8 @@
 #define ON_GLOBAL_UNIVERSE_LOAD_EVENT			CONSTLIT("OnGlobalUniverseLoad")
 #define ON_GLOBAL_UNIVERSE_SAVE_EVENT			CONSTLIT("OnGlobalUniverseSave")
 #define ON_GLOBAL_UPDATE_EVENT					CONSTLIT("OnGlobalUpdate")
+#define ON_PLAYER_BOUGHT_ITEM_EVENT				CONSTLIT("OnPlayerBoughtItem")
+#define ON_PLAYER_SOLD_ITEM_EVENT				CONSTLIT("OnPlayerSoldItem")
 #define ON_RANDOM_ENCOUNTER_EVENT				CONSTLIT("OnRandomEncounter")
 
 #define SPECIAL_EVENT							CONSTLIT("event:")
@@ -194,6 +196,8 @@ static const char *CACHED_EVENTS[CDesignType::evtCount] =
 		"OnDestroyCheck",
 		"OnGlobalTypesInit",
 		"OnObjDestroyed",
+		"OnPlayerBoughtItem",
+		"OnPlayerSoldItem",
 		"OnSystemObjAttacked",
 		"OnSystemStarted",
 		"OnSystemStopped",
@@ -1768,6 +1772,60 @@ void CDesignType::FireOnGlobalUpdate (const SEventHandlerDesc &Event)
 	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
 		ReportEventError(ON_GLOBAL_UPDATE_EVENT, pResult);
+	}
+
+void CDesignType::FireOnPlayerBoughtItem (const CItem &Item, const CCurrencyAndValue &Price)
+
+//	FireOnPlayerBoughtItem
+//
+//	Fires event when the player buys an item from this type.
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(evtOnPlayerBoughtItem, &Event))
+		return;
+
+	CCodeChainCtx Ctx(GetUniverse());
+	Ctx.DefineContainingType(this);
+
+	//	Set up
+
+	Ctx.SaveAndDefineItemVar(Item);
+	Ctx.DefineString(CONSTLIT("aCurrency"), Price.GetCurrencyType()->GetSID());
+	Ctx.DefineInteger(CONSTLIT("aPrice"), (int)Price.GetValue());
+
+	//	Run
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_PLAYER_BOUGHT_ITEM_EVENT, pResult);
+	}
+
+void CDesignType::FireOnPlayerSoldItem (const CItem &Item, const CCurrencyAndValue &Price)
+
+//	FireOnPlayerSoldItem
+//
+//	Fires event when the player sells an item to this type.
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(evtOnPlayerSoldItem, &Event))
+		return;
+
+	CCodeChainCtx Ctx(GetUniverse());
+	Ctx.DefineContainingType(this);
+
+	//	Set up
+
+	Ctx.SaveAndDefineItemVar(Item);
+	Ctx.DefineString(CONSTLIT("aCurrency"), Price.GetCurrencyType()->GetSID());
+	Ctx.DefineInteger(CONSTLIT("aPrice"), (int)Price.GetValue());
+
+	//	Run
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_PLAYER_SOLD_ITEM_EVENT, pResult);
 	}
 
 void CDesignType::FireOnRandomEncounter (CSpaceObject *pObj)

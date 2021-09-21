@@ -238,13 +238,15 @@ class CDesignType
 			evtOnDestroyCheck			= 2,
 			evtOnGlobalTypesInit		= 3,
 			evtOnObjDestroyed			= 4,
-			evtOnSystemObjAttacked		= 5,
-			evtOnSystemStarted			= 6,
-			evtOnSystemStopped			= 7,
-			evtOnSystemWeaponFire		= 8,
-			evtOnUpdate					= 9,
+			evtOnPlayerBoughtItem		= 5,
+			evtOnPlayerSoldItem			= 6,
+			evtOnSystemObjAttacked		= 7,
+			evtOnSystemStarted			= 8,
+			evtOnSystemStopped			= 9,
+			evtOnSystemWeaponFire		= 10,
+			evtOnUpdate					= 11,
 
-			evtCount					= 10,
+			evtCount					= 12,
 			};
 
 		struct SMapDescriptionCtx
@@ -332,6 +334,8 @@ class CDesignType
 		ALERROR FireOnGlobalUniverseLoad (const SEventHandlerDesc &Event);
 		ALERROR FireOnGlobalUniverseSave (const SEventHandlerDesc &Event);
 		void FireOnGlobalUpdate (const SEventHandlerDesc &Event);
+		void FireOnPlayerBoughtItem (const CItem &Item, const CCurrencyAndValue &Price);
+		void FireOnPlayerSoldItem (const CItem &Item, const CCurrencyAndValue &Price);
 		void FireOnRandomEncounter (CSpaceObject *pObj = NULL);
 		size_t GetAllocMemoryUsage (void) const;
 		DWORD GetAPIVersion (void) const { return m_dwVersion; }
