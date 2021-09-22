@@ -455,6 +455,7 @@ struct SDeviceDesc
 
 	CItem Item;									//	Item to add
 	CItemList ExtraItems;						//	Extra items to add (e.g., missiles)
+	int iVariant = 0;							//	Which variant to use
 
 	int iPosAngle = 0;							//	Slot position
 	int iPosRadius = 0;
@@ -468,6 +469,7 @@ struct SDeviceDesc
 
 	DWORD dwLinkedFireOptions = 0;				//	Slot linked-fire options
 	bool bSecondary = false;
+	bool bCycleFire = false;
 	bool bOnSegment = false;					//	Slot is (logically) on segment with ID = sID
 	bool bExternal = false;						//	Slot is external
 	bool bCannotBeEmpty = false;				//	Slot cannot be empty
