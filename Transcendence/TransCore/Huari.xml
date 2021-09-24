@@ -735,6 +735,8 @@
 										(typSetGlobalData &svHuariEmpire; "status" 'friend)
 										(sovSetDisposition &svHuariEmpire; &svPlayer; 'friend)
 										(sovSetDisposition &svPlayer; &svHuariEmpire; 'friend)
+
+										(unvSetAchievement 'humanSpace.huariFriend)
 										)
 									)
 								)

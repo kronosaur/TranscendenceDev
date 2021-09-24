@@ -5,7 +5,9 @@
 
 #include "PreComp.h"
 
+#define ACHIEVEMENT_CORE_BURIED_KILL			CONSTLIT("core.buriedKill")
 #define ACHIEVEMENT_CORE_COLLATERAL_DAMAGE		CONSTLIT("core.collateralDamage")
+#define ACHIEVEMENT_CORE_PARALYZE_KILL			CONSTLIT("core.paralyzeKill")
 #define ACHIEVEMENT_CORE_RADIATION_KILL			CONSTLIT("core.radiationKill")
 
 #define ATTRIB_ORE								CONSTLIT("ore")
@@ -1722,6 +1724,13 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 				{
 				m_Universe.SetAchievement(ACHIEVEMENT_CORE_COLLATERAL_DAMAGE);
 				}
+
+			//	If the ship was paralyzed, then we get an achievement.
+
+			if (pShip->GetCondition(ECondition::paralyzed))
+				{
+				m_Universe.SetAchievement(ACHIEVEMENT_CORE_PARALYZE_KILL);
+				}
 			}
 		else
 			pStats->iFriendDestroyed++;
@@ -1737,6 +1746,8 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 
 	else if (Ctx.Obj.GetCategory() == CSpaceObject::catStation)
 		{
+		const CStation *pStation = Ctx.Obj.AsStation();
+
 		if (Ctx.Obj.HasAttribute(CONSTLIT("populated"))
 				|| Ctx.Obj.HasAttribute(CONSTLIT("score")))
 			{
@@ -1749,6 +1760,16 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 			CSovereign *pSovereign = Ctx.Obj.GetSovereign();
 			if (pSovereign)
 				pSovereign->OnObjDestroyedByPlayer(Ctx);
+
+			if (bIsEnemy)
+				{
+				//	If this is a buried station, then achievement.
+
+				if (pStation && pStation->GetHull().GetHullType() == CStationHullDesc::hullUnderground)
+					{
+					m_Universe.SetAchievement(ACHIEVEMENT_CORE_BURIED_KILL);
+					}
+				}
 			}
 		}
 	}

@@ -167,9 +167,50 @@
 
 			<!-- LEVEL 5 -->
 
+			<Achievement id="humanSpace.visitCathedralOfDomina"
+					sortOrder="05|10"
+					steamID="HS_VISIT_CATHEDRAL_OF_DOMINA=24"
+					>
+			</Achievement>
+
+			<Achievement id="core.paralyzeKill"
+					minDifficulty="normal"
+					sortOrder="05|20"
+					steamID="CORE_PARALYZE_KILL=25"
+					>
+			</Achievement>
+
+			<Achievement id="core.buriedKill"
+					minDifficulty="normal"
+					sortOrder="05|25"
+					steamID="CORE_BURIED_KILL=26"
+					>
+			</Achievement>
+
 			<Achievement id="core.mineOre1000"
 					sortOrder="05|30"
-					steamID="CORE_ORE_RUSH=3"
+					steamID="CORE_ORE_RUSH=27"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.dwargBehemothFriend"
+					sortOrder="05|50"
+					steamID="HS_DWARG_BEHEMOTH_FRIEND=28"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.charonFrigateKiller"
+					minDifficulty="challenge"
+					sortOrder="05|70"
+					steamID="HS_CHARON_FRIGATE_KILLER=29"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.huariFriend"
+					minDifficulty="normal"
+					hidden="true"
+					sortOrder="05|80"
+					steamID="HS_HUARI_FRIEND=30"
 					>
 			</Achievement>
 
@@ -378,10 +419,52 @@
 
 			<!-- LEVEL 5 ACHIEVEMENTS -->
 
+			<Text id="humanSpace.visitCathedralOfDomina.name">Close to Domina</Text>
+			<Text id="humanSpace.visitCathedralOfDomina.desc">
+
+				Visit the Cathedral of the Sisters of Domina.
+			
+			</Text>
+
+			<Text id="core.paralyzeKill.name">Paralyzer</Text>
+			<Text id="core.paralyzeKill.desc">
+
+				Destroy an enemy ship that was paralyzed by EMP in Normal Mode or higher.
+			
+			</Text>
+
+			<Text id="core.buriedKill.name">Bunker Buster</Text>
+			<Text id="core.buriedKill.desc">
+
+				Destroy a buried asteroid station.
+			
+			</Text>
+
 			<Text id="core.mineOre1000.name">Ore Rush</Text>
 			<Text id="core.mineOre1000.desc">
 
 				Mine at least 1,000 tons of ore.
+			
+			</Text>
+
+			<Text id="humanSpace.dwargBehemothFriend.name">The Strong Follow the Stronger</Text>
+			<Text id="humanSpace.dwargBehemothFriend.desc">
+
+				Gain a Dwarg behemoth as a wingmate.
+			
+			</Text>
+
+			<Text id="humanSpace.charonFrigateKiller.name">Frigate Killer</Text>
+			<Text id="humanSpace.charonFrigateKiller.desc">
+
+				Destroy a Charon pirate frigate in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<Text id="humanSpace.huariFriend.name">Friend of the Huari</Text>
+			<Text id="humanSpace.huariFriend.desc">
+
+				Become friends with the Huari in Normal Mode or higher.
 			
 			</Text>
 

@@ -10,6 +10,10 @@
 			nestedScreen=		"true"
 			inherit=			"&dsDockScreenBase;"
 			>
+		<OnScreenInit>
+			(unvSetAchievement 'humanSpace.visitCathedralOfDomina)
+		</OnScreenInit>
+
 		<Display type="detailsPane">
 			<OnDisplayInit>
 				(typTranslate &svSistersOfDomina; 'statusDisplay)

@@ -332,7 +332,7 @@
 			inherit=			"&dsDockScreenBase;"
 			>
 		<OnScreenInit>
-			(unvSetAchievement '
+			(unvSetAchievement 'humanSpace.visitStKats)
 		</OnScreenInit>
 
 		<Panes>
