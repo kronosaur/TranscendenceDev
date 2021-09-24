@@ -6,6 +6,7 @@
 #include "PreComp.h"
 
 #define ACHIEVEMENT_CORE_COLLATERAL_DAMAGE		CONSTLIT("core.collateralDamage")
+#define ACHIEVEMENT_CORE_RADIATION_KILL			CONSTLIT("core.radiationKill")
 
 #define ATTRIB_ORE								CONSTLIT("ore")
 
@@ -1707,6 +1708,13 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 
 			int iScore = Max(1, mathRound(pClass->GetScore() * m_Universe.GetDifficulty().GetScoreAdj()));
 			m_iScore += iScore;
+
+			//	If we killed something with radiation, then achievement.
+
+			if (Ctx.Attacker.GetCause() == killedByRadiationPoisoning)
+				{
+				m_Universe.SetAchievement(ACHIEVEMENT_CORE_RADIATION_KILL);
+				}
 
 			//	If this was caused by an explosion, then we get an achievement.
 
