@@ -831,17 +831,6 @@ void CFleetCommandAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 		if ((pTarget = FindTarget(Ctx.Obj.GetTarget())) != NULL)
 			pTarget->iAssignedTo -= Ctx.Obj.GetCombatPower();
-
-		//	There's a chance that we will break and attack in response to this.
-
-		if (m_State == stateChargeInFormation
-				|| m_State == stateFormAtRallyPoint
-				|| m_State == stateWaitingForThreat
-				|| m_State == stateAttackFromRallyPoint)
-			{
-			if (mathRandom(1, 100) <= 50)
-				OrderBreakAndAttack();
-			}
 		}
 
 	//	Otherwise, check to see if a target was destroyed
@@ -1080,6 +1069,14 @@ void CFleetCommandAI::OrderBreakAndAttack ()
 //	Attack at will.
 
 	{
+	//	NOTE: This is only valid for destroy target orders because it relies on
+	//	the fact that the order target is an enemy. Also, stateAttackAtWill does
+	//	not properly handle going back to formation after the enemy is 
+	//	destroyed.
+
+	if (GetCurrentOrder() != orderDestroyTarget)
+		return;
+
 	SetState(stateAttackAtWill);
 	m_pObjective = GetCurrentOrderTarget();
 	UpdateTargetList();
