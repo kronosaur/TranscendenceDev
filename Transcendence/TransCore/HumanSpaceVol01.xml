@@ -1865,6 +1865,8 @@
 	<!ENTITY stSungCitadel				"0x00100138">
 	<!ENTITY stSungCitadelInnerWall		"0x00100139">
 	<!ENTITY stSungCitadelOuterWall		"0x0010013A">
+	<!ENTITY rsWindSlaver				"0x0010013B">
+	<!ENTITY rsWindSlaverHero			"0x0010013C">
 
 	<!-- 0140-014F XENOPHOBES -->
 	

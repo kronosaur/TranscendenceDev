@@ -80,7 +80,7 @@
 
 <!-- SHIP CLASSES -->
 
-	<!-- Slaver, Wind -->
+	<!-- Level 5: Slaver, Wind -->
 
 	<ShipClass UNID="&scWindSlaver;"
 			manufacturer=		"Sung Empire"
@@ -89,14 +89,35 @@
 			defaultSovereign=	"&svSung;"
 
 			attributes=			"genericClass, sungSlavers"
-			   
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"18"
 			mass=				"20"
-			thrustRatio=		"14"
-			maxSpeed=			"30"
 			cargoSpace=			"10"
 
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"50"
+			maxDevices=			"6"
+			maxNonWeapons=		"3"
+
+			maxArmor=			"medium"
+			stdArmor=			"light"
+
 			cyberDefenseLevel=	"4"
-			>
+			/>
+
+		<Drive
+			maxSpeed=			"30"
+			thrust=				"300"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"18.0"
+			rotationAccel=		"4.0"
+			/>
 
 		<!-- Configuration -->
 		
@@ -106,21 +127,17 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itNeutronBlaster;"/>
+			<Device deviceID="&itNeutronBlaster;"	posAngle="0" posRadius="15" posZ="0"/>
 		</Devices>
-
-		<Maneuver
-			maxRotationRate=	"18.0"
-			rotationAccel=		"4.0"
-			/>
 
 		<!-- Image and Effects -->
 		
-		<Image imageID="&rsWindSlaverHD;" imageX="0" imageY="0" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rsWindSlaver;" imageWidth="54" imageHeight="54" rotationCount="120" rotationColumns="12" viewportRatio="0.00375"/>
+		<HeroImage imageID="&rsWindSlaverHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="141"	posRadius="7"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-141"	posRadius="7"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="90"	posRadius="8"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-90"	posRadius="8"	posZ="0"	rotation="180"/>
 		</Effects>
 
 		<!-- AI and Behavior -->
@@ -1430,6 +1447,7 @@
 	<Image UNID="&rsDragonSlaverHD;"	bitmap="Resources\DragonSlaverHD.jpg"		bitmask="Resources\DragonSlaverHDMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsDragonSlaverHero;"	bitmap="Resources\DragonSlaverLarge.jpg"		bitmask="Resources\DragonSlaverLargeMask.bmp"  loadOnUse="true"/>
 
-	<Image UNID="&rsWindSlaverHD;"		bitmap="Resources\WindSlaverHD.jpg"		bitmask="Resources\WindSlaverHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsWindSlaver;"		bitmap="Resources\WindSlaver.jpg"		bitmask="Resources\WindSlaverMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsWindSlaverHero;"	bitmap="Resources\WindSlaverLarge.jpg"		bitmask="Resources\WindSlaverLargeMask.bmp"  loadOnUse="true"/>
 
 </TranscendenceModule>
