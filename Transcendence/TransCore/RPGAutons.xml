@@ -559,6 +559,27 @@
 					(if (obj@ sourceObj 'radioactive)
 						(objApplyCondition auton 'radioactive)
 						)
+
+					;	For player autons, count to see if we have 10 or more, and
+					;	set an achievement.
+
+					(if (= sourceObj gPlayerShip)
+						(block (
+							(deployedAutons
+								(map (obj@ gPlayerShip 'squadron) '(excludeNil reduceSum) theEntry
+									(if (and (find '(deployed waiting) (@ theEntry 'status))
+											(typHasAttribute (@ theEntry 'type) 'auton)
+											)
+										1
+										)
+									)
+								)
+							)
+							(if (geq deployedAutons 10)
+								(unvSetAchievement 'core.autons10)
+								)
+							)
+						)
 					
 					;	Welcome or error message
 					
