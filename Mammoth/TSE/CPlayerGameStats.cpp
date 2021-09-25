@@ -1735,6 +1735,13 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 		else
 			pStats->iFriendDestroyed++;
 
+		//	If the ship class has an achievement associated...
+
+		if (!pClass->GetAchievement().IsBlank())
+			{
+			m_Universe.SetAchievement(pClass->GetAchievement());
+			}
+
 		//	Tell the sovereign that the player destroyed one of their ships.
 
 		CSovereign *pSovereign = Ctx.Obj.GetSovereign();

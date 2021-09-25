@@ -139,6 +139,12 @@
 					>
 			</Achievement>
 
+			<Achievement id="humanSpace.visitEarthStation"
+					sortOrder="04|15"
+					steamID="HS_VISIT_EARTH_STATION=19"
+					>
+			</Achievement>
+
 			<Achievement id="humanSpace.insuranceResurrect"
 					hidden="true"
 					sortOrder="04|20"
@@ -216,25 +222,188 @@
 
 			<!-- LEVEL 6 -->
 
+			<Achievement id="humanSpace.huaramarca"
+					sortOrder="06|20"
+					hidden="true"
+					steamID="HS_HUARAMARCA=31"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.EI500Speed25"
+					sortOrder="06|40"
+					steamID="HS_EI500_SPEED_25=32"
+					>
+			</Achievement>
+
 			<Achievement id="core.trade150K"
 					sortOrder="06|50"
-					steamID="CORE_ENTREPRENEUR=3"
+					steamID="CORE_ENTREPRENEUR=33"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.kronosaurusKiller"
+					minDifficulty="challenge"
+					sortOrder="06|60"
+					steamID="HS_KRONOSAURUS_KILLER=34"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.jiangsStarKiller"
+					minDifficulty="challenge"
+					hidden="true"
+					sortOrder="06|70"
+					steamID="HS_JIANGS_STAR_KILLER=35"
+					>
+			</Achievement>
+
+			<!-- LEVEL 7 -->
+
+			<Achievement id="sotp.benedictAndFiona"
+					sortOrder="07|10"
+					steamID="SOTP_BENEDICT_AND_FIONA=36"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.outerRealm"
+					sortOrder="07|20"
+					steamID="HS_OUTER_REALM=37"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.fleetManeuvers"
+					sortOrder="07|30"
+					steamID="HS_FLEET_MANEUVERS=38"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.luminereDestroyerKiller"
+					minDifficulty="challenge"
+					sortOrder="07|50"
+					steamID="HS_LUMIERE_DESTROYER_KILLER=38"
 					>
 			</Achievement>
 
 			<!-- LEVEL 8 -->
 
+			<Achievement id="humanSpace.pointJuno"
+					minDifficulty="normal"
+					sortOrder="08|20"
+					steamID="HS_POINT_JUNO=39"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.worldshipKiller"
+					minDifficulty="challenge"
+					sortOrder="08|30"
+					steamID="HS_WORLDSHIP_KILLER=40"
+					>
+			</Achievement>
+
 			<Achievement id="core.trade500K"
 					sortOrder="08|50"
-					steamID="CORE_TYCOON=3"
+					steamID="CORE_TYCOON=41"
 					>
 			</Achievement>
 
 			<!-- LEVEL 9 -->
 
+			<Achievement id="humanSpace.theLamplighter"
+					minDifficulty="normal"
+					sortOrder="09|20"
+					steamID="HS_THE_LAMPLIGHTER=3"
+					>
+			</Achievement>
+
 			<Achievement id="core.trade1M"
 					sortOrder="09|30"
 					steamID="CORE_MERCHANT_PRINCE=3"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.phobosKiller"
+					minDifficulty="challenge"
+					sortOrder="09|50"
+					steamID="HS_PHOBOS_KILLER=40"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.ferianWarriorKiller"
+					minDifficulty="challenge"
+					sortOrder="09|52"
+					steamID="HS_PHOBOS_KILLER=40"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.killerKiller"
+					minDifficulty="challenge"
+					sortOrder="09|53"
+					steamID="HS_KILLER_KILLER=40"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.ranxDreadnoughtKiller"
+					minDifficulty="challenge"
+					sortOrder="09|55"
+					steamID="HS_RANX_DREADNOUGHT_KILLER=40"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.cscAntarcticaKiller"
+					minDifficulty="normal"
+					sortOrder="09|70"
+					steamID="HS_CSC_ANTARCTICA_KILLER=40"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.cscAntarcticaDefender"
+					minDifficulty="normal"
+					sortOrder="09|75"
+					steamID="HS_CSC_ANTARCTICA_DEFENDER=40"
+					>
+			</Achievement>
+
+			<!-- LEVEL 10 -->
+
+			<Achievement id="humanSpace.heretic"
+					sortOrder="10|10"
+					steamID="HS_HERETIC=40"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.dragonSlaverKiller"
+					minDifficulty="challenge"
+					sortOrder="10|50"
+					steamID="HS_DRAGON_SLAVER_KILLER=40"
+					>
+			</Achievement>
+
+			<Achievement id="sotp.breakQuarantine"
+					sortOrder="10|80"
+					steamID="SOTP_BREAK_QUARANTINE=40"
+					>
+			</Achievement>
+
+			<Achievement id="sotp.storyMode"
+					sortOrder="10|90"
+					steamID="SOTP_STORY_MODE=40"
+					>
+			</Achievement>
+
+			<Achievement id="sotp.normalMode"
+					sortOrder="10|91"
+					steamID="SOTP_NORMAL_MODE=40"
+					>
+			</Achievement>
+
+			<Achievement id="sotp.challengeMode"
+					sortOrder="10|92"
+					steamID="SOTP_CHALLENGE_MODE=40"
+					>
+			</Achievement>
+
+			<Achievement id="sotp.permadeathMode"
+					sortOrder="10|93"
+					steamID="SOTP_PERMADEATH_MODE=40"
 					>
 			</Achievement>
 
@@ -389,6 +558,13 @@
 			
 			</Text>
 
+			<Text id="humanSpace.visitEarthStation.name">Craddle of Humanity</Text>
+			<Text id="humanSpace.visitEarthStation.desc">
+
+				Visit abandoned Earth Station in the Sol System.
+			
+			</Text>
+
 			<Text id="humanSpace.insuranceResurrect.name">You Only Live Twice</Text>
 			<Text id="humanSpace.insuranceResurrect.desc">
 
@@ -470,6 +646,20 @@
 
 			<!-- LEVEL 6 ACHIEVEMENTS -->
 
+			<Text id="humanSpace.huaramarca.name">Huaramarca</Text>
+			<Text id="humanSpace.huaramarca.desc">
+
+				Visit the temple of the Huari in Huaramarca.
+			
+			</Text>
+
+			<Text id="humanSpace.EI500Speed25.name">Speed Freak</Text>
+			<Text id="humanSpace.EI500Speed25.desc">
+
+				Reach .25c in an EI500 freighter.
+			
+			</Text>
+
 			<Text id="core.trade150K.name">Entrepreneur</Text>
 			<Text id="core.trade150K.desc">
 
@@ -477,7 +667,65 @@
 			
 			</Text>
 
+			<Text id="humanSpace.kronosaurusKiller.name">Kronosaurus Killer</Text>
+			<Text id="humanSpace.kronosaurusKiller.desc">
+
+				Destroy the Kronosaurus in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<Text id="humanSpace.jiangsStarKiller.name">Butcher of Jiang's Star</Text>
+			<Text id="humanSpace.jiangsStarKiller.desc">
+
+				Destroy all Sung stations in Jiang's Star in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<!-- LEVEL 7 ACHIEVEMENTS -->
+
+			<Text id="sotp.benedictAndFiona.name">Benedict &amp; Fiona</Text>
+			<Text id="sotp.benedictAndFiona.desc">
+
+				Complete Benedict &amp; Fiona mission arc.
+			
+			</Text>
+
+			<Text id="humanSpace.outerRealm.name">Far From Home</Text>
+			<Text id="humanSpace.outerRealm.desc">
+
+				Enter a system in the Outer Realm.
+			
+			</Text>
+
+			<Text id="humanSpace.fleetManeuvers.name">Fleet Maneuvers</Text>
+			<Text id="humanSpace.fleetManeuvers.desc">
+
+				Complete a mission for a Commonwealth Star Carrier.
+			
+			</Text>
+
+			<Text id="humanSpace.luminereDestroyerKiller.name">Lumiere Killer</Text>
+			<Text id="humanSpace.luminereDestroyerKiller.desc">
+
+				Destroy a Lumiere destroyer in Challenge Mode or Permadeath.
+			
+			</Text>
+
 			<!-- LEVEL 8 ACHIEVEMENTS -->
+
+			<Text id="humanSpace.pointJuno.name">Defender of Point Juno</Text>
+			<Text id="humanSpace.pointJuno.desc">
+
+				Successfully defend Point Juno in Normal Mode or higher.
+			
+			</Text>
+
+			<Text id="humanSpace.worldshipKiller.name">Worldkiller</Text>
+			<Text id="humanSpace.worldshipKiller.desc">
+
+				Destroy a Xenophobe worldship in Challenge Mode or Permadeath.
+			
+			</Text>
 
 			<Text id="core.trade500K.name">Tycoon</Text>
 			<Text id="core.trade500K.desc">
@@ -488,10 +736,110 @@
 
 			<!-- LEVEL 9 ACHIEVEMENTS -->
 
+			<Text id="humanSpace.theLamplighter.name">A Lamplighter Upon the Deep</Text>
+			<Text id="humanSpace.theLamplighter.desc">
+
+				Acquire and install the Lamplighter archcannon in Normal Mode or higher.
+			
+			</Text>
+
 			<Text id="core.trade1M.name">Merchant Prince</Text>
 			<Text id="core.trade1M.desc">
 
 				Earn 1 million credits profit from trading.
+			
+			</Text>
+
+			<Text id="humanSpace.phobosKiller.name">Phobos Killer</Text>
+			<Text id="humanSpace.phobosKiller.desc">
+
+				Destroy an Ares dreadnought in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<Text id="humanSpace.ferianWarriorKiller.name">Ferian Warrior Killer</Text>
+			<Text id="humanSpace.ferianWarriorKiller.desc">
+
+				Destroy a Ferian Warrior in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<Text id="humanSpace.killerKiller.name">Killer Killer</Text>
+			<Text id="humanSpace.killerKiller.desc">
+
+				Destroy an Omnithor Hunter-Killer in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<Text id="humanSpace.ranxDreadnoughtKiller.name">Ranx Killer</Text>
+			<Text id="humanSpace.ranxDreadnoughtKiller.desc">
+
+				Destroy a Ranx dreadnought in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<Text id="humanSpace.cscAntarcticaKiller.name">Decker's Enforcer</Text>
+			<Text id="humanSpace.cscAntarcticaKiller.desc">
+
+				Destroy the CSC Antarctica in Normal Mode or higher.
+			
+			</Text>
+
+			<Text id="humanSpace.cscAntarcticaDefender.name">Trigger Not Pulled</Text>
+			<Text id="humanSpace.cscAntarcticaDefender.desc">
+
+				Save the CSC Antarctica in Normal Mode or higher.
+			
+			</Text>
+
+			<!-- LEVEL 10 ACHIEVEMENTS -->
+
+			<Text id="humanSpace.heretic.name">Heretic</Text>
+			<Text id="humanSpace.heretic.desc">
+
+				Reach the Heretic system.
+			
+			</Text>
+
+			<Text id="humanSpace.dragonSlaverKiller.name">Dragonslayer</Text>
+			<Text id="humanSpace.dragonSlaverKiller.desc">
+
+				Destroy a Dragon Slaver in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<Text id="sotp.breakQuarantine.name">Broken Quarantine</Text>
+			<Text id="sotp.breakQuarantine.desc">
+
+				Break the Human Space Quarantine.
+			
+			</Text>
+
+			<Text id="sotp.storyMode.name">The Stars of the Pilgrim (Story Mode)</Text>
+			<Text id="sotp.storyMode.desc">
+
+				Complete The Stars of the Pilgrim in Story Mode.
+			
+			</Text>
+
+			<Text id="sotp.normalMode.name">The Stars of the Pilgrim (Normal Mode)</Text>
+			<Text id="sotp.normalMode.desc">
+
+				Complete The Stars of the Pilgrim in Normal Mode.
+			
+			</Text>
+
+			<Text id="sotp.challengeMode.name">The Stars of the Pilgrim (Challenge Mode)</Text>
+			<Text id="sotp.challengeMode.desc">
+
+				Complete The Stars of the Pilgrim in Challenge Mode.
+			
+			</Text>
+
+			<Text id="sotp.permadeathMode.name">The Stars of the Pilgrim (Permadeath)</Text>
+			<Text id="sotp.permadeathMode.desc">
+
+				Complete The Stars of the Pilgrim in Permadeath Mode.
 			
 			</Text>
 
