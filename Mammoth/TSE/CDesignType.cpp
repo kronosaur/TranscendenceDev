@@ -76,6 +76,7 @@
 #define ON_GLOBAL_PLAYER_CHANGED_SHIPS_EVENT	CONSTLIT("OnGlobalPlayerChangedShips")
 #define ON_GLOBAL_PLAYER_ENTERED_SYSTEM_EVENT	CONSTLIT("OnGlobalPlayerEnteredSystem")
 #define ON_GLOBAL_PLAYER_LEFT_SYSTEM_EVENT		CONSTLIT("OnGlobalPlayerLeftSystem")
+#define ON_GLOBAL_PLAYER_NEW_MAX_SPEED_EVENT	CONSTLIT("OnGlobalPlayerNewMaxSpeed")
 #define ON_GLOBAL_PLAYER_SOLD_ITEM_EVENT		CONSTLIT("OnGlobalPlayerSoldItem")
 #define ON_GLOBAL_RESURRECT_EVENT				CONSTLIT("OnGlobalResurrect")
 #define ON_GLOBAL_TOPOLOGY_CREATED_EVENT		CONSTLIT("OnGlobalTopologyCreated")
@@ -1294,6 +1295,28 @@ void CDesignType::FireOnGlobalPlayerBoughtItem (const SEventHandlerDesc &Event, 
 	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
 		ReportEventError(ON_GLOBAL_PLAYER_BOUGHT_ITEM_EVENT, pResult);
+	}
+
+void CDesignType::FireOnGlobalPlayerNewMaxSpeed (const SEventHandlerDesc &Event, const CSpaceObject &PlayerShipObj, int iNewMaxSpeed)
+
+//	FireOnGlobalPlayerNewMaxSpeed
+//
+//	Player ship achieved new max speed (via upgrade, etc.)
+
+	{
+	CCodeChainCtx Ctx(GetUniverse());
+	Ctx.DefineContainingType(this);
+
+	//	Set up
+
+	Ctx.SaveAndDefineSourceVar(&PlayerShipObj);
+	Ctx.DefineInteger(CONSTLIT("aMaxSpeed"), iNewMaxSpeed);
+
+	//	Run
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_GLOBAL_PLAYER_NEW_MAX_SPEED_EVENT, pResult);
 	}
 
 void CDesignType::FireOnGlobalPlayerSoldItem (const SEventHandlerDesc &Event, CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price)

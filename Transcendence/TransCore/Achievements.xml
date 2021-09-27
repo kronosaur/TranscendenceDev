@@ -414,6 +414,19 @@
 
 		</Achievements>
 
+		<Events>
+			<OnGlobalPlayerNewMaxSpeed>
+				(switch
+					;	Achievement for EI500 when it reaches .25 light-speed
+
+					(= (objGetName gPlayerShip 'generic) "EI500-class freighter")
+						(if (geq aMaxSpeed 25)
+							(unvSetAchievement 'humanSpace.EI500Speed25)
+							)
+					)
+			</OnGlobalPlayerNewMaxSpeed>
+		</Events>
+
 		<Language>
 			<!-- LEVEL 1 ACHIEVEMENTS -->
 

@@ -49,6 +49,7 @@ class CPlayerGameStats
 		void OnItemSold (const CItem &Item, const CCurrencyAndValue &TotalValue);
 		void OnItemUninstalled (const CItem &Item);
 		void OnKeyEvent (EEventTypes iType, CSpaceObject *pObj, DWORD dwCauseUNID);
+		bool OnNewMaxSpeed (int iNewMaxSpeed);
 		void OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObject *pPlayer);
 		void OnPowerInvoked (const CPower &Power);
 		void OnSwitchPlayerShip (const CShip &NewShip, const CShip *pOldShip = NULL);
@@ -60,8 +61,6 @@ class CPlayerGameStats
 
 	private:
 		static constexpr DWORD INVALID_TIME = 0xffffffff;
-
-		static const CShipClass *FindClassByName (SLoadCtx &Ctx, const CString &sClassName);
 
 		struct SItemTypeStats
 			{
@@ -148,10 +147,12 @@ class CPlayerGameStats
 			};
 
 		bool AddMatchingKeyEvents (const CString &sNodeID, const CDesignTypeCriteria &Crit, TArray<SKeyEventStats> *pEventList, TArray<SKeyEventStatsResult> *retList) const;
+		static const CShipClass *FindClassByName (SLoadCtx &Ctx, const CString &sClassName);
 		bool FindItemStats (DWORD dwUNID, SItemTypeStats **retpStats) const;
 		bool FireMineOreAchievement (int iLastValue, int iCurrentValue);
 		bool FireProfitAchievement (CurrencyValue LastValue, CurrencyValue CurrentValue);
 		CString GenerateKeyEventStat (TArray<SKeyEventStatsResult> &List) const;
+		SPlayerShipStats *GetCurrentPlayerShipStats ();
 		SItemTypeStats *GetItemStats (DWORD dwUNID);
 		bool GetMatchingKeyEvents (const CString &sNodeID, const CDesignTypeCriteria &Crit, TArray<SKeyEventStatsResult> *retList) const;
 		SShipClassStats *GetShipStats (DWORD dwUNID);

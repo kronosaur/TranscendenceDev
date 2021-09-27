@@ -376,6 +376,7 @@ class CUniverse
 		void FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip) { m_Design.FireOnGlobalPlayerChangedShips(pOldShip); }
 		void FireOnGlobalPlayerEnteredSystem (void) { m_Design.FireOnGlobalPlayerEnteredSystem(); }
 		void FireOnGlobalPlayerLeftSystem (void) { m_Design.FireOnGlobalPlayerLeftSystem(); }
+		void FireOnGlobalPlayerNewMaxSpeed (const CSpaceObject &PlayerShip, int iNewMaxSpeed) { m_Design.FireOnGlobalPlayerNewMaxSpeed(PlayerShip, iNewMaxSpeed); }
 		void FireOnGlobalPlayerSoldItem (CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price) { m_Design.FireOnGlobalPlayerSoldItem(pBuyerObj, Item, Price); }
 		void FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx) { m_Design.FireOnGlobalSystemCreated(SysCreateCtx); }
 		void FireOnGlobalUniverseCreated (void) { m_Design.FireOnGlobalUniverseCreated(); }

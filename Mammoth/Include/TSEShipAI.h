@@ -285,6 +285,7 @@ class IShipController
 			statusArmorRepaired,			//	dwData = segment
 			statusFuelLowWarning,			//	dwData = sequence
 			statusLifeSupportWarning,		//	dwData = seconds left
+			statusNewMaxSpeed,				//	dwData = max speed (in % light-speed)
 			statusRadiationCleared,			//	Decontaminated
 			statusRadiationWarning,			//	dwData = ticks left
 			statusReactorOverloadWarning,	//	dwData = sequence

@@ -320,6 +320,7 @@ class CDesignType
 		ALERROR FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip, CString *retsError = NULL);
 		ALERROR FireOnGlobalPlayerEnteredSystem (CString *retsError = NULL);
 		ALERROR FireOnGlobalPlayerLeftSystem (CString *retsError = NULL);
+		void FireOnGlobalPlayerNewMaxSpeed (const SEventHandlerDesc &Event, const CSpaceObject &PlayerShipObj, int iNewMaxSpeed);
 		void FireOnGlobalPlayerSoldItem (const SEventHandlerDesc &Event, CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		ALERROR FireOnGlobalResurrect (CString *retsError = NULL);
 		bool FireOnGlobalRunDiagnostics (const SEventHandlerDesc &Event);
@@ -1324,20 +1325,21 @@ class CDesignCollection
 			evtOnGlobalObjGateCheck			= 9,
 
 			evtOnGlobalPlayerBoughtItem		= 10,
-			evtOnGlobalPlayerSoldItem		= 11,
-			evtOnGlobalRunDiagnostics		= 12,
-			evtOnGlobalStartDiagnostics		= 13,
-			evtOnGlobalSystemDiagnostics	= 14,
+			evtOnGlobalPlayerNewMaxSpeed	= 11,
+			evtOnGlobalPlayerSoldItem		= 12,
+			evtOnGlobalRunDiagnostics		= 13,
+			evtOnGlobalStartDiagnostics		= 14,
 
-			evtOnGlobalSystemStarted		= 15,
-			evtOnGlobalSystemStopped		= 16,
-			evtOnGlobalUniverseCreated		= 17,
-			evtOnGlobalUniverseLoad			= 18,
-			evtOnGlobalUniverseSave			= 19,
+			evtOnGlobalSystemDiagnostics	= 15,
+			evtOnGlobalSystemStarted		= 16,
+			evtOnGlobalSystemStopped		= 17,
+			evtOnGlobalUniverseCreated		= 18,
+			evtOnGlobalUniverseLoad			= 19,
 
-			evtOnGlobalUpdate				= 20,
+			evtOnGlobalUniverseSave			= 20,
+			evtOnGlobalUpdate				= 21,
 
-			evtCount						= 21
+			evtCount						= 22
 			};
 
 		enum EFlags
@@ -1423,6 +1425,7 @@ class CDesignCollection
 		void FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip);
 		void FireOnGlobalPlayerEnteredSystem (void);
 		void FireOnGlobalPlayerLeftSystem (void);
+		void FireOnGlobalPlayerNewMaxSpeed (const CSpaceObject &PlayerShipObj, int iNewMaxSpeed);
 		void FireOnGlobalPlayerSoldItem (CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		void FireOnGlobalRunDiagnostics (SDiagnosticsCtx &Ctx);
 		void FireOnGlobalStartDiagnostics (SDiagnosticsCtx &Ctx);

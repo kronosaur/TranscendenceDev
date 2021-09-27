@@ -920,6 +920,17 @@ void CShip::CalcPerformance (void)
 			|| m_Perf.GetDriveDesc().GetMaxSpeed() != rOldMaxSpeed)
 		m_pClass->InitEffects(this, &m_Effects);
 
+	//	If our max speed changed, then tell our controller, in case it cares.
+
+	if (m_Perf.GetDriveDesc().GetMaxSpeed() != rOldMaxSpeed)
+		{
+		int iOldMaxSpeedPercent = mathRound(100.0 * rOldMaxSpeed / LIGHT_SPEED);
+		int iNewMaxSpeedPercent = mathRound(100.0 * m_Perf.GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED);
+
+		if (iOldMaxSpeedPercent != iNewMaxSpeedPercent)
+			m_pController->OnShipStatus(IShipController::statusNewMaxSpeed, (DWORD)iNewMaxSpeedPercent);
+		}
+
 	DEBUG_CATCH
 	}
 

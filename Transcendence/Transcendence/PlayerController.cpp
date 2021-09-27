@@ -1467,6 +1467,16 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 			break;
 			}
 
+		case statusNewMaxSpeed:
+			{
+			int iNewMaxSpeedPercent = (int)dwData;
+			if (m_Stats.OnNewMaxSpeed(iNewMaxSpeedPercent))
+				{
+				m_Universe.FireOnGlobalPlayerNewMaxSpeed(*m_pShip, iNewMaxSpeedPercent);
+				}
+			break;
+			}
+
 		case statusRadiationCleared:
 			DisplayTranslate(CONSTLIT("msgDeconComplete"));
 			break;

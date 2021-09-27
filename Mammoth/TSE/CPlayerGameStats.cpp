@@ -435,11 +435,28 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 
 	//	Stats for player ships used (sorted by when we first entered the ship).
 
+	TSortMap<CString, SPlayerShipStats> PlayerShipStats;
 	for (int i = 0; i < m_PlayerShipStats.GetCount(); i++)
 		{
-		CString sSort = strPatternSubst(CONSTLIT("%012d"), m_PlayerShipStats[i].dwFirstEntered);
+		bool bNew;
+		SPlayerShipStats *pStats = PlayerShipStats.SetAt(m_PlayerShipStats[i].sClassName,  &bNew);
+		if (bNew)
+			*pStats = m_PlayerShipStats[i];
+		else
+			{
+			if (m_PlayerShipStats[i].dwFirstEntered < pStats->dwFirstEntered)
+				pStats->dwFirstEntered = m_PlayerShipStats[i].dwFirstEntered;
 
-		Stats.Insert(m_PlayerShipStats[i].sClassName, NULL_STR, CONSTLIT("Ships Used"), sSort);
+			if (m_PlayerShipStats[i].iMaxSpeed > pStats->iMaxSpeed)
+				pStats->iMaxSpeed = m_PlayerShipStats[i].iMaxSpeed;
+			}
+		}
+
+	for (int i = 0; i < PlayerShipStats.GetCount(); i++)
+		{
+		CString sSort = strPatternSubst(CONSTLIT("%012d"), PlayerShipStats[i].dwFirstEntered);
+
+		Stats.Insert(PlayerShipStats[i].sClassName, NULL_STR, CONSTLIT("Ships Used"), sSort);
 		}
 
 	//	Some combat stats
@@ -793,6 +810,20 @@ int CPlayerGameStats::GetBestEnemyShipsDestroyed (DWORD *retdwUNID) const
 		*retdwUNID = dwBestUNID;
 
 	return pBest->iEnemyDestroyed;
+	}
+
+CPlayerGameStats::SPlayerShipStats *CPlayerGameStats::GetCurrentPlayerShipStats ()
+
+//	GetCurrentPlayerShipStats
+//
+//	Returns the entry for the current player ship.
+
+	{
+	for (int i = 0; i < m_PlayerShipStats.GetCount(); i++)
+		if (m_PlayerShipStats[i].dwLastLeft == INVALID_TIME)
+			return &m_PlayerShipStats[i];
+
+	return NULL;
 	}
 
 CTimeSpan CPlayerGameStats::GetGameTime (void) const
@@ -1699,6 +1730,25 @@ void CPlayerGameStats::OnKeyEvent (EEventTypes iType, CSpaceObject *pObj, DWORD 
 	pStats->sObjName = sName;
 	pStats->dwObjNameFlags = dwNameFlags;
 	pStats->dwCauseUNID = dwCauseUNID;
+	}
+
+bool CPlayerGameStats::OnNewMaxSpeed (int iNewMaxSpeed)
+
+//	OnNewMaxSpeed
+//
+//	Track a new max speed. Returns TRUE if we recorded a new max speed.
+
+	{
+	if (auto pStats = GetCurrentPlayerShipStats())
+		{
+		if (iNewMaxSpeed > pStats->iMaxSpeed)
+			{
+			pStats->iMaxSpeed = iNewMaxSpeed;
+			return true;
+			}
+		}
+
+	return false;
 	}
 
 void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObject *pPlayer)
