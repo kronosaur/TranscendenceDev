@@ -61,6 +61,8 @@ class CPlayerGameStats
 	private:
 		static constexpr DWORD INVALID_TIME = 0xffffffff;
 
+		static const CShipClass *FindClassByName (SLoadCtx &Ctx, const CString &sClassName);
+
 		struct SItemTypeStats
 			{
 			int iCountSold = 0;						//	Number of items sold
@@ -99,10 +101,12 @@ class CPlayerGameStats
 
 		struct SPlayerShipStats
 			{
+			CString sClassName;
 			DWORD dwFirstEntered = INVALID_TIME;	//	First time we started this ship class
 			DWORD dwLastEntered = INVALID_TIME;		//	Last time we started using this ship class
 			DWORD dwLastLeft = INVALID_TIME;		//	Last time we stopped using ship class
 			DWORD dwTotalTime = 0;					//	Total time using ship
+			int iMaxSpeed = 0;						//	Max rated speed (including enhancements)
 			};
 
 		struct SPowerStats
@@ -169,7 +173,7 @@ class CPlayerGameStats
 		CurrencyValue m_TotalValueBought = 0;	//	Total value of items sold
 
 		TMap<DWORD, SItemTypeStats> m_ItemStats;
-		TSortMap<CString, SPlayerShipStats> m_PlayerShipStats;
+		TSortMap<DWORD, SPlayerShipStats> m_PlayerShipStats;
 		TSortMap<DWORD, SPowerStats> m_PowerStats;
 		TMap<DWORD, SShipClassStats> m_ShipStats;
 		TMap<DWORD, SStationTypeStats> m_StationStats;

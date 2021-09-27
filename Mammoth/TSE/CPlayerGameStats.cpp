@@ -135,6 +135,23 @@ int CPlayerGameStats::CalcEndGameScore (void) const
 	return m_iScore / (1 + min(9, m_iResurrectCount));
 	}
 
+const CShipClass *CPlayerGameStats::FindClassByName (SLoadCtx &Ctx, const CString &sClassName)
+
+//	FindClassByName
+//
+//	Looks for the ship class by name.
+
+	{
+	for (int i = 0; i < Ctx.GetUniverse().GetShipClassCount(); i++)
+		{
+		const CShipClass *pClass = Ctx.GetUniverse().GetShipClass(i);
+		if (strEquals(sClassName, pClass->GetNounPhrase()))
+			return pClass;
+		}
+
+	return NULL;
+	}
+
 bool CPlayerGameStats::FindItemStats (DWORD dwUNID, SItemTypeStats **retpStats) const
 
 //	FindItemStats
@@ -420,10 +437,9 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 
 	for (int i = 0; i < m_PlayerShipStats.GetCount(); i++)
 		{
-		const CString sClassName = m_PlayerShipStats.GetKey(i);
 		CString sSort = strPatternSubst(CONSTLIT("%012d"), m_PlayerShipStats[i].dwFirstEntered);
 
-		Stats.Insert(sClassName, NULL_STR, CONSTLIT("Ships Used"), sSort);
+		Stats.Insert(m_PlayerShipStats[i].sClassName, NULL_STR, CONSTLIT("Ships Used"), sSort);
 		}
 
 	//	Some combat stats
@@ -1822,8 +1838,8 @@ void CPlayerGameStats::OnSwitchPlayerShip (const CShip &NewShip, const CShip *pO
 
 	if (pOldShip)
 		{
-		CString sOldClassName = pOldShip->GetType()->GetNounPhrase();
-		SPlayerShipStats *pOldStats = m_PlayerShipStats.GetAt(sOldClassName);
+		DWORD dwOldClass = pOldShip->GetType()->GetUNID();
+		SPlayerShipStats *pOldStats = m_PlayerShipStats.GetAt(dwOldClass);
 		if (pOldStats)
 			{
 			pOldStats->dwLastLeft = dwNow;
@@ -1833,12 +1849,19 @@ void CPlayerGameStats::OnSwitchPlayerShip (const CShip &NewShip, const CShip *pO
 
 	//	Add an entry for the new ship.
 
-	CString sNewClassName = NewShip.GetType()->GetNounPhrase();
-	SPlayerShipStats *pNewStats = m_PlayerShipStats.SetAt(sNewClassName);
+	DWORD dwNewClass = NewShip.GetType()->GetUNID();
+	SPlayerShipStats *pNewStats = m_PlayerShipStats.SetAt(dwNewClass);
 	if (pNewStats->dwFirstEntered == INVALID_TIME)
+		{
+		pNewStats->sClassName = NewShip.GetType()->GetNounPhrase();
 		pNewStats->dwFirstEntered = dwNow;
+		}
 	pNewStats->dwLastEntered = dwNow;
 	pNewStats->dwLastLeft = INVALID_TIME;
+
+	int iNewMaxSpeed = mathRound(100.0 * NewShip.GetMaxSpeed() / LIGHT_SPEED);
+	if (iNewMaxSpeed > pNewStats->iMaxSpeed)
+		pNewStats->iMaxSpeed = iNewMaxSpeed;
 
 	//	If we're switching to a new ship (and we've got an old ship) then track
 	//	installed items.
@@ -2127,19 +2150,40 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 
 	//	Read m_PlayerShipStats
 
-	if (Ctx.dwVersion >= 193)
+	if (Ctx.dwVersion >= 209)
+		{
+		Ctx.pStream->Read(dwCount);
+		for (int i = 0; i < (int)dwCount; i++)
+			{
+			DWORD dwUNID;
+			Ctx.pStream->Read(dwUNID);
+			SPlayerShipStats *pStats = m_PlayerShipStats.SetAt(dwUNID);
+
+			pStats->sClassName.ReadFromStream(Ctx.pStream);
+			Ctx.pStream->Read(pStats->dwFirstEntered);
+			Ctx.pStream->Read(pStats->dwLastEntered);
+			Ctx.pStream->Read(pStats->dwLastLeft);
+			Ctx.pStream->Read(pStats->dwTotalTime);
+			Ctx.pStream->Read(pStats->iMaxSpeed);
+			}
+		}
+	else if (Ctx.dwVersion >= 193)
 		{
 		Ctx.pStream->Read(dwCount);
 		for (int i = 0; i < (int)dwCount; i++)
 			{
 			CString sClassName;
 			sClassName.ReadFromStream(Ctx.pStream);
-			SPlayerShipStats *pStats = m_PlayerShipStats.SetAt(sClassName);
+			const CShipClass *pClass = FindClassByName(Ctx, sClassName);
 
+			SPlayerShipStats *pStats = m_PlayerShipStats.SetAt(pClass ? pClass->GetUNID() : 0);
+			pStats->sClassName = sClassName;
 			Ctx.pStream->Read(pStats->dwFirstEntered);
 			Ctx.pStream->Read(pStats->dwLastEntered);
 			Ctx.pStream->Read(pStats->dwLastLeft);
 			Ctx.pStream->Read(pStats->dwTotalTime);
+			if (pClass)
+				pStats->iMaxSpeed = mathRound(100.0 * pClass->GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED);
 			}
 		}
 
@@ -2374,13 +2418,15 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 	pStream->Write(m_PlayerShipStats.GetCount());
 	for (int i = 0; i < m_PlayerShipStats.GetCount(); i++)
 		{
-		m_PlayerShipStats.GetKey(i).WriteToStream(pStream);
+		pStream->Write(m_PlayerShipStats.GetKey(i));
 
 		const auto &Stats = m_PlayerShipStats[i];
+		Stats.sClassName.WriteToStream(pStream);
 		pStream->Write(Stats.dwFirstEntered);
 		pStream->Write(Stats.dwLastEntered);
 		pStream->Write(Stats.dwLastLeft);
 		pStream->Write(Stats.dwTotalTime);
+		pStream->Write(Stats.iMaxSpeed);
 		}
 
 	pStream->Write(m_PowerStats.GetCount());
