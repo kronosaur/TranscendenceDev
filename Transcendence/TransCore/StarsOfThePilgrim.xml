@@ -281,6 +281,7 @@
 			>
 		<Properties>
 			<Global id="interstellarTraveler"></Global>
+			<Global id="outerRealmTraveler"></Global>
 		</Properties>
 			
 		<TopologyCreator>
@@ -342,16 +343,26 @@
 
 			<OnGlobalPlayerEnteredSystem>
 				(switch
-					(typ@ gType 'interstellarTraveler)
-						Nil
-
 					(= (sysGetNode) (obj@ gPlayerShip 'startingSystem))
 						Nil
 
-					(block ()
-						(typSet@ gType 'interstellarTraveler True)
-						(unvSetAchievement 'sotp.interstellarTraveler)
-						)
+					;	Achievement when we leave our home system.
+
+					(not (typ@ gType 'interstellarTraveler))
+						(block ()
+							(typSet@ gType 'interstellarTraveler True)
+							(unvSetAchievement 'sotp.interstellarTraveler)
+							)
+
+					;	Achievement when we first enter the Outer Realm
+
+					(and (sysHasAttribute 'outerRealm)
+							(not (typ@ gType 'outerRealmTraveler))
+							)
+						(block ()
+							(typSet@ gType 'outerRealmTraveler True)
+							(unvSetAchievement 'humanSpace.outerRealm)
+							)
 					)
 			</OnGlobalPlayerEnteredSystem>
 		</Events>

@@ -150,6 +150,10 @@
 							
 							(shpCancelOrders stormhoundObj)
 							(shpOrder stormhoundObj 'gate skGateObj)
+
+							;	Achievement
+
+							(unvSetAchievement 'sotp.benedictAndFiona)
 							)
 					)
 			</OnCompleted>

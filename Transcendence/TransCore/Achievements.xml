@@ -39,7 +39,7 @@
 					>
 			</Achievement>
 
-			<Achievement id="core.interstellarTraveler"
+			<Achievement id="sotp.interstellarTraveler"
 					sortOrder="01|90"
 					steamID="CORE_INTERSTELLAR_TRAVELER=5"
 					>
@@ -460,8 +460,8 @@
 				Destroy all enemy stations in Eridani in Challenge Mode or Permadeath.
 			
 			</Text>
-			<Text id="core.interstellarTraveler.name">Interstellar Traveler</Text>
-			<Text id="core.interstellarTraveler.desc">
+			<Text id="sotp.interstellarTraveler.name">Interstellar Traveler</Text>
+			<Text id="sotp.interstellarTraveler.desc">
 
 				Leave your home star system.
 			
