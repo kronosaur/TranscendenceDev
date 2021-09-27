@@ -141,33 +141,33 @@
 
 			<Achievement id="humanSpace.visitEarthStation"
 					sortOrder="04|15"
-					steamID="HS_VISIT_EARTH_STATION=19"
+					steamID="HS_VISIT_EARTH_STATION=20"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.insuranceResurrect"
 					hidden="true"
 					sortOrder="04|20"
-					steamID="HS_INSURANCE_RESURRECT=20"
+					steamID="HS_INSURANCE_RESURRECT=21"
 					>
 			</Achievement>
 
 			<Achievement id="core.autons10"
 					sortOrder="04|30"
-					steamID="CORE_AUTONS_10=21"
+					steamID="CORE_AUTONS_10=22"
 					>
 			</Achievement>
 
 			<Achievement id="core.trade50K"
 					sortOrder="04|40"
-					steamID="CORE_BROKER=22"
+					steamID="CORE_BROKER=23"
 					>
 			</Achievement>
 
 			<Achievement id="core.radiationKill"
 					minDifficulty="normal"
 					sortOrder="04|50"
-					steamID="CORE_RADIATION_KILL=23"
+					steamID="CORE_RADIATION_KILL=24"
 					>
 			</Achievement>
 
@@ -175,40 +175,40 @@
 
 			<Achievement id="humanSpace.visitCathedralOfDomina"
 					sortOrder="05|10"
-					steamID="HS_VISIT_CATHEDRAL_OF_DOMINA=24"
+					steamID="HS_VISIT_CATHEDRAL_OF_DOMINA=25"
 					>
 			</Achievement>
 
 			<Achievement id="core.paralyzeKill"
 					minDifficulty="normal"
 					sortOrder="05|20"
-					steamID="CORE_PARALYZE_KILL=25"
+					steamID="CORE_PARALYZE_KILL=26"
 					>
 			</Achievement>
 
 			<Achievement id="core.buriedKill"
 					minDifficulty="normal"
 					sortOrder="05|25"
-					steamID="CORE_BURIED_KILL=26"
+					steamID="CORE_BURIED_KILL=27"
 					>
 			</Achievement>
 
 			<Achievement id="core.mineOre1000"
 					sortOrder="05|30"
-					steamID="CORE_ORE_RUSH=27"
+					steamID="CORE_ORE_RUSH=28"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.dwargBehemothFriend"
 					sortOrder="05|50"
-					steamID="HS_DWARG_BEHEMOTH_FRIEND=28"
+					steamID="HS_DWARG_BEHEMOTH_FRIEND=29"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.charonFrigateKiller"
 					minDifficulty="challenge"
 					sortOrder="05|70"
-					steamID="HS_CHARON_FRIGATE_KILLER=29"
+					steamID="HS_CHARON_FRIGATE_KILLER=30"
 					>
 			</Achievement>
 
@@ -216,7 +216,7 @@
 					minDifficulty="normal"
 					hidden="true"
 					sortOrder="05|80"
-					steamID="HS_HUARI_FRIEND=30"
+					steamID="HS_HUARI_FRIEND=31"
 					>
 			</Achievement>
 
@@ -225,26 +225,26 @@
 			<Achievement id="humanSpace.huaramarca"
 					sortOrder="06|20"
 					hidden="true"
-					steamID="HS_HUARAMARCA=31"
+					steamID="HS_HUARAMARCA=32"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.EI500Speed25"
 					sortOrder="06|40"
-					steamID="HS_EI500_SPEED_25=32"
+					steamID="HS_EI500_SPEED_25=33"
 					>
 			</Achievement>
 
 			<Achievement id="core.trade150K"
 					sortOrder="06|50"
-					steamID="CORE_ENTREPRENEUR=33"
+					steamID="CORE_ENTREPRENEUR=34"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.kronosaurusKiller"
 					minDifficulty="challenge"
 					sortOrder="06|60"
-					steamID="HS_KRONOSAURUS_KILLER=34"
+					steamID="HS_KRONOSAURUS_KILLER=35"
 					>
 			</Achievement>
 
@@ -252,7 +252,7 @@
 					minDifficulty="challenge"
 					hidden="true"
 					sortOrder="06|70"
-					steamID="HS_JIANGS_STAR_KILLER=35"
+					steamID="HS_JIANGS_STAR_KILLER=36"
 					>
 			</Achievement>
 
@@ -260,26 +260,26 @@
 
 			<Achievement id="sotp.benedictAndFiona"
 					sortOrder="07|10"
-					steamID="SOTP_BENEDICT_AND_FIONA=36"
+					steamID="SOTP_BENEDICT_AND_FIONA=37"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.outerRealm"
 					sortOrder="07|20"
-					steamID="HS_OUTER_REALM=37"
+					steamID="HS_OUTER_REALM=38"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.fleetManeuvers"
 					sortOrder="07|30"
-					steamID="HS_FLEET_MANEUVERS=38"
+					steamID="HS_FLEET_MANEUVERS=39"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.luminereDestroyerKiller"
 					minDifficulty="challenge"
 					sortOrder="07|50"
-					steamID="HS_LUMIERE_DESTROYER_KILLER=38"
+					steamID="HS_LUMIERE_DESTROYER_KILLER=40"
 					>
 			</Achievement>
 
@@ -288,20 +288,20 @@
 			<Achievement id="humanSpace.pointJuno"
 					minDifficulty="normal"
 					sortOrder="08|20"
-					steamID="HS_POINT_JUNO=39"
+					steamID="HS_POINT_JUNO=41"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.worldshipKiller"
 					minDifficulty="challenge"
 					sortOrder="08|30"
-					steamID="HS_WORLDSHIP_KILLER=40"
+					steamID="HS_WORLDSHIP_KILLER=42"
 					>
 			</Achievement>
 
 			<Achievement id="core.trade500K"
 					sortOrder="08|50"
-					steamID="CORE_TYCOON=41"
+					steamID="CORE_TYCOON=43"
 					>
 			</Achievement>
 
@@ -310,55 +310,55 @@
 			<Achievement id="humanSpace.theLamplighter"
 					minDifficulty="normal"
 					sortOrder="09|20"
-					steamID="HS_THE_LAMPLIGHTER=3"
+					steamID="HS_THE_LAMPLIGHTER=44"
 					>
 			</Achievement>
 
 			<Achievement id="core.trade1M"
 					sortOrder="09|30"
-					steamID="CORE_MERCHANT_PRINCE=3"
+					steamID="CORE_MERCHANT_PRINCE=45"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.phobosKiller"
 					minDifficulty="challenge"
 					sortOrder="09|50"
-					steamID="HS_PHOBOS_KILLER=40"
+					steamID="HS_PHOBOS_KILLER=46"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.ferianWarriorKiller"
 					minDifficulty="challenge"
 					sortOrder="09|52"
-					steamID="HS_PHOBOS_KILLER=40"
+					steamID="HS_PHOBOS_KILLER=47"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.killerKiller"
 					minDifficulty="challenge"
 					sortOrder="09|53"
-					steamID="HS_KILLER_KILLER=40"
+					steamID="HS_KILLER_KILLER=48"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.ranxDreadnoughtKiller"
 					minDifficulty="challenge"
 					sortOrder="09|55"
-					steamID="HS_RANX_DREADNOUGHT_KILLER=40"
+					steamID="HS_RANX_DREADNOUGHT_KILLER=49"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.cscAntarcticaKiller"
 					minDifficulty="normal"
 					sortOrder="09|70"
-					steamID="HS_CSC_ANTARCTICA_KILLER=40"
+					steamID="HS_CSC_ANTARCTICA_KILLER=50"
 					>
 			</Achievement>
 
 			<Achievement id="humanSpace.cscAntarcticaDefender"
 					minDifficulty="normal"
 					sortOrder="09|75"
-					steamID="HS_CSC_ANTARCTICA_DEFENDER=40"
+					steamID="HS_CSC_ANTARCTICA_DEFENDER=51"
 					>
 			</Achievement>
 
@@ -373,37 +373,37 @@
 			<Achievement id="humanSpace.dragonSlaverKiller"
 					minDifficulty="challenge"
 					sortOrder="10|50"
-					steamID="HS_DRAGON_SLAVER_KILLER=40"
+					steamID="HS_DRAGON_SLAVER_KILLER=52"
 					>
 			</Achievement>
 
 			<Achievement id="sotp.breakQuarantine"
 					sortOrder="10|80"
-					steamID="SOTP_BREAK_QUARANTINE=40"
+					steamID="SOTP_BREAK_QUARANTINE=53"
 					>
 			</Achievement>
 
 			<Achievement id="sotp.storyMode"
 					sortOrder="10|90"
-					steamID="SOTP_STORY_MODE=40"
+					steamID="SOTP_STORY_MODE=54"
 					>
 			</Achievement>
 
 			<Achievement id="sotp.normalMode"
 					sortOrder="10|91"
-					steamID="SOTP_NORMAL_MODE=40"
+					steamID="SOTP_NORMAL_MODE=55"
 					>
 			</Achievement>
 
 			<Achievement id="sotp.challengeMode"
 					sortOrder="10|92"
-					steamID="SOTP_CHALLENGE_MODE=40"
+					steamID="SOTP_CHALLENGE_MODE=56"
 					>
 			</Achievement>
 
 			<Achievement id="sotp.permadeathMode"
 					sortOrder="10|93"
-					steamID="SOTP_PERMADEATH_MODE=40"
+					steamID="SOTP_PERMADEATH_MODE=57"
 					>
 			</Achievement>
 
