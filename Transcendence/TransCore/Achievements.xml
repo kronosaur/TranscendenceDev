@@ -383,25 +383,25 @@
 					>
 			</Achievement>
 
-			<Achievement id="sotp.storyMode"
+			<Achievement id="sotp.completed.story"
 					sortOrder="10|90"
 					steamID="SOTP_STORY_MODE=54"
 					>
 			</Achievement>
 
-			<Achievement id="sotp.normalMode"
+			<Achievement id="sotp.completed.normal"
 					sortOrder="10|91"
 					steamID="SOTP_NORMAL_MODE=55"
 					>
 			</Achievement>
 
-			<Achievement id="sotp.challengeMode"
+			<Achievement id="sotp.completed.challenge"
 					sortOrder="10|92"
 					steamID="SOTP_CHALLENGE_MODE=56"
 					>
 			</Achievement>
 
-			<Achievement id="sotp.permadeathMode"
+			<Achievement id="sotp.completed.permadeath"
 					sortOrder="10|93"
 					steamID="SOTP_PERMADEATH_MODE=57"
 					>
@@ -828,29 +828,29 @@
 			
 			</Text>
 
-			<Text id="sotp.storyMode.name">The Stars of the Pilgrim (Story Mode)</Text>
-			<Text id="sotp.storyMode.desc">
+			<Text id="sotp.completed.story.name">The Stars of the Pilgrim (Story Mode)</Text>
+			<Text id="sotp.completed.story.desc">
 
 				Complete The Stars of the Pilgrim in Story Mode.
 			
 			</Text>
 
-			<Text id="sotp.normalMode.name">The Stars of the Pilgrim (Normal Mode)</Text>
-			<Text id="sotp.normalMode.desc">
+			<Text id="sotp.completed.normal.name">The Stars of the Pilgrim (Normal Mode)</Text>
+			<Text id="sotp.completed.normal.desc">
 
 				Complete The Stars of the Pilgrim in Normal Mode.
 			
 			</Text>
 
-			<Text id="sotp.challengeMode.name">The Stars of the Pilgrim (Challenge Mode)</Text>
-			<Text id="sotp.challengeMode.desc">
+			<Text id="sotp.completed.challenge.name">The Stars of the Pilgrim (Challenge Mode)</Text>
+			<Text id="sotp.completed.challenge.desc">
 
 				Complete The Stars of the Pilgrim in Challenge Mode.
 			
 			</Text>
 
-			<Text id="sotp.permadeathMode.name">The Stars of the Pilgrim (Permadeath)</Text>
-			<Text id="sotp.permadeathMode.desc">
+			<Text id="sotp.completed.permadeath.name">The Stars of the Pilgrim (Permadeath)</Text>
+			<Text id="sotp.completed.permadeath.desc">
 
 				Complete The Stars of the Pilgrim in Permadeath Mode.
 			

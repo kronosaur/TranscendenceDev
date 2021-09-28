@@ -1630,8 +1630,12 @@ PLAYER DATA
 				(block Nil
 					;	Pay the player and record the award
 					(rpgMissionRewardPayment (msnGetData missionObj 'reward))
+
 					;	Increase XP
 					(objIncData gPlayerShip 'fleetXP (msnGetData missionObj 'missionXP))
+
+					;	Achievement
+					(unvSetAchievement 'humanSpace.fleetManeuvers)
 
 					;	dsRPGMission checks for a well-known data member in the mission
 					;	object to see if it should navigate to an additional screen.

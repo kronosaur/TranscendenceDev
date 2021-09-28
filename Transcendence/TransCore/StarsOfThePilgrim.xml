@@ -171,6 +171,12 @@
 								)
 							)
 						)
+
+					;	Achievement
+
+					(if (= aEndGameReason 'leftHumanSpace)
+						(unvSetAchievement (cat 'sotp.completed. (unv@ 'difficulty)))
+						)
 					)
 			</OnGameEnd>
 
@@ -280,6 +286,7 @@
 			displayOn="&smHumanSpace;"
 			>
 		<Properties>
+			<Global id="hereticTraveler"></Global>
 			<Global id="interstellarTraveler"></Global>
 			<Global id="outerRealmTraveler"></Global>
 		</Properties>
@@ -362,6 +369,16 @@
 						(block ()
 							(typSet@ gType 'outerRealmTraveler True)
 							(unvSetAchievement 'humanSpace.outerRealm)
+							)
+
+					;	Achievement when we reach Heretic
+
+					(and (= (sysGetNode) 'G2)
+							(not (typ@ gType 'hereticTraveler))
+							)
+						(block ()
+							(typSet@ gType 'hereticTraveler True)
+							(unvSetAchievement 'humanSpace.heretic)
 							)
 					)
 			</OnGlobalPlayerEnteredSystem>
