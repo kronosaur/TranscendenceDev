@@ -502,6 +502,7 @@
 
 			level=				"10"
 			cyberDefenseLevel=	"8"
+			achievement=		"humanSpace.dragonSlaverKiller"
 
 			attributes=			"capitalShip, genericClass, majorShip, sungSlavers"
 			>

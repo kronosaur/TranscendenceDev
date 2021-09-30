@@ -7126,10 +7126,15 @@ void CSpaceObject::RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, c
 		{
 		CShip *pPlayerShip = AsShip();
 		if (pPlayerShip)
-			pPlayerShip->GetController()->OnItemBought(Item, Price.GetCreditValue());
+			pPlayerShip->GetController()->OnItemBought(Item, Price);
 
 		//	If the player is buying, then allow types to keep track
 		//	(e.g., Black Market gives out experience points).
+
+		if (CDesignType *pSellerType = pSellerObj->GetType())
+			{
+			pSellerType->FireOnPlayerBoughtItem(Item, Price);
+			}
 
 		GetUniverse().FireOnGlobalPlayerBoughtItem(pSellerObj, Item, Price);
 		}
@@ -7141,9 +7146,14 @@ void CSpaceObject::RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, c
 		{
 		CShip *pPlayerShip = pSellerObj->AsShip();
 		if (pPlayerShip)
-			pPlayerShip->GetController()->OnItemSold(Item, Price.GetCreditValue());
+			pPlayerShip->GetController()->OnItemSold(Item, Price);
 
 		//	If the player is selling, then allow types to keep track.
+
+		if (CDesignType *pBuyerType = GetType())
+			{
+			pBuyerType->FireOnPlayerSoldItem(Item, Price);
+			}
 
 		GetUniverse().FireOnGlobalPlayerSoldItem(this, Item, Price);
 		}

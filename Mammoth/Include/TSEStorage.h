@@ -41,7 +41,7 @@ class CGameFile
 		static constexpr DWORD FLAG_VERSION_STRING =	0x00000002;
 		CString GetCreateVersion (DWORD dwFlags = FLAG_VERSION_STRING) const;
 
-		CDifficultyOptions::ELevels GetDifficulty (void) const;
+		CDifficultyOptions::ELevel GetDifficulty (void) const;
 		CString GetEpitaph (void) const { return CString((char *)m_Header.szEpitaph); }
 		CString GetFilespec (void) const { return (IsOpen() ? m_pFile->GetFilename() : NULL_STR); }
 		CString GetGameID (void) { return CString(m_Header.szGameID); }
@@ -141,7 +141,7 @@ class CGameFile
 		ALERROR SaveGameHeader (SGameHeader &Header);
 		void SaveSystemMapToStream (CString *retsStream);
 
-		static DWORD EncodeDifficulty (CDifficultyOptions::ELevels iLevel);
+		static DWORD EncodeDifficulty (CDifficultyOptions::ELevel iLevel);
 
 		int m_iRefCount = 0;
 		DWORD m_dwLastSavedOn = 0;					//	Last tick that we saved on this session

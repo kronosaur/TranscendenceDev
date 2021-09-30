@@ -22,6 +22,8 @@
 #define TIME_SCALE_ATTRIB						CONSTLIT("timeScale")
 
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
+#define ON_SYSTEM_OBJ_CREATED_EVENT				CONSTLIT("OnSystemObjCreated")
+#define ON_SYSTEM_OBJ_DESTROYED_EVENT			CONSTLIT("OnSystemObjDestroyed")
 #define ON_SYSTEM_STARTED_EVENT					CONSTLIT("OnSystemStarted")
 #define ON_SYSTEM_STOPPED_EVENT					CONSTLIT("OnSystemStopped")
 
@@ -32,9 +34,11 @@
 
 #define STR_NONE								CONSTLIT("none")
 
-static const char *CACHED_EVENTS[CSystemType::evtCount] =
+static const char *CACHED_EVENTS[(int)CSystemType::EEvent::Count] =
 	{
-		"OnObjJumpPosAdj",
+	"OnObjJumpPosAdj",
+	"OnSystemObjCreated",
+	"OnSystemObjDestroyed",
 	};
 
 static TStaticStringTable<TStaticStringEntry<Metric>, 7> SCALE_TABLE = {
@@ -99,41 +103,84 @@ bool CSystemType::FireOnObjJumpPosAdj (CSpaceObject *pObj, CVector *iovPos)
 
 	{
 	SEventHandlerDesc Event;
-	if (FindEventHandlerSystemType(evtOnObjJumpPosAdj, &Event))
+	if (!FindEventHandlerSystemType(EEvent::OnObjJumpPosAdj, &Event))
+		return false;
+
+	CCodeChainCtx Ctx(GetUniverse());
+
+	Ctx.DefineContainingType(this);
+	Ctx.SaveAndDefineSourceVar(pObj);
+	Ctx.DefineVector(CONSTLIT("aJumpPos"), *iovPos);
+
+	ICCItem *pResult = Ctx.Run(Event);
+
+	if (pResult->IsError())
 		{
-		CCodeChainCtx Ctx(GetUniverse());
-
-		Ctx.DefineContainingType(this);
-		Ctx.SaveAndDefineSourceVar(pObj);
-		Ctx.DefineVector(CONSTLIT("aJumpPos"), *iovPos);
-
-		ICCItem *pResult = Ctx.Run(Event);
-
-		if (pResult->IsError())
-			{
-			kernelDebugLogPattern("System OnObjJumpPosAdj: %s", pResult->GetStringValue());
-			Ctx.Discard(pResult);
-			return false;
-			}
-		else if (pResult->IsNil())
-			{
-			Ctx.Discard(pResult);
-			return false;
-			}
-		else
-			{
-			CVector vNewPos = Ctx.AsVector(pResult);
-			Ctx.Discard(pResult);
-
-			if (vNewPos == *iovPos)
-				return false;
-
-			*iovPos = vNewPos;
-			return true;
-			}
+		kernelDebugLogPattern("System OnObjJumpPosAdj: %s", pResult->GetStringValue());
+		Ctx.Discard(pResult);
+		return false;
 		}
+	else if (pResult->IsNil())
+		{
+		Ctx.Discard(pResult);
+		return false;
+		}
+	else
+		{
+		CVector vNewPos = Ctx.AsVector(pResult);
+		Ctx.Discard(pResult);
 
-	return false;
+		if (vNewPos == *iovPos)
+			return false;
+
+		*iovPos = vNewPos;
+		return true;
+		}
+	}
+
+void CSystemType::FireOnSystemObjCreated (const CSpaceObject &Obj) const
+
+//	FireOnSystemObjCreated
+//
+//	Fire <OnSystemObjCreated> event
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandlerSystemType(EEvent::OnSystemObjCreated, &Event))
+		return;
+
+	CCodeChainCtx CCX(GetUniverse());
+	CCX.DefineContainingType(this);
+	CCX.DefineSpaceObject(CONSTLIT("aObjCreated"), Obj);
+
+	ICCItemPtr pResult = CCX.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_SYSTEM_OBJ_CREATED_EVENT, pResult);
+	}
+
+void CSystemType::FireOnSystemObjDestroyed (SDestroyCtx &Ctx) const
+
+//	FireOnSystemObjDestroyed
+//
+//	Fire <OnSystemObjDestroyed> event
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandlerSystemType(EEvent::OnSystemObjDestroyed, &Event))
+		return;
+
+	CCodeChainCtx CCX(GetUniverse());
+	CCX.DefineContainingType(this);
+	CCX.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.Obj);
+	CCX.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
+	CCX.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
+	CCX.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
+	CCX.DefineBool(CONSTLIT("aDestroy"), Ctx.WasDestroyed());
+	CCX.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
+
+	ICCItemPtr pResult = CCX.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_SYSTEM_OBJ_DESTROYED_EVENT, pResult);
 	}
 
 void CSystemType::FireOnSystemStarted (DWORD dwElapsedTime)
@@ -215,7 +262,7 @@ ALERROR CSystemType::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (ALERROR error = m_Enhancements.Bind(Ctx))
 		return error;
 
-	InitCachedEvents(evtCount, CACHED_EVENTS, m_CachedEvents);
+	InitCachedEvents((int)EEvent::Count, CACHED_EVENTS, m_CachedEvents);
 
 	return NOERROR;
 	}

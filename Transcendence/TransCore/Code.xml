@@ -101,6 +101,7 @@
 						(plyGetItemStat gPlayer "itemsBoughtValue" smugglingCriteria))
 						)
 					(totalOreMinedValue (plyGetItemStat gPlayer 'itemsMinedValue "* +ore | * +minable;"))
+					(totalOreMined (plyGetStat gPlayer 'tonsOfOreMined))
 
 					; Conducts
 					(systemData (plyGetStat gPlayer "systemData"))
@@ -185,6 +186,9 @@
 							)
 						(if (gr totalEquipProfit 0)
 							(list (list "Profit on ship's equipment" totalEquipProfit "commerce"))
+							)
+						(if (gr totalOreMined 0)
+							(list (list "Tons of ore mined" totalOreMined "commerce"))
 							)
 						(if (gr totalOreMinedValue 0)
 							(list (list "Value of mined resources" totalOreMinedValue "commerce"))

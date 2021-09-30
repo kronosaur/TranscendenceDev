@@ -575,7 +575,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'resurrectCount\n"
 			"   'score\n"
 			"   'systemData\n"
-			"   'systemsVisited\n",
+			"   'systemsVisited\n"
+			"   'tonsOfOreMined\n",
 
 			"is",	0,	},
 
@@ -1367,7 +1368,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Increment
 
-			int iResult = pPlayer->GetGameStats().IncItemStat(sStat, pType->GetUNID(), iInc);
+			int iResult = pPlayer->GetGameStats().IncItemStat(sStat, *pType, iInc);
 
 			//	Return
 
@@ -1432,22 +1433,14 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	The value
 
-			CurrencyValue iPrice = pArgs->GetElement(iArg)->GetIntegerValue();
-
-			//	Convert to credits, if necessary
-
-			if (!pCurrency->IsCreditEquivalent())
-				{
-				const CEconomyType *pCreditEcon = CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
-				iPrice = pCreditEcon->Exchange(pCurrency, iPrice);
-				}
+			CCurrencyAndValue Price(pArgs->GetElement(iArg)->GetIntegerValue(), pCurrency);
 
 			//	Record
 
 			if (dwData == FN_PLY_RECORD_BUY_ITEM)
-				pPlayer->OnItemBought(Item, iPrice);
+				pPlayer->OnItemBought(Item, Price);
 			else
-				pPlayer->OnItemSold(Item, iPrice);
+				pPlayer->OnItemSold(Item, Price);
 
 			pResult = pCC->CreateTrue();
 			break;

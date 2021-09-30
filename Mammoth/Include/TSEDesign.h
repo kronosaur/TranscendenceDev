@@ -5,6 +5,7 @@
 
 #pragma once
 
+class CAchievementDef;
 class CCommunicationsHandler;
 class CCompositeImageDesc;
 class CCreatePainterCtx;
@@ -208,6 +209,23 @@ class CDesignTypeCriteria
 		static const CDesignTypeCriteria m_Null;
 	};
 
+class CAchievementDataBlock
+	{
+	public:
+		ALERROR BindDesign (SDesignLoadCtx &Ctx);
+		const CAchievementDef &GetAchievementDef (int iIndex) const { if (iIndex < 0 || iIndex >= m_Achievements.GetCount()) throw CException(ERR_FAIL); return *m_Achievements[iIndex]; }
+		int GetCount () const { return m_Achievements.GetCount(); }
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		bool IsEmpty () const { return GetCount() == 0; }
+
+		static const CAchievementDataBlock &Null () { return m_Null; }
+		
+	private:
+		TArray<TUniquePtr<CAchievementDef>> m_Achievements;
+
+		static CAchievementDataBlock m_Null;
+	};
+
 //	CDesignType
 
 class CDesignType
@@ -220,13 +238,15 @@ class CDesignType
 			evtOnDestroyCheck			= 2,
 			evtOnGlobalTypesInit		= 3,
 			evtOnObjDestroyed			= 4,
-			evtOnSystemObjAttacked		= 5,
-			evtOnSystemStarted			= 6,
-			evtOnSystemStopped			= 7,
-			evtOnSystemWeaponFire		= 8,
-			evtOnUpdate					= 9,
+			evtOnPlayerBoughtItem		= 5,
+			evtOnPlayerSoldItem			= 6,
+			evtOnSystemObjAttacked		= 7,
+			evtOnSystemStarted			= 8,
+			evtOnSystemStopped			= 9,
+			evtOnSystemWeaponFire		= 10,
+			evtOnUpdate					= 11,
 
-			evtCount					= 10,
+			evtCount					= 12,
 			};
 
 		struct SMapDescriptionCtx
@@ -300,6 +320,7 @@ class CDesignType
 		ALERROR FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip, CString *retsError = NULL);
 		ALERROR FireOnGlobalPlayerEnteredSystem (CString *retsError = NULL);
 		ALERROR FireOnGlobalPlayerLeftSystem (CString *retsError = NULL);
+		void FireOnGlobalPlayerNewMaxSpeed (const SEventHandlerDesc &Event, const CSpaceObject &PlayerShipObj, int iNewMaxSpeed);
 		void FireOnGlobalPlayerSoldItem (const SEventHandlerDesc &Event, CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		ALERROR FireOnGlobalResurrect (CString *retsError = NULL);
 		bool FireOnGlobalRunDiagnostics (const SEventHandlerDesc &Event);
@@ -314,9 +335,12 @@ class CDesignType
 		ALERROR FireOnGlobalUniverseLoad (const SEventHandlerDesc &Event);
 		ALERROR FireOnGlobalUniverseSave (const SEventHandlerDesc &Event);
 		void FireOnGlobalUpdate (const SEventHandlerDesc &Event);
+		void FireOnPlayerBoughtItem (const CItem &Item, const CCurrencyAndValue &Price);
+		void FireOnPlayerSoldItem (const CItem &Item, const CCurrencyAndValue &Price);
 		void FireOnRandomEncounter (CSpaceObject *pObj = NULL);
 		size_t GetAllocMemoryUsage (void) const;
 		DWORD GetAPIVersion (void) const { return m_dwVersion; }
+		const CAchievementDataBlock &GetAchievementDefinitions () const { return (m_pExtra ? m_pExtra->Achievements : CAchievementDataBlock::Null()); }
 		const CArmorMassDefinitions &GetArmorMassDefinitions (void) const { return (m_pExtra ? m_pExtra->ArmorDefinitions : CArmorMassDefinitions::Null); }
 		const CString &GetAttributes (void) const { return m_sAttributes; }
 		CString GetDataField (const CString &sField) const { CString sValue; FindDataField(sField, &sValue); return sValue; }
@@ -452,6 +476,7 @@ class CDesignType
 			CArmorMassDefinitions ArmorDefinitions;		//	Armor mass definitions
 			CDisplayAttributeDefinitions DisplayAttribs;	//	Display attribute definitions
 			CItemEncounterDefinitions ItemEncounterDefinitions;	//	Item encounter definitions
+			CAchievementDataBlock Achievements;			//	Achievements defined by this type
 
 			SEventHandlerDesc EventsCache[evtCount];	//	Cached events
 			};
@@ -748,6 +773,7 @@ class CSystemMapRef : public CDesignTypeRef<CSystemMap>
 #include "TSEImages.h"
 #include "TSESounds.h"
 #include "TSEComms.h"
+#include "TSEAchievements.h"
 
 //	Items ----------------------------------------------------------------------
 
@@ -1299,20 +1325,21 @@ class CDesignCollection
 			evtOnGlobalObjGateCheck			= 9,
 
 			evtOnGlobalPlayerBoughtItem		= 10,
-			evtOnGlobalPlayerSoldItem		= 11,
-			evtOnGlobalRunDiagnostics		= 12,
-			evtOnGlobalStartDiagnostics		= 13,
-			evtOnGlobalSystemDiagnostics	= 14,
+			evtOnGlobalPlayerNewMaxSpeed	= 11,
+			evtOnGlobalPlayerSoldItem		= 12,
+			evtOnGlobalRunDiagnostics		= 13,
+			evtOnGlobalStartDiagnostics		= 14,
 
-			evtOnGlobalSystemStarted		= 15,
-			evtOnGlobalSystemStopped		= 16,
-			evtOnGlobalUniverseCreated		= 17,
-			evtOnGlobalUniverseLoad			= 18,
-			evtOnGlobalUniverseSave			= 19,
+			evtOnGlobalSystemDiagnostics	= 15,
+			evtOnGlobalSystemStarted		= 16,
+			evtOnGlobalSystemStopped		= 17,
+			evtOnGlobalUniverseCreated		= 18,
+			evtOnGlobalUniverseLoad			= 19,
 
-			evtOnGlobalUpdate				= 20,
+			evtOnGlobalUniverseSave			= 20,
+			evtOnGlobalUpdate				= 21,
 
-			evtCount						= 21
+			evtCount						= 22
 			};
 
 		enum EFlags
@@ -1398,6 +1425,7 @@ class CDesignCollection
 		void FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip);
 		void FireOnGlobalPlayerEnteredSystem (void);
 		void FireOnGlobalPlayerLeftSystem (void);
+		void FireOnGlobalPlayerNewMaxSpeed (const CSpaceObject &PlayerShipObj, int iNewMaxSpeed);
 		void FireOnGlobalPlayerSoldItem (CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		void FireOnGlobalRunDiagnostics (SDiagnosticsCtx &Ctx);
 		void FireOnGlobalStartDiagnostics (SDiagnosticsCtx &Ctx);
@@ -1410,6 +1438,7 @@ class CDesignCollection
 		void FireOnGlobalUniverseLoad (void);
 		void FireOnGlobalUniverseSave (void);
 		void FireOnGlobalUpdate (int iTick);
+		const CAchievementDefinitions &GetAchievementDefinitions () const { return m_AchievementDefinitions; }
 		const CAdventureDesc &GetAdventureDesc (void) const { return (m_pAdventureDesc ? *m_pAdventureDesc : m_EmptyAdventure); }
 		CAdventureDesc &GetAdventureDesc (void) { return (m_pAdventureDesc ? *m_pAdventureDesc : m_EmptyAdventure); }
 		DWORD GetAdventureUNID (void) const { return (m_pAdventureExtension ? m_pAdventureExtension->GetUNID() : 0); }
@@ -1479,6 +1508,7 @@ class CDesignCollection
 		CExtension *m_pAdventureExtension = NULL;
 		CAdventureDesc *m_pAdventureDesc = NULL;
 		TSortMap<CString, const CEconomyType *> m_EconomyIndex;
+		CAchievementDefinitions m_AchievementDefinitions;
 		CArmorMassDefinitions m_ArmorDefinitions;
 		CDisplayAttributeDefinitions m_DisplayAttribs;
 		CItemEncounterDefinitions m_ItemEncounterDefinitions;

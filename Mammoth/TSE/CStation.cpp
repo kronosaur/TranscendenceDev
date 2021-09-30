@@ -1003,7 +1003,7 @@ void CStation::ClearBlacklist (CSpaceObject *pObj)
 		}
 	}
 
-void CStation::CreateDestructionEffect (void)
+void CStation::CreateDestructionEffect (const CDamageSource &Attacker)
 
 //	CreateDestructionEffect
 //
@@ -1019,29 +1019,7 @@ void CStation::CreateDestructionEffect (void)
 
 	//	Explosion effect and damage
 
-	SExplosionType Explosion;
-	FireGetExplosionType(&Explosion);
-	if (Explosion.pDesc == NULL)
-		Explosion.pDesc = m_pType->GetExplosionType();
-
-	if (Explosion.pDesc)
-		{
-		SShotCreateCtx Ctx;
-		Ctx.pDesc = Explosion.pDesc;
-		if (Explosion.iBonus != 0)
-			{
-			Ctx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			Ctx.pEnhancements->InsertHPBonus(NULL, Explosion.iBonus);
-			}
-
-		Ctx.Source = CDamageSource(this, Explosion.iCause);
-		Ctx.Source.SetExplosion();
-		Ctx.vPos = GetPos();
-		Ctx.vVel = GetVel();
-		Ctx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
-
-		GetSystem()->CreateWeaponFire(Ctx);
-		}
+	CreateExplosion(Attacker);
 
 	//	Some air leaks
 
@@ -1158,6 +1136,47 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 				20,
 				NULL);
 		}
+	}
+
+bool CStation::CreateExplosion (const CDamageSource &Attacker)
+
+//	CreateExplosion
+//
+//	Creates an explosion when station is destroyed. Returns TRUE if an explosion
+//	was created.
+
+	{
+	SExplosionType Explosion;
+	FireGetExplosionType(&Explosion);
+	if (Explosion.pDesc == NULL)
+		Explosion.pDesc = m_pType->GetExplosionType();
+
+	if (!Explosion.pDesc)
+		return false;
+
+	//	If the player destroyed the station, then this counts as a player-
+	//	created explosion.
+
+	if (Attacker.IsPlayerOrderGiver() && Explosion.iCause == killedByExplosion)
+		Explosion.iCause = killedByPlayerCreatedExplosion;
+
+	//	Create an explosion
+
+	SShotCreateCtx Ctx;
+	Ctx.pDesc = Explosion.pDesc;
+	if (Explosion.iBonus != 0)
+		{
+		Ctx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
+		Ctx.pEnhancements->InsertHPBonus(NULL, Explosion.iBonus);
+		}
+
+	Ctx.Source = CDamageSource(this, Explosion.iCause);
+	Ctx.vPos = GetPos();
+	Ctx.vVel = GetVel();
+	Ctx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
+
+	GetSystem()->CreateWeaponFire(Ctx);
+	return true;
 	}
 
 ALERROR CStation::CreateFromType (CSystem &System,
@@ -1591,32 +1610,9 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 
 	//	Create explosion
 
-	SExplosionType Explosion;
-	FireGetExplosionType(&Explosion);
-	if (Explosion.pDesc == NULL)
-		Explosion.pDesc = m_pType->GetExplosionType();
-
-	if (Explosion.pDesc)
+	if (!CreateExplosion(Ctx.Attacker))
 		{
-		SShotCreateCtx Ctx;
-		Ctx.pDesc = Explosion.pDesc;
-		if (Explosion.iBonus != 0)
-			{
-			Ctx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			Ctx.pEnhancements->InsertHPBonus(NULL, Explosion.iBonus);
-			}
-
-		Ctx.Source = CDamageSource(this, Explosion.iCause);
-		Ctx.Source.SetExplosion();
-		Ctx.vPos = GetPos();
-		Ctx.vVel = GetVel();
-		Ctx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
-
-		GetSystem()->CreateWeaponFire(Ctx);
-		}
-	else
-		{
-		//	Create Particles
+		//	If no explosion defined, then create some particles.
 
 		CObjectImageArray PartImage;
 		RECT rcRect;
@@ -2926,7 +2922,7 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 	else
 		{
 		Abandon(Ctx.Damage.GetCause(), Ctx.Attacker, &Ctx.GetDesc());
-		CreateDestructionEffect();
+		CreateDestructionEffect(Ctx.Attacker);
 		return damageDestroyedAbandoned;
 		}
 	}

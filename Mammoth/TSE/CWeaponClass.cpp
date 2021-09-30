@@ -5059,7 +5059,7 @@ ALERROR CWeaponClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 			if (iTotalTicks > iFireDelay)
 				{
-				GetUniverse().DebugOutput("WARNING: %s (%08x) takes %d ticks to fire all shots, but has only %d ticks fire delay.", (LPSTR)GetName(), GetUNID(), iTotalTicks, iFireDelay);
+				GetUniverse().LogOutput(strPatternSubst("WARNING: %s (%08x) takes %d ticks to fire all shots, but has only %d ticks fire delay.", GetName(), GetUNID(), iTotalTicks, iFireDelay));
 				}
 			}
 		}

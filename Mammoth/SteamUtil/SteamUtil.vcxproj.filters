@@ -35,5 +35,8 @@
     <ClCompile Include="CSteamService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AchievementsUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

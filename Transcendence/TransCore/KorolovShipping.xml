@@ -1814,6 +1814,7 @@
 							(block Nil
 								(typInc@ &unidKorolovShipping; 'escortSuccessCount 1) 
 								(lnkReplace transRecord 0 (+ (@ transRecord 0) 1))
+								(unvSetAchievement 'humanSpace.korolovEscort)
 								(if (and (= totalMissionsSuccess 10) (= totalMissionsFailed 0))
 									(setq xpBonus 1500)
 									)

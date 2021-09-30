@@ -110,6 +110,11 @@
 					(typIncGlobalData &stInsuranceCompany; "claims")
 					(typSetGlobalData &stInsuranceCompany; "insured" Nil)
 
+					; Achievement
+					(if (= (typ@ &stInsuranceCompany; 'claims) 1)
+						(unvSetAchievement 'humanSpace.insuranceResurrect)
+						)
+
 					; Restore the ship					
 					(switch
 						; If the player ship has custom insurance code, then we 

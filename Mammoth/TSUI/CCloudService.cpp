@@ -349,6 +349,29 @@ ALERROR CCloudService::LoadUserCollection (ITaskProcessor *pProcessor, CExtensio
 	return NOERROR;
 	}
 
+ALERROR CCloudService::PostAchievement (ITaskProcessor *pProcessor, const CAchievementDef &Achievement, CString *retsResult)
+
+//	PostAchievement
+//
+//	Posts an achievement to the cloud.
+
+	{
+	for (int i = 0; i < m_Services.GetCount(); i++)
+		{
+		if (m_Services[i]->IsEnabled())
+			{
+			CString sError;
+			if (ALERROR error = m_Services[i]->PostAchievement(pProcessor, Achievement, &sError))
+				{
+				::kernelDebugLogPattern("%s: Error posting achievement: %s", m_Services[i]->GetTag(), sError);
+				//	Continue with other services.
+				}
+			}
+		}
+
+	return NOERROR;
+	}
+
 ALERROR CCloudService::PostCrashReport (ITaskProcessor *pProcessor, const CString &sCrash, CString *retsResult)
 
 //	PostCrashReport

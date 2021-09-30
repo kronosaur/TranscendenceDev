@@ -20,11 +20,13 @@ class CSystemType : public CDesignType
 			sizeCount =						4,
 			};
 
-		enum ECachedHandlers
+		enum class EEvent
 			{
-			evtOnObjJumpPosAdj			= 0,
+			OnObjJumpPosAdj					= 0,
+			OnSystemObjCreated				= 1,
+			OnSystemObjDestroyed			= 2,
 
-			evtCount					= 1,
+			Count							= 3,
 			};
 
 		//	Matches default space background image: rsDeepSpace (DeepSpaceBackground.jpg)
@@ -33,17 +35,19 @@ class CSystemType : public CDesignType
 		CSystemType (void);
 		virtual ~CSystemType (void);
 
-		bool FindEventHandlerSystemType (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
+		bool FindEventHandlerSystemType (EEvent iEvent, SEventHandlerDesc *retEvent = NULL) const 
 			{
-			if (!m_CachedEvents[iEvent].pCode)
+			if (!m_CachedEvents[(int)iEvent].pCode)
 				return false;
 
-			if (retEvent) *retEvent = m_CachedEvents[iEvent];
+			if (retEvent) *retEvent = m_CachedEvents[(int)iEvent];
 			return true;
 			}
 
 		ALERROR FireOnCreate (SSystemCreateCtx &SysCreateCtx, CString *retsError = NULL);
 		bool FireOnObjJumpPosAdj (CSpaceObject *pPos, CVector *iovPos);
+		void FireOnSystemObjCreated (const CSpaceObject &Obj) const;
+		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx) const;
 		void FireOnSystemStarted (DWORD dwElapsedTime);
 		void FireOnSystemStopped ();
 		ALERROR FireSystemCreateCode (SSystemCreateCtx &SysCreateCtx, ICCItem *pCode, const COrbit &OrbitDesc, CString *retsError);
@@ -94,7 +98,7 @@ class CSystemType : public CDesignType
 		bool m_bNoExtraEncounters;			//	TRUE if we don't add new encounters to
 											//		satisfy minimums.
 
-		SEventHandlerDesc m_CachedEvents[evtCount];
+		SEventHandlerDesc m_CachedEvents[(int)EEvent::Count];
 
 		//	Property table
 

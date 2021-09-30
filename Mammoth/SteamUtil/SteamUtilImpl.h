@@ -205,6 +205,63 @@ class CFindOrCreateLeaderboard : public TCallContext0<CFindOrCreateLeaderboard, 
 		SteamLeaderboard_t m_hLeaderboard;
 	};
 
+class CStoreStats
+	{
+	public:
+		CStoreStats () :
+				m_StatsStored(this, &CStoreStats::OnStatsStored),
+				m_AchievementStored(this, &CStoreStats::OnAchievementStored)
+			{ }
+
+		bool Call ()
+			{
+			if (!SteamUserStats()->StoreStats())
+				return false;
+
+			while (!m_bStatsStored || !m_bAchievementStored)
+				{
+				::Sleep(50);
+				SteamAPI_RunCallbacks();
+				}
+
+			return true;
+			}
+
+		STEAM_CALLBACK(CStoreStats, OnStatsStored, UserStatsStored_t, m_StatsStored);
+		STEAM_CALLBACK(CStoreStats, OnAchievementStored, UserAchievementStored_t, m_AchievementStored);
+
+	private:
+		bool m_bAchievementStored = false;
+		bool m_bStatsStored = false;
+	};
+
+class CRequestCurrentStats
+	{
+	public:
+		CRequestCurrentStats () :
+				m_DataReceived(this, &CRequestCurrentStats::OnResult)
+			{ }
+				
+		bool Call ()
+			{
+			if (!SteamUserStats()->RequestCurrentStats())
+				return false;
+
+			while (!m_bComplete)
+				{
+				::Sleep(50);
+				SteamAPI_RunCallbacks();
+				}
+
+			return true;
+			}
+
+		STEAM_CALLBACK(CRequestCurrentStats, OnResult, UserStatsReceived_t, m_DataReceived);
+
+	private:
+		bool m_bComplete = false;
+	};
+
 class CUGCGetUserContent : public TCallContext<CUGCGetUserContent, SteamUGCQueryCompleted_t>
     {
     public:

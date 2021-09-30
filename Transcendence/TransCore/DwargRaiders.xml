@@ -876,6 +876,10 @@
 									)
 								(objSetSovereign gSource newSovereign)
 								(objSendMessage newLeader gSource "WE foLLow thE stRong")
+
+								(if (= (objGetType gSource) &scDwargBehemoth;)
+									(unvSetAchievement 'humanSpace.dwargBehemothFriend)
+									)
 								)
 							)
 						)

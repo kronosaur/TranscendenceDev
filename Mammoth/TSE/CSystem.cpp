@@ -2013,6 +2013,9 @@ void CSystem::FireOnSystemObjCreated (const CSpaceObject &Obj)
 
 		pHandler = pHandler->GetNext();
 		}
+
+	if (m_pType)
+		m_pType->FireOnSystemObjCreated(Obj);
 	}
 
 void CSystem::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
@@ -2032,6 +2035,9 @@ void CSystem::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 
 		pHandler = pHandler->GetNext();
 		}
+
+	if (m_pType)
+		m_pType->FireOnSystemObjDestroyed(Ctx);
 
 	DEBUG_CATCH
 	}

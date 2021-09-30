@@ -2341,6 +2341,16 @@
 						)
 					)
 			</OnDestroy>
+
+			<OnPlayerSoldItem>
+				(switch
+					;	If the player sells an illegal item to a Commonwealth station
+					;	then we register an achievement.
+
+					(itmMatches gItem "* +illegal")
+						(unvSetAchievement 'humanSpace.blackTrafficker)
+					)
+			</OnPlayerSoldItem>
 		</Events>
 
 		<Language>

@@ -703,6 +703,7 @@
 			cyberDefenseLevel=	"8"
 			   
 			explosionType=		"&vtPlasmaExplosion2;"
+			achievement=		"humanSpace.phobosKiller"
 			>
 
 		<!-- Configuration -->

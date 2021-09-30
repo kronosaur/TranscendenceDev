@@ -32,17 +32,18 @@ static const char *CACHED_EVENTS[CDesignCollection::evtCount] =
 		"OnGlobalObjGateCheck",
 
 		"OnGlobalPlayerBoughtItem",
+		"OnGlobalPlayerNewMaxSpeed",
 		"OnGlobalPlayerSoldItem",
 		"OnGlobalRunDiagnostics",
 		"OnGlobalStartDiagnostics",
-		"OnGlobalSystemDiagnostics",
 
+		"OnGlobalSystemDiagnostics",
 		"OnGlobalSystemStarted",
 		"OnGlobalSystemStopped",
 		"OnGlobalUniverseCreated",
 		"OnGlobalUniverseLoad",
-		"OnGlobalUniverseSave",
 
+		"OnGlobalUniverseSave",
 		"OnGlobalUpdate",
 	};
 
@@ -59,9 +60,7 @@ CDesignCollection::CDesignCollection (void) :
 //	CDesignCollection construtor
 
 	{
-	int i;
-
-	for (i = 0; i < evtCount; i++)
+	for (int i = 0; i < evtCount; i++)
 		m_EventsCache[i] = new CGlobalEventCache(CString(CACHED_EVENTS[i], -1, true));
 	}
 
@@ -336,6 +335,13 @@ ALERROR CDesignCollection::BindDesign (CUniverse &Universe, const TArray<CExtens
 		const auto &ItemEncounterDefinitions = pEntry->GetItemEncounterDefinitions();
 		if (!ItemEncounterDefinitions.IsEmpty())
 			m_ItemEncounterDefinitions.Append(ItemEncounterDefinitions);
+
+		const auto &AchievementDefinitions = pEntry->GetAchievementDefinitions();
+		if (!AchievementDefinitions.IsEmpty())
+			{
+			if (m_AchievementDefinitions.AddDefinitions(Ctx, AchievementDefinitions) != NOERROR)
+				return BindDesignError(Ctx, retsError);
+			}
 		}
 
 	//	Tell our armor mass definitions that we're done so that we can calculate
@@ -1047,6 +1053,22 @@ void CDesignCollection::FireOnGlobalPlayerLeftSystem (void)
 		{
 		if (GetEntry(i)->FireOnGlobalPlayerLeftSystem(&sError) != NOERROR)
 			kernelDebugLogString(sError);
+		}
+	}
+
+void CDesignCollection::FireOnGlobalPlayerNewMaxSpeed (const CSpaceObject &PlayerShipObj, int iNewMaxSpeed)
+
+//	FireOnGlobalPlayerNewMaxSpeed
+//
+//	Player ship has achieved a new max speed.
+
+	{
+	for (int i = 0; i < m_EventsCache[evtOnGlobalPlayerNewMaxSpeed]->GetCount(); i++)
+		{
+		SEventHandlerDesc Event;
+		CDesignType *pType = m_EventsCache[evtOnGlobalPlayerNewMaxSpeed]->GetEntry(i, &Event);
+
+		pType->FireOnGlobalPlayerNewMaxSpeed(Event, PlayerShipObj, iNewMaxSpeed);
 		}
 	}
 
@@ -2108,6 +2130,7 @@ void CDesignCollection::Unbind (void)
 	m_DisplayAttribs.DeleteAll();
 	m_ItemEncounterDefinitions.DeleteAll();
 	m_EconomyIndex.DeleteAll();
+	m_AchievementDefinitions.DeleteAll();
 
 	//	Reset
 

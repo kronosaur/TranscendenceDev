@@ -893,13 +893,13 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		//	Validate difficulty
 
 		Defaults.iDifficulty = m_Model.GetUniverse().GetCurrentAdventureDesc().GetDifficulty();
-		if (Defaults.iDifficulty != CDifficultyOptions::lvlUnknown)
+		if (Defaults.iDifficulty != CDifficultyOptions::ELevel::Unknown)
 			Defaults.bDifficultyLocked = true;
 		else
 			{
 			Defaults.iDifficulty = CDifficultyOptions::ParseID(m_Settings.GetString(CGameSettings::lastDifficulty));
-			if (Defaults.iDifficulty == CDifficultyOptions::lvlUnknown)
-				Defaults.iDifficulty = CDifficultyOptions::lvlStory;
+			if (Defaults.iDifficulty == CDifficultyOptions::ELevel::Unknown)
+				Defaults.iDifficulty = CDifficultyOptions::ELevel::Story;
 			}
 
 		//	New game screen

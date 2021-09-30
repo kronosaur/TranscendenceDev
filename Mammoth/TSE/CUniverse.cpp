@@ -1468,8 +1468,8 @@ ALERROR CUniverse::InitGame (DWORD dwStartingMap, CString *retsError)
 	{
 	ALERROR error;
 
-	if (m_Difficulty.GetLevel() == CDifficultyOptions::lvlUnknown)
-		SetDifficultyLevel(CDifficultyOptions::lvlChallenge);
+	if (m_Difficulty.GetLevel() == CDifficultyOptions::ELevel::Unknown)
+		SetDifficultyLevel(CDifficultyOptions::ELevel::Challenge);
 
 	//	If starting map is 0, see if we can get it from the adventure
 
@@ -1828,7 +1828,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 	if (Ctx.dwVersion >= 38)
 		m_Difficulty.ReadFromStream(*pStream);
 	else
-		m_Difficulty.SetLevel(CDifficultyOptions::lvlChallenge);
+		m_Difficulty.SetLevel(CDifficultyOptions::ELevel::Challenge);
 
 	//	Prepare a universe initialization context
 	//	NOTE: Caller has set debug mode based on game file header flag.
@@ -2600,6 +2600,57 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 	m_ObjStats.WriteToStream(pStream);
 
 	return NOERROR;
+	}
+
+bool CUniverse::SetAchievement (const CString &sID, CString *retsError)
+
+//	SetAchievement
+//
+//	Sets an achievement.
+
+	{
+	//	First look for the achievement definition.
+
+	auto &Achievements = m_Design.GetAchievementDefinitions();
+	auto pDef = Achievements.FindDefinition(sID);
+	if (!pDef)
+		{
+		//	In debug mode, we report this, but otherwise we fail silently 
+		//	because an adventure might not define the achievement.
+
+		if (InDebugMode())
+			LogOutput(strPatternSubst("WARNING: Unknown achievement ID: %s.", sID));
+
+		return true;
+		}
+
+	//	If achievement is disabled, then it just means the adventure or 
+	//	extension does not use this achievement.
+
+	if (!pDef->IsEnabled())
+		return true;
+
+	//	If this achievement has a minimum difficulty, then make sure we're at 
+	//	least that level.
+
+	CDifficultyOptions::ELevel iMinDifficulty = pDef->GetMinDifficulty();
+	if ((iMinDifficulty != CDifficultyOptions::ELevel::Unknown)
+			&& (GetDifficultyLevel() < iMinDifficulty))
+		return true;
+
+	//	If this is not a registered game, then we can't post.
+
+#ifndef DEBUG
+	if (!IsRegistered())
+		return true;
+#endif
+
+	//	Post to service.
+
+	if (pDef->CanPost())
+		m_pHost->PostAchievement(*pDef);
+
+	return true;
 	}
 
 void CUniverse::SetCurrentSystem (CSystem *pSystem, bool bPlayerHasEntered)

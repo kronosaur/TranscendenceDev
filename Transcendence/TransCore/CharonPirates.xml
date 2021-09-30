@@ -1159,6 +1159,8 @@
 			level=				"5"
 			attributes=			"capitalShip, charonPirates, charonFrigate, genericClass"
 			inherit=			"&scCharonFrigateStock;"
+
+			achievement=		"humanSpace.charonFrigateKiller"
 			>
 
 		<Names definiteArticle="true">

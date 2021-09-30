@@ -5,6 +5,13 @@
 
 #include "PreComp.h"
 
+#define ACHIEVEMENT_CORE_BURIED_KILL			CONSTLIT("core.buriedKill")
+#define ACHIEVEMENT_CORE_COLLATERAL_DAMAGE		CONSTLIT("core.collateralDamage")
+#define ACHIEVEMENT_CORE_PARALYZE_KILL			CONSTLIT("core.paralyzeKill")
+#define ACHIEVEMENT_CORE_RADIATION_KILL			CONSTLIT("core.radiationKill")
+
+#define ATTRIB_ORE								CONSTLIT("ore")
+
 #define ASTEROIDS_MINED_STAT					CONSTLIT("asteroidsMined")
 #define BEST_ENEMY_SHIPS_DESTROYED_STAT			CONSTLIT("bestEnemyShipsDestroyed")
 #define ENEMY_OBJS_DESTROYED_STAT				CONSTLIT("enemyObjsDestroyed")
@@ -29,6 +36,7 @@
 #define SCORE_STAT								CONSTLIT("score")
 #define SYSTEM_DATA_STAT						CONSTLIT("systemData")
 #define SYSTEMS_VISITED_STAT					CONSTLIT("systemsVisited")
+#define TONS_OF_ORE_MINED_STAT					CONSTLIT("tonsOfOreMined")
 
 #define NIL_VALUE								CONSTLIT("Nil")
 
@@ -42,6 +50,25 @@
 #define STR_MISSION_FAILURE						CONSTLIT("missionFailure")
 #define STR_MISSION_SUCCESS						CONSTLIT("missionSuccess")
 #define STR_SAVED								CONSTLIT("saved")
+
+std::initializer_list<CPlayerGameStats::SOreMinedAchievementDesc> CPlayerGameStats::m_OreMinedAchievements = {
+	{	"",										1			},
+	{	"core.mineOre1",						100			},
+	{	"core.mineOre100",						1000		},
+	{	"core.mineOre1000",						10000		},
+	{	"core.mineOre10000",					100000		},
+	{	"core.mineOre100000",					100000000	},
+	};
+
+std::initializer_list<CPlayerGameStats::SProfitAchievementDesc> CPlayerGameStats::m_ProfitAchievements = {
+	{	"",										10'000			},
+	{	"core.trade10K",						50'000			},
+	{	"core.trade50K",						150'000			},
+	{	"core.trade150K",						500'000			},
+	{	"core.trade500K",						1'000'000		},
+	{	"core.trade1M",							5'000'000		},
+	{	"core.trade5M",							1'000'000'000	},
+	};
 
 class CStatCounterArray
 	{
@@ -106,6 +133,23 @@ int CPlayerGameStats::CalcEndGameScore (void) const
 
 	{
 	return m_iScore / (1 + min(9, m_iResurrectCount));
+	}
+
+const CShipClass *CPlayerGameStats::FindClassByName (SLoadCtx &Ctx, const CString &sClassName)
+
+//	FindClassByName
+//
+//	Looks for the ship class by name.
+
+	{
+	for (int i = 0; i < Ctx.GetUniverse().GetShipClassCount(); i++)
+		{
+		const CShipClass *pClass = Ctx.GetUniverse().GetShipClass(i);
+		if (strEquals(sClassName, pClass->GetNounPhrase()))
+			return pClass;
+		}
+
+	return NULL;
 	}
 
 bool CPlayerGameStats::FindItemStats (DWORD dwUNID, SItemTypeStats **retpStats) const
@@ -288,6 +332,74 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
 		return NULL;
 	}
 
+bool CPlayerGameStats::FireMineOreAchievement (int iLastValue, int iCurrentValue)
+
+//	FireMineOreAchievement
+//
+//	Fires an achievement if the new value crosses a threshold.
+
+	{
+	if (iLastValue >= iCurrentValue)
+		return false;
+
+	int iLastThreshold = -1;
+
+	for (const auto &Entry : m_OreMinedAchievements)
+		{
+		if (iLastThreshold == -1 && iLastValue < Entry.iOreMinedThreshold)
+			iLastThreshold = Entry.iOreMinedThreshold;
+
+		if (iCurrentValue < Entry.iOreMinedThreshold)
+			{
+			//	If we're at the same level still, then nothing to do.
+
+			if (iLastThreshold == Entry.iOreMinedThreshold)
+				return false;
+
+			//	Otherwise, fire an achievement.
+
+			m_Universe.SetAchievement(Entry.sAchievementID);
+			return true;
+			}
+		}
+
+	return false;
+	}
+
+bool CPlayerGameStats::FireProfitAchievement (CurrencyValue LastValue, CurrencyValue CurrentValue)
+
+//	FireProfitAchievement
+//
+//	Fires an achievement if the new value crosses a threshold.
+
+	{
+	if (CurrentValue <= 0 || LastValue >= CurrentValue)
+		return false;
+
+	CurrencyValue LastThreshold = -1;
+
+	for (const auto &Entry : m_ProfitAchievements)
+		{
+		if (LastThreshold == -1 && LastValue < Entry.ProfitThreshold)
+			LastThreshold = Entry.ProfitThreshold;
+
+		if (CurrentValue < Entry.ProfitThreshold)
+			{
+			//	If we're at the same level still, then nothing to do.
+
+			if (LastThreshold == Entry.ProfitThreshold)
+				return false;
+
+			//	Otherwise, fire an achievement.
+
+			m_Universe.SetAchievement(Entry.sAchievementID);
+			return true;
+			}
+		}
+
+	return false;
+	}
+
 void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlayerShip, bool bGameOver) const
 
 //	GenerateGameStats
@@ -323,12 +435,28 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 
 	//	Stats for player ships used (sorted by when we first entered the ship).
 
+	TSortMap<CString, SPlayerShipStats> PlayerShipStats;
 	for (int i = 0; i < m_PlayerShipStats.GetCount(); i++)
 		{
-		const CString sClassName = m_PlayerShipStats.GetKey(i);
-		CString sSort = strPatternSubst(CONSTLIT("%012d"), m_PlayerShipStats[i].dwFirstEntered);
+		bool bNew;
+		SPlayerShipStats *pStats = PlayerShipStats.SetAt(m_PlayerShipStats[i].sClassName,  &bNew);
+		if (bNew)
+			*pStats = m_PlayerShipStats[i];
+		else
+			{
+			if (m_PlayerShipStats[i].dwFirstEntered < pStats->dwFirstEntered)
+				pStats->dwFirstEntered = m_PlayerShipStats[i].dwFirstEntered;
 
-		Stats.Insert(sClassName, NULL_STR, CONSTLIT("Ships Used"), sSort);
+			if (m_PlayerShipStats[i].iMaxSpeed > pStats->iMaxSpeed)
+				pStats->iMaxSpeed = m_PlayerShipStats[i].iMaxSpeed;
+			}
+		}
+
+	for (int i = 0; i < PlayerShipStats.GetCount(); i++)
+		{
+		CString sSort = strPatternSubst(CONSTLIT("%012d"), PlayerShipStats[i].dwFirstEntered);
+
+		Stats.Insert(PlayerShipStats[i].sClassName, NULL_STR, CONSTLIT("Ships Used"), sSort);
 		}
 
 	//	Some combat stats
@@ -684,6 +812,20 @@ int CPlayerGameStats::GetBestEnemyShipsDestroyed (DWORD *retdwUNID) const
 	return pBest->iEnemyDestroyed;
 	}
 
+CPlayerGameStats::SPlayerShipStats *CPlayerGameStats::GetCurrentPlayerShipStats ()
+
+//	GetCurrentPlayerShipStats
+//
+//	Returns the entry for the current player ship.
+
+	{
+	for (int i = 0; i < m_PlayerShipStats.GetCount(); i++)
+		if (m_PlayerShipStats[i].dwLastLeft == INVALID_TIME)
+			return &m_PlayerShipStats[i];
+
+	return NULL;
+	}
+
 CTimeSpan CPlayerGameStats::GetGameTime (void) const
 
 //  GetGameTime
@@ -994,6 +1136,13 @@ ICCItemPtr CPlayerGameStats::GetStat (const CString &sStat) const
 		else
 			return ICCItemPtr(iCount);
 		}
+	else if (strEquals(sStat, TONS_OF_ORE_MINED_STAT))
+		{
+		if (m_iTonsOfOreMined == 0)
+			return ICCItemPtr::Nil();
+		else
+			return ICCItemPtr(m_iTonsOfOreMined);
+		}
 	else
 		{
 		CString sResult = GetStatString(sStat);
@@ -1287,14 +1436,14 @@ ICCItemPtr CPlayerGameStats::GetSystemStat (const CString &sStat, const CString 
 		return ICCItemPtr::Nil();
 	}
 
-int CPlayerGameStats::IncItemStat (const CString &sStat, DWORD dwUNID, int iInc)
+int CPlayerGameStats::IncItemStat (const CString &sStat, const CItemType &ItemType, int iInc)
 
 //	IncItemStat
 //
 //	Increments a stat for the given item.
 
 	{
-	SItemTypeStats *pStats = GetItemStats(dwUNID);
+	SItemTypeStats *pStats = GetItemStats(ItemType.GetUNID());
 
 	if (strEquals(sStat, ITEMS_BOUGHT_COUNT_STAT))
 		{
@@ -1303,7 +1452,10 @@ int CPlayerGameStats::IncItemStat (const CString &sStat, DWORD dwUNID, int iInc)
 		}
 	else if (strEquals(sStat, ITEMS_BOUGHT_VALUE_STAT))
 		{
+		//	NOTE: We assume default currency
 		pStats->iValueBought += (CurrencyValue)Max(0, iInc);
+		m_TotalValueBought += (CurrencyValue)Max(0, iInc);
+
 		return (int)pStats->iValueBought;
 		}
 	else if (strEquals(sStat, ITEMS_DAMAGED_HP_STAT))
@@ -1319,6 +1471,13 @@ int CPlayerGameStats::IncItemStat (const CString &sStat, DWORD dwUNID, int iInc)
 	else if (strEquals(sStat, ITEMS_MINED_COUNT_STAT))
 		{
 		pStats->iCountMined += Max(0, iInc);
+
+		//	For ore, we track some other values and potentially fire 
+		//	achievements.
+
+		if (ItemType.HasAttribute(ATTRIB_ORE) && iInc > 0)
+			OnOreMined(ItemType, iInc);
+
 		return pStats->iCountMined;
 		}
 	else if (strEquals(sStat, ITEMS_SOLD_COUNT_STAT))
@@ -1328,7 +1487,10 @@ int CPlayerGameStats::IncItemStat (const CString &sStat, DWORD dwUNID, int iInc)
 		}
 	else if (strEquals(sStat, ITEMS_SOLD_VALUE_STAT))
 		{
+		//	NOTE: We assume default currency
 		pStats->iValueSold += (CurrencyValue)Max(0, iInc);
+		m_TotalValueSold += (CurrencyValue)Max(0, iInc);
+
 		return (int)pStats->iValueSold;
 		}
 	else
@@ -1391,19 +1553,24 @@ void CPlayerGameStats::OnGameEnd (CSpaceObject *pPlayer)
 	DEBUG_CATCH
 	}
 
-void CPlayerGameStats::OnItemBought (const CItem &Item, CurrencyValue iTotalPrice)
+void CPlayerGameStats::OnItemBought (const CItem &Item, const CCurrencyAndValue &TotalValue)
 
 //	OnItemBought
 //
 //	Player bought an item
 
 	{
-	if (iTotalPrice <= 0)
+	//	Convert to default currency.
+
+	CurrencyValue iTotalValue = m_Universe.GetDefaultCurrency().Exchange(TotalValue);
+	if (iTotalValue <= 0)
 		return;
 
 	SItemTypeStats *pStats = GetItemStats(Item.GetType()->GetUNID());
 	pStats->iCountBought += Item.GetCount();
-	pStats->iValueBought += iTotalPrice;
+	pStats->iValueBought += iTotalValue;
+
+	m_TotalValueBought += iTotalValue;
 	}
 
 void CPlayerGameStats::OnItemDamaged (const CItem &Item, int iHP)
@@ -1448,19 +1615,33 @@ void CPlayerGameStats::OnItemInstalled (const CItem &Item)
 	pStats->iCountInstalled++;
 	}
 
-void CPlayerGameStats::OnItemSold (const CItem &Item, CurrencyValue iTotalPrice)
+void CPlayerGameStats::OnItemSold (const CItem &Item, const CCurrencyAndValue &TotalValue)
 
 //	OnItemSold
 //
 //	Player sold an item
 
 	{
-	if (iTotalPrice <= 0)
+	//	Convert to default currency.
+
+	CurrencyValue iTotalValue = m_Universe.GetDefaultCurrency().Exchange(TotalValue);
+	if (iTotalValue <= 0)
 		return;
+
+	//	Add item stats
 
 	SItemTypeStats *pStats = GetItemStats(Item.GetType()->GetUNID());
 	pStats->iCountSold += Item.GetCount();
-	pStats->iValueSold += iTotalPrice;
+	pStats->iValueSold += iTotalValue;
+
+	//	Compute profit
+
+	CurrencyValue PrevProfit = m_TotalValueSold - m_TotalValueBought;
+	m_TotalValueSold += iTotalValue;
+	CurrencyValue CurProfit = PrevProfit + iTotalValue;
+
+	if (CurProfit > 0)
+		FireProfitAchievement(PrevProfit, CurProfit);
 	}
 
 void CPlayerGameStats::OnItemUninstalled (const CItem &Item)
@@ -1551,6 +1732,25 @@ void CPlayerGameStats::OnKeyEvent (EEventTypes iType, CSpaceObject *pObj, DWORD 
 	pStats->dwCauseUNID = dwCauseUNID;
 	}
 
+bool CPlayerGameStats::OnNewMaxSpeed (int iNewMaxSpeed)
+
+//	OnNewMaxSpeed
+//
+//	Track a new max speed. Returns TRUE if we recorded a new max speed.
+
+	{
+	if (auto pStats = GetCurrentPlayerShipStats())
+		{
+		if (iNewMaxSpeed > pStats->iMaxSpeed)
+			{
+			pStats->iMaxSpeed = iNewMaxSpeed;
+			return true;
+			}
+		}
+
+	return false;
+	}
+
 void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObject *pPlayer)
 
 //	OnDestroyedByPlayer
@@ -1575,11 +1775,38 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 			//	Adjust score for difficulty
 
 			int iScore = Max(1, mathRound(pClass->GetScore() * m_Universe.GetDifficulty().GetScoreAdj()));
-
 			m_iScore += iScore;
+
+			//	If we killed something with radiation, then achievement.
+
+			if (Ctx.Attacker.GetCause() == killedByRadiationPoisoning)
+				{
+				m_Universe.SetAchievement(ACHIEVEMENT_CORE_RADIATION_KILL);
+				}
+
+			//	If this was caused by an explosion, then we get an achievement.
+
+			if (Ctx.Attacker.IsExplosion())
+				{
+				m_Universe.SetAchievement(ACHIEVEMENT_CORE_COLLATERAL_DAMAGE);
+				}
+
+			//	If the ship was paralyzed, then we get an achievement.
+
+			if (pShip->GetCondition(ECondition::paralyzed))
+				{
+				m_Universe.SetAchievement(ACHIEVEMENT_CORE_PARALYZE_KILL);
+				}
 			}
 		else
 			pStats->iFriendDestroyed++;
+
+		//	If the ship class has an achievement associated...
+
+		if (!pClass->GetAchievement().IsBlank())
+			{
+			m_Universe.SetAchievement(pClass->GetAchievement());
+			}
 
 		//	Tell the sovereign that the player destroyed one of their ships.
 
@@ -1592,6 +1819,8 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 
 	else if (Ctx.Obj.GetCategory() == CSpaceObject::catStation)
 		{
+		const CStation *pStation = Ctx.Obj.AsStation();
+
 		if (Ctx.Obj.HasAttribute(CONSTLIT("populated"))
 				|| Ctx.Obj.HasAttribute(CONSTLIT("score")))
 			{
@@ -1604,8 +1833,35 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 			CSovereign *pSovereign = Ctx.Obj.GetSovereign();
 			if (pSovereign)
 				pSovereign->OnObjDestroyedByPlayer(Ctx);
+
+			if (bIsEnemy)
+				{
+				//	If this is a buried station, then achievement.
+
+				if (pStation && pStation->GetHull().GetHullType() == CStationHullDesc::hullUnderground)
+					{
+					m_Universe.SetAchievement(ACHIEVEMENT_CORE_BURIED_KILL);
+					}
+				}
 			}
 		}
+	}
+
+void CPlayerGameStats::OnOreMined (const CItemType &ItemType, int iTonsMined)
+
+//	OnOreMined
+//
+//	Ore has been mined.
+
+	{
+	//	Add to our running count.
+
+	int iPrevValue = m_iTonsOfOreMined;
+	m_iTonsOfOreMined += iTonsMined;
+
+	//	See if we've reached various achievements, and if so, then fire.
+
+	FireMineOreAchievement(iPrevValue, m_iTonsOfOreMined);
 	}
 
 void CPlayerGameStats::OnPowerInvoked (const CPower &Power)
@@ -1632,8 +1888,8 @@ void CPlayerGameStats::OnSwitchPlayerShip (const CShip &NewShip, const CShip *pO
 
 	if (pOldShip)
 		{
-		CString sOldClassName = pOldShip->GetType()->GetNounPhrase();
-		SPlayerShipStats *pOldStats = m_PlayerShipStats.GetAt(sOldClassName);
+		DWORD dwOldClass = pOldShip->GetType()->GetUNID();
+		SPlayerShipStats *pOldStats = m_PlayerShipStats.GetAt(dwOldClass);
 		if (pOldStats)
 			{
 			pOldStats->dwLastLeft = dwNow;
@@ -1643,12 +1899,19 @@ void CPlayerGameStats::OnSwitchPlayerShip (const CShip &NewShip, const CShip *pO
 
 	//	Add an entry for the new ship.
 
-	CString sNewClassName = NewShip.GetType()->GetNounPhrase();
-	SPlayerShipStats *pNewStats = m_PlayerShipStats.SetAt(sNewClassName);
+	DWORD dwNewClass = NewShip.GetType()->GetUNID();
+	SPlayerShipStats *pNewStats = m_PlayerShipStats.SetAt(dwNewClass);
 	if (pNewStats->dwFirstEntered == INVALID_TIME)
+		{
+		pNewStats->sClassName = NewShip.GetType()->GetNounPhrase();
 		pNewStats->dwFirstEntered = dwNow;
+		}
 	pNewStats->dwLastEntered = dwNow;
 	pNewStats->dwLastLeft = INVALID_TIME;
+
+	int iNewMaxSpeed = mathRound(100.0 * NewShip.GetMaxSpeed() / LIGHT_SPEED);
+	if (iNewMaxSpeed > pNewStats->iMaxSpeed)
+		pNewStats->iMaxSpeed = iNewMaxSpeed;
 
 	//	If we're switching to a new ship (and we've got an old ship) then track
 	//	installed items.
@@ -1737,6 +2000,9 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 //	CTimeSpan	m_PlayTime
 //	CTimeSpan	m_GameTime
 //  Metric      m_rFuelConsumed
+//	DWORD		m_iTonsOfOreMined
+//	CurrencyValue	m_TotalValueSold
+//	CurrencyValue	m_TotalValueBought
 //
 //	DWORD		Count of item types
 //	DWORD			UNID
@@ -1835,6 +2101,15 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion >= 129)
 		Ctx.pStream->Read(m_rFuelConsumed);
 
+	if (Ctx.dwVersion >= 207)
+		Ctx.pStream->Read(m_iTonsOfOreMined);
+
+	if (Ctx.dwVersion >= 208)
+		{
+		Ctx.pStream->Read(m_TotalValueSold);
+		Ctx.pStream->Read(m_TotalValueBought);
+		}
+
 	Ctx.pStream->Read(dwCount);
 	for (int i = 0; i < (int)dwCount; i++)
 		{
@@ -1925,19 +2200,40 @@ void CPlayerGameStats::ReadFromStream (SLoadCtx &Ctx)
 
 	//	Read m_PlayerShipStats
 
-	if (Ctx.dwVersion >= 193)
+	if (Ctx.dwVersion >= 209)
+		{
+		Ctx.pStream->Read(dwCount);
+		for (int i = 0; i < (int)dwCount; i++)
+			{
+			DWORD dwUNID;
+			Ctx.pStream->Read(dwUNID);
+			SPlayerShipStats *pStats = m_PlayerShipStats.SetAt(dwUNID);
+
+			pStats->sClassName.ReadFromStream(Ctx.pStream);
+			Ctx.pStream->Read(pStats->dwFirstEntered);
+			Ctx.pStream->Read(pStats->dwLastEntered);
+			Ctx.pStream->Read(pStats->dwLastLeft);
+			Ctx.pStream->Read(pStats->dwTotalTime);
+			Ctx.pStream->Read(pStats->iMaxSpeed);
+			}
+		}
+	else if (Ctx.dwVersion >= 193)
 		{
 		Ctx.pStream->Read(dwCount);
 		for (int i = 0; i < (int)dwCount; i++)
 			{
 			CString sClassName;
 			sClassName.ReadFromStream(Ctx.pStream);
-			SPlayerShipStats *pStats = m_PlayerShipStats.SetAt(sClassName);
+			const CShipClass *pClass = FindClassByName(Ctx, sClassName);
 
+			SPlayerShipStats *pStats = m_PlayerShipStats.SetAt(pClass ? pClass->GetUNID() : 0);
+			pStats->sClassName = sClassName;
 			Ctx.pStream->Read(pStats->dwFirstEntered);
 			Ctx.pStream->Read(pStats->dwLastEntered);
 			Ctx.pStream->Read(pStats->dwLastLeft);
 			Ctx.pStream->Read(pStats->dwTotalTime);
+			if (pClass)
+				pStats->iMaxSpeed = mathRound(100.0 * pClass->GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED);
 			}
 		}
 
@@ -2014,6 +2310,9 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 //	CTimeSpan	m_PlayTime
 //	CTimeSpan	m_GameTime
 //  Metric      m_rFuelConsumed
+//	DWORD		m_iTonsOfOreMined
+//	CurrencyValue	m_TotalValueSold
+//	CurrencyValue	m_TotalValueBought
 //
 //	DWORD		Count of item types
 //	DWORD			UNID
@@ -2071,6 +2370,9 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 	m_PlayTime.WriteToStream(pStream);
 	m_GameTime.WriteToStream(pStream);
 	pStream->Write(m_rFuelConsumed);
+	pStream->Write(m_iTonsOfOreMined);
+	pStream->Write(m_TotalValueSold);
+	pStream->Write(m_TotalValueBought);
 
 	dwSave = m_ItemStats.GetCount();
 	pStream->Write(dwSave);
@@ -2166,13 +2468,15 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 	pStream->Write(m_PlayerShipStats.GetCount());
 	for (int i = 0; i < m_PlayerShipStats.GetCount(); i++)
 		{
-		m_PlayerShipStats.GetKey(i).WriteToStream(pStream);
+		pStream->Write(m_PlayerShipStats.GetKey(i));
 
 		const auto &Stats = m_PlayerShipStats[i];
+		Stats.sClassName.WriteToStream(pStream);
 		pStream->Write(Stats.dwFirstEntered);
 		pStream->Write(Stats.dwLastEntered);
 		pStream->Write(Stats.dwLastLeft);
 		pStream->Write(Stats.dwTotalTime);
+		pStream->Write(Stats.iMaxSpeed);
 		}
 
 	pStream->Write(m_PowerStats.GetCount());

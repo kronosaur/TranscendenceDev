@@ -16,6 +16,7 @@
 #define H_SWITCH							CONSTLIT("h")
 #define NO_LOGO_SWITCH						CONSTLIT("nologo")
 
+#define ACHIEVEMENTS_SWITCH					CONSTLIT("achievements")
 #define ADVENTURE_SWITCH					CONSTLIT("adventure")
 #define API_VERSION_SWITCH					CONSTLIT("apiVersion")
 #define ARMOR_TABLE_SWITCH					CONSTLIT("armortable")
@@ -299,7 +300,7 @@ void AlchemyMain (CXMLElement *pCmdLine)
 		else
 			printf("Unregistered game.\n");
 
-		if (Game.IsGameResurrect() && Game.GetDifficulty() == CDifficultyOptions::ELevels::lvlPermadeath)
+		if (Game.IsGameResurrect() && Game.GetDifficulty() == CDifficultyOptions::ELevel::Permadeath)
 			{
 			if (error = Game.ClearGameResurrect())
 				{
@@ -365,7 +366,9 @@ void AlchemyMain (CXMLElement *pCmdLine)
 
 	//	Figure out what to do
 
-	if (pCmdLine->GetAttributeBool(ARMOR_TABLE_SWITCH))
+	if (pCmdLine->GetAttributeBool(ACHIEVEMENTS_SWITCH))
+		GenerateAchievementsTable(Universe, pCmdLine);
+	else if (pCmdLine->GetAttributeBool(ARMOR_TABLE_SWITCH))
 		GenerateArmorTable(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(DIAGNOSTICS_SWITCH))
 		GenerateDiagnostics(Universe, pCmdLine);

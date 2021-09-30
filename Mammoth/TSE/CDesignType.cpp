@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 
+#define ACHIEVEMENTS_TAG						CONSTLIT("Achievements")
 #define ADVENTURE_DESC_TAG						CONSTLIT("AdventureDesc")
 #define ARMOR_MASS_DESC_TAG						CONSTLIT("ArmorMassDesc")
 #define ATTRIBUTE_DESC_TAG						CONSTLIT("AttributeDesc")
@@ -75,6 +76,7 @@
 #define ON_GLOBAL_PLAYER_CHANGED_SHIPS_EVENT	CONSTLIT("OnGlobalPlayerChangedShips")
 #define ON_GLOBAL_PLAYER_ENTERED_SYSTEM_EVENT	CONSTLIT("OnGlobalPlayerEnteredSystem")
 #define ON_GLOBAL_PLAYER_LEFT_SYSTEM_EVENT		CONSTLIT("OnGlobalPlayerLeftSystem")
+#define ON_GLOBAL_PLAYER_NEW_MAX_SPEED_EVENT	CONSTLIT("OnGlobalPlayerNewMaxSpeed")
 #define ON_GLOBAL_PLAYER_SOLD_ITEM_EVENT		CONSTLIT("OnGlobalPlayerSoldItem")
 #define ON_GLOBAL_RESURRECT_EVENT				CONSTLIT("OnGlobalResurrect")
 #define ON_GLOBAL_TOPOLOGY_CREATED_EVENT		CONSTLIT("OnGlobalTopologyCreated")
@@ -88,6 +90,8 @@
 #define ON_GLOBAL_UNIVERSE_LOAD_EVENT			CONSTLIT("OnGlobalUniverseLoad")
 #define ON_GLOBAL_UNIVERSE_SAVE_EVENT			CONSTLIT("OnGlobalUniverseSave")
 #define ON_GLOBAL_UPDATE_EVENT					CONSTLIT("OnGlobalUpdate")
+#define ON_PLAYER_BOUGHT_ITEM_EVENT				CONSTLIT("OnPlayerBoughtItem")
+#define ON_PLAYER_SOLD_ITEM_EVENT				CONSTLIT("OnPlayerSoldItem")
 #define ON_RANDOM_ENCOUNTER_EVENT				CONSTLIT("OnRandomEncounter")
 
 #define SPECIAL_EVENT							CONSTLIT("event:")
@@ -193,6 +197,8 @@ static const char *CACHED_EVENTS[CDesignType::evtCount] =
 		"OnDestroyCheck",
 		"OnGlobalTypesInit",
 		"OnObjDestroyed",
+		"OnPlayerBoughtItem",
+		"OnPlayerSoldItem",
 		"OnSystemObjAttacked",
 		"OnSystemStarted",
 		"OnSystemStopped",
@@ -268,6 +274,12 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 	if (m_pExtra)
 		{
 		if (ALERROR error = m_pExtra->PropertyDefs.BindDesign(Ctx))
+			{
+			Ctx.pType = pOldType;
+			return error;
+			}
+
+		if (ALERROR error = m_pExtra->Achievements.BindDesign(Ctx))
 			{
 			Ctx.pType = pOldType;
 			return error;
@@ -1285,6 +1297,28 @@ void CDesignType::FireOnGlobalPlayerBoughtItem (const SEventHandlerDesc &Event, 
 		ReportEventError(ON_GLOBAL_PLAYER_BOUGHT_ITEM_EVENT, pResult);
 	}
 
+void CDesignType::FireOnGlobalPlayerNewMaxSpeed (const SEventHandlerDesc &Event, const CSpaceObject &PlayerShipObj, int iNewMaxSpeed)
+
+//	FireOnGlobalPlayerNewMaxSpeed
+//
+//	Player ship achieved new max speed (via upgrade, etc.)
+
+	{
+	CCodeChainCtx Ctx(GetUniverse());
+	Ctx.DefineContainingType(this);
+
+	//	Set up
+
+	Ctx.SaveAndDefineSourceVar(&PlayerShipObj);
+	Ctx.DefineInteger(CONSTLIT("aMaxSpeed"), iNewMaxSpeed);
+
+	//	Run
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_GLOBAL_PLAYER_NEW_MAX_SPEED_EVENT, pResult);
+	}
+
 void CDesignType::FireOnGlobalPlayerSoldItem (const SEventHandlerDesc &Event, CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price)
 
 //	FireOnGlobalPlayerSoldItem
@@ -1761,6 +1795,60 @@ void CDesignType::FireOnGlobalUpdate (const SEventHandlerDesc &Event)
 	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
 		ReportEventError(ON_GLOBAL_UPDATE_EVENT, pResult);
+	}
+
+void CDesignType::FireOnPlayerBoughtItem (const CItem &Item, const CCurrencyAndValue &Price)
+
+//	FireOnPlayerBoughtItem
+//
+//	Fires event when the player buys an item from this type.
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(evtOnPlayerBoughtItem, &Event))
+		return;
+
+	CCodeChainCtx Ctx(GetUniverse());
+	Ctx.DefineContainingType(this);
+
+	//	Set up
+
+	Ctx.SaveAndDefineItemVar(Item);
+	Ctx.DefineString(CONSTLIT("aCurrency"), Price.GetCurrencyType()->GetSID());
+	Ctx.DefineInteger(CONSTLIT("aPrice"), (int)Price.GetValue());
+
+	//	Run
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_PLAYER_BOUGHT_ITEM_EVENT, pResult);
+	}
+
+void CDesignType::FireOnPlayerSoldItem (const CItem &Item, const CCurrencyAndValue &Price)
+
+//	FireOnPlayerSoldItem
+//
+//	Fires event when the player sells an item to this type.
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(evtOnPlayerSoldItem, &Event))
+		return;
+
+	CCodeChainCtx Ctx(GetUniverse());
+	Ctx.DefineContainingType(this);
+
+	//	Set up
+
+	Ctx.SaveAndDefineItemVar(Item);
+	Ctx.DefineString(CONSTLIT("aCurrency"), Price.GetCurrencyType()->GetSID());
+	Ctx.DefineInteger(CONSTLIT("aPrice"), (int)Price.GetValue());
+
+	//	Run
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_PLAYER_SOLD_ITEM_EVENT, pResult);
 	}
 
 void CDesignType::FireOnRandomEncounter (CSpaceObject *pObj)
@@ -2694,9 +2782,7 @@ void CDesignType::InitCachedEvents (int iCount, const char **pszEvents, SEventHa
 //	Initializes events cached by subclassess.
 
 	{
-	int i;
-
-	for (i = 0; i < iCount; i++)
+	for (int i = 0; i < iCount; i++)
 		{
 		if (!FindEventHandler(CString(pszEvents[i], -1, true), &retEvents[i]))
 			{
@@ -2814,6 +2900,11 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 		else if (strEquals(pItem->GetTag(), LANGUAGE_TAG))
 			{
 			if (error = SetExtra()->Language.InitFromXML(Ctx, pItem))
+				return ComposeLoadError(Ctx, Ctx.sError);
+			}
+		else if (strEquals(pItem->GetTag(), ACHIEVEMENTS_TAG))
+			{
+			if (error = SetExtra()->Achievements.InitFromXML(Ctx, *pItem))
 				return ComposeLoadError(Ctx, Ctx.sError);
 			}
 		else if (strEquals(pItem->GetTag(), DISPLAY_ATTRIBUTES_TAG)

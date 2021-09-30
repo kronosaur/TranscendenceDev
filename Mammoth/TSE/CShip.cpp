@@ -22,6 +22,9 @@ const Metric MAX_SPEED_FOR_DOCKING2 =			(0.04 * 0.04 * LIGHT_SPEED * LIGHT_SPEED
 
 const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 
+#define ACHIEVEMENT_CORE_REACTOR_UPGRADE		CONSTLIT("core.reactorUpgrade")
+#define ACHIEVEMENT_CORE_ZERO_HP				CONSTLIT("core.zeroHP")
+
 #define FIELD_CARGO_SPACE						CONSTLIT("cargoSpace")
 #define FIELD_COUNTER_INCREMENT_RATE			CONSTLIT("counterIncrementRate")
 #define FIELD_LAUNCHER							CONSTLIT("launcher")
@@ -917,6 +920,17 @@ void CShip::CalcPerformance (void)
 			|| m_Perf.GetDriveDesc().GetMaxSpeed() != rOldMaxSpeed)
 		m_pClass->InitEffects(this, &m_Effects);
 
+	//	If our max speed changed, then tell our controller, in case it cares.
+
+	if (m_Perf.GetDriveDesc().GetMaxSpeed() != rOldMaxSpeed)
+		{
+		int iOldMaxSpeedPercent = mathRound(100.0 * rOldMaxSpeed / LIGHT_SPEED);
+		int iNewMaxSpeedPercent = mathRound(100.0 * m_Perf.GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED);
+
+		if (iOldMaxSpeedPercent != iNewMaxSpeedPercent)
+			m_pController->OnShipStatus(IShipController::statusNewMaxSpeed, (DWORD)iNewMaxSpeedPercent);
+		}
+
 	DEBUG_CATCH
 	}
 
@@ -1443,6 +1457,12 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 			return;
 		}
 
+	//	If the player caused this destruction, then mark it as player-created
+	//	explosion.
+
+	if (Ctx.Attacker.IsPlayerOrderGiver() && Explosion.iCause == killedByExplosion)
+		Explosion.iCause = killedByPlayerCreatedExplosion;
+
 	//	Explosion
 
 	SShotCreateCtx ShotCtx;
@@ -1455,7 +1475,6 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 		}
 
 	ShotCtx.Source = CDamageSource(this, Explosion.iCause, Ctx.pWreck);
-	ShotCtx.Source.SetExplosion();
 	ShotCtx.vPos = GetPos();
 	ShotCtx.vVel = GetVel();
 	ShotCtx.iDirection = GetRotation();
@@ -3654,6 +3673,14 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSy
 		case itemcatLauncher:
 			m_pController->OnWeaponStatusChanged();
 			break;
+
+		case itemcatReactor:
+			//	If the player installed a new reactor, then this counts as an
+			//	achievement.
+
+			if (IsPlayer())
+				GetUniverse().SetAchievement(ACHIEVEMENT_CORE_REACTOR_UPGRADE);
+			break;
 		}
 
 	//	Reset the fuel level (we are effectively transfering the fuel to the
@@ -4543,6 +4570,15 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		//	Tell the controller that we were damaged
 
 		m_pController->OnDamaged(Ctx.Attacker, pArmor, Ctx.Damage, Ctx.iArmorDamage);
+
+		//	If we took damage that left our armor at exactly 0 hp, then that's
+		//	an achievement.
+
+		if (bIsPlayer && pArmor && pArmor->GetHitPoints() == 0 && Ctx.iArmorDamage > 0)
+			{
+			GetUniverse().SetAchievement(ACHIEVEMENT_CORE_ZERO_HP);
+			}
+
 		return damageArmorHit;
 		}
 

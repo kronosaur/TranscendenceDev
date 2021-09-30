@@ -331,7 +331,10 @@
 	<DockScreen UNID="&dsStKatsArcology;"
 			inherit=			"&dsDockScreenBase;"
 			>
-		
+		<OnScreenInit>
+			(unvSetAchievement 'humanSpace.visitStKats)
+		</OnScreenInit>
+
 		<Panes>
 			<Default descID="descWelcome">
 				<Actions>

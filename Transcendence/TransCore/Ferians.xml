@@ -595,6 +595,8 @@
 			thrustRatio=		"15"
 			maxSpeed=			"22"
 			cargoSpace=			"20"
+
+			achievement=		"humanSpace.ferianWarriorKiller"
 			>
 
 		<!-- Configuration -->

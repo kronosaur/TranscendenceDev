@@ -327,6 +327,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Achievements.cpp" />
     <ClCompile Include="Armor.cpp" />
     <ClCompile Include="Attributes.cpp" />
     <ClCompile Include="BattleSim.cpp" />
