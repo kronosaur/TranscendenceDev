@@ -28,7 +28,7 @@
 
 			<Achievement id="core.mineOre1"
 					sortOrder="01|50"
-					steamID="CORE_SAMPLE_RETURN=3"
+					steamID="CORE_MINE_ORE_1=3"
 					>
 			</Achievement>
 
@@ -571,7 +571,7 @@
 			
 			</Text>
 
-			<Text id="humanSpace.visitEarthStation.name">Craddle of Humanity</Text>
+			<Text id="humanSpace.visitEarthStation.name">Cradle of Humanity</Text>
 			<Text id="humanSpace.visitEarthStation.desc">
 
 				Visit abandoned Earth Station in the Sol System.
