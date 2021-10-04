@@ -169,6 +169,8 @@ class CGCarouselArea : public AGArea
 		bool MoveCursorBack (void);
 		bool MoveCursorForward (void);
 		void ResetCursor (void) { if (m_pListData) m_pListData->ResetCursor(); Invalidate(); }
+		void RestoreSelection (const ICCItem &Selection);
+		ICCItemPtr SaveSelection () const;
 		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
 		void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
 		void SetCursor (int iIndex) { if (m_pListData) m_pListData->SetCursor(iIndex); Invalidate(); }

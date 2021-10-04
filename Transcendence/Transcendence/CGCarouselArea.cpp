@@ -620,6 +620,33 @@ void CGCarouselArea::PaintSelector (CG32bitImage &Dest, const RECT &rcRect, bool
 			CG16bitFont::AlignCenter | CG16bitFont::TruncateBlock);
 	}
 
+void CGCarouselArea::RestoreSelection (const ICCItem &Selection)
+
+//	RestoreSelection
+//
+//	Sets a previously saved selection.
+
+	{
+	if (m_pListData)
+		{
+		m_pListData->SetCursor(Selection.GetIntegerValue());
+		Invalidate();
+		}
+	}
+
+ICCItemPtr CGCarouselArea::SaveSelection () const
+
+//	SaveSelection
+//
+//	Returns a selection that can be restored later.
+
+	{
+	if (m_pListData && m_pListData->IsCursorValid())
+		return ICCItemPtr(m_pListData->GetCursor());
+	else
+		return ICCItemPtr::Nil();
+	}
+
 void CGCarouselArea::SetList (ICCItem *pList)
 
 //	SetList

@@ -19,6 +19,7 @@ class CDockScreenCarousel : public IDockScreenDisplay
 		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override { retDesc->iType = EDockScreenBackground::none; return true; }
 		virtual int OnGetListCursor (void) const override { return m_pControl->GetCursor(); }
 		virtual IListData *OnGetListData (void) const override { return m_pControl->GetList(); }
+		virtual ICCItemPtr OnGetSelection () const override { return (m_pControl ? m_pControl->SaveSelection() : ICCItemPtr::Nil()); }
 		virtual CSpaceObject *OnGetSource (void) const override { return m_pControl->GetSource(); }
 		virtual EResults OnHandleAction (DWORD dwTag, DWORD dwData) override;
 		virtual EResults OnHandleKeyDown (int iVirtKey) override;

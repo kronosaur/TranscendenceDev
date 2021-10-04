@@ -215,6 +215,10 @@ ALERROR CDockScreenCarousel::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 			bMore = SelectNextItem();
 			}
 		}
+	else if (Ctx.pSelection)
+		{
+		m_pControl->RestoreSelection(*Ctx.pSelection);
+		}
 
 	return NOERROR;
 
