@@ -675,7 +675,7 @@
 										enhancement: theEnhancement
 										type: theType
 										}))
-									(setq gResult (intItemEnhanceStatus result (cat "Your " (itmGetName gItem 0x80) " is more powerful") (itmGetName gItem 0x80)))
+									(setq gResult (intItemEnhanceStatus result (cat "Your " (itmGetName gItem 0x80) " has been enhanced") (itmGetName gItem 0x80)))
 									)
 								)
 								
