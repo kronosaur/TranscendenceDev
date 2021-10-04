@@ -226,11 +226,14 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_LAUNCHER_ITEM))
 		{
-		const SDeviceDesc *pDesc = m_AverageDevices.GetDeviceDescByName(devMissileWeapon);
+		int iCount;
+		const SDeviceDesc *pDesc = m_AverageDevices.GetDeviceDescByName(devMissileWeapon, &iCount);
 		if (pDesc == NULL)
 			return ICCItemPtr(ICCItem::Nil);
 
-		return ICCItemPtr(CreateListFromItem(pDesc->Item));
+		CItem Item = pDesc->Item;
+		Item.SetCount(iCount);
+		return ICCItemPtr(CreateListFromItem(Item));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_HULL_VALUE))
