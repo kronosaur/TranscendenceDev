@@ -128,6 +128,7 @@ static constexpr const char *FEEDBACK[] =
 	"Ihlosi",
 
 	"Eric James",
+	"jeremmt",
 	"jimj316",
 	"JohnBWatson",
 
