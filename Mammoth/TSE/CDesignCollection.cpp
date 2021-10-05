@@ -951,14 +951,13 @@ bool CDesignCollection::FireOnGlobalObjGateCheck (CSpaceObject *pObj, CTopologyN
 	return bResult;
 	}
 
-void CDesignCollection::FireOnGlobalPaneInit (CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData)
+void CDesignCollection::FireOnGlobalPaneInit (CSpaceObject *pLocation, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData)
 
 //	FireOnGlobalPaneInit
 //
 //	Give other design types a way to override screens
 
 	{
-	int i;
 	CString sError;
 
 	//	Generate a screen UNID that contains both the screen UNID and a local screen
@@ -968,12 +967,13 @@ void CDesignCollection::FireOnGlobalPaneInit (CDesignType *pRoot, const CString 
 
 	//	Fire all events
 
-	for (i = 0; i < m_EventsCache[evtOnGlobalDockPaneInit]->GetCount(); i++)
+	for (int i = 0; i < m_EventsCache[evtOnGlobalDockPaneInit]->GetCount(); i++)
 		{
 		SEventHandlerDesc Event;
 		CDesignType *pType = m_EventsCache[evtOnGlobalDockPaneInit]->GetEntry(i, &Event);
 
 		if (pType->FireOnGlobalDockPaneInit(Event,
+				pLocation,
 				dwRootUNID,
 				sScreenUNID,
 				sScreen,

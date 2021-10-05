@@ -1205,7 +1205,7 @@ ICCItemPtr CDesignType::FireObjItemCustomEvent (const CString &sEvent, CSpaceObj
 		}
 	}
 
-ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, DWORD dwScreenUNID, const CString &sScreen, const CString &sScreenName, const CString &sPane, ICCItem *pData, CString *retsError)
+ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, CSpaceObject *pLocation, DWORD dwScreenUNID, const CString &sScreen, const CString &sScreenName, const CString &sPane, ICCItem *pData, CString *retsError)
 
 //	FireOnGlobalDockPaneInit
 //
@@ -1214,6 +1214,7 @@ ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, D
 	{
 	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
+	Ctx.SaveAndDefineSourceVar(pLocation);
 	Ctx.SaveAndDefineDataVar(pData);
 
 	//	Set up

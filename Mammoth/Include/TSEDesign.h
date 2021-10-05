@@ -309,7 +309,7 @@ class CDesignType
 		int FireGetGlobalResurrectPotential (void);
 		void FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj, ICCItem *pData = NULL, ICCItem **retpResult = NULL);
 		ICCItemPtr FireObjItemCustomEvent (const CString &sEvent, CSpaceObject *pObj, const CItem &Item, ICCItem *pData = NULL);
-		ALERROR FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, DWORD dwScreenUNID, const CString &sScreen, const CString &sScreenName, const CString &sPane, ICCItem *pData, CString *retsError);
+		ALERROR FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, CSpaceObject *pLocation, DWORD dwScreenUNID, const CString &sScreen, const CString &sScreenName, const CString &sPane, ICCItem *pData, CString *retsError);
 		bool FireOnGlobalEndDiagnostics (const SEventHandlerDesc &Event);
 		void FireOnGlobalIntroCommand (const SEventHandlerDesc &Event, const CString &sCommand);
 		void FireOnGlobalIntroStarted (const SEventHandlerDesc &Event);
@@ -1420,7 +1420,7 @@ class CDesignCollection
 		void FireOnGlobalMarkImages (void);
 		void FireOnGlobalObjDestroyed (SDestroyCtx &Ctx);
 		bool FireOnGlobalObjGateCheck (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj);
-		void FireOnGlobalPaneInit (CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData);
+		void FireOnGlobalPaneInit (CSpaceObject *pLocation, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData);
 		void FireOnGlobalPlayerBoughtItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		void FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip);
 		void FireOnGlobalPlayerEnteredSystem (void);
