@@ -85,6 +85,7 @@ static constexpr const char *FEEDBACK[] =
 	"Darth Saber",
 	"DarthGeek",
 	"Datal",
+	"DerpCat",
 	"Charles Davis",
 	"Demanther",
 	"Derakon",
