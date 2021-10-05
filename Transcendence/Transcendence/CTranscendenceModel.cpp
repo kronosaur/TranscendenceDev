@@ -2697,6 +2697,11 @@ ALERROR CTranscendenceModel::StartNewGameBackground (const SNewGameSettings &New
 			return error;
 		}
 
+	//	Set the current system because we need it to be set when we create the
+	//	player ship.
+
+	m_Universe.SetCurrentSystem(pStartingSystem);
+
 	//	Figure out where in the system we want to start
 
 	CVector vStartPos;
@@ -2753,6 +2758,10 @@ ALERROR CTranscendenceModel::StartNewGameBackground (const SNewGameSettings &New
 		ItemList.GetItemPointerAtCursor()->SetKnown();
 		pType->SetShowReference();
 		}
+
+	//	Reset back to NULL so that we can place the ship later.
+
+	m_Universe.SetCurrentSystem(NULL);
 
 #ifdef DEBUG_ALL_ITEMS
 	if (m_bDebugMode)
