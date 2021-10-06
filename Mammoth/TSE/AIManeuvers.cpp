@@ -42,7 +42,7 @@ constexpr Metric FLOCK_SEPARATION_RANGE2 =	(FLOCK_SEPARATION_RANGE * FLOCK_SEPAR
 constexpr Metric FLOCK_COMBAT_RANGE =		(300.0 * KLICKS_PER_PIXEL);
 constexpr Metric FLOCK_COMBAT_RANGE2 =		(FLOCK_COMBAT_RANGE * FLOCK_COMBAT_RANGE);
 
-constexpr Metric CLOSE_DELTA_V_RATIO =		0.12;
+constexpr Metric CLOSE_DELTA_V_RATIO =		4.0;
 constexpr Metric MIN_SPEED_RATIO =			0.01;
 constexpr Metric FORMATION_MAX_TIME =		5.0;
 constexpr Metric POTENTIAL_TO_POS_ADJ = 100.0;
@@ -1986,14 +1986,17 @@ void CAIBehaviorCtx::ImplementHold (CShip *pShip, bool *retbInPlace)
 	{
 	bool bInPlace;
 
+	const Metric rCloseV = CLOSE_DELTA_V_RATIO * pShip->GetMaxAcceleration();
+	const Metric rCloseV2 = (rCloseV * rCloseV);
+
 	//	Compute our velocity
 
-	CVector vVel = pShip->GetVel();
-	Metric rVel2 = vVel.Length2();
+	const CVector vVel = pShip->GetVel();
+	const Metric rVel2 = vVel.Length2();
 
 	//	If we're going slow enough, we cheat a bit
 
-	if (rVel2 < MAX_DELTA_VEL2)
+	if (rVel2 < rCloseV2)
 		{
 		ImplementStop(pShip);
 		bInPlace = true;
