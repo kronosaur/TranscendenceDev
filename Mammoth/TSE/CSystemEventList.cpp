@@ -154,6 +154,25 @@ bool CSystemEventList::FindEvent (CSystemEvent &Src, int *retiIndex) const
 	return false;
 	}
 
+TArray<CSystemEvent *> CSystemEventList::FindEventsForObj (const CSpaceObject &Obj) const
+
+//	FindEventsForObj
+//
+//	Returns all events for the given object.
+
+	{
+	TArray<CSystemEvent *> Result;
+
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CSystemEvent *pEvent = GetEvent(i);
+		if (pEvent->GetEventHandlerObj() == Obj)
+			Result.Insert(pEvent);
+		}
+
+	return Result;
+	}
+
 void CSystemEventList::OnObjDestroyed (CSpaceObject *pObj)
 
 //	OnObjDestroyed

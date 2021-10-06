@@ -505,6 +505,7 @@ class CSystem
 		CString GetAttribsAtPos (const CVector &vPos);
 		void GetDebugInfo (SDebugInfo &Info) const;
 		CEnvironmentGrid *GetEnvironmentGrid (void) { InitSpaceEnvironment(); return m_pEnvironment; }
+		const CSystemEventList &GetEvents () const { return m_TimedEvents; }
 		CPhysicsForceResolver &GetForceResolver (void) { return m_ForceResolver; }
 		DWORD GetID (void) { return m_dwID; }
 		int GetLastUpdated (void) { return m_iLastUpdated; }
