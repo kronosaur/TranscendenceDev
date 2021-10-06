@@ -29,6 +29,7 @@
 #define PROPERTY_CHARACTER_NAME					CONSTLIT("characterName")
 #define PROPERTY_DEVICE_DAMAGE_IMMUNE			CONSTLIT("deviceDamageImmune")
 #define PROPERTY_DEVICE_DISRUPT_IMMUNE			CONSTLIT("deviceDisruptImmune")
+#define PROPERTY_DEVICE_AT_SLOT					CONSTLIT("deviceAtSlot")
 #define PROPERTY_DEVICE_SLOT_IDS				CONSTLIT("deviceSlotIDs")
 #define PROPERTY_DISINTEGRATION_IMMUNE			CONSTLIT("disintegrationImmune")
 #define PROPERTY_DOCKED_AT_ID					CONSTLIT("dockedAtID")
@@ -310,6 +311,11 @@ ICCItem* CShip::GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const
 				{
 				if (iDeviceSlot < 0 || iDeviceSlot >= this->GetDeviceCount())
 					return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+				}
+
+			if (strEquals(sProperty, PROPERTY_DEVICE_AT_SLOT))
+				{
+				return CreateListFromItem(m_Devices.GetDevice(iDeviceSlot).GetDeviceItem());
 				}
 
 			return pDevSlots->GetDeviceSlotProperty(iDeviceSlot, pCC, sProperty, pArgs);

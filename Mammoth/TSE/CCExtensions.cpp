@@ -1238,6 +1238,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"    'attributes\n"
 			"    'criteria\n"
 			"    'description\n"
+			"    'deviceAtSlot\n"
 			"    'fireArc\n"
 			"    'hasAttribute [attribute]\n"
 			"    'maxMass\n"
@@ -2246,6 +2247,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (device)\n\n"
 
 			"   'capacitor\n"
+			"   'deviceSlotID\n"
 			"   'enabled\n"
 			"   'linkedFireOptions\n"
 			"   'pos\n"
