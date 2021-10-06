@@ -50,6 +50,7 @@
 #define MAX_POWER_ATTRIB						CONSTLIT("maxPower")
 #define MAX_POWER_PERCENT_ATTRIB				CONSTLIT("maxPowerPercentage")
 #define MISSILE_DEFENSE_ATTRIB					CONSTLIT("missileDefense")
+#define NAME_ATTRIB								CONSTLIT("name")
 #define OMNIDIRECTIONAL_ATTRIB					CONSTLIT("omnidirectional")
 #define SECONDARY_WEAPON_ATTRIB					CONSTLIT("secondaryWeapon")
 #define SEGMENT_ID_ATTRIB						CONSTLIT("segmentID")
@@ -66,6 +67,7 @@
 #define PROPERTY_DEVICE_SLOT_MAX_MASS			CONSTLIT("maxMass")
 #define PROPERTY_DEVICE_SLOT_MAX_POWER			CONSTLIT("maxPower")
 #define PROPERTY_DEVICE_SLOT_MAX_POWER_PERCENT	CONSTLIT("maxPowerPercent")
+#define PROPERTY_DEVICE_SLOT_NAME				CONSTLIT("name")
 #define PROPERTY_DEVICE_SLOT_OMNIDIRECTIONAL	CONSTLIT("omnidirectional")
 #define PROPERTY_DEVICE_SLOT_POS				CONSTLIT("pos")
 #define PROPERTY_DEVICE_SLOT_POS_ANGLE			CONSTLIT("posAngle")
@@ -231,6 +233,7 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 			int iMaxCount;
 			int iMaxMass = -1;
 			CString Description;
+			CString Name;
 			int iMaxPower = -1;
 			Metric fMaxPowerPercent = -1.0;
 			};
@@ -1506,6 +1509,8 @@ ICCItem* CGroupOfDeviceGenerators::GetDeviceSlotProperty (const int iSlotIndex, 
 		return pCC->CreateInteger(Slot.iMaxPower);
 	else if (Property == PROPERTY_DEVICE_SLOT_MAX_POWER_PERCENT)
 		return pCC->CreateDouble(Slot.fMaxPowerPercent);
+	else if (Property == PROPERTY_DEVICE_SLOT_NAME)
+		return pCC->CreateString(Slot.Name);
 	else if (Property == PROPERTY_DEVICE_SLOT_OMNIDIRECTIONAL)
 		return pCC->CreateBool(DefaultDesc.bOmnidirectional);
 	else if (Property == PROPERTY_DEVICE_SLOT_POS)
@@ -1613,6 +1618,7 @@ ALERROR CGroupOfDeviceGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement 
 
 			pSlotDesc->Criteria.Init(pEntry->GetAttribute(CRITERIA_ATTRIB));
 			pSlotDesc->Description = pEntry->GetAttribute(DESCRIPTION_ATTRIB);
+			pSlotDesc->Name = pEntry->GetAttribute(NAME_ATTRIB);
 			pSlotDesc->iMaxPower = pEntry->GetAttributeInteger(MAX_POWER_ATTRIB);
 			pSlotDesc->fMaxPowerPercent = pEntry->GetAttributeFloat(MAX_POWER_PERCENT_ATTRIB);
 			pSlotDesc->iMaxMass = pEntry->GetAttributeInteger(MAX_MASS_ATTRIB);
