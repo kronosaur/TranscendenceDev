@@ -190,6 +190,7 @@ static constexpr const char *FEEDBACK[] =
 	"Premier",
 	"Psycholis",
 	"ptbptb",
+	"puffo12346",
 
 	"Quaziz",
 	"Quirk",
