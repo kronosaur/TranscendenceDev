@@ -1815,19 +1815,20 @@ class CAscendedObjectList
 		~CAscendedObjectList (void) { CleanUp(); }
 
 		void DeleteAll (void) { CleanUp(); }
-		void Insert (CSpaceObject *pObj) { m_List.Insert(pObj); }
+		void Insert (CSpaceObject &Obj, CSystemEventList &Events);
 		CSpaceObject *FindByID (DWORD dwID) const;
 		int GetCount (void) const { return m_List.GetCount(); }
 		CSpaceObject *GetObj (int iIndex) const { return m_List[iIndex]; }
 		bool IsEmpty (void) const { return (m_List.GetCount() == 0); }
 		void ReadFromStream (SLoadCtx &Ctx);
-		CSpaceObject *RemoveByID (DWORD dwID);
+		CSpaceObject *RemoveByID (DWORD dwID, CSystemEventList &retEvents);
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
 		void CleanUp (void);
 
 		TArray<CSpaceObject *> m_List;
+		CSystemEventList m_Events;
 	};
 
 //	Implementations ------------------------------------------------------------

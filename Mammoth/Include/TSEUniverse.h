@@ -344,7 +344,7 @@ class CUniverse
 		ALERROR LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, DWORD *retdwPlayerID, CString *retsError);
 		void StartGame (bool bNewGame);
 
-		void AddAscendedObj (CSpaceObject *pObj) { m_AscendedObjects.Insert(pObj); }
+		void AddAscendedObj (CSpaceObject &Obj, CSystemEventList &Events) { m_AscendedObjects.Insert(Obj, Events); }
 		ALERROR AddDynamicType (CExtension *pExtension, DWORD dwUNID, ICCItem *pSource, bool bNewGame, CString *retsError) { return m_Design.AddDynamicType(pExtension, dwUNID, pSource, bNewGame, retsError); }
 		void AddEvent (CSystemEvent *pEvent);
 		void AddTimeDiscontinuity (const CTimeSpan &Duration) { m_Time.AddDiscontinuity(m_iTick++, Duration); }
@@ -451,7 +451,7 @@ class CUniverse
 		void RefreshCurrentMission (void);
 		void RegisterForNotifications (INotifications *pSubscriber) { m_Subscribers.Insert(pSubscriber); }
 		ALERROR Reinit (void);
-		CSpaceObject *RemoveAscendedObj (DWORD dwObjID) { return m_AscendedObjects.RemoveByID(dwObjID); }
+		CSpaceObject *RemoveAscendedObj (DWORD dwObjID, CSystemEventList &Events) { return m_AscendedObjects.RemoveByID(dwObjID, Events); }
 		ALERROR SaveDeviceStorage (void);
 		ALERROR SaveToStream (IWriteStream *pStream);
 		void SetCurrentSystem (CSystem *pSystem, bool bPlayerHasEntered = false);

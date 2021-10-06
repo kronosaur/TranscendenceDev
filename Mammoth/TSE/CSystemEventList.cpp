@@ -36,10 +36,9 @@ bool CSystemEventList::CancelEvent (CSpaceObject *pObj, bool bInDoEvent)
 //	Cancels the given event
 
 	{
-	int i;
 	bool bFound = false;
 
-	for (i = 0; i < GetCount(); i++)
+	for (int i = 0; i < GetCount(); i++)
 		{
 		CSystemEvent *pEvent = GetEvent(i);
 		if (pEvent->GetEventHandlerObj() == pObj)
@@ -66,10 +65,9 @@ bool CSystemEventList::CancelEvent (CSpaceObject *pObj, const CString &sEvent, b
 //	Cancels the given event
 
 	{
-	int i;
 	bool bFound = false;
 
-	for (i = 0; i < GetCount(); i++)
+	for (int i = 0; i < GetCount(); i++)
 		{
 		CSystemEvent *pEvent = GetEvent(i);
 		if (pEvent->GetEventHandlerObj() == pObj 
@@ -97,10 +95,9 @@ bool CSystemEventList::CancelEvent (CDesignType *pType, const CString &sEvent, b
 //	Cancels the given event
 
 	{
-	int i;
 	bool bFound = false;
 
-	for (i = 0; i < GetCount(); i++)
+	for (int i = 0; i < GetCount(); i++)
 		{
 		CSystemEvent *pEvent = GetEvent(i);
 		if (pEvent->GetEventHandlerType() == pType 
@@ -128,9 +125,7 @@ void CSystemEventList::DeleteAll (void)
 //	Delete all events
 
 	{
-	int i;
-
-	for (i = 0; i < m_List.GetCount(); i++)
+	for (int i = 0; i < m_List.GetCount(); i++)
 		delete m_List[i];
 
 	m_List.DeleteAll();
@@ -171,6 +166,24 @@ TArray<CSystemEvent *> CSystemEventList::FindEventsForObj (const CSpaceObject &O
 		}
 
 	return Result;
+	}
+
+void CSystemEventList::MoveEventForObjTo (const CSpaceObject &Obj, CSystemEventList &Dest)
+
+//	MoveEventForObjTo
+//
+//	Moves all events for the given object to the destination.
+
+	{
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CSystemEvent *pEvent = GetEvent(i);
+		if (pEvent->OnObjChangedSystems(Obj))
+			{
+			MoveEvent(i, Dest);
+			i--;
+			}
+		}
 	}
 
 void CSystemEventList::OnObjDestroyed (CSpaceObject *pObj)
@@ -227,11 +240,10 @@ void CSystemEventList::ReadFromStream (SLoadCtx &Ctx)
 //	CSystemEvent	Event
 
 	{
-	int i;
 	DWORD dwCount;
 
 	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
-	for (i = 0; i < (int)dwCount; i++)
+	for (int i = 0; i < (int)dwCount; i++)
 		{
 		CSystemEvent *pEvent;
 		CSystemEvent::CreateFromStream(Ctx, &pEvent);
@@ -284,12 +296,10 @@ void CSystemEventList::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 //	CSystemEvent	Event
 
 	{
-	int i;
-
 	DWORD dwCount = GetCount();
-	pStream->Write((char *)&dwCount, sizeof(DWORD));
+	pStream->Write(dwCount);
 
-	for (i = 0; i < (int)dwCount; i++)
+	for (int i = 0; i < (int)dwCount; i++)
 		{
 		CSystemEvent *pEvent = GetEvent(i);
 		pEvent->WriteToStream(pSystem, pStream);
