@@ -455,7 +455,7 @@ PLAYER DATA
 			type=				"transport"
 			defaultSovereign=	"&svCommonwealthFleet;"
 
-			attributes=			"commonwealth, commonwealthFleet, freighter, genericClass, pacificDefense"
+			attributes=			"commonwealth, commonwealthFleet, freighter, genericClass, military, pacificDefense"
 			inherit=			"&baHumanTechShip;"
 
 			explosionType=		"&vtBlastExplosion3;"
@@ -865,7 +865,7 @@ PLAYER DATA
 			explosionType=		"&vtThermoExplosion3;"
 
 			level=				"10"
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, genericClass, pacificDefense"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, genericClass, military, pacificDefense"
 			>
 
 		<!-- Configuration -->
