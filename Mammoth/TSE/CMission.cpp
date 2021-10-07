@@ -670,19 +670,26 @@ void CMission::OnNewSystem (CSystem *pSystem)
 		{
 		if (strEquals(m_sNodeID, pNode->GetID()))
 			{
-			const DWORD dwTimeAway = sysGetTicksElapsed(m_dwLeftSystemOn);
+			//	NOTE: We call OnNewSystem when we load a game (set the POV) so 
+			//	we can't assume that we're actually inside a new system unless
+			//	we've actually left the system.
 
-			//	Back in our system
+			if (m_dwLeftSystemOn != 0 || !m_fInMissionSystem)
+				{
+				const DWORD dwTimeAway = sysGetTicksElapsed(m_dwLeftSystemOn);
 
-			m_fInMissionSystem = true;
-			m_dwLeftSystemOn = 0;
+				//	Back in our system
 
-			//	If we've been away too long, then the mission fails.
+				m_fInMissionSystem = true;
+				m_dwLeftSystemOn = 0;
 
-			if (m_pType->FailureOnReturnToSystem()
-					&& IsAccepted()
-					&& dwTimeAway >= (DWORD)m_pType->GetReturnToSystemTimeOut())
-				SetFailure(NULL);
+				//	If we've been away too long, then the mission fails.
+
+				if (m_pType->FailureOnReturnToSystem()
+						&& IsAccepted()
+						&& dwTimeAway >= (DWORD)m_pType->GetReturnToSystemTimeOut())
+					SetFailure(NULL);
+				}
 			}
 		else
 			{
