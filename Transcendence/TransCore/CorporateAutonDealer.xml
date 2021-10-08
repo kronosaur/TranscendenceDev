@@ -361,6 +361,20 @@
 													})
 												)
 
+										;	Generic damage
+
+										(itm@ autonItem 'damaged)
+											(block ()
+												(setq repairArmor True)
+												(setq repairHull True)
+												(setq repairCost 10)
+												(scrSetDescTranslate gScreen 'descAutonArmorAndHullDamaged {
+													autonName: (typGetName autonClass 'generic)
+													armorIntegrity: (round (* 100.0 (/ armorHPLeft armorHPMax)))
+													hullIntegrity: 50
+													})
+												)
+
 										;	Auton has armor damage only
 
 										(ls armorHPLeft armorHPMax)
