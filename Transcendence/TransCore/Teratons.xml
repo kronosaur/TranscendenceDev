@@ -775,7 +775,7 @@
 			fireRateAdj=		"20"
 			ejectaType=			"&vtWreckEjecta;"
 			
-			attributes=			"generic, teraton, teratonDefender"
+			attributes=			"generic, staticDefense, teraton, teratonDefender"
 			>
 
 		<Image	imageID="&rsTeratonDefender;" imageWidth="64" imageHeight="64" imageFrameCount="12" imageTicksPerFrame="2"/>

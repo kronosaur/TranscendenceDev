@@ -154,7 +154,7 @@
 			type=				""
 			defaultSovereign=	"&svAres;"
 
-			attributes=			"ares, genericClass"
+			attributes=			"ares, genericClass, staticDefense"
 
 			size=				"21"			   
 			mass=				"100"
@@ -204,7 +204,7 @@
 			type=				""
 			defaultSovereign=	"&svAres;"
 
-			attributes=			"ares, genericClass"
+			attributes=			"ares, genericClass, staticDefense"
 
 			size=				"21"			   
 			mass=				"100"
@@ -322,7 +322,7 @@
 			type=				""
 			defaultSovereign=	"&svAres;"
 
-			attributes=			"ares, genericClass"
+			attributes=			"ares, genericClass, staticDefense"
 
 			size=				"20"			   
 			mass=				"100"

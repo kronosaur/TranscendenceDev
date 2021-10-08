@@ -348,6 +348,8 @@
 			sovereign=			"&svCommonwealth;"
 			inherit=			"&dsDockScreenBase;"
 
+			attributes=			"commonwealth, staticDefense"
+
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockScreen=			"Main"
 			noMapLabel=			"true"

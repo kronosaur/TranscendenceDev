@@ -53,6 +53,8 @@
 	<StationType UNID="&stSungDefenseSat1;"
 			name=				"Sung defense satellite"
 			sovereign=			"&svSung;"
+			attributes=			"sungSlavers, staticDefense"
+
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			noMapLabel=			"true"
 			fireRateAdj=		"40"
