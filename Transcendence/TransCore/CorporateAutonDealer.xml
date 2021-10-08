@@ -423,61 +423,73 @@
 				
 				<Actions>
 					<Action id="actionRepair" default="1">
-						(block (
-							(theEntry (scrGetListEntry gScreen))
-							(currencyUsed (objGetDefaultCurrency gSource))
-							(autonItem (@ theEntry 'autonItem))
-							)
+						(block ()
+							;	Refresh the screen before we repair because the auton bay
+							;	may have repaired stuff in the background.
 
-							;	Repair
+							(scrRefreshScreen gScreen)
 
-							(if (scrGetData gScreen 'repairArmorInFlight)
-								(block (
-									(autonObj (@ theEntry 'autonObj))
-									)
-									(enum (objGetItems autonObj "aI") theArmor
-										(objSet@ autonObj theArmor 'damage 0)
-										)
-									)
+							;	Now repair.
+							;
+							;	NOTE: After the refresh we may actually have nothing to
+							;	repair, so we need to handle that case.
+
+							(block (
+								(theEntry (scrGetListEntry gScreen))
+								(currencyUsed (objGetDefaultCurrency gSource))
+								(autonItem (@ theEntry 'autonItem))
 								)
 
-							(if (scrGetData gScreen 'repairArmor)
-								(block (
-									(autonConfig (@ theEntry 'autonConfig))
-									)
-									(set@ autonConfig 'armor
-										(map (@ autonConfig 'armor) armorDesc
-											(block (
-												(armorItem (@ armorDesc 'item))
-												)
-												{
-													item: (itmSet@ armorItem 'damaged Nil)
-													hp: (itm@ armorItem 'completeHP)
-													}
-												)
+								;	Repair
+
+								(if (scrGetData gScreen 'repairArmorInFlight)
+									(block (
+										(autonObj (@ theEntry 'autonObj))
+										)
+										(enum (objGetItems autonObj "aI") theArmor
+											(objSet@ autonObj theArmor 'damage 0)
 											)
 										)
-
-									(setq autonItem (objSetItemData gPlayerShip autonItem 'autonConfig autonConfig))
 									)
+
+								(if (scrGetData gScreen 'repairArmor)
+									(block (
+										(autonConfig (@ theEntry 'autonConfig))
+										)
+										(set@ autonConfig 'armor
+											(map (@ autonConfig 'armor) armorDesc
+												(block (
+													(armorItem (@ armorDesc 'item))
+													)
+													{
+														item: (itmSet@ armorItem 'damaged Nil)
+														hp: (itm@ armorItem 'completeHP)
+														}
+													)
+												)
+											)
+
+										(setq autonItem (objSetItemData gPlayerShip autonItem 'autonConfig autonConfig))
+										)
+									)
+
+								(if (scrGetData gScreen 'repairHull)
+									(block (
+										(autonConfig (@ theEntry 'autonConfig))
+										)
+										(set@ autonConfig 'maxHullHP Nil)
+										(set@ autonConfig 'hullHP Nil)
+
+										(setq autonItem (objSetItemData gPlayerShip autonItem 'autonConfig autonConfig))
+										(setq autonItem (objSet@ gPlayerShip autonItem 'damaged Nil))
+										)
+									)
+
+								;	Charge player
+
+								(objCharge gPlayerShip currencyUsed (scrGetData gScreen 'repairCost))
+								(scrShowPane gScreen 'Default)
 								)
-
-							(if (scrGetData gScreen 'repairHull)
-								(block (
-									(autonConfig (@ theEntry 'autonConfig))
-									)
-									(set@ autonConfig 'maxHullHP Nil)
-									(set@ autonConfig 'hullHP Nil)
-
-									(setq autonItem (objSetItemData gPlayerShip autonItem 'autonConfig autonConfig))
-									(setq autonItem (objSet@ gPlayerShip autonItem 'damaged Nil))
-									)
-								)
-
-							;	Charge player
-
-							(objCharge gPlayerShip currencyUsed (scrGetData gScreen 'repairCost))
-							(scrShowPane gScreen 'Default)
 							)
 					</Action>
 
