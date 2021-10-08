@@ -2040,6 +2040,7 @@ void CTranscendenceModel::RefreshScreenSession (void)
 	Ctx.sScreen = Frame.sScreen;
 	Ctx.pData = Frame.pInitialData;
 	Ctx.sTab = Frame.sCurrentTab;
+	Ctx.bRefresh = true;
 	Ctx.bReturn = true;
 
 	ShowScreen(Ctx);
@@ -2333,7 +2334,7 @@ ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError
 	else if (!Ctx.bReturn)
 		GetScreenStack().SetCurrent(NewFrame, &OldFrame);
 	else
-		GetScreenStack().ResolveCurrent(NewFrame);
+		GetDockSession().RefreshScreen(NewFrame, Ctx.bRefresh);
 
 	//	Initialize custom screen properties
 
