@@ -22,7 +22,7 @@
 			maxAppearing=		"1-3"
 
 			expireTime=			"5400"
-			failureAfterOutOfSystem="5400"
+			failureOnReturnToSystem="5400"
 			>
 		<Properties>
 			<Data id="reward"></Data>

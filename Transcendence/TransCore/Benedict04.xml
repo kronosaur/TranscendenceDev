@@ -20,7 +20,7 @@
 			priority=			"100"
 			ignoreOwnerLimit=	"true"
 
-			failureAfterOutOfSystem="5400"
+			failureOnReturnToSystem="5400"
 			debriefAfterOutOfSystem="true"
 			>
 		<Properties>
