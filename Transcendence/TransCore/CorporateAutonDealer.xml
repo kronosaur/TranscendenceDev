@@ -167,74 +167,68 @@
 				style="shipList"
 				>
 			<OnDisplayInit>
-				(block (
-					(autonItemList 
-						(apply append
-							(map (objGetItems gPlayerShip "* +auton;") theEntry
-								(if (= (itmGetCount theEntry) 1)
-									(list theEntry)
-									(make 'duplicates (itmSetCount theEntry 1))
-									)
-								)
-							)
-						)
-					)
-					(append
-						;	First autons that are deployed
+				(map (obj@ gPlayerShip 'squadron) 'excludeNil theEntry
 
-						(map (sysFindObject gPlayerShip "s +auton; O:escort;") autonObj
+					(switch
+						;	This is an active auton in the system
+
+						(and (= (@ theEntry 'status) 'deployed) 
+								(objMatches (@ theEntry 'obj) gPlayerShip "s +auton;")
+								)
 							(block (
-								(autonClass (objGetType autonObj))
+								(autonObj (@ theEntry 'obj))
+								(autonType (@ theEntry 'type))
 								)
 								{
-								title: (objGetName autonObj)
-								icon: (shpGetImageDesc autonClass { rotation:90 })
+									title: (@ theEntry 'name)
+									icon: (shpGetImageDesc autonType { rotation:90 })
 
-								largeIcon: (shpGetImageDesc autonClass { type:'schematic })
-								details: 
-									(or (objFireEvent autonObj 'GetShipDetails { })
-										(rpgGetShipDetails autonObj { 
-											noFuelStats: True
-											})
-										)
+									largeIcon: (shpGetImageDesc autonType { type:'schematic })
+									details: 
+										(or (objFireEvent autonObj 'GetShipDetails { })
+											(rpgGetShipDetails autonObj { 
+												noFuelStats: True
+												})
+											)
 
-								autonObj: autonObj
-								autonClass: autonClass
-								}
+									autonObj: autonObj
+									autonClass: autonType
+									}
 								)
-							)
 
-						;	Next, autons that are still in the cargo hold
+						;	This is a stored auton
 
-						(map autonItemList 'excludeNil autonItem
+						(and (@ theEntry 'item)
+								(itmMatches (@ theEntry 'item) "* +auton;")
+								)
 							(block (
+								(autonItem (@ theEntry 'item))
 								(autonConfig (rpgGetAutonConfig autonItem))
-								(autonClass (itmGetStaticData autonItem 'autonShipClass))
+								(autonType (itmGetStaticData autonItem 'autonShipClass))
 								(isKnown (itm@ autonItem 'known))
 								)
 								{
-								title: 
-									(switch
-										(not isKnown )
-											(itmGetName autonItem 0)
+									title: 
+										(switch
+											(not isKnown )
+												(itmGetName autonItem 0)
 
-										(@ autonConfig 'name)
 											(@ autonConfig 'name)
+												(@ autonConfig 'name)
 
-										(typGetName autonClass 'generic)
-										)
+											(typGetName autonType 'generic)
+											)
 
-								icon: (if isKnown (shpGetImageDesc autonClass { rotation:90 }) (itmGetImageDesc autonItem))
+									icon: (if isKnown (shpGetImageDesc autonType { rotation:90 }) (itmGetImageDesc autonItem))
 
-								largeIcon: (if isKnown (shpGetImageDesc autonClass { type:'schematic }))
-								details: (if isKNown (rpgGetAutonItemDetails autonItem { }))
+									largeIcon: (if isKnown (shpGetImageDesc autonType { type:'schematic }))
+									details: (if isKnown (rpgGetAutonItemDetails autonItem { }))
 
-								autonItem: autonItem
-								autonClass: autonClass
-								autonConfig: autonConfig
-								}
+									autonItem: autonItem
+									autonClass: autonType
+									autonConfig: autonConfig
+									}
 								)
-							)
 						)
 					)
 			</OnDisplayInit>
