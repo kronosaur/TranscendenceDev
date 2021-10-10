@@ -2999,17 +2999,17 @@ void CStation::OnDestroyedByHostileFire (CSpaceObject *pAttacker, CSpaceObject *
 //	Station destroyed by hostile fire
 
 	{
-	CSpaceObject *pTarget;
-
 	ASSERT(pOrderGiver && pOrderGiver->CanAttack());
 
 	//	Figure out which target we should attack (based on visibility,
 	//	proximity, etc.).
 
-	if ((pTarget = CalcTargetToAttack(pAttacker, pOrderGiver)))
-		{
-		AvengeAttack(pTarget);
-		}
+	CSpaceObject *pTarget = CalcTargetToAttack(pAttacker, pOrderGiver);
+
+	//	OK if pTarget is NULL. This can happen if the ship that destroyed us is
+	//	invisible to us.
+
+	AvengeAttack(pTarget);
 	}
 
 bool CStation::OnGetCondition (ECondition iCondition) const
@@ -3100,22 +3100,29 @@ void CStation::AvengeAttack (CSpaceObject *pTarget)
 //	We've been killed, so we need to avenge the attack.
 
 	{
-	int i;
+	//	If we have a target, then attack back.
 
-	//	Safety checks
+	if (pTarget && !pTarget->IsDestroyed() && pTarget->CanAttack())
+		{
+		//	Tell our subordinates to attack to kill
 
-	if (pTarget == NULL || pTarget->IsDestroyed() || !pTarget->CanAttack())
-		return;
+		for (int i = 0; i < m_Subordinates.GetCount(); i++)
+			Communicate(m_Subordinates.GetObj(i), msgBaseDestroyedByTarget, pTarget);
 
-	//	Tell our subordinates to attack to kill
+		//	Alert
 
-	for (i = 0; i < m_Subordinates.GetCount(); i++)
-		Communicate(m_Subordinates.GetObj(i), msgBaseDestroyedByTarget, pTarget);
+		if (m_pBase == NULL && m_pType->AlertWhenDestroyed())
+			RaiseAlert(pTarget);
+		}
 
-	//	Alert
+	//	Otherwise, we tell our subordinates that we were attacked by an
+	//	unknown target.
 
-	if (m_pBase == NULL && m_pType->AlertWhenDestroyed())
-		RaiseAlert(pTarget);
+	else
+		{
+		for (int i = 0; i < m_Subordinates.GetCount(); i++)
+			Communicate(m_Subordinates.GetObj(i), msgBaseDestroyedByUnknown);
+		}
 
 	SetAngry();
 	}
@@ -3188,6 +3195,11 @@ DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSp
 		case msgBaseDestroyedByTarget:
 			if (!IsAbandoned())
 				AvengeAttack(pParam1);
+			return resAck;
+
+		case msgBaseDestroyedByUnknown:
+			if (!IsAbandoned())
+				AvengeAttack(NULL);
 			return resAck;
 
 		case msgAttackDeter:

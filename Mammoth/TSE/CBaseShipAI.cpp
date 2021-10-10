@@ -1216,6 +1216,19 @@ DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, 
 				return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
 			}
 
+		case msgBaseDestroyedByUnknown:
+			{
+			if (m_pOrderModule->SupportsReactions())
+				{
+				if (ReactToBaseDestroyed())
+					return resAck;
+				else
+					return resNoAnswer;
+				}
+			else
+				return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
+			}
+
 		case msgQueryAttackStatus:
 			{
 			if (m_pOrderModule->SupportsReactions() && m_DeterModule.IsEnabled())
@@ -1734,6 +1747,37 @@ void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Da
 		case AIReaction::Gate:
 			React(iReaction);
 			break;
+
+		default:
+			throw CException(ERR_FAIL);
+		}
+	}
+
+bool CBaseShipAI::ReactToBaseDestroyed ()
+
+//	ReactToBaseDestroyed
+//
+//	React to our base being destroyed but without a target to attack.
+
+	{
+	AIReaction iReaction = GetReactToBaseDestroyed();
+	switch (iReaction)
+		{
+		case AIReaction::None:
+			return false;
+
+		case AIReaction::Chase:
+		case AIReaction::ChaseFromBase:
+		case AIReaction::Destroy:
+		case AIReaction::DestroyAndRetaliate:
+		case AIReaction::Deter:
+		case AIReaction::DeterWithSecondaries:
+			AddOrder(COrderDesc(IShipController::orderAttackNearestEnemy));
+			return true;
+
+		case AIReaction::Gate:
+			React(iReaction);
+			return true;
 
 		default:
 			throw CException(ERR_FAIL);

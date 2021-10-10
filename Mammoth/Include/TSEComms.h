@@ -38,8 +38,9 @@ enum MessageTypes
 	msgBaseDestroyedByTarget =		23,	//	Our base was destroyed by target (pParam is target)
 	msgOnAsteroidExplored =			24,	//	Sender has been successfully explored by player
 	msgOnPlayerHint =				25, //	Sender has a hint for the player
+	msgBaseDestroyedByUnknown =		26,	//	Our base was destroyed by an unseen enemy
 
-	msgCount =						26,
+	msgCount =						27,
 	};
 
 enum ResponseTypes
