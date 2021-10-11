@@ -855,7 +855,7 @@ bool CStation::CanBeDestroyedBy (CSpaceObject &Attacker) const
 				//	Multi-hull stations require WMD.
 
 				case CStationHullDesc::hullMultiple:
-					if (ShotDesc.GetDamage().GetMassDestructionDamage() > 0)
+					if (ShotDesc.GetSpecialDamage(specialWMD) > 0)
 						return true;
 					break;
 
@@ -863,15 +863,15 @@ bool CStation::CanBeDestroyedBy (CSpaceObject &Attacker) const
 				//	mining damage.
 
 				case CStationHullDesc::hullAsteroid:
-					if (ShotDesc.GetDamage().GetMassDestructionDamage() > 0
-							|| ShotDesc.GetDamage().GetMiningDamage() > 0)
+					if (ShotDesc.GetSpecialDamage(specialWMD) > 0
+							|| ShotDesc.GetSpecialDamage(specialMining) > 0)
 						return true;
 					break;
 
 				//	Underground stations must be attacked with  mining damage.
 
 				case CStationHullDesc::hullUnderground:
-					if (ShotDesc.GetDamage().GetMiningDamage() > 0)
+					if (ShotDesc.GetSpecialDamage(specialMining) > 0)
 						return true;
 					break;
 
