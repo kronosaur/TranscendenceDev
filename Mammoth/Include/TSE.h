@@ -187,6 +187,8 @@ void ReportCrashObj (CString *retsMessage, const CSpaceObject *pCrashObj = NULL)
 class CShockwaveHitTest
 	{
 	public:
+		static constexpr Metric MAX_HITS_PER_OBJ_FRACTION = 0.20;
+
 		void Init (int iSegments, int iLives);
 		bool IsEmpty (void) const { return (m_Segments.GetCount() == 0); }
 		void ReadFromStream (SLoadCtx &Ctx);

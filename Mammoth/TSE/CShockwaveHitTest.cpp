@@ -218,7 +218,7 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 
 			//	Initialize the SegHit array to false.
 
-			bool bObjHit = false;
+			int iHitCount = 0;
 			utlMemSet(&SegHit[0], sizeof(SHitData) * SegHit.GetCount(), 0);
 
 			//	Loop through the grid to see if we hit anything
@@ -260,7 +260,7 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 							SegHit[iSegment].bHit = true;
 							SegHit[iSegment].iAngle = (int)rTheAngle;
 							SegHit[iSegment].vHitPos = vHitTest;
-							bObjHit = true;
+							iHitCount++;
 							}
 						}
 
@@ -272,35 +272,52 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 
 			//	If we hit the object, then do damage
 
-			if (bObjHit)
+			if (iHitCount > 0)
 				{
+				//	There's a maximum amount of damage that we can do to a single 
+				//	object.
+
+				Metric rMaxHitCount = m_Segments.GetCount() * MAX_HITS_PER_OBJ_FRACTION;
+				int iHitChance = 100;
+				if ((Metric)iHitCount > rMaxHitCount)
+					{
+					iHitChance = mathRound(100.0 * rMaxHitCount / (Metric)iHitCount);
+					}
+
+				//	Do damage.
+
 				for (j = 0; j < SegHit.GetCount(); j++)
-					if (SegHit[j].bHit)
+					{
+					if (!SegHit[j].bHit)
+						continue;
+
+					if (iHitChance < 100 && mathRandom(1, 100) > iHitChance)
+						continue;
+
+					//	Do damage to the object
+					//	We check again if the object is destroyed because it could have been
+					//	destroyed by one segment hit.
+
+					if (!pObj->IsDestroyed())
 						{
-						//	Do damage to the object
-						//	We check again if the object is destroyed because it could have been
-						//	destroyed by one segment hit.
+						SDamageCtx DamageCtx(pObj,
+								*Ctx.pDamageDesc,
+								Ctx.pEnhancements,
+								Ctx.Attacker,
+								Ctx.pObj,
+								0.0,
+								AngleMod(SegHit[j].iAngle + 180),
+								SegHit[j].vHitPos);
 
-						if (!pObj->IsDestroyed())
-							{
-							SDamageCtx DamageCtx(pObj,
-									*Ctx.pDamageDesc,
-									Ctx.pEnhancements,
-									Ctx.Attacker,
-									Ctx.pObj,
-									0.0,
-									AngleMod(SegHit[j].iAngle + 180),
-									SegHit[j].vHitPos);
-
-							pObj->Damage(DamageCtx);
-							}
-
-						//	Remember that this segment hit something
-						//	Taking passthrough into account
-
-						if (mathRandom(1, 100) > Ctx.pDamageDesc->GetPassthrough())
-							m_Segments[j] = m_Segments[j] - 1;
+						pObj->Damage(DamageCtx);
 						}
+
+					//	Remember that this segment hit something
+					//	Taking passthrough into account
+
+					if (mathRandom(1, 100) > Ctx.pDamageDesc->GetPassthrough())
+						m_Segments[j] = m_Segments[j] - 1;
+					}
 				}
 			}
 		}
