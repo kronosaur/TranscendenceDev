@@ -114,16 +114,14 @@ void CShockwaveHitTest::Init (int iSegments, int iLives)
 //	Initialize points
 
 	{
-	int i;
-
 	ASSERT(iSegments > 0);
 	ASSERT(iLives >= 0);
 
 	m_Segments.DeleteAll();
 	m_Segments.InsertEmpty(iSegments);
 
-	for (i = 0; i < m_Segments.GetCount(); i++)
-		m_Segments[i] = iLives;
+	for (int i = 0; i < m_Segments.GetCount(); i++)
+		m_Segments[i].iLives = iLives;
 	}
 
 void CShockwaveHitTest::ReadFromStream (SLoadCtx &Ctx)
@@ -135,15 +133,27 @@ void CShockwaveHitTest::ReadFromStream (SLoadCtx &Ctx)
 //	DWORD		Count
 //
 //	DWORD		Life left
+//	DWORD		dwLastHitID
 
 	{
 	DWORD dwLoad;
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
+	m_Segments.DeleteAll();
 	m_Segments.InsertEmpty(dwLoad);
 
 	if (dwLoad > 0)
-		Ctx.pStream->Read((char *)&m_Segments[0], sizeof(int) * dwLoad);
+		{
+		for (int i = 0; i < m_Segments.GetCount(); i++)
+			{
+			Ctx.pStream->Read(m_Segments[i].iLives);
+
+			if (Ctx.dwVersion >= 211)
+				{
+				Ctx.pStream->Read(m_Segments[i].dwLastHitID);
+				}
+			}
+		}
 	}
 
 void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metric rMinRadius, Metric rMaxRadius)
@@ -252,7 +262,9 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 					//	If this segment has already been hit by this object or if we've
 					//	already exceeded the segment's lives, then we skip
 
-					if (!SegHit[iSegment].bHit && m_Segments[iSegment] > 0)
+					if (!SegHit[iSegment].bHit 
+							&& m_Segments[iSegment].iLives > 0
+							&& m_Segments[iSegment].dwLastHitID != pObj->GetID())
 						{
 						CVector vHitTest = vPos + PolarToVector((int)(rTheAngle + rRandomOffset), rTestRadius);
 						if (pObj->PointInObject(pObj->GetPos(), vHitTest))
@@ -260,6 +272,8 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 							SegHit[iSegment].bHit = true;
 							SegHit[iSegment].iAngle = (int)rTheAngle;
 							SegHit[iSegment].vHitPos = vHitTest;
+
+							m_Segments[iSegment].dwLastHitID = pObj->GetID();
 							iHitCount++;
 							}
 						}
@@ -316,7 +330,7 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 					//	Taking passthrough into account
 
 					if (mathRandom(1, 100) > Ctx.pDamageDesc->GetPassthrough())
-						m_Segments[j] = m_Segments[j] - 1;
+						m_Segments[j].iLives = m_Segments[j].iLives - 1;
 					}
 				}
 			}
@@ -333,8 +347,14 @@ void CShockwaveHitTest::WriteToStream (IWriteStream *pStream) const
 	DWORD dwSave;
 
 	dwSave = m_Segments.GetCount();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	if (m_Segments.GetCount() > 0)
-		pStream->Write((char *)&m_Segments[0], sizeof(int) * m_Segments.GetCount());
+		{
+		for (int i = 0; i < m_Segments.GetCount(); i++)
+			{
+			pStream->Write(m_Segments[i].iLives);
+			pStream->Write(m_Segments[i].dwLastHitID);
+			}
+		}
 	}

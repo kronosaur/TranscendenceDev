@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							52;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
-constexpr DWORD SYSTEM_SAVE_VERSION =					210;
+constexpr DWORD SYSTEM_SAVE_VERSION =					211;
 
 //	Uncomment out the following define when building a stable release
 
@@ -759,3 +759,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					210;
 //
 //	210: 1.9
 //		Added m_Events to CAscendedObjectList
+//
+//	211: 1.9
+//		Change CShockwaveHitTest

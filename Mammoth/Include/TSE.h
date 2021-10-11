@@ -196,9 +196,15 @@ class CShockwaveHitTest
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
+		struct SEntry
+			{
+			int iLives = 0;
+			DWORD dwLastHitID = 0;
+			};
+
 		void CalcObjBounds (CSpaceObject *pObj, const CVector &vPos, Metric *retrStartAngle, Metric *retrSizeAngle, Metric *retrStartRadius, Metric *retrEndRadius);
 
-		TArray<int> m_Segments;
+		TArray<SEntry> m_Segments;
 	};
 
 class CHitCtx
