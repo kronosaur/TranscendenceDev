@@ -643,8 +643,8 @@ Metric CShieldClass::CalcRegen180 (CItemCtx &Ctx, DWORD dwFlags) const
 
 	Metric rRegen = m_Regen.GetHPPer180();
 	
-	if (m_iExtraHPPerCharge)
-		rRegen += m_iExtraHPPerCharge * Ctx.GetItemCharges();
+	if (m_iExtraRegenPerCharge)
+		rRegen += m_iExtraRegenPerCharge * Ctx.GetItemCharges();
 
 	return rRegen;
 	}
