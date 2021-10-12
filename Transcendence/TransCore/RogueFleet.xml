@@ -27,18 +27,15 @@
 	<StationType UNID="&stRogueFleetCache;"
 			name=				"Rogue Fleet cache"
 			sovereign=			"&svRogueFleet;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
 
-			multiHull=			"true"
-			armorID=			"&itP120HexphaseArmor;"
-			hitPoints=			"370"
-            regen=              "2"
+			attributes=			"enemy, envAir, envAvoidsFire, generic, human, populated, rogue, rogueFleet"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			size=				"353"
 			fireRateAdj=		"20"
 			explosionType=		"&vtThermoExplosion1;"
 			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"enemy, envAir, envAvoidsFire, generic, human, populated, rogue, rogueFleet"
 			>
 
 		<!-- Encounter Info -->
@@ -52,19 +49,26 @@
 				enemyExclusionRadius=	"50"
 				/>
 
-		<ImageVariants>
-			<Image			imageID="&rsStations1;" imageX="64" imageY="384" imageWidth="64" imageHeight="64"/>
-			<Image			imageID="&rsStations1;" imageX="64" imageY="448" imageWidth="64" imageHeight="64"/>
-		</ImageVariants>
+		<!-- Configuration -->
 
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&itP120HexphaseArmor;"
+				hitPoints=		"370"
+				regen=			"2"
+				/>
+		
 		<Devices>
-			<Device deviceID="&itTeV9Blaster;"	omnidirectional="true"/>
+			<Device deviceID="&itTeV9Blaster;"	omnidirectional="true" posAngle="0" posRadius="0" posZ="20"/>
 		</Devices>
+
+		<!-- Ships and Defenses -->
 
 		<Ships>
 			<Ship		count="1d3"		class="&scCenturionRogue;" orders="patrol" patrolDist="20"/>
 			<Ship		count="1d3"		class="&scCenturionRogue;" orders="guard"/>
 		</Ships>
+
+		<!-- Treasure -->
 
 		<Items>
 			<Item count="2d6"	  item="&itPteracniumFuelRod;"/>
@@ -79,6 +83,25 @@
 			</Table>
 		</Items>
 
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsRogueFleetCache;"			imageWidth="280" imageHeight="280"	viewportRatio="0.04375"/>
+
+		<DockingPorts>
+			<Port posAngle="-38" posRadius="100" rotation="-140"/>
+			<Port posAngle="-62" posRadius="100" rotation="40"/>
+
+			<Port posAngle="82"  posRadius="100" rotation="-20"/>
+			<Port posAngle="58"  posRadius="100" rotation="160"/>
+
+			<Port posAngle="202" posRadius="100" rotation="100"/>
+			<Port posAngle="178" posRadius="100" rotation="280"/>
+
+			<Port posAngle="-110" posRadius="110" />
+			<Port posAngle="10"   posRadius="110" />
+			<Port posAngle="130"  posRadius="110" />
+		</DockingPorts>
+
 	</StationType>
 
 	<!-- Rogue Fleet Settlement -->
@@ -90,13 +113,9 @@
 			attributes=			"enemy, envAir, envAvoidsFire, generic, human, populated, rogue, rogueFleet"
 				 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-				 
-			armorID=			"&itP120HexphaseArmor;"
-			hitPoints=			"950"
-			multiHull=			"true"
-			regen=              "20"
+
+			size=				"375"				 
 			shipRegen=			"4"
-				 
 			fireRateAdj=		"20"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
@@ -113,23 +132,16 @@
 				enemyExclusionRadius=	"50"
 				/>
 
-		<!-- Trade and Items -->
-
-		<Items value="standard:level=8:x=1.4">
-			<Table>
-				<Item	chance="20"	count="2d6" item="&itPteracniumFuelRod;"/>
-				<Item	chance="20"	count="4d8" item="&itS3Missile;"/>
-				<Item	chance="10"	count="2d8" item="&itM2Missile;"/>
-				<Lookup chance="25" count="1" table="&trConsumables9;"/>
-				<Lookup chance="15" count="1" table="&trMinorItem9;"/>
-				<Lookup chance="10" count="1" table="&trMajorItem9;"/>
-			</Table>
-		</Items>
-		
 		<!-- Configuration -->
 		
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&itP120HexphaseArmor;"
+				hitPoints=		"950"
+				regen=			"20"
+				/>
+		
 		<Devices>
-			<Device deviceID="&itStarCannon;"	omnidirectional="true"/>
+			<Device deviceID="&itStarCannon;"	omnidirectional="true" posAngle="0" posRadius="0" posZ="20"/>
 		</Devices>
 
 		<!-- Ships and Defenses -->
@@ -144,14 +156,35 @@
 			<Ship		count="1d3"		class="&scCenturionRogue;" orders="guard"/>
 		</Ships>
 
+		<!-- Treasure -->
+
+		<Items value="standard:level=8:x=1.4">
+			<Table>
+				<Item	chance="20"	count="2d6" item="&itPteracniumFuelRod;"/>
+				<Item	chance="20"	count="4d8" item="&itS3Missile;"/>
+				<Item	chance="10"	count="2d8" item="&itM2Missile;"/>
+				<Lookup chance="25" count="1" table="&trConsumables9;"/>
+				<Lookup chance="15" count="1" table="&trMinorItem9;"/>
+				<Lookup chance="10" count="1" table="&trMajorItem9;"/>
+			</Table>
+		</Items>
+		
 		<!-- Image and Effects -->
 		
-		<Image			imageID="&rsStations8;" imageX="128" imageY="896" imageWidth="128" imageHeight="128" viewportRatio="0.01"/>
+		<Image imageID="&rsRogueFleetSettlement;"		imageWidth="290" imageHeight="290"	viewportRatio="0.0475"/>
 
-		<DockingPorts
-				portCount=		"8"
-				portRadius=		"85"
-				>
+		<DockingPorts>
+			<Port posAngle="10"  posRadius="140"/>
+			<Port posAngle="40"  posRadius="140"/>
+			<Port posAngle="70"  posRadius="140"/>
+
+			<Port posAngle="130" posRadius="140"/>
+			<Port posAngle="150" posRadius="140"/>
+			<Port posAngle="190" posRadius="140"/>
+
+			<Port posAngle="240" posRadius="140"/>
+			<Port posAngle="270" posRadius="140"/>
+			<Port posAngle="310" posRadius="140"/>
 		</DockingPorts>
 	</StationType>
 
@@ -398,11 +431,15 @@
 
 <!-- RESOURCE -->
 
+	<Image UNID="&rsRogueFleetCache;"		bitmap="Resources\RogueFleetCache.jpg"	bitmask="Resources\RogueFleetCacheMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&rsRogueFleetSettlement;"	bitmap="Resources\RogueFleetSettlement.jpg"	bitmask="Resources\RogueFleetSettlementMask.bmp" 	loadOnUse="true" />
+
 	<Image UNID="&rsAurochsRogue;"			bitmap="Resources\AurochsRogue.jpg"	bitmask="Resources\AurochsRogueMask.bmp" 	loadOnUse="true" />
 	<Image UNID="&rsAurochsRogueHero;"		bitmap="Resources\AurochsRogueLarge.jpg"	bitmask="Resources\AurochsRogueLargeMask.bmp" 	loadOnUse="true" />
 	<Image UNID="&rsCenturionRogue;"		bitmap="Resources\CenturionRogue.jpg"	bitmask="Resources\CenturionRogueMask.bmp" 	loadOnUse="true" />
 	<Image UNID="&rsCenturionRogueHero;"	bitmap="Resources\CenturionRogueLarge.jpg"	bitmask="Resources\CenturionRogueLargeMask.bmp" 	loadOnUse="true" />
 	<Image UNID="&rsCenturionXRogue;"		bitmap="Resources\CenturionXRogue.jpg"	bitmask="Resources\CenturionXRogueMask.bmp" 	loadOnUse="true" />
 	<Image UNID="&rsCenturionXRogueHero;"	bitmap="Resources\CenturionXRogueLarge.jpg"	bitmask="Resources\CenturionXRogueLargeMask.bmp" 	loadOnUse="true" />
+
 
 </TranscendenceModule>

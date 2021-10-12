@@ -2380,6 +2380,8 @@
 	<!ENTITY rsAurochsRogue				"0x00100586">
 	<!ENTITY rsAurochsRogueHero			"0x00100587">
 	<!ENTITY smRogueFleetSpace			"0x00100588">
+	<!ENTITY rsRogueFleetCache			"0x00100589">
+	<!ENTITY rsRogueFleetSettlement		"0x0010058A">
 
 	<!-- 05A0-05BF PACIFIC DEFENCE CORPORATION -->
 
