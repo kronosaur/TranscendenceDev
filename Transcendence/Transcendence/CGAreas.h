@@ -280,6 +280,17 @@ class CGIconListArea : public AGArea
 	public:
 		static constexpr DWORD NOTIFY_SELECTION_CHANGED =		1;
 
+		enum class EMove
+			{
+			Down,						//	Move cursor down
+			Left,						//	Move cursor left
+			Right,						//	Move cursor right
+			Up,							//	Move cursor up
+
+			Next,						//	Move to next icon (usually right)
+			Prev,						//	Move to previous icon (usually left)
+			};
+
 		CGIconListArea (CUniverse &Universe, const CVisualPalette &VI, const CDockScreenVisuals &Theme) :
 				m_Universe(Universe),
 				m_VI(VI),
@@ -288,11 +299,13 @@ class CGIconListArea : public AGArea
 			InitFromTheme(VI, Theme);
 			}
 
+		bool DeselectAll ();
 		int GetCount () const { return m_List.GetCount(); }
 		ICCItemPtr GetEntry (int iIndex) const { if (iIndex < 0 || iIndex >= m_List.GetCount()) throw CException(ERR_FAIL); return m_List[iIndex].pData; }
 		ICCItemPtr GetList () const;
 		TArray<int> GetSelection () const;
 		ICCItemPtr GetSelectionAsCCItem () const;
+		bool MoveCursor (EMove iDirection);
 		void RestoreSelection (const ICCItem &Selection);
 		ICCItemPtr SaveSelection () const;
 		bool SetData (const ICCItem &List, CString *retsError = NULL);
@@ -328,12 +341,19 @@ class CGIconListArea : public AGArea
 
 			//	Computed in Format
 
+			mutable int iRow = -1;
+			mutable int iCol = -1;
 			mutable RECT rcRect = { 0 };		//	Location, relative to control rect
 			};
 
 		int CalcIconSize (int iEntryCount) const;
-		bool DeselectAll ();
+		bool ExtendSelection (int iPos, EMove iDirection);
 		bool Format (const RECT &rcRect) const;
+		int GetEntryAtDirection (int iPos, EMove iDirection) const;
+		int GetEntryFromDirection (EMove iDirection) const;
+		int GetFirstEntryInRow (int iRow) const;
+		int GetLastEntryInRow (int iRow) const;
+		int GetSelectedEntryFromDirection (EMove iDirection) const;
 		int HitTestEntry (int x, int y) const;
 		bool InitEntry (SEntry &Entry, const ICCItem &Data, CString *retsError = NULL);
 		void InitFromTheme (const CVisualPalette &VI, const CDockScreenVisuals &Theme);

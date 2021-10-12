@@ -187,6 +187,7 @@ class CDockScreenIconList : public IDockScreenDisplay
 		virtual CSpaceObject *OnGetSource (void) const override { return m_pSource; }
 		virtual DWORD OnGetUIFlags (void) const override { return FLAG_UI_ITEM_SELECTOR; }
 		virtual EResults OnHandleAction (DWORD dwTag, DWORD dwData) override;
+		virtual EResults OnHandleKeyDown (int iVirtKey) override;
 		virtual ALERROR OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError) override;
 		virtual EResults OnResetList (CSpaceObject *pLocation) override;
 		virtual void OnShowItem (void) override;
