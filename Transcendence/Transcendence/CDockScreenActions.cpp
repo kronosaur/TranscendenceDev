@@ -309,7 +309,10 @@ void CDockScreenActions::CreateButtons (const CDockScreenVisuals &DockScreenVisu
 		else
 			{
 			pButton->SetLabelFont(&MajorLabelFont);
-			pButton->SetAcceleratorColor(VI.GetColor(colorTextAccelerator));
+			if (pButton->IsPrefixAccelerator())
+				pButton->SetAcceleratorColor(VI.GetColor(colorAreaAccelerator));
+			else
+				pButton->SetAcceleratorColor(VI.GetColor(colorTextAccelerator));
 			pButton->SetPadding(CONTROL_INNER_PADDING_VERT);
 			pButton->SetBorderRadius(CONTROL_BORDER_RADIUS);
 			pButton->SetBackColor(rgbActionBackground);
