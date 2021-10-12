@@ -431,7 +431,7 @@
 		</Panes>
 		
 		<Language>
-			<Text id="actionDone">"Do[n]e"</Text>
+			<Text id="actionDone">[Esc] Done</Text>
 			<Text id="actionInstallDevice">"Install [D]evice"</Text>
 			<Text id="actionRefuel">"[R]efuel"</Text>
 			<Text id="actionRemoveDevice">"Remo[v]e Device"</Text>

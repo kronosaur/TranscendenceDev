@@ -469,7 +469,7 @@
 		
 		<Language>
 			<Text id="actionBegin">[B]egin Neurohack</Text>
-			<Text id="actionDoneSpecial">Do[n]e</Text>
+			<Text id="actionDoneSpecial">[Esc] Done</Text>
 			<Text id="actionEnter">[E]nter Chamber</Text>
 
 			<Text id="descWelcome">

@@ -16,7 +16,7 @@
 			<Text id="actionDockServices">[D]ock Services</Text>
 			<Text id="actionDonate">[D]onate</Text>
 			<Text id="actionDonateThisItem">[D]onate this Item</Text>
-			<Text id="actionDone">[D]one</Text>
+			<Text id="actionDone">[Esc] Done</Text>
 			<Text id="actionExit">E[x]it</Text>
 			<Text id="actionInformation">[I]nformation</Text>
 			<Text id="actionInstall">[I]nstall</Text>

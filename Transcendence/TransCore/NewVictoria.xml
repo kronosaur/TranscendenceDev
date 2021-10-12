@@ -704,7 +704,7 @@
 		</Panes>
 		
 		<Language>
-			<Text id="actionDone">[D]one</Text>
+			<Text id="actionDone">[Esc] Done</Text>
 			<Text id="actionEngineering">School of [E]ngineering</Text>
 			<Text id="actionUniversityHospital">[U]niversity Hospital</Text>
 			<Text id="actionUniversityTaikon">[T]aikon School of Exploration</Text>
