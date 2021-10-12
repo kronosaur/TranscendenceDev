@@ -168,6 +168,7 @@
 	<!ENTITY baRPGCriminalRecord		"0x000101C0">
 	<!ENTITY dsRPGCriminalArrest		"0x000101C1">
 	<!ENTITY unidTestCriminalRecord		"0x000101C2">
+	<!ENTITY dsRPGFreeSlaves			"0x000101C3">
 	]>
 	
 <CoreLibrary
@@ -211,6 +212,7 @@
 	<Module filename="RPGRumors.xml"/>
 	<Module filename="RPGShipBroker.xml"/>
 	<Module filename="RPGShipScreens.xml"/>
+	<Module filename="RPGSlaves.xml"/>
 	<Module filename="RPGSquadronUI.xml"/>
 	<Module filename="RPGTradingComputer.xml"/>
 	<Module filename="RPGTypes.xml"/>
