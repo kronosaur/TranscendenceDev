@@ -9,6 +9,7 @@
 
 			level=				"1"
 			maxAppearing=		"1"
+			expireTime=			"-1"
 			>
 		<Properties>
 			<Variant id="targetDesc">
