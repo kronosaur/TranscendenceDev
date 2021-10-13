@@ -54,6 +54,7 @@ static constexpr const char *FEEDBACK[] =
 	"Apemant",
 	"Aquilai",
 	"Arkheias",
+	"avorite",
 	"Azmond",
 
 	"Lee Baugh",
