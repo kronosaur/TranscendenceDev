@@ -283,6 +283,8 @@
 
 			priority=		"100"
 			noDecline=		"true"
+			noDebrief=		"true"
+			noStats=		"true"
 			>
 
 		<Image imageID="&rsHereticMissionTile;"	imageWidth="384" imageHeight="192"/>
@@ -348,6 +350,8 @@
 			<Text id="Name">
 				Iocrym Attack
 			</Text>
+			<Text id="FailureMsg"></Text>
+
 			<Text id="textBriefingCommonwealth">
 
 				Nervous scientists approach you as you enter:

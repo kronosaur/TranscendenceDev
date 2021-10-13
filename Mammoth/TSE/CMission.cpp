@@ -629,6 +629,18 @@ void CMission::OnDestroyed (SDestroyCtx &Ctx)
 
 	CompleteMission(CompletedReason::destroyed);
 
+	//	If this is a player mission that still needs a debrief, we close it 
+	//	here (otherwise, we never clear events, because CompleteMission doesn't
+	//	close missions if a debrief is needed).
+
+	if (IsPlayerMission() && !m_fDebriefed)
+		{
+		m_fDebriefed = true;
+
+		FireOnSetPlayerTarget(REASON_DEBRIEFED);
+		CloseMission();
+		}
+
 	//	Destroy the mission
 
 	FireOnDestroy(Ctx);
