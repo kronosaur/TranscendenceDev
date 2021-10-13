@@ -2344,6 +2344,7 @@
 	<!ENTITY rsLuminousDroneHD			"0x00100510">
 	<!ENTITY trLuminousTreasure			"0x00100511">
 	<!ENTITY smLuminousSpace			"0x00100512">
+	<!ENTITY rsLuminousDroneHero		"0x00100513">
 
 	<!-- 0530-057F PLAYER SHIP UPGRADES -->
 
