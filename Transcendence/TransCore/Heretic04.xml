@@ -47,8 +47,7 @@
 					(msnSetData gSource 'targetID (objGetID theArchive))
 
 					;	Give the player the Neurohack ROM
-					(objAddItem gPlayerShip (itmCreate &itNeurohackROM; 1))
-					(itmSetKnown (itmCreate &itNeurohackROM; 1))
+					(objAddItem gPlayerShip (itmSetKnown (itmCreate &itNeurohackROM; 1)))
 					)
 			</OnAccepted>
 
@@ -218,11 +217,7 @@
 		<DockScreens>
 			<Main>
 				<Panes>
-					<Default>
-						<OnPaneInit>
-							(scrSetDescTranslate gScreen 'descWelcome)
-						</OnPaneInit>
-
+					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionEnter" default="1">
 								(switch
@@ -243,11 +238,7 @@
 						</Actions>
 					</Default>
 
-					<Vault>
-						<OnPaneInit>
-							(scrSetDescTranslate gScreen 'descVault)
-						</OnPaneInit>
-
+					<Vault descID="descVault">
 						<Actions>
 							<Action id="actionBegin" default="1">
 								(switch
@@ -266,11 +257,7 @@
 						</Actions>
 					</Vault>
 
-					<NeurohackIntro>
-						<OnPaneInit>
-							(scrSetDescTranslate gScreen 'descNeurohackIntro)
-						</OnPaneInit>
-
+					<NeurohackIntro descID="descNeurohackIntro">
 						<Actions>
 							<Action id="actionContinue" default="1" cancel="1">
 								(block Nil
@@ -290,11 +277,7 @@
 						</Actions>
 					</NeurohackIntro>
 
-					<AIDamaged>
-						<OnPaneInit>
-							(scrSetDescTranslate gScreen 'descAIDamaged)
-						</OnPaneInit>
-
+					<AIDamaged descID="descAIDamaged">
 						<Actions>
 							<Action id="actionLeave" default="1" cancel="1">
 								(scrShowPane gScreen "Default")
@@ -302,14 +285,7 @@
 						</Actions>
 					</AIDamaged>
 
-					<NoVirusLeft>
-						<OnPaneInit>
-							(scrSetDesc gScreen 
-								"Your attempt to subdue the AI is unsuccessful. It appears that the AI has developed "
-								"countermeasures that repel any attempt."
-								)
-						</OnPaneInit>
-						
+					<NoVirusLeft descID="descNoVirusLeft">
 						<Actions>
 							<Action id="actionLeave" default="1" cancel="1">
 								(scrShowPane gScreen "Default")
@@ -317,13 +293,7 @@
 						</Actions>
 					</NoVirusLeft>
 					
-					<NoROM>
-						<OnPaneInit>
-							(scrSetDesc gScreen
-								"You cannot attempt to subdue the AI without a neurohack ROM."
-								)
-						</OnPaneInit>
-						
+					<NoROM descID="descNoROM">
 						<Actions>
 							<Action id="actionLeave" default="1" cancel="1">
 								(scrShowPane gScreen "Default")
@@ -335,10 +305,12 @@
 			
 			<NeurohackComplete>
 				<OnScreenInit>
-					;	If we failed, we set our failure result here. If we succeeded
-					;	we wait until the player gets the ROM to set the status
-					(if (geq (+ (objGetData gSource 'neurohack.failure) (objGetData gSource 'neurohack.damaged)) 3)
-						(msnFailure (msnFind "Pa +unid:&msHereticMaryamsArchive;;"))
+					(switch
+						;	If we failed, we set our failure result here. If we succeeded
+						;	we wait until the player gets the ROM to set the status
+
+						(geq (+ (objGetData gSource 'neurohack.failure) (objGetData gSource 'neurohack.damaged)) 3)
+							(msnFailure (msnFind "Pa +unid:&msHereticMaryamsArchive;;"))
 						)
 				</OnScreenInit>
 
@@ -420,11 +392,7 @@
 						</OnPaneInit>
 					</Default>
 
-					<SentinelAttack>
-						<OnPaneInit>
-							(scrSetDescTranslate gScreen 'descSentinelAttack)
-						</OnPaneInit>
-
+					<SentinelAttack descID="descSentinelAttack">
 						<Actions>
 							<Action id="actionContinue" default="1" cancel="1">
 								(block Nil
@@ -435,11 +403,7 @@
 						</Actions>
 					</SentinelAttack>
 
-					<Failure>
-						<OnPaneInit>
-							(scrSetDescTranslate gScreen 'descFailed)
-						</OnPaneInit>
-
+					<Failure descID="descFailed">
 						<Actions>
 							<Action id="actionDone" default="1" cancel="1">
 								(block (missionObj)
@@ -502,6 +466,17 @@
 				You have subdued the AI! The AI speaks:
 
 				"What do you wish to know?"
+
+			</Text>
+			<Text id="descNoVirusLeft">
+			
+				Your attempt to subdue the AI is unsuccessful. It appears the AI has 
+				developed countermeasures that repel any attempt.
+
+			</Text>
+			<Text id="descNoROM">
+			
+				You cannot attempt to subdue the AI without a neurohack ROM.
 
 			</Text>
 			<Text id="descNoMoreAnswers">

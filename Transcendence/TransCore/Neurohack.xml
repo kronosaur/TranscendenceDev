@@ -211,6 +211,14 @@
 					
 					<Action id="actionDisconnect" cancel="1">
 						(block Nil
+							;	Counts as failure
+
+							(if (@ gData 'onFailure)
+								((@ gData 'onFailure))
+								)
+
+							;	Done
+
 	                        (scrExitScreen gScreen)
 
 							(if (@ gData 'nextScreen)
