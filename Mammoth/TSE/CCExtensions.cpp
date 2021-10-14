@@ -32,6 +32,7 @@ ICCItem *fnEnvironmentGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_DEBUG_BREAK				9
 #define FN_DEBUG_SET_PERFORMANCE_COUNTER	10
 #define FN_DEBUG_CLEAR_OUTPUT		11
+#define FN_DEBUG_GET_PERFORMANCE	12
 
 ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -691,6 +692,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'showOrderInfo\n",
 
 			"s",	0, },
+
+#ifdef DEBUG_PERFORMANCE_COUNTERS
+		{	"dbgGetPerformance",				fnDebug,		FN_DEBUG_GET_PERFORMANCE,
+			"(dbgGetPerformance) -> list of performance entries",
+			"*",	0, },
+#endif
 
 		{	"dbgIsActive",				fnDebug,		FN_DEBUG_IS_ACTIVE,
 			"(dbgIsActive) -> True if in debug mode, else Nil",
@@ -4627,6 +4634,28 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CString sProperty = pArgs->GetElement(0)->GetStringValue();
 			ICCItemPtr pResult = pCtx->GetUniverse().GetDebugProperty(sProperty);
 			return pResult->Reference();
+			}
+
+		case FN_DEBUG_GET_PERFORMANCE:
+			{
+			CPerformanceCounters &Counters = pCtx->GetUniverse().GetPerformanceCounters();
+			auto List = Counters.GetCounters(CPerformanceCounters::EOrder::byMaxTimePerUpdate);
+			if (List.GetCount() == 0)
+				return pCC->CreateNil();
+
+			ICCItemPtr pList(ICCItem::List);
+			for (int i = 0; i < List.GetCount(); i++)
+				{
+				ICCItemPtr pEntry(ICCItem::SymbolTable);
+				pEntry->SetStringAt(CONSTLIT("id"), List[i]->sID);
+				pEntry->SetIntegerAt(CONSTLIT("maxCallsPerUpdate"), List[i]->iMaxCallsPerUpdate);
+				pEntry->SetIntegerAt(CONSTLIT("maxTimePerCall"), List[i]->iMaxTimePerCall);
+				pEntry->SetIntegerAt(CONSTLIT("maxTimePerUpdate"), List[i]->iMaxTimePerUpdate);
+
+				pList->Append(pEntry);
+				}
+
+			return pList->Reference();
 			}
 
 		case FN_DEBUG_IS_ACTIVE:

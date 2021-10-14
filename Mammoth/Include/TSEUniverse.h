@@ -82,8 +82,16 @@ class CDebugOptions
 class CPerformanceCounters
 	{
 	public:
+		enum class EOrder
+			{
+			byMaxCallsPerUpdate,
+			byMaxTimePerCall,
+			byMaxTimePerUpdate,
+			};
+
 		struct SCounter
 			{
+			CString sID;
 			DWORD dwStartTime = 0;
 
 			int iTotalCalls = 0;
@@ -92,12 +100,18 @@ class CPerformanceCounters
 			int iTotalCallsPerUpdate = 0;
 			int iTotalTimePerUpdate = 0;
 
+			int iMaxCallsPerUpdate = 0;
+			int iMaxTimePerUpdate = 0;
+			int iMaxTimePerCall = 0;
+
 			bool bEnabled = false;
 			};
 
 		int GetCount (void) const { return m_Counters.GetCount(); }
 		const SCounter &GetCounter (int iIndex) const { return m_Counters[iIndex]; }
 		const CString &GetCounterID (int iIndex) const { return m_Counters.GetKey(iIndex); }
+		TSortMap<int, const SCounter *> GetCounters (EOrder iOrder) const;
+		bool IsEnabled () const { return m_bEnabled; }
 		void Paint (CG32bitImage &Dest, const RECT &rcRect, const CG16bitFont &Font) const;
 		void SetEnabled (bool bEnabled = true) { m_bEnabled = bEnabled; }
 		bool SetEnabled (const CString &sID, bool bEnabled = true);

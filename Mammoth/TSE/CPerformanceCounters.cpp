@@ -9,6 +9,38 @@
 //#define DEBUG_CCREFCOUNT
 #endif
 
+TSortMap<int, const CPerformanceCounters::SCounter *> CPerformanceCounters::GetCounters (EOrder iOrder) const
+
+//	GetCounters
+//
+//	Returns performance counters by the given order (highest times first).
+
+	{
+	TSortMap<int, const SCounter *> Ordered(DescendingSort);
+	for (int i = 0; i < m_Counters.GetCount(); i++)
+		{
+		switch (iOrder)
+			{
+			case EOrder::byMaxCallsPerUpdate:
+				if (m_Counters[i].iMaxCallsPerUpdate)
+					Ordered.Insert(m_Counters[i].iMaxCallsPerUpdate, &m_Counters[i]);
+				break;
+
+			case EOrder::byMaxTimePerCall:
+				if (m_Counters[i].iMaxTimePerCall)
+					Ordered.Insert(m_Counters[i].iMaxTimePerCall, &m_Counters[i]);
+				break;
+
+			case EOrder::byMaxTimePerUpdate:
+				if (m_Counters[i].iMaxTimePerUpdate)
+					Ordered.Insert(m_Counters[i].iMaxTimePerUpdate, &m_Counters[i]);
+				break;
+			}
+		}
+
+	return Ordered;
+	}
+
 bool CPerformanceCounters::IsAnyCounterEnabled (void) const
 
 //	IsAnyCounterEnabled
@@ -100,7 +132,11 @@ void CPerformanceCounters::StartTimer (const CString &sID)
 //	Starts a performance counter.
 
 	{
-	SCounter *pCounter = m_Counters.SetAt(sID);
+	bool bNew;
+	SCounter *pCounter = m_Counters.SetAt(sID, &bNew);
+	if (bNew)
+		pCounter->sID = sID;
+
 	if (pCounter->dwStartTime)
 		return;
 
@@ -117,6 +153,12 @@ void CPerformanceCounters::StartUpdate ()
 	for (int i = 0; i < m_Counters.GetCount(); i++)
 		if (m_Counters[i].bEnabled)
 			{
+			if (m_Counters[i].iTotalCallsPerUpdate > m_Counters[i].iMaxCallsPerUpdate)
+				m_Counters[i].iMaxCallsPerUpdate = m_Counters[i].iTotalCallsPerUpdate;
+
+			if (m_Counters[i].iTotalTimePerUpdate > m_Counters[i].iMaxTimePerUpdate)
+				m_Counters[i].iMaxTimePerUpdate = m_Counters[i].iTotalTimePerUpdate;
+
 			m_Counters[i].iTotalCallsPerUpdate = 0;
 			m_Counters[i].iTotalTimePerUpdate = 0;
 			}
@@ -131,7 +173,11 @@ void CPerformanceCounters::StopTimer (const CString &sID)
 	{
 	DWORD dwStopTime = ::GetTickCount();
 
-	SCounter *pCounter = m_Counters.SetAt(sID);
+	bool bNew;
+	SCounter *pCounter = m_Counters.SetAt(sID, &bNew);
+	if (bNew)
+		pCounter->sID = sID;
+
 	if (pCounter->dwStartTime == 0)
 		return;
 
@@ -142,4 +188,7 @@ void CPerformanceCounters::StopTimer (const CString &sID)
 	pCounter->iTotalCallsPerUpdate++;
 	pCounter->iTotalTimePerUpdate += dwTotalTime;
 	pCounter->dwStartTime = 0;
+
+	if ((int)dwTotalTime > pCounter->iMaxTimePerCall)
+		pCounter->iMaxTimePerCall = dwTotalTime;
 	}

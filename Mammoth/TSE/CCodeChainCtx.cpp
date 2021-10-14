@@ -743,6 +743,8 @@ ICCItemPtr CCodeChainCtx::RunCode (const SEventHandlerDesc &Event)
 	if (!Event.pCode)
 		return ICCItemPtr::Nil();
 
+	CUsePerformanceCounter Counter(GetUniverse(), Event);
+
 	CExtension *pOldExtension = m_pExtension;
 	m_pExtension = Event.pExtension;
 
