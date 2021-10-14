@@ -35,7 +35,11 @@
 			</OnCreate>
 
 			<OnAccepted>
-				(block (theArchive)
+				(block (
+					(neurohackROM (itmCreate &itNeurohackROM; 1))
+
+					theArchive
+					)
 					;	Create the archive
 					(setq theArchive
 						(sysCreateStation &stMaryamsArchive; 
@@ -47,7 +51,8 @@
 					(msnSetData gSource 'targetID (objGetID theArchive))
 
 					;	Give the player the Neurohack ROM
-					(objAddItem gPlayerShip (itmSetKnown (itmCreate &itNeurohackROM; 1)))
+					(objAddItem gPlayerShip neurohackROM)
+					(itmSetKnown neurohackROM)
 					)
 			</OnAccepted>
 
