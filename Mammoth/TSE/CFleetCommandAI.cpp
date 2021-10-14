@@ -888,7 +888,7 @@ void CFleetCommandAI::OnWriteToStream (IWriteStream *pStream)
 		m_pShip->WriteObjRefToStream(m_Assets[i].pTarget, pStream);
 		}
 
-	pStream->Write(m_Targets.GetCount(), sizeof(DWORD));
+	pStream->Write(m_Targets.GetCount());
 	for (int i = 0; i < m_Targets.GetCount(); i++)
 		{
 		m_pShip->WriteObjRefToStream(m_Targets[i].pTarget, pStream);
