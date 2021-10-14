@@ -444,7 +444,8 @@ class CCurrencyBlock
 struct SEventHandlerDesc
 	{
 	CExtension *pExtension = NULL;
-	ICCItem *pCode = NULL;
+	CString sEvent;
+	ICCItemPtr pCode;
 	};
 
 class CEventHandler

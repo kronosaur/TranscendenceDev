@@ -176,7 +176,7 @@ class CSovereign : public CDesignType
 		mutable const CSystem *m_pEnemyObjectsSystem = NULL;	//	System that we've cached enemy objects
 		mutable CSpaceObjectList m_EnemyObjects;		//	List of enemy objects that can attack
 
-		SEventHandlerDesc m_CachedEvents[CACHED_EVENT_COUNT] = { 0 };
+		SEventHandlerDesc m_CachedEvents[CACHED_EVENT_COUNT];
 		static const char *m_CACHED_EVENTS[CACHED_EVENT_COUNT];
 
 		//	Property table

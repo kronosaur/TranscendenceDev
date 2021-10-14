@@ -6760,11 +6760,9 @@ void CShip::Refuel (const CItem &Fuel)
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineItemVar(Fuel);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			SendMessage(NULL, pResult->GetStringValue());
-
-		Ctx.Discard(pResult);
 		}
 	}
 

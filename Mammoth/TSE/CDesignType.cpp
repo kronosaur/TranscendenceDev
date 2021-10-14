@@ -909,6 +909,7 @@ bool CDesignType::FindEventHandler (const CString &sEvent, SEventHandlerDesc *re
 		if (retEvent)
 			{
 			retEvent->pExtension = m_pExtension;
+			retEvent->sEvent = sEvent;
 			retEvent->pCode = pCode;
 			}
 
@@ -2356,9 +2357,7 @@ void CDesignType::AddUniqueHandlers (TSortMap<CString, SEventHandlerDesc> *retIn
 //	already there).
 
 	{
-	int i;
-
-	for (i = 0; i < m_Events.GetCount(); i++)
+	for (int i = 0; i < m_Events.GetCount(); i++)
 		{
 		ICCItem *pCode;
 		const CString &sEvent = m_Events.GetEvent(i, &pCode);
@@ -2367,6 +2366,7 @@ void CDesignType::AddUniqueHandlers (TSortMap<CString, SEventHandlerDesc> *retIn
 			{
 			SEventHandlerDesc *pDesc = retInheritedHandlers->Insert(sEvent);
 			pDesc->pExtension = m_pExtension;
+			pDesc->sEvent = sEvent;
 			pDesc->pCode = pCode;
 			}
 		}
@@ -2785,7 +2785,8 @@ void CDesignType::InitCachedEvents (int iCount, const char **pszEvents, SEventHa
 	{
 	for (int i = 0; i < iCount; i++)
 		{
-		if (!FindEventHandler(CString(pszEvents[i], -1, true), &retEvents[i]))
+		retEvents[i].sEvent = CString(pszEvents[i], -1, true);
+		if (!FindEventHandler(retEvents[i].sEvent, &retEvents[i]))
 			{
 			retEvents[i].pExtension = NULL;
 			retEvents[i].pCode = NULL;

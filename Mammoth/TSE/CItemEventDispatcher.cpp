@@ -93,9 +93,11 @@ void CItemEventDispatcher::Init (CSpaceObject *pSource)
 
 			for (i = 0; i < pEvents->GetCount(); i++)
 				{
-				CString sEvent = pEvents->GetEvent(i, &Event.pCode);
+				ICCItem *pCode;
+				Event.sEvent = pEvents->GetEvent(i, &pCode);
+				Event.pCode = pCode;
 
-				AddEntry(sEvent, dispatchFireEvent, Event, pItem, OBJID_NULL);
+				AddEntry(Event.sEvent, dispatchFireEvent, Event, pItem, OBJID_NULL);
 				}
 			}
 		else

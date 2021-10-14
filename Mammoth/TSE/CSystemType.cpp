@@ -80,15 +80,13 @@ ALERROR CSystemType::FireOnCreate (SSystemCreateCtx &SysCreateCtx, CString *rets
 		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.SetSystemCreateCtx(&SysCreateCtx);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			{
 			if (retsError)
 				*retsError = strPatternSubst(CONSTLIT("System OnCreate: %s"), pResult->GetStringValue());
 			return ERR_FAIL;
 			}
-
-		Ctx.Discard(pResult);
 		}
 
 	return NOERROR;
@@ -112,23 +110,20 @@ bool CSystemType::FireOnObjJumpPosAdj (CSpaceObject *pObj, CVector *iovPos)
 	Ctx.SaveAndDefineSourceVar(pObj);
 	Ctx.DefineVector(CONSTLIT("aJumpPos"), *iovPos);
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 
 	if (pResult->IsError())
 		{
 		kernelDebugLogPattern("System OnObjJumpPosAdj: %s", pResult->GetStringValue());
-		Ctx.Discard(pResult);
 		return false;
 		}
 	else if (pResult->IsNil())
 		{
-		Ctx.Discard(pResult);
 		return false;
 		}
 	else
 		{
 		CVector vNewPos = Ctx.AsVector(pResult);
-		Ctx.Discard(pResult);
 
 		if (vNewPos == *iovPos)
 			return false;

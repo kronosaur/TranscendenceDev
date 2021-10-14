@@ -308,10 +308,9 @@ void CMission::FireCustomEvent (const CString &sEvent, ICCItem *pData)
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineDataVar(pData);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(sEvent, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -331,10 +330,9 @@ void CMission::FireOnAccepted (void)
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(EVENT_ON_ACCEPTED, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -357,15 +355,14 @@ ICCItem *CMission::FireOnDeclined (void)
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			{
 			ReportEventError(EVENT_ON_DECLINED, pResult);
-			Ctx.Discard(pResult);
 			return NULL;
 			}
 
-		return pResult;
+		return pResult->Reference();
 		}
 
 	return NULL;
@@ -390,15 +387,14 @@ ICCItem *CMission::FireOnReward (ICCItem *pData)
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineDataVar(pData);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			{
 			ReportEventError(EVENT_ON_REWARD, pResult);
-			Ctx.Discard(pResult);
 			return NULL;
 			}
 
-		return pResult;
+		return pResult->Reference();
 		}
 
 	return NULL;
@@ -421,10 +417,9 @@ void CMission::FireOnSetPlayerTarget (const CString &sReason)
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.DefineString(STR_A_REASON, sReason);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(EVENT_ON_SET_PLAYER_TARGET, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -444,10 +439,9 @@ void CMission::FireOnStart (void)
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(EVENT_ON_STARTED, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -469,10 +463,9 @@ void CMission::FireOnStop (const CString &sReason, ICCItem *pData)
 		Ctx.SaveAndDefineDataVar(pData);
 		Ctx.DefineString(STR_A_REASON, sReason);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(EVENT_ON_COMPLETED, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 

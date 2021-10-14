@@ -2591,7 +2591,7 @@ CCurrencyAndValue CShipClass::GetHullValue (CShip *pShip) const
 
 	//	Run
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 
 	//	Interpret results
 
@@ -2603,7 +2603,6 @@ CCurrencyAndValue CShipClass::GetHullValue (CShip *pShip) const
 
 	//	Done
 
-	Ctx.Discard(pResult);
 	return HullValue;
 	}
 

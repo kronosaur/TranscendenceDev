@@ -71,9 +71,7 @@ class CCommunicationsHandler
 			};
 
 		CCommunicationsHandler (void);
-		~CCommunicationsHandler (void);
 
-		CCommunicationsHandler &operator= (const CCommunicationsHandler &Src);
 		ALERROR InitFromXML (CXMLElement *pDesc, CString *retsError);
 
 		void DeleteAll (void);

@@ -525,10 +525,7 @@ template <typename EVENT_ENUM, size_t N> class TEventHandlerCache
 				return false;
 
 			if (retEvent)
-				{
-				retEvent->pExtension = m_Cache[iEvent].pExtension;
-				retEvent->pCode = m_Cache[iEvent].pCode;
-				}
+				*retEvent = m_Cache[iEvent];
 
 			return true;
 			}
@@ -537,13 +534,8 @@ template <typename EVENT_ENUM, size_t N> class TEventHandlerCache
 			{
 			for (int i = 0; i < N; i++)
 				{
-				SEventHandlerDesc Handler;
-				if (pType->FindEventHandler(CString(pEvents[i], -1, true), &Handler))
-					{
-					m_Cache[i].pExtension = Handler.pExtension;
-					m_Cache[i].pCode = (Handler.pCode ? Handler.pCode->Reference() : NULL);
-					}
-				else
+				m_Cache[i].sEvent = CString(pEvents[i], -1, true);
+				if (!pType->FindEventHandler(m_Cache[i].sEvent, &m_Cache[i]))
 					{
 					m_Cache[i].pExtension = NULL;
 					m_Cache[i].pCode = NULL;
@@ -552,13 +544,7 @@ template <typename EVENT_ENUM, size_t N> class TEventHandlerCache
 			}
 
 	private:
-		struct SEntry
-			{
-			CExtension *pExtension = NULL;
-			ICCItemPtr pCode;
-			};
-
-		SEntry m_Cache[N];
+		SEventHandlerDesc m_Cache[N];
 	};
 
 template <class CLASS> class CDesignTypeRef

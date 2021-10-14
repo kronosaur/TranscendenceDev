@@ -426,10 +426,12 @@ void CDesignCollection::CacheGlobalEvents (CDesignType *pType)
 
 		for (int i = 0; i < pEvents->GetCount(); i++)
 			{
-			CString sEvent = pEvents->GetEvent(i, &Event.pCode);
+			ICCItem *pCode;
+			Event.sEvent = pEvents->GetEvent(i, &pCode);
+			Event.pCode = pCode;	//	OK if pCode is NULL
 
 			for (int j = 0; j < evtCount; j++)
-				if (m_EventsCache[j]->Insert(pType, sEvent, Event))
+				if (m_EventsCache[j]->Insert(pType, Event.sEvent, Event))
 					break;
 			}
 		}
@@ -529,7 +531,7 @@ ALERROR CDesignCollection::CreateTemplateTypes (SDesignLoadCtx &Ctx)
 		SEventHandlerDesc Event;
 		if (pTemplate->FindEventHandler(GET_TYPE_SOURCE_EVENT, &Event))
 			{
-			ICCItem *pResult = CCCtx.Run(Event);
+			ICCItemPtr pResult = CCCtx.RunCode(Event);
 			if (pResult->IsError())
 				{
 				Ctx.sError = strPatternSubst(CONSTLIT("GetTypeSource (%x): %s"), pTemplate->GetUNID(), pResult->GetStringValue());
@@ -540,8 +542,6 @@ ALERROR CDesignCollection::CreateTemplateTypes (SDesignLoadCtx &Ctx)
 				if (error = AddDynamicType(pTemplate->GetExtension(), pTemplate->GetUNID(), pResult, true, &Ctx.sError))
 					return error;
 				}
-
-			CCCtx.Discard(pResult);
 			}
 		}
 

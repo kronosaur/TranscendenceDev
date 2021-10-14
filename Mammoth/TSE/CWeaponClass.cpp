@@ -2312,7 +2312,7 @@ int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, const CWeaponFireDesc
 		Ctx.DefineInteger(CONSTLIT("aFireRepeat"), iRepeatingCount);
 		Ctx.DefineItemType(CONSTLIT("aWeaponType"), ShotDesc.GetWeaponType());
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ItemCtx.GetSource()->ReportEventError(GET_AMMO_TO_CONSUME_EVENT, pResult);
 
@@ -2324,8 +2324,6 @@ int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, const CWeaponFireDesc
 			{
 			iResult = 1;
 			}
-
-		Ctx.Discard(pResult);
 
 		//	Done
 
