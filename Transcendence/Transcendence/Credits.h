@@ -214,6 +214,7 @@ static constexpr const char *FEEDBACK[] =
 	"Section6",
 	"Sero",
 	"SevereTireDamage",
+	"ShaggyMoose",
 	"Shaman",
 	"Sheltem",
 	"SiaFu",
