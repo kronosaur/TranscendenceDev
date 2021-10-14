@@ -155,10 +155,9 @@ void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 			Ctx.DefineContainingType(m_pShip);
 			Ctx.SaveAndDefineSourceVar(m_pShip);
 
-			ICCItem *pResult = Ctx.RunLambda(m_pCommandCode);
+			ICCItemPtr pResult = Ctx.RunLambdaCode(m_pCommandCode);
 			if (pResult->IsError())
 				m_pShip->ReportEventError(CONSTLIT("CommandCode"), pResult);
-			Ctx.Discard(pResult);
 			}
 
 		//	If we still got no orders, let the ship class deal with this

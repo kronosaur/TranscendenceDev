@@ -401,8 +401,7 @@ void CDockScreenActions::ExecuteCode (CDockScreen *pScreen, const CString &sID, 
 	Ctx.DefineString(CONSTLIT("aActionID"), sID);
 	Ctx.SetDockScreenList(pScreen->GetListData());
 
-	ICCItem *pResult = Ctx.RunLambda(pCode);
-
+	ICCItemPtr pResult = Ctx.RunLambdaCode(pCode);
 	if (pResult->IsError())
 		{
 		CString sError = pResult->GetStringValue();
@@ -410,8 +409,6 @@ void CDockScreenActions::ExecuteCode (CDockScreen *pScreen, const CString &sID, 
 		pScreen->SetDescriptionError(sError);
 		::kernelDebugLogString(sError);
 		}
-
-	Ctx.Discard(pResult);
 	}
 
 void CDockScreenActions::ExecuteExitScreen (bool bForceUndock)

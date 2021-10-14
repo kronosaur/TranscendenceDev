@@ -1707,7 +1707,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
 
-					ICCItem *pResult = Ctx.Run(m_Controls[i].pCode);	//	LATER:Event
+					ICCItemPtr pResult = Ctx.RunCode(m_Controls[i].pCode);	//	LATER:Event
 
 					//	If we have an error, report it
 
@@ -1717,7 +1717,6 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 							{
 							kernelDebugLogString(pResult->GetStringValue());
 							}
-						Ctx.Discard(pResult);
 						break;
 						}
 
@@ -1728,10 +1727,6 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 					GetImageDescFromList(pResult, &pImage, &rcImage);
 					if (pImage)
 						pControl->SetImage(pImage, rcImage);
-
-					//	Done
-
-					Ctx.Discard(pResult);
 					}
 
 				break;
@@ -1756,7 +1751,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 
 					//	Run the code to paint on the canvas
 
-					ICCItem *pResult = Ctx.Run(m_Controls[i].pCode);	//	LATER:Event
+					ICCItemPtr pResult = Ctx.RunCode(m_Controls[i].pCode);	//	LATER:Event
 
 					//	If we have an error, report it
 
@@ -1766,14 +1761,8 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 							{
 							kernelDebugLogString(pResult->GetStringValue());
 							}
-
-						Ctx.Discard(pResult);
 						break;
 						}
-
-					//	Done
-
-					Ctx.Discard(pResult);
 					}
 
 				break;
@@ -1790,7 +1779,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
 
-					ICCItem *pResult = Ctx.Run(m_Controls[i].pCode);	//	LATER:Event
+					ICCItemPtr pResult = Ctx.RunCode(m_Controls[i].pCode);	//	LATER:Event
 
 					//	If we have an error, report it
 
@@ -1801,7 +1790,6 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 							kernelDebugLogString(pResult->GetStringValue());
 							}
 
-						Ctx.Discard(pResult);
 						break;
 						}
 
@@ -1813,10 +1801,6 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 					int iWillpower = (pResult->GetCount() > 0 ? pResult->GetElement(0)->GetIntegerValue() : 0);
 					int iDamage = (pResult->GetCount() > 1 ? pResult->GetElement(1)->GetIntegerValue() : 0);
 					pControl->SetData(iWillpower, iDamage);
-
-					//	Done
-
-					Ctx.Discard(pResult);
 					}
 
 				break;
@@ -1833,7 +1817,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
 
-					ICCItem *pResult = Ctx.Run(m_Controls[i].pCode);	//	LATER:Event
+					ICCItemPtr pResult = Ctx.RunCode(m_Controls[i].pCode);	//	LATER:Event
 
 					//	The result is the text for the control
 
@@ -1851,10 +1835,6 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 							kernelDebugLogString(pResult->GetStringValue());
 							}
 						}
-
-					//	Done
-
-					Ctx.Discard(pResult);
 					}
 
 				break;

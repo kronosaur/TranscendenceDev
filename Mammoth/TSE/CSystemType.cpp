@@ -235,7 +235,7 @@ ALERROR CSystemType::FireSystemCreateCode (SSystemCreateCtx &SysCreateCtx, ICCIt
 	Ctx.SetSystemCreateCtx(&SysCreateCtx);
 	Ctx.DefineOrbit(CONSTLIT("aOrbit"), OrbitDesc);
 
-	ICCItem *pResult = Ctx.Run(pCode);
+	ICCItemPtr pResult = Ctx.RunCode(pCode);
 	if (pResult->IsError())
 		{
 		if (retsError)
@@ -243,7 +243,6 @@ ALERROR CSystemType::FireSystemCreateCode (SSystemCreateCtx &SysCreateCtx, ICCIt
 		return ERR_FAIL;
 		}
 
-	Ctx.Discard(pResult);
 	return NOERROR;
 	}
 

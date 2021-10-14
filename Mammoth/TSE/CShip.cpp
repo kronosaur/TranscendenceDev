@@ -7325,10 +7325,9 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 		CCCtx.DefineSpaceObject(CONSTLIT("aBaseObj"), Ctx.pBase);
 		CCCtx.DefineSpaceObject(CONSTLIT("aTargetObj"), Ctx.pTarget);
 
-		ICCItem *pResult = CCCtx.Run(Ctx.pOnCreate);	//	LATER:Event
+		ICCItemPtr pResult = CCCtx.RunCode(Ctx.pOnCreate);	//	LATER:Event
 		if (pResult->IsError())
 			ReportEventError(CONSTLIT("local OnCreate"), pResult);
-		CCCtx.Discard(pResult);
 		}
 
 	//	Give the ship a chance to set orders

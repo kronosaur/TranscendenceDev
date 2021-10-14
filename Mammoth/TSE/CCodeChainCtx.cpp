@@ -708,42 +708,6 @@ void CCodeChainCtx::RestoreVars (void)
 		}
 	}
 
-ICCItem *CCodeChainCtx::Run (ICCItem *pCode)
-
-//	Run
-//
-//	Runs the given piece of code and returns a result
-//	(which must be discarded by the caller)
-
-	{
-	ICCItemPtr pResult = RunCode(pCode);
-	return pResult->Reference();
-	}
-
-ICCItem *CCodeChainCtx::Run (const SEventHandlerDesc &Event)
-
-//	Run
-//
-//	Runs the given event and returns a result. (Which must be discarded by the
-//	caller).
-
-	{
-	DEBUG_TRY
-
-	if (!Event.pCode)
-		return m_CC.CreateNil();
-
-	CExtension *pOldExtension = m_pExtension;
-	m_pExtension = Event.pExtension;
-
-	ICCItem *pResult = Run(Event.pCode);
-
-	m_pExtension = pOldExtension;
-	return pResult;
-
-	DEBUG_CATCH
-	}
-
 ICCItemPtr CCodeChainCtx::RunCode (ICCItem *pCode)
 
 //	RunCode
@@ -790,18 +754,6 @@ ICCItemPtr CCodeChainCtx::RunCode (const SEventHandlerDesc &Event)
 	return pResult;
 
 	DEBUG_CATCH
-	}
-
-ICCItem *CCodeChainCtx::RunLambda (ICCItem *pCode)
-
-//	RunLambda
-//
-//	Runs a piece of code or a lambda expression
-//	and returns a result (which must be discarded by the caller)
-
-	{
-	ICCItemPtr pResult = RunLambdaCode(pCode);
-	return pResult->Reference();
 	}
 
 ICCItemPtr CCodeChainCtx::RunLambdaCode (ICCItem *pCode, ICCItem *pArgs)

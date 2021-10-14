@@ -1034,11 +1034,9 @@ void CSpaceObject::CommsMessageFrom (CSpaceObject *pSender, int iIndex)
 
 		//	Execute
 
-		ICCItem *pResult = Ctx.Run(Msg.InvokeEvent);
+		ICCItemPtr pResult = Ctx.RunCode(Msg.InvokeEvent);
 		if (pResult->IsError())
 			pSender->SendMessage(this, pResult->GetStringValue());
-
-		Ctx.Discard(pResult);
 		}
 	}
 
