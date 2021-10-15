@@ -2216,6 +2216,8 @@ void CUniverse::PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags)
 //	Paint the current point of view
 
 	{
+	CUsePerformanceCounter Counter(*this, CONSTLIT("paint.SRS"));
+
 	if (m_pCurrentSystem && m_pPOV)
 		{
 		m_pCurrentSystem->PaintViewport(Dest, rcView, m_pPOV, dwFlags, &m_ViewportAnnotations);
@@ -2248,6 +2250,8 @@ void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMap
 //	Paint the system map
 
 	{
+	CUsePerformanceCounter Counter(*this, CONSTLIT("paint.map"));
+
 	if (m_pCurrentSystem && m_pPOV)
 		m_pCurrentSystem->PaintViewportMap(Dest, rcView, m_pPOV, rMapScale, dwFlags);
 
@@ -3048,10 +3052,6 @@ bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)
 	{
 	m_iLastUpdateSpeed = iUpdateMode;
 
-#ifdef DEBUG_PERFORMANCE_COUNTERS
-	m_PerformanceCounters.StartUpdate();
-#endif
-
 	switch (iUpdateMode)
 		{
 		case updateAccelerated:
@@ -3093,6 +3093,11 @@ void CUniverse::UpdateTick (SSystemUpdateCtx &Ctx)
 
 	if (m_pCurrentSystem == NULL)
 		return;
+
+#ifdef DEBUG_PERFORMANCE_COUNTERS
+	m_PerformanceCounters.StartUpdate();
+	CUsePerformanceCounter Counter(*this, CONSTLIT("update.tick"));
+#endif
 
 	//	Update system
 
@@ -3136,6 +3141,13 @@ void CUniverse::UpdateExtended (void)
 	if (pSystem == NULL)
 		return;
 
+	//	Disable performance for this update (because we don't care about this
+	//	part, but mostly because we update multiple ticks below and it would
+	//	throw off the per-tick calculations.
+
+	bool bEnabled = m_PerformanceCounters.IsEnabled();
+	m_PerformanceCounters.SetEnabled(false);
+
 	//	Calculate the amount of time that has elapsed from the last time the
 	//	system was updated.
 
@@ -3147,6 +3159,10 @@ void CUniverse::UpdateExtended (void)
 	//	Update the system 
 
 	pSystem->UpdateExtended(TotalTime);
+
+	//	Re-enable
+
+	m_PerformanceCounters.SetEnabled(bEnabled);
 
 	DEBUG_CATCH
 	}

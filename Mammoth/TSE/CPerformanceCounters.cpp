@@ -151,17 +151,16 @@ void CPerformanceCounters::StartUpdate ()
 
 	{
 	for (int i = 0; i < m_Counters.GetCount(); i++)
-		if (m_Counters[i].bEnabled)
-			{
-			if (m_Counters[i].iTotalCallsPerUpdate > m_Counters[i].iMaxCallsPerUpdate)
-				m_Counters[i].iMaxCallsPerUpdate = m_Counters[i].iTotalCallsPerUpdate;
+		{
+		if (m_Counters[i].iTotalCallsPerUpdate > m_Counters[i].iMaxCallsPerUpdate)
+			m_Counters[i].iMaxCallsPerUpdate = m_Counters[i].iTotalCallsPerUpdate;
 
-			if (m_Counters[i].iTotalTimePerUpdate > m_Counters[i].iMaxTimePerUpdate)
-				m_Counters[i].iMaxTimePerUpdate = m_Counters[i].iTotalTimePerUpdate;
+		if (m_Counters[i].iTotalTimePerUpdate > m_Counters[i].iMaxTimePerUpdate)
+			m_Counters[i].iMaxTimePerUpdate = m_Counters[i].iTotalTimePerUpdate;
 
-			m_Counters[i].iTotalCallsPerUpdate = 0;
-			m_Counters[i].iTotalTimePerUpdate = 0;
-			}
+		m_Counters[i].iTotalCallsPerUpdate = 0;
+		m_Counters[i].iTotalTimePerUpdate = 0;
+		}
 	}
 
 void CPerformanceCounters::StopTimer (const CString &sID)
