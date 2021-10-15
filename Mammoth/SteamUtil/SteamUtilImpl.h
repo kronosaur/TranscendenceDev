@@ -218,7 +218,7 @@ class CStoreStats
 			if (!SteamUserStats()->StoreStats())
 				return false;
 
-			while (!m_bStatsStored || !m_bAchievementStored)
+			while (!m_bStatsStored && !m_bAchievementStored)
 				{
 				::Sleep(50);
 				SteamAPI_RunCallbacks();
