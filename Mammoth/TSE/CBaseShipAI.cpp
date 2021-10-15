@@ -1180,6 +1180,8 @@ DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, 
 //	Handle communications from other objects
 
 	{
+	DEBUG_TRY
+
 	if (!m_pOrderModule)
 		return OnCommunicateNotify(pSender, iMessage, pParam1, dwParam2, pData);
 
@@ -1239,6 +1241,8 @@ DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, 
 		default:
 			return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CBaseShipAI::OnDestroyed (SDestroyCtx &Ctx)
@@ -1419,6 +1423,8 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 //	Handle the case where an object has been removed from the system
 
 	{
+	DEBUG_TRY
+
 	//	If our current order is to follow the player through and we get
 	//	a notification that the player has been removed, then do nothing
 	//	(we will be updated when we enter the new system).
@@ -1465,6 +1471,8 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 	m_Orders.OnObjDestroyed(&Ctx.Obj, &bChanged);
 	if (bChanged)
 		FireOnOrderChanged();
+
+	DEBUG_CATCH
 	}
 
 void CBaseShipAI::OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedShipsCtx &Options)

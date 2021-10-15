@@ -3873,6 +3873,8 @@ void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 //	If another object got destroyed, we do something
 
 	{
+	DEBUG_TRY
+
 	//	Give the controller a chance to handle it
 
 	m_pController->OnObjDestroyed(Ctx);
@@ -3918,6 +3920,8 @@ void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 
 		m_Interior.OnDestroyed(this, Ctx);
 		}
+
+	DEBUG_CATCH
 	}
 
 bool CShip::ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, const CVector &vObj2Pos)
@@ -4237,10 +4241,14 @@ DWORD CShip::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpace
 //	Handle communications from other objects
 
 	{
+	DEBUG_TRY
+
 	if (!IsInactive())
 		return m_pController->OnCommunicate(pSender, iMessage, pParam1, dwParam2, pData);
 	else
 		return resNoAnswer;
+
+	DEBUG_CATCH
 	}
 
 void CShip::OnComponentChanged (ObjectComponentTypes iComponent)

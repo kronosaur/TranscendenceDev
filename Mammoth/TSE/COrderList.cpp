@@ -97,6 +97,8 @@ void COrderList::OnObjDestroyed (CSpaceObject *pObj, bool *retbCurrentChanged)
 //	Delete all orders that have the object that was destroyed.
 
 	{
+	DEBUG_TRY
+
 	bool bCurrentChanged = false;
 
 	for (int i = 0; i < m_List.GetCount(); i++)
@@ -121,6 +123,8 @@ void COrderList::OnObjDestroyed (CSpaceObject *pObj, bool *retbCurrentChanged)
 
 	if (retbCurrentChanged)
 		*retbCurrentChanged = bCurrentChanged;
+
+	DEBUG_CATCH
 	}
 
 void COrderList::OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceObject *pNewShip, SPlayerChangedShipsCtx &Options, bool *retbCurrentChanged)
