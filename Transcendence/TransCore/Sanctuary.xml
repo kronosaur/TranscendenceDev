@@ -80,6 +80,10 @@
 		
 		<DockScreens>
 			<Main>
+				<OnScreenInit>
+					(unvSetAchievement 'humanSpace.visitCathedralOfDomina)
+				</OnScreenInit>
+
 				<Display type="detailsPane">
 					<OnDisplayInit>
 						(typTranslate &svSistersOfDomina; 'statusDisplay)
