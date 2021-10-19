@@ -739,7 +739,8 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_bSecondary = pDesc->GetAttributeBool(SECONDARY_WEAPON_ATTRIB);
 	m_bCycleFire = pDesc->GetAttributeBool(CYCLE_FIRE_ATTRIB);
-	m_iVariant = pDesc->GetAttributeBool(VARIANT_ATTRIB);
+	m_iVariant = pDesc->GetAttributeInteger(VARIANT_ATTRIB);
+	m_iCharges = pDesc->GetAttributeIntegerBounded(CHARGES_ATTRIB, 0, -1, 0);
 
 	//	Slot enhancements
 
