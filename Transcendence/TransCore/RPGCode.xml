@@ -1860,6 +1860,7 @@
 				;	noCargoCheck:			If True, then we don't check to see if the old device fits in cargo
 				;	replaceItem:			If not Nil, we try to replace this device.
 				;	showActualItem:			Show true item, even if unknown to player.
+				;	slotID:				If not Nil, we try to install in the device slot with the specified ID.
 				;	targetObj:				Object on which to install (if Nil, we assume player ship)
 				;	techCriteria:			If not Nil, the item must match this criteria
 				;	techCriteriaOverride:	If not Nil, and item matches this criteria, install even if above maxTechLevel
@@ -1953,6 +1954,9 @@
 								)
 							(recommendedSlot
 								(switch
+									(@ data 'slotID)
+										{slotID : (@ data 'slotID)}
+
 									(not (@ data 'replaceItem))
 										-1
 

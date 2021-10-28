@@ -1647,7 +1647,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii",	0,	},
 
 		{	"objCanInstallItem",				fnObjGet,			FN_OBJ_CAN_INSTALL_ITEM,
-			"(objCanInstallItem obj item [armorSeg|deviceSlot] [forceUseOfDeviceSlot]) -> (True/Nil resultCode resultString [itemToReplace])\n\n"
+			"(objCanInstallItem obj item [armorSeg|deviceSlot]) -> (True/Nil resultCode resultString [itemToReplace])\n\n"
 			
 			"resultCode\n\n"
 			
@@ -6974,7 +6974,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Invalid item"), pArgs->GetElement(1));
 
 			CDeviceSystem::SSlotDesc Slot;
-			bool bForceUseOfDeviceSlot = pArgs->GetCount() > 3 ? !(pArgs->GetElement(3)->IsNil()) : false;
+			bool bForceUseOfDeviceSlot = false;
 			if (pArgs->GetCount() > 2)
 				{
 				if (!CTLispConvert::AsSlotDesc(*pArgs->GetElement(2), Slot))
@@ -6995,6 +6995,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 							&& pShip
 							&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetDeviceCount()))
 						return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+					bForceUseOfDeviceSlot = pCtx->GetAPIVersion() >= 54;
 					}
 
 				if (!Slot.sID.IsBlank())
@@ -7003,6 +7004,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					const bool bDeviceSlotExists = pShip->GetDeviceSystem().FindSlotDesc(Slot.sID);
 					if (!bDeviceSlotExists)
 						return pCC->CreateError(CONSTLIT("Unknown slot ID"), pArgs->GetElement(2));
+					bForceUseOfDeviceSlot = pCtx->GetAPIVersion() >= 54;
 					}
 				}
 
