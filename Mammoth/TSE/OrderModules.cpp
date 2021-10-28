@@ -55,6 +55,8 @@ DWORD IOrderModule::Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject
 //	Handle communications from another ship
 
 	{
+	DEBUG_TRY
+
 	switch (iMessage)
 		{
 		case msgEscortAttacked:
@@ -79,6 +81,8 @@ DWORD IOrderModule::Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject
 		default:
 			return OnCommunicate(pShip, Ctx, pSender, iMessage, pParam1, dwParam2, pData);
 		}
+
+	DEBUG_CATCH
 	}
 
 IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
@@ -239,10 +243,11 @@ void IOrderModule::ObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx)
 //	And object was destroyed
 
 	{
-	int i;
+	DEBUG_TRY
+
 	bool bCancelOrder = false;
 
-	for (i = 0; i < m_iObjCount; i++)
+	for (int i = 0; i < m_iObjCount; i++)
 		if (Ctx.Obj == m_Objs[i])
 			{
 			//	If this object is a target, and a friendly ship destroyed it, then
@@ -271,6 +276,8 @@ void IOrderModule::ObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx)
 				return;
 				}
 			}
+
+	DEBUG_CATCH
 	}
 
 void IOrderModule::ReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)

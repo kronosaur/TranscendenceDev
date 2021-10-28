@@ -37,7 +37,7 @@
 			attributes=		"korolov"
 
 			level=			"1-5"
-			failureAfterOutOfSystem="5400"
+			failureOnReturnToSystem="5400"
 			>
 
 		<Events>

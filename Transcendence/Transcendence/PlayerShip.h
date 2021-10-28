@@ -253,11 +253,11 @@ class CPlayerShipController : public IShipController
 		virtual void OnDocked (CSpaceObject *pObj) override;
 		virtual void OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) override;
 		virtual void OnFuelConsumed (Metric rFuel, CReactorDesc::EFuelUseTypes iUse) override;
-		virtual void OnItemBought (const CItem &Item, CurrencyValue iTotalPrice) override { m_Stats.OnItemBought(Item, iTotalPrice); }
+		virtual void OnItemBought (const CItem &Item, const CCurrencyAndValue &TotalValue) override { m_Stats.OnItemBought(Item, TotalValue); }
 		virtual void OnItemDamaged (const CItem &Item, int iHP) override { m_Stats.OnItemDamaged(Item, iHP); }
 		virtual void OnItemFired (const CItem &Item) override { m_Stats.OnItemFired(Item); }
 		virtual void OnItemInstalled (const CItem &Item) override { m_Stats.OnItemInstalled(Item); }
-		virtual void OnItemSold (const CItem &Item, CurrencyValue iTotalPrice) override { m_Stats.OnItemSold(Item, iTotalPrice); }
+		virtual void OnItemSold (const CItem &Item, const CCurrencyAndValue &TotalValue) override { m_Stats.OnItemSold(Item, TotalValue); }
 		virtual void OnItemUninstalled (const CItem &Item) override { m_Stats.OnItemUninstalled(Item); }
 		virtual void OnMissionCompleted (CMission *pMission, bool bSuccess) override;
 		virtual void OnNewSystem (CSystem *pSystem) override;

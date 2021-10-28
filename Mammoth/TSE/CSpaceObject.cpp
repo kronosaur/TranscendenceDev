@@ -1034,11 +1034,9 @@ void CSpaceObject::CommsMessageFrom (CSpaceObject *pSender, int iIndex)
 
 		//	Execute
 
-		ICCItem *pResult = Ctx.Run(Msg.InvokeEvent);
+		ICCItemPtr pResult = Ctx.RunCode(Msg.InvokeEvent);
 		if (pResult->IsError())
 			pSender->SendMessage(this, pResult->GetStringValue());
-
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -1104,7 +1102,7 @@ void CSpaceObject::CopyDataFromObj (CSpaceObject *pSource)
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_DATA_TRANSFER_EVENT, pResult);
 		else if (pResult->IsSymbolTable())
@@ -1121,8 +1119,6 @@ void CSpaceObject::CopyDataFromObj (CSpaceObject *pSource)
 					kernelDebugLogPattern("Unknown transfer option: %s", sOption);
 				}
 			}
-
-		Ctx.Discard(pResult);
 		}
 
 	//  Copy
@@ -1973,7 +1969,7 @@ bool CSpaceObject::FireCanDockAsPlayer (CSpaceObject *pDockTarget, CString *rets
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.DefineSpaceObject(CONSTLIT("aDockTarget"), pDockTarget);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		bool bAllowDock;
 		if (pResult->IsError())
@@ -1989,8 +1985,6 @@ bool CSpaceObject::FireCanDockAsPlayer (CSpaceObject *pDockTarget, CString *rets
 			}
 		else
 			bAllowDock = true;
-
-		Ctx.Discard(pResult);
 
 		return bAllowDock;
 		}
@@ -2042,7 +2036,7 @@ bool CSpaceObject::FireCanInstallItem (const CItem &Item, const CDeviceSystem::S
 			Ctx.DefineNil(CONSTLIT("aArmorSeg"));
 			}
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		bool bCanBeInstalled;
 		if (pResult->IsError())
@@ -2058,8 +2052,6 @@ bool CSpaceObject::FireCanInstallItem (const CItem &Item, const CDeviceSystem::S
 			}
 		else
 			bCanBeInstalled = true;
-
-		Ctx.Discard(pResult);
 
 		return bCanBeInstalled;
 		}
@@ -2086,7 +2078,7 @@ bool CSpaceObject::FireCanRemoveItem (const CItem &Item, int iSlot, CString *ret
 		else
 			Ctx.DefineNil(CONSTLIT("aArmorSeg"));
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		bool bCanBeRemoved;
 		if (pResult->IsError())
@@ -2102,8 +2094,6 @@ bool CSpaceObject::FireCanRemoveItem (const CItem &Item, int iSlot, CString *ret
 			}
 		else
 			bCanBeRemoved = true;
-
-		Ctx.Discard(pResult);
 
 		return bCanBeRemoved;
 		}
@@ -2128,16 +2118,14 @@ void CSpaceObject::FireCustomEvent (const CString &sEvent, ECodeChainEvents iEve
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineDataVar(pData);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(sEvent, pResult);
 
 		//	Either return the event result or discard it
 
 		if (retpResult)
-			*retpResult = pResult;
-		else
-			Ctx.Discard(pResult);
+			*retpResult = pResult->Reference();
 		}
 	else
 		{
@@ -2198,16 +2186,14 @@ void CSpaceObject::FireCustomShipOrderEvent (const CString &sEvent, CSpaceObject
 		Ctx.SaveAndDefineDataVar(NULL);
 		Ctx.DefineSpaceObject(CONSTLIT("aShipObj"), pShip);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(sEvent, pResult);
 
 		//	Either return the event result or discard it
 
 		if (retpResult)
-			*retpResult = pResult;
-		else
-			Ctx.Discard(pResult);
+			*retpResult = pResult->Reference();
 		}
 	else
 		{
@@ -2257,7 +2243,7 @@ bool CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion) const
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(GET_EXPLOSION_TYPE_EVENT, pResult);
 
@@ -2300,10 +2286,6 @@ bool CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion) const
 			iBonus = 0;
 			iCause = killedByExplosion;
 			}
-
-		//	Done
-
-		Ctx.Discard(pResult);
 
 		//	Return
 
@@ -2358,7 +2340,7 @@ bool CSpaceObject::FireGetPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem 
 
 		//	Run
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		int iPriceAdj = 100;
 		if (pResult->IsError())
@@ -2369,8 +2351,6 @@ bool CSpaceObject::FireGetPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem 
 			iPriceAdj = pResult->GetIntegerValue();
 
 		//	Done
-
-		Ctx.Discard(pResult);
 
 		if (retiPriceAdj)
 			*retiPriceAdj = iPriceAdj;
@@ -2457,13 +2437,9 @@ void CSpaceObject::FireOnAttacked (const SDamageCtx &Ctx)
 		CCCtx.SaveAndDefineSourceVar(this);
 		CCCtx.DefineDamageCtx(Ctx);
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_ATTACKED_EVENT, pResult);
-
-		//	Done
-
-		CCCtx.Discard(pResult);
 		}
 
 	DEBUG_CATCH
@@ -2484,10 +2460,9 @@ void CSpaceObject::FireOnAttackedByPlayer (void)
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_ATTACKED_BY_PLAYER_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -2550,10 +2525,9 @@ void CSpaceObject::FireOnCreate (const SOnCreate &OnCreate)
 		if (OnCreate.pOrbit)
 			Ctx.DefineOrbit(CONSTLIT("aOrbit"), *OnCreate.pOrbit);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_CREATE_EVENT, pResult);
-		Ctx.Discard(pResult);
 
 #ifdef DEBUG_ON_CREATE_TIME
 		g_dwTotalTime += ::sysGetTicksElapsed(dwStart);
@@ -2587,10 +2561,9 @@ void CSpaceObject::FireOnCreateOrders (CSpaceObject *pBase, CSpaceObject *pTarge
 		Ctx.DefineSpaceObject(CONSTLIT("aBaseObj"), pBase);
 		Ctx.DefineSpaceObject(CONSTLIT("aTargetObj"), pTarget);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_CREATE_ORDERS_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -2610,14 +2583,13 @@ int CSpaceObject::FireOnDamage (SDamageCtx &Ctx, int iDamage)
 		CCCtx.SaveAndDefineSourceVar(this);
 		CCCtx.DefineDamageCtx(Ctx, iDamage);
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_DAMAGE_EVENT, pResult);
 
 		//	Result is the amount of damage
 
 		iDamage = pResult->GetIntegerValue();
-		CCCtx.Discard(pResult);
 		}
 
 	return iDamage;
@@ -2641,10 +2613,9 @@ void CSpaceObject::FireOnDeselected (void)
 
 		//	Run code
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_DESELECTED_EVENT, pResult);
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -2672,10 +2643,9 @@ void CSpaceObject::FireOnDestroy (const SDestroyCtx &Ctx)
 
 		//	Run code
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_DESTROY_EVENT, pResult);
-		CCCtx.Discard(pResult);
 		}
 
 	DEBUG_CATCH
@@ -2734,10 +2704,9 @@ void CSpaceObject::FireOnDestroyObj (const SDestroyCtx &Ctx)
 		CCCtx.DefineBool(CONSTLIT("aDestroy"), Ctx.WasDestroyed());
 		CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_DESTROY_OBJ_EVENT, pResult);
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -2829,10 +2798,9 @@ void CSpaceObject::FireOnEnteredGate (CTopologyNode *pDestNode, const CString &s
 
 		//	Run code
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_ENTERED_GATE_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -2854,10 +2822,9 @@ void CSpaceObject::FireOnEnteredSystem (CSpaceObject *pGate)
 
 		//	Run code
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_ENTERED_SYSTEM_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -2877,10 +2844,9 @@ void CSpaceObject::FireOnLoad (SLoadCtx &Ctx)
 		CCCtx.SaveAndDefineSourceVar(this);
 		CCCtx.DefineInteger(CONSTLIT("aVersion"), Ctx.dwVersion);
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_LOAD_EVENT, pResult);
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -2955,10 +2921,9 @@ void CSpaceObject::FireOnMissionAccepted (CMission *pMission)
 		CCCtx.SaveAndDefineSourceVar(this);
 		CCCtx.DefineSpaceObject(CONSTLIT("aMissionObj"), pMission);
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_MISSION_ACCEPTED_EVENT, pResult);
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -2979,10 +2944,9 @@ void CSpaceObject::FireOnMissionCompleted (CMission *pMission, const CString &sR
 		CCCtx.DefineSpaceObject(CONSTLIT("aMissionObj"), pMission);
 		CCCtx.DefineString(CONSTLIT("aReason"), sReason);
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_MISSION_COMPLETED_EVENT, pResult);
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -3002,10 +2966,9 @@ void CSpaceObject::FireOnObjBlacklistedPlayer (CSpaceObject *pObj)
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.DefineSpaceObject(CONSTLIT("aObj"), pObj);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_OBJ_BLACKLISTED_PLAYER_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -3032,10 +2995,9 @@ void CSpaceObject::FireOnObjDestroyed (const SDestroyCtx &Ctx)
 		CCCtx.DefineBool(CONSTLIT("aDestroy"), Ctx.WasDestroyed());
 		CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_OBJ_DESTROYED_EVENT, pResult);
-		CCCtx.Discard(pResult);
 		}
 
 	DEBUG_CATCH
@@ -3058,10 +3020,9 @@ void CSpaceObject::FireOnObjDocked (CSpaceObject *pObj, CSpaceObject *pDockTarge
 		Ctx.DefineSpaceObject(CONSTLIT("aObjDocked"), pObj);
 		Ctx.DefineSpaceObject(CONSTLIT("aDockTarget"), pDockTarget);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_OBJ_DOCKED_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -3084,10 +3045,9 @@ void CSpaceObject::FireOnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDes
 		Ctx.DefineString(CONSTLIT("aDestNodeID"), (pDestNode ? pDestNode->GetID() : NULL_STR));
 		Ctx.DefineString(CONSTLIT("aDestEntryPoint"), sDestEntryPoint);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_OBJ_ENTERED_GATE_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -3110,7 +3070,7 @@ bool CSpaceObject::FireOnObjGate (CSpaceObject *pObj)
 		Ctx.DefineSpaceObject(CONSTLIT("aObj"), pObj);
 
 		bool bResult;
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			{
 			ReportEventError(ON_OBJ_GATE_EVENT, pResult);
@@ -3120,8 +3080,6 @@ bool CSpaceObject::FireOnObjGate (CSpaceObject *pObj)
 			bResult = false;
 		else
 			bResult = true;
-
-		Ctx.Discard(pResult);
 
 		return bResult;
 		}
@@ -3180,10 +3138,9 @@ void CSpaceObject::FireOnObjJumped (CSpaceObject *pObj)
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.DefineSpaceObject(CONSTLIT("aObj"), pObj);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_OBJ_JUMPED_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -3205,23 +3162,20 @@ bool CSpaceObject::FireOnObjJumpPosAdj (CSpaceObject *pObj, CVector *iovPos)
 		Ctx.DefineSpaceObject(CONSTLIT("aObj"), pObj);
 		Ctx.DefineVector(CONSTLIT("aJumpPos"), *iovPos);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		if (pResult->IsError())
 			{
 			ReportEventError(ON_OBJ_JUMP_POS_ADJ_EVENT, pResult);
-			Ctx.Discard(pResult);
 			return false;
 			}
 		else if (pResult->IsNil())
 			{
-			Ctx.Discard(pResult);
 			return false;
 			}
 		else
 			{
 			CVector vNewPos = Ctx.AsVector(pResult);
-			Ctx.Discard(pResult);
 
 			if (vNewPos == *iovPos)
 				return false;
@@ -3250,10 +3204,9 @@ void CSpaceObject::FireOnObjReconned (CSpaceObject *pObj)
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.DefineSpaceObject(CONSTLIT("aObj"), pObj);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_OBJ_RECONNED_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -3272,10 +3225,9 @@ void CSpaceObject::FireOnOrderChanged (void)
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_ORDER_CHANGED_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -3294,10 +3246,9 @@ void CSpaceObject::FireOnOrdersCompleted (void)
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_ORDERS_COMPLETED_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -3318,11 +3269,9 @@ void CSpaceObject::FireOnPlayerBlacklisted (void)
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_PLAYER_BLACKLISTED_EVENT, pResult);
-
-		Ctx.Discard(pResult);
 		}
 
 	//	Now fire an event for all subscribers
@@ -3348,11 +3297,9 @@ void CSpaceObject::FireOnPlayerEnteredShip (CSpaceObject *pOldShip)
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.DefineSpaceObject(CONSTLIT("aOldShip"), pOldShip);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_PLAYER_ENTERED_SHIP_EVENT, pResult);
-
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -3371,13 +3318,11 @@ CSpaceObject::InterSystemResults CSpaceObject::FireOnPlayerEnteredSystem (CSpace
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_PLAYER_ENTERED_SYSTEM_EVENT, pResult);
 
 		InterSystemResults iResult = GetInterSystemResult(pResult->GetStringValue());
-		Ctx.Discard(pResult);
-
 		return iResult;
 		}
 
@@ -3402,11 +3347,9 @@ void CSpaceObject::FireOnPlayerLeftShip (CSpaceObject *pNewShip)
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.DefineSpaceObject(CONSTLIT("aNewShip"), pNewShip);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_PLAYER_LEFT_SHIP_EVENT, pResult);
-
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -3428,13 +3371,11 @@ CSpaceObject::InterSystemResults CSpaceObject::FireOnPlayerLeftSystem (CSpaceObj
 		Ctx.DefineString(CONSTLIT("aDestNodeID"), (pDestNode ? pDestNode->GetID() : NULL_STR));
 		Ctx.DefineString(CONSTLIT("aDestEntryPoint"), sDestEntryPoint);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_PLAYER_LEFT_SYSTEM_EVENT, pResult);
 
 		InterSystemResults iResult = GetInterSystemResult(pResult->GetStringValue());
-		Ctx.Discard(pResult);
-
 		return iResult;
 		}
 
@@ -3459,10 +3400,9 @@ void CSpaceObject::FireOnSelected (void)
 
 		//	Run code
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_SELECTED_EVENT, pResult);
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -3485,15 +3425,11 @@ bool CSpaceObject::FireOnSubordinateAttacked (const SDamageCtx &Ctx)
 		CCCtx.DefineDamageCtx(Ctx);
 		CCCtx.DefineSpaceObject(CONSTLIT("aObjAttacked"), Ctx.pObj);
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_SUBORDINATE_ATTACKED_EVENT, pResult);
 		else if (pResult->IsNil())
 			bHandled = false;
-
-		//	Done
-
-		CCCtx.Discard(pResult);
 		}
 
 	return bHandled;
@@ -3517,10 +3453,9 @@ void CSpaceObject::FireOnSystemExplosion (CSpaceObject *pExplosion, CSpaceObject
 		Ctx.DefineInteger(CONSTLIT("aExplosionUNID"), dwItemUNID);
 		Ctx.DefineVector(CONSTLIT("aExplosionPos"), pExplosion->GetPos());
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_SYSTEM_EXPLOSION_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -3541,13 +3476,9 @@ void CSpaceObject::FireOnSystemObjAttacked (SDamageCtx &Ctx)
 		CCCtx.DefineDamageCtx(Ctx);
 		CCCtx.DefineSpaceObject(CONSTLIT("aObjAttacked"), Ctx.pObj);
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_ATTACKED_EVENT, pResult);
-
-		//	Done
-
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -3594,10 +3525,9 @@ void CSpaceObject::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 		CCCtx.DefineBool(CONSTLIT("aDestroy"), Ctx.WasDestroyed());
 		CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_SYSTEM_OBJ_DESTROYED_EVENT, pResult);
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -3663,10 +3593,9 @@ void CSpaceObject::FireOnSystemWeaponFire (CSpaceObject *pShot, CSpaceObject *pS
 		Ctx.DefineVector(CONSTLIT("aWeaponPos"), pShot->GetPos());
 		Ctx.DefineItemType(CONSTLIT("aWeaponType"), (pShot->GetWeaponFireDesc() ? pShot->GetWeaponFireDesc()->GetWeaponType() : GetUniverse().GetItemType(dwItemUNID)));
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_SYSTEM_WEAPON_FIRE_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -3688,13 +3617,12 @@ bool CSpaceObject::FireOnTranslateMessage (const CString &sMessage, CString *ret
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.DefineString(CONSTLIT("aMessage"), sMessage);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (!pResult->IsNil())
 			{
 			bHandled = true;
 			sResult = pResult->GetStringValue();
 			}
-		Ctx.Discard(pResult);
 		}
 
 	if (retsMessage)
@@ -3718,10 +3646,9 @@ void CSpaceObject::FireOnUpdate (void)
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_UPDATE_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -7131,10 +7058,15 @@ void CSpaceObject::RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, c
 		{
 		CShip *pPlayerShip = AsShip();
 		if (pPlayerShip)
-			pPlayerShip->GetController()->OnItemBought(Item, Price.GetCreditValue());
+			pPlayerShip->GetController()->OnItemBought(Item, Price);
 
 		//	If the player is buying, then allow types to keep track
 		//	(e.g., Black Market gives out experience points).
+
+		if (CDesignType *pSellerType = pSellerObj->GetType())
+			{
+			pSellerType->FireOnPlayerBoughtItem(Item, Price);
+			}
 
 		GetUniverse().FireOnGlobalPlayerBoughtItem(pSellerObj, Item, Price);
 		}
@@ -7146,9 +7078,14 @@ void CSpaceObject::RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, c
 		{
 		CShip *pPlayerShip = pSellerObj->AsShip();
 		if (pPlayerShip)
-			pPlayerShip->GetController()->OnItemSold(Item, Price.GetCreditValue());
+			pPlayerShip->GetController()->OnItemSold(Item, Price);
 
 		//	If the player is selling, then allow types to keep track.
+
+		if (CDesignType *pBuyerType = GetType())
+			{
+			pBuyerType->FireOnPlayerSoldItem(Item, Price);
+			}
 
 		GetUniverse().FireOnGlobalPlayerSoldItem(this, Item, Price);
 		}
@@ -7616,10 +7553,9 @@ void CSpaceObject::SetOverride (CDesignType *pOverride)
 			Ctx.DefineContainingType(this);
 			Ctx.SaveAndDefineSourceVar(this);
 
-			ICCItem *pResult = Ctx.Run(Event);
+			ICCItemPtr pResult = Ctx.RunCode(Event);
 			if (pResult->IsError())
 				ReportEventError(ON_OVERRIDE_TERM_EVENT, pResult);
-			Ctx.Discard(pResult);
 			}
 		}
 
@@ -7644,10 +7580,9 @@ void CSpaceObject::SetOverride (CDesignType *pOverride)
 			Ctx.DefineContainingType(this);
 			Ctx.SaveAndDefineSourceVar(this);
 
-			ICCItem *pResult = Ctx.Run(Event);
+			ICCItemPtr pResult = Ctx.RunCode(Event);
 			if (pResult->IsError())
 				ReportEventError(ON_OVERRIDE_INIT_EVENT, pResult);
-			Ctx.Discard(pResult);
 			}
 		}
 	}

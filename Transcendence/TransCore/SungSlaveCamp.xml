@@ -200,6 +200,22 @@
 		<Image imageID="&rsItems1;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Events>
+			<OnCreateReward>
+				(block (
+					(roll (random 1 100))
+					)
+					(switch
+						(ls roll 25)
+							(itmCreate &itLongzhuSphere; (random 1 3))
+
+						(ls roll 60)
+							(itmCreate &itPromethiumCrystal; (random 1 4))
+
+						(itmCreate &itCalligraphyScroll; 1)
+						)
+					)
+			</OnCreateReward>
+
 			<OnItemDonatedToSisters>
 				(typIncGlobalData &stDomina; 'slavesOffered (itmGetCount gItem))
 			</OnItemDonatedToSisters>

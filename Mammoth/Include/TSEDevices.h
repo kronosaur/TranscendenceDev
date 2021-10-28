@@ -492,7 +492,7 @@ class CDeviceDescList
 		inline CDeviceClass *GetDeviceClass (int iIndex) const;
 		SDeviceDesc &GetDeviceDesc (int iIndex) { return m_List[iIndex]; }
 		const SDeviceDesc &GetDeviceDesc (int iIndex) const { return m_List[iIndex]; }
-		const SDeviceDesc *GetDeviceDescByName (DeviceNames iDev) const;
+		const SDeviceDesc *GetDeviceDescByName (DeviceNames iDev, int *retiCount = NULL) const;
 		CDeviceItem GetDeviceItem (int iIndex) const { return m_List[iIndex].Item.AsDeviceItemOrThrow(); }
 		int GetFireArc (int iIndex) const;
 		const CItem &GetItem (int iIndex) const { return m_List[iIndex].Item; }

@@ -464,6 +464,7 @@ class CBaseShipAI : public IShipController
 		bool React (AIReaction iReaction);
 		bool React (AIReaction iReaction, CSpaceObject &TargetObj);
 		void ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Damage);
+		bool ReactToBaseDestroyed ();
 		bool ReactToBaseDestroyed (CSpaceObject &AttackerObj);
 		bool ReactToDeterMessage (CSpaceObject &AttackerObj);
 		void ResetBehavior (void);

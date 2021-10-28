@@ -39,6 +39,7 @@
 #define TRADE_TAG								CONSTLIT("Trade")
 #define WRECK_TAG								CONSTLIT("Wreck")
 
+#define ACHIEVEMENT_ATTRIB						CONSTLIT("achievement")
 #define ARMOR_CRITERIA_ATTRIB					CONSTLIT("armorCriteria")
 #define AUTOPILOT_ATTRIB						CONSTLIT("autopilot")
 #define CARGO_SPACE_ATTRIB						CONSTLIT("cargoSpace")
@@ -2614,7 +2615,7 @@ CCurrencyAndValue CShipClass::GetHullValue (CShip *pShip) const
 
 	//	Run
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 
 	//	Interpret results
 
@@ -2626,7 +2627,6 @@ CCurrencyAndValue CShipClass::GetHullValue (CShip *pShip) const
 
 	//	Done
 
-	Ctx.Discard(pResult);
 	return HullValue;
 	}
 
@@ -3485,6 +3485,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_dwClassNameFlags = CLanguage::LoadNameFlags(pDesc);
 	m_fVirtual = pDesc->GetAttributeBool(VIRTUAL_ATTRIB);
 	m_fShipCompartment = pDesc->GetAttributeBool(SHIP_COMPARTMENT_ATTRIB);
+	m_sAchievement = pDesc->GetAttribute(ACHIEVEMENT_ATTRIB);
 
 	if (pDesc->FindAttribute(FREQUENCY_ATTRIB, &sAttrib))
 		m_Frequency = (FrequencyTypes)::GetFrequency(sAttrib);

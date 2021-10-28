@@ -71,7 +71,7 @@
 #define SCALE_SHIP								CONSTLIT("ship")
 #define SCALE_FLOTSAM							CONSTLIT("flotsam")
 
-TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 17> {{
+TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 18> {{
 		{
 		"ascended",		"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsAscended()); },
@@ -121,6 +121,30 @@ TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TP
 		{
 		"escortingPlayer",	"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsPlayerEscort()); },
+		NULL,
+		},
+
+		{
+		"events.system",	"Returns list of registered system events for this object.",
+		[](const CSpaceObject &Obj, const CString &sProperty)
+			{
+			const CSystem *pSystem = Obj.GetSystem();
+			if (!pSystem)
+				return ICCItemPtr::Nil();
+
+			auto Events = pSystem->GetEvents().FindEventsForObj(Obj);
+			if (Events.GetCount() == 0)
+				return ICCItemPtr::Nil();
+			else if (Events.GetCount() == 1)
+				return ICCItemPtr(Events[0]->GetEventHandlerName());
+			else
+				{
+				ICCItemPtr pResult(ICCItem::List);
+				for (int i = 0; i < Events.GetCount(); i++)
+					pResult->Append(ICCItemPtr(Events[i]->GetEventHandlerName()));
+				return pResult;
+				}
+			},
 		NULL,
 		},
 		

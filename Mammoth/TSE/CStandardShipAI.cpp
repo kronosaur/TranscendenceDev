@@ -1594,6 +1594,8 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 //	Handle the case where another object is destroyed
 
 	{
+	DEBUG_TRY
+
 	//	Alter our goals
 
 	if (Ctx.Obj == m_pDest)
@@ -1728,6 +1730,8 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 	if (Ctx.Obj == g_pDebugShip)
 		g_pDebugShip = NULL;
+
+	DEBUG_CATCH
 	}
 
 void CStandardShipAI::OnOrderChanged (void)

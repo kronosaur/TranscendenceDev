@@ -265,11 +265,11 @@ ALERROR CAdventureDesc::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 	CString sDifficulty = pDesc->GetAttribute(DIFFICULTY_ATTRIB);
 	if (sDifficulty.IsBlank() || strEquals(sDifficulty, DIFFICULTY_CHOOSE))
-		m_iForceDifficulty = CDifficultyOptions::lvlUnknown;
+		m_iForceDifficulty = CDifficultyOptions::ELevel::Unknown;
 	else
 		{
 		m_iForceDifficulty = CDifficultyOptions::ParseID(sDifficulty);
-		if (m_iForceDifficulty == CDifficultyOptions::lvlUnknown)
+		if (m_iForceDifficulty == CDifficultyOptions::ELevel::Unknown)
 			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown difficulty: %s"), sDifficulty));
 		}
 

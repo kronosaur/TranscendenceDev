@@ -308,10 +308,9 @@ void CMission::FireCustomEvent (const CString &sEvent, ICCItem *pData)
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineDataVar(pData);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(sEvent, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -331,10 +330,9 @@ void CMission::FireOnAccepted (void)
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(EVENT_ON_ACCEPTED, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -357,15 +355,14 @@ ICCItem *CMission::FireOnDeclined (void)
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			{
 			ReportEventError(EVENT_ON_DECLINED, pResult);
-			Ctx.Discard(pResult);
 			return NULL;
 			}
 
-		return pResult;
+		return pResult->Reference();
 		}
 
 	return NULL;
@@ -390,15 +387,14 @@ ICCItem *CMission::FireOnReward (ICCItem *pData)
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineDataVar(pData);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			{
 			ReportEventError(EVENT_ON_REWARD, pResult);
-			Ctx.Discard(pResult);
 			return NULL;
 			}
 
-		return pResult;
+		return pResult->Reference();
 		}
 
 	return NULL;
@@ -421,10 +417,9 @@ void CMission::FireOnSetPlayerTarget (const CString &sReason)
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.DefineString(STR_A_REASON, sReason);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(EVENT_ON_SET_PLAYER_TARGET, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -444,10 +439,9 @@ void CMission::FireOnStart (void)
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(EVENT_ON_STARTED, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -469,10 +463,9 @@ void CMission::FireOnStop (const CString &sReason, ICCItem *pData)
 		Ctx.SaveAndDefineDataVar(pData);
 		Ctx.DefineString(STR_A_REASON, sReason);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(EVENT_ON_COMPLETED, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -629,6 +622,18 @@ void CMission::OnDestroyed (SDestroyCtx &Ctx)
 
 	CompleteMission(CompletedReason::destroyed);
 
+	//	If this is a player mission that still needs a debrief, we close it 
+	//	here (otherwise, we never clear events, because CompleteMission doesn't
+	//	close missions if a debrief is needed).
+
+	if (IsPlayerMission() && !m_fDebriefed)
+		{
+		m_fDebriefed = true;
+
+		FireOnSetPlayerTarget(REASON_DEBRIEFED);
+		CloseMission();
+		}
+
 	//	Destroy the mission
 
 	FireOnDestroy(Ctx);
@@ -670,19 +675,26 @@ void CMission::OnNewSystem (CSystem *pSystem)
 		{
 		if (strEquals(m_sNodeID, pNode->GetID()))
 			{
-			const DWORD dwTimeAway = sysGetTicksElapsed(m_dwLeftSystemOn);
+			//	NOTE: We call OnNewSystem when we load a game (set the POV) so 
+			//	we can't assume that we're actually inside a new system unless
+			//	we've actually left the system.
 
-			//	Back in our system
+			if (m_dwLeftSystemOn != 0 || !m_fInMissionSystem)
+				{
+				const DWORD dwTimeAway = sysGetTicksElapsed(m_dwLeftSystemOn);
 
-			m_fInMissionSystem = true;
-			m_dwLeftSystemOn = 0;
+				//	Back in our system
 
-			//	If we've been away too long, then the mission fails.
+				m_fInMissionSystem = true;
+				m_dwLeftSystemOn = 0;
 
-			if (m_pType->FailureOnReturnToSystem()
-					&& IsAccepted()
-					&& dwTimeAway >= (DWORD)m_pType->GetReturnToSystemTimeOut())
-				SetFailure(NULL);
+				//	If we've been away too long, then the mission fails.
+
+				if (m_pType->FailureOnReturnToSystem()
+						&& IsAccepted()
+						&& dwTimeAway >= (DWORD)m_pType->GetReturnToSystemTimeOut())
+					SetFailure(NULL);
+				}
 			}
 		else
 			{

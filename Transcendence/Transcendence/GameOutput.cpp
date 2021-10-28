@@ -106,3 +106,13 @@ const CG16bitFont &CTranscendenceWnd::GetFont (const CString &sFont) const
 	{
 	return g_pHI->GetVisuals().GetFont(sFont);
 	}
+
+void CTranscendenceWnd::PostAchievement (const CAchievementDef &Def)
+
+//	PostAchievement
+//
+//	Posts the given achievement.
+
+	{
+	g_pHI->AddBackgroundTask(new CPostAchievementTask(*g_pHI, m_pTC->GetService(), Def), 0);
+	}

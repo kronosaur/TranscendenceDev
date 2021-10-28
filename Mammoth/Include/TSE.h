@@ -187,6 +187,8 @@ void ReportCrashObj (CString *retsMessage, const CSpaceObject *pCrashObj = NULL)
 class CShockwaveHitTest
 	{
 	public:
+		static constexpr Metric MAX_HITS_PER_OBJ_FRACTION = 0.20;
+
 		void Init (int iSegments, int iLives);
 		bool IsEmpty (void) const { return (m_Segments.GetCount() == 0); }
 		void ReadFromStream (SLoadCtx &Ctx);
@@ -194,9 +196,15 @@ class CShockwaveHitTest
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
+		struct SEntry
+			{
+			int iLives = 0;
+			DWORD dwLastHitID = 0;
+			};
+
 		void CalcObjBounds (CSpaceObject *pObj, const CVector &vPos, Metric *retrStartAngle, Metric *retrSizeAngle, Metric *retrStartRadius, Metric *retrEndRadius);
 
-		TArray<int> m_Segments;
+		TArray<SEntry> m_Segments;
 	};
 
 class CHitCtx
@@ -1816,19 +1824,20 @@ class CAscendedObjectList
 		~CAscendedObjectList (void) { CleanUp(); }
 
 		void DeleteAll (void) { CleanUp(); }
-		void Insert (CSpaceObject *pObj) { m_List.Insert(pObj); }
+		void Insert (CSpaceObject &Obj, CSystemEventList &Events);
 		CSpaceObject *FindByID (DWORD dwID) const;
 		int GetCount (void) const { return m_List.GetCount(); }
 		CSpaceObject *GetObj (int iIndex) const { return m_List[iIndex]; }
 		bool IsEmpty (void) const { return (m_List.GetCount() == 0); }
 		void ReadFromStream (SLoadCtx &Ctx);
-		CSpaceObject *RemoveByID (DWORD dwID);
+		CSpaceObject *RemoveByID (DWORD dwID, CSystemEventList &retEvents);
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
 		void CleanUp (void);
 
 		TArray<CSpaceObject *> m_List;
+		CSystemEventList m_Events;
 	};
 
 //	Implementations ------------------------------------------------------------

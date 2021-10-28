@@ -13,7 +13,7 @@ static const Metric MIN_PLAYER_SEPARATION2 =	MIN_PLAYER_SEPARATION * MIN_PLAYER_
 
 CSystemEvent::CSystemEvent (SLoadCtx &Ctx)
 
-//	CSystemEvent constructo
+//	CSystemEvent constructor
 
 	{
 	DWORD dwLoad;
@@ -371,14 +371,14 @@ bool CTimedCustomEvent::OnIsEqual (CSystemEvent &SrcArg) const
 	return (Src.m_pObj == m_pObj && strEquals(Src.m_sEvent, m_sEvent));
 	}
 
-bool CTimedCustomEvent::OnObjChangedSystems (CSpaceObject *pObj)
+bool CTimedCustomEvent::OnObjChangedSystems (const CSpaceObject &Obj) const
 
 //	OnObjChangedSystems
 //
 //	Returns TRUE if the event should be carried into the new system
 
 	{
-	return (m_pObj == pObj);
+	return (m_pObj == Obj);
 	}
 
 bool CTimedCustomEvent::OnObjDestroyed (CSpaceObject *pObj)
@@ -472,14 +472,14 @@ bool CTimedRecurringEvent::OnIsEqual (CSystemEvent &SrcArg) const
 	return (Src.m_pObj == m_pObj && strEquals(Src.m_sEvent, m_sEvent));
 	}
 
-bool CTimedRecurringEvent::OnObjChangedSystems (CSpaceObject *pObj)
+bool CTimedRecurringEvent::OnObjChangedSystems (const CSpaceObject &Obj) const
 
 //	OnObjChangedSystems
 //
 //	Returns TRUE if the event should be carried into the new system
 
 	{
-	return (m_pObj == pObj);
+	return (m_pObj == Obj);
 	}
 
 bool CTimedRecurringEvent::OnObjDestroyed (CSpaceObject *pObj)

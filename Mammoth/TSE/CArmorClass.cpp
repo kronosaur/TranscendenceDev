@@ -1783,14 +1783,12 @@ int CArmorClass::FireGetMaxHP (const CArmorItem &ArmorItem, int iMaxHP) const
 
 		Ctx.DefineInteger(CONSTLIT("aMaxHP"), iMaxHP);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		if (pResult->IsError())
 			ArmorItem.GetSource()->ReportEventError(GET_MAX_HP_EVENT, pResult);
 		else if (!pResult->IsNil())
 			iMaxHP = Max(0, pResult->GetIntegerValue());
-
-		Ctx.Discard(pResult);
 		}
 
 	return iMaxHP;
@@ -1820,7 +1818,7 @@ void CArmorClass::FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		CCCtx.DefineDamageEffects(CONSTLIT("aDamageEffects"), Ctx);
 		CCCtx.DefineInteger(CONSTLIT("aFullDamageHP"), Ctx.iDamage);
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 
 		//	If we return Nil, then nothing
 
@@ -1837,8 +1835,6 @@ void CArmorClass::FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 		else if (pResult->IsList())
 			LoadDamageEffectsFromItem(pResult, Ctx);
-
-		CCCtx.Discard(pResult);
 		}
 	}
 

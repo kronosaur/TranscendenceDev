@@ -170,6 +170,19 @@ class CLoadUserCollectionTask : public IHITask
 		CMultiverseModel &m_Multiverse;
 	};
 
+class CPostAchievementTask : public IHITask
+	{
+	public:
+		CPostAchievementTask (CHumanInterface &HI, CCloudService &Service, const CAchievementDef &Def) : IHITask(HI), m_Service(Service), m_Achievement(Def) { }
+
+		//	IHITask virtuals
+		virtual ALERROR OnExecute (ITaskProcessor *pProcessor, CString *retsResult) { return m_Service.PostAchievement(pProcessor, m_Achievement, retsResult); }
+
+	private:
+		CCloudService &m_Service;
+		const CAchievementDef &m_Achievement;
+	};
+
 class CPostCrashReportTask : public IHITask
 	{
 	public:

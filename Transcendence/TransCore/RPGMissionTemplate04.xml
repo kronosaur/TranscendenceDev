@@ -5,7 +5,7 @@
 	<MissionType UNID="&baDefendStationMission;"
 			inherit=			"&unidCommonText;"
 			expireTime=			"5400"
-			failureAfterOutOfSystem="1800"
+			failureOnReturnToSystem="1800"
 			>
 		<Properties>
 			<!-- encounterDesc

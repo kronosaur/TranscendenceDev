@@ -308,15 +308,13 @@ COverlayType *CDeviceClass::FireGetOverlayType (CItemCtx &ItemCtx) const
 		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		Ctx.SaveAndDefineItemVar(ItemCtx);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		DWORD dwUNID = 0;
 		if (pResult->IsError())
 			ItemCtx.GetSource()->ReportEventError(GET_OVERLAY_TYPE_EVENT, pResult);
 		else if (!pResult->IsNil())
 			dwUNID = pResult->GetIntegerValue();
-
-		Ctx.Discard(pResult);
 
 		//	Done
 

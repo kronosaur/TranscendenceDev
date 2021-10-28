@@ -460,7 +460,7 @@
 		
 		<Language>
 			<Text id="actionBenedict">[C]ontinue</Text>
-			<Text id="actionDone">Do[n]e</Text>
+			<Text id="actionDone">[Esc] Done</Text>
 			
 			<Text id="IntroFirst">
 

@@ -155,10 +155,9 @@ void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 			Ctx.DefineContainingType(m_pShip);
 			Ctx.SaveAndDefineSourceVar(m_pShip);
 
-			ICCItem *pResult = Ctx.RunLambda(m_pCommandCode);
+			ICCItemPtr pResult = Ctx.RunLambdaCode(m_pCommandCode);
 			if (pResult->IsError())
 				m_pShip->ReportEventError(CONSTLIT("CommandCode"), pResult);
-			Ctx.Discard(pResult);
 			}
 
 		//	If we still got no orders, let the ship class deal with this
@@ -1181,6 +1180,8 @@ DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, 
 //	Handle communications from other objects
 
 	{
+	DEBUG_TRY
+
 	if (!m_pOrderModule)
 		return OnCommunicateNotify(pSender, iMessage, pParam1, dwParam2, pData);
 
@@ -1216,6 +1217,19 @@ DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, 
 				return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
 			}
 
+		case msgBaseDestroyedByUnknown:
+			{
+			if (m_pOrderModule->SupportsReactions())
+				{
+				if (ReactToBaseDestroyed())
+					return resAck;
+				else
+					return resNoAnswer;
+				}
+			else
+				return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
+			}
+
 		case msgQueryAttackStatus:
 			{
 			if (m_pOrderModule->SupportsReactions() && m_DeterModule.IsEnabled())
@@ -1227,6 +1241,8 @@ DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, 
 		default:
 			return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CBaseShipAI::OnDestroyed (SDestroyCtx &Ctx)
@@ -1407,6 +1423,8 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 //	Handle the case where an object has been removed from the system
 
 	{
+	DEBUG_TRY
+
 	//	If our current order is to follow the player through and we get
 	//	a notification that the player has been removed, then do nothing
 	//	(we will be updated when we enter the new system).
@@ -1453,6 +1471,8 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 	m_Orders.OnObjDestroyed(&Ctx.Obj, &bChanged);
 	if (bChanged)
 		FireOnOrderChanged();
+
+	DEBUG_CATCH
 	}
 
 void CBaseShipAI::OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedShipsCtx &Options)
@@ -1734,6 +1754,37 @@ void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Da
 		case AIReaction::Gate:
 			React(iReaction);
 			break;
+
+		default:
+			throw CException(ERR_FAIL);
+		}
+	}
+
+bool CBaseShipAI::ReactToBaseDestroyed ()
+
+//	ReactToBaseDestroyed
+//
+//	React to our base being destroyed but without a target to attack.
+
+	{
+	AIReaction iReaction = GetReactToBaseDestroyed();
+	switch (iReaction)
+		{
+		case AIReaction::None:
+			return false;
+
+		case AIReaction::Chase:
+		case AIReaction::ChaseFromBase:
+		case AIReaction::Destroy:
+		case AIReaction::DestroyAndRetaliate:
+		case AIReaction::Deter:
+		case AIReaction::DeterWithSecondaries:
+			AddOrder(COrderDesc(IShipController::orderAttackNearestEnemy));
+			return true;
+
+		case AIReaction::Gate:
+			React(iReaction);
+			return true;
 
 		default:
 			throw CException(ERR_FAIL);

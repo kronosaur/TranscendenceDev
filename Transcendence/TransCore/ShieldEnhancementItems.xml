@@ -672,7 +672,7 @@
 
 			<Text id="rpg.canUse.unknown">					The crystal can modulate energy fields. You can install it on this %dstItem%.</Text>
 
-			<Text id="rpg.useResult.ok">					The %dstItem% is more powerful.</Text>
+			<Text id="rpg.useResult.ok">					The %dstItem% has been enhanced.</Text>
 			<Text id="rpg.useResult.alreadyEnhanced">		The %dstItem% does not benefit from the crystal.</Text>
 			<Text id="rpg.useResult.defectOK">				The %dstItem% is weaker.</Text>
 			<Text id="rpg.useResult.defectRemoved">			The crystal has repaired a defect on the %dstItem%.</Text>

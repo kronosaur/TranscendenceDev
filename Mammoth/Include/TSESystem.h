@@ -487,6 +487,8 @@ class CSystem
 		CSpaceObject *EnumObjectsInBoxGetNextFast (SSpaceObjectGridEnumerator &i) const { return m_ObjGrid.EnumGetNextFast(i); }
 		CSpaceObject *EnumObjectsInBoxPointGetNext (SSpaceObjectGridEnumerator &i) const { return m_ObjGrid.EnumGetNextInBoxPoint(i); }
 		CSpaceObject *FindObject (DWORD dwID) const;
+		CSpaceObject *FindNearestObject (CSpaceObject* pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria = CSpaceObjectCriteria()) const;
+		CSpaceObject *FindNearestTangibleObjectInArc (CSpaceObject* pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria = CSpaceObjectCriteria(), int iMinAngle = -1, int iMaxAngle = -1) const;
 		CSpaceObject *FindObjectInRange (CSpaceObject *pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria = CSpaceObjectCriteria()) const;
 		CSpaceObject *FindObjectWithOrbit (const COrbit &Orbit) const;
 		bool FindObjectName (const CSpaceObject *pObj, CString *retsName = NULL);
@@ -503,6 +505,7 @@ class CSystem
 		CString GetAttribsAtPos (const CVector &vPos);
 		void GetDebugInfo (SDebugInfo &Info) const;
 		CEnvironmentGrid *GetEnvironmentGrid (void) { InitSpaceEnvironment(); return m_pEnvironment; }
+		const CSystemEventList &GetEvents () const { return m_TimedEvents; }
 		CPhysicsForceResolver &GetForceResolver (void) { return m_ForceResolver; }
 		DWORD GetID (void) { return m_dwID; }
 		int GetLastUpdated (void) { return m_iLastUpdated; }

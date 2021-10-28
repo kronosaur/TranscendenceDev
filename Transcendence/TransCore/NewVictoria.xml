@@ -331,7 +331,10 @@
 	<DockScreen UNID="&dsStKatsArcology;"
 			inherit=			"&dsDockScreenBase;"
 			>
-		
+		<OnScreenInit>
+			(unvSetAchievement 'humanSpace.visitStKats)
+		</OnScreenInit>
+
 		<Panes>
 			<Default descID="descWelcome">
 				<Actions>
@@ -672,7 +675,7 @@
 										enhancement: theEnhancement
 										type: theType
 										}))
-									(setq gResult (intItemEnhanceStatus result (cat "Your " (itmGetName gItem 0x80) " is more powerful") (itmGetName gItem 0x80)))
+									(setq gResult (intItemEnhanceStatus result (cat "Your " (itmGetName gItem 0x80) " has been enhanced") (itmGetName gItem 0x80)))
 									)
 								)
 								
@@ -701,7 +704,7 @@
 		</Panes>
 		
 		<Language>
-			<Text id="actionDone">[D]one</Text>
+			<Text id="actionDone">[Esc] Done</Text>
 			<Text id="actionEngineering">School of [E]ngineering</Text>
 			<Text id="actionUniversityHospital">[U]niversity Hospital</Text>
 			<Text id="actionUniversityTaikon">[T]aikon School of Exploration</Text>

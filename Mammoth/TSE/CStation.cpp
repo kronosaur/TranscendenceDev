@@ -855,7 +855,7 @@ bool CStation::CanBeDestroyedBy (CSpaceObject &Attacker) const
 				//	Multi-hull stations require WMD.
 
 				case CStationHullDesc::hullMultiple:
-					if (ShotDesc.GetDamage().GetMassDestructionDamage() > 0)
+					if (ShotDesc.GetSpecialDamage(specialWMD) > 0)
 						return true;
 					break;
 
@@ -863,15 +863,15 @@ bool CStation::CanBeDestroyedBy (CSpaceObject &Attacker) const
 				//	mining damage.
 
 				case CStationHullDesc::hullAsteroid:
-					if (ShotDesc.GetDamage().GetMassDestructionDamage() > 0
-							|| ShotDesc.GetDamage().GetMiningDamage() > 0)
+					if (ShotDesc.GetSpecialDamage(specialWMD) > 0
+							|| ShotDesc.GetSpecialDamage(specialMining) > 0)
 						return true;
 					break;
 
 				//	Underground stations must be attacked with  mining damage.
 
 				case CStationHullDesc::hullUnderground:
-					if (ShotDesc.GetDamage().GetMiningDamage() > 0)
+					if (ShotDesc.GetSpecialDamage(specialMining) > 0)
 						return true;
 					break;
 
@@ -1003,7 +1003,7 @@ void CStation::ClearBlacklist (CSpaceObject *pObj)
 		}
 	}
 
-void CStation::CreateDestructionEffect (void)
+void CStation::CreateDestructionEffect (const CDamageSource &Attacker)
 
 //	CreateDestructionEffect
 //
@@ -1019,29 +1019,7 @@ void CStation::CreateDestructionEffect (void)
 
 	//	Explosion effect and damage
 
-	SExplosionType Explosion;
-	FireGetExplosionType(&Explosion);
-	if (Explosion.pDesc == NULL)
-		Explosion.pDesc = m_pType->GetExplosionType();
-
-	if (Explosion.pDesc)
-		{
-		SShotCreateCtx Ctx;
-		Ctx.pDesc = Explosion.pDesc;
-		if (Explosion.iBonus != 0)
-			{
-			Ctx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			Ctx.pEnhancements->InsertHPBonus(NULL, Explosion.iBonus);
-			}
-
-		Ctx.Source = CDamageSource(this, Explosion.iCause);
-		Ctx.Source.SetExplosion();
-		Ctx.vPos = GetPos();
-		Ctx.vVel = GetVel();
-		Ctx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
-
-		GetSystem()->CreateWeaponFire(Ctx);
-		}
+	CreateExplosion(Attacker);
 
 	//	Some air leaks
 
@@ -1160,6 +1138,47 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 		}
 	}
 
+bool CStation::CreateExplosion (const CDamageSource &Attacker)
+
+//	CreateExplosion
+//
+//	Creates an explosion when station is destroyed. Returns TRUE if an explosion
+//	was created.
+
+	{
+	SExplosionType Explosion;
+	FireGetExplosionType(&Explosion);
+	if (Explosion.pDesc == NULL)
+		Explosion.pDesc = m_pType->GetExplosionType();
+
+	if (!Explosion.pDesc)
+		return false;
+
+	//	If the player destroyed the station, then this counts as a player-
+	//	created explosion.
+
+	if (Attacker.IsPlayerOrderGiver() && Explosion.iCause == killedByExplosion)
+		Explosion.iCause = killedByPlayerCreatedExplosion;
+
+	//	Create an explosion
+
+	SShotCreateCtx Ctx;
+	Ctx.pDesc = Explosion.pDesc;
+	if (Explosion.iBonus != 0)
+		{
+		Ctx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
+		Ctx.pEnhancements->InsertHPBonus(NULL, Explosion.iBonus);
+		}
+
+	Ctx.Source = CDamageSource(this, Explosion.iCause);
+	Ctx.vPos = GetPos();
+	Ctx.vVel = GetVel();
+	Ctx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
+
+	GetSystem()->CreateWeaponFire(Ctx);
+	return true;
+	}
+
 ALERROR CStation::CreateFromType (CSystem &System,
 								  CStationType *pType,
 								  SObjCreateCtx &CreateCtx,
@@ -1230,11 +1249,6 @@ ALERROR CStation::CreateFromType (CSystem &System,
 		{
 		pStation->m_pRotation = new CIntegralRotation;
 		pStation->m_pRotation->SetRotationAngle(pType->GetRotationDesc(), CreateCtx.iRotation);
-		}
-	else if (pType->GetImage().IsRotatable())
-		{
-		pStation->m_pRotation = new CIntegralRotation;
-		pStation->m_pRotation->SetRotationAngle(pType->GetRotationDesc(), mathRandom(0, 359));
 		}
 	else
 		pStation->m_pRotation = NULL;
@@ -1349,6 +1363,21 @@ ALERROR CStation::CreateFromType (CSystem &System,
 		//	Set the parameters
 
 		pStation->SetWreckParams(CreateCtx.pWreckClass, CreateCtx.pWreckShip);
+		}
+
+	//	Make sure the rotation is aligned on an image facing.
+
+	if (!pStation->m_pRotation && pType->GetImage().IsRotatable())
+		{
+		pStation->m_pRotation = new CIntegralRotation;
+		pStation->m_pRotation->SetRotationAngle(pType->GetRotationDesc(), mathRandom(0, 359));
+
+		//	Make sure the rotation is aligned on an image facing
+
+		CCompositeImageModifiers Modifiers;
+		pStation->CalcImageModifiers(&Modifiers);
+		int iAlignedRotation = pType->GetImage().GetActualRotation(pStation->m_ImageSelector, Modifiers);
+		pStation->m_pRotation->SetRotationAngle(pType->GetRotationDesc(), iAlignedRotation);
 		}
 
 	//	Now that we have an image, set the bound
@@ -1581,32 +1610,9 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 
 	//	Create explosion
 
-	SExplosionType Explosion;
-	FireGetExplosionType(&Explosion);
-	if (Explosion.pDesc == NULL)
-		Explosion.pDesc = m_pType->GetExplosionType();
-
-	if (Explosion.pDesc)
+	if (!CreateExplosion(Ctx.Attacker))
 		{
-		SShotCreateCtx Ctx;
-		Ctx.pDesc = Explosion.pDesc;
-		if (Explosion.iBonus != 0)
-			{
-			Ctx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			Ctx.pEnhancements->InsertHPBonus(NULL, Explosion.iBonus);
-			}
-
-		Ctx.Source = CDamageSource(this, Explosion.iCause);
-		Ctx.Source.SetExplosion();
-		Ctx.vPos = GetPos();
-		Ctx.vVel = GetVel();
-		Ctx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
-
-		GetSystem()->CreateWeaponFire(Ctx);
-		}
-	else
-		{
-		//	Create Particles
+		//	If no explosion defined, then create some particles.
 
 		CObjectImageArray PartImage;
 		RECT rcRect;
@@ -2916,7 +2922,7 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 	else
 		{
 		Abandon(Ctx.Damage.GetCause(), Ctx.Attacker, &Ctx.GetDesc());
-		CreateDestructionEffect();
+		CreateDestructionEffect(Ctx.Attacker);
 		return damageDestroyedAbandoned;
 		}
 	}
@@ -2993,17 +2999,17 @@ void CStation::OnDestroyedByHostileFire (CSpaceObject *pAttacker, CSpaceObject *
 //	Station destroyed by hostile fire
 
 	{
-	CSpaceObject *pTarget;
-
 	ASSERT(pOrderGiver && pOrderGiver->CanAttack());
 
 	//	Figure out which target we should attack (based on visibility,
 	//	proximity, etc.).
 
-	if ((pTarget = CalcTargetToAttack(pAttacker, pOrderGiver)))
-		{
-		AvengeAttack(pTarget);
-		}
+	CSpaceObject *pTarget = CalcTargetToAttack(pAttacker, pOrderGiver);
+
+	//	OK if pTarget is NULL. This can happen if the ship that destroyed us is
+	//	invisible to us.
+
+	AvengeAttack(pTarget);
 	}
 
 bool CStation::OnGetCondition (ECondition iCondition) const
@@ -3094,22 +3100,29 @@ void CStation::AvengeAttack (CSpaceObject *pTarget)
 //	We've been killed, so we need to avenge the attack.
 
 	{
-	int i;
+	//	If we have a target, then attack back.
 
-	//	Safety checks
+	if (pTarget && !pTarget->IsDestroyed() && pTarget->CanAttack())
+		{
+		//	Tell our subordinates to attack to kill
 
-	if (pTarget == NULL || pTarget->IsDestroyed() || !pTarget->CanAttack())
-		return;
+		for (int i = 0; i < m_Subordinates.GetCount(); i++)
+			Communicate(m_Subordinates.GetObj(i), msgBaseDestroyedByTarget, pTarget);
 
-	//	Tell our subordinates to attack to kill
+		//	Alert
 
-	for (i = 0; i < m_Subordinates.GetCount(); i++)
-		Communicate(m_Subordinates.GetObj(i), msgBaseDestroyedByTarget, pTarget);
+		if (m_pBase == NULL && m_pType->AlertWhenDestroyed())
+			RaiseAlert(pTarget);
+		}
 
-	//	Alert
+	//	Otherwise, we tell our subordinates that we were attacked by an
+	//	unknown target.
 
-	if (m_pBase == NULL && m_pType->AlertWhenDestroyed())
-		RaiseAlert(pTarget);
+	else
+		{
+		for (int i = 0; i < m_Subordinates.GetCount(); i++)
+			Communicate(m_Subordinates.GetObj(i), msgBaseDestroyedByUnknown);
+		}
 
 	SetAngry();
 	}
@@ -3182,6 +3195,11 @@ DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSp
 		case msgBaseDestroyedByTarget:
 			if (!IsAbandoned())
 				AvengeAttack(pParam1);
+			return resAck;
+
+		case msgBaseDestroyedByUnknown:
+			if (!IsAbandoned())
+				AvengeAttack(NULL);
 			return resAck;
 
 		case msgAttackDeter:

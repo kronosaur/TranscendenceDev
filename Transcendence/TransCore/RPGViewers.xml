@@ -205,7 +205,7 @@
 							icon: (itmGetImageDesc launcherItem)
 							desc: (typTranslate &dsRPGShipClassViewer; 'rtfDevice {
 								itemName: (itmGetName launcherItem '(short actual titleCapitalize))
-								count: ""
+								count: (if (gr (itmGetCount launcherItem) 1) (cat " (&times;" (itmGetCount launcherItem) ")") "")
 								level: (itmGetLevel launcherItem)
 								})
 							})

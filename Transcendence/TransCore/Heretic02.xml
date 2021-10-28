@@ -146,6 +146,8 @@
 								(sysSetData 'G2 'quarantineLifted True)
 								;	Kate leaves
 								(objSetData ownerObj 'stationMaster 'hereticResearcher)
+								;	Achievement
+								(unvSetAchievement 'sotp.breakQuarantine)
 								)
 						)
 					)
