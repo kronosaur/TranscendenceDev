@@ -64,9 +64,11 @@
 #define PROPERTY_DEVICE_SLOT_DESCRIPTION		CONSTLIT("description")
 #define PROPERTY_DEVICE_SLOT_FIRE_ARC			CONSTLIT("fireArc")
 #define PROPERTY_DEVICE_SLOT_HAS_ATTRIBUTE		CONSTLIT("hasAttribute")
+#define PROPERTY_DEVICE_SLOT_MAX_FIRE_ARC		CONSTLIT("maxFireArc")
 #define PROPERTY_DEVICE_SLOT_MAX_MASS			CONSTLIT("maxMass")
 #define PROPERTY_DEVICE_SLOT_MAX_POWER			CONSTLIT("maxPower")
 #define PROPERTY_DEVICE_SLOT_MAX_POWER_PERCENT	CONSTLIT("maxPowerPercent")
+#define PROPERTY_DEVICE_SLOT_MIN_FIRE_ARC		CONSTLIT("minFireArc")
 #define PROPERTY_DEVICE_SLOT_NAME				CONSTLIT("name")
 #define PROPERTY_DEVICE_SLOT_OMNIDIRECTIONAL	CONSTLIT("omnidirectional")
 #define PROPERTY_DEVICE_SLOT_POS				CONSTLIT("pos")
@@ -1503,12 +1505,16 @@ ICCItem* CGroupOfDeviceGenerators::GetDeviceSlotProperty (const int iSlotIndex, 
 		}
 	else if (Property == PROPERTY_DEVICE_SLOT_HAS_ATTRIBUTE)
 		return pArgs->GetCount() >= 4 ? pCC->CreateBool(Slot.Attributes.Find(pArgs->GetElement(3)->GetStringValue())) : pCC->CreateError("Insufficient arguments");
+	else if (Property == PROPERTY_DEVICE_SLOT_MAX_FIRE_ARC)
+		return pCC->CreateInteger(DefaultDesc.iMaxFireArc);
 	else if (Property == PROPERTY_DEVICE_SLOT_MAX_MASS)
 		return pCC->CreateInteger(Slot.iMaxMass);
 	else if (Property == PROPERTY_DEVICE_SLOT_MAX_POWER)
 		return pCC->CreateInteger(Slot.iMaxPower);
 	else if (Property == PROPERTY_DEVICE_SLOT_MAX_POWER_PERCENT)
 		return pCC->CreateDouble(Slot.fMaxPowerPercent);
+	else if (Property == PROPERTY_DEVICE_SLOT_MIN_FIRE_ARC)
+		return pCC->CreateInteger(DefaultDesc.iMinFireArc);
 	else if (Property == PROPERTY_DEVICE_SLOT_NAME)
 		return pCC->CreateString(Slot.Name);
 	else if (Property == PROPERTY_DEVICE_SLOT_OMNIDIRECTIONAL)
