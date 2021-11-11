@@ -548,7 +548,7 @@ class IDeviceGenerator
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const { return false; }
 		virtual bool FindDeviceSlot(const CString& sID, SDeviceDesc* retDesc = NULL, int* retiMaxCount = NULL) const { return false; }
 		virtual bool ItemFitsSlot (CSpaceObject *pObj, const CItem &Item, const int iSlotIndex) const { return false; };
-		virtual int GetNumberOfDescs () const { return 1; }
+		virtual int GetNumberOfDescs () const { return 0; }
 		virtual const int GetDescIndexGivenId (const CString &sID) const { return -1; }
 		virtual ICCItem* GetDeviceSlotProperty (const int iSlotIndex, CCodeChain *pCC, const CString &Property, const ICCItem *pArgs) const { return pCC->CreateNil(); };
 		virtual TArray<CString> GetDeviceSlotIds() const { return TArray<CString>(); }

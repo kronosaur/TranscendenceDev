@@ -304,13 +304,13 @@ ICCItem* CShip::GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const
 					CString sDeviceSlotID = pDeviceSlotID->GetStringValue();
 					iDeviceSlot = pDevSlots->GetDescIndexGivenId(sDeviceSlotID);
 					if (iDeviceSlot == -1)
-						return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+						return pCC->CreateError(CONSTLIT("Invalid device slot ID"), pDeviceSlotID);
 					}
 				}
 			if (iDeviceSlot != -1)
 				{
-				if (iDeviceSlot < 0 || iDeviceSlot >= this->GetDeviceCount())
-					return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+				if (iDeviceSlot < 0 || iDeviceSlot >= numSlots)
+					return pCC->CreateError(CONSTLIT("Invalid device slot"), pOptions);
 				}
 
 			if (strEquals(sProperty, PROPERTY_DEVICE_AT_SLOT))
