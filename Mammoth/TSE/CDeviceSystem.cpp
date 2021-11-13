@@ -692,7 +692,7 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, co
 	//	Allocate devices
 
 	CleanUp();
-	InsertEmpty(Max(Devices.GetCount(), Max(Slots.GetNumberOfDescs(), iMaxDevices)));
+	InsertEmpty(Max(Devices.GetCount(), iMaxDevices));
 
 	//	Slots
 

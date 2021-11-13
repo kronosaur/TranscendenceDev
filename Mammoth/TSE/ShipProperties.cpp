@@ -266,16 +266,6 @@ ICCItemPtr CShip::OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) 
 		return ICCItemPtr();
 	}
 
-bool CShip::IsDeviceSlotProperty(const CString& sName) const
-
-//	IsDeviceSlotProperty
-//
-//	Returns TRUE if the property is a device slot property tied to a specific device slot.
-
-	{
-	return true;
-	}
-
 ICCItem* CShip::GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const ICCItem* pArgs) const
 
 //	GetDeviceSlotProperty
@@ -427,10 +417,6 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_DEVICE_DISRUPT_IMMUNE))
 		return CC.CreateBool(m_Armor.IsImmune(specialDeviceDisrupt));
-
-	// TODO(heliogenesis): Create new function to get all slot IDs from a slot struct
-	//else if (strEquals(sName, PROPERTY_DEVICE_SLOT_IDS))
-	//	return;
 
 	else if (strEquals(sName, PROPERTY_DISINTEGRATION_IMMUNE))
 		return CC.CreateBool(m_Armor.IsImmune(specialDisintegration));

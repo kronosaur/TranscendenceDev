@@ -42,7 +42,6 @@
 #define PROPERTY_CAPACITOR      				CONSTLIT("capacitor")
 #define PROPERTY_CYBER_DEFENSE_LEVEL			CONSTLIT("cyberDefenseLevel")
 #define PROPERTY_CYCLE_FIRE 					CONSTLIT("cycleFire")
-#define PROPERTY_DEVICE_SLOT_ID					CONSTLIT("deviceSlotID")
 #define PROPERTY_DEVICE_SLOTS					CONSTLIT("deviceSlots")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_EXTERNAL						CONSTLIT("external")
@@ -547,9 +546,6 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_CYCLE_FIRE))
 		return (pDevice ? CC.CreateBool(pDevice->GetCycleFireSettings()) : CC.CreateNil());
-
-	else if (strEquals(sName, PROPERTY_DEVICE_SLOT_ID))
-		return (pDevice ? CC.CreateString(pDevice->GetID()) : CC.CreateNil());
 
 	else if (strEquals(sName, PROPERTY_DEVICE_SLOTS))
 		return CC.CreateInteger(GetSlotsRequired());
