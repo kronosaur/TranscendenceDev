@@ -302,7 +302,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 #define FN_SHIP_BLINDNESS			14
 #define FN_SHIP_ENHANCE_ITEM		15
 #define FN_SHIP_CAN_INSTALL_DEVICE	16
-#define FN_SHIP_DEV_SLOT_IDS		17
+//	spare
 #define FN_SHIP_IS_RADIOACTIVE		18
 #define FN_SHIP_CANCEL_ORDERS		19
 #define FN_SHIP_ADD_ENERGY_FIELD	20
@@ -1228,11 +1228,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"shpGetClassName",				fnShipClass,		FN_SHIP_CLASS_NAME,
 			"(shpGetClassName class flags) -> class name",
 			"ii",	0,	},
-
-		{	"shpGetDeviceSlotIds",		fnShipGet,		FN_SHIP_DEV_SLOT_IDS,
-			"(shpGetDeviceSlotProperty ship) -> list of IDs",
-
-			"i",	0, },
 
 		{	"shpGetDeviceSlotProperty",		fnShipGet,		FN_SHIP_DEV_SLOT_PROPERTY,
 			"(shpGetDeviceSlotProperty ship [deviceSlot] property) -> angle\n\n"
@@ -10716,15 +10711,6 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				else
 					return pCC->CreateString(sValue);
 				}
-			}
-
-		case FN_SHIP_DEV_SLOT_IDS:
-			{
-			TArray<CString> ids = pShip->GetDeviceSystem().GetSlots()->GetDeviceSlotIds();
-			ICCItem* pIDs = pCC->CreateLinkedList();
-			for (int i = 0; i < ids.GetCount(); i++)
-				pIDs->AppendString(ids[i]);
-			return pIDs;
 			}
 
 		case FN_SHIP_DEV_SLOT_PROPERTY:

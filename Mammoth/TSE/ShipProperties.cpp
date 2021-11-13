@@ -418,6 +418,15 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_DEVICE_DISRUPT_IMMUNE))
 		return CC.CreateBool(m_Armor.IsImmune(specialDeviceDisrupt));
 
+	else if (strEquals(sName, PROPERTY_DEVICE_SLOT_IDS))
+		{
+		TArray<CString> ids = GetDeviceSystem().GetSlots()->GetDeviceSlotIds();
+		ICCItem* pIDs = CC.CreateLinkedList();
+		for (int i = 0; i < ids.GetCount(); i++)
+			pIDs->AppendString(ids[i]);
+		return pIDs;
+		}
+
 	else if (strEquals(sName, PROPERTY_DISINTEGRATION_IMMUNE))
 		return CC.CreateBool(m_Armor.IsImmune(specialDisintegration));
 
