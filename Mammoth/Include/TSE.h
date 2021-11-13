@@ -640,6 +640,7 @@ class CSpaceObject
 		//	Devices
 
 		virtual bool CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot = CDeviceSystem::SSlotDesc(), bool bForceUseOfDeviceSlot = false, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL);
+		void ClearDeviceSlotAtID (const CString id) { m_DeviceSlotsGivenID.DeleteAt(id); }
 		virtual void DamageExternalDevice (int iDev, SDamageCtx &Ctx) { }
 		virtual void DisableDevice (CInstalledDevice *pDevice) { }
 		bool FindDevice (const CItem &Item, CInstalledDevice **retpDevice, CString *retsError);
@@ -654,6 +655,7 @@ class CSpaceObject
 		virtual CDeviceSystem &GetDeviceSystem (void) { return CDeviceSystem::m_Null; }
 		virtual const CDeviceSystem &GetDeviceSystem (void) const { return CDeviceSystem::m_Null; }
 		CItem GetItemForDevice (CInstalledDevice *pDevice);
+		int GetDeviceSlotAtID (const CString id) const { if (m_DeviceSlotsGivenID.Find(id)) return *m_DeviceSlotsGivenID.GetAt(id); return -1; }
 		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return GetDeviceSystem().GetNamedDevice(iDev); }
 		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return GetDeviceSystem().GetNamedDevice(iDev); }
 		CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { return GetDeviceSystem().GetNamedDeviceItem(iDev); }
@@ -661,6 +663,7 @@ class CSpaceObject
 		virtual void OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass::DeviceNotificationTypes iEvent) { }
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, int iDevSlot);
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, CInstalledDevice *pDevice);
+		void SetDeviceSlotAtID (const CString id, const int iDeviceSlotIndex) { if (iDeviceSlotIndex < 0 || iDeviceSlotIndex >= GetDeviceSystem().GetCount()) throw CException(ERR_FAIL); m_DeviceSlotsGivenID.SetAt(id, iDeviceSlotIndex); }
 
 		//	Docking
 
@@ -1520,6 +1523,7 @@ class CSpaceObject
 		CSpaceObjectList m_SubscribedObjs;				//	List of objects to notify when something happens
 		CObjectJoint *m_pFirstJoint = NULL;				//	List of joints
 		CPhysicsForceDesc m_ForceDesc;					//	Temporary; valid only inside Update.
+		TSortMap<CString, int> m_DeviceSlotsGivenID;	//	Mapping of device desc IDs to device slots where devices with those descs are installed
 
 		int m_iControlsFrozen:8 = 0;					//	Object will not respond to controls
 		int m_iSpare:24 = 0;

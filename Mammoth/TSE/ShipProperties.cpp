@@ -313,9 +313,22 @@ ICCItem* CShip::GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const
 					return pCC->CreateError(CONSTLIT("Invalid device slot"), pOptions);
 				}
 
+			if (iDeviceSlot < 0)
+				return pCC->CreateError(CONSTLIT("Invalid device slot"), pOptions);
+
 			if (strEquals(sProperty, PROPERTY_DEVICE_AT_SLOT))
 				{
-				return CreateListFromItem(m_Devices.GetDevice(iDeviceSlot).GetDeviceItem());
+				ICCItem* pDeviceSlotID = pOptions->GetElement(FIELD_SLOT_ID);
+				if (pDeviceSlotID && !pDeviceSlotID->IsNil())
+					{
+					int iDeviceIndex = GetDeviceSlotAtID(pDeviceSlotID->GetStringValue());
+					if (iDeviceIndex != -1)
+						return CreateListFromItem(m_Devices.GetDevice(iDeviceIndex).GetDeviceItem());
+					else
+						return pCC->CreateNil();
+					}
+				else
+					return pCC->CreateError(CONSTLIT("deviceAtSlot requires slotID to be defined"), pOptions);
 				}
 
 			return pDevSlots->GetDeviceSlotProperty(iDeviceSlot, pCC, sProperty, pArgs);
