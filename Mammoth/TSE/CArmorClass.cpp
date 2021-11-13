@@ -599,7 +599,7 @@ bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx 
 			&& pSource 
 			&& pArmor 
 			&& pArmor->IsPrime()
-			&& (pArmorSet = pSource->GetArmorSystem())
+			&& (pArmorSet = &pSource->GetArmorSystem())
 			&& pArmorSet->GetSegmentCount() > 0)
 		{
 		//	Count how many armor segments of this type
@@ -1783,14 +1783,12 @@ int CArmorClass::FireGetMaxHP (const CArmorItem &ArmorItem, int iMaxHP) const
 
 		Ctx.DefineInteger(CONSTLIT("aMaxHP"), iMaxHP);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		if (pResult->IsError())
 			ArmorItem.GetSource()->ReportEventError(GET_MAX_HP_EVENT, pResult);
 		else if (!pResult->IsNil())
 			iMaxHP = Max(0, pResult->GetIntegerValue());
-
-		Ctx.Discard(pResult);
 		}
 
 	return iMaxHP;
@@ -1820,7 +1818,7 @@ void CArmorClass::FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		CCCtx.DefineDamageEffects(CONSTLIT("aDamageEffects"), Ctx);
 		CCCtx.DefineInteger(CONSTLIT("aFullDamageHP"), Ctx.iDamage);
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 
 		//	If we return Nil, then nothing
 
@@ -1837,8 +1835,6 @@ void CArmorClass::FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 		else if (pResult->IsList())
 			LoadDamageEffectsFromItem(pResult, Ctx);
-
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -1849,9 +1845,8 @@ void CArmorClass::GenerateScaledStats (void)
 //  Generate parameters for all levels.
 
 	{
-	int i;
-
-	ASSERT(m_pScalable == NULL);
+	if (m_pScalable)
+		throw CException(ERR_FAIL);
 
 	int iBaseLevel = m_pItemType->GetLevel();
 	m_iScaledLevels = 1 + m_pItemType->GetMaxLevel() - iBaseLevel;
@@ -1862,7 +1857,7 @@ void CArmorClass::GenerateScaledStats (void)
 
 	const SStdStats &BaseStd = GetStdStats(iBaseLevel);
 
-	for (i = 1; i < m_iScaledLevels; i++)
+	for (int i = 1; i < m_iScaledLevels; i++)
 		{
 		SScalableStats &Stats = m_pScalable[i - 1];
 		Stats.iLevel = iBaseLevel + i;
@@ -2432,7 +2427,9 @@ int CArmorClass::GetStdCost (int iLevel)
 //	Returns standard cost by level
 
 	{
-	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
+	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
+		throw CException(ERR_FAIL);
+
 	return STD_STATS[iLevel - 1].iCost;
 	}
 
@@ -2474,7 +2471,9 @@ int CArmorClass::GetStdHP (int iLevel)
 //	Returns standard hp by level
 
 	{
-	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
+	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
+		throw CException(ERR_FAIL);
+
 	return STD_STATS[iLevel - 1].iHP;
 	}
 
@@ -2485,7 +2484,9 @@ int CArmorClass::GetStdMass (int iLevel)
 //	Returns standard mass by level (in kg)
 
 	{
-	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
+	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
+		throw CException(ERR_FAIL);
+
 	return STD_STATS[iLevel - 1].iMass;
 	}
 
@@ -2496,7 +2497,9 @@ const CArmorClass::SStdStats &CArmorClass::GetStdStats (int iLevel)
 //  Returns standard stats
 
 	{
-	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
+	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
+		throw CException(ERR_FAIL);
+
 	return STD_STATS[iLevel - 1];
 	}
 
@@ -3103,7 +3106,7 @@ bool CArmorClass::UpdateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, const C
 		case regenFromHealer:
 			{
 			CSpaceObject *pRoot = pObj->GetAttachedRoot();
-			CArmorSystem *pHealerSystem = (pRoot ? pRoot->GetArmorSystem() : pObj->GetArmorSystem());
+			CArmorSystem *pHealerSystem = (pRoot ? &pRoot->GetArmorSystem() : &pObj->GetArmorSystem());
 			if (pHealerSystem)
 				{
 				iHP = Min(iHP, pHealerSystem->GetHealerLeft());

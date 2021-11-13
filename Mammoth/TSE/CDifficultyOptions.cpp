@@ -5,7 +5,7 @@
 
 #include "PreComp.h"
 
-const CDifficultyOptions::SDesc CDifficultyOptions::m_Table[lvlCount] = {
+const CDifficultyOptions::SDesc CDifficultyOptions::m_Table[(int)ELevel::Count] = {
 	//	ID				Name			PlayerDamageAdj		EnemyDamageAdj
 	{	"story",		"Story Mode",		0.1,				10.0	},
 	{	"normal",		"Standard",			0.5,				2.0,	},
@@ -13,28 +13,28 @@ const CDifficultyOptions::SDesc CDifficultyOptions::m_Table[lvlCount] = {
 	{	"permadeath",	"Permadeath",		1.0,				1.0		},
 	};
 
-CString CDifficultyOptions::GetID (ELevels iLevel)
+CString CDifficultyOptions::GetID (ELevel iLevel)
 
 //	GetID
 //
 //	Returns the ID.
 
 	{
-	if (iLevel >= 0 && iLevel < lvlCount)
-		return CString(m_Table[iLevel].pID);
+	if (iLevel >= ELevel::Story && iLevel < ELevel::Count)
+		return CString(m_Table[(int)iLevel].pID);
 	else
 		return NULL_STR;
 	}
 
-CString CDifficultyOptions::GetLabel (ELevels iLevel)
+CString CDifficultyOptions::GetLabel (ELevel iLevel)
 
 //	GetLabel
 //
 //	Returns the human-readable name of the difficulty level.
 
 	{
-	if (iLevel >= 0 && iLevel < lvlCount)
-		return CString(m_Table[iLevel].pName);
+	if (iLevel >= ELevel::Story && iLevel < ELevel::Count)
+		return CString(m_Table[(int)iLevel].pName);
 	else
 		return NULL_STR;
 	}
@@ -46,24 +46,24 @@ Metric CDifficultyOptions::GetScoreAdj (void) const
 //	Score adjustment.
 
 	{
-	if (m_iLevel >= 0 && m_iLevel < lvlCount)
+	if (m_iLevel >= ELevel::Story && m_iLevel < ELevel::Count)
 		return GetPlayerDamageAdj() / GetEnemyDamageAdj();
 	else
 		return 1.0;
 	}
 
-CDifficultyOptions::ELevels CDifficultyOptions::ParseID (const CString &sValue)
+CDifficultyOptions::ELevel CDifficultyOptions::ParseID (const CString &sValue)
 
 //	ParseID
 //
 //	Parse the value as an ID. If invalid, we return lvlUnknown.
 
 	{
-	for (int i = 0; i < lvlCount; i++)
+	for (int i = 0; i < (int)ELevel::Count; i++)
 		if (strEquals(sValue, CString(m_Table[i].pID)))
-			return (ELevels)i;
+			return (ELevel)i;
 
-	return lvlUnknown;
+	return ELevel::Unknown;
 	}
 
 void CDifficultyOptions::ReadFromStream (IReadStream &Stream)
@@ -75,10 +75,10 @@ void CDifficultyOptions::ReadFromStream (IReadStream &Stream)
 	{
 	DWORD dwLoad;
 	Stream.Read(dwLoad);
-	if ((int)dwLoad >= 0 && (int)dwLoad < lvlCount)
-		m_iLevel = (ELevels)dwLoad;
+	if ((int)dwLoad >= 0 && (int)dwLoad < (int)ELevel::Count)
+		m_iLevel = (ELevel)dwLoad;
 	else
-		m_iLevel = lvlUnknown;
+		m_iLevel = ELevel::Unknown;
 	}
 
 bool CDifficultyOptions::SaveOnUndock (void) const
@@ -90,8 +90,8 @@ bool CDifficultyOptions::SaveOnUndock (void) const
 	{
 	switch (m_iLevel)
 		{
-		case lvlStory:
-		case lvlNormal:
+		case ELevel::Story:
+		case ELevel::Normal:
 			return true;
 
 		default:
@@ -106,6 +106,6 @@ void CDifficultyOptions::WriteToStream (IWriteStream &Stream) const
 //	Write to a stream.
 
 	{
-	DWORD dwSave = m_iLevel;
+	DWORD dwSave = (DWORD)m_iLevel;
 	Stream.Write(dwSave);
 	}

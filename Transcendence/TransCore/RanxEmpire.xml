@@ -355,8 +355,8 @@
 			maxCargoSpace=		"20000"
 			maxDevices=			"8"
 
-			maxArmor=			"heavy"
-			stdArmor=			"heavy"
+			maxArmor=			"massive"
+			stdArmor=			"massive"
 			/>
 
 		<Drive
@@ -453,6 +453,7 @@
 			cyberDefenseLevel=	"6"
 
 			explosionType=		"&vtThermoExplosion3;"
+			achievement=		"humanSpace.ranxDreadnoughtKiller"
 			>
 
 		<!-- Configuration -->

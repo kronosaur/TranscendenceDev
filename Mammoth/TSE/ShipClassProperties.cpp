@@ -55,7 +55,16 @@
 #define PROPERTY_WRECK_TYPE						CONSTLIT("wreckType")
 #define PROPERTY_WRECK_TYPE_NAME				CONSTLIT("wreckTypeName")
 
-TPropertyHandler<CShipClass> CShipClass::m_PropertyTable = std::array<TPropertyHandler<CShipClass>::SPropertyDef, 5> {{
+TPropertyHandler<CShipClass> CShipClass::m_PropertyTable = std::array<TPropertyHandler<CShipClass>::SPropertyDef, 6> {{
+		{
+		"achievement",			"Achievement triggered if destroyed by player",
+		[](const CShipClass &ShipClass, const CString &sProperty) 
+			{
+			return (!ShipClass.GetAchievement().IsBlank() ? ICCItemPtr(ShipClass.GetAchievement()) : ICCItemPtr::Nil());
+			},
+		NULL,
+		},
+
 		{
 		"ai.combatStyle",			"Combat style",
 		[](const CShipClass &ShipClass, const CString &sProperty) 
@@ -217,11 +226,14 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_LAUNCHER_ITEM))
 		{
-		const SDeviceDesc *pDesc = m_AverageDevices.GetDeviceDescByName(devMissileWeapon);
+		int iCount;
+		const SDeviceDesc *pDesc = m_AverageDevices.GetDeviceDescByName(devMissileWeapon, &iCount);
 		if (pDesc == NULL)
 			return ICCItemPtr(ICCItem::Nil);
 
-		return ICCItemPtr(CreateListFromItem(pDesc->Item));
+		CItem Item = pDesc->Item;
+		Item.SetCount(iCount);
+		return ICCItemPtr(CreateListFromItem(Item));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_HULL_VALUE))
@@ -265,7 +277,8 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		for (int i = 0; i < m_AverageDevices.GetCount(); i++)
 			{
 			const SDeviceDesc &Desc = m_AverageDevices.GetDeviceDesc(i);
-			if (Desc.Item.GetType()->GetCategory() == itemcatMiscDevice)
+			if (Desc.Item.GetType()->GetCategory() == itemcatMiscDevice
+					&& !Desc.Item.IsVirtual())
 				{
 				ICCItemPtr pItem(CreateListFromItem(Desc.Item));
 				pResult->Append(pItem);
@@ -287,7 +300,8 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 	else if (strEquals(sProperty, PROPERTY_SHIELD_ITEM))
 		{
 		const SDeviceDesc *pDesc = m_AverageDevices.GetDeviceDescByName(devShields);
-		if (pDesc == NULL)
+		if (pDesc == NULL
+				|| pDesc->Item.IsVirtual())
 			return ICCItemPtr(ICCItem::Nil);
 
 		return ICCItemPtr(CreateListFromItem(pDesc->Item));
@@ -357,7 +371,8 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		for (int i = 0; i < m_AverageDevices.GetCount(); i++)
 			{
 			const SDeviceDesc &Desc = m_AverageDevices.GetDeviceDesc(i);
-			if (Desc.Item.GetType()->GetCategory() == itemcatWeapon)
+			if (Desc.Item.GetType()->GetCategory() == itemcatWeapon
+					&& !Desc.Item.IsVirtual())
 				{
 				bool bNew;
 				CString sSort = strPatternSubst(CONSTLIT("%02d-%08x"), MAX_ITEM_LEVEL - Desc.Item.GetLevel(), Desc.Item.GetType()->GetUNID());

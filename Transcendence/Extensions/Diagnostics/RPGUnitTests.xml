@@ -91,7 +91,7 @@
 								desc: "smuggling illegal goods"
 								penalty: 1000
 								severity: 1
-								time: 2
+								time: (unvGetTicK)
 								}
 							}
 
@@ -106,7 +106,7 @@
 								desc: "smuggling illegal goods"
 								penalty: 1000
 								severity: 1
-								time: 2
+								time: (unvGetTicK)
 								}
 							}
 

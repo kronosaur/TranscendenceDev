@@ -137,6 +137,8 @@
 
 						(= status 'transport)
 							(rpgSetTarget gSource aReason (objGetObjByID (msn@ gSource 'ownerID)) 'dock)
+
+						(rpgSetTarget gSource aReason (objGetObjByID (msn@ gSource 'ownerID)) 'dock)
 						)
 					)
 			</OnSetPlayerTarget>

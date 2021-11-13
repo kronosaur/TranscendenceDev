@@ -498,7 +498,10 @@
 								; If found, improve it
 								(if itemToImprove
 									(block Nil
-										(shpEnhanceItem gSource itemToImprove)
+										(shpEnhanceItem gSource itemToImprove {
+											enhancement: "+bonus"
+											type: &vtIngenuityEnhancement;
+											})
 										(setq desc (typTranslate gType 'msgDeviceEnhanced {
 											itemName: (itmGetName itemToImprove 0xa0)
 											}))
@@ -821,7 +824,7 @@
 			virtual=			"true"
 			level=				"1"
 			>
-		<Image imageID="&rsItems1;" imageX="288" imageY="768" imageWidth="96" imageHeight="96"/>
+		<Image imageID="&rsDominaPowers;"	imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
 <!-- BASE CLASSES -->

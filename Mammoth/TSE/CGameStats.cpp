@@ -397,13 +397,13 @@ ALERROR CGameStats::WriteAsText (IWriteStream *pOutput) const
 
 		//	Add the two lines (with a tab separator)
 
-		if (pOutput->Write(sName.GetASCIIZPointer(), sName.GetLength()))
+		if (error = pOutput->Write(sName.GetASCIIZPointer(), sName.GetLength()))
 			return error;
-		if (pOutput->Write("\t", 1))
+		if (error = pOutput->Write("\t", 1))
 			return error;
-		if (pOutput->Write(sValue.GetASCIIZPointer(), sValue.GetLength()))
+		if (error = pOutput->Write(sValue.GetASCIIZPointer(), sValue.GetLength()))
 			return error;
-		if (pOutput->Write("\r\n", 2))
+		if (error = pOutput->Write("\r\n", 2))
 			return error;
 		}
 

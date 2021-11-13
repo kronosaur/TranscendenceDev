@@ -363,6 +363,8 @@
 							(typSetData &msCSCLamplighterTesting; 'status 'installed)
 							(msnSuccess theMission)
 
+							(unvSetAchievement 'humanSpace.theLamplighter)
+
 							(scrShowPane gScreen 'InstallSuccess)
 							)
 					</Action>

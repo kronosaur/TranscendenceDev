@@ -32,6 +32,7 @@
 				levelFrequency=			"--rur v---- ----- ----- -----"
 
 				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"50"
 				/>
 
 		<!-- Trade and Items -->

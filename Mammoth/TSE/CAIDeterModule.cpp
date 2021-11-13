@@ -64,6 +64,23 @@ void CAIDeterModule::BehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, CSpaceObje
 	m_bNoTurn = bNoTurn;
 	}
 
+ICCItemPtr CAIDeterModule::GetAIStatus () const
+
+//	GetAIStatus
+//
+//	Returns current status.
+
+	{
+	if (!m_pTarget)
+		return ICCItemPtr::Nil();
+
+	ICCItemPtr pResult(ICCItem::SymbolTable);
+	pResult->SetIntegerAt(CONSTLIT("targetID"), m_pTarget->GetID());
+	pResult->SetBooleanAt(CONSTLIT("noTurn"), m_bNoTurn);
+
+	return pResult;
+	}
+
 void CAIDeterModule::OnObjDestroyed (CShip &Ship, const SDestroyCtx &Ctx)
 
 //	OnObjDestroy
@@ -71,6 +88,8 @@ void CAIDeterModule::OnObjDestroyed (CShip &Ship, const SDestroyCtx &Ctx)
 //	Object has been destroyed.
 
 	{
+	DEBUG_TRY
+
 	if (Ctx.Obj == m_pTarget)
 		{
 		//	If a friend destroyed our target then thank them
@@ -82,6 +101,8 @@ void CAIDeterModule::OnObjDestroyed (CShip &Ship, const SDestroyCtx &Ctx)
 
 		Cancel();
 		}
+
+	DEBUG_CATCH
 	}
 
 void CAIDeterModule::ReadFromStream (SLoadCtx &Ctx)

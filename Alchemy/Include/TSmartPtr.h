@@ -175,6 +175,17 @@ template <class OBJ> class TUniquePtr
 			return *this;
 			}
 
+		TUniquePtr<OBJ> &operator= (TUniquePtr<OBJ> &&Src) noexcept
+			{
+			if (m_pPtr)
+				delete m_pPtr;
+
+			m_pPtr = Src.m_pPtr;
+			Src.m_pPtr = NULL;
+
+			return *this;
+			}
+
 		operator OBJ *() const { return m_pPtr; }
 		OBJ * operator->() const { return m_pPtr; }
 

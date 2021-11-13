@@ -13,15 +13,18 @@ class CShipChallengeCtx
 
 		CShipChallengeCtx (const CSpaceObjectList &List) { AddShips(List); }
 
-		void AddShip (CSpaceObject *pObj);
 		void AddShips (const CSpaceObjectList &List);
 		Metric GetTotalCombat (void) const { return m_rTotalCombat; }
 		int GetTotalCount (void) const { return m_iTotalCount; }
+		int GetTotalRolls () const { return m_iTotalRolls; }
 		int GetTotalScore (void) const { return m_iTotalScore; }
 
 	private:
+		void AddShip (CSpaceObject *pObj);
+
 		int m_iTotalCount = 0;
 		int m_iTotalScore = 0;
+		int m_iTotalRolls = 0;
 		Metric m_rTotalCombat = 0.0;
 	};
 
@@ -32,6 +35,7 @@ class CShipChallengeDesc
 			{
 			countNone,
 			countAuto,						//	Default
+			countOnce,						//	Roll once on the table
 
 			countShips,						//	Use m_Count as number of ships
 			countScore,						//	Use m_Count as desired total score
@@ -46,6 +50,8 @@ class CShipChallengeDesc
 		CShipChallengeDesc (void) :
 				m_iType(countNone)
 			{ }
+
+		CShipChallengeDesc (ECountTypes iType, int iCount = 0) { if (!Init(iType, iCount)) throw CException(ERR_FAIL); }
 
 		ECountTypes GetCountType (void) const { return m_iType; }
 		Metric GetChallengeStrength (int iLevel) const { return CalcChallengeStrength(m_iType, iLevel); }

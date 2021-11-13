@@ -198,6 +198,30 @@ int CDeviceItem::GetHP (int *retiMaxHP, bool bUninstalled) const
 		}
 	}
 
+CString CDeviceItem::GetHPDisplay (const CLanguage::SHPDisplayOptions &Options, int *retiIntegrity) const
+
+//	GetHPDisplay
+//
+//	Returns a string representing the armor integrity.
+
+	{
+	int iMaxHP;
+	int iHP = GetHP(&iMaxHP);
+
+	int iIntegrity = (iMaxHP ? mathRound(100.0 * iHP / iMaxHP) : 0);
+	if (retiIntegrity)
+		*retiIntegrity = iIntegrity;
+
+	switch (Options.iType)
+		{
+		case CLanguage::EHPDisplay::Percent:
+			return CLanguage::ComposeHitPointValue(iIntegrity, Options);
+
+		default:
+			return CLanguage::ComposeHitPointValue(GetHP(), Options);
+		}
+	}
+
 DWORD CDeviceItem::GetLinkedFireOptions (void) const
 
 //	GetLinkedFireOptions

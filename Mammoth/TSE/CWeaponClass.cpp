@@ -681,9 +681,18 @@ CSpaceObject *CWeaponClass::CalcBestTarget (CInstalledDevice &Device, const CTar
 		if ((!bCheckRange || rDist2 < rMaxRange2)
 				&& ((DWORD)TargetList.GetTargetType(i) & dwTargetTypes)
 				&& DeviceItem.GetWeaponEffectiveness(pTarget) >= 0
-				&& IsTargetReachable(Device, *pTarget, -1, &iFireAngle)
-				&& (!bCheckLineOfFire || SourceObj.IsLineOfFireClear(&Device, pTarget, iFireAngle, rMaxRange)))
+				&& IsTargetReachable(Device, *pTarget, -1, &iFireAngle))
 			{
+			//	If we have a target, but there are friendlies in the way, then
+			//	abort. We don't look for more targets because checking the 
+			//	line-of-fire is expensive. This mostly works because the target
+			//	list is ordered by distance/priority.
+
+			if (bCheckLineOfFire && !SourceObj.IsLineOfFireClear(&Device, pTarget, iFireAngle, rMaxRange))
+				return NULL;
+
+			//	Found target
+
 			if (retiFireAngle) *retiFireAngle = iFireAngle;
 			if (retrDist2) *retrDist2 = rDist2;
 
@@ -940,7 +949,7 @@ int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject 
 
 	//	If we're firing straight, then we just fire straight
 
-	if (iType == CDeviceRotationDesc::rotNone)
+	if (iType == CDeviceRotationDesc::rotNone || iType == CDeviceRotationDesc::rotTracking)
 		return AngleMod(pSource->GetRotation() + iMinFireArc);
 
 	//	If we don't have a target, then we fire straight also, but we need to 
@@ -1128,7 +1137,7 @@ int CWeaponClass::CalcReachableFireAngle (const CInstalledDevice &Device, int iD
 
 	//	If we're firing straight, then we just fire straight
 
-	if (iType == CDeviceRotationDesc::rotNone)
+	if (iType == CDeviceRotationDesc::rotNone || iType == CDeviceRotationDesc::rotTracking)
 		return (iDefaultAngle == -1 ? AngleMod(Source.GetRotation() + iMinFireArc) : iDefaultAngle);
 
 	//	If we're omni, then we can always hit the desired angle.
@@ -1227,7 +1236,8 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 
 		if (Targets.GetCount() > 0)
 			{
-			bool bCanRotate = (GetRotationType(DeviceItem) != CDeviceRotationDesc::rotNone);
+			auto iRotationType = GetRotationType(DeviceItem);
+			bool bCanRotate = (iRotationType != CDeviceRotationDesc::rotNone && iRotationType != CDeviceRotationDesc::rotTracking);
 
 			for (int i = 0; i < Shots.GetCount(); i++)
 				{
@@ -2302,7 +2312,7 @@ int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, const CWeaponFireDesc
 		Ctx.DefineInteger(CONSTLIT("aFireRepeat"), iRepeatingCount);
 		Ctx.DefineItemType(CONSTLIT("aWeaponType"), ShotDesc.GetWeaponType());
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ItemCtx.GetSource()->ReportEventError(GET_AMMO_TO_CONSUME_EVENT, pResult);
 
@@ -2314,8 +2324,6 @@ int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, const CWeaponFireDesc
 			{
 			iResult = 1;
 			}
-
-		Ctx.Discard(pResult);
 
 		//	Done
 
@@ -2701,6 +2709,7 @@ DWORD CWeaponClass::GetTargetTypes (const CDeviceItem &DeviceItem) const
 	//	targets that we need.
 
 	if (GetRotationType(DeviceItem) != CDeviceRotationDesc::rotNone
+			|| pShotDesc->GetFireType() == CWeaponFireDesc::ftArea
 			|| IsTracking(DeviceItem, pShotDesc)
 			|| IsMIRV(*pShotDesc))
 		{
@@ -3601,7 +3610,10 @@ CDeviceRotationDesc::ETypes CWeaponClass::GetRotationType (const CDeviceItem &De
 			*retiMaxArc = iFireAngle;
 			}
 
-		return CDeviceRotationDesc::rotNone;
+		if (IsTrackingWeapon(DeviceItem))
+			return CDeviceRotationDesc::rotTracking;
+		else
+			return CDeviceRotationDesc::rotNone;
 		}
 
 	//	If the weapon is omnidirectional then we don't need directional 
@@ -3630,7 +3642,10 @@ CDeviceRotationDesc::ETypes CWeaponClass::GetRotationType (const CDeviceItem &De
 			*retiMaxArc = iFireAngle;
 			}
 
-		return CDeviceRotationDesc::rotNone;
+		if (IsTrackingWeapon(DeviceItem))
+			return CDeviceRotationDesc::rotTracking;
+		else
+			return CDeviceRotationDesc::rotNone;
 		}
 
 	//	Otherwise, we try to figure out the largest fire arc and use that.
@@ -4513,6 +4528,23 @@ bool CWeaponClass::IsAreaWeapon (const CDeviceItem &DeviceItem) const
 	return false;
 	}
 
+bool CWeaponClass::IsShockwaveWeapon (const CDeviceItem &DeviceItem) const
+
+//	IsShockwaveWeapon
+//
+//	Returns TRUE if this is a shockwave weapon like the Oracus HARASS weapon.
+
+	{
+	const CWeaponFireDesc *pShot = GetWeaponFireDesc(DeviceItem);
+	if (pShot == NULL)
+		return false;
+
+	if (pShot->GetType() == CWeaponFireDesc::ftArea)
+		return true;
+
+	return false;
+	}
+
 bool CWeaponClass::IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice)
 
 //	IsVariantSelected
@@ -4578,6 +4610,20 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 		return false;
 		}
 
+	//	Shockwave weapons get special code.
+
+	if (pShotDesc->GetFireType() == CWeaponFireDesc::ftArea)
+		{
+		const Metric rMaxRange = REACHABLE_RANGE_ADJ * pShotDesc->GetMaxRange();
+		const Metric rMaxRange2 = rMaxRange * rMaxRange;
+
+		const Metric rTargetDist2 = pSource->GetDistance2(&Target);
+		if (retiFireAngle) *retiFireAngle = iDefaultFireAngle;
+		if (retiAimAngle) *retiAimAngle = VectorToPolar(Target.GetPos() - pSource->GetPos());
+
+		return (rTargetDist2 <= rMaxRange2);
+		}
+
 	//	Get rotation info
 
 	int iMinFireArc, iMaxFireArc;
@@ -4612,7 +4658,7 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 
 	//	Tracking weapons are always aligned.
 
-	else if (iType == CDeviceRotationDesc::rotSwivelAlways)
+	else if (iType == CDeviceRotationDesc::rotSwivelAlways || iType == CDeviceRotationDesc::rotTracking)
 		return true;
 
 	//	Figure out our aim tolerance
@@ -5011,7 +5057,7 @@ ALERROR CWeaponClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 			if (iTotalTicks > iFireDelay)
 				{
-				GetUniverse().DebugOutput("WARNING: %s (%08x) takes %d ticks to fire all shots, but has only %d ticks fire delay.", (LPSTR)GetName(), GetUNID(), iTotalTicks, iFireDelay);
+				GetUniverse().LogOutput(strPatternSubst("WARNING: %s (%08x) takes %d ticks to fire all shots, but has only %d ticks fire delay.", GetName(), GetUNID(), iTotalTicks, iFireDelay));
 				}
 			}
 		}

@@ -5,7 +5,6 @@
 #include "PreComp.h"
 
 
-#define ALLOC_GRANULARITY				16
 #define ATTACK_RANGE					(18.0 * LIGHT_SECOND)
 
 //	At this perception we should be able to detect a normal ship (stealth = 4)
@@ -26,37 +25,6 @@
 #define BREAK_CHARGE_RANGE				(20.0 * LIGHT_SECOND)
 #define CHARGE_ATTACK_RANGE				(200.0 * LIGHT_SECOND)
 
-CFleetCommandAI::CFleetCommandAI (void) : 
-		m_State(stateNone),
-		m_pObjective(NULL),
-		m_pTarget(NULL),
-		m_iAssetCount(0),
-		m_iAssetAlloc(0),
-		m_pAssets(NULL),
-		m_iTargetCount(0),
-		m_iTargetAlloc(0),
-		m_pTargets(NULL),
-		m_iCounter(0),
-		m_iRallyFacing(0),
-		m_iStartingAssetCount(0)
-
-//	CFleetCommandAI constructor
-
-	{
-	}
-
-CFleetCommandAI::~CFleetCommandAI (void)
-
-//	CFleetCommandAI destructor
-
-	{
-	if (m_pAssets)
-		delete [] m_pAssets;
-
-	if (m_pTargets)
-		delete [] m_pTargets;
-	}
-
 CFleetCommandAI::SAsset *CFleetCommandAI::AddAsset (CSpaceObject *pAsset)
 
 //	AddAsset
@@ -64,45 +32,20 @@ CFleetCommandAI::SAsset *CFleetCommandAI::AddAsset (CSpaceObject *pAsset)
 //	Add an asset to our list
 
 	{
-	int i;
-
-	//	Make sure we have enough room in the list
-
-	if (m_iAssetCount + 1 > m_iAssetAlloc)
-		{
-		if (m_pAssets == NULL)
-			{
-			m_iAssetAlloc = ALLOC_GRANULARITY;
-			m_pAssets = new SAsset [m_iAssetAlloc];
-			}
-		else
-			{
-			m_iAssetAlloc += ALLOC_GRANULARITY;
-			SAsset *pNewAssets = new SAsset [m_iAssetAlloc];
-
-			for (i = 0; i < m_iAssetCount; i++)
-				pNewAssets[i] = m_pAssets[i];
-
-			delete [] m_pAssets;
-			m_pAssets = pNewAssets;
-			}
-		}
-
 	//	Make sure that we are not adding a duplicate
 
 #ifdef DEBUG
-	for (i = 0; i < m_iAssetCount; i++)
-		if (m_pAssets[i].pAsset == pAsset)
-			ASSERT(false);
+	for (int i = 0; i < m_Assets.GetCount(); i++)
+		if (m_Assets[i].pAsset == pAsset)
+			throw CException(ERR_FAIL);
 #endif
 
 	//	Add the ship
 
-	SAsset *pNewAsset = &m_pAssets[m_iAssetCount];
+	SAsset *pNewAsset = m_Assets.Insert();
 	pNewAsset->pAsset = pAsset;
 	pNewAsset->iFormationPos = -1;
 	pNewAsset->pTarget = NULL;
-	m_iAssetCount++;
 	m_iStartingAssetCount++;
 
 	return pNewAsset;
@@ -115,36 +58,8 @@ void CFleetCommandAI::AddTarget (CSpaceObject *pTarget)
 //	Add an target to our list
 
 	{
-	int i;
-
-	//	Make sure we have enough room in the list
-
-	if (m_iTargetCount + 1 > m_iTargetAlloc)
-		{
-		if (m_pTargets == NULL)
-			{
-			m_iTargetAlloc = ALLOC_GRANULARITY;
-			m_pTargets = new STarget [m_iTargetAlloc];
-			}
-		else
-			{
-			m_iTargetAlloc += ALLOC_GRANULARITY;
-			STarget *pNewTargets = new STarget [m_iTargetAlloc];
-
-			for (i = 0; i < m_iTargetCount; i++)
-				pNewTargets[i] = m_pTargets[i];
-
-			delete [] m_pTargets;
-			m_pTargets = pNewTargets;
-			}
-		}
-
-	//	Add the ship
-
-	m_pTargets[m_iTargetCount].pTarget = pTarget;
-	m_pTargets[m_iTargetCount].iAssignedTo = 0;
-	m_pTargets[m_iTargetCount].iKilled = 0;
-	m_iTargetCount++;
+	STarget *pNewTarget = m_Targets.Insert();
+	pNewTarget->pTarget = pTarget;
 	}
 
 void CFleetCommandAI::Behavior (SUpdateCtx &Ctx)
@@ -307,14 +222,12 @@ void CFleetCommandAI::ComputeCombatPower (int *retiAssetPower, int *retiTargetPo
 //	Compute the power of assets and targets
 
 	{
-	int i;
-
 	if (retiAssetPower)
 		{
 		int iAssetPower = 0;
 
-		for (i = 0; i < m_iAssetCount; i++)
-			iAssetPower += m_pAssets[i].pAsset->GetCombatPower();
+		for (int i = 0; i < m_Assets.GetCount(); i++)
+			iAssetPower += m_Assets[i].pAsset->GetCombatPower();
 
 		*retiAssetPower = iAssetPower;
 		}
@@ -323,8 +236,8 @@ void CFleetCommandAI::ComputeCombatPower (int *retiAssetPower, int *retiTargetPo
 		{
 		int iTargetPower = 0;
 
-		for (i = 0; i < m_iTargetCount; i++)
-			iTargetPower += m_pTargets[i].pTarget->GetCombatPower();
+		for (int i = 0; i < m_Targets.GetCount(); i++)
+			iTargetPower += m_Targets[i].pTarget->GetCombatPower();
 
 		*retiTargetPower = iTargetPower;
 		}
@@ -337,13 +250,11 @@ bool CFleetCommandAI::ComputeFormationReady (void)
 //	Returns TRUE if all our ships are in proper formation
 
 	{
-	int i;
-
 	Metric rMaxVel = (g_KlicksPerPixel / 4.0);
 	Metric rMaxVel2 = rMaxVel * rMaxVel;
 
-	for (i = 0; i < m_iAssetCount; i++)
-		if (m_pAssets[i].pAsset->GetVel().Length2() > rMaxVel2)
+	for (int i = 0; i < m_Assets.GetCount(); i++)
+		if (m_Assets[i].pAsset->GetVel().Length2() > rMaxVel2)
 			return false;
 
 	return true;
@@ -416,7 +327,6 @@ CString CFleetCommandAI::DebugCrashInfo (void)
 //	Returns debug crash info
 
 	{
-	int i;
 	CString sResult;
 
 	sResult.Append(CONSTLIT("CFleetCommandAI\r\n"));
@@ -425,14 +335,14 @@ CString CFleetCommandAI::DebugCrashInfo (void)
 	sResult.Append(strPatternSubst(CONSTLIT("m_pObjective: %s\r\n"), CSpaceObject::DebugDescribe(m_pObjective)));
 	sResult.Append(strPatternSubst(CONSTLIT("m_pTarget: %s\r\n"), CSpaceObject::DebugDescribe(m_pTarget)));
 
-	for (i = 0; i < m_iAssetCount; i++)
+	for (int i = 0; i < m_Assets.GetCount(); i++)
 		{
-		sResult.Append(strPatternSubst(CONSTLIT("Asset[%d].pAsset: %s\r\n"), i, CSpaceObject::DebugDescribe(m_pAssets[i].pAsset)));
-		sResult.Append(strPatternSubst(CONSTLIT("Asset[%d].pAsset: %s\r\n"), i, CSpaceObject::DebugDescribe(m_pAssets[i].pTarget)));
+		sResult.Append(strPatternSubst(CONSTLIT("Asset[%d].pAsset: %s\r\n"), i, CSpaceObject::DebugDescribe(m_Assets[i].pAsset)));
+		sResult.Append(strPatternSubst(CONSTLIT("Asset[%d].pAsset: %s\r\n"), i, CSpaceObject::DebugDescribe(m_Assets[i].pTarget)));
 		}
 
-	for (i = 0; i < m_iTargetCount; i++)
-		sResult.Append(strPatternSubst(CONSTLIT("Target[%d].pTarget: %s\r\n"), i, CSpaceObject::DebugDescribe(m_pTargets[i].pTarget)));
+	for (int i = 0; i < m_Targets.GetCount(); i++)
+		sResult.Append(strPatternSubst(CONSTLIT("Target[%d].pTarget: %s\r\n"), i, CSpaceObject::DebugDescribe(m_Targets[i].pTarget)));
 
 	return sResult;
 	}
@@ -444,14 +354,12 @@ CFleetCommandAI::SAsset *CFleetCommandAI::FindAsset (CSpaceObject *pAsset, int *
 //	Returns the asset record
 
 	{
-	int i;
-
-	for (i = 0; i < m_iAssetCount; i++)
-		if (m_pAssets[i].pAsset == pAsset)
+	for (int i = 0; i < m_Assets.GetCount(); i++)
+		if (m_Assets[i].pAsset == pAsset)
 			{
 			if (retiIndex)
 				*retiIndex = i;
-			return &m_pAssets[i];
+			return &m_Assets[i];
 			}
 
 	return NULL;
@@ -464,14 +372,12 @@ CFleetCommandAI::STarget *CFleetCommandAI::FindTarget (CSpaceObject *pTarget, in
 //	Returns the target record
 
 	{
-	int i;
-
-	for (i = 0; i < m_iTargetCount; i++)
-		if (m_pTargets[i].pTarget == pTarget)
+	for (int i = 0; i < m_Targets.GetCount(); i++)
+		if (m_Targets[i].pTarget == pTarget)
 			{
 			if (retiIndex)
 				*retiIndex = i;
-			return &m_pTargets[i];
+			return &m_Targets[i];
 			}
 
 	return NULL;
@@ -666,7 +572,7 @@ void CFleetCommandAI::ImplementWaitAtPosition (void)
 	{
 	//	If we've lost a lot of ships, then attack a target
 
-	if (m_iStartingAssetCount > 2 * m_iAssetCount)
+	if (m_iStartingAssetCount > 2 * m_Assets.GetCount())
 		{
 		if (m_pTarget == NULL)
 			m_pTarget = m_pShip->GetNearestVisibleEnemy(ATTACK_RANGE);
@@ -733,7 +639,7 @@ DWORD CFleetCommandAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessa
 
 				//	Enter formation
 
-				pAsset->iFormationPos = m_iAssetCount - 1;
+				pAsset->iFormationPos = m_Assets.GetCount() - 1;
 				DWORD dwFormation = MAKELONG(pAsset->iFormationPos, 0);
 				m_pShip->Communicate(pSender, msgFormUp, NULL, dwFormation);
 				}
@@ -762,42 +668,40 @@ void CFleetCommandAI::OnNewSystemNotify (void)
 //	We find ourselves in a different system
 
 	{
-	int i;
 	CSystem *pNewSystem = m_pShip->GetSystem();
 
 	//	Remove any assets that are not in the new system
 
-	int iNewCount = m_iAssetCount;
-	for (i = 0; i < m_iAssetCount; i++)
+	int iNewCount = m_Assets.GetCount();
+	for (int i = 0; i < m_Assets.GetCount(); i++)
 		{
-		if (m_pAssets[i].pAsset->GetSystem() != pNewSystem)
+		if (m_Assets[i].pAsset->GetSystem() != pNewSystem)
 			{
-			IShipController::OrderTypes iOrder = m_pAssets[i].pAsset->AsShip()->GetController()->GetCurrentOrderDesc().GetOrder();
-			m_pAssets[i].pAsset = NULL;
+			IShipController::OrderTypes iOrder = m_Assets[i].pAsset->AsShip()->GetController()->GetCurrentOrderDesc().GetOrder();
+			m_Assets[i].pAsset = NULL;
 			iNewCount--;
 			}
 		else
-			m_pAssets[i].pTarget = NULL;
+			m_Assets[i].pTarget = NULL;
 		}
 
 	//	New array
 
-	if (iNewCount != m_iAssetCount)
+	if (iNewCount != m_Assets.GetCount())
 		{
-		SAsset *pNewArray = new SAsset [m_iAssetAlloc];
-		int j = 0;
-		for (i = 0; i < m_iAssetCount; i++)
-			if (m_pAssets[i].pAsset)
-				pNewArray[j++] = m_pAssets[i];
+		TArray<SAsset> NewArray;
+		NewArray.GrowToFit(iNewCount);
 
-		delete [] m_pAssets;
-		m_pAssets = pNewArray;
-		m_iAssetCount = j;
+		for (int i = 0; i < m_Assets.GetCount(); i++)
+			if (m_Assets[i].pAsset)
+				NewArray.Insert(m_Assets[i]);
+
+		m_Assets = std::move(NewArray);
 		}
 
 	//	Remove all targets
 
-	m_iTargetCount = 0;
+	m_Targets.DeleteAll();
 	}
 
 void CFleetCommandAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
@@ -831,17 +735,6 @@ void CFleetCommandAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 		if ((pTarget = FindTarget(Ctx.Obj.GetTarget())) != NULL)
 			pTarget->iAssignedTo -= Ctx.Obj.GetCombatPower();
-
-		//	There's a chance that we will break and attack in response to this.
-
-		if (m_State == stateChargeInFormation
-				|| m_State == stateFormAtRallyPoint
-				|| m_State == stateWaitingForThreat
-				|| m_State == stateAttackFromRallyPoint)
-			{
-			if (mathRandom(1, 100) <= 50)
-				OrderBreakAndAttack();
-			}
 		}
 
 	//	Otherwise, check to see if a target was destroyed
@@ -908,48 +801,48 @@ void CFleetCommandAI::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		flags
 
 	{
-	int i;
 	DWORD dwLoad;
 
-	Ctx.pStream->Read((char *)&m_State, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
+	m_State = (StateTypes)dwLoad;
 	CSystem::ReadObjRefFromStream(Ctx, &m_pTarget);
 	CSystem::ReadObjRefFromStream(Ctx, &m_pObjective);
-	Ctx.pStream->Read((char *)&m_iCounter, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&m_iStartingAssetCount, sizeof(DWORD));
+	Ctx.pStream->Read(m_iCounter);
+	Ctx.pStream->Read(m_iStartingAssetCount);
 
-	Ctx.pStream->Read((char *)&m_iAssetCount, sizeof(DWORD));
-	if (m_iAssetCount)
+	int iAssetCount;
+	Ctx.pStream->Read(iAssetCount);
+	if (iAssetCount)
 		{
-		m_iAssetAlloc = AlignUp(m_iAssetCount, ALLOC_GRANULARITY);
-		m_pAssets = new SAsset [m_iAssetAlloc];
+		m_Assets.InsertEmpty(iAssetCount);
 
-		for (i = 0; i < m_iAssetCount; i++)
+		for (int i = 0; i < iAssetCount; i++)
 			{
-			CSystem::ReadObjRefFromStream(Ctx, &m_pAssets[i].pAsset);
-			Ctx.pStream->Read((char *)&m_pAssets[i].iFormationPos, sizeof(DWORD));
-			CSystem::ReadObjRefFromStream(Ctx, &m_pAssets[i].pTarget);
+			CSystem::ReadObjRefFromStream(Ctx, &m_Assets[i].pAsset);
+			Ctx.pStream->Read(m_Assets[i].iFormationPos);
+			CSystem::ReadObjRefFromStream(Ctx, &m_Assets[i].pTarget);
 			}
 		}
 
-	Ctx.pStream->Read((char *)&m_iTargetCount, sizeof(DWORD));
-	if (m_iTargetCount)
+	int iTargetCount;
+	Ctx.pStream->Read(iTargetCount);
+	if (iTargetCount)
 		{
-		m_iTargetAlloc = AlignUp(m_iTargetCount, sizeof(DWORD));
-		m_pTargets = new STarget [m_iTargetAlloc];
+		m_Targets.InsertEmpty(iTargetCount);
 
-		for (i = 0; i < m_iTargetCount; i++)
+		for (int i = 0; i < iTargetCount; i++)
 			{
-			CSystem::ReadObjRefFromStream(Ctx, &m_pTargets[i].pTarget);
-			Ctx.pStream->Read((char *)&m_pTargets[i].iAssignedTo, sizeof(DWORD));
-			Ctx.pStream->Read((char *)&m_pTargets[i].iKilled, sizeof(DWORD));
+			CSystem::ReadObjRefFromStream(Ctx, &m_Targets[i].pTarget);
+			Ctx.pStream->Read(m_Targets[i].iAssignedTo);
+			Ctx.pStream->Read(m_Targets[i].iKilled);
 			}
 		}
 
-	Ctx.pStream->Read((char *)&m_vThreatPotential, sizeof(CVector));
-	Ctx.pStream->Read((char *)&m_vRallyPoint, sizeof(CVector));
-	Ctx.pStream->Read((char *)&m_iRallyFacing, sizeof(DWORD));
+	m_vThreatPotential.ReadFromStream(*Ctx.pStream);
+	m_vRallyPoint.ReadFromStream(*Ctx.pStream);
+	Ctx.pStream->Read(m_iRallyFacing);
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_fOpenFireOrdered =		((dwLoad & 0x00000001) ? true : false);
 	}
 
@@ -978,38 +871,38 @@ void CFleetCommandAI::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		flags
 
 	{
-	int i;
 	DWORD dwSave;
 
-	pStream->Write((char *)&m_State, sizeof(DWORD));
+	dwSave = m_State;
+	pStream->Write(dwSave);
 	m_pShip->WriteObjRefToStream(m_pTarget, pStream);
 	m_pShip->WriteObjRefToStream(m_pObjective, pStream);
-	pStream->Write((char *)&m_iCounter, sizeof(DWORD));
-	pStream->Write((char *)&m_iStartingAssetCount, sizeof(DWORD));
+	pStream->Write(m_iCounter);
+	pStream->Write(m_iStartingAssetCount);
 
-	pStream->Write((char *)&m_iAssetCount, sizeof(DWORD));
-	for (i = 0; i < m_iAssetCount; i++)
+	pStream->Write(m_Assets.GetCount());
+	for (int i = 0; i < m_Assets.GetCount(); i++)
 		{
-		m_pShip->WriteObjRefToStream(m_pAssets[i].pAsset, pStream);
-		pStream->Write((char *)&m_pAssets[i].iFormationPos, sizeof(DWORD));
-		m_pShip->WriteObjRefToStream(m_pAssets[i].pTarget, pStream);
+		m_pShip->WriteObjRefToStream(m_Assets[i].pAsset, pStream);
+		pStream->Write(m_Assets[i].iFormationPos);
+		m_pShip->WriteObjRefToStream(m_Assets[i].pTarget, pStream);
 		}
 
-	pStream->Write((char *)&m_iTargetCount, sizeof(DWORD));
-	for (i = 0; i < m_iTargetCount; i++)
+	pStream->Write(m_Targets.GetCount());
+	for (int i = 0; i < m_Targets.GetCount(); i++)
 		{
-		m_pShip->WriteObjRefToStream(m_pTargets[i].pTarget, pStream);
-		pStream->Write((char *)&m_pTargets[i].iAssignedTo, sizeof(DWORD));
-		pStream->Write((char *)&m_pTargets[i].iKilled, sizeof(DWORD));
+		m_pShip->WriteObjRefToStream(m_Targets[i].pTarget, pStream);
+		pStream->Write(m_Targets[i].iAssignedTo);
+		pStream->Write(m_Targets[i].iKilled);
 		}
 
-	pStream->Write((char *)&m_vThreatPotential, sizeof(CVector));
-	pStream->Write((char *)&m_vRallyPoint, sizeof(CVector));
-	pStream->Write((char *)&m_iRallyFacing, sizeof(DWORD));
+	m_vThreatPotential.WriteToStream(*pStream);
+	m_vRallyPoint.WriteToStream(*pStream);
+	pStream->Write(m_iRallyFacing);
 
 	dwSave = 0;
 	dwSave |= (m_fOpenFireOrdered ?			0x00000001 : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	}
 
 void CFleetCommandAI::OrderAllFormUp (bool bResetFormation)
@@ -1019,25 +912,23 @@ void CFleetCommandAI::OrderAllFormUp (bool bResetFormation)
 //	Order all ships to form up
 
 	{
-	int i;
-
 	//	Form up
 
-	for (i = 0; i < m_iAssetCount; i++)
+	for (int i = 0; i < m_Assets.GetCount(); i++)
 		{
-		m_pAssets[i].pTarget = NULL;
+		m_Assets[i].pTarget = NULL;
 
 		if (bResetFormation)
-			m_pAssets[i].iFormationPos = i;
+			m_Assets[i].iFormationPos = i;
 
-		DWORD dwFormation = MAKELONG(m_pAssets[i].iFormationPos, 0);
-		m_pShip->Communicate(m_pAssets[i].pAsset, msgFormUp, m_pShip, dwFormation);
+		DWORD dwFormation = MAKELONG(m_Assets[i].iFormationPos, 0);
+		m_pShip->Communicate(m_Assets[i].pAsset, msgFormUp, m_pShip, dwFormation);
 		}
 
 	//	No targets are being attacked
 
-	for (i = 0; i < m_iTargetCount; i++)
-		m_pTargets[i].iAssignedTo = 0;
+	for (int i = 0; i < m_Targets.GetCount(); i++)
+		m_Targets[i].iAssignedTo = 0;
 	}
 
 void CFleetCommandAI::OrderAllOpenFire (void)
@@ -1047,10 +938,8 @@ void CFleetCommandAI::OrderAllOpenFire (void)
 //	Order all ships to open fire in formation
 
 	{
-	int i;
-
-	for (i = 0; i < m_iAssetCount; i++)
-		m_pShip->Communicate(m_pAssets[i].pAsset, msgAttackInFormation);
+	for (int i = 0; i < m_Assets.GetCount(); i++)
+		m_pShip->Communicate(m_Assets[i].pAsset, msgAttackInFormation);
 	}
 
 void CFleetCommandAI::OrderAttackTarget (CSpaceObject *pTarget)
@@ -1060,16 +949,14 @@ void CFleetCommandAI::OrderAttackTarget (CSpaceObject *pTarget)
 //	Order all ships that are not assigned to attack the target
 
 	{
-	int i;
-
 	if (pTarget == NULL)
 		return;
 
-	for (i = 0; i < m_iAssetCount; i++)
-		if (m_pAssets[i].pTarget == NULL)
+	for (int i = 0; i < m_Assets.GetCount(); i++)
+		if (m_Assets[i].pTarget == NULL)
 			{
-			m_pShip->Communicate(m_pAssets[i].pAsset, msgAttack, pTarget);
-			m_pAssets[i].pTarget = pTarget;
+			m_pShip->Communicate(m_Assets[i].pAsset, msgAttack, pTarget);
+			m_Assets[i].pTarget = pTarget;
 			}
 	}
 
@@ -1080,6 +967,14 @@ void CFleetCommandAI::OrderBreakAndAttack ()
 //	Attack at will.
 
 	{
+	//	NOTE: This is only valid for destroy target orders because it relies on
+	//	the fact that the order target is an enemy. Also, stateAttackAtWill does
+	//	not properly handle going back to formation after the enemy is 
+	//	destroyed.
+
+	if (GetCurrentOrder() != orderDestroyTarget)
+		return;
+
 	SetState(stateAttackAtWill);
 	m_pObjective = GetCurrentOrderTarget();
 	UpdateTargetList();
@@ -1093,10 +988,7 @@ void CFleetCommandAI::RemoveAsset (int iIndex)
 //	Removes the entry from the array
 
 	{
-	for (int i = iIndex; i < (m_iAssetCount - 1); i++)
-		m_pAssets[i] = m_pAssets[i + 1];
-
-	m_iAssetCount--;
+	m_Assets.Delete(iIndex);
 	}
 
 bool CFleetCommandAI::RemoveAssetObj (CSpaceObject *pObj)
@@ -1107,23 +999,21 @@ bool CFleetCommandAI::RemoveAssetObj (CSpaceObject *pObj)
 //	as a target). Returns TRUE if an asset was removed.
 
 	{
-	int i;
-
-	for (i = 0; i < m_iAssetCount; i++)
+	for (int i = 0; i < m_Assets.GetCount(); i++)
 		{
-		if (m_pAssets[i].pAsset == pObj)
+		if (m_Assets[i].pAsset == pObj)
 			{
 			RemoveAsset(i);
 			return true;
 			}
-		else if (m_pAssets[i].pTarget == pObj)
+		else if (m_Assets[i].pTarget == pObj)
 			{
-			m_pAssets[i].pTarget = NULL;
+			m_Assets[i].pTarget = NULL;
 
 			//	Order this asset to form-up
 
-			DWORD dwFormation = MAKELONG(m_pAssets[i].iFormationPos, 0);
-			m_pShip->Communicate(m_pAssets[i].pAsset, msgFormUp, m_pShip, dwFormation);
+			DWORD dwFormation = MAKELONG(m_Assets[i].iFormationPos, 0);
+			m_pShip->Communicate(m_Assets[i].pAsset, msgFormUp, m_pShip, dwFormation);
 			}
 		}
 
@@ -1137,10 +1027,7 @@ void CFleetCommandAI::RemoveTarget (int iIndex)
 //	Removes the entry from the array
 
 	{
-	for (int i = iIndex; i < (m_iTargetCount - 1); i++)
-		m_pTargets[i] = m_pTargets[i + 1];
-
-	m_iTargetCount--;
+	m_Targets.Delete(iIndex);
 	}
 
 void CFleetCommandAI::SetState (StateTypes State)
@@ -1173,17 +1060,15 @@ void CFleetCommandAI::UpdateAttackTargets (void)
 //	Updates to make sure that all targets are being attacked
 
 	{
-	int i;
-
 	//	See if any targets have wandered out of our intercept range
 	//	If so, call off the assets
 
-	for (i = 0; i < m_iTargetCount; i++)
+	for (int i = 0; i < m_Targets.GetCount(); i++)
 		{
-		CVector vDist = m_pTargets[i].pTarget->GetPos() - m_pShip->GetPos();
+		CVector vDist = m_Targets[i].pTarget->GetPos() - m_pShip->GetPos();
 		if (vDist.Length2() > INTERCEPT_THREAT_RANGE2)
 			{
-			RemoveAssetObj(m_pTargets[i].pTarget);
+			RemoveAssetObj(m_Targets[i].pTarget);
 
 			RemoveTarget(i);
 			i--;
@@ -1195,20 +1080,20 @@ void CFleetCommandAI::UpdateAttackTargets (void)
 	int iNextTarget = 0;
 	int iNextAsset = 0;
 
-	while (iNextAsset < m_iAssetCount && iNextTarget < m_iTargetCount)
+	while (iNextAsset < m_Assets.GetCount() && iNextTarget < m_Targets.GetCount())
 		{
-		int iPower = m_pTargets[iNextTarget].pTarget->GetCombatPower();
+		int iPower = m_Targets[iNextTarget].pTarget->GetCombatPower();
 		
-		while (iPower > m_pTargets[iNextTarget].iAssignedTo
-				&& iNextAsset < m_iAssetCount)
+		while (iPower > m_Targets[iNextTarget].iAssignedTo
+				&& iNextAsset < m_Assets.GetCount())
 			{
-			if (m_pAssets[iNextAsset].pTarget == NULL)
+			if (m_Assets[iNextAsset].pTarget == NULL)
 				{
 				//	Assign the asset to attack the target
 
-				m_pShip->Communicate(m_pAssets[iNextAsset].pAsset, msgAttack, m_pTargets[iNextTarget].pTarget);
-				m_pAssets[iNextAsset].pTarget = m_pTargets[iNextTarget].pTarget;
-				m_pTargets[iNextTarget].iAssignedTo += m_pAssets[iNextAsset].pAsset->GetCombatPower();
+				m_pShip->Communicate(m_Assets[iNextAsset].pAsset, msgAttack, m_Targets[iNextTarget].pTarget);
+				m_Assets[iNextAsset].pTarget = m_Targets[iNextTarget].pTarget;
+				m_Targets[iNextTarget].iAssignedTo += m_Assets[iNextAsset].pAsset->GetCombatPower();
 				}
 
 			iNextAsset++;

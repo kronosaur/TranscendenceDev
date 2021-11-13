@@ -5,9 +5,9 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							51;
+constexpr DWORD API_VERSION =							53;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
-constexpr DWORD SYSTEM_SAVE_VERSION =					206;
+constexpr DWORD SYSTEM_SAVE_VERSION =					211;
 
 //	Uncomment out the following define when building a stable release
 
@@ -747,3 +747,18 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					206;
 //
 //	206: 1.9 Beta 4
 //		Added fields to CMarker
+//
+//	207: 1.9
+//		Added m_iTonsOfOreMined to CPlayerGameStats
+//
+//	208: 1.9
+//		Added m_TotalValueSold and m_TotalValueBought to CPlayerGameStats
+//
+//	209: 1.9
+//		Changed m_PlayerShipStats in CPlayerGameStats
+//
+//	210: 1.9
+//		Added m_Events to CAscendedObjectList
+//
+//	211: 1.9
+//		Change CShockwaveHitTest

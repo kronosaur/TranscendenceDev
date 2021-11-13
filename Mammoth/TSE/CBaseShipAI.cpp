@@ -155,10 +155,9 @@ void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 			Ctx.DefineContainingType(m_pShip);
 			Ctx.SaveAndDefineSourceVar(m_pShip);
 
-			ICCItem *pResult = Ctx.RunLambda(m_pCommandCode);
+			ICCItemPtr pResult = Ctx.RunLambdaCode(m_pCommandCode);
 			if (pResult->IsError())
 				m_pShip->ReportEventError(CONSTLIT("CommandCode"), pResult);
-			Ctx.Discard(pResult);
 			}
 
 		//	If we still got no orders, let the ship class deal with this
@@ -721,6 +720,38 @@ CString CBaseShipAI::GetAISettingString (const CString &sSetting)
 	return m_AICtx.GetAISetting(sSetting); 
 	}
 
+ICCItemPtr CBaseShipAI::GetAIStatus () const
+
+//	GetAIStatus
+//
+//	Returns AI status, mostly for debugging.
+
+	{
+	ICCItemPtr pResult(ICCItem::SymbolTable);
+
+	if (m_Orders.GetCount() > 0)
+		{
+		pResult->SetAt(CONSTLIT("order"), GetCurrentOrderDesc().AsCCItem());
+		}
+
+	if (m_pOrderModule)
+		{
+		pResult->SetAt(CONSTLIT("orderModule"), m_pOrderModule->GetAIStatus(*m_pShip, m_AICtx));
+		}
+
+	if (m_DeterModule.IsEnabled())
+		{
+		pResult->SetAt(CONSTLIT("deterModule"), m_DeterModule.GetAIStatus());
+		}
+
+	if (!m_Blacklist.IsEmpty())
+		{
+		pResult->SetAt(CONSTLIT("blacklistModule"), m_Blacklist.AsCCItem());
+		}
+
+	return pResult;
+	}
+
 CSpaceObject *CBaseShipAI::GetBase (void) const
 
 //	GetBase
@@ -1149,6 +1180,8 @@ DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, 
 //	Handle communications from other objects
 
 	{
+	DEBUG_TRY
+
 	if (!m_pOrderModule)
 		return OnCommunicateNotify(pSender, iMessage, pParam1, dwParam2, pData);
 
@@ -1184,6 +1217,19 @@ DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, 
 				return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
 			}
 
+		case msgBaseDestroyedByUnknown:
+			{
+			if (m_pOrderModule->SupportsReactions())
+				{
+				if (ReactToBaseDestroyed())
+					return resAck;
+				else
+					return resNoAnswer;
+				}
+			else
+				return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
+			}
+
 		case msgQueryAttackStatus:
 			{
 			if (m_pOrderModule->SupportsReactions() && m_DeterModule.IsEnabled())
@@ -1195,6 +1241,8 @@ DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, 
 		default:
 			return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2, pData);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CBaseShipAI::OnDestroyed (SDestroyCtx &Ctx)
@@ -1375,6 +1423,8 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 //	Handle the case where an object has been removed from the system
 
 	{
+	DEBUG_TRY
+
 	//	If our current order is to follow the player through and we get
 	//	a notification that the player has been removed, then do nothing
 	//	(we will be updated when we enter the new system).
@@ -1421,6 +1471,8 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 	m_Orders.OnObjDestroyed(&Ctx.Obj, &bChanged);
 	if (bChanged)
 		FireOnOrderChanged();
+
+	DEBUG_CATCH
 	}
 
 void CBaseShipAI::OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedShipsCtx &Options)
@@ -1541,6 +1593,10 @@ void CBaseShipAI::OnStationDestroyed (const SDestroyCtx &Ctx)
 		else
 			OnObjDestroyedNotify(Ctx);
 		}
+
+	//	Deter module
+
+	m_DeterModule.OnObjDestroyed(*m_pShip, Ctx);
 
 	//	Remove orders as appropriate
 
@@ -1669,7 +1725,7 @@ void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Da
 			{
 			//	If the attacker is a valid threat, then add an order
 
-			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+			if (m_AICtx.CalcIsPossibleTarget(*m_pShip, AttackerObj))
 				React(iReaction, AttackerObj);
 
 			m_AICtx.CommunicateWithBaseAttackDeter(*m_pShip, AttackerObj, Damage.GetOrderGiver());
@@ -1698,6 +1754,37 @@ void CBaseShipAI::ReactToAttack (CSpaceObject &AttackerObj, const SDamageCtx &Da
 		case AIReaction::Gate:
 			React(iReaction);
 			break;
+
+		default:
+			throw CException(ERR_FAIL);
+		}
+	}
+
+bool CBaseShipAI::ReactToBaseDestroyed ()
+
+//	ReactToBaseDestroyed
+//
+//	React to our base being destroyed but without a target to attack.
+
+	{
+	AIReaction iReaction = GetReactToBaseDestroyed();
+	switch (iReaction)
+		{
+		case AIReaction::None:
+			return false;
+
+		case AIReaction::Chase:
+		case AIReaction::ChaseFromBase:
+		case AIReaction::Destroy:
+		case AIReaction::DestroyAndRetaliate:
+		case AIReaction::Deter:
+		case AIReaction::DeterWithSecondaries:
+			AddOrder(COrderDesc(IShipController::orderAttackNearestEnemy));
+			return true;
+
+		case AIReaction::Gate:
+			React(iReaction);
+			return true;
 
 		default:
 			throw CException(ERR_FAIL);
@@ -1767,7 +1854,7 @@ bool CBaseShipAI::ReactToDeterMessage (CSpaceObject &AttackerObj)
 			{
 			//	If the attacker is a valid threat, then react
 
-			if (m_AICtx.CalcIsDeterNeeded(*m_pShip, AttackerObj))
+			if (m_AICtx.CalcIsPossibleTarget(*m_pShip, AttackerObj))
 				{
 				React(iReaction, AttackerObj);
 				return true;
@@ -2272,17 +2359,18 @@ void CBaseShipAI::UpgradeWeaponBehavior (void)
 
 			if (!BestItem.IsEmpty())
 				{
-				int iSlot = DeviceItem.GetInstalledDevice()->GetDeviceSlot();
+				CDeviceSystem::SSlotDesc Slot;
+				Slot.iIndex = DeviceItem.GetInstalledDevice()->GetDeviceSlot();
 
 				//	Uninstall the previous weapon
 
-				m_pShip->SetCursorAtDevice(ItemList, iSlot);
+				m_pShip->SetCursorAtDevice(ItemList, Slot.iIndex);
 				m_pShip->RemoveItemAsDevice(ItemList);
 
 				//	Install the new item
 
 				ItemList.SetCursorAtItem(BestItem);
-				m_pShip->InstallItemAsDevice(ItemList, iSlot);
+				m_pShip->InstallItemAsDevice(ItemList, Slot);
 
 				bWeaponsInstalled = true;
 				}

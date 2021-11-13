@@ -166,6 +166,13 @@ class CArmorSystem
 class CDeviceSystem
 	{
 	public:
+		struct SSlotDesc
+			{
+			int iIndex = -1;						//	If not -1, this refers to the given slot index.
+			CString sID;							//	If not blank, this refers to the given slot ID.
+			int iPos = -1;							//	If not -1, this is the UI slot position.
+			};
+
 		static constexpr DWORD FLAG_NO_NAMED_DEVICES = 0x00000001;
 		CDeviceSystem (DWORD dwFlags = 0);
 
@@ -181,34 +188,35 @@ class CDeviceSystem
 		static constexpr DWORD FLAG_MATCH_BY_TYPE =	0x00000002;
 		int FindDeviceIndex (const CItem &Item, DWORD dwFlags = 0) const;
 
+		bool FindDevicesByID (const CString &sID, TArray<int> *retIndices = NULL) const;
 		int FindFreeSlot (void);
 		int FindNamedIndex (const CItem &Item) const;
 		int FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir = 1, bool switchWeapons = false) const;
 		int FindRandomIndex (bool bEnabledOnly) const;
+		bool FindSlotDesc (const CString &sID, SDeviceDesc *retDesc = NULL, int *retiMaxCount = NULL) const;
 		bool FindWeapon (int *retiIndex = NULL) const;
 		bool FindWeaponByItem (const CItem &Item, int *retiIndex = NULL, int *retiVariant = NULL) const;
 		void FinishInstall (void);
 		int GetCount (void) const { return m_Devices.GetCount(); }
 		int GetCountByID (const CString &sID) const;
-		CInstalledDevice &GetDevice (int iIndex) { return *m_Devices[iIndex]; }
-		CDeviceItem GetDeviceItem (int iIndex) const { if (!m_Devices[iIndex]->IsEmpty()) return m_Devices[iIndex]->GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }
-		const CInstalledDevice &GetDevice (int iIndex) const { return *m_Devices[iIndex]; }
-		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
-		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
+		CInstalledDevice &GetDevice (int iIndex) { if (iIndex < 0 || iIndex >= GetCount()) throw CException(ERR_FAIL); return *m_Devices[iIndex]; }
+		CDeviceItem GetDeviceItem (int iIndex) const { if (iIndex < 0 || iIndex >= GetCount()) throw CException(ERR_FAIL); if (!m_Devices[iIndex]->IsEmpty()) return m_Devices[iIndex]->GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }
+		const CInstalledDevice &GetDevice (int iIndex) const { if (iIndex < 0 || iIndex >= GetCount()) throw CException(ERR_FAIL); return *m_Devices[iIndex]; }
+		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return GetNamedDeviceHelper(iDev); }
+		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return const_cast<CInstalledDevice *>(GetNamedDeviceHelper(iDev)); }
 		CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return GetDevice(m_NamedDevices[iDev]).GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }
 		int GetNamedIndex (DeviceNames iDev) const { return (HasNamedDevices() ? m_NamedDevices[iDev] : -1); }
 		DWORD GetTargetTypes (void) const;
-		bool HasNamedDevices (void) const { return (m_NamedDevices.GetCount() > 0); }
 		bool HasShieldsUp (void) const;
-		bool Init (CSpaceObject *pObj, const CDeviceDescList &Devices, int iMaxDevices = 0);
-		bool Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iDeviceSlot = -1, int iSlotPosIndex = -1, bool bInCreate = false, int *retiDeviceSlot = NULL);
+		bool Init (CSpaceObject *pObj, const CDeviceDescList &Devices, const IDeviceGenerator &Slots, int iMaxDevices = 0);
+		bool Install (CSpaceObject *pObj, CItemListManipulator &ItemList, const SSlotDesc &Slot, int *retiDeviceSlot = NULL);
 		bool IsEmpty (void) const { return (m_Devices.GetCount() == 0); }
 		bool IsSlotAvailable (ItemCategories iItemCat, int *retiSlot = NULL) const;
 		bool IsWeaponRepeating (DeviceNames iDev = devNone) const;
 		void MarkImages (void);
 		bool OnDestroyCheck (CSpaceObject *pObj, DestructionTypes iCause, const CDamageSource &Attacker);
 		void OnSubordinateDestroyed (CSpaceObject &SubordinateObj, const CString &sSubordinateID);
-		void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj);
+		void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj, const IDeviceGenerator &Slots);
 		void ReadyFirstMissile (CSpaceObject *pObj);
 		void ReadyFirstWeapon (CSpaceObject *pObj);
 		void ReadyNextLauncher (CSpaceObject *pObj, int iDir = 1);
@@ -283,11 +291,14 @@ class CDeviceSystem
 		static CDeviceSystem m_Null;
 
 	private:
+		const CInstalledDevice *GetNamedDeviceHelper (DeviceNames iDev) const;
 		DeviceNames GetNamedFromDeviceIndex (int iIndex) const;
+		bool HasNamedDevices (void) const { return (m_NamedDevices.GetCount() > 0); }
 		void InsertEmpty (int iCount = 1);
 
 		TArray<TUniquePtr<CInstalledDevice>> m_Devices;
 		TArray<int> m_NamedDevices;
+		const IDeviceGenerator *m_pSlots = NULL;
 	};
 
 //	Ship Structure and Compartments --------------------------------------------

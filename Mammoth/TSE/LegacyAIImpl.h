@@ -91,8 +91,8 @@ class CFerianShipAI : public CBaseShipAI
 class CFleetCommandAI : public CBaseShipAI
 	{
 	public:
-		CFleetCommandAI (void);
-		virtual ~CFleetCommandAI (void);
+		CFleetCommandAI (void) { }
+		virtual ~CFleetCommandAI (void) { }
 
 		//	IShipController virtuals
 		virtual void Behavior (SUpdateCtx &Ctx) override;
@@ -125,16 +125,16 @@ class CFleetCommandAI : public CBaseShipAI
 
 		struct STarget
 			{
-			CSpaceObject *pTarget;
-			int iAssignedTo;					//	Power points assigned to destroy this target
-			int iKilled;						//	Power points killed by this asset
+			CSpaceObject *pTarget = NULL;
+			int iAssignedTo = 0;				//	Power points assigned to destroy this target
+			int iKilled = 0;					//	Power points killed by this asset
 			};
 
 		struct SAsset
 			{
-			CSpaceObject *pAsset;
-			int iFormationPos;
-			CSpaceObject *pTarget;				//	Assigned target (NULL = none)
+			CSpaceObject *pAsset = NULL;
+			int iFormationPos = -1;
+			CSpaceObject *pTarget = NULL;		//	Assigned target (NULL = none)
 			};
 
 		SAsset *AddAsset (CSpaceObject *pAsset);
@@ -163,27 +163,22 @@ class CFleetCommandAI : public CBaseShipAI
 		void UpdateTargetList (void);
 		void UpdateTargetListAndPotentials (void);
 
-		StateTypes m_State;
+		StateTypes m_State = stateNone;
 
-		CSpaceObject *m_pTarget;
-		CSpaceObject *m_pObjective;
-		int m_iCounter;
+		CSpaceObject *m_pTarget = NULL;
+		CSpaceObject *m_pObjective = NULL;
+		int m_iCounter = 0;
 
-		int m_iStartingAssetCount;
-		int m_iAssetCount;
-		int m_iAssetAlloc;
-		SAsset *m_pAssets;
-
-		int m_iTargetCount;
-		int m_iTargetAlloc;
-		STarget *m_pTargets;
+		int m_iStartingAssetCount = 0;
+		TArray<SAsset> m_Assets;
+		TArray<STarget> m_Targets;
 
 		CVector m_vThreatPotential;
 		CVector m_vRallyPoint;
-		int m_iRallyFacing;
+		int m_iRallyFacing = 0;
 
-		DWORD m_fOpenFireOrdered:1;
-		DWORD m_dwSpare:31;
+		DWORD m_fOpenFireOrdered:1 = false;
+		DWORD m_dwSpare:31 = 0;
 	};
 
 class CFleetShipAI : public CBaseShipAI

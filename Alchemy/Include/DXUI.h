@@ -192,6 +192,7 @@ class CGButtonArea : public AGArea
 
 		CString GetLabelAccelerator (void) { return (m_iAccelerator != -1 ? CString(m_sLabel.GetASCIIZPointer() + m_iAccelerator, 1) : NULL_STR); }
 		bool IsDisabled (void) { return m_bDisabled; }
+		bool IsPrefixAccelerator () const { return !m_sAccelerator.IsBlank(); }
 		void SetAcceleratorColor (CG32bitPixel rgbColor) { m_rgbAccelColor = rgbColor; }
 		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
 		void SetBackColorHover (CG32bitPixel rgbColor) { m_rgbBackColorHover = rgbColor; }

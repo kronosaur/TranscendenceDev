@@ -19,7 +19,7 @@
 			level=			"2-7"
 
 			expireTime=			"5400"
-			failureAfterOutOfSystem="5400"
+			failureOnReturnToSystem="5400"
 			>
 		<Properties>
 			<Variant id="reward">

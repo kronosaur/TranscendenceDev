@@ -590,7 +590,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 			};
 
 		int ComputeVaporTrail (void);
-		void CreateFragments (const CVector &vPos);
+		void CreateFragments (const CVector &vPos, const CVector &vVel = NullVector);
 		Metric GetAge (void) const;
 		int GetManeuverRate (void) const;
 		bool IsDetonatingOnMining () const;
@@ -1047,9 +1047,8 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		int GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice);
 		DeviceNames GetDeviceNameForCategory (ItemCategories iCategory);
 		int GetItemDeviceName (const CItem &Item) const;
-		CItem GetNamedItem (DeviceNames iDev) const;
 		bool HasNamedDevice (DeviceNames iDev) const;
-		void InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot = -1, int iSlotPosIndex = -1);
+		void InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSystem::SSlotDesc &RecommendedSlot = CDeviceSystem::SSlotDesc());
 		bool IsDeviceSlotAvailable (ItemCategories iItemCat = itemcatNone, int *retiSlot = NULL);
 		void ReadyFirstWeapon (void);
 		void ReadyNextWeapon (int iDir = 1);
@@ -1136,11 +1135,12 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		using CSpaceObject::AddOverlay;
 		virtual CTradingDesc *AllocTradeDescOverride (void) override;
 		virtual CShip *AsShip (void) override { return this; }
+		virtual const CShip *AsShip (void) const override { return this; }
 		virtual void Behavior (SUpdateCtx &Ctx) override;
 		virtual bool CanAttack (void) const override;
 		virtual bool CanBeAttacked (void) const override { return CanAttack(); }
 		virtual bool CanBeDestroyedBy (CSpaceObject &Attacker) const override;
-		virtual bool CanInstallItem (const CItem &Item, int iSlot = -1, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL) override;
+		virtual bool CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot = CDeviceSystem::SSlotDesc(), InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL) override;
 		virtual bool CanMove (void) const override { return true; }
 		virtual RequestDockResults CanObjRequestDock (CSpaceObject *pObj = NULL) const override;
 		virtual bool CanThrust (void) const override { return (GetThrust() > 0.0); }
@@ -1161,7 +1161,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual int GetAISettingInteger (const CString &sSetting) override { return m_pController->GetAISettingInteger(sSetting); }
 		virtual CString GetAISettingString (const CString &sSetting) override { return m_pController->GetAISettingString(sSetting); }
 		virtual const CArmorSystem &GetArmorSystem (void) const override { return m_Armor; }
-		virtual CArmorSystem *GetArmorSystem (void) override { return &m_Armor; }
+		virtual CArmorSystem &GetArmorSystem (void) override { return m_Armor; }
 		virtual CSpaceObject *GetAttachedRoot (void) const;
 		virtual CSpaceObject *GetBase (void) const override;
 		virtual Metric GetCargoSpaceLeft (void) const override;
@@ -1183,9 +1183,6 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual const CDockingPorts *GetDockingPorts (void) const override { return &m_DockingPorts; }
 		virtual CDockingPorts *GetDockingPorts (void) override { return &m_DockingPorts; }
 		virtual const CSoundResource *GetDockScreenAmbientSound () const override;
-		virtual CInstalledDevice *GetDevice (int iDev) override { return &m_Devices.GetDevice(iDev); }
-		virtual int GetDeviceCount (void) const override { return m_Devices.GetCount(); }
-		virtual CDeviceItem GetDeviceItem (int iDev) const override { return m_Devices.GetDeviceItem(iDev); }
 		virtual const CDeviceSystem &GetDeviceSystem (void) const { return m_Devices; }
 		virtual CDeviceSystem &GetDeviceSystem (void) { return m_Devices; }
 		virtual CVector GetDockingPortOffset (int iRotation) override { return m_pClass->GetDockingPortOffset(iRotation); }
@@ -1203,9 +1200,6 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual int GetMaxPower (void) const override;
 		virtual int GetMaxCounterValue (void) const override { return m_pClass->GetHullDesc().GetMaxCounter(); };
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
-		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const override;
-		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) override;
-		virtual CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const override { return m_Devices.GetNamedDeviceItem(iDev); }
 		virtual CString GetObjClassName (void) const override { return CONSTLIT("CShip"); }
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
 		virtual const COverlayList *GetOverlays (void) const override { return &m_Overlays; }
@@ -1217,7 +1211,6 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual ScaleTypes GetScale (void) const override { return scaleShip; }
 		virtual int GetScore (void) override { return m_pClass->GetScore(); }
 		virtual CXMLElement *GetScreen (const CString &sName) override { return m_pClass->GetScreen(sName); }
-		virtual int GetShieldLevel (void) const override;
 		virtual const CShipPerformanceDesc &GetShipPerformance (void) const override { return m_Perf; }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual const CSquadronID &GetSquadronID () const override { return m_SquadronID; }
@@ -1358,7 +1351,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void CalcBounds (void);
 		int CalcMaxCargoSpace (void) const;
 		void CalcDeviceBonus (void);
-		InstallItemResults CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot = NULL);
+		InstallItemResults CalcDeviceToReplace (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, int *retiSlot = NULL);
 		DWORD CalcEffectsMask (void);
 		void CalcPerformance (void);
 		int CalcPowerUsed (SUpdateCtx &Ctx, int *retiPowerGenerated = NULL);

@@ -142,14 +142,12 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual CSpaceObject *GetBase (void) const override { return m_pBase; }
 		virtual Categories GetCategory (void) const override { return catStation; }
 		virtual DWORD GetClassUNID (void) override { return m_pType->GetUNID(); }
+		virtual const CSovereign *GetControllingSovereign (void) const override { return m_pType->GetControllingSovereign(); }
 		virtual const CCurrencyBlock *GetCurrencyBlock (void) const override;
 		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) override;
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) override;
 		virtual DWORD GetDefaultBkgnd (void) override { return m_pType->GetDefaultBkgnd(); }
 		virtual const CRegenDesc &GetDefaultShipRepair () const { return m_pType->GetShipRegenDesc(); }
-		virtual CInstalledDevice *GetDevice (int iDev) override { return &m_Devices.GetDevice(iDev); }
-		virtual int GetDeviceCount (void) const override { return m_Devices.GetCount(); }
-		virtual CDeviceItem GetDeviceItem (int iDev) const override { return m_Devices.GetDeviceItem(iDev); }
 		virtual const CDeviceSystem &GetDeviceSystem (void) const { return m_Devices; }
 		virtual CDeviceSystem &GetDeviceSystem (void) { return m_Devices; }
 		virtual const CDockingPorts *GetDockingPorts (void) const override { return &m_DockingPorts; }
@@ -191,7 +189,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual CTradingDesc *GetTradeDescOverride (void) const override { return m_pTrade; }
 		virtual CDesignType *GetType (void) const override { return m_pType; }
 		virtual int GetVisibleDamage (void) const override { return m_Hull.GetVisibleDamage(); }
-		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) const override { return m_Hull.GetVisibleDamageDesc(Damage); }
+		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) const override;
 		virtual CDesignType *GetWreckType (void) const override;
 		virtual bool HasAttribute (const CString &sAttribute) const override;
 		virtual bool HasStarlightImage (void) const override { return (m_rStarlightDist > 0.0); }
@@ -301,8 +299,9 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		int CalcNumberOfShips (void);
 		bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !IsImmutable() && !m_fNoBlacklist); }
 		void ClearBlacklist (CSpaceObject *pObj);
-		void CreateDestructionEffect (void);
+		void CreateDestructionEffect (const CDamageSource &Attacker);
 		void CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int iDirection, const DamageDesc &Damage);
+		bool CreateExplosion (const CDamageSource &Attacker);
 		void CreateStructuralDestructionEffect (SDestroyCtx &Ctx);
 		ALERROR CreateMapImage (void) const;
 		void DeterAttack (CSpaceObject *pTarget);

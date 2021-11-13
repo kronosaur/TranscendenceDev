@@ -31,8 +31,8 @@
 const int DIGEST_SIZE = 20;
 static BYTE g_BaseFileDigest[] =
 	{
-	203, 204,  51, 200, 190, 102, 136,  56,  42, 207,
-	 67,  56, 216, 193,  77, 180, 176, 223,  93, 104,
+	 48,   4, 240, 192, 241,  69,  60, 252, 196,   2,
+	210,  49, 198,  69, 111,   8, 241,  21,  22, 216,
 	};
 
 class CLibraryResolver : public IXMLParserController
@@ -1362,7 +1362,8 @@ CString CExtensionCollection::GetExternalResourceFilespec (CExtension *pExtensio
 //	extensions in the Collection folder.
 
 	{
-	ASSERT(pExtension && pExtension->GetFolderType() == CExtension::folderCollection);
+	if (!pExtension || pExtension->GetFolderType() != CExtension::folderCollection)
+		throw CException(ERR_FAIL);
 
 	//	We look in a subdirectory of the Collection folder
 

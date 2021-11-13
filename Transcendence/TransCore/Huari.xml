@@ -151,6 +151,10 @@
 
 		<DockScreens>
 			<Main>
+				<OnScreenInit>
+					(unvSetAchievement 'humanSpace.huaramarca)
+				</OnScreenInit>
+
 				<Panes>
 					<Default descID="descWelcome">
 						<Actions>
@@ -735,6 +739,8 @@
 										(typSetGlobalData &svHuariEmpire; "status" 'friend)
 										(sovSetDisposition &svHuariEmpire; &svPlayer; 'friend)
 										(sovSetDisposition &svPlayer; &svHuariEmpire; 'friend)
+
+										(unvSetAchievement 'humanSpace.huariFriend)
 										)
 									)
 								)

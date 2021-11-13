@@ -132,6 +132,7 @@ class CDeviceRotationDesc
 			rotUnknown,
 
 			rotNone,							//	Cannot rotate
+			rotTracking,						//	Cannot rotate, but has tracking (so always fire)
 			rotSwivelIfTargetInArc,				//	Swivels < 360 degrees, if target reachable
 			rotSwivelAlways,					//	Swivels < 360 degrees, always (e.g., tracking weapons)
 			rotOmnidirectional,					//	Omnidirectional
@@ -373,6 +374,7 @@ class CDeviceClass
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
 		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) { return false; }
 		virtual bool IsLastVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
+		virtual bool IsShockwaveWeapon (const CDeviceItem &DeviceItem) const { return false; }
 		virtual bool IsTrackingWeapon (const CDeviceItem &DeviceItem) const { return false; }
 		virtual bool IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
 		virtual bool IsWeaponAligned (CSpaceObject *pShip, const CInstalledDevice *pDevice, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const { return false; }
@@ -489,7 +491,7 @@ class CDeviceDescList
 		inline CDeviceClass *GetDeviceClass (int iIndex) const;
 		SDeviceDesc &GetDeviceDesc (int iIndex) { return m_List[iIndex]; }
 		const SDeviceDesc &GetDeviceDesc (int iIndex) const { return m_List[iIndex]; }
-		const SDeviceDesc *GetDeviceDescByName (DeviceNames iDev) const;
+		const SDeviceDesc *GetDeviceDescByName (DeviceNames iDev, int *retiCount = NULL) const;
 		CDeviceItem GetDeviceItem (int iIndex) const { return m_List[iIndex].Item.AsDeviceItemOrThrow(); }
 		int GetFireArc (int iIndex) const;
 		const CItem &GetItem (int iIndex) const { return m_List[iIndex].Item; }
@@ -525,6 +527,7 @@ class IDeviceGenerator
 	{
 	public:
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IDeviceGenerator **retpGenerator);
+		static const IDeviceGenerator &Null ();
 
 		virtual ~IDeviceGenerator (void) { }
 		virtual void AddDevices (SDeviceGenerateCtx &Ctx) { }
@@ -541,6 +544,7 @@ class IDeviceGenerator
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceObject *pSource, const CItem &Item, SDeviceDesc *retDesc) const { return false; }
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const { return false; }
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const { return false; }
+		virtual bool FindDeviceSlot (const CString &sID, SDeviceDesc *retDesc = NULL, int *retiMaxCount = NULL) const { return false; }
 
 		static ALERROR InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, SDeviceDesc *retDesc);
 	};
@@ -562,7 +566,7 @@ class CInstalledDevice
 		DWORD GetUNID (void) const { return m_pClass.GetUNID(); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitFromDesc (const SDeviceDesc &Desc);
-		void Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iDeviceSlot, bool bInCreate = false);
+		void Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iDeviceSlot, const SDeviceDesc &Desc);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 		void ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx);
 		void SetClass (CDeviceClass *pClass) { m_pClass.Set(pClass); }
@@ -689,7 +693,7 @@ class CInstalledDevice
 		Metric GetMaxRange (CItemCtx &ItemCtx) const { return m_pClass->GetMaxRange(ItemCtx); }
 		CString GetName (void) { return m_pClass->GetName(); }
 		CVector GetPos (const CSpaceObject *pSource) const;
-		CVector GetPosOffset (CSpaceObject *pSource);
+		CVector GetPosOffset (const CSpaceObject *pSource) const;
 		int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const { return m_pClass->GetPowerRating(Ctx, retiIdlePowerUse); }
 		void GetSelectedVariantInfo (const CSpaceObject *pSource, 
 											CString *retsLabel,

@@ -32,17 +32,18 @@ static const char *CACHED_EVENTS[CDesignCollection::evtCount] =
 		"OnGlobalObjGateCheck",
 
 		"OnGlobalPlayerBoughtItem",
+		"OnGlobalPlayerNewMaxSpeed",
 		"OnGlobalPlayerSoldItem",
 		"OnGlobalRunDiagnostics",
 		"OnGlobalStartDiagnostics",
-		"OnGlobalSystemDiagnostics",
 
+		"OnGlobalSystemDiagnostics",
 		"OnGlobalSystemStarted",
 		"OnGlobalSystemStopped",
 		"OnGlobalUniverseCreated",
 		"OnGlobalUniverseLoad",
-		"OnGlobalUniverseSave",
 
+		"OnGlobalUniverseSave",
 		"OnGlobalUpdate",
 	};
 
@@ -59,9 +60,7 @@ CDesignCollection::CDesignCollection (void) :
 //	CDesignCollection construtor
 
 	{
-	int i;
-
-	for (i = 0; i < evtCount; i++)
+	for (int i = 0; i < evtCount; i++)
 		m_EventsCache[i] = new CGlobalEventCache(CString(CACHED_EVENTS[i], -1, true));
 	}
 
@@ -336,6 +335,13 @@ ALERROR CDesignCollection::BindDesign (CUniverse &Universe, const TArray<CExtens
 		const auto &ItemEncounterDefinitions = pEntry->GetItemEncounterDefinitions();
 		if (!ItemEncounterDefinitions.IsEmpty())
 			m_ItemEncounterDefinitions.Append(ItemEncounterDefinitions);
+
+		const auto &AchievementDefinitions = pEntry->GetAchievementDefinitions();
+		if (!AchievementDefinitions.IsEmpty())
+			{
+			if (m_AchievementDefinitions.AddDefinitions(Ctx, AchievementDefinitions) != NOERROR)
+				return BindDesignError(Ctx, retsError);
+			}
 		}
 
 	//	Tell our armor mass definitions that we're done so that we can calculate
@@ -420,10 +426,12 @@ void CDesignCollection::CacheGlobalEvents (CDesignType *pType)
 
 		for (int i = 0; i < pEvents->GetCount(); i++)
 			{
-			CString sEvent = pEvents->GetEvent(i, &Event.pCode);
+			ICCItem *pCode;
+			Event.sEvent = pEvents->GetEvent(i, &pCode);
+			Event.pCode = pCode;	//	OK if pCode is NULL
 
 			for (int j = 0; j < evtCount; j++)
-				if (m_EventsCache[j]->Insert(pType, sEvent, Event))
+				if (m_EventsCache[j]->Insert(pType, Event.sEvent, Event))
 					break;
 			}
 		}
@@ -523,7 +531,7 @@ ALERROR CDesignCollection::CreateTemplateTypes (SDesignLoadCtx &Ctx)
 		SEventHandlerDesc Event;
 		if (pTemplate->FindEventHandler(GET_TYPE_SOURCE_EVENT, &Event))
 			{
-			ICCItem *pResult = CCCtx.Run(Event);
+			ICCItemPtr pResult = CCCtx.RunCode(Event);
 			if (pResult->IsError())
 				{
 				Ctx.sError = strPatternSubst(CONSTLIT("GetTypeSource (%x): %s"), pTemplate->GetUNID(), pResult->GetStringValue());
@@ -534,8 +542,6 @@ ALERROR CDesignCollection::CreateTemplateTypes (SDesignLoadCtx &Ctx)
 				if (error = AddDynamicType(pTemplate->GetExtension(), pTemplate->GetUNID(), pResult, true, &Ctx.sError))
 					return error;
 				}
-
-			CCCtx.Discard(pResult);
 			}
 		}
 
@@ -945,14 +951,13 @@ bool CDesignCollection::FireOnGlobalObjGateCheck (CSpaceObject *pObj, CTopologyN
 	return bResult;
 	}
 
-void CDesignCollection::FireOnGlobalPaneInit (CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData)
+void CDesignCollection::FireOnGlobalPaneInit (CSpaceObject *pLocation, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData)
 
 //	FireOnGlobalPaneInit
 //
 //	Give other design types a way to override screens
 
 	{
-	int i;
 	CString sError;
 
 	//	Generate a screen UNID that contains both the screen UNID and a local screen
@@ -962,12 +967,13 @@ void CDesignCollection::FireOnGlobalPaneInit (CDesignType *pRoot, const CString 
 
 	//	Fire all events
 
-	for (i = 0; i < m_EventsCache[evtOnGlobalDockPaneInit]->GetCount(); i++)
+	for (int i = 0; i < m_EventsCache[evtOnGlobalDockPaneInit]->GetCount(); i++)
 		{
 		SEventHandlerDesc Event;
 		CDesignType *pType = m_EventsCache[evtOnGlobalDockPaneInit]->GetEntry(i, &Event);
 
 		if (pType->FireOnGlobalDockPaneInit(Event,
+				pLocation,
 				dwRootUNID,
 				sScreenUNID,
 				sScreen,
@@ -1047,6 +1053,22 @@ void CDesignCollection::FireOnGlobalPlayerLeftSystem (void)
 		{
 		if (GetEntry(i)->FireOnGlobalPlayerLeftSystem(&sError) != NOERROR)
 			kernelDebugLogString(sError);
+		}
+	}
+
+void CDesignCollection::FireOnGlobalPlayerNewMaxSpeed (const CSpaceObject &PlayerShipObj, int iNewMaxSpeed)
+
+//	FireOnGlobalPlayerNewMaxSpeed
+//
+//	Player ship has achieved a new max speed.
+
+	{
+	for (int i = 0; i < m_EventsCache[evtOnGlobalPlayerNewMaxSpeed]->GetCount(); i++)
+		{
+		SEventHandlerDesc Event;
+		CDesignType *pType = m_EventsCache[evtOnGlobalPlayerNewMaxSpeed]->GetEntry(i, &Event);
+
+		pType->FireOnGlobalPlayerNewMaxSpeed(Event, PlayerShipObj, iNewMaxSpeed);
 		}
 	}
 
@@ -2108,6 +2130,7 @@ void CDesignCollection::Unbind (void)
 	m_DisplayAttribs.DeleteAll();
 	m_ItemEncounterDefinitions.DeleteAll();
 	m_EconomyIndex.DeleteAll();
+	m_AchievementDefinitions.DeleteAll();
 
 	//	Reset
 

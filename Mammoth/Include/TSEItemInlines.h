@@ -66,6 +66,11 @@ inline CDesignType *CItemType::GetUseScreen (CString *retsName) const
 
 //	CDifferentiatedItem Inlines ------------------------------------------------
 
+inline bool CDifferentiatedItem::AccumulateEnhancementDisplayAttributes (TArray<SDisplayAttribute> &retList) const
+	{
+	return m_Item.AccumulateEnhancementDisplayAttributes(retList);
+	}
+
 inline ItemCategories CDifferentiatedItem::GetCategory (void) const
 	{
 	return m_Item.GetCategory();
@@ -140,6 +145,21 @@ inline const CItemType &CDifferentiatedItem::GetType (void) const
 inline CItemType &CDifferentiatedItem::GetType (void)
 	{
 	return *m_Item.GetType();
+	}
+
+inline bool CDifferentiatedItem::IsDamaged (int *retiDamagedHP) const
+	{
+	return m_Item.IsDamaged(retiDamagedHP);
+	}
+
+inline bool CDifferentiatedItem::IsDisrupted (void) const
+	{
+	return m_Item.IsDisrupted();
+	}
+
+inline bool CDifferentiatedItem::IsEnhanced (void) const
+	{
+	return m_Item.IsEnhanced();
 	}
 
 inline bool CDifferentiatedItem::IsLauncher (void) const
@@ -417,6 +437,11 @@ inline bool CDeviceItem::IsMiningWeapon (void) const
 		return false;
 	}
 
+inline bool CDeviceItem::IsShockwaveWeapon (void) const
+	{
+	return GetType().GetDeviceClass()->IsShockwaveWeapon(*this);
+	}
+
 inline bool CDeviceItem::IsTrackingWeapon (void) const
 	{
 	return GetType().GetDeviceClass()->IsTrackingWeapon(*this);
@@ -425,6 +450,14 @@ inline bool CDeviceItem::IsTrackingWeapon (void) const
 inline bool CDeviceItem::IsWeaponVariantValid (int iVariant) const
 	{
 	return GetType().GetDeviceClass()->IsWeaponVariantValid(*this, iVariant);
+	}
+
+inline bool CDeviceItem::IsWorking () const
+	{
+	if (const CInstalledDevice *pDevice = GetInstalledDevice())
+		return pDevice->IsWorking();
+	else
+		return false;
 	}
 
 inline bool CDeviceItem::NeedsAutoTarget (int *retiMinFireArc, int *retiMaxFireArc) const

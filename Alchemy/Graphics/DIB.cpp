@@ -489,12 +489,19 @@ ALERROR dibLoadFromBlock (IReadBlock &Data, HBITMAP *rethDIB, EBitmapTypes *reti
 	//	Set the bits
 
 	HDC hDC = CreateCompatibleDC(NULL);
+	BITMAPINFO *pFileData = (BITMAPINFO *)::GlobalLock(hFileData);
+	if (!pFileData)
+		{
+		GlobalFree(hFileData);
+		return ERR_MEMORY;
+		}
+
 	SetDIBits(hDC,
 			hDIB,
 			0,
 			bi.biHeight,
 			Data.GetPointer(iBitsOffset, -1),
-			(BITMAPINFO *)GlobalLock(hFileData),
+			pFileData,
 			DIB_RGB_COLORS);
 
 	::DeleteDC(hDC);

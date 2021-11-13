@@ -11,6 +11,8 @@
 #define SPAN_ATTRIB               				CONSTLIT("span")
 #define START_ATTRIB            				CONSTLIT("start")
 
+const CShipArmorSegmentDesc CShipArmorSegmentDesc::m_Null;
+
 bool CShipArmorSegmentDesc::AngleInSegment (int iAngle) const
 
 //  AngleInSegment

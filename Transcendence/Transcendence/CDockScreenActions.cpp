@@ -266,7 +266,7 @@ void CDockScreenActions::CreateButtons (const CDockScreenVisuals &DockScreenVisu
 	const CG16bitFont &MajorLabelFont = VI.GetFont(fontMediumHeavyBold);
 	const CG16bitFont &MinorLabelFont = VI.GetFont(fontMedium);
 
-    CG32bitPixel rgbActionBackground = CG32bitPixel::Darken(DockScreenVisuals.GetTextBackgroundColor(), 175);
+	CG32bitPixel rgbActionBackground = CG32bitPixel::Darken(DockScreenVisuals.GetTextBackgroundColor(), 175);
 
 	//	Arrange the buttons. This will justify and initialize rcRect for all
 	//	actions.
@@ -309,7 +309,10 @@ void CDockScreenActions::CreateButtons (const CDockScreenVisuals &DockScreenVisu
 		else
 			{
 			pButton->SetLabelFont(&MajorLabelFont);
-			pButton->SetAcceleratorColor(VI.GetColor(colorTextAccelerator));
+			if (pButton->IsPrefixAccelerator())
+				pButton->SetAcceleratorColor(VI.GetColor(colorAreaAccelerator));
+			else
+				pButton->SetAcceleratorColor(VI.GetColor(colorTextAccelerator));
 			pButton->SetPadding(CONTROL_INNER_PADDING_VERT);
 			pButton->SetBorderRadius(CONTROL_BORDER_RADIUS);
 			pButton->SetBackColor(rgbActionBackground);
@@ -398,8 +401,7 @@ void CDockScreenActions::ExecuteCode (CDockScreen *pScreen, const CString &sID, 
 	Ctx.DefineString(CONSTLIT("aActionID"), sID);
 	Ctx.SetDockScreenList(pScreen->GetListData());
 
-	ICCItem *pResult = Ctx.RunLambda(pCode);
-
+	ICCItemPtr pResult = Ctx.RunLambdaCode(pCode);
 	if (pResult->IsError())
 		{
 		CString sError = pResult->GetStringValue();
@@ -407,8 +409,6 @@ void CDockScreenActions::ExecuteCode (CDockScreen *pScreen, const CString &sID, 
 		pScreen->SetDescriptionError(sError);
 		::kernelDebugLogString(sError);
 		}
-
-	Ctx.Discard(pResult);
 	}
 
 void CDockScreenActions::ExecuteExitScreen (bool bForceUndock)

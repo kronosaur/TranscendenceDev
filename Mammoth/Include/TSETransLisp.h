@@ -9,6 +9,7 @@ class CDockSession;
 class CInstalledArmor;
 class CInstalledDevice;
 class CItemCtx;
+class CItemList;
 class COrbit;
 struct SDamageCtx;
 struct SSystemCreateCtx;
@@ -56,6 +57,7 @@ class CCodeChainCtx
 		void DefineItem (const CItem &Item);
 		void DefineItem (const CString &sVar, const CItem &Item);
 		void DefineItem (const CString &sVar, CItemCtx &ItemCtx);
+		void DefineItemList (const CString &sVar, const CItemList &ItemList);
 		void DefineItemType (const CString &sVar, const CItemType *pType);
 		void DefineNil (const CString &sVar) { m_CC.DefineGlobal(sVar, m_CC.GetNil()); }
 		void DefineOrbit (const CString &sVar, const COrbit &OrbitDesc);
@@ -79,12 +81,9 @@ class CCodeChainCtx
 		ICCItemPtr LinkCode (const CString &sString) { return CCodeChain::LinkCode(sString); }
 		ICCItemPtr LinkCode (const CString &sString, CCodeChain::SLinkOptions &Options) { return CCodeChain::LinkCode(sString, Options); }
 		void RestoreVars (void);
-		ICCItem *Run (ICCItem *pCode);
-		ICCItem *Run (const SEventHandlerDesc &Event);
 		ICCItemPtr RunCode (ICCItem *pCode);
 		ICCItemPtr RunCode (const SEventHandlerDesc &Event);
 		bool RunEvalString (const CString &sString, bool bPlain, CString *retsResult);
-		ICCItem *RunLambda (ICCItem *pCode);
 		ICCItemPtr RunLambdaCode (ICCItem *pCode, ICCItem *pArgs = NULL);
 		void SaveAndDefineDataVar (const ICCItem *pData);
 		void SaveAndDefineItemVar (const CItem &Item);
@@ -118,6 +117,7 @@ class CCodeChainCtx
 		static bool InEvent (ECodeChainEvents iEvent);
 
 	private:
+
 		struct SInvokeFrame
 			{
 			ECodeChainEvents iEvent;		//	Event raised

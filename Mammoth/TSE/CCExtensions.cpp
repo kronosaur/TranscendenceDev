@@ -31,6 +31,8 @@ ICCItem *fnEnvironmentGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_DEBUG_SET				8
 #define FN_DEBUG_BREAK				9
 #define FN_DEBUG_SET_PERFORMANCE_COUNTER	10
+#define FN_DEBUG_CLEAR_OUTPUT		11
+#define FN_DEBUG_GET_PERFORMANCE	12
 
 ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -502,6 +504,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_TOPOLOGY_DISTANCE_TO_CRITERIA		40
 #define FN_SYS_GET_ASCENDED_OBJECTS		41
 #define FN_SYS_ITEM_FREQUENCY			42
+#define FN_SYS_NEXT_NODE_TO				43
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -557,6 +560,7 @@ ICCItem *fnDesignFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_UNIVERSE_SET_OBJECT_KNOWN	8
 #define FN_UNIVERSE_ENTITY				9
 #define FN_UNIVERSE_GET_PROPERTY		10
+#define FN_UNIVERSE_SET_ACHIEVEMENT		11
 
 ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -619,7 +623,6 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FIELD_ARC_OFFSET				CONSTLIT("arcOffset")
 #define FIELD_ATTRIBS					CONSTLIT("attribs")
 #define FIELD_CENTER					CONSTLIT("center")
-#define FIELD_DEVICE_SLOT				CONSTLIT("deviceSlot")
 #define FIELD_ERODE						CONSTLIT("erode")
 #define FIELD_EXCLUDE_WORLDS			CONSTLIT("excludeWorlds")
 #define FIELD_HEIGHT					CONSTLIT("height")
@@ -630,7 +633,6 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FIELD_RADIUS_OFFSET				CONSTLIT("radiusOffset")
 #define FIELD_REMOVE					CONSTLIT("remove")
 #define FIELD_ROTATION					CONSTLIT("rotation")
-#define FIELD_SLOT_POS_INDEX			CONSTLIT("slotPosIndex")
 #define FIELD_SOURCE_ONLY				CONSTLIT("sourceOnly")
 #define FIELD_TYPE						CONSTLIT("type")
 #define FIELD_WIDTH						CONSTLIT("width")
@@ -668,6 +670,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"*",	PPFLAG_SIDEEFFECTS, },
 
+		{	"dbgClear",						fnDebug,		FN_DEBUG_CLEAR_OUTPUT,
+			"(dbgClear)",
+			
+			"*",	PPFLAG_SIDEEFFECTS, },
+
 		{	"dbgGet",						fnDebug,		FN_DEBUG_GET,
 			"(dbgGet property) -> value\n\n"
 			
@@ -677,6 +684,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'memoryUse\n"
 			"   'showAIDebug\n"
 			"   'showBounds\n"
+			"   'showDamageDone\n"
 			"   'showFacingsAngle\n"
 			"   'showLineOfFire\n"
 			"   'showNavPaths\n"
@@ -684,6 +692,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'showOrderInfo\n",
 
 			"s",	0, },
+
+#ifdef DEBUG_PERFORMANCE_COUNTERS
+		{	"dbgGetPerformance",				fnDebug,		FN_DEBUG_GET_PERFORMANCE,
+			"(dbgGetPerformance) -> list of performance entries",
+			"*",	0, },
+#endif
 
 		{	"dbgIsActive",				fnDebug,		FN_DEBUG_IS_ACTIVE,
 			"(dbgIsActive) -> True if in debug mode, else Nil",
@@ -704,6 +718,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'showAIDebug True/Nil\n"
 			"   'showBounds True/Nil\n"
+			"   'showDamageDone True/Nil\n"
 			"   'showFacingsAngle True/Nil\n"
 			"   'showLineOfFire True/Nil\n"
 			"   'showNavPaths True/Nil\n"
@@ -1702,7 +1717,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"objDamage",					fnObjGet,		FN_OBJ_DAMAGE,	
 			"(objDamage obj weaponType objSource [pos] [options]) -> result\n\n"
-				
+
+			"objSource:\n\n"
+
+			"   cause: Cause type\n"
+			"   obj: Object that caused the damage [optional]\n"
+			"   secondaryObj: Another object that caused damage [optional]\n"
+			"   namePattern: Noun pattern for what caused damage [optional]\n"
+			"   sourceName: Alternative to namePattern [optional]\n"
+			"   sourceNameFlags: Alternative to namePattern [optional]\n"
+			"\n"
 			"result:\n\n"
 
 			"   'noDamage\n"
@@ -2281,7 +2305,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'ignoreData\n"
 			"   'ignoreDisruption\n"
 			"   'ignoreEnhancements\n"
-			"   'ignoreInstalled\n",
+			"   'ignoreInstalled\n"
+			"   'knownOnly\n",
 
 			"iv*",	0,	},
 
@@ -3052,7 +3077,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"sv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateMarker",				fnSystemCreateMarker,	0,
-			"(sysCreateMarker name pos sovereignID) -> marker",
+			"(sysCreateMarker name pos sovereignID|options) -> marker\n\n"
+			
+			"options:\n\n"
+			
+			"   lifetime: Lifetime in ticks\n"
+			"   sovereign: Marker sovereign\n"
+			"   style: Marker style\n",
+
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateShip",				fnSystemCreateShip,	0,
@@ -3220,6 +3252,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysGetNavPathPoint",			fnSystemGet,	FN_SYS_NAV_PATH_POINT,
 			"(sysGetNavPathPoint sovereignID objFrom objTo %path) -> vector",
 			"iiii",	0,	},
+
+		{	"sysGetNextNodeTo",			fnSystemGet,		FN_SYS_NEXT_NODE_TO,
+			"(sysGetNextNodeTo [fromNodeID] toNodeID) -> nodeID",
+			"*s",	0,	},
 
 		{	"sysGetNode",					fnSystemGet,	FN_SYS_NODE,
 			"(sysGetNode) -> nodeID",
@@ -4004,6 +4040,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 				
 			"   'apiVersion        Engine API version\n"
 			"   'defaultCurrency   Default currency\n"
+			"   'difficulty        Difficulty level\n"
 			"   'minAPIVersion     Lowest API version used by extensions\n",
 
 			"s",	0,	},
@@ -4019,6 +4056,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"unvGetTick",					fnUniverseGet,	FN_UNIVERSE_TICK,
 			"(unvGetTick) -> time",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{	"unvSetAchievement",			fnUniverseGet,	FN_UNIVERSE_SET_ACHIEVEMENT,
+			"(unvSetAchievement id) -> True/Nil\n\n",
+			"s",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"unvSetExtensionData",			fnUniverseGet,	FN_UNIVERSE_SET_EXTENSION_DATA,
 			"(unvSetExtensionData scope attrib data) -> True/Nil\n\n"
@@ -4582,11 +4623,39 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #endif
 			}
 
+		case FN_DEBUG_CLEAR_OUTPUT:
+			{
+			pCtx->GetUniverse().GetHost()->ConsoleClear();
+			return pCC->CreateString(NULL_STR);
+			}
+
 		case FN_DEBUG_GET:
 			{
 			CString sProperty = pArgs->GetElement(0)->GetStringValue();
 			ICCItemPtr pResult = pCtx->GetUniverse().GetDebugProperty(sProperty);
 			return pResult->Reference();
+			}
+
+		case FN_DEBUG_GET_PERFORMANCE:
+			{
+			CPerformanceCounters &Counters = pCtx->GetUniverse().GetPerformanceCounters();
+			auto List = Counters.GetCounters(CPerformanceCounters::EOrder::byMaxTimePerUpdate);
+			if (List.GetCount() == 0)
+				return pCC->CreateNil();
+
+			ICCItemPtr pList(ICCItem::List);
+			for (int i = 0; i < List.GetCount(); i++)
+				{
+				ICCItemPtr pEntry(ICCItem::SymbolTable);
+				pEntry->SetStringAt(CONSTLIT("id"), List[i]->sID);
+				pEntry->SetIntegerAt(CONSTLIT("maxCallsPerUpdate"), List[i]->iMaxCallsPerUpdate);
+				pEntry->SetIntegerAt(CONSTLIT("maxTimePerCall"), List[i]->iMaxTimePerCall);
+				pEntry->SetIntegerAt(CONSTLIT("maxTimePerUpdate"), List[i]->iMaxTimePerUpdate);
+
+				pList->Append(pEntry);
+				}
+
+			return pList->Reference();
 			}
 
 		case FN_DEBUG_IS_ACTIVE:
@@ -5580,8 +5649,16 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_PROPERTY:
 			{
-			CItemCtx ItemCtx(Item);
-			return Item.GetItemProperty(*pCtx, ItemCtx, pArgs->GetElement(1)->GetStringValue(), bOnType);
+			if (CSpaceObject *pSource = Item.GetSource())
+				{
+				CItemCtx ItemCtx(&Item, pSource);
+				return Item.GetItemProperty(*pCtx, ItemCtx, pArgs->GetElement(1)->GetStringValue(), bOnType);
+				}
+			else
+				{
+				CItemCtx ItemCtx(Item);
+				return Item.GetItemProperty(*pCtx, ItemCtx, pArgs->GetElement(1)->GetStringValue(), bOnType);
+				}
 			}
 
 		case FN_ITEM_DAMAGED:
@@ -6856,21 +6933,34 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (Item.GetType() == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid item"), pArgs->GetElement(1));
 
-			int iSlot = ((pArgs->GetCount() > 2 && !pArgs->GetElement(2)->IsNil()) ? pArgs->GetElement(2)->GetIntegerValue() : -1);
-
-			//	Validate the slot
-
-			if (iSlot != -1)
+			CDeviceSystem::SSlotDesc Slot;
+			if (pArgs->GetCount() > 2)
 				{
-				CShip *pShip = pObj->AsShip();
-				if (Item.IsArmor() 
-						&& pShip 
-						&& (iSlot < 0 || iSlot >= pShip->GetArmorSectionCount()))
-					return pCC->CreateError(CONSTLIT("Invalid armor segment"), pArgs->GetElement(2));
-				if (Item.IsDevice()
-						&& pShip
-						&& (iSlot < 0 || iSlot >= pShip->GetDeviceCount() || pShip->GetDevice(iSlot)->IsEmpty()))
-					return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+				if (!CTLispConvert::AsSlotDesc(*pArgs->GetElement(2), Slot))
+					{
+					return pCC->CreateError(CONSTLIT("Invalid slot desc"), pArgs->GetElement(2));
+					}
+
+				//	Validate the slot
+
+				if (Slot.iIndex != -1)
+					{
+					CShip *pShip = pObj->AsShip();
+					if (Item.IsArmor() 
+							&& pShip 
+							&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetArmorSectionCount()))
+						return pCC->CreateError(CONSTLIT("Invalid armor segment"), pArgs->GetElement(2));
+					if (Item.IsDevice()
+							&& pShip
+							&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetDeviceCount() || pShip->GetDevice(Slot.iIndex)->IsEmpty()))
+						return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+					}
+
+				if (!Slot.sID.IsBlank())
+					{
+					if (!pObj->GetDeviceSystem().FindSlotDesc(Slot.sID))
+						return pCC->CreateError(CONSTLIT("Unkown slot ID"), pArgs->GetElement(2));
+					}
 				}
 
 			//	Ask the object
@@ -6878,7 +6968,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CSpaceObject::InstallItemResults iResult;
 			CString sResult;
 			CItem ItemToReplace;
-			bool bCanInstall = pObj->CanInstallItem(Item, iSlot, &iResult, &sResult, &ItemToReplace);
+			bool bCanInstall = pObj->CanInstallItem(Item, Slot, &iResult, &sResult, &ItemToReplace);
 
 			//	Generate the result
 
@@ -7227,7 +7317,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				if (strEquals(sName, NAMED_ITEM_SELECTED_WEAPON))
 					{
-					CItem theItem = pShip->GetNamedItem(devPrimaryWeapon);
+					CItem theItem = pShip->GetNamedDeviceItem(devPrimaryWeapon);
 					if (theItem.GetType())
 						{
 						ICCItem *pItem = CreateListFromItem(theItem);
@@ -7237,7 +7327,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					}
 				else if (strEquals(sName, NAMED_ITEM_SELECTED_LAUNCHER))
 					{
-					CItem theItem = pShip->GetNamedItem(devMissileWeapon);
+					CItem theItem = pShip->GetNamedDeviceItem(devMissileWeapon);
 					if (theItem.GetType())
 						{
 						ICCItem *pItem = CreateListFromItem(theItem);
@@ -7267,7 +7357,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 								}
 							else
 								{
-								CItem theItem = pShip->GetNamedItem(devMissileWeapon);
+								CItem theItem = pShip->GetNamedDeviceItem(devMissileWeapon);
 								if (theItem.GetType())
 									{
 									ICCItem *pItem = CreateListFromItem(theItem);
@@ -10891,13 +10981,14 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_SHIP_CAN_INSTALL_DEVICE:
 			{
 			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
-			int iSlot = (pArgs->GetCount() > 2 ? pArgs->GetElement(2)->GetIntegerValue() : -1);
+			CDeviceSystem::SSlotDesc Slot;
+			Slot.iIndex = (pArgs->GetCount() > 2 ? pArgs->GetElement(2)->GetIntegerValue() : -1);
 
 			//	Check standard conditions
 
 			CSpaceObject::InstallItemResults iResult;
 			CString sResult;
-			pShip->CanInstallItem(Item, iSlot, &iResult, &sResult);
+			pShip->CanInstallItem(Item, Slot, &iResult, &sResult);
 
 			if (!sResult.IsBlank())
 				return pCC->CreateString(sResult);
@@ -11111,35 +11202,31 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	See if we passed in a device slot
 
-			int iDeviceSlot = -1;
-			int iSlotPosIndex = -1;
-			if (pArgs->GetCount() >= 3)
+			CDeviceSystem::SSlotDesc Slot;
+			if (pArgs->GetCount() > 2)
 				{
-				ICCItem *pOptions = pArgs->GetElement(2);
-				if (pOptions->IsInteger())
-					iDeviceSlot = pOptions->GetIntegerValue();
-				else
+				if (!CTLispConvert::AsSlotDesc(*pArgs->GetElement(2), Slot))
 					{
-					ICCItem *pDeviceSlot = pOptions->GetElement(FIELD_DEVICE_SLOT);
-					if (pDeviceSlot && !pDeviceSlot->IsNil())
-						iDeviceSlot = pDeviceSlot->GetIntegerValue();
-
-					ICCItem *pSlotPosIndex = pOptions->GetElement(FIELD_SLOT_POS_INDEX);
-					if (pSlotPosIndex && !pSlotPosIndex->IsNil())
-						iSlotPosIndex = pSlotPosIndex->GetIntegerValue();
+					return pCC->CreateError(CONSTLIT("Invalid slot desc"), pArgs->GetElement(2));
 					}
 
-				if (iDeviceSlot != -1)
+				if (Slot.iIndex != -1)
 					{
 					if (Item.IsDevice()
-							&& (iDeviceSlot < 0 || iDeviceSlot >= pShip->GetDeviceCount() || pShip->GetDevice(iDeviceSlot)->IsEmpty()))
+							&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetDeviceCount() || pShip->GetDevice(Slot.iIndex)->IsEmpty()))
 						return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+					}
+
+				if (!Slot.sID.IsBlank())
+					{
+					if (!pShip->GetDeviceSystem().FindSlotDesc(Slot.sID))
+						return pCC->CreateError(CONSTLIT("Unkown slot ID"), pArgs->GetElement(2));
 					}
 				}
 
 			//	Otherwise, install or remove
 
-			pShip->InstallItemAsDevice(ItemList, iDeviceSlot, iSlotPosIndex);
+			pShip->InstallItemAsDevice(ItemList, Slot);
 
 			//	Make sure the cursor is still valid
 
@@ -13361,8 +13448,8 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 		CreateCtx.pOrbit = &Loc.GetOrbit();
 		CreateCtx.bCreateSatellites = true;
 
-		if (pSystem->CreateStation(pSysCreateCtx,
-				pType,
+		if (pSystem->CreateStation(*pSysCreateCtx,
+				*pType,
 				CreateCtx,
 				&pStation) != NOERROR)
 			return pCC->CreateError(CONSTLIT("Unable to create station"), NULL);
@@ -13510,8 +13597,8 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 		CreateCtx.bCreateSatellites = true;
 		CreateCtx.pEventHandler = pEventHandler;
 
-		if (pSystem->CreateStation(pSysCreateCtx,
-				pType,
+		if (pSystem->CreateStation(*pSysCreateCtx,
+				*pType,
 				CreateCtx,
 				&pStation) != NOERROR)
 			return pCC->CreateError(CONSTLIT("Unable to create station"), NULL);
@@ -14056,6 +14143,48 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Done
 
 			return pCC->CreateInteger(iFreq);
+			}
+
+		case FN_SYS_NEXT_NODE_TO:
+			{
+			int iArg = 0;
+
+			//	If we have more than 1 args, then the first arg is the fromID
+
+			const CTopologyNode *pFromNode;
+			if (pArgs->GetCount() > 1 && pArgs->GetElement(0)->IsIdentifier())
+				{
+				pFromNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				if (pFromNode == NULL)
+					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
+				}
+
+			//	Otherwise, we assume the current system.
+
+			else
+				{
+				const CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
+				if (pSystem == NULL)
+					return StdErrorNoSystem(*pCC);
+
+				pFromNode = pSystem->GetTopology();
+				if (pFromNode == NULL)
+					return pCC->CreateError(CONSTLIT("No topology node"));
+				}
+
+			//	Get the destination node.
+
+			const CTopologyNode *pToNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+			if (pToNode == NULL)
+				return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(iArg - 1));
+
+			//	Compute
+
+			const CTopologyNode *pNextNode = pCtx->GetUniverse().GetTopology().GetNextNodeTo(*pFromNode, *pToNode);
+			if (!pNextNode)
+				return pCC->CreateNil();
+
+			return pCC->CreateString(pNextNode->GetID());
 			}
 
 		case FN_SYS_LOCATIONS:
@@ -15565,6 +15694,17 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Unable to store data"), pArgs->GetElement(1));
 
 			//	Result
+
+			return pCC->CreateTrue();
+			}
+
+		case FN_UNIVERSE_SET_ACHIEVEMENT:
+			{
+			CString sID = pArgs->GetElement(0)->GetStringValue();
+
+			CString sError;
+			if (!pCtx->GetUniverse().SetAchievement(sID, &sError))
+				return pCC->CreateError(sError);
 
 			return pCC->CreateTrue();
 			}

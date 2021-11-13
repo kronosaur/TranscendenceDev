@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidTradingTests;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(block (
+					shop1Obj
+					)
+					;	Set up a player ship
+
+					(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
+					(if (not gPlayerShip)
+						(error "Unable to create player ship.")
+						)
+					(shpOrder gPlayerShip 'hold)
+
+					;	Install some armor
+
+					(objAddItem gPlayerShip (itmCreate &itTestArmorLowRepairLevel; 1))
+					(if (not (shpInstallArmor gPlayerShip (itmCreate &itTestArmorLowRepairLevel; 1) 0))
+						(error "Unable to install itTestArmorLowRepairLevel.")
+						)
+
+					(objSet@ gPlayerShip (@ (objGetItems gPlayerShip "aI +unid:&itTestArmorLowRepairLevel;") 0) 'hp 20)
+
+					;	Set up a station
+
+					(setq shop1Obj (sysCreateStation &stTestShop1; gPlayerShip))
+
+					;	Unit Tests for Missions --------------------------------
+
+					(diagEval (list
+
+						{	test:'(obj@ gPlayerShip (@ data 'armorItem1) 'hp)				result: 20 }
+
+						{	test:'(obj@ gPlayerShip (@ data 'armorItem1) 'level)			result: 6 }
+						{	test:'(obj@ gPlayerShip (@ data 'armorItem1) 'repairLevel)		result: 5 }
+						{	test:'(obj@ (@ data 'shop1Obj) 'repairArmorMaxLevel)			result: 5 }
+
+						{	test:'(objGetArmorRepairPrice (@ data 'shop1Obj) 
+									gPlayerShip 
+									(@ data 'armorItem1)
+									1)														result: 3 }
+
+						{	test:'(objGetArmorRepairPrice (@ data 'shop1Obj) 
+									gPlayerShip 
+									(@ data 'armorItem2)
+									1)														result: 1 }
+
+						{	test:'(objGetArmorRepairPrice (@ data 'shop1Obj) 
+									(itmCreate &itReactiveArmor; 1)
+									10)														result: 10 }
+						)
+						
+						{
+						shop1Obj: shop1Obj
+						armorItem1: (@ (objGetItems gPlayerShip "aI +unid:&itTestArmorLowRepairLevel;") 0)
+						armorItem2: (@ (objGetItems gPlayerShip "aI +unid:&itReactiveArmor;") 0)
+						})
+
+					;	Done
+
+					(objDestroy shop1Obj)
+
+					(objDestroy gPlayerShip)
+					(setq gPlayerShip Nil)
+					(setq gSource Nil)
+					)
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
+<!-- TEST TYPES -->
+
+	<StationType UNID="&stTestShop1;"
+			name=				"Test Shop 1"
+			sovereign=			"&svCommonwealth;"
+				 
+			attributes=			"testStation"
+			>
+		
+		<!-- Trade and Items -->
+		
+		<Trade currency="credit">
+			<Sell	criteria="*NU -defective; -notForSale;"	priceAdj="100"/>
+			<Buy	criteria="*NU -illegal; -notForSale;"	priceAdj="100"/>
+			
+			<Refuel			criteria="f +BasicFuel; L:1-5;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-5;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a L:1-5;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-6; -illegal;" priceAdj="50"/>
+			<RemoveDevice	criteria="d L:1-6;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+		</Trade>
+
+		<!-- Configuration -->
+		
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&itPlasteelPlate;"
+				hitPoints=		"100"
+				regen=			"1"
+				/>
+		
+	</StationType>
+
+	<ItemType UNID="&itTestArmorLowRepairLevel;"
+			name=				"[segment(s) of ]test armor 1"
+			attributes=			"testItem"
+			  
+			level=				"6"
+			frequency=			"rare"
+			numberAppearing=	"1d4"
+
+			value=				"200"
+			mass=				"2000"
+			  
+			description=		"This level 6 armor can be repaired with level 5 tech."
+			>
+
+		<Image imageID="&rsItems2;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Armor
+				hitPoints=	"40"
+				hpBonus=	"+100,+100, +50, +50"
+
+				repairTech=	"5"
+				installCostAdj="150"
+				/>
+	</ItemType>
+
+</TranscendenceModule>
+

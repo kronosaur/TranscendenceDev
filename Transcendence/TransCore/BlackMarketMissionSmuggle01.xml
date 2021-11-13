@@ -129,6 +129,7 @@
 					)
 			</Text>
 			<Text id="SuccessMsg"></Text>
+			<Text id="FailureMsg"></Text>
 
 			<Text id="textBriefing1">
 

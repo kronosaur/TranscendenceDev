@@ -432,6 +432,14 @@ void CAttackOrder::OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrd
 		return;
 		}
 
+#ifdef DEBUG
+	if (pOrderTarget->GetSovereign() == Ship.GetSovereign()
+			&& !Ship.GetSovereign()->IsEnemy(Ship.GetSovereign()))
+		{
+		ASSERT(false);
+		}
+#endif
+
 	//	Set our state
 
 	m_iState = (m_fHold ? EState::AttackingTargetAndHolding : EState::AttackingTargetAndAvoiding);
@@ -471,6 +479,8 @@ void CAttackOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iOb
 //	Notification that an object was destroyed
 
 	{
+	DEBUG_TRY
+
 	//	If the object we're avoiding was destroyed
 
 	if (iObj == OBJ_AVOID)
@@ -496,6 +506,8 @@ void CAttackOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iOb
 
 		m_Objs[OBJ_TARGET] = pNewTarget;
 		}
+
+	DEBUG_CATCH
 	}
 
 void CAttackOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)

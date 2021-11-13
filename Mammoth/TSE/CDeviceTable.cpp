@@ -54,6 +54,8 @@ class CNullDevice : public IDeviceGenerator
 	{
 	public:
 		virtual bool IsVariant (void) const override { return false; }
+
+		static const CNullDevice m_Null;
 	};
 
 class CSingleDevice : public IDeviceGenerator
@@ -183,6 +185,7 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, CSpaceObject *pObj, const CItem &Item, SDeviceDesc *retDesc) const override;
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const override;
 		virtual bool FindDefaultDesc (SDeviceGenerateCtx &Ctx, const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const override;
+		virtual bool FindDeviceSlot (const CString &sID, SDeviceDesc *retDesc = NULL, int *retiMaxCount = NULL) const override;
 
 	private:
 		struct SEntry
@@ -205,6 +208,8 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 		TArray<SEntry> m_Table;
 		TArray<SSlotDesc> m_SlotDesc;
 	};
+
+const CNullDevice CNullDevice::m_Null;
 
 ALERROR IDeviceGenerator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IDeviceGenerator **retpGenerator)
 
@@ -327,6 +332,11 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 		retDesc->Enhancements.InsertMissileDefense();
 
 	return NOERROR;
+	}
+
+const IDeviceGenerator &IDeviceGenerator::Null ()
+	{
+	return CNullDevice::m_Null;
 	}
 
 //	CSingleDevice -------------------------------------------------------------
@@ -1330,6 +1340,38 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (SDeviceGenerateCtx &Ctx, const C
 	return false;
 	}
 
+bool CGroupOfDeviceGenerators::FindDeviceSlot (const CString &sID, SDeviceDesc *retDesc, int *retiMaxCount) const
+
+//	FindDefaultDesc
+//
+//	Looks for the given slot descriptor by ID.
+
+	{
+	for (int i = 0; i < m_SlotDesc.GetCount(); i++)
+		{
+		//	Skip if not the desired id
+
+		if (!strEquals(m_SlotDesc[i].DefaultDesc.sID, sID))
+			continue;
+
+		//	Return max count
+
+		if (retiMaxCount)
+			*retiMaxCount = m_SlotDesc[i].iMaxCount;
+
+		//	If we get this far, then this is a valid slot.
+
+		if (retDesc)
+			*retDesc = m_SlotDesc[i].DefaultDesc;
+
+		return true;
+		}
+
+	//	Not found
+
+	return false;
+	}
+
 const CGroupOfDeviceGenerators::SSlotDesc *CGroupOfDeviceGenerators::FindSlotDesc (CSpaceObject *pObj, const CItem &Item) const
 
 //	FindSlotDesc
@@ -1498,27 +1540,41 @@ int CDeviceDescList::GetCountByID (const CString &sID) const
 	return iCount;
 	}
 
-const SDeviceDesc *CDeviceDescList::GetDeviceDescByName (DeviceNames iDev) const
+const SDeviceDesc *CDeviceDescList::GetDeviceDescByName (DeviceNames iDev, int *retiCount) const
 
 //  GetDeviceDescByName
 //
 //  Returns a descriptor for a named device (or NULL if not found)
 
 	{
-	int i;
 	ItemCategories iCatToFind = CDeviceClass::GetItemCategory(iDev);
+	const SDeviceDesc *pFound = NULL;
+	int iCount = 0;
 
-	for (i = 0; i < GetCount(); i++)
+	for (int i = 0; i < GetCount(); i++)
 		{
 		CDeviceClass *pDevice = GetDeviceClass(i);
 
 		//	See if this is the category that we want to find
 
 		if (pDevice->GetCategory() == iCatToFind)
-			return &GetDeviceDesc(i);
+			{
+			if (!pFound)
+				{
+				pFound = &GetDeviceDesc(i);
+				iCount = 1;
+				}
+			else if (pFound->Item.GetType() == GetDeviceDesc(i).Item.GetType())
+				{
+				iCount++;
+				}
+			}
 		}
 
-	return NULL;
+	if (retiCount)
+		*retiCount = iCount;
+
+	return pFound;
 	}
 
 int CDeviceDescList::GetFireArc (int iIndex) const

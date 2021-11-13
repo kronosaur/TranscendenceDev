@@ -39,6 +39,7 @@
 #define TRADE_TAG								CONSTLIT("Trade")
 #define WRECK_TAG								CONSTLIT("Wreck")
 
+#define ACHIEVEMENT_ATTRIB						CONSTLIT("achievement")
 #define ARMOR_CRITERIA_ATTRIB					CONSTLIT("armorCriteria")
 #define AUTOPILOT_ATTRIB						CONSTLIT("autopilot")
 #define CARGO_SPACE_ATTRIB						CONSTLIT("cargoSpace")
@@ -2233,6 +2234,19 @@ CString CShipClass::GetDesc (void) const
 	return NULL_STR;
 	}
 
+const IDeviceGenerator &CShipClass::GetDeviceSlots (void) const
+
+//	GetDeviceSlots
+//
+//	Returns device slot definitions.
+
+	{
+	if (m_pDeviceSlots)
+		return *m_pDeviceSlots;
+	else
+		return IDeviceGenerator::Null();
+	}
+
 CVector CShipClass::GetDockingPortOffset (int iRotation)
 
 //	GetDockingPortOffset
@@ -2577,7 +2591,7 @@ CCurrencyAndValue CShipClass::GetHullValue (CShip *pShip) const
 
 	//	Run
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 
 	//	Interpret results
 
@@ -2589,7 +2603,6 @@ CCurrencyAndValue CShipClass::GetHullValue (CShip *pShip) const
 
 	//	Done
 
-	Ctx.Discard(pResult);
 	return HullValue;
 	}
 
@@ -2780,7 +2793,7 @@ CString CShipClass::GetPlayerSortString (void) const
 			GetUNID());
 	}
 
-CVector CShipClass::GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos)
+CVector CShipClass::GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos) const
 
 //	GetPosOffset
 //
@@ -3448,6 +3461,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_dwClassNameFlags = CLanguage::LoadNameFlags(pDesc);
 	m_fVirtual = pDesc->GetAttributeBool(VIRTUAL_ATTRIB);
 	m_fShipCompartment = pDesc->GetAttributeBool(SHIP_COMPARTMENT_ATTRIB);
+	m_sAchievement = pDesc->GetAttribute(ACHIEVEMENT_ATTRIB);
 
 	if (pDesc->FindAttribute(FREQUENCY_ATTRIB, &sAttrib))
 		m_Frequency = (FrequencyTypes)::GetFrequency(sAttrib);

@@ -87,6 +87,9 @@
     <Filter Include="Source Files\InSessionSettings">
       <UniqueIdentifier>{989b4e7d-2b43-4195-b7a6-308b8525b851}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Achievements">
+      <UniqueIdentifier>{fda3b235-ed08-4ccc-8165-c67ec54a20c3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PreComp.h">
@@ -393,6 +396,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\TSEStationImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEAchievements.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1629,6 +1635,21 @@
     </ClCompile>
     <ClCompile Include="CReactionImpl.cpp">
       <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="ItemProperties.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CAchievementDefinitions.cpp">
+      <Filter>Source Files\Achievements</Filter>
+    </ClCompile>
+    <ClCompile Include="CAchievementDef.cpp">
+      <Filter>Source Files\Achievements</Filter>
+    </ClCompile>
+    <ClCompile Include="CAchievementDataBlock.cpp">
+      <Filter>Source Files\Achievements</Filter>
+    </ClCompile>
+    <ClCompile Include="CAchievementRecord.cpp">
+      <Filter>Source Files\Achievements</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

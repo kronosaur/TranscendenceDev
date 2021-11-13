@@ -32,6 +32,8 @@
 			attributes=			"capitalShip, charonPirates, charonFrigate, majorShip"
 			inherit=			"&scCharonFrigateStock;"
 			character=			"&unidKronosaurus;"
+
+			achievement=		"humanSpace.kronosaurusKiller"
 			>
 
 		<Names definiteArticle="true">pirate ship Kronosaurus</Names>

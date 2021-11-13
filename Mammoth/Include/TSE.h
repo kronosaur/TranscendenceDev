@@ -188,6 +188,8 @@ void ReportCrashObj (CString *retsMessage, const CSpaceObject *pCrashObj = NULL)
 class CShockwaveHitTest
 	{
 	public:
+		static constexpr Metric MAX_HITS_PER_OBJ_FRACTION = 0.20;
+
 		void Init (int iSegments, int iLives);
 		bool IsEmpty (void) const { return (m_Segments.GetCount() == 0); }
 		void ReadFromStream (SLoadCtx &Ctx);
@@ -195,9 +197,15 @@ class CShockwaveHitTest
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
+		struct SEntry
+			{
+			int iLives = 0;
+			DWORD dwLastHitID = 0;
+			};
+
 		void CalcObjBounds (CSpaceObject *pObj, const CVector &vPos, Metric *retrStartAngle, Metric *retrSizeAngle, Metric *retrStartRadius, Metric *retrEndRadius);
 
-		TArray<int> m_Segments;
+		TArray<SEntry> m_Segments;
 	};
 
 class CHitCtx
@@ -227,11 +235,13 @@ class CHitCtx
 class CAttackDetector
 	{
 	public:
-		CAttackDetector (void);
+		CAttackDetector (void) { }
 
+		ICCItemPtr AsCCItem () const;
 		void Blacklist (void) { m_iCounter = -1; }
 		void ClearBlacklist (void) { m_iCounter = 0; }
 		bool IsBlacklisted (void) const { return m_iCounter == -1; }
+		bool IsEmpty () const { return (m_iCounter == 0 && m_iLastHit == 0); }
 		bool Hit (int iTick);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void Update (int iTick) { if ((iTick % DECAY_RATE) == 0) OnUpdate(); }
@@ -247,8 +257,8 @@ class CAttackDetector
 
 		void OnUpdate (void);
 
-		int m_iCounter;
-		int m_iLastHit;
+		int m_iCounter = 0;
+		int m_iLastHit = 0;
 	};
 
 //	CSpaceObject Definitions ---------------------------------------------------
@@ -630,23 +640,24 @@ class CSpaceObject
 
 		//	Devices
 
-		virtual bool CanInstallItem (const CItem &Item, int iSlot = -1, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL);
+		virtual bool CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot = CDeviceSystem::SSlotDesc(), InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL);
 		virtual void DamageExternalDevice (int iDev, SDamageCtx &Ctx) { }
 		virtual void DisableDevice (CInstalledDevice *pDevice) { }
 		bool FindDevice (const CItem &Item, CInstalledDevice **retpDevice, CString *retsError);
 		virtual CInstalledDevice *FindDevice (const CItem &Item) { return NULL; }
 		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return false; }
-		bool FireCanInstallItem (const CItem &Item, int iSlot, CString *retsResult);
+		bool FireCanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, CString *retsResult);
 		bool FireCanRemoveItem (const CItem &Item, int iSlot, CString *retsResult);
-		virtual CInstalledDevice *GetDevice (int iDev) { return NULL; }
-		virtual int GetDeviceCount (void) const { return 0; }
-		virtual CDeviceItem GetDeviceItem (int iDev) const { return CItem().AsDeviceItem(); }
+		CInstalledDevice *GetDevice (int iDev) { return &GetDeviceSystem().GetDevice(iDev); }
+		int GetDeviceCount (void) const { return GetDeviceSystem().GetCount(); }
+		CDeviceItem GetDeviceItem (int iDev) const { return GetDeviceSystem().GetDeviceItem(iDev); }
 		virtual CDeviceSystem &GetDeviceSystem (void) { return CDeviceSystem::m_Null; }
 		virtual const CDeviceSystem &GetDeviceSystem (void) const { return CDeviceSystem::m_Null; }
 		CItem GetItemForDevice (CInstalledDevice *pDevice);
-		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return NULL; }
-		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }
-		virtual CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { return CItem().AsDeviceItem(); }
+		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return GetDeviceSystem().GetNamedDevice(iDev); }
+		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return GetDeviceSystem().GetNamedDevice(iDev); }
+		CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { return GetDeviceSystem().GetNamedDeviceItem(iDev); }
+		int GetShieldLevel (void) const;
 		virtual void OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass::DeviceNotificationTypes iEvent) { }
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, int iDevSlot);
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, CInstalledDevice *pDevice);
@@ -819,6 +830,7 @@ class CSpaceObject
 		void FireItemOnUpdate (void);
 		void FireOnAttacked (const SDamageCtx &Ctx);
 		void FireOnAttackedByPlayer (void);
+		void FireOnAutoLoot (CSpaceObject &LootedBy, const CItemList &Loot);
 		void FireOnCreate (void);
 		void FireOnCreate (const SOnCreate &OnCreate);
 		void FireOnCreateOrders (CSpaceObject *pBase, CSpaceObject *pTarget);
@@ -1199,6 +1211,7 @@ class CSpaceObject
 		virtual CMissile *AsMissile (void) { return NULL; }
 		virtual CMission *AsMission (void) { return NULL; }
 		virtual CShip *AsShip (void) { return NULL; }
+		virtual const CShip *AsShip (void) const { return NULL; }
 		virtual CStation *AsStation (void) { return NULL; }
 		virtual bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength) { return false; }
 		virtual bool CanAttack (void) const { return false; }
@@ -1210,6 +1223,7 @@ class CSpaceObject
 		virtual bool FindDataField (const CString &sField, CString *retsValue) { return false; }
 		virtual Categories GetCategory (void) const { return catOther; }
 		virtual DWORD GetClassUNID (void) { return 0; }
+		virtual const CSovereign *GetControllingSovereign (void) const { return GetSovereign(); }
 		virtual Metric GetGravity (Metric *retrRadius) const { return 0.0; }
 		CInteractionLevel GetInteraction (void) const { const CWeaponFireDesc *pDesc = GetWeaponFireDesc(); return (pDesc ? pDesc->GetInteraction() : CInteractionLevel(-1)); }
 		virtual Metric GetInvMass (void) const { return 0.0; }
@@ -1259,7 +1273,7 @@ class CSpaceObject
 		virtual int GetAISettingInteger (const CString &sSetting) { return 0; }
 		virtual CString GetAISettingString (const CString &sSetting) { return NULL_STR; }
 		virtual const CArmorSystem &GetArmorSystem (void) const { return CArmorSystem::m_Null; }
-		virtual CArmorSystem *GetArmorSystem (void) { return NULL; }
+		virtual CArmorSystem &GetArmorSystem (void) { return CArmorSystem::m_Null; }
 		virtual CurrencyValue GetBalancedTreasure (void) const { return 0; }
 		virtual Metric GetCargoSpaceLeft (void) const { return 1000000.0; }
 		virtual int GetCombatPower (void) { return 0; }
@@ -1281,7 +1295,6 @@ class CSpaceObject
 		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
 		virtual int GetPerception (void) const { return perceptNormal; }
 		virtual int GetScore (void) { return 0; }
-		virtual int GetShieldLevel (void) const { return -1; }
 		virtual CG32bitPixel GetSpaceColor (void) { return 0; }
 		virtual int GetStealth (void) const { return stealthNormal; }
 		virtual int GetStealthAdj (void) const { return 0; }
@@ -1373,6 +1386,8 @@ class CSpaceObject
 
 		virtual void OnLosePOV (void) { }
 
+		static CString GetCategoryName (Categories iCategory);
+
 	protected:
 
 		//	Virtuals to be overridden
@@ -1458,6 +1473,7 @@ class CSpaceObject
 		void SetInDamageCode (void) { m_fInDamage = true; }
 		void SetNoFriendlyFire (void) { m_fNoFriendlyFire = true; }
 		void SetNonLinearMove (bool bValue = true) { m_fNonLinearMove = bValue; }
+		void ShowDamage (const SDamageCtx &Ctx);
 		void UpdateTrade (SUpdateCtx &Ctx, int iInventoryRefreshed);
 		void UpdateTradeExtended (const CTimeSpan &ExtraTime);
 
@@ -1808,19 +1824,20 @@ class CAscendedObjectList
 		~CAscendedObjectList (void) { CleanUp(); }
 
 		void DeleteAll (void) { CleanUp(); }
-		void Insert (CSpaceObject *pObj) { m_List.Insert(pObj); }
+		void Insert (CSpaceObject &Obj, CSystemEventList &Events);
 		CSpaceObject *FindByID (DWORD dwID) const;
 		int GetCount (void) const { return m_List.GetCount(); }
 		CSpaceObject *GetObj (int iIndex) const { return m_List[iIndex]; }
 		bool IsEmpty (void) const { return (m_List.GetCount() == 0); }
 		void ReadFromStream (SLoadCtx &Ctx);
-		CSpaceObject *RemoveByID (DWORD dwID);
+		CSpaceObject *RemoveByID (DWORD dwID, CSystemEventList &retEvents);
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
 		void CleanUp (void);
 
 		TArray<CSpaceObject *> m_List;
+		CSystemEventList m_Events;
 	};
 
 //	Implementations ------------------------------------------------------------

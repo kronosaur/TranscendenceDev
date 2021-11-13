@@ -71,7 +71,7 @@
 #define SCALE_SHIP								CONSTLIT("ship")
 #define SCALE_FLOTSAM							CONSTLIT("flotsam")
 
-TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 17> {{
+TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 18> {{
 		{
 		"ascended",		"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsAscended()); },
@@ -121,6 +121,30 @@ TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TP
 		{
 		"escortingPlayer",	"True|Nil",
 		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsPlayerEscort()); },
+		NULL,
+		},
+
+		{
+		"events.system",	"Returns list of registered system events for this object.",
+		[](const CSpaceObject &Obj, const CString &sProperty)
+			{
+			const CSystem *pSystem = Obj.GetSystem();
+			if (!pSystem)
+				return ICCItemPtr::Nil();
+
+			auto Events = pSystem->GetEvents().FindEventsForObj(Obj);
+			if (Events.GetCount() == 0)
+				return ICCItemPtr::Nil();
+			else if (Events.GetCount() == 1)
+				return ICCItemPtr(Events[0]->GetEventHandlerName());
+			else
+				{
+				ICCItemPtr pResult(ICCItem::List);
+				for (int i = 0; i < Events.GetCount(); i++)
+					pResult->Append(ICCItemPtr(Events[i]->GetEventHandlerName()));
+				return pResult;
+				}
+			},
 		NULL,
 		},
 		
@@ -321,6 +345,33 @@ ICCItemPtr CSpaceObject::GetProperty (CCodeChainCtx &CCX, const CString &sProper
 		}
 	}
 
+CString CSpaceObject::GetCategoryName (Categories iCategory)
+	{
+	switch (iCategory)
+		{
+		case catShip:
+			return CATEGORY_SHIP;
+
+		case catStation:
+			return CATEGORY_STATION;
+
+		case catBeam:
+			return CATEGORY_BEAM;
+
+		case catMissile:
+			return CATEGORY_MISSILE;
+
+		case catMission:
+			return CATEGORY_MISSION;
+
+		case catMarker:
+			return CATEGORY_MARKER;
+
+		default:
+			return CATEGORY_EFFECT;
+		}
+	}
+
 ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const
 
 //	GetProperty
@@ -331,31 +382,8 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 	CCodeChain &CC = GetUniverse().GetCC();
 
 	if (strEquals(sName, PROPERTY_CATEGORY))
-		{
-		switch (GetCategory())
-			{
-			case catShip:
-				return CC.CreateString(CATEGORY_SHIP);
+		return CC.CreateString(GetCategoryName(GetCategory()));
 
-			case catStation:
-				return CC.CreateString(CATEGORY_STATION);
-
-			case catBeam:
-				return CC.CreateString(CATEGORY_BEAM);
-
-			case catMissile:
-				return CC.CreateString(CATEGORY_MISSILE);
-
-			case catMission:
-				return CC.CreateString(CATEGORY_MISSION);
-
-			case catMarker:
-				return CC.CreateString(CATEGORY_MARKER);
-
-			default:
-				return CC.CreateString(CATEGORY_EFFECT);
-			}
-		}
 	else if (strEquals(sName, PROPERTY_COMMS_KEY))
 		{
 		if (m_iHighlightChar)

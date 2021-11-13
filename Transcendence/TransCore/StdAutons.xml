@@ -714,7 +714,7 @@
 		<!-- Hull -->
 
 		<Hull
-			size=				"10"
+			size=				"13"
 			mass=				"2"
 			cargoSpace=			"0"
 
@@ -754,7 +754,8 @@
 		
 		<!-- Image and Effects -->
 
-		<Image imageID="&rsExplorerAutonHD;" imageX="0" imageY="0" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12"/>
+		<Image imageID="&rsExplorerAutonHD;" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12" viewportRatio="0.0035"/>
+		<HeroImage imageID="&rsExplorerAutonHero;" imageWidth="320" imageHeight="320"/>
 
 		<!-- AI and Behavior -->
 
@@ -881,11 +882,13 @@
 		</Events>
 		
 		<Language>
-			<String id="DeployAck">"Tx3 explorer online"</String>
-			<String id="ExplorationDone">"Exploration complete"</String>
-			<String id="ExploreAck">"Commencing exploration"</String>
-			<String id="NoExploreTarget">"No unexplored objects in system"</String>
-			<String id="ObjectExplored">"%objectName% explored"</String>
+			<String id="DeployAck">Tx3 explorer online</String>
+			<String id="ExplorationDone">Exploration complete</String>
+			<String id="ExploreAck">Commencing exploration</String>
+			<String id="NoExploreTarget">No unexplored objects in system</String>
+			<String id="ObjectExplored">%objectName% explored</String>
+
+			<Text id="action.msgExplore">[E]xplore</Text>
 		</Language>
 	</ShipClass>
 
@@ -1123,5 +1126,6 @@
 	<Image UNID="&rs310AAutonHero;"		bitmap="Resources\310AAutonLarge.jpg"	bitmask="Resources\310AAutonLargeMask.bmp"	loadOnUse="true" />
 
 	<Image UNID="&rsExplorerAutonHD;"	bitmap="Resources\ExplorerAutonHD.jpg"	bitmask="Resources\ExplorerAutonHDMask.bmp"	loadOnUse="true" />
+	<Image UNID="&rsExplorerAutonHero;"	bitmap="Resources\ExplorerAutonLarge.jpg"	bitmask="Resources\ExplorerAutonLargeMask.bmp"	loadOnUse="true" />
 
 </TranscendenceModule>

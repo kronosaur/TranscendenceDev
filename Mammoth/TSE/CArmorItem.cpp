@@ -112,3 +112,63 @@ int CArmorItem::GetHP (int *retiMaxHP, bool bUninstalled) const
 		return Max(0, iMaxHP - iDamagedHP);
 		}
 	}
+
+CString CArmorItem::GetHPDisplay (const CLanguage::SHPDisplayOptions &Options, int *retiIntegrity) const
+
+//	GetHPDisplay
+//
+//	Returns a string representing the armor integrity.
+
+	{
+	int iMaxHP;
+	int iHP = GetHP(&iMaxHP);
+
+	int iIntegrity = (iMaxHP ? mathRound(100.0 * iHP / iMaxHP) : 0);
+	if (retiIntegrity)
+		*retiIntegrity = iIntegrity;
+
+	switch (Options.iType)
+		{
+		case CLanguage::EHPDisplay::Percent:
+			return CLanguage::ComposeHitPointValue(iIntegrity, Options);
+
+		default:
+			return CLanguage::ComposeHitPointValue(GetHP(), Options);
+		}
+	}
+
+const CShipArmorSegmentDesc &CArmorItem::GetSegmentDesc () const
+
+//	GetSegmentDesc
+//
+//	Returns the segment descriptor.
+
+	{
+	const CSpaceObject *pSource = GetSource();
+	if (!pSource)
+		return CShipArmorSegmentDesc::m_Null;
+
+	const CShip *pShip = pSource->AsShip();
+	if (!pShip)
+		return CShipArmorSegmentDesc::m_Null;
+		
+	const CShipArmorDesc &ArmorDesc = pShip->GetClass().GetArmorDesc();
+	int iSect = GetSegmentIndex();
+	if (iSect < 0 || iSect >= ArmorDesc.GetCount())
+		return CShipArmorSegmentDesc::m_Null;
+
+	return ArmorDesc.GetSegment(iSect);
+	}
+
+int CArmorItem::GetSegmentIndex () const
+
+//	GetSegmentIndex
+//
+//	Returns the segment index (or -1)
+
+	{
+	if (const CInstalledArmor *pInstalled = GetInstalledArmor())
+		return pInstalled->GetSect();
+	else
+		return -1;
+	}

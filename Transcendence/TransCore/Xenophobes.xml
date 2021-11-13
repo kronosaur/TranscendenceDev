@@ -310,6 +310,7 @@
 			cyberDefenseLevel=	"8"
 
 			explosionType=		"&vtThermoExplosion3;"
+			achievement=		"humanSpace.worldshipKiller"
 			>
 
 		<!-- Configuration -->
@@ -425,6 +426,7 @@
 			cyberDefenseLevel=	"8"
 
 			explosionType=		"&vtThermoExplosion4;"
+			achievement=		"humanSpace.xenophobeArkKiller"
 			>
 
 		<Names definiteArticle="true">Ark of Bennin; Ark of Certitude; Ark of Justice &amp; Retribution; Ark of Purity;

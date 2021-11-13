@@ -25,8 +25,9 @@
 
 			maxAppearing=		"1"
 			priority=			"100"
+			ignoreOwnerLimit=	"true"
 
-			failureAfterOutOfSystem="5400"
+			failureOnReturnToSystem="5400"
 			noDebrief=			"true"
 			>
 		<Events>
@@ -150,6 +151,10 @@
 							
 							(shpCancelOrders stormhoundObj)
 							(shpOrder stormhoundObj 'gate skGateObj)
+
+							;	Achievement
+
+							(unvSetAchievement 'sotp.benedictAndFiona)
 							)
 					)
 			</OnCompleted>

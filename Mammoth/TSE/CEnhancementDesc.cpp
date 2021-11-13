@@ -168,6 +168,7 @@ void CEnhancementDesc::InsertHPBonus (int iBonus)
 	{
 	SEnhancerDesc *pEnhance = m_Enhancements.Insert();
 	pEnhance->Criteria.Init(CItemCriteria::ALL);
+	pEnhance->Criteria.SetExcludeVirtual(false);
 	pEnhance->Enhancement.SetModBonus(iBonus);
 	}
 
@@ -180,6 +181,7 @@ void CEnhancementDesc::InsertMissileDefense (void)
 	{
 	SEnhancerDesc *pEnhance = m_Enhancements.Insert();
 	pEnhance->Criteria.Init(CItemCriteria::ALL);
+	pEnhance->Criteria.SetExcludeVirtual(false);
 	pEnhance->Enhancement.SetModMissileDefense();
 	}
 

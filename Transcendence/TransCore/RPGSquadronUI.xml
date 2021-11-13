@@ -434,7 +434,7 @@
 						;	Convert back to item
 						(newAutonItem (objFireEvent autonObj 'ConvertToItem))
 						)
-						(objSetItemData gPlayerShip autonItem 'autonConfig (itmGetData newAutonItem 'autonConfig)))
+						(objSetItemData gPlayerShip autonItem 'autonConfig (itmGetData newAutonItem 'autonConfig))
 
 						;	Remove any suspended autons, in case we return to this 
 						;	screen from a dock services sub-screen. We want to get rid
@@ -514,20 +514,68 @@
 								(@ theEntry 'item)
 								)
 							)
+						(combatAutons 
+							(filter squadronList theEntry
+								(and (@ theEntry 'item)
+									(itmHasAttribute (@ theEntry 'item) 'combatAuton)
+									(obj@ gPlayerShip (@ theEntry 'item) 'canBeUsed)
+									)
+								)
+							)
 
 						(actionPos -1)
 						(nextActionPos (lambda () (setq actionPos (+ actionPos 1))))
 						)
 						(switch
 
-							;	If nothing is selected, then no commands
+							;	If nothing is selected, then handle it.
 
 							(not entry)
 								(block ()
+									;	Deploy all combat autons
+
+									(if combatAutons
+										(scrAddAction gScreen 'actionDeployCombatAutons (nextActionPos) Nil
+											(lambda ()
+												(block (
+													;	Recalc list because it may have changed.
+
+													(squadronList (scrGetList gScreen))
+													(combatAutons 
+														(filter squadronList theEntry
+															(and (@ theEntry 'item)
+																(itmHasAttribute (@ theEntry 'item) 'combatAuton)
+																(obj@ gPlayerShip (@ theEntry 'item) 'canBeUsed)
+																)
+															)
+														)
+													)
+													(enum combatAutons theEntry
+														(switch
+															(not (@ theEntry 'item))
+																Nil
+
+															(not (obj@ gPlayerShip (@ theEntry 'item) 'canBeUsed))
+																Nil
+
+															(obj@ gPlayerShip (@ theEntry 'item) 'hasUseScreen)
+																Nil
+
+															(block ()
+																(plyUseItem gPlayer (@ theEntry 'item))
+																)
+															)
+														)
+
+													(scrExitScreen gScreen 'forceUndock)
+													)
+												)
+											)
+										)
+
 									(scrSetDescTranslate gScreen 'descItemsInCargo {
 										itemCount: (fmtNoun (scrTranslate gScreen 'nounAuton) (count squadronList) 'countAlways)
 										})
-
 									)
 
 							storedItems
@@ -541,19 +589,38 @@
 
 									(scrAddAction gScreen 'actionDeploy (nextActionPos) Nil
 										(lambda ()
-											(enum storedItems theItem
-												(switch
-													(not (obj@ gPlayerShip theItem 'canBeUsed))
-														Nil
+											(block (
+												(entry (scrGetListEntry gScreen))
 
-													(obj@ gPlayerShip theItem 'hasUseScreen)
-														Nil
+												(selection
+													(switch
+														(= (typeof entry) 'struct)
+															(list entry)
 
-													(block ()
-														(plyUseItem gPlayer theItem)
-														(scrExitScreen gScreen 'forceUndock)
+														entry
 														)
 													)
+												(storedItems
+													(map selection theEntry
+														(@ theEntry 'item)
+														)
+													)
+												)
+												(enum storedItems theItem
+													(switch
+														(not (obj@ gPlayerShip theItem 'canBeUsed))
+															Nil
+
+														(obj@ gPlayerShip theItem 'hasUseScreen)
+															Nil
+
+														(block ()
+															(plyUseItem gPlayer theItem)
+															)
+														)
+													)
+
+												(scrExitScreen gScreen 'forceUndock)
 												)
 											)
 										)
@@ -688,6 +755,7 @@
 			<Text id="core.name">Squadron</Text>
 
 			<Text id="actionDeploy">[D]eploy</Text>
+			<Text id="actionDeployCombatAutons">[D]eploy Combat Autons</Text>
 			<Text id="actionShowConfiguration">[C]onfiguration</Text>
 			<Text id="actionNameAuton">[N]ame Auton</Text>
 			<Text id="actionInputName">[Enter] Name</Text>

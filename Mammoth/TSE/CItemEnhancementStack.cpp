@@ -48,6 +48,7 @@ void CItemEnhancementStack::AccumulateAttributes (const CItem &Item, TArray<SDis
 
 		switch (m_Stack[i].GetType())
 			{
+			case etBonus:
 			case etRegenerate:
 			case etHealerRegenerate:
 			case etReflect:
@@ -627,6 +628,20 @@ bool CItemEnhancementStack::IsBlindingImmune (void) const
 
 	for (i = 0; i < m_Stack.GetCount(); i++)
 		if (m_Stack[i].IsBlindingImmune())
+			return true;
+
+	return false;
+	}
+
+bool CItemEnhancementStack::IsBonus () const
+
+//	IsBonsu
+//
+//	Returns TRUE if we have an item-specific bonus.
+
+	{
+	for (int i = 0; i < m_Stack.GetCount(); i++)
+		if (m_Stack[i].IsBonus())
 			return true;
 
 	return false;

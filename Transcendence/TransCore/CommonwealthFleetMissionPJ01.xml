@@ -538,7 +538,11 @@
 			</OnCanDebrief>
 
 			<OnReward>
-				(commFleet_GiveReward gSource)
+				(block ()
+					(commFleet_GiveReward gSource)
+
+					(unvSetAchievement 'humanSpace.pointJuno)
+					)
 			</OnReward>
 
 			<OnGetNextScreen>

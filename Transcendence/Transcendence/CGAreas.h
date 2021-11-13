@@ -24,6 +24,7 @@ class CDetailList
 
 		void CleanUp (void) { m_List.DeleteAll(); }
 		void Format (int cxWidth, int cyHeight = 0, DWORD dwFlags = 0, int *retcyHeight = NULL);
+		int GetHeight () const { return m_cyFormattedHeight; }
 		void Load (ICCItem *pDetails);
 		void Paint (CG32bitImage &Dest, int x, int y) const;
 		void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
@@ -32,6 +33,7 @@ class CDetailList
 		struct SDetailEntry
 			{
 			CString sTitle;
+			int cyTitle = 0;
 			CG32bitImage *pIcon = NULL;
 			RECT rcIconSrc = { 0 };
 			CRTFText Desc;
@@ -65,6 +67,8 @@ class CDetailList
 		const CVisualPalette &m_VI;
 		CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
 		TArray<SDetailEntry> m_List;
+
+		int m_cyFormattedHeight = 0;
 	};
 
 class CDetailArea
@@ -112,7 +116,7 @@ class CDetailArea
 		void PaintBackgroundImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc, int cyExtraMargin = 0) const;
 		void PaintBadgeImage (CG32bitImage &Dest, const RECT &rcDest) const;
 		void PaintScaledImage (CG32bitImage &Dest, const RECT &rcDest, const ICCItem &ImageDesc) const;
-		void PaintStackedImage (CG32bitImage &Dest, int x, int y, ICCItem *pImageDesc, Metric rScale = 1.0) const;
+		void PaintStackedImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc, Metric rScale = 1.0) const;
 
 		CUniverse &m_Universe;
 		const CVisualPalette &m_VI;
@@ -165,6 +169,8 @@ class CGCarouselArea : public AGArea
 		bool MoveCursorBack (void);
 		bool MoveCursorForward (void);
 		void ResetCursor (void) { if (m_pListData) m_pListData->ResetCursor(); Invalidate(); }
+		void RestoreSelection (const ICCItem &Selection);
+		ICCItemPtr SaveSelection () const;
 		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
 		void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
 		void SetCursor (int iIndex) { if (m_pListData) m_pListData->SetCursor(iIndex); Invalidate(); }
@@ -274,6 +280,17 @@ class CGIconListArea : public AGArea
 	public:
 		static constexpr DWORD NOTIFY_SELECTION_CHANGED =		1;
 
+		enum class EMove
+			{
+			Down,						//	Move cursor down
+			Left,						//	Move cursor left
+			Right,						//	Move cursor right
+			Up,							//	Move cursor up
+
+			Next,						//	Move to next icon (usually right)
+			Prev,						//	Move to previous icon (usually left)
+			};
+
 		CGIconListArea (CUniverse &Universe, const CVisualPalette &VI, const CDockScreenVisuals &Theme) :
 				m_Universe(Universe),
 				m_VI(VI),
@@ -282,11 +299,13 @@ class CGIconListArea : public AGArea
 			InitFromTheme(VI, Theme);
 			}
 
+		bool DeselectAll ();
 		int GetCount () const { return m_List.GetCount(); }
 		ICCItemPtr GetEntry (int iIndex) const { if (iIndex < 0 || iIndex >= m_List.GetCount()) throw CException(ERR_FAIL); return m_List[iIndex].pData; }
 		ICCItemPtr GetList () const;
 		TArray<int> GetSelection () const;
 		ICCItemPtr GetSelectionAsCCItem () const;
+		bool MoveCursor (EMove iDirection);
 		void RestoreSelection (const ICCItem &Selection);
 		ICCItemPtr SaveSelection () const;
 		bool SetData (const ICCItem &List, CString *retsError = NULL);
@@ -322,12 +341,19 @@ class CGIconListArea : public AGArea
 
 			//	Computed in Format
 
+			mutable int iRow = -1;
+			mutable int iCol = -1;
 			mutable RECT rcRect = { 0 };		//	Location, relative to control rect
 			};
 
 		int CalcIconSize (int iEntryCount) const;
-		bool DeselectAll ();
+		bool ExtendSelection (int iPos, EMove iDirection);
 		bool Format (const RECT &rcRect) const;
+		int GetEntryAtDirection (int iPos, EMove iDirection) const;
+		int GetEntryFromDirection (EMove iDirection) const;
+		int GetFirstEntryInRow (int iRow) const;
+		int GetLastEntryInRow (int iRow) const;
+		int GetSelectedEntryFromDirection (EMove iDirection) const;
 		int HitTestEntry (int x, int y) const;
 		bool InitEntry (SEntry &Entry, const ICCItem &Data, CString *retsError = NULL);
 		void InitFromTheme (const CVisualPalette &VI, const CDockScreenVisuals &Theme);
@@ -682,6 +708,8 @@ class CGSelectorArea : public AGArea
 		virtual void Update (void) override;
 
 	private:
+		static constexpr int SPACING_X = 8;
+
 		enum ETypes
 			{
 			typeNone,
@@ -719,16 +747,17 @@ class CGSelectorArea : public AGArea
 		void CalcRegionRect (const SEntry &Entry, int xCenter, int yCenter, RECT *retrcRect);
 		void CleanUp (void);
 		bool FindLayoutForPos (const CVector &vPos, const TArray<bool> &SlotStatus, int *retiIndex = NULL);
-		bool FindNearestRegion (int xCur, int yCur, EDirections iDir, bool bDiagOnly, int *retiIndex) const;
+		bool FindNearestRegion (int iCur, int xCur, int yCur, EDirections iDir, bool bDiagOnly, int *retiIndex) const;
 		bool FindRegionInDirection (EDirections iDir, int *retiIndex = NULL) const;
+		void FixRegionOverlaps ();
 		void PaintBackground (CG32bitImage &Dest, const RECT &rcRect) const;
 		void PaintEmptySlot (CG32bitImage &Dest, const RECT &rcRect, const SEntry &Entry);
 		void PaintInstalledItem (CG32bitImage &Dest, const RECT &rcRect, const SEntry &Entry);
 		void PaintModifier (CG32bitImage &Dest, int x, int y, const CString &sText, CG32bitPixel rgbColor, CG32bitPixel rgbBackColor, int *rety);
-		void SetRegionsFromArmor (CSpaceObject *pSource);
-		void SetRegionsFromDevices (CSpaceObject *pSource);
-		void SetRegionsFromMiscDevices (CSpaceObject *pSource);
-		void SetRegionsFromWeapons (CSpaceObject *pSource);
+		void SetRegionsFromArmor (const CSpaceObject &Source);
+		void SetRegionsFromDevices (const CSpaceObject &Source);
+		void SetRegionsFromMiscDevices (const CSpaceObject &Source);
+		void SetRegionsFromWeapons (const CSpaceObject &Source);
 
 		const CVisualPalette &m_VI;
 		const CDockScreenVisuals &m_Theme;

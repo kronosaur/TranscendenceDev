@@ -13,7 +13,7 @@ class CItemListWrapper : public IListData
 		CItemListWrapper (CSpaceObject *pSource);
 		CItemListWrapper (CItemList &ItemList);
 
-		virtual void DeleteAtCursor (int iCount) override { m_ItemList.DeleteAtCursor(iCount); if (m_pSource) m_pSource->InvalidateItemListAddRemove(); }
+		virtual void DeleteAtCursor (int iCount) override;
 		virtual bool FindItem (const CItem &Item, int *retiCursor = NULL) override { return m_ItemList.FindItem(Item, 0, retiCursor); }
 		virtual int GetCount (void) const override { return m_ItemList.GetCount(); }
 		virtual int GetCursor (void) const override { return m_ItemList.GetCursor(); }

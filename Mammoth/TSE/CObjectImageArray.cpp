@@ -811,6 +811,8 @@ bool CObjectImageArray::ImagesIntersect (int iTick, int iRotation, int x, int y,
 //	Returns TRUE if the given image intersects with this image
 
 	{
+	DEBUG_TRY
+
 	if (m_pImage == NULL || Image2.m_pImage == NULL)
 		return false;
 
@@ -917,6 +919,8 @@ bool CObjectImageArray::ImagesIntersect (int iTick, int iRotation, int x, int y,
 	//	If we get this far then we did not intersect
 
 	return false;
+
+	DEBUG_CATCH
 	}
 
 ALERROR CObjectImageArray::Init (CUniverse &Universe, DWORD dwBitmapUNID, int iFrameCount, int iTicksPerFrame, bool bResolveNow)

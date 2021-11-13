@@ -122,6 +122,19 @@ ALERROR CGameFile::ComposeLoadError (const CString &sError, CString *retsError)
 	return ERR_FAIL;
 	}
 
+void CGameFile::CopyHeaderString (const CString &sSrc, char *pszDest, int iDestSize)
+
+//	CopyHeaderString
+//
+//	Copies a string.
+
+	{
+	int iLen = Min(sSrc.GetLength(), iDestSize - 1);
+	const char *pSrc = sSrc.GetASCIIZPointer();
+	utlMemCopy(pSrc, pszDest, iLen);
+	pszDest[iLen] = '\0';
+	}
+
 ALERROR CGameFile::Create (const CString &sFilename, const CString &sUsername)
 
 //	Create
@@ -164,20 +177,20 @@ ALERROR CGameFile::Create (const CString &sFilename, const CString &sUsername)
 	m_Header.dwCreateVersionMinor = LOWORD((DWORD)(VerInfo.dwProductVersion >> 32));
 	m_Header.dwCreateVersionPoint = HIWORD((DWORD)VerInfo.dwProductVersion);
 	m_Header.dwCreateVersionBuild = LOWORD((DWORD)VerInfo.dwProductVersion);
-	lstrcpyn(m_Header.szCreateVersion, VerInfo.sProductVersion.GetASCIIZPointer(), sizeof(m_Header.szCreateVersion));
+	CopyHeaderString(VerInfo.sProductVersion, m_Header.szCreateVersion, sizeof(m_Header.szCreateVersion));
 
 	//	If we have a username then we treat this as a regulation game.
 
 	if (!sUsername.IsBlank())
 		{
-		lstrcpyn(m_Header.szUsername, sUsername.GetASCIIZPointer(), sizeof(m_Header.szUsername));
+		CopyHeaderString(sUsername, m_Header.szUsername, sizeof(m_Header.szUsername));
 
 		//	Generate a game ID
 
 		CIntegerIP RandomID;
 		cryptoRandom(32, &RandomID);
 		CString sGameID = RandomID.AsBase64();
-		utlMemCopy(sGameID.GetASCIIZPointer(), m_Header.szGameID, sGameID.GetLength() + 1);
+		CopyHeaderString(sGameID, m_Header.szGameID, sizeof(m_Header.szGameID));
 		}
 
 	//	Save out an empty system map
@@ -213,7 +226,7 @@ ALERROR CGameFile::Create (const CString &sFilename, const CString &sUsername)
 	return NOERROR;
 	}
 
-DWORD CGameFile::EncodeDifficulty (CDifficultyOptions::ELevels iLevel)
+DWORD CGameFile::EncodeDifficulty (CDifficultyOptions::ELevel iLevel)
 
 //	EncodeDifficulty
 //
@@ -224,16 +237,16 @@ DWORD CGameFile::EncodeDifficulty (CDifficultyOptions::ELevels iLevel)
 		{
 		//	Challenge level is the default
 
-		case CDifficultyOptions::lvlChallenge:
+		case CDifficultyOptions::ELevel::Challenge:
 			return 0;
 
-		case CDifficultyOptions::lvlNormal:
+		case CDifficultyOptions::ELevel::Normal:
 			return (1 << GAME_FLAG_DIFFICULTY_SHIFT);
 
-		case CDifficultyOptions::lvlStory:
+		case CDifficultyOptions::ELevel::Story:
 			return (2 << GAME_FLAG_DIFFICULTY_SHIFT);
 
-		case CDifficultyOptions::lvlPermadeath:
+		case CDifficultyOptions::ELevel::Permadeath:
 			return (3 << GAME_FLAG_DIFFICULTY_SHIFT);
 
 		default:
@@ -282,7 +295,7 @@ CString CGameFile::GetCreateVersion (DWORD dwFlags) const
 		return CString(m_Header.szCreateVersion);
 	}
 
-CDifficultyOptions::ELevels CGameFile::GetDifficulty (void) const
+CDifficultyOptions::ELevel CGameFile::GetDifficulty (void) const
 
 //	GetDifficulty
 //
@@ -294,19 +307,19 @@ CDifficultyOptions::ELevels CGameFile::GetDifficulty (void) const
 	switch (dwFlags)
 		{
 		case 0:
-			return CDifficultyOptions::lvlChallenge;
+			return CDifficultyOptions::ELevel::Challenge;
 
 		case 1:
-			return CDifficultyOptions::lvlNormal;
+			return CDifficultyOptions::ELevel::Normal;
 
 		case 2:
-			return CDifficultyOptions::lvlStory;
+			return CDifficultyOptions::ELevel::Story;
 
 		case 3:
-			return CDifficultyOptions::lvlPermadeath;
+			return CDifficultyOptions::ELevel::Permadeath;
 
 		default:
-			return CDifficultyOptions::lvlChallenge;
+			return CDifficultyOptions::ELevel::Challenge;
 		}
 	}
 
@@ -1169,7 +1182,7 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 		ASSERT(!sSystemName.IsBlank());
 		if (!strEquals(sSystemName, GetSystemName()))
 			{
-			lstrcpyn(m_Header.szSystemName, sSystemName.GetASCIIZPointer(), sizeof(m_Header.szSystemName));
+			CopyHeaderString(sSystemName, m_Header.szSystemName, sizeof(m_Header.szSystemName));
 			bUpdateHeader = true;
 			}
 		}
@@ -1187,7 +1200,7 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 		m_Header.dwAdventure = Univ.GetCurrentAdventureDesc().GetExtensionUNID();
 
 		CString sPlayerName = Univ.GetPlayerName();
-		lstrcpyn(m_Header.szPlayerName, sPlayerName.GetASCIIZPointer(), sizeof(m_Header.szPlayerName));
+		CopyHeaderString(sPlayerName, m_Header.szPlayerName, sizeof(m_Header.szPlayerName));
 
 		bUpdateHeader = true;
 		}
@@ -1201,7 +1214,7 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 		m_Header.dwPlayerShip = pPlayerObj->GetType()->GetUNID();
 
 		CString sShipClass = pPlayerObj->GetNounPhrase(nounGeneric);
-		lstrcpyn(m_Header.szShipClassName, sShipClass.GetASCIIZPointer(), sizeof(m_Header.szShipClassName));
+		CopyHeaderString(sShipClass, m_Header.szShipClassName, sizeof(m_Header.szShipClassName));
 
 		SaveShipImage(Univ, *pPlayerObj);
 
@@ -1387,7 +1400,7 @@ ALERROR CGameFile::SetGameStatus (int iScore, const CString &sEpitaph, bool bEnd
 	ASSERT(m_pFile);
 
 	m_Header.dwScore = iScore;
-	lstrcpyn(m_Header.szEpitaph, sEpitaph.GetASCIIZPointer(), sizeof(m_Header.szEpitaph));
+	CopyHeaderString(sEpitaph, m_Header.szEpitaph, sizeof(m_Header.szEpitaph));
 
 	//	If this is an end game state, mark it
 

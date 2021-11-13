@@ -136,6 +136,9 @@
 				(switch
 					(= aReason 'failure)
 						(msnSetData gSource 'rewardItem (itmCreate &itCharonPirateMapROM; 1))
+
+					(= aReason 'success)
+						(unvSetAchievement 'humanSpace.noWinScenario)
 					)
 			</OnCompleted>
 

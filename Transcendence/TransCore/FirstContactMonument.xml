@@ -170,7 +170,7 @@
 			<Text id="actionInfoWhere">Where are they [n]ow?</Text>
 			<Text id="actionLeave">[L]eave</Text>
 			<Text id="actionContinue">[C]ontinue</Text>
-			<Text id="actionDone">[D]one</Text>
+			<Text id="actionDone">[Esc] Done</Text>
 			<Text id="actionBar">[S]it at the Bar</Text>
 
             <Text id="descWelcome">

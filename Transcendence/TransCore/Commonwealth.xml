@@ -92,9 +92,10 @@
 						
 					; If the player has slaves then free them
 					(and (objGetItems gPlayerShip "* +slaves;")
+							(not (scrGetSessionData gScreen 'rpg.noSlaveConfiscation))
 							(not (scrGetSessionData gScreen 'commonwealth.noSlaveConfiscation))
 							)
-						{	screen:&dsCommonwealthFreeSlaves;	priority:8		overrideOnly:true	}
+						{	screen:&dsRPGFreeSlaves;	priority:8		overrideOnly:true	}
 						
 					; If the player has a black market container, then she is imprisoned
 					(and (not (objGetItems gPlayerShip "*I+SmugglersHold;")) 
@@ -140,6 +141,43 @@
 		</Events>
 		
 		<Language>
+			<Text id="rpg.descDeclareSlaves">
+
+				You approach the customs podium, an officer asks you:
+
+				"Anything to declare?"
+
+				You remember that you have %itemName% in your cargo hold.
+
+			</Text>
+			<Text id="rpg.descRescueSlaves.1">
+
+				You inform the Commonwealth authorities that you have rescued 
+				a slave.
+				
+				The jaded officer takes the slave coffin and files a routine 
+				report.
+			
+			</Text>
+			<Text id="rpg.descRescueSlaves.2">
+			
+				You inform the Commonwealth authorities that you have rescued a
+				couple of slaves.
+				
+				The jaded officer takes the	two slave coffins and files a 
+				routine report.
+			
+			</Text>
+			<Text id="rpg.descRescueSlaves.several">
+
+				You inform the Commonwealth authorities that you have rescued 
+				several slaves. The officer in charge thanks you:
+
+				"You must have a pretty good ship to have survived a fight 
+				against Slavers!"
+				
+			</Text>
+
 			<Text id="textWantedFor">Wanted by the Commonwealth for %crimeText%</Text>
 		</Language>
 	</Sovereign>
@@ -347,6 +385,8 @@
 			name=				"Commonwealth defense turret"
 			sovereign=			"&svCommonwealth;"
 			inherit=			"&dsDockScreenBase;"
+
+			attributes=			"commonwealth, staticDefense"
 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockScreen=			"Main"
@@ -1623,7 +1663,7 @@
 
 						; Compose text
 						(scrSetDescTranslate gScreen 'descConfiscate {
-							itemList: (join (map itemsToConfiscate theItem (itmGetName theItem 'count)) 'oxfordComma)
+							itemList: (join (map itemsToConfiscate theItem (itmGetName theItem '(count escapeQuotes))) 'oxfordComma)
 							})
 						)
 				</OnPaneInit>
@@ -1645,202 +1685,6 @@
 				Commonwealth Customs has inspected your ship's cargo hold and
 				confiscated %itemList%.
 
-			</Text>
-		</Language>
-	</DockScreen>
-
-	<!-- Commonwealth Free Slaves -->
-
-	<DockScreen UNID="&dsCommonwealthFreeSlaves;"
-			nestedScreen="true"
-			inherit=		"&dsDockScreenBase;"
-			>
-		<InitialPane>
-			(block (
-				;	This is a list of all slaves we carry.
-
-				(allSlaves (objGetItems gPlayerShip "* +slaves;"))
-				(totalSlaves (map allSlaves 'reduceSum theItem (itmGetCount theItem)))
-				)
-				;	Remember these values. It's OK to do this here since they
-				;	are just cached values.
-
-				(scrSetData gScreen 'allSlaves allSlaves)
-				(scrSetData gScreen 'totalSlaves totalSlaves)
-
-				(switch
-					;	If we have a smuggler's cargo hold then we get the option of
-					;	not declaring the slaves
-
-					(objGetItems gPlayerShip "*I +smugglersHold;")
-						"FreeSlavesAsk"
-
-					;	Otherwise, we always free them.
-
-					"Default"
-					)
-				)
-		</InitialPane>
-
-		<Panes>
-			<Default>
-				<OnPaneInit>
-					(block (
-						(allSlaves (scrGetData gScreen 'allSlaves))
-						(totalSlaves (scrGetData gScreen 'totalSlaves))
-
-						desc
-						)
-						; Free the slaves
-
-						(enum allSlaves itemToRemove
-							(objRemoveItem gPlayerShip itemToRemove)
-							)
-
-						; Keep track of how many we have freed in total
-
-						(objIncData gPlayerShip 'slavesFreed totalSlaves)
-
-						; Create description
-
-						(switch
-							(= totalSlaves 1)
-								(scrSetDescTranslate gScreen 'descRescue.1)
-
-							(= totalSlaves 2)
-								(scrSetDescTranslate gScreen 'descRescue.2)
-
-							(scrSetDescTranslate gScreen 'descRescue.several)
-							)
-						)
-				</OnPaneInit>
-
-				<Actions>
-					<Action id="actionContinue" default="1" cancel="1">
-						(block (
-							(freed (objGetData gPlayerShip "slavesFreed"))
-							(rewarded (objGetData gPlayerShip "slaveReward"))
-							)
-							(switch
-								(and (geq freed 12) (ls rewarded 12))
-									(scrShowPane gScreen "Reward1")
-
-								(and (geq freed 24) (ls rewarded 24))
-									(scrShowPane gScreen "Reward1")
-
-								(scrExitScreen gScreen)
-								)
-							)
-					</Action>
-				</Actions>
-			</Default>
-
-			<FreeSlavesAsk>
-				<OnPaneInit>
-					(scrSetDescTranslate gScreen 'descDeclareSlaves {
-						itemName: (itmGetName (@ (scrGetData gScreen 'allSlaves) 0) 'count)
-						})
-				</OnPaneInit>
-
-				<Actions>
-					<Action id="actionDeclareSlaves" default="1">
-						(scrShowPane gScreen 'Default)
-					</Action>
-
-					<Action id="actionNothingToDeclare" cancel="1">
-						(block ()
-							;	Set a flag for the remainder of the session.
-							(scrSetSessionData gScreen 'commonwealth.noSlaveConfiscation True)
-							(scrExitScreen gScreen)
-							)
-					</Action>
-				</Actions>
-			</FreeSlavesAsk>
-
-			<Reward1>
-				<OnPaneInit>
-					(block (reward roll)
-						; Create a random reward
-						(setq roll (random 1 100))
-						(switch
-							(ls roll 25)
-								(setq reward (itmCreate &itLongzhuSphere; (random 1 3)))
-
-							(ls roll 60)
-								(setq reward (itmCreate &itPromethiumCrystal; (random 1 4)))
-
-							(setq reward (itmCreate &itCalligraphyScroll; 1))
-							)
-
-						; Give it to the player
-						(objAddItem gPlayerShip reward)
-						(scrSetDescTranslate gScreen 'descReward {
-							itemName: (itmGetName reward 'count)
-							})
-						)
-				</OnPaneInit>
-
-				<Actions>
-					<Action id="actionContinue" default="1" cancel="1">
-						(block Nil
-							(objSetData gPlayerShip "slaveReward" (objGetData gPlayerShip "slavesFreed"))
-							(scrExitScreen gScreen)
-							)
-					</Action>
-				</Actions>
-			</Reward1>
-		</Panes>
-
-		<Language>
-			<String id="actionDeclareSlaves">"[Y]es, I do."</String>
-			<String id="actionNothingToDeclare">"[N]o.</String>
-
-			<Text id="descDeclareSlaves">
-
-				You approach the customs podium, an officer asks you:
-
-				"Anything to declare?"
-
-				You remember that you have %itemName% in your cargo hold.
-
-			</Text>
-			<Text id="descRescue.1">
-
-				You inform the Commonwealth authorities that you have rescued 
-				a slave.
-				
-				The jaded officer takes the slave coffin and files a routine 
-				report.
-			
-			</Text>
-			<Text id="descRescue.2">
-			
-				You inform the Commonwealth authorities that you have rescued a
-				couple of slaves.
-				
-				The jaded officer takes the	two slave coffins and files a 
-				routine report.
-			
-			</Text>
-			<Text id="descRescue.several">
-
-				You inform the Commonwealth authorities that you have rescued 
-				several slaves. The officer in charge thanks you:
-
-				"You must have a pretty good ship to have survived a fight 
-				against Slavers!"
-				
-			</Text>
-			<Text id="descReward">
-
-				Medtechs revive one of the slaves, and after blinking away 
-				confusion, she thanks you with a barely audible whisper.
-				
-				She puts something in your hand, then turns and walks away 
-				without another word.
-				
-				When you open your hand you see %itemName%.
-			
 			</Text>
 		</Language>
 	</DockScreen>
@@ -2341,6 +2185,16 @@
 						)
 					)
 			</OnDestroy>
+
+			<OnPlayerSoldItem>
+				(switch
+					;	If the player sells an illegal item to a Commonwealth station
+					;	then we register an achievement.
+
+					(itmMatches gItem "* +illegal")
+						(unvSetAchievement 'humanSpace.blackTrafficker)
+					)
+			</OnPlayerSoldItem>
 		</Events>
 
 		<Language>

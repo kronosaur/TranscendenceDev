@@ -13,8 +13,10 @@
 CString::PSTORESTRUCT CString::g_pStore;
 int CString::g_iStoreSize;
 CString::PSTORESTRUCT CString::g_pFreeStore;
-CRITICAL_SECTION g_csStore;
 const CString Kernel::NULL_STR;
+
+static CRITICAL_SECTION g_csStore;
+static bool g_csInitialized = false;
 
 #ifdef DEBUG_STRING_LEAKS
 int g_iStoreCount = 0;
@@ -126,7 +128,7 @@ CString::CString (CharacterSets iCharSet, const char *pString) :
 
 			//	Now convert back to system code page
 
-			Size(iUnicodeLen);
+			Size(iUnicodeLen+1);
 			iResult = ::WideCharToMultiByte(CP_ACP, 0, szUnicode, iUnicodeLen, m_pStore->pString, iUnicodeLen, NULL, NULL);
 
 			//	Deal with failure
@@ -146,7 +148,7 @@ CString::CString (CharacterSets iCharSet, const char *pString) :
 						return;
 						}
 
-					Size(iSystemLen);
+					Size(iSystemLen+1);
 					iResult = ::WideCharToMultiByte(CP_ACP, 0, szUnicode, iUnicodeLen, m_pStore->pString, iSystemLen, NULL, NULL);
 					}
 				else
@@ -331,6 +333,12 @@ CString::PSTORESTRUCT CString::AllocStore (int iSize, BOOL bAllocString)
 
 	//	Critical section
 
+	if (!g_csInitialized)
+		{
+		InitializeCriticalSection(&g_csStore);
+		g_csInitialized = true;
+		}
+
 	EnterCriticalSection(&g_csStore);
 
 	//	If we haven't yet created the store array, do it now
@@ -390,6 +398,8 @@ CString::PSTORESTRUCT CString::AllocStore (int iSize, BOOL bAllocString)
 		//	Add the new storage blocks to the free list
 
 		AddToFreeList(g_pStore + g_iStoreSize, STORE_SIZE_INCREMENT);
+		if (!g_pFreeStore)
+			throw CException(ERR_FAIL);
 
 		g_iStoreSize += STORE_SIZE_INCREMENT;
 		}
@@ -837,28 +847,20 @@ void CString::Size (int iLength, DWORD dwFlags)
 
 	if (IsExternalStorage() || m_pStore->iAllocSize < iLength)
 		{
-		char *pNewString;
-
 		int iNewAlloc;
 		if (dwFlags & FLAG_GEOMETRIC_GROWTH)
 			iNewAlloc = Max(iLength, m_pStore->iAllocSize * 2);
 		else
 			iNewAlloc = iLength;
 
-		pNewString = (char *)HeapAlloc(GetProcessHeap(), 0, iNewAlloc);
+		char *pNewString = (char *)HeapAlloc(GetProcessHeap(), 0, iNewAlloc);
 		if (pNewString == NULL)
 			throw CException(ERR_MEMORY);
 
 		//	If we're supposed to preserve contents, copy the content over
 
 		if (dwFlags & FLAG_PRESERVE_CONTENTS)
-			{
-			int i;
-			int iCopyLen = Min(m_pStore->iLength, iLength);
-
-			for (i = 0; i < iCopyLen; i++)
-				pNewString[i] = m_pStore->pString[i];
-			}
+			utlMemCopy(m_pStore->pString, pNewString, Min(m_pStore->iLength, iLength));
 
 		//	Only free if this is our storage
 
@@ -1770,7 +1772,7 @@ ALERROR CString::INTStringInit (void)
 //	any other call.
 
 	{
-	InitializeCriticalSection(&g_csStore);
+//	InitializeCriticalSection(&g_csStore);
 	InitLowerCaseAbsoluteTable();
 	return NOERROR;
 	}

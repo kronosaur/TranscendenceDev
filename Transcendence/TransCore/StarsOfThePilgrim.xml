@@ -20,6 +20,7 @@
 	<!ENTITY msBenedictToKorolov		"0x0020000B">
 	<!ENTITY msBenedictTraining			"0x0020000C">
 	<!ENTITY rsGalacticCoreMissionTile	"0x0020000D">
+	<!ENTITY unidAchievements			"0x0020000E">
 	
 	<!-- 0010-005F BENEDICT MISSION ARC -->
 	
@@ -170,6 +171,12 @@
 								)
 							)
 						)
+
+					;	Achievement
+
+					(if (= aEndGameReason 'leftHumanSpace)
+						(unvSetAchievement (cat 'sotp.completed. (unv@ 'difficulty)))
+						)
 					)
 			</OnGameEnd>
 
@@ -238,6 +245,7 @@
 		</Language>
 	</AdventureDesc>
 		
+	<Module filename="Achievements.xml"/>
 	<Module filename="Benedict00.xml"/>
 	<Module filename="Benedict01.xml"/>
 	<Module filename="Benedict02.xml"/>
@@ -277,6 +285,11 @@
 	<SystemMap UNID="&unidPartISystemMap;"
 			displayOn="&smHumanSpace;"
 			>
+		<Properties>
+			<Global id="hereticTraveler"></Global>
+			<Global id="interstellarTraveler"></Global>
+			<Global id="outerRealmTraveler"></Global>
+		</Properties>
 			
 		<TopologyCreator>
 			<Node ID="NewBeyondMainline"/>
@@ -334,6 +347,41 @@
 					(unvSetObjectKnown 'A7 "t +unid:&stCommonwealthSettlement;;")
 					)
 			</OnGlobalUniverseCreated>
+
+			<OnGlobalPlayerEnteredSystem>
+				(switch
+					(= (sysGetNode) (obj@ gPlayerShip 'startingSystem))
+						Nil
+
+					;	Achievement when we leave our home system.
+
+					(not (typ@ gType 'interstellarTraveler))
+						(block ()
+							(typSet@ gType 'interstellarTraveler True)
+							(unvSetAchievement 'sotp.interstellarTraveler)
+							)
+
+					;	Achievement when we first enter the Outer Realm
+
+					(and (sysHasAttribute 'outerRealm)
+							(not (typ@ gType 'outerRealmTraveler))
+							)
+						(block ()
+							(typSet@ gType 'outerRealmTraveler True)
+							(unvSetAchievement 'humanSpace.outerRealm)
+							)
+
+					;	Achievement when we reach Heretic
+
+					(and (= (sysGetNode) 'G2)
+							(not (typ@ gType 'hereticTraveler))
+							)
+						(block ()
+							(typSet@ gType 'hereticTraveler True)
+							(unvSetAchievement 'humanSpace.heretic)
+							)
+					)
+			</OnGlobalPlayerEnteredSystem>
 		</Events>
 	</SystemMap>
 

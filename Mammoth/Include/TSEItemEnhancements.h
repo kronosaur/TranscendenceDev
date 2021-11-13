@@ -61,6 +61,7 @@ enum ItemEnhancementTypes
 	etCyberDefense =					0x1e00,	//	Bonus to cyberdefense (A = increase)
 	etStealth =							0x1f00,	//	Bonus to stealth (A = increase)
 	etPerception =						0x2000,	//	Bonus to perception (A = increate)
+	etBonus =							0x2100,	//	Item-specific bonus (e.g., for reactors and drives)
 
 	etData1Mask =						0x000f,	//	4-bits of data (generally for damage adj)
 	etData2Mask =						0x00f0,	//	4-bits of data (generally for damage type)
@@ -160,10 +161,11 @@ class CItemEnhancement
 		ItemEnhancementTypes GetType (void) const { return (ItemEnhancementTypes)(m_dwMods & etTypeMask); }
 		int GetValueAdj (const CItem &Item) const;
 		bool HasCustomDamageAdj (void) const;
-		ALERROR InitFromDesc (CUniverse &Universe, const ICCItem &Item, CString *retsError);
+		ALERROR InitFromDesc (CUniverse &Universe, const ICCItem &Value, CString *retsError);
 		ALERROR InitFromDesc (const CString &sDesc, CString *retsError);
 		ALERROR InitFromDesc (SDesignLoadCtx &Ctx, const CString &sDesc);
 		bool IsBlindingImmune (void) const { return IsIonEffectImmune() || ((GetType() == etSpecialDamage) && GetLevel2() == specialBlinding && !IsDisadvantage()); }
+		bool IsBonus () const { return ((GetType() == etBonus) && !IsDisadvantage()); }
 		bool IsDecaying (void) const { return ((GetType() == etRegenerate) && IsDisadvantage()); }
 		bool IsDeviceDamageImmune (void) const { return IsIonEffectImmune() || ((GetType() == etSpecialDamage) && GetLevel2() == specialDeviceDamage && !IsDisadvantage()); }
 		bool IsDisadvantage (void) const { return ((m_dwMods & etDisadvantage) ? true : false); }
@@ -280,12 +282,13 @@ class CItemEnhancementStack
 		void Insert (const CItemEnhancement &Mods);
 		void InsertActivateAdj (CItemType *pEnhancerType, int iAdj, int iMin, int iMax);
 		void InsertHPBonus (CItemType *pEnhancerType, int iBonus);
-		bool IsEmpty (void) const { return (m_Stack.GetCount() == 0); }
 		bool IsBlindingImmune (void) const;
+		bool IsBonus () const;
 		bool IsDecaying (void) const;
 		bool IsDeviceDamageImmune (void) const;
 		bool IsDisintegrationImmune (void) const;
 		bool IsEMPImmune (void) const;
+		bool IsEmpty (void) const { return (m_Stack.GetCount() == 0); }
 		bool IsMissileDefense (void) const;
 		bool IsNoAmmo () const;
 		bool IsPhotoRegenerating (void) const;

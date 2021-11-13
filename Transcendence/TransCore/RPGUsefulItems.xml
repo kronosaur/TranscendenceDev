@@ -355,8 +355,8 @@
 								(scrSetDesc gScreen (@ useInfo 'desc))
 
 							(scrSetDescTranslate gScreen 'descCanNotUse {
-								useItem: (itmGetName useItem 'article)
-								dstItem: (itmGetName dstItem 'article)
+								useItem: (itmGetName useItem '(article escapeQuotes))
+								dstItem: (itmGetName dstItem '(article escapeQuotes))
 								})
 							)
 						(scrEnableAction gScreen 'actionUse (@ useInfo 'canUse))
@@ -375,6 +375,12 @@
 							(theShip gPlayerShip)
 							(dstItem (scrGetItem gScreen))
 							(theCursor (scrGetListCursor gScreen))
+
+							(enhancedSegments
+								(count (objGetItems theShip "aI +property:enhancement; -property:defectiveEnhancement;"))
+								)
+							(allAlreadyEnhanced (= enhancedSegments (obj@ theShip 'armorCount)))
+
 							result
 							)
 							;	Use the item
@@ -385,6 +391,18 @@
 
 							;	Restore the cursor position
 							(scrSetListCursor gScreen theCursor)
+
+							;	If we've enhanced all armor segments on the player ship,
+							;	then we get an achievement.
+
+							(if (and (= theShip gPlayerShip)
+									(not allAlreadyEnhanced)
+									(= (count (objGetItems theShip "aI +property:enhancement; -property:defectiveEnhancement;"))
+										(obj@ theShip 'armorCount)
+										)
+									)
+								(unvSetAchievement 'core.armorEnhanced)
+								)
 
 							;	Store result and display it
 							(scrSetData gScreen 'usageResult result)
@@ -489,7 +507,7 @@
 			<Text id="labelDevicesCargo">Devices Cargo</Text>
 			<Text id="labelAmmoCargo">Ammo Cargo</Text>
 
-			<Text id="descCanNotUse">You cannot use %useItem% on this %dstItem%.</Text>
+			<Text id="descCanNotUse">You cannot use %useItem% on %dstItem%.</Text>
 		</Language>
 	</DockScreen>
 
@@ -515,7 +533,7 @@
 			minLevel: Target armor most be at least this level.
 			maxLevel: Target armor must not be higher than this level.
 
-    -->
+	-->
 
 	<Type UNID="&baStdArmorRepair;">
 		<Properties>
@@ -847,7 +865,7 @@
 		enhancement - enhancement to apply
 		enhancementTable - table of criteria and enhancements for different device types / levels
 
-    -->
+	-->
 
 	<Type UNID="&baStdDeviceEnhancement;">
 		<Properties>
@@ -1125,9 +1143,9 @@
 			<Text id="rpg.noTargetItemUnknown">				This appears to be some kind of device upgrade, but no appropriate device could be found.</Text>
 
 			<Text id="rpg.canUse.ok">						You can use %useItem% on this %dstItem%.</Text>
-			<Text id="rpg.canUse.alreadyEnhanced">			This %dstItem% is already enhanced; %UseItem% will have no effect.</Text>
-			<Text id="rpg.canUse.cantReplaceDefect">		This %dstItem% is defective; %UseItem% will have no effect.</Text>
-			<Text id="rpg.canUse.cantReplaceEnhancement">	This %dstItem% is already enhanced; %UseItem% will have no effect.</Text>
+			<Text id="rpg.canUse.alreadyEnhanced">			This %dstItem% is already enhanced; %useItem% will have no effect.</Text>
+			<Text id="rpg.canUse.cantReplaceDefect">		This %dstItem% is defective; %useItem% will have no effect.</Text>
+			<Text id="rpg.canUse.cantReplaceEnhancement">	This %dstItem% is already enhanced; %useItem% will have no effect.</Text>
 			<Text id="rpg.canUse.damaged">					You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>
 			<Text id="rpg.canUse.defectImproved">			You can use %useItem% on this %dstItem%.</Text>
 			<Text id="rpg.canUse.defectOK">					You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>
@@ -1262,7 +1280,7 @@
 			armor types / levels. Use this to apply different enhancements to
 			different types of armor.
 
-    -->
+	-->
 
 	<Type UNID="&baStdPasteBarrel;">
 		<Properties>
@@ -1460,9 +1478,9 @@
 
 		<Language>
 			<Text id="rpg.canUse.ok">						You can use %useItem% on this %dstItem%.</Text>
-			<Text id="rpg.canUse.alreadyEnhanced">			This %dstItem% is already enhanced; %UseItem% will have no effect.</Text>
+			<Text id="rpg.canUse.alreadyEnhanced">			This %dstItem% is already enhanced; %useItem% will have no effect.</Text>
 			<Text id="rpg.canUse.cantReplaceDefect">		This %dstItem% is defective; %useItem% will have no effect.</Text>
-			<Text id="rpg.canUse.cantReplaceEnhancement">	This %dstItem% is already enhanced; %UseItem% will have no effect.</Text>
+			<Text id="rpg.canUse.cantReplaceEnhancement">	This %dstItem% is already enhanced; %useItem% will have no effect.</Text>
 			<Text id="rpg.canUse.damaged">					You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>
 			<Text id="rpg.canUse.defectImproved">			You can use %useItem% on this %dstItem%.</Text>
 			<Text id="rpg.canUse.defectOK">					You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>

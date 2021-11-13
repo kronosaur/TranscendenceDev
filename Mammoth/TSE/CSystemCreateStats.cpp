@@ -185,7 +185,7 @@ void CSystemCreateStats::AddLabel (const CString &sAttributes)
 #ifdef DEBUG
 	if (strFind(sAttributes, CONSTLIT("outerSystem")) != -1
 			&& strFind(sAttributes, CONSTLIT("innerSystem")) != -1)
-		g_pUniverse->DebugOutput("ERROR: %s", sAttributes.GetASCIIZPointer());
+		g_pUniverse->LogOutput(strPatternSubst("ERROR: %s", sAttributes));
 #endif
 
 	if (m_PermuteAttribs.GetCount() > 0)

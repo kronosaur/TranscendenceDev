@@ -20,7 +20,9 @@ class CEngineOptions
 		bool InitArmorDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomArmorDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ArmorDamageAdj); }
 		bool InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType &Type);
 		bool InitShieldDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomShieldDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ShieldDamageAdj); }
+		bool IsDamageShown () const { return m_bShowDamageDone; }
 		void Merge (const CEngineOptions &Src);
+		void SetShowDamageDone (bool bValue = true) { m_bShowDamageDone = bValue; }
 
 	private:
 		bool InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable);
@@ -39,6 +41,8 @@ class CEngineOptions
 		bool m_bHideIonizeImmune = false;
 		bool m_bHideRadiationImmune = false;
 		bool m_bHideShatterImmune = false;
+
+		bool m_bShowDamageDone = false;
 	};
 
 //	CAdventureDesc -------------------------------------------------------------
@@ -53,7 +57,7 @@ class CAdventureDesc : public CDesignType
 		DWORD GetBackgroundUNID (void) const { return m_dwBackgroundUNID; }
 		const CEconomyType &GetDefaultCurrency (void) const;
 		CString GetDesc (void);
-		CDifficultyOptions::ELevels GetDifficulty (void) const { return m_iForceDifficulty; }
+		CDifficultyOptions::ELevel GetDifficulty (void) const { return m_iForceDifficulty; }
 		const CXMLElement &GetEncounterOverrideXML (void) const { return m_EncounterOverridesXML; }
 		const CEngineOptions &GetEngineOptions (void) const { return m_EngineOptions; }
 		DWORD GetExtensionUNID (void) const { return m_dwExtensionUNID; }
@@ -95,7 +99,7 @@ class CAdventureDesc : public CDesignType
 
 		CEngineOptions m_EngineOptions;			//	Options for engine behavior
 		CXMLElement m_EncounterOverridesXML;
-		CDifficultyOptions::ELevels m_iForceDifficulty = CDifficultyOptions::lvlUnknown;
+		CDifficultyOptions::ELevel m_iForceDifficulty = CDifficultyOptions::ELevel::Unknown;
 
 		CEconomyTypeRef m_pDefaultCurrency;		//	Default currency (mostly used for UI)
 

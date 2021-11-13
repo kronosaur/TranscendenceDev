@@ -103,7 +103,7 @@ struct SNewGameSettings
 	{
 	CString sPlayerName;						//	Character name
 	GenomeTypes iPlayerGenome = genomeUnknown;	//	Genome
-	CDifficultyOptions::ELevels iDifficulty = CDifficultyOptions::lvlUnknown;
+	CDifficultyOptions::ELevel iDifficulty = CDifficultyOptions::ELevel::Unknown;
 	DWORD dwPlayerShip = 0;						//	Starting ship class
 
 	bool bFullCreate = false;					//	If TRUE, create all systems
@@ -438,6 +438,7 @@ class CCommandLineDisplay
 		void CleanUp (void);
 		void ClearInput (void) { m_sInput = NULL_STR; m_iCursorPos = 0; m_bInvalid = true; }
 		void ClearHint (void) { m_sHint = NULL_STR; m_iScrollPos = 0; m_bInvalid = true; }
+		void ClearOutput () { m_iOutputStart = 0; m_iOutputEnd = 0; m_Output[0] = NULL_STR; m_bInvalid = true; }
 		const CString &GetInput (void) { return m_sInput; }
 		int GetOutputLineCount (void) { return GetOutputCount(); }
 		const RECT &GetRect (void) { return m_rcRect; }
@@ -475,7 +476,7 @@ class CCommandLineDisplay
 
 		const CVisualPalette &m_VI;
 		const CG16bitFont *m_pFont = NULL;
-		RECT m_rcRect;
+		RECT m_rcRect = { 0 };
 		bool m_bEnabled = false;
 
 		CString m_Output[MAX_LINES + 1];
@@ -494,7 +495,7 @@ class CCommandLineDisplay
 		CG32bitImage m_Buffer;
 		bool m_bInvalid = true;
 		int m_iCounter = 0;
-		RECT m_rcCursor;
+		RECT m_rcCursor = { 0 };
 	};
 
 class CUIResources
@@ -558,6 +559,7 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 								const CString &sDestEntryPoint);
 
 		//	CUniverse::IHost
+		virtual void ConsoleClear () override;
 		virtual void ConsoleOutput (const CString &sLine) override;
 		virtual IPlayerController *CreatePlayerController (void) override;
 		virtual IShipController *CreateShipController (const CString &sController) override;
@@ -567,6 +569,7 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		virtual void GameOutput (const CString &sLine) override;
 		virtual CG32bitPixel GetColor (const CString &sColor) const override;
 		virtual const CG16bitFont &GetFont (const CString &sFont) const override;
+		virtual void PostAchievement (const CAchievementDef &Def) override;
 
 		//	IAniCommand
 		virtual void OnAniCommand (const CString &sID, const CString &sEvent, const CString &sCmd, DWORD dwData);

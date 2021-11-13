@@ -50,6 +50,24 @@ bool CGIconListArea::DeselectAll ()
 	return bSelectionChanged;
 	}
 
+bool CGIconListArea::ExtendSelection (int iPos, EMove iDirection)
+
+//	ExtendSelection
+//
+//	Extends the selection in the given direction.
+
+	{
+	int iNewEntry = GetEntryAtDirection(iPos, iDirection);
+	if (iNewEntry == -1)
+		return false;
+
+	if (m_List[iNewEntry].bSelected)
+		return false;
+
+	m_List[iNewEntry].bSelected = true;
+	return true;
+	}
+
 bool CGIconListArea::Format (const RECT &rcRect) const
 
 //	Format
@@ -86,6 +104,8 @@ bool CGIconListArea::Format (const RECT &rcRect) const
 
 		//	Place each icon
 
+		const int cxFullRowWidth = (iEntriesPerRow * cxEntry) + ((iEntriesPerRow - 1) * ENTRY_SPACING);
+		const int xFullRowStart = rcRect.left + (RectWidth(rcRect) - cxFullRowWidth) / 2;
 		for (int i = 0; i < m_List.GetCount(); i++)
 			{
 			const SEntry &Entry = m_List[i];
@@ -99,6 +119,12 @@ bool CGIconListArea::Format (const RECT &rcRect) const
 			Entry.rcRect.right = Entry.rcRect.left + cxEntry;
 			Entry.rcRect.top = yStart + iRow * (cyEntry + ENTRY_SPACING);
 			Entry.rcRect.bottom = Entry.rcRect.top + cyEntry;
+
+			//	The row and column that we store is used for keyboard navigation
+			//	so we base it on position.
+
+			Entry.iRow = iRow;
+			Entry.iCol = mathRound((double)(Entry.rcRect.left - xFullRowStart) / (cxEntry + ENTRY_SPACING));
 			}
 
 		m_rcFrame = rcRect;
@@ -106,6 +132,218 @@ bool CGIconListArea::Format (const RECT &rcRect) const
 
 		return true;
 		}
+	}
+
+int CGIconListArea::GetEntryAtDirection (int iPos, EMove iDirection) const
+
+//	GetEntryAtDirection
+//
+//	Returns the entry in the given direction from iPos (or -1 if there are no
+//	appropriate entries.
+
+	{
+	if (!m_bFormatted || iPos == -1)
+		return -1;
+
+	int iCurRow = m_List[iPos].iRow;
+	int iCurCol = m_List[iPos].iCol;
+
+	switch (iDirection)
+		{
+		case EMove::Left:
+			{
+			for (int i = 0; i < m_List.GetCount(); i++)
+				{
+				if (i != iPos 
+						&& m_List[i].iRow == iCurRow 
+						&& m_List[i].iCol == iCurCol - 1)
+					return i;
+				}
+
+			int iEntry = GetLastEntryInRow(iCurRow - 1);
+			if (iEntry == iPos)
+				return -1;
+
+			return iEntry;
+			}
+
+		case EMove::Right:
+			{
+			for (int i = 0; i < m_List.GetCount(); i++)
+				{
+				if (i != iPos 
+						&& m_List[i].iRow == iCurRow 
+						&& m_List[i].iCol == iCurCol + 1)
+					return i;
+				}
+
+			int iEntry = GetFirstEntryInRow(iCurRow + 1);
+			if (iEntry == iPos)
+				return -1;
+
+			return iEntry;
+			}
+
+		case EMove::Up:
+			{
+			for (int i = 0; i < m_List.GetCount(); i++)
+				{
+				if (i != iPos 
+						&& m_List[i].iCol == iCurCol 
+						&& m_List[i].iRow == iCurRow - 1)
+					return i;
+				}
+
+			return -1;
+			}
+
+		case EMove::Down:
+			{
+			for (int i = 0; i < m_List.GetCount(); i++)
+				{
+				if (i != iPos 
+						&& m_List[i].iCol == iCurCol 
+						&& m_List[i].iRow == iCurRow + 1)
+					return i;
+				}
+
+			return -1;
+			}
+
+		default:
+			return -1;
+		}
+	}
+
+int CGIconListArea::GetEntryFromDirection (EMove iDirection) const
+
+//	GetEntryFromDirection
+//
+//	Returns the current cursor position for purposes of keyboard navigation.
+//	-1 = no icon selected.
+
+	{
+	if (!m_bFormatted)
+		return -1;
+
+	if (m_List.GetCount() == 0)
+		return -1;
+
+	int iBestEntry = 0;
+	for (int i = 1; i < m_List.GetCount(); i++)
+		{
+		switch (iDirection)
+			{
+			case EMove::Left:
+				if (m_List[i].iCol > m_List[iBestEntry].iCol)
+					iBestEntry = i;
+				break;
+
+			case EMove::Right:
+				if (m_List[i].iCol < m_List[iBestEntry].iCol)
+					iBestEntry = i;
+				break;
+
+			case EMove::Up:
+				if (m_List[i].iRow > m_List[iBestEntry].iRow)
+					iBestEntry = i;
+				break;
+
+			case EMove::Down:
+				if (m_List[i].iRow < m_List[iBestEntry].iRow)
+					iBestEntry = i;
+				break;
+			}
+		}
+
+	return iBestEntry;
+	}
+
+int CGIconListArea::GetFirstEntryInRow (int iRow) const
+
+//	GetFirstEntryInRow
+//
+//	Returns the first entry in the given row (or -1).
+
+	{
+	int iBestEntry = -1;
+	for (int i = 0; i < m_List.GetCount(); i++)
+		if (m_List[i].iRow == iRow)
+			{
+			if (iBestEntry == -1
+					|| m_List[i].iCol < m_List[iBestEntry].iCol)
+				iBestEntry = i;
+			}
+
+	return iBestEntry;
+	}
+
+int CGIconListArea::GetLastEntryInRow (int iRow) const
+
+//	GetLastEntryInRow
+//
+//	Returns the last entry in the given row (or -1).
+
+	{
+	int iBestEntry = -1;
+	for (int i = 0; i < m_List.GetCount(); i++)
+		if (m_List[i].iRow == iRow)
+			{
+			if (iBestEntry == -1
+					|| m_List[i].iCol > m_List[iBestEntry].iCol)
+				iBestEntry = i;
+			}
+
+	return iBestEntry;
+	}
+
+int CGIconListArea::GetSelectedEntryFromDirection (EMove iDirection) const
+
+//	GetSelectedEntryFromDirection
+//
+//	Returns the current cursor position for purposes of keyboard navigation.
+//	-1 = no icon selected.
+
+	{
+	if (!m_bFormatted)
+		return -1;
+
+	int iBestEntry = -1;
+	for (int i = 0; i < m_List.GetCount(); i++)
+		{
+		if (m_List[i].bSelected)
+			{
+			if (iBestEntry == -1)
+				iBestEntry = i;
+			else
+				{
+				switch (iDirection)
+					{
+					case EMove::Left:
+						if (m_List[i].iCol < m_List[iBestEntry].iCol)
+							iBestEntry = i;
+						break;
+
+					case EMove::Right:
+						if (m_List[i].iCol > m_List[iBestEntry].iCol)
+							iBestEntry = i;
+						break;
+
+					case EMove::Up:
+						if (m_List[i].iRow < m_List[iBestEntry].iRow)
+							iBestEntry = i;
+						break;
+
+					case EMove::Down:
+						if (m_List[i].iRow > m_List[iBestEntry].iRow)
+							iBestEntry = i;
+						break;
+					}
+				}
+			}
+		}
+
+	return iBestEntry;
 	}
 
 ICCItemPtr CGIconListArea::GetList () const
@@ -286,6 +524,40 @@ bool CGIconListArea::LButtonDown (int x, int y)
 		}
 
 	return false;
+	}
+
+bool CGIconListArea::MoveCursor (EMove iDirection)
+
+//	MoveCursor
+//
+//	Moves the cursor in the given direction.
+//
+//	NOTE: We do not signal a selection change because we assume our caller has
+//	initiated this and handles the selection change.
+
+	{
+	int iCurPos = GetSelectedEntryFromDirection(iDirection);
+	if (uiIsControlDown() && iCurPos != -1)
+		return ExtendSelection(iCurPos, iDirection);
+	else if (iCurPos == -1)
+		{
+		int iNewPos = GetEntryFromDirection(iDirection);
+		if (iNewPos == -1)
+			return false;
+
+		m_List[iNewPos].bSelected = true;
+		return true;
+		}
+	else
+		{
+		int iNewPos = GetEntryAtDirection(iCurPos, iDirection);
+		if (iNewPos == -1)
+			iNewPos = iCurPos;
+
+		DeselectAll();
+		m_List[iNewPos].bSelected = true;
+		return true;
+		}
 	}
 
 void CGIconListArea::Paint (CG32bitImage &Dest, const RECT &rcRect)

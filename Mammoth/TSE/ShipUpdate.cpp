@@ -270,6 +270,8 @@ bool CShip::UpdateAllDevices (CDeviceClass::SDeviceUpdateCtx &DeviceCtx, CShipUp
 //	Updates all devices. Returns FALSE if the ship was destroyed.
 
 	{
+	CUsePerformanceCounter Counter(GetUniverse(), CONSTLIT("update.shipDevices"));
+
 	m_fDeviceDisrupted = false;
 
 	for (CDeviceItem DeviceItem : GetDeviceSystem())
@@ -419,7 +421,8 @@ bool CShip::UpdateFuel (SUpdateCtx &Ctx, int iTick)
 //	NOTE: iTick is a local system tick, not the global universe tick.
 
 	{
-	ASSERT(m_pPowerUse);
+	if (!m_pPowerUse)
+		throw CException(ERR_FAIL);
 
 	DEBUG_TRY
 
@@ -634,6 +637,8 @@ bool CShip::UpdateTriggerAllDevices (CDeviceClass::SActivateCtx &ActivateCtx, CS
 //	Activates devices, if appropriate. Returns FALSE if the ship was destroyed.
 
 	{
+	CUsePerformanceCounter Counter(GetUniverse(), CONSTLIT("update.shipDevicesTrigger"));
+
 	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
 		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();

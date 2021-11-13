@@ -286,16 +286,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"is",	0,	},
 
 		{	"scrGetScreen",				    fnScrGet,		FN_SCR_GET_SCREEN,
-            "(scrGetScreen gScreen) -> screenDesc\n\n"
+			"(scrGetScreen gScreen) -> screenDesc\n\n"
 
-            "screenDesc:\n\n"
+			"screenDesc:\n\n"
 
-            "   'type: UNID of screen or root type\n"
-            "   'screenName: Screen name, if type is not a dock screen\n"
-            "   'pane: Current pane\n"
-            "   'data: Associated data\n",
+			"   'type: UNID of screen or root type\n"
+			"   'screenName: Screen name, if type is not a dock screen\n"
+			"   'pane: Current pane\n"
+			"   'data: Associated data\n",
 
-            "i",	0,	},
+			"i",	0,	},
 
 		{	"scrGetReturnData",				fnScrGet,		FN_SCR_RETURN_DATA,
 			"(scrGetReturnData screen attrib) -> data",
@@ -575,7 +575,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'resurrectCount\n"
 			"   'score\n"
 			"   'systemData\n"
-			"   'systemsVisited\n",
+			"   'systemsVisited\n"
+			"   'tonsOfOreMined\n",
 
 			"is",	0,	},
 
@@ -1367,7 +1368,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Increment
 
-			int iResult = pPlayer->GetGameStats().IncItemStat(sStat, pType->GetUNID(), iInc);
+			int iResult = pPlayer->GetGameStats().IncItemStat(sStat, *pType, iInc);
 
 			//	Return
 
@@ -1432,22 +1433,14 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	The value
 
-			CurrencyValue iPrice = pArgs->GetElement(iArg)->GetIntegerValue();
-
-			//	Convert to credits, if necessary
-
-			if (!pCurrency->IsCreditEquivalent())
-				{
-				const CEconomyType *pCreditEcon = CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
-				iPrice = pCreditEcon->Exchange(pCurrency, iPrice);
-				}
+			CCurrencyAndValue Price(pArgs->GetElement(iArg)->GetIntegerValue(), pCurrency);
 
 			//	Record
 
 			if (dwData == FN_PLY_RECORD_BUY_ITEM)
-				pPlayer->OnItemBought(Item, iPrice);
+				pPlayer->OnItemBought(Item, Price);
 			else
-				pPlayer->OnItemSold(Item, iPrice);
+				pPlayer->OnItemSold(Item, Price);
 
 			pResult = pCC->CreateTrue();
 			break;
@@ -1601,15 +1594,15 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_SCR_GET_PROPERTY:
 			return DockSession.GetProperty(pArgs->GetElement(1)->GetStringValue())->Reference();
 
-        case FN_SCR_GET_SCREEN:
-            {
-            if (!DockSession.InSession())
-                return pCC->CreateNil();
+		case FN_SCR_GET_SCREEN:
+			{
+			if (!DockSession.InSession())
+				return pCC->CreateNil();
 
-            const SDockFrame &CurFrame = DockSession.GetCurrentFrame();
+			const SDockFrame &CurFrame = DockSession.GetCurrentFrame();
 			ICCItemPtr pResult = CDockScreenStack::AsCCItem(CurFrame);
-            return pResult->Reference();
-            }
+			return pResult->Reference();
+			}
 
 		case FN_SCR_IS_ACTION_ENABLED:
 			{
@@ -1737,10 +1730,10 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	//	Convert the first argument into a dock screen object
 
 	CDockScreen *pScreen = GetDockScreenArg(*pCtx, pArgs->GetElement(0));
-    if (pScreen == NULL)
-        return pCC->CreateError(CONSTLIT("Screen expected"), pArgs->GetElement(0));
-    else if (!pScreen->InOnInit() && !pScreen->IsValid())
-        return pCC->CreateNil();
+	if (pScreen == NULL)
+		return pCC->CreateError(CONSTLIT("Screen expected"), pArgs->GetElement(0));
+	else if (!pScreen->InOnInit() && !pScreen->IsValid())
+		return pCC->CreateNil();
 
 	//	Do the appropriate command
 
@@ -1802,7 +1795,7 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CString sID = pArgs->GetElement(1)->GetStringValue();
 			int iPos = (pArgs->GetElement(2)->IsNil() ? -1 : pArgs->GetElement(2)->GetIntegerValue());
 			CString sLabel = (pArgs->GetElement(3)->IsNil() ? NULL_STR : pArgs->GetElement(3)->GetStringValue());
-            bool bMinor = (dwData == FN_SCR_ADD_MINOR_ACTION);
+			bool bMinor = (dwData == FN_SCR_ADD_MINOR_ACTION);
 			
 			int iArg = 4;
 			CString sKey;
@@ -1891,8 +1884,8 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateBool(pScreen->SetControlValue(sID, pValue));
 			}
 
-        case FN_SCR_CONTROL_VALUE_TRANSLATE:
-            {
+		case FN_SCR_CONTROL_VALUE_TRANSLATE:
+			{
 			CString sID = pArgs->GetElement(1)->GetStringValue();
 
 			ICCItem *pText = pArgs->GetElement(2);
@@ -1911,7 +1904,7 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Set the screen descriptor
 
 			return pCC->CreateBool(pScreen->SetControlValue(sID, pResult));
-            }
+			}
 
 		case FN_SCR_DATA:
 			return pCC->CreateBool(DockSession.SetData(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2)));

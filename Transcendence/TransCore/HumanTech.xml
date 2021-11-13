@@ -35,6 +35,7 @@
 
 			<ArmorDisplay 
 					style=			"circular"
+					scale=			"hp"
 					/>
 
 			<!-- NOTE: This shield definition is for backwards compatibility.

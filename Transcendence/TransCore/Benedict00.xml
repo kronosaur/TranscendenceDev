@@ -22,7 +22,7 @@
 
 			maxAppearing=		"1"
 			debriefAfterOutOfSystem="true"
-			failureAfterOutOfSystem="5400"
+			failureOnReturnToSystem="5400"
 			>
 		<Events>
 			<CanCreate>

@@ -41,18 +41,35 @@
 				))
 
 			(setq intGetGateToSystem (lambda (theSource destSystem)
-				(block (gateID gateObj)
+				(block (
+					;	Figure out which node we should go to to reach the destination
 
-					; Figure out which gate in the system leads to dest
-					(setq gateID (item (filter (sysGetStargates (sysGetNode)) theGate (intIsGateToSystem (sysGetNode) theGate destSystem Nil)) 0))
+					(nextNodeID (sysGetNextNodeTo destSystem))
 
-					; Return gate object
-					(if (and gateID (setq gateObj (sysFindObject theSource (cat "NG:" gateID))))
-						gateObj
-						
-						; If not found, return the nearest gate
-						(sysFindObject theSource "NG")
+					;	Find the stargate that leads that node
+
+					(nextGateID
+						(@ 
+							(filter (sysGetStargates) theGate 
+								(= (sysGetStargateDestinationNode theGate) nextNodeID)
+								)
+							0)
 						)
+
+					;	Find the stargate object
+
+					(stargateObj 
+						(or
+							(if nextGateID
+								(sysFindObject theSource (cat "NG:" nextGateID))
+								)
+
+							;	Nearest gate
+							(sysFindObject theSource "NG")
+							)
+						)
+					)
+					stargateObj
 					)
 				))
 				  
@@ -84,6 +101,7 @@
 						(plyGetItemStat gPlayer "itemsBoughtValue" smugglingCriteria))
 						)
 					(totalOreMinedValue (plyGetItemStat gPlayer 'itemsMinedValue "* +ore | * +minable;"))
+					(totalOreMined (plyGetStat gPlayer 'tonsOfOreMined))
 
 					; Conducts
 					(systemData (plyGetStat gPlayer "systemData"))
@@ -168,6 +186,9 @@
 							)
 						(if (gr totalEquipProfit 0)
 							(list (list "Profit on ship's equipment" totalEquipProfit "commerce"))
+							)
+						(if (gr totalOreMined 0)
+							(list (list "Tons of ore mined" totalOreMined "commerce"))
 							)
 						(if (gr totalOreMinedValue 0)
 							(list (list "Value of mined resources" totalOreMinedValue "commerce"))

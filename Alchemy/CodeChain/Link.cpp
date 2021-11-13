@@ -7,8 +7,7 @@
 #define SYMBOL_QUOTE					'\''	//	Quote symbol
 #define SYMBOL_OPENPAREN				'('		//	Open list
 #define SYMBOL_CLOSEPAREN				')'		//	Close list
-#define SYMBOL_OPENQUOTE				'\"'	//	Open quote
-#define SYMBOL_CLOSEQUOTE				'\"'	//	Close quote
+#define SYMBOL_DOUBLE_QUOTE				'\"'	//	quote
 #define SYMBOL_BACKSLASH				'\\'	//	Back-slash
 #define SYMBOL_OPENBRACE				'{'		//	Open literal structure
 #define SYMBOL_CLOSEBRACE				'}'		//	Close structure
@@ -236,7 +235,7 @@ ICCItemPtr CCodeChain::LinkFragment (const CString &sString, int iOffset, int *r
 	//	If this is an open quote, then read everything until
 	//	the close quote
 
-	else if (*pPos == SYMBOL_OPENQUOTE)
+	else if (*pPos == SYMBOL_DOUBLE_QUOTE)
 		{
 		//	Parse the string, until the end quote, parsing escape codes
 
@@ -250,7 +249,7 @@ ICCItemPtr CCodeChain::LinkFragment (const CString &sString, int iOffset, int *r
 
 			switch (*pPos)
 				{
-				case SYMBOL_CLOSEQUOTE:
+				case SYMBOL_DOUBLE_QUOTE:
 				case '\0':
 					{
 					if (pStartFragment)
@@ -315,7 +314,7 @@ ICCItemPtr CCodeChain::LinkFragment (const CString &sString, int iOffset, int *r
 		//	If we found the close, then create a string; otherwise,
 		//	it is an error
 
-		if (*pPos == SYMBOL_CLOSEQUOTE)
+		if (*pPos == SYMBOL_DOUBLE_QUOTE)
 			{
 			pResult = ICCItemPtr(CreateString(sResultString));
 
@@ -357,18 +356,17 @@ ICCItemPtr CCodeChain::LinkFragment (const CString &sString, int iOffset, int *r
 
 		//	Look for whitespace
 
-    	while (*pPos != '\0'
-        		&& *pPos != ' ' && *pPos != '\n' && *pPos != '\r' && *pPos != '\t'
-            	&& *pPos != SYMBOL_OPENPAREN
+		while (*pPos != '\0'
+				&& *pPos != ' ' && *pPos != '\n' && *pPos != '\r' && *pPos != '\t'
+				&& *pPos != SYMBOL_OPENPAREN
 				&& *pPos != SYMBOL_CLOSEPAREN
-				&& *pPos != SYMBOL_OPENQUOTE
-				&& *pPos != SYMBOL_CLOSEQUOTE
+				&& *pPos != SYMBOL_DOUBLE_QUOTE
 				&& *pPos != SYMBOL_OPENBRACE
 				&& *pPos != SYMBOL_CLOSEBRACE
 				&& *pPos != SYMBOL_COLON
 				&& *pPos != SYMBOL_QUOTE
 				&& *pPos != ';')
-        	pPos++;
+			pPos++;
 
 		//	If we did not advance, then we clearly hit an error
 
@@ -429,49 +427,49 @@ char *CCodeChain::SkipWhiteSpace (char *pPos, int *ioiLine)
 //	Skips white space and comments when parsing
 
 	{
-    bool bDone = false;
-    bool bInComment = false;
-    
-    while (!bDone)
-        {
-    	/*	If we're inside a comment, keep going until we find the end of the line;
-        	Otherwise, just skip white space */
-        
-        if (*pPos == '\0')
-            bDone = true;
-        else if (bInComment)
-            {
+	bool bDone = false;
+	bool bInComment = false;
+	
+	while (!bDone)
+		{
+		/*	If we're inside a comment, keep going until we find the end of the line;
+			Otherwise, just skip white space */
+		
+		if (*pPos == '\0')
+			bDone = true;
+		else if (bInComment)
+			{
 			if (*pPos == '\n')
 				{
 				*ioiLine += 1;
 				bInComment = false;
 				}
-        	else if (*pPos == '\r')
-                bInComment = false;
+			else if (*pPos == '\r')
+				bInComment = false;
 
-            pPos++;
-        	}
-        else
-            {
-        	if (*pPos == ';')
-                {
-                bInComment = true;
-                pPos++;
-            	}
+			pPos++;
+			}
+		else
+			{
+			if (*pPos == ';')
+				{
+				bInComment = true;
+				pPos++;
+				}
 			else if (*pPos == '\n')
 				{
 				*ioiLine += 1;
 				pPos++;
 				}
-            else if (*pPos == ' ' || *pPos == '\r' || *pPos == '\t')
-                pPos++;
-            else
-                bDone = true;
-        	}
-    	}
-    
-    return pPos;
-    }
+			else if (*pPos == ' ' || *pPos == '\r' || *pPos == '\t')
+				pPos++;
+			else
+				bDone = true;
+			}
+		}
+	
+	return pPos;
+	}
 
 CString CCodeChain::Unlink (ICCItem *pItem)
 

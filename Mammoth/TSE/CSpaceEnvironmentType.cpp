@@ -553,15 +553,13 @@ ALERROR CSpaceEnvironmentType::FireOnUpdate (CSpaceObject *pObj, CString *retsEr
 
 		Ctx.DefineSpaceObject(CONSTLIT("aObj"), pObj);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			{
 			if (retsError)
 				*retsError = strPatternSubst(CONSTLIT("SpaceEnv OnUpdate: %s"), pResult->GetStringValue());
 			return ERR_FAIL;
 			}
-
-		Ctx.Discard(pResult);
 		}
 
 	return NOERROR;

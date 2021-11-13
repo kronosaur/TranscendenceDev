@@ -155,6 +155,7 @@ class CHullDesc
 		int GetCyberDefenseLevel (void) const { return m_iCyberDefenseLevel; }
 		const CItemCriteria &GetDeviceCriteria (void) const { return m_DeviceCriteria; }
 		Metric GetExtraPoints (void) const { return m_rExtraPoints; }
+		int GetLifeSupportPowerUse () const { return m_iLifeSupportPowerUse; }
 		int GetMass (void) const { return m_iMass; }
 		int GetMaxCargoSpace (void) const { return m_iMaxCargoSpace; }
 		int GetMaxCounter(void) const { return m_iMaxCounter; }
@@ -191,6 +192,7 @@ class CHullDesc
 		int m_iCounterIncrementRate = 0;	//  Value by which temperature/capacitor counter is updated every tick
 		int m_iStealthAdj = 0;				//  Stealth value of the ship at zero heat to add to armor/nebula stealth value
 		int m_iStealthAdjAtMaxHeat = 0;		//  Stealth value of the ship at max heat to add to armor/nebula stealth value
+		int m_iLifeSupportPowerUse = 0;		//	Power used for life-support (in 1/10th MW).
 
 		CItemCriteria m_DeviceCriteria;		//	Allowable devices
 		CArmorLimits m_ArmorLimits;			//	Adjustments based on armor
@@ -401,6 +403,7 @@ class CShipClass : public CDesignType
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags = 0) const;
 
 		CString GenerateShipName (DWORD *retdwFlags) const;
+		const CString &GetAchievement () const { return m_sAchievement; }
 		const CAISettings &GetAISettings (void) const { return m_AISettings; }
 		const CShipArmorDesc &GetArmorDesc (void) const { return m_Armor; }
 		DWORD GetCategoryFlags (void) const;
@@ -413,7 +416,7 @@ class CShipClass : public CDesignType
 		CDesignType *GetDefaultEventHandler (void) const { return m_EventHandler; }
 		CSovereign *GetDefaultSovereign (void) const { return m_pDefaultSovereign; }
 		CString GetDesc (void) const;
-		IDeviceGenerator *GetDeviceSlots (void) const { return m_pDeviceSlots; }
+		const IDeviceGenerator &GetDeviceSlots (void) const;
 		const CDockingPorts &GetDockingPorts (void) { return m_DockingPorts; }
 		CVector GetDockingPortOffset (int iRotation);
 		const CDriveDesc &GetDriveDesc (const CItem **retpDriveItem = NULL) const;
@@ -441,7 +444,7 @@ class CShipClass : public CDesignType
 		int GetMaxStructuralHitPoints (void) const;
 		const CPlayerSettings *GetPlayerSettings (void) const;
 		CString GetPlayerSortString (void) const;
-		CVector GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos = true);
+		CVector GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos = true) const;
 		IItemGenerator *GetRandomItemTable (void) const { return m_pItems; }
 		const CReactorDesc &GetReactorDesc (const CItem **retpReactorItem = NULL) const;
 		int GetRotationAngle (void) { return m_Perf.GetIntegralRotationDesc().GetFrameAngle(); }
@@ -596,6 +599,7 @@ class CShipClass : public CDesignType
 		CString m_sTypeName;					//	Name of type
 		DWORD m_dwClassNameFlags = 0;			//	Flags for class name
 		CSovereignRef m_pDefaultSovereign;		//	Sovereign
+		CString m_sAchievement;					//	Achievement if killed by player
 
 		CString m_sShipNames;					//	Names to use for individual ship
 		DWORD m_dwShipNameFlags = 0;			//	Flags for ship name

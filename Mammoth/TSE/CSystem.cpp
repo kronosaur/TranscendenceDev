@@ -232,6 +232,9 @@ bool CSystem::AscendObject (CSpaceObject *pObj, CString *retsError)
 //	ascended objects. Return FALSE if there was an error.
 
 	{
+	if (!pObj)
+		throw CException(ERR_FAIL);
+
 	if (pObj->IsAscended())
 		return true;
 
@@ -256,13 +259,18 @@ bool CSystem::AscendObject (CSpaceObject *pObj, CString *retsError)
 		return false;
 		}
 
+	//	Move events
+
+	CSystemEventList Events;
+	TransferObjEventsOut(pObj, Events);
+
 	//	Ascend the object
 
 	pObj->Ascend();
 
 	//	Add to the list of ascended objects
 
-	m_Universe.AddAscendedObj(pObj);
+	m_Universe.AddAscendedObj(*pObj, Events);
 
 	//	Done
 
@@ -1329,8 +1337,8 @@ ALERROR CSystem::CreateStation (CStationType *pType,
 	CreateCtx.pEventHandler = pEventHandler;
 
 	CSpaceObject *pStation;
-	if (error = CreateStation(&Ctx,
-			pType,
+	if (error = CreateStation(Ctx,
+			*pType,
 			CreateCtx,
 			&pStation))
 		return error;
@@ -1478,9 +1486,31 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 			TArray<CSpaceObject *> Targets;
 			Targets.InsertEmpty(iFragmentCount);
 
+			//	If we have a shaped charge, then distribute
+
+			if (!pFragDesc->FragmentArc.IsEmpty())
+				{
+				int iArc = pFragDesc->FragmentArc.Roll();
+				int iHalfArc = iArc / 2;
+
+				for (int i = 0; i < iFragmentCount; i++)
+					{
+					int iDirOffset = pFragDesc->Direction.Roll();
+					int iCenterAngle = Ctx.iDirection;
+					if (iDirOffset != CWeaponFireDesc::DEFAULT_FRAGMENT_DIRECTION)
+						iCenterAngle += iDirOffset;
+
+					int iMinAngle = iCenterAngle - iHalfArc;
+					int iMaxAngle = iMinAngle + iArc;
+
+					Angles[i] = AngleMod(mathRandom(iMinAngle, iMaxAngle));
+					Targets[i] = Ctx.pTarget;
+					}
+				}
+
 			//	If we have lots of fragments then we just pick random angles
 
-			if (iFragmentCount > 90)
+			else if (iFragmentCount > 90)
 				{
 				for (i = 0; i < iFragmentCount; i++)
 					{
@@ -1493,8 +1523,19 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 
 			else
 				{
-				int iAngleOffset = mathRandom(0, 359);
-				int iAngleVar = 90 / iFragmentCount;
+				int iDirOffset = pFragDesc->Direction.Roll();
+				int iAngleOffset;
+				int iAngleVar;
+				if (iDirOffset == CWeaponFireDesc::DEFAULT_FRAGMENT_DIRECTION)
+					{
+					iAngleOffset = mathRandom(0, 359);
+					iAngleVar = 90 / iFragmentCount;
+					}
+				else
+					{
+					iAngleOffset = Ctx.iDirection + iDirOffset;
+					iAngleVar = 0;
+					}
 
 				//	Compute angles for each fragment
 
@@ -1664,7 +1705,9 @@ bool CSystem::DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **
 //	Descends the object back to the system.
 
 	{
-	CSpaceObject *pObj = m_Universe.RemoveAscendedObj(dwObjID);
+	CSystemEventList Events;
+
+	CSpaceObject *pObj = m_Universe.RemoveAscendedObj(dwObjID, Events);
 	if (pObj == NULL)
 		{
 		//	See if this object is already descended. Then we succeed.
@@ -1694,6 +1737,10 @@ bool CSystem::DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **
 
 	if (pObj->IsTimeStopped())
 		pObj->RestartTime();
+
+	//	Add events back to the system.
+
+	TransferObjEventsIn(pObj, Events);
 
 	//	Place the ship at the gate in the new system
 
@@ -1767,6 +1814,63 @@ CSpaceObject *CSystem::FindObject (DWORD dwID) const
 		}
 
 	return NULL;
+	}
+
+CSpaceObject *CSystem::FindNearestObject (CSpaceObject *pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria) const
+
+//	FindNearestObject
+//
+//	Returns the nearest object in range of the given position.
+
+	{
+	//	If we have a criteria, we need to check.
+
+	if (!Criteria.IsEmpty())
+		{
+		CCriteriaObjSelector Selector(pSource, Criteria);
+		CNearestInRadiusRange Range(vCenter, rRange);
+
+		return CSpaceObjectEnum::FindNearestObj(*this, Range, Selector);
+		}
+
+	//	If we don't have a criteria, then we can do this faster.
+
+	else
+		{
+		CAnyObjSelector Selector;
+		CNearestInRadiusRange Range(vCenter, rRange);
+
+		return CSpaceObjectEnum::FindNearestObj(*this, Range, Selector);
+		}
+	}
+
+CSpaceObject *CSystem::FindNearestTangibleObjectInArc (CSpaceObject *pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria, int iMinAngle, int iMaxAngle) const
+
+//	FindNearestObject
+//
+//	Returns the nearest object in range of the given position, within the angle defined by iMinAngle and iMaxAngle.
+//	If both iMinAngle and iMaxAngle are -1, then we ignore the angle of the object.
+
+	{
+	//	If we have a criteria, we need to check.
+
+	if (!Criteria.IsEmpty())
+		{
+		CCriteriaObjSelector Selector(pSource, Criteria);
+		CNearestInRadiusRange Range(vCenter, rRange);
+
+		return CSpaceObjectEnum::FindNearestTangibleObjInArc(*this, pSource, vCenter, iMinAngle, iMaxAngle, Range, Selector);
+		}
+
+	//	If we don't have a criteria, then we can do this faster.
+
+	else
+		{
+		CAnyObjSelector Selector;
+		CNearestInRadiusRange Range(vCenter, rRange);
+
+		return CSpaceObjectEnum::FindNearestTangibleObjInArc(*this, pSource, vCenter, iMinAngle, iMaxAngle, Range, Selector);
+		}
 	}
 
 CSpaceObject *CSystem::FindObjectInRange (CSpaceObject *pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria) const
@@ -1923,6 +2027,9 @@ void CSystem::FireOnSystemObjCreated (const CSpaceObject &Obj)
 
 		pHandler = pHandler->GetNext();
 		}
+
+	if (m_pType)
+		m_pType->FireOnSystemObjCreated(Obj);
 	}
 
 void CSystem::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
@@ -1942,6 +2049,9 @@ void CSystem::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 
 		pHandler = pHandler->GetNext();
 		}
+
+	if (m_pType)
+		m_pType->FireOnSystemObjDestroyed(Ctx);
 
 	DEBUG_CATCH
 	}
@@ -4655,9 +4765,7 @@ void CSystem::TransferObjEventsIn (CSpaceObject *pObj, CSystemEventList &ObjEven
 //	Moves all of the timed events in ObjEvents to the system
 
 	{
-	int i;
-
-	for (i = 0; i < ObjEvents.GetCount(); i++)
+	for (int i = 0; i < ObjEvents.GetCount(); i++)
 		{
 		CSystemEvent *pEvent = ObjEvents.GetEvent(i);
 
@@ -4680,12 +4788,13 @@ void CSystem::TransferObjEventsOut (CSpaceObject *pObj, CSystemEventList &ObjEve
 //	ObjEvents.
 
 	{
-	int i;
+	if (!pObj)
+		throw CException(ERR_FAIL);
 
-	for (i = 0; i < GetTimedEventCount(); i++)
+	for (int i = 0; i < GetTimedEventCount(); i++)
 		{
 		CSystemEvent *pEvent = GetTimedEvent(i);
-		if (pEvent->OnObjChangedSystems(pObj))
+		if (pEvent->OnObjChangedSystems(*pObj))
 			{
 			//	Set the tick to an offset from system time
 
@@ -4962,6 +5071,11 @@ void CSystem::UpdateCollisionTesting (SUpdateCtx &Ctx)
 //	contacts for every unique pair of collisions detected.
 
 	{
+	//	This range needs to be large enough to include the largest object that
+	//	can block things.
+
+	constexpr Metric MAX_COLLISION_RANGE = 6.0 * LIGHT_SECOND;
+
 	for (int i = 0; i < GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = GetObject(i);
@@ -4976,7 +5090,7 @@ void CSystem::UpdateCollisionTesting (SUpdateCtx &Ctx)
 		//	Loop over all objects in range.
 
 		SSpaceObjectGridEnumerator j;
-		EnumObjectsInBoxStart(j, pObj->GetPos(), g_SecondsPerUpdate * LIGHT_SECOND);
+		EnumObjectsInBoxStart(j, pObj->GetPos(), MAX_COLLISION_RANGE);
 		while (EnumObjectsInBoxHasMore(j))
 			{
 			CSpaceObject *pContactObj = EnumObjectsInBoxGetNext(j);

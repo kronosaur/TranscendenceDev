@@ -26,6 +26,7 @@ class CTLispConvert
 		static bool AsOption (ICCItem *pItem, const CString &sOption) { return (pItem && pItem->GetBooleanAt(sOption)); }
 		static CG32bitPixel AsRGB (const ICCItem *pItem, CG32bitPixel rgbDefault = CG32bitPixel(255, 255, 255));
 		static bool AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector *retSelector = NULL);
+		static bool AsSlotDesc (const ICCItem &Value, CDeviceSystem::SSlotDesc &retSlot);
 		static CVector AsVector (const ICCItem *pItem);
 		static ICCItemPtr CreateCurrencyValue (CurrencyValue Value);
 		static ICCItemPtr CreateItem (const CItem &Value);

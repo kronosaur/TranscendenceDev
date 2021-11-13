@@ -75,6 +75,10 @@ ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase) const
 		case countShips:
 			sType = CONSTLIT("ships");
 			break;
+
+		case countOnce:
+			sType = CONSTLIT("once");
+			break;
 			
 		case countChallengeEasy:
 			sType = CONSTLIT("challengeEasy");
@@ -315,6 +319,9 @@ bool CShipChallengeDesc::NeedsMoreShips (CSpaceObject &Base, const CShipChalleng
 		case countShips:
 			return (Ctx.GetTotalCount() < m_Count.RollSeeded(Base.GetDestiny()));
 
+		case countOnce:
+			return (Ctx.GetTotalRolls() == 0);
+
 		case countProperty:
 			{
 			ICCItemPtr pResult = Base.GetProperty(m_sValue);
@@ -493,8 +500,10 @@ void CShipChallengeCtx::AddShips (const CSpaceObjectList &List)
 //	Adds ships to the total
 
 	{
-	int i;
-
-	for (i = 0; i < List.GetCount(); i++)
+	for (int i = 0; i < List.GetCount(); i++)
 		AddShip(List.GetObj(i));
+
+	//	Increment roll count
+
+	m_iTotalRolls++;
 	}

@@ -75,7 +75,7 @@
 #define STR_NEXT								CONSTLIT("next")
 #define STR_PREV								CONSTLIT("prev")
 
-TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CShip>::SPropertyDef, 4> {{
+TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CShip>::SPropertyDef, 5> {{
 		{
 		"inPlayerSquadron",		"True/Nil if we're part of the player's squadron",
 		[](const CShip &ShipObj, const CString &sProperty) 
@@ -85,6 +85,16 @@ TPropertyHandler<CShip> CShip::m_PropertyTable = std::array<TPropertyHandler<CSh
 				return ICCItemPtr::Nil();
 
 			return ICCItemPtr(pPlayerShip->IsInOurSquadron(ShipObj));
+			},
+		NULL,
+		},
+
+		{
+		"maneuver",				"Max rotation (degrees/second)",
+		[](const CShip &ShipObj, const CString &sProperty) 
+			{
+			Metric rManeuver = g_SecondsPerUpdate * ShipObj.m_Perf.GetIntegralRotationDesc().GetMaxRotationSpeedDegrees();
+			return ICCItemPtr(rManeuver);
 			},
 		NULL,
 		},
@@ -443,7 +453,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_SELECTED_LAUNCHER))
 		{
-		CItem theItem = GetNamedItem(devMissileWeapon);
+		CItem theItem = GetNamedDeviceItem(devMissileWeapon);
 		if (theItem.GetType() == NULL)
 			return CC.CreateNil();
 
@@ -475,7 +485,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 
 		else
 			{
-			CItem theItem = GetNamedItem(devMissileWeapon);
+			CItem theItem = GetNamedDeviceItem(devMissileWeapon);
 			if (theItem.GetType() == NULL)
 				return CC.CreateNil();
 
@@ -484,7 +494,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		}
 	else if (strEquals(sName, PROPERTY_SELECTED_WEAPON))
 		{
-		CItem theItem = GetNamedItem(devPrimaryWeapon);
+		CItem theItem = GetNamedDeviceItem(devPrimaryWeapon);
 		if (theItem.GetType() == NULL)
 			return CC.CreateNil();
 
@@ -687,7 +697,14 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		}
 	else if (strEquals(sName, PROPERTY_ROTATION))
 		{
-		SetRotation(pValue->GetIntegerValue());
+		int iNewRotation = pValue->GetIntegerValue();
+		SetRotation(iNewRotation);
+
+		//	Notify controller that the rotation has been set manually. This is
+		//	necessary to turn off mouse move on the player ship (otherwise, we
+		//	will just rotate back to where the mouse points).
+
+		m_pController->OnShipStatus(IShipController::statusRotationSet, iNewRotation);
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_ROTATION_SPEED))

@@ -240,7 +240,14 @@
 
 						;	How many of this item do we already have?
 
-						(countInCargo (objHasItem gPlayerShip thisItem 1))
+						(matchingInCargo (filter (objGetItems gPlayerShip (cat "*U +unid:" (itmGetType thisItem))) theItem
+							(and (itmIsKnown thisItem)
+								(itmIsKnown theItem)
+								(= (itmIsDamaged thisItem) (itmIsDamaged theItem))
+								)
+							))
+
+						(countInCargo (map matchingInCargo 'reduceSum theItem (itmGetCount theItem)))
 						
 						;	Can this item be installed?
 						
@@ -323,6 +330,7 @@
 						(switch
 							(and (itmMatches thisItem "M")
 									(not (objGetItemProperty gPlayerShip thisItem 'canBeFired))
+									(itmGetProperty thisItem 'weaponTypes)
 									)
 								(scrSetControlValueTranslate gScreen 'descWarning 'warningLauncherNeeded {
 									itemName: (itmGetName thisItem '(short plural))
@@ -331,6 +339,7 @@
 
 							(and (itmMatches thisItem "m")
 									(not (objGetItemProperty gPlayerShip thisItem 'canBeFired))
+									(itmGetProperty thisItem 'weaponTypes)
 									)
 								(scrSetControlValueTranslate gScreen 'descWarning 'warningWeaponNeeded {
 									itemName: (itmGetName thisItem '(short plural))
@@ -1056,9 +1065,9 @@
 			(setq rpgBuyItem (lambda (theObj theItem thePrice theCurrency options)
 				(block Nil
 					; Add to player ship
-                    (if (not (@ options 'noAddItem))
-					    (objAddItem gPlayerShip theItem)
-                        )
+					(if (not (@ options 'noAddItem))
+						(objAddItem gPlayerShip theItem)
+						)
 					
 					; Record the transaction
 					(objRecordBuyItem gPlayerShip theObj theItem theCurrency thePrice)

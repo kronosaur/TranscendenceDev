@@ -5,7 +5,7 @@
 	<MissionType UNID="&baDefendStationMission;"
 			inherit=			"&unidCommonText;"
 			expireTime=			"5400"
-			failureAfterOutOfSystem="1800"
+			failureOnReturnToSystem="1800"
 			>
 		<Properties>
 			<!-- encounterDesc
@@ -121,6 +121,10 @@
 
 					(msnSet@ gSource 'targetID (objGetID firstObj))
 					(msnSetPlayerTarget gSource)
+					
+					;	Set up the station
+					
+					(objSet@ stationObj 'ignoreFriendlyFire True)
 					)
 
 			</OnAcceptedUndock>
@@ -207,6 +211,14 @@
 							)
 					)
 			</OnObjDestroyed>
+			
+			<OnCompleted>
+				(block (
+					(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+					)
+					(objSet@ stationObj 'ignoreFriendlyFire Nil)
+					)
+			</OnCompleted>
 
 			<OnReward>
 				(block (

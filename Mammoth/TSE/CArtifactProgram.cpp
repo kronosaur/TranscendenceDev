@@ -84,7 +84,7 @@ bool CArtifactProgram::Init (EProgramTypes iType, int iLocus, CItemType *pItem, 
 	Ctx.SaveAndDefineSourceVar(NULL);
 	Ctx.SaveAndDefineItemVar(CItem(pItem, 1));
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 
 	//	We expect the result to be a struct with various fields (some optional).
 
@@ -145,10 +145,6 @@ bool CArtifactProgram::Init (EProgramTypes iType, int iLocus, CItemType *pItem, 
 			pNewEffect->iValue = pDef->GetIntegerAt(FIELD_VALUE);
 			}
 		}
-
-	//	Done
-
-	Ctx.Discard(pResult);
 
 	return true;
 	}

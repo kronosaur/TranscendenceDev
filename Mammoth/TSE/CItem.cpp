@@ -24,35 +24,6 @@
 #define ON_REMOVED_AS_ENHANCEMENT_EVENT			CONSTLIT("OnRemovedAsEnhancement")
 #define ON_UNINSTALL_EVENT						CONSTLIT("OnUninstall")
 
-#define PROPERTY_CAN_BE_USED					CONSTLIT("canBeUsed")
-#define PROPERTY_CHARGES						CONSTLIT("charges")
-#define PROPERTY_COMPONENTS						CONSTLIT("components")
-#define PROPERTY_DAMAGED						CONSTLIT("damaged")
-#define PROPERTY_DEFECTIVE_ENHANCEMENT			CONSTLIT("defectiveEnhancement")
-#define PROPERTY_DESCRIPTION					CONSTLIT("description")
-#define PROPERTY_DISRUPTED						CONSTLIT("disrupted")
-#define PROPERTY_ENHANCEMENT					CONSTLIT("enhancement")
-#define PROPERTY_HAS_USE_SCREEN					CONSTLIT("hasUseScreen")
-#define PROPERTY_INC_CHARGES					CONSTLIT("incCharges")
-#define PROPERTY_INSTALLED						CONSTLIT("installed")
-#define PROPERTY_KNOWN							CONSTLIT("known")
-#define PROPERTY_LEVEL  						CONSTLIT("level")
-#define PROPERTY_MAX_CHARGES  					CONSTLIT("maxCharges")
-#define PROPERTY_MAX_LEVEL  					CONSTLIT("maxLevel")
-#define PROPERTY_MIN_LEVEL  					CONSTLIT("minLevel")
-#define PROPERTY_MASS_BONUS_PER_CHARGE			CONSTLIT("massBonusPerCharge")
-#define PROPERTY_PRICE							CONSTLIT("price")
-#define PROPERTY_REFERENCE						CONSTLIT("reference")
-#define PROPERTY_ROOT_NAME						CONSTLIT("rootName")
-#define PROPERTY_SLOT_INDEX						CONSTLIT("slotIndex")
-#define PROPERTY_TRADE_ID						CONSTLIT("tradeID")
-#define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
-#define PROPERTY_VARIANT						CONSTLIT("variant")
-#define PROPERTY_UNKNOWN_TYPE					CONSTLIT("unknownType")
-#define PROPERTY_UNKNOWN_TYPE_INDEX				CONSTLIT("unknownTypeIndex")
-#define PROPERTY_USED							CONSTLIT("used")
-#define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
-
 #define SPECIAL_PROPERTY						CONSTLIT("property:")
 
 CItemEnhancement CItem::m_NullMod;
@@ -161,8 +132,6 @@ void CItem::AccumulateCustomAttributes (TArray<SDisplayAttribute> *retList, ICCI
 //	Adds display attributes defined by <GetDisplayAttributes>
 
 	{
-	int i;
-
 	//	See if we have <GetDisplayAttributes> event. If not, we're done.
 
 	SEventHandlerDesc Event;
@@ -177,14 +146,14 @@ void CItem::AccumulateCustomAttributes (TArray<SDisplayAttribute> *retList, ICCI
 	Ctx.SaveAndDefineItemVar(*this);
 	Ctx.SaveAndDefineDataVar(pData);
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
 		::kernelDebugLogPattern("[%08x] <GetDisplayAttributes>: %s", GetType()->GetUNID(), pResult->GetStringValue());
 	else if (!pResult->IsNil())
 		{
 		//	We expect a list of attributes.
 
-		for (i = 0; i < pResult->GetCount(); i++)
+		for (int i = 0; i < pResult->GetCount(); i++)
 			{
 			ICCItem *pEntry = pResult->GetElement(i);
 
@@ -193,8 +162,6 @@ void CItem::AccumulateCustomAttributes (TArray<SDisplayAttribute> *retList, ICCI
 				retList->Insert(Entry);
 			}
 		}
-
-	Ctx.Discard(pResult);
 	}
 
 bool CItem::AccumulateEnhancementDisplayAttributes (TArray<SDisplayAttribute> &retList) const
@@ -544,49 +511,6 @@ void CItem::Extra (void)
 		m_pExtra = new SExtra;
 	}
 
-bool CItem::FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult) const
-
-//	FindCustomProperty
-//
-//	Finds a custom property.
-
-	{
-	if (IsEmpty())
-		return false;
-
-	EPropertyType iType;
-	if (!m_pItemType->FindCustomProperty(sProperty, pResult, &iType))
-		return false;
-
-	switch (iType)
-		{
-		case EPropertyType::propData:
-		case EPropertyType::propItemData:
-		case EPropertyType::propVariant:
-			pResult = GetDataAsItem(sProperty);
-			return true;
-
-		case EPropertyType::propDynamicData:
-			{
-			CCodeChainCtx RunCtx(GetUniverse());
-
-			RunCtx.SetItemType(GetType());
-			RunCtx.DefineContainingType(m_pItemType);
-			RunCtx.SaveAndDefineSourceVar(GetSource());
-			RunCtx.SaveAndDefineItemVar(*this);
-
-			pResult = RunCtx.RunCode(pResult);
-			return true;
-			}
-
-		case EPropertyType::propObjData:
-			return false;
-
-		default:
-			return true;
-		}
-	}
-
 bool CItem::FireCanBeInstalled (CSpaceObject *pSource, int iSlot, CString *retsError) const
 
 //	FireCanBeInstalled
@@ -627,13 +551,14 @@ bool CItem::FireCanBeInstalled (CSpaceObject *pSource, int iSlot, CString *retsE
 			Ctx.DefineNil(CONSTLIT("aArmorSeg"));
 			}
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		bool bCanBeInstalled;
 		if (pResult->IsError())
 			{
 			*retsError = pResult->GetStringValue();
-			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x CanBeInstalled"), m_pItemType->GetUNID()), pResult);
+			if (pSource)
+				pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x CanBeInstalled"), m_pItemType->GetUNID()), pResult);
 			bCanBeInstalled = false;
 			}
 		else if (!pResult->IsTrue())
@@ -643,8 +568,6 @@ bool CItem::FireCanBeInstalled (CSpaceObject *pSource, int iSlot, CString *retsE
 			}
 		else
 			bCanBeInstalled = true;
-
-		Ctx.Discard(pResult);
 
 		return bCanBeInstalled;
 		}
@@ -668,7 +591,7 @@ bool CItem::FireCanBeUninstalled (CSpaceObject *pSource, CString *retsError) con
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		bool bCanBeUninstalled;
 		if (pResult->IsError())
@@ -684,8 +607,6 @@ bool CItem::FireCanBeUninstalled (CSpaceObject *pSource, CString *retsError) con
 			}
 		else
 			bCanBeUninstalled = true;
-
-		Ctx.Discard(pResult);
 
 		return bCanBeUninstalled;
 		}
@@ -774,7 +695,7 @@ void CItem::FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *
 
 		//	Run code
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			{
 			if (ItemCtx.GetSource())
@@ -786,9 +707,7 @@ void CItem::FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *
 		//	Either return the event result or discard it
 
 		if (retpResult)
-			*retpResult = pResult;
-		else
-			Ctx.Discard(pResult);
+			*retpResult = pResult->Reference();
 		}
 	else
 		{
@@ -841,10 +760,9 @@ void CItem::FireOnAddedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEn
 		Ctx.SaveAndDefineItemVar(ItemEnhanced);
 		Ctx.DefineInteger(CONSTLIT("aResult"), (int)iStatus);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnAddedAsEnhancement"), m_pItemType->GetUNID()), pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -874,9 +792,8 @@ bool CItem::FireOnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, cons
 		Ctx.DefineBool(CONSTLIT("aDestroy"), (iCause != enteredStargate && iCause != ascended));
 		Ctx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(iCause));
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		bool bResult = (pResult->IsNil() ? false : true);
-		Ctx.Discard(pResult);
 
 		return bResult;
 		}
@@ -902,10 +819,9 @@ void CItem::FireOnDisabled (CSpaceObject *pSource) const
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnDisable"), m_pItemType->GetUNID()), pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -927,10 +843,9 @@ void CItem::FireOnDocked (CSpaceObject *pSource, CSpaceObject *pDockedAt) const
 		Ctx.DefineSpaceObject(CONSTLIT("aObjDocked"), pSource);
 		Ctx.DefineSpaceObject(CONSTLIT("aDockTarget"), pDockedAt);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnDocked"), m_pItemType->GetUNID()), pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -950,10 +865,9 @@ void CItem::FireOnEnabled (CSpaceObject *pSource) const
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnEnable"), m_pItemType->GetUNID()), pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -1037,10 +951,9 @@ void CItem::FireOnInstall (CSpaceObject *pSource) const
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnInstall"), m_pItemType->GetUNID()), pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -1067,10 +980,9 @@ void CItem::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) c
 		CCCtx.DefineBool(CONSTLIT("aDestroy"), Ctx.WasDestroyed());
 		CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnObjDestroyed"), m_pItemType->GetUNID()), pResult);
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -1091,13 +1003,12 @@ bool CItem::FireOnReactorOverload (CSpaceObject *pSource) const
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnReactorOverload"), m_pItemType->GetUNID()), pResult);
 		else
 			bHandled = !pResult->IsNil();
 
-		Ctx.Discard(pResult);
 		return bHandled;
 		}
 	else
@@ -1120,10 +1031,9 @@ void CItem::FireOnRemovedAsEnhancement (CSpaceObject *pSource, const CItem &Item
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(ItemEnhanced);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnRemovedAsEnhancement"), m_pItemType->GetUNID()), pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -1143,10 +1053,9 @@ void CItem::FireOnUninstall (CSpaceObject *pSource) const
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnUninstall"), m_pItemType->GetUNID()), pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -1222,10 +1131,8 @@ CString CItem::GetDesc (bool bActual) const
 		Ctx.SaveAndDefineSourceVar(GetSource());
 		Ctx.SaveAndDefineItemVar(*this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		CString sDesc = pResult->GetStringValue();
-		Ctx.Discard(pResult);
-
 		return sDesc;
 		}
 
@@ -1668,7 +1575,7 @@ CString CItem::GetNounPhrase (DWORD dwFlags) const
 		Ctx.SaveAndDefineItemVar(*this);
 		Ctx.DefineVar(CONSTLIT("aFlags"), CLanguage::GetNounFlags(dwFlags));
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			{
 			sName = pResult->GetStringValue();
@@ -1684,7 +1591,6 @@ CString CItem::GetNounPhrase (DWORD dwFlags) const
 			sName = pResult->GetStringValue();
 			dwNounFlags = 0;
 			}
-		Ctx.Discard(pResult);
 		}
 	else if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetName, &Event)
 			 && !(dwFlags & nounNoEvent))
@@ -1776,308 +1682,6 @@ int CItem::GetInstallCost (void) const
 		return -1;
 	}
 
-ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty, bool bOnType) const
-
-//	GetItemProperty
-//
-//	Returns an item property. Caller must free ICCItem.
-//
-//	This is one of the main entry points for item properties (the other is 
-//	CDesignType::GetProperty). All other item property functions are helpers and
-//	should not be called directly.
-//
-//	This function assumes that the item specified by CItemCtx is the SAME as 
-//	this item. Behavior is undefined otherwise. However, we DO support an empty
-//	CItemCtx.
-//
-//	ARCHITECTURE
-//
-//	There are two entry points for item properties. CDesignType::GetProperty 
-//	returns all properties available to uninstalled items, including any device
-//	or armor specific properties.
-//
-//	CItem::GetItemProperty is a superset of CDesignType::GetProperty. It also
-//	returns properties available to concrete and installed items. For example, 
-//	it returns the damaged state of an item and the charges on a weapon.
-//
-//	Importantly, the properties returned by CDesignType::GetProperty are 
-//	identical to those returned by CItem::GetItemProperty on a newly cons'ed up
-//	item.
-//
-//	All other item properties are helpers and should not be called directly
-//	other than from one of the two methods above.
-//
-//	IMPLEMENTATION NOTES
-//
-//	CDeviceClass::FindItemProperty: We take both CCodeChainCtx and CItemCtx. This
-//		method ONLY returns device properties. It will never return CItem or
-//		CItemType properties (because otherwise we'd recurse infinitely). It
-//		returns NULL if it does not know about the property.
-//
-//	CDesignType::FindBaseProperty: This method handles generic type properties 
-//		and it also converts any old-style fields into properties. When getting
-//		fields, we might again call out to the device class (to get its fields).
-//		We return NULL if we do not know about the property.
-//
-//	CDesignType::GetProperty: This method calls OnGetProperty on its subclasses
-//		to let them handle it. If the subclass does not handle it, then we call
-//		CDesignType::FindBaseProperty.
-//
-//	CItemType::OnGetProperty: We call GetItemProperty with an empty CItemCtx.
-//		Since GetItemProperty ends up calling CDesignType::FindBaseProperty, we
-//		never return NULL (we always handle it).
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	ICCItemPtr pResult;
-	int i;
-
-	if (m_pItemType == NULL)
-		return CC.CreateNil();
-
-	//	Handle custom properties first.
-
-	else if (FindCustomProperty(sProperty, pResult))
-		return pResult->Reference();
-
-	//	First we handle all properties that are specific to the item instance.
-
-	else if (strEquals(sProperty, PROPERTY_CAN_BE_USED))
-		return CC.CreateBool(CanBeUsed());
-
-	else if (strEquals(sProperty, PROPERTY_CHARGES))
-		return CC.CreateInteger(GetCharges());
-
-	else if (strEquals(sProperty, PROPERTY_DAMAGED))
-		return CC.CreateBool(IsDamaged());
-
-	else if (strEquals(sProperty, PROPERTY_DEFECTIVE_ENHANCEMENT))
-		return CC.CreateBool(GetMods().IsDisadvantage());
-
-	else if (strEquals(sProperty, PROPERTY_DESCRIPTION))
-		{
-		if (CCCtx.InEvent(eventGetDescription))
-			return CC.CreateString(GetType()->GetDesc());
-		else
-			return CC.CreateString(GetDesc());
-		}
-
-	else if (strEquals(sProperty, PROPERTY_DISRUPTED))
-		{
-		DWORD dwTime = GetDisruptedDuration();
-		if (dwTime == 0)
-			return CC.CreateNil();
-		else if (dwTime == INFINITE_TICK)
-			return CC.CreateTrue();
-		else
-			return CC.CreateInteger(dwTime);
-		}
-
-	else if (strEquals(sProperty, PROPERTY_ENHANCEMENT))
-		return GetMods().AsDesc(GetUniverse())->Reference();
-
-	else if (strEquals(sProperty, PROPERTY_HAS_USE_SCREEN))
-		return CC.CreateBool(HasUseItemScreen());
-
-	else if (strEquals(sProperty, PROPERTY_INSTALLED))
-		return CC.CreateBool(IsInstalled());
-
-	else if (strEquals(sProperty, PROPERTY_KNOWN))
-		{
-		if (bOnType)
-			{
-			//	If asking about the type, we return True if all unknown types 
-			//	are known.
-
-			for (int i = 0; i < m_pItemType->GetUnknownTypeCount(); i++)
-				if (!m_pItemType->IsKnown(i))
-					return CC.CreateNil();
-
-			return CC.CreateTrue();
-			}
-		else
-			return CC.CreateBool(IsKnown());
-		}
-
-	else if (strEquals(sProperty, PROPERTY_LEVEL))
-		return CC.CreateInteger(GetLevel());
-
-	else if (strEquals(sProperty, PROPERTY_PRICE))
-		return CC.CreateInteger(GetTradePrice(NULL, true));
-
-	else if (strEquals(sProperty, PROPERTY_REFERENCE))
-		{
-		if (CCCtx.InEvent(eventGetReferenceText))
-			return CC.CreateString(GetType()->GetReference(Ctx));
-		else
-			return CC.CreateString(GetReference(Ctx));
-		}
-
-	else if (strEquals(sProperty, PROPERTY_ROOT_NAME))
-		{
-		CString sRoot;
-		CString sModifier;
-
-		CLanguage::ParseItemName(GetNounPhrase(nounShort | nounNoModifiers), &sRoot, &sModifier);
-
-		if (sModifier.IsBlank())
-			return CC.CreateString(sRoot);
-		else
-			return CC.CreateString(strPatternSubst(CONSTLIT("%s, %s"), sRoot, sModifier));
-		}
-
-	else if (strEquals(sProperty, PROPERTY_SLOT_INDEX))
-		{
-		if (IsInstalled())
-			return CC.CreateInteger(GetInstalled());
-		else
-			return CC.CreateNil();
-		}
-	else if (strEquals(sProperty, PROPERTY_TRADE_ID))
-		{
-		TArray<SDisplayAttribute> Attribs;
-		if (!GetDisplayAttributes(&Attribs, NULL, true))
-			return CC.CreateNil();
-
-		for (i = 0; i < Attribs.GetCount(); i++)
-			if (!Attribs[i].sID.IsBlank())
-				return CC.CreateString(Attribs[i].sID);
-
-		return CC.CreateNil();
-		}
-
-	else if (strEquals(sProperty, PROPERTY_UNKNOWN_TYPE))
-		{
-		CItemType *pType = GetUnknownType();
-		if (pType == NULL)
-			return CC.CreateNil();
-		else
-			return CC.CreateInteger(pType->GetUNID());
-		}
-
-	else if (strEquals(sProperty, PROPERTY_UNKNOWN_TYPE_INDEX))
-		{
-		int iUnknownIndex = GetUnknownIndex();
-		if (iUnknownIndex < 0)
-			return CC.CreateNil();
-		else
-			return CC.CreateInteger(iUnknownIndex);
-		}
-
-	else if (strEquals(sProperty, PROPERTY_USED))
-		return CC.CreateBool(IsUsed());
-
-	else if (strEquals(sProperty, PROPERTY_VARIANT))
-		return CC.CreateInteger(GetVariantNumber());
-
-	//	Handle any armor item properties
-
-	else if (IsArmor())
-		{
-		if (const CArmorItem ArmorItem = AsArmorItem())
-			{
-			ICCItemPtr pResult = ArmorItem.FindProperty(sProperty);
-			if (pResult)
-				return pResult->Reference();
-			}
-		}
-
-	//	Next we handle all properties for devices, armor, etc. Note that this
-	//	includes both installed properties (e.g., armor segment) and static
-	//	properties (e.g., armor HP). But it DOES NOT include item type 
-	//	properties common to all items (e.g., mass).
-
-	else
-		{
-		CDeviceClass *pDevice;
-
-		//	If this is a device, then pass it on
-
-		if (pDevice = GetType()->GetDeviceClass())
-			{
-			if (pResult = pDevice->FindItemProperty(Ctx, sProperty))
-				return pResult;
-			}
-
-		//	If this is a missile, then pass it to the weapon.
-
-		else if (GetType()->IsMissile())
-			{
-			if (Ctx.ResolveVariant()
-					&& (pResult = Ctx.GetVariantDevice()->FindItemProperty(Ctx, sProperty)))
-				return pResult;
-			}
-		}
-
-	//	If we get this far, then we ask the item type for its properties. This 
-	//	will also get any design type properties and will check the old-style
-	//	data fields.
-
-	if (pResult = GetType()->FindItemTypeBaseProperty(CCCtx, sProperty))
-		return pResult->Reference();
-
-	//	Otherwise, we've got nothing
-
-	else
-		return CC.CreateNil();
-	}
-
-Metric CItem::GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const
-
-//	GetItemPropertyDouble
-//
-//	Returns a double.
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty, false);
-	if (pResult == NULL)
-		return 0.0;
-
-	Metric rValue = pResult->GetDoubleValue();
-	pResult->Discard();
-	return rValue;
-	}
-
-int CItem::GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const
-
-//	GetItemPropertyInteger
-//
-//	Returns an integer property.
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty, false);
-	if (pResult == NULL)
-		return 0;
-
-	int iValue = pResult->GetIntegerValue();
-	pResult->Discard();
-	return iValue;
-	}
-
-CString CItem::GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const
-
-//	GetItemPropertyString
-//
-//	Returns a string property
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty, false);
-	if (pResult == NULL)
-		return 0;
-
-	CString sValue;
-	if (pResult->IsNil())
-		sValue = NULL_STR;
-	else
-		sValue = pResult->Print(PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
-
-	pResult->Discard();
-	return sValue;
-	}
-
 CString CItem::GetReference (CItemCtx &ItemCtx, const CItem &Ammo, DWORD dwFlags) const
 
 //	GetReference
@@ -2115,9 +1719,8 @@ CString CItem::GetReference (CItemCtx &ItemCtx, const CItem &Ammo, DWORD dwFlags
 			Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 			Ctx.SaveAndDefineItemVar(*this);
 
-			ICCItem *pResult = Ctx.Run(Event);
+			ICCItemPtr pResult = Ctx.RunCode(Event);
 			sReference = pResult->GetStringValue();
-			Ctx.Discard(pResult);
 			}
 		}
 
@@ -2238,6 +1841,19 @@ bool CItem::GetReferenceSpeedBonus (CItemCtx &Ctx, DWORD dwFlags, int *retiSpeed
 		return false;
 	}
 
+int CItem::GetRepairLevel () const
+
+//	GetRepairLevel
+//
+//	Returns the repair level.
+
+	{
+	if (const CArmorItem ArmorItem = AsArmorItem())
+		return ArmorItem.GetRepairLevel();
+	else
+		return GetLevel();
+	}
+
 CSpaceObject *CItem::GetSource (void) const
 
 //	GetSource
@@ -2290,12 +1906,10 @@ int CItem::GetTradePrice (const CSpaceObject *pObj, bool bActual) const
 		Ctx.SaveAndDefineItemVar(*this);
 		Ctx.DefineString(CONSTLIT("aPriceType"), (bActual ? CONSTLIT("actual") : CONSTLIT("normal")));
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError() && pObj)
 			pObj->ReportEventError(strPatternSubst(CONSTLIT("Item %x GetTradePrice"), m_pItemType->GetUNID()), pResult);
 		int iPrice = pResult->GetIntegerValue();
-		Ctx.Discard(pResult);
-
 		return iPrice;
 		}
 	else
@@ -2817,6 +2431,11 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 		if (!Criteria.MatchesMass(GetMassKg()))
 			return false;
 
+		//	Check for repair level
+
+		if (!Criteria.MatchesRepairLevel(GetRepairLevel()))
+			return false;
+
 		//	Otherwise, we match completely
 
 		return true;
@@ -2839,6 +2458,7 @@ DWORD CItem::ParseFlags (ICCItem *pItem)
 		dwFlags |= (pItem->GetBooleanAt(CONSTLIT("ignoreDisrupted")) ? CItem::FLAG_IGNORE_DISRUPTED : 0);
 		dwFlags |= (pItem->GetBooleanAt(CONSTLIT("ignoreEnhancements")) ? CItem::FLAG_IGNORE_ENHANCEMENTS : 0);
 		dwFlags |= (pItem->GetBooleanAt(CONSTLIT("ignoreInstalled")) ? CItem::FLAG_IGNORE_INSTALLED : 0);
+		dwFlags |= (pItem->GetBooleanAt(CONSTLIT("knownOnly")) ? CItem::FLAG_KNOWN_ONLY : 0);
 		}
 
 	return dwFlags;
@@ -2930,7 +2550,7 @@ void CItem::ReadFromCCItem (CDesignCollection &Design, const CSystem *pSystem, c
 						{
 						CArmorSystem *pArmorSys;
 						if (IsArmor() 
-								&& (pArmorSys = pSource->GetArmorSystem())
+								&& (pArmorSys = &pSource->GetArmorSystem())
 								&& iInstalledIndex >= 0 && iInstalledIndex < pArmorSys->GetSegmentCount())
 							{
 							m_pExtra->m_iInstalled = EInstalled::Armor;
@@ -3137,38 +2757,6 @@ void CItem::SetCharges (int iCharges)
 		m_pExtra->m_dwCharges = iCharges;
 	}
 
-bool CItem::SetCustomProperty (const CString &sProperty, const ICCItem &Value)
-
-//	SetCustomProperty
-//
-//	Sets a custom property. Returns TRUE if the property was found.
-
-	{
-	if (IsEmpty())
-		return false;
-
-	ICCItemPtr pDummy;
-	EPropertyType iType;
-	if (!m_pItemType->FindCustomProperty(sProperty, pDummy, &iType))
-		return false;
-
-	switch (iType)
-		{
-		case EPropertyType::propGlobal:
-			m_pItemType->SetGlobalData(sProperty, &Value);
-			return true;
-
-		case EPropertyType::propData:
-		case EPropertyType::propItemData:
-			Extra();
-			m_pExtra->m_Data.SetData(sProperty, &Value);
-			return true;
-
-		default:
-			return false;
-		}
-	}
-
 void CItem::SetDamaged (int iDamagedHP)
 
 //	SetDamaged
@@ -3295,162 +2883,6 @@ void CItem::SetPrepareUninstalled (void)
 		m_pExtra->m_iInstalled = EInstalled::None;
 		m_pExtra->m_iInstalledIndex = -2;
 		}
-	}
-
-ESetPropertyResult CItem::SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError)
-
-//	SetProperty
-//
-//	Sets item property. If we cannot set the property we return an error. If
-//	retsError is blank then we cannot set the property because the value is Nil.
-
-	{
-	if (IsEmpty())
-		{
-		if (retsError) *retsError = CONSTLIT("Unable to set propery on a null item.");
-		return ESetPropertyResult::error;
-		}
-
-	else if (SetCustomProperty(sName, (pValue ? *pValue : *ICCItemPtr::Nil())))
-		return ESetPropertyResult::set;
-
-	else if (strEquals(sName, PROPERTY_CHARGES))
-		{
-		if (pValue == NULL || pValue->IsNil())
-			{
-			if (retsError) *retsError = NULL_STR;
-			return ESetPropertyResult::error;
-			}
-			
-		SetCharges(pValue->GetIntegerValue());
-		}
-
-	else if (strEquals(sName, PROPERTY_DAMAGED))
-		{
-		if (pValue == NULL)
-			SetDamaged(true);
-		else if (pValue->IsInteger())
-			SetDamaged(pValue->GetIntegerValue());
-		else
-			SetDamaged(!pValue->IsNil());
-		}
-
-	else if (strEquals(sName, PROPERTY_DISRUPTED))
-		{
-		if (pValue == NULL)
-			SetDisrupted(INFINITE_TICK);
-		else if (pValue->IsNil())
-			ClearDisrupted();
-		else if (pValue->IsInteger())
-			SetDisrupted(pValue->GetIntegerValue());
-		else
-			SetDisrupted(INFINITE_TICK);
-		}
-
-	else if (strEquals(sName, PROPERTY_INC_CHARGES))
-		{
-		if (pValue == NULL)
-			SetCharges(GetCharges() + 1);
-		else if (pValue->IsNil())
-			{
-			if (retsError) *retsError = NULL_STR;
-			return ESetPropertyResult::error;
-			}
-		else
-			SetCharges(Max(0, GetCharges() + pValue->GetIntegerValue()));
-		}
-
-	else if (strEquals(sName, PROPERTY_ENHANCEMENT))
-		{
-		if (pValue == NULL || pValue->IsNil())
-			AddEnhancement(CItemEnhancement());
-		else
-			{
-			CItemEnhancement NewEnhancement;
-			if (NewEnhancement.InitFromDesc(GetUniverse(), *pValue, retsError) != NOERROR)
-				return ESetPropertyResult::error;
-
-			AddEnhancement(NewEnhancement);
-			}
-		}
-
-	else if (strEquals(sName, PROPERTY_INSTALLED))
-		{
-		if (pValue && pValue->IsNil())
-			ClearInstalled();
-		else
-			{
-			if (retsError) *retsError = CONSTLIT("Unable to set installation flag on item.");
-			return ESetPropertyResult::error;
-			}
-		}
-
-	else if (strEquals(sName, PROPERTY_KNOWN))
-		{
-		if (bOnType)
-			m_pItemType->SetAllKnown(!pValue->IsNil());
-		else
-			SetKnown(pValue && !pValue->IsNil());
-		}
-
-	else if (strEquals(sName, PROPERTY_LEVEL))
-		{
-		//  If this is armor, then we remember the current damaged state and
-		//  carry that forward to the new level.
-
-		if (CArmorClass *pArmor = GetType()->GetArmorClass())
-			return pArmor->SetItemProperty(Ctx, *this, sName, (pValue ? *pValue : *ICCItemPtr::Nil()), retsError);
-
-		//	Otherwise, we just set the item level.
-
-		if (!SetLevel((pValue ? pValue->GetIntegerValue() : 0), retsError))
-			return ESetPropertyResult::error;
-		}
-	else if (strEquals(sName, PROPERTY_UNKNOWN_TYPE_INDEX))
-		{
-		int iUnknownTypeCount = m_pItemType->GetUnknownTypeCount();
-		if (iUnknownTypeCount == 0)
-			;
-
-		else if (pValue == NULL || pValue->IsNil())
-			SetUnknownIndex(m_pItemType->GetRandomUnknownTypeIndex());
-
-		else
-			{
-			int iIndex = Max(0, Min(pValue->GetIntegerValue(), iUnknownTypeCount - 1));
-			SetUnknownIndex(iIndex);
-			}
-		}
-	else if (strEquals(sName, PROPERTY_VARIANT))
-		{
-		if (pValue == NULL || pValue->IsNil())
-			{
-			if (retsError) *retsError = NULL_STR;
-			return ESetPropertyResult::error;
-			}
-
-		SetVariantNumber(pValue->GetIntegerValue());
-		}
-
-	//	If this is armor, then pass it on.
-
-	else if (CArmorClass *pArmor = GetType()->GetArmorClass())
-		return pArmor->SetItemProperty(Ctx, *this, sName, (pValue ? *pValue : *ICCItemPtr::Nil()), retsError);
-
-	//	If this is an installed device, then pass it on
-
-	else if (CInstalledDevice *pDevice = Ctx.GetDevice())
-		return pDevice->SetProperty(Ctx, sName, pValue, retsError);
-
-	//	Otherwise, nothing
-
-	else
-		{
-		if (retsError) *retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sName);
-		return ESetPropertyResult::notFound;
-		}
-
-	return ESetPropertyResult::set;
 	}
 
 void CItem::SetUnknownIndex (int iIndex)

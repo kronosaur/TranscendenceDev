@@ -87,6 +87,7 @@ struct SDockFrame
 	ICCItemPtr pStoredData;					//	Read-write data
 	ICCItemPtr pReturnData;					//	Data returns from a previous screen
 	ICCItemPtr pSavedSelection;				//	Saved selection (for when we return to screen)
+	CString sSavedControlText;				//	Saved control text when refreshing a pane
 
 	SDockScreenBackgroundDesc BackgroundDesc;
 
@@ -108,6 +109,7 @@ struct SShowScreenCtx
 
 	CString sTab;
 	bool bReturn = false;
+	bool bRefresh = false;
 	bool bFirstFrame = false;
 	};
 
@@ -174,11 +176,13 @@ class CDockSession
 		CSpaceObject *OnPlayerDocked (IDockScreenUI &DockScreenUI, CSpaceObject *pObj);
 		void OnPlayerShowShipScreen (IDockScreenUI &DockScreenUI, CDesignType *pDefaultScreensRoot);
 		void PlayAmbientSound ();
+		void RefreshScreen (const SDockFrame &ResolvedFrame, bool bSaveSelection);
 		void SetBackgroundDesc (const SDockScreenBackgroundDesc &BackgroundDesc) { m_DockFrames.SetBackgroundDesc(BackgroundDesc); }
 		void SetCurrentPane (const CString &sPane) { m_DockFrames.SetCurrentPane(sPane); }
 		bool SetData (const CString &sAttrib, const ICCItem *pValue);
 		bool SetProperty (const CString &sProperty, const ICCItem &Value, CString *retsError = NULL);
 		bool SetReturnData (const CString &sAttrib, ICCItem *pValues);
+		bool SetSavedControlText (const CString &sValue);
 		bool SetScreenSet (const ICCItem &ScreenSet);
 		bool SetSessionData (const CString &sAttrib, ICCItem *pValues);
 		bool ShowScreen (CSpaceObject &Location, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData);

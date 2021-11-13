@@ -9,6 +9,7 @@
 
 			level=				"1"
 			maxAppearing=		"1"
+			expireTime=			"-1"
 			>
 		<Properties>
 			<Definition id="encounterDesc">
@@ -31,18 +32,39 @@
 		<Image imageID="&rsRaisuStation;"	imageWidth="170" imageHeight="170"/>
 
 		<Events>
-			<OnCompleted>
-				(switch
-					;	On success, we set state for the station.
+			<CanCreate>
+				(block (
+					(settlementObj (sysFindObject gPlayerShip "TAN +unid:&stCentauriSettlement;;"))
+					)
+					(switch
+						;	If settlement destroyed, then no mission.
 
-					(= aReason 'success)
-						(block (
-							(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
-							)
-							(if (not (obj@ stationObj 'abandoned))
-								(objSet@ stationObj 'status 'defended)
+						(not settlementObj)
+							Nil
+
+						;	Mission
+
+						True
+						)
+					)
+			</CanCreate>
+
+			<OnCompleted>
+				(block ()
+					(switch
+						;	On success, we set state for the station.
+
+						(= aReason 'success)
+							(block (
+								(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
 								)
-							)
+								(if (not (obj@ stationObj 'abandoned))
+									(objSet@ stationObj 'status 'defended)
+									)
+								)
+						)
+						
+					(typFireObjEvent &baDefendStationMission; gSource 'OnCompleted gData)
 					)
 			</OnCompleted>
 			

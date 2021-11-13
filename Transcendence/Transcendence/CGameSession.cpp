@@ -55,7 +55,7 @@ void CGameSession::DismissMenu (void)
 
 		//	Mouse controls the ship again
 
-		if (IsMouseAimEnabled())
+		if (IsMouseAimConfigured())
 			{
 			ShowCursor(false);
 			SyncMouseToPlayerShip();
@@ -198,7 +198,7 @@ bool CGameSession::IsIconBarShown (void) const
 	if (strEquals(sValue, CONSTLIT("auto")))
 		{
 #if 0
-		return (GetUniverse().GetDifficultyLevel() == CDifficultyOptions::lvlStory);
+		return (GetUniverse().GetDifficultyLevel() == CDifficultyOptions::ELevel::Story);
 #else
 		return false;
 #endif
@@ -461,7 +461,7 @@ void CGameSession::OnShowDockScreen (bool bShow)
 
 		if (g_pTrans->m_State == CTranscendenceWnd::gsInGame)
 			{
-			if (IsMouseAimEnabled())
+			if (IsMouseAimConfigured())
 				ShowCursor(true);
 			}
 
@@ -478,7 +478,7 @@ void CGameSession::OnShowDockScreen (bool bShow)
 
 		//	Hide the cursor
 
-		if (IsMouseAimEnabled())
+		if (IsMouseAimConfigured())
 			{
 			ShowCursor(false);
 			SyncMouseToPlayerShip();
@@ -661,7 +661,7 @@ bool CGameSession::ShowMenu (EMenuTypes iMenu)
 
 	//	Show our cursor, in case the menus have mouse UI
 
-	if (IsMouseAimEnabled())
+	if (IsMouseAimConfigured())
 		ShowCursor(true);
 
 	//	Set state

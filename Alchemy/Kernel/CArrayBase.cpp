@@ -46,13 +46,17 @@ void CArrayBase::AllocBlock (HANDLE hHeap, int iGranularity)
 //	Allocate the main block
 
 	{
-	ASSERT(m_pBlock == NULL);
+	if (m_pBlock)
+		throw CException(ERR_FAIL);
 
 #ifdef DEBUG_ARRAY_STATS
 	g_dwArraysCreated++;
 #endif
 
 	m_pBlock = (SHeader *)::HeapAlloc(hHeap, 0, sizeof(SHeader));
+	if (!m_pBlock)
+		throw CException(ERR_MEMORY);
+
 	m_pBlock->m_hHeap = hHeap;
 	m_pBlock->m_iAllocSize = sizeof(SHeader);
 	m_pBlock->m_iGranularity = iGranularity;
@@ -100,6 +104,9 @@ void CArrayBase::CopyOptions (const CArrayBase &Src)
 			::HeapFree(m_pBlock->m_hHeap, 0, m_pBlock);
 
 		m_pBlock = (SHeader *)::HeapAlloc(Src.GetHeap(), 0, sizeof(SHeader));
+		if (!m_pBlock)
+			throw CException(ERR_MEMORY);
+
 		m_pBlock->m_hHeap = Src.GetHeap();
 		m_pBlock->m_iAllocSize = sizeof(SHeader);
 		m_pBlock->m_iGranularity = Src.GetGranularity();
@@ -110,7 +117,9 @@ void CArrayBase::CopyOptions (const CArrayBase &Src)
 
 	else if (GetGranularity() != Src.GetGranularity())
 		{
-		ASSERT(m_pBlock);
+		if (!m_pBlock)
+			throw CException(ERR_FAIL);
+
 		m_pBlock->m_iGranularity = Src.GetGranularity();
 		}
 	}
@@ -140,18 +149,17 @@ void CArrayBase::DeleteBytes (int iOffset, int iLength)
 //	Delete iLength bytes in the array at the given offset
 
 	{
-	int i;
-
 	if (iLength <= 0)
 		return;
 
-	ASSERT(m_pBlock);
+	if (!m_pBlock)
+		throw CException(ERR_FAIL);
 
 	//	Move stuff down
 
 	char *pSource = GetBytes() + iOffset + iLength;
 	char *pDest = GetBytes() + iOffset;
-	for (i = 0; i < GetSize() - (iOffset + iLength); i++)
+	for (int i = 0; i < GetSize() - (iOffset + iLength); i++)
 		*pDest++ = *pSource++;
 
 	//	Done

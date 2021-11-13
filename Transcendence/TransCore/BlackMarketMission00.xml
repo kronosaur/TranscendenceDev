@@ -73,6 +73,7 @@
 							(objRemoveItem gPlayerShip theItem)
 							(objAddItem gPlayerShip (itmCreate &itBlackMarketID; 1))
 							(itmSetKnown &itBlackMarketID;)
+							(unvSetAchievement 'humanSpace.shadyDealings)
 							(msnSuccess gSource)
 							)
 
@@ -142,6 +143,7 @@
 				Finding nothing else to talk about, you finish eating in silence.
 			</Text>
 			<Text id="SuccessMsg"></Text>
+			<Text id="FailureMsg"></Text>
 			<Text id="Illegals1">
 
 				As you finish dinner one of the brothers says,

@@ -1467,6 +1467,16 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 			break;
 			}
 
+		case statusNewMaxSpeed:
+			{
+			int iNewMaxSpeedPercent = (int)dwData;
+			if (m_Stats.OnNewMaxSpeed(iNewMaxSpeedPercent))
+				{
+				m_Universe.FireOnGlobalPlayerNewMaxSpeed(*m_pShip, iNewMaxSpeedPercent);
+				}
+			break;
+			}
+
 		case statusRadiationCleared:
 			DisplayTranslate(CONSTLIT("msgDeconComplete"));
 			break;
@@ -1521,6 +1531,11 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 
 		case statusReactorRestored:
 			DisplayTranslate(CONSTLIT("msgReactorPowerRestored"));
+			break;
+
+		case statusRotationSet:
+			if (m_pSession && m_pSession->IsMouseAimEnabled())
+				m_pSession->SetMouseAimEnabled(false);
 			break;
 		}
 

@@ -22,6 +22,9 @@ const Metric MAX_SPEED_FOR_DOCKING2 =			(0.04 * 0.04 * LIGHT_SPEED * LIGHT_SPEED
 
 const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 
+#define ACHIEVEMENT_CORE_REACTOR_UPGRADE		CONSTLIT("core.reactorUpgrade")
+#define ACHIEVEMENT_CORE_ZERO_HP				CONSTLIT("core.zeroHP")
+
 #define FIELD_CARGO_SPACE						CONSTLIT("cargoSpace")
 #define FIELD_COUNTER_INCREMENT_RATE			CONSTLIT("counterIncrementRate")
 #define FIELD_LAUNCHER							CONSTLIT("launcher")
@@ -207,6 +210,8 @@ void CShip::Behavior (SUpdateCtx &Ctx)
 
 	{
 	DEBUG_TRY
+
+	CUsePerformanceCounter Counter(GetUniverse(), CONSTLIT("update.shipBehavior"));
 
 	if (!IsInactive() && !m_fControllerDisabled)
 		{
@@ -547,7 +552,7 @@ int CShip::CalcDeviceSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon, int *
 	return m_Devices.CalcSlotsInUse(retiWeaponSlots, retiNonWeapon, retiLauncherSlots);
 	}
 
-CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot)
+CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, int *retiSlot)
 
 //	CalcDeviceToReplace
 //
@@ -644,6 +649,8 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 			case itemcatLauncher:
 				if (Hull.GetMaxLaunchers() == 1)
 					return insReplaceLauncher;
+				else
+					break;
 
 			case itemcatReactor:
 				return insReplaceReactor;
@@ -663,10 +670,38 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 			}
 		}
 
+	int iSlotToReplace = -1;
+	if (Slot.iIndex != -1 && !GetDevice(Slot.iIndex)->IsEmpty())
+		iSlotToReplace = Slot.iIndex;
+
+	//	If we have a slot ID, see if we're replacing something.
+
+	if (Slot.iIndex == -1 && !Slot.sID.IsBlank())
+		{
+		int iMaxCount;
+		if (m_Devices.FindSlotDesc(Slot.sID, NULL, &iMaxCount))
+			{
+			//	If the max count is not unlimited, then we need to see if there
+			//	are existing devices at that ID.
+
+			if (iMaxCount != -1)
+				{
+				TArray<int> ExistingDevices;
+				if (m_Devices.FindDevicesByID(Slot.sID, &ExistingDevices)
+						&& ExistingDevices.GetCount() >= iMaxCount)
+					{
+					//	Pick the first device to replace.
+
+					iSlotToReplace = ExistingDevices[0];
+					}
+				}
+			}
+		}
+
 	//	If we have no limitation on slots, then we can continue.
 
 	if (Hull.GetMaxDevices() == -1
-			&& iSuggestedSlot == -1)
+			&& iSlotToReplace == -1)
 		return insOK;
 
 	//	If we have enough space, then we're done
@@ -675,17 +710,15 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 			&& iWeaponSlotsNeeded <= 0
 			&& iNonWeaponSlotsNeeded <= 0
 			&& iLauncherSlotsNeeded <= 0
-			&& iSuggestedSlot == -1)
+			&& iSlotToReplace == -1)
 		return insOK;
-
-	int iSlotToReplace = -1;
 
 	//	If we passed in a slot to replace, see if freeing that device gives us
 	//	enough room.
 
-	if (iSuggestedSlot != -1)
+	if (iSlotToReplace != -1)
 		{
-		CInstalledDevice *pDevice = GetDevice(iSuggestedSlot);
+		CInstalledDevice *pDevice = GetDevice(iSlotToReplace);
 		if (!pDevice->IsEmpty())
 			{
 			bool bThisIsWeapon = (pDevice->GetCategory() == itemcatWeapon || pDevice->GetCategory() == itemcatLauncher);
@@ -700,7 +733,9 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 					&& iWeaponSlotsFreed >= iWeaponSlotsNeeded
 					&& iNonWeaponSlotsFreed >= iNonWeaponSlotsNeeded
 					&& iLauncherSlotsFreed >= iLauncherSlotsNeeded)
-				iSlotToReplace = iSuggestedSlot;
+				{ }
+			else
+				iSlotToReplace = -1;
 			}
 		}
 
@@ -885,6 +920,17 @@ void CShip::CalcPerformance (void)
 			|| m_Perf.GetDriveDesc().GetMaxSpeed() != rOldMaxSpeed)
 		m_pClass->InitEffects(this, &m_Effects);
 
+	//	If our max speed changed, then tell our controller, in case it cares.
+
+	if (m_Perf.GetDriveDesc().GetMaxSpeed() != rOldMaxSpeed)
+		{
+		int iOldMaxSpeedPercent = mathRound(100.0 * rOldMaxSpeed / LIGHT_SPEED);
+		int iNewMaxSpeedPercent = mathRound(100.0 * m_Perf.GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED);
+
+		if (iOldMaxSpeedPercent != iNewMaxSpeedPercent)
+			m_pController->OnShipStatus(IShipController::statusNewMaxSpeed, (DWORD)iNewMaxSpeedPercent);
+		}
+
 	DEBUG_CATCH
 	}
 
@@ -903,7 +949,7 @@ int CShip::CalcPowerUsed (SUpdateCtx &Ctx, int *retiPowerGenerated)
 
 	//	We always consume some power for life-support
 
-	iPowerUsed += CPowerConsumption::DEFAULT_LIFESUPPORT_POWER_USE;
+	iPowerUsed += m_pClass->GetHullDesc().GetLifeSupportPowerUse();
 
 	//	If we're thrusting, then we consume power
 
@@ -989,7 +1035,7 @@ bool CShip::CanBeDestroyedBy (CSpaceObject &Attacker) const
 	return false;
 	}
 
-bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
+bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
 
 //	CanInstallItem
 //
@@ -1001,6 +1047,8 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 	CString sResult;
 	CItem ItemToReplace;
 	const CHullDesc &Hull = m_pClass->GetHullDesc();
+
+	int iSlot = Slot.iIndex;
 
 	//	If this is an armor item, see if we can install it.
 
@@ -1015,7 +1063,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 		//	Ask the object if we can install this item
 
-		else if (!FireCanInstallItem(Item, iSlot, &sResult))
+		else if (!FireCanInstallItem(Item, Slot, &sResult))
 			iResult = insCannotInstall;
 
 		//	See if the armor is too heavy
@@ -1025,7 +1073,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 		//	Fire CanBeInstalled to check for custom conditions
 
-		else if (!Item.FireCanBeInstalled(this, iSlot, &sResult))
+		else if (!Item.FireCanBeInstalled(this, Slot.iIndex, &sResult))
 			iResult = insCannotInstall;
 
 		//	Otherwise, we're OK
@@ -1036,7 +1084,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 			//	replaced.
 
 			CItemListManipulator ItemList(GetItemList());
-			if (iSlot != -1 && SetCursorAtArmor(ItemList, iSlot))
+			if (Slot.iIndex != -1 && SetCursorAtArmor(ItemList, Slot.iIndex))
 				{
 				ItemToReplace = ItemList.GetItemAtCursor();
 
@@ -1047,7 +1095,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 				//	Check to see if we are allowed to remove the item
 
-				else if (!FireCanRemoveItem(ItemToReplace, iSlot, &sResult))
+				else if (!FireCanRemoveItem(ItemToReplace, Slot.iIndex, &sResult))
 					iResult = insCannotInstall;
 
 				//	Otherwise, OK.
@@ -1087,12 +1135,12 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 		//	Ask the object if we can install this item
 
-		else if (!FireCanInstallItem(Item, iSlot, &sResult))
+		else if (!FireCanInstallItem(Item, Slot, &sResult))
 			iResult = insCannotInstall;
 
 		//	Fire CanBeInstalled to check for custom conditions
 
-		else if (!Item.FireCanBeInstalled(this, iSlot, &sResult))
+		else if (!Item.FireCanBeInstalled(this, Slot.iIndex, &sResult))
 			iResult = insCannotInstall;
 
 		//	See if the ship's engine core is powerful enough
@@ -1119,7 +1167,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 		else
 			{
 			int iRecommendedSlot;
-			iResult = CalcDeviceToReplace(Item, iSlot, &iRecommendedSlot);
+			iResult = CalcDeviceToReplace(Item, Slot, &iRecommendedSlot);
 			switch (iResult)
 				{
 				case insOK:
@@ -1409,6 +1457,12 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 			return;
 		}
 
+	//	If the player caused this destruction, then mark it as player-created
+	//	explosion.
+
+	if (Ctx.Attacker.IsPlayerOrderGiver() && Explosion.iCause == killedByExplosion)
+		Explosion.iCause = killedByPlayerCreatedExplosion;
+
 	//	Explosion
 
 	SShotCreateCtx ShotCtx;
@@ -1421,7 +1475,6 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 		}
 
 	ShotCtx.Source = CDamageSource(this, Explosion.iCause, Ctx.pWreck);
-	ShotCtx.Source.SetExplosion();
 	ShotCtx.vPos = GetPos();
 	ShotCtx.vVel = GetVel();
 	ShotCtx.iDirection = GetRotation();
@@ -1516,7 +1569,7 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 	CDeviceDescList Devices;
 	pClass->GenerateDevices(System.GetLevel(), Devices);
 
-	pShip->m_Devices.Init(pShip, Devices, pClass->GetHullDesc().GetMaxDevices());
+	pShip->m_Devices.Init(pShip, Devices, pClass->GetDeviceSlots(), pClass->GetHullDesc().GetMaxDevices());
 
 	//	Install equipment
 
@@ -1688,7 +1741,8 @@ void CShip::DamageDevice (CInstalledDevice *pDevice, SDamageCtx &Ctx)
 //	Damages the given device
 
 	{
-	ASSERT(pDevice);
+	if (!pDevice)
+		throw CException(ERR_FAIL);
 
 	//	Damage the device
 
@@ -3014,24 +3068,6 @@ CString CShip::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const
 		}
 	}
 
-CInstalledDevice *CShip::GetNamedDevice (DeviceNames iDev)
-	{
-	int iIndex = m_Devices.GetNamedIndex(iDev);
-	if (iIndex == -1)
-		return NULL;
-	else
-		return &m_Devices.GetDevice(iIndex);
-	}
-
-const CInstalledDevice *CShip::GetNamedDevice (DeviceNames iDev) const
-	{
-	int iIndex = m_Devices.GetNamedIndex(iDev);
-	if (iIndex == -1)
-		return NULL;
-	else
-		return &m_Devices.GetDevice(iIndex);
-	}
-
 CDeviceClass *CShip::GetNamedDeviceClass (DeviceNames iDev)
 	{
 	CInstalledDevice *pDev = GetNamedDevice(iDev);
@@ -3039,24 +3075,6 @@ CDeviceClass *CShip::GetNamedDeviceClass (DeviceNames iDev)
 		return NULL;
 	else
 		return pDev->GetClass(); 
-	}
-
-CItem CShip::GetNamedItem (DeviceNames iDev) const
-
-//	GetNamedItem
-//
-//	Returns the item for the named device
-
-	{
-	int iIndex = m_Devices.GetNamedIndex(iDev);
-	if (iIndex == -1)
-		return CItem();
-	else
-		{
-		CItemListManipulator ItemList(const_cast<CShip *>(this)->GetItemList());
-		SetCursorAtNamedDevice(ItemList, iDev);
-		return ItemList.GetItemAtCursor();
-		}
 	}
 
 int CShip::GetPerception (void) const
@@ -3144,20 +3162,6 @@ void CShip::GetReactorStats (SReactorStats &Stats) const
 
 		Stats.iMaxCharges = Max(1, Max(Stats.iChargesLeft, pReactor->GetItem()->GetType()->GetMaxCharges()));
 		}
-	}
-
-int CShip::GetShieldLevel (void) const
-
-//	GetShieldLevel
-//
-//	Returns the % shield level of the ship (or -1 if the ship has no shields)
-
-	{
-	const CInstalledDevice *pShields = GetNamedDevice(devShields);
-	if (pShields == NULL)
-		return -1;
-
-	return pShields->GetHitPointsPercent(this);
 	}
 
 int CShip::GetStealth (void) const
@@ -3488,6 +3492,8 @@ bool CShip::ImageInObject (const CVector &vObjPos, const CObjectImageArray &Imag
 //	object
 
 	{
+	DEBUG_TRY
+
 	return ImagesIntersect(Image,
 			iTick,
 			iRotation, 
@@ -3496,6 +3502,8 @@ bool CShip::ImageInObject (const CVector &vObjPos, const CObjectImageArray &Imag
 			GetSystem()->GetTick(), 
 			m_Rotation.GetFrameIndex(), 
 			vObjPos);
+
+	DEBUG_CATCH
 	}
 
 void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
@@ -3593,7 +3601,7 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 	m_pController->OnShipStatus(IShipController::statusArmorRepaired, iSect);
 	}
 
-void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot, int iSlotPosIndex)
+void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSystem::SSlotDesc &RecommendedSlot)
 
 //	InstallItemAsDevice
 //
@@ -3601,15 +3609,17 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 
 	{
 	CDeviceClass *pNewDevice = ItemList.GetItemAtCursor().GetType()->GetDeviceClass();
-	ASSERT(pNewDevice);
+	if (!pNewDevice)
+		throw CException(ERR_FAIL);
 
 	DeviceNames iNamedSlot = GetDeviceNameForCategory(pNewDevice->GetCategory());
 
 	//	If necessary, remove previous item in a slot
 
+	CDeviceSystem::SSlotDesc Slot = RecommendedSlot;
 	Metric rOldFuel = -1.0;
 	int iSlotToReplace;
-	CalcDeviceToReplace(ItemList.GetItemAtCursor(), iDeviceSlot, &iSlotToReplace);
+	CalcDeviceToReplace(ItemList.GetItemAtCursor(), Slot, &iSlotToReplace);
 	if (iSlotToReplace != -1)
 		{
 		const CInstalledDevice &ToReplace = m_Devices.GetDevice(iSlotToReplace);
@@ -3619,7 +3629,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 		//	(But only if we're the same kind of device).
 
 		if (ToReplace.GetCategory() == ItemList.GetItemAtCursor().GetType()->GetCategory())
-			iSlotPosIndex = ToReplace.GetSlotPosIndex();
+			Slot.iPos = ToReplace.GetSlotPosIndex();
 
 		//	If we're upgrading/downgrading a reactor, then remember the old fuel level
 
@@ -3637,7 +3647,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 
 	//	Install
 
-	if (!m_Devices.Install(this, ItemList, iDeviceSlot, iSlotPosIndex, false, &iDeviceSlot))
+	if (!m_Devices.Install(this, ItemList, Slot, &Slot.iIndex))
 		return;
 
 	//	Recalc bonuses
@@ -3652,9 +3662,9 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 	//	the new enhancement stack, since we might have a linked-fire setting
 	//	conferred by a device slot.
 
-	m_Devices.RefreshNamedDevice(iDeviceSlot);
+	m_Devices.RefreshNamedDevice(Slot.iIndex);
 
-	switch (m_Devices.GetDevice(iDeviceSlot).GetCategory())
+	switch (m_Devices.GetDevice(Slot.iIndex).GetCategory())
 		{
 		case itemcatWeapon:
 			m_pController->OnWeaponStatusChanged();
@@ -3662,6 +3672,14 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 
 		case itemcatLauncher:
 			m_pController->OnWeaponStatusChanged();
+			break;
+
+		case itemcatReactor:
+			//	If the player installed a new reactor, then this counts as an
+			//	achievement.
+
+			if (IsPlayer())
+				GetUniverse().SetAchievement(ACHIEVEMENT_CORE_REACTOR_UPGRADE);
 			break;
 		}
 
@@ -3855,6 +3873,8 @@ void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 //	If another object got destroyed, we do something
 
 	{
+	DEBUG_TRY
+
 	//	Give the controller a chance to handle it
 
 	m_pController->OnObjDestroyed(Ctx);
@@ -3900,6 +3920,8 @@ void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 
 		m_Interior.OnDestroyed(this, Ctx);
 		}
+
+	DEBUG_CATCH
 	}
 
 bool CShip::ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, const CVector &vObj2Pos)
@@ -4219,10 +4241,14 @@ DWORD CShip::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpace
 //	Handle communications from other objects
 
 	{
+	DEBUG_TRY
+
 	if (!IsInactive())
 		return m_pController->OnCommunicate(pSender, iMessage, pParam1, dwParam2, pData);
 	else
 		return resNoAnswer;
+
+	DEBUG_CATCH
 	}
 
 void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
@@ -4442,6 +4468,15 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	m_pClass->GetHullDesc().AdjustDamage(Ctx);
 
+	//	Show damage
+
+	if (GetUniverse().GetEngineOptions().IsDamageShown()
+			&& Ctx.iDamage > 0
+			&& Ctx.Attacker.IsPlayerOrderGiver())
+		{
+		ShowDamage(Ctx);
+		}
+
 	//	Let the armor handle it
 
 	Ctx.iArmorHitDamage = Ctx.iDamage;
@@ -4543,6 +4578,15 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		//	Tell the controller that we were damaged
 
 		m_pController->OnDamaged(Ctx.Attacker, pArmor, Ctx.Damage, Ctx.iArmorDamage);
+
+		//	If we took damage that left our armor at exactly 0 hp, then that's
+		//	an achievement.
+
+		if (bIsPlayer && pArmor && pArmor->GetHitPoints() == 0 && Ctx.iArmorDamage > 0)
+			{
+			GetUniverse().SetAchievement(ACHIEVEMENT_CORE_ZERO_HP);
+			}
+
 		return damageArmorHit;
 		}
 
@@ -5732,7 +5776,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Load devices
 
-	m_Devices.ReadFromStream(Ctx, this);
+	m_Devices.ReadFromStream(Ctx, this, m_pClass->GetDeviceSlots());
 
 	//	Previous versions stored drive desc UNID
 
@@ -6724,11 +6768,9 @@ void CShip::Refuel (const CItem &Fuel)
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineItemVar(Fuel);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			SendMessage(NULL, pResult->GetStringValue());
-
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -7291,10 +7333,9 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 		CCCtx.DefineSpaceObject(CONSTLIT("aBaseObj"), Ctx.pBase);
 		CCCtx.DefineSpaceObject(CONSTLIT("aTargetObj"), Ctx.pTarget);
 
-		ICCItem *pResult = CCCtx.Run(Ctx.pOnCreate);	//	LATER:Event
+		ICCItemPtr pResult = CCCtx.RunCode(Ctx.pOnCreate);	//	LATER:Event
 		if (pResult->IsError())
 			ReportEventError(CONSTLIT("local OnCreate"), pResult);
-		CCCtx.Discard(pResult);
 		}
 
 	//	Give the ship a chance to set orders
@@ -7313,6 +7354,7 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			case IShipController::orderNone:
 				//	If a ship has no orders and it has a base, then dock with the base
 				if (Ctx.pBase 
+						&& !Ctx.pBase->IsDestroyed()
 						&& Ctx.pBase->CanObjRequestDock(this)
 						&& GetCurrentOrderDesc().GetOrder() == IShipController::orderNone)
 					{
@@ -7322,14 +7364,23 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 				break;
 
 			case IShipController::orderDock:
-				Ctx.OrderDesc.SetTarget((Ctx.pBase && Ctx.pBase->CanObjRequestDock(this)) ? Ctx.pBase : NULL);
-				bDockWithBase = true;
+				if (Ctx.pBase
+						&& !Ctx.pBase->IsDestroyed()
+						&& Ctx.pBase->CanObjRequestDock(this))
+					{
+					Ctx.OrderDesc.SetTarget(Ctx.pBase);
+					bDockWithBase = true;
+					}
 				break;
 
 			case IShipController::orderGuard:
-				Ctx.OrderDesc.SetTarget(Ctx.pBase);
-				bIsSubordinate = true;
-				bDockWithBase = true;
+				if (Ctx.pBase
+						&& !Ctx.pBase->IsDestroyed())
+					{
+					Ctx.OrderDesc.SetTarget(Ctx.pBase);
+					bIsSubordinate = true;
+					bDockWithBase = true;
+					}
 				break;
 
 			case IShipController::orderMine:
@@ -7337,35 +7388,44 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			case IShipController::orderOrbitExact:
 			case IShipController::orderOrbitPatrol:
 			case IShipController::orderSentry:
-				Ctx.OrderDesc.SetTarget(Ctx.pBase);
-				bIsSubordinate = true;
+				if (Ctx.pBase && !Ctx.pBase->IsDestroyed())
+					{
+					Ctx.OrderDesc.SetTarget(Ctx.pBase);
+					bIsSubordinate = true;
+					}
 				break;
 
 			case IShipController::orderGateOnThreat:
-				Ctx.OrderDesc.SetTarget(Ctx.pBase);
-				bNeedsDockOrder = true;
-				bDockWithBase = true;
+				if (Ctx.pBase && !Ctx.pBase->IsDestroyed())
+					{
+					Ctx.OrderDesc.SetTarget(Ctx.pBase);
+					bNeedsDockOrder = true;
+					bDockWithBase = true;
+					}
 				break;
 
 			case IShipController::orderGate:
 				//	For backwards compatibility...
-				if (Ctx.pBase)
+				if (Ctx.pBase && !Ctx.pBase->IsDestroyed())
 					{
 					Ctx.OrderDesc = COrderDesc(IShipController::orderGateOnThreat, Ctx.pBase);
 					bNeedsDockOrder = true;
 					bDockWithBase = true;
 					}
-				else
+				else if (Ctx.pTarget && !Ctx.pTarget->IsDestroyed())
 					{
-					//	OK if this is NULL...we just go to closest gate
 					Ctx.OrderDesc.SetTarget(Ctx.pTarget);
 					}
+				else
+					//	Go to nearest gate
+					Ctx.OrderDesc.SetTarget(NULL);
 
 				break;
 
 			case IShipController::orderEscort:
 			case IShipController::orderFollow:
-				Ctx.OrderDesc.SetTarget(Ctx.pBase);
+				if (Ctx.pBase && !Ctx.pBase->IsDestroyed())
+					Ctx.OrderDesc.SetTarget(Ctx.pBase);
 				break;
 
 			case IShipController::orderDestroyTarget:
@@ -7373,7 +7433,8 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			case IShipController::orderDestroyTargetHold:
 			case IShipController::orderAttackStation:
 			case IShipController::orderBombard:
-				Ctx.OrderDesc.SetTarget(Ctx.pTarget);
+				if (Ctx.pTarget && !Ctx.pTarget->IsDestroyed())
+					Ctx.OrderDesc.SetTarget(Ctx.pTarget);
 				break;
 			}
 

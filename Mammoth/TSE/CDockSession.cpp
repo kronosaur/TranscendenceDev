@@ -404,6 +404,22 @@ void CDockSession::PlayAmbientSound ()
 	m_pAmbientSoundPlaying = m_pAmbientSound;
 	}
 
+void CDockSession::RefreshScreen (const SDockFrame &ResolvedFrame, bool bSaveSelection)
+
+//	RefreshScreen
+//
+//	Refresh the current screen.
+
+	{
+	if (InSession())
+		{
+		m_DockFrames.ResolveCurrent(ResolvedFrame);
+
+		if (bSaveSelection)
+			m_DockFrames.GetCurrent().pSavedSelection = m_pDockScreenUI->GetDisplaySelection();
+		}
+	}
+
 void CDockSession::RunExitCode ()
 
 //	RunExitCode
@@ -498,6 +514,21 @@ bool CDockSession::SetReturnData (const CString &sAttrib, ICCItem *pData)
 	//	Add the entry
 
 	Frame.pReturnData->SetAt(sAttrib, pData);
+	return true;
+	}
+
+bool CDockSession::SetSavedControlText (const CString &sValue)
+
+//	SetSavedControlText
+//
+//	Saves the current text.
+
+	{
+	if (!InSession())
+		return false;
+
+	SDockFrame &Frame = m_DockFrames.GetCurrent();
+	Frame.sSavedControlText = sValue;
 	return true;
 	}
 

@@ -296,6 +296,7 @@ class CGuardOrder : public IOrderModule
 	protected:
 		//	IOrderModule virtuals
 
+		virtual void OnAccumulateAIStatus (const CShip &Ship, const CAIBehaviorCtx &Ctx, ICCItem &Result) const override;
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
 		virtual void OnBehaviorStart (CShip &Ship, CAIBehaviorCtx &Ctx, const COrderDesc &OrderDesc) override;
 		virtual void OnDestroyed (CShip *pShip, SDestroyCtx &Ctx) override;

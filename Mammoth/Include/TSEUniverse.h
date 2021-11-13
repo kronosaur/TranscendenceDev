@@ -82,12 +82,27 @@ class CDebugOptions
 class CPerformanceCounters
 	{
 	public:
+		enum class EOrder
+			{
+			byMaxCallsPerUpdate,
+			byMaxTimePerCall,
+			byMaxTimePerUpdate,
+			};
+
 		struct SCounter
 			{
+			CString sID;
 			DWORD dwStartTime = 0;
 
 			int iTotalCalls = 0;
 			int iTotalTime = 0;
+
+			int iTotalCallsPerUpdate = 0;
+			int iTotalTimePerUpdate = 0;
+
+			int iMaxCallsPerUpdate = 0;
+			int iMaxTimePerUpdate = 0;
+			int iMaxTimePerCall = 0;
 
 			bool bEnabled = false;
 			};
@@ -95,10 +110,13 @@ class CPerformanceCounters
 		int GetCount (void) const { return m_Counters.GetCount(); }
 		const SCounter &GetCounter (int iIndex) const { return m_Counters[iIndex]; }
 		const CString &GetCounterID (int iIndex) const { return m_Counters.GetKey(iIndex); }
+		TSortMap<int, const SCounter *> GetCounters (EOrder iOrder) const;
+		bool IsEnabled () const { return m_bEnabled; }
 		void Paint (CG32bitImage &Dest, const RECT &rcRect, const CG16bitFont &Font) const;
 		void SetEnabled (bool bEnabled = true) { m_bEnabled = bEnabled; }
 		bool SetEnabled (const CString &sID, bool bEnabled = true);
 		void StartCounter (const CString &sID) { if (m_bEnabled) StartTimer(sID); }
+		void StartUpdate ();
 		void StopCounter (const CString &sID) { if (m_bEnabled) StopTimer(sID); }
 
 	private:
@@ -245,6 +263,7 @@ class CUniverse
 		class IHost
 			{
 			public:
+				virtual void ConsoleClear () { }
 				virtual void ConsoleOutput (const CString &sLine) { }
 				virtual IPlayerController *CreatePlayerController (void) { return NULL; }
 				virtual IShipController *CreateShipController (const CString &sController) { return NULL; }
@@ -256,6 +275,7 @@ class CUniverse
 				virtual const CG16bitFont &GetFont (const CString &sFont) const { const CG16bitFont *pFont; if (!FindFont(sFont, &pFont)) return CG16bitFont::GetDefault(); return *pFont; }
 				virtual void LogOutput (const CString &sLine) const { ::kernelDebugLogString(sLine); }
 				virtual void OnSaveGame (void) const { }
+				virtual void PostAchievement (const CAchievementDef &Def) { }
 			};
 
 		class INotifications
@@ -338,7 +358,7 @@ class CUniverse
 		ALERROR LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, DWORD *retdwPlayerID, CString *retsError);
 		void StartGame (bool bNewGame);
 
-		void AddAscendedObj (CSpaceObject *pObj) { m_AscendedObjects.Insert(pObj); }
+		void AddAscendedObj (CSpaceObject &Obj, CSystemEventList &Events) { m_AscendedObjects.Insert(Obj, Events); }
 		ALERROR AddDynamicType (CExtension *pExtension, DWORD dwUNID, ICCItem *pSource, bool bNewGame, CString *retsError) { return m_Design.AddDynamicType(pExtension, dwUNID, pSource, bNewGame, retsError); }
 		void AddEvent (CSystemEvent *pEvent);
 		void AddTimeDiscontinuity (const CTimeSpan &Duration) { m_Time.AddDiscontinuity(m_iTick++, Duration); }
@@ -365,11 +385,12 @@ class CUniverse
 		CSpaceObject *FindObject (DWORD dwID);
 		void FireOnGlobalIntroCommand (const CString &sCommand) { m_Design.FireOnGlobalIntroCommand(sCommand); }
 		void FireOnGlobalIntroStarted (void) { m_Design.FireOnGlobalIntroStarted(); }
-		void FireOnGlobalPaneInit (CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData) { m_Design.FireOnGlobalPaneInit(pRoot, sScreen, sPane, pData); }
+		void FireOnGlobalPaneInit (CSpaceObject *pLocation, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData) { m_Design.FireOnGlobalPaneInit(pLocation, pRoot, sScreen, sPane, pData); }
 		void FireOnGlobalPlayerBoughtItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price) { m_Design.FireOnGlobalPlayerBoughtItem(pSellerObj, Item, Price); }
 		void FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip) { m_Design.FireOnGlobalPlayerChangedShips(pOldShip); }
 		void FireOnGlobalPlayerEnteredSystem (void) { m_Design.FireOnGlobalPlayerEnteredSystem(); }
 		void FireOnGlobalPlayerLeftSystem (void) { m_Design.FireOnGlobalPlayerLeftSystem(); }
+		void FireOnGlobalPlayerNewMaxSpeed (const CSpaceObject &PlayerShip, int iNewMaxSpeed) { m_Design.FireOnGlobalPlayerNewMaxSpeed(PlayerShip, iNewMaxSpeed); }
 		void FireOnGlobalPlayerSoldItem (CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price) { m_Design.FireOnGlobalPlayerSoldItem(pBuyerObj, Item, Price); }
 		void FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx) { m_Design.FireOnGlobalSystemCreated(SysCreateCtx); }
 		void FireOnGlobalUniverseCreated (void) { m_Design.FireOnGlobalUniverseCreated(); }
@@ -389,7 +410,7 @@ class CUniverse
 		const CDisplayAttributeDefinitions &GetAttributeDesc (void) const { return m_Design.GetDisplayAttributes(); }
 		const CEconomyType &GetCreditCurrency (void) const;
 		const CDebugOptions &GetDebugOptions (void) const { return m_DebugOptions; }
-		ICCItemPtr GetDebugProperty (const CString &sProperty) const { return m_DebugOptions.GetProperty(sProperty); }
+		ICCItemPtr GetDebugProperty (const CString &sProperty) const;
 		const CEconomyType &GetDefaultCurrency (void) const { return GetCurrentAdventureDesc().GetDefaultCurrency(); }
 		CEffectCreator &GetDefaultFireEffect (DamageTypes iDamage);
 		CEffectCreator &GetDefaultHitEffect (DamageTypes iDamage);
@@ -444,13 +465,13 @@ class CUniverse
 		void RefreshCurrentMission (void);
 		void RegisterForNotifications (INotifications *pSubscriber) { m_Subscribers.Insert(pSubscriber); }
 		ALERROR Reinit (void);
-		CSpaceObject *RemoveAscendedObj (DWORD dwObjID) { return m_AscendedObjects.RemoveByID(dwObjID); }
+		CSpaceObject *RemoveAscendedObj (DWORD dwObjID, CSystemEventList &Events) { return m_AscendedObjects.RemoveByID(dwObjID, Events); }
 		ALERROR SaveDeviceStorage (void);
 		ALERROR SaveToStream (IWriteStream *pStream);
 		void SetCurrentSystem (CSystem *pSystem, bool bPlayerHasEntered = false);
 		void SetDebugMode (bool bDebug = true) { m_bDebugMode = bDebug; }
 		bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
-		void SetDifficultyLevel (CDifficultyOptions::ELevels iLevel) { m_Difficulty.SetLevel(iLevel); }
+		void SetDifficultyLevel (CDifficultyOptions::ELevel iLevel) { m_Difficulty.SetLevel(iLevel); }
 		void SetEngineOptions (const CEngineOptions &Options) { m_EngineOptions.Merge(Options); }
 		bool SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData);
 		void SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV = NULL);
@@ -508,7 +529,7 @@ class CUniverse
 		CSystem *GetCurrentSystem (void) { return m_pCurrentSystem; }
 		IPlayerController::EUIMode GetCurrentUIMode (void) const { return (m_pPlayer ? m_pPlayer->GetUIMode() : IPlayerController::uimodeUnknown); }
 		const CDifficultyOptions &GetDifficulty (void) const { return m_Difficulty; }
-		CDifficultyOptions::ELevels GetDifficultyLevel (void) const { return m_Difficulty.GetLevel(); }
+		CDifficultyOptions::ELevel GetDifficultyLevel (void) const { return m_Difficulty.GetLevel(); }
 		DWORD GetFrameTicks (void) const { return m_dwFrame; }
 		int GetPaintTick (void) { return m_iPaintTick; }
 		CSpaceObject *GetPOV (void) const { return m_pPOV; }
@@ -557,6 +578,7 @@ class CUniverse
 		void PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags);
 		void PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rScale, DWORD dwFlags, bool *retbNewEnemies = NULL);
 		void PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale, DWORD dwFlags = 0);
+		bool SetAchievement (const CString &sID, CString *retsError = NULL);
 		void SetLogImageLoad (bool bLog = true) { CSmartLock Lock(m_cs); m_iLogImageLoad += (bLog ? -1 : +1); }
 		bool Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode = updateNormal);
 		void UpdateExtended (void);
@@ -589,6 +611,7 @@ class CUniverse
 		ALERROR InitFonts (void);
 		ALERROR InitRequiredEncounters (CString *retsError);
 		ALERROR InitTopology (DWORD dwStartingMap, CString *retsError);
+		void PostAchievement (const CAchievementDef &Def) { if (!m_pHost) throw CException(ERR_FAIL); m_pHost->PostAchievement(Def); }
 		void SetHost (IHost *pHost);
 		void SetPlayer (IPlayerController *pPlayer);
 		void UpdateTick (SSystemUpdateCtx &Ctx);

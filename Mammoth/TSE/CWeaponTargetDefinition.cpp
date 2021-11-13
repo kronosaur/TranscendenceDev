@@ -10,7 +10,7 @@ bool CWeaponTargetDefinition::MatchesTarget(CSpaceObject* pSource, CSpaceObject*
 	return pTarget ? pTarget->MatchesCriteria(Ctx, m_TargetCriteria) : false;
 	}
 
-CSpaceObject* CWeaponTargetDefinition::FindTarget(CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CItemCtx& ItemCtx) const
+CSpaceObject* CWeaponTargetDefinition::FindTarget (CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CItemCtx& ItemCtx) const
 
 //	FindTarget
 //
@@ -26,7 +26,6 @@ CSpaceObject* CWeaponTargetDefinition::FindTarget(CWeaponClass* pWeapon, CInstal
 	int iMinFireArc, iMaxFireArc;
 	auto rotationType = pWeapon->GetRotationType(ItemCtx.GetDeviceItem(), &iMinFireArc, &iMaxFireArc);
 
-	CSpaceObject* pBestTarget = NULL;
 	CSystem* pSystem = pSource->GetSystem();
 	CVector vSourcePos = pDevice->GetPos(pSource);
 
@@ -50,39 +49,20 @@ CSpaceObject* CWeaponTargetDefinition::FindTarget(CWeaponClass* pWeapon, CInstal
 
 	//  Calculate min/max fire arcs given the object's rotation
 
-	iMinFireArc = (pSource->GetRotation() + iMinFireArc) % 360;
-	iMaxFireArc = (pSource->GetRotation() + iMaxFireArc) % 360;
+	iMinFireArc = isOmniDirectional ? -1 : (pSource->GetRotation() + iMinFireArc) % 360;
+	iMaxFireArc = isOmniDirectional ? -1 : (pSource->GetRotation() + iMaxFireArc) % 360;
 
-		//	Compute the range
+	//	Compute the range
 
-		Metric rBestDist2;
-		if (m_TargetCriteria.MatchesMaxRadius() < g_InfiniteDistance)
-			rBestDist2 = (m_TargetCriteria.MatchesMaxRadius() * m_TargetCriteria.MatchesMaxRadius());
-		else
-			rBestDist2 = pDevice->GetMaxRange(ItemCtx) * pDevice->GetMaxRange(ItemCtx);
+	Metric rBestDist;
+	if (m_TargetCriteria.MatchesMaxRadius() < g_InfiniteDistance)
+		rBestDist = m_TargetCriteria.MatchesMaxRadius();
+	else
+		rBestDist = pDevice->GetMaxRange(ItemCtx);
 
-		//	Now look for the nearest object
+	//	Now look for the nearest object
 
-		CSpaceObjectCriteria::SCtx Ctx(pSource, m_TargetCriteria);
-	for (int i = 0; i < pSystem->GetObjectCount(); i++)
-		{
-		CSpaceObject* pObj = pSystem->GetObject(i);
-		Metric rDistance2;
-		if (pObj
-			&& pObj->MatchesCriteriaCategory(Ctx, m_TargetCriteria)
-			&& ((rDistance2 = (pObj->GetPos() - vSourcePos).Length2()) < rBestDist2)
-			&& pObj->MatchesCriteria(Ctx, m_TargetCriteria)
-			&& !pObj->IsIntangible()
-			&& pObj != pSource
-			&& (isOmniDirectional
-				|| AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc)))
-			{
-			pBestTarget = pObj;
-			rBestDist2 = rDistance2;
-			}
-		}
-
-	return pBestTarget;
+	return pSystem->FindNearestTangibleObjectInArc(pSource, vSourcePos, rBestDist, m_TargetCriteria, iMinFireArc, iMaxFireArc);
 	}
 
 bool CWeaponTargetDefinition::AimAndFire(CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CDeviceClass::SDeviceUpdateCtx& Ctx) const

@@ -93,33 +93,34 @@ static const char *g_pszDamageResults[damageResultCount] =
 
 static const char *g_pszMessageID[msgCount] =
 	{
-	"",							//	0
-	"AttackTarget",				//	msgAttack
-	"AttackTargetBroadcast",	//	msgDestroyBroadcast
-	"HitByFriendlyFire",		//	msgHitByFriendlyFire
-	"QueryEscortStatus",		//	msgQueryEscortStatus
-	"QueryFleetStatus",			//	msgQueryFleetStatus
-	"EscortAttacked",			//	msgEscortAttacked
-	"EscortReportingIn",		//	msgEscortReportingIn
-	"WatchYourTargets",			//	msgWatchTargets
-	"NiceShooting",				//	msgNiceShooting
-	"FormUp",					//	msgFormUp
-	"BreakAndAttack",			//	msgBreakAndAttack
-	"QueryComms",				//	msgQueryCommunications
-	"AbortAttack",				//	msgAbortAttack
-	"Wait",						//	msgWait
-	"QueryWaitStatus",			//	msgQueryWaitStatus
-	"AttackInFormation",		//	msgAttackInFormation
-	"DeterTarget",				//	msgAttackDeter
-	"QueryAttackStatus",		//	msgQueryAttackStatus
-	"DockingSequenceEngaged",	//	msgDockingSequenceEngaged
-	"HitByHostileFire",			//	msgHitByHostileFire
-	"DestroyedByFriendlyFire",	//	msgDestroyedByFriendlyFire
-	"DestroyedByHostileFire",	//	msgDestroyedByHostileFire
-	"BaseDestroyedByTarget",	//	msgBaseDestroyedByTarget
+	"",								//	0
+	"AttackTarget",					//	msgAttack
+	"AttackTargetBroadcast",		//	msgDestroyBroadcast
+	"HitByFriendlyFire",			//	msgHitByFriendlyFire
+	"QueryEscortStatus",			//	msgQueryEscortStatus
+	"QueryFleetStatus",				//	msgQueryFleetStatus
+	"EscortAttacked",				//	msgEscortAttacked
+	"EscortReportingIn",			//	msgEscortReportingIn
+	"WatchYourTargets",				//	msgWatchTargets
+	"NiceShooting",					//	msgNiceShooting
+	"FormUp",						//	msgFormUp
+	"BreakAndAttack",				//	msgBreakAndAttack
+	"QueryComms",					//	msgQueryCommunications
+	"AbortAttack",					//	msgAbortAttack
+	"Wait",							//	msgWait
+	"QueryWaitStatus",				//	msgQueryWaitStatus
+	"AttackInFormation",			//	msgAttackInFormation
+	"DeterTarget",					//	msgAttackDeter
+	"QueryAttackStatus",			//	msgQueryAttackStatus
+	"DockingSequenceEngaged",		//	msgDockingSequenceEngaged
+	"HitByHostileFire",				//	msgHitByHostileFire
+	"DestroyedByFriendlyFire",		//	msgDestroyedByFriendlyFire
+	"DestroyedByHostileFire",		//	msgDestroyedByHostileFire
+	"BaseDestroyedByTarget",		//	msgBaseDestroyedByTarget
 
-	"core.onAsteroidExplored",	//	msgOnAsteroidExplored
-	"core.onPlayerHint",		//	msgOnPlayerHint
+	"core.onAsteroidExplored",		//	msgOnAsteroidExplored
+	"core.onPlayerHint",			//	msgOnPlayerHint
+	"core.baseDestroyedByUnknown"	//	msgBaseDestroyedByUnknown
 	};
 
 #define MESSAGE_ID_COUNT			(sizeof(g_pszMessageID) / sizeof(g_pszMessageID[0]))
@@ -1226,7 +1227,9 @@ int GetFrequencyByLevel (const CString &sLevelFrequency, int iLevel)
 
 	{
 	char *pTable = sLevelFrequency.GetPointer();
-	if (pTable && pTable[0] == '*')
+	if (!pTable)
+		return ftNotRandom;
+	else if (pTable[0] == '*')
 		return ftCommon;
 
 	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);

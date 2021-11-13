@@ -18,6 +18,7 @@
 
 #define ACCELERATION_FACTOR_ATTRIB				CONSTLIT("accelerationFactor")
 #define AMMO_ID_ATTRIB							CONSTLIT("ammoID")
+#define ARC_ANGLE_ATTRIB						CONSTLIT("arcAngle")
 #define AREA_DAMAGE_DENSITY_ATTRIB				CONSTLIT("areaDamageDensity")
 #define AUTO_TARGET_ATTRIB						CONSTLIT("autoAcquireTarget")
 #define CAN_HIT_SOURCE_ATTRIB					CONSTLIT("canHitSource")
@@ -26,6 +27,7 @@
 #define DAMAGE_ATTRIB							CONSTLIT("damage")
 #define DAMAGE_AT_MAX_RANGE_ATTRIB				CONSTLIT("damageAtMaxRange")
 #define DIRECTIONAL_ATTRIB						CONSTLIT("directional")
+#define DIRECTION_ATTRIB						CONSTLIT("direction")
 #define EXHAUST_DRAG_ATTRIB						CONSTLIT("drag")
 #define EFFECT_ATTRIB							CONSTLIT("effect")
 #define EXPANSION_SPEED_ATTRIB					CONSTLIT("expansionSpeed")
@@ -839,6 +841,7 @@ bool CWeaponFireDesc::FindEventHandler (const CString &sEvent, SEventHandlerDesc
 		if (retEvent)
 			{
 			retEvent->pExtension = m_pExtension;
+			retEvent->sEvent = sEvent;
 			retEvent->pCode = pCode;
 			}
 
@@ -1150,11 +1153,9 @@ void CWeaponFireDesc::FireOnCreateShot (const CDamageSource &Source, CSpaceObjec
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Source.GetOrderGiver());
 		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), GetWeaponType());
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			pShot->ReportEventError(ON_CREATE_SHOT_EVENT, pResult);
-
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -1176,7 +1177,7 @@ bool CWeaponFireDesc::FireOnDamageAbandoned (SDamageCtx &Ctx)
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
 		CCCtx.DefineDamageCtx(Ctx);
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			Ctx.pObj->ReportEventError(ON_DAMAGE_ABANDONED_EVENT, pResult);
 
@@ -1193,8 +1194,6 @@ bool CWeaponFireDesc::FireOnDamageAbandoned (SDamageCtx &Ctx)
 			Ctx.iDamage = pResult->GetIntegerValue();
 			bResult = true;
 			}
-
-		CCCtx.Discard(pResult);
 
 		return bResult;
 		}
@@ -1220,7 +1219,7 @@ bool CWeaponFireDesc::FireOnDamageArmor (SDamageCtx &Ctx) const
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
 		CCCtx.DefineDamageCtx(Ctx);
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			Ctx.pObj->ReportEventError(ON_DAMAGE_ARMOR_EVENT, pResult);
 
@@ -1237,8 +1236,6 @@ bool CWeaponFireDesc::FireOnDamageArmor (SDamageCtx &Ctx) const
 			Ctx.iDamage = pResult->GetIntegerValue();
 			bResult = true;
 			}
-
-		CCCtx.Discard(pResult);
 
 		return bResult;
 		}
@@ -1265,7 +1262,7 @@ bool CWeaponFireDesc::FireOnDamageOverlay (SDamageCtx &Ctx, COverlay *pOverlay)
 		CCCtx.DefineDamageCtx(Ctx);
 		CCCtx.DefineInteger(CONSTLIT("aOverlayID"), pOverlay->GetID());
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			Ctx.pObj->ReportEventError(ON_DAMAGE_OVERLAY_EVENT, pResult);
 
@@ -1282,8 +1279,6 @@ bool CWeaponFireDesc::FireOnDamageOverlay (SDamageCtx &Ctx, COverlay *pOverlay)
 			Ctx.iDamage = pResult->GetIntegerValue();
 			bResult = true;
 			}
-
-		CCCtx.Discard(pResult);
 
 		return bResult;
 		}
@@ -1332,7 +1327,7 @@ bool CWeaponFireDesc::FireOnDamageShields (SDamageCtx &Ctx, int iDevice)
 			CCCtx.DefineInteger(CONSTLIT("aOriginalArmorDamageHP"), Ctx.iDamage - Ctx.iAbsorb);
 			}
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 
 		//	If we return Nil, then we continue processing
 
@@ -1414,8 +1409,6 @@ bool CWeaponFireDesc::FireOnDamageShields (SDamageCtx &Ctx, int iDevice)
 			bResult = true;
 			}
 
-		CCCtx.Discard(pResult);
-
 		return bResult;
 		}
 	else
@@ -1448,11 +1441,9 @@ void CWeaponFireDesc::FireOnDestroyObj (const SDestroyCtx &Ctx)
 		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), GetWeaponType());
 		CCCtx.DefineInteger(CONSTLIT("aWeaponLevel"), GetLevel());
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			Ctx.Obj.ReportEventError(ON_DESTROY_OBJ_EVENT, pResult);
-
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -1476,11 +1467,9 @@ void CWeaponFireDesc::FireOnDestroyShot (CSpaceObject *pShot)
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), pShot->GetDamageSource().GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), pShot->GetDamageSource().GetOrderGiver());
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			pShot->ReportEventError(ON_DESTROY_SHOT_EVENT, pResult);
-
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -2314,21 +2303,16 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			sCount = pDesc->GetAttribute(FRAGMENT_COUNT_ATTRIB);
 		pNewDesc->Count.LoadFromXML(sCount, 1);
 
+		//	Fragmentation Arc
+
+		pNewDesc->Direction.LoadFromXML(pFragDesc->GetAttribute(DIRECTION_ATTRIB), DEFAULT_FRAGMENT_DIRECTION);
+		pNewDesc->FragmentArc.LoadFromXML(pFragDesc->GetAttribute(ARC_ANGLE_ATTRIB), 0);
+
 		//	Set MIRV flag
 
 		if (pDesc->GetAttributeBool(FRAGMENT_TARGET_ATTRIB))
 			pNewDesc->pDesc->m_fMIRV = true;
 		}
-
-	//	If we have fragments, then set proximity appropriately
-	//	NOTE: We set the fail safe value even if we don't set the proximity
-	//	blast because we might set m_fProximityBlast later if there
-	//	is an OnFragment event.
-
-	m_fProximityBlast = (iFragCount != 0);
-	m_iProximityFailsafe = pDesc->GetAttributeInteger(FAILSAFE_ATTRIB);
-	m_rMaxFragThreshold = LIGHT_SECOND * CWeaponClass::DEFAULT_FRAG_THRESHOLD;
-	m_rMinFragThreshold = 0.5 * LIGHT_SECOND * CWeaponClass::DEFAULT_FRAG_THRESHOLD;
 
 	//	If we've got a fragment interval set, then it means we periodically 
 	//	fragment (instead of fragmenting on proximity).
@@ -2342,27 +2326,45 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			return ERR_FAIL;
 			}
 
-		//	Clear proximity blast flag.
-
 		m_fProximityBlast = false;
 		}
 
-	//	See if we have custom fragmentation thresholds
+	//	Otherwise, initialize proximity fragmentation values
+	//
+	//	NOTE: We set these values even if we don't have fragments because we 
+	//	might have an OnFragment event.
 
 	else
 		{
-		Metric rValue;
+		m_fProximityBlast = (iFragCount != 0);
+		m_iProximityFailsafe = pDesc->GetAttributeInteger(FAILSAFE_ATTRIB);
 
-		if (pDesc->FindAttributeDouble(FRAGMENT_MAX_RADIUS_ATTRIB, &rValue)
-				|| pDesc->FindAttributeDouble(FRAGMENT_RADIUS_ATTRIB, &rValue))
+		Metric rMax = pDesc->GetAttributeDoubleBounded(FRAGMENT_MAX_RADIUS_ATTRIB, 0.0, -1.0, -1.0);
+		if (rMax == -1.0)
+			rMax = pDesc->GetAttributeDoubleBounded(FRAGMENT_RADIUS_ATTRIB, 0.0, -1.0, -1.0);
+
+		Metric rMin = pDesc->GetAttributeDoubleBounded(FRAGMENT_MIN_RADIUS_ATTRIB, 0.0, -1.0, -1.0);
+
+		//	Set defaults, based on which values are defined.
+
+		if (rMax == -1.0 && rMin == -1.0)
 			{
-			m_rMaxFragThreshold = LIGHT_SECOND * Max(0.0, rValue);
-
-			if (pDesc->FindAttributeDouble(FRAGMENT_MIN_RADIUS_ATTRIB, &rValue))
-				m_rMinFragThreshold = Min(LIGHT_SECOND * Max(0.0, rValue), m_rMaxFragThreshold);
-			else
-				m_rMinFragThreshold = 0.5 * m_rMaxFragThreshold;
+			rMax = CWeaponClass::DEFAULT_FRAG_THRESHOLD;
+			rMin = CWeaponClass::DEFAULT_FRAG_MIN_THRESHOLD;
 			}
+		else if (rMin == -1.0)
+			{
+			rMin = Min(CWeaponClass::DEFAULT_FRAG_MIN_THRESHOLD, rMax);
+			}
+		else if (rMax == -1.0)
+			{
+			rMax = Max(rMin, CWeaponClass::DEFAULT_FRAG_THRESHOLD);
+			}
+
+		//	Convert to light-seconds
+
+		m_rMaxFragThreshold = LIGHT_SECOND * rMax;
+		m_rMinFragThreshold = LIGHT_SECOND * rMin;
 		}
 
 	//	Compute max effective range

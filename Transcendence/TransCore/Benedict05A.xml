@@ -26,7 +26,7 @@
 			maxAppearing=		"1"
 			priority=			"100"
 
-			failureAfterOutOfSystem="5400"
+			failureOnReturnToSystem="5400"
 			noDebrief=			"true"
 			>
 		<Events>

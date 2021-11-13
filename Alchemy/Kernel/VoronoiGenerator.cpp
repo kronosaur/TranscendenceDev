@@ -1321,6 +1321,9 @@ void VoronoiDiagramGenerator::insertVertexAddress(long vertexNum, struct Site* a
 	if(vertices == 0)
 	{
 		vertices = (struct Site **) myalloc(4000*sizeof( *vertices));
+		if (!vertices)
+			throw CException(ERR_MEMORY);
+
 		sizeOfVertices = 4000;
 		for(int i = sizeOfVertices - 4000; i < sizeOfVertices; i++)
 		{
@@ -1331,6 +1334,9 @@ void VoronoiDiagramGenerator::insertVertexAddress(long vertexNum, struct Site* a
 	while(vertexNum > sizeOfVertices - 1)
 	{
 		vertices = (Site**)realloc(vertices,(sizeOfVertices+4000)*sizeof(Site*));
+		if (!vertices)
+			throw CException(ERR_MEMORY);
+
 		sizeOfVertices += 4000;
 
 		for(int i = sizeOfVertices - 4000; i < sizeOfVertices; i++)

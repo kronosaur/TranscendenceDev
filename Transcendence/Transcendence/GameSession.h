@@ -89,6 +89,7 @@ class CGameSession : public IHISession
 		bool IsMouseAimEnabled (void) const { return m_bMouseAim; }
 		void PaintInfoText (CG32bitImage &Dest, const CString &sTitle, const TArray<CString> &Body, bool bAboveTargeting = true);
 		void PaintSoundtrackTitles (CG32bitImage &Dest);
+		void SetMouseAimEnabled (bool bEnabled = true);
 
 	private:
 
@@ -125,7 +126,6 @@ class CGameSession : public IHISession
 
 		void PaintMenu (CG32bitImage &Screen);
 		void PaintSRS (CG32bitImage &Screen);
-		void SetMouseAimEnabled (bool bEnabled = true);
 		bool ShowMenu (EMenuTypes iMenu);
 		void SyncMouseToPlayerShip (void);
 

@@ -126,7 +126,9 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 
 		case stateApproaching:
 			{
-			ASSERT(m_pDest);
+			if (!m_pDest)
+				throw CException(ERR_FAIL);
+
 			CVector vTarget = m_pDest->GetPos() - m_pShip->GetPos();
 			Metric rTargetDist2 = vTarget.Dot(vTarget);
 
@@ -202,8 +204,8 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 
 		case stateAvoidingEnemyStation:
 			{
-			ASSERT(m_pDest);
-			ASSERT(m_pTarget);
+			if (!m_pDest || !m_pTarget)
+				throw CException(ERR_FAIL);
 
 			int iTick = m_pShip->GetSystem()->GetTick();
 			CVector vTarget = m_pTarget->GetPos() - m_pShip->GetPos();
@@ -1592,6 +1594,8 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 //	Handle the case where another object is destroyed
 
 	{
+	DEBUG_TRY
+
 	//	Alter our goals
 
 	if (Ctx.Obj == m_pDest)
@@ -1726,6 +1730,8 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 	if (Ctx.Obj == g_pDebugShip)
 		g_pDebugShip = NULL;
+
+	DEBUG_CATCH
 	}
 
 void CStandardShipAI::OnOrderChanged (void)

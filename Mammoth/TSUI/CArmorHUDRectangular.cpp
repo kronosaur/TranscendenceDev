@@ -381,7 +381,7 @@ void CArmorHUDRectangular::PaintHealerLevel (SHUDPaintCtx &Ctx, CShip *pShip)
 
 	//	Compute healer left.
 
-	int iHealerLeft = pShip->GetArmorSystem()->GetHealerLeft();
+	int iHealerLeft = pShip->GetArmorSystem().GetHealerLeft();
 
 	//	Calc the percentage level. NOTE: It is OK if we have > 100% healer,
 	//	but we top out at 100%.
@@ -498,7 +498,7 @@ void CArmorHUDRectangular::Realize (SHUDPaintCtx &Ctx)
 
 	//	If we use healing reserves, paint those.
 
-	CArmorSystem *pArmor = pShip->GetArmorSystem();
+	CArmorSystem *pArmor = &pShip->GetArmorSystem();
 	if (pArmor && pArmor->GetHealerLeft() > 0)
 		PaintHealerLevel(Ctx, pShip);
 	}

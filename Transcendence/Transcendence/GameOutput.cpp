@@ -6,6 +6,16 @@
 #include "Transcendence.h"
 #include "XMLUtil.h"
 
+void CTranscendenceWnd::ConsoleClear ()
+
+//	ConsoleClear
+//
+//	Clear the console
+
+	{
+	m_pTC->GetDebugConsole().ClearOutput();
+	}
+
 void CTranscendenceWnd::ConsoleOutput (const CString &sLine)
 
 //	ConsoleOutput
@@ -95,4 +105,14 @@ const CG16bitFont &CTranscendenceWnd::GetFont (const CString &sFont) const
 
 	{
 	return g_pHI->GetVisuals().GetFont(sFont);
+	}
+
+void CTranscendenceWnd::PostAchievement (const CAchievementDef &Def)
+
+//	PostAchievement
+//
+//	Posts the given achievement.
+
+	{
+	g_pHI->AddBackgroundTask(new CPostAchievementTask(*g_pHI, m_pTC->GetService(), Def), 0);
 	}

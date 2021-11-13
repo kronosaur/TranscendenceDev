@@ -532,6 +532,28 @@ void CCodeChainCtx::DefineItem (const CString &sVar, const CItem &Item)
 		m_CC.DefineGlobal(sVar, m_CC.GetNil());
 	}
 
+void CCodeChainCtx::DefineItemList (const CString &sVar, const CItemList &ItemList)
+
+//	DefineItemList
+//
+//	Defines a list of items.
+
+	{
+	if (ItemList.GetCount() == 0)
+		m_CC.DefineGlobal(sVar, m_CC.GetNil());
+	else
+		{
+		ICCItemPtr pValue(ICCItem::List);
+		for (int i = 0; i < ItemList.GetCount(); i++)
+			{
+			ICCItemPtr pItem(CreateListFromItem(ItemList.GetItem(i)));
+			pValue->Append(pItem);
+			}
+
+		m_CC.DefineGlobal(sVar, pValue);
+		}
+	}
+
 void CCodeChainCtx::DefineItemType (const CString &sVar, const CItemType *pType)
 
 //	DefineItemType
@@ -686,42 +708,6 @@ void CCodeChainCtx::RestoreVars (void)
 		}
 	}
 
-ICCItem *CCodeChainCtx::Run (ICCItem *pCode)
-
-//	Run
-//
-//	Runs the given piece of code and returns a result
-//	(which must be discarded by the caller)
-
-	{
-	ICCItemPtr pResult = RunCode(pCode);
-	return pResult->Reference();
-	}
-
-ICCItem *CCodeChainCtx::Run (const SEventHandlerDesc &Event)
-
-//	Run
-//
-//	Runs the given event and returns a result. (Which must be discarded by the
-//	caller).
-
-	{
-	DEBUG_TRY
-
-	if (!Event.pCode)
-		return m_CC.CreateNil();
-
-	CExtension *pOldExtension = m_pExtension;
-	m_pExtension = Event.pExtension;
-
-	ICCItem *pResult = Run(Event.pCode);
-
-	m_pExtension = pOldExtension;
-	return pResult;
-
-	DEBUG_CATCH
-	}
-
 ICCItemPtr CCodeChainCtx::RunCode (ICCItem *pCode)
 
 //	RunCode
@@ -757,6 +743,8 @@ ICCItemPtr CCodeChainCtx::RunCode (const SEventHandlerDesc &Event)
 	if (!Event.pCode)
 		return ICCItemPtr::Nil();
 
+	CUsePerformanceCounter Counter(GetUniverse(), Event);
+
 	CExtension *pOldExtension = m_pExtension;
 	m_pExtension = Event.pExtension;
 
@@ -768,18 +756,6 @@ ICCItemPtr CCodeChainCtx::RunCode (const SEventHandlerDesc &Event)
 	return pResult;
 
 	DEBUG_CATCH
-	}
-
-ICCItem *CCodeChainCtx::RunLambda (ICCItem *pCode)
-
-//	RunLambda
-//
-//	Runs a piece of code or a lambda expression
-//	and returns a result (which must be discarded by the caller)
-
-	{
-	ICCItemPtr pResult = RunLambdaCode(pCode);
-	return pResult->Reference();
 	}
 
 ICCItemPtr CCodeChainCtx::RunLambdaCode (ICCItem *pCode, ICCItem *pArgs)

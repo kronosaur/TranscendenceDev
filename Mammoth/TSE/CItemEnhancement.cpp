@@ -39,6 +39,10 @@ void CItemEnhancement::AccumulateAttributes (const CItem &Item, TArray<SDisplayA
 		case etNone:
 			break;
 
+		case etBonus:
+			retList->Insert(SDisplayAttribute(iDisplayType, (IsDisadvantage() ? CONSTLIT("-degraded") : CONSTLIT("+enhanced")), true));
+			break;
+
 		case etHPBonus:
 		case etStrengthen:
 			if (dwFlags & FLAG_INCLUDE_HP_BONUS)
@@ -535,7 +539,8 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, const CItemEnhan
 
 	//	For binary enhancements we check the status of the item.
 
-	else if (Enhancement.m_dwMods == etBinaryEnhancement)
+	else if (Enhancement.m_dwMods == etBinaryEnhancement
+			|| Enhancement.m_dwMods == etBonus)
 		{
 		//	If the item is damaged, then enhancing it repairs it
 
@@ -1722,6 +1727,7 @@ int CItemEnhancement::GetValueAdj (const CItem &Item) const
 			case etResistHPBonus:
 				return Max(-80, -GetDataX());
 
+			case etBonus:
 			case etPhotoRegenerate:
 			case etPhotoRecharge:
 			case etRepairOnHit:
@@ -1769,6 +1775,7 @@ int CItemEnhancement::GetValueAdj (const CItem &Item) const
 			case etResistHPBonus:
 				return GetDataX();
 
+			case etBonus:
 			case etPhotoRegenerate:
 			case etPhotoRecharge:
 			case etRepairOnHit:
@@ -2260,6 +2267,17 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 	else if (strEquals(sID, CONSTLIT("enhance")))
 		m_dwMods = etBinaryEnhancement;
 
+	else if (strEquals(sID, CONSTLIT("bonus")))
+		{
+		if (bDisadvantage)
+			{
+			if (retsError) *retsError = CONSTLIT("Bonus disadvantage not supported.");
+			return ERR_FAIL;
+			}
+
+		m_dwMods = EncodeAX(etBonus);
+		}
+
 	//	Otherwise, see if this is a special damage 
 
 	else
@@ -2314,23 +2332,23 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 	return NOERROR;
 	}
 
-ALERROR CItemEnhancement::InitFromDesc (CUniverse &Universe, const ICCItem &Item, CString *retsError)
+ALERROR CItemEnhancement::InitFromDesc (CUniverse &Universe, const ICCItem &Value, CString *retsError)
 
 //	InitFromDesc
 //
 //	Initializes from a CodeChain item
 
 	{
-	if (Item.IsNil())
+	if (Value.IsNil())
 		{
 		*this = CItemEnhancement();
 		return NOERROR;
 		}
-	else if (Item.IsSymbolTable())
+	else if (Value.IsSymbolTable())
 		{
 		//	Enhancement
 
-		CString sMods = Item.GetStringAt(CONSTLIT("enhancement"));
+		CString sMods = Value.GetStringAt(CONSTLIT("enhancement"));
 		if (sMods.IsBlank())
 			{
 			//	Sometimes the struct has no enhancement but a desc field that
@@ -2345,12 +2363,12 @@ ALERROR CItemEnhancement::InitFromDesc (CUniverse &Universe, const ICCItem &Item
 
 		//	Lifetime
 
-		int iLifetime = Item.GetIntegerAt(CONSTLIT("lifetime"), -1);
+		int iLifetime = Value.GetIntegerAt(CONSTLIT("lifetime"), -1);
 		m_iExpireTime = (iLifetime != -1 ? Universe.GetTicks() + iLifetime : -1);
 
 		//	Enhancement type
 
-		DWORD dwEnhancementUNID = (DWORD)Item.GetIntegerAt(CONSTLIT("type"));
+		DWORD dwEnhancementUNID = (DWORD)Value.GetIntegerAt(CONSTLIT("type"));
 		if (dwEnhancementUNID)
 			{
 			m_pEnhancer = Universe.FindItemType(dwEnhancementUNID);
@@ -2363,13 +2381,22 @@ ALERROR CItemEnhancement::InitFromDesc (CUniverse &Universe, const ICCItem &Item
 
 		return NOERROR;
 		}
-	else if (Item.IsInteger())
+	else if (Value.IsInteger())
 		{
-		*this = CItemEnhancement((DWORD)Item.GetIntegerValue());
+		*this = CItemEnhancement((DWORD)Value.GetIntegerValue());
 		return NOERROR;
 		}
 	else
-		return InitFromDesc(Item.GetStringValue(), retsError);
+		{
+		CString sValue = Value.GetStringValue();
+		if (strEquals(sValue, CONSTLIT("repair")))
+			{
+			m_dwMods = EncodeABC(etRepairDevice, 0, 0);
+			return NOERROR;
+			}
+		else
+			return InitFromDesc(Value.GetStringValue(), retsError);
+		}
 	}
 
 ALERROR CItemEnhancement::InitFromDesc (SDesignLoadCtx &Ctx, const CString &sDesc)

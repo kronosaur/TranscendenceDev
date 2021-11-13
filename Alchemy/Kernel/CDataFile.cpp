@@ -816,7 +816,7 @@ ALERROR CDataFile::OpenInt (void)
 	else
 		{
 		int iEntryTableSize = header.dwEntryTableCount * sizeof(SEntryV1);
-		SEntryV1 *pOldEntryTable = (SEntryV1 *)new char [iEntryTableSize];
+		SEntryV1 *pOldEntryTable = new SEntryV1 [header.dwEntryTableCount];
 		if (pOldEntryTable == NULL)
 			return ERR_MEMORY;
 
@@ -824,7 +824,7 @@ ALERROR CDataFile::OpenInt (void)
 
 		if (error = ReadBuffer(header.dwEntryTablePos, iEntryTableSize, pOldEntryTable))
 			{
-			delete pOldEntryTable;
+			delete [] pOldEntryTable;
 			return ERR_FILEOPEN;
 			}
 

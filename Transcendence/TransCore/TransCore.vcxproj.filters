@@ -1080,5 +1080,17 @@
     <Xml Include="Sisters02.xml">
       <Filter>Human Space Library\Sisters</Filter>
     </Xml>
+    <Xml Include="..\Extensions\Diagnostics\CombatAI.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
+    <Xml Include="..\Extensions\Diagnostics\TradingTests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
+    <Xml Include="Achievements.xml">
+      <Filter>Part I</Filter>
+    </Xml>
+    <Xml Include="RPGSlaves.xml">
+      <Filter>RPG Library</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
