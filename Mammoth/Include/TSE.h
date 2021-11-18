@@ -58,7 +58,7 @@
 #define DEBUG_VECTOR
 //#define DEBUG_WEAPON_POS
 #else
-//#define DEBUG_PERFORMANCE_COUNTERS
+#define DEBUG_PERFORMANCE_COUNTERS
 #endif
 
 //	We leave this defined because we want to get traces in the field in case
