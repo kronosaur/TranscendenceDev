@@ -1489,7 +1489,7 @@ void CAIBehaviorCtx::GetPrimaryWeaponsToFire (CShip* pShip,
 		}
 	}
 
-void CAIBehaviorCtx::FireWeaponIfOnTarget(CShip *pShip, CSpaceObject *pTarget, CInstalledDevice *pWeaponToFire, Metric rWeaponRange, Metric rTargetDist2, bool bDoNotShoot, int *retiFacingAngle, int *retiAngleToTarget)
+void CAIBehaviorCtx::FireWeaponIfOnTarget(CShip *pShip, CSpaceObject *pTarget, CInstalledDevice *pWeaponToFire, Metric rWeaponRange, Metric rTargetDist2, bool bDoNotShoot, int *retiFacingAngle, int *retiAngleToTarget, bool *retbIsAligned)
 	{
 #ifdef DEBUG
 	bool bDebug = pShip->IsSelected();
@@ -1506,6 +1506,8 @@ void CAIBehaviorCtx::FireWeaponIfOnTarget(CShip *pShip, CSpaceObject *pTarget, C
 		retiFacingAngle);
 	bool bAimError = false;
 	*retiAngleToTarget = iAimAngle;
+	if (retbIsAligned)
+		*retbIsAligned = bAligned;
 
 	//	iAimAngle is the direction that we should fire in order to hit
 	//	the target.
@@ -1736,7 +1738,8 @@ void CAIBehaviorCtx::ImplementFireAllWeaponsOnTarget (CShip* pShip,
 		auto weaponDeviceItem = pWeaponToFire->GetDeviceItem();
 		int iAngleToTarget = -1;
 		int iFacingAngle = -1;
-		FireWeaponIfOnTarget(pShip, pTarget, pWeaponToFire, rWeaponRange, rTargetDist2, bDoNotShoot, &iFacingAngle, &iAngleToTarget);
+		bool bIsAligned = false;
+		FireWeaponIfOnTarget(pShip, pTarget, pWeaponToFire, rWeaponRange, rTargetDist2, bDoNotShoot, &iFacingAngle, &iAngleToTarget, &bIsAligned);
 
 		//	Turn to aim, even if weapon is already approximately aligned
 		//	If 'FireAllPrimaryWeapons' is set, though, we should ignore guns that have large fire arcs
@@ -1753,11 +1756,11 @@ void CAIBehaviorCtx::ImplementFireAllWeaponsOnTarget (CShip* pShip,
 		int iDistanceToFireBoundary = min(min(abs(iMinFireArc - iAngleToTarget), abs(iMaxFireArc - iAngleToTarget)), min(abs((iMinFireArc - 360) - iAngleToTarget), abs((360 + iMaxFireArc) - iAngleToTarget)));
 		bool bIgnoreThisGun = (weaponDeviceItem.GetWeaponEffectiveness(pTarget) < 0) || pWeaponToFire->IsDamaged() || pWeaponToFire->IsOmniDirectional();
 		if (!bIgnoreThisGun)
-			aimAngles.push_back(std::make_pair(iDistanceToFireBoundary, iFacingAngle));
+			aimAngles.push_back(std::make_pair(bIsAligned ? AngleRange(iMinFireArc, iMaxFireArc) : iDistanceToFireBoundary, iFacingAngle));
 
 		}
 
-	int iLowestScore = 360;
+	int iLowestScore = 360 * 360;
 	int iFacingAngle = -1;
 	for (const auto& aimAngle : aimAngles)
 		{
