@@ -1400,6 +1400,7 @@ class CSpaceObject
 		virtual void OnLosePOV (void) { }
 
 		static CString GetCategoryName (Categories iCategory);
+		static CString GetUpdatePerformanceID (Categories iCategory);
 
 	protected:
 

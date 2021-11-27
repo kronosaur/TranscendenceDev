@@ -7715,7 +7715,7 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 //	Update the object
 
 	{
-	CUsePerformanceCounter Counter(GetUniverse(), strPatternSubst(CONSTLIT("update.%s"), GetCategoryName(GetCategory())));
+	CUsePerformanceCounter Counter(GetUniverse(), GetUpdatePerformanceID(GetCategory()));
 
 	//	Update as long as we are not time-stopped.
 
