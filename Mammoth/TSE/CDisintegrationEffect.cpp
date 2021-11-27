@@ -115,7 +115,7 @@ void CDisintegrationEffect::InitParticle (SParticle *pParticle)
 			(iFade * 0xff / 100));
 	}
 
-void CDisintegrationEffect::OnMove (const CVector &vOldPos, Metric rSeconds)
+void CDisintegrationEffect::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
 //

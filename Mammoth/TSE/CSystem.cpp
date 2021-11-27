@@ -4876,6 +4876,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	SUpdateCtx Ctx;
 	Ctx.pSystem = this;
 	Ctx.pAnnotations = pAnnotations;
+	Ctx.SetNoShipEffectUpdate(SystemCtx.bNoShipEffectUpdate);
 
 	//	Initialize the player weapon context so that we can select the auto-
 	//	target.
@@ -4996,6 +4997,16 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 
 #ifdef DEBUG_PERFORMANCE
 			iMoveObj++;
+#endif
+#ifdef DEBUG_MOVE_PERFORMANCE
+			if (Ctx.bCalledMove)
+				SystemCtx.iMoveCalls++;
+
+			if (Ctx.bCalledShipOnMove)
+				SystemCtx.iShipOnMoveCalls++;
+
+			if (Ctx.bCalledShipEffectMove)
+				SystemCtx.iShipEffectMoveCalls++;
 #endif
 			}
 		}

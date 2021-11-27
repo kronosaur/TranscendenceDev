@@ -445,7 +445,7 @@ void CContinuousBeam::OnDestroyed (SDestroyCtx &Ctx)
 	m_pDesc->FireOnDestroyShot(this);
 	}
 
-void CContinuousBeam::OnMove (const CVector &vOldPos, Metric rSeconds)
+void CContinuousBeam::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
 //

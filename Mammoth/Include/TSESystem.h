@@ -98,16 +98,17 @@ typedef TSEListNode<CSystemEventHandler> CSystemEventHandlerNode;
 
 struct SSystemUpdateCtx
 	{
-	SSystemUpdateCtx (void) : rSecondsPerTick(g_SecondsPerUpdate),
-			bForceEventFiring(false),
-			bForcePainted(false),
-			bTrackPlayerObjs(false)
-		{ }
+	Metric rSecondsPerTick = g_SecondsPerUpdate;
+	bool bForceEventFiring = false;					//	If TRUE, fire events even if no player ship
+	bool bForcePainted = false;						//	If TRUE, mark objects as painted 
+	bool bTrackPlayerObjs = false;					//	If TRUE, make a list of player objects
+	bool bNoShipEffectUpdate = false;				//	If TRUE, do not update ship effects
 
-	Metric rSecondsPerTick;
-	bool bForceEventFiring;					//	If TRUE, fire events even if no player ship
-	bool bForcePainted;						//	If TRUE, mark objects as painted 
-	bool bTrackPlayerObjs;					//	If TRUE, make a list of player objects
+#ifdef DEBUG_MOVE_PERFORMANCE
+	int iMoveCalls = 0;
+	int iShipOnMoveCalls = 0;
+	int iShipEffectMoveCalls = 0;
+#endif
 	};
 
 //	CMoveCtx is currently unused; it was part of an experiment to see

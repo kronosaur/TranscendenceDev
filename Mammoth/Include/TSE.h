@@ -61,6 +61,8 @@
 #define DEBUG_PERFORMANCE_COUNTERS
 #endif
 
+//#define DEBUG_MOVE_PERFORMANCE
+
 //	We leave this defined because we want to get traces in the field in case
 //	of a crash.
 #define DEBUG_PROGRAMSTATE
@@ -286,11 +288,13 @@ struct SUpdateCtx
 		CAutoTargetCalc &GetAutoTarget () { return m_AutoTarget; }
 		CSpaceObject *GetPlayerShip () { return m_pPlayer; }
 		CTargetList &GetTargetList ();
+		bool IsShipEffectUpdateEnabled () const { return !m_bNoShipEffectUpdate; }
 		bool IsTimeStopped (void) const { return m_bTimeStopped; }
 		void OnEndUpdate () { m_pObj = NULL; }
 		void OnStartUpdate (CSpaceObject &Obj);
 		bool PlayerHasCommsTarget () const { return m_bPlayerHasCommsTarget; }
 		bool PlayerHasSquadron () const { return m_bPlayerHasSquadron; }
+		void SetNoShipEffectUpdate (bool bValue = true) { m_bNoShipEffectUpdate = bValue; }
 		void SetPlayerShip (CSpaceObject &PlayerObj);
 		void UpdatePlayerCalc (const CSpaceObject &Obj);
 
@@ -303,10 +307,20 @@ struct SUpdateCtx
 		bool bHasShipBarriers = false;				//	TRUE if the system has ship barriers (e.g., Arena)
 		bool bHasGravity = false;					//	TRUE if the system has gravity
 
+#ifdef DEBUG_MOVE_PERFORMANCE
+		bool bCalledMove = false;
+		bool bCalledShipOnMove = false;
+		bool bCalledShipEffectMove = false;
+#endif
+
 	private:
 
 		CSpaceObject *m_pPlayer = NULL;				//	The player
 		TArray<CSpaceObject *> m_PlayerObjs;		//	List of player objects, if pPlayer == NULL
+
+		//	Options
+
+		bool m_bNoShipEffectUpdate = false;
 
 		//	About the object being updated
 
@@ -1414,7 +1428,7 @@ class CSpaceObject
 		virtual bool OnIncProperty (const CString &sProperty, ICCItem *pValue, ICCItemPtr &pResult) { return false; }
 		virtual bool OnIsImmuneTo (SpecialDamageTypes iSpecialDamage) const { return false; }
 		virtual void OnItemEnhanced (CItemListManipulator &ItemList) { }
-		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) { }
+		virtual void OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds) { }
 		virtual void OnNewSystem (CSystem *pSystem) { }
 		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate) { }
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }

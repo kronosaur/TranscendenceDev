@@ -5119,13 +5119,17 @@ void CShip::OnItemEnhanced (CItemListManipulator &ItemList)
 		}
 	}
 
-void CShip::OnMove (const CVector &vOldPos, Metric rSeconds)
+void CShip::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
 //
 //	Do stuff when station moves
 
 	{
+#ifdef DEBUG_MOVE_PERFORMANCE
+	Ctx.bCalledShipOnMove = true;
+#endif
+
 	//	If the station is moving then make sure all docked ships
 	//	move along with it.
 
@@ -5133,10 +5137,14 @@ void CShip::OnMove (const CVector &vOldPos, Metric rSeconds)
 
 	//	Move effects
 
-	if (WasPainted())
+	if (WasPainted() && Ctx.IsShipEffectUpdateEnabled())
 		{
 		bool bRecalcBounds;
 		m_Effects.Move(this, vOldPos, &bRecalcBounds);
+
+#ifdef DEBUG_MOVE_PERFORMANCE
+		Ctx.bCalledShipEffectMove = true;
+#endif
 
 		//	Recalculate bounds, if necessary
 

@@ -96,7 +96,7 @@ CEffectCreator *CEffect::GetEffectCreator (void)
 		return NULL;
 	}
 
-void CEffect::OnMove (const CVector &vOldPos, Metric rSeconds)
+void CEffect::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
 //
