@@ -196,6 +196,12 @@ void TestUpdate (CUniverse &Universe, CXMLElement *pCmdLine)
 	if (iUpdateCount == 0)
 		iUpdateCount = DEFAULT_UPDATE;
 
+	//	Options
+
+	CString sNode = pCmdLine->GetAttribute(CONSTLIT("node"));
+	if (sNode.IsBlank())
+		sNode = Universe.GetCurrentAdventureDesc().GetStartingNodeID();
+
 	//	Create the fist system
 
 	for (iTrial = 0; iTrial < iCount; iTrial++)
@@ -213,12 +219,12 @@ void TestUpdate (CUniverse &Universe, CXMLElement *pCmdLine)
 			return;
 			}
 
-		//	Create the first system
+		//	Create the appropriate system
 
-		CTopologyNode *pNode = Universe.GetFirstTopologyNode();
+		CTopologyNode *pNode = Universe.FindTopologyNode(sNode);
 		if (pNode == NULL)
 			{
-			printf("ERROR: Cannot find first node.\n");
+			printf("ERROR: Cannot find node: %s.\n", (LPSTR)sNode);
 			return;
 			}
 
@@ -228,6 +234,8 @@ void TestUpdate (CUniverse &Universe, CXMLElement *pCmdLine)
 			printf("ERROR: Unable to create star system.\n");
 			return;
 			}
+
+		printf("[%s] %s\n", (LPSTR)sNode, (LPSTR)pSystem->GetName());
 
 		//	Set the POV
 
