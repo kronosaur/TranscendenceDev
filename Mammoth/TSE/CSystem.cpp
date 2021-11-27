@@ -4913,6 +4913,11 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 		if (pObj == NULL)
 			continue;
 
+		//	Skip updating out of plane objects for performance reasons
+
+		if (pObj->IsOutOfPlaneObj())
+			continue;
+
 		//	Initialize context
 
 		Ctx.OnStartUpdate(*pObj);
