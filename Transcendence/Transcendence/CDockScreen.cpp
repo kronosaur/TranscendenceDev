@@ -1034,7 +1034,30 @@ void CDockScreen::HandleChar (char chChar)
 //	Handle char events
 
 	{
-	m_CurrentPane.HandleChar(chChar);
+	//	First see if the pane handles it. If it does, then we're done.
+	//	NOTE: This is the reverse of how we handle keydown. We should change 
+	//	the latter to be pane-first.
+
+	if (m_CurrentPane.HandleChar(chChar))
+		return;
+
+	//	Let the display handle it.
+
+	IDockScreenDisplay::EResults iResult = m_pDisplay->HandleChar(chChar);
+
+	switch (iResult)
+		{
+		//	If we need to reshow the pane, do it.
+
+		case IDockScreenDisplay::resultShowPane:
+			m_CurrentPane.ExecuteShowPane(EvalInitialPane());
+			break;
+
+		//	Otherwise, continue.
+
+		default:
+			break;
+		}
 	}
 
 void CDockScreen::HandleKeyDown (int iVirtKey)
