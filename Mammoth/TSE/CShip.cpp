@@ -7321,6 +7321,10 @@ void CShip::SetName (const CString &sName, DWORD dwFlags)
 		m_dwNameFlags = dwFlags;
 		m_fNameBlanked = false;
 		}
+
+	//	Clear the cache, so we recompute it.
+
+	m_sMapLabel = NULL_STR;
 	}
 
 void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
