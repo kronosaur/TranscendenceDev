@@ -13,6 +13,14 @@
 #define CATEGORY_SHIP							CONSTLIT("ship")
 #define CATEGORY_STATION						CONSTLIT("station")
 
+#define UPDATE_CATEGORY_BEAM					CONSTLIT("update.beam")
+#define UPDATE_CATEGORY_EFFECT					CONSTLIT("update.effect")
+#define UPDATE_CATEGORY_MARKER					CONSTLIT("update.marker")
+#define UPDATE_CATEGORY_MISSILE					CONSTLIT("update.missile")
+#define UPDATE_CATEGORY_MISSION					CONSTLIT("update.mission")
+#define UPDATE_CATEGORY_SHIP					CONSTLIT("update.ship")
+#define UPDATE_CATEGORY_STATION					CONSTLIT("update.station")
+
 #define FIELD_ARMOR_INTEGRITY					CONSTLIT("armorIntegrity")
 #define FIELD_DESC								CONSTLIT("desc")
 #define FIELD_DESC_ID							CONSTLIT("descID")
@@ -369,6 +377,33 @@ CString CSpaceObject::GetCategoryName (Categories iCategory)
 
 		default:
 			return CATEGORY_EFFECT;
+		}
+	}
+
+CString CSpaceObject::GetUpdatePerformanceID (Categories iCategory)
+	{
+	switch (iCategory)
+		{
+		case catShip:
+			return UPDATE_CATEGORY_SHIP;
+
+		case catStation:
+			return UPDATE_CATEGORY_STATION;
+
+		case catBeam:
+			return UPDATE_CATEGORY_BEAM;
+
+		case catMissile:
+			return UPDATE_CATEGORY_MISSILE;
+
+		case catMission:
+			return UPDATE_CATEGORY_MISSION;
+
+		case catMarker:
+			return UPDATE_CATEGORY_MARKER;
+
+		default:
+			return UPDATE_CATEGORY_EFFECT;
 		}
 	}
 

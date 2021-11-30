@@ -3091,6 +3091,12 @@ void CUniverse::UpdateTick (SSystemUpdateCtx &Ctx)
 	{
 	DEBUG_TRY
 
+#ifdef DEBUG_MOVE_PERFORMANCE
+	Ctx.iMoveCalls = 0;
+	Ctx.iShipOnMoveCalls = 0;
+	Ctx.iShipEffectMoveCalls = 0;
+#endif
+
 	if (m_pCurrentSystem == NULL)
 		return;
 

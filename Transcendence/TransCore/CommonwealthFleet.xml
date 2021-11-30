@@ -781,6 +781,18 @@ PLAYER DATA
 			<Effect type="thrustMain"		posAngle="180"	posRadius="49"	posZ="8"	rotation="180"	effect="&efMainThrusterLarge;"/>
 		</Effects>
 
+		<PlayerSettings>
+			<ArmorDisplay 
+					style=			"circular"
+					scale=			"hp"
+					>
+				<ArmorSection segment="0" hpAngle="25"/>
+				<ArmorSection segment="2" hpAngle="155"/>
+				<ArmorSection segment="3" hpAngle="-155"/>
+				<ArmorSection segment="5" hpAngle="-25"/>
+			</ArmorDisplay>
+		</PlayerSettings>
+
 		<!-- AI and Behavior -->
 
 		<AISettings

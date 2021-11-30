@@ -6343,6 +6343,12 @@ void CSpaceObject::Move (SUpdateCtx &Ctx, Metric rSeconds)
 	{
 	DEBUG_TRY
 
+#ifdef DEBUG_MOVE_PERFORMANCE
+	Ctx.bCalledMove = true;
+	Ctx.bCalledShipOnMove = false;
+	Ctx.bCalledShipEffectMove = false;
+#endif
+
 	//	Remember the old position
 
 	m_vOldPos = m_vPos;
@@ -6354,7 +6360,7 @@ void CSpaceObject::Move (SUpdateCtx &Ctx, Metric rSeconds)
 
 	//	Let descendants process the move (if necessary)
 
-	OnMove(m_vOldPos, rSeconds);
+	OnMove(Ctx, m_vOldPos, rSeconds);
 
 	//	Clear painted (until the next tick)
 
@@ -7709,7 +7715,7 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 //	Update the object
 
 	{
-	CUsePerformanceCounter Counter(GetUniverse(), strPatternSubst(CONSTLIT("update.%s"), GetCategoryName(GetCategory())));
+	CUsePerformanceCounter Counter(GetUniverse(), GetUpdatePerformanceID(GetCategory()));
 
 	//	Update as long as we are not time-stopped.
 

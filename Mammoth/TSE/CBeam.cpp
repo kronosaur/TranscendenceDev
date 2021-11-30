@@ -103,7 +103,7 @@ CString CBeam::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const
 		}
 	}
 
-void CBeam::OnMove (const CVector &vOldPos, Metric rSeconds)
+void CBeam::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
 //

@@ -3339,6 +3339,7 @@
 				stealth=		"15"
 
 				failSafe=		"10"
+				noDetonationOnEndOfLife="true"
 
 				hitEffect=		"&efBlastHitDefault;"
 				sound=			"&snMissileLauncher;"
@@ -3390,6 +3391,7 @@
 				stealth=		"12"
 
 				failSafe=		"10"
+				noDetonationOnEndOfLife="true"
 
 				sound=			"&snMissileLauncher;"
 				hitEffect=		"&efBlastHitDefault;"

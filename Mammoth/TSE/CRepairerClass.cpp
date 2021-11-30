@@ -326,6 +326,7 @@ int CRepairerClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 			CCCtx.SaveAndDefineSourceVar(pSource);
 			CCCtx.SaveAndDefineItemVar(Ctx.GetItem());
 			CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), i);
+			CCCtx.DefineItem(CONSTLIT("aArmorItem"), ArmorItem[i]);
 			CCCtx.DefineItemType(CONSTLIT("aArmorType"), &ArmorItem[i].GetType());
 
 			ICCItemPtr pResult = CCCtx.RunCode(Event);

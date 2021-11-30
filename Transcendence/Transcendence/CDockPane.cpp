@@ -1227,7 +1227,10 @@ void CDockPane::RestoreControlValue (CDockSession &DockSession)
 				{
 				auto *pControl = m_Controls[i].AsTextArea();
 				if (pControl)
+					{
 					pControl->SetText(Frame.sSavedControlText);
+					pControl->SetCursor(0, Frame.sSavedControlText.GetLength());
+					}
 
 				//	Clear out the saved text.
 

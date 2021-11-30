@@ -254,7 +254,7 @@ void CRadiusDamage::OnDestroyed (SDestroyCtx &Ctx)
 	m_pDesc->FireOnDestroyShot(this);
 	}
 
-void CRadiusDamage::OnMove (const CVector &vOldPos, Metric rSeconds)
+void CRadiusDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
 //
