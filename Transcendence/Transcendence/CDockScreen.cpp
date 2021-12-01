@@ -84,6 +84,8 @@ void CDockScreen::Action (DWORD dwTag, DWORD dwData)
 //	Button pressed
 
 	{
+	DEBUG_TRY
+
 	switch (dwTag)
 		{
 		//	Handle tab control events
@@ -122,6 +124,8 @@ void CDockScreen::Action (DWORD dwTag, DWORD dwData)
 				}
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CDockScreen::AddDisplayControl (CXMLElement *pDesc, 
@@ -1591,7 +1595,11 @@ void CDockScreen::OnExecuteActionDone (void)
 //	Called by the pane when it is done executing an action.
 
 	{
+	DEBUG_TRY
+
 	m_Session.OnExecuteActionDone();
+
+	DEBUG_CATCH
 	}
 
 void CDockScreen::OnModifyItemBegin (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const

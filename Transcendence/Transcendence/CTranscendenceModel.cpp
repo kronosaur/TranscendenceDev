@@ -2194,6 +2194,8 @@ ALERROR CTranscendenceModel::ShowPane (const CString &sPane)
 //	Shows the given pane
 
 	{
+	DEBUG_TRY
+
 	ASSERT(!GetScreenStack().IsEmpty());
 	if (!InScreenSession())
 		return NOERROR;
@@ -2213,6 +2215,8 @@ ALERROR CTranscendenceModel::ShowPane (const CString &sPane)
 	//	Done
 
 	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError)

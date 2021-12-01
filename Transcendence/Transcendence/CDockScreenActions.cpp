@@ -333,6 +333,8 @@ void CDockScreenActions::Execute (int iAction, CDockScreen *pScreen)
 //	Executes the given action
 
 	{
+	DEBUG_TRY
+
 	SActionDesc *pAction = &m_Actions[iAction];
 
 	//	Ignore the action if disabled or invisible
@@ -385,6 +387,8 @@ void CDockScreenActions::Execute (int iAction, CDockScreen *pScreen)
 
 		ExecuteCode(pScreen, pAction->sID, pAction->pExtension, pExp);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CDockScreenActions::ExecuteCode (CDockScreen *pScreen, const CString &sID, CExtension *pExtension, ICCItem *pCode)
@@ -428,7 +432,11 @@ void CDockScreenActions::ExecuteShowPane (const CString &sPane)
 //	Show the given pane
 
 	{
+	DEBUG_TRY
+
 	g_pTrans->GetModel().ShowPane(sPane);
+
+	DEBUG_CATCH
 	}
 
 bool CDockScreenActions::FindByID (const CString &sID, int *retiAction)
