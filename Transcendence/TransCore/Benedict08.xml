@@ -160,43 +160,52 @@
 			</OnCompleted>
 			
 			<OnGlobalSystemStarted>
-				(block (
-					(penitentObj (@ (sysFindObject Nil "T +unid:&stPenitentMonastery;;") 0))
-					)
-
-					;	Make sure the Penitent monastery has an event handler,
-					;	even if we can't create the mission.
-							
-					(if (not (objGetEventHandler penitentObj))
-						(objSetEventHandler penitentObj &evBenedict08PenitentBase;)
+				(switch
+					;	Only in Eta Ceti
+					
+					(!= (sysGetNode) 'EC)
+						Nil
+						
+					;	Set up the mission
+						
+					(block (
+						(penitentObj (@ (sysFindObject Nil "T +unid:&stPenitentMonastery;;") 0))
 						)
 
-					;	Set up the mission, if necessary
-
-					(if (msnCanCreate &msRescueChildrenFromPenitents;)
-						(block (
-							stormhoundObj
+						;	Make sure the Penitent monastery has an event handler,
+						;	even if we can't create the mission.
+							
+						(if (not (objGetEventHandler penitentObj))
+							(objSetEventHandler penitentObj &evBenedict08PenitentBase;)
 							)
-							;	Create Stormhound near gate to SK
 
-							(setq stormhoundObj
-								(rpgCharacterCreateShip
-									&unidStormhound;
-									&scStormhoundAquila;
-									(sysVectorRandom (sysGetStargateLeadingToNode 'SK) 20 40)
-									{ repairAll:True }
-									)
+						;	Set up the mission, if necessary
+
+						(if (msnCanCreate &msRescueChildrenFromPenitents;)
+							(block (
+								stormhoundObj
 								)
+								;	Create Stormhound near gate to SK
+
+								(setq stormhoundObj
+									(rpgCharacterCreateShip
+										&unidStormhound;
+										&scStormhoundAquila;
+										(sysVectorRandom (sysGetStargateLeadingToNode 'SK) 20 40)
+										{ repairAll:True }
+										)
+									)
 						
-							;	Order appropriately
+								;	Order appropriately
 
-							(shpCancelOrders stormhoundObj)
-							(shpOrder stormhoundObj 'hold)
+								(shpCancelOrders stormhoundObj)
+								(shpOrder stormhoundObj 'hold)
 
-							;	Make sure the monastery has the questTarget property 
-							;	set so that another mission doesn't try to destroy it.
+								;	Make sure the monastery has the questTarget property 
+								;	set so that another mission doesn't try to destroy it.
 
-							(objSet@ penitentObj 'questTarget True)
+								(objSet@ penitentObj 'questTarget True)
+								)
 							)
 						)
 					)

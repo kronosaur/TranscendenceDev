@@ -335,7 +335,9 @@
 			<GetRumors>
 				(block (communionItem)
 					(append
-						(if (setq communionItem (random (objGetItems gPlayerShip "*U +communion;")))
+						(if (and (setq communionItem (random (objGetItems gPlayerShip "*U +communion;")))
+								(= (obj@ gPlayerShip 'characterClass) &unidPilgrimClass;)
+								)
 							(rpgRumorAdd 'sistersMission 'offerItem 100 nil {
 								itemName: (itmGetName communionItem 'article)
 								})
@@ -368,7 +370,12 @@
 				(cat
 					(objTranslate gSource 'descAbbessAdviceIntro)
 					"\n\n"
-					(objTranslate gSource (cat 'descAbbessAdvice (min (sysGetLevel) 7)))
+					(switch
+						(= (obj@ gPlayerShip 'characterClass) &unidPilgrimClass;)
+							(objTranslate gSource (cat 'descAbbessAdvice (min (sysGetLevel) 7)))
+
+						(objTranslate gSource 'descAbbessAdvice.nonPilgrim)
+						)
 					)
 			</Text>
 			<Text id="descAbbessAdviceIntro">
@@ -416,6 +423,12 @@
 			
 				"The universe is dark and lonely; I do not envy your task."
 				
+			</Text>
+			<Text id="descAbbessAdvice.nonPilgrim">
+
+				"You cannot help others if you cannot help yourself. You cannot
+				love others if you do not love yourself."
+
 			</Text>
 
 			<Text id="rumor.sistersMission.offerItem">
