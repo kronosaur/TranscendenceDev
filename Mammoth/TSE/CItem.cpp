@@ -2719,9 +2719,12 @@ void CItem::ReadFromStream (SLoadCtx &Ctx)
 			m_pExtra = NULL;
 		}
 
+	//	Handle backwards compatibility.
+
 	if (Ctx.dwVersion < 201 && !m_pExtra && byOldInstalled != 0xff)
 		{
-		int i = 0;
+		m_pExtra = new SExtra;
+		m_pExtra->m_iInstalledIndex = (int)(char)byOldInstalled;
 		}
 	}
 
