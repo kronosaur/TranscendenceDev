@@ -84,6 +84,8 @@ void CDockScreen::Action (DWORD dwTag, DWORD dwData)
 //	Button pressed
 
 	{
+	DEBUG_TRY
+
 	switch (dwTag)
 		{
 		//	Handle tab control events
@@ -122,6 +124,8 @@ void CDockScreen::Action (DWORD dwTag, DWORD dwData)
 				}
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CDockScreen::AddDisplayControl (CXMLElement *pDesc, 
@@ -1034,7 +1038,30 @@ void CDockScreen::HandleChar (char chChar)
 //	Handle char events
 
 	{
-	m_CurrentPane.HandleChar(chChar);
+	//	First see if the pane handles it. If it does, then we're done.
+	//	NOTE: This is the reverse of how we handle keydown. We should change 
+	//	the latter to be pane-first.
+
+	if (m_CurrentPane.HandleChar(chChar))
+		return;
+
+	//	Let the display handle it.
+
+	IDockScreenDisplay::EResults iResult = m_pDisplay->HandleChar(chChar);
+
+	switch (iResult)
+		{
+		//	If we need to reshow the pane, do it.
+
+		case IDockScreenDisplay::resultShowPane:
+			m_CurrentPane.ExecuteShowPane(EvalInitialPane());
+			break;
+
+		//	Otherwise, continue.
+
+		default:
+			break;
+		}
 	}
 
 void CDockScreen::HandleKeyDown (int iVirtKey)
@@ -1568,7 +1595,11 @@ void CDockScreen::OnExecuteActionDone (void)
 //	Called by the pane when it is done executing an action.
 
 	{
+	DEBUG_TRY
+
 	m_Session.OnExecuteActionDone();
+
+	DEBUG_CATCH
 	}
 
 void CDockScreen::OnModifyItemBegin (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const

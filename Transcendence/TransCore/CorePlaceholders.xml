@@ -12,6 +12,10 @@
 			name="independent"
 			alignment="constructive chaos"
 			>
+		<Language>
+			<Text id="WatchYourTargets">""</Text>
+			<Text id="NiceShooting">""</Text>
+		</Language>
 	</Sovereign>
 
 	<Sovereign UNID="&svPlayerAlly;"

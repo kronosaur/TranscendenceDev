@@ -27,7 +27,10 @@ class CUsePerformanceCounter
 				if (Event.sEvent.IsBlank())
 					m_sID = CONSTLIT("event.UnknownEvent");
 				else
-					m_sID = strPatternSubst(CONSTLIT("event.%s"), Event.sEvent);
+					{
+					m_sID = CONSTLIT("event.");
+					m_sID.Append(Event.sEvent);
+					}
 
 				m_Universe.GetPerformanceCounters().StartCounter(m_sID);
 				m_bRunning = true;

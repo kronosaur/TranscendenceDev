@@ -1986,17 +1986,25 @@ void CAIBehaviorCtx::ImplementHold (CShip *pShip, bool *retbInPlace)
 	{
 	bool bInPlace;
 
-	const Metric rCloseV = CLOSE_DELTA_V_RATIO * pShip->GetMaxAcceleration();
-	const Metric rCloseV2 = (rCloseV * rCloseV);
-
 	//	Compute our velocity
 
 	const CVector vVel = pShip->GetVel();
 	const Metric rVel2 = vVel.Length2();
 
+	const Metric rMaxAccel = pShip->GetMaxAcceleration();
+	const Metric rCloseV = CLOSE_DELTA_V_RATIO * rMaxAccel;
+	const Metric rCloseV2 = (rCloseV * rCloseV);
+
+	//	If we cannot move, then we're done.
+
+	if (rMaxAccel == 0.0)
+		{
+		bInPlace = true;
+		}
+
 	//	If we're going slow enough, we cheat a bit
 
-	if (rVel2 < rCloseV2)
+	else if (rVel2 < rCloseV2)
 		{
 		ImplementStop(pShip);
 		bInPlace = true;

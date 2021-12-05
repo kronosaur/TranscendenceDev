@@ -111,7 +111,7 @@
 					(typSetGlobalData &stInsuranceCompany; "insured" Nil)
 
 					; Achievement
-					(if (= (typ@ &stInsuranceCompany; 'claims) 1)
+					(if (= (typGetGlobalData &stInsuranceCompany; 'claims) 1)
 						(unvSetAchievement 'humanSpace.insuranceResurrect)
 						)
 

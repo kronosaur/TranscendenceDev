@@ -343,6 +343,8 @@ void CDockPane::ExecuteAction (int iAction)
 //	Executes the given action.
 
 	{
+	DEBUG_TRY
+
 	g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
 
 	//	Set up some context so we deal with re-entrancy issues.
@@ -369,6 +371,8 @@ void CDockPane::ExecuteAction (int iAction)
 		m_Actions.ExecuteShowPane(m_sDeferredShowPane);
 		m_sDeferredShowPane = NULL_STR;
 		}
+
+	DEBUG_CATCH
 	}
 
 void CDockPane::ExecuteCancelAction (void)
@@ -1227,7 +1231,10 @@ void CDockPane::RestoreControlValue (CDockSession &DockSession)
 				{
 				auto *pControl = m_Controls[i].AsTextArea();
 				if (pControl)
+					{
 					pControl->SetText(Frame.sSavedControlText);
+					pControl->SetCursor(0, Frame.sSavedControlText.GetLength());
+					}
 
 				//	Clear out the saved text.
 

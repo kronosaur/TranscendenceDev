@@ -3069,7 +3069,7 @@ bool CStation::OnMiningDamage (SDamageCtx &Ctx)
 	return !IsDestroyed();
 	}
 
-void CStation::OnMove (const CVector &vOldPos, Metric rSeconds)
+void CStation::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
 //

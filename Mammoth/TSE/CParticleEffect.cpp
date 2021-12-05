@@ -429,7 +429,7 @@ EDamageResults CParticleEffect::OnDamage (SDamageCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CParticleEffect::OnMove (const CVector &vOldPos, Metric rSeconds)
+void CParticleEffect::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
 //

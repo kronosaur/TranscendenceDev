@@ -329,8 +329,6 @@ class CWeaponHUDDefault : public IHUDPainter
 class CArmorHUDRingSegments : public IHUDPainter
 	{
 	public:
-		CArmorHUDRingSegments (void);
-
 		virtual void GetBounds (int *retWidth, int *retHeight) const override;
 		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
@@ -339,10 +337,40 @@ class CArmorHUDRingSegments : public IHUDPainter
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 
 	private:
+		struct SSegment
+			{
+			int iStartAngle = 0;
+			int iEndAngle = 0;
+			int iLabelAngle = 0;
+			int iHPLabelAngle = 0;
+
+			//	Initialize in CalcHPLabelBox
+
+			bool bArcHPLabel = false;
+			CVector vInnerPos;
+			CVector vOuterPos;
+
+			int iArcRadius = 0;
+			int iArcWidth = 0;
+			Metric rArcStart = 0.0;
+			Metric rArcSpan = 0.0;
+
+			CVector vHPText;
+			Metric rHPTextRotation = 0.0;
+
+			//	Initialized at Realize-time
+
+			CString sHP;
+			int iIntegrity = 0;
+			};
+
 		ALERROR Bind (SDesignLoadCtx &Ctx);
+		void CalcHPLabelBox (int iAngle, int iRadius, SSegment &Seg);
 		void DrawArmorName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CArmorItem ArmorItem, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
-		void DrawIntegrityBox (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sText, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
+		void DrawIntegrityBox (CG32bitImage &Dest, const SSegment &Seg, CG32bitPixel rgbBack) const;
+		void DrawIntegrityBoxText (CG32bitImage &Dest, const SSegment &Seg, CG32bitPixel rgbColor) const;
 		void DrawItemBox (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sName, const TArray<SDisplayAttribute> &Attribs, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
+		void DrawShieldsIntegrity (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sHP, CG32bitPixel rgbBack, CG32bitPixel rgbColor) const;
 		void DrawShieldsName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CDeviceItem ShieldItem, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
 		void Realize (SHUDPaintCtx &Ctx);
 
@@ -357,8 +385,11 @@ class CArmorHUDRingSegments : public IHUDPainter
 
 		int m_iArmorRingRadius = 100;
 		int m_iArmorRingWidth = 10;
+		int m_iArmorInnerRadius = 90;
+		int m_iArmorNameRadius = 90;
 		int m_iShieldRingWidth = 10;
 		CLanguage::SHPDisplayOptions m_HPDisplay;
+		TArray<SSegment> m_Segments;
 
 		//	Metrics
 

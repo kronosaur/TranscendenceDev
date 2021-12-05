@@ -146,7 +146,6 @@
 			</Achievement>
 
 			<Achievement id="humanSpace.insuranceResurrect"
-					hidden="true"
 					sortOrder="04|20"
 					steamID="HS_INSURANCE_RESURRECT=21"
 					>

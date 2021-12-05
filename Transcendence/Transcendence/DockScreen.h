@@ -101,6 +101,7 @@ class IDockScreenDisplay
 		DWORD GetUIFlags (void) const { return OnGetUIFlags(); }
 
 		EResults HandleAction (DWORD dwTag, DWORD dwData) { return OnHandleAction(dwTag, dwData); }
+		EResults HandleChar (char chChar) { return OnHandleChar(chChar); }
 		EResults HandleKeyDown (int iVirtKey) { return OnHandleKeyDown(iVirtKey); }
 		ALERROR Init (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError);
 		bool IsCurrentItemValid (void) const { return OnIsCurrentItemValid(); }
@@ -138,6 +139,7 @@ class IDockScreenDisplay
 		virtual CSpaceObject *OnGetSource (void) const { return NULL; }
 		virtual DWORD OnGetUIFlags (void) const { return 0; }
 		virtual EResults OnHandleAction (DWORD dwTag, DWORD dwData) { return resultNone; }
+		virtual EResults OnHandleChar (char chChar) { return resultNone; }
 		virtual EResults OnHandleKeyDown (int iVirtKey) { return resultNone; }
 		virtual ALERROR OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError) { return NOERROR; }
 		virtual bool OnIsCurrentItemValid (void) const { return false; }
