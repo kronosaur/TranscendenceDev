@@ -156,23 +156,18 @@ void C3DConversion::CalcPolar (int iScale, const CVector &vPos, int iZ, Metric *
 	Metric rXp = vPos.GetX() / g_KlicksPerPixel;
 	Metric rYp = vPos.GetY() / g_KlicksPerPixel;
 
-	bool bYIsPositive = rYp > 0.0;
-	rYp = -abs(rYp);
-
-	Metric rDen = (rYp * g_rK1) - (rD * g_rK2);
+	Metric rDen = (rXp * g_rK1) - (rD * g_rK2);
 	if (rDen == 0.0)
 		rDen = 0.1;
 
-	Metric rY = (-(rZ * g_rK1 * rD) - (rYp * rZ * g_rK2) - (2.0 * rYp)) / rDen;
-	Metric rYg = rY * g_rK2 - rZ * g_rK1;
-	Metric rX = (rYp == 0.0 ? rXp / rScale : rXp * rYg / rYp);
+	Metric rX = (-(rZ * g_rK1 * rD) - (rXp * rZ * g_rK2) - (2.0 * rXp)) / rDen;
+	Metric rXg = rX * g_rK2 - rZ * g_rK1;
+	Metric rY = (rXp == 0.0 ? rYp / rScale : rYp * rXg / rXp);
 
 	rY = rY * rScale;
 	rX = rX * rScale;
 
 	Metric rAngle = VectorToPolarRadians(CVector(rX, rY), retrRadius);
-	if (bYIsPositive)
-		rAngle = -rAngle;
 	if (retrAngle)
 		*retrAngle = rAngle;
 	}
