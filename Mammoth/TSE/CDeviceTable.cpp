@@ -261,7 +261,7 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 	retDesc->sID = pDesc->GetAttribute(ID_ATTRIB);
 
 	C3DObjectPos Pos;
-	if (Pos.InitFromXML(pDesc, C3DObjectPos::FLAG_CALC_POLAR, &retDesc->b3DPosition))
+	if (Pos.InitFromXML(pDesc, 0, &retDesc->b3DPosition))
 		{
 		retDesc->iPosAngle = Pos.GetAngle();
 		retDesc->iPosRadius = Pos.GetRadius();
@@ -644,7 +644,7 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Load device position attributes
 
 	C3DObjectPos Pos;
-	if (Pos.InitFromXML(pDesc, C3DObjectPos::FLAG_CALC_POLAR, &m_b3DPosition))
+	if (Pos.InitFromXML(pDesc, 0, &m_b3DPosition))
 		{
 		m_iPosAngle = Pos.GetAngle();
 		m_iPosRadius = Pos.GetRadius();
