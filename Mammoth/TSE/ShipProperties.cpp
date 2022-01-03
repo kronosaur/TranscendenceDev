@@ -331,7 +331,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(GetCounterValue());
 
 	else if (strEquals(sName, PROPERTY_COUNTER_INCREMENT_RATE))
-		return CC.CreateInteger(GetCounterIncrementRate());
+		return CC.CreateInteger(GetClass().GetHullDesc().GetCounterIncrementRate());
 
 	else if (strEquals(sName, PROPERTY_CHALLENGE_RATING))
 		return CC.CreateInteger(CChallengeRatingCalculator::CalcChallengeRating(*this));

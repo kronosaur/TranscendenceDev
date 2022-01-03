@@ -246,19 +246,10 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	Update
 
-	int iCounterIncRate = m_pClass->GetHullDesc().GetCounterIncrementRate();
-	if (iCounterIncRate > 0)
-		{
-		//	If counter increment rate is greater than zero, then we allow the counter value to be unbounded below
-		//	but bounded above
-		m_iCounterValue = Min(m_iCounterValue + iCounterIncRate, m_pClass->GetHullDesc().GetMaxCounter());
-		}
-	else
-		{
-		//	Else we allow the counter value to be unbounded above
-		//	but bounded below
-		m_iCounterValue = Max(0, m_iCounterValue + iCounterIncRate);
-		}
+	int iCounterIncRate = GetCounterIncrementRate(Ctx);
+	//	We allow the counter value to be unbounded above
+	//	but bounded below
+	m_iCounterValue = Max(0, m_iCounterValue + iCounterIncRate);
 
 	DEBUG_CATCH
 	}

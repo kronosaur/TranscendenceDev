@@ -180,6 +180,7 @@ class CDeviceSystem
 		void AccumulateHUDTimers (const CSpaceObject &Source, TArray<SHUDTimerDesc> &retTimers) const;
 		void AccumulatePerformance (SShipPerformanceCtx &Ctx) const;
 		void AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, int &iPowerUsed, int &iPowerGenerated);
+		int AccumulateCounterIncrement (const SUpdateCtx& Ctx, const CSpaceObject *pObj) const;
 		int CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon, int *retiLauncherSlots) const;
 		void CleanUp (void);
 		CInstalledDevice *FindDevice (const CItem &Item);

@@ -2653,6 +2653,29 @@ int CShip::GetCombatPower (void)
 	return m_pController->GetCombatPower();
 	}
 
+int CShip::GetCounterIncrementRate(SUpdateCtx& Ctx) const
+
+//	GetCounterIncrementRate
+//
+//	Get the amount to increment the ship's heat/energy counter this tick.
+//	We obtain this by getting both the hull's innate increment rate, and the increment rates of all devices.
+
+	{
+	//	Hull's innate increment rate
+
+	int iHullCounterIncrementRate = m_pClass->GetHullDesc().GetCounterIncrementRate();
+
+	//	Devices can affect the counter increment rate
+
+	iHullCounterIncrementRate += m_Devices.AccumulateCounterIncrement(Ctx, this);
+
+	//	Armor can affect the counter increment rate
+
+	//m_Armor.AccumulatePowerUsed(Ctx, this, iPowerUsed, iPowerGenerated);
+
+	return iHullCounterIncrementRate;
+	}
+
 const CCurrencyBlock *CShip::GetCurrencyBlock (void) const
 
 //	GetCurrencyBlock

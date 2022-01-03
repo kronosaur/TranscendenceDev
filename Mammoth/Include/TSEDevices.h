@@ -325,7 +325,8 @@ class CDeviceClass
 		virtual const CRepairerClass *AsRepairerClass (void) const { return NULL; }
 		virtual CShieldClass *AsShieldClass (void) { return NULL; }
 		virtual CWeaponClass *AsWeaponClass (void) { return NULL; }
-		virtual bool CalcFireSolution (const CInstalledDevice &Device, CSpaceObject &Target, int *retiAimAngle = NULL, Metric *retrDist = NULL) const { return false; }
+		virtual int CalcCounterDelta (const SUpdateCtx& Ctx, const CInstalledDevice* pDevice, const CSpaceObject* pSource) { return 0; }
+		virtual bool CalcFireSolution (const CInstalledDevice &Device, const CSpaceObject &Target, int *retiAimAngle = NULL, Metric *retrDist = NULL) const { return false; }
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }
 		virtual bool CanHitFriends (void) const { return true; }
 		virtual void Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource) { }
@@ -587,6 +588,7 @@ class CInstalledDevice
 		DWORD GetData (void) const { return m_dwData; }
 		int GetDeviceSlot (void) const { return m_iDeviceSlot; }
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const { return m_pEnhancements; }
+		int GetExtraCounterPerTick (void) const { return m_iExtraCounterPerTick; }
 		int GetExtraPowerUse (void) const { return m_iExtraPowerUse; }
 		ItemFates GetFate (void) const;
 		int GetFireAngle (void) const { return m_iFireAngle; }
@@ -675,6 +677,7 @@ class CInstalledDevice
 		bool Activate (CDeviceClass::SActivateCtx &ActivateCtx)
 			{ return m_pClass->Activate(*this, ActivateCtx); }
 		int CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource);
+		int CalcCounterDelta (const SUpdateCtx& Ctx, const CSpaceObject *pSource) const;
 		bool CanBeDamaged (void) { return m_pClass->CanBeDamaged(); }
 		bool CanBeDisabled (CItemCtx &Ctx) { return m_pClass->CanBeDisabled(Ctx); }
 		bool CanBeDisrupted (void) { return m_pClass->CanBeDisrupted(); }
@@ -774,6 +777,7 @@ class CInstalledDevice
 		int m_iActivateDelay:16 = 0;				//	Cached activation delay
 		int m_iExtraPowerUse:16 = 0;				//	Additional power use per tick
 		int m_iSlotPosIndex:16 = -1;				//	Slot placement
+		int m_iExtraCounterPerTick:32 = 0;
 
 		DWORD m_fOmniDirectional:1 = false;			//	Installed on turret
 		DWORD m_fOverdrive:1 = false;				//	Device has overdrive installed
