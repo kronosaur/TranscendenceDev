@@ -934,6 +934,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'deviceDisruptImmune\n"
 			"   'disintegrationImmune\n"
 			"   'EMPImmune\n"
+			"	'heatGeneration\n"
+			"	'heatGenerationNearStar\n"
 			"   'hp\n"
 			"   'hpBonus\n"
 			"   'maxHP\n"

@@ -137,6 +137,8 @@ class CArmorSystem
 		static CArmorSystem m_Null;
 
 		void AccumulatePerformance (SShipPerformanceCtx &Ctx) const;
+
+		int AccumulateCounterIncrement (const SUpdateCtx& Ctx, const CSpaceObject* pObj) const;
 		void AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, int &iPowerUsed, int &iPowerGenerated);
 		int CalcTotalHitPoints (int *retiMaxHP = NULL) const;
 		int GetHealerLeft (void) const { return m_iHealerLeft; }

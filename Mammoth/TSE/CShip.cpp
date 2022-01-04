@@ -2667,13 +2667,13 @@ int CShip::GetCounterIncrementRate(SUpdateCtx& Ctx) const
 
 	//	Devices can affect the counter increment rate
 
-	iHullCounterIncrementRate += m_Devices.AccumulateCounterIncrement(Ctx, this);
+	int iDevCounterIncrementRate = m_Devices.AccumulateCounterIncrement(Ctx, this);
 
 	//	Armor can affect the counter increment rate
 
-	//m_Armor.AccumulatePowerUsed(Ctx, this, iPowerUsed, iPowerGenerated);
+	int iArmorCounterIncrementRate = m_Armor.AccumulateCounterIncrement(Ctx, this);
 
-	return iHullCounterIncrementRate;
+	return iHullCounterIncrementRate + iDevCounterIncrementRate + iArmorCounterIncrementRate;
 	}
 
 const CCurrencyBlock *CShip::GetCurrencyBlock (void) const

@@ -979,7 +979,7 @@ int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject 
 		}
 	}
 
-bool CWeaponClass::CalcFireSolution (const CInstalledDevice &Device, CSpaceObject &Target, int *retiAimAngle, Metric *retrDist) const
+bool CWeaponClass::CalcFireSolution (const CInstalledDevice &Device, const CSpaceObject &Target, int *retiAimAngle, Metric *retrDist) const
 
 //	CalcFireSolution
 //
