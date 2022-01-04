@@ -187,8 +187,8 @@ void CReactorHUDCircular::PaintCounterGauge(CShip *pShip)
 
 	//	Calculate fuel values
 
-	Metric rCounterValue = ((Metric)pShip->GetCounterValue() / (Metric)pShip->GetMaxCounterValue());
-	Metric rBoundedCounterValue = Min(1.0, ((Metric)pShip->GetCounterValue() / (Metric)pShip->GetMaxCounterValue()));
+	Metric rHeatValue = ((Metric)pShip->GetHeatValue() / (Metric)pShip->GetMaxHeatValue());
+	Metric rBoundedHeatValue = Min(1.0, ((Metric)pShip->GetHeatValue() / (Metric)pShip->GetMaxHeatValue()));
 	bool rCounterIsHeat = (pShip->GetCounterIsHeat());
 
 	//	Paint the background
@@ -206,13 +206,13 @@ void CReactorHUDCircular::PaintCounterGauge(CShip *pShip)
 
 	//	Figure out how we should paint
 
-	CG32bitPixel rgbColor = rCounterIsHeat ? CG32bitPixel((BYTE)(rBoundedCounterValue * 255), 64, (BYTE)(255 - (rBoundedCounterValue * 255)))
-		    : CG32bitPixel((BYTE)(rBoundedCounterValue * 64), (BYTE)(rBoundedCounterValue * 64) + 64, (BYTE)(rBoundedCounterValue * 127) + 127);
+	CG32bitPixel rgbColor = rCounterIsHeat ? CG32bitPixel((BYTE)(rBoundedHeatValue * 255), 64, (BYTE)(255 - (rBoundedHeatValue * 255)))
+		    : CG32bitPixel((BYTE)(rBoundedHeatValue * 64), (BYTE)(rBoundedHeatValue * 64) + 64, (BYTE)(rBoundedHeatValue * 127) + 127);
 
 	CGDraw::Arc(m_Buffer,
 		CVector(m_xCenter, m_yCenter),
 		m_iGaugeRadius + RING_SPACING + RING_SPACING + m_iGaugeWidth,
-		0.5 * PI + (PI * (0.95 - rBoundedCounterValue)),
+		0.5 * PI + (PI * (0.95 - rBoundedHeatValue)),
 		1.5 * PI,
 		m_iGaugeWidth,
 		rgbColor,
@@ -234,7 +234,7 @@ void CReactorHUDCircular::PaintCounterGauge(CShip *pShip)
 	SmallFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextDialogLabel), rCounterIsHeat ? CONSTLIT("Heat") : CONSTLIT("Energy"), CG16bitFont::AlignRight);
 	yText += SmallFont.GetHeight();
 
-	MediumFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextHighlight), strPatternSubst(CONSTLIT("%d%%"), mathRound(100.0 * rCounterValue)), CG16bitFont::AlignRight);
+	MediumFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextHighlight), strPatternSubst(CONSTLIT("%d%%"), mathRound(100.0 * rHeatValue)), CG16bitFont::AlignRight);
 	}
 
 void CReactorHUDCircular::PaintFuelGauge (const SReactorStats &Stats, bool bCounterGaugePresent)
@@ -510,7 +510,7 @@ void CReactorHUDCircular::Realize (SHUDPaintCtx &Ctx)
 
 	SReactorStats Stats;
 	pShip->GetReactorStats(Stats);
-	bool bCounterGaugePresent = (pShip->GetMaxCounterValue() > 0);
+	bool bCounterGaugePresent = (pShip->GetMaxHeatValue() > 0);
 
 	//	Set up some metrics
 

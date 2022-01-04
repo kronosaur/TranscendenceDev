@@ -538,9 +538,9 @@ void CArmorClass::AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDis
 		}
 	}
 
-int CArmorClass::AccumulateCounterIncrement(CItemCtx& ItemCtx, const SUpdateCtx& Ctx, const CSpaceObject* pObj) const
+int CArmorClass::AccumulateHeatIncrement(CItemCtx& ItemCtx, const SUpdateCtx& Ctx, const CSpaceObject* pObj) const
 
-//	AccumulateCounterIncrement
+//	AccumulateHeatIncrement
 //
 //	Generate and dissipate heat.
 	{

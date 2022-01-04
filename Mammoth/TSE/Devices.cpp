@@ -45,7 +45,7 @@
 #define PROPERTY_DEVICE_SLOTS					CONSTLIT("deviceSlots")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_EXTERNAL						CONSTLIT("external")
-#define PROPERTY_EXTRA_COUNTER_PER_TICK			CONSTLIT("extraCounterPerTick")
+#define PROPERTY_EXTRA_HEAT_PER_TICK			CONSTLIT("extraHeatPerTick")
 #define PROPERTY_EXTRA_POWER_USE				CONSTLIT("extraPowerUse")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")

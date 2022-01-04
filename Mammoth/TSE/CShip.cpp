@@ -26,12 +26,12 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define ACHIEVEMENT_CORE_ZERO_HP				CONSTLIT("core.zeroHP")
 
 #define FIELD_CARGO_SPACE						CONSTLIT("cargoSpace")
-#define FIELD_COUNTER_INCREMENT_RATE			CONSTLIT("counterIncrementRate")
+#define FIELD_HEAT_INCREMENT_RATE			CONSTLIT("heatIncrementRate")
 #define FIELD_LAUNCHER							CONSTLIT("launcher")
 #define FIELD_LAUNCHER_UNID						CONSTLIT("launcherUNID")
 #define FIELD_MAX_SPEED							CONSTLIT("maxSpeed")
 #define FIELD_MANEUVER							CONSTLIT("maneuver")
-#define FIELD_MAX_COUNTER						CONSTLIT("maxCounter")
+#define FIELD_MAX_HEAT						CONSTLIT("maxHeat")
 #define FIELD_NAME								CONSTLIT("name")
 #define FIELD_PRIMARY_ARMOR						CONSTLIT("primaryArmor")
 #define FIELD_PRIMARY_ARMOR_UNID				CONSTLIT("primaryArmorUNID")
@@ -2653,9 +2653,9 @@ int CShip::GetCombatPower (void)
 	return m_pController->GetCombatPower();
 	}
 
-int CShip::GetCounterIncrementRate(SUpdateCtx& Ctx) const
+int CShip::GetHeatIncrementRate(SUpdateCtx& Ctx) const
 
-//	GetCounterIncrementRate
+//	GetHeatIncrementRate
 //
 //	Get the amount to increment the ship's heat/energy counter this tick.
 //	We obtain this by getting both the hull's innate increment rate, and the increment rates of all devices.
@@ -2663,17 +2663,17 @@ int CShip::GetCounterIncrementRate(SUpdateCtx& Ctx) const
 	{
 	//	Hull's innate increment rate
 
-	int iHullCounterIncrementRate = m_pClass->GetHullDesc().GetCounterIncrementRate();
+	int iHullHeatIncrementRate = m_pClass->GetHullDesc().GetHeatIncrementRate();
 
 	//	Devices can affect the counter increment rate
 
-	int iDevCounterIncrementRate = m_Devices.AccumulateCounterIncrement(Ctx, this);
+	int iDevHeatIncrementRate = m_Devices.AccumulateHeatIncrement(Ctx, this);
 
 	//	Armor can affect the counter increment rate
 
-	int iArmorCounterIncrementRate = m_Armor.AccumulateCounterIncrement(Ctx, this);
+	int iArmorHeatIncrementRate = m_Armor.AccumulateHeatIncrement(Ctx, this);
 
-	return iHullCounterIncrementRate + iDevCounterIncrementRate + iArmorCounterIncrementRate;
+	return iHullHeatIncrementRate + iDevHeatIncrementRate + iArmorHeatIncrementRate;
 	}
 
 const CCurrencyBlock *CShip::GetCurrencyBlock (void) const
@@ -3209,7 +3209,7 @@ int CShip::GetStealth (void) const
 	//  maximum and initial intrinsic stealth values
 	if (GetCounterIsHeat())
 		{
-		float fStealthAdjDelta = (float(GetCounterValue()) / float(GetMaxCounterValue())) * (GetStealthAdjAtMaxHeat() - GetStealthAdj());
+		float fStealthAdjDelta = (float(GetHeatValue()) / float(GetMaxHeatValue())) * (GetStealthAdjAtMaxHeat() - GetStealthAdj());
 		iStealthAdj += int(round(fStealthAdjDelta));
 		}
 
@@ -5562,7 +5562,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		Controlled ObjID
 //	Controller Data
 //
-//	DWORD		m_iCounterValue
+//	DWORD		m_iHeatValue
 
 	{
 #ifdef DEBUG_LOAD
@@ -5980,9 +5980,9 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_pController->ReadFromStream(Ctx, this);
 
 	if (Ctx.dwVersion >= 164)
-		Ctx.pStream->Read(m_iCounterValue);
+		Ctx.pStream->Read(m_iHeatValue);
 	else
-		m_iCounterValue = 0;
+		m_iHeatValue = 0;
 
 	//  Recompute performance (because we don't save it).
 
@@ -6185,7 +6185,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		Controller ObjID
 //	Controller Data
 //
-//	DWORD		m_iCounterValue
+//	DWORD		m_iHeatValue
 
 	{
 	DWORD dwSave;
@@ -6324,7 +6324,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 
 	//  Heat counter
 
-	pStream->Write(m_iCounterValue);
+	pStream->Write(m_iHeatValue);
 	}
 
 bool CShip::OrientationChanged (void)

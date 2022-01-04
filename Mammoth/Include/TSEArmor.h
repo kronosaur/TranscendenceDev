@@ -70,7 +70,7 @@ class CArmorClass
 
 		EDamageResults AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		void AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDisplayAttribute> *retList) const;
-		int AccumulateCounterIncrement (CItemCtx& ItemCtx, const SUpdateCtx& Ctx, const CSpaceObject* pObj) const;
+		int AccumulateHeatIncrement (CItemCtx& ItemCtx, const SUpdateCtx& Ctx, const CSpaceObject* pObj) const;
 		bool AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
 		void AccumulatePowerUsed (CItemCtx &ItemCtx, SUpdateCtx &Ctx, int &iPowerUsed, int &iPowerGenerated) const;

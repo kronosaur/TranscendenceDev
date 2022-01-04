@@ -9,14 +9,14 @@
 #define HULL_TAG								CONSTLIT("Hull")
 
 #define CARGO_SPACE_ATTRIB						CONSTLIT("cargoSpace")
-#define COUNTER_INCREMENT_RATE_ATTRIB			CONSTLIT("counterIncrementRate")
+#define HEAT_INCREMENT_RATE_ATTRIB			CONSTLIT("heatIncrementRate")
 #define CYBER_DEFENSE_LEVEL_ATTRIB				CONSTLIT("cyberDefenseLevel")
 #define DEVICE_CRITERIA_ATTRIB					CONSTLIT("deviceCriteria")
 #define HULL_VALUE_ATTRIB						CONSTLIT("hullValue")
 #define LIFE_SUPPORT_POWER_USER_ATTRIB			CONSTLIT("lifeSupportPowerUse")
 #define MASS_ATTRIB								CONSTLIT("mass")
 #define MAX_CARGO_SPACE_ATTRIB					CONSTLIT("maxCargoSpace")
-#define MAX_COUNTER_ATTRIB						CONSTLIT("maxCounter")
+#define MAX_HEAT_ATTRIB						CONSTLIT("maxHeat")
 #define MAX_DEVICES_ATTRIB						CONSTLIT("maxDevices")
 #define MAX_NON_WEAPONS_ATTRIB					CONSTLIT("maxNonWeapons")
 #define MAX_LAUNCHERS_ATTRIB					CONSTLIT("maxLaunchers")
@@ -132,8 +132,8 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 
 	// Counter limit and increment rate
 	
-	m_iCounterIncrementRate = pHull->GetAttributeInteger(COUNTER_INCREMENT_RATE_ATTRIB);
-	m_iMaxCounter = pHull->GetAttributeInteger(MAX_COUNTER_ATTRIB);
+	m_iHeatIncrementRate = pHull->GetAttributeInteger(HEAT_INCREMENT_RATE_ATTRIB);
+	m_iMaxHeat = pHull->GetAttributeInteger(MAX_HEAT_ATTRIB);
 	m_iStealthAdj = pHull->GetAttributeInteger(STEALTH_ADJ_ATTRIB);
 	m_iStealthAdjAtMaxHeat = pHull->GetAttributeInteger(STEALTH_ADJ_AT_MAX_HEAT_ATTRIB);
 

@@ -13,7 +13,7 @@
 #define PROPERTY_CYCLE_FIRE 					CONSTLIT("cycleFire")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_EXTERNAL						CONSTLIT("external")
-#define PROPERTY_EXTRA_COUNTER_PER_TICK			CONSTLIT("extraCounterPerTick")
+#define PROPERTY_EXTRA_HEAT_PER_TICK			CONSTLIT("extraHeatPerTick")
 #define PROPERTY_EXTRA_POWER_USE				CONSTLIT("extraPowerUse")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
@@ -41,7 +41,7 @@ bool CInstalledDevice::AccumulateSlotEnhancements (CSpaceObject *pSource, TArray
 	return bEnhanced;
 	}
 
-int CInstalledDevice::CalcCounterDelta(const SUpdateCtx& Ctx, const CSpaceObject* pSource) const
+int CInstalledDevice::CalcHeatDelta(const SUpdateCtx& Ctx, const CSpaceObject* pSource) const
 
 //	CalcPowerUsed
 //
@@ -54,13 +54,13 @@ int CInstalledDevice::CalcCounterDelta(const SUpdateCtx& Ctx, const CSpaceObject
 
 	//	Let the device compute heat generation.
 
-	int iCounterDelta = m_pClass->CalcCounterDelta(Ctx, this, pSource);
+	int iHeatDelta = m_pClass->CalcHeatDelta(Ctx, this, pSource);
 
 	//	Add extra counter per tick.
 
-	iCounterDelta += m_iExtraCounterPerTick;
+	iHeatDelta += m_iExtraHeatPerTick;
 
-	return iCounterDelta;
+	return iHeatDelta;
 	}
 
 int CInstalledDevice::CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource)
@@ -384,7 +384,7 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	m_pOverlay = NULL;
 	m_dwData = 0;
 	m_iExtraPowerUse = 0;
-	m_iExtraCounterPerTick = 0;
+	m_iExtraHeatPerTick = 0;
 	m_iTemperature = 0;
 	m_fWaiting = false;
 	m_fEnabled = true;
@@ -743,11 +743,11 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	if (Ctx.dwVersion >= 212)
 		{
 		Ctx.pStream->Read(dwLoad);
-		m_iExtraCounterPerTick = (int)dwLoad;
+		m_iExtraHeatPerTick = (int)dwLoad;
 		}
 	else
 		{
-		m_iExtraCounterPerTick = 0;
+		m_iExtraHeatPerTick = 0;
 		}
 
 	Ctx.pStream->Read(dwLoad);
@@ -1104,9 +1104,9 @@ ESetPropertyResult CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &
 			}
 		}
 
-	else if (strEquals(sName, PROPERTY_EXTRA_COUNTER_PER_TICK))
+	else if (strEquals(sName, PROPERTY_EXTRA_HEAT_PER_TICK))
 		{
-		m_iExtraCounterPerTick = pValue->GetIntegerValue();
+		m_iExtraHeatPerTick = pValue->GetIntegerValue();
 		}
 
 	else if (strEquals(sName, PROPERTY_EXTRA_POWER_USE))
@@ -1420,7 +1420,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave = MAKELONG(m_iShotSeparationScale, m_iMaxFireRange);
 	pStream->Write(dwSave);
 
-	dwSave = DWORD(m_iExtraCounterPerTick) & 0xffffffff;
+	dwSave = DWORD(m_iExtraHeatPerTick) & 0xffffffff;
 	pStream->Write(dwSave);
 
 	dwSave = 0;

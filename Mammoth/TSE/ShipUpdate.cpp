@@ -246,10 +246,10 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	Update
 
-	int iCounterIncRate = GetCounterIncrementRate(Ctx);
+	int iHeatIncRate = GetHeatIncrementRate(Ctx);
 	//	We allow the counter value to be unbounded above
 	//	but bounded below
-	m_iCounterValue = Max(0, m_iCounterValue + iCounterIncRate);
+	m_iHeatValue = Max(0, m_iHeatValue + iHeatIncRate);
 
 	DEBUG_CATCH
 	}

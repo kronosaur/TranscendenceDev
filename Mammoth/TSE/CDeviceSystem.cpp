@@ -125,19 +125,19 @@ void CDeviceSystem::AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, in
 		}
 	}
 
-int CDeviceSystem::AccumulateCounterIncrement(const SUpdateCtx &Ctx, const CSpaceObject* pObj) const
+int CDeviceSystem::AccumulateHeatIncrement(const SUpdateCtx &Ctx, const CSpaceObject* pObj) const
 
-//	AccumulateCounterIncrement
+//	AccumulateHeatIncrement
 //
 //	Get the net delta of the heat/energy counter for all devices.
 
 {
-	int iCounterDelta = 0;
+	int iHeatDelta = 0;
 	for (int i = 0; i < m_Devices.GetCount(); i++)
 		{
-		iCounterDelta += m_Devices[i]->CalcCounterDelta(Ctx, pObj);
+		iHeatDelta += m_Devices[i]->CalcHeatDelta(Ctx, pObj);
 		}
-	return iCounterDelta;
+	return iHeatDelta;
 }
 
 int CDeviceSystem::CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon, int *retiLauncherSlots) const
