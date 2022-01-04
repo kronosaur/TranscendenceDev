@@ -174,11 +174,11 @@ void CReactorHUDCircular::PaintChargesGauge (const SReactorStats &Stats)
 		}
 	}
 
-void CReactorHUDCircular::PaintCounterGauge(CShip *pShip)
+void CReactorHUDCircular::PaintHeatGauge(CShip *pShip)
 
-//	PaintCounterGauge
+//	PaintHeatGauge
 //
-//	Paints the heat/energy gauge
+//	Paints the heat gauge
 
 	{
 	const CVisualPalette &VI = g_pHI->GetVisuals();
@@ -189,7 +189,6 @@ void CReactorHUDCircular::PaintCounterGauge(CShip *pShip)
 
 	Metric rHeatValue = ((Metric)pShip->GetHeatValue() / (Metric)pShip->GetMaxHeatValue());
 	Metric rBoundedHeatValue = Min(1.0, ((Metric)pShip->GetHeatValue() / (Metric)pShip->GetMaxHeatValue()));
-	bool rCounterIsHeat = (pShip->GetCounterIsHeat());
 
 	//	Paint the background
 
@@ -206,8 +205,7 @@ void CReactorHUDCircular::PaintCounterGauge(CShip *pShip)
 
 	//	Figure out how we should paint
 
-	CG32bitPixel rgbColor = rCounterIsHeat ? CG32bitPixel((BYTE)(rBoundedHeatValue * 255), 64, (BYTE)(255 - (rBoundedHeatValue * 255)))
-		    : CG32bitPixel((BYTE)(rBoundedHeatValue * 64), (BYTE)(rBoundedHeatValue * 64) + 64, (BYTE)(rBoundedHeatValue * 127) + 127);
+	CG32bitPixel rgbColor = CG32bitPixel((BYTE)(rBoundedHeatValue * 255), 64, (BYTE)(255 - (rBoundedHeatValue * 255)));
 
 	CGDraw::Arc(m_Buffer,
 		CVector(m_xCenter, m_yCenter),
@@ -231,7 +229,7 @@ void CReactorHUDCircular::PaintCounterGauge(CShip *pShip)
 
 	int xText = m_xCenter + (int)vInnerPos.GetX() - 3 * RING_SPACING;
 	int yText = m_yCenter + (int)vInnerPos.GetY() - (cyHeight / 2);
-	SmallFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextDialogLabel), rCounterIsHeat ? CONSTLIT("Heat") : CONSTLIT("Energy"), CG16bitFont::AlignRight);
+	SmallFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextDialogLabel), CONSTLIT("Heat"), CG16bitFont::AlignRight);
 	yText += SmallFont.GetHeight();
 
 	MediumFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextHighlight), strPatternSubst(CONSTLIT("%d%%"), mathRound(100.0 * rHeatValue)), CG16bitFont::AlignRight);
@@ -537,7 +535,7 @@ void CReactorHUDCircular::Realize (SHUDPaintCtx &Ctx)
 
 	if (bCounterGaugePresent)
 		{
-		PaintCounterGauge(pShip);
+		PaintHeatGauge(pShip);
 		}
 
 	if (Stats.bUsesCharges)

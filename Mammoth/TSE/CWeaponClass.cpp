@@ -1529,13 +1529,6 @@ bool CWeaponClass::CanConsumeShipHeat (const CDeviceItem &DeviceItem, const CWea
 			return false;
 			}
 		}
-	else if (m_iHeatPerShot < 0)
-		{
-		if (pSource->GetHeatValue() + m_iHeatPerShot < 0)
-			{
-			return false;
-			}
-		}
 
 	return true;
 	}
