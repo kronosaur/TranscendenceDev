@@ -1652,11 +1652,11 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 		CString sAttrib = pDesc->GetAttribute(PHOTO_HEAT_ATTRIB);
 		if (sAttrib.IsBlank())
 			{
-			pArmor->m_iHeatGeneration = 0;
+			pArmor->m_iPhotoHeatGeneration = 0;
 			}
 		else
 			{
-			pArmor->m_iHeatGeneration = Max(0, strToInt(sAttrib, 0));
+			pArmor->m_iPhotoHeatGeneration = strToInt(sAttrib, 0);
 			}
 		}
 
@@ -1675,7 +1675,7 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 
 	//	Passive heat generation
 
-	pArmor->m_iHeatGeneration = pDesc->GetAttributeIntegerBounded(HEAT_GENERATION_ATTRIB, 0);
+	pArmor->m_iHeatGeneration = pDesc->GetAttributeInteger(HEAT_GENERATION_ATTRIB);
 
 	//	Load reflection
 
