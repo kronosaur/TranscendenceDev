@@ -2653,7 +2653,7 @@ int CShip::GetCombatPower (void)
 	return m_pController->GetCombatPower();
 	}
 
-int CShip::GetHeatIncrementRate(SUpdateCtx& Ctx) const
+int CShip::GetHeatIncrementRate (SUpdateCtx& Ctx)
 
 //	GetHeatIncrementRate
 //
@@ -2665,6 +2665,11 @@ int CShip::GetHeatIncrementRate(SUpdateCtx& Ctx) const
 
 	int iHullHeatIncrementRate = m_pClass->GetHullDesc().GetHeatIncrementRate();
 
+	//	If we're thrusting, then we generate heat
+	int iDriveHeatIncrementRate = 0;
+	if (!IsParalyzed() && m_pController->GetThrust())
+		iDriveHeatIncrementRate = m_Perf.GetDriveDesc().GetHeatGeneration();
+
 	//	Devices can affect the counter increment rate
 
 	int iDevHeatIncrementRate = m_Devices.AccumulateHeatIncrement(Ctx, this);
@@ -2673,7 +2678,7 @@ int CShip::GetHeatIncrementRate(SUpdateCtx& Ctx) const
 
 	int iArmorHeatIncrementRate = m_Armor.AccumulateHeatIncrement(Ctx, this);
 
-	return iHullHeatIncrementRate + iDevHeatIncrementRate + iArmorHeatIncrementRate;
+	return iHullHeatIncrementRate + iDevHeatIncrementRate + iArmorHeatIncrementRate + iDriveHeatIncrementRate;
 	}
 
 const CCurrencyBlock *CShip::GetCurrencyBlock (void) const

@@ -29,6 +29,7 @@
 #define PROPERTY_DOCKED_AT_ID					CONSTLIT("dockedAtID")
 #define PROPERTY_DOCKING_ENABLED				CONSTLIT("dockingEnabled")
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
+#define PROPERTY_DRIVE_HEAT_GENERATION			CONSTLIT("driveHeatGeneration")
 #define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
 #define PROPERTY_EMP_IMMUNE						CONSTLIT("EMPImmune")
 #define PROPERTY_EXIT_GATE_TIMER				CONSTLIT("exitGateTimer")
@@ -516,6 +517,9 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_DRIVE_POWER))
 		return CC.CreateInteger(m_Perf.GetDriveDesc().GetPowerUse() * 100);
+
+	else if (strEquals(sName, PROPERTY_DRIVE_HEAT_GENERATION))
+		return CC.CreateInteger(m_Perf.GetDriveDesc().GetHeatGeneration());
 
 	else if (strEquals(sName, PROPERTY_MAX_SPEED))
 		return CC.CreateInteger(mathRound(100.0 * GetMaxSpeed() / LIGHT_SPEED));

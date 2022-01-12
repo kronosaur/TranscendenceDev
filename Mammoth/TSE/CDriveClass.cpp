@@ -9,8 +9,10 @@
 #define FIELD_MAX_SPEED				CONSTLIT("maxSpeed")
 #define FIELD_THRUST				CONSTLIT("thrust")
 #define FIELD_POWER					CONSTLIT("power")
+#define FIELD_HEAT_GENERATION		CONSTLIT("heatGeneration")
 
 #define PROPERTY_DRIVE_POWER		CONSTLIT("drivePowerUse")
+#define PROPERTY_HEAT_GENERATION	CONSTLIT("heatGeneration")
 #define PROPERTY_MAX_SPEED			CONSTLIT("maxSpeed")
 #define PROPERTY_POWER				CONSTLIT("power")
 #define PROPERTY_THRUST				CONSTLIT("thrust")
@@ -198,6 +200,8 @@ bool CDriveClass::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = strFromInt(pDesc->DriveDesc.GetThrust());
 	else if (strEquals(sField, FIELD_POWER))
 		*retsValue = strFromInt(pDesc->DriveDesc.GetPowerUse() * 100);
+	else if (strEquals(sField, FIELD_HEAT_GENERATION))
+		*retsValue = strFromInt(pDesc->DriveDesc.GetHeatGeneration());
 	else
 		return false;
 
@@ -274,6 +278,9 @@ ICCItem *CDriveClass::FindItemProperty (CItemCtx &Ctx, const CString &sProperty)
 			|| strEquals(sProperty, PROPERTY_DRIVE_POWER))
 		return CC.CreateInteger(pDesc->DriveDesc.GetPowerUse() * 100);
 
+	else if (strEquals(sProperty, PROPERTY_HEAT_GENERATION))
+		return CC.CreateInteger(pDesc->DriveDesc.GetHeatGeneration());
+
 	//	Otherwise, just get the property from the base class
 
 	else
@@ -313,6 +320,9 @@ ICCItem *CDriveClass::GetDriveProperty (const CDriveDesc &Desc, const CString &s
 	else if (strEquals(sProperty, PROPERTY_POWER)
 			|| strEquals(sProperty, PROPERTY_DRIVE_POWER))
 		return CCodeChain::CreateInteger(Desc.GetPowerUse() * 100);
+
+	else if (strEquals(sProperty, PROPERTY_HEAT_GENERATION))
+		return CCodeChain::CreateInteger(Desc.GetHeatGeneration());
 	else
 		return CCodeChain::CreateNil();
 	}

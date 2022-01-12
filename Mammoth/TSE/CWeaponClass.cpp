@@ -89,6 +89,7 @@
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
 #define PROPERTY_FIRE_DELAY						CONSTLIT("fireDelay")
 #define PROPERTY_FIRE_RATE						CONSTLIT("fireRate")
+#define PROPERTY_HEAT_GENERATION				CONSTLIT("heatGeneration")	//	Heat per tick during continuous fire
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
 #define PROPERTY_MAX_DAMAGE						CONSTLIT("maxDamage")
 #define PROPERTY_MIN_DAMAGE						CONSTLIT("minDamage")
@@ -2953,6 +2954,15 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 			return CC.CreateNil();
 
 		return CC.CreateInteger(mathRound(1000.0 / rDelay));
+		}
+
+	else if (strEquals(sProperty, PROPERTY_HEAT_GENERATION))
+		{
+		//	TODO(heliogenesis): Update for charging weapons
+		Metric rDelay = CalcActivateDelay(Ctx) + 1;
+		Metric rShotsPerBurst = min(Metric(GetContinuous(*pShot) + 1), rDelay);
+		Metric rHeatPerShot = m_iHeatPerShot;
+		return CC.CreateInteger(mathRound((rShotsPerBurst * rHeatPerShot) / rDelay));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_LINKED_FIRE_OPTIONS))

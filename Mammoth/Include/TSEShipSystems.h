@@ -182,7 +182,7 @@ class CDeviceSystem
 		void AccumulateHUDTimers (const CSpaceObject &Source, TArray<SHUDTimerDesc> &retTimers) const;
 		void AccumulatePerformance (SShipPerformanceCtx &Ctx) const;
 		void AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, int &iPowerUsed, int &iPowerGenerated);
-		int AccumulateHeatIncrement (const SUpdateCtx& Ctx, const CSpaceObject *pObj) const;
+		int AccumulateHeatIncrement (const SUpdateCtx& Ctx, CSpaceObject *pObj) const;
 		int CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon, int *retiLauncherSlots) const;
 		void CleanUp (void);
 		CInstalledDevice *FindDevice (const CItem &Item);
@@ -667,6 +667,7 @@ class CDriveDesc
 		Metric AdjMaxSpeed (Metric rAdj);
 		int AdjPowerUse (Metric rAdj);
 		int AdjThrust (Metric rAdj);
+		int GetHeatGeneration (void) const { return m_iHeatGeneration; }
 		Metric GetMaxSpeed (void) const { return m_rMaxSpeed; }
 		int GetMaxSpeedFrac (void) const { return (m_iMaxSpeedLimit != -1 ? m_iMaxSpeedLimit : mathRound(100.0 * m_rMaxSpeed / LIGHT_SPEED)); }
 		int GetMaxSpeedInc (void) const { return m_iMaxSpeedInc; }
@@ -680,6 +681,7 @@ class CDriveDesc
 		void InitThrustFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
 		void Interpolate (const CDriveDesc &From, const CDriveDesc &To, Metric rInterpolate = 0.5);
 		bool IsInertialess (void) const { return (m_fInertialess ? true : false); }
+		void SetHeatGeneration (int iHeatGeneration) { m_iHeatGeneration = iHeatGeneration; }
 		void SetInertialess (bool bValue = true) { m_fInertialess = bValue; }
 		void SetMaxSpeed (Metric rSpeed) { m_rMaxSpeed = rSpeed; }
 		void SetPowerUse (int iPowerUse) { m_iPowerUse = iPowerUse; }
@@ -695,6 +697,7 @@ class CDriveDesc
 		int m_iMaxSpeedLimit;				//	Do not increase above this limit (-1 = no limit)
 		int m_iThrust;						//	Thrust (GigaNewtons--gasp!)
 		int m_iPowerUse;					//	Power used while thrusting (1/10 megawatt)
+		int m_iHeatGeneration;				//	Heat generated while thrusting, in 10s of kJs per tick
 
 		Metric m_rMaxSpeed;					//	Computed max speed (Km/sec)
 

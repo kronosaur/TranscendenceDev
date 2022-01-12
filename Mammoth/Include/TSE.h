@@ -1290,7 +1290,7 @@ class CSpaceObject
 		virtual CurrencyValue GetBalancedTreasure (void) const { return 0; }
 		virtual Metric GetCargoSpaceLeft (void) const { return 1000000.0; }
 		virtual int GetCombatPower (void) { return 0; }
-		virtual int GetHeatIncrementRate (SUpdateCtx& Ctx) const { return 0; }
+		virtual int GetHeatIncrementRate (SUpdateCtx& Ctx) { return 0; }
 		virtual bool GetCounterIsHeat (void) const { return false; }
 		virtual int GetHeatValue (void) const { return 0; }
 		virtual int GetCyberDefenseLevel (void) const { return GetLevel(); }

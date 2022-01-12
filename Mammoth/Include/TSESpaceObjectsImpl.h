@@ -1170,7 +1170,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual DWORD GetClassUNID (void) override { return m_pClass->GetUNID(); }
 		virtual int GetCombatPower (void) override;
 		virtual int GetHeatValue (void) const override { return m_iHeatValue; }
-		virtual int GetHeatIncrementRate (SUpdateCtx& Ctx) const override;
+		virtual int GetHeatIncrementRate (SUpdateCtx& Ctx) override;
 		virtual bool GetCounterIsHeat (void) const override { return m_pClass->GetHullDesc().GetHeatIncrementRate() < 0; }
 		virtual const CCurrencyBlock *GetCurrencyBlock (void) const override;
 		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) override;

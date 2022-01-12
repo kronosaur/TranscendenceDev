@@ -325,7 +325,7 @@ class CDeviceClass
 		virtual const CRepairerClass *AsRepairerClass (void) const { return NULL; }
 		virtual CShieldClass *AsShieldClass (void) { return NULL; }
 		virtual CWeaponClass *AsWeaponClass (void) { return NULL; }
-		virtual int CalcHeatDelta (const SUpdateCtx& Ctx, const CInstalledDevice* pDevice, const CSpaceObject* pSource) { return 0; }
+		virtual int CalcHeatDelta (const SUpdateCtx& Ctx, const CInstalledDevice* pDevice, CSpaceObject* pSource) { return 0; }
 		virtual bool CalcFireSolution (const CInstalledDevice &Device, const CSpaceObject &Target, int *retiAimAngle = NULL, Metric *retrDist = NULL) const { return false; }
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }
 		virtual bool CanHitFriends (void) const { return true; }
@@ -342,6 +342,7 @@ class CDeviceClass
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const { return damageGeneric; }
 		virtual int GetDefaultFireAngle (const CDeviceItem &DeviceItem) const { return 0; }
+		virtual int GetHeatRating (CItemCtx& Ctx, int* retiIdleHeatGeneration = NULL) const { if (retiIdleHeatGeneration) *retiIdleHeatGeneration = 0; return 0; }
 		virtual int GetHitPoints (CItemCtx &ItemCtx, int *retiMaxHP = NULL) const { return 0; }
 		virtual DWORD GetLinkedFireOptions (void) const { return 0; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, const CInstalledDevice *pDevice, CSpaceObject *pTarget) const { return 0.0; }
@@ -677,7 +678,7 @@ class CInstalledDevice
 		bool Activate (CDeviceClass::SActivateCtx &ActivateCtx)
 			{ return m_pClass->Activate(*this, ActivateCtx); }
 		int CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource);
-		int CalcHeatDelta (const SUpdateCtx& Ctx, const CSpaceObject *pSource) const;
+		int CalcHeatDelta (const SUpdateCtx& Ctx, CSpaceObject *pSource) const;
 		bool CanBeDamaged (void) { return m_pClass->CanBeDamaged(); }
 		bool CanBeDisabled (CItemCtx &Ctx) { return m_pClass->CanBeDisabled(Ctx); }
 		bool CanBeDisrupted (void) { return m_pClass->CanBeDisrupted(); }

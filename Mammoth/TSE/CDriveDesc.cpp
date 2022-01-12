@@ -8,6 +8,8 @@
 #define DRIVE_TAG								CONSTLIT("Drive")
 
 #define DRIVE_POWER_USE_ATTRIB					CONSTLIT("drivePowerUse")
+#define DRIVE_HEAT_GENERATION_ATTRIB			CONSTLIT("driveHeatGeneration")
+#define HEAT_GENERATION_ATTRIB					CONSTLIT("heatGeneration")
 #define INERTIALESS_DRIVE_ATTRIB				CONSTLIT("inertialessDrive")
 #define MAX_SPEED_ATTRIB						CONSTLIT("maxSpeed")
 #define MAX_SPEED_INC_ATTRIB					CONSTLIT("maxSpeedInc")
@@ -23,7 +25,8 @@ CDriveDesc::CDriveDesc (void) :
 		m_iThrust(0),
 		m_iPowerUse(0),
 		m_rMaxSpeed(0.0),
-		m_fInertialess(false)
+		m_fInertialess(false),
+		m_iHeatGeneration(0)
 
 //  CDriveDesc constructor
 
@@ -61,9 +64,15 @@ void CDriveDesc::Add (const CDriveDesc &Src)
 	//  Power use is additive (unless inertialess)
 
 	if (Src.m_fInertialess)
+		{
 		m_iPowerUse = Src.m_iPowerUse;
+		m_iHeatGeneration = Src.m_iHeatGeneration;
+		}
 	else
+		{
 		m_iPowerUse += Src.m_iPowerUse;
+		m_iHeatGeneration += Src.m_iHeatGeneration;
+		}
 
 	//  Take on inertialess
 
@@ -209,6 +218,7 @@ ALERROR CDriveDesc::InitFromShipClassXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 		//	-1 means default. We will compute a proper default in Bind
 		m_iPowerUse = pDrive->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, -1);
 		m_fInertialess = pDrive->GetAttributeBool(INERTIALESS_DRIVE_ATTRIB);
+		m_iHeatGeneration = pDrive->GetAttributeIntegerBounded(HEAT_GENERATION_ATTRIB, 0, -1, 0);
 		}
 	else
 		{
@@ -228,6 +238,7 @@ ALERROR CDriveDesc::InitFromShipClassXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 		//	-1 means default. We will compute a proper default in Bind
 		m_iPowerUse = pDesc->GetAttributeIntegerBounded(DRIVE_POWER_USE_ATTRIB, 0, -1, -1);
 		m_fInertialess = pDesc->GetAttributeBool(INERTIALESS_DRIVE_ATTRIB);
+		m_iHeatGeneration = pDesc->GetAttributeIntegerBounded(DRIVE_HEAT_GENERATION_ATTRIB, 0, -1, 0);
 		}
 
 	*retiMaxSpeed = iMaxSpeed;
@@ -272,6 +283,8 @@ ALERROR CDriveDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD 
 	if (!pDesc->FindAttributeInteger(POWER_USE_ATTRIB, &m_iPowerUse))
 		m_iPowerUse = pDesc->GetAttributeInteger(POWER_USED_ATTRIB);
 
+	m_iHeatGeneration = pDesc->GetAttributeIntegerBounded(HEAT_GENERATION_ATTRIB, 0, -1, 0);
+
 	//  Other
 
 	m_fInertialess = pDesc->GetAttributeBool(INERTIALESS_DRIVE_ATTRIB);
@@ -296,4 +309,5 @@ void CDriveDesc::Interpolate (const CDriveDesc &From, const CDriveDesc &To, Metr
 	m_iThrust = mathRound(mathInterpolate(From.m_iThrust, To.m_iThrust, rInterpolate));
 	m_iPowerUse = mathRound(mathInterpolate(From.m_iPowerUse, To.m_iPowerUse, rInterpolate));
 	m_rMaxSpeed = mathInterpolate(From.m_rMaxSpeed, To.m_rMaxSpeed, rInterpolate);
+	m_iHeatGeneration = mathRound(mathInterpolate(From.m_iHeatGeneration, To.m_iHeatGeneration, rInterpolate));
 	}

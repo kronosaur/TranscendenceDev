@@ -125,7 +125,7 @@ void CDeviceSystem::AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, in
 		}
 	}
 
-int CDeviceSystem::AccumulateHeatIncrement(const SUpdateCtx &Ctx, const CSpaceObject* pObj) const
+int CDeviceSystem::AccumulateHeatIncrement (const SUpdateCtx &Ctx, CSpaceObject* pObj) const
 
 //	AccumulateHeatIncrement
 //

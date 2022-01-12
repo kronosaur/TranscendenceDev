@@ -41,9 +41,9 @@ bool CInstalledDevice::AccumulateSlotEnhancements (CSpaceObject *pSource, TArray
 	return bEnhanced;
 	}
 
-int CInstalledDevice::CalcHeatDelta(const SUpdateCtx& Ctx, const CSpaceObject* pSource) const
+int CInstalledDevice::CalcHeatDelta (const SUpdateCtx& Ctx, CSpaceObject* pSource) const
 
-//	CalcPowerUsed
+//	CalcHeatDelta
 //
 //	Calculates how much heat this device generated this tick. Positive numbers indicate
 //	heat generation, negative numbers are heat dissipation.
