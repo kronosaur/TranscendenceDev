@@ -571,11 +571,29 @@ int CShieldClass::CalcHeatDelta (const SUpdateCtx& Ctx, const CInstalledDevice* 
 	int iIdleHeat;
 	int iHeat = GetHeatRating(ItemCtx, &iIdleHeat);
 
+	if (iIdleHeat == 0 && iHeat == 0)
+		return 0;
+
 	//	If we're regenerating shields, then we generate more heat
 	//	otherwise, we only generate half heat
 
 	if ((!m_Regen.IsEmpty() || m_iExtraRegenPerCharge > 0) && pDevice->IsRegenerating())
-		return iHeat;
+		{
+		//	If regenerating shields, and the heat from regeneration would reduce the max HP below the
+		//	current shield HP, then use idle heat instead. This avoids deadlocking HP when regeneration
+		//	heat exceeds ship cooling, and HP is reduced by high heat, which ends up also preventing the
+		//	ship from cooling off.
+		Metric postHeatMaxHPMultiplier = 1.0;
+		UpdateHPPenaltyFromHeat(pSource, pSource->GetHeatValue() + iHeat, postHeatMaxHPMultiplier);
+
+		int iMaxHP = GetMaxHP(ItemCtx);
+		int iHPLeft = GetHPLeft(ItemCtx);
+		Metric currHPPercent = Metric(GetHPLeft(ItemCtx)) / Metric(GetMaxHP(ItemCtx));
+		if (currHPPercent > postHeatMaxHPMultiplier)
+			return iIdleHeat;
+		else
+			return iHeat;
+		}
 	else
 		return iIdleHeat;
 	}
@@ -2082,6 +2100,21 @@ ESetPropertyResult CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &
 	return ESetPropertyResult::set;
 	}
 
+void CShieldClass::UpdateHPPenaltyFromHeat (const CSpaceObject *pSource, int iCurrentHeat, Metric &rHeatHPMultiplier)
+	{
+	if (m_iHeatPenaltyThreshold > 0)
+		{
+		int iHeatPercent = ((iCurrentHeat * 100) / pSource->GetMaxHeatValue());
+		if (iHeatPercent > m_iHeatPenaltyThreshold && m_iHeatThresholdZeroHP >= m_iHeatPenaltyThreshold)
+			{
+			//	Adjust max HP linearly, so that it is at 100% at the heat penalty threshold and 0% at the heat threshold for zero HP
+			int iMaxHeatOver = m_iHeatThresholdZeroHP - m_iHeatPenaltyThreshold;
+			int iHeatOver = min(iMaxHeatOver, iHeatPercent - m_iHeatPenaltyThreshold);
+			rHeatHPMultiplier = (1.0 - (float(iHeatOver) / float(iMaxHeatOver)));
+			}
+		}
+	}
+
 void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx)
 
 //	Update
@@ -2150,17 +2183,7 @@ void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 		//	Adjust max HP based on heat thresholds.
 		//	We do this here so that we can show that shield HP is less than max if regen is inhibited
 		//	by high ship heat.
-		if (m_iHeatPenaltyThreshold > 0)
-			{
-			int iHeatPercent = ((pSource->GetHeatValue() * 100) / pSource->GetMaxHeatValue());
-			if (iHeatPercent > m_iHeatPenaltyThreshold && m_iHeatThresholdZeroHP >= m_iHeatPenaltyThreshold)
-				{
-				//	Adjust max HP linearly, so that it is at 100% at the heat penalty threshold and 0% at the heat threshold for zero HP
-				int iMaxHeatOver = m_iHeatThresholdZeroHP - m_iHeatPenaltyThreshold;
-				int iHeatOver = min(iMaxHeatOver, iHeatPercent - m_iHeatPenaltyThreshold);
-				rHeatHPMultiplier = (1.0 - (float(iHeatOver) / float(iMaxHeatOver)));
-				}
-			}
+		UpdateHPPenaltyFromHeat(pSource, pSource->GetHeatValue(), rHeatHPMultiplier);
 		iMaxHP = int(round(rHeatHPMultiplier * iMaxHP));
 
 		if (iHPLeft != iMaxHP)

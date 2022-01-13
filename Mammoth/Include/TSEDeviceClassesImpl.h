@@ -554,6 +554,7 @@ class CShieldClass : public CDeviceClass
 		void SetDepleted (CInstalledDevice *pDevice, CSpaceObject *pSource);
 		void SetHPLeft (CInstalledDevice *pDevice, CSpaceObject *pSource, int iHP, bool bConsumeCharges = false);
 		bool UpdateDepleted (CInstalledDevice *pDevice);
+		void UpdateHPPenaltyFromHeat (const CSpaceObject *pSource, int iCurrentHeat, Metric &rHeatHPMultiplier);
 
 		int m_iHitPoints;						//	Max HP
 		int m_iArmorShield;						//	If non-zero then this is the
