@@ -3980,11 +3980,21 @@ int CSpaceObject::GetImageScale (void) const
 //	Returns the scale.
 
 	{
-	const CObjectImageArray &Image = GetImage();
-	if (Image.IsEmpty())
-		return 512;	//	Default
+	if (m_iImageScale == -1)
+		{
+		const CObjectImageArray &Image = GetImage();
+		if (!Image.IsEmpty())
+			m_iImageScale = Image.GetImageViewportSize();
+		else
+			{
+			//	If there is no image, we return a default value, but we don't
+			//	cache the value, in case the image gets set later.
 
-	return Image.GetImageViewportSize();
+			return 512;
+			}
+		}
+
+	return m_iImageScale;
 	}
 
 int CSpaceObject::GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort)
