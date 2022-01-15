@@ -207,6 +207,16 @@
 								)
 							Nil
 
+						;	If the player has slaves then free them
+
+						(and (objGetItems gPlayerShip "*U +illegal; +slaves;")
+								(not (scrGetSessionData gScreen 'rpg.noSlaveConfiscation))
+								)
+							{	screen:&dsRPGFreeSlaves;
+								priority:8
+								overrideOnly:true
+								}
+						
 						;	If player has a smuggler's cargo hold, then nothing to do.
 
 						(objGetItems gPlayerShip "*I +smugglersHold;")

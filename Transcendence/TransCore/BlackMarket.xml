@@ -741,7 +741,7 @@ PLAYER DATA
 		</Items>
 
 		<Image imageID="&rsMolotokA;" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" viewportRatio="0.004875"/>
-		<Image imageID="&rsMolotokAHero;" imageHeight="320" imageWidth="320"/>
+		<HeroImage imageID="&rsMolotokAHero;" imageHeight="320" imageWidth="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="155"	posRadius="22"	posZ="0"	rotation="180"/>
@@ -821,7 +821,7 @@ PLAYER DATA
 		</Items>
 
 		<Image imageID="&rsMolotokB;" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" viewportRatio="0.004875"/>
-		<Image imageID="&rsMolotokBHero;" imageHeight="320" imageWidth="320"/>
+		<HeroImage imageID="&rsMolotokBHero;" imageHeight="320" imageWidth="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="155"	posRadius="22"	posZ="0"	rotation="180"/>

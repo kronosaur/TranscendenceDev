@@ -893,6 +893,7 @@ bool CWeaponFireDesc::FindEventHandler (const CString &sEvent, SEventHandlerDesc
 		if (retEvent)
 			{
 			retEvent->pExtension = m_pExtension;
+			retEvent->sEvent = sEvent;
 			retEvent->pCode = pCode;
 			}
 
@@ -1204,11 +1205,9 @@ void CWeaponFireDesc::FireOnCreateShot (const CDamageSource &Source, CSpaceObjec
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Source.GetOrderGiver());
 		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), GetWeaponType());
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			pShot->ReportEventError(ON_CREATE_SHOT_EVENT, pResult);
-
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -1230,7 +1229,7 @@ bool CWeaponFireDesc::FireOnDamageAbandoned (SDamageCtx &Ctx)
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
 		CCCtx.DefineDamageCtx(Ctx);
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			Ctx.pObj->ReportEventError(ON_DAMAGE_ABANDONED_EVENT, pResult);
 
@@ -1247,8 +1246,6 @@ bool CWeaponFireDesc::FireOnDamageAbandoned (SDamageCtx &Ctx)
 			Ctx.iDamage = pResult->GetIntegerValue();
 			bResult = true;
 			}
-
-		CCCtx.Discard(pResult);
 
 		return bResult;
 		}
@@ -1274,7 +1271,7 @@ bool CWeaponFireDesc::FireOnDamageArmor (SDamageCtx &Ctx) const
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
 		CCCtx.DefineDamageCtx(Ctx);
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			Ctx.pObj->ReportEventError(ON_DAMAGE_ARMOR_EVENT, pResult);
 
@@ -1291,8 +1288,6 @@ bool CWeaponFireDesc::FireOnDamageArmor (SDamageCtx &Ctx) const
 			Ctx.iDamage = pResult->GetIntegerValue();
 			bResult = true;
 			}
-
-		CCCtx.Discard(pResult);
 
 		return bResult;
 		}
@@ -1319,7 +1314,7 @@ bool CWeaponFireDesc::FireOnDamageOverlay (SDamageCtx &Ctx, COverlay *pOverlay)
 		CCCtx.DefineDamageCtx(Ctx);
 		CCCtx.DefineInteger(CONSTLIT("aOverlayID"), pOverlay->GetID());
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			Ctx.pObj->ReportEventError(ON_DAMAGE_OVERLAY_EVENT, pResult);
 
@@ -1336,8 +1331,6 @@ bool CWeaponFireDesc::FireOnDamageOverlay (SDamageCtx &Ctx, COverlay *pOverlay)
 			Ctx.iDamage = pResult->GetIntegerValue();
 			bResult = true;
 			}
-
-		CCCtx.Discard(pResult);
 
 		return bResult;
 		}
@@ -1386,7 +1379,7 @@ bool CWeaponFireDesc::FireOnDamageShields (SDamageCtx &Ctx, int iDevice)
 			CCCtx.DefineInteger(CONSTLIT("aOriginalArmorDamageHP"), Ctx.iDamage - Ctx.iAbsorb);
 			}
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 
 		//	If we return Nil, then we continue processing
 
@@ -1468,8 +1461,6 @@ bool CWeaponFireDesc::FireOnDamageShields (SDamageCtx &Ctx, int iDevice)
 			bResult = true;
 			}
 
-		CCCtx.Discard(pResult);
-
 		return bResult;
 		}
 	else
@@ -1502,11 +1493,9 @@ void CWeaponFireDesc::FireOnDestroyObj (const SDestroyCtx &Ctx)
 		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), GetWeaponType());
 		CCCtx.DefineInteger(CONSTLIT("aWeaponLevel"), GetLevel());
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			Ctx.Obj.ReportEventError(ON_DESTROY_OBJ_EVENT, pResult);
-
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -1530,11 +1519,9 @@ void CWeaponFireDesc::FireOnDestroyShot (CSpaceObject *pShot)
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), pShot->GetDamageSource().GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), pShot->GetDamageSource().GetOrderGiver());
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			pShot->ReportEventError(ON_DESTROY_SHOT_EVENT, pResult);
-
-		CCCtx.Discard(pResult);
 		}
 	}
 

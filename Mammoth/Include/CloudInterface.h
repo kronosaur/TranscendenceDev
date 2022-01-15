@@ -46,11 +46,11 @@ class ICIService
 		ICIService (CHumanInterface &HI) : m_HI(HI), m_bEnabled(false), m_bModified(false) { }
 		virtual ~ICIService (void) { }
 
-		inline bool IsEnabled (void) { return m_bEnabled; }
-		inline bool IsModified (void) { return m_bModified; }
-		inline void SetEnabled (bool bValue = true) { m_bEnabled = bValue; }
+		bool IsEnabled (void) { return m_bEnabled; }
+		bool IsModified (void) { return m_bModified; }
+		void SetEnabled (bool bValue = true) { m_bEnabled = bValue; }
 
-        virtual void AccumulateExtensionFolders (TArray<CString> &Folders) { }
+		virtual void AccumulateExtensionFolders (TArray<CString> &Folders) { }
 		virtual ALERROR ChangePassword (ITaskProcessor *pProcessor, const CString &sUsername, const CString &sOldPassword, const CString &sNewPassword, CString *retsResult = NULL) { return NOERROR; }
 		virtual CString GetTag (void) = 0;
 		virtual CString GetUsername (void) { return NULL_STR; }
@@ -60,6 +60,7 @@ class ICIService
 		virtual ALERROR InitPrivateData (void) { return NOERROR; }
 		virtual ALERROR LoadNews (ITaskProcessor *pProcessor, CMultiverseModel &Multiverse, const SFileVersionInfo &AppVersion, const CString &sCacheFilespec, CString *retsResult = NULL) { return NOERROR; }
 		virtual ALERROR LoadUserCollection (ITaskProcessor *pProcessor, CExtensionCollection &Extensions, CMultiverseModel &Multiverse, CString *retsResult = NULL) { return NOERROR; }
+		virtual ALERROR PostAchievement (ITaskProcessor *pProcessor, const CAchievementDef &Achievement, CString *retsResult = NULL) { return NOERROR; }
 		virtual ALERROR PostCrashReport (ITaskProcessor *pProcessor, const CString &sCrash, CString *retsResult = NULL) { return NOERROR; }
 		virtual ALERROR PostGameRecord (ITaskProcessor *pProcessor, const CGameRecord &Record, const CGameStats &Stats, CString *retsResult = NULL) { return NOERROR; }
 		virtual ALERROR ProcessDownloads (ITaskProcessor *pProcessor, CString *retsResult = NULL) { return NOERROR; }
@@ -78,7 +79,7 @@ class ICIService
 	protected:
 		void SendServiceError (const CString &sStatus);
 		void SendServiceStatus (const CString &sStatus);
-		inline void SetModified (bool bValue = true) { m_bModified = bValue; }
+		void SetModified (bool bValue = true) { m_bModified = bValue; }
 
 		CHumanInterface &m_HI;
 		bool m_bEnabled;
@@ -99,10 +100,10 @@ class CCloudService
 
 		~CCloudService (void);
 
-		inline void AddService (ICIService *pService) { if (pService) m_Boot.Insert(pService); }
+		void AddService (ICIService *pService) { if (pService) m_Boot.Insert(pService); }
 		void CleanUp (void);
 		CString GetDefaultUsername (void);
-        TArray<CString> GetExtensionFolders (void);
+		TArray<CString> GetExtensionFolders (void);
 		CString GetUsername (void);
 		bool HasCapability (DWORD dwCapability);
 		ALERROR InitFromXML (CHumanInterface &HI, CXMLElement *pDesc, bool *retbModified);
@@ -117,6 +118,7 @@ class CCloudService
 		ALERROR Housekeeping (ITaskProcessor *pProcessor);
 		ALERROR LoadNews (ITaskProcessor *pProcessor, CMultiverseModel &Multiverse, const SFileVersionInfo &AppVersion, const CString &sCacheFilespec, CString *retsResult = NULL);
 		ALERROR LoadUserCollection (ITaskProcessor *pProcessor, CExtensionCollection &Extensions, CMultiverseModel &Multiverse, CString *retsResult = NULL);
+		ALERROR PostAchievement (ITaskProcessor *pProcessor, const CAchievementDef &Achievement, CString *retsResult = NULL);
 		ALERROR PostCrashReport (ITaskProcessor *pProcessor, const CString &sCrash, CString *retsResult = NULL);
 		ALERROR PostGameRecord (ITaskProcessor *pProcessor, const CGameRecord &Record, const CGameStats &Stats, CString *retsResult = NULL);
 		ALERROR ProcessDownloads (ITaskProcessor *pProcessor, CString *retsResult = NULL);

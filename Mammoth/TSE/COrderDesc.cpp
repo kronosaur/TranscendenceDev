@@ -237,6 +237,8 @@ void COrderDesc::CleanUp ()
 //	Free all resources.
 
 	{
+	DEBUG_TRY
+
 	switch (GetDataType())
 		{
 		case EDataType::None:
@@ -266,6 +268,8 @@ void COrderDesc::CleanUp ()
 
 	m_dwDataType = (DWORD)EDataType::None;
 	m_pData = NULL;
+
+	DEBUG_CATCH
 	}
 
 void COrderDesc::Copy (const COrderDesc &Src)

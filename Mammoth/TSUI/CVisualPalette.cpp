@@ -68,7 +68,7 @@ static SColorInitTable COLOR_TABLE[] =
 		{	CONSTDEF("TextShields"),			CG32bitPixel(0xE5, 0xFF, 0xCC) },	//	H:90  S:20  B:100
 		{	CONSTDEF("TextAccelerator"),		CG32bitPixel(0xFF, 0xFF, 0x00) },	//	H:60  S:100 B:100
 
-		{	CONSTDEF("AreaAccelerator"),		CG32bitPixel(0xCB, 0xCB, 0x00) },	//	H:60  S:100 B:80
+		{	CONSTDEF("AreaAccelerator"),		CG32bitPixel(0xE5, 0xE5, 0x17) },	//	H:60  S:90 B:90
 		{	CONSTDEF("TextQuoteColor"),			CG32bitPixel(0xB2, 0xD9, 0xFF) },	//	H:210 S:30  B:100
 	};
 

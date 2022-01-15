@@ -45,6 +45,7 @@ static constexpr const char *FEEDBACK[] =
 	"Aeon Blaze",
 	"Aeonic",
 	"ahrenjb",
+	"Alandra",
 	"Amariithynar",
 	"Anakey",
 	"Androgeos",
@@ -53,6 +54,7 @@ static constexpr const char *FEEDBACK[] =
 	"Apemant",
 	"Aquilai",
 	"Arkheias",
+	"avorite",
 	"Azmond",
 
 	"Lee Baugh",
@@ -85,6 +87,7 @@ static constexpr const char *FEEDBACK[] =
 	"Darth Saber",
 	"DarthGeek",
 	"Datal",
+	"DerpCat",
 	"Charles Davis",
 	"Demanther",
 	"Derakon",
@@ -128,6 +131,7 @@ static constexpr const char *FEEDBACK[] =
 	"Ihlosi",
 
 	"Eric James",
+	"jeremmt",
 	"jimj316",
 	"JohnBWatson",
 
@@ -187,6 +191,7 @@ static constexpr const char *FEEDBACK[] =
 	"Premier",
 	"Psycholis",
 	"ptbptb",
+	"puffo12346",
 
 	"Quaziz",
 	"Quirk",
@@ -209,6 +214,7 @@ static constexpr const char *FEEDBACK[] =
 	"Section6",
 	"Sero",
 	"SevereTireDamage",
+	"ShaggyMoose",
 	"Shaman",
 	"Sheltem",
 	"SiaFu",

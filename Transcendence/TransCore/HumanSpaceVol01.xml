@@ -1751,6 +1751,8 @@
 	<!ENTITY rsAresShipyard				"0x001000B8">
 	<!ENTITY rsTundraHero				"0x001000B9">
 	<!ENTITY rsChasmHero				"0x001000BA">
+	<!ENTITY rsSandstorm				"0x001000BB">
+	<!ENTITY rsSandstormHero			"0x001000BC">
 	
 	<!-- 00C0-00CF SALVAGERS -->
 	
@@ -1863,6 +1865,8 @@
 	<!ENTITY stSungCitadel				"0x00100138">
 	<!ENTITY stSungCitadelInnerWall		"0x00100139">
 	<!ENTITY stSungCitadelOuterWall		"0x0010013A">
+	<!ENTITY rsWindSlaver				"0x0010013B">
+	<!ENTITY rsWindSlaverHero			"0x0010013C">
 
 	<!-- 0140-014F XENOPHOBES -->
 	
@@ -2079,6 +2083,8 @@
 	<!ENTITY vtDwargMissileDefense		"0x001002D7">
 	<!ENTITY vtDwargMissileDefenseWeapon	"0x001002D8">
 	<!ENTITY efDwargMissileDefense		"0x001002D9">
+	<!ENTITY rsDwargColony				"0x001002DA">
+	<!ENTITY rsDwargColonyComposite		"0x001002DB">
 
 	<!-- 02F0-030F RINGERS -->
 
@@ -2338,6 +2344,7 @@
 	<!ENTITY rsLuminousDroneHD			"0x00100510">
 	<!ENTITY trLuminousTreasure			"0x00100511">
 	<!ENTITY smLuminousSpace			"0x00100512">
+	<!ENTITY rsLuminousDroneHero		"0x00100513">
 
 	<!-- 0530-057F PLAYER SHIP UPGRADES -->
 
@@ -2374,6 +2381,8 @@
 	<!ENTITY rsAurochsRogue				"0x00100586">
 	<!ENTITY rsAurochsRogueHero			"0x00100587">
 	<!ENTITY smRogueFleetSpace			"0x00100588">
+	<!ENTITY rsRogueFleetCache			"0x00100589">
+	<!ENTITY rsRogueFleetSettlement		"0x0010058A">
 
 	<!-- 05A0-05BF PACIFIC DEFENCE CORPORATION -->
 

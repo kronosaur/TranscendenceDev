@@ -73,6 +73,7 @@
 							(objRemoveItem gPlayerShip theItem)
 							(objAddItem gPlayerShip (itmCreate &itBlackMarketID; 1))
 							(itmSetKnown &itBlackMarketID;)
+							(unvSetAchievement 'humanSpace.shadyDealings)
 							(msnSuccess gSource)
 							)
 

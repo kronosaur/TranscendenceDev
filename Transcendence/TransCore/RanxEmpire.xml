@@ -453,6 +453,7 @@
 			cyberDefenseLevel=	"6"
 
 			explosionType=		"&vtThermoExplosion3;"
+			achievement=		"humanSpace.ranxDreadnoughtKiller"
 			>
 
 		<!-- Configuration -->

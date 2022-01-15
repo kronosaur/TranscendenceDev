@@ -86,7 +86,18 @@ int CGTextArea::Justify (const RECT &rcRect)
 	{
 	RECT rcText = CalcTextRect(rcRect);
 
-	if (!m_sText.IsBlank())
+	if (IsRTF())
+		{
+		FormatRTF(rcText);
+
+		RECT rcBounds;
+		m_RichText.GetBounds(&rcBounds);
+        if (RectHeight(rcBounds) == 0)
+            return 0;
+
+		return m_rcPadding.top + RectHeight(rcBounds) + m_rcPadding.bottom;
+		}
+	else if (!m_sText.IsBlank())
 		{
 		if (m_pFont == NULL)
 			return 0;
@@ -99,17 +110,6 @@ int CGTextArea::Justify (const RECT &rcRect)
 			}
 
 		return m_rcPadding.top + (m_Lines.GetCount() * m_pFont->GetHeight() + (m_Lines.GetCount() - 1) * m_cyLineSpacing) + m_rcPadding.bottom;
-		}
-	else if (!m_sRTF.IsBlank())
-		{
-		FormatRTF(rcText);
-
-		RECT rcBounds;
-		m_RichText.GetBounds(&rcBounds);
-        if (RectHeight(rcBounds) == 0)
-            return 0;
-
-		return m_rcPadding.top + RectHeight(rcBounds) + m_rcPadding.bottom;
 		}
 	else
 		return 0;
@@ -143,10 +143,10 @@ void CGTextArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 	//	Paint the content
 
-	if (!m_sText.IsBlank())
-		PaintText(Dest, rcText);
-	else
+	if (IsRTF())
 		PaintRTF(Dest, rcText);
+	else
+		PaintText(Dest, rcText);
 
 	DEBUG_CATCH
 	}

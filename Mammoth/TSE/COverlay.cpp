@@ -500,14 +500,12 @@ void COverlay::FireCustomEvent (CSpaceObject *pSource, const CString &sEvent, IC
 
 		//	Execute
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		//	Done
 
 		if (retpResult)
-			*retpResult = pResult;
-		else
-			Ctx.Discard(pResult);
+			*retpResult = pResult->Reference();
 		}
 	else if (retpResult)
 		*retpResult = GetUniverse().GetCC().CreateNil();
@@ -563,14 +561,12 @@ void COverlay::FireOnCreate (CSpaceObject *pSource)
 
 		//	Execute
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		//	Done
 
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Overlay OnCreate: %s"), pResult->GetStringValue()), pResult);
-
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -596,7 +592,7 @@ bool COverlay::FireOnDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 
 		//	Execute
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 
 		//	Check for error
 
@@ -614,7 +610,6 @@ bool COverlay::FireOnDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 
 		//	Done
 
-		CCCtx.Discard(pResult);
 		return bHandled;
 		}
 	else
@@ -642,14 +637,12 @@ void COverlay::FireOnDestroy (CSpaceObject *pSource)
 
 		//	Execute
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		//	Done
 
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Overlay OnDestroy: %s"), pResult->GetStringValue()), pResult);
-
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -726,14 +719,12 @@ void COverlay::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx
 
 		//	Execute
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 
 		//	Done
 
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Overlay OnObjDestroyed: %s"), pResult->GetStringValue()), pResult);
-
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -756,10 +747,9 @@ void COverlay::FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) cons
 		Ctx.DefineSpaceObject(CONSTLIT("aObjDocked"), pShip);
 		Ctx.DefineSpaceObject(CONSTLIT("aDockTarget"), pSource);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(EVENT_ON_OBJ_DOCKED, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -784,14 +774,12 @@ void COverlay::FireOnUpdate (CSpaceObject *pSource)
 
 		//	Execute
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		//	Done
 
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Overlay OnUpdate: %s"), pResult->GetStringValue()), pResult);
-
-		Ctx.Discard(pResult);
 		}
 	}
 

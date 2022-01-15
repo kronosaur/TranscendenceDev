@@ -2329,10 +2329,9 @@ void CStationType::OnShipEncounterCreated (SSystemCreateCtx &CreateCtx, CSpaceOb
 		Ctx.SaveAndDefineDataVar(NULL);
 		Ctx.DefineOrbit(CONSTLIT("aOrbit"), Orbit);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_CREATE_EVENT, pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 

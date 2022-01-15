@@ -2334,7 +2334,7 @@ int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, const CWeaponFireDesc
 		Ctx.DefineInteger(CONSTLIT("aFireRepeat"), iRepeatingCount);
 		Ctx.DefineItemType(CONSTLIT("aWeaponType"), ShotDesc.GetWeaponType());
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ItemCtx.GetSource()->ReportEventError(GET_AMMO_TO_CONSUME_EVENT, pResult);
 
@@ -2346,8 +2346,6 @@ int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, const CWeaponFireDesc
 			{
 			iResult = 1;
 			}
-
-		Ctx.Discard(pResult);
 
 		//	Done
 
@@ -5220,7 +5218,7 @@ ALERROR CWeaponClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 			if (iTotalTicks > iFireDelay)
 				{
-				GetUniverse().DebugOutput("WARNING: %s (%08x) takes %d ticks to fire all shots, but has only %d ticks fire delay.", (LPSTR)GetName(), GetUNID(), iTotalTicks, iFireDelay);
+				GetUniverse().LogOutput(strPatternSubst("WARNING: %s (%08x) takes %d ticks to fire all shots, but has only %d ticks fire delay.", GetName(), GetUNID(), iTotalTicks, iFireDelay));
 				}
 			}
 		}

@@ -1468,8 +1468,8 @@ ALERROR CUniverse::InitGame (DWORD dwStartingMap, CString *retsError)
 	{
 	ALERROR error;
 
-	if (m_Difficulty.GetLevel() == CDifficultyOptions::lvlUnknown)
-		SetDifficultyLevel(CDifficultyOptions::lvlChallenge);
+	if (m_Difficulty.GetLevel() == CDifficultyOptions::ELevel::Unknown)
+		SetDifficultyLevel(CDifficultyOptions::ELevel::Challenge);
 
 	//	If starting map is 0, see if we can get it from the adventure
 
@@ -1828,7 +1828,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 	if (Ctx.dwVersion >= 38)
 		m_Difficulty.ReadFromStream(*pStream);
 	else
-		m_Difficulty.SetLevel(CDifficultyOptions::lvlChallenge);
+		m_Difficulty.SetLevel(CDifficultyOptions::ELevel::Challenge);
 
 	//	Prepare a universe initialization context
 	//	NOTE: Caller has set debug mode based on game file header flag.
@@ -2216,6 +2216,8 @@ void CUniverse::PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags)
 //	Paint the current point of view
 
 	{
+	CUsePerformanceCounter Counter(*this, CONSTLIT("paint.SRS"));
+
 	if (m_pCurrentSystem && m_pPOV)
 		{
 		m_pCurrentSystem->PaintViewport(Dest, rcView, m_pPOV, dwFlags, &m_ViewportAnnotations);
@@ -2248,6 +2250,8 @@ void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMap
 //	Paint the system map
 
 	{
+	CUsePerformanceCounter Counter(*this, CONSTLIT("paint.map"));
+
 	if (m_pCurrentSystem && m_pPOV)
 		m_pCurrentSystem->PaintViewportMap(Dest, rcView, m_pPOV, rMapScale, dwFlags);
 
@@ -2600,6 +2604,57 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 	m_ObjStats.WriteToStream(pStream);
 
 	return NOERROR;
+	}
+
+bool CUniverse::SetAchievement (const CString &sID, CString *retsError)
+
+//	SetAchievement
+//
+//	Sets an achievement.
+
+	{
+	//	First look for the achievement definition.
+
+	auto &Achievements = m_Design.GetAchievementDefinitions();
+	auto pDef = Achievements.FindDefinition(sID);
+	if (!pDef)
+		{
+		//	In debug mode, we report this, but otherwise we fail silently 
+		//	because an adventure might not define the achievement.
+
+		if (InDebugMode())
+			LogOutput(strPatternSubst("WARNING: Unknown achievement ID: %s.", sID));
+
+		return true;
+		}
+
+	//	If achievement is disabled, then it just means the adventure or 
+	//	extension does not use this achievement.
+
+	if (!pDef->IsEnabled())
+		return true;
+
+	//	If this achievement has a minimum difficulty, then make sure we're at 
+	//	least that level.
+
+	CDifficultyOptions::ELevel iMinDifficulty = pDef->GetMinDifficulty();
+	if ((iMinDifficulty != CDifficultyOptions::ELevel::Unknown)
+			&& (GetDifficultyLevel() < iMinDifficulty))
+		return true;
+
+	//	If this is not a registered game, then we can't post.
+
+#ifndef DEBUG
+	if (!IsRegistered())
+		return true;
+#endif
+
+	//	Post to service.
+
+	if (pDef->CanPost())
+		m_pHost->PostAchievement(*pDef);
+
+	return true;
 	}
 
 void CUniverse::SetCurrentSystem (CSystem *pSystem, bool bPlayerHasEntered)
@@ -2997,10 +3052,6 @@ bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)
 	{
 	m_iLastUpdateSpeed = iUpdateMode;
 
-#ifdef DEBUG_PERFORMANCE_COUNTERS
-	m_PerformanceCounters.StartUpdate();
-#endif
-
 	switch (iUpdateMode)
 		{
 		case updateAccelerated:
@@ -3040,8 +3091,19 @@ void CUniverse::UpdateTick (SSystemUpdateCtx &Ctx)
 	{
 	DEBUG_TRY
 
+#ifdef DEBUG_MOVE_PERFORMANCE
+	Ctx.iMoveCalls = 0;
+	Ctx.iShipOnMoveCalls = 0;
+	Ctx.iShipEffectMoveCalls = 0;
+#endif
+
 	if (m_pCurrentSystem == NULL)
 		return;
+
+#ifdef DEBUG_PERFORMANCE_COUNTERS
+	m_PerformanceCounters.StartUpdate();
+	CUsePerformanceCounter Counter(*this, CONSTLIT("update.tick"));
+#endif
 
 	//	Update system
 
@@ -3085,6 +3147,13 @@ void CUniverse::UpdateExtended (void)
 	if (pSystem == NULL)
 		return;
 
+	//	Disable performance for this update (because we don't care about this
+	//	part, but mostly because we update multiple ticks below and it would
+	//	throw off the per-tick calculations.
+
+	bool bEnabled = m_PerformanceCounters.IsEnabled();
+	m_PerformanceCounters.SetEnabled(false);
+
 	//	Calculate the amount of time that has elapsed from the last time the
 	//	system was updated.
 
@@ -3096,6 +3165,10 @@ void CUniverse::UpdateExtended (void)
 	//	Update the system 
 
 	pSystem->UpdateExtended(TotalTime);
+
+	//	Re-enable
+
+	m_PerformanceCounters.SetEnabled(bEnabled);
 
 	DEBUG_CATCH
 	}

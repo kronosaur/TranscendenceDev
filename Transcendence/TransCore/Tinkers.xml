@@ -837,6 +837,7 @@
 
 			allowPlayerDelete=	"true"
 			noDebrief=			"true"
+			noInProgress=		"true"
 			noStats=			"true"
 			>
 
@@ -888,6 +889,7 @@
 			<Text id="textSummary">
 				Acquire %itemsNeeded% to have the Tinkers fabricate %item%.
 			</Text>
+			<Text id="FailureMsg"></Text>
 		</Language>
 	</MissionType>
 

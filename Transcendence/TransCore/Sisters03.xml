@@ -427,7 +427,9 @@
 					(switch
 						;	If we already completed this conversation, then nothing to do.
 						
-						(msn@ missionObj 'epilogueCompleted)
+						(or (not missionObj)
+								(msn@ missionObj 'epilogueCompleted)
+								)
 							Nil
 							
 						;	Script

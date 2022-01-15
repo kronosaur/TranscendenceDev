@@ -404,6 +404,22 @@ void CDockSession::PlayAmbientSound ()
 	m_pAmbientSoundPlaying = m_pAmbientSound;
 	}
 
+void CDockSession::RefreshScreen (const SDockFrame &ResolvedFrame, bool bSaveSelection)
+
+//	RefreshScreen
+//
+//	Refresh the current screen.
+
+	{
+	if (InSession())
+		{
+		m_DockFrames.ResolveCurrent(ResolvedFrame);
+
+		if (bSaveSelection)
+			m_DockFrames.GetCurrent().pSavedSelection = m_pDockScreenUI->GetDisplaySelection();
+		}
+	}
+
 void CDockSession::RunExitCode ()
 
 //	RunExitCode

@@ -231,7 +231,7 @@ void CParticleDamage::OnDestroyed (SDestroyCtx &Ctx)
 	m_pDesc->FireOnDestroyShot(this);
 	}
 
-void CParticleDamage::OnMove (const CVector &vOldPos, Metric rSeconds)
+void CParticleDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
 //

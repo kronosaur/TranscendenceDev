@@ -84,7 +84,7 @@
 			<Text id="actionMissions">[M]issions</Text>
 			<Text id="actionViewCargo">[V]iew Cargo Hold</Text>
 			<Text id="actionRefuelReactor">[R]efuel Reactor</Text>
-			<Text id="actionDone">[B]ack to Cockpit</Text>
+			<Text id="actionDone">[Esc] Done</Text>
 
 			<Text id="descWelcome">
 				

@@ -268,7 +268,7 @@ void CFractureEffect::InitParticleArray (void)
 	
 	}
 
-void CFractureEffect::OnMove (const CVector &vOldPos, Metric rSeconds)
+void CFractureEffect::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
 //

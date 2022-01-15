@@ -239,6 +239,10 @@ DWORD CEscortOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObje
 			return resAck;
 			}
 
+		case msgBaseDestroyedByUnknown:
+			pShip->GetController()->AddOrder(COrderDesc(IShipController::orderAttackNearestEnemy), true);
+			return resAck;
+
 		case msgFormUp:
 			{
 			if (m_iState != stateEscorting)

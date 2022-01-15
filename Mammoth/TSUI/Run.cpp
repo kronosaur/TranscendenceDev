@@ -80,19 +80,19 @@ bool CHumanInterface::CreateMainWindow (HINSTANCE hInst, int nCmdShow, LPSTR lpC
 
 	{
 	CString sError;
-    WNDCLASSEX wc;
+	WNDCLASSEX wc;
 
 	//	Register window
 
 	ZeroMemory(&wc, sizeof(wc));
 	wc.cbSize = sizeof(wc);
 	wc.style = CS_DBLCLKS;
-    wc.lpfnWndProc = MainWndProc;
-    wc.hInstance = hInst;
+	wc.lpfnWndProc = MainWndProc;
+	wc.hInstance = hInst;
 	wc.hIcon = m_Options.hIcon;
-    wc.hCursor = ::LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    wc.lpszClassName = m_Options.sClassName.GetASCIIZPointer();
+	wc.hCursor = ::LoadCursor(NULL, IDC_ARROW);
+	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+	wc.lpszClassName = m_Options.sClassName.GetASCIIZPointer();
 	if (!RegisterClassEx(&wc))
 		return ERR_FAIL;
 
@@ -102,7 +102,7 @@ bool CHumanInterface::CreateMainWindow (HINSTANCE hInst, int nCmdShow, LPSTR lpC
 	//	know if we got that far, we use the return value of CreateWindow to
 	//	check for errors.
 
-    HWND hWnd = ::CreateWindowEx(0,	// WS_EX_TOPMOST,
+	HWND hWnd = ::CreateWindowEx(0,	// WS_EX_TOPMOST,
 			m_Options.sClassName.GetASCIIZPointer(), 
 			m_Options.sAppName.GetASCIIZPointer(),
 			WS_POPUP,
@@ -138,7 +138,7 @@ bool CHumanInterface::CreateMainWindow (HINSTANCE hInst, int nCmdShow, LPSTR lpC
 	else
 		ShowWindow(hWnd, SW_SHOWMAXIMIZED);
 
-    UpdateWindow(hWnd);
+	UpdateWindow(hWnd);
 
 	//	Done
 
@@ -223,6 +223,9 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 	{
 	DEBUG_TRY
 
+	if (!g_pHI)
+		return DefWindowProc(hWnd, message, wParam, lParam);
+
 	switch (message)
 		{
 		case WM_ACTIVATEAPP:
@@ -288,7 +291,7 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 			return g_pHI->WMKeyDown((int)wParam, lParam);
 
 		case WM_KEYUP:
-			return (g_pHI ? g_pHI->WMKeyUp((int)wParam, lParam) : 0);
+			return g_pHI->WMKeyUp((int)wParam, lParam);
 
 		case WM_LBUTTONDBLCLK:
 			return g_pHI->WMLButtonDblClick((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
@@ -297,7 +300,7 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 			return g_pHI->WMLButtonDown((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
 
 		case WM_LBUTTONUP:
-			return (g_pHI ? g_pHI->WMLButtonUp((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam) : 0);
+			return g_pHI->WMLButtonUp((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
 
 		case WM_MBUTTONDBLCLK:
 			return g_pHI->WMMButtonDblClick((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
@@ -306,7 +309,7 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 			return g_pHI->WMMButtonDown((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
 
 		case WM_MBUTTONUP:
-			return (g_pHI ? g_pHI->WMMButtonUp((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam) : 0);
+			return g_pHI->WMMButtonUp((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
 
 		case WM_MOUSEMOVE:
 			return g_pHI->WMMouseMove((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
@@ -333,7 +336,7 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 			return g_pHI->WMRButtonDown((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
 
 		case WM_RBUTTONUP:
-			return (g_pHI ? g_pHI->WMRButtonUp((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam) : 0);
+			return g_pHI->WMRButtonUp((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
 
 		case WM_SIZE:
 			return g_pHI->WMSize((int)LOWORD(lParam), (int)HIWORD(lParam), (int)wParam);
@@ -345,7 +348,7 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 
-	DEBUG_CATCH
+	DEBUG_CATCH_MSG(strPatternSubst("Crash in MainWndProc. Message = 0x%x.", message));
 	}
 
 LONG CHumanInterface::WMActivateApp (bool bActivate)
@@ -572,7 +575,7 @@ LONG CHumanInterface::WMLButtonDblClick (int x, int y, DWORD dwFlags)
 		m_iLastVirtualKey = 0;
 		}
 
-    m_bLButtonDown = true;
+	m_bLButtonDown = true;
 	return 0;
 	}
 
@@ -595,7 +598,7 @@ LONG CHumanInterface::WMLButtonDown (int x, int y, DWORD dwFlags)
 		m_iLastVirtualKey = 0;
 		}
 
-    m_bLButtonDown = true;
+	m_bLButtonDown = true;
 	return 0;
 	}
 
@@ -616,7 +619,7 @@ LONG CHumanInterface::WMLButtonUp (int x, int y, DWORD dwFlags)
 		m_pCurSession->HILButtonUp(xLocal, yLocal, dwFlags);
 		}
 
-    m_bLButtonDown = false;
+	m_bLButtonDown = false;
 	return 0;
 	}
 
@@ -639,7 +642,7 @@ LONG CHumanInterface::WMMButtonDblClick (int x, int y, DWORD dwFlags)
 		m_iLastVirtualKey = 0;
 		}
 
-    m_bMButtonDown = true;
+	m_bMButtonDown = true;
 	return 0;
 	}
 
@@ -662,7 +665,7 @@ LONG CHumanInterface::WMMButtonDown (int x, int y, DWORD dwFlags)
 		m_iLastVirtualKey = 0;
 		}
 
-    m_bMButtonDown = true;
+	m_bMButtonDown = true;
 	return 0;
 	}
 
@@ -683,7 +686,7 @@ LONG CHumanInterface::WMMButtonUp (int x, int y, DWORD dwFlags)
 		m_pCurSession->HIMButtonUp(xLocal, yLocal, dwFlags);
 		}
 
-    m_bMButtonDown = false;
+	m_bMButtonDown = false;
 	return 0;
 	}
 
@@ -708,10 +711,10 @@ LONG CHumanInterface::WMMouseMove (int x, int y, DWORD dwFlags)
 		m_pCurSession->HIMouseMove(xLocal, yLocal, dwFlags);
 		}
 
-    //  Remember the position so we can tell if we moved last time.
+	//  Remember the position so we can tell if we moved last time.
 
-    m_xLastMousePos = x;
-    m_yLastMousePos = y;
+	m_xLastMousePos = x;
+	m_yLastMousePos = y;
 
 	return 0;
 	}
@@ -766,7 +769,7 @@ LONG CHumanInterface::WMRButtonDblClick (int x, int y, DWORD dwFlags)
 		m_pCurSession->HIRButtonDblClick(xLocal, yLocal, dwFlags);
 		}
 
-    m_bRButtonDown = true;
+	m_bRButtonDown = true;
 	return 0;
 	}
 
@@ -789,7 +792,7 @@ LONG CHumanInterface::WMRButtonDown (int x, int y, DWORD dwFlags)
 		m_iLastVirtualKey = 0;
 		}
 
-    m_bRButtonDown = true;
+	m_bRButtonDown = true;
 	return 0;
 	}
 
@@ -810,7 +813,7 @@ LONG CHumanInterface::WMRButtonUp (int x, int y, DWORD dwFlags)
 		m_pCurSession->HIRButtonUp(xLocal, yLocal, dwFlags);
 		}
 
-    m_bRButtonDown = false;
+	m_bRButtonDown = false;
 	return 0;
 	}
 

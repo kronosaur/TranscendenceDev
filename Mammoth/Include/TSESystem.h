@@ -98,16 +98,17 @@ typedef TSEListNode<CSystemEventHandler> CSystemEventHandlerNode;
 
 struct SSystemUpdateCtx
 	{
-	SSystemUpdateCtx (void) : rSecondsPerTick(g_SecondsPerUpdate),
-			bForceEventFiring(false),
-			bForcePainted(false),
-			bTrackPlayerObjs(false)
-		{ }
+	Metric rSecondsPerTick = g_SecondsPerUpdate;
+	bool bForceEventFiring = false;					//	If TRUE, fire events even if no player ship
+	bool bForcePainted = false;						//	If TRUE, mark objects as painted 
+	bool bTrackPlayerObjs = false;					//	If TRUE, make a list of player objects
+	bool bNoShipEffectUpdate = false;				//	If TRUE, do not update ship effects
 
-	Metric rSecondsPerTick;
-	bool bForceEventFiring;					//	If TRUE, fire events even if no player ship
-	bool bForcePainted;						//	If TRUE, mark objects as painted 
-	bool bTrackPlayerObjs;					//	If TRUE, make a list of player objects
+#ifdef DEBUG_MOVE_PERFORMANCE
+	int iMoveCalls = 0;
+	int iShipOnMoveCalls = 0;
+	int iShipEffectMoveCalls = 0;
+#endif
 	};
 
 //	CMoveCtx is currently unused; it was part of an experiment to see
@@ -487,6 +488,8 @@ class CSystem
 		CSpaceObject *EnumObjectsInBoxGetNextFast (SSpaceObjectGridEnumerator &i) const { return m_ObjGrid.EnumGetNextFast(i); }
 		CSpaceObject *EnumObjectsInBoxPointGetNext (SSpaceObjectGridEnumerator &i) const { return m_ObjGrid.EnumGetNextInBoxPoint(i); }
 		CSpaceObject *FindObject (DWORD dwID) const;
+		CSpaceObject *FindNearestObject (CSpaceObject* pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria = CSpaceObjectCriteria()) const;
+		CSpaceObject *FindNearestTangibleObjectInArc (CSpaceObject* pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria = CSpaceObjectCriteria(), int iMinAngle = -1, int iMaxAngle = -1) const;
 		CSpaceObject *FindObjectInRange (CSpaceObject *pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria = CSpaceObjectCriteria()) const;
 		CSpaceObject *FindObjectWithOrbit (const COrbit &Orbit) const;
 		bool FindObjectName (const CSpaceObject *pObj, CString *retsName = NULL);
@@ -503,6 +506,7 @@ class CSystem
 		CString GetAttribsAtPos (const CVector &vPos);
 		void GetDebugInfo (SDebugInfo &Info) const;
 		CEnvironmentGrid *GetEnvironmentGrid (void) { InitSpaceEnvironment(); return m_pEnvironment; }
+		const CSystemEventList &GetEvents () const { return m_TimedEvents; }
 		CPhysicsForceResolver &GetForceResolver (void) { return m_ForceResolver; }
 		DWORD GetID (void) { return m_dwID; }
 		int GetLastUpdated (void) { return m_iLastUpdated; }

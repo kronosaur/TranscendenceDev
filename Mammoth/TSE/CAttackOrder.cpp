@@ -479,6 +479,8 @@ void CAttackOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iOb
 //	Notification that an object was destroyed
 
 	{
+	DEBUG_TRY
+
 	//	If the object we're avoiding was destroyed
 
 	if (iObj == OBJ_AVOID)
@@ -504,6 +506,8 @@ void CAttackOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iOb
 
 		m_Objs[OBJ_TARGET] = pNewTarget;
 		}
+
+	DEBUG_CATCH
 	}
 
 void CAttackOrder::OnReadFromStream (SLoadCtx &Ctx, const COrderDesc &OrderDesc)

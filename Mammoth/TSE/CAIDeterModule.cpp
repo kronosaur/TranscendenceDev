@@ -88,6 +88,8 @@ void CAIDeterModule::OnObjDestroyed (CShip &Ship, const SDestroyCtx &Ctx)
 //	Object has been destroyed.
 
 	{
+	DEBUG_TRY
+
 	if (Ctx.Obj == m_pTarget)
 		{
 		//	If a friend destroyed our target then thank them
@@ -99,6 +101,8 @@ void CAIDeterModule::OnObjDestroyed (CShip &Ship, const SDestroyCtx &Ctx)
 
 		Cancel();
 		}
+
+	DEBUG_CATCH
 	}
 
 void CAIDeterModule::ReadFromStream (SLoadCtx &Ctx)

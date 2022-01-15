@@ -276,163 +276,190 @@ bool CContinuousBeam::HitTestSegment (SSegment &Segment, CVector *retvHitPos)
 //	we return TRUE and retvHitPos is where the segment got stopped.
 
 	{
-	CVector vNewPos = Segment.vPos + Segment.vDeltaPos;
+	//	If vDeltaPos is very far from vPos, we will end up getting a lot of unwanted objects in
+	//	the bounding box. We can avoid this by stepping through vDeltaPos in small steps rather
+	//	than all at once. This minimizes the number of potential objects we have to search through.
+	const Metric MAX_STEP_SIZE = 20 * g_KlicksPerPixel;
+	CVector vBeamDirection = Segment.vDeltaPos.Normal();
+	Metric rDistLeft = Segment.vDeltaPos.Length();
+	int iNumOfSteps = int(ceil(rDistLeft / MAX_STEP_SIZE));
+	TArray<DWORD> NewHits;
+	bool bPassthroughHitDetected = false;
 
-	//	Get our bounds
-
-	CVector vLL = Segment.vPos;
-	CVector vUR = Segment.vPos;
-	CGeometry::AccumulateBounds(vNewPos, vLL, vUR);
-
-	//	Compute the segment length (we need this for stepping and for bounds)
-
-	CVector vDiff = (vNewPos - Segment.vPos);
-	Metric rLength = vDiff.Length();
-	if (rLength == 0.0)
-		return false;
-
-	Metric rStep = 3.0 * g_KlicksPerPixel;
-	CVector vStep = (rStep / rLength) * vDiff;
-	int iHitDir = AngleMod(180 + VectorToPolar(vStep));
-
-	//	Get the list of objects that intersect the object
-
-	SSpaceObjectGridEnumerator i;
-	GetSystem()->EnumObjectsInBoxStart(i, vUR, vLL);
-
-	//	If we have passthrough, then we need to get a list of objects hit.
-
-	if (m_pDesc->GetPassthrough() > 0)
+	CVector vCurrPos;
+	CVector vNewPos;
+	for (int iStepNum = 0; iStepNum < iNumOfSteps; iStepNum++)
 		{
-		//	We keep an array of hits sorted by ascending order of distance
-		//	along the travel direction.
-
-		TSortMap<Metric, CHitCtx> Hits;
-
-		//	See if the beam hit anything. We start with a crude first pass.
-		//	Any objects near the beam are then analyzed further to see if
-		//	the beam hit them.
-
-		while (GetSystem()->EnumObjectsInBoxHasMore(i))
+		Metric rStepDistance = min(rDistLeft, MAX_STEP_SIZE);
+		CVector vIncrementalDeltaPos = vBeamDirection * rStepDistance;
+		rDistLeft -= rStepDistance;
+		if (iStepNum > 0)
 			{
-			CSpaceObject *pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
-			if (!CanHit(pObj)
-					|| !pObj->CanBeHitBy(m_pDesc->GetDamage())
-					|| pObj == this)
-				continue;
-
-			//	See where we hit this object (if at all)
-
-			Metric rTest = 0.0;
-			CVector vTest = Segment.vPos;
-			while (rTest < rLength)
-				{
-				if (pObj->PointInObject(pObj->GetPos(), vTest))
-					{
-					Hits.Insert(rTest, CHitCtx(pObj, vTest, iHitDir));
-					break;
-					}
-
-				rTest += rStep;
-				vTest = vTest + vStep;
-				}
+			vCurrPos = vNewPos;
 			}
-
-		//	Loop over all hits in order and see if they passthrough
-
-		bool bHit = false;
-		TArray<DWORD> NewHits;
-		for (int j = 0; j < Hits.GetCount(); j++)
+		else
 			{
-			//	If this object was hit by this same segment last tick, then
-			//	skip it.
-
-			if (Segment.Hits.Find(Hits[j].GetHitObj()->GetID()))
-				continue;
-
-			//	Add this hit to the list
-
-			m_Hits.Insert(Hits[j]);
-			NewHits.Insert(Hits[j].GetHitObj()->GetID());
-
-			//	If we DO NOT pass through, then we're done
-
-			if (mathRandom(1, 100) > m_pDesc->GetPassthrough()
-					|| Hits[j].GetHitObj()->GetPassthroughDefault() == damageNoDamageNoPassthrough)
-				{
-				bHit = true;
-				*retvHitPos = Hits[j].GetHitPos();
-				break;
-				}
+			vCurrPos = Segment.vPos;
 			}
+		vNewPos = vCurrPos + vIncrementalDeltaPos;
 
-		//	Reset the list of hits for this segment.
+		//	Get our bounds
 
-		Segment.Hits = NewHits;
+		CVector vLL = vCurrPos;
+		CVector vUR = vCurrPos;
+		CGeometry::AccumulateBounds(vNewPos, vLL, vUR);
 
-		//	Done
+		//	Compute the segment length (we need this for stepping and for bounds)
 
-		return bHit;
-		}
-
-	//	Otherwise, we only have a single object.
-
-	else
-		{
-		//	Track the best (nearest) object that we hit
-
-		CSpaceObject *pHit = NULL;
-		CVector vBestHit;
-		Metric rBestDist = rLength;
-
-		//	See if the beam hit anything. We start with a crude first pass.
-		//	Any objects near the beam are then analyzed further to see if
-		//	the beam hit them.
-
-		while (GetSystem()->EnumObjectsInBoxHasMore(i))
-			{
-			CSpaceObject *pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
-			if (!CanHit(pObj)
-					|| !pObj->CanBeHitBy(m_pDesc->GetDamage())
-					|| pObj == this)
-				continue;
-
-			//	See where we hit this object (if at all)
-
-			Metric rTest = 0.0;
-			CVector vTest = Segment.vPos;
-			while (rTest < rBestDist)
-				{
-				if (pObj->PointInObject(pObj->GetPos(), vTest))
-					{
-					pHit = pObj;
-					vBestHit = vTest;
-					rBestDist = rTest;
-					break;
-					}
-
-				rTest += rStep;
-				vTest = vTest + vStep;
-				}
-			}
-
-		//	If nothing hit, then we're done
-
-		if (pHit == NULL)
+		CVector vDiff = (vNewPos - vCurrPos);
+		Metric rLength = vDiff.Length();
+		if (rLength == 0.0)
 			return false;
 
-		//	Remember what we hit.
-		//
-		//	NOTE: We do not need to remember the object hit in the segment 
-		//	because we only use that to compute passthrough.
+		Metric rStep = 3.0 * g_KlicksPerPixel;
+		CVector vStep = (rStep / rLength) * vDiff;
+		int iHitDir = AngleMod(180 + VectorToPolar(vStep));
 
-		m_Hits.Insert(CHitCtx(pHit, vBestHit, iHitDir));
+		//	Get the list of objects that intersect the object
 
-		//	Return the split position
+		SSpaceObjectGridEnumerator i;
+		GetSystem()->EnumObjectsInBoxStart(i, vUR, vLL);
 
-		*retvHitPos = vBestHit;
-		return true;
+		//	If we have passthrough, then we need to get a list of objects hit.
+
+		if (m_pDesc->GetPassthrough() > 0)
+			{
+			//	We keep an array of hits sorted by ascending order of distance
+			//	along the travel direction.
+
+			TSortMap<Metric, CHitCtx> Hits;
+
+			//	See if the beam hit anything. We start with a crude first pass.
+			//	Any objects near the beam are then analyzed further to see if
+			//	the beam hit them.
+
+			while (GetSystem()->EnumObjectsInBoxHasMore(i))
+				{
+				CSpaceObject *pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
+				if (!CanHit(pObj)
+						|| !pObj->CanBeHitBy(m_pDesc->GetDamage())
+						|| pObj == this)
+					continue;
+
+				//	See where we hit this object (if at all)
+
+				Metric rTest = 0.0;
+				CVector vTest = vCurrPos;
+				while (rTest < rLength)
+					{
+					if (pObj->PointInObject(pObj->GetPos(), vTest))
+						{
+						Hits.Insert(rTest, CHitCtx(pObj, vTest, iHitDir));
+						break;
+						}
+
+					rTest += rStep;
+					vTest = vTest + vStep;
+					}
+				}
+
+			//	Loop over all hits in order and see if they passthrough
+
+			bool bHit = false;
+			for (int j = 0; j < Hits.GetCount(); j++)
+				{
+				//	If this object was hit by this same segment last tick, then
+				//	skip it.
+
+				if (Segment.Hits.Find(Hits[j].GetHitObj()->GetID()))
+					continue;
+
+				//	Add this hit to the list
+
+				m_Hits.Insert(Hits[j]);
+				NewHits.Insert(Hits[j].GetHitObj()->GetID());
+
+				//	If we DO NOT pass through, then we're done
+
+				if (mathRandom(1, 100) > m_pDesc->GetPassthrough()
+						|| Hits[j].GetHitObj()->GetPassthroughDefault() == damageNoDamageNoPassthrough)
+					{
+					bHit = true;
+					*retvHitPos = Hits[j].GetHitPos();
+					break;
+					}
+				}
+
+			//	Reset the list of hits for this segment.
+
+			Segment.Hits = NewHits;
+
+			//	Done
+
+			bPassthroughHitDetected = bPassthroughHitDetected || bHit;
+			}
+
+		//	Otherwise, we only have a single object.
+
+		else
+			{
+			//	Track the best (nearest) object that we hit
+
+			CSpaceObject *pHit = NULL;
+			CVector vBestHit;
+			Metric rBestDist = rLength;
+
+			//	See if the beam hit anything. We start with a crude first pass.
+			//	Any objects near the beam are then analyzed further to see if
+			//	the beam hit them.
+
+			while (GetSystem()->EnumObjectsInBoxHasMore(i))
+				{
+				CSpaceObject *pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
+				if (!CanHit(pObj)
+						|| !pObj->CanBeHitBy(m_pDesc->GetDamage())
+						|| pObj == this)
+					continue;
+
+				//	See where we hit this object (if at all)
+
+				Metric rTest = 0.0;
+				CVector vTest = vCurrPos;
+				while (rTest < rBestDist)
+					{
+					if (pObj->PointInObject(pObj->GetPos(), vTest))
+						{
+						pHit = pObj;
+						vBestHit = vTest;
+						rBestDist = rTest;
+						break;
+						}
+
+					rTest += rStep;
+					vTest = vTest + vStep;
+					}
+				}
+
+			//	If nothing hit, then we're done
+
+			if (pHit == NULL)
+				continue;
+
+			//	Remember what we hit.
+			//
+			//	NOTE: We do not need to remember the object hit in the segment
+			//	because we only use that to compute passthrough.
+
+			m_Hits.Insert(CHitCtx(pHit, vBestHit, iHitDir));
+
+			//	Return the split position
+
+			*retvHitPos = vBestHit;
+			return true;
+			}
 		}
+	//	If we reach here that means we didn't hit anything, unless we hit something in the passthrough phase.
+	return bPassthroughHitDetected;
 	}
 
 void CContinuousBeam::OnDestroyed (SDestroyCtx &Ctx)
@@ -445,7 +472,7 @@ void CContinuousBeam::OnDestroyed (SDestroyCtx &Ctx)
 	m_pDesc->FireOnDestroyShot(this);
 	}
 
-void CContinuousBeam::OnMove (const CVector &vOldPos, Metric rSeconds)
+void CContinuousBeam::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
 //
@@ -682,7 +709,7 @@ void CContinuousBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		EDamageResults iResult = DoDamage(Hit.GetHitObj(), Hit.GetHitPos(), Hit.GetHitDir());
 
 		//	NOTE: No need to do anything with the result because we've already
-		//	determined whether the beam/segment needs to be split. We do not 
+		//	determined whether the beam/segment needs to be split. We do not
 		//	check for passthrough here because we already checked in OnMove.
 		//	[And we have to check in OnMove because otherwise we would not
 		//	paint correctly.]

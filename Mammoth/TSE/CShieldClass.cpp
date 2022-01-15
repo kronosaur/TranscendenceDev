@@ -643,8 +643,8 @@ Metric CShieldClass::CalcRegen180 (CItemCtx &Ctx, DWORD dwFlags) const
 
 	Metric rRegen = m_Regen.GetHPPer180();
 	
-	if (m_iExtraHPPerCharge)
-		rRegen += m_iExtraHPPerCharge * Ctx.GetItemCharges();
+	if (m_iExtraRegenPerCharge)
+		rRegen += m_iExtraRegenPerCharge * Ctx.GetItemCharges();
 
 	return rRegen;
 	}
@@ -962,8 +962,6 @@ int CShieldClass::FireGetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource
 			return iMaxHP;
 		else
 			{
-			CUsePerformanceCounterForEvent Counter(GetUniverse(), GET_MAX_HP_EVENT);
-
 			CCodeChainCtx Ctx(GetUniverse());
 
 			Ctx.DefineContainingType(GetItemType());
@@ -994,8 +992,6 @@ void CShieldClass::FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	SEventHandlerDesc Event;
 	if (FindEventHandlerShieldClass(evtOnShieldDamage, &Event))
 		{
-		CUsePerformanceCounterForEvent Counter(GetUniverse(), ON_SHIELD_DAMAGE_EVENT);
-
 		//	Setup arguments
 
 		CCodeChainCtx CCCtx(GetUniverse());
@@ -1088,7 +1084,6 @@ void CShieldClass::FireOnShieldDown (CInstalledDevice *pDevice, CSpaceObject *pS
 	SEventHandlerDesc Event;
 	if (FindEventHandlerShieldClass(evtOnShieldDown, &Event))
 		{
-		CUsePerformanceCounterForEvent Counter(GetUniverse(), ON_SHIELD_DOWN_EVENT);
 		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(GetItemType());

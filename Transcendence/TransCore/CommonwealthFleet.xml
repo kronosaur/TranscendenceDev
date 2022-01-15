@@ -455,7 +455,7 @@ PLAYER DATA
 			type=				"transport"
 			defaultSovereign=	"&svCommonwealthFleet;"
 
-			attributes=			"commonwealth, commonwealthFleet, freighter, genericClass, pacificDefense"
+			attributes=			"commonwealth, commonwealthFleet, freighter, genericClass, military, pacificDefense"
 			inherit=			"&baHumanTechShip;"
 
 			explosionType=		"&vtBlastExplosion3;"
@@ -781,6 +781,18 @@ PLAYER DATA
 			<Effect type="thrustMain"		posAngle="180"	posRadius="49"	posZ="8"	rotation="180"	effect="&efMainThrusterLarge;"/>
 		</Effects>
 
+		<PlayerSettings>
+			<ArmorDisplay 
+					style=			"circular"
+					scale=			"hp"
+					>
+				<ArmorSection segment="0" hpAngle="25"/>
+				<ArmorSection segment="2" hpAngle="155"/>
+				<ArmorSection segment="3" hpAngle="-155"/>
+				<ArmorSection segment="5" hpAngle="-25"/>
+			</ArmorDisplay>
+		</PlayerSettings>
+
 		<!-- AI and Behavior -->
 
 		<AISettings
@@ -865,7 +877,7 @@ PLAYER DATA
 			explosionType=		"&vtThermoExplosion3;"
 
 			level=				"10"
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, genericClass, pacificDefense"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, genericClass, military, pacificDefense"
 			>
 
 		<!-- Configuration -->
@@ -990,6 +1002,8 @@ PLAYER DATA
 			valueBonusPerCharge="150"
 
 			description=		"This external pod is loaded with thirty-six XM900 nuclear missiles and can be installed without the aid of a station."
+
+			showChargesInUseMenu="true"
 			>
 
 		<Image imageID="&rsItemsNAMI4;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
@@ -1628,8 +1642,12 @@ PLAYER DATA
 				(block Nil
 					;	Pay the player and record the award
 					(rpgMissionRewardPayment (msnGetData missionObj 'reward))
+
 					;	Increase XP
 					(objIncData gPlayerShip 'fleetXP (msnGetData missionObj 'missionXP))
+
+					;	Achievement
+					(unvSetAchievement 'humanSpace.fleetManeuvers)
 
 					;	dsRPGMission checks for a well-known data member in the mission
 					;	object to see if it should navigate to an additional screen.

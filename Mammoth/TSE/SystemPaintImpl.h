@@ -23,9 +23,10 @@ class CDepthPaintList : public IPaintList
 		virtual void Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx) const override;
 
 	private:
-		inline DWORD GetPaintOrderKey (CSpaceObject &Obj) const { return (DWORD)(int)((m_rTopEdge - Obj.GetPos().Y()) / g_KlicksPerPixel); }
+		inline DWORD GetPaintOrderKey (CSpaceObject &Obj) const 
+			{ return ((DWORDLONG)(int)((m_rTopEdge - Obj.GetPos().Y()) / g_KlicksPerPixel) << 32) | Obj.GetID(); }
 
-		TSortMap<DWORD, CSpaceObject *> m_List;
+		TSortMap<DWORDLONG, CSpaceObject *> m_List;
 		Metric m_rTopEdge = 0.0;
 	};
 

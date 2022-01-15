@@ -1197,14 +1197,12 @@ void CSovereign::Update (int iTick, CSystem *pSystem)
 
 		//	Execute
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		//	Done
 
 		if (pResult->IsError())
 			ReportEventError(EVENT_ON_UPDATE, pResult);
-
-		Ctx.Discard(pResult);
 		}
 	}
 

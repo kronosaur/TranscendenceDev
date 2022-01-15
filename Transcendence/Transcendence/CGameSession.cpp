@@ -198,7 +198,7 @@ bool CGameSession::IsIconBarShown (void) const
 	if (strEquals(sValue, CONSTLIT("auto")))
 		{
 #if 0
-		return (GetUniverse().GetDifficultyLevel() == CDifficultyOptions::lvlStory);
+		return (GetUniverse().GetDifficultyLevel() == CDifficultyOptions::ELevel::Story);
 #else
 		return false;
 #endif

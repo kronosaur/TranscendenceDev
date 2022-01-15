@@ -1,0 +1,861 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidAchievements;">
+		<Achievements>
+
+			<!-- LEVEL 1 -->
+
+			<Achievement id="sotp.finishedTraining"
+					sortOrder="01|10"
+					steamID="SOTP_FINISHED_TRAINING=0"
+					>
+				<Image imageID="&rsBenedictMission;"	imageWidth="384" imageHeight="192"/>
+			</Achievement>
+
+			<Achievement id="humanSpace.avengerOfRaisu"
+					sortOrder="01|20"
+					steamID="HS_AVENGER_OF_RAISU=1"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.peacemakerOfRaisu"
+					sortOrder="01|25"
+					steamID="HS_PEACEMAKER_OF_RAISU=2"
+					>
+			</Achievement>
+
+			<Achievement id="core.mineOre1"
+					sortOrder="01|50"
+					steamID="CORE_MINE_ORE_1=3"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.vigilanteOfEridani"
+					minDifficulty="challenge"
+					sortOrder="01|80"
+					steamID="HS_VIGILANTE_OF_ERIDANI=4"
+					>
+			</Achievement>
+
+			<Achievement id="sotp.interstellarTraveler"
+					sortOrder="01|90"
+					steamID="CORE_INTERSTELLAR_TRAVELER=5"
+					>
+			</Achievement>
+
+			<!-- LEVEL 2 -->
+
+			<Achievement id="humanSpace.korolovEscort"
+					sortOrder="02|20"
+					steamID="HS_FREIGHTER_ESCORT=6"
+					>
+			</Achievement>
+
+			<Achievement id="core.collateralDamage"
+					minDifficulty="normal"
+					sortOrder="02|30"
+					steamID="CORE_COLLATERAL_DAMAGE=7"
+					>
+			</Achievement>
+
+			<Achievement id="core.trade10K"
+					sortOrder="02|50"
+					steamID="CORE_PEDDLER=8"
+					>
+			</Achievement>
+
+			<!-- LEVEL 3 -->
+
+			<Achievement id="humanSpace.gladiator"
+					sortOrder="03|10"
+					steamID="HS_GLADIATOR=9"
+					>
+			</Achievement>
+
+			<Achievement id="core.mineOre100"
+					sortOrder="03|20"
+					steamID="CORE_INCREASING_RETURNS=10"
+					>
+			</Achievement>
+
+			<Achievement id="core.zeroHP"
+					sortOrder="03|25"
+					steamID="CORE_ZERO_HP=11"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.shadyDealings"
+					sortOrder="03|30"
+					steamID="HS_SHADY_DEALINGS=12"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.blackTrafficker"
+					sortOrder="03|55"
+					steamID="HS_BLACK_TRAFFICKER=13"
+					>
+			</Achievement>
+
+			<Achievement id="core.armorEnhanced"
+					sortOrder="03|40"
+					steamID="CORE_ARMOR_ENHANCED=14"
+					>
+			</Achievement>
+
+			<Achievement id="core.reactorUpgrade"
+					sortOrder="03|45"
+					steamID="CORE_REACTOR_UPGRADE=15"
+					>
+			</Achievement>
+
+			<Achievement id="core.newShip"
+					sortOrder="03|50"
+					steamID="CORE_NEW_SHIP=16"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.heroOfTheArena"
+					minDifficulty="normal"
+					sortOrder="03|80"
+					steamID="HS_HERO_OF_THE_ARENA=17"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.noWinScenario"
+					minDifficulty="challenge"
+					hidden="true"
+					sortOrder="03|90"
+					steamID="HS_NO_WIN_SCENARIO=18"
+					>
+			</Achievement>
+
+			<!-- LEVEL 4 -->
+
+			<Achievement id="humanSpace.visitStKats"
+					sortOrder="04|10"
+					steamID="HS_VISIT_ST_KATS=19"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.visitEarthStation"
+					sortOrder="04|15"
+					steamID="HS_VISIT_EARTH_STATION=20"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.insuranceResurrect"
+					sortOrder="04|20"
+					steamID="HS_INSURANCE_RESURRECT=21"
+					>
+			</Achievement>
+
+			<Achievement id="core.autons10"
+					sortOrder="04|30"
+					steamID="CORE_AUTONS_10=22"
+					>
+			</Achievement>
+
+			<Achievement id="core.trade50K"
+					sortOrder="04|40"
+					steamID="CORE_BROKER=23"
+					>
+			</Achievement>
+
+			<Achievement id="core.radiationKill"
+					minDifficulty="normal"
+					sortOrder="04|50"
+					steamID="CORE_RADIATION_KILL=24"
+					>
+			</Achievement>
+
+			<!-- LEVEL 5 -->
+
+			<Achievement id="humanSpace.visitCathedralOfDomina"
+					sortOrder="05|10"
+					steamID="HS_VISIT_CATHEDRAL_OF_DOMINA=25"
+					>
+			</Achievement>
+
+			<Achievement id="core.paralyzeKill"
+					minDifficulty="normal"
+					sortOrder="05|20"
+					steamID="CORE_PARALYZE_KILL=26"
+					>
+			</Achievement>
+
+			<Achievement id="core.buriedKill"
+					minDifficulty="normal"
+					sortOrder="05|25"
+					steamID="CORE_BURIED_KILL=27"
+					>
+			</Achievement>
+
+			<Achievement id="core.mineOre1000"
+					sortOrder="05|30"
+					steamID="CORE_ORE_RUSH=28"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.dwargBehemothFriend"
+					sortOrder="05|50"
+					steamID="HS_DWARG_BEHEMOTH_FRIEND=29"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.charonFrigateKiller"
+					minDifficulty="challenge"
+					sortOrder="05|70"
+					steamID="HS_CHARON_FRIGATE_KILLER=30"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.huariFriend"
+					minDifficulty="normal"
+					hidden="true"
+					sortOrder="05|80"
+					steamID="HS_HUARI_FRIEND=31"
+					>
+			</Achievement>
+
+			<!-- LEVEL 6 -->
+
+			<Achievement id="humanSpace.huaramarca"
+					sortOrder="06|20"
+					hidden="true"
+					steamID="HS_HUARAMARCA=32"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.EI500Speed25"
+					sortOrder="06|40"
+					steamID="HS_EI500_SPEED_25=33"
+					>
+			</Achievement>
+
+			<Achievement id="core.trade150K"
+					sortOrder="06|50"
+					steamID="CORE_ENTREPRENEUR=34"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.kronosaurusKiller"
+					minDifficulty="challenge"
+					sortOrder="06|60"
+					steamID="HS_KRONOSAURUS_KILLER=35"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.jiangsStarKiller"
+					minDifficulty="challenge"
+					hidden="true"
+					sortOrder="06|70"
+					steamID="HS_JIANGS_STAR_KILLER=36"
+					>
+			</Achievement>
+
+			<!-- LEVEL 7 -->
+
+			<Achievement id="sotp.benedictAndFiona"
+					sortOrder="07|10"
+					steamID="SOTP_BENEDICT_AND_FIONA=37"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.outerRealm"
+					sortOrder="07|20"
+					steamID="HS_OUTER_REALM=38"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.fleetManeuvers"
+					sortOrder="07|30"
+					steamID="HS_FLEET_MANEUVERS=39"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.luminereDestroyerKiller"
+					minDifficulty="challenge"
+					sortOrder="07|50"
+					steamID="HS_LUMIERE_DESTROYER_KILLER=40"
+					>
+			</Achievement>
+
+			<!-- LEVEL 8 -->
+
+			<Achievement id="humanSpace.pointJuno"
+					minDifficulty="normal"
+					sortOrder="08|20"
+					steamID="HS_POINT_JUNO=41"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.worldshipKiller"
+					minDifficulty="challenge"
+					sortOrder="08|30"
+					steamID="HS_WORLDSHIP_KILLER=42"
+					>
+			</Achievement>
+
+			<Achievement id="core.trade500K"
+					sortOrder="08|50"
+					steamID="CORE_TYCOON=43"
+					>
+			</Achievement>
+
+			<!-- LEVEL 9 -->
+
+			<Achievement id="humanSpace.theLamplighter"
+					minDifficulty="normal"
+					sortOrder="09|20"
+					steamID="HS_THE_LAMPLIGHTER=44"
+					>
+			</Achievement>
+
+			<Achievement id="core.trade1M"
+					sortOrder="09|30"
+					steamID="CORE_MERCHANT_PRINCE=45"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.phobosKiller"
+					minDifficulty="challenge"
+					sortOrder="09|50"
+					steamID="HS_PHOBOS_KILLER=46"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.ferianWarriorKiller"
+					minDifficulty="challenge"
+					sortOrder="09|52"
+					steamID="HS_PHOBOS_KILLER=47"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.killerKiller"
+					minDifficulty="challenge"
+					sortOrder="09|53"
+					steamID="HS_KILLER_KILLER=48"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.ranxDreadnoughtKiller"
+					minDifficulty="challenge"
+					sortOrder="09|55"
+					steamID="HS_RANX_DREADNOUGHT_KILLER=49"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.cscAntarcticaKiller"
+					minDifficulty="normal"
+					sortOrder="09|70"
+					steamID="HS_CSC_ANTARCTICA_KILLER=50"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.cscAntarcticaDefender"
+					minDifficulty="normal"
+					sortOrder="09|75"
+					steamID="HS_CSC_ANTARCTICA_DEFENDER=51"
+					>
+			</Achievement>
+
+			<!-- LEVEL 10 -->
+
+			<Achievement id="humanSpace.heretic"
+					sortOrder="10|10"
+					steamID="HS_HERETIC=40"
+					>
+			</Achievement>
+
+			<Achievement id="humanSpace.dragonSlaverKiller"
+					minDifficulty="challenge"
+					sortOrder="10|50"
+					steamID="HS_DRAGON_SLAVER_KILLER=52"
+					>
+			</Achievement>
+
+			<Achievement id="sotp.breakQuarantine"
+					sortOrder="10|80"
+					steamID="SOTP_BREAK_QUARANTINE=53"
+					>
+			</Achievement>
+
+			<Achievement id="sotp.completed.story"
+					sortOrder="10|90"
+					steamID="SOTP_STORY_MODE=54"
+					>
+			</Achievement>
+
+			<Achievement id="sotp.completed.normal"
+					sortOrder="10|91"
+					steamID="SOTP_NORMAL_MODE=55"
+					>
+			</Achievement>
+
+			<Achievement id="sotp.completed.challenge"
+					sortOrder="10|92"
+					steamID="SOTP_CHALLENGE_MODE=56"
+					>
+			</Achievement>
+
+			<Achievement id="sotp.completed.permadeath"
+					sortOrder="10|93"
+					steamID="SOTP_PERMADEATH_MODE=57"
+					>
+			</Achievement>
+
+			<!-- DISABLED ACHIEVEMENTS -->
+
+			<Achievement id="core.mineOre10000"		disabled="true"/>
+			<Achievement id="core.mineOre100000"	disabled="true"/>
+
+		</Achievements>
+
+		<Events>
+			<OnGlobalPlayerNewMaxSpeed>
+				(switch
+					;	Achievement for EI500 when it reaches .25 light-speed
+
+					(= (objGetName gPlayerShip 'generic) "EI500-class freighter")
+						(if (geq aMaxSpeed 25)
+							(unvSetAchievement 'humanSpace.EI500Speed25)
+							)
+					)
+			</OnGlobalPlayerNewMaxSpeed>
+		</Events>
+
+		<Language>
+			<!-- LEVEL 1 ACHIEVEMENTS -->
+
+			<Text id="sotp.finishedTraining.name">Benedict's Pupil</Text>
+			<Text id="sotp.finishedTraining.desc">
+
+				Complete Benedict's training session in Eridani.
+			
+			</Text>
+			<Text id="humanSpace.avengerOfRaisu.name">Avenger of Raisu</Text>
+			<Text id="humanSpace.avengerOfRaisu.desc">
+
+				Destroy Centauri settlement in Eridani.
+			
+			</Text>
+			<Text id="humanSpace.peacemakerOfRaisu.name">Peacemaker of Raisu</Text>
+			<Text id="humanSpace.peacemakerOfRaisu.desc">
+
+				Make peace between Raisu Station and Centauri Warlords.
+			
+			</Text>
+			<Text id="core.mineOre1.name">Sample Return</Text>
+			<Text id="core.mineOre1.desc">
+
+				Mine at least 1 ton of ore.
+			
+			</Text>
+			<Text id="humanSpace.vigilanteOfEridani.name">Vigilante of Eridani</Text>
+			<Text id="humanSpace.vigilanteOfEridani.desc">
+
+				Destroy all enemy stations in Eridani in Challenge Mode or Permadeath.
+			
+			</Text>
+			<Text id="sotp.interstellarTraveler.name">Interstellar Traveler</Text>
+			<Text id="sotp.interstellarTraveler.desc">
+
+				Leave your home star system.
+			
+			</Text>
+
+			<!-- LEVEL 2 ACHIEVEMENTS -->
+
+			<Text id="humanSpace.korolovEscort.name">Freighter Escort</Text>
+			<Text id="humanSpace.korolovEscort.desc">
+
+				Successfully escort at least one Korolov freighter.
+			
+			</Text>
+
+			<Text id="core.collateralDamage.name">Collateral Damage</Text>
+			<Text id="core.collateralDamage.desc">
+
+				Kill an enemy by blowing up a different enemy.
+			
+			</Text>
+
+			<Text id="core.trade10K.name">Peddler</Text>
+			<Text id="core.trade10K.desc">
+
+				Earn 10,000 credits profit from trading.
+			
+			</Text>
+
+			<!-- LEVEL 3 ACHIEVEMENTS -->
+
+			<Text id="humanSpace.gladiator.name">Gladiator</Text>
+			<Text id="humanSpace.gladiator.desc">
+
+				Become a gladiator at the Battle Arena Maximus.
+			
+			</Text>
+
+			<Text id="core.mineOre100.name">Increasing Returns</Text>
+			<Text id="core.mineOre100.desc">
+
+				Mine at least 100 tons of ore.
+			
+			</Text>
+
+			<Text id="core.zeroHP.name">Lucky, Lucky, Lucky!</Text>
+			<Text id="core.zeroHP.desc">
+
+				Survive damage that reduces an armor segment to 0 hit points.
+			
+			</Text>
+
+			<Text id="humanSpace.shadyDealings.name">Shady Dealings</Text>
+			<Text id="humanSpace.shadyDealings.desc">
+
+				Gain an introduction to the Black Market.
+			
+			</Text>
+
+			<Text id="humanSpace.blackTrafficker.name">Black Trafficker</Text>
+			<Text id="humanSpace.blackTrafficker.desc">
+
+				Sell an illegal item to a Commonwealth station.
+			
+			</Text>
+
+			<Text id="core.armorEnhanced.name">Armorer</Text>
+			<Text id="core.armorEnhanced.desc">
+
+				Enhance all armor segments on your ship.
+			
+			</Text>
+
+			<Text id="core.reactorUpgrade.name">Power Up</Text>
+			<Text id="core.reactorUpgrade.desc">
+
+				Upgrade the reactor on your ship.
+			
+			</Text>
+
+			<Text id="core.newShip.name">That New Ship Smell</Text>
+			<Text id="core.newShip.desc">
+
+				Buy a new ship for yourself.
+			
+			</Text>
+
+			<Text id="humanSpace.heroOfTheArena.name">Hero of the Arena</Text>
+			<Text id="humanSpace.heroOfTheArena.desc">
+
+				Defeat The Slicer at the Battle Arena Maximus in Normal Mode or higher.
+			
+			</Text>
+
+			<Text id="humanSpace.noWinScenario.name">No Win Scenario</Text>
+			<Text id="humanSpace.noWinScenario.desc">
+
+				Save Korolov station in the Charon System in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<!-- LEVEL 4 ACHIEVEMENTS -->
+
+			<Text id="humanSpace.visitStKats.name">Capital Tourist</Text>
+			<Text id="humanSpace.visitStKats.desc">
+
+				Visit the capital of the Commonwealth.
+			
+			</Text>
+
+			<Text id="humanSpace.visitEarthStation.name">Cradle of Humanity</Text>
+			<Text id="humanSpace.visitEarthStation.desc">
+
+				Visit abandoned Earth Station in the Sol System.
+			
+			</Text>
+
+			<Text id="humanSpace.insuranceResurrect.name">You Only Live Twice</Text>
+			<Text id="humanSpace.insuranceResurrect.desc">
+
+				Use insurance policy to resurrect.
+			
+			</Text>
+
+			<Text id="core.autons10.name">Auton Armada</Text>
+			<Text id="core.autons10.desc">
+
+				Deploy at least 10 autons at one time.
+			
+			</Text>
+
+			<Text id="core.trade50K.name">Broker</Text>
+			<Text id="core.trade50K.desc">
+
+				Earn 50,000 credits profit from trading.
+			
+			</Text>
+
+			<Text id="core.radiationKill.name">Nuke 'em 'til they Glow</Text>
+			<Text id="core.radiationKill.desc">
+
+				Kill an enemy ship by radioactive contamination in Normal Mode or higher.
+			
+			</Text>
+
+			<!-- LEVEL 5 ACHIEVEMENTS -->
+
+			<Text id="humanSpace.visitCathedralOfDomina.name">Close to Domina</Text>
+			<Text id="humanSpace.visitCathedralOfDomina.desc">
+
+				Visit the Cathedral of the Sisters of Domina.
+			
+			</Text>
+
+			<Text id="core.paralyzeKill.name">Paralyzer</Text>
+			<Text id="core.paralyzeKill.desc">
+
+				Destroy an enemy ship that was paralyzed by EMP in Normal Mode or higher.
+			
+			</Text>
+
+			<Text id="core.buriedKill.name">Bunker Buster</Text>
+			<Text id="core.buriedKill.desc">
+
+				Destroy a buried asteroid station.
+			
+			</Text>
+
+			<Text id="core.mineOre1000.name">Ore Rush</Text>
+			<Text id="core.mineOre1000.desc">
+
+				Mine at least 1,000 tons of ore.
+			
+			</Text>
+
+			<Text id="humanSpace.dwargBehemothFriend.name">The Strong Follow the Stronger</Text>
+			<Text id="humanSpace.dwargBehemothFriend.desc">
+
+				Gain a Dwarg behemoth as a wingmate.
+			
+			</Text>
+
+			<Text id="humanSpace.charonFrigateKiller.name">Frigate Killer</Text>
+			<Text id="humanSpace.charonFrigateKiller.desc">
+
+				Destroy a Charon pirate frigate in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<Text id="humanSpace.huariFriend.name">Friend of the Huari</Text>
+			<Text id="humanSpace.huariFriend.desc">
+
+				Become friends with the Huari in Normal Mode or higher.
+			
+			</Text>
+
+			<!-- LEVEL 6 ACHIEVEMENTS -->
+
+			<Text id="humanSpace.huaramarca.name">Huaramarca</Text>
+			<Text id="humanSpace.huaramarca.desc">
+
+				Visit the temple of the Huari in Huaramarca.
+			
+			</Text>
+
+			<Text id="humanSpace.EI500Speed25.name">Speed Freak</Text>
+			<Text id="humanSpace.EI500Speed25.desc">
+
+				Reach .25c in an EI500 freighter.
+			
+			</Text>
+
+			<Text id="core.trade150K.name">Entrepreneur</Text>
+			<Text id="core.trade150K.desc">
+
+				Earn 150,000 credits profit from trading.
+			
+			</Text>
+
+			<Text id="humanSpace.kronosaurusKiller.name">Kronosaurus Killer</Text>
+			<Text id="humanSpace.kronosaurusKiller.desc">
+
+				Destroy the Kronosaurus in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<Text id="humanSpace.jiangsStarKiller.name">Butcher of Jiang's Star</Text>
+			<Text id="humanSpace.jiangsStarKiller.desc">
+
+				Destroy all Sung stations in Jiang's Star in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<!-- LEVEL 7 ACHIEVEMENTS -->
+
+			<Text id="sotp.benedictAndFiona.name">Benedict &amp; Fiona</Text>
+			<Text id="sotp.benedictAndFiona.desc">
+
+				Complete Benedict &amp; Fiona mission arc.
+			
+			</Text>
+
+			<Text id="humanSpace.outerRealm.name">Far From Home</Text>
+			<Text id="humanSpace.outerRealm.desc">
+
+				Enter a system in the Outer Realm.
+			
+			</Text>
+
+			<Text id="humanSpace.fleetManeuvers.name">Fleet Maneuvers</Text>
+			<Text id="humanSpace.fleetManeuvers.desc">
+
+				Complete a mission for a Commonwealth Star Carrier.
+			
+			</Text>
+
+			<Text id="humanSpace.luminereDestroyerKiller.name">Lumiere Killer</Text>
+			<Text id="humanSpace.luminereDestroyerKiller.desc">
+
+				Destroy a Lumiere destroyer in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<!-- LEVEL 8 ACHIEVEMENTS -->
+
+			<Text id="humanSpace.pointJuno.name">Defender of Point Juno</Text>
+			<Text id="humanSpace.pointJuno.desc">
+
+				Successfully defend Point Juno in Normal Mode or higher.
+			
+			</Text>
+
+			<Text id="humanSpace.worldshipKiller.name">Worldkiller</Text>
+			<Text id="humanSpace.worldshipKiller.desc">
+
+				Destroy a Xenophobe worldship in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<Text id="core.trade500K.name">Tycoon</Text>
+			<Text id="core.trade500K.desc">
+
+				Earn 500,000 credits profit from trading.
+			
+			</Text>
+
+			<!-- LEVEL 9 ACHIEVEMENTS -->
+
+			<Text id="humanSpace.theLamplighter.name">A Lamplighter Upon the Deep</Text>
+			<Text id="humanSpace.theLamplighter.desc">
+
+				Acquire and install the Lamplighter archcannon in Normal Mode or higher.
+			
+			</Text>
+
+			<Text id="core.trade1M.name">Merchant Prince</Text>
+			<Text id="core.trade1M.desc">
+
+				Earn 1 million credits profit from trading.
+			
+			</Text>
+
+			<Text id="humanSpace.phobosKiller.name">Phobos Killer</Text>
+			<Text id="humanSpace.phobosKiller.desc">
+
+				Destroy an Ares dreadnought in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<Text id="humanSpace.ferianWarriorKiller.name">Ferian Warrior Killer</Text>
+			<Text id="humanSpace.ferianWarriorKiller.desc">
+
+				Destroy a Ferian Warrior in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<Text id="humanSpace.killerKiller.name">Killer Killer</Text>
+			<Text id="humanSpace.killerKiller.desc">
+
+				Destroy an Omnithor Hunter-Killer in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<Text id="humanSpace.ranxDreadnoughtKiller.name">Ranx Killer</Text>
+			<Text id="humanSpace.ranxDreadnoughtKiller.desc">
+
+				Destroy a Ranx dreadnought in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<Text id="humanSpace.cscAntarcticaKiller.name">Decker's Enforcer</Text>
+			<Text id="humanSpace.cscAntarcticaKiller.desc">
+
+				Destroy the CSC Antarctica in Normal Mode or higher.
+			
+			</Text>
+
+			<Text id="humanSpace.cscAntarcticaDefender.name">Trigger Not Pulled</Text>
+			<Text id="humanSpace.cscAntarcticaDefender.desc">
+
+				Save the CSC Antarctica in Normal Mode or higher.
+			
+			</Text>
+
+			<!-- LEVEL 10 ACHIEVEMENTS -->
+
+			<Text id="humanSpace.heretic.name">Heretic</Text>
+			<Text id="humanSpace.heretic.desc">
+
+				Reach the Heretic system.
+			
+			</Text>
+
+			<Text id="humanSpace.dragonSlaverKiller.name">Dragonslayer</Text>
+			<Text id="humanSpace.dragonSlaverKiller.desc">
+
+				Destroy a Dragon Slaver in Challenge Mode or Permadeath.
+			
+			</Text>
+
+			<Text id="sotp.breakQuarantine.name">Broken Quarantine</Text>
+			<Text id="sotp.breakQuarantine.desc">
+
+				Break the Human Space Quarantine.
+			
+			</Text>
+
+			<Text id="sotp.completed.story.name">The Stars of the Pilgrim (Story Mode)</Text>
+			<Text id="sotp.completed.story.desc">
+
+				Complete The Stars of the Pilgrim in Story Mode.
+			
+			</Text>
+
+			<Text id="sotp.completed.normal.name">The Stars of the Pilgrim (Normal Mode)</Text>
+			<Text id="sotp.completed.normal.desc">
+
+				Complete The Stars of the Pilgrim in Normal Mode.
+			
+			</Text>
+
+			<Text id="sotp.completed.challenge.name">The Stars of the Pilgrim (Challenge Mode)</Text>
+			<Text id="sotp.completed.challenge.desc">
+
+				Complete The Stars of the Pilgrim in Challenge Mode.
+			
+			</Text>
+
+			<Text id="sotp.completed.permadeath.name">The Stars of the Pilgrim (Permadeath)</Text>
+			<Text id="sotp.completed.permadeath.desc">
+
+				Complete The Stars of the Pilgrim in Permadeath Mode.
+			
+			</Text>
+
+		</Language>
+	</Type>
+
+</TranscendenceModule>

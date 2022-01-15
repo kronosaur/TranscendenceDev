@@ -570,6 +570,15 @@
 			</OnUpdate>
 			
 			<OnCompleted>
+				(switch
+					;	If in Eridani, then this triggers an achievement
+
+					(and (= aReason 'success) 
+							(= (sysGetNode) 'SE)
+							)
+						(unvSetAchievement 'sotp.finishedTraining)
+						)
+					)
 			</OnCompleted>
 
 			<OnReward>

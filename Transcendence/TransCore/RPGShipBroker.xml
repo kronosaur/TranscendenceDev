@@ -547,9 +547,15 @@
 							(objResume selObj)
 							(switch
 								(= oldShip gPlayerShip)
-									(plyChangeShip gPlayer selObj {
-										transferEquipment: True
-										})
+									(block ()
+										(plyChangeShip gPlayer selObj {
+											transferEquipment: True
+											})
+
+										;	Achievement
+
+										(unvSetAchievement 'core.newShip)
+										)
 
 								(rpgChangeWingmanShip oldShip selObj)
 								)

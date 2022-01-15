@@ -611,7 +611,7 @@ void CNewGameSession::OnUpdate (bool bTopMost)
 	{
 	}
 
-void CNewGameSession::SetDifficulty (CDifficultyOptions::ELevels iLevel)
+void CNewGameSession::SetDifficulty (CDifficultyOptions::ELevel iLevel)
 
 //	SetDifficulty
 //
@@ -624,17 +624,17 @@ void CNewGameSession::SetDifficulty (CDifficultyOptions::ELevels iLevel)
 
 	switch (iLevel)
 		{
-		case CDifficultyOptions::lvlStory:
+		case CDifficultyOptions::ELevel::Story:
 			m_Difficulty.SetImage(VI.GetImage(imageDifficultyStory));
 			m_DifficultyDesc.SetText(m_Universe.TranslateEngineText(CONSTLIT("descDifficulty.story")));
 			break;
 
-		case CDifficultyOptions::lvlNormal:
+		case CDifficultyOptions::ELevel::Normal:
 			m_Difficulty.SetImage(VI.GetImage(imageDifficultyNormal));
 			m_DifficultyDesc.SetText(m_Universe.TranslateEngineText(CONSTLIT("descDifficulty.normal")));
 			break;
 
-		case CDifficultyOptions::lvlPermadeath:
+		case CDifficultyOptions::ELevel::Permadeath:
 			m_Difficulty.SetImage(VI.GetImage(imageDifficultyPermadeath));
 			m_DifficultyDesc.SetText(m_Universe.TranslateEngineText(CONSTLIT("descDifficulty.permadeath")));
 			break;

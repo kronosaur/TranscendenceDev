@@ -219,7 +219,7 @@ void CMenuDisplay::Realize (void) const
 					m_Data.GetItemAcceleratorPos(i),
 					MenuFont,
 					rgbColor,
-					VI.GetColor(colorAreaAccelerator));
+					VI.GetColor(colorTextAccelerator));
 			}
 		else
 			{
