@@ -256,7 +256,8 @@ class CWeaponClass : public CDeviceClass
 		CShotArray CalcShotsFired (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, SActivateCtx &ActivateCtx, int &retiFireAngle, bool &retbSetFireAngle) const;
 		bool CalcSingleTarget (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, SActivateCtx &ActivateCtx, int &retiFireAngle, CSpaceObject *&retpTarget, bool &retbSetFireAngle) const;
 		bool CanConsumeAmmo (const CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc, int iRepeatingCount, int &retiAmmoToConsume) const;
-		bool CanConsumeShipCounter (const CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc) const;
+		bool CanConsumeShipCounter (const CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc) const; // TODO(heliogenesis: Rename to 'CanConsumeShipHeat')
+		bool ChargeWeapon (const bool bSetFireAngle, const int iFireAngle, const CWeaponFireDesc& ShotDesc, CDeviceItem& DeviceItem, CShotArray& Shots, SActivateCtx& ActivateCtx, CInstalledDevice& Device);
 		EFireResults Consume (CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc, int iRepeatingCount, bool *retbConsumedItems = NULL);
 		void ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, int iRepeatingCount, int iAmmoToConsume, bool *retbConsumed);
 		bool ConsumeCapacitor (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc);
@@ -283,8 +284,7 @@ class CWeaponClass : public CDeviceClass
 								 SShotFireResult& retResult);
 		bool FireWeapon (CInstalledDevice &Device,
 						 const CWeaponFireDesc &ShotDesc,
-						 SActivateCtx &ActivateCtx,
-						 const bool IsCharging = false);
+						 SActivateCtx &ActivateCtx);
 		void FireWeaponShot (CSpaceObject *pSource, 
 							 CInstalledDevice *pDevice, 
 							 const CWeaponFireDesc &ShotDesc, 

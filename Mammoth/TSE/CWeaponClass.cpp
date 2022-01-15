@@ -260,7 +260,8 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 
 	//	Fire the weapon if it isn't a charging weapon
 
-	bool bSuccess = FireWeapon(Device, *pShotDesc, ActivateCtx, GetChargeTime(*pShotDesc) > 0);
+	ActivateCtx.bIsCharging = GetChargeTime(*pShotDesc) > 0;
+	bool bSuccess = FireWeapon(Device, *pShotDesc, ActivateCtx);
 
 	//	If firing the weapon destroyed the ship, then we bail out
 
@@ -283,11 +284,11 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 	//  bSuccess is false here (we technically didn't fire any shots by charging)
 
 	if (GetChargeTime(*pShotDesc) > 0)
-	{
+		{
 		SetContinuousFire(&Device, CONTINUOUS_START);
 		//  Return true so we consume power
 		return true;
-	}
+		}
 
 	//	If this is a continuous fire weapon then set the device data
 	//	We set to -1 because we skip the first Update after the call
@@ -2483,10 +2484,59 @@ bool CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx,
 	return true;
 	}
 
+bool CWeaponClass::ChargeWeapon (const bool bSetFireAngle, const int iFireAngle, const CWeaponFireDesc &ShotDesc, CDeviceItem &DeviceItem, CShotArray &Shots, SActivateCtx &ActivateCtx, CInstalledDevice &Device)
+
+//	ChargeWeapon
+//
+//	Handle charging for charging weapons. Returns TRUE if we should consume power, etc.
+	{
+	for (int i = 0; i < Shots.GetCount(); i++)
+		{
+		//	If we're using ship heat, make sure we have enough.
+
+		if (!CanConsumeShipHeat(DeviceItem, ShotDesc))
+			return false;
+
+		//  Update the ship energy/heat counter.
+
+		if (m_iHeatPerShot != 0)
+			ConsumeShipHeat(DeviceItem, ShotDesc);
+
+		CSpaceObject& Source = Device.GetSourceOrThrow();
+		CItemCtx ItemCtx(&Source, &Device);
+		SShotFireResult Result;
+		if (FireOnChargeWeapon(ItemCtx,
+			ShotDesc,
+			Shots[i].vPos,
+			Shots[i].pTarget,
+			Shots[i].iDir,
+			ActivateCtx.iChargeFrame,
+			Result))
+			{
+			if (Source.IsDestroyed())
+				return false;
+			}
+
+		if (Result.bFireEffect)
+			ShotDesc.CreateChargeEffect(Source.GetSystem(), &Source, Shots[i].vPos, CVector(), Shots[i].iDir, ActivateCtx.iChargeFrame);
+
+		if (Result.bSoundEffect)
+			ShotDesc.PlayChargeSound(&Source);
+		}
+
+	//	Set the device angle so that repeating weapons can get access to it.
+	Device.SetTarget(Shots[0].pTarget);
+	if (bSetFireAngle)
+		{
+		CSpaceObject& Source = Device.GetSourceOrThrow();
+		Device.SetFireAngle(AngleMod(iFireAngle - (m_bBurstTracksTargets ? Source.GetRotation() : 0)));
+		}
+	return true;
+	}
+
 bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 							   const CWeaponFireDesc &ShotDesc,
-							   SActivateCtx &ActivateCtx,
-							   const bool IsCharging)
+							   SActivateCtx &ActivateCtx)
 
 //	FireWeapon
 //
@@ -2507,54 +2557,8 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 	//	If we're charging, then we don't fire shots - instead we only increment the ship counter (if needed),
 	//	create the fire effect, and return True (so that we consume power). Charging does not consume ammo,
 	//	and cannot fail due to damaged or disrupted weapons.
-	if (IsCharging)
-		{
-		for (int i = 0; i < Shots.GetCount(); i++)
-			{
-			//	If we're using ship counters, make sure we have enough.
-
-			if (!CanConsumeShipCounter(DeviceItem, ShotDesc))
-				return false;
-
-			//  Update the ship energy/heat counter.
-
-			if (m_iCounterPerShot != 0)
-				ConsumeShipCounter(DeviceItem, ShotDesc);
-
-			CSpaceObject& Source = Device.GetSourceOrThrow();
-			CItemCtx ItemCtx(&Source, &Device);
-			SShotFireResult Result;
-			if (FireOnChargeWeapon(ItemCtx,
-				ShotDesc,
-				Shots[i].vPos,
-				Shots[i].pTarget,
-				Shots[i].iDir,
-				ActivateCtx.iChargeFrame,
-				Result))
-				{
-				if (Source.IsDestroyed())
-					return false;
-				}
-
-			if (Result.bFireEffect)
-				ShotDesc.CreateChargeEffect(Source.GetSystem(), &Source, Shots[i].vPos, CVector(), Shots[i].iDir, ActivateCtx.iChargeFrame);
-
-			if (Result.bSoundEffect)
-				ShotDesc.PlayChargeSound(&Source);
-			}
-
-		//	Set the device angle so that repeating weapons can get access to it.
-		Device.SetTarget(Shots[0].pTarget);
-		if (bSetFireAngle)
-			{
-			Device.SetFireAngle(iFireAngle);
-			}
-		else if (ActivateCtx.iRepeatingCount == 0)
-			{
-			Device.SetFireAngle(-1);
-			}
-		return true;
-		}
+	if (ActivateCtx.bIsCharging)
+		return ChargeWeapon(bSetFireAngle, iFireAngle, ShotDesc, DeviceItem, Shots, ActivateCtx, Device);
 
 	//	Figure out when happens when we try to consume ammo, etc.
 
@@ -5619,8 +5623,9 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 				ActivateCtx.iRepeatingCount = 1 + iContinuous - min(int(dwContinuous) / iContinuousDelay, iContinuous + 1);
 				ActivateCtx.iChargeFrame = 1 + iChargeTime - min(int(dwContinuous) - iBurstLengthInFrames, iChargeTime + 1);
+				ActivateCtx.bIsCharging = int(dwContinuous) > iBurstLengthInFrames + 1;
 
-				FireWeapon(*pDevice, *pShot, ActivateCtx, (int(dwContinuous) > iBurstLengthInFrames + 1));
+				FireWeapon(*pDevice, *pShot, ActivateCtx);
 
 				if (pSource->IsDestroyed())
 					return;
