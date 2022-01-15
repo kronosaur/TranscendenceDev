@@ -2494,13 +2494,13 @@ bool CWeaponClass::ChargeWeapon (const bool bSetFireAngle, const int iFireAngle,
 		{
 		//	If we're using ship heat, make sure we have enough.
 
-		if (!CanConsumeShipHeat(DeviceItem, ShotDesc))
+		if (!CanConsumeShipCounter(DeviceItem, ShotDesc))
 			return false;
 
 		//  Update the ship energy/heat counter.
 
-		if (m_iHeatPerShot != 0)
-			ConsumeShipHeat(DeviceItem, ShotDesc);
+		if (m_iCounterPerShot != 0)
+			ConsumeShipCounter(DeviceItem, ShotDesc);
 
 		CSpaceObject& Source = Device.GetSourceOrThrow();
 		CItemCtx ItemCtx(&Source, &Device);
