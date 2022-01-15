@@ -2393,10 +2393,10 @@ bool CWeaponClass::FireOnChargeWeapon (CItemCtx& ItemCtx,
 
 	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
-	{
+		{
 		ItemCtx.GetSource()->ReportEventError(ON_CHARGE_WEAPON_EVENT, pResult);
 		return true;
-	}
+		}
 	else if (pResult->IsNil())
 		return false;
 
@@ -2404,14 +2404,14 @@ bool CWeaponClass::FireOnChargeWeapon (CItemCtx& ItemCtx,
 		return true;
 
 	else
-	{
+		{
 		retResult.bShotFired = !pResult->GetBooleanAt(CONSTLIT("noEffect"));
 		retResult.bFireEffect = retResult.bShotFired && !pResult->GetBooleanAt("noFireEffect");
 		retResult.bSoundEffect = retResult.bShotFired && !pResult->GetBooleanAt("noSoundEffect");
 		retResult.bRecoil = retResult.bShotFired && !pResult->GetBooleanAt("noRecoil");
 
 		return true;
-	}
+		}
 
 	//	Done
 
