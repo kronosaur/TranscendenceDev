@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 
+#define CHARGE_EFFECT_TAG						CONSTLIT("ChargeEffect")
 #define DAMAGE_TAG								CONSTLIT("Damage")
 #define EFFECT_TAG								CONSTLIT("Effect")
 #define ENHANCED_TAG							CONSTLIT("Enhanced")
@@ -22,6 +23,9 @@
 #define AREA_DAMAGE_DENSITY_ATTRIB				CONSTLIT("areaDamageDensity")
 #define AUTO_TARGET_ATTRIB						CONSTLIT("autoAcquireTarget")
 #define CAN_HIT_SOURCE_ATTRIB					CONSTLIT("canHitSource")
+#define CHARGE_EFFECT_ATTRIB					CONSTLIT("chargeEffect")
+#define CHARGE_TIME_ATTRIB						CONSTLIT("chargeTime")
+#define CHARGE_SOUND_ATTRIB						CONSTLIT("chargeSound")
 #define COUNT_ATTRIB							CONSTLIT("count")
 #define EXHAUST_RATE_ATTRIB						CONSTLIT("creationRate")
 #define DAMAGE_ATTRIB							CONSTLIT("damage")
@@ -73,6 +77,7 @@
 #define PARTICLE_SPREAD_WIDTH_ATTRIB			CONSTLIT("particleSpreadWidth")
 #define PASSTHROUGH_ATTRIB						CONSTLIT("passthrough")
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
+#define PLAY_SOUND_ONCE_PER_BURST_ATTRIB		CONSTLIT("playSoundOncePerBurst")
 #define RANGE_ATTRIB							CONSTLIT("range")
 #define RELATIVISTIC_SPEED_ATTRIB				CONSTLIT("relativisticSpeed")
 #define BEAM_CONTINUOUS_ATTRIB					CONSTLIT("repeating")
@@ -90,6 +95,7 @@
 #define VAPOR_TRAIL_WIDTH_ATTRIB				CONSTLIT("vaporTrailWidth")
 #define VAPOR_TRAIL_WIDTH_INC_ATTRIB			CONSTLIT("vaporTrailWidthInc")
 
+#define FIELD_CHARGE_SOUND						CONSTLIT("chargeSound")
 #define FIELD_PARTICLE_COUNT					CONSTLIT("particleCount")
 #define FIELD_SOUND								CONSTLIT("sound")
 
@@ -175,6 +181,7 @@ void CWeaponFireDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(m_pEffect.GetUNID(), true);
 	retTypesUsed->SetAt(m_pHitEffect.GetUNID(), true);
 	retTypesUsed->SetAt(m_pFireEffect.GetUNID(), true);
+	retTypesUsed->SetAt(m_pChargeEffect.GetUNID(), true);
 	retTypesUsed->SetAt(m_pExplosionType.GetUNID(), true);
 
 	if (m_pParticleDesc)
@@ -557,6 +564,44 @@ bool CWeaponFireDesc::CanHit (const CSpaceObject &Obj) const
 	return true;
 	}
 
+void CWeaponFireDesc::CreateChargeEffect (CSystem* pSystem, CSpaceObject* pSource, const CVector& vPos, const CVector& vVel, int iDir, int iFireRepeat) const
+
+//	CreateChargeEffect
+//
+//	Creates a charge effect.
+
+	{
+	//	If we have a source, then we add the charge effect as an effect on the source.
+
+	if (pSource)
+		{
+		//	Create a painter.
+
+		CCreatePainterCtx Ctx;
+		Ctx.SetWeaponFireDesc(this);
+		Ctx.SetFireCharge(iFireRepeat);
+
+		IEffectPainter* pPainter = m_pChargeEffect.CreatePainter(Ctx, &GetUniverse().GetDefaultFireEffect(m_Damage.GetDamageType()));
+		if (pPainter == NULL)
+			return;
+
+		//	Add the effect
+
+		pSource->AddEffect(pPainter, vPos, 0, iDir);
+		}
+
+	//	Otherwise, we add a stand-alone effect
+
+	else
+		{
+		CEffectCreator* pFireEffect = GetFireEffect();
+		if (pFireEffect == NULL)
+			return;
+
+		pFireEffect->CreateEffect(pSystem, pSource, vPos, vVel, iDir);
+		}
+	}
+
 IEffectPainter *CWeaponFireDesc::CreateEffectPainter (SShotCreateCtx &CreateCtx)
 
 //	CreateEffectPainter
@@ -590,7 +635,7 @@ IEffectPainter *CWeaponFireDesc::CreateEffectPainter (SShotCreateCtx &CreateCtx)
 	return m_pEffect.CreatePainter(PainterCtx);
 	}
 
-void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir) const
+void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir, int iFireRepeat) const
 
 //	CreateFireEffect
 //
@@ -605,6 +650,8 @@ void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource,
 
 		CCreatePainterCtx Ctx;
 		Ctx.SetWeaponFireDesc(this);
+		Ctx.SetFireCharge(GetChargeTime());
+		Ctx.SetFireRepeat(iFireRepeat);
 
 		IEffectPainter *pPainter = m_pFireEffect.CreatePainter(Ctx, &GetUniverse().GetDefaultFireEffect(m_Damage.GetDamageType()));
 		if (pPainter == NULL)
@@ -758,6 +805,8 @@ bool CWeaponFireDesc::FindDataField (const CString &sField, CString *retsValue) 
 		}
 	else if (strEquals(sField, FIELD_SOUND))
 		*retsValue = (m_FireSound.GetSound() != -1 ? strFromInt(m_FireSound.GetUNID(), false) : NULL_STR);
+	else if (strEquals(sField, FIELD_CHARGE_SOUND))
+		*retsValue = (m_ChargeSound.GetSound() != -1 ? strFromInt(m_ChargeSound.GetUNID(), false) : NULL_STR);
 	else
 		return false;
 
@@ -814,6 +863,9 @@ CEffectCreator *CWeaponFireDesc::FindEffectCreator (const CString &sUNID)
 
 			case 'f':
 				return pDesc->m_pFireEffect;
+
+			case 'c':
+				return pDesc->m_pChargeEffect;
 
 			case 'p':
 				return (pDesc->m_pParticleDesc ? pDesc->m_pParticleDesc->GetParticleEffect() : NULL);
@@ -1567,6 +1619,25 @@ DamageTypes CWeaponFireDesc::GetDamageType (void) const
 	return iType;
 	}
 
+CEffectCreator* CWeaponFireDesc::GetChargeEffect(void) const
+
+//	GetChargeEffect
+//
+//	Returns the charge effect creator (or NULL if there is none).
+
+{
+	//	If we have a custom fire effect, use that.
+
+	if (m_pChargeEffect)
+		return m_pChargeEffect;
+
+	//	Otherwise, see if the universe has a default effect for this damage
+	//	type.
+	//	TODO(heliogenesis): Add GetDefaultChargeEffect
+
+	return &GetUniverse().GetDefaultFireEffect(m_Damage.GetDamageType());
+}
+
 CEffectCreator *CWeaponFireDesc::GetFireEffect (void) const
 
 //	GetFireEffect
@@ -1899,6 +1970,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 
 	m_pHitEffect.Set(NULL);
 	m_pFireEffect.Set(NULL);
+	m_pChargeEffect.Set(NULL);
 
 	//	Old effects
 
@@ -1907,6 +1979,8 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	//	Sound
 
 	m_FireSound = CSoundRef();
+	m_ChargeSound = CSoundRef();
+	m_bPlaySoundOncePerBurst = false;
 
 	//	Compute max effective range
 
@@ -2220,6 +2294,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	m_iContinuous = pDesc->GetAttributeIntegerBounded(BEAM_CONTINUOUS_ATTRIB, 0, -1, -1);
 	m_iContinuousFireDelay = pDesc->GetAttributeIntegerBounded(CONTINUOUS_FIRE_DELAY_ATTRIB, 0, -1, -1);
+	m_iChargeTime = pDesc->GetAttributeIntegerBounded(CHARGE_TIME_ATTRIB, 0, -1, -1);
 
 	if (pDesc->FindAttributeInteger(PASSTHROUGH_ATTRIB, &m_iPassthrough))
 		{
@@ -2385,6 +2460,13 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			pDesc->GetAttribute(FIRE_EFFECT_ATTRIB)))
 		return error;
 
+
+	if (error = m_pChargeEffect.LoadEffect(Ctx,
+		strPatternSubst("%s:f", m_sUNID),
+		pDesc->GetContentElementByTag(CHARGE_EFFECT_TAG),
+		pDesc->GetAttribute(CHARGE_EFFECT_ATTRIB)))
+		return error;
+
 	//	Explosion
 
 	if (error = m_pExplosionType.LoadUNID(Ctx, pDesc->GetAttribute(EXPLOSION_TYPE_ATTRIB)))
@@ -2414,6 +2496,9 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	if (error = m_FireSound.LoadUNID(Ctx, pDesc->GetAttribute(SOUND_ATTRIB)))
 		return error;
+	if (error = m_ChargeSound.LoadUNID(Ctx, pDesc->GetAttribute(CHARGE_SOUND_ATTRIB)))
+		return error;
+	m_bPlaySoundOncePerBurst = pDesc->GetAttributeBool(PLAY_SOUND_ONCE_PER_BURST_ATTRIB);
 
 	//	Events
 
@@ -2744,7 +2829,10 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	m_pEffect = Src.m_pEffect;
 	m_pHitEffect = Src.m_pHitEffect;
 	m_pFireEffect = Src.m_pFireEffect;
+	m_pChargeEffect = Src.m_pChargeEffect;
 	m_FireSound = Src.m_FireSound;
+	m_ChargeSound = Src.m_ChargeSound;
+	m_bPlaySoundOncePerBurst = Src.m_bPlaySoundOncePerBurst;
 	m_pOldEffects = (Src.m_pOldEffects ? new SOldEffects(*Src.m_pOldEffects) : NULL);
 	m_pExplosionType = Src.m_pExplosionType;
 
@@ -2865,10 +2953,14 @@ void CWeaponFireDesc::MarkImages (void)
 	if (m_pFireEffect)
 		m_pFireEffect->MarkImages();
 
+	if (m_pChargeEffect)
+		m_pChargeEffect->MarkImages();
+
 	if (m_pExplosionType)
 		m_pExplosionType->MarkImages();
 
 	m_FireSound.Mark();
+	m_ChargeSound.Mark();
 
 	SFragmentDesc *pFragment = m_pFirstFragment;
 	while (pFragment)
@@ -2914,7 +3006,13 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	if (error = m_pFireEffect.Bind(Ctx))
 		return error;
 
+	if (error = m_pChargeEffect.Bind(Ctx))
+		return error;
+
 	if (error = m_FireSound.Bind(Ctx))
+		return error;
+
+	if (error = m_ChargeSound.Bind(Ctx))
 		return error;
 
 	if (m_pParticleDesc)

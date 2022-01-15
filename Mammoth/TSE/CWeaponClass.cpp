@@ -15,6 +15,7 @@
 #define ANGLE_ATTRIB							CONSTLIT("angle")
 #define BURST_TRACKS_TARGETS_ATTRIB				CONSTLIT("burstTracksTargets")
 #define CHARGES_ATTRIB							CONSTLIT("charges")
+#define CHARGE_TIME_ATTRIB						CONSTLIT("chargeTime")
 #define CONTINUOUS_CONSUME_PERSHOT_ATTRIB		CONSTLIT("consumeAmmoPerRepeatingShot")
 #define COOLING_RATE_ATTRIB						CONSTLIT("coolingRate")
 #define COUNTER_ATTRIB							CONSTLIT("counter")
@@ -50,11 +51,13 @@
 #define ON_FIRE_WEAPON_EVENT					CONSTLIT("OnFireWeapon")
 #define GET_AMMO_TO_CONSUME_EVENT				CONSTLIT("GetAmmoToConsume")
 #define GET_AMMO_COUNT_TO_DISPLAY_EVENT			CONSTLIT("GetAmmoCountToDisplay")
+#define ON_CHARGE_WEAPON_EVENT					CONSTLIT("OnChargeWeapon")
 
 #define FIELD_AMMO_TYPE							CONSTLIT("ammoType")
 #define FIELD_AVERAGE_DAMAGE					CONSTLIT("averageDamage")	//	Average damage (1000x hp)
 #define FIELD_BALANCE							CONSTLIT("balance")
 #define FIELD_BALANCE_DAMAGE					CONSTLIT("balanceDamage")	//	Computed damage (per 180 ticks) based on balance 
+#define FIELD_CHARGE_TIME						CONSTLIT("chargeTime")
 #define FIELD_CONFIGURATION						CONSTLIT("configuration")
 #define FIELD_DAMAGE_180						CONSTLIT("damage")			//	HP damage per 180 ticks
 #define FIELD_DAMAGE_TYPE						CONSTLIT("damageType")
@@ -78,6 +81,7 @@
 #define PROPERTY_BALANCE_DAMAGE					CONSTLIT("balanceDamage")
 #define PROPERTY_BALANCE_COST 					CONSTLIT("balanceCost")
 #define PROPERTY_BALANCE_EXCLUDE_COST			CONSTLIT("balanceExcludeCost")
+#define PROPERTY_CHARGE_TIME					CONSTLIT("chargeTime")
 #define PROPERTY_CAN_FIRE_WHEN_BLIND			CONSTLIT("canFireWhenBlind")
 #define PROPERTY_DAMAGE_180						CONSTLIT("damage")			//	HP damage per 180 ticks
 #define PROPERTY_DAMAGE_PER_PROJECTILE			CONSTLIT("damagePerProjectile")
@@ -210,6 +214,7 @@ static const char *CACHED_EVENTS[CWeaponClass::evtCount] =
 		"OnFireWeapon",
 		"GetAmmoToConsume",
 		"GetAmmoCountToDisplay",
+		"OnChargeWeapon",
 	};
 
 CFailureDesc CWeaponClass::g_DefaultFailure(CFailureDesc::profileWeaponFailure);
@@ -238,6 +243,7 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 	const CWeaponFireDesc *pShotDesc = GetWeaponFireDesc(Device);
 
 	ActivateCtx.iRepeatingCount = 0;
+	ActivateCtx.iChargeFrame = 0;
 	ActivateCtx.bConsumedItems = false;
 
 	//	If not enabled, no firing
@@ -253,8 +259,9 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 	if (!m_bCanFireWhenBlind && SourceObj.IsBlind())
 		ActivateCtx.pTarget = NULL;
 
-	//	Fire the weapon
+	//	Fire the weapon if it isn't a charging weapon
 
+	ActivateCtx.bIsCharging = GetChargeTime(*pShotDesc) > 0;
 	bool bSuccess = FireWeapon(Device, *pShotDesc, ActivateCtx);
 
 	//	If firing the weapon destroyed the ship, then we bail out
@@ -270,6 +277,19 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 
 	if (!bSuccess)
 		return false;
+
+	//  If we have nonzero charge time then set continuous fire device data
+	//	We set to -1 because we skip the first Update after the call
+	//	to Activate (since it happens on the same tick)
+	//  Note that we can't combine this with the if block later on because
+	//  bSuccess is false here (we technically didn't fire any shots by charging)
+
+	if (GetChargeTime(*pShotDesc) > 0)
+		{
+		SetContinuousFire(&Device, CONTINUOUS_START);
+		//  Return true so we consume power
+		return true;
+		}
 
 	//	If this is a continuous fire weapon then set the device data
 	//	We set to -1 because we skip the first Update after the call
@@ -1298,7 +1318,7 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 
 	//	For repeating weapons, we need the target stored in the device
 
-	if (ActivateCtx.iRepeatingCount != 0)
+	if (ActivateCtx.iRepeatingCount != 0 || ActivateCtx.iChargeFrame != 0)
 		{
 		CDeviceItem DeviceItem = Device.GetDeviceItem();
 		CSpaceObject &Source = Device.GetSourceOrThrow();
@@ -1877,6 +1897,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	pWeapon->m_iFailureChance = pDesc->GetAttributeInteger(FAILURE_CHANCE_ATTRIB);
 	pWeapon->m_iMinFireArc = AngleMod(pDesc->GetAttributeInteger(MIN_FIRE_ARC_ATTRIB));
 	pWeapon->m_iMaxFireArc = AngleMod(pDesc->GetAttributeInteger(MAX_FIRE_ARC_ATTRIB));
+	pWeapon->m_iChargeTime = pDesc->GetAttributeIntegerBounded(CHARGE_TIME_ATTRIB, 0, -1, 0);
 
 	pWeapon->m_bCharges = pDesc->GetAttributeBool(CHARGES_ATTRIB);
 	pWeapon->m_bOmnidirectional = pDesc->GetAttributeBool(OMNIDIRECTIONAL_ATTRIB);
@@ -2139,6 +2160,8 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 		}
 	else if (strEquals(sField, FIELD_IS_ALTERNATING))
 		*retsValue = (GetConfiguration(*pShot).IsAlternating() ? CString("True") : NULL_STR);
+	else if (strEquals(sField, FIELD_CHARGE_TIME))
+		*retsValue = strFromInt(GetChargeTime(*pShot));
 	else
 		return pShot->FindDataField(sField, retsValue);
 
@@ -2221,11 +2244,11 @@ bool CWeaponClass::FireAllShots (CInstalledDevice &Device, const CWeaponFireDesc
 		//	Create the barrel flash effect, unless canceled
 
 		if (Result.bFireEffect)
-			ShotDesc.CreateFireEffect(Source.GetSystem(), &Source, Shots[i].vPos, CVector(), Shots[i].iDir);
+			ShotDesc.CreateFireEffect(Source.GetSystem(), &Source, Shots[i].vPos, CVector(), Shots[i].iDir, iRepeatingCount);
 
 		//	Create the sound effect, if necessary
 
-		if (Result.bSoundEffect)
+		if (Result.bSoundEffect && !(ShotDesc.GetPlaySoundOncePerBurst() && iRepeatingCount > 0))
 			retResult.bSoundEffect = true;
 
 		//	Recoil
@@ -2327,6 +2350,68 @@ int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, const CWeaponFireDesc
 		return 1;
 	}
 
+bool CWeaponClass::FireOnChargeWeapon (CItemCtx& ItemCtx,
+									   const CWeaponFireDesc& ShotDesc,
+									   const CVector& vSource,
+									   CSpaceObject* pTarget,
+									   int iFireAngle,
+									   int iRepeatingCount,
+									   SShotFireResult& retResult)
+//	FireOnChargeWeapon
+//
+//	Fires OnChargeWeapon event.
+//
+//	default (or Nil) = charge weapon as normal; sound plays on first frame only and fire effect is drawn on all frames
+//	noEffect = do not consume power or ammo; do not play sound or draw fire effect
+//	effectDrawn (or True) = consume power and ammo normally
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandlerWeaponClass(evtOnChargeWeapon, &Event))
+		return false;
+
+	retResult = SShotFireResult();
+
+	CCodeChainCtx Ctx(GetUniverse());
+	TSharedPtr<CItemEnhancementStack> pEnhancements = ItemCtx.GetEnhancementStack();
+
+	Ctx.DefineContainingType(GetItemType());
+	Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
+	Ctx.SaveAndDefineItemVar(ItemCtx);
+	Ctx.DefineInteger(CONSTLIT("aFireAngle"), iFireAngle);
+	Ctx.DefineVector(CONSTLIT("aFirePos"), vSource);
+	Ctx.DefineInteger(CONSTLIT("aFireCharge"), iRepeatingCount);
+	Ctx.DefineInteger(CONSTLIT("aFireRepeat"), 0);
+	Ctx.DefineSpaceObject(CONSTLIT("aTargetObj"), pTarget);
+	Ctx.DefineInteger(CONSTLIT("aWeaponBonus"), (pEnhancements ? pEnhancements->GetBonus() : 0));
+	Ctx.DefineItemType(CONSTLIT("aWeaponType"), ShotDesc.GetWeaponType());
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		{
+		ItemCtx.GetSource()->ReportEventError(ON_CHARGE_WEAPON_EVENT, pResult);
+		return true;
+		}
+	else if (pResult->IsNil())
+		return false;
+
+	else if (pResult->IsTrue() || pResult->GetBooleanAt(CONSTLIT("effectDrawn")))
+		return true;
+
+	else
+		{
+		retResult.bShotFired = !pResult->GetBooleanAt(CONSTLIT("noEffect"));
+		retResult.bFireEffect = retResult.bShotFired && !pResult->GetBooleanAt("noFireEffect");
+		retResult.bSoundEffect = retResult.bShotFired && !pResult->GetBooleanAt("noSoundEffect");
+		retResult.bRecoil = retResult.bShotFired && !pResult->GetBooleanAt("noRecoil");
+
+		return true;
+		}
+
+	//	Done
+
+	return true;
+	}
+
 bool CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx, 
 									 const CWeaponFireDesc &ShotDesc,
 									 const CVector &vSource,
@@ -2360,6 +2445,7 @@ bool CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx,
 	Ctx.SaveAndDefineItemVar(ItemCtx);
 	Ctx.DefineInteger(CONSTLIT("aFireAngle"), iFireAngle);
 	Ctx.DefineVector(CONSTLIT("aFirePos"), vSource);
+	Ctx.DefineInteger(CONSTLIT("aFireCharge"), GetChargeTime(ShotDesc));
 	Ctx.DefineInteger(CONSTLIT("aFireRepeat"), iRepeatingCount);
 	Ctx.DefineSpaceObject(CONSTLIT("aTargetObj"), pTarget);
 	Ctx.DefineInteger(CONSTLIT("aWeaponBonus"), (pEnhancements ? pEnhancements->GetBonus() : 0));
@@ -2392,8 +2478,58 @@ bool CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx,
 	return true;
 	}
 
-bool CWeaponClass::FireWeapon (CInstalledDevice &Device, 
-							   const CWeaponFireDesc &ShotDesc, 
+bool CWeaponClass::ChargeWeapon (const bool bSetFireAngle, const int iFireAngle, const CWeaponFireDesc &ShotDesc, CDeviceItem &DeviceItem, CShotArray &Shots, SActivateCtx &ActivateCtx, CInstalledDevice &Device)
+
+//	ChargeWeapon
+//
+//	Handle charging for charging weapons. Returns TRUE if we should consume power, etc.
+	{
+	for (int i = 0; i < Shots.GetCount(); i++)
+		{
+		//	If we're using ship heat, make sure we have enough.
+
+		if (!CanConsumeShipHeat(DeviceItem, ShotDesc))
+			return false;
+
+		//  Update the ship energy/heat counter.
+
+		if (m_iHeatPerShot != 0)
+			ConsumeShipHeat(DeviceItem, ShotDesc);
+
+		CSpaceObject& Source = Device.GetSourceOrThrow();
+		CItemCtx ItemCtx(&Source, &Device);
+		SShotFireResult Result;
+		if (FireOnChargeWeapon(ItemCtx,
+			ShotDesc,
+			Shots[i].vPos,
+			Shots[i].pTarget,
+			Shots[i].iDir,
+			ActivateCtx.iChargeFrame,
+			Result))
+			{
+			if (Source.IsDestroyed())
+				return false;
+			}
+
+		if (Result.bFireEffect)
+			ShotDesc.CreateChargeEffect(Source.GetSystem(), &Source, Shots[i].vPos, CVector(), Shots[i].iDir, ActivateCtx.iChargeFrame);
+
+		if (Result.bSoundEffect)
+			ShotDesc.PlayChargeSound(&Source);
+		}
+
+	//	Set the device angle so that repeating weapons can get access to it.
+	Device.SetTarget(Shots[0].pTarget);
+	if (bSetFireAngle)
+		{
+		CSpaceObject& Source = Device.GetSourceOrThrow();
+		Device.SetFireAngle(AngleMod(iFireAngle - (m_bBurstTracksTargets ? Source.GetRotation() : 0)));
+		}
+	return true;
+	}
+
+bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
+							   const CWeaponFireDesc &ShotDesc,
 							   SActivateCtx &ActivateCtx)
 
 //	FireWeapon
@@ -2411,6 +2547,12 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 	CShotArray Shots = CalcShotsFired(Device, ShotDesc, ActivateCtx, iFireAngle, bSetFireAngle);
 	if (Shots.GetCount() == 0)
 		return false;
+
+	//	If we're charging, then we don't fire shots - instead we only increment the ship counter (if needed),
+	//	create the fire effect, and return True (so that we consume power). Charging does not consume ammo,
+	//	and cannot fail due to damaged or disrupted weapons.
+	if (ActivateCtx.bIsCharging)
+		return ChargeWeapon(bSetFireAngle, iFireAngle, ShotDesc, DeviceItem, Shots, ActivateCtx, Device);
 
 	//	Figure out when happens when we try to consume ammo, etc.
 
@@ -2456,7 +2598,8 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 
 	int iNewPolarity;
 	if ((ActivateCtx.iRepeatingCount == GetContinuous(ShotDesc))
-			&& GetConfiguration(ShotDesc).IncPolarity(GetAlternatingPos(&Device), &iNewPolarity))
+			&& GetConfiguration(ShotDesc).IncPolarity(GetAlternatingPos(&Device), &iNewPolarity)
+			&& (ActivateCtx.iChargeFrame == GetChargeTime(ShotDesc)))
 		SetAlternatingPos(&Device, iNewPolarity);
 
 	//	Remember last shot count
@@ -2625,6 +2768,25 @@ const CConfigurationDesc &CWeaponClass::GetConfiguration (const CWeaponFireDesc 
 		return ShotConfiguration;
 
 	return m_Configuration;
+	}
+
+int CWeaponClass::GetChargeTime (const CWeaponFireDesc &Shot) const
+
+//	GetChargeTime
+//
+//	If this is a weapon with charge time, we return the number of ticks before
+//	shots. 0 means no charge time.
+
+	{
+	//	Check the shot first, which can override the weapon.
+
+	int iChargeTime = Shot.GetChargeTime();
+	if (iChargeTime != -1)
+		return iChargeTime;
+
+	//	Check the weapon
+
+	return m_iChargeTime;
 	}
 
 int CWeaponClass::GetContinuous (const CWeaponFireDesc &Shot) const
@@ -2842,7 +3004,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		if (Balance.iLevel == 0)
 			return CC.CreateNil();
 
-		const SStdStats &Stats = STD_WEAPON_STATS[Balance.iLevel - 1];
+		const SStdStats& Stats = STD_WEAPON_STATS[Balance.iLevel - 1];
 
 		//  Compute the balance assuming that damage is standard.
 
@@ -2861,7 +3023,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		if (Balance.iLevel == 0)
 			return CC.CreateNil();
 
-		const SStdStats &Stats = STD_WEAPON_STATS[Balance.iLevel - 1];
+		const SStdStats& Stats = STD_WEAPON_STATS[Balance.iLevel - 1];
 
 		//  Compute the balance assuming that cost is standard.
 
@@ -2883,6 +3045,9 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
 		return CC.CreateInteger(mathRound(Balance.rBalance - Balance.rCost));
 		}
+	else if (strEquals(sProperty, PROPERTY_CHARGE_TIME))
+		return CC.CreateInteger(GetChargeTime(*pShot));
+
 	else if (strEquals(sProperty, PROPERTY_DAMAGE_180))
 		{
 		Metric rDamagePerShot = CalcDamagePerShot(*pShot, pEnhancements);
@@ -5406,6 +5571,8 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 		}
 
 	//	See if we continue to fire
+	//  dwContinouous starts at maximum repeating count and counts backwards towards zero; it represents
+	//  how many frames we have left in this burst
 
 	DWORD dwContinuous = GetContinuousFire(pDevice);
 	if (dwContinuous == CONTINUOUS_START)
@@ -5415,17 +5582,18 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 			{
 			int iContinuous = GetContinuous(*pShot);
 			int iContinuousDelay = Max(1, GetContinuousFireDelay(*pShot) + 1);
+			int iChargeTime = Max(0, GetChargeTime(*pShot));
 
 			//	-1 is used to skip the first update cycle
 			//	(which happens on the same tick as Activate)
 
 			if (iContinuousDelay > 1)
 				{
-				SetContinuousFire(pDevice, ((iContinuous + 1) * iContinuousDelay) - 1);
+				SetContinuousFire(pDevice, (iChargeTime + ((iContinuous + 1) * iContinuousDelay)) - 1);
 				}
 			else
 				{
-				SetContinuousFire(pDevice, iContinuous);
+				SetContinuousFire(pDevice, iContinuous + iChargeTime);
 				}
 			}
 		else
@@ -5441,12 +5609,24 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 			{
 			int iContinuous = GetContinuous(*pShot);
 			int iContinuousDelay = Max(1, GetContinuousFireDelay(*pShot) + 1);
+			int iChargeTime = Max(0, GetChargeTime(*pShot));
+			int iBurstLengthInFrames = iContinuousDelay > 1 ? ((iContinuous + 1) * iContinuousDelay) - 1 : iContinuous;
+			int iFireFrame = max(0, iBurstLengthInFrames - int(dwContinuous));
 
 			SActivateCtx ActivateCtx(Ctx);
 
-			if ((dwContinuous % iContinuousDelay) == 0)
+			if ((dwContinuous % iContinuousDelay) == 0 || (int(dwContinuous) > iBurstLengthInFrames))
 				{
-				ActivateCtx.iRepeatingCount = 1 + iContinuous - (dwContinuous / iContinuousDelay);
+				CTargetList pSourceTargetList;
+				if (ActivateCtx.GetTargetList().IsEmpty())
+					{
+					pSourceTargetList = pSource->GetTargetList();
+					ActivateCtx.SetTargetList(pSourceTargetList);
+					}
+
+				ActivateCtx.iRepeatingCount = 1 + iContinuous - min(int(dwContinuous) / iContinuousDelay, iContinuous + 1);
+				ActivateCtx.iChargeFrame = 1 + iChargeTime - min(int(dwContinuous) - iBurstLengthInFrames, iChargeTime + 1);
+				ActivateCtx.bIsCharging = int(dwContinuous) > iBurstLengthInFrames + 1;
 
 				FireWeapon(*pDevice, *pShot, ActivateCtx);
 
