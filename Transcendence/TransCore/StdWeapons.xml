@@ -21,6 +21,8 @@
 			valueBonusPerCharge="5"
 
 			description=		"This disposable weapon system is loaded with thirty-two KM100 missiles. The weapon can be installed and uninstalled without the aid of a station."
+
+			showChargesInUseMenu="true"
 			>
 
 		<Image imageID="&rsItemsNAMI2;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
@@ -198,6 +200,8 @@
 			valueBonusPerCharge="15"
 
 			description=		"The DM1500 is loaded with thirty-two KM500 tracking missiles. This weapon can be installed and uninstalled without the aid of a station."
+
+			showChargesInUseMenu="true"
 			>
 
 		<Image imageID="&rsItemsNAMI2;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
@@ -3335,6 +3339,7 @@
 				stealth=		"15"
 
 				failSafe=		"10"
+				noDetonationOnEndOfLife="true"
 
 				hitEffect=		"&efBlastHitDefault;"
 				sound=			"&snMissileLauncher;"
@@ -3386,6 +3391,7 @@
 				stealth=		"12"
 
 				failSafe=		"10"
+				noDetonationOnEndOfLife="true"
 
 				sound=			"&snMissileLauncher;"
 				hitEffect=		"&efBlastHitDefault;"

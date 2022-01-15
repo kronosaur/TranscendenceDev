@@ -81,12 +81,9 @@ class CCodeChainCtx
 		ICCItemPtr LinkCode (const CString &sString) { return CCodeChain::LinkCode(sString); }
 		ICCItemPtr LinkCode (const CString &sString, CCodeChain::SLinkOptions &Options) { return CCodeChain::LinkCode(sString, Options); }
 		void RestoreVars (void);
-		ICCItem *Run (ICCItem *pCode);
-		ICCItem *Run (const SEventHandlerDesc &Event);
 		ICCItemPtr RunCode (ICCItem *pCode);
 		ICCItemPtr RunCode (const SEventHandlerDesc &Event);
 		bool RunEvalString (const CString &sString, bool bPlain, CString *retsResult);
-		ICCItem *RunLambda (ICCItem *pCode);
 		ICCItemPtr RunLambdaCode (ICCItem *pCode, ICCItem *pArgs = NULL);
 		void SaveAndDefineDataVar (const ICCItem *pData);
 		void SaveAndDefineItemVar (const CItem &Item);
@@ -120,6 +117,7 @@ class CCodeChainCtx
 		static bool InEvent (ECodeChainEvents iEvent);
 
 	private:
+
 		struct SInvokeFrame
 			{
 			ECodeChainEvents iEvent;		//	Event raised

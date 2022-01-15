@@ -36,19 +36,20 @@ class CPlayerGameStats
         DWORD GetSystemLastVisitedTime (const CString &sNodeID);
 		ICCItemPtr GetSystemStat (const CString &sStat, const CString &sNodeID) const;
 		bool HasVisitedMultipleSystems (void) const;
-		int IncItemStat (const CString &sStat, DWORD dwUNID, int iInc);
+		int IncItemStat (const CString &sStat, const CItemType &ItemType, int iInc);
 		int IncScore (int iScore) { m_iScore = Max(0, m_iScore + iScore); return m_iScore; }
 		int IncStat (const CString &sStat, int iInc = 1);
 		int IncSystemStat (const CString &sStat, const CString &sNodeID, int iInc);
         void OnFuelConsumed (CSpaceObject *pPlayer, Metric rFuel) { m_rFuelConsumed += rFuel; }
 		void OnGameEnd (CSpaceObject *pPlayer);
-		void OnItemBought (const CItem &Item, CurrencyValue iTotalPrice);
+		void OnItemBought (const CItem &Item, const CCurrencyAndValue &TotalValue);
 		void OnItemDamaged (const CItem &Item, int iHP);
 		void OnItemFired (const CItem &Item);
 		void OnItemInstalled (const CItem &Item);
-		void OnItemSold (const CItem &Item, CurrencyValue iTotalPrice);
+		void OnItemSold (const CItem &Item, const CCurrencyAndValue &TotalValue);
 		void OnItemUninstalled (const CItem &Item);
 		void OnKeyEvent (EEventTypes iType, CSpaceObject *pObj, DWORD dwCauseUNID);
+		bool OnNewMaxSpeed (int iNewMaxSpeed);
 		void OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObject *pPlayer);
 		void OnPowerInvoked (const CPower &Power);
 		void OnSwitchPlayerShip (const CShip &NewShip, const CShip *pOldShip = NULL);
@@ -99,10 +100,12 @@ class CPlayerGameStats
 
 		struct SPlayerShipStats
 			{
+			CString sClassName;
 			DWORD dwFirstEntered = INVALID_TIME;	//	First time we started this ship class
 			DWORD dwLastEntered = INVALID_TIME;		//	Last time we started using this ship class
 			DWORD dwLastLeft = INVALID_TIME;		//	Last time we stopped using ship class
 			DWORD dwTotalTime = 0;					//	Total time using ship
+			int iMaxSpeed = 0;						//	Max rated speed (including enhancements)
 			};
 
 		struct SPowerStats
@@ -131,14 +134,31 @@ class CPlayerGameStats
 			int iAsteroidsMined = 0;				//	Count of asteroids explored for resources
 			};
 
+		struct SOreMinedAchievementDesc
+			{
+			CString sAchievementID;
+			int iOreMinedThreshold = 0;				//	Must be less than this value
+			};
+
+		struct SProfitAchievementDesc
+			{
+			CString sAchievementID;
+			CurrencyValue ProfitThreshold = 0;		//	Must be less than this value
+			};
+
 		bool AddMatchingKeyEvents (const CString &sNodeID, const CDesignTypeCriteria &Crit, TArray<SKeyEventStats> *pEventList, TArray<SKeyEventStatsResult> *retList) const;
+		static const CShipClass *FindClassByName (SLoadCtx &Ctx, const CString &sClassName);
 		bool FindItemStats (DWORD dwUNID, SItemTypeStats **retpStats) const;
+		bool FireMineOreAchievement (int iLastValue, int iCurrentValue);
+		bool FireProfitAchievement (CurrencyValue LastValue, CurrencyValue CurrentValue);
 		CString GenerateKeyEventStat (TArray<SKeyEventStatsResult> &List) const;
+		SPlayerShipStats *GetCurrentPlayerShipStats ();
 		SItemTypeStats *GetItemStats (DWORD dwUNID);
 		bool GetMatchingKeyEvents (const CString &sNodeID, const CDesignTypeCriteria &Crit, TArray<SKeyEventStatsResult> *retList) const;
 		SShipClassStats *GetShipStats (DWORD dwUNID);
 		SStationTypeStats *GetStationStats (DWORD dwUNID);
 		const SSystemStats *GetSystemStats (const CString &sNodeID) const;
+		void OnOreMined (const CItemType &ItemType, int iTonsMined);
 		SSystemStats *SetSystemStats (const CString &sNodeID);
 
 		static void WriteTimeValue (CMemoryWriteStream &Output, DWORD dwTime);
@@ -149,9 +169,12 @@ class CPlayerGameStats
 		CTimeSpan m_PlayTime;					//	Total time spent playing the game
 		CTimeSpan m_GameTime;					//	Total elapsed time in the game
         Metric m_rFuelConsumed = 0.0;			//  Total fuel consumed (fuel units)
+		int m_iTonsOfOreMined = 0;				//	Total tons of ore mined
+		CurrencyValue m_TotalValueSold = 0;		//	Total value of items bought
+		CurrencyValue m_TotalValueBought = 0;	//	Total value of items sold
 
 		TMap<DWORD, SItemTypeStats> m_ItemStats;
-		TSortMap<CString, SPlayerShipStats> m_PlayerShipStats;
+		TSortMap<DWORD, SPlayerShipStats> m_PlayerShipStats;
 		TSortMap<DWORD, SPowerStats> m_PowerStats;
 		TMap<DWORD, SShipClassStats> m_ShipStats;
 		TMap<DWORD, SStationTypeStats> m_StationStats;
@@ -160,6 +183,9 @@ class CPlayerGameStats
 
 		int m_iExtraSystemsVisited = 0;			//	For backwards compatibility
 		int m_iExtraEnemyShipsDestroyed = 0;	//	For backwards compatibility
+
+		static std::initializer_list<SOreMinedAchievementDesc> m_OreMinedAchievements;
+		static std::initializer_list<SProfitAchievementDesc> m_ProfitAchievements;
 	};
 
 class IPlayerController

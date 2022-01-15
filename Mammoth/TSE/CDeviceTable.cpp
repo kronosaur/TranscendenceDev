@@ -1540,27 +1540,41 @@ int CDeviceDescList::GetCountByID (const CString &sID) const
 	return iCount;
 	}
 
-const SDeviceDesc *CDeviceDescList::GetDeviceDescByName (DeviceNames iDev) const
+const SDeviceDesc *CDeviceDescList::GetDeviceDescByName (DeviceNames iDev, int *retiCount) const
 
 //  GetDeviceDescByName
 //
 //  Returns a descriptor for a named device (or NULL if not found)
 
 	{
-	int i;
 	ItemCategories iCatToFind = CDeviceClass::GetItemCategory(iDev);
+	const SDeviceDesc *pFound = NULL;
+	int iCount = 0;
 
-	for (i = 0; i < GetCount(); i++)
+	for (int i = 0; i < GetCount(); i++)
 		{
 		CDeviceClass *pDevice = GetDeviceClass(i);
 
 		//	See if this is the category that we want to find
 
 		if (pDevice->GetCategory() == iCatToFind)
-			return &GetDeviceDesc(i);
+			{
+			if (!pFound)
+				{
+				pFound = &GetDeviceDesc(i);
+				iCount = 1;
+				}
+			else if (pFound->Item.GetType() == GetDeviceDesc(i).Item.GetType())
+				{
+				iCount++;
+				}
+			}
 		}
 
-	return NULL;
+	if (retiCount)
+		*retiCount = iCount;
+
+	return pFound;
 	}
 
 int CDeviceDescList::GetFireArc (int iIndex) const

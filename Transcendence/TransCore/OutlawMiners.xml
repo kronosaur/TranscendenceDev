@@ -531,6 +531,8 @@
 			name=				"Outlaw defense turret"
 			sovereign=			"&svOutlawMiners;"
 				 
+			attributes=			"outlaws, staticDefense"
+
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			mass=				"2000"
@@ -573,6 +575,8 @@
 			name=				"Outlaw howitzer"
 			sovereign=			"&svOutlawMiners;"
 				 
+			attributes=			"outlaws, staticDefense"
+
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			mass=				"2000"

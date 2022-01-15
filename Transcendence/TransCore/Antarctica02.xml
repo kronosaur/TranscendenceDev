@@ -258,6 +258,8 @@
 								(objAddItem gPlayerShip (itmCreate &itGemOfSacrifice; 1))
 								(msnSetData gSource 'playerRewarded True)
 								(msnSetData gSource 'onDockScreen Nil)
+
+								(unvSetAchievement 'humanSpace.cscAntarcticaDefender)
 								)
 						)
 					(msnSetData gSource 'msgProgress Nil)

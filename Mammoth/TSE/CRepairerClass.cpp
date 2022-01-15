@@ -80,7 +80,7 @@ void CRepairerClass::CalcArmorRegen (const CDeviceItem &RepairerItem, int iSegme
 		Ctx.DefineItem(CONSTLIT("aArmorItem"), ArmorItem);
 		Ctx.DefineItemType(CONSTLIT("aArmorType"), &ArmorItem.GetType());
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			{
 			iRegenHP = 0;
@@ -101,8 +101,6 @@ void CRepairerClass::CalcArmorRegen (const CDeviceItem &RepairerItem, int iSegme
 			if (pPowerUse)
 				iPower = pPowerUse->GetIntegerValue();
 			}
-
-		Ctx.Discard(pResult);
 
 		//	Convert to regen HP using a CRegenDesc structure
 
@@ -328,6 +326,7 @@ int CRepairerClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 			CCCtx.SaveAndDefineSourceVar(pSource);
 			CCCtx.SaveAndDefineItemVar(Ctx.GetItem());
 			CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), i);
+			CCCtx.DefineItem(CONSTLIT("aArmorItem"), ArmorItem[i]);
 			CCCtx.DefineItemType(CONSTLIT("aArmorType"), &ArmorItem[i].GetType());
 
 			ICCItemPtr pResult = CCCtx.RunCode(Event);

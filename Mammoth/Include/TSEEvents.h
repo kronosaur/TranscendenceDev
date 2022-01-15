@@ -37,7 +37,7 @@ class CSystemEvent
 		virtual CString GetEventHandlerName (void) { return NULL_STR; }
 		virtual CSpaceObject *GetEventHandlerObj (void) { return NULL; }
 		virtual CDesignType *GetEventHandlerType (void) { return NULL; }
-		virtual bool OnObjChangedSystems (CSpaceObject *pObj) { return false; }
+		virtual bool OnObjChangedSystems (const CSpaceObject &Obj) const { return false; }
 		virtual bool OnObjDestroyed (CSpaceObject *pObj) { return false; }
 		virtual void OnPlayerChangedShips (CSpaceObject &OldShip, CSpaceObject &NewShip, SPlayerChangedShipsCtx &Options) { }
 		virtual bool OnStationDestroyed (CSpaceObject *pObj) { return false; }
@@ -62,14 +62,16 @@ class CSystemEventList
 		bool CancelEvent (CSpaceObject *pObj, const CString &sEvent, bool bInDoEvent);
 		bool CancelEvent (CDesignType *pType, const CString &sEvent, bool bInDoEvent);
 		void DeleteAll (void);
-		inline int GetCount (void) const { return m_List.GetCount(); }
-		inline CSystemEvent *GetEvent (int iIndex) const { return m_List[iIndex]; }
-		inline void MoveEvent (int iIndex, CSystemEventList &Dest) { Dest.AddEvent(m_List[iIndex]); m_List.Delete(iIndex); }
+		TArray<CSystemEvent *> FindEventsForObj (const CSpaceObject &Obj) const;
+		int GetCount (void) const { return m_List.GetCount(); }
+		CSystemEvent *GetEvent (int iIndex) const { return m_List[iIndex]; }
+		void MoveEvent (int iIndex, CSystemEventList &Dest) { Dest.AddEvent(m_List[iIndex]); m_List.Delete(iIndex); }
+		void MoveEventForObjTo (const CSpaceObject &Obj, CSystemEventList &Dest);
 		void OnObjDestroyed (CSpaceObject *pObj);
 		void OnPlayerChangedShips (CSpaceObject &OldShip, CSpaceObject &NewShip, SPlayerChangedShipsCtx &Options);
 		void OnStationDestroyed (CSpaceObject *pObj);
 		void ReadFromStream (SLoadCtx &Ctx);
-		inline void RemoveEvent (int iIndex) { delete m_List[iIndex]; m_List.Delete(iIndex); }
+		void RemoveEvent (int iIndex) { delete m_List[iIndex]; m_List.Delete(iIndex); }
 		void Update (DWORD dwTick, CSystem &System);
 		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
 

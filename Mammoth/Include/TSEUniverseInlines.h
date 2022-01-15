@@ -18,42 +18,27 @@ class CUsePerformanceCounter
 #endif
 			}
 
-		~CUsePerformanceCounter (void)
-			{
-			StopCounter();
-			}
-
-		void StopCounter (void)
+		CUsePerformanceCounter (CUniverse &Universe, const SEventHandlerDesc &Event) :
+				m_Universe(Universe)
 			{
 #ifdef DEBUG_PERFORMANCE_COUNTERS
-			if (m_bRunning)
+			if (m_Universe.GetPerformanceCounters().IsEnabled())
 				{
-				m_Universe.GetPerformanceCounters().StopCounter(m_sID);
-				m_bRunning = false;
+				if (Event.sEvent.IsBlank())
+					m_sID = CONSTLIT("event.UnknownEvent");
+				else
+					{
+					m_sID = CONSTLIT("event.");
+					m_sID.Append(Event.sEvent);
+					}
+
+				m_Universe.GetPerformanceCounters().StartCounter(m_sID);
+				m_bRunning = true;
 				}
 #endif
 			}
 
-	private:
-		CUniverse &m_Universe;
-		CString m_sID;
-		bool m_bRunning = false;
-	};
-
-class CUsePerformanceCounterForEvent
-	{
-	public:
-		CUsePerformanceCounterForEvent (CUniverse &Universe, const CString &sEvent) :
-				m_Universe(Universe),
-				m_sID(strPatternSubst(CONSTLIT("event.%s"), sEvent))
-			{
-#ifdef DEBUG_PERFORMANCE_COUNTERS
-			m_Universe.GetPerformanceCounters().StartCounter(m_sID);
-			m_bRunning = true;
-#endif
-			}
-
-		~CUsePerformanceCounterForEvent (void)
+		~CUsePerformanceCounter (void)
 			{
 			StopCounter();
 			}

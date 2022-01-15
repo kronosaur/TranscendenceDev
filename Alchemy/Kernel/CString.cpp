@@ -13,8 +13,10 @@
 CString::PSTORESTRUCT CString::g_pStore;
 int CString::g_iStoreSize;
 CString::PSTORESTRUCT CString::g_pFreeStore;
-CRITICAL_SECTION g_csStore;
 const CString Kernel::NULL_STR;
+
+static CRITICAL_SECTION g_csStore;
+static bool g_csInitialized = false;
 
 #ifdef DEBUG_STRING_LEAKS
 int g_iStoreCount = 0;
@@ -126,7 +128,7 @@ CString::CString (CharacterSets iCharSet, const char *pString) :
 
 			//	Now convert back to system code page
 
-			Size(iUnicodeLen);
+			Size(iUnicodeLen+1);
 			iResult = ::WideCharToMultiByte(CP_ACP, 0, szUnicode, iUnicodeLen, m_pStore->pString, iUnicodeLen, NULL, NULL);
 
 			//	Deal with failure
@@ -146,7 +148,7 @@ CString::CString (CharacterSets iCharSet, const char *pString) :
 						return;
 						}
 
-					Size(iSystemLen);
+					Size(iSystemLen+1);
 					iResult = ::WideCharToMultiByte(CP_ACP, 0, szUnicode, iUnicodeLen, m_pStore->pString, iSystemLen, NULL, NULL);
 					}
 				else
@@ -330,6 +332,12 @@ CString::PSTORESTRUCT CString::AllocStore (int iSize, BOOL bAllocString)
 	PSTORESTRUCT pStore;
 
 	//	Critical section
+
+	if (!g_csInitialized)
+		{
+		InitializeCriticalSection(&g_csStore);
+		g_csInitialized = true;
+		}
 
 	EnterCriticalSection(&g_csStore);
 
@@ -1764,7 +1772,7 @@ ALERROR CString::INTStringInit (void)
 //	any other call.
 
 	{
-	InitializeCriticalSection(&g_csStore);
+//	InitializeCriticalSection(&g_csStore);
 	InitLowerCaseAbsoluteTable();
 	return NOERROR;
 	}

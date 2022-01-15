@@ -20,7 +20,7 @@
 			level=			"3-7"
 
 			expireTime=			"5400"
-			failureAfterOutOfSystem="5400"
+			failureOnReturnToSystem="5400"
 			>
 		<Properties>
 			<Data id="reward"></Data>
@@ -30,11 +30,18 @@
 
 		<Events>
 			<OnCreate>
-				(block (enemyStations)
+				(block (
+					(enemyStations 
+						(filter (sysFindObject aOwnerObj "TAE +populated; -outlawMiners; -penitents; -property:questTarget; -uncharted;") targetObj
+							(objCanDestroyTarget gPlayerShip targetObj)
+							)
+						)
+					)
 					(switch
 						;	Get a list of enemy stations in the region. If we cannot find any
 						;	suitable targets then we don't have a mission.
-						(not (setq enemyStations (sysFindObject aOwnerObj "TAE +populated; -outlawMiners; -penitents; -property:questTarget; -uncharted;"))) ;L:4-5
+
+						(not enemyStations)
 							(msnDestroy gSource)
 
 						;	Create the mission

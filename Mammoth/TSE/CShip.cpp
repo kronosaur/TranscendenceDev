@@ -22,6 +22,9 @@ const Metric MAX_SPEED_FOR_DOCKING2 =			(0.04 * 0.04 * LIGHT_SPEED * LIGHT_SPEED
 
 const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 
+#define ACHIEVEMENT_CORE_REACTOR_UPGRADE		CONSTLIT("core.reactorUpgrade")
+#define ACHIEVEMENT_CORE_ZERO_HP				CONSTLIT("core.zeroHP")
+
 #define FIELD_CARGO_SPACE						CONSTLIT("cargoSpace")
 #define FIELD_COUNTER_INCREMENT_RATE			CONSTLIT("counterIncrementRate")
 #define FIELD_LAUNCHER							CONSTLIT("launcher")
@@ -917,6 +920,17 @@ void CShip::CalcPerformance (void)
 			|| m_Perf.GetDriveDesc().GetMaxSpeed() != rOldMaxSpeed)
 		m_pClass->InitEffects(this, &m_Effects);
 
+	//	If our max speed changed, then tell our controller, in case it cares.
+
+	if (m_Perf.GetDriveDesc().GetMaxSpeed() != rOldMaxSpeed)
+		{
+		int iOldMaxSpeedPercent = mathRound(100.0 * rOldMaxSpeed / LIGHT_SPEED);
+		int iNewMaxSpeedPercent = mathRound(100.0 * m_Perf.GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED);
+
+		if (iOldMaxSpeedPercent != iNewMaxSpeedPercent)
+			m_pController->OnShipStatus(IShipController::statusNewMaxSpeed, (DWORD)iNewMaxSpeedPercent);
+		}
+
 	DEBUG_CATCH
 	}
 
@@ -1443,6 +1457,12 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 			return;
 		}
 
+	//	If the player caused this destruction, then mark it as player-created
+	//	explosion.
+
+	if (Ctx.Attacker.IsPlayerOrderGiver() && Explosion.iCause == killedByExplosion)
+		Explosion.iCause = killedByPlayerCreatedExplosion;
+
 	//	Explosion
 
 	SShotCreateCtx ShotCtx;
@@ -1455,7 +1475,6 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 		}
 
 	ShotCtx.Source = CDamageSource(this, Explosion.iCause, Ctx.pWreck);
-	ShotCtx.Source.SetExplosion();
 	ShotCtx.vPos = GetPos();
 	ShotCtx.vVel = GetVel();
 	ShotCtx.iDirection = GetRotation();
@@ -3654,6 +3673,14 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSy
 		case itemcatLauncher:
 			m_pController->OnWeaponStatusChanged();
 			break;
+
+		case itemcatReactor:
+			//	If the player installed a new reactor, then this counts as an
+			//	achievement.
+
+			if (IsPlayer())
+				GetUniverse().SetAchievement(ACHIEVEMENT_CORE_REACTOR_UPGRADE);
+			break;
 		}
 
 	//	Reset the fuel level (we are effectively transfering the fuel to the
@@ -3846,6 +3873,8 @@ void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 //	If another object got destroyed, we do something
 
 	{
+	DEBUG_TRY
+
 	//	Give the controller a chance to handle it
 
 	m_pController->OnObjDestroyed(Ctx);
@@ -3891,6 +3920,8 @@ void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 
 		m_Interior.OnDestroyed(this, Ctx);
 		}
+
+	DEBUG_CATCH
 	}
 
 bool CShip::ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, const CVector &vObj2Pos)
@@ -4210,10 +4241,14 @@ DWORD CShip::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpace
 //	Handle communications from other objects
 
 	{
+	DEBUG_TRY
+
 	if (!IsInactive())
 		return m_pController->OnCommunicate(pSender, iMessage, pParam1, dwParam2, pData);
 	else
 		return resNoAnswer;
+
+	DEBUG_CATCH
 	}
 
 void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
@@ -4543,6 +4578,15 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		//	Tell the controller that we were damaged
 
 		m_pController->OnDamaged(Ctx.Attacker, pArmor, Ctx.Damage, Ctx.iArmorDamage);
+
+		//	If we took damage that left our armor at exactly 0 hp, then that's
+		//	an achievement.
+
+		if (bIsPlayer && pArmor && pArmor->GetHitPoints() == 0 && Ctx.iArmorDamage > 0)
+			{
+			GetUniverse().SetAchievement(ACHIEVEMENT_CORE_ZERO_HP);
+			}
+
 		return damageArmorHit;
 		}
 
@@ -5075,13 +5119,17 @@ void CShip::OnItemEnhanced (CItemListManipulator &ItemList)
 		}
 	}
 
-void CShip::OnMove (const CVector &vOldPos, Metric rSeconds)
+void CShip::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
 //
 //	Do stuff when station moves
 
 	{
+#ifdef DEBUG_MOVE_PERFORMANCE
+	Ctx.bCalledShipOnMove = true;
+#endif
+
 	//	If the station is moving then make sure all docked ships
 	//	move along with it.
 
@@ -5089,10 +5137,14 @@ void CShip::OnMove (const CVector &vOldPos, Metric rSeconds)
 
 	//	Move effects
 
-	if (WasPainted())
+	if (WasPainted() && Ctx.IsShipEffectUpdateEnabled())
 		{
 		bool bRecalcBounds;
 		m_Effects.Move(this, vOldPos, &bRecalcBounds);
+
+#ifdef DEBUG_MOVE_PERFORMANCE
+		Ctx.bCalledShipEffectMove = true;
+#endif
 
 		//	Recalculate bounds, if necessary
 
@@ -6724,11 +6776,9 @@ void CShip::Refuel (const CItem &Fuel)
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineItemVar(Fuel);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			SendMessage(NULL, pResult->GetStringValue());
-
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -7271,6 +7321,10 @@ void CShip::SetName (const CString &sName, DWORD dwFlags)
 		m_dwNameFlags = dwFlags;
 		m_fNameBlanked = false;
 		}
+
+	//	Clear the cache, so we recompute it.
+
+	m_sMapLabel = NULL_STR;
 	}
 
 void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
@@ -7291,10 +7345,9 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 		CCCtx.DefineSpaceObject(CONSTLIT("aBaseObj"), Ctx.pBase);
 		CCCtx.DefineSpaceObject(CONSTLIT("aTargetObj"), Ctx.pTarget);
 
-		ICCItem *pResult = CCCtx.Run(Ctx.pOnCreate);	//	LATER:Event
+		ICCItemPtr pResult = CCCtx.RunCode(Ctx.pOnCreate);	//	LATER:Event
 		if (pResult->IsError())
 			ReportEventError(CONSTLIT("local OnCreate"), pResult);
-		CCCtx.Discard(pResult);
 		}
 
 	//	Give the ship a chance to set orders

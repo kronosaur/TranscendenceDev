@@ -255,7 +255,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual EConditionResult OnApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) override;
 		virtual EConditionResult OnCanApplyCondition (ECondition iCondition, const SApplyConditionOptions &Options) const override;
 		virtual EConditionResult OnCanRemoveCondition (ECondition iCondition, const SApplyConditionOptions &Options) const override;
-		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
+		virtual void OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds) override;
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2, ICCItem *pData) override;
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) override;
@@ -299,8 +299,9 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		int CalcNumberOfShips (void);
 		bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !IsImmutable() && !m_fNoBlacklist); }
 		void ClearBlacklist (CSpaceObject *pObj);
-		void CreateDestructionEffect (void);
+		void CreateDestructionEffect (const CDamageSource &Attacker);
 		void CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int iDirection, const DamageDesc &Damage);
+		bool CreateExplosion (const CDamageSource &Attacker);
 		void CreateStructuralDestructionEffect (SDestroyCtx &Ctx);
 		ALERROR CreateMapImage (void) const;
 		void DeterAttack (CSpaceObject *pTarget);

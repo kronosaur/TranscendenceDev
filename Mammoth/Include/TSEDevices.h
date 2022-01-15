@@ -222,24 +222,27 @@ class CDeviceClass
 
 		struct SActivateCtx
 			{
-			SActivateCtx (SUpdateCtx &Ctx, CSpaceObject *pTargetArg, int iFireAngleArg = -1) :
+			SActivateCtx (SUpdateCtx &Ctx, CSpaceObject *pTargetArg, int iFireAngleArg = -1, bool bIsChargingArg = false) :
 					m_ObjCtx(Ctx),
 					pTarget(pTargetArg),
-					iFireAngle(iFireAngleArg)
+					iFireAngle(iFireAngleArg),
+					bIsCharging(bIsChargingArg)
 				{ }
 
-			SActivateCtx (SUpdateCtx &Ctx, CSpaceObject *pTargetArg, CTargetList &TargetListArg, int iFireAngleArg = -1) :
+			SActivateCtx (SUpdateCtx &Ctx, CSpaceObject *pTargetArg, CTargetList &TargetListArg, int iFireAngleArg = -1, bool bIsChargingArg = false) :
 					m_ObjCtx(Ctx),
 					pTarget(pTargetArg),
 					m_pTargetList(&TargetListArg),
-					iFireAngle(iFireAngleArg)
+					iFireAngle(iFireAngleArg),
+					bIsCharging(bIsChargingArg)
 				{ }
 
-			SActivateCtx (SDeviceUpdateCtx &UpdateCtx, CSpaceObject *pTargetArg = NULL, int iFireAngleArg = -1) :
+			SActivateCtx (SDeviceUpdateCtx &UpdateCtx, CSpaceObject *pTargetArg = NULL, int iFireAngleArg = -1, bool bIsChargingArg = false) :
 					m_ObjCtx(UpdateCtx.GetObjCtx()),
 					m_pTargetList(UpdateCtx.GetTargetListOverride()),
 					pTarget(pTargetArg),
-					iFireAngle(iFireAngleArg)
+					iFireAngle(iFireAngleArg),
+					bIsCharging(bIsChargingArg)
 				{
 				}
 
@@ -258,6 +261,7 @@ class CDeviceClass
 
 			int iRepeatingCount = 0;
 			int iChargeFrame = 0;
+			bool bIsCharging = false;
 
 			//	Status results
 
@@ -495,7 +499,7 @@ class CDeviceDescList
 		inline CDeviceClass *GetDeviceClass (int iIndex) const;
 		SDeviceDesc &GetDeviceDesc (int iIndex) { return m_List[iIndex]; }
 		const SDeviceDesc &GetDeviceDesc (int iIndex) const { return m_List[iIndex]; }
-		const SDeviceDesc *GetDeviceDescByName (DeviceNames iDev) const;
+		const SDeviceDesc *GetDeviceDescByName (DeviceNames iDev, int *retiCount = NULL) const;
 		CDeviceItem GetDeviceItem (int iIndex) const { return m_List[iIndex].Item.AsDeviceItemOrThrow(); }
 		int GetFireArc (int iIndex) const;
 		const CItem &GetItem (int iIndex) const { return m_List[iIndex].Item; }

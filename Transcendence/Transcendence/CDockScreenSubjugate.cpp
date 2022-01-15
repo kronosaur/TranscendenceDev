@@ -72,11 +72,9 @@ void CDockScreenSubjugate::FireOnCompleted (const CString &sReason)
 	Ctx.SaveAndDefineDataVar(m_pData);
 	Ctx.DefineString(PARAM_REASON, sReason);
 
-	ICCItem *pResult = Ctx.Run(pCode);	//	LATER:Event
+	ICCItemPtr pResult = Ctx.RunCode(pCode);	//	LATER:Event
 	if (pResult->IsError())
 		::kernelDebugLogPattern("<OnCompleted>: %s", pResult->GetStringValue());
-
-	Ctx.Discard(pResult);
 	}
 
 void CDockScreenSubjugate::OnCompleted (bool bSuccess)

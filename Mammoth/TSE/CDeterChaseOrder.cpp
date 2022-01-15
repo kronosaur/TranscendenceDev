@@ -221,7 +221,7 @@ void CDeterChaseOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int
 
 		//	Done
 
-		pShip->CancelCurrentOrder();
+		*retbCancelOrder = true;
 		}
 	else if (iObj == OBJ_BASE)
 		{

@@ -7,8 +7,13 @@
 
 struct SSample
 	{
-	DWORD dwTime;				//	How long this sample took
-	int iObjCount;				//	Number of objects at end of sample
+	DWORD dwTime = 0;				//	How long this sample took
+	int iObjCount = 0;				//	Number of objects at end of sample
+
+#ifdef DEBUG_MOVE_PERFORMANCE
+	int iShipMoveCalls = 0;			//	Ships moving (per update)
+	int iShipEffectMoveCalls = 0;	//	Ship effects moving (per update)
+#endif
 	};
 
 const int DEFAULT_UPDATE =		1000;
@@ -196,6 +201,12 @@ void TestUpdate (CUniverse &Universe, CXMLElement *pCmdLine)
 	if (iUpdateCount == 0)
 		iUpdateCount = DEFAULT_UPDATE;
 
+	//	Options
+
+	CString sNode = pCmdLine->GetAttribute(CONSTLIT("node"));
+	if (sNode.IsBlank())
+		sNode = Universe.GetCurrentAdventureDesc().GetStartingNodeID();
+
 	//	Create the fist system
 
 	for (iTrial = 0; iTrial < iCount; iTrial++)
@@ -213,12 +224,12 @@ void TestUpdate (CUniverse &Universe, CXMLElement *pCmdLine)
 			return;
 			}
 
-		//	Create the first system
+		//	Create the appropriate system
 
-		CTopologyNode *pNode = Universe.GetFirstTopologyNode();
+		CTopologyNode *pNode = Universe.FindTopologyNode(sNode);
 		if (pNode == NULL)
 			{
-			printf("ERROR: Cannot find first node.\n");
+			printf("ERROR: Cannot find node: %s.\n", (LPSTR)sNode);
 			return;
 			}
 
@@ -228,6 +239,8 @@ void TestUpdate (CUniverse &Universe, CXMLElement *pCmdLine)
 			printf("ERROR: Unable to create star system.\n");
 			return;
 			}
+
+		printf("[%s] %s\n", (LPSTR)sNode, (LPSTR)pSystem->GetName());
 
 		//	Set the POV
 
@@ -246,13 +259,22 @@ void TestUpdate (CUniverse &Universe, CXMLElement *pCmdLine)
 		SSystemUpdateCtx Ctx;
 		Ctx.bForceEventFiring = true;
 		Ctx.bForcePainted = true;
+		Ctx.bNoShipEffectUpdate = true;
 
 		//	Update for a while
+
+		int iTotalShipMoveCalls = 0;
+		int iTotalShipEffectMoveCalls = 0;
 
 		DWORD dwStart = ::GetTickCount();
 		for (i = 0; i < iUpdateCount; i++)
 			{
 			Universe.Update(Ctx);
+
+#ifdef DEBUG_MOVE_PERFORMANCE
+			iTotalShipMoveCalls += Ctx.iShipOnMoveCalls;
+			iTotalShipEffectMoveCalls += Ctx.iShipEffectMoveCalls;
+#endif
 
 			if (i > 0 && (i % SAMPLE_SIZE) == 0)
 				{
@@ -262,12 +284,29 @@ void TestUpdate (CUniverse &Universe, CXMLElement *pCmdLine)
 				pSample->dwTime = dwTime;
 				pSample->iObjCount = GetValidObjCount(pSystem);
 
+#ifdef DEBUG_MOVE_PERFORMANCE
+				pSample->iShipMoveCalls = mathRound(iTotalShipMoveCalls / (double)SAMPLE_SIZE);
+				pSample->iShipEffectMoveCalls = mathRound(iTotalShipEffectMoveCalls / (double)SAMPLE_SIZE);
+				iTotalShipMoveCalls = 0;
+				iTotalShipEffectMoveCalls = 0;
+#endif
+
 				CString sTime = strFormatMilliseconds(dwTime);
 				CString sObjTime = strFormatMicroseconds(1000 * dwTime / pSample->iObjCount);
+
+#ifdef DEBUG_MOVE_PERFORMANCE
+				printf("Objs: %d  Total time: %s  Per obj: %s  Ships moving: %d   Ship effects: %d\n", 
+					pSample->iObjCount, 
+					sTime.GetASCIIZPointer(),
+					sObjTime.GetASCIIZPointer(),
+					pSample->iShipMoveCalls,
+					pSample->iShipEffectMoveCalls);
+#else
 				printf("Objs: %d  Total time: %s  Per obj: %s\n", 
 						pSample->iObjCount, 
 						sTime.GetASCIIZPointer(),
 						sObjTime.GetASCIIZPointer());
+#endif
 
 				dwStart = ::GetTickCount();
 				}

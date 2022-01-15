@@ -74,31 +74,31 @@ class CDesignPropertyDefinitions
 class CDifficultyOptions
 	{
 	public:
-		enum ELevels
+		enum class ELevel
 			{
-			lvlUnknown			= -1,
+			Unknown			= -1,
 
-			lvlStory			= 0,
-			lvlNormal			= 1,
-			lvlChallenge		= 2,
-			lvlPermadeath		= 3,
+			Story			= 0,
+			Normal			= 1,
+			Challenge		= 2,
+			Permadeath		= 3,
 
-			lvlCount			= 4,
+			Count			= 4,
 			};
 
-		Metric GetEnemyDamageAdj (void) const { if (m_iLevel >= 0 && m_iLevel < lvlCount) return m_Table[m_iLevel].rEnemyDamageAdj; else throw CException(ERR_FAIL); }
-		ELevels GetLevel (void) const { return m_iLevel; }
-		Metric GetPlayerDamageAdj (void) const { if (m_iLevel >= 0 && m_iLevel < lvlCount) return m_Table[m_iLevel].rPlayerDamageAdj; else throw CException(ERR_FAIL); }
+		Metric GetEnemyDamageAdj (void) const { if (m_iLevel >= ELevel::Story && m_iLevel < ELevel::Count) return m_Table[(int)m_iLevel].rEnemyDamageAdj; else throw CException(ERR_FAIL); }
+		ELevel GetLevel (void) const { return m_iLevel; }
+		Metric GetPlayerDamageAdj (void) const { if (m_iLevel >= ELevel::Story && m_iLevel < ELevel::Count) return m_Table[(int)m_iLevel].rPlayerDamageAdj; else throw CException(ERR_FAIL); }
 		Metric GetScoreAdj (void) const;
 		void ReadFromStream (IReadStream &Stream);
 		bool SaveOnUndock (void) const;
-		void SetLevel (ELevels iLevel) { m_iLevel = iLevel; }
+		void SetLevel (ELevel iLevel) { m_iLevel = iLevel; }
 		void WriteToStream (IWriteStream &Stream) const;
 
-		static CString GetID (ELevels iLevel);
-		static CString GetLabel (ELevels iLevel);
-		static ELevels NextLevel (ELevels iLevel) { iLevel = (ELevels)(iLevel + 1); if (iLevel == lvlCount) iLevel = lvlStory; return iLevel; }
-		static ELevels ParseID (const CString &sValue);
+		static CString GetID (ELevel iLevel);
+		static CString GetLabel (ELevel iLevel);
+		static ELevel NextLevel (ELevel iLevel) { iLevel = (ELevel)((int)iLevel + 1); if (iLevel == ELevel::Count) iLevel = ELevel::Story; return iLevel; }
+		static ELevel ParseID (const CString &sValue);
 
 	private:
 		struct SDesc
@@ -109,8 +109,8 @@ class CDifficultyOptions
 			Metric rEnemyDamageAdj;
 			};
 
-		ELevels m_iLevel = lvlUnknown;
+		ELevel m_iLevel = ELevel::Unknown;
 
-		static const SDesc m_Table[lvlCount];
+		static const SDesc m_Table[(int)ELevel::Count];
 	};
 

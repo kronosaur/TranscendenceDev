@@ -1286,7 +1286,7 @@ ALERROR CTranscendenceModel::LoadGame (const CString &sSignedInUsername, const C
 		//	If this game is in end game state OR if we are forcing permadeath and this game is over then we just load the stats.
 
 		if (m_GameFile.IsEndGame() 
-				|| (m_GameFile.GetDifficulty() == CDifficultyOptions::lvlPermadeath && m_GameFile.IsGameResurrect())
+				|| (m_GameFile.GetDifficulty() == CDifficultyOptions::ELevel::Permadeath && m_GameFile.IsGameResurrect())
 				|| (m_bForcePermadeath && m_GameFile.IsGameResurrect() && m_GameFile.GetResurrectCount() == 0))
 			{
 			error = m_GameFile.LoadGameStats(&m_GameStats);
@@ -2040,6 +2040,7 @@ void CTranscendenceModel::RefreshScreenSession (void)
 	Ctx.sScreen = Frame.sScreen;
 	Ctx.pData = Frame.pInitialData;
 	Ctx.sTab = Frame.sCurrentTab;
+	Ctx.bRefresh = true;
 	Ctx.bReturn = true;
 
 	ShowScreen(Ctx);
@@ -2065,7 +2066,7 @@ ALERROR CTranscendenceModel::SaveGame (DWORD dwFlags, CString *retsError)
 	if ((dwFlags & CGameFile::FLAG_ACCEPT_MISSION) 
 			&& (m_Universe.InDebugMode()
 				|| m_bNoMissionCheckpoint
-				|| m_Universe.GetDifficultyLevel() == CDifficultyOptions::lvlPermadeath))
+				|| m_Universe.GetDifficultyLevel() == CDifficultyOptions::ELevel::Permadeath))
 		return NOERROR;
 
 	//	If this is a mission check point and we've already quit the game, then
@@ -2193,6 +2194,8 @@ ALERROR CTranscendenceModel::ShowPane (const CString &sPane)
 //	Shows the given pane
 
 	{
+	DEBUG_TRY
+
 	ASSERT(!GetScreenStack().IsEmpty());
 	if (!InScreenSession())
 		return NOERROR;
@@ -2212,6 +2215,8 @@ ALERROR CTranscendenceModel::ShowPane (const CString &sPane)
 	//	Done
 
 	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError)
@@ -2333,7 +2338,7 @@ ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError
 	else if (!Ctx.bReturn)
 		GetScreenStack().SetCurrent(NewFrame, &OldFrame);
 	else
-		GetScreenStack().ResolveCurrent(NewFrame);
+		GetDockSession().RefreshScreen(NewFrame, Ctx.bRefresh);
 
 	//	Initialize custom screen properties
 
@@ -2697,6 +2702,11 @@ ALERROR CTranscendenceModel::StartNewGameBackground (const SNewGameSettings &New
 			return error;
 		}
 
+	//	Set the current system because we need it to be set when we create the
+	//	player ship.
+
+	m_Universe.SetCurrentSystem(pStartingSystem);
+
 	//	Figure out where in the system we want to start
 
 	CVector vStartPos;
@@ -2753,6 +2763,10 @@ ALERROR CTranscendenceModel::StartNewGameBackground (const SNewGameSettings &New
 		ItemList.GetItemPointerAtCursor()->SetKnown();
 		pType->SetShowReference();
 		}
+
+	//	Reset back to NULL so that we can place the ship later.
+
+	m_Universe.SetCurrentSystem(NULL);
 
 #ifdef DEBUG_ALL_ITEMS
 	if (m_bDebugMode)

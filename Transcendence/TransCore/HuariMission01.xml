@@ -27,7 +27,7 @@
 			level=			"4-8"
 
 			expireTime=			"5400"
-			failureAfterOutOfSystem="5400"
+			failureOnReturnToSystem="5400"
 			>
 
 		<StaticData>

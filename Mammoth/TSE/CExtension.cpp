@@ -904,14 +904,12 @@ ALERROR CExtension::ExecuteGlobals (SDesignLoadCtx &Ctx)
 
 	for (i = 0; i < m_Globals.GetCount(); i++)
 		{
-		ICCItem *pResult = CCCtx.Run(m_Globals[i].pCode);
+		ICCItemPtr pResult = CCCtx.RunCode(m_Globals[i].pCode);
 		if (pResult->IsError())
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("%s globals: %s"), m_Globals[i].sFilespec, pResult->GetStringValue());
 			return ERR_FAIL;
 			}
-
-		CCCtx.Discard(pResult);
 		}
 
 	//	Done

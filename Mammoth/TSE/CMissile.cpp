@@ -771,7 +771,7 @@ void CMissile::OnDestroyed (SDestroyCtx &Ctx)
 	m_Overlays.FireOnObjDestroyed(this, Ctx);
 	}
 
-void CMissile::OnMove (const CVector &vOldPos, Metric rSeconds)
+void CMissile::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
 //

@@ -109,6 +109,7 @@ struct SShowScreenCtx
 
 	CString sTab;
 	bool bReturn = false;
+	bool bRefresh = false;
 	bool bFirstFrame = false;
 	};
 
@@ -175,6 +176,7 @@ class CDockSession
 		CSpaceObject *OnPlayerDocked (IDockScreenUI &DockScreenUI, CSpaceObject *pObj);
 		void OnPlayerShowShipScreen (IDockScreenUI &DockScreenUI, CDesignType *pDefaultScreensRoot);
 		void PlayAmbientSound ();
+		void RefreshScreen (const SDockFrame &ResolvedFrame, bool bSaveSelection);
 		void SetBackgroundDesc (const SDockScreenBackgroundDesc &BackgroundDesc) { m_DockFrames.SetBackgroundDesc(BackgroundDesc); }
 		void SetCurrentPane (const CString &sPane) { m_DockFrames.SetCurrentPane(sPane); }
 		bool SetData (const CString &sAttrib, const ICCItem *pValue);

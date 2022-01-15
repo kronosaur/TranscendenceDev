@@ -10,6 +10,11 @@
 				backgroundID=		"&rsRedGiantSpace;"
 				spaceColor=			"#200f0a"
 				>
+		<Properties>
+			<!-- Set to TRUE when all Sung stations have been destroyed -->
+			<Global id="allSungDestroyed"></Global>
+		</Properties>
+
 		<SystemGroup>
 
 			<!-- Jiang's Star System -->
@@ -217,6 +222,37 @@
 				</Table>
 			</Orbitals>
 		</SystemGroup>
+
+		<Events>
+			<OnSystemObjDestroyed>
+				(switch
+					;	If all enemy stations are already dead, then nothing to do.
+
+					(typ@ gType 'allSungDestroyed)
+						Nil
+
+					;	If this is not a Sung station, then skip
+
+					(not (objMatches aObjDestroyed gPlayerShip "TE +sungSlavers; +populated;"))
+						Nil
+
+					;	Count remaining enemy stations. If some are still left, then 
+					;	we're done (we exclude objects that cannot attack, like Arco
+					;	Vaughn's habitat).
+
+					(sysFindObject gPlayerShip "TAE +sungSlavers; +populated; +property:canAttack;")
+						Nil
+
+					;	If we get this far, then all enemy stations have been destroyed.
+
+					(block ()
+						(typSet@ gType 'allSungDestroyed True)
+						(unvSetAchievement 'humanSpace.jiangsStarKiller)
+						)
+					)
+			</OnSystemObjDestroyed>
+		</Events>
+
 	</SystemType>
 
 </TranscendenceModule>

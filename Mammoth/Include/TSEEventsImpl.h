@@ -87,7 +87,7 @@ class CTimedCustomEvent : public CSystemEvent
 		virtual void DoEvent (DWORD dwTick, CSystem &System) override;
 		virtual CString GetEventHandlerName (void) override { return m_sEvent; }
 		virtual CSpaceObject *GetEventHandlerObj (void) override { return m_pObj; }
-		virtual bool OnObjChangedSystems (CSpaceObject *pObj) override;
+		virtual bool OnObjChangedSystems (const CSpaceObject &Obj) const override;
 		virtual bool OnObjDestroyed (CSpaceObject *pObj) override;
 
 	protected:
@@ -112,7 +112,7 @@ class CTimedRecurringEvent : public CSystemEvent
 		virtual void DoEvent (DWORD dwTick, CSystem &System) override;
 		virtual CString GetEventHandlerName (void) override { return m_sEvent; }
 		virtual CSpaceObject *GetEventHandlerObj (void) override { return m_pObj; }
-		virtual bool OnObjChangedSystems (CSpaceObject *pObj) override;
+		virtual bool OnObjChangedSystems (const CSpaceObject &Obj) const override;
 		virtual bool OnObjDestroyed (CSpaceObject *pObj) override;
 
 	protected:

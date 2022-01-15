@@ -38,7 +38,7 @@ class CAreaDamage : public TSpaceObjectImpl<OBJID_CAREADAMAGE>
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
 		virtual const CWeaponFireDesc *GetWeaponFireDesc (void) const override { return m_pDesc; }
-		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
+		virtual void OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds) override;
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
 
@@ -83,7 +83,7 @@ class CBeam : public TSpaceObjectImpl<OBJID_CBEAM>
 		virtual CSpaceObject *GetSecondarySource (void) const override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual const CWeaponFireDesc *GetWeaponFireDesc (void) const override { return m_pDesc; }
-		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
+		virtual void OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds) override;
 
 	protected:
 		//	Virtuals to be overridden
@@ -174,7 +174,7 @@ class CContinuousBeam : public TSpaceObjectImpl<OBJID_CCONTINUOUSBEAM>
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
 		virtual const CWeaponFireDesc *GetWeaponFireDesc (void) const override { return m_pDesc; }
-		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
+		virtual void OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds) override;
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
 
 	protected:
@@ -283,7 +283,7 @@ class CDisintegrationEffect : public TSpaceObjectImpl<OBJID_CDISINTEGRATIONEFFEC
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) override;
 		virtual void OnUpdateExtended (const CTimeSpan &ExtraTime) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
-		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
+		virtual void OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds) override;
 
 	private:
 		struct SParticle
@@ -347,7 +347,7 @@ class CEffect : public TSpaceObjectImpl<OBJID_CEFFECT>
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override { return damagePassthrough; }
 		virtual ICCItemPtr OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) const override;
-		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
+		virtual void OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds) override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) override;
@@ -413,7 +413,7 @@ class CFractureEffect : public TSpaceObjectImpl<OBJID_CFRACTUREEFFECT>
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) override;
 		virtual void OnUpdateExtended (const CTimeSpan &ExtraTime) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
-		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
+		virtual void OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds) override;
 
 	private:
 		struct SParticle
@@ -561,7 +561,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual bool IsIntangible (void) const override { return (IsInactive() || IsDestroyed()); }
 		virtual bool IsTargetableProjectile (void) const override { return m_fTargetable; }
 		virtual bool IsUnreal (void) const override { return (IsInactive() || IsSuspended() || IsDestroyed()); }
-		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
+		virtual void OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds) override;
 		virtual void OnOverlayConditionChanged (ECondition iCondition, EConditionChange iChange) override { }
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
@@ -658,7 +658,7 @@ class CParticleDamage : public TSpaceObjectImpl<OBJID_CPARTICLEDAMAGE>
 		virtual bool IsInactive (void) const override { return (m_fPainterFade ? true : false); }
 		virtual bool IsIntangible (void) const override { return ((m_fPainterFade || IsDestroyed()) ? true : false); }
 		virtual bool IsUnreal (void) const override { return (IsInactive() || IsSuspended() || IsDestroyed()); }
-		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
+		virtual void OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds) override;
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
 
 	protected:
@@ -843,7 +843,7 @@ class CParticleEffect : public TSpaceObjectImpl<OBJID_CPARTICLEEFFECT>
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
-		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
+		virtual void OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds) override;
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
 
 	private:
@@ -938,7 +938,7 @@ class CRadiusDamage : public TSpaceObjectImpl<OBJID_CRADIUSDAMAGE>
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
 		virtual const CWeaponFireDesc *GetWeaponFireDesc (void) const override { return m_pDesc; }
-		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
+		virtual void OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds) override;
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
 
 	protected:
@@ -1262,7 +1262,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual void OnHitByDeviceDisruptDamage (DWORD dwDuration) override;
 		virtual void OnItemEnhanced (CItemListManipulator &ItemList) override;
 		virtual void OnMissionCompleted (CMission *pMission, bool bSuccess) override { m_pController->OnMissionCompleted(pMission, bSuccess); }
-		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
+		virtual void OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds) override;
 		virtual void OnNewSystem (CSystem *pSystem) override;
 		virtual void OnObjHit (SDamageCtx &Ctx) override { m_pController->OnObjHit(Ctx); }
 		virtual void OnOverlayConditionChanged (ECondition iCondition, EConditionChange iChange) override { m_pController->OnOverlayConditionChanged(iCondition, iChange); }

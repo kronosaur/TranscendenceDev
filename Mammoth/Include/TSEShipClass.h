@@ -403,6 +403,7 @@ class CShipClass : public CDesignType
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags = 0) const;
 
 		CString GenerateShipName (DWORD *retdwFlags) const;
+		const CString &GetAchievement () const { return m_sAchievement; }
 		const CAISettings &GetAISettings (void) const { return m_AISettings; }
 		const CShipArmorDesc &GetArmorDesc (void) const { return m_Armor; }
 		DWORD GetCategoryFlags (void) const;
@@ -568,7 +569,7 @@ class CShipClass : public CDesignType
 		CItemType *CalcBestMissile (const SDeviceDesc &Device) const;
 		Metric CalcCombatStrength (void) const;
 		Metric CalcDamageRate (int *retiAveWeaponLevel = NULL, int *retiMaxWeaponLevel = NULL) const;
-		Metric CalcDefenseRate (void) const;
+		Metric CalcDefenseRate (Metric *retrStaticRate = NULL, Metric *retrLegacyRate = NULL) const;
 		Metric CalcDodgeRate (void) const { return CalcManeuverValue(true); }
 		CurrencyValue CalcHullValue (const CShipStandard &Standard, Metric *retrPoints = NULL) const;
 		int CalcLevel (void) const;
@@ -598,6 +599,7 @@ class CShipClass : public CDesignType
 		CString m_sTypeName;					//	Name of type
 		DWORD m_dwClassNameFlags = 0;			//	Flags for class name
 		CSovereignRef m_pDefaultSovereign;		//	Sovereign
+		CString m_sAchievement;					//	Achievement if killed by player
 
 		CString m_sShipNames;					//	Names to use for individual ship
 		DWORD m_dwShipNameFlags = 0;			//	Flags for ship name

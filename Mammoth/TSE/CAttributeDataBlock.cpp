@@ -442,6 +442,8 @@ void CAttributeDataBlock::OnObjDestroyed (CSpaceObject *pObj)
 //	Object has been destroyed
 
 	{
+	DEBUG_TRY
+
 	DWORD dwObjID = pObj->GetID();
 	SObjRefEntry *pEntry = m_pObjRefData;
 	while (pEntry)
@@ -454,6 +456,8 @@ void CAttributeDataBlock::OnObjDestroyed (CSpaceObject *pObj)
 
 		pEntry = pEntry->pNext;
 		}
+
+	DEBUG_CATCH
 	}
 
 void CAttributeDataBlock::OnSystemChanged (CSystem *pSystem)

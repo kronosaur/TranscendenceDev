@@ -93,9 +93,11 @@ void CItemEventDispatcher::Init (CSpaceObject *pSource)
 
 			for (i = 0; i < pEvents->GetCount(); i++)
 				{
-				CString sEvent = pEvents->GetEvent(i, &Event.pCode);
+				ICCItem *pCode;
+				Event.sEvent = pEvents->GetEvent(i, &pCode);
+				Event.pCode = pCode;
 
-				AddEntry(sEvent, dispatchFireEvent, Event, pItem, OBJID_NULL);
+				AddEntry(Event.sEvent, dispatchFireEvent, Event, pItem, OBJID_NULL);
 				}
 			}
 		else
@@ -172,10 +174,9 @@ void CItemEventDispatcher::FireEventFull (CSpaceObject *pSource, ECodeChainEvent
 
 			//	Run code
 
-			ICCItem *pResult = Ctx.Run(pEntry->Event);
+			ICCItemPtr pResult = Ctx.RunCode(pEntry->Event);
 			if (pResult->IsError())
 				pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x Event"), pEntry->pItem->GetType()->GetUNID()), pResult);
-			Ctx.Discard(pResult);
 			}
 
 		//	Check for enhancement expiration

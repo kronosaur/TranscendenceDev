@@ -375,6 +375,12 @@
 							(theShip gPlayerShip)
 							(dstItem (scrGetItem gScreen))
 							(theCursor (scrGetListCursor gScreen))
+
+							(enhancedSegments
+								(count (objGetItems theShip "aI +property:enhancement; -property:defectiveEnhancement;"))
+								)
+							(allAlreadyEnhanced (= enhancedSegments (obj@ theShip 'armorCount)))
+
 							result
 							)
 							;	Use the item
@@ -385,6 +391,18 @@
 
 							;	Restore the cursor position
 							(scrSetListCursor gScreen theCursor)
+
+							;	If we've enhanced all armor segments on the player ship,
+							;	then we get an achievement.
+
+							(if (and (= theShip gPlayerShip)
+									(not allAlreadyEnhanced)
+									(= (count (objGetItems theShip "aI +property:enhancement; -property:defectiveEnhancement;"))
+										(obj@ theShip 'armorCount)
+										)
+									)
+								(unvSetAchievement 'core.armorEnhanced)
+								)
 
 							;	Store result and display it
 							(scrSetData gScreen 'usageResult result)
@@ -515,7 +533,7 @@
 			minLevel: Target armor most be at least this level.
 			maxLevel: Target armor must not be higher than this level.
 
-    -->
+	-->
 
 	<Type UNID="&baStdArmorRepair;">
 		<Properties>
@@ -847,7 +865,7 @@
 		enhancement - enhancement to apply
 		enhancementTable - table of criteria and enhancements for different device types / levels
 
-    -->
+	-->
 
 	<Type UNID="&baStdDeviceEnhancement;">
 		<Properties>
@@ -1262,7 +1280,7 @@
 			armor types / levels. Use this to apply different enhancements to
 			different types of armor.
 
-    -->
+	-->
 
 	<Type UNID="&baStdPasteBarrel;">
 		<Properties>

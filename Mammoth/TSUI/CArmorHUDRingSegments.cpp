@@ -6,11 +6,16 @@
 #include "stdafx.h"
 
 #define ARMOR_COLOR_ATTRIB						CONSTLIT("armorColor")
+#define HP_ANGLE_ATTRIB							CONSTLIT("hpAngle")
+#define LABEL_ANGLE_ATTRIB						CONSTLIT("labelAngle")
 #define SCALE_ATTRIB							CONSTLIT("scale")
+#define SEGMENT_ATTRIB							CONSTLIT("segment")
 #define SHIELDS_COLOR_ATTRIB					CONSTLIT("shieldsColor")
 
 #define SCALE_HP								CONSTLIT("hp")
 #define SCALE_PERCENT							CONSTLIT("percent")
+
+#define TAG_ARMOR_SECTION						CONSTLIT("ArmorSection")
 
 const int RING_SPACING = 2;
 const int INTER_SEGMENT_SPACING = 2;
@@ -18,14 +23,6 @@ const int NAME_SPACING_X = 20;
 const int NAME_WIDTH = 130;
 
 const CG32bitPixel DISABLED_LABEL_COLOR =	CG32bitPixel(128, 0, 0);
-
-CArmorHUDRingSegments::CArmorHUDRingSegments (void) :
-		m_bInvalid(true)
-
-//	CArmorHUDRingSegments constructor
-
-	{
-	}
 
 ALERROR CArmorHUDRingSegments::Bind (SDesignLoadCtx &Ctx)
 
@@ -35,6 +32,81 @@ ALERROR CArmorHUDRingSegments::Bind (SDesignLoadCtx &Ctx)
 
 	{
 	return NOERROR;
+	}
+
+void CArmorHUDRingSegments::CalcHPLabelBox (int iAngle, int iRadius, SSegment &Seg)
+
+//	CalcHPLabelBox
+//
+//	Compose the position of the HP label.
+
+	{
+	Metric rCenterAngle = ::mathDegreesToRadians(iAngle);
+
+	//	Figure out if we're drawing the text radially or along the arc.
+
+	if (iAngle <= 45 || (iAngle >= 135 && iAngle <= 225) || iAngle >= 315)
+		{
+		Seg.bArcHPLabel = false;
+
+		CVector vMidPoint = CVector::FromPolarInv(rCenterAngle, iRadius);
+		int cxTotal = m_cxMaxValue + 2;
+		int cxExtra = m_cxMaxValue / 2;
+		int cxInner = cxTotal - cxExtra;
+
+		//	Right side of circle
+
+		if (iAngle <= 45 || iAngle >= 315)
+			{
+			Seg.vInnerPos = vMidPoint - CVector(cxInner, 0.0);
+			Seg.vOuterPos = vMidPoint + CVector(cxExtra, 0.0);
+
+			Seg.vHPText = Seg.vInnerPos + (0.5 * (Seg.vOuterPos - Seg.vInnerPos)) + CVector(0.0, -0.5 * m_cyMaxValue);
+			Seg.rHPTextRotation = 0.0;
+			}
+
+		//	Left side of circle
+
+		else
+			{
+			Seg.vInnerPos = vMidPoint + CVector(cxInner, 0.0);
+			Seg.vOuterPos = vMidPoint - CVector(cxExtra, 0.0);
+
+			Seg.vHPText = Seg.vInnerPos + (0.5 * (Seg.vOuterPos - Seg.vInnerPos)) + CVector(0.0, -0.5 * m_cyMaxValue);
+			Seg.rHPTextRotation = 0.0;
+			}
+		}
+
+	//	Otherwise, painting along the arc.
+
+	else
+		{
+		Seg.bArcHPLabel = true;
+
+		Seg.iArcRadius = Max(10, iRadius - m_cyMaxValue);
+		Seg.iArcWidth = m_cyMaxValue;// +RING_SPACING;
+
+		//	Compute the smallest angle that will fit the length of the text
+		//	at the narrow point of the arc.
+
+		Seg.rArcSpan = (Metric)m_cxMaxValue / (Metric)Seg.iArcRadius;
+		Seg.rArcStart = mathAngleMod(rCenterAngle - (0.5 * Seg.rArcSpan));
+
+		//	Compute the text position
+
+		if (iAngle < 180)
+			{
+			int iTextRadius = Seg.iArcRadius + ((Seg.iArcWidth - m_cyMaxValue) / 2) + m_cyMaxValue;
+			Seg.vHPText = CVector::FromPolarInv(rCenterAngle, iTextRadius);
+			Seg.rHPTextRotation = rCenterAngle - (HALF_PI);
+			}
+		else
+			{
+			int iTextRadius = Seg.iArcRadius + ((Seg.iArcWidth - m_cyMaxValue) / 2) - 1;
+			Seg.vHPText = CVector::FromPolarInv(rCenterAngle, iTextRadius);
+			Seg.rHPTextRotation = rCenterAngle + (HALF_PI);
+			}
+		}
 	}
 
 void CArmorHUDRingSegments::DrawArmorName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CArmorItem ArmorItem, CG32bitPixel rgbBack, CG32bitPixel rgbColor)
@@ -74,9 +146,46 @@ void CArmorHUDRingSegments::DrawArmorName (CG32bitImage &Dest, int iAngle, int i
 	DEBUG_CATCH
 	}
 
-void CArmorHUDRingSegments::DrawIntegrityBox (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sText, CG32bitPixel rgbBack, CG32bitPixel rgbColor)
+void CArmorHUDRingSegments::DrawIntegrityBox (CG32bitImage &Dest, const SSegment &Seg, CG32bitPixel rgbBack) const
 
 //	DrawIntegrityBox
+//
+//	Draws the armor integrity value on an arc background.
+
+	{
+	DEBUG_TRY
+
+	CVector vCenter(m_xCenter, m_yCenter);
+
+	if (Seg.bArcHPLabel)
+		{
+		CGDraw::Arc(Dest, 
+				vCenter, 
+				Seg.iArcRadius, 
+				Seg.rArcStart, 
+				mathAngleMod(Seg.rArcStart + Seg.rArcSpan), 
+				Seg.iArcWidth, 
+				rgbBack, 
+				CGDraw::blendNormal, 
+				0, 
+				CGDraw::ARC_INNER_RADIUS);
+		}
+	else
+		{
+		CGDraw::ArcQuadrilateral(Dest,
+				vCenter,
+				Seg.vInnerPos,
+				Seg.vOuterPos,
+				m_cyMaxValue,
+				rgbBack);
+		}
+
+	DEBUG_CATCH
+	}
+
+void CArmorHUDRingSegments::DrawIntegrityBoxText (CG32bitImage &Dest, const SSegment &Seg, CG32bitPixel rgbColor) const
+
+//	DrawIntegrityBoxText
 //
 //	Draws the armor integrity value on an arc background.
 
@@ -86,106 +195,21 @@ void CArmorHUDRingSegments::DrawIntegrityBox (CG32bitImage &Dest, int iAngle, in
 	const CVisualPalette &VI = g_pHI->GetVisuals();
 	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
 
-	Metric rCenterAngle = ::mathDegreesToRadians(iAngle);
-
-	//	We compute the metrics for the arc and the text
-
-	int iArcRadius;
-	Metric rArcStart;
-	Metric rArcSpan;
-	int iArcWidth;
-
-	CVector vText;
-	Metric rTextRot;
-
-	//	Figure out if we're drawing the text radially or along the arc.
-
-	if (iAngle <= 45 || (iAngle >= 135 && iAngle <= 225) || iAngle >= 315)
-		{
-		CVector vInnerPos;
-		CVector vOuterPos;
-		CVector vMidPoint = CVector::FromPolarInv(rCenterAngle, iRadius);
-		int cxTotal = m_cxMaxValue + 2;
-		int cxExtra = m_cxMaxValue / 2;
-
-		//	Right side of circle
-
-		if (iAngle <= 45 || iAngle >= 315)
-			{
-			vInnerPos = vMidPoint - CVector(cxTotal - cxExtra, 0.0);
-			vOuterPos = vMidPoint + CVector(cxExtra, 0.0);
-
-			vText = vInnerPos + (0.5 * (vOuterPos - vInnerPos)) + CVector(0.0, -0.5 * m_cyMaxValue);
-			rTextRot = 0.0;
-			}
-
-		//	Left side of circle
-
-		else
-			{
-			vInnerPos = vMidPoint + CVector(cxTotal - cxExtra, 0.0);
-			vOuterPos = vMidPoint - CVector(cxExtra, 0.0);
-
-			vText = vInnerPos + (0.5 * (vOuterPos - vInnerPos)) + CVector(0.0, -0.5 * m_cyMaxValue);
-			rTextRot = 0.0;
-			}
-
-		//	Draw the arc
-
-		CVector vCenter(m_xCenter, m_yCenter);
-		bool bRightSide = (iAngle <= 45 || iAngle >= 315);
-		CGDraw::ArcQuadrilateral(Dest,
-				vCenter,
-				vInnerPos,
-				vOuterPos,
-				m_cyMaxValue,
-				rgbBack);
-		}
-
-	//	Otherwise, painting along the arc.
-
-	else
-		{
-		iArcRadius = Max(10, iRadius - m_cyMaxValue);
-		iArcWidth = m_cyMaxValue;// +RING_SPACING;
-
-		//	Compute the smallest angle that will fit the length of the text
-		//	at the narrow point of the arc.
-
-		rArcSpan = (Metric)m_cxMaxValue / (Metric)iArcRadius;
-		rArcStart = mathAngleMod(rCenterAngle - (0.5 * rArcSpan));
-
-		//	Compute the text position
-
-		if (iAngle < 180)
-			{
-			vText = CVector::FromPolarInv(rCenterAngle, iArcRadius + ((iArcWidth - m_cyMaxValue) / 2) + m_cyMaxValue);
-			rTextRot = rCenterAngle - (HALF_PI);
-			}
-		else
-			{
-			vText = CVector::FromPolarInv(rCenterAngle, iArcRadius + ((iArcWidth - m_cyMaxValue) / 2) - 1);
-			rTextRot = rCenterAngle + (HALF_PI);
-			}
-
-		//	Draw the arc
-
-		CGDraw::Arc(Dest, CVector(m_xCenter, m_yCenter), iArcRadius, rArcStart, mathAngleMod(rArcStart + rArcSpan), iArcWidth, rgbBack, CGDraw::blendNormal, 0, CGDraw::ARC_INNER_RADIUS);
-		}
-
 	//	Draw the text
 
-	vText = vText + CVector(m_xCenter, m_yCenter);
-	if (rTextRot == 0.0)
-		MediumFont.DrawText(Dest, (int)vText.GetX(), (int)vText.GetY(), rgbColor, sText, CG16bitFont::AlignCenter);
+	CVector vCenter(m_xCenter, m_yCenter);
+	CVector vText = vCenter + Seg.vHPText;
+
+	if (Seg.rHPTextRotation == 0.0)
+		MediumFont.DrawText(Dest, (int)vText.GetX(), (int)vText.GetY(), rgbColor, Seg.sHP, CG16bitFont::AlignCenter);
 	else
 		CGDraw::Text(Dest,
 				vText,
-				sText,
+				Seg.sHP,
 				MediumFont,
 				rgbColor,
 				CGDraw::blendNormal,
-				rTextRot,
+				Seg.rHPTextRotation,
 				CGDraw::TEXT_ALIGN_CENTER);
 
 	DEBUG_CATCH
@@ -242,6 +266,48 @@ void CArmorHUDRingSegments::DrawItemBox (CG32bitImage &Dest, int iAngle, int iRa
 	DEBUG_CATCH
 	}
 
+void CArmorHUDRingSegments::DrawShieldsIntegrity (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sHP, CG32bitPixel rgbBack, CG32bitPixel rgbColor) const
+
+//	DrawShieldIntegrity
+//
+//	Draws the HP box.
+
+	{
+	const CVisualPalette &VI = g_pHI->GetVisuals();
+	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
+
+	CVector vCenter(m_xCenter, m_yCenter);
+	Metric rCenterAngle = ::mathDegreesToRadians(iAngle);
+
+	int iArcRadius = Max(10, iRadius - m_cyMaxValue);
+	int iArcWidth = m_cyMaxValue;// +RING_SPACING;
+
+	//	Compute the smallest angle that will fit the length of the text
+	//	at the narrow point of the arc.
+
+	Metric rArcSpan = (Metric)m_cxMaxValue / (Metric)iArcRadius;
+	Metric rArcStart = mathAngleMod(rCenterAngle - (0.5 * rArcSpan));
+
+	//	Draw
+
+	CGDraw::Arc(Dest, 
+			vCenter, 
+			iArcRadius, 
+			rArcStart, 
+			mathAngleMod(rArcStart + rArcSpan), 
+			iArcWidth, 
+			rgbBack, 
+			CGDraw::blendNormal, 
+			0, 
+			CGDraw::ARC_INNER_RADIUS);
+
+	//	Compute the text position
+
+	int iTextRadius = iArcRadius + ((iArcWidth - m_cyMaxValue) / 2) + m_cyMaxValue;
+	CVector vText = vCenter + CVector::FromPolarInv(rCenterAngle, iTextRadius);
+	MediumFont.DrawText(Dest, (int)vText.GetX(), (int)vText.GetY(), rgbColor, sHP, CG16bitFont::AlignCenter);
+	}
+
 void CArmorHUDRingSegments::DrawShieldsName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CDeviceItem ShieldItem, CG32bitPixel rgbBack, CG32bitPixel rgbColor)
 
 //	DrawShieldsName
@@ -279,6 +345,9 @@ bool CArmorHUDRingSegments::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsErr
 //	Initialize from XML
 
 	{
+	const CVisualPalette &VI = g_pHI->GetVisuals();
+	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
+
 	m_rgbArmor = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(ARMOR_COLOR_ATTRIB), CG32bitPixel(255, 128, 0));
 	m_rgbArmorText = CG32bitPixel::Fade(m_rgbArmor, CG32bitPixel(255, 255, 255), 80);
 	m_rgbArmorTextBack = CG32bitPixel::Darken(m_rgbArmor, 128);
@@ -303,10 +372,10 @@ bool CArmorHUDRingSegments::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsErr
 	m_iArmorRingWidth = 20;
 	m_iShieldRingWidth = 20;
 
-	//	Calculate metrics
+	m_iArmorInnerRadius = m_iArmorRingRadius - m_iArmorRingWidth;
+	m_iArmorNameRadius = m_iArmorRingRadius + RING_SPACING + m_iShieldRingWidth + RING_SPACING;
 
-	const CVisualPalette &VI = g_pHI->GetVisuals();
-	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
+	//	Calculate metrics
 
 	int iTotalRadius = m_iArmorRingRadius + RING_SPACING + m_iShieldRingWidth;
 	m_cxDisplay = (2 * iTotalRadius) + (2 * (NAME_SPACING_X + NAME_WIDTH));
@@ -318,6 +387,51 @@ bool CArmorHUDRingSegments::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsErr
 	//	Measure out metrics for armor/shield integrity text
 
 	m_cxMaxValue = MediumFont.MeasureText(CONSTLIT("100%"), &m_cyMaxValue);
+
+	//	Initialize armor segment metrics
+
+	auto &ArmorDesc = CreateCtx.Class.GetArmorDesc();
+	m_Segments.DeleteAll();
+	m_Segments.InsertEmpty(ArmorDesc.GetCount());
+	for (int i = 0; i < m_Segments.GetCount(); i++)
+		{
+		auto &SegmentDesc = ArmorDesc.GetSegment(i);
+
+		m_Segments[i].iStartAngle = AngleMod(90 + SegmentDesc.GetStartAngle());
+		m_Segments[i].iEndAngle = AngleMod(90 + SegmentDesc.GetStartAngle() + SegmentDesc.GetSpan());
+		m_Segments[i].iLabelAngle = AngleMod(90 + SegmentDesc.GetCenterAngle());
+		m_Segments[i].iHPLabelAngle = AngleMod(90 + SegmentDesc.GetCenterAngle());
+		}
+
+	//	See if the definition overrides some angles.
+
+	for (int i = 0; i < CreateCtx.Desc.GetContentElementCount(); i++)
+		{
+		const CXMLElement &Child = *CreateCtx.Desc.GetContentElement(i);
+		if (strEquals(Child.GetTag(), TAG_ARMOR_SECTION))
+			{
+			int iSeg = Child.GetAttributeInteger(SEGMENT_ATTRIB);
+			if (iSeg < 0 || iSeg >= ArmorDesc.GetCount())
+				{
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("Invalid segment ID: %d"), iSeg);
+				return false;
+				}
+
+			int iValue;
+			if (Child.FindAttributeInteger(HP_ANGLE_ATTRIB, &iValue))
+				m_Segments[iSeg].iHPLabelAngle = AngleMod(90 + iValue);
+
+			if (Child.FindAttributeInteger(LABEL_ANGLE_ATTRIB, &iValue))
+				m_Segments[iSeg].iLabelAngle = AngleMod(90 + iValue);
+			}
+		}
+
+	//	Calc metrics of HP label based on angle
+
+	for (int i = 0; i < m_Segments.GetCount(); i++)
+		{
+		CalcHPLabelBox(m_Segments[i].iHPLabelAngle, m_iArmorInnerRadius + RING_SPACING, m_Segments[i]);
+		}
 
 	return true;
 	}
@@ -374,9 +488,6 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 	CG32bitPixel rgbShieldsBack = CG32bitPixel(20, 20, 20, 140);
 	CG32bitPixel rgbSelectionBack = CG32bitPixel::ChangeHue(m_rgbArmorTextBack, 180);
 
-	int iArmorInnerRadius = m_iArmorRingRadius - m_iArmorRingWidth;
-	int iArmorNameRadius = m_iArmorRingRadius + RING_SPACING + m_iShieldRingWidth + RING_SPACING;
-
 	//	Create the buffer, if necessary
 
 	if (m_Buffer.IsEmpty())
@@ -386,27 +497,27 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 
 	//	Paint the ship
 
-	pShip->GetClass()->PaintScaled(m_Buffer, m_xCenter, m_yCenter, 2 * iArmorInnerRadius, 2 * iArmorInnerRadius, 90, 0);
-	CGDraw::Circle(m_Buffer, m_xCenter, m_yCenter, iArmorInnerRadius, CG32bitPixel(CG32bitPixel::Desaturate(m_rgbArmor), 80), CGDraw::blendCompositeNormal);
+	pShip->GetClass()->PaintScaled(m_Buffer, m_xCenter, m_yCenter, 2 * m_iArmorInnerRadius, 2 * m_iArmorInnerRadius, 90, 0);
+	CGDraw::Circle(m_Buffer, m_xCenter, m_yCenter, m_iArmorInnerRadius, CG32bitPixel(CG32bitPixel::Desaturate(m_rgbArmor), 80), CGDraw::blendCompositeNormal);
 
 	//	Paint each of the armor segments, one at a time.
 
 	for (CArmorItem ArmorItem : pShip->GetArmorSystem())
 		{
-		const CShipArmorSegmentDesc &Sect = ArmorItem.GetSegmentDesc();
-		int iIntegrity;
-		CString sHP = ArmorItem.GetHPDisplay(m_HPDisplay, &iIntegrity);
-		int iWidth = (iIntegrity * m_iArmorRingWidth) / 100;
+		SSegment &Seg = m_Segments[ArmorItem.GetSegmentIndex()];
 		bool bSelected = (ArmorItem.GetSegmentIndex() == Ctx.iSegmentSelected);
+
+		Seg.sHP = ArmorItem.GetHPDisplay(m_HPDisplay, &Seg.iIntegrity);
+		int iWidth = (Seg.iIntegrity * m_iArmorRingWidth) / 100;
 
 		//	Draw the full armor size
 
 		CGDraw::Arc(m_Buffer, 
 				m_xCenter, 
 				m_yCenter, 
-				iArmorInnerRadius, 
-				AngleMod(90 + Sect.GetStartAngle()), 
-				AngleMod(90 + Sect.GetStartAngle() + Sect.GetSpan()), 
+				m_iArmorInnerRadius, 
+				Seg.iStartAngle, 
+				Seg.iEndAngle, 
 				m_iArmorRingWidth, 
 				rgbArmorBack, 
 				CGDraw::blendCompositeNormal, 
@@ -418,34 +529,47 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 		CGDraw::Arc(m_Buffer, 
 				m_xCenter, 
 				m_yCenter, 
-				iArmorInnerRadius, 
-				AngleMod(90 + Sect.GetStartAngle()), 
-				AngleMod(90 + Sect.GetStartAngle() + Sect.GetSpan()), 
+				m_iArmorInnerRadius, 
+				Seg.iStartAngle, 
+				Seg.iEndAngle, 
 				iWidth, 
 				m_rgbArmor, 
 				CGDraw::blendCompositeNormal, 
 				INTER_SEGMENT_SPACING,
 				CGDraw::ARC_INNER_RADIUS);
 
-		//	Draw armor integrity box
-
-        int iCenterAngle = AngleMod(90 + Sect.GetCenterAngle());
-		DrawIntegrityBox(m_Buffer, 
-				iCenterAngle, 
-				iArmorInnerRadius + RING_SPACING, 
-				sHP, 
-				(bSelected ? rgbSelectionBack : m_rgbArmorTextBack),
-				m_rgbArmorText);
-
 		//	Draw armor text
 
 		DrawArmorName(m_Buffer, 
-				iCenterAngle, 
-				iArmorNameRadius, 
+				Seg.iLabelAngle, 
+				m_iArmorNameRadius, 
 				pShip, 
 				ArmorItem,
 				(bSelected ? rgbSelectionBack : m_rgbArmorTextBack),
 				m_rgbArmorText);
+
+		//	Draw armor integrity box
+
+		if (!bSelected)
+			DrawIntegrityBox(m_Buffer, Seg, m_rgbArmorTextBack);
+		}
+
+	//	Paint the selected HP box
+
+	if (Ctx.iSegmentSelected != -1)
+		{
+		SSegment &Seg = m_Segments[Ctx.iSegmentSelected];
+
+		DrawIntegrityBox(m_Buffer, Seg, rgbSelectionBack);
+		}
+
+	//	Paint the HP values
+
+	for (int i = 0; i < m_Segments.GetCount(); i++)
+		{
+		SSegment &Seg = m_Segments[i];
+
+		DrawIntegrityBoxText(m_Buffer, Seg, m_rgbArmorText);
 		}
 
 	//	Paint shield level
@@ -489,7 +613,7 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 
 		//	Draw shield integrity box
 
-		DrawIntegrityBox(m_Buffer, 
+		DrawShieldsIntegrity(m_Buffer, 
 				90, 
 				iShieldInnerRadius + m_iShieldRingWidth, 
 				sHP, 

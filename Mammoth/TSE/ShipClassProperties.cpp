@@ -55,12 +55,70 @@
 #define PROPERTY_WRECK_TYPE						CONSTLIT("wreckType")
 #define PROPERTY_WRECK_TYPE_NAME				CONSTLIT("wreckTypeName")
 
-TPropertyHandler<CShipClass> CShipClass::m_PropertyTable = std::array<TPropertyHandler<CShipClass>::SPropertyDef, 5> {{
+TPropertyHandler<CShipClass> CShipClass::m_PropertyTable = std::array<TPropertyHandler<CShipClass>::SPropertyDef, 11> {{
+		{
+		"achievement",			"Achievement triggered if destroyed by player",
+		[](const CShipClass &ShipClass, const CString &sProperty) 
+			{
+			return (!ShipClass.GetAchievement().IsBlank() ? ICCItemPtr(ShipClass.GetAchievement()) : ICCItemPtr::Nil());
+			},
+		NULL,
+		},
+
 		{
 		"ai.combatStyle",			"Combat style",
 		[](const CShipClass &ShipClass, const CString &sProperty) 
 			{
 			return ICCItemPtr(CAISettings::ConvertToID(ShipClass.m_AISettings.GetCombatStyle()));
+			},
+		NULL,
+		},
+
+		{
+		"balance.combat",		"Balance combat strength",
+		[](const CShipClass &ShipClass, const CString &sProperty) 
+			{
+			return ICCItemPtr(ShipClass.CalcCombatStrength());
+			},
+		NULL,
+		},
+
+		{
+		"balance.defense",		"Balance defense strength",
+		[](const CShipClass &ShipClass, const CString &sProperty) 
+			{
+			return ICCItemPtr(ShipClass.CalcDefenseRate());
+			},
+		NULL,
+		},
+
+		{
+		"balance.defenseStatic",		"Balance defense strength (excluding maneuver)",
+		[](const CShipClass &ShipClass, const CString &sProperty) 
+			{
+			Metric rRate;
+			ShipClass.CalcDefenseRate(&rRate);
+			return ICCItemPtr(rRate);
+			},
+		NULL,
+		},
+
+		{
+		"balance.dodgeRate",	"Balance dodge rate (component of defense strength)",
+		[](const CShipClass &ShipClass, const CString &sProperty) 
+			{
+			return ICCItemPtr(ShipClass.CalcDodgeRate());
+			},
+		NULL,
+		},
+
+		{
+		"balance.type",			"Balance type",
+		[](const CShipClass &ShipClass, const CString &sProperty) 
+			{
+			CString sValue;
+			ShipClass.CalcBalanceType(&sValue);
+			return ICCItemPtr(sValue);
 			},
 		NULL,
 		},
@@ -217,11 +275,14 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_LAUNCHER_ITEM))
 		{
-		const SDeviceDesc *pDesc = m_AverageDevices.GetDeviceDescByName(devMissileWeapon);
+		int iCount;
+		const SDeviceDesc *pDesc = m_AverageDevices.GetDeviceDescByName(devMissileWeapon, &iCount);
 		if (pDesc == NULL)
 			return ICCItemPtr(ICCItem::Nil);
 
-		return ICCItemPtr(CreateListFromItem(pDesc->Item));
+		CItem Item = pDesc->Item;
+		Item.SetCount(iCount);
+		return ICCItemPtr(CreateListFromItem(Item));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_HULL_VALUE))

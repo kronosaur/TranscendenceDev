@@ -13,12 +13,12 @@
 						{	test:'(typ@ &stDwargColony; 'abandonedDockScreen)		result:&dsRPGAbandonedStation;	}
 						{	test:'(typ@ &stDwargColony; 'armorClass)				result:"Dwarg chiton armor"	}
 						{	test:'(typ@ &stDwargColony; 'armorLevel)				result:3	}
-						{	test:'(typ@ &stDwargColony; 'balance)					result:216	}
+						{	test:'(typ@ &stDwargColony; 'balance)					result:176	}
 						{	test:'(typ@ &stDwargColony; 'canAttack)					result:True	}
 						{	test:'(typ@ &stDwargColony; 'category)					result:"02-Enemy"	}
-						{	test:'(typ@ &stDwargColony; 'challengeRating)			result:10	}
+						{	test:'(typ@ &stDwargColony; 'challengeRating)			result:9	}
 						{	test:'(typ@ &stDwargColony; 'defenderCombatStrengthTarget)			result:	87.807999999999979 }
-						{	test:'(typ@ &stDwargColony; 'defenderStrength)			result:642	}
+						{	test:'(typ@ &stDwargColony; 'defenderStrength)			result:501	}
 						{	test:'(typ@ &stDwargColony; 'dockScreen)				result:Nil	}
 						{	test:'(typ@ &stDwargColony; 'explosionType)				result:"blast explosion 2"	}
 						{	test:'(typ@ &stDwargColony; 'fireRateAdj)				result:200	}
@@ -41,13 +41,13 @@
 						{	test:'(typ@ &stDwargColony; 'shipEncounterTable)		result:Nil	}
 						{	test:'(typ@ &stDwargColony; 'shipReinforcementsTable)	result:'(&scDwargRaider;)	}
 						{	test:'(typ@ &stDwargColony; 'showsUnexploredAnnotation)	result:Nil	}
-						{	test:'(typ@ &stDwargColony; 'size)						result:0	}
+						{	test:'(typ@ &stDwargColony; 'size)						result:189	}
 						{	test:'(typ@ &stDwargColony; 'sovereign)					result:&svDwargRaiders;	}
 						{	test:'(typ@ &stDwargColony; 'sovereignName)				result:"Dwarg civilization"	}
 						{	test:'(typ@ &stDwargColony; 'squadronDesc)				result:{ count:'challengeHard id:"0" reinforce:'auto  shipTable:'(&scDwargRaider;) 	} }
-						{	test:'(typ@ &stDwargColony; 'stdTreasure)				result:3437.0	}
+						{	test:'(typ@ &stDwargColony; 'stdTreasure)				result:2976.0	}
 						{	test:'(typ@ &stDwargColony; 'systemCriteria)			result:"+dwargSpace;"	}
-						{	test:'(typ@ &stDwargColony; 'treasureBalance)			result:93	}
+						{	test:'(typ@ &stDwargColony; 'treasureBalance)			result:107	}
 						{	test:'(typ@ &stDwargColony; 'treasureDesiredValue)		result:3200	}
 						{	test:'(typ@ &stDwargColony; 'treasureValue)				result:3200	}
 						{	test:'(typ@ &stDwargColony; 'unid)						result:&stDwargColony;	}

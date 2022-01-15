@@ -132,8 +132,6 @@ void CItem::AccumulateCustomAttributes (TArray<SDisplayAttribute> *retList, ICCI
 //	Adds display attributes defined by <GetDisplayAttributes>
 
 	{
-	int i;
-
 	//	See if we have <GetDisplayAttributes> event. If not, we're done.
 
 	SEventHandlerDesc Event;
@@ -148,14 +146,14 @@ void CItem::AccumulateCustomAttributes (TArray<SDisplayAttribute> *retList, ICCI
 	Ctx.SaveAndDefineItemVar(*this);
 	Ctx.SaveAndDefineDataVar(pData);
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
 		::kernelDebugLogPattern("[%08x] <GetDisplayAttributes>: %s", GetType()->GetUNID(), pResult->GetStringValue());
 	else if (!pResult->IsNil())
 		{
 		//	We expect a list of attributes.
 
-		for (i = 0; i < pResult->GetCount(); i++)
+		for (int i = 0; i < pResult->GetCount(); i++)
 			{
 			ICCItem *pEntry = pResult->GetElement(i);
 
@@ -164,8 +162,6 @@ void CItem::AccumulateCustomAttributes (TArray<SDisplayAttribute> *retList, ICCI
 				retList->Insert(Entry);
 			}
 		}
-
-	Ctx.Discard(pResult);
 	}
 
 bool CItem::AccumulateEnhancementDisplayAttributes (TArray<SDisplayAttribute> &retList) const
@@ -555,7 +551,7 @@ bool CItem::FireCanBeInstalled (CSpaceObject *pSource, int iSlot, CString *retsE
 			Ctx.DefineNil(CONSTLIT("aArmorSeg"));
 			}
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		bool bCanBeInstalled;
 		if (pResult->IsError())
@@ -572,8 +568,6 @@ bool CItem::FireCanBeInstalled (CSpaceObject *pSource, int iSlot, CString *retsE
 			}
 		else
 			bCanBeInstalled = true;
-
-		Ctx.Discard(pResult);
 
 		return bCanBeInstalled;
 		}
@@ -597,7 +591,7 @@ bool CItem::FireCanBeUninstalled (CSpaceObject *pSource, CString *retsError) con
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		bool bCanBeUninstalled;
 		if (pResult->IsError())
@@ -613,8 +607,6 @@ bool CItem::FireCanBeUninstalled (CSpaceObject *pSource, CString *retsError) con
 			}
 		else
 			bCanBeUninstalled = true;
-
-		Ctx.Discard(pResult);
 
 		return bCanBeUninstalled;
 		}
@@ -703,7 +695,7 @@ void CItem::FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *
 
 		//	Run code
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			{
 			if (ItemCtx.GetSource())
@@ -715,9 +707,7 @@ void CItem::FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *
 		//	Either return the event result or discard it
 
 		if (retpResult)
-			*retpResult = pResult;
-		else
-			Ctx.Discard(pResult);
+			*retpResult = pResult->Reference();
 		}
 	else
 		{
@@ -770,10 +760,9 @@ void CItem::FireOnAddedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEn
 		Ctx.SaveAndDefineItemVar(ItemEnhanced);
 		Ctx.DefineInteger(CONSTLIT("aResult"), (int)iStatus);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnAddedAsEnhancement"), m_pItemType->GetUNID()), pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -803,9 +792,8 @@ bool CItem::FireOnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, cons
 		Ctx.DefineBool(CONSTLIT("aDestroy"), (iCause != enteredStargate && iCause != ascended));
 		Ctx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(iCause));
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		bool bResult = (pResult->IsNil() ? false : true);
-		Ctx.Discard(pResult);
 
 		return bResult;
 		}
@@ -831,10 +819,9 @@ void CItem::FireOnDisabled (CSpaceObject *pSource) const
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnDisable"), m_pItemType->GetUNID()), pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -856,10 +843,9 @@ void CItem::FireOnDocked (CSpaceObject *pSource, CSpaceObject *pDockedAt) const
 		Ctx.DefineSpaceObject(CONSTLIT("aObjDocked"), pSource);
 		Ctx.DefineSpaceObject(CONSTLIT("aDockTarget"), pDockedAt);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnDocked"), m_pItemType->GetUNID()), pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -879,10 +865,9 @@ void CItem::FireOnEnabled (CSpaceObject *pSource) const
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnEnable"), m_pItemType->GetUNID()), pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -966,10 +951,9 @@ void CItem::FireOnInstall (CSpaceObject *pSource) const
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnInstall"), m_pItemType->GetUNID()), pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -996,10 +980,9 @@ void CItem::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) c
 		CCCtx.DefineBool(CONSTLIT("aDestroy"), Ctx.WasDestroyed());
 		CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnObjDestroyed"), m_pItemType->GetUNID()), pResult);
-		CCCtx.Discard(pResult);
 		}
 	}
 
@@ -1020,13 +1003,12 @@ bool CItem::FireOnReactorOverload (CSpaceObject *pSource) const
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnReactorOverload"), m_pItemType->GetUNID()), pResult);
 		else
 			bHandled = !pResult->IsNil();
 
-		Ctx.Discard(pResult);
 		return bHandled;
 		}
 	else
@@ -1049,10 +1031,9 @@ void CItem::FireOnRemovedAsEnhancement (CSpaceObject *pSource, const CItem &Item
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(ItemEnhanced);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnRemovedAsEnhancement"), m_pItemType->GetUNID()), pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -1072,10 +1053,9 @@ void CItem::FireOnUninstall (CSpaceObject *pSource) const
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnUninstall"), m_pItemType->GetUNID()), pResult);
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -1151,10 +1131,8 @@ CString CItem::GetDesc (bool bActual) const
 		Ctx.SaveAndDefineSourceVar(GetSource());
 		Ctx.SaveAndDefineItemVar(*this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		CString sDesc = pResult->GetStringValue();
-		Ctx.Discard(pResult);
-
 		return sDesc;
 		}
 
@@ -1597,7 +1575,7 @@ CString CItem::GetNounPhrase (DWORD dwFlags) const
 		Ctx.SaveAndDefineItemVar(*this);
 		Ctx.DefineVar(CONSTLIT("aFlags"), CLanguage::GetNounFlags(dwFlags));
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			{
 			sName = pResult->GetStringValue();
@@ -1613,7 +1591,6 @@ CString CItem::GetNounPhrase (DWORD dwFlags) const
 			sName = pResult->GetStringValue();
 			dwNounFlags = 0;
 			}
-		Ctx.Discard(pResult);
 		}
 	else if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetName, &Event)
 			 && !(dwFlags & nounNoEvent))
@@ -1742,9 +1719,8 @@ CString CItem::GetReference (CItemCtx &ItemCtx, const CItem &Ammo, DWORD dwFlags
 			Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 			Ctx.SaveAndDefineItemVar(*this);
 
-			ICCItem *pResult = Ctx.Run(Event);
+			ICCItemPtr pResult = Ctx.RunCode(Event);
 			sReference = pResult->GetStringValue();
-			Ctx.Discard(pResult);
 			}
 		}
 
@@ -1930,12 +1906,10 @@ int CItem::GetTradePrice (const CSpaceObject *pObj, bool bActual) const
 		Ctx.SaveAndDefineItemVar(*this);
 		Ctx.DefineString(CONSTLIT("aPriceType"), (bActual ? CONSTLIT("actual") : CONSTLIT("normal")));
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError() && pObj)
 			pObj->ReportEventError(strPatternSubst(CONSTLIT("Item %x GetTradePrice"), m_pItemType->GetUNID()), pResult);
 		int iPrice = pResult->GetIntegerValue();
-		Ctx.Discard(pResult);
-
 		return iPrice;
 		}
 	else
@@ -2745,9 +2719,12 @@ void CItem::ReadFromStream (SLoadCtx &Ctx)
 			m_pExtra = NULL;
 		}
 
+	//	Handle backwards compatibility.
+
 	if (Ctx.dwVersion < 201 && !m_pExtra && byOldInstalled != 0xff)
 		{
-		int i = 0;
+		m_pExtra = new SExtra;
+		m_pExtra->m_iInstalledIndex = (int)(char)byOldInstalled;
 		}
 	}
 

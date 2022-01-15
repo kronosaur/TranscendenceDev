@@ -113,7 +113,7 @@ void CAreaDamage::OnDestroyed (SDestroyCtx &Ctx)
 	m_pDesc->FireOnDestroyShot(this);
 	}
 
-void CAreaDamage::OnMove (const CVector &vOldPos, Metric rSeconds)
+void CAreaDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
 //

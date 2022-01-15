@@ -58,8 +58,10 @@
 #define DEBUG_VECTOR
 //#define DEBUG_WEAPON_POS
 #else
-//#define DEBUG_PERFORMANCE_COUNTERS
+#define DEBUG_PERFORMANCE_COUNTERS
 #endif
+
+//#define DEBUG_MOVE_PERFORMANCE
 
 //	We leave this defined because we want to get traces in the field in case
 //	of a crash.
@@ -187,6 +189,8 @@ void ReportCrashObj (CString *retsMessage, const CSpaceObject *pCrashObj = NULL)
 class CShockwaveHitTest
 	{
 	public:
+		static constexpr Metric MAX_HITS_PER_OBJ_FRACTION = 0.20;
+
 		void Init (int iSegments, int iLives);
 		bool IsEmpty (void) const { return (m_Segments.GetCount() == 0); }
 		void ReadFromStream (SLoadCtx &Ctx);
@@ -194,9 +198,15 @@ class CShockwaveHitTest
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
+		struct SEntry
+			{
+			int iLives = 0;
+			DWORD dwLastHitID = 0;
+			};
+
 		void CalcObjBounds (CSpaceObject *pObj, const CVector &vPos, Metric *retrStartAngle, Metric *retrSizeAngle, Metric *retrStartRadius, Metric *retrEndRadius);
 
-		TArray<int> m_Segments;
+		TArray<SEntry> m_Segments;
 	};
 
 class CHitCtx
@@ -278,11 +288,13 @@ struct SUpdateCtx
 		CAutoTargetCalc &GetAutoTarget () { return m_AutoTarget; }
 		CSpaceObject *GetPlayerShip () { return m_pPlayer; }
 		CTargetList &GetTargetList ();
+		bool IsShipEffectUpdateEnabled () const { return !m_bNoShipEffectUpdate; }
 		bool IsTimeStopped (void) const { return m_bTimeStopped; }
 		void OnEndUpdate () { m_pObj = NULL; }
 		void OnStartUpdate (CSpaceObject &Obj);
 		bool PlayerHasCommsTarget () const { return m_bPlayerHasCommsTarget; }
 		bool PlayerHasSquadron () const { return m_bPlayerHasSquadron; }
+		void SetNoShipEffectUpdate (bool bValue = true) { m_bNoShipEffectUpdate = bValue; }
 		void SetPlayerShip (CSpaceObject &PlayerObj);
 		void UpdatePlayerCalc (const CSpaceObject &Obj);
 
@@ -295,10 +307,20 @@ struct SUpdateCtx
 		bool bHasShipBarriers = false;				//	TRUE if the system has ship barriers (e.g., Arena)
 		bool bHasGravity = false;					//	TRUE if the system has gravity
 
+#ifdef DEBUG_MOVE_PERFORMANCE
+		bool bCalledMove = false;
+		bool bCalledShipOnMove = false;
+		bool bCalledShipEffectMove = false;
+#endif
+
 	private:
 
 		CSpaceObject *m_pPlayer = NULL;				//	The player
 		TArray<CSpaceObject *> m_PlayerObjs;		//	List of player objects, if pPlayer == NULL
+
+		//	Options
+
+		bool m_bNoShipEffectUpdate = false;
 
 		//	About the object being updated
 
@@ -1378,6 +1400,7 @@ class CSpaceObject
 		virtual void OnLosePOV (void) { }
 
 		static CString GetCategoryName (Categories iCategory);
+		static CString GetUpdatePerformanceID (Categories iCategory);
 
 	protected:
 
@@ -1406,7 +1429,7 @@ class CSpaceObject
 		virtual bool OnIncProperty (const CString &sProperty, ICCItem *pValue, ICCItemPtr &pResult) { return false; }
 		virtual bool OnIsImmuneTo (SpecialDamageTypes iSpecialDamage) const { return false; }
 		virtual void OnItemEnhanced (CItemListManipulator &ItemList) { }
-		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) { }
+		virtual void OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds) { }
 		virtual void OnNewSystem (CSystem *pSystem) { }
 		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate) { }
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
@@ -1815,19 +1838,20 @@ class CAscendedObjectList
 		~CAscendedObjectList (void) { CleanUp(); }
 
 		void DeleteAll (void) { CleanUp(); }
-		void Insert (CSpaceObject *pObj) { m_List.Insert(pObj); }
+		void Insert (CSpaceObject &Obj, CSystemEventList &Events);
 		CSpaceObject *FindByID (DWORD dwID) const;
 		int GetCount (void) const { return m_List.GetCount(); }
 		CSpaceObject *GetObj (int iIndex) const { return m_List[iIndex]; }
 		bool IsEmpty (void) const { return (m_List.GetCount() == 0); }
 		void ReadFromStream (SLoadCtx &Ctx);
-		CSpaceObject *RemoveByID (DWORD dwID);
+		CSpaceObject *RemoveByID (DWORD dwID, CSystemEventList &retEvents);
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
 		void CleanUp (void);
 
 		TArray<CSpaceObject *> m_List;
+		CSystemEventList m_Events;
 	};
 
 //	Implementations ------------------------------------------------------------

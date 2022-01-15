@@ -559,7 +559,6 @@ void CEffectCreator::InitPainterParameters (CCreatePainterCtx &Ctx, IEffectPaint
 //	Initialize painter parameters
 
 	{
-	int i;
 	SEventHandlerDesc Event;
 	ICCItemPtr pParams;
 
@@ -577,7 +576,7 @@ void CEffectCreator::InitPainterParameters (CCreatePainterCtx &Ctx, IEffectPaint
 
 		else if (pResult->IsSymbolTable())
 			{
-			for (i = 0; i < pResult->GetCount(); i++)
+			for (int i = 0; i < pResult->GetCount(); i++)
 				pPainter->SetParamFromItem(Ctx, pResult->GetKey(i), pResult->GetElement(i));
 			}
 		else
@@ -589,7 +588,7 @@ void CEffectCreator::InitPainterParameters (CCreatePainterCtx &Ctx, IEffectPaint
 
 	else if (pParams = Ctx.GetParams())
 		{
-		for (i = 0; i < pParams->GetCount(); i++)
+		for (int i = 0; i < pParams->GetCount(); i++)
 			pPainter->SetParamFromItem(Ctx, pParams->GetKey(i), pParams->GetElement(i));
 		}
 	}
@@ -823,6 +822,7 @@ bool CEffectCreator::OnFindEventHandler (const CString &sEvent, SEventHandlerDes
 		if (retEvent)
 			{
 			retEvent->pExtension = GetExtension();
+			retEvent->sEvent = sEvent;
 			retEvent->pCode = pCode;
 			}
 

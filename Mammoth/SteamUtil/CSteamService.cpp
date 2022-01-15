@@ -112,6 +112,15 @@ CSteamService::CSteamService (CHumanInterface &HI) : ICIService(HI)
 		return;
 		}
 
+	//	Get current stats
+
+	if (!CRequestCurrentStats().Call())
+		{
+		::kernelDebugLogPattern("Unable to get current Steam stats.");
+		m_bConnected = false;
+		return;
+		}
+
 	//	We're enabled
 
 	m_sUsername = CString(CString::csUTF8, SteamFriends()->GetPersonaName());
@@ -318,6 +327,31 @@ ALERROR CSteamService::LoadUserCollection (ITaskProcessor *pProcessor, CExtensio
 	Extensions.UpdateRegistrationStatus(Collection);
 	Multiverse.SetCollection(Collection);
 	SendServiceStatus(NULL_STR);
+
+	return NOERROR;
+	}
+
+ALERROR CSteamService::PostAchievement (ITaskProcessor *pProcessor, const CAchievementDef &Achievement, CString *retsResult)
+
+//	PostAchievement
+//
+//	Sets an achievement.
+
+	{
+	//	Only post if it's valid for Steam.
+
+	if (!m_bConnected || !Achievement.CanPostToSteam())
+		return NOERROR;
+
+	//	Set the achievement
+
+	if (!SteamUserStats()->SetAchievement(Achievement.GetSteamID()))
+		return ERR_FAIL;
+
+	//	Store them
+
+	if (!CStoreStats().Call())
+		return ERR_FAIL;
 
 	return NOERROR;
 	}

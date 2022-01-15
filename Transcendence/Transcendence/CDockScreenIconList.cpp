@@ -93,6 +93,98 @@ IDockScreenDisplay::EResults CDockScreenIconList::OnHandleAction (DWORD dwTag, D
 		return resultNone;
 	}
 
+IDockScreenDisplay::EResults CDockScreenIconList::OnHandleChar (char chChar)
+
+//	OnHandleChar
+//
+//	Handle keyboard.
+
+	{
+	if (!m_pControl)
+		return resultNone;
+
+	switch (chChar)
+		{
+		case ' ':
+			if (m_pControl->GetSelection().GetCount() == 0)
+				{
+				if (m_pControl->MoveCursor(CGIconListArea::EMove::Right))
+					{
+					g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+					return resultShowPane;
+					}
+				else
+					return resultHandled;
+				}
+			else
+				{
+				if (m_pControl->DeselectAll())
+					{
+					g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+					return resultShowPane;
+					}
+				else
+					return resultHandled;
+				}
+
+		default:
+			return resultNone;
+		}
+	}
+
+IDockScreenDisplay::EResults CDockScreenIconList::OnHandleKeyDown (int iVirtKey)
+
+//	OnHandleKeyDown
+//
+//	Handle keyboard.
+
+	{
+	if (!m_pControl)
+		return resultNone;
+
+	switch (iVirtKey)
+		{
+		case VK_UP:
+			if (m_pControl->MoveCursor(CGIconListArea::EMove::Up))
+				{
+				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+				return resultShowPane;
+				}
+			else
+				return resultHandled;
+
+		case VK_LEFT:
+			if (m_pControl->MoveCursor(CGIconListArea::EMove::Left))
+				{
+				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+				return resultShowPane;
+				}
+			else
+				return resultHandled;
+
+		case VK_DOWN:
+			if (m_pControl->MoveCursor(CGIconListArea::EMove::Down))
+				{
+				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+				return resultShowPane;
+				}
+			else
+				return resultHandled;
+
+		case VK_RIGHT:
+			if (m_pControl->MoveCursor(CGIconListArea::EMove::Right))
+				{
+				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+				return resultShowPane;
+				}
+			else
+				return resultHandled;
+
+		default:
+			return resultNone;
+		}
+	}
+
 ALERROR CDockScreenIconList::OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError)
 
 //	OnInit

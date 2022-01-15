@@ -9,6 +9,7 @@
 
 			level=				"1"
 			maxAppearing=		"1"
+			expireTime=			"-1"
 			>
 		<Properties>
 			<Definition id="encounterDesc">
@@ -31,6 +32,23 @@
 		<Image imageID="&rsRaisuStation;"	imageWidth="170" imageHeight="170"/>
 
 		<Events>
+			<CanCreate>
+				(block (
+					(settlementObj (sysFindObject gPlayerShip "TAN +unid:&stCentauriSettlement;;"))
+					)
+					(switch
+						;	If settlement destroyed, then no mission.
+
+						(not settlementObj)
+							Nil
+
+						;	Mission
+
+						True
+						)
+					)
+			</CanCreate>
+
 			<OnCompleted>
 				(block ()
 					(switch
