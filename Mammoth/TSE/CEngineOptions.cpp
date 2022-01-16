@@ -216,4 +216,9 @@ void CEngineOptions::Merge (const CEngineOptions &Src)
 
 	if (Src.m_iDefaultShotHP != -1)
 		m_iDefaultShotHP = Src.m_iDefaultShotHP;
+
+	m_bHideDisintegrationImmune = m_bHideDisintegrationImmune || Src.m_bHideDisintegrationImmune;
+	m_bHideIonizeImmune = m_bHideIonizeImmune || Src.m_bHideIonizeImmune;
+	m_bHideRadiationImmune = m_bHideRadiationImmune || Src.m_bHideRadiationImmune;
+	m_bHideShatterImmune = m_bHideShatterImmune || Src.m_bHideShatterImmune;
 	}
