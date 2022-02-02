@@ -1803,6 +1803,8 @@ void CSpaceObject::EnterGate (CTopologyNode *pDestNode, const CString &sDestEntr
 //	NOTE: pDestNode and pStargate may be NULL.
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	If we're going to the same system, then do nothing
@@ -1844,6 +1846,8 @@ void CSpaceObject::EnterGate (CTopologyNode *pDestNode, const CString &sDestEntr
 	//	are notified.
 
 	GateHook(pDestNode, sDestEntryPoint, pStargate, bAscend);
+
+	DEBUG_CATCH
 	}
 
 int CSpaceObject::FindCommsMessage (const CString &sID)
