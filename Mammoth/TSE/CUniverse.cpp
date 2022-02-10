@@ -21,6 +21,7 @@
 #define PROPERTY_DIFFICULTY					CONSTLIT("difficulty")
 #define PROPERTY_MIN_API_VERSION			CONSTLIT("minAPIVersion")
 #define PROPERTY_SHOW_DAMAGE_DONE			CONSTLIT("showDamageDone")
+#define PROPERTY_TRANSLATE_LOG				CONSTLIT("translateLog")
 
 #define STR_G_PLAYER						CONSTLIT("gPlayer")
 #define STR_G_PLAYER_SHIP					CONSTLIT("gPlayerShip")
@@ -855,6 +856,14 @@ ICCItemPtr CUniverse::GetDebugProperty (const CString &sProperty) const
 	{
 	if (strEquals(sProperty, PROPERTY_SHOW_DAMAGE_DONE))
 		return ICCItemPtr(m_EngineOptions.IsDamageShown());
+	else if (strEquals(sProperty, PROPERTY_TRANSLATE_LOG))
+		{
+		auto Result = CLanguageDataBlock::GetDebugLog();
+		ICCItemPtr pResult(ICCItem::List);
+		for (int i = 0; i < Result.GetCount(); i++)
+			pResult->AppendString(Result[i]);
+		return pResult;
+		}
 	else
 		return m_DebugOptions.GetProperty(sProperty);
 	}
@@ -3090,6 +3099,12 @@ void CUniverse::UpdateTick (SSystemUpdateCtx &Ctx)
 
 	{
 	DEBUG_TRY
+
+#ifdef DEBUG_MOVE_PERFORMANCE
+	Ctx.iMoveCalls = 0;
+	Ctx.iShipOnMoveCalls = 0;
+	Ctx.iShipEffectMoveCalls = 0;
+#endif
 
 	if (m_pCurrentSystem == NULL)
 		return;

@@ -1178,7 +1178,7 @@ void CDeviceSystem::ReadyNextMissile (CSpaceObject *pObj, int iDir, bool bUsedLa
 	bool lastSelected = false;
 	bool firstSelected = false;
 	CInstalledDevice *pDevice = GetNamedDevice(devMissileWeapon);
-	if (pDevice)
+	if (pDevice && pDevice->GetItem())
 		{
 		pDevice->SelectNextVariant(pObj, iDir);
 		lastSelected = pDevice->IsLastVariantSelected(pObj);
@@ -1204,11 +1204,13 @@ void CDeviceSystem::ReadyNextMissile (CSpaceObject *pObj, int iDir, bool bUsedLa
 	//  Don't forget to also select the first (or last) missile, too.
 	//  Note, we select the next missile launcher if the FIRST variant is selected, because we
 	//  were on the last variant before running this function (which moved us to the first one).
+	//	If pDevice doesn't exist or the class is NULL, then that means the installed launcher no
+	//	longer exists, and so we should select the next launcher if possible.
 
-	if (bUsedLastAmmo ? pDevice->GetValidVariantCount(pObj) == 0 : true)
+	if (bUsedLastAmmo && pDevice && pDevice->GetItem() ? pDevice->GetValidVariantCount(pObj) == 0 : true)
 		{
 		bool bselectPrevLauncher = (lastSelected && (iDir == 0));
-		bool bselectNextLauncher = ((firstSelected && (iDir == 1)) || (pDevice == NULL));
+		bool bselectNextLauncher = ((firstSelected && (iDir == 1)) || (!pDevice || !pDevice->GetItem()));
 		
 		if ((bselectPrevLauncher || bselectNextLauncher) && (pObj->GetCategory() == CSpaceObject::catShip) && (pObj->IsPlayer()))
 			pObj->AsShip()->SetWeaponTriggered(devMissileWeapon, false);
@@ -1386,6 +1388,8 @@ bool CDeviceSystem::Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemLis
 			case itemcatWeapon:
 				if (m_NamedDevices[devPrimaryWeapon] == iDevSlot)
 					m_NamedDevices[devPrimaryWeapon] = FindNextIndex(pObj, iDevSlot, itemcatWeapon);
+				if (m_NamedDevices[devMissileWeapon] == iDevSlot)
+					m_NamedDevices[devMissileWeapon] = FindNextIndex(pObj, iDevSlot, itemcatLauncher);
 				break;
 
 			case itemcatLauncher:

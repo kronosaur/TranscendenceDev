@@ -691,7 +691,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'showLineOfFire\n"
 			"   'showNavPaths\n"
 			"   'showNodeInfo\n"
-			"   'showOrderInfo\n",
+			"   'showOrderInfo\n"
+			"   'translateLog\n",
 
 			"s",	0, },
 
@@ -910,6 +911,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'balanceDamage\n"
 			"   'balanceCost\n"
 			"   'balanceExcludeCost\n"
+			"   'chargeTime\n"
 			"   'damage              Average damage per 180 ticks\n"
 			"   'damagePerProjectile\n"
 			"   'damageWMD180        Average WMD damage per 180 ticks\n"
@@ -2892,8 +2894,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'hasInProgress     Mission show in progress text\n"
 			"   'id                Mission object ID\n"
 			"   'inProgress        Active player mission and not completed\n"
-			"   'isActive          Is an active player mission\n"
-			"   'isCompleted       Is a completed mission (player or non-player)\n"
+			"   'isActive          Is an active player mission (accepted and not debriefed)\n"
+			"   'isCompleted       Is a completed mission (player or non-player, not necessarily debriefed)\n"
 			"   'isDebriefed       Player has been debriefed\n"
 			"   'isDeclined        Player has declined mission\n"
 			"   'isFailure         Mission has failed\n"
@@ -9105,6 +9107,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				CVector vOldFirePos;
 				GetPosOrObject(pEvalCtx, pCC->LookupGlobal(CONSTLIT("aFirePos"), pCtx), &vOldFirePos);
 				ICCItem *p_OldFireRepeat = pCC->LookupGlobal(CONSTLIT("aFireRepeat"), pCtx);
+				ICCItem *p_OldFireCharge = pCC->LookupGlobal(CONSTLIT("aFireCharge"), pCtx);
 				ICCItem *p_OldTargetObj = pCC->LookupGlobal(CONSTLIT("aTargetObj"), pCtx);
 				ICCItem *p_OldWeaponBonus = pCC->LookupGlobal(CONSTLIT("aWeaponBonus"), pCtx);
 				ICCItem *p_OldWeaponType = pCC->LookupGlobal(CONSTLIT("aWeaponType"), pCtx);
@@ -9119,6 +9122,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pCtx->DefineInteger(CONSTLIT("aFireAngle"), p_OldFireAngle->GetIntegerValue());
 				pCtx->DefineVector(CONSTLIT("aFirePos"), vOldFirePos);
 				pCtx->DefineInteger(CONSTLIT("aFireRepeat"), p_OldFireRepeat->GetIntegerValue());
+				pCtx->DefineInteger(CONSTLIT("aFireCharge"), p_OldFireCharge->GetIntegerValue());
 				pCtx->DefineSpaceObject(CONSTLIT("aTargetObj"), CreateObjFromItem(p_OldTargetObj));
 				pCtx->DefineInteger(CONSTLIT("aWeaponBonus"), p_OldWeaponBonus->GetIntegerValue());
 				pCtx->DefineItemType(CONSTLIT("aWeaponType"), pCtx->AsItem(p_OldWeaponType).GetType());
@@ -13033,7 +13037,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Create barrel flash effect
 
 			if (bFireEffect)
-				pDesc->CreateFireEffect(pSystem, pSource, vPos, CVector(), iDir);
+				pDesc->CreateFireEffect(pSystem, pSource, vPos, CVector(), iDir, 0);
 
 			//	If we have a bonus, we need an enhancement stack
 

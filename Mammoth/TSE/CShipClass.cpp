@@ -637,7 +637,7 @@ int CShipClass::CalcDefaultSize (const CObjectImageArray &Image)
 	return (int)mathRound(rMeterSize);
 	}
 
-Metric CShipClass::CalcDefenseRate (void) const
+Metric CShipClass::CalcDefenseRate (Metric *retrStaticRate, Metric *retrLegacyRate) const
 
 //	CalcDefenseRate
 //
@@ -781,10 +781,22 @@ Metric CShipClass::CalcDefenseRate (void) const
 	else
 		return 0.0;
 
+	//	Before adjustment
+
+	if (retrStaticRate)
+		*retrStaticRate = rRate;
+
+	//	Previously maneuverability counted more.
+
+	if (retrLegacyRate)
+		{
+		Metric rHitRate = rRate * (1.0 - CalcDodgeRate());
+		*retrLegacyRate = rRate * rRate / rHitRate;
+		}
+
 	//	Adjust rate based on maneuverability of ship
 
-	Metric rHitRate = rRate * (1.0 - CalcDodgeRate());
-	rRate = rRate * rRate / rHitRate;
+	rRate += rRate * CalcDodgeRate();
 
 	//	Done
 

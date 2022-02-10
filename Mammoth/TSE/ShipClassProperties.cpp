@@ -55,7 +55,7 @@
 #define PROPERTY_WRECK_TYPE						CONSTLIT("wreckType")
 #define PROPERTY_WRECK_TYPE_NAME				CONSTLIT("wreckTypeName")
 
-TPropertyHandler<CShipClass> CShipClass::m_PropertyTable = std::array<TPropertyHandler<CShipClass>::SPropertyDef, 6> {{
+TPropertyHandler<CShipClass> CShipClass::m_PropertyTable = std::array<TPropertyHandler<CShipClass>::SPropertyDef, 11> {{
 		{
 		"achievement",			"Achievement triggered if destroyed by player",
 		[](const CShipClass &ShipClass, const CString &sProperty) 
@@ -70,6 +70,55 @@ TPropertyHandler<CShipClass> CShipClass::m_PropertyTable = std::array<TPropertyH
 		[](const CShipClass &ShipClass, const CString &sProperty) 
 			{
 			return ICCItemPtr(CAISettings::ConvertToID(ShipClass.m_AISettings.GetCombatStyle()));
+			},
+		NULL,
+		},
+
+		{
+		"balance.combat",		"Balance combat strength",
+		[](const CShipClass &ShipClass, const CString &sProperty) 
+			{
+			return ICCItemPtr(ShipClass.CalcCombatStrength());
+			},
+		NULL,
+		},
+
+		{
+		"balance.defense",		"Balance defense strength",
+		[](const CShipClass &ShipClass, const CString &sProperty) 
+			{
+			return ICCItemPtr(ShipClass.CalcDefenseRate());
+			},
+		NULL,
+		},
+
+		{
+		"balance.defenseStatic",		"Balance defense strength (excluding maneuver)",
+		[](const CShipClass &ShipClass, const CString &sProperty) 
+			{
+			Metric rRate;
+			ShipClass.CalcDefenseRate(&rRate);
+			return ICCItemPtr(rRate);
+			},
+		NULL,
+		},
+
+		{
+		"balance.dodgeRate",	"Balance dodge rate (component of defense strength)",
+		[](const CShipClass &ShipClass, const CString &sProperty) 
+			{
+			return ICCItemPtr(ShipClass.CalcDodgeRate());
+			},
+		NULL,
+		},
+
+		{
+		"balance.type",			"Balance type",
+		[](const CShipClass &ShipClass, const CString &sProperty) 
+			{
+			CString sValue;
+			ShipClass.CalcBalanceType(&sValue);
+			return ICCItemPtr(sValue);
 			},
 		NULL,
 		},

@@ -2384,6 +2384,8 @@ void CShip::GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, 
 //	Ship passes through stargate
 
 	{
+	DEBUG_TRY
+
 	//	Reset other gate stuff (this might be set if we re-enter a gate
 	//	right after we leave it)
 
@@ -2424,6 +2426,8 @@ void CShip::GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, 
 
 	if (IsPlayer())
 		GetUniverse().NotifyOnPlayerEnteredGate(pDestNode, sDestEntryPoint, pStargate);
+
+	DEBUG_CATCH
 	}
 
 AbilityStatus CShip::GetAbility (Abilities iAbility) const
@@ -5132,13 +5136,17 @@ void CShip::OnItemEnhanced (CItemListManipulator &ItemList)
 		}
 	}
 
-void CShip::OnMove (const CVector &vOldPos, Metric rSeconds)
+void CShip::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
 //
 //	Do stuff when station moves
 
 	{
+#ifdef DEBUG_MOVE_PERFORMANCE
+	Ctx.bCalledShipOnMove = true;
+#endif
+
 	//	If the station is moving then make sure all docked ships
 	//	move along with it.
 
@@ -5146,10 +5154,14 @@ void CShip::OnMove (const CVector &vOldPos, Metric rSeconds)
 
 	//	Move effects
 
-	if (WasPainted())
+	if (WasPainted() && Ctx.IsShipEffectUpdateEnabled())
 		{
 		bool bRecalcBounds;
 		m_Effects.Move(this, vOldPos, &bRecalcBounds);
+
+#ifdef DEBUG_MOVE_PERFORMANCE
+		Ctx.bCalledShipEffectMove = true;
+#endif
 
 		//	Recalculate bounds, if necessary
 
@@ -7326,6 +7338,10 @@ void CShip::SetName (const CString &sName, DWORD dwFlags)
 		m_dwNameFlags = dwFlags;
 		m_fNameBlanked = false;
 		}
+
+	//	Clear the cache, so we recompute it.
+
+	m_sMapLabel = NULL_STR;
 	}
 
 void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)

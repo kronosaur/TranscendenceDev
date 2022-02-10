@@ -570,7 +570,7 @@ class CShipClass : public CDesignType
 		CItemType *CalcBestMissile (const SDeviceDesc &Device) const;
 		Metric CalcCombatStrength (void) const;
 		Metric CalcDamageRate (int *retiAveWeaponLevel = NULL, int *retiMaxWeaponLevel = NULL) const;
-		Metric CalcDefenseRate (void) const;
+		Metric CalcDefenseRate (Metric *retrStaticRate = NULL, Metric *retrLegacyRate = NULL) const;
 		Metric CalcDodgeRate (void) const { return CalcManeuverValue(true); }
 		CurrencyValue CalcHullValue (const CShipStandard &Standard, Metric *retrPoints = NULL) const;
 		int CalcLevel (void) const;

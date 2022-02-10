@@ -299,6 +299,7 @@ class CGTextArea : public AGArea
 	private:
 		RECT CalcTextRect (const RECT &rcRect);
 		void FormatRTF (const RECT &rcRect);
+		bool IsRTF () const { return (m_sText.IsBlank() && !m_sRTF.IsBlank()); }
 		void PaintRTF (CG32bitImage &Dest, const RECT &rcRect);
 		void PaintText (CG32bitImage &Dest, const RECT &rcRect);
 

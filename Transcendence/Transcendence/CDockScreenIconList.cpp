@@ -93,6 +93,45 @@ IDockScreenDisplay::EResults CDockScreenIconList::OnHandleAction (DWORD dwTag, D
 		return resultNone;
 	}
 
+IDockScreenDisplay::EResults CDockScreenIconList::OnHandleChar (char chChar)
+
+//	OnHandleChar
+//
+//	Handle keyboard.
+
+	{
+	if (!m_pControl)
+		return resultNone;
+
+	switch (chChar)
+		{
+		case ' ':
+			if (m_pControl->GetSelection().GetCount() == 0)
+				{
+				if (m_pControl->MoveCursor(CGIconListArea::EMove::Right))
+					{
+					g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+					return resultShowPane;
+					}
+				else
+					return resultHandled;
+				}
+			else
+				{
+				if (m_pControl->DeselectAll())
+					{
+					g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+					return resultShowPane;
+					}
+				else
+					return resultHandled;
+				}
+
+		default:
+			return resultNone;
+		}
+	}
+
 IDockScreenDisplay::EResults CDockScreenIconList::OnHandleKeyDown (int iVirtKey)
 
 //	OnHandleKeyDown
@@ -140,28 +179,6 @@ IDockScreenDisplay::EResults CDockScreenIconList::OnHandleKeyDown (int iVirtKey)
 				}
 			else
 				return resultHandled;
-
-		case VK_SPACE:
-			if (m_pControl->GetSelection().GetCount() == 0)
-				{
-				if (m_pControl->MoveCursor(CGIconListArea::EMove::Right))
-					{
-					g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
-					return resultShowPane;
-					}
-				else
-					return resultHandled;
-				}
-			else
-				{
-				if (m_pControl->DeselectAll())
-					{
-					g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
-					return resultShowPane;
-					}
-				else
-					return resultHandled;
-				}
 
 		default:
 			return resultNone;

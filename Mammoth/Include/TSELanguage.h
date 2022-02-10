@@ -220,6 +220,7 @@ class CLanguageDataBlock
 		bool Translate (const CDesignType &Type, const CString &sID, const SParams &Params, ICCItemPtr &retResult) const;
 		bool TranslateText (const CDesignType &Type, const CString &sID, const SParams &Params, CString *retsText) const;
 
+		static TArray<CString> GetDebugLog ();
 		static bool IsScriptEntry (const SEntryDesc &Entry);
 		static const CLanguageDataBlock m_Null;
 
@@ -250,9 +251,12 @@ class CLanguageDataBlock
 		CString ParseTextBlock (const CString &sText) const;
 		static bool ParseScriptParam (const CString &sValue, CString *retsScript, CString *retsOrder, CString *retsHeader);
 		ETranslateResult TranslateEval (const CDesignType &Type, const CString &sID, const SParams &Params, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
-		const SEntry *TranslateTry (const CString &sID, const ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText = NULL, CString *retsText = NULL) const;
+		const SEntry *TranslateTry (const CDesignType &Type, const CString &sID, const ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText = NULL, CString *retsText = NULL) const;
 
 		TSortMap<CString, SEntry> m_Data;
+
+		static void DebugLog (const CDesignType &Type, const CString &sID, const CString &sText);
+		static TQueue<CString> m_DebugLog;
 	};
 
 class CNameDesc

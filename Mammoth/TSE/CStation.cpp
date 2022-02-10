@@ -3069,7 +3069,7 @@ bool CStation::OnMiningDamage (SDamageCtx &Ctx)
 	return !IsDestroyed();
 	}
 
-void CStation::OnMove (const CVector &vOldPos, Metric rSeconds)
+void CStation::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
 //
@@ -6118,9 +6118,8 @@ bool CStation::UpdateOverlays (SUpdateCtx &Ctx, bool &iobCalcBounds, bool &iobCa
 
 	{
 	bool bModified;
-	const CObjectImageArray &Image = GetImage(true);
 
-	m_Overlays.Update(this, Image.GetImageViewportSize(), GetRotation(), &bModified);
+	m_Overlays.Update(this, GetImageScale(), GetRotation(), &bModified);
 	if (IsDestroyed())
 		return false;
 
