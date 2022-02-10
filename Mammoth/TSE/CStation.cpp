@@ -6118,9 +6118,8 @@ bool CStation::UpdateOverlays (SUpdateCtx &Ctx, bool &iobCalcBounds, bool &iobCa
 
 	{
 	bool bModified;
-	const CObjectImageArray &Image = GetImage(true);
 
-	m_Overlays.Update(this, Image.GetImageViewportSize(), GetRotation(), &bModified);
+	m_Overlays.Update(this, GetImageScale(), GetRotation(), &bModified);
 	if (IsDestroyed())
 		return false;
 

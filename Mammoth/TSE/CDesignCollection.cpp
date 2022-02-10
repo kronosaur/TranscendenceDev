@@ -1848,30 +1848,9 @@ ALERROR CDesignCollection::ResolveTypeOverride (SDesignLoadCtx &Ctx, CDesignType
 //	Resolve the override.
 
 	{
-	//	Find the type that we are trying to override. If we can't find it
-	//	then just continue without error (it means we're trying to override
-	//	a type that doesn't currently exist).
-
-	CDesignType *pAncestor = m_AllTypes.FindByUNID(Override.GetUNID());
-	if (pAncestor == NULL)
-		{
-		//	In previous versions, we sometimes saved these overrides, so if
-		//	we find it in TypesUsed, then it means we need it.
-
-		if (TypesUsed.Find(Override.GetUNID()))
-			{
-			m_AllTypes.AddOrReplaceEntry(&Override);
-			}
-
-		if (retpNewType)
-			*retpNewType = &Type;
-
-		return NOERROR;
-		}
-
 	//	If the ancestor is a different type, then this is an error.
 
-	if (pAncestor->GetType() != designGenericType && pAncestor->GetType() != Override.GetType())
+	if (Type.GetType() != designGenericType && Type.GetType() != Override.GetType())
 		return Override.ComposeLoadError(Ctx, CONSTLIT("Cannot override a different type."));
 
 	//	Generate a merged XML so that we inherit appropriate XML from our
@@ -1879,7 +1858,7 @@ ALERROR CDesignCollection::ResolveTypeOverride (SDesignLoadCtx &Ctx, CDesignType
 
 	CXMLElement *pNewXML = new CXMLElement;
 	bool bMerged;
-	pNewXML->InitFromMerge(*pAncestor->GetXMLElement(), *Override.GetXMLElement(), Override.GetXMLMergeFlags(), &bMerged);
+	pNewXML->InitFromMerge(*Type.GetXMLElement(), *Override.GetXMLElement(), Override.GetXMLMergeFlags(), &bMerged);
 
 	//	If we did not merge anything from our ancestor then no need to create
 	//	a new type.
@@ -1913,7 +1892,7 @@ ALERROR CDesignCollection::ResolveTypeOverride (SDesignLoadCtx &Ctx, CDesignType
 
 	pNewType->SetModification();
 	pNewType->SetMerged();
-	pNewType->SetInheritFrom(pAncestor);
+	pNewType->SetInheritFrom(&Type);
 
 	//	Now replace the original
 

@@ -689,7 +689,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'showLineOfFire\n"
 			"   'showNavPaths\n"
 			"   'showNodeInfo\n"
-			"   'showOrderInfo\n",
+			"   'showOrderInfo\n"
+			"   'translateLog\n",
 
 			"s",	0, },
 

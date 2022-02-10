@@ -1534,6 +1534,7 @@ class CSpaceObject
 		CSpaceObjectList m_SubscribedObjs;				//	List of objects to notify when something happens
 		CObjectJoint *m_pFirstJoint = NULL;				//	List of joints
 		CPhysicsForceDesc m_ForceDesc;					//	Temporary; valid only inside Update.
+		mutable int m_iImageScale = -1;					//	Cached value computed in GetImageScale
 
 		int m_iControlsFrozen:8 = 0;					//	Object will not respond to controls
 		int m_iSpare:24 = 0;

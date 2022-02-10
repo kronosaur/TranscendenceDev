@@ -2371,6 +2371,8 @@ void CShip::GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, 
 //	Ship passes through stargate
 
 	{
+	DEBUG_TRY
+
 	//	Reset other gate stuff (this might be set if we re-enter a gate
 	//	right after we leave it)
 
@@ -2411,6 +2413,8 @@ void CShip::GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, 
 
 	if (IsPlayer())
 		GetUniverse().NotifyOnPlayerEnteredGate(pDestNode, sDestEntryPoint, pStargate);
+
+	DEBUG_CATCH
 	}
 
 AbilityStatus CShip::GetAbility (Abilities iAbility) const

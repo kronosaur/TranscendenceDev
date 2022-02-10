@@ -18,6 +18,7 @@
 #define SCRIPT_ID_PREFIX						CONSTLIT("[script]")
 
 const CLanguageDataBlock CLanguageDataBlock::m_Null;
+TQueue<CString> CLanguageDataBlock::m_DebugLog(20);
 
 void CLanguageDataBlock::AccumulateScript (const CDesignType *pSource, const CString &sScript, TSortMap<CString, CScript::SScriptEntry> &Script) const
 
@@ -282,6 +283,19 @@ void CLanguageDataBlock::Copy (const CLanguageDataBlock &Src)
 		}
 	}
 
+void CLanguageDataBlock::DebugLog (const CDesignType &Type, const CString &sID, const CString &sText)
+
+//	DebugLog
+//
+//	Debug translations.
+
+	{
+	if (!Type.GetUniverse().InDebugMode())
+		return;
+
+	m_DebugLog.EnqueueAndOverwrite(strPatternSubst(CONSTLIT("[%08x %s] %s -> %s"), Type.GetUNID(), Type.GetNounPhrase(), sID, sText));
+	}
+
 void CLanguageDataBlock::DeleteAll (void)
 
 //	DeleteAll
@@ -294,6 +308,22 @@ void CLanguageDataBlock::DeleteAll (void)
 			m_Data[i].pCode->Discard();
 
 	m_Data.DeleteAll();
+	}
+
+TArray<CString> CLanguageDataBlock::GetDebugLog ()
+
+//	GetDebugLog
+//
+//	Returns the debug log.
+
+	{
+	TArray<CString> Result;
+	Result.InsertEmpty(m_DebugLog.GetCount());
+
+	for (int i = 0; i < m_DebugLog.GetCount(); i++)
+		Result[i] = m_DebugLog[i];
+
+	return Result;
 	}
 
 CLanguageDataBlock::SEntryDesc CLanguageDataBlock::GetEntry (int iIndex) const
@@ -798,7 +828,7 @@ CLanguageDataBlock::ETranslateResult CLanguageDataBlock::TranslateEval (const CD
 	//	If we can resolve this without running code, then do it.
 
 	ETranslateResult iResult;
-	const SEntry *pEntry = TranslateTry(sID, Params.pData, iResult, retText, retsText);
+	const SEntry *pEntry = TranslateTry(Type, sID, Params.pData, iResult, retText, retsText);
 	if (pEntry == NULL)
 		return iResult;
 
@@ -834,7 +864,7 @@ bool CLanguageDataBlock::TranslateText (const CDesignType &Type, const CString &
 	return ComposeTextResult(iResult, List, retsText);
 	}
 
-const CLanguageDataBlock::SEntry *CLanguageDataBlock::TranslateTry (const CString &sID, const ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText, CString *retsText) const
+const CLanguageDataBlock::SEntry *CLanguageDataBlock::TranslateTry (const CDesignType &Type, const CString &sID, const ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText, CString *retsText) const
 
 //	TranslateTry
 //
@@ -851,6 +881,7 @@ const CLanguageDataBlock::SEntry *CLanguageDataBlock::TranslateTry (const CStrin
 	const SEntry *pEntry = m_Data.GetAt(sID);
 	if (pEntry == NULL)
 		{
+		DebugLog(Type, sID, CONSTLIT("Not found"));
 		retiResult = resultNotFound;
 		return NULL;
 		}
@@ -860,6 +891,7 @@ const CLanguageDataBlock::SEntry *CLanguageDataBlock::TranslateTry (const CStrin
 
 	else if (retText == NULL && retsText == NULL)
 		{
+		DebugLog(Type, sID, CONSTLIT("Found text"));
 		retiResult = resultFound;
 		return NULL;
 		}
@@ -867,12 +899,16 @@ const CLanguageDataBlock::SEntry *CLanguageDataBlock::TranslateTry (const CStrin
 	//	If we have code, then our caller will need to handle it.
 
 	else if (pEntry->pCode)
+		{
+		DebugLog(Type, sID, CONSTLIT("Found code"));
 		return pEntry;
+		}
 
 	//	Otherwise, we can just return the string.
 
 	else if (retsText)
 		{
+		DebugLog(Type, sID, CONSTLIT("Found text"));
 		*retsText = CLanguage::Compose(pEntry->sText, pData);
 		retiResult = resultString;
 		return NULL;
@@ -882,7 +918,9 @@ const CLanguageDataBlock::SEntry *CLanguageDataBlock::TranslateTry (const CStrin
 
 	else
 		{
+		DebugLog(Type, sID, CONSTLIT("Found text"));
 		retiResult = resultFound;
 		return NULL;
 		}
 	}
+
