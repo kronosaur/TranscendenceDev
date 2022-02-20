@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							53;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
-constexpr DWORD SYSTEM_SAVE_VERSION =					211;
+constexpr DWORD SYSTEM_SAVE_VERSION =					212;
 
 //	Uncomment out the following define when building a stable release
 

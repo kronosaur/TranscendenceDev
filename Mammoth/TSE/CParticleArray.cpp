@@ -1549,9 +1549,30 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 	
 	//	Previous version didn't have everything
 
-	if (Ctx.dwVersion >= 120)
+	if (Ctx.dwVersion >= 212)
 		Ctx.pStream->Read((char *)m_pArray, sizeof(SParticle) * m_iCount);
 
+	else if (Ctx.dwVersion >= 119)
+		{
+		SParticle212* pOldArray = new SParticle212[m_iCount];
+		Ctx.pStream->Read((char*)pOldArray, sizeof(SParticle212) * m_iCount);
+
+		for (i = 0; i < m_iCount; i++)
+			{
+			m_pArray[i].Pos = pOldArray[i].Pos;
+			m_pArray[i].Vel = pOldArray[i].Vel;
+			m_pArray[i].x = pOldArray[i].x;
+			m_pArray[i].y = pOldArray[i].y;
+			m_pArray[i].xVel = pOldArray[i].xVel;
+			m_pArray[i].yVel = pOldArray[i].yVel;
+			m_pArray[i].iGeneration = pOldArray[i].iGeneration;
+			m_pArray[i].iLifeLeft = pOldArray[i].iLifeLeft;
+			m_pArray[i].iDestiny = pOldArray[i].iDestiny;
+			m_pArray[i].iRotation = pOldArray[i].iRotation;
+			m_pArray[i].rData = pOldArray[i].rData;
+			m_pArray[i].fAlive = pOldArray[i].fAlive;
+			}
+		}
 	else if (Ctx.dwVersion >= 119)
 		{
 		SParticle119 *pOldArray = new SParticle119[m_iCount];
