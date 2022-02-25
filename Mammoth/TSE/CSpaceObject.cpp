@@ -1421,10 +1421,6 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 		pObj->m_fHasOnOrderChangedEvent = pObj->FindEventHandler(CONSTLIT("OnOrderChanged"));
 		}
 
-	//	Set event flags in case any events got added
-
-	pObj->SetEventFlags();
-
 	//	Done
 
 	*retpObj = pObj;
@@ -6513,6 +6509,24 @@ bool CSpaceObject::ObjRequestDock (CSpaceObject *pObj, int iPort)
 			ASSERT(false);
 			return false;
 		}
+	}
+
+void CSpaceObject::OnObjLoadComplete (SLoadCtx &Ctx)
+
+//	OnObjLoadComplete
+//
+//	Called after all objects have been loaded.
+
+	{
+	SetEventFlags();
+
+	if (Ctx.pSystem)
+		{
+		LoadObjReferences(Ctx.pSystem);
+		OnSystemLoaded(Ctx);
+		}
+
+	FireOnLoad(Ctx);
 	}
 
 void CSpaceObject::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &ModifyCtx, const CItem &Item) const
