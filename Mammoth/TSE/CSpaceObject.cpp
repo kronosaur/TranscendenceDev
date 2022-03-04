@@ -4363,12 +4363,14 @@ CG32bitPixel CSpaceObject::GetSymbolColor (void) const
 	{
 	CAccessibilitySettings cAccessibilitySettings = GetUniverse().GetAccessibilitySettings();
 	CSovereign *pPlayer = GetUniverse().GetPlayerSovereign();
+	CSovereign *pSovereign = GetSovereign();
 	CSpaceObject *pPlayerShip;
 	CG32bitPixel rgbColor;
 
 	//	Player & player's assets
 
-	if ((GetSovereign() == pPlayer) || (GetSovereign()->IsPlayerOwned()))
+	if (pSovereign 
+			&& ((pSovereign == pPlayer) || pSovereign->IsPlayerOwned()))
 		rgbColor = cAccessibilitySettings.GetIFFColor(CAccessibilitySettings::IFFType::player);
 
 	//	Angered ships
