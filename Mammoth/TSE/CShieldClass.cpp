@@ -1406,15 +1406,15 @@ int CShieldClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 
 	if (m_iExtraPowerPerCharge)
 		{
-		iPower += m_iExtraHPPerCharge * Ctx.GetItemCharges();
+		iPower += m_iExtraPowerPerCharge * Ctx.GetItemCharges();
 
 		if (m_iPowerUse > 0)
 			{
 			Metric rAdj = (Metric)m_iIdlePowerUse / m_iPowerUse;
-			iIdlePower += mathRound(m_iExtraHPPerCharge * rAdj * Ctx.GetItemCharges());
+			iIdlePower += mathRound(m_iExtraPowerPerCharge * rAdj * Ctx.GetItemCharges());
 			}
 		else
-			iIdlePower += (m_iExtraHPPerCharge * Ctx.GetItemCharges()) / 2;
+			iIdlePower += (m_iExtraPowerPerCharge * Ctx.GetItemCharges()) / 2;
 		}
 
 	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();

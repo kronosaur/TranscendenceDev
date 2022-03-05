@@ -458,6 +458,18 @@ ALERROR CMissionList::ReadFromStream (SLoadCtx &Ctx, CString *retsError)
 		//	Add to global missions
 
 		m_List[i] = pObj->AsMission();
+		if (!m_List[i])
+			{
+			*retsError = CSpaceObject::DebugLoadError(Ctx);
+			return ERR_FAIL;
+			}
+		}
+
+	//	Load complete
+
+	for (int i = 0; i < m_List.GetCount(); i++)
+		{
+		m_List[i]->OnObjLoadComplete(Ctx);
 		}
 
 	return NOERROR;

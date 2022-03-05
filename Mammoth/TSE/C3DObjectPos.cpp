@@ -130,11 +130,13 @@ bool C3DObjectPos::InitFromXML (CXMLElement *pDesc, DWORD dwFlags, bool *retb3DP
 		else
 			y = -y;
 
-		InitPosZFromXML(pDesc, retb3DPos);
+		bool b3DPos;
+		InitPosZFromXML(pDesc, &b3DPos);
+		if (retb3DPos) *retb3DPos = b3DPos;
 
 		//	Convert to polar coordinates
 
-		if (dwFlags & FLAG_CALC_POLAR)
+		if (b3DPos && (dwFlags & FLAG_CALC_POLAR))
 			{
 			CVector vPos(x * g_KlicksPerPixel, y * g_KlicksPerPixel);
 			Metric rAngle;

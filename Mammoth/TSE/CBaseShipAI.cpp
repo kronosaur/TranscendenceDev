@@ -1296,6 +1296,8 @@ void CBaseShipAI::OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEnt
 //	Ship enters a stargate
 	
 	{
+	DEBUG_TRY
+
 	//	If we're ascending, then leave the ship alone (it will get pulled out of
 	//	the system by our caller).
 
@@ -1318,6 +1320,8 @@ void CBaseShipAI::OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEnt
 
 	else
 		m_pShip->SetDestroyInGate();
+
+	DEBUG_CATCH
 	}
 
 void CBaseShipAI::OnHitBarrier (CSpaceObject *pBarrierObj, const CVector &vPos)
@@ -1364,6 +1368,8 @@ void CBaseShipAI::OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode
 //	Handle the case where another object entered a stargate
 
 	{
+	DEBUG_TRY
+
 	//	If the player has left and we have inter system events, then see if we
 	//	need to follow the player
 
@@ -1414,6 +1420,8 @@ void CBaseShipAI::OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode
 				AddOrder(COrderDesc(IShipController::orderDestroyPlayerOnReturn), true);
 			break;
 		}
+
+	DEBUG_CATCH
 	}
 
 void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
