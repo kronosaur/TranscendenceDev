@@ -30,9 +30,30 @@ int Kernel::sysGetProcessorCount (void)
 //	Returns the number of processors on the machine
 
 	{
-	SYSTEM_INFO si;
-	::GetSystemInfo(&si);
-	return si.dwNumberOfProcessors;
+	PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX piBuff = new SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX[1];
+	DWORD dwBuffLen = 1;
+	PDWORD pdwBuffLen = &dwBuffLen;
+	bool bbuffered = ::GetLogicalProcessorInformationEx(LOGICAL_PROCESSOR_RELATIONSHIP(4), piBuff, pdwBuffLen);
+	//if we have multiple processor information structs, we need to handle that
+	if (!bbuffered)
+		{
+		delete[] piBuff;
+		piBuff = new SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX[*pdwBuffLen];
+		//The call should work now, as GetLogicalProcessorInformationEx should have set pdwBuffLen to the correct value upon failing
+		bbuffered = ::GetLogicalProcessorInformationEx(LOGICAL_PROCESSOR_RELATIONSHIP(4), piBuff, pdwBuffLen);
+		}
+	int iProc = 0;
+	if (bbuffered)
+		iProc = piBuff[0].Group.GroupInfo[0].MaximumProcessorCount;
+	else
+		{
+		//fallback to the old way of doing it
+		SYSTEM_INFO si;
+		::GetSystemInfo(&si);
+		iProc = si.dwNumberOfProcessors;
+		}
+	delete[] piBuff;
+	return iProc;
 	}
 
 CString Kernel::sysGetUserName (void)
