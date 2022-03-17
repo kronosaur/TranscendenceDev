@@ -1038,6 +1038,31 @@
 										{ enhancement:"-resist:laser:150" }
 										)
 									'resultCode)									result:'enhancementRemoved	}
+									
+						;	REPAIR ---------------------------------------------
+						
+						{	test:'(objAddItem gPlayerShip 
+									(itmSet@
+										(itmCreate &itLaserCannon; 2)
+										'damaged True
+										)
+									)												result:'ignore	}
+
+						{	test:'(shpEnhanceItem gPlayerShip 
+										(@ (objGetItems gPlayerShip "dDU") 0)
+										)											result:8	}
+
+						{	test:'(objGetItems gPlayerShip "dDU")					result:(list (itmSet@ (itmCreate &itLaserCannon; 1) 'damaged True))	}
+
+						{	test:'(shpEnhanceItem gPlayerShip 
+										(@ (objGetItems gPlayerShip "dDU") 0)
+										)											result:8	}
+
+						{	test:'(objGetItems gPlayerShip "dDU")					result:Nil	}
+
+						{	test:'(enum (objGetItems gPlayerShip "dU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
 						))
 
 					;	Armor paste iterations

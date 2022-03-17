@@ -1686,45 +1686,52 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 		case eisCantReplaceDefect:
 		case eisCantReplaceEnhancement:
 			return iResult;
-
-		case eisItemRepaired:
-			ItemList.SetDamagedAtCursor(false);
-			return iResult;
 		}
 
 	//	Notify any dock screens that we might modify an item
 
+	DWORD dwID = OBJID_NULL;
+
 	IDockScreenUI::SModifyItemCtx ModifyCtx;
 	OnModifyItemBegin(ModifyCtx, TargetItem);
 
-	//	Enhance
+	//	If repairing, then do it here.
 
-	DWORD dwID;
-	switch (Enhancement.GetModCode())
+	if (iResult == eisItemRepaired)
 		{
-		case etBinaryEnhancement:
-			dwID = OBJID_NULL;
-			ItemList.SetEnhancedAtCursor(true);
-			break;
-
-		default:
-			//	NOTE: This call handles etNone properly by removing the 
-			//	enhancement and returning a null ID.
-
-			dwID = ItemList.AddItemEnhancementAtCursor(Enhancement);
-			break;
+		ItemList.SetDamagedAtCursor(false);
 		}
 
-	//	Deal with installed items
+	//	Enhance
 
-	ItemEnhancementModified(ItemList);
-
-	//	Fire On event to the enhancement
-
-	if (Mods.GetEnhancementType() && ItemList.IsCursorValid())
+	else
 		{
-		CItem theEnhancement(Mods.GetEnhancementType(), 1);
-		theEnhancement.FireOnAddedAsEnhancement(this, ItemList.GetItemAtCursor(), iResult);
+		switch (Enhancement.GetModCode())
+			{
+			case etBinaryEnhancement:
+				dwID = OBJID_NULL;
+				ItemList.SetEnhancedAtCursor(true);
+				break;
+
+			default:
+				//	NOTE: This call handles etNone properly by removing the 
+				//	enhancement and returning a null ID.
+
+				dwID = ItemList.AddItemEnhancementAtCursor(Enhancement);
+				break;
+			}
+
+		//	Deal with installed items
+
+		ItemEnhancementModified(ItemList);
+
+		//	Fire On event to the enhancement
+
+		if (Mods.GetEnhancementType() && ItemList.IsCursorValid())
+			{
+			CItem theEnhancement(Mods.GetEnhancementType(), 1);
+			theEnhancement.FireOnAddedAsEnhancement(this, ItemList.GetItemAtCursor(), iResult);
+			}
 		}
 
 	//	Update the object
@@ -4373,12 +4380,14 @@ CG32bitPixel CSpaceObject::GetSymbolColor (void) const
 	{
 	CAccessibilitySettings cAccessibilitySettings = GetUniverse().GetAccessibilitySettings();
 	CSovereign *pPlayer = GetUniverse().GetPlayerSovereign();
+	CSovereign *pSovereign = GetSovereign();
 	CSpaceObject *pPlayerShip;
 	CG32bitPixel rgbColor;
 
 	//	Player & player's assets
 
-	if ((GetSovereign() == pPlayer) || (GetSovereign()->IsPlayerOwned()))
+	if (pSovereign 
+			&& ((pSovereign == pPlayer) || pSovereign->IsPlayerOwned()))
 		rgbColor = cAccessibilitySettings.GetIFFColor(CAccessibilitySettings::IFFType::player);
 
 	//	Angered ships
