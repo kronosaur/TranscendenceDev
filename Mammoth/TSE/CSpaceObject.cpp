@@ -1690,45 +1690,52 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 		case eisCantReplaceDefect:
 		case eisCantReplaceEnhancement:
 			return iResult;
-
-		case eisItemRepaired:
-			ItemList.SetDamagedAtCursor(false);
-			return iResult;
 		}
 
 	//	Notify any dock screens that we might modify an item
 
+	DWORD dwID = OBJID_NULL;
+
 	IDockScreenUI::SModifyItemCtx ModifyCtx;
 	OnModifyItemBegin(ModifyCtx, TargetItem);
 
-	//	Enhance
+	//	If repairing, then do it here.
 
-	DWORD dwID;
-	switch (Enhancement.GetModCode())
+	if (iResult == eisItemRepaired)
 		{
-		case etBinaryEnhancement:
-			dwID = OBJID_NULL;
-			ItemList.SetEnhancedAtCursor(true);
-			break;
-
-		default:
-			//	NOTE: This call handles etNone properly by removing the 
-			//	enhancement and returning a null ID.
-
-			dwID = ItemList.AddItemEnhancementAtCursor(Enhancement);
-			break;
+		ItemList.SetDamagedAtCursor(false);
 		}
 
-	//	Deal with installed items
+	//	Enhance
 
-	ItemEnhancementModified(ItemList);
-
-	//	Fire On event to the enhancement
-
-	if (Mods.GetEnhancementType() && ItemList.IsCursorValid())
+	else
 		{
-		CItem theEnhancement(Mods.GetEnhancementType(), 1);
-		theEnhancement.FireOnAddedAsEnhancement(this, ItemList.GetItemAtCursor(), iResult);
+		switch (Enhancement.GetModCode())
+			{
+			case etBinaryEnhancement:
+				dwID = OBJID_NULL;
+				ItemList.SetEnhancedAtCursor(true);
+				break;
+
+			default:
+				//	NOTE: This call handles etNone properly by removing the 
+				//	enhancement and returning a null ID.
+
+				dwID = ItemList.AddItemEnhancementAtCursor(Enhancement);
+				break;
+			}
+
+		//	Deal with installed items
+
+		ItemEnhancementModified(ItemList);
+
+		//	Fire On event to the enhancement
+
+		if (Mods.GetEnhancementType() && ItemList.IsCursorValid())
+			{
+			CItem theEnhancement(Mods.GetEnhancementType(), 1);
+			theEnhancement.FireOnAddedAsEnhancement(this, ItemList.GetItemAtCursor(), iResult);
+			}
 		}
 
 	//	Update the object
