@@ -382,14 +382,20 @@ class CArmorHUDRingSegments : public IHUDPainter
 		CG32bitPixel m_rgbShields = CG32bitPixel(0xff, 0xff, 0xff);			//	Color of shields
 		CG32bitPixel m_rgbShieldsText = CG32bitPixel(0x00, 0x00, 0x00);		//	Shield text color
 		CG32bitPixel m_rgbShieldsTextBack = CG32bitPixel(0xff, 0xff, 0xff);	//	Shield text background color
+		CG32bitPixel m_rgbHull = CG32bitPixel(0xff, 0xff, 0xff);			//	Color of hull
+		CG32bitPixel m_rgbHullText = CG32bitPixel(0x00, 0x00, 0x00);		//	Hull text color
+		CG32bitPixel m_rgbHullTextBack = CG32bitPixel(0xff, 0xff, 0xff);	//	Hull text background color
 
 		int m_iArmorRingRadius = 100;
 		int m_iArmorRingWidth = 10;
 		int m_iArmorInnerRadius = 90;
 		int m_iArmorNameRadius = 90;
 		int m_iShieldRingWidth = 10;
+		int m_iHullCircleRadius = 80;
 		CLanguage::SHPDisplayOptions m_HPDisplay;
 		TArray<SSegment> m_Segments;
+
+		bool m_bNoHPLabel = false;
 
 		//	Metrics
 
