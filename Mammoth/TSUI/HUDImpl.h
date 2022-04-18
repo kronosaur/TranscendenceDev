@@ -369,6 +369,7 @@ class CArmorHUDRingSegments : public IHUDPainter
 		void DrawArmorName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CArmorItem ArmorItem, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
 		void DrawIntegrityBox (CG32bitImage &Dest, const SSegment &Seg, CG32bitPixel rgbBack) const;
 		void DrawIntegrityBoxText (CG32bitImage &Dest, const SSegment &Seg, CG32bitPixel rgbColor) const;
+		void DrawHullIntegrityText (CG32bitImage &Dest, const int iHP, const int iMaxHP, const CLanguage::SHPDisplayOptions& Options, CG32bitPixel rgbColor) const;
 		void DrawItemBox (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sName, const TArray<SDisplayAttribute> &Attribs, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
 		void DrawShieldsIntegrity (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sHP, CG32bitPixel rgbBack, CG32bitPixel rgbColor) const;
 		void DrawShieldsName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CDeviceItem ShieldItem, CG32bitPixel rgbBack, CG32bitPixel rgbColor);

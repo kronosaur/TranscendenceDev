@@ -12,7 +12,7 @@
 #define SCALE_ATTRIB							CONSTLIT("scale")
 #define SEGMENT_ATTRIB							CONSTLIT("segment")
 #define SHIELDS_COLOR_ATTRIB					CONSTLIT("shieldsColor")
-#define NO_HP_LABEL_ATTRIB						CONSTLIT("noHPLabel")
+#define NO_ARMOR_HP_LABEL_ATTRIB				CONSTLIT("noArmorHPLabel")
 
 #define SCALE_HP								CONSTLIT("hp")
 #define SCALE_PERCENT							CONSTLIT("percent")
@@ -217,6 +217,38 @@ void CArmorHUDRingSegments::DrawIntegrityBoxText (CG32bitImage &Dest, const SSeg
 	DEBUG_CATCH
 	}
 
+void CArmorHUDRingSegments::DrawHullIntegrityText (CG32bitImage& Dest, const int iHP, const int iMaxHP, const CLanguage::SHPDisplayOptions& Options, CG32bitPixel rgbColor) const
+
+//	DrawIntegrityBoxText
+//
+//	Draws the armor integrity value on an arc background.
+
+	{
+	DEBUG_TRY
+
+	const CVisualPalette &VI = g_pHI->GetVisuals();
+	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
+
+	//	Draw the text
+
+	int iIntegrity = (iMaxHP ? mathRound(100.0 * iHP / iMaxHP) : 0);
+
+	CString sText;
+	switch (Options.iType)
+		{
+		case CLanguage::EHPDisplay::Percent:
+			sText = CLanguage::ComposeHitPointValue(iIntegrity, Options);
+			break;
+		default:
+			sText = CLanguage::ComposeHitPointValue(iHP, Options);
+		}
+
+	CVector vCenter(m_xCenter, m_yCenter);
+	MediumFont.DrawText(Dest, (int)vCenter.GetX(), (int)vCenter.GetY(), rgbColor, sText, CG16bitFont::AlignCenter);
+
+	DEBUG_CATCH
+	}
+
 void CArmorHUDRingSegments::DrawItemBox (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sName, const TArray<SDisplayAttribute> &Attribs, CG32bitPixel rgbBack, CG32bitPixel rgbColor)
 
 	//	DrawItemBox
@@ -356,7 +388,7 @@ bool CArmorHUDRingSegments::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsErr
 	m_rgbShields = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(SHIELDS_COLOR_ATTRIB), CG32bitPixel(103, 204, 0));
 	m_rgbShieldsText = CG32bitPixel::Fade(m_rgbShields, CG32bitPixel(255, 255, 255), 80);
 	m_rgbShieldsTextBack = CG32bitPixel::Darken(m_rgbShields, 128);
-	m_rgbHull = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(HULL_COLOR_ATTRIB), CG32bitPixel(128, 128, 128));
+	m_rgbHull = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(HULL_COLOR_ATTRIB), CG32bitPixel(64, 128, 255));
 	m_rgbHullText = CG32bitPixel::Fade(m_rgbHull, CG32bitPixel(255, 255, 255), 80);
 	m_rgbHullTextBack = CG32bitPixel::Darken(m_rgbHull, 128);
 
@@ -394,7 +426,7 @@ bool CArmorHUDRingSegments::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsErr
 	//	Measure out metrics for armor/shield integrity text
 
 	m_cxMaxValue = MediumFont.MeasureText(CONSTLIT("100%"), &m_cyMaxValue);
-	m_bNoHPLabel = CreateCtx.Desc.GetAttributeBool(NO_HP_LABEL_ATTRIB);
+	m_bNoHPLabel = CreateCtx.Desc.GetAttributeBool(NO_ARMOR_HP_LABEL_ATTRIB);
 
 	//	Initialize armor segment metrics
 
@@ -507,16 +539,20 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 
 	pShip->GetClass()->PaintScaled(m_Buffer, m_xCenter, m_yCenter, 2 * m_iArmorInnerRadius, 2 * m_iArmorInnerRadius, 90, 0);
 
-	int iHullCircleRadius = m_iArmorInnerRadius;
 	int iHullHP = 0;
 	int iMaxHullHP = 0;
 	pShip->GetInteriorDesc().GetHitPoints(*pShip, pShip->GetClass()->GetInteriorDesc(), &iHullHP, &iMaxHullHP);
 	if (iMaxHullHP > 0)
 		{
-		iHullCircleRadius = int(iHullCircleRadius * float(iHullHP) / float(iMaxHullHP));
+		int iHullCircleRadius = int(m_iArmorInnerRadius * float(iHullHP) / float(iMaxHullHP));
+		CGDraw::Circle(m_Buffer, m_xCenter, m_yCenter, iHullCircleRadius, CG32bitPixel(CG32bitPixel::Desaturate(m_rgbHull), 200), CGDraw::blendCompositeNormal);
+		DrawHullIntegrityText(m_Buffer, iHullHP, iMaxHullHP, m_HPDisplay, m_rgbHullText);
+		}
+	else
+		{
+		CGDraw::Circle(m_Buffer, m_xCenter, m_yCenter, m_iArmorInnerRadius, CG32bitPixel(CG32bitPixel::Desaturate(m_rgbHull), 80), CGDraw::blendCompositeNormal);
 		}
 
-	CGDraw::Circle(m_Buffer, m_xCenter, m_yCenter, iHullCircleRadius, CG32bitPixel(CG32bitPixel::Desaturate(m_rgbHull), iMaxHullHP > 0 ? 200 : 80), CGDraw::blendCompositeNormal);
 
 	//	Paint each of the armor segments, one at a time.
 	const CShipArmorDesc &ArmorDesc = pShip->GetClass()->GetArmorDesc();
