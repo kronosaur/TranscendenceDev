@@ -11,6 +11,7 @@
 #define SCALE_ATTRIB							CONSTLIT("scale")
 #define SEGMENT_ATTRIB							CONSTLIT("segment")
 #define SHIELDS_COLOR_ATTRIB					CONSTLIT("shieldsColor")
+#define NO_HP_LABEL_ATTRIB						CONSTLIT("noHPLabel")
 
 #define SCALE_HP								CONSTLIT("hp")
 #define SCALE_PERCENT							CONSTLIT("percent")
@@ -501,6 +502,7 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 	CGDraw::Circle(m_Buffer, m_xCenter, m_yCenter, m_iArmorInnerRadius, CG32bitPixel(CG32bitPixel::Desaturate(m_rgbArmor), 80), CGDraw::blendCompositeNormal);
 
 	//	Paint each of the armor segments, one at a time.
+	const CShipArmorDesc &ArmorDesc = pShip->GetClass()->GetArmorDesc();
 
 	for (CArmorItem ArmorItem : pShip->GetArmorSystem())
 		{
@@ -510,14 +512,17 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 		Seg.sHP = ArmorItem.GetHPDisplay(m_HPDisplay, &Seg.iIntegrity);
 		int iWidth = (Seg.iIntegrity * m_iArmorRingWidth) / 100;
 
+		int iSegStartAngle = ArmorDesc.GetSegment(ArmorItem.GetSegmentIndex()).GetStartAngle() + 90;
+		int iGetEndAngle = iSegStartAngle + ArmorDesc.GetSegment(ArmorItem.GetSegmentIndex()).GetSpan();
+
 		//	Draw the full armor size
 
 		CGDraw::Arc(m_Buffer, 
 				m_xCenter, 
 				m_yCenter, 
 				m_iArmorInnerRadius, 
-				Seg.iStartAngle, 
-				Seg.iEndAngle, 
+				iSegStartAngle,
+				iGetEndAngle,
 				m_iArmorRingWidth, 
 				rgbArmorBack, 
 				CGDraw::blendCompositeNormal, 
@@ -530,8 +535,8 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 				m_xCenter, 
 				m_yCenter, 
 				m_iArmorInnerRadius, 
-				Seg.iStartAngle, 
-				Seg.iEndAngle, 
+				iSegStartAngle,
+				iGetEndAngle,
 				iWidth, 
 				m_rgbArmor, 
 				CGDraw::blendCompositeNormal, 
