@@ -780,6 +780,16 @@ void CSpaceObject::UpdateTrade (SUpdateCtx &Ctx, int iInventoryRefreshed)
 	{
 	DEBUG_TRY
 
+	//	Quick fix
+	//	Player might have trade services from devices that
+	//  have the GetTradeServices event (e.g. Auton Bay)
+	//	which means they have trade overrides
+	//	Don't call OnUpdate (otherwise the player prints money)
+	//	In the future, we should let replenish and max balance
+	//	be 0 and have -1 represent "default value"
+	if (IsPlayer())
+		return;
+
 	//	Update override first
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();

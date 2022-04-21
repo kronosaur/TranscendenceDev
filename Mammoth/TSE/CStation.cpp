@@ -3086,7 +3086,7 @@ void CStation::OnSystemLoaded (SLoadCtx &Ctx)
 
 //	OnSystemLoaded
 //
-//	System has just been loaded. This is our change to make some fixes.
+//	System has just been loaded. This is our chance to make some fixes.
 
 	{
 	if (Ctx.dwVersion < 199)
