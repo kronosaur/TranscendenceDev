@@ -1552,7 +1552,7 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion >= 212)
 		Ctx.pStream->Read((char *)m_pArray, sizeof(SParticle) * m_iCount);
 
-	else if (Ctx.dwVersion >= 119)
+	else if (Ctx.dwVersion >= 120)
 		{
 		SParticle212* pOldArray = new SParticle212[m_iCount];
 		Ctx.pStream->Read((char*)pOldArray, sizeof(SParticle212) * m_iCount);
