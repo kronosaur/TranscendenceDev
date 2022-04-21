@@ -1029,6 +1029,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool IsMultiHull (void) const override { return m_pClass->GetInteriorDesc().IsMultiHull(); }
 
 		void GetAttachedSectionInfo (TArray<SAttachedSectionInfo> &Result) const;
+		const CShipInterior& GetInteriorDesc (void) const { return m_Interior; }
 		bool HasAttachedSections (void) const { return m_fHasShipCompartments; }
 		bool IsShipSection (void) const { return m_fShipCompartment; }
 		bool RepairInterior (int iRepairHP) { return m_Interior.RepairHitPoints(this, m_pClass->GetInteriorDesc(), iRepairHP); }
