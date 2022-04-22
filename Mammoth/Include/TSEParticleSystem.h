@@ -255,8 +255,8 @@ class CParticleArray
 			int iRotation;						//	Particle rotation
 			Metric rData;						//	Miscellaneous data for particle
 
-			DWORD fAlive:1;						//	TRUE if particle is alive
-			DWORD dwSpare:31;					//	Spare
+			bool fAlive;						//	TRUE if particle is alive
+			DWORD dwSpare:32;					//	Spare
 			};
 
 		CParticleArray (void);
@@ -338,6 +338,29 @@ class CParticleArray
 
 			DWORD fAlive:1;						//	TRUE if particle is alive
 			DWORD dwSpare:31;					//	Spare
+			};
+
+		struct SParticle212
+			{
+			CVector Pos;						//	Position. Valid if we use real coordinates
+			CVector Vel;						//	Velocity. Valid if we use real coordinates
+												//		NOTE: In Km per tick (unlike normal velocities)
+
+			int x;								//	Offset from center of particle cloud
+			int y;								//		(screen-coords, in 256ths of pixels)
+												//		(valid in all cases)
+			int xVel;							//	Velocity relative to particle cloud
+			int yVel;							//		(screen-coords, in 256ths of pixels per tick)
+												//		(not valid if using real coordinates)
+
+			int iGeneration;					//	Created on this tick
+			int iLifeLeft;						//	Ticks of life left
+			int iDestiny;						//	Random number from 1-360
+			int iRotation;						//	Particle rotation
+			Metric rData;						//	Miscellaneous data for particle
+
+			DWORD fAlive : 1;						//	TRUE if particle is alive
+			DWORD dwSpare : 31;					//	Spare
 			};
 
 		void CleanUp (void);
