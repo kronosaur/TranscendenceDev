@@ -1421,10 +1421,6 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 		pObj->m_fHasOnOrderChangedEvent = pObj->FindEventHandler(CONSTLIT("OnOrderChanged"));
 		}
 
-	//	Set event flags in case any events got added
-
-	pObj->SetEventFlags();
-
 	//	Done
 
 	*retpObj = pObj;
@@ -1803,6 +1799,8 @@ void CSpaceObject::EnterGate (CTopologyNode *pDestNode, const CString &sDestEntr
 //	NOTE: pDestNode and pStargate may be NULL.
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	If we're going to the same system, then do nothing
@@ -1844,6 +1842,8 @@ void CSpaceObject::EnterGate (CTopologyNode *pDestNode, const CString &sDestEntr
 	//	are notified.
 
 	GateHook(pDestNode, sDestEntryPoint, pStargate, bAscend);
+
+	DEBUG_CATCH
 	}
 
 int CSpaceObject::FindCommsMessage (const CString &sID)
@@ -3980,11 +3980,21 @@ int CSpaceObject::GetImageScale (void) const
 //	Returns the scale.
 
 	{
-	const CObjectImageArray &Image = GetImage();
-	if (Image.IsEmpty())
-		return 512;	//	Default
+	if (m_iImageScale == -1)
+		{
+		const CObjectImageArray &Image = GetImage();
+		if (!Image.IsEmpty())
+			m_iImageScale = Image.GetImageViewportSize();
+		else
+			{
+			//	If there is no image, we return a default value, but we don't
+			//	cache the value, in case the image gets set later.
 
-	return Image.GetImageViewportSize();
+			return 512;
+			}
+		}
+
+	return m_iImageScale;
 	}
 
 int CSpaceObject::GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort)
@@ -6499,6 +6509,24 @@ bool CSpaceObject::ObjRequestDock (CSpaceObject *pObj, int iPort)
 			ASSERT(false);
 			return false;
 		}
+	}
+
+void CSpaceObject::OnObjLoadComplete (SLoadCtx &Ctx)
+
+//	OnObjLoadComplete
+//
+//	Called after all objects have been loaded.
+
+	{
+	SetEventFlags();
+
+	if (Ctx.pSystem)
+		{
+		LoadObjReferences(Ctx.pSystem);
+		OnSystemLoaded(Ctx);
+		}
+
+	FireOnLoad(Ctx);
 	}
 
 void CSpaceObject::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &ModifyCtx, const CItem &Item) const

@@ -966,6 +966,7 @@ class CSpaceObject
 		bool NotifyOnObjGateCheck (CSpaceObject *pGatingObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj);
 		bool NotifyOthersWhenDestroyed (void) { return (m_fNoObjectDestructionNotify ? false : true); }
 		void OnObjDestroyed (const SDestroyCtx &Ctx);
+		void OnObjLoadComplete (SLoadCtx &Ctx);
 		bool ParseConditionOptions (const ICCItem &Options, SApplyConditionOptions &retOptions) const;
 		bool PointInHitSizeBox (const CVector &vPos, Metric rRadius = 0.0) const
 			{ 
@@ -1534,6 +1535,7 @@ class CSpaceObject
 		CSpaceObjectList m_SubscribedObjs;				//	List of objects to notify when something happens
 		CObjectJoint *m_pFirstJoint = NULL;				//	List of joints
 		CPhysicsForceDesc m_ForceDesc;					//	Temporary; valid only inside Update.
+		mutable int m_iImageScale = -1;					//	Cached value computed in GetImageScale
 
 		int m_iControlsFrozen:8 = 0;					//	Object will not respond to controls
 		int m_iSpare:24 = 0;

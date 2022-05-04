@@ -1019,12 +1019,7 @@ ALERROR CSystem::CreateFromStream (CUniverse &Universe,
 		CSpaceObject *pObj = Ctx.pSystem->GetObject(i);
 
 		if (pObj)
-			{
-			pObj->LoadObjReferences(Ctx.pSystem);
-			pObj->OnSystemLoaded(Ctx);
-
-			pObj->FireOnLoad(Ctx);
-			}
+			pObj->OnObjLoadComplete(Ctx);
 		}
 
 	//	Done

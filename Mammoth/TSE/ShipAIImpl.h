@@ -195,7 +195,7 @@ class CAIBehaviorCtx
 		bool CalcFlockingFormationRandom (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing);
 		bool ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2);
 		void GetPrimaryWeaponsToFire (CShip* pShip, CSpaceObject *pTarget, Metric rTargetDist2, TArray<CInstalledDevice*> &pWeaponsToFire, TArray<Metric> &rWeaponRanges);
-		void FireWeaponIfOnTarget (CShip* pShip, CSpaceObject *pTarget, CInstalledDevice *pWeaponToFire, Metric rWeaponRange, Metric rTargetDist2, bool bDoNotShoot, int *retiFacingAngle, int *retiAngleToTarget);
+		void FireWeaponIfOnTarget (CShip* pShip, CSpaceObject *pTarget, CInstalledDevice *pWeaponToFire, Metric rWeaponRange, Metric rTargetDist2, bool bDoNotShoot, int *retiFacingAngle, int *retiAngleToTarget, bool *retbIsAligned = nullptr);
 
 		CAISettings m_AISettings;					//	Settings
 

@@ -94,6 +94,13 @@ void CAscendedObjectList::ReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 210)
 		m_Events.ReadFromStream(Ctx);
+
+	//	Load complete
+
+	for (int i = 0; i < m_List.GetCount(); i++)
+		{
+		m_List[i]->OnObjLoadComplete(Ctx);
+		}
 	}
 
 CSpaceObject *CAscendedObjectList::RemoveByID (DWORD dwID, CSystemEventList &retEvents)

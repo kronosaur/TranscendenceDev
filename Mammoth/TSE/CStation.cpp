@@ -3086,7 +3086,7 @@ void CStation::OnSystemLoaded (SLoadCtx &Ctx)
 
 //	OnSystemLoaded
 //
-//	System has just been loaded. This is our change to make some fixes.
+//	System has just been loaded. This is our chance to make some fixes.
 
 	{
 	if (Ctx.dwVersion < 199)
@@ -6118,9 +6118,8 @@ bool CStation::UpdateOverlays (SUpdateCtx &Ctx, bool &iobCalcBounds, bool &iobCa
 
 	{
 	bool bModified;
-	const CObjectImageArray &Image = GetImage(true);
 
-	m_Overlays.Update(this, Image.GetImageViewportSize(), GetRotation(), &bModified);
+	m_Overlays.Update(this, GetImageScale(), GetRotation(), &bModified);
 	if (IsDestroyed())
 		return false;
 
