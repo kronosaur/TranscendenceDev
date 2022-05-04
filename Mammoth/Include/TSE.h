@@ -966,6 +966,7 @@ class CSpaceObject
 		bool NotifyOnObjGateCheck (CSpaceObject *pGatingObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj);
 		bool NotifyOthersWhenDestroyed (void) { return (m_fNoObjectDestructionNotify ? false : true); }
 		void OnObjDestroyed (const SDestroyCtx &Ctx);
+		void OnObjLoadComplete (SLoadCtx &Ctx);
 		bool ParseConditionOptions (const ICCItem &Options, SApplyConditionOptions &retOptions) const;
 		bool PointInHitSizeBox (const CVector &vPos, Metric rRadius = 0.0) const
 			{ 
