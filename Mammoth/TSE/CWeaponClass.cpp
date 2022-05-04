@@ -3127,7 +3127,8 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		Metric rDelay = CalcActivateDelay(Ctx) + 1;
 		Metric rShotsPerBurst = min(Metric(GetContinuous(*pShot) + 1), rDelay);
 		Metric rHeatPerShot = m_iHeatPerShot;
-		return CC.CreateInteger(mathRound((rShotsPerBurst * rHeatPerShot) / rDelay));
+		Metric rChargeTime = GetChargeTime(*pShot);
+		return CC.CreateInteger(mathRound(((rShotsPerBurst + rChargeTime) * rHeatPerShot) / rDelay));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_LINKED_FIRE_OPTIONS))
