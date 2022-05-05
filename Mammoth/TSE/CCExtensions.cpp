@@ -2252,7 +2252,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (device)\n\n"
 
 			"   'capacitor\n"
-			"   'deviceSlotID\n"
+			"   'slotID\n"
 			"   'enabled\n"
 			"   'linkedFireOptions\n"
 			"   'pos\n"
