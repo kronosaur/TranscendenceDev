@@ -120,6 +120,8 @@
 #define PROPERTY_INTERACTION					CONSTLIT("interaction")
 #define PROPERTY_LIFETIME						CONSTLIT("lifetime")
 #define PROPERTY_MINING_TYPE					CONSTLIT("miningType")
+#define PROPERTY_MISSILE_SPEED					CONSTLIT("missileSpeed")
+#define PROPERTY_RANGE							CONSTLIT("range")
 #define PROPERTY_SHOTS_PER_AMMO_ITEM			CONSTLIT("shotsPerAmmoItem")
 #define PROPERTY_STD_HP							CONSTLIT("stdHP")
 #define PROPERTY_STD_INTERACTION				CONSTLIT("stdInteraction")
@@ -961,8 +963,14 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 			return CC.CreateNil();
 		}
 
+	else if (strEquals(sProperty, PROPERTY_MISSILE_SPEED))
+		return CC.CreateNumber(mathRound(100 * ((m_rMissileSpeed + m_rMaxMissileSpeed) / (2 * LIGHT_SECOND))));
+
 	else if (strEquals(sProperty, PROPERTY_LIFETIME))
 		return CC.CreateNumber(m_Lifetime.GetAveValueFloat());
+
+	else if (strEquals(sProperty, PROPERTY_RANGE))
+		return CC.CreateNumber(GetMaxRange() / LIGHT_SECOND);
 
 	else if (strEquals(sProperty, PROPERTY_SHOTS_PER_AMMO_ITEM))
 		{
