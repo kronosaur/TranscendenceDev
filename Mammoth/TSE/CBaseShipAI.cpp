@@ -1935,7 +1935,8 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 
 	Ctx.pStream->Read(dwLoad);
 	CShipClass *pClass = Ctx.GetUniverse().FindShipClass(dwLoad);
-	CSystem::ReadObjRefFromStream(Ctx, (CSpaceObject **)&m_pShip);
+	bool bOptional = (pShip != NULL);
+	CSystem::ReadObjRefFromStream(Ctx, (CSpaceObject **)&m_pShip, bOptional);
 	if (m_pShip == NULL)
 		m_pShip = pShip;
 
