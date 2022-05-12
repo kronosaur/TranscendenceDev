@@ -11281,6 +11281,15 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 				}
 
+			if (pTarget && pTarget->IsAscended())
+				{
+				if (pCtx->GetUniverse().InDebugMode())
+					return pCC->CreateError(CONSTLIT("shpOrder target is ascended"), pArgs->GetElement(1));
+
+				::kernelDebugLogPattern("ERROR: shpOrder %s target ascended.", pArgs->GetElement(1)->GetStringValue());
+				return pCC->CreateNil();
+				}
+
 			//	Get the data
 
 			COrderDesc OrderDesc = COrderDesc::ParseFromCCItem(*pCtx, iOrder, pTarget, *pArgs, iArg);
