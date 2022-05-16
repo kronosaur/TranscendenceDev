@@ -920,8 +920,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'linkedFireOptions\n"
 			"   'maxDamage           Maximum damage per shot\n"
 			"   'minDamage           Minimum damage per shot\n"
+			"   'missileSpeed\n"
 			"   'multiShot\n"
 			"   'omnidirectional\n"
+			"   'range\n"
 			"   'repeating\n"
 			"	'shipCounterPerShot\n"
 			"   'stdCost\n"
@@ -11282,6 +11284,15 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateError(CONSTLIT("shpOrder target already destroyed"), pArgs->GetElement(1));
 
 				::kernelDebugLogPattern("ERROR: shpOrder %s target already destroyed.", pArgs->GetElement(1)->GetStringValue());
+				return pCC->CreateNil();
+				}
+
+			if (pTarget && pTarget->IsAscended())
+				{
+				if (pCtx->GetUniverse().InDebugMode())
+					return pCC->CreateError(CONSTLIT("shpOrder target is ascended"), pArgs->GetElement(1));
+
+				::kernelDebugLogPattern("ERROR: shpOrder %s target ascended.", pArgs->GetElement(1)->GetStringValue());
 				return pCC->CreateNil();
 				}
 
