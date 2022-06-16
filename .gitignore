@@ -66,6 +66,7 @@ bld/
 
 # Other Visual Studio files
 
+.vs/
 *.tlog
 *.VC.db
 *.VC.db-shm

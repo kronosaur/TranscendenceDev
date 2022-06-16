@@ -6387,7 +6387,7 @@ void CSpaceObject::Move (SUpdateCtx &Ctx, Metric rSeconds)
 
 	//	Set a flag so we check collisions
 
-	if (IsAnchored())
+	if (IsAnchored() || m_vVel.IsNull())
 		SetCollisionTestNeeded(false);
 	else if (Ctx.bHasShipBarriers)
 		SetCollisionTestNeeded(GetCategory() == CSpaceObject::catShip || GetCategory() == CSpaceObject::catStation);
