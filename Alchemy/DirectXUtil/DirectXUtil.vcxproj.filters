@@ -84,9 +84,6 @@
     <ClInclude Include="..\Include\DXSparseMask.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\DXScreenMgr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\DXScreenMgr3D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -144,9 +141,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Debug.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectDraw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Noise.cpp">
@@ -323,9 +317,6 @@
     <ClCompile Include="CScreenMgr3D.cpp">
       <Filter>Source Files\DX</Filter>
     </ClCompile>
-    <ClCompile Include="CScreenMgr.cpp">
-      <Filter>Source Files\DX</Filter>
-    </ClCompile>
     <ClCompile Include="8bitNoise.cpp">
       <Filter>Source Files\Fractal</Filter>
     </ClCompile>
@@ -427,6 +418,9 @@
     </ClCompile>
     <ClCompile Include="CDrawText.cpp">
       <Filter>Source Files\TextFormat</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectDraw.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

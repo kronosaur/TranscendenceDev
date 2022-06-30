@@ -7,11 +7,7 @@
 
 #pragma comment(lib, "d3d9.lib")
 
-CDXScreen::CDXScreen (void) :
-		m_hWnd(NULL),
-		m_pD3D(NULL),
-		m_pD3DDevice(NULL),
-		m_bDeviceLost(false)
+CDXScreen::CDXScreen (void)
 
 //	CDXScreen constructor
 
