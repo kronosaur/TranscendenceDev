@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <memory>
+
 class CCargoDesc;
 class CTargetList;
 class CWeaponTargetDefinition;
