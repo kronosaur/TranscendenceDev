@@ -2265,36 +2265,39 @@ void CUniverse::PlaySound (CSpaceObject *pSource, int iChannel)
 //	Plays a sound from the given source
 
 	{
-	if (!m_bNoSound 
-			&& m_pSoundMgr 
-			&& iChannel != -1)
+	if (m_bNoSound || !m_pSoundMgr || iChannel == -1)
+		return;
+
+	//	If the system is not active, then skip.
+
+	if (pSource && (!pSource->GetSystem() || !pSource->GetSystem()->IsInPlay()))
+		return;
+
+	//	Default to full volume
+
+	int iVolume = 0;
+	int iPan = 0;
+
+	//	Figure out how close the source is to the POV. The sound fades as we get
+	//	further away.
+
+	if (pSource && m_pPOV)
 		{
-		//	Default to full volume
+		CVector vDist = pSource->GetPos() - m_pPOV->GetPos();
+		Metric rDist2 = vDist.Length2();
+		iVolume = -(int)(10000.0 * rDist2 / (MAX_SOUND_DISTANCE * MAX_SOUND_DISTANCE));
 
-		int iVolume = 0;
-		int iPan = 0;
+		//	If below a certain level, then it is silent anyway
 
-		//	Figure out how close the source is to the POV. The sound fades as we get
-		//	further away.
+		if (iVolume <= -10000)
+			return;
 
-		if (pSource && m_pPOV)
-			{
-			CVector vDist = pSource->GetPos() - m_pPOV->GetPos();
-			Metric rDist2 = vDist.Length2();
-			iVolume = -(int)(10000.0 * rDist2 / (MAX_SOUND_DISTANCE * MAX_SOUND_DISTANCE));
+		//	Adjust left/right volume based on direction
 
-			//	If below a certain level, then it is silent anyway
-
-			if (iVolume <= -10000)
-				return;
-
-			//	Adjust left/right volume based on direction
-
-			iPan = (int)(10000.0 * (vDist.GetX() / MAX_SOUND_DISTANCE));
-			}
-
-		m_pSoundMgr->Play(iChannel, iVolume, iPan);
+		iPan = (int)(10000.0 * (vDist.GetX() / MAX_SOUND_DISTANCE));
 		}
+
+	m_pSoundMgr->Play(iChannel, iVolume, iPan);
 	}
 
 void CUniverse::PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CSystemEventList &SavedEvents)

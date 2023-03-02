@@ -41,23 +41,7 @@ constexpr Metric MAP_GRID_SIZE =				3000.0 * LIGHT_SECOND;
 
 CSystem::CSystem (CUniverse &Universe, CTopologyNode *pTopology) : 
 		m_Universe(Universe),
-		m_dwID(OBJID_NULL),
 		m_pTopology(pTopology),
-		m_pEnvironment(NULL),
-		m_iTick(0),
-		m_iNextEncounter(0),
-		m_iTimeStopped(0),
-		m_rKlicksPerPixel(KLICKS_PER_PIXEL),
-		m_rTimeScale(TIME_SCALE),
-		m_iLastUpdated(-1),
-		m_fNoRandomEncounters(false),
-		m_fInCreate(false),
-		m_fUseDefaultTerritories(true),
-		m_fEnemiesInLRS(false),
-		m_fEnemiesInSRS(false),
-		m_fPlayerUnderAttack(false),
-		m_fLocationsBlocked(false),
-		m_fFlushEventHandlers(false),
 		m_pThreadPool(NULL),
 		m_ObjGrid(GRID_SIZE, CELL_SIZE, CELL_BORDER)
 
@@ -3023,6 +3007,22 @@ bool CSystem::IsExclusionZoneClear (const CVector &vPos, Metric rMinExclusion) c
 		}
 
 	//	If we get this far, then zone is clear
+
+	return true;
+	}
+
+bool CSystem::IsInPlay () const
+
+//	IsInPlay
+//
+//	Returns TRUE if we're currently playing in this system.
+
+	{
+	if (GetUniverse().GetCurrentSystem() != this)
+		return false;
+
+	if (m_fNotInUI)
+		return false;
 
 	return true;
 	}
