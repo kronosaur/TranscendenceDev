@@ -75,7 +75,7 @@ bld/
 
 ## Visual Studio Config files
 
-Transcendece/.vs/*
+Transcendence/.vs/*
 .vs/config/applicationhost.config
 .vs/slnx.sqlite
 
