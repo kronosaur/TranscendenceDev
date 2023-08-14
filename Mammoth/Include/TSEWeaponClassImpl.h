@@ -133,7 +133,7 @@ class CWeaponClass : public CDeviceClass
 
 		virtual bool Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx) override;
 		virtual CWeaponClass *AsWeaponClass (void) override { return this; }
-		virtual bool CalcFireSolution (const CInstalledDevice &Device, CSpaceObject &Target, int *retiAimAngle = NULL, Metric *retrDist = NULL) const override;
+		virtual bool CalcFireSolution (const CInstalledDevice &Device, const CSpaceObject &Target, int *retiAimAngle = NULL, Metric *retrDist = NULL) const override;
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ICCItem *FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) override;
 		virtual int GetActivateDelay (CItemCtx &ItemCtx) const override;
@@ -256,12 +256,12 @@ class CWeaponClass : public CDeviceClass
 		CShotArray CalcShotsFired (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, SActivateCtx &ActivateCtx, int &retiFireAngle, bool &retbSetFireAngle) const;
 		bool CalcSingleTarget (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, SActivateCtx &ActivateCtx, int &retiFireAngle, CSpaceObject *&retpTarget, bool &retbSetFireAngle) const;
 		bool CanConsumeAmmo (const CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc, int iRepeatingCount, int &retiAmmoToConsume) const;
-		bool CanConsumeShipCounter (const CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc) const; // TODO(heliogenesis: Rename to 'CanConsumeShipHeat')
+		bool CanConsumeShipHeat (const CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc) const;
 		bool ChargeWeapon (const bool bSetFireAngle, const int iFireAngle, const CWeaponFireDesc& ShotDesc, CDeviceItem& DeviceItem, CShotArray& Shots, SActivateCtx& ActivateCtx, CInstalledDevice& Device);
 		EFireResults Consume (CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc, int iRepeatingCount, bool *retbConsumedItems = NULL);
 		void ConsumeAmmo (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, int iRepeatingCount, int iAmmoToConsume, bool *retbConsumed);
 		bool ConsumeCapacitor (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc);
-		void ConsumeShipCounter (CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc);
+		void ConsumeShipHeat (CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc);
 		void FailureExplosion (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, bool *retbSourceDestroyed);
 		bool FireAllShots (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, CShotArray &Shots, int iRepeatingCount, SShotFireResult &retResult);
 		bool FireGetAmmoCountToDisplay (const CDeviceItem &DeviceItem, const CWeaponFireDesc &Shot, int *retiAmmoCount = NULL) const;
@@ -352,7 +352,7 @@ class CWeaponClass : public CDeviceClass
 		int m_iCounterUpdateRate;				//	Ticks to update counter
 		int m_iCounterUpdate;					//	Inc/dec value per update
 		int m_iCounterActivate;					//	Inc/dec value per shot
-		int m_iCounterPerShot;					//	How much to increment the ship's counter by per shot
+		int m_iHeatPerShot;					//	How much to increment the ship's heat by per shot
 		int m_iChargeTime;						//  Charge time before firing
 
 		bool m_bTargetStationsOnly;				//	Do not target ships

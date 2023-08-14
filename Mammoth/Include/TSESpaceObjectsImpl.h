@@ -1170,9 +1170,9 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CDesignType *GetCharacter (void) const override { return m_pCharacter; }
 		virtual DWORD GetClassUNID (void) override { return m_pClass->GetUNID(); }
 		virtual int GetCombatPower (void) override;
-		virtual int GetCounterValue (void) const override { return m_iCounterValue; }
-		virtual int GetCounterIncrementRate (void) const override { return m_pClass->GetHullDesc().GetCounterIncrementRate(); }
-		virtual bool GetCounterIsHeat (void) const override { return m_pClass->GetHullDesc().GetCounterIncrementRate() < 0; }
+		virtual int GetHeatValue (void) const override { return m_iHeatValue; }
+		virtual int GetHeatIncrementRate (SUpdateCtx& Ctx) override;
+		virtual bool GetCounterIsHeat (void) const override { return m_pClass->GetHullDesc().GetHeatIncrementRate() < 0; }
 		virtual const CCurrencyBlock *GetCurrencyBlock (void) const override;
 		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) override;
 		virtual int GetCyberDefenseLevel (void) const override;
@@ -1199,7 +1199,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual int GetLevel (void) const override { return m_pClass->GetLevel(); }
 		virtual Metric GetMass (void) const override;
 		virtual int GetMaxPower (void) const override;
-		virtual int GetMaxCounterValue (void) const override { return m_pClass->GetHullDesc().GetMaxCounter(); };
+		virtual int GetMaxHeatValue (void) const override { return m_pClass->GetHullDesc().GetMaxHeat(); };
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) const override { return CONSTLIT("CShip"); }
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
@@ -1229,7 +1229,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) const override;
 		virtual bool HasAttribute (const CString &sAttribute) const override;
 		virtual bool ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos) override;
-		virtual void IncCounterValue(int iCounterValue) override { m_iCounterValue += iCounterValue; }
+		virtual void IncHeatValue(int iHeatValue) override { m_iHeatValue += iHeatValue; }
 		virtual bool IsAnchored (void) const override { return (GetDockedObj() != NULL) || IsManuallyAnchored(); }
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsAttached (void) const override { return m_fShipCompartment; }
@@ -1288,7 +1288,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool SetAbility (Abilities iAbility, AbilityModifications iModification, int iDuration, DWORD dwOptions) override;
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) override { return m_pController->SetAISettingInteger(sSetting, iValue); }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) override { return m_pController->SetAISettingString(sSetting, sValue); }
-		virtual void SetCounterValue(int iCounterValue) override { m_iCounterValue = iCounterValue; }
+		virtual void SetHeatValue(int iHeatValue) override { m_iHeatValue = iHeatValue; }
 		virtual void SetFireDelay (CInstalledDevice *pWeapon, int iDelay = -1) override;
 		virtual void SetIdentified (bool bIdentified = true) override { m_fIdentified = bIdentified; }
 		virtual void SetKnown (bool bKnown = true) override { m_fKnown = bKnown; }
@@ -1427,7 +1427,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 
 		mutable Metric m_rItemMass = 0.0;			//	Total mass of all items (including installed)
 		mutable Metric m_rCargoMass = 0.0;			//	Mass of cargo items (not including installed)
-		int m_iCounterValue = 0;					//	Heat/capacitor counter value
+		int m_iHeatValue = 0;					//	Heat/capacitor counter value
 
 		CSpaceObject *m_pDocked = NULL;				//	If not NULL, object we are docked to.
 		CSpaceObject *m_pExitGate = NULL;			//	If not NULL, gate we are about to exit.

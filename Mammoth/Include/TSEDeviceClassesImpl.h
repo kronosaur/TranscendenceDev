@@ -220,10 +220,11 @@ class CEnhancerClass : public CDeviceClass
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice);
 
 		//	CDeviceClass virtuals
-
+		virtual int CalcHeatDelta (const SUpdateCtx& Ctx, const CInstalledDevice* pDevice, CSpaceObject* pSource) override;
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
+		virtual int GetHeatRating (CItemCtx& Ctx, int* retiIdleHeatGeneration = NULL) const override;
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
 
 	protected:
@@ -236,6 +237,7 @@ class CEnhancerClass : public CDeviceClass
 			int iLevel;
 			CEnhancementDesc Enhancements;	//	List of enhancements applied
 			int iPowerUse;					//	Power use at this level
+			int iHeatGeneration;
 			};
 
 		struct SInheritedStats
@@ -245,6 +247,7 @@ class CEnhancerClass : public CDeviceClass
 			CItemCriteria Criteria;
 			CItemLevelCriteria LevelCheck;
 			int iPowerUse;
+			int iHeatGeneration;
 			};
 
 		bool AccumulateOldStyle (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
@@ -272,6 +275,7 @@ class CEnhancerClass : public CDeviceClass
 		int m_iDamageAdjArray[damageCount];	//	Adjustment to weapons damage
 
 		int m_iPowerUse;
+		int m_iHeatGeneration;
 	};
 
 class CMiscellaneousClass : public CDeviceClass
@@ -282,6 +286,8 @@ class CMiscellaneousClass : public CDeviceClass
 		//	CDeviceClass virtuals
 
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+		virtual int CalcHeatDelta (const SUpdateCtx& Ctx, const CInstalledDevice* pDevice, CSpaceObject* pSource) override;
+		virtual int GetHeatRating (CItemCtx& Ctx, int* retiIdleHeatGeneration = NULL) const override;
 		virtual int GetActivateDelay (CItemCtx &ItemCtx) const override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
 		virtual int GetCounter (const CInstalledDevice *pDevice, const CSpaceObject *pSource, EDeviceCounterType *retiType = NULL, int *retiLevel = NULL) const override;
@@ -305,6 +311,9 @@ class CMiscellaneousClass : public CDeviceClass
 											//		to charge for activation. If
 											//		<0, this is a percent of max
 											//		reactor power.
+
+		int m_iHeatGeneration;
+		int m_iCapacitorHeatGeneration;
 	};
 
 class CReactorClass : public CDeviceClass
@@ -485,11 +494,13 @@ class CShieldClass : public CDeviceClass
 		virtual bool AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon) override;
 		virtual bool AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip, SDamageCtx &Ctx) override;
 		virtual CShieldClass *AsShieldClass (void) override { return this; }
+		virtual int CalcHeatDelta (const SUpdateCtx& Ctx, const CInstalledDevice* pDevice, CSpaceObject* pSource) override;
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual void Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName) override;
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) override;
+		virtual int GetHeatRating (CItemCtx& Ctx, int* retiIdleHeatGeneration) const override;
 		virtual int GetHitPoints (CItemCtx &ItemCtx, int *retiMaxHP = NULL) const override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatShields; }
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
@@ -543,6 +554,7 @@ class CShieldClass : public CDeviceClass
 		void SetDepleted (CInstalledDevice *pDevice, CSpaceObject *pSource);
 		void SetHPLeft (CInstalledDevice *pDevice, CSpaceObject *pSource, int iHP, bool bConsumeCharges = false);
 		bool UpdateDepleted (CInstalledDevice *pDevice);
+		void UpdateHPPenaltyFromHeat (const CSpaceObject *pSource, int iCurrentHeat, Metric &rHeatHPMultiplier);
 
 		int m_iHitPoints;						//	Max HP
 		int m_iArmorShield;						//	If non-zero then this is the
@@ -559,10 +571,16 @@ class CShieldClass : public CDeviceClass
 		DamageTypeSet m_WeaponSuppress;			//	Types of weapons suppressed
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
 		int m_iTimeBetweenFlashEffects;			//  Minimum time between flash effects in ticks
+		int m_iHeatGeneration;					//  Heat generated during regeneration, in 10s of kJs per tick
+		int m_iIdleHeatGeneration;				//  Heat generated when maintaining shields
+		int m_iHeatDamageConversion;			//  Heat generated per post-adjustment point of damage taken (in 10s of kJs)
+		int m_iHeatPenaltyThreshold;			//	Percent of ship heat at which shield maximum HP is reduced
+		int m_iHeatThresholdZeroHP;				//	Percent of ship heat at which shield maximum HP will be reduced to zero
 
 		int m_iExtraHPPerCharge;				//	Extra HP for each point of charge
 		int m_iExtraPowerPerCharge;				//	Extra power use for each point of charge (1/10 megawatt)
 		int m_iExtraRegenPerCharge;				//	Extra regen/180 ticks per point of charge
+		int m_iExtraHeatPerCharge;				//	Extra heat generation per point of charge (10s of kJs per tick)
 
 		DWORD m_fHasNonRegenHPBonus:1;			//	If TRUE, charges are non-regenerating HP
 		DWORD m_fRegenByShieldLevel:1;			//	If TRUE, regen decreases with low shield level
@@ -587,6 +605,8 @@ class CSolarDeviceClass : public CDeviceClass
 
 		//	CDeviceClass virtuals
 
+		virtual int CalcHeatDelta (const SUpdateCtx &Ctx, const CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+		virtual int GetHeatRating (CItemCtx& Ctx, int* retiIdleHeatGeneration) const override;
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
@@ -602,6 +622,9 @@ class CSolarDeviceClass : public CDeviceClass
 		int m_iPowerGen;						//	Power generated at maximum solar intensity (1/10th MW).
 		int m_iRefuel;							//	Units of fuel recharged per 10 ticks
 												//	at 100% intensity.
+
+		int m_iHeatGeneration;					//	Units of heat generated per tick.
+		int m_iSolarHeatGeneration;				//	Units of heat generated per tick at 100% intensity.
 	};
 
 #include "TSEWeaponClassImpl.h"

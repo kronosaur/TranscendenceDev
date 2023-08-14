@@ -301,7 +301,7 @@
 						{	test:'(itm@ &itLaserCannon; 'range)					result:60	}
 						{	test:'(itm@ &itLaserCannon; 'repeating)				result:0	}
 						{	test:'(itm@ &itLaserCannon; 'secondary)				result:Nil	}
-						{	test:'(itm@ &itLaserCannon; 'shipCounterPerShot)		result:0	}
+						{	test:'(itm@ &itLaserCannon; 'shipHeatPerShot)		result:0	}
 						{	test:'(itm@ &itLaserCannon; 'singlePointOrigin)		result:True	}
 						{	test:'(itm@ &itLaserCannon; 'speed)					result:100	}
 						{	test:'(itm@ &itLaserCannon; 'stdCost)					result:350.0	}
@@ -396,7 +396,7 @@
 						{	test:'(itm@ &itNAMIMissileLauncher; 'range)					result:108	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'repeating)				result:0	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'secondary)				result:Nil	}
-						{	test:'(itm@ &itNAMIMissileLauncher; 'shipCounterPerShot)		result:0	}
+						{	test:'(itm@ &itNAMIMissileLauncher; 'shipHeatPerShot)		result:0	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'singlePointOrigin)		result:True	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'speed)					result:60	}
 						{	test:'(itm@ &itNAMIMissileLauncher; 'stdCost)					result:800.0	}
@@ -451,7 +451,7 @@
 						{	test:'(itm@ &itKM500Missile; 'range)					result:96	}
 						{	test:'(itm@ &itKM500Missile; 'repeating)				result:0	}
 						{	test:'(itm@ &itKM500Missile; 'secondary)				result:Nil	}
-						{	test:'(itm@ &itKM500Missile; 'shipCounterPerShot)		result:0	}
+						{	test:'(itm@ &itKM500Missile; 'shipHeatPerShot)		result:0	}
 						{	test:'(itm@ &itKM500Missile; 'singlePointOrigin)		result:True	}
 						{	test:'(itm@ &itKM500Missile; 'speed)					result:40	}
 						{	test:'(itm@ &itKM500Missile; 'stdCost)				result:6	}

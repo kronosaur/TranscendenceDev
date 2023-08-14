@@ -17,9 +17,9 @@
 #define PROPERTY_CARGO_SPACE_FREE_KG			CONSTLIT("cargoSpaceFreeKg")
 #define PROPERTY_CARGO_SPACE_USED_KG			CONSTLIT("cargoSpaceUsedKg")
 #define PROPERTY_CONTAMINATION_TIMER			CONSTLIT("contaminationTimer")
-#define PROPERTY_COUNTER_INCREMENT_RATE			CONSTLIT("counterIncrementRate")
-#define PROPERTY_COUNTER_VALUE					CONSTLIT("counterValue")
-#define PROPERTY_COUNTER_VALUE_INCREMENT		CONSTLIT("counterValueIncrement")
+#define PROPERTY_HEAT_INCREMENT_RATE			CONSTLIT("heatIncrementRate")
+#define PROPERTY_HEAT_VALUE					CONSTLIT("heatValue")
+#define PROPERTY_HEAT_VALUE_INCREMENT		CONSTLIT("heatValueIncrement")
 #define PROPERTY_CHALLENGE_RATING				CONSTLIT("challengeRating")
 #define PROPERTY_CHARACTER						CONSTLIT("character")
 #define PROPERTY_CHARACTER_NAME					CONSTLIT("characterName")
@@ -29,6 +29,7 @@
 #define PROPERTY_DOCKED_AT_ID					CONSTLIT("dockedAtID")
 #define PROPERTY_DOCKING_ENABLED				CONSTLIT("dockingEnabled")
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
+#define PROPERTY_DRIVE_HEAT_GENERATION			CONSTLIT("driveHeatGeneration")
 #define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
 #define PROPERTY_EMP_IMMUNE						CONSTLIT("EMPImmune")
 #define PROPERTY_EXIT_GATE_TIMER				CONSTLIT("exitGateTimer")
@@ -38,7 +39,7 @@
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_HULL_PRICE						CONSTLIT("hullPrice")
 #define PROPERTY_INTERIOR_HP					CONSTLIT("interiorHP")
-#define PROPERTY_MAX_COUNTER					CONSTLIT("maxCounter")
+#define PROPERTY_MAX_HEAT					CONSTLIT("maxHeat")
 #define PROPERTY_MAX_FUEL						CONSTLIT("maxFuel")
 #define PROPERTY_MAX_FUEL_EXACT					CONSTLIT("maxFuelExact")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
@@ -327,11 +328,11 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_CONTAMINATION_TIMER))
 		return CC.CreateInteger(m_iContaminationTimer);
 
-	else if (strEquals(sName, PROPERTY_COUNTER_VALUE))
-		return CC.CreateInteger(GetCounterValue());
+	else if (strEquals(sName, PROPERTY_HEAT_VALUE))
+		return CC.CreateInteger(GetHeatValue());
 
-	else if (strEquals(sName, PROPERTY_COUNTER_INCREMENT_RATE))
-		return CC.CreateInteger(GetCounterIncrementRate());
+	else if (strEquals(sName, PROPERTY_HEAT_INCREMENT_RATE))
+		return CC.CreateInteger(GetClass().GetHullDesc().GetHeatIncrementRate());
 
 	else if (strEquals(sName, PROPERTY_CHALLENGE_RATING))
 		return CC.CreateInteger(CChallengeRatingCalculator::CalcChallengeRating(*this));
@@ -388,8 +389,8 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(iHP);
 		}
 
-	else if (strEquals(sName, PROPERTY_MAX_COUNTER))
-		return CC.CreateInteger(m_pClass->GetHullDesc().GetMaxCounter());
+	else if (strEquals(sName, PROPERTY_MAX_HEAT))
+		return CC.CreateInteger(m_pClass->GetHullDesc().GetMaxHeat());
 
 	else if (strEquals(sName, PROPERTY_MAX_FUEL))
 		return CC.CreateInteger(mathRound(GetMaxFuel() / FUEL_UNITS_PER_STD_ROD));
@@ -517,6 +518,9 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_DRIVE_POWER))
 		return CC.CreateInteger(m_Perf.GetDriveDesc().GetPowerUse() * 100);
 
+	else if (strEquals(sName, PROPERTY_DRIVE_HEAT_GENERATION))
+		return CC.CreateInteger(m_Perf.GetDriveDesc().GetHeatGeneration());
+
 	else if (strEquals(sName, PROPERTY_MAX_SPEED))
 		return CC.CreateInteger(mathRound(100.0 * GetMaxSpeed() / LIGHT_SPEED));
 
@@ -574,14 +578,14 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		m_fAlwaysLeaveWreck = !pValue->IsNil();
 		return true;
 		}
-	else if (strEquals(sName, PROPERTY_COUNTER_VALUE))
+	else if (strEquals(sName, PROPERTY_HEAT_VALUE))
 		{
-		SetCounterValue(pValue->GetIntegerValue());
+		SetHeatValue(pValue->GetIntegerValue());
 		return true;
 		}
-	else if (strEquals(sName, PROPERTY_COUNTER_VALUE_INCREMENT))
+	else if (strEquals(sName, PROPERTY_HEAT_VALUE_INCREMENT))
 		{
-		IncCounterValue(pValue->GetIntegerValue());
+		IncHeatValue(pValue->GetIntegerValue());
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_CHARACTER))

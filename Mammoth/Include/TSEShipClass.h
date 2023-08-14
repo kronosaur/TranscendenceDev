@@ -151,14 +151,14 @@ class CHullDesc
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		const CArmorLimits &GetArmorLimits (void) const { return m_ArmorLimits; }
 		int GetCargoSpace (void) const { return m_iCargoSpace; }
-		int GetCounterIncrementRate(void) const { return m_iCounterIncrementRate; }
+		int GetHeatIncrementRate(void) const { return m_iHeatIncrementRate; }
 		int GetCyberDefenseLevel (void) const { return m_iCyberDefenseLevel; }
 		const CItemCriteria &GetDeviceCriteria (void) const { return m_DeviceCriteria; }
 		Metric GetExtraPoints (void) const { return m_rExtraPoints; }
 		int GetLifeSupportPowerUse () const { return m_iLifeSupportPowerUse; }
 		int GetMass (void) const { return m_iMass; }
 		int GetMaxCargoSpace (void) const { return m_iMaxCargoSpace; }
-		int GetMaxCounter(void) const { return m_iMaxCounter; }
+		int GetMaxHeat(void) const { return m_iMaxHeat; }
 		int GetMaxDevices (void) const { return m_iMaxDevices; }
 		int GetMaxLaunchers (void) const { return m_iMaxLaunchers; }
 		int GetMaxNonWeapons (void) const { return m_iMaxNonWeapons; }
@@ -189,7 +189,7 @@ class CHullDesc
 		int m_iMass = 0;					//	Empty hull mass (tons)
 		CCurrencyAndValue m_Value;			//	Value of hull alone (excluding any devices/armor)
 		int m_iCargoSpace = 0;				//	Default cargo space (tons)
-		int m_iCounterIncrementRate = 0;	//  Value by which temperature/capacitor counter is updated every tick
+		int m_iHeatIncrementRate = 0;	//  Value by which temperature/capacitor counter is updated every tick
 		int m_iStealthAdj = 0;				//  Stealth value of the ship at zero heat to add to armor/nebula stealth value
 		int m_iStealthAdjAtMaxHeat = 0;		//  Stealth value of the ship at max heat to add to armor/nebula stealth value
 		int m_iLifeSupportPowerUse = 0;		//	Power used for life-support (in 1/10th MW).
@@ -198,7 +198,7 @@ class CHullDesc
 		CArmorLimits m_ArmorLimits;			//	Adjustments based on armor
 
 		int m_iMaxCargoSpace = 0;			//	Max amount of cargo space with expansion (tons)
-		int m_iMaxCounter = 0;				//  Max value of counter (used for temperature or capacitor)
+		int m_iMaxHeat = 0;				//  Max value of counter (used for temperature or capacitor)
 		int m_iMaxReactorPower = 0;			//	Max compatible reactor power
 		int m_iMaxDevices = 0;				//	Max number of devices
 		int m_iMaxWeapons = 0;				//	Max number of weapon devices (including launchers)

@@ -7,6 +7,22 @@
 
 CArmorSystem CArmorSystem::m_Null;
 
+int CArmorSystem::AccumulateHeatIncrement(const SUpdateCtx& Ctx, const CSpaceObject* pObj) const
+
+//	AccumulateHeatIncrement
+//
+//	Get the net delta of the heat/energy counter for all armor segments.
+
+{
+	int iHeatDelta = 0;
+	for (const CInstalledArmor& Armor : *this)
+	{
+		CItemCtx ItemCtx(pObj, &Armor);
+		iHeatDelta += ItemCtx.GetArmorClass()->AccumulateHeatIncrement(ItemCtx, Ctx, pObj);
+	}
+	return iHeatDelta;
+}
+
 void CArmorSystem::AccumulatePerformance (SShipPerformanceCtx &Ctx) const
 
 //	AccumulatePerformance
