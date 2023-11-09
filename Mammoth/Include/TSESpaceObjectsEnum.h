@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include<functional>
+
 //	RANGE FILTERS --------------------------------------------------------------
 
 //	CNearestInRadiusRange
@@ -182,6 +184,7 @@ class CCriteriaObjSelector
 		bool Matches (CSpaceObject &Obj, Metric rDist2)
 			{
 			return (!Obj.IsUnreal())
+				&& Obj.MatchesCriteriaCategory(m_Ctx, m_Criteria)
 				&& Obj.MatchesCriteria(m_Ctx, m_Criteria);
 			}
 
@@ -683,6 +686,11 @@ class CSpaceObjectEnum
 		template <class RANGE, class SELECTOR>
 		static CSpaceObject *FindNearestTangibleObjInArc (const CSystem &System, const CSpaceObject *pSource, const CVector vCenter, const int iMinAngle, const int iMaxAngle, RANGE &Range, SELECTOR &Selector)
 			{
+			//	TODO(heliogenesis): Create variants of this for other areas where we can optimize via grid.
+			//	For AutoDefenseClass, we can use this as is but we also need to exclude pObj->GetDamageSource().IsAutomatedWeapon() == TRUE,
+			//	and ((!pObj->GetDamageSource().IsEjecta() && !pObj->GetDamageSource().IsExplosion())) if the auto defense class only targets reactions.
+			//	We may want to pass in a function pointer that accepts pObj, pSource, vCenter as arguments so we can avoid introducing an excessive number of functions like this.
+			//	If we go this route, we should remove the `!pObj->IsIntangible()` function, and add that to the function pointer for intangibility.
 			const CSpaceObjectGrid &Grid = System.GetObjectGrid();
 
 			Range.ReduceRadius(Selector.GetMaxRange());
@@ -713,6 +721,98 @@ class CSpaceObjectEnum
 				}
 
 			return pBestObj;
+			}
+
+		template <class RANGE, class SELECTOR>
+		static CSpaceObject* FindNearestObjInArc(const CSystem& System, const CSpaceObject* pSource, const CVector vCenter, const int iMinAngle, const int iMaxAngle, RANGE& Range, SELECTOR& Selector)
+			{
+			const std::function<bool(const CSpaceObject*, const CSpaceObject*, const CVector, const int, const int)> fnExclude =
+				[](const CSpaceObject* pSource, const CSpaceObject* pObj, const CVector vCenter, const int iMinAngle, const int iMaxAngle) {
+				return true;
+			};
+			return FindNearestObjInArc(System, pSource, vCenter, iMinAngle, iMaxAngle, fnExclude, Range, Selector);
+			}
+
+		template <class RANGE, class SELECTOR>
+		static CSpaceObject *FindNearestObjInArc(const CSystem &System, const CSpaceObject *pSource, const CVector vCenter, const int iMinAngle, const int iMaxAngle,
+			const std::function<bool(const CSpaceObject*, const CSpaceObject*, const CVector, const int, const int)> fnExclude, RANGE &Range, SELECTOR &Selector)
+			{
+			const CSpaceObjectGrid &Grid = System.GetObjectGrid();
+
+			Range.ReduceRadius(Selector.GetMaxRange());
+
+			CSpaceObject *pBestObj = NULL;
+
+			SSpaceObjectGridEnumerator i;
+			Grid.EnumStart(i, Range.GetUR(), Range.GetLL(), gridNoBoxCheck);
+
+			bool bOmnidirectional = (iMinAngle == -1 && iMaxAngle == -1);
+
+			while (Grid.EnumHasMore(i))
+				{
+				CSpaceObject *pObj = Grid.EnumGetNextFast(i);
+
+				Metric rDist2;
+				if (Selector.MatchesCategory(*pObj)
+						&& Range.Matches(*pObj, &rDist2)
+						&& Selector.Matches(*pObj, rDist2)
+						&& pObj != pSource
+						&& !fnExclude(pSource, pObj, vCenter, iMinAngle, iMaxAngle)
+						&& (bOmnidirectional
+							|| AngleInArc(VectorToPolar((pObj->GetPos() - vCenter)), iMinAngle, iMaxAngle)))
+					{
+					Range.SetBestDist2(rDist2);
+					pBestObj = pObj;
+					}
+				}
+
+			return pBestObj;
+			}
+
+		template <class RANGE, class SELECTOR>
+		static TArray<CSpaceObject*> FindNearbyObjsInArc(const CSystem& System, const CSpaceObject* pSource, const CVector vCenter, const int iMinAngle, const int iMaxAngle, RANGE& Range, SELECTOR& Selector)
+			{
+			const std::function<bool(const CSpaceObject*, const CSpaceObject*, const CVector, const int, const int)> fnExclude =
+				[](const CSpaceObject* pSource, const CSpaceObject* pObj, const CVector vCenter, const int iMinAngle, const int iMaxAngle) {
+				return true;
+			};
+			return FindNearbyObjsInArc(System, pSource, vCenter, iMinAngle, iMaxAngle, fnExclude, Range, Selector);
+			}
+
+		template <class RANGE, class SELECTOR>
+		static TArray<CSpaceObject*> FindNearbyObjsInArc(const CSystem &System, const CSpaceObject *pSource, const CVector vCenter, const int iMinAngle, const int iMaxAngle,
+			const std::function<bool(const CSpaceObject*, const CSpaceObject*, const CVector, const int, const int)> fnExclude, RANGE &Range, SELECTOR &Selector)
+			{
+			const CSpaceObjectGrid &Grid = System.GetObjectGrid();
+
+			Range.ReduceRadius(Selector.GetMaxRange());
+
+			CSpaceObject *pBestObj = NULL;
+
+			SSpaceObjectGridEnumerator i;
+			Grid.EnumStart(i, Range.GetUR(), Range.GetLL(), gridNoBoxCheck);
+
+			bool bOmnidirectional = (iMinAngle == -1 && iMaxAngle == -1);
+
+			TArray<CSpaceObject*> Objects;
+			while (Grid.EnumHasMore(i))
+				{
+				CSpaceObject *pObj = Grid.EnumGetNextFast(i);
+
+				Metric rDist2;
+				if (Selector.MatchesCategory(*pObj)
+						&& Range.Matches(*pObj, &rDist2)
+						&& Selector.Matches(*pObj, rDist2)
+						&& pObj != pSource
+						&& !fnExclude(pSource, pObj, vCenter, iMinAngle, iMaxAngle)
+						&& (bOmnidirectional
+							|| AngleInArc(VectorToPolar((pObj->GetPos() - vCenter)), iMinAngle, iMaxAngle)))
+					{
+					Objects.Insert(pObj);
+					}
+				}
+
+			return Objects;
 			}
 
 		template <class RANGE, class SELECTOR>
