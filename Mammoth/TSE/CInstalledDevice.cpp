@@ -308,6 +308,7 @@ void CInstalledDevice::InitFromDesc (const SDeviceDesc &Desc)
 	SetFate(Desc.iFate);
 
 	m_fSecondaryWeapon = Desc.bSecondary;
+	m_fCycleFire = Desc.bCycleFire;
 
 	m_SlotEnhancements = Desc.Enhancements;
 	if (Desc.iSlotBonus != 0)
@@ -393,6 +394,8 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	//	we need to check things like charges.
 
 	m_pClass->SelectFirstVariant(m_pSource, this);
+	if (Desc.iVariant != 0)
+		m_pItem->SetVariantNumber(Desc.iVariant);
 
 	//	Default to basic fire delay. Callers must set the appropriate delay
 	//	based on enhancements later.
