@@ -29,6 +29,7 @@
 #define LAUNCHER_ATTRIB							CONSTLIT("launcher")
 #define LINKED_FIRE_ATTRIB						CONSTLIT("linkedFire")
 #define MAX_FIRE_ARC_ATTRIB						CONSTLIT("maxFireArc")
+#define MAX_SWIVEL_PER_TICK_ATTRIB				CONSTLIT("maxSwivelPerTick")
 #define MIN_FIRE_ARC_ATTRIB						CONSTLIT("minFireArc")
 #define MULTI_TARGET_ATTRIB						CONSTLIT("multiTarget")
 #define CAN_FIRE_WHEN_BLIND_ATTRIB				CONSTLIT("canFireWhenBlind")
@@ -942,7 +943,7 @@ Metric CWeaponClass::CalcDamagePerShot (const CWeaponFireDesc &ShotDesc, const C
 	return CalcConfigurationMultiplier(&ShotDesc, false) * CalcDamage(ShotDesc, pEnhancements, dwDamageFlags);
 	}
 
-int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject *pTarget, bool *retbSetDeviceAngle) const
+int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, const CSpaceObject *pTarget, bool *retbSetDeviceAngle) const
 
 //	CalcFireAngle
 //
@@ -999,7 +1000,31 @@ int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject 
 		}
 	}
 
-bool CWeaponClass::CalcFireSolution (const CInstalledDevice &Device, CSpaceObject &Target, int *retiAimAngle, Metric *retrDist) const
+int CWeaponClass::CalcFireAngleRestrictedBySwivelRate (const int iFireAngle, const CInstalledDevice *pDevice, const CSpaceObject *pSource) const
+//	If the fire angle is restricted due to traversal limits, then restrict the fire angle to the bounds.
+
+	{
+	int iNewFireAngle = iFireAngle;
+	int iSwivelPivotPerTick = GetSwivelPivotPerTick(pDevice);
+	if (m_bBurstTracksTargets && iSwivelPivotPerTick > 0 && pDevice->GetFireAngle() != -1)
+		{
+		float fPivotAmount = float(pDevice->GetLastSwivelTime() - pDevice->GetContinuousFire()) / max(1.0f, float(GetSwivelUpdateRate(pDevice)));
+		int pivotAmount = int(fPivotAmount) * iSwivelPivotPerTick;
+		int iShipRotation = pSource->GetRotation();
+		int iOldFireAngle = AngleMod(pDevice->GetFireAngle() + iShipRotation);
+		int iMinDelta = AngleMod(iOldFireAngle - pivotAmount);
+		int iMaxDelta = AngleMod(iOldFireAngle + pivotAmount);
+		if (AngleMod(abs(iFireAngle - iOldFireAngle)) > pivotAmount)
+			{
+			int iDistToMinDelta = AngleMod(iMinDelta - iFireAngle);
+			int iDistToMaxDelta = AngleMod(iFireAngle - iMaxDelta);
+			iNewFireAngle = iDistToMinDelta < iDistToMaxDelta ? iMinDelta : iMaxDelta;
+			}
+		}
+	return iNewFireAngle;
+	}
+
+bool CWeaponClass::CalcFireSolution (const CInstalledDevice &Device, const CSpaceObject &Target, int *retiAimAngle, Metric *retrDist) const
 
 //	CalcFireSolution
 //
@@ -1326,6 +1351,9 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 		//	use the same value already stored.
 
 		retbSetFireAngle = false;
+		int iContinuousFire = Device.GetContinuousFire();
+		int iSwivelUpdateRate = GetSwivelUpdateRate(&Device);
+		bool bCanUpdateFireAngle = (Device.GetLastSwivelTime() - iContinuousFire) >= iSwivelUpdateRate || iSwivelUpdateRate == 0;
 
 		//	If we need a target, then get it from the device.
 
@@ -1333,10 +1361,14 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 			{
 			retpTarget = Device.GetTarget(&Source);
 			retiFireAngle = Device.GetFireAngle();
+			if (m_bBurstTracksTargets)
+				{
+				retiFireAngle = AngleMod(retiFireAngle + Source.GetRotation());
+				}
 
 			//	If necessary, we recompute the fire angle
 
-			if (retiFireAngle == -1 || m_bBurstTracksTargets)
+			if (retiFireAngle == -1 || (m_bBurstTracksTargets && bCanUpdateFireAngle))
 				{
 				if (retpTarget)
 					{
@@ -1357,6 +1389,18 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 					else
 						retiFireAngle = -1;
 					}
+
+				if (GetSwivelPivotPerTick(&Device) > 0 && m_bBurstTracksTargets && retiFireAngle == -1)
+					{
+					retiFireAngle = Device.GetDefaultFireAngle();
+					}
+
+				if (retiFireAngle != -1)
+					{
+					retiFireAngle = CalcFireAngleRestrictedBySwivelRate(retiFireAngle, &Device, &Source);
+					Device.SetFireAngle(AngleMod(retiFireAngle - (m_bBurstTracksTargets ? Source.GetRotation() : 0)));
+					}
+				Device.SetLastSwivelTime(iContinuousFire);
 				}
 			}
 
@@ -1375,7 +1419,6 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 	else
 		{
 		CDeviceItem DeviceItem = Device.GetDeviceItem();
-
 		switch (DeviceItem.CalcTargetType())
 			{
 			case CDeviceItem::calcNoTarget:
@@ -1418,6 +1461,7 @@ bool CWeaponClass::CalcSingleTarget (CInstalledDevice &Device,
 			default:
 				return false;
 			}
+		Device.SetLastSwivelTime(GetChargeTime(ShotDesc) + ((1 + GetContinuous(ShotDesc)) * (GetContinuousFireDelay(ShotDesc) + 1)));
 		}
 
 	//	Fire!
@@ -1925,12 +1969,15 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 
 	pWeapon->m_iContinuous = pDesc->GetAttributeIntegerBounded(REPEATING_ATTRIB, 0, -1, 0);
 	pWeapon->m_iContinuousFireDelay = pDesc->GetAttributeIntegerBounded(REPEATING_DELAY_ATTRIB, 0, -1, 0);
+	Metric fSwivelPerTick = pDesc->GetAttributeFloat(MAX_SWIVEL_PER_TICK_ATTRIB);
+	pWeapon->m_iSwivelPivotPerTick = fSwivelPerTick > 0.0 ? max(1, int(fSwivelPerTick)) : 0;
+	pWeapon->m_iSwivelUpdateRate = fSwivelPerTick >= 1.0 || fSwivelPerTick <= 0.0 ? 0 : int(1.0 / fSwivelPerTick);
 
 	//	NOTE: For now we don't support a combination of repeating fire and 
 	//	repeating delay that exceeds 254.
 
 	if (pWeapon->m_iContinuous > CONTINUOUS_DATA_LIMIT
-			|| pWeapon->m_iContinuous * pWeapon->m_iContinuousFireDelay > CONTINUOUS_DATA_LIMIT)
+			|| pWeapon->m_iContinuous * (pWeapon->m_iContinuousFireDelay + 1) > CONTINUOUS_DATA_LIMIT)
 		{
 		Ctx.sError = CONSTLIT("Unfortunately, that combination of repeating= and repeatingDelay= is too high for the engine.");
 		return ERR_FAIL;
@@ -2550,6 +2597,10 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 
 	bool bSetFireAngle;
 	int iFireAngle;
+	if (ActivateCtx.iRepeatingCount == 0 && ActivateCtx.iChargeFrame == 0)
+		{
+		Device.SetFireAngle(-1);
+		}
 	CShotArray Shots = CalcShotsFired(Device, ShotDesc, ActivateCtx, iFireAngle, bSetFireAngle);
 	if (Shots.GetCount() == 0)
 		return false;
@@ -2593,11 +2644,8 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 	Device.SetTarget(Shots[0].pTarget);
 	if (bSetFireAngle)
 		{
-		Device.SetFireAngle(iFireAngle);
-		}
-	else if (ActivateCtx.iRepeatingCount == 0)
-		{
-		Device.SetFireAngle(-1);
+		CSpaceObject& Source = Device.GetSourceOrThrow();
+		Device.SetFireAngle(AngleMod(iFireAngle - (m_bBurstTracksTargets ? Source.GetRotation() : 0)));
 		}
 
 	//	Increment polarity, if necessary
@@ -4031,6 +4079,29 @@ const CWeaponClass::SStdStats &CWeaponClass::GetStdStats (int iLevel)
 		}
 	}
 
+int CWeaponClass::GetSwivelPivotPerTick (const CInstalledDevice* pDevice) const
+	{
+	int deviceSwivelPivot = pDevice->GetSwivelPivotPerTick();
+	return deviceSwivelPivot > 0 ? deviceSwivelPivot : m_iSwivelPivotPerTick;
+	}
+
+float CWeaponClass::GetSwivelPivotPerTickExact (const CInstalledDevice* pDevice) const
+	{
+	int deviceSwivelPivot = pDevice->GetSwivelPivotPerTick();
+	int deviceSwivelUpdateRate = pDevice->GetSwivelUpdateRate();
+	if (deviceSwivelPivot >= 0 && deviceSwivelUpdateRate >= 0)
+		{
+		return deviceSwivelUpdateRate == 0 ? 360 : float(deviceSwivelPivot) / float(deviceSwivelUpdateRate);
+		}
+	return m_iSwivelUpdateRate == 0 ? 360 : float(m_iSwivelPivotPerTick) / float(m_iSwivelUpdateRate);
+	}
+
+int CWeaponClass::GetSwivelUpdateRate (const CInstalledDevice* pDevice) const
+	{
+	int deviceSwivelUpdateRate = pDevice->GetSwivelUpdateRate();
+	return deviceSwivelUpdateRate > 0 ? deviceSwivelUpdateRate : m_iSwivelUpdateRate;
+	}
+
 int CWeaponClass::GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice)
 
 //	GetValidVariantCount
@@ -4758,7 +4829,7 @@ bool CWeaponClass::IsStdDamageType (DamageTypes iDamageType, int iLevel)
 	return (iLevel >= iTierLevel && iLevel < iTierLevel + 3);
 	}
 
-bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObject &Target, int iDefaultFireAngle, int *retiFireAngle, int *retiAimAngle) const
+bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, const CSpaceObject &Target, int iDefaultFireAngle, int *retiFireAngle, int *retiAimAngle) const
 
 //	IsTargetReachable
 //
