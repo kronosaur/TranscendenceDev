@@ -21,6 +21,7 @@
 #define API_VERSION_SWITCH					CONSTLIT("apiVersion")
 #define ARMOR_TABLE_SWITCH					CONSTLIT("armortable")
 #define ATTRIBUTE_LIST_SWITCH				CONSTLIT("attributelist")
+#define BATTLE_SIM_SWITCH					CONSTLIT("battlesim")
 #define DEBUG_SWITCH						CONSTLIT("debug")
 #define DEBUG_CREATE_SWITCH					CONSTLIT("debugCreate")
 #define DEBUG_MARKERS_SWITCH				CONSTLIT("debugMarkers")
@@ -32,7 +33,7 @@
 #define ENCOUNTER_COUNT_SWITCH				CONSTLIT("encountercount")
 #define ENCOUNTER_FREQ_SWITCH				CONSTLIT("encounterfreq")
 #define ENCOUNTER_SIM_SWITCH				CONSTLIT("encountersim")
-#define BATTLE_SIM_SWITCH					CONSTLIT("battlesim")
+#define EXPORT_SWITCH						CONSTLIT("export")
 #define ENCOUNTER_TABLE_SWITCH				CONSTLIT("encountertable")
 #define ENTITIES_SWITCH						CONSTLIT("entitiesReference")
 #define EXTENSION_FOLDER_ATTRIB				CONSTLIT("extensionFolder")
@@ -378,6 +379,8 @@ void AlchemyMain (CXMLElement *pCmdLine)
 		GenerateEncounterFrequency(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(ENCOUNTER_TABLE_SWITCH))
 		GenerateEncounterTable(Universe, pCmdLine);
+	else if (pCmdLine->GetAttributeBool(EXPORT_SWITCH))
+		ExportData(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(EXTENSION_TABLE_SWITCH))
 		GenerateExtensionTable(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(IMAGES_SWITCH))
