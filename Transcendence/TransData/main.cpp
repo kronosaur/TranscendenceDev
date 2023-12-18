@@ -380,7 +380,7 @@ void AlchemyMain (CXMLElement *pCmdLine)
 	else if (pCmdLine->GetAttributeBool(ENCOUNTER_TABLE_SWITCH))
 		GenerateEncounterTable(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(EXPORT_SWITCH))
-		ExportData(Universe, pCmdLine);
+		ExportData(Universe, *pCmdLine);
 	else if (pCmdLine->GetAttributeBool(EXTENSION_TABLE_SWITCH))
 		GenerateExtensionTable(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(IMAGES_SWITCH))
