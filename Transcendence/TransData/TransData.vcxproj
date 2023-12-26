@@ -397,6 +397,7 @@
     <ClCompile Include="Attributes.cpp" />
     <ClCompile Include="BattleSim.cpp" />
     <ClCompile Include="CCTransDataLibrary.cpp" />
+    <ClCompile Include="CExportProcess.cpp" />
     <ClCompile Include="CHost.cpp" />
     <ClCompile Include="CImageGrid.cpp" />
     <ClCompile Include="CItemInfoTable.cpp" />
@@ -569,6 +570,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Diagnostics.h" />
+    <ClInclude Include="ExportProcess.h" />
     <ClInclude Include="ItemBenchmarks.h" />
     <ClInclude Include="PreComp.h" />
     <ClInclude Include="Reference.h" />

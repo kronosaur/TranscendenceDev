@@ -146,6 +146,8 @@ struct SDesignTypeInfo
 
 typedef TSortMap<DWORD, SDesignTypeInfo> CDesignTypeStats;
 
+#include "ExportProcess.h"
+
 //	Functions
 
 const char *FrequencyChar (int iFreq);

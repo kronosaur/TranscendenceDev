@@ -88,4 +88,5 @@
 
 void ExportData (CUniverse& Universe, const CXMLElement& CmdLine)
 	{
+	printf("Exporting data...\n");
 	}
