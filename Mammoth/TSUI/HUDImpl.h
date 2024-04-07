@@ -430,7 +430,7 @@ class CReactorHUDCircular : public IHUDPainter
 	private:
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		void PaintChargesGauge (const SReactorStats &Stats);
-		void PaintCounterGauge(CShip * pShip);
+		void PaintHeatGauge(CShip * pShip);
 		void PaintFuelGauge(const SReactorStats & Stats, bool bCounterGaugePresent);
 		void PaintPowerGauge (const SReactorStats &Stats);
 		void PaintReactorItem (const SReactorStats &Stats);

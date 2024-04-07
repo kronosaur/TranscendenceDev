@@ -117,6 +117,7 @@
 #define FIELD_DEVICE_ITEMS						CONSTLIT("deviceItems")
 #define FIELD_DOCK_SERVICES_SCREEN				CONSTLIT("dockServicesScreen")
 #define FIELD_DODGE_RATE						CONSTLIT("dodgeRate")
+#define FIELD_DRIVE_HEAT_GENERATION				CONSTLIT("driveHeatGeneration")
 #define FIELD_DRIVE_IMAGE						CONSTLIT("driveImage")
 #define FIELD_DRIVE_POWER						CONSTLIT("drivePowerUse")
 #define FIELD_EXPLOSION_TYPE					CONSTLIT("explosionType")
@@ -2038,6 +2039,9 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		}
 	else if (strEquals(sField, FIELD_DRIVE_POWER))
 		*retsValue = strFromInt(m_Perf.GetDriveDesc().GetPowerUse());
+
+	else if (strEquals(sField, FIELD_DRIVE_HEAT_GENERATION))
+		*retsValue = strFromInt(m_Perf.GetDriveDesc().GetHeatGeneration());
 
 	else if (m_Perf.GetReactorDesc().FindDataField(sField, retsValue))
 		return true;

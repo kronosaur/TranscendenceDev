@@ -22,6 +22,7 @@
 #define ENHANCEMENT_TYPE_ATTRIB					CONSTLIT("enhancementType")
 #define EMP_DAMAGE_ADJ_ATTRIB					CONSTLIT("EMPDamageAdj")
 #define EMP_IMMUNE_ATTRIB						CONSTLIT("EMPImmune")
+#define HEAT_GENERATION_ATTRIB					CONSTLIT("heatGeneration")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define HP_BONUS_PER_CHARGE_ATTRIB				CONSTLIT("hpBonusPerCharge")
 #define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")
@@ -30,6 +31,7 @@
 #define MAX_HP_BONUS_ATTRIB						CONSTLIT("maxHPBonus")
 #define MAX_SPEED_ATTRIB						CONSTLIT("maxSpeed")
 #define MAX_SPEED_INC_ATTRIB					CONSTLIT("maxSpeedInc")
+#define PHOTO_HEAT_ATTRIB						CONSTLIT("photoHeatGeneration")
 #define PHOTO_RECHARGE_ATTRIB					CONSTLIT("photoRecharge")
 #define PHOTO_REPAIR_ATTRIB						CONSTLIT("photoRepair")
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
@@ -74,6 +76,8 @@
 #define PROPERTY_DEVICE_DISRUPT_IMMUNE			CONSTLIT("deviceDisruptImmune")
 #define PROPERTY_DISINTEGRATION_IMMUNE			CONSTLIT("disintegrationImmune")
 #define PROPERTY_EMP_IMMUNE						CONSTLIT("EMPImmune")
+#define PROPERTY_HEAT_GENERATION				CONSTLIT("heatGeneration")
+#define PROPERTY_HEAT_GENERATION_NEAR_STAR		CONSTLIT("heatGenerationNearStar")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_HP_BONUS						CONSTLIT("hpBonus")
 #define PROPERTY_INC_HP							CONSTLIT("incHP")
@@ -532,6 +536,16 @@ void CArmorClass::AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDis
 		if (m_Reflective.InSet((DamageTypes)i))
 			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("%s reflect"), GetDamageShortName((DamageTypes)i))));
 		}
+	}
+
+int CArmorClass::AccumulateHeatIncrement(CItemCtx& ItemCtx, const SUpdateCtx& Ctx, const CSpaceObject* pObj) const
+
+//	AccumulateHeatIncrement
+//
+//	Generate and dissipate heat.
+	{
+	CSpaceObject* pSource = ItemCtx.GetSource();
+	return m_iHeatGeneration + (m_iPhotoHeatGeneration * Ctx.GetLightIntensity(pSource) / 100);
 	}
 
 bool CArmorClass::AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements)
@@ -1614,22 +1628,36 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	pArmor->m_fChargeDecay = pDesc->GetAttributeBool(CHARGE_DECAY_ATTRIB);
 
 	//	Solar power
+		{
+		CString sAttrib = pDesc->GetAttribute(PHOTO_RECHARGE_ATTRIB);
+		if (sAttrib.IsBlank())
+			{
+			pArmor->m_fPhotoRecharge = false;
+			pArmor->m_iPowerGen = 0;
+			}
+		else if (CXMLElement::IsBoolTrueValue(sAttrib))
+			{
+			pArmor->m_fPhotoRecharge = true;
+			pArmor->m_iPowerGen = 0;
+			}
+		else
+			{
+			pArmor->m_iPowerGen = Max(0, strToInt(sAttrib, 0));
+			pArmor->m_fPhotoRecharge = (pArmor->m_iPowerGen > 0);
+			}
+		}
 
-	CString sAttrib = pDesc->GetAttribute(PHOTO_RECHARGE_ATTRIB);
-	if (sAttrib.IsBlank())
+	//	Solar heat
 		{
-		pArmor->m_fPhotoRecharge = false;
-		pArmor->m_iPowerGen = 0;
-		}
-	else if (CXMLElement::IsBoolTrueValue(sAttrib))
-		{
-		pArmor->m_fPhotoRecharge = true;
-		pArmor->m_iPowerGen = 0;
-		}
-	else
-		{
-		pArmor->m_iPowerGen = Max(0, strToInt(sAttrib, 0));
-		pArmor->m_fPhotoRecharge = (pArmor->m_iPowerGen > 0);
+		CString sAttrib = pDesc->GetAttribute(PHOTO_HEAT_ATTRIB);
+		if (sAttrib.IsBlank())
+			{
+			pArmor->m_iPhotoHeatGeneration = 0;
+			}
+		else
+			{
+			pArmor->m_iPhotoHeatGeneration = strToInt(sAttrib, 0);
+			}
 		}
 
 	//	Stealth
@@ -1644,6 +1672,10 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 
 	pArmor->m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0);
 	pArmor->m_iIdlePowerUse = pDesc->GetAttributeIntegerBounded(IDLE_POWER_USE_ATTRIB, 0, -1, pArmor->m_iPowerUse);
+
+	//	Passive heat generation
+
+	pArmor->m_iHeatGeneration = pDesc->GetAttributeInteger(HEAT_GENERATION_ATTRIB);
 
 	//	Load reflection
 
@@ -2087,6 +2119,12 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 	else if (strEquals(sName, PROPERTY_EMP_IMMUNE))
 		return ICCItemPtr(IsImmune(Stats, Enhancements, specialEMP));
 
+	else if (strEquals(sName, PROPERTY_HEAT_GENERATION))
+		return ICCItemPtr(m_iHeatGeneration);
+
+	else if (strEquals(sName, PROPERTY_HEAT_GENERATION_NEAR_STAR))
+		return ICCItemPtr(m_iHeatGeneration + m_iPhotoHeatGeneration);
+	
 	else if (strEquals(sName, PROPERTY_HP_BONUS))
 		return ICCItemPtr(Stats.DamageAdj.GetHPBonusProperty(&Enhancements));
 

@@ -70,6 +70,7 @@ class CArmorClass
 
 		EDamageResults AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		void AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDisplayAttribute> *retList) const;
+		int AccumulateHeatIncrement (CItemCtx& ItemCtx, const SUpdateCtx& Ctx, const CSpaceObject* pObj) const;
 		bool AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
 		void AccumulatePowerUsed (CItemCtx &ItemCtx, SUpdateCtx &Ctx, int &iPowerUsed, int &iPowerGenerated) const;
@@ -167,6 +168,8 @@ class CArmorClass
 		int m_iArmorCompleteBonus;				//	Extra HP if armor is complete
 		int m_iHPBonusPerCharge;				//	Extra HP for each charge
 		int m_iStealthFromArmor;				//	Stealth level
+		int m_iHeatGeneration;					//	Passive heat generation (10 kJs)
+		int m_iPhotoHeatGeneration;				//	Heat generation when near a star (10 kJs)
 		int m_iPowerUse;						//	Power consumed (1/10th MWs)
 		int m_iIdlePowerUse;					//	Power consumed when not regenerating
 		int m_iPowerGen;						//	Power generation, usually solar (1/10th MWs)
