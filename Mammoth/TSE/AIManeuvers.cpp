@@ -149,6 +149,7 @@ bool CAIBehaviorCtx::CalcFlockingFormationCloud (CShip *pShip, CSpaceObject *pLe
 	Metric rFlockCount = 0.0;
 	Metric rAvoidCount = 0.0;
 
+	//	TODO(heliogenesis): Use grid functions to optimize this code.
 	for (i = 0; i < pShip->GetSystem()->GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = pShip->GetSystem()->GetObject(i);

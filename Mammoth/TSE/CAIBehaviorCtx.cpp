@@ -643,6 +643,7 @@ bool CAIBehaviorCtx::CalcNavPath (CShip *pShip, CSpaceObject *pTo)
 
 	CSpaceObject *pBestObj = NULL;
 	Metric rBestDist2 = MAX_NAV_START_DIST2;
+	//	TODO(heliogenesis): Use grid optimizations for this code
 	for (i = 0; i < pSystem->GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = pSystem->GetObject(i);
