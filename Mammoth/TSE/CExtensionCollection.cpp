@@ -31,8 +31,8 @@
 const int DIGEST_SIZE = 20;
 static BYTE g_BaseFileDigest[] =
 	{
-	147, 154,  23, 247, 162, 195, 196, 146, 127, 249,
-	 18, 241, 161,  61,  17,   4, 128,   8, 179,  53,
+    180, 173, 175, 206,  76, 231, 147, 151, 137,  77,
+    209, 207,  24,   0, 122, 170, 227,  85, 210, 152,
 	};
 
 class CLibraryResolver : public IXMLParserController
@@ -93,7 +93,7 @@ ALERROR CExtensionCollection::AddCompatibilityLibrary (CExtension *pAdventure, c
 
 	//	In debug mode we output which extension required us to include this library.
 
-	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
 	CString sExtensionName;
 
 	bool bNeedLibrary = false;
@@ -233,7 +233,7 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 	if (pExtension->IsMarked())
 		return NOERROR;
 
-	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
 
 	//	Mark now in case there is a circular dependency (in that case, we will
 	//	ignore the circular dependency.)
@@ -253,9 +253,9 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 	Resolver.ReportLibraryErrors();
 
 	CExtension::SLoadOptions LoadOptions;
-	LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
-	LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
-	LoadOptions.bLoadDiagnostics = ((dwFlags & FLAG_DIAGNOSTICS) == FLAG_DIAGNOSTICS);
+	LoadOptions.bNoResources = (dwFlags & FLAG_NO_RESOURCES);
+	LoadOptions.bNoDigestCheck = (dwFlags & FLAG_NO_COLLECTION_CHECK);
+	LoadOptions.bLoadDiagnostics = (dwFlags & FLAG_DIAGNOSTICS);
 
 	//	Make sure the extension is loaded completely.
 
@@ -459,8 +459,8 @@ ALERROR CExtensionCollection::ComputeAvailableAdventures (DWORD dwFlags, TArray<
 
 	//	Initialize
 
-	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
-	bool bRegisteredOnly = ((dwFlags & FLAG_REGISTERED_ONLY) == FLAG_REGISTERED_ONLY);
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
+	bool bRegisteredOnly = (dwFlags & FLAG_REGISTERED_ONLY);
 	retList->DeleteAll();
 
 	//	Loop by UNID because we allow at most one of each UNID.
@@ -535,12 +535,12 @@ ALERROR CExtensionCollection::ComputeAvailableExtensions (CExtension *pAdventure
 
 	//	Initialize
 
-	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
 	bool bAllExtensions = (Extensions.GetCount() == 0);
-	bool bAutoOnly = ((dwFlags & FLAG_AUTO_ONLY) == FLAG_AUTO_ONLY);
-	bool bIncludeAuto = bAutoOnly || ((dwFlags & FLAG_INCLUDE_AUTO) == FLAG_INCLUDE_AUTO);
-	bool bRegisteredOnly = ((dwFlags & FLAG_REGISTERED_ONLY) == FLAG_REGISTERED_ONLY);
-	bool bNoDiagnostics = !((dwFlags & FLAG_DIAGNOSTICS) == FLAG_DIAGNOSTICS);
+	bool bAutoOnly = (dwFlags & FLAG_AUTO_ONLY);
+	bool bIncludeAuto = bAutoOnly || (dwFlags & FLAG_INCLUDE_AUTO);
+	bool bRegisteredOnly = (dwFlags & FLAG_REGISTERED_ONLY);
+	bool bNoDiagnostics = !(dwFlags & FLAG_DIAGNOSTICS);
 
 	if (!(dwFlags & FLAG_ACCUMULATE))
 		retList->DeleteAll();
@@ -678,7 +678,7 @@ ALERROR CExtensionCollection::ComputeBindOrder (CExtension *pAdventure,
 	ALERROR error;
 	int i;
 
-	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
 
 	//	Initialize
 
@@ -768,7 +768,7 @@ void CExtensionCollection::ComputeCompatibilityLibraries (CExtension *pAdventure
 
 	//	Initialize
 
-	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
 	retList->DeleteAll();
 
 	//	Loop by UNID because we allow at most one of each UNID.
@@ -1135,7 +1135,7 @@ bool CExtensionCollection::FindAdventureFromDesc (DWORD dwUNID, DWORD dwFlags, C
 	CSmartLock Lock(m_cs);
 	int i;
 
-	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
 
 	//	Look for the adventure
 
@@ -1182,8 +1182,8 @@ bool CExtensionCollection::FindBestExtension (DWORD dwUNID, DWORD dwRelease, DWO
 	{
 	CSmartLock Lock(m_cs);
 
-	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
-	bool bAllowAltRelease = ((dwFlags & FLAG_ALLOW_DIFFERENT_RELEASE) == FLAG_ALLOW_DIFFERENT_RELEASE);
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
+	bool bAllowAltRelease = (dwFlags & FLAG_ALLOW_DIFFERENT_RELEASE);
 
 	int iPos;
 	if (!m_ByUNID.FindPos(dwUNID, &iPos))
@@ -1535,7 +1535,7 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, const TSortMap<DWO
 	if (!m_bReloadNeeded)
 		return NOERROR;
 
-	m_bLoadedInDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	m_bLoadedInDebugMode = (dwFlags & FLAG_DEBUG_MODE);
 	m_DisabledExtensions = DisabledExtensions;
 
 	//	Default adventure can never be disabled.
@@ -1582,9 +1582,9 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, const TSortMap<DWO
 		Resolver.AddDefaults(pExtension);
 
 		CExtension::SLoadOptions LoadOptions;
-		LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
-		LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
-		LoadOptions.bLoadDiagnostics = ((dwFlags & FLAG_DIAGNOSTICS) == FLAG_DIAGNOSTICS);
+		LoadOptions.bNoResources = (dwFlags & FLAG_NO_RESOURCES);
+		LoadOptions.bNoDigestCheck = (dwFlags & FLAG_NO_COLLECTION_CHECK);
+		LoadOptions.bLoadDiagnostics = (dwFlags & FLAG_DIAGNOSTICS);
 
 		//	If this extension has been manually disabled, then don't bother with
 		//	the digest because it is expensive. We'll compute it later.
@@ -1866,8 +1866,8 @@ ALERROR CExtensionCollection::LoadFile (const CString &sFilespec, CExtension::EF
 	Resolver.AddDefaults(pExtension);
 
 	CExtension::SLoadOptions LoadOptions;
-	LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
-	LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
+	LoadOptions.bNoResources = (dwFlags & FLAG_NO_RESOURCES);
+	LoadOptions.bNoDigestCheck = (dwFlags & FLAG_NO_COLLECTION_CHECK);
 
 	//	Load it
 

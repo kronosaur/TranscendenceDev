@@ -6,7 +6,7 @@ static constexpr const char *ADDITIONAL_PROGRAMMING[] =
 	{
 	"Owen Embury (giantcabbage)",
 	"Nathaniel Stalberg (NMS)",
-	"Bryon Leung (Heliogenesis)",
+	"Lily Leung (Heliogenesis)",
 	"Alex Chen (Archcannon)",
 	"Brian Merchant",
 	"Benn Bollay"

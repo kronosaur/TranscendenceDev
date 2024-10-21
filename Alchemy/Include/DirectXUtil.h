@@ -213,7 +213,6 @@ bool dxLoadImageFile (const CString &sFilespec, HBITMAP *rethDIB, EBitmapTypes *
 
 //	Screen Manager ------------------------------------------------------------
 
-#include "DXScreenMgr.h"
 #include "DXScreenMgr3D.h"
 
 //	Inlines

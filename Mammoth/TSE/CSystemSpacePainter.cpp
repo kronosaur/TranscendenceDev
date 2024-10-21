@@ -345,7 +345,7 @@ void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, int xCenter,
 
 	PainterCtx.pBackground = m_pBackground;
 	PainterCtx.xBackground = ClockMod(xCenter / 4, cxImage);
-	PainterCtx.yBackground = ClockMod(-yCenter / 4, cyImage);
+	PainterCtx.yBackground = ClockMod(Ctx.rcView.top - yCenter / 4, cyImage);
 
 	//	Compute the chunks
 

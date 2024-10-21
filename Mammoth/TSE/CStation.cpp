@@ -1735,6 +1735,8 @@ void CStation::FinishCreation (SSystemCreateCtx *pSysCreateCtx)
 	OnCreate.pCreateCtx = pSysCreateCtx;
 	OnCreate.pOrbit = m_pMapOrbit;
 	FireOnCreate(OnCreate);
+	if (IsDestroyed())
+		return;
 
 	//	Add the object to the universe. We wait until the end in case
 	//	OnCreate ends up setting the name (or something).

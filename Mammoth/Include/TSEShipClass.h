@@ -450,7 +450,7 @@ class CShipClass : public CDesignType
 		int GetRotationAngle (void) { return m_Perf.GetIntegralRotationDesc().GetFrameAngle(); }
 		const CRotationDesc &GetRotationDesc (void) const { return m_Perf.GetRotationDesc(); }
 		int GetRotationRange (void) { return m_Perf.GetIntegralRotationDesc().GetFrameCount(); }
-		int GetScore (void) { return m_iScore; }
+		int GetScore (void) const { return m_iScore; }
 		DWORD GetShipNameFlags (void) { return m_dwShipNameFlags; }
 		CString GetShortName (void) const;
 		const CShipStandard &GetStandard (void) const;

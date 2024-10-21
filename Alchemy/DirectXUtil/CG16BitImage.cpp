@@ -28,7 +28,6 @@ CG16bitImage::CG16bitImage (void) :
 		m_pRedAlphaTable(NULL),
 		m_pGreenAlphaTable(NULL),
 		m_pBlueAlphaTable(NULL),
-		m_pSurface(NULL),
 		m_pSprite(NULL),
 		m_pBMI(NULL)
 
@@ -81,43 +80,6 @@ int CG16bitImage::AdjustTextX (const CG16bitFont &Font, const CString &sText, Al
 		x -= cxText;
 
 	return Min(Max((int)m_rcClip.left, x), (int)m_rcClip.right - cxText);
-	}
-
-void CG16bitImage::AssociateSurface (LPDIRECTDRAW7 pDD)
-
-//	AssociateSurface
-//
-//	Creates a surface for this image
-
-	{
-	if (m_pSurface == NULL)
-		{
-		DDSURFACEDESC2 ddsd2;
-		::ZeroMemory(&ddsd2, sizeof(DDSURFACEDESC2));
-		::ZeroMemory(&ddsd2.ddpfPixelFormat, sizeof(DDPIXELFORMAT));
-		ddsd2.dwSize = sizeof(ddsd2);
-		ddsd2.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_LPSURFACE |
-						DDSD_PITCH | DDSD_PIXELFORMAT | DDSD_CAPS;
-		ddsd2.dwWidth = m_cxWidth;
-		ddsd2.dwHeight= m_cyHeight;
-		ddsd2.lPitch  = AlignUp(m_cxWidth * 2, sizeof(DWORD));
-		ddsd2.lpSurface = m_pRGB;
-
-		// Set up the pixel format for 16-bit RGB (5-6-5).
-		ddsd2.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
-		ddsd2.ddpfPixelFormat.dwFlags= DDPF_RGB;
-		ddsd2.ddpfPixelFormat.dwRGBBitCount = 16;
-		ddsd2.ddpfPixelFormat.dwRBitMask    = 0xf800;
-		ddsd2.ddpfPixelFormat.dwGBitMask    = 0x07e0;
-		ddsd2.ddpfPixelFormat.dwBBitMask    = 0x001f;
-
-		ddsd2.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY;
-
-		// Create the surface
-		HRESULT hr = pDD->CreateSurface(&ddsd2, &m_pSurface, NULL);
-		if (FAILED(hr))
-			kernelDebugLogPattern("Unable to associate surface: %x", hr);
-		}
 	}
 
 WORD CG16bitImage::BlendPixel (WORD pxDest, WORD pxSource, DWORD byOpacity)
@@ -596,237 +558,6 @@ void CG16bitImage::BltToDC (HDC hDC, int x, int y)
 			m_pRGB,
 			m_pBMI,
 			DIB_RGB_COLORS);
-	}
-
-void CG16bitImage::BltToSurface (LPDIRECTDRAWSURFACE7 pSurface, SurfaceTypes iType)
-
-//	BltToSurface
-//
-//	Blt the entire image to the given DirectDraw surface. We assume
-//	that the surface is 16-bit (5-5-5 or 5-6-5) surface.
-
-	{
-	if (m_pRGB)
-		{
-		//	If we've already got a surface, blt using that
-
-		if (m_pSurface)
-			{
-			HRESULT hr = pSurface->Blt(NULL, m_pSurface, NULL, DDBLT_WAIT, NULL);
-			if (FAILED(hr))
-				{
-				::kernelDebugLogPattern("Unable to blt surface: %x", hr);
-				m_pSurface->Release();
-				m_pSurface = NULL;
-				}
-			else
-				return;
-			}
-
-		//	Otherwise, do it the hard way
-
-		DDSURFACEDESC2 desc;
-
-		//	Lock the surface
-
-		if (!SurfaceLock(pSurface, &desc))
-			return;
-
-		//	Calculate some metrics
-
-		int iLinesToBlt = min(m_cyHeight, (int)desc.dwHeight);
-		int iPixelSize = ((iType == r8g8b8) ? sizeof(DWORD) : sizeof(WORD));
-		int iDWORDsPerLine = AlignUp(min(m_cxWidth, (int)desc.dwWidth) * iPixelSize / sizeof(DWORD), sizeof(DWORD));
-		int iSourcePitch = m_iRGBRowSize;
-		int iDestPitch = desc.lPitch / sizeof(DWORD);
-
-		//	Blt the bitmap
-
-		DWORD *pDestLine = (DWORD *)desc.lpSurface;
-		DWORD *pSourceLine = (DWORD *)m_pRGB;
-
-		//	Handle both 16-bit bit patterns
-
-		if (iType == r5g5b5)
-			{
-			for (int i = 0; i < iLinesToBlt; i++)
-				{
-				DWORD *pSource = pSourceLine;
-				DWORD *pDest = pDestLine;
-				DWORD *pDestEnd = pDestLine + iDWORDsPerLine;
-				DWORD dwData;
-
-				while (pDest < pDestEnd)
-					{
-					dwData = *pSource++;
-					*pDest++ = (dwData & ~0xFFE0FFE0) | ((dwData & 0xFFC0FFC0) >> 1);
-					}
-
-				pSourceLine += iSourcePitch;
-				pDestLine += iDestPitch;
-				}
-			}
-		else if (iType == r5g6b5)
-			{
-			for (int i = 0; i < iLinesToBlt; i++)
-				{
-				DWORD *pSource = pSourceLine;
-				DWORD *pDest = pDestLine;
-				DWORD *pDestEnd = pDestLine + iDWORDsPerLine;
-
-				while (pDest < pDestEnd)
-					*pDest++ = *pSource++;
-
-				pSourceLine += iSourcePitch;
-				pDestLine += iDestPitch;
-				}
-			}
-		else if (iType == r8g8b8)
-			{
-			int iUnrolled = iDWORDsPerLine / 8;
-			int iRemaining = iDWORDsPerLine % 8;
-
-			for (int i = 0; i < iLinesToBlt; i++)
-				{
-				WORD *pSource = (WORD *)pSourceLine;
-				DWORD *pDest = pDestLine;
-
-				//	First do the unrolled part
-				//	Note we add 0x70307 to add back the clipped bits (so that
-				//	ffff = ffffff; note that this means that 0000 = 070307)
-
-				DWORD *pDestEnd = pDest + (iUnrolled * 8);
-				DWORD *pSourceDW = (DWORD *)pSource;
-				while (pDest < pDestEnd)
-					{
-					DWORD dwData = *pSourceDW++;
-					*pDest++ = ((dwData & 0x0000f800) << 8) | ((dwData & 0x000007e0) << 05) | ((dwData & 0x0000001f) << 03) | 0x70307;
-					*pDest++ = ((dwData & 0xf8000000) >> 8) | ((dwData & 0x07e00000) >> 11) | ((dwData & 0x001f0000) >> 13) | 0x70307;
-
-					dwData = *pSourceDW++;
-					*pDest++ = ((dwData & 0x0000f800) << 8) | ((dwData & 0x000007e0) << 05) | ((dwData & 0x0000001f) << 03) | 0x70307;
-					*pDest++ = ((dwData & 0xf8000000) >> 8) | ((dwData & 0x07e00000) >> 11) | ((dwData & 0x001f0000) >> 13) | 0x70307;
-
-					dwData = *pSourceDW++;
-					*pDest++ = ((dwData & 0x0000f800) << 8) | ((dwData & 0x000007e0) << 05) | ((dwData & 0x0000001f) << 03) | 0x70307;
-					*pDest++ = ((dwData & 0xf8000000) >> 8) | ((dwData & 0x07e00000) >> 11) | ((dwData & 0x001f0000) >> 13) | 0x70307;
-
-					dwData = *pSourceDW++;
-					*pDest++ = ((dwData & 0x0000f800) << 8) | ((dwData & 0x000007e0) << 05) | ((dwData & 0x0000001f) << 03) | 0x70307;
-					*pDest++ = ((dwData & 0xf8000000) >> 8) | ((dwData & 0x07e00000) >> 11) | ((dwData & 0x001f0000) >> 13) | 0x70307;
-					}
-
-				//	Do any extra
-
-				pDestEnd = pDest + iRemaining;
-				pSource = (WORD *)pSourceDW;
-				while (pDest < pDestEnd)
-					{
-					DWORD dwData = *pSource++;
-					*pDest++ = ((dwData & 0xf800) << 8) | ((dwData & 0x07e0) << 5) | ((dwData & 0x001f) << 3) | 0x70307;
-					}
-
-				pSourceLine += iSourcePitch;
-				pDestLine += iDestPitch;
-				}
-			}
-
-		//	Done
-
-		SurfaceUnlock(pSurface);
-		}
-	}
-
-void CG16bitImage::BltToSurface (LPDIRECTDRAWSURFACE7 pSurface, SurfaceTypes iType, const RECT &rcDest)
-
-//	BltToSurface
-//
-//	Blt the entire image to the given DirectDraw surface. We assume
-//	that the surface is 16-bit (5-5-5 or 5-6-5) surface.
-
-	{
-	if (m_pRGB)
-		{
-		DDSURFACEDESC2 desc;
-
-		//	Lock the surface
-
-		if (!SurfaceLock(pSurface, &desc))
-			return;
-
-		//	Calculate some metrics
-
-		int iLinesToBlt = min(m_cyHeight, (int)desc.dwHeight);
-		int iPixelSize = ((iType == r8g8b8) ? sizeof(DWORD) : sizeof(WORD));
-		int iDWORDsPerLine = AlignUp(min(m_cxWidth, (int)desc.dwWidth) * iPixelSize / sizeof(DWORD), sizeof(DWORD));
-		int iSourcePitch = m_iRGBRowSize;
-		int iDestPitch = desc.lPitch / sizeof(DWORD);
-
-		//	Blt the bitmap
-
-		DWORD *pDestLine = ((DWORD *)desc.lpSurface) + (rcDest.top * iDestPitch) + (rcDest.left * iPixelSize / sizeof(DWORD));
-		DWORD *pSourceLine = (DWORD *)m_pRGB;
-
-		//	Handle both 16-bit bit patterns
-
-		if (iType == r5g5b5)
-			{
-			for (int i = 0; i < iLinesToBlt; i++)
-				{
-				DWORD *pSource = pSourceLine;
-				DWORD *pDest = pDestLine;
-				DWORD *pDestEnd = pDestLine + iDWORDsPerLine;
-				DWORD dwData;
-
-				while (pDest < pDestEnd)
-					{
-					dwData = *pSource++;
-					*pDest++ = (dwData & ~0xFFE0FFE0) | ((dwData & 0xFFC0FFC0) >> 1);
-					}
-
-				pSourceLine += iSourcePitch;
-				pDestLine += iDestPitch;
-				}
-			}
-		else if (iType == r5g6b5)
-			{
-			for (int i = 0; i < iLinesToBlt; i++)
-				{
-				DWORD *pSource = pSourceLine;
-				DWORD *pDest = pDestLine;
-				DWORD *pDestEnd = pDestLine + iDWORDsPerLine;
-
-				while (pDest < pDestEnd)
-					*pDest++ = *pSource++;
-
-				pSourceLine += iSourcePitch;
-				pDestLine += iDestPitch;
-				}
-			}
-		else if (iType == r8g8b8)
-			{
-			for (int i = 0; i < iLinesToBlt; i++)
-				{
-				WORD *pSource = (WORD *)pSourceLine;
-				DWORD *pDest = pDestLine;
-				DWORD *pDestEnd = pDestLine + iDWORDsPerLine;
-				DWORD dwData;
-
-				while (pDest < pDestEnd)
-					{
-					dwData = *pSource++;
-					*pDest++ = ((dwData & 0xf800) << 8) | ((dwData & 0x07e0) << 5) | ((dwData & 0x001f) << 3);
-					}
-
-				pSourceLine += iSourcePitch;
-				pDestLine += iDestPitch;
-				}
-			}
-
-		//	Done
-
-		SurfaceUnlock(pSurface);
-		}
 	}
 
 void CG16bitImage::BltWithMask (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG16bitImage &Mask, const CG16bitImage &Source, int xDest, int yDest)
@@ -1700,8 +1431,6 @@ void CG16bitImage::CopyData (const CG16bitImage &Src)
 
 	//	LATER: Deal with surfaces
 
-	ASSERT(Src.m_pSurface == NULL);
-	m_pSurface = NULL;
 	m_pBMI = NULL;
 	}
 
@@ -2400,12 +2129,6 @@ void CG16bitImage::DeleteData (void)
 		m_pBlueAlphaTable = NULL;
 		}
 
-	if (m_pSurface)
-		{
-		m_pSurface->Release();
-		m_pSurface = NULL;
-		}
-
 	if (m_pSprite)
 		{
 		delete m_pSprite;
@@ -2420,20 +2143,6 @@ void CG16bitImage::DeleteData (void)
 
 	m_cxWidth = 0;
 	m_cyHeight = 0;
-	}
-
-void CG16bitImage::DiscardSurface (void)
-
-//	DiscardSurface
-//
-//	Discard surface
-
-	{
-	if (m_pSurface)
-		{
-		m_pSurface->Release();
-		m_pSurface = NULL;
-		}
 	}
 
 WORD CG16bitImage::FadeColor (WORD wStart, WORD wEnd, int iFade)
@@ -3177,27 +2886,6 @@ void CG16bitImage::FillTransRGB (int x, int y, int cxWidth, int cyHeight, COLORR
 		}
 	}
 
-SurfaceTypes CG16bitImage::GetSurfaceType (LPDIRECTDRAWSURFACE7 pSurface)
-
-//	GetSurfaceType
-//
-//	Returns the type of DirectX surface
-
-	{
-	DDSURFACEDESC2 desc;
-	ZeroMemory(&desc, sizeof(desc));
-	desc.dwSize = sizeof(desc);
-	HRESULT hr = pSurface->GetSurfaceDesc(&desc);
-	if (desc.ddpfPixelFormat.dwRBitMask == 0x7c00)
-		return r5g5b5;
-	else if (desc.ddpfPixelFormat.dwRBitMask == 0xf800)
-		return r5g6b5;
-	else if (desc.ddpfPixelFormat.dwRBitMask == 0x00ff0000)
-		return r8g8b8;
-	else
-		return stUnknown;
-	}
-
 WORD CG16bitImage::GetPixelAlpha (int x, int y)
 
 //	GetPixelAlpha
@@ -3648,7 +3336,6 @@ void CG16bitImage::SwapBuffers (CG16bitImage &Other)
 //	Swaps buffers
 
 	{
-	ASSERT(m_pSurface == NULL);
 	Swap(m_pRGB, Other.m_pRGB);
 	}
 
@@ -3693,7 +3380,6 @@ void CG16bitImage::WriteToStream (IWriteStream *pStream)
 
 	//	We don't support some classes of images yet
 	ASSERT(m_pSprite == NULL);
-	ASSERT(m_pSurface == NULL);
 	ASSERT(m_pRedAlphaTable == NULL);
 	ASSERT(m_pGreenAlphaTable == NULL);
 	ASSERT(m_pBlueAlphaTable == NULL);

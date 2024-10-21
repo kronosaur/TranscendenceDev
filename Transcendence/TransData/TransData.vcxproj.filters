@@ -19,6 +19,9 @@
     <Filter Include="TLisp Files">
       <UniqueIdentifier>{44ee7372-84e8-4e57-879b-9be2fbbf64a4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\CmdExport">
+      <UniqueIdentifier>{f6669012-c7ee-4709-936a-6a7567fb2d94}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Armor.cpp">
@@ -207,6 +210,12 @@
     <ClCompile Include="Achievements.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CExportProcess.cpp">
+      <Filter>Source Files\CmdExport</Filter>
+    </ClCompile>
+    <ClCompile Include="ExportData.cpp">
+      <Filter>Source Files\CmdExport</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -228,6 +237,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Diagnostics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ExportProcess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

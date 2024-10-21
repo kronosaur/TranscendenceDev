@@ -2315,6 +2315,8 @@ void CShip::FinishCreation (SShipGeneratorCtx *pCtx, SSystemCreateCtx *pSysCreat
 		}
 
 	FireOnCreate(OnCreate);
+	if (IsDestroyed())
+		return;
 
 	//	Set the orders from the generator
 

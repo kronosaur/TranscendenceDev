@@ -5,21 +5,35 @@
 
 #pragma once
 
+struct SScreenMgrOptions
+	{
+	HWND m_hWnd = NULL;
+
+	bool m_bWindowedMode = false;
+	bool m_bMultiMonitorMode = false;			//	If TRUE, screen spans all monitors
+
+	bool m_bForceDX = false;
+	bool m_bForceNonDX = false;
+	bool m_bForceExclusiveMode = false;
+	bool m_bForceNonExclusiveMode = false;
+	bool m_bForceScreenSize = false;			//	If in exclusive mode, switch to desired res
+	bool m_bNoGPUAcceleration = false;
+
+	int m_cyMaxScreen = -1;						//	Scales screen if we're bigger than this (-1 = no scaling)
+	int m_cxScreen = 1024;						//	Used if exclusive or windowed
+	int m_cyScreen = 768;						//	Used if exclusive or windowed
+	int m_iColorDepth = 16;						//	Used if exclusive
+
+	bool m_bDebugVideo = false;
+	};
+
 struct SDXLayerCreate
 	{
-	SDXLayerCreate (void) :
-			cxWidth(-1),
-			cyHeight(-1),
-			xPos(0),
-			yPos(0),
-			zPos(0)
-		{ }
-
-	int cxWidth;					//	Width of layer
-	int cyHeight;					//	Height of layer
-	int xPos;
-	int yPos;
-	int zPos;						//	ZPos
+	int cxWidth = -1;							//	Width of layer
+	int cyHeight = -1;							//	Height of layer
+	int xPos = 0;
+	int yPos = 0;
+	int zPos = 0;								//	ZPos
 	};
 
 class CDXScreen
@@ -50,13 +64,6 @@ class CDXScreen
 	private:
 		struct SLayer
 			{
-			SLayer (void) :
-					pVertices(NULL),
-					pTexture(NULL),
-					pFrontBuffer(NULL),
-					pBackBuffer(NULL)
-				{ }
-
 			~SLayer (void)
 				{
 				if (pVertices)
@@ -75,16 +82,16 @@ class CDXScreen
 			CG32bitImage FrontBuffer;
 			CG32bitImage BackBuffer;
 
-			int cxWidth;
-			int cyHeight;
-			int xPos;
-			int yPos;
-			int zPos;
+			int cxWidth = -1;
+			int cyHeight = -1;
+			int xPos = 0;
+			int yPos = 0;
+			int zPos = 0;
 
-			IDirect3DVertexBuffer9 *pVertices;
-			IDirect3DTexture9 *pTexture;
-			IDirect3DTexture9 *pFrontBuffer;
-			IDirect3DTexture9 *pBackBuffer;
+			IDirect3DVertexBuffer9 *pVertices = NULL;
+			IDirect3DTexture9 *pTexture = NULL;
+			IDirect3DTexture9 *pFrontBuffer = NULL;
+			IDirect3DTexture9 *pBackBuffer = NULL;
 			};
 
 		bool BeginScene (void);
@@ -92,29 +99,29 @@ class CDXScreen
 		inline bool CanUseDynamicTextures (void) const { return ((m_DeviceCaps.Caps2 & D3DCAPS2_DYNAMICTEXTURES) ? true : false); }
 		bool CreateLayerResources (SLayer &Layer, CString *retsError = NULL);
 		bool InitDevice (CString *retsError = NULL);
-        bool InitLayerResources (void);
+		bool InitLayerResources (void);
 		bool Present (void);
 		void RenderError (const CString &sError);
 		bool ResetDevice (void);
 
-		HWND m_hWnd;						//	Window
-		IDirect3D9 *m_pD3D;					//	Used to create the D3DDevice
-		IDirect3DDevice9 *m_pD3DDevice;		//	Our rendering device
-		D3DPRESENT_PARAMETERS m_Present;	//	Present parameters
-		D3DCAPS9 m_DeviceCaps;				//	Device caps for current device
+		HWND m_hWnd = NULL;						//	Window
+		IDirect3D9 *m_pD3D = NULL;				//	Used to create the D3DDevice
+		IDirect3DDevice9 *m_pD3DDevice = NULL;	//	Our rendering device
+		D3DPRESENT_PARAMETERS m_Present;		//	Present parameters
+		D3DCAPS9 m_DeviceCaps;					//	Device caps for current device
 
-		int m_cxTarget;						//	Width of target surface (usually the screen)
-		int m_cyTarget;						//	Height of target surface
+		int m_cxTarget = 0;						//	Width of target surface (usually the screen)
+		int m_cyTarget = 0;						//	Height of target surface
 
-		int m_cxSource;						//	Width of source image (usually layer size)
-		int m_cySource;
+		int m_cxSource = 0;						//	Width of source image (usually layer size)
+		int m_cySource = 0;
 
-		bool m_bUseGDI;						//	Use GDI instead of Direct3D
-		bool m_bNoGPUAcceleration;			//	Do not use textures, even if available
-		bool m_bUseTextures;				//	Use textures for layers.
-		bool m_bEndSceneNeeded;				//	If TRUE, we need an EndScene call
-		bool m_bErrorReported;				//	If TRUE, we've already reported an error
-		bool m_bDeviceLost;					//	If TRUE, we need to reset the device
+		bool m_bUseGDI = false;					//	Use GDI instead of Direct3D
+		bool m_bNoGPUAcceleration = false;		//	Do not use textures, even if available
+		bool m_bUseTextures = false;			//	Use textures for layers.
+		bool m_bEndSceneNeeded = false;			//	If TRUE, we need an EndScene call
+		bool m_bErrorReported = false;			//	If TRUE, we've already reported an error
+		bool m_bDeviceLost = false;				//	If TRUE, we need to reset the device
 
 		TArray<SLayer> m_Layers;
 		TSortMap<int, int> m_PaintOrder;
@@ -137,9 +144,9 @@ class CDXBackgroundBlt
 		CDXScreen &m_DX;
 
 		CCriticalSection m_cs;
-		HANDLE m_hBackgroundThread;		//	Background thread
-		HANDLE m_hWorkEvent;			//	Blt
-		HANDLE m_hQuitEvent;			//	Time to quit
+		HANDLE m_hBackgroundThread = INVALID_HANDLE_VALUE;	//	Background thread
+		HANDLE m_hWorkEvent = INVALID_HANDLE_VALUE;			//	Blt
+		HANDLE m_hQuitEvent = INVALID_HANDLE_VALUE;			//	Time to quit
 	};
 
 class CScreenMgr3D

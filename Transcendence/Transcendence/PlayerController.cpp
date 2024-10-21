@@ -2229,6 +2229,25 @@ void CPlayerShipController::OnProgramDamage (CSpaceObject *pHacker, const Progra
 	DisplayTranslate(CONSTLIT("msgCyberattackDetected"), CONSTLIT("program"), Program.sProgramName);
 	}
 
+void CPlayerShipController::OnSystemLoaded (void)
+
+//	OnSystemLoaded
+//
+//	System has loaded.
+
+	{
+	//	If the current order needs a target, but we don't have one, then clear
+	//	the order. This can happen in some error cases.
+
+	bool bRequired;
+	if (IShipController::OrderHasTarget(m_OrderDesc.GetOrder(), &bRequired)
+			&& bRequired
+			&& m_OrderDesc.GetTarget() == NULL)
+		{
+		m_OrderDesc = COrderDesc();
+		}
+	}
+
 void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 
 //	OnUpdatePlayer
@@ -2417,7 +2436,11 @@ void CPlayerShipController::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 	CSystem::ReadObjRefFromStream(Ctx, &m_pDestination, true);
 
 	if (Ctx.dwVersion >= 195)
-		m_OrderDesc.ReadFromStream(Ctx);
+		//	We set this to optional because there are some error cases where we
+		//	save a pointer that never resolves. In that case, it will come back
+		//	NULL and we clear it in OnSystemLoaded.
+
+		m_OrderDesc.ReadFromStream(Ctx, true);
 	else if (Ctx.dwVersion >= 100)
 		{
 		Ctx.pStream->Read(dwLoad);
