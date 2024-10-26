@@ -7,10 +7,10 @@
 
 const CDifficultyOptions::SDesc CDifficultyOptions::m_Table[(int)ELevel::Count] = {
 	//	ID				Name			PlayerDamageAdj		EnemyDamageAdj
-	{	"story",		"Story Mode",		0.1,				10.0	},
-	{	"normal",		"Standard",			0.5,				2.0,	},
-	{	"challenge",	"Challenge",		1.0,				1.0,	},
-	{	"permadeath",	"Permadeath",		1.0,				1.0		},
+	{	"story",		"Easy",				0.25,				1.0,	},
+	{	"normal",		"Medium",			0.5,				1.0,	},
+	{	"challenge",	"Classic",			1.0,				1.0,	},
+	{	"permadeath",	"Permadeath",		1.0,				1.0,	},
 	};
 
 CString CDifficultyOptions::GetID (ELevel iLevel)
