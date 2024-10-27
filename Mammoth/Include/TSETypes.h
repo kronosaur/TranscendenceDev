@@ -68,12 +68,13 @@ static constexpr Metric g_AU =							149600000.0;		//	1 AU in Kilometers
 
 static constexpr Metric KLICKS_PER_PIXEL =				12500.0;			//	Default kilometers per pixel
 static constexpr Metric TIME_SCALE =					60.0;				//	Seconds of game time per second of real time
-static constexpr Metric STD_SECONDS_PER_UPDATE =		2.0;				//	Standard adjustment when converting to ticks
+static constexpr Metric STD_SECONDS_PER_UPDATE =		1.0;				//	Standard adjustment when converting to ticks
+static constexpr Metric OLD_FRAMERATE_SCALE =			30.0 / TIME_SCALE;	//	Scale factor to apply to old rates based on 30 frames per secon
 static constexpr Metric MAX_SOUND_DISTANCE =			(140.0 * LIGHT_SECOND);	//	Maximum distance at which sound is heard (in light-seconds)
 																			//		In practice, this works out to about 100 ls, depending on
 																			//		global volume, etc.
 
-static constexpr int g_TicksPerSecond =					30;					//	Frames per second of time
+static constexpr int g_TicksPerSecond =					60;					//	Frames per second of time
 static constexpr Metric g_LRSRange =					(100.0 * LIGHT_SECOND);	//	Range of LRS
 static constexpr Metric g_MapKlicksPerPixel =			g_AU / 400.0;		//	400 pixels per AU
 static constexpr Metric g_InfiniteDistance =			g_AU * g_AU * 1000000.0;	//	A very large number

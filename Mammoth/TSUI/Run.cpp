@@ -11,7 +11,7 @@ const DWORD ID_LOW_PRIORITY_BACKGROUND_PROCESSOR =	2;
 const int MAX_SCREEN_HEIGHT =						1080;
 
 const int TIMER_RESOLUTION =						1;
-const int TICKS_PER_SECOND =						30;
+const int TICKS_PER_SECOND =						60;
 const int FRAME_DELAY =								(1000 / TICKS_PER_SECOND);		//	Delay in mSecs
 
 void CHumanInterface::Run (IHIController *pController, HINSTANCE hInst, int nCmdShow, LPSTR lpCmdLine)

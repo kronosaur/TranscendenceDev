@@ -59,7 +59,7 @@
 
 #define MAX_REFLECTION_CHANCE					95
 const Metric MAX_REFLECTION_TARGET =			50.0 * LIGHT_SECOND;
-const Metric STD_FIRE_DELAY_TICKS =				8.0;
+const Metric STD_FIRE_DELAY_TICKS =				16.0 / STD_SECONDS_PER_UPDATE;;
 const Metric STD_DEFENSE_RATIO =				0.8;
 const int STD_DEPLETION_DELAY =					360;
 
