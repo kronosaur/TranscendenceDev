@@ -867,6 +867,61 @@ void CMissile::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 	else
 		m_fPassthrough = false;
 
+	//	If we hit something, then process damage now
+
+	if (m_pHit)
+		{
+		bool bDestroy = false;
+
+		//	If we have fragments, then explode now
+
+		if (m_pDesc->ProximityBlast()
+			&& m_iTick >= m_pDesc->GetProximityFailsafe())
+			{
+			CreateFragments(m_vHitPos);
+			bDestroy = true;
+			}
+
+		//	Otherwise, if this was a direct hit, then we do damage
+
+		else if (m_iHitDir != -1)
+			{
+			SDamageCtx DamageCtx(m_pHit,
+				*m_pDesc,
+				m_pEnhancements,
+				m_Source,
+				this,
+				GetAge(),
+				AngleMod(m_iHitDir + mathRandom(0, 30) - 15),
+				m_vHitPos);
+
+			EDamageResults result = m_pHit->Damage(DamageCtx);
+
+			//	If we hit another missile (or some small object) there is a chance
+			//	that we continue
+
+			if (result == damagePassthrough || result == damagePassthroughDestroyed)
+				{
+				m_iHitPoints = m_iHitPoints / 2;
+				bDestroy = (m_iHitPoints == 0);
+				}
+
+			//	If we have passthrough and we did not reflect, then we 
+			//	continue without being destroyed.
+
+			else if (m_fPassthrough && !DamageCtx.IsShotReflected())
+				{
+				}
+
+			//	Otherwise, missile is destroyed on hit
+
+			else
+				bDestroy = true;
+			}
+
+		if (bDestroy && !SetMissileFade())
+			Destroy(removedFromSystem, CDamageSource());
+		}
 	DEBUG_CATCH
 	}
 
@@ -1357,56 +1412,6 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			{
 			CreateFragments(GetPos());
 			bDestroy = true;
-			}
-
-		//	If we hit something, then do damage
-
-		else if (m_pHit)
-			{
-			//	If we have fragments, then explode now
-
-			if (m_pDesc->ProximityBlast()
-					&& m_iTick >= m_pDesc->GetProximityFailsafe())
-				{
-				CreateFragments(m_vHitPos);
-				bDestroy = true;
-				}
-
-			//	Otherwise, if this was a direct hit, then we do damage
-
-			else if (m_iHitDir != -1)
-				{
-				SDamageCtx DamageCtx(m_pHit,
-						*m_pDesc,
-						m_pEnhancements,
-						m_Source,
-						this,
-						GetAge(),
-						AngleMod(m_iHitDir + mathRandom(0, 30) - 15),
-						m_vHitPos);
-
-				EDamageResults result = m_pHit->Damage(DamageCtx);
-
-				//	If we hit another missile (or some small object) there is a chance
-				//	that we continue
-
-				if (result == damagePassthrough || result == damagePassthroughDestroyed)
-					{
-					m_iHitPoints = m_iHitPoints / 2;
-					bDestroy = (m_iHitPoints == 0);
-					}
-
-				//	If we have passthrough and we did not reflect, then we 
-				//	continue without being destroyed.
-
-				else if (m_fPassthrough && !DamageCtx.IsShotReflected())
-					{ }
-
-				//	Otherwise, missile is destroyed on hit
-
-				else
-					bDestroy = true;
-				}
 			}
 
 		//	See if the missile has faded out

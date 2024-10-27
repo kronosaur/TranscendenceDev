@@ -4233,25 +4233,6 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 			&& m_Universe.GetSFXOptions().IsStarshineEnabled())
 		RemoveVolumetricShadow(&Ctx.Obj);
 
-	//	Debug code to see if we ever delete a barrier in the middle of move
-
-#ifdef DEBUG_PROGRAMSTATE
-	if (g_iProgramState == psUpdatingMove)
-		{
-		if (Ctx.Obj.IsBarrier())
-			{
-			CString sObj = CONSTLIT("ERROR: Destroying barrier during move.\r\n");
-
-			ReportCrashObj(&sObj, &Ctx.Obj);
-			kernelDebugLogString(sObj);
-
-#ifdef DEBUG
-			DebugBreak();
-#endif
-			}
-		}
-#endif
-
 	DEBUG_CATCH
 	}
 
