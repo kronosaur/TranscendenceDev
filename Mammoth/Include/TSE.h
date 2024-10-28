@@ -15,7 +15,6 @@
 #include "JSONUtil.h"
 #include "DirectXUtil.h"
 #include "Reanimator.h"
-#include "TSEAccessibilitySettings.h"
 
 //  Starting with Part II we use Arabic numerals for levels.
 
