@@ -132,10 +132,6 @@ ALERROR CRotationDesc::InitFromManeuverXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 	m_rAccelPerTick = pDesc->GetAttributeDoubleBounded(ROTATION_ACCEL_ATTRIB, 0.01, -1.0, m_rDegreesPerTick);
 	m_rAccelPerTickStop = pDesc->GetAttributeDoubleBounded(ROTATION_STOP_ACCEL_ATTRIB, 0.01, -1.0, m_rAccelPerTick);
 
-	//	Adjust for change in frame rate
-	m_rDegreesPerTick *= OLD_FRAMERATE_SCALE;
-	m_rAccelPerTick *= OLD_FRAMERATE_SCALE;
-	m_rAccelPerTickStop *= OLD_FRAMERATE_SCALE;
     return NOERROR;
     }
 

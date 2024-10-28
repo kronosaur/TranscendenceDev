@@ -2598,11 +2598,6 @@ bool CWeaponFireDesc::InitLifetime (SDesignLoadCtx &Ctx, const CXMLElement &XMLD
 			Ctx.sError = strPatternSubst(CONSTLIT("Invalid lifetime: %s"), sValue);
 			return false;
 			}
-		else
-			{
-			// Lifetimes are specified assuming 30 fps ticks
-			m_Lifetime.Scale(1/OLD_FRAMERATE_SCALE);
-			}
 		}
 	else
 		{

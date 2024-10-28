@@ -94,10 +94,6 @@ ALERROR CParticleSystemDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement
 		Ctx.sError = CONSTLIT("Invalid particleCount count.");
 		return error;
 		}
-	else
-		{
-		m_EmitRate.Scale(1.0 / OLD_FRAMERATE_SCALE);
-		}
 
 	if (error = m_EmitSpeed.LoadFromXML(pDesc->GetAttribute(EMIT_SPEED_ATTRIB)))
 		{
@@ -110,10 +106,6 @@ ALERROR CParticleSystemDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement
 		Ctx.sError = CONSTLIT("Invalid emitTime.");
 		return error;
 		}
-	else
-		{
-		m_EmitLifetime.Scale(1.0 / OLD_FRAMERATE_SCALE);
-		}
 
 	if (error = m_EmitWidth.LoadFromXML(pDesc->GetAttribute(EMIT_WIDTH_ATTRIB)))
 		{
@@ -125,10 +117,6 @@ ALERROR CParticleSystemDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement
 		{
 		Ctx.sError = CONSTLIT("Invalid particleLifetime.");
 		return error;
-		}
-	else
-		{
-		m_ParticleLifetime.Scale(1.0 / OLD_FRAMERATE_SCALE);
 		}
 
 	if (error = m_SpreadAngle.LoadFromXML(pDesc->GetAttribute(SPREAD_ANGLE_ATTRIB)))

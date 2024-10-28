@@ -1234,11 +1234,9 @@ ALERROR CObjectImageArray::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &
 		m_iFramesPerRow = m_iFrameCount;
 
 	m_iTicksPerFrame = Desc.GetAttributeInteger(CONSTLIT(g_ImageTicksPerFrameAttrib));
-	m_iTicksPerFrame = mathRound(m_iTicksPerFrame / OLD_FRAMERATE_SCALE);
 	if (m_iTicksPerFrame <= 0 && m_iFrameCount > 1)
 		m_iTicksPerFrame = 1;
 	m_iFlashTicks = Desc.GetAttributeInteger(FLASH_TICKS_ATTRIB);
-	m_iFlashTicks = mathRound(m_iFlashTicks / OLD_FRAMERATE_SCALE);
 
 	CString sBlending = Desc.GetAttribute(BLENDING_ATTRIB);
 	if (strEquals(sBlending, LIGHTEN_BLENDING))
