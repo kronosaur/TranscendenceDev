@@ -32,7 +32,7 @@ when installing DirectX SDKs:
 
 http://support.microsoft.com/kb/2728613
 
-Use Microsoft Visual Studio 2010 or later. Load Transcendence/Transcendence.sln, 
+Use Microsoft Visual Studio 2019 or later. Load Transcendence/Transcendence.sln, 
 which is the Transcendence solution file. The following warnings, if shown under
 Output from Solution, may be safely ignored:
 
@@ -60,9 +60,8 @@ For security reasons the source code does not include certain files to
 communicate with the Hexarc arcology (the cloud service). The code will compile
 without it, however, as long as you add CHexarcServiceStub.cpp to the build.
 
-In Visual Studio, find the CHexarcServiceStub.cpp file in the TSUI project under 
-the \Source Files\CloudInterface Files folder. Bring up the Properties page for 
-the file and under General properties set "Exclude from Build" to "No".
+In Visual Studio, select the "Debug For Contributors" configuration, this will
+build the game with CHexarcServiceStub.cpp.
 
 LICENSE
 
