@@ -6375,7 +6375,7 @@ void CSpaceObject::Move (SUpdateCtx &Ctx, Metric rSeconds)
 	//	Move the object on a straight line along the velocity vector
 
 	if (!m_vVel.IsNull() && !m_fNonLinearMove && !IsAnchored())
-		m_vPos = m_vPos + (m_vVel * g_SecondsPerUpdate);
+		m_vPos = m_vPos + (m_vVel * rSeconds);
 
 	//	Let descendants process the move (if necessary)
 

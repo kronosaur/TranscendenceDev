@@ -683,6 +683,7 @@ struct SHIOptions
 			m_bForceNonExclusiveMode(false),
 			m_bForceScreenSize(false),
 			m_bNoGPUAcceleration(false),
+			m_bUse60fps(false),
 			m_iSoundVolume(DEFAULT_SOUND_VOLUME),
 			m_bDebugVideo(false)
 		{ }
@@ -707,6 +708,7 @@ struct SHIOptions
 	bool m_bForceNonExclusiveMode;
 	bool m_bForceScreenSize;
 	bool m_bNoGPUAcceleration;
+	bool m_bUse60fps;					//	If TRUE, run at 60 fps
 
 	//	Sound options
 	int m_iSoundVolume;

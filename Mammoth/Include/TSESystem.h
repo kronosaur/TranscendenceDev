@@ -103,6 +103,7 @@ struct SSystemUpdateCtx
 	bool bForcePainted = false;						//	If TRUE, mark objects as painted 
 	bool bTrackPlayerObjs = false;					//	If TRUE, make a list of player objects
 	bool bNoShipEffectUpdate = false;				//	If TRUE, do not update ship effects
+	bool bUse60fps = false;							//  If TRUE, run at 60 fps (two frames per tick)
 
 #ifdef DEBUG_MOVE_PERFORMANCE
 	int iMoveCalls = 0;
@@ -591,6 +592,8 @@ class CSystem
 		void UnnameObject (CSpaceObject &Obj);
 		void UnregisterEventHandler (CSpaceObject *pObj);
 		void Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations = NULL);
+		void UpdateBehaviors(SSystemUpdateCtx& SystemCtx, SViewportAnnotations* pAnnotations = NULL);
+		void UpdatePhysics(SSystemUpdateCtx& SystemCtx, SViewportAnnotations* pAnnotations = NULL, Metric timestep=1.0);
 		void UpdateExtended (const CTimeSpan &ExtraTime);
 		void ValidateExclusionRadius (void) const;
 		void ValidateExclusionRadius (CSpaceObject *pObj, const CStationEncounterDesc::SExclusionDesc &Exclusion) const;
