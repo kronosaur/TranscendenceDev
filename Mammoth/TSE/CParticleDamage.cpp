@@ -249,6 +249,7 @@ void CParticleDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rS
 		SEffectMoveCtx Ctx;
 		Ctx.pObj = this;
 		Ctx.vOldPos = vOldPos;
+		Ctx.rSeconds = rSeconds;
 
 		m_pEffectPainter->OnMove(Ctx);
 
@@ -269,7 +270,7 @@ void CParticleDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rS
 		//	Continue moving (otherwise, exhaust trail effects won't work 
 		//	properly).
 
-		SetPos(vOldPos + (GetVel() * g_SecondsPerUpdate));
+		SetPos(vOldPos + (GetVel() * rSeconds));
 		return;
 		}
 
@@ -279,6 +280,7 @@ void CParticleDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rS
 		{
 		SEffectMoveCtx Ctx;
 		Ctx.pObj = this;
+		Ctx.rSeconds = rSeconds;
 
 		m_pParticlePainter->OnMove(Ctx);
 		}
@@ -287,7 +289,7 @@ void CParticleDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rS
 
 	bool bAlive;
 	CVector vNewPos;
-	m_Particles.UpdateMotionLinear(&bAlive, &vNewPos);
+	m_Particles.UpdateMotionLinear(rSeconds, &bAlive, &vNewPos);
 
 	//	If we're still alive, then set our position and bounds based on the
 	//	particles.

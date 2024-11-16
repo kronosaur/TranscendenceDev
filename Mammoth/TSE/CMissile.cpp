@@ -790,6 +790,7 @@ void CMissile::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 		SEffectMoveCtx Ctx;
 		Ctx.pObj = this;
 		Ctx.vOldPos = vOldPos;
+		Ctx.rSeconds = rSeconds;
 
 		bool bBoundsChanged;
 		m_pPainter->OnMove(Ctx, &bBoundsChanged);

@@ -486,6 +486,7 @@ void CContinuousBeam::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rS
 		{
 		SEffectMoveCtx Ctx;
 		Ctx.pObj = this;
+		Ctx.rSeconds = rSeconds;
 
 		m_pPainter->OnMove(Ctx);
 		}

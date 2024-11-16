@@ -5146,7 +5146,7 @@ void CShip::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 	if (WasPainted() && Ctx.IsShipEffectUpdateEnabled())
 		{
 		bool bRecalcBounds;
-		m_Effects.Move(this, vOldPos, &bRecalcBounds);
+		m_Effects.Move(this, vOldPos, rSeconds, &bRecalcBounds);
 
 #ifdef DEBUG_MOVE_PERFORMANCE
 		Ctx.bCalledShipEffectMove = true;
