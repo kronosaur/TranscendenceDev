@@ -1743,9 +1743,9 @@ void CParticleArray::UpdateBrownian (const CParticleSystemDesc &Desc, SEffectUpd
 	Metric rMaxRadius2 = rMaxRadius * rMaxRadius;
 	bool bCheckRadius = (rMaxRadius > 0.0);
 
-	Metric rCohesionSpeed = g_SecondsPerUpdate * Desc.GetXformTime() * Desc.GetCohesionFactor() * Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
-	Metric rImpulseSpeed = g_SecondsPerUpdate * Desc.GetXformTime() * IMPULSE_FACTOR * Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
-	Metric rMaxSpeed = MAX_SPEED_FACTOR * g_SecondsPerUpdate * Desc.GetXformTime() * Desc.GetEmitSpeed().GetMaxValue() * LIGHT_SPEED / 100.0;
+	Metric rCohesionSpeed = Desc.GetXformTime() * Desc.GetCohesionFactor() * Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
+	Metric rImpulseSpeed = Desc.GetXformTime() * IMPULSE_FACTOR * Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
+	Metric rMaxSpeed = MAX_SPEED_FACTOR * Desc.GetXformTime() * Desc.GetEmitSpeed().GetMaxValue() * LIGHT_SPEED / 100.0;
 
 	//	Loop over all particles
 
@@ -2099,7 +2099,7 @@ void CParticleArray::UpdateComet (const CParticleSystemDesc &Desc, SEffectUpdate
 			if (rVelAdj < 0.01)
 				rVelAdj = 0.0;
 
-			pParticle->Vel = g_SecondsPerUpdate * (m_vLastEmitSourceVel + ::PolarToVector(pParticle->iRotation, rMaxSpeed - (rSpeedRange * rVelAdj)));
+			pParticle->Vel = m_vLastEmitSourceVel + ::PolarToVector(pParticle->iRotation, rMaxSpeed - (rSpeedRange * rVelAdj));
 			pParticle->rData = rVelAdj;
 			}
 
