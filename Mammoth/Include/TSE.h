@@ -1291,9 +1291,9 @@ class CSpaceObject
 		virtual CurrencyValue GetBalancedTreasure (void) const { return 0; }
 		virtual Metric GetCargoSpaceLeft (void) const { return 1000000.0; }
 		virtual int GetCombatPower (void) { return 0; }
-		virtual int GetCounterIncrementRate (void) const { return 0; }
+		virtual int GetHeatIncrementRate (SUpdateCtx& Ctx) { return 0; }
 		virtual bool GetCounterIsHeat (void) const { return false; }
-		virtual int GetCounterValue (void) const { return 0; }
+		virtual int GetHeatValue (void) const { return 0; }
 		virtual int GetCyberDefenseLevel (void) const { return GetLevel(); }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
 		virtual DamageTypes GetDamageType (void) { return damageGeneric; }
@@ -1303,7 +1303,7 @@ class CSpaceObject
 		virtual int GetLastFireTime (void) const { return 0; }
 		virtual int GetLastHitTime (void) const { return 0; }
 		virtual int GetLevel (void) const { return 1; }
-		virtual int GetMaxCounterValue (void) const { return 0; }
+		virtual int GetMaxHeatValue (void) const { return 0; }
 		virtual int GetMaxPower (void) const { return 0; }
 		virtual int GetMaxLightDistance (void) const { return 0; }
 		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
@@ -1315,7 +1315,7 @@ class CSpaceObject
 		virtual int GetStealthAdjAtMaxHeat (void) const { return 0; }
 		virtual int GetVisibleDamage (void) const { return 0; }
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) const { Damage = SVisibleDamage(); }
-		virtual void IncCounterValue(int iCounterValue) { }
+		virtual void IncHeatValue(int iHeatValue) { }
 		virtual bool IsAngry (void) { return false; }
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const { return IsEnemy(pObj); }
 		virtual bool IsIdentified (void) const { return true; }
@@ -1338,7 +1338,7 @@ class CSpaceObject
 		virtual void SendMessage (const CSpaceObject *pSender, const CString &sMsg) const { }
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) { return 0; }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) { return NULL_STR; }
-		virtual void SetCounterValue(int iCounterValue) { }
+		virtual void SetHeatValue(int iHeatValue) { }
 		virtual void SetIdentified (bool bIdentified = true) { }
 		virtual void SetMapLabelPos (CMapLabelPainter::EPositions iPos) { }
 		virtual void UpdateArmorItems (void) { }

@@ -13,6 +13,7 @@
 #define PROPERTY_CYCLE_FIRE 					CONSTLIT("cycleFire")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_EXTERNAL						CONSTLIT("external")
+#define PROPERTY_EXTRA_HEAT_PER_TICK			CONSTLIT("extraHeatPerTick")
 #define PROPERTY_EXTRA_POWER_USE				CONSTLIT("extraPowerUse")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
@@ -38,6 +39,28 @@ bool CInstalledDevice::AccumulateSlotEnhancements (CSpaceObject *pSource, TArray
 		bEnhanced = m_SlotEnhancements.Accumulate(GetLevel(), *GetItem(), *pEnhancements, &EnhancementIDs);
 
 	return bEnhanced;
+	}
+
+int CInstalledDevice::CalcHeatDelta (const SUpdateCtx& Ctx, CSpaceObject* pSource) const
+
+//	CalcHeatDelta
+//
+//	Calculates how much heat this device generated this tick. Positive numbers indicate
+//	heat generation, negative numbers are heat dissipation.
+	{
+
+	if (IsEmpty())
+		return 0;
+
+	//	Let the device compute heat generation.
+
+	int iHeatDelta = m_pClass->CalcHeatDelta(Ctx, this, pSource);
+
+	//	Add extra counter per tick.
+
+	iHeatDelta += m_iExtraHeatPerTick;
+
+	return iHeatDelta;
 	}
 
 int CInstalledDevice::CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource)
@@ -361,6 +384,7 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	m_pOverlay = NULL;
 	m_dwData = 0;
 	m_iExtraPowerUse = 0;
+	m_iExtraHeatPerTick = 0;
 	m_iTemperature = 0;
 	m_fWaiting = false;
 	m_fEnabled = true;
@@ -713,6 +737,17 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 		{
 		m_iShotSeparationScale = 32767;
 		m_iMaxFireRange = 0;
+		}
+
+
+	if (Ctx.dwVersion >= 212)
+		{
+		Ctx.pStream->Read(dwLoad);
+		m_iExtraHeatPerTick = (int)dwLoad;
+		}
+	else
+		{
+		m_iExtraHeatPerTick = 0;
 		}
 
 	Ctx.pStream->Read(dwLoad);
@@ -1069,6 +1104,11 @@ ESetPropertyResult CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &
 			}
 		}
 
+	else if (strEquals(sName, PROPERTY_EXTRA_HEAT_PER_TICK))
+		{
+		m_iExtraHeatPerTick = pValue->GetIntegerValue();
+		}
+
 	else if (strEquals(sName, PROPERTY_EXTRA_POWER_USE))
 		{
 		m_iExtraPowerUse = pValue->GetIntegerValue();
@@ -1378,6 +1418,9 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	pStream->Write(dwSave);
 
 	dwSave = MAKELONG(m_iShotSeparationScale, m_iMaxFireRange);
+	pStream->Write(dwSave);
+
+	dwSave = DWORD(m_iExtraHeatPerTick) & 0xffffffff;
 	pStream->Write(dwSave);
 
 	dwSave = 0;

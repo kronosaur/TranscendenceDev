@@ -11,6 +11,7 @@
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define DAMAGE_ADJ_ATTRIB						CONSTLIT("damageAdj")
 #define ENHANCEMENT_TYPE_ATTRIB					CONSTLIT("enhancementType")
+#define HEAT_GENERATION_ATTRIB					CONSTLIT("heatGeneration")
 #define HP_BONUS_ATTRIB							CONSTLIT("hpBonus")
 #define LEVEL_ATTRIB							CONSTLIT("level")
 #define LEVEL_CHECK_ATTRIB						CONSTLIT("levelCheck")
@@ -114,6 +115,27 @@ void CEnhancerClass::ApplyInherited (SScalableStats &Stats, const SInheritedStat
 
 	if (!RootStats.LevelCheck.IsEmpty())
 		Stats.Enhancements.SetLevelCheck(-1, RootStats.LevelCheck);
+
+	if (!RootStats.iHeatGeneration != 0)
+		Stats.iHeatGeneration = RootStats.iHeatGeneration;
+	}
+
+int CEnhancerClass::CalcHeatDelta(const SUpdateCtx& Ctx, const CInstalledDevice* pDevice, CSpaceObject* pSource)
+
+//	CalcHeatDelta
+//
+//	Returns the amount of heat generated per tick
+
+	{
+	if (!pDevice->IsEnabled())
+		return 0;
+
+	CItemCtx ItemCtx(pSource, pDevice);
+	const SScalableStats* pStats = GetStats(ItemCtx);
+	if (pStats == NULL)
+		return m_iHeatGeneration;
+
+	return pStats->iHeatGeneration;
 	}
 
 int CEnhancerClass::CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource)
@@ -164,6 +186,7 @@ ALERROR CEnhancerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 		RootStats.Criteria.Init(RootStats.sCriteria);
 
 	RootStats.iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, -1);
+	RootStats.iHeatGeneration = pDesc->GetAttributeIntegerBounded(HEAT_GENERATION_ATTRIB, 0, -1, 0);
 	if (error = RootStats.LevelCheck.InitFromXML(Ctx, pDesc->GetAttribute(LEVEL_CHECK_ATTRIB)))
 		return error;
 
@@ -203,6 +226,7 @@ ALERROR CEnhancerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 			}
 
 		pDevice->m_iPowerUse = RootStats.iPowerUse;
+		pDevice->m_iHeatGeneration = RootStats.iHeatGeneration;
 		pDevice->m_sEnhancementType = RootStats.sType;
 		pDevice->m_iActivateAdj = pDesc->GetAttributeIntegerBounded(ACTIVATE_ADJ_ATTRIB, 1, -1, 100);
 		pDevice->m_iMinActivateDelay = pDesc->GetAttributeIntegerBounded(MIN_ACTIVATE_DELAY_ATTRIB, 0, -1, 0);
@@ -282,6 +306,24 @@ ICCItem *CEnhancerClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return CDeviceClass::FindItemProperty(Ctx, sName);
 	}
 
+int CEnhancerClass::GetHeatRating(CItemCtx& Ctx, int* retiIdleHeatGeneration) const
+
+//	GetPowerRating
+//
+//	Returns the rated heat generation for the device (regardless of whether it is 
+//	enabled or not).
+
+	{
+	if (retiIdleHeatGeneration)
+		*retiIdleHeatGeneration = 0;
+
+	const SScalableStats *pStats = GetStats(Ctx);
+	if (pStats == NULL)
+		return m_iHeatGeneration;
+
+	return pStats->iHeatGeneration;
+	}
+
 int CEnhancerClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 
 //	GetPowerRating
@@ -340,6 +382,7 @@ ALERROR CEnhancerClass::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 
 	m_pDesc[0].iLevel = pType->GetLevel();
 	m_pDesc[0].iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, 0);
+	m_pDesc[0].iHeatGeneration = pDesc->GetAttributeIntegerBounded(HEAT_GENERATION_ATTRIB, 0, -1, 0);
 
 	//	Initialize the enhancements
 
@@ -393,6 +436,7 @@ ALERROR CEnhancerClass::InitFromScalingXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 
 		m_pDesc[iIndex].iLevel = iLevel;
 		m_pDesc[iIndex].iPowerUse = pEntry->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, 0);
+		m_pDesc[iIndex].iHeatGeneration = pEntry->GetAttributeIntegerBounded(HEAT_GENERATION_ATTRIB, 0, -1, 0);
 
 		//	Initialize the enhancements
 

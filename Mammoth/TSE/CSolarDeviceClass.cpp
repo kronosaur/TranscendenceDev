@@ -7,6 +7,8 @@
 
 #define POWER_GEN_ATTRIB							CONSTLIT("powerGen")
 #define REFUEL_ATTRIB								CONSTLIT("refuel")
+#define HEAT_GENERATION_ATTRIB						CONSTLIT("heatGeneration")
+#define SOLAR_HEAT_GENERATION_ATTRIB				CONSTLIT("solarHeatGeneration")
 
 #define CYCLE_TIME									10
 
@@ -16,6 +18,42 @@ CSolarDeviceClass::CSolarDeviceClass (void)
 
 	{
 	}
+
+int CSolarDeviceClass::CalcHeatDelta (const SUpdateCtx& Ctx, const CInstalledDevice* pDevice, CSpaceObject* pSource)
+
+//	CalcHeatDelta
+//
+//	Returns the amount of heat generated per tick
+
+	{
+	int iHeat = 0;
+
+	//	Only if enabled
+
+	if (!pDevice->IsEnabled())
+		return 0;
+
+	//	Add constant heat generation
+
+	iHeat += m_iHeatGeneration;
+
+	//	Add solar heat generation
+
+	int iIntensity = Ctx.GetLightIntensity(pSource);
+	if (pDevice->IsDamaged() || pDevice->IsDisrupted())
+		iIntensity = iIntensity / 2;
+
+	iHeat += (m_iSolarHeatGeneration * iIntensity) / 100;
+
+	//	Done
+
+	return iHeat;
+	}
+
+int CSolarDeviceClass::GetHeatRating (CItemCtx& Ctx, int* retiIdleHeatGeneration) const
+{
+	return max(m_iHeatGeneration, m_iHeatGeneration + m_iSolarHeatGeneration);
+}
 
 int CSolarDeviceClass::CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource)
 
@@ -55,6 +93,7 @@ ALERROR CSolarDeviceClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 
 	pDevice->m_iPowerGen = pDesc->GetAttributeIntegerBounded(POWER_GEN_ATTRIB, 0, -1, 0);
 	pDevice->m_iRefuel = pDesc->GetAttributeIntegerBounded(REFUEL_ATTRIB, 0, -1, 0);
+	pDevice->m_iSolarHeatGeneration = pDesc->GetAttributeIntegerBounded(SOLAR_HEAT_GENERATION_ATTRIB, 0, -1, 0);
 
 	//	Done
 

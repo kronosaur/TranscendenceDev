@@ -45,8 +45,10 @@
 #define PROPERTY_DEVICE_SLOTS					CONSTLIT("deviceSlots")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_EXTERNAL						CONSTLIT("external")
+#define PROPERTY_EXTRA_HEAT_PER_TICK			CONSTLIT("extraHeatPerTick")
 #define PROPERTY_EXTRA_POWER_USE				CONSTLIT("extraPowerUse")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
+#define PROPERTY_HEAT_GENERATION				CONSTLIT("heatGeneration")
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
 #define PROPERTY_POS							CONSTLIT("pos")
@@ -530,7 +532,7 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_CAN_TARGET_MISSILES))
 		return (pDevice ? CC.CreateBool(pDevice->CanTargetMissiles()) : CC.CreateNil());
 	else if (strEquals(sName, PROPERTY_CAPACITOR))
-		{
+	{
 		CSpaceObject* pSource = Ctx.GetSource();
 		EDeviceCounterType iType;
 		int iLevel;
@@ -539,7 +541,7 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 			return CC.CreateNil();
 
 		return CC.CreateInteger(iLevel);
-		}
+	}
 
 	else if (strEquals(sName, PROPERTY_CYBER_DEFENSE_LEVEL))
 		return CC.CreateInteger(Ctx.GetDeviceItem().GetCyberDefenseLevel());
@@ -557,12 +559,15 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return CC.CreateBool(pDevice ? pDevice->IsExternal() : IsExternal());
 
 	else if (strEquals(sName, PROPERTY_EXTRA_POWER_USE))
-		{
+	{
 		if (pDevice == NULL)
 			return CC.CreateNil();
 
 		return CC.CreateInteger(pDevice->GetExtraPowerUse());
-		}
+	}
+
+	else if (strEquals(sName, PROPERTY_HEAT_GENERATION))
+		return CC.CreateInteger(GetHeatRating(Ctx));
 
 	else if (strEquals(sName, PROPERTY_POS))
 		{

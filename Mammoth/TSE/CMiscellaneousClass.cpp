@@ -9,6 +9,9 @@
 #define CAPACITOR_POWER_USE_ATTRIB				(CONSTLIT("capacitorPowerUse"))
 #define POWER_RATING_ATTRIB						(CONSTLIT("powerRating"))
 
+#define HEAT_GENERATION_ATTRIB					(CONSTLIT("heatGeneration"))
+#define CAPACITOR_HEAT_GENERATION_ATTRIB		(CONSTLIT("capacitorHeatGeneration"))
+
 #define TICKS_PER_UPDATE						30
 
 CMiscellaneousClass::CMiscellaneousClass (void)
@@ -46,6 +49,39 @@ int CMiscellaneousClass::CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevi
 	return iPower;
 	}
 
+int CMiscellaneousClass::CalcHeatDelta (const SUpdateCtx& Ctx, const CInstalledDevice* pDevice, CSpaceObject* pSource)
+
+//	CalcHeatDelta
+//
+//	Returns the amount of heat generated per tick
+
+	{
+	int iHeat = 0;
+
+	//	Only if enabled
+
+	if (!pDevice->IsEnabled())
+		return 0;
+
+	//	Add constant heat generation
+
+	iHeat += m_iHeatGeneration;
+
+	//	If we're not ready, then we generate additional heat when charging the capacitors
+
+	if (!pDevice->IsReady())
+		iHeat += m_iCapacitorHeatGeneration;
+
+	//	Done
+
+	return iHeat;
+	}
+
+int CMiscellaneousClass::GetHeatRating (CItemCtx& Ctx, int* retiIdleHeatGeneration) const
+	{
+	return max(m_iHeatGeneration, m_iHeatGeneration + m_iCapacitorHeatGeneration);
+	}
+
 ALERROR CMiscellaneousClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice)
 
 //	CreateFromXML
@@ -67,6 +103,9 @@ ALERROR CMiscellaneousClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 	pDevice->m_iPowerUse = pDesc->GetAttributeInteger(POWER_USE_ATTRIB);
 	pDevice->m_iPowerToActivate = pDesc->GetAttributeInteger(POWER_TO_ACTIVATE_ATTRIB);
 	pDevice->m_iPowerForCapacitor = pDesc->GetAttributeInteger(CAPACITOR_POWER_USE_ATTRIB);
+
+	pDevice->m_iHeatGeneration = pDesc->GetAttributeInteger(HEAT_GENERATION_ATTRIB);
+	pDevice->m_iCapacitorHeatGeneration = pDesc->GetAttributeInteger(CAPACITOR_HEAT_GENERATION_ATTRIB);
 
 	//	Done
 

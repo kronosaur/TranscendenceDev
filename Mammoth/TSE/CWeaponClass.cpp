@@ -40,7 +40,7 @@
 #define REPEATING_ATTRIB						CONSTLIT("repeating")
 #define REPEATING_DELAY_ATTRIB					CONSTLIT("repeatingDelay")
 #define REPORT_AMMO_ATTRIB						CONSTLIT("reportAmmo")
-#define SHIP_COUNTER_PER_SHOT_ATTRIB			CONSTLIT("shipCounterPerShot")
+#define SHIP_HEAT_PER_SHOT_ATTRIB				CONSTLIT("shipHeatPerShot")
 #define TARGET_STATIONS_ONLY_ATTRIB				CONSTLIT("targetStationsOnly")
 #define TYPE_ATTRIB								CONSTLIT("type")
 #define USES_LAUNCHER_CONTROLS_ATTRIB			CONSTLIT("usesLauncherControls")
@@ -93,6 +93,7 @@
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
 #define PROPERTY_FIRE_DELAY						CONSTLIT("fireDelay")
 #define PROPERTY_FIRE_RATE						CONSTLIT("fireRate")
+#define PROPERTY_HEAT_GENERATION				CONSTLIT("heatGeneration")	//	Heat per tick during continuous fire
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
 #define PROPERTY_MAX_DAMAGE						CONSTLIT("maxDamage")
 #define PROPERTY_MIN_DAMAGE						CONSTLIT("minDamage")
@@ -100,7 +101,7 @@
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
 #define PROPERTY_REPEATING						CONSTLIT("repeating")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
-#define PROPERTY_SHIP_COUNTER_PER_SHOT			CONSTLIT("shipCounterPerShot")
+#define PROPERTY_SHIP_HEAT_PER_SHOT				CONSTLIT("shipHeatPerShot")
 #define PROPERTY_SINGLE_POINT_ORIGIN			CONSTLIT("singlePointOrigin")
 #define PROPERTY_STD_COST						CONSTLIT("stdCost")
 #define PROPERTY_STD_MASS						CONSTLIT("stdMass")
@@ -999,7 +1000,7 @@ int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject 
 		}
 	}
 
-bool CWeaponClass::CalcFireSolution (const CInstalledDevice &Device, CSpaceObject &Target, int *retiAimAngle, Metric *retrDist) const
+bool CWeaponClass::CalcFireSolution (const CInstalledDevice &Device, const CSpaceObject &Target, int *retiAimAngle, Metric *retrDist) const
 
 //	CalcFireSolution
 //
@@ -1521,16 +1522,16 @@ bool CWeaponClass::CanConsumeAmmo (const CDeviceItem &DeviceItem, const CWeaponF
 	return true;
 	}
 
-bool CWeaponClass::CanConsumeShipCounter (const CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc) const
+bool CWeaponClass::CanConsumeShipHeat (const CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc) const
 
-//	CanConsumeShipCounter
+//	CanConsumeShipHeat
 //
-//	Returns TRUE if we can consume/increment ship counter.
+//	Returns TRUE if we can consume/increment ship heat.
 
 	{
 	//	Short-circuit.
 
-	if (!m_iCounterPerShot)
+	if (!m_iHeatPerShot)
 		return true;
 
 	//	Get source and device
@@ -1539,19 +1540,12 @@ bool CWeaponClass::CanConsumeShipCounter (const CDeviceItem &DeviceItem, const C
 	if (!pSource)
 		return false;
 
-	//  If changing the ship counter leaves us out of range, then we cannot
+	//  If changing the ship heat leaves us out of range, then we cannot
 	//	consume.
 
-	if (m_iCounterPerShot > 0)
+	if (m_iHeatPerShot > 0)
 		{
-		if (pSource->GetCounterValue() + m_iCounterPerShot > pSource->GetMaxCounterValue())
-			{
-			return false;
-			}
-		}
-	else if (m_iCounterPerShot < 0)
-		{
-		if (pSource->GetCounterValue() + m_iCounterPerShot < 0)
+		if (pSource->GetHeatValue() + m_iHeatPerShot > pSource->GetMaxHeatValue())
 			{
 			return false;
 			}
@@ -1584,9 +1578,9 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 
 	CFailureDesc::EFailureTypes iFailureMode = CFailureDesc::failNone;
 
-	//	If we're using ship counters, make sure we have enough.
+	//	If we're using ship heat, make sure we have enough.
 
-	if (!CanConsumeShipCounter(DeviceItem, ShotDesc))
+	if (!CanConsumeShipHeat(DeviceItem, ShotDesc))
 		return resFailure;
 
 	//	See if we have enough ammo/charges to fire
@@ -1621,10 +1615,10 @@ CWeaponClass::EFireResults CWeaponClass::Consume (CDeviceItem &DeviceItem, const
 	//	If we get this far, then we're going to consume resources (ammo,
 	//	etc.) and iFailureMode is set correctly.
 
-	//  Update the ship energy/heat counter.
+	//  Update the ship heat.
 
-	if (m_iCounterPerShot != 0)
-		ConsumeShipCounter(DeviceItem, ShotDesc);
+	if (m_iHeatPerShot != 0)
+		ConsumeShipHeat(DeviceItem, ShotDesc);
 	
 	//	Consume ammo/charges
 
@@ -1856,15 +1850,15 @@ bool CWeaponClass::ConsumeCapacitor (CItemCtx &ItemCtx, const CWeaponFireDesc &S
 	return true;
 	}
 
-void CWeaponClass::ConsumeShipCounter (CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc)
+void CWeaponClass::ConsumeShipHeat (CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc)
 
-//	ConsumeShipCounter
+//	ConsumeShipHeat
 //
-//	Updates ship counter. We assume that we've already called 
-//	CanConsumeShipCounter.
+//	Updates ship heat. We assume that we've already called 
+//	CanConsumeShipHeat.
 
 	{
-	if (!m_iCounterPerShot)
+	if (!m_iHeatPerShot)
 		return;
 
 	//	Get source and device
@@ -1873,7 +1867,7 @@ void CWeaponClass::ConsumeShipCounter (CDeviceItem &DeviceItem, const CWeaponFir
 	if (pSource == NULL)
 		return;
 
-	pSource->IncCounterValue(m_iCounterPerShot);
+	pSource->IncHeatValue(m_iHeatPerShot);
 	}
 
 ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpWeapon)
@@ -1911,7 +1905,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	pWeapon->m_bReportAmmo = pDesc->GetAttributeBool(REPORT_AMMO_ATTRIB);
 	pWeapon->m_bTargetStationsOnly = pDesc->GetAttributeBool(TARGET_STATIONS_ONLY_ATTRIB);
 	pWeapon->m_bContinuousConsumePerShot = pDesc->GetAttributeBool(CONTINUOUS_CONSUME_PERSHOT_ATTRIB);
-	pWeapon->m_iCounterPerShot = pDesc->GetAttributeIntegerBounded(SHIP_COUNTER_PER_SHOT_ATTRIB, 0, -1, 0); // TODO(heliogenesis): Enable shots to have this statistic too
+	pWeapon->m_iHeatPerShot = pDesc->GetAttributeIntegerBounded(SHIP_HEAT_PER_SHOT_ATTRIB, 0, -1, 0);
 	pWeapon->m_bBurstTracksTargets = pDesc->GetAttributeBool(BURST_TRACKS_TARGETS_ATTRIB);
 	pWeapon->m_bCanFireWhenBlind = pDesc->GetAttributeBool(CAN_FIRE_WHEN_BLIND_ATTRIB);
 	pWeapon->m_bUsesLauncherControls = pDesc->GetAttributeBool(USES_LAUNCHER_CONTROLS_ATTRIB);
@@ -2494,13 +2488,13 @@ bool CWeaponClass::ChargeWeapon (const bool bSetFireAngle, const int iFireAngle,
 		{
 		//	If we're using ship heat, make sure we have enough.
 
-		if (!CanConsumeShipCounter(DeviceItem, ShotDesc))
+		if (!CanConsumeShipHeat(DeviceItem, ShotDesc))
 			return false;
 
 		//  Update the ship energy/heat counter.
 
-		if (m_iCounterPerShot != 0)
-			ConsumeShipCounter(DeviceItem, ShotDesc);
+		if (m_iHeatPerShot != 0)
+			ConsumeShipHeat(DeviceItem, ShotDesc);
 
 		CSpaceObject& Source = Device.GetSourceOrThrow();
 		CItemCtx ItemCtx(&Source, &Device);
@@ -3127,6 +3121,16 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		return CC.CreateInteger(mathRound(1000.0 / rDelay));
 		}
 
+	else if (strEquals(sProperty, PROPERTY_HEAT_GENERATION))
+		{
+		//	TODO(heliogenesis): Update for charging weapons
+		Metric rDelay = CalcActivateDelay(Ctx) + 1;
+		Metric rShotsPerBurst = min(Metric(GetContinuous(*pShot) + 1), rDelay);
+		Metric rHeatPerShot = m_iHeatPerShot;
+		Metric rChargeTime = GetChargeTime(*pShot);
+		return CC.CreateInteger(mathRound(((rShotsPerBurst + rChargeTime) * rHeatPerShot) / rDelay));
+		}
+
 	else if (strEquals(sProperty, PROPERTY_LINKED_FIRE_OPTIONS))
 		{
 		//	Get the options from the device
@@ -3181,9 +3185,9 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 	else if (strEquals(sProperty, PROPERTY_REPEATING))
 		return CC.CreateInteger(GetContinuous(*pShot));
 
-	else if (strEquals(sProperty, PROPERTY_SHIP_COUNTER_PER_SHOT))
+	else if (strEquals(sProperty, PROPERTY_SHIP_HEAT_PER_SHOT))
 		{
-		return CC.CreateInteger(m_iCounterPerShot);
+		return CC.CreateInteger(m_iHeatPerShot);
 		}
 
 	else if (strEquals(sProperty, PROPERTY_SINGLE_POINT_ORIGIN))
