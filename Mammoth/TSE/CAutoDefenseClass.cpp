@@ -85,51 +85,18 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 			{
 			Metric rBestDist2 = m_rInterceptRange * m_rInterceptRange;
 
-			for (int i = 0; i < pSystem->GetObjectCount(); i++)
-				{
-				CSpaceObject *pObj = pSystem->GetObject(i);
+			const std::function<bool(const CSpaceObject*, const CSpaceObject*, const CVector, const int, const int)> fnExclude =
+				[this](const CSpaceObject* pSource, const CSpaceObject* pObj, const CVector vCenter, const int iMinAngle, const int iMaxAngle) {
+				// Exclude objects that are intangible, or ejecta/explosions if we are not targeting reactions
+				CSpaceObject* pMissileSource = this->m_rMinSourceRange2 > 0.0 ? pObj->GetDamageSource().GetObj() : nullptr;
+				return pObj->IsIntangible() || (!m_bTargetReactions && (pObj->GetDamageSource().IsEjecta() || pObj->GetDamageSource().IsExplosion())) ||
+					pObj->GetCategory() != CSpaceObject::catMissile || pObj->GetDamageSource().IsEqual(*pSource)
+					|| pObj->GetDamageSource().IsAutomatedWeapon() || !pSource->IsAngryAt(pObj->GetDamageSource()) ||
+					(pMissileSource && pSource->GetDistance2(pMissileSource) < this->m_rMinSourceRange2);
+			};
 
-				//	See if this is a valid target. If not, skip
-
-				if (pObj == NULL
-						|| pObj->GetCategory() != CSpaceObject::catMissile
-						|| pObj->GetDamageSource().IsEqual(pSource)
-						|| pObj->IsIntangible()
-						|| pObj->GetDamageSource().IsAutomatedWeapon()
-						|| !pSource->IsAngryAt(pObj->GetDamageSource())
-						|| (!isOmniDirectional
-								&& !AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc)))
-					continue;
-
-				if (!m_bTargetReactions
-						&& (pObj->GetDamageSource().IsEjecta() || pObj->GetDamageSource().IsExplosion()))
-					continue;
-
-				//	Is this closer than our previous best. If not, skip.
-
-				CVector vRange = pObj->GetPos() - vSourcePos;
-				Metric rDistance2 = vRange.Dot(vRange);
-
-				if (rDistance2 >= rBestDist2)
-					continue;
-
-				//	If we have restrictions on the source distance, then check
-				//	here. Skip if we don't match.
-
-				if (m_rMinSourceRange2 > 0.0)
-					{
-					CSpaceObject *pMissileSource = pObj->GetDamageSource().GetObj();
-					if (pMissileSource && pSource->GetDistance2(pMissileSource) < m_rMinSourceRange2)
-						continue;
-					}
-
-				//	If we get this far, then this is the best target so far.
-
-				pBestTarget = pObj;
-				rBestDist2 = rDistance2;
-				}
-
-			return pBestTarget;
+			CSpaceObjectCriteria EmptyCriteria;
+			return pSystem->FindNearestObjectInArc(pSource, vSourcePos, m_rInterceptRange, fnExclude, EmptyCriteria, iMinFireArc, iMaxFireArc);
 			}
 
 		//	Look for an object by criteria
@@ -138,36 +105,23 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 			{
 			//	Compute the range
 
-			Metric rBestDist2;
+			Metric rBestDist;
 			if (m_TargetCriteria.MatchesMaxRadius() < g_InfiniteDistance)
-				rBestDist2 = (m_TargetCriteria.MatchesMaxRadius() * m_TargetCriteria.MatchesMaxRadius());
+				rBestDist = m_TargetCriteria.MatchesMaxRadius();
 			else
-				rBestDist2 = m_rInterceptRange * m_rInterceptRange;
+				rBestDist = m_rInterceptRange;
 
 			//	Now look for the nearest object
 
-			CSpaceObjectCriteria::SCtx Ctx(pSource, m_TargetCriteria);
-			for (int i = 0; i < pSystem->GetObjectCount(); i++)
-				{
-				CSpaceObject *pObj = pSystem->GetObject(i);
-				Metric rDistance2;
-				if (pObj
-						&& pObj->MatchesCriteriaCategory(Ctx, m_TargetCriteria)
-						&& ((rDistance2 = (pObj->GetPos() - vSourcePos).Length2()) < rBestDist2)
-						&& pObj->MatchesCriteria(Ctx, m_TargetCriteria)
-						&& !pObj->IsIntangible()
-						&& pObj != pSource
-						&& !pObj->GetDamageSource().IsAutomatedWeapon()
-						&& (m_bTargetReactions || (!pObj->GetDamageSource().IsEjecta() && !pObj->GetDamageSource().IsExplosion()))
-						&& (isOmniDirectional
-								|| AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc)))
-					{
-					pBestTarget = pObj;
-					rBestDist2 = rDistance2;
-					}
-				}
+			const std::function<bool(const CSpaceObject*, const CSpaceObject*, const CVector, const int, const int)> fnExclude =
+				[this](const CSpaceObject* pSource, const CSpaceObject* pObj, const CVector vCenter, const int iMinAngle, const int iMaxAngle) {
+				// Exclude objects that are intangible, or ejecta/explosions if we are not targeting reactions
+				return pObj->IsIntangible() || (!this->m_bTargetReactions && (pObj->GetDamageSource().IsEjecta() || pObj->GetDamageSource().IsExplosion()))
+					|| pObj->GetDamageSource().IsAutomatedWeapon();
+			};
 
-			return pBestTarget;
+			CSpaceObjectCriteria::SCtx Ctx(pSource, m_TargetCriteria);
+			return pSystem->FindNearestObjectInArc(pSource, vSourcePos, rBestDist, fnExclude, m_TargetCriteria, iMinFireArc, iMaxFireArc);
 			}
 
 		default:

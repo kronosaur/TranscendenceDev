@@ -62,7 +62,7 @@ CSpaceObject* CWeaponTargetDefinition::FindTarget (CWeaponClass* pWeapon, CInsta
 
 	//	Now look for the nearest object
 
-	return pSystem->FindNearestTangibleObjectInArc(pSource, vSourcePos, rBestDist, m_TargetCriteria, iMinFireArc, iMaxFireArc);
+	return pSystem->FindNearestObjectInArc(pSource, vSourcePos, rBestDist, fnExclude, m_TargetCriteria, iMinFireArc, iMaxFireArc);
 	}
 
 bool CWeaponTargetDefinition::AimAndFire(CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CDeviceClass::SDeviceUpdateCtx& Ctx) const
