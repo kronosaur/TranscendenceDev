@@ -4822,7 +4822,7 @@ void CSystem::UnregisterEventHandler (CSpaceObject *pObj)
 		}
 	}
 
-void CSystem::Update (SSystemUpdateCtx& SystemCtx, SViewportAnnotations* pAnnotations)
+void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations)
 
 //	Update
 //
@@ -4835,7 +4835,7 @@ void CSystem::Update (SSystemUpdateCtx& SystemCtx, SViewportAnnotations* pAnnota
 
 	}
 
-void CSystem::UpdateBehaviors (SSystemUpdateCtx& SystemCtx, SViewportAnnotations* pAnnotations)
+void CSystem::UpdateBehaviors (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations)
 
 //	Update
 //
@@ -4869,7 +4869,7 @@ void CSystem::UpdateBehaviors (SSystemUpdateCtx& SystemCtx, SViewportAnnotations
 	//	Initialize the player weapon context so that we can select the auto-
 	//	target.
 
-	if (CSpaceObject* pPlayerShip = GetPlayerShip())
+	if (CSpaceObject *pPlayerShip = GetPlayerShip())
 		Ctx.SetPlayerShip(*pPlayerShip);
 
 
@@ -4893,7 +4893,7 @@ void CSystem::UpdateBehaviors (SSystemUpdateCtx& SystemCtx, SViewportAnnotations
 	DebugStartTimer();
 	for (i = 0; i < GetObjectCount(); i++)
 		{
-		CSpaceObject* pObj = GetObject(i);
+		CSpaceObject *pObj = GetObject(i);
 		if (pObj == NULL)
 			continue;
 
@@ -4954,7 +4954,7 @@ void CSystem::UpdateBehaviors (SSystemUpdateCtx& SystemCtx, SViewportAnnotations
 	//	accumulated during update. For example, we use this to set the nearest
 	//	docking port.
 
-	CSpaceObject* pPlayer = GetPlayerShip();
+	CSpaceObject *pPlayer = GetPlayerShip();
 	if (pPlayer && !pPlayer->IsDestroyed())
 		pPlayer->UpdatePlayer(Ctx);
 
@@ -4981,7 +4981,7 @@ void CSystem::UpdateBehaviors (SSystemUpdateCtx& SystemCtx, SViewportAnnotations
 	}
 
 
-void CSystem::UpdatePhysics(SSystemUpdateCtx& SystemCtx, SViewportAnnotations* pAnnotations, Metric timestep)
+void CSystem::UpdatePhysics (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations, Metric timestep)
 
 //	Update
 //
@@ -5009,7 +5009,7 @@ void CSystem::UpdatePhysics(SSystemUpdateCtx& SystemCtx, SViewportAnnotations* p
 	//	Initialize the player weapon context so that we can select the auto-
 	//	target.
 
-	if (CSpaceObject* pPlayerShip = GetPlayerShip())
+	if (CSpaceObject *pPlayerShip = GetPlayerShip())
 		Ctx.SetPlayerShip(*pPlayerShip);
 
 	//	Add all objects to the grid so that we can do faster

@@ -30,7 +30,7 @@ class CSmokeTrailPainter : public IEffectPainter
 		virtual int GetFadeLifetime (bool bHit) const override { return m_pCreator->GetParticleLifetimeMax(); }
 		virtual void GetRect (RECT *retRect) const override;
 		virtual void OnBeginFade (void) override { m_iEmitLifetime = 0; }
-		virtual void OnMove(SEffectMoveCtx& Ctx, bool* retbBoundsChanged = NULL) override;
+		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged = NULL) override;
 		virtual void OnUpdate (SEffectUpdateCtx &Ctx) override;
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override { Paint(Dest, x, y, Ctx); }
@@ -268,7 +268,7 @@ void CSmokeTrailPainter::OnReadFromStream (SLoadCtx &Ctx)
 	m_pParticlePainter = CEffectCreator::CreatePainterFromStreamAndCreator(Ctx, m_pCreator->GetParticleEffect());
 	}
 
-void CSmokeTrailPainter::OnMove(SEffectMoveCtx& Ctx, bool* retbBoundsChanged)
+void CSmokeTrailPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged)
 
 //	OnMove
 //

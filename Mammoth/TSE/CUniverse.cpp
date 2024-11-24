@@ -3158,7 +3158,7 @@ void CUniverse::UpdateTick (SSystemUpdateCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CUniverse::UpdatePhysics(SSystemUpdateCtx& Ctx)
+void CUniverse::UpdatePhysics (SSystemUpdateCtx &Ctx)
 
 //	UpdatePhysics
 //
