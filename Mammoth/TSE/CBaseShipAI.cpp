@@ -2409,21 +2409,34 @@ void CBaseShipAI::UseItemsBehavior (void)
 			&& m_pShip->GetShieldLevel() < 40)
 		{
 		//	Look for superconducting coils
+		int iDevices = m_pShip->GetDeviceCount();
+		CItemType* pType = NULL;
+		for (int i = 0; i < iDevices; i++)
+			{
+			if (m_pShip->GetDevice(i)->GetCategory() == itemcatShields)
+				{
+				int iUNID = m_pShip->GetDevice(i)->GetUNID();
+				pType = m_pShip->GetUniverse().FindItemType(iUNID);
+				break;
+				}
+			}
 
-		CItemType *pType = m_pShip->GetUniverse().FindItemType(g_SuperconductingCoilUNID);
 		if (pType)
 			{
-			CItem Coils(pType, 1);
-			CItemListManipulator ItemList(m_pShip->GetItemList());
-			
-			if (ItemList.SetCursorAtItem(Coils))
+			CItemList shipItems = m_pShip->GetItemList();
+			for (int i = 0; i < shipItems.GetCount(); i++)
 				{
-				m_pShip->UseItem(Coils);
-				m_pShip->OnComponentChanged(comCargo);
+				CItemCriteria shieldAmmoCriteria = pType->GetDeviceClass()->AsShieldClass()->GetShieldAmmoCriteria();
+				if (shipItems.GetItem(i).MatchesCriteria(shieldAmmoCriteria))
+					{
+					CItem shieldAmmo = shipItems.GetItem(i);
+					m_pShip->UseItem(shieldAmmo);
+					m_pShip->OnComponentChanged(comCargo);
+					break;
+					}
 				}
 			}
 		}
-
 	DEBUG_CATCH
 	}
 

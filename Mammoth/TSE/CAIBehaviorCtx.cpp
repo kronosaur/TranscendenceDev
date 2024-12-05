@@ -458,10 +458,12 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 				}
 
 			case itemcatShields:
+				{
 				m_pShields = &Device;
-				if (Device.GetClass()->GetUNID() == g_SuperconductingShieldsUNID)
+				if (Device.GetClass()->AsShieldClass()->UsesShieldAmmo())
 					m_fSuperconductingShields = true;
 				break;
+				}
 			}
 		}
 
