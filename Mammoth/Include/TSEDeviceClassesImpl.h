@@ -482,6 +482,8 @@ class CShieldClass : public CDeviceClass
 
 		CItemCriteria GetShieldAmmoCriteria(void) const { return CItemCriteria(m_sShieldAmmoCriteria); }
 		bool UsesShieldAmmo(void) const { return m_sShieldAmmoCriteria.GetLength() > 0; }
+		int GetShieldAmmoAIPollingRate(void) const { return m_iShieldAmmoAIPollInterval; }
+		int GetShieldAmmoAIRegenAt(void) const { return m_iShieldAmmoAIRegenAt; }
 
 		//	CDeviceClass virtuals
 
@@ -582,7 +584,9 @@ class CShieldClass : public CDeviceClass
 		CEffectCreatorRef m_pHitEffect;				//	Effect when shield is hit, appearing at hit location
 		CEffectCreatorRef m_pFlashEffect;			//	Effect when shield is hit, appearing on ship
 
-		CString m_sShieldAmmoCriteria = CString("");			//	Attribute string for shield ammo type
+		CString m_sShieldAmmoCriteria;			//	Attribute string for shield ammo type
+		int m_iShieldAmmoAIPollInterval;
+		int m_iShieldAmmoAIRegenAt;
 	};
 
 class CSolarDeviceClass : public CDeviceClass

@@ -2404,11 +2404,9 @@ void CBaseShipAI::UseItemsBehavior (void)
 	if (m_pShip->IsDestinyTime(ITEM_ON_AI_UPDATE_CYCLE, ITEM_ON_AI_UPDATE_OFFSET))
 		m_pShip->FireItemOnAIUpdate();
 
-	if (m_AICtx.HasSuperconductingShields()
-			&& m_pShip->IsDestinyTime(61)
-			&& m_pShip->GetShieldLevel() < 40)
+	if (m_AICtx.HasSuperconductingShields())
 		{
-		//	Look for superconducting coils
+		//	Look for shield
 		int iDevices = m_pShip->GetDeviceCount();
 		CItemType* pType = NULL;
 		for (int i = 0; i < iDevices; i++)
@@ -2421,18 +2419,25 @@ void CBaseShipAI::UseItemsBehavior (void)
 				}
 			}
 
+		//	Look for appropriate shield ammo
 		if (pType)
 			{
-			CItemList shipItems = m_pShip->GetItemList();
-			for (int i = 0; i < shipItems.GetCount(); i++)
+			int iPollInterval = pType->GetDeviceClass()->AsShieldClass()->GetShieldAmmoAIPollingRate();
+			int iShieldLevel = pType->GetDeviceClass()->AsShieldClass()->GetShieldAmmoAIRegenAt();
+			if ( m_pShip->IsDestinyTime(iPollInterval)
+				&& m_pShip->GetShieldLevel() <= iShieldLevel)
 				{
-				CItemCriteria shieldAmmoCriteria = pType->GetDeviceClass()->AsShieldClass()->GetShieldAmmoCriteria();
-				if (shipItems.GetItem(i).MatchesCriteria(shieldAmmoCriteria))
+				CItemList shipItems = m_pShip->GetItemList();
+				for (int i = 0; i < shipItems.GetCount(); i++)
 					{
-					CItem shieldAmmo = shipItems.GetItem(i);
-					m_pShip->UseItem(shieldAmmo);
-					m_pShip->OnComponentChanged(comCargo);
-					break;
+					CItemCriteria shieldAmmoCriteria = pType->GetDeviceClass()->AsShieldClass()->GetShieldAmmoCriteria();
+					if (shipItems.GetItem(i).MatchesCriteria(shieldAmmoCriteria))
+						{
+						CItem shieldAmmo = shipItems.GetItem(i);
+						m_pShip->UseItem(shieldAmmo);
+						m_pShip->OnComponentChanged(comCargo);
+						break;
+						}
 					}
 				}
 			}

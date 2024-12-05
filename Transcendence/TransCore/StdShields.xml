@@ -369,6 +369,8 @@
 				depletionDelay=	"0"
 				powerUse=		"50"
 				shieldAmmoCriteria=	"u +superconductingShieldCoil"
+				shieldAmmoAIPollRate=	"61"
+				shieldAmmoAIRechargeAtPercent=	"40"
 				/>
 
 	</ItemType>
