@@ -83,7 +83,13 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 
 		case trgMissiles:
 			{
-			Metric rBestDist2 = m_rInterceptRange * m_rInterceptRange;
+			Metric rOwnerScale = max(pSource->GetImage().GetImageWidth(), pSource->GetImage().GetImageWidth()) * KLICKS_PER_PIXEL;
+			Metric rOwnerRadius = rOwnerScale / 2;
+			Metric rInterceptRange = m_rInterceptRange;
+			if (rOwnerScale >= rInterceptRange) //if radius of owner is at least half of normal intercept range
+				rInterceptRange = rInterceptRange + rOwnerRadius;
+
+			Metric rBestDist2 = rInterceptRange * rInterceptRange;
 
 			for (int i = 0; i < pSystem->GetObjectCount(); i++)
 				{
@@ -97,6 +103,12 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 						|| pObj->IsIntangible()
 						|| pObj->GetDamageSource().IsAutomatedWeapon()
 						|| !pSource->IsAngryAt(pObj->GetDamageSource())
+						|| (pObj->GetVel().GetX() > 0
+							? pObj->GetPos().GetX() + pObj->GetVel().GetX() > pSource->GetPos().GetX() + rOwnerRadius
+							: pObj->GetPos().GetX() + pObj->GetVel().GetX() < pSource->GetPos().GetX() - rOwnerRadius)
+						|| (pObj->GetVel().GetY() > 0
+							? pObj->GetPos().GetY() + pObj->GetVel().GetY() > pSource->GetPos().GetY() + rOwnerRadius
+							: pObj->GetPos().GetY() + pObj->GetVel().GetY() < pSource->GetPos().GetY() - rOwnerRadius)
 						|| (!isOmniDirectional
 								&& !AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc)))
 					continue;
@@ -137,12 +149,17 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 		case trgCriteria:
 			{
 			//	Compute the range
+			Metric rOwnerScale = max(pSource->GetImage().GetImageWidth(), pSource->GetImage().GetImageWidth()) * KLICKS_PER_PIXEL;
+			Metric rOwnerRadius = rOwnerScale / 2;
+			Metric rInterceptRange = m_rInterceptRange;
+			if (rOwnerScale >= rInterceptRange) //if radius of owner is at least half of normal intercept range
+				rInterceptRange = rInterceptRange + rOwnerRadius;
 
 			Metric rBestDist2;
 			if (m_TargetCriteria.MatchesMaxRadius() < g_InfiniteDistance)
 				rBestDist2 = (m_TargetCriteria.MatchesMaxRadius() * m_TargetCriteria.MatchesMaxRadius());
 			else
-				rBestDist2 = m_rInterceptRange * m_rInterceptRange;
+				rBestDist2 = rInterceptRange * rInterceptRange;
 
 			//	Now look for the nearest object
 
@@ -158,6 +175,14 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 						&& !pObj->IsIntangible()
 						&& pObj != pSource
 						&& !pObj->GetDamageSource().IsAutomatedWeapon()
+						&& (pObj->GetCategory() != CSpaceObject::catMissile ? true :
+							!((pObj->GetVel().GetX() > 0
+								? pObj->GetPos().GetX() + pObj->GetVel().GetX() > pSource->GetPos().GetX() + rOwnerRadius
+								: pObj->GetPos().GetX() + pObj->GetVel().GetX() < pSource->GetPos().GetX() - rOwnerRadius)
+							|| (pObj->GetVel().GetY() > 0
+								? pObj->GetPos().GetY() + pObj->GetVel().GetY() > pSource->GetPos().GetY() + rOwnerRadius
+								: pObj->GetPos().GetY() + pObj->GetVel().GetY() < pSource->GetPos().GetY() - rOwnerRadius))
+							)
 						&& (m_bTargetReactions || (!pObj->GetDamageSource().IsEjecta() && !pObj->GetDamageSource().IsExplosion()))
 						&& (isOmniDirectional
 								|| AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc)))
@@ -174,6 +199,78 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 			ASSERT(false);
 			return NULL;
 		}
+	}
+
+CDeviceClass::SDeviceUpdateCtx CAutoDefenseClass::GetEmptyDeviceUpdateCtx(void)
+	{
+		SUpdateCtx uCtx;
+		SDeviceUpdateCtx DeviceUpdateCtx(uCtx, 0);
+		return DeviceUpdateCtx;
+	}
+
+void CAutoDefenseClass::UpdateTarget(CInstalledDevice* pDevice, CSpaceObject* pSource, SDeviceUpdateCtx& Ctx)
+	{
+
+	CDeviceClass* pWeapon = GetWeapon();
+	if (pWeapon == NULL || pDevice == NULL || pSource == NULL)
+		return;
+
+	//	Skip if we're not ready or disabled
+	//
+	//	NOTE: If pDevice is damaged or disrupted we handle this as a potential 
+	//	misfire inside of pWeapon->Activate.
+
+	if (!pDevice->IsReady() || !pDevice->IsEnabled())
+		return;
+
+	//	If the ship is disarmed or paralyzed, then we do not fire.
+
+	if (pSource->GetCondition(ECondition::paralyzed)
+		|| pSource->GetCondition(ECondition::disarmed))
+		return;
+
+	//	If we're docked with a station, then we do not fire.
+
+	if (m_bCheckLineOfFire && pSource->GetDockedObj())
+		return;
+
+	//	Look for a target; if none, then skip.
+
+	m_pTarget = FindTarget(pDevice, pSource);
+	if (m_pTarget == NULL)
+		return;
+
+	//	Shoot at target
+
+	int iFireAngle;
+	if (!pWeapon->CalcFireSolution(*pDevice, *m_pTarget, &iFireAngle))
+		return;
+
+	//	If friendlies are in the way, don't shoot
+
+	if (m_bCheckLineOfFire
+		&& !pSource->IsLineOfFireClear(pDevice, m_pTarget, iFireAngle, pSource->GetDistance(m_pTarget)))
+		return;
+
+	//	Since we're using this as a target, set the destroy notify flag
+	//	(Normally beams don't notify, so we need to override this).
+
+	m_pTarget->SetDestructionNotify();
+
+	//	Fire
+
+	SActivateCtx ActivateCtx(Ctx, m_pTarget, iFireAngle);
+
+	pWeapon->Activate(*pDevice, ActivateCtx);
+
+	Ctx.bConsumedItems = ActivateCtx.bConsumedItems;
+
+	pDevice->SetTimeUntilReady(m_iRechargeTicks);
+
+	//	Identify
+
+	if (pSource->IsPlayer())
+		pDevice->GetItem()->SetKnown();
 	}
 
 int CAutoDefenseClass::GetActivateDelay (CItemCtx &ItemCtx) const
@@ -526,62 +623,7 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 
 	pWeapon->Update(pDevice, pSource, Ctx);
 
-	//	Skip if we're not ready or disabled
-	//
-	//	NOTE: If pDevice is damaged or disrupted we handle this as a potential 
-	//	misfire inside of pWeapon->Activate.
-
-	if (!pDevice->IsReady() || !pDevice->IsEnabled())
-		return;
-
-	//	If the ship is disarmed or paralyzed, then we do not fire.
-
-	if (pSource->GetCondition(ECondition::paralyzed) 
-			|| pSource->GetCondition(ECondition::disarmed))
-		return;
-
-	//	If we're docked with a station, then we do not fire.
-
-	if (m_bCheckLineOfFire && pSource->GetDockedObj())
-		return;
-
-	//	Look for a target; if none, then skip.
-
-	CSpaceObject *pTarget = FindTarget(pDevice, pSource);
-	if (pTarget == NULL)
-		return;
-
-	//	Shoot at target
-
-	int iFireAngle;
-	if (!pWeapon->CalcFireSolution(*pDevice, *pTarget, &iFireAngle))
-		return;
-
-	//	If friendlies are in the way, don't shoot
-
-	if (m_bCheckLineOfFire
-			&& !pSource->IsLineOfFireClear(pDevice, pTarget, iFireAngle, pSource->GetDistance(pTarget)))
-		return;
-
-	//	Since we're using this as a target, set the destroy notify flag
-	//	(Normally beams don't notify, so we need to override this).
-
-	pTarget->SetDestructionNotify();
-
-	//	Fire
-
-	SActivateCtx ActivateCtx(Ctx, pTarget, iFireAngle);
-
-	pWeapon->Activate(*pDevice, ActivateCtx);
-
-	Ctx.bConsumedItems = ActivateCtx.bConsumedItems;
-
-	pDevice->SetTimeUntilReady(m_iRechargeTicks);
-
-	//	Identify
-
-	if (pSource->IsPlayer())
-		pDevice->GetItem()->SetKnown();
+	UpdateTarget(pDevice, pSource, Ctx);
 
 	DEBUG_CATCH
 	}
@@ -675,6 +717,15 @@ ALERROR CAutoDefenseClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	*retpDevice = pDevice;
 
 	return NOERROR;
+	}
+
+void CAutoDefenseClass::UpdateTargetOnDestroy(CInstalledDevice* pDevice, CSpaceObject* pSource, const SDestroyCtx& Ctx)
+	{
+	if (Ctx.Obj == m_pTarget)
+		{
+		SDeviceUpdateCtx dCtx = GetEmptyDeviceUpdateCtx();
+		UpdateTarget(pDevice, pSource, dCtx);
+		}
 	}
 
 ALERROR CAutoDefenseClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
