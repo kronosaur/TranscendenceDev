@@ -28,6 +28,9 @@
 #define REGEN_ADJ_PER_CHARGE_ATTRIB				CONSTLIT("regenHPBonusPerCharge")
 #define REGEN_TIME_ATTRIB						CONSTLIT("regenTime")
 #define REGEN_TYPE_ATTRIB						CONSTLIT("regenType")
+#define SHIELD_AMMO_CRITERIA_ATTRIB				CONSTLIT("shieldAmmoCriteria")
+#define SHIELD_AMMO_AI_POLLING_ATTRIB			CONSTLIT("shieldAmmoAIPollRate")
+#define SHIELD_AMMO_AI_RECHARGE_AT_ATTRIB		CONSTLIT("shieldAmmoAIRechargeAtPercent")
 #define TIME_BETWEEN_FLASH_EFFECTS_ATTRIB		CONSTLIT("timeBetweenFlashEffects")
 #define WEAPON_SUPPRESS_ATTRIB					CONSTLIT("weaponSuppress")
 
@@ -683,6 +686,12 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 	//	on the item type.
 
 	InitCtx.iMaxCharges = pDesc->GetAttributeIntegerBounded(MAX_CHARGES_ATTRIB, 0, -1, -1);
+
+	//  Store shield ammo filter
+
+	pShield->m_sShieldAmmoCriteria = pDesc->GetAttribute(SHIELD_AMMO_CRITERIA_ATTRIB);
+	pShield->m_iShieldAmmoAIRegenAt = pDesc->GetAttributeIntegerBounded(SHIELD_AMMO_AI_RECHARGE_AT_ATTRIB, 0, 99, 0);
+	pShield->m_iShieldAmmoAIPollInterval = pDesc->GetAttributeIntegerBounded(SHIELD_AMMO_AI_POLLING_ATTRIB, 1, INT_MAX, 61);
 
 	//	Load regen value
 
@@ -1879,12 +1888,7 @@ bool CShieldClass::RequiresItems (void) const
 //	Shield requires some other item to function
 
 	{
-#ifdef LATER
-	//	Need to explicitly list superconducting coils as a required
-	//	item for these shields to function
-#else
-	return m_Regen.IsEmpty();
-#endif
+	return (m_Regen.IsEmpty() && UsesShieldAmmo());
 	}
 
 void CShieldClass::Reset (CInstalledDevice *pDevice, CSpaceObject *pSource)

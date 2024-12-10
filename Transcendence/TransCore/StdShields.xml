@@ -368,6 +368,9 @@
 				regen=			"0"
 				depletionDelay=	"0"
 				powerUse=		"50"
+				shieldAmmoCriteria=	"u +superconductingShieldCoil"
+				shieldAmmoAIPollRate=	"61"
+				shieldAmmoAIRechargeAtPercent=	"40"
 				/>
 
 	</ItemType>
@@ -381,7 +384,7 @@
 			mass=				"100"
 			frequency=			"uncommon"
 			numberAppearing=	"1d6+1"
-			attributes=			"commonwealth, consumable, kartal"
+			attributes=			"commonwealth, consumable, kartal, superconductingShieldCoil"
 
 			description=		"This is a special type of coil used to repair superconducting shield generators."
 			>
