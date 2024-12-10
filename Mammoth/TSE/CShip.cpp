@@ -3885,6 +3885,10 @@ void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 
 	m_pController->OnObjDestroyed(Ctx);
 
+	//  Allow autoDefense devices to update target if needed
+
+	UpdateAutoDefenseTargetingOnDestroy(Ctx);
+
 	//	If what we're docked with got destroyed, clear it
 
 	if (GetDockedObj() == Ctx.Obj)

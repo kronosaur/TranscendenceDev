@@ -2103,6 +2103,18 @@ bool CSpaceObject::FireCanRemoveItem (const CItem &Item, int iSlot, CString *ret
 		return true;
 	}
 
+int CSpaceObject::GetNextAutoDefenseDeviceIndex (int iDev)
+	{
+	if(iDev < 0)
+		return iDev;
+	for (int i = iDev; i < GetDeviceCount(); i++)
+		{
+		if (GetDevice(i)->IsAutomatedWeapon())
+			return i;
+		}
+	return -1;
+	}
+
 void CSpaceObject::FireCustomEvent (const CString &sEvent, ECodeChainEvents iEvent, ICCItem *pData, ICCItem **retpResult)
 
 //	FireCustomEvent
@@ -7458,6 +7470,17 @@ bool CSpaceObject::SetCursorAtDevice (CItemListManipulator &ItemList, CInstalled
 
 	{
 	return SetCursorAtDevice(ItemList, pDevice->GetDeviceSlot());
+	}
+
+void CSpaceObject::UpdateAutoDefenseTargetingOnDestroy (const SDestroyCtx& Ctx)
+	{
+	int i = GetNextAutoDefenseDeviceIndex(0);
+	while (i >= 0)
+		{
+		GetDevice(i)->GetClass()->AsAutoDefenseClass()->UpdateTargetOnDestroy(GetDevice(i), this, Ctx);
+		i++;
+		i = GetNextAutoDefenseDeviceIndex(i);
+		}
 	}
 
 void CSpaceObject::SetCursorAtRandomItem (CItemListManipulator &ItemList, const CItemCriteria &Crit)

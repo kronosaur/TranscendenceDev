@@ -10,6 +10,7 @@
 class CCargoDesc;
 class CTargetList;
 class CWeaponTargetDefinition;
+class CAutoDefenseClass;
 struct SShipPerformanceCtx;
 struct SUpdateCtx;
 
@@ -332,6 +333,7 @@ class CDeviceClass
 		virtual const CRepairerClass *AsRepairerClass (void) const { return NULL; }
 		virtual CShieldClass *AsShieldClass (void) { return NULL; }
 		virtual CWeaponClass *AsWeaponClass (void) { return NULL; }
+		virtual CAutoDefenseClass *AsAutoDefenseClass (void) { return NULL; }
 		virtual bool CalcFireSolution (const CInstalledDevice &Device, CSpaceObject &Target, int *retiAimAngle = NULL, Metric *retrDist = NULL) const { return false; }
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }
 		virtual bool CanHitFriends (void) const { return true; }
@@ -716,7 +718,7 @@ class CInstalledDevice
 		CWeaponTargetDefinition *GetWeaponTargetDefinition (void) const { return (m_pWeaponTargetDefinition.get()); }
 		bool HasLastShots (void) const { return (m_LastShotIDs.GetCount() > 0); }
 		int IncCharges (CSpaceObject *pSource, int iChange);
-		bool IsAutomatedWeapon (void) const { return m_pClass->IsAutomatedWeapon() || (IsSecondaryWeapon() && m_pWeaponTargetDefinition != nullptr); }
+		bool IsAutomatedWeapon (void) const { return m_pClass ? m_pClass->IsAutomatedWeapon() || (IsSecondaryWeapon() && m_pWeaponTargetDefinition != nullptr) : false; }
 		bool IsFirstVariantSelected(CSpaceObject *pSource) { return (m_pClass ? m_pClass->IsFirstVariantSelected(pSource, this) : true); }
 		bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) { return m_pClass->IsFuelCompatible(Ctx, FuelItem); }
 		bool IsLastVariantSelected(CSpaceObject *pSource) { return (m_pClass ? m_pClass->IsLastVariantSelected(pSource, this) : true); }
