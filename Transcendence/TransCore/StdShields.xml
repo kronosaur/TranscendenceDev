@@ -355,7 +355,7 @@
 			value=				"8500"
 			mass=				"1600"
 			frequency=			"rare"
-			attributes=			"commonwealth, kartal, majorItem, specialty"
+			attributes=			"commonwealth, kartal, majorItem, specialty, superconductingShield"
 
 			description=		"This generator uses an array of superconducting coils. Individual coils must be replaced to restore the field after damage is taken."
 			>
@@ -395,7 +395,7 @@
 			(switch
 				; Does the ship have a superconducting shield? If not
 				; then we can't do anything.
-				(not (eq (shpGetShieldItemUNID gSource) &itSuperconductingShields;))
+				(not (itmMatches (shpGetShieldItemUNID gSource) "* +superconductingShield;"))
 					(objSendMessage gSource Nil (typTranslate gType 'msgSSRequired))
 
 				; Are the shields fully charged? If they are, then this
