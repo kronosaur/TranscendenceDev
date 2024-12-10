@@ -333,7 +333,7 @@ class CDeviceClass
 		virtual const CRepairerClass *AsRepairerClass (void) const { return NULL; }
 		virtual CShieldClass *AsShieldClass (void) { return NULL; }
 		virtual CWeaponClass *AsWeaponClass (void) { return NULL; }
-		virtual CAutoDefenseClass *AsAutoDefenseClass(void) { return NULL; }
+		virtual CAutoDefenseClass *AsAutoDefenseClass (void) { return NULL; }
 		virtual bool CalcFireSolution (const CInstalledDevice &Device, CSpaceObject &Target, int *retiAimAngle = NULL, Metric *retrDist = NULL) const { return false; }
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }
 		virtual bool CanHitFriends (void) const { return true; }

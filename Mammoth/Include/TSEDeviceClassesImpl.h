@@ -36,11 +36,11 @@ class CAutoDefenseClass : public CDeviceClass
 	{
 	public:
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice);
-		void UpdateTargetOnDestroy(CInstalledDevice* pDevice, CSpaceObject* pSource, const SDestroyCtx& Ctx);
+		void UpdateTargetOnDestroy (CInstalledDevice* pDevice, CSpaceObject* pSource, const SDestroyCtx& Ctx);
 
 		//	CDeviceClass virtuals
 
-		virtual CAutoDefenseClass *AsAutoDefenseClass(void) override { return this; }
+		virtual CAutoDefenseClass *AsAutoDefenseClass (void) override { return this; }
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sProperty) override;
 		virtual int GetActivateDelay (CItemCtx &ItemCtx) const override;
@@ -75,8 +75,8 @@ class CAutoDefenseClass : public CDeviceClass
 		bool IsDirectional (CInstalledDevice *pDevice, int *retiMinFireArc, int *retiMaxFireArc);
 		bool IsOmniDirectional (CInstalledDevice *pDevice);
 		CSpaceObject *FindTarget (CInstalledDevice *pDevice, CSpaceObject *pSource);
-		SDeviceUpdateCtx GetEmptyDeviceUpdateCtx(void);
-		void UpdateTarget(CInstalledDevice* pDevice, CSpaceObject* pSource, SDeviceUpdateCtx& Ctx);
+		SDeviceUpdateCtx GetEmptyDeviceUpdateCtx (void);
+		void UpdateTarget (CInstalledDevice* pDevice, CSpaceObject* pSource, SDeviceUpdateCtx& Ctx);
 
 		TargetingSystemTypes m_iTargeting = trgNone;
 		CSpaceObjectCriteria m_TargetCriteria;

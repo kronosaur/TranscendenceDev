@@ -201,14 +201,14 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 		}
 	}
 
-CDeviceClass::SDeviceUpdateCtx CAutoDefenseClass::GetEmptyDeviceUpdateCtx(void)
+CDeviceClass::SDeviceUpdateCtx CAutoDefenseClass::GetEmptyDeviceUpdateCtx (void)
 	{
 		SUpdateCtx uCtx;
 		SDeviceUpdateCtx DeviceUpdateCtx(uCtx, 0);
 		return DeviceUpdateCtx;
 	}
 
-void CAutoDefenseClass::UpdateTarget(CInstalledDevice* pDevice, CSpaceObject* pSource, SDeviceUpdateCtx& Ctx)
+void CAutoDefenseClass::UpdateTarget (CInstalledDevice* pDevice, CSpaceObject* pSource, SDeviceUpdateCtx& Ctx)
 	{
 
 	CDeviceClass* pWeapon = GetWeapon();
@@ -520,7 +520,7 @@ CString CAutoDefenseClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWO
 		return NULL_STR;
 	}
 
-bool CAutoDefenseClass::IsDirectional(CInstalledDevice *pDevice, int *retiMinFireArc, int *retiMaxFireArc)
+bool CAutoDefenseClass::IsDirectional (CInstalledDevice *pDevice, int *retiMinFireArc, int *retiMaxFireArc)
 
 //	IsDirectional
 //
@@ -587,7 +587,7 @@ bool CAutoDefenseClass::IsDirectional(CInstalledDevice *pDevice, int *retiMinFir
 		}
 	}
 
-bool CAutoDefenseClass::IsOmniDirectional(CInstalledDevice *pDevice)
+bool CAutoDefenseClass::IsOmniDirectional (CInstalledDevice *pDevice)
 
 //	IsOmniDirectional
 //
@@ -719,7 +719,7 @@ ALERROR CAutoDefenseClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	return NOERROR;
 	}
 
-void CAutoDefenseClass::UpdateTargetOnDestroy(CInstalledDevice* pDevice, CSpaceObject* pSource, const SDestroyCtx& Ctx)
+void CAutoDefenseClass::UpdateTargetOnDestroy (CInstalledDevice* pDevice, CSpaceObject* pSource, const SDestroyCtx& Ctx)
 	{
 	if (Ctx.Obj == m_pTarget)
 		{

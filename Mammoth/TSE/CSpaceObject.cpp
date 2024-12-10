@@ -2103,7 +2103,7 @@ bool CSpaceObject::FireCanRemoveItem (const CItem &Item, int iSlot, CString *ret
 		return true;
 	}
 
-int CSpaceObject::GetNextAutoDefenseDeviceIndex(int iDev)
+int CSpaceObject::GetNextAutoDefenseDeviceIndex (int iDev)
 	{
 	if(iDev < 0)
 		return iDev;
@@ -7472,7 +7472,7 @@ bool CSpaceObject::SetCursorAtDevice (CItemListManipulator &ItemList, CInstalled
 	return SetCursorAtDevice(ItemList, pDevice->GetDeviceSlot());
 	}
 
-void CSpaceObject::UpdateAutoDefenseTargetingOnDestroy(const SDestroyCtx& Ctx)
+void CSpaceObject::UpdateAutoDefenseTargetingOnDestroy (const SDestroyCtx& Ctx)
 	{
 	int i = GetNextAutoDefenseDeviceIndex(0);
 	while (i >= 0)
