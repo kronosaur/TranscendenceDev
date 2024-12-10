@@ -419,7 +419,7 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 	//	Compute some properties of installed devices
 
 	m_pShields = NULL;
-	m_fSuperconductingShields = false;
+	m_fAmmoShields = false;
 	m_iBestNonLauncherWeaponLevel = 0;
 	m_fHasSecondaryWeapons = false;
 
@@ -461,7 +461,7 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 				{
 				m_pShields = &Device;
 				if (Device.GetClass()->AsShieldClass()->UsesShieldAmmo())
-					m_fSuperconductingShields = true;
+					m_fAmmoShields = true;
 				break;
 				}
 			}
@@ -759,7 +759,7 @@ void CAIBehaviorCtx::CalcShieldState (CShip *pShip)
 	if (m_pShields
 			&& !NoShieldRetreat()
 			&& pShip->IsDestinyTime(17) 
-			&& !m_fSuperconductingShields)
+			&& !m_fAmmoShields)
 		{
 		int iHPLeft, iMaxHP;
 		m_pShields->GetStatus(pShip, &iHPLeft, &iMaxHP);
