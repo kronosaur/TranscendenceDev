@@ -2404,7 +2404,7 @@ void CBaseShipAI::UseItemsBehavior (void)
 	if (m_pShip->IsDestinyTime(ITEM_ON_AI_UPDATE_CYCLE, ITEM_ON_AI_UPDATE_OFFSET))
 		m_pShip->FireItemOnAIUpdate();
 
-	if (m_AICtx.HasSuperconductingShields())
+	if (m_AICtx.HasAmmoShields())
 		{
 		//	Look for shield
 		CShieldClass* pShieldClass = m_pShip->GetNamedDeviceClass(devShields)->AsShieldClass();
