@@ -392,6 +392,7 @@ class CDeviceClass
 		virtual CString OnGetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) { return NULL_STR; }
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) { }
 		virtual void OnUninstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) { }
+		virtual void OnObjDestroyed (CInstalledDevice *pDevice, CSpaceObject *pSource, const SDestroyCtx &Ctx) { }
 		virtual void Recharge (CInstalledDevice *pDevice, CShip *pShip, int iStatus) { }
 		virtual bool RequiresItems (void) const { return false; }
 		virtual void Reset (CInstalledDevice *pDevice, CSpaceObject *pSource) { }

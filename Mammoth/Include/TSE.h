@@ -675,7 +675,7 @@ class CSpaceObject
 		virtual void OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass::DeviceNotificationTypes iEvent) { }
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, int iDevSlot);
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, CInstalledDevice *pDevice);
-		void UpdateAutoDefenseTargetingOnDestroy (const SDestroyCtx& Ctx);
+		void OnObjDestroyUpdateDevices (const SDestroyCtx& Ctx);
 
 		//	Docking
 

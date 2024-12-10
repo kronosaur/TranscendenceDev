@@ -7472,14 +7472,13 @@ bool CSpaceObject::SetCursorAtDevice (CItemListManipulator &ItemList, CInstalled
 	return SetCursorAtDevice(ItemList, pDevice->GetDeviceSlot());
 	}
 
-void CSpaceObject::UpdateAutoDefenseTargetingOnDestroy (const SDestroyCtx& Ctx)
+void CSpaceObject::OnObjDestroyUpdateDevices (const SDestroyCtx& Ctx)
 	{
-	int i = GetNextAutoDefenseDeviceIndex(0);
-	while (i >= 0)
+	for (int i = 0; i < GetDeviceCount(); i++)
 		{
-		GetDevice(i)->GetClass()->AsAutoDefenseClass()->UpdateTargetOnDestroy(GetDevice(i), this, Ctx);
-		i++;
-		i = GetNextAutoDefenseDeviceIndex(i);
+		CDeviceClass* pDeviceClass = GetDevice(i)->GetClass();
+		if(pDeviceClass)
+			pDeviceClass->OnObjDestroyed(GetDevice(i), this, Ctx);
 		}
 	}
 

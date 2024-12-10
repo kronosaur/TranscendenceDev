@@ -3885,9 +3885,9 @@ void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 
 	m_pController->OnObjDestroyed(Ctx);
 
-	//  Allow autoDefense devices to update target if needed
+	//  Have all of our devices handle it, ex, they may need to retarget
 
-	UpdateAutoDefenseTargetingOnDestroy(Ctx);
+	OnObjDestroyUpdateDevices(Ctx);
 
 	//	If what we're docked with got destroyed, clear it
 

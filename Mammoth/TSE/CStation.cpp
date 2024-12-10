@@ -3146,6 +3146,11 @@ void CStation::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	m_Targets.Delete(&Ctx.Obj);
 	m_WeaponTargets.Delete(Ctx.Obj);
 
+	//  Notify devices so they can retarget or take other
+	//	actions if necessary
+
+	OnObjDestroyUpdateDevices(Ctx);
+
 	//	If this was our base, remove it.
 
 	if (Ctx.Obj == m_pBase)
