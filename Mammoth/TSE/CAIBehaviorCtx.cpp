@@ -460,7 +460,8 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 			case itemcatShields:
 				{
 				m_pShields = &Device;
-				if (Device.GetClass()->AsShieldClass()->UsesShieldAmmo())
+				auto* pShieldClass = Device.GetClass()->AsShieldClass();
+				if (pShieldClass && pShieldClass->UsesShieldAmmo())
 					m_fSuperconductingShields = true;
 				break;
 				}
