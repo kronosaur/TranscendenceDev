@@ -3,18 +3,6 @@
 //	CExtension class
 //	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 //
-//	API VERSION HISTORY
-//
-//	 0: Unknown version
-//
-//	 1: 95-0.96b
-//		Original Extensions
-//
-//	 2: 0.97
-//		Changed gStation to gSource
-//
-//	 3: 1.1
-//		<SmokeTrail>: emitSpeed fixed (used in klicks per tick instead of per second)
 //
 //	See: LoadExtensionVersion in Utilities.cpp
 

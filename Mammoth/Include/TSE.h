@@ -1471,7 +1471,12 @@ class CSpaceObject
 		const CEnhancementDesc *GetSystemEnhancements (void) const;
 		ICCItemPtr GetTypeProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
 		CSpaceObject *HitTest (const CVector &vStart, const DamageDesc &Damage, CVector *retvHitPos, int *retiHitDir);
-		CSpaceObject *HitTestProximity (const CVector &vStart, Metric rMinThreshold, Metric rMaxThreshold, const DamageDesc &Damage, const CTargetList::STargetOptions &TargetOptions, const CSpaceObject *pTarget, CVector *retvHitPos, int *retiHitDir);
+		CSpaceObject *HitTestProximity (const CVector &vStart, const CWeaponFireDesc *pDesc, const CTargetList::STargetOptions &TargetOptions, const CSpaceObject *pTarget, CVector *retvHitPos, int *retiHitDir);
+		CSpaceObject *HitTestProximityLegacy (const CVector &vStart, Metric rMinThreshold, Metric rMaxThreshold, const DamageDesc &Damage, const CTargetList::STargetOptions &TargetOptions, const CSpaceObject *pTarget, CVector *retvHitPos, int *retiHitDir);
+		bool IntersectionTestScan(const CSpaceObject* pTarget, const CVector& vStart, const CVector& vStep, const int iSteps, const bool bComputeProximity, CVector* retvHitPos, int* retiHitDir, CVector* retvDetectPos, int* retiTriangulationDir);
+		bool IntersectionTestScan (const CSpaceObject* pTarget, const CVector& vStart, const CVector& vStep, const int iSteps) { return IntersectionTestScan(pTarget, vStart, vStep, iSteps, false, NULL, NULL, NULL, NULL); };
+		bool IntersectionTestScan (const CSpaceObject *pTarget, const CVector &vStart, const CVector &vStep, const int iSteps, CVector *retvHitPos, int *retiHitDir) { return IntersectionTestScan(pTarget, vStart, vStep, iSteps, true, retvHitPos, retiHitDir, NULL, NULL); };
+		bool IntersectionTestScan (const CSpaceObject* pTarget, const CVector& vStart, const CVector& vStep, const int iSteps, const bool bComputeProximity, CVector* retvHitPos, int* retiHitDir) { return IntersectionTestScan(pTarget, vStart, vStep, iSteps, true, retvHitPos, retiHitDir, NULL, NULL); };
 		bool ImagesIntersect (const CObjectImageArray &Image1, int iTick1, int iRotation1, const CVector &vPos1,
 				const CObjectImageArray &Image2, int iTick2, int iRotation2, const CVector &vPos2);
 		bool IsObjectDestructionHooked (void) { return (m_fHookObjectDestruction ? true : false); }
