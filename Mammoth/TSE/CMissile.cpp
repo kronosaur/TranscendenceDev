@@ -837,7 +837,7 @@ void CMissile::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 	else if (m_pDesc->ProximityBlast() && m_iTick >= m_pDesc->GetProximityFailsafe())
 		{
-		if (iExtAPI)
+		if (iExtAPI >= 54)
 			{
 			//	Get Relevant Thresholds
 
