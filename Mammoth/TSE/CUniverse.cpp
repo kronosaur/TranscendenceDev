@@ -2229,7 +2229,7 @@ void CUniverse::PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags)
 
 	if (m_pCurrentSystem && m_pPOV)
 		{
-		m_pCurrentSystem->PaintViewport(Dest, rcView, m_pPOV, dwFlags, &m_ViewportAnnotations);
+		m_pCurrentSystem->PaintViewport(Dest, rcView, m_pPOV, dwFlags, m_dFrameInterpolation,  &m_ViewportAnnotations);
 
 		//	Reset annotations until the next update
 
@@ -2386,6 +2386,7 @@ ALERROR CUniverse::Reinit (void)
 
 	m_iTick = 1;
 	m_iPaintTick = 1;
+	m_dFrameInterpolation = 0.;
 
 	//	Clear some basic variables
 
@@ -3072,6 +3073,7 @@ bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)
 			UpdateTick(Ctx);
 			UpdateTick(Ctx);
 			UpdateTick(Ctx);
+			m_dFrameInterpolation = 0.;
 			m_dwFrame++;
 			return true;
 
@@ -3079,16 +3081,19 @@ bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)
 			return false;
 
 		case updateSlowMotion:
-			if ((m_dwFrame++ % 4) == 0)
-				{
+		    {
+			bool do_update = (m_dwFrame++ % 4) == 0;
+			if (do_update)
+			    {
 				UpdateTick(Ctx);
-				return true;
-				}
-			else
-				return false;
+			    }
+			m_dFrameInterpolation = ((m_dwFrame - 1) % 4) / 4.;
+			return do_update;
+		    }
 
 		default:
 			UpdateTick(Ctx);
+			m_dFrameInterpolation = 0.;
 			m_dwFrame++;
 			return true;
 		}
