@@ -53,6 +53,7 @@ class CAutoDefenseClass : public CDeviceClass
 		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsAutomatedWeapon (void) const override { return true; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
+		virtual void OnObjDestroyed (CInstalledDevice* pDevice, CSpaceObject* pSource, const SDestroyCtx& Ctx) override { UpdateTargetOnDestroy(pDevice, pSource, Ctx); }
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 
 	protected:

@@ -2404,33 +2404,21 @@ void CBaseShipAI::UseItemsBehavior (void)
 	if (m_pShip->IsDestinyTime(ITEM_ON_AI_UPDATE_CYCLE, ITEM_ON_AI_UPDATE_OFFSET))
 		m_pShip->FireItemOnAIUpdate();
 
-	if (m_AICtx.HasSuperconductingShields())
+	if (m_AICtx.HasAmmoShields())
 		{
 		//	Look for shield
-		int iDevices = m_pShip->GetDeviceCount();
-		CItemType* pType = NULL;
-		for (int i = 0; i < iDevices; i++)
-			{
-			if (m_pShip->GetDevice(i)->GetCategory() == itemcatShields)
-				{
-				int iUNID = m_pShip->GetDevice(i)->GetUNID();
-				pType = m_pShip->GetUniverse().FindItemType(iUNID);
-				break;
-				}
-			}
+		CShieldClass* pShieldClass = m_pShip->GetNamedDeviceClass(devShields)->AsShieldClass();
 
-		//	Look for appropriate shield ammo
-		if (pType)
+		if (pShieldClass)
 			{
-			int iPollInterval = pType->GetDeviceClass()->AsShieldClass()->GetShieldAmmoAIPollingRate();
-			int iShieldLevel = pType->GetDeviceClass()->AsShieldClass()->GetShieldAmmoAIRegenAt();
-			if ( m_pShip->IsDestinyTime(iPollInterval)
-				&& m_pShip->GetShieldLevel() <= iShieldLevel)
+			int iPollInterval = pShieldClass->GetShieldAmmoAIPollingRate();
+			int iShieldLevel = pShieldClass->GetShieldAmmoAIRegenAt();
+			if (m_pShip->IsDestinyTime(iPollInterval) && m_pShip->GetShieldLevel() <= iShieldLevel)
 				{
+				CItemCriteria shieldAmmoCriteria = pShieldClass->GetShieldAmmoCriteria();
 				CItemList shipItems = m_pShip->GetItemList();
 				for (int i = 0; i < shipItems.GetCount(); i++)
 					{
-					CItemCriteria shieldAmmoCriteria = pType->GetDeviceClass()->AsShieldClass()->GetShieldAmmoCriteria();
 					if (shipItems.GetItem(i).MatchesCriteria(shieldAmmoCriteria))
 						{
 						CItem shieldAmmo = shipItems.GetItem(i);
