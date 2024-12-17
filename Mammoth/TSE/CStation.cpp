@@ -1113,8 +1113,11 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 				Ctx.iDirection = AngleMod(iDirection 
 						+ (mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12))
 						+ (360 - 30));
+				Ctx.iSourceDirection = Ctx.iDirection; //stations dont have a rotation
 				Ctx.vPos = vHitPos;
 				Ctx.vVel = GetVel() + PolarToVector(Ctx.iDirection, pEjectaType->GetInitialSpeed());
+				Ctx.vSourcePos = Ctx.vPos;
+				Ctx.vSourceVec = Ctx.vVel;
 				Ctx.dwFlags = SShotCreateCtx::CWF_EJECTA;
 
 				GetSystem()->CreateWeaponFire(Ctx);

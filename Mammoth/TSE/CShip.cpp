@@ -1478,6 +1478,9 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 	ShotCtx.vPos = GetPos();
 	ShotCtx.vVel = GetVel();
 	ShotCtx.iDirection = GetRotation();
+	ShotCtx.vSourcePos = ShotCtx.vPos;
+	ShotCtx.vSourceVec = ShotCtx.vVel;
+	ShotCtx.iSourceDirection = ShotCtx.iDirection;
 	ShotCtx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
 
 	GetSystem()->CreateWeaponFire(ShotCtx);

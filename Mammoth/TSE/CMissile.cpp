@@ -339,12 +339,10 @@ void CMissile::CreateFragments (const CVector &vPos, const CVector &vVel)
 			&& !m_pDesc->IsMIRVFragment())
 		return;
 
-	//  If we triggering inside an object, then we only create half the number
-	//  of fragments (as if it hit on the surface).
+	//  If we triggering inside an object, then we should pass that info along
+	//  in case we need to reduce the fragmentation count as if we hit the surface
 
-	int iFraction = 100;
-	if (m_pHit && m_pHit->PointInObject(m_pHit->GetPos(), vPos))
-		iFraction = 50;
+	bool bInternalHit = m_pHit && m_pHit->PointInObject(m_pHit->GetPos(), vPos);
 
 	//	If there is an event, then let it handle the fragmentation
 
@@ -363,6 +361,9 @@ void CMissile::CreateFragments (const CVector &vPos, const CVector &vVel)
 		FragCtx.pTarget = m_pTarget;
 		FragCtx.vPos = vPos;
 		FragCtx.vVel = vVel;
+		FragCtx.vSourceVec = GetVel();
+		FragCtx.vSourcePos = GetPos();
+		FragCtx.iSourceDirection = GetRotation();
 
 		//	The direction is either towards the object that triggered us, or
 		//	along the direction of travel.
@@ -370,11 +371,16 @@ void CMissile::CreateFragments (const CVector &vPos, const CVector &vVel)
 		if (m_pHit)
 			FragCtx.iDirection = VectorToPolar(m_pHit->GetPos() - vPos);
 		else
-			FragCtx.iDirection = VectorToPolar(GetVel());
+			{
+			if (m_pDesc->GetExtension()->GetAPIVersion() >= 54)
+				FragCtx.iDirection = FragCtx.iSourceDirection;	//use direction of the projectile
+			else
+				FragCtx.iDirection = VectorToPolar(vVel, NULL); //use provided direction of travel
+			}
 
 		//	Create all fragments
 
-		GetSystem()->CreateWeaponFragments(FragCtx,	this, iFraction);
+		GetSystem()->CreateWeaponFragments(FragCtx,	this, 100, bInternalHit);
 		}
 
 	//	Create the hit effect
@@ -411,6 +417,7 @@ void CMissile::CreateReflection (const CVector &vPos, int iDirection, CMissile *
 	ReflectCtx.vPos = vPos;
 	ReflectCtx.vVel = PolarToVector(iDirection, GetVel().Length());
 	ReflectCtx.iDirection = iDirection;
+	ReflectCtx.iSourceDirection = iDirection;
 
 	CMissile *pReflection;
 	Create(*GetSystem(), ReflectCtx, &pReflection);
@@ -738,6 +745,12 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 
 	m_iHitPoints = 0;
 
+
+	//	If we detonate on destruction from damage, do so now
+
+	if (m_pDesc->IsDetonatingOnDestroyed() && m_pDesc->HasFragments())
+		CreateFragments(GetPos());
+
 	//	If we've got a vapor trail, then we stick around until the trail is gone,
 	//	but otherwise we're destroyed.
 
@@ -784,6 +797,8 @@ void CMissile::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 	//	Note that we do this even if we're destroyed because we might have
 	//	some fading particles.
 
+	int iExtAPI = m_pDesc->GetExtension()->GetAPIVersion();
+
 	if (m_pPainter
 			&& WasPainted())
 		{
@@ -817,35 +832,69 @@ void CMissile::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 	if (m_iTick <= 1 && (m_pDesc->IsFragment() || m_fReflection))
 		{ }
 
-	//	If this is a fragmentation missile, then we need to compute proxity 
+	//	If this is a fragmentation missile, then we need to compute proximty 
 	//	rather than just hit testing.
 
 	else if (m_pDesc->ProximityBlast() && m_iTick >= m_pDesc->GetProximityFailsafe())
 		{
-		//	Compute threshold
-
-		Metric rMaxThreshold = m_pDesc->GetFragmentationMaxThreshold();
-		Metric rMinThreshold = m_pDesc->GetFragmentationMinThreshold();
-
-		CTargetList::STargetOptions TargetOptions;
-		TargetOptions.bIncludeStations = true;
-		TargetOptions.bIncludeMinable = IsDetonatingOnMining();
-
-		//	Hit test
-
-		m_pHit = HitTestProximity(vOldPos, rMinThreshold, rMaxThreshold, m_pDesc->GetDamage(), TargetOptions, m_pTarget, &m_vHitPos, &m_iHitDir);
-
-		//	Make sure we are not too close to the source when we trigger
-		//	a proximity blast.
-
-		CSpaceObject *pSource;
-		if (m_pHit && m_iHitDir == -1 && (pSource = m_Source.GetObj()))
+		if (iExtAPI >= 54)
 			{
-			CVector vDist = m_vHitPos - pSource->GetPos();
-			Metric rDist2 = vDist.Length2();
+			//	Get Relevant Thresholds
 
-			if (rDist2 < (rMaxThreshold * rMaxThreshold) / 4.0)
-				m_pHit = NULL;
+			Metric rProximityFailsafe = m_pDesc->GetFragDistanceFailsafe();
+
+			CTargetList::STargetOptions TargetOptions;
+			TargetOptions.bIncludeStations = true;
+			TargetOptions.bIncludeMinable = IsDetonatingOnMining();
+
+			//	Check if we activated against some target
+
+			m_pHit = HitTestProximity(vOldPos, m_pDesc, TargetOptions, m_pTarget, &m_vHitPos, &m_iHitDir);
+
+			//	Check against our failsafe distance
+
+			CSpaceObject *pSource;
+			if (m_pHit && rProximityFailsafe && m_iHitDir == -1 && (pSource = m_Source.GetObj()))
+				{
+				CVector vDist = m_vHitPos - pSource->GetPos();
+				Metric rDist2 = vDist.Length2();
+
+				if (rDist2 < (rProximityFailsafe * rProximityFailsafe))
+					m_pHit = NULL;
+				}
+
+			}
+
+		//	Handle legacy version
+
+		else
+			{
+			//	Compute threshold
+
+			Metric rMaxThreshold = m_pDesc->GetFragmentationMaxThreshold();
+			Metric rMinThreshold = m_pDesc->GetFragmentationMinThreshold();
+
+			CTargetList::STargetOptions TargetOptions;
+			TargetOptions.bIncludeStations = true;
+			TargetOptions.bIncludeMinable = IsDetonatingOnMining();
+
+			//	Hit test
+
+			m_pHit = HitTestProximityLegacy(vOldPos, rMinThreshold, rMaxThreshold, m_pDesc->GetDamage(), TargetOptions, m_pTarget, &m_vHitPos, &m_iHitDir);
+
+			//	Make sure we are not too close to the source when we trigger
+			//	a proximity blast.
+
+			CSpaceObject *pSource;
+			if (m_pHit && m_iHitDir == -1 && (pSource = m_Source.GetObj()))
+				{
+				CVector vDist = m_vHitPos - pSource->GetPos();
+				Metric rDist2 = vDist.Length2();
+
+				if (rDist2 < (rMaxThreshold * rMaxThreshold) / 4.0)
+					m_pHit = NULL;
+				}
+
 			}
 		}
 

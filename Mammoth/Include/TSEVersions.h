@@ -5,13 +5,112 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							53;
+constexpr DWORD API_VERSION =							54;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
 constexpr DWORD SYSTEM_SAVE_VERSION =					212;
 
 //	Uncomment out the following define when building a stable release
 
 #define TRANSCENDENCE_STABLE_RELEASE
+
+//	API VERSION HISTORY ---------------------------------------------------
+//
+//	 0: Unknown version (0.9 or older)
+//
+//	 1: 0.95-0.96b
+//		Added support for extensions
+//		API Version specified as version="1"
+//
+//	 2: 0.97
+//		Changed gStation to gSource
+//
+//	 3: 1.1
+//		<SmokeTrail>: emitSpeed fixed (used in klicks per tick instead of per second)
+//
+//	 53: 1.9.2
+//
+//
+//	 54: 1.9.3a0
+//		<ItemType><Weapon><Missile>:
+//			detonateOnDestroyed="true|false"
+//				Projectile will fragment even if it is killed
+//				Default: "true"
+//			noDetonationOnImpact="true|false"
+//				Projectile will not fragment if it hits the target
+//				Default: "false"
+//			proximityTriggerOnTargetOnly="true|false"
+//				Proximity fragmentation can only be triggered by the intended target
+//				Default: "false"
+//			proximitySensorArc=[int 0-360]
+//				Sets the angle relative to the front of the munition within which
+//				it will consider targets
+//				Default: 360
+//			proximityDistanceImpactTrigger=[float] (units: ls)
+//				If a munition detects it will probably impact a valid target within [int]
+//				light-seconds, it will automatically detonate early rather than waiting
+//				to impact the target or reach the automatic fragmentation distance
+//				Default: 0
+//			proximityDistanceArmed=[float] (units: ls)
+//				This is the maximum proximity sensor range of the munition. It only arms
+//				proximity detection. If it detects that it would move away from the nearest
+//				valid target within the next tick, it will detonate.
+//				Note: this value smartly adjusts based on the size of the candidate
+//					fragmentation trigger. For the intended legacy behavior, use
+//					fragmentMaxRadius.
+//				Default: 4
+//			proximityDistanceAutoTrigger=[float] (units: ls)
+//				The projectile will automatically fragment if a valid target is within
+//				sensor range in this distance. Automatically forces proximityArmedDistance
+//				to be its value if it is less.
+//				Note: this value smartly adjusts based on the size of the candidate
+//					fragmentation trigger. For the intended legacy behavior, use
+//					fragmentMinRadius - this value still had a small amount of smart
+//					adjustment however.
+//				Default: 0.5
+//			proximityDistanceFail=[float] (units: ls)
+//				The projectile will not fragment if within this distance. Automatically
+//				sets disableImpactFragmentation to True. Raises an error if it greater
+//				than proximityArmed or proximityAutoTrigger distances.
+//				Default: -1 (disabled)
+//			proximityDistanceFailsafe=[float] (units: ls)
+//				The projectile will not fragment if within this distance of the source.
+//				Default: -1 (disabled)
+//			fragmentVelocityInheritance="none|newtonian|relativisitc|superluminal"
+//				Sets the mode of fragment velocity inheritance.
+//				Note: if the missile velocity or defined fragment velocity is over
+//					1.0c, then the behavior if not "none" defaults to "superluminal"
+//				Default: "none"
+//					none: no inheritance, the <Fragment> defined speed is used
+//					newtonian: velocities are added, and capped at 1.0c
+//					relativistic: velocities are combined in an asymptotic way
+//					superluminal: as in newtonian, but velocity is not capped
+//			fragmentAngleDirection="direction|velocity|target|trigger|origin|system|random"
+//				Sets the middle angle of the fragment arcAngle to be relative to a
+//				configurable object. If a value cannot be determined, it will fall back
+//				to "direction".
+//				API 54 Default: "direction"
+//				API <54 Default: hard-coded to "trigger" (legacy behavior)
+//					target: direction of the intended target
+//					trigger: direction of the object that triggered fragmentation
+//					velocity: direction the missile was traveling
+//					direction: direction the missile was facing
+//					origin: direction of the center of the system
+//					system: direction of 0-angle of the system
+//					random: direction is random
+//			fragmentAngle=[Dice Expression]
+//				Degree offset for an individual fragment. Diceroll is rolled
+//				for each fragment individually. This is an absolute value so
+//				remember to offset the value to center it. This replaces
+//				the value specified in arcAngle.
+//				Default: 1d360
+//			fragmentAngleOffset=[int]
+//				Degrees offset for all fragments from either the values in
+//				fragmentAngle (an asbolute value diceroll) or in
+//				arcAngle (a uniform distribution zeroed on the middle) from the
+//				angle source picked with fragmentAngleDirection.
+//				Default: 0
+//	 
+
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
 //
