@@ -36,9 +36,11 @@ class CAutoDefenseClass : public CDeviceClass
 	{
 	public:
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice);
+		void UpdateTargetOnDestroy (CInstalledDevice* pDevice, CSpaceObject* pSource, const SDestroyCtx& Ctx);
 
 		//	CDeviceClass virtuals
 
+		virtual CAutoDefenseClass *AsAutoDefenseClass (void) override { return this; }
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sProperty) override;
 		virtual int GetActivateDelay (CItemCtx &ItemCtx) const override;
@@ -51,6 +53,7 @@ class CAutoDefenseClass : public CDeviceClass
 		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsAutomatedWeapon (void) const override { return true; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
+		virtual void OnObjDestroyed (CInstalledDevice* pDevice, CSpaceObject* pSource, const SDestroyCtx& Ctx) override { UpdateTargetOnDestroy(pDevice, pSource, Ctx); }
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 
 	protected:
@@ -73,6 +76,8 @@ class CAutoDefenseClass : public CDeviceClass
 		bool IsDirectional (CInstalledDevice *pDevice, int *retiMinFireArc, int *retiMaxFireArc);
 		bool IsOmniDirectional (CInstalledDevice *pDevice);
 		CSpaceObject *FindTarget (CInstalledDevice *pDevice, CSpaceObject *pSource);
+		SDeviceUpdateCtx GetEmptyDeviceUpdateCtx (void);
+		void UpdateTarget (CInstalledDevice* pDevice, CSpaceObject* pSource, SDeviceUpdateCtx& Ctx);
 
 		TargetingSystemTypes m_iTargeting = trgNone;
 		CSpaceObjectCriteria m_TargetCriteria;
@@ -87,6 +92,7 @@ class CAutoDefenseClass : public CDeviceClass
 		int m_iRechargeTicks = 0;
 
 		CDeviceClassRef m_pWeapon;
+		CSpaceObject *m_pTarget;
 	};
 
 class CCargoSpaceClass : public CDeviceClass
@@ -480,6 +486,11 @@ class CShieldClass : public CDeviceClass
 			return true;
 			}
 
+		CItemCriteria GetShieldAmmoCriteria(void) const { return CItemCriteria(m_sShieldAmmoCriteria); }
+		bool UsesShieldAmmo(void) const { return m_sShieldAmmoCriteria.GetLength() > 0; }
+		int GetShieldAmmoAIPollingRate(void) const { return m_iShieldAmmoAIPollInterval; }
+		int GetShieldAmmoAIRegenAt(void) const { return m_iShieldAmmoAIRegenAt; }
+
 		//	CDeviceClass virtuals
 
 		virtual bool AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon) override;
@@ -578,6 +589,10 @@ class CShieldClass : public CDeviceClass
 
 		CEffectCreatorRef m_pHitEffect;				//	Effect when shield is hit, appearing at hit location
 		CEffectCreatorRef m_pFlashEffect;			//	Effect when shield is hit, appearing on ship
+
+		CString m_sShieldAmmoCriteria;			//	Attribute string for shield ammo type
+		int m_iShieldAmmoAIPollInterval;
+		int m_iShieldAmmoAIRegenAt;
 	};
 
 class CSolarDeviceClass : public CDeviceClass

@@ -661,6 +661,7 @@ class CSpaceObject
 		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return false; }
 		bool FireCanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, CString *retsResult);
 		bool FireCanRemoveItem (const CItem &Item, int iSlot, CString *retsResult);
+		int GetNextAutoDefenseDeviceIndex (int iDev);
 		CInstalledDevice *GetDevice (int iDev) { return &GetDeviceSystem().GetDevice(iDev); }
 		int GetDeviceCount (void) const { return GetDeviceSystem().GetCount(); }
 		CDeviceItem GetDeviceItem (int iDev) const { return GetDeviceSystem().GetDeviceItem(iDev); }
@@ -674,6 +675,7 @@ class CSpaceObject
 		virtual void OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass::DeviceNotificationTypes iEvent) { }
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, int iDevSlot);
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, CInstalledDevice *pDevice);
+		void OnObjDestroyUpdateDevices (const SDestroyCtx& Ctx);
 
 		//	Docking
 
@@ -1469,7 +1471,12 @@ class CSpaceObject
 		const CEnhancementDesc *GetSystemEnhancements (void) const;
 		ICCItemPtr GetTypeProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
 		CSpaceObject *HitTest (const CVector &vStart, const DamageDesc &Damage, CVector *retvHitPos, int *retiHitDir);
-		CSpaceObject *HitTestProximity (const CVector &vStart, Metric rMinThreshold, Metric rMaxThreshold, const DamageDesc &Damage, const CTargetList::STargetOptions &TargetOptions, const CSpaceObject *pTarget, CVector *retvHitPos, int *retiHitDir);
+		CSpaceObject *HitTestProximity (const CVector &vStart, const CWeaponFireDesc *pDesc, const CTargetList::STargetOptions &TargetOptions, const CSpaceObject *pTarget, CVector *retvHitPos, int *retiHitDir);
+		CSpaceObject *HitTestProximityLegacy (const CVector &vStart, Metric rMinThreshold, Metric rMaxThreshold, const DamageDesc &Damage, const CTargetList::STargetOptions &TargetOptions, const CSpaceObject *pTarget, CVector *retvHitPos, int *retiHitDir);
+		bool IntersectionTestScan(const CSpaceObject* pTarget, const CVector& vStart, const CVector& vStep, const int iSteps, const bool bComputeProximity, CVector* retvHitPos, int* retiHitDir, CVector* retvDetectPos, int* retiTriangulationDir);
+		bool IntersectionTestScan (const CSpaceObject* pTarget, const CVector& vStart, const CVector& vStep, const int iSteps) { return IntersectionTestScan(pTarget, vStart, vStep, iSteps, false, NULL, NULL, NULL, NULL); };
+		bool IntersectionTestScan (const CSpaceObject *pTarget, const CVector &vStart, const CVector &vStep, const int iSteps, CVector *retvHitPos, int *retiHitDir) { return IntersectionTestScan(pTarget, vStart, vStep, iSteps, true, retvHitPos, retiHitDir, NULL, NULL); };
+		bool IntersectionTestScan (const CSpaceObject* pTarget, const CVector& vStart, const CVector& vStep, const int iSteps, const bool bComputeProximity, CVector* retvHitPos, int* retiHitDir) { return IntersectionTestScan(pTarget, vStart, vStep, iSteps, true, retvHitPos, retiHitDir, NULL, NULL); };
 		bool ImagesIntersect (const CObjectImageArray &Image1, int iTick1, int iRotation1, const CVector &vPos1,
 				const CObjectImageArray &Image2, int iTick2, int iRotation2, const CVector &vPos2);
 		bool IsObjectDestructionHooked (void) { return (m_fHookObjectDestruction ? true : false); }

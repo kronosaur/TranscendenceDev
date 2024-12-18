@@ -1442,7 +1442,7 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 	return NOERROR;
 	}
 
-ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMissileSource, int iFraction)
+ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMissileSource, int iFraction, bool bInternalHit)
 
 //	CreateWeaponFragments
 //
@@ -1453,11 +1453,13 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 
 	ALERROR error;
 	int i;
+	int iExtAPI = Ctx.pDesc->GetExtension()->GetAPIVersion();
 
 	CWeaponFireDesc::SFragmentDesc *pFragDesc = Ctx.pDesc->GetFirstFragment();
 	while (pFragDesc)
 		{
 		int iFragmentCount = pFragDesc->Count.Roll();
+		int iFragmentFraction = iFraction * (bInternalHit ? 50 : 100) / 100;
 		if (iFragmentCount > 0)
 			{
 			TArray<int> Angles;
@@ -1469,22 +1471,78 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 
 			if (!pFragDesc->FragmentArc.IsEmpty())
 				{
-				int iArc = pFragDesc->FragmentArc.Roll();
-				int iHalfArc = iArc / 2;
+
+				//handle direction setting for different APIs and settings
+				int iCenterAngle;
+				if (iExtAPI >= 54)
+					{
+					if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleDirection)
+						iCenterAngle = Ctx.iSourceDirection;
+					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleVelocity)
+						iCenterAngle = VectorToPolar(Ctx.vSourceVec);
+					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleTarget)
+						iCenterAngle = VectorToPolar(Ctx.vPos - Ctx.pTarget->GetPos());
+					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleTrigger)
+						iCenterAngle = Ctx.iDirection;
+					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleOrigin)
+						iCenterAngle = AngleMod(VectorToPolar(Ctx.vPos) - 180);
+					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleSystem)
+						iCenterAngle = 0;
+					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleRandom)
+						iCenterAngle = mathRandom(0, 359);
+					else
+						iCenterAngle = Ctx.iSourceDirection;
+					}
+				else
+					iCenterAngle = Ctx.iDirection; //	Legacy default
 
 				for (int i = 0; i < iFragmentCount; i++)
 					{
-					int iDirOffset = pFragDesc->Direction.Roll();
-					int iCenterAngle = Ctx.iDirection;
-					if (iDirOffset != CWeaponFireDesc::DEFAULT_FRAGMENT_DIRECTION)
-						iCenterAngle += iDirOffset;
 
-					int iMinAngle = iCenterAngle - iHalfArc;
-					int iMaxAngle = iMinAngle + iArc;
+					//	Handle the different arcAngle/fragmentAngle modes
 
-					Angles[i] = AngleMod(mathRandom(iMinAngle, iMaxAngle));
+					if (pFragDesc->iFragArcOffsetAndMode & CWeaponFireDesc::FLAG_FRAG_ARC_ABSOLUTE)
+						{
+
+						//	Handle the new absolute offset mode
+
+						int iRandomGlobalOffset = pFragDesc->Direction.Roll();
+						int iFragArcOffset = pFragDesc->iFragArcOffsetAndMode & CWeaponFireDesc::FLAG_FRAG_ARC_DATA_BITS;
+						int iFragmentAngleOffset = pFragDesc->FragmentArc.Roll();
+						Angles[i] = AngleMod(iFragmentAngleOffset + iFragArcOffset + iCenterAngle);
+						}
+					else
+						{
+
+						//	Handle legacy behavior and if we have any of the new fields set instead or in addition to legacy fields
+
+						int iFragArcOffset = pFragDesc->iFragArcOffsetAndMode & CWeaponFireDesc::FLAG_FRAG_ARC_DATA_BITS;
+						int iDirOffset = pFragDesc->Direction.Roll() + iFragArcOffset;
+						if (iDirOffset != CWeaponFireDesc::DEFAULT_FRAGMENT_DIRECTION)
+							iCenterAngle += iDirOffset;
+						int iArc = pFragDesc->FragmentArc.Roll();
+						int iHalfArc = iArc / 2;
+
+						//  If we hit inside of an object, we should only generate the
+						//	fraction of projectiles that would hit at the surface (180 arc)
+
+						if (bInternalHit && iExtAPI >= 54)
+							iFragmentFraction = iFraction * min(iArc, 180) / (100 * iArc);
+
+						int iMinAngle = iCenterAngle - iHalfArc + iDirOffset;
+						int iMaxAngle = iMinAngle + iArc + iDirOffset;
+
+						Angles[i] = AngleMod(mathRandom(iMinAngle, iMaxAngle));
+						}
+
+					//  Handle exact 
+					int iAngleForwardnessOffset = AngleMod(Angles[i] - Ctx.iDirection);
+					if (bInternalHit && iAngleForwardnessOffset > 90 && iAngleForwardnessOffset < 270)
+						Angles[i] = -1;
+
 					Targets[i] = Ctx.pTarget;
 					}
+				iFragmentFraction = 100; //We already handle removing internal hit fragments in this code
 				}
 
 			//	If we have lots of fragments then we just pick random angles
@@ -1538,12 +1596,30 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 					{
 					for (i = 0; i < iFragmentCount; i++)
 						{
+
+						//	Skip any previously deleted fragments
+
+						if (Angles[i] < 0)
+							continue;
+
 						auto &Target = TargetList[i % iFound];
 						Targets[i] = Target.pObj;
+						
+						//	If travel direction is prioritized and fragments can maneuver,
+						//	then we just use the existing defined angle
+						
+						if (pFragDesc->pDesc->IsTracking() && (
+							pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleDirection
+							|| pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleVelocity
+							|| pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleOrigin
+							|| pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleSystem
+							|| pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleRandom
+							))
+							continue;
 
 						//	If fragments can maneuver, then fire angle jitters a bit.
 
-						if (pFragDesc->pDesc->IsTracking())
+						else if (pFragDesc->pDesc->IsTracking())
 							Angles[i] = AngleMod(Target.iFireAngle + mathRandom(-45, 45));
 
 						//	If we've got multiple fragments to the same target, then
@@ -1572,15 +1648,15 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 			//	(unless we are MIRVed)
 
 			CVector vInitVel;
-			if (!pFragDesc->pDesc->IsMIRV())
+			if (!pFragDesc->pDesc->IsMIRV() || !pFragDesc->iVelocityType == CWeaponFireDesc::fviNone)
 				vInitVel = Ctx.vVel;
 
 			//	If we don't want to create all fragments, we randomly delete 
 			//	some fragments (by setting angle to -1).
 
-			if (iFraction < 100)
+			if (iFragmentFraction < 100)
 				{
-				int iNewFragmentCount = Max(1, iFraction * iFragmentCount / 100);
+				int iNewFragmentCount = Max(1, iFragmentFraction * iFragmentCount / 100);
 				if (iNewFragmentCount < iFragmentCount)
 					{
 					TArray<int> ToDelete;
@@ -1614,6 +1690,23 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 
 				Metric rSpeed = pFragDesc->pDesc->GetInitialSpeed();
 
+				//	Compute Velocity (already handled fviNone by leaving vInitVel as default for that case)
+				CVector vShotVel;
+				CVector vSuperluminalShotVel = vInitVel + PolarToVector(Angles[i], rSpeed);
+				if (pFragDesc->iVelocityType == CWeaponFireDesc::fviSuperluminal || rSpeed > LIGHT_SPEED)
+					vShotVel = vSuperluminalShotVel;
+				else
+					{
+					Metric rInitSpeed;
+					VectorToPolar(vInitVel, &rInitSpeed);
+					if (rInitSpeed > LIGHT_SPEED)
+						vShotVel = vSuperluminalShotVel;
+					else if (pFragDesc->iVelocityType == CWeaponFireDesc::fviNewtonian)
+						vShotVel = PolarToVector(VectorToPolar(vSuperluminalShotVel), LIGHT_SPEED);
+					else if (pFragDesc->iVelocityType == CWeaponFireDesc::fviRelativistic)
+						vShotVel = PolarToVector(VectorToPolar(vSuperluminalShotVel), LIGHT_SPEED - ((LIGHT_SPEED - rSpeed) * (LIGHT_SPEED - rInitSpeed)));
+					}
+
 				//  Create the fragment
 
 				SShotCreateCtx FragCtx;
@@ -1623,6 +1716,9 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 				FragCtx.vPos = Ctx.vPos + CVector(mathRandom(-10, 10) * g_KlicksPerPixel / 10.0, mathRandom(-10, 10) * g_KlicksPerPixel / 10.0);
 				FragCtx.vVel = vInitVel + PolarToVector(Angles[i], rSpeed);
 				FragCtx.iDirection = Angles[i];
+				FragCtx.iSourceDirection = FragCtx.iDirection;
+				FragCtx.vSourceVec = FragCtx.vVel;
+				FragCtx.vSourcePos = FragCtx.vPos;
 				FragCtx.pTarget = Targets[i];
 				FragCtx.dwFlags = SShotCreateCtx::CWF_FRAGMENT;
 

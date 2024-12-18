@@ -479,9 +479,12 @@ struct SShotCreateCtx
 	CWeaponFireDesc *pDesc = NULL;
 	TSharedPtr<CItemEnhancementStack> pEnhancements;
 	CDamageSource Source;
-	CVector vPos;
-	CVector vVel;
-	int iDirection = 0;
+	CVector vPos;									//  Position of point of firing
+	CVector vVel;									//	Velocity to inherit
+	CVector vSourcePos;								//	Position of source, not position of point of fire
+	CVector vSourceVec;								//	Velocity of source (usually same as vVel, but not guaranteed)
+	int iSourceDirection = 0;						//	Source facing, not the same as source velocity
+	int iDirection = 0;								//	Direction of firing (for proximity fragments, this is the direction to the triggering object)
 	int iRepeatingCount = 0;
 	CSpaceObject *pTarget = NULL;
 	DWORD dwFlags = 0;
@@ -607,14 +610,38 @@ class CWeaponFireDesc
 			evtCount					= 8,
 			};
 
+		enum EFragmentVelocityInheritanceTypes
+			{
+			fviNone,						//	Does not inherit parent projectile's motion (default for non-MIRVs)
+			fviNewtonian,					//	Adds the parent projectile's motion, but will not exceed 1.0c
+			fviRelativistic,				//	Asymptotically inherits the parent projectile's motion to not exceed 1.0c
+			fviSuperluminal,				//	Adds the parent projectile's motion (default for non-MIRVs)
+			};
+
+		enum EFragmentAngleTypes
+			{
+			fragAngleDirection,				//Facing of projectile (API 54 default)
+			fragAngleVelocity,				//Direction of travel of projectile
+			fragAngleTrigger,				//Direction from projectile to trigger (API <54 and older default)
+			fragAngleTarget,				//Direction from projectile to target
+			fragAngleOrigin,				//Direction from projectile to origin (used for effects)
+			fragAngleSystem,				//Relative to system's 0 degree angle (0=right, 90=up, 180=left, 270=down)
+			fragAngleRandom,				//Relative to a random angle
+			};
+
 		static constexpr int DEFAULT_FRAGMENT_DIRECTION = 360;
+		static constexpr int FLAG_FRAG_ARC_ABSOLUTE = 0x200;
+		static constexpr int FLAG_FRAG_ARC_DATA_BITS = 0x1FF; //0-512 needed to hold 0-359
 
 		struct SFragmentDesc
 			{
 			CWeaponFireDesc *pDesc;			//	Data for fragments
 			DiceRange Count;				//	Number of fragments
-			DiceRange Direction;			//	Fragmentation direction relative to trigger (or path) (360 = random)
+			DiceRange Direction;			//	Fragmentation direction relative to fragment angle type (see EFragmentAngleTypes) (360 = random)
 			DiceRange FragmentArc;			//	Angle of arc of fragmentation (0 = omnidirectional).
+			EFragmentAngleTypes iFragAngleType;					//	If the travel direction should be prioritized over the target direction (see EFragmentAngleTypes
+			EFragmentVelocityInheritanceTypes iVelocityType;	//	Type of velocity inheretance to use
+			int iFragArcOffsetAndMode;		//	0 to 359 = exact offset - FragmentArc.center with 1dFragmentArc distribution, 0 to 359 + FLAG_FRAG_ARC_ABSOLUTE = exact offset with FragmentArc roll per fragment
 
 			SFragmentDesc *pNext;
 			};
@@ -736,6 +763,12 @@ class CWeaponFireDesc
 		SFragmentDesc *GetFirstFragment (void) const { return m_pFirstFragment; }
 		Metric GetFragmentationMaxThreshold (void) const { return m_rMaxFragThreshold; }
 		Metric GetFragmentationMinThreshold (void) const { return m_rMinFragThreshold; }
+		Metric GetFragDistanceArmed (void) const { return m_rFragDistanceArmed; }
+		Metric GetFragDistanceAutoTrigger (void) const { return m_rFragDistanceAutoTrigger; }
+		Metric GetFragDistanceFail (void) const { return m_rFragDistanceFail; }
+		Metric GetFragDistanceFailsafe (void) const { return m_rFragDistanceFailsafe; }
+		Metric GetFragDistanceImpactTarget (void) const { return m_rFragDistanceImpactTarget; }
+		Metric GetFragSensorArc (void) const { return m_iProximitySensorArc; }
 		int GetHitPoints (void) const { return m_iHitPoints; }
 		int GetIdlePowerUse (void) const { return m_iIdlePowerUse; }
 		const CObjectImageArray &GetImage (void) const { return GetOldEffects().Image; }
@@ -774,6 +807,8 @@ class CWeaponFireDesc
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const SInitOptions &Options);
 		ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem, CWeaponClass *pWeapon);
 		bool IsDetonatingOnEndOfLife () const { return (ProximityBlast() && !m_fNoDetonationOnEndOfLife); }
+		bool IsDetonatingOnDestroyed () const { return (ProximityBlast() && m_fDetonateOnDestroyed); }
+		bool IsDetonatingOnImpact () const { return (ProximityBlast() && !m_fNoDetonationOnImpact); }
 		bool IsCurvedBeam (void) const { return false; }
 		bool IsDirectionalImage (void) const { return m_fDirectional; }
 		bool IsFragment (void) const { return m_fFragment; }
@@ -888,8 +923,14 @@ class CWeaponFireDesc
 		SFragmentDesc *m_pFirstFragment = NULL;	//	Pointer to first fragment desc (or NULL)
 		int m_iProximityFailsafe = 0;			//	Min ticks before proximity is active
 		DiceRange m_FragInterval;				//	If not empty, we keep fragmenting
-		Metric m_rMaxFragThreshold = 0.0;		//	Max fragmentation distance
-		Metric m_rMinFragThreshold = 0.0;		//	Min fragmentation distance
+		Metric m_rMaxFragThreshold = 0.0;		//	Max fragmentation distance (legacy behavior)
+		Metric m_rMinFragThreshold = 0.0;		//	Min fragmentation distance (legacy behavior)
+		int m_iProximitySensorArc = 360;		//	Arc of coverage of the Proximity sensor
+		Metric m_rFragDistanceArmed = 0.0;		//	Max fragmentation distance (accounts for target size)
+		Metric m_rFragDistanceAutoTrigger = 0.0;//	Min/Forced fragmentation distance (accounts for target size)
+		Metric m_rFragDistanceFail = 0.0;		//	Fragmentation does not occur under this distance
+		Metric m_rFragDistanceFailsafe = 0.0;	//	Fragmentation does not occur under this distance from the source
+		Metric m_rFragDistanceImpactTarget = 0.0;	//	Force fragmentation if we are going to impact a target within this distance
 
 		//	Events
 		CEventHandler m_Events;					//	Events
@@ -925,8 +966,8 @@ class CWeaponFireDesc
 		DWORD m_fNoWMDHint:1 = false;			//	If TRUE, do not show WMD-needed hint
 		DWORD m_fNoMiningHint:1 = false;		//	If TRUE, do not show mining-needed hint
 		DWORD m_fNoDetonationOnEndOfLife:1 = false;	//	If TRUE, do not detonate when life expires
-		DWORD m_fSpare6:1;
-		DWORD m_fSpare7:1;
+		DWORD m_fNoDetonationOnImpact:1 = false;//	If TRUE, do not detonate when impacting an object
+		DWORD m_fDetonateOnDestroyed:1 = false;	//	If TRUE, detonate when destroyedd
 		DWORD m_fSpare8:1;
 
 		DWORD m_dwSpare:8;

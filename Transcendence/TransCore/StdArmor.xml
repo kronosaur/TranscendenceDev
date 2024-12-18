@@ -4,6 +4,14 @@
 
 	<Type unid="&unidArmorMass;">
 		<ArmorMassDesc>
+			<!--
+				The tags "medium" and "maximum" are engine-defined and dictate how automatic balance
+				calculations take place.
+				Items above the "maximum" mass limit are considered npc-bespoke and will not return
+				valid balance numbers.
+				If "medium" is not specified, a standard armor mass of 3500kg is assumed.
+				If "maximum" is not specified, a maximum armor mass of 16000kg is assumed.
+			-->
 			<ArmorMass id="ultraLight"	label="ultra-light"		mass="1000"/>
 			<ArmorMass id="light"		label="light"			mass="2500"/>
 			<ArmorMass id="medium"		label="medium"			mass="3500"/>
@@ -11,6 +19,7 @@
 			<ArmorMass id="superHeavy"	label="super-heavy"		mass="9000"/>
 			<ArmorMass id="massive"		label="massive"			mass="12000"/>
 			<ArmorMass id="dreadnought"	label="dreadnought"		mass="100000"/>
+			<ArmorMass id="maximum"		label="maximum"			mass="1000000"/>
 		</ArmorMassDesc>
 	</Type>
 

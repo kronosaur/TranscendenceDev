@@ -1478,6 +1478,9 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 	ShotCtx.vPos = GetPos();
 	ShotCtx.vVel = GetVel();
 	ShotCtx.iDirection = GetRotation();
+	ShotCtx.vSourcePos = ShotCtx.vPos;
+	ShotCtx.vSourceVec = ShotCtx.vVel;
+	ShotCtx.iSourceDirection = ShotCtx.iDirection;
 	ShotCtx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
 
 	GetSystem()->CreateWeaponFire(ShotCtx);
@@ -3884,6 +3887,10 @@ void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	//	Give the controller a chance to handle it
 
 	m_pController->OnObjDestroyed(Ctx);
+
+	//  Have all of our devices handle it, ex, they may need to retarget
+
+	OnObjDestroyUpdateDevices(Ctx);
 
 	//	If what we're docked with got destroyed, clear it
 

@@ -399,6 +399,10 @@ void CRadiusDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			FragCtx.pTarget = m_pTarget;
 			FragCtx.vPos = GetPos();
 			FragCtx.vVel = GetVel();
+			FragCtx.iDirection = GetRotation();
+			FragCtx.vSourcePos = FragCtx.vPos;
+			FragCtx.vSourceVec = FragCtx.vVel;
+			FragCtx.iSourceDirection = FragCtx.iDirection;
 
 			GetSystem()->CreateWeaponFragments(FragCtx, this);
 			}

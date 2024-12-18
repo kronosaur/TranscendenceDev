@@ -7106,6 +7106,11 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				FragCtx.Source = DamageCtx.Attacker;
 				FragCtx.pTarget = (!pObj->IsDestroyed() ? pObj : NULL);
 				FragCtx.vPos = vHitPos;
+				FragCtx.vVel = pObj->GetVel();
+				FragCtx.vSourcePos = vHitPos;
+				FragCtx.vSourceVec = FragCtx.vVel;
+				FragCtx.iDirection = VectorToPolar(vHitPos - pObj->GetPos());
+				FragCtx.iSourceDirection = FragCtx.iDirection;
 
 				pSystem->CreateWeaponFragments(FragCtx, DamageCtx.pCause);
 				}
@@ -13022,7 +13027,10 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			Ctx.Source = Source;
 			Ctx.vPos = vPos;
 			Ctx.vVel = PolarToVector(iDir, rSpeed);
+			Ctx.vSourcePos = pSource ? pSource->GetPos() : vPos;
+			Ctx.vSourceVec = pSource ? pSource->GetVel() : Ctx.vVel;
 			Ctx.iDirection = iDir;
+			Ctx.iSourceDirection = pSource ? pSource->GetRotation() : iDir;
 			Ctx.pTarget = pTarget;
 			Ctx.dwFlags = (bDetonateNow ? SShotCreateCtx::CWF_EXPLOSION : SShotCreateCtx::CWF_WEAPON_FIRE);
 
