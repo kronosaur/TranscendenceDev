@@ -548,6 +548,7 @@
     <Xml Include="BlackMarketMission02.xml" />
     <Xml Include="BlackMarketMissionSmuggle01.xml" />
     <Xml Include="BlackMarketPlayerShips.xml" />
+    <Xml Include="CentauriOccupation.xml" />
     <Xml Include="CommonwealthCenturions.xml" />
     <Xml Include="CommonwealthCharacters.xml" />
     <Xml Include="CommonwealthFleetMission01.xml" />

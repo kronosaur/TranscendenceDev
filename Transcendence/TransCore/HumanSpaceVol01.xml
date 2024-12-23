@@ -1349,6 +1349,7 @@
 	<!ENTITY itCentauriHeavyCLAW		"0x0802004E">
 	<!ENTITY tbCentauriEncounters		"0x0802004F">
 	<!ENTITY svCentauriWarlords			"0x08020050">
+	<!ENTITY msCentauriOccupation		"0x08020051">
 
 	<!ENTITY stKobolWarlordCamp			"0x08020080">
 	<!ENTITY scKobolGunshipDualTeV9		"0x08020081">
@@ -2614,6 +2615,10 @@
 	<Module filename="BlackMarketMissionSmuggle01.xml"/>
 	<Module filename="BlackMarketPlayerShips.xml"/>
 
+	<!-- Centauri Warlords -->
+	<Module filename="CentauriOccupation.xml"/>
+	<Module filename="CentauriWarlords.xml"/>
+
 	<!-- Characters -->
 		
 	<Module filename="Benedict.xml"/>
@@ -2719,7 +2724,6 @@
 
 	<Module filename="Abbasid.xml"/>
 	<Module filename="Anarchists.xml"/>
-	<Module filename="CentauriWarlords.xml"/>
 	<Module filename="DeathDrugsCartel.xml"/>
 	<Module filename="Debris.xml"/>
 	<Module filename="DwargRaiders.xml"/>
