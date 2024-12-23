@@ -4,20 +4,6 @@
 
 	<!-- Mission: Centauri Occupation ===========================================
 
-	EXTRA DATA
-
-	status:	Status of Raisu station
-		Nil						= Controlled by Centauri Warlords
-		'destroyed				= Destroyed
-		'destroyedByPlayer		= Destroyed by player
-		'liberated				= Liberated
-
-	targetID: ID of ship to destroy (Arco Vaughn)
-
-	raidersDestroyedByPlayer: Number of raiders guarding Raisu that have been
-		destroyed by the player.
-
-	raidersSummoned: Number of raiders summoned to station
 
 	======================================================================== -->
 
@@ -79,7 +65,6 @@
 						(msnRegisterForEvents gSource gPlayerShip)
 						(msnSet@ gSource 'registerEvents True)
 						)
-						
 
 					;	Add Centauri Raiders
 					(enum raidersToCreate theClass
@@ -98,14 +83,12 @@
 					)
 			</OnCreate>
 
-
 			<OnPlayerEnteredSystem>
-				;	Mission can be created before player is in system, so register for events here
-				;  (= (sysGetNode) (msn@ gSource 'nodeID)))
 				(if (msn@ gSource 'registerEvents)
 					(msnRegisterForEvents gSource gPlayerShip)
 					)
 			</OnPlayerEnteredSystem>
+
 			<OnAccepted>
 				(dbgOutput "Mission accepted")
 			</OnAccepted>
