@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Mission: Centauri Occupation ===========================================
+
+	EXTRA DATA
+
+	status:	Status of Raisu station
+		Nil						= Controlled by Centauri Warlords
+		'destroyed				= Destroyed
+		'destroyedByPlayer		= Destroyed by player
+		'liberated				= Liberated
+
+	targetID: ID of ship to destroy (Arco Vaughn)
+
+	raidersDestroyedByPlayer: Number of raiders guarding Raisu that have been
+		destroyed by the player.
+
+	raidersSummoned: Number of raiders summoned to station
+
+	======================================================================== -->
+
+	<MissionType UNID="&msCentauriOccupation;"
+			name=				"Centauri Occupation"
+			attributes=			"special"
+			inherit=			"&unidCommonText;"
+
+			level=				"1-3"
+			priority=			"100"
+			recordNonPlayer=	"true"
+			>
+		<Properties>
+			<Variant id="rewardItem">
+				(randomTable
+					90 (itmCreate &itCentauriRice; (rollDice 1 8))
+					5 (itmCreate &itNaturalPeriweed; (rollDice 3 6))
+					6 (itmCreate &itHogeiSalmon; (rollDice 1 6))
+					)
+			</Variant>
+
+			<Definition id="rpg.deliveryMission">True</Definition>
+			<Data id="rpg.deliveryDestID"></Data>
+
+			<Data id="enemiesLeft"></Data>
+			<Data id="liberatedByPlayer"></Data>
+
+			<Data id="stationName"></Data>
+			<Data id="registerEvents"></Data>
+		</Properties>
+
+		<Image imageID="&rsRaisuStation;"	imageWidth="170" imageHeight="170"/>
+
+		<Events>
+			<OnGlobalSystemStarted>
+				(enum (sysFindObject Nil "T +unid:&stCentauriOccupation;") theObj
+					(if (not (msnFind theObj "*S +unid:&msCentauriOccupation;"))
+						(msnCreate &msCentauriOccupation; theObj))
+						)
+					)
+			</OnGlobalSystemStarted>
+
+			<OnCreate>
+				(block (
+					(raidersToCreate (list &scCentauriRaider; &scCentauriRaider; &scCentauriRaider; &scCentauriRaider;))
+					)
+
+					;	Start occupation
+					(objSetEventHandler aOwnerObj &evCentauriOccupation;)
+
+					;	Use deliveryMission to prevent default dock screens appearing
+					(msnSet@ gSource 'rpg.deliveryDestID (objGetID aOwnerObj))
+
+					(msnSet@ gSource 'stationName (objGetName aOwnerObj))
+					
+					;	Mission is created via OnGlobalSystemStarted which means player will be defined in
+					;	first system, but not in higher levels.
+					(if gPlayerShip
+						(msnRegisterForEvents gSource gPlayerShip)
+						(msnSet@ gSource 'registerEvents True)
+						)
+						
+
+					;	Add Centauri Raiders
+					(enum raidersToCreate theClass
+						(block (
+							(theShip (sysCreateShip theClass aOwnerObj &svCentauriWarlords;))
+							)
+							(objSetData theShip 'rpg.missionTarget (objGetID gSource))
+							(shpOrder theShip 'guard aOwnerObj)
+							(msnRegisterForEvents gSource theShip)
+							(msnInc@ gSource 'enemiesLeft)
+							)
+						)
+
+					;	Ignore friendly fire until all enemies destroyed.
+					(objSet@ aOwnerObj 'ignoreFriendlyFire True)
+					)
+			</OnCreate>
+
+
+			<OnPlayerEnteredSystem>
+				;	Mission can be created before player is in system, so register for events here
+				;  (= (sysGetNode) (msn@ gSource 'nodeID)))
+				(if (msn@ gSource 'registerEvents)
+					(msnRegisterForEvents gSource gPlayerShip)
+					)
+			</OnPlayerEnteredSystem>
+			<OnAccepted>
+				(dbgOutput "Mission accepted")
+			</OnAccepted>
+
+			<OnDeliveryMissionCompleted>
+				{
+				desc: (msnTranslate gSource 'descHiding)
+				forceUndock: True
+				}
+			</OnDeliveryMissionCompleted>
+
+			<OnObjDestroyed>
+				(switch
+					(= (objGetData aObjDestroyed 'rpg.missionTarget) (objGetID gSource))
+						(block Nil
+						
+							;	If the player destroys any of the warlords then she counts as the liberator
+							(if (and gPlayerShip (= aOrderGiver gPlayerShip))
+								(block Nil
+									(msnAccept gSource)
+									(objSet@ gSource 'liberatedByPlayer True)
+									)
+								)
+								
+							(if (leq (msnInc@ gSource 'enemiesLeft -1) 0)
+								(msnSuccess gSource)
+								)
+							)
+					)
+			</OnObjDestroyed>
+
+			<OnObjDocked>
+				(switch
+					;	Need to accept on dock to ensure rpg.deliveryMission dockscreen will work
+					(and (= aObjDocked gPlayerShip) (= (objGetID aDockTarget) (msn@ gSource 'ownerID )))
+					(Block Nil
+						(dbgOutput "player docked, accepting mission")
+						(msnAccept gSource)
+						)
+					)
+			</OnObjDocked>
+
+			<OnCompleted>
+				(switch
+					(and (= aReason 'success))
+						(block (
+							(stationObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+							)
+
+							(objSetEventHandler stationObj Nil)
+
+							;	If the player helped then create the reward, otherwise skip the debrief screen.
+							(if (msn@ gSource 'liberatedByPlayer)
+								(rpgStoreItem stationObj (msn@ gSource 'rewardItem))
+								(msnSet@ 'isDebriefed True)
+								)
+							)
+					)
+			</OnCompleted>
+
+			<OnGetNextScreen>
+				(switch
+					(= aScreenType 'SuccessFollowUp)
+						{
+							nextScreen: &dsRPGLoot;
+							nextScreenData: {
+								sourceObj: (rpgGetStorage (objGetObjByID (msnGetProperty gSource 'ownerID)))
+								}
+							}
+					)
+			</OnGetNextScreen>
+			
+			<GetRumors>
+				(switch
+					(!= (msnGetProperty gSource 'nodeID) (sysGetNode))
+						Nil
+
+					;	LATER: Add different rumor after liberation
+					;(msnGetProperty gSource 'isSuccess)
+					;	Nil
+
+					(msnGetProperty gSource 'isFailure)
+						Nil
+
+					(rpgRumorAdd 'commonwealthPub Nil 10 'scan {station: (msn@ gSource 'stationName)})
+					)
+			</GetRumors>
+		</Events>
+
+		<Language>
+			<!-- Code Points -->
+			<Text id="Name">
+				(msnTranslate gSource 'descName { station:(msn@ gSource 'stationName) })
+			</Text>
+
+			<Text id="Summary">
+				(cat
+					(msnTranslate gSource 'descSummary {
+						station: (msn@ gSource 'stationName)
+						systemName: (sysGetName)
+						})
+					"\n\n"
+					(typTranslate &dsRPGMission; 'mission.rewardSummary {
+						systemName: (sysGetName)
+						payment: "Unknown"
+						})
+					)
+			</Text>
+			
+			<Text id="SuccessDebrief">
+				(block (
+					(theItem (msn@ gSource 'rewardItem))
+					)
+
+					(list
+						{	descID:'textSuccess1	}
+						(if (= (itmGetCount theItem) 1)
+							{	descID:'textSuccess2.one data:{itemName: (itmGetName theItem 'demonstrative)}}
+							{	descID:'textSuccess2.many data:{itemName: (itmGetName theItem 'demonstrative)}}
+							)
+						)
+					)
+			</Text>
+
+			<!-- Text -->
+
+			<Text id="descName">Liberate %station%</Text>
+			<Text id="descSummary">
+
+				Centauri warlords have taken over %station%.
+
+			</Text>
+
+			<Text id="descHiding">
+
+				The docks and corridors of this station are deserted. The men
+				and women of the station hide in their apartments and refuse to
+				talk with you.
+
+			</Text>
+			<Text id="textSuccess1">
+
+				As you exit the airlock dozens of men and women cheer for you.
+				The leader approaches you:
+
+				"Thank you for killing the warlords! We've been hiding ourselves
+				ever since they took over the station."
+
+			</Text>
+			<Text id="textSuccess2.one">
+
+				The leader continues:
+
+				"We would like to reward you for liberating our station. Please
+				accept %itemName%; it was left behind by the warlords."
+
+			</Text>
+			<Text id="textSuccess2.many">
+
+				The leader continues:
+
+				"We would like to reward you for liberating our station. Please
+				accept %itemName%; they were left behind by the warlords."
+
+			</Text>
+			<Text id="rumor.commonwealthPub">
+
+				You listen to a refugee from %station%:
+
+				"Centauri warlords took over our station last month.
+				Whatever&mdash;I like this place better."
+
+				You spend 5 credits and buy him a few drinks.
+
+			</Text>
+		</Language>
+
+	</MissionType>
+		
+	<!-- Level 4: Centauri Occupation
+	
+	This is now a near-copy of stCommonwealthSlums with the following differences:
+
+		allowEnemyDocking: required for occupation ships to dock.
+
+		controllingSovereign: what does this do? Does it affect positioning	
+
+		Encounter: tag
+
+		Dockscreen: does not include main hall
+
+	LATER: Change allowEnemyDocking to a property, then combine this station with stCommonwealthSlums
+
+	-->
+
+	<StationType UNID="&stCentauriOccupation;"
+			name=				"occupied Commonwealth habitat"
+			sovereign=			"&svCommonwealth;"
+			controllingSovereign="&svCentauriWarlords;"
+			inherit=			"&baCommonwealthStation;"
+				 
+			attributes=			"commonwealth, commonwealthCustoms, friendly, envWater, envAvoidsEarth, human, populated"
+
+			dockScreen=			"Main"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			allowEnemyDocking=	"true"
+
+			level=				"4"
+			size=				"160"
+			armorID=			"&itPlasteelPlate;"
+			hitPoints=			"150"
+			multiHull=			"true"
+			regen=              "1"
+
+			explosionType=		"&vtBlastExplosion2;"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<Properties>
+			<Data id="rpg.storageID"></Data>
+		</Properties>
+
+		<Names noArticle="true">
+			Arenius Habitat; Baja Habitat; Clearspace Station; Durin Habitat;
+			Earthnight Habitat; Fairmoon Settlement; Greenfield Habitat;
+			Hector Habitat; Ionfalls Habitat; Jovian Clouds Settlement; Keller Station;
+			Lama Habitat; Murchenson Settlement; Nightfall Habitat; Oort Settlement;
+			Pallas Station; Queequeg Habitat; Radiant Settlement; Star's End Station;
+			Terra Ex Habitat; Uriel Station; Venuslight Habitat; Weathermoon Habitat
+		</Names>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+commonwealthSpace;"
+				systemAffinity=			"+commonwealthCore;"
+				levelFrequency=			"ccv-- ----- ----- ----- -----"
+
+				locationCriteria=		"+planetary"
+				exclusionRadius=		"50"
+				/>
+
+		<!-- Trade and Items -->
+
+		<Trade>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+			
+			<ConsumeTrade	criteria="{core.fusionFuel}"		impact="1"/>
+			<ConsumeTrade	criteria="{human.basicFood}"	impact="2"/>
+			<ConsumeTrade	criteria="{human.meds}"		impact="2"/>
+			<ConsumeTrade	criteria="{human.res}"		impact="1"/>
+		</Trade>
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
+		</Ships>
+
+		<!-- Image and Effects -->
+
+		<Image		imageID="&rsCommonwealthHabitat;" imageWidth="170" imageHeight="240" viewportRatio="0.02125"/>
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"100"
+				/>
+
+		<!-- Dock Screens -->
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<OnPaneInit>
+							(block Nil
+								(scrShowAction gScreen 'actionTakeReward (rpgGetStorage gSource))
+								
+								;	Display the friendly greeting if we have any completed (player) missions
+								;	LATER: need to exclude failed missions, and missions where the player did
+								;	not help e.g. player docked at station/accepted, but left without helping
+								(if (msnFind gSource 'rS)
+									(scrSetDescTranslate gScreen 'descFriendly)
+									)
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionTakeReward">
+								(scrShowScreen gScreen &dsRPGLoot; {
+									sourceObj: (rpgGetStorage gSource)
+									})
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<Language>
+			<Text id="actionTakeReward">[T]ake Reward</Text>
+
+			<Text id="descFriendly">
+
+				You are docked at a small Commonwealth habitat. The people here
+				are friendly and grateful to you, but they mostly go on with
+				their business.
+
+			</Text>
+			<Text id="descWelcome">
+
+				You are docked at a small Commonwealth habitat. The people here
+				are friendly, but they mostly go on with their business.
+
+			</Text>
+		</Language>
+
+	</StationType>
+
+</TranscendenceModule>
