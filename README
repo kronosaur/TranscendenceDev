@@ -23,7 +23,7 @@ You will need to install the February 2010 DirectX SDK release, as later version
 do not include necessary libraries. The correct DirectX SDK can be downloaded 
 here: 
 
-http://www.microsoft.com/en-us/download/details.aspx?id=10084
+https://archive.org/details/dxsdk_feb10
 
 Note the DirectX SDK's install location on your computer.
 
