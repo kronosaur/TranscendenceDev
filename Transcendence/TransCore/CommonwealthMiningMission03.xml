@@ -214,7 +214,7 @@
 							(enum (objGetItems markerObj "* +ore") theItem
 								(objAddItem asteroidObj theItem)
 								)
-							(objDestroy markerObj)
+							(objRemove markerObj)
 							(msnSet@ gSource 'markerID Nil)
 							)
 						)
@@ -260,7 +260,7 @@
 					(markerObj (objGetObjByID (msn@ gSource 'markerID)))
 					)
 					(if markerObj
-						(objDestroy markerObj)
+						(objRemove markerObj)
 						)
 					)
 			</OnDestroy>

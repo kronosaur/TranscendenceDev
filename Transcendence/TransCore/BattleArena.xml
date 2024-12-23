@@ -1731,7 +1731,7 @@
 						(if (and (sysVectorInPolygon theObj (obj@ arenaObj 'arenaPolygon))
 								(objGetItems theObj "m +military; | m +illegal; | * +auton;")
 								)
-							(objDestroy theObj)
+							(objRemove theObj)
 							)
 						)
 					)

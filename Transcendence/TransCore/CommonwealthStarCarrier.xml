@@ -1286,7 +1286,7 @@
 					(objSetData gSource "squadron" Nil)
 					(enum squadronList theEntry
 						(if (eq (item theEntry 2) 'home)
-							(objDestroy (objGetObjByID (item theEntry 0)))
+							(objRemove (objGetObjByID (item theEntry 0)))
 							)
 						)
 

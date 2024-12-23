@@ -620,7 +620,7 @@
 					(switch
 						(eq status 'gotoRallyPoint)
 							(block Nil
-								(objDestroy (objGetObjRefData gSource "rallyMarker"))
+								(objRemove (objGetObjRefData gSource "rallyMarker"))
 								(shpOrder gSource "hold" Nil 6)
 								(objSetData gSource "status" 'waitForWingmen)
 
@@ -653,7 +653,7 @@
 						(eq status 'gotoAttackPoint)
 							(block Nil
 								; Done with marker
-								(objDestroy (objGetObjRefData gSource "rallyMarker"))
+								(objRemove (objGetObjRefData gSource "rallyMarker"))
 
 								; Order wingmen to attack at will
 								(for i 1 (objGetData gSource "WingmanCount")
