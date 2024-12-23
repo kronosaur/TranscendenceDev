@@ -575,7 +575,7 @@
 
 								(objGetEventHandler oldShip)
 									(block ()
-										(objDestroy oldShip)
+										(objRemove oldShip)
 										)
 									
 								;	The old ship is suspended and possibly available for sale
@@ -1136,7 +1136,7 @@
 							
 								(not (objGetShipSellPrice sellerObj shipObj))
 									(block Nil
-										(objDestroy shipObj)
+										(objRemove shipObj)
 										Nil
 										)
 									
@@ -1159,7 +1159,7 @@
 					
 					;	Delete the extra ones
 					
-					(enum extraList shipObj (objDestroy shipObj))
+					(enum extraList shipObj (objRemove shipObj))
 					
 					;	Suspend the ships
 					

@@ -58,7 +58,7 @@
 						overlay2ID: overlay2ID
 						})
 
-					(objDestroy markerObj)
+					(objRemove markerObj)
 					)
 			</OnGlobalStartDiagnostics>
 		</Events>

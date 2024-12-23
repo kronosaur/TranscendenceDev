@@ -116,7 +116,7 @@
 							(diagAssertMissionLanguage missionObj)
 						
 							(msnDestroy missionObj)
-							(objDestroy gPlayerShip)
+							(objRemove gPlayerShip)
 							(setq gPlayerShip Nil)
 							)
 						)

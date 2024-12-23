@@ -159,7 +159,7 @@
 
 						;	Done
 
-						{	test:'(objDestroy markerObj)									result:'ignore	}
+						{	test:'(objRemove markerObj)									result:'ignore	}
 						{	test:'(setq markerObj Nil)										result:'ignore	}
 
 						;	Test Scaled Armor ----------------------------------
@@ -688,7 +688,7 @@
 
 						(lambda ()
 							(block ()
-								(objDestroy gPlayerShip)
+								(objRemove gPlayerShip)
 								(setq gPlayerShip Nil)
 								)
 							)
@@ -942,7 +942,7 @@
 
 						(lambda ()
 							(block ()
-								(objDestroy gPlayerShip)
+								(objRemove gPlayerShip)
 								(setq gPlayerShip Nil)
 								)
 							)
@@ -978,7 +978,7 @@
 
 					;	Clean up
 
-					(objDestroy gPlayerShip)
+					(objRemove gPlayerShip)
 					(setq gPlayerShip Nil)
 
 					;	Unit Tests for Usable Items ----------------------------
@@ -1007,7 +1007,7 @@
 
 					;	Clean up
 
-					(objDestroy gPlayerShip)
+					(objRemove gPlayerShip)
 					(setq gPlayerShip Nil)
 					)
 			</OnGlobalStartDiagnostics>

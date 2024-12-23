@@ -241,7 +241,7 @@
 
 					;	Clean up
 
-					(objDestroy gPlayerShip)
+					(objRemove gPlayerShip)
 					(setq gPlayerShip Nil)
 					)
 			</OnGlobalStartDiagnostics>

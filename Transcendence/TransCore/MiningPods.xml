@@ -536,7 +536,7 @@
 								
 							;	We get destroyed
 							
-							(objDestroy gSource)
+							(objRemove gSource)
 							)
 						)
 					)

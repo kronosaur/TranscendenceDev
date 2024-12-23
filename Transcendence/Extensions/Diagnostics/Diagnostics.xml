@@ -197,10 +197,10 @@
 
 					(lambda () 
 						(block ()
-							(objDestroy gPlayerShip)
+							(objRemove gPlayerShip)
 							(setq gPlayerShip Nil)
 
-							(objDestroy autonObj)
+							(objRemove autonObj)
 							(setq autonObj Nil)
 							)
 						)
@@ -253,7 +253,7 @@
 
 					(lambda () 
 						(block ()
-							(objDestroy gPlayerShip)
+							(objRemove gPlayerShip)
 							(setq gPlayerShip Nil)
 							)
 						)
@@ -326,7 +326,7 @@
 
 					(lambda () 
 						(block ()
-							(objDestroy gPlayerShip)
+							(objRemove gPlayerShip)
 							(setq gPlayerShip Nil)
 							)
 						)
@@ -398,7 +398,7 @@
 
 				;	Done with player ship
 
-				(objDestroy gPlayerShip)
+				(objRemove gPlayerShip)
 				(if gPlayerShip
 					(error "gPlayerShip not cleared")
 					)

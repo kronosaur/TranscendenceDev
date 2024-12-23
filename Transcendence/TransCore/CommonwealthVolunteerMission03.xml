@@ -398,7 +398,7 @@
 							(setq destObj (objGetObjByID (msn@ gSource 'destID)))
 							)
 						(block ()
-							(objDestroy destObj)
+							(objRemove destObj)
 							(msnSet@ gSource 'status 'destroyed)
 							)
 						)
@@ -502,9 +502,9 @@
 							)
 
 						(diagUpdateSystem 1)
-						(objDestroy missionObj)
+						(objRemove missionObj)
 
-						(objDestroy gPlayerShip)
+						(objRemove gPlayerShip)
 						(setq gPlayerShip Nil)
 						)
 					)

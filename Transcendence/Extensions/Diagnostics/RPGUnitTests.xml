@@ -54,7 +54,7 @@
 
 						(lambda ()
 							(block ()
-								(objDestroy gPlayerShip)
+								(objRemove gPlayerShip)
 								(setq gPlayerShip Nil)
 								)
 							)
@@ -118,7 +118,7 @@
 
 					;	Clean up
 
-					(objDestroy gPlayerShip)
+					(objRemove gPlayerShip)
 					(setq gPlayerShip Nil)
 					)
 			</OnGlobalRunDiagnostics>

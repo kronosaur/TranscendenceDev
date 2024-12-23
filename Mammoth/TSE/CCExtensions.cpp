@@ -257,6 +257,7 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_GET_REMOVE_CONDITION_PRICE	148
 #define FN_OBJ_SQUADRON_COMMS		149
 #define FN_OBJ_SQUADRON_COMMS_MESSAGES	150
+#define FN_OBJ_REMOVE				151
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1753,8 +1754,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objDestroy",					fnObjSet,		FN_OBJ_DESTROY,
-			"(objDestroy obj [objSource]) -> True/Nil",
+			"(objDestroy obj [objSource]) -> True/Nil\n\n"
+			"objSource: required in API 54+. For old 1 argument behavior, see objRemove.\n",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objRemove",					fnObjSet,		FN_OBJ_REMOVE,
+			"(objRemove obj) -> True/Nil",
+			"i",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objEnhanceItem",		fnObjSet,		FN_OBJ_ENHANCE_ITEM,
 			"(objEnhanceItem obj item enhancementType|item|enhancementDesc) -> result\n\n"
@@ -8743,7 +8749,23 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CDamageSource DamageSource(NULL, removedFromSystem);
 			if (pArgs->GetCount() > 1)
-				DamageSource = GetDamageSourceArg(*pCC, pArgs->GetElement(1));
+				{
+				if (pCtx->GetAPIVersion() <= 53)
+					DamageSource = GetDamageSourceArg(*pCC, pArgs->GetElement(1));
+				else
+					{
+					CString sError = CONSTLIT("Calling (objDestroy obj) has been deprecated in API 54+. Use (objRemove obj) instead.");
+					return pCC->CreateError(sError, pArgs->GetElement(1));
+					}
+				}
+
+			pObj->Destroy(DamageSource.GetCause(), DamageSource);
+			return pCC->CreateTrue();
+			}
+
+		case FN_OBJ_REMOVE:
+			{
+			CDamageSource DamageSource(NULL, removedFromSystem);
 
 			pObj->Destroy(DamageSource.GetCause(), DamageSource);
 			return pCC->CreateTrue();

@@ -62,9 +62,9 @@
 
 					;	Done
 
-					(objDestroy shop1Obj)
+					(objRemove shop1Obj)
 
-					(objDestroy gPlayerShip)
+					(objRemove gPlayerShip)
 					(setq gPlayerShip Nil)
 					(setq gSource Nil)
 					)

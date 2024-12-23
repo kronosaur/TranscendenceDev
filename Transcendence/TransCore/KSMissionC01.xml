@@ -189,7 +189,7 @@
 										)
 										;	Replace the destroyed korolov with new construction
 										(objSetKnown newStation)
-										(objDestroy stationObj)
+										(objRemove stationObj)
 
 										;	Debrief at the new station
 										(msnSet@ gSource 'debrieferID (objGetID newStation))
@@ -221,8 +221,8 @@
 								)
 
 								;	Remove default Korolov ships and events
-								(enum (sysFindObject korolovObj "sHZ") theShip (objDestroy theShip))
-								(enum (sysFindObject korolovObj "TN:32; +unid:&stSealedCargoContainer;;") theCrate (objDestroy theCrate))
+								(enum (sysFindObject korolovObj "sHZ") theShip (objRemove theShip))
+								(enum (sysFindObject korolovObj "TN:32; +unid:&stSealedCargoContainer;;") theCrate (objRemove theCrate))
 								(sysCancelTimerEvent korolovObj 'OnTrafficControl)
 								(objSetEventHandler korolovObj &evKorolovAtCharon;)
 

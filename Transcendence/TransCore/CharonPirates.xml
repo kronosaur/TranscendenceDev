@@ -1522,7 +1522,7 @@
 					; Destroy any previous ambush markers
 					(setq ambushMarker (objGetObjRefData gSource "ambushMarker"))
 					(if ambushMarker
-						(objDestroy ambushMarker)
+						(objRemove ambushMarker)
 						)
 
 					; 30% of the time we pick a spot on the transports's path
@@ -1993,7 +1993,7 @@
 
 					;	Done with marker
 					
-					(objDestroy raidMarker)
+					(objRemove raidMarker)
 					)
 				))
 

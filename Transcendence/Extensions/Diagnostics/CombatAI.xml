@@ -53,10 +53,10 @@
 
 					;	Clean up
 
-					(objDestroy gPlayerShip)
+					(objRemove gPlayerShip)
 					(setq gPlayerShip Nil)
 
-					(objDestroy baseObj)
+					(objRemove baseObj)
 					)
 			</OnGlobalStartDiagnostics>
 		</Events>

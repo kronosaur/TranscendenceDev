@@ -606,7 +606,7 @@
 						'detonateNow
 						)
 
-					(objDestroy gSource)
+					(objRemove gSource)
 					)
 			</OrderSelfDestruct>
 		</Events>

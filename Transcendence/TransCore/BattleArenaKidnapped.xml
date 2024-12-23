@@ -89,7 +89,7 @@
 
 					(objSetProperty destObj 'shipReinforcementEnabled Nil)
 					(enum (sysFindObject destObj "sAJ O:guard;") theObj
-						(objDestroy theObj)
+						(objRemove theObj)
 						)
 
 					;	Create a single guard
