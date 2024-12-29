@@ -4968,6 +4968,10 @@ void CSystem::UpdateBehaviors (SSystemUpdateCtx &SystemCtx, SViewportAnnotations
 	if (CSpaceObject *pPlayerShip = GetPlayerShip())
 		Ctx.SetPlayerShip(*pPlayerShip);
 
+	//	Add all objects to the grid so that we can do faster
+	//	hit tests (this is also required for some AI functions)
+
+	m_ObjGrid.Init(this, Ctx);
 
 	//	Fire timed events
 	//	NOTE: We only do this if we have a player because otherwise, some
