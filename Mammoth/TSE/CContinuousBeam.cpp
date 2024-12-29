@@ -479,12 +479,14 @@ void CContinuousBeam::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rS
 //	Handle moving
 
 	{
+	int i;
 	//	Update the effect painter
 
 	if (m_pPainter)
 		{
 		SEffectMoveCtx Ctx;
 		Ctx.pObj = this;
+		Ctx.rSeconds = rSeconds;
 
 		m_pPainter->OnMove(Ctx);
 		}
@@ -500,6 +502,15 @@ void CContinuousBeam::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rS
 
 	SetPos(vNewPos);
 	SetBounds(rMaxBoundsX, rMaxBoundsY);
+
+	//	Do damage
+
+	for (i = 0; i < m_Hits.GetCount(); i++)
+		{
+		const CHitCtx& Hit = m_Hits[i];
+
+		EDamageResults iResult = DoDamage(Hit.GetHitObj(), Hit.GetHitPos(), Hit.GetHitDir());
+		}
 	}
 
 void CContinuousBeam::ObjectDestroyedHook (const SDestroyCtx &Ctx)
@@ -696,23 +707,6 @@ void CContinuousBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		{
 		SEffectUpdateCtx UpdateCtx(GetUniverse());
 		m_pPainter->OnUpdate(UpdateCtx);
-		}
-
-	//	Do damage
-
-	for (i = 0; i < m_Hits.GetCount(); i++)
-		{
-		const CHitCtx &Hit = m_Hits[i];
-
-		//	Do damage
-
-		EDamageResults iResult = DoDamage(Hit.GetHitObj(), Hit.GetHitPos(), Hit.GetHitDir());
-
-		//	NOTE: No need to do anything with the result because we've already
-		//	determined whether the beam/segment needs to be split. We do not
-		//	check for passthrough here because we already checked in OnMove.
-		//	[And we have to check in OnMove because otherwise we would not
-		//	paint correctly.]
 		}
 
 	//	Update each segment (except for the pseudo segment).
