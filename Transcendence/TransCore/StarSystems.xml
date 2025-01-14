@@ -1479,7 +1479,7 @@
 								;	8, then we skip.
 							
 								(ls (count (setq allAsteroids (sysFindObject markerObj (cat "tN:" radius "; +asteroid;")))) 8)
-									(objDestroy markerObj)
+									(objRemove markerObj)
 								
 								;	Otherwise, we create the ore deposit
 								
