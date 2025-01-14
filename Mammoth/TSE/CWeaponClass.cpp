@@ -1265,7 +1265,12 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 
 				Shots[i].pTarget = Target.pObj;
 				if (bCanRotate)
-					Shots[i].iDir = Target.iFireAngle;
+					{
+					int iDeviceSlotAvgAngle = iRotationType != CDeviceRotationDesc::rotOmnidirectional ? AngleMod(Device.GetMinFireArc() + abs(Device.GetMaxFireArc() - Device.GetMinFireArc()) / 2) : 0;
+					int iSourceDirection = Device.GetSource()->GetRotation();
+					int iConfigurationOffsetAngle = AngleMod(Shots[i].iDir - iSourceDirection - iDeviceSlotAvgAngle);
+					Shots[i].iDir = AngleMod(iConfigurationOffsetAngle + Target.iFireAngle);
+					}
 				}
 			}
 
