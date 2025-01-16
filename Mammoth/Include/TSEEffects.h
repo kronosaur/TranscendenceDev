@@ -20,6 +20,7 @@ struct SEffectMoveCtx
 	{
 	CSpaceObject *pObj = NULL;					//	The object that owns the effect
 	CVector vOldPos;							//	Old position of object
+	Metric rSeconds = -1;						//	Time since last move
 
 	bool bUseOrigin = false;					//	If TRUE, vOrigin is valid.
 	CVector vOrigin;							//	Effect origin
@@ -404,7 +405,7 @@ class CObjectEffectList
 
 		void AccumulateBounds (CSpaceObject *pObj, const CObjectEffectDesc &Desc, int iRotation, RECT *ioBounds);
 		void Init (const CObjectEffectDesc &Desc, const TArray<IEffectPainter *> &Painters);
-		void Move (CSpaceObject *pObj, const CVector &vOldPos, bool *retbBoundsChanged = NULL);
+		void Move (CSpaceObject *pObj, const CVector &vOldPos, Metric rSeconds, bool *retbBoundsChanged = NULL);
 		void Paint (SViewportPaintCtx &Ctx, const CObjectEffectDesc &Desc, DWORD dwEffects, CG32bitImage &Dest, int x, int y);
 		void PaintAll (SViewportPaintCtx &Ctx, const CObjectEffectDesc &Desc, CG32bitImage &Dest, int x, int y);
 		void Update (CSpaceObject *pObj, const CObjectEffectDesc &Desc, int iRotation, DWORD dwEffects);
