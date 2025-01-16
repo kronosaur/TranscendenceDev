@@ -100,6 +100,9 @@
     <Filter Include="Human Space Library\Commonwealth Metropolis">
       <UniqueIdentifier>{008a8470-8f59-4e13-8bc5-72c588016ec7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Human Space Library\Centauri Warlords">
+      <UniqueIdentifier>{9ce2fe60-ca7f-42d4-8608-516ec944f1ca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Transcendence.xml" />
@@ -237,9 +240,6 @@
     </None>
     <None Include="RPGAnalyzers.xml">
       <Filter>RPG Library</Filter>
-    </None>
-    <None Include="CentauriWarlords.xml">
-      <Filter>Human Space Library\Encounters</Filter>
     </None>
     <None Include="Code.xml">
       <Filter>Human Space Library\Miscellaneous</Filter>
@@ -402,6 +402,9 @@
     </None>
     <None Include="Part1Compatibility.xml">
       <Filter>Part I</Filter>
+    </None>
+    <None Include="CentauriWarlords.xml">
+      <Filter>Human Space Library\Centauri Warlords</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -1091,6 +1094,9 @@
     </Xml>
     <Xml Include="RPGSlaves.xml">
       <Filter>RPG Library</Filter>
+    </Xml>
+    <Xml Include="CentauriOccupation.xml">
+      <Filter>Human Space Library\Centauri Warlords</Filter>
     </Xml>
   </ItemGroup>
 </Project>
