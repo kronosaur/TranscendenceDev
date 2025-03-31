@@ -31,6 +31,14 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					212;
 //
 //
 //	 54: 1.9.3a0
+//		<CoreLibrary>:
+//			Added new CoreLibrary: Compatibility UNID Library (0x00710000)
+//				Compatibility UNID Library contains pre-API 54 legacy aliases
+//				for older mods, and is automatically loaded for any pre-API 54
+//				library/adventure/extension.
+//				To continue using the legacy aliases in API 54, please explicitly
+//				include the Compatibility UNID Library:
+//					<Library unid="&CMPU_unidCompatibilityUNIDLibrary;"/>
 //		<ItemType><Weapon><Missile>:
 //			detonateOnDestroyed="true|false"
 //				Projectile will fragment even if it is killed
