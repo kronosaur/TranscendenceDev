@@ -24,13 +24,19 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					212;
 //	 2 "2": 0.97
 //		Changed gStation to gSource
 // 
-//	 3 "1.0": 1.0
+//	 3 "1.0": 1.0/1.01
 //      API Version specified as version="{Product version}"
 //		<SmokeTrail>: emitSpeed fixed (used in klicks per tick instead of per second)
 //		<Weapon>: shield damage modifier uses a different calculation with more bits for dmg
 // 
-//	 ? "1.1": 1.04
-//		Unspecified changes
+//	 4-11 "1.1": 1.02-1.08b
+//		1.02: https://forums.kronosaur.com/viewtopic.php?f=15&t=3174
+//		1.03: https://forums.kronosaur.com/viewtopic.php?f=15&t=3300
+//		1.04: https://forums.kronosaur.com/viewtopic.php?f=15&t=3563
+//		1.05: https://forums.kronosaur.com/viewtopic.php?f=15&t=3956
+//		1.06: https://forums.kronosaur.com/viewtopic.php?f=15&t=4292
+//		1.07: https://forums.kronosaur.com/viewtopic.php?f=15&t=4612
+//		1.08: https://forums.kronosaur.com/viewtopic.php?f=15&t=4889
 // 
 //   12: (1.08c/1.08d)/1.08e
 //		1.08c and 1.08d have savegame corruption issues, do not use them.
@@ -39,8 +45,14 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					212;
 //		<TranscendenceAdventure><TranscendenceExtension>:
 //			If no library is selected the compatibility library is
 //			automatically loaded.
+//	 12 (later): 1.08g-1.08l (?)
+//		<MissionType>
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=5387
 // 
-//   14: 1.2
+//	 13: 1.2a1
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=5667
+// 
+//   14: 1.2b1
 //		Transcribed from here: https://wiki.kronosaur.com/doku.php/modding/xml/api_version?s[]=api
 //		<EffectType>: (new)
 //			Can now specify effect design types for creating dynamic effects
@@ -83,18 +95,47 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					212;
 //			'playerMissionsGiven: The number of missions this object has assigned the player
 //			'underAttack: same as (objIsUnderAttack)
 //			"property:{propertyName}" is now a valid criteria filter for boolean properties
+//				(Note: ItemType is not supported until API 24)
 //
-//   22: 1.3
+//   15: 1.2b2
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=5938
 //
-//	 23:
+//   16: 1.2b3?
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=5978
+//
+//   17: 1.2b4?
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=6061
+//
+//   18: 1.2rc1?
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=6102
+//
+//   19: 1.2?
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=6128
+//
+//   20: 1.3b1
+//		https://multiverse.kronosaur.com/news.hexm?id=258
 // 
-//   24:
+//	 21: 1.3b2
+//		https://multiverse.kronosaur.com/news.hexm?id=434
 // 
-//   25:
+//   22: 1.3rc1/1.3
+//		https://multiverse.kronosaur.com/news.hexm?id=532
+//
+//	 23: 1.5b1
+//		https://multiverse.kronosaur.com/news.hexm?id=1063
 // 
-//   26:
+//   24: 1.5rc1/1.5
+//		https://multiverse.kronosaur.com/news.hexm?id=1096
 // 
-//   27:
+//   25: 1.6b2
+//		Tlisp supports basic floating point math:
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=7116
+// 
+//   26: 1.6b3
+//		https://multiverse.kronosaur.com/news.hexm?id=1364
+// 
+//   27: 1.6b5
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=7226
 // 
 //   28:
 // 
