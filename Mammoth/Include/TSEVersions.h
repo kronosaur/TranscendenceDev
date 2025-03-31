@@ -25,18 +25,41 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					212;
 //		Changed gStation to gSource
 // 
 //	 3 "1.0": 1.0/1.01
-//      API Version specified as version="{Product version}"
+//      API Version specified as version="1.0"
 //		<SmokeTrail>: emitSpeed fixed (used in klicks per tick instead of per second)
 //		<Weapon>: shield damage modifier uses a different calculation with more bits for dmg
 // 
-//	 4-11 "1.1": 1.02-1.08b
-//		1.02: https://forums.kronosaur.com/viewtopic.php?f=15&t=3174
-//		1.03: https://forums.kronosaur.com/viewtopic.php?f=15&t=3300
-//		1.04: https://forums.kronosaur.com/viewtopic.php?f=15&t=3563
-//		1.05: https://forums.kronosaur.com/viewtopic.php?f=15&t=3956
-//		1.06: https://forums.kronosaur.com/viewtopic.php?f=15&t=4292
-//		1.07: https://forums.kronosaur.com/viewtopic.php?f=15&t=4612
-//		1.08: https://forums.kronosaur.com/viewtopic.php?f=15&t=4889
+//	 4 "1.1": 1.02
+//      API Version specified as version="1.1"
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=3174
+// 
+//	 5 "1.1": 1.03
+//      API Version specified as version="1.1"
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=3300
+// 
+//	 6 "1.1": 1.04
+//      API Version specified as version="1.1"
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=3563
+// 
+//	 7 "1.1": 1.05
+//      API Version specified as version="1.1"
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=3956
+// 
+//	 8 "1.1": 1.06
+//      API Version specified as version="1.1"
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=4292
+// 
+//	 9 "1.1": 1.07
+//      API Version specified as version="1.1"
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=4612
+// 
+//	 10 "1.1": 1.08
+//      API Version specified as version="1.1"
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=4889
+// 
+//	 11 "1.1": 1.08b(?)
+//      API Version specified as version="1.1"
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=4912
 // 
 //   12: (1.08c/1.08d)/1.08e
 //		1.08c and 1.08d have savegame corruption issues, do not use them.
@@ -137,7 +160,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					212;
 //   27: 1.6b5
 //		https://forums.kronosaur.com/viewtopic.php?f=15&t=7226
 // 
-//   28:
+//   28: 1.6rc1?
+//		https://ministry.kronosaur.com/program.hexm?id=1&status=closed&tag=28
 // 
 //   29: 1.7preview
 //		http://ministry.kronosaur.com/record.hexm?id=8048
