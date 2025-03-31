@@ -1,0 +1,1690 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Slicer Cannon -->
+
+	<ItemType UNID="&HS_itSlicerCannon;"
+			name=				"PM6 Slicer cannon"
+			level=				"6"
+			value=				"30000"
+			mass=				"4000"
+			frequency=			"notrandom"
+			attributes=			"cannotOrder, EI; EnergyWeapon; MajorItem"
+
+			description=		"A modified particle cannon firing crisscrossing beams."
+
+			sortName=			"slicer cannon, PM6"
+			>
+
+		<Image imageID="&HS_rsItemsEI2;" imageX="192" imageY="192" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"beam"
+
+				damage=				"particle:2d8+1"
+				fireRate=			"6"
+				lifetime=			"30"
+				powerUse=			"300"
+
+				effect=				"&CORE_efParticleBeamDefault;"
+				sound=				"&CORE_snLaserCannon;"
+				>
+
+			<Configuration aimTolerance="5" alternating="true">
+				<Shot posAngle="90" posRadius="20" angle="-3"/>
+				<Shot posAngle="270" posRadius="20" angle="3"/>
+			</Configuration>
+		</Weapon>
+	</ItemType>
+
+<!-- Gladiator (Level 1) ================================================== -->
+
+	<!-- Borer-class Gunship -->
+
+	<ShipClass UNID="&HS_scBorerG1;"
+			manufacturer=		"United African States"
+			class=				"Borer"
+			type=				"gunship"
+
+			attributes=			"battleArena, melee1"
+			inherit=			"&HS_scBorerStock;"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itLightReactiveArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="20" item="&HS_itFastFireLaserCannon;" enhanced="10"/>
+				<Device chance="20" item="&HS_itBlaster;" enhanced="15"/>
+				<Device chance="20" item="&HS_itHeavyRecoillessCannon;" enhanced="10"/>
+				<Device chance="40" item="&HS_itMiningLaser;" enhanced="5"/>
+			</Table>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"30"
+			fireAccuracy=		"80"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>
+				0
+			</arenaSkillBase>
+		</StaticData>
+	</ShipClass>
+
+	<!-- EI100 Freighter -->
+
+	<ShipClass UNID="&HS_scEI100G1;"
+			manufacturer=		"Earth Industries"
+			class=				"EI100"
+			type=				"freighter"
+
+			attributes=			"battleArena, melee1"
+			inherit=			"&HS_scEI100Stock;"
+			>
+
+		<Armor
+			armorID=			"&HS_itLightReactiveArmor;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Table>
+				<Device chance="40" item="&HS_itOmniLaserCannon;"/>
+				<Device chance="20" item="&HS_itRecoillessCannon;" omnidirectional="true"/>
+				<Device chance="20" item="&HS_itLightRecoillessCannon;" omnidirectional="true"/>
+
+				<Device chance="20" item="&HS_itNAMIMissileLauncher;">
+					<Items>
+						<Table>
+							<Item chance="80" count="4d6" item="&HS_itKM100Missile;"/>
+							<Item chance="20" count="4d6" item="&HS_itFragmentationMissile;"/>
+						</Table>
+					</Items>
+				</Device>
+			</Table>
+
+			<Device item="&HS_itClass1Deflector;"/>
+		</Devices>
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"30"
+			fireAccuracy=		"80"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>
+				0
+			</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+	<!-- Light IAV -->
+
+	<ShipClass UNID="&HS_scIAVLightG1;"
+			manufacturer=		"(Various)"
+			class=				"light IAV"
+			type=				""
+
+			attributes=			"battleArena, melee1"
+			inherit=			"&HS_scIAVLight;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itUltraLightTitaniumArmor;"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="30" item="&HS_itLightRecoillessCannon;" enhanced="10"/>
+				<Device chance="45" item="&CORE_itLaserCannon;" enhanced="15"/>
+				<Device chance="25" item="&HS_itRecoillessCannon;" enhanced="5"/>
+			</Table>
+		</Devices>
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"30"
+			fireRangeAdj=		"50"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>
+				0
+			</arenaSkillBase>
+		</StaticData>
+	</ShipClass>
+
+	<!-- Ronin A-class Gunship -->
+
+	<ShipClass UNID="&HS_scRoninG1;"
+			manufacturer=		"Pacific Defense"
+			class=				"Ronin/A"
+			type=				"gunship"
+
+			level=				"1"
+			attributes=			"battleArena, melee1"
+			inherit=			"&HS_scRoninA;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itLightCeramicPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="15" item="&HS_itDualLaserCannon;" enhanced="10"/>
+				<Device chance="30" item="&HS_itFastFireLaserCannon;" enhanced="10"/>
+				<Device chance="30" item="&HS_itBlaster;" enhanced="15"/>
+				<Device chance="15" item="&HS_itTridentCannon;" enhanced="15"/>
+				<Device chance="10" item="&HS_itHeavyRecoillessCannon;" enhanced="10"/>
+			</Table>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"30"
+			fireRangeAdj=		"50"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>
+				0
+			</arenaSkillBase>
+		</StaticData>
+	</ShipClass>
+
+<!-- Gladiator (Level 2) ================================================== -->
+
+	<!-- Earthzone Armed Shuttle -->
+
+	<ShipClass UNID="&HS_scEarthzoneG2;"
+			manufacturer=		"Revolution Designs"
+			class=				"Earthzone 100"
+			type=				"armed shuttle"
+
+			level=				"2"
+			attributes=			"battleArena, melee2"
+			inherit=			"&HS_scEarthzone;"
+			>
+
+		<Armor
+			armorID=			"&HS_itLightTitaniumArmor;"
+			/>
+
+		<Devices>
+			<Table>
+				<Device chance="15" item="&HS_itFastFireLaserCannon;"/>
+				<Device chance="30" item="&HS_itOmniLaserCannon;"/>
+				<Device chance="15" item="&HS_itDisposableLauncher;"/>
+
+				<Group chance="40">
+					<Table>
+						<Device chance="50" item="&CORE_itLaserCannon;"/>
+						<Device chance="30" item="&HS_itRecoillessCannon;"/>
+						<Device chance="20" item="&HS_itDualLaserCannon;"/>
+					</Table>
+
+					<Device item="&HS_itLaserDeflector;"/>
+				</Group>
+			</Table>
+		</Devices>
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"20"
+			fireRangeAdj=		"50"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>
+				0
+			</arenaSkillBase>
+		</StaticData>
+	</ShipClass>
+
+	<!-- EI100 Freighter -->
+
+	<ShipClass UNID="&HS_scEI100G2;"
+			manufacturer=		"Earth Industries"
+			class=				"EI100"
+			type=				"freighter"
+
+			attributes=			"battleArena, melee2"
+			inherit=			"&HS_scEI100Stock;"
+			>
+
+		<Armor
+			armorID=			"&HS_itReactiveArmor;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Table>
+				<Device chance="20" item="&HS_itBlaster;" omnidirectional="true"/>
+				<Device chance="20" item="&HS_itFastFireLaserCannon;" omnidirectional="true"/>
+				<Device chance="20" item="&HS_itHeavyRecoillessCannon;" omnidirectional="true"/>
+
+				<Device chance="40" item="&HS_itNAMIMissileLauncher;">
+					<Items>
+						<Table>
+							<Item chance="80" count="4d6" item="&HS_itKM100Missile;"/>
+							<Item chance="20" count="4d6" item="&HS_itFragmentationMissile;"/>
+						</Table>
+					</Items>
+				</Device>
+			</Table>
+
+			<Device item="&HS_itClass1Deflector;"/>
+		</Devices>
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"20"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>
+				0
+			</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+	<!-- EI500 Freighter G2 -->
+
+	<ShipClass UNID="&HS_scEI500G2;"
+			manufacturer=		"Earth Industries"
+			class=				"EI500"
+			type=				"freighter"
+
+			level=				"2"
+			attributes=			"battleArena, melee2"
+			inherit=			"&HS_scEI500Stock;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itTitaniumArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="20" item="&HS_itOmniLaserCannon;"/>
+				<Device chance="40" item="&HS_itTurbolaserCannon;" enhanced="100"/>
+				<Device chance="40" item="&HS_itLaserArray;" enhanced="100"/>
+			</Table>
+
+			<Device deviceID="&HS_itClass2Deflector;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"20"
+			fireAccuracy=		"85"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>
+				0
+			</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+	<!-- Medium IAV G2 -->
+
+	<ShipClass UNID="&HS_scIAVMediumG2;"
+			manufacturer=		"(Various)"
+			class=				"medium IAV"
+			type=				""
+
+			mass=				"50"
+			cargoSpace=			"10"
+			thrustRatio=		"6.5"
+			maxSpeed=			"16"
+
+			attributes=			"battleArena, melee2"
+			>
+
+		<Armor>
+			<ArmorSection start="270" span="180" armorID="&HS_itLightReactiveArmor;" />
+			<ArmorSection start="90"  span="180" armorID="&HS_itLightReactiveArmor;" />
+		</Armor>
+
+		<Devices>
+			<Table>
+				<Device chance="30" item="&HS_itTridentCannon;" enhanced="15"/>
+				<Device chance="45" item="&HS_itDualLaserCannon;" enhanced="15"/>
+				<Device chance="25" item="&HS_itArbalestCannon;"/>
+			</Table>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"5.0"
+			rotationAccel=		"0.5"
+			/>
+
+		<Image imageID="&HS_rsIAVMediumHD;" imageX="0" imageY="0" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" />
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="168"	posRadius="30"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-168"	posRadius="30"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"20"
+			fireRangeAdj=		"50"
+			fireAccuracy=		"85"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>0</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+	<!-- Heavy IAV G2 -->
+
+	<ShipClass UNID="&HS_scIAVHeavyG2;"
+			manufacturer=		"(Various)"
+			class=				"heavy IAV"
+			type=				""
+			level=				"2"
+
+			attributes=			"battleArena, melee2"
+			inherit=			"&HS_scIAVHeavy;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itLightPlasteelPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="30" item="&HS_itDualRecoillessCannon;"/>
+				<Device chance="25" item="&HS_itArbalestCannon;"/>
+				<Device chance="45" item="&HS_itPartisanCannon;"/>
+			</Table>
+		</Devices>
+
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"20"
+			fireRangeAdj=		"65"
+			fireAccuracy=		"85"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>0</arenaSkillBase>
+		</StaticData>
+	</ShipClass>
+
+	<!-- Ronin A-class Gunship -->
+
+	<ShipClass UNID="&HS_scRoninG2;"
+			manufacturer=		"Pacific Defense"
+			class=				"Ronin/A"
+			type=				"gunship"
+
+			level=				"2"
+			attributes=			"battleArena, melee2"
+			inherit=			"&HS_scRoninA;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itCeramicPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="15" item="&HS_itArbalestCannon;" enhanced="15"/>
+				<Device chance="10" item="&HS_itLaserArray;" enhanced="10"/>
+				<Device chance="25" item="&HS_itBlaster;" enhanced="100"/>
+				<Device chance="15" item="&HS_itPartisanCannon;" enhanced="15"/>
+				<Device chance="10" item="&HS_itOmniLaserCannon;" enhanced="10"/>
+				<Device chance="25" item="&HS_itTurbolaserCannon;" enhanced="10"/>
+			</Table>
+		</Devices>
+
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"20"
+			fireRangeAdj=		"50"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>0</arenaSkillBase>
+		</StaticData>
+	</ShipClass>
+
+	<!-- Sapphire Yacht G2 -->
+
+	<ShipClass UNID="&HS_scSapphireG2;"
+			manufacturer=		"Zubrin Systems"
+			class=				"Sapphire"
+			type=				"yacht"
+
+			level=				"2"
+			attributes=			"battleArena, melee2"
+			inherit=			"&HS_scSapphireYacht;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itReactiveArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="20" item="&HS_itArbalestCannon;"/>
+				<Device chance="25" item="&HS_itTurbolaserCannon;"/>
+				<Device chance="20" item="&HS_itPartisanCannon;"/>
+				<Device chance="25" item="&HS_itDualRecoillessCannon;"/>
+				<Group chance="10">
+					<Device item="&HS_itBlinderCannon;"/>
+					<Device item="&HS_itHeavyRecoillessCannon;"/>
+				</Group>
+			</Table>
+
+			<Table>
+				<Device chance="60" item="&HS_itClass1Deflector;"/>
+				<Device chance="30" item="&HS_itLaserDeflector;"/>
+				<Device chance="10" item="&HS_itCyclotronDeflectorI;"/>
+			</Table>			
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"20"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>0</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+<!-- Gladiator (Level 3) ================================================== -->
+
+	<!-- EI200 Freighter -->
+
+	<ShipClass UNID="&HS_scEI200G3;"
+			manufacturer=		"Earth Industries"
+			class=				"EI200"
+			type=				"freighter"
+
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scEI200Stock;"
+			>
+
+		<Names noArticle="true" personalName="true">
+			Anton Malik; Ed Somme; Irina Bolstov; Mila Czech; Rene Arms;
+			Walsh Gordon; Katrina Feodor; Viktor Kovalenko
+		</Names>
+
+		<Armor
+			armorID=			"&CORE_itHeavyReactiveArmor;"
+			count=				"6"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="25" item="&HS_itArbalestCannon;" omnidirectional="true" posAngle="0" posRadius="3" posZ="14"/>
+				<Device chance="25" item="&HS_itTurbolaserCannon;" omnidirectional="true" posAngle="0" posRadius="3" posZ="14"/>
+				<Device chance="25" item="&HS_itPartisanCannon;" omnidirectional="true" posAngle="0" posRadius="3" posZ="14"/>
+				<Device chance="25" item="&HS_itLaserArray;" omnidirectional="true" posAngle="0" posRadius="3" posZ="14"/>
+			</Table>
+
+			<Device item="&HS_itMonopoleDeflector;"/>
+		</Devices>
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"15"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>300</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+	<!-- Heavy IAV G3 -->
+
+	<ShipClass UNID="&HS_scIAVHeavyG3;"
+			manufacturer=		"(Various)"
+			class=				"heavy IAV"
+			type=				""
+
+			level=				"3"
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scIAVHeavy;"
+			>
+
+		<Names noArticle="true" personalName="true">
+			Iron Axe; Death Dealer; Gene Reaper; Jabberwock; Mortal Wound;
+			The Ox; The Undertaker; The Vampyre; The Wyvern; ZeroZero
+		</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itLightBlastPlate;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Table>
+				<Device chance="30" item="&HS_itPartisanCannon;" enhancement="0x1005"/>
+				<Device chance="25" item="&HS_itSlamCannon;"/>
+				<Device chance="20" item="&HS_itMorningStarCannon;"/>
+				<Device chance="25" item="&HS_itFlenserCannon;"/>
+			</Table>
+
+			<Device item="&HS_itHullPlateIonizer;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"15"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>250</arenaSkillBase>
+		</StaticData>
+	</ShipClass>
+
+	<!-- Ronin B-class Gunship -->
+
+	<ShipClass UNID="&HS_scRoninG3;"
+			manufacturer=		"Pacific Defense"
+			class=				"Ronin/B"
+			type=				"gunship"
+
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scRoninB;"
+			>
+
+		<Names noArticle="true" personalName="true">
+			Brother Brandan; Flavius Maul; Hannibal; Marc Renser; Lawrence Dorr; 
+			Anon Thraces; Perigrine; Vespatian; Gladius Quintus
+		</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itHeavyCeramicPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="15" item="&HS_itArbalestCannon;"/>
+				<Device chance="10" item="&HS_itLaserArray;"/>
+				<Device chance="25" item="&HS_itBlaster;" enhanced="50"/>
+				<Device chance="15" item="&HS_itPartisanCannon;"/>
+				<Device chance="10" item="&HS_itOmniLaserCannon;"/>
+				<Device chance="25" item="&HS_itTurbolaserCannon;"/>
+			</Table>
+
+			<Device item="&HS_itNAMIMissileLauncher;">
+				<Items>
+					<Item count="4d6" item="&HS_itKM100Missile;"/>
+				</Items>
+			</Device>
+
+			<Device item="&HS_itMonopoleDeflector;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"15"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>200</arenaSkillBase>
+		</StaticData>
+	</ShipClass>
+
+	<!-- Sapphire Yacht G3 -->
+
+	<ShipClass UNID="&HS_scSapphireG3;"
+			manufacturer=		"Zubrin Systems"
+			class=				"Sapphire"
+			type=				"yacht"
+
+			level=				"3"
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scSapphireYacht;"
+			>
+
+		<Names noArticle="true" personalName="true">
+			Aelix; Erasmus Barynger; Iridian Oz; Merseine; Ren Sawyer;
+			Roma Victor; Nolan Reyes; Jan Lodestar; Benn Taryn
+		</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itReactiveArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Table>
+				<Group chance="50">
+					<Table>
+						<Device chance="15" item="&HS_itArbalestCannon;"/>
+						<Device chance="15" item="&HS_itTurbolaserCannon;"/>
+						<Device chance="15" item="&HS_itPartisanCannon;"/>
+						<Device chance="12" item="&HS_itDualRecoillessCannon;"/>
+						<Device chance="15" item="&HS_itLaserArray;"/>
+						<Device chance="15" item="&HS_itMoskvaLightTurret;"/>
+						<Device chance="13" item="&HS_itOmniLaserCannon;"/>
+					</Table>
+
+					<Table>
+						<Device chance="50" item="&HS_itMonopoleDeflector;"/>
+						<Device chance="50" item="&HS_itCyclotronDeflectorIII;"/>
+					</Table>
+				</Group>
+
+				<Group chance="50">
+					<Table>
+						<Device chance="10" item="&HS_itParticleBeamWeapon;"/>
+						<Device chance="10" item="&HS_itSlamCannon;"/>
+						<Device chance="10" item="&HS_itDualTurbolaserCannon;"/>
+						<Device chance="10" item="&HS_itOmniTurbolaserCannon;"/>
+						<Device chance="10" item="&HS_itMorningStarCannon;"/>
+						<Device chance="10" item="&CORE_itBallistaCannon;"/>
+						<Device chance="10" item="&HS_itFlenserCannon;"/>
+						<Device chance="10" item="&HS_itMoskvaDualCannon;"/>
+						<Device chance="10" item="&HS_itOmniPartisanCannon;"/>
+						<Group  chance="10">
+							<Device item="&HS_itMAGLauncher;">
+								<Items>
+									<Item count="100" item="&HS_it400HexageneMAG;"/>
+								</Items>
+							</Device>
+							<Device item="&HS_itTurbolaserCannon;"/>
+						</Group>
+					</Table>
+
+					<Table>
+						<Device chance="50" item="&HS_itHullPlateIonizer;" enhanced="true"/>
+						<Device chance="50" item="&HS_itClass2Deflector;" enhanced="true"/>
+					</Table>
+				</Group>
+			</Table>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"15"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>350</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+	<!-- T31 Armed Transport -->
+
+	<ShipClass UNID="&HS_scT31G3;"
+			manufacturer=		"United African States"
+			class=				"T31"
+			type=				"armed transport"
+
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scT31ArmedTransport;"
+			>
+
+		<Names noArticle="true" personalName="true">
+			Borin Thal; Farah Dawson; Jorgen Nash; Nimmoh Kenyatta; Soren Marx;
+			Crom Cassey; Hathor Said
+		</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itLightPlasteelPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Table>
+				<Group chance="50">
+					<Device item="&HS_itSmartCannon;">
+						<Items>
+							<Item count="12d20" item="&HS_itSmartCannonShell;"/>
+						</Items>
+					</Device>
+					<Device item="&HS_itOmniLaserCannon;" secondaryWeapon="true"/>
+				</Group>
+
+				<Device chance="30" item="&HS_itOmniTurbolaserCannon;"/>
+
+				<Group chance="20">
+					<Device item="&HS_itPartisanCannon;" enhanced="true"/>
+					<Device item="&HS_itOmniLaserCannon;" secondaryWeapon="true"/>
+				</Group>
+			</Table>
+
+			<Device item="&HS_itCyclotronDeflectorIII;"/>
+			<Device deviceID="&HS_itCargoHoldExpansion;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"15"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>400</arenaSkillBase>
+		</StaticData>
+	</ShipClass>
+
+<!-- Gladiator (Level 4) ================================================== -->
+
+	<!-- EI500 Freighter G4 -->
+
+	<ShipClass UNID="&HS_scEI500G4;"
+			manufacturer=		"Earth Industries"
+			class=				"EI500"
+			type=				"freighter"
+
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scEI500Stock;"
+			>
+
+		<Names noArticle="true" personalName="true">
+			Cara Ogden; Gail Neethan; Kate Janovich; Owen Saul; Tensor Aren;
+			Ivan Ilyanich; Nadia Konstantine
+		</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itPlasteelPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="25" item="&HS_itMoskvaLightTurret;"/>
+				<Device chance="25" item="&HS_itTurbolaserCannon;"/>
+				<Device chance="25" item="&HS_itArbalestCannon;"/>
+				<Device chance="25" item="&HS_itSmartCannon;">
+					<Items>
+						<Item count="500" item="&HS_itSmartCannonShell;"/>
+					</Items>
+				</Device>
+			</Table>
+
+			<Table>
+				<Device chance="60" item="&HS_itOmniLaserCannon;"/>
+				<Device chance="40" item="&HS_itMAGLauncher;">
+					<Items>
+						<Item count="100" item="&HS_it600HexageneMAG;"/>
+					</Items>
+				</Device>
+			</Table>
+
+			<Device deviceID="&HS_itClass3Deflector;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"12"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>500</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+	<!-- Manticore-class Heavy Gunship -->
+
+	<ShipClass UNID="&HS_scManticoreG4;"
+			manufacturer=		"Makayev-Energia"
+			class=				"Manticore"
+			type=				"heavy gunship"
+
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scManticore;"
+			>
+
+		<Names noArticle="true" personalName="true">
+			Domo; The Journeyman; Roc; Xantic Mage; Typhoon Tom;
+			The Reaver; The Beast; Andromalius
+		</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itAdvancedReactiveArmor;"
+			startAt=			"0"
+			count=				"6"
+			/>
+		
+		<Devices>
+			<Table>
+				<Group chance="25">
+					<Device item="&CORE_itBallistaCannon;"/>
+					<Device item="&HS_itClass2Deflector;"/>
+				</Group>
+
+				<Group chance="25">
+					<Device item="&HS_itArbalestCannon;" enhanced="100"/>
+					<Device item="&HS_itMonopoleDeflector;"/>
+				</Group>
+
+				<Group chance="25">
+					<Device item="&HS_itParticleBeamWeapon;"/>
+					<Device item="&HS_itHullPlateIonizer;"/>
+				</Group>
+
+				<Group chance="25">
+					<Device item="&HS_itSlamCannon;"/>
+					<Device item="&HS_itClass2Deflector;"/>
+				</Group>
+			</Table>
+
+			<Device item="&HS_itMAGLauncher;">
+				<Items>
+					<Item			  count="15-25" item="&HS_it600HexageneMAG;"/>
+					<Item chance="50" count="5-10" item="&HS_it800HexageneMAG;"/>
+				</Items>
+			</Device>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"15"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>650</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+	<!-- Ronin C-class Gunship -->
+
+	<ShipClass UNID="&HS_scRoninG4;"
+			manufacturer=		"Pacific Defense"
+			class=				"Ronin/C"
+			type=				"gunship"
+
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scRoninC;"
+			>
+	
+		<Names noArticle="true" personalName="true">
+			Tycus Armiger; Roland Chu; Eli Stetson; Bill Gibson; Irene Senderos; 
+			Ramon Armiger; Moss Eigen; Septimus Thrace; Titus Antonius
+		</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itHeavyCeramicPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="35" item="&HS_itSlamCannon;"/>
+				<Device chance="30" item="&HS_itParticleBeamWeapon;"/>
+				<Device chance="10" item="&HS_itFlenserCannon;"/>
+				<Device chance="15" item="&HS_itOmniTurbolaserCannon;"/>
+				<Device chance="10" item="&HS_itMorningStarCannon;"/>
+			</Table>
+
+			<Device item="&HS_itNAMIMissileLauncher;">
+				<Items>
+					<Table>
+						<Item chance="10" count="4d6" item="&HS_itKM100Missile;"/>
+						<Item chance="60" count="4d6" item="&HS_itFragmentationMissile;"/>
+						<Item chance="30" count="2d6" item="&HS_itKM500Missile;"/>
+					</Table>
+				</Items>
+			</Device>
+
+			<Device item="&HS_itMonopoleDeflector;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"12"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>450</arenaSkillBase>
+		</StaticData>
+	</ShipClass>
+
+	<!-- Sapphire Yacht G4 -->
+
+	<ShipClass UNID="&HS_scSapphireG4;"
+			manufacturer=		"Zubrin Systems"
+			class=				"Sapphire"
+			type=				"yacht"
+
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scSapphireYacht;"
+			>
+
+		<Names noArticle="true" personalName="true">
+			Betelgeuse; Dane Farimus; Janus; Noctolux; Saturnia;
+			Xan; Oort; Hades Jack; Xo Nguyen
+		</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itReactiveArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="10" item="&HS_itParticleBeamWeapon;"/>
+				<Device chance="10" item="&HS_itSlamCannon;"/>
+				<Device chance="10" item="&HS_itDualTurbolaserCannon;"/>
+				<Device chance="10" item="&HS_itOmniTurbolaserCannon;"/>
+				<Device chance="10" item="&HS_itMorningStarCannon;"/>
+				<Device chance="10" item="&CORE_itBallistaCannon;"/>
+				<Device chance="10" item="&HS_itFlenserCannon;"/>
+				<Device chance="10" item="&HS_itMoskvaDualCannon;"/>
+				<Device chance="10" item="&HS_itOmniPartisanCannon;"/>
+				<Group  chance="10">
+					<Device item="&HS_itMAGLauncher;">
+						<Items>
+							<Item count="100" item="&HS_it400HexageneMAG;"/>
+						</Items>
+					</Device>
+					<Device item="&HS_itTurbolaserCannon;"/>
+				</Group>
+			</Table>
+
+			<Table>
+				<Device chance="40" item="&HS_itClass3Deflector;"/>
+				<Device chance="30" item="&HS_itCeratopsQuasiArmor1;"/>
+				<Device chance="30" item="&HS_itCyclotronDeflectorIV;"/>
+			</Table>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"12"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>550</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+	<!-- Wolfen-class Gunship -->
+
+	<ShipClass UNID="&HS_scWolfenG4;"
+			manufacturer=		"Pacific Defense"
+			class=				"Wolfen/C"
+			type=				"gunship"
+
+			level=				"4"
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scWolfenC;"
+			>
+
+		<Names noArticle="true" personalName="true">
+			Alpha Wolf; The Gorgon; Moonglum; Uriel Sarre; Katrina Cross;
+			The Lycanthrope; Amon Thalen
+		</Names>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itHeavyCeramicPlate;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Table>
+				<Device chance="35" deviceID="&HS_itDualRecoillessCannon;"/>
+				<Device chance="35" deviceID="&HS_itLaserArray;"/>
+				<Device chance="15" deviceID="&HS_itTurbolaserCannon;"/>
+				<Device chance="15" deviceID="&HS_itPartisanCannon;"/>
+			</Table>
+
+			<Device deviceID="&HS_itClass1Deflector;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"15"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>600</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+<!-- Gladiator (Level 5) ================================================== -->
+
+	<!-- Centurion-class Heavy Gunship -->
+
+	<ShipClass UNID="&HS_scCenturionG5;"
+			manufacturer=		"Pacific Defense"
+			class=				"Centurion"
+			type=				"heavy gunship"
+			level=				"5"
+
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scCenturionBlock1;"
+			>
+
+		<Names noArticle="true" personalName="true">
+			Canis; Goth Antimus; Kolith Maximus; Ord Chamberlain; Tanhauser;
+			Kirin Tal; The Legionnaire; Agiel; Somerset Cole
+		</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itPolyceramicPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="25" item="&HS_itParticleBeamWeapon;"/>
+				<Device chance="25" item="&HS_itSlamCannon;"/>
+				<Device chance="25" item="&HS_itDualTurbolaserCannon;" enhancement="0x1005"/>
+				<Device chance="25" item="&HS_itMoskvaDualCannon;"/>
+			</Table>
+
+			<Table>
+				<Device chance="25" item="&HS_itIonCannon;"/>
+				<Device chance="75" item="&HS_itNAMIMissileLauncher;">
+					<Items>
+						<Item count="100"	item="&HS_itKM500Missile;"/>
+					</Items>
+				</Device>
+			</Table>
+
+			<Device item="&HS_itCyclotronDeflectorIII;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"12"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>900</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+	<!-- EI500 Freighter G5 -->
+
+	<ShipClass UNID="&HS_scEI500G5;"
+			manufacturer=		"Earth Industries"
+			class=				"EI500"
+			type=				"freighter"
+
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scEI500Stock;"
+			>
+
+		<Names noArticle="true" personalName="true">
+			Darren Kilton; Hilton Wells; Leonardo Morin; Mikhail Petrovich; Victor Grazen;
+			Anwar Ali; Alexander Xorn
+		</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&CORE_itHeavyPlasteelPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="25" item="&HS_itMorningStarCannon;"/>
+				<Device chance="25" item="&HS_itFlenserCannon;"/>
+				<Device chance="25" item="&HS_itParticleBeamWeapon;"/>
+				<Device chance="25" item="&HS_itMoskvaDualCannon;"/>
+			</Table>
+
+			<Table>
+				<Device chance="30" item="&HS_itOmniPartisanCannon;"/>
+				<Device chance="30" item="&HS_itOmniTurbolaserCannon;"/>
+				<Device chance="40" item="&HS_itMAGLauncher;">
+					<Items>
+						<Item count="100" item="&HS_it800HexageneMAG;"/>
+					</Items>
+				</Device>
+			</Table>
+
+			<Device deviceID="&HS_itR1Deflector;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"12"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>700</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+	<!-- Manticore-class Heavy Gunship -->
+
+	<ShipClass UNID="&HS_scManticoreG5;"
+			manufacturer=		"Makayev-Energia"
+			class=				"Manticore"
+			type=				"heavy gunship"
+
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scManticore;"
+			>
+
+		<Names noArticle="true" personalName="true">
+			Erin Starton; Kondor; Stormbringer; Ytrix; Xander Mal;
+			Remora Khan; Ravleen; Charum
+		</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itLightBlastPlate;"
+			startAt=			"0"
+			count=				"6"
+			/>
+		
+		<Devices>
+			<Table>
+				<Group chance="25">
+					<Device item="&CORE_itBallistaCannon;"/>
+					<Device item="&HS_itMonopoleDeflector;" enhancement="0x0105"/>
+				</Group>
+
+				<Group chance="25">
+					<Device item="&HS_itHeavySlamCannon;"/>
+					<Device item="&HS_itMonopoleDeflector;"/>
+				</Group>
+
+				<Group chance="25">
+					<Device item="&HS_itParticleBeamWeapon;"/>
+					<Device item="&HS_itCyclotronDeflectorIII;"/>
+				</Group>
+
+				<Group chance="25">
+					<Device item="&HS_itSlamCannon;"/>
+					<Device item="&HS_itCyclotronDeflectorIII;"/>
+				</Group>
+			</Table>
+
+			<Device item="&HS_itMAGLauncher;">
+				<Items>
+					<Item count="15-25" item="&HS_it800HexageneMAG;"/>
+					<Item count="15-25" item="&HS_it600HexageneMAG;"/>
+				</Items>
+			</Device>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"15"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>800</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+	<!-- Wolfen-class Gunship -->
+
+	<ShipClass UNID="&HS_scWolfenG5;"
+			manufacturer=		"Pacific Defense"
+			class=				"Wolfen/C"
+			type=				"gunship"
+
+			level=				"5"
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scWolfenC;"
+			>
+
+		<Names noArticle="true" personalName="true">
+			Ballena; Halifax Warg; Ortho; Vortex; Qirin Caine;
+			Firedrake; Vilkacis Grome
+		</Names>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itPolyceramicPlate;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Table>
+				<Device chance="40" item="&HS_itDualTurbolaserCannon;"/>
+				<Device chance="40" item="&HS_itMoskvaDualCannon;"/>
+				<Device chance="20" item="&HS_itDualRecoillessCannon;" enhanced="100"/>
+			</Table>
+
+			<Device deviceID="&HS_itCyclotronDeflectorI;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"12"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>750</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+<!-- Gladiator (Level 6) ================================================== -->
+
+	<!-- Centurion-class Heavy Gunship -->
+
+	<ShipClass UNID="&HS_scCenturionG6;"
+			manufacturer=		"Pacific Defense"
+			class=				"Centurion"
+			type=				"heavy gunship"
+
+			level=				"6"
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scCenturionBlock2;"
+			>
+
+		<Names noArticle="true" personalName="true">
+			The Dauphin; Hale Thonsen; Lantham; Polaris; Ursus;
+			The Elemental; Polar Dragon; Frost; Karl Svalbard
+		</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itPolyceramicPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Table>
+				<Device chance="20" deviceID="&HS_itOmniTurbolaserCannon;" enhanced="100"/>
+				<Device chance="20" deviceID="&HS_itLancerCannon;"/>
+				<Device chance="20" deviceID="&HS_itDualParticleBeamWeapon;"/>
+				<Device chance="20" deviceID="&HS_itNeutronBlaster;"/>
+				<Device chance="20" deviceID="&HS_itShtormRepeater;"/>
+			</Table>
+
+			<Table>
+				<Device chance="25" deviceID="&HS_itIonCannon;"/>
+				<Device chance="75" deviceID="&HS_itNAMIMissileLauncher;">
+					<Items>
+						<Item count="100"	item="&HS_itKM500Missile;"/>
+						<Item count="50"	item="&HS_itKM550Missile;"/>
+					</Items>
+				</Device>
+			</Table>
+
+			<Device deviceID="&HS_itCeratopsQuasiArmor1;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"12"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>1200</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+	<!-- Manticore-class Heavy Gunship -->
+
+	<ShipClass UNID="&HS_scManticoreG6;"
+			manufacturer=		"Makayev-Energia"
+			class=				"Manticore"
+			type=				"heavy gunship"
+
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scManticore;"
+			>
+
+		<Names noArticle="true" personalName="true">
+			Fenris; Luna Mal; Talisman; Dimachaeri; Quartinus;
+			Tannin; Orobas
+		</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itBlastPlate;"
+			startAt=			"0"
+			count=				"6"
+			/>
+		
+		<Devices>
+			<Table>
+				<Group chance="25">
+					<Device item="&HS_itMarkIHowitzer;"/>
+					<Device item="&HS_itCyclotronDeflectorIII;"/>
+				</Group>
+
+				<Group chance="25">
+					<Device item="&HS_itAkan30Cannon;">
+						<Items>
+							<Item count="500" item="&HS_itAkan30CannonShell;"/>
+						</Items>
+					</Device>
+
+					<Device item="&HS_itCyclotronDeflectorIII;"/>
+				</Group>
+
+				<Group chance="25">
+					<Device item="&HS_itUrakHowitzer;"/>
+					<Device item="&HS_itCyclotronDeflectorIV;"/>
+				</Group>
+
+				<Group chance="25">
+					<Device item="&HS_itMoskvaLightTurret;" secondaryWeapon="true"/>
+					<Device item="&HS_itArmorRepairDevice;"/>
+					<Device item="&HS_itCyclotronDeflectorIV;"/>
+				</Group>
+			</Table>
+
+			<Table>
+				<Device chance="50" item="&HS_itMakayevLauncher;">
+					<Items>
+						<Item count="50" item="&HS_itStrelkaGreen;"/>
+						<Item count="250" item="&HS_itStrelkaWhite;"/>
+					</Items>
+				</Device>
+
+				<Device chance="50" item="&HS_itMAGLauncher;">
+					<Items>
+						<Item count="20-30" item="&HS_itZG24ClusterMAG;"/>
+						<Item count="30-50" item="&HS_it800HexageneMAG;"/>
+					</Items>
+				</Device>
+			</Table>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"15"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>1100</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+	<!-- Wolfen-class Gunship -->
+
+	<ShipClass UNID="&HS_scWolfenG6;"
+			manufacturer=		"Pacific Defense"
+			class=				"Wolfen/C"
+			type=				"gunship"
+
+			level=				"6"
+			attributes=			"battleArena, gladiator"
+			inherit=			"&HS_scWolfenC2;"
+			>
+
+		<Names noArticle="true" personalName="true">
+			Constantine; Illuminatus; Pestilence; The Warthog; Scimitar;
+			Demonlance; Jean Rougarou
+		</Names>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itCeralloyArmor;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Table>
+				<Device chance="40" item="&HS_itDualTurbolaserCannon;"/>
+				<Device chance="40" item="&HS_itMoskvaDualCannon;"/>
+				<Device chance="12" item="&HS_itDualFlenserCannon;"/>
+				<Device chance="8"  item="&HS_itNeutronBlaster;"/>
+			</Table>
+
+			<Device deviceID="&HS_itNAMIMissileLauncher;">
+				<Items>
+					<Item count="20-30"	item="&HS_itKM500Missile;"/>
+				</Items>
+			</Device>
+
+			<Device deviceID="&HS_itHullPlateIonizer;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"15"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>1000</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+	<!-- The Slicer's Manticore-class Heavy Gunship -->
+
+	<ShipClass UNID="&HS_scTheSlicerManticore;"
+			manufacturer=		"Makayev-Energia"
+			class=				"Manticore"
+			type=				"heavy gunship"
+
+			attributes=			"battleArena, theSlicer"
+			inherit=			"&HS_scManticore;"
+
+			leavesWreck=		"100"
+			>
+
+		<Names noArticle="true" personalName="true">The Slicer</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itBlastPlate;"
+			startAt=			"0"
+			count=				"6"
+			/>
+		
+		<Devices>
+			<Device item="&HS_itSlicerCannon;"/>
+
+			<Table>
+				<Group chance="25">
+					<Device item="&HS_itOmniPartisanCannon;" secondaryWeapon="true"/>
+					<Device item="&HS_itR1Deflector;"/>
+				</Group>
+
+				<Group chance="25">
+					<Device item="&HS_itOmniPartisanCannon;" enhanced="100" secondaryWeapon="true"/>
+					<Device item="&HS_itCyclotronDeflectorIV;"/>
+				</Group>
+
+				<Group chance="25">
+					<Device item="&HS_itOmniPartisanCannon;" secondaryWeapon="true"/>
+					<Device item="&HS_itArmorRepairDevice;"/>
+					<Device item="&HS_itCyclotronDeflectorIV;"/>
+				</Group>
+
+				<Group chance="25">
+					<Device item="&HS_itMakayevLauncher;" secondaryWeapon="true">
+						<Items>
+							<Table>
+								<Item chance="60" count="250" item="&HS_itStrelkaWhite;"/>
+								<Item chance="30" count="150" item="&HS_itStrelkaGreen;"/>
+								<Item chance="10" count="50" item="&HS_itStrelkaRed;"/>
+							</Table>
+						</Items>
+					</Device>
+
+					<Device item="&HS_itCeratopsQuasiArmor1;"/>
+				</Group>
+			</Table>
+
+			<Device item="&CORE_itTritiumPropulsionUpgrade;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"10"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<arenaSkillBase>1200</arenaSkillBase>
+		</StaticData>
+
+	</ShipClass>
+
+</TranscendenceModule>

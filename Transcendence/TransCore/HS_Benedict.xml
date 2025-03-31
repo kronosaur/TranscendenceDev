@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Benedict
+
+	GLOBAL DATA
+
+	firstPlayerMeetingTime: Tick of player's first meeting.
+			Nil if the player has never met him face to face.
+
+	lastestPlayerMeetingTime: Tick of most recent meeting with Kate.
+
+	lastNodeID: Last known position. Nil means unknown.
+
+	lastSystemPos: Last known position in the lastNodeID system.
+
+	objID: The objID of current ship. If Nil, then no ship has
+			been created yet.
+
+	playerRel: See rpgCharacterGetRel in RPGCharacter.xml
+					
+	-->
+
+	<Type UNID="&HS_unidBenedict;">
+		<Properties>
+			<Definition id="core.namePattern">": Benedict"</Definition>
+		</Properties>
+
+		<StaticData>
+			<MissionAttribute>"benedictMission"</MissionAttribute>
+			<Name>"Benedict"</Name>
+			<Sovereign>&HS_svCommonwealth;</Sovereign>
+		</StaticData>
+
+		<Events>
+			<OnCharacterCanBeMet>
+				True
+			</OnCharacterCanBeMet>
+
+			<OnGlobalSystemStopped>
+				(rpgCharacterAscend &HS_unidBenedict;)
+			</OnGlobalSystemStopped>
+		</Events>
+
+		<Language>
+		</Language>
+	</Type>
+
+	<!-- Benedict's Ship -->
+
+	<ShipClass UNID="&HS_scBenedictAsterion;"
+			manufacturer=		"NAMI"
+			class=				"Asterion"
+			type=				"heavy gunship"
+
+			attributes=			"benedict"
+			character=			"&HS_unidBenedict;"
+
+			size=				"44"
+			mass=				"200"
+			thrustRatio=		"4.0"
+			maxSpeed=			"20"
+			cargoSpace=			"100"
+
+			dockingPorts=		"4"
+			dockScreen=			"&RPG_dsRPGCharacterDefault;"
+			>
+
+		<Names noArticle="true" personalName="true">Benedict</Names>
+		
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itMediumIthaliumArmor;"
+			count=				"6"
+			enhancement=		"+immunity:EMP"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itFusionfireHowitzer;"	posAngle="180" posRadius="8" posZ="20"/>
+			<Device deviceID="&HS_itYoroiMX;"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"8.0"
+			rotationAccel=		"2.0"
+			/>
+
+		<Items>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsAsterionHeavyGunship;" imageWidth="72" imageHeight="72" rotationCount="120" rotationColumns="12" viewportRatio="0.00625"/>
+		<HeroImage imageID="&HS_rsAsterionHeavyGunshipHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="115"	posRadius="26"	posZ="6"	rotation="180" bringToFront="*"/>
+			<Effect type="thrustMain"		posAngle="-115"	posRadius="26"	posZ="6"	rotation="180" bringToFront="*"/>
+			<Effect type="thrustMain"		posAngle="166"	posRadius="34"	posZ="9"	rotation="180" />
+			<Effect type="thrustMain"		posAngle="-166"	posRadius="34"	posZ="9"	rotation="180" />
+		</Effects>
+
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			fireRateAdj=		"20"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			ignoreShieldsDown=	"true"
+			/>
+
+		<Language>
+			<Text id="FirstMeetingIntro">
+				(list
+					{
+						desc: (cat
+							"The airlock opens and you see Benedict dressed in combat armor.\n\n"
+							
+							"\"Good to see you, %name%!\""
+							)
+						}
+					)
+			</Text>
+
+			<Text id="MeetingIntro">
+
+				The airlock opens and you see Benedict dressed in combat armor.
+							
+				"Good to see you, %name%!"
+
+			</Text>
+
+			<Text id="NoMissions">
+				The airlock refuses to open.
+			</Text>
+		</Language>
+	</ShipClass>
+	
+</TranscendenceModule>

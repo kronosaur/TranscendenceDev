@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&HS_chEnricoGaul;">
+		<Properties>
+			<Definition id="core.namePattern">": [Captain ]Enrico Gaul"</Definition>
+		</Properties>
+
+		<Events>
+			<GetGlobalRumors>
+				(switch
+					;	Only in Eridani
+
+					(!= (sysGetNode) 'SE)
+						Nil
+
+					(block (
+						;	Find the nearest Commonwealth Fortress to the player.
+
+						(allFortresses (unvFindObject "TA +unid:&HS_stCommonwealthFortress;;"))
+						(bestEntry
+							(map allFortresses '(original reduceMin excludeNil) theEntry
+								(block (
+									(nodeID (@ theEntry 2))
+									)
+									(if (!= nodeID (sysGetNode))
+										(sysGetTopologyDistance (sysGetNode) nodeID)
+										)
+									)
+								)
+							)
+						)
+						(append
+							(if bestEntry
+								(block (
+									(nodeID (@ bestEntry 2))
+									)
+									(rpgRumorAdd 'metropolisMilitia 'nearestFortress nil 
+
+										(lambda (theRumor)
+											(block ()
+												(sysSetKnown nodeID)
+												(unvSetObjectKnown nodeID "* +unid:&HS_stCommonwealthFortress;;")
+												)
+											)
+
+										{
+										systemName: (sysGetName nodeID)
+										})
+									)
+								)
+							)
+						)
+					)
+			</GetGlobalRumors>
+		</Events>
+
+		<Language>
+			<Code id="missionIntro">
+				(block (
+					;	Count the number of mission intros that we've already
+					;	given to the player. 0 means that we've never shown an
+					;	intro before.
+
+					(introCount (count
+						(filter (msnFind "* +property:character.missionGiver=&HS_chEnricoGaul;;") theMission
+							(msn@ theMission 'isIntroShown)
+							)
+						))
+					)
+					(switch
+						(geq introCount 3)
+							(typTranslate gType 'missionIntro.default gData)
+
+						(typTranslate gType (cat 'missionIntro. (+ introCount 1)) gData)
+						)
+					)
+			</Code>
+
+			<!-- First Mission Intro -->
+
+			<Code id="missionIntro.1">
+				(list
+					{	descID: 'textIntro.1.1		labelID: 'actionIntro.1.1	translateType: gType	}
+					{	descID: 'textIntro.1.2		labelID: 'actionIntro.1.2	translateType: gType	}
+					)
+			</Code>
+			<Text id="textIntro.1.1">
+
+				A gray-haired man in wrinkled militia blues stands at a console.
+				A captain's insignia sits on his shoulder and the name 'Gaul' is
+				printed above his heart.
+
+				"What are you gawking at, civie? Can't you see there's work to
+				do?"
+
+				He musters up an intimidating look, but a whiff of gin betrays
+				him.
+
+			</Text>
+			<String id="actionIntro.1.1">"[W]hat kind of work?"</String>
+			<Text id="textIntro.1.2">
+
+				He shakes his head and scoffs.
+
+				"The kind that pays to fuel that kack ship of yours! Assuming
+				you survive long enough to collect, that is.
+
+				"This is the militia, %boy%&mdash;not an ice cream shop. You do
+				the job that needs doing."
+
+			</Text>
+			<String id="actionIntro.1.2">"[I]'m ready."</String>
+
+			<!-- Second Mission Intro -->
+
+			<Code id="missionIntro.2">
+				(list
+					{	descID: 'textIntro.2.1		labelID: 'actionIntro.2.1	translateType: gType	}
+					{	descID: 'textIntro.2.2		labelID: 'actionIntro.2.2	translateType: gType	}
+					)
+			</Code>
+			<Text id="textIntro.2.1">
+
+				The gray-haired man is staring off into space. His face is red 
+				and his eyes are puffy. He stands up and frowns when you enter.
+
+				"Well, look who's back! Ready for another job? Is this a 
+				convenient time for you?"
+			
+			</Text>
+			<String id="actionIntro.2.1">"[I]'m ready to help, captain."</String>
+			<Text id="textIntro.2.2">
+
+				"Yeah, well don't be so eager. This aint some cushy corporate 
+				gig where you push a button and let the bots do the kill.
+
+				"We work for a living here, %boy%."
+			
+			</Text>
+			<String id="actionIntro.2.2">"[D]o you have a mission for me or not?"</String>
+
+			<!-- Third Mission Intro -->
+
+			<Code id="missionIntro.3">
+				(list
+					{	descID: 'textIntro.3.1		labelID: 'actionIntro.3.1	translateType: gType	}
+					{	descID: 'textIntro.3.2		labelID: 'actionIntro.3.2	translateType: gType	}
+					)
+			</Code>
+			<Text id="textIntro.3.1">
+
+				Captain Gaul sits at his console watching a message from a young
+				woman. She's dressed in a neolinen suit and wears a trendy hair 
+				style. Gaul snaps the message off when he sees you.
+
+				"Back already? You must be desperate for some coin."
+
+			</Text>
+			<String id="actionIntro.3.1">"[I] just want to help, captain."</String>
+			<Text id="textIntro.3.2">
+
+				Gaul laughs.
+
+				"You're just passing through, %boy%. Sooner or later you'll be
+				done with us and off to the next system. You think you're a 
+				hero? Heroes stay and fight day after day, even when it's easier
+				to run."
+
+			</Text>
+			<String id="actionIntro.3.2">"[J]ust give me a mission, please!"</String>
+
+			<!-- Subsequent Mission Intros -->
+
+			<Code id="missionIntro.default">
+				(list
+					{	descID: 'textIntro.default.1	labelID: 'actionIntro.default.1	translateType: gType	}
+					)
+			</Code>
+			<Text id="textIntro.default.1">
+
+				Captain Gaul walks up to you. He has a tight smile on his face.
+
+				"What the hell are you doing here, %name%? Don't you have better
+				things to do than catch pissant drug smugglers?"
+			
+			</Text>
+			<String id="actionIntro.default.1">"[K]nock it off, I'm trying to help."</String>
+
+			<!-- COMMONWEALTH VOLUNTEER 01 -->
+
+			<Code id="volunteer01.briefing">
+				(typTranslate gType (cat 'volunteer01.briefing. (min (@ gData 'missionNumber) 3)) gData)
+			</Code>
+			<Text id="volunteer01.briefing.1">
+			
+				The gray-haired man grunts as he looks down at a screen.
+
+				"All right. There's a drug smuggler just came into the
+				system with a load of tempus. Your mission is to intercept the 
+				ship and destroy it. We don't want that kack on our station.
+
+				"We'll pay %reward% if you succeed. Clear?"
+
+			</Text>
+			<Text id="volunteer01.briefing.2">
+			
+				Captain Gaul scoffs.
+
+				"%Boy%, I got more missions than you can handle. Everyone except
+				me is in the Black Market, judging by the amount of drugs 
+				flooding into the system!
+
+				"We tagged another smuggler ship just yesterday. Your mission is
+				to intercept and destroy.
+
+				"We'll pay %reward% if you succeed. Clear?"
+
+			</Text>
+			<Text id="volunteer01.briefing.3">
+			
+				Captain Gaul grunts as he looks down at a screen.
+
+				"Guess what!? I got another smuggler for you to air out. 
+				Shocking, isn't it? Why bother getting a job when you can just
+				fast-forward your life on tempus?
+
+				"We'll pay %reward% if you succeed. Clear?"
+
+			</Text>
+			<Text id="volunteer01.successDebrief">
+
+				The gray-haired man leans back on his chair.
+
+				"Good. A nice clean hit. We don't want their filth on our
+				station.
+
+				"We've deposited %reward% to your account."
+
+			</Text>
+			<Text id="volunteer01.failureDebrief">
+
+				The gray-haired man shouts as you enter:
+
+				"What the kack are you doing? We're all alone out here, and if 
+				we don't clean up this filth no one is going to do it for us.
+
+				"Next time act like you actually care!"
+
+			</Text>
+
+			<!-- COMMONWEALTH VOLUNTEER 02 -->
+
+			<Code id="volunteer02.briefing">
+				(typTranslate gType (cat 'volunteer02.briefing. (min (@ gData 'missionNumber) 3)) gData)
+			</Code>
+			<Text id="volunteer02.briefing.1">
+
+				The gray-haired man stares at you then shakes his head.
+
+				"All right, %boy%. I hope you can handle this.
+
+				"There's %targetName% in the system, and the station council has
+				grown a backbone and decided to act. I've been authorized to 
+				deal with the threat, which means I'm authorizing you to blow
+				it to hell.
+
+				"We'll pay %reward% if you succeed. Clear?"
+
+			</Text>
+			<Text id="volunteer02.briefing.2">
+
+				Captain Gaul chuckles.
+
+				"Well it's your lucky day! The station council is cleaning up 
+				the system. Must be an election coming up.
+
+				"There's %targetName% in the system and I want you to go in and
+				destroy it. Go ahead, make a mess if necessary.
+
+				"We'll pay %reward% if you succeed. Clear?"
+
+			</Text>
+			<Text id="volunteer02.briefing.3">
+
+				Captain Gaul scoffs.
+
+				"All right, I forgot how much you hate banter.
+
+				"Let me get to the point: We've got %targetName% in the system
+				and I've been authorized to take it out. I want you to go out 
+				there and destroy it.
+
+				"We'll pay %reward% if you succeed. Clear?"
+
+			</Text>
+			<Text id="volunteer02.acceptReply.easy">
+
+				"All right. I'll send the target to your computer. Don't worry
+				about these guys&mdash;you can handle them. But don't get 
+				careless either.
+
+				"OK, get out of here."
+
+			</Text>
+			<Text id="volunteer02.acceptReply.normal">
+
+				"All right. I'll send the target to your computer. Be careful,
+				OK? These guys are not gonna make it easy for you.
+
+				"OK, get out of here."
+
+			</Text>
+			<Text id="volunteer02.acceptReply.hard">
+
+				Captain Gaul nods, then looks you in the eyes.
+
+				"Listen, %name%, these guys are the real deal. They're 
+				experienced, and they're well-armed. Go in strong and keep
+				blasting until they're done.
+
+				"But be careful. If your armor takes a beating, get out of 
+				there. You're no good to me if you're dead.
+
+				"OK, get out of here."
+
+			</Text>
+			<Text id="volunteer02.successDebrief">
+
+				The gray-haired man leans back on his chair.
+
+				"Good. A nice clean hit. That'll send a message.
+
+				"We've deposited %reward% to your account."
+
+			</Text>
+			<Text id="volunteer02.textFailureDebrief">
+
+				The gray-haired man shouts as you enter:
+
+				"What the kack are you doing? We're all alone out here, and if 
+				we don't stand up to these blowholes they're gonna own the whole
+				system.
+
+				"Next time act like you actually care!"
+
+			</Text>
+
+			<!-- COMMONWEALTH VOLUNTEER 03 -->
+
+			<Code id="volunteer03.briefing">
+				(typTranslate gType (cat 'volunteer03.briefing. (min (@ gData 'missionNumber) 3)) gData)
+			</Code>
+			<Text id="volunteer03.briefing.1">
+
+				The gray-haired man stares at you then shakes his head.
+
+				"A Commonwealth freighter sent out a distress call a few minutes
+				ago. It sounds like they're under attack. I want you to go out
+				there and help them out.
+
+				"We'll pay %reward% if you can keep the freighter alive. Clear?"
+
+			</Text>
+			<Text id="volunteer03.briefing.2">
+
+				Captain Gaul chuckles.
+
+				"Be careful what you wish for, %boy%!
+
+				"We've just picked up a distress call from a Commonwealth 
+				freighter. It sounds like they're under attack and need 
+				armed assistance.
+
+				"We'll pay %reward% if you can save the freighter. Clear?"
+
+			</Text>
+			<Text id="volunteer03.briefing.3">
+
+				Captain Gaul looks down.
+
+				"All right, %name%, I've got a mission for you.
+
+				"There's a Commonwealth freighter in trouble a couple of hundred
+				light-seconds out. Looks like they're in the middle of a 
+				firefight.
+
+				"We'll pay %reward% if you can defend the freighter. Clear?"
+
+			</Text>
+
+			<Text id="rumor.metropolisMilitia.nearestFortress">
+			
+				Captain Gaul slumps in his chair, reeking of gin. He smiles as
+				you enter, and straightens out his shirt.
+
+				"I'm proud of you, %boy%. Maybe the universe is going to be OK
+				after all.
+
+				"There's a militia fortress in the %systemName% System. Go there
+				when you're ready. You're not going to learn any more from a 
+				washout like me."
+
+			</Text>
+		</Language>
+	</Type>
+
+</TranscendenceModule>

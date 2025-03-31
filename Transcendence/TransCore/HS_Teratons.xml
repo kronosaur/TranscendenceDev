@@ -1,0 +1,1367 @@
+<?xml version="1.0" ?>
+
+<TranscendenceModule>
+
+	<Sovereign UNID="&HS_svTeratons;"
+			name=":the Teraton host"
+			adjective="Teraton"
+			demonym=":a Teraton(s)"
+			plural="true"
+
+			alignment="neutral"
+			/>
+
+	<SystemMap unid="&HS_smTeratonSpace;"
+			displayOn="&HS_smHumanSpace;"
+			>
+		<TopologyProcessor priority="secondaryColony">
+			<System criteria="+ringerSpace;"	attributes="teratonSpace"/>
+		</TopologyProcessor>
+	</SystemMap>
+
+<!-- ENCOUNTERS -->
+
+	<!-- Teraton Factory -->
+
+	<StationType UNID="&HS_stTeratonFactory;"
+			name=				"Teraton fabricator"
+			sovereign=			"&HS_svTeratons;"
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			multiHull=			"true"
+			armorID=			"&HS_itAdvancedIthaliumArmor;"
+			hitPoints=			"1200"
+			regen=              "24"
+			fireRateAdj=		"10"
+			explosionType=		"&CORE_vtThermoExplosion3;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"envAir, envAvoidsFire, independent, friendly, generic, majorStation, populated, neoHuman, teraton, teratonFactory"
+
+			inherit=			"&HS_baTeratonNestBase;"
+			>
+
+		<Names>Teraton Nest</Names>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+teratonSpace;"
+				systemAffinity=			"+envAir; -envFire;"
+				levelFrequency=			"----- --ruv ----- ----- -----"
+
+				locationCriteria=		"+outerSystem, -void"
+				enemyExclusionRadius=	"50"
+				/>
+
+		<Image			imageID="&HS_rsStations9;" imageX="0" imageY="0" imageWidth="256" imageHeight="256"/>
+
+		<Items>
+			<RandomItem count="20" 
+					criteria=		"* +Res; -NotStandard"
+					level=			"7"
+					levelCurve=		"3"
+					/>
+			<RandomItem count="10" 
+					criteria=		"f -NotStandard"
+					level=			"8"
+					levelCurve=		"3"
+					/>
+		</Items>
+
+		<Trade currency="rin">
+			<Sell	criteria="*NU +soul;"							priceAdj="unavailable"/>
+			<Sell	criteria="*NU +ringerValuable;"					priceAdj="250"/>
+			<Sell	criteria="*NU +alien;"							priceAdj="120"/>
+			<Sell	criteria="*NU -ID;"								priceAdj="100"/>
+			<Buy	criteria="*NU +soul;"							priceAdj="constant:1000"/>
+			<Buy	criteria="*NU +alien;"							priceAdj="50"/>
+			<Buy	criteria="*NU +res; &gt;=6;"					priceAdj="90"/>
+			<Buy	criteria="wmNU &gt;=5;"							priceAdj="50"/>
+		</Trade>
+		
+		<StaticData>
+			<FactoryTable>
+				(	; pattern				minM	minE	minD	chgM	chgE	chgD	output		output level
+					(&HS_itRingerAmbrosia;		Nil		Nil		Nil		0		0		+5		Nil			Nil)
+					(&HS_itRingerSpice;		Nil		Nil		Nil		0		0		+1		Nil			Nil)
+					(&HS_itRadioactiveWaste;	Nil		Nil		Nil		0		-1		-5		Nil			Nil)
+					(&HS_itOrganicAcid;		Nil		Nil		Nil		0		0		-1		Nil			Nil)
+					("* +Soul;"				Nil		Nil		Nil		0		0		"+l"	Nil			Nil)
+					("* +Food; +Lux;"		Nil		1		Nil		0		-1		+1		Nil			Nil)
+					("* +Res; +ZeroPoint;"	Nil		Nil		Nil		0		"+l"	0		Nil			Nil)
+					("* +Res; +AntiMatter;"	Nil		Nil		Nil		0		"+l"	0		Nil			Nil)
+					("* +Res; +Nuclear;"	Nil		Nil		Nil		0		"+l"	0		Nil			Nil)
+					("* +Res;"				Nil		Nil		Nil		"+l"	0		0		Nil			Nil)
+					("f"					Nil		Nil		Nil		0		"+l"	0		Nil			Nil)
+					("a"					Nil		1		Nil		"+l"	-1		0		Nil			Nil)
+					("* +Meds;"				Nil		Nil		Nil		0		0		"-l"	Nil			Nil)
+
+					("wD L:2-7;"			"+2l"	"+2l"	2		"-2l"	"-2l"	-2		"w"			"l")
+					("wD L:2-7;"			"+2l"	"+2l"	Nil		"-2l"	"-2l"	0		"w"			"l-1")
+					("w L:2-7;"				"+2l"	"+2l"	2		"-2l"	"-2l"	-2		"w"			"l+1")
+					("w L:2-7;"				"+2l"	"+2l"	Nil		"-2l"	"-2l"	0		"w"			"l")
+					("wD L:8-10;"			"+2l"	"+2l"	5		"-2l"	"-2l"	-5		"w"			"l-1")
+					("wD L:8-10;"			"+2l"	"+2l"	2		"-2l"	"-2l"	-2		"w"			"l-2")
+					("w L:8-10;"			"+2l"	"+2l"	5		"-2l"	"-2l"	-5		"w"			"l")
+					("w L:8-10;"			"+2l"	"+2l"	2		"-2l"	"-2l"	-2		"w"			"l-1")
+
+					("sD L:2-7;"			"+l"	"+l"	2		"-l"	"-l"	-2		"s"			"l")
+					("sD L:2-7;"			"+l"	"+l"	Nil		"-l"	"-l"	0		"s"			"l-1")
+					("s L:2-7;"				"+l"	"+l"	2		"-l"	"-l"	-2		"s"			"l+1")
+					("s L:2-7;"				"+l"	"+l"	Nil		"-l"	"-l"	0		"s"			"l")
+					("sD L:8-10;"			"+l"	"+l"	5		"-l"	"-l"	-5		"s"			"l-1")
+					("sD L:8-10;"			"+l"	"+l"	2		"-l"	"-l"	-2		"s"			"l-2")
+					("s L:8-10;"			"+l"	"+l"	5		"-l"	"-l"	-5		"s"			"l")
+					("s L:8-10;"			"+l"	"+l"	2		"-l"	"-l"	-2		"s"			"l-1")
+
+					("vrD L:2-7;"			"+l"	"+2l"	2		"-l"	"-2l"	-2		"vr"		"l")
+					("vrD L:2-7;"			"+l"	"+2l"	Nil		"-l"	"-2l"	0		"vr"		"l-1")
+					("vr L:2-7;"			"+l"	"+2l"	2		"-l"	"-2l"	-2		"vr"		"l+1")
+					("vr L:2-7;"			"+l"	"+2l"	Nil		"-l"	"-2l"	0		"vr"		"l")
+					("vrD L:8-10;"			"+l"	"+2l"	5		"-l"	"-2l"	-5		"vr"		"l-1")
+					("vrD L:8-10;"			"+l"	"+2l"	2		"-l"	"-2l"	-2		"vr"		"l-2")
+					("vr L:8-10;"			"+l"	"+2l"	5		"-l"	"-2l"	-5		"vr"		"l")
+					("vr L:8-10;"			"+l"	"+2l"	2		"-l"	"-2l"	-2		"vr"		"l-1")
+
+					("d~swvrD L:2-7;"		"+l"	"+l"	2		"-l"	"-l"	-2		"d~swvr"	"l")
+					("d~swvrD L:2-7;"		"+l"	"+l"	Nil		"-l"	"-l"	0		"d~swvr"	"l-1")
+					("d~swvr L:2-7;"		"+l"	"+l"	2		"-l"	"-l"	-2		"d~swvr"	"l+1")
+					("d~swvr L:2-7;"		"+l"	"+l"	Nil		"-l"	"-l"	0		"d~swvr"	"l")
+					("d~swvrD L:8-10;"		"+l"	"+l"	5		"-l"	"-l"	-5		"d~swvr"	"l-1")
+					("d~swvrD L:8-10;"		"+l"	"+l"	2		"-l"	"-l"	-2		"d~swvr"	"l-2")
+					("d~swvr L:8-10;"		"+l"	"+l"	5		"-l"	"-l"	-5		"d~swvr"	"l")
+					("d~swvr L:8-10;"		"+l"	"+l"	2		"-l"	"-l"	-2		"d~swvr"	"l-1")
+
+					("d"					Nil		Nil		Nil		"+l"	"+l"	"-l"	Nil			Nil)
+
+					("m &lt;11"				"+l"	"+l"	Nil		"-l"	"-l"	0		"replicate"	Nil)
+					("m &lt;16"				"+2l"	"+2l"	Nil		"-2l"	"-2l"	0		"replicate"	Nil)
+
+					(Nil					Nil		Nil		Nil		0		0		0		Nil			Nil)
+					)
+			</FactoryTable>
+		</StaticData>
+
+		<Events>
+			<OnCreate>
+				(block (allFoods)
+					; Set energy, material, and disposition randomly
+					(objSetData gSource "disposition" (random -1 1))
+					(objSetData gSource "energy" (random -2 2))
+					(objSetData gSource "material" (random -2 2))
+
+					; The "bias" of the creature alters its tells
+					(objSetData gSource "bias" (random -2 2))
+
+					; Make a list of the creature's food preferences
+					(setq allFoods (shuffle (itmGetTypes "* +Food; +Lux; -UNID:&HS_itRingerAmbrosia;; -UNID:&HS_itRingerSpice;;")))
+					(objSetData gSource "love" (subset allFoods 0 2))
+					(objSetData gSource "hate" (subset allFoods 2 4))
+					)
+			</OnCreate>
+		</Events>
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionFabricatorChamber" default="1">
+								<Navigate screen="Factory"/>
+							</Action>
+
+							<Action id="actionCommoditiesExchange">
+								(if (not (intTeratonMugging))
+									(scrShowScreen gScreen &RPG_dsRPGCommoditiesExchange;)
+									)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+
+			<Factory>
+
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(block (disposition energy material lastItemDrop numberLeft)
+								(setq disposition (add (objGetData gSource "disposition") (objGetData gSource "bias")))
+								(setq energy (objGetData gSource "energy"))
+								(setq material (objGetData gSource "material"))
+								(setq lastItemDrop (objGetData gSource 'lastItemDrop))
+								(setq numberLeft (objHasItem gPlayerShip lastItemDrop 1))
+								
+								;	Set the item as screen data because gSource isn't defined in Language elements.
+								(scrSetData gScreen 'lastItemDrop lastItemDrop)
+								
+								;	Make the action backgrounds max. width.
+								(scrSetActionDesc gScreen 'actionDummy "This text needs to be loooooooooooooooooooooooooooooooooooooooooooooong.")
+								(scrShowAction gScreen 'actionDummy Nil)
+								
+								(switch
+									(not lastItemDrop)
+										(scrShowAction gScreen 'actionDropAnother Nil)
+									numberLeft
+										(scrSetActionDesc gScreen 'actionDropAnother (scrTranslate gScreen 'actionDescDropAnother { number:numberLeft }))
+									(block nil
+										(scrEnableAction gScreen 'actionDropAnother Nil)
+										(scrSetActionDesc gScreen 'actionDropAnother (scrTranslate gScreen 'actionDescNoneLeft))
+										)
+									)
+									
+								(scrSetDesc gScreen
+									(cat (scrTranslate gScreen 'descFactory)
+										"\n\n"
+										(switch
+											(geq disposition 7)
+												"The organic mass purrs with contentment."
+
+											(geq disposition 2)
+												"The organic mass appears calm."
+
+											(geq disposition 0)
+												"The organic mass appears wary."
+
+											(ls disposition -7)
+												"The organic mass flails its tentacles in rage."
+
+											"The organic mass appears restless and angry."
+											)
+
+										(switch
+											(leq energy 0)
+												" It has 0 energy points"
+
+											(eq energy 1)
+												" It has 1 energy point"
+
+											(cat " It has " energy " energy points")
+											)
+
+										(switch
+											(leq material 0)
+												" and 0 material points."
+
+											(eq material 1)
+												" and 1 material point."
+
+											(cat " and " material " material points.")
+											)
+										)
+									)
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionDropItem" default="1">
+								<Navigate screen="DropItem"/>
+							</Action>
+							
+							<Action id="actionDropAnother">
+								(intFabricatorDropItem (objGetData gSource 'lastItemDrop))
+							</Action>
+							
+							<Action id="actionDummy"/>
+
+							<Action id="actionLeave" cancel="1">
+								<Navigate screen="Main"/>
+							</Action>
+						</Actions>
+					</Default>
+
+					<Result>
+						<OnPaneInit>
+							(scrSetDesc gScreen (scrGetData gScreen 'dropResult))
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(if (and (ls (objGetData gSource "disposition") -9) (leq (random 1 100) 25))
+									(scrShowPane gScreen "AngryTentacles")
+									(scrShowPane gScreen "Default")
+									)
+							</Action>
+						</Actions>
+					</Result>
+
+					<AngryTentacles descID="descAngryTentacles">
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(block Nil
+									(plyDestroyed gPlayer "was eaten by an angry Teraton fabricator")
+									(scrExitScreen gScreen 'forceUndock)
+									)
+							</Action>
+						</Actions>
+					</AngryTentacles>
+				</Panes>
+			</Factory>
+
+			<DropItem
+				type=			"itemPicker"
+				>
+
+				<ListOptions
+					dataFrom=	"player"
+					list=		"*U -ID; -questItem;"
+					/>
+
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(block nil
+								(scrSetDescTranslate gScreen 'descDropItem)
+								(if (not (scrGetItem gScreen))
+									(block nil
+										(scrSetActionDesc gScreen 'actionDropThis (scrTranslate gScreen 'descNoItemsHere))
+										(scrEnableAction gScreen 'actionDropThis Nil)
+										)
+									)
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionDropThis" default="1">
+								(intFabricatorDropItem (scrGetItem gScreen))
+							</Action>
+
+							<Action id="actionCancel" cancel="1">
+								<Navigate screen="Factory"/>
+							</Action>
+						</Actions>
+					</Default>
+
+				</Panes>
+			</DropItem>
+
+		</DockScreens>
+
+		<DockingPorts>
+			<Port x="-64"	y="77" />
+			<Port x="-32"	y="126" />
+			<Port x="0"		y="77" />
+			<Port x="78"	y="-20" />
+			<Port x="124"	y="-80" />
+			<Port x="54"	y="-80" />
+			<Port x="-40"	y="-68" />
+			<Port x="-106"	y="-64" />
+			<Port x="-72"	y="0" />
+		</DockingPorts>
+
+		<Language>
+			<Text id="actionFabricatorChamber">[F]abricator Chamber</Text>
+			<Text id="actionDropItem">[D]rop Item in Pit</Text>
+			<Text id="actionDropThis">[D]rop this Item</Text>
+			<Text id="actionDropAnother">
+				(block (text)
+					(setq text (typTranslate gType 'actionDropAnotherText {
+						itemName:(itmGetName (scrGetData gScreen 'lastItemDrop) 0x400)
+						}))
+					(if (gr (count text) 46)
+						(setq text (cat (subset text 0 45)
+										(typTranslate &RPG_unidCommonText; 'ellipsis)
+							))
+						)
+					text
+					)
+			</Text>
+			<Text id="actionDropAnotherText">Drop [A]nother %itemName%</Text>
+			<Text id="actionDescDropAnother">
+				"You have %number% left."
+			</Text>
+			<Text id="actionDescNoneLeft">
+				"You have none left."
+			</Text>
+			
+			<Text id="descDropItem">What item do you wish to drop into the Teraton pit?</Text>
+			<Text id="descFactory">
+				You are in the vast central chamber of the Teraton nest. A
+				large pit in the center of the cavern is inhabited by a mass
+				of tentacles, cilia, and grotesque organs.
+			</Text>
+			<Text id="descResultNewItem">
+				Tentacles reach out to accept your offering and the organic mass
+				swallows it with a hiss. Organs gurgle and glow for a while, and
+				then tentacles pull a slimy mass out of some orifice and deposit
+				it at your feet.
+
+				You see %itemName%.
+			</Text>
+			<Text id="descResultLike">
+				Tentacles eagerly reach out to accept your offering and the
+				organic mass swallows it with a hiss.
+
+				The organic mass spews a sweet, pleasant mist.
+			</Text>
+			<Text id="descResultDislike">
+				Tentacles reach out to accept your offering and the organic
+				mass tentatively swallows it.
+
+				With a roar of anger, the organic mass spews a thick mist of
+				bile. You are covered in a slimy broth of chemicals.
+			</Text>
+			<Text id="descResultFeed">
+				Tentacles reach out to accept your offering and the organic
+				mass swallows it.
+
+				Organs and bladders gurgle as they process the %food% you have
+				fed them.
+			</Text>
+			<Text id="descResultDiscard">
+				Tentacles reach out to accept your offering, but after a
+				tentative taste they discard it through one of the many tunnels
+				along the wall of the pit.
+			</Text>
+			<Text id="descResultUnknown">
+				Tentacles reach out to accept your offering, but after a
+				tentative taste, they crush it and discard it through one of
+				the many tunnels along the wall of the pit.
+			</Text>
+			<Text id="descAngryTentacles">
+				Angered by your offerings, the tentacles of the pit reach out
+				to grab you. Before you can run, they slip around your neck
+				and waist and pull you down into the pit.
+
+				You are dissolved by the various acids and enzymes of the
+				grotesque organic mass.
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Teraton Research Center -->
+
+	<StationType UNID="&HS_stTeratonResearch;"
+			name=				"Teraton research center"
+			sovereign=			"&HS_svTeratons;"
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			multiHull=			"true"
+			armorID=			"&HS_itAdvancedIthaliumArmor;"
+			hitPoints=			"1200"
+			regen=              "24"
+			fireRateAdj=		"10"
+			explosionType=		"&CORE_vtThermoExplosion3;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"envAir, envAvoidsFire, generic, independent, friendly, majorStation, populated, neoHuman, teraton, teratonResearch"
+
+			inherit=			"&HS_baTeratonNestBase;"
+			>
+
+		<Names>Teraton Nest</Names>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+teratonSpace;"
+				systemAffinity=			"+envAir; -envFire;"
+				levelFrequency=			"----- --rr- ----- ----- -----"
+
+				locationCriteria=		"+outerSystem, -void"
+				enemyExclusionRadius=	"50"
+				/>
+
+		<Image			imageID="&HS_rsStations9;" imageX="0" imageY="0" imageWidth="256" imageHeight="256"/>
+
+		<Items>
+			<RandomItem count="12" 
+					criteria=		"* -NotStandard"
+					level=			"7"
+					levelCurve=		"1"
+					/>
+			<RandomItem count="1d2" 
+					criteria=		"* +Alien; -NotStandard;"
+					level=			"9"
+					levelCurve=		"3"
+					/>
+		</Items>
+
+		<Trade currency="rin">
+			<Sell	criteria="*NU +soul;"							priceAdj="unavailable"/>
+			<Sell	criteria="*NU +ringerValuable;"					priceAdj="250"/>
+			<Sell	criteria="*NU +alien;"							priceAdj="120"/>
+			<Sell	criteria="*NU -ID;"								priceAdj="100"/>
+			<Buy	criteria="*NU +soul;"							priceAdj="constant:1000"/>
+			<Buy	criteria="*NU +alien;"							priceAdj="50"/>
+			<Buy	criteria="*NU +res; &gt;=6;"					priceAdj="90"/>
+			<Buy	criteria="wmNU &gt;=5;"							priceAdj="50"/>
+		</Trade>
+		
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionResearchChamber" default="1">
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +teratonResearch; =" (sysGetLevel) ";")
+									noMissionTextID: 'descResearchNone
+									})
+							</Action>
+
+							<Action id="actionCommoditiesExchange">
+								(if (not (intTeratonMugging))
+									(scrShowScreen gScreen &RPG_dsRPGCommoditiesExchange;)
+									)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+
+		</DockScreens>
+
+		<DockingPorts>
+			<Port x="-64"	y="77" />
+			<Port x="-32"	y="126" />
+			<Port x="0"		y="77" />
+			<Port x="78"	y="-20" />
+			<Port x="124"	y="-80" />
+			<Port x="54"	y="-80" />
+			<Port x="-40"	y="-68" />
+			<Port x="-106"	y="-64" />
+			<Port x="-72"	y="0" />
+		</DockingPorts>
+
+		<Language>
+			<Text id="actionResearchChamber">[R]esearch Chamber</Text>
+
+			<Text id="descResearchNone">
+				You enter a dim cavern filled with arcane equipment. Dozens of
+				human subjects, wired, tubed, and in various stages of health
+				and wholeness, lie on articulated beds. A tall Teraton with
+				supernumerary fingers tends to the patients with a mixture of
+				curiosity and concern.
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Teraton Trading Post -->
+
+	<StationType UNID="&HS_stTeratonTradingPost;"
+			name=				"Teraton trading post"
+			sovereign=			"&HS_svTeratons;"
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			multiHull=			"true"
+			armorID=			"&HS_itAdvancedIthaliumArmor;"
+			hitPoints=			"1200"
+			regen=              "20"
+			fireRateAdj=		"10"
+			explosionType=		"&CORE_vtThermoExplosion3;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"envAir, envAvoidsFire, generic, independent, friendly, majorStation, populated, neoHuman, teraton, teratonTrading"
+
+			inherit=			"&HS_baTeratonNestBase;"
+			>
+
+		<Names>Teraton Nest</Names>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+teratonSpace;"
+				systemAffinity=			"+envAir; -envFire;"
+				levelFrequency=			"----- -vcuv ----- ----- -----"
+
+				locationCriteria=		"+outerSystem, -void"
+				enemyExclusionRadius=	"50"
+				/>
+
+		<Image			imageID="&HS_rsStations9;" imageX="0" imageY="0" imageWidth="256" imageHeight="256"/>
+
+		<Items>
+			<RandomItem count="20" 
+					criteria=		"* -NotStandard"
+					level=			"7"
+					levelCurve=		"1"
+					/>
+			<RandomItem count="10" 
+					criteria=		"adm -NotStandard"
+					level=			"8"
+					levelCurve=		"1"
+					/>
+			<RandomItem count="5" 
+					criteria=		"wm -NotStandard"
+					level=			"9"
+					levelCurve=		"2"
+					/>
+			<RandomItem count="5" 
+					criteria=		"fmut +Consumable; -NotStandard;"
+					level=			"10"
+					levelCurve=		"2"
+					/>
+		</Items>
+
+		<Trade currency="rin">
+			<Sell	criteria="*NU +soul;"							priceAdj="unavailable"/>
+			<Sell	criteria="*NU +ringerValuable;"					priceAdj="250"/>
+			<Sell	criteria="*NU +alien;"							priceAdj="120"/>
+			<Sell	criteria="*NU -ID;"								priceAdj="100"/>
+			<Buy	criteria="*NU +soul;"							priceAdj="constant:1000"/>
+			<Buy	criteria="*NU +alien;"							priceAdj="50"/>
+			<Buy	criteria="*NU +res; &gt;=6;"					priceAdj="90"/>
+			<Buy	criteria="wmNU &gt;=5;"							priceAdj="50"/>
+		</Trade>
+		
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionCommoditiesExchange">
+								(if (not (intTeratonMugging))
+									(scrShowScreen gScreen &RPG_dsRPGCommoditiesExchange;)
+									)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+
+					</Default>
+				</Panes>
+			</Main>
+
+		</DockScreens>
+
+		<DockingPorts>
+			<Port x="-64"	y="77" />
+			<Port x="-32"	y="126" />
+			<Port x="0"		y="77" />
+			<Port x="78"	y="-20" />
+			<Port x="124"	y="-80" />
+			<Port x="54"	y="-80" />
+			<Port x="-40"	y="-68" />
+			<Port x="-106"	y="-64" />
+			<Port x="-72"	y="0" />
+		</DockingPorts>
+
+	</StationType>
+
+<!-- STATION TYPES -->
+
+	<!-- Teraton Chrysalis
+	
+	EXTRA DATA
+	
+	openTime:			Tick on which chrysalis will open
+	type:				One of the following
+							'defender = Create a Teraton defender
+	
+	-->
+
+	<StationType UNID="&HS_stTeratonChrysalis;"
+			name=				"Teraton chrysalis(es)"
+			sovereign=			"&HS_svTeratons;"
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+			dockingPorts=		"4"
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+
+			multiHull=			"true"
+			mass=				"5000"
+			armorID=			"&HS_itLightIthaliumArmor;"
+			hitPoints=			"250"
+			regen=				"10"
+			structuralHitPoints="20"
+			fireRateAdj=		"20"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			
+			attributes=			"teraton, teratonChrysalis"
+			>
+
+		<Image	imageID="&HS_rsTeratonChrysalis;" imageWidth="100" imageHeight="100"/>
+		
+		<Language>
+			<Text id="actionUndock">[U]ndock</Text>
+
+			<Text id="descWelcome">
+				You are docked with a Teraton chrysalis&mdash;a pulsing mass
+				of biomechanical systems. You see a bony structure taking
+				shape inside the large spherical structure.
+			</Text>
+			<Text id="core.abandonedStationDesc">
+
+				You are docked at the dead remains of a Teraton chrysalis.
+				The bony, motionless mass at its center bleeds an ochre fluid.
+
+			</Text>
+		</Language>
+		
+		<Events>
+			<OnBehavior>
+				(block (openTime)
+					(if (and (setq openTime (objGetData gSource "openTime"))
+							(geq (unvGetTick) openTime)
+							(not (objIsAbandoned gSource)))
+						(block (theType theObj)
+							; Create open animation effect
+							(sysCreateEffect &HS_efTeratonChrysalisOpen; Nil (objGetPos gSource))
+							
+							; Create the object
+							(setq theType (objGetData gSource "type"))
+							(switch
+								(eq theType 'defender)
+									(block (theBase)
+										(setq theObj (sysCreateStation &HS_stTeratonDefender; (objGetPos gSource)))
+										
+										; Find the nearest Teraton nest and make this a subordinate
+										(if (setq theBase (sysFindObject gSource "TAN +teraton; +populated"))
+											(objAddSubordinate theBase theObj)
+											)
+										)
+								)
+							
+							; Destroy ourselves
+							(objDestroy gSource)
+							)
+						)
+					)
+			</OnBehavior>
+			
+			<OnCreate>
+				(sysAddObjRecurringTimerEvent 30 gSource "OnBehavior")
+			</OnCreate>
+		</Events>
+		
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionUndock" default="1" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+	</StationType>
+
+	<!-- Teraton Defense Satellite -->
+
+	<StationType UNID="&HS_stTeratonDefender;"
+			name=				"Teraton Defender"
+			sovereign=			"&HS_svTeratons;"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+			dockingPorts=		"4"
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+
+			multiHull=			"true"
+			mass=				"5000"
+			armorID=			"&HS_itLightIthaliumArmor;"
+			hitPoints=			"150"
+			structuralHitPoints="40"
+			fireRateAdj=		"20"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			
+			attributes=			"generic, staticDefense, teraton, teratonDefender"
+			>
+
+		<Image	imageID="&HS_rsTeratonDefender;" imageWidth="64" imageHeight="64" imageFrameCount="12" imageTicksPerFrame="2"/>
+
+		<Devices>
+			<Device deviceID="&HS_itKytrynBlaster;"	omnidirectional="true"/>
+		</Devices>
+
+		<Language>
+			<Text id="core.abandonedStationDesc">
+
+				You are docked at the dead remains of a Teraton defender.
+				Wisps of high-energy plasma vent from holes along a bony central mass.
+
+			</Text>
+		</Language>
+	</StationType>
+
+<!-- ITEM TYPES -->
+
+	<!-- Kytryn Blaster -->
+
+	<ItemType UNID="&HS_itKytrynBlaster;"
+			name=				"Kytryn blaster"
+			level=				"9"
+			value=				"220000"
+			mass=				"3000"
+			frequency=			"rare"
+			attributes=			"Alien; MajorItem; Military; Teraton"
+			unknownType=		"&HS_itUnknownAlienDevice10;"
+
+			description=		"Kytryn blasters were created by the Teratons based on research on Iocrym technology."
+			>
+
+		<Image imageID="&HS_rsItems9;" imageX="0" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"particles"
+				damage=				"plasma:40; WMD5"
+				
+				fireRate=			"16"
+
+				powerUse=			"3000"
+				sound=				"&CORE_snRecoillessCannon;"
+				>
+
+			<ParticleSystem
+					style=				"amorphous"
+					emitRate=			"40"
+					emitSpeed=			"36-44"
+					emitLifetime=		"1"
+					spreadAngle=		"6"
+					
+					particleLifetime=	"80"
+					particleEffect=		"&CORE_efPlasmaParticleDefault;"
+					>
+			</ParticleSystem>
+		</Weapon>
+	</ItemType>
+
+	<!-- Kytryn Launcher -->
+
+	<ItemType UNID="&HS_itKytrynLauncher;"
+			name=				"Kytryn launcher"
+			level=				"10"
+			value=				"350000"
+			mass=				"5000"
+			frequency=			"rare"
+			attributes=			"Alien; MajorItem; Military; Teraton"
+			unknownType=		"&HS_itUnknownAlienDevice10;"
+
+			description=		"This Teraton weapon launches a Kytryn plasma pod warhead, which blossoms into a shell of plasma energy."
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="0" imageY="480" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				fireRate=			"40"
+				powerUse=			"200"
+				launcher=			"true"
+				>
+
+			<Missiles>
+				<Missile ammoID="&HS_itKytrynPlasmaSeed;"/>
+			</Missiles>
+		</Weapon>
+	</ItemType>
+
+	<!-- Kytryn Plasma Seed -->
+
+	<ItemType UNID="&HS_itKytrynPlasmaSeed;"
+			name=				"Kytryn plasma pod"
+			level=				"10"
+			value=				"450"
+			mass=				"30"
+			attributes=			"Consumable; Alien; Missile; Teraton"
+			frequency=			"uncommon"
+			numberAppearing=	"1d6"
+
+			description=		"These alien warheads are launched by the Kytryn launcher."
+
+			sortName=			"Kytryn.10"
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="0" imageY="96" imageWidth="96" imageHeight="96"/>
+		
+		<Missile
+				type=			"missile"
+				lifetime=		"480"
+				missileSpeed=	"30"
+
+				failsafe=		"6"
+
+				sound=			"&CORE_snMissileLauncher;"
+				>
+			
+			<Effect>
+				<Orb
+						style=				"flare"
+						radius=				"50"
+						intensity=			"50"
+						
+						blendMode=			"screen"
+						primaryColor=		"#feff00"
+						secondaryColor=		"#ffbf00"
+						/>
+			
+				<ParticleSystem
+						style=				"jet"
+						fixedPos=			"true"
+						emitRate=			"4-8"
+						tangentSpeed=		"-6-6"
+						particleLifetime=	"24"
+						XformTime=			"30"
+						>
+					<ParticleEffect>
+						<Orb
+								instance=			"owner"
+						
+								style=				"smooth"
+								animate=			"fade"
+								radius=				"10"
+								lifetime=			"24"
+								intensity=			"20"
+						
+								blendMode=			"screen"
+								primaryColor=		"#feff00"
+								secondaryColor=		"#ff7f00"
+								/>
+					</ParticleEffect>
+				</ParticleSystem>
+			</Effect>
+
+			<Fragment
+					type=				"particles"
+					damage=				"plasma:500; WMD:4"
+					hitPoints=			"10"
+					>
+			
+				<ParticleSystem
+						style=				"radiate"
+						emitLifetime=		"1"
+						emitRate=			"120"
+						emitSpeed=			"20"
+					
+						particleLifetime=	"30"
+						particleEffect=		"&CORE_efPlasmaParticleDefault;"
+						>
+				</ParticleSystem>
+			</Fragment>
+		</Missile>
+	</ItemType>
+
+	<!-- Teraton Nest Base
+	
+	All Teraton nests are derived from this type
+	
+	-->
+	
+	<Type UNID="&HS_baTeratonNestBase;"
+			inherit=			"&RPG_unidCommonText;"
+			>
+		<Properties>
+			<!--
+			By default Teratons do not bother checking for military ID.
+			-->
+			<Constant	id="rpg.checkMilitaryID">Nil</Constant>
+		</Properties>
+
+		<Language>
+			<Text id="actionCommoditiesExchange">[T]rading Chamber</Text>
+
+			<Text id="descWelcome">
+				You are in the peripheral tunnel of a Teraton nest. The hard
+				walls are covered by a sinewy membrane and odd growths hang from
+				the ceiling. There is a foul smell of rot and bile in the air.
+			</Text>
+			<Text id="core.commoditiesExchangeDesc">
+
+				The Trading Chamber is a vast, dark cavern where Teratons
+				trade with various human and neohumans. From a distance the
+				Teratons look like abnormally tall humans, but up close you
+				notice their deformities and mutations.
+
+			</Text>
+			<Text id="core.abandonedStationDesc">
+
+				You are docked at the remains of a Teraton nest.
+				The sickly sweet smell of burnt flesh fills the air and 
+				mucousy discharges flow out of organic walls.
+
+			</Text>
+		</Language>
+
+		<Events>
+			<OnBehavior>
+				(if (not (objIsAbandoned gSource))
+					(block (totalDefenders)
+						; Count the number of defenders
+						(setq totalDefenders (count (sysFindObject gSource "TAN:25; +teraton; -populated;")))
+						(setq optimalDefenders (add 3 (typGetGlobalData &HS_baTeratonNestBase; "nestsDestroyed")))
+						
+						(if (ls totalDefenders optimalDefenders)
+							(terCreateDefender gSource)
+							)
+						)
+					)
+			</OnBehavior>
+			
+			<OnCreate>
+				(block Nil
+					; Create some defenders
+					(for i 1 (random 3 5)
+						(block (thePos theObj)
+							(setq thePos (sysVectorRandom gSource (random 7 20) 4 "t"))
+							(setq theObj (sysCreateStation &HS_stTeratonDefender; thePos))
+							(objAddSubordinate gSource theObj)
+							)
+						)
+					
+					; Register update event
+					(sysAddObjRecurringTimerEvent 301 gSource "OnBehavior")
+					)
+			</OnCreate>
+
+			<OnDestroy>
+				(block (playerItems)
+					; Keep track of stations destroyed
+					(typIncGlobalData &HS_baTeratonNestBase; "nestsDestroyed")
+					
+					; Before we destroy items on the station, take away any items
+					; that we took from the player; these have a greater chance of showing
+					; up.
+					
+					(setq playerItems (filter (objGetItems gSource "*") theItem (itmGetData theItem "001F2001_fromPlayer")))
+					(enum playerItems theItem (objRemoveItem gSource theItem))
+					
+					; Destroy items on the station
+					(rpgDestroyItems gSource)
+					
+					; Add back the player items
+					(enum playerItems theItem
+						(if (leq (random 1 100) 90)
+							(objAddItem gSource (itmSetData theItem "001F2001_fromPlayer" Nil (itmGetCount theItem)))
+							)
+						)
+					)
+			</OnDestroy>
+		</Events>
+	</Type>
+	
+	<Globals>
+		(block Nil
+			(setq intConsumeItem (lambda (theObj theItem)
+				(if (objHasItem theObj theItem)
+					(block Nil
+						(objRemoveItem theObj theItem)
+						True
+						)
+					Nil
+					)
+				))
+				
+			(setq terCreateDefender (lambda (theNest)
+				(block (thePos theObj)
+					; Pick a proper location for the defender
+					(setq thePos (sysVectorRandom theNest (random 7 20) 4 "t"))
+					
+					; Create the chrysalis
+					(setq theObj (sysCreateStation &HS_stTeratonChrysalis; thePos))
+					(objAddSubordinate theNest theObj)
+					
+					; Set params
+					(objSetData theObj "type" 'defender)
+					
+					; Chrysalis will open in 1 minute
+					(objSetData theObj "openTime" (add (unvGetTick) 1800))
+					)
+				))
+
+			(setq intTeratonGetLevelCurve (lambda (value theItem)
+				(switch
+					(isint value)
+						(block (result)
+							(setq result "")
+							(for i 1 5 (setq result (cat result (if (eq i value) "c" "-"))))
+							(setq result (cat result " "))
+							(for i 6 10 (setq result (cat result (if (eq i value) "c" "-"))))
+							(setq result (cat result " "))
+							(for i 11 15 (setq result (cat result (if (eq i value) "c" "-"))))
+							result
+							)
+
+					(eq value "l")
+						(intTeratonGetLevelCurve (itmGetLevel theItem) theItem)
+
+					(eq value "l+1")
+						(intTeratonGetLevelCurve (add (itmGetLevel theItem) 1) theItem)
+
+					(eq value "l-1")
+						(intTeratonGetLevelCurve (subtract (itmGetLevel theItem) 1) theItem)
+
+					(eq value "l+2")
+						(intTeratonGetLevelCurve (add (itmGetLevel theItem) 2) theItem)
+
+					"ccccc ccccc"
+					)
+				))
+
+			(setq intTeratonGetValue (lambda (value theItem)
+				(switch
+					(not value)
+						-1000
+
+					(isint value)
+						value
+
+					(eq value "+l")
+						(itmGetLevel theItem)
+
+					(eq value "-l")
+						(subtract 0 (itmGetLevel theItem))
+
+					(eq value "+2l")
+						(multiply (itmGetLevel theItem) 2)
+
+					(eq value "-2l")
+						(subtract 0 (multiply (itmGetLevel theItem) 2))
+
+					0
+					)
+				))
+
+			(setq intTeratonMugging (lambda (destination)
+				(switch
+					; If the player is not too powerful then there is a chance that
+					; the Teratons will just take what they want.
+
+					(or (and (ls (objGetCombatPower gPlayerShip) 15) (leq (random 1 100) 25))
+							(and (ls (objGetCombatPower gPlayerShip) 25) (leq (random 1 100) 5)))
+						(block (bestItem bestValue value)
+
+							; Look for the most expensive item that the player has
+							(setq bestValue 0)
+							(objEnumItems gPlayerShip "*U" theItem
+								(block Nil
+									(setq value (multiply (objGetBuyPrice gSource theItem) (itmGetCount theItem)))
+									(if (and value (gr value bestValue))
+										(block Nil
+											(setq bestItem theItem)
+											(setq bestValue value)
+											)
+										)
+									)
+								)
+
+							; If we found something interesting, then take it
+							(if bestItem
+								(block Nil
+									; Take the item from the player
+									(objRemoveItem gPlayerShip bestItem)
+									
+									; Mark it so we know where it came from
+									(setq bestItem (itmSetData bestItem "001F2001_fromPlayer" True (itmGetCount bestItem)))
+									
+									; Add it to the nest
+									(objAddItem gSource bestItem)
+
+									(setq gItem bestItem)
+									(scrShowScreen gScreen "&HS_dsTeratonMugging;")
+									)
+								(if destination (scrShowPane gScreen destination))
+								)
+							)
+
+					(if destination (scrShowPane gScreen destination))
+					)
+				))
+				
+			(setq intFabricatorDropItem (lambda (theItem)
+				(block (
+					(energy (objGetData gSource "energy"))
+					(material (objGetData gSource "material"))
+					(disposition (objGetData gSource "disposition"))
+					(table (objGetStaticData gSource "FactoryTable"))
+					entry criteria result
+					)
+
+					(switch
+						; If this is the creature's favorite food, then we have a special entry
+						; +5 disposition
+
+						(find (objGetData gSource "love") (itmGetType theItem))
+							(setq entry (list Nil Nil Nil Nil 0 0 +5 Nil Nil))
+
+						; If this is the creature's least favorite food, then we have a special
+						; entry: -5 to -8 disposition.
+
+						(find (objGetData gSource "hate") (itmGetType theItem))
+							(setq entry (list Nil Nil Nil Nil 0 0 (random -8 -5) Nil Nil))
+
+						; Otherwise, look for the item in the table
+
+						(setq entry Nil)
+						)
+
+					; Look for the entry in the table
+					(enumwhile table (not entry) thisEntry
+						(switch
+							; Skip if not enough material
+							(ls material (intTeratonGetValue (item thisEntry 1) theItem))
+								Nil
+
+							; Skip if not enough energy
+							(ls energy (intTeratonGetValue (item thisEntry 2) theItem))
+								Nil
+
+							; Skip if not enough disposition
+							(ls disposition (intTeratonGetValue (item thisEntry 3) theItem))
+								Nil
+
+							; If the criteria in the table is Nil, then we always match. This
+							; is for the last (default) entry.
+							(not (setq criteria (item thisEntry 0)))
+								(setq entry thisEntry)
+
+							; If the criteria is an integer, then we see if this is the UNID
+							; of the item.
+							(isint criteria)
+								(if (eq (itmGetType theItem) criteria)
+									(setq entry thisEntry)
+									)
+
+							; If the criteria matches, then we have an entry
+							(itmMatches theItem criteria)
+								(setq entry thisEntry)
+							)
+						)
+					
+					; Remember the item
+					(objSetData gSource 'lastItemDrop theItem)
+
+					; Consume the item	
+					(objRemoveItem gPlayerShip theItem 1)
+
+					; Figure out the result
+					(if entry
+						(block (incEnergy incMaterial incDisposition output newItem)
+							(setq incMaterial (intTeratonGetValue (item entry 4) theItem))
+							(setq incEnergy (intTeratonGetValue (item entry 5) theItem))
+							(setq incDisposition (intTeratonGetValue (item entry 6) theItem))
+
+							(setq output (item entry 7))
+							(switch
+								(not output)
+									(setq newItem Nil)
+
+								(eq output "replicate")
+									(setq newItem (itmCreate (itmGetType theItem) (random 8 12)))
+
+								(isint output)
+									(setq newItem (itmCreate output 1))
+
+								(setq newItem (itmCreateRandom output (intTeratonGetLevelCurve (item entry 8) theItem)))
+								)
+
+							; State changes
+							(objIncData gSource "material" incMaterial)
+							(objIncData gSource "energy" incEnergy)
+							(objIncData gSource "disposition" incDisposition)
+							(if newItem
+								(objAddItem gPlayerShip newItem)
+								)
+
+							; Compute the result description string
+							(switch
+								newItem
+									(setq result (scrTranslate gScreen 'descResultNewItem {
+										itemName: (itmGetName newItem 8)
+										}))
+
+								(gr incDisposition 0)
+									(setq result (scrTranslate gScreen 'descResultLike))
+
+								(ls incDisposition 0)
+									(setq result (scrTranslate gScreen 'descResultDislike))
+
+								(or (gr incMaterial 0) (gr incEnergy 0))
+									(setq result (scrTranslate gScreen 'descResultFeed {
+										food: (if (gr incEnergy 0) "energy" "material")
+										}))
+
+								(setq result (scrTranslate gScreen 'descResultDiscard))
+								)
+
+							; DEBUG
+							; (setq result (cat result "\n\nM=" (objGetData gSource "material") " E=" (objGetData gSource "energy") " D=" (objGetData gSource "disposition")))
+							)
+						(setq result (scrTranslate gScreen 'descResultUnknown))
+						)
+
+					; Next
+					(scrShowScreen gScreen "Factory" "Result" { dropResult:result })
+					)
+				))
+				
+			)
+	</Globals>
+
+	<!-- Teraton Mugging Screen -->
+
+	<DockScreen UNID="&HS_dsTeratonMugging;"
+			inherit=			"&RPG_dsDockScreenBase;"
+			>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(scrSetDescTranslate gScreen 'descMugging {
+						itemName: (itmGetName gItem 8)
+						})
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						<Exit/>
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="descMugging">
+				You try to enter the Trading Chamber but a group of Teratons grab
+				you and drag you back to your ship. Snorting with contempt for
+				your weak ship, they rummage through your cargo hold looking for
+				valuable items.
+
+				They take %itemName% and leave you in pain on the deck of your ship.
+			</Text>
+		</Language>
+	</DockScreen>
+
+<!-- RESOURCES -->
+
+	<Effect UNID="&HS_efTeratonChrysalisOpen;">
+		<Sequencer>
+			<Image imageID="&HS_rsTeratonChrysalis;" 
+					imageX="0" 
+					imageY="0" 
+					imageWidth="100" 
+					imageHeight="100"
+					imageFrameCount="16"
+					imageTicksPerFrame="2"/>
+
+			<ImageFracture>
+				<Image imageID="&HS_rsTeratonChrysalis;" 
+						imageX="1500" 
+						imageY="0" 
+						imageWidth="100" 
+						imageHeight="100"/>
+			</ImageFracture>
+		</Sequencer>
+	</Effect>
+
+	<Image UNID="&HS_rsTeratonChrysalis;" bitmap="Resources\TeratonChrysalis.jpg" bitmask="Resources\TeratonChrysalisMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsTeratonDefender;" bitmap="Resources\TeratonDefender.jpg" bitmask="Resources\TeratonDefender.bmp"  loadOnUse="true"/>
+
+</TranscendenceModule>	

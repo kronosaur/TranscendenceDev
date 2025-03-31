@@ -1,0 +1,702 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- COMPATIBILITY TYPES =======================================================
+
+	This module contains types that have been DEPRECATED and superceded by 
+	newer types.
+
+							SYSTEM
+	OLD TYPE				VERSION		NEW TYPE
+
+	dsJettison				78			dsRPGJettison
+	dsLoot					78			dsRPGLoot
+	dsRepairItem			78			dsRPGRepairItem
+
+	-->
+
+	<DockScreen UNID="&RPG_dsRepairItem;"
+			type=				"itemPicker"
+			nestedScreen=		"true"
+			obsoleteVersion=			"37"
+			>
+
+		<ListOptions
+			dataFrom=	"player"
+			list=		"*"
+			>
+			(scrSetListFilter gScreen gShowCriteria)
+		</ListOptions>
+
+		<Panes>
+			<Default descID="descRepairItemDefault">
+				<OnPaneInit>
+					(block (thisItem currencyUsed)
+						(setq thisItem (scrGetItem gScreen))
+						(setq currencyUsed (objGetDefaultCurrency gSource))
+						(setq gResult Nil)
+
+						(if thisItem
+							(block (desc)
+								; Compute the cost to repair the item
+								(setq gCost (divide (multiply (itmGetPrice thisItem currencyUsed) gMargin) 100))
+
+								(switch
+									(gr gCost (objGetBalance gPlayerShip currencyUsed))
+										(setq desc (cat "It will cost " (fmtCurrency currencyUsed gCost) " to repair " (itmGetName thisItem 0x04) ". Unfortunately, you cannot afford the cost."))
+
+									(block Nil
+										(setq desc (cat "We can repair " (itmGetName thisItem 0x04) " for " (fmtCurrency currencyUsed gCost) "."))
+										(setq gResult True)
+										)
+									)
+
+								(scrSetDesc gScreen desc)
+								)
+							)
+
+						(scrEnableAction gScreen 0 gResult)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Repair Item" default="1" key="R">
+						(block Nil
+							(setq gItem (scrGetItem gScreen))
+							
+							(shpEnhanceItem gPlayerShip gItem)
+							(objCharge gPlayerShip (objGetDefaultCurrency gSource) gCost)
+							
+							(scrShowPane gScreen "Success")
+							)
+					</Action>
+
+					<Action name="Cancel" cancel="1" key="C">
+                        (scrExitScreen gScreen)
+					</Action>
+				</Actions>
+
+			</Default>
+
+			<Success
+					noListNavigation="true"
+					>
+				<OnPaneInit>
+					(scrSetDesc gScreen (cat "Your " (itmGetName gItem 0) " has been repaired successfully."))
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Continue" default="1" cancel="1" key="C">
+                        (scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Success>
+		</Panes>
+
+		<Language>
+			<Text id="descRepairItemDefault">
+				You do not have any items that we can repair.
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Jettison
+
+		gPrevScreen: Must be set to the name/UNID of the screen to
+				navigate to when done.
+
+	-->
+
+	<DockScreen UNID="&RPG_dsJettison;"
+			name=				"Ship's Cargo Hold"
+			type=				"itemPicker"
+			obsoleteVersion=			"37"
+			>
+
+		<ListOptions
+			dataFrom=	"player"
+			list=		"*U"
+			/>
+
+		<Panes>
+			<Default descID="descNoItems">
+				<OnPaneInit>
+					(block (thisItem)
+						(setq thisItem (scrGetItem gScreen))
+
+						(if thisItem
+							(block (availCount fitCount)
+								(setq availCount (itmGetCount thisItem))
+								(setq fitCount (objGetFitCount gSource thisItem))
+								(setq gMaxCount (min availCount fitCount))
+
+								(setq desc (cat "Unit mass: " (fmtNumber 'massKg (itmGetMass thisItem))))
+								(if (gr gMaxCount 1)
+									(setq desc (cat desc " (" gMaxCount " at " (fmtNumber 'massKg (multiply (itmGetMass thisItem) gMaxCount)) ")"))
+									)
+
+								(if (ls (objGetCargoSpaceLeft gSource) 200000)
+									(setq desc (cat desc "\nCapacity: " (fmtNumber 'massKg (objGetCargoSpaceLeft gSource))))
+									)
+
+								(switch
+									(eq gMaxCount 0)
+										(setq desc (cat desc "\n\nThere is not enough space here to jettison " (itmGetName thisItem 4) "."))
+									(eq gMaxCount 1)
+										(setq desc (cat desc "\n\nThere is enough space to jettison one " (itmGetName thisItem 0) "."))
+									(gr availCount fitCount)
+										(setq desc (cat desc "\n\nThere is enough space to jettison only " fitCount " " (itmGetName thisItem 2) "."))
+									(setq desc (cat desc "\n\nThere is enough space to jettison all " (itmGetName thisItem 8) "."))
+									)
+
+								(scrSetDesc gScreen desc)
+								)
+							(setq gMaxCount 0)
+							)
+
+						; Enable/disable actions
+						(scrEnableAction gScreen 0 (gr gMaxCount 0))
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Jettison this Item" default="1" key="J" >
+						(switch
+							(gr gMaxCount 1)
+								(scrShowPane gScreen "JettisonQuantity")
+
+							(eq gMaxCount 1)
+								(block (itemsToJettison)
+									; Dump items
+									(setq itemsToJettison (scrRemoveItem gScreen 1))
+									(rpgJettisonItem gSource itemsToJettison)
+									(scrShowPane gScreen "Default")
+									)
+							)
+				</Action>
+
+					<Action name="Done" cancel="1" key="D">
+						(scrShowScreen gScreen gPrevScreen)
+				</Action>
+
+			</Actions>
+
+		</Default>
+
+			<JettisonQuantity
+					showCounter=	"true">
+
+				<OnPaneInit>
+					(block Nil
+						(scrSetDesc gScreen (cat "How many items do you wish to jettison?"))
+						(scrSetCounter gScreen gMaxCount)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Jettison" default="1" key="J">
+						(block (count)
+							(setq count (scrGetCounter gScreen))
+							(if (gr count gMaxCount)
+								(scrSetCounter gScreen gMaxCount)
+								(block (itemsToJettison)
+									; Dump items
+									(setq itemsToJettison (scrRemoveItem gScreen count))
+									(rpgJettisonItem gSource itemsToJettison)
+									(scrShowPane gScreen "Default")
+									)
+								)
+							)
+					</Action>
+
+					<Action name="Cancel" cancel="1" key="C">
+						<ShowPane pane="Default"/>
+					</Action>
+
+				</Actions>
+
+			</JettisonQuantity>
+		</Panes>
+
+		<Language>
+			<Text id="descNoItems">
+				There are no items in your cargo hold that can be jettisoned.
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Loot 
+
+		gPrevScreen: Must be set to the name/UNID of the screen to
+				navigate to when done.
+
+	-->
+
+	<DockScreen UNID="&RPG_dsLoot;"
+			type=				"itemPicker"
+			obsoleteVersion=			"37"
+			>
+
+		<ListOptions
+			dataFrom=	"station"
+			list=		"*U"
+			/>
+
+		<Panes>
+			<Default descID="descNoItems">
+				<OnPaneInit>
+					(block (thisItem)
+						(setq thisItem (scrGetItem gScreen))
+						(if thisItem
+							(block (fitCount availCount desc)
+								(setq availCount (itmGetCount thisItem))
+								(setq fitCount (objGetFitCount gPlayerShip thisItem))
+								
+								(setq gMaxCount (min availCount fitCount))
+
+								(setq desc (cat "Unit mass: " (fmtNumber 'massKg (itmGetMass thisItem))))
+								(if (gr gMaxCount 1)
+									(setq desc (cat desc " (" gMaxCount " at " (fmtNumber 'massKg (multiply (itmGetMass thisItem) gMaxCount)) ")"))
+									)
+
+								(setq desc (cat desc "\n\n"))
+
+								(switch
+									(eq gMaxCount 0)
+										(setq desc (cat desc "You do not have enough space to carry " (itmGetName thisItem 4) "."))
+									(eq gMaxCount 1)
+										(setq desc (cat desc "You have enough room to carry one " (itmGetName thisItem 0) "."))
+									(gr availCount fitCount)
+										(setq desc (cat desc "You have enough room to carry only " fitCount " " (itmGetName thisItem 2) "."))
+									(setq desc (cat desc "You have enough room to carry all " (itmGetName thisItem 8) "."))
+									)
+
+								(scrSetDesc gScreen desc)
+								)
+							(setq gMaxCount 0)
+							)
+
+						; Enable/disable actions
+						(scrEnableAction gScreen 0 (gr gMaxCount 0))
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Loot this Item" key="L" default="1" >
+						(if (gr gMaxCount 1)
+							(scrShowPane gScreen "LootQuantity")
+							(if (eq gMaxCount 1)
+								(block (itemsToLoot)
+									(setq itemsToLoot (scrRemoveItem gScreen 1))
+									(objAddItem gPlayerShip itemsToLoot)
+									(typSetData &CORE_svPlayer; 'tutorialLooted True)
+									(scrShowPane gScreen "Default")
+									)
+								)
+							)
+					</Action>
+
+					<Action name="Done" cancel="1" key="D">
+						(scrShowScreen gScreen gPrevScreen)
+					</Action>
+
+				</Actions>
+
+			</Default>
+
+			<LootQuantity
+					showCounter=	"true">
+
+				<OnPaneInit>
+					(block Nil
+						(scrSetDesc gScreen (cat "How many items do you wish to loot?"))
+						(scrSetCounter gScreen gMaxCount)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Loot" default="1" key="L">
+						(block (count)
+							(setq count (scrGetCounter gScreen))
+							(if (gr count gMaxCount)
+								(scrSetCounter gScreen gMaxCount)
+								(block (itemsToLoot)
+									(setq itemsToLoot (scrRemoveItem gScreen count))
+									(objAddItem gPlayerShip itemsToLoot)
+									(typSetData &CORE_svPlayer; 'tutorialLooted True)
+									(scrShowPane gScreen "Default")
+									)
+								)
+							)
+					</Action>
+
+					<Action name="Cancel" cancel="1" key="C">
+						<ShowPane pane="Default"/>
+					</Action>
+
+				</Actions>
+			</LootQuantity>
+		</Panes>
+
+		<Language>
+			<Text id="descNoItems">
+				There are no items here.
+			</Text>
+		</Language>
+	</DockScreen>
+
+<!-- DOCK SERVICES =============================================================
+
+	This screen allows the player to repair and upgrade their ship at a station.
+	We rely on the <Trade> entries to determine the services that the station 
+	will offer.
+	
+	gData uses the following fields:
+	
+		checkMilitaryID: If True, we check for military ID before installing
+				any military items. We also refuse to install Illegal items.
+		
+		reactorUpgrade: If non-Nil, this must be a list generate with
+				rpgGetReactorUpgradeList. Otherwise, we do not offer a reactor
+				upgrade at this station.
+
+-->
+	
+	<DockScreen unid="&RPG_dsRPGDockServicesCompatible;"
+			inherit=			"&RPG_dsDockScreenBase;"
+			nestedScreen=		"true"
+			obsoleteVersion=			"37"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(canRepairArmor (objGetProperty gSource 'repairArmorMaxLevel))
+						(canInstallDevices (objGetProperty gSource 'installDeviceMaxLevel))
+						)
+					
+						;	Show/hide actions based on the services available
+						;	at this station.
+
+						(scrShowAction gScreen 'actionRepairArmor canRepairArmor)
+						(scrShowAction gScreen 'actionInstallDevice canInstallDevices)
+						(scrShowAction gScreen 'actionRemoveDevice canInstallDevices)
+						(scrShowAction gScreen 'actionUpgradeReactor (@ gData 'reactorUpgrade))
+						
+						;	Descriptor
+						
+						(scrSetDescTranslate gScreen 'dockServicesScreenDesc)
+						)
+				</OnPaneInit>
+				
+				<Actions>
+					<Action id="actionRefuel">
+						(scrShowScreen gScreen "&RPG_dsRPGRefuel;")
+					</Action>
+
+					<Action id="actionRepairArmor">
+						(scrShowScreen gScreen "&RPG_dsRPGRepairArmor;" {
+							checkMilitaryID: (@ gData 'checkMilitaryID)
+							})
+					</Action>
+
+					<Action id="actionInstallDevice">
+						(scrShowScreen gScreen &RPG_dsRPGInstallDevice; {
+							checkMilitaryID: (@ gData 'checkMilitaryID)
+							})
+					</Action>
+
+					<Action id="actionRemoveDevice">
+						(block Nil
+							(setq gMargin 100)
+							(scrShowScreen gScreen &RPG_dsRemoveDevice;)
+							)
+					</Action>
+
+					<Action id="actionUpgradeReactor">
+						(scrShowScreen gScreen &RPG_dsRPGInstallDeviceFromList; {
+							itemList: (@ gData 'reactorUpgrade)
+							priceAdj: Nil
+							checkMilitaryID: (@ gData 'checkMilitaryID)
+							noItemsText: (scrTranslate gScreen 'errorNoReactorTech)
+							})
+					</Action>
+
+					<Action id="actionDone" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		
+		<Language>
+			<Text id="actionDone">[Esc] Done</Text>
+			<Text id="actionInstallDevice">"Install [D]evice"</Text>
+			<Text id="actionRefuel">"[R]efuel"</Text>
+			<Text id="actionRemoveDevice">"Remo[v]e Device"</Text>
+			<Text id="actionRepairArmor">"Repair or Replace [A]rmor"</Text>
+			<Text id="actionUpgradeReactor">"U[p]grade Reactor"</Text>
+			
+			<Text id="dockServicesScreenDesc">"Your ship is docked."</Text>
+			
+			<Text id="errorNoReactorTech">"The technology required to upgrade your reactor is not available at this station."</Text>
+		</Language>
+	</DockScreen>
+
+<!-- REMOVE DEVICE SCREEN ======================================================
+
+	This screen allows the player to remove a currently installed device.
+
+	gData uses the following fields:
+
+	shipObj: The object from which we are removing the device.
+	dockObj: The object that is removing the device.
+	deviceItem: The item to remove.
+	
+-->
+
+	<DockScreen UNID="&RPG_dsRPGRemoveDevice;"
+			inherit=			"&RPG_dsDockScreenBase;"
+			nestedScreen=		"true"
+			obsoleteVersion=			"37"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(theItem (@ gData 'deviceItem))
+						(theShip (@ gData 'shipObj))
+						(theDock (@ gData 'dockObj))
+						
+						(currencyUsed (objGetDefaultCurrency theDock))
+						(costToRemove (objGetItemProperty theDock theItem 'removeDevicePrice))
+						
+						(result (shpCanRemoveDevice theShip theItem))
+						
+						(desc Nil)
+						(canRemove Nil)
+						)
+						
+						(switch
+							(not (isint result))
+								(setq desc result)
+								
+							(not (eq result 0))
+								(setq desc "The device cannot be removed.")
+								
+							(gr (itmGetMass theItem) (objGetCargoSpaceLeft theShip))
+								(setq desc (scrTranslate gScreen 'descNoRoomForDevice))
+								
+							(ls (objGetBalance theShip currencyUsed) costToRemove)
+								(setq desc (scrTranslate gScreen 'descRemoveCantAfford { cost:(fmtCurrency currencyUsed costToRemove) }))
+								
+							(eq costToRemove 0)
+								(block Nil
+									(setq desc (scrTranslate gScreen 'descRemoveFree))
+									(scrSetData gScreen 'cost 0)
+									(setq canRemove True)
+									)
+									
+							(block Nil
+								(setq desc (scrTranslate gScreen 'descRemove { cost:(fmtCurrency currencyUsed costToRemove) }))
+								(scrSetData gScreen 'cost costToRemove)
+								(setq canRemove True)
+								)
+							)
+						
+						;	Set description
+						
+						(scrSetDesc gScreen desc)
+						
+						;	Set actions
+						
+						(scrEnableAction gScreen 'actionRemove canRemove)
+						)
+				</OnPaneInit>
+				
+				<Actions>
+					<Action id="actionRemove" default="1">
+						(block (
+							(theItem (@ gData 'deviceItem))
+							(theShip (@ gData 'shipObj))
+							(theDock (@ gData 'dockObj))
+							(currencyUsed (objGetDefaultCurrency theDock))
+							)
+							
+							(shpRemoveDevice theShip theItem)
+							(objCharge theShip currencyUsed (scrGetData gScreen 'cost))
+
+							(scrExitScreen gScreen)
+							)
+					</Action>
+					
+					<Action id="actionCancel" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		
+		<Language>
+			<Text id="actionRemove">"[R]emove"</Text>
+			
+			<Text id="descNoRoomForDevice">"The device cannot be removed because there is no room in your cargo hold to store it."</Text>
+			<Text id="descRemoveCantAfford">(cat "The device can be removed for " (@ gData 'cost) ". Unfortunately, you cannot afford the cost.")</Text>
+			<Text id="descRemoveFree">"The device can be removed free of charge."</Text>
+			<Text id="descRemove">(cat "The device can be removed for " (@ gData 'cost) ".")</Text>
+		</Language>
+	</DockScreen>
+
+<!-- REPAIR ARMOR SCREEN =======================================================
+
+	This screen allows the player to repair armor at a station. It requires the
+	station to use the <RepairArmor> directive in its <Trade> section.
+
+	gData uses the following fields:
+
+	'checkMilitaryID: If True, we should check for a military ID.
+
+-->
+
+	<DockScreen UNID="&RPG_dsRPGRepairArmor;"
+			type=				"itemPicker"
+			nestedScreen=		"true"
+			obsoleteVersion=			"37"
+			>
+
+		<ListOptions
+			dataFrom=	"player"
+			list=		"aI"
+
+			initialItem="=(block (
+				(desiredSeg (scrGetData gScreen 'armorSeg))
+				(seg (itmGetArmorInstalledLocation (scrGetItem gScreen)))
+				)
+
+				(or (not desiredSeg) (eq seg desiredSeg))
+				)"
+			/>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (currencyUsed damage desc theArmor canRepair)
+						(setq theArmor (scrGetItem gScreen))
+						(setq damage (objGetArmorDamage gPlayerShip theArmor))
+						(setq maxHP (shpGetArmorMaxHitPoints gPlayerShip theArmor))
+
+						; Remember the armor segment so that we can come back to 
+						; this same selection (e.g., when we go to replace armor)
+
+						(scrSetData gScreen 'armorSeg (itmGetArmorInstalledLocation theArmor))
+
+						; Ask the station to compute the cost of repairing the given hit points
+
+						(setq currencyUsed (objGetDefaultCurrency gSource))
+						(setq gCost (objGetArmorRepairPrice gSource gPlayerShip theArmor damage))
+
+						; Compose repair message for this segment
+
+						(setq desc (cat "The ship's " (objGetArmorName gPlayerShip theArmor) " " (itmGetName theArmor 0)))
+						(setq canRepair True)
+
+						(switch
+							(eq damage 0)
+								(block Nil
+									(setq desc (cat desc " is not damaged."))
+									(setq canRepair Nil)
+									)
+
+							(and (not gCost)
+									(gr (itmGetLevel theArmor) (objGetProperty gSource 'repairArmorMaxLevel)))
+								(block Nil
+									(setq desc (cat desc " cannot be repaired. The technology required is not available at this station."))
+									(setq canRepair Nil)
+									)
+
+							(not gCost)
+								(block Nil
+									(setq desc (cat desc " cannot be repaired at this station."))
+									(setq canRepair Nil)
+									)
+
+							(ls (objGetBalance gPlayerShip currencyUsed) gCost)
+								(block Nil
+									(setq desc (cat desc " can be repaired for " (fmtCurrency currencyUsed gCost) ", which, unfortunately, is more than you can afford."))
+									(setq canRepair Nil)
+									)
+
+							(eq gCost 0)
+								(setq desc (cat desc " is damaged and can be repaired free of charge."))
+
+							(setq desc (cat desc " is damaged and will cost " (fmtCurrency currencyUsed gCost) " to repair."))
+							)
+
+						; Initialize the pane
+
+						(scrSetDesc gScreen desc)
+						(scrEnableAction gScreen 0 canRepair)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Repair" key="R" >
+						(block Nil
+							(objRepairArmor gPlayerShip (scrGetItem gScreen))
+							(objCharge gPlayerShip (objGetDefaultCurrency gSource) gCost)
+							(typSetData &CORE_svPlayer; 'tutorialRepaired True)
+							(scrShowPane gScreen "Default")
+							)
+					</Action>
+
+					<Action name="Replace" key="P" >
+						(scrShowScreen gScreen &RPG_dsRPGReplaceArmor; {
+							armorSeg: (scrGetData gScreen 'armorSeg)
+							checkMilitaryID: (@ gData 'checkMilitaryID)
+							})
+					</Action>
+
+					<Action name="Done" cancel="1" key="D">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+	</DockScreen>
+
+	<ShipClass UNID="&RPG_baStdAutonBaseObsolete;"
+			obsoleteVersion="1"
+			>
+	</ShipClass>
+
+	<ItemType UNID="&RPG_baStdAuxMountDeviceBaseObsolete;"
+			obsoleteVersion="1">
+	</ItemType>
+
+	<ShipClass UNID="&RPG_baStdWingmanBaseObsolete;"
+			obsoleteVersion="1"
+			>
+	</ShipClass>
+
+	<Type UNID="&RPG_baStdAutonBaseOld;"
+			obsoleteVersion="50"
+			>
+	</Type>
+	
+<!-- RPG USE ITEM ==============================================================
+
+	This screen allows the player to use an item on another item or device.
+
+	gData uses the following fields:
+
+		useItem:	The item being used. If not specifed we check gItem instead
+
+-->
+
+	<DockScreen UNID="&RPG_dsRPGUseItem;"
+			obsoleteVersion=			"38"
+			>
+	</DockScreen>
+
+</TranscendenceModule>

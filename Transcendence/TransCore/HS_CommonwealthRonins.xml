@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- SHIP CLASSES -->
+
+	<!-- Level 2: Ronin A-class Gunship -->
+
+	<ShipClass UNID="&HS_scRoninA;"
+			manufacturer=		"Pacific Defense"
+			class=				"Ronin/A"
+			type=				"gunship"
+			defaultSovereign=	"&HS_svCommonwealth;"
+
+			attributes=			"commonwealth, genericClass, pacificDefense"
+			inherit=			"&HS_baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"18"
+			mass=				"50"
+			cargoSpace=			"50"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"100"
+			maxDevices=			"6"
+
+			maxArmor=			"heavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"400"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"9.0"
+			rotationAccel=		"2.0"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itLightCeramicPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itBlaster;"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsRoninA;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.00275"/>
+		<HeroImage imageID="&HS_rsRoninAHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="148"	posRadius="20"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-148"	posRadius="20"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"45"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 3: Ronin B-class Gunship -->
+
+	<ShipClass UNID="&HS_scRoninB;"
+			manufacturer=		"Pacific Defense"
+			class=				"Ronin/B"
+			type=				"gunship"
+			defaultSovereign=	"&HS_svCommonwealth;"
+
+			level=				"3"
+			attributes=			"commonwealth, genericClass, pacificDefense"
+			inherit=			"&HS_baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"18"
+			mass=				"50"
+			cargoSpace=			"50"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"200"
+			maxDevices=			"6"
+
+			maxArmor=			"superHeavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"400"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"11.0"
+			rotationAccel=		"2.0"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itCeramicPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itBlaster;"/>
+			<Device deviceID="&HS_itNAMIMissileLauncher;">
+				<Items>
+					<Item count="2d6" item="&HS_itKM100Missile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itClass1Deflector;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="3d6" item="&CORE_itHelium3FuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsRoninB;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.00275"/>
+		<HeroImage imageID="&HS_rsRoninBHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="148"	posRadius="20"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-148"	posRadius="20"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"40"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 4: Ronin C-class Gunship -->
+
+	<ShipClass UNID="&HS_scRoninC;"
+			manufacturer=		"Pacific Defense"
+			class=				"Ronin/C"
+			type=				"gunship"
+			defaultSovereign=	"&HS_svCommonwealth;"
+
+			attributes=			"commonwealth, genericClass, pacificDefense"
+			inherit=			"&HS_baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"18"
+			mass=				"60"
+			cargoSpace=			"50"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"200"
+			maxDevices=			"6"
+
+			maxArmor=			"superHeavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"500"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"12.0"
+			rotationAccel=		"3.0"
+			rotationStopAccel=	"12.0"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itHeavyCeramicPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itParticleBeamWeapon;"/>
+			<Device deviceID="&HS_itNAMIMissileLauncher;">
+				<Items>
+					<Item count="2d6" item="&HS_itFragmentationMissile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itClass2Deflector;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="3d6" item="&CORE_itHelium3FuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsRoninC;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.00275"/>
+		<HeroImage imageID="&HS_rsRoninCHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="148"	posRadius="20"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-148"	posRadius="20"	posZ="0"	rotation="180"/>
+		</Effects>
+
+		<!-- Player Settings -->
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"25"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&HS_rsRoninA;"					bitmap="Resources\RoninA.jpg" bitmask="Resources\RoninAMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsRoninAHero;"				bitmap="Resources\RoninALarge.jpg" bitmask="Resources\RoninALargeMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsRoninB;"					bitmap="Resources\RoninB.jpg" bitmask="Resources\RoninBMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsRoninBHero;"				bitmap="Resources\RoninBLarge.jpg" bitmask="Resources\RoninBLargeMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsRoninC;"					bitmap="Resources\RoninC.jpg" bitmask="Resources\RoninCMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsRoninCHero;"				bitmap="Resources\RoninCLarge.jpg" bitmask="Resources\RoninCLargeMask.bmp" loadOnUse="true"/>
+
+</TranscendenceModule>

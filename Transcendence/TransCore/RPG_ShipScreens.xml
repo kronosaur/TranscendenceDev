@@ -1,0 +1,719 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Player ship's interior -->
+
+	<DockScreen UNID="&RPG_dsShipInterior;"
+			inherit=			"&RPG_dsDockScreenBase;"
+			>
+
+		<Display type="detailsPane"
+				>
+			<OnDisplayInit>
+				(block (
+					(shipObj gPlayerShip)
+					(shipClass (objGetType shipObj))
+					)
+					{
+					detailsStyle: 'full
+					largeIcon: (shpGetImageDesc shipClass { type:'schematic })
+					details: 
+						(or (objFireEvent shipObj 'GetShipDetails { })
+							(rpgGetShipDetails shipObj { noDevices:True })
+							)
+
+					shipObj: shipObj
+					}
+					)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default descID="descWelcome">
+				<OnPaneInit>
+					(block (
+						(squadron (obj@ gPlayerShip 'squadron))
+						)
+						(scrShowAction gScreen 'actionSquadron squadron)
+						)
+				</OnPaneInit>
+				
+				<Actions>
+					<Action id="actionShipConfig">
+						;	Show the appropriate dock services screen based on the ship
+						;	class.
+					
+						(scrShowScreen gScreen
+							(obj@ gPlayerShip 'shipConfigScreen)
+							{ }
+							)
+					</Action>
+
+					<Action id="actionSquadron">
+						(scrShowScreen gScreen &RPG_dsRPGSquadron;)
+					</Action>
+
+					<Action id="actionMissions">
+						(scrShowScreen gScreen &RPG_dsRPGMissionJournal;)
+					</Action>
+
+					<Action id="actionViewCargo">
+						(block Nil
+							(setq gDest Nil)
+							(scrShowScreen gScreen &RPG_dsCargoHold;)
+							)
+					</Action>
+
+					<Action id="actionRefuelReactor">
+						(scrShowScreen gScreen &RPG_dsManualRefuel;)
+					</Action>
+
+					<Action id="actionDone" cancel="1">
+						<Exit/>
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="core.name">Ship's Interior</Text>
+
+			<Text id="actionShipConfig">[S]hip Configuration</Text>
+			<Text id="actionSquadron">S[q]uadron</Text>
+			<Text id="actionMissions">[M]issions</Text>
+			<Text id="actionViewCargo">[V]iew Cargo Hold</Text>
+			<Text id="actionRefuelReactor">[R]efuel Reactor</Text>
+			<Text id="actionDone">[Esc] Done</Text>
+
+			<Text id="descWelcome">
+				
+				You are inside the main compartment of your ship. A hatch in 
+				front of you opens into the cargo hold. To the side there is a 
+				small ladder that leads to the reactor and the ship's engines.
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Player ship configuration -->
+
+	<DockScreen UNID="&RPG_dsShipConfig;"
+			desc=				"Ship Configuration"
+			type=				"itemPicker"
+			>
+
+		<ListOptions
+			dataFrom=	"player"
+			list=		"*I"
+			/>
+
+		<Panes>
+			<Default descID="descShipConfigDefault">
+				<OnPaneInit>
+					(block (thisItem desc)
+						(setq thisItem (scrGetItem gScreen))
+
+						(if thisItem
+							(block (theCategory)
+								(setq desc (cat "Unit mass: " (fmtNumber 'massKg (itmGetMass thisItem)) "\n\n"))
+
+								; Describe the item installation
+								(setq desc (cat desc (objGetInstalledItemDesc gPlayerShip thisItem) "."))
+								
+								; Display
+								(scrSetDesc gScreen desc)
+								)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Done" cancel="1" key="D">
+						<Navigate screen="&RPG_dsShipInterior;"/>
+					</Action>
+
+				</Actions>
+
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="core.name">Ship's Configuration</Text>
+
+			<Text id="descShipConfigDefault">
+				You are viewing the ship's configuration.
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Player ship's cargo hold -->
+
+	<DockScreen UNID="&RPG_dsCargoHold;"
+			type=				"itemPicker"
+			inherit=			"&RPG_dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+
+		<ListOptions
+			dataFrom=	"player"
+			list=		"*U"
+			initialItem="=(scrSetListCursor gScreen (scrGetData gScreen 'cursor))"
+			/>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(switch
+						;	If we have no items, then nothing to do
+
+						(not (scrGetItem gScreen))
+							(block Nil
+								(scrSetDescTranslate gScreen 'descCargoEmpty)
+								(scrShowAction gScreen 'actionUse Nil)
+								(scrEnableAction gScreen 'actionJettisonItem Nil)
+								)
+
+						;	Otherwise, initialize the pane
+
+						(block (
+							(thisItem (scrGetItem gScreen))
+							(maxCount (itmGetCount thisItem))
+							(unitPrice (itmGetPrice thisItem))
+							(itemCurrency (itm@ thisItem 'currency))
+
+							;	Compose text that describes the item
+
+							(itemText (if (= maxCount 1)
+
+								(scrTranslate gScreen 'descCargoItem {
+									unitMass: (fmtNumber 'massKg (itmGetMass thisItem))
+									unitPrice: (fmtCurrency  itemCurrency unitPrice)
+									})
+
+								(scrTranslate gScreen 'descCargoItems {
+									unitMass: (fmtNumber 'massKg (itmGetMass thisItem))
+									unitPrice: (fmtCurrency itemCurrency unitPrice)
+									count: maxCount
+									totalMass: (fmtNumber 'massKg (* (itmGetMass thisItem) maxCount))
+									totalPrice: (fmtCurrency itemCurrency (* unitPrice maxCount))
+									})
+								))
+
+							;	Compute trade compute text
+
+							(tradeData (rpgItemTradeComputer thisItem))
+							)
+
+							;	Set the text
+
+							(if tradeData
+								(scrSetDesc gScreen itemText "\n\n" (@ tradeData 'sellRecommendation))
+								(scrSetDesc gScreen itemText)
+								)
+
+							;	Remember some calculations for later
+
+							(scrSetData gScreen 'maxCount maxCount)
+
+							;	Enable/disable actions
+
+							(scrShowAction gScreen 'actionUse (obj@ gPlayerShip thisItem 'canBeUsed))
+							(scrEnableAction gScreen 'actionJettisonItem (gr maxCount 0))
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionUse" default="1">
+						(block (
+							(thisItem (scrGetItem gScreen))
+							)
+							(switch
+								(obj@ gPlayerShip thisItem 'hasUseScreen)
+									(block Nil
+										(scrSetData gScreen 'cursor (scrGetListCursor gScreen))
+										(scrShowItemUseScreen gScreen thisItem)
+										)
+
+								(block Nil
+									(plyRedirectMessage gPlayer True)
+									(plyUseItem gPlayer thisItem)
+									(plyRedirectMessage gPlayer Nil)
+
+									(if (plyGetRedirectMessage gPlayer)
+										(scrShowPane gScreen "UseMessage")
+										)
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionJettisonItem">
+						(block (
+							(maxCount (scrGetData gScreen 'maxCount))
+							)
+							(switch
+								(gr maxCount 1)
+									(scrShowPane gScreen "JettisonQuantity")
+
+								(block (itemsToJettison)
+									;	Create cargo crate
+									(if (not gDest)
+										(setq gDest (sysCreateStation &RPG_stGenericCargoCrate; (sysVectorPolarOffset gPlayerShip 0 0)))
+										)
+
+									;	Dump items
+									(setq itemsToJettison (scrRemoveItem gScreen 1))
+									(rpgJettisonItem gDest itemsToJettison)
+									(scrShowPane gScreen "Default")
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionDone" cancel="1">
+						<Exit/>
+					</Action>
+				</Actions>
+			</Default>
+
+			<JettisonQuantity
+					showCounter=	"true">
+
+				<OnPaneInit>
+					(block (
+						(maxCount (scrGetData gScreen 'maxCount))
+						)
+						(scrSetDescTranslate gScreen 'descHowMany)
+						(scrSetCounter gScreen maxCount)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionJettison" default="1">
+						(block (
+							(useCount (scrGetCounter gScreen))
+							(maxCount (scrGetData gScreen 'maxCount))
+							)
+
+							(switch
+								(= useCount 0)
+									(scrShowPane gScreen "Default")
+
+								(gr useCount maxCount)
+									(scrSetCounter gScreen maxCount)
+
+								(block (itemsToJettison)
+									;	Create cargo crate
+									(if (not gDest)
+										(setq gDest (sysCreateStation &RPG_stGenericCargoCrate; (sysVectorPolarOffset gPlayerShip 0 0)))
+										)
+
+									;	Dump items
+									(setq itemsToJettison (scrRemoveItem gScreen useCount))
+									(rpgJettisonItem gDest itemsToJettison)
+									(scrShowPane gScreen "Default")
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionCancel" cancel="1">
+						(scrShowPane gScreen "Default")
+					</Action>
+				</Actions>
+			</JettisonQuantity>
+
+			<UseMessage>
+				<OnPaneInit>
+					(block (
+						(theMessage (plyGetRedirectMessage gPlayer))
+						(lastChar (subset theMessage (- (count theMessage) 1)))
+						)
+						(if (or (= lastChar ".")
+								(= lastChar "!")
+								(= lastChar "?")
+								(= lastChar "\"")
+								(= lastChar "'")
+								)
+							(scrSetDesc gScreen theMessage)
+							(scrSetDesc gScreen (cat theMessage "."))
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(scrShowPane gScreen "Default")
+					</Action>
+				</Actions>
+			</UseMessage>
+		</Panes>
+
+		<Language>
+			<Text id="core.name">Ship's Cargo Hold</Text>
+
+			<Text id="actionJettisonItem">[J]ettison this Item</Text>
+			<Text id="actionUse">[U]se this Item</Text>
+
+			<Text id="descCargoEmpty">You are in your ship's cargo hold.</Text>
+			<Text id="descCargoItem">
+				Unit mass: %unitMass%\n
+				Unit price: %unitPrice%
+			</Text>
+			<Text id="descCargoItems">
+				Unit mass: %unitMass% (%count% at %totalMass%)\n
+				Unit price: %unitPrice% (%count% for %totalPrice%)
+			</Text>
+			<Text id="descTradeData">
+				Trade computer: %sellRecommendation% for %price%.
+			</Text>
+			<Text id="descTradeDataMultiple">
+				Trade computer: %sellRecommendation% for %price% (%count% for %totalPrice%).
+			</Text>
+			<Text id="descHowMany">How many items do you wish to jettison?</Text>
+
+			<Text id="tradeComputer.sellInSystem">
+				Sell in the %systemName% System
+			</Text>
+			<Text id="tradeComputer.sellToObj">
+				Sell to %objName% in this system
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Refuel ship screen -->
+
+	<DockScreen UNID="&RPG_dsManualRefuel;"
+			type=				"itemPicker"
+			inherit=			"&RPG_dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+
+		<ListOptions
+			dataFrom=	"player"
+			list=		"f"
+			/>
+
+		<Panes>
+			<Default descID="descManualRefuelDefault">
+				<OnPaneInit>
+					(block (thisItem curEngine)
+						(setq thisItem (scrGetItem gScreen))
+						(setq gMaxCount 0)
+						(switch
+							(not thisItem)
+								(scrSetDescTranslate gScreen 'descManualRefuelUnavailable)
+
+							(not (shpIsFuelCompatible gPlayerShip thisItem))
+								(scrSetDescTranslate gScreen 'descManualRefuelIncompatible)
+
+							(setq gMaxCount (itmGetCount thisItem))
+							)
+
+						; Enable/disable actions
+						(scrEnableAction gScreen 'actionRefuel (gr gMaxCount 0))
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionRefuel" default="1">
+						(block Nil
+							; No need to show help about refueling
+							(plyEnableMessage gPlayer 'refuelHint Nil)
+
+							; Handle refuel
+							(switch
+								; If this item requires confirmation, show pane
+								(itmHasAttribute (scrGetItem gScreen) 'ConfirmRefuel)
+									(scrShowPane gScreen "ConfirmRefuel")
+
+								; If there are more than one item, get count
+								(gr gMaxCount 1)
+									(scrShowPane gScreen "RefuelQuantity")
+
+								(eq gMaxCount 0)
+									Nil
+
+								; Refuel from a single item
+								(block (itemsToUse)
+									(setq itemsToUse (scrRemoveItem gScreen 1))
+
+									(plyRedirectMessage gPlayer True)
+									(shpRefuelFromItem gPlayerShip itemsToUse)
+									(plyRedirectMessage gPlayer Nil)
+
+									(if (plyGetRedirectMessage gPlayer)
+										(scrShowPane gScreen "RefuelMessage")
+										(scrExitScreen gScreen)
+										)
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionCancel" cancel="1">
+						<Exit/>
+					</Action>
+				</Actions>
+			</Default>
+
+			<ConfirmRefuel>
+				<OnPaneInit>
+					(scrSetDescTranslate gScreen 'descConfirmRefuel {
+						itemName: (itmGetName (scrGetItem gScreen) 'article)
+						})
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionYes" default="1">
+						(switch
+							(gr gMaxCount 1)
+								(scrShowPane gScreen "RefuelQuantity")
+
+							(eq gMaxCount 0)
+								(scrShowPane gScreen "Default")
+
+							(block (itemsToUse)
+								(setq itemsToUse (scrRemoveItem gScreen 1))
+
+								(plyRedirectMessage gPlayer True)
+								(shpRefuelFromItem gPlayerShip itemsToUse)
+								(plyRedirectMessage gPlayer Nil)
+
+								(if (plyGetRedirectMessage gPlayer)
+									(scrShowPane gScreen "RefuelMessage")
+									(scrExitScreen gScreen)
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionNo" cancel="1">
+						(scrShowPane gScreen "Default")
+					</Action>
+				</Actions>
+			</ConfirmRefuel>
+
+			<RefuelMessage>
+				<OnPaneInit>
+					(scrSetDesc gScreen (plyGetRedirectMessage gPlayer))
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						<Exit/>
+					</Action>
+				</Actions>
+			</RefuelMessage>
+
+			<RefuelQuantity
+					showCounter=	"true">
+
+				<OnPaneInit>
+					(block (thisItem maxNeeded)
+						(setq thisItem (scrGetItem gScreen))
+						(setq maxNeeded (shpGetFuelNeeded gPlayerShip thisItem))
+						(if (ls maxNeeded gMaxCount)
+							(setq gMaxCount maxNeeded)
+							)
+						(scrSetDescTranslate gScreen 'descRefuelQuantity {
+							itemName: (itmGetName thisItem 'plural)
+							})
+						(scrSetCounter gScreen gMaxCount)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionRefuel" default="1">
+						(block (count)
+							(setq count (scrGetCounter gScreen))
+							(if (gr count gMaxCount)
+								(scrSetCounter gScreen gMaxCount)
+								(block (itemsToUse)
+									(setq itemsToUse (scrRemoveItem gScreen count))
+
+									(plyRedirectMessage gPlayer True)
+									(shpRefuelFromItem gPlayerShip itemsToUse)
+									(plyRedirectMessage gPlayer Nil)
+
+									(if (plyGetRedirectMessage gPlayer)
+										(scrShowPane gScreen "RefuelMessage")
+										(scrExitScreen gScreen)
+										)
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionCancel" cancel="1">
+						<Exit/>
+					</Action>
+				</Actions>
+			</RefuelQuantity>
+
+			<RefuelMessage>
+				<OnPaneInit>
+					(scrSetDesc gScreen (plyGetRedirectMessage gPlayer))
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						<Exit/>
+					</Action>
+				</Actions>
+			</RefuelMessage>
+		</Panes>
+
+		<Language>
+			<Text id="core.name">Ship's Cargo Hold</Text>
+
+			<Text id="actionNo">[N]o</Text>
+			<Text id="actionYes">[Y]es</Text>
+
+			<Text id="descManualRefuelDefault">
+				Pick an item to use as fuel.
+			</Text>
+			<Text id="descManualRefuelUnavailable">
+				You do not have any items that can be used as fuel.
+			</Text>
+			<Text id="descManualRefuelIncompatible">
+				You cannot use this kind of fuel in your ship's reactor.
+			</Text>
+			<Text id="descConfirmRefuel">
+				Are you sure you want to use %itemName% for fuel?
+			</Text>
+			<Text id="descRefuelQuantity">
+				How many %itemName% do you wish to use?
+			</Text>
+		</Language>
+	</DockScreen>
+	
+<!-- MISSION JOURNAL ===========================================================
+
+	This screen is designed to be opened from the Ship's interior screen. It
+	shows the list of active missions for the player.
+
+-->
+
+	<DockScreen UNID="&RPG_dsRPGMissionJournal;"
+			inherit=			"&RPG_dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+		<Display type="customPicker"
+				iconWidth="192"
+				iconHeight="96"
+				>
+			<OnDisplayInit>
+				(block (
+					;	Make a list of all mission arcs
+
+					(missionArcs
+						(map (msnFind "*A") theMission {
+							title: (msn@ theMission 'arcName)
+							icon: (or (msn@ theMission 'imageDesc) (resCreateImageDesc &CORE_rsGenericMissionIcon; 0 0 64 64))
+							desc: (cat (msn@ theMission 'name) "\n" (scrTranslate gScreen 'textArcStatus (msn@ theMission 'arcStatus)))
+							rowHeight: 96
+
+							missionObj: theMission
+							acceptedOn: (msn@ theMission 'acceptedOn)
+							})
+						)
+
+					;	Now a list of all non-mission arc missions
+
+					(singleMissions 
+						(map (msnFind "a -property:arc;") theMission {
+							title: (msn@ theMission 'name)
+							icon: (or (msn@ theMission 'imageDesc) (resCreateImageDesc &CORE_rsGenericMissionIcon; 0 0 64 64))
+							desc: Nil
+							rowHeight: 64
+
+							missionObj: theMission
+							acceptedOn: (msn@ theMission 'acceptedOn)
+							})
+						)
+					)
+
+					; Now sort by accepted time (later first)
+
+					(append
+						(sort missionArcs 'descending 'acceptedOn)
+						(sort singleMissions 'descending 'acceptedOn)
+						)
+					)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(theEntry (scrGetListEntry gScreen))
+						(theMission (@ theEntry 'missionObj))
+						)
+						(switch
+							(not theEntry)
+								(scrSetDescTranslate gScreen 'descNoMissions)
+
+							(scrSetDesc gScreen (msn@ theMission 'summary))
+							)
+							
+						(scrShowAction gScreen 'actionRemoveMission (msn@ theMission 'canBeDeleted))
+						(scrShowAction gScreen 'actionSetTarget 
+							(and
+								(msn@ theMission 'isActive)
+								(typHasEvent (msn@ theMission 'unid) 'OnSetPlayerTarget)
+								)
+							)
+						(scrEnableAction gScreen 'actionSetTarget (neq theMission (scrGetData gScreen 'targetMission)))
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionSetTarget" default="1">
+						(block (
+							(theMission (@ (scrGetListEntry gScreen) 'missionObj))
+							)
+							(msnSetPlayerTarget theMission)
+							(scrSetData gScreen 'targetMission theMission)
+							(scrSetListCursor gScreen (scrGetListCursor gScreen)) ;  Refresh to disable action
+							)
+					</Action>
+
+					<Action id="actionRemoveMission">
+						(block (
+							(theEntry (scrGetListEntry gScreen))
+							(theMission (@ theEntry 'missionObj))
+							)
+							(msnFailure theMission)
+							(scrRefreshScreen gScreen)
+							)
+					</Action>
+					
+					<Action id="actionDone" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="actionRemoveMission">[R]emove Mission</Text>
+			<Text id="actionSetTarget">[S]et Target</Text>
+
+			<Text id="descNoMissions">You have no missions to complete.</Text>
+
+			<Text id="textArcStatus">
+				Chapters Completed: %completed%\n
+				Chapters Left: %left%
+			</Text>
+		</Language>
+	</DockScreen>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&RPG_rsItemListScreen;"	bitmap="Resources\ItemListScreen.jpg"		bitmask="Resources\ItemListScreenMask.bmp"		loadOnUse="true" />
+	
+</TranscendenceModule>

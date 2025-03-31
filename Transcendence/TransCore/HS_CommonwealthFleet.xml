@@ -1,0 +1,1776 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+<!-- THE COMMONWEALTH FLEET
+
+	GLOBAL DATA
+	
+	medsDonated:		Cost of total medical supplies donated
+	
+-->
+
+	<Sovereign UNID="&HS_svCommonwealthFleet;"
+			name=":the Commonwealth Fleet"
+			shortName=":the Fleet"
+			adjective="Fleet"
+			demonym=":a Fleet crewmember(s)"
+
+			alignment="constructive chaos"
+			>
+		<Properties>
+			<Global id="cscStatus">
+				{
+					america: {
+						class: &HS_scCSCAmerica;
+						nodeID: Nil
+						}
+
+					antarctica: {
+						class: &HS_scCSCAntarctica;
+						nodeID: Nil
+						}
+
+					arctica: {
+						class: &HS_scCSCArctica;
+						nodeID: Nil
+						}
+
+					asia: {
+						class: &HS_scCSCAsia;
+						nodeID: Nil
+						}
+
+					atlantica: {
+						class: &HS_scCSCAtlantica;
+						nodeID: Nil
+						}
+
+					india: {
+						class: &HS_scCSCIndia;
+						nodeID: Nil
+						}
+
+					pacifica: {
+						class: &HS_scCSCPacifica;
+						nodeID: Nil
+						}
+
+					sahara: {
+						class: &HS_scCSCSahara;
+						nodeID: Nil
+						}
+
+					terra: {
+						class: &HS_scCSCTerra;
+						nodeID: Nil
+						}
+					}
+			</Global>
+		</Properties>
+
+		<Events>
+			<GetGlobalAchievements>
+				(block (medsDonated)
+
+					(append
+						;	Rank
+						(if (gr (objGetData gPlayerShip "fleetXP") 0)
+							(list
+								(list
+									"Commonwealth Fleet rank"
+									(typTranslate &HS_svCommonwealthFleet; 'PlayerRank)
+									)
+								)
+							)
+
+						;	Missions
+						(rpgMissionAchievements &HS_svCommonwealthFleet; "* +commonwealthFleet;")
+
+						;	Meds donated
+						(if (setq medsDonated (typGetGlobalData &HS_svCommonwealthFleet; "medsDonated"))
+							(list
+								(list
+									"Value of supplies donated to Commonwealth Fleet"
+									medsDonated
+									(typTranslate &RPG_unidCommonText; 'missionsAndActivities)
+									)
+								)
+							)
+						)
+					)
+			</GetGlobalAchievements>
+			
+			<GetGlobalDockScreen>
+				(switch
+					; This only applies to Fleet ships and stations
+					(not (objMatches gSource Nil "sTAV +commonwealthFleet;"))
+						Nil
+						
+					; The remaining screens are only invoked if the ship/station
+					; implements Fleet Law (e.g., CSC Antarctica does not).
+					(not (objHasAttribute gSource "fleetLaw"))
+						Nil
+						
+					; If the player has committed a crime, then imprisonment
+					(geq (int (objGetData gPlayerShip "fleetCrimeSeverity")) 2)
+						{	screen:&HS_dsFleetImprison;	priority:8		overrideOnly:true	}
+						
+					; If the player has committed a Commonwealth crime then she
+					; is kicked out of the military.
+					(and (geq (int (objGetData gPlayerShip "commonCrimeSeverity")) 2)
+							(leq (objGetData gPlayerShip "fleetLevel") 3))
+						{	screen:&HS_dsFleetDischarge;	priority:8		overrideOnly:true	}
+						
+					; If the player does not have a military ID, then
+					; refuse dock
+					(not (objGetItems gPlayerShip "*+MilitaryID;"))
+						{	screen:&HS_dsFleetRefuseDock;	priority:6		overrideOnly:true	}
+						
+					; If the player has committed a Commonwealth crime but is a
+					; Fleet lieutenant or higher, then she gets a warning.
+					(and (geq (int (objGetData gPlayerShip "commonCrimeSeverity")) 2)
+							(not (eq (typGetGlobalData &HS_svCommonwealthFleet; 'commonCrimeWarning) (objGetData gPlayerShip "commonCrime"))))
+						{	screen:&HS_dsFleetCrimeWarning;	priority:5		overrideOnly:true	}
+
+					Nil
+					)
+			</GetGlobalDockScreen>
+
+			<OnGlobalUniverseCreated>
+				(block Nil
+					; Initialize all variables that we need
+					(objSetData gPlayerShip "fleetXP" 0)
+					(objSetData gPlayerShip "fleetLevel" 1)
+					)
+			</OnGlobalUniverseCreated>
+		</Events>
+
+		<Language>
+			<Text id="PlayerRank">
+				(block (
+					(rank (objGetData gPlayerShip "fleetLevel"))
+					)
+					(switch
+						(= rank 1) "Civilian"
+						(= rank 2) "Privateer"
+						(= rank 3) "Ensign"
+						(= rank 4) "Fleet lieutenant"
+						(= rank 5) "Fleet commander"
+						(= rank 6) "Fleet captain"
+						(cat "ERROR: Fleet rank: " (or rank "Nil"))
+						)
+					)
+			</Text>
+
+			<Text id="rpg.missionTypeDesc">CSC missions</Text>
+		</Language>
+	</Sovereign>
+	
+	<SystemMap unid="&HS_smCSCOperationsSpace;"
+			displayOn="&HS_smHumanSpace;"
+			>
+		<TopologyProcessor priority="secondaryColony">
+			<System criteria="+outerRealm;"			attributes="cscOperationsSpace"/>
+		</TopologyProcessor>
+	</SystemMap>
+
+<!--
+
+PLAYER DATA
+
+	fleetLevel:		Fleet level (1-6)
+	fleetXP:		Fleet experience points
+
+-->
+	
+	<Type unid="&HS_unidCommonwealthFleet;">
+		<Properties>
+			<Definition id="rankTable">
+				(list
+					{	rank:0	}
+					{	rank:1		id:'civilian			icon:(resCreateImageDesc &HS_rsCommonwealthFleetInsignia;   0   0 256 256)	}
+					{	rank:2		id:'privateer			icon:(resCreateImageDesc &HS_rsCommonwealthFleetInsignia;   0 256 256 256)	}
+					{	rank:3		id:'ensign				icon:(resCreateImageDesc &HS_rsCommonwealthFleetInsignia; 256   0 256 256)	}
+					{	rank:4		id:'fleetLieutenant		icon:(resCreateImageDesc &HS_rsCommonwealthFleetInsignia; 512   0 256 256)	}
+					{	rank:5		id:'fleetCommander		icon:(resCreateImageDesc &HS_rsCommonwealthFleetInsignia; 256 256 256 256)	}
+					{	rank:5		id:'fleetCaptain		icon:(resCreateImageDesc &HS_rsCommonwealthFleetInsignia; 512 256 256 256)	}
+					)
+			</Definition>
+			<DynamicGlobal id="rank">
+				(objGetData gPlayerShip 'fleetLevel)
+			</DynamicGlobal>
+			<DynamicGlobal id="rankID">
+				(block (
+					(rank (typ@ gType 'rank))
+					)
+					(@ (@ (typ@ gType 'rankTable) rank) 'id)
+					)
+			</DynamicGlobal>
+			<DynamicGlobal id="rankIcon">
+				(block (
+					(rank (or (typ@ gType 'rank) 1))
+					(rankTable (typ@ gType 'rankTable))
+					)
+					(@ (@ rankTable rank) 'icon)
+						)
+					)
+			</DynamicGlobal>
+			<DynamicGlobal id="rankNoun">
+				(typTranslate gType (cat "rank." (typ@ gType 'rankID)) { gender:(plyGetGenome gPlayer) })
+			</DynamicGlobal>
+		</Properties>
+
+		<Events>
+			<GetGlobalPlayerPriceAdj>
+				(block (rank)
+					(setq rank (objGetData gPlayerShip 'fleetLevel))
+
+					(switch
+						;	Only at Fleet stations/ships
+
+						(not (objHasAttribute aProviderObj 'commonwealthFleet))
+							Nil
+
+						;	Refuel is free at level 3 or higher
+
+						(or (= aService 'priceToRefuel)
+								(= aService 'decontaminate)
+								)
+							(switch
+								(geq rank 3)	0
+								Nil
+								)
+
+						;	Armor repair and device installation is free at 
+						;	level 4 or higher
+
+						(or (eq aService 'priceToRepairArmor)
+								(eq aService 'priceToInstallDevice)
+								(eq aService 'priceToRemoveDevice)
+								)
+							(switch
+								(geq rank 4)	0
+								Nil
+								)
+
+						;	No adjustment
+						
+						Nil
+						)
+					)
+			</GetGlobalPlayerPriceAdj>
+		</Events>
+
+		<Language>
+			<Code id="rankDetails">
+				(block (
+					(rankID (typ@ gType 'rankID))
+					(successList (plyGetKeyEventStat gPlayer 'missionSuccess Nil "* +commonwealthFleet;"))
+					(failureList (plyGetKeyEventStat gPlayer 'missionFailure Nil "* +commonwealthFleet;"))
+					)
+					(if rankID
+						{
+							title: (fmtNoun (typ@ gType 'rankNoun) 1 'titleCapitalize)
+							largeIcon: (typ@ gType 'rankIcon)
+
+							details: (list
+								{
+									title: (typTranslate gType 'labelSuccesses)
+									desc: (typTranslate gType 'rtfValue { 
+										value: (count successList)
+										})
+									}
+								{
+									title: (typTranslate gType 'labelFailures)
+									desc: (typTranslate gType 'rtfValue {
+										value: (count failureList)
+										})
+									}
+								)
+
+							detailsStyle: 'stats
+							align: 'bottom
+							}
+						)
+					)
+			</Code>
+			<Text id="rank.civilian">:a civilian(s)</Text>
+			<Text id="rank.privateer">:a privateer(s)</Text>
+			<Text id="rank.ensign">:an ensign(s)</Text>
+			<Text id="rank.fleetLieutenant">:a Fleet lieutenant(s)</Text>
+			<Text id="rank.fleetCommander">:a Fleet commander(s)</Text>
+			<Text id="rank.fleetCaptain">:a Fleet captain(s)</Text>
+
+			<Text id="labelSuccesses">Mission Successes:</Text>
+			<Text id="labelFailures">Mission Failures:</Text>
+			<RTF id="rtfValue">{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
+
+			<Text id="rpg.missionTypeDesc">Commonwealth Fleet missions</Text>
+		</Language>
+	</Type>
+
+<!-- ENCOUNTERS -->
+
+	<!-- CSC Task Force Encounter -->
+
+	<EncounterType UNID="&HS_stCSCTaskForceEncounter;"
+			name=				"(CSC Task Force)"
+			sovereign=			"&HS_svCommonwealthFleet;"
+
+			attributes=			"fleet,friendly,envAir,envEarth,envFire,envWater"
+			>
+		<Properties>
+			<Definition id="cscList">
+				'(america atlantica asia india pacifica)
+			</Definition>
+		</Properties>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+cscOperationsSpace;"
+				systemAffinity=			"*"
+				levelFrequency=			"----- -ucu- ----- ----- -----"
+
+				locationCriteria=		"+outerSystem, -planetary"
+				enemyExclusionRadius=	"120"
+
+				maxAppearing=			"2-4"
+				unique=					"inSystem"
+				/>
+
+		<Ships>
+			<Ship	count="1"	class="&HS_scCSCAmerica;" orders="hold">
+				<GetParameters>
+					(block (
+						(allCSCs (typ@ &HS_stCSCTaskForceEncounter; 'cscList))
+						(cscStatus (typ@ &HS_svCommonwealthFleet; 'cscStatus))
+
+						;	Make a list of all ships that have not yet been encountered
+
+						(cscLeft
+							(filter allCSCs cscID
+								(not (@ (@ cscStatus cscID) 'nodeID))
+								)
+							)
+
+						;	Pick a random ship
+
+						(cscToCreate (or (random cscLeft) 'america))
+						)
+						;	Return the CSC class
+
+						{
+							class: (@ (@ cscStatus cscToCreate) 'class)
+							}
+						)
+				</GetParameters>
+
+				<Escorts>
+					<Ship					count="1"	class="&HS_scCenturionM;"	orders="guard" controller="fleetcommand">
+						<Escorts>
+							<Ship     count="6"	class="&HS_scCenturionM;"	orders="escort" controller="fleet"/>
+						</Escorts>
+					</Ship>
+					<Ship					count="1"	class="&HS_scCenturionM;"	orders="guard" controller="fleetcommand">
+						<Escorts>
+							<Ship     count="6"	class="&HS_scCenturionM;"	orders="escort" controller="fleet"/>
+						</Escorts>
+					</Ship>
+				</Escorts>
+			</Ship>
+		</Ships>
+	</EncounterType>
+
+	<!-- CSC Support Encounter -->
+
+	<EncounterType UNID="&HS_etCSCSupportEncounter;"
+			name=				"(CSC Support Ship)"
+			sovereign=			"&HS_svCommonwealthFleet;"
+
+			attributes=			"fleet,friendly,envAir,envEarth,envFire,envWater"
+			>
+		<Properties>
+			<Definition id="cscList">
+				'(arctica sahara)
+			</Definition>
+		</Properties>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+cscOperationsSpace;"
+				systemAffinity=			"*"
+				levelFrequency=			"----- rcu-- ----- ----- -----"
+
+				locationCriteria=		"*"
+				enemyExclusionRadius=	"120"
+
+				maxAppearing=			"2"
+				unique=					"inSystem"
+				/>
+
+		<Ships>
+			<Ship	count="1"	class="&HS_scCSCArctica;" orders="hold">
+				<GetParameters>
+					(block (
+						(allCSCs (typ@ &HS_etCSCSupportEncounter; 'cscList))
+						(cscStatus (typ@ &HS_svCommonwealthFleet; 'cscStatus))
+
+						;	Make a list of all ships that have not yet been encountered
+
+						(cscLeft
+							(filter allCSCs cscID
+								(not (@ (@ cscStatus cscID) 'nodeID))
+								)
+							)
+
+						;	Pick a random ship
+
+						(cscToCreate (or (random cscLeft) 'arctica))
+						)
+						;	Return the CSC class
+
+						{
+							class: (@ (@ cscStatus cscToCreate) 'class)
+							}
+						)
+				</GetParameters>
+
+				<Escorts>
+					<Ship     count="2d6"	class="&HS_scCenturionM;"	orders="patrol" patrolDist="15"/>
+				</Escorts>
+			</Ship>
+		</Ships>
+	</EncounterType>
+
+<!-- SHIP CLASSES -->
+
+	<!-- Level 7: Aurochs Transport -->
+
+	<ShipClass UNID="&HS_scAurochs;"
+			manufacturer=		"Pacific Defense"
+			class=				"Aurochs"
+			type=				"transport"
+			defaultSovereign=	"&HS_svCommonwealthFleet;"
+
+			attributes=			"commonwealth, commonwealthFleet, freighter, genericClass, military, pacificDefense"
+			inherit=			"&HS_baHumanTechShip;"
+
+			explosionType=		"&CORE_vtBlastExplosion3;"
+			>
+
+		<Names noArticle="true">
+			Aurochs Alpha-%0%0; Aurochs Beta-%0%0; Aurochs Gamma-%0%0;
+			Aurochs Delta-%0%0; Aurochs Epsilon-%0%0; Aurochs Zeta-%0%0;
+			Aurochs Eta-%0%0; Aurochs Theta-%0%0; Aurochs Iota-%0%0;
+			Aurochs Kappa-%0%0; Aurochs Lambda-%0%0; Aurochs Mu-%0%0;
+			Aurochs Nu-%0%0; Aurochs Xi-%0%0; Aurochs Omicron-%0%0;
+			Aurochs Pi-%0%0; Aurochs Rho-%0%0; Aurochs Sigma-%0%0;
+			Aurochs Tau-%0%0; Aurochs Upsilon-%0%0; Aurochs Phi-%0%0;
+			Aurochs Chi-%0%0; Aurochs Psi-%0%0; Aurochs Omega-%0%0
+		</Names>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"65"
+			mass=				"2000"
+			cargoSpace=			"2000"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"2000"
+			maxDevices=			"8"
+			maxWeapons=			"3"
+			/>
+
+		<Drive
+			maxSpeed=			"15"
+			thrust=				"1800"
+			powerUse=			"120"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"4.0"
+			rotationAccel=		"0.5"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itP120HexphaseArmor;"
+			count=				"12"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itTeV9Blaster;" omnidirectional="true" posAngle="180" posRadius="12" posZ="10"/>
+			<Device deviceID="&HS_itR5Deflector;"/>
+		</Devices>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"30"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"70"
+
+					posX=		"-31"
+					posY=		"0"
+					sizeX=		"28"
+					sizeY=		"42"
+					/>
+			
+			<Compartment name="cargo containers"
+					type=		"cargo"
+					hitPoints=	"50"
+
+					posX=		"10"
+					posY=		"0"
+					sizeX=		"40"
+					sizeY=		"40"
+					/>
+		</Interior>
+		 
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="1d12" item="&HS_itXenotiteFuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsAurochsHD;" imageWidth="98" imageHeight="98"		rotationCount="120" rotationColumns="12" viewportRatio="0.009375"/>
+		<HeroImage imageID="&HS_rsAurochsHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="157"	posRadius="43"	posZ="0"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="42"	posZ="5"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-157"	posRadius="43"	posZ="0"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"20"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"standOff"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 7: Britannia-class Heavy Gunship -->
+
+	<ShipClass UNID="&HS_scBritannia;"
+			manufacturer=		"Pacific Defense"
+			class=				"Britannia"
+			type=				"heavy gunship"
+			defaultSovereign=	"&HS_svCommonwealthFleet;"
+
+			attributes=			"commonwealth, commonwealthMilitary, commonMilitary, commonwealthFleet, genericClass, military, pacificDefense"
+			inherit=			"&HS_scBritanniaStock;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itP120HexphaseArmor;"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itStarCannon;"/>
+			<Device deviceID="&HS_itR5Deflector;"/>
+			<Device deviceID="&HS_itNM900MissilePod;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="2d6" item="&HS_itHeliumAssembly;"/>
+		</Items>
+
+		<!-- AI and Behavior -->
+
+		<Events>
+			<Reload>
+				(block (theMissilePod)
+					(setq theMissilePod (item (objGetItems gSource "lI") 0))
+					(if theMissilePod
+						; Tell the missile pod to reload itself
+						(objFireItemEvent gSource theMissilePod "Reload")
+						)
+					)
+			</Reload>
+		</Events>
+	</ShipClass>
+
+	<ShipClass UNID="&HS_scBritanniaStock;"
+			manufacturer=		"Pacific Defense"
+			class=				"Britannia"
+			type=				"heavy gunship"
+			defaultSovereign=	"&HS_svCommonwealthFleet;"
+
+			attributes=			""
+			inherit=			"&HS_baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"30"
+			mass=				"120"
+			cargoSpace=			"100"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"200"
+			maxDevices=			"9"
+			maxNonWeapons=		"6"
+
+			maxArmor=			"massive"
+			stdArmor=			"heavy"
+			/>
+
+		<Drive
+			maxSpeed=			"22"
+			thrust=				"1500"
+			powerUse=			"90"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"12.0"
+			rotationAccel=		"1.0"
+			rotationStopAccel=	"9.0"
+			/>
+
+		<Armor
+			armorID=			"&HS_itP120HexphaseArmor;"
+			count=				"4"
+			/>
+		
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&HS_itStarCannon;"/>
+			<Device deviceID="&HS_itR5Deflector;"/>
+			<Device deviceID="&HS_itNM900MissilePod;"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsBritanniaHD;" imageWidth="80" imageHeight="80" rotationCount="120" rotationColumns="12" viewportRatio="0.006"/>
+		<HeroImage imageID="&HS_rsBritanniaHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="154"	posRadius="26"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-154"	posRadius="26"	posZ="0"	rotation="180"/>
+			<Effect type="rotateRight"		posAngle="82"	posRadius="23"	posZ="0"	rotation="0"/>
+			<Effect type="rotateRight"		posAngle="-98"	posRadius="23"	posZ="0"	rotation="180"/>
+			<Effect type="rotateLeft"		posAngle="-82"	posRadius="23"	posZ="0"	rotation="0"/>
+			<Effect type="rotateLeft"		posAngle="98"	posRadius="23"	posZ="0"	rotation="180"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"25"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+	</ShipClass>
+
+	<!-- Level 7: Minotaur-class Corvette -->
+
+	<ShipClass UNID="&HS_scMinotaur;"
+			manufacturer=		"NAMI"
+			class=				"Minotaur"
+			type=				"corvette"
+			defaultSovereign=	"&HS_svCommonwealthFleet;"
+
+			attributes=			"commonwealth, commonwealthFleet, genericClass, military, nami"
+			inherit=			"&HS_baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"83"
+			mass=				"800"
+			cargoSpace=			"100"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"200"
+			maxDevices=			"9"
+			maxNonWeapons=		"6"
+
+			maxArmor=			"massive"
+			stdArmor=			"heavy"
+
+			valueAdj=			"+2.0"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"1200"
+			powerUse=			"100"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"4.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot id="topturret" criteria="w +property:omnidirectional;" 	posAngle="180" posRadius="18" posZ="10">
+				<EnhancementAbilities>
+					<Enhance type=			"&HS_vtMinotaurTurretSlot;"
+							 enhancement=	"+linkedFire:whenInFireArc;"
+							 />
+				</EnhancementAbilities>
+			</DeviceSlot>
+			<DeviceSlot criteria="w +property:multiShot;" posAngle="0" posRadius="20" posZ="0"/>
+			<DeviceSlot criteria="w~l" posAngle="32"  posRadius="20" posZ="0"/>
+			<DeviceSlot criteria="l"   posAngle="-32" posRadius="20" posZ="0"/>
+		</DeviceSlots>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itSuperHeavyBlastPlate;"
+			startAt=			"0"
+			>
+			<Armor span="40"/>
+			<Armor span="100"/>
+			<Armor span="40"/>
+			<Armor span="40"/>
+			<Armor span="100"/>
+			<Armor span="40"/>
+		</Armor>
+		
+		<Devices>
+			<Device deviceID="&HS_itMarkVHowitzer;"/>
+			<Device deviceID="&HS_itOmniTeV9Blaster;"/>
+			<Device deviceID="&HS_itNAMIMissileLauncher;">
+				<Items>
+					<Item count="2d6" item="&HS_itXM900Missile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itR5Deflector;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="1d12" item="&HS_itPteracniumFuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsMinotaur;" imageWidth="110" imageHeight="110" rotationCount="120" rotationColumns="12" viewportRatio="0.01125"/>
+		<HeroImage imageID="&HS_rsMinotaurHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="49"	posZ="-8"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="170"	posRadius="50"	posZ="0"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-170"	posRadius="50"	posZ="0"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="49"	posZ="8"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+		</Effects>
+
+		<PlayerSettings>
+			<ArmorDisplay 
+					style=			"circular"
+					scale=			"hp"
+					>
+				<ArmorSection segment="0" hpAngle="25"/>
+				<ArmorSection segment="2" hpAngle="155"/>
+				<ArmorSection segment="3" hpAngle="-155"/>
+				<ArmorSection segment="5" hpAngle="-25"/>
+			</ArmorDisplay>
+		</PlayerSettings>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"25"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"standOff"
+			/>
+
+	</ShipClass>
+
+	<ItemType UNID="&HS_vtMinotaurTurretSlot;"
+			name=				"Minotaur auto-turret"
+			virtual=			"true"
+			level=				"1"
+			>
+		<Image imageID="&HS_rsMinotaur;" imageX="0" imageY="0" imageWidth="110" imageHeight="110"/>
+	</ItemType>
+
+	<!-- Level 8: Minotaur/M-class Corvette -->
+
+	<ShipClass UNID="&HS_scMinotaurM;"
+			manufacturer=		"NAMI"
+			class=				"Minotaur/M"
+			type=				"corvette"
+			defaultSovereign=	"&HS_svCommonwealthFleet;"
+
+			attributes=			"commonwealth, commonwealthFleet, genericClass, military, nami"
+			inherit=			"&HS_scMinotaur;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itMassiveIthaliumArmor;"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itFusionfireHowitzer;"/>
+			<Device deviceID="&HS_itOmniTeV9Blaster;"/>
+			<Device deviceID="&HS_itNAMIMissileLauncher;">
+				<Items>
+					<Item count="2d6" item="&HS_itXM900Missile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itR9Deflector;"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsMinotaurM;" imageWidth="110" imageHeight="110" rotationCount="120" rotationColumns="12" viewportRatio="0.01125"/>
+		<HeroImage imageID="&HS_rsMinotaurMHero;" imageWidth="320" imageHeight="320"/>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"20"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"standOff"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 9: Aquila-class Cruiser -->
+
+	<ShipClass UNID="&HS_scAquilaCruiser;"
+			manufacturer=		"Pacific Defense"
+			class=				"Aquila"
+			type=				"cruiser"
+			defaultSovereign=	"&HS_svCommonwealthFleet;"
+
+			size=				"220"
+			mass=				"26000"
+			cargoSpace=			"1000"
+			thrustRatio=		"1"
+			maxSpeed=			"16"
+
+			cyberDefenseLevel=	"8"
+			explosionType=		"&CORE_vtThermoExplosion3;"
+
+			level=				"10"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, genericClass, military, pacificDefense"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itP210HexphaseArmor;"
+			count=				"16"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itStarCannon;" secondaryWeapon="true" minFireArc="355" maxFireArc="175" posAngle="90" posRadius="24" posZ="8"/>
+			<Device deviceID="&HS_itStarCannon;" secondaryWeapon="true" minFireArc="185" maxFireArc="5" posAngle="-90" posRadius="24" posZ="8"/>
+			<Device deviceID="&HS_itNAMIHeavyLauncher;" omnidirectional="true">
+				<Items>
+					<Item count="4d20" item="&HS_itM2Missile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itR9Deflector;"/>
+			<Device deviceID="&HS_vtStdDamageControl;"		level="9"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"3"
+			rotationAccel=		"0.5"
+			/>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"200"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"100"
+
+					posX=		"-75"
+					posY=		"0"
+					sizeX=		"42"
+					sizeY=		"56"
+					/>
+		</Interior>
+
+		<Image imageID="&rsAquilaHD;" imageWidth="210" imageHeight="210" 	rotationCount="120" rotationColumns="12" viewportRatio="0.01375"/>
+		<HeroImage imageID="&HS_rsAquilaHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="168"	posRadius="94"	posZ="-20"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-168"	posRadius="94"	posZ="-20"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="94"	posZ="-5"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+		</Effects>
+
+		<Items>
+		</Items>
+
+		<AISettings
+			fireRateAdj=		"30"
+			fireAccuracy=		"95"
+			perception=			"4"
+
+			combatStyle=		"standOff"
+			/>
+
+	</ShipClass>
+	
+<!-- ITEM TYPES -->
+
+	<!-- Ares Campaign Ribbon -->
+
+	<ItemType UNID="&HS_itAresCampaignRibbon;"
+			name=				"Ares Campaign Ribbon"
+			level=				"7"
+			value=				"50"
+			mass=				"1"
+			frequency=			"rare"
+			numberAppearing=	"1"
+			attributes=			"Consumable; NotForSale"
+
+			description=		"The Commonwealth Fleet awards this ribbon to all who have been in combat against the Ares Orthodoxy."
+
+			sortName=			"medal, Ares Campaign Ribbon"
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+	<!-- R5B deflector -->
+
+	<ItemType UNID="&HS_itR5BDeflector;"
+			name=				":an R5-B deflector"
+			level=				"7"
+			value=				"45000"
+			mass=				"3500"
+			frequency=			"rare"
+			attributes=			"MajorItem; Military; Specialty"
+
+			description=		"Commonwealth Fleet labs created this variant of the R5, but it proved too expensive for widespread deployment."
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Shields
+				hitPoints=		"220"
+				hpBonus=		"  +0,  +0,  +0,  +0, +75, +25"
+				regen=			"40"
+				powerUse=		"550"
+				/>
+
+	</ItemType>
+
+	<!-- NM900 external missile pod -->
+
+	<ItemType UNID="&HS_itNM900MissilePod;"
+			name=				"NM900 external missile pod"
+			level=				"7"
+			value=				"4200"
+			mass=				"1000"
+			frequency=			"rare"
+			attributes=			"Disposable; MajorItem; Military; NAMI; Specialty"
+
+			charges=			"36"
+			massBonusPerCharge=	"40" 
+			valueBonusPerCharge="150"
+
+			description=		"This external pod is loaded with thirty-six XM900 nuclear missiles and can be installed without the aid of a station."
+
+			showChargesInUseMenu="true"
+			>
+
+		<Image imageID="&HS_rsItemsNAMI4;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+				launcher=			"true"
+				fireRate=			"30"
+				powerUse=			"50"
+				charges=			"true"
+
+				deviceSlots=		"0"
+				external=			"true"
+				
+				missileSpeed=		"40"
+				hitPoints=			"30"
+				lifetime=			"120"
+				maneuverRate=		"9"
+
+				effect=				"&HS_efMissileNAMI;"
+				hitEffect=			"&HS_efThermoFragmentExplosion;"
+				sound=				"&CORE_snMissileLauncher;"
+				>
+
+			<Fragment 
+					count=			"1"
+					type=			"radius"
+
+					damage=			"thermo:6d24; momentum:6; WMD:7"
+					minRadius=		"1"
+					maxRadius=		"4"
+					missileSpeed=	"0"
+					
+					hitEffect=		"&HS_efThermoFragmentHit;"
+					>
+			</Fragment>
+		</Weapon>
+		
+		<Invoke>
+			(intAutoInstall gSource gItem)
+		</Invoke>
+
+		<Events>
+			<Reload>
+				; Reloads the pod with missiles
+				(objSetItemCharges gSource gItem 36)
+			</Reload>
+		</Events>
+
+		<Language>
+			<Text id="core.charges">missile(s)</Text>
+		</Language>
+	</ItemType>
+
+	<!-- Lamplighter Archcannon -->
+
+	<ItemType UNID="&HS_itLamplighter;"
+			name=				"Lamplighter archcannon"
+			level=				"10"
+			value=				"950000"
+			mass=				"5500"
+			frequency=			"notrandom"
+			attributes=			"MajorItem; Military"
+
+			description=		"Commissioned by Admiral Decker, this Commonwealth secret weapon is arguably the most powerful weapon created by humans."
+			>
+
+		<Image imageID="&HS_rsItems10;" imageX="96" imageY="192" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				damage=				"antimatter:10d12; WMD:5"
+				fireRate=			"16"
+				missileSpeed=		"50"
+				lifetime=			"60"
+				powerUse=			"2000"
+
+				effect=				"&HS_efLamplighterProjectile;"
+				sound=				"&CORE_snRecoillessCannon;"
+				>
+		</Weapon>
+
+	</ItemType>
+
+	<!-- Project Lamplighter Prototype -->
+
+	<ItemType UNID="&HS_itLamplighterPrototype;"
+			name=				"Project Lamplighter prototype"
+			level=				"10"
+			value=				"400000"
+			mass=				"5500"
+			frequency=			"notrandom"
+			unknownType=		"&HS_itUnknownLamplighterPrototype;"
+			attributes=			"lamplighterPrototype, majorItem, military, questItem"
+
+			description=		"This prototype is designed to test the antimatter blast chamber of the Project Lamplighter weapon."
+			>
+
+		<Image imageID="&HS_rsItems10;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+				failureChance=		"10"
+
+				damage=				"antimatter:6d12; WMD:5"
+				fireRate=			"15"
+				missileSpeed=		"60"
+				lifetime=			"40"
+				powerUse=			"3000"
+
+				effect=				"&HS_efLamplighterProjectile;"
+				sound=				"&CORE_snRecoillessCannon;"
+				>
+		</Weapon>
+
+	</ItemType>
+
+	<!-- Lamplighter data ROM -->
+
+	<ItemType UNID="&HS_itLamplighterDataROM;"
+			name=				"unmarked data ROM"
+			level=				"7"
+			value=				"0"
+			frequency=			"notrandom"
+			mass=				"1"
+			attributes=			"cannotOrder, consumable, info, lamplighterDataROM, notForSale, questItem"
+
+			description=		"This unmarked ROM contains what looks like experimental data. It contains millions of data points collected over several years; their meaning and purpose is unknown."
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+	<!-- Unknown Prototype -->
+
+	<ItemType UNID="&HS_itUnknownLamplighterPrototype;"
+			name=				"unknown prototype weapon"
+			virtual=			"true"
+			level=				"10"
+			value=				"100000"
+
+			description=		"This is weapon prototype of some kind. Its markings suggest that it was created by the Commonwealth Fleet."
+
+			attributes=			"unknown"
+			>
+
+		<Names>weapon prototype(s) marked "Alpha"; weapon prototype(s) marked "Beta"; weapon prototype(s) marked "Gamma";
+			weapon prototype(s) marked "Delta"; weapon prototype(s) marked "Epsilon"; weapon prototype(s) marked "Omega";
+			weapon prototype(s) marked "0.1"; weapon prototype(s) marked "X17"; weapon prototype(s) marked "Trinity";
+			weapon prototype(s) marked "Halifax"; weapon prototype(s) marked "Test No. 6"; weapon prototype(s) marked "596";
+			weapon prototype(s) marked "Hurricane"; weapon prototype(s) marked "Ivy Mike"; weapon prototype(s) marked "Castle Bravo";
+			weapon prototype(s) marked "Tsar Bomba"; weapon prototype(s) marked "Smiling Buddha"; weapon prototype(s) marked "RDS-37"
+		</Names>
+
+	</ItemType>
+	
+	<!-- Damage Control Party -->
+
+	<ItemType UNID="&HS_vtDamageControlParty;"
+			name=				"(damage control party)"
+			level=				"10"
+			virtual=			"true"
+			>
+
+		<RepairerDevice
+				regen=				"10,10,10, 7, 7,  7, 5, 5, 5, 4"
+				compartmentRegen=	"10"
+				powerUse=			"50"
+				/>
+
+	</ItemType>
+
+<!-- DOCK SCREENS -->
+
+	<!-- Fleet Delivery	-->
+
+	<DockScreen UNID="&HS_dsFleetDelivery;"	nestedScreen="true">
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (items)
+						(setq items (objGetData gSource "fleetMissionCargo"))
+
+						; See if the player has all the items that we expect
+						(setq gResult True)
+						(enum items thisItem
+							(if (not (objHasItem gPlayerShip thisItem))
+								(setq gResult Nil)
+								)
+							)
+
+						(if gResult
+							(scrSetDesc gScreen "The dockmaster meets you as you dock: \"Thank you for bringing these supplies&#x97;our situation is desperate.\"")
+							(scrSetDesc gScreen "The dockmaster meets you as you dock: \"Where are the supplies that you were supposed to be bringing? Those supplies are desperately needed!\"")
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Continue" default="1" cancel="1" key="C">
+						(block Nil
+							(if gResult
+								(block (items missionObj)
+									; Remove the supplies
+									(setq missionObj (objGetObjRefData gPlayerShip "fleetMission"))
+									(setq items (objGetData gSource "fleetMissionCargo"))
+
+									(enum items thisItem
+										(objRemoveItem gPlayerShip thisItem)
+										)
+
+									; Mission is a success
+									(objSetData missionObj "MissionStatus" "success")
+									(typIncGlobalData &HS_scCSCTaskForce; "missionsCompleted")
+									(objSetData gSource "fleetMissionCargo" Nil)
+									(objSetObjRefData gPlayerShip "fleetMission" Nil)
+									(shpCancelOrders gPlayerShip)
+									)
+								)
+
+							(scrExitScreen gScreen)
+							)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Events>
+			<GetGlobalDockScreen>
+				; If we have a delivery mission to this station, then show
+				; the proper screen.
+				;
+				; The screen is shown with mission priority (4) meaning that
+				; it will show up after decon and confiscation screens.
+				
+				(if	(and (objMatches gSource Nil "sTAV")
+						(objGetData gSource "fleetMissionCargo")
+						)
+					{	screen:&HS_dsFleetDelivery;		priority:4		overrideOnly:true	}
+					Nil
+					)
+			</GetGlobalDockScreen>
+		</Events>
+	</DockScreen>
+
+	<!-- Fleet only allows docking with military ID	-->
+
+	<DockScreen UNID="&HS_dsFleetRefuseDock;"	
+			inherit=		"&RPG_dsDockScreenBase;"
+			nestedScreen=	"true"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(scrSetDescTranslate gScreen 'textBlocked {
+						location: (if (objIsShip gSource)
+							(scrTranslate gScreen 'nounShip)
+							(scrTranslate gScreen 'nounInstallation)
+							)
+						})
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionUndock" default="1" cancel="1">
+						(scrExitScreen gScreen 'forceUndock)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		<Language>
+			<Text id="textBlocked">
+				
+				As you exit the docking ramp, Commonwealth troopers train their 
+				weapons on you:
+				
+				"This is a military %location%, civie!"
+				
+			</Text>
+			<Text id="nounShip">ship</Text>
+			<Text id="nounInstallation">installation</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Fleet Promotion -->
+
+	<DockScreen UNID="&HS_dsFleetPromotion;"
+			nestedScreen=	"true"
+			inherit=		"&RPG_dsDockScreenBase;"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(newLevel (intFleetPromotion))
+						)
+						(scrSetDescTranslate gScreen (cat "Promotion:" newLevel) {
+							captainName: (cat "the captain of " (objGetName gSource 'article))
+							})
+
+						(switch
+							(= newLevel 2)
+								(objAddItem gPlayerShip (itmCreate &HS_itAresCampaignRibbon; 1))
+							)
+
+						(objSetData gPlayerShip "fleetLevel" newLevel)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="Promotion:2">
+				(cat
+					"In recognition of your service to the Fleet, " (@ gData 'captainName)
+					" awards you the title of Privateer and bestows upon you the Ares Campaign Ribbon."
+					)
+			</Text>
+			<Text id="Promotion:3">
+				(cat
+					"In recognition of your service to the Fleet, " (@ gData 'captainName)
+					" awards you the rank of ensign in the Commonwealth Fleet."
+					)
+			</Text>
+			<Text id="Promotion:4">
+				(cat
+					"In recognition of your service to the Fleet, " (@ gData 'captainName)
+					" promotes you to the rank of Fleet lieutenant."
+					)
+			</Text>
+			<Text id="Promotion:5">
+				(cat
+					"In recognition of your service to the Fleet, " (@ gData 'captainName)
+					" promotes you to the rank of Fleet commander."
+					)
+			</Text>
+			<Text id="Promotion:6">
+				(cat
+					"In recognition of your service to the Fleet, " (@ gData 'captainName)
+					" promotes you to the rank of Fleet captain."
+					)
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Fleet Crime Warning -->
+
+	<DockScreen UNID="&HS_dsFleetCrimeWarning;"	nestedScreen="true">
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(scrSetDesc gScreen (plyComposeString gPlayer (cat
+						"As you leave your ship a Fleet officer approaches you:\n\n"
+						"\"One moment, %sir%! Looks like you've been tagged by the Commonwealth for some kind of incident. "
+						"The record lists '" (objGetData gPlayerShip "commonCrime") ",' which is...uh...a serious crime, %sir%. "
+						"Probably a mistake, %sir%, I think. I just thought you'd want to know.\""
+						)))
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Continue" default="1" cancel="1" key="C">
+						(block Nil
+							(typSetGlobalData &HS_svCommonwealthFleet; "commonCrimeWarning" (objGetData gPlayerShip "commonCrime"))
+							(scrExitScreen gScreen)
+							)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+	</DockScreen>
+
+	<!-- Fleet Discharge -->
+
+	<DockScreen UNID="&HS_dsFleetDischarge;"	nestedScreen="true">
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block Nil
+						(scrSetDesc gScreen (cat 
+							"As you enter you are surrounded by heavily armed soldiers. A Fleet officer approaches you:\n\n"
+							
+							(switch
+								(gr (objGetData gPlayerShip "fleetXP") 0)
+									"\"Because of your crimes against the Commonwealth you are hereby discharged from the Fleet.\""
+									
+								(objGetItems gPlayerShip "* +commonwealth; +militaryID")
+									"\"Because of your crimes against the Commonwealth your military ID is hereby revoked.\""
+									
+								"\"You're nothing but a common criminal, not even worth putting in the locker.\""
+								)
+								
+							"\n\nThe soldiers escort you back to your ship."
+							))
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Undock" default="1" cancel="1" key="U">
+						(block (milIDs)
+							(objSetData gPlayerShip "fleetLevel" 1)
+							(objSetData gPlayerShip "fleetXP" 0)
+							(enum (objGetItems gPlayerShip "* +commonwealth; +militaryID") theItem
+								(objRemoveItem gPlayerShip theItem)
+								)
+							(scrExitScreen gScreen 'forceUndock)
+							)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+	</DockScreen>
+	
+	<!-- Fleet Imprison -->
+
+	<DockScreen UNID="&HS_dsFleetImprison;"	nestedScreen="true">
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block Nil
+						(scrSetDesc gScreen (cat "As you enter you are surrounded by heavily armed soldiers. A Fleet officer approaches you: \"You are charged with treason for " (objGetData gPlayerShip "fleetCrime") "\"" ))
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Continue" default="1" cancel="1" key="C">
+						(block Nil
+							(plyDestroyed gPlayer (cat "was executed for " (objGetData gPlayerShip "fleetCrime")))
+							(scrExitScreen gScreen 'forceUndock)
+							)
+					</Action>
+				</Actions>
+
+			</Default>
+		</Panes>
+	</DockScreen>
+	
+<!-- GLOBALS -->
+
+	<Globals>
+		(block Nil
+			(setq intFleetCreateWingmen (lambda (missionObj aCount theClass)
+				(block (
+					(baseObj (objGetObjByID (msnGetProperty missionObj 'ownerID)))
+					(missionID (msnGetProperty missionObj 'id))
+					)
+					(if (not theClass)
+						(setq theClass &HS_scCenturionM;)
+						)
+					(for i 0 (- aCount 1)
+						(block (wingmanObj)
+							(setq wingmanObj (sysCreateShip
+								theClass
+								baseObj
+								&HS_svCommonwealthFleet;
+								'fleet
+								))
+							(shpOrder wingmanObj 'escort gPlayerShip i)
+
+							;	Keep track of wingmen
+							(objSetData wingmanObj (cat missionID "_wingman") True)
+							(msnRegisterForEvents missionObj wingmanObj)
+							)
+						)
+					)
+				))
+
+			(setq intFleetCrime (lambda (severity description)
+				(if (gr severity (int (objGetData gPlayerShip "fleetCrimeSeverity")))
+					(block Nil
+						(objSetData gPlayerShip "fleetCrimeSeverity" severity)
+						(objSetData gPlayerShip "fleetCrime" description)
+						)
+					)
+				))
+
+			(setq intFleetDisperseWingmen (lambda (missionObj)
+				(block (
+					(baseObj (objGetObjByID (msnGetProperty missionObj 'ownerID)))
+					(missionID (msnGetProperty missionObj 'id))
+					(wingmen (sysFindObject Nil (cat "sA D:" missionID "_wingman;")))
+					)
+					(enum wingmen wingmanObj
+						(block Nil
+							(shpCancelOrders wingmanObj)
+							(shpOrder wingmanObj 'dock baseObj)
+							(shpOrder wingmanObj 'gate)
+							)
+						)
+					(count wingmen)
+					)
+				))
+				
+			(setq fltOrderCheckPosition (lambda (theCSC)
+				(block (enemyObj)
+					; Are we in a good spot? If not, then we need to move
+					(if (and (setq enemyObj (sysFindObject theCSC "TAEPN"))
+							(leq (objGetDistance theCSC enemyObj) 80)
+							)
+						(block (dest bearing)
+							; bearing away from enemy
+							(setq bearing 
+								(sysVectorAngle (sysVectorSubtract (objGetPos theCSC) (objGetPos enemyObj)))
+								)
+								
+							; Pick a better spot that is away from the enemy
+							(setq dest (sysVectorRandom theCSC 
+								(lambda Nil
+									(sysVectorPolarOffset Nil
+										(modulo (add bearing 360 (random -80 80)) 360)
+										(random 120 180)
+										)
+									)
+								100 
+								"TA"
+								))
+							
+							; Order the ship to move
+							(shpCancelOrders theCSC)
+							(shpOrder theCSC 'holdCourse
+								(sysVectorAngle (sysVectorSubtract dest (objGetPos theCSC)))
+								(sysVectorDistance dest (objGetPos theCSC))
+								)
+
+							(objSetData theCSC "behavior" 'moving)
+							(objSetProperty theCSC 'dockingEnabled Nil)
+							True
+							)
+						Nil
+						)
+					)
+				))
+
+			(setq cscSquadronCreateShip (lambda (theCSC theClass)
+				(block (theShip theEntry squadronList)
+				
+					; Create the ship
+					(setq theShip (sysCreateShip theClass theCSC (objGetSovereign theCSC)))
+					(objSuspend theShip)
+					
+					; Create the squadron entry
+					(setq theEntry (list (objGetID theShip) theClass 'home))
+					
+					; Append to the squadron list
+					
+					(setq squadronList (append (objGetData theCSC "squadron") (list theEntry)))
+					(objSetData theCSC "squadron" squadronList)
+					
+					;(dbgOutput (objGetID theShip) ": Created " (typGetDataField theClass "name"))
+					)
+				))
+				
+			(setq cscSquadronDeployShip (lambda (theCSC theClass)
+				(block (theID theShip squadronList)
+					
+					; Look for a ship that matches the class and is currently
+					; at "home"
+					
+					(setq squadronList (objGetData theCSC "squadron"))
+					(setq theID (item (match squadronList theEntry (and (eq (item theEntry 1) theClass) (eq (item theEntry 2) 'home))) 0))
+					
+					; If we found one, deploy the ship
+					(if (and theID (setq theShip (objGetObjByID theID)))
+						(block Nil
+							
+							; Ship appears out of the CSC
+							(objResume theShip theCSC)
+							(objRegisterForEvents theCSC theShip)
+							
+							; Update squadron list
+							(setq squadronList 
+								(map squadronList theEntry
+									(if (eq (item theEntry 0) theID)
+										; Update this entry
+										(list theID (item theEntry 1) 'deployed)
+										
+										; Leave the entry alone
+										theEntry
+										)
+									)
+								)
+								
+							(objSetData theCSC "squadron" squadronList)
+							
+							;(dbgOutput theID ": Deployed")
+							
+							; Done
+							theShip
+							)
+							
+						; Otherwise, couldn't deploy
+						Nil
+						)
+					)
+				))
+
+			(setq intFleetPromotion (lambda Nil
+				; Returns level that the player is promoted to (or Nil)
+
+				(block (xp newLevel)
+					(setq xp (objGetData gPlayerShip "fleetXP"))
+					(switch
+						(geq xp 10000)
+							(setq newLevel 6)
+
+						(geq xp 3000)
+							(setq newLevel 5)
+
+						(geq xp 1500)
+							(setq newLevel 4)
+
+						(geq xp 600)
+							(setq newLevel 3)
+
+						(geq xp 200)
+							(setq newLevel 2)
+
+						(setq newLevel 1)
+						)
+
+					; Return if different from current level
+					(if (eq (objGetData gPlayerShip "fleetLevel") newLevel)
+						Nil
+						newLevel
+						)
+					)
+				))
+
+			(setq commFleet_GiveReward (lambda (missionObj)
+				(block Nil
+					;	Pay the player and record the award
+					(rpgMissionRewardPayment (msnGetData missionObj 'reward))
+
+					;	Increase XP
+					(objIncData gPlayerShip 'fleetXP (msnGetData missionObj 'missionXP))
+
+					;	Achievement
+					(unvSetAchievement 'humanSpace.fleetManeuvers)
+
+					;	dsRPGMission checks for a well-known data member in the mission
+					;	object to see if it should navigate to an additional screen.
+					(if (and missionObj (intFleetPromotion))
+						(msnSetData missionObj 'rewardNextScreen &HS_dsFleetPromotion;)
+						)
+					)
+				))
+			)
+	</Globals>
+
+<!-- EFFECTS -->
+
+	<EffectType unid="&HS_efLamplighterProjectile;"
+			instance=			"owner"
+			>
+		<Effect>
+			<ParticlePattern
+					style=			"comet"
+					primaryColor=	"#ffe566"
+					jitterLength=	"80-150"
+					>
+				<Events>
+					<GetParameters>
+						(block (
+							(damageHP (@ gData 'damageHP))
+							)
+							{
+								particleCount: (mathScale damageHP 50 680 100 300 50)
+								length: (mathScale damageHP 50 680 80 220 50)
+								width: (mathScale damageHP 50 680 8 24 50)
+								}
+							)
+					</GetParameters>
+				</Events>
+			</ParticlePattern>
+			
+			<Orb
+					style=				"smooth"
+					animate=			"flicker"
+					spikeCount=			"6"
+						
+					blendMode=			"screen"
+					primaryColor=		"#fbffcc"
+					secondaryColor=		"#ffe566"
+					>
+				<Events>
+					<GetParameters>
+						(block (
+							(damageHP (@ gData 'damageHP))
+							)
+							{
+								radius: (mathScale damageHP 50 680 30 80 50)
+								intensity: (mathScale damageHP 50 680 20 50 50)
+								}
+							)
+					</GetParameters>
+				</Events>
+			</Orb>
+		</Effect>
+	</EffectType>
+
+<!-- TABLES -->
+
+	<EncounterTable UNID="&HS_etKobolAmbush1;">
+		<Table count="1d3+2">
+			<Ship chance="50"	count="1"	class="&HS_scKobolGunshipDualTeV9;"	orders="attack" sovereign="&HS_svKobolWarlords;"/>
+			<Ship chance="30"	count="1"	class="&HS_scKobolGunshipOmniTeV9;"	orders="attack" sovereign="&HS_svKobolWarlords;"/>
+			<Ship chance="20"	count="1"	class="&HS_scKobolGunshipMissiles;"	orders="attack" sovereign="&HS_svKobolWarlords;"/>
+		</Table>
+	</EncounterTable>
+
+	<ItemTable unid="&HS_tbCommonwealthFleetItems;">
+		<Table>
+			<LevelTable chance="40">
+				<Item levelFrequency="vvruc curv-"	count="2d4" item="&HS_itBlastPlate;"/>
+				<Item levelFrequency="--vru ccurv"	count="2d4" item="&HS_itAdvancedCeralloyArmor;"/>
+				<Item levelFrequency="--vru ccurv"	count="2d4" item="&HS_itP120HexphaseArmor;"/>
+				<Item levelFrequency="---vr uccur"	count="2d4" item="&HS_itOrthoSteel;"/>
+				<Item levelFrequency="---vr uccur"	count="1d4" item="&HS_itP210HexphaseArmor;"/>
+				<Item levelFrequency="----v ruccu"	count="1d4" item="&HS_itHexaCarbideArmor;"/>
+			</LevelTable>
+
+			<LevelTable chance="40">
+				<Item levelFrequency="vvruc curv-"	count="1"	item="&HS_itTeV9Blaster;"/>
+				<Item levelFrequency="vvruc curv-"	count="1"	item="&HS_itSAR10Cannon;"/>
+				<Item levelFrequency="--vru ccurv"	count="1"	item="&HS_itDualSAR10Cannon;"/>
+				<Item levelFrequency="--vru ccurv"	count="1"	item="&HS_itSAR40Cannon;"/>
+				<Item levelFrequency="--vru ccurv"	count="1"	item="&HS_itOmniTeV9Blaster;"/>
+				<Item levelFrequency="--vru ccurv"	count="1"	item="&HS_itStarCannon;"/>
+				<Item levelFrequency="--vru ccurv"	count="1"	item="&HS_itNM900MissilePod;"/>
+				<Item levelFrequency="---vr uccur"	count="1"	item="&HS_itFusionfireHowitzer;"/>
+				<Item levelFrequency="---vr uccur"	count="1"	item="&HS_itIonBlaster;"/>
+				<Item levelFrequency="----v ruccu"	count="1"	item="&HS_itNAMIHeavyLauncher;"/>
+				<Item levelFrequency="----v ruccu"	count="1"	item="&HS_itSAR200AdvancedCannon;"/>
+			</LevelTable>
+
+			<LevelTable chance="20">
+				<Item levelFrequency="vvruc curv-"	count="1"	item="&HS_itR5Deflector;"/>
+				<Item levelFrequency="--vru ccurv"	count="1"	item="&HS_itR5BDeflector;"/>
+				<Item levelFrequency="---vr uccur"	count="1"	item="&HS_itR9Deflector;"/>
+			</LevelTable>
+		</Table>
+	</ItemTable>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&HS_rsCommonwealthFleetInsignia;"			bitmap="Resources\CommonwealthFleetInsignia.jpg" bitmask="Resources\CommonwealthFleetInsigniaMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&rsAquilaHD;"				bitmap="Resources\AquilaHD.jpg" bitmask="Resources\AquilaHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsAquilaHero;"			bitmap="Resources\AquilaLarge.jpg" bitmask="Resources\AquilaLargeMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&HS_rsAurochsHD;"				bitmap="Resources\AurochsHD.jpg"	bitmask="Resources\AurochsHDMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&HS_rsAurochsHero;"			bitmap="Resources\AurochsLarge.jpg"	bitmask="Resources\AurochsLargeMask.bmp" 	loadOnUse="true" />
+	
+	<Image UNID="&HS_rsMinotaur;"				bitmap="Resources\Minotaur.jpg" bitmask="Resources\MinotaurMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsMinotaurHero;"			bitmap="Resources\MinotaurLarge.jpg" bitmask="Resources\MinotaurLargeMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsMinotaurM;"				bitmap="Resources\MinotaurM.jpg" bitmask="Resources\MinotaurMMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsMinotaurMHero;"			bitmap="Resources\MinotaurMLarge.jpg" bitmask="Resources\MinotaurMLargeMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&HS_rsBritanniaHD;"			bitmap="Resources\BritanniaHD.jpg" bitmask="Resources\BritanniaHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsBritanniaHero;"			bitmap="Resources\BritanniaLarge.jpg" bitmask="Resources\BritanniaLargeMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&HS_rsCenturionHD;"			bitmap="Resources\CenturionHD.jpg"	bitmask="Resources\CenturionHDMask.bmp" 	loadOnUse="true" />
+
+</TranscendenceModule>

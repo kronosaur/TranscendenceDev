@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Stargate -->
+
+	<StationType UNID="&GLXY_stStargate;"
+			name=				"(stargate)"
+			sovereign=			"&CORE_svNeutral;"
+			dockScreen=			"Main"
+
+			immutable=			"true"
+
+			attributes=			"generic, stargate"
+			
+			gateEffect=			"&GLXY_efStargateOut;"
+			definiteArticle=	"true"
+			>
+		<Encounter
+				exclusionRadius="50"
+				/>
+
+		<Image imageID="&GLXY_rsDaazhenStargate;" imageWidth="350" imageHeight="350" imageFrameCount="48" imageTicksPerFrame="1" animationColumns="6"/>
+
+		<DockingPorts
+				portCount=		"4"
+				portRadius=		"190"
+				>
+		</DockingPorts>
+		
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action name="Undock" cancel="1" key="U">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are docked at an alien stargate. These giant structures are 
+				used by the Ancient Races to move their starships across the 
+				Galaxy.
+				
+				Stargates are the best mode of faster-than-light travel and 
+				they are the only method known to humans.
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Stargate beacon -->
+
+	<StationType UNID="&GLXY_stStargateBeacon;"
+			name=				"(stargate beacon)"
+			sovereign=			"&CORE_svNeutral;"
+			noMapLabel=			"true"
+			immutable=			"true"
+			mass=				"5000"
+			>
+
+		<Image imageID="&GLXY_rsStdStargate;" imageX="0" imageY="128" imageWidth="28" imageHeight="28"/>
+
+	</StationType>
+	
+	<!-- Majellen Stargate -->
+
+	<StationType UNID="&GLXY_stMajellenStargate;"
+			name=				"(stargate)"
+			sovereign=			"&CORE_svNeutral;"
+			dockScreen=			"Main"
+
+			immutable=			"true"
+			attributes=			"generic, majellen, stargate"
+
+			gateEffect=			"&GLXY_efStargateOut;"
+
+			definiteArticle=	"true"
+			>
+		<Image imageID="&GLXY_rsMajellenStargate;" imageWidth="400" imageHeight="400" imageFrameCount="48" imageTicksPerFrame="1" animationColumns="6"/>
+
+		<DockingPorts
+				portCount=		"4"
+				portRadius=		"150"
+				>
+		</DockingPorts>
+		
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action name="Undock" cancel="1" key="U">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are docked at an alien stargate. These giant structures are 
+				used by the Ancient Races to move their starships across the 
+				Galaxy.
+				
+				Stargates are the best mode of faster-than-light travel and 
+				they are the only method known to humans.
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<StationType UNID="&GLXY_stUnchartedMajellenStargate;"
+			name=				"(stargate)"
+			sovereign=			"&CORE_svNeutral;"
+			dockScreen=			"Main"
+
+			immutable=			"true"
+			attributes=			"majellen, stargate, uncharted"
+
+			gateEffect=			"&GLXY_efStargateOut;"
+
+			definiteArticle=	"true"
+			>
+		<Image imageID="&GLXY_rsMajellenStargate;" imageWidth="400" imageHeight="400" imageFrameCount="48" imageTicksPerFrame="1" animationColumns="6"/>
+
+		<DockingPorts
+				portCount=		"4"
+				portRadius=		"150"
+				>
+		</DockingPorts>
+		
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action name="Undock" cancel="1" key="U">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are docked at an alien stargate. These giant structures are 
+				used by the Ancient Races to move their starships across the 
+				Galaxy.
+				
+				Stargates are the best mode of faster-than-light travel and 
+				they are the only method known to humans.
+
+			</Text>
+		</Language>
+	</StationType>
+
+<!-- STARGATE EFFECTS -->
+
+	<Effect UNID="&GLXY_efStargateIn;"
+			sound="&GLXY_snStargate;"
+			>
+		<Image imageID="&GLXY_rsDaazhenStargateEffect;"
+				imageX="0" 
+				imageY="0" 
+				imageWidth="400" 
+				imageHeight="400"
+				imageFrameCount="32"
+				imageTicksPerFrame="1"
+			    animationColumns="8"/>
+	</Effect>
+
+	<Effect UNID="&GLXY_efStargateOut;"
+			sound="&GLXY_snStargate;"
+			>
+		<Image imageID="&GLXY_rsDaazhenStargateEffect;"
+				imageX="0" 
+				imageY="0" 
+				imageWidth="400" 
+				imageHeight="400"
+				imageFrameCount="32"
+				imageTicksPerFrame="1"
+			    animationColumns="8"/>
+	</Effect>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&GLXY_rsDaazhenStargate;"		bitmap="Resources\DaazhenStargate.jpg"		bitmask="Resources\DaazhenStargateMask.bmp" loadOnUse="true"/>
+	<Image UNID="&GLXY_rsDaazhenStargateEffect;"	bitmap="Resources\DaazhenStargateEffect.jpg"		bitmask="Resources\DaazhenStargateEffectMask.bmp" loadOnUse="true"/>
+	<Image UNID="&GLXY_rsMajellenStargate;"		bitmap="Resources\MajellenStargate.jpg"		bitmask="Resources\MajellenStargateMask.bmp" loadOnUse="true"/>
+	
+	<Image UNID="&GLXY_rsStdStargate;"		bitmap="Resources\StdStargate.jpg"		bitmask="Resources\StdStargateMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&GLXY_rsStargateEffects;"	bitmap="Resources\StargateEffects.jpg" bitmask="Resources\StargateEffectsMask.bmp" loadOnUse="true"/>
+
+	<Sound UNID="&GLXY_snStargate;"			filename="Resources\Stargate.wav"/>
+
+</TranscendenceModule>

@@ -103,696 +103,696 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Transcendence.xml" />
-    <None Include="CoreCode.xml">
+    <None Include="CORE_CoreCode.xml">
       <Filter>Core Types</Filter>
     </None>
-    <None Include="CoreEffects.xml">
+    <None Include="CORE_CoreEffects.xml">
       <Filter>Core Types</Filter>
     </None>
-    <None Include="RPGAutons.xml">
+    <None Include="RPG_Autons.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="RPGAuxDevices.xml">
+    <None Include="RPG_AuxDevices.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="RPGBehaviors.xml">
+    <None Include="RPG_Behaviors.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="RPGCharacterClasses.xml">
+    <None Include="RPG_CharacterClasses.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="RPGCharacters.xml">
+    <None Include="RPG_Characters.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="RPGCode.xml">
+    <None Include="RPG_Code.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="RPGCompatibility.xml">
+    <None Include="RPG_Compatibility.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="RPGDeviceDockScreens.xml">
+    <None Include="RPG_DeviceDockScreens.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="RPGDialog.xml">
+    <None Include="RPG_Dialog.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="RPGDockScreens.xml">
+    <None Include="RPG_DockScreens.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="RPGDockServices.xml">
+    <None Include="RPG_DockServices.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="RPGMissions.xml">
+    <None Include="RPG_Missions.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="RPGPlayer.xml">
+    <None Include="RPG_Player.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="RPGShipScreens.xml">
+    <None Include="RPG_ShipScreens.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="RPGTypes.xml">
+    <None Include="RPG_Types.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="RPGWingmen.xml">
+    <None Include="RPG_Wingmen.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="HUD.xml">
+    <None Include="RPG_HUD.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="Benedict00.xml">
+    <None Include="SOTP_Benedict00.xml">
       <Filter>Part I</Filter>
     </None>
-    <None Include="Benedict01.xml">
+    <None Include="SOTP_Benedict01.xml">
       <Filter>Part I</Filter>
     </None>
-    <None Include="Benedict02.xml">
+    <None Include="SOTP_Benedict02.xml">
       <Filter>Part I</Filter>
     </None>
-    <None Include="BenedictStoryArc.xml">
+    <None Include="SOTP_BenedictStoryArc.xml">
       <Filter>Part I</Filter>
     </None>
-    <None Include="Elysium.xml">
+    <None Include="SOTP_Elysium.xml">
       <Filter>Part I</Filter>
     </None>
-    <None Include="PlayerShips.xml">
+    <None Include="SOTP_PlayerShips.xml">
       <Filter>Part I</Filter>
     </None>
-    <None Include="StarsOfThePilgrim.xml">
+    <None Include="SOTP_StarsOfThePilgrim.xml">
       <Filter>Part I</Filter>
     </None>
-    <None Include="Environments.xml">
+    <None Include="GLXY_Environments.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="Groups.xml">
+    <None Include="GLXY_Groups.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="Ice.xml">
+    <None Include="GLXY_Ice.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="Metallic.xml">
+    <None Include="GLXY_Metallic.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="Mining.xml">
+    <None Include="GLXY_Mining.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="Neurohack.xml">
+    <None Include="GLXY_Neurohack.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="Primordial.xml">
+    <None Include="GLXY_Primordial.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="Rocky.xml">
+    <None Include="GLXY_Rocky.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="Stargates.xml">
+    <None Include="GLXY_Stargates.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="Stars.xml">
+    <None Include="GLXY_Stars.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="StarSystems.xml">
+    <None Include="GLXY_StarSystems.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="Volcanic.xml">
+    <None Include="GLXY_Volcanic.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="Worlds.xml">
+    <None Include="GLXY_Worlds.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="CoreExplosions.xml">
+    <None Include="CORE_CoreExplosions.xml">
       <Filter>Core Types</Filter>
     </None>
-    <None Include="CoreTypesLibrary.xml">
+    <None Include="CORE_CoreTypesLibrary.xml">
       <Filter>Core Types</Filter>
     </None>
-    <None Include="Compatibility10.xml">
+    <None Include="CMPT_Compatibility10.xml">
       <Filter>Compatibility</Filter>
     </None>
-    <None Include="GalaxyCompatibility.xml">
+    <None Include="GLXY_GalaxyCompatibility.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="GalaxyEffects.xml">
+    <None Include="GLXY_GalaxyEffects.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="RPGAnalyzers.xml">
+    <None Include="RPG_Analyzers.xml">
       <Filter>RPG Library</Filter>
     </None>
-    <None Include="CentauriWarlords.xml">
+    <None Include="HS_CentauriWarlords.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </None>
-    <None Include="Code.xml">
+    <None Include="HS_Code.xml">
       <Filter>Human Space Library\Miscellaneous</Filter>
     </None>
-    <None Include="DwargRaiders.xml">
+    <None Include="HS_DwargRaiders.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </None>
-    <None Include="HSCompatibility.xml">
+    <None Include="HS_HSCompatibility.xml">
       <Filter>Human Space Library\Miscellaneous</Filter>
     </None>
-    <None Include="HumanSpaceMap.xml">
+    <None Include="HS_HumanSpaceMap.xml">
       <Filter>Human Space Library\Star Systems</Filter>
     </None>
-    <None Include="Iocrym.xml">
+    <None Include="HS_Iocrym.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </None>
-    <None Include="KateMorgental.xml">
+    <None Include="HS_KateMorgental.xml">
       <Filter>Human Space Library\Characters</Filter>
     </None>
-    <None Include="Luminous.xml">
+    <None Include="HS_Luminous.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </None>
-    <None Include="MiscItems.xml">
+    <None Include="HS_MiscItems.xml">
       <Filter>Human Space Library\Items</Filter>
     </None>
-    <None Include="OutlawMiners.xml">
+    <None Include="HS_OutlawMiners.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </None>
-    <None Include="Ringers.xml">
+    <None Include="HS_Ringers.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </None>
-    <None Include="RogueFleet.xml">
+    <None Include="HS_RogueFleet.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </None>
-    <None Include="StdArmor.xml">
+    <None Include="HS_StdArmor.xml">
       <Filter>Human Space Library\Items</Filter>
     </None>
-    <None Include="StdAutons.xml">
+    <None Include="HS_StdAutons.xml">
       <Filter>Human Space Library\Items</Filter>
     </None>
-    <None Include="StdDevices.xml">
+    <None Include="HS_StdDevices.xml">
       <Filter>Human Space Library\Items</Filter>
     </None>
-    <None Include="StdFuel.xml">
+    <None Include="HS_StdFuel.xml">
       <Filter>Human Space Library\Items</Filter>
     </None>
-    <None Include="StdShields.xml">
+    <None Include="HS_StdShields.xml">
       <Filter>Human Space Library\Items</Filter>
     </None>
-    <None Include="StdWeapons.xml">
+    <None Include="HS_StdWeapons.xml">
       <Filter>Human Space Library\Items</Filter>
     </None>
-    <None Include="StdDockScreens.xml">
+    <None Include="HS_StdDockScreens.xml">
       <Filter>Human Space Library\Miscellaneous</Filter>
     </None>
-    <None Include="StdPlayerShips.xml">
+    <None Include="HS_StdPlayerShips.xml">
       <Filter>Human Space Library\Miscellaneous</Filter>
     </None>
-    <None Include="StdSovereigns.xml">
+    <None Include="HS_StdSovereigns.xml">
       <Filter>Human Space Library\Miscellaneous</Filter>
     </None>
-    <None Include="StdSystems.xml">
+    <None Include="HS_StdSystems.xml">
       <Filter>Human Space Library\Star Systems</Filter>
     </None>
-    <None Include="StdTypes.xml">
+    <None Include="HS_StdTypes.xml">
       <Filter>Human Space Library\Miscellaneous</Filter>
     </None>
-    <None Include="StdUnknownItems.xml">
+    <None Include="HS_StdUnknownItems.xml">
       <Filter>Human Space Library\Items</Filter>
     </None>
-    <None Include="Tinkers.xml">
+    <None Include="HS_Tinkers.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </None>
-    <None Include="UrakWarlords.xml">
+    <None Include="HS_UrakWarlords.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </None>
-    <None Include="UsefulItems.xml">
+    <None Include="HS_UsefulItems.xml">
       <Filter>Human Space Library\Items</Filter>
     </None>
-    <None Include="CommonwealthFleet.xml">
+    <None Include="HS_CommonwealthFleet.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </None>
-    <None Include="CommonwealthMilitia.xml">
+    <None Include="HS_CommonwealthMilitia.xml">
       <Filter>Human Space Library\Commonwealth Militia</Filter>
     </None>
-    <None Include="KorolovShipping.xml">
+    <None Include="HS_KorolovShipping.xml">
       <Filter>Human Space Library\Korolov Shipping</Filter>
     </None>
-    <None Include="CorporateHierarchy.xml">
+    <None Include="HS_CorporateHierarchy.xml">
       <Filter>Human Space Library\Corporate Hierarchy</Filter>
     </None>
-    <None Include="Rasiermesser.xml">
+    <None Include="HS_Rasiermesser.xml">
       <Filter>Human Space Library\Corporate Hierarchy</Filter>
     </None>
-    <None Include="Commonwealth.xml">
+    <None Include="HS_Commonwealth.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </None>
-    <None Include="CommonwealthAgricultural.xml">
+    <None Include="HS_CommonwealthAgricultural.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </None>
-    <None Include="PointJuno.xml">
+    <None Include="HS_PointJuno.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </None>
-    <None Include="Antarctica.xml">
+    <None Include="HS_Antarctica.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </None>
-    <None Include="Eridani.xml">
+    <None Include="HS_Eridani.xml">
       <Filter>Human Space Library\Eridani</Filter>
     </None>
-    <None Include="BlackMarket.xml">
+    <None Include="HS_BlackMarket.xml">
       <Filter>Human Space Library\Black Market</Filter>
     </None>
-    <None Include="BattleArena.xml">
+    <None Include="HS_BattleArena.xml">
       <Filter>Human Space Library\Battle Arena</Filter>
     </None>
-    <None Include="BattleArenaGladiators.xml">
+    <None Include="HS_BattleArenaGladiators.xml">
       <Filter>Human Space Library\Battle Arena</Filter>
     </None>
-    <None Include="CharonFortress.xml">
+    <None Include="HS_CharonFortress.xml">
       <Filter>Human Space Library\Charon Pirates</Filter>
     </None>
-    <None Include="CharonPirates.xml">
+    <None Include="HS_CharonPirates.xml">
       <Filter>Human Space Library\Charon Pirates</Filter>
     </None>
-    <None Include="StKatharines.xml">
+    <None Include="HS_StKatharines.xml">
       <Filter>Human Space Library\St Katharines</Filter>
     </None>
-    <None Include="SistersOfDomina.xml">
+    <None Include="HS_SistersOfDomina.xml">
       <Filter>Human Space Library\Sisters</Filter>
     </None>
-    <None Include="Huari.xml">
+    <None Include="HS_Huari.xml">
       <Filter>Human Space Library\Huari</Filter>
     </None>
-    <None Include="Teratons.xml">
+    <None Include="HS_Teratons.xml">
       <Filter>Human Space Library\Teratons</Filter>
     </None>
-    <None Include="SungSlavers.xml">
+    <None Include="HS_SungSlavers.xml">
       <Filter>Human Space Library\Sung Slavers</Filter>
     </None>
-    <None Include="AresOrthodoxy.xml">
+    <None Include="HS_AresOrthodoxy.xml">
       <Filter>Human Space Library\Ares Orthodoxy</Filter>
     </None>
-    <None Include="CommonwealthMining.xml">
+    <None Include="HS_CommonwealthMining.xml">
       <Filter>Human Space Library\Commonwealth Mining</Filter>
     </None>
-    <None Include="Heretic.xml">
+    <None Include="HS_Heretic.xml">
       <Filter>Human Space Library\Heretic</Filter>
     </None>
-    <None Include="StdEffects.xml">
+    <None Include="HS_StdEffects.xml">
       <Filter>Human Space Library\Items</Filter>
     </None>
-    <None Include="Domina.xml">
+    <None Include="HS_Domina.xml">
       <Filter>Human Space Library\Pilgrim</Filter>
     </None>
-    <None Include="OvoidsCompatibility.xml">
+    <None Include="GLXY_OvoidsCompatibility.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </None>
-    <None Include="CommonwealthMetropolis.xml">
+    <None Include="HS_CommonwealthMetropolis.xml">
       <Filter>Human Space Library\Commonwealth Metropolis</Filter>
     </None>
-    <None Include="Part1Compatibility.xml">
+    <None Include="SOTP_Part1Compatibility.xml">
       <Filter>Part I</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="CorePlaceholders.xml">
+    <Xml Include="CORE_CorePlaceholders.xml">
       <Filter>Core Types</Filter>
     </Xml>
-    <Xml Include="RPGLibrary.xml">
+    <Xml Include="RPG_Library.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="HumanSpaceVol01.xml">
+    <Xml Include="HS_HumanSpaceVol01.xml">
       <Filter>Human Space Library</Filter>
     </Xml>
-    <Xml Include="CompatibilityLibrary.xml">
+    <Xml Include="CMPT_CompatibilityLibrary.xml">
       <Filter>Compatibility</Filter>
     </Xml>
-    <Xml Include="Ore.xml">
+    <Xml Include="GLXY_Ore.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </Xml>
-    <Xml Include="GalaxyLibrary.xml">
+    <Xml Include="GLXY_GalaxyLibrary.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </Xml>
-    <Xml Include="RPGComponents.xml">
+    <Xml Include="RPG_Components.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="CoreProjectileEffects.xml">
+    <Xml Include="CORE_CoreProjectileEffects.xml">
       <Filter>Core Types</Filter>
     </Xml>
-    <Xml Include="CoreHitEffects.xml">
+    <Xml Include="CORE_CoreHitEffects.xml">
       <Filter>Core Types</Filter>
     </Xml>
-    <Xml Include="CoreFireEffects.xml">
+    <Xml Include="CORE_CoreFireEffects.xml">
       <Filter>Core Types</Filter>
     </Xml>
-    <Xml Include="RPGShipBroker.xml">
+    <Xml Include="RPG_ShipBroker.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="Benedict04.xml">
+    <Xml Include="SOTP_Benedict04.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Benedict05.xml">
+    <Xml Include="SOTP_Benedict05.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Benedict05A.xml">
+    <Xml Include="SOTP_Benedict05A.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Benedict06.xml">
+    <Xml Include="SOTP_Benedict06.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Benedict07.xml">
+    <Xml Include="SOTP_Benedict07.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Benedict08.xml">
+    <Xml Include="SOTP_Benedict08.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Benedict.xml">
+    <Xml Include="HS_Benedict.xml">
       <Filter>Human Space Library\Characters</Filter>
     </Xml>
-    <Xml Include="EtaCeti.xml">
+    <Xml Include="HS_EtaCeti.xml">
       <Filter>Human Space Library\Star Systems</Filter>
     </Xml>
-    <Xml Include="Fiona.xml">
+    <Xml Include="HS_Fiona.xml">
       <Filter>Human Space Library\Characters</Filter>
     </Xml>
-    <Xml Include="HugoSandoval.xml">
+    <Xml Include="HS_HugoSandoval.xml">
       <Filter>Human Space Library\Characters</Filter>
     </Xml>
-    <Xml Include="Penitents.xml">
+    <Xml Include="HS_Penitents.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="StdMiningEquipment.xml">
+    <Xml Include="HS_StdMiningEquipment.xml">
       <Filter>Human Space Library\Items</Filter>
     </Xml>
-    <Xml Include="Stormhound.xml">
+    <Xml Include="HS_Stormhound.xml">
       <Filter>Human Space Library\Characters</Filter>
     </Xml>
-    <Xml Include="Rama.xml">
+    <Xml Include="HS_Rama.xml">
       <Filter>Human Space Library\Characters</Filter>
     </Xml>
-    <Xml Include="Jenna.xml">
+    <Xml Include="HS_Jenna.xml">
       <Filter>Human Space Library\Characters</Filter>
     </Xml>
-    <Xml Include="Volkov.xml">
+    <Xml Include="HS_Volkov.xml">
       <Filter>Human Space Library\Characters</Filter>
     </Xml>
-    <Xml Include="CommonwealthFleetMission01.xml">
+    <Xml Include="HS_CommonwealthFleetMission01.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CommonwealthFleetMission02.xml">
+    <Xml Include="HS_CommonwealthFleetMission02.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CommonwealthFleetMission03.xml">
+    <Xml Include="HS_CommonwealthFleetMission03.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CommonwealthFleetMission04.xml">
+    <Xml Include="HS_CommonwealthFleetMission04.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CommonwealthFleetMission05.xml">
+    <Xml Include="HS_CommonwealthFleetMission05.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CommonwealthFleetMission06.xml">
+    <Xml Include="HS_CommonwealthFleetMission06.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CommonwealthFleetMission07.xml">
+    <Xml Include="HS_CommonwealthFleetMission07.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CommonwealthFleetMission08.xml">
+    <Xml Include="HS_CommonwealthFleetMission08.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CommonwealthFleetMission09.xml">
+    <Xml Include="HS_CommonwealthFleetMission09.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CommonwealthFleetMission10.xml">
+    <Xml Include="HS_CommonwealthFleetMission10.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CommonwealthFleetMission11.xml">
+    <Xml Include="HS_CommonwealthFleetMission11.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CommonwealthFleetMissionLL01.xml">
+    <Xml Include="HS_CommonwealthFleetMissionLL01.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CommonwealthFleetMissionLL02.xml">
+    <Xml Include="HS_CommonwealthFleetMissionLL02.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CommonwealthMilitiaMission04.xml">
+    <Xml Include="HS_CommonwealthMilitiaMission04.xml">
       <Filter>Human Space Library\Commonwealth Militia</Filter>
     </Xml>
-    <Xml Include="CommonwealthMilitiaMission01.xml">
+    <Xml Include="HS_CommonwealthMilitiaMission01.xml">
       <Filter>Human Space Library\Commonwealth Militia</Filter>
     </Xml>
-    <Xml Include="CommonwealthMilitiaMission02.xml">
+    <Xml Include="HS_CommonwealthMilitiaMission02.xml">
       <Filter>Human Space Library\Commonwealth Militia</Filter>
     </Xml>
-    <Xml Include="CommonwealthMilitiaMission03.xml">
+    <Xml Include="HS_CommonwealthMilitiaMission03.xml">
       <Filter>Human Space Library\Commonwealth Militia</Filter>
     </Xml>
-    <Xml Include="KSMission03.xml">
+    <Xml Include="HS_KSMission03.xml">
       <Filter>Human Space Library\Korolov Shipping</Filter>
     </Xml>
-    <Xml Include="KronosaurusMission01.xml">
+    <Xml Include="HS_KronosaurusMission01.xml">
       <Filter>Human Space Library\Korolov Shipping</Filter>
     </Xml>
-    <Xml Include="KSMission01.xml">
+    <Xml Include="HS_KSMission01.xml">
       <Filter>Human Space Library\Korolov Shipping</Filter>
     </Xml>
-    <Xml Include="KSMission02.xml">
+    <Xml Include="HS_KSMission02.xml">
       <Filter>Human Space Library\Korolov Shipping</Filter>
     </Xml>
-    <Xml Include="CommonwealthShips.xml">
+    <Xml Include="HS_CommonwealthShips.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </Xml>
-    <Xml Include="RPGCommoditiesExchange.xml">
+    <Xml Include="RPG_CommoditiesExchange.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="RPGMembership.xml">
+    <Xml Include="RPG_Membership.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="RaisuStation.xml">
+    <Xml Include="HS_RaisuStation.xml">
       <Filter>Human Space Library\Eridani</Filter>
     </Xml>
-    <Xml Include="BlackMarketMission00.xml">
+    <Xml Include="HS_BlackMarketMission00.xml">
       <Filter>Human Space Library\Black Market</Filter>
     </Xml>
-    <Xml Include="BlackMarketMission01.xml">
+    <Xml Include="HS_BlackMarketMission01.xml">
       <Filter>Human Space Library\Black Market</Filter>
     </Xml>
-    <Xml Include="CommonwealthMilitiaMissionSK01.xml">
+    <Xml Include="HS_CommonwealthMilitiaMissionSK01.xml">
       <Filter>Human Space Library\Commonwealth Militia</Filter>
     </Xml>
-    <Xml Include="BattleArenaKidnapped.xml">
+    <Xml Include="HS_BattleArenaKidnapped.xml">
       <Filter>Human Space Library\Battle Arena</Filter>
     </Xml>
-    <Xml Include="BattleArenaMelee.xml">
+    <Xml Include="HS_BattleArenaMelee.xml">
       <Filter>Human Space Library\Battle Arena</Filter>
     </Xml>
-    <Xml Include="Dall01.xml">
+    <Xml Include="HS_Dall01.xml">
       <Filter>Human Space Library\St Katharines</Filter>
     </Xml>
-    <Xml Include="Sanctuary.xml">
+    <Xml Include="HS_Sanctuary.xml">
       <Filter>Human Space Library\Sisters</Filter>
     </Xml>
-    <Xml Include="HuariMission01.xml">
+    <Xml Include="HS_HuariMission01.xml">
       <Filter>Human Space Library\Huari</Filter>
     </Xml>
-    <Xml Include="HuariMission02.xml">
+    <Xml Include="HS_HuariMission02.xml">
       <Filter>Human Space Library\Huari</Filter>
     </Xml>
-    <Xml Include="HuariMission03.xml">
+    <Xml Include="HS_HuariMission03.xml">
       <Filter>Human Space Library\Huari</Filter>
     </Xml>
-    <Xml Include="HuaramarcaMission07.xml">
+    <Xml Include="SOTP_HuaramarcaMission07.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Huaramarca.xml">
+    <Xml Include="SOTP_Huaramarca.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="HuaramarcaMission01.xml">
+    <Xml Include="SOTP_HuaramarcaMission01.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="HuaramarcaMission02.xml">
+    <Xml Include="SOTP_HuaramarcaMission02.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="HuaramarcaMission03.xml">
+    <Xml Include="SOTP_HuaramarcaMission03.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="HuaramarcaMission04.xml">
+    <Xml Include="SOTP_HuaramarcaMission04.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="HuaramarcaMission05.xml">
+    <Xml Include="SOTP_HuaramarcaMission05.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="HuaramarcaMission06.xml">
+    <Xml Include="SOTP_HuaramarcaMission06.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Kronosaurus.xml">
+    <Xml Include="HS_Kronosaurus.xml">
       <Filter>Human Space Library\Charon Pirates</Filter>
     </Xml>
-    <Xml Include="KSMissionC01.xml">
+    <Xml Include="HS_KSMissionC01.xml">
       <Filter>Human Space Library\Korolov Shipping</Filter>
     </Xml>
-    <Xml Include="KSMissionC02.xml">
+    <Xml Include="HS_KSMissionC02.xml">
       <Filter>Human Space Library\Korolov Shipping</Filter>
     </Xml>
-    <Xml Include="TeratonResearch.xml">
+    <Xml Include="HS_TeratonResearch.xml">
       <Filter>Human Space Library\Teratons</Filter>
     </Xml>
-    <Xml Include="KorolovFreighters.xml">
+    <Xml Include="HS_KorolovFreighters.xml">
       <Filter>Human Space Library\Korolov Shipping</Filter>
     </Xml>
-    <Xml Include="RPGCommonText.xml">
+    <Xml Include="RPG_CommonText.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="RPGUsefulItems.xml">
+    <Xml Include="RPG_UsefulItems.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="Dantalion.xml">
+    <Xml Include="HS_Dantalion.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CoreItems.xml">
+    <Xml Include="CORE_CoreItems.xml">
       <Filter>Core Types</Filter>
     </Xml>
-    <Xml Include="RPGTradingComputer.xml">
+    <Xml Include="RPG_TradingComputer.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="Abbasid.xml">
+    <Xml Include="HS_Abbasid.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="Xenophobes.xml">
+    <Xml Include="HS_Xenophobes.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="DeathDrugsCartel.xml">
+    <Xml Include="HS_DeathDrugsCartel.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="Anarchists.xml">
+    <Xml Include="HS_Anarchists.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="Gaians.xml">
+    <Xml Include="HS_Gaians.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="Heliotropes.xml">
+    <Xml Include="HS_Heliotropes.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="Himal.xml">
+    <Xml Include="HS_Himal.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="KobolWarlords.xml">
+    <Xml Include="HS_KobolWarlords.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="Marauders.xml">
+    <Xml Include="HS_Marauders.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="Outlaws.xml">
+    <Xml Include="HS_Outlaws.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="Pteravores.xml">
+    <Xml Include="HS_Pteravores.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="RanxEmpire.xml">
+    <Xml Include="HS_RanxEmpire.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="Salvagers.xml">
+    <Xml Include="HS_Salvagers.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="Sapiens.xml">
+    <Xml Include="HS_Sapiens.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="Debris.xml">
+    <Xml Include="HS_Debris.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="Ventari.xml">
+    <Xml Include="HS_Ventari.xml">
       <Filter>Human Space Library\Encounters</Filter>
     </Xml>
-    <Xml Include="CommonwealthFleetMissionLL03.xml">
+    <Xml Include="HS_CommonwealthFleetMissionLL03.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CommonwealthFleetMissionLL04.xml">
+    <Xml Include="HS_CommonwealthFleetMissionLL04.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CommonwealthFleetMissionPJ01.xml">
+    <Xml Include="HS_CommonwealthFleetMissionPJ01.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="Antarctica01.xml">
+    <Xml Include="HS_Antarctica01.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="Antarctica02.xml">
+    <Xml Include="HS_Antarctica02.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="AntarcticaD01.xml">
+    <Xml Include="HS_AntarcticaD01.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="RPGDockManagement.xml">
+    <Xml Include="RPG_DockManagement.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="HumanTech.xml">
+    <Xml Include="HS_HumanTech.xml">
       <Filter>Human Space Library\Miscellaneous</Filter>
     </Xml>
-    <Xml Include="CommonwealthCenturions.xml">
+    <Xml Include="HS_CommonwealthCenturions.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </Xml>
-    <Xml Include="CommonwealthStarCarrier.xml">
+    <Xml Include="HS_CommonwealthStarCarrier.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="CSCTerra.xml">
+    <Xml Include="HS_CSCTerra.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </Xml>
-    <Xml Include="Heretic00.xml">
+    <Xml Include="SOTP_Heretic00.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Heretic01.xml">
+    <Xml Include="SOTP_Heretic01.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Heretic02.xml">
+    <Xml Include="SOTP_Heretic02.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Heretic03.xml">
+    <Xml Include="SOTP_Heretic03.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Heretic04.xml">
+    <Xml Include="SOTP_Heretic04.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Heretic05.xml">
+    <Xml Include="SOTP_Heretic05.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Heretic06.xml">
+    <Xml Include="SOTP_Heretic06.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Heretic07.xml">
+    <Xml Include="SOTP_Heretic07.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Heretic08.xml">
+    <Xml Include="SOTP_Heretic08.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="CommonwealthMission01.xml">
+    <Xml Include="HS_CommonwealthMission01.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </Xml>
-    <Xml Include="RPGRumors.xml">
+    <Xml Include="RPG_Rumors.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="BattleArenaChallenger.xml">
+    <Xml Include="HS_BattleArenaChallenger.xml">
       <Filter>Human Space Library\Battle Arena</Filter>
     </Xml>
-    <Xml Include="BattleArenaFight.xml">
+    <Xml Include="HS_BattleArenaFight.xml">
       <Filter>Human Space Library\Battle Arena</Filter>
     </Xml>
-    <Xml Include="CommonwealthRonins.xml">
+    <Xml Include="HS_CommonwealthRonins.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </Xml>
-    <Xml Include="CorporateInsurance.xml">
+    <Xml Include="HS_CorporateInsurance.xml">
       <Filter>Human Space Library\Corporate Hierarchy</Filter>
     </Xml>
-    <Xml Include="QuantumCPU.xml">
+    <Xml Include="HS_QuantumCPU.xml">
       <Filter>Human Space Library\Items</Filter>
     </Xml>
-    <Xml Include="SungSlaveCamp.xml">
+    <Xml Include="HS_SungSlaveCamp.xml">
       <Filter>Human Space Library\Sung Slavers</Filter>
     </Xml>
-    <Xml Include="Barricades.xml">
+    <Xml Include="HS_Barricades.xml">
       <Filter>Human Space Library\Items</Filter>
     </Xml>
-    <Xml Include="AresItems.xml">
+    <Xml Include="HS_AresItems.xml">
       <Filter>Human Space Library\Ares Orthodoxy</Filter>
     </Xml>
-    <Xml Include="AresShips.xml">
+    <Xml Include="HS_AresShips.xml">
       <Filter>Human Space Library\Ares Orthodoxy</Filter>
     </Xml>
-    <Xml Include="CorporateTradingPost.xml">
+    <Xml Include="HS_CorporateTradingPost.xml">
       <Filter>Human Space Library\Corporate Hierarchy</Filter>
     </Xml>
     <Xml Include="..\Extensions\Diagnostics\Diagnostics.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
-    <Xml Include="CommonwealthCharacters.xml">
+    <Xml Include="HS_CommonwealthCharacters.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </Xml>
     <Xml Include="..\Extensions\Diagnostics\ItemUnitTests.xml">
@@ -807,7 +807,7 @@
     <Xml Include="..\Extensions\Diagnostics\TestItems.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
-    <Xml Include="Analyzers.xml">
+    <Xml Include="HS_Analyzers.xml">
       <Filter>Human Space Library\Items</Filter>
     </Xml>
     <Xml Include="CoreSamples.xml">
@@ -816,19 +816,19 @@
     <Xml Include="..\Extensions\Diagnostics\FunctionTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
-    <Xml Include="RPGViewers.xml">
+    <Xml Include="RPG_Viewers.xml">
       <Filter>RPG Library</Filter>
     </Xml>
     <Xml Include="..\Extensions\Diagnostics\TopologyTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
-    <Xml Include="AsteroidFields.xml">
+    <Xml Include="GLXY_AsteroidFields.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </Xml>
-    <Xml Include="GroupIAsteroids.xml">
+    <Xml Include="GLXY_GroupIAsteroids.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </Xml>
-    <Xml Include="OreStone.xml">
+    <Xml Include="GLXY_OreStone.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </Xml>
     <Xml Include="..\Extensions\Diagnostics\TestMissions.xml">
@@ -837,217 +837,217 @@
     <Xml Include="..\Extensions\Diagnostics\MissionUnitTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
-    <Xml Include="Ferians.xml">
+    <Xml Include="HS_Ferians.xml">
       <Filter>Human Space Library\Ferians</Filter>
     </Xml>
-    <Xml Include="FerianMission01.xml">
+    <Xml Include="HS_FerianMission01.xml">
       <Filter>Human Space Library\Ferians</Filter>
     </Xml>
     <Xml Include="..\Extensions\Diagnostics\DesignTypeTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
-    <Xml Include="CommonwealthMissionRevenge01.xml">
+    <Xml Include="HS_CommonwealthMissionRevenge01.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </Xml>
     <Xml Include="..\Extensions\Diagnostics\ItemEnhancementUnitTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
-    <Xml Include="ArmorEnhancementItems.xml">
+    <Xml Include="HS_ArmorEnhancementItems.xml">
       <Filter>Human Space Library\Items</Filter>
     </Xml>
-    <Xml Include="ArmorRepairItems.xml">
+    <Xml Include="HS_ArmorRepairItems.xml">
       <Filter>Human Space Library\Items</Filter>
     </Xml>
-    <Xml Include="WeaponEnhancementItems.xml">
+    <Xml Include="HS_WeaponEnhancementItems.xml">
       <Filter>Human Space Library\Items</Filter>
     </Xml>
-    <Xml Include="ShieldEnhancementItems.xml">
+    <Xml Include="HS_ShieldEnhancementItems.xml">
       <Filter>Human Space Library\Items</Filter>
     </Xml>
-    <Xml Include="RasiermesserMission01.xml">
+    <Xml Include="HS_RasiermesserMission01.xml">
       <Filter>Human Space Library\Corporate Hierarchy</Filter>
     </Xml>
-    <Xml Include="CommonwealthMiningMission01.xml">
+    <Xml Include="HS_CommonwealthMiningMission01.xml">
       <Filter>Human Space Library\Commonwealth Mining</Filter>
     </Xml>
-    <Xml Include="CommonwealthMiningMission02.xml">
+    <Xml Include="HS_CommonwealthMiningMission02.xml">
       <Filter>Human Space Library\Commonwealth Mining</Filter>
     </Xml>
-    <Xml Include="EridaniStations.xml">
+    <Xml Include="HS_EridaniStations.xml">
       <Filter>Human Space Library\Eridani</Filter>
     </Xml>
-    <Xml Include="MRAD.xml">
+    <Xml Include="HS_MRAD.xml">
       <Filter>Human Space Library\Heretic</Filter>
     </Xml>
     <Xml Include="..\Extensions\Diagnostics\SystemFunctionTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
-    <Xml Include="FirstContactMonument.xml">
+    <Xml Include="HS_FirstContactMonument.xml">
       <Filter>Human Space Library\St Katharines</Filter>
     </Xml>
-    <Xml Include="NewVictoria.xml">
+    <Xml Include="HS_NewVictoria.xml">
       <Filter>Human Space Library\St Katharines</Filter>
     </Xml>
-    <Xml Include="Makayev.xml">
+    <Xml Include="HS_Makayev.xml">
       <Filter>Human Space Library\Corporate Hierarchy</Filter>
     </Xml>
-    <Xml Include="RPGMining.xml">
+    <Xml Include="RPG_Mining.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="CoreEngineText.xml">
+    <Xml Include="CORE_CoreEngineText.xml">
       <Filter>Core Types</Filter>
     </Xml>
-    <Xml Include="MiningPods.xml">
+    <Xml Include="HS_MiningPods.xml">
       <Filter>Human Space Library\Items</Filter>
     </Xml>
-    <Xml Include="UndergroundCaverns.xml">
+    <Xml Include="GLXY_UndergroundCaverns.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </Xml>
-    <Xml Include="BlackMarketMember.xml">
+    <Xml Include="HS_BlackMarketMember.xml">
       <Filter>Human Space Library\Black Market</Filter>
     </Xml>
-    <Xml Include="CoreDiagnostics.xml">
+    <Xml Include="CORE_CoreDiagnostics.xml">
       <Filter>Core Types</Filter>
     </Xml>
-    <Xml Include="SistersDonate.xml">
+    <Xml Include="HS_SistersDonate.xml">
       <Filter>Human Space Library\Sisters</Filter>
     </Xml>
-    <Xml Include="Pilgrim.xml">
+    <Xml Include="HS_Pilgrim.xml">
       <Filter>Human Space Library\Pilgrim</Filter>
     </Xml>
-    <Xml Include="SistersPilgrimsAid.xml">
+    <Xml Include="HS_SistersPilgrimsAid.xml">
       <Filter>Human Space Library\Sisters</Filter>
     </Xml>
-    <Xml Include="Sisters01.xml">
+    <Xml Include="HS_Sisters01.xml">
       <Filter>Human Space Library\Sisters</Filter>
     </Xml>
-    <Xml Include="SistersSanctum.xml">
+    <Xml Include="HS_SistersSanctum.xml">
       <Filter>Human Space Library\Sisters</Filter>
     </Xml>
-    <Xml Include="HaloGems.xml">
+    <Xml Include="HS_HaloGems.xml">
       <Filter>Human Space Library\Items</Filter>
     </Xml>
-    <Xml Include="SungFortress.xml">
+    <Xml Include="HS_SungFortress.xml">
       <Filter>Human Space Library\Sung Slavers</Filter>
     </Xml>
-    <Xml Include="SungCitadel.xml">
+    <Xml Include="HS_SungCitadel.xml">
       <Filter>Human Space Library\Sung Slavers</Filter>
     </Xml>
-    <Xml Include="JiangsStar.xml">
+    <Xml Include="HS_JiangsStar.xml">
       <Filter>Human Space Library\Sung Slavers</Filter>
     </Xml>
-    <Xml Include="Scoria.xml">
+    <Xml Include="GLXY_Scoria.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </Xml>
-    <Xml Include="Ovoids.xml">
+    <Xml Include="GLXY_Ovoids.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </Xml>
-    <Xml Include="ContainerHabitat.xml">
+    <Xml Include="HS_ContainerHabitat.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </Xml>
-    <Xml Include="RPGMissionTemplate01.xml">
+    <Xml Include="RPG_MissionTemplate01.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="CommonwealthVolunteerMission01.xml">
+    <Xml Include="HS_CommonwealthVolunteerMission01.xml">
       <Filter>Human Space Library\Commonwealth Metropolis</Filter>
     </Xml>
-    <Xml Include="EnricoGaul.xml">
+    <Xml Include="HS_EnricoGaul.xml">
       <Filter>Human Space Library\Characters</Filter>
     </Xml>
-    <Xml Include="RPGMissionTemplate02.xml">
+    <Xml Include="RPG_MissionTemplate02.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="CommonwealthVolunteerMission02.xml">
+    <Xml Include="HS_CommonwealthVolunteerMission02.xml">
       <Filter>Human Space Library\Commonwealth Metropolis</Filter>
     </Xml>
-    <Xml Include="CommonwealthVolunteerMission03.xml">
+    <Xml Include="HS_CommonwealthVolunteerMission03.xml">
       <Filter>Human Space Library\Commonwealth Metropolis</Filter>
     </Xml>
-    <Xml Include="RejuvTank.xml">
+    <Xml Include="HS_RejuvTank.xml">
       <Filter>Human Space Library\Items</Filter>
     </Xml>
-    <Xml Include="LiaPereira.xml">
+    <Xml Include="HS_LiaPereira.xml">
       <Filter>Human Space Library\Characters</Filter>
     </Xml>
-    <Xml Include="Psych01.xml">
+    <Xml Include="SOTP_Psych01.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="Psych00.xml">
+    <Xml Include="SOTP_Psych00.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="RPGMissionTemplate03.xml">
+    <Xml Include="RPG_MissionTemplate03.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="CommonwealthMiningMission03.xml">
+    <Xml Include="HS_CommonwealthMiningMission03.xml">
       <Filter>Human Space Library\Commonwealth Mining</Filter>
     </Xml>
-    <Xml Include="HarperThompson.xml">
+    <Xml Include="HS_HarperThompson.xml">
       <Filter>Human Space Library\Characters</Filter>
     </Xml>
-    <Xml Include="CommonwealthMiningMission04.xml">
+    <Xml Include="HS_CommonwealthMiningMission04.xml">
       <Filter>Human Space Library\Commonwealth Mining</Filter>
     </Xml>
-    <Xml Include="MuhammadCondi.xml">
+    <Xml Include="HS_MuhammadCondi.xml">
       <Filter>Human Space Library\Characters</Filter>
     </Xml>
-    <Xml Include="UndergroundStructures.xml">
+    <Xml Include="HS_UndergroundStructures.xml">
       <Filter>Human Space Library\Miscellaneous</Filter>
     </Xml>
-    <Xml Include="CommonwealthMiningMission05.xml">
+    <Xml Include="HS_CommonwealthMiningMission05.xml">
       <Filter>Human Space Library\Commonwealth Mining</Filter>
     </Xml>
-    <Xml Include="Cryovolcanic.xml">
+    <Xml Include="GLXY_Cryovolcanic.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </Xml>
-    <Xml Include="CorporateAutonDealer.xml">
+    <Xml Include="HS_CorporateAutonDealer.xml">
       <Filter>Human Space Library\Corporate Hierarchy</Filter>
     </Xml>
     <Xml Include="..\Extensions\Diagnostics\ShipClassTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
-    <Xml Include="BlackMarketMission02.xml">
+    <Xml Include="HS_BlackMarketMission02.xml">
       <Filter>Human Space Library\Black Market</Filter>
     </Xml>
-    <Xml Include="BlackMarketMissionSmuggle01.xml">
+    <Xml Include="HS_BlackMarketMissionSmuggle01.xml">
       <Filter>Human Space Library\Black Market</Filter>
     </Xml>
-    <Xml Include="RaisuMission01.xml">
+    <Xml Include="HS_RaisuMission01.xml">
       <Filter>Human Space Library\Eridani</Filter>
     </Xml>
-    <Xml Include="RaisuMission02.xml">
+    <Xml Include="HS_RaisuMission02.xml">
       <Filter>Human Space Library\Eridani</Filter>
     </Xml>
-    <Xml Include="RPGMissionTemplate04.xml">
+    <Xml Include="RPG_MissionTemplate04.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="RaisuMission03.xml">
+    <Xml Include="HS_RaisuMission03.xml">
       <Filter>Human Space Library\Eridani</Filter>
     </Xml>
-    <Xml Include="ResidentialsMission01.xml">
+    <Xml Include="HS_ResidentialsMission01.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </Xml>
-    <Xml Include="RPGMissionTemplate05.xml">
+    <Xml Include="RPG_MissionTemplate05.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="RPGMissionTemplate06.xml">
+    <Xml Include="RPG_MissionTemplate06.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="ResidentialsMission02.xml">
+    <Xml Include="HS_ResidentialsMission02.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </Xml>
-    <Xml Include="RPGMissionTemplate07.xml">
+    <Xml Include="RPG_MissionTemplate07.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="ResidentialsMission03.xml">
+    <Xml Include="HS_ResidentialsMission03.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </Xml>
     <Xml Include="..\Extensions\Diagnostics\RadiationTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
-    <Xml Include="Tenhove.xml">
+    <Xml Include="HS_Tenhove.xml">
       <Filter>Human Space Library\Corporate Hierarchy</Filter>
     </Xml>
-    <Xml Include="RPGCrime.xml">
+    <Xml Include="RPG_Crime.xml">
       <Filter>RPG Library</Filter>
     </Xml>
     <Xml Include="..\Extensions\Diagnostics\StationTypeTests.xml">
@@ -1062,22 +1062,22 @@
     <Xml Include="..\Extensions\Diagnostics\TSETests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
-    <Xml Include="RPGSquadronUI.xml">
+    <Xml Include="RPG_SquadronUI.xml">
       <Filter>RPG Library</Filter>
     </Xml>
-    <Xml Include="BlackMarketPlayerShips.xml">
+    <Xml Include="HS_BlackMarketPlayerShips.xml">
       <Filter>Human Space Library\Black Market</Filter>
     </Xml>
-    <Xml Include="AgriculturalMission01.xml">
+    <Xml Include="HS_AgriculturalMission01.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </Xml>
-    <Xml Include="Sisters03.xml">
+    <Xml Include="HS_Sisters03.xml">
       <Filter>Human Space Library\Sisters</Filter>
     </Xml>
-    <Xml Include="NPCPilgrims.xml">
+    <Xml Include="HS_NPCPilgrims.xml">
       <Filter>Human Space Library\Pilgrim</Filter>
     </Xml>
-    <Xml Include="Sisters02.xml">
+    <Xml Include="HS_Sisters02.xml">
       <Filter>Human Space Library\Sisters</Filter>
     </Xml>
     <Xml Include="..\Extensions\Diagnostics\CombatAI.xml">
@@ -1086,10 +1086,10 @@
     <Xml Include="..\Extensions\Diagnostics\TradingTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
-    <Xml Include="Achievements.xml">
+    <Xml Include="SOTP_Achievements.xml">
       <Filter>Part I</Filter>
     </Xml>
-    <Xml Include="RPGSlaves.xml">
+    <Xml Include="RPG_Slaves.xml">
       <Filter>RPG Library</Filter>
     </Xml>
   </ItemGroup>

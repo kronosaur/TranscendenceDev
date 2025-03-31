@@ -1,0 +1,129 @@
+<?xml version="1.0" ?>
+
+<TranscendenceModule>
+
+	<!-- Level 5: T31 Armed Transport -->
+
+	<ShipClass UNID="&HS_scT31PlayerL5;"
+			manufacturer=		"United African States"
+			class=				"T31"
+			type=				"armed transport"
+
+			attributes=			"blackMarket, playerClass, shipBroker"
+			inherit=			"&HS_scT31ArmedTransport;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itHardenedPlasteelPlate;"
+			/>
+		
+		<Devices>
+			<Device item="&HS_itBallistaTurret;"/>
+			<Device item="&HS_itMAGLauncher;">
+				<Items>
+					<Item count="12d20" item="&HS_it800HexageneMAG;"/>
+					<Item count="12d20" item="&HS_it600HexageneMAG;"/>
+				</Items>
+			</Device>
+
+			<Device item="&HS_itYoroiS100;"/>
+			<Device item="&HS_it100MWReactor;"/>
+			<Device item="&HS_itSmugglersCargoHold;"/>
+		</Devices>
+
+		<Items>
+		</Items>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"This competitor to the EI200 class includes 4 weapon slots."
+			/>
+		
+	</ShipClass>
+
+	<!-- Level 6: Molotok/A Heavy Gunship -->
+
+	<ShipClass UNID="&HS_scMolotokAPlayerL6;"
+			manufacturer=		"Makayev-Energia"
+			class=				"Molotok/A"
+			type=				"heavy gunship"
+
+			attributes=			"blackMarket, playerClass, makayev, shipBroker"
+			inherit=			"&HS_scMolotokA;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itHeavyMarkIOmskArmor;"
+			/>
+		
+		<Devices>
+			<Device item="&HS_itMarkIIIHowitzer;"/>
+			<Device item="&HS_itDragonflyMissileSystem;">
+				<Items>
+					<Item count="12d20" item="&HS_itDragonflyCartridge;"/>
+				</Items>
+			</Device>
+
+			<Device item="&HS_itOmskDeflectorI;"/>
+			<Device item="&HS_it150MWReactor;"/>
+			<Device item="&HS_itSmugglersCargoHold;"/>
+		</Devices>
+
+		<Items>
+		</Items>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The Molotok class is preferred by bounty hunters for its versatility."
+			/>
+		
+	</ShipClass>
+
+	<!-- Level 8: Molotok/B Heavy Gunship -->
+
+	<ShipClass UNID="&HS_scMolotokBPlayerL8;"
+			manufacturer=		"Makayev-Energia"
+			class=				"Molotok/B"
+			type=				"heavy gunship"
+
+			attributes=			"blackMarket, playerClass, makayev, shipBroker"
+			inherit=			"&HS_scMolotokB;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itOrthoSteel;"
+			/>
+		
+		<Devices>
+			<Device item="&HS_itFusionfireHowitzer;"/>
+			<Device item="&HS_itDragonflyMissileSystem;">
+				<Items>
+					<Item count="12d20" item="&HS_itDragonflyCartridge;"/>
+				</Items>
+			</Device>
+
+			<Device item="&HS_itPlasmaShieldGenerator;"/>
+			<Device item="&HS_it500MWReactor;"/>
+			<Device item="&HS_itSmugglersCargoHold;"/>
+		</Devices>
+
+		<Items>
+		</Items>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The Molotok class is preferred by bounty hunters for its versatility."
+			/>
+		
+	</ShipClass>
+
+</TranscendenceModule>

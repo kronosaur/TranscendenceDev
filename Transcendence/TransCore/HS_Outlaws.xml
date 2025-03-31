@@ -1,0 +1,1213 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- Outlaws ============================================================== -->
+
+	<Sovereign UNID="&HS_svOutlaw;"
+			name="Outlaws"
+			alignment="destructive order"
+			/>
+
+	<SystemMap unid="&HS_smOutlawSpace;"
+			displayOn="&HS_smHumanSpace;"
+			>
+		<TopologyProcessor priority="secondaryColony">
+			<System criteria="+humanSpace;"	attributes="outlawSpace"/>
+		</TopologyProcessor>
+	</SystemMap>
+
+<!-- ENCOUNTERS -->
+
+	<!-- Outlaw Convoy Encounter -->
+
+	<StationType UNID="&HS_stOutlawConvoyEncounter;"
+			name=				"(outlaw convoy)"
+			sovereign=			"&HS_svIndependentTrader;"
+
+			attributes=			"debris, envWater, envAvoidsEarth, friendly, outlaw"
+
+			abandonedScreen=			"&RPG_dsRPGAbandonedStation;"
+
+			scale=				"ship"
+			size=				"20"
+			mass=				"50"
+			structuralHitPoints="20"
+
+			mobile=				"true"
+			noMapIcon=			"true"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+outlawSpace;"
+				systemAffinity=			"+envWater; -envEarth;"
+				levelFrequency=			"uuurv ----- ----- ----- -----"
+
+				locationCriteria=		"--planetary"
+				/>
+
+		<Names>abandoned cargo container</Names>
+
+		<!-- Items -->
+
+		<Items>
+			<Table>
+				<Null	chance="20"/>
+				<Lookup chance="30" count="1d3" table="&HS_trConsumables1;"/>
+				<Lookup chance="15" count="1"	table="&HS_trConsumables2;"/>
+				<Lookup chance="25" count="1"	table="&HS_trMinorItem1;"/>
+				<Lookup chance="10" count="1"	table="&HS_trMajorItem1;"/>
+			</Table>
+		</Items>
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<LevelTable>
+				<Ship	levelFrequence="ccuv- -----"	count="1"	class="&HS_scT31ArmedTransport;"	orders="tradeRoute"	sovereign="&HS_svBlackMarket;">
+					<Items>
+						<Table value="standard:level=2">
+							<Lookup	chance="60"	count="1"	table="&HS_trIllegalItems2;"/>
+							<Lookup chance="30"	count="1"	table="&HS_trStdTreasure;"/>
+						</Table>
+					</Items>
+
+					<Escorts>
+						<Ship     count="1d4"	class="&HS_scZulu;"	orders="escort"/>
+					</Escorts>
+				</Ship>
+				<Ship	levelFrequence="-rcuv -----"	count="1"	class="&HS_scT31ArmedTransport;"	orders="tradeRoute"	sovereign="&HS_svBlackMarket;">
+					<Items>
+						<Table value="standard:level=3">
+							<Lookup	chance="60"	count="1"	table="&HS_trIllegalItems2;"/>
+							<Lookup chance="30"	count="1"	table="&HS_trStdTreasure;"/>
+						</Table>
+					</Items>
+
+					<Escorts>
+						<Ship     count="1d4"	class="&HS_scZulu-II;"	orders="escort"/>
+					</Escorts>
+				</Ship>
+				<Ship	levelFrequence="--rcu vvvvv"	count="1"	class="&HS_scT55ArmedTransport;"	orders="tradeRoute"	sovereign="&HS_svBlackMarket;">
+					<Items>
+						<Table value="standard:level=3">
+							<Lookup	chance="60"	count="1"	table="&HS_trIllegalItems3;"/>
+							<Lookup chance="30"	count="1"	table="&HS_trStdTreasure;"/>
+						</Table>
+					</Items>
+
+					<Escorts>
+						<Ship     count="2d4"	class="&HS_scZulu-II;"	orders="escort"/>
+					</Escorts>
+				</Ship>
+			</LevelTable>
+		</Ships>
+
+		<!-- Image and Effects
+		
+			Abandoned containers are mostly yellow, with a small chance of other
+			colors.
+
+		-->
+
+		<ImageVariants>
+			<Image	imageID="&HS_rsCargoContainer;"	imageX="0"   imageY="112" imageWidth="56" imageHeight="56" viewportRatio="0.00406"/>
+			<Image	imageID="&HS_rsCargoContainer;"	imageX="56"  imageY="112" imageWidth="56" imageHeight="56" viewportRatio="0.00406"/>
+			<Image	imageID="&HS_rsCargoContainer;"	imageX="112" imageY="112" imageWidth="56" imageHeight="56" viewportRatio="0.00406"/>
+			<Image	imageID="&HS_rsCargoContainer;"	imageX="168" imageY="112" imageWidth="56" imageHeight="56" viewportRatio="0.00406"/>
+			<Image	imageID="&HS_rsCargoContainer;"	imageX="224" imageY="112" imageWidth="56" imageHeight="56" viewportRatio="0.00406"/>
+			<Image	imageID="&HS_rsCargoContainer;"	imageX="280" imageY="112" imageWidth="56" imageHeight="56" viewportRatio="0.00406"/>
+			<Image	imageID="&HS_rsCargoContainer;"	imageX="336" imageY="112" imageWidth="56" imageHeight="56" viewportRatio="0.00406"/>
+			<Image	imageID="&HS_rsCargoContainer;"	imageX="392" imageY="112" imageWidth="56" imageHeight="56" viewportRatio="0.00406"/>
+
+			<Image	imageID="&HS_rsCargoContainer;"	imageX="0"   imageY="0"   imageWidth="56" imageHeight="56" viewportRatio="0.00406"/>
+			<Image	imageID="&HS_rsCargoContainer;"	imageX="224" imageY="56"  imageWidth="56" imageHeight="56" viewportRatio="0.00406"/>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"50"
+				maxDist=		"3"
+				/>
+
+		<!-- Events and Data -->
+
+		<Events>
+			<GetExplosionType>
+				(intContainerGetExplosionType gSource)
+			</GetExplosionType>
+
+			<OnDamage>
+				(intContainerOnDamage gSource aDamageHP)
+			</OnDamage>
+		</Events>
+	</StationType>
+
+	<!-- Level 1: Outlaw Camp -->
+
+	<StationType UNID="&HS_stOutlawBase;"
+			name=				"outlaw camp"
+			sovereign=			"&HS_svOutlaw;"
+
+			level=				"1"
+			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlaws, outlawSmugglers, populated"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			size=				"69"
+			explosionType=		"&CORE_vtKineticExplosion1;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+outlawSpace;"
+				systemAffinity=			"+envWater; -envEarth;"
+				levelFrequency=			"ucv-- ----- ----- ----- -----"
+
+				locationCriteria=		"--innerSystem, +planetary"
+				/>
+
+		<!-- Treasure and Items -->
+
+		<Items>
+			<Lookup chance="25" count="1d2" table="&HS_trIllegalItems1;"/>
+			<Table chance="50">
+				<Lookup chance="40" count="1" table="&HS_trConsumables2;"/>
+				<Lookup chance="40" count="1" table="&HS_trMinorItem2;"/>
+				<Lookup chance="20" count="1" table="&HS_trMajorItem2;"/>
+			</Table>
+		</Items>
+
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&HS_itLightCeramicPlate;"
+				hitPoints=		"50"
+				/>
+		
+		<Devices>
+			<Device deviceID="&HS_itRecoillessCannon;"	posAngle="0" posRadius="0" posZ="56" omnidirectional="true" missileDefense="true" />
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Squadron table="&HS_tbOutlawDefenders;"	count="challenge:standard"	reinforce="auto"/>
+
+		<!-- Images and Effects -->
+
+		<Image imageID="&HS_rsOutlawCamp;"			imageWidth="96" imageHeight="96"	viewportRatio="0.009375"/>
+
+		<DockingPorts
+				portAngle=		"-15"
+				portCount=		"8"
+				portRadius=		"60"
+				/>
+
+		<!-- Random Encounters -->
+
+		<Encounters frequency="common">
+			<Lookup table="&HS_tbOutlawEncounters;"/>
+		</Encounters>
+
+		<!-- Events and Data -->
+
+		<Events>
+			<GetRumors>
+				{
+					attributes: "commonwealthPub"
+					priority: 11
+					textID: 'rumor.commonwealthPub
+					}
+			</GetRumors>
+		</Events>
+
+		<Language>
+			<Text id="rumor.commonwealthPub">
+				You spend 5 credits on drinks. A young stationer next to you
+				comments that its a lot easier to get laudanum now that the
+				Outlaw base is in the system.
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Level 2: Outlaw Base -->
+
+	<StationType UNID="&HS_stOutlawBase2;"
+			name=				"outlaw base"
+			sovereign=			"&HS_svOutlaw;"
+
+			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlaws, outlawSmugglers, populated"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			size=				"186"
+			fireRateAdj=		"30"
+			explosionType=		"&CORE_vtKineticExplosion2;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+outlawSpace;"
+				systemAffinity=			"+envWater; -envEarth;"
+				levelFrequency=			"vcr-- ----- ----- ----- -----"
+
+				locationCriteria=		"--innerSystem, +planetary"
+				/>
+
+		<!-- Treasure and Items -->
+
+		<Items>
+			<Lookup					count="1d2" table="&HS_trIllegalItems1;"/>
+			<Table chance="50">
+				<Lookup chance="40" count="1" table="&HS_trConsumables3;"/>
+				<Lookup chance="40" count="1" table="&HS_trMinorItem3;"/>
+				<Lookup chance="20" count="1" table="&HS_trMajorItem3;"/>
+			</Table>
+		</Items>
+
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&HS_itCeramicPlate;"
+				hitPoints=		"90"
+				regen=			"1"
+				/>
+		
+		<Devices>
+			<Device deviceID="&HS_itHeavyRecoillessCannon;"	posAngle="-15" posRadius="40" posZ="20"	fireAngle="-15" fireArc="200"	missileDefense="true" />
+			<Device deviceID="&HS_itHeavyRecoillessCannon;"	posAngle="165" posRadius="40" posZ="20"	fireAngle="165" fireArc="200"	missileDefense="true" />
+		</Devices>
+
+		<!-- Ships and Defense -->
+
+		<Squadron table="&HS_tbOutlawDefenders;"	count="challenge:standard"	reinforce="auto"/>
+
+		<!-- Images and Effects -->
+
+		<Image imageID="&HS_rsOutlawBase;"			imageWidth="186" imageHeight="186"	viewportRatio="0.025"/>
+
+		<DockingPorts
+				portAngle=		"-15"
+				portCount=		"8"
+				portRadius=		"110"
+				/>
+
+		<!-- Random Encounters -->
+
+		<Encounters frequency="common">
+			<Lookup table="&HS_tbOutlawEncounters;"/>
+		</Encounters>
+
+	</StationType>
+
+	<!-- Level 3: Outlaw Haven -->
+
+	<StationType UNID="&HS_stOutlawHaven;"
+			name=				"outlaw haven"
+			sovereign=			"&HS_svOutlaw;"
+
+			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlawHaven, outlaws, outlawSmugglers, populated"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			size=				"200"
+			fireRateAdj=		"20"
+			explosionType=		"&CORE_vtKineticExplosion3;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+outlawSpace;"
+				systemAffinity=			"+envWater; -envEarth;"
+				levelFrequency=			"-vcr- ----- ----- ----- -----"
+
+				locationCriteria=		"+outerSystem, +planetary"
+				enemyExclusionRadius=	"100"
+				/>
+
+		<!-- Treasure and Items -->
+
+		<Items>
+			<Table>
+				<Lookup chance="40" count="1" table="&HS_trConsumables3;"/>
+				<Lookup chance="40" count="1" table="&HS_trMinorItem3;"/>
+				<Lookup chance="20" count="1" table="&HS_trMajorItem3;"/>
+			</Table>
+		</Items>
+
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&HS_itHeavyCeramicPlate;"
+				hitPoints=		"250"
+				regen=			"5"
+				/>
+		
+		<Devices>
+			<Device deviceID="&HS_itArbalestCannon;"	posAngle="30"  posRadius="40" posZ="20"	fireAngle="30"  fireArc="180"	missileDefense="true" />
+			<Device deviceID="&HS_itArbalestCannon;"	posAngle="120" posRadius="40" posZ="20"	fireAngle="120" fireArc="180"	missileDefense="true" />
+			<Device deviceID="&HS_itArbalestCannon;"	posAngle="210" posRadius="40" posZ="20"	fireAngle="210" fireArc="180"	missileDefense="true" />
+			<Device deviceID="&HS_itArbalestCannon;"	posAngle="300" posRadius="40" posZ="20"	fireAngle="300" fireArc="180"	missileDefense="true" />
+		</Devices>
+
+		<!-- Ships and Defense -->
+
+		<Squadrons>
+			<Squadron table="&HS_tbOutlawDefenders;"		count="challenge:standard"		reinforce="auto"/>
+			<Squadron table="&HS_tbOutlawTransports;"		count="1d2"						reinforce="auto"/>
+		</Squadrons>
+
+		<!-- Images and Effects -->
+
+		<Image imageID="&HS_rsOutlawHaven;"			imageWidth="200" imageHeight="200"	viewportRatio="0.0275"/>
+
+		<DockingPorts
+				portAngle=		"-15"
+				portCount=		"8"
+				portRadius=		"115"
+				/>
+
+		<!-- Random Encounters -->
+
+		<Encounters frequency="common">
+			<Lookup table="&HS_tbOutlawEncounters;"/>
+		</Encounters>
+
+	</StationType>
+
+<!-- SHIP CLASSES -->
+
+	<!-- Level 1: Zulu-class Gunship -->
+
+	<ShipClass UNID="&HS_scZulu;"
+			manufacturer=		"United African States"
+			class=				"Zulu"
+			type=				"gunship"
+			defaultSovereign=	"&HS_svOutlaw;"
+
+			attributes=			"genericClass, outlaws"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"24"
+			mass=				"25"
+			cargoSpace=			"5"
+			maxCargoSpace=		"25"
+			maxDevices=			"6"
+
+			maxReactorPower=	"10000"
+
+			maxArmor=			"medium"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"200"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"9.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itLightCeramicPlate;"
+			count=				"2"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itRecoillessCannon;"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&HS_rsZuluHD;" imageX="0" imageY="0" imageWidth="55" imageHeight="55" rotationCount="120" rotationColumns="12" viewportRatio="0.0040625"/>
+		<HeroImage imageID="&HS_rsZuluHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="150"	posRadius="20"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-150"	posRadius="20"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			fireRateAdj=		"50"
+			fireRangeAdj=		"50"
+			fireAccuracy=		"80"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 2: Zulu II-class Gunship -->
+
+	<ShipClass UNID="&HS_scZulu-II;"
+			manufacturer=		"United African States"
+			class=				"Zulu II"
+			type=				"gunship"
+			defaultSovereign=	"&HS_svOutlaw;"
+
+			attributes=			"genericClass, outlaws"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"24"
+			mass=				"25"
+			cargoSpace=			"5"
+			maxCargoSpace=		"25"
+			maxDevices=			"6"
+
+			maxReactorPower=	"10000"
+
+			maxArmor=			"medium"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"200"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itLightCeramicPlate;"
+			count=				"2"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itHeavyRecoillessCannon;"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"9.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsZulu2HD;" imageX="0" imageY="0" imageWidth="55" imageHeight="55" rotationCount="120" rotationColumns="12" viewportRatio="0.0040625"/>
+		<HeroImage imageID="&HS_rsZulu2Hero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="150"	posRadius="20"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-150"	posRadius="20"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"30"
+			fireRangeAdj=		"70"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 3: Oromo-class Gunship -->
+
+	<ShipClass UNID="&HS_scOromo;"
+			manufacturer=		"United African States"
+			class=				"Oromo"
+			type=				"heavy gunship"
+			defaultSovereign=	"&HS_svOutlaw;"
+
+			attributes=			"genericClass, outlaws"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"53"
+			mass=				"500"
+			cargoSpace=			"100"
+			maxCargoSpace=		"500"
+			maxDevices=			"8"
+
+			maxReactorPower=	"10000"
+
+			maxArmor=			"heavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"2400"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"9.0"
+			rotationAccel=		"2.0"
+			/>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itHeavyCeramicPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itArbalestCannon;"/>
+		</Devices>
+
+		<Items>
+			<Item count="1d6" item="&HS_itHeliumAssembly;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&HS_rsOromoHD;" imageX="0" imageY="0" imageWidth="80" imageHeight="80" rotationCount="120" rotationColumns="12"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="37"	posZ="0"	rotation="180"	sendToBack="angles:0-60, 120-180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"30"
+			fireRangeAdj=		"50"
+			fireAccuracy=		"85"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+	</ShipClass>
+
+	<!-- Level 4: Oromo II-class Gunship -->
+
+	<ShipClass UNID="&HS_scOromoII;"
+			manufacturer=		"United African States"
+			class=				"Oromo II"
+			type=				"heavy gunship"
+			defaultSovereign=	"&HS_svOutlaw;"
+
+			attributes=			"genericClass, outlaws"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"53"
+			mass=				"500"
+			cargoSpace=			"100"
+			maxCargoSpace=		"500"
+			maxDevices=			"8"
+
+			maxReactorPower=	"10000"
+
+			maxArmor=			"heavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"2400"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"9.0"
+			rotationAccel=		"3.0"
+			/>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itPolyceramicPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itMoskvaDualCannon;"/>
+		</Devices>
+
+		<Items>
+			<Item count="1d6" item="&HS_itHeliumAssembly;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&HS_rsOromoHD;" imageX="0" imageY="0" imageWidth="80" imageHeight="80" rotationCount="120" rotationColumns="12"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="37"	posZ="0"	rotation="180"	sendToBack="angles:0-60, 120-180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"20"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+	</ShipClass>
+
+	<!-- Level 5: Sotho-class Gunship -->
+
+	<ShipClass UNID="&HS_scSotho;"
+			manufacturer=		"United African States"
+			class=				"Sotho"
+			type=				"heavy gunship"
+			defaultSovereign=	"&HS_svOutlaw;"
+
+			attributes=			"genericClass, outlaws"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"45"
+			mass=				"600"
+			cargoSpace=			"200"
+			maxCargoSpace=		"500"
+			maxDevices=			"8"
+
+			maxReactorPower=	"10000"
+
+			maxArmor=			"heavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"18"
+			thrust=				"2400"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"6.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itCeralloyArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itBallistaTurret;"	posAngle="180" posRadius="7" posZ="20"/>
+			<Device deviceID="&HS_itClass2Deflector;"/>
+		</Devices>
+
+		<Items>
+			<Item count="2d6" item="&HS_itXenotiteFuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&HS_rsSotho120;" imageWidth="72" imageHeight="72" rotationCount="120" rotationColumns="12" viewportRatio="0.00625"/>
+		<HeroImage imageID="&HS_rsSothoHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="164"	posRadius="30"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-164"	posRadius="30"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"40"
+			fireAccuracy=		"85"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+	</ShipClass>
+
+	<!-- Level 6: Sotho II-class Gunship -->
+
+	<ShipClass UNID="&HS_scSothoII;"
+			manufacturer=		"United African States"
+			class=				"Sotho II"
+			type=				"heavy gunship"
+			defaultSovereign=	"&HS_svOutlaw;"
+
+			attributes=			"genericClass, outlaws"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"45"
+			mass=				"600"
+			cargoSpace=			"200"
+			maxCargoSpace=		"500"
+			maxDevices=			"8"
+
+			maxReactorPower=	"10000"
+
+			maxArmor=			"heavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"18"
+			thrust=				"2400"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"6.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itHeavyCeralloyArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itMarkIHowitzerTurret;"	posAngle="180" posRadius="7" posZ="20"/>
+			<Device deviceID="&HS_itClass3Deflector;"/>
+		</Devices>
+
+		<Items>
+			<Item count="2d6" item="&HS_itXenotiteFuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&HS_rsSotho120;" imageWidth="72" imageHeight="72" rotationCount="120" rotationColumns="12" viewportRatio="0.00625"/>
+		<HeroImage imageID="&HS_rsSothoHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="164"	posRadius="30"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-164"	posRadius="30"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"25"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+	</ShipClass>
+
+	<!-- T31 Armed Transport -->
+
+	<ShipClass UNID="&HS_scT31ArmedTransport;"
+			manufacturer=		"United African States"
+			class=				"T31"
+			type=				"armed transport"
+			defaultSovereign=	"&HS_svOutlaw;"
+
+			attributes=			"freighter, genericClass, outlaws"
+			inherit=			"&HS_baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"60"
+			mass=				"600"
+			cargoSpace=			"600"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"600"
+			maxDevices=			"10"
+			maxWeapons=			"4"
+
+			maxArmor=			"superHeavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"16"
+			thrust=				"1000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"6.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="20"/>
+			<DeviceSlot criteria="c" cannotBeEmpty="true"/>
+		</DeviceSlots>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itLightPlasteelPlate;"
+			count=				"6"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itSmartCannon;">
+				<Items>
+					<Item count="10d20" item="&HS_itSmartCannonShell;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itRecoillessCannon;"/>
+			<Device deviceID="&HS_itCargoHoldExpansion;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="1d6" item="&CORE_itHelium3FuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsT31Transport;" imageWidth="90" imageHeight="90" rotationCount="120" rotationColumns="12" viewportRatio="0.008125"/>
+		<HeroImage imageID="&HS_rsT31TransportHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="164"	posRadius="41"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-164"	posRadius="41"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"40"
+			fireAccuracy=		"85"
+			perception=			"4"
+			/>
+
+	</ShipClass>
+
+	<!-- T55 Armed Transport -->
+
+	<ShipClass UNID="&HS_scT55ArmedTransport;"
+			manufacturer=		"United African States"
+			class=				"T55"
+			type=				"armed transport"
+			defaultSovereign=	"&HS_svOutlaw;"
+
+			attributes=			"freighter, genericClass, outlaws"
+			inherit=			"&HS_baHumanTechShip;"
+			   
+			size=				"95"
+			mass=				"900"
+			thrustRatio=		"1.1"
+			maxSpeed=			"16"
+			cargoSpace=			"1500"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"93"
+			mass=				"900"
+			cargoSpace=			"2000"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"1000"
+			maxDevices=			"6"
+
+			maxArmor=			"superHeavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"16"
+			thrust=				"1000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"6.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itPlasteelPlate;"
+			count=				"8"
+			/>
+
+		<Devices>
+			<Device deviceID="&CORE_itBallistaCannon;" omnidirectional="true"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="1d6" item="&HS_itHeliumAssembly;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsT55Transport;" imageWidth="114" imageHeight="114" rotationCount="120" rotationColumns="12" viewportRatio="0.01225"/>
+		<HeroImage imageID="&HS_rsT55TransportHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="170"	posRadius="54"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-170"	posRadius="54"	posZ="0"	rotation="180"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"30"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"standoff"
+			/>
+
+	</ShipClass>
+
+<!-- ITEM TYPES -->
+
+	<!-- Level 5: Ballista Turret -->
+
+	<ItemType UNID="&HS_itBallistaTurret;"
+			name=				"Ballista turret"
+			attributes=			"majorItem, outlaws, NAMI"
+			  
+			level=				"5"
+			frequency=			"veryrare"
+
+			value=				"13000"
+			mass=				"8000"
+			  
+			description=		"Outlaw engineers have mounted a Ballista cannon on an RK15 mount."
+			>
+
+		<Image imageID="&HS_rsItemsNAMI3;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				omnidirectional=	"true"
+				damage=				"kinetic:14d8; momentum:5; WMD:5"
+				fireRate=			"50"
+				missileSpeed=		"45"
+				lifetime=			"67"
+				powerUse=			"200"
+
+				effect=				"&CORE_efKineticBoltDefault;"
+				sound=				"&CORE_snRecoillessCannon;"
+				>
+		</Weapon>
+	</ItemType>
+
+	<!-- Level 6: Mark I Howitzer Turret -->
+
+	<ItemType UNID="&HS_itMarkIHowitzerTurret;"
+			name=				"mark I howitzer turret"
+			attributes=			"howitzer, majorItem, makayev, outlaws"
+			  
+			level=				"6"
+			frequency=			"veryrare"
+
+			value=				"24000"
+			mass=				"6500"
+			  
+			description=		"This is a mark I howitzer on an omnidirectional turret."
+			>
+
+		<Image imageID="&HS_rsItemsMakayev1;" imageX="288" imageY="192" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				omnidirectional=	"true"
+				damage=				"blast:5d12; momentum:3; WMD:4"
+				fireRate=			"50"
+				missileSpeed=		"50"
+				lifetime=			"120"
+				powerUse=			"280"
+				recoil=				"2"
+
+				effect=				"&CORE_efBlastShellDefault;"
+				sound=				"&CORE_snRecoillessCannon;"
+				>
+		</Weapon>
+
+	</ItemType>
+
+<!-- TABLES -->
+
+	<ShipTable unid="&HS_tbOutlawDefenders;">
+		<LevelTable>
+			<Ship levelFrequency="cv--- -----"	count="1"	class="&HS_scZulu;"		orders="guard"/>
+			<Ship levelFrequency="ucv-- -----"	count="1"	class="&HS_scZulu-II;"		orders="guard"/>
+			<Ship levelFrequency="-ucv- -----"	count="1"	class="&HS_scOromo;"		orders="guard"/>
+			<Ship levelFrequency="--ucv -----"	count="1"	class="&HS_scOromoII;"		orders="guard"/>
+			<Ship levelFrequency="---uc v----"	count="1"	class="&HS_scSotho;"		orders="guard"/>
+			<Ship levelFrequency="----u cv---"	count="1"	class="&HS_scSothoII;"		orders="guard"/>
+		</LevelTable>
+	</ShipTable>
+
+	<ShipTable unid="&HS_tbOutlawTransports;">
+		<LevelTable>
+			<Ship levelFrequency="cccur -----" class="&HS_scT31ArmedTransport;"	count="1" orders="gateOnThreat">
+				<Items>
+					<Group value="standard:level=3:x=1.3">
+						<Lookup				count="1d2+1" table="&HS_trIllegalItems2;"/>
+						<Lookup chance="50"	count="1"	table="&HS_trStdTreasure;"/>
+					</Group>
+				</Items>
+			</Ship>
+			<Ship levelFrequency="--ucu r----" class="&HS_scT55ArmedTransport;"	count="1" orders="gateOnThreat">
+				<Items>
+					<Group value="standard:level=4:x=1.3">
+						<Lookup				count="1d2+1" table="&HS_trIllegalItems3;"/>
+						<Lookup chance="50"	count="1"	table="&HS_trStdTreasure;"/>
+					</Group>
+				</Items>
+			</Ship>
+			<Ship levelFrequency="---uc ur---" class="&HS_scT55ArmedTransport;"	count="1" orders="gateOnThreat">
+				<Escorts>
+					<Ship					   count="1d4"	class="&HS_scOromo;" orders="escort"/>
+				</Escorts>
+
+				<Items>
+					<Group value="standard:level=4:x=1.3">
+						<Lookup				count="1d2+1" table="&HS_trIllegalItems3;"/>
+						<Lookup chance="50"	count="1"	table="&HS_trStdTreasure;"/>
+					</Group>
+				</Items>
+			</Ship>
+		</LevelTable>
+	</ShipTable>
+
+	<ShipTable UNID="&HS_tbOutlawEncounters;">
+		<LevelTable>
+			<Ship levelFrequency="ucv-- -----" count="1"	class="&HS_scZulu;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Ship					   count="1d2"	class="&HS_scZulu;" orders="escort"/>
+				</Escorts>
+			</Ship>
+
+			<Ship levelFrequency="-cuv- -----" count="1"	class="&HS_scZulu-II;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Ship					   count="1d4"	class="&HS_scZulu;" orders="escort"/>
+				</Escorts>
+			</Ship>
+
+			<Ship levelFrequency="-cuv- -----" count="1"	class="&HS_scOromo;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Table>
+						<Ship chance="20"	   count="1d4"	class="&HS_scZulu;" orders="escort"/>
+						<Ship chance="40"	   count="1d2"	class="&HS_scZulu-II;" orders="escort"/>
+						<Ship chance="40"	   count="1"	class="&HS_scOromo;" orders="escort"/>
+					</Table>
+				</Escorts>
+			</Ship>
+
+			<Ship levelFrequency="-rcur -----" count="1"	class="&HS_scZulu-II;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Ship					   count="1d3"	class="&HS_scZulu-II;" orders="escort"/>
+					<Ship					   count="1d8"	class="&HS_scZulu;" orders="escort"/>
+				</Escorts>
+			</Ship>
+
+			<Ship levelFrequency="-rcur -----" count="1"	class="&HS_scOromo;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Table>
+						<Ship chance="30"	   count="1d8"	class="&HS_scZulu;" orders="escort"/>
+						<Ship chance="30"	   count="1d4"	class="&HS_scZulu-II;" orders="escort"/>
+						<Ship chance="40"	   count="1d2"	class="&HS_scOromo;" orders="escort"/>
+					</Table>
+				</Escorts>
+			</Ship>
+
+			<Ship levelFrequency="-rcur -----" count="1"	class="&HS_scOromoII;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Table>
+						<Ship chance="40"	   count="1d6"	class="&HS_scZulu;" orders="escort"/>
+						<Ship chance="40"	   count="1d2"	class="&HS_scZulu-II;" orders="escort"/>
+						<Ship chance="10"	   count="1d2"	class="&HS_scOromo;" orders="escort"/>
+						<Ship chance="10"	   count="1"	class="&HS_scOromoII;" orders="escort"/>
+					</Table>
+				</Escorts>
+			</Ship>
+			
+			<Ship levelFrequency="ccurr -----" count="1"	class="&HS_scT31ArmedTransport;" eventHandler="&RPG_evStdConvoyEncounterBehavior;">
+				<Items>
+					<Lookup					count="1d2+1" table="&HS_trIllegalItems2;"/>
+					<Table>
+						<Lookup chance="40" count="1" table="&HS_trConsumables2;"/>
+						<Lookup chance="40" count="1" table="&HS_trMinorItem2;"/>
+						<Lookup chance="20" count="1" table="&HS_trMajorItem2;"/>
+					</Table>
+				</Items>
+
+				<Escorts>
+					<Ship					   count="1d4+2"	class="&HS_scZulu;" orders="escort"/>
+				</Escorts>
+			</Ship>
+
+			<Ship levelFrequency="ruccc -----" count="1"	class="&HS_scT31ArmedTransport;" eventHandler="&RPG_evStdConvoyEncounterBehavior;">
+				<Items>
+					<Lookup					count="1d8+1" table="&HS_trIllegalItems2;"/>
+					<Table count="1d2">
+						<Lookup chance="40" count="1" table="&HS_trConsumables2;"/>
+						<Lookup chance="40" count="1" table="&HS_trMinorItem2;"/>
+						<Lookup chance="20" count="1" table="&HS_trMajorItem2;"/>
+					</Table>
+				</Items>
+
+				<Escorts>
+					<Table>
+						<Ship chance="60"	   count="1d4+2"	class="&HS_scZulu-II;" orders="escort"/>
+						<Ship chance="40"	   count="1d3+1"	class="&HS_scOromo;" orders="escort"/>
+					</Table>
+				</Escorts>
+			</Ship>
+		</LevelTable>
+	</ShipTable>
+
+<!-- RESOURCES -->
+	
+	<Image UNID="&HS_rsOromo;"				bitmap="Resources\Oromo.jpg"		bitmask="Resources\OromoMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsSotho;"				bitmap="Resources\Sotho.jpg"		bitmask="Resources\SothoMask.bmp"  loadOnUse="true"/>
+
+	<Image UNID="&HS_rsSotho120;"			bitmap="Resources\Sotho120.jpg"		bitmask="Resources\Sotho120Mask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsSothoHero;"			bitmap="Resources\SothoLarge.jpg"		bitmask="Resources\SothoLargeMask.bmp"  loadOnUse="true"/>
+
+	<Image UNID="&HS_rsT31Transport;"		bitmap="Resources\T31TransportHD.jpg"		bitmask="Resources\T31TransportHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsT31TransportHero;"	bitmap="Resources\T31TransportLarge.jpg"		bitmask="Resources\T31TransportLargeMask.bmp"  loadOnUse="true"/>
+
+	<Image UNID="&HS_rsT55Transport;"		bitmap="Resources\T55TransportHD.jpg"		bitmask="Resources\T55TransportHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsT55TransportHero;"	bitmap="Resources\T55TransportLarge.jpg"		bitmask="Resources\T55TransportLargeMask.bmp"  loadOnUse="true"/>
+
+	<Image UNID="&HS_rsOromoHD;"			bitmap="Resources\OromoHD.jpg"			bitmask="Resources\OromoHDMask.bmp"  loadOnUse="true"/>
+
+	<Image UNID="&HS_rsZuluHD;"			bitmap="Resources\ZuluHD.jpg"			bitmask="Resources\ZuluHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsZuluHero;"			bitmap="Resources\ZuluLarge.jpg"			bitmask="Resources\ZuluLargeMask.bmp"  loadOnUse="true"/>
+
+	<Image UNID="&HS_rsZulu2HD;"			bitmap="Resources\Zulu2HD.jpg"			bitmask="Resources\Zulu2HDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsZulu2Hero;"			bitmap="Resources\Zulu2Large.jpg"			bitmask="Resources\Zulu2LargeMask.bmp"  loadOnUse="true"/>
+	
+	<Image UNID="&HS_rsOutlawCamp;"		bitmap="Resources\OutlawCamp.jpg"		bitmask="Resources\OutlawCampMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsOutlawBase;"		bitmap="Resources\OutlawBase.jpg"		bitmask="Resources\OutlawBaseMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsOutlawHaven;"		bitmap="Resources\OutlawHaven.jpg"		bitmask="Resources\OutlawHavenMask.bmp"  loadOnUse="true"/>
+
+</TranscendenceModule>

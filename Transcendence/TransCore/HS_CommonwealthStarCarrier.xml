@@ -1,0 +1,1724 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- CARRIERS -->
+
+	<!-- CSC America -->
+
+	<ShipClass UNID="&HS_scCSCAmerica;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, EI, fleetLaw, majorShip, military"
+			inherit=			"&HS_scCSCTaskForceStock;"
+
+			dockScreen=			"Main"
+			>
+
+		<Names>:the CSC America</Names>
+
+		<Properties>
+			<Definition id="csc.emblem">
+				(resCreateImageDesc &HS_rsFleetEmblems; 320 0 320 240)
+			</Definition>
+			<Definition id="csc.id">
+				'america
+			</Definition>
+		</Properties>
+
+		<Language>
+			<Text id="csc.captainsWelcome">
+
+				You talk to the captain of the CSC America:
+				
+				"The Ares have been ruthless. When we lost the CSC Europa, the 
+				damn Martians deliberately targeted the emergency capsules.
+				
+				"We taught them a lesson after that, though: we torched several 
+				of their communes."
+
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- CSC Arctica -->
+
+	<ShipClass UNID="&HS_scCSCArctica;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, EI, fleetLaw, majorShip, military"
+			inherit=			"&HS_scCSCSupportStock;"
+
+			dockScreen=			"Main"
+			>
+
+		<Names>:the CSC Arctica</Names>
+
+		<Properties>
+			<Definition id="csc.giftTable">
+				'(	; donation	item						count		unique
+					(10000		&HS_itPlasmaShieldGenerator;	1			'Gift1)
+					(5000		&HS_itInvincibleDeflector;		1			'Gift2)
+					(2500		&HS_itR5Deflector;				1			'Gift3)
+					(1250		&HS_itEMPImmuneCoating;		'armor		'Gift4)
+					(0			&HS_itKobeWater;				1			Nil)
+					)
+			</Definition>
+
+			<Definition id="csc.emblem">
+				(resCreateImageDesc &HS_rsFleetEmblems; 960 0 320 240)
+			</Definition>
+			<Definition id="csc.id">
+				'arctica
+			</Definition>
+		</Properties>
+
+		<Language>
+			<Text id="csc.captainsWelcome">
+
+				The captain of the CSC Arctica welcomes you aboard:
+				
+				"How are things going back in the Commonwealth? I haven't been 
+				to St. Katharine's in more than five years&mdash;had an amazing 
+				time at this little bar in the inner system.
+				
+				"You really should check it out&mdash;if you make it back, I mean."
+
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- CSC Asia -->
+
+	<ShipClass UNID="&HS_scCSCAsia;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, EI, fleetLaw, majorShip, military"
+			inherit=			"&HS_scCSCTaskForceStock;"
+
+			dockScreen=			"Main"
+			>
+
+		<Names>:the CSC Asia</Names>
+
+		<Properties>
+			<Definition id="csc.emblem">
+				(resCreateImageDesc &HS_rsFleetEmblems; 0 240 320 240)
+			</Definition>
+			<Definition id="csc.id">
+				'asia
+			</Definition>
+		</Properties>
+
+		<Language>
+			<Text id="csc.captainsWelcome">
+				
+				You talk to the captain of the CSC Asia:
+				
+				"When the Antarctica went rogue, Admiral Decker just about 
+				pissed acid. He was furious! He took it as a personal betrayal."
+
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- CSC Atlantica -->
+
+	<ShipClass UNID="&HS_scCSCAtlantica;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, EI, fleetLaw, majorShip, military"
+			inherit=			"&HS_scCSCTaskForceStock;"
+
+			dockScreen=			"Main"
+			>
+
+		<Names>:the CSC Atlantica</Names>
+
+		<Properties>
+			<Definition id="csc.emblem">
+				(resCreateImageDesc &HS_rsFleetEmblems; 320 240 320 240)
+			</Definition>
+			<Definition id="csc.id">
+				'atlantica
+			</Definition>
+		</Properties>
+
+		<Language>
+			<Text id="csc.captainsWelcome">
+
+				You talk to the captain of the CSC Atlantica:
+				
+				"This war has been tough on the troops. We've had to start 
+				scavenging for vital supplies. I'm not surprised that the 
+				discipline in some units has deteriorated."
+
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- CSC India -->
+
+	<ShipClass UNID="&HS_scCSCIndia;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, EI, fleetLaw, majorShip, military"
+			inherit=			"&HS_scCSCTaskForceStock;"
+
+			dockScreen=			"Main"
+			>
+
+		<Names>:the CSC India</Names>
+
+		<Properties>
+			<Definition id="csc.emblem">
+				(resCreateImageDesc &HS_rsFleetEmblems; 0 480 320 240)
+			</Definition>
+			<Definition id="csc.id">
+				'india
+			</Definition>
+		</Properties>
+
+		<Language>
+			<Text id="csc.captainsWelcome">
+				
+				You talk to the captain of the CSC India:
+				
+				"If you ever get back to the Commonwealth, you've got to tell 
+				them to send more ships. We're getting killed out here and I 
+				don't even know if anyone back home cares."
+
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- CSC Pacifica -->
+
+	<ShipClass UNID="&HS_scCSCPacifica;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, EI, fleetLaw, majorShip, military"
+			inherit=			"&HS_scCSCTaskForceStock;"
+
+			dockScreen=			"Main"
+			>
+
+		<Names>:the CSC Pacifica</Names>
+
+		<Properties>
+			<Definition id="csc.emblem">
+				(resCreateImageDesc &HS_rsFleetEmblems; 320 480 320 240)
+			</Definition>
+			<Definition id="csc.id">
+				'pacifica
+			</Definition>
+		</Properties>
+
+		<Language>
+			<Text id="csc.captainsWelcome">
+
+				You talk to the captain of the CSC Pacifica:
+				
+				"You ever meet a Martian? Not the meek little Syrtians&mdash;I 
+				mean the Ares clones. They all have this smug look of 
+				superiority that cranks me up.
+				
+				"They look better in the crosshairs of a TeV 9, that's for 
+				sure!"
+
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- CSC Sahara -->
+
+	<ShipClass UNID="&HS_scCSCSahara;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, EI, fleetLaw, majorShip, military"
+			inherit=			"&HS_scCSCSupportStock;"
+
+			dockScreen=			"Main"
+			>
+
+		<Names>:the CSC Sahara</Names>
+
+		<Properties>
+			<Definition id="csc.giftTable">
+				'(	; donation	item						count	unique
+					(10000		&HS_itMammoth100Deflector;		1		'Gift1)
+					(5000		&HS_itBlueEtheriumCrystal;		1		'Gift2)
+					(2500		&HS_itPatchSpider;				1		'Gift3)
+					(1250		&HS_itR1Deflector;				1		'Gift4)
+					(0			&HS_itEuropanIceVodka;			1		Nil)
+					)
+			</Definition>
+
+			<Definition id="csc.emblem">
+				(resCreateImageDesc &HS_rsFleetEmblems; 640 480 320 240)
+			</Definition>
+			<Definition id="csc.id">
+				'sahara
+			</Definition>
+		</Properties>
+
+		<Language>
+			<Text id="csc.captainsWelcome">
+
+				The captain of the CSC Sahara welcomes you aboard:
+				
+				"I hope you will be able to help our good doctor to obtain 
+				medical supplies. This damn war has made more invalids than 
+				heroes."
+
+			</Text>
+		</Language>
+	</ShipClass>
+
+<!-- BASE CLASSES -->
+
+	<!-- CSC (Stock)
+	
+		This base class defines the basic hull, including device slot placements.
+		All CSCs should descend from this, either directly or via another class.
+
+	-->
+
+	<ShipClass UNID="&HS_scCSCStock;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+			defaultSovereign=	"&HS_svCommonwealthFleet;"
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, EI, fleetLaw, majorShip, military"
+			inherit=			"&HS_baCSCBase;"
+			>
+		<Properties>
+			<DynamicData id="csc.emblemDesc">
+				{
+					type: 'image
+					image: (or (obj@ gSource 'csc.emblem) (eval (objGetStaticData gSource 'csc.emblem)))
+					align: '(center middle)
+					padding-bottom: 100
+					}
+			</DynamicData>
+
+			<!-- This is generally not used because we're not allowed to dock
+				without a military ID. But we add it here for completeness. -->
+
+			<Definition id="rpg.checkMilitaryID">"* +militaryID;"</Definition>
+
+			<Definition id="rpg.checkRadioactive">True</Definition>
+		</Properties>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"400"
+			mass=				"200000"
+			cargoSpace=			"5000"
+			cyberDefenseLevel=	"6"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"5000"
+			maxDevices=			"20"
+			/>
+
+		<Drive
+			maxSpeed=			"2"
+			thrust=				"100000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"1"
+			rotationAccel=		"0.1"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot id="w1"		criteria="w"	posAngle="0"   posRadius="98" posZ="-5"		fireAngle="0"   fireArc="200"	secondaryWeapon="true" />
+			<DeviceSlot id="w2"		criteria="w"	posAngle="90"  posRadius="98" posZ="-5"		fireAngle="90"  fireArc="200"	secondaryWeapon="true" />
+			<DeviceSlot id="w3"		criteria="w"	posAngle="-90" posRadius="98" posZ="-5"		fireAngle="-90" fireArc="200"	secondaryWeapon="true" />
+			<DeviceSlot id="w4"		criteria="w"	posAngle="180" posRadius="98" posZ="-5"		fireAngle="180" fireArc="200"	secondaryWeapon="true" />
+
+			<DeviceSlot id="omni1"	criteria="l"	posAngle="0"   posRadius="30" posZ="20"		omnidirectional="true" />
+			<DeviceSlot id="omni2"	criteria="d"	posAngle="180" posRadius="30" posZ="20"		omnidirectional="true" />
+		</DeviceSlots>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"600"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"200"
+
+					posX=		"-56"
+					posY=		"0"
+					sizeX=		"42"
+					sizeY=		"60"
+					/>
+		</Interior>
+		
+		<Wreck
+			explosionType=		"&CORE_vtPlasmaExplosion2;"
+			/>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itP1000HexphaseArmor;"
+			count=				"20"
+			/>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&rsCSCHD;" imageWidth="370" imageHeight="370" rotationCount="120" rotationColumns="12" viewportRatio="0.03"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="166"	posRadius="116"	posZ="-10"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="114"	posZ="-10"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-166"	posRadius="116"	posZ="-10"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+		</Effects>
+			
+		<DockingPorts>
+			<Port posAngle="90"   posRadius="105"  posZ="0" />
+			<Port posAngle="-90"  posRadius="105"  posZ="0" />
+
+			<Port posAngle="45"   posRadius="105"  posZ="0"	bringToFront="*"/>
+			<Port posAngle="135"  posRadius="105"  posZ="0"	bringToFront="*"/>
+			<Port posAngle="225"  posRadius="105"  posZ="0"	bringToFront="*"/>
+			<Port posAngle="315"  posRadius="105"  posZ="0"	bringToFront="*"/>
+		</DockingPorts>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"15"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+	</ShipClass>
+
+	<!-- CSC Support (Stock)
+
+		This class defines a standard CSC hospital ship (support ship).	
+		Descendants from this class must define the following data elements:
+
+		PROPERTIES
+
+		csc.emblem: Code to generate the ship's emblem.
+
+		STATIC DATA
+
+		csc.giftTable: Table of items to give as gifts.
+
+		LANGUAGE
+
+		csc.captainsWelcome: Text when player meets captain.
+	
+	-->
+
+	<ShipClass UNID="&HS_scCSCSupportStock;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+			defaultSovereign=	"&HS_svCommonwealthFleet;"
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, EI, fleetLaw, majorShip, military"
+			inherit=			"&HS_scCSCStock;"
+
+			dockScreen=			"Main"
+			>
+		<Properties>
+			<Definition id="csc.giftTable">
+				'(	; donation	item						count		unique
+					(10000		&HS_itPlasmaShieldGenerator;	1			'Gift1)
+					(5000		&HS_itInvincibleDeflector;		1			'Gift2)
+					(2500		&HS_itR5Deflector;				1			'Gift3)
+					(1250		&HS_itEMPImmuneCoating;		'armor		'Gift4)
+					(0			&HS_itKobeWater;				1			Nil)
+					)
+			</Definition>
+		</Properties>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itP1000HexphaseArmor;"
+			count=				"20"
+			/>
+		
+		<Devices>
+			<Device slotID="w1"		deviceID="&HS_itTeV9Blaster;" />
+			<Device slotID="w2"		deviceID="&HS_itTeV9Blaster;" />
+			<Device slotID="w3"		deviceID="&HS_itTeV9Blaster;" />
+			<Device slotID="w4"		deviceID="&HS_itTeV9Blaster;" />
+			
+			<Device slotID="omni2"	deviceID="&HS_itMissileDefense;" />
+			<Device					deviceID="&HS_vtDamageControlParty;"/>
+		</Devices>
+
+		<!-- Items and Trading -->
+
+		<Trade currency="credit">
+			<Sell	criteria="m +commonwealth; +military; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			
+			<Refuel			criteria="f +BasicFuel; L:1-9;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-9;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a L:1-9;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+		</Trade>
+		
+		<Items>
+			<Item				count="6d12"	item="&HS_itPteracniumFuelRod;"/>
+			
+			<!-- Some upgrades for sale -->
+			
+			<RandomItem count="1d3" criteria="r +commonwealth; -defective; -illegal; -notForSale; -notStandard; L:6-8;"		levelFrequency="systemLevel:ru|c|curv"/>
+			<Lookup count="8-12" table="&HS_tbCommonwealthFleetItems;"/>
+		</Items>
+
+		<!-- Dock Screens -->
+
+		<DockScreens>
+			<Main>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
+				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &HS_unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(scrSetDescTranslate gScreen 'descWelcome { shipName:(objGetName gSource 'article) })
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionInformation">
+								(scrShowScreen gScreen &RPG_dsRPGDialog; (objTranslate gSource 'csc.info))
+							</Action>
+
+							<Action id="actionBridge" default="1">
+								(block Nil
+									(scrShowScreen gScreen 'Bridge)
+								
+									; If see if we got promoted
+									(if (intFleetPromotion)
+										(scrShowScreen gScreen "&HS_dsFleetPromotion;")
+										)
+									)
+							</Action>
+
+							<Action id="actionInfirmary">
+								(scrShowScreen gScreen 'Infirmary)
+							</Action>
+
+							<Action id="actionDockServices">
+								(rpgDockServices gPlayerShip)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+
+			</Main>
+
+			<Bridge
+				name=			"Bridge"
+				>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
+				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &HS_unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(scrSetDescTranslate gScreen 'csc.captainsWelcome)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionLeave" default="1" cancel="1">
+								(scrShowScreen gScreen "Main")
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+
+			</Bridge>
+
+			<Infirmary
+				name=			"Infirmary"
+				>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
+				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &HS_unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
+				<Panes>
+					<Default descID="descInfirmary">
+						<Actions>
+							<Action id="actionTalkMedical" default="1">
+								(block (
+									; See if the player has any medical supplies
+									(medicalSupplies (objGetItems gPlayerShip "*U +Meds; -questItem; -notForSale;"))
+									)
+
+									(scrSetData gScreen 'medicalSupplies medicalSupplies)
+
+									(if medicalSupplies
+										(scrShowPane gScreen 'SellMedicalItems)
+										(scrShowPane gScreen 'NoMedicalItems)
+										)
+									)
+							</Action>
+
+							<!--
+							<Action name="Talk to patient" key="P">
+								</Action>
+								-->
+
+							<Action id="actionLeave" cancel="1">
+								(scrShowScreen gScreen "Main")
+							</Action>
+						</Actions>
+					</Default>
+
+					<NoMedicalItems descID="descNoMedicalItems">
+						<Actions>
+							<Action id="actionLeave" default="1" cancel="1">
+								(scrShowPane gScreen "Default")
+							</Action>
+						</Actions>
+
+					</NoMedicalItems>
+
+					<SellMedicalItems>
+						<OnPaneInit>
+							(block (
+								(medicalSupplies (scrGetData gScreen 'medicalSupplies))
+
+								; Figure out how much all the supplies cost
+
+								(totalCost (map medicalSupplies 'reduceSum theItem
+									; Offer 25% more
+									(divide (multiply 125 (itmGetPrice theItem 'credit) (itmGetCount theItem)) 100)
+									))
+								)
+								(scrSetData gScreen 'totalCost totalCost)
+
+								; Set the description
+
+								(if (= (count medicalSupplies) 1)
+
+									; Only one item
+									(scrSetDescTranslate gScreen 'descOffer {
+										cost: (fmtCurrency 'credit totalCost)
+										itemName: (itmGetName (item medicalSupplies 0) 'countOnly)
+										})
+
+									; Multiple items
+									(scrSetDescTranslate gScreen 'descOfferMultiple {
+										cost: (fmtCurrency 'credit totalCost)
+										itemListDesc: (strItemList medicalSupplies 'count)
+										})
+									)
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionSellItems" default="1">
+								(block (
+									(medicalSupplies (scrGetData gScreen 'medicalSupplies))
+									(totalCost (scrGetData gScreen 'totalCost))
+									)
+									; Remove the items from the cargo hold
+									(enum medicalSupplies theItem
+										(block ()
+											(objRemoveItem gPlayerShip theItem)
+											(plyRecordSellItem gPlayer theItem
+												(divide (multiply 125 (itmGetPrice theItem 'credit) (itmGetCount theItem)) 100)
+												)
+											)
+										)
+
+									; Pay the player
+									(plyCredit gPlayer totalCost)
+
+									; Done
+									(scrShowPane gScreen 'DoneSelling)
+									)
+							</Action>
+
+							<Action id="actionDonate">
+								(block (
+									(medicalSupplies (scrGetData gScreen 'medicalSupplies))
+									(totalCost (scrGetData gScreen 'totalCost))
+									)
+									; Remove the items from the cargo hold
+									(enum medicalSupplies theItem
+										(objRemoveItem gPlayerShip theItem)
+										)
+										
+									; Keep track of how much we donate
+									(typIncGlobalData &HS_svCommonwealthFleet; 'medsDonated totalCost)
+
+									; Player gets a gift depending on how much she donated
+									(scrShowPane gScreen 'Donate)
+									)
+							</Action>
+
+							<Action id="actionLeave" cancel="1">
+								(scrShowPane gScreen "Default")
+							</Action>
+						</Actions>
+					</SellMedicalItems>
+
+					<DoneSelling descID="descDoneSelling">
+						<Actions>
+							<Action id="actionLeave" default="1" cancel="1">
+								(scrShowPane gScreen "Default")
+							</Action>
+						</Actions>
+					</DoneSelling>
+
+					<Donate>
+						<OnPaneInit>
+							(block (
+								(totalCost (scrGetData gScreen 'totalCost))
+
+								; Get the gift table
+								(giftTable (obj@ gSource 'csc.giftTable))
+
+								gift fleetXP xpGain maxGain
+								)
+
+								; Find the appropriate gift based on the donation. The donation amount
+								; must be greater than the minimum for the gift and the gift must have
+								; not been given before (or the gift must not be unique).
+
+								(setq gift Nil)
+								(enumwhile giftTable (not gift) thisEntry
+									(if (and (geq totalCost (item thisEntry 0))
+											(or (not (item thisEntry 3)) (not (objGetData gSource (item thisEntry 3))))
+											)
+										(block (
+											(theType (@ thisEntry 1))
+											(countField (@ thisEntry 2))
+											(uniqueField (@ thisEntry 3))
+
+											(theCount
+												(switch
+													(= countField 'armor)
+														(obj@ gPlayerShip 'armorCount)
+
+													countField
+													)
+												)
+											)
+											(setq gift (itmCreate theType theCount))
+
+											; Remember that we gave this gift
+
+											(if uniqueField
+												(objSetData gSource uniqueField True)
+												)
+											)
+										)
+									)
+
+								; Describe the gift
+								(scrSetDescTranslate gScreen 'descGift {
+									itemName: (itmGetName gift '(actual count))
+									})
+
+								; Give the gift to the player
+								(objAddItem gPlayerShip gift)
+								(itmSetKnown gift)
+
+								; Figure out how much experience we could gain. We cannot gain more than
+								; 200xp or xp beyond 600 (Master Sergeant).
+								(setq fleetXP (objGetData gPlayerShip "fleetXP"))
+								(switch
+									(geq fleetXP 600)
+										(setq maxGain 0)
+
+									(geq fleetXP 400)
+										(setq maxGain (subtract 600 fleetXP))
+
+									(setq maxGain 200)
+									)
+
+								; Player gains experience at the rate of 1 xp per 10 credits
+								; up to a maximum
+								(setq xpGain (divide totalCost 10))
+								(if (gr xpGain maxGain)
+									(setq xpGain maxGain)
+									)
+
+								(objIncData gPlayerShip "fleetXP" xpGain)
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionDone" default="1" cancel="1">
+								(scrShowPane gScreen "Default")
+							</Action>
+						</Actions>
+					</Donate>
+				</Panes>
+			</Infirmary>
+		</DockScreens>
+
+		<Language>
+			<Text id="actionInformation">[I]nformation</Text>
+			<Text id="actionBridge">[B]ridge</Text>
+			<Text id="actionInfirmary">[M]edbay</Text>
+			<Text id="actionTalkMedical">Talk to [M]edical Officer</Text>
+			<Text id="actionDonate">[D]onate Items</Text>
+
+			<Text id="descWelcome">
+
+				You are in the docking bay of %shipName%.
+
+			</Text>
+			<Text id="descInfirmary">
+
+				You are in the main infirmary of a Commonwealth Star Carrier. 
+				Sleep-deprived technicians attend hundreds of patients in their 
+				rejuv tanks, mostly oblivious to the insistent medical alarms. 
+				
+				The smell of blood, wounds, and antiseptics smother you.
+
+			</Text>
+			<Text id="descNoMedicalItems">
+
+				The Medical Officer complains about how hard it is to get 
+				medical supplies this deep in space.
+				
+				"We're getting killed out here fighting the Ares and this is 
+				how the Commonwealth thanks us&mdash;no supplies, no 
+				reinforcements, nothing!"
+
+			</Text>
+			<Text id="descOffer">
+
+				"Welcome to the Infirmary, %sir%! We're in desperate need of 
+				medical supplies. I'm prepared to offer you %cost% for the 
+				%itemName% in your cargo hold.
+
+				"What do you say?"
+			
+			</Text>
+			<Text id="descOfferMultiple">
+
+				"Welcome to the Infirmary, %sir%! We are in desperate need of 
+				medical supplies. I'm prepared to offer you %cost% for all the 
+				medical items in your cargo hold:
+				
+				"%ItemListDesc%.
+				
+				"What do you say?"
+
+			</Text>
+			<String id="descDoneSelling">
+
+				"Thank you, those supplies are really going to help these troopers."
+
+			</String>
+			<Text id="descGift">
+
+				"Your generosity humbles me! When I was posted in the frontlines
+				I came across %itemName%. I would be honored if you would accept
+				it as a gift."
+			
+			</Text>
+
+			<Text id="textInfo1">
+			
+				The Commonwealth Star Carrier is the backbone of the Fleet, and 
+				our greatest asset in the war against the Ares. Twelve of these 
+				magnificent monsters were built in the 2350s, and most are 
+				still serving with distinction today.
+
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- CSC Task Force (Stock)
+	
+		This class defines a standard CSC Task Force ship (an active CSC on
+		patrol in the Outer Realm).
+
+		Descendants from this class must define the following data elements:
+
+		PROPERTIES
+
+		csc.emblem: Code to generate the ship's emblem.
+
+		LANGUAGE
+
+		csc.captainsWelcome: Text when player meets captain.
+	
+	-->
+
+	<ShipClass UNID="&HS_scCSCTaskForceStock;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+			defaultSovereign=	"&HS_svCommonwealthFleet;"
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, EI, fleetLaw, genericClass, majorShip, military"
+			inherit=			"&HS_scCSCStock;"
+
+			dockScreen=			"Main"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itP1000HexphaseArmor;"
+			count=				"20"
+			/>
+		
+		<Devices>
+			<Device slotID="w1"		deviceID="&HS_itSAR40Cannon;"/>
+			<Device slotID="w2"		deviceID="&HS_itSAR40Cannon;"/>
+			<Device slotID="w3"		deviceID="&HS_itSAR40Cannon;"/>
+			<Device slotID="w4"		deviceID="&HS_itSAR40Cannon;"/>
+			
+			<Device slotID="omni2"	deviceID="&HS_itMissileDefense;"/>
+			<Device					deviceID="&HS_vtDamageControlParty;"/>
+		</Devices>
+
+		<!-- Trade and Items -->
+
+		<Trade currency="credit">
+			<Sell	criteria="m +commonwealth; +military; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="500" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			
+			<Refuel			criteria="f +BasicFuel; L:1-9;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-10;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a L:1-10;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+		</Trade>
+
+		<Items>
+			<Item				count="6d12"	item="&HS_itPteracniumFuelRod;"/>
+			
+			<!-- Some upgrades for sale -->
+			
+			<RandomItem count="1d4" criteria="r +commonwealth; -defective; -illegal; -notForSale; -notStandard; L:6-9;"		levelFrequency="systemLevel:ru|c|curv"/>
+			<Lookup count="8-12" table="&HS_tbCommonwealthFleetItems;"/>
+		</Items>
+
+		<!-- Dock Screens -->
+
+		<DockScreens>
+			<Main>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
+				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &HS_unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(scrSetDescTranslate gScreen 'descWelcome { shipName:(objGetName gSource 'article) })
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionInformation">
+								(scrShowScreen gScreen &RPG_dsRPGDialog; (objTranslate gSource 'csc.info))
+							</Action>
+
+							<Action id="actionBridge" default="1">
+								(scrShowScreen gScreen "Bridge")
+							</Action>
+
+							<Action id="actionFlightDeck">
+								(scrShowScreen gScreen "FlightDeck")
+							</Action>
+
+							<Action id="actionDockServices">
+								(rpgDockServices gPlayerShip)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+
+			<Bridge
+				name=			"Bridge"
+				>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
+				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &HS_unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(scrSetDescTranslate gScreen 'csc.captainsWelcome)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionLeave" default="1" cancel="1">
+								(scrShowScreen gScreen "Main")
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+
+			</Bridge>
+
+			<FlightDeck
+				name=			"Flight Deck"
+				>
+				<OnScreenInit>
+					(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+				</OnScreenInit>
+				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &HS_unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(block (
+								(behavior (objGetData gSource "behavior"))
+								(rank (objGetData gPlayerShip "fleetLevel"))
+								)
+								
+								(switch
+									(eq behavior 'moving)
+										(scrSetDescTranslate gScreen 'descFlightDeckMoving {
+											shipName: (objGetName gSource 'article)
+											})
+											
+									(eq rank 1)
+										(scrSetDescTranslate gScreen 'descFlightDeck.rank.1 {
+											shipName: (objGetName gSource 'article)
+											})
+
+									(scrSetDescTranslate gScreen 'descFlightDeck {
+										shipName: (objGetName gSource 'article)
+										})
+									)
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionTalk" default="1">
+								(block (
+									(behavior (objGetData gSource "behavior"))
+									(rank (objGetData gPlayerShip "fleetLevel"))
+									)
+									(switch
+										(eq behavior 'moving)
+											(scrShowPane gScreen "ShipMoving")
+										
+										(rpgMissionAssignment {
+											missionCriteria: (cat "n +cscTaskForce; +rank" (int rank) "; =" (sysGetLevel) ";")
+											noMissionTextID: 'descNoMissions
+
+											rankDetails: (typTranslate &HS_unidCommonwealthFleet; 'rankDetails)
+											})
+										)
+									)
+							</Action>
+
+							<Action id="actionLeave" cancel="1">
+								(scrShowScreen gScreen "Main")
+							</Action>
+						</Actions>
+					</Default>
+					
+					<ShipMoving descID="descShipMoving">
+						<Actions>
+							<Action id="actionLeave" default="1" cancel="1">
+								(scrShowScreen gScreen "Main")
+							</Action>
+						</Actions>
+					</ShipMoving>
+				</Panes>
+			</FlightDeck>
+		</DockScreens>
+
+		<Language>
+			<Text id="actionBridge">[B]ridge</Text>
+			<Text id="actionFlightDeck">[F]light Deck</Text>
+			<Text id="actionTalk">Talk to E[x]ecutive Officer</Text>
+
+			<Text id="descWelcome">
+
+				You are in the docking bay of %shipName%.
+
+			</Text>
+
+			<String id="descNoMissions">
+
+				"Sorry, there are no missions available for you."
+
+			</String>
+			<Text id="csc.captainsWelcome">
+
+				The captain welcomes you aboard.
+
+			</Text>
+			<Text id="descFlightDeckMoving">
+
+				You are on the flight deck of %shipName%. The ship is on 
+				maneuvers and the XO is giving orders to the astrogator and the 
+				sensor chief.
+				
+			</Text>
+			<Text id="descFlightDeck.rank.1">
+
+				The flight deck of %shipName% hums with the activity of men and 
+				women working at terminals and holocharts. The XO is giving 
+				orders to a squadron out on a mission.
+				
+			</Text>
+			<Text id="descFlightDeck">
+
+				You are on the flight deck of %shipName%. Men and women work at 
+				terminals planning missions and communicating with squadrons on 
+				patrol. The XO is near a holochart, listening to a report.
+				
+			</Text>
+			<Text id="descShipMoving">
+
+				The XO is too busy to talk to you right now. He waves you away 
+				while he concentrates on the maneuvers.
+			
+			</Text>
+		</Language>
+
+	</ShipClass>
+
+<!-- BASE CLASSES -->
+
+	<!-- CSC Base Class
+	
+	EXTRA DATA
+	
+	behavior:			Ship's current behavior
+							Nil					= holding position and available for missions
+							'defendingCritical	= CSC is being attack by powerful enemy
+							'moving				= CSC is moving to a new position
+							
+	disableDefense:		If TRUE, then we don't deploy defenders (we use this when we want to
+						let the player handle it).
+
+	squadron:			Entries for each ship in the CSC's squadron.
+							Each entry in the squadron is a list:
+								0: objID
+								1: ship class
+								2: status:
+									'home
+									'deployed
+									'destroyed
+	
+	targetObj:			Target to destroy. If the CSC is in 'defendingCritical mode, then this
+						is the capital ship that is attacking it.
+						
+	-->
+
+	<Type UNID="&HS_baCSCBase;"
+			inherit="&RPG_unidCommonText;"
+			>
+		<Events>
+			<OnAttackedByPlayer>
+				(block Nil
+					(if (not (eq (shpGetOrder gSource) 'attackHold))
+						(shpOrderImmediate gSource 'attackHold gPlayerShip 10)
+						)
+					)
+			</OnAttackedByPlayer>
+
+			<OnBehavior>
+				(block (behavior attackerList)
+					(setq behavior (objGetData gSource "behavior"))
+					
+					(switch
+						(eq behavior 'defendingCritical)
+							Nil
+							
+						(eq behavior 'moving)
+							Nil
+
+						(block (attackerList highValueEnemies)
+							(switch
+								; If we don't have anyone attacking us, then there is
+								; nothing to do.
+								(not (setq attackerList (sysFindObject gSource "sAEPX")))
+									Nil
+									
+								; If we're not supposed to attack, then don't
+								(objGetData gSource "disableDefense")
+									Nil
+									
+								; If any of the attackers are level 9 or higher, then we need
+								; help. Deploy some Britannias.
+								(setq highValueEnemies (filter attackerList theObj (geq (objGetLevel theObj) 9)))
+									(block (theTarget )
+										(setq theTarget (random highValueEnemies))
+										(objSetObjRefData gSource "targetObj" theTarget)
+										(objRegisterForEvents gSource theTarget)
+
+										(for i 1 6
+											(block (theShip)
+												(setq theShip (cscSquadronDeployShip gSource &HS_scBritannia;))
+												(if theShip
+													(block Nil
+														(shpOrder theShip 'attack theTarget)
+														(shpOrder theShip 'attackNearestEnemy)
+														(shpOrder theShip 'gate gSource)
+														)
+													)
+												)
+											)
+
+										(objSetData gSource "behavior" 'defendingCritical)
+										)
+								)
+							)
+						)
+					)
+			</OnBehavior>
+
+			<OnCreate>
+				(block (
+					(cscID (obj@ gSource 'csc.id))
+					(cscStatus (typ@ &HS_svCommonwealthFleet; 'cscStatus))
+					(ourStatus (@ cscStatus cscID))
+					)
+					; (dbgOutput "Creating " (objGetName gSource) " in " (sysGetName) "           ")
+
+					;	Set our status
+
+					(set@ ourStatus 'nodeID (sysGetNode))
+					(set@ cscStatus cscID ourStatus)
+					(typSet@ &HS_svCommonwealthFleet; 'cscStatus cscStatus)
+
+					;	Are we in a good spot? If not, then we give orders to move
+
+					(fltOrderCheckPosition gSource)
+
+					;	Create the Britannia squadron
+
+					(for i 1 6
+						(cscSquadronCreateShip gSource &HS_scBritannia;)
+						)
+
+					;	Behavior event
+
+					(sysAddObjRecurringTimerEvent 90 gSource "OnBehavior")
+					)
+			</OnCreate>
+
+			<OnDestroy>
+				(block (
+					;	Remember original wreck obj because it might get
+					;	wiped by a call to objDestroy
+
+					(wreckObj aWreckObj)
+					(squadronList (objGetData gSource "squadron"))
+					)
+					; Destroy our squadron
+					(objSetData gSource "squadron" Nil)
+					(enum squadronList theEntry
+						(if (eq (item theEntry 2) 'home)
+							(objDestroy (objGetObjByID (item theEntry 0)))
+							)
+						)
+
+					; Commonwealth is mad too
+					(intCommonwealthOnDestroy)
+
+					; Destroy items on the wreck, because we don't want too much loot
+					(if wreckObj
+						(rpgDestroyItems wreckObj)
+						)
+
+					; Military will execute the player
+					(if (and gPlayerShip (eq aOrderGiver gPlayerShip))
+						(intFleetCrime 3 (cat "the destruction of " (objGetName gSource 'article)))
+						)
+					)
+			</OnDestroy>
+
+			<OnObjDestroyed>
+				(block (behavior theID theEntry squadronList)
+					(setq behavior (objGetData gSource "behavior"))
+					
+					(switch
+						; See if we destroyed the target
+						(and (eq behavior 'defendingCritical)
+								(eq aObjDestroyed (objGetObjRefData gSource "targetObj"))
+								)
+							(block Nil
+								(objSetData gSource "behavior" Nil)
+								)
+						
+						; If the ship entered a stargate, then ignore it
+						(eq aDestroyReason 'enteredStargate)
+							Nil
+						
+						; See if this is one of our gunships	
+						(setq theEntry (match (setq squadronList (objGetData gSource "squadron")) theEntry 
+								(eq (item theEntry 0) (setq theID (objGetID aObjDestroyed)))
+								))
+							(block Nil
+							
+								; Mark the entry as destroyed
+								(setq squadronList (map squadronList theEntry
+									(if (eq (item theEntry 0) theID)
+										(list theID (item theEntry 1) 'destroyed)
+										theEntry
+										)
+									))
+									
+								(objSetData gSource "squadron" squadronList)
+								
+								;(dbgOutput theID ": Destroyed")
+								)
+						)
+					)
+			</OnObjDestroyed>
+
+			<OnObjEnteredGate>
+				(block (theID theEntry squadronList)
+					(setq theID (objGetID aObj))
+					
+					(switch
+						(not (setq theEntry (match (setq squadronList (objGetData gSource "squadron")) theEntry (eq (item theEntry 0) theID))))
+							Nil
+							
+						(block Nil
+							; Repair and reload the ship
+							(intArmorRepairAll aObj 10)
+							(shpRechargeShield aObj)
+							(objFireEvent aObj "Reload")
+							
+							; Suspend object
+							(objSuspend aObj)
+							
+							; Mark the entry as home
+							(setq squadronList (map squadronList theEntry
+								(if (eq (item theEntry 0) theID)
+									(list theID (item theEntry 1) 'home)
+									theEntry
+									)
+								))
+								
+							(objSetData gSource "squadron" squadronList)
+
+							;(dbgOutput theID ": Returned to carrier")
+							)
+						)
+					)
+			</OnObjEnteredGate>
+			
+			<OnOrdersCompleted>
+				(block (behavior)
+					(setq behavior (objGetData gSource "behavior"))
+					(switch
+						(eq behavior 'moving)
+							(block Nil
+								(objSetProperty gSource 'dockingEnabled True)
+								(shpOrder gSource 'hold)
+								(objSetData gSource "behavior" Nil)
+								)
+
+						(block Nil
+							(shpOrder gSource 'hold)
+							(objSetData gSource "behavior" Nil)
+							)
+						)
+					)
+			</OnOrdersCompleted>
+		</Events>
+
+		<Language>
+			<Text id="core.deconDesc">
+
+				The dockmaster automatically charges you %cost% for 
+				decontaminating your ship.
+
+			</Text>
+			<Text id="core.deconFree">
+
+				The dockmaster decontaminates your ship for free.
+			
+			</Text>
+			<Text id="core.cannotAffordDecon">
+
+				The dockmaster stops your ship due to high radiation levels. 
+				
+				"Sorry, you cannot afford %cost% for decontamination."
+
+			</Text>
+
+			<Text id="csc.info">
+				(list
+					{	id: 'welcome
+						descID: 'textInfo1
+						actions: (list
+							{	labelID: 'actionOuterRealm			nextPage:'outerRealm	}
+							{	labelID: 'actionAresWar				nextPage:'aresWar	}
+							{	labelID: 'actionRogueFleet			nextPage:'rogueFleet	}
+							{	labelID: 'actionOurShips			nextPage:'code
+								code: (lambda ()
+									(scrShowScreen gScreen &RPG_dsRPGShipClassViewer; {
+										list: (list
+
+											;	NOTE: If you add items to the list, make sure
+											;	you add a description in the Language section.
+
+											{	shipClass:&HS_scCenturionM;	}
+											{	shipClass:&HS_scCenturionX;	}
+											{	shipClass:&HS_scBritannia;		}
+											{	shipClass:&HS_scMinotaurM;		}
+											{	shipClass:&HS_scAurochs;		}
+											{	shipClass:&HS_scScarabFreighter;		}
+											{	shipClass:&HS_scAquilaCruiser;	}
+											{	shipClass:&HS_scCSCTaskForceStock;		largeIconScale: 0.625 }
+											)
+										})
+									)
+								}
+							{	labelID: 'actionEnemyIntel			nextPage:'code
+								code: (lambda ()
+									(scrShowScreen gScreen &RPG_dsRPGShipClassViewer; {
+										list: (list
+
+											;	NOTE: If you add items to the list, make sure
+											;	you add a description in the Language section.
+
+											{	shipClass:&HS_scSandstorm;	}
+											{	shipClass:&HS_scTundra;	}
+											{	shipClass:&HS_scChasm;		}
+											{	shipClass:&HS_scPolar;		}
+											{	shipClass:&HS_scCometfall;	}
+											{	shipClass:&HS_scDeimos;	}
+											{	shipClass:&HS_scPhobos;	}
+
+											{	shipClass:&HS_scCenturionRogue;	}
+											{	shipClass:&HS_scCenturionXRogue;	}
+											{	shipClass:&HS_scRogueMineLayer;	}
+											)
+										})
+									)
+								}
+
+							{	labelID: 'actionDone				nextPage:'exitScreen	}
+							)
+						}
+
+					{	id: 'aresWar		descID: 'textAresWar1		labelID: 'actionDone	nextPage: 'welcome 	}
+
+					{	id: 'rogueFleet		descID: 'textRogueFleet1	labelID: 'actionDone	nextPage: 'welcome 	}
+
+					{	id: 'outerRealm		descID: 'textOuterRealm1	}
+					{	id: 'outerRealm		descID: 'textOuterRealm2	labelID: 'actionDone	nextPage: 'welcome 	}
+					)
+			</Text>
+			<Text id="textInfo1">
+			
+				Out here on the outskirts of Human Space, it doesn't matter who
+				you are. All that matters is who you become. This is where you
+				test your limits, build your strength, and fulfill your potential.
+
+				Become a part of something bigger. Join the Commonwealth Fleet!
+
+			</Text>
+			<Text id="actionAresWar">The [A]res War</Text>
+			<Text id="actionOuterRealm">The [O]uter Realm</Text>
+			<Text id="actionRogueFleet">The [R]ogue Fleet</Text>
+			<Text id="actionOurShips">Our [S]hips</Text>
+			<Text id="actionEnemyIntel">[E]nemy Intelligence</Text>
+
+			<Text id="textOuterRealm1">
+			
+				We are explorers. Once we walked out of Africa and colonized an 
+				entire world. Today we're colonizing the galaxy and the Outer 
+				Realm is the new frontier.
+
+				Commonwealth settlers are mining new asteroid fields, but they
+				are not alone. The Ranx Empire and the Ares Orthodoxy have 
+				militarized the region, hoping to claim the natural riches for
+				themselves.
+
+			</Text>
+			<Text id="textOuterRealm2">
+
+				Here in the Outer Realm, the Fleet is the only thing protecting
+				our stations from destruction.
+
+				Aboard the CSC Terra, Admiral Decker directs a group of strike
+				carriers in operations against the Ares Orthodoxy.
+
+				Older carriers like the CSC Arctica and the CSC Sahara defend
+				Commonwealth settlements and manage supply lines.
+			
+			</Text>
+			<Text id="textAresWar1">
+			
+				After the Ares destroyed our fortress of Point Pallas, the Fleet
+				was forced to retreat. But our strength and resilience has kept
+				the Ares from making further gains.
+
+				Our Star Carriers move freely throughout the Outer Realm, 
+				striking at will and hiding in the black. So long as the Fleet
+				survives, the settlements of the Commonwealth will be safe.
+
+			</Text>
+			<Text id="textRogueFleet1">
+
+				The Fleet is tasked with fighting enemies both foreign and 
+				domestic. Sadly, a group of traitorous officers have deserted 
+				and formed a lawless fleet of outlaws.
+
+				Admiral Decker vows to bring these renegades to justice, and
+				he reminds every Commonwealth citizen that helping a deserter in
+				a time of war is treason.
+
+				There will be no mercy for citizens who raise arms against the 
+				Fleet.
+
+			</Text>
+
+			<!-- Commonwealth Fleet -->
+
+			<Text id="rpg.shipClassDesc.&HS_scCenturionM;">
+
+				For over a hundred years, Pacific Defense has designed and built
+				gunships for the Fleet. Today's Centurion/Ms are state-of-the-art
+				weapons platforms incorporating lessons from the Fleet's long
+				history.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scCenturionX;">
+
+				After renewed Ares hostilities in the 2370s, the Fleet ordered
+				a crash program to improve the venerable Centurions. The 
+				result was the Centurion/X.
+
+				The Centurion/X was eventually displaced by the clean-sheet 
+				design of the Britannia class, but some pilots still prefer the
+				comfortable feel and handling of the traditional Centurion.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scBritannia;">
+
+				Fleet gunship design has evolved to respond to changing
+				threats. The Britannia blurs the distinction between gunships
+				and missile ships, a necessary step to counter the effectiveness
+				of the Cometfall heavy bomber.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scMinotaurM;">
+
+				The Minotaur was once designed as a heavy bomber, but has since
+				been repurposed as an escort corvette to defend the Fleet's
+				extensive supply lines.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scAurochs;">
+
+				Aurochs transports are a common sight in the Outer Realm. They
+				are armored enough to survive in a combat zone, and flexible
+				enough to serve as either bulk freighter or troop carrier.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scScarabFreighter;">
+
+				These giant freighters supply the bulk of the Fleets needs. They
+				carry immense quantities of fuel and ammunition, but they cannot
+				survive without a significant escort.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scAquilaCruiser;">
+
+				The Commonwealth Parliament only reluctantly approved the huge
+				budget required for the Star Carrier program. After losing the
+				Australia and the Amazonia, legislators refused to fund 
+				replacements.
+
+				Instead they opted to develop the Aquila class. Though the Fleet
+				was initially resistant to integrating these cruisers into 
+				carrier operations, they have lately proved to be valuable in 
+				their own right.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scCSCTaskForceStock;">
+
+				Every Fleet member remembers the first time they saw a Star 
+				Carrier in person. The sight of these moving fortresses on 
+				approach bring relief to our friends and dread to our enemies.
+
+			</Text>
+
+			<!-- Ares Ships -->
+			
+			<Text id="rpg.shipClassDesc.&HS_scSandstorm;">
+
+				One-on-one, fast and light Sandstorms are no match for our 
+				Centurions, but in every recent battle our gunships have been
+				greatly outnumbered.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scTundra;">
+
+				Don't be fooled by the small size of these gunships. They are
+				heavy armored and fire micronukes.
+
+				Tundras are particularly effective against slow targets like
+				freighters and carriers. Do not let these ships get inside their
+				defense zone.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scChasm;">
+
+				The newest Ares gunship is the Chasm. With its superior positron
+				cannon, it is more than a match for our Britannias, and easily
+				surpasses our Centurions.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scPolar;">
+
+				Ares freighters are big and dumb, but they are usually escorted
+				by a Sandstorm squadron and carry an omnidirectional ion weapon.
+				
+				There are rumors that a Polar-II class has been developed, 
+				mounting a positron weapon. If so, it will be much harder for us
+				to disrupt Ares supply lines.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scCometfall;">
+
+				Cometfalls are heavy bombers designed to destroy stations and
+				carriers. In 2372 a squadron of Cometfalls destroyed Point Vesta.
+				The following year, Cometfalls destroyed the CSC Amazonia and 
+				the CSC Australia.
+
+				Since then, we've evolved our tactics to integrate the Britannia
+				class, which can destroy Cometfalls long before they reach their
+				targets.
+
+				Nevertheless, these ships remain dangerous and must not be
+				underestimated.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scDeimos;">
+
+				While the Deimos class is no match for our Aquilas, it is a
+				formidable anti-gunship platform. Its lightning turret can swat
+				away a whole squadron, while its thermonuclear Hecates cannon
+				can punch through heavy armor at range.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scPhobos;">
+
+				The development of the Phobos dreadnought has changed the 
+				balance of power in the Outer Realm. Its new plasma archcannon
+				is the pinnacle of weapon technology, and obsoletes much of the
+				armor technology defending our stations and carriers.
+
+				Nevertheless, new tactics developed by Admiral Decker, and the
+				bravery of our men and women, have risen to the challenge. Even
+				now, our scientists are hard at work on advanced technologies 
+				that will surpass the dreaded Phobos.
+
+			</Text>
+
+			<!-- Rogue Fleet -->
+
+			<Text id="rpg.shipClassDesc.&HS_scCenturionRogue;">
+
+				The Rogue Fleet stole reserve Centurions and keep them running 
+				with black market parts. Though similar in most respects to our
+				front-line Centurions, these older models use a TeV 9 cannon 
+				instead of the modern SARs.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scCenturionXRogue;">
+
+				Rogue Centurion/Xs are identical to the Fleet's version, and are
+				just as deadly.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scRogueMineLayer;">
+
+				The Rogue Fleet raids freighter convoys to obtain supplies. It 
+				has outfitted Aurochs transports with mine laying equipment to
+				ambush unsuspecting ships.
+
+			</Text>
+		</Language>
+	</Type>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&rsCSCHD;"					bitmap="Resources\CSCHD.jpg" bitmask="Resources\CSCHDMask.bmp" loadOnUse="true" />
+	<Image UNID="&HS_rsFleetEmblems;"			bitmap="Resources\FleetEmblems.jpg" bitmask="Resources\FleetEmblemsMask.bmp" loadOnUse="true" />
+
+</TranscendenceModule>

@@ -1,0 +1,1236 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Commonwealth Militia
+
+	This type holds all global data and events for the Commonwealth Militia
+	occupation.
+
+	PROPERTIES
+
+		rankID: The player's current rank.
+
+			Nil: Civilian who has never completed any missions.
+			'volunteer: Civilian who has completed at least one mission.
+
+			'lieutenant: Lieutenant in the militia.
+			'captain: Captin in the militia.
+			'major: Major in the militia.
+
+			'blacklisted: Dishonorably discharged.
+
+	ATTRIBUTES
+
+	commonwealthMilitia: MissionTypes with this attribute are considered part of the
+			Commonwealth Militia cycle; they will be included in the final tally of
+			missions succeeded/failed.
+
+	rank?: This family of attributes includes all valid Commonwealth Militia ranks:
+			(rank1, rank2, rank3, and rank0). The player will only be offered missions
+			appropriate to their own rank. rank0 indicates the mission is available
+			to civilians.
+
+			A MissionType may have multiple rank attributes.
+
+			A mission must have both the commonwealthMilitia and at least one rank
+			attribute to be offered at a Commonwealth Fortress. Special missions may
+			omit the rank attribute if they are offered in another way.
+
+	-->
+
+	<Type UNID="&HS_unidCommonwealthMilitia;">
+		<Properties>
+			<Definition id="rankTable">
+				(list
+					{	rank: 0		
+						id: 'volunteer	
+						icon: (resCreateImageDesc &HS_rsCommonwealthMilitiaInsignia;   0   0 256 256)
+
+						minTotalSuccess: 0
+						minNetSuccess: 0
+						}
+
+					{	rank: 1
+						id: 'lieutenant
+						icon: (resCreateImageDesc &HS_rsCommonwealthMilitiaInsignia; 256   0 256 256)
+
+						minTotalSuccess: 1
+						minNetSuccess: 1		;	Must have 1 more success than failure to achieve rank
+						}
+
+					{	rank: 2
+						id: 'captain
+						icon: (resCreateImageDesc &HS_rsCommonwealthMilitiaInsignia; 512   0 256 256)
+
+						minTotalSuccess: 3
+						minNetSuccess: 2
+						}
+
+					{	rank: 3
+						id: 'major
+						icon: (resCreateImageDesc &HS_rsCommonwealthMilitiaInsignia;   0 256 256 256)
+
+						minTotalSuccess: 6
+						minNetSuccess: 4
+						}
+					)
+			</Definition>
+			<DynamicGlobal id="rank">(typGetData gType 'rank)</DynamicGlobal>
+			<DynamicGlobal id="rankID">
+				(block (
+					(rank (typ@ gType 'rank))
+					)
+					(switch
+						(not rank)
+							(if (msnFind "r +commonwealthMilitia;")
+								'volunteer
+								)
+
+						(= rank -1)
+							'blacklisted
+
+						(@ (@ (typ@ gType 'rankTable) rank) 'id)
+						)
+					)
+			</DynamicGlobal>
+			<DynamicGlobal id="rankIcon">
+				(block (
+					(rank (or (typ@ gType 'rank) 0))
+					(rankTable (typ@ gType 'rankTable))
+					)
+					(switch
+						(= rank -1)
+							Nil
+
+						(@ (@ rankTable rank) 'icon)
+						)
+					)
+			</DynamicGlobal>
+			<DynamicGlobal id="rankNoun">
+				(typTranslate gType (cat "rank." (typ@ gType 'rankID)) { gender:(plyGetGenome gPlayer) })
+			</DynamicGlobal>
+			<DynamicGlobal id="rankFailureCount">
+				(count (msnFind "r +commonwealthMilitia; -commonwealthVolunteer; +property:isFailure;"))
+			</DynamicGlobal>
+			<DynamicGlobal id="rankSuccessCount">
+				(count (msnFind "r +commonwealthMilitia; -commonwealthVolunteer; +property:isSuccess;"))
+			</DynamicGlobal>
+
+			<Definition id="volunteerRewardTable">
+
+				;	REWARD		LEVEL
+				; ---------------------------------
+
+				'(	0
+
+					400			;	1
+					800			;	2
+					1500		;	3
+					3000		;	4
+					6000		;	5
+
+					10000		;	6
+					20000		;	7
+					40000		;	8
+					70000		;	9
+					120000		;	10
+					)
+
+			</Definition>
+		</Properties>
+
+		<Events>
+			<GetGlobalAchievements>
+				(append
+					;	Rank
+					(if  (typ@ gType 'rank)
+						(list
+							(list
+								"Commonwealth militia rank"
+								(fmtNoun (typ@ gType 'rankNoun) 1 'titleCapitalize)
+								)
+							)
+						)
+
+					;	Missions
+					(rpgMissionAchievements &HS_unidCommonwealthMilitia; "* +commonwealthMilitia;")
+					)
+			</GetGlobalAchievements>
+
+			<GetGlobalPlayerPriceAdj>
+				(block (rank)
+					(setq rank (typGetData &HS_unidCommonwealthMilitia; 'rank))
+
+					(switch
+						;	Only at armory
+						(not (objHasAttribute aProviderObj 'commonwealthArmory))
+							Nil
+
+						;	Must have rank, or nothing available
+						(or (not rank) (leq rank 0))
+							-1
+
+						;	Some items only available to captains
+						(or (eq (itmGetType gItem) &HS_itXM900Missile;)
+								(eq (itmGetType gItem) &HS_itStarCannon;)
+								)
+							(if (gr rank 1)
+								Nil		;	No adjustment
+								-1		;	Unavailable
+								)
+
+						;	Other items are available at a discount depending on level
+						(= rank 1)
+							90
+
+						(= rank 2)
+							75
+
+						(= rank 3)
+							55
+
+						;	No adjustment
+						Nil
+						)
+					)
+			</GetGlobalPlayerPriceAdj>
+		</Events>
+
+		<Language>
+			<Code id="rankDetails">
+				(block (
+					(rankID (typ@ gType 'rankID))
+					(successList (plyGetKeyEventStat gPlayer 'missionSuccess Nil "* +commonwealthMilitia;"))
+					(failureList (plyGetKeyEventStat gPlayer 'missionFailure Nil "* +commonwealthMilitia;"))
+
+					(rank (or (typ@ gType 'rank) 0))
+					(rankTable (typ@ gType 'rankTable))
+					(rankDesc 
+						(if (!= rank -1)
+							(@ rankTable rank)
+							)
+						)
+					(nextRankDesc
+						(if (and (!= rank -1) (ls rank 3))
+							(@ rankTable (+ rank 1))
+							)
+						)
+
+					;	NOTE: These counts are different from the shown success/failure 
+					;	counts because we don't count volunteer missions for rank.
+
+					(rankSuccesses (typ@ gType 'rankSuccessCount))
+					(rankFailures (typ@ gType 'rankFailureCount))
+
+					(successForRank 
+						(max (@ rankDesc 'minTotalSuccess) 
+							(+ rankFailures (@ rankDesc 'minNetSuccess))
+							)
+						)
+					(successForNextRank
+						(max (@ nextRankDesc 'minTotalSuccess) 
+							(+ rankFailures (@ nextRankDesc 'minNetSuccess))
+							)
+						)
+
+					(totalNeeded (- successForNextRank successForRank))
+					(soFar (max 0 (- rankSuccesses successForRank)))
+					(percentToNextLevel (if (gr totalNeeded 0) (round (* 100.0 (/ soFar totalNeeded)))))
+					)
+					(if rankID
+						{
+							title: (fmtNoun (typ@ gType 'rankNoun) 1 'titleCapitalize)
+							largeIcon: (typ@ gType 'rankIcon)
+
+							details: (list
+								{
+									title: (typTranslate gType 'labelSuccesses)
+									desc: (typTranslate gType 'rtfValue { 
+										value: (count successList)
+										})
+									}
+								{
+									title: (typTranslate gType 'labelFailures)
+									desc: (typTranslate gType 'rtfValue {
+										value: (count failureList)
+										})
+									}
+								(if (and percentToNextLevel nextRankDesc (gr rank 0))
+									{
+										title: (typTranslate gType 'labelNextLevel {
+											nextLevelName: 
+												(fmtNoun
+													(typTranslate gType (cat "rank." (@ nextRankDesc 'id)) { gender:(plyGetGenome gPlayer) })
+													1
+													'titleCapitalize
+													)
+											})
+										desc: (typTranslate gType 'rtfValue {
+											value: (cat percentToNextLevel "%")
+											})
+										}
+									)
+								)
+
+							detailsStyle: 'stats
+							align: 'bottom
+							}
+						)
+					)
+			</Code>
+			<Text id="rank.blacklisted">:an outcast(s)</Text>
+			<Text id="rank.volunteer">:a volunteer(s)</Text>
+			<Text id="rank.lieutenant">:a lieutenant(s)</Text>
+			<Text id="rank.captain">:a captain(s)</Text>
+			<Text id="rank.major">:a major(s)</Text>
+
+			<Text id="labelSuccesses">Mission Successes:</Text>
+			<Text id="labelFailures">Mission Failures:</Text>
+			<Text id="labelNextLevel">Progress to %nextLevelName%:</Text>
+			<RTF id="rtfValue">{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
+
+			<Text id="rpg.missionTypeDesc">Commonwealth militia missions</Text>
+		</Language>
+	</Type>
+
+<!-- STATION TYPES -->
+
+	<!-- Commonwealth Fortress
+
+	DATA
+
+	NextBarEncounter: Min tick when the next bar encounter is ready
+
+	-->
+
+	<StationType UNID="&HS_stCommonwealthFortress;"
+			name=				"Commonwealth fortress(es)"
+			sovereign=			"&HS_svCommonwealth;"
+			inherit=			"&HS_baCommonwealthStation;"
+
+			attributes=			"commonwealth, commonwealthArmory, commonwealthCustoms, commonwealthMilitary, commonMilitary, fleetDelivery, friendly, generic, human, majorStation, primary, populated"
+
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			level=				"6"
+			size=				"450"
+			armorID=			"&HS_itP120HexphaseArmor;"
+			hitPoints=			"1400"
+			multiHull=			"true"
+			regen=              "11"
+			shipRegen=			"10"
+
+			explosionType=		"&CORE_vtBlastExplosion4;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+commonwealthSpace;"
+				systemAffinity=			"+commonwealthCore;"
+				levelFrequency=			"---cc ur--- ----- ----- -----"
+
+				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"75"
+
+				unique=					"inSystem"
+				/>
+
+		<Properties>
+			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; +military; -notStandard; +shipBroker;"</Constant>
+			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
+		</Properties>
+
+		<!-- Trade and Items -->
+
+		<Trade currency="credit">
+			<Sell	criteria="m +commonwealth; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur" noDescription="true"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100" noDescription="true"/>
+
+			<Refuel			criteria="f +BasicFuel; L:3-8;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-8;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a L:1-8;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-8;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-8;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+
+			<SellShip		criteria="s -notForSale;" priceAdj="100"/>
+			<BuyShip		criteria="s L:1-10; -notForSale;" priceAdj="80"/>
+
+			<ConsumeTrade	criteria="{core.antimatterFuel}"		impact="3"/>
+		</Trade>
+
+		<Items>
+			<RandomItem count="2d10"
+					criteria=		"ad~r L:1-8; +commonwealth; -alien; -defective; -illegal; -notForSale; -notStandard; -specialty;"
+					levelFrequency=	"systemLevel:r|c|cur"
+					/>
+			<RandomItem count="1d4"
+					criteria=		"r L:4-8; +commonwealth; -alien; -defective; -illegal; -specialty; -notForSale; -notStandard;"
+					levelFrequency="systemLevel:ru|c|curv"
+					/>
+
+			<Item				count="16d20"	item="&HS_itKM500Missile;" />
+			<Item				count="8d20"	item="&HS_itKM550Missile;" />
+			<Item				count="8d20"	item="&HS_itXM900Missile;" />
+		</Items>
+
+		<!-- Configuration -->
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Lookup count="2d3+1" table="&HS_tbCommEliteDefenders;"/>
+		</Ships>
+
+		<Reinforcements minShips="5">
+			<Lookup table="&HS_tbCommEliteDefenders;"/>
+		</Reinforcements>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&HS_rsCommonwealthMilitiaFortress;" imageWidth="322" imageHeight="300" viewportRatio="0.05875"/>
+
+		<DockingPorts
+				portCount=		"10"
+				portRadius=		"185"
+				>
+		</DockingPorts>
+
+		<!-- Dock Screen -->
+
+		<DockScreens>
+			<Main>
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &HS_unidCommonwealthMilitia; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(block (rank)
+								(setq rank (typGetData &HS_unidCommonwealthMilitia; 'rank))
+
+								(switch
+									(not rank)
+										(scrSetDescTranslate gScreen "descWelcome:New")
+
+									(= rank -1)
+										(scrSetDescTranslate gScreen "descWelcome:Blacklisted")
+
+									(scrSetDescTranslate gScreen (cat "descWelcome:" rank))
+									)
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionInformation">
+								(scrShowScreen gScreen &RPG_dsRPGDialog; (objTranslate gSource 'militia.info))
+							</Action>
+
+							<Action id="actionCommandCenter" default="1">
+								(block (
+									(rank (typGetData &HS_unidCommonwealthMilitia; 'rank))
+									(commonCriteria (cat "n +commonwealthMilitia; -commonwealthVolunteer; +rank" (int rank) "; =" (sysGetLevel) ";"))
+									)
+									(if (objGetItems gPlayerShip "* +militaryID;")
+
+										;	If we have a military ID, we gain access to Militia missions.
+										(rpgMissionAssignment {
+											missionCriteria: commonCriteria
+											displayCriteria: "n +commonwealthMilitia;"
+											noMissionTextID: 'descNoMissions
+											maxPerStation: (+ 6 (modulo (objGetDestiny gSource) 3))
+											})
+
+										;	Otherwise we only get some missions
+
+										(rpgMissionAssignment {
+											missionCriteria: (cat commonCriteria " -requiresID;")
+											displayCriteria: "n +commonwealthMilitia;"
+											noMissionTextID: 'descNoCommandCenterAccess
+											maxPerStation: (+ 3 (modulo (objGetDestiny gSource) 3))
+											})
+										)
+									)
+							</Action>
+
+							<Action id="actionDockServices">
+								(if (gr (typGetData &HS_unidCommonwealthMilitia; 'rank) 0)
+									(rpgDockServices gPlayerShip)
+									(scrShowScreen gScreen &RPG_dsRPGMessage; { textID:'descNoDockServicesAccess })
+									)
+							</Action>
+
+							<Action id="actionBuyShip">
+								(if (gr (typGetData &HS_unidCommonwealthMilitia; 'rank) 0)
+									(scrShowScreen gScreen &RPG_dsRPGShipBroker;)
+									(scrShowScreen gScreen &RPG_dsRPGMessage; { textID:'descNoShipBrokerAccess })
+									)
+							</Action>
+
+							<Action id="actionOfficersClub">
+								(if (gr (typGetData &HS_unidCommonwealthMilitia; 'rank) 0)
+									(scrShowPane gScreen "OfficersClub")
+									(scrShowScreen gScreen &RPG_dsRPGMessage; { textID:'descNoOfficersClubAccess })
+									)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+
+					</Default>
+
+					<OfficersClub descID="descOfficersClub">
+						<Actions>
+							<Action id="actionBar" default="1">
+								(if (ls (plyGetCredits gPlayer) 5)
+									(scrShowScreen gScreen &RPG_dsRPGMessage; { textID:'descBarNoMoney })
+
+									(block (
+										(rank (typGetData &HS_unidCommonwealthMilitia; 'rank))
+										)
+										(plyCharge gPlayer 5)
+										(switch
+											;	If the player is black-listed, then she is not welcome
+											;	NOTE - won't happen as we need positive rank to get here
+											(= rank -1)
+												(scrShowScreen gScreen &RPG_dsRPGMessage; { textID:'descBarBlacklisted })
+
+											; Make sure enough time passes between encounters
+											(gr (objGetData gSource 'NextBarEncounter) (unvGetTick))
+												(scrShowScreen gScreen &RPG_dsRPGMessage; { textID:'descBarEmpty })
+
+											;	If the player is a captain, they can meet Jenna
+											(and (= rank 2)
+												(not (typGetGlobalData &HS_chJenna; 'status))
+												(leq (random 1 100) 60)
+												)
+												(scrShowScreen gScreen &RPG_dsRPGWingmanEncounter; {wingman: &HS_chJenna;})
+
+											;	If the player is a major, then another chance for a henchman
+											(and (= rank 3)
+												(not (typGetGlobalData &HS_chRama; 'status))
+												(leq (random 1 100) 80)
+												)
+												(scrShowScreen gScreen &RPG_dsRPGWingmanEncounter; {wingman: &HS_chRama;})
+
+											;	Otherwise, we get rumors
+											(block Nil
+												(objSetData gSource 'NextBarEncounter (+ (unvGetTick) (random 1500 2000)))
+												(rpgMissionAssignment {
+													missionCriteria: (cat "n +commonwealthMilitiaOC; =" (sysGetLevel) ";")
+													displayCriteria: "n +commonwealthMilitiaOC;"
+
+													rumorInterval: 0
+													noMissionTextID: 'descBarEmpty
+													})
+												)
+											)
+										)
+									)
+							</Action>
+
+							<Action id="actionLeave" cancel="1">
+								(scrShowPane gScreen "Default")
+							</Action>
+						</Actions>
+					</OfficersClub>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<!-- Events and Data -->
+
+		<Events>
+			<OnCreate>
+				(block (gate gateList count)
+					; Get the list of gates in the system
+					(setq gateList (sysFindObject gSource "G -uncharted;"))
+
+					; Place nav beacons between us and the stargates in this system
+					(setq count 0)
+					(enum gateList gate
+						(block (beacon)
+							(setq beacon
+								(sysCreateStation &HS_stNavBeacon;
+									(sysVectorAdd
+										(objGetPos gSource)
+										(sysVectorDivide
+											(sysVectorSubtract
+												(objGetPos gate)
+												(objGetPos gSource)
+												)
+											2
+											)
+										)
+									)
+								)
+
+							; Name the nav beacons
+							(if (ls count 5)
+								(objSetName beacon
+									(cat "NavBeacon " (item '(Alpha Beta Gamma Delta Epsilon) count))
+									)
+								)
+
+							; Remember which NavBeacon goes with each gate
+							(objSetObjRefData gate "NavBeacon" beacon)
+
+							(setq count (add count 1))
+							)
+						)
+					)
+			</OnCreate>
+
+			<GetRumors>
+				(append
+					(rpgRumorAdd 'commonwealthMilitiaOC (make 'sequence 8))
+
+					(if (= (objGetProperty gPlayerShip 'characterClass) &RPG_unidPilgrimClass;)
+						(rpgRumorAdd 'commonwealthMilitiaOC (make 'sequence 21 23))
+						(rpgRumorAdd 'commonwealthMilitiaOC (make 'sequence 41 43))
+						)
+					)
+			</GetRumors>
+		</Events>
+
+		<Language>
+			<Text id="actionCommandCenter">[C]ommand Center</Text>
+			<Text id="actionOfficersClub">[O]fficers' Club</Text>
+			<Text id="actionBar">[S]it at the Bar</Text>
+			<Text id="actionInformation">[I]nformation</Text>
+
+			<Text id="rumor.commonwealthMilitiaOC.1">
+
+				A man with a prosthetic arm sits next to you:
+				"I've been flying for the militia for years, but I'd much
+				rather be helping the Fleet. No one's seen them in a long time.
+				They must be at the Ares Homeworld by now."
+
+			</Text>
+			<Text id="rumor.commonwealthMilitiaOC.2">
+
+				A man and a woman sit next to you. The woman starts a conversation with you:
+				"We're students from St. Katharine's Star! It's so exciting to be
+				here where all the action is! We're writing a doctoral thesis on
+				the role of minority neohumans on reductive militia policy. Wish us luck!"
+
+			</Text>
+			<Text id="rumor.commonwealthMilitiaOC.3">
+
+				An older pilot sits next to you: "Don't underestimate the slavers!
+				We've been fighting them for years and they just keep advancing their
+				technology. There are rumors that they've developed a new archcannon
+				powered by their longzhu spheres."
+
+			</Text>
+			<Text id="rumor.commonwealthMilitiaOC.4">
+
+				A woman sits next to you: "My husband is in the Commonwealth Fleet
+				and I haven't seen him for years. Sometimes I get messages from him,
+				but it's never good news."
+
+			</Text>
+			<Text id="rumor.commonwealthMilitiaOC.5">
+
+				A young man wearing trendy clothes talks with you: "I think that
+				girl in the flight suit likes me. What do you think?"
+
+			</Text>
+			<Text id="rumor.commonwealthMilitiaOC.6">
+
+				A short-haired woman talks to you: "My cousin's best friend says that
+				the CSC Europa got blown up by the Ares. They should pull back the
+				Fleet and have them fight the slavers! You know what I mean? What's the point?"
+
+			</Text>
+			<Text id="rumor.commonwealthMilitiaOC.7">
+
+				A dark-skinned woman talks with you: "My best friend went to the
+				Core; it was two years ago, I think. A year later they found her
+				wreckage in the Sanctuary system; she left me a message, but
+				I've never been able to read it."
+
+			</Text>
+			<Text id="rumor.commonwealthMilitiaOC.8">
+
+				A tall woman talks to you: "I'm doing research on the Iocrym.
+				It is curious, don't you think, that they haven't returned? A lot of
+				ignorant people think they are preparing to invade, which is ridiculous.
+				They wouldn't travel thousands of light-years just to kill us. Why bother?"
+
+			</Text>
+
+			<Text id="rumor.commonwealthMilitiaOC.21">
+
+				A well-dressed woman sits next to you: "You're heading to the galactic
+				what? I don't know&#x97;sounds like brainwashing to me."
+
+			</Text>
+			<Text id="rumor.commonwealthMilitiaOC.22">
+
+				A short, round man sits next to you: "You're going to the Core?
+				Elegant! Maybe you'll get to meet the aliens."
+
+			</Text>
+			<Text id="rumor.commonwealthMilitiaOC.23">
+
+				A young woman sits next to you: "Why does Domina compel you to go to
+				the Core? I suppose you won't find out until you get there. Still,
+				it's nice to have a purpose in life."
+
+			</Text>
+
+			<Text id="rumor.commonwealthMilitiaOC.41">
+
+				A well-dressed woman sits next to you: "You're doing what?
+				I don't know&#x97;sounds like a wasted life to me."
+
+			</Text>
+			<Text id="rumor.commonwealthMilitiaOC.42">
+
+				A short, round man sits next to you: "You're a merc? Elegant!
+				Have you been in many battles?"
+
+			</Text>
+			<Text id="rumor.commonwealthMilitiaOC.43">
+
+				A young woman sits next to you: "Must be nice to travel so much.
+				I visited Rigel Aurelius with my parents when I was little, but
+				I don't remember anything."
+
+			</Text>
+
+			<Text id="descWelcome:New">
+
+				You are in the main hall of a Commonwealth Militia Fortress. 
+				Squadron leaders rush through the hall reading mission 
+				briefings and weapons manifests. You feel out of place here.
+
+			</Text>
+			<Text id="descWelcome:Blacklisted">
+
+				You are in the main hall of a Commonwealth Militia Fortress.
+				Squadron leaders rush through the hall reading mission 
+				briefings and weapons manifests. You feel out of place here.
+
+			</Text>
+			<Text id="descWelcome:1">
+
+				You are in the main hall of a Commonwealth Militia Fortress.
+				Squadron leaders rush through the hall reading mission 
+				briefings and weapons manifests.
+
+			</Text>
+			<Text id="descWelcome:2">
+
+				You are in the main hall of a Commonwealth Militia Fortress.
+				Squadron leaders rush through the hall on various missions; 
+				several stop to say hello to you. You feel like you belong.
+
+			</Text>
+			<Text id="descWelcome:3">
+
+				You are in the main hall of a Commonwealth Militia Fortress.
+				Squadron leaders rush through the hall on various missions, 
+				each one stops to salute you as you pass.
+
+			</Text>
+			<Text id="descNoCommandCenterAccess">
+
+				Two guards flank the door to the Command Center. One of them 
+				checks your ID against a computer list:
+
+				"Sorry, %sir%, only experienced pilots are allowed inside."
+
+			</Text>
+			<Text id="descNoMissions">
+				(if (= (typGetData &HS_unidCommonwealthMilitia; 'rank) -1)
+					(typTranslate &HS_stCommonwealthFortress; 'descNoMissions.blacklisted)
+					(typTranslate &HS_stCommonwealthFortress; 'descNoMissions.normal)
+					)
+			</Text>
+			<Text id="descNoMissions.blacklisted">
+
+				"How about getting us a cup of tea or something? That's probably
+				a mission you could handle."
+
+			</Text>
+			<String id="descNoMissions.normal">
+
+				"Sorry, there are no missions currently available."
+
+			</String>
+			<Text id="descNoOfficersClubAccess">
+
+				Two guards flank the door to the Officers' Club. One of them 
+				checks your ID against a computer list:
+
+				"Sorry, %sir%, only officers are allowed in the club."
+
+			</Text>
+			<Text id="descNoDockServicesAccess">
+
+				Two guards flank the door to Dock Services. One of them checks 
+				your ID against a computer list:
+
+				"Sorry, %sir%, only militia members are allowed in."
+
+			</Text>
+			<Text id="descNoShipBrokerAccess">
+
+				Two guards flank the door checking IDs:
+
+				"Sorry, %sir%, only militia members are allowed in."
+
+			</Text>
+			<Text id="descOfficersClub">
+
+				The Officers' Club is packed with pilots and other officers having a
+				few drinks to pass away the off-duty hours.
+
+			</Text>
+			<Text id="descBarNoMoney">
+
+				You sit at the bar, but you don't even have enough money to buy 
+				a drink.
+				
+				You feel out of place.
+				
+			</Text>
+			<Text id="descBarBlacklisted">
+			
+				You spend 5 credits on drinks, but everyone avoids you. You feel
+				out of place here.
+				
+			</Text>
+			<Text id="descBarEmpty">
+			
+				You spend 5 credits on drinks, but there aren't too many people 
+				here that you want to talk to.
+				
+			</Text>
+
+			<Text id="descLibraryComputer">
+
+				A set of booths along the wall give you access to a holographic
+				computer system. You sit down at one of them and access the
+				data banks.
+
+			</Text>
+
+			<Text id="militia.info">
+				(list
+					{	id: 'welcome
+						descID: 'textInfo1
+						actions: (list
+							{	labelID: 'actionOurMission			nextPage:'ourMission	}
+							{	labelID: 'actionUngoverned			nextPage:'ungoverned	}
+							{	labelID: 'actionEnemyIntel			nextPage:'code
+								code: (lambda ()
+									(scrShowScreen gScreen &RPG_dsRPGShipClassViewer; {
+										list: (list
+
+											;	NOTE: If you add items to the list, make sure
+											;	you add a description in the Language section.
+
+											{	shipClass:&HS_scMarauderRaidPlatform;	}
+											{	shipClass:&HS_scCorsair-II;	}
+											{	shipClass:&HS_scViking-II;	}
+											{	shipClass:&HS_scBarbary;	}
+											{	shipClass:&HS_scDrake;	}
+											{	shipClass:&HS_scTripoli;	}
+
+											{	shipClass:&HS_scWindSlaver;	}
+											{	shipClass:&HS_scSteelSlaver;	}
+											{	shipClass:&HS_scEarthSlaver;	}
+											{	shipClass:&HS_scSungTransport;	}
+											{	shipClass:&HS_scDragonSlaver;	}
+
+											{	shipClass:&HS_scDwargRaider;	}
+											{	shipClass:&HS_scDwargMaster;	}
+											{	shipClass:&HS_scDwargBehemoth;	}
+											)
+										})
+									)
+								}
+
+							{	labelID: 'actionDone				nextPage:'exitScreen	}
+							)
+						}
+					{	id: 'ourMission
+						descID: 'textOurMission1		labelID: 'actionDone	nextPage: 'welcome 
+						}
+					{	id: 'ungoverned
+						descID: 'textUngoverned1		labelID: 'actionDone	nextPage: 'welcome 
+						}
+					)
+			</Text>
+
+			<Text id="textInfo1">
+
+				The Commonwealth Militia has served the people for over three 
+				hundred years.
+
+			</Text>
+			<Text id="actionOurMission">Our [M]ission</Text>
+			<Text id="actionUngoverned">The [U]ngoverned Territories</Text>
+			<Text id="actionEnemyIntel">[E]nemy Intelligence</Text>
+
+			<Text id="textOurMission1">
+			
+				Our mission	is to defend Commonwealth stations from predation 
+				by marauders, outlaws, and slavers.
+
+				The Sung Empire is our primary enemy. Their technological
+				achievements, built on a hideous slave industry, threaten to
+				overwhelm our defenses. But the Commonwealth Militia has always
+				risen to the occasion, and our citizens in the Territories 
+				remain safe.
+
+				Lesser threats are no less important, and the Militia is 
+				committed to safeguarding navigation and trade from piracy
+				and marauders.
+
+			</Text>
+			<Text id="textUngoverned1">
+
+				Beyond St. Katharine's Star, the systems of the Ungoverned
+				Territories are crisscrossed with competing claims. The
+				Commonwealth was the first sovereign to colonize the region,
+				but we were never able to control such a vast area.
+
+				Warlords and empires rise and fall, but the Militia
+				has always kept the chaos at bay. Someday the Commonwealth will
+				grow to displace the lawless sovereigns of the Territories.
+
+				Until then the Militia will keep watch.
+				
+			</Text>
+
+			<!-- Marauder Ships -->
+			
+			<Text id="rpg.shipClassDesc.&HS_scMarauderRaidPlatform;">
+
+				Marauders roam the Ungoverned Territories raiding isolated mines
+				and colonies.
+
+				These raid platforms serve as mobile bases from which to launch
+				attacks. Don't be fooled by their seemingly ad hoc construction;
+				they are heavily armored, and boast a pair of turbolasers.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scCorsair-II;">
+				
+				Upgraded Corsairs have killed more Militia members than almost 
+				any	other class. They are cheap enough to be produced in large
+				numbers, but carry the same KM100 missiles used by our Ronins.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scViking-II;">
+				
+				These heavy gunships are the backbone of the marauder fleet. 
+				They are robust enough to handle a few hits, but still fast
+				enough to serve as effective raiders.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scBarbary;">
+				
+				Outlaw engineers at Neptune's Forge designed this deadly gunship
+				specially for raiding. Its EMP cannon can disable ships in an
+				instant, leaving them paralyzed and defenseless.
+
+				Shields can absorb the disabling pulse, but are greatly weakened
+				by it. Some higher level armors are immune to EMP. But if your
+				ship is vulnerable, your best option is to run.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scDrake;">
+
+				The common Drake is an underestimated capital ship. Though less
+				capable than a Charon frigate, the Drake is nevertheless a
+				powerful adversary. Its large supply of missiles and heavy armor
+				allow it to hold its ground against all but the strongest
+				gunships.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scTripoli;">
+				
+				The Tripoli class is the deadliest ship in the marauder fleet.
+				More powerful even than a Charon frigate, each of these ships 
+				serves as the command center for the leader of a marauder cell.
+
+			</Text>
+
+			<!-- Sung Slaver Ships -->
+
+			<Text id="rpg.shipClassDesc.&HS_scWindSlaver;">
+
+				Sung Slavers displaced the Huari Empire in the twenty-third
+				century, and their fortresses and citadels have bloomed across
+				the Ungoverned Territories.
+
+				The ubiquitous Wind Slaver is a fast gunship, designed to be
+				produced in large numbers. Each is piloted by a slave encased
+				in a cybernetic coffin, which accounts for its unnatural
+				speed and maneuverability.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scSteelSlaver;">
+
+				Steel Slavers are the heavy gunships of the Sung fleet. They 
+				are crewed by four Sung officers, and often serve as command and
+				control for a Wind Slaver squadron.
+
+				Steel Slavers carry cybernetic equipment (augmented by multiple
+				slave coffins) that can remotely disable weapons on targets by
+				exploiting various software vulnerabilities.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scEarthSlaver;">
+
+				These massive ships are the biggest threat to the Commonwealth
+				in the Territories. Their axis-aligned supercannon is designed
+				for one purpose alone: to demolish stations.
+
+				The Sung have so far refrained from destroying a station, knowing
+				that it would result in all-out war.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scSungTransport;">
+
+				These sleek transports ply the nav routes of the Ungoverned
+				Territories, no different than the other freighters	that supply
+				the stations of Human Space.
+
+				But whereas other freighters might carry fuel or consumer goods,
+				these transports are likely to be carrying slave coffins.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scDragonSlaver;">
+
+				Sung technology easily matches that of the Commonwealth. Nowhere
+				is this clearer than in their development of the Dragon Slaver.
+				This capital ship is equipped with an antimatter cannon&mdash;the
+				ultimate destructive force known to us.
+
+				Fortunately, very few of these ships have been built, and the 
+				cost of deploying them keeps them a rare sight.
+
+			</Text>
+
+			<!-- Dwarg Ships -->
+
+			<Text id="rpg.shipClassDesc.&HS_scDwargRaider;">
+
+				The mysterious Dwarg are an emerging threat in the Ungoverned
+				Territories. Their entire industry is based on genetically-engineered
+				zoanthropes: human beings reduced to animal intellect.
+
+				These raiders are light gunships with zoanthrope pilots.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scDwargMaster;">
+
+				Dwarg masters command legions of zoanthropes, who will fight to
+				the death to protect their master.
+				
+				These ships also possess a tracking missile-weapon that can 
+				deliver an EMP pulse to its targets.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&HS_scDwargBehemoth;">
+
+				These massive ships are heavily armed and armored, but are 
+				nonetheless controlled by a zoanthrope.
+
+			</Text>
+
+			<Text id="core.mapDescMain">
+				Commonwealth Militia HQ
+			</Text>
+			<Code id="rpg.statusDetails">
+				(typTranslate &HS_unidCommonwealthMilitia; 'rankDetails)
+			</Code>
+		</Language>
+	</StationType>
+
+<!-- DOCK SCREENS -->
+
+	<!-- Militia Promotion -->
+
+	<DockScreen UNID="&HS_dsMilitiaPromotion;"
+			nestedScreen=		"true"
+			inherit=			"&RPG_dsDockScreenBase;"
+			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &HS_unidCommonwealthMilitia; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(scrSetDescTranslate gScreen (cat "Promotion:" (typGetData &HS_unidCommonwealthMilitia; 'rank)))
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(block (
+							(rank (typGetData &HS_unidCommonwealthMilitia; 'rank))
+							)
+							(switch
+								(= rank 1)
+									(block Nil
+										(objAddItem gPlayerShip (itmCreate &HS_itMilitaryID; 1))
+										(itmSetKnown &HS_itMilitaryID;)
+										)
+
+								(= rank 2)
+									(objAddItem gPlayerShip (itmCreate &HS_itMedalOfDistinction; 1))
+
+								(= rank 3)
+									(objAddItem gPlayerShip (itmCreate &HS_itMedalOfHonor; 1))
+								)
+							(scrExitScreen gScreen)
+							)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="Promotion:1">
+
+				"Your success on this mission has brought you great respect.
+				It is my privilege to bestow upon you the rank of lieutenant
+				in service to the Commonwealth Militia."
+
+				General Powell hands you a military ID chip.
+
+			</Text>
+			<Text id="Promotion:2">
+
+				"Your skills on this mission have brought you great admiration.
+				It is my honor to present you with the Commonwealth Medal of Distinction
+				and to promote you to the rank of captain. Congratulations!"
+
+			</Text>
+			<Text id="Promotion:3">
+
+				"Your bravery has brought great honor to you and to the Militia.
+				It is my honor to present you with the Commonwealth Medal of Honor
+				and to promote you to the rank of major. Congratulations!"
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+<!-- GLOBALS -->
+
+	<Globals>
+		(block Nil
+			(setq milCanEnterCC (lambda ()
+				(or
+					(gr (typGetData &HS_unidCommonwealthMilitia; 'rank) 0)
+					(gr (typGetData &HS_stBattleArena; "arenaSkill") 200)
+					(gr (typGetData &HS_unidKorolovShipping; "xp") 0)
+					(msnFind "r +commonwealthVolunteer; +property:isSuccess;")
+					(objGetItems gPlayerShip "*+MilitaryID")
+					)
+				))
+
+			(setq milMissionCompleted (lambda (missionObj reason data)
+				(block (
+					(rank (typGetData &HS_unidCommonwealthMilitia; 'rank))
+					(success (typ@ &HS_unidCommonwealthMilitia; 'rankSuccessCount))
+					(failure (typ@ &HS_unidCommonwealthMilitia; 'rankFailureCount))
+					promoted
+					)
+					;	Add current mission to success/failure counts
+					(if (= reason 'success)
+						(setq success (+ success 1))
+						(setq failure (+ failure 1))
+						)
+
+					(switch
+						(= reason 'failure)
+							;	If the player ever ends up with 3 more failures than
+							;	successes then he is booted.
+							(if (geq failure (+ success 3))
+								(typSetData &HS_unidCommonwealthMilitia; 'rank -1)
+								)
+
+						(not rank)
+							;	Need one more successes than failures to become an apprentice.
+							(if (geq (- success failure) 1)
+								(setq promoted True)
+								)
+
+						(= rank 1)
+							;	Need at least three successes to be a journeyman and two more successes than failures
+							(if (and (geq success 3) (geq (- success failure) 2))
+								(setq promoted True)
+								)
+
+						(= rank 2)
+							;	Need at least six successes to be a master and four more successes than failures
+							(if (and (geq success 6) (geq (- success failure) 4))
+								(setq promoted True)
+								)
+						)
+
+					(if promoted
+						(typSetData &HS_unidCommonwealthMilitia; 'promote True)
+						)
+					)
+				))
+
+			(setq milGiveReward (lambda (missionObj)
+				(block (
+					(reward (msn@ missionObj 'reward))
+					)
+					;	Pay the player and record the award
+					(if reward
+						(rpgMissionRewardPayment reward)
+						)
+
+					;	Increase XP
+					(typIncData &HS_unidCommonwealthMilitia; 'xp (msnGetData missionObj 'missionXP))
+
+					;	Check to see if we've been promoted
+					(if (typGetData &HS_unidCommonwealthMilitia; 'promote)
+						(block Nil
+							;	Clear promotion flag
+							(typSetData &HS_unidCommonwealthMilitia; 'promote Nil)
+
+							;	dsRPGMission checks for a well-known data member in the mission
+							;	object to see if it should navigate to an additional screen.
+							(if missionObj
+								(msnSetData missionObj 'rewardNextScreen &HS_dsMilitiaPromotion;)
+								)
+
+							;	Set the new rank
+							(typIncData &HS_unidCommonwealthMilitia; 'rank)
+							)
+						)
+					)
+				))
+			)
+	</Globals>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&HS_rsCommonwealthMilitiaFortress;"			bitmap="Resources\CommonwealthMilitiaFortress.jpg" bitmask="Resources\CommonwealthMilitiaFortressMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsCommonwealthMilitiaInsignia;"			bitmap="Resources\CommonwealthMilitiaInsignia.jpg" bitmask="Resources\CommonwealthMilitiaInsigniaMask.bmp" loadOnUse="true"/>
+	
+</TranscendenceModule>

@@ -1,0 +1,1034 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+	<Type unid="&RPG_dsDockScreenBase;"
+			inherit="&RPG_unidCommonText;">
+	</Type>
+	
+<!-- ABANDONED STATION =========================================================
+
+	Language IDs:
+	
+	descAbandonedStation: If the station has the given language ID, then we use
+			that as the description. Otherwise we come up with a default.
+	
+	
+-->
+
+	<DockScreen unid="&RPG_dsRPGAbandonedStation;"
+			inherit=			"&RPG_dsDockScreenBase;"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(hasTriage (objGetProperty gSource 'rpg.triageMissionCriteria))
+						desc
+						)
+						(switch
+							;	If we have a description in the object, then use that.
+							;	NOTE: We also check AbandonedScreenDesc because that ID
+							;	was used by the (now deprecated) dsAbandonedStation.
+						
+							(setq desc (or 
+									(objTranslate gSource 'core.abandonedStationDesc) 
+									(objTranslate gSource 'descAbandonedStation) 
+									(objTranslate gSource 'AbandonedScreenDesc)))
+								(scrSetDesc gScreen desc)
+
+							;	If we have triage
+
+							hasTriage
+								(scrSetDescTranslate gScreen 'descAbandonedStationTriage)
+								
+							;	If populated, then use a default.
+							
+							(objHasAttribute gSource 'populated)
+								(scrSetDescTranslate gScreen 'descAbandonedStationPopulated)
+								
+							;	If a ship, use ship description.
+							
+							(= (objGetProperty gSource 'scale) 'ship)
+								(scrSetDescTranslate gScreen 'descAbandonedShipDefault { objName:(objGetName gSource 'article) })
+								
+							;	Otherwise, generic default
+							
+							(scrSetDescTranslate gScreen 'descAbandonedStationDefault)
+							)
+
+						;	Triage zone is enabled if this is a friendly, 
+						;	populated station.
+
+						(scrShowAction gScreen 'actionTriage hasTriage)
+
+						;	Enable loot action if we have loot
+							
+						(rpgSetLootAction gSource)
+						)
+				</OnPaneInit>
+				
+				<Actions>
+					<Action id="actionTriage" default="1">
+						(rpgMissionAssignment {
+							missionCriteria: (objGetProperty gSource 'rpg.triageMissionCriteria)
+							noMissionTextID: 'descTriageEmpty
+							})
+					</Action>
+
+					<Action id="actionLoot" default="1">
+						(scrShowScreen gScreen &RPG_dsRPGLoot;)
+					</Action>
+
+					<Action id="actionJettison">
+						(scrShowScreen gScreen &RPG_dsRPGJettison;)
+					</Action>
+
+					<Action id="actionUndock" default="1" cancel="1">
+						<Exit/>
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		
+		<Language>
+			<Text id="actionTriage">[T]riage Center</Text>
+
+			<Text id="descAbandonedStationDefault">
+
+				You are docked at a destroyed structure.
+				Leaking fluids and venting gases obscure the ruined machinery inside.
+
+			</Text>
+			<Text id="descAbandonedStationTriage">
+
+				You are docked at the ruins of a station. Spacesuited crews roam
+				the cavernous bay and vacuum alarms sound in the distance.
+
+				An inflatable chamber in the middle serves as a triage and 
+				command	center.
+
+			</Text>
+			<Text id="descTriageEmpty">
+
+				Rows of medbeds fill the makeshift triage center. Human medics 
+				and autodocs roam the aisles seemingly without purpose or 
+				urgency.
+
+				All you hear are coughs and muffled cries.
+
+			</Text>
+			<Text id="descAbandonedStationPopulated">
+
+				You are docked at the lifeless ruins of a destroyed station.
+				Wrecked machinery and smoldering bodies litter the silent, cavernous bay.
+
+			</Text>
+			<Text id="descAbandonedShipDefault">
+
+				You are docked with %objName%.
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+<!-- CONFISCATE ================================================================
+
+	This screen checks for contraband and confiscates it.
+
+	PROPERTIES
+
+		rpg.confiscateContraband: This property is a criteria defining the items
+				that are considered contraband by the station. If set the True, 
+				then we	default to "* +illegal; | * +military;".
+
+	In all cases, if we have a smuggler's cargo hold, we do not confiscate. 
+	And we do not confiscate military items if the player has any valid military
+	ID.
+
+-->
+
+	<DockScreen UNID="&RPG_dsRPGConfiscate;"
+			inherit=			"&RPG_dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(itemsToConfiscate (@ gData 'itemsToConfiscate))
+						)
+						;	Remove items
+
+						(enum itemsToConfiscate theItem
+							(objRemoveItem gPlayerShip theItem)
+							)
+
+						;	Compose text
+
+						(scrSetDescTranslate gScreen 'core.confiscateDesc {
+							itemList: (join (map itemsToConfiscate theItem (itmGetName theItem 'count)) 'oxfordComma)
+							})
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(block Nil
+							(objFireEvent gSource 'OnItemsConfiscated gData)
+							(scrExitScreen gScreen)
+							)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		
+		<Events>
+			<GetGlobalDockScreen>
+				(block (
+					(confiscateContraband (obj@ gSource 'rpg.confiscateContraband))
+					(contrabandCriteria 
+						(switch
+							(= confiscateContraband True)
+								"*U +illegal; -id; | *U +military; -id;"
+
+							confiscateContraband
+							)
+						)
+
+					hasMilitaryID
+					itemsToConfiscate
+					)
+					(switch
+						;	Station must check for contraband
+
+						(or (not contrabandCriteria)
+								(obj@ gSource 'abandoned)
+								)
+							Nil
+
+						;	If the player has slaves then free them
+
+						(and (objGetItems gPlayerShip "*U +illegal; +slaves;")
+								(not (scrGetSessionData gScreen 'rpg.noSlaveConfiscation))
+								)
+							{	screen:&RPG_dsRPGFreeSlaves;
+								priority:8
+								overrideOnly:true
+								}
+						
+						;	If player has a smuggler's cargo hold, then nothing to do.
+
+						(objGetItems gPlayerShip "*I +smugglersHold;")
+							Nil
+
+						;	Remember if we have a military ID
+
+						(block () (setq hasMilitaryID (objGetItems gPlayerShip "* +militaryID;")) nil)
+							Nil
+
+						;	Make a list of items to confiscate
+
+						(not (setq itemsToConfiscate
+								(map (objGetItems gPlayerShip contrabandCriteria) 'excludeNil theItem
+									(switch
+										;	Don't confiscate military items if we have a military ID.
+
+										(and hasMilitaryID
+												(itmHasAttribute theItem 'military)
+												)
+											Nil
+
+										theItem
+										)
+									)
+								))
+							Nil
+						
+						;	Bring up the screen
+					
+						{	screen:&RPG_dsRPGConfiscate;
+							priority: 5
+							overrideOnly: True
+
+							itemsToConfiscate: itemsToConfiscate
+							}
+						)
+					)
+			</GetGlobalDockScreen>
+		</Events>
+
+		<Language>
+			<Text id="core.confiscateDesc">
+			
+				Customs has inspected your ship's cargo hold and confiscated
+				%itemList%.
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+<!-- DECONTAMINATION ===========================================================
+
+	This screen allows a station to decontaminate the player's ship.
+	
+	PROPERTIES
+	
+		rpg.checkRadioactive: If a station has this property set to True, then 
+				we check the player ship for contamination before allowing them
+				to dock. If possible, we decontaminate, otherwise, we refuse
+				docking.
+	
+	gData uses the following fields:
+	
+		currency: The currency used (if Nil, we default to station default)
+		cost: The cost to decontaminate (defaults to 250)
+		descDeconID: ID of language for decon (default to descDecon).
+		descDeconCantAffordID: ID of language for "can't afford" message (defaults to descDeconCantAfford).
+		
+-->
+	
+	<DockScreen UNID="&RPG_dsRPGDecontamination;"
+			inherit=			"&RPG_dsDockScreenBase;"
+			nestedScreen=		"true"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(currency (or (@ gData 'currency) (obj@ gSource 'currency)))
+						(cost 
+							(or 
+								(@ gData 'cost)
+								(objGetRemoveConditionPrice gSource gPlayerShip 'radioactive)
+								
+								;	Backwards compatibility: If we bring up this screen
+								;	explicitly, then we always allow it.
+								
+								(if (not (obj@ gSource 'rpg.checkRadioactive)) 250)
+								)
+							)
+
+						(transData {
+							currency:currency
+							cost:(fmtCurrency currency cost)
+							deconCost:(fmtCurrency currency cost)
+							})
+						)
+						(switch
+							;	If this station cannot decontaminate, then we refuse dock.
+							
+							(not cost)
+								(scrSetDescTranslate gScreen 'core.cannotDecon transData)
+
+							;	If we cannot afford the decontamination cost, then we 
+							;	refues dock.
+							
+							(ls (plyGetCredits gPlayer currency) cost)
+								(scrSetDesc gScreen
+									(or (scrTranslate gScreen (@ gData 'descDeconCantAffordID) transData)
+										(scrTranslate gScreen 'core.cannotAffordDecon transData)
+										(scrTranslate gScreen 'descDeconCantAfford transData)
+										)
+									)
+
+							;	Decontaminate
+
+							(block ()
+								(if (= cost 0)
+									(scrSetDescTranslate gScreen 'core.deconFree transData)
+
+									(scrSetDesc gScreen
+										(or (scrTranslate gScreen (@ gData 'descDeconID) transData)
+											(scrTranslate gScreen 'core.deconDesc transData)
+											(scrTranslate gScreen 'descDecon transData)
+											)
+										)
+									)
+									
+								(scrSetData gScreen 'decontaminate True)
+								(scrSetData gScreen 'deconCost cost)
+								(scrSetData gScreen 'deconCurrency currency)
+								)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(block (
+							(canDecon (scrGetData gScreen 'decontaminate))
+							(currency (scrGetData gScreen 'deconCurrency))
+							(cost (scrGetData gScreen 'deconCost))
+							)
+							
+							(if canDecon
+								(block Nil
+									(objCharge gPlayerShip currency cost)
+									(objCredit gSource currency cost)
+									(objRemoveCondition gPlayerShip 'radioactive)
+									)
+								)
+								
+							;	If the ship is still radioactive, force undock.
+							;	Otherwise, we just exit the screen and go back to the default screen
+						
+							(scrExitScreen gScreen (objGetCondition gPlayerShip 'radioactive))
+							)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		
+		<Events>
+			<GetGlobalDockScreen>
+				(switch
+					;	If the player is not radioactive, then nothing to do.
+					
+					(not (objGetCondition gPlayerShip 'radioactive))
+						Nil
+						
+					;	Must be an active, populated station which checks for
+					;	radiation.
+					
+					(not (objMatches gSource Nil "TAV +populated; +property:rpg.checkRadioactive; | sA +property:rpg.checkRadioactive;"))
+						Nil
+						
+					;	Bring up the screen
+					
+					{	screen:&RPG_dsRPGDecontamination;
+						priority: 9
+						overrideOnly: True
+						}
+					)
+			</GetGlobalDockScreen>
+		</Events>
+
+		<Language>
+			<Text id="core.deconDesc">
+
+				The dockmaster stops your ship due to high radiation levels. 
+				You are automatically charged %deconCost% for decontaminating 
+				your ship.
+
+			</Text>
+			<Text id="core.deconFree">
+
+				The dockmaster decontaminates your ship for free.
+			
+			</Text>
+			<Text id="core.cannotAffordDecon">
+
+				The dockmaster stops your ship due to high radiation levels. 
+				Unfortunately, you cannot afford %deconCost% for decontamination.
+
+			</Text>
+			<Text id="core.cannotDecon">
+				
+				The dockmaster stops you:
+				
+				"Get that radioactive piece of junk off my dock! We don't have
+				the facilities to deal with it."
+				
+			</Text>
+		</Language>
+	</DockScreen>
+
+<!-- JETTISON SCREEN ===========================================================
+
+	This screen allows the player to jettison items either to the docked object
+	or to a crate in space.
+
+	gData uses the following fields:
+
+	jettisonLabel: "Jettison this Item"
+
+	jettisonConfirmLabel: "Jettison"
+
+	sourceObj: Object to jettison to.
+
+-->
+
+	<DockScreen UNID="&RPG_dsRPGJettison;"
+			type=				"itemPicker"
+			nestedScreen=		"true"
+			inherit=			"&RPG_dsDockScreenBase;"
+			>
+
+		<ListOptions
+			dataFrom=	"player"
+			list=		"*U"
+			/>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(thisItem (scrGetItem gScreen))
+						(sourceObj (or (@ gData 'sourceObj) gSource))
+						)
+
+						;	Initialize action label, if necessary
+
+						(if (@ gData 'jettisonLabel)
+							(scrSetActionLabel gScreen 'actionJettisonThis (@ gData 'jettisonLabel))
+							)
+
+						(switch
+							(not thisItem)
+								(block ()
+									(setq gMaxCount 0)
+									(scrSetDescTranslate gScreen 'descNoItemsHere)
+									)
+								
+							(block (
+								(availCount (itmGetCount thisItem))
+								(fitCount (objGetFitCount sourceObj thisItem))
+								(maxCount (min availCount fitCount))
+
+								(capacityLeft
+									(if (ls (objGetCargoSpaceLeft sourceObj) 200000)
+										(scrTranslate gScreen 'capacityLeftString {
+											capacity: (fmtNumber 'massKg (objGetCargoSpaceLeft sourceObj))
+											})
+										)
+									)
+
+								(totalMassString 
+									(if (gr maxCount 1)
+										(scrTranslate gScreen 'totalMassString {
+											quantity:maxCount
+											mass:(fmtNumber 'massKg (* (itmGetMass thisItem) maxCount))
+											})
+										""
+										)
+									)
+
+								(itemText
+									(scrTranslate gScreen 'descJettisonDefault {
+										unitMass:(fmtNumber 'massKg (itmGetMass thisItem))
+										totalMassString:totalMassString
+										})
+									)
+
+								(spaceString
+									(switch
+										(eq maxCount 0)
+											(scrTranslate gScreen 'rpg.noSpaceToJettison { itemName:(itmGetName thisItem 'article) })
+
+										(gr availCount fitCount)
+											(scrTranslate gScreen 'rpg.onlySomeSpaceToJettison {
+												itemName:(itmGetName (itmSetCount thisItem fitCount) 'countAlways)
+												})
+
+										;(scrTranslate gScreen 'spaceStringAll { itemName:(itmGetName thisItem 'count) })
+										)
+									)
+								)
+
+								(scrSetDesc gScreen
+									(if capacityLeft (cat capacityLeft "\n"))
+									itemText
+									(if spaceString (cat "\n\n" spaceString))
+									)
+
+								(setq gMaxCount maxCount)
+								)
+							)
+
+						; Enable/disable actions
+						(scrEnableAction gScreen 'actionJettisonThis (gr gMaxCount 0))
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionJettisonThis" default="1">
+						(block (
+							(sourceObj (if (@ gData 'sourceObj) (@ gData 'sourceObj) gSource))
+							)
+							(switch
+								(gr gMaxCount 1)
+									(scrShowPane gScreen "JettisonQuantity")
+
+								(eq gMaxCount 1)
+									(block (itemsToJettison)
+										; Dump items
+										(setq itemsToJettison (scrRemoveItem gScreen 1))
+										(rpgJettisonItem sourceObj itemsToJettison)
+										(scrShowPane gScreen "Default")
+										)
+								)
+							)
+					</Action>
+
+					<Action id="actionDone" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+
+			<JettisonQuantity
+					showCounter=	"true">
+
+				<OnPaneInit>
+					(block Nil
+						;	Initialize action label, if necessary
+
+						(switch
+							(@ gData 'jettisonConfirmLabel)
+								(scrSetActionLabel gScreen 'actionJettison (@ gData 'jettisonConfirmLabel))
+
+							(@ gData 'jettisonLabel)
+								(scrSetActionLabel gScreen 'actionJettison (@ gData 'jettisonLabel))
+							)
+
+						(scrSetDescTranslate gScreen 'rpg.jettisonQuantity)
+						(scrSetCounter gScreen gMaxCount)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionJettison" default="1">
+						(block (
+							(sourceObj (if (@ gData 'sourceObj) (@ gData 'sourceObj) gSource))
+							(count (scrGetCounter gScreen))
+							)
+							(if (gr count gMaxCount)
+								(scrSetCounter gScreen gMaxCount)
+								(block (itemsToJettison)
+									; Dump items
+									(setq itemsToJettison (scrRemoveItem gScreen count))
+									(rpgJettisonItem sourceObj itemsToJettison)
+									(scrShowPane gScreen "Default")
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionCancel" cancel="1">
+						<ShowPane pane="Default"/>
+					</Action>
+				</Actions>
+			</JettisonQuantity>
+		</Panes>
+
+		<Language>
+			<Text id="actionJettisonThis">[J]ettison this Item</Text>
+			<Text id="actionJettison">[J]ettison</Text>
+
+			<Text id="descJettisonDefault">
+				Unit mass: %unitMass% %totalMassString%
+			</Text>
+			<String id="totalMassString">(%quantity% at %mass%)</String>
+			<Text id="capacityLeftString">Capacity Left: %capacity%</Text>
+
+			<Text id="rpg.jettisonQuantity">How many items do you wish to jettison?</Text>
+			<Text id="rpg.noSpaceToJettison">There is not enough space here to jettison %itemName%.</Text>
+			<Text id="rpg.onlySomeSpaceToJettison">There is only enough space here to jettison %itemName%.</Text>
+		</Language>
+	</DockScreen>
+
+<!-- LOOT SCREEN ===============================================================
+
+	This screen allows the player to loot items from the object that we're 
+	docked with.
+
+	gData uses the following fields:
+
+	lootLabel: "Loot this Item"
+
+	lootConfirmLabel: "Loot"
+
+	nextScreen:	If specified, we navigate to the given screen when we're done.
+		This may also be a list consisting of a screen and a pane.
+						
+	sourceObj: Object to loot from (if Nil, we look from the station we're 
+		docked with.
+-->
+
+	<DockScreen UNID="&RPG_dsRPGLoot;"
+			type=				"itemPicker"
+			nestedScreen=		"true"
+			inherit=			"&RPG_dsDockScreenBase;"
+			>
+
+		<ListOptions
+			dataFrom=	"=(or (@ gData 'sourceObj) 'station)"
+			list=		"*U"
+			/>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(thisItem (scrGetItem gScreen))
+						(sourceObj (or (@ gData 'sourceObj) gSource))
+						)
+						;	Initialize action label, if necessary
+
+						(if (@ gData 'lootLabel)
+							(scrSetActionLabel gScreen 'actionLootThis (@ gData 'lootLabel))
+							)
+
+						;	Set description
+
+						(switch
+							(not thisItem)
+								(block Nil
+									(scrSetData gScreen 'maxCount 0)
+									(scrSetDescTranslate gScreen 'descNoItemsHere)
+									(scrEnableAction gScreen 'actionLootThis Nil)
+									(scrSetActionLabel gScreen 'actionDone Nil Nil '(default cancel))
+									)
+
+							(block (
+								(availCount (itmGetCount thisItem))
+								(fitCount (objGetFitCount gPlayerShip thisItem))
+								(maxCount (min availCount fitCount))
+
+								(itemCurrency (itmGetProperty thisItem 'currency))
+								(itemPrice (itmGetPrice thisItem))
+
+								(capacityLeft
+									(if (ls (objGetCargoSpaceLeft sourceObj) 200000)
+										(scrTranslate gScreen 'capacityLeftString {
+											capacity: (fmtNumber 'massKg (objGetCargoSpaceLeft sourceObj))
+											})
+										)
+									)
+
+								(totalMassString 
+									(if (gr maxCount 1)
+										(scrTranslate gScreen 'totalMassString {
+											quantity:maxCount
+											mass:(fmtNumber 'massKg (* (itmGetMass thisItem) maxCount))
+											})
+										""
+										)
+									)
+
+								(totalPriceString
+									(if (gr maxCount 1)
+										(scrTranslate gScreen 'totalPriceString {
+											count:maxCount
+											price:(fmtCurrency itemCurrency (* maxCount itemPrice))
+											})
+										""
+										)
+									)
+
+								(itemText
+									(scrTranslate gScreen 'descLootDefault {
+										unitMass:(fmtNumber 'massKg (itmGetMass thisItem))
+										unitPrice:(fmtCurrency itemCurrency itemPrice)
+										totalMassString:totalMassString
+										totalPriceString:totalPriceString
+										})
+									)
+
+								(spaceString
+									(switch
+										(eq maxCount 0)
+											(scrTranslate gScreen 'spaceStringNone { itemName:(itmGetName thisItem 'article) })
+
+										(gr availCount fitCount)
+											(scrTranslate gScreen 'spaceStringSome {
+												itemName:(itmGetName (itmSetCount thisItem fitCount) 'countAlways)
+												})
+
+										;(scrTranslate gScreen 'spaceStringAll { itemName:(itmGetName thisItem 'count) })
+										)
+									)
+
+								(tradeData (rpgItemTradeComputer thisItem))
+								)
+								(scrSetDesc gScreen
+									(if capacityLeft (cat capacityLeft "\n"))
+									itemText
+									(if spaceString (cat "\n\n" spaceString))
+									(if tradeData (cat "\n\n" (@ tradeData 'sellRecommendation)))
+									)
+
+								(scrSetData gScreen 'maxCount maxCount)
+
+								(scrEnableAction gScreen 'actionLootThis (gr maxCount 0))
+								)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionLootThis" default="1">
+						(if (gr (scrGetData gScreen 'maxCount) 1)
+							(scrShowPane gScreen "LootQuantity")
+							(block (itemsToLoot)
+								(setq itemsToLoot (scrRemoveItem gScreen 1))
+								(objAddItem gPlayerShip itemsToLoot)
+
+								(if (objHasAttribute gSource 'minedOre)
+									(plyIncItemStat gPlayer 'itemsMinedCount itemsToLoot 1)
+									)
+
+								(scrShowPane gScreen "Default")
+								)
+							)
+					</Action>
+
+					<Action id="actionDone" cancel="1">
+						(block Nil
+							;	As long as the player gets to this screen, we count it
+							;	as a success, whether or not they actually loot something.
+							;
+							;	(This allows us to plant fake loot in the Benedict 
+							;	mission without the player noticing.)
+
+							(typSetData &CORE_svPlayer; 'tutorialLooted True)
+							(scrExitScreen gScreen (@ gData 'forceUndock))
+
+							(if (@ gData 'nextScreen)
+								(scrShowScreen gScreen (@ gData 'nextScreen))
+								)
+							)
+					</Action>
+				</Actions>
+			</Default>
+
+			<LootQuantity
+					showCounter=	"true">
+
+				<OnPaneInit>
+					(block Nil
+						(switch
+							(@ gData 'lootConfirmLabel)
+								(scrSetActionLabel gScreen 'actionLoot (@ gData 'lootConfirmLabel))
+
+							(@ gData 'lootLabel)
+								(scrSetActionLabel gScreen 'actionLoot (@ gData 'lootLabel))
+							)
+
+						(scrSetDesc gScreen (or (@ gData 'descLootQuantity)
+												(scrTranslate gScreen 'rpg.lootQuantity)
+												))
+						(scrSetCounter gScreen (scrGetData gScreen 'maxCount))
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionLoot" default="1">
+						(block (
+							(count (scrGetCounter gScreen))
+							(maxCount (scrGetData gScreen 'maxCount))
+							)
+							(if (gr count maxCount)
+								(scrSetCounter gScreen maxCount)
+								(block (itemsToLoot)
+									(setq itemsToLoot (scrRemoveItem gScreen count))
+									(objAddItem gPlayerShip itemsToLoot)
+
+									(if (objHasAttribute gSource 'minedOre)
+										(plyIncItemStat gPlayer 'itemsMinedCount itemsToLoot count)
+										)
+
+									(scrShowPane gScreen "Default")
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionCancel" cancel="1">
+						<ShowPane pane="Default"/>
+					</Action>
+				</Actions>
+			</LootQuantity>
+		</Panes>
+		
+		<Language>
+			<Text id="descLootDefault">
+				Unit mass: %unitMass% %totalMassString%\n
+				Unit price: %unitPrice% %totalPriceString%
+			</Text>
+			<String id="totalMassString">(%quantity% at %mass%)</String>
+			<String id="totalPriceString">(%count% for %price%)</String>
+			<Text id="capacityLeftString">Capacity Left: %capacity%</Text>
+			<Text id="spaceStringNone">You do not have enough space to carry %itemName%.</Text>
+			<Text id="spaceStringSome">You only have enough room to carry %itemName%.</Text>
+			<Text id="spaceStringAll">You have enough room to carry all %itemName%.</Text>
+			<Text id="actionLootThis">[L]oot this Item</Text>
+
+			<Text id="rpg.lootQuantity">How many items do you wish to loot?</Text>
+		</Language>
+
+	</DockScreen>
+
+<!-- MESSAGE SCREEN ============================================================
+
+	This screen is used to show a simple message.
+
+	gData uses the following fields:
+
+	desc: The text to display.
+
+	nextScreen:	If specified, we navigate to the given screen when we're done
+			This may also be a list consisting of a screen and a pane.
+
+			If nextScreen is equal to 'forceUndock, then we force undock when we
+			exit.
+
+	textID: If specified, we obtain the text to display by asking gSource to
+			translate the ID. (desc is ignored.)
+
+-->
+
+	<DockScreen UNID="&RPG_dsRPGMessage;"
+			nestedScreen=		"true"
+			inherit=			"&RPG_dsDockScreenBase;"
+			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(or (@ gData 'rankDetails) 
+					(objTranslate gSource 'rpg.statusDetails)
+					)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(switch
+						(@ gData 'descID)
+							(scrSetDesc gScreen (objTranslate gSource (@ gData 'descID)))
+
+						(@ gData 'textID)
+							(scrSetDesc gScreen (objTranslate gSource (@ gData 'textID)))
+
+						(scrSetDesc gScreen (or (@ gData 'text) (@ gData 'desc)))
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(switch
+							(not (@ gData 'nextScreen))
+								(scrExitScreen gScreen)
+
+							(eq (@ gData 'nextScreen) 'forceUndock)
+								(scrExitScreen gScreen 'forceUndock)
+
+							(block Nil
+								(scrExitScreen gScreen)
+								(scrShowScreen gScreen (@ gData 'nextScreen))
+								)
+							)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+	</DockScreen>
+
+<!-- REFUEL SCREEN =============================================================
+
+	This screen allows the player to refuel from a station. It requires the
+	station to use the <Refuel> directive in its <Trade> section.
+
+-->
+
+	<DockScreen UNID="&RPG_dsRPGRefuel;"
+			nestedScreen="true"
+			inherit=			"&RPG_dsDockScreenBase;"
+			>
+
+		<Panes>
+			<Default
+					showCounter=	"true">
+
+				<OnPaneInit>
+					(block (maxAfford currencyUsed fuelToUse)
+						(setq currencyUsed (objGetDefaultCurrency gSource))
+
+						(setq fuelToUse (objGetRefuelItemAndPrice gSource gPlayerShip))
+						(setq gItem (@ fuelToUse 0))
+						(setq gCost (@ fuelToUse 1))
+						
+						(if fuelToUse
+							(setq gMaxCount (shpGetFuelNeeded gPlayerShip gItem))
+							(setq gMaxCount 0)
+							)
+
+						(if (gr gCost 0)
+							(setq maxAfford (divide (objGetBalance gPlayerShip currencyUsed) gCost))
+							)
+
+						(switch
+							(not fuelToUse)
+								(block Nil
+									(setq gMaxCount 0)
+									(scrSetDesc gScreen (cat "This refueling facility does not have fuel compatible with your ship's reactor."))
+									)
+
+							(eq gCost 0)
+								(switch
+									(eq gMaxCount 0)
+										(scrSetDesc gScreen "Your ship does not need any fuel.")
+									(eq gMaxCount 1)
+										(scrSetDesc gScreen (cat "Your ship needs one " (itmGetName gItem 0) " to refuel. We can refuel you free of charge."))
+									(scrSetDesc gScreen (cat "Your ship needs " gMaxCount " " (itmGetName gItem 2) " to refuel. We can refuel you free of charge. How many do you wish to use?"))
+									)
+
+							(geq maxAfford gMaxCount)
+								(switch
+									(eq gMaxCount 0)
+										(scrSetDesc gScreen "Your ship does not need any fuel.")
+									(eq gMaxCount 1)
+										(scrSetDesc gScreen (cat "Your ship needs one " (itmGetName gItem 0) " to refuel for a total cost of " (fmtCurrency currencyUsed gCost) "."))
+									(scrSetDesc gScreen (cat "Your ship needs " gMaxCount " " (itmGetName gItem 2) " to refuel. Each " (itmGetName gItem 0) " costs " (fmtCurrency currencyUsed gCost) " (" (fmtCurrency currencyUsed (multiply gCost gMaxCount)) " total). How many do you wish to buy?"))
+									)
+
+							(block Nil
+								(setq gMaxCount maxAfford)
+								(switch
+									(eq gMaxCount 0)
+										(scrSetDesc gScreen "You cannot afford to refuel your ship.")
+									(eq gMaxCount 1)
+										(scrSetDesc gScreen (cat "Each " (itmGetName gItem 0) " costs " (fmtCurrency currencyUsed gCost) ". You can only afford a single one."))
+									(scrSetDesc gScreen (cat "Each " (itmGetName gItem 0) " costs " (fmtCurrency currencyUsed gCost) ". You can only afford " gMaxCount " " (itmGetName gItem 2) ". How many do you wish to buy?"))
+									)
+								)
+							)
+
+						(scrSetCounter gScreen gMaxCount)
+
+						; Enable/disable actions
+						(scrEnableAction gScreen 'actionRefuel (gr gMaxCount 0))
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionRefuel" default="1">
+						(block (count)
+							(setq count (scrGetCounter gScreen))
+							(if (gr count gMaxCount)
+								(scrSetCounter gScreen gMaxCount)
+								
+								(block (itemsToUse currencyUsed)
+									(setq itemsToUse (itmCreate (itmGetType gItem) count))
+									(setq currencyUsed (objGetDefaultCurrency gSource))
+									
+									(shpRefuelFromItem gPlayerShip itemsToUse)
+									
+									(rpgBuyItem gSource itemsToUse (* count gCost) currencyUsed { 'noAddItem:True })
+									
+									(scrExitScreen gScreen)
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionCancel" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+	</DockScreen>
+
+</TranscendenceModule>

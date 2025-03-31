@@ -1,0 +1,1154 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+<!-- EFFECT TYPES ========================================================= -->
+
+	<Effect UNID="&HS_efMediumExplosion1;">
+		<Image imageID="&CORE_rsMediumExplosions;" 
+				imageX="0" 
+				imageY="0" 
+				imageWidth="64" 
+				imageHeight="64"
+				imageFrameCount="16"
+				imageTicksPerFrame="2"/>
+	</Effect>
+
+	<Effect UNID="&HS_efBattleArenaWallHit;">
+		<Image imageID="&CORE_rsShieldHit;" 
+				imageX="0" 
+				imageY="0" 
+				imageWidth="32" 
+				imageHeight="32"
+				imageFrameCount="12"
+				imageTicksPerFrame="1"/>
+	</Effect>
+
+	<Effect UNID="&HS_efStationExplosion;">
+		<Image imageID="&CORE_rsMediumHit;" 
+				imageX="0" 
+				imageY="0" 
+				imageWidth="32" 
+				imageHeight="32"
+				imageFrameCount="12"
+				imageTicksPerFrame="1"/>
+	</Effect>
+
+	<Effect UNID="&HS_efGemOfSacrifice;">
+		<Starburst
+				lifetime=		"40"
+				spikeCount=		"1d6+2"
+				spikeLength=	"4d80"
+				primaryColor=	"0xde, 0xb7, 0xff"
+				secondaryColor=	"0x89, 0x00, 0xff"
+				/>
+	</Effect>
+
+<!-- RESOURCES ================================================================
+
+	NOTE: For images that have a 1-bit mask, we specify the backColor attribute
+	to apply the mask to the in-memory image. This saves us from having to carry
+	around the mask. Images that use an 8-bit mask should not use this technique
+
+	Naming conventions
+
+	A		Animation (default 16 frames)
+	A{n}	Animation of n frames (e.g., "A20")
+	B{n}	Bitmap (black = trans) of size n x n (e.g., "B32")
+	D		Directional (default 20 frames)
+	D{n}	Directional with n directions (e.g., "D40")
+	G{n}	Alpha blended image of size n x n (e.g., "G128")
+
+-->
+	<Image UNID="&HS_rsZubrinLRS;"			bitmap="Resources\LargeHUD.jpg"		/>
+	<Image UNID="&HS_rsZubrinLRSBorder;"	bitmask="Resources\LRSBorderMask.bmp"/>
+	<Image UNID="&HS_rsZubrinTargeting;"	bitmap="Resources\WeaponsHUD.bmp"	bitmask="Resources\WeaponsHUDMask.bmp"	/>
+
+	<Image UNID="&HS_rsSRSSnow;"			bitmap="Resources\ScreenSnow.jpg"/>
+
+	<Image UNID="&HS_rsEndGameEscaped;"	bitmap="Resources\GameOverEscape.jpg"			loadOnUse="true" />
+	<Image UNID="&HS_rsEndGameDestroyed;"	bitmap="Resources\GameOver.jpg"				loadOnUse="true" />
+
+	<Image UNID="&HS_rsStations1;"		bitmap="Resources\Stations1.jpg"		bitmask="Resources\Stations1Mask.bmp"  />
+	<Image UNID="&HS_rsStations2;"		bitmap="Resources\Stations2.jpg"		bitmask="Resources\Stations2Mask.bmp"  />
+	<Image UNID="&HS_rsStations3;"		bitmap="Resources\Stations3.jpg"		bitmask="Resources\Stations3Mask.bmp"  />
+	<Image UNID="&HS_rsStations4;"		bitmap="Resources\Stations4.jpg"		bitmask="Resources\Stations4Mask.bmp"  />
+	<Image UNID="&HS_rsStations5;"		bitmap="Resources\Stations5.jpg"		bitmask="Resources\Stations5Mask.bmp"  />
+	<Image UNID="&HS_rsStations6;"		bitmap="Resources\Stations6.jpg"		bitmask="Resources\Stations6Mask.bmp"  />
+	<Image UNID="&HS_rsStations7;"		bitmap="Resources\Stations7.jpg"		bitmask="Resources\Stations7Mask.bmp"  />
+	<Image UNID="&HS_rsStations8;"		bitmap="Resources\Stations8.jpg"		bitmask="Resources\Stations8Mask.bmp"  />
+	<Image UNID="&HS_rsStations9;"		bitmap="Resources\Stations9.jpg"		bitmask="Resources\Stations9Mask.bmp"  />
+
+	<Image UNID="&HS_rsNavBeacon;"		bitmap="Resources\NavBeacon.jpg"		bitmask="Resources\NavBeaconMask.bmp" NoPM="true"/>
+	<Image UNID="&HS_rsLogBuoy;"		bitmap="Resources\LogBuoy.jpg"		bitmask="Resources\LogBuoyMask.bmp"  loadOnUse="true"/>
+
+	<Image UNID="&HS_rsShockwave1;"	bitmap="Resources\Shockwave1.jpg"		bitmask="Resources\Shockwave1Mask.bmp" loadOnUse="true"/>
+
+<!-- ITEM TABLES ==============================================================
+
+	Item Table Attributes
+
+	<RandomItem>
+
+	categories:
+			*	all categories
+			a	armor
+			d	device (weapon, shield, drive, etc.)
+			f	fuel
+			l	launcher weapon only
+			m	missile
+			r	reactor
+			s	shields
+			t	miscellaneous
+			u	useful (armor coating, ROM, etc.)
+			v	drive
+			w	weapon (including launchers)
+			I	is installed
+			D	is damaged
+			N	is not damaged
+			S	is useable
+			U	is not installed
+
+	modifiers:
+			+	must have this modifier
+			-	must not have this modifier
+
+-->
+	
+	<ItemTable UNID="&HS_trStdTreasure;">
+		<Table>
+			<RandomItem chance="15"
+					criteria=			"* +MajorItem; -NotStandard;"
+					levelFrequency=		"systemLevel:vu|c|uv"
+					/>
+			<RandomItem chance="30"
+					criteria=			"* +MinorItem; -NotStandard;"
+					levelFrequency=		"systemLevel:vu|c|uv"
+					/>
+			<RandomItem chance="55"
+					criteria=			"* +Consumable; -NotStandard;"
+					levelFrequency=		"systemLevel:vu|c|uv"
+					/>
+		</Table>
+	</ItemTable>
+	
+	<ItemTable UNID="&HS_trStdLevelTreasure;">
+		<Group	value="standard">
+			<Table>
+				<RandomItem chance="15"
+						criteria=			"* +MajorItem; -NotStandard;"
+						levelFrequency=		"systemLevel:vu|c|uv"
+						/>
+				<RandomItem chance="30"
+						criteria=			"* +MinorItem; -NotStandard;"
+						levelFrequency=		"systemLevel:vu|c|uv"
+						/>
+				<RandomItem chance="55"
+						criteria=			"* +Consumable; -NotStandard;"
+						levelFrequency=		"systemLevel:vu|c|uv"
+						/>
+			</Table>
+		</Group>
+	</ItemTable>
+	
+	<ItemTable unid="&HS_trStdTreasureLevel1;">
+		<Group value="standard:level=1">
+			<Table>
+				<RandomItem chance="15"
+						criteria=			"* +MajorItem; -NotStandard;"
+						levelFrequency=		"cuv-- -----"
+						/>
+				<RandomItem chance="30"
+						criteria=			"* +MinorItem; -NotStandard;"
+						levelFrequency=		"cuv-- -----"
+						/>
+				<RandomItem chance="55"
+						criteria=			"* +Consumable; -NotStandard;"
+						levelFrequency=		"cuv-- -----"
+						/>
+			</Table>
+		</Group>
+	</ItemTable>
+
+	<ItemTable unid="&HS_trStdTreasureLevel2;">
+		<Group value="standard:level=2">
+			<Table>
+				<RandomItem chance="15"
+						criteria=			"* +MajorItem; -NotStandard;"
+						levelFrequency=		"ucuv- -----"
+						/>
+				<RandomItem chance="30"
+						criteria=			"* +MinorItem; -NotStandard;"
+						levelFrequency=		"ucuv- -----"
+						/>
+				<RandomItem chance="55"
+						criteria=			"* +Consumable; -NotStandard;"
+						levelFrequency=		"ucuv- -----"
+						/>
+			</Table>
+		</Group>
+	</ItemTable>
+
+	<ItemTable unid="&HS_trStdTreasureLevel3;">
+		<Group value="standard:level=3">
+			<Table>
+				<RandomItem chance="15"
+						criteria=			"* +MajorItem; -NotStandard;"
+						levelFrequency=		"vucuv -----"
+						/>
+				<RandomItem chance="30"
+						criteria=			"* +MinorItem; -NotStandard;"
+						levelFrequency=		"vucuv -----"
+						/>
+				<RandomItem chance="55"
+						criteria=			"* +Consumable; -NotStandard;"
+						levelFrequency=		"vucuv -----"
+						/>
+			</Table>
+		</Group>
+	</ItemTable>
+
+	<ItemTable unid="&HS_trStdTreasureLevel4;">
+		<Group value="standard:level=4">
+			<Table>
+				<RandomItem chance="15"
+						criteria=			"* +MajorItem; -NotStandard;"
+						levelFrequency=		"-vucu v----"
+						/>
+				<RandomItem chance="30"
+						criteria=			"* +MinorItem; -NotStandard;"
+						levelFrequency=		"-vucu v----"
+						/>
+				<RandomItem chance="55"
+						criteria=			"* +Consumable; -NotStandard;"
+						levelFrequency=		"-vucu v----"
+						/>
+			</Table>
+		</Group>
+	</ItemTable>
+
+	<ItemTable unid="&HS_trStdTreasureLevel5;">
+		<Group value="standard:level=5">
+			<Table>
+				<RandomItem chance="15"
+						criteria=			"* +MajorItem; -NotStandard;"
+						levelFrequency=		"--vuc uv---"
+						/>
+				<RandomItem chance="30"
+						criteria=			"* +MinorItem; -NotStandard;"
+						levelFrequency=		"--vuc uv---"
+						/>
+				<RandomItem chance="55"
+						criteria=			"* +Consumable; -NotStandard;"
+						levelFrequency=		"--vuc uv---"
+						/>
+			</Table>
+		</Group>
+	</ItemTable>
+
+	<ItemTable unid="&HS_trStdTreasureLevel6;">
+		<Group value="standard:level=6">
+			<Table>
+				<RandomItem chance="15"
+						criteria=			"* +MajorItem; -NotStandard;"
+						levelFrequency=		"---vu cuv--"
+						/>
+				<RandomItem chance="30"
+						criteria=			"* +MinorItem; -NotStandard;"
+						levelFrequency=		"---vu cuv--"
+						/>
+				<RandomItem chance="55"
+						criteria=			"* +Consumable; -NotStandard;"
+						levelFrequency=		"---vu cuv--"
+						/>
+			</Table>
+		</Group>
+	</ItemTable>
+
+	<ItemTable unid="&HS_trStdTreasureLevel7;">
+		<Group value="standard:level=7">
+			<Table>
+				<RandomItem chance="15"
+						criteria=			"* +MajorItem; -NotStandard;"
+						levelFrequency=		"----v ucuv-"
+						/>
+				<RandomItem chance="30"
+						criteria=			"* +MinorItem; -NotStandard;"
+						levelFrequency=		"----v ucuv-"
+						/>
+				<RandomItem chance="55"
+						criteria=			"* +Consumable; -NotStandard;"
+						levelFrequency=		"----v ucuv-"
+						/>
+			</Table>
+		</Group>
+	</ItemTable>
+
+	<ItemTable unid="&HS_trStdTreasureLevel8;">
+		<Group value="standard:level=8">
+			<Table>
+				<RandomItem chance="15"
+						criteria=			"* +MajorItem; -NotStandard;"
+						levelFrequency=		"----- vucuv"
+						/>
+				<RandomItem chance="30"
+						criteria=			"* +MinorItem; -NotStandard;"
+						levelFrequency=		"----- vucuv"
+						/>
+				<RandomItem chance="55"
+						criteria=			"* +Consumable; -NotStandard;"
+						levelFrequency=		"----- vucuv"
+						/>
+			</Table>
+		</Group>
+	</ItemTable>
+
+	<ItemTable unid="&HS_trStdTreasureLevel9;">
+		<Group value="standard:level=9">
+			<Table>
+				<RandomItem chance="15"
+						criteria=			"* +MajorItem; -NotStandard;"
+						levelFrequency=		"----- -vucu v----"
+						/>
+				<RandomItem chance="30"
+						criteria=			"* +MinorItem; -NotStandard;"
+						levelFrequency=		"----- -vucu v----"
+						/>
+				<RandomItem chance="55"
+						criteria=			"* +Consumable; -NotStandard;"
+						levelFrequency=		"----- -vucu v----"
+						/>
+			</Table>
+		</Group>
+	</ItemTable>
+
+	<ItemTable unid="&HS_trStdTreasureLevel10;">
+		<Group value="standard:level=10">
+			<Table>
+				<RandomItem chance="15"
+						criteria=			"* +MajorItem; -NotStandard;"
+						levelFrequency=		"----- --vuc uv---"
+						/>
+				<RandomItem chance="30"
+						criteria=			"* +MinorItem; -NotStandard;"
+						levelFrequency=		"----- --vuc uv---"
+						/>
+				<RandomItem chance="55"
+						criteria=			"* +Consumable; -NotStandard;"
+						levelFrequency=		"----- --vuc uv---"
+						/>
+			</Table>
+		</Group>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trConsumables1;">
+		<RandomItem
+				criteria=			"fmut +Consumable; -Illegal; -Military; -NotStandard"
+				level=				"1"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trConsumables2;">
+		<RandomItem
+				criteria=			"fmut +Consumable; -Illegal; -Military; -NotStandard"
+				level=				"2"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trConsumables3;">
+		<RandomItem
+				criteria=			"fmut +Consumable; -Illegal; -Military; -NotStandard"
+				level=				"3"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trConsumables4;">
+		<RandomItem
+				criteria=			"fmut +Consumable; -Illegal; -Military; -NotStandard"
+				level=				"4"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trConsumables5;">
+		<RandomItem
+				criteria=			"fmut +Consumable; -Illegal; -Military; -NotStandard"
+				level=				"5"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trConsumables6;">
+		<RandomItem
+				criteria=			"fmut +Consumable; -Illegal; -NotStandard;"
+				level=				"6"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trConsumables7;">
+		<RandomItem
+				criteria=			"fmut +Consumable; -Illegal; -NotStandard;"
+				level=				"7"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trConsumables8;">
+		<RandomItem
+				criteria=			"fmut +Consumable; -Illegal; -NotStandard;"
+				level=				"8"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trConsumables9;">
+		<RandomItem
+				criteria=			"fmut +Consumable; -Illegal; -NotStandard;"
+				level=				"9"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trConsumables10;">
+		<RandomItem
+				criteria=			"fmut +Consumable; -Illegal; -NotStandard;"
+				level=				"10"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMajorItem1;">
+		<RandomItem
+				criteria=			"wsd +MajorItem; -Illegal; -Military; -NotStandard"
+				level=				"1"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMajorItem2;">
+		<RandomItem
+				criteria=			"wsd +MajorItem; -Illegal; -Military; -NotStandard"
+				level=				"2"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMajorItem3;">
+		<RandomItem
+				criteria=			"wsd +MajorItem; -Illegal; -Military; -NotStandard"
+				level=				"3"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMajorItem4;">
+		<RandomItem
+				criteria=			"wsd +MajorItem; -Illegal; -Military; -NotStandard"
+				level=				"4"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMajorItem5;">
+		<RandomItem
+				criteria=			"wsd +MajorItem; -Illegal; -Military; -NotStandard"
+				level=				"5"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMajorItem6;">
+		<RandomItem
+				criteria=			"wsd +MajorItem; -Illegal; -Military; -NotStandard"
+				level=				"6"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMajorItem7;">
+		<RandomItem
+				criteria=			"wsd +MajorItem; -Illegal; -NotStandard;"
+				level=				"7"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMajorItem8;">
+		<RandomItem
+				criteria=			"wsd +MajorItem; -Illegal; -NotStandard;"
+				level=				"8"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMajorItem9;">
+		<RandomItem
+				criteria=			"wsd +MajorItem; -Illegal; -NotStandard;"
+				level=				"9"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMajorItem10;">
+		<RandomItem
+				criteria=			"wsd +MajorItem; -Illegal; -NotStandard;"
+				level=				"10"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMinorItem1;">
+		<RandomItem
+				criteria=			"afmut +MinorItem; -Illegal; -Military; -NotStandard"
+				level=				"1"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMinorItem2;">
+		<RandomItem
+				criteria=			"afmut +MinorItem; -Illegal; -Military; -NotStandard"
+				level=				"2"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMinorItem3;">
+		<RandomItem
+				criteria=			"afmut +MinorItem; -Illegal; -Military; -NotStandard"
+				level=				"3"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMinorItem4;">
+		<RandomItem
+				criteria=			"afmut +MinorItem; -Illegal; -Military; -NotStandard"
+				level=				"4"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMinorItem5;">
+		<RandomItem
+				criteria=			"afmut +MinorItem; -Illegal; -Military; -NotStandard"
+				level=				"5"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMinorItem6;">
+		<RandomItem
+				criteria=			"afmut +MinorItem; -Illegal; -NotStandard;"
+				level=				"6"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMinorItem7;">
+		<RandomItem
+				criteria=			"afmut +MinorItem; -Illegal; -NotStandard;"
+				level=				"7"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMinorItem8;">
+		<RandomItem
+				criteria=			"afmut +MinorItem; -Illegal; -NotStandard;"
+				level=				"8"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMinorItem9;">
+		<RandomItem
+				criteria=			"afmut +MinorItem; -Illegal; -NotStandard;"
+				level=				"9"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMinorItem10;">
+		<RandomItem
+				criteria=			"afmut +MinorItem; -Illegal; -NotStandard;"
+				level=				"10"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trStationSupplies;">
+		<Table>
+			<Item chance="15" count="1d6"	item="&CORE_itHelium3FuelRod;" />
+			<Item chance="25" count="1d8"	item="&HS_itFrozenSupplies;" />
+			<Item chance="20" count="1d8"	item="&HS_itHydrocarbons;" />
+			<Item chance="30" count="1d12"	item="&HS_itWaterIce;" />
+			<Item chance="10" count="1d6"	item="&HS_itMedicalSupplies;" />
+		</Table>
+	</ItemTable>
+
+	<!-- LEVEL I-II -->
+
+	<ItemTable UNID="&HS_trUsefulItems1;">
+		<Table>
+			<RandomItem chance="50"
+					criteria=		"fmu -Illegal; -Military; -Alien; -NotStandard"
+					level=			"1"
+					levelCurve=		"2"
+					/>
+			<RandomItem chance="50"
+					criteria=		"fmu -Illegal; -Military; -Alien; -NotStandard"
+					level=			"2"
+					levelCurve=		"2"
+					/>
+		</Table>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMiscItems1;">
+		<Table>
+			<RandomItem chance="50"
+					criteria=		"t -Illegal; -Military; -Alien; -NotStandard"
+					level=			"1"
+					levelCurve=		"2"
+					/>
+			<RandomItem chance="50"
+					criteria=		"t -Illegal; -Military; -Alien; -NotStandard"
+					level=			"2"
+					levelCurve=		"2"
+					/>
+		</Table>
+	</ItemTable>
+
+	<!-- LEVEL III-IV -->
+
+	<ItemTable UNID="&HS_trMiscItems2;">
+		<Table>
+			<RandomItem chance="50"
+					criteria=		"t -Illegal; -Military; -Alien; -NotStandard"
+					level=			"3"
+					levelCurve=		"2"
+					/>
+			<RandomItem chance="50"
+					criteria=		"t -Illegal; -Military; -Alien; -NotStandard"
+					level=			"4"
+					levelCurve=		"2"
+					/>
+		</Table>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trUsefulItems2;">
+		<Table>
+			<RandomItem chance="50"
+					criteria=		"fmu -Illegal; -Military; -Alien; -NotStandard"
+					level=			"3"
+					levelCurve=		"2"
+					/>
+			<RandomItem chance="50"
+					criteria=		"fmu -Illegal; -Military; -Alien; -NotStandard"
+					level=			"4"
+					levelCurve=		"2"
+					/>
+		</Table>
+	</ItemTable>
+
+	<!-- LEVEL V-VI -->
+
+	<ItemTable UNID="&HS_trMiscItems3;">
+		<Table>
+			<RandomItem chance="50"
+					criteria=		"t -Illegal; -Military; -Alien; -NotStandard"
+					level=			"5"
+					levelCurve=		"2"
+					/>
+			<RandomItem chance="50"
+					criteria=		"t -Illegal; -Military; -Alien; -NotStandard"
+					level=			"6"
+					levelCurve=		"2"
+					/>
+		</Table>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trHaloGems;">
+		<RandomItem 
+				criteria=			"* +HaloGem; -NotStandard"
+				level=				"7"
+				levelCurve=			"1"
+				/>
+	</ItemTable>
+
+	<!-- Cargo Container Items -->
+
+	<ItemTable UNID="&HS_trCargoContainer;">
+		<Table>
+			<Group chance="60" value="standard">
+				<RandomItem chance="60"
+						criteria=			"* +res; -notStandard;"
+						levelFrequency=		"systemLevel:vu|c|uv"
+						/>
+			</Group>
+			<Group chance="60" value="standard">
+				<RandomItem chance="30"
+						criteria=			"f -notStandard;"
+						levelFrequency=		"systemLevel:vu|c|uv"
+						/>
+			</Group>
+			<Group chance="10" value="standard">
+				<RandomItem chance="10"
+						criteria=			"m -notStandard;"
+						levelFrequency=		"systemLevel:vu|c|uv"
+						/>
+			</Group>
+		</Table>
+	</ItemTable>
+
+	<!-- Illegal items -->
+
+	<ItemTable UNID="&HS_trIllegalItems1;">
+		<RandomItem
+				criteria=			"* +Illegal"
+				level=				"1"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trIllegalItems2;">
+		<RandomItem
+				criteria=			"* +Illegal"
+				level=				"2"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trIllegalItems3;">
+		<RandomItem
+				criteria=			"* +Illegal"
+				level=				"3"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<!-- Military items -->
+
+	<ItemTable UNID="&HS_trMilitaryItem4;">
+		<RandomItem	
+				criteria=			"* +Military; -NotStandard"	
+				level=				"4"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMilitaryItem5;">
+		<RandomItem	
+				criteria=			"* +Military; -NotStandard"	
+				level=				"5"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMilitaryItem6;">
+		<RandomItem	
+				criteria=			"* +Military; -NotStandard"	
+				level=				"6"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMilitaryItem7;">
+		<RandomItem	
+				criteria=			"* +Military; -NotStandard"	
+				level=				"7"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMilitaryItem8;">
+		<RandomItem	
+				criteria=			"* +Military; -NotStandard"	
+				level=				"8"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMilitaryItem9;">
+		<RandomItem	
+				criteria=			"* +Military; -NotStandard"	
+				level=				"9"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<ItemTable UNID="&HS_trMilitaryItem10;">
+		<RandomItem	
+				criteria=			"* +Military; -NotStandard"	
+				level=				"10"
+				levelCurve=			"2"
+				/>
+	</ItemTable>
+
+	<!-- Miscellaneous -->
+
+	<ItemTable UNID="&HS_trMedicalItem;">
+		<RandomItem
+				criteria=			"* +Meds; -NotStandard"
+				level=				"5"
+				levelCurve=			"4"
+				/>
+	</ItemTable>
+
+<!-- ITEM TYPES ===============================================================
+
+	MODIFIERS
+
+	Alien						Item is not found in Human Space
+	AntiMatter					Item is involved in AntiMatter industry
+	Auton						Item is an auton
+	BlackMarketID				This is a black market ID
+	Bushido						Item is sold by Bushido corp
+	Food						Item is human food or drink
+	Fuel						Item is starship fuel
+	HaloGem						Item is a halo gem
+	ID							Item is an ID
+	Illegal						Item is illegal in Human Space
+	Info						Item consists of digital information
+	Lux							Item is human luxury good
+	Makayev						Item is sold by Makayev corp
+	Meds						Item is human medicine
+	Military					Item is restricted to military in Human Space
+	MilitaryID					Item is a military ID
+	Missile						Item is ammo or missile
+	Nuclear						Item is involved in nuclear industry
+	Rasiermesser				Item is sold by Rasiermesser corp
+	Res							Item is a resource needed for industry
+	RingerValuable				Item is used by Ringers
+	Soul						Item contains (possibly dormant) intelligence of HIG III or above
+	Specialty					Item is not a commodity; for sale only in specific stations
+	ZeroPoint					Item is used in Zero-point energy industry
+
+	Consumable					Item is consumable (missiles/ammo/treasure)
+	MajorItem					Device/Shield/Weapon
+	MinorItem					Armor/Enhancements
+
+	DAMAGE TYPES
+
+	laser
+	kinetic
+	particle
+	blast
+	ion
+	thermo
+	positron
+	plasma
+	antimatter
+	nano
+	graviton
+	singularity
+	dark acid
+	dark steel
+	dark lightning
+	dark fire
+
+	USE KEYS
+
+	5							Luminous 5scare
+	A							autons
+	C							gem of contrition
+	F							gem of sacrifice
+	J							transpace jumpdrive
+	L							superconducting coils
+	S							Scramble1.4
+
+	COMMON USE PHRASES
+
+	Ship already has a(n) xyz
+	xyz installed
+	xyz uninstalled
+	Ship cannot support xyz
+	xyz required
+	xyz: blah blah
+	Not enough fuel to xyz
+
+-->
+
+	<!-- Military ID -->
+
+	<ItemType UNID="&HS_itMilitaryID;"
+			name=				"Commonwealth military identification chip"
+			level=				"4"
+			value=				"500"
+			mass=				"1"
+			frequency=			"veryrare"
+			unknownType=		"&HS_itUnknownID;"
+			attributes=			"commonwealth, ID, militaryID, minorItem"
+
+			description=		"This identification chip is used by the Commonwealth military to identify authorized military personnel."
+
+			sortName=			"identification chip, military"
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+<!-- SHIP CLASSES ========================================================= -->
+
+	<!-- EI100/M Missileship-->
+
+	<ShipClass UNID="&HS_scEI100M;"
+			manufacturer=		"Earth Industries"
+			class=				"EI100/M"
+			type=				"missileship"
+
+			attributes=			""
+			inherit=			"&HS_scEI100Stock;"
+			>
+
+		<Armor
+			armorID=			"&HS_itReactiveArmor;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itOmniLaserCannon;"/>
+			<Device deviceID="&HS_itNAMIMissileLauncher;" omnidirectional="true" >
+				<Items>
+					<Item count="2d6" item="&HS_itKM500Missile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itClass1Deflector;"/>
+		</Devices>
+
+		<Items>
+			<Item count="4d6" item="&CORE_itHelium3FuelRod;"/>
+		</Items>
+
+		<AISettings
+			fireRateAdj=		"60"
+			fireAccuracy=		"100"
+			perception=			"4"
+			
+			combatStyle=		"standOff"
+			/>
+
+	</ShipClass>
+
+<!-- STATION TYPES ============================================================
+
+	STATION ATTRIBUTES
+
+	anarchists				anarchists
+	commonwealth			commonwealth station
+	commonFleet				Commonwealth Fleet
+	commonwealthMilitary	either Commonwealth militia or Commonwealth Fleet
+	enemy					enemy of the player
+	friendly				friend of the player
+	populated				not an automated station
+	primary					main station in the system
+
+	ENVIRONMENT ATTRIBUTES
+
+	envEarth				station found in earth systems
+	envFire					station found in fire systems
+	envWater				station found in water systems
+	envAir					station found in air systems
+
+	For example, in asteroid systems (+envEarth) any station that
+	DOES NOT have the envEarth attribute is half as likely to appear
+	in the system.
+
+	Each of the above attributes also has a pair of the form envAvoidsXXX. For
+	example, envAvoidsAir means that the station is less likely than average to
+	be found in an ice system.
+
+	LOCATION CRITERIA
+
+	+planetary				station twice as likely to appear near a planet
+
+-->
+
+	<!-- Flotsam -->
+
+	<StationType UNID="&CORE_stFlotsam;"
+			name=				"(flotsam)"
+			sovereign=			"&CORE_svNeutral;"
+			inherit=			"&RPG_unidCommonText;"
+			
+			abandonedScreen=	"Main"
+
+			scale=				"ship"
+			mobile=				"true"
+			mass=				"1"
+			destroyWhenEmpty=	"true"
+			noMapIcon=			"true"
+			>
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(block (
+								(theItem (item (objGetItems gSource "*") 0))
+								)
+
+								(if theItem
+									(block nil
+										(scrSetData gScreen 'itemName (itmGetName theItem 0x08))
+										(scrSetDescTranslate gScreen 'descFindItem)
+									)
+
+									(block Nil
+										(scrSetDescTranslate gScreen 'descItemSecure)
+										(scrShowAction gScreen 'actionLoot Nil)
+										)
+									)
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionLoot" default="1">
+								(scrShowScreen gScreen &RPG_dsRPGLoot;)
+							</Action>
+
+							<Action id="actionUndock" cancel="1" default="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"24"
+				maxDist=		"3"
+				/>
+				
+		<Language>
+			<Text id="descFindItem">(cat "You find " (scrGetData gScreen 'itemName) " floating in space.")</Text>
+			<Text id="descItemSecure">"The item is secure aboard your ship."</Text>
+		</Language>
+	</StationType>
+
+	<!-- Tan Ru Dorem -->
+
+	<StationType UNID="&HS_stTanRuDorem;"
+			name=				": Tan&#x95;Ru&#x95;Dorem"
+			sovereign=			"&CORE_svNeutral;"
+			dockScreen=			"Main"
+
+			multiHull=			"true"
+			immutable=			"true"
+			>
+
+		<Image imageID="&HS_rsStations7;" imageX="0" imageY="768" imageWidth="256" imageHeight="256"/>
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action name="Undock" cancel="1" key="U">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<DockingPorts>
+			<Port x="79"	y="75" />
+			<Port x="0"		y="100" />
+			<Port x="-73"	y="74" />
+			<Port x="-109"	y="0" />
+			<Port x="-87"	y="-75" />
+			<Port x="0"		y="-109" />
+			<Port x="82"	y="-82" />
+			<Port x="109"	y="8" />
+		</DockingPorts>
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are docked at a strange station, apparently devoid of inhabitants. The 
+				immense docking bay is built out of a metal engraved with faintly luminous 
+				hieroglyphics.
+				
+				The walls are warm to the touch and hum with power.
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- SPECIAL STATIONS -->
+
+	<!-- NavBeacon -->
+
+	<StationType UNID="&HS_stNavBeacon;"
+			name=				"(navigational beacon)"
+			sovereign=			"&CORE_svIndependent;"
+			dockScreen=			"&HS_dsNavBeacon;"
+			noMapLabel=			"true"
+			beacon=				"true"
+			immutable=			"true"
+			mass=				"2500"
+			>
+
+		<Names noArticle="true">NavBeacon %s-%0%0%0</Names>
+
+		<DockingPorts
+				maxDist=		"3"
+				>
+			<Port x="0"		y="24" />
+			<Port x="0"		y="-24" />
+			<Port x="24"	y="0" />
+			<Port x="-24"	y="0" />
+		</DockingPorts>
+
+		<ImageVariants>
+			<Image imageID="&HS_rsNavBeacon;" imageX="0" imageY="0"   imageWidth="64" imageHeight="64" imageFrameCount="2" imageTicksPerFrame="120" flashTicks="3" />
+			<Image imageID="&HS_rsNavBeacon;" imageX="0" imageY="64"  imageWidth="64" imageHeight="64" imageFrameCount="2" imageTicksPerFrame="120" flashTicks="3" />
+			<Image imageID="&HS_rsNavBeacon;" imageX="0" imageY="128" imageWidth="64" imageHeight="64" imageFrameCount="2" imageTicksPerFrame="120" flashTicks="3" />
+			<Image imageID="&HS_rsNavBeacon;" imageX="0" imageY="192" imageWidth="64" imageHeight="64" imageFrameCount="2" imageTicksPerFrame="120" flashTicks="3" />
+		</ImageVariants>
+
+	</StationType>
+
+	<!-- Debug Depot (Obsolete) -->
+	
+	<StationType UNID="&HS_stDebugDepot;"
+			name=				"(debug depot)"
+			sovereign=			"&CORE_svIndependent;"
+			dockScreen=			"Main"
+			scale=				"ship"
+			noMapIcon=			"true"
+			>
+			
+		<ImageShipwreck class="&CORE_scMikeno;"/>
+		
+		<DockScreens>
+			<Main name="Debug Depot">
+				<Panes>
+					<Default>
+						<Actions>
+							<Action name="Undock" default="1" cancel="1" key="U">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"48"
+				maxDist=		"3"
+				/>
+	</StationType>
+
+</TranscendenceModule>

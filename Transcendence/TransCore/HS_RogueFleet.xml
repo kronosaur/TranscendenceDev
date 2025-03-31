@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- ROGUE FLEET -->
+
+	<Sovereign UNID="&HS_svRogueFleet;"
+			name=":the Rogue Fleet"
+			adjective="Rogue Fleet"
+			demonym=":a Rogue Fleetmember(s)"
+
+			alignment="destructive chaos"
+			/>
+
+	<SystemMap unid="&HS_smRogueFleetSpace;"
+			displayOn="&HS_smHumanSpace;"
+			>
+		<TopologyProcessor priority="secondaryColony">
+			<System criteria="+outerRealm;"				attributes="rogueFleetSpace"/>
+		</TopologyProcessor>
+	</SystemMap>
+
+<!-- ENCOUNTERS -->
+
+	<!-- Rogue Fleet Cache -->
+
+	<StationType UNID="&HS_stRogueFleetCache;"
+			name=				"Rogue Fleet cache"
+			sovereign=			"&HS_svRogueFleet;"
+
+			attributes=			"enemy, envAir, envAvoidsFire, generic, human, populated, rogue, rogueFleet"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			size=				"353"
+			fireRateAdj=		"20"
+			explosionType=		"&CORE_vtThermoExplosion1;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+rogueFleetSpace;"
+				systemAffinity=			"+envAir; -envFire;"
+				levelFrequency=			"----- vcu-- ----- ----- -----"
+
+				locationCriteria=		"+asteroids"
+				enemyExclusionRadius=	"50"
+				/>
+
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&HS_itP120HexphaseArmor;"
+				hitPoints=		"370"
+				regen=			"2"
+				/>
+		
+		<Devices>
+			<Device deviceID="&HS_itTeV9Blaster;"	omnidirectional="true" posAngle="0" posRadius="0" posZ="20"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Ship		count="1d3"		class="&HS_scCenturionRogue;" orders="patrol" patrolDist="20"/>
+			<Ship		count="1d3"		class="&HS_scCenturionRogue;" orders="guard"/>
+		</Ships>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="2d6"	  item="&HS_itPteracniumFuelRod;"/>
+			<Table>
+				<Item	chance="25"	count="2d6" item="&HS_itPteracniumFuelRod;"/>
+				<Item	chance="30"	count="4d8" item="&HS_itS3Missile;"/>
+				<Item	chance="15"	count="2d8" item="&HS_itP120HexphaseArmor;"/>
+				<Item	chance="10"	count="1" item="&HS_itTeV9Blaster;"/>
+				<Lookup chance="10" count="1" table="&HS_trConsumables8;"/>
+				<Lookup chance="5"	count="1" table="&HS_trMinorItem8;"/>
+				<Lookup chance="5"	count="1" table="&HS_trMajorItem8;"/>
+			</Table>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsRogueFleetCache;"			imageWidth="280" imageHeight="280"	viewportRatio="0.04375"/>
+
+		<DockingPorts>
+			<Port posAngle="-38" posRadius="100" rotation="-140"/>
+			<Port posAngle="-62" posRadius="100" rotation="40"/>
+
+			<Port posAngle="82"  posRadius="100" rotation="-20"/>
+			<Port posAngle="58"  posRadius="100" rotation="160"/>
+
+			<Port posAngle="202" posRadius="100" rotation="100"/>
+			<Port posAngle="178" posRadius="100" rotation="280"/>
+
+			<Port posAngle="-110" posRadius="110" />
+			<Port posAngle="10"   posRadius="110" />
+			<Port posAngle="130"  posRadius="110" />
+		</DockingPorts>
+
+	</StationType>
+
+	<!-- Rogue Fleet Settlement -->
+
+	<StationType UNID="&HS_stRogueFleetSettlement;"
+			name=				"Rogue Fleet settlement"
+			sovereign=			"&HS_svRogueFleet;"
+				 
+			attributes=			"enemy, envAir, envAvoidsFire, generic, human, populated, rogue, rogueFleet"
+				 
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			size=				"375"				 
+			shipRegen=			"4"
+			fireRateAdj=		"20"
+			explosionType=		"&CORE_vtThermoExplosion2;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+rogueFleetSpace;"
+				systemAffinity=			"+envAir; -envFire;"
+				levelFrequency=			"----- -rcr- ----- ----- -----"
+
+				locationCriteria=		"+asteroids"
+				enemyExclusionRadius=	"50"
+				/>
+
+		<!-- Configuration -->
+		
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&HS_itP120HexphaseArmor;"
+				hitPoints=		"950"
+				regen=			"20"
+				/>
+		
+		<Devices>
+			<Device deviceID="&HS_itStarCannon;"	omnidirectional="true" posAngle="0" posRadius="0" posZ="20"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+		
+		<Ships>
+			<Ship		count="1"		class="&HS_scCenturionXRogue;" orders="patrol" patrolDist="20">
+				<Escorts>
+					<Ship		count="1d3"		class="&HS_scCenturionRogue;" orders="escort"/>
+				</Escorts>
+			</Ship>
+			<Ship		count="1"		class="&HS_scCenturionXRogue;" orders="guard"/>
+			<Ship		count="1d3"		class="&HS_scCenturionRogue;" orders="guard"/>
+		</Ships>
+
+		<!-- Treasure -->
+
+		<Items value="standard:level=8:x=1.4">
+			<Table>
+				<Item	chance="20"	count="2d6" item="&HS_itPteracniumFuelRod;"/>
+				<Item	chance="20"	count="4d8" item="&HS_itS3Missile;"/>
+				<Item	chance="10"	count="2d8" item="&HS_itM2Missile;"/>
+				<Lookup chance="25" count="1" table="&HS_trConsumables9;"/>
+				<Lookup chance="15" count="1" table="&HS_trMinorItem9;"/>
+				<Lookup chance="10" count="1" table="&HS_trMajorItem9;"/>
+			</Table>
+		</Items>
+		
+		<!-- Image and Effects -->
+		
+		<Image imageID="&HS_rsRogueFleetSettlement;"		imageWidth="290" imageHeight="290"	viewportRatio="0.0475"/>
+
+		<DockingPorts>
+			<Port posAngle="10"  posRadius="140"/>
+			<Port posAngle="40"  posRadius="140"/>
+			<Port posAngle="70"  posRadius="140"/>
+
+			<Port posAngle="130" posRadius="140"/>
+			<Port posAngle="150" posRadius="140"/>
+			<Port posAngle="190" posRadius="140"/>
+
+			<Port posAngle="240" posRadius="140"/>
+			<Port posAngle="270" posRadius="140"/>
+			<Port posAngle="310" posRadius="140"/>
+		</DockingPorts>
+	</StationType>
+
+	<EncounterTable UNID="&HS_etRogueAmbush1;">
+		<Table>
+			<Ship chance="30"	count="1d3"	class="&HS_scCenturionRogue;"	orders="attack" sovereign="&HS_svRogueFleet;"/>
+			<Ship chance="50"	count="1"	class="&HS_scCenturionRogue;"	orders="attack"	sovereign="&HS_svRogueFleet;">
+				<Escorts>
+					<Ship count="2"	class="&HS_scCenturionRogue;" orders="escort"/>
+				</Escorts>
+			</Ship>
+			<Ship chance="20"	count="1"	class="&HS_scCenturionXRogue;"	orders="attack" sovereign="&HS_svRogueFleet;"/>
+		</Table>
+	</EncounterTable>
+
+	<EncounterTable UNID="&HS_etRogueAmbush2;">
+		<Table>
+			<Ship chance="50"	count="1"	class="&HS_scCenturionXRogue;"	orders="attack"	sovereign="&HS_svRogueFleet;">
+				<Escorts>
+					<Ship count="2"	class="&HS_scCenturionRogue;" orders="escort"/>
+				</Escorts>
+			</Ship>
+			<Ship chance="30"	count="2d2"	class="&HS_scCenturionRogue;"	orders="attack" sovereign="&HS_svRogueFleet;"/>
+			<Ship chance="20"	count="1d2"	class="&HS_scCenturionXRogue;"	orders="attack" sovereign="&HS_svRogueFleet;"/>
+		</Table>
+	</EncounterTable>
+
+<!-- SHIP CLASSES -->
+
+	<!-- Level 6: Centurion-class Heavy Gunship -->
+
+	<ShipClass UNID="&HS_scCenturionRogue;"
+			manufacturer=		"Pacific Defense Corporation"
+			class=				"Centurion"
+			type=				"heavy gunship"
+			defaultSovereign=	"&HS_svRogueFleet;"
+
+			attributes=			"genericClass, rogueFleet"
+			inherit=			"&HS_scCenturionBlock2;"
+			>
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itBlastPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itTeV9Blaster;"/>
+			<Device deviceID="&HS_itR1Deflector;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="2d6" item="&HS_itXenotiteFuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsCenturionRogue;" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" viewportRatio="0.005"/>
+		<HeroImage imageID="&HS_rsCenturionRogueHero;" imageWidth="320" imageHeight="320"/>
+
+	</ShipClass>
+
+	<!-- Level 7: Centurion/X-class Heavy Gunship -->
+
+	<ShipClass UNID="&HS_scCenturionXRogue;"
+			manufacturer=		"Pacific Defense Corporation"
+			class=				"Centurion/X"
+			type=				"heavy gunship"
+			defaultSovereign=	"&HS_svRogueFleet;"
+
+			attributes=			"genericClass, rogueFLeet"
+			inherit=			"&HS_scCenturionX;"
+			>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="2d6" item="&HS_itPteracniumFuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsCenturionXRogue;" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" viewportRatio="0.005"/>
+		<HeroImage imageID="&HS_rsCenturionXRogueHero;" imageWidth="320" imageHeight="320"/>
+
+	</ShipClass>
+
+	<!-- Levle 7: Rogue Mine Layer -->
+
+	<ShipClass UNID="&HS_scRogueMineLayer;"
+			manufacturer=		"Pacific Defense Corporation"
+			class=				"Aurochs"
+			type=				"mine layer"
+			defaultSovereign=	"&HS_svRogueFleet;"
+
+			attributes=			"genericClass, rogueFleet"
+			inherit=			"&HS_baHumanTechShip;"
+
+			explosionType=		"&CORE_vtBlastExplosion3;"
+			leavesWreck=		"80"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"65"
+			mass=				"2000"
+			cargoSpace=			"2000"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"2000"
+			maxDevices=			"8"
+			maxWeapons=			"3"
+			/>
+
+		<Drive
+			maxSpeed=			"15"
+			thrust=				"1800"
+			powerUse=			"120"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"4.0"
+			rotationAccel=		"0.5"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itP120HexphaseArmor;"
+			count=				"12"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itNAMIMineLauncher;">
+				<Items>
+					<Item count="3d12" item="&HS_itStaticMine;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itR5Deflector;"/>
+		</Devices>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"30"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"70"
+
+					posX=		"-31"
+					posY=		"0"
+					sizeX=		"28"
+					sizeY=		"42"
+					/>
+			
+			<Compartment name="cargo containers"
+					type=		"cargo"
+					hitPoints=	"50"
+
+					posX=		"10"
+					posY=		"0"
+					sizeX=		"40"
+					sizeY=		"40"
+					/>
+		</Interior>
+		 
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="1d12" item="&HS_itXenotiteFuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsAurochsRogue;" imageWidth="98" imageHeight="98"		rotationCount="120" rotationColumns="12" viewportRatio="0.009375"/>
+		<HeroImage imageID="&HS_rsAurochsRogueHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="157"	posRadius="43"	posZ="0"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="42"	posZ="5"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-157"	posRadius="43"	posZ="0"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"20"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"standOff"
+			/>
+
+		<Events>
+			<OnOrdersCompleted>
+				; GLOBALS
+				; "MinePos" are the coordinates of the center of the area to mine
+				;
+				; "DropMine" is True if the ship should drop a mine at next point
+				; "Target" is the marker for the next destination
+				(block (minePos mineItem)
+					(setq minePos (objGetData gSource "MinePos"))
+					(setq mineItem (itmCreate &HS_itStaticMine; 1))
+
+					; We only do something if we've got mines and a place to go
+					(if (and minePos (objHasItem gSource mineItem))
+						(block (destPos)
+
+							; Drop a mine if we are ready
+							(if (objGetData gSource "DropMine")
+								(block Nil
+									(sysCreateWeaponFire &HS_itStaticMine; gSource (objGetPos gSource) 0 0 Nil)
+									(objRemoveItem gSource mineItem)
+									)
+								)
+
+							; Delete the marker, if it exists
+							(if (objGetObjRefData gSource "Target")
+								(objDestroy (objGetObjRefData gSource "Target"))
+								)
+
+							; Pick a position to go to 
+							(setq destPos (sysCreateMarker 
+								""
+								(sysVectorPolarOffset minePos (random 0 359) (random 1 4))
+								(objGetSovereign gSource)
+								))
+							(objSetObjRefData gSource "Target" destPos)
+							(shpOrderGoto gSource destPos)
+
+							; Drop a mine when we reach the destination
+							(objSetData gSource "DropMine" True)
+							)
+						)
+					)
+			</OnOrdersCompleted>
+		</Events>
+	</ShipClass>
+
+<!-- RESOURCE -->
+
+	<Image UNID="&HS_rsRogueFleetCache;"		bitmap="Resources\RogueFleetCache.jpg"	bitmask="Resources\RogueFleetCacheMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&HS_rsRogueFleetSettlement;"	bitmap="Resources\RogueFleetSettlement.jpg"	bitmask="Resources\RogueFleetSettlementMask.bmp" 	loadOnUse="true" />
+
+	<Image UNID="&HS_rsAurochsRogue;"			bitmap="Resources\AurochsRogue.jpg"	bitmask="Resources\AurochsRogueMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&HS_rsAurochsRogueHero;"		bitmap="Resources\AurochsRogueLarge.jpg"	bitmask="Resources\AurochsRogueLargeMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&HS_rsCenturionRogue;"		bitmap="Resources\CenturionRogue.jpg"	bitmask="Resources\CenturionRogueMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&HS_rsCenturionRogueHero;"	bitmap="Resources\CenturionRogueLarge.jpg"	bitmask="Resources\CenturionRogueLargeMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&HS_rsCenturionXRogue;"		bitmap="Resources\CenturionXRogue.jpg"	bitmask="Resources\CenturionXRogueMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&HS_rsCenturionXRogueHero;"	bitmap="Resources\CenturionXRogueLarge.jpg"	bitmask="Resources\CenturionXRogueLargeMask.bmp" 	loadOnUse="true" />
+
+
+</TranscendenceModule>

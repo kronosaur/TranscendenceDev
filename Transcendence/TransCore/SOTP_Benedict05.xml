@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+	<!-- Fiona in St. Katharine's Star =========================================
+
+	EXTRA DATA
+	
+	======================================================================== -->
+	
+	<MissionType UNID="&SOTP_msFionaInStKats;"
+			name=				"Benedict 05: Fiona in St. Kats"
+			attributes=			"benedictStoryArc, stKatsHospital"
+			inherit=			"&SOTP_baBenedictMission;"
+
+			level=				"4"
+			missionArc=			"benedictArc:50"
+
+			maxAppearing=		"1"
+			priority=			"100"
+			ignoreOwnerLimit=	"true"
+
+			noDebrief=			"true"
+			>
+		<Events>
+			<CanCreate>
+				(switch
+					;	If Fiona is dead, mission doesn't show up
+						
+					(not (rpgCharacterIsAliveAndWell &HS_unidFiona;))
+						Nil
+
+					;	If player skipped original Fiona mission, then nothing here.
+
+					(not (msnFind "r +unid:&SOTP_msBenedictAndFiona;; +property:isSuccess;"))
+						Nil
+
+					;	Mission can be created
+
+					True
+					)
+			</CanCreate>
+
+			<OnCreate>
+			</OnCreate>
+
+			<OnAccepted>
+				(block ()
+					(sysSetKnown 'C5 True)
+					)
+			</OnAccepted>
+
+			<OnSetPlayerTarget>
+			</OnSetPlayerTarget>
+			
+			<OnObjDestroyed>
+			</OnObjDestroyed>
+		</Events>
+		
+		<Language>
+			<Text id="Name">
+				Chapter 4: The Merc
+			</Text>
+			<Text id="Summary">
+				(block (
+					)
+					(switch
+						(msn@ gSource 'isFailure)
+							(msnTranslate gSource 'textSummary.failure {
+								systemName: (sysGetName 'C5)
+								})
+							
+						(msnTranslate gSource 'textSummary.active {
+							systemName: (sysGetName 'C5)
+							})
+						)
+					)
+			</Text>
+			<Text id="Intro">
+				(append
+					(list
+						{	descID: 'descIntro1			labelID: 'actionIntro1
+							data: {
+								systemName: (sysGetName (objGetProperty gPlayerShip 'startingSystem))
+								}
+							}
+						{	descID: 'descIntro2			labelID: 'actionIntro2	}
+						{	descID: 'descIntro3		}
+						{	descID: 'descIntro4			labelID: 'actionIntro4	}
+						)
+
+					(if (msnFind "r +unid:&SOTP_msBenedictInNewBeyond;;")
+						(list
+							{	descID: 'descIntro5			labelID: 'actionIntro5	}
+							{	descID: 'descIntro6			labelID: 'actionIntro6
+								data: {
+									systemName: (sysGetName 'C5)
+									}
+								}
+							{	descID: 'descIntro7
+								actions: (list
+									{	labelID: 'actionIntro7A		nextPage: 'trustBenedict		}
+									{	labelID: 'actionIntro7B		nextPage: 'dontTrustBenedict	}
+									)
+								}
+							)
+						(list
+							{	descID: 'descIntro5A		labelID: 'actionIntro5A	}
+							{	descID: 'descIntro6A		labelID: 'actionIntro6A
+								data: {
+									systemName: (sysGetName 'C5)
+									}
+								}
+							{	descID: 'descIntro7A
+								actions: (list
+									{	labelID: 'actionIntro7A		nextPage: 'trustBenedict		}
+									{	labelID: 'actionIntro7B		nextPage: 'dontTrustBenedict	}
+									)
+								}
+							)
+						)
+
+					(list
+						{	id: 'trustBenedict
+							descID: 'descIntro8			labelID: 'actionIntro8		nextPage: 'exitPane
+							}
+
+						{	id: 'dontTrustBenedict
+							descID: 'descIntro9			labelID: 'actionIntro8		nextPage: 'exitPane 
+							}
+						)
+					)
+			</Text>
+			<Text id="Briefing">
+				(list
+					{
+						descID: 'descBriefing1
+						acceptLabelID: 'actionAccept
+						declineLabelID: 'actionDecline
+
+						data: {
+							systemName: (sysGetName 'C5)
+							}
+						}
+					)
+			</Text>
+
+			<!-- INTRO -->
+
+			<Text id="textSummary.active">
+
+				Fiona reveals the circumstances around her attack. She had been
+				investigating the destruction of a Sisters of Domina ship, 
+				called the Hand of Solace.
+
+				Sister Elana Ston was in command and survived the destruction,
+				claiming that it was marauders who attacked them. But Fiona is
+				skeptical.
+
+				Fiona asks you to get in touch with Hugo Sandoval in the
+				%systemName% system. Together you must find the wreck of the 
+				Hand of Solace and unravel its mysteries.
+
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="textSummary.failure">
+
+				You have failed. Fiona asked you to team up with Hugo Sandoval
+				to find the wreckage of the Hand of Solace and search for 
+				clues.
+
+				But now Sandoval is dead and you've lost any hope of finding the
+				Hand of Solace.
+
+				No further progress on this storyline is possible.
+			
+				System: %systemName%\n
+				Payment: None
+
+			</Text>
+			<Text id="descIntro1">
+			
+				You enter the brightly lit central garden of the New Victoria 
+				University Hospital. Recovering patients sit on articulated 
+				gurneys, while medtechs pass through, heads buried in datapads.
+							
+				Nearby, Fiona rests at a bench, hooked up to a medical auton:
+							
+				"I'm glad to finally meet you. Thank you for saving my life in 
+				%systemName%."
+			
+			</Text>
+			<String id="actionIntro1">"[D]o you remember what happened?"</String>
+			<Text id="descIntro2">
+			
+				Fiona looks around and engages a privacy screen.
+							
+				"Look, I don't know you, OK? Thanks again, but everything is fine."
+
+			</Text>
+			<String id="actionIntro2">"[B]enedict is worried about you."</String>
+			<Text id="descIntro3">
+			
+				Fiona blinks tears away and looks down.
+							
+				"You don't want to get involved, OK?"
+							
+				She pauses for a long time, but seeing your persistence she 
+				shakes her head and sighs. A fresh scar curves under her left 
+				eye and disappears behind her ear.
+
+			</Text>
+			<Text id="descIntro4">
+			
+				"A few months ago, one of our medical ships, the Hand of Solace,
+				was ambushed and wrecked by marauders. Sister Elana Ston was in 
+				command at the time, and she survived along with a medtech. 
+				Later, the medtech was found dead&mdash;blasted, actually.
+							
+				"Sister Ston thought the medtech might have been involved with 
+				the marauders and then betrayed by them."
+
+			</Text>
+			<String id="actionIntro4">"[A] medtech in league with marauders?"</String>
+
+			<Text id="descIntro5">
+			
+				"Yeah, I know it doesn't make sense, OK? But I couldn't find 
+				any other explanation. And the Hand of Solace was gone, so there 
+				was no evidence.
+							
+				"But then I got a strange message."
+
+			</Text>
+			<String id="actionIntro5">"[L]et me guess, Stormhound, right?"</String>
+			<Text id="descIntro6">
+
+				Fiona arches an eyebrow, impressed.
+							
+				"Yes! He said it wasn't marauders. He told me to look for the 
+				wreckage of the medical ship in the %systemName% system. Asked 
+				to tell him what I found.
+							
+				"But I never got there. Penitents attacked me on my way and 
+				here I am."
+			
+			</Text>
+			<String id="actionIntro6">"[W]ho knows about this? Benedict?"</String>
+
+			<Text id="descIntro5A">
+			
+				"Yeah, I know it doesn't make sense, OK? But I couldn't find 
+				any other explanation. And the Hand of Solace was gone, so there 
+				was no evidence.
+
+				"But then I met Stormhound."
+				
+			</Text>
+			<String id="actionIntro5A">"[S]tormhound? The hard metal band?"</String>
+			<Text id="descIntro6A">
+
+				"No! No, I think it's just a codename. Anyway, he said it wasn't
+				marauders and that the wreckage of the Hand of Solace was in the
+				%systemName% system. He asked me to tell him when I found it.
+
+				"But I never got there. Penitents attacked me on my way and here
+				I am."
+			
+			</Text>
+			<String id="actionIntro6A">"[W]ho knows about this? Benedict?"</String>
+			<Text id="descIntro7A">
+
+				Fiona looks down.
+
+				"No. Not yet. Stormhound told me about his past. That he used to
+				be a Penitent and was mindwiped by the Sisters.
+
+				"I'm questioning everything, OK?"
+
+			</Text>
+
+			<Text id="descIntro7">
+
+				Fiona stares at you.
+							
+				"No. Not yet. Stormhound told me about his past. I'm questioning 
+				everything, OK?"
+			
+			</Text>
+			<String id="actionIntro7A">"[Y]ou can trust Benedict."</String>
+			<String id="actionIntro7B">"[D]on't trust Benedict."</String>
+			<Text id="descIntro8">
+			
+				Fiona closes her eyes and smiles.
+							
+				"I want to believe that, OK? I really do. But I can't take the 
+				chance that I'm wrong."
+			
+			</Text>
+			<String id="actionIntro8">"[W]hat do we do now?"</String>
+			<Text id="descIntro9">
+
+				Fiona closes her eyes and frowns.
+							
+				"I don't know anymore. But either way, I can't take the chance 
+				that he's turned."
+			
+			</Text>
+
+			<!-- BRIEFING -->
+
+			<Text id="descBriefing1">
+			
+				Fiona brings up a starmap on her datapad.
+							
+				"I'm going to need your help. Go to the %systemName% system and 
+				get in touch with Hugo Sandoval. He's a friend of mine. He's a 
+				merc, but I can trust him.
+							
+				"Together you should be able to find the wreckage of Sister 
+				Ston's medical ship. Perhaps we'll scrape off a clue."
+
+			</Text>
+			<String id="actionAccept">"[I]'m on my way."</String>
+			<String id="actionDecline">"[L]et me prepare first."</String>
+
+			<!-- ACCEPT -->
+
+			<String id="AcceptReply">
+				"Good luck, %name%!"
+			</String>
+
+			<!-- DECLINE -->
+
+			<String id="DeclineReply">
+				"Alright, but don't take long. Something tells me we don't have much time."
+			</String>
+
+			<!-- IN PROGRESS -->
+
+			<Text id="InProgress">
+
+				"Something tells me we don't have much time. The sooner you reach 
+				Sandoval, the better!"
+
+			</Text>
+			<Text id="SuccessMsg">
+				""
+			</Text>
+		</Language>
+	</MissionType>
+	
+</TranscendenceModule>

@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- STATION TYPES -->
+
+	<!-- Level 4: Sung Slave Camp -->
+
+	<StationType UNID="&HS_stSungSlaveCamp;"
+			name=				"Sung slave camp"
+			sovereign=			"&HS_svSung;"
+
+			attributes=			"enemy, envAir, envEarth, envFire, envWater, generic, human, populated, sungSlaveCamp, sungSlavers"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			size=				"328"
+			armorID=			"&HS_itSungArmor;"
+			hitPoints=			"150"
+			multiHull=			"true"
+			regen=				"4"
+
+			fireRateAdj=		"80"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+sungSpace;"
+				systemAffinity=			"*"
+				levelFrequency=			"--vcu r---- ----- ----- -----"
+				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"60"
+				/>
+
+		<!-- Trade and Items -->
+
+		<Items>
+			<Lookup					count="1d4"	table="&HS_trStationSupplies;" />
+			<Table>
+				<Lookup chance="40" count="1" table="&HS_trConsumables5;"/>
+				<Lookup chance="40" count="1" table="&HS_trMinorItem5;"/>
+				<Lookup chance="20" count="1" table="&HS_trMajorItem5;"/>
+			</Table>
+		</Items>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&HS_itParticleBeamWeapon;"	omnidirectional="true"/>
+		</Devices>
+
+		<Satellites overlapCheck="asteroids">
+			<Orbitals count="6" distance="15" angle="equidistant">
+				<Station type="&HS_stSungDefenseSat1;"/>
+			</Orbitals>
+
+			<Orbitals count="3d2" distance="8" angle="equidistant:0" overlapCheck="none">
+				<Station type="&HS_stSungSlaveQuarters;"	imageVariant="quarters1" rotation="orbitPos:180"/>
+			</Orbitals>
+
+			<Orbitals count="4d2" distance="10" angle="equidistant:15" overlapCheck="none">
+				<Station type="&HS_stSungSlaveQuarters;"	imageVariant="quarters2" rotation="orbitPos:180"/>
+			</Orbitals>
+
+			<Orbitals count="5d2" distance="12" angle="equidistant:-15" overlapCheck="none">
+				<Station type="&HS_stSungSlaveQuarters;"	imageVariant="quarters3" rotation="orbitPos:180"/>
+			</Orbitals>
+		</Satellites>
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Ship		count="1d3+1"	class="&HS_scWindSlaver;" orders="patrol" patrolDist="20"/>
+		</Ships>
+
+		<Encounters frequency="common">
+			<Ship   count="1d4"	class="&HS_scWindSlaver;" orders="attack"/>
+		</Encounters>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&HS_rsSungKeep;" imageWidth="260" imageHeight="260" viewportRatio="0.02"/>
+
+		<DockingPorts
+				portAngle=		"30"
+				portCount=		"8"
+				portRadius=		"140"
+				/>
+
+		<!-- Events and Data -->
+
+		<InitialData>
+			<sung>True</sung>
+		</InitialData>
+
+		<Events>
+			<OnCreate>
+				;	Count the number of slave quarters in the area
+
+				(objSetData gSource "totalSlaveCount" 
+					(count (sysFindObject gSource "T:sungSlaveQuarters; N:15;"))
+					)
+			</OnCreate>
+
+			<GetRumors>
+				{
+					attributes: "commonwealthPub"
+					priority: 41
+					textID: 'rumor.commonwealthPub
+					}
+			</GetRumors>
+		</Events>
+
+		<Language>
+			<Text id="rumor.commonwealthPub">
+
+				You spend 5 credits while listening to a drunk woman:
+
+				"My sister-in-law was abducted by those filthy Sung. We finally
+				got her released by buying her contract. I can't believe they
+				allow slavery to exist. Hey, can you buy me a drink?"
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Sung Slave Quarters -->
+
+	<StationType UNID="&HS_stSungSlaveQuarters;"
+			name=				"Sung slave quarters|Sung slave quarters"
+			sovereign=			"&HS_svSungSlaves;"
+
+			attributes=			"sungSlaveQuarters"
+
+			dockScreen=			"&HS_dsSungSlaveQuarters;"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			mass=				"3000"
+			armorID=			"&HS_itUltraLightTitaniumArmor;"
+			hitPoints=			"30"
+			structuralHitPoints="10"
+
+			noMapLabel=			"true"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Image and Effects -->
+
+		<ImageVariants>
+			<Image id="quarters1"	imageID="&HS_rsSungSlaveQuarters;" imageX="0"   imageY="0" imageWidth="100" imageHeight="100" rotationCount="12" rotationColumns="1" viewportRatio="0.005"/>
+			<Image id="quarters2"	imageID="&HS_rsSungSlaveQuarters;" imageX="100" imageY="0" imageWidth="100" imageHeight="100" rotationCount="12" rotationColumns="1" viewportRatio="0.005"/>
+			<Image id="quarters3"	imageID="&HS_rsSungSlaveQuarters;" imageX="200" imageY="0" imageWidth="100" imageHeight="100" rotationCount="12" rotationColumns="1" viewportRatio="0.005"/>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"24"
+				maxDist=		"3"
+				/>
+
+		<!-- Events and Data -->
+
+		<InitialData>
+			<sungSlave>True</sungSlave>
+		</InitialData>
+
+		<Language>
+			<Text id="core.abandonedStationDesc">
+
+				You are docked at a ruined structure once housing slaves.
+				Lifeless forms float around in zero-G amid the scraps and mementos they once owned.
+
+			</Text>
+		</Language>
+	</StationType>
+
+<!-- ITEM TYPES -->
+
+	<!-- Slave Coffin -->
+
+	<ItemType UNID="&HS_itSlaveCoffin;"
+			name=				"slave coffin"
+			level=				"5"
+			value=				"2500"
+			mass=				"500"
+			frequency=			"rare"
+			numberAppearing=	"1d3"
+			attributes=			"communion, illegal, minorItem, slaves, soul"
+
+			description=		"The Sung Slavers of Jiang's Star transport their slaves in life-support canisters that keep their captive occupants in biological suspension."
+			>
+
+		<Properties>
+			<Definition id="sisters.donateAtt">-1</Definition>
+			<Definition id="sisters.donateRel">40</Definition>
+		</Properties>
+
+		<Image imageID="&CORE_rsItems1;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Events>
+			<OnCreateReward>
+				(block (
+					(roll (random 1 100))
+					)
+					(switch
+						(ls roll 25)
+							(itmCreate &HS_itLongzhuSphere; (random 1 3))
+
+						(ls roll 60)
+							(itmCreate &HS_itPromethiumCrystal; (random 1 4))
+
+						(itmCreate &HS_itCalligraphyScroll; 1)
+						)
+					)
+			</OnCreateReward>
+
+			<OnItemDonatedToSisters>
+				(typIncGlobalData &HS_stDomina; 'slavesOffered (itmGetCount gItem))
+			</OnItemDonatedToSisters>
+		</Events>
+
+		<Language>
+			<Text id="sisters.donateDesc">
+				
+				Seeing your concern, the abbess explains:
+
+				"Don't worry, they are unharmed. Domina will free their minds 
+				and give them a normal life."
+
+				You feel your connection to Domina strengthening, but when the
+				lasers stop you see that the coffin is gone.
+			
+			</Text>
+			<Text id="sisters.donateDesc.plural">
+				
+				Seeing your concern, the abbess explains:
+
+				"Don't worry, they are unharmed. Domina will free their minds 
+				and give them a normal life."
+
+				You feel your connection to Domina strengthening, but when the
+				lasers stop you see that the coffins are gone.
+			
+			</Text>
+		</Language>
+	</ItemType>
+
+<!-- DOCK SCREENS -->
+
+	<!-- Sung Slave Quarters
+	
+		We rely on the data sungState on the slave camp object. sungState can be one
+		of the following:
+
+		Nil: We've never computed the number of slave coffins available.
+		'angry: Too many slave quarters killed; angry with player
+		'allDead: No slave conffins survived.
+		'coffins: At least one coffin is available for the player to take
+		'coffinsTaken: Player got a chance to take some coffins, but there are
+			more left.
+		'done: All coffins taken.
+
+		In addition, the data coffinCount is the number of coffins left.
+	
+	-->
+
+	<DockScreen UNID="&HS_dsSungSlaveQuarters;"
+			inherit="&RPG_dsDockScreenBase;"
+			>
+
+		<OnScreenInit>
+			(block (
+				(slaverObj (sysFindObject gSource "T:sungSlaveCamp; N"))
+				(sungState (objGetData slaverObj 'sungState))
+				(coffinCount (objGetData slaverObj 'coffinCount))
+				)
+				;	Remember the Slave camp object
+
+				(scrSetData gScreen 'slaverObj slaverObj)
+
+				;	Figure out what to do.
+
+				;	When we first dock, we compute the number of slaves rescued 
+				;	by the player.
+
+				(switch
+					;	If the slave camp is not dead, then nothing to.
+
+					(or (not slaverObj) (not (objIsAbandoned slaverObj)))
+						Nil
+
+					;	See if we need to calculate how many coffins to add
+
+					(not sungState)
+						(block (
+							(totalSlaveCount (objGetData slaverObj 'totalSlaveCount))
+
+							;	Get all the slave quarters
+
+							(slaves (sysFindObject slaverObj "T:sungSlaveQuarters; N:15;"))
+
+							;	Count how many are still alive
+
+							(alive 
+								(map slaves 'reduceSum slaveObj
+									(if (objIsAbandoned slaveObj) 0 1)
+									)
+								)
+
+							;	The dead are the total minus the living
+
+							(dead (- totalSlaveCount alive))
+
+							;	For each surviving slave quarter, there is a 50% 
+							;	chance of a surviving slave coffin
+
+							(slaveCoffins 
+								(map (make 'sequence alive) 'reduceSum i
+									(round 'stochastic 0.5)
+									)
+								)
+							)
+							(switch
+								;	If there are more dead than alive, the player 
+								;	gets nothing.
+
+								(gr dead alive)
+									(objSetData slaverObj 'sungState 'angry)
+
+								;	If no coffins, then too many died
+
+								(= slaveCoffins 0)
+									(objSetData slaverObj 'sungState 'allDead)
+
+								;	Otherwise, we add slave coffins to the station
+
+								(block ()
+									(objAddItem gSource (itmCreate &HS_itSlaveCoffin; slaveCoffins))
+									(objSetData slaverObj 'sungState 'coffins)
+									)
+								)
+							)
+
+					;	If the player left some coffins behind, add them
+
+					coffinCount
+						(block ()
+							(objAddItem gSource (itmCreate &HS_itSlaveCoffin; coffinCount))
+							(objSetData slaverObj 'coffinCount Nil)
+							)
+					)
+				)
+		</OnScreenInit>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(slaverObj (scrGetData gScreen 'slaverObj))
+						(sungState (objGetData slaverObj 'sungState))
+						(showLoot Nil)
+						)
+						(switch
+							(not slaverObj)
+								(scrSetDescTranslate gScreen 'descEmpty)
+								
+							(not (objIsAbandoned slaverObj))
+								(scrSetDescTranslate gScreen 'descNotFree)
+
+							(or (not sungState) (= sungState 'done))
+								(scrSetDescTranslate gScreen 'descEmpty)
+
+							(= sungState 'angry)
+								(scrSetDescTranslate gScreen 'descNoReward)
+
+							(= sungState 'allDead)
+								(scrSetDescTranslate gScreen 'descNoReward)
+
+							;	Otherwise, there are slaves that need to be taken by
+							;	the player.
+
+							(objGetItems gSource "* +unid:&HS_itSlaveCoffin;")
+								(block ()
+									;	If we've already looted at least once, then
+									;	we have a slightly different message
+
+									(if (= sungState 'coffinsTaken)
+										(scrSetDescTranslate gScreen 'descWelcomeBack)
+										(scrSetDescTranslate gScreen 'descWelcome)
+										)
+									(setq showLoot True)
+									)
+
+							;	Otherwise, thanks!
+
+							(scrSetDescTranslate gScreen 'descDone)
+							)
+
+						(scrShowAction gScreen 'actionLiberate showLoot)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionLiberate" default="1">
+						(scrShowScreen gScreen &RPG_dsRPGLoot; {
+							nextScreen: &HS_dsSungSlaveQuarters;
+							lootLabel: (scrTranslate gScreen 'actionLiberate)
+							})
+					</Action>
+
+					<Action id="actionUndock" default="1" cancel="1">
+						(block (
+							(slaverObj (scrGetData gScreen 'slaverObj))
+							(sungState (objGetData slaverObj 'sungState))
+							(coffinsLeft (@ (objGetItems gSource "* +unid:&HS_itSlaveCoffin;") 0))
+							)
+							(switch
+								coffinsLeft
+									(block ()
+										(objRemoveItem gSource coffinsLeft)
+										(objSetData slaverObj 'coffinCount (itmGetCount coffinsLeft))
+										(objSetData slaverObj 'sungState 'coffinsTaken)
+										)
+
+								(or (= sungState 'coffinsTaken)
+										(= sungState 'conffins)
+										)
+									(objSetData slaverObj 'sungState 'done)
+								)
+
+							(scrExitScreen gScreen)
+							)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="actionLiberate">[T]ake</Text>
+
+			<Text id="descWelcome">
+
+				As you enter the station you are surrounded by cheering families:
+				
+				"Thank you for freeing us! The Slavers are finally dead! But 
+				some of our people are still not liberated. Please take them to 
+				a place where they can be free."
+
+			</Text>
+			<Text id="descWelcomeBack">
+
+				Worried families surround you:
+
+				"Our people are still not liberated. Please take them to a place
+				where they can be free."
+
+			</Text>
+			<Text id="descDone">
+
+				"Thank you again for saving us! We will never forget you."
+
+			</Text>
+			<Text id="descEmpty">
+
+				You are docked at a station once used to house slaves of the 
+				Sung Empire. Now abandoned, these living quarters appear no 
+				worse than sub-standard corporate quarters.
+				
+				But a closer look reveals surveillance sensors and discarded 
+				docility collars.
+
+			</Text>
+			<Text id="descNoReward">
+
+				You are docked at the living quarters of a small slave community. 
+				Though free at last, they weep for the hundreds who died in the 
+				attack and for the family that the dead have left behind. 
+				
+				The piercing wail of the inconsolable does not completely mask 
+				the anger of those looking for revenge.
+				
+				You are not welcome here.
+
+			</Text>
+			<Text id="descNotFree">
+
+				You are docked at a station used to house slaves. Two men meet 
+				you at the airlock:
+				
+				"Get out of here! Leave while you can before the Slavers return!"
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+</TranscendenceModule>

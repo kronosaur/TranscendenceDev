@@ -1,0 +1,678 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Point Juno -->
+
+	<StationType UNID="&HS_stPointJuno;"
+			name=				": Point Juno"
+			sovereign=			"&HS_svCommonwealthFleet;"
+
+			attributes=			"commonwealth, commonwealthFleet, commonwealthMilitary, fleetDelivery, fleetLaw, friendly, generic, human, majorStation, pointJuno, populated"
+			inherit=			"&HS_baCommonwealthStation;"
+
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			level=				"8"
+			size=				"590"
+			armorID=			"&HS_itP1000HexphaseArmor;"
+			hitPoints=			"2400"
+			multiHull=			"true"
+			regen=              "20"
+			shipRegen=			"20"
+
+			ignoreFriendlyFire=	"true"
+			explosionType=		"&CORE_vtThermoExplosion3;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<Properties>
+			<Constant		id="rpg.shipBrokerCriteria">"s L:7-9; +commonwealth; +military; -notStandard; +shipBroker;"</Constant>
+			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
+		</Properties>
+
+		<!-- Trade and Items -->
+		
+		<Trade currency="credit">
+			<Sell	criteria="m +commonwealth; +military; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="500" levelFrequency="systemLevel:ruc|c|cur" noDescription="true"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100" noDescription="true"/>
+			
+			<Refuel			criteria="f +BasicFuel; L:1-9;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-10;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a L:1-10;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+
+			<SellShip		criteria="s -notForSale;" priceAdj="100"/>
+			<BuyShip		criteria="s L:1-10; -notForSale;" priceAdj="80"/>
+		</Trade>
+
+		<Items>
+			<!-- Some upgrades for sale -->
+			
+			<RandomItem count="1d6" criteria="r +commonwealth; -defective; -illegal; -notForSale; -notStandard; L:6-9;"		levelFrequency="systemLevel:ru|c|curv"/>
+			<Lookup count="12-16" table="&HS_tbCommonwealthFleetItems;"/>
+		</Items>
+		
+		<!-- Configuration -->
+
+		<!-- Satellites -->
+
+		<Satellites>
+			<Orbitals distance="12" angle="90">
+				<Station type="&HS_stNavBeacon;" imageVariant="1"/>
+			</Orbitals>
+
+			<Orbitals distance="12" angle="270">
+				<Station type="&HS_stNavBeacon;" imageVariant="1"/>
+			</Orbitals>
+		</Satellites>
+		
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Ship					count="1"	class="&HS_scBritannia;"	orders="guard" controller="fleetcommand">
+				<Escorts>
+					<Ship			count="8"	class="&HS_scCenturionM;"	orders="escort" controller="fleet"/>
+				</Escorts>
+			</Ship>
+			<Ship					count="1"	class="&HS_scBritannia;"	orders="guard" controller="fleetcommand">
+				<Escorts>
+					<Ship			count="8"	class="&HS_scCenturionM;"	orders="escort" controller="fleet"/>
+				</Escorts>
+			</Ship>
+		</Ships>
+
+		<Reinforcements minShips="5">
+			<Table>
+				<Ship chance="25" count="1" class="&HS_scEI500;" orders="gateOnThreat"/>
+				<Ship chance="10" count="1" class="&HS_scWolfenC;" orders="gateOnThreat"/>
+				<Ship chance="15" count="1" class="&HS_scRoninC;" orders="guard"/>
+				<Ship chance="50" count="1" class="&HS_scCenturionM;" orders="guard"/>
+			</Table>
+		</Reinforcements>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&HS_rsPointJuno;"		imageWidth="420" imageHeight="460" viewportRatio="0.0425"/>
+		<HeroImage		imageID="&HS_rsPointJunoHero;" imageWidth="800" imageHeight="650"/>
+
+		<DockingPorts
+				portCount=		"10"
+				portRadius=		"210"
+				>
+		</DockingPorts>
+		
+		<!-- Dock Screen -->
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionCentralCommand" default="1">
+								(block (
+									(rank (objGetData gPlayerShip 'fleetLevel))
+									)
+									(switch
+										;	Can't get in unless the player is Fleet Lieutenant or above
+										(ls rank 4)
+											(scrShowScreen gScreen &RPG_dsRPGMessage; { textID:'descAccessDenied })
+
+										;	Otherwise show missions
+										(rpgMissionAssignment {
+											missionCriteria: (cat "n +cscPointJuno; +rank" (int rank) "; =" (sysGetLevel) ";")
+											noMissionTextID: 'descNoMissions
+											})
+										)
+									)
+							</Action>
+
+							<Action id="actionDockServices">
+								(rpgDockServices gPlayerShip)
+							</Action>
+
+							<Action id="actionBuyShip">
+								(scrShowScreen gScreen &RPG_dsRPGShipBroker;)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+
+		</DockScreens>
+
+		<!-- Events and Data -->
+
+		<Events>
+			<OnDestroy>
+				(block Nil
+					(intCommonwealthOnDestroy)
+
+					; Military will execute the player
+					(if (and gPlayerShip (eq aOrderGiver gPlayerShip))
+						(intFleetCrime 3 (cat "the destruction of " (objGetName gSource 4)))
+						)
+					)
+			</OnDestroy>
+		</Events>
+
+		<Language>
+			<!-- Code Points -->
+
+			<Text id="descNoMissions">
+				(switch
+					(= (objGetProperty gPlayerShip 'characterClass) &RPG_unidPilgrimClass;)
+						(objTranslate gSource 'descNoMissionsPilgrim)
+					
+					(objTranslate gSource 'descNoMissionsNormal)
+					)
+			</Text>
+
+			<!-- Text -->
+
+			<Text id="actionCentralCommand">[C]entral Command</Text>
+			<Text id="actionDockServices">[D]ock Services</Text>
+			<Text id="actionUndock">[U]ndock</Text>
+
+			<Text id="descWelcome">You are docked at Point Juno.</Text>
+			<Text id="descNoMissionsNormal">
+
+				General Verner welcomes you as you enter:
+				
+				"I'm glad you're in no hurry. Rest here with us and continue your journey later."
+
+			</Text>
+			<Text id="descNoMissionsPilgrim">
+
+				General Verner welcomes you as you enter:
+				
+				"I'm glad you're in no hurry to go to the Core. Rest here with us and seek Domina later."
+
+			</Text>
+			<Text id="descAccessDenied">
+
+				Two armed guards block your path:
+				
+				"I'm sorry, %sir%, only Fleet Officers are allowed in Central Command."
+
+			</Text>
+			
+			<Text id="core.mapDescMain">
+				Commonwealth Fleet stronghold
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- CSC Europa Wreckage 
+
+	EXTRA DATA
+
+	VaultCode:		The code required to open the weapons vault
+	VaultOpened:	True if the vault has been opened
+
+	-->
+
+	<StationType UNID="&HS_stCSCEuropaWreck;"
+			name=				":the wreck of the CSC Europa"
+			sovereign=			"&HS_svCommonwealthFleet;"
+			inherit=			"&RPG_unidCommonText;"
+			
+			abandonedScreen=	"Main"
+			scale=				"ship"
+
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"CSCEuropa, generic, locked, shipwreck, uncharted"
+			>
+
+		<Image			imageID="&HS_rsCSCWreckage;" imageX="0" imageY="0" imageWidth="332" imageHeight="320"/>
+
+		<Ships>
+			<Table>
+				<Group chance="60">
+					<Ship	count="4"	class="&HS_scChasm;"	orders="guard"	sovereign="&HS_svAres;"/>
+					<Ship	count="2d8"	class="&HS_scSandstorm;" orders="patrol" patrolDist="10" sovereign="&HS_svAres;"/>
+					<Ship	count="1d2"	class="&HS_scCometfall;" orders="patrol" patrolDist="15" sovereign="&HS_svAres;"/>
+				</Group>
+				<Group chance="30">
+					<Ship	count="2d6"	class="&HS_scKobolGunshipDualTeV9;"	orders="patrol" patrolDist="5" sovereign="&HS_svKobolWarlords;"/>
+					<Ship	count="2d4"	class="&HS_scKobolGunshipOmniTeV9;"	orders="patrol" patrolDist="5" sovereign="&HS_svKobolWarlords;"/>
+					<Ship	count="1d6"	class="&HS_scKobolGunshipMissiles;"	orders="guard" sovereign="&HS_svKobolWarlords;"/>
+				</Group>
+				<Group chance="10">
+					<Ship	count="2d8"	class="&HS_scCenturionRogue;"	orders="patrol"	patrolDist="5" sovereign="&HS_svRogueFleet;"/>
+					<Ship	count="1d8"	class="&HS_scCenturionXRogue;"	orders="guard" sovereign="&HS_svRogueFleet;"/>
+				</Group>
+			</Table>
+		</Ships>
+
+		<Items>
+			<Item count="1" item="&HS_itLamplighterPrototype;"/>
+			<Table count="1d4">
+				<Item chance="40"	count="1"		item="&HS_itStarCannon;"/>
+				<Item chance="30"	count="1"		item="&HS_itNAMIHeavyLauncher;"/>
+				<Item chance="20"	count="1"		item="&HS_itR9Deflector;"/>
+				<Item chance="10"	count="1"		item="&HS_itPlasmaCannon;"/>
+			</Table>
+			<Table count="2d6">
+				<Item chance="20"	count="24d40"	item="&HS_itThermoCannonShell;"/>
+				<Item chance="20"	count="4d20"	item="&HS_itStaticMine;"/>
+				<Item chance="15"	count="4d12"	item="&HS_itXM900Missile;"/>
+				<Item chance="15"	count="2d20"	item="&HS_itTrackingMine;"/>
+				<Item chance="10"	count="4d20"	item="&HS_itS3Missile;"/>
+				<Item chance="10"	count="1d12"	item="&HS_itM2Missile;"/>
+				<Item chance="5"	count="1d4"		item="&HS_itM5Missile;"/>
+				<Item chance="5"	count="2d12"	item="&HS_itKytrynPlasmaSeed;"/>
+			</Table>
+		</Items>
+
+		<Satellites>
+			<Orbitals count="2d6" distance="2d8+4" angle="random">
+				<Table>
+					<Station chance="60" type="&HS_stSandstormWreck;"/>
+					<Station chance="40" type="&HS_stCenturionWreck;"/>
+				</Table>
+			</Orbitals>
+		</Satellites>
+
+		<Events>
+			<OnCreate>
+				(block (codes)
+					(setq codes '(anvil boson cloud dour enigma fallen golem heavy ice joust kilo labor metal neverland outpost proxy quasar rom sensor toxic ultra vial wren xavier yoke zone))
+					(typSetGlobalData &HS_stCSCEuropaWreck; "VaultCode" (cat (random codes) " " (random codes) " " (random 1 999)))
+					)
+			</OnCreate>
+		</Events>
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descDefault">
+						<Actions>
+							<Action id="actionBridge" default="1">
+								(scrShowPane gScreen "Bridge")
+							</Action>
+
+							<Action id="actionWeaponsVault">
+								(if (objGetData gSource "VaultOpened")
+									(scrShowPane gScreen "WeaponsVault")
+									(scrShowPane gScreen "WeaponsVaultLocked")
+									)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+
+					<Bridge descID="descBridge">
+						<Actions>
+							<Action id="actionDone" default="1" cancel="1">
+								(scrShowPane gScreen "Default")
+							</Action>
+						</Actions>
+					</Bridge>
+
+					<WeaponsVault>
+						<OnPaneInit>
+							(block nil
+								(scrSetDescTranslate gScreen 'descWeaponsVault)
+								(rpgSetLootAction gSource)
+								)
+						</OnPaneInit>
+						
+						<Actions>
+							<Action id="actionLoot" default="1">
+								(scrShowScreen gScreen &RPG_dsRPGLoot;)
+							</Action>
+
+							<Action id="actionJettison">
+								(scrShowScreen gScreen &RPG_dsRPGJettison;)
+							</Action>
+
+							<Action id="actionDone" cancel="1" default="1">
+								(scrShowPane gScreen "Default")
+							</Action>
+						</Actions>
+
+					</WeaponsVault>
+
+					<WeaponsVaultLocked
+							descID=		"descWeaponsVaultLocked"
+							showTextInput="true">
+
+						<Actions>
+							<Action id="actionEnterCode" default="1">
+								(block Nil
+									(if (eq (scrGetInputText gScreen) (typGetGlobalData &HS_stCSCEuropaWreck; "VaultCode"))
+										(block Nil
+											(objSetData gSource "VaultOpened" True)
+											(scrShowPane gScreen "WeaponsVault")
+											)
+										(scrShowPane gScreen "InvalidCode")
+										)
+									)
+							</Action>
+
+							<Action id="actionDoneSpecial" cancel="1">
+								(scrShowPane gScreen "Default")
+							</Action>
+						</Actions>
+					</WeaponsVaultLocked>
+
+					<InvalidCode descID="descInvalidCode">
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(scrShowPane gScreen "WeaponsVaultLocked")
+							</Action>
+						</Actions>
+					</InvalidCode>
+				</Panes>
+			</Main>
+
+		</DockScreens>
+
+		<DockingPorts>
+			<Port x="0"		y="120" />
+			<Port x="0"		y="-120" />
+			<Port x="80"	y="80" />
+			<Port x="80"	y="-80" />
+			<Port x="120"	y="0" />
+			<Port x="-120"	y="0" />
+			<Port x="-80"	y="80" />
+			<Port x="-80"	y="-80" />
+		</DockingPorts>
+		
+		<Language>
+			<Text id="actionBridge">[B]ridge</Text>
+			<Text id="actionWeaponsVault">[W]eapons Vault</Text>
+			<Text id="actionEnterCode">[Enter] Enter Code</Text>
+			<Text id="actionDoneSpecial">[Esc] Done</Text>
+
+			<Text id="descDefault">
+				You are docked with the hulking wreckage of the CSC Europa.
+			</Text>
+			<Text id="descBridge">
+				The bridge is completely smashed. Bodies float around in zero-G amid
+				the shredded remains of consoles and other electronic equipment.
+			</Text>
+			<Text id="descWeaponsVault">
+				You are inside the CSC Europa's weapons vault.
+			</Text>
+			<Text id="descWeaponsVaultLocked">
+				You are standing in front of the massive blast-proof doors of the
+				ship's weapons vault. There is an alphabetic codepad on the door
+				that requests an entry code.
+			</Text>
+			<Text id="descInvalidCode">
+				The code appears to be invalid. The vault doors remained closed.
+			</Text>
+		</Language>
+
+	</StationType>
+
+	<!-- Point Juno System -->
+
+	<SystemType UNID="&HS_ssPointJuno;" 
+				name=				"Point Juno"
+				attributes=			"nonExtensible"
+				backgroundID=		"&GLXY_rsLightNebulaSpace;"
+				spaceColor=			"#282a3c"
+				spaceEnvironmentTileSize=	"large"
+				noRandomEncounters=	"true"
+				noExtraEncounters=	"true"
+				>
+
+		<SystemGroup>
+
+			<Station type="&GLXY_stNebulaStar;" name="Zheling"/>
+
+			<AddAttribute attributes="GTypeSystem, nebulaSystem"/>
+			<AddTerritory minRadius="0"		maxRadius="240"		attributes="innerSystem, organicComp, greenhouseZone"/>
+			<AddTerritory minRadius="240"	maxRadius="400"		attributes="lifeZone, rockyComp, desertZone"/>
+			<AddTerritory minRadius="400"	maxRadius="0"		attributes="outerSystem, metallicComp, barrenZone"/>
+
+			<!-- Zheling I is volcanic world -->
+
+			<Orbitals distance="75-85" angle="random">
+				<Group>
+					<Primary>
+						<Station type="&GLXY_stVolcanicTerrestrialSizeH;" name="Zheling I"	showOrbit="true"/>
+					</Primary>
+
+					<Orbitals distance="2d6+10" angle="random">
+						<Location attributes="zhelingIOrbit"/>
+					</Orbitals>
+				</Group>
+			</Orbitals>
+
+			<!-- Zheling II is a desert world with a moon -->
+
+			<Orbitals distance="155-165" angle="255-285">
+				<Group>
+					<Primary>
+						<Station type="&GLXY_stDesertTerrestrialSizeH;" name="Zheling II" showOrbit="true"/>
+					</Primary>
+
+					<Orbitals count="2" distance="2d6+10" angle="equidistant">
+						<Location attributes="zhelingIIOrbit"/>
+					</Orbitals>
+
+					<Orbitals distance="2d8+30" angle="random">
+						<Station type="&GLXY_stRockyPlanetoidSizeF;"/>
+					</Orbitals>
+				</Group>
+			</Orbitals>
+
+			<!-- Zheling III is a greenhouse world -->
+
+			<Orbitals distance="240-270" angle="100-190">
+				<Group>
+					<Primary>
+						<Station type="&GLXY_stGreenhouseTerrestrialSizeI;" name="Zheling III" showOrbit="true"/>
+					</Primary>
+
+					<Orbitals count="2-3" distance="2d6+10" angle="equidistant">
+						<Location attributes="zhelingIIIOrbit"/>
+					</Orbitals>
+
+					<!-- Nebula at the third planetary orbit -->
+
+					<Trojan offset="120">
+						<SpaceEnvironment 
+								type=			"&GLXY_seLightNebula;"
+								shape=			"arc" 
+								width=			"120"
+								widthVariation=	"60"
+								span=			"90-120"
+								erode=			"50"
+
+								patchType=		"&GLXY_efNebula;"
+								patchFrequency=	"50"
+
+								encountersCount="1d4"
+								>
+						</SpaceEnvironment>
+					</Trojan>
+				</Group>
+			</Orbitals>
+
+			<!-- Point Juno is near close to the orbit of Zheling III -->
+
+			<Orbitals distance="240-270" angle="255-285">
+				<Location attributes="pointJunoStation" required="true"/>
+			</Orbitals>
+
+			<!-- Zheling IV is a gas giant -->
+
+			<Orbitals distance="360-400" angle="30-75">
+				<Group>
+					<Primary>
+						<Station type="&GLXY_stHydrogenGasGiantSizeM;" name="Zheling IV" showOrbit="true"/>
+					</Primary>
+
+					<ZAdjust inclination="random" rotation="alignedRandom" excludeLocations="true">
+						<Lookup table="AsteroidRing25"/>
+					</ZAdjust>
+
+					<Orbitals count="2-3" distance="24" angle="equidistant">
+						<Location attributes="zhelingIVOrbit" required="true"/>
+					</Orbitals>
+
+					<!-- Wreck of CSC Europa is near the gas giant -->
+
+					<Siblings angleInc="15-25">
+						<Location attributes="cscEuropaWreck" required="true"/>
+					</Siblings>
+
+					<Lookup table="AsteroidTrojans50"/>
+
+					<Trojan>
+						<Location attributes="zhelingIVTrojan" required="true"/>
+					</Trojan>
+
+					<Lookup table="AsteroidAntiTrojans50"/>
+
+					<AntiTrojan>
+						<Location attributes="zhelingIVAntiTrojan" required="true"/>
+					</AntiTrojan>
+
+					<!-- Nebula at the fourth planetary orbit -->
+
+					<Trojan offset="60">
+						<SpaceEnvironment 
+								type=			"&GLXY_seLightNebula;"
+								shape=			"arc" 
+								width=			"200"
+								widthVariation=	"100"
+								span=			"120-160"
+								erode=			"50"
+
+								patchType=		"&GLXY_efNebula;"
+								patchFrequency=	"50"
+
+								encountersCount="1d4"
+								>
+						</SpaceEnvironment>
+					</Trojan>
+
+					<AntiTrojan offset="120">
+						<SpaceEnvironment 
+								type=			"&GLXY_seLightNebula;"
+								shape=			"arc" 
+								width=			"200"
+								widthVariation=	"100"
+								span=			"120-160"
+								erode=			"50"
+
+								patchType=		"&GLXY_efNebula;"
+								patchFrequency=	"50"
+
+								encountersCount="1d4"
+								>
+						</SpaceEnvironment>
+					</AntiTrojan>
+				</Group>
+			</Orbitals>
+
+			<!-- Zheling V is a methane giant -->
+
+			<Orbitals distance="600-660" angle="random">
+				<Group>
+					<Primary>
+						<Station type="&GLXY_stMethaneGasGiantSizeK;" name="Zheling V" showOrbit="true"/>
+					</Primary>
+
+					<Orbitals count="1-2" distance="2d6+18" angle="equidistant">
+						<Location attributes="zhelingVOrbit"/>
+					</Orbitals>
+
+					<!-- Moons -->
+
+					<Orbitals distance="2d8+30" angle="random">
+						<Station type="&GLXY_stRockyOuterAsteroidSizeB;"/>
+					</Orbitals>
+
+					<Orbitals distance="2d8+70" angle="random">
+						<Station type="&GLXY_stRockyPlanetoidSizeE;"/>
+					</Orbitals>
+
+					<Orbitals distance="2d7+110" angle="random">
+						<Station type="&GLXY_stRockyOuterAsteroidSizeD;"/>
+					</Orbitals>
+
+					<!-- Asteroid Belt -->
+
+					<LocationAttributes attributes="zhelingVRegion">
+						<Lookup table="AsteroidIceBelt100"/>
+					</LocationAttributes>
+				</Group>
+			</Orbitals>
+
+			<!-- Place the outbound stargate at the inner world -->
+
+			<RandomLocation locationCriteria="*zhelingIOrbit">
+				<Lookup table="StargateOutbound"/>
+			</RandomLocation>
+
+			<!-- Place the inbound stargate at the second world -->
+
+			<RandomLocation locationCriteria="*zhelingIIOrbit">
+				<Lookup table="StargateInbound"/>
+			</RandomLocation>
+
+			<!-- Place Point Juno and the CSC Europa Wreck -->
+
+			<RandomLocation locationCriteria="*pointJunoStation">
+				<Station type="&HS_stPointJuno;"/>
+			</RandomLocation>
+
+			<RandomLocation locationCriteria="*cscEuropaWreck">
+				<Station type="&HS_stCSCEuropaWreck;"/>
+			</RandomLocation>
+
+			<!-- Place the staging area -->
+
+			<RandomLocation locationCriteria="*zhelingIVTrojan">
+				<Marker objName="stagingAlpha"/>
+			</RandomLocation>
+
+			<RandomLocation locationCriteria="*zhelingIVAntiTrojan">
+				<Marker objName="stagingBeta"/>
+			</RandomLocation>
+
+			<!-- Place some Ares Communes -->
+
+			<RandomLocation locationCriteria="*zhelingIIIOrbit">
+				<Station type="&HS_stAresCommune;"/>
+			</RandomLocation>
+
+			<RandomLocation locationCriteria="*zhelingIVOrbit">
+				<Station type="&HS_stAresCommune;"/>
+			</RandomLocation>
+
+			<!-- Create more stargates in case an extension added more links -->
+
+			<Lookup table="HumanSpaceStargates"/>
+
+		</SystemGroup>
+	</SystemType>
+
+	<!-- Resources -->
+
+	<Image UNID="&HS_rsPointJuno;"			bitmap="Resources\PointJuno.jpg" bitmask="Resources\PointJunoMask.bmp" />
+	<Image UNID="&HS_rsPointJunoHero;"		bitmap="Resources\PointJunoHero.jpg" bitmask="Resources\PointJunoHeroMask.bmp" loadOnUse="true" />
+	<Image UNID="&HS_rsCSCWreckage;"		bitmap="Resources\CSCWreckage.jpg" bitmask="Resources\CSCWreckageMask.bmp" loadOnUse="true" />
+
+	<Image UNID="&HS_rsStationsPointJuno;"	obsoleteVersion="39" bitmap="Resources\StationsPointJuno.jpg" bitmask="Resources\StationsPointJunoMask.bmp" />
+	<Image UNID="&HS_rsPointJunoBkgnd;"	obsoleteVersion="39" bitmap="Resources\PointJunoBack.jpg" loadOnUse="true" />
+
+</TranscendenceModule>

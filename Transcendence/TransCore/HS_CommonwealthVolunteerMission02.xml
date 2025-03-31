@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType UNID="&HS_msCMVolunteer02;"
+			name=				"Commonwealth Volunteer 02: Destroy Enemy Station"
+			attributes=			"commonwealthMilitia, commonwealthVolunteer, eridaniScript, metropolisMilitia, rank0"
+			inherit=			"&RPG_baDestroyStationMission;"
+
+			level=				"1-5"
+			maxAppearing=		"3-5"
+			>
+		<Properties>
+			<Variant id="character.missionGiver">
+				(typ@ &HS_msCMVolunteer01; 'militiaCaptain)
+			</Variant>
+			<Data id="reward"></Data>
+			<Variant id="targetDesc">
+				{
+					criteria: "TAE +populated; -property:questTarget; -uncharted;"
+					}
+			</Variant>
+		</Properties>
+
+		<Image imageID="&HS_rsCommonwealthMilitiaInsignia;" imageX="0" imageY="0" imageWidth="256" imageHeight="256"/>
+
+		<Events>
+			<OnTargetChosen>
+				(block (
+					(targetObj (@ gData 'targetObj))
+
+					;	The reward for the station is half of the standard
+					;	treasure value for the station.
+
+					(rewardExact (/ (obj@ targetObj 'stdTreasure) 2))
+
+					;	Round it to the nearest 100
+
+					(reward (max 100 (* 100 (round (/ rewardExact 100)))))
+					)
+					(msnSet@ gSource 'reward reward)
+					)
+			</OnTargetChosen>
+
+			<OnGlobalSystemDiagnostics>
+				(block (
+					(stationType
+						(switch
+							(= (sysGetNode) 'SE)
+								&HS_stStartonEridani;
+
+							&HS_stCommonwealthStation;
+							)
+						)
+
+					stationObj
+					)
+					(if (and (leq (sysGetLevel) 4)
+							(setq stationObj (@ (sysFindObject Nil (cat "TA +unid:" stationType ";")) 0))
+							(msnCanCreate &HS_msCMVolunteer02; stationObj)
+							)
+						(block (missionObj)
+							(diagCreatePlayerShip)
+
+							(diagAssert (setq missionObj (msnCreate &HS_msCMVolunteer02; stationObj)) (cat "Militia Volunteer 02: Unable to create in " (sysGetName) "."))
+							(diagAssertMissionLanguage missionObj)
+						
+							(msnDestroy missionObj)
+							(objDestroy gPlayerShip)
+							(setq gPlayerShip Nil)
+							)
+						)
+					)
+			</OnGlobalSystemDiagnostics>
+		</Events>
+		
+		<Language>
+			<Text id="Name">
+				Destroy Threat to Metropolis
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+					reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+					systemName: (sysGetName)
+					})
+			</Text>
+			<Text id="Intro">
+				(typTranslate (msn@ gSource 'character.missionGiver) 'missionIntro {
+					missionObj: gSource
+					})
+			</Text>
+			<Text id="Briefing">
+				(block (
+					(trData {
+						missionNumber: (+ (msn@ gSource 'missionNumber) 1)
+						targetName: (objGetName (objGetObjByID (msn@ gSource 'targetID)) 'article)
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(or
+						(typTranslate (msn@ gSource 'character.missionGiver) 'volunteer02.briefing trData)
+						(msnTranslate gSource 'textBriefing trData)
+						)
+					)
+			</Text>
+			<Text id="AcceptReply">
+				(block (
+					(targetObj (objGetObjByID (msn@ gSource 'targetID)))
+					(targetCR (obj@ targetObj 'challengeRating))
+					(systemCR (sys@ 'stdChallengeRating))
+					(rating
+						(switch
+							(gr targetCR systemCR)
+								'hard
+
+							(ls targetCR systemCR)
+								'easy
+
+							'normal
+							)
+						)
+					)
+					(or
+						(typTranslate (msn@ gSource 'character.missionGiver) (cat 'volunteer02.acceptReply. rating))
+						(msnTranslate gSource (cat 'textAcceptReply. rating))
+						)
+					)
+			</Text>
+			<Text id="DeclineReply">
+				(msnTranslate gSource 'textDeclineReply1 {
+					})
+			</Text>
+			<Text id="InProgress">
+				(msnTranslate gSource 'textInProgress1 {
+					})
+			</Text>
+			<Text id="SuccessDebrief">
+				(block (
+					(trData {
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
+						})
+					)
+					(or
+						(typTranslate (msn@ gSource 'character.missionGiver) 'volunteer02.successDebrief trData)
+						(msnTranslate gSource 'textSuccessDebrief trData)
+						)
+					)
+			</Text>
+			<Text id="FailureDebrief">
+				(or
+					(typTranslate (msn@ gSource 'character.missionGiver) 'volunteer02.failureDebrief)
+					(msnTranslate gSource 'textFailureDebrief)
+					)
+			</Text>
+
+			<Text id="textSummary">
+			
+				%TargetName% is preying on vulnerable citizens in the system.
+				Your mission is to destroy the station.
+
+				System: %systemName%\n
+				Payment: %reward%
+
+			</Text>
+			<Text id="textBriefing">
+
+				The captain looks down at a screen.
+
+				"There's %targetName% in the system. It's been implicated in 
+				several civilian deaths. The station council has voted to 
+				authorize its destruction.
+
+				"Your mission is to destroy the station and any defenders. We'll
+				pay %reward% if you succeed. Interested?"
+
+			</Text>
+			<Text id="textAcceptReply.normal">
+
+				"All right. I'll send the target to your computer. Be careful,
+				OK? These guys are not gonna make it easy for you.
+
+				"Good luck!"
+
+			</Text>
+			<Text id="textAcceptReply.easy">
+
+				"All right. I'll send the target to your computer. This target
+				is ill-equipped and poorly-trained. You should have no trouble.
+
+				"Good luck!"
+
+			</Text>
+			<Text id="textAcceptReply.hard">
+
+				The captain looks you in the eyes.
+
+				"Listen, %name%, this is a hard one. The target is experienced
+				and well-armed. Make sure you repair and resupply before you go.
+				And be careful!
+
+				"OK, Good luck!"
+
+			</Text>
+			<Text id="textDeclineReply1">
+
+				"Ah, Hell! What are you doing here then? Stop wasting my time!"
+
+			</Text>
+			<Text id="textInProgress1">
+
+				"What's wrong? You said you could handle this mission! Get back 
+				out there and finish the job!"
+
+			</Text>
+			<Text id="textSuccessDebrief">
+
+				The captain looks pleased.
+
+				"Great work! You've got an aptitude for this. We've deposited 
+				%reward% to your account."
+
+			</Text>
+			<Text id="textFailureDebrief">
+
+				The captain is disappointed.
+
+				"Next time, try a little harder. We can't afford to let these
+				criminals get a foothold in the system."
+
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

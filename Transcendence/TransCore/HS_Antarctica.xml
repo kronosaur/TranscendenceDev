@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Sovereign UNID="&HS_svCSCAntarctica;"
+			name=":the CSC Antarctica"
+			shortName=":the Antarctica"
+			adjective="Antarctica"
+			demonym=":an Antarctica crewmember(s)"
+
+			alignment="constructive chaos"
+			>
+		<Language>
+			<Text id="WatchYourTargets">Cease fire! Cease fire or we will engage</Text>
+		</Language>
+
+		<Relationships>
+			<Relationship sovereign="&HS_svAres;" disposition="neutral" mutual="true"/>
+			<Relationship sovereign="&HS_svGaianTerraformers;" disposition="neutral" mutual="true"/>
+		</Relationships>
+	</Sovereign>
+
+	<Sovereign UNID="&HS_svFleetAssassins;"
+			name=":the Commonwealth Fleet"
+			shortName=":the Fleet"
+			adjective="Fleet"
+			demonym=":a Fleet crewmember(s)"
+
+			alignment="constructive chaos"
+			>
+
+		<Relationships>
+			<Relationship sovereign="&HS_svCSCAntarctica;" disposition="enemy" mutual="true"/>
+		</Relationships>
+	</Sovereign>
+
+	<!-- Captain Helios
+
+	GLOBAL DATA
+
+	status: Antarctica's current status. One of the following:
+
+		Nil:					Alive
+		'destroyed:				Destroyed by others
+		'destroyedByPlayer:		The player destroyed the Antarctica
+		'betrayed:				Destroyed by player after she promised otherwise
+
+	-->
+
+	<Type UNID="&HS_unidCaptainHelios;">
+		<StaticData>
+			<MissionAttribute>"captainHeliosMission"</MissionAttribute>
+			<Name>"Captain Helios"</Name>
+			<Sovereign>&HS_svCSCAntarctica;</Sovereign>
+		</StaticData>
+
+		<Events>
+			<OnCharacterCanBeMet>
+				True
+			</OnCharacterCanBeMet>
+
+			<OnGlobalSystemStopped>
+				(rpgCharacterAscend &HS_unidCaptainHelios;)
+			</OnGlobalSystemStopped>
+		</Events>
+
+		<Language>
+		</Language>
+	</Type>
+
+	<!-- CSC Antarctica -->
+
+	<ShipClass UNID="&HS_scCSCAntarctica;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, cscAntarctica, EI, majorShip, uncharted, captainHelios"
+			inherit=			"&HS_scCSCStock;"
+			character=			"&HS_unidCaptainHelios;"
+			achievement=		"humanSpace.cscAntarcticaKiller"
+
+			dockScreen=			"Main"
+			>
+
+		<Names>:the CSC Antarctica</Names>
+
+		<Properties>
+			<Definition id="csc.emblem">
+				(resCreateImageDesc &HS_rsFleetEmblems; 640 0 320 240)
+			</Definition>
+		</Properties>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itP1000HexphaseArmor;"
+			count=				"20"
+			/>
+		
+		<Devices>
+			<Device slotID="w1"		deviceID="&HS_itSAR40Cannon;"/>
+			<Device slotID="w2"		deviceID="&HS_itSAR40Cannon;"/>
+			<Device slotID="w3"		deviceID="&HS_itSAR40Cannon;"/>
+			<Device slotID="w4"		deviceID="&HS_itSAR40Cannon;"/>
+
+			<Device slotID="omni1"	deviceID="&HS_itNAMIHeavyLauncher;">
+				<Items>
+					<Item count="100"		item="&HS_itM2Missile;"/>
+				</Items>
+			</Device>
+			<Device slotID="omni2"	deviceID="&HS_itMissileDefense;"/>
+			<Device					deviceID="&HS_vtDamageControlParty;"/>
+		</Devices>
+
+		<!-- Trade and Items -->
+
+		<Trade currency="credit">
+			<Sell	criteria="m +commonwealth; +military; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="500" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			
+			<Refuel			criteria="f +BasicFuel; L:1-9;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-10;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a L:1-10;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+		</Trade>
+
+		<Items>
+			<Item				count="6d12"	item="&HS_itPteracniumFuelRod;"/>
+			
+			<!-- Some upgrades for sale -->
+			
+			<RandomItem count="1d3" criteria="r +commonwealth; -defective; -illegal; -notForSale; -notStandard; L:6-9;"		levelFrequency="systemLevel:ru|c|curv"/>
+			<Lookup count="8-12" table="&HS_tbCommonwealthFleetItems;"/>
+		</Items>
+
+		<!-- Dock Screens -->
+
+		<DockScreens>
+			<Main>
+				<OnScreenInit>
+					(block ()
+						(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+
+						(rpgMissionAssignmentOnScreenInit {
+							missionCriteria: (cat "n +antarcticaMission; =" (sysGetLevel) ";")
+							})
+						)
+				</OnScreenInit>
+
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionBridge" default="1">
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +antarcticaMission; =" (sysGetLevel) ";")
+									noMissionTextID: 'descNoMissions
+									})
+							</Action>
+
+							<Action id="actionDockServices">
+								(rpgDockServices gPlayerShip)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<!-- Events and Language -->
+
+		<Events>
+			<OnCreate>
+				;	We override the base class's OnCreate because we don't want
+				;	the normal behavior or the Britannia squadron.
+
+			</OnCreate>
+
+			<OnDestroy>
+				;	We override the base class's OnDestroy because we don't want
+				;	the automatic retaliation, etc.
+
+				(if aWreckObj
+					(rpgDestroyItems aWreckObj)
+					)
+			</OnDestroy>
+			
+			<GetDockScreen>
+				(switch
+					;	If the player does not have a military ID, then
+					;	refuse dock
+					
+					(not (objGetItems gPlayerShip "*+MilitaryID"))
+						{	screen:&HS_dsFleetRefuseDock;	priority:6		overrideOnly:true	}
+					
+					Nil
+					)
+			</GetDockScreen>
+		</Events>
+
+		<Language>
+			<Text id="actionBridge">[B]ridge</Text>
+			<Text id="actionDockServices">[D]ock Services</Text>
+			<Text id="actionUndock">[U]ndock</Text>
+
+			<Text id="descWelcome">You are in the docking bay of the CSC Antarctica.</Text>
+			<Text id="descNoMissions">
+				
+				A Fleet officer blocks the door.
+				
+				"I don't know who you think you are, mate, but you aren't our 
+				crew, so you'd better get off our ship."
+				
+			</Text>
+		</Language>
+	</ShipClass>
+
+</TranscendenceModule>

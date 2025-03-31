@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+	<Type UNID="&RPG_unidPilgrimClass;">
+		<Properties>
+			<Definition id="levelTable">
+				(list
+					Nil
+					{	level:1		xp:0		icon:(resCreateImageDesc &HS_rsSistersRanks; 0 0 256 256) }
+					{	level:2		xp:250		icon:(resCreateImageDesc &HS_rsSistersRanks; 256 0 256 256) }
+					{	level:3		xp:500		icon:(resCreateImageDesc &HS_rsSistersRanks; 512 0 256 256) }
+					{	level:4		xp:1000		icon:(resCreateImageDesc &HS_rsSistersRanks; 0 256 256 256) }
+					{	level:5		xp:2000		icon:(resCreateImageDesc &HS_rsSistersRanks; 256 256 256 256) }
+					{	level:6		xp:4000		icon:(resCreateImageDesc &HS_rsSistersRanks; 512 256 256 256) }
+					)
+			</Definition>
+
+			<Global id="nextLevelNotification"></Global>
+
+			<DynamicGlobal id="level">
+				(block (
+					(level (typGetGlobalData &HS_stDomina; 'level))
+					)
+					(switch
+						;	If we have a level, then that's the level
+						
+						level
+							level
+							
+						;	If we're a Pilgrim, then we're at least level 1.
+						
+						(= (obj@ gPlayerShip 'characterClass) &RPG_unidPilgrimClass;)
+							1
+							
+						;	Otherwise Nil
+						)
+					)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="levelIcon">
+				(block (
+					(levelTable (typ@ gType 'levelTable))
+					)
+					(@ (@ levelTable (typ@ gType 'level)) 'icon)
+					)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="levelNoun">
+				(typTranslate gType 'nounRankPattern { rank:(typ@ gType 'level) gender:(plyGetGenome gPlayer) })
+			</DynamicGlobal>
+
+			<DynamicGlobal id="levelTier">
+				(typTranslate gType (cat 'tier. (typ@ gType 'level)))
+			</DynamicGlobal>
+
+			<DynamicGlobal id="nextLevel">
+				(block (
+					(levelTable (typ@ gType 'levelTable))
+					(level (typ@ gType 'level))
+					(nextLevel (+ level 1))
+
+					(xp (typ@ gType 'xp))
+					(prevXP (@ (@ levelTable level) 'xp))
+					(nextXP (@ (@ levelTable nextLevel) 'xp))
+					(totalXPToNextLevel (- nextXP prevXP))
+					(curXPAtLevel (- xp prevXP))
+					)
+					(switch
+						(= level 6)
+							Nil
+
+						{
+							nextLevel: nextLevel
+							nextXP: nextXP
+							progress: (round (* 100.0 (/ curXPAtLevel totalXPToNextLevel)))
+							}
+						)
+					)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="xp">
+				(typGetGlobalData &HS_stDomina; 'xp)
+			</DynamicGlobal>
+		</Properties>
+
+		<Events>
+			<GetGlobalAchievements>
+				(block (
+					(level (typ@ gType 'level))
+					(psionicsOffered (typGetGlobalData &HS_stDomina; "psionicsOffered"))
+					(slavesOffered (typGetGlobalData &HS_stDomina; "slavesOffered"))
+
+					theList 
+					)
+					(if (and level (gr level 0))
+						(setq theList (list
+							(list
+								"Domina relationship"
+								(fmtNoun (typ@ &RPG_unidPilgrimClass; 'levelNoun) 1 '(capitalize))
+								)
+							))
+						)
+						
+					(if (and (gr level 0) 
+							(not (typGetGlobalData &HS_stDomina; "invokeCount"))
+							)
+						(setq theList (append theList (list
+							(list "Never invoked powers of Domina" Nil "conducts")
+							)))
+						)
+						
+					(if psionicsOffered
+						(setq theList (append theList (list
+							(list "Psionics offered to Domina" psionicsOffered "missions &amp; activities")
+							)))
+						)
+
+					(if slavesOffered
+						(setq theList (append theList (list
+							(list "Slaves offered to Domina" slavesOffered "missions &amp; activities")
+							)))
+						)
+
+					theList
+					)
+			</GetGlobalAchievements>
+		</Events>
+		
+		<Language>
+			<Code id="rankDetails">
+				(block (
+					(level (typ@ gType 'level))
+					(nextLevel (typ@ gType 'nextLevel))
+					)
+					(if level
+						{
+							title: (fmtNoun (typ@ gType 'levelNoun) 1 'titleCapitalize)
+							largeIcon: (typ@ gType 'levelIcon)
+
+							details: (list
+								{
+									title: (typTranslate gType 'labelDominaPowers)
+									desc: (typTranslate gType 'rtfLevelValue { 
+										value: level
+										})
+									}
+								(if nextLevel
+									{
+										title: (typTranslate gType 'labelProgress {
+											nextLevel: (fmtNoun (typTranslate gType 'nounRankPattern { rank:(@ nextLevel 'nextLevel) gender:(plyGetGenome gPlayer) }) 1 'titleCapitalize)
+											})
+										desc: (typTranslate gType 'rtfValue { 
+											value: (cat (@ nextLevel 'progress) "%")
+											})
+										}
+									)
+								{
+									title: (typTranslate gType 'labelAidBudget)
+									desc: (typTranslate gType 'rtfValue {
+										value: (fmtCurrency 'credit (typ@ &HS_svSistersOfDomina; 'balance))
+										})
+									}
+								)
+
+							detailsStyle: 'stats
+							align: 'bottom
+							}
+						)
+					)
+			</Code>
+
+			<Code id="nounRankPattern">
+				(typTranslate gType (cat "rank." (@ gData 'rank)) gData)
+			</Code>
+
+			<Text id="rank.1">:a novice(s)</Text>
+			<Text id="rank.2">:an acolyte(s)</Text>
+			<Text id="rank.3">:an adept(s)</Text>
+			<Text id="rank.4">:a curate(s)</Text>
+			<Text id="rank.5">:a canon(s)</Text>
+			<Text id="rank.6">
+				(or (typTranslate gType (cat "rank.6." (@ gData 'gender)))
+					(typTranslate gType "rank.6.humanFemale")
+					)
+			</Text>
+			<Text id="rank.6.humanMale">:a patriarch(s)</Text>
+			<Text id="rank.6.humanFemale">:a matriarch(s)</Text>
+
+			<Text id="tier.1">first-tier</Text>
+			<Text id="tier.2">second-tier</Text>
+			<Text id="tier.3">third-tier</Text>
+			<Text id="tier.4">fourth-tier</Text>
+			<Text id="tier.5">fifth-tier</Text>
+			<Text id="tier.6">sixth-tier</Text>
+
+			<Text id="labelDominaPowers">Domina Powers:</Text>
+			<Text id="labelProgress">Progress to %nextLevel%:</Text>
+			<Text id="labelAidBudget">Pilgrims' Aid Budget:</Text>
+
+			<RTF id="rtfValue">{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
+			<RTF id="rtfLevelValue">{/rtf {/f:LargeBold;/c:#ffe667; Tier %value%}}</RTF>
+		</Language>
+	</Type>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&HS_rsSistersRanks;"		bitmap="Resources\SistersOfDominaRanks.jpg" bitmask="Resources\SistersOfDominaRanksMask.bmp" loadOnUse="true"/>
+
+</TranscendenceModule>

@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- GROUP MORPHOLOGIES
+
+	SIZE CLASSIFICATION
+
+			Asteroid			< 1,000 km
+	sizeA		Tiny			~ 10 km
+	sizeB		Small			~ 50 km
+	sizeC		Medium			~ 100 km
+	sizeD		Large			~ 500 km
+
+			Planetoid			~ 2,500 km
+	sizeE		Small			~ 1,000 km
+	sizeF		Medium			~ 2,000	km
+	sizeG		Large			~ 4,000 km
+		
+			Terrestrial			~ 10,000 km
+	sizeH		Small			~ 5,000 km
+	sizeI		Medium			~ 10,000 km
+	sizeJ		Large			~ 20,000 km
+
+			Gas Giant			~ 100,000 km
+	sizeK		Small			~ 50,000 km
+	sizeL		Medium			~ 100,000 km
+	sizeM		Large			~ 200,000 km
+
+-->
+
+	<SystemPartTable unid="&GLXY_tbAsteroidMorphologies;">
+		
+		<!-- COMPANIONS -->
+
+		<AsteroidCompanion>
+			<Lookup table="LocationDefinition">
+				<_Morphology>
+					<Table>
+						<Lookup chance="40"		table="VariantSizeB"/>
+						<Lookup chance="50"		table="VariantSizeC"/>
+						<Lookup chance="10"		table="VariantSizeD"/>
+					</Table>
+				</_Morphology>
+			</Lookup>
+
+			<Orbitals distance="2d4+8" angle="random">
+				<Label attributes="moon, planetary"/>
+			</Orbitals>
+		</AsteroidCompanion>
+
+		<PlanetoidCompanion>
+			<Lookup table="LocationDefinition">
+				<_Morphology>
+					<Table>
+						<Lookup chance="60"		table="VariantSizeE"/>
+						<Lookup chance="30"		table="VariantSizeF"/>
+						<Lookup chance="10"		table="VariantSizeG"/>
+					</Table>
+				</_Morphology>
+			</Lookup>
+
+			<Orbitals count="1-3" distance="2d4+8" angle="random">
+				<Label attributes="moon, planetary"/>
+			</Orbitals>
+		</PlanetoidCompanion>
+
+		<!-- Variant Asteroids & Planetoids
+		
+			These definitions must be invoked with a double Variant directive.
+			One directive must define the region (inner, lifeZone, outer); the
+			other must define the classification (frost, ice, metallic, etc).
+			
+		-->
+
+		<VariantAsteroidTrojanLabel>
+			<VariantTable>
+				<Label variant="ice"		attributes="asteroids, ice, trojan"/>
+				<Label variant="metallic"	attributes="asteroids, metallic, trojan"/>
+				<Label variant="primordial"	attributes="asteroids, primordial, trojan"/>
+				<Label variant="rocky"		attributes="asteroids, rocky, trojan"/>
+				<Label variant="volcanic"	attributes="asteroids, trojan, volcanic"/>
+			</VariantTable>
+		</VariantAsteroidTrojanLabel>
+
+	</SystemPartTable>
+
+	<SystemPartTable unid="&GLXY_tbPlanetaryMorphologies;">
+
+		<!-- A planetoid in a sparse field of lesser asteroids. Use for small 
+			planets and planetoids.
+
+			REQUIRES
+
+			_PlanetType:	A planet definition
+			_PlanetLabel:	A label for station around planet
+			
+		-->
+
+		<StandardPlanetoidMorphology>
+
+			<!-- A planet (the type is an input to the table) -->
+
+			<Lookup table="_PlanetType"/>
+
+			<!-- A label in orbit around the planet (also an input, in case the
+				caller wants to define some special attributes. -->
+
+			<Orbitals distance="2d6+10" angle="random">
+				<Lookup table="_PlanetLabel"/>
+			</Orbitals>
+
+			<!-- Since this is a small planet, good chance of lots asteroids in
+				the orbit. -->
+
+			<Table>
+				<Null	chance="20"/>
+				<Lookup chance="50" table="AsteroidBelt12"/>
+				<Lookup chance="20" table="AsteroidBelt25"/>
+				<Lookup chance="9" table="AsteroidBelt50"/>
+				<Lookup chance="1" table="AsteroidBelt100"/>
+			</Table>
+
+		</StandardPlanetoidMorphology>
+
+		<!-- A larger (terrestrial-sized) planet, possibly with satellites and
+			some chance of trojans or other asteroids.
+
+			REQUIRES
+
+			_PlanetType:	A planet definition
+			_PlanetLabel:	A label for stations around planet
+
+		-->
+
+		<StandardTerrestrialMorphology>
+
+			<!-- A planet (the type is an input to the table) -->
+
+			<Lookup table="_PlanetType"/>
+
+			<!-- A label in orbit around the planet (also an input, in case the
+				caller wants to define some special attributes. -->
+
+			<Orbitals count="1-3" distance="2d6+10" angle="random">
+				<Lookup table="_PlanetLabel"/>
+			</Orbitals>
+
+			<!-- Chance of one or more moons around the planet -->
+
+			<Table>
+				<!-- No moon -->
+				<Null		chance="50"/>
+
+				<!-- One small moon -->
+				<Orbitals	chance="30" distance="2d8+30" angle="random">
+					<Lookup table="AsteroidCompanion"/>
+				</Orbitals>
+
+				<!-- Two small moons -->
+				<Group		chance="12">
+					<Orbitals	distance="2d8+24" angle="random">
+						<Lookup table="AsteroidCompanion"/>
+					</Orbitals>
+					<Orbitals	distance="2d8+48" angle="random">
+						<Lookup table="AsteroidCompanion"/>
+					</Orbitals>
+				</Group>
+
+				<!-- One large moon -->
+				<Orbitals	chance="8" distance="2d8+32" angle="random">
+					<Lookup table="PlanetoidCompanion"/>
+				</Orbitals>
+			</Table>
+
+			<!-- Chance of trojans and/or asteroids -->
+
+			<Table>
+				<!-- Nothing -->
+				<Null		chance="60"/>
+
+				<!-- One trojan area -->
+				<Lookup		chance="10" table="AsteroidTrojans12"/>
+				<Lookup		chance="10" table="AsteroidAntiTrojans12"/>
+
+				<!-- Asteroid belt -->
+				<Lookup		chance="10" table="AsteroidBelt12"/>
+				<Lookup		chance="5"  table="AsteroidBelt25"/>
+
+				<!-- Two trojan areas -->
+				<Group		chance="4">
+					<Lookup	table="AsteroidTrojans12"/>
+					<Lookup	table="AsteroidAntiTrojans12"/>
+				</Group>
+
+				<!-- Asteroid belt plus two trojan areas -->
+				<Group		chance="1">
+					<Lookup	table="AsteroidBelt12"/>
+					<Lookup	table="AsteroidTrojans12"/>
+					<Lookup	table="AsteroidAntiTrojans12"/>
+				</Group>
+			</Table>
+
+		</StandardTerrestrialMorphology>
+
+		<!-- A gas giant planet with satellites and trojans.
+
+			REQUIRES
+
+			_PlanetType:	A planet definition
+			_PlanetLabel:	A label for stations around planet
+
+		-->
+
+		<StandardGasGiantMorphology>
+
+			<!-- A planet (the type is an input to the table) -->
+
+			<Lookup table="_PlanetType"/>
+
+			<!-- A label in orbit around the planet (also an input, in case the
+				caller wants to define some special attributes. -->
+
+			<Orbitals count="2d2" distance="2d6+20" angle="equidistant">
+				<Lookup table="_PlanetLabel"/>
+			</Orbitals>
+
+			<!-- Chance of one or more moons around the planet -->
+
+			<Table>
+				<!-- No moon -->
+				<Null		chance="10"/>
+
+				<!-- One large moon -->
+				<Orbitals	chance="30" distance="2d8+32" angle="random">
+					<Lookup table="PlanetoidCompanion"/>
+				</Orbitals>
+
+				<!-- Two moons -->
+				<Group		chance="40">
+					<Orbitals	distance="2d8+32" angle="random">
+						<Table>
+							<Lookup chance="75" table="AsteroidCompanion"/>
+							<Lookup chance="25" table="PlanetoidCompanion"/>
+						</Table>
+					</Orbitals>
+					<Orbitals	distance="2d8+72" angle="random">
+						<Table>
+							<Lookup chance="40" table="AsteroidCompanion"/>
+							<Lookup chance="60" table="PlanetoidCompanion"/>
+						</Table>
+					</Orbitals>
+				</Group>
+
+				<!-- Three moons -->
+				<Group		chance="20">
+					<Orbitals	distance="2d8+32" angle="random">
+						<Table>
+							<Lookup chance="80" table="AsteroidCompanion"/>
+							<Lookup chance="20" table="PlanetoidCompanion"/>
+						</Table>
+					</Orbitals>
+					<Orbitals	distance="2d8+72" angle="random">
+						<Table>
+							<Lookup chance="40" table="AsteroidCompanion"/>
+							<Lookup chance="60" table="PlanetoidCompanion"/>
+						</Table>
+					</Orbitals>
+					<Orbitals	distance="2d8+112" angle="random">
+						<Table>
+							<Lookup chance="80" table="AsteroidCompanion"/>
+							<Lookup chance="20" table="PlanetoidCompanion"/>
+						</Table>
+					</Orbitals>
+				</Group>
+			</Table>
+
+			<!-- Chance of trojans and/or asteroids -->
+
+			<Table>
+				<!-- Nothing -->
+				<Null		chance="10"/>
+
+				<!-- One trojan area -->
+				<Lookup		chance="10" table="AsteroidTrojans50"/>
+				<Lookup		chance="10" table="AsteroidAntiTrojans50"/>
+				<Lookup		chance="20" table="AsteroidTrojans100"/>
+				<Lookup		chance="20" table="AsteroidAntiTrojans100"/>
+
+				<!-- Two trojan areas -->
+				<Group		chance="5">
+					<Lookup	table="AsteroidTrojans25"/>
+					<Lookup	table="AsteroidAntiTrojans25"/>
+				</Group>
+
+				<Group		chance="20">
+					<Lookup	table="AsteroidTrojans50"/>
+					<Lookup	table="AsteroidAntiTrojans50"/>
+				</Group>
+
+				<Group		chance="5">
+					<Lookup	table="AsteroidTrojans100"/>
+					<Lookup	table="AsteroidAntiTrojans100"/>
+				</Group>
+			</Table>
+		</StandardGasGiantMorphology>
+
+		<!-- A gas giant planet with satellites and trojans.
+
+			REQUIRES
+
+			_PlanetType:	A planet definition
+			_PlanetLabel:	A label for stations around planet
+
+		-->
+
+		<SmallGasGiantMorphology>
+
+			<!-- A planet (the type is an input to the table) -->
+
+			<Lookup table="_PlanetType"/>
+
+			<!-- A label in orbit around the planet (also an input, in case the
+				caller wants to define some special attributes. -->
+
+			<Orbitals count="1-2" distance="2d6+18" angle="equidistant">
+				<Lookup table="_PlanetLabel"/>
+			</Orbitals>
+
+			<!-- Chance of one or more moons around the planet -->
+
+			<Table>
+				<!-- No moon -->
+				<Null		chance="20"/>
+
+				<!-- One moon -->
+				<Orbitals	chance="60" distance="2d8+30" angle="random">
+					<Table>
+						<Lookup chance="20" table="AsteroidCompanion"/>
+						<Lookup chance="80" table="PlanetoidCompanion"/>
+					</Table>
+				</Orbitals>
+
+				<!-- Two moons -->
+				<Group		chance="20">
+					<Orbitals	distance="2d8+30" angle="random">
+						<Table>
+							<Lookup chance="80" table="AsteroidCompanion"/>
+							<Lookup chance="20" table="PlanetoidCompanion"/>
+						</Table>
+					</Orbitals>
+					<Orbitals	distance="2d8+70" angle="random">
+						<Table>
+							<Lookup chance="50" table="AsteroidCompanion"/>
+							<Lookup chance="50" table="PlanetoidCompanion"/>
+						</Table>
+					</Orbitals>
+				</Group>
+			</Table>
+
+			<!-- Chance of trojans and/or asteroids -->
+
+			<Table>
+				<!-- Nothing -->
+				<Null		chance="10"/>
+
+				<!-- One trojan area -->
+				<Lookup		chance="15" table="AsteroidTrojans25"/>
+				<Lookup		chance="15" table="AsteroidAntiTrojans25"/>
+				<Lookup		chance="20" table="AsteroidTrojans50"/>
+				<Lookup		chance="20" table="AsteroidAntiTrojans50"/>
+
+				<!-- Two trojan areas -->
+				<Group		chance="5">
+					<Lookup	table="AsteroidTrojans12"/>
+					<Lookup	table="AsteroidAntiTrojans12"/>
+				</Group>
+
+				<Group		chance="10">
+					<Lookup	table="AsteroidTrojans25"/>
+					<Lookup	table="AsteroidAntiTrojans25"/>
+				</Group>
+
+				<Group		chance="5">
+					<Lookup	table="AsteroidTrojans50"/>
+					<Lookup	table="AsteroidAntiTrojans50"/>
+				</Group>
+			</Table>
+		</SmallGasGiantMorphology>
+
+	</SystemPartTable>
+
+</TranscendenceModule>

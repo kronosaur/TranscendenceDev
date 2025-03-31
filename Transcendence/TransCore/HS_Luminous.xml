@@ -1,0 +1,580 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Sovereign UNID="&HS_svLuminous;"
+			name=": Luminous"
+			adjective="Luminous"
+			demonym=":a Luminous drone(s)"
+
+			alignment="cryptologue"
+			/>
+
+	<Sovereign UNID="&HS_svFriendlyLuminous;"
+			name="Luminous drones"
+			demonym=":a Luminous drone(s)"
+
+			alignment="archivist"
+			>
+		<Language>
+			<String id="WatchYourTargets">Drone damaged</String>
+			<Text id="NiceShooting"></Text>
+		</Language>
+	</Sovereign>
+
+	<SystemMap unid="&HS_smLuminousSpace;"
+			displayOn="&HS_smHumanSpace;"
+			>
+		<TopologyProcessor priority="primaryColony">
+			<System criteria="+outerRealm;"				attributes="luminousSpace"/>
+		</TopologyProcessor>
+	</SystemMap>
+
+<!-- STATION TYPES -->
+
+	<!-- Luminous Assembler -->
+
+	<StationType UNID="&HS_stLuminousAssembler;"
+			name=				"Luminous Assembler"
+			sovereign=			"&HS_svLuminous;"
+
+			attributes=			"ai, enemy, envWater, envAvoidsEarth, generic, luminous, score"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			armorID=			"&HS_itLuminousArmature;"
+			hitPoints=			"600"
+			multiHull=			"true"
+            regen=              "3.0"
+
+			explosionType=		"&CORE_vtThermoExplosion3;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+luminousSpace;"
+				systemAffinity=			"+envWater; -envEarth;"
+				levelFrequency=			"----- -ucur ----- ----- -----"
+
+				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"50"
+				/>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Group value="standard:level=8:x=1.4">
+				<Table>
+					<RandomItem chance="40"	count="1d6"
+							criteria=			"* +Info; -NotStandard; "
+							levelFrequency=		"----u ccur-"
+							/>
+					<Lookup		chance="40" count="1d6" table="&HS_trLuminousTreasure;"/>
+					<Lookup		chance="20" count="1"	table="&HS_trStdTreasure;"/>
+				</Table>
+			</Group>
+		</Items>
+
+		<!-- Configuration -->
+
+		<Devices>
+		</Devices>
+
+		<!-- Satellites -->
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Ship			count="1d6"	class="&HS_scLuminousDrone;"	orders="patrol" patrolDist="5"/>
+		</Ships>
+
+		<Construction constructionRate="500" maxConstruction="12">
+			<Table>
+				<Ship chance="100" count="1"	class="&HS_scLuminousDrone;" orders="patrol" patrolDist="5"/>
+			</Table>
+		</Construction>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&HS_rsStations8;" imageX="0" imageY="0" imageWidth="192" imageHeight="192"/>
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"100"
+				/>
+
+		<!-- Random Encounters -->
+		
+		<Encounters frequency="common">
+			<Ship							   count="1"	 class="&HS_scLuminousDrone;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Ship					   count="1d4-1" class="&HS_scLuminousDrone;" orders="escort"/>
+				</Escorts>
+			</Ship>
+		</Encounters>
+
+		<!-- Events and Data -->
+
+		<GlobalData>
+			<Resist>
+				; particle  blast  ion  thermo  total
+				(1 1 1 1 4)
+			</Resist>
+		</GlobalData>
+
+		<Language>
+			<Text id="core.abandonedStationDesc">
+
+				You are docked at the remains of a Luminous assembler.
+				This automated factory churned out drones controlled by 
+				the mysterious sentient entity known as Luminous.
+
+			</Text>
+		</Language>
+	</StationType>
+
+<!-- SHIP CLASSES -->
+
+	<!-- Luminous Drone -->
+
+	<ShipClass UNID="&HS_scLuminousDrone;"
+			manufacturer=		""
+			class=				"Luminous drone"
+			type=				""
+			defaultSovereign=	"&HS_svLuminous;"
+
+			attributes=			"AI, genericClass, luminous, luminousDrone"
+			score=				"800"
+
+			explosionType=		"&CORE_vtBlastExplosion2;"
+			>
+
+		<Properties>
+			<Definition id="core.noBiologicalEffects">True</Definition>
+			<Definition id="core.noRadiationDeath">True</Definition>
+		</Properties>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"70"
+			mass=				"600"
+			cargoSpace=			"10"
+			cyberDefenseLevel=	"10"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"200"
+			maxDevices=			"6"
+			maxWeapons=			"1"
+
+			maxArmor=			"medium"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"2400"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"18.0"
+			rotationAccel=		"3.0"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot criteria="w" posAngle="180" posRadius="36" posZ="0" minFireArc="180" maxFireArc="180"/>
+		</DeviceSlots>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itLuminousArmature;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itLuminousIonBlaster;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item chance="50" count="1d6" item="&HS_itHeliumAssembly;"/>
+			<Item chance="5"  count="1"	  item="&HS_itOpticalKnowledgeArray;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsLuminousDroneHD;" imageWidth="96" imageHeight="96" rotationCount="120" rotationColumns="12" viewportRatio="0.009375"/>
+		<HeroImage imageID="&HS_rsLuminousDroneHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="36"	posZ="0"	rotation="180"	sendToBack="*"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"30"
+			fireRangeAdj=		"50"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+		<Events>
+			<OnCreate>
+				(block (resistList total rnd choice)
+					(setq resistList (typGetGlobalData &HS_stLuminousAssembler; "Resist"))
+					(setq total (item resistList 4))
+
+					; Depending on what we've been killed-by previously, create
+					; new drones that are resistant
+
+					(setq rnd (random 1 total))
+					(setq choice Nil)
+					(for i 0 3
+						(if (and (not choice) (leq rnd (item resistList i)))
+							(setq choice i)
+							(setq rnd (subtract rnd (item resistList i)))
+							)
+						)
+
+					; Add appropriate shield generator
+					(switch
+						(eq choice 0)
+							(setq choice (itmCreate &HS_itLuminousParticleShields; 1))
+
+						(eq choice 1)
+							(setq choice (itmCreate &HS_itLuminousBlastShields; 1))
+
+						(eq choice 2)
+							(setq choice (itmCreate &HS_itLuminousIonShields; 1))
+
+						(eq choice 3)
+							(setq choice (itmCreate &HS_itLuminousThermoShields; 1))
+
+						(setq choice Nil)
+						)
+
+					; Install
+					(if choice
+						(block Nil
+							(objAddItem gSource choice)
+							(shpInstallDevice gSource choice)
+							(shpRechargeShield gSource)
+							)
+						)
+					)
+			</OnCreate>
+
+			<OnDestroy>
+				(if aDestroyer
+					(block (damage resistList d1 d2 d3 d4)
+						; Figure out what kind of damage killed us
+						(setq damage (objGetDamageType aDestroyer))
+
+						; Increment the resist list
+						(setq resistList (typGetGlobalData &HS_stLuminousAssembler; "Resist"))
+						(setq d1 (if (eq damage 2) (add (item resistList 0) 1) (item resistList 0)))
+						(setq d2 (if (eq damage 3) (add (item resistList 1) 1) (item resistList 1)))
+						(setq d3 (if (eq damage 4) (add (item resistList 2) 1) (item resistList 2)))
+						(setq d4 (if (eq damage 5) (add (item resistList 3) 1) (item resistList 3)))
+
+						(typSetGlobalData &HS_stLuminousAssembler; "Resist"
+							(list d1 d2 d3 d4
+								(add (add (add d1 d2) d3) d4)
+								)
+							)
+						)
+					)
+			</OnDestroy>
+		</Events>
+	</ShipClass>
+
+<!-- ITEM TYPES -->
+
+	<!-- Ion Blaster -->
+
+	<ItemType UNID="&HS_itLuminousIonBlaster;"
+			name=				"Luminous blaster"
+			attributes=			"energyWeapon, luminous, military, majorItem, notForSale, notStandard"
+			  
+			level=				"8"
+			frequency=			"rare"
+			  
+			value=				"83000"
+			mass=				"4000"
+
+			description=		"This ion blaster is used by Luminous for its drones."
+			>
+
+		<Image imageID="&HS_rsItems8;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"beam"
+
+				damage=				"ion:5d6; WMD1"
+				fireRate=			"10"
+				lifetime=			"30"
+				powerUse=			"1000"
+
+				effect=				"&HS_efEIBlasterBeam;"
+				fireEffect=			"&HS_efEIBlasterFire;"
+				hitEffect=			"&HS_efEIBlasterHit;" 
+				sound=				"&CORE_snLaserCannon;"
+				>
+		</Weapon>
+	</ItemType>
+
+	<!-- Luminous Armature -->
+
+	<ItemType UNID="&HS_itLuminousArmature;"
+			name=				"[segment(s) of ]Luminous armature"
+			level=				"5"
+			value=				"900"
+			mass=				"3500"
+			attributes=			"Luminous; MinorItem; NotForSale; NotStandard"
+			frequency=			"uncommon"
+			numberAppearing=	"1d4"
+
+			description=		"The Luminous's drones are protected with this armor. It is a conductive exotic alloy that resists ion and thermo damage."
+
+			sortName=			"Luminous armature, segment of"
+			>
+
+		<Image imageID="&HS_rsItems5;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Armor
+				hitPoints=	"100"
+				hpBonus=	"  +0,  +0,  +0,  +0,+100,+100"
+
+				repairTech=	"6"
+				repairCostAdj=	"200"
+				installCostAdj=	"250"
+				/>
+
+	</ItemType>
+
+	<!-- Luminous Scare Program -->
+
+	<ItemType UNID="&HS_itLuminousScareProgram;"
+			name=				"Luminous 5care algorithm"
+			level=				"7"
+			value=				"1500"
+			mass=				"50"
+			frequency=			"rare"
+			numberAppearing=	"1d6"
+			unknownType=		"&HS_itUnknownMnemonicCube;"
+			attributes=			"consumable, info, luminous, quantumProgram"
+
+			description=		"This cube contains algorithms used by Luminous to control its drones. When invoked on a quantum CPU, this causes drones to immediately leave the system."
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
+
+		<Invoke key="R">
+			(switch
+				; If we don't have a quantum CPU
+				(not (progHasQuantumCPU gSource))
+					(objSendMessage gSource Nil "Quantum CPU required")
+
+				; Otherwise, we scare any Luminous drones
+				(block (targets)
+					(setq targets (sysFindObject gSource "sEN:20; B:luminousDrone;"))
+					(enum targets target
+						(block Nil
+							(shpCancelOrders target)
+							(shpOrderGate target)
+							)
+						)
+					(if targets
+						(objSendMessage gSource Nil "5care: Program complete")
+						(objSendMessage gSource Nil "5care: No carrier signal")
+						)
+
+					(itmSetKnown gItem)
+					(objRemoveItem gSource gItem 1)
+					)
+				)
+		</Invoke>
+	</ItemType>
+
+	<!-- Luminous Tame Program -->
+
+	<ItemType UNID="&HS_itLuminousTameProgram;"
+			name=				"Luminous 7ame algorithm"
+			level=				"8"
+			value=				"2500"
+			mass=				"50"
+			frequency=			"rare"
+			unknownType=		"&HS_itUnknownMnemonicCube;"
+			attributes=			"consumable, info, luminous, quantumProgram"
+
+			description=		"When invoked, this algorithm will reprogram a Luminous drone and imprint it with instructions to defend its programmer."
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
+
+		<Invoke>
+			(switch
+				; If we don't have a quantum CPU
+				(not (progHasQuantumCPU gSource))
+					(objSendMessage gSource Nil "Quantum CPU required")
+
+				; Otherwise, we choose a random Luminous drone
+				(block (target)
+					(setq target (random (sysFindObject gSource "sEN:20; B:luminousDrone;")))
+
+					(if (not target)
+						(objSendMessage gSource Nil "7ame: No carrier signal")
+						(block Nil
+							(objSetSovereign target &HS_svFriendlyLuminous;)
+							(shpSetController target "auton")
+							(shpOrderEscort target gSource)
+							(objSendMessage gSource target "7ame: Program complete")
+							)
+						)
+
+					(itmSetKnown gItem)
+					(objRemoveItem gSource gItem 1)
+					)
+				)
+		</Invoke>
+	</ItemType>
+
+	<!-- Luminous Particle Shield -->
+
+	<ItemType UNID="&HS_itLuminousParticleShields;"
+			name=				"Luminous particle shield"
+			level=				"6"
+			value=				"12000"
+			mass=				"5000"
+			frequency=			"veryrare"
+			attributes=			"Luminous; MajorItem; NotForSale; NotStandard;"
+
+			description=		"The Luminous AI has developed these shield generators for its drones. They are designed to be resistant to particle-beam energy."
+
+			sortName=			"Luminous shields, particle"
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Shields
+				hitPoints=		"95"
+				hpBonus=		" +25,  +0,+600,  +0,-100,  +0"
+				absorbAdj=		" 100,   0, 100,   0, 100,   0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0"
+				regen=			"45"
+				powerUse=		"300"
+				/>
+
+	</ItemType>
+
+	<!-- Luminous Blast Shield -->
+
+	<ItemType UNID="&HS_itLuminousBlastShields;"
+			name=				"Luminous blast shield"
+			level=				"6"
+			value=				"12000"
+			mass=				"5000"
+			frequency=			"veryrare"
+			attributes=			"Luminous; MajorItem; NotForSale; NotStandard;"
+
+			description=		"The Luminous AI has developed these shield generators for its drones. They are designed to be resistant to blast energy."
+
+			sortName=			"Luminous shields, blast"
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Shields
+				hitPoints=		"95"
+				hpBonus=		"  +0, +25,  +0,+600,  +0,-100"
+				absorbAdj=		"   0, 100,   0, 100,   0, 100,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0"
+				regen=			"45"
+				powerUse=		"300"
+				/>
+
+	</ItemType>
+
+	<!-- Luminous Ion Shield -->
+
+	<ItemType UNID="&HS_itLuminousIonShields;"
+			name=				"Luminous ion shield"
+			level=				"6"
+			value=				"12000"
+			mass=				"5000"
+			frequency=			"veryrare"
+			attributes=			"Luminous; MajorItem; NotForSale; NotStandard;"
+
+			description=		"The Luminous AI has developed these shield generators for its drones. They are designed to be resistant to ion energy."
+
+			sortName=			"Luminous shields, ion"
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Shields
+				hitPoints=		"95"
+				hpBonus=		" +25,  +0,-100,  +0,+850,  +0"
+				absorbAdj=		" 100,   0, 100,   0, 100,   0,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0"
+				regen=			"45"
+				powerUse=		"300"
+				/>
+
+	</ItemType>
+
+	<!-- Luminous Thermo Shield -->
+
+	<ItemType UNID="&HS_itLuminousThermoShields;"
+			name=				"Luminous thermo shield"
+			level=				"6"
+			value=				"12000"
+			mass=				"5000"
+			frequency=			"veryrare"
+			attributes=			"Luminous; MajorItem; NotForSale; NotStandard;"
+
+			description=		"The Luminous AI has developed these shield generators for its drones. They are designed to be resistant to thermonuclear energy."
+
+			sortName=			"Luminous shields, thermo"
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Shields
+				hitPoints=		"95"
+				hpBonus=		"  +0, +25,  +0,-100,  +0,+850"
+				absorbAdj=		"   0, 100,   0, 100,   0, 100,  0,  0,   0,  0,  0,  0,   0,  0,  0,  0"
+				regen=			"45"
+				powerUse=		"300"
+				/>
+
+	</ItemType>
+
+<!-- TABLES -->
+	
+	<ItemTable UNID="&HS_trLuminousTreasure;">
+		<Table>
+			<RandomItem chance="15"
+					criteria=			"* +luminous; +majorItem"
+					levelFrequency=		"systemLevel:uuc|u|uv"
+					/>
+			<RandomItem chance="30"
+					criteria=			"* +luminous; +minorItem"
+					levelFrequency=		"systemLevel:uuc|u|uv"
+					/>
+			<RandomItem chance="55"
+					criteria=			"* +luminous; +consumable"
+					levelFrequency=		"systemLevel:uuc|u|uv"
+					/>
+		</Table>
+	</ItemTable>
+	
+<!-- RESOURCES -->
+	
+	<Image UNID="&HS_rsLuminousDroneHD;"	bitmap="Resources\LuminousDroneHD.jpg"	bitmask="Resources\LuminousDroneHDMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&HS_rsLuminousDroneHero;"	bitmap="Resources\LuminousDroneLarge.jpg"	bitmask="Resources\LuminousDroneLargeMask.bmp" 	loadOnUse="true" />
+
+</TranscendenceModule>

@@ -1,0 +1,707 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+<!-- SHIP CLASSES -->
+	
+	<!-- Antares I Freighter -->
+
+	<ShipClass UNID="&HS_scAntaresI;"
+			manufacturer=		"Makayev-Energia"
+			class=				"Antares I"
+			type=				"freighter"
+			defaultSovereign=	"&HS_svCorporate;"
+
+			attributes=			"commonwealth, freighter, genericClass, makayev"
+			   
+			size=				"135"
+			mass=				"5000"
+			thrustRatio=		"1"
+			maxSpeed=			"8"
+			cargoSpace=			"30000"
+			>
+
+		<Names noArticle="true">Antares Heavy 1%0%0</Names>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itTitaniumArmor;"
+			count=				"12"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itRecoillessCannon;" omnidirectional="true"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"2.0"
+			rotationAccel=		"0.2"
+			/>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"20"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"30"
+
+					posX=		"-54"
+					posY=		"0"
+					sizeX=		"32"
+					sizeY=		"28"
+					/>
+			
+			<Compartment name="cargo containers"
+					type=		"cargo"
+					hitPoints=	"20"
+
+					posX=		"2"
+					posY=		"0"
+					sizeX=		"76"
+					sizeY=		"68"
+					/>
+		</Interior>
+
+		<Items>
+		</Items>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&rsAntaresIHD;" imageWidth="144" imageHeight="144"	rotationCount="120" rotationColumns="12" viewportRatio="0.0175"/>
+		<HeroImage imageID="&HS_rsAntaresIHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="176"	posRadius="69"	posZ="-3"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-176"	posRadius="69"	posZ="-3"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="173"	posRadius="69"	posZ="5"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-173"	posRadius="69"	posZ="5"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="69"	posZ="10"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"120"
+			fireAccuracy=		"90"
+			perception=			"4"
+			combatStyle=		"standOff"
+			/>
+
+		<StaticData>
+			<Data id="korolov.containerPrice">
+				(
+					0 ; new pilots cannot escort
+					0 ; apprentices cannot escort
+					0 ; journeymen cannot escort
+
+					; Masters: 45 - 150 credits per container
+					; 54,000 - 180,000 cargo value
+					(multiply 5 (add (random 3 10) (random 3 10) (random 3 10)))
+
+					150 ; legends don't escort, but add anyway
+					)
+			</Data>
+
+			<korolovEscortRate>350</korolovEscortRate>
+
+			<korolovMinLevel>3</korolovMinLevel>
+		</StaticData>
+		
+		<Events>
+			<OnDestroy>
+				(korOnShipDestroyed)
+			</OnDestroy>
+		</Events>
+		
+		<Language>
+			<Text id="korolov.shipDesc">
+				The Antares I design is more than a hundred years old, built originally
+				by the massive Polyarny Shipyards orbiting Ceres. Slow and unencumbered
+				by armor, the Antares I can haul 30 kilotons of cargo, but only the most
+				skilled pilots can protect it from pirate attack. Only Masters in the
+				Korolov Shipping Corporation are rated to escort the Antares I class.
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- Antares II Freighter -->
+
+	<ShipClass UNID="&HS_scAntaresII;"
+			manufacturer=		"Makayev-Energia"
+			class=				"Antares II"
+			type=				"freighter"
+			defaultSovereign=	"&HS_svCorporate;"
+
+			attributes=			"commonwealth, freighter, genericClass, makayev"
+			   
+			size=				"135"
+			mass=				"6000"
+			thrustRatio=		"1.5"
+			maxSpeed=			"12"
+			cargoSpace=			"30000"
+			>
+
+		<Names noArticle="true">Antares Heavy 2%0%0</Names>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itLightPlasteelPlate;"
+			count=				"12"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itHeavyRecoillessCannon;" secondaryWeapon="true" posAngle="0" posRadius="25" omnidirectional="true"/>
+			<Device deviceID="&HS_itHeavyRecoillessCannon;" secondaryWeapon="true" posAngle="180" posRadius="25" omnidirectional="true"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"2.0"
+			rotationAccel=		"0.2"
+			/>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"15"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"30"
+
+					posX=		"-54"
+					posY=		"0"
+					sizeX=		"32"
+					sizeY=		"28"
+					/>
+			
+			<Compartment name="cargo containers"
+					type=		"cargo"
+					hitPoints=	"30"
+
+					posX=		"2"
+					posY=		"0"
+					sizeX=		"76"
+					sizeY=		"68"
+					/>
+		</Interior>
+
+		<Items>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsAntaresIIHD;" imageWidth="144" imageHeight="144"	rotationCount="120" rotationColumns="12" viewportRatio="0.0175"/>
+		<HeroImage imageID="&HS_rsAntaresIIHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="176"	posRadius="69"	posZ="-3"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-176"	posRadius="69"	posZ="-3"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="173"	posRadius="69"	posZ="5"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-173"	posRadius="69"	posZ="5"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="69"	posZ="10"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"120"
+			fireAccuracy=		"90"
+			perception=			"4"
+			combatStyle=		"standOff"
+			/>
+
+		<StaticData>
+			<Data id="korolov.containerPrice">
+				(
+					0 ; new pilots cannot escort
+					0 ; apprentices cannot escort
+
+					; Journeymen: 100 - 240 credits per container
+					; 120,000 - 288,000
+					(multiply 2 (add (random 20 40) (random 20 40) (random 10 40)))
+
+					; Masters: 200 - 400 credits per container
+					; 240,000 - 480,000
+					(multiply 2 (add (random 30 60) (random 30 60) (random 40 80)))
+
+					400 ; legends don't escort, but add anyway
+					)
+			</Data>
+
+			<korolovEscortRate>100</korolovEscortRate>
+
+			<korolovMinLevel>2</korolovMinLevel>
+		</StaticData>
+
+		<Events>
+			<OnDestroy>
+				(korOnShipDestroyed)
+			</OnDestroy>
+		</Events>
+		
+		<Language>
+			<Text id="korolov.shipDesc">
+				While sacrificing none of its cargo capacity, the Antares II has a top
+				speed 50% higher than its predecessor. Escort pilots must have the rank
+				of Journeyman or Master to defend the Antares II class.
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- Antares V Freighter -->
+
+	<ShipClass UNID="&HS_scAntaresV;"
+			manufacturer=		"Makayev-Energia"
+			class=				"Antares V"
+			type=				"freighter"
+			level=				"4"
+			defaultSovereign=	"&HS_svCorporate;"
+
+			attributes=			"commonwealth, freighter, genericClass, makayev"
+
+			size=				"185"
+			mass=				"10000"
+			thrustRatio=		"1"
+			maxSpeed=			"8"
+			cargoSpace=			"50000"
+			>
+
+		<Names noArticle="true">Antares Heavy 5%0%0</Names>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itLightPlasteelPlate;"
+			count=				"12"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itPartisanCannon;" secondaryWeapon="true" posAngle="0" posRadius="50" omnidirectional="true"/>
+			<Device deviceID="&HS_itPartisanCannon;" secondaryWeapon="true" posAngle="0" posRadius="0" omnidirectional="true"/>
+			<Device deviceID="&HS_itPartisanCannon;" secondaryWeapon="true" posAngle="180" posRadius="50" omnidirectional="true"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"2.0"
+			rotationAccel=		"0.2"
+			/>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"20"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"40"
+
+					posX=		"-74"
+					posY=		"0"
+					sizeX=		"28"
+					sizeY=		"28"
+					/>
+			
+			<Compartment name="cargo containers"
+					type=		"cargo"
+					hitPoints=	"30"
+
+					posX=		"2"
+					posY=		"0"
+					sizeX=		"120"
+					sizeY=		"60"
+					/>
+		</Interior>
+
+		<Items>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsAntaresVHD;" imageWidth="180" imageHeight="180"	rotationCount="120" rotationColumns="12" viewportRatio="0.02375"/>
+		<HeroImage imageID="&HS_rsAntaresVHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="177"	posRadius="88"	posZ="-3"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-177"	posRadius="88"	posZ="-3"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="175"	posRadius="88"	posZ="5"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-175"	posRadius="88"	posZ="5"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="88"	posZ="10"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"120"
+			fireAccuracy=		"90"
+			perception=			"4"
+			combatStyle=		"standOff"
+			/>
+
+		<StaticData>
+			<Data id="korolov.containerPrice">
+				(
+					0 ; new pilots cannot escort
+					0 ; apprentices cannot escort
+
+					; Journeymen: 80 - 160 credits
+					; 160,000 - 320,000 cargo value
+					(multiply 10 (add (random 2 4) (random 2 4) (random 2 4) (random 2 4)))
+
+					; Masters: 160 - 400 credits
+					; 320,000 - 800,000 cargo value
+					(add (multiply 10 (add (random 4 10) (random 4 10))) (multiply 10 (add (random 4 10) (random 4 10))))
+
+					400 ; legends don't escort, but add anyway
+					)
+			</Data>
+
+			<korolovEscortRate>50</korolovEscortRate>
+
+			<korolovMinLevel>2</korolovMinLevel>
+		</StaticData>
+
+		<Events>
+			<OnDestroy>
+				(korOnShipDestroyed)
+			</OnDestroy>
+		</Events>
+		
+		<Language>
+			<Text id="korolov.shipDesc">
+				The Antares V is basically a stretched version of the earlier II series.
+				It has larger cargo capacity and upgraded weapons. Escort pilots must
+				have the rank of Journeyman or Master to escort the Antares V class.
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- EI100 Freighter -->
+
+	<ShipClass UNID="&HS_scEI100;"
+			manufacturer=		"Earth Industries"
+			class=				"EI100"
+			type=				"freighter"
+			level=				"2"
+			defaultSovereign=	"&HS_svCorporate;"
+
+			attributes=			"commonwealth, EI, freighter, genericClass"
+			inherit=			"&HS_scEI100Stock;"
+			>
+
+		<Names definiteArticle="true">
+			freighter Anon7; freighter Beta Antares; freighter Claire Rennard;
+			freighter Don Antonio; freighter Enfield; freighter Farsol;
+			freighter Gravity's Pull; freighter Heseltine; freighter Ibanez;
+			freighter Jovian Cargo; freighter Korean Star; freighter Liquid Metal;
+			freighter Matori Maru; freighter North Sea; freighter Ologous;
+			freighter Paolo Sante; freighter Qinlong; freighter Remora;
+			freighter San Cristobal; freighter Titus Gaelianus; freighter Umgala Kori;
+			freighter Velo; freighter Wantanabe Maru; freighter Xan; freighter Yasu Maru;
+			freighter Zodiac Bound
+		</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itLightReactiveArmor;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itOmniLaserCannon;"/>
+			<Device deviceID="&HS_itClass1Deflector;"/>
+			<Device deviceID="&HS_itCargoHoldExpansion;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"80"
+			fireAccuracy=		"85"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<Data id="korolov.containerPrice">
+				(
+					; New pilot: 1500 - 4000 credits
+					; 15,000 - 20,000 cargo value
+					(multiply 100 (random 15 20))
+
+					; Apprentices: 1500 - 4000 credits
+					; 15,000 - 30,000 cargo value
+					(multiply 100 (random 15 30))
+
+					; Journeymen: 2500 - 5000 credits
+					; 25,000 - 50,000 cargo value
+					(multiply 100 (random 25 50))
+
+					; Masters: 3000 - 5000 credits
+					; 30,000 - 50,000 cargo value
+					(multiply 100 (random 30 50))
+
+					5000 ; legends don't escort, but add anyway
+					)
+			</Data>
+
+			<korolovEscortRate>200</korolovEscortRate>
+
+			<korolovMinLevel>0</korolovMinLevel>
+		</StaticData>
+
+		<Events>
+			<OnDestroy>
+				(korOnShipDestroyed)
+			</OnDestroy>
+		</Events>
+		
+		<Language>
+			<Text id="korolov.shipDesc">
+				The EI100 class freighter was designed for fast interplanetary transportation.
+				Early in its history, it even carried passengers, but today it carries light
+				commodities. Because of the relatively low value of its cargo, the EI100 is
+				often escorted by Apprentice pilots.
+			</Text>
+		</Language>
+
+	</ShipClass>
+
+	<!-- EI200 Freighter -->
+
+	<ShipClass UNID="&HS_scEI200;"
+			manufacturer=		"Earth Industries"
+			class=				"EI200"
+			type=				"freighter"
+			defaultSovereign=	"&HS_svCorporate;"
+
+			level=				"3"
+			attributes=			"commonwealth, EI, freighter, genericClass"
+			inherit=			"&HS_scEI200Stock;"
+			>
+
+		<Names definiteArticle="true">
+			freighter King Albert; freighter Barbosa; freighter Cyteen;
+			freighter Domus; freighter Ernst Mach; freighter Foolhardy;
+			freighter Gianani; freighter Hashidate Maru; freighter Indomitable;
+			freighter Janus Order; freighter Kaiko Maru; freighter Lorenz Attractor;
+			freighter Mutant Child; freighter Nisshin Maru; freighter Oort Cloud;
+			freighter Peter Parker; freighter Quequeg; freighter Rendezvous;
+			freighter Semele Zeus; freighter Thomas Paine; freighter Umber17;
+			freighter Voltaire; freighter Washburn; freighter Xanthus; freighter Yushin Maru;
+			freighter Zephyr
+		</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itReactiveArmor;"
+			count=				"6"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itBlaster;" omnidirectional="true" posAngle="0" posRadius="3" posZ="14"/>
+			<Device deviceID="&HS_itClass1Deflector;"/>
+			<Device deviceID="&HS_itCargoHoldExpansion;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"90"
+			fireAccuracy=		"85"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<Data id="korolov.containerPrice">
+				(
+					; New pilot: 800 - 2000 credits
+					; 20,000 - 40,000 cargo value
+					(multiply 100 (random 10 20))
+
+					; Apprentices: 1200 - 2500 credits
+					; 24,000 - 50,000 cargo value
+					(multiply 100 (random 12 25))
+
+					; Journeymen: 1500 - 4000 credits
+					; 30,000 - 80,000 cargo value
+					(multiply 100 (random 15 40))
+
+					; Masters: 3000 - 5000 credits
+					; 60,000 - 100,000 cargo value
+					(multiply 100 (random 30 50))
+
+					5000 ; legends don't escort, but add anyway
+					)
+			</Data>
+
+			<korolovEscortRate>150</korolovEscortRate>
+
+			<korolovMinLevel>0</korolovMinLevel>
+		</StaticData>
+
+		<Events>
+			<OnDestroy>
+				(korOnShipDestroyed)
+			</OnDestroy>
+		</Events>
+		
+		<Language>
+			<Text id="korolov.shipDesc">
+				The EI200 class freighter is a larger and faster version of the 100 series.
+				It has double the cargo capacity and upgraded armor and weapons. It is
+				designed to transport small quantities of high-value cargo. The EI200 is
+				so well defended that even Apprentices are allowed to escort them.
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- EI7000 Freighter -->
+
+	<ShipClass UNID="&HS_scEI7000;"
+			manufacturer=		"Earth Industries"
+			class=				"EI7000"
+			type=				"freighter"
+			level=				"5"
+			defaultSovereign=	"&HS_svCorporate;"
+
+			attributes=			"commonwealth, EI, freighter, genericClass"
+			inherit=			"&HS_scEI7000Stock;"
+			>
+
+		<Names definiteArticle="true">
+			freighter Ammon; freighter Caelestis; freighter Fulgurator;
+			freighter Laterius; freighter Lucetius; freighter Pluvius;
+			freighter Stator; freighter Terminus; freighter Tonans;
+			freighter Victor; freighter Summanus; freighter Feretrius;
+			freighter Optimus Maximus; freighter Brixianus; freighter Ladicus;
+			freighter Parthinus; freighter Poeninus; freighter Solutorius;
+			freighter Taranis; freighter Uxellinus
+		</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itAdvancedReactiveArmor;"
+			count=				"12"
+			/>
+
+		<Devices>
+			<Device slotID="omni1" deviceID="&HS_itTurbolaserCannon;"/>
+			<Device deviceID="&HS_itClass3Deflector;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"20"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+		<StaticData>
+			<Data id="korolov.containerPrice">
+				(
+					0 ; new pilots cannot escort
+					0 ; apprentices cannot escort
+
+					; Journeymen: 2000 - 4000 credits
+					; 160,000 - 320,000 cargo value
+					(multiply 100 (add (random 10 20) (random 10 20)))
+
+					; Masters: 4000 - 10000 credits
+					; 320,000 - 800,000 cargo value
+					(multiply 100 (add (random 20 50) (random 20 50)))
+
+					5000 ; legends don't escort, but add anyway
+					)
+			</Data>
+
+			<korolovEscortRate>50</korolovEscortRate>
+
+			<korolovMinLevel>2</korolovMinLevel>
+		</StaticData>
+
+		<Events>
+			<OnDestroy>
+				(korOnShipDestroyed)
+			</OnDestroy>
+		</Events>
+		
+		<Language>
+			<Text id="korolov.shipDesc">
+				The 7000 is the most powerful member of the EI freighter series. With a
+				cargo capacity of 2 kilotons and heavy armor and weapons, the EI7000 is
+				ideal for high-value cargos. Only Journeymen and Masters are rated to
+				escort the EI7000 class.
+			</Text>
+		</Language>
+	</ShipClass>
+
+<!-- ITEM TYPES -->
+	
+	<!-- Shipping Container -->
+
+	<ItemType UNID="&HS_itKorolovShippingContainer;"
+			name=				"Korolov shipping container"
+			level=				"1"
+			value=				"125000"
+			mass=				"25000"
+			frequency=			"notrandom"
+			attributes=			"NotForSale"
+
+			description=		"These standardized shipping containers hold everything from ore to consumer goods."
+
+			sortName=			"shipping container, Korolov"
+
+			charges=			"5000"
+			valueCharges=		"true"
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+	<!-- Class V Deflector -->
+
+	<ItemType UNID="&HS_itClass5Deflector;"
+			name=				"class V deflector"
+			level=				"5"
+			value=				"14000"
+			mass=				"2500"
+			frequency=			"notrandom"
+			attributes=			"EI, majorItem, notStandard"
+
+			description=		"High manufacturing costs and poor sales doomed it in the market, but many prefer this vintage deflector over modern imitators."
+
+			sortName=			"deflector, class V"
+			>
+
+		<Image imageID="&HS_rsItemsEI2;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Shields
+				hitPoints=		"100"
+				hpBonus=		"+100,  +0,+100,  +0,  +0,  +0"
+				regen=			"48"
+				depletionDelay=	"240"
+				powerUse=		"300"
+				/>
+
+	</ItemType>
+
+<!-- RESOURCES -->
+	
+	<Image UNID="&rsAntaresIHD;"		bitmap="Resources\AntaresIHD.jpg" bitmask="Resources\AntaresIHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsAntaresIHero;"		bitmap="Resources\AntaresILarge.jpg" bitmask="Resources\AntaresILargeMask.bmp"  loadOnUse="true"/>
+
+	<Image UNID="&rsAntaresIIHD;"		bitmap="Resources\AntaresIIHD.jpg" bitmask="Resources\AntaresIIHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsAntaresIIHero;"		bitmap="Resources\AntaresIILarge.jpg" bitmask="Resources\AntaresIILargeMask.bmp"  loadOnUse="true"/>
+
+	<Image UNID="&rsAntaresVHD;"		bitmap="Resources\AntaresVHD.jpg" bitmask="Resources\AntaresVHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsAntaresVHero;"		bitmap="Resources\AntaresVLarge.jpg" bitmask="Resources\AntaresVLargeMask.bmp"  loadOnUse="true"/>
+
+	
+</TranscendenceModule>

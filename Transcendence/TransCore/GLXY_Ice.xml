@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- TABLES -->
+
+	<SystemPartTable unid="&GLXY_tbIcePlanets;">
+		
+		<!-- ASTEROID FIELDS -->
+		
+		<AsteroidIceArc50>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidArc50Morphology">
+					<_AsteroidSizeA		table="IceSizeA"/>
+					<_AsteroidSizeB		table="IceSizeB"/>
+					<_AsteroidSizeC		table="IceSizeC"/>
+					<_AsteroidSizeD		table="IceSizeD"/>
+
+					<_Label				table="IceLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidIceArc50>
+
+		<AsteroidIceArc100>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidArc100Morphology">
+					<_AsteroidSizeA		table="IceSizeA"/>
+					<_AsteroidSizeB		table="IceSizeB"/>
+					<_AsteroidSizeC		table="IceSizeC"/>
+					<_AsteroidSizeD		table="IceSizeD"/>
+
+					<_Label				table="IceLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidIceArc100>
+
+		<AsteroidIceArc200>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidArc200Morphology">
+					<_AsteroidSizeA		table="IceSizeA"/>
+					<_AsteroidSizeB		table="IceSizeB"/>
+					<_AsteroidSizeC		table="IceSizeC"/>
+					<_AsteroidSizeD		table="IceSizeD"/>
+
+					<_Label				table="IceLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidIceArc200>
+		
+		<AsteroidIceBelt100>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt100Morphology">
+					<_AsteroidSizeA		table="IceSizeA"/>
+					<_AsteroidSizeB		table="IceSizeB"/>
+					<_AsteroidSizeC		table="IceSizeC"/>
+					<_AsteroidSizeD		table="IceSizeD"/>
+
+					<_Label				table="IceLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidIceBelt100>
+		
+		<AsteroidIceBelt500>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt500Morphology">
+					<_AsteroidSizeA		table="IceSizeA"/>
+					<_AsteroidSizeB		table="IceSizeB"/>
+					<_AsteroidSizeC		table="IceSizeC"/>
+					<_AsteroidSizeD		table="IceSizeD"/>
+
+					<_Label				table="IceLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidIceBelt500>
+		
+		<!-- PLANETS AND PLANETOIDS -->
+
+		<IcePrimary>
+			<LocationCriteriaTable>
+				<Table criteria="*innerSystem">
+					<Lookup chance="100" table="IcePlanetoidPrimary"/>
+				</Table>
+				<Table criteria="*lifeZone">
+					<Lookup chance="100" table="IcePlanetoidPrimary"/>
+				</Table>
+				<Table criteria="*outerSystem">
+					<Lookup chance="100" table="IcePlanetoidPrimary"/>
+				</Table>
+			</LocationCriteriaTable>
+		</IcePrimary>
+
+		<IcePlanetoidPrimary>
+			<Lookup table="StandardPlanetoidMorphology">
+				<_PlanetType>
+					<Table>
+						<Station chance="59" type="&GLXY_stIcePlanetoidSizeE;" showOrbit="true"/>
+						<Station chance="28" type="&GLXY_stIcePlanetoidSizeF;" showOrbit="true"/>
+						<Station chance="8"  type="&GLXY_stIcePlanetoidSizeG;" showOrbit="true"/>
+						<Station chance="5"  type="&GLXY_stCryovolcanicSizeC;" showOrbit="true"/>
+					</Table>
+				</_PlanetType>
+				<_PlanetLabel>
+					<Label attributes="ice, planet, planetary, planetoid"/>
+				</_PlanetLabel>
+			</Lookup>
+		</IcePlanetoidPrimary>
+
+		<IceComet>
+			<Table>
+				<RandomStation	chance="10"	stationCriteria="*ice; *generic; *sizeClass:B;" locationAttribs="*" includeAll="true" showOrbit="true"/>
+				<RandomStation	chance="20"	stationCriteria="*ice; *generic; *sizeClass:C;" locationAttribs="*" includeAll="true" showOrbit="true"/>
+				<RandomStation	chance="40"	stationCriteria="*ice; *generic; *sizeClass:D;" locationAttribs="*" includeAll="true" showOrbit="true"/>
+				<Station		chance="20" type="&GLXY_stIcePlanetoidSizeE;" showOrbit="true"/>
+				<Station		chance="8"  type="&GLXY_stIcePlanetoidSizeF;" showOrbit="true"/>
+				<Station		chance="3"  type="&GLXY_stIcePlanetoidSizeG;" showOrbit="true"/>
+			</Table>
+
+			<Orbitals distance="2d4+8" angle="random">
+				<Label attributes="asteroids, comet, ice"/>
+			</Orbitals>
+		</IceComet>
+
+		<!-- COMPONENTS -->
+
+		<IceSizeA>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ice;		*generic; *inner; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ice;		*generic; *lifeZone; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ice;		*generic; *outer; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</IceSizeA>
+
+		<IceSizeB>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ice;		*generic; *inner; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ice;		*generic; *lifeZone; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ice;		*generic; *outer; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</IceSizeB>
+
+		<IceSizeC>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ice;		*generic; *inner; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ice;		*generic; *lifeZone; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ice;		*generic; *outer; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</IceSizeC>
+
+		<IceSizeD>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ice;		*generic; *inner; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ice;		*generic; *lifeZone; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ice;		*generic; *outer; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</IceSizeD>
+
+		<IceSizeE>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ice;		*generic; *inner; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ice;		*generic; *lifeZone; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ice;		*generic; *outer; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</IceSizeE>
+
+		<IceSizeF>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ice;		*generic; *inner; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ice;		*generic; *lifeZone; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ice;		*generic; *outer; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</IceSizeF>
+
+		<IceSizeG>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ice;		*generic; *inner; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ice;		*generic; *lifeZone; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ice;		*generic; *outer; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</IceSizeG>
+
+		<IceLabel>
+			<Label attributes="ice"/>
+		</IceLabel>
+	</SystemPartTable>
+
+<!-- ASTEROIDS & PLANETS -->
+
+	<!-- Size A Ice Asteroid -->
+
+	<StationType UNID="&GLXY_stIceAsteroidSizeA;"
+		name=				"ice asteroid"
+		attributes=			"asteroid, generic, ice, inner, lifeZone, outer"
+		inherit=			"&GLXY_baIceAsteroid;"
+
+		scale=				"world"
+		size=				"7"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsIceAsteroidSizeA;"/>
+
+		<Items>
+			<Table>
+				<Null chance="95"/>
+				<Lookup chance="5" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size B Ice Asteroid -->
+
+	<StationType UNID="&GLXY_stIceAsteroidSizeB;"
+		name=				"ice asteroid"
+		attributes=			"asteroid, generic, ice, inner, lifeZone, outer"
+		inherit=			"&GLXY_baIceAsteroid;"
+
+		scale=				"world"
+		size=				"60"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsIceAsteroidSizeB;"/>
+
+		<Items>
+			<Table>
+				<Null chance="95"/>
+				<Lookup chance="5" count="1d6" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size C Ice Asteroid -->
+
+	<StationType UNID="&GLXY_stIceAsteroidSizeC;"
+		name=				"ice asteroid"
+		attributes=			"asteroid, generic, ice, inner, lifeZone, outer"
+		inherit=			"&GLXY_baIceAsteroid;"
+
+		scale=				"world"
+		size=				"165"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsIceAsteroidSizeC;"/>
+
+		<Items>
+			<Table>
+				<Null chance="95"/>
+				<Lookup chance="5" count="1d8" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size D Ice Asteroid -->
+
+	<StationType UNID="&GLXY_stIceAsteroidSizeD;"
+		name=				"ice asteroid"
+		attributes=			"asteroid, generic, ice, inner, lifeZone, outer"
+		inherit=			"&GLXY_baIceAsteroid;"
+
+		scale=				"world"
+		size=				"670"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsIceAsteroidSizeD;"/>
+
+		<Items>
+			<Table>
+				<Null chance="95"/>
+				<Lookup chance="5" count="1d10" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Ice Planetoid Size E -->
+
+	<StationType UNID="&GLXY_stIcePlanetoidSizeE;"
+		name=				"ice planetoid"
+		attributes=			"generic, ice, inner, lifeZone, outer, planetoid"
+
+		scale=				"world"
+		size=				"1250"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsIcePlanetoidSizeE;"/>
+	</StationType>
+
+	<!-- Ice Planetoid Size F -->
+
+	<StationType UNID="&GLXY_stIcePlanetoidSizeF;"
+		name=				"ice planetoid"
+		attributes=			"generic, ice, inner, lifeZone, outer, planetoid"
+
+		scale=				"world"
+		size=				"2450"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsIcePlanetoidSizeF;"/>
+	</StationType>
+
+	<!-- Ice Planetoid Size G -->
+
+	<StationType UNID="&GLXY_stIcePlanetoidSizeG;"
+		name=				"ice planetoid"
+		attributes=			"generic, ice, inner, lifeZone, outer, planetoid"
+
+		scale=				"world"
+		size=				"4000"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsIcePlanetoidSizeG;"/>
+	</StationType>
+
+<!-- BASE CLASSES -->
+
+	<StationType unid="&GLXY_baIceAsteroid;"
+			virtual=	"true"
+			>
+		<Asteroid type="icy"/>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+	</StationType>
+
+<!-- RESOURCES -->
+	
+	<ImageComposite unid="&GLXY_rsIceAsteroidSizeA;">
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="0"   imageY="0"   imageWidth="40" imageHeight="40"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="0"   imageY="40"  imageWidth="40" imageHeight="40"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="0"   imageY="80"  imageWidth="40" imageHeight="40"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="0"   imageY="120" imageWidth="40" imageHeight="40"/>
+
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="40"  imageY="0"   imageWidth="40" imageHeight="40"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="40"  imageY="40"  imageWidth="40" imageHeight="40"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="40"  imageY="80"  imageWidth="40" imageHeight="40"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="40"  imageY="120" imageWidth="40" imageHeight="40"/>
+		</ImageVariants>
+	</ImageComposite>
+
+	<ImageComposite unid="&GLXY_rsIceAsteroidSizeB;">
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="80"  imageY="0"   imageWidth="60" imageHeight="60"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="80"  imageY="60"  imageWidth="60" imageHeight="60"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="80"  imageY="120" imageWidth="60" imageHeight="60"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="140" imageY="0"   imageWidth="60" imageHeight="60"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="140" imageY="60"  imageWidth="60" imageHeight="60"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="140" imageY="120" imageWidth="60" imageHeight="60"/>
+		</ImageVariants>
+	</ImageComposite>
+
+	<ImageComposite unid="&GLXY_rsIceAsteroidSizeC;">
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="0"   imageY="160" imageWidth="80" imageHeight="80"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="0"   imageY="240" imageWidth="80" imageHeight="80"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="0"   imageY="320" imageWidth="80" imageHeight="80"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="0"   imageY="400" imageWidth="80" imageHeight="80"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="0"   imageY="480" imageWidth="80" imageHeight="80"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="0"   imageY="560" imageWidth="80" imageHeight="80"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="0"   imageY="640" imageWidth="80" imageHeight="80"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="0"   imageY="720" imageWidth="80" imageHeight="80"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="0"   imageY="800" imageWidth="80" imageHeight="80"/>
+		</ImageVariants>
+	</ImageComposite>
+
+	<ImageComposite unid="&GLXY_rsIceAsteroidSizeD;">
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="80"  imageY="180" imageWidth="120" imageHeight="120"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="80"  imageY="300" imageWidth="120" imageHeight="120"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="80"  imageY="420" imageWidth="120" imageHeight="120"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="80"  imageY="540" imageWidth="120" imageHeight="120"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="80"  imageY="660" imageWidth="120" imageHeight="120"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="80"  imageY="780" imageWidth="120" imageHeight="120"/>
+		</ImageVariants>
+	</ImageComposite>
+
+	<ImageComposite unid="&GLXY_rsIcePlanetoidSizeE;">
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="200" imageY="0"   imageWidth="140" imageHeight="140"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="200" imageY="140" imageWidth="140" imageHeight="140"/>
+		</ImageVariants>
+	</ImageComposite>
+
+	<ImageComposite unid="&GLXY_rsIcePlanetoidSizeF;">
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="200" imageY="280" imageWidth="160" imageHeight="160"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="200" imageY="440" imageWidth="160" imageHeight="160"/>
+		</ImageVariants>
+	</ImageComposite>
+	
+	<ImageComposite unid="&GLXY_rsIcePlanetoidSizeG;">
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="200" imageY="600" imageWidth="180" imageHeight="180"/>
+			<Image			imageID="&GLXY_rsIceAsteroids;" imageX="200" imageY="780" imageWidth="180" imageHeight="180"/>
+		</ImageVariants>
+	</ImageComposite>
+	
+	<Image UNID="&GLXY_rsIceAsteroids;"			bitmap="Resources\IceAsteroids.jpg"			bitmask="Resources\IceAsteroidsMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&GLXY_rsWorldsIcePlanet1;"		bitmap="Resources\WorldsIcePlanet1.jpg"		bitmask="Resources\WorldsIcePlanetMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&GLXY_rsWorldsIcePlanet2;"		bitmap="Resources\WorldsIcePlanet2.jpg"		bitmask="Resources\WorldsIcePlanetMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&GLXY_rsWorldsIcePlanet3;"		bitmap="Resources\WorldsIcePlanet3.jpg"		bitmask="Resources\WorldsIcePlanetMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&GLXY_rsWorldsIcePlanet4;"		bitmap="Resources\WorldsIcePlanet3.jpg"		bitmask="Resources\WorldsIcePlanetMask.bmp"  loadOnUse="true"/>
+
+</TranscendenceModule>

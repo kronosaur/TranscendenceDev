@@ -1,0 +1,583 @@
+<?xml version="1.0" ?>
+
+<TranscendenceModule>
+
+	<!-- Mission: Korolov At Charon ============================================
+
+
+	EXTRA DATA
+
+	targetsLeft:			Number of missile ships left to destroy
+	stationsLeft:			Number of Charon stations left to destroy
+	rewardItem:				Reward item
+
+	state:					Mission state:
+		Nil					Mission has not yet started
+		'underAttack:		Station is under attack
+		'survivedAttack:	Station has survived pirate attack
+		'strikeBack:		Player has been asked to destroy Charon stations
+
+	======================================================================== -->
+
+	<MissionType UNID="&HS_msKorolovAtCharon;"
+			name=			"Korolov At Charon"
+			attributes=		"korolov, special"
+
+			level=			"3"
+			maxAppearing=	"1"
+			noDecline=		"true"
+			noFailureOnOwnerDestroyed=	"true"
+			>
+		<Events>
+			<CanCreate>
+				(switch
+					;	Only in Charon system
+
+					(!= (sysGetNode) 'CP)
+						Nil
+
+					;	Fortress must exist
+
+					(not (sysFindObject Nil "TA +charonFortress;"))
+						Nil
+
+					;	Can create
+
+					True
+					)
+			</CanCreate>
+
+			<OnCreate>
+				(block (
+					(pirateStations (sysFindObject gSource "TA +charonPirates;"))
+					)
+					(enum pirateStations theObj (msnRegisterForEvents gSource theObj))
+					(msnSetData gSource 'stationsLeft (count pirateStations))
+
+					;	Timer fires in all systems because the attack happens whether or
+					;	not the player is in the system.
+
+					(msnAddTimerEvent gSource 500 'OnTimerAttack1 { allSystems:True })
+					(msnAddTimerEvent gSource 850 'OnTimerAttack2 { allSystems:True })
+
+					;	Choose a random mission reward
+					(msnSetData gSource 'rewardItem (randomTable
+						30 (itmCreate &HS_itXRayLaserCannon; 1)
+						30 (itmCreate &HS_itOmniParticleCannon; 1)
+						20 (itmCreate &HS_itMarkIHowitzer; 1)
+						20 (itmCreate &HS_itClass5Deflector; 1)
+						))
+					)
+			</OnCreate>
+
+			<OnAccepted>
+				(block (
+					(korolovObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+					)
+					;	Ignore friendly fire during attack
+					(objSetProperty korolovObj 'ignoreFriendlyFire True)
+
+					(msnSetData gSource 'state 'underAttack)
+					)
+			</OnAccepted>
+
+			<OnInProgress>
+				(block (
+					(state (msnGetData gSource 'state))
+					)
+					(switch
+						(and (= state 'underAttack) (= (msnGetData gSource 'targetsLeft) 0))
+							(block Nil
+								(msnSetData gSource 'state 'survivedAttack)
+								(msnSetProperty gSource 'summary (msnTranslate gSource 'Summary))
+
+								;	Make sure we're at least members
+								(if (not (typGetData &HS_unidKorolovShipping; 'level))
+									(typSetData &HS_unidKorolovShipping; 'level 1)
+									)
+
+								;	We've managed to save the station so save the game
+								(msnSetData gSource 'missionCheckpoint True)
+								)
+
+						(= state 'strikeBack)
+							(block Nil
+								;	Check which stations are left for mission text
+								(msnSetData gSource 'pirateStationsLeft
+									(count (sysFindObject gSource "AT +charonPirates; -charonFortress;")))
+								(msnSetData gSource 'pirateFortressLeft
+									(sysFindObject gSource "AT:charonFortress;"))
+								)
+						)
+					)
+			</OnInProgress>
+			
+			<OnInProgressUndock>
+				(block (
+					(state (msnGetData gSource 'state))
+					)
+					;	Update mission state if necessary
+					(switch
+						(= state 'survivedAttack)
+							(msnSetData gSource 'state 'strikeBack)
+						)
+
+					;	Checkpoint if necessary
+					(if (msnGetData gSource 'missionCheckpoint)
+						(block Nil
+							(msnSetData gSource 'missionCheckpoint Nil)
+							(gamSave 'missionCheckpoint)
+							)
+						)
+					)
+			</OnInProgressUndock>
+
+			<OnCompleted>
+				(switch
+					(= aReason 'failure)
+						(msnSetData gSource 'rewardItem (itmCreate &HS_itCharonPirateMapROM; 1))
+
+					(= aReason 'success)
+						(unvSetAchievement 'humanSpace.noWinScenario)
+					)
+			</OnCompleted>
+
+			<OnObjDestroyed>
+				(switch
+					;	Korolov Shipping
+					(= (objGetID aObjDestroyed) (objGetProperty gSource 'ownerID) )
+						(block Nil
+							;	Manual failure on owner destroyed so we can still debrief
+							(msnFailure gSource)
+
+							;	Unless the player was responsible
+							(if (and gPlayerShip (= aOrderGiver gPlayerShip))
+								(msnSetProperty gSource 'isDebriefed True)
+								)
+							)
+
+					;	One of the missile ships attacking the station
+					(= (objGetData aObjDestroyed 'KorolovAtCharon) (objGetID gSource))
+						(msnIncData gSource 'targetsLeft -1)
+
+					;	One of the Charon stations
+					(and (objHasAttribute aObjDestroyed 'charonPirates) (not (objIsShip aObjDestroyed)))
+						(if (= (msnIncData gSource 'stationsLeft -1) 0)
+							(block (
+								(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+								)
+								;	Call off the attack, if any
+
+								(enum (sysFindObject Nil "sA +charonPirates") shipObj
+									(block ()
+										(shpCancelOrders shipObj)
+										(shpOrder shipObj 'gate)
+										)
+									)
+
+								;	Make sure we're at least members
+
+								(if (not (typGetData &HS_unidKorolovShipping; 'level))
+									(typSetData &HS_unidKorolovShipping; 'level 1)
+									)
+
+								;	If Korolov station is destroyed, we rebuild it.
+
+								(if (and stationObj (obj@ stationObj 'abandoned))
+									(block (
+										(newStation (sysCreateStation &HS_stKorolovAtCharonCons; (objGetPos stationObj)))
+										)
+										;	Replace the destroyed korolov with new construction
+										(objSetKnown newStation)
+										(objDestroy stationObj)
+
+										;	Debrief at the new station
+										(msnSet@ gSource 'debrieferID (objGetID newStation))
+										)
+
+									;	Otherwise, mission success
+
+									(msnSuccess gSource)
+									)
+								)
+							)
+					)
+			</OnObjDestroyed>
+
+			<OnGlobalSystemStarted>
+				(block (missionObj)
+					(switch
+						;	If not in the right system, then nothing to do
+
+						(!= (sysGetNode) 'CP)
+							Nil
+
+						;	If we have not yet created the mission, the do so now.
+
+						(not (setq missionObj (@ (msnFind "* +unid:&HS_msKorolovAtCharon;;") 0)))
+							(block (
+								(korolovObj (sysFindObject Nil "TAN +korolovShipping;"))
+								(korolovPos (objGetPos korolovObj))
+								)
+
+								;	Remove default Korolov ships and events
+								(enum (sysFindObject korolovObj "sHZ") theShip (objDestroy theShip))
+								(enum (sysFindObject korolovObj "TN:32; +unid:&HS_stSealedCargoContainer;;") theCrate (objDestroy theCrate))
+								(sysCancelTimerEvent korolovObj 'OnTrafficControl)
+								(objSetEventHandler korolovObj &HS_evKorolovAtCharon;)
+
+								;	Korolov station is already damaged
+								(objSetProperty korolovObj 'hp 250)
+
+								;	Add defenders
+								(for i 1 (rollDice 1 2)
+									(block (theShip)
+										(setq theShip (sysCreateShip &HS_tbCommDefenders; korolovPos &HS_svCorporate;))
+										(shpOrder theShip 'dock korolovObj)
+										(shpOrder theShip 'guard korolovObj)
+										)
+									)
+								(for i 1 (rollDice 1 4)
+									(block (theShip)
+										(setq theShip (sysCreateShip &HS_tbCommPrivateCrafts; korolovPos &HS_svCorporate;))
+										(shpOrder theShip 'dock korolovObj)
+										(shpOrder theShip 'gateOnThreat)
+										)
+									)
+								(for i 1 (rollDice 3 6)
+									(block (theShip)
+										(setq theShip (sysCreateShip &HS_scRoninB; korolovPos &HS_svCorporate;))
+										(shpOrder theShip 'patrol korolovObj 10)
+										)
+									)
+
+								;	Create the mission
+								(msnCreate &HS_msKorolovAtCharon; korolovObj)
+								)
+
+						;	If the mission is already completed, then nothing to do.
+
+						(msnGetProperty missionObj 'isCompleted)
+							Nil
+
+						;	If we missed the initial attack timer, do it now.
+
+						(= (msnGetData missionObj 'timerState) 'attack1)
+							(msnFireEvent missionObj 'OnTimerAttack1)
+
+						;	If we missed the second attack timer, then we return 
+						;	to find the station destroyed.
+
+						(= (msnGetData missionObj 'timerState) 'attack2)
+							(block (
+								(korolovObj (objGetObjByID (objGetProperty missionObj 'ownerID)))
+								)
+								(msnAccept missionObj)
+								(staAbandon korolovObj)
+								)
+						)
+					)
+			</OnGlobalSystemStarted>
+
+			<OnTimerAttack1>
+				(switch
+					;	If we're not in the Charon system then we remember that the
+					;	timer fired and deal with the result when we re-enter the system.
+
+					(!= (sysGetNode) 'CP)
+						(msnSetData gSource 'timerState 'attack1)
+
+					;	Proceed with encounter
+
+					(block (
+						(korolovObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+						)
+						;	If the player has not seen the briefing yet start the mission anyway
+						(msnAccept gSource)
+					
+						;	Create fleets of pirates to attack
+						(for i 1 5
+							(sysAddEncounterEventAtDist 0 korolovObj &HS_etPirateAmbush3; (random 100 200))
+							)
+						)
+					)
+			</OnTimerAttack1>
+
+			<OnTimerAttack2>
+				(switch
+					;	If we're not in the Charon system then we remember that the
+					;	timer fired and deal with the result when we re-enter the system.
+
+					(!= (sysGetNode) 'CP)
+						(msnSetData gSource 'timerState 'attack2)
+
+					;	Proceed with encounter
+
+					(block (
+						(korolovObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+						(pos (sysVectorPolarOffset korolovObj (random 0 359) 120))
+						)
+
+						; Create drake missile ships
+						(for i 1 5
+							(block (theShip)
+								(setq theShip 
+									(sysCreateShip 
+											&HS_scDrake; 
+											(sysVectorPolarOffset pos (multiply i 30) 24)
+											&HS_svPirates;)
+									)
+
+								(shpOrder theShip 'attack korolovObj)
+								(shpOrder theShip 'gate)
+
+								(objSetData theShip 'KorolovAtCharon (objGetID gSource))
+								(msnIncData gSource 'targetsLeft)
+								(msnRegisterForEvents gSource theShip)
+								)
+							)
+						)
+					)
+			</OnTimerAttack2>
+
+			<OnReward>
+				(objAddItem gPlayerShip (msnGetData gSource 'rewardItem))
+			</OnReward>
+			
+			<OnDebriefed>
+				(switch
+					(and (msnGetProperty gSource 'isFailure)
+							(gr (msnGetData gSource 'stationsLeft) 0)
+							)
+						(block (
+							(korolovObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+							theMission
+							)
+							(objAddItem gPlayerShip (msnGetData gSource 'rewardItem))
+							(setq theMission (msnCreate &HS_msKorolovAtCharonRevenge; korolovObj))
+							(if theMission (msnAccept theMission))
+							)
+					)
+			</OnDebriefed>
+		</Events>
+
+		<Image	imageID="&HS_rsKorolovLogo;" imageWidth="152" imageHeight="150"/>
+
+		<Language>
+			<Text id="Name">
+				Korolov at Charon
+			</Text>
+			<Text id="Summary">
+				(block (
+					(state (msnGetData gSource 'state))
+					)
+					(cat
+						(if (or (= state 'survivedAttack) (= state 'strikeBack))
+							(msnTranslate gSource "Summary:survivedAttack")
+							(msnTranslate gSource "Summary:underAttack")
+							)
+						"\n\n"
+						(typTranslate &RPG_dsRPGMission; 'mission.rewardSummary {
+							systemName: (sysGetName)
+							payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+							})
+						)
+					)
+			</Text>
+			<Text id="Summary:underAttack">
+
+				Korolov Shipping is under attack from Charon pirates. Defend the station.
+
+			</Text>
+			<Text id="Summary:survivedAttack">
+
+				You have successfully defended Korolov Shipping from a Charon pirate attack.
+				Now you need to hunt down and destroy all Charon stations in the system.
+
+			</Text>
+			<Text id="Intro">
+
+				As you enter the command center, you see several people gathered 
+				around a central display table. A woman approaches you:
+					
+				"We're planning a big attack on the Charon fortress in this 
+				system and we could use all the help we can get. Are you..."
+
+			</Text>
+			<Text id="Briefing">
+
+				Before she can finish, the alarms bleat and she turns back to 
+				the display table.
+
+				Her face goes white as she sees the mass of signals approaching 
+				the station...
+
+			</Text>
+			<Text id="InProgress">
+				(block (
+					(state (msnGetData gSource 'state))
+					(stationsLeft (msnGetData gSource 'pirateStationsLeft))
+					(fortress (msnGetData gSource 'pirateFortressLeft))
+					)
+					(switch
+						(= state 'underAttack)
+							(msnTranslate gSource "InProgress:underAttack")
+
+						(= state 'survivedAttack)
+							(msnTranslate gSource "InProgress:survivedAttack")
+
+						(and (not fortress) (= stationsLeft 1))
+							(msnTranslate gSource "InProgress:strikeBack:oneMore")
+
+						(not fortress)
+							(msnTranslate gSource "InProgress:strikeBack:noFortress" {
+								pirateStationsLeft: (strNumber stationsLeft)
+								})
+
+						(= stationsLeft 0)
+							(msnTranslate gSource "InProgress:strikeBack:onlyFortress")
+
+						(= stationsLeft 1)
+							(msnTranslate gSource "InProgress:strikeBack:onePlusFortress")
+
+						(msnTranslate gSource "InProgress:strikeBack:Fortress" {
+							pirateStationsLeft: (strNumber stationsLeft)
+							})
+						)
+					)
+			</Text>
+			<Text id="InProgress:underAttack">
+
+				The command center is filled with men and women shouting orders and counter-orders.
+				The constant drone of sirens is punctuated frequently by the concussive blow of explosions.
+
+				A woman shouts at you, "Get out of here and make yourself useful!"
+
+			</Text>
+			<Text id="InProgress:survivedAttack">
+
+				The command center is smashed. Some people are caring for the injured while
+				others look at the tactical screens. A woman approaches you:
+
+				"Thanks for your help! We were lucky that you were in the area.
+				Now we need you to strike while we have the initiative. Destroy
+				all the Charon stations in the system!"
+
+			</Text>
+			<Text id="InProgress:strikeBack:oneMore">
+
+				The command center is nearly ruined, but several people are tracking the tactical situation:
+
+				"There is still one Charon station left in the system. Destroy it and you'll be done!"
+
+			</Text>
+			<Text id="InProgress:strikeBack:noFortress">
+
+				The command center is nearly ruined, but several people are tracking the tactical situation:
+
+				"Although the Charon Fortress has been destroyed there are still
+				%pirateStationsLeft% Charon stations in the system."
+
+			</Text>
+			<Text id="InProgress:strikeBack:onlyFortress">
+
+				The command center is nearly ruined, but several people are tracking the tactical situation:
+
+				"All the lesser Charon stations are destroyed, but the Charon Fortress remains.
+				Destroy it and you'll be done!"
+
+			</Text>
+			<Text id="InProgress:strikeBack:onePlusFortress">
+
+				The command center is nearly ruined, but several people are tracking the tactical situation:
+
+				"There are two Charon stations still active in the system:
+				the Fortress of the Charon Pirates and another lesser Charon station."
+
+			</Text>
+			<Text id="InProgress:strikeBack:Fortress">
+
+				The command center is nearly ruined, but several people are tracking the tactical situation:
+
+				"There are %pirateStationsLeft% Charon pirate stations left,
+				in addition to the Fortress of the Charon Pirates."
+
+			</Text>
+			<Text id="FailureDebrief">
+				(switch
+					;	If no pirate stations left, then that means the player 
+					;	destroyed then between the time Korolov was destroyed
+					;	and they docked back at Korolov.
+
+					(= (msnGetData gSource 'stationsLeft) 0)
+						(list
+							{	descID: 'textFailureDebrief.avenged	}
+							)
+
+					;	Otherwise, normal revenge
+
+					(list
+						{
+							descID: 'textFailureDebrief1
+							}
+						{
+							descID: 'textFailureDebrief2
+							data: { item: (itmGetName (msnGetData gSource 'rewardItem) '(count escapeQuotes)) }
+							}
+						)
+					)
+			</Text>
+			<Text id="textFailureDebrief1">
+
+				You are docked at the lifeless ruins of a destroyed station. Amid wrecked
+				machinery and smoldering bodies you find a woman who is still alive.
+
+				She grabs your hand, "Avenge us...the Fortress is in the system...kill them all..."
+
+			</Text>
+			<Text id="textFailureDebrief2">
+
+				As her lifeless hand releases yours, she drops %item%.
+
+				You take the ROM with you, hoping that it will contain some useful information.
+
+			</Text>
+			<Text id="textFailureDebrief.avenged">
+
+				You are docked at a station under construction. The manager
+				of the station walks up to you to shake your hand.
+
+				"What do you think? We'll have this old station rebuilt in a
+				few months. And we owe it all to you for destroying the pirates."
+			
+			</Text>
+			<Text id="SuccessDebrief">
+				(msnTranslate gSource 'textSuccessDebrief {
+					reward: (itmGetName (msnGetData gSource 'rewardItem) '(demonstrative))
+					})
+			</Text>
+			<Text id="textSuccessDebrief">
+
+				Everyone cheers as you enter.
+
+				"We don't have much in the way of rewards, but it would be our
+				honor if you would accept %reward%. The Charon pirates will no
+				longer threaten the Commonwealth, and we owe it all to you!"
+
+			</Text>
+
+			<Text id="achievement.success">Defended Korolov Shipping in the Charon system</Text>
+		</Language>
+	</MissionType>
+
+<!-- BEHAVIORS -->
+
+	<Type UNID="&HS_evKorolovAtCharon;">
+		<Events>
+			<OnDestroy>
+				(rpgDestroyItems gSource)
+			</OnDestroy>
+		</Events>
+	</Type>
+
+</TranscendenceModule>

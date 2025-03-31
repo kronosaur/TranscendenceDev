@@ -1,0 +1,605 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Sovereign UNID="&HS_svUrakWarlords;"
+			name=":the Urak Empire"
+			shortName=":the Urak"
+			adjective="Urak"
+			demonym=":an Urak warlord(s)"
+			plural="true"
+
+			alignment="destructive order"
+			/>
+
+	<SystemMap unid="&HS_smUrakSpace;"
+			displayOn="&HS_smHumanSpace;"
+			>
+		<TopologyProcessor priority="secondaryColony">
+			<System criteria="+newBeyond;"		attributes="urakSpace"/>
+			<System criteria="+ungoverned;"		attributes="urakSpace"/>
+		</TopologyProcessor>
+	</SystemMap>
+
+<!-- ENCOUNTERS -->
+
+	<!-- Urak Outpost -->
+
+	<StationType UNID="&HS_stUrakOutpost;"
+			name=				"Urak outpost"
+			sovereign=			"&HS_svUrakWarlords;"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			multiHull=			"true"
+			armorID=			"&HS_itUrakArmorLight;"
+			hitPoints=			"60"
+			regen=				"1"
+			fireRateAdj=		"60"
+			explosionType=		"&CORE_vtKineticExplosion2;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"enemy, envAir, envAvoidsFire, generic, human, populated, urakWarlords"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+urakSpace;"
+				systemAffinity=			"+envAir; -envFire;"
+				levelFrequency=			"rcuv- ----- ----- ----- -----"
+
+				locationCriteria=		"-innerSystem, -void"
+				enemyExclusionRadius=	"50"
+				/>
+
+		<Image			imageID="&HS_rsStations2;" imageX="128" imageY="0" imageWidth="128" imageHeight="128"/>
+
+		<Devices>
+			<Device deviceID="&HS_itSlamCannon;"	omnidirectional="true"/>
+		</Devices>
+
+		<Ships>
+			<Ship				count="1d4" class="&HS_scUrakSentinel;" orders="patrol" patrolDist="5"/>
+		</Ships>
+
+		<Reinforcements minShips="3">
+			<Ship				count="1d2" class="&HS_scUrakSentinel;" orders="patrol" patrolDist="5"/>
+		</Reinforcements>
+
+		<Items>
+			<Group value="standard:level=2:x=2.0">
+				<Table>
+					<Lookup chance="30" count="1" table="&HS_trConsumables3;"/>
+					<RandomItem chance="30"
+							criteria=			"* +Res; -NotStandard;"
+							levelFrequency=		"rucur"
+							/>
+					<Item chance="15" count="1d4" item="&HS_itUrakArmorLight;"/>
+					<Item chance="10" count="1" item="&HS_itUrakMassDriver;"/>
+					<Lookup chance="10" count="1" table="&HS_trMinorItem3;"/>
+					<Lookup chance="5" count="1" table="&HS_trMajorItem3;"/>
+				</Table>
+			</Group>
+		</Items>
+
+		<DockingPorts>
+			<Port x="11"	y="60" />
+			<Port x="83"	y="44" />
+			<Port x="59"	y="-12" />
+			<Port x="54"	y="-81" />
+			<Port x="-19"	y="-60" />
+			<Port x="-88"	y="-51" />
+			<Port x="-60"	y="11" />
+			<Port x="-50"	y="74" />
+		</DockingPorts>
+	</StationType>
+
+	<!-- Urak Mine -->
+
+	<StationType UNID="&HS_stUrakMine;"
+			name=				"Urak mine"
+			sovereign=			"&HS_svUrakWarlords;"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			fireRateAdj=		"60"
+			explosionType=		"&CORE_vtKineticExplosion2;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"asteroidBase, enemy, envAir, envAvoidsFire, generic, human, populated, urakWarlords"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+urakSpace;"
+				systemAffinity=			"+envAir; -envFire;"
+				levelFrequency=			"-vcuv ----- ----- ----- -----"
+
+				locationCriteria=		"+outerSystem"
+				enemyExclusionRadius=	"50"
+				/>
+
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&HS_itUrakArmorLight;"
+				hitPoints=		"120"
+				regen=			"1"
+				/>
+		
+		<Devices>
+			<Device deviceID="&HS_itUrakHowitzer;" omnidirectional="true"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Ship				count="1d4" class="&HS_scUrakSentinel;" orders="patrol" patrolDist="5"/>
+		</Ships>
+
+		<Reinforcements minShips="3">
+			<Ship				count="1d2" class="&HS_scUrakSentinel;" orders="patrol" patrolDist="5"/>
+		</Reinforcements>
+
+		<!-- Treasure -->
+
+		<Items>
+			<RandomItem count="1d4"
+					criteria=			"* +Res; -NotStandard;"
+					levelFrequency=		"-uccu"
+					/>
+			<RandomItem chance="30"
+					criteria=			"* +Res; -NotStandard;"
+					levelFrequency=		"---uc cu---"
+					/>
+			<Table>
+				<Lookup chance="40" count="1" table="&HS_trConsumables3;"/>
+				<Item chance="25" count="1d4" item="&HS_itUrakArmorLight;"/>
+				<Item chance="20" count="1" item="&HS_itUrakMassDriver;"/>
+				<Lookup chance="10" count="1" table="&HS_trMinorItem3;"/>
+				<Lookup chance="5" count="1" table="&HS_trMajorItem3;"/>
+			</Table>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<ImageVariants>
+			<LocationCriteriaTable>
+				<Image criteria="*ice"			imageID="&HS_rsUrakMineIcy;"			imageWidth="260" imageHeight="260"	viewportRatio="0.0325"/>
+				<Image criteria="*metallic"		imageID="&HS_rsUrakMineMetallic;"		imageWidth="260" imageHeight="260"	viewportRatio="0.0325"/>
+				<Image criteria="*primordial"	imageID="&HS_rsUrakMinePrimordial;"		imageWidth="260" imageHeight="260"	viewportRatio="0.0325"/>
+				<Image criteria="*volcanic"		imageID="&HS_rsUrakMineVolcanic;"		imageWidth="260" imageHeight="260"	viewportRatio="0.0325"/>
+				
+				<Image criteria="*~"			imageID="&HS_rsUrakMineRocky;"			imageWidth="260" imageHeight="260"	viewportRatio="0.0325"/>
+			</LocationCriteriaTable>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"120"
+				>
+		</DockingPorts>
+
+	</StationType>
+
+	<!-- Urak Fortress -->
+
+	<StationType UNID="&HS_stUrakFortress;"
+			name=				"Urak fortress(es)"
+			sovereign=			"&HS_svUrakWarlords;"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+			dockingPorts=		"8"
+
+			multiHull=			"true"
+			armorID=			"&HS_itUrakArmorHeavy;"
+			hitPoints=			"790"
+            regen=              "6"
+			fireRateAdj=		"40"
+			explosionType=		"&CORE_vtBlastExplosion3;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"enemy, envAir, envAvoidsFire, generic, human, majorStation, populated, urakFortress, urakWarlords"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+urakSpace;"
+				systemAffinity=			"+envAir; -envFire;"
+				levelFrequency=			"--vcu v---- ----- ----- -----"
+
+				locationCriteria=		"-innerSystem, -void"
+				enemyExclusionRadius=	"60"
+				/>
+
+		<Image			imageID="&HS_rsStations4;" imageX="0" imageY="768" imageWidth="256" imageHeight="256"/>
+
+		<Devices>
+			<Device deviceID="&HS_itUrakHowitzer;" omnidirectional="true" posAngle="90" posRadius="100"/>
+			<Device deviceID="&HS_itUrakHowitzer;" omnidirectional="true" posAngle="210" posRadius="100"/>
+			<Device deviceID="&HS_itUrakHowitzer;" omnidirectional="true" posAngle="330" posRadius="100"/>
+		</Devices>
+
+		<Ships>
+			<Ship				count="1d4" class="&HS_scUrakSentinel;" orders="patrol" patrolDist="4"/>
+			<Ship				count="1d4" class="&HS_scUrakSentinel;" orders="patrol" patrolDist="7"/>
+			<Ship				count="1"	class="&HS_scUrakDestroyer;" orders="patrol" patrolDist="15"/>
+		</Ships>
+
+		<Reinforcements minShips="5">
+			<Table>
+				<Ship chance="35"		count="1d2" class="&HS_scUrakSentinel;" orders="patrol" patrolDist="4"/>
+				<Ship chance="35"		count="1d2" class="&HS_scUrakSentinel;" orders="patrol" patrolDist="7"/>
+				<Ship chance="30"		count="1"	class="&HS_scUrakDestroyer;" orders="patrol" patrolDist="15"/>
+			</Table>
+		</Reinforcements>
+
+		<Items>
+			<Group value="standard:level=4:x=3.5">
+				<RandomItem
+						criteria=			"* +Res; -NotStandard;"
+						levelFrequency=		"-uccu"
+						/>
+				<RandomItem chance="10"
+						criteria=			"* +Res; -NotStandard;"
+						levelFrequency=		"---uc cu---"
+						/>
+				<Table count="1-4">
+					<Lookup chance="15" count="1" table="&HS_trConsumables5;"/>
+					<Item chance="20" count="1d4" item="&HS_itUrakArmorLight;"/>
+					<Item chance="20" count="1" item="&HS_itUrakMassDriver;"/>
+					<Item chance="15" count="1d4" item="&HS_itUrakArmorHeavy;"/>
+					<Item chance="15" count="1" item="&HS_itUrakHowitzer;"/>
+					<Lookup chance="10" count="1" table="&HS_trMinorItem5;"/>
+					<Lookup chance="5" count="1" table="&HS_trMajorItem5;"/>
+				</Table>
+			</Group>
+		</Items>
+
+	</StationType>
+
+<!-- SHIP CLASSES -->
+
+	<!-- Urak Sentinel -->
+
+	<ShipClass UNID="&HS_scUrakSentinel;"
+			manufacturer=		"Urak"
+			class=				""
+			type=				"sentinel"
+			defaultSovereign=	"&HS_svUrakWarlords;"
+
+			size=				"14"
+			mass=				"5"
+			cargoSpace=			"5"
+			thrustRatio=		"4"
+			maxSpeed=			"16"
+
+			attributes=			"auton, combatAuton, genericClass, urak"
+			>
+
+		<Properties>
+			<Definition id="core.noBiologicalEffects">True</Definition>
+			<Definition id="core.noRadiationDeath">True</Definition>
+		</Properties>
+
+		<Armor>
+			<ArmorSection start="270" span="180" armorID="&HS_itUrakArmorLight;" />
+			<ArmorSection start="90"  span="180" armorID="&HS_itUrakArmorLight;" />
+		</Armor>
+
+		<Devices>
+			<Device deviceID="&HS_itUrakMassDriver;"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"18.0"
+			rotationAccel=		"6.0"
+			/>
+
+		<Image imageID="&HS_rsUrakSentinelHD;" imageWidth="50" imageHeight="50" rotationCount="120" rotationColumns="12" viewportRatio="0.005"/>
+		<HeroImage imageID="&HS_rsUrakSentinelHero;" imageWidth="320" imageHeight="320"/>
+
+		<AISettings
+			fireRateAdj=		"20"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"noRetreat"
+			/>
+
+	</ShipClass>
+
+	<!-- Urak Destroyer -->
+
+	<ShipClass UNID="&HS_scUrakDestroyer;"
+			manufacturer=		"Urak"
+			class=				""
+			type=				"destroyer"
+			defaultSovereign=	"&HS_svUrakWarlords;"
+
+			attributes=			"capitalShip, genericClass, urak"
+
+			size=				"174"
+			mass=				"11000"
+			thrustRatio=		"1"
+			maxSpeed=			"10"
+			cargoSpace=			"500"
+
+			cyberDefenseLevel=	"4"
+
+			explosionType=		"&CORE_vtBlastExplosion3;"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itUrakArmorHeavy;"
+			count=				"12"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itUrakHowitzer;"									 minFireArc="330" maxFireArc="30"  posAngle="0"   posRadius="56" posZ="25"/>
+			<Device deviceID="&HS_itUrakMassDriverAdvanced;" secondaryWeapon="true" minFireArc="90"  maxFireArc="270" posAngle="180" posRadius="30" posZ="30"/>
+			<Device deviceID="&HS_itUrakMassDriverAdvanced;" secondaryWeapon="true" minFireArc="350" maxFireArc="170" posAngle="30"  posRadius="30" posZ="30"/>
+			<Device deviceID="&HS_itUrakMassDriverAdvanced;" secondaryWeapon="true" minFireArc="190" maxFireArc="10"  posAngle="-30" posRadius="30" posZ="30"/>
+
+			<Device deviceID="&HS_vtStdDamageControl;"		level="5"/>
+			<Device deviceID="&HS_it100MWReactor;"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"3"
+			rotationAccel=		"0.5"
+			/>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"100"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"80"
+
+					posX=		"0"
+					posY=		"0"
+					sizeX=		"40"
+					sizeY=		"40"
+					/>
+		</Interior>
+
+		<Items>
+			<Item				  count="2d6"	item="&HS_itXenotiteFuelRod;"/>
+			<Table>
+				<Lookup chance="40" count="1" table="&HS_trConsumables5;"/>
+				<Lookup chance="40" count="1" table="&HS_trMinorItem5;"/>
+				<Lookup chance="20" count="1" table="&HS_trMajorItem5;"/>
+			</Table>
+		</Items>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&rsUrakDestroyerHD;" imageWidth="180" imageHeight="180"	rotationCount="120" rotationColumns="12" viewportRatio="0.02375"/>
+		<Image imageID="&HS_rsUrakDestroyerHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="155"	posRadius="28"	posZ="-10"	rotation="180"	effect="&CORE_efMainThrusterLarge;"	sendToBack="*"/>
+			<Effect type="thrustMain"		posAngle="-155"	posRadius="28"	posZ="-10"	rotation="180"	effect="&CORE_efMainThrusterLarge;"	sendToBack="*"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"40"
+			fireAccuracy=		"90"
+			perception=			"5"
+			combatStyle=		"noRetreat"
+			/>
+
+	</ShipClass>
+
+<!-- ITEM TYPES -->
+
+	<!-- Urak Mass Driver -->
+
+	<ItemType UNID="&HS_itUrakMassDriver;"
+			name=				"Urak mass driver"
+			level=				"3"
+			value=				"2100"
+			mass=				"6000"
+			frequency=			"rare"
+			attributes=			"MajorItem; NotForSale; Urak"
+
+			description=		"The Urak mass driver is a short-range dual kinetic cannon that shoots heavy metal slugs."
+
+			sortName=			"Urak.1.30"
+			>
+
+		<Image imageID="&HS_rsItems3;" imageX="288" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				damage=				"kinetic:1d6+1; momentum1"
+				fireRate=			"10"
+				missileSpeed=		"40"
+				lifetime=			"38"
+				powerUse=			"60"
+
+				effect=				"&CORE_efKineticBoltDefault;"
+				sound=				"&CORE_snRecoillessCannon;"
+				>
+
+			<Configuration aimTolerance="5">
+				<Shot posAngle="90" posRadius="12" angle="3d5-9"/>
+				<Shot posAngle="270" posRadius="12" angle="3d5-9"/>
+			</Configuration>
+		</Weapon>
+	</ItemType>
+
+	<!-- Light Urak Armor -->
+
+	<ItemType UNID="&HS_itUrakArmorLight;"
+			name=				"[segment(s) of ]light Urak armor"
+			level=				"2"
+			value=				"100"
+			frequency=			"rare"
+			numberAppearing=	"1d4"
+			mass=				"2000"
+			attributes=			"MinorItem; NotForSale; Urak"
+
+			description=		"The foundries of the Urak Warlords produce excellent armor, resistant to both laser and kinetic damage."
+
+			sortName=			"Urak.2.20"
+			>
+
+		<Image imageID="&HS_rsItems2;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Armor
+				hitPoints=	"20"
+				hpBonus=	"+150,+150,  +0,  +0"
+
+				repairTech=	"4"
+				/>
+
+	</ItemType>
+
+	<!-- Urak Armor, Heavy -->
+
+	<ItemType UNID="&HS_itUrakArmorHeavy;"
+			name=				"[segment(s) of ]super-heavy Urak armor"
+			level=				"4"
+			value=				"700"
+			mass=				"7000"
+			frequency=			"rare"
+			numberAppearing=	"1d4"
+			attributes=			"MinorItem; NotForSale; Urak"
+
+			description=		"The capital ships of the Urak Warlords use a heavy armor that resists laser, kinetic, particle, and blast damage."
+
+			sortName=			"Urak.2.10"
+			>
+
+		<Image imageID="&HS_rsItems2;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Armor
+				hitPoints=	"80"
+				hpBonus=	"+100,+100,+100,+100"
+
+				repairTech=	"6"
+				/>
+
+	</ItemType>
+
+	<!-- Urak Mass Driver, Advanced -->
+
+	<ItemType UNID="&HS_itUrakMassDriverAdvanced;"
+			name=				"advanced Urak mass driver"
+			level=				"4"
+			value=				"4600"
+			mass=				"4500"
+			frequency=			"rare"
+			attributes=			"MajorItem; NotForSale; Urak"
+
+			description=		"The advanced version of the Urak mass driver fires high-explosive shells."
+
+			sortName=			"Urak.1.20"
+			>
+
+		<Image imageID="&HS_rsItems4;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				damage=				"blast:1d6+1; momentum:1; WMD:4"
+				fireRate=			"14"
+				missileSpeed=		"40"
+				lifetime=			"38"
+				powerUse=			"100"
+
+				effect=				"&CORE_efBlastShellDefault;"
+				sound=				"&CORE_snRecoillessCannon;"
+				>
+
+			<Configuration aimTolerance="5">
+				<Shot posAngle="90" posRadius="12" angle="3d5-9"/>
+				<Shot posAngle="270" posRadius="12" angle="3d5-9"/>
+			</Configuration>
+		</Weapon>
+	</ItemType>
+
+	<!-- Urak Howitzer -->
+
+	<ItemType UNID="&HS_itUrakHowitzer;"
+			name=				"Urak howitzer"
+			level=				"5"
+			value=				"7000"
+			mass=				"4500"
+			frequency=			"veryrare"
+			numberAppearing=	"1"
+			attributes=			"Howitzer; MajorItem; NotForSale; Urak"
+
+			description=		"Urak howitzers fire high-explosive shells that explode on proximity to their target."
+
+			sortName=			"Urak.1.10"
+			>
+
+		<Image imageID="&HS_rsItems5;" imageX="0" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				fireRate=			"36"
+				missileSpeed=		"50"
+				lifetime=			"90"
+				powerUse=			"200"
+				recoil=				"2"
+
+				effect=				"&CORE_efBlastShellDefault;"
+				sound=				"&CORE_snRecoillessCannon;"
+				>
+
+			<Fragment 
+					count=			"30-36"
+					type=			"missile"
+					lifetime=		"10"
+					damage=			"blast:1d6; momentum:1; WMD:4"
+					missileSpeed=	"32-48"
+					>
+
+				<Effect>
+					<ImageAndTail 
+							imageID=			"&CORE_rsMissiles;" 
+							imageX=				"96" 
+							imageY=				"0" 
+							imageWidth=			"16" 
+							imageHeight=		"16"
+							imageFrameCount=	"2"
+							imageTicksPerFrame=	"2"
+
+							length=				"48"
+							width=				"3"
+							primaryColor=		"0xff, 0xff, 0xff"
+							secondaryColor=		"0xc0, 0xc2, 0x85"
+							/>
+				</Effect>
+			</Fragment>
+		</Weapon>
+	</ItemType>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&rsUrakDestroyerHD;"		bitmap="Resources\UrakDestroyerHD.jpg" 	bitmask="Resources\UrakDestroyerHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsUrakDestroyerHero;"		bitmap="Resources\UrakDestroyerLarge.jpg" 	bitmask="Resources\UrakDestroyerLargeMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&HS_rsUrakSentinelHD;"		bitmap="Resources\UrakSentinelHD.jpg" 	bitmask="Resources\UrakSentinelHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsUrakSentinelHero;"		bitmap="Resources\UrakSentinelLarge.jpg" 	bitmask="Resources\UrakSentinelLargeMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&HS_rsUrakMineIcy;"			bitmap="Resources\UrakMineIcy.jpg"		bitmask="Resources\UrakMineIcyMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsUrakMineMetallic;"		bitmap="Resources\UrakMineMetallic.jpg"		bitmask="Resources\UrakMineMetallicMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsUrakMinePrimordial;"	bitmap="Resources\UrakMinePrimordial.jpg"		bitmask="Resources\UrakMinePrimordialMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsUrakMineRocky;"			bitmap="Resources\UrakMineRocky.jpg"		bitmask="Resources\UrakMineRockyMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsUrakMineVolcanic;"		bitmap="Resources\UrakMineVolcanic.jpg"		bitmask="Resources\UrakMineVolcanicMask.bmp"  loadOnUse="true"/>
+
+</TranscendenceModule>

@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- TABLES -->
+
+	<SystemPartTable unid="&GLXY_tbMetallicPlanets;">
+
+		<MetallicPrimary>
+			<LocationCriteriaTable>
+				<Table criteria="*innerSystem">
+					<Lookup chance="100" table="MetallicPlanetoidPrimary"/>
+				</Table>
+				<Table criteria="*lifeZone">
+					<Lookup chance="100" table="MetallicPlanetoidPrimary"/>
+				</Table>
+				<Table criteria="*outerSystem">
+					<Lookup chance="100" table="MetallicPlanetoidPrimary"/>
+				</Table>
+			</LocationCriteriaTable>
+		</MetallicPrimary>
+
+		<MetallicPlanetoidPrimary>
+			<Lookup table="StandardPlanetoidMorphology">
+				<_PlanetType>
+					<Table>
+						<Station chance="60" type="&GLXY_stMetallicPlanetoidSizeE;" showOrbit="true"/>
+						<Station chance="30" type="&GLXY_stMetallicPlanetoidSizeF;" showOrbit="true"/>
+						<Station chance="10" type="&GLXY_stMetallicPlanetoidSizeG;" showOrbit="true"/>
+					</Table>
+				</_PlanetType>
+				<_PlanetLabel>
+					<Label attributes="metallic, planet, planetary, planetoid"/>
+				</_PlanetLabel>
+			</Lookup>
+		</MetallicPlanetoidPrimary>
+
+	</SystemPartTable>
+
+<!-- ASTEROIDS & PLANETS -->
+	
+	<!-- Size A Metallic Asteroid -->
+
+	<StationType UNID="&GLXY_stMetallicAsteroidSizeA;"
+		name=				"metallic asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
+		inherit=			"&GLXY_baMetallicAsteroid;"
+
+		scale=				"world"
+		size=				"4"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtMetallicAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsMetallicAsteroidSizeA;"/>
+
+		<Items>
+			<Table>
+				<Null chance="90"/>
+				<Lookup chance="10" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size B Metallic Asteroid -->
+
+	<StationType UNID="&GLXY_stMetallicAsteroidSizeB;"
+		name=				"metallic asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
+		inherit=			"&GLXY_baMetallicAsteroid;"
+
+		scale=				"world"
+		size=				"55"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtMetallicAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsMetallicAsteroidSizeB;"/>
+		
+		<Items>
+			<Table>
+				<Null chance="90"/>
+				<Lookup chance="10" count="1d6" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size C Metallic Asteroid -->
+
+	<StationType UNID="&GLXY_stMetallicAsteroidSizeC;"
+		name=				"metallic asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
+		inherit=			"&GLXY_baMetallicAsteroid;"
+
+		scale=				"world"
+		size=				"250"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtMetallicAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsMetallicAsteroidSizeC;"/>
+
+		<Items>
+			<Table>
+				<Null chance="90"/>
+				<Lookup chance="10" count="1d8" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size D Metallic Asteroid -->
+
+	<StationType UNID="&GLXY_stMetallicAsteroidSizeD;"
+		name=				"metallic asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, metallic, outer"
+		inherit=			"&GLXY_baMetallicAsteroid;"
+
+		scale=				"world"
+		size=				"625"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtMetallicAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsMetallicAsteroidSizeD;"/>
+
+		<Items>
+			<Table>
+				<Null chance="90"/>
+				<Lookup chance="10" count="1d10" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Metallic Planetoid Size E -->
+
+	<StationType UNID="&GLXY_stMetallicPlanetoidSizeE;"
+		name=				"metallic planetoid"
+		attributes=			"generic, inner, lifeZone,  metallic, outer, planetoid"
+
+		scale=				"world"
+		size=				"1150"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtMetallicAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsMetallicPlanetoidSizeE;"/>
+	</StationType>
+
+	<!-- Metallic Planetoid Size F -->
+
+	<StationType UNID="&GLXY_stMetallicPlanetoidSizeF;"
+		name=				"metallic planetoid"
+		attributes=			"generic, inner, lifeZone, metallic, outer, planetoid"
+
+		scale=				"world"
+		size=				"2050"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtMetallicAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsMetallicPlanetoidSizeF;"/>
+	</StationType>
+
+	<!-- Metallic Planetoid Size G -->
+
+	<StationType UNID="&GLXY_stMetallicPlanetoidSizeG;"
+		name=				"metallic planetoid"
+		attributes=			"generic, inner, lifeZone, metallic, outer, planetoid"
+
+		scale=				"world"
+		size=				"4000"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtMetallicAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsMetallicPlanetoidSizeG;"/>
+	</StationType>
+
+<!-- BASE CLASSES -->
+
+	<StationType unid="&GLXY_baMetallicAsteroid;"
+			virtual=	"true"
+			>
+		<Asteroid type="metallic"/>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+	</StationType>
+
+<!-- RESOURCES -->
+	
+	<ImageComposite unid="&GLXY_rsMetallicAsteroidSizeA;">
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="0"   imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="32"  imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="64"  imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="96"  imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="128" imageY="128"	imageWidth="32" imageHeight="32"/>
+
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="160"   imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="192"   imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="224"   imageY="128"	imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+	</ImageComposite>
+
+	<ImageComposite unid="&GLXY_rsMetallicAsteroidSizeB;">
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="0"   imageY="0"		imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="64"  imageY="0"		imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="128" imageY="0"		imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="192" imageY="0"		imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="0"   imageY="64"	imageWidth="64" imageHeight="64"/>
+
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="64"  imageY="64"	imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="128" imageY="64"	imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="192" imageY="64"	imageWidth="64" imageHeight="64"/>
+		</ImageVariants>
+	</ImageComposite>
+	
+	<ImageComposite unid="&GLXY_rsMetallicAsteroidSizeC;">
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="0"   imageY="0"		imageWidth="90" imageHeight="90"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="0"   imageY="90"		imageWidth="90" imageHeight="90"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="0"   imageY="180"		imageWidth="90" imageHeight="90"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="0"   imageY="270"		imageWidth="90" imageHeight="90"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="0"   imageY="360"		imageWidth="90" imageHeight="90"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="0"   imageY="450"		imageWidth="90" imageHeight="90"/>
+		</ImageVariants>
+	</ImageComposite>
+		
+	<ImageComposite unid="&GLXY_rsMetallicAsteroidSizeD;">
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="90"  imageY="0"		imageWidth="120" imageHeight="120"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="90"  imageY="120"		imageWidth="120" imageHeight="120"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="90"  imageY="240"		imageWidth="120" imageHeight="120"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="90"  imageY="360"		imageWidth="120" imageHeight="120"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="90"  imageY="480"		imageWidth="120" imageHeight="120"/>
+		</ImageVariants>
+	</ImageComposite>
+	
+	<ImageComposite unid="&GLXY_rsMetallicPlanetoidSizeE;">
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="210"  imageY="0"		imageWidth="140" imageHeight="140"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="210"  imageY="140"		imageWidth="140" imageHeight="140"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="210"  imageY="280"		imageWidth="140" imageHeight="140"/>
+		</ImageVariants>
+	</ImageComposite>
+	
+	<ImageComposite unid="&GLXY_rsMetallicPlanetoidSizeF;">
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="350"  imageY="0"		imageWidth="150" imageHeight="150"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="350"  imageY="150"		imageWidth="150" imageHeight="150"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="350"  imageY="300"		imageWidth="150" imageHeight="150"/>
+		</ImageVariants>
+	</ImageComposite>
+	
+	<ImageComposite unid="&GLXY_rsMetallicPlanetoidSizeG;">
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="210"  imageY="450"		imageWidth="180" imageHeight="180"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids2;" imageX="390"  imageY="450"		imageWidth="180" imageHeight="180"/>
+		</ImageVariants>
+	</ImageComposite>
+	
+	<Image UNID="&GLXY_rsMetallicAsteroids;"		bitmap="Resources\MetallicAsteroids.jpg"	bitmask="Resources\MetallicAsteroidsMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&GLXY_rsMetallicAsteroids2;"	bitmap="Resources\MetallicAsteroids2.jpg"	bitmask="Resources\MetallicAsteroids2Mask.bmp"  loadOnUse="true"/>
+
+</TranscendenceModule>

@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+<!-- CORE SOVEREIGNS ===========================================================
+
+	Adventures generally override these.
+	
+-->
+
+	<Sovereign UNID="&CORE_svPlayer;"
+			name="independent"
+			alignment="constructive chaos"
+			>
+		<Language>
+			<Text id="WatchYourTargets">""</Text>
+			<Text id="NiceShooting">""</Text>
+		</Language>
+	</Sovereign>
+
+	<Sovereign UNID="&CORE_svPlayerAlly;"
+			name="independent"
+			alignment="constructive chaos"
+
+			inherit="&CORE_svPlayer;"
+			>
+	</Sovereign>
+
+	<Sovereign UNID="&CORE_svIndependent;"
+			name="independent merchants"
+			alignment="constructive chaos"
+			/>
+
+	<Sovereign UNID="&CORE_svNeutral;"
+			name="neutral"
+			alignment="neutral"
+			/>
+
+	<Sovereign UNID="&CORE_svUnknownEnemy;"
+			name="unknown enemy"
+			alignment="destructive order"
+			/>
+	
+<!-- SHIP CLASSES ==============================================================
+
+	We need some default classes just for the intro. [In case an adventure 
+	forgets to define any ship classes.]
+	
+	Adventures & libraries should override if needed.
+	
+-->
+
+	<!-- Mikeno-class destroyer -->
+
+	<ShipClass UNID="&CORE_scMikeno;"
+			manufacturer=		"United African States"
+			class=				"Mikeno"
+			type=				"destroyer"
+			defaultSovereign=	"&CORE_svIndependent;"
+
+			attributes=			""
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"100"
+			mass=				"5000"
+			cargoSpace=			"500"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"5000"
+			maxDevices=			"10"
+			maxWeapons=			"4"
+			/>
+
+		<Drive
+			maxSpeed=			"12"
+			thrust=				"8000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"3.6"
+			rotationAccel=		"1.2"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&CORE_itHeavyPlasteelPlate;"
+			count=				"12"
+			/>
+
+		<Devices>
+			<Device deviceID="&CORE_itBallistaCannon;" posAngle="0" posRadius="64"/>
+
+			<Device deviceID="&CORE_itLaserCannon;" secondaryWeapon="true" minFireArc="30" maxFireArc="175" posAngle="90" posRadius="20"/>
+			<Device deviceID="&CORE_itLaserCannon;" secondaryWeapon="true" minFireArc="185" maxFireArc="330" posAngle="270" posRadius="20"/>
+		</Devices>
+
+		<Items>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&CORE_rsMikeno;" imageX="0" imageY="0" imageWidth="192" imageHeight="192" rotationCount="20"/>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"15"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+	</ShipClass>
+
+<!-- STATION TYPES =============================================================
+
+	These station types are referred to by the engine itself. Adventures are
+	free to override them, but they must exist.
+
+-->
+
+	<!-- Flotsam -->
+
+	<StationType UNID="&CORE_stFlotsam;"
+			name=				"(flotsam)"
+			sovereign=			"&CORE_svNeutral;"
+
+			scale=				"ship"
+			mobile=				"true"
+			mass=				"1"
+			immutable=			"true"
+			destroyWhenEmpty=	"true"
+			noMapIcon=			"true"
+			>
+	</StationType>
+
+	<!-- Shipwreck -->
+
+	<StationType UNID="&CORE_stShipwreck;"
+			name=				"(shipwreck)"
+			sovereign=			"&CORE_svNeutral;"
+			scale=				"ship"
+			mobile=				"true"
+			noMapIcon=			"true"
+
+			attributes=			"shipwreck"
+			>
+	</StationType>
+	
+<!-- ITEM TYPES ================================================================
+
+	These types are often used by core functions and subroutines. Adventures are
+	free to override them.
+	
+	These are all set to be notRandom and notStandard, so they don't show up on
+	random table. Libraries should override to change this behavior.
+
+-->
+	
+	<!-- itHelium3FuelRod -->
+
+	<ItemType UNID="&CORE_itHelium3FuelRod;"
+			name=				"helium&#xb3; fuel rod"
+			level=				"1"
+			value=				"25"
+			mass=				"100"
+			frequency=			"notRandom"
+			numberAppearing=	"3d6"
+			attributes=			"notStandard"
+
+			data=				"2500"
+
+			description=		"This standard He&#xb3; fuel rod fits most starship reactors."
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="288" imageY="96" imageWidth="96" imageHeight="96"/>
+
+	</ItemType>
+	
+	<!-- Laser Cannon -->
+
+	<ItemType UNID="&CORE_itLaserCannon;"
+			name=				"laser cannon"
+			level=				"1"
+			value=				"250"
+			mass=				"1000"
+			frequency=			"notRandom"
+			attributes=			"notStandard"
+
+			description=		"A popular weapon for light freighters and fast gunships. This weapon is manufactured by the Earth Industries Conglomerate."
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"beam"
+
+				damage=				"laser:1d4"
+				fireRate=			"10"
+				lifetime=			"30"
+				powerUse=			"10"
+
+				effect=				"&CORE_efLaserBeamDefault;"
+				sound=				"&CORE_snLaserCannon;"
+				>
+		</Weapon>
+	</ItemType>
+
+	<!-- Ballista Cannon -->
+
+	<ItemType UNID="&CORE_itBallistaCannon;"
+			name=				"AK505 Ballista cannon"
+			level=				"4"
+			value=				"3500"
+			mass=				"6000"
+			frequency=			"notRandom"
+			attributes=			"notStandard"
+
+			description=		"The largest kinetic mass driver created by NAMI, the Ballista cannon can pummel a medium-sized station."
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				damage=				"kinetic:14d8; momentum5; WMD5"
+				fireRate=			"45"
+				missileSpeed=		"45"
+				hitPoints=			"5"
+				lifetime=			"67"
+				powerUse=			"160"
+
+				effect=				"&CORE_efKineticBoltDefault;"
+				sound=				"&CORE_snRecoillessCannon;"
+				>
+		</Weapon>
+	</ItemType>
+
+	<!-- Segment of Heavy Plasteel Plate -->
+
+	<ItemType UNID="&CORE_itHeavyPlasteelPlate;"
+			name=				"[segment(s) of ]heavy plasteel armor"
+			level=				"5"
+			value=				"800"
+			mass=				"3000"
+			attributes=			"notStandard"
+			frequency=			"notRandom"
+			numberAppearing=	"1d4"
+
+			description=		"This is a stronger plate of the popular plasteel armor."
+
+			sortName=			"plasteel armor.10"
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Armor
+				hitPoints=	"120"
+				/>
+
+	</ItemType>
+
+	<!-- Tritium Propulsion Upgrade -->
+
+	<ItemType UNID="&CORE_itTritiumPropulsionUpgrade;"
+			name=				"tritium propulsion upgrade"
+			attributes=			"notStandard"
+			  
+			level=				"3"
+			frequency=			"notRandom"
+
+			value=				"1600"
+			mass=				"2000"
+			  
+			description=		"Most small and medium sized ships use a fusion drive for propulsion. This device upgrade mixes-in a powerful tritium plasma to increase the thrust of the engines."
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="96" imageY="384" imageWidth="96" imageHeight="96"/>
+
+		<DriveDevice
+				maxSpeedInc=	"2"
+				maxSpeed=		"20"
+				thrust=			"200"
+				powerUse=		"30"
+				/>
+	</ItemType>
+
+	<!-- Unknown ROM -->
+
+	<ItemType UNID="&CORE_itUnknownROM;"
+			name=				"ROM biosoft(s)"
+			virtual=			"true"
+			level=				"1"
+			value=				"300"
+			attributes=			"unknown"
+
+			description=		"These ROM biochips are generally used to upgrade a computer's neural network. Unfortunately, you have no knowledge of the software's specific nature or purpose."
+			>
+
+		<Names>
+			ROM biosoft(s) labeled "Unknown"
+		</Names>
+
+		<Image imageID="&CORE_rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+<!-- MISCELLANEOUS =============================================================
+
+-->
+	
+	<EconomyType UNID="&CORE_ecCreditEconomy;"
+			id=				"credit" 
+			currency=		"credit(s)"
+			conversion=		"100"
+			/>
+	
+<!-- RESOURCES =================================================================
+
+	These resources are used by these types.
+	
+	NOTE: rsMissiles is used by the ejecta in the Transcendence Universe Library
+	We should move them later.
+	
+-->
+
+	<Image UNID="&CORE_rsExplosionsAG128;"		bitmap="Resources\Explosions-AG128.jpg"	bitmask="Resources\Explosions-AG128Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&CORE_rsExplosionsA20G192;"		bitmap="Resources\Explosions-A20G192.jpg"	bitmask="Resources\Explosions-A20G192Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&CORE_rsExplosionsA20G256;"		bitmap="Resources\Explosions-A20G256.jpg"	bitmask="Resources\Explosions-A20G256Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&CORE_rsExplosion2AG128;"		bitmap="Resources\Explosion-2-AG128.jpg" bitmask="Resources\Explosion-2-AG128Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&CORE_rsExplosion2A20G192;"		bitmap="Resources\Explosion-2-A20G192.jpg"	bitmask="Resources\Explosion-2-A20G192Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&CORE_rsExplosion3AG128;"	bitmap="Resources\Explosion-3-AG128.jpg"	bitmask="Resources\Explosion-3-AG128Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&CORE_rsShockwave2;"	bitmap="Resources\Shockwave2.jpg"		bitmask="Resources\Shockwave2Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&CORE_rsShockwave3;"	bitmap="Resources\Shockwave3.jpg"		bitmask="Resources\Shockwave3Mask.bmp" loadOnUse="true"/>
+	
+	<Image UNID="&CORE_rsItems1;"		bitmap="Resources\Items1.jpg"	bitmask="Resources\Items1Mask.bmp" />
+	
+	<Image UNID="&CORE_rsMissiles;"		bitmap="Resources\Missiles.jpg" bitmask="Resources\MissilesMask.bmp" loadOnUse="true"/>
+	<Image UNID="&CORE_rsMissiles3;"		bitmap="Resources\Missiles3.jpg" bitmask="Resources\Missiles3Mask.bmp" loadOnUse="true"/>
+	
+	<Image UNID="&CORE_rsMikeno;"		bitmap="Resources\Mikeno.jpg"	bitmask="Resources\MikenoMask.bmp" loadOnUse="true"/>
+	
+</TranscendenceModule>

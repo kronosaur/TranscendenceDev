@@ -1,0 +1,171 @@
+<?xml version="1.0" ?>
+
+<TranscendenceModule>
+
+	<!-- Mission: Destroy Threat ==================================================
+
+	Basic
+
+	EXTRA DATA
+
+	reward:			Reward (in credits) for completing mission
+	targetID:			Id of station to destroy
+
+	=========================================================================== -->
+
+	<MissionType UNID="&HS_msCMDestroyThreat;"
+			name=			"Commonwealth Militia 03: Destroy Threat"
+			attributes=		"commonwealthMilitia, rank1"
+
+			level=			"3-7"
+
+			expireTime=			"5400"
+			failureOnReturnToSystem="5400"
+			>
+		<Properties>
+			<Data id="reward"></Data>
+		</Properties>
+
+		<Image imageID="&HS_rsCommonwealthMilitiaInsignia;" imageX="512" imageY="256" imageWidth="256" imageHeight="256"/>
+
+		<Events>
+			<OnCreate>
+				(block (
+					(enemyStations 
+						(filter (sysFindObject aOwnerObj "TAE +populated; -outlawMiners; -penitents; -property:questTarget; -uncharted;") targetObj
+							(objCanDestroyTarget gPlayerShip targetObj)
+							)
+						)
+					)
+					(switch
+						;	Get a list of enemy stations in the region. If we cannot find any
+						;	suitable targets then we don't have a mission.
+
+						(not enemyStations)
+							(msnDestroy gSource)
+
+						;	Create the mission
+
+						(block (
+							;	Pick a random enemy station to destroy
+
+							(targetObj (seededRandom (objGetDestiny aOwnerObj) enemyStations))
+
+							;	The reward for the station is half of the standard
+							;	treasure value for the station.
+
+							(rewardExact (/ (obj@ targetObj 'stdTreasure) 2))
+
+							;	Round it to the nearest 100
+
+							(reward (max 100 (* 100 (round (/ rewardExact 100)))))
+							)
+
+							; Remember it
+							(msnSetData gSource 'targetID (objGetID targetObj))
+							(msnSet@ gSource 'reward reward)
+
+							; Register for events so we know when the target is destroyed
+							(msnRegisterForEvents gSource targetObj)
+							)
+						)
+					)
+			</OnCreate>
+
+			<OnObjDestroyed>
+				(switch
+					(= (objGetID aObjDestroyed) (msnGetData gSource 'targetID))
+						(msnSuccess gSource)
+					)
+			</OnObjDestroyed>
+
+			<OnSetPlayerTarget>
+				(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'targetID)))
+			</OnSetPlayerTarget>
+
+			<OnCompleted>
+				(milMissionCompleted gSource aReason gData)
+			</OnCompleted>
+
+			<OnReward>
+				(milGiveReward gSource)
+			</OnReward>
+		</Events>
+
+		<Language>
+			<Text id="Name">
+				Destroy Enemy Station
+			</Text>
+
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) 'article)
+					systemName: (sysGetName)
+					payment: (fmtCurrency 'credit (msn@ gSource 'reward))
+					})
+			</Text>
+			<Text id="textSummary">
+				Your mission is to destroy %targetName% in %systemName%.
+
+				System: %systemName%\n
+				Payment: %payment%
+			</Text>
+
+			<Text id="Intro">
+
+				You are in the command center surrounded by wall maps and scanner 
+				displays. The commanding officer of the fortress looks up from 
+				his charts:
+
+				"Are you looking for a mission, pilot?"
+
+			</Text>
+
+			<Text id="Briefing">
+				(msnTranslate gSource 'textBriefing {
+					targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) 'article)
+					payment: (fmtCurrency 'credit (msn@ gSource 'reward))
+					})
+			</Text>
+			<String id="AcceptReply">
+				"Good luck, pilot!"
+			</String>
+
+			<String id="DeclineReply">
+				"Why don't you make yourself useful and get us some tea or something."
+			</String>
+
+			<String id="InProgress">
+				"What is your major malfunction!? Get back out there and complete your mission!"
+			</String>
+			<String id="FailureDebrief">
+				"You screwed that mission all the way to Sol and back. You better hit the sims, pilot!"
+			</String>
+			<Text id="SuccessDebrief">
+				(list
+					{	descID:'textSuccessDebrief1		
+						data: {
+							payment: (fmtCurrency 'credit (msn@ gSource 'reward))
+							}
+						}
+					)
+			</Text>
+
+			<Text id="textBriefing">
+
+				"%TargetName% in the system has been harassing traffic in the area.
+				We want you to take it out.
+				
+				"We'll pay %payment% if you succeed. Clear?"
+
+			</Text>
+			<Text id="textSuccessDebrief1">
+
+				"Well done! You dealt with that threat expertly. We've deposited
+				%payment% in your account."
+
+			</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

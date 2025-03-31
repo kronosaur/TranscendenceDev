@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Level 5: Makayev Arms Dealer -->
+
+	<StationType UNID="&HS_stArmsDealerMakayev;"
+			name=				": Makayev-Energia Space Systems|Makayev-Energia Space Systems"
+			sovereign=			"&HS_svCorporate;"
+			inherit=			"&HS_baCorporateStation;"
+
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			level=				"5"
+			multiHull=			"true"
+			armorID=			"&HS_itBlastPlate;"
+			hitPoints=			"350"
+			regen=				"12"
+			fireRateAdj=		"20"
+			explosionType=		"&CORE_vtBlastExplosion2;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"corporate, corporateArms, corporateCustoms, envAir, envEarth, envFire, envWater, friendly, independent, generic, human, makayev, populated"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+corporateSpace;"
+				systemAffinity=			"*"
+				levelFrequency=			"--rur v---- ----- ----- -----"
+
+				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"50"
+				/>
+
+		<!-- Trade and Items -->
+
+		<Trade currency="credit">
+			<Sell	criteria="m +makayev; -defective; -military; -illegal; -notForSale;" priceAdj="100" inventoryAdj="500" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+
+			<RepairArmor	criteria="a L:1-8;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a +makayev; L:1-7;" priceAdj="100"/>
+			<InstallDevice	criteria="d +makayev; L:1-7;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-7;" priceAdj="100"/>
+			
+			<ReplaceArmor	criteria="a L:1-7;" priceAdj="unavailable"	messageID="descNoInstall"/>
+			<InstallDevice	criteria="d L:1-7;" priceAdj="unavailable"	messageID="descNoInstall"/>
+		</Trade>
+
+		<Items>
+			<RandomItem count="1d12" 
+					criteria=		"w L:1-7; +Makayev; -defective; -NotForSale;"
+					levelFrequency=	"systemLevel:r|c|cur"
+					enhanced=		"10"
+					enhancement=	"=(intMakayevWeaponEnhancement gItem)"
+					/>
+
+			<RandomItem chance="65" count="1d4" 
+					criteria=		"d~w L:1-7; +Makayev; -defective; -NotForSale;"
+					levelFrequency=	"systemLevel:r|c|cur"
+					/>
+
+			<RandomItem count="2d12" 
+					criteria=		"a L:1-7; +Makayev; -defective; -NotForSale;"
+					levelFrequency=	"systemLevel:r|c|cur"
+					enhanced=		"10"
+					enhancement=	"=(intMakayevArmorEnhancement gItem)"
+					/>
+
+			<LevelTable count="1-8">
+				<Item levelFrequency="----u ccur-"	count="40-60"	item="&HS_itStrelkaRed;" />
+				<Item levelFrequency="----- -uccu"	count="40-60"	item="&HS_itStrelkaBlack;" />
+			</LevelTable>
+		</Items>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<LevelTable>
+				<Device levelFrequency="ucr-- -----"	deviceID="&HS_itMoskvaLightTurret;" />
+				<Device levelFrequency="rucr- -----"	deviceID="&HS_itSlamCannon;"		omnidirectional="true"/>
+				<Device levelFrequency="-rucr -----"	deviceID="&HS_itMarkIHowitzer;"	omnidirectional="true"/>
+				<Device levelFrequency="--ruc r----"	deviceID="&HS_itMarkIIIHowitzer;"	omnidirectional="true"/>
+				<Device levelFrequency="---ru cr---"	deviceID="&HS_itMarkVHowitzer;"	omnidirectional="true"/>
+			</LevelTable>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Ships standingCount="3-4">
+			<Table>
+				<Lookup chance="75" table="&HS_tbCorpMakayevDefenders;"/>
+				<Lookup chance="25" table="&HS_tbCommPrivateCrafts;"/>
+			</Table>
+		</Ships>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&HS_rsCorporateArmsDealer;" imageWidth="148" imageHeight="226" viewportRatio="0.03125"/>
+
+		<DockingPorts
+				portCount=		"8"
+				portAngle=		"-15"
+				portRadius=		"100"
+				/>
+		
+		<!-- Dock Screen -->
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionDockServices" default="1">
+								(rpgDockServices gPlayerShip)
+							</Action>
+
+							<Action id="actionBuyItems">
+								(scrShowScreen gScreen &RPG_dsRPGCommoditiesExchangeBuy;)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<!-- Events and Data -->
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are docked at a Makayev-Energia weapons franchise.
+
+			</Text>
+			<Text id="descNoInstall">
+
+				We only install Makayev items. We cannot install %itemName% on 
+				your ship.
+
+			</Text>
+			<Text id="dockServices:installAbility">
+
+				We install Makayev items up to tech level %maxLevel%.
+
+			</Text>
+
+			<Text id="core.mapDesc">
+
+				Repairs armor up to level 8 &mdash;
+				Installs Makayev armor up to level 7 &mdash;
+				Installs Makayev devices up to level 7 &mdash;
+				Sells Makayev products
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Level 8: Makayev Manufacturing Plant -->
+
+	<StationType UNID="&HS_stMakayevFactory;"
+			name=				"Makayev manufacturing plant"
+			sovereign=			"&HS_svCorporate;"
+			inherit=			"&HS_baCorporateStation;"
+
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+			dockingPorts=		"8"
+
+			multiHull=			"true"
+			armorID=			"&HS_itAdvancedPlasteelPlate;"
+			hitPoints=			"1890"
+			regen=              "19"
+			fireRateAdj=		"15"
+			explosionType=		"&CORE_vtThermoExplosion3;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"corporate, corporateArms, corporateCustoms, envAir, envEarth, envFire, envWater, friendly, independent, generic, human, majorStation, Makayev, populated"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+corporateSpace;"
+				systemAffinity=			"+corporateCore;"
+				levelFrequency=			"----- rrur- ----- ----- -----"
+
+				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"75"
+
+				unique=					"inSystem"
+				/>
+
+		<!-- Trade and Items -->
+
+		<Trade currency="credit">
+			<Sell	criteria="m +makayev; -defective; -illegal; -notForSale;" priceAdj="100" inventoryAdj="800" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU +makayev; -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+
+			<Refuel			criteria="f +BasicFuel; L:1-10;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-9;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a +makayev;" priceAdj="100"/>
+			<InstallDevice	criteria="d +makayev;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-10;" priceAdj="100"/>
+			
+			<ReplaceArmor	criteria="a L:1-10;" priceAdj="unavailable"	messageID="descNoInstall"/>
+			<InstallDevice	criteria="d L:1-10;" priceAdj="unavailable"	messageID="descNoInstall"/>
+
+			<ConsumeTrade	criteria="{core.antimatterFuel}"	impact="3"/>
+			<ConsumeTrade	criteria="{human.res}"		impact="3"/>
+			<ConsumeTrade	criteria="{core.ore}"			impact="3"/>
+		</Trade>
+
+		<Items>
+			<RandomItem count="2d3"
+					criteria=		"w L:1-10; +Makayev; -defective; -NotForSale;"
+					levelFrequency=	"systemLevel:uc|c|crv"
+					enhanced=		"20"
+					enhancement=	"=(intMakayevWeaponEnhancement gItem)"
+					/>
+
+			<RandomItem count="2d6"
+					criteria=		"a L:1-10; +Makayev; -defective; -NotForSale;"
+					levelFrequency=	"systemLevel:uc|c|crv"
+					enhanced=		"20"
+					enhancement=	"=(intMakayevArmorEnhancement gItem)"
+					/>
+
+			<RandomItem count="2d3"
+					criteria=		"w L:1-10; +Makayev; -defective; -NotForSale;"
+					levelFrequency=	"systemLevel:r|c|cur"
+					enhanced=		"10"
+					enhancement=	"=(intMakayevWeaponEnhancement gItem)"
+					/>
+
+			<RandomItem count="2d6"
+					criteria=		"a L:1-10; +Makayev; -defective; -NotForSale;"
+					levelFrequency=	"systemLevel:r|c|cur"
+					enhanced=		"10"
+					enhancement=	"=(intMakayevArmorEnhancement gItem)"
+					/>
+
+			<RandomItem count="1d4"
+					criteria=		"d~w L:1-10; +Makayev; -defective; -NotForSale;"
+					levelFrequency=	"systemLevel:rucc|c|ur"
+					/>
+		</Items>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&HS_itMarkVHowitzer;"	omnidirectional="true"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Ships standingCount="4-5">
+			<Table>
+				<Lookup chance="50" table="&HS_tbCorpMakayevDefenders;"/>
+				<Lookup chance="50" table="&HS_tbCommPrivateCrafts;"/>
+			</Table>
+		</Ships>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsMakayevFactory;" imageX="0" imageY="0" imageWidth="150" imageHeight="256"/>
+
+		<DockingPorts>
+			<Port x="22"	y="86" />
+			<Port x="56"	y="35" />
+			<Port x="69"	y="-39" />
+			<Port x="33"	y="-75" />
+			<Port x="-33"	y="-75" />
+			
+			<Port x="-69"	y="-39" />
+			<Port x="-56"	y="35" />
+			<Port x="-22"	y="86" />
+		</DockingPorts>
+
+		<!-- Dock Screens -->
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionDockServices" default="1">
+								(rpgDockServices gPlayerShip)
+							</Action>
+
+							<Action id="actionBuyItems">
+								(scrShowScreen gScreen &RPG_dsRPGCommoditiesExchangeBuy;)
+							</Action>
+
+							<Action id="actionRepairItems">
+								(scrShowScreen gScreen "&RPG_dsRPGRepairItem;" {
+									criteria: "*~aD +Makayev;"
+									priceAdj: 65
+									})
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<!-- Events and Data -->
+
+		<Language>
+			<Text id="actionRepairItems">[R]epair Items</Text>
+
+			<Text id="descWelcome">
+				Welcome to Makayev-Energia!
+			</Text>
+			<Text id="descNoInstall">
+
+				We only install Makayev items. We cannot install %itemName% on 
+				your ship.
+
+			</Text>
+			<Text id="dockServices:installAbility">
+
+				We install Makayev items up to tech level %maxLevel%.
+
+			</Text>
+            
+			<Text id="core.mapDesc">
+
+				Refuels up to level 10 &mdash;
+				Repairs/installs Makayev armor up to level 9 &mdash;
+				Installs Makayev devices up to level 9 &mdash;
+				Sells Makayev weapons and ammo
+
+			</Text>
+		</Language>
+	</StationType>
+
+<!-- TABLES -->
+
+	<ShipTable unid="&HS_tbCorpMakayevDefenders;">
+		<LevelTable>
+			<Ship levelFrequency="vrucc r----" count="1" class="&HS_scMolotokA;" orders="guard"/>
+			<Ship levelFrequency="--ruc cr---" count="1" class="&HS_scMolotokB;" orders="guard"/>
+			<Ship levelFrequency="---ru ccrvv" count="1" class="&HS_scManticore;" orders="guard"/>
+		</LevelTable>
+	</ShipTable>
+	
+<!-- RESOURCE -->
+
+	<Image UNID="&HS_rsMakayevFactory;"		bitmap="Resources\MakayevFactory.jpg" bitmask="Resources\MakayevFactoryMask.bmp" loadOnUse="true"/>
+
+</TranscendenceModule>

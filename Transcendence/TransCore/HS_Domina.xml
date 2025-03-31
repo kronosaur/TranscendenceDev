@@ -1,0 +1,1120 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+	<Sovereign UNID="&HS_svDomina;"
+			name="Domina"
+			alignment="constructive chaos"
+			>
+
+		<AttributeDesc>
+			<ItemAttribute id="domina.communion"	label="Domina communion"		criteriaLabel="Domina items"		criteria="* +communion;"/>
+		</AttributeDesc>
+
+		<Events>
+			<GetPlayerStatus>
+				(block (
+					(rank (domInitRelationship))
+					)
+					(switch
+						;	Rank = 0 means not a pilgrim
+
+						(or (not rank) (= rank 0))
+							Nil
+
+						;	Otherwise, we return status
+
+						{
+							rank: (typ@ &RPG_unidPilgrimClass; 'level)
+							rankNoun: (typ@ &RPG_unidPilgrimClass; 'levelNoun)
+							}
+						)
+					)
+			</GetPlayerStatus>
+		</Events>
+
+		<Language>
+			<Text id="nounRank">
+				(typTranslate &RPG_unidPilgrimClass; 'nounRankPattern gData)
+			</Text>
+		</Language>
+	</Sovereign>
+
+<!-- POWERS -->
+
+	<!-- Rank 1: Sustain -->
+
+	<Power UNID="&HS_pwSustain;"
+			inherit=	"&HS_baDominaPower;"
+
+			name=		"Sustain"
+			level=		"1"
+			key=		"A"
+			attributes=	"Domina"
+			>
+
+		<StaticData>
+			<Data id="rank">1</Data>
+		</StaticData>
+
+		<Image imageID="&HS_rsDominaPowers;"	imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Events>
+			<OnInvoke>
+				(block Nil
+					(objAddOverlay gSource &HS_sfSustain; 500)
+					(objSendMessage gSource Nil (typTranslate gType 'msgInvoke))
+					)
+			</OnInvoke>
+		</Events>
+
+		<Language>
+			<Text id="core.help">Impenetrable shield protects ship</Text>
+			<Text id="core.desc">
+			
+				When invoked, an impenetrable shield protects you ship
+				from damage, but it also prevents you from firing your
+				weapons.
+
+			</Text>
+
+			<Text id="msgInvoke">Invoked the sustaining powers of Domina!</Text>
+		</Language>
+	</Power>
+
+	<!-- Rank 2: Restore -->
+
+	<Power UNID="&HS_pwHeal;"
+			inherit=	"&HS_baDominaPower;"
+
+			name=		"Restore"
+			level=		"3"
+			key=		"B"
+			attributes=	"Domina"
+			>
+
+		<StaticData>
+			<Data id="rank">2</Data>
+		</StaticData>
+
+		<Image imageID="&HS_rsDominaPowers;"	imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Events>
+			<OnInvoke>
+				(block (shieldDamage restored pointsLeft)
+			
+					;	Fully recharge any enabled undamaged installed shield.
+				
+					(if (filter (objGetItems gSource "sIN -nonEnergyShields;") theShield (objGetItemProperty gSource theShield 'enabled))
+						(block ()
+							(if (setq shieldDamage (shpGetShieldDamage gSource)) (setq restored True))
+							(setq pointsLeft (/ (- 1000 shieldDamage) 2))
+							(shpRechargeShield gSource)
+							)
+						(setq pointsLeft 500)
+						)
+				
+					;	For each shield point less than 1000 recharged, repair half a point of armor, distributed in proportion to how damaged each segment is.
+				
+					(if (gr pointsLeft 0)
+						(block (lastSegment totalDamage)
+							(setq lastSegment (- (shpGetArmorCount gSource) 1))
+							(for i 0 lastSegment
+								(setq totalDamage (+ totalDamage (objGetArmorDamage gSource i)))
+								)
+							(if (gr totalDamage 0)
+								(block ((repairFraction (min 1 (/ pointsLeft totalDamage))))
+									(for i 0 lastSegment
+										(objRepairArmor gSource i (round 'stochastic (* (objGetArmorDamage gSource i) repairFraction)))
+										)
+									(setq restored True)
+									)
+								)
+						
+							;	Later: use leftover points to repair compartments?
+							)
+						)
+				
+					(if restored
+						(objSendMessage gSource Nil (typTranslate &HS_pwHeal; 'dominaRestored))
+						(objSendMessage gSource Nil (typTranslate &HS_pwHeal; 'dominaCantRestore))
+						)
+					)
+			</OnInvoke>
+		</Events>
+
+		<Language>
+			<Text id="core.help">Restores shields and armor</Text>
+			<Text id="core.desc">
+			
+				This power will recharge your shields if needed. If your shields do not need
+				recharging, it will repair your armor.
+
+			</Text>
+
+			<Text id="dominaRestored">Invoked the restoring powers of Domina!</Text>
+			<Text id="dominaCantRestore">I cannot help you, child</Text>
+		</Language>
+	</Power>
+
+	<!-- Rank 2: Strengthen -->
+
+	<Power UNID="&HS_pwStrengthen;"
+			inherit=	"&HS_baDominaPower;"
+
+			name=		"Strengthen"
+			level=		"3"
+			key=		"C"
+			attributes=	"Domina"
+			>
+
+		<StaticData>
+			<Data id="rank">2</Data>
+		</StaticData>
+
+		<Image imageID="&HS_rsDominaPowers;"	imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Events>
+			<OnInvoke>
+				(block Nil
+					(objAddOverlay gSource &HS_sfStrengthen; 600)
+					(objSendMessage gSource Nil (typTranslate gType 'msgInvoke))
+					)
+			</OnInvoke>
+		</Events>
+
+		<Language>
+			<Text id="core.help">Temporarily increases weapon damage</Text>
+			<Text id="core.desc">
+			
+				When invoked, Strengthen will increase the damage dealt by your
+				weapons.
+
+			</Text>
+
+			<Text id="msgInvoke">Invoked the strength of Domina!</Text>
+		</Language>
+	</Power>
+
+	<!-- Rank 3: Defend -->
+
+	<Power UNID="&HS_pwDefend;"
+			inherit=	"&HS_baDominaPower;"
+
+			name=		"Defend"
+			level=		"5"
+			key=		"D"
+			attributes=	"Domina"
+			>
+
+		<StaticData>
+			<Data id="rank">3</Data>
+		</StaticData>
+
+		<Image imageID="&HS_rsDominaPowers;"	imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Events>
+			<OnInvoke>
+				(block (level duration)
+					(setq level (typGetGlobalData &HS_stDomina; "level"))
+					(if (gr level 3)
+						(setq duration (add 150 (multiply 100 (subtract level 3))))
+						(setq duration 150)
+						)
+					(objAddOverlay gSource &HS_sfDefend; duration)
+					(objSendMessage gSource Nil (typTranslate gType 'msgInvoke))
+					)
+			</OnInvoke>
+		</Events>
+
+		<Language>
+			<Text id="core.help">Invulnerable shield protects ship</Text>
+			<Text id="core.desc">
+			
+				Invoking Defend creates an invulnerable shield that protects
+				your ship from damage. Unlike Sustain, however, you are still
+				able to fire your weapons.
+
+			</Text>
+
+			<Text id="msgInvoke">Invoked the defensive powers of Domina!</Text>
+		</Language>
+	</Power>
+
+	<!-- Rank 3: Nebula Sight -->
+
+	<Power UNID="&HS_pwNebularSight;"
+			inherit=	"&HS_baDominaPower;"
+
+			name=		"Nebular Sight"
+			level=		"5"
+			key=		"E"
+			attributes=	"Domina"
+			>
+
+		<StaticData>
+			<Data id="rank">3</Data>
+		</StaticData>
+
+		<Image imageID="&HS_rsDominaPowers;"	imageX="384" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Events>
+			<OnInvoke>
+				(block (found)
+					; Iterate over all stations in the system
+					(setq found 0)
+					(enum (sysFindObject gSource "Ts") obj
+						; If in a nebula and unknown, set to known
+						(if (and
+								(not (objIsKnown obj))
+								(envHasAttribute (sysGetEnvironment obj) 'nebula))
+							(block Nil
+								(objSetKnown obj)
+								(setq found (add found 1))
+								)
+							)
+						)
+
+					(if found
+						(objSendMessage gSource Nil (typTranslate gType 'msgInvoke))
+						(objSendMessage gSource Nil (typTranslate gType 'msgNothing))
+						)
+					)
+			</OnInvoke>
+		</Events>
+
+		<Language>
+			<Text id="core.help">Reveals stations hidden in nebulae</Text>
+			<Text id="core.desc">
+			
+				Domina reveals the location of ships and stations hidden among 
+				the nebulae	of the system.
+
+			</Text>
+
+			<Text id="msgInvoke">A vision from Domina reveals hidden stations</Text>
+			<Text id="msgNothing">Nothing new is revealed to you</Text>
+		</Language>
+	</Power>
+
+	<!-- Rank 4: Circle of Wrath -->
+
+	<Power UNID="&HS_pwCircleOfWrath;"
+			inherit=	"&HS_baDominaPower;"
+
+			name=		"Circle of Wrath"
+			level=		"7"
+			key=		"F"
+			attributes=	"Domina"
+			>
+
+		<StaticData>
+			<Data id="rank">4</Data>
+		</StaticData>
+
+		<Image imageID="&HS_rsDominaPowers;"	imageX="0" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Events>
+			<OnInvoke>
+				(block (objVel)
+					(setq objVel (objGetVel gSource))
+					(sysCreateWeaponFire 
+						&HS_itCircleOfWrathPower;
+						gSource
+						(objGetPos gSource)
+						(sysVectorAngle objVel)
+						(sysVectorSpeed objVel)
+						Nil
+						)
+					)
+			</OnInvoke>
+		</Events>
+
+		<Language>
+			<Text id="core.help">Damages ships and stations in range</Text>
+			<Text id="core.desc">
+			
+				This power creates an expanding circle of dark energy that
+				damages all ships caught in its path.
+
+			</Text>
+		</Language>
+	</Power>
+
+	<!-- Rank 4: Ingenuity -->
+
+	<Power UNID="&HS_pwIngenuity;"
+			inherit=	"&HS_baDominaPower;"
+
+			name=		"Ingenuity"
+			level=		"7"
+			key=		"G"
+			attributes=	"Domina"
+			>
+
+		<StaticData>
+			<Data id="rank">4</Data>
+		</StaticData>
+
+		<Image imageID="&HS_rsDominaPowers;"	imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Events>
+			<OnInvoke>
+				(block (roll desc)
+					(setq roll (random 1 100))
+
+					(switch
+						; Nothing happens
+						(leq roll 10)
+							(setq desc (typTranslate gType 'msgNothing))
+
+						; HP bonus to armor
+						(leq roll 50)
+							(block (
+								; Pick a random installed armor that has not been enhanced
+								(itemToImprove
+									(random
+										(filter (objGetItems gSource "aI") theArmor
+											(not (itmIsEnhanced theArmor))
+											)
+										)
+									)
+								)
+
+								; If found, improve it
+								(if itemToImprove
+									(block Nil
+										(shpEnhanceItem gSource itemToImprove {
+											enhancement: (if (leq roll 35) 0x0102 0x0105)
+											type: &HS_vtIngenuityEnhancement;
+											})
+											
+										(setq desc (typTranslate gType 'msgArmorImproved {
+											segment: (objGetArmorName gSource itemToImprove)
+											itemName: (itmGetName itemToImprove 0xa0)
+											}))
+										)
+									(setq desc (typTranslate gType 'msgNothing))
+									)
+								)
+
+						; Shield enhancement
+						(leq roll 75)
+							(block (
+
+								;	Find the shield generator item
+
+								(itemToImprove
+									(item
+										(filter (objGetItems gSource "sI -nonEnergyShields;") theItem
+											(and (not (itmIsDamaged theItem)) (not (itmIsEnhanced theItem)))
+											)
+										0
+										)
+									)
+
+								;	Translate data
+
+								(data {
+									itemName: (itmGetName itemToImprove 0xa0)
+									})
+								)
+
+								; Improve shields
+
+								(switch
+									(not itemToImprove)
+										(setq desc (typTranslate gType 'msgNothing))
+
+									(leq roll 65)
+										(block ()
+											(shpEnhanceItem gSource itemToImprove {
+												enhancement: 0x0102
+												type: &HS_vtIngenuityEnhancement;
+												})
+											(setq desc (typTranslate gType 'msgShieldStrength data))
+											)
+
+									(leq roll 70)
+										(block ()
+											(shpEnhanceItem gSource itemToImprove {
+												enhancement: 0x0104
+												type: &HS_vtIngenuityEnhancement;
+												})
+											(setq desc (typTranslate gType 'msgShieldStrength data))
+											)
+
+									(block ()
+										(shpEnhanceItem gSource itemToImprove {
+											enhancement: 0x0f01
+											type: &HS_vtIngenuityEnhancement;
+											})
+										(setq desc (typTranslate gType 'msgShieldEfficiency data))
+										)
+									)
+								)
+
+						; Damage bonus to weapons
+						(leq roll 90)
+							(block (
+								; Pick a random installed weapon that has not been enhanced
+								(itemToImprove
+									(random
+										(filter (objGetItems gSource "wI") theItem
+											(and (not (itmIsDamaged theItem)) (not (itmIsEnhanced theItem)))
+											)
+										)
+									)
+								)
+
+								; If found, improve it
+								(if itemToImprove
+									(block Nil
+										(shpEnhanceItem gSource itemToImprove {
+											enhancement: (if (leq roll 85) 0x0102 0x0104)
+											type: &HS_vtIngenuityEnhancement;
+											})
+											
+										(setq desc (typTranslate gType 'msgWeaponImproved {
+											itemName: (itmGetName itemToImprove 0xa0)
+											}))
+										)
+									(setq desc (typTranslate gType 'msgNothing))
+									)
+								)
+
+						; Enhancement to reactor or drive
+						(leq roll 100)
+							(block (
+								(itemToImprove
+									(random
+										(filter (objGetItems gSource "rvI") theItem
+											(and (not (itmIsDamaged theItem)) (not (itmIsEnhanced theItem)))
+											)
+										)
+									)
+								)
+
+								; If found, improve it
+								(if itemToImprove
+									(block Nil
+										(shpEnhanceItem gSource itemToImprove {
+											enhancement: "+bonus"
+											type: &HS_vtIngenuityEnhancement;
+											})
+										(setq desc (typTranslate gType 'msgDeviceEnhanced {
+											itemName: (itmGetName itemToImprove 0xa0)
+											}))
+										)
+									(setq desc (typTranslate gType 'msgNothing))
+									)
+								)
+						)
+
+					; Done
+					(objSendMessage gSource Nil desc)
+					)
+			</OnInvoke>
+		</Events>
+
+		<Language>
+			<Text id="core.help">Reveals improvements to ship</Text>
+			<Text id="core.desc">
+			
+				Ingenuity channels Domina's superior knowledge to enhance and
+				upgrade your devices.
+
+			</Text>
+
+			<Text id="msgNothing">Nothing new is revealed to you</Text>
+			<Text id="msgArmorImproved">Domina reveals a way to strengthen your %segment% %itemName%</Text>
+			<Text id="msgShieldStrength">Domina reveals a way to strengthen your %itemName%</Text>
+			<Text id="msgShieldEfficiency">Domina reveals efficiency improvements to your %itemName%</Text>
+			<Text id="msgWeaponImproved">Domina reveals a way to improve your %itemName%</Text>
+			<Text id="msgDeviceEnhanced">Domina reveals a way to enhance your %itemName%</Text>
+		</Language>
+	</Power>
+
+	<!-- Rank 5 Desperate Escape -->
+
+	<Power UNID="&HS_pwDesperateEscape;"
+			inherit=	"&HS_baDominaPower;"
+
+			name=		"Desperate Escape"
+			level=		"9"
+			key=		"H"
+			attributes=	"Domina"
+			>
+
+		<StaticData>
+			<Data id="rank">5</Data>
+		</StaticData>
+
+		<Image imageID="&HS_rsDominaPowers;"	imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Events>
+			<OnDestroyCheck>
+				(if (= (typFireEvent gType 'GetInvokeStatus) 'ready)
+					(block Nil
+						(domInvokePower (typGetStaticData gType 'rank))
+
+						(objAddOverlay gSource &HS_sfSustain; 180)
+						(objSendMessage gSource Nil (typTranslate gType 'msgEscape))
+
+						; Avoid destruction
+						Nil
+						)
+
+					; Destruction proceeds
+					True
+					)
+			</OnDestroyCheck>
+
+			<OnInvokedByPlayer>
+				(block ()
+					(plyMessage gPlayer (typTranslate gType 'msgStatus))
+
+					;	The power doesn't get used unless we're destroyed
+
+					Nil
+					)
+			</OnInvokedByPlayer>
+		</Events>
+
+		<Language>
+			<Text id="core.help">Saves ship from destruction</Text>
+			<Text id="core.desc">
+			
+				When available, Desperate Escape invokes automatically to prevent
+				your ship from being destroyed by enemy damage.
+
+			</Text>
+
+			<Text id="msgStatus">You feel Domina is watching out for you</Text>
+			<Text id="msgEscape">Escape while you can, child!</Text>
+		</Language>
+	</Power>
+
+	<!-- Rank 5 Shatter -->
+
+	<Power UNID="&HS_pwShatter;"
+			inherit=	"&HS_baDominaPower;"
+
+			name=		"Shatter"
+			level=		"9"
+			key=		"I"
+			attributes=	"Domina"
+			>
+
+		<StaticData>
+			<Data id="rank">5</Data>
+		</StaticData>
+
+		<Image imageID="&HS_rsDominaPowers;"	imageX="288" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Events>
+			<OnInvoke>
+				(block (objVel)
+					(setq objVel (objGetVel gSource))
+					(sysCreateWeaponFire 
+						&HS_itShatterPower;
+						gSource
+						(objGetPos gSource)
+						(sysVectorAngle objVel)
+						(sysVectorSpeed objVel)
+						Nil
+						)
+					)
+			</OnInvoke>
+		</Events>
+
+		<Language>
+			<Text id="core.help">Shatters ships in range</Text>
+			<Text id="core.desc">
+			
+				Shatter releases an expanding circle of dark matter causing heavy
+				damage to anything it touches.
+
+			</Text>
+		</Language>
+	</Power>
+
+	<!-- NOT IMPLEMENTED : Prescience -->
+
+	<Power UNID="&HS_pwPrescience;"
+			obsolete="43"
+			name=		"Prescience"
+			>
+		<Events>
+			<OnShow>
+				Nil
+				;(domShowPower 6)
+			</OnShow>
+
+			<OnInvoke>
+				(block Nil
+					(plyMessage gPlayer "Invoked PRESCIENCE")
+					)
+			</OnInvoke>
+		</Events>
+	</Power>
+
+<!-- EFFECTS AND DAMAGE -->
+
+	<!-- Domina's Circle of Wrath -->
+
+	<ItemType UNID="&HS_itCircleOfWrathPower;"
+			name=				"Circle of Wrath"
+			virtual=			"true"
+			level=				"6"
+			>
+
+		<Weapon
+				type=				"shockwave"
+
+				damage=				"darkLightning:6d6"
+				fireRate=			"30"
+				expansionSpeed=		"20"
+				missileSpeed=		"0"
+				lifetime=			"40"
+				powerUse=			"200"
+				>
+
+			<Effect>
+				<Shockwave
+						style=			"glowRing"
+						width=			"2"
+						glowSize=		"12"
+						primaryColor=	"0xff, 0xff, 0xff"
+						secondaryColor=	"0xff, 0x00, 0xff"
+						/>
+			</Effect>
+
+		</Weapon>
+
+	</ItemType>
+
+	<!-- Domina's Shatter -->
+
+	<ItemType UNID="&HS_itShatterPower;"
+			name=				"Shatter"
+			virtual=			"true"
+			level=				"8"
+			>
+
+		<Weapon
+				type=				"shockwave"
+
+				damage=				"darkSteel:8d12; shatter5"
+				fireRate=			"30"
+				expansionSpeed=		"80"
+				missileSpeed=		"0"
+				lifetime=			"20"
+				powerUse=			"500"
+				>
+
+			<Effect>
+				<Shockwave
+						style=			"image"
+						>
+					<Image imageID=				"&HS_rsShatterShockwave;"
+							imageX=				"0" 
+							imageY=				"0" 
+							imageWidth=			"512" 
+							imageHeight=		"128"
+							/>
+				</Shockwave>
+			</Effect>
+
+		</Weapon>
+
+	</ItemType>
+
+	<OverlayType UNID="&HS_sfSustain;"
+			name=			"Sustain"
+			attributes=     "dominaPower, energyField, temporary"
+
+			absorbAdj=		"100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100"
+			weaponSuppress=	"*"
+
+			showInHUD=		"true"
+			>
+		<Image imageID="&HS_rsDominaPowers;"	imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Effect>
+			<Image imageID="&HS_rsDominaEffects1;" 
+					imageX="0" 
+					imageY="0" 
+					imageWidth="96" 
+					imageHeight="96"
+					imageFrameCount="3"
+					imageTicksPerFrame="3"/>
+		</Effect>
+
+		<HitEffect
+				altEffect="true"
+				sound="&CORE_snShieldHit1;"
+				>
+			<Image imageID="&HS_rsDominaEffects1;" 
+					imageX="288" 
+					imageY="0" 
+					imageWidth="96" 
+					imageHeight="96"
+					imageFrameCount="3"
+					imageTicksPerFrame="3"/>
+		</HitEffect>
+	</OverlayType>
+
+	<OverlayType UNID="&HS_sfStrengthen;"
+			name=			"Strengthen"
+			attributes=     "dominaPower, effect, temporary"
+				 
+			weaponBonusAdj=	"100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100"
+
+			showInHUD=		"true"
+			>
+		<Image imageID="&HS_rsDominaPowers;"	imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Effect>
+			<Starburst
+					spikeCount=		"20"
+					spikeLength=	"4d8"
+					primaryColor=	"#80ffbf"
+					secondaryColor=	"#00ff80"
+					/>
+		</Effect>
+	</OverlayType>
+
+	<OverlayType UNID="&HS_sfDefend;"
+			name=			"Defend"
+			attributes=     "dominaPower, energyField, temporary"
+				 
+			absorbAdj=		"100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100"
+
+			showInHUD=		"true"
+			>
+		<Image imageID="&HS_rsDominaPowers;"	imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Effect>
+			<Image imageID="&HS_rsDominaEffects1;" 
+					imageX="0" 
+					imageY="96" 
+					imageWidth="96" 
+					imageHeight="96"
+					imageFrameCount="3"
+					imageTicksPerFrame="3"/>
+		</Effect>
+
+		<HitEffect
+				altEffect="true"
+				sound="&CORE_snShieldHit1;"
+				>
+			<Image imageID="&HS_rsDominaEffects1;" 
+					imageX="288" 
+					imageY="96" 
+					imageWidth="96" 
+					imageHeight="96"
+					imageFrameCount="3"
+					imageTicksPerFrame="3"/>
+		</HitEffect>
+	</OverlayType>
+
+	<ItemType UNID="&HS_vtIngenuityEnhancement;"
+			name=				"Domina Ingenuity enhancement"
+			virtual=			"true"
+			level=				"1"
+			>
+		<Image imageID="&HS_rsDominaPowers;"	imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+<!-- BASE CLASSES -->
+
+	<Type unid="&HS_baDominaPower;">
+		<Events>
+			<GetInvokeStatus>
+				(block (
+					(rank (typGetStaticData gType 'rank))
+					lastInvokeTime
+					)
+					(switch
+						;	Must be a pilgrim
+
+						(!= (objGetProperty gPlayerShip 'characterClass) &RPG_unidPilgrimClass;)
+							'notPilgrim
+
+						;	Do not show powers that are above our level
+
+						(gr rank (domInitRelationship))
+							'tooHighLevel
+							
+						;	If we've never invoked a power at this level, then show it
+
+						(not (setq lastInvokeTime (typGetData &HS_stDomina; (cat 'lastInvokeTime rank))))
+							'ready
+
+						;	If we're in cooldown, then return status
+
+						(ls (- (unvGetTick) lastInvokeTime) (domGetTimeRequired rank))
+							{
+								onShow: True
+								cooldownStart: lastInvokeTime
+								cooldownEnd: (+ lastInvokeTime (domGetTimeRequired rank))
+								}
+
+						;	Can be invoked
+
+						'ready
+						)
+					)
+			</GetInvokeStatus>
+
+			<OnShow>
+				(block (
+					(status (typFireEvent gType 'GetInvokeStatus))
+					)
+					(switch
+						(= status 'ready)
+							True
+
+						(= (typeof status) 'struct)
+							status
+
+						Nil
+						)
+					)
+			</OnShow>
+
+			<OnInvokedByPlayer>
+				(domInvokePower (typGetStaticData gType 'rank))
+			</OnInvokedByPlayer>
+		</Events>
+	</Type>
+
+<!-- MECHANICS -->
+
+	<!-- Domina
+
+	GLOBAL DATA
+	
+
+	invokeCount:		Number of times player has invoked a power
+
+	lastInvokeTime{n}:	Ticks at which player last invoked a power of level n
+
+	level:				Player's level:
+							Nil	= Not yet initialized
+							0	= Non-pilgrim
+							1	= Novice
+							2	= Acolyte
+							3	= Adept
+							4	= Curate
+							5	= Canon
+							6	= Matriarch/Patriarch
+
+	psionicsOffered:	Number of psionic items offered
+	
+	slavesOffered:		Number of slave coffins offered
+	
+	xp:					Number of experience points
+
+	-->
+
+	<StationType UNID="&HS_stDomina;"
+			name=				"(domina)"
+			sovereign=			"&HS_svDomina;"
+			virtual=			"true"
+			>
+	</StationType>
+	
+<!-- DOCK SCREENS -->
+	
+	<DockScreen UNID="&HS_dsPilgrimBeringStation;">
+		<Panes>
+			<Default descID="descPilgrimWelcome">
+				<Actions>
+					<Action name="Go to Level 5" key="G" default="1">
+						(scrShowPane gScreen "Level5")
+					</Action>
+
+					<Action name="Undock" cancel="1" key="U">
+						<Exit/>
+					</Action>
+				</Actions>
+			</Default>
+
+			<Level5 descID="descLevel5">
+				<Actions>
+					<Action name="Go to Unit 224D" key="G" default="1">
+						(scrShowPane gScreen "Unit224D")
+					</Action>
+
+					<Action name="Leave" key="L" cancel="1">
+						(scrShowPane gScreen "Default")
+					</Action>
+				</Actions>
+			</Level5>
+
+			<Unit224D>
+				<OnPaneInit>
+					(scrSetDescTranslate gScreen 'descUnit224D {
+						parent: 
+							(switch
+								(= (plyGetGenome gPlayer) 'humanMale)
+									(scrTranslate gScreen 'textMother)
+
+								(scrTranslate gScreen 'textFather)
+								)
+						})
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Continue" key="C" default="1" cancel="1">
+						<Exit/>
+					</Action>
+				</Actions>
+			</Unit224D>
+		</Panes>
+
+		<Language>
+			<Text id="descPilgrimWelcome">
+
+				You are in the docking bay of a residential station. You see a
+				mix of dockworkers, professionals, and families boarding 
+				shuttles and starships.
+
+				You feel nervous and uneasy as you walk through its familiar 
+				halls.
+
+			</Text>
+			<Text id="descLevel5">
+
+				Full of great trepidation, you take the lift to level 5. You 
+				are in a non-descript residential corridor with dozens of doors,
+				each leading to a different housing unit.
+
+			</Text>
+			<Text id="descUnit224D">
+
+				You stop in front of the closed door of unit 224D. Your heart 
+				is beating hard and your hands tremble.	From inside the unit 
+				you hear a small girl crying. Her %parent% tries to reassure 
+				her, but with no result.
+
+				For a second your hand reaches for the door controls, but then 
+				you remember your promise to Domina. Soon your anxiety fades and 
+				you leave knowing that you are doing the right thing.
+
+			</Text>
+			<Text id="textFather">father</Text>
+			<Text id="textMother">mother</Text>
+		</Language>
+	</DockScreen>
+
+<!-- GLOBALS -->
+	
+	<Globals>
+		(block Nil
+			(setq domGainXP (lambda (xpGain)
+				(block (level)
+					(setq level (domInitRelationship))
+					(setq xp (typGetGlobalData &HS_stDomina; "xp"))
+
+					(setq xp (add xp xpGain))
+					(typSetGlobalData &HS_stDomina; "xp" xp)
+
+					; See if we went up a level
+					(setq newLevel (domGetLevel xp))
+					(if (gr newLevel level)
+						(block Nil
+							(typSetGlobalData &HS_stDomina; "level" newLevel)
+							(typSet@ &RPG_unidPilgrimClass; 'nextLevelNotification level)
+							(setq level newLevel)
+							)
+						)
+
+					level
+					)
+				))
+
+			(setq domGetLevel (lambda (xp)
+				(switch
+					(ls xp 250)		1
+					(ls xp 500)		2
+					(ls xp 1000)	3
+					(ls xp 2000)	4
+					(ls xp 4000)	5
+									6
+					)
+				))
+
+			(setq domGetTimeRequired (lambda (levelReq)
+				; time = level^2 - 2*(level - 1)
+				(item '(0 1800 3600 9000 18000 30600 46800 66600 90000 117000 147600) levelReq)
+				))
+
+			(setq domInitRelationship (lambda ()
+				(block (level)
+					(if (not (setq level (typGetGlobalData &HS_stDomina; "level")))
+						(block Nil
+							(if (eq (objGetProperty gPlayerShip 'characterClass) &RPG_unidPilgrimClass;)
+								(setq level 1)
+								(setq level 0)
+								)
+							
+							(typSetGlobalData &HS_stDomina; "level" level)
+							(typSetGlobalData &HS_stDomina; "xp" 0)
+							)
+						)
+						
+					level
+					)
+				))
+
+			(setq domInvokePower (lambda (levelReq)
+				(block Nil
+					(typSetGlobalData &HS_stDomina; (cat "lastInvokeTime" levelReq) (unvGetTick))
+					(typIncGlobalData &HS_stDomina; "invokeCount")
+					True
+					)
+				))
+
+			;	DEPRECATED. Use OnShow instead.
+			(setq domShowPower (lambda (levelReq)
+				(block (lastInvokeTime)
+					(switch
+						; Must be a pilgrim
+						(not (eq (objGetProperty gPlayerShip 'characterClass) &RPG_unidPilgrimClass;))
+							Nil
+						
+						; Always show level 1 power (sustain)
+						(eq levelReq 1)
+							True
+
+						; Do not show powers that are above our level
+						(gr levelReq (domInitRelationship))
+							Nil
+							
+						; If we've never invoked a power at this level, then show it
+						(not (setq lastInvokeTime (typGetGlobalData &HS_stDomina; (cat "lastInvokeTime" levelReq))))
+							True
+
+						; Do not show powers for levels that have been recently invoked
+						(block (timeReq timeWaited)
+							(setq timeReq (domGetTimeRequired levelReq))
+							(setq timeWaited (subtract (unvGetTick) lastInvokeTime))
+
+							(geq timeWaited timeReq)
+							)
+						)
+					)
+				))
+			)
+	</Globals>
+
+	<!-- Resources -->
+
+	<Image UNID="&HS_rsDominaPowers;"		bitmap="Resources\DominaPowers.jpg"		bitmask="Resources\DominaPowersMask.bmp"/>
+	<Image UNID="&HS_rsDominaEffects1;"	bitmap="Resources\MediumEffects.jpg"	bitmask="Resources\MediumEffectsMask.bmp"/>
+	<Image UNID="&HS_rsShatterShockwave;"	bitmap="Resources\ShatterShockwave.jpg"	bitmask="Resources\ShatterShockwaveMask.bmp"/>
+
+</TranscendenceModule>

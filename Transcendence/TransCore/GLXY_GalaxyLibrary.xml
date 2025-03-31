@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE CoreLibrary
+	[
+	<!ENTITY GLXY_tbBasicSystemParts			"0x0000000B">
+	
+	<!ENTITY GLXY_stStargate					"0x00002002">
+	<!ENTITY GLXY_stStargateBeacon			"0x0000200A">
+	<!ENTITY GLXY_stMinedOre					"0x0000200B">
+	
+	<!ENTITY GLXY_stO-TypeStar				"0x00002100">
+	<!ENTITY GLXY_stA-TypeStar				"0x00002101">
+	<!ENTITY GLXY_stG-TypeStar				"0x00002102">
+	<!ENTITY GLXY_stM-TypeStar				"0x00002103">
+	<!ENTITY GLXY_stWhiteDwarfStar			"0x00002104">
+	<!ENTITY GLXY_stRedDwarfStar				"0x00002105">
+	<!ENTITY GLXY_stBlueGiantStar			"0x00002106">
+	<!ENTITY GLXY_stRedGiantStar				"0x00002107">
+	<!ENTITY GLXY_stNebulaStar				"0x00002108">
+	<!ENTITY GLXY_stK-TypeStar				"0x00002109">
+	
+	<!ENTITY GLXY_stSmallAsteroid			"0x00002200">
+	<!ENTITY GLXY_stMediumAsteroid			"0x00002201">
+	<!ENTITY GLXY_stLargeAsteroid			"0x00002202">
+	<!ENTITY GLXY_stSmallIceAsteroid			"0x00002203">
+	<!ENTITY GLXY_stLargeIceAsteroid			"0x00002204">
+	<!ENTITY GLXY_stPlanetoid				"0x00002205">
+	<!ENTITY GLXY_stCrateredPlanet			"0x00002206">
+	<!ENTITY GLXY_stIcePlanet				"0x00002207">
+	<!ENTITY GLXY_stGreenhousePlanet			"0x00002208">
+	<!ENTITY GLXY_stBiospherePlanet			"0x00002209">
+	<!ENTITY GLXY_stDesertPlanet				"0x0000220A">
+	<!ENTITY GLXY_stHydrogenGasGiant			"0x0000220B">
+	<!ENTITY GLXY_stRingedGasGiant			"0x0000220C">
+	<!ENTITY GLXY_stMethaneGasGiant			"0x0000220D">
+	<!ENTITY GLXY_stSmallVolcanicAsteroid	"0x0000220E">
+	<!ENTITY GLXY_stMediumVolcanicAsteroid	"0x0000220F">
+	<!ENTITY GLXY_stVolcanicPlanet			"0x00002210">
+	<!ENTITY GLXY_stSmallFrostAsteroid		"0x00002211">
+	<!ENTITY GLXY_stMediumFrostAsteroid		"0x00002212">
+	<!ENTITY GLXY_stSmallMetallicAsteroid	"0x00002213">
+	<!ENTITY GLXY_stMediumMetallicAsteroid	"0x00002214">
+	
+	<!ENTITY GLXY_stOreSmallAsteroid			"0x00002300">
+	<!ENTITY GLXY_stOreSmallFrostAsteroid	"0x00002301">
+	<!ENTITY GLXY_stOreSmallVolcanicAsteroid	"0x00002302">
+	<!ENTITY GLXY_stOreMediumAsteroid		"0x00002303">
+	<!ENTITY GLXY_stOreMediumFrostAsteroid	"0x00002304">
+	<!ENTITY GLXY_stOreMediumVolcanicAsteroid	"0x00002305">
+	<!ENTITY GLXY_stOreSmallMetallicAsteroid	"0x00002306">
+	<!ENTITY GLXY_stOreMediumMetallicAsteroid	"0x00002307">
+	
+	<!ENTITY GLXY_itTitaniumOre				"0x00004024">
+	<!ENTITY GLXY_itPlasteelOre				"0x00004028">
+	<!ENTITY GLXY_itDuralloyOre				"0x0000402A">
+	<!ENTITY GLXY_itPteracniumOre			"0x0000402C">
+	<!ENTITY GLXY_itGoldOre					"0x00004030">
+	<!ENTITY GLXY_itPlatinumOre				"0x00004031">
+	<!ENTITY GLXY_itNeutroniumOre			"0x00004034">
+	<!ENTITY GLXY_itPalladiumOre				"0x00004095">
+	<!ENTITY GLXY_itUraniumOre				"0x000040FD">
+	<!ENTITY GLXY_itHeliumRegolith			"0x000040FE">
+	<!ENTITY GLXY_itCobaltThoriumOre			"0x000040FF">
+	
+	<!ENTITY GLXY_itHadronArchaeolith		"0x00004104">
+	<!ENTITY GLXY_itCeralloyOre				"0x0000413F">
+	<!ENTITY GLXY_itOrthoSteelOre			"0x00004140">
+	<!ENTITY GLXY_itIthaliumOre				"0x00004141">
+	<!ENTITY GLXY_itXenotiteOre				"0x00004100">
+	<!ENTITY GLXY_itTetramiteOre				"0x00004167">
+	<!ENTITY GLXY_itHyperonicOre				"0x0000416E">
+	<!ENTITY GLXY_itEtheriumOre				"0x0000416F">
+	
+	<!ENTITY GLXY_vtStoneAsteroidEjecta		"0x00005001">
+	<!ENTITY GLXY_vtIceAsteroidEjecta		"0x00005002">
+	<!ENTITY GLXY_vtVolcanicAsteroidEjecta	"0x00005003">
+	<!ENTITY GLXY_vtUnknownAmmoBox			"0x00005005">
+	<!ENTITY GLXY_vtUnknownFieldCrystal		"0x00005006">
+	<!ENTITY GLXY_vtMetallicAsteroidEjecta	"0x00005019">
+	
+	<!ENTITY GLXY_tbStoneAsteroidOre			"0x00008107">
+	<!ENTITY GLXY_tbFrostAsteroidOre			"0x00008108">
+	<!ENTITY GLXY_tbMetallicAsteroidOre		"0x00008109">
+	<!ENTITY GLXY_tbVolcanicAsteroidOre		"0x0000810A">
+	
+	<!ENTITY GLXY_efStargateIn				"0x00009005">
+	<!ENTITY GLXY_efStargateOut				"0x00009006">
+	<!ENTITY GLXY_efNebula					"0x0000900B">
+	<!ENTITY GLXY_seNebula					"0x00009201">
+	
+	<!ENTITY GLXY_dsMinedOre					"0x0000A01E">
+	<!ENTITY GLXY_dsNeurohack				"0x0000A020">
+	<!ENTITY GLXY_dsNeurohackHelp			"0x0000A021">
+	
+	<!ENTITY GLXY_rsMinedOreBkgnd			"0x0000F012">
+	<!ENTITY GLXY_rsWorlds1					"0x0000F102">
+	<!ENTITY GLXY_rsStar1					"0x0000F109">
+	<!ENTITY GLXY_rsRedDwarfStar				"0x0000F119">
+	<!ENTITY GLXY_rsAStar					"0x0000F11A">
+	<!ENTITY GLXY_rsWorlds2					"0x0000F11E">
+	<!ENTITY GLXY_rsNebulaEnv				"0x0000F122">
+	<!ENTITY GLXY_rsNebula					"0x0000F123">
+	<!ENTITY GLXY_rsRedGiantStar				"0x0000F125">
+	<!ENTITY GLXY_rsWorldsRingedGiant1		"0x0000F12F">
+	<!ENTITY GLXY_rsWorldsRingedGiant2		"0x0000F130">
+	<!ENTITY GLXY_rsWorldsRingedGiant3		"0x0000F131">
+	<!ENTITY GLXY_rsWorldsRingedGiant4		"0x0000F132">
+	<!ENTITY GLXY_rsWorldsRingedGiant5		"0x0000F133">
+	<!ENTITY GLXY_rsWorldsRingedGiant6		"0x0000F134">
+	<!ENTITY GLXY_rsWorldsRingedGiant7		"0x0000F135">
+	<!ENTITY GLXY_rsWorldsRingedGiant8		"0x0000F136">
+	<!ENTITY GLXY_rsWorldsIcePlanet1			"0x0000F139">
+	<!ENTITY GLXY_rsWorldsIcePlanet2			"0x0000F13A">
+	<!ENTITY GLXY_rsWorldsIcePlanet3			"0x0000F13B">
+	<!ENTITY GLXY_rsWorldsIcePlanet4			"0x0000F13C">
+	<!ENTITY GLXY_rsMetallicAsteroids		"0x0000F14A">
+	
+	<!ENTITY GLXY_snStargate					"0x0000F208">
+	
+	<!ENTITY GLXY_rsNeurohackFrame			"0x001CF003">
+	<!ENTITY GLXY_rsNeurohackControls		"0x001CF004">
+	
+	<!ENTITY GLXY_stMajellenStargate			"0x001E2001">
+	<!ENTITY GLXY_stUnchartedMajellenStargate	"0x001E2003">
+	
+	<!-- LIBRARIES -->
+	
+	<!ENTITY CORE_unidCoreTypesLibrary		"0x00030000">
+	<!ENTITY RPG_unidRPGLibrary				"0x00010000">
+	
+	<!-- 0002 0000-FFFF GALAXY LIBRARY -->
+	
+	<!ENTITY GLXY_unidGalaxyLibrary			"0x00020000">
+	
+	<!ENTITY GLXY_rsOreSmall					"0x00020010">
+	<!ENTITY GLXY_rsStdStargate				"0x00020011">
+	<!ENTITY GLXY_rsStargateEffects			"0x00020012">
+	<!ENTITY GLXY_rsLightNebula				"0x00020013">
+	<!ENTITY GLXY_stPrimordialStar			"0x00020014">
+	<!ENTITY GLXY_seLightNebula				"0x00020015">
+	<!ENTITY GLXY_rsPrimordialMist			"0x00020016">
+	<!ENTITY GLXY_sePrimordialMist			"0x00020017">
+	<!ENTITY GLXY_rsPrimordialNebula			"0x00020018">
+	<!ENTITY GLXY_sePrimordialNebula			"0x00020019">
+	<!ENTITY GLXY_rsPrimordialAsteroids		"0x0002001A">
+	<!ENTITY GLXY_rsPrimordialWorlds			"0x0002001B">
+	<!ENTITY GLXY_stPrimordialAsteroidSizeA	"0x0002001C">
+	<!ENTITY GLXY_stPrimordialAsteroidSizeB	"0x0002001D">
+	<!ENTITY GLXY_stPrimordialPlanetoidSizeF	"0x0002001E">
+	<!ENTITY GLXY_stPrimordialPlanetoidSizeF2	"0x0002001F">
+	<!ENTITY GLXY_stPrimordialTerrestrialSizeH	"0x00020020">
+	<!ENTITY GLXY_stPrimordialTerrestrialSizeH2	"0x00020021">
+	<!ENTITY GLXY_stPrimordialTerrestrialSizeJ	"0x00020022">
+	<!ENTITY GLXY_stPrimordialGasGiantSizeK	"0x00020023">
+	<!ENTITY GLXY_tbSystemMorphologies		"0x00020024">
+	<!ENTITY GLXY_tbPrimordialAsteroidOre	"0x00020025">
+	<!ENTITY GLXY_tbAsteroidMorphologies		"0x00020026">
+	<!ENTITY GLXY_tbPlanetaryMorphologies	"0x00020027">
+	<!ENTITY GLXY_stRockyAsteroidSizeA		"0x00020028">
+	<!ENTITY GLXY_stRockyOuterAsteroidSizeA	"0x00020029">
+	<!ENTITY GLXY_stRockyAsteroidSizeB		"0x0002002A">
+	<!ENTITY GLXY_stRockyOuterAsteroidSizeB	"0x0002002B">
+	<!ENTITY GLXY_stRockyAsteroidSizeC		"0x0002002C">
+	<!ENTITY GLXY_stRockyOuterAsteroidSizeC	"0x0002002D">
+	<!ENTITY GLXY_stRockyAsteroidSizeD		"0x0002002E">
+	<!ENTITY GLXY_stRockyOuterAsteroidSizeD	"0x0002002F">
+	<!ENTITY GLXY_stRockyPlanetoidSizeE		"0x00020030">
+	<!ENTITY GLXY_stRockyPlanetoidSizeF		"0x00020031">
+	<!ENTITY GLXY_stRockyPlanetoidSizeG		"0x00020032">
+	<!ENTITY GLXY_stIceAsteroidSizeA			"0x00020033">
+	<!ENTITY GLXY_stIceAsteroidSizeB			"0x00020034">
+	<!ENTITY GLXY_stIceAsteroidSizeC			"0x00020035">
+	<!ENTITY GLXY_stIceAsteroidSizeD			"0x00020036">
+	<!ENTITY GLXY_stIcePlanetoidSizeE		"0x00020037">
+	<!ENTITY GLXY_stIcePlanetoidSizeF		"0x00020038">
+	<!ENTITY GLXY_stIcePlanetoidSizeG		"0x00020039">
+	<!ENTITY GLXY_stMetallicAsteroidSizeA	"0x0002003A">
+	<!ENTITY GLXY_stMetallicAsteroidSizeB	"0x0002003B">
+	<!ENTITY GLXY_stMetallicAsteroidSizeC	"0x0002003C">
+	<!ENTITY GLXY_stMetallicAsteroidSizeD	"0x0002003D">
+	<!ENTITY GLXY_stMetallicPlanetoidSizeE	"0x0002003E">
+	<!ENTITY GLXY_stMetallicPlanetoidSizeF	"0x0002003F">
+	<!ENTITY GLXY_stMetallicPlanetoidSizeG	"0x00020040">
+	<!ENTITY GLXY_stPrimordialAsteroidSizeC	"0x00020041">
+	<!ENTITY GLXY_stPrimordialAsteroidSizeD	"0x00020042">
+	<!ENTITY GLXY_stPrimordialPlanetoidSizeE	"0x00020043">
+	<!ENTITY GLXY_stPrimordialPlanetoidSizeG	"0x00020044">
+	<!ENTITY GLXY_stVolcanicAsteroidSizeA	"0x00020045">
+	<!ENTITY GLXY_stVolcanicAsteroidSizeB	"0x00020046">
+	<!ENTITY GLXY_stVolcanicAsteroidSizeC	"0x00020047">
+	<!ENTITY GLXY_stVolcanicAsteroidSizeD	"0x00020048">
+	<!ENTITY GLXY_stVolcanicPlanetoidSizeE	"0x00020049">
+	<!ENTITY GLXY_stVolcanicPlanetoidSizeF	"0x0002004A">
+	<!ENTITY GLXY_stVolcanicPlanetoidSizeG	"0x0002004B">
+	<!ENTITY GLXY_stVolcanicTerrestrialSizeH	"0x0002004C">
+	<!ENTITY GLXY_rsIceAsteroids				"0x0002004D">
+	<!ENTITY GLXY_rsMetallicAsteroids2		"0x0002004E">
+	<!ENTITY GLXY_rsRockyAsteroids			"0x0002004F">
+	<!ENTITY GLXY_rsVolcanicAsteroids		"0x00020050">
+	<!ENTITY GLXY_rsVolcanicTerrestrials		"0x00020051">
+	<!ENTITY GLXY_rsBiosphereTerrestrials	"0x00020052">
+	<!ENTITY GLXY_stBiosphereTerrestrialSizeI	"0x00020053">
+	<!ENTITY GLXY_rsDesertTerrestrials		"0x00020054">
+	<!ENTITY GLXY_stDesertTerrestrialSizeH	"0x00020055">
+	<!ENTITY GLXY_rsGreenhouseTerrestrials	"0x00020056">
+	<!ENTITY GLXY_stGreenhouseTerrestrialSizeI	"0x00020057">
+	<!ENTITY GLXY_rsHydrogenGasGiant01		"0x00020058">
+	<!ENTITY GLXY_stHydrogenGasGiantSizeM	"0x00020059">
+	<!ENTITY GLXY_rsHydrogenGasGiant02		"0x0002005A">
+	<!ENTITY GLXY_rsHydrogenGasGiant03		"0x0002005B">
+	<!ENTITY GLXY_rsMethaneGasGiant01		"0x0002005C">
+	<!ENTITY GLXY_stMethaneGasGiantSizeK		"0x0002005D">
+	<!ENTITY GLXY_tbPrimordialPlanets		"0x0002005E">
+	<!ENTITY GLXY_tbStandardPlanets			"0x0002005F">
+	<!ENTITY GLXY_tbIcePlanets				"0x00020060">
+	<!ENTITY GLXY_tbMetallicPlanets			"0x00020061">
+	<!ENTITY GLXY_tbRockyPlanets				"0x00020062">
+	<!ENTITY GLXY_tbVolcanicPlanets			"0x00020063">
+	<!ENTITY GLXY_rsRedGiantStar2			"0x00020064">
+	<!ENTITY GLXY_rsRedDwarfStar2			"0x00020065">
+	<!ENTITY GLXY_unidLocationAttribDef		"0x00020066">
+	<!ENTITY GLXY_tbStars					"0x00020067">
+	<!ENTITY GLXY_tbAsteroidOre				"0x00020068">
+	<!ENTITY GLXY_rsMinedOreHero				"0x00020069">
+
+	<!ENTITY GLXY_tbAsteroidFieldMorphologies	"0x0002006A">
+	<!ENTITY GLXY_tbGroupIAsteroids			"0x0002006B">
+	
+	<!-- 0070-007F STARS -->
+	
+	<!ENTITY GLXY_stStarClassM8				"0x00020070">
+	<!ENTITY GLXY_stStarClassM5				"0x00020071">
+	<!ENTITY GLXY_stStarClassM0				"0x00020072">
+	<!ENTITY GLXY_stStarClassK5				"0x00020073">
+	<!ENTITY GLXY_stStarClassK0				"0x00020074">
+	<!ENTITY GLXY_stStarClassG5				"0x00020075">
+	<!ENTITY GLXY_stStarClassG2				"0x00020076">
+	<!ENTITY GLXY_stStarClassG0				"0x00020077">
+	<!ENTITY GLXY_stStarClassF5				"0x00020078">
+	<!ENTITY GLXY_stStarClassF0				"0x00020079">
+	<!ENTITY GLXY_stStarClassA5				"0x0002007A">
+	<!ENTITY GLXY_stStarClassA0				"0x0002007B">
+	
+	<!-- 0080-008F OVOID ASTEROIDS (OLD SCALE) -->
+	
+	<!ENTITY GLXY_rsOvoidAsteroids			"0x00020080">
+	<!ENTITY GLXY_stOvoidAsteroidSizeAComp	"0x00020081">
+	<!ENTITY GLXY_stOvoidAsteroidSizeBComp	"0x00020082">
+	<!ENTITY GLXY_stOvoidAsteroidSizeCComp	"0x00020083">
+	<!ENTITY GLXY_stOvoidAsteroidSizeDComp	"0x00020084">
+	<!ENTITY GLXY_stOvoidPlanetoidSizeEComp	"0x00020085">
+	<!ENTITY GLXY_stOvoidPlanetoidSizeFComp	"0x00020086">
+	<!ENTITY GLXY_stOvoidPlanetoidSizeGComp	"0x00020087">
+	<!ENTITY GLXY_tbOvoidTablesComp			"0x00020088">
+	<!ENTITY GLXY_baOvoidAsteroid			"0x00020089">
+	
+	<!-- 0090-00AF SYSTEM BACKGROUNDS -->
+	
+	<!ENTITY GLXY_rsLightNebulaSpace			"0x00020090">
+	<!ENTITY GLXY_rsPrimordialNebulaSpace	"0x00020091">
+	<!ENTITY GLXY_rsRedDwarfSpace			"0x00020092">
+	<!ENTITY GLXY_rsRockyAsteroidSpace		"0x00020093">
+	<!ENTITY GLXY_rsBrightStarSpace			"0x00020094">
+	<!ENTITY GLXY_rsRedGiantSpace			"0x00020095">
+	
+	<!-- 00B0-00BF STARGATES -->
+	
+	<!ENTITY GLXY_rsDaazhenStargate			"0x000200B0">
+	<!ENTITY GLXY_rsDaazhenStargateEffect	"0x000200B1">
+	<!ENTITY GLXY_rsMajellenStargate			"0x000200B2">
+	
+	<!-- 00C0-00CF MINING -->
+	
+	<!ENTITY GLXY_ovMiningOreCount			"0x000200C0">
+	
+	<!-- 00D0-00DF ICE ASTEROIDS -->
+	
+	<!ENTITY GLXY_rsIceAsteroidSizeA			"0x000200D0">
+	<!ENTITY GLXY_rsIceAsteroidSizeB			"0x000200D1">
+	<!ENTITY GLXY_rsIceAsteroidSizeC			"0x000200D2">
+	<!ENTITY GLXY_rsIceAsteroidSizeD			"0x000200D3">
+	<!ENTITY GLXY_rsIcePlanetoidSizeE		"0x000200D4">
+	<!ENTITY GLXY_rsIcePlanetoidSizeF		"0x000200D5">
+	<!ENTITY GLXY_rsIcePlanetoidSizeG		"0x000200D6">
+	<!ENTITY GLXY_baIceAsteroid				"0x000200D7">
+	
+	<!-- 00E0-00EF METALLIC ASTEROIDS -->
+	
+	<!ENTITY GLXY_rsMetallicAsteroidSizeA	"0x000200E0">
+	<!ENTITY GLXY_rsMetallicAsteroidSizeB	"0x000200E1">
+	<!ENTITY GLXY_rsMetallicAsteroidSizeC	"0x000200E2">
+	<!ENTITY GLXY_rsMetallicAsteroidSizeD	"0x000200E3">
+	<!ENTITY GLXY_rsMetallicPlanetoidSizeE	"0x000200E4">
+	<!ENTITY GLXY_rsMetallicPlanetoidSizeF	"0x000200E5">
+	<!ENTITY GLXY_rsMetallicPlanetoidSizeG	"0x000200E6">
+	<!ENTITY GLXY_baMetallicAsteroid			"0x000200E7">
+	
+	<!-- 00F0-00FF PRIMORDIAL ASTEROIDS -->
+	
+	<!ENTITY GLXY_rsPrimordialAsteroidSizeA	"0x000200F0">
+	<!ENTITY GLXY_rsPrimordialAsteroidSizeB	"0x000200F1">
+	<!ENTITY GLXY_rsPrimordialAsteroidSizeC	"0x000200F2">
+	<!ENTITY GLXY_rsPrimordialAsteroidSizeD	"0x000200F3">
+	<!ENTITY GLXY_rsPrimordialPlanetoidSizeE	"0x000200F4">
+	<!ENTITY GLXY_rsPrimordialPlanetoidSizeF	"0x000200F5">
+	<!ENTITY GLXY_rsPrimordialPlanetoidSizeG	"0x000200F6">
+	<!ENTITY GLXY_baPrimordialAsteroid		"0x000200F7">
+	
+	<!-- 0100-010F ROCKY ASTEROIDS -->
+	
+	<!ENTITY GLXY_rsRockyAsteroidSizeA		"0x00020100">
+	<!ENTITY GLXY_rsRockyAsteroidSizeB		"0x00020101">
+	<!ENTITY GLXY_rsRockyAsteroidSizeC		"0x00020102">
+	<!ENTITY GLXY_rsRockyAsteroidSizeD		"0x00020103">
+	<!ENTITY GLXY_rsRockyPlanetoidSizeE		"0x00020104">
+	<!ENTITY GLXY_rsRockyPlanetoidSizeF		"0x00020105">
+	<!ENTITY GLXY_rsRockyPlanetoidSizeG		"0x00020106">
+	<!ENTITY GLXY_baRockyAsteroid			"0x00020107">
+	
+	<!-- 0110-011F VOLCANIC ASTEROIDS -->
+	
+	<!ENTITY GLXY_rsVolcanicAsteroidSizeA	"0x00020110">
+	<!ENTITY GLXY_rsVolcanicAsteroidSizeB	"0x00020111">
+	<!ENTITY GLXY_rsVolcanicAsteroidSizeC	"0x00020112">
+	<!ENTITY GLXY_rsVolcanicAsteroidSizeD	"0x00020113">
+	<!ENTITY GLXY_rsVolcanicPlanetoidSizeE	"0x00020114">
+	<!ENTITY GLXY_rsVolcanicPlanetoidSizeF	"0x00020115">
+	<!ENTITY GLXY_rsVolcanicPlanetoidSizeG	"0x00020116">
+	<!ENTITY GLXY_baVolcanicAsteroid			"0x00020117">
+
+	<!-- 0120-013F ORE STONE ASTEROIDS -->
+
+	<!ENTITY GLXY_tbOreStoneTables			"0x00020120">
+	<!ENTITY GLXY_rsOreStoneAsteroids		"0x00020121">
+	<!ENTITY GLXY_baOreStoneAsteroidOld		"0x00020122">
+	<!ENTITY GLXY_stOreStoneAsteroidSizeA	"0x00020123">
+	<!ENTITY GLXY_stOreStoneAsteroidSizeB	"0x00020124">
+	<!ENTITY GLXY_stOreStoneAsteroidSizeC	"0x00020125">
+	<!ENTITY GLXY_stOreStoneAsteroidSizeD	"0x00020126">
+	<!ENTITY GLXY_baOreStonePlanetoid		"0x00020127">
+	<!ENTITY GLXY_stOreStonePlanetoidSizeE	"0x00020128">
+	<!ENTITY GLXY_stOreStonePlanetoidSizeF	"0x00020129">
+	<!ENTITY GLXY_stOreStonePlanetoidSizeG	"0x0002012A">
+	<!ENTITY GLXY_baOreStoneAsteroid			"0x0002012B">
+
+	<!-- 0140-015F UNDERGROUND CAVERNS -->
+
+	<!ENTITY GLXY_baUndergroundCavern		"0x00020140">
+	<!ENTITY GLXY_rsUndergroundCavernIce		"0x00020141">
+	<!ENTITY GLXY_rsUndergroundCavernMetallic	"0x00020142">
+	<!ENTITY GLXY_rsUndergroundCavernPrimordial	"0x00020143">
+	<!ENTITY GLXY_rsUndergroundCavernRocky	"0x00020144">
+	<!ENTITY GLXY_rsUndergroundCavernVolcanic	"0x00020145">
+	<!ENTITY GLXY_baLootCavern				"0x00020146">
+	<!ENTITY GLXY_ovLootCavernIce			"0x00020147">
+	<!ENTITY GLXY_ovLootCavernMetallic		"0x00020148">
+	<!ENTITY GLXY_ovLootCavernPrimordial		"0x00020149">
+	<!ENTITY GLXY_ovLootCavernRocky			"0x0002014A">
+	<!ENTITY GLXY_ovLootCavernVolcanic		"0x0002014B">
+
+	<!-- 0160-017F SCORIA ASTEROIDS -->
+
+	<!ENTITY GLXY_tbScoriaTables				"0x00020160">
+	<!ENTITY GLXY_baScoriaAsteroid			"0x00020161">
+	<!ENTITY GLXY_rsScoriaAsteroids			"0x00020162">
+	<!ENTITY GLXY_stScoriaAsteroidSizeA1		"0x00020163">
+	<!ENTITY GLXY_stScoriaAsteroidSizeA2		"0x00020164">
+	<!ENTITY GLXY_stScoriaAsteroidSizeA3		"0x00020165">
+	<!ENTITY GLXY_stScoriaAsteroidSizeA4		"0x00020166">
+	<!ENTITY GLXY_stScoriaAsteroidSizeB1		"0x00020167">
+	<!ENTITY GLXY_stScoriaAsteroidSizeB2		"0x00020168">
+	<!ENTITY GLXY_stScoriaAsteroidSizeC1		"0x00020169">
+	<!ENTITY GLXY_stScoriaAsteroidSizeC2		"0x0002016A">
+	<!ENTITY GLXY_stScoriaAsteroidSizeD		"0x0002016B">
+	<!ENTITY GLXY_baScoriaPlanetoid			"0x0002016C">
+	<!ENTITY GLXY_stScoriaPlanetoidSizeE		"0x0002016D">
+
+	<!-- 0180-019F OVOID ASTEROIDS -->
+
+	<!ENTITY GLXY_tbOvoidTables				"0x00020180">
+	<!ENTITY GLXY_stOvoidAsteroidSizeA1		"0x00020181">
+	<!ENTITY GLXY_stOvoidAsteroidSizeA2		"0x00020182">
+	<!ENTITY GLXY_stOvoidAsteroidSizeA3		"0x00020183">
+	<!ENTITY GLXY_stOvoidAsteroidSizeB1		"0x00020184">
+	<!ENTITY GLXY_stOvoidAsteroidSizeB2		"0x00020185">
+	<!ENTITY GLXY_stOvoidAsteroidSizeC		"0x00020186">
+	<!ENTITY GLXY_stOvoidAsteroidSizeD		"0x00020187">
+
+	<!-- 01A0-01BF ORE AND RESOURCE TYPES -->
+
+	<!ENTITY GLXY_itCopperOre				"0x000201A0">
+	<!ENTITY GLXY_itVanadiumOre				"0x000201A1">
+	<!ENTITY GLXY_itNiobiumOre				"0x000201A2">
+	<!ENTITY GLXY_itCeriumOre				"0x000201A3">
+	<!ENTITY GLXY_itHexaniumOre				"0x000201A4">
+	<!ENTITY GLXY_itMolybdenumOre			"0x000201A5">
+	<!ENTITY GLXY_itIridiumOre				"0x000201A6">
+	<!ENTITY GLXY_itLonsdaleiteOre			"0x000201A7">
+	<!ENTITY GLXY_itTantalumOre				"0x000201A8">
+
+	<!-- 01C0-01DF CRYOVOLCANIC ASTEROIDS -->
+
+	<!ENTITY GLXY_tbCryovolcanicTables		"0x000201C0">
+	<!ENTITY GLXY_baCryovolcanic				"0x000201C1">
+	<!ENTITY GLXY_rsCryovolcanicAsteroids	"0x000201C2">
+	<!ENTITY GLXY_ovCryovolcanoSmall			"0x000201C3">
+	<!ENTITY GLXY_ovCryovolcanoMedium		"0x000201C4">
+	<!ENTITY GLXY_ovCryovolcanoLarge			"0x000201C5">
+	<!ENTITY GLXY_stCryovolcanicSizeA		"0x000201C6">
+	<!ENTITY GLXY_stCryovolcanicSizeB		"0x000201C7">
+	<!ENTITY GLXY_stCryovolcanicSizeC		"0x000201C8">
+	<!ENTITY GLXY_stCryovolcanicSizeD		"0x000201C9">
+	]>
+	
+<CoreLibrary
+		UNID=				"&GLXY_unidGalaxyLibrary;"
+		name=				"Transcendence Galaxy"
+		release=			"1"
+		private=			"true"
+		>
+
+	<Library unid="&CORE_unidCoreTypesLibrary;"/>
+	<Library unid="&RPG_unidRPGLibrary;"/>
+	
+	<Module filename="GLXY_AsteroidFields.xml"/>
+	<Module filename="GLXY_Cryovolcanic.xml"/>
+	<Module filename="GLXY_Environments.xml"/>
+	<Module filename="GLXY_GalaxyCompatibility.xml"/>
+	<Module filename="GLXY_GalaxyEffects.xml"/>
+	<Module filename="GLXY_GroupIAsteroids.xml"/>
+	<Module filename="GLXY_Groups.xml"/>
+	<Module filename="GLXY_Ice.xml"/>
+	<Module filename="GLXY_Metallic.xml"/>
+	<Module filename="GLXY_Mining.xml"/>
+	<Module filename="GLXY_Ore.xml"/>
+	<Module filename="GLXY_OreStone.xml"/>
+	<Module filename="GLXY_Ovoids.xml"/>
+	<Module filename="GLXY_OvoidsCompatibility.xml"/>
+	<Module filename="GLXY_Neurohack.xml"/>
+	<Module filename="GLXY_Primordial.xml"/>
+	<Module filename="GLXY_Rocky.xml"/>
+	<Module filename="GLXY_Scoria.xml"/>
+	<Module filename="GLXY_Stargates.xml"/>
+	<Module filename="GLXY_Stars.xml"/>
+	<Module filename="GLXY_StarSystems.xml"/>
+	<Module filename="GLXY_UndergroundCaverns.xml"/>
+	<Module filename="GLXY_Volcanic.xml"/>
+	<Module filename="GLXY_Worlds.xml"/>
+
+</CoreLibrary>

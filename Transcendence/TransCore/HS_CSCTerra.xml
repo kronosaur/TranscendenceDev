@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- CSC Terra -->
+
+	<ShipClass UNID="&HS_scCSCTerra;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, EI, fleetLaw, majorShip, cscTerra"
+			inherit=			"&HS_scCSCStock;"
+
+			dockScreen=			"Main"
+			>
+
+		<Names>:the CSC Terra</Names>
+
+		<Properties>	
+			<Definition id="csc.emblem">
+				(resCreateImageDesc &HS_rsFleetEmblems; 960 480 320 240)
+			</Definition>
+		</Properties>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itP1000HexphaseArmor;"
+			count=				"20"
+			/>
+		
+		<Devices>
+			<Device slotID="w1"		deviceID="&HS_itSAR200AdvancedCannon;"/>
+			<Device slotID="w2"		deviceID="&HS_itSAR200AdvancedCannon;"/>
+			<Device slotID="w3"		deviceID="&HS_itSAR200AdvancedCannon;"/>
+			<Device slotID="w4"		deviceID="&HS_itSAR200AdvancedCannon;"/>
+
+			<Device slotID="omni1"	deviceID="&HS_itNAMIHeavyLauncher;">
+				<Items>
+					<Item count="300"	item="&HS_itM2Missile;"/>
+				</Items>
+			</Device>
+			<Device slotID="omni2"	deviceID="&HS_itMissileDefense;"/>
+			<Device					deviceID="&HS_vtDamageControlParty;"/>
+		</Devices>
+
+		<!-- Trade and Items -->
+
+		<Trade currency="credit">
+			<Sell	criteria="m +commonwealth; +military; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="500" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			
+			<Refuel			criteria="f +BasicFuel; L:1-9;" priceAdj="90"/>
+			<RepairArmor	criteria="a L:1-10;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a L:1-10;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<InstallDevice	criteria="d +unid:&HS_itLamplighter;;" priceAdj="100"/>
+			<RemoveDevice	criteria="d +unid:&HS_itLamplighter;;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+		</Trade>
+
+		<Items>
+			<Item				count="6d12"	item="&HS_itPteracniumFuelRod;"/>
+			
+			<!-- Some upgrades for sale -->
+			
+			<RandomItem count="1d6" criteria="r +commonwealth; -defective; -illegal; -notForSale; -notStandard; L:6-9;"		levelFrequency="systemLevel:ru|c|curv"/>
+			<Lookup count="12-16" table="&HS_tbCommonwealthFleetItems;"/>
+		</Items>
+
+		<!-- Dock Screens -->
+
+		<DockScreens>
+			<Main>
+				<OnScreenInit>
+					(block ()
+						(scrSetBackgroundImage gScreen (obj@ gSource 'csc.emblemDesc))
+
+						(rpgMissionAssignmentOnScreenInit {
+							missionCriteria: (cat "n +cscTerra; =" (sysGetLevel) ";")
+							})
+						)
+				</OnScreenInit>
+				
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &HS_unidCommonwealthFleet; 'rankDetails)
+					</OnDisplayInit>
+				</Display>
+
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(scrSetDescTranslate gScreen 'descWelcome {objName: (objGetName gSource)})
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionInformation">
+								(scrShowScreen gScreen &RPG_dsRPGDialog; (objTranslate gSource 'csc.info))
+							</Action>
+
+							<Action id="actionBridge" default="1">
+								(block (
+									(rank (objGetData gPlayerShip 'fleetLevel))
+									(behavior (objGetData gSource 'behavior))
+									)
+									(switch
+										;	Can't get in unless the player is Fleet Commander or above
+										(ls rank 5)
+											(scrShowScreen gScreen &RPG_dsRPGMessage; { textID:'descAccessDenied })
+
+										;	If on maneuvers, then too busy
+										(= behavior 'moving)
+											(scrShowScreen gScreen &RPG_dsRPGMessage; { textID:'descShipMoving })
+
+										;	Otherwise show missions
+										(rpgMissionAssignment {
+											missionCriteria: (cat "n +cscTerra; +rank" (int rank) "; =" (sysGetLevel) ";")
+											noMissionTextID: 'descNoMissions
+
+											rankDetails: (typTranslate &HS_unidCommonwealthFleet; 'rankDetails)
+											})
+										)
+									)
+							</Action>
+
+							<Action id="actionDockServices">
+								(rpgDockServices gPlayerShip)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<Language>
+			<Text id="actionBridge">[B]ridge</Text>
+			<Text id="actionDockServices">[D]ock Services</Text>
+			<Text id="actionUndock">[U]ndock</Text>
+
+			<Text id="descWelcome">You are in the docking bay of the %objName%.</Text>
+			<Text id="descAccessDenied">
+
+				Two armed guards block your path:
+				
+				"I'm sorry, %sir%, the admiral does not like to be disturbed by 
+				junior officers."
+
+			</Text>
+			<Text id="descShipMoving">
+
+				The bridge of the CSC Terra is busy with activity. Admiral Decker
+				is leaning over a holochart as the massive ship maneuvers through
+				the system.
+
+			</Text>
+			<String id="descNoMissions">
+
+				The bridge of the CSC Terra is busy with activity. Admiral Decker
+				and his XO are discussing the results of the last operation.
+
+			</String>
+		</Language>
+	</ShipClass>
+
+	<!-- CSC Terra Encounter -->
+
+	<EncounterType UNID="&HS_stCSCTerraEncounter;"
+			name=				"(CSC Terra)"
+			sovereign=			"&HS_svCommonwealthFleet;"
+
+			attributes=			"fleet,friendly,primary,envAir,envEarth,envFire,envWater"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+cscOperationsSpace;"
+				systemAffinity=			"*"
+				levelFrequency=			"----- ---c- ----- ----- -----"
+
+				locationCriteria=		"+outerSystem, -planetary"
+				enemyExclusionRadius=	"120"
+
+				maxAppearing=			"1"
+				/>
+
+		<Ships>
+			<Ship	count="1"	class="&HS_scCSCTerra;" orders="hold">
+				<Names definiteArticle="true">CSC Terra</Names>
+				
+				<InitialData>
+					<CSC>"terra"</CSC>
+				</InitialData>
+			</Ship>
+		</Ships>
+	</EncounterType>
+
+</TranscendenceModule>

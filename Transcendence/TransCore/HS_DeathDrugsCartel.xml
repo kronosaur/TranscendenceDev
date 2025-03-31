@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- Death Drugs Cartel =================================================== -->
+
+	<Sovereign UNID="&HS_svDeathDrugsCartel;"
+			name=":the Death Drugs Cartel"
+			adjective="Death Drugs Cartel"
+			demonym=":a Death Drugs Cartel member(s)"
+
+			alignment="destructive order"
+			/>
+
+<!-- STATION TYPES -->
+
+	<!-- Death Drug Cartel Outpost -->
+
+	<StationType UNID="&HS_stDrugCartelOutpost;"
+			name=				"Death Drug Cartel outpost"
+			sovereign=			"&HS_svDeathDrugsCartel;"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+			dockingPorts=		"8"
+
+			armorID=			"&HS_itPlasteelPlate;"
+			hitPoints=			"160"
+            regen=              "2"
+			fireRateAdj=		"20"
+			explosionType=		"&CORE_vtBlastExplosion1;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"drugcartel, enemy, envWater, envAvoidsEarth, generic, human, outlaws, populated"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+outlawSpace;"
+				systemAffinity=			"+envWater; -envEarth;"
+				levelFrequency=			"--ucu r---- ----- ----- -----"
+
+				locationCriteria=		"-innerSystem, +planetary"
+				/>
+
+		<Image			imageID="&HS_rsStations4;" imageX="0" imageY="320" imageWidth="96" imageHeight="96"/>
+
+		<Devices>
+			<Device deviceID="&HS_itSlamCannon;"	omnidirectional="true"/>
+		</Devices>
+
+		<Ships>
+			<Table>
+				<Ship chance="50"	count="1d4"	class="&HS_scMethEnforcer;" orders="guard"/>
+				<Group chance="50">
+					<Ship			count="1d2"	class="&HS_scMethEnforcer;" orders="guard"/>
+					<Ship			count="1"	class="&HS_scMethEnforcer;" orders="guard"/>
+				</Group>
+			</Table>
+		</Ships>
+
+		<Items value="standard:level=4:x=0.75">
+			<Lookup chance="30" count="1d2" table="&HS_trStationSupplies;"/>
+			<Lookup chance="30" count="1d4" table="&HS_trMedicalItem;"/>
+			<Item chance="50"	count="1d4"	item="&HS_itDeathDrugs;" />
+		</Items>
+
+		<Encounters frequency="uncommon">
+			<Table>
+				<Ship chance="60" count="1" class="&HS_scMethEnforcer;"  eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+					<Escorts>
+						<LevelTable>
+							<Null levelFrequency="uuu-- -----" />
+							<Ship levelFrequency="ccc-- -----"   count="1"		class="&HS_scMethEnforcer;" orders="escort"/>
+							<Ship levelFrequency="---c- -----"   count="1d2"	class="&HS_scMethEnforcer;" orders="escort"/>
+							<Ship levelFrequency="----c -----"   count="1d2+1"	class="&HS_scMethEnforcer;" orders="escort"/>
+							<Ship levelFrequency="----- c----"   count="1d4"	class="&HS_scMethEnforcer;" orders="escort"/>
+							<Ship levelFrequency="----- -cccc"   count="1d4+1"	class="&HS_scMethEnforcer;" orders="escort"/>
+						</LevelTable>
+					</Escorts>
+				</Ship>
+				<Ship chance="40" count="1" class="&HS_scT55ArmedTransport;"  eventHandler="&RPG_evStdConvoyEncounterBehavior;">
+					<Items>
+						<Lookup chance="50" count="1d2" table="&HS_trStationSupplies;"/>
+						<Item	chance="90"	count="1d8"	item="&HS_itDeathDrugs;"/>
+					</Items>
+					<Escorts>
+						<LevelTable>
+							<Ship levelFrequency="ccc-- -----"   count="1d4"	class="&HS_scMethEnforcer;" orders="escort"/>
+							<Ship levelFrequency="---c- -----"   count="1d6"	class="&HS_scMethEnforcer;" orders="escort"/>
+							<Ship levelFrequency="----c -----"   count="1d6+1"	class="&HS_scMethEnforcer;" orders="escort"/>
+							<Ship levelFrequency="----- c----"   count="1d8"	class="&HS_scMethEnforcer;" orders="escort"/>
+							<Ship levelFrequency="----- -cccc"   count="1d10"	class="&HS_scMethEnforcer;" orders="escort"/>
+						</LevelTable>
+					</Escorts>
+				</Ship>
+			</Table>
+		</Encounters>
+		<Events>
+			<GetRumors>
+				{
+					attributes: "commonwealthPub"
+					priority: 40
+					textID: 'rumor.commonwealthPub
+					}
+			</GetRumors>
+		</Events>
+
+		<Language>
+			<Text id="rumor.commonwealthPub">
+
+				An old man talks to you:
+
+				"I don't trust the corporate medlabs&mdash;they talk about drug
+				shortages while they munch on oncokillers and antigens! I'm going
+				to the Death Labs&mdash;what's the worst they can do? Kill me?"
+
+				You spend 5 credits to buy him a drink.
+
+			</Text>
+		</Language>
+	</StationType>
+	
+<!-- SHIP CLASSES -->
+
+	<!-- Meth Enforcer -->
+
+	<ShipClass UNID="&HS_scMethEnforcer;"
+			manufacturer=		"Meth"
+			class=				""
+			type=				"enforcer"
+			defaultSovereign=	"&HS_svDeathDrugsCartel;"
+
+			size=				"35"
+			mass=				"70"
+			cargoSpace=			"100"
+			thrustRatio=		"7"
+			maxSpeed=			"20"
+
+			attributes=			"deathDrugsCartel,genericClass"
+			>
+
+		<Armor
+			armorID=			"&HS_itPolyceramicPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itSlamCannon;"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"18.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<Image imageID="&HS_rsMethEnforcerHD;" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" viewportRatio="0.005"/>
+		<HeroImage imageID="&HS_rsMethEnforcerHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="21"	posZ="-5"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="21"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="21"	posZ="5"	rotation="180"/>
+		</Effects>
+		
+		<AISettings
+			fireRateAdj=		"20"
+			fireRangeAdj=		"50"
+			fireAccuracy=		"95"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&HS_rsMethEnforcerHD;"				bitmap="Resources\MethEnforcerHD.jpg"		bitmask="Resources\MethEnforcerHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsMethEnforcerHero;"				bitmap="Resources\MethEnforcerLarge.jpg"		bitmask="Resources\MethEnforcerLargeMask.bmp"  loadOnUse="true"/>
+
+</TranscendenceModule>

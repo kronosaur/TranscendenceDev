@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+<!-- CHARACTER CLASSES
+
+	We define the Transcendence character classes here so that various other 
+	types can react accordingly. Note that we generally implement these
+	classes in other libraries.
+	
+-->	
+	
+	<!-- CDM Mercenary
+	
+		Implemented in Near Stars Vol 1.
+		
+	-->
+	
+	<Type UNID="&RPG_unidCDMMercenaryClass;">
+	</Type>
+	
+	<!-- COMSOC Agent
+	
+		Not Yet Implemented
+		
+	-->
+		 
+	<Type UNID="&RPG_unidCOMSOCAgentClass;">
+	</Type>
+	
+	<!-- Freelancer
+	
+		Not Yet Implemented
+		
+	-->
+		 
+	<Type UNID="&RPG_unidFreelancerClass;">
+	</Type>
+	
+	<!-- Pilgrim
+	
+		Implemented in core (Human Space library).
+		
+	-->
+		 
+	<Type UNID="&RPG_unidPilgrimClass;">
+	</Type>
+
+</TranscendenceModule>

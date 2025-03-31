@@ -1,0 +1,2026 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Sovereign UNID="&HS_svAresHeretic;"
+			name=":the Ares Orthodoxy"
+			shortName=":the Ares"
+			adjective="Ares"
+			demonym="Arean(s)"
+
+			alignment="neutral"
+			>
+		<Relationships>
+			<Relationship sovereign="&HS_svAres;" disposition="friend" mutual="true"/>
+			<Relationship sovereign="&HS_svIocrym;" disposition="enemy" mutual="true"/>
+		</Relationships>
+	</Sovereign>
+
+	<Sovereign UNID="&HS_svSentinelAI;"
+			name="sentinel AI"
+			alignment="constructive chaos"
+			>
+		<Relationships>
+			<Relationship sovereign="&HS_svIocrym;" disposition="friend" mutual="true"/>
+		</Relationships>
+	</Sovereign>
+
+<!-- LEVEL XV ITEMS -->
+
+	<!-- Iocrym Manipulator Device -->
+
+	<ItemType UNID="&HS_itIocrymManipulator;"
+			name=				"Iocrym manipulator"
+			virtual=			"true"
+			>
+
+		<Weapon
+				type=				"missile"
+
+				damage=				"graviton:6d12; WMD7"
+				fireRate=			"15"
+				missileSpeed=		"50"
+				lifetime=			"60"
+				powerUse=			"2000"
+
+				sound=				"&CORE_snRecoillessCannon;"
+				>
+
+			<Effect>
+				<SmokeTrail
+						spread=			"0"
+						emitDuration=	"100"
+						emitRate=		"0-3"
+						emitSpeed=		"12"
+						particleLifetime="15"
+						>
+					<ParticleEffect>
+						<Particle
+								style=			"plain"
+								minWidth=		"2"
+								maxWidth=		"4"
+								primaryColor=	"0xff, 0xc0, 0xff"
+								secondaryColor=	"0xff, 0x80, 0xff"
+								/>
+					</ParticleEffect>
+				</SmokeTrail>
+
+				<Starburst
+						style=			"flare"
+						spikeCount=		"8"
+						spikeLength=	"8-15"
+						primaryColor=	"0xff, 0xc0, 0xff"
+						secondaryColor=	"0xff, 0x80, 0xff"
+						/>
+			</Effect>
+
+			<HitEffect>
+				<Null/>
+			</HitEffect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Stargate Control Rod -->
+
+	<ItemType UNID="&HS_itStargateControlRod;"
+			name=				"stargate control rod"
+			level=				"15"
+			value=				"5000"
+			mass=				"100"
+			frequency=			"notrandom"
+			numberAppearing=	"1"
+			unknownType=		"&HS_itUnknownHyperglyph;"
+			attributes=			"alien, hereticStargate, hyperglyphRod, minorItem, notForSale, questItem"
+
+			description=		"This hyperglyph rod is used to program stargates."
+			>
+
+		<Image imageID="&HS_rsHereticItems;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Events>
+			<OnObjDestroyed>
+				(if (eq gSource aObjDestroyed)
+				
+					; If our object gets destroyed and we don't end up on the
+					; resulting wreck, then we create our own object.
+					
+					(if (or (not aWreckObj) (not (objGetItems aWreckObj "* +unid:&HS_itStargateControlRod;")))
+						(block (theObj)
+							(setq theObj (sysCreateFlotsam &HS_itStargateControlRod; (objGetPos gSource) &CORE_svNeutral;))
+							(objIncVel theObj (sysVectorPolarVelocity (random 0 359) 5))
+							)
+						)
+					)
+			</OnObjDestroyed>
+		</Events>
+	</ItemType>
+
+<!-- LEVEL XII ITEMS -->
+
+	<!-- Iocrym Cybernetic Tower -->
+
+	<ItemType UNID="&HS_itIocrymCyberneticTower;"
+			name=				"Iocrym cybernetic tower"
+			level=				"12"
+			value=				"100000"
+			mass=				"10000"
+			frequency=			"notrandom"
+			numberAppearing=	"1"
+			attributes=			"alien, iocrymCyberneticTower, notForSale, questItem"
+
+			description=		"This massive and beautiful crystalline tower is clearly part of a larger structure."
+			>
+
+		<Image imageID="&HS_rsHereticItems;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+	
+<!-- LEVEL X ITEMS -->
+
+	<!-- Iocrym paralysis program -->
+
+	<ItemType UNID="&HS_itIocrymSentinelVirus;"
+			name=				"Iocrym sentinel virus(es)"
+			level=				"10"
+			value=				"2500"
+			mass=				"50"
+			frequency=			"notrandom"
+			unknownType=		"&HS_itUnknownMnemonicCube;"
+			attributes=			"Consumable; Info; NotForSale"
+
+			description=		"This cube contains an infiltrator virus that will disable Iocrym sentinels within 50 light-seconds."
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
+
+		<Invoke key="V">
+			(switch
+				; If we don't have a quantum CPU
+				(not (progHasQuantumCPU gSource))
+					(objSendMessage gSource Nil "Quantum CPU required")
+
+				; Otherwise, we disable any Iocrym sentinels
+				(block (targets)
+					(setq targets (sysFindObject gSource "sN:50; +iocrymSentinel;"))
+					(enum targets target
+						(objMakeParalyzed target (random 9000 15000))
+						)
+					(if targets
+						(objSendMessage gSource Nil "ISV0.9b: Program complete")
+						(objSendMessage gSource Nil "ISV0.9b: No target signal")
+						)
+
+					(itmSetKnown gItem)
+					(objRemoveItem gSource gItem 1)
+					)
+				)
+		</Invoke>
+	</ItemType>
+
+<!-- LEVEL I ITEMS -->
+
+	<ItemType UNID="&HS_itHereticResearchROM;"
+			name=				"data ROM(s) labeled &quot;Heretic research&quot;"
+			level=				"1"
+			value=				"0"
+			mass=				"1"
+			frequency=			"notrandom"
+			attributes=			"hereticROM, info, minorItem, notForSale, questItem"
+
+			description=		"This ROM contains research data about Iocrym technology."
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+	</ItemType>
+
+	<ItemType UNID="&HS_itIocrymSentinelData;"
+			name=				"data ROM(s) labeled &quot;Heretic research&quot;"
+			level=				"1"
+			value=				"0"
+			mass=				"1"
+			frequency=			"notrandom"
+			attributes=			"hereticROM, info, lesserData, minorItem, notForSale, questItem"
+
+			description=		"This ROM contains research data about Iocrym technology."
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+	</ItemType>
+
+<!-- SHIPS -->
+
+	<!-- Huygens Explorer -->
+
+	<ShipClass UNID="&HS_scHuygensExplorer;"
+			manufacturer=		"Ringers"
+			class=				"Huygens"
+			type=				"explorer"
+			defaultSovereign=	"&HS_svRingers;"
+
+			size=				"195"
+			mass=				"4000"
+			cargoSpace=			"1500"
+			thrustRatio=		"0.8"
+			maxSpeed=			"12"
+
+			explosionType=		"&CORE_vtThermoExplosion2;"
+
+			attributes=			"capitalShip, genericClass, huygensExplorer, majorShip, ringers"
+
+			dockingPorts=		"4"
+			dockScreen=			"&RPG_dsRPGAbandonedStation;"
+			>
+
+		<Armor
+			armorID=			"&HS_itQuadroCarbideArmor;"
+			count=				"12"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itMammoth100Deflector;"/>
+
+			<Device deviceID="&HS_itPositronLancer;" minFireArc="30" maxFireArc="175" posAngle="90" posRadius="5"/>
+			<Device deviceID="&HS_itPositronLancer;" minFireArc="185" maxFireArc="330" posAngle="270" posRadius="5"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"5"
+			rotationAccel=		"0.5"
+			/>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"120"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"80"
+
+					posX=		"-61"
+					posY=		"0"
+					sizeX=		"60"
+					sizeY=		"40"
+					/>
+		</Interior>
+
+		<Image imageID="&rsCorporateExplorerHD;" imageWidth="192" imageHeight="192"	rotationCount="120" rotationColumns="12" viewportRatio="0.025"/>
+		<HeroImage imageID="&HS_rsCorporateExplorerHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="176"	posRadius="88"	posZ="0"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-176"	posRadius="88"	posZ="0"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+		</Effects>
+
+		<Names definiteArticle="true">Huygens Explorer</Names>
+
+		<AISettings
+			fireRateAdj=		"15"
+			fireAccuracy=		"95"
+			perception=			"8"
+			/>
+
+	</ShipClass>
+
+<!-- STATIONS -->
+
+	<!-- Heretic Station -->
+
+	<StationType UNID="&HS_stHereticStation;"
+			name=				": Heretic Station"
+			sovereign=			"&HS_svCommonwealth;"
+			inherit=			"&HS_baCommonwealthStation;"
+				 
+			attributes=			"commonwealth, commonwealthCustoms, friendly, human, majorStation, populated"
+				 
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+			
+			size=				"390"
+			armorID=			"&HS_itP120HexphaseArmor;"
+			hitPoints=			"740"
+			multiHull=			"true"
+			regen=              "15"
+			shipRegen=			"6"
+				 
+			explosionType=		"&CORE_vtThermoExplosion2;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			fireRateAdj=		"40"
+			>
+
+		<!-- Trade and Items -->
+		
+		<Trade currency="credit">
+			<Sell	criteria="m +commonwealth; -premiumAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>
+			<Buy	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
+			<Buy	criteria="*NU -Illegal; -ID;"				priceAdj="10"/>
+			
+			<Refuel			criteria="f +BasicFuel; L:1-10;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-10;" priceAdj="120"/>
+			<ReplaceArmor	criteria="a L:1-10;" priceAdj="120"/>
+			<InstallDevice	criteria="d L:1-10;" priceAdj="120"/>
+			<RemoveDevice	criteria="d L:1-10;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+		</Trade>
+
+		<Items>
+			<RandomItem count="10" 
+					criteria=		"ad L:1-10; +commonwealth; -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					levelFrequency=	"systemLevel:u|c|crv"
+					/>
+			<RandomItem count="10" 
+					criteria=		"*~adm -defective; -Illegal; -Military; -Alien; -Specialty; -NotStandard; -NotForSale;"
+					levelFrequency=	"systemLevel:ru|c|cur"
+					/>
+
+			<Item count="4d12"	item="&HS_itPteracniumFuelRod;" />
+		</Items>
+
+		<!-- Configuration -->
+		
+		<Devices>
+			<Device deviceID="&HS_itTeV9Blaster;"	omnidirectional="true"/>
+		</Devices>
+
+		<!-- Satellites -->
+		
+		<Satellites overlapCheck="asteroids">
+			<Orbitals distance="12" angle="45">
+				<Station type="&HS_stCommonwealthTurret;" imageVariant="2"/>
+			</Orbitals>
+
+			<Orbitals distance="12" angle="135">
+				<Station type="&HS_stCommonwealthTurret;" imageVariant="1"/>
+			</Orbitals>
+
+			<Orbitals distance="12" angle="225">
+				<Station type="&HS_stCommonwealthTurret;" imageVariant="0"/>
+			</Orbitals>
+
+			<Orbitals distance="12" angle="315">
+				<Station type="&HS_stCommonwealthTurret;" imageVariant="3"/>
+			</Orbitals>
+		</Satellites>
+
+		<!-- Ships and Defenses -->
+		
+		<Ships>
+			<Lookup count="2" table="&HS_tbCommDefenders;"/>
+			<Lookup count="1d4" table="&HS_tbCommPrivateCrafts;"/>
+		</Ships>
+
+		<Reinforcements minShips="5">
+			<Table>
+				<Lookup chance="75" table="&HS_tbCommDefenders;"/>
+				<Lookup chance="25" table="&HS_tbCommPrivateCrafts;"/>
+			</Table>
+		</Reinforcements>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&HS_rsCommonwealthSettlement;" imageWidth="320" imageHeight="290" viewportRatio="0.05"/>
+
+		<DockingPorts
+				portCount=		"10"
+				portRadius=		"175"
+				>
+		</DockingPorts>
+		
+		<!-- Dock Screens -->
+		
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionMainHall" default="1">
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +commonwealthSettlement; =" (sysGetLevel) ";")
+									noMissionTextID: 'descHallEmpty
+									maxPerStation: 1
+									})
+							</Action>
+
+							<Action id="actionCommoditiesExchange">
+								(scrShowScreen gScreen &RPG_dsRPGCommoditiesExchange;)
+							</Action>
+
+							<Action id="actionDockServices">
+								(rpgDockServices gPlayerShip)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+		
+		<!-- Events and Data -->
+
+		<Language>
+			<Text id="descWelcome">
+				You are in the docking bay of a Commonwealth colony.
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Commonwealth Research Station -->
+
+	<StationType UNID="&HS_stCommonwealthResearchHeretic;"
+			name=				"Nares-Strong Research Station"
+			sovereign=			"&HS_svCommonwealth;"
+			inherit=			"&HS_baCommonwealthStation;"
+
+			attributes=			"commonwealth, commonwealthCustoms, commonResearch, friendly, hereticStation, human, populated"
+				 
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+				 
+			size=				"390"
+			armorID=			"&HS_itP120HexphaseArmor;"
+			hitPoints=			"370"
+			multiHull=			"true"
+			regen=              "4"
+			shipRegen=			"6"
+				 
+			explosionType=		"&CORE_vtThermoExplosion2;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			fireRateAdj=		"40"
+				 
+			ignoreFriendlyFire=	"true"
+			definiteArticle=	"true"
+			>
+
+		<!-- Trade and Items -->
+		
+		<Trade currency="credit">
+			<Refuel			criteria="f +BasicFuel; L:1-10;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-10;" priceAdj="120"/>
+			<ReplaceArmor	criteria="a L:1-10;" priceAdj="120"/>
+			<InstallDevice	criteria="d L:1-10;" priceAdj="120"/>
+			<RemoveDevice	criteria="d L:1-10;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+		</Trade>
+		
+		<Items>
+			<Item count="4d12"	item="&HS_itXenotiteFuelRod;" />
+			<Item count="4d12"	item="&HS_itPteracniumFuelRod;" />
+		</Items>
+
+		<!-- Configuration -->
+		
+		<Devices>
+			<Device deviceID="&HS_itTeV9Blaster;"	omnidirectional="true"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+		
+		<Ships>
+			<Lookup count="2" table="&HS_tbCommDefenders;"/>
+			<Lookup count="1d4" table="&HS_tbCommPrivateCrafts;"/>
+		</Ships>
+
+		<Reinforcements minShips="5">
+			<Table>
+				<Lookup chance="75" table="&HS_tbCommDefenders;"/>
+				<Lookup chance="25" table="&HS_tbCommPrivateCrafts;"/>
+			</Table>
+		</Reinforcements>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&HS_rsCommonwealthColony;" imageWidth="320" imageHeight="290" viewportRatio="0.05"/>
+
+		<DockingPorts
+				portCount=		"10"
+				portRadius=		"175"
+				>
+		</DockingPorts>
+		
+		<!-- Dock Screens -->
+		
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionResearchLevel" default="1">
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +commonwealthResearch; =" (sysGetLevel) ";")
+									noMissionTextID: 'descNoMissions
+									})
+							</Action>
+
+							<Action id="actionDockServices">
+								(rpgDockServices gPlayerShip)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+		
+		<Language>
+			<Text id="actionResearchLevel">[R]esearch Level</Text>
+
+			<Text id="descWelcome">
+				You are in the docking bay of a Commonwealth research station.
+			</Text>
+			<Text id="descNoMissions">
+
+				Researchers stand around holocharts discussing graviton 
+				science. The chief scientist talks to you:
+
+				"We're studying the gravitational distortion the Iocrym used
+				to trap us here. We've got ten years' worth of data to analyze."
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Ringers Research Outpost -->
+
+	<StationType UNID="&HS_stRingersResearchHeretic;"
+			name=				"Ringers research outpost"
+			sovereign=			"&HS_svRingers;"
+			inherit=			"&HS_baRingersStation;"
+
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+			ignoreFriendlyFire=	"true"
+
+			multiHull=			"true"
+			armorID=			"&HS_itDiamondLatticeArmor;"
+			hitPoints=			"810"
+			regen=              "8"
+			fireRateAdj=		"15"
+			explosionType=		"&CORE_vtPlasmaExplosion1;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"friendly, hereticStation, independent, majorStation, neoHuman, populated, ringers"
+			
+			definiteArticle=	"true"
+			>
+
+		<Ships>
+			<Table count="1d4">
+				<Ship chance="50"	count="1" class="&HS_scCenturionM;" orders="gateOnThreat" />
+				<Ship chance="15"	count="1" class="&HS_scEI500;" orders="gateOnThreat"/>
+				<Ship chance="10"	count="1" class="&HS_scWolfenC;" orders="gateOnThreat"/>
+				<Ship chance="25"	count="1" class="&HS_scFerianMiner;" orders="gateOnThreat"/>
+			</Table>
+		</Ships>
+
+		<Devices>
+			<Device deviceID="&HS_itPositronLancer;" omnidirectional="true"/>
+		</Devices>
+
+		<Items>
+			<RandomItem count="1d12" 
+					criteria=		"* +Meds; -defective; -Illegal; -NotStandard; -NotForSale;"
+					levelFrequency=	"systemLevel:ruc|u|r"
+					/>
+
+			<RandomItem count="1d4" 
+					criteria=		"u -defective; -NotForSale; -NotStandard;"
+					levelFrequency=	"systemLevel:ruc|u|r"
+					/>
+
+			<RandomItem count="2d12" 
+					criteria=		"f -defective; -NotForSale; -NotStandard;"
+					levelFrequency=	"systemLevel:ru|c|ur"
+					/>
+
+			<Item				count="1d12"	item="&HS_itEuropanIceMoss;" />
+			<Item				count="1d6"		item="&HS_itEuropanIceVodka;" />
+		</Items>
+
+		<Trade currency="rin">
+			<Sell	criteria="*NU +ringerValuable; -defective;"		priceAdj="250"/>
+			<Sell	criteria="*NU -defective; -ID;"					priceAdj="100"/>
+			<Buy	criteria="*NU +ringerValuable;"		priceAdj="200"/>
+			<Buy	criteria="*NU +res; &gt;=4;"		priceAdj="90"/>
+			<ConsumeTrade	criteria="{human.res}"		impact="2"/>
+			<ConsumeTrade	criteria="{core.ore}"			impact="5"/> 
+		</Trade>
+
+		<Reinforcements minShips="3">
+			<Table count="1d4">
+				<Ship chance="50"	count="1" class="&HS_scCenturionM;" orders="gateOnThreat" />
+				<Ship chance="25"	count="1" class="&HS_scFerianMiner;" orders="gateOnThreat"/>
+				<Ship chance="15"	count="1" class="&HS_scEI500;" orders="gateOnThreat"/>
+				<Ship chance="10"	count="1" class="&HS_scWolfenC;" orders="gateOnThreat"/>
+			</Table>
+		</Reinforcements>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&HS_rsRingersCollective;" imageWidth="200" imageHeight="300" viewportRatio="0.04125"/>
+
+		<DockingPorts>
+			<Port posAngle="16"		posRadius="113" posZ="46"/>
+			<Port posAngle="45"		posRadius="106" posZ="110"/>
+			<Port posAngle="122"	posRadius="105" posZ="30"/>
+			<Port posAngle="-171"	posRadius="121" posZ="100"/>
+
+			<Port posAngle="-149"	posRadius="118" posZ="-110"/>
+			<Port posAngle="-112"	posRadius="98"  posZ="-60"/>
+			<Port posAngle="-65"	posRadius="90"  posZ="-30"/>
+			<Port posAngle="-22"	posRadius="104" posZ="-46"/>
+		</DockingPorts>
+
+		<!-- Dock Screens -->
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionResearchLab" default="1">
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +ringersResearch; =" (sysGetLevel) ";")
+									noMissionTextID: 'descNoMissions
+									})
+							</Action>
+
+							<Action id="actionCommoditiesExchange">
+								(switch
+									(= (objGetBalance gPlayerShip 'rin) 0)
+										(scrShowPane gScreen 'ExchangeIntro)
+
+									(scrShowScreen gScreen &RPG_dsRPGCommoditiesExchange;)
+									)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+
+					<ExchangeIntro descID="descExchangeIntro">
+						<Actions>
+							<Action id="actionContinue" cancel="1" default="1">
+								(block Nil
+									(scrShowPane gScreen 'Default)
+									(scrShowScreen gScreen &RPG_dsRPGCommoditiesExchange;)
+									)
+							</Action>
+						</Actions>
+					</ExchangeIntro>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<Language>
+			<Text id="actionCommoditiesExchange">[S]upplies</Text>
+			<Text id="actionResearchLab">[R]esearch Lab</Text>
+
+			<Text id="descWelcome">
+
+				You are docked at a Ringers Collective. Ringer neohumans float
+				through the vast volume of the station, perfectly adapted to
+				zero-gravity and space.
+
+			</Text>
+			<Text id="descNoMissions">
+
+				A young ringer greets you as you enter the lab. His melodic
+				voice is translated through a device on his neck:
+
+				"Earthican, welcome! We seek answers to questions unrelated to
+				Earthicans. Return here later and perhaps we have questions for
+				all human-descendants."
+
+			</Text>
+			<Text id="core.commoditiesExchangeDesc">
+
+				The central structure of the Ringers Collective is a large marketplace
+				containing sophisticated and rare devices from all over Human Space.
+				Commonwealth credits are not accepted here.
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- St. Josephine Mission -->
+
+	<StationType UNID="&HS_stSistersResearchHeretic;"
+			name=				":the St. Josephine mission"
+			sovereign=			"&HS_svSistersOfDomina;"
+			inherit=			"&HS_stSistersOfDomina;"
+			   
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+			   
+			multiHull=			"true"
+			armorID=			"&HS_itLightIthaliumArmor;"
+			hitPoints=			"470"
+			regen=              "4"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			ignoreFriendlyFire=	"true"
+
+			attributes=			"friendly, hereticStation, human, majorStation, populated, religious, sistersOfDomina"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter/>
+		
+	</StationType>
+
+	<!-- TVX-1 -->
+
+	<StationType UNID="&HS_stTVX1Outpost;"
+			name=				": Taikon research outpost TVX-1"
+			sovereign=			"&HS_svCorporate;"
+			inherit=			"&HS_baCorporateStation;"
+
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+			dockingPorts=		"8"
+			ignoreFriendlyFire=	"true"
+
+			multiHull=			"true"
+			armorID=			"&HS_itQuadroCarbideArmor;"
+			hitPoints=			"610"
+			regen=              "6"
+			fireRateAdj=		"20"
+			explosionType=		"&CORE_vtThermoExplosion2;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"corporate, corporateCustoms, friendly, hereticStation, human, independent, populated"
+			>
+
+		<Image			imageID="&HS_rsStations8;" imageX="0" imageY="448" imageWidth="128" imageHeight="192"/>
+
+		<Ships>
+			<Lookup count="2" table="&HS_tbCorpDefenders;"/>
+			<Lookup count="1d4" table="&HS_tbCommPrivateCrafts;"/>
+		</Ships>
+
+		<Reinforcements minShips="4">
+			<Table>
+				<Lookup chance="75" table="&HS_tbCorpDefenders;"/>
+				<Lookup chance="25" table="&HS_tbCommPrivateCrafts;"/>
+			</Table>
+		</Reinforcements>
+
+		<Devices>
+			<Device deviceID="&HS_itHeavyIonBlaster;"	omnidirectional="true"/>
+		</Devices>
+
+		<Items>
+			<Item	count="6d12" item="&HS_itPteracniumFuelRod;"/>
+		</Items>
+
+		<Trade currency="rin">
+			<Refuel			criteria="f +unid:&HS_itPteracniumFuelRod;;" priceAdj="100"/>
+			<Refuel			criteria="f +BasicFuel; L:1-10;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-11;" priceAdj="120"/>
+			<ReplaceArmor	criteria="a L:1-11;" priceAdj="120"/>
+			<InstallDevice	criteria="d L:1-11;" priceAdj="120"/>
+			<RemoveDevice	criteria="d L:1-11;" priceAdj="100"/>
+		</Trade>
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionResearchLab" default="1">
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +taikonResearch; =" (sysGetLevel) ";")
+									noMissionTextID: 'descNoMissions
+									})
+							</Action>
+
+							<Action id="actionDockServices">
+								(rpgDockServices gPlayerShip)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<DockingPorts>
+			<Port x="68"	y="35" />
+			<Port x="42"	y="-71" />
+			<Port x="-74"	y="-39" />
+			<Port x="-38"	y="63" />
+			<Port x="90"	y="-31" />
+			<Port x="-28"	y="-90" />
+			<Port x="-101"	y="21" />
+			<Port x="36"	y="88" />
+		</DockingPorts>
+
+		<Language>
+			<Text id="actionResearchLab">[R]esearch Lab</Text>
+
+			<Text id="descWelcome">
+				You are docked at a Taikon research station.
+			</Text>
+			<Text id="descNoMissions">
+
+				A tall man in a corporate suit approaches you:
+
+				"Welcome to TVX-1! Taikon Ventures is out here in the Heretic
+				system studying Iocrym technology."
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Ares Research Outpost -->
+
+	<StationType UNID="&HS_stAresResearchHeretic;"
+			name=				"Ares research outpost"
+			sovereign=			"&HS_svAresHeretic;"
+			inherit=			"&RPG_unidCommonText;"
+
+			attributes=			"ares, hereticStation, neoHuman, populated"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+			dockScreen=			"Main"
+			ignoreFriendlyFire=	"true"
+
+			armorID=			"&HS_itHeavyTharsisPlate;"
+			hitPoints=			"610"
+			multiHull=			"true"
+			regen=              "6"
+
+			fireRateAdj=		"20"
+			explosionType=		"&CORE_vtThermoExplosion2;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			
+			definiteArticle=	"true"
+			>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&HS_itLightningCannon;" omnidirectional="true"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Ship		count="1d6"		class="&HS_scSandstorm;" orders="guard"/>
+		</Ships>
+
+		<Reinforcements minShips="5">
+			<Ship		count="1d4"		class="&HS_scSandstorm;" orders="guard"/>
+		</Reinforcements>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Table>
+				<Lookup chance="25" count="1d3" table="&HS_trConsumables7;"/>
+				<Lookup chance="25" count="1"	table="&HS_trConsumables8;"/>
+				<Lookup chance="25" count="1"	table="&HS_trMinorItem7;"/>
+				<Lookup chance="15" count="1"	table="&HS_trMinorItem8;"/>
+				<Lookup chance="10" count="1"	table="&HS_trMajorItem7;"/>
+			</Table>
+		</Items>
+
+		<!-- Image and Effects -->
+		
+		<Image			imageID="&HS_rsAresOutpost;" imageWidth="160" imageHeight="250"	viewportRatio="0.03"/>
+
+		<DockingPorts
+				portAngle=		"15"
+				portCount=		"8"
+				portRadius=		"95"
+				/>
+
+		<!-- Dock Screens -->
+
+		<DockScreens>
+			<Main>
+				<InitialPane>
+					; If the player saves the Antarctica, then the Ares will be friendly
+					(if (not (msnFind "r +unid:&HS_msEscapeFromDantalion;; +property:isSuccess;"))
+						"GetOut"
+						"Default"
+						)
+				</InitialPane>
+
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionCommandCenter" default="1">
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +aresResearch; =" (sysGetLevel) ";")
+									noMissionTextID: 'descNoMissions
+									})
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+
+					<GetOut descID="descGetOut">
+						<Actions>
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</GetOut>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<Language>
+			<Text id="actionCommandCenter">[C]ommand Center</Text>
+
+			<Text id="descWelcome">
+
+				You are docked at an Ares research outpost. Ares warriors stare
+				at you as you enter the station.
+
+			</Text>
+			<Text id="descGetOut">
+
+				Ares warriors meet you at the airlock. Their weapons are pointed at you:
+
+				"We don't want conflict, Human. Leave now and don't disturb our research."
+
+			</Text>
+			<Text id="descNoMissions">
+
+				An Ares scientist comes forward:
+
+				"Welcome, Human! It is good that we can meet under peaceful circumstances.
+				We are studying the Iocrym, but unfortunately, there are no Iocrym stations in
+				the system for us to probe. Perhaps you will have better luck elsewhere."
+
+			</Text>
+
+			<Text id="core.mapDesc">
+				Research base
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Log Buoy
+
+	EXTRA DATA
+
+	logText:			Text to display.
+
+	nextObj:			Next object in the series (if Nil, then we haven't created it yet)
+
+	-->
+
+	<StationType UNID="&HS_stLogBuoy;"
+			name=				"log buoy"
+			sovereign=			"&CORE_svNeutral;"
+			dockScreen=			"DisplayLog"
+			noMapLabel=			"true"
+			mass=				"1000"
+			mobile=				"true"
+			>
+
+		<ImageVariants>
+			<Image imageID="&HS_rsLogBuoy;" imageX="0"   imageY="0"   imageWidth="40" imageHeight="40"/>
+			<Image imageID="&HS_rsLogBuoy;" imageX="40"  imageY="0"   imageWidth="40" imageHeight="40"/>
+			<Image imageID="&HS_rsLogBuoy;" imageX="80"  imageY="0"   imageWidth="40" imageHeight="40"/>
+			<Image imageID="&HS_rsLogBuoy;" imageX="120" imageY="0"   imageWidth="40" imageHeight="40"/>
+		</ImageVariants>
+
+		<DockScreens>
+			<DisplayLog
+					backgroundID=	"none"
+					>
+				<Display animate="false">
+					<Text id="text" left="12" right="-12" top="16" bottom="-16">
+						(objGetData gSource "logText")
+					</Text>
+				</Display>
+
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(scrSetDesc gScreen 
+								"You are docked with a log buoy.\n\n"
+								"The message includes archived star system coordinates. Press Download to "
+								"program coordinates into your ship's computer."
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action name="Download Coordinates" key="D" default="1">
+								(block Nil
+									(setq nextObj (objGetObjRefData gSource "nextObj"))
+									(if nextObj
+										(block Nil
+											(shpCancelOrders gPlayerShip)
+											(shpOrder gPlayerShip 'dock nextObj)
+											)
+										)
+
+									(scrShowPane gScreen "DownloadComplete")
+									)
+							</Action>
+
+							<Action name="Undock" key="U" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+
+					<DownloadComplete descID="descDownloadComplete">
+						<Actions>
+							<Action name="Undock" key="U" default="1" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</DownloadComplete>
+				</Panes>
+			</DisplayLog>
+		</DockScreens>
+
+		<DockingPorts>
+			<Port x="0"		y="24" />
+			<Port x="0"		y="-24" />
+			<Port x="24"	y="0" />
+			<Port x="-24"	y="0" />
+		</DockingPorts>
+
+		<Language>
+			<Text id="descDownloadComplete">Download complete.</Text>
+		</Language>
+	</StationType>
+
+	<!-- Svalbard Wreck -->
+
+	<StationType UNID="&HS_stSvalbardWreck;"
+			name=				"wreck of the Svalbard Explorer"
+			sovereign=			"&CORE_svNeutral;"
+			inherit=			"&RPG_unidCommonText;"
+
+			attributes=			"shipwreck"
+
+			dockScreen=			"Main"
+
+			scale=				"ship"
+			mobile=				"true"
+			immutable=			"true"
+
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<Events>
+			<GetExplosionType>
+				(intContainerGetExplosionType gSource)
+			</GetExplosionType>
+
+			<OnDamage>
+				(intContainerOnDamage gSource aDamageHP)
+			</OnDamage>
+		</Events>
+
+		<DockScreens>
+			<Main>
+				<InitialPane>
+					(switch
+						;	If Kate Morgental is already at the Control Point, then
+						;	we don't need to do anything.
+
+						(objGetData (@ (sysFindObject Nil "T +unid:&HS_stHereticControlCenter;;") 0) 'stationMaster)
+							'EmptyWreck
+
+						;	If the quarantine has already been liftedn then nothing 
+						;	to do.
+
+						(sysGetData 'G2 'quarantineLifted)
+							'EmptyWreck
+
+						;	If we're already transfering people, then nothing to do.
+
+						(typGetGlobalData &HS_scSvalbardExplorer; 'inTransfer)
+							'EmptyWreck
+
+						'Default
+						)
+				</InitialPane>
+
+				<Panes>
+					<Default descID="textWelcome">
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(scrShowPane gScreen "Transfer")
+							</Action>
+						</Actions>
+					</Default>
+
+					<Transfer descID="textTransfer">
+						<Actions>
+							<Action id="actionUndock" default="1" cancel="1">
+								(block Nil
+									(shpCancelOrders gPlayerShip)
+									(shpOrder gPlayerShip 'dock (sysFindObject gSource "TN +hereticControlPoint"))
+
+									(typSetGlobalData &HS_scSvalbardExplorer; 'inTransfer True)
+									(scrExitDock gScreen)
+									)
+							</Action>
+						</Actions>
+					</Transfer>
+
+					<EmptyWreck descID="textEmpty">
+						<Actions>
+							<Action id="actionUndock" default="1" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</EmptyWreck>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"24"
+				maxDist=		"3"
+				/>
+
+		<Language>
+			<Text id="textWelcome">
+
+				The bridge of the Svalbard is smashed, but much of the research 
+				team survived. Kate Morgental appears from the wreckage:
+
+				"We've lost all the research! But we know that the Iocrym are 
+				controlling the quarantine from a central spot. Can you take us 
+				and our equipment to the control point? We'll set up a base 
+				there."
+			
+			</Text>
+			<Text id="textTransfer">
+
+				"We've programmed the location of the Iocrym control point into 
+				your computer. Just take us there and we'll set up a base."
+			
+			</Text>
+			<Text id="textEmpty">
+			
+				You are docked with the empty wreck of the Svalbard Explorer.
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Heretic Stargate -->
+
+	<StationType UNID="&HS_stHereticGate;"
+			name=				"Heretic Gate"
+			sovereign=			"&CORE_svNeutral;"
+			dockScreen=			"Main"
+
+			immutable=			"true"
+			inactive=			"true"
+
+			attributes=			"stargate, uncharted"
+			
+			gateEffect=			"&GLXY_efStargateOut;"
+			definiteArticle=	"true"
+			>
+		<Image imageID="&GLXY_rsDaazhenStargate;" imageWidth="350" imageHeight="350" imageFrameCount="48" imageTicksPerFrame="1" animationColumns="6"/>
+
+		<DockingPorts
+				portCount=		"4"
+				portRadius=		"190"
+				>
+		</DockingPorts>
+		
+		<DockScreens>
+			<Main
+				name=			"Heretic Gate"
+				>
+
+				<InitialPane>
+					(if (objGetData gSource "Active")
+						"Default"
+						"Activate"	
+						)
+				</InitialPane>
+
+				<Panes>
+					<Activate descID="descActivate">
+						<Actions>
+							<Action name="Activate Stargate" default="1" key="A">
+								<Navigate screen="PickItem"/>
+							</Action>
+
+							<Action name="Undock" cancel="1" key="U">
+								<Exit/>
+							</Action>
+
+						</Actions>
+
+					</Activate>
+
+					<Default descID="descDefault">
+						<Actions>
+							<Action name="Undock" cancel="1" key="U">
+								<Exit/>
+							</Action>
+
+						</Actions>
+
+					</Default>
+				</Panes>
+			</Main>
+
+			<PickItem
+					name=				"Heretic Gate"
+					type=				"itemPicker"
+					>
+
+				<ListOptions
+					dataFrom=	"player"
+					list=		"*U"
+					/>
+
+				<Panes>
+					<Default descID="descControlRoom">
+						<Actions>
+							<Action name="Use this Item" default="1" key="U">
+								(block Nil
+									(setq gItem (scrGetItem gScreen))
+									(switch
+										(eq gItem Nil)
+											Nil
+
+										(eq (itmGetType gItem) &HS_itStargateControlRod;)
+											(block Nil
+												(objSetData gSource "Active" True)
+												(staSetActive gSource)
+												(scrRemoveItem gScreen 1)
+												(scrShowPane gScreen "Success")
+												)
+
+										(scrShowPane gScreen "Failure")
+										)
+									)
+							</Action>
+
+							<Action name="Leave" cancel="1" key="L">
+								<Navigate screen="Main"/>
+							</Action>
+
+						</Actions>
+
+					</Default>
+
+					<Failure>
+						<OnPaneInit>
+							(scrSetDesc gScreen (cat "Using " (itmGetName gItem 4) " has no discernible effect on the stargate."))
+						</OnPaneInit>
+
+						<Actions>
+							<Action name="Done" default="1" cancel="1" key="D">
+								<ShowPane pane="Default"/>
+							</Action>
+						</Actions>
+
+					</Failure>
+
+					<Success descID="descSuccess">
+						<Actions>
+							<Action name="Done" default="1" cancel="1" key="D">
+								<Navigate screen="Main"/>
+							</Action>
+						</Actions>
+
+					</Success>
+				</Panes>
+
+			</PickItem>
+
+		</DockScreens>
+
+		<Language>
+			<Text id="descActivate">
+
+				You are docked at the Heretic Gate. This gate has been 
+				deactivated ever since the Ancient Races of the Galaxy 
+				quarantined Human Space. The Heretic Gate is the only barrier 
+				that stands between humanity and the rest of the Galaxy.
+				
+				It is also the only way to get to the Galactic Core.
+
+			</Text>
+			<Text id="descDefault">
+
+				You are docked at the Heretic Gate. This gate leads out of the 
+				Human Quarantine Zone and into the rest of the Galaxy.
+				
+				Your journey to the Galactic Core continues here...
+
+			</Text>
+			<Text id="descControlRoom">
+
+				You are in the alien control room of the Heretic Gate. Pick an 
+				item to use to attempt to activate the stargate.
+
+			</Text>
+			<Text id="descSuccess">
+
+				As you install the alien hyperglyph rod the machines in the 
+				control room hum with energy. The stargate spins slowly to life.
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Iocrym Control Point
+
+	EXTRA DATA
+
+	stationMaster:		Current station master
+		Nil:			Station deserted
+		'researcher:	Human researchers present
+
+-->
+
+	<StationType UNID="&HS_stHereticControlCenter;"
+			name=				"Iocrym control point"
+			sovereign=			"&CORE_svNeutral;"
+			inherit=			"&RPG_unidCommonText;"
+
+			dockScreen=			"Main"
+
+			multiHull=			"true"
+			immutable=			"true"
+
+			attributes=			"hereticControlPoint, iocrym, uncharted"
+
+			definiteArticle=	"true"
+			>
+
+		<Image imageID="&HS_rsIocrymOutpost;" imageWidth="162" imageHeight="218"/>
+		
+		<DockScreens>
+			<Main>
+				<InitialPane>
+					(switch
+						;	If we're bringing Kate and others here.
+
+						(typGetGlobalData &HS_scSvalbardExplorer; 'inTransfer)
+							'TransferSvalbardCrew
+
+						;	Otherwise, continue
+
+						'Default
+						)
+				</InitialPane>
+
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(if (objGetData gSource 'stationMaster)
+								(scrSetDescTranslate gScreen 'descWelcomeCamp)
+								(scrSetDescTranslate gScreen 'descWelcome)
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionCentralChamber" default="1">
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +hereticControlPoint; =" (sysGetLevel) ";")
+									noMissionTextID: (switch
+										(not (objGetData gSource 'stationMaster))
+											'descChamberEmpty
+
+										(sysGetData 'quarantineLifted)
+											'descDisabled
+
+										'descNoMissions
+										)
+									})
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+
+					<TransferSvalbardCrew descID="descTransferSvalbardCrew">
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(block ()
+									(shpCancelOrders gPlayerShip)
+									(typSetGlobalData &HS_scSvalbardExplorer; 'inTransfer Nil)
+									(objSetData gSource 'stationMaster 'kateMorgental)
+
+									(scrShowPane gScreen 'Default)
+									)
+							</Action>
+						</Actions>
+					</TransferSvalbardCrew>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<DockingPorts>
+			<Port x="-36"	y="80" />
+			<Port x="-87"	y="40" />
+			<Port x="-92"	y="-33" />
+			<Port x="-42"	y="-85" />
+			<Port x="36"	y="80" />
+			<Port x="87"	y="40" />
+			<Port x="92"	y="-33" />
+			<Port x="42"	y="-85" />
+		</DockingPorts>
+		
+		<Language>
+			<Text id="actionCentralChamber">[C]entral Chamber</Text>
+
+			<Text id="descWelcome">
+
+				You are docked at a massive alien structure. The walls appear to be made of a
+				blue-green crystalline substance that looks fragile but is actually immensely strong.
+
+			</Text>
+			<Text id="descWelcomeCamp">
+
+				You are docked at a massive alien structure. The walls appear to be made of a
+				blue-green crystalline substance that looks fragile but is actually immensely strong.
+
+				Cables and equipment run through the dock area into a large central chamber
+				in front of you. You see researchers working in the distance.
+
+			</Text>
+			<Text id="descChamberEmpty">
+
+				The central chamber is deserted, but the entire structure seems to hum with power.
+				Built in to the walls of the chamber you see banks of alien machines covered in
+				glowing symbols.
+
+			</Text>
+			<Text id="descNoMissions">
+
+				The central chamber is full of both familiar human equipment and strange
+				alien machines.	One of the researchers talks to you:
+
+				"The technology here is incredible. It may take years, but one day we'll
+				understand it!"
+
+			</Text>
+			<Text id="descDisabled">
+
+				Researchers have connected their scanners and computers to the alien
+				machines in the chamber. A researcher talks to you:
+
+				"Now that we've disabled the Iocrym manipulators we have a little more time
+				to study this technology. We're going to make some amazing discoveries here!
+				Maybe someday soon we'll be as advanced as the Iocrym!"
+
+			</Text>
+			<Text id="descTransferSvalbardCrew">
+
+				Kate Morgental disembarks with her research team:
+
+				"Thanks for bringing us here; our whole mission would have failed without you.
+				Fortunately we were able to salvage a lot of our equipment from the Svalbard."
+			
+			</Text>
+
+			<Text id="core.mapDesc">
+				Alien structure
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Iocrym Manipulator
+
+	EXTRA DATA
+
+	fireAngle:			Fire angle for the energy pulse
+
+	-->
+
+	<StationType UNID="&HS_stIocrymManipulator;"
+			name=				"Iocrym manipulator"
+			sovereign=			"&CORE_svNeutral;"
+			inherit=			"&RPG_unidCommonText;"
+
+			dockScreen=			"Main"
+			dockingPorts=		"4"
+				 
+			attributes=			"alien, iocrym"
+
+			multiHull=			"true"
+			immutable=			"true"
+			>
+
+		<ImageVariants>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="0"	imageWidth="192" imageHeight="192"/>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="192"	imageWidth="192" imageHeight="192"/>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="384"	imageWidth="192" imageHeight="192"/>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="576"	imageWidth="192" imageHeight="192"/>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="768"	imageWidth="192" imageHeight="192"/>
+
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="960"	imageWidth="192" imageHeight="192"/>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="1152"	imageWidth="192" imageHeight="192"/>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="1344"	imageWidth="192" imageHeight="192"/>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="1536"	imageWidth="192" imageHeight="192"/>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="1728"	imageWidth="192" imageHeight="192"/>
+
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="1920"	imageWidth="192" imageHeight="192"/>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="2112"	imageWidth="192" imageHeight="192"/>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="2304"	imageWidth="192" imageHeight="192"/>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="2496"	imageWidth="192" imageHeight="192"/>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="2688"	imageWidth="192" imageHeight="192"/>
+
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="2880"	imageWidth="192" imageHeight="192"/>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="3072"	imageWidth="192" imageHeight="192"/>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="3264"	imageWidth="192" imageHeight="192"/>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="3456"	imageWidth="192" imageHeight="192"/>
+			<Image imageID="&HS_rsIocrymManipulator;" imageX="0" imageY="3648"	imageWidth="192" imageHeight="192"/>
+		</ImageVariants>
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(switch
+								(sysGetData 'quarantineLifted)
+									(scrSetDescTranslate gScreen 'descInactive)
+
+								(scrSetDescTranslate gScreen 'descWelcome)
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionUndock" cancel="1" default="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<Events>
+			<OnCreate>
+				(sysAddObjRecurringTimerEvent 150 gSource "OnFirePulse")
+			</OnCreate>
+
+			<OnFirePulse>
+				(if (not (sysGetData 'quarantineLifted))
+					(sysCreateWeaponFire
+						&HS_itIocrymManipulator;
+						gSource
+						(objGetPos gSource)
+						(objGetData gSource "fireAngle")
+						50
+						Nil
+						)
+					)
+			</OnFirePulse>
+		</Events>
+
+		<Language>
+			<Text id="descWelcome">
+				You are docked at an alien structure of immense size. Vast energies pulse
+				through its core and a massive beam of incredible power erupts regularly
+				out of one end. You feel a dizzying vertigo just being near it.
+			</Text>
+			<Text id="descInactive">
+				You are docked at an Iocrym structure of immense size. Though it has
+				fortunately been deactivated, its purpose was to warp the gravity well
+				around the Heretic sun and prevent anyone from leaving the inner system.
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Heretic Sun -->
+
+	<StationType UNID="&HS_stHereticSun;"
+			name=				"Heretic"
+			scale=				"star"
+
+			attributes=			"star"
+				 
+			spaceColor=			"#495167"
+			maxLightRadius=		"610"
+			>
+		
+		<ImageEffect>
+			<Orb
+					style=			"smooth"
+					radius=			"490"
+					intensity=		"25"
+					primaryColor=	"#a6beff"
+					secondaryColor=	"#a6beff"
+					/>
+		</ImageEffect>
+		
+		<Events>
+			<OnCreate>
+				(sysAddObjRecurringTimerEvent 30 gSource "OnEffect")
+			</OnCreate>
+
+			<OnEffect>
+				(if (not (sysGetData 'quarantineLifted))
+					(sysCreateEffect &HS_efIocrymManipulatorWaves; gSource Nil)
+					)
+			</OnEffect>
+		</Events>
+	</StationType>
+
+	<Effect UNID="&HS_efIocrymManipulatorWaves;">
+		<Shockwave
+				style=			"glowRing"
+				lifetime=		"40"
+				speed=			"20"
+				
+				width=			"2"
+				glowSize=		"12"
+				fadeStart=		"0"
+				primaryColor=	"0xff, 0xc0, 0xff"
+				secondaryColor=	"0xff, 0x80, 0xff"
+				/>
+	</Effect>
+
+	<!-- Space Environments -->
+
+	<SpaceEnvironmentType UNID="&HS_seSpacetimeQuarantine;"
+			lrsJammer=			"true"
+			dragFactor=			"73"
+			attributes=			"nebula"
+
+			mapColor=			"#be83ac"
+			autoEdges=			"true"
+			>
+
+		<Image imageID="&GLXY_rsLightNebula;" 
+				imageX="0" 
+				imageY="0" 
+				imageWidth="2048" 
+				imageHeight="2048"/>
+
+		<Events>
+			<OnObjUpdate>
+				(block (
+					(thePos (objGetPos aObj))
+					(theRadius (sysVectorDistance thePos))
+					(theLimit (sysGetData 'quarantineRadius))
+					)
+					(if (and (gr theRadius theLimit) (not (sysGetData 'quarantineLifted)))
+						(block (
+							(theAngle (sysVectorAngle thePos))
+							)
+							(objSetPos aObj (sysVectorPolarOffset Nil (+ theAngle 180) (- theLimit 10)))
+							)
+						)
+					)
+			</OnObjUpdate>
+		</Events>
+	</SpaceEnvironmentType>
+
+	<!-- Heretic System
+
+	EXTRA DATA
+
+	quarantineLifted:			Quarantine field disabled
+	quarantineRadius:			Quarantine field radius
+
+	-->
+
+	<SystemType UNID="&HS_ssHeretic;" 
+			name=				"Heretic"
+			attributes=			"nonExtensible"
+			backgroundID=		"&GLXY_rsLightNebulaSpace;"
+			spaceColor=			"#282a3c"
+			spaceEnvironmentTileSize=	"large"
+			noRandomEncounters=	"true"
+			noExtraEncounters=	"true"
+			>
+		<SystemGroup>
+
+			<!-- Star -->
+			
+			<Station type="&HS_stHereticSun;" name="1766 Zhang"/>
+
+			<AddAttribute attributes="GTypeSystem"/>
+			<AddTerritory minRadius="0"		maxRadius="370"		attributes="innerSystem, rockyComp, cinderZone"/>
+			<AddTerritory minRadius="370"	maxRadius="620"		attributes="lifeZone, rockyComp, desertZone"/>
+			<AddTerritory minRadius="620"	maxRadius="0"		attributes="outerSystem, rockyComp, frostZone"/>
+			
+			<!-- Control Center -->
+
+			<Orbitals distance="90" angle="90">
+				<Station type="&HS_stHereticControlCenter;"/>
+			</Orbitals>
+
+			<!-- Pteravore lairs around the manipulators -->
+
+			<Orbitals count="3d2" distance="65-80" angle="minSeparation:10">
+				<Station type="&HS_stPteravoreLair;"/>
+			</Orbitals>
+
+			<!-- Archipelago -->
+
+			<Orbitals distance="4" scale="light-minute" angle="random">
+				<Group>
+					<Station chance="5" type="&GLXY_stRockyAsteroidSizeB;"/>
+
+					<Siblings count="6d4+1" angle="equidistant" radiusInc="-120-120">
+						<Group>
+							<Table>
+								<Lookup chance="75" table="AsteroidArc25"/>
+								<Lookup chance="25" table="AsteroidArc50"/>
+							</Table>
+
+							<Siblings arcInc="-60-60" radiusInc="8-16">
+								<Label attributes="archipelago, asteroids"/>
+							</Siblings>
+						</Group>
+					</Siblings>
+				</Group>
+			</Orbitals>
+
+			<!-- Place the stations around the archipelago -->
+
+			<RandomLocation locationCriteria="*archipelago">
+				<Group>
+					<Lookup table="StargateInbound"/>
+					<Orbitals distance="24-36" angle="random">
+						<Station type="&HS_stHereticStation;"/>
+					</Orbitals>
+				</Group>
+				<Station type="&HS_stCommonwealthResearchHeretic;"/>
+				<Marker objName="svalbardMarker"/>
+				<Station type="&HS_stRingersResearchHeretic;"/>
+				<Station type="&HS_stSistersResearchHeretic;"/>
+				<Station type="&HS_stTVX1Outpost;"/>
+				<Station type="&HS_stAresResearchHeretic;"/>
+			</RandomLocation>
+
+			<!-- Heretic II -->
+
+			<Orbitals distance="8" scale="light-minute" angle="random">
+				<Group>
+					<Station type="&GLXY_stRockyPlanetoidSizeE;"
+							name="Heretic II"
+							showOrbit="true"
+							/>
+
+					<Siblings count="4d4+8" distribution="4d40-82">
+						<Station type="&GLXY_stRockyAsteroidSizeA;"/>
+					</Siblings>
+				</Group>
+			</Orbitals>
+
+			<!-- Nebula -->
+
+			<Orbitals count="2d4" distance="300-420" angle="random">
+				<SpaceEnvironment 
+						type=			"&GLXY_seLightNebula;"
+						shape=			"arc" 
+						width=			"60"
+						widthVariation=	"100"
+						span=			"1d40+50"
+						erode=			"50"
+
+						patchType=		"&GLXY_efNebula;"
+						patchFrequency=	"50"
+
+						encountersCount="1d4+2"
+						>
+					<Label attributes="brightNebulae, innerNebula, nebulae, void"/>
+				</SpaceEnvironment>
+			</Orbitals>
+
+			<Orbitals count="2d4" distance="780-880" angle="random">
+				<SpaceEnvironment 
+						type=			"&GLXY_seLightNebula;"
+						shape=			"arc" 
+						width=			"60"
+						widthVariation=	"100"
+						span=			"1d40+50"
+						erode=			"50"
+
+						patchType=		"&GLXY_efNebula;"
+						patchFrequency=	"50"
+
+						encountersCount="1d4+2"
+						>
+					<Label attributes="brightNebulae, outerNebula, nebulae, void"/>
+				</SpaceEnvironment>
+			</Orbitals>
+
+			<Orbitals distance="960" angle="random">
+				<SpaceEnvironment 
+						type=			"&HS_seSpacetimeQuarantine;"
+						shape=			"circular" 
+						width=			"120"
+						widthVariation=	"50"
+						>
+				</SpaceEnvironment>
+			</Orbitals>
+			
+			<!-- Some Iocrym outposts are hidden in the nebula -->
+			
+			<RandomLocation count="1d4" locationCriteria="*outerNebula">
+				<Station type="&HS_stIocrymOutpost;"/>
+			</RandomLocation>
+
+			<!-- Heretic III -->
+
+			<Orbitals distance="24" scale="light-minute" angle="random">
+				<Group>
+					<Station type="&GLXY_stRockyPlanetoidSizeG;" 
+							name="Heretic III" 
+							showOrbit="true"
+							/>
+
+					<Orbitals distance="2d12" angle="random">
+						<Stargate objName="Outbound" type="&HS_stHereticGate;">
+							<Ships>
+								<Ship	class="&HS_scIocrymCommandShip;" count="1" sovereign="&HS_svIocrym;" orders="patrol" patrolDist="20">
+									<Items>
+										<Item count="1" item="&HS_itStargateControlRod;"/>
+									</Items>
+								</Ship>
+							</Ships>
+						</Stargate>
+					</Orbitals>
+				</Group>
+			</Orbitals>
+
+		</SystemGroup>
+
+		<Events>
+			<OnCreate>
+				(block (
+					(angularSep 18)
+					(radius 60)
+
+					(varCount 20)
+					(varOffset (multiply (divide varCount 4) 3))
+					(varAngle (divide 360 varCount))
+					(objCount (divide 360 angularSep))
+					(theAngle 0)
+					)
+					;	Create manipulators around central star
+					(for i 1 objCount
+						(block (theObj)
+							(setq theObj 
+								(sysCreateStation &HS_stIocrymManipulator; (sysVectorPolarOffset Nil theAngle radius)))
+
+							; Variant
+							(staSetImageVariant theObj
+								(modulo
+									(subtract varCount (modulo (add (divide theAngle varAngle) varOffset 10) varCount))
+									varCount
+									)
+								)
+
+							; Set the fire angle
+							(objSetData theObj "fireAngle" (modulo (add theAngle 180) 360))
+
+							; Do not show a map label
+							(staSetShowMapLabel theObj Nil)
+
+							; Next
+							(setq theAngle (add theAngle angularSep))
+							)
+						)
+
+					;	Set the quarantine radius
+					(sysSetData 'quarantineRadius 940)
+					)
+			</OnCreate>
+			
+			<OnObjJumpPosAdj>
+				(block Nil
+					; Do not allow the player to jump outside of the quarantine
+					
+					(if (not (sysGetData 'quarantineLifted))
+						(block (
+							(theRadius (sysVectorDistance aJumpPos))
+							(theLimit (sysGetData 'quarantineRadius))
+							)
+							(if (gr theRadius theLimit)
+								(setq aJumpPos (sysVectorPolarOffset Nil (+ (sysVectorAngle aJumpPos) 180) (- (+ theLimit theLimit -10) theRadius)))
+								)
+							)
+						)
+						
+					aJumpPos
+					)
+			</OnObjJumpPosAdj>
+		</Events>
+
+		<Language>
+			<Text id="sisters.dominaRevealStargate">
+				(block (
+					(gateObj (sysFindObject gPlayerShip "tN +unid:&HS_stHereticGate;;"))
+					)
+					(switch
+						(objGetProperty gateObj 'active)
+							(typTranslate &HS_ssHeretic; 'descRevealHereticGateActive)
+							
+						(objIsKnown gateObj)
+							(typTranslate &HS_ssHeretic; 'descRevealHereticGateInactive)
+
+						(block Nil
+							(objSetKnown gateObj)
+							(typTranslate &HS_ssHeretic; 'descRevealHereticGateUnknown)
+							)
+						)
+					)
+			</Text>
+			
+			<Text id="descRevealHereticGateActive">
+				A connection with Domina is denied to you, but your brief attempt
+				points the way to your destiny's end.
+
+				A vision of the Heretic Gate appears in your mind, prompting feelings
+				of excitement mixed with dread.
+			</Text>
+			<Text id="descRevealHereticGateInactive">
+				A connection with Domina is denied to you, but your brief attempt
+				reveals a future vision of the Heretic Gate.
+
+				You see it pulsing with ancient energies and spinning up to full working order.
+			</Text>
+			<Text id="descRevealHereticGateUnknown">
+				A connection with Domina is denied to you, but your brief attempt
+				points the way forward.
+
+				You see an ancient stargate at the edge of the system, guarded by a crystalline monster.
+			</Text>
+		</Language>
+	</SystemType>
+
+	<!-- Globals -->
+
+	<Globals>
+		(block Nil
+			(setq herAttackInProgress (lambda (theStation)
+				(sysFindObject theStation "sAE N:60; O:attack;")
+				))
+				
+			; controlPointCamp:			Control point camp established
+			; currentMission:			Current mission in progress
+			; missionAres:				Ares mission successful
+			; missionHuygensExplorer:	Huygens Explorer destroyed
+			; missionMaryamsArchive:	AI has given info to player
+			; missionMRAD:				MRAD experiment successful
+			; missionSvalbardExplorer:	Svalbard Explorer completed its run
+			; missionTaikon:			Iocrym cybernetic tower found
+			; sentinelAttack:			Sentinels are attacking stations
+
+			(setq herStatus (lambda (statusField)
+				(typGetGlobalData &HS_scSvalbardExplorer; statusField)
+				))
+				
+			(setq herStatusClear (lambda (statusField)
+				(typSetGlobalData &HS_scSvalbardExplorer; statusField Nil)
+				))
+				
+			(setq herStatusSet (lambda (statusField theValue)
+				(block Nil
+					(if (not theValue)
+						(setq theValue True)
+						)
+					(typSetGlobalData &HS_scSvalbardExplorer; statusField theValue)
+					)
+				))
+			)
+	</Globals>
+
+<!-- Resources -->
+
+	<Image UNID="&HS_rsIocrymManipulator;"		bitmap="Resources\IocrymManipulator.jpg" bitmask="Resources\IocrymManipulatorMask.bmp" loadOnUse="true"/>
+	
+	<Image UNID="&HS_rsHereticItems;"			bitmap="Resources\HereticItems.jpg" bitmask="Resources\HereticItemsMask.bmp" />
+	<Image UNID="&HS_rsHereticMissionTile;"	bitmap="Resources\HereticMissionTile.jpg" />
+
+</TranscendenceModule>

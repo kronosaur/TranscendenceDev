@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- DOCK SCREENS -->
+
+	<!-- Donate Screen	-->
+	
+	<DockScreen unid="&HS_dsSistersDonate;"
+			nestedScreen=		"true"
+			inherit=			"&RPG_dsDockScreenBase;"
+			>
+	</DockScreen>
+
+	<!-- Domina Donate Item	-->
+
+	<DockScreen UNID="&HS_dsDominaDonateItem;"
+			type=				"itemPicker"
+			nestedScreen=		"true"
+			inherit=			"&RPG_dsDockScreenBase;"
+			>
+	</DockScreen>
+
+<!-- TABLES -->
+
+	<Type unid="&HS_tbSistersDonation;">
+	</Type>
+
+</TranscendenceModule>

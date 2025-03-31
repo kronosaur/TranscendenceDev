@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- RUMOR SCREEN ==============================================================
+
+	This screen is used to show rumors.
+
+	gData uses the following fields:
+
+		attributes: A list of attributes for this rumor. [Used when generating the rumor]
+
+		priority: The priority of this rumor. [Used when generating the rumor]
+
+		sourceObj: The object which generated the rumor (maybe a station or mission)
+
+		onExitRumor: (lambda (theRumor) ...)
+				This function is called when we leave the rumor screen
+
+		dialogID: Language ID of a dsRPGDialog structure stored in sourceObj
+
+
+		For simple single-page rumors the paneDesc may be merged directly into
+		the rumor structure allowing the following paneDesc fields to be used
+		instead of dialogID:
+
+		textID: ID of language element in sourceObj
+
+		data: data passed to msn/objTranslate
+
+		desc: The description to show for the pane.	[Valid only if textID is Nil.]
+
+-->
+
+	<DockScreen UNID="&RPG_dsRPGRumor;"
+			nestedScreen=		"true"
+			inherit=			"&RPG_dsDockScreenBase;"
+			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(or (@ gData 'rankDetails)
+					(objTranslate gSource 'rpg.statusDetails)
+					)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(sourceObj (@ gData 'sourceObj))
+						(sourceTyp (@ gData 'sourceType))
+						(translateData (struct 
+							(@ gData 'data) 
+							{ rumorGiver: (@ gData 'rumorGiver)	}
+							))
+						(rumorIntro (objTranslate gSource 'rumor.intro translateData))
+						(descID (or (@ gData 'descID) (@ gData 'textID)))
+						(missionObj 
+							(if (= (objGetProperty sourceObj 'category) 'mission) 
+								sourceObj
+								)
+							)
+
+						(theRumor (switch
+							;	If we have a dialogID then translate from sourceObj
+							;	This could be a complex multi-page RPGDialog case
+							(@ gData 'dialogID)
+								(switch
+									sourceObj
+										(objTranslate sourceObj (@ gData 'dialogID) translateData)
+
+									sourceTyp
+										(typTranslate sourceTyp (@ gData 'dialogID) translateData)
+									)
+
+							;	For scanning we create a more complex dialog
+							(and (= (@ gData 'special) 'scan) sourceObj (not (obj@ sourceObj 'known)))
+								(list
+									{	descID: (@ gData 'textID)
+										actions: (list
+											{	nextPage: 'addCoords	labelID: 'actionAddCoords	}
+											{	nextPage: 'exitPane		labelID: 'actionDone		}
+											)
+										}
+									{	id: 'addCoords
+										desc: (scrTranslate gScreen 'descCoordsAdded {
+											destName: (objGetName sourceObj 'definitePhrase)
+											})
+										sourceObj: sourceObj
+										code: (lambda (pageDesc)
+											(block (
+												(sourceObj (@ pageDesc 'sourceObj))
+												)
+												(objSetKnown sourceObj)
+												(objSetShowAsDestination sourceObj 'autoClear)
+												)
+											)
+										}
+									)
+
+							;	If the station showing the rumor has an intro then prepend it
+							rumorIntro
+								{
+									desc: (cat rumorIntro
+										(or
+											(objTranslate sourceObj descID translateData)
+											(typTranslate sourceTyp descID translateData)
+											(@ gData 'desc)
+											)
+										)
+									}
+
+							;	If we have a global rumor then we need to translate descID
+							sourceTyp
+								{
+									desc: (or
+										(typTranslate sourceTyp descID translateData)
+										(@ gData 'desc)
+										)
+									}
+
+							;	Otherwise just pass the gData structure
+							gData
+							))
+						)
+
+						(rpgPagePaneInit gScreen theRumor
+							{
+								actionDoneID: (or (@ gData 'actionDoneID) 'actionContinue)
+								;	sourceObj may be either mission or space object, but
+								;	objTranslate and msnTranslate are identical so this works
+								missionObj: missionObj
+								translateType: (if sourceTyp sourceTyp (objGetType sourceObj))
+								translateData: translateData
+								rumorObj: gData
+								onExitPane: (lambda (theScreen pageDesc options)
+									(block (
+										(theRumor (@ options 'rumorObj))
+										(code (@ theRumor 'onExitRumor))
+										)
+										(if code (code theRumor))
+										(scrExitScreen theScreen)
+										)
+									)
+								}
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="actionAddCoords">[R]emember Coordinates</Text>
+			<Text id="descCoordsAdded">
+			
+				You add the coordinates of %destName% to your ship's computer.
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+<!-- GLOBALS -->
+
+	<Globals>
+		(block Nil
+			(setq rpgRumorAdd (lambda (attrib suffix priority special data)
+
+				;	Wrapper function to simplify adding a rumor(s) to a station/mission
+				;	Rumor text should be in language element:
+				;		rumor.attrib[.suffix]
+				;
+				;	attrib:	Rumor attribute e.g. commonwealthMining
+				;	suffix:	Added to the end of textID. May be a sequence [optional]
+				;	priority:	Rumor priority [default 10]
+				;	special:	May be one of the following:
+				;		'scan		Scan (i.e. objSetKnow) the source station after displaying rumor
+				;		(lambda)		Code to execute after displaying rumor
+				;	data:	Data passed to msn/objTranslate when translating text element
+
+				(map (if (isatom suffix) (list suffix) suffix) suf
+					{
+						attributes: attrib
+						priority: (or priority 10)
+						textID: (cat "rumor." attrib (if suf ".") suf)
+						special: (if (= special 'scan) special)
+						data: data
+						onExitRumor: 
+							(switch
+								(isfunction special) 
+									special
+								)
+						}
+					)
+				))
+
+			(setq rpgRumorParseCriteria (lambda (criteriaString)
+
+				;	Parses a standard attribute requirement string split into
+				;	lists of required and excluded attributes
+
+				(block (
+					(criteria (split criteriaString " ,;"))
+					)
+					{
+						require: (map criteria 'excludeNil attr (if (= (strFind attr '+) 0) (subset attr 1)))
+						exclude: (map criteria 'excludeNil attr (if (= (strFind attr '-) 0) (subset attr 1)))
+						}
+					)
+				))
+
+			(setq rpgGetRumor (lambda (options)
+
+				;	Options may contain the following fields
+				;
+				;		rumorCriteria: Criteria used to find suitable rumors. If not
+				;				supplied then fallback to mission/display criteria
+				;
+				;		rumorGiver: The character info for the character giving the 
+				;				rumor (as returned by rpgCharacterGetInfo). This is passed
+				;				as a field in gData when translating text.
+				;
+				;		actionDoneID: Action ID to use for the done button (defaults to
+				;				'actionContinue).
+				;
+				;		rumorInterval: If greater than 0, then we keep the same rumor for 
+				;				the given number of ticks.
+
+				(block (
+					;	
+					(rumorCriteria (or
+							(@ options 'rumorCriteria)
+							(@ options 'displayCriteria)
+							(@ options 'missionCriteria)
+						))
+
+					;	Parse rumorCriteria into list of required and excluded attributes
+					(rumorAttributes (rpgRumorParseCriteria rumorCriteria))
+
+					;	Data passed to GetRumor event
+					(eventData {
+						stationObj:gSource
+						})
+
+					;	Lambda to set rumor defaults
+					(setRumorDefaults (lambda (default rumors)
+						(switch
+							(= (typeOf rumors) 'struct)
+								(struct default rumors)
+							(= (typeOf rumors) 'list)
+								(map rumors theRumor
+									(struct default theRumor)
+									)
+							)
+						))
+
+					;	Build rumor list from: global types, local stations, and missions
+					(allRumors (apply append (append
+						(map (typFind "* +event:GetGlobalRumors;") 'excludeNil theType
+							(setRumorDefaults
+								{	sourceType: theType	stationObj:gSource }
+								(typFireEvent theType 'GetGlobalRumors eventData)
+								)
+							)
+						(map (sysFindObject Nil "sTAV +event:GetRumors;") 'excludeNil theObj
+							(setRumorDefaults
+								{	sourceObj: theObj	stationObj:gSource }
+								(objFireEvent theObj 'GetRumors eventData)
+								)
+							)
+						(map (msnFind "* +event:GetRumors;") 'excludeNil msnObj
+							(setRumorDefaults
+								{	sourceObj: msnObj	stationObj:gSource }
+								(msnFireEvent msnObj 'GetRumors eventData)
+								)
+							)
+						)))
+
+					(filteredRumors (map allRumors '(original excludeNil) theRumor
+						(block (
+							(attributes (split (@ theRumor 'attributes) " ,;"))
+							)
+							(and
+								(apply and (map (@ rumorAttributes 'require) attr (find attributes attr)))
+								(apply and (map (@ rumorAttributes 'exclude) attr (not (find attributes attr))))
+								)
+							)
+						))
+
+					;	Rumor interval defaults to 1800
+					(rumorInterval (or (@ options 'rumorInterval) 1800))
+
+					;	Chance of rumor being selected is proportional to its priority
+					;	If all priorities are equal this is equivalent to (random rumorList)
+					(maxRoll
+						(+ (map filteredRumors theRumor (or (@ theRumor 'priority) 10)))
+						)
+
+					(theRoll 
+						(switch
+							(gr rumorInterval 0)
+								(seededRandom (* (objGetProperty gSource 'destiny) (divide (unvGetTick) rumorInterval)) 1 maxRoll)
+
+							(random 1 maxRoll)
+							)
+						)
+
+					(theRumor (match filteredRumors theRumor
+						(ls (setq theRoll (- theRoll (or (@ theRumor 'priority) 10))) 1)
+						))
+					)
+
+					(if (@ options 'debug)
+						(block ()
+							(dbgOutput "All: " allRumors)
+							(dbgOutput "Filtered: " filteredRumors)
+							(dbgOutput "Rumor: " theRumor)
+							)
+						)
+
+					(if (and theRumor (@ options 'actionDoneID))
+						(set@ theRumor 'actionDoneID (@ options 'actionDoneID))
+						)
+
+					(switch
+						(not theRumor)
+							Nil
+
+						(@ options 'rumorGiver)
+							(set@ theRumor 'rumorGiver (@ options 'rumorGiver))
+
+						(@ options 'missionGiver)
+							(set@ theRumor 'rumorGiver (@ options 'missionGiver))
+						)
+
+					(if (and theRumor (@ options 'rankDetails))
+						(set@ theRumor 'rankDetails (@ options 'rankDetails))
+						)
+
+					theRumor
+					)
+				))
+
+			(setq rpgRumorShow (lambda (options)
+
+				;	Options may contain the following fields
+				;
+				;		rumorCriteria: Criteria used to find suitable rumors. If not
+				;				supplied then fallback to mission/display criteria
+				;
+				;		noRumorTextID: Language ID to display if there are no rumors
+				;				available at this station. [Required]
+				;
+				;		actionDoneID: Action ID to use for the done button (defaults to
+				;				'actionContinue).
+
+				(block (
+					(noRumorTextID (@ options 'noRumorTextID))
+					theRumor
+					)
+					(switch
+						;	Check if we have any rumors
+						(setq theRumor (rpgGetRumor options))
+							(scrShowScreen gScreen &RPG_dsRPGRumor; theRumor)
+
+						; Otherwise, nothing
+						(scrShowScreen gScreen &RPG_dsRPGMessage; { desc:(scrTranslate gScreen noRumorTextID) })
+						)
+					)
+				))
+			)
+	</Globals>
+
+</TranscendenceModule>
+

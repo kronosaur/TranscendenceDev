@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Sovereign UNID="&HS_svAres;"
+			name=":the Ares Orthodoxy"
+			shortName=":the Ares"
+			adjective="Ares"
+			demonym="Arean(s)"
+
+			alignment="destructive order"
+			/>
+
+	<SystemMap unid="&HS_smAresSpace;"
+			displayOn="&HS_smHumanSpace;"
+			>
+		<TopologyProcessor priority="primaryColony">
+			<System criteria="+outerRealm;" attributes="aresSpace"/>
+		</TopologyProcessor>
+	</SystemMap>
+
+	<!-- Level 7: Ares Outpost -->
+
+	<StationType UNID="&HS_stAresOutpost;"
+			name=				"Ares outpost"
+			sovereign=			"&HS_svAres;"
+
+			attributes=			"ares, enemy, envAir, envEarth, envFire, envWater, generic, neoHuman, populated"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			armorID=			"&HS_itLightTharsisPlate;"
+			hitPoints=			"370"
+			multiHull=			"true"
+			regen=              "4"
+
+			fireRateAdj=		"40"
+			explosionType=		"&CORE_vtThermoExplosion1;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+humanSpace;"
+				distanceCriteria=		"+aresSpace;"
+				distanceFrequency=		"ccccc|rv---"
+				systemAffinity=			"*"
+				levelFrequency=			"----- rcur- ----- ----- -----"
+
+				locationCriteria=		"-asteroids"
+				enemyExclusionRadius=	"80"
+				/>
+
+		<Encounters frequency="common">
+			<Lookup table="&HS_tbAresEncounters;"/>
+		</Encounters>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&HS_itLightningCannon;" omnidirectional="true"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Ship		count="1d6"		class="&HS_scSandstorm;" orders="guard"/>
+		</Ships>
+
+		<Reinforcements minShips="5">
+			<Ship		count="1d4"		class="&HS_scSandstorm;" orders="guard"/>
+		</Reinforcements>
+
+		<!-- Treasure -->
+
+		<Items value="standard:level=7:x=1.3">
+			<Table>
+				<Lookup chance="25" count="1d3" table="&HS_trConsumables7;"/>
+				<Lookup chance="25" count="1"	table="&HS_trConsumables8;"/>
+				<Lookup chance="25" count="1"	table="&HS_trMinorItem7;"/>
+				<Lookup chance="15" count="1"	table="&HS_trMinorItem8;"/>
+				<Lookup chance="10" count="1"	table="&HS_trMajorItem7;"/>
+			</Table>
+		</Items>
+
+		<!-- Image and Effects -->
+		
+		<Image			imageID="&HS_rsAresOutpost;" imageWidth="160" imageHeight="250"	viewportRatio="0.03"/>
+
+		<DockingPorts
+				portAngle=		"15"
+				portCount=		"8"
+				portRadius=		"95"
+				/>
+
+	</StationType>
+
+	<!-- Level 9: Ares Commune -->
+
+	<StationType UNID="&HS_stAresCommune;"
+			name=				"Ares commune"
+			sovereign=			"&HS_svAres;"
+
+			attributes=			"ares, aresMajor, enemy, envAir, envEarth, envFire, envWater, generic, majorStation, neoHuman, populated"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			armorID=			"&HS_itTharsisPlate;"
+			hitPoints=			"2400"
+			multiHull=			"true"
+			regen=              "25"
+
+			explosionType=		"&CORE_vtThermoExplosion4;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+humanSpace;"
+				distanceCriteria=		"+aresSpace;"
+				distanceFrequency=		"ccccu|v----"
+				systemAffinity=			"*"
+				levelFrequency=			"----- -vuur ----- ----- -----"
+
+				locationCriteria=		"-asteroids"
+				enemyExclusionRadius=	"100"
+				/>
+
+		<Encounters frequency="common">
+			<Lookup table="&HS_tbAresEncounters;"/>
+		</Encounters>
+
+		<!-- Configuration -->
+
+		<!-- Satellites -->
+
+		<Satellites overlapCheck="asteroids">
+			<LevelTable>
+				<Orbitals levelFrequency="----- cccur ----- -----" count="3d3" distance="12" angle="equidistant">
+					<Ship class="&HS_scAresSentry;" count="1" sovereign="&HS_svAres;" orders="sentry"/>
+				</Orbitals>
+				<Orbitals levelFrequency="----- --rcu r---- -----" count="2d3" distance="12" angle="equidistant">
+					<Ship class="&HS_scAresDualSentry;" count="1" sovereign="&HS_svAres;" orders="sentry"/>
+				</Orbitals>
+				<Orbitals levelFrequency="----- ---rc ur--- -----" count="1d3+1" distance="12" angle="equidistant">
+					<Ship class="&HS_scAresAdvancedSentry;" count="1" sovereign="&HS_svAres;" orders="sentry"/>
+				</Orbitals>
+			</LevelTable>
+		</Satellites>
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Ship		count="1d2"		class="&HS_scTundra;" orders="guard"/>
+			<Ship		count="1d6"		class="&HS_scSandstorm;" orders="patrol" patrolDist="5"/>
+		</Ships>
+
+		<Reinforcements minShips="6">
+			<Table>
+				<Ship chance="75"	count="1d4" class="&HS_scSandstorm;" orders="patrol" patrolDist="5"/>
+				<Ship chance="25"	count="1" class="&HS_scTundra;" orders="guard" />
+			</Table>
+		</Reinforcements>
+
+		<!-- Treasure -->
+
+		<Items value="standard:level=8:x=8">
+			<Table>
+				<Lookup chance="25" count="1d3" table="&HS_trConsumables8;"/>
+				<Lookup chance="25" count="1"	table="&HS_trConsumables9;"/>
+				<Lookup chance="25" count="1"	table="&HS_trMinorItem8;"/>
+				<Lookup chance="15" count="1"	table="&HS_trMinorItem9;"/>
+				<Lookup chance="10" count="1"	table="&HS_trMajorItem8;"/>
+			</Table>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&HS_rsAresCommune;" imageWidth="360" imageHeight="360"	viewportRatio="0.03375"/>
+
+		<DockingPorts>
+			<Port posAngle="-75"   posRadius="80"	posZ="0" />
+			<Port posAngle="45"    posRadius="80"	posZ="0" />
+			<Port posAngle="165"   posRadius="80"	posZ="0"	bringToFront="true" />
+
+			<Port posAngle="-45"   posRadius="120"	posZ="-60"	rotation="75"/>
+			<Port posAngle="15"    posRadius="120"	posZ="-60"	rotation="-105"/>
+
+			<Port posAngle="75"    posRadius="120"	posZ="-60"	rotation="-165"/>
+			<Port posAngle="135"   posRadius="120"	posZ="-60"	rotation="15"	bringToFront="true"/>
+
+			<Port posAngle="195"   posRadius="120"	posZ="-60"	rotation="-45"	sendToBack="true"/>
+			<Port posAngle="-105"  posRadius="120"	posZ="-60"	rotation="135"/>
+		</DockingPorts>
+
+	</StationType>
+
+	<!-- Level 9: Ares Shipyard -->
+
+	<StationType UNID="&HS_stAresShipyard;"
+			name=				"Ares shipyard"
+			sovereign=			"&HS_svAres;"
+
+			attributes=			"ares, aresMajor, enemy, envAir, envEarth, envFire, envWater, generic, majorStation, neoHuman, populated"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			armorID=			"&HS_itMassiveTharsisPlate;"
+			hitPoints=			"3600"
+			multiHull=			"true"
+			regen=              "22"
+
+			explosionType=		"&CORE_vtPlasmaExplosion3;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+humanSpace;"
+				distanceCriteria=		"+aresSpace;"
+				distanceFrequency=		"cccur|-----"
+				systemAffinity=			"*"
+				levelFrequency=			"----- --vuu ----- ----- -----"
+
+				locationCriteria=		"-asteroids"
+				enemyExclusionRadius=	"150"
+				/>
+
+		<Encounters frequency="common">
+			<Lookup table="&HS_tbAresEncounters;"/>
+		</Encounters>
+
+		<!-- Configuration -->
+
+		<!-- Satellites -->
+
+		<Satellites overlapCheck="asteroids">
+			<LevelTable>
+				<Orbitals levelFrequency="----- cccur ----- -----" count="5d3" distance="18" angle="equidistant">
+					<Ship class="&HS_scAresSentry;" count="1" sovereign="&HS_svAres;" orders="sentry"/>
+				</Orbitals>
+				<Orbitals levelFrequency="----- -rcur ----- -----" count="4d3" distance="18" angle="equidistant">
+					<Ship class="&HS_scAresDualSentry;" count="1" sovereign="&HS_svAres;" orders="sentry"/>
+				</Orbitals>
+				<Orbitals levelFrequency="----- --rcc ur--- -----" count="3d3" distance="18" angle="equidistant">
+					<Ship class="&HS_scAresAdvancedSentry;" count="1" sovereign="&HS_svAres;" orders="sentry"/>
+				</Orbitals>
+			</LevelTable>
+		</Satellites>
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Ship		count="1d2"		class="&HS_scTundra;"					orders="guard"/>
+			<Ship		count="1d6"		class="&HS_scSandstorm;"				orders="patrol:5"/>
+			<Table>
+				<Ship	chance="40"	count="1d4+2"	class="&HS_scChasm;"		orders="patrol:5"/>
+				<Ship	chance="40" count="1d2"		class="&HS_scDeimos;"		orders="patrol:8"/>
+				<Ship	chance="10" count="4d6"		class="&HS_scSandstorm;"	orders="patrol:8"/>
+				<Ship	chance="10" count="1"		class="&HS_scPhobos;"		orders="guard"/>
+			</Table>
+		</Ships>
+
+		<Construction constructionRate="500" maxConstruction="10">
+			<Table>
+				<Ship chance="40"	count="1"	class="&HS_scSandstorm;"		orders="patrol:5"/>
+				<Ship chance="20"	count="1"	class="&HS_scChasm;"			orders="patrol:5"/>
+				<Ship chance="20"	count="1"	class="&HS_scTundra;"			orders="patrol:8"/>
+				<Ship chance="10"	count="1"	class="&HS_scDeimos;"			orders="patrol:8"/>
+				<Ship chance="5"	count="1"	class="&HS_scPhobos;"			orders="patrol:50"/>
+				<Ship chance="5"	count="1"	class="&HS_scDeimos;"			eventHandler="&RPG_evStdWanderBehavior;"/>
+			</Table>
+		</Construction>
+
+		<!-- Treasure -->
+
+		<Items value="standard:level=9:x=6">
+			<Table>
+				<Lookup chance="25" count="1d3" table="&HS_trConsumables9;"/>
+				<Lookup chance="25" count="1"	table="&HS_trConsumables10;"/>
+				<Lookup chance="25" count="1"	table="&HS_trMinorItem9;"/>
+				<Lookup chance="15" count="1"	table="&HS_trMinorItem10;"/>
+				<Lookup chance="10" count="1"	table="&HS_trMajorItem9;"/>
+			</Table>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&HS_rsAresShipyard;" imageWidth="640" imageHeight="640"	viewportRatio="0.04375"/>
+
+		<DockingPorts>
+
+			<!-- Upper Section -->
+
+			<Port posAngle="105"	posRadius="165"		posZ="80"/>
+			<Port posAngle="82"		posRadius="165"		posZ="80"		rotation="-75"/>
+			<Port posAngle="128"	posRadius="165"		posZ="80"		rotation="-75"/>
+
+			<Port posAngle="63"		posRadius="200"		posZ="50"		rotation="195"/>
+			<Port posAngle="75"		posRadius="260"		posZ="50"		rotation="195"/>
+
+			<Port posAngle="147"	posRadius="200"		posZ="50"		rotation="15"/>
+			<Port posAngle="135"	posRadius="260"		posZ="50"		rotation="15"/>
+
+			<!-- -120 degrees -->
+
+			<Port posAngle="-15"	posRadius="165"		posZ="80"/>
+			<Port posAngle="-38"	posRadius="165"		posZ="80"		rotation="-195"/>
+			<Port posAngle="8"		posRadius="165"		posZ="80"		rotation="-195"		bringToFront="true"/>
+
+			<Port posAngle="-57"	posRadius="200"		posZ="50"		rotation="75"/>
+			<Port posAngle="-45"	posRadius="260"		posZ="50"		rotation="75"/>
+
+			<Port posAngle="27"		posRadius="200"		posZ="50"		rotation="-105"		bringToFront="true"/>
+			<Port posAngle="15"		posRadius="260"		posZ="50"		rotation="-105"		bringToFront="true"/>
+
+			<!-- +120 degrees -->
+
+			<Port posAngle="225"	posRadius="165"		posZ="80"/>
+			<Port posAngle="202"	posRadius="165"		posZ="80"		rotation="45"/>
+			<Port posAngle="248"	posRadius="165"		posZ="80"		rotation="45"/>
+
+			<Port posAngle="183"	posRadius="200"		posZ="50"		rotation="315"		bringToFront="true"/>
+			<Port posAngle="195"	posRadius="260"		posZ="50"		rotation="315"/>
+
+			<Port posAngle="267"	posRadius="200"		posZ="50"		rotation="135"/>
+			<Port posAngle="255"	posRadius="260"		posZ="50"		rotation="135"/>
+
+		</DockingPorts>
+
+	</StationType>
+	
+<!-- MISCELLANEOUS -->
+
+	<!-- Freighter Treasure -->
+
+	<ItemTable unid="&HS_tbAresFreighterTreasure;">
+		<Group value="standard">
+			<Table>
+				<Item chance="35"	count="5d6"	item="&GLXY_itPteracniumOre;"/>
+				<Item chance="25"	count="8d6"	item="&GLXY_itOrthoSteelOre;"/>
+				<Item chance="20"	count="5d6"	item="&GLXY_itIthaliumOre;"/>
+				<Lookup	chance="20" count="1"	table="&HS_trStdTreasure;"/>
+			</Table>
+		</Group>
+	</ItemTable>
+
+	<!-- Encounters -->
+
+	<ShipTable UNID="&HS_etAresAmbush1;">
+		<Ship count="1d2+2"	class="&HS_scSandstorm;"	orders="attack"	sovereign="&HS_svAres;"/>
+	</ShipTable>
+
+	<ShipTable UNID="&HS_etAresAmbush2;">
+		<Ship count="1d3+3"	class="&HS_scSandstorm;"	orders="attack"	sovereign="&HS_svAres;"/>
+	</ShipTable>
+
+	<ShipTable UNID="&HS_etAresAmbush3;">
+		<Ship count="1"		class="&HS_scChasm;"		orders="attack" sovereign="&HS_svAres;">
+			<Escorts>
+				<Ship count="1d2+4" class="&HS_scSandstorm;"	orders="escort"/>
+			</Escorts>
+		</Ship>
+	</ShipTable>
+
+	<ShipTable UNID="&HS_etAresAmbush4;">
+		<Ship count="1"		class="&HS_scTundra;"		orders="attack" sovereign="&HS_svAres;">
+			<Escorts>
+				<Ship count="1d2+4" class="&HS_scSandstorm;"	orders="escort"/>
+			</Escorts>
+		</Ship>
+	</ShipTable>
+	
+	<!-- Ares Encounter Table -->
+	
+	<ShipTable unid="&HS_tbAresEncounters;">
+		<LevelTable>
+			<Ship levelFrequency="----- ucur-" count="1"	 class="&HS_scSandstorm;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Ship					   count="1d3-1" class="&HS_scSandstorm;" orders="escort"/>
+				</Escorts>
+			</Ship>
+
+			<Ship levelFrequency="----- -vuur" count="1"	 class="&HS_scSandstorm;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Ship					   count="1d4-1" class="&HS_scSandstorm;" orders="escort"/>
+				</Escorts>
+			</Ship>
+
+			<Ship levelFrequency="----- --rrv" count="1"	 class="&HS_scTundra;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Ship					   count="1d3"	 class="&HS_scSandstorm;" orders="escort"/>
+				</Escorts>
+			</Ship>
+
+			<Ship levelFrequency="----- --vuu" count="1"	 class="&HS_scSandstorm;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Ship					   count="1d6-1" class="&HS_scSandstorm;" orders="escort"/>
+				</Escorts>
+			</Ship>
+
+			<Ship levelFrequency="----- ---rr" count="1"	 class="&HS_scTundra;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Ship					   count="1d6" class="&HS_scSandstorm;" orders="escort"/>
+				</Escorts>
+			</Ship>
+
+			<Ship levelFrequency="----- ---rr" count="1"	 class="&HS_scChasm;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Ship					   count="1d6" class="&HS_scSandstorm;" orders="escort"/>
+				</Escorts>
+			</Ship>
+
+			<Ship levelFrequency="----- ruucu" count="1"	 class="&HS_scPolar;" eventHandler="&RPG_evStdConvoyEncounterBehavior;">
+				<Items>
+					<Table>
+						<RandomItem chance="40" count="1d2" levelFrequency="----- ccurv" criteria="* +Ares;" />
+						<Item		chance="10" count="1d12" item="&GLXY_itTetramiteOre;"/>
+						<Item		chance="10" count="3d12" item="&GLXY_itXenotiteOre;"/>
+						<Item		chance="10" count="2d12" item="&GLXY_itPteracniumOre;"/>
+						<Item		chance="10" count="3d12" item="&HS_itPteracniumFuelRod;"/>
+						<Lookup chance="10" count="1d4" table="&HS_trConsumables8;"/>
+						<Lookup chance="5" count="1" table="&HS_trMinorItem8;"/>
+						<Lookup chance="5" count="1" table="&HS_trMajorItem8;"/>
+					</Table>
+				</Items>
+
+				<Escorts>
+					<Ship					   count="2d4"	 class="&HS_scSandstorm;" orders="escort"/>
+				</Escorts>
+			</Ship>
+		</LevelTable>
+	</ShipTable>
+	
+<!-- RESOURCES -->
+	
+	<Image UNID="&HS_rsAresCommune;"				bitmap="Resources\AresCommune.jpg" bitmask="Resources\AresCommuneMask.bmp" loadOnUse="true" />
+	<Image UNID="&HS_rsAresOutpost;"				bitmap="Resources\AresOutpost.jpg" bitmask="Resources\AresOutpostMask.bmp" loadOnUse="true" />
+	<Image UNID="&HS_rsAresShipyard;"				bitmap="Resources\AresShipyard.jpg" bitmask="Resources\AresShipyardMask.bmp" loadOnUse="true" />
+
+</TranscendenceModule>

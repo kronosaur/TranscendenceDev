@@ -1,0 +1,791 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- SISTERS OF DOMINA
+
+	PLAYER DATA
+	
+	sistersLastDonation:	Time at which the player donated last (Nil if never)
+	sistersStory:	State of story-telling
+	slaveReward:	Number of slaves for which player has already been rewarded
+	slaveSales:		Proceeds from slave sales
+	slavesFreed:	Number of slaves freed to commonwealth authorities
+	
+-->
+
+	<Sovereign UNID="&HS_svSistersOfDomina;"
+			name=":the Sisters of Domina"
+			shortName=":the Sisters"
+			adjective="Sister"
+			demonym=":a Sister(s)"
+			plural="true"
+
+			alignment="constructive chaos"
+			inherit="&RPG_unidCommonText;"
+			>
+		<Properties>
+			<Definition id="gainPerPeriod">0.01</Definition>
+			<Definition id="periodInSeconds">75</Definition>
+
+			<Global id="balance">0</Global>
+			<Global id="totalTithe">0</Global>
+			<Global id="investmentGain">0</Global>
+			<Global id="pilgrimsAidUsed">0</Global>
+			
+			<Definition id="contemplateIntervalInSeconds">600</Definition>
+			<Global id="lastContemplateTime"></Global>
+		</Properties>
+
+		<Events>
+			<GetGlobalAchievements>
+				(block (
+					(totalDonations (typ@ gType 'totalTithe))
+					(pilgrimsAidUsed (typ@ gType 'pilgrimsAidUsed))
+					)
+					(append
+						(if (gr totalDonations 0)
+							(list {
+								descID: 'achievement.donations
+								value: (fmtCurrency 'credit totalDonations)
+								sectionID: 'missionsAndActivities
+								})
+							)
+
+						(if (gr pilgrimsAidUsed 0)
+							(list {
+								descID: 'achievement.pilgrimsAidUsed
+								value: (fmtCurrency 'credit pilgrimsAidUsed)
+								sectionID: 'missionsAndActivities
+								})
+							(list {
+								descID: 'achievement.neverUsedPilgrimsAid
+								sectionID: 'conducts
+								})
+							)
+						)
+					)
+			</GetGlobalAchievements>
+
+			<OnGlobalUpdate>
+				(switch
+					(!= (mod (divide (unvGetTick) 30) (typ@ gType 'periodInSeconds)) 0)
+						Nil
+
+					(gr (typ@ gType 'balance) 1000000)
+						Nil
+
+					(block (
+						(balance (typ@ gType 'balance))
+						(rate (typ@ gType 'gainPerPeriod))
+						(gain (round (* balance rate)))
+						)
+						(typInc@ gType 'investmentGain gain)
+						(typInc@ gType 'balance gain)
+						)
+					)
+			</OnGlobalUpdate>
+
+			<OnMoneyDonatedToSisters>
+				(block (
+					(totalValue (@ gData 'value))
+					)
+					(typInc@ gType 'totalTithe totalValue)
+					(typInc@ gType 'balance totalValue)
+					)
+			</OnMoneyDonatedToSisters>
+		</Events>
+
+		<Language>
+			<Text id="achievement.donations">Money donated to Sisters of Domina</Text>
+			<Text id="achievement.pilgrimsAidUsed">Pilgrims' Aid Usage</Text>
+			<Text id="achievement.neverUsedPilgrimsAid">Never used Pilgrims' Aid</Text>
+
+			<Code id="statusDisplay">
+				(switch
+					(= (obj@ gPlayerShip 'characterClass) &RPG_unidPilgrimClass;)
+						(typTranslate &RPG_unidPilgrimClass; 'rankDetails)
+
+					(typTranslate gType 'nonPilgrimStatus)
+					)
+			</Code>
+
+			<Code id="nonPilgrimStatus">
+				(block (
+					(balance (typ@ gType 'balance))
+					)
+					(if (gr balance 0)
+						{
+							title: (typTranslate gType 'labelPilgrimsAid)
+							largeIcon: (typGetImageDesc &HS_stCathedralOfDomina;)
+
+							details: (list
+								{
+									title: (typTranslate gType 'labelAidBudget)
+									desc: (typTranslate gType 'rtfValue {
+										value: (fmtCurrency 'credit balance)
+										})
+									}
+								)
+
+							detailsStyle: 'stats
+							align: 'bottom
+							}
+						)
+					)
+			</Code>
+
+			<Text id="labelPilgrimsAid">Pilgrims' Aid</Text>
+			<Text id="labelAidBudget">Budget:</Text>
+			<RTF id="rtfValue">{/rtf {/f:LargeBold;/c:#ffe667; %value%}}</RTF>
+		</Language>
+	</Sovereign>
+	
+<!-- ITEM TYPES -->
+	
+	<!-- Prayer Stone -->
+
+	<ItemType UNID="&HS_itCarvedPrayerStone;"
+			name=				"carved prayer stone"
+			level=				"1"
+			value=				"500"
+			mass=				"1"
+			frequency=			"rare"
+			attributes=			"art, communion, consumable, lux, psionic"
+
+			description=		"A beautiful prayer stone cut out of a crystal of some sort; the symbol of Domina is carved on one face."
+			>
+
+		<Properties>
+			<Definition id="sisters.donateRel">30</Definition>
+		</Properties>
+
+		<Image imageID="&CORE_rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+	<!-- Jewel of Contemplation -->
+
+	<ItemType UNID="&HS_itJewelOfContemplation;"
+			name=				"jewel(s) of contemplation"
+			level=				"3"
+			value=				"2000"
+			mass=				"10"
+			frequency=			"rare"
+			attributes=			"art, communion, consumable, lux, psionic"
+
+			description=		"A heavy, pure crystal set in a platinum band; the symbol of Domina is inscribed on one face."
+			>
+
+		<Properties>
+			<Definition id="sisters.donateRel">48</Definition>
+		</Properties>
+
+		<Image imageID="&CORE_rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+	<!-- Hierolith Crystal -->
+
+	<ItemType UNID="&HS_itHierolithCrystal;"
+			name=				"hierolith crystal"
+			level=				"9"
+			value=				"5000"
+			mass=				"100"
+			frequency=			"rare"
+			attributes=			"art, communion, consumable, lux, psionic, ringerValuable"
+
+			description=		"These hyperdense crystals are formed inside black holes; they resonate with transcendent consciousness."
+			>
+
+		<Properties>
+			<Definition id="sisters.donateRel">360</Definition>
+		</Properties>
+
+		<Image imageID="&CORE_rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+	
+<!-- ENCOUNTERS -->
+
+	<!-- Sisters of Domina -->
+
+	<StationType UNID="&HS_stSistersOfDomina;"
+			name=				":the Sisters of Domina|Sisters of Domina"
+			sovereign=			"&HS_svSistersOfDomina;"
+			inherit=			"&HS_baSistersStation;"
+			   
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			size=				"245"
+			multiHull=			"true"
+			armorID=			"&HS_itPlasteelPlate;"
+			hitPoints=			"160"
+			regen=              "2"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"envAir, envAvoidsFire, friendly, generic, human, majorStation, populated, religious, sistersOfDomina"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+commonwealthSpace;"
+				systemAffinity=			"+envAir; -envFire;"
+				levelFrequency=			"ruccc ur--- ----- ----- -----"
+
+				locationCriteria=		"-innerSystem, +planetary"
+
+				unique=					"inSystem"
+				/>
+
+		<!-- Trade and Items -->
+
+		<Trade currency="credit">
+			<AcceptDonation	criteria="* -ID; -questItem;" priceAdj="100" actualPrice="true"/>
+
+			<Refuel			criteria="f +basicFuel; L:1-10;" priceAdj="100"/>
+			<Decontaminate	criteria="*"		priceAdj="100"/>
+		</Trade>
+
+		<Items>
+			<Table count="1d6">
+				<Lookup chance="25" count="1d3" table="&HS_trConsumables2;"/>
+				<Lookup chance="25" count="1"	table="&HS_trConsumables3;"/>
+				<Lookup chance="25" count="1"	table="&HS_trMinorItem2;"/>
+				<Lookup chance="15" count="1"	table="&HS_trMinorItem3;"/>
+				<Lookup chance="10" count="1"	table="&HS_trMajorItem2;"/>
+			</Table>
+		</Items>
+
+		<!-- Configuration -->
+
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Lookup count="1d2" table="&HS_tbCommDefenders;"/>
+			<Lookup count="1d3" table="&HS_tbCommPrivateCrafts;"/>
+		</Ships>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&HS_rsSistersAbbey;" imageWidth="224" imageHeight="330" viewportRatio="0.0325"/>
+		<HeroImage		imageID="&HS_rsSistersShrineHero;" imageWidth="400" imageHeight="650"/>
+		
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"135"
+				portAngle=		"-5"
+				/>
+
+		<!-- Dock Screen -->
+
+		<DockScreens>
+			<Main>
+				<Display type="detailsPane">
+					<OnDisplayInit>
+						(typTranslate &HS_svSistersOfDomina; 'statusDisplay)
+					</OnDisplayInit>
+				</Display>
+
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(block Nil
+								(if (objGetData gSource "freeSanctum")
+									(scrSetDescTranslate gScreen 'WelcomeFreeSanctum)
+									(scrSetDescTranslate gScreen 'Welcome)
+									)
+
+								;	No Sanctum if you're not a pilgrim
+
+								(if (!= (objGetProperty gPlayerShip 'characterClass) &RPG_unidPilgrimClass;)
+									(scrShowAction gScreen 'actionSanctum Nil)
+									)
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionTalkToAbbess" default="1">
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +sistersMission; =" (sysGetLevel) ";")
+									noMissionTextID: 'descNothingToTalkAbout
+									maxPerStation: 1
+									})
+							</Action>
+							<Action id="actionSanctum">
+								(scrShowScreen gScreen &HS_dsSistersSanctum;)
+							</Action>
+							<Action id="actionPilgrimsAid">
+								(scrShowScreen gScreen &HS_dsSistersDockServices;)
+							</Action>
+							<Action id="actionDonate">
+								(scrShowScreen gScreen &HS_dsDominaTithe;)
+							</Action>
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<!-- Events and Data -->
+
+		<Events>
+			<GetRumors>
+				(block (communionItem)
+					(append
+						(if (and (setq communionItem (random (objGetItems gPlayerShip "*U +communion;")))
+								(= (obj@ gPlayerShip 'characterClass) &RPG_unidPilgrimClass;)
+								)
+							(rpgRumorAdd 'sistersMission 'offerItem 100 nil {
+								itemName: (itmGetName communionItem 'article)
+								})
+							)
+						)
+					)
+			</GetRumors>
+		</Events>
+
+		<Language>
+			<Text id="actionTalkToAbbess">[M]atriarch's Chancery</Text>
+			<Text id="actionDonate">[D]onate</Text>
+			<Text id="actionPilgrimsAid">[P]ilgrims' Aid</Text>
+			<Text id="actionSanctum">[S]anctum</Text>
+			<Text id="actionUndock">[U]ndock</Text>
+			
+			<Text id="Welcome">
+				You are docked at an abbey of the Sisters of Domina.
+			</Text>
+			<Text id="WelcomeFreeSanctum">
+
+				You are docked at an abbey of the Sisters of Domina. 
+				A woman wearing a flowing cardinal robe is before you.
+					
+				"Take your ease here before you go, or seek guidance 
+				at our Sanctum. May the blessings of Domina protect you."
+
+			</Text>
+			<Text id="descNothingToTalkAbout">
+				(cat
+					(objTranslate gSource 'descAbbessAdviceIntro)
+					"\n\n"
+					(switch
+						(= (obj@ gPlayerShip 'characterClass) &RPG_unidPilgrimClass;)
+							(objTranslate gSource (cat 'descAbbessAdvice (min (sysGetLevel) 7)))
+
+						(objTranslate gSource 'descAbbessAdvice.nonPilgrim)
+						)
+					)
+			</Text>
+			<Text id="descAbbessAdviceIntro">
+
+				You enter the abbess's spartan office and chat with her. She 
+				leaves you with a small piece of advice:
+
+			</Text>
+			<Text id="descAbbessAdvice1">
+			
+				"You are one of the few who can commune with Domina; do not 
+				waste this blessing."
+				
+			</Text>
+			<Text id="descAbbessAdvice2">
+			
+				"Do not kill for sport. But do not be afraid to fight for 
+				Domina."
+
+			</Text>
+			<Text id="descAbbessAdvice3">
+			
+				"Domina seeks connection with all thinking beings, and even 
+				death cannot fully erase the luminous patterns of sentience."
+				
+			</Text>
+			<Text id="descAbbessAdvice4">
+			
+				"Domina can guide you, but you must seek your own answers."
+
+			</Text>
+			<Text id="descAbbessAdvice5">
+			
+				"Do not let Domina's brilliance blind you to the strength and 
+				worth of mere humans."
+				
+			</Text>
+			<Text id="descAbbessAdvice6">
+			
+				"Domina controls you, but it's up to you to keep your humanity.
+				Always remember that."
+				
+			</Text>
+			<Text id="descAbbessAdvice7">
+			
+				"The universe is dark and lonely; I do not envy your task."
+				
+			</Text>
+			<Text id="descAbbessAdvice.nonPilgrim">
+
+				"You cannot help others if you cannot help yourself. You cannot
+				love others if you do not love yourself."
+
+			</Text>
+
+			<Text id="rumor.sistersMission.offerItem">
+
+				The abbess greets you as you enter:
+
+				"Welcome, %name%! You have %itemName% in your cargo hold. That
+				would make a wonderful offering to Domina. Go to our sanctum
+				and make an offering."
+
+			</Text>
+
+			<Text id="core.mapDesc">
+				Contemplation and communion
+			</Text>
+
+			<Code id="rpg.statusDetails">
+				(typTranslate &HS_svSistersOfDomina; 'statusDisplay)
+			</Code>
+		</Language>
+	</StationType>
+	
+<!-- DOCK SCREENS -->
+	
+	<!-- Sisters Donate -->
+
+	<DockScreen UNID="&HS_dsDominaTithe;"
+			nestedScreen=		"true"
+			inherit=			"&RPG_dsDockScreenBase;"
+			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &HS_svSistersOfDomina; 'statusDisplay)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default
+					showCounter=	"true">
+
+				<OnPaneInit>
+					(block (
+						(maxCount (plyGetCredits gPlayer))
+						)
+						(scrEnableAction gScreen 'actionDonate (gr maxCount 0))
+						(if (gr maxCount 0)
+							(scrSetDescTranslate gScreen 'descHowMuch)
+							(scrSetDescTranslate gScreen 'descNoMoney)
+							)
+							
+						(scrSetCounter gScreen 0)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDonate" default="1">
+						(block (
+							(count (scrGetCounter gScreen))
+							(maxCount (plyGetCredits gPlayer))
+							)
+							(switch
+								(= count 0)
+									(scrExitScreen gScreen)
+
+								(gr count maxCount)
+									(scrSetCounter gScreen 0)
+									
+								(block ()
+
+									;	Donation
+
+									(plyCharge gPlayer count)
+									(typFireEvent &HS_svSistersOfDomina; 'OnMoneyDonatedToSisters {
+										value: count
+										})
+
+									(scrShowPane gScreen 'Thanks)
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionCancel" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+
+			<Thanks descID="descThanks">
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Thanks>
+		</Panes>
+		
+		<Language>
+			<Text id="actionDonate">[D]onate</Text>
+
+			<Text id="descHowMuch">
+
+				"We're collecting donations to the Pilgrims' Aid fund. How many
+				credits do you wish to give?"
+
+			</Text>
+			<Text id="descNoMoney">
+
+				"We are devoutly grateful for your good intentions. 
+				Unfortunately, you have no credits to give."
+
+			</Text>
+			<Text id="descThanks">
+
+				"Thank you for your generous contribution. Your faithful 
+				support enables us to help the truly needy. May the blessings 
+				of Domina illuminate your way."
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Sisters Promotion -->
+
+	<DockScreen unid="&HS_dsSistersPromotion;"
+			nestedScreen="true"
+			inherit="&RPG_dsDockScreenBase;"
+			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &HS_svSistersOfDomina; 'statusDisplay)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(scrSetDescTranslate gScreen 'textPromotion {
+						rank: (fmtNoun (typ@ &RPG_unidPilgrimClass; 'levelNoun) 1 'article)
+						tier: (typ@ &RPG_unidPilgrimClass; 'levelTier)
+						})
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(block ()
+							(typSet@ &RPG_unidPilgrimClass; 'nextLevelNotification Nil)
+							(scrExitScreen gScreen)
+							)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="textPromotion">
+			
+				You feel a stronger connection to Domina.
+
+				You are now %rank% and have access to %tier% powers.
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Sisters Decontamination -->
+
+	<DockScreen UNID="&HS_dsSistersDecon;"
+			nestedScreen=		"true"
+			>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(deconCost (objGetRemoveConditionPrice gSource gPlayerShip 'radioactive))
+						)
+						(switch
+							;	If the player has more money than we do, then we refuse dock
+						
+							(gr (plyGetCredits gPlayer) (typ@ &HS_svSistersOfDomina; 'balance))
+								(scrSetDescTranslate gScreen 'descCantDock)
+							
+							;	Sisters must have enough money
+						
+							(ls (typ@ &HS_svSistersOfDomina; 'balance) deconCost)
+								(scrSetDescTranslate gScreen 'descCantDock)
+							
+							;	Decontaminate
+						
+							(block ()
+								(typInc@ &HS_svSistersOfDomina; 'balance (- deconCost))
+								(objRemoveCondition gPlayerShip 'radioactive)
+								(scrSetDescTranslate gScreen 'descDecon)
+								)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Continue" default="1" cancel="1" key="C">
+						(scrExitScreen gScreen (objGetCondition gPlayerShip 'radioactive))
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+	
+		<Language>
+			<Text id="descCantDock">
+				
+				"Forgive us, child, but we cannot allow your ship to contaminate
+				our shrine."
+				
+			</Text>
+			<Text id="descDecon">
+				
+				"Your vessel has been purified. Devote your life to Domina and 
+				your spirit shall be similarly cleansed."
+				
+			</Text>
+		</Language>
+	</DockScreen>
+
+<!-- SHIP CLASSES -->
+	
+	<!-- Level 5: Hand of Domina Hospital Ship -->
+
+	<ShipClass UNID="&HS_scHandOfDomina;"
+			manufacturer=		"Earth Industries"
+			class=				"Hand of Domina"
+			type=				"medical ship"
+			level=				"5"
+			defaultSovereign=	"&HS_svSistersOfDomina;"
+			   
+			attributes=			"commonwealth, genericClass, EI, sistersOfDomina"
+
+			size=				"75"
+			mass=				"2100"
+			thrustRatio=		"2"
+			maxSpeed=			"12"
+			cargoSpace=			"2000"
+			>
+
+		<Names definiteArticle="true">
+			Hand of Benevolence; Hand of Charity; Hand of Comfort; Hand of Compassion; 
+			Hand of Hope; Hand of Mercy; Hand of Refuge; Hand of Relief; Hand of Rescue; 
+			Hand of Salvation; Hand of Succor; Hand of Tranquility
+		</Names>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itCeralloyArmor;"
+			count=				"12"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itPartisanCannon;" omnidirectional="true" posAngle="0" posRadius="25" posZ="15"/>
+			<Device deviceID="&HS_itMissileDefense;" omnidirectional="true" posAngle="180" posRadius="30" posZ="15"/>
+			<Device deviceID="&HS_itYoroiS100;"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"6.0"
+			rotationAccel=		"1"
+			/>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"30"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"70"
+
+					posX=		"-40"
+					posY=		"0"
+					sizeX=		"26"
+					sizeY=		"50"
+					/>
+			
+			<Compartment name="cargo containers"
+					type=		"cargo"
+					hitPoints=	"50"
+
+					posX=		"6"
+					posY=		"0"
+					sizeX=		"74"
+					sizeY=		"36"
+					/>
+		</Interior>
+
+		<Items>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsHandOfDomina;" imageWidth="110" imageHeight="110"	rotationCount="120" rotationColumns="12" viewportRatio="0.01"/>
+		<HeroImage imageID="&HS_rsHandOfDominaHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="165"	posRadius="52"	posZ="-10"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-165"	posRadius="52"	posZ="-10"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="165"	posRadius="52"	posZ="10"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-165"	posRadius="52"	posZ="10"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"20"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"standOff"
+			/>
+
+	</ShipClass>
+	
+<!-- BASE CLASSES -->
+	
+	<Type unid="&HS_baSistersStation;"
+			inherit="&RPG_unidCommonText;"
+			>
+		<Properties>
+			<Definition id="rpg.checkRadioactive">True</Definition>
+		</Properties>
+
+		<Events>
+			<GetDockScreen>
+				(switch
+					;	This only applies to active station
+					
+					(obj@ gSource 'abandoned)
+						Nil
+
+					;	If the player ship is radioactive, then we need to
+					;	decontaminate. We have a custom screen because we use
+					;	Pilgrims' Aid budget.
+					
+					(objGetCondition gPlayerShip 'radioactive)
+						{	screen:&HS_dsSistersDecon;			priority:10		overrideOnly:true	}
+						
+					Nil
+					)
+			</GetDockScreen>
+		</Events>
+	</Type>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&HS_rsHandOfDomina;"			bitmap="Resources\HandOfDomina.jpg" bitmask="Resources\HandOfDominaMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsHandOfDominaHero;"		bitmap="Resources\HandOfDominaLarge.jpg" bitmask="Resources\HandOfDominaLargeMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&HS_rsSistersAbbey;"			bitmap="Resources\SistersAbbey.jpg" bitmask="Resources\SistersAbbeyMask.bmp" loadOnUse="true" />
+	<Image UNID="&HS_rsSistersShrineBkgnd;"	bitmap="Resources\SistersShrine.jpg" loadOnUse="true" />
+	<Image UNID="&HS_rsSistersShrineHero;"		bitmap="Resources\SistersShrineHero.jpg" bitmask="Resources\SistersShrineHeroMask.bmp" loadOnUse="true" />
+
+</TranscendenceModule>

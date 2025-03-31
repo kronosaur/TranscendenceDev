@@ -1,0 +1,1532 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+	<Sovereign UNID="&RPG_svFriendlyAuton;"
+			name="autons"
+			demonym=":an auton(s)"
+			inherit="&CORE_svPlayer;"
+
+			alignment="constructive chaos"
+			>
+	</Sovereign>
+
+	<ItemType UNID="&RPG_baAutonItemBase;"
+		name=		"(auton item base)"
+		virtual=	"true"
+		>
+		
+		<Invoke key="A"
+				undamagedOnly="true"
+				>
+			(switch
+				(itm@ gItem 'damaged)
+					(objSendMessage gSource Nil (typTranslate gType 'msgAutonDamaged))
+
+				(rpgDeployAutonFromItem gSource (itmGetStaticData gItem 'autonShipClass) gItem)
+				)
+		</Invoke>
+		
+		<Events>
+			<GetName>
+				(block (name singularClass pluralClass)
+					(if (find aFlags 'actual)
+						(block Nil
+							(setq singularClass (itmGetName gItem '(noEvent noModifiers actual)))
+							(setq pluralClass (itmGetName gItem '(noEvent noModifiers actual plural)))
+							)
+						(block Nil
+							(setq singularClass (itmGetName gItem '(noEvent noModifiers)))
+							(setq pluralClass (itmGetName gItem '(noEvent noModifiers plural)))
+							)
+						)
+					(if (setq name (@ (itmGetData gItem 'autonConfig) 'name))
+						(typTranslate &RPG_baAutonItemBase; 'nameText {
+							autonName:(substitute name "\"" "'")
+							singularClass:singularClass
+							pluralClass:pluralClass
+							})
+						(cat singularClass "|" pluralClass)
+						)
+					)
+			</GetName>
+			
+			<OnUpdate>
+				(block (config)
+					(if (and (setq config (itmGetData gItem 'autonConfig))
+							(or (isError (scrGetScreen gScreen)) (not (scrGetScreen gScreen)))
+							(@ config 'shieldStatus)
+							(eq (@ (rpgGetAutonItemShieldStatus config) 'percent) 100)
+							)
+						(objSetItemData gSource gItem 'autonConfig (set@ config 'shieldStatus Nil) (itmGetCount gItem))
+						)
+					)
+			</OnUpdate>
+		</Events>
+		
+		<Language>
+			<Text id="nameText">%singularClass% named "%autonName%"|%pluralClass% named "%autonName%"</Text>
+			<Text id="msgAutonDamaged">
+
+				Auton is damaged and cannot be deployed.
+
+			</Text>
+		</Language>
+	</ItemType>
+	
+	<!-- Auton Base Class
+	
+	Do not rely on the implementation of this class across versions. If you wish
+	to inherit from this class in an Extension, you should copy the class into
+	your own Extension and then inherit from that.
+
+	EXTRA DATA
+	
+	autonItemType:		The type of item that created the auton.
+	
+	behavior:			Autons's current behavior
+							Nil						= nothing
+							'attackingAtWill		= attacking any target in range
+							'attackingTarget		= attacking a target
+							'custom					= handled by derived class
+							'escorting				= escorting the player
+							'returning				= returning to player ship
+							'waiting				= waiting for the player
+
+	EVENTS
+		
+	Derived types may implement the following events:
+		
+	CreateFromItem: Create the auton ship. gData has the following fields:
+				
+			item: The item used to create the auton
+			sourceObj: The object launching the auton
+			type: The ship class of the auton to create
+				
+			By default this event creates an auton of the given type and 
+			orders it to escort the launching object.
+				
+			NOTE: If you override this event it recommended that you call
+			the base class event (which returns the auton object) and then
+			modify the auton.
+				
+	ConvertToItem: This event must return an item structure representing the
+			auton when converted to an item. By default we look at the auton
+			object's data ("autonItemType"), which is set by the default
+			CreateFromItem event.
+		
+	OrderAttackSelf: Implement behavior when the auton is ordered to attack 
+			itself. By default, the auton refuses to comply.
+			
+	LANGUAGE
+	
+	Derived types may define the following language elements:
+	
+	AttackTargetAck: Reply when auton is ordered to attack a valid target.
+	
+	DeployAck: Reply when auton is deployed.
+	
+	FormUpAck: Reply when auton is ordered to form up.
+	
+	ReturnAck: Reply when auton is ordered to return to the ship.
+	
+	WaitAck: Reply when auton is ordered to wait.
+				
+	-->
+
+	<ShipClass unid="&RPG_baStdAutonBase;">
+
+		<Properties>
+			<Definition id="core.noBiologicalEffects">True</Definition>
+			<Definition id="core.noRadiationDeath">True</Definition>
+
+			<Data id="autonItemType"></Data>
+
+			<!-- maxHullHP
+			
+				Determines the time that it will take to repair a destroyed 
+				auton in the auton bay, and also the cost to repair at an auton
+				dealer.
+
+				NOTE: This cannot be a Constant because when we compute these
+				property values we have not yet computed a level (the latter
+				happens during Bind).
+
+			-->
+			<DynamicGlobal id="maxHullHP">
+				(@ '(
+					0
+					5		; Level 1
+					10		; Level 2
+					20		; Level 3
+					40		; Level 4
+					80		; Level 5
+					150		; Level 6
+					250		; Level 7
+					400		; Level 8
+					600		; Level 9
+					1000	; Level 10
+					) 
+					(min (typ@ gType 'level) 10)
+					)
+			</DynamicGlobal>
+		</Properties>
+
+		<Wreck	wreckType=			"&RPG_stAutonWreck;"
+				noInstalledItems=	"true"
+				/>
+
+		<Communications>
+			<Message id="msgAttackTarget" name="Attack target" key="A">
+				<OnShow>
+					(and (objGetTarget gSender)
+						(not (eq (objGetTarget gSender) (objGetTarget gSource)))
+						(not (shpGetAISetting gSource 'nonCombatant))
+						(objGetItems gSource "wI")
+						(obj@ gSource 'playerWingman)
+						)
+				</OnShow>
+				
+				<Invoke>
+					(switch
+						;	If ordered to attack ourselves, hilarity ensues
+						
+						(eq (objGetTarget gSender) gSource)
+							(objFireEvent gSource "OrderAttackSelf")
+							
+						;	If no target, unable to compy
+						
+						(not (objGetTarget gSender))
+							(objSendMessageTranslate gSender gSource 'UnableToComply)
+
+						;	Attack the target
+						
+						(block Nil
+							(objSetData gSource 'behavior 'attackingTarget)
+							(objSendMessageTranslate gSender gSource 'AttackTargetAck)
+							
+							(shpCancelOrders gSource)
+							(shpOrder gSource 'attack (objGetTarget gSender))
+							)
+						)
+				</Invoke>
+			</Message>
+
+			<Message id="msgBreakAndAttack" name="Break &amp; attack" key="B">
+				<OnShow>
+					(and (neq (objGetData gSource 'behavior) 'attackingAtWill)
+						(not (shpGetAISetting gSource 'nonCombatant))
+						(objGetItems gSource "wI")
+						(obj@ gSource 'playerWingman)
+						)
+				</OnShow>
+				
+				<Invoke>
+					(intOrderBreakAndAttack gSource gSender True)
+				</Invoke>
+			</Message>
+
+			<Message id="msgFormUp" name="Form up" key="F">
+				<OnShow>
+					(and (neq (objGetData gSource 'behavior) 'escorting)
+						(obj@ gSource 'playerWingman)
+						)
+				</OnShow>
+
+				<Invoke>
+					(block Nil
+						(objSetData gSource 'behavior 'escorting)
+						(objSendMessageTranslate gSender gSource 'FormUpAck)
+						
+						(shpCancelOrders gSource)
+						(shpOrder gSource 'escort gPlayerShip)
+						)
+				</Invoke>
+			</Message>
+			
+			<Message id="msgReturnToShip" name="Return to ship" key="R">
+				<OnShow>
+					(and
+						(objGetItems gSender "*IN +AutonBay;")
+						(obj@ gSource 'autonItemType)
+						(neq (objGetData gSource 'behavior) 'returning)
+						(obj@ gSource 'playerWingman)
+						)
+				</OnShow>
+				
+				<Invoke>
+					(block (spaceLeft mass)
+					
+						;	Make sure there will be enough space to return, accounting for
+						;	autons that are already returning. Search the system if we haven't
+						;	done so yet this tick.
+						
+						(if (eq (unvGetTick) (objGetData gSender 'returningAutonMassCheckTick))
+							(setq spaceLeft (objGetData gSender 'spaceLeftAfterAutonsReturn))
+							(block nil
+								(setq spaceLeft (objGetCargoSpaceLeft gSender))
+								(enum (sysFindObject nil 's) theShip
+									(if (and (obj@ theShip 'autonItemType)
+											(eq (objGetData theShip 'behavior) 'returning)
+											(eq (shpGetOrderTarget theShip) gSender)
+											)
+										(setq spaceLeft (- spaceLeft (objFireEvent theShip "CalcMass")))
+										)
+									)
+								(objSetData gSender 'returningAutonMassCheckTick (unvGetTick))
+								)
+							)
+						
+						(setq mass (objFireEvent gSource "CalcMass"))
+						(if (gr mass spaceLeft)
+						
+							;	Not enough space
+							(objSendMessageTranslate gSender gSource 'ErrNoSpaceToReturn)
+								
+							;	Return
+							(block Nil
+								(objSetData gSource 'behavior 'returning)
+								(objSendMessageTranslate gSender gSource 'ReturnAck)
+								
+								(setq spaceLeft (- spaceLeft mass))
+								
+								(shpCancelOrders gSource)
+								(shpOrder gSource 'gate gSender)
+								)
+							)
+							
+						;	Remember remaining space
+						(objSetData gSender 'spaceLeftAfterAutonsReturn spaceLeft)
+						)
+				</Invoke>
+			</Message>
+
+			<Message id="msgStatus" name="Status" key="S">
+				<OnShow>
+					(obj@ gSource 'playerWingman)
+				</OnShow>
+				
+				<Invoke>
+					(block (
+						(damageDesc (objGetProperty gSource 'damageDesc))
+						(shieldLevel (@ damageDesc 'shieldLevel))
+						(armorLevel (@ damageDesc 'armorIntegrity))
+						(hullLevel (@ damageDesc 'hullIntegrity))
+						)
+						(objSendMessage gSender gSource
+							(switch
+								(and hullLevel (ls hullLevel 100))
+									(objTranslate gSource 'msgHullDamage damageDesc)
+									
+								(and armorLevel (ls armorLevel 100))
+									(objTranslate gSource 'msgArmorDamage damageDesc)
+									
+								(and shieldLevel (ls shieldLevel 100))
+									(objTranslate gSource 'msgShieldDamage damageDesc)
+
+								(objTranslate gSource 'msgNoDamage)
+								)
+							)
+							
+						(objSetShowAsDestination gSource 'autoclear)
+						)
+				</Invoke>
+			</Message>
+
+			<Message id="msgWait" name="Wait" key="W">
+				<OnShow>
+					(and (neq (objGetData gSource 'behavior) 'waiting)
+						(obj@ gSource 'playerWingman)
+						)
+				</OnShow>
+
+				<Invoke>
+					(block Nil
+						(objSetData gSource 'behavior 'waiting)
+						(objSendMessageTranslate gSender gSource 'WaitAck)
+						
+						(shpCancelOrders gSource)
+						(shpOrder gSource 'hold)
+						)
+				</Invoke>
+			</Message>
+		</Communications>
+		
+		<Events>
+			<CalcMass>
+				(block (
+					(autonType (or (obj@ gSource 'autonItemType) &RPG_itAutoSentinel;))
+					)
+					(add
+						(itmGetMass autonType)
+						(map (objGetItems gSource "*U") 'reduceSum theItem 
+							(multiply (itmGetCount theItem) (itmGetMass theItem))
+							)
+						)
+					)
+			</CalcMass>
+			
+			<ConvertToItem>
+				(block (
+					(includeCargoItems (not (@ gData 'noCargoItems)))
+
+					(autonType (or (obj@ gSource 'autonItemType) &RPG_itAutoSentinel;))
+					(autonItem (itmCreate autonType 1))
+					(shieldMaxHP (shpGetShieldMaxHitPoints gSource))
+					(shieldDamage (shpGetShieldDamage gSource))
+					armorDamaged config
+					)
+					
+					;	Assign a repair ID if there's any armor damage
+					
+					(enum (objGetItems gSource "aI") theArmor
+						(if (gr (objGetArmorDamage gSource theArmor) 0) (setq armorDamaged True))
+						)
+						
+					;	Store the current armor, devices, and status on the auton
+					
+					(setq config {
+						armor: (map (objGetItems gSource "aI") theArmor	{
+							item: (itmSet@ theArmor 'installed Nil)
+							hp: (subtract (itm@ theArmor 'completeHP) (objGetArmorDamage gSource theArmor))
+							})
+							
+						devices: (map (objGetItems gSource "dI") theDev {
+							item: (itmSet@ theDev 'installed Nil)
+							})
+							
+						shieldStatus: (if (gr shieldDamage 0) {
+							maxHP: shieldMaxHP
+							hp: (- shieldMaxHP shieldDamage)
+							regen: (/ (typ@ (shpGetShieldItemUNID gSource) 'regen) 180)
+							regenStartTick: (unvGetTick) ; TODO: Add a way to get depletion time left.
+							})
+							
+						cargo: (if includeCargoItems (objGetItems gSource "*U"))
+						
+						name: (if (neq (objGetName gSource) (obj@ gSource 'name))
+									(rpgSanitizeAutonName (objGetName gSource))
+									)
+									
+						repairID: (if armorDamaged (rpgGetNextAutonRepairID))
+
+						maxHullHP: (if (@ gData 'damaged) (obj@ gSource 'maxHullHP))
+						hullHP: (if (@ gData 'damaged) 0)
+						})
+					
+					(if (neq config (rpgGetAutonDefaultConfig autonItem))
+						(setq autonItem (itmSetData autonItem 'autonConfig config))
+						)
+					
+					;	Add one charge on the item for every ton of cargo inside the auton
+
+					(if includeCargoItems					
+						(setq autonItem (itmSet@ autonItem 'charges
+							(divide 
+								(map (objGetItems gSource "*U") 'reduceSum theItem 
+									(multiply (itmGetCount theItem) (itmGetMass theItem))
+									)
+								1000
+								)
+							))
+						)
+
+					;	Set damaged, if necessary
+
+					(if (@ gData 'damaged)
+						(setq autonItem (itmSet@ autonItem 'damaged True))
+						)
+						
+					;	Done
+					
+					autonItem
+					)
+			</ConvertToItem>
+			
+			<CreateFromItem>
+				(block (
+					(sourceObj (@ gData 'sourceObj))
+					(sourceItem (@ gData 'item))
+					(autonConfig (itmGetData sourceItem 'autonConfig))
+					(autonSovereign
+						(switch
+							(= sourceObj gPlayerShip)
+								&RPG_svFriendlyAuton;
+
+							(obj@ sourceObj 'sovereign)
+							)
+						)
+
+					auton
+					)
+					
+					;	Create the auton
+					
+					(setq auton
+						(sysCreateShip 
+							(@ gData 'type)
+							(objGetPos sourceObj)
+							autonSovereign
+							)
+						)
+						
+					;	If the source item has a configuration then we need to initialize the ship.
+					
+					(if autonConfig
+						(block Nil
+						
+							;	Start by installing the proper armor
+							
+							(for i 0 (subtract (shpGetArmorCount auton) 1)
+								(block (newArmorItem)
+									(setq newArmorItem (@ (@ (@ autonConfig 'armor) i) 'item))
+									
+									(objAddItem auton newArmorItem)
+									(shpInstallArmor auton newArmorItem i)
+									
+									;	Set the appropriate hit points
+									
+									(objSet@ auton (shpGetArmor auton i) 'hp (@ (@ (@ autonConfig 'armor) i) 'hp))
+									)
+								)
+								
+							;	Uninstall all devices
+							
+							(enum (objGetItems auton "dI") theItem
+								(shpRemoveDevice auton theItem)
+								)
+								
+							;	Install required devices
+							
+							(enum (@ autonConfig 'devices) deviceDesc
+								(block (newDeviceItem)
+									(setq newDeviceItem (@ deviceDesc 'item))
+									
+									(objAddItem auton newDeviceItem)
+									(shpInstallDevice auton newDeviceItem)
+									)
+								)
+								
+							;	Remove uninstalled armor and devices
+								
+							(enum (objGetItems auton "adU") theItem
+								(objRemoveItem auton theItem)
+								)
+								
+							;	Add items to cargo
+							
+							(enum (@ autonConfig 'cargo) theItem
+								(objAddItem auton theItem)
+								)
+							
+							;	Set name
+							
+							(if (@ autonConfig 'name)
+								(objSetName auton (@ autonConfig 'name) 0xC0) ; Personal and no article
+								)
+								
+							;	Set shield level
+							
+							(shpRechargeShield auton (or (@ (rpgGetAutonItemShieldStatus autonConfig) 'hp)
+														(shpGetShieldMaxHitPoints auton)
+								))
+							)
+						)
+						
+					;	Order the auton to escort the source
+					
+					(objSetData auton 'behavior 'escorting)
+					(shpOrder auton 'escort sourceObj)
+
+					;	Store the item type in the auton object so that we can
+					;	convert it back later.
+					
+					(objSetData auton 'autonItem sourceItem)
+					(if (not (obj@ auton 'autonItemType))
+						(objSet@ auton 'autonItemType (itmGetType sourceItem))
+						)
+
+					;	For player autons, set them so they always leave a wreck
+					;	(so the player can repair them).
+
+					(if (= autonSovereign &RPG_svFriendlyAuton;)
+						(objSet@ auton 'alwaysLeaveWreck True)
+						)
+
+					;	If the source is irradiated, then the auton is also 
+					;	radioactive.
+
+					(if (obj@ sourceObj 'radioactive)
+						(objApplyCondition auton 'radioactive)
+						)
+
+					;	For player autons, count to see if we have 10 or more, and
+					;	set an achievement.
+
+					(if (= sourceObj gPlayerShip)
+						(block (
+							(deployedAutons
+								(map (obj@ gPlayerShip 'squadron) '(excludeNil reduceSum) theEntry
+									(if (and (find '(deployed waiting) (@ theEntry 'status))
+											(typHasAttribute (@ theEntry 'type) 'auton)
+											)
+										1
+										)
+									)
+								)
+							)
+							(if (geq deployedAutons 10)
+								(unvSetAchievement 'core.autons10)
+								)
+							)
+						)
+					
+					;	Welcome or error message
+					
+					(objSendMessageTranslate sourceObj auton (or (@ gData 'messageID) 'DeployAck))
+					
+					;	Return the auton created, in case subclasses want to
+					;	modify it.
+					
+					auton
+					)
+			</CreateFromItem>
+			
+			<OnCreate>
+				(block Nil
+					;	If this is a friendly auton then we assume that we are escorting
+					;	the player. We need to do this for backwards compatibility, in case
+					;	anyone tries to create an auton without going through CreateFromItem
+					
+					(if (eq (objGetSovereign gSource) &RPG_svFriendlyAuton;)
+						(block Nil
+							(objSet@ gSource 'playerWingman True)
+							)
+						)
+					)
+			</OnCreate>
+
+			<OnDestroy>
+				;	Convert the auton into an item and store it on the 
+				;	wreck. This allows us to salvage it later.
+				;
+				;	NOTE: We leave cargo items (e.g., Mule auton cargo) on the
+				;	wreckage itself, so the player can take it bit by bit.
+				;
+				;	NOTE: In the Wreck subelement we set noInstalledItems="true"
+				;	so that installed items (armor devices) are NOT placed on
+				;	the wreck.
+
+				(if (and aWreckObj
+						(obj@ gSource 'autonItemType)
+						)
+					(block (
+						(autonItem 
+							(objFireEvent gSource "ConvertToItem" {
+								damaged: True
+								noCargoItems: True
+								})
+							)
+						)
+						(objSet@ aWreckObj 'autonItem autonItem)
+						)
+					)
+			</OnDestroy>
+			
+			<OnEnteredGate>
+				;	If we returned to a ship or non-gate station, convert back to an item
+				
+				(if (objMatches aGateObj nil "st -stargate;")
+					(block (
+						(autonItem (objFireEvent gSource "ConvertToItem"))
+						(autonShipClass (itmGetStaticData autonItem 'autonShipClass))
+						(notEnoughSpace (gr (itmGetMass autonItem) (objGetCargoSpaceLeft aGateObj)))
+						)
+						;	If the auton is radioactive, then the source becomes
+						;	radioactive.
+
+						(if (and (obj@ gSource 'radioactive)
+								(not notEnoughSpace)
+								)
+							(block (
+								(result (objApplyCondition aGateObj 'radioactive { applyTo:'interior }))
+								(resultCode (@ result 'resultCode))
+								)
+								(objSendMessage aGateObj Nil (objTranslate gSource (cat 'msgRadiation. resultCode) {
+									autonName: (objGetName gSource 'definitePhrase)
+									}))
+								)
+							)
+
+						;	Add to cargo
+						(objAddItem aGateObj autonItem)
+						
+						;	If there's not enough space, redeploy with an error message
+						(if notEnoughSpace
+							(rpgDeployAutonFromItem aGateObj autonShipClass autonItem 'ErrNoSpaceToReturn)
+							)
+						)
+					)
+			</OnEnteredGate>
+			
+			<OnOrdersCompleted>
+				(block Nil
+					(switch
+						(not (obj@ gSource 'playerWingman))
+							Nil
+						
+						(not gPlayerShip)
+							(block Nil
+								(objSetData gSource 'behavior 'waiting)
+								(shpOrder gSource 'hold)
+								)
+							
+						(and (eq (objGetData gSource 'behavior) 'attackingAtWill)
+							(intOrderBreakAndAttack gSource gPlayerShip Nil)
+							)
+							Nil
+								
+						;	Default: return to formation.
+						(block Nil
+							(objSetData gSource 'behavior 'escorting)
+							(shpOrder gSource 'escort gPlayerShip)
+							)
+							
+						)
+					)
+			</OnOrdersCompleted>
+			
+			<OnPlayerLeftSystem>
+				(block (behavior)
+					(setq behavior (objGetData gSource 'behavior))
+					(switch
+						(not (obj@ gSource 'playerWingman))
+							Nil
+							
+						; If we're waiting, stay in this system and wait for the player
+						
+						(eq behavior 'waiting)
+							'waitForPlayer
+
+						; Otherwise, follow the player through the gate
+						
+						'followPlayer
+						)
+					)
+			</OnPlayerLeftSystem>
+			
+			<OrderAttackSelf>
+				(objSendMessageTranslate gSender gSource 'UnableToComply)
+			</OrderAttackSelf>
+		</Events>
+		
+		<Language>
+			<Code id="rpg.squadronStatus">
+				(block (
+					(behavior (objGetData gSource 'behavior))
+					)
+					(switch
+						(or (not behavior)
+								(not (obj@ gSource 'playerWingman))
+								)
+							Nil
+
+						(or (= behavior 'attackingAtWill)
+								(= behavior 'attackingTarget)
+								)
+							(block (
+								(orderDesc (shpGetOrderDesc gSource))
+								(order (@ orderDesc 0))
+								(targetObj (@ orderDesc 1))
+								)
+								(switch
+									(= order 'attack)
+										(objTranslate gSource 'rpg.squadronStatus.attackingTarget {
+											objName: (objGetName gSource 'definitePhrase)
+											targetName: (objGetName targetObj 'article)
+											})
+
+									(objTranslate gSource 'rpg.squadronStatus.lookingForTargets {
+										objName: (objGetName gSource 'definitePhrase)
+										})
+									)
+								)
+
+						(= behavior 'returning)
+							(objTranslate gSource 'rpg.squadronStatus.returning {
+								objName: (objGetName gSource 'definitePhrase)
+								})
+
+						(= behavior 'waiting)
+							(objTranslate gSource 'rpg.squadronStatus.waiting {
+								objName: (objGetName gSource 'definitePhrase)
+								})
+
+						;	OK to return Nil. The Squadron UI will default to a 
+						;	generic phrase.
+						)
+					)
+			</Code>
+			<Text id="rpg.squadronStatus.attackingTarget">
+
+				%ObjName% is attacking %targetName%.
+				
+			</Text>
+			<Text id="rpg.squadronStatus.lookingForTargets">
+
+				%ObjName% is looking for targets.
+
+			</Text>
+			<Text id="rpg.squadronStatus.returning">
+
+				%ObjName% is returning to the ship.
+			
+			</Text>
+			<Text id="rpg.squadronStatus.waiting">
+
+				%ObjName% is waiting.
+			
+			</Text>
+
+			<Text id="DeployAck">(objTranslate gSource 'DeployAckString { autonName:(objGetName auton 0x01) } )</Text>
+
+			<String id="AttackTargetAck">		Auton order acknowledged</String>
+			<String id="DeployAckString">		%autonName% online</String>
+			<String id="ErrNoSpaceToReturn">	Not enough space in cargo hold to return to ship</String>
+			<String id="FormUpAck">				Auton order acknowledged</String>
+			<String id="NiceShooting"></String>
+			<String id="NoTargetInRange">		No target in range</String>
+			<String id="ReturnAck">				Auton order acknowledged</String>
+			<String id="UnableToComply">		Unable to comply</String>
+			<String id="WaitAck">				Auton order acknowledged</String>
+			<String id="WatchYourTargets"></String>
+
+			<String id="msgRadiation.ok">		%AutonName% has contaminated your ship</String>
+			<String id="msgRadiation.noEffect">	Your ship is immune to radiation</String>
+			<String id="msgRadiation.alreadyApplied"></String>
+
+			<String id="msgNoDamage">			No damage</String>
+			<String id="msgArmorDamage">		Armor integrity at %armorIntegrity%%</String>
+			<String id="msgShieldDamage">		Shields at %shieldLevel%%</String>
+			<String id="msgHullDamage">			Hull integrity at %hullIntegrity%%</String>
+
+			<Text id="action.msgAttackTarget">[A]ttack Target</Text>
+			<Text id="action.msgBreakAndAttack">[B]reak &amp; Attack</Text>
+			<Text id="action.msgFormUp">[F]orm Up</Text>
+			<Text id="action.msgReturnToShip">[R]eturn to Ship</Text>
+			<Text id="action.msgStatus">[S]tatus</Text>
+			<Text id="action.msgWait">[W]ait</Text>
+		</Language>
+	</ShipClass>
+
+	<DockScreen UNID="&RPG_dsNameAuton;"
+		nestedScreen= 	"true"
+		>
+		<Panes>
+			<Default
+				showTextInput=	"true"
+			>
+				<OnPaneInit>
+					(scrSetDescTranslate gScreen 'descName 
+						{ autonName:(itmGetName (typFireEvent (objGetType (@ gData 'autonObject)) 'ConvertToItem) 0) }
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionName" default="1">
+						(block ((theName (rpgSanitizeAutonName (scrGetInputText gScreen)))
+								(theAuton (@ gData 'autonObject))
+								)
+							(objSetName theAuton (or theName (obj@ theAuton 'name)))
+							(scrExitScreen gScreen)
+							)
+					</Action>
+					
+					<Action id="actionCancel" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		
+		<Language>
+			<Text id="actionName">[Enter] Name</Text>
+			<Text id="actionCancel">[Esc] Cancel</Text>
+			<Text id="descName">What would you like to name this %autonName%?</Text>
+		</Language>
+	</DockScreen>
+
+<!-- AUTON WRECK -->
+
+	<!-- Auton Wreck -->
+
+	<StationType unid="&RPG_stAutonWreck;"
+			name=				"(shipwreck)"
+			sovereign=			"&CORE_svNeutral;"
+			dockScreen=			"&RPG_dsRPGAutonWreck;"
+			scale=				"ship"
+			mobile=				"true"
+			noMapIcon=			"true"
+
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			
+			attributes=			"shipwreck"
+			>
+		<Properties>
+			<Data id="autonItem"></Data>
+		</Properties>
+
+		<Events>
+			<GetExplosionType>
+				(intContainerGetExplosionType gSource)
+			</GetExplosionType>
+
+			<OnDamage>
+				(intContainerOnDamage gSource aDamageHP)
+			</OnDamage>
+		</Events>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"48"
+				maxDist=		"3"
+				/>
+	</StationType>
+
+	<DockScreen unid="&RPG_dsRPGAutonWreck;"
+			inherit=			"&RPG_dsDockScreenBase;"
+			>
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(canSalvage (obj@ gSource 'autonItem))
+						(hasItems (objGetItems gSource "*U"))
+
+						(showSalvage canSalvage)
+						(showLoot (or hasItems (not canSalvage)))
+						(enableLoot hasItems)
+						)
+						(scrSetDescTranslate gScreen 'descAutonWreck {
+							objName: (objGetName gSource 'article)
+							})
+
+						;	Show/hide actions
+
+						(scrShowAction gScreen 'actionSalvage showSalvage)
+						(scrShowAction gScreen 'actionLoot showLoot)
+						(scrEnableAction gScreen 'actionLoot enableLoot)
+						(if (and showLoot (not enableLoot))
+							(scrSetActionDesc gScreen 'actionLoot (scrTranslate gScreen 'core.noItemsHereDesc))
+							)
+						)
+				</OnPaneInit>
+				
+				<Actions>
+					<Action id="actionSalvage">
+						(block (
+							(autonItem (obj@ gSource 'autonItem))
+							(autonMass (itmGetMass autonItem))
+							(cargoItems (objGetItems gSource "*U"))
+							(cargoMass (map cargoItems 'reduceSum theItem (itmGetMass theItem)))
+							(totalMass (+ autonMass cargoMass))
+
+							(spaceAvail (objGetCargoSpaceLeft gPlayerShip))
+							(spaceNeeded (- totalMass spaceAvail))
+							)
+							(switch
+								;	Not enough space for auton and cargo
+
+								(and (gr spaceNeeded 0) (gr cargoMass 0))
+									(scrShowScreen gScreen &RPG_dsRPGMessage; {
+										text:(scrTranslate gScreen 'descNoSpaceWithCargo {
+											totalMass: (fmtNumber 'massKg totalMass)
+											}) 
+										})
+
+								;	Not enough space for auton
+
+								(gr spaceNeeded 0)
+									(scrShowScreen gScreen &RPG_dsRPGMessage; {
+										text:(scrTranslate gScreen 'descNoSpace {
+											totalMass: (fmtNumber 'massKg totalMass)
+											}) 
+										})
+
+								;	Salvage success
+
+								(block ()
+									(objAddItem gPlayerShip autonItem)
+									(enum cargoItems theItem
+										(block ()
+											(objAddItem gPlayerShip theItem)
+											(objRemoveItem gSource theItem)
+											)
+										)
+									(objSet@ gSource 'destroyWhenEmpty True)
+									(scrExitScreen gScreen)
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionLoot">
+						(scrShowScreen gScreen &RPG_dsRPGLoot;)
+					</Action>
+
+					<Action id="actionUndock" default="1" cancel="1">
+						<Exit/>
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+		
+		<Language>
+			<Text id="actionSalvage">[S]alvage Auton</Text>
+
+			<Text id="descAutonWreck">
+
+				You are docked with %objName%.
+
+			</Text>
+			<Text id="descNoSpace">
+				
+				There is not enough space in your cargo hold to salvage the 
+				auton.
+				
+				You need at least %totalMass% of free space.
+
+			</Text>
+			<Text id="descNoSpaceWithCargo">
+			
+				There is not enough space in your cargo hold to salvage the 
+				auton and all of its cargo.
+				
+				You need at least %totalMass% of free space.
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+<!-- GLOBAL FUNCTIONS ==========================================================
+
+-->
+
+	<Globals>
+		(block Nil
+			(setq rpgCleanUpSuspendedAuton (lambda (sourceObj)
+				(block (auton)
+					(if (setq auton (objGetObjRefData sourceObj 'rpgSuspendedAuton))
+						(objDestroy auton)
+						)
+						
+					(objSetObjRefData sourceObj 'rpgSuspendedAuton Nil)
+					)
+				))
+
+			(setq rpgCreateSuspendedAuton (lambda (sourceObj autonItem)
+				(block (autonUNID auton)
+					(switch
+					
+						;	Get the UNID
+						
+						(not (setq autonUNID (itmGetStaticData autonItem 'autonShipClass)))
+							Nil
+					
+						;	Check to see if we've already created this auton. If so, then
+						;	we just return it.
+					
+						(and (setq auton (objGetObjRefData sourceObj 'rpgSuspendedAuton))
+								(itmIsEqual autonItem (objGetData auton 'autonItem))
+								)
+							auton
+					
+						;	Let the auton ship class create itself based on the item
+					
+						(block Nil
+							(setq auton
+								(typFireEvent autonUNID 'CreateFromItem { sourceObj:sourceObj type:autonUNID item:autonItem })
+								)
+								
+							;	Suspend the ship
+							
+							(objSuspend auton)
+								
+							;	Remember the suspended auton, in case we need it later.
+							
+							(rpgCleanUpSuspendedAuton sourceObj)
+							(objSetObjRefData sourceObj 'rpgSuspendedAuton auton)
+
+							;	Register an event so that we clean up this auton 
+							;	when we exit dock screen mode.
+
+							(if (scr@ gScreen 'screen)
+								(scrAddUndockCode gScreen (cat 'rpg.cleanUpAuton. (objGetID sourceObj))
+									(lambda ()
+										(block ()
+											(rpgCleanUpSuspendedAuton sourceObj)
+											)
+										)
+									)
+								)
+							
+							;	Done
+							
+							auton
+							)
+						)
+					)
+				))
+				
+			(setq rpgDeployAutonFromItem (lambda (sourceObj autonUNID autonItem messageID)
+				(block Nil
+					;	Let the auton ship class create itself based on the item
+				
+					(typFireEvent autonUNID 'CreateFromItem {
+						sourceObj:sourceObj
+						type:autonUNID
+						item:autonItem
+						messageID:messageID
+						})
+				
+					;	Identify and remove the item from the source
+				
+					(itmSetKnown autonItem)
+					(objRemoveItem sourceObj autonItem 1)
+					
+					;	If the item had a repairID, free it
+					
+					(rpgFreeAutonRepairID (@ (itmGetData autonItem 'autonConfig) 'repairID))
+					)
+				))
+			
+			(setq rpgFreeAutonRepairID (lambda (theID)
+				(typSetData &RPG_baAutonItemBase; 'freedRepairIDs
+					(append (typGetData &RPG_baAutonItemBase; 'freedRepairIDs) theID)
+					)
+				))
+				
+			(setq rpgGetAutonConfig (lambda (autonItem)
+				;	Return the saved config if there is one, otherwise the default for the item type
+				
+				(or (itmGetData autonItem 'autonConfig)
+					(rpgGetAutonDefaultConfig autonItem)
+					)
+				))
+
+			(setq rpgGetAutonDamageDesc (lambda (autonItem)
+				(block (
+					(autonConfig (rpgGetAutonConfig autonItem))
+
+					;	Armor integrity is the integrity of the most damaged
+					;	armor segment (this is consistent with how ships show
+					;	damage.
+
+					(armorIntegrity
+						(map (@ autonConfig 'armor) 'reduceMin armorDesc
+							(block (
+								(armorHP (@ armorDesc 'hp))
+								(armorMaxHP (itm@ (@ armorDesc 'item) 'completeHP))
+								)
+								(round (* 100.0 (/ armorHP armorMaxHP)))
+								)
+							)
+						)
+
+					(hullMaxHP (@ autonConfig 'maxHullHP))
+					(hullHP (@ autonConfig 'hullHP))
+					(hullIntegrity (if (gr hullMaxHP 0)
+						(round (* 100.0 (/ hullHP hullMaxHP)))
+						))
+
+					(shieldItem
+						(@ (map (@ autonConfig 'devices) 'excludeNil deviceDesc
+								(if (= (itm@ (@ deviceDesc 'item) 'category) 'shields)
+									(@ deviceDesc 'item)
+									)
+								)
+							0)
+						)
+
+					(shieldDesc (if shieldItem
+						(rpgGetAutonItemShieldStatus autonConfig)
+						))
+
+					(shieldLevel (@ shieldDesc 'percent))
+
+					(visibleIntegrity
+						(if hullIntegrity
+							(round (* (/ hullIntegrity 100.0) armorIntegrity))
+							armorIntegrity
+							)
+						)
+					)
+					(if autonConfig
+						{
+							shieldLevel: shieldLevel
+							armorIntegrity: armorIntegrity
+							hullIntegrity: hullIntegrity
+
+							visibleDamage: (- 100 visibleIntegrity)
+							}
+						)
+					)
+				))
+			
+			(setq rpgGetAutonDefaultConfig (lambda (autonItem)
+				;
+				;	We return a struct with the following elements:
+				;
+				;		armor: An array of structs, each struct with the following elements:
+				;
+				;				item: An item descriptor
+				;				hp: The number of hit points left
+				;
+				;		devices: An array of structs, each struct with the following
+				;				elements:
+				;
+				;				item: An item descriptor
+				(block (
+					(autonShipClass (itmGetStaticData autonItem 'autonShipClass))
+					)
+					(if autonShipClass
+						{
+							armor: (map (typGetDataField autonShipClass 'armorItems) Nil theArmor
+								{
+									item: theArmor
+									hp: (itm@ theArmor 'completeHP)
+									}
+								)
+
+							devices: (map (typGetDataField autonShipClass 'deviceItems) Nil theDevice
+								{
+									item: theDevice
+									}
+								)
+							}
+						
+						;	Otherwise, there is nothing we can do.
+						
+						)
+					)
+				))
+
+			(setq rpgGetAutonItemDetails (lambda (autonItem options)
+				(block (
+					(autonConfig (rpgGetAutonConfig autonItem))
+					(autonClass (itmGetStaticData autonItem 'autonShipClass))
+
+					(showDevices (not (@ options 'noDevices)))
+
+					;	Reactor stats
+					
+					(reactorText (cat (typGetName autonClass '(short generic titleCapitalize)) " Reactor"))
+					(reactorIcon (resCreateImageDesc &CORE_rsItems1; 288 288 96 96))
+					(reactorPowerText (fmtNumber 'power (typ@ autonClass 'power)))
+
+					;	Drive Stats
+					
+					(driveText (cat (typGetName autonClass '(short generic titleCapitalize)) " Drive"))
+					(driveIcon (resCreateImageDesc &CORE_rsItems1; 96 384 96 96))
+					
+					;	Cargo Stats
+					
+					(cargoIcon (resCreateImageDesc &CORE_rsItems1; 96 192 96 96))
+
+					;	Armor
+
+					(armorCount (count (@ autonConfig 'armor)))
+					(firstArmorItem (@ (@ (@ autonConfig 'armor) 0) 'item))
+
+					;	Devices
+
+					(allDevicesDesc (@ autonConfig 'devices))
+					(shieldItem
+						(@
+							(match allDevicesDesc theDesc 
+								(= (itm@ (@ theDesc 'item) 'category) 'shields)
+								)
+							'item
+							)
+						)
+
+					(weaponItems (map allDevicesDesc 'excludeNil theDesc
+						(if (= (itm@ (@ theDesc 'item) 'category) 'weapon)
+							(@ theDesc 'item)
+							)
+						))
+					(weaponItem1 (@ weaponItems 0))
+					(weaponItem2 (@ weaponItems 1))
+
+					(launcherItem Nil)
+
+					(miscItems (map allDevicesDesc 'excludeNil theDesc
+						(if (itmMatches (@ theDesc 'item) "d~wsrvc")
+							(@ theDesc 'item)
+							)
+						))
+					(miscItem1 (@ miscItems 0))
+
+					;	Slots
+					
+					(deviceSlots (typ@ autonClass 'deviceSlots))
+					(maxWeaponSlots (typ@ autonClass 'deviceSlotsWeapons))
+					(maxNonWeaponSlots (typ@ autonClass 'deviceSlotsNonWeapons))
+
+					(availDeviceSlots (- deviceSlots (count allDevicesDesc)))
+					(availWeaponSlots (- maxWeaponSlots (count weaponItems)))
+					(availNonWeaponSlots 
+						(- maxNonWeaponSlots 
+							(- (count allDevicesDesc) (count weaponItems))
+							)
+						)
+					)
+					(list 
+						{
+						icon: (shpGetImageDesc autonClass 0)
+						desc:
+							(cat
+								"{/rtf "
+									"{/f:MediumBold;/c:#79828c; manufacturer:} " (typ@ autonClass 'manufacturer) "\n"
+									"{/f:MediumBold;/c:#79828c; size:} " (fmtNumber (typ@ autonClass 'size)) " meters\n"
+									"{/f:MediumBold;/c:#79828c; mass:} " (fmtNumber 'massTons (typ@ autonClass 'hullMass)) "\n"
+								"}"
+								)
+						}
+
+						{
+						icon: reactorIcon
+						title: reactorText
+						desc: 
+							(cat
+								"{/rtf "
+									"{/f:MediumBold;/c:#79828c; max. output:} " reactorPowerText "\n"
+								"}"
+								)
+						}
+						
+						{
+						icon: driveIcon
+						title: driveText
+						desc:
+							(cat
+								"{/rtf "
+									"{/f:MediumBold;/c:#79828c; max. speed:} " (fmtNumber 'speed (typ@ autonClass 'maxSpeed)) "\n"
+									"{/f:MediumBold;/c:#79828c; thrust//mass:} " (fmtNumber 'real (/ (typ@ autonClass 'thrustToWeight) 1000)) "\n"
+									"{/f:MediumBold;/c:#79828c; maneuverability:} " (fmtNumber 'real (typ@ autonClass 'maneuver)) "\n"
+								"}"
+								)
+						}
+
+						(if (gr (typ@ autonClass 'cargoSpace) 0)
+							{
+							icon: cargoIcon
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'massTons (typ@ autonClass 'cargoSpace)) "\n"
+										"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'massTons (typ@ autonClass 'maxCargoSpace)) "\n"
+									"}"
+									)
+							}
+							)
+						
+						(if showDevices
+							{
+							icon: (itmGetImageDesc firstArmorItem)
+							title: (cat (itmGetName firstArmorItem '(short actual titleCapitalize)) " (&times;" armorCount ")")
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel firstArmorItem) "\n"
+										"{/f:MediumBold;/c:#79828c; std. armor:} " (typ@ autonClass 'stdArmorClassName) "\n"
+										"{/f:MediumBold;/c:#79828c; max. armor:} " (typ@ autonClass 'maxArmorClassName) "\n"
+									"}"
+									)
+							}
+							{
+							icon: (itmGetImageDesc firstArmorItem)
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; std. armor:} " (typ@ autonClass 'stdArmorClassName) "\n"
+										"{/f:MediumBold;/c:#79828c; max. armor:} " (typ@ autonClass 'maxArmorClassName) "\n"
+									"}"
+									)
+							}
+							)
+
+						(if (and shieldItem showDevices) {
+							icon: (itmGetImageDesc shieldItem)
+							title: (itmGetName shieldItem '(short actual titleCapitalize))
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel shieldItem) "\n"
+									"}"
+									)
+							})
+
+						(if (and weaponItem1 showDevices) {
+							icon: (itmGetImageDesc weaponItem1)
+							title: (itmGetName weaponItem1 '(short actual titleCapitalize))
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel weaponItem1) "\n"
+									"}"
+									)
+							})
+
+						(if (and weaponItem2 showDevices) {
+							icon: (itmGetImageDesc weaponItem2)
+							title: (itmGetName weaponItem2 '(short actual titleCapitalize))
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel weaponItem2) "\n"
+									"}"
+									)
+							})
+
+						(if (and launcherItem showDevices) {
+							icon: (itmGetImageDesc launcherItem)
+							title: (itmGetName launcherItem '(short actual titleCapitalize))
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel launcherItem) "\n"
+									"}"
+									)
+							})
+
+						(if (and miscItem1 showDevices) {
+							icon: (itmGetImageDesc miscItem1)
+							title: (itmGetName miscItem1 '(short actual titleCapitalize))
+							desc:
+								(cat
+									"{/rtf "
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel miscItem1) "\n"
+									"}"
+									)
+							})
+
+						{
+						icon: (resCreateImageDesc &CORE_rsItems1; 96 768 96 96)
+						desc:
+							(cat
+								"{/rtf "
+									"{/f:MediumBold;/c:#79828c; device slots:} " deviceSlots " (" availDeviceSlots " free)\n"
+							
+									(if (!= deviceSlots maxWeaponSlots)
+										(cat "{/f:MediumBold;/c:#79828c; for weapons:} " maxWeaponSlots " (" availWeaponSlots " free)\n")
+										)
+									(if (!= deviceSlots maxNonWeaponSlots)
+										(cat "{/f:MediumBold;/c:#79828c; for non-weapons:} " maxNonWeaponSlots " (" availNonWeaponSlots " free)\n") 
+										)
+								"}"
+								)
+						})
+					)
+				))
+			
+			(setq rpgGetAutonItemShieldStatus (lambda (theConfig)
+				(block (theStatus)
+					(if (setq theStatus (@ theConfig 'shieldStatus))
+						(block (
+							(regenTime (- (unvGetTick) (@ theStatus 'regenStartTick) ))
+							(hp (+ (@ theStatus 'hp) (* regenTime (@ theStatus 'regen))))
+							(maxHP (@ theStatus 'maxHP))
+							)
+							(if (geq hp maxHP)
+								(setq hp maxHP)
+								(setq hp (int hp))
+								)
+							{
+								hp: hp
+								maxHP: maxHP
+								percent: (round (* 100.0 (/ hp maxHP)))
+								}
+							)
+							
+						{ percent: 100 }
+						)
+					)
+				))
+
+			(setq rpgGetAutonRepairDesc (lambda (sourceObj autonItem)
+
+				;	Loop over all installed devices and ask if they repair
+				;	the given item.
+				;
+				;	We return an array of structs. Each struct has the following
+				;	fields:
+				;
+				;		repairDesc: Description of whether we're repairing or 
+				;			not.
+
+				(map (objGetItems sourceObj "dI") 'excludeNil theDevice
+					(objFireItemEvent sourceObj theDevice 'GetAutonRepairDesc {
+						item: autonItem
+						})
+					)
+				))
+			
+			(setq rpgGetNextAutonRepairID (lambda Nil
+				(block (
+					(freedIDs (typGetData &RPG_baAutonItemBase; 'freedRepairIDs))
+					nextID
+					)
+					(if freedIDs
+						(block Nil
+							(setq nextID (@ freedIDs 0))
+							(typSetData &RPG_baAutonItemBase; 'freedRepairIDs (subset freedIDs 1))
+							)
+						(block Nil
+							(setq nextID (or (typGetData &RPG_baAutonItemBase; 'nextRepairID) 1))
+							(typSetData &RPG_baAutonItemBase; 'nextRepairID (add nextID 1))
+							)
+						)
+					nextID
+					)
+				))
+			
+			(setq rpgGetSuspendedAuton (lambda (sourceObj)
+				(objGetObjRefData sourceObj 'rpgSuspendedAuton)
+				))
+				
+			(setq rpgSanitizeAutonName (lambda (theName)
+				(block (tempName newName)
+					;	Pairs of % signs with another character and no spaces between them could be parameters that will be replaced.
+					;	We can't control the text parsing code or escape them, so break them up by inserting a space.
+					
+					(for i 0 (min 16 (- (count theName) 1))
+						(if (and (eq (subset theName i 1) "%")
+								(gr (strFind (subset theName (+ i 1)) "%") 0)
+								(or (not (strFind (subset theName (+ i 1)) " "))
+									(ls (strFind (subset theName (+ i 1)) "%") (strFind (subset theName (+ i 1)) " "))
+									)
+								)
+							(setq tempName (cat tempName "% "))
+							(setq tempName (cat tempName (subset theName i 1)))
+							)
+						)
+					
+					;	Escape characters with special function in item names with \
+					
+					(for i 0 (min 16 (- (count tempName) 1))
+						(if (find "\\|[]();:" (subset tempName i 1))
+							(setq newName (cat newName "\\" (subset tempName i 1)))
+							(setq newName (cat newName (subset tempName i 1)))
+							)
+						)
+				
+					;	Replace empty string with Nil to reset to default name, otherwise return new name.
+					
+					(if (or (not newName) (eq "" (apply cat (split newName " ")))) Nil (strCapitalize newName))
+					)
+				))
+			)
+	</Globals>
+
+</TranscendenceModule>

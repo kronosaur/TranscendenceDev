@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- CONSTRUCTIVE CHAOS -->
+
+	<Sovereign UNID="&CORE_svIndependent;"
+			name="independent merchant"
+			alignment="constructive chaos"
+			/>
+
+	<Sovereign UNID="&HS_svDefectiveAuton;"
+			name="auton"
+			alignment="constructive chaos"
+			>
+		<Language>
+			<Text id="WatchYourTargets">""</Text>
+			<Text id="NiceShooting">""</Text>
+		</Language>
+		
+		<Relationships>
+			<Relationship sovereign="&CORE_svPlayer;" disposition="enemy" mutual="true"/>
+		</Relationships>
+	</Sovereign>
+
+	<!-- CONSTRUCTIVE ORDER -->
+
+	<!-- NEUTRAL -->
+
+	<Sovereign UNID="&HS_svIndependentTrader;"
+			name="independent merchant"
+			alignment="neutral"
+			/>
+
+	<!-- DESTRUCTIVE ORDER -->
+
+	<Sovereign UNID="&HS_svDestructiveOrder;"
+			name="(destructive order)"
+			alignment="destructive order"
+			/>
+
+	<Sovereign UNID="&HS_svCult;"
+			name="Cult"
+			alignment="destructive order"
+			/>
+
+	<Sovereign UNID="&HS_svSettlers;"
+			name="Settlers"
+			alignment="destructive order"
+			/>
+
+	<!-- DESTRUCTIVE CHAOS -->
+
+	<Sovereign UNID="&HS_svDestructiveChaos;"
+			name="(destructive chaos)"
+			alignment="destructive chaos"
+			/>
+
+</TranscendenceModule>

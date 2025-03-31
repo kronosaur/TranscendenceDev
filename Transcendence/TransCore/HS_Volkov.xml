@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+	<!-- Volkov's Wolfen-class Gunship
+
+	-->
+
+	<ShipClass UNID="&HS_scWolfenVolkov;"
+			manufacturer=		"Pacific Defense"
+			class=				"Wolfen/C"
+			type=				"gunship"
+			defaultSovereign=	"&HS_svCommonwealth;"
+
+			attributes=			"commonwealth, pacificDefense, wingmate"
+			inherit=			"&HS_scWolfenC3;"
+			character=			"&HS_chVolkov;"
+			eventHandler=		"&HS_chVolkov;"
+
+			leavesWreck=		"25"
+			>
+
+		<Names noArticle="true" personalName="true">Volkov</Names>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itAdvancedReactiveArmor;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itXRayLaserCannon;"/>
+			<Device deviceID="&HS_itClass5Deflector;"/>
+			<Device deviceID="&HS_it100MWReactor;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"10"
+			fireAccuracy=		"95"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+
+	<!-- Helena Volkov
+	
+	EXTRA DATA
+	
+	status:				Ship's status
+							Nil						= Helena's body is here
+							'volkovLeft				= Volkov has left with Helena's body
+
+	volkov:				Volkov's ship
+
+	LATER: This assumes that Volkov's ship has the "volkov" attribute, but if
+		Volkov changes ships, then this is not guaranteed. A better method would
+		be to search of the character (chVolkov).
+	
+	-->
+
+	<StationType UNID="&HS_stHelenaVolkov;"
+			name=				"wreck of Helena Volkov's EI500 freighter"
+			sovereign=			"&CORE_svNeutral;"
+			inherit=			"&RPG_unidCommonText;"
+			
+			dockScreen=			"Main"
+			scale=				"ship"
+			noMapIcon=			"true"
+
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"debris, friendly, helenaVolkov, locked, shipwreck"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+humanSpace;"
+				systemAffinity=			"*"
+				levelFrequency=			"---vr vvv-- ----- ----- -----"
+
+				locationCriteria=		"-planetary"
+
+				maxAppearing=			"1"
+				/>
+
+		<ImageShipwreck class="&HS_scEI500;"/>
+
+		<Events>
+			<GetExplosionType>
+				(intContainerGetExplosionType gSource)
+			</GetExplosionType>
+			
+			<OnAttacked>
+				(block (volkov)
+					(if (and aOrderGiver (setq volkov (objGetObjRefData gSource "volkov")))
+						(objSendMessage aOrderGiver volkov "\"Leave Helena alone!\"")
+						)
+					)
+			</OnAttacked>
+			
+			<OnCreate>
+				(sysAddObjRecurringTimerEvent 60 gSource "OnSearchForVolkov")
+			</OnCreate>
+
+			<OnDamage>
+				(intContainerOnDamage gSource aDamageHP)
+			</OnDamage>
+			
+			<OnDestroy>
+				(block (volkov)
+					(if (and aOrderGiver 
+							(objCanAttack aOrderGiver)
+							(setq volkov (objGetObjRefData gSource "volkov")))
+						(block Nil
+							(shpCancelOrders volkov)
+							(shpOrder volkov 'attack aOrderGiver)
+							(shpOrder volkov 'gate (intGetGateToSystem gSource (objGetData volkov "homeSystem")))
+							)
+						)
+					)
+			</OnDestroy>
+			
+			<OnSearchForVolkov>
+				(block (volkov)
+					(if (and (setq volkov (@ (sysFindObject gSource "sAN:100; +character:&HS_chVolkov;;") 0))
+							(not (eq (objGetData volkov "behavior") 'goingHome))
+							)
+						(block Nil
+							(objSetObjRefData gSource "volkov" volkov)
+							(setq aTargetObj gSource)
+							(objFireEvent volkov "OrderJoinHelena")
+							)
+						)
+					)
+			</OnSearchForVolkov>
+		</Events>
+
+		<DockScreens>
+			<Main>
+				<InitialPane>
+					(if (objIsDockedAt (objGetObjRefData gSource "volkov") gSource)
+						(if (not (objGetData gSource "status"))
+							"VolkovGrieving"
+							"VolkovGrieving2"
+							)
+						(if (not (objGetData gSource "status"))
+							"Helena"
+							"Default"
+							)
+						)
+				</InitialPane>
+
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(scrShowScreen gScreen &RPG_dsRPGAbandonedStation;)
+						</OnPaneInit>
+					</Default>
+					
+					<Helena	descID="descHelena">
+						<Actions>
+							<Action id="actionUndock" default="1" cancel="1">
+								(scrExitDock gScreen)
+							</Action>
+						</Actions>
+					</Helena>
+					
+					<VolkovGrieving descID="descVolkovGrieving">
+						<Actions>
+							<Action id="actionUndock" default="1" cancel="1">
+								(block (volkov)
+									(setq volkov (objGetObjRefData gSource "volkov"))
+									(shpCancelOrders volkov)
+									(shpOrder volkov 'wait 10)
+									(shpOrder volkov 'gate (intGetGateToSystem gSource (objGetData volkov "homeSystem")))
+									
+									(objSetData gSource "status" 'volkovLeft)
+									(scrExitDock gScreen)
+									)
+							</Action>
+						</Actions>
+					</VolkovGrieving>
+					
+					<VolkovGrieving2 descID="descVolkovGrieving2">
+						<Actions>
+							<Action id="actionUndock" default="1" cancel="1">
+								(scrExitDock gScreen)
+							</Action>
+						</Actions>
+					</VolkovGrieving2>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"48"
+				maxDist=		"3"
+				/>
+				
+		<Language>
+			<Text id="core.abandonedStationDesc">
+
+				You are docked with the wreck of an EI500 freighter.
+
+				There is a makeshift memorial here honoring Helena Volkov.
+
+			</Text>
+			<Text id="descHelena">
+				
+				You are docked with the wreck of an EI500 freighter.
+
+				You see the body of a woman still strapped to the command chair 
+				on the bridge.
+
+			</Text>
+			<Text id="descVolkovGrieving">
+
+				You are docked with the wreck of an EI500 freighter. 
+				You see Volkov on the deck cradling the body of his wife.
+
+				"Helena was so beautiful and so loving! But Domina called her, 
+				and now she is dead! Why? What reason?"
+
+				You leave Volkov to his grief.
+
+			</Text>
+			<Text id="descVolkovGrieving2">
+
+				You are docked with the wreck of an EI500 freighter.
+
+				You see Volkov tenderly carrying his wife's body to his ship.
+
+			</Text>
+		</Language>
+	</StationType>
+
+<!-- BEHAVIOR -->
+
+	<Type unid="&HS_chVolkov;"
+			inherit=	"&RPG_baStdWingmanBase;">
+
+		<Properties>
+			<Definition id="core.namePattern">": Volkov"</Definition>
+		</Properties>
+
+		<StaticData>
+			<Name>Volkov</Name>
+			<Sovereign>&HS_svCommonwealth;</Sovereign>
+		</StaticData>
+
+		<Language>
+			<Text id="ArmorRepaired">			Good! Armor is repaired</Text>
+			<Text id="AttackTargetAck">			Da! Target acquired</Text>
+			<Text id="CancelAttackAck">			Da! Returning now</Text>
+			<Text id="FormUpAck">				Da! Returning now</Text>
+			<Text id="IcantAttackFriends">		Helena would not want me to</Text>
+			<Text id="IcantAttackMyself">		Is joke?</Text>
+			<Text id="ImFarFromHome">			</Text>
+			<Text id="ImTooFarFromHome">		</Text>
+			<Text id="ImGoingHome">				Noooooo!</Text>
+			<Text id="ImRepairingArmor">		Docking to repair armor</Text>
+			<Text id="MyArmorNeedsRepair">		Please, my armor needs repair</Text>
+			<Text id="NiceShooting">			Spasibo!</Text>
+			<Text id="NoTargetInRange">			No targets!</Text>
+			<Text id="Status100Percent">		No damage</Text>
+			<Text id="StatusAttackingTarget">	Target acquired</Text>
+			<Text id="StatusGoingHome">			Leave me alone!</Text>
+			<Text id="StatusRepairingArmor">	Repairs almost finished</Text>
+			<Text id="StatusWaiting">			Waiting, as ordered</Text>
+			<Text id="WaitAck">					I will wait</Text>
+			<Text id="WatchYourTargets">		Blya! Watch your fire!</Text>
+			<Text id="WingmanJoined">			</Text>
+			<Text id="WingmanKilled">			Helena, I will join you now!</Text>
+
+			<Text id="Intro">
+				(if (= (objGetProperty gPlayerShip 'characterClass) &RPG_unidPilgrimClass;)
+					(cat
+						"As the crowd breaks up, a tall man in a faded flight suit walks up to you:\n\n"
+						"\"My name is Volkov. You are going to the Core, is true? "
+						"I also want to go and I would fly with you, if you're willing.\""
+						)
+					(cat
+						"As the crowd breaks up, a tall man in a faded flight suit walks up to you:\n\n"
+						"\"My name is Volkov. You are leaving the system, is true? "
+						"I also want to go and I would fly with you, if you're willing.\""
+						)
+					)
+			</Text>
+			<Text id="AcceptReply">
+
+				Volkov nods his head, more in relief than in joy.
+
+				"Good. I will see you out there!"
+
+			</Text>
+			<Text id="DeclineReply">
+
+				Volkov grimaces in disappointment and a profound grief fills 
+				his eyes. He begins to plead, but then turns away in resignation.
+				As he walks away he whispers to himself: "Helena..."
+				
+				And then he is gone.
+
+			</Text>
+		</Language>
+		
+		<Events>
+			<GetGlobalAchievements>
+				(block (theList status)
+				(setq status (typGetGlobalData &HS_chVolkov; "status"))
+
+					(if status
+						(setq theList (list
+							(list
+								(switch
+									(eq status 'joined) "Joined by Volkov"
+									(eq status 'declined) "Declined Volkov's company"
+									(eq status 'destroyed) "Lost Volkov"
+									(eq status 'destroyedByPlayer) "Killed Volkov"
+									(eq status 'returnedHome) "Allowed Volkov to find his wife"
+									(cat "ERROR: Volkov status: " (or status "Nil"))
+									)
+								Nil
+								"achievements &amp; regrets"
+								)
+							))
+						)
+						
+					theList
+					)
+			</GetGlobalAchievements>
+			
+			<OnCreate>
+				(block (shieldEnhance armorEnhance)
+					; Call base class
+					(typFireObjEvent &RPG_baStdWingmanBase; gSource "OnCreate")
+					
+					; Add a random enhancements to Volkov's stuff
+					(setq shieldEnhance (random '(0x0102 0x0105 0x0A28 0x0A38)))
+					(setq armorEnhance (random '(0x0103 0x0104 0x0105 0x0200 0x0705)))
+					(objEnumItems gSource "aswI" theItem
+						(switch
+							(eq (itmGetType theItem) &HS_itClass5Deflector;)
+								(shpEnhanceItem gSource theItem shieldEnhance)
+
+							(eq (itmGetType theItem) &HS_itAdvancedReactiveArmor;)
+								(shpEnhanceItem gSource theItem armorEnhance)
+							)
+						)
+					)
+			</OnCreate>
+
+			<OrderCreateShip>
+				(sysCreateShip &HS_scWolfenVolkov; (@ gData 'pos) &HS_svCommonwealth;)
+			</OrderCreateShip>
+			
+			<OrderJoinHelena>
+				(block Nil
+					(shpCancelOrders gSource)
+					(shpOrder gSource 'dock aTargetObj)
+					(shpOrder gSource 'wait)
+
+					(objSetData gSource "behavior" 'goingHome)
+					(objSendMessage gPlayerShip gSource (objTranslate gSource 'ImGoingHome))
+					)
+			</OrderJoinHelena>
+		</Events>
+	</Type>
+	
+</TranscendenceModule>

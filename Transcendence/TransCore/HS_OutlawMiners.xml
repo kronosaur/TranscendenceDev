@@ -1,0 +1,1388 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Sovereign UNID="&HS_svOutlawMiners;"
+			name=":the Freeminers Union"
+			shortName=":the Freeminers"
+			adjective="Freeminer"
+			demonym=":a Freeminer(s)"
+			plural="true"
+
+			alignment="destructive order"
+			/>
+
+<!-- STATION TYPES -->
+
+	<!-- Level 2: Outlaw Mine -->
+
+	<StationType UNID="&HS_stAsteroidMineTitanium;"
+			name=				"level 2 outlaw mine"
+			sovereign=			"&HS_svOutlawMiners;"
+			inherit=			"&HS_baOutlawMine;"
+				 
+			attributes=			"asteroidBase, enemy, envEarth, envAvoidsAir, generic, human, outlawMiners, outlaws, populated, settlers"
+				 
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+				 
+			explosionType=		"&CORE_vtKineticExplosion2;"
+			ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+outlawSpace;"
+				systemAffinity=			"+envEarth; -envAir;"
+				levelFrequency=			"ucr-- ----- ----- ----- -----"
+
+				locationCriteria=		"++asteroids"
+				/>
+
+		<Encounters frequency="uncommon">
+			<Lookup table="&HS_tbOutlawMinerEncounters;"/>
+		</Encounters>
+
+		<!-- Trade and Items -->
+		
+		<Items>
+			<Group value="standard:level=2:x=0.5">
+				<Lookup table="&HS_tbOutlawMineTreasure;"/>
+			</Group>
+		</Items>
+
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&HS_itLightCeramicPlate;"
+				hitPoints=		"90"
+				regen=			"1"
+				/>
+		
+		<!-- Ships and Defenses -->
+		
+		<Ships>
+			<Lookup table="&HS_tbOutlawMineTurrets;"/>
+			<Lookup table="&HS_tbOutlawMineDefenders;"/>
+		</Ships>
+
+		<Reinforcements minShips="2">
+			<Lookup table="&HS_tbOutlawMineDefenders;"/>
+		</Reinforcements>
+		
+		<!-- Image and Effects -->
+		
+		<ImageVariants>
+			<LocationCriteriaTable>
+				<Variants criteria="*ice">
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				<Variants criteria="*metallic">
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				<Variants criteria="*primordial">
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				<Variants criteria="*volcanic">
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				
+				<Variants criteria="*~">
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+			</LocationCriteriaTable>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"120"
+				>
+		</DockingPorts>
+
+	</StationType>
+
+	<!-- Level 3: Outlaw Mine -->
+
+	<StationType UNID="&HS_stAsteroidMinePalladium;"
+			name=				"level 3 outlaw mine"
+			sovereign=			"&HS_svOutlawMiners;"
+			inherit=			"&HS_baOutlawMine;"
+				 
+			attributes=			"asteroidBase, enemy, envEarth, envAvoidsAir, generic, human, outlawMiners, outlaws, populated, settlers"
+				 
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+				 
+			explosionType=		"&CORE_vtKineticExplosion2;"
+			ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+			>
+
+		<!-- Encounter Info -->
+		
+		<Encounter
+				systemCriteria=			"+outlawSpace;"
+				systemAffinity=			"+envEarth; -envAir;"
+				levelFrequency=			"rucr- ----- ----- ----- -----"
+
+				locationCriteria=		"++asteroids"
+				/>
+
+		<Encounters frequency="uncommon">
+			<Lookup table="&HS_tbOutlawMinerEncounters;"/>
+		</Encounters>
+
+		<!-- Trade and Items -->
+		
+		<Items>
+			<Group value="standard:level=3:x=0.5">
+				<Lookup table="&HS_tbOutlawMineTreasure;"/>
+			</Group>
+		</Items>
+
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&HS_itCeramicPlate;"
+				hitPoints=		"120"
+				regen=			"1"
+				/>
+		
+		<!-- Ships and Defenses -->
+		
+		<Ships>
+			<Lookup table="&HS_tbOutlawMineTurrets;"/>
+			<Lookup table="&HS_tbOutlawMineDefenders;"/>
+		</Ships>
+
+		<Reinforcements minShips="2">
+			<Lookup table="&HS_tbOutlawMineDefenders;"/>
+		</Reinforcements>
+		
+		<!-- Image and Effects -->
+		
+		<ImageVariants>
+			<LocationCriteriaTable>
+				<Variants criteria="*ice">
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				<Variants criteria="*metallic">
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				<Variants criteria="*primordial">
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				<Variants criteria="*volcanic">
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				
+				<Variants criteria="*~">
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+			</LocationCriteriaTable>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"120"
+				>
+		</DockingPorts>
+	</StationType>
+
+	<!-- Level 4: Outlaw Mine -->
+
+	<StationType UNID="&HS_stAsteroidMineCeralloy;"
+			name=				"level 4 outlaw mine"
+			sovereign=			"&HS_svOutlawMiners;"
+			inherit=			"&HS_baOutlawMine;"
+				 
+			attributes=			"asteroidBase, enemy, envEarth, envAvoidsAir, generic, human, outlawMiners, outlaws, populated, settlers"
+				 
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+				 
+			explosionType=		"&CORE_vtBlastExplosion1;"
+			ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+			>
+
+		<!-- Encounter Info -->
+		
+		<Encounter
+				systemCriteria=			"+outlawSpace;"
+				systemAffinity=			"+envEarth; -envAir;"
+				levelFrequency=			"-ruur ----- ----- ----- -----"
+
+				locationCriteria=		"++asteroids"
+				/>
+
+		<Encounters frequency="uncommon">
+			<Lookup table="&HS_tbOutlawMinerEncounters;"/>
+		</Encounters>
+
+		<!-- Trade and Items -->
+		
+		<Items>
+			<Group value="standard:level=4:x=0.5">
+				<Lookup table="&HS_tbOutlawMineTreasure;"/>
+			</Group>
+		</Items>
+
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&HS_itHeavyCeramicPlate;"
+				hitPoints=		"160"
+				regen=			"2"
+				/>
+		
+		<!-- Ships and Defenses -->
+		
+		<Ships>
+			<Lookup table="&HS_tbOutlawMineTurrets;"/>
+			<Lookup table="&HS_tbOutlawMineDefenders;"/>
+		</Ships>
+
+		<Reinforcements minShips="2">
+			<Lookup table="&HS_tbOutlawMineDefenders;"/>
+		</Reinforcements>
+		
+		<!-- Image and Effects -->
+		
+		<ImageVariants>
+			<LocationCriteriaTable>
+				<Variants criteria="*ice">
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				<Variants criteria="*metallic">
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				<Variants criteria="*primordial">
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				<Variants criteria="*volcanic">
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				
+				<Variants criteria="*~">
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+			</LocationCriteriaTable>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"120"
+				>
+		</DockingPorts>
+
+	</StationType>
+
+	<!-- Level 5: Outlaw Mine -->
+
+	<StationType UNID="&HS_stAsteroidMineDuralloy;"
+			name=				"level 5 outlaw mine"
+			sovereign=			"&HS_svOutlawMiners;"
+			inherit=			"&HS_baOutlawMine;"
+				 
+			attributes=			"asteroidBase, enemy, envEarth, envAvoidsAir, generic, human, outlawMiners, outlaws, populated, settlers"
+				 
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+				 
+			explosionType=		"&CORE_vtBlastExplosion2;"
+			ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+			>
+
+		<!-- Encounter Info -->
+		
+		<Encounter
+				systemCriteria=			"+outlawSpace;"
+				systemAffinity=			"+envEarth; -envAir;"
+				levelFrequency=			"--ruc r---- ----- ----- -----"
+
+				locationCriteria=		"++asteroids"
+				enemyExclusionRadius=	"40"
+				/>
+		
+		<Encounters frequency="uncommon">
+			<Lookup table="&HS_tbOutlawMinerEncounters;"/>
+		</Encounters>
+
+		<!-- Trade and Items -->
+		
+		<Items>
+			<Group value="standard:level=5:x=0.5">
+				<Lookup table="&HS_tbOutlawMineTreasure;"/>
+			</Group>
+		</Items>
+		
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&HS_itPolyceramicPlate;"
+				hitPoints=		"210"
+				regen=			"2"
+				/>
+		
+		<!-- Ships and Defenses -->
+		
+		<Ships>
+			<Lookup table="&HS_tbOutlawMineTurrets;"/>
+			<Lookup table="&HS_tbOutlawMineDefenders;"/>
+		</Ships>
+
+		<Reinforcements minShips="2">
+			<Lookup table="&HS_tbOutlawMineDefenders;"/>
+		</Reinforcements>
+		
+		<!-- Image and Effects -->
+		
+		<ImageVariants>
+			<LocationCriteriaTable>
+				<Variants criteria="*ice">
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				<Variants criteria="*metallic">
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				<Variants criteria="*primordial">
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				<Variants criteria="*volcanic">
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				
+				<Variants criteria="*~">
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+			</LocationCriteriaTable>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"120"
+				>
+		</DockingPorts>
+		
+	</StationType>
+
+	<!-- Level 6: Outlaw Mine -->
+
+	<StationType UNID="&HS_stAsteroidMinePteracnium;"
+			name=				"level 6 outlaw mine"
+			sovereign=			"&HS_svOutlawMiners;"
+			inherit=			"&HS_baOutlawMine;"
+				 
+			attributes=			"asteroidBase, enemy, envEarth, envAvoidsAir, generic, human, outlawMiners, outlaws, populated, settlers"
+				 
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+				 
+			explosionType=		"&CORE_vtBlastExplosion2;"
+			ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+			>
+
+		<!-- Encounter Info -->
+		
+		<Encounter
+				systemCriteria=			"+outlawSpace;"
+				systemAffinity=			"+envEarth; -envAir;"
+				levelFrequency=			"---ru ur--- ----- ----- -----"
+
+				locationCriteria=		"++asteroids"
+				enemyExclusionRadius=	"40"
+				/>
+		
+		<Encounters frequency="uncommon">
+			<Lookup table="&HS_tbOutlawMinerEncounters;"/>
+		</Encounters>
+		
+		<!-- Trade and Items -->
+		
+		<Items>
+			<Group value="standard:level=6:x=0.5">
+				<Lookup table="&HS_tbOutlawMineTreasure;"/>
+			</Group>
+		</Items>
+			
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&HS_itCeralloyArmor;"
+				hitPoints=		"280"
+				regen=			"3"
+				/>
+		
+		<!-- Ships and Defenses -->
+		
+		<Ships>
+			<Lookup table="&HS_tbOutlawMineTurrets;"/>
+			<Lookup table="&HS_tbOutlawMineDefenders;"/>
+		</Ships>
+
+		<Reinforcements minShips="2">
+			<Lookup table="&HS_tbOutlawMineDefenders;"/>
+		</Reinforcements>
+		
+		<!-- Image and Effects -->
+		
+		<ImageVariants>
+			<LocationCriteriaTable>
+				<Variants criteria="*ice">
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineIce;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				<Variants criteria="*metallic">
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineMetallic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				<Variants criteria="*primordial">
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMinePrimordial;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				<Variants criteria="*volcanic">
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineVolcanic;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+				
+				<Variants criteria="*~">
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="0"/>
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="220"/>
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="440"/>
+					<Image imageID="&HS_rsOutlawMineRocky;"	imageWidth="220" imageHeight="220"	imageX="0"	imageY="660"/>
+				</Variants>
+			</LocationCriteriaTable>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"120"
+				>
+		</DockingPorts>
+
+	</StationType>
+
+	<!-- Level 5: Outlaw Turret -->
+
+	<StationType UNID="&HS_stOutlawTurret;"
+			name=				"Outlaw defense turret"
+			sovereign=			"&HS_svOutlawMiners;"
+				 
+			attributes=			"outlaws, staticDefense"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+				 
+			mass=				"2000"
+			armorID=			"&HS_itCeralloyArmor;"
+			hitPoints=			"90"
+			structuralHitPoints="25"
+			fireRateAdj=		"20"
+				 
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+			>
+
+		<!-- Configuration -->
+		
+		<Devices>
+			<Device deviceID="&HS_itShtormRepeater;"	omnidirectional="true"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+		
+		<ImageVariants>
+			<Image			imageID="&HS_rsStations4;" imageX="192" imageY="448" imageWidth="42" imageHeight="42"/>
+			<Image			imageID="&HS_rsStations4;" imageX="192" imageY="490" imageWidth="42" imageHeight="42"/>
+			<Image			imageID="&HS_rsStations4;" imageX="192" imageY="532" imageWidth="42" imageHeight="42"/>
+			<Image			imageID="&HS_rsStations4;" imageX="192" imageY="574" imageWidth="42" imageHeight="42"/>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"24"
+				maxDist=		"3"
+				/>
+
+	</StationType>
+	
+	<!-- Level 6: Outlaw Howitzer -->
+
+	<StationType UNID="&HS_stOutlawHowitzer;"
+			name=				"Outlaw howitzer"
+			sovereign=			"&HS_svOutlawMiners;"
+				 
+			attributes=			"outlaws, staticDefense"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+				 
+			mass=				"2000"
+			armorID=			"&HS_itHeavyCeralloyArmor;"
+			hitPoints=			"120"
+			structuralHitPoints="25"
+			fireRateAdj=		"20"
+				 
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			noMapLabel=			"true"
+			noFriendlyFire=		"true"
+			>
+
+		<!-- Configuration -->
+		
+		<Devices>
+			<Device deviceID="&HS_itMarkIIIHowitzer;"	omnidirectional="true"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+		
+		<ImageVariants>
+			<Image			imageID="&HS_rsStations4;" imageX="192" imageY="448" imageWidth="42" imageHeight="42"/>
+			<Image			imageID="&HS_rsStations4;" imageX="192" imageY="490" imageWidth="42" imageHeight="42"/>
+			<Image			imageID="&HS_rsStations4;" imageX="192" imageY="532" imageWidth="42" imageHeight="42"/>
+			<Image			imageID="&HS_rsStations4;" imageX="192" imageY="574" imageWidth="42" imageHeight="42"/>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"2"
+				portRadius=		"24"
+				maxDist=		"3"
+				/>
+
+	</StationType>
+	
+<!-- SHIP CLASSES -->
+
+	<!-- Level 2: Borer-class Gunship -->
+
+	<ShipClass UNID="&HS_scBorer;"
+			manufacturer=		"United African States"
+			class=				"Borer"
+			type=				"gunship"
+			defaultSovereign=	"&HS_svOutlawMiners;"
+
+			attributes=			"genericClass, outlaws, outlawMiners"
+			inherit=			"&HS_scBorerStock;"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itLightReactiveArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itMiningLaser;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			fireRateAdj=		"40"
+			fireAccuracy=		"70"
+			perception=			"4"
+			/>
+
+		<Events>
+			<OnCreate>
+				(block (baseOre maxLootValue)
+					; There is a chance that we have some small amount of ore
+					
+					(setq maxLootValue (random 50 200))
+					(switch
+						; 50% chance of fuel rods instead of ore.
+						(leq (random 1 100) 50)
+							(objAddItem gSource (itmCreate &CORE_itHelium3FuelRod; (random 1 6)))
+							
+						; If we have a base and it has ore then we have some of
+						; that in our cargo.
+						(and aBaseObj (setq baseOre (random (objGetItems aBaseObj "t +Ore"))))
+							(objAddItemByValue gSource baseOre maxLootValue 'credit)
+
+						; Otherwise we add ore appropriate to the system
+						(objAddItemByValue gSource (itmCreate (sysGetRandomOreType) 1) maxLootValue 'credit)
+						)
+					)
+			</OnCreate>
+		</Events>
+	</ShipClass>
+
+	<!-- Level 4: Borer II-class Gunship -->
+
+	<ShipClass UNID="&HS_scBorer-II;"
+			manufacturer=		"United African States"
+			class=				"Borer II"
+			type=				"gunship"
+			defaultSovereign=	"&HS_svOutlawMiners;"
+
+			attributes=			"genericClass, outlaws, outlawMiners"
+			inherit=			"&HS_scBorerIIStock;"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&CORE_itHeavyReactiveArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itProtonDrill;"/>
+			<Device deviceID="&HS_itClass1Deflector;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			fireRateAdj=		"30"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+		<Events>
+			<OnCreate>
+				(block (baseOre maxLootValue)
+					; There is a chance that we have some small amount of ore
+					
+					(setq maxLootValue (random 100 500))
+					(switch
+						; 20% chance of fuel rods instead of ore.
+						(leq (random 1 100) 20)
+							(objAddItem gSource (itmCreate &HS_itHeliumAssembly; (random 1 8)))
+
+						; If we have a base and it has ore then we have some of
+						; that in our cargo.
+						(and aBaseObj (setq baseOre (random (objGetItems aBaseObj "t +Ore"))))
+							(objAddItemByValue gSource baseOre maxLootValue 'credit)
+								
+						; Otherwise we add ore appropriate to the system
+						(objAddItemByValue gSource (itmCreate (sysGetRandomOreType) 1) maxLootValue 'credit)
+						)
+						
+					; Chance of fuel rods in addition
+					(if (leq (random 1 100) 50)
+						(objAddItem gSource (itmCreate &CORE_itHelium3FuelRod; (random 1 4)))
+						)
+					)
+			</OnCreate>
+		</Events>
+	</ShipClass>
+
+	<!-- Level 6: Borer III-class Gunship -->
+
+	<ShipClass UNID="&HS_scBorer-III;"
+			manufacturer=		"United African States"
+			class=				"Borer III"
+			type=				"gunship"
+			defaultSovereign=	"&HS_svOutlawMiners;"
+
+			attributes=			"genericClass, outlaws, outlawMiners"
+			inherit=			"&HS_scBorerIIIStock;"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itBlastPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itPlasmaTorch;"/>
+			<Device deviceID="&HS_itClass3Deflector;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			fireRateAdj=		"20"
+			fireAccuracy=		"90"
+			perception=			"4"
+			/>
+
+		<Events>
+			<OnCreate>
+				(block (baseOre maxLootValue)
+					; There is a chance that we have some small amount of ore
+					
+					(setq maxLootValue (random 250 1500))
+					(switch
+						; 20% chance of fuel rods instead of ore.
+						(leq (random 1 100) 20)
+							(objAddItem gSource (itmCreate &HS_itXenotiteFuelRod; (random 1 8)))
+
+						; If we have a base and it has ore then we have some of
+						; that in our cargo.
+						(and aBaseObj (setq baseOre (random (objGetItems aBaseObj "t +Ore"))))
+							(objAddItemByValue gSource baseOre maxLootValue 'credit)
+								
+						; Otherwise we add ore appropriate to the system
+						(objAddItemByValue gSource (itmCreate (sysGetRandomOreType) 1) maxLootValue 'credit)
+						)
+						
+					; Chance of fuel rods in addition
+					(if (leq (random 1 100) 50)
+						(objAddItem gSource (itmCreate &CORE_itHelium3FuelRod; (random 1 4)))
+						)
+					)
+			</OnCreate>
+		</Events>
+	</ShipClass>
+
+	<!-- Hammerhead-class Gunship -->
+
+	<ShipClass UNID="&HS_scHammerhead;"
+			manufacturer=		"Earth Industries"
+			class=				"Hammerhead"
+			type=				"gunship"
+			defaultSovereign=	"&HS_svOutlawMiners;"
+
+			attributes=			"EI, genericClass, outlaws, outlawMiners"
+			inherit=			"&HS_baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"20"
+			mass=				"30"
+			cargoSpace=			"10"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"50"
+			maxDevices=			"6"
+
+			maxArmor=			"heavy"
+			stdArmor=			"light"
+			/>
+
+		<Drive
+			maxSpeed=			"17"
+			thrust=				"250"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"18.0"
+			rotationAccel=		"2.0"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itUltraLightTitaniumArmor;"
+			count=				"2"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itRecoillessCannon;"		posAngle="0" posRadius="16" posZ="0"/>
+			<Device deviceID="&HS_itAClassDefenseScreen;"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsHammerheadHD;" imageWidth="50" imageHeight="50" rotationCount="120" rotationColumns="12" viewportRatio="0.003125"/>
+		<HeroImage imageID="&HS_rsHammerheadHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="23"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"50"
+			fireRangeAdj=		"50"
+			fireAccuracy=		"80"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+
+	<!-- Hammerhead II-class Gunship -->
+
+	<ShipClass UNID="&HS_scHammerhead-II;"
+			manufacturer=		"Earth Industries"
+			class=				"Hammerhead II"
+			type=				"gunship"
+			defaultSovereign=	"&HS_svOutlawMiners;"
+
+			size=				"20"
+			mass=				"45"
+			cargoSpace=			"10"
+			thrustRatio=		"10"
+			maxSpeed=			"16"
+
+			attributes=			"EI, genericClass, outlaws, outlawMiners"
+			inherit=			"&HS_baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"20"
+			mass=				"45"
+			cargoSpace=			"10"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"50"
+			maxDevices=			"6"
+
+			maxArmor=			"heavy"
+			stdArmor=			"light"
+			/>
+
+		<Drive
+			maxSpeed=			"18"
+			thrust=				"500"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"18.0"
+			rotationAccel=		"2.0"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itLightTitaniumArmor;"
+			count=				"2"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itDualRecoillessCannon;"		posAngle="0" posRadius="16" posZ="0"/>
+			<Device deviceID="&HS_itClass1Deflector;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="4d6" item="&CORE_itHelium3FuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsHammerhead2HD;" imageWidth="50" imageHeight="50" rotationCount="120" rotationColumns="12" viewportRatio="0.003125"/>
+		<HeroImage imageID="&HS_rsHammerhead2Hero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="167"	posRadius="24"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-167"	posRadius="24"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"30"
+			fireRangeAdj=		"50"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+	
+<!-- TABLES -->
+
+	<ItemTable UNID="&HS_tbOutlawMineTreasure;">
+		<Table>
+			<RandomItem chance="40"
+					criteria=			"* +miningEquipment; -notStandard;"
+					levelFrequency=		"systemLevel:vu|c|uv"
+					/>
+			<RandomItem chance="60"
+					criteria=			"* +consumable; -notStandard;"
+					levelFrequency=		"systemLevel:vu|c|uv"
+					/>
+		</Table>
+	</ItemTable>
+
+	<ShipTable unid="&HS_tbOutlawMineTurrets;">
+		<LevelTable>
+			<Group levelFrequency="cr-- -----">
+				<Ship class="&HS_scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&HS_scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=180"/>
+			</Group>
+			<Group levelFrequency="ucr-- -----">
+				<Ship class="&HS_scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&HS_scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=90"/>
+				<Ship class="&HS_scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=180"/>
+				<Ship class="&HS_scTenhoveSentinel;"	orders="orbitExact:radius=10:speed=1:angle=270"/>
+			</Group>
+			<Group levelFrequency="-ucr- -----">
+				<Ship class="&HS_scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&HS_scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=180"/>
+			</Group>
+			<Group levelFrequency="--ucr -----">
+				<Ship class="&HS_scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&HS_scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=90"/>
+				<Ship class="&HS_scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=180"/>
+				<Ship class="&HS_scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=270"/>
+			</Group>
+			<Group levelFrequency="---uc r----">
+				<Ship class="&HS_scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&HS_scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=60"/>
+				<Ship class="&HS_scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=120"/>
+				<Ship class="&HS_scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=180"/>
+				<Ship class="&HS_scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=240"/>
+				<Ship class="&HS_scTR200Defender;"		orders="orbitExact:radius=10:speed=1:angle=300"/>
+			</Group>
+			<Group levelFrequency="----u cr---">
+				<Ship class="&HS_scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&HS_scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=180"/>
+			</Group>
+			<Group levelFrequency="----- ucrvv">
+				<Ship class="&HS_scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=0"/>
+				<Ship class="&HS_scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=90"/>
+				<Ship class="&HS_scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=180"/>
+				<Ship class="&HS_scTMA9BattleAuton;"	orders="orbitExact:radius=10:speed=1:angle=270"/>
+			</Group>
+		</LevelTable>
+	</ShipTable>
+
+	<ShipTable unid="&HS_tbOutlawMineDefenders;">
+		<Group>
+
+			<!-- We always have some Borers -->
+
+			<LevelTable>
+				<Ship levelFrequency="ucr-- -----"	count="1d2"		class="&HS_scBorer;"		orders="guard"/>
+				<Ship levelFrequency="-ucr- -----"	count="1d2+1"	class="&HS_scBorer;"		orders="patrol:5"/>
+				<Ship levelFrequency="--ucr -----"	count="1d2"		class="&HS_scBorer-II;"	orders="patrol:5"/>
+				<Ship levelFrequency="---uc r----"	count="1d2+1"	class="&HS_scBorer-II;"	orders="patrol:5"/>
+				<Ship levelFrequency="----u cr---"	count="1d2"		class="&HS_scBorer-III;"	orders="patrol:5"/>
+				<Ship levelFrequency="----- ucr--"	count="1d2+1"	class="&HS_scBorer-III;"	orders="patrol:5"/>
+			</LevelTable>
+
+			<!-- Add some guards too -->
+
+			<Table>
+				<!-- 60% of the time we have lots of light defenders -->
+
+				<LevelTable chance="60">
+					<Ship levelFrequency="ucr-- -----"	count="1d4" class="&HS_scHammerhead;"		orders="patrol:5"/>
+					<Ship levelFrequency="-ucr- -----"	count="1d4" class="&HS_scHammerhead-II;"	orders="patrol:5"/>
+					<Ship levelFrequency="--ucr -----"	count="1d4" class="&HS_scOromo;"			orders="patrol:5"/>
+					<Ship levelFrequency="---uc r----"	count="1d4" class="&HS_scOromoII;"			orders="patrol:5"/>
+					<Ship levelFrequency="----u cr---"	count="1d4" class="&HS_scSotho;"			orders="patrol:5"/>
+					<Ship levelFrequency="----- ucrvv"	count="2d3" class="&HS_scSothoII;"			orders="patrol:5"/>
+				</LevelTable>
+
+				<!-- 40% of the time we have heavy defenders -->
+
+				<LevelTable chance="40">
+					<Ship levelFrequency="ucr-- -----"	count="1" class="&HS_scOromo;"				orders="guard"/>
+					<Ship levelFrequency="-ucr- -----"	count="1" class="&HS_scOromoII;"			orders="guard"/>
+					<Ship levelFrequency="--ucr -----"	count="1" class="&HS_scSotho;"				orders="guard"/>
+					<Ship levelFrequency="---uc rvvvv"	count="1" class="&HS_scSothoII;"			orders="guard"/>
+				</LevelTable>
+			</Table>
+
+		</Group>
+	</ShipTable>
+		
+	<ShipTable unid="&HS_tbOutlawMinerEncounters;">
+		<LevelTable>
+			<Ship levelFrequency="ucu-- -----" count="1"	 class="&HS_scBorer;" eventHandler="&HS_evOutlawMinerBehavior;">
+				<Escorts>
+					<Ship chance="80"		   count="1d2"	 class="&HS_scHammerhead;" orders="escort"/>
+				</Escorts>
+			</Ship>
+		
+			<Ship levelFrequency="-ucu- -----" count="1"	 class="&HS_scBorer;" eventHandler="&HS_evOutlawMinerBehavior;">
+				<Escorts>
+					<Table>
+						<Ship chance="60"	   count="1d4"	 class="&HS_scHammerhead;" orders="escort"/>
+						<Ship chance="30"	   count="1"	 class="&HS_scBorer;" orders="escort"/>
+						<Ship chance="10"	   count="2"	 class="&HS_scBorer;" orders="escort"/>
+					</Table>
+				</Escorts>
+			</Ship>
+		
+			<Ship levelFrequency="--ucu -----" count="1"	 class="&HS_scBorer-II;" eventHandler="&HS_evOutlawMinerBehavior;">
+				<Escorts>
+					<Table>
+						<Ship chance="60"	   count="1d4"	 class="&HS_scHammerhead;" orders="escort"/>
+						<Ship chance="30"	   count="1"	 class="&HS_scBorer;" orders="escort"/>
+						<Ship chance="10"	   count="2"	 class="&HS_scBorer;" orders="escort"/>
+					</Table>
+				</Escorts>
+			</Ship>
+		
+			<Ship levelFrequency="---uc u----" count="1"	 class="&HS_scBorer-II;" eventHandler="&HS_evOutlawMinerBehavior;">
+				<Escorts>
+					<Table>
+						<Ship chance="20"	   count="1d6"	 class="&HS_scHammerhead;" orders="escort"/>
+						<Ship chance="30"	   count="1d3"	 class="&HS_scBorer;" orders="escort"/>
+						<Ship chance="40"	   count="1d3"	 class="&HS_scHammerhead-II;" orders="escort"/>
+						<Ship chance="10"	   count="1"	 class="&HS_scBorer-II;" orders="escort"/>
+					</Table>
+				</Escorts>
+			</Ship>
+		
+			<Ship levelFrequency="----u cu---" count="1"	 class="&HS_scBorer-II;" eventHandler="&HS_evOutlawMinerBehavior;">
+				<Escorts>
+					<Table>
+						<Ship chance="10"	   count="1d8"	 class="&HS_scHammerhead;" orders="escort"/>
+						<Ship chance="20"	   count="1d4+1" class="&HS_scBorer;" orders="escort"/>
+						<Ship chance="45"	   count="1d4+1" class="&HS_scHammerhead-II;" orders="escort"/>
+						<Ship chance="25"	   count="1d3"	 class="&HS_scBorer-II;" orders="escort"/>
+					</Table>
+				</Escorts>
+			</Ship>
+			
+			<Ship levelFrequency="ruuuu ur---" count="1"	class="&HS_scT31ArmedTransport;" eventHandler="&RPG_evStdConvoyEncounterBehavior;">
+				<Items>
+					<Item chance="50"		count="8d20" item="&HS_itSmartCannonShell;"/>
+					<Lookup					count="1d2"  table="&GLXY_tbAsteroidOre;"/>
+				</Items>
+
+				<Escorts>
+					<Ship					   count="1d4+1"	class="&HS_scHammerhead-II;" orders="escort"/>
+				</Escorts>
+			</Ship>
+		</LevelTable>
+	</ShipTable>
+
+	<ShipTable unid="&HS_tbOutlawMinerProspector;">
+		<LevelTable>
+			<Ship levelFrequency="ucu-- -----" count="1"	 class="&HS_scBorer;" eventHandler="&RPG_evStdMiningBehavior;">
+				<Escorts>
+					<Ship chance="80"		   count="1d2"	 class="&HS_scHammerhead;" orders="escort"/>
+				</Escorts>
+			</Ship>
+		
+			<Ship levelFrequency="-ucu- -----" count="1"	 class="&HS_scBorer;" eventHandler="&RPG_evStdMiningBehavior;">
+				<Escorts>
+					<Table>
+						<Ship chance="60"	   count="1d4"	 class="&HS_scHammerhead;" orders="escort"/>
+						<Ship chance="30"	   count="1"	 class="&HS_scBorer;" orders="escort"/>
+						<Ship chance="10"	   count="2"	 class="&HS_scBorer;" orders="escort"/>
+					</Table>
+				</Escorts>
+			</Ship>
+		
+			<Ship levelFrequency="--ucu -----" count="1"	 class="&HS_scBorer-II;" eventHandler="&RPG_evStdMiningBehavior;">
+				<Escorts>
+					<Table>
+						<Ship chance="60"	   count="1d4"	 class="&HS_scHammerhead;" orders="escort"/>
+						<Ship chance="30"	   count="1"	 class="&HS_scBorer;" orders="escort"/>
+						<Ship chance="10"	   count="2"	 class="&HS_scBorer;" orders="escort"/>
+					</Table>
+				</Escorts>
+			</Ship>
+		
+			<Ship levelFrequency="---uc u----" count="1"	 class="&HS_scBorer-II;" eventHandler="&RPG_evStdMiningBehavior;">
+				<Escorts>
+					<Table>
+						<Ship chance="20"	   count="1d6"	 class="&HS_scHammerhead;" orders="escort"/>
+						<Ship chance="30"	   count="1d3"	 class="&HS_scBorer;" orders="escort"/>
+						<Ship chance="40"	   count="1d3"	 class="&HS_scHammerhead-II;" orders="escort"/>
+						<Ship chance="10"	   count="1"	 class="&HS_scBorer-II;" orders="escort"/>
+					</Table>
+				</Escorts>
+			</Ship>
+		
+			<Ship levelFrequency="----u currr" count="1"	 class="&HS_scBorer-III;" eventHandler="&RPG_evStdMiningBehavior;">
+				<Escorts>
+					<Table>
+						<Ship chance="10"	   count="1d8"	 class="&HS_scHammerhead;" orders="escort"/>
+						<Ship chance="20"	   count="1d4+1" class="&HS_scBorer;" orders="escort"/>
+						<Ship chance="45"	   count="1d4+1" class="&HS_scHammerhead-II;" orders="escort"/>
+						<Ship chance="25"	   count="1d3"	 class="&HS_scBorer-II;" orders="escort"/>
+					</Table>
+				</Escorts>
+			</Ship>
+		</LevelTable>
+	</ShipTable>
+
+	<!-- Outlaw Miner Behavior
+	
+		USAGE NOTES
+		
+		This is for random encounters in which the player runs into
+		an outlaw miner. The miner tries to defend the area around asteroids
+		
+		EXTRA DATA
+		
+		behavior:			Ship's current behavior
+								'onCourse				= Ship on straight course
+								'backToBase				= Heading back to base
+								'patrolling				= Orbiting base
+								'leavingSystem			= Leaving
+								
+		homeObj:			Ship's base asteroid (may be Nil)
+		
+	-->
+
+	<ShipClass UNID="&HS_evOutlawMinerBehavior;"
+			class=				"(zone encounter behavior)"
+			virtual=			"true"
+			
+			attributes=			"behaviorClass"
+			>
+			
+		<Events>
+			<GetCreatePos>
+				(if aTargetObj
+					(intComputeRandomEncounterPos aTargetObj)
+					)
+			</GetCreatePos>
+
+			<OnBehavior>
+				(block (behavior)
+					(setq behavior (objGetData gSource "0804000B_behavior"))
+					(switch
+						; If we see any enemy ships and we're inside our patrol zone
+						; then attack. Otherwise, change course and head back to base.
+
+						(eq behavior 'onCourse)
+							(block (theEnemy theBase baseDist)
+								(if (setq theEnemy (sysFindObject gSource "sEPAN"))
+									(switch
+
+										; Attack
+										(and (setq theBase (objGetObjRefData gSource "0804000B_homeObj"))
+												(leq (setq baseDist (objGetDistance gSource theBase)) 100)
+												)
+											(block Nil
+												(shpCancelOrders gSource)
+												(shpOrder gSource 'patrol theBase 100)
+												(objSetData gSource "0804000B_behavior" 'patrolling)
+												)
+
+										; Back to base
+										theBase
+											(block Nil
+												(shpCancelOrders gSource)
+												(shpOrder gSource 'holdCourse
+													(sysVectorSubtract (objGetPos theBase) (objGetPos gSource))
+													(subtract baseDist 100)
+													)
+												(objSetData gSource "0804000B_behavior" 'backToBase)
+												)
+
+										; Leave the system
+										(block Nil
+											(shpCancelOrders gSource)
+											(shpOrder gSource 'gate)
+											(objSetData gSource "0804000B_behavior" 'leavingSystem)
+											)
+										)
+									)
+								)
+						)
+					)
+			</OnBehavior>
+			
+			<OnCreateOrders>
+				(block (theCourse homeBase)
+					(if (not aTargetObj)
+						(setq aTargeObj gPlayerShip)
+						)
+
+					; Find our nearest asteroid
+					(setq homeBase (sysFindObject gSource "tN +asteroid;"))
+					(if (not homeBase)
+						(setq homeBase aBaseObj)
+						)
+					(objSetObjRefData gSource "0804000B_homeObj" homeBase)
+
+					; Move towards the player's path
+					(setq theCourse (intComputeRandomEncounterCourse gSource aTargetObj))
+					(shpOrder gSource 'holdCourse theCourse 300)
+
+					; Register a timer so that we can look for enemies
+					(sysAddObjRecurringTimerEvent 30 gSource "OnBehavior")
+					(objSetData gSource "0804000B_behavior" 'onCourse)
+					)
+			</OnCreateOrders>
+			
+			<OnOrdersCompleted>
+				(block (behavior)
+					(setq behavior (objGetData gSource "0804000B_behavior"))
+					(switch
+						; If we're done with this order, then we never encountered
+						; the player, so we're done, head for a stargate
+						; Note: we might encounter the player en route
+						(eq behavior 'onCourse)
+							(shpOrder gSource 'gate)
+							
+						; If we're done attacking, then we're done
+						(eq behavior 'attackingEnemy)
+							(block Nil
+								(shpOrder gSource 'gate)
+								(objSetData gSource "0804000B_behavior" 'onCourse)
+								)
+
+						(eq behavior 'backToBase)
+							(block Nil
+								(shpOrder gSource 'patrol (objGetObjRefData gSource "0804000B_homeObj") 100)
+								(objSetData gSource "0804000B_behavior" 'patrolling)
+								)
+						)
+					)
+			</OnOrdersCompleted>
+		</Events>
+	</ShipClass>
+	
+<!-- BASE CLASSES -->
+	
+	<Type unid="&HS_baOutlawMine;">
+		<Properties>
+			<Variant id="oreType">(sysGetRandomOreType)</Variant>
+		</Properties>
+
+		<Events>
+			<OnCreate>
+				(block (
+					(asteroidList (sysFindObject gSource "tN:50 +asteroid"))
+
+					(oreNameFull (itmGetName (obj@ gSource 'oreType) 'short))
+					(oreSuffix (find oreNameFull " ore"))
+					(oreName (if oreSuffix (subset oreNameFull 0 oreSuffix) oreNameFull))
+					)
+					;	Name the station after the ore type
+
+					(objSetName gSource 
+						(objTranslate gSource 'namePattern {
+							oreType: oreName
+							})
+						)
+
+					;	Add some ore to our station
+
+					(objAddItem gSource (obj@ gSource 'oreType) (+ (random 1 6) (random 1 6)))
+
+					;	Add ore to asteroids in the neighborhood
+					
+					(if asteroidList
+					
+						;	Asteroids in the area have a greater chance of having ore.
+						;	(The station was built here for a reason.)
+						
+						(enum asteroidList asteroidObj
+							(if (leq (random 1 100) 20)
+								(objAddItem asteroidObj (obj@ gSource 'oreType) (random 1 8))
+								)
+							)
+							
+						;	If there are no asteroids, then create some
+						
+						(for i 1 (random 2 5)
+							(sysCreateLookup "AsteroidSingleton" 
+								(sysOrbit aOrbit (random 8 22) (random 0 359))
+								)
+							)
+						)
+					)
+			</OnCreate>
+			
+			<OnOreDepositFound>
+				(switch
+					;	If we're dead, then just send a single prospector from the
+					;	nearest stargate.
+					
+					(objGetProperty gSource 'abandoned)
+						(block (minerObj)
+							(setq minerObj (sysCreateShip &HS_tbOutlawMinerProspector; (sysFindObject gSource "GN") &HS_svOutlawMiners;))
+							(objSetData minerObj 'depositID (objGetID (@ gData 'depositObj)))
+							)
+							
+					;	Otherwise, we send a random number from this station
+					
+					(for i 1 (random 0 3)
+						(block (minerObj)
+							(setq minerObj (sysCreateShip &HS_tbOutlawMinerProspector; gSource &HS_svOutlawMiners;))
+							(objSetData minerObj 'depositID (objGetID (@ gData 'depositObj)))
+							)
+						)
+					)
+			</OnOreDepositFound>
+		</Events>
+
+		<Language>
+			<Text id="namePattern">:an outlaw %oreType% mine(s)</Text>
+		</Language>
+	</Type>
+	
+<!-- RESOURCES -->
+
+	<Image UNID="&HS_rsOutlawMineIce;"			bitmap="Resources\OutlawMineIce.jpg" bitmask="Resources\OutlawMineIceMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsOutlawMineMetallic;"	bitmap="Resources\OutlawMineMetallic.jpg" bitmask="Resources\OutlawMineMetallicMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsOutlawMinePrimordial;"	bitmap="Resources\OutlawMinePrimordial.jpg" bitmask="Resources\OutlawMinePrimordialMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsOutlawMineRocky;"		bitmap="Resources\OutlawMineRocky.jpg" bitmask="Resources\OutlawMineRockyMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsOutlawMineVolcanic;"	bitmap="Resources\OutlawMineVolcanic.jpg" bitmask="Resources\OutlawMineVolcanicMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&HS_rsHammerheadHD;"			bitmap="Resources\HammerheadHD.jpg" bitmask="Resources\HammerheadHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsHammerheadHero;"		bitmap="Resources\HammerheadLarge.jpg"			bitmask="Resources\HammerheadLargeMask.bmp"  loadOnUse="true"/>
+
+	<Image UNID="&HS_rsHammerhead2HD;"			bitmap="Resources\Hammerhead2HD.jpg" bitmask="Resources\Hammerhead2HDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsHammerhead2Hero;"		bitmap="Resources\Hammerhead2Large.jpg"			bitmask="Resources\Hammerhead2LargeMask.bmp"  loadOnUse="true"/>
+
+</TranscendenceModule>

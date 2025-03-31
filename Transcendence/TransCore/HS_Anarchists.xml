@@ -1,0 +1,691 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- Freeworld Anarchists ================================================= -->
+
+	<Sovereign UNID="&HS_svAnarchists;"
+			name="Anarchists"
+			alignment="destructive chaos"
+			/>
+
+	<SystemMap unid="&HS_smAnarchistSpace;"
+			displayOn="&HS_smHumanSpace;"
+			>
+		<TopologyProcessor priority="tertiaryColony">
+			<System criteria="+corporateSpace;"	attributes="anarchistSpace"/>
+		</TopologyProcessor>
+	</SystemMap>
+
+<!-- STATION TYPES -->
+
+	<!-- Anarchist Camp -->
+
+	<StationType UNID="&HS_stAnarchistCell;"
+			name=				"Anarchist habitat"
+			sovereign=			"&HS_svAnarchists;"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+			dockingPorts=		"4"
+
+			armorID=			"&HS_itUltraLightTitaniumArmor;"
+			hitPoints=			"50"
+			fireRateAdj=		"30"
+			explosionType=		"&CORE_vtKineticExplosion1;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"anarchists, enemy, envEarth, envAvoidsAir, freeworldAnarchists, generic, human, populated"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+anarchistSpace;"
+				systemAffinity=			"+envEarth; -envAir;"
+				levelFrequency=			"cuv-- ----- ----- ----- -----"
+
+				locationCriteria=		"+asteroids"
+				/>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&CORE_itLaserCannon;"	omnidirectional="true"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Squadron table="&HS_tbAnarchistDefenders;"	count="challenge:standard"	reinforce="auto"/>
+
+		<!-- Treasure and Items -->
+
+		<Items>
+			<RandomItem chance="30"
+					criteria=			"* +Info; -Alien; -NotStandard;"
+					levelFrequency=		"c----"
+					/>
+			<Lookup chance="60" table="&HS_trStdTreasure;"/>
+		</Items>
+
+		<!-- Images and Effects -->
+
+		<ImageVariants>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="0"   imageY="0"   imageWidth="112" imageHeight="122"/>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="112" imageY="0"   imageWidth="122" imageHeight="122"/>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="234" imageY="0"   imageWidth="102" imageHeight="122"/>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="0"   imageY="122" imageWidth="100" imageHeight="122"/>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="100" imageY="122" imageWidth="128" imageHeight="122"/>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="228" imageY="122" imageWidth="120" imageHeight="122"/>
+		</ImageVariants>
+
+		<!-- Random Encounters -->
+
+		<Encounters frequency="common">
+			<Lookup table="&HS_tbAnarchistEncounters;"/>
+		</Encounters>
+
+	</StationType>
+
+	<!-- Anarchist Gathering -->
+
+	<StationType UNID="&HS_stAnarchistGathering;"
+			name=				"Anarchist gathering"
+			sovereign=			"&HS_svAnarchists;"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+			dockingPorts=		"4"
+
+			armorID=			"&HS_itTitaniumArmor;"
+			hitPoints=			"50"
+			fireRateAdj=		"30"
+			explosionType=		"&CORE_vtKineticExplosion1;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"anarchists, enemy, envEarth, envAvoidsAir, freeworldAnarchists, generic, human, populated"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+anarchistSpace;"
+				systemAffinity=			"+envEarth; -envAir;"
+				levelFrequency=			"rcuv- ----- ----- ----- -----"
+
+				locationCriteria=		"+asteroids"
+				enemyExclusionRadius=	"50"
+				/>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&CORE_itLaserCannon;"	omnidirectional="true"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Squadron table="&HS_tbAnarchistDefenders;"	count="challenge:standard"	reinforce="auto"/>
+
+		<!-- Satellites -->
+
+		<Satellites overlapCheck="asteroids">
+			<Orbitals count="1d3+1" distance="1d4+6" angle="random">
+				<Station type="&HS_stAnarchistGatheringSat;"/>
+			</Orbitals>
+		</Satellites>
+
+		<!-- Treasure and Items -->
+
+		<Items>
+			<RandomItem chance="60"
+					criteria=			"* +Info; -Alien; -NotStandard;"
+					levelFrequency=		"cu---"
+					/>
+			<Lookup chance="50" table="&HS_trStdTreasure;"/>
+		</Items>
+
+		<!-- Images and Effects -->
+
+		<ImageVariants>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="0"   imageY="0"   imageWidth="112" imageHeight="122"/>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="112" imageY="0"   imageWidth="122" imageHeight="122"/>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="234" imageY="0"   imageWidth="102" imageHeight="122"/>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="0"   imageY="122" imageWidth="100" imageHeight="122"/>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="100" imageY="122" imageWidth="128" imageHeight="122"/>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="228" imageY="122" imageWidth="120" imageHeight="122"/>
+		</ImageVariants>
+
+		<!-- Random Encounters -->
+
+		<Encounters frequency="common">
+			<Lookup table="&HS_tbAnarchistEncounters;"/>
+		</Encounters>
+
+	</StationType>
+
+	<!-- Anarchist Gathering Satellite -->
+
+	<StationType UNID="&HS_stAnarchistGatheringSat;"
+			name=				"Anarchist gathering"
+			sovereign=			"&HS_svAnarchists;"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+			dockingPorts=		"4"
+			noMapLabel=			"true"
+
+			armorID=			"&HS_itTitaniumArmor;"
+			hitPoints=			"50"
+			fireRateAdj=		"30"
+			explosionType=		"&CORE_vtKineticExplosion1;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			
+			attributes=			"anarchists, enemy, freeworldAnarchists, human, populated"
+			>
+
+		<!-- Treasure and Items -->
+
+		<Items>
+			<RandomItem chance="30"
+					criteria=			"* +Info; -Alien; -NotStandard; "
+					levelFrequency=		"cu---"
+					/>
+			<Lookup chance="25" table="&HS_trStdTreasure;"/>
+		</Items>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&CORE_itLaserCannon;"	omnidirectional="true"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Squadron table="&HS_tbAnarchistDefenders;"	count="challenge:standard"	reinforce="auto"/>
+
+		<!-- Images and Effects -->
+
+		<ImageVariants>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="0"   imageY="0"   imageWidth="112" imageHeight="122"/>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="112" imageY="0"   imageWidth="122" imageHeight="122"/>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="234" imageY="0"   imageWidth="102" imageHeight="122"/>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="0"   imageY="122" imageWidth="100" imageHeight="122"/>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="100" imageY="122" imageWidth="128" imageHeight="122"/>
+			<Image		imageID="&HS_rsAnarchistStations;" imageX="228" imageY="122" imageWidth="120" imageHeight="122"/>
+		</ImageVariants>
+
+		<!-- Random Encounters -->
+
+		<Encounters frequency="common">
+			<Lookup table="&HS_tbAnarchistEncounters;"/>
+		</Encounters>
+
+	</StationType>
+
+	<!-- Anarchist Settlement -->
+
+	<StationType UNID="&HS_stAnarchistSettlement;"
+			name=				"Anarchist settlement"
+			sovereign=			"&HS_svAnarchists;"
+
+			attributes=			"anarchists, enemy, envEarth, envAvoidsAir, freeworldAnarchists, generic, human, populated"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			size=				"237"
+			fireRateAdj=		"30"
+			explosionType=		"&CORE_vtKineticExplosion3;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+anarchistSpace;"
+				systemAffinity=			"+envEarth; -envAir;"
+				levelFrequency=			"-rcuv ----- ----- ----- -----"
+
+				locationCriteria=		"+asteroids"
+				enemyExclusionRadius=	"75"
+				/>
+
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&HS_itLightPlasteelPlate;"
+				hitPoints=		"250"
+				regen=			"5"
+				/>
+		
+		<Devices>
+			<Device deviceID="&CORE_itLaserCannon;"	posAngle="0"   posRadius="60" posZ="10" fireAngle="0"   fireArc="180"  missileDefense="true"/>
+			<Device deviceID="&CORE_itLaserCannon;"	posAngle="60"  posRadius="60" posZ="10" fireAngle="60"  fireArc="180"  missileDefense="true"/>
+			<Device deviceID="&CORE_itLaserCannon;"	posAngle="120" posRadius="60" posZ="10" fireAngle="120" fireArc="180"  missileDefense="true"/>
+			<Device deviceID="&CORE_itLaserCannon;"	posAngle="180" posRadius="60" posZ="10" fireAngle="180" fireArc="180"  missileDefense="true"/>
+			<Device deviceID="&CORE_itLaserCannon;"	posAngle="240" posRadius="60" posZ="10" fireAngle="240" fireArc="180"  missileDefense="true"/>
+			<Device deviceID="&CORE_itLaserCannon;"	posAngle="300" posRadius="60" posZ="10" fireAngle="300" fireArc="180"  missileDefense="true"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+		
+		<Squadrons>
+			<Squadron table="&HS_tbAnarchistHorde;"		count="challenge:standard"	reinforce="auto"/>
+			<Squadron table="&HS_tbAnarchistDefenders;"	count="challenge:easy"		reinforce="auto"/>
+		</Squadrons>
+
+		<!-- Treasure -->
+
+		<Items value="standard:level=3:x=3">
+			<RandomItem count="1d2"
+					criteria=			"* +Info; -Alien; -NotStandard;"
+					levelFrequency=		"ucur-"
+					/>
+			<Lookup count="1d3" table="&HS_trStdTreasure;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<ImageVariants>
+			<Image		imageID="&HS_rsAnarchistSettlement;" imageX="0"    imageY="0"   imageWidth="260" imageHeight="260" viewportRatio="0.0275"/>
+			<Image		imageID="&HS_rsAnarchistSettlement;" imageX="260"  imageY="0"   imageWidth="260" imageHeight="260" viewportRatio="0.0275"/>
+			<Image		imageID="&HS_rsAnarchistSettlement;" imageX="0"    imageY="260"   imageWidth="260" imageHeight="260" viewportRatio="0.0275"/>
+			<Image		imageID="&HS_rsAnarchistSettlement;" imageX="260"  imageY="260"   imageWidth="260" imageHeight="260" viewportRatio="0.0275"/>
+		</ImageVariants>
+
+		<DockingPorts>
+			<Port posAngle="45" posRadius="110" rotation="-135"/>
+			<Port posAngle="65" posRadius="119" rotation="-135"/>
+			<Port posAngle="25" posRadius="119" rotation="-135"/>
+
+			<Port posAngle="135" posRadius="110" rotation="-45"/>
+			<Port posAngle="155" posRadius="119" rotation="-45"/>
+			<Port posAngle="115" posRadius="119" rotation="-45"/>
+
+			<Port posAngle="225" posRadius="110" rotation="45"/>
+			<Port posAngle="245" posRadius="119" rotation="45"/>
+			<Port posAngle="205" posRadius="119" rotation="45"/>
+
+			<Port posAngle="315" posRadius="110" rotation="135"/>
+			<Port posAngle="335" posRadius="119" rotation="135"/>
+			<Port posAngle="295" posRadius="119" rotation="135"/>
+		</DockingPorts>
+
+		<!-- Random Encounters -->
+
+		<Encounters frequency="common">
+			<Lookup table="&HS_tbAnarchistEncounters;"/>
+		</Encounters>
+
+	</StationType>
+	
+<!-- SHIP CLASSES -->
+
+	<!-- Level 1: Hornet Battlepod -->
+
+	<ShipClass UNID="&HS_scHornet;"
+			manufacturer=		"Earth Industries"
+			class=				"Hornet"
+			type=				"battlepod"
+			defaultSovereign=	"&HS_svAnarchists;"
+
+			size=				"10"
+			mass=				"5"
+			cargoSpace=			"0"
+			thrustRatio=		"16"
+			maxSpeed=			"35"
+
+			attributes=			"anarchists, EI, genericClass"
+			>
+
+		<Armor>
+			<ArmorSection start="0" span="360" armorID="&HS_itUltraLightTitaniumCasing;"/>
+		</Armor>
+
+		<Devices>
+			<Device deviceID="&CORE_itLaserCannon;"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"18.0"
+			rotationAccel=		"6.0"
+			/>
+
+		<Image imageID="&HS_rsHornetHD;" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12" viewportRatio="0.0029375"/>
+		<HeroImage imageID="&HS_rsHornetHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="8"	posZ="0"	rotation="180"/>
+		</Effects>
+
+		<AISettings
+			fireRateAdj=		"30"
+			fireAccuracy=		"70"
+			perception=			"4"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 1: Earthzone 100 Armed Shuttle -->
+
+	<ShipClass UNID="&HS_scEarthzone;"
+			manufacturer=		"Revolution Designs"
+			class=				"Earthzone 100"
+			type=				"armed shuttle"
+			defaultSovereign=	"&HS_svAnarchists;"
+
+			attributes=			"anarchists, genericClass"
+			inherit=			"&HS_baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"26"
+			mass=				"50"
+			cargoSpace=			"50"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"150"
+			maxDevices=			"6"
+
+			maxArmor=			"heavy"
+			stdArmor=			"light"
+			/>
+
+		<Drive
+			maxSpeed=			"20"
+			thrust=				"240"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"9.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="20" posZ="0"/>
+		</DeviceSlots>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itLightTitaniumArmor;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&CORE_itLaserCannon;"/>
+			<Device deviceID="&HS_itAClassDefenseScreen;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="1d6" item="&CORE_itHelium3FuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsEarthzone100;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.00325"/>
+		<HeroImage imageID="&HS_rsEarthzone100Hero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="21"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"20"
+			fireRangeAdj=		"50"
+			fireAccuracy=		"85"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 3: Earthzone 1200 Gunship -->
+
+	<ShipClass UNID="&HS_scEarthzone1200;"
+			manufacturer=		"Revolution Designs"
+			class=				"Earthzone 1200"
+			type=				"gunship"
+			defaultSovereign=	"&HS_svAnarchists;"
+
+			attributes=			"anarchists, genericClass"
+			inherit=			"&HS_baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"29"
+			mass=				"120"
+			cargoSpace=			"100"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"200"
+			maxDevices=			"8"
+
+			maxArmor=			"heavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"18"
+			thrust=				"480"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"9.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="24" posZ="0"/>
+		</DeviceSlots>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itLightPlasteelPlate;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itTurbolaserCannon;"/>
+			<Device deviceID="&HS_itClass2Deflector;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="1d6" item="&CORE_itHelium3FuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsEarthzone1200;" imageWidth="58" imageHeight="58" rotationCount="120" rotationColumns="12" viewportRatio="0.004375"/>
+		<HeroImage imageID="&HS_rsEarthzone1200Hero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="148"	posRadius="13"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-148"	posRadius="13"	posZ="0"	rotation="180"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"25"
+			fireAccuracy=		"85"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 4: Earthzone 5000 Missileship -->
+
+	<ShipClass UNID="&HS_scEarthzone5000;"
+			manufacturer=		"Revolution Designs"
+			class=				"Earthzone 5000"
+			type=				"missileship"
+			defaultSovereign=	"&HS_svAnarchists;"
+
+			attributes=			"anarchists, genericClass"
+			inherit=			"&HS_baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"34"
+			mass=				"250"
+			cargoSpace=			"100"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"200"
+			maxDevices=			"8"
+
+			maxArmor=			"heavy"
+			stdArmor=			"medium"
+			/>
+
+		<Drive
+			maxSpeed=			"16"
+			thrust=				"720"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"3.0"
+			rotationAccel=		"0.5"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot criteria="w +property:omnidirectional;" posAngle="0" posRadius="9" posZ="10"/>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="24" posZ="0"/>
+		</DeviceSlots>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itPlasteelPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itNAMIMissileLauncher;" minFireArc="300" maxFireArc="60">
+				<Items>
+					<Item count="4d6" item="&HS_itKM120Missile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itOmniTurbolaserCannon;" secondaryWeapon="true"/>
+			<Device deviceID="&HS_itCyclotronDeflectorIII;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="2d6" item="&HS_itHeliumAssembly;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsEarthzone5000;" imageWidth="66" imageHeight="66" rotationCount="120" rotationColumns="12" viewportRatio="0.005"/>
+		<HeroImage imageID="&HS_rsEarthzone5000Hero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="152"	posRadius="29"	posZ="-1"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="26"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-152"	posRadius="29"	posZ="-1"	rotation="180"/>
+		</Effects>
+		
+		<!-- Events and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"30"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+
+<!-- TABLES -->
+
+	<!-- Anarchist Defenders -->
+
+	<ShipTable unid="&HS_tbAnarchistDefenders;">
+		<LevelTable>
+			<Ship	levelFrequency="cur-- -----"	count="1d4"		class="&HS_scHornet;"			orders="patrol:10"/>
+			<Ship	levelFrequency="crv-- -----"	count="1"		class="&HS_scEarthzone;"		orders="guard"/>
+			<Ship	levelFrequency="-rrr- -----"	count="1"		class="&HS_scEarthzone1200;"	orders="guard"/>
+			<Ship	levelFrequency="-rcur -----"	count="1"		class="&HS_scEarthzone1200;"	orders="patrol:10"/>
+			<Ship	levelFrequency="--rcu rvvvv"	count="1"		class="&HS_scEarthzone5000;"	orders="guard"/>
+		</LevelTable>
+	</ShipTable>
+
+	<ShipTable unid="&HS_tbAnarchistHorde;">
+		<LevelTable>
+			<Ship	levelFrequency="ccurv -----"	count="3d6"		class="&HS_scHornet;"			orders="patrol:15" />
+			<Ship	levelFrequency="-ucur v----"	count="4d6"		class="&HS_scHornet;"			orders="patrol:15" />
+			<Ship	levelFrequency="--ucu rv---"	count="5d6"		class="&HS_scHornet;"			orders="patrol:15" />
+			<Ship	levelFrequency="---uc urv--"	count="6d6"		class="&HS_scHornet;"			orders="patrol:15" />
+			<Ship	levelFrequency="----u curvv"	count="8d6"		class="&HS_scHornet;"			orders="patrol:15" />
+		</LevelTable>
+	</ShipTable>
+
+	<!-- Anarchist Random Encounter Table -->
+	
+	<ShipTable UNID="&HS_tbAnarchistEncounters;">
+		<LevelTable>
+			<Ship levelFrequency="ccccc ccccc" count="1" class="&HS_scHornet;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<LevelTable>
+						<Ship levelFrequency="c---- -----"  count="1d2"		class="&HS_scHornet;" orders="escort"/>
+						<Ship levelFrequency="-c--- -----"  count="1d4"		class="&HS_scHornet;" orders="escort"/>
+						<Ship levelFrequency="--c-- -----"  count="1d6"		class="&HS_scHornet;" orders="escort"/>
+						<Ship levelFrequency="---c- -----"  count="1d6+2"	class="&HS_scHornet;" orders="escort"/>
+						<Ship levelFrequency="----c ccccc"  count="1d6+4"	class="&HS_scHornet;" orders="escort"/>
+					</LevelTable>
+				</Escorts>
+			</Ship>
+			<Ship levelFrequency="-rucc ccccc" count="1" class="&HS_scEarthzone;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<LevelTable>
+						<Ship levelFrequency="-c--- -----"  count="1d4"		class="&HS_scHornet;" orders="escort"/>
+						<Ship levelFrequency="--c-- -----"  count="1d6"		class="&HS_scHornet;" orders="escort"/>
+						<Ship levelFrequency="---c- -----"  count="1d6+2"	class="&HS_scHornet;" orders="escort"/>
+						<Ship levelFrequency="----c ccccc"  count="1d6+4"	class="&HS_scHornet;" orders="escort"/>
+					</LevelTable>
+				</Escorts>
+			</Ship>
+			<Ship levelFrequency="-vruc ccccc" count="1" class="&HS_scEarthzone;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Ship									count="1"		class="&HS_scEarthzone;" orders="escort"/>
+					<LevelTable>
+						<Ship levelFrequency="-c--- -----"  count="1d2"		class="&HS_scHornet;" orders="escort"/>
+						<Ship levelFrequency="--c-- -----"  count="1d4"		class="&HS_scHornet;" orders="escort"/>
+						<Ship levelFrequency="---c- -----"  count="1d6"		class="&HS_scHornet;" orders="escort"/>
+						<Ship levelFrequency="----c ccccc"  count="1d6+2"	class="&HS_scHornet;" orders="escort"/>
+					</LevelTable>
+				</Escorts>
+			</Ship>
+		</LevelTable>
+	</ShipTable>
+	
+<!-- RESOURCES -->
+
+	<Image UNID="&HS_rsAnarchistStations;"				bitmap="Resources\AnarchistStations.jpg"		bitmask="Resources\AnarchistStationsMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&HS_rsAnarchistSettlement;"			bitmap="Resources\AnarchistSettlement.jpg"		bitmask="Resources\AnarchistSettlementMask.bmp"	loadOnUse="true"/>
+
+	<Image UNID="&HS_rsEarthzone100;"					bitmap="Resources\EarthZone100.jpg"					bitmask="Resources\EarthZone100Mask.bmp"  			loadOnUse="true"/>
+	<Image UNID="&HS_rsEarthzone100Hero;"				bitmap="Resources\EarthZone100Large.jpg"					bitmask="Resources\EarthZone100LargeMask.bmp"  			loadOnUse="true"/>
+	<Image UNID="&HS_rsEarthzone1200;"					bitmap="Resources\EarthZone1200.jpg"					bitmask="Resources\EarthZone1200Mask.bmp"  			loadOnUse="true"/>
+	<Image UNID="&HS_rsEarthzone1200Hero;"				bitmap="Resources\EarthZone1200Large.jpg"					bitmask="Resources\EarthZone1200LargeMask.bmp"  			loadOnUse="true"/>
+	<Image UNID="&HS_rsEarthzone5000;"					bitmap="Resources\EarthZone5000.jpg"					bitmask="Resources\EarthZone5000Mask.bmp"  			loadOnUse="true"/>
+	<Image UNID="&HS_rsEarthzone5000Hero;"				bitmap="Resources\EarthZone5000Large.jpg"					bitmask="Resources\EarthZone5000LargeMask.bmp"  			loadOnUse="true"/>
+
+	<Image UNID="&HS_rsHornetHD;"						bitmap="Resources\HornetHD.jpg"					bitmask="Resources\HornetHDMask.bmp"  			loadOnUse="true"/>
+	<Image UNID="&HS_rsHornetHero;"					bitmap="Resources\HornetLarge.jpg"				bitmask="Resources\HornetLargeMask.bmp"  			loadOnUse="true"/>
+	
+</TranscendenceModule>

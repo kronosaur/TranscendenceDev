@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType unid="&RPG_baInterceptMission;"
+			inherit=			"&RPG_unidCommonText;"
+			expireTime=			"5400"
+			failureOnReturnToSystem="1800"
+			>
+		<Properties>
+			<!-- alwaysLeaveWreck
+			
+				Define as True to set the principal target to always leave a
+				wreck.
+
+				-->
+			<Definition id="alwaysLeaveWreck">Nil</Definition>
+
+			<!-- reward
+			
+				Override this to compute a reward when the mission is created.
+				Nil means no reward. In general this should be a Variant
+				property (that is, a value initialized when the mission is
+				created).
+
+				-->
+			<Definition id="reward"></Definition>
+
+			<!-- rewardCurrency
+			
+				This is the currency in which the reward is given.
+
+				-->
+			<Constant id="rewardCurrency">(unv@ 'defaultCurrency)</Constant>
+
+			<!-- targetDesc
+
+				This is a description of the target to intercept.
+
+				-->
+			<Constant id="targetDesc">
+				{
+					type: &CORE_scMikeno;
+					sovereign: &CORE_svUnknownEnemy;
+					escorts: Nil
+					distToGate: 200
+					}
+			</Constant>
+
+			<!-- timeAdj
+
+				This is how much time the player is given to reach the target
+				as a factor of the shortest possible time.
+			
+				-->
+			<Definition id="timeAdj">1.5</Definition>
+
+			<!-- These properties are internal and should not be overridden. -->
+
+			<Data id="destID"></Data>
+			<Data id="targetID"></Data>
+			<Data id="targetPos"></Data>
+		</Properties>
+
+		<Events>
+			<CanCreate>
+				(switch
+					;	Must have a stargate a certain distance from us.
+
+					(not (sysFindObject aOwnerObj "G R:300; -uncharted;"))
+						Nil
+
+					;	OK
+
+					True
+					)
+			</CanCreate>
+
+			<OnCreate>
+				(block (
+					;	Pick a random stargate. It must be a certain distance 
+					;	from us.
+
+					(destObj (random (sysFindObject aOwnerObj "G R:300; -uncharted;")))
+
+					;	Pick target
+
+					(targetDesc (msn@ gSource 'targetDesc))
+
+					;	Compute the angle from the gate to our station
+
+					(angleToStation (sysVectorAngle (sysVectorSubtract aOwnerObj destObj)))
+
+					;	Pick a random course angle (from the perspective of the destination)
+
+					(courseAngle (mod 'degrees 
+						(+ angleToStation 
+							(* (random '(-1 1))	(random 30 60))
+							)
+						360
+						))
+
+					;	Pick a point a specific distance away from the destination along the course
+					;	angle. This is the projected interception point; the distance away from
+					;	the destination is proportional to the time that the player will have to
+					;	destroy the transport.
+
+					(interceptPos (sysVectorPolarOffset destObj courseAngle (@ targetDesc 'distToGate)))
+
+					;	Compute the time that it will take the player to reach the intercept
+					;	position from the mission station.
+
+					(playerTravelTime 
+						(round (* (msn@ gSource 'timeAdj)
+							(sysCalcTravelTime (sysVectorDistance interceptPos aOwnerObj) (shpGetMaxSpeed gPlayerShip))
+							))
+						)
+
+					;	Compute the distance that the target will travel in that time
+
+					(targetSpeed (typ@ (@ targetDesc 'type) 'maxSpeed))
+					(freighterDist (sysCalcTravelDistance targetSpeed playerTravelTime))
+
+					;	Now compute a position for the freighter
+
+					(freighterPos (sysVectorPolarOffset destObj courseAngle (+ (@ targetDesc 'distToGate) freighterDist)))
+					)
+					;	Store these calculations
+
+					(msnSet@ gSource 'destID (objGetID destObj))
+					(msnSet@ gSource 'targetPos freighterPos)
+					)
+			</OnCreate>
+
+			<OnAccepted>
+				(block (
+					(stationObj (objGetObjByID (msn@ gSource 'ownerID)))
+					(destObj (objGetObjByID (msn@ gSource 'destID)))
+					(targetDesc (msn@ gSource 'targetDesc))
+					(targetPos (msn@ gSource 'targetPos))
+
+					targetObj 
+					)
+					;	Create the freighter and order it to gate
+
+					(setq targetObj (sysCreateShip (@ targetDesc 'type) targetPos (@ targetDesc 'sovereign)))
+					(shpOrder targetObj 'gate destObj)
+
+					(objSet@ targetObj 'alwaysLeaveWreck (msn@ gSource 'alwaysLeaveWreck))
+
+					;	Create any escorts
+
+					(enum (@ targetDesc 'escorts) theEntry
+						(block (escortObj)
+							(setq escortObj (sysCreateShip (@ theEntry 'type) freighterPos (@ targetDesc 'sovereign)))
+							(shpOrder escortObj 'escort targetObj)
+							)
+						)
+
+					;	Remember the target
+
+					(msnSet@ gSource 'targetID (objGetID targetObj))
+					(msnRegisterForEvents gSource targetObj)
+					)
+			</OnAccepted>
+
+			<OnSetPlayerTarget>
+				(rpgSetTarget gSource aReason (objGetObjByID (msn@ gSource 'targetID)))
+			</OnSetPlayerTarget>
+			
+			<OnObjDestroyed>
+				(switch
+					(= (objGetID aObjDestroyed) (msn@ gSource 'targetID))
+						(if aDestroy
+							(msnSuccess gSource)
+							(msnFailure gSource)
+							)
+					)
+			</OnObjDestroyed>
+
+			<OnReward>
+				(block (
+					(reward (msn@ gSource 'reward))
+					(currency (msn@ gSource 'rewardCurrency))
+					)
+					(if reward
+						(rpgMissionRewardPayment reward currency)
+						)
+					)
+			</OnReward>
+		</Events>
+	</MissionType>
+
+</TranscendenceModule>

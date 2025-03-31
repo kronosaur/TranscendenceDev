@@ -1,0 +1,1874 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- SYSTEM PARTS -->
+
+	<SystemPartTable unid="&GLXY_tbBasicSystemParts;"
+			obsoleteVersion=			"37"
+			>
+
+		<!-- Planets and Planetoids -->
+
+		<AsteroidBelt>
+			<Group>
+				<Siblings count="500" distribution="4d40-82">
+					<Lookup table="AsteroidSmall"/>
+				</Siblings>
+
+				<Siblings count="50" distribution="4d20-42">
+					<Lookup table="AsteroidMedium"/>
+				</Siblings>
+
+				<Siblings count="1d6+6" radiusInc="4d40-82" angle="minSeparation:10">
+					<Label attributes="asteroids,asteroidbelt"/>
+				</Siblings>
+			</Group>
+		</AsteroidBelt>
+
+		<AsteroidGroupAmorphous>
+			<Orbitals count="3-6" distance="4-10" angle="random">
+				<Group>
+					<Orbitals count="3d6" distance="1-16" angle="random">
+						<Lookup table="AsteroidSmall"/>
+					</Orbitals>
+
+					<Orbitals count="2d2-2" distance="1-10" angle="random">
+						<Lookup table="AsteroidMedium"/>
+					</Orbitals>
+
+					<Orbitals count="1" distance="0-3" angle="random">
+						<Label attributes="asteroids"/>
+					</Orbitals>
+				</Group>
+			</Orbitals>
+		</AsteroidGroupAmorphous>
+
+		<AsteroidGroupArc>
+			<Group>
+				<Siblings count="1d20" arcInc="2d85-86" radiusInc="-4-4">
+					<Lookup table="AsteroidSmall"/>
+				</Siblings>
+
+				<Siblings count="1d20" arcInc="2d65-66" radiusInc="-6-6">
+					<Lookup table="AsteroidSmall"/>
+				</Siblings>
+
+				<Siblings count="1d20" arcInc="2d45-46" radiusInc="-8-8">
+					<Lookup table="AsteroidSmall"/>
+				</Siblings>
+
+				<Siblings count="1d20" arcInc="2d25-26" radiusInc="-12-12">
+					<Lookup table="AsteroidSmall"/>
+				</Siblings>
+
+				<Siblings count="1d5-1" arcInc="2d15-16" radiusInc="-16-16">
+					<Lookup table="AsteroidMedium"/>
+				</Siblings>
+
+				<Siblings count="1" arcInc="2d9-10" radiusInc="-24-24">
+					<Label attributes="asteroids"/>
+				</Siblings>
+
+				<Siblings count="1" arcInc="86-90" radiusInc="-2-2">
+					<Label attributes="asteroids"/>
+				</Siblings>
+
+				<Siblings count="1" arcInc="-86--90" radiusInc="-2-2">
+					<Label attributes="asteroids"/>
+				</Siblings>
+			</Group>
+		</AsteroidGroupArc>
+
+		<AsteroidMedium>
+			<Table>
+				<Station chance="90" type="&GLXY_stMediumAsteroid;"/>
+				<Station chance="10" type="&GLXY_stOreMediumAsteroid;"/>
+			</Table>
+		</AsteroidMedium>
+
+		<AsteroidMediumFrost>
+			<Table>
+				<Station chance="95" type="&GLXY_stMediumFrostAsteroid;"/>
+				<Station chance="5" type="&GLXY_stOreMediumFrostAsteroid;"/>
+			</Table>
+		</AsteroidMediumFrost>
+
+		<AsteroidMediumMetallic>
+			<Table>
+				<Station chance="90" type="&GLXY_stMediumMetallicAsteroid;"/>
+				<Station chance="10" type="&GLXY_stOreMediumMetallicAsteroid;"/>
+			</Table>
+		</AsteroidMediumMetallic>
+
+		<AsteroidMediumVolcanic>
+			<Table>
+				<Station chance="85" type="&GLXY_stMediumVolcanicAsteroid;"/>
+				<Station chance="15" type="&GLXY_stOreMediumVolcanicAsteroid;"/>
+			</Table>
+		</AsteroidMediumVolcanic>
+
+		<AsteroidSmall>
+			<Table>
+				<Station chance="90" type="&GLXY_stSmallAsteroid;"/>
+				<Station chance="10" type="&GLXY_stOreSmallAsteroid;"/>
+			</Table>
+		</AsteroidSmall>
+
+		<AsteroidSmallFrost>
+			<Table>
+				<Station chance="95" type="&GLXY_stSmallFrostAsteroid;"/>
+				<Station chance="5" type="&GLXY_stOreSmallFrostAsteroid;"/>
+			</Table>
+		</AsteroidSmallFrost>
+
+		<AsteroidSmallMetallic>
+			<Table>
+				<Station chance="90" type="&GLXY_stSmallMetallicAsteroid;"/>
+				<Station chance="10" type="&GLXY_stOreSmallMetallicAsteroid;"/>
+			</Table>
+		</AsteroidSmallMetallic>
+
+		<AsteroidSmallVolcanic>
+			<Table>
+				<Station chance="85" type="&GLXY_stSmallVolcanicAsteroid;"/>
+				<Station chance="15" type="&GLXY_stOreSmallVolcanicAsteroid;"/>
+			</Table>
+		</AsteroidSmallVolcanic>
+
+		<Comet>
+			<Group>
+				<Station type="&GLXY_stCrateredPlanet;"
+						showOrbit="true"
+					/>
+
+				<Orbitals distance="2d4+8" angle="random">
+					<Label attributes="asteroids,comet,frost"/>
+				</Orbitals>
+
+				<Trojan probability="10">
+					<Lookup table="FrostTrojans"/>
+				</Trojan>
+
+				<AntiTrojan probability="10">
+					<Lookup table="FrostTrojans"/>
+				</AntiTrojan>
+
+			</Group>
+		</Comet>
+
+		<DesertWorld>
+			<Group>
+				<Station type="&GLXY_stDesertPlanet;"
+						showOrbit="true"
+					/>
+
+				<Orbitals distance="2d6+10" angle="random">
+					<Label attributes="desert,planet,planetary"/>
+				</Orbitals>
+
+				<Orbitals distance="2d8+30" angle="random">
+					<Table>
+						<Null chance="50"/>
+						<Group chance="45">
+							<Lookup table="AsteroidMedium"/>
+
+							<Orbitals distance="2d4+8" angle="random">
+								<Label attributes="moon,planetary"/>
+							</Orbitals>
+						</Group>
+						<Group chance="5">
+							<Station type="&GLXY_stCrateredPlanet;"/>
+
+							<Orbitals distance="2d4+8" angle="random">
+								<Label attributes="moon,planetary"/>
+							</Orbitals>
+						</Group>
+					</Table>
+				</Orbitals>
+
+				<Trojan>
+					<Group probability="10">
+						<Orbitals count="1d4+4" distance="2d8+8" angle="random">
+							<Lookup table="AsteroidSmall"/>
+						</Orbitals>
+
+						<Orbitals count="1d4" distance="2d8+8" angle="random">
+							<Lookup table="AsteroidMedium"/>
+						</Orbitals>
+
+						<Orbitals count="1d3+1" distance="1d8+6" angle="random">
+							<Label attributes="asteroids,trojan"/>
+						</Orbitals>
+
+					</Group>
+				</Trojan>
+
+				<AntiTrojan>
+					<Group probability="10">
+						<Orbitals count="1d4+4" distance="2d8+8" angle="random">
+							<Lookup table="AsteroidSmall"/>
+						</Orbitals>
+
+						<Orbitals count="1d4" distance="2d8+8" angle="random">
+							<Lookup table="AsteroidMedium"/>
+						</Orbitals>
+
+						<Orbitals count="1d3+1" distance="1d8+6" angle="random">
+							<Label attributes="asteroids,trojan"/>
+						</Orbitals>
+
+					</Group>
+				</AntiTrojan>
+
+			</Group>
+		</DesertWorld>
+
+		<FrostTrojans>
+			<Table>
+				<Group chance="50">
+					<Orbitals count="2d8+4" distance="1-30" angle="random">
+						<Lookup table="AsteroidSmallFrost"/>
+					</Orbitals>
+
+					<Orbitals count="4d8+4" distance="1-80" angle="random">
+						<Lookup table="AsteroidSmallFrost"/>
+					</Orbitals>
+
+					<Orbitals count="1d6" distance="2d8+8" angle="random">
+						<Lookup table="AsteroidMediumFrost"/>
+					</Orbitals>
+
+					<Orbitals count="1d2" distance="2d8+6" angle="random">
+						<Label attributes="asteroids,frost,trojan"/>
+					</Orbitals>
+				</Group>
+				<Group chance="50">
+					<Orbitals count="2d4+4" distance="1d24" angle="random">
+						<Lookup table="AsteroidSmallFrost"/>
+					</Orbitals>
+
+					<Orbitals count="1d6" distance="2d8+8" angle="random">
+						<Lookup table="AsteroidMediumFrost"/>
+					</Orbitals>
+
+					<Siblings count="1d40" arcInc="2d205-206" radiusInc="-4-4">
+						<Lookup table="AsteroidSmallFrost"/>
+					</Siblings>
+
+					<Siblings count="1d40" arcInc="2d159-160" radiusInc="-6-6">
+						<Lookup table="AsteroidSmallFrost"/>
+					</Siblings>
+
+					<Siblings count="1d32" arcInc="2d109-110" radiusInc="-8-8">
+						<Lookup table="AsteroidSmallFrost"/>
+					</Siblings>
+
+					<Orbitals chance="90" distance="2d8+6" angle="random">
+						<Label attributes="asteroids,frost,trojan"/>
+					</Orbitals>
+
+					<Siblings chance="30" arcInc="120-200">
+						<Label attributes="asteroids,frost,trojan"/>
+					</Siblings>
+
+					<Siblings chance="30" arcInc="-200--120">
+						<Label attributes="asteroids,frost,trojan"/>
+					</Siblings>
+				</Group>
+			</Table>
+		</FrostTrojans>
+
+		<GasGiant>
+			<Group>
+				<Station type="&GLXY_stHydrogenGasGiant;"
+						showOrbit="true"
+					/>
+
+				<Orbitals count="2d2+1" distance="1d6+12" angle="equidistant">
+					<Label attributes="gasgiant,planet,planetary"/>
+				</Orbitals>
+
+				<Orbitals distance="2d8+24" angle="random">
+					<Group>
+						<Station type="&GLXY_stCrateredPlanet;" />
+
+						<Orbitals distance="2d4+8" angle="random">
+							<Label attributes="gasgiant,moon,planetary"/>
+						</Orbitals>
+					</Group>
+				</Orbitals>
+
+				<Orbitals distance="2d8+64" angle="random">
+					<Group probability="80">
+						<Station type="&GLXY_stCrateredPlanet;" />
+
+						<Orbitals distance="2d4+8" angle="random">
+							<Label attributes="gasgiant,moon,planetary"/>
+						</Orbitals>
+					</Group>
+				</Orbitals>
+
+				<Orbitals distance="2d8+104" angle="random">
+					<Group probability="40">
+						<Station type="&GLXY_stCrateredPlanet;" />
+
+						<Orbitals distance="2d4+8" angle="random">
+							<Label attributes="gasgiant,moon,planetary"/>
+						</Orbitals>
+					</Group>
+				</Orbitals>
+
+				<Trojan probability="60">
+					<Table>
+						<Lookup chance="75" table="StdTrojans"/>
+						<Lookup chance="25" table="FrostTrojans"/>
+					</Table>
+				</Trojan>
+
+				<AntiTrojan probability="60">
+					<Table>
+						<Lookup chance="75" table="StdTrojans"/>
+						<Lookup chance="25" table="FrostTrojans"/>
+					</Table>
+				</AntiTrojan>
+
+			</Group>
+
+		</GasGiant>
+
+		<IcyWorld>
+			<Group>
+				<Station type="&GLXY_stIcePlanet;"
+						showOrbit="true"
+					/>
+
+				<Orbitals distance="2d6+10" angle="random">
+					<Label attributes="planet,planetary,frost"/>
+				</Orbitals>
+
+				<Orbitals distance="2d8+30" angle="random">
+					<Table>
+						<Null chance="50"/>
+						<Group chance="35">
+							<Lookup table="AsteroidMediumFrost"/>
+
+							<Orbitals distance="2d4+8" angle="random">
+								<Label attributes="moon,planetary,frost"/>
+							</Orbitals>
+						</Group>
+						<Group chance="15">
+							<Orbitals count="2d6" distance="1d12+4" angle="random">
+								<Lookup table="AsteroidSmallFrost"/>
+							</Orbitals>
+
+							<Orbitals distance="2d4+8" angle="random">
+								<Label attributes="asteroids,planetary,frost"/>
+							</Orbitals>
+						</Group>
+					</Table>
+				</Orbitals>
+
+				<Trojan probability="10">
+					<Lookup table="FrostTrojans"/>
+				</Trojan>
+
+				<AntiTrojan probability="10">
+					<Lookup table="FrostTrojans"/>
+				</AntiTrojan>
+
+			</Group>
+		</IcyWorld>
+
+		<InnerGasGiant>
+			<Group>
+				<Station type="&GLXY_stHydrogenGasGiant;"
+						showOrbit="true"
+					/>
+
+				<Orbitals count="2d2+1" distance="1d6+12" angle="equidistant">
+					<Label attributes="gasgiant,planet,planetary"/>
+				</Orbitals>
+
+				<Orbitals distance="2d8+24" angle="random">
+					<Group>
+						<Station type="&GLXY_stCrateredPlanet;" />
+
+						<Orbitals distance="2d4+8" angle="random">
+							<Label attributes="gasgiant,moon,planetary"/>
+						</Orbitals>
+					</Group>
+				</Orbitals>
+
+				<Orbitals distance="2d8+64" angle="random">
+					<Group probability="60">
+						<Station type="&GLXY_stCrateredPlanet;" />
+
+						<Orbitals distance="2d4+8" angle="random">
+							<Label attributes="gasgiant,moon,planetary"/>
+						</Orbitals>
+					</Group>
+				</Orbitals>
+
+				<Trojan probability="30">
+					<Lookup table="StdTrojans"/>
+				</Trojan>
+
+				<AntiTrojan probability="30">
+					<Lookup table="StdTrojans"/>
+				</AntiTrojan>
+
+			</Group>
+
+		</InnerGasGiant>
+
+		<InnerMethaneGiant>
+			<Group>
+				<Station type="&GLXY_stMethaneGasGiant;"
+						showOrbit="true"
+					/>
+
+				<Orbitals distance="1d6+12" angle="random">
+					<Label attributes="methanegiant,planet,planetary"/>
+				</Orbitals>
+
+				<Orbitals distance="2d8+24" angle="random">
+					<Group probability="70">
+						<Station type="&GLXY_stCrateredPlanet;" />
+
+						<Orbitals distance="2d4+8" angle="random">
+							<Label attributes="methanegiant,moon,planetary"/>
+						</Orbitals>
+					</Group>
+				</Orbitals>
+
+				<Orbitals distance="2d8+64" angle="random">
+					<Group probability="50">
+						<Lookup table="AsteroidMedium"/>
+
+						<Orbitals distance="2d4+8" angle="random">
+							<Label attributes="methanegiant,moon,planetary"/>
+						</Orbitals>
+					</Group>
+				</Orbitals>
+
+				<Trojan probability="25">
+					<Lookup table="StdTrojans"/>
+				</Trojan>
+
+				<AntiTrojan probability="25">
+					<Lookup table="StdTrojans"/>
+				</AntiTrojan>
+
+			</Group>
+		</InnerMethaneGiant>
+
+		<MethaneGiant>
+			<Group>
+				<Station type="&GLXY_stMethaneGasGiant;"
+						showOrbit="true"
+					/>
+
+				<Orbitals distance="1d6+12" angle="random">
+					<Label attributes="methanegiant,planet,planetary"/>
+				</Orbitals>
+
+				<Orbitals distance="2d8+24" angle="random">
+					<Group probability="80">
+						<Station type="&GLXY_stCrateredPlanet;" />
+
+						<Orbitals distance="2d4+8" angle="random">
+							<Label attributes="methanegiant,moon,planetary"/>
+						</Orbitals>
+					</Group>
+				</Orbitals>
+
+				<Orbitals distance="2d8+64" angle="random">
+					<Group probability="90">
+						<Lookup table="AsteroidMediumFrost"/>
+
+						<Orbitals distance="2d4+8" angle="random">
+							<Label attributes="methanegiant,moon,planetary,frost"/>
+						</Orbitals>
+					</Group>
+				</Orbitals>
+
+				<Orbitals distance="2d8+104" angle="random">
+					<Group probability="90">
+						<Lookup table="AsteroidMediumFrost"/>
+
+						<Orbitals distance="2d4+8" angle="random">
+							<Label attributes="methanegiant,moon,planetary,frost"/>
+						</Orbitals>
+					</Group>
+				</Orbitals>
+
+				<Trojan probability="60">
+					<Lookup table="FrostTrojans"/>
+				</Trojan>
+
+				<AntiTrojan probability="60">
+					<Lookup table="FrostTrojans"/>
+				</AntiTrojan>
+
+			</Group>
+		</MethaneGiant>
+
+		<OuterRockyGroup>
+			<Group>
+				<Station type="&GLXY_stCrateredPlanet;"
+						showOrbit="true"
+					/>
+
+				<Orbitals distance="2d6+10" angle="random">
+					<Label attributes="planet,planetary"/>
+				</Orbitals>
+
+				<Siblings count="1d8+5" radiusInc="4d20-42" angle="minSeparation:10">
+					<Group>
+						<Lookup table="AsteroidMediumFrost"/>
+
+						<Orbitals distance="1d8+8" angle="random">
+							<Table>
+								<Null	 chance="60"/>
+								<Label   chance="40" attributes="asteroids,frost"/>
+							</Table>
+						</Orbitals>
+					</Group>
+				</Siblings>
+			</Group>
+		</OuterRockyGroup>
+
+		<RingedWorld>
+			<Group>
+				<Station type="&GLXY_stRingedGasGiant;"
+						showOrbit="true"
+					/>
+
+				<Orbitals distance="2d6+12" angle="random">
+					<Label attributes="asteroids,planet,planetary,ringedgiant,frost"/>
+				</Orbitals>
+
+				<Orbitals distance="1d8+32" angle="random">
+					<Group probability="80">
+						<Station type="&GLXY_stCrateredPlanet;" />
+
+						<Orbitals distance="2d4+8" angle="random">
+							<Label attributes="moon,planetary,ringedgiant"/>
+						</Orbitals>
+					</Group>
+				</Orbitals>
+
+				<Trojan probability="60">
+					<Table>
+						<Lookup chance="50" table="StdTrojans"/>
+						<Lookup chance="50" table="FrostTrojans"/>
+					</Table>
+				</Trojan>
+
+				<AntiTrojan probability="60">
+					<Table>
+						<Lookup chance="50" table="StdTrojans"/>
+						<Lookup chance="50" table="FrostTrojans"/>
+					</Table>
+				</AntiTrojan>
+
+			</Group>
+		</RingedWorld>
+
+		<RockyWorld>
+			<Group>
+				<Station type="&GLXY_stCrateredPlanet;"
+						showOrbit="true"
+					/>
+
+				<Orbitals distance="2d6+10" angle="random">
+					<Label attributes="planet,planetary"/>
+				</Orbitals>
+
+				<Orbitals distance="2d8+30" angle="random">
+					<Table>
+						<Null chance="50"/>
+						<Group chance="35">
+							<Lookup table="AsteroidMedium"/>
+
+							<Orbitals distance="2d4+8" angle="random">
+								<Label attributes="moon,planetary"/>
+							</Orbitals>
+						</Group>
+						<Group chance="15">
+							<Station type="&GLXY_stCrateredPlanet;"/>
+
+							<Orbitals distance="2d4+8" angle="random">
+								<Label attributes="moon,planetary"/>
+							</Orbitals>
+						</Group>
+					</Table>
+				</Orbitals>
+
+				<Trojan>
+					<Group probability="10">
+						<Orbitals count="1d4+4" distance="2d8+8" angle="random">
+							<Lookup table="AsteroidSmall"/>
+						</Orbitals>
+
+						<Orbitals count="1d4" distance="2d8+8" angle="random">
+							<Lookup table="AsteroidMedium"/>
+						</Orbitals>
+
+						<Orbitals count="1d3+1" distance="1d8+6" angle="random">
+							<Label attributes="asteroids,trojan"/>
+						</Orbitals>
+
+					</Group>
+				</Trojan>
+
+				<AntiTrojan>
+					<Group probability="10">
+						<Orbitals count="1d4+4" distance="2d8+8" angle="random">
+							<Lookup table="AsteroidSmall"/>
+						</Orbitals>
+
+						<Orbitals count="1d4" distance="2d8+8" angle="random">
+							<Lookup table="AsteroidMedium"/>
+						</Orbitals>
+
+						<Orbitals count="1d3+1" distance="1d8+6" angle="random">
+							<Label attributes="asteroids,trojan"/>
+						</Orbitals>
+
+					</Group>
+				</AntiTrojan>
+
+			</Group>
+		</RockyWorld>
+
+		<StdTrojans>
+			<Table>
+				<Group chance="50">
+					<Orbitals count="2d8+4" distance="1-30" angle="random">
+						<Lookup table="AsteroidSmall"/>
+					</Orbitals>
+
+					<Orbitals count="4d8+4" distance="1-80" angle="random">
+						<Lookup table="AsteroidSmall"/>
+					</Orbitals>
+
+					<Orbitals count="1d6" distance="2d8+8" angle="random">
+						<Lookup table="AsteroidMedium"/>
+					</Orbitals>
+
+					<Orbitals count="1d2" distance="2d8+6" angle="random">
+						<Label attributes="asteroids,trojan"/>
+					</Orbitals>
+				</Group>
+				<Group chance="50">
+					<Orbitals count="2d4+4" distance="1d24" angle="random">
+						<Lookup table="AsteroidSmall"/>
+					</Orbitals>
+
+					<Orbitals count="1d6" distance="2d8+8" angle="random">
+						<Lookup table="AsteroidMedium"/>
+					</Orbitals>
+
+					<Siblings count="1d40" arcInc="2d205-206" radiusInc="-4-4">
+						<Lookup table="AsteroidSmall"/>
+					</Siblings>
+
+					<Siblings count="1d40" arcInc="2d159-160" radiusInc="-6-6">
+						<Lookup table="AsteroidSmall"/>
+					</Siblings>
+
+					<Siblings count="1d32" arcInc="2d109-110" radiusInc="-8-8">
+						<Lookup table="AsteroidSmall"/>
+					</Siblings>
+
+					<Orbitals chance="90" distance="2d8+6" angle="random">
+						<Label attributes="asteroids,trojan"/>
+					</Orbitals>
+
+					<Siblings chance="30" arcInc="120-200">
+						<Label attributes="asteroids,trojan"/>
+					</Siblings>
+
+					<Siblings chance="30" arcInc="-200--120">
+						<Label attributes="asteroids,trojan"/>
+					</Siblings>
+				</Group>
+			</Table>
+		</StdTrojans>
+
+		<VolcanicWorld>
+			<Group>
+				<Station type="&GLXY_stVolcanicPlanet;"
+						showOrbit="true"
+					/>
+
+				<Orbitals distance="2d6+10" angle="random">
+					<Label attributes="planet,planetary,volcanic"/>
+				</Orbitals>
+
+				<Orbitals distance="2d8+30" angle="random">
+					<Table>
+						<Null chance="50"/>
+						<Group chance="45">
+							<Lookup table="AsteroidMediumVolcanic"/>
+
+							<Orbitals distance="2d4+8" angle="random">
+								<Label attributes="moon,planetary,volcanic"/>
+							</Orbitals>
+						</Group>
+						<Group chance="5">
+							<Orbitals count="1d4+4" distance="2d8+8" angle="random">
+								<Lookup table="AsteroidSmallVolcanic"/>
+							</Orbitals>
+
+							<Orbitals distance="2d4+8" angle="random">
+								<Label attributes="moon,planetary,volcanic"/>
+							</Orbitals>
+						</Group>
+					</Table>
+				</Orbitals>
+
+				<Trojan>
+					<Group probability="10">
+						<Orbitals count="1d4+4" distance="2d8+8" angle="random">
+							<Lookup table="AsteroidSmallVolcanic"/>
+						</Orbitals>
+
+						<Orbitals count="1d4" distance="2d8+8" angle="random">
+							<Lookup table="AsteroidMediumVolcanic"/>
+						</Orbitals>
+
+						<Orbitals count="1d3+1" distance="1d8+6" angle="random">
+							<Label attributes="asteroids,trojan,volcanic"/>
+						</Orbitals>
+
+					</Group>
+				</Trojan>
+
+				<AntiTrojan>
+					<Group probability="10">
+						<Orbitals count="1d4+4" distance="2d8+8" angle="random">
+							<Lookup table="AsteroidSmallVolcanic"/>
+						</Orbitals>
+
+						<Orbitals count="1d4" distance="2d8+8" angle="random">
+							<Lookup table="AsteroidMediumVolcanic"/>
+						</Orbitals>
+
+						<Orbitals count="1d3+1" distance="1d8+6" angle="random">
+							<Label attributes="asteroids,trojan,volcanic"/>
+						</Orbitals>
+
+					</Group>
+				</AntiTrojan>
+
+			</Group>
+		</VolcanicWorld>
+
+		<Vulcanoids>
+			<Group>
+				<Siblings count="250" distribution="2d40-41">
+					<Lookup table="AsteroidSmallVolcanic"/>
+				</Siblings>
+
+				<Siblings count="50" distribution="2d20-21">
+					<Lookup table="AsteroidMediumVolcanic"/>
+				</Siblings>
+
+				<Siblings count="1d4+1" radiusInc="2d40-41" angle="minSeparation:15">
+					<Label attributes="asteroids,volcanic"/>
+				</Siblings>
+			</Group>
+		</Vulcanoids>
+		
+		<VariantAsteroidLarge>
+			<Table>
+				<Lookup chance="35"		table="VariantSizeA"/>
+				<Lookup chance="25"		table="VariantSizeB"/>
+				<Lookup chance="15"		table="VariantSizeC"/>
+				<Lookup chance="12"		table="VariantSizeD"/>
+				<Lookup chance="8"		table="VariantSizeE"/>
+				<Lookup chance="4"		table="VariantSizeF"/>
+				<Lookup chance="1"		table="VariantSizeG"/>
+			</Table>
+		</VariantAsteroidLarge>
+
+		<VariantAsteroidAndLabel>
+			<Table>
+				<Lookup chance="80"		table="VariantSizeA"/>
+				<Lookup chance="14"		table="VariantSizeB"/>
+				<Group  chance="5">
+					<Lookup				table="VariantSizeC"/>
+					
+					<Orbitals distance="2d4+4" angle="random">
+						<Lookup table="VariantAsteroidBeltLabel"/>
+					</Orbitals>
+				</Group>
+				<Group  chance="1">
+					<Lookup				table="VariantSizeD"/>
+					
+					<Orbitals distance="2d4+8" angle="random">
+						<Lookup table="VariantAsteroidBeltLabel"/>
+					</Orbitals>
+				</Group>
+			</Table>
+		</VariantAsteroidAndLabel>
+
+		<VariantAsteroidBeltLabel>
+			<VariantTable>
+				<Label variant="ice"		attributes="asteroids, asteroidBelt, ice"/>
+				<Label variant="metallic"	attributes="asteroids, asteroidBelt, metallic"/>
+				<Label variant="primordial"	attributes="asteroids, asteroidBelt, primordial"/>
+				<Label variant="rocky"		attributes="asteroids, asteroidBelt, rocky"/>
+				<Label variant="volcanic"	attributes="asteroids, asteroidBelt, volcanic"/>
+			</VariantTable>
+		</VariantAsteroidBeltLabel>
+
+		<VariantAsteroidBeltVoidLabel>
+			<VariantTable>
+				<Label variant="ice"		attributes="asteroidBelt, ice, void"/>
+				<Label variant="metallic"	attributes="asteroidBelt, metallic, void"/>
+				<Label variant="primordial"	attributes="asteroidBelt, primordial, void"/>
+				<Label variant="rocky"		attributes="asteroidBelt, rocky, void"/>
+				<Label variant="volcanic"	attributes="asteroidBelt, void, volcanic"/>
+			</VariantTable>
+		</VariantAsteroidBeltVoidLabel>
+
+	</SystemPartTable>
+
+<!-- ASTEROIDS & PLANETS -->
+
+	<!-- Small Asteroid -->
+
+	<StationType UNID="&GLXY_stSmallAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(rocky asteroid)"
+		scale=				"world"
+		size=				"4"
+
+		attributes=			"asteroid, rocky"
+
+		ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="768" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="800" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="832" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="864" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="896" imageWidth="32" imageHeight="32"/>
+
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="928" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="960" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="992" imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+
+		<Events>
+			; Note: We add this even to asteroids without ore because some scenarios
+			; call for adding ore to existing asteroids
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+
+	</StationType>
+
+	<!-- Medium Asteroid -->
+
+	<StationType UNID="&GLXY_stMediumAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(rocky asteroid)"
+		scale=				"world"
+		size=				"65"
+
+		attributes=			"asteroid, rocky"
+
+		ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+		>
+		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
+
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="128" imageY="0"   imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="128" imageY="64"  imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="128" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="128" imageY="192" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="128" imageY="256" imageWidth="64" imageHeight="64"/>
+
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="128" imageY="320" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="128" imageY="384" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="128" imageY="448" imageWidth="64" imageHeight="64"/>
+		</ImageVariants>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+
+	</StationType>
+
+	<!-- Large Asteroid
+
+	 -->
+
+	<StationType UNID="&GLXY_stLargeAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(rocky asteroid)"
+		scale=				"world"
+		size=				"250"
+
+		attributes=			"asteroid, rocky"
+
+		ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="0" imageWidth="128" imageHeight="128"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="128" imageWidth="128" imageHeight="128"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="256" imageWidth="128" imageHeight="128"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="384" imageWidth="128" imageHeight="128"/>
+		</ImageVariants>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+
+	</StationType>
+
+	<!-- Planetoid -->
+
+	<StationType UNID="&GLXY_stPlanetoid;"
+			obsoleteVersion=			"37"
+		name=				"(rocky planetoid)"
+		scale=				"world"
+		size=				"1150"
+
+		attributes=			"planetoid, rocky"
+
+		ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="0"   imageWidth="128" imageHeight="128" />
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="128" imageWidth="128" imageHeight="128" />
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="256" imageWidth="128" imageHeight="128" />
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="384" imageWidth="128" imageHeight="128" />
+		</ImageVariants>
+	</StationType>
+
+	<!-- Cratered Planet
+	
+	 -->
+
+	<StationType UNID="&GLXY_stCrateredPlanet;"
+			obsoleteVersion=			"37"
+		name=				"(rocky terrestrial)"
+		scale=				"world"
+		size=				"1150"
+
+		attributes=			"rocky, terrestrial"
+		>
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="0"   imageWidth="128" imageHeight="128" />
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="128" imageWidth="128" imageHeight="128" />
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="256" imageWidth="128" imageHeight="128" />
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="384" imageWidth="128" imageHeight="128" />
+		</ImageVariants>
+	</StationType>
+
+	<!-- Small Frost Asteroid -->
+
+	<StationType UNID="&GLXY_stSmallFrostAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(frost asteroid)"
+		scale=				"world"
+		size=				"4"
+
+		attributes=			"asteroid, frost"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="768" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="800" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="832" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="864" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="896" imageWidth="32" imageHeight="32"/>
+
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="928" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="960" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="992" imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+	</StationType>
+
+	<!-- Medium Frost Asteroid -->
+
+	<StationType UNID="&GLXY_stMediumFrostAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(frost asteroid)"
+		scale=				"world"
+		size=				"65"
+
+		attributes=			"asteroid, frost"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="0"   imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="64"  imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="192" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="256" imageWidth="64" imageHeight="64"/>
+
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="320" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="384" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="448" imageWidth="64" imageHeight="64"/>
+		</ImageVariants>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+	</StationType>
+
+	<!-- Small Ice Asteroid
+	
+	 -->
+
+	<StationType UNID="&GLXY_stSmallIceAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(ice asteroid)"
+		scale=				"world"
+		size=				"4"
+
+		attributes=			"asteroid, ice"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="768" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="800" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="832" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="864" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="896" imageWidth="32" imageHeight="32"/>
+
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="928" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="960" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="992" imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+
+	</StationType>
+
+	<!-- Large Ice Asteroid
+	
+	 -->
+
+	<StationType UNID="&GLXY_stLargeIceAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(ice planetoid)"
+		scale=				"world"
+		size=				"1150"
+
+		attributes=			"ice, planetoid"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="0"   imageWidth="128" imageHeight="128"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="128" imageWidth="128" imageHeight="128"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="256" imageWidth="128" imageHeight="128"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="384" imageWidth="128" imageHeight="128"/>
+		</ImageVariants>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+
+	</StationType>
+
+	<!-- Ice Planet -->
+
+	<StationType UNID="&GLXY_stIcePlanet;"
+			obsoleteVersion=			"37"
+		name=				"(ice terrestrial)"
+		scale=				"world"
+		size=				"4700"
+
+		attributes=			"ice, terrestrial"
+		>
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorldsIcePlanet1;" imageX="0" imageY="0"   imageWidth="182" imageHeight="182" />
+			<Image			imageID="&GLXY_rsWorldsIcePlanet2;" imageX="0" imageY="0"   imageWidth="182" imageHeight="182" />
+			<Image			imageID="&GLXY_rsWorldsIcePlanet3;" imageX="0" imageY="0"   imageWidth="182" imageHeight="182" />
+			<Image			imageID="&GLXY_rsWorldsIcePlanet4;" imageX="0" imageY="0"   imageWidth="182" imageHeight="182" />
+		</ImageVariants>
+	</StationType>
+
+	<!-- Small Metallic Asteroid -->
+
+	<StationType UNID="&GLXY_stSmallMetallicAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(metallic asteroid)"
+		scale=				"world"
+		size=				"4"
+
+		attributes=			"asteroid, metallic"
+
+		ejectaType=			"&GLXY_vtMetallicAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="0"   imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="32"  imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="64"  imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="96"  imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="128" imageY="128"	imageWidth="32" imageHeight="32"/>
+
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="160"   imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="192"   imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="224"   imageY="128"	imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+	</StationType>
+
+	<!-- Medium Metallic Asteroid -->
+
+	<StationType UNID="&GLXY_stMediumMetallicAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(metallic asteroid)"
+		scale=				"world"
+		size=				"55"
+
+		attributes=			"asteroid, metallic"
+
+		ejectaType=			"&GLXY_vtMetallicAsteroidEjecta;"
+		>
+
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="0"   imageY="0"		imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="64"  imageY="0"		imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="128" imageY="0"		imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="192" imageY="0"		imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="0"   imageY="64"	imageWidth="64" imageHeight="64"/>
+
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="64"  imageY="64"	imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="128" imageY="64"	imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="192" imageY="64"	imageWidth="64" imageHeight="64"/>
+		</ImageVariants>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+	</StationType>
+
+	<!-- Small Volcanic Asteroid -->
+
+	<StationType UNID="&GLXY_stSmallVolcanicAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(volcanic asteroid)"
+		scale=				"world"
+		size=				"4"
+
+		attributes=			"asteroid, volcanic"
+
+		ejectaType=			"&GLXY_vtVolcanicAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="192" imageY="768" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="192" imageY="800" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="192" imageY="832" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="192" imageY="864" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="192" imageY="896" imageWidth="32" imageHeight="32"/>
+
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="192" imageY="928" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="192" imageY="960" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="192" imageY="992" imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+
+	</StationType>
+
+	<!-- Medium Volcanic Asteroid -->
+
+	<StationType UNID="&GLXY_stMediumVolcanicAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(volcanic asteroid)"
+		scale=				"world"
+		size=				"70"
+
+		attributes=			"asteroid, volcanic"
+
+		ejectaType=			"&GLXY_vtVolcanicAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="512" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="576" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="640" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="704" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="768" imageWidth="64" imageHeight="64"/>
+
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="832" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="896" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="960" imageWidth="64" imageHeight="64"/>
+		</ImageVariants>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+
+	</StationType>
+
+	<!-- Volcanic Planet -->
+
+	<StationType UNID="&GLXY_stVolcanicPlanet;"
+			obsoleteVersion=			"37"
+		name=				"(volcanic terrestrial)"
+		scale=				"world"
+		size=				"5000"
+
+		attributes=			"terrestrial, volcanic"
+		>
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="0" imageY="512" imageWidth="128" imageHeight="128"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="0" imageY="640" imageWidth="128" imageHeight="128"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="0" imageY="768" imageWidth="128" imageHeight="128"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="0" imageY="896" imageWidth="128" imageHeight="128"/>
+		</ImageVariants>
+	</StationType>
+
+	<!-- Biosphere -->
+
+	<StationType UNID="&GLXY_stBiospherePlanet;"
+			obsoleteVersion=			"37"
+		name=				"(biosphere terrestrial)"
+		scale=				"world"
+		size=				"10000"
+
+		attributes=			"biosphere, terrestrial"
+		>
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="0"   imageWidth="128" imageHeight="128"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="128" imageWidth="128" imageHeight="128"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="256" imageWidth="128" imageHeight="128"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="384" imageWidth="128" imageHeight="128"/>
+		</ImageVariants>
+	</StationType>
+
+	<!-- Desert Planet -->
+
+	<StationType UNID="&GLXY_stDesertPlanet;"
+			obsoleteVersion=			"37"
+		name=				"(desert terrestrial)"
+		scale=				"world"
+		size=				"7000"
+
+		attributes=			"desert, terrestrial"
+		>
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="0" imageY="0" imageWidth="128" imageHeight="128"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="0" imageY="128" imageWidth="128" imageHeight="128"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="0" imageY="256" imageWidth="128" imageHeight="128"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="0" imageY="384" imageWidth="128" imageHeight="128"/>
+		</ImageVariants>
+	</StationType>
+
+	<!-- Greenhouse Planet -->
+
+	<StationType UNID="&GLXY_stGreenhousePlanet;"
+			obsoleteVersion=			"37"
+		name=				"(greenhouse terrestrial)"
+		scale=				"world"
+		size=				"5000"
+
+		attributes=			"co2planet, terrestrial"
+		>
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="0"   imageWidth="128" imageHeight="128" />
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="128" imageWidth="128" imageHeight="128" />
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="256" imageWidth="128" imageHeight="128" />
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="0" imageY="384" imageWidth="128" imageHeight="128" />
+		</ImageVariants>
+	</StationType>
+
+	<!-- Hydrogen Gas Giant -->
+
+	<StationType UNID="&GLXY_stHydrogenGasGiant;"
+			obsoleteVersion=			"37"
+		name=				"(hydrogen gas giant)"
+		scale=				"world"
+		size=				"140000"
+
+		attributes=			"gasGiant"
+		>
+		<Image imageID="&GLXY_rsWorlds1;" imageX="0" imageY="512" imageWidth="256" imageHeight="256"/>
+	</StationType>
+
+	<!-- Methane Gas Giant -->
+
+	<StationType UNID="&GLXY_stMethaneGasGiant;"
+			obsoleteVersion=			"37"
+		name=				"(methane gas giant)"
+		scale=				"world"
+		size=				"50000"
+
+		attributes=			"gasGiant"
+		>
+		<Image imageID="&GLXY_rsWorlds1;" imageX="0" imageY="768" imageWidth="192" imageHeight="192"/>
+	</StationType>
+
+	<!-- Primordial Star -->
+
+	<StationType UNID="&GLXY_stPrimordialStar;"
+			obsoleteVersion=			"37"
+		name=				"(primordial star)"
+		scale=				"star"
+		spaceColor=			"0x4d, 0x41, 0x0f"
+		maxLightRadius=		"400"
+
+		attributes=			"generic, primordial, star"
+		>
+
+		<Image>
+			<FilterColorize hue="49" saturation="60">
+				<Image imageID="&GLXY_rsStar1;" imageX="0" imageY="0" imageWidth="512" imageHeight="512"/>
+			</FilterColorize>
+		</Image>
+	</StationType>
+
+	<!-- O-Type Star -->
+
+	<StationType UNID="&GLXY_stO-TypeStar;"
+			obsoleteVersion=			"37"
+		name=				"(star)"
+		scale=				"star"
+
+		attributes=			"star"
+		>
+	<Image imageID="&GLXY_rsStar1;" imageX="0" imageY="0" imageWidth="512" imageHeight="512"/>
+	</StationType>
+
+	<!-- A-Type Star -->
+
+	<StationType UNID="&GLXY_stA-TypeStar;"
+			obsoleteVersion=			"37"
+		name=				"(A class star)"
+		scale=				"star"
+		spaceColor=			"0x12, 0x50, 0x79"
+		maxLightRadius=		"800"
+
+		attributes=			"generic, star"
+		>
+
+		<Image>
+			<FilterColorize hue="203" saturation="75">
+				<Image imageID="&GLXY_rsAStar;" imageX="0" imageY="0" imageWidth="512" imageHeight="512"/>
+			</FilterColorize>
+		</Image>
+	</StationType>
+
+	<!-- G-Type Star -->
+
+	<StationType UNID="&GLXY_stG-TypeStar;"
+			obsoleteVersion=			"37"
+		name=				"(G class star)"
+		scale=				"star"
+		spaceColor=			"#656551"
+		maxLightRadius=		"620"
+
+		attributes=			"generic, star"
+		>
+
+		<Image>
+			<FilterColorize hue="57" saturation="50">
+				<Image imageID="&GLXY_rsStar1;" imageX="0" imageY="0" imageWidth="512" imageHeight="512"/>
+			</FilterColorize>
+		</Image>
+	</StationType>
+
+	<!-- K-Type Star -->
+
+	<StationType UNID="&GLXY_stK-TypeStar;"
+			obsoleteVersion=			"37"
+		name=				"(K class star)"
+		scale=				"star"
+		spaceColor=			"0x70, 0x44, 0x1a"
+		maxLightRadius=		"620"
+
+		attributes=			"generic, star"
+		>
+
+		<Image>
+			<FilterColorize hue="30" saturation="63">
+				<Image imageID="&GLXY_rsStar1;" imageX="0" imageY="0" imageWidth="512" imageHeight="512"/>
+			</FilterColorize>
+		</Image>
+	</StationType>
+
+	<!-- M-Type Star -->
+
+	<StationType UNID="&GLXY_stM-TypeStar;"
+			obsoleteVersion=			"37"
+		name=				"(star)"
+		scale=				"star"
+
+		attributes=			"star"
+		>
+	<Image imageID="&GLXY_rsStar1;" imageX="0" imageY="0" imageWidth="512" imageHeight="512"/>
+	</StationType>
+
+	<!-- Red Dwarf Star -->
+
+	<StationType UNID="&GLXY_stRedDwarfStar;"
+			obsoleteVersion=			"37"
+		name=				"(red dwarf star)"
+		scale=				"star"
+		spaceColor=			"0x59, 0x0e, 0x00"
+		maxLightRadius=		"320"
+
+		attributes=			"generic, star"
+		>
+	<Image imageID="&GLXY_rsRedDwarfStar;" imageX="0" imageY="0" imageWidth="256" imageHeight="256"/>
+	</StationType>
+
+	<!-- Blue Giant Star -->
+
+	<StationType UNID="&GLXY_stBlueGiantStar;"
+			obsoleteVersion=			"37"
+		name=				"(star)"
+		scale=				"star"
+
+		attributes=			"star"
+		>
+	<Image imageID="&GLXY_rsStar1;" imageX="0" imageY="0" imageWidth="512" imageHeight="512"/>
+	</StationType>
+
+<!-- MINING COMPATIBILITY -->
+	
+	<!-- Small Asteroid with Ore -->
+
+	<StationType UNID="&GLXY_stOreSmallAsteroid;"
+			obsoleteVersion=			"37"
+			name=				"(small ore asteroid)"
+			scale=				"world"
+
+			attributes=			"asteroid, stoneAsteroid, tinyAsteroid"
+
+			ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+			>
+
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="768" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="800" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="832" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="864" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="896" imageWidth="32" imageHeight="32"/>
+
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="928" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="960" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="992" imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+
+		<Items>
+			<Lookup table="&GLXY_tbStoneAsteroidOre;"/>
+		</Items>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+
+	</StationType>
+	
+	<!-- Medium Asteroid with Ore -->
+
+	<StationType UNID="&GLXY_stOreMediumAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(medium ore asteroid)"
+		scale=				"world"
+
+		attributes=			"asteroid, mediumAsteroid, stoneAsteroid"
+
+		ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+		>
+
+		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
+
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="128" imageY="0"   imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="128" imageY="64"  imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="128" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="128" imageY="192" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="128" imageY="256" imageWidth="64" imageHeight="64"/>
+
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="128" imageY="320" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="128" imageY="384" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="128" imageY="448" imageWidth="64" imageHeight="64"/>
+		</ImageVariants>
+
+		<Items>
+			<Lookup count="1d6" table="&GLXY_tbStoneAsteroidOre;"/>
+		</Items>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+
+	</StationType>
+
+	<!-- Small Frost Asteroid with Ore -->
+
+	<StationType UNID="&GLXY_stOreSmallFrostAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(small frost ore asteroid)"
+		scale=				"world"
+
+		attributes=			"asteroid, frostAsteroid, tinyAsteroid"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="768" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="800" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="832" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="864" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="896" imageWidth="32" imageHeight="32"/>
+
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="928" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="960" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="224" imageY="992" imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+
+		<Items>
+			<Lookup table="&GLXY_tbFrostAsteroidOre;"/>
+		</Items>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+
+	</StationType>
+
+	<!-- Medium Frost Asteroid with Ore -->
+
+	<StationType UNID="&GLXY_stOreMediumFrostAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(medium frost ore asteroid)"
+		scale=				"world"
+
+		attributes=			"asteroid, frostAsteroid, mediumAsteroid"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="0"   imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="64"  imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="192" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="256" imageWidth="64" imageHeight="64"/>
+
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="320" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="384" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds1;" imageX="192" imageY="448" imageWidth="64" imageHeight="64"/>
+		</ImageVariants>
+
+		<Items>
+			<Lookup count="1d6" table="&GLXY_tbFrostAsteroidOre;"/>
+		</Items>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+
+	</StationType>
+
+	<!-- Small Metallic Asteroid with Ore -->
+
+	<StationType UNID="&GLXY_stOreSmallMetallicAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(asteroid)"
+		scale=				"world"
+
+		attributes=			"asteroid, metallicAsteroid, tinyAsteroid"
+
+		ejectaType=			"&GLXY_vtMetallicAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="0"   imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="32"  imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="64"  imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="96"  imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="128" imageY="128"	imageWidth="32" imageHeight="32"/>
+
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="160"   imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="192"   imageY="128"	imageWidth="32" imageHeight="32"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="224"   imageY="128"	imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+
+		<Items>
+			<Lookup table="&GLXY_tbMetallicAsteroidOre;"/>
+		</Items>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+
+	</StationType>
+
+	<!-- Medium Metallic Asteroid with Ore -->
+
+	<StationType UNID="&GLXY_stOreMediumMetallicAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(asteroid)"
+		scale=				"world"
+
+		attributes=			"asteroid, mediumAsteroid, metallicAsteroid"
+
+		ejectaType=			"&GLXY_vtMetallicAsteroidEjecta;"
+		>
+
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="0"   imageY="0"		imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="64"  imageY="0"		imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="128" imageY="0"		imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="192" imageY="0"		imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="0"   imageY="64"	imageWidth="64" imageHeight="64"/>
+
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="64"  imageY="64"	imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="128" imageY="64"	imageWidth="64" imageHeight="64"/>
+			<Image	imageID="&GLXY_rsMetallicAsteroids;" imageX="192" imageY="64"	imageWidth="64" imageHeight="64"/>
+		</ImageVariants>
+
+		<Items>
+			<Lookup count="1d6" table="&GLXY_tbMetallicAsteroidOre;"/>
+		</Items>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+
+	</StationType>
+
+	<!-- Small Volcanic Asteroid with Ore -->
+
+	<StationType UNID="&GLXY_stOreSmallVolcanicAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(small volcanic ore asteroid)"
+		scale=				"world"
+
+		attributes=			"asteroid, tinyAsteroid, volcanicAsteroid"
+
+		ejectaType=			"&GLXY_vtVolcanicAsteroidEjecta;"
+		>
+
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="192" imageY="768" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="192" imageY="800" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="192" imageY="832" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="192" imageY="864" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="192" imageY="896" imageWidth="32" imageHeight="32"/>
+
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="192" imageY="928" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="192" imageY="960" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="192" imageY="992" imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+
+		<Items>
+			<Lookup table="&GLXY_tbVolcanicAsteroidOre;"/>
+		</Items>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+
+	</StationType>
+
+	<!-- Medium Volcanic Asteroid with Ore -->
+
+	<StationType UNID="&GLXY_stOreMediumVolcanicAsteroid;"
+			obsoleteVersion=			"37"
+		name=				"(medium volcanic ore asteroid)"
+		scale=				"world"
+
+		attributes=			"asteroid, mediumAsteroid, volcanicAsteroid"
+
+		ejectaType=			"&GLXY_vtVolcanicAsteroidEjecta;"
+		>
+
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="512" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="576" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="640" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="704" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="768" imageWidth="64" imageHeight="64"/>
+
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="832" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="896" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsWorlds2;" imageX="128" imageY="960" imageWidth="64" imageHeight="64"/>
+		</ImageVariants>
+
+		<Items>
+			<Lookup count="1d6" table="&GLXY_tbVolcanicAsteroidOre;"/>
+		</Items>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+
+	</StationType>
+
+<!-- TABLES -->
+
+	<ItemTable unid="&GLXY_tbPrimordialAsteroidOre;"
+			obsoleteVersion=			"37"
+			>
+		<LevelTable>
+			<Item levelFrequency="ccccc ccccc ccccc ccccc ccccc" count="45-60"	item="&GLXY_itTitaniumOre;"/>
+			<Item levelFrequency="ucccc ccccc ccccc ccccc ccccc" count="15-20"	item="&GLXY_itPlasteelOre;"/>
+			<Item levelFrequency="ruccc ccccc ccccc ccccc ccccc" count="15-20"	item="&GLXY_itPalladiumOre;"/>
+			<Item levelFrequency="-vruu uuuuu uuuuu uuuuu uuuuu" count="5-10"	item="&GLXY_itCeralloyOre;"/>
+			<Item levelFrequency="--vru uuuuu uuuuu uuuuu uuuuu" count="1-10"	item="&GLXY_itPlatinumOre;"/>
+			<Item levelFrequency="--vrr rrrrr rrrrr rrrrr rrrrr" count="1-4"	item="&GLXY_itGoldOre;"/>
+			<Item levelFrequency="---vv vvvvv vvvvv vvvvv vvvvv" count="1-35"	item="&GLXY_itGoldOre;"/>
+			<Item levelFrequency="---vr rrrrr rrrrr rrrrr rrrrr" count="1-4"	item="&GLXY_itDuralloyOre;"/>
+			<Item levelFrequency="----v vvvvv vvvvv vvvvv vvvvv" count="5-15"	item="&GLXY_itDuralloyOre;"/>
+			<Item levelFrequency="----v rrrrr rrrrr rrrrr rrrrr" count="5-10"	item="&GLXY_itOrthoSteelOre;"/>
+			<Item levelFrequency="----v ruuuu uuuuu uuuuu uuuuu" count="1-10"	item="&GLXY_itIthaliumOre;"/>
+		</LevelTable>
+	</ItemTable>
+
+	<ItemTable unid="&GLXY_tbMetallicAsteroidOre;"
+			obsoleteVersion=			"37"
+			>
+		<LevelTable>
+			<Item levelFrequency="uuuuu uuuuu uuuuu uuuuu uuuuu" count="5-10"	item="&GLXY_itUraniumOre;"/>
+			<Item levelFrequency="ucccc ccccc ccccc ccccc ccccc" count="15-35"	item="&GLXY_itPlasteelOre;"/>
+			<Item levelFrequency="-rucc ccccc ccccc ccccc ccccc" count="10-15"	item="&GLXY_itCeralloyOre;"/>
+			<Item levelFrequency="-vruu uuuuu uuuuu uuuuu uuuuu" count="1-10"	item="&GLXY_itGoldOre;"/>
+			<Item levelFrequency="--vrr rrrrr rrrrr rrrrr rrrrr" count="5-10"	item="&GLXY_itXenotiteOre;"/>
+			<Item levelFrequency="--ruc ccccc ccccc ccccc ccccc" count="5-10"	item="&GLXY_itDuralloyOre;"/>
+			<Item levelFrequency="--vru uuuuu uuuuu uuuuu uuuuu" count="1-10"	item="&GLXY_itPlatinumOre;"/>
+			<Item levelFrequency="---vr uuuuu uuuuu uuuuu uuuuu" count="5-15"	item="&GLXY_itOrthoSteelOre;"/>
+			<Item levelFrequency="----- vrrrr rrrrr rrrrr rrrrr" count="5-10"	item="&GLXY_itIthaliumOre;"/>
+		</LevelTable>
+	</ItemTable>
+	
+	<ItemTable unid="&GLXY_tbStoneAsteroidOre;"
+			obsoleteVersion=			"37"
+			>
+		<LevelTable>
+			<Item levelFrequency="ccccc ccccc ccccc ccccc ccccc" count="45-60"	item="&GLXY_itTitaniumOre;"/>
+			<Item levelFrequency="uuuuu uuuuu uuuuu uuuuu uuuuu" count="1-10"	item="&GLXY_itUraniumOre;"/>
+			<Item levelFrequency="vvvvv vvvvv vvvvv vvvvv vvvvv" count="10-50"	item="&GLXY_itUraniumOre;"/>
+			<Item levelFrequency="ucccc ccccc ccccc ccccc ccccc" count="15-20"	item="&GLXY_itPlasteelOre;"/>
+			<Item levelFrequency="ruuuu uuuuu uuuuu uuuuu uuuuu" count="5-10"	item="&GLXY_itHeliumRegolith;"/>
+			<Item levelFrequency="ruccc ccccc ccccc ccccc ccccc" count="15-20"	item="&GLXY_itPalladiumOre;"/>
+			<Item levelFrequency="vruuu uuuuu uuuuu uuuuu uuuuu" count="1-6"	item="&GLXY_itCobaltThoriumOre;"/>
+			<Item levelFrequency="-vruu uuuuu uuuuu uuuuu uuuuu" count="5-10"	item="&GLXY_itCeralloyOre;"/>
+			<Item levelFrequency="--vrr rrrrr rrrrr rrrrr rrrrr" count="1-4"	item="&GLXY_itGoldOre;"/>
+			<Item levelFrequency="---vv vvvvv vvvvv vvvvv vvvvv" count="1-35"	item="&GLXY_itGoldOre;"/>
+			<Item levelFrequency="---vr rrrrr rrrrr rrrrr rrrrr" count="1-4"	item="&GLXY_itDuralloyOre;"/>
+			<Item levelFrequency="----v vvvvv vvvvv vvvvv vvvvv" count="5-15"	item="&GLXY_itDuralloyOre;"/>
+		</LevelTable>
+	</ItemTable>
+
+	<ItemTable unid="&GLXY_tbFrostAsteroidOre;"
+			obsoleteVersion=			"37"
+			>
+		<LevelTable>
+			<Item levelFrequency="uuuuu uuuuu uuuuu uuuuu uuuuu" count="1-5"	item="&GLXY_itUraniumOre;"/>
+			<Item levelFrequency="ucccc ccccc ccccc ccccc ccccc" count="15-20"	item="&GLXY_itPlasteelOre;"/>
+			<Item levelFrequency="ruuuu uuuuu uuuuu uuuuu uuuuu" count="1-10"	item="&GLXY_itHeliumRegolith;"/>
+			<Item levelFrequency="ruccc ccccc ccccc ccccc ccccc" count="10-15"	item="&GLXY_itPalladiumOre;"/>
+			<Item levelFrequency="vruuu uuuuu uuuuu uuuuu uuuuu" count="1-6"	item="&GLXY_itCobaltThoriumOre;"/>
+			<Item levelFrequency="-rucc ccccc ccccc ccccc ccccc" count="10-15"	item="&GLXY_itCeralloyOre;"/>
+			<Item levelFrequency="--vrr rrrrr rrrrr rrrrr rrrrr" count="1-4"	item="&GLXY_itGoldOre;"/>
+			<Item levelFrequency="--vrr rrrrr rrrrr rrrrr rrrrr" count="5-10"	item="&GLXY_itXenotiteOre;"/>
+			<Item levelFrequency="---vr rrrrr rrrrr rrrrr rrrrr" count="1-6"	item="&GLXY_itDuralloyOre;"/>
+			<Item levelFrequency="----v rrrrr rrrrr rrrrr rrrrr" count="5-10"	item="&GLXY_itOrthoSteelOre;"/>
+		</LevelTable>
+	</ItemTable>
+
+	<ItemTable unid="&GLXY_tbVolcanicAsteroidOre;"
+			obsoleteVersion=			"37"
+			>
+		<LevelTable>
+			<Item levelFrequency="vrucc ccccc ccccc ccccc ccccc" count="5-10"	item="&GLXY_itGoldOre;"/>
+			<Item levelFrequency="vrucc ccccc ccccc ccccc ccccc" count="1-35"	item="&GLXY_itXenotiteOre;"/>
+			<Item levelFrequency="--vru uuuuu uuuuu uuuuu uuuuu" count="5-10"	item="&GLXY_itDuralloyOre;"/>
+			<Item levelFrequency="--vru uuuuu uuuuu uuuuu uuuuu" count="1-10"	item="&GLXY_itPlatinumOre;"/>
+			<Item levelFrequency="--vru uuuuu uuuuu uuuuu uuuuu" count="5-25"	item="&GLXY_itPteracniumOre;"/>
+			<Item levelFrequency="---ru ccccc ccccc ccccc ccccc" count="10-45"	item="&GLXY_itOrthoSteelOre;"/>
+			<Item levelFrequency="----v ruuuu uuuuu uuuuu uuuuu" count="1-10"	item="&GLXY_itIthaliumOre;"/>
+			<Item levelFrequency="----- -vvvv vvvvv vvvvv vvvvv" count="10-35"	item="&GLXY_itIthaliumOre;"/>
+			<Item levelFrequency="----- --vrr rrrrr rrrrr rrrrr" count="1-4"	item="&GLXY_itNeutroniumOre;"/>
+			<Item levelFrequency="----- --vrr rrrrr rrrrr rrrrr" count="1-6"	item="&GLXY_itTetramiteOre;"/>
+			<Item levelFrequency="----- ---vr rrrrr rrrrr rrrrr" count="1-2"	item="&GLXY_itHyperonicOre;"/>
+			<Item levelFrequency="----- ---vr rrrrr rrrrr rrrrr" count="1"		item="&GLXY_itEtheriumOre;"/>
+		</LevelTable>
+	</ItemTable>
+	
+	<Type unid="&GLXY_baOreStoneAsteroidOld;"
+			obsoleteVersion=			"49"
+			>
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+	</Type>
+
+<!-- RESOURCES -->
+
+	<Image obsoleteVersion="37" UNID="&GLXY_rsAStar;"					bitmap="Resources\AStar.jpg"				bitmask="Resources\Star1Mask.bmp"   loadOnUse="true"/>
+	<Image obsoleteVersion="37" UNID="&GLXY_rsStar1;"					bitmap="Resources\Star1.jpg"				bitmask="Resources\Star1Mask.bmp"   loadOnUse="true"/>
+	<Image obsoleteVersion="37" UNID="&GLXY_rsRedDwarfStar;"			bitmap="Resources\RedDwarfStar.jpg"			bitmask="Resources\RedDwarfStarMask.bmp"  loadOnUse="true"/>
+	<Image obsoleteVersion="37" UNID="&GLXY_rsRedGiantStar;"			bitmap="Resources\RedGiantStar.jpg"			bitmask="Resources\RedGiantStarMask.bmp"  loadOnUse="true"/>
+
+</TranscendenceModule>

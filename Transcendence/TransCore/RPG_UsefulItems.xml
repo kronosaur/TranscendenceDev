@@ -1,0 +1,1531 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- RPG USE ITEM ON ARMOR =====================================================
+
+	This screen allows the player to use an item on an armor segment.
+
+	gData uses the following fields:
+
+		useItem:	The item being used. If not specifed we check gItem instead
+
+-->
+
+	<DockScreen UNID="&RPG_dsRPGUseItemOnArmor;"
+			inherit=			"&RPG_dsRPGUseItemBase;"
+			nestedScreen=		"true"
+			>
+		<Display type="armorSelector"
+				dataFrom=	"player"
+				list=		"aI"
+				noEmptySlots="true"
+				/>
+
+		<Panes>
+		</Panes>
+
+		<Language>
+			<Text id="rpg.tabLabel">Installed Armor</Text>
+			<Text id="actionUse">[U]se on this Armor Segment</Text>
+		</Language>
+	</DockScreen>
+
+<!-- RPG USE ITEM ON DEVICE ====================================================
+
+	This screen allows the player to use an item on an installed device.
+
+	gData uses the following fields:
+
+		useItem:	The item being used. If not specifed we check gItem instead
+
+-->
+
+	<DockScreen UNID="&RPG_dsRPGUseItemOnDevice;"
+			inherit=			"&RPG_dsRPGUseItemBase;"
+			nestedScreen=		"true"
+			>
+
+		<Display type="deviceSelector"
+				dataFrom=	"player"
+				list=		"dI"
+				noEmptySlots="true"
+				/>
+
+		<Panes>
+		</Panes>
+
+		<Language>
+			<Text id="rpg.tabLabel">Installed Devices</Text>
+			<Text id="actionUse">[U]se on this Device</Text>
+		</Language>
+	</DockScreen>
+
+<!-- RPG USE ITEM ON SHIELDS ===================================================
+
+	This screen allows the player to use an item on an installed device.
+
+	gData uses the following fields:
+
+		useItem:	The item being used. If not specifed we check gItem instead
+
+-->
+
+	<DockScreen UNID="&RPG_dsRPGUseItemOnShields;"
+			inherit=			"&RPG_dsRPGUseItemBase;"
+			nestedScreen=		"true"
+			>
+
+		<Display type="deviceSelector"
+				dataFrom=	"player"
+				list=		"sI"
+				noEmptySlots="true"
+				/>
+
+		<Panes>
+		</Panes>
+
+		<Language>
+			<Text id="rpg.tabLabel">Shields</Text>
+			<Text id="actionUse">[U]se on this Shield</Text>
+		</Language>
+	</DockScreen>
+
+<!-- RPG USE ITEM ON CARGO =====================================================
+
+	This screen allows the player to use an item on an item in the cargo bay.
+
+	gData uses the following fields:
+
+		useItem: The item being used. If not specifed we check gItem instead.
+
+		criteria: If non-Nil, this is the criteria of items to show.
+
+-->
+
+	<DockScreen UNID="&RPG_dsRPGUseItemOnCargo;"
+			inherit=			"&RPG_dsRPGUseItemBase;"
+			nestedScreen=		"true"
+			>
+
+		<Display type="itemPicker"
+				dataFrom=	"player"
+				list=		"*U"
+				>
+			<OnDisplayInit>
+				(block (
+					(useItem (scrGetData gScreen 'useItem))
+					(criteria (@ gData 'criteria))
+					)
+					(switch
+						(isfunction criteria)
+							(scrSetListFilter gScreen criteria)
+
+						criteria
+							(scrSetListFilter gScreen (lambda (theItem)
+								(and (itmMatches theItem criteria) (not (itmIsEqual theItem useItem)))
+								))
+						)
+
+					;	Do not need to reproduce details shown in itemPicker list
+					(scrSetData gScreen 'hideCurrent True)
+					)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+		</Panes>
+
+		<Language>
+		</Language>
+	</DockScreen>
+
+<!-- RPG USE ITEM BASE =========================================================
+
+	Base class for the various Use Item on XYZ dockscreens.
+
+	gData uses the following fields:
+
+		useItem: The item being used. If not specifed we check gItem instead.
+
+	The following item properties will affect behavior
+
+		rpg.useCriteria: This will be used by the item base classes and display
+				lists to filter items to show
+
+		rpg.unknownUseCriteria: This optional criteria will be used instead of
+				rpg.useCriteria if the item being used is unknown to the player.
+
+-->
+
+	<DockScreen UNID="&RPG_dsRPGUseItemBase;"
+			inherit=			"&RPG_dsDockScreenBase;"
+			nestedScreen=		"true"
+			name=				"=(itmGetName (or (@ gData 'useItem) gItem) 'capitalize)"
+			>
+		<Properties>
+			<Global id="rpg.debug">Nil</Global>
+		</Properties>
+
+		<OnScreenInit>
+			(block (
+				(debug (typ@ &RPG_dsRPGUseItemBase; 'rpg.debug))
+				(useItemSaved (or (@ gData 'useItem) gItem))
+				(useItem (@ (filter (objGetItems gPlayerShip '*) theItem (itmIsEqual theItem useItemSaved)) 0))
+
+				(cargoCriteria 
+					(switch
+						(itmIsKnown useItem)
+							(itm@ useItem 'rpg.useCriteria)
+
+						(or (itm@ useItem 'rpg.unknownUseCriteria)
+							(itm@ useItem 'rpg.useCriteria)
+							)
+						)
+					)
+
+				(hasGeneralCargo (filter (objGetItems gPlayerShip "*~admU") theItem (itmMatches theItem cargoCriteria)))
+				(hasDevicesCargo (filter (objGetItems gPlayerShip "dU") theItem (itmMatches theItem cargoCriteria)))
+				(hasArmorCargo (filter (objGetItems gPlayerShip "aU") theItem (itmMatches theItem cargoCriteria)))
+				(hasAmmoCargo (filter (objGetItems gPlayerShip "m") theItem (itmMatches theItem cargoCriteria)))
+				)
+				(scrSetData gScreen 'useItem useItemSaved)
+
+				;	If we have a cargo criteria (meaning we can use the item on a 
+				;	cargo item, then we need a tab set.
+
+				(if (and cargoCriteria (not (@ gData 'subTab)))
+					(scrSetTabSet gScreen (list
+						{
+							id: 'configuration
+							label: (typTranslate gType 'rpg.tabLabel)
+							screen: gType
+							data: gData
+							}
+
+						(if hasGeneralCargo
+							{
+								id: 'generalCargo
+								label: (typTranslate gType 'labelGeneralCargo)
+								screen: &RPG_dsRPGUseItemOnCargo;
+								data: {
+									useItem: useItem
+									criteria: 
+										(lambda (theItem)
+											(and (itmMatches theItem "*~admU") 
+												(not (itmIsEqual theItem useItem))
+												(itmMatches theItem cargoCriteria)
+												)
+											)
+									subTab: True
+									}
+								}
+							)
+
+						(switch
+							(and hasDevicesCargo hasArmorCargo)
+								{
+									id: 'armorAndDevicesCargo
+									label: (typTranslate gType 'labelArmorAndDevicesCargo)
+									screen: &RPG_dsRPGUseItemOnCargo;
+									data: {
+										useItem: useItem
+										criteria: 
+											(lambda (theItem)
+												(and (itmMatches theItem "adU") 
+													(not (itmIsEqual theItem useItem))
+													(itmMatches theItem cargoCriteria)
+													)
+												)
+										subTab: True
+										}
+									}
+
+							(and hasArmorCargo)
+								{
+									id: 'armorCargo
+									label: (typTranslate gType 'labelArmorCargo)
+									screen: &RPG_dsRPGUseItemOnCargo;
+									data: {
+										useItem: useItem
+										criteria: 
+											(lambda (theItem)
+												(and (itmMatches theItem "aU") 
+													(not (itmIsEqual theItem useItem))
+													(itmMatches theItem cargoCriteria)
+													)
+												)
+										subTab: True
+										}
+									}
+
+							(and hasDevicesCargo)
+								{
+									id: 'devicesCargo
+									label: (typTranslate gType 'labelDevicesCargo)
+									screen: &RPG_dsRPGUseItemOnCargo;
+									data: {
+										useItem: useItem
+										criteria: 
+											(lambda (theItem)
+												(and (itmMatches theItem "dU") 
+													(not (itmIsEqual theItem useItem))
+													(itmMatches theItem cargoCriteria)
+													)
+												)
+										subTab: True
+										}
+									}
+							)
+
+						(if hasAmmoCargo
+							{
+								id: 'devicesCargo
+								label: (typTranslate gType 'labelAmmoCargo)
+								screen: &RPG_dsRPGUseItemOnCargo;
+								data: {
+									useItem: useItem
+									criteria: 
+										(lambda (theItem)
+											(and (itmMatches theItem "m") 
+												(not (itmIsEqual theItem useItem))
+												(itmMatches theItem cargoCriteria)
+												)
+											)
+									subTab: True
+									}
+								}
+							)
+						))
+					)
+				)
+		</OnScreenInit>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(debug (typ@ &RPG_dsRPGUseItemBase; 'rpg.debug))
+						(useItem (@ (filter (objGetItems gPlayerShip '*) theItem (itmIsEqual theItem (scrGetData gScreen 'useItem))) 0))
+						(theShip gPlayerShip)
+						(dstItem (scrGetItem gScreen))
+						(useInfo (objFireItemEvent theShip useItem 'CanUseOnItem {
+								targetItem: dstItem
+								shipObj: theShip
+								} ))
+
+						(cargoCriteria 
+							(switch
+								(itmIsKnown useItem)
+									(itm@ useItem 'rpg.useCriteria)
+
+								(or (itm@ useItem 'rpg.unknownUseCriteria)
+									(itm@ useItem 'rpg.useCriteria)
+									)
+								)
+							)
+
+						;	Initialise the screen set if necessary
+						)
+						(if debug
+							(print "useInfo: " useInfo)
+							)
+
+						;	Set the description
+						(scrSetControlValue gScreen 'useItem {
+							title: (itmGetName useItem '(titleCapitalize countOnly))
+							desc: (itm@ useItem 'description)
+							})
+
+						(if (not (scrGetData gScreen 'hideCurrent))
+							(scrSetControlValue gScreen 'currentItem {
+								source: theShip
+								item: dstItem
+								})
+							)
+
+						(switch
+							(not dstItem)
+								(scrSetDesc gScreen (or
+									(itmTranslate useItem (if (itmIsKnown useItem) 'rpg.noTargetItem 'rpg.noTargetItemUnknown))
+									(scrTranslate gScreen 'descNoItemsHere)
+									))
+
+							(@ useInfo 'desc)
+								(scrSetDesc gScreen (@ useInfo 'desc))
+
+							(scrSetDescTranslate gScreen 'descCanNotUse {
+								useItem: (itmGetName useItem '(article escapeQuotes))
+								dstItem: (itmGetName dstItem '(article escapeQuotes))
+								})
+							)
+						(scrEnableAction gScreen 'actionUse (@ useInfo 'canUse))
+						)
+				</OnPaneInit>
+
+				<Controls>
+					<ItemDisplay id="useItem"/>
+					<ItemDisplay id="currentItem"/>
+				</Controls>
+
+				<Actions>
+					<Action id="actionUse" default="1">
+						(block (
+							(useItem (scrGetData gScreen 'useItem))
+							(theShip gPlayerShip)
+							(dstItem (scrGetItem gScreen))
+							(theCursor (scrGetListCursor gScreen))
+
+							(enhancedSegments
+								(count (objGetItems theShip "aI +property:enhancement; -property:defectiveEnhancement;"))
+								)
+							(allAlreadyEnhanced (= enhancedSegments (obj@ theShip 'armorCount)))
+
+							result
+							)
+							;	Use the item
+							(setq result (objFireItemEvent theShip useItem 'OnUseOnItem {
+								targetItem: dstItem
+								shipObj: theShip
+								}))
+
+							;	Restore the cursor position
+							(scrSetListCursor gScreen theCursor)
+
+							;	If we've enhanced all armor segments on the player ship,
+							;	then we get an achievement.
+
+							(if (and (= theShip gPlayerShip)
+									(not allAlreadyEnhanced)
+									(= (count (objGetItems theShip "aI +property:enhancement; -property:defectiveEnhancement;"))
+										(obj@ theShip 'armorCount)
+										)
+									)
+								(unvSetAchievement 'core.armorEnhanced)
+								)
+
+							;	Store result and display it
+							(scrSetData gScreen 'usageResult result)
+							(scrShowPane gScreen 'ShowResult)
+							)
+					</Action>
+
+					<Action id="actionCancel" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+
+			<ShowResult noListNavigation="true">
+				<OnPaneInit>
+					(block (
+						(useItem (scrGetData gScreen 'useItem))
+						(dstItem (scrGetItem gScreen))
+						(theShip gPlayerShip)
+						(result (scrGetData gScreen 'usageResult))
+						)
+						(scrSetControlValue gScreen 'useItem {
+							title: (itmGetName (itmSetCount useItem 1) '(titleCapitalize countOnly))
+							desc: (itm@ useItem 'description)
+							})
+
+						(if (not (scrGetData gScreen 'hideCurrent))
+							(scrSetControlValue gScreen 'currentItem {
+								source: theShip
+								item: dstItem
+								})
+							)
+
+						(scrSetDesc gScreen (@ result 'desc))
+
+						(if (and (objHasItem theShip useItem 1) (not (@ result 'nextScreen)))
+
+							;	If we've got another item to use, ask if the player wants
+							;	to use it.
+
+							(block ()
+								(scrShowAction gScreen 'actionDone True)
+								(scrShowAction gScreen 'actionUseAnother True)
+								;(scrSetActionLabel gScreen 'actionUseAnother (scrTranslate gScreen 'actionUseAnother {
+								;	itemName: (itmGetName useItem 0)
+								;	}))
+								)
+
+							;	Done
+
+							(block ()
+								(scrShowAction gScreen 'actionDone True)
+								(scrShowAction gScreen 'actionUseAnother Nil)
+								)
+							)
+						)
+				</OnPaneInit>
+
+				<Controls>
+					<ItemDisplay id="useItem"/>
+					<ItemDisplay id="currentItem"/>
+				</Controls>
+
+				<Actions>
+					<Action id="actionUseAnother" default="1">
+						(scrShowPane gScreen 'Default)
+					</Action>
+
+					<Action id="actionDone" default="1" cancel="1">
+						(block (
+							(result (scrGetData gScreen 'usageResult))
+							)
+							(switch
+								(= (@ result 'nextScreen) 'forceUndock)
+									(scrExitScreen gScreen 'forceUndock)
+
+								(= (@ result 'nextScreen) 'forceExit)
+									(scrExitScreen gScreen)
+
+								(@ result 'nextScreen)
+									(block Nil
+										(scrExitScreen gScreen)
+										(scrShowScreen gScreen (@ result 'nextScreen) (@ result 'nextScreenData))
+										)
+
+								(scrExitScreen gScreen)
+								)
+							)
+					</Action>
+				</Actions>
+			</ShowResult>
+		</Panes>
+
+		<Language>
+			<Text id="actionUse">[U]se on this Item</Text>
+			<Text id="actionUseOnCargo">Use on [C]argo Item</Text>
+			<Text id="actionUseAnother">[U]se Another</Text>
+
+			<Text id="labelGeneralCargo">General Cargo</Text>
+			<Text id="labelArmorAndDevicesCargo">Devices &amp; Armor Cargo</Text>
+			<Text id="labelArmorCargo">Armor Cargo</Text>
+			<Text id="labelDevicesCargo">Devices Cargo</Text>
+			<Text id="labelAmmoCargo">Ammo Cargo</Text>
+
+			<Text id="descCanNotUse">You cannot use %useItem% on %dstItem%.</Text>
+		</Language>
+	</DockScreen>
+
+
+<!-- BASE CLASSES -->
+
+	<!-- Armor Repair Item Base Class
+
+	Armor repair items should inherit from this class. Typically they should
+	set useScreen to dsRPGUseItemOnArmor.
+
+	EVENTS
+		CanRepairItem - override this event to limit which types of armor can be repaired
+
+	PROPERTIES
+
+		rpg.repairTable: Table to determine effect on various items. The table
+			is a list of structs with the following fields:
+
+			criteria: Table entry used for items that match this criteria.
+			repairHP: HP repaired.
+			descID: If repairHP is Nil, then this explains why repair failed.
+			minLevel: Target armor most be at least this level.
+			maxLevel: Target armor must not be higher than this level.
+
+	-->
+
+	<Type UNID="&RPG_baStdArmorRepair;">
+		<Properties>
+			<Constant id="rpg.useCriteria">"a"</Constant>
+		</Properties>
+
+		<Events>
+			<CanRepairItem>True</CanRepairItem>
+
+			<CanUseOnItem>
+				(block (
+					(debug (typ@ &RPG_dsRPGUseItemBase; 'rpg.debug))
+					(dstItem (@ gData 'targetItem))
+					(shipObj (@ gData 'shipObj))
+					(armorNoun (cat (objGetArmorName shipObj dstItem) " " (itmGetName dstItem 'noModifiers)))
+					(skillLevel (typGetData &RPG_baStdArmorRepair; 'skillLevel))
+					(useDesc (switch
+						(ls skillLevel 2)	'descUsageOK1
+						(ls skillLevel 5)	'descUsageOK2
+						(ls skillLevel 10)	'descUsageOK3
+											'descUsageOK4
+						))
+					(repairDesc 
+						(or (rpgFindItemInTable dstItem (itm@ gItem 'rpg.repairTable))
+							{
+								repairHP: (eval (itmGetStaticData gItem 'repairHP))
+								minLevel: (max 1 (- (itmGetLevel gItem) 3))
+								maxLevel: (+ (itmGetLevel gItem) 4)
+								}
+							)
+						)
+					(armorLevel (itm@ dstItem 'repairLevel))
+					(armorHP (obj@ shipObj dstItem 'hp))
+					(maxArmorHP (obj@ shipObj dstItem 'maxHP))
+					)
+					(if debug
+						(print "CanUseOnItem: repairDesc: " repairDesc)
+						)
+					(switch
+						;	Armor repair items only work on armor
+						(not (itmMatches dstItem "a"))
+							{
+								canUse: Nil
+								desc: (itmTranslate gItem 'descUsageNotArmor {
+									useItem: (itmGetName gItem 'plural)
+									dstItem: (itmGetName dstItem 'article)
+									})
+								}
+
+						;	Item is unidentified (assume it is a barrel for now)
+						(not (itmIsKnown gItem))
+							{
+								canUse: True
+								desc: (itmTranslate gItem 'descUsageUnknown {
+									useItem: (itmGetName gItem)
+									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+									})
+								}
+
+						;	Armor segment is not damaged
+						(= armorHP maxArmorHP)
+							{
+								canUse: Nil
+								desc: (itmTranslate gItem 'descUsageArmorNotDamaged {
+									useItem: (itmGetName gItem)
+									dstItem: (itmGetName dstItem)
+									armorNoun: armorNoun
+									})
+								}
+
+						;	Check if we can repair armor with the given item
+						(not (and (setq aItemToRepair dstItem)
+								(objFireItemEvent shipObj gItem 'CanRepairItem { itemToRepair:dstItem })
+								))
+							{
+								canUse: Nil
+								desc: (itmTranslate gItem 'descUsageCanNotRepair {
+									useItem: (itmGetName gItem 'article)
+									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+									})
+								}
+
+						;	If we can't repair this item
+						(not (@ repairDesc 'repairHP))
+							{
+								canUse: Nil
+								desc: (itmTranslate gItem (@ repairDesc 'descID) {
+									useItem: (itmGetName gItem 'article)
+									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+									})
+								}
+
+						;	We cannot repair armor that is too low level
+						(and (@ repairDesc 'minLevel) (ls armorLevel (@ repairDesc 'minLevel)))
+							{
+								canUse: Nil
+								desc: (itmTranslate gItem 'descArmorTooPrimitive {
+									useItem: (itmGetName gItem 'article)
+									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+									})
+								}
+
+						;	We cannot repair armor that is too high level
+						(and (@ repairDesc 'maxLevel) (gr armorLevel (@ repairDesc 'maxLevel)))
+							{
+								canUse: Nil
+								desc: (itmTranslate gItem 'descArmorTooAdvanced {
+									useItem: (itmGetName gItem 'article)
+									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+									})
+								}
+
+						;	Otherwise OK
+						{
+							canUse: True
+							desc: (itmTranslate gItem useDesc {
+								useItem: (itmGetName gItem 'article)
+								dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+								})
+							}
+						)
+					)
+			</CanUseOnItem>
+
+			<OnUseOnItem>
+				(block (
+					(debug (typ@ &RPG_dsRPGUseItemBase; 'rpg.debug))
+					(dstItem (@ gData 'targetItem))
+					(shipObj (@ gData 'shipObj))
+					(repairDesc 
+						(or (rpgFindItemInTable dstItem (itm@ gItem 'rpg.repairTable))
+							{
+								repairHP: (eval (itmGetStaticData gItem 'repairHP))
+								minLevel: (max 1 (- (itmGetLevel gItem) 3))
+								maxLevel: (+ (itmGetLevel gItem) 4)
+								}
+							)
+						)
+					(descIntro (or 
+						(itmTranslate gItem 'rpg.useResultIntro)
+						(itmTranslate gItem 'descResultIntro)
+						))
+					(armorLevel (itm@ dstItem 'repairLevel))
+					(armorHP (obj@ shipObj dstItem 'hp))
+					(maxArmorHP (obj@ shipObj dstItem 'maxHP))
+
+					(consumeItem True)
+
+					resultDesc hpRepaired
+					)
+					(if debug
+						(print "CanUseOnItem: repairDesc: " repairDesc)
+						)
+
+					(switch
+						(not (itmMatches dstItem "a"))
+							(setq resultDesc 'descResultNotArmor)
+
+						;	NOTE: We need to check some of these conditions again because if this
+						;	was an unknown item, we don't know that it won't work until we try it.
+						;
+						;	Also, if we get this far, then we consume the item, because we didn't
+						;	know what it was so we used up the whole thing.
+
+						(= armorHP maxArmorHP)
+							(setq resultDesc 'descResultNotDamaged)
+
+						(not (objFireItemEvent shipObj gItem 'CanRepairItem { itemToRepair:dstItem }))
+							(setq resultDesc 'descResultCannotRepair)
+
+						;	If we can't repair this item
+						(not (@ repairDesc 'repairHP))
+							(setq resultDesc (or (@ repairDesc 'descID) 'descResultCannotRepair))
+
+						;	We cannot repair armor that is too low level
+						(and (@ repairDesc 'minLevel) (ls armorLevel (@ repairDesc 'minLevel)))
+							(setq resultDesc 'descResultArmorTooPrimitive)
+
+						;	We cannot repair armor that is too high level
+						(and (@ repairDesc 'maxLevel) (gr armorLevel (@ repairDesc 'maxLevel)))
+							(setq resultDesc 'descResultArmorTooAdvanced)
+
+						(block (
+							(repair (@ repairDesc 'repairHP))
+							(armorSeg (itmGetArmorInstalledLocation dstItem))
+							(skillLevel (typGetData &RPG_baStdArmorRepair; 'skillLevel))
+
+							;	As skill level increased, the player's failure chance
+							;	decreases. Also the amount of hp repaired increased.
+							(failureChance (switch
+								(ls skillLevel 2)	20
+								(ls skillLevel 5)	10
+								(ls skillLevel 10)	5
+													0
+								))
+							(repairScale (switch
+								(ls skillLevel 2)	80
+								(ls skillLevel 5)	100
+								(ls skillLevel 10)	110
+									(min (+ 70 (* skillLevel 5)) 200)
+								))
+							(usedUp 100)
+							)
+							;	If the repairing item is damaged armor, then we don't repair as much
+							(if (itmMatches theItem "aD")
+								(setq repair (/ repair 2))
+								)
+
+							;	Scale repair HP with skill level
+							(setq repair (/ (* repair repairScale) 100))
+
+							;	Do the repairs
+							(switch
+								(leq (random 1 100) failureChance)
+									(if (= (random 1 2) 1)
+										;	Sometimes we fail and damage the armor
+										(block (
+											(damageCaused (/ (* repair (random 20 100)) 100))
+											)
+											(setq dstItem (objSet@ shipObj dstItem 'incHP (- damageCaused)))
+											(if (and (not (itm@ dstItem 'installed))
+													(= (itm@ dstItem 'hp) 0)
+													)
+												(block ()
+													(objRemoveItem shipObj dstItem)
+													(setq resultDesc 'descResultDestroyed)
+													)
+												(setq resultDesc 'descResultDamagedMore)
+												)
+											)
+
+										;	Sometimes we fail without damaging further
+										(setq resultDesc 'descResultFailed)
+										)
+
+								(block ()
+									(setq hpRepaired (min (- maxArmorHP armorHP) repair))
+									(objSet@ shipObj dstItem 'incHP repair)
+									(setq resultDesc 'descResultRepaired)
+										
+									;	How much of the kit did we use?
+									(if (gr repair 0)
+										(setq usedUp (/ (* 100 hpRepaired) repair))
+										)
+
+									;	Skill level increases
+									(typIncData &RPG_baStdArmorRepair; 'skillLevel)
+									)
+								)
+
+							;	Use up the item
+							(if (or (ls skillLevel 10)
+									(geq usedUp 20)
+									(leq (random 1 100) (add usedUp 20))
+									)
+								Nil
+
+								; Item is not used up
+								(block ()
+									(setq resultDesc 'descResultReusable)
+									(setq consumeItem Nil)
+									)
+								)
+							)
+						)
+
+					;	Identify the item
+					(itmSetKnown gItem)
+
+					;	Consume
+					(if consumeItem
+						(objRemoveItem shipObj gItem 1)
+						)
+
+					{
+						desc: (cat
+							descIntro (if descIntro " ")
+							(itmTranslate gItem resultDesc {
+								useItem: (itmGetName gItem)
+								dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+								hpRepaired: (fmtNoun (typTranslate &RPG_baStdArmorRepair; 'nounHitPoints) hpRepaired 'countAlways)
+								})
+							)
+						}
+					)
+			</OnUseOnItem>
+		</Events>
+
+		<Language>
+			<Text id="descUsageArmorNotDamaged">The %dstItem% is not damaged.</Text>
+			<Text id="descUsageCanNotRepair">Unfortunately, you cannot repair %dstItem% with %useItem%.</Text>
+			<Text id="descUsageInstalledOnly">%UseItem% can only be used on installed armor segments.</Text>
+			<Text id="descUsageNotArmor">%UseItem% are used for repairing armor and will not function on %dstItem%.</Text>
+			<Text id="descUsageUnknown">The barrel seems to contain some kind of armor paste. You can use it on %dstItem%.</Text>
+			<Text id="descArmorTooPrimitive">Unfortunately, %dstItem% is too primitive to be repaired with %useItem%.</Text>
+			<Text id="descArmorTooAdvanced">Unfortunately, %dstItem% is too advanced to be repaired with %useItem%.</Text>
+
+			<Text id="descUsageOK1">You can attempt to repair %dstItem% with %useItem%, though you do not have much experience repairing armor.</Text>
+			<Text id="descUsageOK2">You can attempt to repair %dstItem% with %useItem%; you have some experience repairing armor.</Text>
+			<Text id="descUsageOK3">You can attempt to repair %dstItem% with %useItem%; you are proficient at repairing armor.</Text>
+			<Text id="descUsageOK4">You can attempt to repair %dstItem% with %useItem%; you are an expert at repairing armor.</Text>
+
+			<Text id="descResultCanNotRepair">Unfortunately, you cannot repair %dstItem% with it.</Text>
+			<Text id="descResultDamagedMore">Unfortunately, your attempt to repair the armor has only damaged it further.</Text>
+			<Text id="descResultDestroyed">Unfortunately, your attempt to repair the armor has destroyed it.</Text>
+			<Text id="descResultFailed">Unfortunately, your attempt to repair the armor was unsuccessful and the %useItem% was ruined in the process.</Text>
+			<Text id="descResultItemError">ERROR: &lt;RepairHP&gt; static data not found.</Text>
+			<Text id="descResultNotArmor">That is not an armor segment.</Text>
+			<Text id="descResultNotDamaged">But the armor does not need to be repaired.</Text>
+			<Text id="descResultRepaired">You have successfully repaired %hpRepaired% of damage to your armor.</Text>
+			<Text id="descResultArmorTooPrimitive">Unfortunately, %dstItem% is too primitive to be repaired with it.</Text>
+			<Text id="descResultArmorTooAdvanced">Unfortunately, %dstItem% is too advanced to be repaired with it.</Text>
+			<Text id="descResultReusable">
+				You have successfully repaired %hpRepaired% of damage to your armor.
+
+				There is still enough of the %useItem% left to repair other segments.
+			</Text>
+			
+			<Text id="nounHitPoints">hit point(s)</Text>
+		</Language>
+	</Type>
+
+	<!-- Device Enhancment Item Base Class
+
+	Items to enhance devices should inherit from this class. Typically they should
+	set useScreen to dsRPGUseItemOnDevice.
+
+	STATIC DATA
+		enhancement - enhancement to apply
+		enhancementTable - table of criteria and enhancements for different device types / levels
+
+	-->
+
+	<Type UNID="&RPG_baStdDeviceEnhancement;">
+		<Properties>
+			<DynamicGlobal id="enhance.maxLevel">
+				(block (
+					(enhancementTable (itm@ gType 'rpg.enhancementTable))
+
+					(maxLevelPerEntry
+						(map enhancementTable 'excludeNil theEntry
+							(if (and (@ theEntry 'criteria) (@ theEntry 'enhancement))
+								(map (itmGetTypes (@ theEntry 'criteria)) 'reduceMax theItem
+									(itmGetLevel theItem)
+									)
+								)
+							)
+						)
+						
+					(maxLevel (map maxLevelPerEntry 'reduceMax theLevel theLevel))
+					)
+					maxLevel
+					)
+			</DynamicGlobal>
+			<DynamicGlobal id="enhance.minLevel">
+				(block (
+					(enhancementTable (itm@ gType 'rpg.enhancementTable))
+
+					(minLevelPerEntry
+						(map enhancementTable 'excludeNil theEntry
+							(if (and (@ theEntry 'criteria) (@ theEntry 'enhancement))
+								(map (itmGetTypes (@ theEntry 'criteria)) 'reduceMin theItem
+									(itmGetLevel theItem)
+									)
+								)
+							)
+						)
+						
+					(minLevel (map minLevelPerEntry 'reduceMin theLevel theLevel))
+					)
+					minLevel
+					)
+			</DynamicGlobal>
+			
+			<Constant id="rpg.useCriteria">"d"</Constant>
+		</Properties>
+
+		<Events>
+			<CanUseOnItem>
+
+				;	This event is called by dsRPGUseItemBase to figure out 
+				;	whether to enable the Use button.
+				;
+				;	gSource: The object on which we are enhancing
+				;	gItem: The item doing the enhancing
+				;
+				;	gData
+				;		targetItem: The item being enhanced.
+				;
+				;	RETURN
+				;		Nil: Cannot use on the item
+				;
+				;		descriptor:
+				;			canUse: True/Nil
+				;			desc: Explanation of what will happen if used
+				;				(or why it cannot be used).
+
+				(block (
+					(debug (typ@ &RPG_dsRPGUseItemBase; 'rpg.debug))
+					(dstItem (@ gData 'targetItem))
+					(useCriteria (itm@ gItem 'rpg.useCriteria))
+
+					;	NOTE: enhancementInfo is optional, because sometimes we handle everything
+					;	inside CanEnhanceItem and OnEnhanceItem.
+
+					(enhancementInfo (rpgFindItemInTable dstItem (or (itm@ gItem 'rpg.enhancementTable) (itmGetStaticData gItem 'enhancementTable))))
+					(trData {
+						useItem: (itmGetName gItem 'article)
+						dstItem: (itmGetName dstItem 'noModifiers)
+						})
+					)
+					(if debug
+						(switch
+							(not (itmMatches dstItem useCriteria))
+								(print "CanUseOnItem: " (itmGetName dstItem 0) " does not match criteria: " useCriteria)
+								
+							(not enhancementInfo)
+								(print "CanUseOnItem: Unable to find enhancement info in rpg.enhancementTable: " (or (itm@ gItem 'rpg.enhancementTable) (itmGetStaticData gItem 'enhancementTable)))
+								
+							(print "CanUseOnItem: enhancementInfo: " enhancementInfo)
+							)
+						)
+						
+					(switch
+						(not (itmMatches dstItem useCriteria))
+							Nil
+
+						(not (itmIsKnown gItem))
+							{
+								canUse: True
+								desc: (or (itmTranslate gItem 'descUsageUnknown trData)
+										(itmTranslate gItem 'rpg.canUse.unknown trData)
+										)
+								}
+								
+						(@ enhancementInfo 'custom)
+							{
+								canUse: True
+								desc: (itmTranslate gItem (@ enhancementInfo 'descID) trData)
+								}
+
+						(@ enhancementInfo 'repair)
+							{
+								canUse: True
+								desc: (or (itmTranslate gItem 'rpg.canUse.repaired trData)
+										(itmTranslate gItem 'descUsageRepair trData)
+										)
+								}
+
+						(and enhancementInfo (not (@ enhancementInfo 'enhancement)))
+							{
+								canUse: Nil
+								desc: 
+									(or (itmTranslate gItem (@ enhancementInfo 'descID) trData)
+										(itmTranslate gItem (cat "rpg.useResult." (@ enhancementInfo 'descID)) trData)
+										(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)) trData)
+										)
+								}
+
+						(block (
+							(result (objCanEnhanceItem gSource dstItem gItem))
+							(resultCode (@ result 'resultCode))
+
+							(canUse (or
+								(not (find '(alreadyEnhanced noEffect) resultCode))
+								(itm@ gItem 'rpg.alwaysAllowUse)
+								))
+							)
+							{
+								canUse: canUse
+								desc: (or (@ result 'desc)
+										(itmTranslate gItem (cat "rpg.canUse." resultCode) trData)
+										(itmTranslate gItem (cat "descUsage." resultCode) trData)
+										)
+								}
+							)
+						)
+					)
+			</CanUseOnItem>
+
+			<GetEnhancement>
+
+				;	This event is called by objCanEnhanceItem and objEnhanceItem
+				;	to figure out what enhancement will be applied.
+				;
+				;	gSource: The object on which we are enhancing
+				;	gItem: The item doing the enhancing
+				;
+				;	gData
+				;		mode: Either 'canEnhance or 'onEnhance
+				;		targetItem: The item being enhanced.
+				;
+				;	RETURN
+				;		Nil: Cannot enhance target (no effect)
+				;		'repair: Target item should be repaired
+				;
+				;		enhancement description:
+				;			enhancement: Enhancement code/desc (required)
+				;			lifetime: Duration of enhancement (ticks). Nil or -1
+				;				means permanent.
+				;			type: Item type of enhancement (only if different
+				;				from gItem).
+				;			desc: Explanation for result
+
+				(block (
+					(dstItem (@ gData 'targetItem))
+					enhancement
+					enhancementInfo
+					(trData {
+						itemName: (itmGetName gItem 'article)
+						targetItemName: (itmGetName dstItem 'noModifiers)
+
+						useItem: (itmGetName gItem 'article)
+						dstItem: (itmGetName dstItem 'noModifiers)
+						})
+					)
+					(switch
+
+						;	Only works on devices
+
+						(not (itmMatches dstItem "d"))
+							Nil
+
+						;	Backwards compatibility
+
+						(setq enhancement (itmGetStaticData gItem 'enhancement))
+							{	
+								enhancement: enhancement
+								}
+
+						;	Table look up
+						;	NOTE: It is OK if we find a table entry with no enhancement.
+						;	That just means that we cannot enhance the target (usually
+						;	due to level) and the desc field explains why.
+
+						(setq enhancementInfo (rpgFindItemInTable dstItem 
+								(or (itm@ gItem 'rpg.enhancementTable)
+									(itmGetStaticData gItem 'enhancementTable)
+									)
+								))
+							{
+								enhancement: (@ enhancementInfo 'enhancement)
+								lifetime: (@ enhancementInfo 'lifetime)
+								desc: (or (itmTranslate gItem (@ enhancementInfo 'descID) trData)
+										(itmTranslate gItem (cat "rpg.useResult." (@ enhancementInfo 'descID)) trData)
+										(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)) trData)
+										)
+								}
+
+						;	Invalid
+
+						Nil
+						)
+					)
+			</GetEnhancement>
+
+			<OnUseOnItem>
+				(block (
+					(dstItem (@ gData 'targetItem))
+					(trData {
+						itemName: (itmGetName gItem 'article)
+						targetItemName: (itmGetName dstItem 'noModifiers)
+
+						dstItem: (itmGetName dstItem 'noModifiers)
+						})
+
+					(wasUnknown (not (itmIsKnown gItem)))
+					result
+					)
+					;	Apply the enhancement
+
+					(setq result (objEnhanceItem gSource dstItem gItem))
+
+					;	Remove and identify the item
+
+					(if (not (@ result 'doNotConsume))
+						(objRemoveItem gSource gItem 1)
+						)
+
+					(itmSetKnown gItem)
+
+					;	Describe what happened
+
+					{
+						desc: (join 
+								(list
+									(or (itmTranslate gItem 'rpg.useResultIntro trData) 
+										(itmTranslate gItem 'descResultIntro trData)
+										)
+									(or (@ result 'desc)
+										(itmTranslate gItem (cat "rpg.useResult." (@ result 'resultCode)) trData)
+										(itmTranslate gItem (cat "descResult." (@ result 'resultCode)) trData)
+										)
+									)
+								" "
+								)
+						nextScreen: (@ result 'nextScreen)
+						}
+					)
+			</OnUseOnItem>
+		</Events>
+
+		<Language>
+			<!-- These language elements can be overidden by subclasses -->
+
+			<Text id="rpg.noTargetItem">					No appropriate device found.</Text>
+			<Text id="rpg.noTargetItemUnknown">				This appears to be some kind of device upgrade, but no appropriate device could be found.</Text>
+
+			<Text id="rpg.canUse.ok">						You can use %useItem% on this %dstItem%.</Text>
+			<Text id="rpg.canUse.alreadyEnhanced">			This %dstItem% is already enhanced; %useItem% will have no effect.</Text>
+			<Text id="rpg.canUse.cantReplaceDefect">		This %dstItem% is defective; %useItem% will have no effect.</Text>
+			<Text id="rpg.canUse.cantReplaceEnhancement">	This %dstItem% is already enhanced; %useItem% will have no effect.</Text>
+			<Text id="rpg.canUse.damaged">					You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="rpg.canUse.defectImproved">			You can use %useItem% on this %dstItem%.</Text>
+			<Text id="rpg.canUse.defectOK">					You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="rpg.canUse.defectRemoved">			You can use %useItem% on this %dstItem%.</Text>
+			<Text id="rpg.canUse.defectReplaced">			You can use %useItem% on this %dstItem%.</Text>
+			<Text id="rpg.canUse.degraded">					You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="rpg.canUse.enhancementDegraded">		You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="rpg.canUse.enhancementRemoved">		You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="rpg.canUse.enhancementReplaced">		You can use %useItem% on this %dstItem%.</Text>
+			<Text id="rpg.canUse.improved">					You can use %useItem% on this %dstItem%.</Text>
+			<Text id="rpg.canUse.noEffect">					%UseItem% will have no effect on this %dstItem%.</Text>
+			<Text id="rpg.canUse.repaired">					You can use %useItem% to repair this %dstItem%.</Text>
+
+			<Text id="rpg.canUse.unknown">					This appears to be some kind of device upgrade. You can use it on this %dstItem%.</Text>
+
+			<Text id="rpg.useResult.ok">					The %dstItem% has been enhanced.</Text>
+			<Text id="rpg.useResult.alreadyEnhanced">		This %dstItem% does not need the enhancement.</Text>
+			<Text id="rpg.useResult.cantReplaceDefect">		But it has no effect on this %dstItem% because it is already defective.</Text>
+			<Text id="rpg.useResult.cantReplaceEnhancement">But it has no effect on this %dstItem% because it is already enhanced.</Text>
+			<Text id="rpg.useResult.damaged">				The %dstItem% was damaged.</Text>
+			<Text id="rpg.useResult.defectImproved">		The defect on this %dstItem% has been partially repaired.</Text>
+			<Text id="rpg.useResult.defectOK">				The %dstItem% has been weakened.</Text>
+			<Text id="rpg.useResult.defectRemoved">			The enhancement has repaired a defect on this %dstItem%.</Text>
+			<Text id="rpg.useResult.defectReplaced">		The enhancement has replaced the previous defect on this %dstItem%.</Text>
+			<Text id="rpg.useResult.degraded">				The %dstItem% has weakened further.</Text>
+			<Text id="rpg.useResult.enhancementDegraded">	The %dstItem%'s enhancement has weakened.</Text>
+			<Text id="rpg.useResult.enhancementRemoved">	The %dstItem% has lost its previous enhancement.</Text>
+			<Text id="rpg.useResult.enhancementReplaced">	The %dstItem% has been enhanced, but has lost its previous enhancement.</Text>
+			<Text id="rpg.useResult.improved">				The %dstItem% has been further enhanced.</Text>
+			<Text id="rpg.useResult.noEffect">				The enhancement has no effect.</Text>
+			<Text id="rpg.useResult.repaired">				The %dstItem% has been repaired.</Text>
+
+			<!-- These are standard custom result codes. -->
+
+			<Text id="rpg.useResult.tooAdvanced">			Unfortunately, your device is too advanced to be upgraded.</Text>
+			<Text id="rpt.useResult.tooPrimitive">			Unfortunately, your device is too primitive for the upgrade.</Text>
+		</Language>
+	</Type>
+
+	<!-- Equipment Item Base Class
+
+	This represents a ROM or other item that installs equipment, such as a
+	targeting computer.
+
+	PROPERTIES
+
+	rpg.equipment: ID of equipment installed by this item.
+
+	rpg.alternateEquipment: Additional ID of equipment repaired by this item.
+		If specified, we repair this equipment if damaged.
+
+	LANGUAGE
+
+	rpg.equipmentInstalled: The equipment was installed successfully.
+
+	rpg.equipmentNoEffect: Installation had no effect because the equipment was
+		already installed.
+
+	rpg.equipmentRedundant: The equipment was installed, but is currently not
+		needed because the ship has the capability from another source.
+
+	rpg.equipmentRepaired: The equipment was repaired.
+	
+	-->
+
+	<ItemType unid="&RPG_baStdEquipmentItem;">
+		<Invoke>
+			(block (
+				(theEquipment (itm@ gItem 'rpg.equipment))
+				(repairEquipment (itm@ gItem 'rpg.alternateEquipment))
+
+				(equipmentStatus (objGetEquipmentStatus gSource theEquipment))
+				)
+				;	Handle each of the cases
+
+				(switch
+					;	If we need to repair the equipment, do it.
+
+					(= equipmentStatus 'damaged)
+						(block ()
+							(objChangeEquipmentStatus gSource theEquipment 'repair 'noMessage)
+							(objSendMessage gSource Nil (typTranslate gType 'rpg.equipmentRepaired))
+							)
+
+					(and repairEquipment
+							(= (objGetEquipmentStatus gSource repairEquipment) 'damaged)
+							)
+						(block ()
+							(objChangeEquipmentStatus gSource repairEquipment 'repair 'noMessage)
+							(objSendMessage gSource Nil (typTranslate gType 'rpg.equipmentRepaired))
+							)
+
+					;	Try to install the equipment. If it fails, then it means 
+					;	that we already have the equipment installed on the ship.
+
+					(not (objChangeEquipmentStatus gSource theEquipment 'install))
+						(objSendMessage gSource Nil (typTranslate gType 'rpg.equipmentNoEffect))
+						
+					;	If we didn't have equipment before, and installation 
+					;	succeeds, then we've succeeded.
+
+					(!= equipmentStatus 'ready)
+						(objSendMessage gSource Nil (typTranslate gType 'rpg.equipmentInstalled))
+
+					;	If we DID have a trading computer before and installation succeeded
+					;	anyway, then it means we have a trading computer on some device
+					;	(e.g., a cargo hold) and now we have a redundant one installed on
+					;	the ship.
+
+					(objSendMessage gSource Nil (typTranslate gType 'rpg.equipmentRedundant))
+					)
+
+				;	Identify and remove
+
+				(itmSetKnown gItem)
+				(objRemoveItem gSource gItem 1)
+				)
+		</Invoke>
+	</ItemType>
+
+	<!-- Paste Barrel Item Base Class
+
+	Armor coating barrels should inherit from this class. Typically they should
+	set useScreen to dsRPGUseItemOnArmor.
+
+	PROPERTIES
+
+		core.enhancement: Enhancement to apply to armor. Use for constant
+			enhancements (i.e., enhancements that apply to all armor).
+
+		rpg.enhancementTable: Table of criteria and enhancements for different 
+			armor types / levels. Use this to apply different enhancements to
+			different types of armor.
+
+	-->
+
+	<Type UNID="&RPG_baStdPasteBarrel;">
+		<Properties>
+			<DynamicGlobal id="enhance.maxLevel">
+				(block (
+					(enhancementTable (itm@ gType 'rpg.enhancementTable))
+
+					(maxLevelPerEntry
+						(map enhancementTable 'excludeNil theEntry
+							(if (and (@ theEntry 'criteria) (@ theEntry 'enhancement))
+								(map (itmGetTypes (@ theEntry 'criteria)) 'reduceMax theItem
+									(itmGetLevel theItem)
+									)
+								)
+							)
+						)
+						
+					(maxLevel (map maxLevelPerEntry 'reduceMax theLevel theLevel))
+					)
+					maxLevel
+					)
+			</DynamicGlobal>
+			<DynamicGlobal id="enhance.minLevel">
+				(block (
+					(enhancementTable (itm@ gType 'rpg.enhancementTable))
+
+					(minLevelPerEntry
+						(map enhancementTable 'excludeNil theEntry
+							(if (and (@ theEntry 'criteria) (@ theEntry 'enhancement))
+								(map (itmGetTypes (@ theEntry 'criteria)) 'reduceMin theItem
+									(itmGetLevel theItem)
+									)
+								)
+							)
+						)
+						
+					(minLevel (map minLevelPerEntry 'reduceMin theLevel theLevel))
+					)
+					minLevel
+					)
+			</DynamicGlobal>
+			
+			<Constant id="rpg.useCriteria">"a"</Constant>
+		</Properties>
+
+		<Events>
+			<CanUseOnItem>
+				(block (
+					(debug (typ@ &RPG_dsRPGUseItemBase; 'rpg.debug))
+					(dstItem (@ gData 'targetItem))
+					(useCriteria (itm@ gItem 'rpg.useCriteria))
+
+					(trData {
+						useItem: (itmGetName gItem 'article)
+						dstItem: (itmGetName dstItem 'noModifiers)
+						})
+					)
+					(switch
+						(not (itmMatches dstItem useCriteria))
+							Nil
+
+						(not (itmIsKnown gItem))
+							{
+								canUse: True
+								desc: (or (itmTranslate gItem 'descUsageUnknown trData)
+										(itmTranslate gItem 'rpg.canUse.unknown trData)
+										)
+								}
+
+						(block (
+							(result (objCanEnhanceItem gSource dstItem gItem))
+							(resultCode (@ result 'resultCode))
+
+							(canUse (or
+								(not (find '(alreadyEnhanced cantReplaceDefect cantReplaceEnhancement noEffect) resultCode))
+								(itm@ gItem 'rpg.alwaysAllowUse)
+								))
+							)
+							{
+								canUse: canUse
+								desc: (or (@ result 'desc)
+										(itmTranslate gItem (cat "rpg.canUse." resultCode) trData)
+										(itmTranslate gItem (cat "descUsage." resultCode) trData)
+										)
+								}
+							)
+						)
+					)
+			</CanUseOnItem>
+
+			<GetEnhancement>
+
+				;	This event is called by objCanEnhanceItem and objEnhanceItem
+				;	to figure out what enhancement will be applied.
+				;
+				;	gItem: The item doing the enhancing
+				;
+				;	gData
+				;		targetItem: The item being enhanced.
+				;
+				;	RETURN
+				;		Nil: Cannot enhance target (no effect)
+				;		'repair: Target item should be repaired
+				;
+				;		enhancement description:
+				;			enhancement: Enhancement code/desc (required)
+				;			lifetime: Duration of enhancement (ticks). Nil or -1
+				;				means permanent.
+				;			type: Item type of enhancement (only if different
+				;				from gItem).
+				;			desc: Explanation for result
+
+				(block (
+					(dstItem (@ gData 'targetItem))
+					enhancement
+					enhancementInfo
+					)
+					(switch
+
+						;	Only works on armor
+
+						(not (itmMatches dstItem "a"))
+							Nil
+
+						;	Backwards compatibility
+
+						(setq enhancement (itmGetStaticData gItem 'enhancement))
+							{	
+								enhancement: enhancement
+								}
+
+						;	Table look up
+						;	NOTE: It is OK if we find a table entry with no enhancement.
+						;	That just means that we cannot enhance the target (usually
+						;	due to level) and the desc field explains why.
+
+						(setq enhancementInfo (rpgFindItemInTable dstItem 
+								(or (itm@ gItem 'rpg.enhancementTable) 
+									(itmGetStaticData gItem 'enhancementTable)
+									)
+								))
+							{
+								enhancement: (@ enhancementInfo 'enhancement)
+								desc: (or (itmTranslate gItem (@ enhancementInfo 'descID))
+										(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)))
+										)
+								}
+
+						;	Invalid
+
+						Nil
+						)
+					)
+			</GetEnhancement>
+
+			<OnUseOnItem>
+				(block (
+					(dstItem (@ gData 'targetItem))
+
+					(trData {
+						useItem: (itmGetName gItem 'article)
+						dstItem: (itmGetName dstItem 'noModifiers)
+						})
+
+					result
+					)
+					;	Apply the enhancement
+
+					(setq result (objEnhanceItem gSource dstItem gItem))
+
+					;	Remove and identify the item
+
+					(objRemoveItem gSource gItem 1)
+					(itmSetKnown gItem)
+
+					;	Describe what happened
+
+					{
+						desc: (join 
+								(list
+									(or (itmTranslate gItem 'rpg.useResultIntro trData)
+										(itmTranslate gItem 'descResultIntro trData)
+										)
+									(or (@ result 'desc)
+										(itmTranslate gItem (cat "rpg.useResult." (@ result 'resultCode)) trData)
+										(itmTranslate gItem (cat "descResult." (@ result 'resultCode)) trData)
+										)
+									)
+								" "
+								)
+						}
+					)
+			</OnUseOnItem>
+		</Events>
+
+		<Language>
+			<Text id="rpg.canUse.ok">						You can use %useItem% on this %dstItem%.</Text>
+			<Text id="rpg.canUse.alreadyEnhanced">			This %dstItem% is already enhanced; %useItem% will have no effect.</Text>
+			<Text id="rpg.canUse.cantReplaceDefect">		This %dstItem% is defective; %useItem% will have no effect.</Text>
+			<Text id="rpg.canUse.cantReplaceEnhancement">	This %dstItem% is already enhanced; %useItem% will have no effect.</Text>
+			<Text id="rpg.canUse.damaged">					You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="rpg.canUse.defectImproved">			You can use %useItem% on this %dstItem%.</Text>
+			<Text id="rpg.canUse.defectOK">					You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="rpg.canUse.defectRemoved">			You can use %useItem% on this %dstItem%.</Text>
+			<Text id="rpg.canUse.defectReplaced">			You can use %useItem% on this %dstItem%.</Text>
+			<Text id="rpg.canUse.degraded">					You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="rpg.canUse.enhancementDegraded">		You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="rpg.canUse.enhancementRemoved">		You can use %useItem% on this %dstItem%, but it's probably not a good idea.</Text>
+			<Text id="rpg.canUse.enhancementReplaced">		You can use %useItem% on this %dstItem%.</Text>
+			<Text id="rpg.canUse.improved">					You can use %useItem% on this %dstItem%.</Text>
+			<Text id="rpg.canUse.noEffect">					%UseItem% will have no effect on this %dstItem%.</Text>
+			<Text id="rpg.canUse.repaired">					You can use %useItem% to repair this %dstItem%.</Text>
+
+			<Text id="rpg.canUse.unknown">					The barrel seems to contain some kind of armor paste. You can use it on this %dstItem%.</Text>
+
+			<Text id="rpg.useResult.ok">					The %dstItem% has been enhanced.</Text>
+			<Text id="rpg.useResult.alreadyEnhanced">		But your armor does not need the enhancement.</Text>
+			<Text id="rpg.useResult.cantReplaceDefect">		But it has no effect on your armor because it is already defective.</Text>
+			<Text id="rpg.useResult.cantReplaceEnhancement">But it has no effect on your armor because it is already enhanced.</Text>
+			<Text id="rpg.useResult.defectImproved">		It seems to have partially repaired the defect.</Text>
+			<Text id="rpg.useResult.defectRemoved">			It seems to have restored your armor.</Text>
+			<Text id="rpg.useResult.defectReplaced">		The new enhancement has replaced the previous defect.</Text>
+			<Text id="rpg.useResult.degraded">				Your armor has weakened further.</Text>
+			<Text id="rpg.useResult.enhancementDegraded">	Your armor's enhancement has decreased.</Text>
+			<Text id="rpg.useResult.enhancementRemoved">	Your armor has lost its enhancement.</Text>
+			<Text id="rpg.useResult.enhancementReplaced">	Unfortunately, your armor has lost its previous enhancement.</Text>
+			<Text id="rpg.useResult.improved">				Your armor has been further enhanced.</Text>
+			<Text id="rpg.useResult.noEffect">				But it has no effect on your armor.</Text>
+
+			<!-- These are standard custom result codes. -->
+
+			<Text id="rpg.useResult.tooAdvanced">			Unfortunately, your armor is too strong for the nanomachines.</Text>
+			<Text id="rpg.useResult.tooPrimitive">			Unfortunately, your armor is too primitive for the nanomachines.</Text>
+		</Language>
+	</Type>
+
+<!-- CODE -->
+
+	<Globals>
+		(block Nil
+			;	Just a wrapper to save some typing
+			(setq itmTranslate (lambda (theItem textID data default)
+				(typTranslate (itmGetType theItem) textID data default)
+				))
+			)
+	</Globals>
+
+</TranscendenceModule>

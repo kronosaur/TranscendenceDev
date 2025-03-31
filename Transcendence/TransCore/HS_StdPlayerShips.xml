@@ -1,0 +1,770 @@
+<?xml version="1.0" ?>
+
+<TranscendenceModule>
+
+<!-- BRITANNIA-CLASS HEAVY GUNSHIP -->
+
+	<!-- Level 9: Britannia-class Heavy Gunship -->
+
+	<ShipClass UNID="&HS_scBritanniaPlayerL9;"
+			manufacturer=		"Pacific Defense"
+			class=				"Britannia"
+			type=				"heavy gunship"
+			defaultSovereign=	"&HS_svCommonwealthFleet;"
+
+			attributes=			"commonwealth, military, pacificDefense, playerClass, shipBroker"
+			inherit=			"&HS_scBritanniaStock;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itP210HexphaseArmor;"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itHeavyIonBlaster;"/>
+			<Device deviceID="&HS_itNAMIHeavyLauncher;">
+				<Items>
+					<Item	count="50-100" item="&HS_itS3Missile;"/>
+				</Items>
+			</Device>
+
+			<Device deviceID="&HS_itR9Deflector;"/>
+			<Device deviceID="&HS_it1GWReactor;"/>
+		</Devices>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The Britannia class benefits from Pacific Defense's deep experience creating space-superiority gunships."
+			/>
+		
+	</ShipClass>
+
+<!-- CENTURION-CLASS HEAVY GUNSHIP -->
+
+	<!-- Level 6: Centurion-class Heavy Gunship Block 2 -->
+
+	<ShipClass UNID="&HS_scCenturionBlock2PlayerL6;"
+			manufacturer=		"Pacific Defense"
+			class=				"Centurion"
+			type=				"heavy gunship"
+
+			attributes=			"commonwealth, military, pacificDefense, playerClass, shipBroker"
+			inherit=			"&HS_scCenturionBlock2;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itBlastPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itTeV9Blaster;"/>
+			<Device deviceID="&HS_itR1Deflector;"/>
+
+			<Device deviceID="&HS_it150MWReactor;"/>
+		</Devices>
+
+		<!-- No Treasure -->
+
+		<Items>
+		</Items>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The venerable, though versatile, Centurion is the backbone of the Commonwealth military."
+			/>
+		
+	</ShipClass>
+
+	<!-- Level 7: Centurion/X-class Heavy Gunship -->
+
+	<ShipClass UNID="&HS_scCenturionXPlayerL7;"
+			manufacturer=		"Pacific Defense"
+			class=				"Centurion/X"
+			type=				"heavy gunship"
+			defaultSovereign=	"&HS_svCommonwealth;"
+
+			attributes=			"commonwealth, military, pacificDefense, playerClass, shipBroker"
+			inherit=			"&HS_scCenturionX;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itP120HexphaseArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itStarCannon;"/>
+			<Device deviceID="&HS_itNAMIMissileLauncher;">
+				<Items>
+					<Item count="2d6" item="&HS_itXM900Missile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itYoroiMX;"/>
+
+			<Device deviceID="&HS_it250MWReactor;"/>
+		</Devices>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The updated Centurion/X was never produced in large numbers due to the introduction of the Britannia class."
+			/>
+		
+	</ShipClass>
+	
+<!-- EI200-CLASS FREIGHTER -->
+
+	<!-- Level 4: EI200-class Freighter -->
+
+	<ShipClass UNID="&HS_scEI200PlayerL4;"
+			manufacturer=		"Earth Industries"
+			class=				"EI200"
+			type=				"freighter"
+
+			level=				"4"
+			attributes=			"commonwealth, corporate, EI, playerClass, shipBroker"
+			inherit=			"&HS_scEI200Stock;"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itAdvancedReactiveArmor;"
+			count=				"6"
+			/>
+		
+		<Devices>
+			<Table>
+				<Group chance="40">
+					<Device deviceID="&HS_itOmniTurbolaserCannon;"/>
+					<Device deviceID="&HS_itMAGLauncher;">
+						<Items>
+							<Item			  count="50-100" item="&HS_it600HexageneMAG;"/>
+							<Item chance="40" count="50-100" item="&HS_it800HexageneMAG;"/>
+						</Items>
+					</Device>
+					<Device chance="50" deviceID="&HS_itLaserEnhancer;"/>
+				</Group>
+				<Group chance="40">
+					<Device deviceID="&HS_itOmniPartisanCannon;"/>
+					<Device deviceID="&HS_itFlenserCannon;"/>
+					<Device deviceID="&HS_itKineticEnhancer;"/>
+				</Group>
+				<Group chance="20">
+					<Device deviceID="&HS_itOmniTurbolaserCannon;"/>
+					<Device deviceID="&HS_itSlamCannon;"/>
+					<Device deviceID="&HS_itLaserEnhancer;"/>
+				</Group>
+			</Table>
+
+			<Table>
+				<Device chance="40" deviceID="&HS_itClass3Deflector;"/>
+				<Device chance="30" deviceID="&HS_itCeratopsQuasiArmor1;"/>
+				<Device chance="30" deviceID="&HS_itR1Deflector;"/>
+			</Table>
+
+			<Device deviceID="&HS_itCargoHoldExpansion;"/>
+			<Device deviceID="&HS_it100MWReactor;"/>
+		</Devices>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The EI200 has more than double the cargo capacity of the EI500."
+			/>
+		
+	</ShipClass>
+
+<!-- EI500-CLASS FREIGHTER -->
+
+	<!-- Level 3: EI500-class Freighter -->
+
+	<ShipClass UNID="&HS_scEI500PlayerL3;"
+			manufacturer=		"Earth Industries"
+			class=				"EI500"
+			type=				"freighter"
+
+			level=				"3"
+			attributes=			"commonwealth, corporate, EI, playerClass, shipBroker"
+			inherit=			"&HS_scEI500Stock;"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&CORE_itHeavyReactiveArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itOmniLaserCannon;"/>
+			<Device deviceID="&HS_itNAMIMissileLauncher;">
+				<Items>
+					<Item  count="50-100" item="&HS_itFragmentationMissile;"/>
+					<Item  count="50-100" item="&HS_itKM500Missile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itCyclotronDeflectorIII;"/>
+
+			<Device deviceID="&HS_itSolarPanelArray;"/>
+			<Device deviceID="&CORE_itTritiumPropulsionUpgrade;"/>
+			<Device deviceID="&HS_itCargoHoldExpansion;"/>
+			<Device deviceID="&HS_it25MWReactor;"/>
+		</Devices>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The EI500 is slow and ungraceful, but its large cargo hold and capacity for upgrades makes it a favorite among independent pilots."
+			/>
+		
+	</ShipClass>
+
+	<!-- Level 4: EI500-class Freighter (Variant A) -->
+
+	<ShipClass UNID="&HS_scEI500PlayerL4A;"
+			manufacturer=		"Earth Industries"
+			class=				"EI500"
+			type=				"freighter"
+
+			level=				"4"
+			attributes=			"commonwealth, corporate, EI, playerClass, shipBroker"
+			inherit=			"&HS_scEI500Stock;"
+
+			frequency=			"uncommon"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itAdvancedReactiveArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itOmniPartisanCannon;"/>
+			<Device deviceID="&HS_itFlenserCannon;"/>
+			<Device deviceID="&HS_itR1Deflector;"/>
+
+			<Device deviceID="&HS_itKineticEnhancer;"/>
+			<Device deviceID="&HS_itCargoHoldExpansion;"/>
+			<Device deviceID="&HS_it100MWReactor;"/>
+		</Devices>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The EI500 is slow and ungraceful, but its large cargo hold and capacity for upgrades makes it a favorite among independent pilots."
+			/>
+		
+	</ShipClass>
+
+	<!-- Level 4: EI500-class Freighter (Variant B) -->
+
+	<ShipClass UNID="&HS_scEI500PlayerL4B;"
+			manufacturer=		"Earth Industries"
+			class=				"EI500"
+			type=				"freighter"
+
+			level=				"4"
+			attributes=			"commonwealth, corporate, EI, playerClass, shipBroker"
+			inherit=			"&HS_scEI500Stock;"
+
+			frequency=			"uncommon"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itPolyceramicPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itOmniPartisanCannon;"/>
+			<Device deviceID="&HS_itOmniTurbolaserCannon;"/>
+			<Device deviceID="&HS_itCeratopsQuasiArmor1;"/>
+
+			<Device deviceID="&HS_itArmorRepairDevice;"/>
+			<Device deviceID="&HS_itCargoHoldExpansion;"/>
+			<Device deviceID="&HS_it100MWReactor;"/>
+		</Devices>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The EI500 is slow and ungraceful, but its large cargo hold and capacity for upgrades makes it a favorite among independent pilots."
+			/>
+		
+	</ShipClass>
+
+	<!-- Level 4: EI500-class Freighter (Variant C) -->
+
+	<ShipClass UNID="&HS_scEI500PlayerL4C;"
+			manufacturer=		"Earth Industries"
+			class=				"EI500"
+			type=				"freighter"
+
+			level=				"4"
+			attributes=			"commonwealth, corporate, EI, playerClass, shipBroker"
+			inherit=			"&HS_scEI500Stock;"
+
+			frequency=			"uncommon"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itV10PoweredArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itOmniTurbolaserCannon;"/>
+			<Device deviceID="&HS_itNAMIMissileLauncher;">
+				<Items>
+					<Item			  count="50-100" item="&HS_itFragmentationMissile;"/>
+					<Item chance="80" count="50-100" item="&HS_itKM500Missile;"/>
+					<Item chance="40" count="25-50" item="&HS_itKM550Missile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itClass3Deflector;"/>
+
+			<Device deviceID="&CORE_itTritiumPropulsionUpgrade;"/>
+			<Device deviceID="&HS_itCargoHoldExpansion;"/>
+			<Device deviceID="&HS_it100MWReactor;"/>
+		</Devices>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The EI500 is slow and ungraceful, but its large cargo hold and capacity for upgrades makes it a favorite among independent pilots."
+			/>
+		
+	</ShipClass>
+
+<!-- MINOTAUR-CLASS CORVETTE -->
+
+	<!-- Level 7: Minotaur-class Corvette -->
+
+	<ShipClass UNID="&HS_scMinotaurPlayerL7;"
+			manufacturer=		"NAMI"
+			class=				"Minotaur"
+			type=				"corvette"
+
+			attributes=			"commonwealth, military, nami, playerClass, shipBroker"
+			inherit=			"&HS_scMinotaur;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itSuperHeavyBlastPlate;"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itMarkVHowitzer;"/>
+			<Device deviceID="&HS_itOmniTeV9Blaster;"/>
+			<Device deviceID="&HS_itNAMIMissileLauncher;">
+				<Items>
+					<Item count="2d6" item="&HS_itXM900Missile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itR5Deflector;"/>
+			<Device deviceID="&HS_it250MWReactor;"/>
+		</Devices>
+		
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The Minotaur corvette sports a secondary omnidirectional blaster linked to the main fire control."
+			/>
+
+	</ShipClass>
+
+	<!-- Level 8: Minotaur/M-class Corvette -->
+
+	<ShipClass UNID="&HS_scMinotaurPlayerL8;"
+			manufacturer=		"NAMI"
+			class=				"Minotaur/M"
+			type=				"corvette"
+
+			attributes=			"commonwealth, military, nami, playerClass, shipBroker"
+			inherit=			"&HS_scMinotaurM;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itMassiveIthaliumArmor;"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itFusionfireHowitzer;"/>
+			<Device deviceID="&HS_itOmniTeV9Blaster;"/>
+			<Device deviceID="&HS_itNAMIMissileLauncher;">
+				<Items>
+					<Item count="2d6" item="&HS_itXM900Missile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itR9Deflector;"/>
+			<Device deviceID="&HS_it500MWReactor;"/>
+		</Devices>
+		
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The Minotaur corvette sports a secondary omnidirectional blaster linked to the main fire control."
+			/>
+
+	</ShipClass>
+
+<!-- SAPPHIRE-CLASS YACHT -->
+
+	<!-- Level 3: Sapphire Yacht -->
+
+	<ShipClass UNID="&HS_scSapphirePlayerL3;"
+			manufacturer=		"Zubrin Systems"
+			class=				"Sapphire"
+			type=				"yacht"
+
+			attributes=			"commonwealth, corporate, playerClass, shipBroker, zubrin"
+			inherit=			"&HS_scSapphireYacht;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itLightPlasteelPlate;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itPartisanCannon;"/>
+			<Device deviceID="&HS_itTurbolaserCannon;"/>
+			<Device deviceID="&HS_itMonopoleDeflector;"/>
+		
+			<Device deviceID="&HS_itMinersCargoHold;"/>
+			<Device deviceID="&HS_itKineticEnhancer;"/>
+			<Device deviceID="&HS_it25MWReactor;"/>
+		</Devices>
+		
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The versatile Sapphire yacht strikes a good balance between a gunship and a freighter."
+			/>
+
+	</ShipClass>
+
+	<!-- Level 5: Sapphire Yacht (Variant A) -->
+
+	<ShipClass UNID="&HS_scSapphirePlayerL5A;"
+			manufacturer=		"Zubrin Systems"
+			class=				"Sapphire"
+			type=				"yacht"
+
+			attributes=			"commonwealth, corporate, playerClass, shipBroker, zubrin"
+			inherit=			"&HS_scSapphireYacht;"
+
+			frequency=			"uncommon"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itHardenedPlasteelPlate;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itDualFlenserCannon;"/>
+			<Device deviceID="&HS_itOmniParticleCannon;"/>
+			<Device deviceID="&HS_itYoroiS100;"/>
+		
+			<Device deviceID="&HS_itCargoHoldExpansion;"/>
+			<Device deviceID="&HS_it100MWReactor;"/>
+		</Devices>
+		
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The versatile Sapphire yacht strikes a good balance between a gunship and a freighter."
+			/>
+
+	</ShipClass>
+
+	<!-- Level 5: Sapphire Yacht (Variant B) -->
+
+	<ShipClass UNID="&HS_scSapphirePlayerL5B;"
+			manufacturer=		"Zubrin Systems"
+			class=				"Sapphire"
+			type=				"yacht"
+
+			attributes=			"commonwealth, corporate, playerClass, shipBroker, zubrin"
+			inherit=			"&HS_scSapphireYacht;"
+
+			frequency=			"uncommon"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itCeralloyArmor;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itAkan30Cannon;">
+				<Items>
+					<Item count="300" item="&HS_itAkan30CannonShell;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itIonCannon;"/>
+			<Device deviceID="&HS_itNephrenP25;"/>
+		
+			<Device deviceID="&HS_itRasiermesserEnhancer;"/>
+			<Device deviceID="&HS_it100MWReactor;"/>
+		</Devices>
+		
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The versatile Sapphire yacht strikes a good balance between a gunship and a freighter."
+			/>
+
+	</ShipClass>
+
+	<!-- Level 5: Sapphire Yacht (Variant C) -->
+
+	<ShipClass UNID="&HS_scSapphirePlayerL5C;"
+			manufacturer=		"Zubrin Systems"
+			class=				"Sapphire"
+			type=				"yacht"
+
+			attributes=			"commonwealth, corporate, playerClass, shipBroker, zubrin"
+			inherit=			"&HS_scSapphireYacht;"
+
+			frequency=			"uncommon"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itLightBlastPlate;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itMarkIHowitzer;"/>
+			<Device deviceID="&HS_itMakayevLauncher;">
+				<Items>
+					<Item count="200" item="&HS_itStrelkaWhite;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itYoroiS100;"/>
+		
+			<Device deviceID="&HS_itMakayevBlastEnhancer;"/>
+			<Device deviceID="&HS_it100MWReactor;"/>
+		</Devices>
+		
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The versatile Sapphire yacht strikes a good balance between a gunship and a freighter."
+			/>
+
+	</ShipClass>
+
+<!-- WOLFEN-CLASS GUNSHIP -->
+
+	<!-- Level 3: Wolfen-class Gunship -->
+
+	<ShipClass UNID="&HS_scWolfenPlayerL3;"
+			manufacturer=		"Pacific Defense"
+			class=				"Wolfen/C"
+			type=				"gunship"
+
+			attributes=			"commonwealth, corporate, pacificDefense, playerClass, shipBroker"
+			inherit=			"&HS_scWolfenC;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itHeavyCeramicPlate;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itTurbolaserCannon;"/>
+			<Device deviceID="&HS_itNAMIMissileLauncher;">
+				<Items>
+					<Item  count="50-100" item="&HS_itFragmentationMissile;"/>
+					<Item  count="50-100" item="&HS_itKM500Missile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itMonopoleDeflector;"/>
+
+			<Device deviceID="&HS_it25MWReactor;"/>
+		</Devices>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"Fast and deadly, the Wolfen is designed for combat. Though limited in cargo capacity, it has lots of room for more weapons."
+			/>
+		
+	</ShipClass>
+
+	<!-- Level 6: Wolfen-class Gunship (Variant A) -->
+
+	<ShipClass UNID="&HS_scWolfenPlayerL6A;"
+			manufacturer=		"Pacific Defense"
+			class=				"Wolfen/C"
+			type=				"gunship"
+
+			attributes=			"commonwealth, corporate, pacificDefense, playerClass, shipBroker"
+			inherit=			"&HS_scWolfenC2;"
+
+			frequency=			"uncommon"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itDuralloyArmor;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itDualParticleBeamWeapon;"/>
+			<Device deviceID="&HS_itMarkIIIHowitzer;"/>
+			<Device deviceID="&HS_itMAGLauncher;">
+				<Items>
+					<Item count="200" item="&HS_itZG24ClusterMAG;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itCeratopsQuasiArmor2;"/>
+
+			<Device deviceID="&HS_itHowitzerHighSpeedLoader;"/>
+			<Device deviceID="&HS_it150MWReactor;"/>
+		</Devices>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"Fast and deadly, the Wolfen is designed for combat. Though limited in cargo capacity, it has lots of room for more weapons."
+			/>
+		
+	</ShipClass>
+
+	<!-- Level 6: Wolfen-class Gunship (Variant B) -->
+
+	<ShipClass UNID="&HS_scWolfenPlayerL6B;"
+			manufacturer=		"Pacific Defense"
+			class=				"Wolfen/C"
+			type=				"gunship"
+
+			attributes=			"commonwealth, corporate, pacificDefense, playerClass, shipBroker"
+			inherit=			"&HS_scWolfenC2;"
+
+			frequency=			"uncommon"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itHeavyCeralloyArmor;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itDualParticleBeamWeapon;"/>
+			<Device deviceID="&HS_itIonCannon;"/>
+			<Device deviceID="&HS_itMakayevLauncher;">
+				<Items>
+					<Item count="200" item="&HS_itStrelkaGreen;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itYoroiS500;"/>
+
+			<Device deviceID="&HS_itParticleEnhancer;"/>
+			<Device deviceID="&HS_it150MWReactor;"/>
+		</Devices>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"Fast and deadly, the Wolfen is designed for combat. Though limited in cargo capacity, it has lots of room for more weapons."
+			/>
+		
+	</ShipClass>
+
+	<!-- Level 6: Wolfen-class Gunship (Variant C) -->
+
+	<ShipClass UNID="&HS_scWolfenPlayerL6C;"
+			manufacturer=		"Pacific Defense"
+			class=				"Wolfen/C"
+			type=				"gunship"
+
+			attributes=			"commonwealth, corporate, military, pacificDefense, playerClass, shipBroker"
+			inherit=			"&HS_scWolfenC3;"
+
+			frequency=			"uncommon"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itHeavyCeralloyArmor;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itXRayLaserCannon;"/>
+			<Device deviceID="&HS_itShtormRepeater;"/>
+			<Device deviceID="&HS_itNAMIMissileLauncher;">
+				<Items>
+					<Item count="100" item="&HS_itKM500Missile;"/>
+					<Item count="100" item="&HS_itKM550Missile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itR5Deflector;"/>
+
+			<Device deviceID="&HS_itLaserEnhancer;"/>
+			<Device deviceID="&HS_it150MWReactor;"/>
+		</Devices>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"Fast and deadly, the Wolfen is designed for combat. Though limited in cargo capacity, it has lots of room for more weapons."
+			/>
+		
+	</ShipClass>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&HS_rsEI100XArmor;"		bitmap="Resources\ArmorHUD_EI100X.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsArmorHUDShip_EI500;"	bitmap="Resources\ArmorHUDShip_EI500.jpg" bitmask="Resources\ArmorHUDShip_EI500Mask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&HS_rsZubrinArmor;"		bitmap="Resources\ArmorHUD.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsArmorHUDShip_Sapphire;"	bitmap="Resources\ArmorHUDShip_Sapphire.jpg" bitmask="Resources\ArmorHUDShip_SapphireMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsZubrinReactor;"		bitmap="Resources\ReactorDisplay.jpg"	bitmask="Resources\ReactorDisplayMask.bmp"  loadOnUse="true"/>
+	
+	<Image UNID="&HS_rsSapphireYacht;"		bitmap="Resources\ShipsSapphireYacht.jpg" bitmask="Resources\ShipsSapphireYachtMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsEI500Freighter;"	bitmap="Resources\ShipsEI500Freighter.jpg" bitmask="Resources\ShipsEI500FreighterMask.bmp" loadOnUse="true"/>
+	
+	<Image UNID="&HS_rsEI500FreighterHD;"	bitmap="Resources\EI500FreighterHD.jpg" bitmask="Resources\EI500FreighterHDMask.bmp" loadOnUse="true"/>
+
+</TranscendenceModule>

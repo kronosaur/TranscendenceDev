@@ -1,0 +1,784 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- Ferian Miners
+
+	DATA
+
+	rank: Player's rank with Ferians. One of:
+
+		Nil: No relationship
+		1: Hireling
+		2: Comrade
+		3: Friend
+		4: Counselor
+		5: Provider
+		6: Grand Provider
+
+	status: This tracks the relationship between the sovereign and the player.
+
+		Nil: Player has never talked with Ferians.
+
+		'known: Player has met Ferians.
+
+	xp: XP earned by player doing missions for Ferians.
+
+-->
+	
+	<Sovereign UNID="&HS_svFerianMiners;"
+			name=":the Ferian swarm"
+			shortName=":the Ferians"
+			adjective="Ferian"
+			demonym=":a Ferian(s)"
+			plural="true"
+
+			alignment="neutral"
+			>
+		<Relationships>
+			<Relationship sovereign="&HS_svRingers;" disposition="friend" mutual="true"/>
+		</Relationships>
+		
+		<Language>
+			<Text id="WatchYourTargets">Grrr! Defend the nest!</Text>
+			<Text id="NiceShooting">""</Text>
+		</Language>
+	</Sovereign>
+
+	<Sovereign UNID="&HS_svFerianMinersAngry;"
+			name=":the Ferian swarm"
+			shortName=":the Ferians"
+			adjective="Ferian"
+			demonym=":a Ferian(s)"
+			plural="true"
+
+			alignment="destructive order"
+			>
+		<Relationships>
+			<Relationship sovereign="&HS_svFerianMiners;" disposition="friend" mutual="true"/>
+			<Relationship sovereign="&HS_svRingers;" disposition="friend" mutual="true"/>
+		</Relationships>
+
+		<Language>
+			<Text id="WatchYourTargets">""</Text>
+			<Text id="NiceShooting">""</Text>
+		</Language>
+	</Sovereign>
+
+	<SystemMap unid="&HS_smFerianSpace;"
+			displayOn="&HS_smHumanSpace;"
+			>
+		<TopologyProcessor priority="secondaryColony">
+			<System criteria="+ringerSpace;"			attributes="ferianSpace"/>
+			<System criteria="+ungoverned; +envEarth;"	attributes="ferianSpace"/>
+		</TopologyProcessor>
+	</SystemMap>
+
+<!-- ENCOUNTERS -->
+	
+	<!-- Level 6: Ferian Colony
+	
+		EXTRA DATA
+
+		attackLevel:		Tracks how much the colony has been attacked
+		lastAttacker:		Last object that attacked us
+		maxMiners:			Max number of miners at one time
+		minersKilled:		Total number of miners killed
+		totalWarriors:		Total number of warrior created
+
+		storageID: ID of object to store reward for player.
+
+	-->
+
+	<StationType UNID="&HS_stFerianColony;"
+			name=				"Ferian colony|Ferian colonies"
+			sovereign=			"&HS_svFerianMiners;"
+			inherit=			"&HS_baFerianStation;"
+				 
+			attributes=			"asteroidBase, enemy, envEarth, envAvoidsAir, ferian, generic, neoHuman, miners, populated, zoanthrope"
+				 
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+				 
+			ignoreFriendlyFire=	"true"
+			explosionType=		"&CORE_vtThermoExplosion1;"
+			ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+ferianSpace;"
+				systemAffinity=			"+envEarth; -envAir;"
+				levelFrequency=			"---ru ccr-- ----- ----- -----"
+
+				locationCriteria=		"++asteroids"
+				/>
+
+		<Properties>
+			<Constant		id="maxFerianMissions">(random 1 3)</Constant>
+		</Properties>
+
+		<!-- Trade and Items -->
+
+		<Trade currency="rin">
+			<BalanceTrade	criteria="{core.ore}"			impact="10"/>
+		</Trade>
+
+		<Items>
+			<Lookup count="4d8"	table="&GLXY_tbAsteroidOre;"/>
+			<Item count="4d12"	item="&HS_itChronimiumGas;" />
+		</Items>
+
+		<!-- Configuration -->
+		
+		<Hull 	hullType=		"asteroidHull"
+				armorID=		"&HS_itAdvancedPlasteelPlate;"
+				hitPoints=		"500"
+			    regen=			"10"
+				/>
+		
+		<!-- Ships and Defenses -->
+		
+		<Ships>
+			<Ship count="3d6" class="&HS_scFerianMiner;" orders="mine" controller="ferian"/>
+		</Ships>
+
+		<!-- Image and Effects -->
+		
+		<ImageVariants>
+			<LocationCriteriaTable>
+				<Image criteria="*ice"			imageID="&HS_rsFerianColonyIce;"			imageWidth="260" imageHeight="260"	viewportRatio="0.0325"/>
+				<Image criteria="*metallic"		imageID="&HS_rsFerianColonyMetallic;"		imageWidth="260" imageHeight="260"	viewportRatio="0.0325"/>
+				<Image criteria="*primordial"	imageID="&HS_rsFerianColonyPrimordial;"	imageWidth="260" imageHeight="260"	viewportRatio="0.0325"/>
+				<Image criteria="*volcanic"		imageID="&HS_rsFerianColonyVolcanic;"		imageWidth="260" imageHeight="260"	viewportRatio="0.0325"/>
+				
+				<Image criteria="*~"			imageID="&HS_rsFerianColonyRocky;"			imageWidth="260" imageHeight="260"	viewportRatio="0.0325"/>
+			</LocationCriteriaTable>
+		</ImageVariants>
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"120"
+				>
+		</DockingPorts>
+
+		<!-- Dock Screens -->
+		
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionMainHall">
+								(block (storageObj)
+									(switch
+										;	If we've never met the Ferians
+
+										(not (typGetData &HS_svFerianMiners; 'status))
+											(scrShowPane gScreen 'FerianIntro)
+
+										;	If the player left some ore here from a 
+										;	previous mission, then allow them to get
+										;	it.
+
+										(and (setq storageObj (objGetObjByID (objGetData gSource 'storageID)))
+												(objGetItems storageObj "*")
+												)
+											(scrShowScreen gScreen &RPG_dsRPGLoot; {
+												sourceObj: storageObj
+												})
+
+										;	Otherwise, see if there are any missions.
+
+										(rpgMissionAssignment {
+											missionCriteria: "n +ferianColony;"
+											noMissionTextID: 'descNoMissions
+											maxPerStation: (or (obj@ gSource 'maxFerianMissions) 1)
+											})
+										)
+									)
+							</Action>
+
+							<Action id="actionUndock" default="1" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+
+					<FerianIntro descID="descFerianIntro">
+						<Actions>
+							<Action id="actionContinue">
+								(block ()
+									(scrShowPane gScreen 'Default)
+									(typSetData &HS_svFerianMiners; 'status 'known)
+
+									(rpgMissionAssignment {
+										missionCriteria: "n +ferianColony;"
+										noMissionTextID: 'descNoMissions
+										maxPerStation: (or (obj@ gSource 'maxFerianMissions) 1)
+										})
+									)
+							</Action>
+						</Actions>
+					</FerianIntro>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<!-- Events and Behavior -->
+
+		<Events>
+			<OnAttacked>
+				(if (and aOrderGiver
+						(objCanAttack aOrderGiver)
+						(not (eq (objGetDisposition gSource aOrderGiver) 'friend))
+						)
+					(block Nil
+						(objIncData gSource "attackLevel" 1)
+						(objSetObjRefData gSource "lastAttacker" aOrderGiver)
+						)
+					)
+			</OnAttacked>
+			
+			<OnCreate>
+				(block (asteroidCount maxMiners)
+				
+					;	Count the number of asteroids in the area (within 60 light-seconds)
+					
+					(setq asteroidCount (count (sysFindObject gSource "t:asteroid; N:60;")))
+					
+					;	If there we have less than four asteroids, create more.
+					
+					(if (ls asteroidCount 4)
+						(block (
+							(newAsteroids (random 2 5))
+							)
+							
+							(for i 1 newAsteroids
+								(sysCreateLookup "AsteroidSingleton" 
+									(sysOrbit aOrbit (random 8 22) (random 0 359))
+									)
+								)
+								
+							(setq asteroidCount (add asteroidCount newAsteroids))
+							)
+						)
+
+					;	Compute the number of miners
+					
+					(setq maxMiners (multiply asteroidCount 2))
+					(if (gr asteroidCount 0)
+						(setq maxMiners (add maxMiners (random 1 asteroidCount)))
+						)
+
+					;	Sometimes we get more miners
+					
+					(if (leq (random 1 100) 5)
+						(setq maxMiners (multiply maxMiners 2))
+						)
+
+					(objSetData gSource "maxMiners" maxMiners)
+					(objSetData gSource "attackLevel" 0)
+					(objSetData gSource "minersKilled" 0)
+
+					;	Register timer event for construction
+					
+					(sysAddObjRecurringTimerEvent (random 400 800) gSource "OnConstruction")
+					)
+			</OnCreate>
+
+			<OnConstruction>
+				(if (not (objIsAbandoned gSource))
+					(block (minerCount theTarget)
+						; Count the number of ferian miners for this base
+						(setq minerCount (count (sysFindObject gSource "sH")))
+						
+						(switch
+							; If we've already got our maximum, then nothing to do
+							(geq minerCount (objGetData gSource "maxMiners"))
+								Nil
+								
+							; If our attack level is high, send out a warrior
+							(and (leq (random 6 40) (objGetData gSource "attackLevel"))
+									(setq theTarget (objGetObjRefData gSource "lastAttacker"))
+									(objMatches theTarget gSource "sTA")
+									(ls (objGetData gSource "totalWarriors") (divide (objGetData gSource "maxMiners") 3))
+									(ls (count (sysFindObject gSource "sH +ferianWarrior")) 3)
+									(leq (objGetDistance gSource theTarget) 150)
+									)
+								(block (newWarrior)
+									(setq newWarrior
+										(sysCreateShip &HS_scFerianWarrior; gSource 
+											(if (eq theTarget gPlayerShip) &HS_svFerianMinersAngry; &HS_svFerianMiners;)
+											)
+										)
+									(objAddSubordinate gSource newWarrior)
+									(objRegisterForEvents gSource newWarrior)
+									
+									(shpOrder newWarrior 'attack theTarget)
+									(shpOrder newWarrior 'gate gSource)
+
+									(objIncData gSource "totalWarriors")
+									)
+									
+							; If a lot of miners have been killed, then don't create more
+							(gr (objGetData gSource "minersKilled") (objGetData gSource "maxMiners"))
+								Nil
+									
+							; Otherwise, create a miner
+							(block (newMiner)
+								(setq newMiner
+									(sysCreateShip &HS_scFerianMiner; gSource &HS_svFerianMiners; "ferian")
+									)
+								(objAddSubordinate gSource newMiner)
+								(shpOrderMine newMiner gSource)
+								)
+							)
+							
+						; Decrement attack level
+						(if (gr (objGetData gSource "attackLevel") 0)
+							(objIncData gSource "attackLevel" -1)
+							)
+						)
+					)
+			</OnConstruction>
+			
+			<OnDestroy>
+				(block (warriorsLeft)
+					(setq warriorsLeft (subtract (divide (objGetData gSource "maxMiners") 3) (objGetData gSource "totalWarriors")))
+					(for i 1 (min warriorsLeft 3)
+						(block (newWarrior)
+							(setq newWarrior
+								(sysCreateShip &HS_scFerianWarrior; gSource &HS_svFerianMinersAngry;))
+
+							(if (and aOrderGiver 
+									(objCanAttack aOrderGiver)
+									)
+								(shpOrder newWarrior 'attack aOrderGiver)
+								(shpOrder newWarrior 'attackNearestEnemy)
+								)
+
+							(shpOrder newWarrior 'gate gSource)
+							)
+						)
+						
+					; All miners become angry
+					(enum (sysFindObject gSource "sH +ferianMiner") theMiner
+						(objSetSovereign theMiner &HS_svFerianMinersAngry;)
+						)
+					)
+			</OnDestroy>
+			
+			<OnObjEnteredGate>
+				(if (and (eq aGateObj gSource)
+						(objMatches aObj Nil "s +ferianWarrior;")
+						)
+					(objIncData gSource "totalWarriors" -1)
+					)
+			</OnObjEnteredGate>
+			
+			<OnOreDepositFound>
+				(switch
+					;	If we're dead, then nothing
+					
+					(objGetProperty gSource 'abandoned)
+						Nil
+							
+					;	Otherwise, we send a random number of miners to the new deposit
+					
+					(block (
+						(maxMiners (objGetData gSource "maxMiners"))
+						(minersToSend 
+							(random 1 (max 1 (divide maxMiners 8)))
+							)
+						(minersAvail (filter (sysFindObject gSource "sH") minerObj
+							(not (objGetData minerObj 'depositID))
+							))
+						)
+						
+						(for i 1 (min minersToSend (count minersAvail))
+							(block (
+								(minerObj (@ minersAvail (subtract i 1)))
+								)
+								
+								(shpCancelOrders minerObj)
+								(shpOrder minerObj 'approach (@ gData 'depositObj) 20)
+								(shpOrder minerObj 'mine gSource)
+								(objSetData minerObj 'depositID (objGetID (@ gData 'depositObj)))
+								;(dbgOutput "Sent miner " (objGetID minerObj) " to " (objGetID (@ gData 'depositObj)))
+								)
+							)
+							
+						;	Increment the max number of ferians
+						
+						(objIncData gSource 'maxMiners minersToSend)
+						)
+					)
+			</OnOreDepositFound>
+			
+			<OnMinerDestroyed>
+				(block Nil
+					(objIncData gSource "minersKilled")
+
+					(if (and aOrderGiver 
+							(objCanAttack aOrderGiver)
+							(not (eq (sovGetDisposition &HS_svFerianMiners; (objGetSovereign aOrderGiver)) 'friend))
+							)
+						(block Nil
+							(objIncData gSource "attackLevel" 2)
+							(if (or (not (objGetObjRefData gSource "lastAttacker"))
+									(leq (random 1 100) 50)
+									)
+								(objSetObjRefData gSource "lastAttacker" aOrderGiver)
+								)
+							)
+						)
+					)
+			</OnMinerDestroyed>
+		</Events>
+
+		<Language>
+			<Text id="actionMainHall">[M]ain Hall</Text>
+
+			<Text id="descWelcome">
+			
+				You enter into a vast chamber, only partially pressurized. Large
+				metal maws consume a small fortune in rocks and ores delivered 
+				by Ferian miners.
+
+				Beneath them you see various vessels shrouded by the cranes and 
+				girders of a shipyard. Most of the vessels are new Ferian miners
+				being created out of raw materials.
+				
+				A few are much larger and have a more sinister shape.
+
+			</Text>
+			<Text id="descFerianIntro">
+
+				You enter a room carved out of rock filled with holopanes.
+				Monkey-like creatures in dark spacesuits bounce around in the
+				low gravity on various errands.
+
+				Tall figures in jeweled armor stand silently around the 
+				displays.
+
+			</Text>
+			<Text id="descNoMissions">
+
+				A tall figure in jeweled armor walks towards you; their face is
+				covered by an opaque helmet inlaid with silver and gold. You 
+				hear their voice through a raspy speaker:
+
+				"There's nothing here for you, Earthican."
+
+			</Text>
+		</Language>
+	</StationType>
+
+<!-- SHIP CLASSES -->
+	
+	<!-- Level 6: Ferian Miner -->
+
+	<ShipClass UNID="&HS_scFerianMiner;"
+			manufacturer=		""
+			class=				"Ferian miner"
+			type=				""
+			defaultSovereign=	"&HS_svFerianMiners;"
+
+			attributes=			"ferian, ferianMiner, genericClass, zoanthrope"
+			   
+			size=				"21"
+			mass=				"120"
+			thrustRatio=		"4"
+			maxSpeed=			"17"
+			cargoSpace=			"200"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itLightPlasteelPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itPlasmaTorch;"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"9.0"
+			rotationAccel=		"1.0"
+			/>
+		
+		<!-- Trade and Items -->
+		
+		<Items>
+			<Item count="1d2" item="&HS_itXenotiteFuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&HS_rsFerianMinerHD;" imageX="0" imageY="0" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" />
+		
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="23"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			fireRateAdj=		"40"
+			fireAccuracy=		"85"
+			perception=			"4"
+			/>
+
+		<Events>
+			<OnCreate>
+				(if (geq (random 1 100) 20)
+					(sysAddRandomOreByValue gSource
+						(@ 
+							(list 0 
+								20 50 100 200 500 1000 2000 5000 10000 20000)
+							(sysGetLevel)
+							)
+						)
+					)
+			</OnCreate>
+			
+			<OnDestroy>
+				(if (eq (shpGetOrder gSource) 'mine)
+					(objFireEvent (shpGetOrderTarget gSource) "OnMinerDestroyed")
+					)
+			</OnDestroy>
+
+			<OnOrdersCompleted>
+				(block (
+					colonyObj
+					)
+					(switch
+
+						;	If we ever find ourselves without an order, find another
+						;	Ferian colony in the system and mine for it.
+
+						(setq colonyObj (sysFindObject gSource "TAN +ferian;"))
+							(block ()
+								(shpOrder gSource 'mine colonyObj)
+
+								;	We set our sovereign back to normal in case 
+								;	we're a refugee from a destroyed colony.
+
+								(objSetSovereign gSource &HS_svFerianMiners;)
+								)
+
+						;	Otherwise, we gate out
+
+						(shpOrder gSource 'gate)
+						)
+					)
+			</OnOrdersCompleted>
+		</Events>
+	</ShipClass>
+
+	<!-- Level 9: Ferian Warrior -->
+
+	<ShipClass UNID="&HS_scFerianWarrior;"
+			manufacturer=		""
+			class=				"Ferian warrior"
+			type=				""
+			defaultSovereign=	"&HS_svFerianMiners;"
+
+			attributes=			"ferian, ferianWarrior, genericClass, zoanthrope"
+			   
+			size=				"130"
+			mass=				"5000"
+			thrustRatio=		"15"
+			maxSpeed=			"22"
+			cargoSpace=			"20"
+
+			achievement=		"humanSpace.ferianWarriorKiller"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itHeavyBlastPlate;"
+			count=				"12"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itFerianCannon;" posAngle="0" posRadius="65" posZ="0"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"9.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"120"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"80"
+
+					posX=		"-40"
+					posY=		"0"
+					sizeX=		"58"
+					sizeY=		"26"
+					/>
+		</Interior>
+
+		<!-- Trade and Items -->
+		
+		<Items>
+			<Item count="1d6" item="&HS_itPteracniumFuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&rsFerianWarriorHD;"	imageWidth="144" imageHeight="144"	rotationCount="120" rotationColumns="12" viewportRatio="0.016875"/>
+		<HeroImage imageID="&HS_rsFerianWarriorHero;" imageWidth="320" imageHeight="320"/>
+		
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="66"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			combatStyle=		"chase"
+			fireRateAdj=		"20"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+	</ShipClass>
+
+<!-- ITEM TYPES -->
+	
+	<!-- Level 9: Ferian Cannon -->
+
+	<ItemType UNID="&HS_itFerianCannon;"
+			name=				"Ferian plasma cannon"
+			attributes=			"Ferian; MajorItem; Military; NotForSale; NotStandard"
+			  
+			level=				"9"
+			frequency=			"notrandom"
+			  
+			value=				"150000"
+			mass=				"5000"
+
+			description=		"Ferians have adapted their plasma torches for combat."
+			>
+
+		<Image imageID="&HS_rsItems9;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"particles"
+				damage=				"plasma:60; mining:3; WMD:4"
+				
+				fireRate=			"30"
+
+				powerUse=			"2000"
+				sound=				"&CORE_snRecoillessCannon;"
+				>
+			
+			<ParticleSystem
+					style=				"spray"
+					emitLifetime=		"1"
+					emitRate=			"100"
+					emitSpeed=			"60"
+					spreadAngle=		"1"
+					splashChance=		"50"
+					
+					particleLifetime=	"40"
+					particleEffect=		"&CORE_efPlasmaParticleDefault;"
+					>
+			</ParticleSystem>
+		</Weapon>
+	</ItemType>
+
+<!-- BASE CLASSES -->
+
+	<Type unid="&HS_baFerianStation;"
+			inherit="&RPG_unidCommonText;"
+			>
+		<Events>
+			<OnPlayerReward>
+				(block (
+					(storageObj (objGetObjByID (objGetData gSource 'storageID)))
+					(rewardValue (@ gData 'value))
+
+					;	Pick several random ore types
+
+					(oreList (list (sysGetRandomOreType) (sysGetRandomOreType) (sysGetRandomOreType) (sysGetRandomOreType)))
+
+					;	Choose the highest priced one (to minimize the amount
+					;	that the player has to carry).
+
+					(bestOreType 
+						(map oreList '(reduceMax original) theOreType
+							(itmGetPrice theOreType 'rin)
+							)
+						)
+
+					(cheapestOreType
+						(map oreList '(reduceMin original) theOreType
+							(itmGetPrice theOreType 'rin)
+							)
+						)
+					)
+					;	Create a storage object, if necessary
+
+					(if (not storageObj)
+						(block ()
+							(setq storageObj (sysCreateMarker "Ferian Storage" (objGetPos gSource) &HS_svFerianMiners;))
+							(objSetData gSource 'storageID (objGetID storageObj))
+							)
+						)
+
+					;	Add ore to storage appropriate to the system
+
+					(while (gr rewardValue 0)
+						(block (itemAdded)
+							(if (gr rewardValue (itmGetPrice bestOreType))
+								(setq itemAdded (objAddItemByValue storageObj (itmCreate bestOreType 1) rewardValue 'credit))
+								(setq itemAdded (objAddItemByValue storageObj (itmCreate cheapestOreType 1) (max rewardValue (itmGetPrice cheapestOreType)) 'credit))
+								)
+
+							(setq rewardValue
+								(- rewardValue (* (itmGetPrice itemAdded) (itmGetCount itemAdded)))
+								)
+							)
+						)
+
+					;	Return data appropriate for a mission to navigate to the
+					;	loot screen.
+
+					{
+						nextScreen: &RPG_dsRPGLoot;
+						nextScreenData: {
+							sourceObj: storageObj
+							}
+						}
+					)
+			</OnPlayerReward>
+		</Events>
+	</Type>
+
+<!-- RESOURCES & EFFECTS -->
+	
+	<Image UNID="&HS_rsFerianColonyIce;"			bitmap="Resources\FerianColonyIce.jpg"	bitmask="Resources\FerianColonyIceMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&HS_rsFerianColonyMetallic;"		bitmap="Resources\FerianColonyMetallic.jpg"	bitmask="Resources\FerianColonyMetallicMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&HS_rsFerianColonyPrimordial;"	bitmap="Resources\FerianColonyPrimordial.jpg"	bitmask="Resources\FerianColonyPrimordialMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&HS_rsFerianColonyRocky;"			bitmap="Resources\FerianColonyRocky.jpg"	bitmask="Resources\FerianColonyRockyMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&HS_rsFerianColonyVolcanic;"		bitmap="Resources\FerianColonyVolcanic.jpg"	bitmask="Resources\FerianColonyVolcanicMask.bmp"	loadOnUse="true"/>
+
+	<Image UNID="&rsFerianWarriorHD;"			bitmap="Resources\FerianWarriorHD.jpg"	bitmask="Resources\FerianWarriorHDMask.bmp"	loadOnUse="true"/>
+	<Image UNID="&HS_rsFerianWarriorHero;"			bitmap="Resources\FerianWarriorLarge.jpg"	bitmask="Resources\FerianWarriorLargeMask.bmp"	loadOnUse="true"/>
+
+	<Image UNID="&HS_rsFerianMinerHD;"				bitmap="Resources\FerianMinerHD.jpg"	bitmask="Resources\FerianMinerHDMask.bmp"	loadOnUse="true"/>
+
+</TranscendenceModule>

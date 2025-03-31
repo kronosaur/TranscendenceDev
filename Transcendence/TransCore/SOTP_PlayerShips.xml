@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- STARTING PLAYER SHIPS -->
+	
+	<!-- Player Ship: Sapphire-class Yacht -->
+
+	<ShipClass UNID="&HS_scSapphirePlayer;"
+			manufacturer=		"Zubrin Systems"
+			class=				"Sapphire"
+			type=				"yacht"
+
+			attributes=			"commonwealth, playerClass, startingClass, zubrin, 00200000_PlayerShip"
+			inherit=			"&HS_scSapphireYacht;"
+			characterClass=		"&RPG_unidPilgrimClass;"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itReactiveArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itRecoillessCannon;"/>
+			<Device deviceID="&HS_itClass1Deflector;"/>
+			<Device deviceID="&HS_it15MWReactor;"/>
+		</Devices>
+		
+		<Items>
+			<Item count="4d6" item="&CORE_itHelium3FuelRod;"/>
+		</Items>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The versatile Sapphire yacht strikes a good balance between a gunship and a freighter."
+			sortOrder=			"10"
+			initialClass=		"true"
+			startingCredits=	"10d100+1500"
+			/>
+		
+	</ShipClass>
+
+	<!-- Player Ship: EI500 Freighter -->
+
+	<ShipClass UNID="&HS_scEI100XPlayer;"
+			manufacturer=		"Earth Industries"
+			class=				"EI500"
+			type=				"freighter"
+
+			attributes=			"commonwealth, EI, freighter, playerClass, startingClass, 00200000_PlayerShip"
+			inherit=			"&HS_scEI500Stock;"
+			characterClass=		"&RPG_unidPilgrimClass;"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itLightPlasteelPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itOmniLaserCannon;"/>
+			<Device deviceID="&HS_itClass1Deflector;"/>
+			<Device deviceID="&HS_it25MWReactor;"/>
+			<Device deviceID="&HS_itCargoHoldExpansion;"/>
+		</Devices>
+
+		<Equipment>
+			<Install equipment="targetingComputer"/>
+		</Equipment>
+
+		<Items>
+			<Item count="6d6" item="&CORE_itHelium3FuelRod;"/>
+		</Items>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"The EI500 is slow and ungraceful, but its omnidirectional laser can hit even the fastest gunships. Six open slots for devices give you lots of upgrade flexibility."
+			sortOrder=			"15"
+			initialClass=		"true"
+			startingCredits=	"5d20+200"
+			/>
+		
+	</ShipClass>
+
+	<!-- Player Ship: Wolfen-class Gunship -->
+
+	<ShipClass UNID="&HS_scWolfenPlayer;"
+			manufacturer=		"Pacific Defense"
+			class=				"Wolfen/C"
+			type=				"gunship"
+
+			attributes=			"commonwealth, pacificDefense, playerClass, startingClass, 00200000_PlayerShip"
+			inherit=			"&HS_scWolfenC;"
+			characterClass=		"&RPG_unidPilgrimClass;"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itLightPlasteelPlate;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itDualLaserCannon;"/>
+			<Device deviceID="&HS_itNAMIMissileLauncher;">
+				<Items>
+					<Item count="4d6" item="&HS_itKM500Missile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itClass2Deflector;"/>
+			<Device deviceID="&HS_it10MWReactor;"/>
+		</Devices>
+
+		<Items>
+			<Item count="4d6" item="&CORE_itHelium3FuelRod;"/>
+		</Items>
+
+		<!-- Player Settings -->
+		
+		<PlayerSettings
+			desc=				"Fast and deadly, the Wolfen is designed for combat. Though limited in cargo capacity, it has lots of room for more weapons."
+			sortOrder=			"20"
+			initialClass=		"true"
+			startingCredits=	"5d20+200"
+			/>
+		
+	</ShipClass>
+
+</TranscendenceModule>

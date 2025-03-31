@@ -1,0 +1,96 @@
+<?xml version="1.0" ?>
+
+<TranscendenceModule>
+
+	<!-- Kronosaurus -->
+
+	<Type UNID="&HS_unidKronosaurus;">
+		<StaticData>
+			<Data id="MissionAttribute">"kronosaurusMission"</Data>
+			<Data id="Name">"Kronosaurus"</Data>
+			<Data id="Sovereign">&HS_svPirates;</Data>
+		</StaticData>
+
+		<Events>
+			<OnCharacterCanBeMet>
+				True
+			</OnCharacterCanBeMet>
+
+			<OnGlobalSystemStopped>
+				(rpgCharacterAscend &HS_unidKronosaurus;)
+			</OnGlobalSystemStopped>
+		</Events>
+	</Type>
+
+	<!-- The Kronosaurus -->
+
+	<ShipClass UNID="&HS_scCharonFrigateKronosaurus;"
+			manufacturer=		"Neptune's Forge"
+			class=				"Charon frigate"
+			type=				""
+			   
+			attributes=			"capitalShip, charonPirates, charonFrigate, majorShip"
+			inherit=			"&HS_scCharonFrigateStock;"
+			character=			"&HS_unidKronosaurus;"
+
+			achievement=		"humanSpace.kronosaurusKiller"
+			>
+
+		<Names definiteArticle="true">pirate ship Kronosaurus</Names>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itBlastPlate;"
+			count=				"12"
+			/>
+		
+		<Devices>
+			<Device slotID="omni1"		deviceID="&HS_itNAMIMissileLauncher;">
+				<Items>
+					<Item count="20d20" item="&HS_itKM500Missile;"/>
+				</Items>
+			</Device>
+			<Device slotID="port1"		deviceID="&HS_itTurbolaserCannon;"/>
+			<Device slotID="port2"		deviceID="&HS_itTurbolaserCannon;"/>
+			<Device slotID="starboard1"	deviceID="&HS_itTurbolaserCannon;"/>
+			<Device slotID="starboard2"	deviceID="&HS_itTurbolaserCannon;"/>
+		</Devices>
+
+		<Items>
+			<Item count="2d6" item="&HS_itXenotiteFuelRod;"/>
+		</Items>
+
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"25"
+			fireAccuracy=		"95"
+			perception=			"4"
+			
+			combatStyle=		"standOff"
+			/>
+
+		<!-- Language -->
+
+		<Language>
+			<Text id="FirstMeetingIntro">
+				(cat
+					"LATER: First meeting."
+					)
+			</Text>
+
+			<Text id="MeetingIntro">
+				(cat
+					"LATER: Intro."
+					)
+			</Text>
+
+			<Text id="NoMissions">
+				(cat
+					"LATER: No missions."
+					)
+			</Text>
+		</Language>
+	</ShipClass>
+
+</TranscendenceModule>

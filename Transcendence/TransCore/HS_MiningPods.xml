@@ -1,0 +1,633 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- STATION TYPES -->
+	
+	<!-- Mining Pod
+	
+	DATA
+	
+	ownerID: Object that created it.
+	
+	podType: UNID of item type that created this.
+	
+	status:
+	
+		Nil: Ready to be armed.
+		'armed: Armed to explode
+		
+	-->
+
+	<StationType UNID="&HS_stMiningPod;"
+			name=				"(mining pod)"
+			sovereign=			"&CORE_svNeutral;"
+				 
+			attributes=			"miningPod"
+
+			scale=				"flotsam"
+			mobile=				"true"
+			mass=				"1"
+			>
+
+		<ImageVariants>
+			<Image			imageID="&HS_rsMiningPod;" imageX="0"  imageY="0"  imageWidth="24" imageHeight="24" />
+			<Image			imageID="&HS_rsMiningPod;" imageX="24" imageY="0"  imageWidth="24" imageHeight="24" />
+		</ImageVariants>
+		
+		<Communications>
+			<Message id="msgDetonate" name="Detonate" key="A">
+				<OnShow>
+					(and (= (objGetID gSender) (objGetData gSource 'ownerID))
+						(not (objGetData gSource 'status))
+						)
+				</OnShow>
+				
+				<Invoke>
+					(block (
+						(podType (objGetData gSource 'podType))
+						overlayID
+						)
+						
+						;	Remove the radius overlay and add an armed radius
+						
+						(enum (objGetOverlays gSource) oldOverlayID
+							(if (= (objGetOverlayType gSource oldOverlayID) &HS_ovMiningPodRadius;)
+								(objRemoveOverlay gSource oldOverlayID)
+								)
+							)
+
+						(setq overlayID (objAddOverlay gSource &HS_ovMiningPodArmedRadius;))
+						(objSetOverlayProperty gSource overlayID 'counter (typGetStaticData podType 'effectRadius))
+						
+						;	Add a timer overlay to the pod
+				
+						(setq overlayID	(objAddOverlay gSource	&HS_ovMiningPodTimer;))
+						(objSetOverlayData gSource overlayID 'sourceID (objGetData gSource 'ownerID))
+						(objSetOverlayData gSource overlayID 'startTime (unvGetTick))
+						(objSetOverlayData gSource overlayID 'podType podType)
+						
+						;	Armed
+						
+						(objSetData gSource 'status 'armed)
+						)
+				</Invoke>
+			</Message>
+		</Communications>
+	</StationType>
+
+	<!-- Level 2: Seismic Scanner Pod -->
+
+	<ItemType UNID="&HS_itSeismicScannerPod;"
+			name=				"seismic scanner pod"
+			attributes=			"commonwealth, essentialMiningEquipment, miningEquipment"
+			inherit=			"&HS_baMiningPodItem;"
+			  
+			level=				"2"
+			frequency=			"common"
+			numberAppearing=	"4d6"
+
+			value=				"150"
+			mass=				"500"
+
+			description=		"This scanner pod emits a seismic wave that reveals the location of valuable resources in asteroids. It has a range of 30 light-seconds."
+			>
+
+		<Image imageID="&HS_rsItems2;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+		
+		<StaticData>
+			<Data id="effectRadius">30</Data>
+			<Data id="imageVariant">0</Data>
+		</StaticData>
+		
+		<Events>
+			<OnEffect>
+				(sysCreateWeaponFire 
+					&HS_vtSeismicScannerPower; 
+					(list (@ gData 'sourceObj) 'explosion Nil "seismic scanner pod" 0x00)
+					(objGetPos (@ gData 'podObj))
+					0
+					0
+					Nil
+					(list 'detonateNow 'fireEffect 'soundEffect)
+					)
+			</OnEffect>
+		</Events>
+	</ItemType>
+	
+	<ItemType UNID="&HS_vtSeismicScannerPower;"
+			name=				"seismic scanner power"
+			virtual=			"true"
+			inherit=			"&HS_baSeismicScannerPower;"
+			level=				"2"
+			>
+
+		<Weapon
+				type=				"shockwave"
+
+				damage=				"generic:1; mining:5;"
+				fireRate=			"30"
+				expansionSpeed=		"80"
+				missileSpeed=		"0"
+				lifetime=			"20"
+				powerUse=			"500"
+				canHitSource=		"true"
+				
+				passthrough=		"100"
+				
+				sound=				"&CORE_snArmorHit1;"
+				>
+
+			<Effect>
+				<Shockwave
+						style=			"glowRing"
+						width=			"2"
+						glowSize=		"12"
+						primaryColor=	"#ffd4cb"
+						secondaryColor=	"#f24b29"
+						/>
+			</Effect>
+		</Weapon>
+	</ItemType>
+	
+	<!-- Level 3: Class-A Excavation Pod -->
+	
+	<ItemType UNID="&HS_itClassAExcavationPod;"
+			name=				"class A excavation pod"
+			attributes=			"commonwealth, essentialMiningEquipment, miningEquipment"
+			inherit=			"&HS_baMiningPodItem;"
+			  
+			level=				"3"
+			frequency=			"uncommon"
+			numberAppearing=	"2d6"
+
+			value=				"250"
+			mass=				"500"
+
+			description=		"Class A excavation pods uses a seismic charge to extract ore from asteroids in a 30 light-second radius. Excavation pods are most effective on metallic and volcanic asteroids."
+			>
+
+		<Image imageID="&HS_rsItems3;" imageX="96" imageY="192" imageWidth="96" imageHeight="96"/>
+		
+		<StaticData>
+			<Data id="effectRadius">30</Data>
+			<Data id="imageVariant">1</Data>
+		</StaticData>
+		
+		<Events>
+			<OnEffect>
+				(sysCreateWeaponFire 
+					&HS_vtClassAExcavationPower; 
+					(list (@ gData 'sourceObj) 'explosion Nil "class A excavation pod" 0x00)
+					(objGetPos (@ gData 'podObj))
+					0
+					0
+					Nil
+					(list 'detonateNow 'fireEffect 'soundEffect)
+					)
+			</OnEffect>
+		</Events>
+	</ItemType>
+	
+	<ItemType UNID="&HS_vtClassAExcavationPower;"
+			name=				"class A excavation power"
+			virtual=			"true"
+			level=				"3"
+			>
+
+		<Weapon
+				type=				"shockwave"
+
+				damage=				"blast:4d6; mining:5"
+				fireRate=			"30"
+				expansionSpeed=		"80"
+				missileSpeed=		"0"
+				lifetime=			"20"
+				powerUse=			"500"
+				canHitSource=		"true"
+				
+				passthrough=		"100"
+				>
+
+			<FireEffect
+					sound="&CORE_snArmorHit1;"
+							>
+				<Flare
+						style=			"fadingBlast"
+						radius=			"120"
+						primaryColor=	"#ffc29a"
+						lifetime=		"8"
+								/>
+			</FireEffect>
+			
+			<Effect>
+				<Shockwave
+						style=			"image"
+						>
+					<Image imageID=				"&CORE_rsShockwave3;"
+							imageX=				"0" 
+							imageY=				"0" 
+							imageWidth=			"512" 
+							imageHeight=		"128"
+							/>
+				</Shockwave>
+			</Effect>
+		</Weapon>
+	</ItemType>
+	
+	<!-- Level 5: Class-B Excavation Pod -->
+	
+	<ItemType UNID="&HS_itClassBExcavationPod;"
+			name=				"class B excavation pod"
+			attributes=			"commonwealth, essentialMiningEquipment, miningEquipment"
+			inherit=			"&HS_baMiningPodItem;"
+			  
+			level=				"5"
+			frequency=			"uncommon"
+			numberAppearing=	"2d6"
+
+			value=				"500"
+			mass=				"500"
+
+			description=		"This improved excavation pod has a 40 light-second radius. Excavation pods are most effective on metallic and volcanic asteroids."
+			>
+
+		<Image imageID="&HS_rsItems5;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+		
+		<StaticData>
+			<Data id="effectRadius">40</Data>
+			<Data id="imageVariant">1</Data>
+		</StaticData>
+		
+		<Events>
+			<OnEffect>
+				(sysCreateWeaponFire 
+					&HS_vtClassBExcavationPower; 
+					(list (@ gData 'sourceObj) 'explosion Nil "class B excavation pod" 0x00)
+					(objGetPos (@ gData 'podObj))
+					0
+					0
+					Nil
+					(list 'detonateNow 'fireEffect 'soundEffect)
+					)
+			</OnEffect>
+		</Events>
+	</ItemType>
+	
+	<ItemType UNID="&HS_vtClassBExcavationPower;"
+			name=				"class B excavation power"
+			virtual=			"true"
+			level=				"5"
+			>
+
+		<Weapon
+				type=				"shockwave"
+
+				damage=				"blast:6d6; mining:6"
+				fireRate=			"30"
+				expansionSpeed=		"80"
+				missileSpeed=		"0"
+				lifetime=			"25"
+				powerUse=			"500"
+				canHitSource=		"true"
+				
+				passthrough=		"100"
+				>
+
+			<FireEffect
+					sound="&CORE_snArmorHit1;"
+							>
+				<Flare
+						style=			"fadingBlast"
+						radius=			"180"
+						primaryColor=	"#ffc29a"
+						lifetime=		"8"
+								/>
+			</FireEffect>
+			
+			<Effect>
+				<Shockwave
+						style=			"image"
+						>
+					<Image imageID=				"&CORE_rsShockwave3;"
+							imageX=				"0" 
+							imageY=				"0" 
+							imageWidth=			"512" 
+							imageHeight=		"128"
+							/>
+				</Shockwave>
+			</Effect>
+		</Weapon>
+	</ItemType>
+	
+	<!-- Level 6: Advanced Scanner Pod -->
+
+	<ItemType UNID="&HS_itAdvancedScannerPod;"
+			name=				"advanced scanner pod"
+			attributes=			"advanced, commonwealth, miningEquipment, specialty"
+			inherit=			"&HS_baMiningPodItem;"
+			  
+			level=				"6"
+			frequency=			"uncommon"
+			numberAppearing=	"4d6"
+
+			value=				"250"
+			mass=				"500"
+
+			description=		"This is an improved version of the seismic scanner pod. It detects ore in a 60 light-second radius."
+			>
+
+		<Image imageID="&HS_rsItems6;" imageX="288" imageY="96" imageWidth="96" imageHeight="96"/>
+		
+		<StaticData>
+			<Data id="effectRadius">60</Data>
+			<Data id="imageVariant">0</Data>
+		</StaticData>
+		
+		<Events>
+			<OnEffect>
+				(sysCreateWeaponFire 
+					&HS_vtAdvancedScannerPower; 
+					(list (@ gData 'sourceObj) 'explosion Nil "advanced scanner pod" 0x00)
+					(objGetPos (@ gData 'podObj))
+					0
+					0
+					Nil
+					(list 'detonateNow 'fireEffect 'soundEffect)
+					)
+			</OnEffect>
+		</Events>
+	</ItemType>
+	
+	<ItemType UNID="&HS_vtAdvancedScannerPower;"
+			name=				"advanced scanner power"
+			virtual=			"true"
+			inherit=			"&HS_baSeismicScannerPower;"
+			level=				"6"
+			>
+
+		<Weapon
+				type=				"shockwave"
+
+				damage=				"generic:1; mining:7;"
+				fireRate=			"30"
+				expansionSpeed=		"80"
+				missileSpeed=		"0"
+				lifetime=			"38"
+				powerUse=			"500"
+				canHitSource=		"true"
+				
+				passthrough=		"100"
+				
+				sound=				"&CORE_snArmorHit1;"
+				>
+
+			<Effect>
+				<Shockwave
+						style=			"glowRing"
+						width=			"2"
+						glowSize=		"12"
+						primaryColor=	"#f7ffcc"
+						secondaryColor=	"#d1f229"
+						/>
+			</Effect>
+		</Weapon>
+	</ItemType>
+	
+	<!-- Level 8: Class-C Excavation Pod -->
+	
+	<ItemType UNID="&HS_itClassCExcavationPod;"
+			name=				"class C excavation pod"
+			attributes=			"advanced, commonwealth, miningEquipment, specialty"
+			inherit=			"&HS_baMiningPodItem;"
+			  
+			level=				"8"
+			frequency=			"uncommon"
+			numberAppearing=	"2d6"
+
+			value=				"1000"
+			mass=				"500"
+
+			description=		"The class C uses a thermonuclear change and has a range of 60 light-seconds. Excavation pods are most effective on metallic and volcanic asteroids."
+			>
+
+		<Image imageID="&HS_rsItems8;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+		
+		<StaticData>
+			<Data id="effectRadius">60</Data>
+			<Data id="imageVariant">1</Data>
+		</StaticData>
+		
+		<Events>
+			<OnEffect>
+				(sysCreateWeaponFire 
+					&HS_vtClassCExcavationPower; 
+					(list (@ gData 'sourceObj) 'explosion Nil "class C excavation pod" 0x00)
+					(objGetPos (@ gData 'podObj))
+					0
+					0
+					Nil
+					(list 'detonateNow 'fireEffect 'soundEffect)
+					)
+			</OnEffect>
+		</Events>
+	</ItemType>
+	
+	<ItemType UNID="&HS_vtClassCExcavationPower;"
+			name=				"class C excavation power"
+			virtual=			"true"
+			level=				"8"
+			>
+
+		<Weapon
+				type=				"shockwave"
+
+				damage=				"thermo:8d12; mining:7"
+				fireRate=			"30"
+				expansionSpeed=		"80"
+				missileSpeed=		"0"
+				lifetime=			"38"
+				powerUse=			"500"
+				canHitSource=		"true"
+				
+				passthrough=		"100"
+				>
+
+			<FireEffect
+					sound="&CORE_snArmorHit1;"
+							>
+				<Flare
+						style=			"fadingBlast"
+						radius=			"240"
+						primaryColor=	"#ffc29a"
+						lifetime=		"8"
+								/>
+			</FireEffect>
+			
+			<Effect>
+				<Shockwave
+						style=			"image"
+						>
+					<Image imageID=				"&CORE_rsShockwave3;"
+							imageX=				"0" 
+							imageY=				"0" 
+							imageWidth=			"512" 
+							imageHeight=		"128"
+							/>
+				</Shockwave>
+			</Effect>
+		</Weapon>
+	</ItemType>
+	
+<!-- OVERLAYS -->
+
+	<OverlayType UNID="&HS_ovMiningPodRadius;"
+			attributes=         "effect"
+			>
+		<Counter style=	"radius"
+				color=	"#5ff12a"
+				/>
+	</OverlayType>
+	
+	<OverlayType UNID="&HS_ovMiningPodArmedRadius;"
+			attributes=         "effect"
+			>
+		<Counter style=	"radius"
+				color=	"#f24b29"
+				/>
+	</OverlayType>
+	
+	<OverlayType UNID="&HS_ovMiningPodTimer;"
+			attributes=         "effect"
+			>
+		
+		<Counter style=	"progress"
+				color=	"#f24b29"
+				max=	"100"
+				/>
+		
+		<Events>
+			<OnUpdate>
+				(block (
+					(startTime (objGetOverlayData gSource aOverlayID 'startTime))
+					(detonateTime 150)
+					(progress (subtract (unvGetTick) startTime))
+					(percentDone (if (gr detonateTime 0) (divide (multiply progress 100) detonateTime) 0))
+					(podType (objGetOverlayData gSource aOverlayID 'podType))
+					)
+					
+					(switch
+						;	If we're still ticking, set the counter
+						
+						(ls progress detonateTime)
+							(block Nil
+								(objSetOverlayProperty gSource aOverlayID 'counter percentDone)
+								(objSetOverlayProperty gSource aOverlayID 'counterLabel (typTranslate podType "msgWaiting"))
+								)
+
+						;	Boom!
+
+						(block Nil
+							(typFireEvent podType 'OnEffect {
+								sourceObj: (objGetObjByID (objGetOverlayData gSource aOverlayID 'sourceID))
+								podObj: gSource
+								overlayID: aOverlayID
+								})
+								
+							;	We get destroyed
+							
+							(objDestroy gSource)
+							)
+						)
+					)
+			</OnUpdate>
+		</Events>
+	</OverlayType>
+	
+<!-- BASE CLASSES -->
+	
+	<ItemType UNID="&HS_baMiningPodItem;"
+			name=				"(mining pod)"
+			virtual=			"true"
+			level=				"1"
+			>
+
+		<Invoke>
+			(block (
+				(podType (itmGetType gItem))
+				(miningPodObj Nil)
+				(overlayID Nil)
+				)
+				
+				;	Create a mining pod
+				
+				(setq miningPodObj (sysCreateStation &HS_stMiningPod; (objGetPos gSource)))
+				(objSetName miningPodObj (itmGetName gItem 0x00) 0x00)
+				(objIncVel miningPodObj (sysVectorPolarVelocity (objGetProperty gSource 'rotation) 5))
+				(objSetData miningPodObj 'ownerID (objGetID gSource))
+				(objSetData miningPodObj 'podType podType)
+				(staSetImageVariant miningPodObj (typGetStaticData podType 'imageVariant))
+				
+				;	Add a radius overlay to indicate its area of effect
+
+				(setq overlayID (objAddOverlay miningPodObj &HS_ovMiningPodRadius;))
+				(objSetOverlayProperty miningPodObj overlayID 'counter (typGetStaticData (itmGetType gItem) 'effectRadius))
+				
+				;	Identify and consume the pod
+				
+				(itmSetKnown gItem)
+				(objRemoveItem gSource gItem 1)
+				)
+		</Invoke>
+		
+		<Events>
+			<GetDisplayAttributes>
+				(list
+					{	labelType: 'advantage
+						label: (typTranslate gType 'attribShockwaveMining)
+						}
+					)
+			</GetDisplayAttributes>
+		</Events>
+		
+		<Language>
+			<Text id="msgWaiting">Armed</Text>
+			<Text id="attribShockwaveMining">shockwave mining</Text>
+		</Language>
+	</ItemType>
+	
+	<ItemType UNID="&HS_baSeismicScannerPower;"
+			name=				"(seismic scanner base class)"
+			virtual=			"true"
+			level=				"2"
+			>
+		<Properties>
+			<ObjData id="mining.asteroidsFound">0</ObjData>
+		</Properties>
+
+		<Events>
+			<OnDestroyShot>
+				(block (
+					(asteroidsFound (objGetProperty gSource 'mining.asteroidsFound))
+					)
+					(switch
+						(= asteroidsFound 0)
+							(objSendMessage aOrderGiver Nil (typTranslate &GLXY_ovMiningOreCount; 'msgNoOreFound))
+
+						(= asteroidsFound 1)
+							(objSendMessage aOrderGiver Nil (typTranslate &GLXY_ovMiningOreCount; 'msgOreFound1))
+
+						(objSendMessage aOrderGiver Nil (typTranslate &GLXY_ovMiningOreCount; 'msgOreFoundN {
+							count: asteroidsFound
+							}))
+						)
+					)
+			</OnDestroyShot>
+		</Events>
+	</ItemType>
+	
+<!-- RESOURCES -->
+
+	<Image UNID="&HS_rsMiningPod;"		bitmap="Resources\MiningPod.jpg" bitmask="Resources\MiningPodMask.bmp" loadOnUse="true"/>
+	
+</TranscendenceModule>

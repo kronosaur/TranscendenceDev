@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<DockScreen UNID="&RPG_dsRPGFreeSlaves;"
+			nestedScreen=	"true"
+			inherit=		"&RPG_dsDockScreenBase;"
+			>
+		<InitialPane>
+			(block (
+				;	This is a list of all slaves we carry.
+
+				(allSlaves (objGetItems gPlayerShip "* +slaves;"))
+				(totalSlaves (map allSlaves 'reduceSum theItem (itmGetCount theItem)))
+				)
+				;	Remember these values. It's OK to do this here since they
+				;	are just cached values.
+
+				(scrSetData gScreen 'allSlaves allSlaves)
+				(scrSetData gScreen 'totalSlaves totalSlaves)
+
+				(switch
+					;	If we have a smuggler's cargo hold then we get the option of
+					;	not declaring the slaves
+
+					(objGetItems gPlayerShip "*I +smugglersHold;")
+						"FreeSlavesAsk"
+
+					;	Otherwise, we always free them.
+
+					"Default"
+					)
+				)
+		</InitialPane>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(allSlaves (scrGetData gScreen 'allSlaves))
+						(totalSlaves (scrGetData gScreen 'totalSlaves))
+
+						desc
+						)
+						; Free the slaves
+
+						(enum allSlaves itemToRemove
+							(objRemoveItem gPlayerShip itemToRemove)
+							)
+
+						; Keep track of how many we have freed in total
+
+						(objIncData gPlayerShip 'slavesFreed totalSlaves)
+
+						; Create description
+
+						(switch
+							(= totalSlaves 1)
+								(scrSetDescTranslate gScreen 'rpg.descRescueSlaves.1)
+
+							(= totalSlaves 2)
+								(scrSetDescTranslate gScreen 'rpg.descRescueSlaves.2)
+
+							(scrSetDescTranslate gScreen 'rpg.descRescueSlaves.several)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(block (
+							(freed (objGetData gPlayerShip "slavesFreed"))
+							(rewarded (objGetData gPlayerShip "slaveReward"))
+							)
+							(switch
+								(and (geq freed 12) (ls rewarded 12))
+									(scrShowPane gScreen "Reward1")
+
+								(and (geq freed 24) (ls rewarded 24))
+									(scrShowPane gScreen "Reward1")
+
+								(scrExitScreen gScreen)
+								)
+							)
+					</Action>
+				</Actions>
+			</Default>
+
+			<FreeSlavesAsk>
+				<OnPaneInit>
+					(scrSetDescTranslate gScreen 'rpg.descDeclareSlaves {
+						itemName: (itmGetName (@ (scrGetData gScreen 'allSlaves) 0) 'count)
+						})
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDeclareSlaves" default="1">
+						(scrShowPane gScreen 'Default)
+					</Action>
+
+					<Action id="actionNothingToDeclare" cancel="1">
+						(block ()
+							;	Set a flag for the remainder of the session.
+							(scrSetSessionData gScreen 'rpg.noSlaveConfiscation True)
+							(scrExitScreen gScreen)
+							)
+					</Action>
+				</Actions>
+			</FreeSlavesAsk>
+
+			<Reward1>
+				<OnPaneInit>
+					(block (
+						(allSlaves (scrGetData gScreen 'allSlaves))
+						(slaveItem (@ allSlaves 0))
+						(reward (typFireObjItemEvent (itmGetType slaveItem) gPlayerShip slaveItem 'OnCreateReward))
+						)
+						;	Give it to the player
+
+						(objAddItem gPlayerShip reward)
+						(scrSetDescTranslate gScreen 'rpg.descRewardFromSlaves {
+							itemName: (itmGetName reward 'count)
+							})
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(block Nil
+							(objSetData gPlayerShip "slaveReward" (objGetData gPlayerShip "slavesFreed"))
+							(scrExitScreen gScreen)
+							)
+					</Action>
+				</Actions>
+			</Reward1>
+		</Panes>
+
+		<Language>
+			<String id="actionDeclareSlaves">"[Y]es, I do."</String>
+			<String id="actionNothingToDeclare">"[N]o.</String>
+
+			<Text id="rpg.descDeclareSlaves">
+
+				You approach the customs podium, an officer asks you:
+
+				"Anything to declare?"
+
+				You remember that you have %itemName% in your cargo hold.
+
+			</Text>
+			<Text id="rpg.descRescueSlaves.1">
+
+				You inform customs that you have rescued a slave.
+				
+				The jaded officer takes the slave coffin and files a routine 
+				report.
+			
+			</Text>
+			<Text id="rpg.descRescueSlaves.2">
+			
+				You inform customs that you have rescued a couple of slaves.
+				
+				The jaded officer takes the	two slave coffins and files a 
+				routine report.
+			
+			</Text>
+			<Text id="rpg.descRescueSlaves.several">
+
+				You inform customs that you have rescued several slaves. The 
+				officer in charge thanks you:
+
+				"You must have a pretty good ship to have survived a fight 
+				against Slavers!"
+				
+			</Text>
+			<Text id="rpg.descRewardFromSlaves">
+
+				Medtechs revive one of the slaves, and after blinking away 
+				confusion, she thanks you with a barely audible whisper.
+				
+				She puts something in your hand, then turns and walks away 
+				without another word.
+				
+				When you open your hand you see %itemName%.
+			
+			</Text>
+		</Language>
+	</DockScreen>
+
+</TranscendenceModule>

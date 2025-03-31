@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+	<!-- Fiona -->
+	
+	<Type UNID="&HS_unidFiona;">
+		<Properties>
+			<Definition id="core.namePattern">": Fiona"</Definition>
+		</Properties>
+
+		<StaticData>
+			<Data id="MissionAttribute">"fionaMission"</Data>
+			<Data id="Name">"Fiona"</Data>
+			<Data id="Sovereign">&HS_svCommonwealth;</Data>
+		</StaticData>
+
+		<Events>
+			<OnCharacterCanBeMet>
+				True
+			</OnCharacterCanBeMet>
+
+			<OnGlobalSystemStopped>
+				(rpgCharacterAscend &HS_unidFiona;)
+			</OnGlobalSystemStopped>
+		</Events>
+	</Type>
+	
+	<!-- Fiona's Ship -->
+	
+	<ShipClass UNID="&HS_scFionaScorpion;"
+			manufacturer=		"Earth Industries"
+			class=				"Scorpion"
+			type=				"gunship"
+			defaultSovereign=	"&HS_svCommonwealth;"
+
+			attributes=			"fiona"
+			character=			"&HS_unidFiona;"
+			   
+			size=				"40"
+			mass=				"120"
+			thrustRatio=		"8"
+			maxSpeed=			"25"
+			cargoSpace=			"40"
+
+			dockingPorts=		"4"
+			dockScreen=			"&RPG_dsRPGCharacterDefault;"
+			>
+
+		<Names noArticle="true" personalName="true">Fiona</Names>
+		
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itQuadroCarbideArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itLightIonBlaster;"/>
+			<Device deviceID="&HS_itYoroiMX;"/>
+			<Device deviceID="&HS_itThermoCannon;">
+				<Items>
+					<Item	 count="20d20"	item="&HS_itThermoCannonShell;"/>
+				</Items>
+			</Device>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"12.0"
+			rotationAccel=		"3.0"
+			/>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsScorpionGunship;" imageWidth="68" imageHeight="68" rotationCount="120" rotationColumns="12" viewportRatio="0.005625"/>
+		<HeroImage imageID="&HS_rsScorpionGunshipHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="170"	posRadius="30"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-170"	posRadius="30"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+		
+		<AISettings
+			fireRateAdj=		"20"
+			fireRangeAdj=		"30"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			ignoreShieldsDown=	"true"
+			/>
+
+		<Language>
+			<Text id="FirstMeetingIntro">
+				(list
+					{
+						desc: (cat
+							"LATER: Fiona intro."
+							)
+						}
+					)
+			</Text>
+
+			<Text id="MeetingIntro">
+				(cat
+					"LATER: Fiona"
+					)
+			</Text>
+
+			<Text id="NoMissions">
+				The airlock refuses to open.
+			</Text>
+			
+			<Text id="ArmorRepaired">			My ship's as good as new</Text>
+			<Text id="AttackTargetAck">			Target acquired</Text>
+			<Text id="CancelAttackAck">			Acknowledged</Text>
+			<Text id="FormUpAck">				Acknowledged</Text>
+			<Text id="IcantAttackFriends">		Quit screwing around!</Text>
+			<Text id="IcantAttackMyself">		Knock off the jokes, please!</Text>
+			<Text id="ImRepairingArmor">		Docking to repair armor</Text>
+			<Text id="MyArmorNeedsRepair">		My ship needs repairs</Text>
+			<Text id="NiceShooting">			</Text>
+			<Text id="NoTargetInRange">			No targets in sight</Text>
+			<Text id="Status100Percent">		All systems normal</Text>
+			<Text id="StatusAttackingTarget">	Engaging the enemy</Text>
+			<Text id="StatusGoingHome">			</Text>
+			<Text id="StatusRepairingArmor">	Repairing my ship</Text>
+			<Text id="StatusWaiting">			Waiting as ordered</Text>
+			<Text id="WaitAck">					Acknowledged</Text>
+			<Text id="WatchYourTargets">		</Text>
+			<Text id="WingmanJoined">			Let's do this.</Text>
+		</Language>
+	</ShipClass>
+	
+</TranscendenceModule>

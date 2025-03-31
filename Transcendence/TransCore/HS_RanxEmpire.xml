@@ -1,0 +1,747 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- Ranx Empire =========================================================== -->
+
+	<Sovereign UNID="&HS_svRanxEmpire;"
+			name=":the Ranx Empire"
+			shortName=":the Ranx"
+			adjective="Ranx"
+			demonym=":a Ranx citizen(s)"
+			plural="true"
+
+			alignment="destructive order"
+			/>
+
+	<SystemMap unid="&HS_smRanxSpace;"
+			displayOn="&HS_smHumanSpace;"
+			>
+		<TopologyProcessor priority="primaryColony">
+			<System criteria="+outerRealm;"				attributes="ranxSpace"/>
+		</TopologyProcessor>
+	</SystemMap>
+
+<!-- ENCOUNTERS -->
+
+	<!-- Level 7: Ranx Outpost -->
+
+	<StationType UNID="&HS_stRanxOutpost;"
+			name=				"Ranx outpost"
+			sovereign=			"&HS_svRanxEmpire;"
+
+			attributes=			"enemy, envEarth, envAvoidsAir, generic, human, populated, ranx"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			size=				"300"
+			explosionType=		"&CORE_vtThermoExplosion2;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+ranxSpace;"
+				systemAffinity=			"+envEarth; -envAir;"
+				levelFrequency=			"----- ucur- ----- ----- -----"
+
+				locationCriteria=		"-outerSystem, +planetary|+50"
+				enemyExclusionRadius=	"60"
+				/>
+
+		<Encounters frequency="uncommon">
+			<Lookup table="&HS_tbRanxEncounters;"/>
+		</Encounters>
+
+		<!-- Properties -->
+
+		<Properties>
+			<Definition id="supplyList">
+				(list
+					{	itemType:&HS_itAkan30CannonShell;		multiplier:3	}
+					)
+			</Definition>
+
+			<DynamicData id="rpg.suppliesNeeded">
+				(rpgCalcSuppliesNeeded gSource (obj@ gSource 'supplyList))
+			</DynamicData>
+		</Properties>
+
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&HS_itLightOrthoSteel;"
+				hitPoints=		"370"
+				regen=			"4"
+				/>
+		
+		<Devices>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="7"    posRadius="48" posZ="35" fireAngle="7"  fireArc="120"		missileDefense="true">
+				<Items>
+					<Item count="30d40"	item="&HS_itAkan30CannonShell;" />
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="97"   posRadius="48" posZ="35" fireAngle="97"  fireArc="120"		missileDefense="true"/>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="187"  posRadius="48" posZ="35" fireAngle="187"  fireArc="120"		missileDefense="true"/>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="277"  posRadius="48" posZ="35" fireAngle="277"  fireArc="120"		missileDefense="true"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Squadrons>
+			<Squadron table="&HS_tbRanxDefenders;"		count="challenge:standard"/>
+			<Squadron table="&HS_tbRanxResupply;"		count="property:rpg.suppliesNeeded"		reinforceLimit="3" />
+		</Squadrons>
+
+		<!-- Treasure -->
+
+		<Items value="standard:level=7:x=1.2">
+			<Table chance="50">
+				<Lookup chance="40" count="1" table="&HS_trConsumables8;"/>
+				<Lookup chance="40" count="1" table="&HS_trMinorItem8;"/>
+				<Lookup chance="20" count="1" table="&HS_trMajorItem8;"/>
+			</Table>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsRanxOutpost;"			imageWidth="300" imageHeight="300"	viewportRatio="0.03875"/>
+
+		<DockingPorts>
+			<Port posAngle="65" posRadius="82" rotation="255" />
+			<Port posAngle="85" posRadius="82" rotation="255"/>
+
+			<Port posAngle="155" posRadius="82" rotation="345" />
+			<Port posAngle="175" posRadius="82" rotation="345"/>
+
+			<Port posAngle="245" posRadius="82" rotation="75" />
+			<Port posAngle="265" posRadius="82" rotation="75"/>
+
+			<Port posAngle="335" posRadius="82" rotation="165" />
+			<Port posAngle="355" posRadius="82" rotation="165"/>
+		</DockingPorts>
+
+	</StationType>
+
+	<!-- Level 8: Ranx Fortress -->
+
+	<StationType UNID="&HS_stRanxFortress;"
+			name=				"Ranx fortress(es)"
+			sovereign=			"&HS_svRanxEmpire;"
+
+			attributes=			"enemy, envEarth, envAvoidsAir, generic, human, majorStation, populated, ranx"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			size=				"599"
+			explosionType=		"&CORE_vtThermoExplosion4;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+ranxSpace;"
+				systemAffinity=			"+envEarth; -envAir;"
+				levelFrequency=			"----- -rcr- ----- ----- -----"
+
+				locationCriteria=		"-outerSystem, +planetary|+50"
+				enemyExclusionRadius=	"100"
+				/>
+
+		<Encounters frequency="common">
+			<Lookup table="&HS_tbRanxEncounters;"/>
+		</Encounters>
+
+		<!-- Properties -->
+
+		<Properties>
+			<Definition id="supplyList">
+				(list
+					{	itemType:&HS_itAkan30CannonShell;		multiplier:5	}
+					{	itemType:&HS_itKilotonCannonShell;		multiplier:1	}
+					)
+			</Definition>
+
+			<DynamicData id="rpg.suppliesNeeded">
+				(rpgCalcSuppliesNeeded gSource (obj@ gSource 'supplyList))
+			</DynamicData>
+		</Properties>
+
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&HS_itOrthoSteel;"
+				hitPoints=		"2400"
+				regen=			"19"
+				/>
+		
+		<Devices>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="7"    posRadius="114" posZ="60" fireAngle="7"  fireArc="120"		missileDefense="true">
+				<Items>
+					<Item count="50d40"		item="&HS_itAkan30CannonShell;" />
+					<Item count="72-120"	item="&HS_itKilotonCannonShell;" />
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="97"   posRadius="114" posZ="60" fireAngle="97"  fireArc="120"		missileDefense="true"/>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="187"  posRadius="114" posZ="60" fireAngle="187"  fireArc="120"		missileDefense="true"/>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="277"  posRadius="114" posZ="60" fireAngle="277"  fireArc="120"		missileDefense="true"/>
+
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="52"    posRadius="114" posZ="60" fireAngle="52"  fireArc="120"		missileDefense="true"/>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="142"   posRadius="114" posZ="60" fireAngle="142"  fireArc="120"		missileDefense="true"/>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="232"   posRadius="114" posZ="60" fireAngle="232"  fireArc="120"		missileDefense="true"/>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="312"   posRadius="114" posZ="60" fireAngle="312"  fireArc="120"		missileDefense="true"/>
+
+			<!-- Inner Guns -->
+
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="7"    posRadius="114" posZ="60" fireAngle="187"  fireArc="120"	maxFireRange="6"/>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="97"   posRadius="114" posZ="60" fireAngle="277"  fireArc="120"	maxFireRange="6"/>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="187"  posRadius="114" posZ="60" fireAngle="7"  fireArc="120"	maxFireRange="6"/>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="277"  posRadius="114" posZ="60" fireAngle="97"  fireArc="120"	maxFireRange="6"/>
+
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="52"    posRadius="114" posZ="60" fireAngle="232"  fireArc="120"	maxFireRange="6"/>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="142"   posRadius="114" posZ="60" fireAngle="312"  fireArc="120"	maxFireRange="6"/>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="232"   posRadius="114" posZ="60" fireAngle="52"  fireArc="120"	maxFireRange="6"/>
+			<Device deviceID="&HS_itAkan30Cannon;"	posAngle="312"   posRadius="114" posZ="60" fireAngle="142"  fireArc="120"	maxFireRange="6"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Squadrons>
+			<Squadron table="&HS_tbRanxDefenders;"			count="challenge:hard"/>
+			<Squadron table="&HS_tbRanxDreadnoughtPatrol;"	count="1"	reinforceInterval="60"	reinforceLimit="3" />
+			<Squadron table="&HS_tbRanxResupply;"			count="property:rpg.suppliesNeeded"		reinforceLimit="3" />
+		</Squadrons>
+
+		<!--
+		<Ships>
+			<Ship			count="1d6"	class="&HS_scRanxGunship;"	orders="patrol" patrolDist="5"/>
+			<Ship			count="1d6"	class="&HS_scRanxGunship;"	orders="guard" />
+			<Ship					count="1"	class="&HS_scRanxDreadnought;"	orders="patrol" patrolDist="150">
+				<Escorts>
+					<Ship			count="1d4"	class="&HS_scRanxGunship;"	orders="escort"/>
+				</Escorts>
+			</Ship>
+		</Ships>
+
+		<Reinforcements minShips="5">
+			<Table>
+				<Ship chance="75"  count="1d4"	class="&HS_scRanxGunship;" orders="patrol" patrolDist="5"/>
+				<Ship chance="25"  count="1"	class="&HS_scRanxDreadnought;"	orders="patrol" patrolDist="25">
+					<Escorts>
+						<Ship			count="1d4"	class="&HS_scRanxGunship;"	orders="escort"/>
+					</Escorts>
+				</Ship>
+			</Table>
+		</Reinforcements>
+		-->
+
+		<!-- Treasure -->
+
+		<Items value="standard:level=8:x=2">
+			<Table count="1-2">
+				<Lookup chance="40" count="1" table="&HS_trConsumables9;"/>
+				<Lookup chance="40" count="1" table="&HS_trMinorItem9;"/>
+				<Lookup chance="20" count="1" table="&HS_trMajorItem9;"/>
+			</Table>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&HS_rsRanxFortress;" imageWidth="380" imageHeight="380" viewportRatio="0.0375"/>
+
+		<DockingPorts>
+			<Port posAngle="65" posRadius="150" rotation="255" />
+			<Port posAngle="85" posRadius="150" rotation="255"/>
+
+			<Port posAngle="155" posRadius="150" rotation="345" />
+			<Port posAngle="175" posRadius="150" rotation="345"/>
+
+			<Port posAngle="245" posRadius="150" rotation="75" />
+			<Port posAngle="265" posRadius="150" rotation="75"/>
+
+			<Port posAngle="335" posRadius="150" rotation="165" />
+			<Port posAngle="355" posRadius="150" rotation="165"/>
+		</DockingPorts>
+
+	</StationType>
+	
+<!-- SHIP CLASSES -->
+
+	<!-- Level 6: Ranx Gunship -->
+
+	<ShipClass UNID="&HS_scRanxGunship;"
+			manufacturer=		"Ranx"
+			class=				""
+			type=				"gunship"
+			defaultSovereign=	"&HS_svRanxEmpire;"
+
+			level=				"6"
+			mass=				"60"
+			cargoSpace=			"10"
+			thrustRatio=		"12"
+			maxSpeed=			"18"
+
+			attributes=			"genericClass,ranx"
+			>
+
+		<Armor
+			armorID=			"&HS_itDepletedUraniumArmor;"
+			count=				"2"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itAkan30Cannon;">
+				<Items>
+					<Item count="20d20"	item="&HS_itAkan30CannonShell;" />
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itMonopoleDeflector;"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"12.0"
+			rotationAccel=		"2.0"
+			/>
+
+		<Items>
+			<Table>
+				<Item chance="60" count="2d6" item="&HS_itXenotiteFuelRod;"/>
+				<Item chance="30" count="1d2" item="&HS_itLightArmorRepair;"/>
+				<Item chance="10" count="1" item="&HS_itMediumArmorRepair;"/>
+			</Table>
+		</Items>
+
+		<Image imageID="&HS_rsRanxGunshipHD;"	imageWidth="48"	imageHeight="48"	rotationCount="120"	rotationColumns="12" />
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="130"	posRadius="12"	posZ="8"	rotation="180"	bringToFront="*"/>
+			<Effect type="thrustMain"		posAngle="-130"	posRadius="12"	posZ="8"	rotation="180"	bringToFront="*"/>
+		</Effects>
+		
+		<AISettings
+			fireRateAdj=		"25"
+			fireRangeAdj=		"60"
+			fireAccuracy=		"90"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 8: Ranx Freighter -->
+
+	<ShipClass UNID="&HS_scRanxFreighter;"
+			manufacturer=		"Ranx"
+			class=				""
+			type=				"freighter"
+			defaultSovereign=	"&HS_svRanxEmpire;"
+
+			attributes=			"freighter, genericClass, majorShip, ranx"
+			   
+			explosionType=		"&CORE_vtThermoExplosion2;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"220"
+			mass=				"20000"
+			cargoSpace=			"20000"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"20000"
+			maxDevices=			"8"
+
+			maxArmor=			"massive"
+			stdArmor=			"massive"
+			/>
+
+		<Drive
+			maxSpeed=			"8"
+			thrust=				"10000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"2.0"
+			rotationAccel=		"0.4"
+			/>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itTransuranicPlate;"
+			count=				"12"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itAkan30Cannon;"	 secondaryWeapon="true" omnidirectional="true"	posAngle="180" posRadius="10" posZ="20">
+				<Items>
+					<Item	count="1000-1200"	item="&HS_itAkan30CannonShell;" />
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itAkan30Cannon;"	 secondaryWeapon="true" omnidirectional="true"	posAngle="0"   posRadius="18" posZ="20"/>
+			<Device deviceID="&HS_itPatchSpider;"/>
+			<Device deviceID="&HS_itPatchSpider;"/>
+		</Devices>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"200"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"50"
+
+					posX=		"-77"
+					posY=		"0"
+					sizeX=		"44"
+					sizeY=		"30"
+					/>
+		</Interior>
+
+		<Items>
+			<Item	count="2d6"		item="&HS_itPteracniumFuelRod;"/>
+			<Table>
+				<Lookup	chance="40"	count="1d4"		table="&HS_trConsumables7;"/>
+				<Lookup	chance="30"	count="1d2"		table="&HS_trMinorItem7;"/>
+				<Lookup	chance="30"	count="1"		table="&HS_trMajorItem7;"/>
+			</Table>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsRanxFreighter;"	imageWidth="200" imageHeight="200"	rotationCount="120" rotationColumns="12" viewportRatio="0.0275"/>
+		<HeroImage imageID="&HS_rsRanxFreighterHero;" imageWidth="320" imageHighet="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="100"	posZ="0"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"35"
+			fireAccuracy=		"90"
+			perception=			"6"
+			
+			combatStyle=		"standOff"
+			/>
+
+	</ShipClass>
+
+	<!-- Level 9: Ranx Dreadnought -->
+
+	<ShipClass UNID="&HS_scRanxDreadnought;"
+			manufacturer=		"Ranx"
+			class=				""
+			type=				"dreadnought"
+			defaultSovereign=	"&HS_svRanxEmpire;"
+
+			level=				"9"
+			attributes=			"capitalShip, genericClass, majorShip, ranx"
+			   
+			size=				"350"
+			mass=				"60000"
+			cargoSpace=			"15000"
+			thrustRatio=		"0.5"
+			maxSpeed=			"8"
+
+			cyberDefenseLevel=	"6"
+
+			explosionType=		"&CORE_vtThermoExplosion3;"
+			achievement=		"humanSpace.ranxDreadnoughtKiller"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&HS_itTransuranicPlate;"
+			count=				"16"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itKilotonCannon;"						omnidirectional="true"				posAngle="180" posRadius="61" posZ="20">
+				<Items>
+					<Item	count="80-160"		item="&HS_itKilotonCannonShell;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itAkan30Cannon;"	 secondaryWeapon="true" minFireArc="225" maxFireArc="340"	posAngle="270" posRadius="20" posZ="0">
+				<Items>
+					<Item	count="1000-1200"	item="&HS_itAkan30CannonShell;" />
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itAkan30Cannon;"	 secondaryWeapon="true" minFireArc="20"  maxFireArc="135"	posAngle="90"  posRadius="20" posZ="0"/>
+			<Device deviceID="&HS_itAkan30Cannon;"	 secondaryWeapon="true" minFireArc="100" maxFireArc="260"	posAngle="180" posRadius="90" posZ="10"/>
+			<Device deviceID="&HS_itPatchSpider;"/>
+			<Device deviceID="&HS_itPatchSpider;"/>
+			<Device deviceID="&HS_vtRanxDamageControl;"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"2.0"
+			rotationAccel=		"0.2"
+			/>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"300"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"100"
+
+					posX=		"-115"
+					posY=		"0"
+					sizeX=		"44"
+					sizeY=		"44"
+					/>
+		</Interior>
+
+		<Items>
+			<Item	count="4d6"		item="&HS_itPteracniumFuelRod;"/>
+			<Table>
+				<Lookup	chance="40"	count="1d4"		table="&HS_trConsumables8;"/>
+				<Lookup	chance="30"	count="1d2"		table="&HS_trMinorItem8;"/>
+				<Lookup	chance="30"	count="1"		table="&HS_trMajorItem7;"/>
+			</Table>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsRanxDreadnoughtHD;"	imageWidth="280" imageHeight="280"	rotationCount="120" rotationColumns="12" viewportRatio="0.0475"/>
+		<HeroImage imageID="&HS_rsRanxDreadnoughtHero;" imageWidth="320" imageHighet="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="175"	posRadius="134"	posZ="0"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="134"	posZ="0"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-175"	posRadius="134"	posZ="0"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"35"
+			fireAccuracy=		"90"
+			perception=			"6"
+			
+			combatStyle=		"standOff"
+			/>
+
+	</ShipClass>
+
+<!-- ITEM TYPES -->
+
+	<!-- Level 4: Segment of Depleted Uranium Armor -->
+
+	<ItemType UNID="&HS_itDepletedUraniumArmor;"
+			name=				"[segment(s) of ]depleted uranium armor"
+			level=				"4"
+			value=				"500"
+			frequency=			"rare"
+			numberAppearing=	"1d4"
+			mass=				"5000"
+			attributes=			"minorItem, notForSale, ranx"
+
+			description=		"Though dense and extremely strong, depleted uranium is difficult to repair."
+			>
+
+		<Image imageID="&HS_rsItems4;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Armor
+				hitPoints=	"100"
+				hpBonus=	"  +0,  +0, +25, +25, +25, +25"
+
+				repairTech=	"6"
+				installCostAdj="150"
+				/>
+	</ItemType>
+
+	<!-- Level 7: Damage Control Party -->
+
+	<ItemType UNID="&HS_vtRanxDamageControl;"
+			name=				"(damage control party)"
+			level=				"7"
+			virtual=			"true"
+			>
+		<RepairerDevice
+				compartmentRegen=	"5"
+				powerUse=			"50"
+				/>
+	</ItemType>
+
+	<!-- Level 7: Kiloton Cannon -->
+
+	<ItemType UNID="&HS_itKilotonCannon;"
+			name=				"kiloton cannon"
+			attributes=			"majorItem, military, ranx, specialty"
+			  
+			level=				"7"
+			frequency=			"uncommon"
+
+			value=				"45000"
+			mass=				"4000"
+			  
+			description=		"This heavy nuclear cannon requires kiloton cannon shells."
+			>
+
+		<Image imageID="&HS_rsItemsEI3;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				fireRate=			"20"
+				powerUse=			"50"
+				>
+
+			<Missiles>
+				<Missile ammoID="&HS_itKilotonCannonShell;"
+						type=			"missile"
+
+						missileSpeed=	"50"
+						lifetime=		"120"
+
+						failsafe=		"10"
+
+						hitEffect=		"&HS_efThermoFragmentExplosion;"
+						sound=			"&CORE_snMissileLauncher;"
+						>
+
+					<Effect>
+						<ParticleJet
+								emitRate=			"20"
+								emitSpeed=			"40-50"
+								particleLifetime=	"10-30"
+								spreadAngle=		"2"
+								>
+							<ParticleEffect>
+								<Particle
+										style=			"plain"
+										minWidth=		"1"
+										maxWidth=		"3"
+										primaryColor=	"#effeff"
+										secondaryColor=	"#5b777a"
+										/>
+							</ParticleEffect>
+						</ParticleJet>
+						
+						<Image imageID="&CORE_rsMissiles;" imageX="0" imageY="48" imageWidth="16" imageHeight="16" imageFrameCount="12" imageTicksPerFrame="3"/>
+					</Effect>
+
+					<Fragment 
+							count=				"50-70"
+							type=				"missile"
+
+							damage=				"thermo:1d12+2; WMD:4"
+							missileSpeed=		"70-90"
+							lifetime=			"5"
+							
+							effect=				"&CORE_efThermoShellDefault;"
+							hitEffect=			"&HS_efThermoFragmentHit;"
+							>
+					</Fragment>
+				</Missile>
+			</Missiles>
+		</Weapon>
+	</ItemType>
+
+	<!-- Level 7: Kiloton Cannon Shell -->
+
+	<ItemType UNID="&HS_itKilotonCannonShell;"
+			name=				"kiloton cannon shell"
+			attributes=			"consumable, military, missile, ranx, specialty"
+			  
+			level=				"7"
+			frequency=			"common"
+			numberAppearing=	"72-120"
+
+			value=				"120"
+			mass=				"50"
+			  
+			description=		"This shell cartridge is used by the kiloton cannon."
+			>
+
+		<Image imageID="&HS_rsItemsEI3;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+<!-- TABLES -->
+
+	<!-- Ranx Defenders Table -->
+
+	<ShipTable unid="&HS_tbRanxDefenders;">
+		<LevelTable>
+			<Ship levelFrequency="----- ccurr" count="1"	class="&HS_scRanxGunship;" orders="guard"/>
+			<Ship levelFrequency="----- ccurr" count="1"	class="&HS_scRanxGunship;" orders="patrol:5"/>
+		</LevelTable>
+	</ShipTable>
+
+	<!-- Ranx Resupply Convoy -->
+
+	<ShipTable unid="&HS_tbRanxResupply;">
+		<LevelTable>
+			<Ship levelFrequency="----- ccccc" count="1"	class="&HS_scRanxFreighter;" eventHandler="&RPG_evStdResupplyBehavior;">
+				<Escorts>
+					<LevelTable>
+						<Ship levelFrequency="----- crv--" count="1d4"		class="&HS_scRanxGunship;"	orders="escort"/>
+						<Ship levelFrequency="----- -crv-" count="1d4+2"	class="&HS_scRanxGunship;"	orders="escort"/>
+						<Ship levelFrequency="----- --crv" count="2d6"		class="&HS_scRanxGunship;"	orders="escort"/>
+					</LevelTable>
+				</Escorts>
+			</Ship>
+		</LevelTable>
+	</ShipTable>
+
+	<!-- Ranx Dreadnought Patrol -->
+
+	<ShipTable unid="&HS_tbRanxDreadnoughtPatrol;">
+		<Ship					count="1"	class="&HS_scRanxDreadnought;"	orders="patrol:25">
+			<Escorts>
+				<LevelTable>
+					<Ship levelFrequency="----- crv--" count="1d4"		class="&HS_scRanxGunship;"	orders="escort"/>
+					<Ship levelFrequency="----- -crv-" count="1d4+2"	class="&HS_scRanxGunship;"	orders="escort"/>
+					<Ship levelFrequency="----- --crv" count="2d6"		class="&HS_scRanxGunship;"	orders="escort"/>
+				</LevelTable>
+			</Escorts>
+		</Ship>
+	</ShipTable>
+
+	<!-- Ranx Encounter Table -->
+	
+	<ShipTable unid="&HS_tbRanxEncounters;">
+		<LevelTable>
+			<Ship levelFrequency="----- ccurr" count="1"	class="&HS_scRanxGunship;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Ship					   count="1d3"	class="&HS_scRanxGunship;" orders="escort"/>
+				</Escorts>
+			</Ship>
+
+			<Ship levelFrequency="----- -ucur" count="1"	class="&HS_scRanxGunship;" eventHandler="&RPG_evStdPatrolEncounterBehavior;">
+				<Escorts>
+					<Ship					   count="1d6"	class="&HS_scRanxGunship;" orders="escort"/>
+				</Escorts>
+			</Ship>
+			
+			<Ship levelFrequency="----- -rrrr" count="1"	class="&HS_scRanxDreadnought;"	eventHandler="&RPG_evStdWanderBehavior;"	maxShips="4">
+				<Escorts>
+					<Ship					   count="1d4"	class="&HS_scRanxGunship;"	orders="escort"/>
+				</Escorts>
+			</Ship>
+		</LevelTable>
+	</ShipTable>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&HS_rsRanxOutpost;"			bitmap="Resources\RanxOutpost.jpg"		bitmask="Resources\RanxOutpostMask.bmp"  	loadOnUse="true"/>
+	<Image UNID="&HS_rsRanxFortress;"			bitmap="Resources\RanxFortress.jpg"		bitmask="Resources\RanxFortressMask.bmp"  	loadOnUse="true"/>
+
+	<Image UNID="&rsRanxDreadnoughtHD;"		bitmap="Resources\RanxDreadnoughtHD.jpg" bitmask="Resources\RanxDreadnoughtHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsRanxDreadnoughtHero;"	bitmap="Resources\RanxDreadnoughtLarge.jpg" bitmask="Resources\RanxDreadnoughtLargeMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&HS_rsRanxFreighter;"			bitmap="Resources\RanxFreighter.jpg" bitmask="Resources\RanxFreighterMask.bmp" loadOnUse="true"/>
+	<Image UNID="&HS_rsRanxFreighterHero;"		bitmap="Resources\RanxFreighterLarge.jpg" bitmask="Resources\RanxFreighterLargeMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&HS_rsRanxGunshipHD;"				bitmap="Resources\RanxGunshipHD.jpg"		bitmask="Resources\RanxGunshipHDMask.bmp"  	loadOnUse="true"/>
+
+</TranscendenceModule>

@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE CoreLibrary
+	[
+	<!ENTITY RPG_efShieldHUDDefault			"0x00000020">
+	<!ENTITY RPG_rsShieldHUDDefault			"0x00000021">
+	
+	<!ENTITY RPG_svFriendlyAuton			"0x0000100F">
+	
+	<!ENTITY RPG_baStdWingmanBaseObsolete	"0x00003012">
+	<!ENTITY RPG_baStdAutonBaseObsolete		"0x00003013">
+	<!ENTITY RPG_evStdPatrolEncounterBehavior	"0x00003014">
+	<!ENTITY RPG_evStdConvoyEncounterBehavior	"0x00003015">
+	<!ENTITY RPG_evStdZoneEncounterBehavior	"0x00003016">
+	
+	<!ENTITY RPG_itAutoSentinel				"0x000040ED">	<!-- Used only as a default -->
+	
+	<!ENTITY RPG_dsCargoHold				"0x0000A002">
+	<!ENTITY RPG_dsShipInterior				"0x0000A001">
+	<!ENTITY RPG_dsManualRefuel				"0x0000A00A">
+	<!ENTITY RPG_dsRemoveDevice				"0x0000A00B">
+	<!ENTITY RPG_dsLoot						"0x0000A013">
+	<!ENTITY RPG_dsJettison					"0x0000A016">
+	<!ENTITY RPG_dsShipConfig				"0x0000A01B">
+	<!ENTITY RPG_dsRepairItem				"0x0000A01D">
+	<!ENTITY RPG_dsDockScreenBase			"0x0000A022">
+	
+	<!ENTITY RPG_rsItemListScreen			"0x0000F003">
+	
+	<!ENTITY RPG_unidPilgrimClass			"0x00201002">
+	
+	<!-- LIBRARIES -->
+	
+	<!ENTITY CORE_unidCoreTypesLibrary		"0x00030000">
+	
+	<!-- 0001 0000-FFFF RPG LIBRARY -->
+	
+	<!ENTITY RPG_unidRPGLibrary				"0x00010000">
+	
+	<!ENTITY RPG_dsRPGMission				"0x00010010">
+	<!ENTITY RPG_dsRPGInstallDeviceFromList	"0x00010011">
+	<!ENTITY RPG_dsRPGLoot					"0x00010012">
+	<!ENTITY RPG_dsRPGJettison				"0x00010013">
+	<!ENTITY RPG_dsRPGRepairItem			"0x00010014">
+	<!ENTITY RPG_dsRPGRefuel				"0x00010015">
+	<!ENTITY RPG_dsRPGDeliveryMission		"0x00010016">
+	<!ENTITY RPG_dsRPGMissionJournal		"0x00010017">
+	<!ENTITY RPG_dsRPGRepairArmor			"0x00010018">
+	<!ENTITY RPG_dsRPGReplaceArmor			"0x00010019">
+	<!ENTITY RPG_dsRPGMessage				"0x0001001A">
+	<!ENTITY RPG_dsRPGCharacterDefault		"0x0001001B">
+	<!ENTITY RPG_dsRPGAnalyzeItem			"0x0001001C">
+	<!ENTITY RPG_baStdAuxMountDeviceBaseObsolete	"0x0001001D">
+	<!ENTITY RPG_ovAuxForwardLeftMount		"0x0001001E">
+	<!ENTITY RPG_ovAuxForwardRightMount		"0x0001001F">
+	<!ENTITY RPG_rsAuxMountOverlay			"0x00010020">
+	<!ENTITY RPG_rsAuxMountOverlayHD		"0x00010021">
+	<!ENTITY RPG_dsRPGInstallDevice			"0x00010022">
+	<!ENTITY RPG_dsRPGManageArmor			"0x00010023">
+	<!ENTITY RPG_dsRPGUpgradeArmor			"0x00010024">
+	<!ENTITY RPG_dsRPGUpgradeDevice			"0x00010025">
+	<!ENTITY RPG_unidCDMMercenaryClass		"0x00010026">
+	<!ENTITY RPG_unidFreelancerClass		"0x00010027">
+	<!ENTITY RPG_unidCOMSOCAgentClass		"0x00010028">
+	<!ENTITY RPG_dsRPGDockServices			"0x00010029">
+	<!ENTITY RPG_dsRPGDockServicesCompatible	"0x0001002A">
+	<!ENTITY RPG_dsRPGCommoditiesExchange	"0x0001002B">
+	<!ENTITY RPG_dsRPGCommoditiesExchangeBuy	"0x0001002C">
+	<!ENTITY RPG_dsRPGDialog				"0x0001002D">
+	<!ENTITY RPG_dsRPGManageMiscDevices		"0x0001002E">
+	<!ENTITY RPG_dsRPGRemoveDevice			"0x0001002F">
+	
+	<!-- 0030-003F MISC DOCK SCREENS -->
+	
+	<!ENTITY RPG_dsRPGManageWeapons			"0x00010030">
+	<!ENTITY RPG_dsRPGDecontamination		"0x00010031">
+	<!ENTITY RPG_dsRPGAbandonedStation		"0x00010032">
+	<!ENTITY RPG_dsRPGDockServicesBase		"0x00010033">
+	<!ENTITY RPG_dsRPGCommoditiesExchangeSell	"0x00010034">
+	<!ENTITY RPG_dsRPGShipBroker			"0x00010035">
+	<!ENTITY RPG_dsRPGWingmanEncounter		"0x00010036">
+	<!ENTITY RPG_dsRPGUseItem				"0x00010037">
+	<!ENTITY RPG_dsRPGUseItemBase			"0x00010038">
+	<!ENTITY RPG_dsRPGUseItemOnArmor		"0x00010039">
+	<!ENTITY RPG_dsRPGUseItemOnDevice		"0x0001003A">
+	<!ENTITY RPG_dsRPGUseItemOnCargo		"0x0001003B">
+	<!ENTITY RPG_dsRPGDockManagement		"0x0001003C">
+	<!ENTITY RPG_dsRPGShipBrokerWingman		"0x0001003D">
+	<!ENTITY RPG_dsRPGShipBrokerConfirm		"0x0001003E">
+	<!ENTITY RPG_dsRPGRumor					"0x0001003F">
+	
+	<!-- 0040-004F CARGO CRATE -->
+	
+	<!ENTITY RPG_stGenericCargoCrate		"0x00010040">
+	<!ENTITY RPG_rsGenericCargoCrate		"0x00010041">
+	
+	<!-- 0050-006F BEHAVIORS -->
+	
+	<!ENTITY RPG_evStdMiningBehavior		"0x00010050">
+	<!ENTITY RPG_evStdWanderBehavior		"0x00010051">
+	<!ENTITY RPG_evStdResupplyBehavior		"0x00010052">
+	
+	<!-- 0070-008F DOCK SCREENS -->
+
+	<!ENTITY RPG_unidRPGPaneInitMission		"0x00010070">
+	<!ENTITY RPG_unidCommonText				"0x00010071">
+
+	<!-- 0090-00AF AUTONS -->
+
+	<!ENTITY RPG_baStdAutonBaseOld			"0x00010090">
+	<!ENTITY RPG_baAutonItemBase			"0x00010091">
+	<!ENTITY RPG_dsNameAuton				"0x00010092">
+	<!ENTITY RPG_baStdAutonBase				"0x00010093">
+	<!ENTITY RPG_stAutonWreck				"0x00010094">
+	<!ENTITY RPG_dsRPGAutonWreck			"0x00010095">
+
+	<!-- 00B0-00CF ITEMS -->
+
+	<!ENTITY RPG_baStdAuxMountDeviceBase	"0x000100B0">
+	<!ENTITY RPG_baStdArmorRepair			"0x000100B1">
+	<!ENTITY RPG_baStdPasteBarrel			"0x000100B2">
+	<!ENTITY RPG_baStdDeviceEnhancement		"0x000100B3">
+	<!ENTITY RPG_baStdEquipmentItem			"0x000100B4">
+
+	<!-- 00D0-00EF WINGMEN -->
+
+	<!ENTITY RPG_baStdWingmanBase			"0x000100D0">
+	<!ENTITY RPG_evStdFollowerBehavior		"0x000100D1">
+	<!ENTITY RPG_dsStdFollowerScreen		"0x000100D2">
+
+	<!-- 00F0-010F MEMBERSHIP -->
+
+	<!ENTITY RPG_dsRPGPromotion				"0x000100F0">
+
+	<!-- 0110-011F TRADING COMPUTER -->
+
+	<!ENTITY RPG_unidTradingComputer		"0x00010110">
+
+	<!-- 0120-013F MISC DOCK SCREENS -->
+
+	<!ENTITY RPG_dsRPGShipClassViewer		"0x00010120">
+	<!ENTITY RPG_dsRPGUseItemOnShields		"0x00010121">
+	<!ENTITY RPG_dsRPGConfiscate			"0x00010122">
+	<!ENTITY RPG_dsRPGSquadron				"0x00010123">
+	<!ENTITY RPG_dsRPGSquadronInCargoHold	"0x00010124">
+	<!ENTITY RPG_dsRPGSquadronWaiting		"0x00010125">
+
+	<!-- 0140-015F MINING -->
+
+	<!ENTITY RPG_unidMiningSkill			"0x00010140">
+
+	<!-- 0160-017F PLAYER -->
+
+	<!ENTITY RPG_unidPlayer					"0x00010160">
+
+	<!-- 0180-01BF MISSION TEMPLATE -->
+
+	<!ENTITY RPG_baInterceptMission			"0x00010180">
+	<!ENTITY RPG_baDestroyStationMission	"0x00010181">
+	<!ENTITY RPG_baVisitStationMission		"0x00010182">
+	<!ENTITY RPG_baDefendStationMission		"0x00010183">
+	<!ENTITY RPG_baRetrieveFromStationMission		"0x00010184">
+	<!ENTITY RPG_baEscortMission			"0x00010185">
+	<!ENTITY RPG_baAssaultStationMission	"0x00010186">
+
+	<!-- 01C0-01FF CRIME -->
+
+	<!ENTITY RPG_baRPGCriminalRecord		"0x000101C0">
+	<!ENTITY RPG_dsRPGCriminalArrest		"0x000101C1">
+	<!ENTITY RPG_unidTestCriminalRecord		"0x000101C2">
+	<!ENTITY RPG_dsRPGFreeSlaves			"0x000101C3">
+	]>
+	
+<CoreLibrary
+		UNID=				"&RPG_unidRPGLibrary;"
+		name=				"Transcendence RPG"
+		release=			"1"
+		private=			"true"
+		>
+
+	<Library unid="&CORE_unidCoreTypesLibrary;"/>
+	
+	<Module filename="RPG_HUD.xml"/>
+	<Module filename="RPG_Analyzers.xml"/>
+	<Module filename="RPG_Autons.xml"/>
+	<Module filename="RPG_AuxDevices.xml"/>
+	<Module filename="RPG_Behaviors.xml"/>
+	<Module filename="RPG_CharacterClasses.xml"/>
+	<Module filename="RPG_Characters.xml"/>
+	<Module filename="RPG_Code.xml"/>
+	<Module filename="RPG_CommoditiesExchange.xml"/>
+	<Module filename="RPG_CommonText.xml"/>
+	<Module filename="RPG_Compatibility.xml"/>
+	<Module filename="RPG_Components.xml"/>
+	<Module filename="RPG_Crime.xml"/>
+	<Module filename="RPG_DeviceDockScreens.xml"/>
+	<Module filename="RPG_Dialog.xml"/>
+	<Module filename="RPG_DockManagement.xml"/>
+	<Module filename="RPG_DockScreens.xml"/>
+	<Module filename="RPG_DockServices.xml"/>
+	<Module filename="RPG_Membership.xml"/>
+	<Module filename="RPG_Mining.xml"/>
+	<Module filename="RPG_MissionTemplate01.xml"/>
+	<Module filename="RPG_MissionTemplate02.xml"/>
+	<Module filename="RPG_MissionTemplate03.xml"/>
+	<Module filename="RPG_MissionTemplate04.xml"/>
+	<Module filename="RPG_MissionTemplate05.xml"/>
+	<Module filename="RPG_MissionTemplate06.xml"/>
+	<Module filename="RPG_MissionTemplate07.xml"/>
+	<Module filename="RPG_Missions.xml"/>
+	<Module filename="RPG_Player.xml"/>
+	<Module filename="RPG_Rumors.xml"/>
+	<Module filename="RPG_ShipBroker.xml"/>
+	<Module filename="RPG_ShipScreens.xml"/>
+	<Module filename="RPG_Slaves.xml"/>
+	<Module filename="RPG_SquadronUI.xml"/>
+	<Module filename="RPG_TradingComputer.xml"/>
+	<Module filename="RPG_Types.xml"/>
+	<Module filename="RPG_UsefulItems.xml"/>
+	<Module filename="RPG_Viewers.xml"/>
+	<Module filename="RPG_Wingmen.xml"/>
+
+</CoreLibrary>

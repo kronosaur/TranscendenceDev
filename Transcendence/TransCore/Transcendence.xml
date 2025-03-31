@@ -54,16 +54,22 @@
 	
 	<!-- RPG LIBRARY 0001 -->
 	
-	<!ENTITY unidRPGLibrary				"0x00010000">
+	<!ENTITY RPG_unidRPGLibrary				"0x00010000">
+		<!-- For backward compatibility -->
+	<!ENTITY unidRPGLibrary					"0x00010000">
 
 	<!-- CANONICAL UNIVERSE LIBRARY 0002 -->
 	
-	<!ENTITY unidGalaxyLibrary			"0x00020000">
-	<!ENTITY unidUniverseLibrary		"0x00020000">	<!-- For backward compatibility -->
+	<!ENTITY GLXY_unidGalaxyLibrary			"0x00020000">
+		<!-- For backward compatibility -->
+	<!ENTITY unidGalaxyLibrary				"0x00020000">
+	<!ENTITY unidUniverseLibrary			"0x00020000">
 
 	<!-- CORE TYPE LIBRARY 0003 -->
 	
-	<!ENTITY unidCoreTypesLibrary		"0x00030000">
+	<!ENTITY CORE_unidCoreTypesLibrary		"0x00030000">
+		<!-- For backward compatibility -->
+	<!ENTITY unidCoreTypesLibrary			"0x00030000">
 	
 	<!-- RESERVED 0004-000E -->
 
@@ -72,7 +78,9 @@
 
 	<!-- HUMAN SPACE LIBRARY 0010-001F -->
 
-	<!ENTITY unidHumanSpaceLibrary		"0x00100000">
+	<!ENTITY HS_unidHumanSpaceLibrary		"0x00100000">
+		<!-- For backward compatibility -->
+	<!ENTITY unidHumanSpaceLibrary			"0x00100000">
 	
 	<!-- 0020 xxxx to 002F xxxx RESERVED FOR PART I -->
 	<!-- 0030 xxxx to 003F xxxx RESERVED FOR PART II LIBRARY -->
@@ -81,7 +89,10 @@
 	<!-- 0060 xxxx to 006F xxxx RESERVED FOR PART III ADVENTURE -->
 	<!-- 0070 xxxx to 007F xxxx RESERVED FOR COMPATIBILITY LIBRARY -->
 	
-	<!ENTITY unidCompatibilityLibrary	"0x00700000">
+	<!ENTITY CMPT_unidCompatibilityLibrary	"0x00700000">
+	<!ENTITY CMPU_unidCompatibilityUNIDLibrary	"0x00710000">
+		<!-- For backward compatibility -->
+	<!ENTITY unidCompatibilityLibrary		"0x00700000">
 	
 	<!-- 0080-00FF RESERVED -->
 	
@@ -93,10 +104,10 @@
 	<!-- PART I 0020 0xxx -->
 
 	<!-- Needed for backwards compatibility -->
-	<!ENTITY smHumanSpace				"0x00200001">
-	<!ENTITY rsHumanSpace				"0x00200002">
-	<!ENTITY smElysium					"0x00200003">
-	<!ENTITY unidPartISystemMap			"0x00200004">
+	<!ENTITY HS_smHumanSpace				"0x00200001">
+	<!ENTITY HS_rsHumanSpace				"0x00200002">
+	<!ENTITY HS_smElysium					"0x00200003">
+	<!ENTITY SOTP_unidPartISystemMap		"0x00200004">
 	
 	<!-- HUARI 0021 0xxx -->
 	
@@ -140,14 +151,15 @@
 
 <!-- CORE LIBRARIES ======================================================== -->
 	
-	<CoreLibrary filename="CoreTypesLibrary.xml"/>
-	<CoreLibrary filename="RPGLibrary.xml"/>
-	<CoreLibrary filename="GalaxyLibrary.xml"/>
-	<CoreLibrary filename="HumanSpaceVol01.xml"/>
-	<CoreLibrary filename="CompatibilityLibrary.xml"/>
+	<CoreLibrary filename="CORE_CoreTypesLibrary.xml"/>
+	<CoreLibrary filename="RPG_Library.xml"/>
+	<CoreLibrary filename="GLXY_GalaxyLibrary.xml"/>
+	<CoreLibrary filename="HS_HumanSpaceVol01.xml"/>
+	<CoreLibrary filename="CMPT_CompatibilityLibrary.xml"/>
+	<CoreLibrary filename="CMPU_CompatibilityUNIDLibrary.xml"/>
 
 <!-- CORE ADVENTURE ======================================================== -->
 
-	<TranscendenceAdventure filename="StarsOfThePilgrim.xml"/>
+	<TranscendenceAdventure filename="SOTP_StarsOfThePilgrim.xml"/>
 		
 </TranscendenceUniverse>

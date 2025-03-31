@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<SystemMap UNID="&HS_smHumanSpace;"
+			name=				"Human Space" 
+			backgroundImage=	"&HS_rsHumanSpace;"
+			backgroundImageScale="200"
+			initialScale=		"200"
+			minScale=			"100" 
+			maxScale=			"250" 
+			lightYearsPerPixel= "0.4"
+			   
+			stargateLineColor=  "#6b8299"
+			>
+
+		<MapEffect>
+			<!-- New Beyond -->
+
+			<Group xOffset="179" yOffset="-163">
+				<!--
+
+				NOTE: We can't delete these because saved game rely on effect
+				order. In the future we need to change this so we can deprecate
+				these effects.
+
+				<Text text=				"New Beyond" 
+						font=			"Title"
+						primaryColor=	"0xff, 0xff, 0xff"
+						opacity=		"20"
+						/>
+				-->
+			</Group>
+			
+			<Group xOffset="324" yOffset="-61">
+				<Text text=				"Charon Pirates" 
+						font=			"SubTitleHeavyBold"
+						primaryColor=	"#fff2d9"
+						opacity=		"80"
+						/>
+			</Group>
+
+			<Group xOffset="-160" yOffset="420">
+				<Text text=				"Huari Empire" 
+						font=			"SubTitleHeavyBold"
+						primaryColor=	"#fff2d9"
+						opacity=		"80"
+						/>
+			</Group>
+
+			<!-- Ungoverned Territories -->
+
+			<Group xOffset="-33" yOffset="347">
+			<!--
+				<Text text=				"Ungoverned Territories" 
+						font=			"Title"
+						primaryColor=	"0xff, 0xff, 0xff"
+						opacity=		"20"
+						/>
+			-->
+			</Group>
+				
+			<Group xOffset="-300" yOffset="260">
+				<Text text=				"Sung Slavers" 
+						font=			"SubTitleHeavyBold"
+						primaryColor=	"#fff2d9"
+						opacity=		"80"
+						/>
+			</Group>
+
+			<!-- Outer Realm -->
+
+			<Group xOffset="-224" yOffset="-44">
+			<!--
+				<Text text=				"Outer\nRealm" 
+						font=			"Title"
+						primaryColor=	"0xff, 0xff, 0xff"
+						opacity=		"20"
+						/>
+			-->
+			</Group>
+				
+			<Group xOffset="-384" yOffset="36">
+				<Text text=				"Ranx\nEmpire" 
+						font=			"SubTitleHeavyBold"
+						primaryColor=	"#fff2d9"
+						opacity=		"80"
+						/>
+			</Group>
+
+			<Group xOffset="-383" yOffset="-176">
+				<Text text=				"Ares\nSpace" 
+						font=			"SubTitleHeavyBold"
+						primaryColor=	"#fff2d9"
+						opacity=		"80"
+						/>
+			</Group>
+		</MapEffect>
+
+		<!-- NEW BEYOND ==================================================== -->
+		
+		<NodeGroup ID="NewBeyondMainline">
+			<Stargate from="SE:Outbound"	to="C1:Inbound"/>
+			<Stargate from="C1:Outbound"	to="C3:Inbound"/>
+			<Stargate from="C3:Outbound"	to="C3A:Inbound"/>
+			<Stargate from="C3A:Outbound"	to="BA:Inbound"/>
+			<Stargate from="BA:Outbound"	to="C4:Inbound"/>
+			<StargateTable>
+				<Group chance="50">
+					<Stargate from="C4:Outbound" to="C4A:Inbound"/>
+					<Stargate from="C4A:Outbound" to="CP:Inbound"/>
+				</Group>
+				<Stargate chance="50" from="C4:Outbound" to="CP:Inbound"/>
+			</StargateTable>
+		</NodeGroup>
+		
+		<!-- ERIDANI -->
+		
+		<Node ID="SE" x="-15" y="-66" initialState="known">
+			<System 
+					name=			"Eridani"
+					level=			"1"
+					attributes=		"humanSpace, mainline, newBeyond"
+					>
+				<System UNID="&HS_ssStartonEridani;"/>
+			</System>
+		</Node>
+		
+		<!-- RIGEL AURELIUS -->
+
+		<Node ID="BA" x="207" y="-205" initialState="known">
+			<System
+					name=			"Rigel Aurelius"
+					level=			"3"
+					attributes=		"humanSpace, mainline, newBeyond"
+					>
+				<System UNID="&HS_ssBattleArena;"/>
+			</System>
+		</Node>
+
+		<!-- CHARON -->
+		
+		<Node ID="CP" x="267" y="-40" initialState="positionKnown">
+			<System
+					name="Charon"
+					level=			"3"
+					attributes=		"humanSpace, mainline, newBeyond"
+					>
+				<System UNID="&HS_ssCharonPirateFortress;"/>
+			</System>
+		</Node>
+
+		<!-- SAINT KATHARINE'S STAR -->
+
+		<Node ID="SK" x="228" y="20" initialState="known">
+			<System
+					name=			"St. Katharine's Star"
+					level=			"4"
+					attributes=		"humanSpace, mainline, stKatharine"
+					>
+				<System UNID="&HS_ssStKatharine;"/>
+			</System>
+		</Node>
+		
+		<!-- MINOR NEW BEYOND SYSTEMS -->
+
+		<Node ID="C1" x="18" y="-139" initialState="positionKnown">
+			<System
+					level=			"1"
+					attributes=		"humanSpace, mainline, newBeyond"
+					>
+				<Table>
+					<System chance="25" name="Groombridge"	UNID="&HS_ssEarthSpaceStandard;"/>
+					<System chance="25" name="Lalande"		UNID="&HS_ssEarthSpaceRedDwarf;"/>
+					<System chance="25" name="5 Indi"		UNID="&HS_ssEarthSpaceAsteroids;"/>
+					<System chance="25" name="Foum Alhaut"	UNID="&HS_ssEarthSpaceDesert;"/>
+				</Table>
+			</System>
+		</Node>
+
+		<Node ID="C3" x="71" y="-189" initialState="positionKnown">
+			<System
+					level=			"2"
+					attributes=		"humanSpace, mainline, newBeyond"
+					>
+				<Table>
+					<System chance="25" name="Orgos"		UNID="&HS_ssEarthSpaceStandard;"/>
+					<System chance="25" name="Ross 248"		UNID="&HS_ssEarthSpaceRedDwarf;"/>
+					<System chance="25" name="Cairn"		UNID="&HS_ssEarthSpaceAsteroids;"/>
+					<System chance="25" name="Ras Alhague"	UNID="&HS_ssEarthSpaceDesert;"/>
+				</Table>
+			</System>
+		</Node>
+
+		<Node ID="C3A" x="143" y="-219" initialState="positionKnown">
+			<System
+					level=			"2"
+					attributes=		"humanSpace, mainline, newBeyond"
+					>
+				<Table>
+					<System chance="50" name="Lacaille"		UNID="&HS_ssEarthSpaceRedDwarf;"/>
+					<System chance="50" name="Cygni"		UNID="&HS_ssEarthSpaceAsteroids;"/>
+				</Table>
+			</System>
+		</Node>
+		
+		<Node ID="C4" x="266" y="-172" initialState="positionKnown">
+			<System
+					level=			"3"
+					attributes=		"humanSpace, mainline, newBeyond"
+					>
+				<Table>
+					<System chance="17" name="Van Maanen"	UNID="&HS_ssEarthSpaceStandard;"/>
+					<System chance="8"  name="Moren-Lin"	UNID="&HS_ssEarthSpaceBinary;"/>
+					<System chance="25" name="Jotunheim"	UNID="&HS_ssEarthSpaceRedDwarf;"/>
+					<System chance="25" name="Hena's Star"	UNID="&HS_ssEarthSpaceAsteroids;"/>
+					<System chance="25" name="Ankaa"		UNID="&HS_ssEarthSpaceDesert;"/>
+				</Table>
+			</System>
+		</Node>
+
+		<Node ID="C4A" x="284" y="-96" initialState="unknown">
+			<System
+					level=			"3"
+					attributes=		"humanSpace, mainline, newBeyond"
+					>
+				<Table>
+					<System chance="20" name="Manchester"	UNID="&HS_ssEarthSpaceStandard;"/>
+					<System chance="5"  name="Fridlund"		UNID="&HS_ssEarthSpaceBinary;"/>
+					<System chance="25" name="L372"			UNID="&HS_ssEarthSpaceRedDwarf;"/>
+					<System chance="25" name="Kaus Media"	UNID="&HS_ssEarthSpaceAsteroids;"/>
+					<System chance="25" name="Al Maisan"	UNID="&HS_ssEarthSpaceDesert;"/>
+				</Table>
+			</System>
+		</Node>
+		
+		<!-- UNGOVERNED TERRITORIES ======================================== -->
+		
+		<NodeGroup ID="UngovernedTerritoriesMainline">
+			<Stargate from="SK:Outbound" to="C5A:Inbound"/>
+			<Stargate from="C5A:Outbound" to="C5:Inbound"/>
+			<Stargate from="C5:Outbound"	to="C6:Inbound"/>
+			<StargateTable>
+				<Group chance="50">
+					<Stargate from="C6:Outbound" to="C6A:Inbound"/>
+					<Stargate from="C6A:Outbound" to="CD:Inbound"/>
+				</Group>
+				<Stargate chance="50" from="C6:Outbound" to="CD:Inbound"/>
+			</StargateTable>
+			<Stargate from="CD:Outbound"	to="C7:Inbound"/>
+			<Stargate from="C7:Outbound"	to="C8:Inbound"/>
+			<StargateTable>
+				<Group chance="50">
+					<Stargate from="C8:Outbound" to="C8A:Inbound"/>
+					<Stargate from="C8A:Outbound" to="C9:Inbound"/>
+				</Group>
+				<Stargate chance="50" from="C8:Outbound" to="C9:Inbound"/>
+			</StargateTable>
+		</NodeGroup>
+
+		<!-- SANCTUARY -->
+		
+		<Node ID="CD" x="0" y="260" initialState="known">
+			<System
+					name=			"Sanctuary"
+					level=			"5"
+					attributes=		"huaramarcaGate, humanSpace, mainline, ungoverned"
+					>
+				<System UNID="&HS_ssSanctuary;"/>
+			</System>
+		</Node>
+		
+		<!-- JIANG'S STAR -->
+		
+		<Node ID="C9" x="-273" y="222" initialState="known">
+			<System
+					name=				"Jiang's Star"
+					level=				"6"
+					attributes=			"huaramarcaGate, humanSpace, mainline, ungoverned"
+					>
+				<System UNID="&HS_ssJiangsStar;"/>
+			</System>
+		</Node>
+
+		<!-- MINOR UNGOVERNED TERRITORIES SYSTEMS -->
+
+		<Node ID="C5A" x="196" y="79" initialState="positionKnown">
+			<System
+					level=			"4"
+					attributes=		"humanSpace, mainline, ungoverned"
+					>
+				<Table>
+					<System chance="50" name="Mu Casser"	UNID="&HS_ssEarthSpacePrimordial;"/>
+					<System chance="50" name="Dorado"		UNID="&HS_ssEarthSpaceMetallic;"/>
+				</Table>
+			</System>
+		</Node>
+
+		<Node ID="C5" x="162" y="130" initialState="positionKnown">
+			<System		
+					level=			"4"
+					attributes=		"humanSpace, mainline, ungoverned"
+					>
+				<Table>
+					<System chance="17" name="Humboldt"	UNID="&HS_ssEarthSpaceStandard;"/>
+					<System chance="8"  name="Neheb"		UNID="&HS_ssEarthSpaceBinary;"/>
+					<System chance="25" name="70 Ophiuchi" UNID="&HS_ssEarthSpaceIceAsteroids;"/>
+					<System chance="25" name="Draconis"	UNID="&HS_ssEarthSpaceAsteroids;"/>
+					<System chance="25" name="Hadar"		UNID="&HS_ssEarthSpaceDesert;"/>
+				</Table>
+			</System>
+		</Node>
+
+		<Node ID="C6" x="106" y="191" initialState="positionKnown">
+			<System				
+					level=			"5"
+					attributes=		"huaramarcaGate, humanSpace, mainline, ungoverned"
+					>
+				<Table>
+					<System chance="17" name="Orthrus"	UNID="&HS_ssEarthSpaceBinary;"/>
+					<System chance="8"  name="Kinder's Star"	UNID="&HS_ssEarthSpaceStandard;"/>
+					<System chance="17" name="Lebezerin"	UNID="&HS_ssEarthSpaceNebulae;"/>
+					<System chance="8"  name="Kruger 60"	UNID="&HS_ssEarthSpaceRedDwarf;"/>
+					<System chance="17" name="Carinus"	UNID="&HS_ssEarthSpaceMetallic;"/>
+					<System chance="8"  name="Tiberius"	UNID="&HS_ssEarthSpaceAsteroids;"/>
+					<System chance="17" name="Acheron"	UNID="&HS_ssEarthSpaceVolcanic;"/>
+					<System chance="8"  name="Khaldun"	UNID="&HS_ssEarthSpaceDesert;"/>
+				</Table>
+			</System>
+		</Node>
+
+		<Node ID="C6A" x="44" y="239" initialState="unknown">
+			<System
+					level=			"5"
+					attributes=		"huaramarcaGate, humanSpace, mainline, ungoverned"
+					>
+				<Table>
+					<System chance="17" name="Junger"		UNID="&HS_ssEarthSpaceStandard;"/>
+					<System chance="8"  name="Ravena"		UNID="&HS_ssEarthSpaceBinary;"/>
+					<System chance="17" name="Jaoel"		UNID="&HS_ssEarthSpaceNebulae;"/>
+					<System chance="8"  name="55 Cancri"	UNID="&HS_ssEarthSpaceIceAsteroids;"/>
+					<System chance="17" name="Trajan"		UNID="&HS_ssEarthSpaceMetallic;"/>
+					<System chance="8"  name="Gordian"		UNID="&HS_ssEarthSpaceAsteroids;"/>
+					<System chance="17" name="Tarterus"	UNID="&HS_ssEarthSpaceVolcanic;"/>
+					<System chance="8"  name="Shihab"		UNID="&HS_ssEarthSpaceDesert;"/>
+				</Table>
+			</System>
+		</Node>
+
+		<Node ID="C7" x="-94" y="295" initialState="positionKnown">
+			<System
+					level=			"5"
+					attributes=		"huaramarcaGate, humanSpace, mainline, ungoverned"
+					>
+				<Table>
+					<System chance="17" name="Amphion"	UNID="&HS_ssEarthSpaceBinary;"/>
+					<System chance="8"  name="Kanto"		UNID="&HS_ssEarthSpaceStandard;"/>
+					<System chance="17" name="Raziel"		UNID="&HS_ssEarthSpaceNebulae;"/>
+					<System chance="8"  name="Estelle"	UNID="&HS_ssEarthSpaceIceAsteroids;"/>
+					<System chance="17" name="Domitus"	UNID="&HS_ssEarthSpaceAsteroidArcs;"/>
+					<System chance="8"  name="Honorius"	UNID="&HS_ssEarthSpaceAsteroids;"/>
+					<System chance="17" name="Gehenna"	UNID="&HS_ssEarthSpaceVolcanic;"/>
+					<System chance="8"  name="Arrakis"	UNID="&HS_ssEarthSpaceDesert;"/>
+				</Table>
+			</System>
+		</Node>
+
+		<Node ID="C8" x="-191" y="292" initialState="positionKnown">
+			<System
+					level=			"6"
+					attributes=		"huaramarcaGate, humanSpace, mainline, ungoverned"
+					>
+				<Table>
+					<System chance="17" name="Zethus"		UNID="&HS_ssEarthSpaceBinary;"/>
+					<System chance="8"  name="Nobunaga"	UNID="&HS_ssEarthSpaceStandard;"/>
+					<System chance="20" name="Galgaliel"	UNID="&HS_ssEarthSpaceNebulae;"/>
+					<System chance="5"  name="Cinder"		UNID="&HS_ssEarthSpaceRedDwarf;"/>
+					<System chance="20" name="Numerianus"	UNID="&HS_ssEarthSpaceMetallic;"/>
+					<System chance="5" name="Galerius"	UNID="&HS_ssEarthSpaceAsteroids;"/>
+					<System chance="20" name="Exael"		UNID="&HS_ssEarthSpaceVolcanic;"/>
+					<System chance="5"  name="Alembra"	UNID="&HS_ssEarthSpaceDesert;"/>
+				</Table>
+			</System>
+		</Node>
+
+		<Node ID="C8A" x="-238" y="268" initialState="unknown">
+			<System
+					level=				"6"
+					attributes=			"huaramarcaGate, humanSpace, mainline, ungoverned"
+					>
+				<Table>
+					<System chance="50" name="Maharashtra" UNID="&HS_ssEarthSpacePrimordial;"/>
+					<System chance="50" name="Bhutihan"	UNID="&HS_ssEarthSpaceMetallic;"/>
+				</Table>
+			</System>
+		</Node>
+
+		<!-- OUTER REALM =================================================== -->
+		
+		<NodeGroup ID="OuterRealmMainline">
+			<Stargate from="A1:Outbound"	to="EC:Inbound"/>
+			<StargateTable>
+				<Group chance="50">
+					<Stargate from="EC:Outbound" to="A3:Inbound"/>
+					<Stargate from="A3:Outbound" to="A3A:Inbound"/>
+				</Group>
+				<Stargate chance="50" from="EC:Outbound" to="A3A:Inbound"/>
+			</StargateTable>
+			<Stargate from="A3A:Outbound"	to="PJ:Inbound"/>
+			<Stargate from="PJ:Outbound"	to="A5:Inbound"/>
+			<Stargate from="A5:Outbound"	to="A7:Inbound"/>
+			<Stargate from="A7:Outbound"	to="G1:Inbound"/>
+			<Stargate from="G1:Outbound"	to="G2:Inbound"/>
+		</NodeGroup>
+		
+		<!-- ETA CETI -->
+		
+		<Node ID="EC" x="-284" y="36" initialState="positionKnown">
+			<System
+					name=				"Eta Ceti"
+					level=				"7"
+					attributes=			"humanSpace, mainline, outerRealm"
+					>
+				<System UNID="&HS_ssEtaCeti;"/>
+			</System>
+		</Node>
+		
+		<!-- POINT JUNO -->
+		
+		<Node ID="PJ" x="-203" y="-136" initialState="known">
+			<System
+					name=				"Point Juno"
+					level=				"8"
+					attributes=			"humanSpace, mainline, outerRealm"
+					>
+				<System UNID="&HS_ssPointJuno;"/>
+			</System>
+		</Node>
+		
+		<!-- DANTALION -->
+		
+		<Node ID="A7" x="-288" y="-269" initialState="known">
+			<System
+					name=				"Dantalion"
+					level=				"9"
+					attributes=			"humanSpace, mainline, outerRealm"
+					>
+				<System UNID="&HS_ssDantalion;"/>
+			</System>
+		</Node>
+
+		<!-- HERETIC -->
+		
+		<Node ID="G2" x="-382" y="-388" initialState="positionKnown">
+			<System
+					UNID=				"&HS_ssHeretic;"
+					name=				"Heretic"
+					level=				"10"
+					attributes=			"humanSpace, mainline, outerRealm"
+					/>
+		</Node>
+		
+		<!-- MINOR OUTER REALM SYSTEMS -->
+
+		<Node ID="A1" x="-292" y="149" initialState="positionKnown">
+			<System
+					level=				"7"
+					attributes=			"humanSpace, mainline, outerRealm"
+					>
+				<Table>
+					<System chance="8"  name="Sleng"		UNID="&HS_ssEarthSpaceStandard;"/>
+					<System chance="17"  name="Enkidu"		UNID="&HS_ssEarthSpacePrimordial;"/>
+					<System chance="25" name="Tzadkiel"	UNID="&HS_ssEarthSpaceNebulae;"/>
+					<System chance="25" name="Severian's Star" UNID="&HS_ssEarthSpaceMetallic;"/>
+					<System chance="25" name="Flauros"	UNID="&HS_ssEarthSpaceVolcanicAsteroids;"/>
+				</Table>
+			</System>
+		</Node>
+
+		<Node ID="A2" x="-293" y="95" initialState="positionKnown">
+			<System
+					level=				"7"
+					attributes=			"humanSpace, mainline, outerRealm"
+					>
+				<Table>
+					<System chance="8"  name="Zhang Li"	UNID="&HS_ssEarthSpaceStandard;"/>
+					<System chance="17" name="Liu Bai"	UNID="&HS_ssEarthSpacePrimordial;"/>
+					<System chance="25" name="Peng Lai"	UNID="&HS_ssEarthSpaceNebulae;"/>
+					<System chance="25" name="Kunlun"		UNID="&HS_ssEarthSpaceAsteroidArcs;"/>
+					<System chance="25" name="Shenlong"	UNID="&HS_ssEarthSpaceVolcanic;"/>
+				</Table>
+			</System>
+		</Node>
+
+		<Node ID="A3" x="-253" y="-23" initialState="unknown">
+			<System
+					level=				"8"
+					attributes=			"humanSpace, mainline, outerRealm"
+					>
+				<Table>
+					<System chance="17" name="Ki Xyrrmir"	UNID="&HS_ssEarthSpaceStandard;"/>
+					<System chance="8"  name="Ulom"		UNID="&HS_ssEarthSpaceBinary;"/>
+					<System chance="25" name="Qilin"		UNID="&HS_ssEarthSpaceNebulae;"/>
+					<System chance="25" name="Tao Tie"	UNID="&HS_ssEarthSpaceMetallic;"/>
+					<System chance="25" name="Tianlong"	UNID="&HS_ssEarthSpaceVolcanicAsteroids;"/>
+				</Table>
+			</System>
+		</Node>
+
+		<Node ID="A3A" x="-205" y="-66" initialState="positionKnown">
+			<System
+					level=				"8"
+					attributes=			"humanSpace, mainline, outerRealm"
+					>
+				<Table>
+					<System chance="25" name="St. Esperance's Star" UNID="&HS_ssEarthSpaceStandard;"/>
+					<System chance="25" name="Metatron"	UNID="&HS_ssEarthSpaceNebulae;"/>
+					<System chance="25" name="Que Qiao"	UNID="&HS_ssEarthSpaceAsteroidArcs;"/>
+					<System chance="25" name="Li"			UNID="&HS_ssEarthSpaceVolcanic;"/>
+				</Table>
+			</System>
+		</Node>
+
+		<Node ID="A5" x="-216" y="-188" initialState="positionKnown">
+			<System
+					level=				"9"
+					attributes=			"humanSpace, mainline, outerRealm"
+					>
+				<Table>
+					<System chance="25" name="Umi"		UNID="&HS_ssEarthSpaceStandard;"/>
+					<System chance="25" name="Vori"		UNID="&HS_ssEarthSpaceNebulae;"/>
+					<System chance="25" name="Meri"		UNID="&HS_ssEarthSpaceMetallic;"/>
+					<System chance="25" name="Penati"		UNID="&HS_ssEarthSpaceVolcanicAsteroids;"/>
+				</Table>
+			</System>
+		</Node>
+
+		<Node ID="A6" x="-254" y="-234" initialState="positionKnown">
+			<System
+					level=				"9"
+					attributes=			"humanSpace, mainline, outerRealm"
+					>
+				<Table>
+					<System chance="25" name="Denebola"	UNID="&HS_ssEarthSpacePrimordial;"/>
+					<System chance="25" name="Pharos"		UNID="&HS_ssEarthSpaceNebulae;"/>
+					<System chance="25" name="Saurus Mons" UNID="&HS_ssEarthSpaceMetallic;"/>
+					<System chance="25" name="Erebus"		UNID="&HS_ssEarthSpaceVolcanicAsteroids;"/>
+				</Table>
+			</System>
+		</Node>
+
+		<!-- LEVEL X -->
+
+		<Node ID="G1" x="-346" y="-331" initialState="positionKnown">
+			<System
+					level=				"10"
+					attributes=			"humanSpace, mainline, outerRealm"
+					>
+				<Table>
+					<System chance="25" name="LV 426"		UNID="&HS_ssEarthSpaceStandard;"/>
+					<System chance="25" name="IC 767"		UNID="&HS_ssEarthSpaceNebulae;"/>
+					<System chance="25" name="HD 11901"	UNID="&HS_ssEarthSpaceAsteroidArcs;"/>
+					<System chance="25" name="HD 44594"	UNID="&HS_ssEarthSpaceVolcanic;"/>
+				</Table>
+			</System>
+		</Node>
+
+	</SystemMap>
+
+<!-- RESOURCES =================================================================
+
+-->
+
+	<Image UNID="&HS_rsHumanSpace;"			bitmap="Resources\HumanSpace.jpg" loadOnUse="true" />
+	
+</TranscendenceModule>

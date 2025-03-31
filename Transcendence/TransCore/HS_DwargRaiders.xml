@@ -1,0 +1,1011 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Sovereign UNID="&HS_svDwargRaiders;"
+			name=":the Dwarg civilization"
+			shortName=":the Dwarg"
+			adjective="Dwarg"
+			demonym=":a Dwarg master(s)"
+			plural="true"
+
+			alignment="destructive order"
+			/>
+
+	<Sovereign UNID="&HS_svFriendlyZoanthrope;"
+			name="zoanthropes"
+			adjective="zoanthrope"
+			demonym=":a zoanthrope(s)"
+			alignment="constructive chaos"
+			/>
+
+	<SystemMap unid="&HS_smDwargSpace;"
+			displayOn="&HS_smHumanSpace;"
+			>
+		<TopologyProcessor priority="primaryColony">
+			<System criteria="+ungoverned;"	attributes="dwargSpace"/>
+			<System criteria="+outerRealm;"	attributes="dwargSpace"/>
+		</TopologyProcessor>
+	</SystemMap>
+
+<!-- STATION TYPES -->
+
+	<!-- Dwarg Colony -->
+
+	<StationType UNID="&HS_stDwargColony;"
+			name=				"Dwarg colony|Dwarg colonies"
+			sovereign=			"&HS_svDwargRaiders;"
+
+			attributes=			"dwarg, dwargColony, dwargRaiders, enemy, envWater, envAvoidsEarth, generic, neoHuman, populated"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			size=				"189"
+			armorID=			"&HS_itDwargChitonArmor;"
+			hitPoints=			"160"
+			multiHull=			"true"
+			regen=              "2"
+
+			fireRateAdj=		"50"
+			explosionType=		"&CORE_vtBlastExplosion2;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+dwargSpace;"
+				systemAffinity=			"+envWater; -envEarth;"
+				levelFrequency=			"---cu v---- ----- ----- -----"
+
+				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"50"
+				/>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&HS_itDwargXiphonCannon;"	omnidirectional="true"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Ships challenge="hard">
+			<Ship				count="1d4+4"	class="&HS_scDwargRaider;"		orders="orbitPatrol:radius=8000-12000mls:angle=0-359"/>
+		</Ships>
+
+		<!-- Treasure -->
+
+		<Items value="standard:level=4:x=1.6">
+			<Lookup table="&HS_trStdTreasure;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<ImageLookup imageID="&HS_rsDwargColonyComposite;"/>
+
+		<DockingPorts	rotation="0">
+			<Port x="-82"	y="35" />
+			<Port x="-33"	y="71" />
+			<Port x="76"	y="44" />
+			<Port x="85"	y="0" />
+			<Port x="0"		y="-86" />
+			<Port x="-49"	y="-70" />
+		</DockingPorts>
+	</StationType>
+
+	<!-- Dwarg Gathering -->
+
+	<StationType UNID="&HS_stDwargGathering;"
+			name=				"Dwarg colony|Dwarg colonies"
+			sovereign=			"&HS_svDwargRaiders;"
+
+			attributes=			"dwarg, dwargColony, dwargRaiders, enemy, envWater, envAvoidsEarth, generic, neoHuman, populated"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			size=				"189"
+			armorID=			"&HS_itDwargCatoptricArmor;"
+			hitPoints=			"210"
+			multiHull=			"true"
+			regen=              "2"
+
+			fireRateAdj=		"50"
+			explosionType=		"&CORE_vtBlastExplosion2;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+dwargSpace;"
+				systemAffinity=			"+envWater; -envEarth;"
+				levelFrequency=			"----c uv--- ----- ----- -----"
+
+				locationCriteria=		"+planetary"
+				exclusionRadius=		"50"
+				enemyExclusionRadius=	"100"
+				/>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&HS_itDwargXiphonCannon;"	omnidirectional="true"/>
+			<Device deviceID="&HS_vtDwargMissileDefense;"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Ships challenge="standard">
+			<Ship				count="1"		class="&HS_scDwargMaster;" orders="patrol" patrolDist="10">
+				<Escorts>
+					<Ship				count="1d4+4"	class="&HS_scDwargRaider;"		orders="escort"	/>
+				</Escorts>
+			</Ship>
+		</Ships>
+
+		<!-- Satellites -->
+
+		<Satellites overlapCheck="planetoids">
+			<Table>
+				<Group chance="50">
+					<Siblings arcInc="16" radiusInc="1d4+3">
+						<Station type="&HS_stDwargGatheringSat;"/>
+					</Siblings>
+					<Siblings arcInc="-16" radiusInc="1d4+3">
+						<Station type="&HS_stDwargGatheringSat;"/>
+					</Siblings>
+				</Group>
+				<Group chance="50">
+					<Siblings arcInc="16" radiusInc="1d4+3">
+						<Station type="&HS_stDwargGatheringSat;"/>
+					</Siblings>
+					<Siblings arcInc="-16" radiusInc="1d4+3">
+						<Station type="&HS_stDwargGatheringSat;"/>
+					</Siblings>
+					<Siblings arcInc="32">
+						<Station type="&HS_stDwargGatheringSat;"/>
+					</Siblings>
+				</Group>
+			</Table>
+		</Satellites>
+
+		<!-- Treasure -->
+
+		<Items value="standard:level=5">
+			<Lookup table="&HS_trStdTreasure;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<ImageLookup imageID="&HS_rsDwargColonyComposite;"/>
+
+		<DockingPorts	rotation="0">
+			<Port x="-82"	y="35" />
+			<Port x="-33"	y="71" />
+			<Port x="76"	y="44" />
+			<Port x="85"	y="0" />
+			<Port x="0"		y="-86" />
+			<Port x="-49"	y="-70" />
+		</DockingPorts>
+
+		<!-- Random Encounters -->
+
+		<Encounters frequency="uncommon">
+			<Ship				count="1"		class="&HS_scDwargMaster;"		eventHandler="&RPG_evStdWanderBehavior;"	maxShips="3">
+				<Escorts>
+					<Ship				count="1d4+4"	class="&HS_scDwargRaider;"		orders="escort"	/>
+				</Escorts>
+			</Ship>
+		</Encounters>
+	</StationType>
+
+	<!-- Dwarg Gathering Satellite -->
+
+	<StationType UNID="&HS_stDwargGatheringSat;"
+			name=				"Dwarg colony|Dwarg colonies"
+			sovereign=			"&HS_svDwargRaiders;"
+
+			attributes=			"dwarg, dwargRaiders, enemy, envWater, envAvoidsEarth, neoHuman, populated"
+
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			size=				"189"
+			armorID=			"&HS_itDwargCatoptricArmor;"
+			hitPoints=			"210"
+			multiHull=			"true"
+			regen=              "2"
+
+			fireRateAdj=		"50"
+			explosionType=		"&CORE_vtBlastExplosion2;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+			noMapLabel=			"true"
+			enemyExclusionRadius="50"
+			>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&HS_itDwargXiphonCannon;"	omnidirectional="true"/>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Ships challenge="standard">
+			<Ship				count="1d4+4"	class="&HS_scDwargRaider;"		orders="orbitPatrol:radius=8000-12000mls:angle=0-359"/>
+		</Ships>
+
+		<!-- Treasure -->
+
+		<Items value="standard:level=5">
+			<Lookup table="&HS_trStdTreasure;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<ImageLookup imageID="&HS_rsDwargColonyComposite;"/>
+
+		<DockingPorts	rotation="0">
+			<Port x="-82"	y="35" />
+			<Port x="-33"	y="71" />
+			<Port x="76"	y="44" />
+			<Port x="85"	y="0" />
+			<Port x="0"		y="-86" />
+			<Port x="-49"	y="-70" />
+		</DockingPorts>
+	</StationType>
+
+	<!-- Dwarg Fortress -->
+
+	<StationType UNID="&HS_stDwargFortress;"
+			name=				"Dwarg fortress(es)"
+			sovereign=			"&HS_svDwargRaiders;"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			multiHull=			"true"
+			armorID=			"&HS_itDwargHolochroalArmor;"
+			hitPoints=			"1400"
+			regen=              "11"
+			fireRateAdj=		"40"
+			explosionType=		"&CORE_vtBlastExplosion4;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"dwarg, dwargRaiders, enemy, envWater, envAvoidsEarth, generic, majorStation, neoHuman, populated"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+dwargSpace;"
+				systemAffinity=			"+envWater; -envEarth;"
+				levelFrequency=			"----- cr--- ----- ----- -----"
+
+				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"100"
+				/>
+
+		<Image			imageID="&HS_rsStations6;" imageX="0" imageY="896" imageWidth="256" imageHeight="256"/>
+
+		<Devices>
+			<Device deviceID="&HS_itDwargBehemothCannon;"	posAngle="45"  posRadius="30" posZ="40" maxFireRange="2"/>
+			<Device deviceID="&HS_itDwargBehemothCannon;"	posAngle="-70" posRadius="30" posZ="40" maxFireRange="2"/>
+			<Device deviceID="&HS_itDwargBehemothCannon;"	posAngle="160" posRadius="30" posZ="40" maxFireRange="2"/>
+			
+			<Device deviceID="&HS_itDwargXiphonCannon;"	posAngle="45"  posRadius="90"  posZ="0" fireArc="180" />
+			<Device deviceID="&HS_itDwargBehemothCannon;"	posAngle="-15" posRadius="90" posZ="0" fireArc="180" />
+			<Device deviceID="&HS_itDwargXiphonCannon;"	posAngle="-70" posRadius="90" posZ="0" fireAngle="295" fireArc="180" />
+			<Device deviceID="&HS_itDwargBehemothCannon;"	posAngle="225" posRadius="90" posZ="0" fireAngle="220" fireArc="180" />
+			<Device deviceID="&HS_itDwargXiphonCannon;"	posAngle="150" posRadius="90" posZ="0" fireAngle="155" fireArc="180" />
+			<Device deviceID="&HS_itDwargBehemothCannon;"	posAngle="105" posRadius="90" posZ="0" fireAngle="112" fireArc="180" />
+
+			<Device deviceID="&HS_vtDwargMissileDefense;"/>
+		</Devices>
+
+		<Ships challenge="deadly">
+			<Table>
+				<Ship chance="30"			count="1d2"		class="&HS_scDwargMaster;" orders="patrol" patrolDist="10">
+					<Escorts>
+						<Ship	chance="25"	count="1"		class="&HS_scDwargBehemoth;"		orders="escort"	/>
+						<Ship				count="1d4+4"	class="&HS_scDwargRaider;"		orders="escort"	/>
+					</Escorts>
+				</Ship>
+				<Ship chance="60"			count="8-12"	class="&HS_scDwargRaider;"		orders="orbitPatrol:radius=8000-12000mls:angle=0-359"/>
+				<Ship chance="10"			count="1"		class="&HS_scDwargBehemoth;"	orders="patrol:6"/>
+			</Table>
+		</Ships>
+
+		<Items value="standard:level=6:x=4">
+			<Lookup table="&HS_trStdTreasure;"/>
+		</Items>
+
+		<DockingPorts>
+			<Port x="62"	y="95" />
+			<Port x="106"	y="60" />
+			<Port x="125"	y="0" />
+			<Port x="111"	y="-60" />
+			<Port x="69"	y="-108" />
+
+			<Port x="-62"	y="95" />
+			<Port x="-106"	y="60" />
+			<Port x="-125"	y="0" />
+			<Port x="-111"	y="-60" />
+			<Port x="-69"	y="-108" />
+
+			<Port x="0"		y="-127" />
+			<Port x="0"		y="106" />
+		</DockingPorts>
+
+		<Encounters frequency="common">
+			<Ship				count="1"		class="&HS_scDwargMaster;" eventHandler="&RPG_evStdWanderBehavior;" maxShips="4">
+				<Escorts>
+					<Ship				count="2d4+8"	class="&HS_scDwargRaider;"		orders="escort"	/>
+				</Escorts>
+			</Ship>
+		</Encounters>
+
+	</StationType>
+
+<!-- SHIP CLASSES -->
+	
+	<!-- Dwarg Raider -->
+
+	<ShipClass UNID="&HS_scDwargRaider;"
+			manufacturer=		"Dwarg"
+			class=				"Zoanthrope raider"
+			type=				""
+			defaultSovereign=	"&HS_svDwargRaiders;"
+			inherit=			"&HS_baZoanthropeBase;"
+
+			size=				"27"
+			mass=				"25"
+			cargoSpace=			"5"
+			thrustRatio=		"6.5"
+			maxSpeed=			"19"
+
+			attributes=			"dwarg, genericClass, zoanthrope"
+
+			explosionType=		"&CORE_vtKineticExplosion1;"
+			>
+
+		<Armor
+			armorID=			"&HS_itDwargChitonArmor;"
+			count=				"2"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itDwargXiphonCannon;"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"9.0"
+			rotationAccel=		"2.0"
+			/>
+
+		<Image imageID="&HS_rsZoanthropeRaiderHD;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.00375"/>
+		<HeroImage imageID="&HS_rsZoanthropeRaiderHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="2"	posZ="0"	rotation="180"/>
+		</Effects>
+
+		<AISettings
+			fireRateAdj=		"30"
+			fireRangeAdj=		"50"
+			fireAccuracy=		"90"
+			perception=			"4"
+
+			flockingStyle=		"cloud"
+			/>
+			
+	</ShipClass>
+
+	<!-- Dwarg Master -->
+
+	<ShipClass UNID="&HS_scDwargMaster;"
+			manufacturer=		"Dwarg"
+			class=				"Dwarg master"
+			type=				""
+			defaultSovereign=	"&HS_svDwargRaiders;"
+
+			size=				"77"
+			mass=				"1900"
+			cargoSpace=			"25"
+			thrustRatio=		"5"
+			maxSpeed=			"22"
+
+			attributes=			"dwarg,genericClass"
+			>
+
+		<Armor
+			armorID=			"&HS_itDwargCatoptricArmor;"
+			count=				"4"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itDwargCnidocystCannon;" omnidirectional="true">
+				<Items>
+					<Item count="4d20" item="&HS_itDwargCnidocystNodule;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&HS_itDwargXiphonCannon;" secondaryWeapon="true" omnidirectional="true"/>
+			<Device deviceID="&HS_vtDwargMissileDefense;"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"7.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<Items>
+			<Item count="2d6" item="&HS_itXenotiteFuelRod;"/>
+		</Items>
+
+		<Image imageID="&rsDwargMasterHD;" imageWidth="96" imageHeight="96" rotationCount="120" rotationColumns="12" viewportRatio="0.01"/>
+		<HeroImage imageID="&HS_rsDwargMasterHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="43"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<AISettings
+			combatStyle=		"standOff"
+			fireRateAdj=		"20"
+			fireAccuracy=		"95"
+			perception=			"4"
+			/>
+
+	</ShipClass>
+
+	<!-- Dwarg Behemoth -->
+
+	<ShipClass UNID="&HS_scDwargBehemoth;"
+			manufacturer=		"Dwarg"
+			class=				"Zoanthrope behemoth"
+			type=				""
+			defaultSovereign=	"&HS_svDwargRaiders;"
+			inherit=			"&HS_baZoanthropeBase;"
+
+			size=				"107"
+			mass=				"10000"
+			cargoSpace=			"100"
+			thrustRatio=		"0.2"
+			maxSpeed=			"12"
+
+			explosionType=		"&CORE_vtBlastExplosion3;"
+
+			attributes=			"dwarg, genericClass, zoanthrope"
+			>
+
+		<Armor
+			armorID=			"&HS_itDwargHolochroalArmor;"
+			count=				"12"
+			/>
+		
+		<Devices>
+			<Device deviceID="&HS_itDwargBehemothCannon;"/>
+			<Device deviceID="&HS_itDwargXiphonCannon;" secondaryWeapon="true" minFireArc="350" maxFireArc="190" posAngle="95" posRadius="38"/>
+			<Device deviceID="&HS_itDwargXiphonCannon;" secondaryWeapon="true" minFireArc="170" maxFireArc="10" posAngle="-95" posRadius="38"/>
+		</Devices>
+
+		<Maneuver
+			maxRotationRate=	"5"
+			rotationAccel=		"0.5"
+			/>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"180"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"80"
+
+					posX=		"-41"
+					posY=		"0"
+					sizeX=		"29"
+					sizeY=		"45"
+					/>
+		</Interior>
+		
+		<Items>
+			<Item				  count="1d6"	item="&HS_itPteracniumFuelRod;"/>
+			<Table>
+				<Lookup chance="40" count="1" table="&HS_trConsumables6;"/>
+				<Lookup chance="40" count="1" table="&HS_trMinorItem6;"/>
+				<Lookup chance="20" count="1" table="&HS_trMajorItem6;"/>
+			</Table>
+		</Items>
+
+		<Image imageID="&rsDwargBehemothHD;" imageWidth="128" imageHeight="128" rotationCount="120" rotationColumns="12" viewportRatio="0.014375"/>
+		<HeroImage imageID="&HS_rsDwargBehemothHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="176"	posRadius="57"	posZ="-7"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-176"	posRadius="57"	posZ="-7"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="172"	posRadius="57"	posZ="0"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="56"	posZ="0"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-172"	posRadius="57"	posZ="0"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="176"	posRadius="57"	posZ="7"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-176"	posRadius="57"	posZ="7"	rotation="180"	effect="&CORE_efMainThrusterLarge;"/>
+		</Effects>
+			
+		<AISettings
+			aggressor=			"true"
+			fireRateAdj=		"20"
+			fireAccuracy=		"95"
+			perception=			"4"
+
+			flockingStyle=		"cloud"
+			/>
+
+	</ShipClass>
+
+<!-- ITEM TYPES -->
+
+	<!-- Level 3: Dwarg Chiton Armor -->
+
+	<ItemType UNID="&HS_itDwargChitonArmor;"
+			name=				"[segment(s) of ]Dwarg chiton armor"
+			level=				"3"
+			value=				"100"
+			mass=				"1000"
+			frequency=			"rare"
+			numberAppearing=	"1d4"
+			attributes=			"Dwarg; MinorItem; NotForSale;"
+
+			description=		"Dwarg raiders use a tough polyceramic armor that resists particle beams."
+
+			sortName=			"Dwarg.2.30"
+			>
+
+		<Image imageID="&HS_rsItems3;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Armor
+				hitPoints=	"30"
+				hpBonus=	"  +0,  +0, +50,  +0"
+				/>
+
+	</ItemType>
+
+	<!-- Level 4: Dwarg Missile Defense -->
+
+	<ItemType UNID="&HS_vtDwargMissileDefense;"
+			name=				"Dwarg missile defense system"
+			level=				"4"
+			virtual=			"true"
+			>
+		<AutoDefenseDevice
+				target=			"missiles"
+				weapon=			"&HS_vtDwargMissileDefenseWeapon;"
+				fireRate=		"15"
+				interceptRange=	"20"
+				/>
+	</ItemType>
+
+	<ItemType UNID="&HS_vtDwargMissileDefenseWeapon;"
+			name=				"Dwarg missile defense weapon"
+			level=				"4"
+			virtual=			"true" 
+			>
+		<Weapon
+				type=				"beam"
+
+				damage=				"laser:1d8+4"
+				fireRate=			"15"
+				lifetime=			"30"
+				powerUse=			"10"
+
+				noFriendlyFire=		"true"
+
+				effect=				"&CORE_efNullEffect;"
+				fireEffect=			"&CORE_efNullEffect;"
+				>
+		</Weapon>
+
+		<Events>
+			<OnFireWeapon>
+				;	gSource: Dwarg ship/station
+				;	aTargetObj: Missile to disable
+
+				(block (
+					curTarget allDwarg missileDir
+					)
+					(switch
+						;	If the missile cannot maneuver, then we cannot 
+						;	influence it.
+
+						(not (obj@ aTargetObj 'tracking))
+							Nil
+
+						;	If the missile target is not a Dwarg master (or equivalent)
+						;	then we don't care.
+
+						(or (not (setq curTarget (obj@ aTargetObj 'target)))
+								(not (objMatches curTarget Nil "sTA +dwarg; -zoanthrope;"))
+								)
+							Nil
+
+						;	Make a list of all Dwarg zoanthropes within 20 light-seconds
+						;	of the missile.
+
+						(not (setq allDwarg (sysFindObject aTargetObj "s N:20; +dwarg; +zoanthrope;")))
+							Nil
+
+						(block ()
+							;	Change the missile target to one of the Dwarg in the
+							;	path.
+
+							(objSet@ aTargetObj 'target (random allDwarg))
+							(objAddOverlay aTargetObj &HS_efDwargMissileDefense; 30)
+							)
+						)
+
+					;	We always return True, indicating that we handled the "shot"
+
+					True
+					)
+			</OnFireWeapon>
+		</Events>
+	</ItemType>
+
+	<!-- Level 4: Dwarg Xiphon Cannon -->
+
+	<ItemType UNID="&HS_itDwargXiphonCannon;"
+			name=				"Dwarg xiphon cannon"
+			level=				"4"
+			value=				"3000"
+			mass=				"3000"
+			frequency=			"rare"
+			numberAppearing=	"1"
+			attributes=			"Dwarg; MajorItem; NotForSale;"
+
+			description=		"This blast weapon is mounted on a small swivelling platform, enabling it to fire in a 20 degree arc."
+			sortName=			"Dwarg.1.30"
+			>
+
+		<Image imageID="&HS_rsItems4;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				minFireArc=			"350"
+				maxFireArc=			"10"
+				damage=				"blast:3d4; momentum:1; WMD:2"
+				fireRate=			"20"
+				missileSpeed=		"50"
+				lifetime=			"50"
+				powerUse=			"80"
+
+				effect=				"&CORE_efBlastShellDefault;"
+				sound=				"&CORE_snRecoillessCannon;"
+				>
+		</Weapon>
+
+	</ItemType>
+
+	<!-- Level 5: Dwarg Catoptric Armor -->
+
+	<ItemType UNID="&HS_itDwargCatoptricArmor;"
+			name=				"[segment(s) of ]Dwarg catoptric armor"
+			level=				"5"
+			value=				"600"
+			mass=				"2500"
+			frequency=			"rare"
+			numberAppearing=	"1d4"
+			attributes=			"Dwarg; MinorItem; NotForSale; NotStandard"
+
+			description=		"Dwarg engineers developed this particle-reflecting armor to defend themselves against Sung slavers."
+
+			sortName=			"Dwarg.2.20"
+			>
+
+		<Image imageID="&HS_rsItems3;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Armor
+				hitPoints=	"75"
+				reflect=	"particle"
+
+				repairCostAdj=	"300"
+				/>
+
+	</ItemType>
+
+	<!-- Level 5: Cnidocyst Cannon -->
+
+	<ItemType UNID="&HS_itDwargCnidocystCannon;"
+			name=				"Dwarg cnidocyst cannon"
+			level=				"5"
+			value=				"8000"
+			mass=				"3000"
+			attributes=			"Dwarg; MajorItem; NotForSale; NotStandard"
+			frequency=			"rare"
+
+			description=		"Dwarg masters use this cannon to paralyze their targets."
+			>
+
+		<Image imageID="&HS_rsItems5;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				fireRate=			"16"
+				powerUse=			"20"
+				>
+
+			<Missiles>
+				<Missile ammoID="&HS_itDwargCnidocystNodule;"
+						type=			"missile"
+
+						damage=			"ion:4d6; EMP:4"
+						missileSpeed=	"50"
+						lifetime=		"180"
+						maneuverRate=	"18"
+
+						sound=			"&CORE_snRecoillessCannon;"
+						>
+
+					<Effect>
+						<Ray
+								style=			"lightning"
+								shape=			"tapered"
+								length=			"60"
+								width=			"10"
+								intensity=		"50"
+								
+								primaryColor=	"#a0f0ff"
+								secondaryColor=	"#f0f0ff"
+								>
+						</Ray>
+						
+						<Starburst
+								style=			"morningStar"
+								spikeCount=		"2d6+2"
+								spikeLength=	"2d10"
+								primaryColor=	"#a0f0ff"
+								secondaryColor=	"#f0f0ff"
+								/>
+					</Effect>
+
+				</Missile>
+			</Missiles>
+		</Weapon>
+	</ItemType>
+
+	<!-- Level 5: Cnidocyst Nodule -->
+
+	<ItemType UNID="&HS_itDwargCnidocystNodule;"
+			name=				"Dwarg cnidocyst nodule"
+			level=				"5"
+			value=				"50"
+			mass=				"20"
+			attributes=			"Consumable; Dwarg; Missile; NotForSale; NotStandard"
+			frequency=			"uncommon"
+			numberAppearing=	"40-60"
+
+			description=		"Used by the Dwarg, cnidocyst nodules are guided missiles that paralyze their targets when they hit."
+
+			sortName=			"~.Dwarg cnidocyst"
+			>
+
+		<Image imageID="&CORE_rsItems1;" imageX="288" imageY="192" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+	<!-- Level 6: Dwarg behemoth Cannon -->
+
+	<ItemType UNID="&HS_itDwargBehemothCannon;"
+			name=				"Dwarg behemoth cannon"
+			level=				"6"
+			value=				"25000"
+			mass=				"6000"
+			frequency=			"rare"
+			numberAppearing=	"1"
+			attributes=			"Dwarg; MajorItem; Military; NotForSale; NotStandard"
+
+			description=		"Dwarg behemoths use this thermonuclear cannon."
+			sortName=			"Dwarg.1.20"
+			>
+
+		<Image imageID="&HS_rsItems6;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				damage=				"thermo:2d12+4; momentum:2; WMD:5"
+				fireRate=			"20"
+				missileSpeed=		"50"
+				lifetime=			"60"
+				powerUse=			"300"
+
+				effect=				"&CORE_efThermoShellDefault;"
+				sound=				"&CORE_snRecoillessCannon;"
+				>
+		</Weapon>
+
+	</ItemType>
+
+	<!-- Level 7: Dwarg Holochroal Armor -->
+
+	<ItemType UNID="&HS_itDwargHolochroalArmor;"
+			name=				"[segment(s) of ]Dwarg holochroal armor"
+			level=				"7"
+			value=				"7000"
+			mass=				"12000"
+			frequency=			"rare"
+			numberAppearing=	"1d4"
+			attributes=			"Dwarg; Military; MinorItem; NotForSale; NotStandard"
+
+			description=		"This heavy armor is used by Dwarg behemoths. It reflects particle and ion damage."
+
+			sortName=			"Dwarg.2.10"
+			>
+
+		<Image imageID="&HS_rsItems3;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Armor
+				hitPoints=	"200"
+				reflect=	"particle; ion"
+
+				repairCostAdj=	"300"
+				/>
+
+	</ItemType>
+
+<!-- GLOBALS -->
+
+	<Globals>
+		(block Nil
+			(setq intZoanthropeOnObjDestroyed (lambda Nil
+				; If our leader got destroyed, then find a new leader or gate out
+
+				(if (eq aObjDestroyed (objGetObjRefData gSource "leader"))
+					(block (newLeader)
+						; Note: We don't call objGetOrderGiver because the Zoanthropes
+						; are not smart enough to notice.
+						(setq newLeader aDestroyer)
+						
+						; See if the destroyer should be the new leader
+						(if (and newLeader 
+								(objCanAttack newLeader)
+								(leq (random 1 100) 50)
+								)
+							(block (newSovereign)
+								(shpCancelOrders gSource)
+								(shpOrderEscort gSource newLeader)
+								(if (eq (objGetSovereign newLeader) &CORE_svPlayer;)
+									(setq newSovereign &HS_svFriendlyZoanthrope;)
+									(setq newSovereign (objGetSovereign newLeader))
+									)
+								(objSetSovereign gSource newSovereign)
+								(objSendMessage newLeader gSource "WE foLLow thE stRong")
+
+								(if (= (objGetType gSource) &HS_scDwargBehemoth;)
+									(unvSetAchievement 'humanSpace.dwargBehemothFriend)
+									)
+								)
+							)
+						)
+					)
+				))
+
+			(setq intZoanthropeOnOrderChanged (lambda Nil
+				(block (
+					(order (shpGetOrder gSource))
+
+					(prevLeader (objGetObjRefData gSource "leader"))
+					(newLeader (shpGetOrderTarget gSource))
+					)
+
+					; If we are patrolling, guarding, or escorting something, register that object
+					; so that we can tell if it gets destroyed
+
+					(if (and (find '(guard escort patrol orbitExact orbitPatrol) order)
+							(!= prevLeader newLeader)
+							)
+						(block ()
+
+							; If we've got a previous registration, cancel it
+							; NOTE: OnOrderChanged gets called before OnObjDestroyed, so 
+							; we only unregister if we've got a new leader (otherwise we would
+							; unregister and never get an OnObjDestroyed event).
+							
+							(if prevLeader
+								(block Nil
+									(objUnregisterForEvents gSource prevLeader)
+									(objSetObjRefData gSource "leader" Nil)
+									)
+								)
+
+							; Register for the new leader
+							
+							(objSetObjRefData gSource "leader" newLeader)
+							(objRegisterForEvents gSource newLeader)
+							)
+						)
+					)
+				))
+			)
+	</Globals>
+
+<!-- BASE CLASSES -->
+	
+	<!-- Zoanthrope base class -->
+	
+	<Type UNID="&HS_baZoanthropeBase;">
+		<Events>
+			<OnObjDestroyed>
+				(intZoanthropeOnObjDestroyed)
+			</OnObjDestroyed>
+
+			<OnOrderChanged>
+				(intZoanthropeOnOrderChanged)
+			</OnOrderChanged>
+		</Events>
+		
+		<Language>
+			<Text id="WatchYourTargets">Grrr!</Text>
+			<Text id="NiceShooting">""</Text>
+		</Language>
+	</Type>
+
+<!-- EFFECTS -->
+
+	<OverlayType UNID="&HS_efDwargMissileDefense;"
+			attributes=     "dwarg, effect, temporary"
+			>
+		<Effect>
+			<LightningStorm
+					style=			"objectArcs"
+					intensity=		"50"
+					lifetime=		"30"
+
+					primaryColor=	"#00a9ff"
+					/>
+		</Effect>
+	</OverlayType>
+
+<!-- RESOURCES -->
+	
+	<ImageComposite unid="&HS_rsDwargColonyComposite;">
+		<Image>
+			<RotationTable>
+				<Image rotation="0"   imageID="&HS_rsDwargColony;" imageX="0"   imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="15"  imageID="&HS_rsDwargColony;" imageX="630" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="30"  imageID="&HS_rsDwargColony;" imageX="420" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="45"  imageID="&HS_rsDwargColony;" imageX="210" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="60"  imageID="&HS_rsDwargColony;" imageX="0"   imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="75"  imageID="&HS_rsDwargColony;" imageX="630" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="90"  imageID="&HS_rsDwargColony;" imageX="420" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="105" imageID="&HS_rsDwargColony;" imageX="210" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+
+				<Image rotation="120" imageID="&HS_rsDwargColony;" imageX="0"   imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="135" imageID="&HS_rsDwargColony;" imageX="630" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="150" imageID="&HS_rsDwargColony;" imageX="420" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="165" imageID="&HS_rsDwargColony;" imageX="210" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="180" imageID="&HS_rsDwargColony;" imageX="0"   imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="195" imageID="&HS_rsDwargColony;" imageX="630" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="210" imageID="&HS_rsDwargColony;" imageX="420" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="225" imageID="&HS_rsDwargColony;" imageX="210" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+
+				<Image rotation="240" imageID="&HS_rsDwargColony;" imageX="0"   imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="255" imageID="&HS_rsDwargColony;" imageX="630" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="270" imageID="&HS_rsDwargColony;" imageX="420" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="285" imageID="&HS_rsDwargColony;" imageX="210" imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="300" imageID="&HS_rsDwargColony;" imageX="0"   imageY="210" imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="315" imageID="&HS_rsDwargColony;" imageX="630" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="330" imageID="&HS_rsDwargColony;" imageX="420" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+				<Image rotation="345" imageID="&HS_rsDwargColony;" imageX="210" imageY="0"   imageWidth="210" imageHeight="210" viewportRatio="0.0275"/>
+			</RotationTable>
+		</Image>
+	</ImageComposite>
+	
+	<Image UNID="&HS_rsDwargColony;"			bitmap="Resources\DwargColony.jpg"	bitmask="Resources\DwargColonyMask.bmp" 	loadOnUse="true" />
+
+	<Image UNID="&rsDwargBehemothHD;"		bitmap="Resources\DwargBehemothHD.jpg"	bitmask="Resources\DwargBehemothHDMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&HS_rsDwargBehemothHero;"		bitmap="Resources\DwargBehemothLarge.jpg"	bitmask="Resources\DwargBehemothLargeMask.bmp" 	loadOnUse="true" />
+
+	<Image UNID="&rsDwargMasterHD;"			bitmap="Resources\DwargMasterHD.jpg"	bitmask="Resources\DwargMasterHDMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&HS_rsDwargMasterHero;"		bitmap="Resources\DwargMasterLarge.jpg"	bitmask="Resources\DwargMasterLargeMask.bmp" 	loadOnUse="true" />
+
+	<Image UNID="&HS_rsZoanthropeRaiderHD;"	bitmap="Resources\ZoanthropeRaiderHD.jpg"	bitmask="Resources\ZoanthropeRaiderHDMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&HS_rsZoanthropeRaiderHero;"	bitmap="Resources\ZoanthropeRaiderLarge.jpg"	bitmask="Resources\ZoanthropeRaiderLargeMask.bmp" 	loadOnUse="true" />
+
+</TranscendenceModule>

@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- DEFAULT THRUSTER EFFECTS ==================================================
+
+	These include main and maneuvering thruster effects.
+
+-->
+	
+	<EffectType UNID="&CORE_efManeuveringThrusterDefault;"
+			instance=			"creator"
+			>
+		<Effect>
+			<ParticleJet
+					emitRate=			"24"
+					emitSpeed=			"6-10"
+					particleLifetime=	"3-4"
+					spreadAngle=		"1"
+					>
+				<ParticleEffect>
+					<Particle
+							style=			"plain"
+							minWidth=		"1"
+							maxWidth=		"2"
+							primaryColor=	"#c0c0c0"
+							secondaryColor=	"#808080"
+							/>
+				</ParticleEffect>
+			</ParticleJet>
+		</Effect>
+	</EffectType>
+
+	<EffectType UNID="&CORE_efMainThrusterDefault;"
+			instance=			"creator"
+			>
+		<Effect>
+			<ParticleJet
+					emitRate=			"20"
+					emitSpeed=			"20-30"
+					particleLifetime=	"3-6"
+					spreadAngle=		"4"
+					>
+				<ParticleEffect>
+					<Particle
+							style=			"plain"
+							minWidth=		"1"
+							maxWidth=		"3"
+							primaryColor=	"#ffc041"
+							secondaryColor=	"#812617"
+							/>
+				</ParticleEffect>
+			</ParticleJet>
+			
+			<Ray	style=			"smooth"
+					shape=			"tapered"
+					blendMode=		"screen"
+					>
+				<Events>
+					<GetParameters>
+						(block (thrusterPower maxSpeed primaryTable)
+							(setq thrusterPower (@ gData 'thrusterPower))
+							(setq maxSpeed (@ gData 'maxSpeed))
+							(setq primaryTable (list "#FF7F38" "#FF8F46" "#FFA054" "#FFB065" "#FFBF75" "#FFCF86" "#FFDF97" "#FFEEA7" "#FFFEB8" "#FFFEB8" "#FAFDC0" "#F5FDC8" "#EFFCD0" "#EAFBD8" "#E5FBDF" "#E0FAE7" "#DAF9EF" "#D5F9F7" "#D0F8FF" "#D0F8FF"))
+
+							{
+								length: (mathScale maxSpeed 12 35 30 80 50)
+								width: (mathScale thrusterPower 50 1000 16 52 50)
+								intensity: (mathScale maxSpeed 12 35 40 60 50)
+								primaryColor: (@ primaryTable (subtract (max 16 (min maxSpeed 35)) 16))
+								secondaryColor: "#812617"
+								}
+							)
+					</GetParameters>
+				</Events>
+			</Ray>
+		</Effect>
+	</EffectType>
+
+	<EffectType UNID="&CORE_efMainThrusterLarge;"
+			instance=			"creator"
+			>
+		<Effect>
+			<ParticleJet
+					emitRate=			"15-30"
+					emitSpeed=			"5-8"
+					particleLifetime=	"24-60"
+					spreadAngle=		"3"
+					>
+				<ParticleEffect>
+					<Particle
+							style=			"plain"
+							minWidth=		"1"
+							maxWidth=		"4"
+							primaryColor=	"#e5c483"
+							secondaryColor=	"#392f2e"
+							/>
+				</ParticleEffect>
+			</ParticleJet>
+			
+				<Ray	style=			"smooth"
+						shape=			"tapered"
+						blendMode=		"screen"
+						>
+				<Events>
+					<GetParameters>
+						(block (thrusterPower maxSpeed primaryTable)
+							(setq thrusterPower (@ gData 'thrusterPower))
+							(setq maxSpeed (@ gData 'maxSpeed))
+							(setq primaryTable (list "#FF7F38" "#FF8F46" "#FFA054" "#FFB065" "#FFBF75" "#FFCF86" "#FFDF97" "#FFEEA7" "#FFFEB8" "#FFFEB8" "#FAFDC0" "#F5FDC8" "#EFFCD0" "#EAFBD8" "#E5FBDF" "#E0FAE7" "#DAF9EF" "#D5F9F7" "#D0F8FF" "#D0F8FF"))
+
+							{
+								length: (mathScale maxSpeed 12 20 40 80 50)
+								width: (mathScale thrusterPower 1000 5000 24 64 50)
+								intensity: (mathScale maxSpeed 12 20 40 60 50)
+								primaryColor: (@ primaryTable (subtract (max 16 (min maxSpeed 35)) 16))
+								secondaryColor: "#812617"
+								}
+							)
+					</GetParameters>
+				</Events>
+			</Ray>
+		</Effect>
+	</EffectType>
+
+<!-- DEFAULT DAMAGE EFFECTS ====================================================
+
+	These include smoke and fire effects to show that a given object has been
+	damaged.
+
+-->
+	
+	<OverlayType UNID="&CORE_ovDamagedSiteSmall;"
+			attributes=         "effect"
+			>
+		<Effect>
+			<ParticleCloud
+					style=				"cloud"
+					slowMotion=			"25"
+					emitRate=			"6-9"
+					emitSpeed=			"1-4"
+					particleLifetime=	"10-15"
+					>
+				<ParticleEffect>
+					<Particle
+							style=			"smoke"
+							minWidth=		"1"
+							maxWidth=		"4"
+							/>
+				</ParticleEffect>
+			</ParticleCloud>
+		</Effect>
+	</OverlayType>
+	
+	<OverlayType UNID="&CORE_ovDamagedSiteMedium;"
+			attributes=         "effect"
+			>
+		<Effect>
+			<ParticleCloud
+					style=				"cloud"
+					slowMotion=			"25"
+					emitRate=			"10-15"
+					emitSpeed=			"1-4"
+					particleLifetime=	"15-20"
+					>
+				<ParticleEffect>
+					<Particle
+							style=			"smoke"
+							minWidth=		"1"
+							maxWidth=		"4"
+							/>
+				</ParticleEffect>
+			</ParticleCloud>
+		</Effect>
+	</OverlayType>
+	
+	<OverlayType UNID="&CORE_ovDeprezSiteSmall;"
+			attributes=         "effect"
+			>
+		<Effect>
+			<ParticleCloud
+					style=				"jet"
+					emitRate=			"10"
+					emitSpeed=			"5-10"
+					particleLifetime=	"10-15"
+					>
+				<ParticleEffect>
+					<Particle
+							style=			"plain"
+							minWidth=		"1"
+							maxWidth=		"4"
+							primaryColor=	"#ffffff"
+							secondaryColor=	"#808080"
+							/>
+				</ParticleEffect>
+			</ParticleCloud>
+		</Effect>
+	</OverlayType>
+
+	<OverlayType unid="&CORE_ovTimeStop;"
+			attributes=		"effect"
+			timeStop=		"true"
+			>
+	</OverlayType>
+	
+	<Effect UNID="&CORE_efSmallExplosion1;"
+			sound="&CORE_snArmorHit1;"
+			>
+		<Image imageID="&CORE_rsMediumHit;" 
+				imageX="0" 
+				imageY="0" 
+				imageWidth="32" 
+				imageHeight="32"
+				imageFrameCount="12"
+				imageTicksPerFrame="1"/>
+	</Effect>
+
+	<EffectType unid="&CORE_efNullEffect;"
+			instance=		"game"
+			>
+		<Effect>
+			<Null/>
+		</Effect>
+	</EffectType>
+
+<!-- COMMON SHIELD EFFECTS =====================================================
+
+-->
+	
+	<Effect UNID="&CORE_efShieldHit1;"
+			sound="&CORE_snShieldHit1;"
+			>
+		<Image imageID="&CORE_rsShieldHit;" 
+				imageX="0" 
+				imageY="0" 
+				imageWidth="32" 
+				imageHeight="32"
+				imageFrameCount="12"
+				imageTicksPerFrame="1"/>
+	</Effect>
+
+	
+<!-- STATION DAMAGE PAINTERS ===================================================
+
+-->
+	
+	<Effect UNID="&CORE_efLargeStationDamage;">
+		<Image imageID="&CORE_rsLargeDamage;"
+				imageWidth="64"
+				imageHeight="64"
+				imageFrameCount="5"/>
+	</Effect>
+
+	<Effect UNID="&CORE_efMediumStationDamage;">
+		<Image imageID="&CORE_rsMediumDamage;"
+				imageWidth="24"
+				imageHeight="24"
+				imageFrameCount="10"/>
+	</Effect>
+
+<!-- DIAGNOSTICS AND DEBUGGING =================================================
+
+-->
+
+	<EffectType unid="&CORE_efTestOrbEffect;"
+			loop="true"
+			>
+		<Effect>
+			<Orb	style=			"fireblast"
+					animate=		"explode"
+					intensity=		"100"
+					radius=			"120"
+					lifetime=		"30"
+					distortion=		"60"
+					detail=			"40"
+					
+					blendMode=		"normal"
+					primaryColor=	"#ffd200"
+					secondaryColor=	"#ff2a00"
+					/>
+		</Effect>
+	</EffectType>
+
+<!-- DEFAULT SOUND EFFECTS =====================================================
+
+-->
+	
+	<Sound unid="&CORE_snDefaultEnemyShipAlarm;"			filename="Resources\EnemyShipAlarm.wav"/>
+	<Sound unid="&CORE_snDefaultFuelLowAlarm;"			filename="Resources\FuelLowAlarm.wav"/>
+	<Sound unid="&CORE_snDefaultRadiationAlarm;"			filename="Resources\RadiationAlarm.wav"/>
+	<Sound unid="&CORE_snDefaultHullBreachAlarm;"		filename="Resources\HullBreachAlarm.wav"/>
+	<Sound unid="&CORE_snDefaultReactorOverloadAlarm;"	filename="Resources\ReactorOverloadAlarm.wav"/>
+	<Sound unid="&CORE_snDefaultShieldsDownAlarm;"		filename="Resources\ShieldsDownAlarm.wav"/>
+	<Sound unid="&CORE_snDefaultButtonClick;"			filename="Resources\UIClick.wav"/>
+	<Sound unid="&CORE_snDefaultSelect;"					filename="Resources\UISelect.wav"/>
+	<Sound unid="&CORE_snDefaultGravityAlarm;"			filename="Resources\GravityAlarm.wav"/>
+	
+	<Sound UNID="&CORE_snLaserCannon;"		filename="Resources\LaserFire1.wav"/>
+	<Sound UNID="&CORE_snRecoillessCannon;"	filename="Resources\CannonFire1.wav"/>
+	<Sound UNID="&CORE_snArmorHit1;"			filename="Resources\ArmorHit1.wav"/>
+	<Sound UNID="&CORE_snShipExplosion1;"		filename="Resources\ShipExplosion1.wav"/>
+	<Sound UNID="&CORE_snStationExplosion1;"		filename="Resources\StationExplosion1.wav"/>
+	<Sound UNID="&CORE_snShieldHit1;"			filename="Resources\ShieldHit1.wav"/>
+	<Sound UNID="&CORE_snMissileLauncher;"		filename="Resources\MissileLaunch1.wav"/>
+
+	<Sound unid="&CORE_snDefaultShipScreenAmbient;"		filename="Resources\DefaultShipScreenAmbient.wav"/>
+
+<!-- RESOURCES =================================================================
+
+	These resources are used by these effects.
+	
+-->
+
+	<Image UNID="&CORE_rsDefaultDockScreenBkgnd;"	bitmap="Resources\DockScreenBackground.jpg"	bitmask="Resources\DockScreenBackgroundMask.bmp" loadOnUse="true"/>
+	<Image UNID="&CORE_rsDefaultDockScreenMask;"		bitmask="Resources\DockScreenMask.bmp"/>
+	
+	<Image UNID="&CORE_rsExplosionsAG48;"			bitmap="Resources\Explosions-AG48.jpg"	bitmask="Resources\Explosions-AG48Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&CORE_rsExplosionsAG96;"			bitmap="Resources\Explosions-AG96.jpg"	bitmask="Resources\Explosions-AG96Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&CORE_rsMediumExplosions;"			bitmap="Resources\MediumExplosions.jpg" bitmask="Resources\MediumExplosionsMask.bmp"/>
+	<Image UNID="&CORE_rsMediumDamage;"				bitmap="Resources\MediumDamage.jpg"	bitmask="Resources\MediumDamageMask.bmp"/>
+	<Image UNID="&CORE_rsMediumHit;"					bitmap="Resources\MediumHit.jpg"		bitmask="Resources\MediumHitMask.bmp"/>
+	<Image UNID="&CORE_rsLargeDamage;"				bitmap="Resources\LargeDamage.jpg"	bitmask="Resources\LargeDamageMask.bmp"/>
+	<Image UNID="&CORE_rsShieldHit;"					bitmap="Resources\ShieldHit.jpg" bitmask="Resources\ShieldHitMask.bmp" loadOnUse="true"/>
+	
+	<Image UNID="&CORE_rsDeepSpace;"					bitmap="Resources\DeepSpaceBackground.jpg"	loadOnUse="true"/>
+
+	<Image UNID="&CORE_rsGenericMissionIcon;"		bitmap="Resources\GenericMissionIcon.jpg"	bitmask="Resources\GenericMissionIconMask.bmp"	loadOnUse="true"/>
+
+	<Image UNID="&CORE_rsCoreIconBar;"				bitmap="Resources\CoreIconBar.jpg"	bitmask="Resources\CoreIconBarMask.bmp"	loadOnUse="true"/>
+
+</TranscendenceModule>

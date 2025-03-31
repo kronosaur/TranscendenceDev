@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- TABLES -->
+
+	<SystemPartTable unid="&GLXY_tbPrimordialPlanets;">
+		<PrimordialPrimary>
+			<LocationCriteriaTable>
+				<Table criteria="*innerSystem">
+					<Lookup chance="70" table="PrimordialPlanetoidPrimary"/>
+					<Lookup chance="30" table="PrimordialTerrestrialPrimary"/>
+				</Table>
+				<Table criteria="*lifeZone">
+					<Lookup chance="40" table="PrimordialPlanetoidPrimary"/>
+					<Lookup chance="60" table="PrimordialTerrestrialPrimary"/>
+				</Table>
+				<Table criteria="*outerSystem">
+					<Lookup chance="80" table="PrimordialPlanetoidPrimary"/>
+					<Lookup chance="20" table="PrimordialTerrestrialPrimary"/>
+				</Table>
+			</LocationCriteriaTable>
+		</PrimordialPrimary>
+
+		<PrimordialPlanetoidPrimary>
+			<Lookup table="StandardPlanetoidMorphology">
+				<_PlanetType>
+					<Table>
+						<Station chance="60" type="&GLXY_stPrimordialPlanetoidSizeF;" showOrbit="true"/>
+						<Station chance="40" type="&GLXY_stPrimordialPlanetoidSizeF2;" showOrbit="true"/>
+					</Table>
+				</_PlanetType>
+				<_PlanetLabel>
+					<Label attributes="planet, planetary, planetoid, primordial"/>
+				</_PlanetLabel>
+			</Lookup>
+		</PrimordialPlanetoidPrimary>
+
+		<PrimordialTerrestrialPrimary>
+			<Lookup table="StandardTerrestrialMorphology">
+				<_PlanetType>
+					<Table>
+						<Station chance="30" type="&GLXY_stPrimordialTerrestrialSizeH;" showOrbit="true"/>
+						<Station chance="50" type="&GLXY_stPrimordialTerrestrialSizeH2;" showOrbit="true"/>
+						<Station chance="20" type="&GLXY_stPrimordialTerrestrialSizeJ;" showOrbit="true"/>
+					</Table>
+				</_PlanetType>
+				<_PlanetLabel>
+					<Label attributes="planet, planetary, primordial, terrestrial"/>
+				</_PlanetLabel>
+			</Lookup>
+		</PrimordialTerrestrialPrimary>
+
+		<PrimordialGasGiantPrimary>
+			<Lookup table="SmallGasGiantMorphology">
+				<_PlanetType>
+					<Table>
+						<Station chance="100" type="&GLXY_stPrimordialTerrestrialSizeH;" showOrbit="true"/>
+					</Table>
+				</_PlanetType>
+				<_PlanetLabel>
+					<Label attributes="gasGiant, planet, planetary, primordial"/>
+				</_PlanetLabel>
+			</Lookup>
+		</PrimordialGasGiantPrimary>
+	</SystemPartTable>
+
+<!-- ASTEROIDS & PLANETS -->
+
+	<!-- Size A Primordial Asteroid -->
+
+	<StationType UNID="&GLXY_stPrimordialAsteroidSizeA;"
+		name=				"primordial asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
+		inherit=			"&GLXY_baPrimordialAsteroid;"
+
+		scale=				"world"
+		size=				"6"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsPrimordialAsteroidSizeA;"/>
+
+		<Items>
+			<Table>
+				<Null chance="92"/>
+				<Lookup chance="8" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size B Primordial Asteroid -->
+
+	<StationType UNID="&GLXY_stPrimordialAsteroidSizeB;"
+		name=				"primordial asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
+		inherit=			"&GLXY_baPrimordialAsteroid;"
+
+		scale=				"world"
+		size=				"55"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsPrimordialAsteroidSizeB;"/>
+
+		<Items>
+			<Table>
+				<Null chance="92"/>
+				<Lookup chance="8" count="1d6" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size C Primordial Asteroid -->
+
+	<StationType UNID="&GLXY_stPrimordialAsteroidSizeC;"
+		name=				"primordial asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
+		inherit=			"&GLXY_baPrimordialAsteroid;"
+
+		scale=				"world"
+		size=				"250"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsPrimordialAsteroidSizeC;"/>
+
+		<Items>
+			<Table>
+				<Null chance="92"/>
+				<Lookup chance="8" count="1d8" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size D Primordial Asteroid -->
+
+	<StationType UNID="&GLXY_stPrimordialAsteroidSizeD;"
+		name=				"primordial asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, primordial"
+		inherit=			"&GLXY_baPrimordialAsteroid;"
+
+		scale=				"world"
+		size=				"740"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsPrimordialAsteroidSizeD;"/>
+
+		<Items>
+			<Table>
+				<Null chance="92"/>
+				<Lookup chance="8" count="1d10" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size E Primordial Planetoid -->
+
+	<StationType UNID="&GLXY_stPrimordialPlanetoidSizeE;"
+		name=				"primordial planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+
+		scale=				"world"
+		size=				"1150"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsPrimordialPlanetoidSizeE;"/>
+	</StationType>
+
+	<!-- Size F Primordial Planetoid -->
+
+	<StationType UNID="&GLXY_stPrimordialPlanetoidSizeF;"
+		name=				"primordial planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+
+		scale=				"world"
+		size=				"1640"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtStoneAsteroidEjecta;"
+		>
+		<ImageLookup imageID="&GLXY_rsPrimordialPlanetoidSizeF;"/>
+	</StationType>
+
+	<!-- Size F Primordial Planetoid -->
+
+	<StationType UNID="&GLXY_stPrimordialPlanetoidSizeF2;"
+		name=				"primordial planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+
+		scale=				"world"
+		size=				"2530"
+		anonymous=			"true"
+		>
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsPrimordialWorlds;"	imageX="182" imageY="580"   imageWidth="158"  imageHeight="158"/>
+		</ImageVariants>
+	</StationType>
+
+	<!-- Size G Primordial Planetoid -->
+
+	<StationType UNID="&GLXY_stPrimordialPlanetoidSizeG;"
+		name=				"primordial planetoid"
+		attributes=			"generic, inner, lifeZone, outer, planetoid, primordial"
+
+		scale=				"world"
+		size=				"4000"
+		anonymous=			"true"
+		>
+		<ImageLookup imageID="&GLXY_rsPrimordialPlanetoidSizeG;"/>
+	</StationType>
+
+	<!-- Size H Primordial Terrestrial -->
+
+	<StationType UNID="&GLXY_stPrimordialTerrestrialSizeH;"
+		name=				"primordial world"
+		attributes=			"generic, inner, lifeZone, outer, primordial, terrestrial"
+
+		scale=				"world"
+		size=				"4285"
+		anonymous=			"true"
+		>
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsPrimordialWorlds;"	imageX="0"   imageY="580"   imageWidth="182"  imageHeight="182"/>
+		</ImageVariants>
+	</StationType>
+
+	<!-- Size H Primordial Terrestrial -->
+
+	<StationType UNID="&GLXY_stPrimordialTerrestrialSizeH2;"
+		name=				"primordial world"
+		attributes=			"atmosphere, denseAtmosphere, generic, inner, lifeZone, outer, primordial, terrestrial"
+
+		scale=				"world"
+		size=				"6300"
+		anonymous=			"true"
+		>
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsPrimordialWorlds;"	imageX="0"   imageY="340"   imageWidth="240"  imageHeight="240"/>
+			<Image	imageID="&GLXY_rsPrimordialWorlds;"	imageX="240" imageY="340"   imageWidth="240"  imageHeight="240"/>
+		</ImageVariants>
+	</StationType>
+
+	<!-- Size J Primordial Terrestrial -->
+
+	<StationType UNID="&GLXY_stPrimordialTerrestrialSizeJ;"
+		name=				"primordial world"
+		attributes=			"generic, inner, lifeZone, outer, primordial, terrestrial"
+
+		scale=				"world"
+		size=				"22000"
+		anonymous=			"true"
+		>
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsPrimordialWorlds;"	imageX="340" imageY="0"     imageWidth="270"  imageHeight="270"/>
+		</ImageVariants>
+	</StationType>
+
+	<!-- Size K Primordial Gas Giant -->
+
+	<StationType UNID="&GLXY_stPrimordialGasGiantSizeK;"
+		name=				"primordial gas giant"
+		attributes=			"atmosphere, denseAtmosphere, gasGiant, generic, inner, lifeZone, outer, primordial"
+
+		scale=				"world"
+		size=				"48200"
+		anonymous=			"true"
+		>
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsPrimordialWorlds;"	imageX="0"   imageY="0"     imageWidth="340"  imageHeight="340"/>
+		</ImageVariants>
+	</StationType>
+
+<!-- ENVIRONMENTS -->
+
+	<!-- Primordial Mist -->
+
+	<SpaceEnvironmentType UNID="&GLXY_sePrimordialMist;"
+			lrsJammer=			"true"
+			attributes=			"nebula, primordial"
+
+			mapColor=			"#bf9b22"
+			autoEdges=			"true"
+			>
+
+		<Image imageID="&GLXY_rsPrimordialMist;" 
+				imageX="0" 
+				imageY="0" 
+				imageWidth="2048" 
+				imageHeight="2048"/>
+	</SpaceEnvironmentType>
+
+	<!-- Primordial Nebula -->
+
+	<SpaceEnvironmentType UNID="&GLXY_sePrimordialNebula;"
+			lrsJammer=			"true"
+			attributes=			"nebula, primordial"
+
+			mapColor=			"#bf9b22"
+			autoEdges=			"true"
+			>
+
+		<Image imageID="&GLXY_rsPrimordialNebula;" 
+				imageX="0" 
+				imageY="0" 
+				imageWidth="2048" 
+				imageHeight="2048"/>
+	</SpaceEnvironmentType>
+
+<!-- BASE CLASSES -->
+
+	<StationType unid="&GLXY_baPrimordialAsteroid;"
+			virtual=	"true"
+			>
+		<Asteroid type="primordial"/>
+
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining)
+			</OnMining>
+		</Events>
+	</StationType>
+
+<!-- RESOURCES -->
+	
+	<ImageComposite unid="&GLXY_rsPrimordialAsteroidSizeA;">
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="0"   imageY="0"		imageWidth="40"  imageHeight="40"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="40"	 imageY="0"		imageWidth="40"  imageHeight="40"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="0"	 imageY="40"	imageWidth="40"  imageHeight="40"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="40"  imageY="40"	imageWidth="40"  imageHeight="40"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="0"   imageY="80"	imageWidth="40"  imageHeight="40"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="40"  imageY="80"	imageWidth="40"  imageHeight="40"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="0"   imageY="120"	imageWidth="40"  imageHeight="40"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="40"  imageY="120"	imageWidth="40"  imageHeight="40"/>
+		</ImageVariants>
+	</ImageComposite>
+
+	<ImageComposite unid="&GLXY_rsPrimordialAsteroidSizeB;">
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="80"  imageY="0"		imageWidth="80"  imageHeight="80"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="80"  imageY="80"    imageWidth="80"  imageHeight="80"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="0"   imageY="160"   imageWidth="80"  imageHeight="80"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="80"  imageY="160"   imageWidth="80"  imageHeight="80"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="0"   imageY="240"   imageWidth="80"  imageHeight="80"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="80"  imageY="240"   imageWidth="80"  imageHeight="80"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="0"   imageY="320"   imageWidth="80"  imageHeight="80"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="80"  imageY="320"   imageWidth="80"  imageHeight="80"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="0"   imageY="400"   imageWidth="80"  imageHeight="80"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="80"  imageY="400"   imageWidth="80"  imageHeight="80"/>
+		</ImageVariants>
+	</ImageComposite>
+
+	<ImageComposite unid="&GLXY_rsPrimordialAsteroidSizeC;">
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="160" imageY="0"		imageWidth="90"  imageHeight="90"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="160" imageY="90"	imageWidth="90"  imageHeight="90"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="160" imageY="180"	imageWidth="90"  imageHeight="90"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="160" imageY="270"	imageWidth="90"  imageHeight="90"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="160" imageY="360"	imageWidth="90"  imageHeight="90"/>
+		</ImageVariants>
+	</ImageComposite>
+
+	<ImageComposite unid="&GLXY_rsPrimordialAsteroidSizeD;">
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="250" imageY="0"		imageWidth="120"  imageHeight="120"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="250" imageY="120"	imageWidth="120"  imageHeight="120"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="250" imageY="240"	imageWidth="120"  imageHeight="120"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="250" imageY="360"	imageWidth="120"  imageHeight="120"/>
+		</ImageVariants>
+	</ImageComposite>
+
+	<ImageComposite unid="&GLXY_rsPrimordialPlanetoidSizeE;">
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="370" imageY="0"		imageWidth="130"  imageHeight="130"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="370" imageY="130"	imageWidth="130"  imageHeight="130"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="370" imageY="260"	imageWidth="130"  imageHeight="130"/>
+		</ImageVariants>
+	</ImageComposite>
+
+	<ImageComposite unid="&GLXY_rsPrimordialPlanetoidSizeF;">
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="500" imageY="0"     imageWidth="160"  imageHeight="160"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="500" imageY="160"   imageWidth="160"  imageHeight="160"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="500" imageY="320"   imageWidth="160"  imageHeight="160"/>
+		</ImageVariants>
+	</ImageComposite>
+
+	<ImageComposite unid="&GLXY_rsPrimordialPlanetoidSizeG;">
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="660" imageY="0"     imageWidth="180"  imageHeight="180"/>
+			<Image	imageID="&GLXY_rsPrimordialAsteroids;"	imageX="660" imageY="180"   imageWidth="180"  imageHeight="180"/>
+		</ImageVariants>
+	</ImageComposite>
+
+	<Image UNID="&GLXY_rsPrimordialAsteroids;"	bitmap="Resources\PrimordialAsteroids.jpg"	bitmask="Resources\PrimordialAsteroidsMask.bmp"		loadOnUse="true"/>
+	<Image UNID="&GLXY_rsPrimordialMist;"		bitmap="Resources\PrimordialMist.jpg"		bitmask="Resources\PrimordialMistMask.bmp"		loadOnUse="true"/>
+	<Image UNID="&GLXY_rsPrimordialNebula;"		bitmap="Resources\PrimordialNebula.jpg"		bitmask="Resources\PrimordialNebulaMask.bmp"		loadOnUse="true"/>
+	<Image UNID="&GLXY_rsPrimordialWorlds;"		bitmap="Resources\PrimordialWorlds.jpg"		bitmask="Resources\PrimordialWorldsMask.bmp"		loadOnUse="true"/>
+
+</TranscendenceModule>

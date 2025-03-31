@@ -148,6 +148,76 @@ ALERROR CExtensionCollection::AddCompatibilityLibrary (CExtension *pAdventure, c
 	return NOERROR;
 	}
 
+ALERROR CExtensionCollection::AddCompatibilityUNIDLibrary (CExtension *pAdventure, const TArray<CExtension *> &Extensions, DWORD dwFlags, const TArray<CExtension *> &Compatibility, TArray<CExtension *> *retList, CString *retsError)
+
+//	AddCompatibilityLibrary
+//
+//	Examines the adventure and extensions and, if necessary, adds the compatibility
+//	library to the bind list.
+
+	{
+	int i;
+
+	//	In debug mode we output which extension required us to include this library.
+
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
+	CString sExtensionName;
+
+	bool bNeedLibrary = false;
+
+	//	If we're forcing include, then do it.
+
+	if (dwFlags & FLAG_FORCE_COMPATIBILITY_LIBRARY)
+		{
+		bNeedLibrary = true;
+		sExtensionName = CONSTLIT("save file");
+		}
+
+	//	See if the adventure needs it
+
+	else if (pAdventure->UsesCompatibilityUNIDLibrary())
+		{
+		bNeedLibrary = true;
+		sExtensionName = pAdventure->GetName();
+		}
+
+	//	Otherwise, see if any extensions need it
+
+	else
+		{
+		for (i = 0; i < Extensions.GetCount(); i++)
+			{
+			sExtensionName = Extensions[i]->GetName();
+			int iAPIVer = Extensions[i]->GetAPIVersion();
+			if (Extensions[i]->UsesCompatibilityUNIDLibrary())
+				{
+				bNeedLibrary = true;
+				break;
+				}
+			}
+		}
+
+	if (!bNeedLibrary)
+		return NOERROR;
+
+	if (bDebugMode)
+		::kernelDebugLogPattern("Adding compatibility UNID library because of %s.", sExtensionName);
+
+	//	Add the library
+
+	CExtension *pLibrary;
+	if (!FindBestExtension(DEFAULT_COMPATIBILITY_UNID_LIBRARY_UNID, 1, dwFlags, &pLibrary))
+		{
+		if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to find compatibility UNID library: %08x"), DEFAULT_COMPATIBILITY_UNID_LIBRARY_UNID);
+		return ERR_FAIL;
+		}
+
+	if (AddToBindList(pLibrary, dwFlags, Compatibility, retList, retsError) != NOERROR)
+		return ERR_FAIL;
+
+	return NOERROR;
+	}
+
 void CExtensionCollection::AddOrReplace (CExtension *pExtension)
 
 //	AddOrReplace
@@ -724,6 +794,11 @@ ALERROR CExtensionCollection::ComputeBindOrder (CExtension *pAdventure,
 	if (error = AddCompatibilityLibrary(pAdventure, DesiredExtensions, dwFlags, CompatibilityLibraries, retList, retsError))
 		return error;
 
+	//	See if we need the compatibility UNID library
+
+	if (error = AddCompatibilityUNIDLibrary(pAdventure, DesiredExtensions, dwFlags, CompatibilityLibraries, retList, retsError))
+		return error;
+
 	//	Now add the adventure and any dependencies
 
 	if (pAdventure)
@@ -845,11 +920,29 @@ void CExtensionCollection::ComputeCoreLibraries (CExtension *pExtension, TArray<
 				retList->Insert(pLibrary);
 
 			//	Prior to API 26 we expected these UNIDs to be defined, so we 
-			//	need to add them.
+			//	need to add them. 
 
 			if (pExtension->GetAPIVersion() < 26)
 				{
 				if (FindBestExtension(UNID_HUMAN_SPACE_LIBRARY, 1, 0, &pLibrary))
+					retList->Insert(pLibrary);
+				}
+
+			//	Prior to API 12 we expected these UNIDs to be defined, so we 
+			//	need to add them.
+
+			if (pExtension->GetAPIVersion() < 12)
+				{
+				if (FindBestExtension(DEFAULT_COMPATIBILITY_LIBRARY_UNID, 1, 0, &pLibrary))
+					retList->Insert(pLibrary);
+				}
+
+			//	Prior to API 53 we expected these UNIDs to have valid entities, so we
+			//	need to add them
+
+			if (pExtension->GetAPIVersion() < 54)
+				{
+				if (FindBestExtension(DEFAULT_COMPATIBILITY_UNID_LIBRARY_UNID, 1, 0, &pLibrary))
 					retList->Insert(pLibrary);
 				}
 

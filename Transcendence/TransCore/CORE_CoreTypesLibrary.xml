@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE CoreLibrary
+	[
+	<!ENTITY CORE_efLaserHitDefault			"0x00000010">
+	<!ENTITY CORE_efKineticHitDefault		"0x00000011">
+	<!ENTITY CORE_efParticleHitDefault		"0x00000012">
+	<!ENTITY CORE_efBlastHitDefault			"0x00000013">
+	<!ENTITY CORE_efIonHitDefault			"0x00000014">
+	<!ENTITY CORE_efThermoHitDefault			"0x00000015">
+	<!ENTITY CORE_efPositronHitDefault		"0x00000016">
+	<!ENTITY CORE_efPlasmaHitDefault			"0x00000017">
+	<!ENTITY CORE_efAntimatterHitDefault		"0x00000018">
+	<!ENTITY CORE_efNanoHitDefault			"0x00000019">
+	<!ENTITY CORE_efGravitonHitDefault		"0x0000001A">
+	<!ENTITY CORE_efSingularityHitDefault	"0x0000001B">
+	<!ENTITY CORE_efDarkAcidHitDefault		"0x0000001C">
+	<!ENTITY CORE_efDarkSteelHitDefault		"0x0000001D">
+	<!ENTITY CORE_efDarkLightningHitDefault	"0x0000001E">
+	<!ENTITY CORE_efDarkFireHitDefault		"0x0000001F">
+	
+	<!ENTITY CORE_rsMikeno					"0x00000030">
+	
+	<!ENTITY CORE_efLaserBeamDefault			"0x00000040">
+	<!ENTITY CORE_efKineticBoltDefault		"0x00000041">
+	<!ENTITY CORE_efParticleBeamDefault		"0x00000042">
+	<!ENTITY CORE_efBlastShellDefault		"0x00000043">
+	<!ENTITY CORE_efIonBeamDefault			"0x00000044">
+	<!ENTITY CORE_efThermoShellDefault		"0x00000045">
+	<!ENTITY CORE_efPositronBeamDefault		"0x00000046">
+	<!ENTITY CORE_efPlasmaBoltDefault		"0x00000047">
+	<!ENTITY CORE_efAntimatterPodDefault		"0x00000048">
+	<!ENTITY CORE_efNanoBlobDefault			"0x00000049">
+	<!ENTITY CORE_efGravitonBeamDefault		"0x0000004A">
+	<!ENTITY CORE_efSingularityMassDefault	"0x0000004B">
+	<!ENTITY CORE_efDarkAcidBoltDefault		"0x0000004C">
+	<!ENTITY CORE_efDarkSteelBoltDefault		"0x0000004D">
+	<!ENTITY CORE_efDarkLightningBoltDefault	"0x0000004E">
+	<!ENTITY CORE_efDarkFireBoltDefault		"0x0000004F">
+	
+	<!ENTITY CORE_ovDamagedSiteSmall			"0x00000050">
+	<!ENTITY CORE_ovDamagedSiteMedium		"0x00000051">
+	<!ENTITY CORE_ovDamagedSiteLarge			"0x00000052">
+	<!ENTITY CORE_ovDeprezSiteSmall			"0x00000053">
+	
+	<!ENTITY CORE_efLaserFireDefault			"0x00000070">
+	<!ENTITY CORE_efKineticFireDefault		"0x00000071">
+	<!ENTITY CORE_efParticleFireDefault		"0x00000072">
+	<!ENTITY CORE_efBlastFireDefault			"0x00000073">
+	<!ENTITY CORE_efIonFireDefault			"0x00000074">
+	<!ENTITY CORE_efThermoFireDefault		"0x00000075">
+	<!ENTITY CORE_efPositronFireDefault		"0x00000076">
+	<!ENTITY CORE_efPlasmaFireDefault		"0x00000077">
+	<!ENTITY CORE_efAntimatterFireDefault	"0x00000078">
+	<!ENTITY CORE_efNanoFireDefault			"0x00000079">
+	<!ENTITY CORE_efGravitonFireDefault		"0x0000007A">
+	<!ENTITY CORE_efSingularityFireDefault	"0x0000007B">
+	<!ENTITY CORE_efDarkAcidFireDefault		"0x0000007C">
+	<!ENTITY CORE_efDarkSteelFireDefault		"0x0000007D">
+	<!ENTITY CORE_efDarkLightningFireDefault	"0x0000007E">
+	<!ENTITY CORE_efDarkFireFireDefault		"0x0000007F">
+	
+	<!ENTITY CORE_efManeuveringThrusterDefault	"0x00000090">
+	<!ENTITY CORE_efMainThrusterDefault		"0x00000091">
+	<!ENTITY CORE_efMainThrusterLarge		"0x00000092">
+	
+	<!ENTITY CORE_snDefaultEnemyShipAlarm	"0x000000A0">
+	<!ENTITY CORE_snDefaultFuelLowAlarm		"0x000000A1">
+	<!ENTITY CORE_snDefaultRadiationAlarm	"0x000000A2">
+	<!ENTITY CORE_snDefaultHullBreachAlarm	"0x000000A3">
+	<!ENTITY CORE_snDefaultReactorOverloadAlarm	"0x000000A4">
+	<!ENTITY CORE_snDefaultShieldsDownAlarm	"0x000000A5">
+	<!ENTITY CORE_snDefaultButtonClick		"0x000000A6">
+	<!ENTITY CORE_snDefaultSelect			"0x000000A7">
+	<!ENTITY CORE_snDefaultGravityAlarm		"0x000000A8">
+	
+	<!ENTITY CORE_svPlayer					"0x00001001">
+	<!ENTITY CORE_svIndependent				"0x00001003">
+	<!ENTITY CORE_ecCreditEconomy			"0x00001017">
+	<!ENTITY CORE_svUnknownEnemy				"0x00001018">
+	<!ENTITY CORE_svNeutral					"0x00001019">
+	
+	<!ENTITY CORE_stShipwreck				"0x00002001">
+	<!ENTITY CORE_stFlotsam					"0x0000200E">
+	
+	<!ENTITY CORE_scMikeno					"0x00003007">
+	
+	<!ENTITY CORE_itHeavyReactiveArmor		"0x00004002">
+	<!ENTITY CORE_itHeavyPlasteelPlate		"0x00004008">
+	<!ENTITY CORE_itLaserCannon				"0x0000400D">
+	<!ENTITY CORE_itHelium3FuelRod			"0x0000403C">
+	<!ENTITY CORE_itTritiumPropulsionUpgrade	"0x0000404B">
+	<!ENTITY CORE_itUnknownROM				"0x00004061">
+	<!ENTITY CORE_itBallistaCannon			"0x000041A2">
+	
+	<!ENTITY CORE_vtWreckEjecta				"0x00005004">
+	<!ENTITY CORE_vtKineticExplosion1		"0x00005007">
+	<!ENTITY CORE_vtKineticExplosion2		"0x00005008">
+	<!ENTITY CORE_vtKineticExplosion3		"0x00005009">
+	<!ENTITY CORE_vtKineticExplosion4		"0x0000500A">
+	<!ENTITY CORE_vtBlastExplosion1			"0x0000500B">
+	<!ENTITY CORE_vtBlastExplosion2			"0x0000500C">
+	<!ENTITY CORE_vtBlastExplosion3			"0x0000500D">
+	<!ENTITY CORE_vtBlastExplosion4			"0x0000500E">
+	<!ENTITY CORE_vtThermoExplosion1			"0x0000500F">
+	<!ENTITY CORE_vtThermoExplosion2			"0x00005010">
+	<!ENTITY CORE_vtThermoExplosion3			"0x00005011">
+	<!ENTITY CORE_vtThermoExplosion4			"0x00005012">
+	<!ENTITY CORE_vtPlasmaExplosion1			"0x00005013">
+	<!ENTITY CORE_vtPlasmaExplosion2			"0x00005014">
+	<!ENTITY CORE_vtPlasmaExplosion3			"0x00005015">
+	<!ENTITY CORE_vtPlasmaExplosion4			"0x00005016">
+	<!ENTITY CORE_vtRadioactiveExplosion1	"0x00005017">
+	<!ENTITY CORE_vtRadioactiveExplosion2	"0x00005018">
+	
+	<!ENTITY CORE_efSmallExplosion1			"0x00009003">
+	<!ENTITY CORE_efShieldHit1				"0x00009004">
+	<!ENTITY CORE_efLargeStationDamage		"0x0000900E">
+	<!ENTITY CORE_efMediumStationDamage		"0x0000900F">
+	<!ENTITY CORE_efRadioactiveHitEffect		"0x00009013">
+	
+	<!ENTITY CORE_rsMediumDamage				"0x0000F001">
+	<!ENTITY CORE_rsDefaultDockScreenBkgnd	"0x0000F013">	<!-- Same as rsZubrinDockScreenBkgnd -->
+	<!ENTITY CORE_rsDefaultDockScreenMask	"0x0000F014">	<!-- Same as rsZubrinDockScreenMask -->
+	<!ENTITY CORE_rsMissiles					"0x0000F101">
+	<!ENTITY CORE_rsMediumHit				"0x0000F106">
+	<!ENTITY CORE_rsShieldHit				"0x0000F107">
+	<!ENTITY CORE_rsMediumExplosions			"0x0000F110">
+	<!ENTITY CORE_rsMissiles3				"0x0000F111">
+	<!ENTITY CORE_rsLargeDamage				"0x0000F113">
+	<!ENTITY CORE_rsItems1					"0x0000F11D">
+	<!ENTITY CORE_rsExplosionsAG128			"0x0000F13F">
+	<!ENTITY CORE_rsExplosionsA20G192		"0x0000F140">
+	<!ENTITY CORE_rsExplosionsA20G256		"0x0000F141">
+	<!ENTITY CORE_rsShockwave2				"0x0000F142">
+	<!ENTITY CORE_rsShockwave3				"0x0000F143">
+	<!ENTITY CORE_rsExplosion2AG128			"0x0000F144">
+	<!ENTITY CORE_rsExplosion2A20G192		"0x0000F145">
+	<!ENTITY CORE_rsExplosion3AG128			"0x0000F14B">
+	<!ENTITY CORE_rsExplosionsAG48			"0x0000F14C">
+	<!ENTITY CORE_rsExplosionsAG96			"0x0000F14D">
+	
+	<!ENTITY CORE_snLaserCannon				"0x0000F201">
+	<!ENTITY CORE_snRecoillessCannon			"0x0000F202">
+	<!ENTITY CORE_snArmorHit1				"0x0000F203">
+	<!ENTITY CORE_snShipExplosion1			"0x0000F204">
+	<!ENTITY CORE_snStationExplosion1		"0x0000F205">
+	<!ENTITY CORE_snShieldHit1				"0x0000F206">
+	<!ENTITY CORE_snMissileLauncher			"0x0000F207">
+	
+	<!-- 0003 0000-FFFF CORE TYPES LIBRARY -->
+	
+	<!ENTITY CORE_unidCoreTypesLibrary		"0x00030000">
+	<!ENTITY CORE_rsDeepSpace				"0x00030001">
+	<!ENTITY CORE_unidCoreCriteria			"0x00030002">
+	<!ENTITY CORE_efNullEffect				"0x00030003">
+	<!ENTITY CORE_unidEngineText				"0x00030004">
+	<!ENTITY CORE_rsCoreIconBar				"0x00030005">
+	
+	<!-- 0020-002F PROJECTILE EFFECTS -->
+	
+	<!ENTITY CORE_efPlasmaParticleDefault	"0x00030020">
+    <!ENTITY CORE_efKineticFragmentDefault   "0x00030021">
+    <!ENTITY CORE_efBlastFragmentDefault     "0x00030022">
+	<!ENTITY CORE_efAntimatterParticleDefault	"0x00030023">
+	<!ENTITY CORE_efNanoParticleDefault		"0x00030024">
+	
+	<!-- 0030-007F EXPLOSIONS -->
+
+	<!ENTITY CORE_vtAntimatterExplosion1		"0x00030030">
+	<!ENTITY CORE_vtAntimatterExplosion2		"0x00030031">
+	<!ENTITY CORE_vtAntimatterExplosion3		"0x00030032">
+	<!ENTITY CORE_vtAntimatterExplosion4		"0x00030033">
+	<!ENTITY CORE_vtGravitonExplosion1		"0x00030034">
+	<!ENTITY CORE_vtGravitonExplosion2		"0x00030035">
+	<!ENTITY CORE_vtGravitonExplosion3		"0x00030036">
+	<!ENTITY CORE_vtGravitonExplosion4		"0x00030037">
+    <!ENTITY CORE_vtGravitonExplosion5       "0x00030038">
+    <!ENTITY CORE_vtKineticExplosion5        "0x00030039">
+    <!ENTITY CORE_vtBlastExplosion5          "0x0003003A">
+    <!ENTITY CORE_vtThermoExplosion5         "0x0003003B">
+    <!ENTITY CORE_vtPlasmaExplosion5         "0x0003003C">
+    <!ENTITY CORE_vtAntimatterExplosion5     "0x0003003D">
+    
+    <!ENTITY CORE_efKineticExplosion         "0x0003003E">
+    <!ENTITY CORE_efBlastExplosion           "0x0003003F">
+    <!ENTITY CORE_efThermoExplosion          "0x00030040">
+    <!ENTITY CORE_efPlasmaExplosion          "0x00030041">
+    <!ENTITY CORE_efAntimatterExplosion      "0x00030042">
+    <!ENTITY CORE_efGravitonExplosion		"0x00030043">
+
+	<!ENTITY CORE_vtDisintegrationExplosion	"0x00030044">
+
+	<!-- 0080-00BF OVERLAY TYPE -->
+
+	<!ENTITY CORE_ovTimeStop					"0x00030080">
+
+	<!-- 00C0-00FF SAMPLES -->
+
+	<!ENTITY CORE_itSampleItemMisc			"0x000300C0">
+	<!ENTITY CORE_itSampleItemArmor			"0x000300C1">
+
+	<!-- 0100-0139 DIAGNOSTICS AND DEBUGGING -->
+
+	<!ENTITY CORE_efTestOrbEffect			"0x00030100">
+	<!ENTITY CORE_unidDiagnostics			"0x00030101">
+
+	<!-- 0140-017F MISCELLANEOUS EFFECTS -->
+
+	<!ENTITY CORE_vtGenericEnhancement		"0x00030140">
+	<!ENTITY CORE_rsGenericMissionIcon		"0x00030141">
+
+	<!-- 0180-01CF SOVEREIGNS -->
+
+	<!ENTITY CORE_svPlayerAlly				"0x00030180">
+
+	<!-- 01D0-01FF SOUND EFFECTS -->
+
+	<!ENTITY CORE_snDefaultShipScreenAmbient	"0x000301D0">
+	]>
+	
+<CoreLibrary
+		UNID=				"&CORE_unidCoreTypesLibrary;"
+		name=				"Transcendence Core Types"
+		release=			"1"
+		private=			"true"
+		>
+
+	<Module filename="CORE_CoreCode.xml"/>
+	<Module filename="CORE_CoreDiagnostics.xml"/>
+	<Module filename="CORE_CoreEffects.xml"/>
+	<Module filename="CORE_CoreEngineText.xml"/>
+	<Module filename="CORE_CoreExplosions.xml"/>
+	<Module filename="CORE_CoreFireEffects.xml"/>
+	<Module filename="CORE_CoreHitEffects.xml"/>
+	<Module filename="CORE_CoreItems.xml"/>
+	<Module filename="CORE_CorePlaceholders.xml"/>
+	<Module filename="CORE_CoreProjectileEffects.xml"/>
+
+</CoreLibrary>

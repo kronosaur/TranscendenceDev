@@ -190,27 +190,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="Code.xml">
+    <None Include="HS_Code.xml">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Compatibility10.xml">
+    <None Include="CMPT_Compatibility10.xml">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="CoreCode.xml">
+    <None Include="CORE_CoreCode.xml">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="CoreEffects.xml">
+    <None Include="CORE_CoreEffects.xml">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="CoreTypesLibrary.xml">
+    <None Include="CORE_CoreTypesLibrary.xml">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
@@ -220,16 +220,16 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="AresOrthodoxy.xml">
+    <None Include="HS_AresOrthodoxy.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BattleArena.xml">
+    <None Include="HS_BattleArena.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BattleArenaGladiators.xml">
+    <None Include="HS_BattleArenaGladiators.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Antarctica.xml">
+    <None Include="HS_Antarctica.xml">
       <SubType>Designer</SubType>
     </None>
     <Xml Include="..\Extensions\Diagnostics\CombatAI.xml" />
@@ -252,520 +252,520 @@
     <Xml Include="..\Extensions\Diagnostics\TradingTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TSETests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TopologyTests.xml" />
-    <Xml Include="Abbasid.xml" />
-    <Xml Include="Achievements.xml" />
-    <Xml Include="AgriculturalMission01.xml" />
-    <Xml Include="Analyzers.xml" />
-    <Xml Include="Anarchists.xml" />
-    <Xml Include="Antarctica01.xml" />
-    <Xml Include="Antarctica02.xml" />
-    <Xml Include="AntarcticaD01.xml" />
-    <Xml Include="AresItems.xml" />
-    <Xml Include="AresShips.xml" />
-    <Xml Include="ArmorEnhancementItems.xml" />
-    <Xml Include="ArmorRepairItems.xml" />
-    <Xml Include="AsteroidFields.xml" />
-    <Xml Include="Barricades.xml" />
-    <Xml Include="BattleArenaChallenger.xml" />
-    <Xml Include="BattleArenaFight.xml" />
-    <Xml Include="BattleArenaKidnapped.xml" />
-    <Xml Include="BattleArenaMelee.xml" />
-    <Xml Include="Benedict.xml">
+    <Xml Include="HS_Abbasid.xml" />
+    <Xml Include="SOTP_Achievements.xml" />
+    <Xml Include="HS_AgriculturalMission01.xml" />
+    <Xml Include="HS_Analyzers.xml" />
+    <Xml Include="HS_Anarchists.xml" />
+    <Xml Include="HS_Antarctica01.xml" />
+    <Xml Include="HS_Antarctica02.xml" />
+    <Xml Include="HS_AntarcticaD01.xml" />
+    <Xml Include="HS_AresItems.xml" />
+    <Xml Include="HS_AresShips.xml" />
+    <Xml Include="HS_ArmorEnhancementItems.xml" />
+    <Xml Include="HS_ArmorRepairItems.xml" />
+    <Xml Include="GLXY_AsteroidFields.xml" />
+    <Xml Include="HS_Barricades.xml" />
+    <Xml Include="HS_BattleArenaChallenger.xml" />
+    <Xml Include="HS_BattleArenaFight.xml" />
+    <Xml Include="HS_BattleArenaKidnapped.xml" />
+    <Xml Include="HS_BattleArenaMelee.xml" />
+    <Xml Include="HS_Benedict.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <None Include="BlackMarket.xml">
+    <None Include="HS_BlackMarket.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="CentauriWarlords.xml">
+    <None Include="HS_CentauriWarlords.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="CharonFortress.xml">
+    <None Include="HS_CharonFortress.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="CharonPirates.xml">
+    <None Include="HS_CharonPirates.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Commonwealth.xml">
+    <None Include="HS_Commonwealth.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="CommonwealthAgricultural.xml">
+    <None Include="HS_CommonwealthAgricultural.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="CommonwealthFleet.xml">
+    <None Include="HS_CommonwealthFleet.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="CommonwealthMetropolis.xml">
+    <None Include="HS_CommonwealthMetropolis.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="CommonwealthMilitia.xml">
+    <None Include="HS_CommonwealthMilitia.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="CommonwealthMining.xml">
+    <None Include="HS_CommonwealthMining.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="CorporateHierarchy.xml">
+    <None Include="HS_CorporateHierarchy.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Domina.xml">
+    <None Include="HS_Domina.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="DwargRaiders.xml">
+    <None Include="HS_DwargRaiders.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Eridani.xml">
+    <None Include="HS_Eridani.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="HSCompatibility.xml">
+    <None Include="HS_HSCompatibility.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="HumanSpaceMap.xml">
+    <None Include="HS_HumanSpaceMap.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Iocrym.xml">
+    <None Include="HS_Iocrym.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="KateMorgental.xml">
+    <None Include="HS_KateMorgental.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="KorolovShipping.xml">
+    <None Include="HS_KorolovShipping.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Luminous.xml">
+    <None Include="HS_Luminous.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="MiscItems.xml">
+    <None Include="HS_MiscItems.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="OutlawMiners.xml">
+    <None Include="HS_OutlawMiners.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Rasiermesser.xml">
+    <None Include="HS_Rasiermesser.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Ringers.xml">
+    <None Include="HS_Ringers.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="RogueFleet.xml">
+    <None Include="HS_RogueFleet.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="SistersOfDomina.xml">
+    <None Include="HS_SistersOfDomina.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="StdArmor.xml">
+    <None Include="HS_StdArmor.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="StdAutons.xml">
+    <None Include="HS_StdAutons.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="StdDevices.xml">
+    <None Include="HS_StdDevices.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="StdDockScreens.xml">
+    <None Include="HS_StdDockScreens.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="StdEffects.xml">
+    <None Include="HS_StdEffects.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="CoreExplosions.xml">
+    <None Include="CORE_CoreExplosions.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="StdFuel.xml" />
-    <None Include="StdPlayerShips.xml">
+    <None Include="HS_StdFuel.xml" />
+    <None Include="HS_StdPlayerShips.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="StdShields.xml">
+    <None Include="HS_StdShields.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="StdSovereigns.xml" />
-    <None Include="StdSystems.xml">
+    <None Include="HS_StdSovereigns.xml" />
+    <None Include="HS_StdSystems.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="StdTypes.xml">
+    <None Include="HS_StdTypes.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="StdUnknownItems.xml" />
-    <None Include="StdWeapons.xml">
+    <None Include="HS_StdUnknownItems.xml" />
+    <None Include="HS_StdWeapons.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="StKatharines.xml">
+    <None Include="HS_StKatharines.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="SungSlavers.xml">
+    <None Include="HS_SungSlavers.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Teratons.xml">
+    <None Include="HS_Teratons.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Tinkers.xml">
+    <None Include="HS_Tinkers.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="UrakWarlords.xml">
+    <None Include="HS_UrakWarlords.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="UsefulItems.xml">
+    <None Include="HS_UsefulItems.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Elysium.xml">
+    <None Include="SOTP_Elysium.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Heretic.xml">
+    <None Include="HS_Heretic.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Huari.xml">
+    <None Include="HS_Huari.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="PlayerShips.xml">
+    <None Include="SOTP_PlayerShips.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="PointJuno.xml">
+    <None Include="HS_PointJuno.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="StarsOfThePilgrim.xml">
+    <None Include="SOTP_StarsOfThePilgrim.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="BenedictStoryArc.xml">
+    <None Include="SOTP_BenedictStoryArc.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Benedict00.xml">
+    <None Include="SOTP_Benedict00.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Benedict02.xml">
+    <None Include="SOTP_Benedict02.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Part1Compatibility.xml">
+    <None Include="SOTP_Part1Compatibility.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Benedict01.xml">
+    <None Include="SOTP_Benedict01.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="HUD.xml" />
-    <None Include="RPGAnalyzers.xml">
+    <None Include="RPG_HUD.xml" />
+    <None Include="RPG_Analyzers.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="RPGAutons.xml">
+    <None Include="RPG_Autons.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="RPGAuxDevices.xml">
+    <None Include="RPG_AuxDevices.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="RPGBehaviors.xml">
+    <None Include="RPG_Behaviors.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="RPGCharacters.xml">
+    <None Include="RPG_Characters.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="RPGCode.xml">
+    <None Include="RPG_Code.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="RPGCompatibility.xml">
+    <None Include="RPG_Compatibility.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="RPGDockScreens.xml">
+    <None Include="RPG_DockScreens.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="RPGMissions.xml">
+    <None Include="RPG_Missions.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="RPGPlayer.xml">
+    <None Include="RPG_Player.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="RPGShipScreens.xml">
+    <None Include="RPG_ShipScreens.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="RPGTypes.xml" />
-    <None Include="RPGWingmen.xml">
+    <None Include="RPG_Types.xml" />
+    <None Include="RPG_Wingmen.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="RPGDockServices.xml">
+    <None Include="RPG_DockServices.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="RPGDeviceDockScreens.xml">
+    <None Include="RPG_DeviceDockScreens.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="RPGCharacterClasses.xml" />
-    <None Include="RPGDialog.xml" />
-    <None Include="Environments.xml">
+    <None Include="RPG_CharacterClasses.xml" />
+    <None Include="RPG_Dialog.xml" />
+    <None Include="GLXY_Environments.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Groups.xml" />
-    <None Include="Ice.xml">
+    <None Include="GLXY_Groups.xml" />
+    <None Include="GLXY_Ice.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Metallic.xml">
+    <None Include="GLXY_Metallic.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Mining.xml">
+    <None Include="GLXY_Mining.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Neurohack.xml" />
-    <None Include="Primordial.xml">
+    <None Include="GLXY_Neurohack.xml" />
+    <None Include="GLXY_Primordial.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Rocky.xml">
+    <None Include="GLXY_Rocky.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Stargates.xml" />
-    <None Include="StarSystems.xml">
+    <None Include="GLXY_Stargates.xml" />
+    <None Include="GLXY_StarSystems.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="GalaxyCompatibility.xml">
+    <None Include="GLXY_GalaxyCompatibility.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="GalaxyEffects.xml" />
-    <None Include="Volcanic.xml">
+    <None Include="GLXY_GalaxyEffects.xml" />
+    <None Include="GLXY_Volcanic.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Worlds.xml">
+    <None Include="GLXY_Worlds.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Stars.xml">
+    <None Include="GLXY_Stars.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="OvoidsCompatibility.xml">
+    <None Include="GLXY_OvoidsCompatibility.xml">
       <SubType>Designer</SubType>
     </None>
-    <Xml Include="Benedict04.xml">
+    <Xml Include="SOTP_Benedict04.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="Benedict05.xml">
+    <Xml Include="SOTP_Benedict05.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="Benedict05A.xml">
+    <Xml Include="SOTP_Benedict05A.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="Benedict06.xml">
+    <Xml Include="SOTP_Benedict06.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="Benedict07.xml">
+    <Xml Include="SOTP_Benedict07.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="Benedict08.xml">
+    <Xml Include="SOTP_Benedict08.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="BlackMarketMember.xml" />
-    <Xml Include="BlackMarketMission00.xml" />
-    <Xml Include="BlackMarketMission01.xml" />
-    <Xml Include="BlackMarketMission02.xml" />
-    <Xml Include="BlackMarketMissionSmuggle01.xml" />
-    <Xml Include="BlackMarketPlayerShips.xml" />
-    <Xml Include="CommonwealthCenturions.xml" />
-    <Xml Include="CommonwealthCharacters.xml" />
-    <Xml Include="CommonwealthFleetMission01.xml" />
-    <Xml Include="CommonwealthFleetMission02.xml" />
-    <Xml Include="CommonwealthFleetMission03.xml" />
-    <Xml Include="CommonwealthFleetMission04.xml">
+    <Xml Include="HS_BlackMarketMember.xml" />
+    <Xml Include="HS_BlackMarketMission00.xml" />
+    <Xml Include="HS_BlackMarketMission01.xml" />
+    <Xml Include="HS_BlackMarketMission02.xml" />
+    <Xml Include="HS_BlackMarketMissionSmuggle01.xml" />
+    <Xml Include="HS_BlackMarketPlayerShips.xml" />
+    <Xml Include="HS_CommonwealthCenturions.xml" />
+    <Xml Include="HS_CommonwealthCharacters.xml" />
+    <Xml Include="HS_CommonwealthFleetMission01.xml" />
+    <Xml Include="HS_CommonwealthFleetMission02.xml" />
+    <Xml Include="HS_CommonwealthFleetMission03.xml" />
+    <Xml Include="HS_CommonwealthFleetMission04.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="CommonwealthFleetMission05.xml">
+    <Xml Include="HS_CommonwealthFleetMission05.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="CommonwealthFleetMission06.xml" />
-    <Xml Include="CommonwealthFleetMission07.xml" />
-    <Xml Include="CommonwealthFleetMission08.xml" />
-    <Xml Include="CommonwealthFleetMission09.xml" />
-    <Xml Include="CommonwealthFleetMission10.xml" />
-    <Xml Include="CommonwealthFleetMission11.xml" />
-    <Xml Include="CommonwealthFleetMissionLL01.xml" />
-    <Xml Include="CommonwealthFleetMissionLL02.xml" />
-    <Xml Include="CommonwealthFleetMissionLL03.xml" />
-    <Xml Include="CommonwealthFleetMissionLL04.xml" />
-    <Xml Include="CommonwealthFleetMissionPJ01.xml">
+    <Xml Include="HS_CommonwealthFleetMission06.xml" />
+    <Xml Include="HS_CommonwealthFleetMission07.xml" />
+    <Xml Include="HS_CommonwealthFleetMission08.xml" />
+    <Xml Include="HS_CommonwealthFleetMission09.xml" />
+    <Xml Include="HS_CommonwealthFleetMission10.xml" />
+    <Xml Include="HS_CommonwealthFleetMission11.xml" />
+    <Xml Include="HS_CommonwealthFleetMissionLL01.xml" />
+    <Xml Include="HS_CommonwealthFleetMissionLL02.xml" />
+    <Xml Include="HS_CommonwealthFleetMissionLL03.xml" />
+    <Xml Include="HS_CommonwealthFleetMissionLL04.xml" />
+    <Xml Include="HS_CommonwealthFleetMissionPJ01.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="CommonwealthMiningMission03.xml" />
-    <Xml Include="CommonwealthMiningMission04.xml" />
-    <Xml Include="CommonwealthMiningMission05.xml" />
-    <Xml Include="CommonwealthVolunteerMission01.xml" />
-    <Xml Include="CommonwealthMilitiaMission01.xml" />
-    <Xml Include="CommonwealthMilitiaMission02.xml" />
-    <Xml Include="CommonwealthMilitiaMission03.xml" />
-    <Xml Include="CommonwealthMilitiaMission04.xml" />
-    <Xml Include="CommonwealthMilitiaMissionSK01.xml" />
-    <Xml Include="CommonwealthMiningMission01.xml" />
-    <Xml Include="CommonwealthMiningMission02.xml" />
-    <Xml Include="CommonwealthMission01.xml" />
-    <Xml Include="CommonwealthMissionRevenge01.xml" />
-    <Xml Include="CommonwealthRonins.xml" />
-    <Xml Include="CommonwealthShips.xml">
+    <Xml Include="HS_CommonwealthMiningMission03.xml" />
+    <Xml Include="HS_CommonwealthMiningMission04.xml" />
+    <Xml Include="HS_CommonwealthMiningMission05.xml" />
+    <Xml Include="HS_CommonwealthVolunteerMission01.xml" />
+    <Xml Include="HS_CommonwealthMilitiaMission01.xml" />
+    <Xml Include="HS_CommonwealthMilitiaMission02.xml" />
+    <Xml Include="HS_CommonwealthMilitiaMission03.xml" />
+    <Xml Include="HS_CommonwealthMilitiaMission04.xml" />
+    <Xml Include="HS_CommonwealthMilitiaMissionSK01.xml" />
+    <Xml Include="HS_CommonwealthMiningMission01.xml" />
+    <Xml Include="HS_CommonwealthMiningMission02.xml" />
+    <Xml Include="HS_CommonwealthMission01.xml" />
+    <Xml Include="HS_CommonwealthMissionRevenge01.xml" />
+    <Xml Include="HS_CommonwealthRonins.xml" />
+    <Xml Include="HS_CommonwealthShips.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="CommonwealthStarCarrier.xml" />
-    <Xml Include="CommonwealthVolunteerMission02.xml" />
-    <Xml Include="CommonwealthVolunteerMission03.xml" />
-    <Xml Include="CompatibilityLibrary.xml" />
-    <Xml Include="ContainerHabitat.xml" />
-    <Xml Include="CoreDiagnostics.xml" />
-    <Xml Include="CoreEngineText.xml" />
-    <Xml Include="CoreFireEffects.xml">
+    <Xml Include="HS_CommonwealthStarCarrier.xml" />
+    <Xml Include="HS_CommonwealthVolunteerMission02.xml" />
+    <Xml Include="HS_CommonwealthVolunteerMission03.xml" />
+    <Xml Include="CMPT_CompatibilityLibrary.xml" />
+    <Xml Include="HS_ContainerHabitat.xml" />
+    <Xml Include="CORE_CoreDiagnostics.xml" />
+    <Xml Include="CORE_CoreEngineText.xml" />
+    <Xml Include="CORE_CoreFireEffects.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="CoreHitEffects.xml" />
-    <Xml Include="CoreItems.xml" />
-    <Xml Include="CorePlaceholders.xml">
+    <Xml Include="CORE_CoreHitEffects.xml" />
+    <Xml Include="CORE_CoreItems.xml" />
+    <Xml Include="CORE_CorePlaceholders.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="CoreProjectileEffects.xml">
+    <Xml Include="CORE_CoreProjectileEffects.xml">
       <SubType>Designer</SubType>
     </Xml>
     <Xml Include="CoreSamples.xml" />
-    <Xml Include="CorporateAutonDealer.xml" />
-    <Xml Include="CorporateInsurance.xml" />
-    <Xml Include="CorporateTradingPost.xml" />
-    <Xml Include="Cryovolcanic.xml" />
-    <Xml Include="CSCTerra.xml" />
-    <Xml Include="Dall01.xml" />
-    <Xml Include="Dantalion.xml" />
-    <Xml Include="DeathDrugsCartel.xml" />
-    <Xml Include="Debris.xml">
+    <Xml Include="HS_CorporateAutonDealer.xml" />
+    <Xml Include="HS_CorporateInsurance.xml" />
+    <Xml Include="HS_CorporateTradingPost.xml" />
+    <Xml Include="GLXY_Cryovolcanic.xml" />
+    <Xml Include="HS_CSCTerra.xml" />
+    <Xml Include="HS_Dall01.xml" />
+    <Xml Include="HS_Dantalion.xml" />
+    <Xml Include="HS_DeathDrugsCartel.xml" />
+    <Xml Include="HS_Debris.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="EnricoGaul.xml" />
-    <Xml Include="EridaniStations.xml" />
-    <Xml Include="EtaCeti.xml" />
-    <Xml Include="FerianMission01.xml" />
-    <Xml Include="Ferians.xml">
+    <Xml Include="HS_EnricoGaul.xml" />
+    <Xml Include="HS_EridaniStations.xml" />
+    <Xml Include="HS_EtaCeti.xml" />
+    <Xml Include="HS_FerianMission01.xml" />
+    <Xml Include="HS_Ferians.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="Fiona.xml">
+    <Xml Include="HS_Fiona.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="FirstContactMonument.xml" />
-    <Xml Include="Gaians.xml">
+    <Xml Include="HS_FirstContactMonument.xml" />
+    <Xml Include="HS_Gaians.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="GroupIAsteroids.xml" />
-    <Xml Include="HaloGems.xml" />
-    <Xml Include="HarperThompson.xml" />
-    <Xml Include="Heliotropes.xml" />
-    <Xml Include="Heretic00.xml" />
-    <Xml Include="Heretic01.xml" />
-    <Xml Include="Heretic02.xml" />
-    <Xml Include="Heretic03.xml" />
-    <Xml Include="Heretic04.xml" />
-    <Xml Include="Heretic05.xml" />
-    <Xml Include="Heretic06.xml" />
-    <Xml Include="Heretic07.xml" />
-    <Xml Include="Heretic08.xml" />
-    <Xml Include="Himal.xml" />
-    <Xml Include="Huaramarca.xml">
+    <Xml Include="GLXY_GroupIAsteroids.xml" />
+    <Xml Include="HS_HaloGems.xml" />
+    <Xml Include="HS_HarperThompson.xml" />
+    <Xml Include="HS_Heliotropes.xml" />
+    <Xml Include="SOTP_Heretic00.xml" />
+    <Xml Include="SOTP_Heretic01.xml" />
+    <Xml Include="SOTP_Heretic02.xml" />
+    <Xml Include="SOTP_Heretic03.xml" />
+    <Xml Include="SOTP_Heretic04.xml" />
+    <Xml Include="SOTP_Heretic05.xml" />
+    <Xml Include="SOTP_Heretic06.xml" />
+    <Xml Include="SOTP_Heretic07.xml" />
+    <Xml Include="SOTP_Heretic08.xml" />
+    <Xml Include="HS_Himal.xml" />
+    <Xml Include="SOTP_Huaramarca.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="HuaramarcaMission01.xml" />
-    <Xml Include="HuaramarcaMission02.xml" />
-    <Xml Include="HuaramarcaMission03.xml" />
-    <Xml Include="HuaramarcaMission04.xml" />
-    <Xml Include="HuaramarcaMission05.xml" />
-    <Xml Include="HuaramarcaMission06.xml" />
-    <Xml Include="HuaramarcaMission07.xml" />
-    <Xml Include="HuariMission01.xml" />
-    <Xml Include="HuariMission02.xml" />
-    <Xml Include="HuariMission03.xml" />
-    <Xml Include="HugoSandoval.xml">
+    <Xml Include="SOTP_HuaramarcaMission01.xml" />
+    <Xml Include="SOTP_HuaramarcaMission02.xml" />
+    <Xml Include="SOTP_HuaramarcaMission03.xml" />
+    <Xml Include="SOTP_HuaramarcaMission04.xml" />
+    <Xml Include="SOTP_HuaramarcaMission05.xml" />
+    <Xml Include="SOTP_HuaramarcaMission06.xml" />
+    <Xml Include="SOTP_HuaramarcaMission07.xml" />
+    <Xml Include="HS_HuariMission01.xml" />
+    <Xml Include="HS_HuariMission02.xml" />
+    <Xml Include="HS_HuariMission03.xml" />
+    <Xml Include="HS_HugoSandoval.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="HumanSpaceVol01.xml">
+    <Xml Include="HS_HumanSpaceVol01.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="HumanTech.xml" />
-    <Xml Include="Jenna.xml" />
-    <Xml Include="JiangsStar.xml" />
-    <Xml Include="KobolWarlords.xml" />
-    <Xml Include="KorolovFreighters.xml" />
-    <Xml Include="Kronosaurus.xml" />
-    <Xml Include="KronosaurusMission01.xml" />
-    <Xml Include="KSMission01.xml" />
-    <Xml Include="KSMission02.xml" />
-    <Xml Include="KSMission03.xml" />
-    <Xml Include="KSMissionC01.xml" />
-    <Xml Include="KSMissionC02.xml" />
-    <Xml Include="LiaPereira.xml" />
-    <Xml Include="Makayev.xml" />
-    <Xml Include="Marauders.xml" />
-    <Xml Include="MiningPods.xml" />
-    <Xml Include="MRAD.xml" />
-    <Xml Include="MuhammadCondi.xml" />
-    <Xml Include="NewVictoria.xml" />
-    <Xml Include="NPCPilgrims.xml" />
-    <Xml Include="Ore.xml" />
-    <Xml Include="OreStone.xml" />
-    <Xml Include="Outlaws.xml" />
-    <Xml Include="Ovoids.xml" />
-    <Xml Include="Penitents.xml">
+    <Xml Include="HS_HumanTech.xml" />
+    <Xml Include="HS_Jenna.xml" />
+    <Xml Include="HS_JiangsStar.xml" />
+    <Xml Include="HS_KobolWarlords.xml" />
+    <Xml Include="HS_KorolovFreighters.xml" />
+    <Xml Include="HS_Kronosaurus.xml" />
+    <Xml Include="HS_KronosaurusMission01.xml" />
+    <Xml Include="HS_KSMission01.xml" />
+    <Xml Include="HS_KSMission02.xml" />
+    <Xml Include="HS_KSMission03.xml" />
+    <Xml Include="HS_KSMissionC01.xml" />
+    <Xml Include="HS_KSMissionC02.xml" />
+    <Xml Include="HS_LiaPereira.xml" />
+    <Xml Include="HS_Makayev.xml" />
+    <Xml Include="HS_Marauders.xml" />
+    <Xml Include="HS_MiningPods.xml" />
+    <Xml Include="HS_MRAD.xml" />
+    <Xml Include="HS_MuhammadCondi.xml" />
+    <Xml Include="HS_NewVictoria.xml" />
+    <Xml Include="HS_NPCPilgrims.xml" />
+    <Xml Include="GLXY_Ore.xml" />
+    <Xml Include="GLXY_OreStone.xml" />
+    <Xml Include="HS_Outlaws.xml" />
+    <Xml Include="GLXY_Ovoids.xml" />
+    <Xml Include="HS_Penitents.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="Pilgrim.xml" />
-    <Xml Include="Psych00.xml" />
-    <Xml Include="Psych01.xml" />
-    <Xml Include="Pteravores.xml" />
-    <Xml Include="QuantumCPU.xml" />
-    <Xml Include="RaisuMission01.xml" />
-    <Xml Include="RaisuMission02.xml" />
-    <Xml Include="RaisuMission03.xml" />
-    <Xml Include="RaisuStation.xml" />
-    <Xml Include="Rama.xml" />
-    <Xml Include="RanxEmpire.xml" />
-    <Xml Include="RasiermesserMission01.xml" />
-    <Xml Include="RejuvTank.xml" />
-    <Xml Include="ResidentialsMission01.xml" />
-    <Xml Include="ResidentialsMission02.xml" />
-    <Xml Include="ResidentialsMission03.xml" />
-    <Xml Include="RPGCommoditiesExchange.xml" />
-    <Xml Include="RPGCommonText.xml" />
-    <Xml Include="RPGComponents.xml">
+    <Xml Include="HS_Pilgrim.xml" />
+    <Xml Include="SOTP_Psych00.xml" />
+    <Xml Include="SOTP_Psych01.xml" />
+    <Xml Include="HS_Pteravores.xml" />
+    <Xml Include="HS_QuantumCPU.xml" />
+    <Xml Include="HS_RaisuMission01.xml" />
+    <Xml Include="HS_RaisuMission02.xml" />
+    <Xml Include="HS_RaisuMission03.xml" />
+    <Xml Include="HS_RaisuStation.xml" />
+    <Xml Include="HS_Rama.xml" />
+    <Xml Include="HS_RanxEmpire.xml" />
+    <Xml Include="HS_RasiermesserMission01.xml" />
+    <Xml Include="HS_RejuvTank.xml" />
+    <Xml Include="HS_ResidentialsMission01.xml" />
+    <Xml Include="HS_ResidentialsMission02.xml" />
+    <Xml Include="HS_ResidentialsMission03.xml" />
+    <Xml Include="RPG_CommoditiesExchange.xml" />
+    <Xml Include="RPG_CommonText.xml" />
+    <Xml Include="RPG_Components.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="RPGCrime.xml" />
-    <Xml Include="RPGDockManagement.xml" />
-    <Xml Include="RPGLibrary.xml" />
-    <Xml Include="GalaxyLibrary.xml" />
-    <Xml Include="RPGMembership.xml" />
-    <Xml Include="RPGMining.xml" />
-    <Xml Include="RPGMissionTemplate01.xml" />
-    <Xml Include="RPGMissionTemplate02.xml" />
-    <Xml Include="RPGMissionTemplate03.xml" />
-    <Xml Include="RPGMissionTemplate04.xml" />
-    <Xml Include="RPGMissionTemplate05.xml" />
-    <Xml Include="RPGMissionTemplate06.xml" />
-    <Xml Include="RPGMissionTemplate07.xml" />
-    <Xml Include="RPGRumors.xml" />
-    <Xml Include="RPGShipBroker.xml">
+    <Xml Include="RPG_Crime.xml" />
+    <Xml Include="RPG_DockManagement.xml" />
+    <Xml Include="RPG_Library.xml" />
+    <Xml Include="GLXY_GalaxyLibrary.xml" />
+    <Xml Include="RPG_Membership.xml" />
+    <Xml Include="RPG_Mining.xml" />
+    <Xml Include="RPG_MissionTemplate01.xml" />
+    <Xml Include="RPG_MissionTemplate02.xml" />
+    <Xml Include="RPG_MissionTemplate03.xml" />
+    <Xml Include="RPG_MissionTemplate04.xml" />
+    <Xml Include="RPG_MissionTemplate05.xml" />
+    <Xml Include="RPG_MissionTemplate06.xml" />
+    <Xml Include="RPG_MissionTemplate07.xml" />
+    <Xml Include="RPG_Rumors.xml" />
+    <Xml Include="RPG_ShipBroker.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="RPGSlaves.xml" />
-    <Xml Include="RPGSquadronUI.xml" />
-    <Xml Include="RPGTradingComputer.xml" />
-    <Xml Include="RPGUsefulItems.xml" />
-    <Xml Include="RPGViewers.xml" />
-    <Xml Include="Salvagers.xml" />
-    <Xml Include="Sanctuary.xml" />
-    <Xml Include="Sapiens.xml" />
-    <Xml Include="Scoria.xml" />
-    <Xml Include="ShieldEnhancementItems.xml" />
-    <Xml Include="Sisters01.xml" />
-    <Xml Include="Sisters02.xml" />
-    <Xml Include="Sisters03.xml" />
-    <Xml Include="SistersDonate.xml" />
-    <Xml Include="SistersPilgrimsAid.xml" />
-    <Xml Include="SistersSanctum.xml" />
-    <Xml Include="StdMiningEquipment.xml">
+    <Xml Include="RPG_Slaves.xml" />
+    <Xml Include="RPG_SquadronUI.xml" />
+    <Xml Include="RPG_TradingComputer.xml" />
+    <Xml Include="RPG_UsefulItems.xml" />
+    <Xml Include="RPG_Viewers.xml" />
+    <Xml Include="HS_Salvagers.xml" />
+    <Xml Include="HS_Sanctuary.xml" />
+    <Xml Include="HS_Sapiens.xml" />
+    <Xml Include="GLXY_Scoria.xml" />
+    <Xml Include="HS_ShieldEnhancementItems.xml" />
+    <Xml Include="HS_Sisters01.xml" />
+    <Xml Include="HS_Sisters02.xml" />
+    <Xml Include="HS_Sisters03.xml" />
+    <Xml Include="HS_SistersDonate.xml" />
+    <Xml Include="HS_SistersPilgrimsAid.xml" />
+    <Xml Include="HS_SistersSanctum.xml" />
+    <Xml Include="HS_StdMiningEquipment.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="Stormhound.xml">
+    <Xml Include="HS_Stormhound.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="SungCitadel.xml" />
-    <Xml Include="SungFortress.xml" />
-    <Xml Include="SungSlaveCamp.xml" />
-    <Xml Include="Tenhove.xml" />
-    <Xml Include="TeratonResearch.xml" />
-    <Xml Include="UndergroundCaverns.xml" />
-    <Xml Include="UndergroundStructures.xml" />
-    <Xml Include="Ventari.xml" />
-    <Xml Include="Volkov.xml">
+    <Xml Include="HS_SungCitadel.xml" />
+    <Xml Include="HS_SungFortress.xml" />
+    <Xml Include="HS_SungSlaveCamp.xml" />
+    <Xml Include="HS_Tenhove.xml" />
+    <Xml Include="HS_TeratonResearch.xml" />
+    <Xml Include="GLXY_UndergroundCaverns.xml" />
+    <Xml Include="HS_UndergroundStructures.xml" />
+    <Xml Include="HS_Ventari.xml" />
+    <Xml Include="HS_Volkov.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="WeaponEnhancementItems.xml" />
-    <Xml Include="Xenophobes.xml" />
+    <Xml Include="HS_WeaponEnhancementItems.xml" />
+    <Xml Include="HS_Xenophobes.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- HUARAMARCA SYSTEM -->
+
+	<SystemMap UNID="&SOTP_smHuariSpace;"
+			displayOn="&HS_smHumanSpace;">
+
+		<RootNode ID="Huaramarca"/>
+		
+		<Node ID="Huaramarca" x="-139" y="453">
+			<System 
+					name=			"Huaramarca"
+					level=			"6"
+					attributes=		"huari, humanSpace, noAutoGateCreate"
+					>
+				<System UNID="&HS_ssHuaramarca;"/>
+			</System>
+
+			<Stargates>
+				<Stargate Name="Inbound"  DestID="[Prev]"/>
+			</Stargates>
+		</Node>
+	</SystemMap>
+
+	<SystemType UNID="&HS_ssHuaramarca;"
+			name=				"Huaramarca"
+			attributes=			"nonExtensible"
+			noRandomEncounters=	"true"
+			noExtraEncounters=	"true"
+			backgroundID=		"&GLXY_rsRedGiantSpace;"
+			spaceColor=			"#200f0a"
+			>
+
+		<SystemGroup>
+
+			<!-- Star -->
+
+			<Station type="&GLXY_stRedGiantStar;"/>
+
+			<AddAttribute attributes="redGiantSystem"/>
+			<AddTerritory minRadius="0"		maxRadius="370"		attributes="innerSystem, rockyComp, cinderZone"/>
+			<AddTerritory minRadius="370"	maxRadius="620"		attributes="lifeZone, organicComp, primordialZone"/>
+			<AddTerritory minRadius="620"	maxRadius="0"		attributes="outerSystem, waterComp, iceZone"/>
+
+			<!-- Worlds -->
+
+			<Orbitals angle="incrementing:30-330">
+
+				<!-- Urcaguary -->
+
+				<Group distance="80">
+					<Primary>
+						<Station type="&GLXY_stVolcanicTerrestrialSizeH;" name="Urcaguary" showOrbit="true"/>
+					</Primary>
+				</Group>
+
+				<!-- Pariacaca -->
+
+				<Group distance="160">
+					<Primary>
+						<Station type="&GLXY_stRockyPlanetoidSizeF;" name="Pariacaca" showOrbit="true"/>
+					</Primary>
+				</Group>
+
+				<!-- Illapa -->
+
+				<Group distance="270">
+					<Primary>
+						<Station type="&GLXY_stIcePlanetoidSizeG;"	name="Illapa" showOrbit="true"/>
+					</Primary>
+
+					<!-- Huari Temple -->
+
+					<Orbitals distance="80" angle="random">
+						<Group>
+							<Station type="&HS_stHuariTemple;"/>
+
+							<Siblings arcInc="+20">
+								<Station type="&HS_stHuariHabitat;" noMapLabel="true"/>
+							</Siblings>
+
+							<Siblings arcInc="-20">
+								<Station type="&HS_stHuariHabitat;" noMapLabel="true"/>
+							</Siblings>
+
+							<Siblings arcInc="+40">
+								<Station type="&HS_stHuariHabitat;" noMapLabel="true"/>
+							</Siblings>
+
+							<Siblings arcInc="-40">
+								<Station type="&HS_stHuariHabitat;" noMapLabel="true"/>
+							</Siblings>
+						</Group>
+					</Orbitals>
+
+					<!-- Asteroids -->
+
+					<Lookup table="AsteroidBelt200"/>
+				</Group>
+
+				<!-- Mama Cocha -->
+
+				<Group distance="520">
+					<Primary>
+						<Station type="&GLXY_stMethaneGasGiantSizeK;"	name="Mama Cocha" showOrbit="true"/>
+					</Primary>
+
+					<!-- Moons of Mama Cocha -->
+
+					<Orbitals angle="incrementing:45-315">
+
+						<Group distance="20">
+							<Primary>
+								<Station type="&GLXY_stRockyOuterAsteroidSizeB;"/>
+							</Primary>
+						</Group>
+
+						<Group distance="40">
+							<Primary>
+								<Station type="&GLXY_stRockyPlanetoidSizeG;" />
+							</Primary>
+						</Group>
+
+						<Group distance="80">
+							<Primary>
+								<Station type="&GLXY_stRockyPlanetoidSizeE;" />
+							</Primary>
+						</Group>
+					</Orbitals>
+				</Group>
+
+				<!-- Supay -->
+
+				<Group distance="900">
+					<Primary>
+						<Station type="&GLXY_stIcePlanetoidSizeF;" name="Supay" showOrbit="true"/>
+					</Primary>
+
+					<Orbitals distance="40" angle="random">
+						<Stargate objName="Inbound" type="&GLXY_stMajellenStargate;">
+							<Ships>
+								<Ship count="4"	class="&HS_scHurinDestroyer;"	sovereign="&HS_svHuariEmpire;" orders="patrol" patrolDist="15"/>
+							</Ships>
+						</Stargate>
+					</Orbitals>
+
+					<ZAdjust inclination="30-60" rotation="alignedRandom" excludeLocations="true">
+						<Lookup table="AsteroidRing200"/>
+					</ZAdjust>
+				</Group>
+
+			</Orbitals>
+
+			<!-- Comets -->
+
+			<Orbitals count="3-6" scale="light-minute" distance="1d8+20" angle="random" eccentricity="1d20" rotation="random">
+				<Lookup table="AsteroidArc50"/>
+			</Orbitals>
+
+		</SystemGroup>
+
+		<Events>
+			<OnGlobalTopologyCreated>
+				;	LATER: The creation of the Huaramarca should be done in the
+				;	map, using a TopologyCreator.
+
+				(block (gateway)
+
+					; Pick a random system in Huari space to have a gateway to Huaramarca
+					(setq gateway
+						(random
+							(filter (sysGetNodes) theNode 
+								(sysHasAttribute theNode 'huaramarcaGate)
+								)
+							)
+						)
+						
+					(if gateway
+						(block Nil
+							(typSetGlobalData &HS_svHuariEmpire; "huaramarcaGateway" gateway)
+							(sysAddStargateTopology gateway "GateToHuaramarca" "Huaramarca" "Inbound")
+							)
+						)
+					)
+			</OnGlobalTopologyCreated>
+
+			<OnGlobalSystemCreated>
+				(if (eq (sysGetNode) (typGetGlobalData &HS_svHuariEmpire; "huaramarcaGateway"))
+					(block Nil
+
+						; Create a stargate in deep space away from everything
+						(sysCreateStargate 
+							&GLXY_stUnchartedMajellenStargate;
+							(sysVectorRandom Nil (random 1200 1500) 300 "t")
+							"GateToHuaramarca"
+							"Huaramarca"
+							"Inbound"
+							)
+						)
+					)
+			</OnGlobalSystemCreated>
+		</Events>
+	</SystemType>
+
+</TranscendenceModule>

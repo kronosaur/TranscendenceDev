@@ -1,0 +1,1033 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Segment of Dvalin Armor -->
+
+	<ItemType UNID="&HS_itDvalinArmor;"
+			name=				"[segment(s) of ]Dvalin armor"
+			level=				"9"
+			value=				"15000"
+			frequency=			"notrandom"
+			mass=				"3500"
+			attributes=			"military, minorItem, rasiermesser, notStandard"
+
+			description=		"Dvalin's nano-sintering process can create armor that is stronger than hexphase."
+
+			sortName=			"Dvalin armor"
+			>
+
+		<Image imageID="&HS_rsItems7;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Armor
+				hitPoints=	"320"
+				hpBonus=	"  +0,  +0,+100, +0, +100,  +0"
+
+				repairCostAdj=	"150"
+				/>
+
+	</ItemType>
+
+	<!-- Dvalin Ion9 cannon -->
+
+	<ItemType UNID="&HS_itDvalinIon9Cannon;"
+			name=				"Dvalin Ion9 cannon"
+			level=				"9"
+			value=				"200000"
+			mass=				"4000"
+			frequency=			"notrandom"
+			attributes=			"energyWeapon, majorItem, military, rasiermesser, notStandard"
+
+			description=		"This is an experimental ion cannon created by Rasiermesser's chief scientist."
+			>
+
+		<Image imageID="&HS_rsItemsRasiermesser4;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"particles"
+
+				damage=				"ion:90; shield:9;"
+				fireRate=			"22"
+				missileSpeed=		"100"
+				lifetime=			"30"
+				powerUse=			"2000"
+
+				particleCount=		"1d11+44"
+				particleSpreadAngle="5"
+				sound=				"&CORE_snRecoillessCannon;"
+				>
+
+			<Effect>
+				<Ray
+						style=			"grainy"
+						shape=			"tapered"
+						primaryColor=	"#80eaff"
+						secondaryColor=	"#006b80"
+						width=			"8"
+						length=			"80"
+						intensity=		"50"
+						/>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Arms Dealer, Rasiermesser -->
+
+	<StationType UNID="&HS_stArmsDealerRasiermesser;"
+			name=				": Rasiermesser Arms &amp; Armor|Rasiermesser Arms &amp; Armor"
+			sovereign=			"&HS_svCorporate;"
+			inherit=			"&HS_baCorporateStation;"
+
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+
+			level=				"4"
+			multiHull=			"true"
+			armorID=			"&HS_itLightGusokuArmor;"
+			hitPoints=			"160"
+			regen=				"2"
+			fireRateAdj=		"80"
+			explosionType=		"&CORE_vtBlastExplosion2;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"corporate, corporateCustoms, envAir, envEarth, envFire, envWater, friendly, generic, human, independent, populated, rasiermesser"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+corporateSpace;"
+				systemAffinity=			"*"
+				levelFrequency=			"-rurv ----- ----- ----- -----"
+
+				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"50"
+				/>
+
+		<!-- Trade and Items -->
+
+		<Items>
+			<RandomItem count="1d12" 
+					criteria=		"w L:1-7; +Rasiermesser; -defective; -NotForSale;"
+					levelFrequency=	"systemLevel:r|c|cur"
+					enhanced=		"10"
+					enhancement=	"=(intRasiermesserWeaponEnhancement gItem)"
+					/>
+
+			<RandomItem count="2d12" 
+					criteria=		"a L:1-7; +Rasiermesser; -defective; -NotForSale;"
+					levelFrequency=	"systemLevel:u|c|cur"
+					enhanced=		"10"
+					enhancement=	"=(intRasiermesserArmorEnhancement)"
+					/>
+		</Items>
+
+		<Trade currency="credit">
+			<Sell	criteria="m +rasiermesser; -defective; -military; -illegal; -notForSale;" priceAdj="100" inventoryAdj="800" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+
+			<RepairArmor	criteria="a L:1-7;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a +rasiermesser; L:1-7;" priceAdj="100"/>
+			<InstallDevice	criteria="d +rasiermesser; L:1-7;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-7;" priceAdj="100"/>
+			
+			<ReplaceArmor	criteria="a L:1-7;" priceAdj="unavailable"	messageID="descNoInstall"/>
+			<InstallDevice	criteria="d L:1-7;" priceAdj="unavailable"	messageID="descNoInstall"/>
+		</Trade>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&HS_itAkan30Cannon;"	omnidirectional="true">
+				<Items>
+					<Item count="900" item="&HS_itAkan30CannonShell;"/>
+				</Items>
+			</Device>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Ships standingCount="3-4">
+			<Table>
+				<Lookup chance="75" table="&HS_tbCorpRasiermesserDefenders;"/>
+				<Lookup chance="25" table="&HS_tbCommPrivateCrafts;"/>
+			</Table>
+		</Ships>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&HS_rsCorporateArmsDealer;" imageWidth="148" imageHeight="226" viewportRatio="0.03125"/>
+
+		<DockingPorts
+				portCount=		"8"
+				portAngle=		"-15"
+				portRadius=		"100"
+				/>
+		
+		<!-- Dock Screen -->
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionOperations">
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +rasiermesserArmsDealer; =" (sysGetLevel) ";")
+									noMissionTextID: 'descNoMissions
+									maxPerStation: 1
+									})
+							</Action>
+
+							<Action id="actionDockServices" default="1">
+								(rpgDockServices gPlayerShip)
+							</Action>
+
+							<Action id="actionBuyItems">
+								(scrShowScreen gScreen &RPG_dsRPGCommoditiesExchangeBuy;)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<!-- Events and Data -->
+
+		<Language>
+			<Text id="descWelcome">
+
+				You are docked at a Rasiermesser arms dealer.
+
+			</Text>
+			<Text id="descNoMissions">
+
+				The operations level is filled with screens. A couple of 
+				controllers sit in front of them looking bored. One of them 
+				turns to you:
+
+				"Nothing going on today, fortunately!"
+
+			</Text>
+
+			<Text id="descNoInstall">
+
+				We only install Rasiermesser items. We cannot install %itemName%
+				on your ship.
+
+			</Text>
+			<Text id="dockServices:installAbility">
+
+				We install Rasiermesser items up to tech level %maxLevel%.
+
+			</Text>
+			
+			<Text id="core.mapDesc">
+
+				Repairs armor up to level 7 &mdash;
+				Installs Rasiermesser armor up to level 7 &mdash;
+				Installs Rasiermesser devices up to level 7 &mdash;
+				Sells Rasiermesser products
+
+			</Text>
+		</Language>
+	</StationType>
+
+	<!-- Arms Dealer, Rasiermesser Factory 
+
+	EXTRA DATA
+
+	Dvalin:			True if Dvalin is at this station.
+	giftXP:			XP at last gift (from Dvalin)
+	XP:				Experience points (increases as the player donates)
+
+	GLOBAL DATA
+
+	DvalinSystem:	NodeID of system where Dvalin can be found (or Nil if he
+					has not yet been created).
+
+	-->
+
+	<StationType UNID="&HS_stRasiermesserFactory;"
+			name=				"Rasiermesser manufacturing plant"
+			sovereign=			"&HS_svCorporate;"
+			inherit=			"&HS_baCorporateStation;"
+
+			dockScreen=			"Main"
+			abandonedScreen=	"&RPG_dsRPGAbandonedStation;"
+			dockingPorts=		"8"
+
+			multiHull=			"true"
+			armorID=			"&HS_itLightGusokuArmor;"
+			hitPoints=			"1470"
+			regen=              "15"
+			fireRateAdj=		"80"
+			explosionType=		"&CORE_vtThermoExplosion2;"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"corporate, corporateCustoms, envAir, envEarth, envFire, envWater, friendly, generic, human, independent, majorStation, populated, rasiermesser"
+			>
+
+		<Properties>
+			<Global id="DvalinSystem">Nil</Global>
+			<Global id="showDvalinAttribute">Nil</Global>
+
+			<Data id="Dvalin">Nil</Data>
+			<Data id="DvalinArmorGiven">Nil</Data>
+			<Data id="DvalinWeaponGiven">Nil</Data>
+			<Data id="giftXP">0</Data>
+			<Data id="xp">0</Data>
+
+			<Data id="rpg.storageID"></Data>
+		</Properties>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+corporateSpace;"
+				systemAffinity=			"+corporateCore;"
+				levelFrequency=			"----r uur-- ----- ----- -----"
+
+				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"75"
+
+				unique=					"inSystem"
+				/>
+
+		<!-- Trade and Items -->
+
+		<Items>
+			<RandomItem count="1d12"
+					criteria=		"w L:1-10; +Rasiermesser; -defective; -NotForSale;"
+					levelFrequency=	"systemLevel:r|c|cur"
+					enhanced=		"20"
+					enhancement=	"=(intRasiermesserWeaponEnhancement gItem)"
+					/>
+
+			<RandomItem count="1d12"
+					criteria=		"a L:1-10; +Rasiermesser; -defective; -NotForSale;"
+					levelFrequency=	"systemLevel:r|c|cur"
+					enhanced=		"20"
+					enhancement=	"=(intRasiermesserArmorEnhancement)"
+					/>
+
+			<RandomItem count="1d12"
+					criteria=		"w L:1-10; +Rasiermesser; -defective; -NotForSale;"
+					levelFrequency=	"systemLevel:v|u|cur"
+					enhanced=		"10"
+					enhancement=	"=(intRasiermesserWeaponEnhancement gItem)"
+					/>
+
+			<RandomItem count="1d12"
+					criteria=		"a L:1-10; +Rasiermesser; -defective; -NotForSale;"
+					levelFrequency=	"systemLevel:v|u|cur"
+					enhanced=		"10"
+					enhancement=	"=(intRasiermesserArmorEnhancement)"
+					/>
+
+			<Item chance="95" count="4"			item="&HS_itV300PoweredArmor;" />
+		</Items>
+
+		<Trade currency="credit">
+			<Sell	criteria="m +rasiermesser; -defective; -illegal; -notForSale;" priceAdj="100" inventoryAdj="800" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+
+			<Refuel			criteria="f +BasicFuel; L:1-9;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-9;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a +rasiermesser;" priceAdj="100"/>
+			<InstallDevice	criteria="d +rasiermesser;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-10;" priceAdj="100"/>
+			
+			<ReplaceArmor	criteria="a L:1-10;" priceAdj="unavailable"	messageID="descNoInstall"/>
+			<InstallDevice	criteria="d L:1-10;" priceAdj="unavailable"	messageID="descNoInstall"/>
+
+			<ConsumeTrade	criteria="{core.antimatterFuel}"	impact="3"/>
+			<ConsumeTrade	criteria="{human.res}"		impact="3"/>
+			<ConsumeTrade	criteria="{core.ore}"			impact="4"/>
+		</Trade>
+
+		<!-- Configuration -->
+
+		<Devices>
+			<Device deviceID="&HS_itAkan30Cannon;"	omnidirectional="true">
+				<Items>
+					<Item count="900" item="&HS_itAkan30CannonShell;"/>
+				</Items>
+			</Device>
+		</Devices>
+
+		<!-- Ships and Defenses -->
+
+		<Ships standingCount="3-4">
+			<Table>
+				<Lookup chance="75" table="&HS_tbCorpRasiermesserDefenders;"/>
+				<Lookup chance="25" table="&HS_tbCommPrivateCrafts;"/>
+			</Table>
+		</Ships>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&HS_rsRasiermesserFactory;" imageWidth="320" imageHeight="580" viewportRatio="0.0225"/>
+		<HeroImage imageID="&HS_rsRasiermesserFactoryHero;" imageWidth="850" imageHeight="648"/>
+
+		<DockingPorts
+				portAngle=		"8"
+				portCount=		"8"
+				portRadius=		"150"
+				>
+		</DockingPorts>
+
+		<!-- Dock Screen -->
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionResearchLab" default="1">
+								(block (storageObj)
+									(switch
+										;	If we've previously left some rewards here, get them.
+
+										(setq storageObj (rpgGetStorage gSource))
+											(scrShowScreen gScreen &RPG_dsRPGLoot; {
+												sourceObj: storageObj
+												})
+
+										;	If this is Dvalin's lab, then go there
+
+										(objGetProperty gSource 'Dvalin )
+											(scrShowScreen gScreen 'ResearchLab)
+
+										;	Otherwise, nothing exciting.
+
+										(scrShowScreen gScreen 'SecondaryLab)
+										)
+									)
+							</Action>
+
+							<Action id="actionBuyItems">
+								(scrShowScreen gScreen &RPG_dsRPGCommoditiesExchangeBuy;)
+							</Action>
+
+							<Action id="actionRepairItems">
+								(scrShowScreen gScreen &RPG_dsRPGRepairItem; {
+									criteria: "*~aD +Rasiermesser;"
+									priceAdj: 65
+									})
+							</Action>
+
+							<Action id="actionDockServices">
+								(rpgDockServices gPlayerShip)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+
+			<ResearchLab>
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(block (
+								(xp (or (objGetProperty gSource 'xp) 0))
+								)
+								(switch
+									(ls xp 50)
+										(scrSetDescTranslate gScreen 'DvalinIntro.01)
+
+									(ls xp 150)
+										(scrSetDescTranslate gScreen 'DvalinIntro.02)
+
+									(ls xp 500)
+										(scrSetDescTranslate gScreen 'DvalinIntro.03)
+
+									(not (objGetProperty gSource 'DvalinWeaponGiven))
+										(scrSetDescTranslate gScreen 'DvalinIntro.04)
+
+									(block ()
+										(scrSetDescTranslate gScreen 'DvalinIntro.05)
+										(scrEnableAction gScreen 'actionOfferItem Nil)
+										)
+									)
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionOfferItem" default="1">
+								(block ()
+									(scrShowScreen gScreen "OfferItem")
+
+									;	After offering, we know what kinds of items
+									;	Dvalin is looking for
+
+									(typSetProperty &HS_stRasiermesserFactory; 'showDvalinAttribute True)
+									)
+							</Action>
+
+							<Action id="actionLeave" cancel="1">
+								(scrShowScreen gScreen 'Main)
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</ResearchLab>
+
+			<OfferItem
+				type=				"itemPicker"
+				>
+
+				<ListOptions
+					dataFrom=	"player"
+					list=		"aswU +notForSale; -illegal; -rasiermesser; F:rv-;"
+					/>
+
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(block (
+								(theItem (scrGetItem gScreen))
+								)
+								(scrSetDesc gScreen (cat
+									(scrTranslate gScreen 'DvalinOfferIntro)
+									"\n\n"
+									(if theItem
+										(scrTranslate gScreen 'DvalinOfferItem { itemName:(itmGetName theItem 0) })
+										(scrTranslate gScreen 'DvalinNothingToOffer)
+										)
+									))
+
+								(scrEnableAction gScreen 'actionOfferItem theItem)
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionOfferItem" default="1">
+								(block (
+									(theItem (scrGetItem gScreen))
+									(itemLevel (itmGetLevel theItem))
+
+									;	Armor is worth half as much
+									(itemScoreAdj (if (= (itmGetProperty theItem 'category) 'armor) 0.5 1.0))
+
+									;	Higher level items are exponentially more valuable
+									(itemScore (round (* itemScoreAdj (pow 1.5 itemLevel))))
+
+									(haveCount 0)
+
+									haveDamaged haveUndamaged gain result
+									)
+
+									; See if we've already got the item that the player donated
+
+									(enum (objGetItems gSource "aswU +NotForSale; F:rv-;") itemAtLab
+										(if (eq (itmGetType itemAtLab) (itmGetType theItem))
+											(block Nil
+												(setq haveCount (add haveCount (itmGetCount theItem)))
+												(if (itmIsDamaged itemAtLab)
+													(setq haveDamaged True)
+													(setq haveUndamaged True)
+													)
+												)
+											)
+										)
+
+									; Figure out how valuable this item is to Dvalin
+
+									(switch
+										(and (not haveDamaged) (not haveUndamaged))
+											(if (itmIsDamaged theItem)
+												(block Nil
+													(setq gain (multiply 5 itemScore))
+													(setq result (scrTranslate gScreen 'DvalinImpressed {
+														itemName: (itmGetName theItem 'article)
+														}))
+													)
+												(block Nil
+													(setq gain (multiply 10 itemScore))
+													(setq result (scrTranslate gScreen 'DvalinEcstatic {
+														itemName: (itmGetName theItem 'article)
+														}))
+													)
+												)
+
+										(and (not haveUndamaged) (not (itmIsDamaged theItem)))
+											(block Nil
+												(setq gain (multiply 7 itemScore))
+												(setq result (scrTranslate gScreen 'DvalinVeryPleased {
+													itemName: (itmGetName theItem 0)
+													}))
+												)
+
+										(gr haveCount 5)
+											(block Nil
+												(setq gain 0)
+												(setq result (scrTranslate gScreen 'DvalinUninterested {
+													itemName: (itmGetName theItem 0)
+													}))
+												)
+
+										(or (not haveDamaged) (not (itmIsDamaged theItem)))
+											(block Nil
+												(setq gain (multiply 3 itemScore))
+												(setq result (scrTranslate gScreen 'DvalinPleased {
+													itemName: (itmGetName theItem 0)
+													}))
+												)
+
+										(block Nil
+											(setq gain (multiply 2 itemScore))
+											(setq result (scrTranslate gScreen 'DvalinNotVeryInterested {
+												itemName: (itmGetName theItem 0)
+												}))
+											)
+										)
+
+									; Increase XP
+									(objIncProperty gSource 'xp gain)
+
+									; Transfer the item
+									(objRemoveItem gPlayerShip theItem 1)
+									(objAddItem gSource theItem 1)
+
+									; Done
+									(scrShowScreen gScreen 'Reward {
+										result: result
+										noGift: (= gain 0)
+										})
+									)
+							</Action>
+
+							<Action id="actionCancel" cancel="1">
+								(scrShowScreen gScreen 'ResearchLab)
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</OfferItem>
+
+			<Reward>
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(scrSetDesc gScreen (@ gData 'result))
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(block (
+									(xp (or (objGetProperty gSource 'xp) 0))
+									(noGift (@ gData 'noGift))
+
+									;	We double xp required after each gift
+									(minXP (max (multiply (objGetProperty gSource 'giftXP) 2) 100))
+
+									(roll (random 1 100))
+
+									(giftItem Nil)
+									)
+									; Figure out what kind of gift to give
+
+									(switch
+										(or noGift (ls xp minXP))
+											Nil
+
+										(geq xp 2400)
+											Nil
+
+										(geq xp 800)
+											(if (not (objGetProperty gSource 'DvalinWeaponGiven))
+												(block Nil
+													(setq giftItem (itmCreate &HS_itDvalinIon9Cannon; 1))
+													(objSetProperty gSource 'DvalinWeaponGiven True)
+
+													;	Once the Ion9 has been given, we no longer care 
+													;	about Dvalin items.
+
+													(typSetProperty &HS_stRasiermesserFactory; 'showDvalinAttribute Nil)
+													)
+												)
+
+										(geq xp 400)
+											(if (not (objGetProperty gSource 'DvalinArmorGiven))
+												(block Nil
+													(setq giftItem (itmCreate &HS_itDvalinArmor; (objGetProperty gPlayerShip 'armorCount)))
+													(objSetProperty gSource 'DvalinArmorGiven True)
+													)
+												)
+
+										(geq xp 200)
+											(switch
+												(leq roll 60)
+													(setq giftItem (itmSetEnhanced (itmCreate &HS_itAkan600Turret; 1) {
+														enhancement: "+hpBonus:50"
+														type: &HS_itBlastUpgrade;
+														}))
+
+												(leq roll 90)
+													(setq giftItem (itmSetEnhanced (itmCreate &HS_itAkan600Turret; 1) {
+														enhancement: "+hpBonus:70"
+														type: &HS_itBlastUpgrade;
+														}))
+
+												(setq giftItem (itmSetEnhanced (itmCreate &HS_itAkan600Turret; 1) {
+													enhancement: "+speed:80"
+													type: &HS_itWeaponSpeedROM;
+													}))
+												)
+
+										(geq xp 100)
+											(switch
+												(leq roll 60)
+													(setq giftItem (itmSetEnhanced (itmCreate &HS_itAdvancedCeralloyArmor; (objGetProperty gPlayerShip 'armorCount)) {
+														enhancement: "+hpBonus:100"
+														type: &HS_itPlasteelNanos;
+														}))
+
+												(leq roll 90)
+													(setq giftItem (itmSetEnhanced (itmCreate &HS_itAdvancedCeralloyArmor; (objGetProperty gPlayerShip 'armorCount)) {
+														enhancement: "+reflect:ion"
+														type: &HS_itIonReflectCoating;
+														}))
+
+												(setq giftItem (itmSetEnhanced (itmCreate &HS_itAdvancedCeralloyArmor; (objGetProperty gPlayerShip 'armorCount)) {
+													enhancement: "+regen"
+													type: &HS_itRegeneratingNanos;
+													}))
+												)
+										)
+
+									; Give the gift
+									(if giftItem
+										(block Nil
+											(rpgStoreItem gSource giftItem)
+											(objSetProperty gSource "giftXP" minXP)
+											(scrSetData gScreen 'giftItem giftItem)
+											(scrShowPane gScreen 'Gift)
+											)
+										(scrShowScreen gScreen 'ResearchLab)
+										)
+									)
+							</Action>
+						</Actions>
+					</Default>
+
+					<Gift>
+						<OnPaneInit>
+							(block (
+								(giftItem (scrGetData gScreen 'giftItem))
+								)
+								(scrSetDescTranslate gScreen 
+									(switch
+										(gr (itmGetCount giftItem) 1)
+											'DvalinGiftMultiple
+
+										(= (itmGetType giftItem) &HS_itDvalinIon9Cannon;)
+											'DvalinGiftIon9
+
+										'DvalinGiftSingle
+										)
+									{
+										itemName: (itmGetName giftItem '(demonstrative noModifiers))
+										}
+									)
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(block ()
+									(scrShowScreen gScreen 'Main)
+
+									(scrShowScreen gScreen &RPG_dsRPGLoot; {
+										sourceObj: (rpgGetStorage gSource)
+										})
+									)
+							</Action>
+						</Actions>
+					</Gift>
+				</Panes>
+			</Reward>
+
+			<SecondaryLab>
+				<Panes>
+					<Default descID="descSecondaryLab">
+						<Actions>
+							<Action id="actionLeave" default="1" cancel="1">
+								(scrShowScreen gScreen "Main")
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</SecondaryLab>
+		</DockScreens>
+
+		<!-- Events and Data -->
+
+		<AttributeDesc>
+			<!-- Define attribute for items that Dvalin is interested in. -->
+		
+			<ItemAttribute label="Dvalin valuable"		criteria="asw +notForSale; F:rv-;">
+				<OnShow>(typGetProperty gType 'showDvalinAttribute)</OnShow>
+			</ItemAttribute>
+		</AttributeDesc>
+
+		<Events>
+			<OnCreate>
+				(if (not (objGetProperty gSource 'DvalinSystem))
+					(block Nil
+						(objSetProperty gSource 'DvalinSystem (sysGetNode))
+						(objSetProperty gSource 'Dvalin True)
+						)
+					)
+			</OnCreate>
+		</Events>
+
+		<Language>
+			<Text id="actionOfferItem">[O]ffer Item</Text>
+			<Text id="actionRepairItems">[R]epair Items</Text>
+			<Text id="actionResearchLab">Research [L]ab</Text>
+
+			<Text id="descWelcome">
+
+				Welcome to Rasiermesser! We are the leading manufacturer of 
+				innovative weapon systems in Human Space.
+
+			</Text>
+			<Text id="descNoInstall">
+
+				We only install Rasiermesser items. We cannot install %itemName%
+				on your ship.
+
+			</Text>
+			<Text id="descSecondaryLab">
+
+				The lab is filled with racks of equipment and testing structures. A small 
+				number of researchers are testing the quality and reliability of various items.
+
+			</Text>
+			<Text id="dockServices:installAbility">
+
+				We install Rasiermesser items up to tech level %maxLevel%.
+
+			</Text>
+			<Text id="DvalinIntro.01">
+
+				The lab is filled with racks of equipment; researchers are 
+				testing various new weapons here.
+
+				Sitting by the corner, a small stocky man mumbles to himself as 
+				he pores through dozens of screens of information. His name is 
+				Dvalin, the chief scientist for the Rasiermesser Corporation.
+
+			</Text>
+			<Text id="DvalinIntro.02">
+
+				The center of the lab has a massive testing area; a segment of 
+				armor on a static frame is being subjected to intense energies.
+
+				Dvalin walks over to you and points to the test: "Dat is my new
+				nano-sintered armor. It will be twice as strong as hexphase, ya?
+				It will be done soon!"
+
+			</Text>
+			<Text id="DvalinIntro.03">
+
+				One side of the lab has a static frame holding a complex weapon;
+				scientists and engineers work on it under Dvalin's direction.
+
+				Dvalin walks over to you: "It is my new project, ya? An ion 
+				weapon as powerful as a howitzer!"
+
+			</Text>
+			<Text id="DvalinIntro.04">
+
+				The center of the lab has a massive testing area; a 
+				dangerous-looking weapon attached to a static frame burns a hole
+				in a sample of blast plate.
+
+				Dvalin walks over to you and points at the test: "Vat do you 
+				think? Impressive, ya? Much better than Akan!"
+
+			</Text>
+			<Text id="DvalinIntro.05">
+
+				The center of the lab has a massive testing area; an Ion9 cannon
+				is attached to a static frame.
+
+				Dvalin walks over to you: "How do you like you Ion9? Impressive,
+				ya? We're trying to adapt it for mass production."
+			
+			</Text>
+			<Text id="DvalinOfferIntro">
+
+				Dvalin is looking for rare and powerful items to reverse-engineer
+				and learn from.
+			
+			</Text>
+			<Text id="DvalinOfferItem">
+
+				The %itemName% could be useful in his research.
+			
+			</Text>
+			<Text id="DvalinNothingToOffer">
+
+				Unfortunately, Dvalin is not interested in any of the items in 
+				your cargo hold.
+			
+			</Text>
+			<Text id="DvalinEcstatic">
+
+				Dvalin is ecstatic: "Gods! I have not seen %itemName% before! It
+				is in excellent condition, ya?"
+			
+			</Text>
+			<Text id="DvalinImpressed">
+
+				Dvalin is impressed: "Gods! %ItemName%! A pity it is not intact,
+				ya?"
+				
+			</Text>
+			<Text id="DvalinVeryPleased">
+
+				Dvalin is very pleased: "At last! An undamaged %itemName%! It is
+				in excellent condition, ya?"
+			
+			</Text>
+			<Text id="DvalinPleased">
+
+				Dvalin is pleased: "Good work! This %itemName% will be analyzed 
+				with the others."
+			
+			</Text>
+			<Text id="DvalinNotVeryInterested">
+
+				Dvalin is somewhat interested: "Another one, ya? Put it over 
+				there; we will analyze it."
+
+			</Text>
+			<Text id="DvalinUninterested">
+
+				Dvalin is uninterested: "Another one, ya? We will use it for 
+				ballast, perhaps."
+			
+			</Text>
+			<Text id="DvalinGiftSingle">
+
+				Dvalin thanks you for helping his research:
+
+				"Danke for your aid! Our research advances because of you. 
+				Please, accept %itemName%. It has special enhancements, ya?"
+
+			</Text>
+			<Text id="DvalinGiftIon9">
+
+				Dvalin thanks you for helping his research:
+
+				"Danke for your aid! Because of your help I have created 
+				the Ion9 cannon.
+				
+				"Take it on your journey. It is my greatest accomplishment."
+
+			</Text>
+			<Text id="DvalinGiftMultiple">
+
+				Dvalin thanks you for helping his research:
+
+				"Danke for your aid! Our research advances because of you. 
+				Please, accept %itemName%. I made them specially for you!"
+
+			</Text>
+			
+			<Text id="core.mapDescCustom">
+				(if (objGetProperty gSource 'Dvalin)
+					(cat (typTranslate gType 'mapDescDvalin) " "
+						(typTranslate gType 'core.mapDesc)
+						)
+					(typTranslate gType 'core.mapDesc)
+					)
+			</Text>
+			<Text id="mapDescDvalin">
+
+				Dvalin's Research Lab &mdash;
+
+			</Text>
+			<Text id="core.mapDesc">
+
+				Refuels up to level 9 &mdash; 
+				Repairs armor up to level 9 &mdash;
+				Installs Rasiermesser armor up to level 8 &mdash;
+				Installs Rasiermesser devices up to level 9 &mdash;
+				Sells Rasiermesser products
+
+			</Text>
+		</Language>
+
+	</StationType>
+
+<!-- TABLES -->
+
+	<ShipTable unid="&HS_tbCorpRasiermesserDefenders;">
+		<!--
+			There are no Rasiermesser ships in Core, so we just pick normal 
+			defenders. Corporate Command overrides this. 
+		-->
+		<LevelTable>
+			<Ship levelFrequency="cccr- -----" count="1" class="&HS_scRoninA;" orders="guard"/>
+			<Ship levelFrequency="ruucc cr---" count="1" class="&HS_scRoninB;" orders="guard"/>
+			<Ship levelFrequency="uuucc cur--" count="1" class="&HS_scWolfenC;" orders="guard"/>
+			<Ship levelFrequency="---uu ccccu" count="1" class="&HS_scRoninC;" orders="guard"/>
+			<Ship levelFrequency="ccccc ccccc" count="1" class="&HS_scCenturionBlock2;" orders="guard"/>
+			<Ship levelFrequency="--ruc cuuuu" count="1" class="&HS_scManticore;" orders="guard"/>
+			<Ship levelFrequency="----- -uuuu" count="1" class="&HS_scBritannia;" orders="guard"/>
+		</LevelTable>
+	</ShipTable>
+	
+	<Globals>
+		(block Nil
+			(setq intRasiermesserArmorEnhancement (lambda Nil
+				(random (list
+					{	enhancement:"+hpBonus:10"			type:&HS_itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:20"			type:&HS_itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:20"			type:&HS_itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:30"			type:&HS_itPlasteelNanos;	}
+					{	enhancement:0x0a05					type:&HS_itAblativeArmorCoating;	}
+					{	enhancement:0x0a15					type:&HS_itReactiveArmorCoating;	}
+					{	enhancement:0x0a25					type:&HS_itParticleResistCoating;	}
+					;	LATER: Add blast resistance coating
+					{	enhancement:0x0200					type:&HS_itRegeneratingNanos;	}
+					))
+				))
+
+			(setq intRasiermesserWeaponEnhancement (lambda (theItem)
+				(random (list
+					{	enhancement:"+hpBonus:10"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+hpBonus:20"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+hpBonus:20"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+hpBonus:20"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+hpBonus:30"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+hpBonus:30"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+hpBonus:40"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+efficient:20"			type:&HS_itWeaponEfficiencyROM;	}
+					{	enhancement:"+speed:80"				type:&HS_itWeaponSpeedROM;	}
+					))
+				))
+			)
+	</Globals>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&HS_rsRasiermesserFactory;" bitmap="Resources\RasiermesserFactory.jpg" bitmask="Resources\RasiermesserFactoryMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&HS_rsRasiermesserFactoryBkgnd;" bitmap="Resources\RasiermesserFactoryScreen.jpg" loadOnUse="true" />
+	<Image UNID="&HS_rsRasiermesserFactoryHero;" bitmap="Resources\RasiermesserFactoryHero.jpg" bitmask="Resources\RasiermesserFactoryHeroMask.bmp" loadOnUse="true" />
+
+</TranscendenceModule>

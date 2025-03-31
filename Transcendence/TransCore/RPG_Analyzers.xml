@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+<!-- ANALYZE SCREEN ============================================================
+	
+	GLOBAL DATA
+	
+	skillLevel:			Total number of successful uses
+	
+	ITEM OBJECT
+	
+	We fire OnAnalyzeItem to allow the item to handle analysis. The item should
+	return a struct with the following fields:
+	
+		desc: A description of the result of the analysis.
+		modifiedItem: The modified item.
+	
+-->
+
+	<DockScreen UNID="&RPG_dsRPGAnalyzeItem;"
+			inherit=			"&RPG_dsDockScreenBase;"
+			>
+
+		<OnScreenInit>
+			(if (not (scrGetData gScreen 'analyzer))
+				(scrSetData gScreen 'analyzer gItem)
+				)
+		</OnScreenInit>
+
+		<Display type="itemPicker"
+				dataFrom=	"player"
+				list=		"*"
+				initialItem="=
+					(if (scrGetData gScreen 'modifiedItem)
+						(itmIsEqual (scrGetItem gScreen) (scrGetData gScreen 'modifiedItem))
+						(scrSetListCursor gScreen (scrGetData gScreen 'cursor))
+						)"
+				>
+			<OnDisplayInit>
+				(scrSetListFilter gScreen (lambda (theItem)
+					(or
+						(not (itmIsKnown theItem))
+						(objFireItemEvent gSource theItem 'GetIsAnalysisRequired)
+						)
+					))
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(analyzerItem (scrGetData gScreen 'analyzer))
+						(skillLevel (typGetData &RPG_dsRPGAnalyzeItem; 'skillLevel))
+						(chargesLeft (itmGetProperty analyzerItem 'charges))
+						(itemToAnalyze (scrGetItem gScreen))
+						canAnalyze result
+						)
+						
+						;	Init skill level
+						(if (not skillLevel)
+							(block Nil
+								(typSetData &RPG_dsRPGAnalyzeItem; 'skillLevel 0)
+								(setq skillLevel 0)
+								)
+							)
+							
+						;	Report the number of charges remaining
+						(scrSetControlValue gScreen 'chargesLeft
+							(scrTranslate gScreen 'descChargesLeft { charges:chargesLeft })
+							)
+						
+						;	Continue with description
+						
+						(switch
+							;	If no more charges then we cannot analyze anything
+							
+							(eq chargesLeft 0)
+								(scrSetDescTranslate gScreen 'descNoCharges { itemName:(itmGetName analyzerItem 'escapeQuotes) })
+								
+							;	Nothing to analyze
+							
+							(not itemToAnalyze)
+								(scrSetDescTranslate gScreen 'descNoItemsHere)
+								
+							;	Check to see if this analyzer can handle this item
+							
+							(and (setq result (objFireItemEvent gSource analyzerItem 'CanAnalyzeItem { itemToAnalyze: itemToAnalyze }))
+									(not (@ result 'canAnalyzeItem))
+									)
+								(scrSetDesc gScreen (@ result 'message))
+								
+							;	OK
+							
+							(block (
+								(flags (if (= (itmGetCount itemToAnalyze) 1) '(installedState demonstrative escapeQuotes) '(installedState article escapeQuotes)))
+								(theName (itmGetName itemToAnalyze flags))
+								)
+								(switch
+									(ls skillLevel 2)
+										(scrSetDescTranslate gScreen 'descAnalyze1 { itemName:theName })
+									
+									(ls skillLevel 5)
+										(scrSetDescTranslate gScreen 'descAnalyze2 { itemName:theName })
+									
+									(ls skillLevel 10)
+										(scrSetDescTranslate gScreen 'descAnalyze3 { itemName:theName })
+									
+									(scrSetDescTranslate gScreen 'descAnalyze4 { itemName:theName })
+									)
+								
+								(setq canAnalyze True)
+								)
+							)
+						
+						;	Initialize actions
+						(scrEnableAction gScreen 'actionAnalyze canAnalyze)
+						)
+				</OnPaneInit>
+
+				<Controls>
+					<Text id="chargesLeft"/>
+				</Controls>
+
+				<Actions>
+					<Action id="actionAnalyze" default="1">
+						(block (
+							(analyzerItem (scrGetData gScreen 'analyzer))
+							(result (rpgAnalyzeItem gSource (scrGetItem gScreen)))
+							(modifiedItem (@ result 'modifiedItem))
+							)
+							;	Consume a charge on the analyzer
+							(setq analyzerItem (objSetItemProperty gSource analyzerItem 'incCharges -1))
+							(scrSetData gScreen 'analyzer analyzerItem)
+							
+							;	Save the modified item if it still needs analysis
+							(switch
+
+								;	If the Analysis failed somehow and the item still 
+								;	needs analysis, then we remember to set the cursor here
+								;	when we come back.
+
+								(and modifiedItem
+										(or (not (itmIsKnown modifiedItem))
+											(objFireItemEvent gSource modifiedItem 'GetIsAnalysisRequired)
+											)
+										)
+									(scrSetData gScreen 'modifiedItem modifiedItem)
+
+								;	If we analyzed one item out of a stack and there are still 
+								;	remaining items in the stack, then we remember them so that
+								;	we position the cursor there.
+
+								(@ result 'remainingItem)
+									(scrSetData gScreen 'modifiedItem (@ result 'remainingItem))
+
+								;	Otherwise, nothing
+									
+								(scrSetData gScreen 'modifiedItem Nil)
+								)
+							
+							;	Save the cursor
+							(scrSetData gScreen 'cursor (scrGetListCursor gScreen))
+							
+							;	Set the filter so we only select the modified item
+							(scrSetListFilter gScreen (lambda (theItem)
+								(itmIsEqual theItem modifiedItem)
+								))
+							
+							;	Done
+
+							(scrSetData gScreen 'result (@ result 'desc))
+							(scrShowPane gScreen 'Done)
+							)
+					</Action>
+
+					<Action id="actionCancel" cancel="1" default="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+
+			<Done noListNavigation="true">
+				<OnPaneInit>
+					(block (
+						(analyzerItem (scrGetData gScreen 'analyzer))
+						(chargesLeft (itmGetProperty analyzerItem 'charges))
+						)
+
+						;	Report the number of charges remaining
+						(scrSetControlValue gScreen 'chargesLeft
+							(scrTranslate gScreen 'descChargesLeft { charges:chargesLeft })
+							)
+
+						(scrSetDesc gScreen (scrGetData gScreen 'result))
+						(scrEnableAction gScreen 'actionContinue (gr chargesLeft 0))
+						)
+				</OnPaneInit>
+
+				<Controls>
+					<Text id="chargesLeft"/>
+				</Controls>
+
+				<Actions>
+					<Action id="actionContinue" default="1">
+						(block Nil
+							;	Reset filter to show all items again
+							(scrSetListFilter gScreen (lambda (theItem)
+								(or
+									(not (itmIsKnown theItem))
+									(objFireItemEvent gSource theItem 'GetIsAnalysisRequired)
+									)
+								))
+							
+							;	Refresh to make sure items are in the right order, since damaged items may have been added
+							(scrRefreshScreen gScreen)
+							
+							(scrShowPane gScreen 'Default)
+							)
+					</Action>
+
+					<Action id="actionDone" cancel="1" default="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Done>
+		</Panes>
+
+		<Language>
+			<Text id="actionAnalyze">[A]nalyze Item</Text>
+
+			<Text id="descChargesLeft">Charges Left: %charges%</Text>
+			<Text id="descNoCharges">
+				Unfortunately, this %itemName% is out of charge and cannot function.
+			</Text>
+			<Text id="descNoItemsHere">
+				There are no items here requiring analysis.
+			</Text>
+			<Text id="descAnalyze1">
+				You can analyze %itemName%, though you do not have much experience analyzing items.
+			</Text>
+			<Text id="descAnalyze2">
+				You can analyze %itemName%; you have some experience analyzing items.
+			</Text>
+			<Text id="descAnalyze3">
+				You can analyze %itemName%; you are proficient at analyzing items.
+			</Text>
+			<Text id="descAnalyze4">
+				You can analyze %itemName%; you are an expert at analyzing items.
+			</Text>
+			<Text id="descBotched">
+				Unfortunately, you botched the analysis and got no results.
+			</Text>
+			<Text id="descDamaged">
+				You attempt to analyze %itemName% but accidentally short out a major component, damaging it.
+			</Text>
+			<Text id="descDestroyed">
+				You attempt to analyze %itemName% but accidentally destroy it with a burst of high-energy ions.
+			</Text>
+			<Text id="descIdentified">
+				Your analysis reveals it to be %itemName%.
+			</Text>
+			<Text id="descNoEffect">
+				You run the analyzer but are unable to reveal any additional information about %itemName%.
+			</Text>
+		</Language>
+	</DockScreen>
+
+<!-- GLOBAL FUNCTIONS ==========================================================
+
+-->
+
+	<Globals>
+		(block Nil
+			(setq rpgAnalyzeItem (lambda (sourceObj itemToAnalyze)
+			
+				;	We return a struct with the following elements:
+				;
+				;		desc: The description of the result.
+				;		modifiedItem: The item to show, if any.
+				
+				(block (skillLevel failureChance result desc modifiedItem remainingItem)
+					
+					;	Compute the chance of failure based on skillLevel
+					
+					(setq skillLevel (typGetData &RPG_dsRPGAnalyzeItem; 'skillLevel))
+					(switch
+						(ls skillLevel 2)
+							(setq failureChance 20)
+
+						(ls skillLevel 5)
+							(setq failureChance 10)
+
+						(ls skillLevel 10)
+							(setq failureChance 5)
+
+						(setq failureChance 0)
+						)
+						
+					;	Our skill level increases
+					
+					(typIncData &RPG_dsRPGAnalyzeItem; 'skillLevel 1)
+					
+					(setq modifiedItem itemToAnalyze)
+						
+					;	Analyze
+					
+					(switch
+						;	There is a chance of failure, depending on the skill of
+						;	the user.
+						
+						(leq (random 1 100) failureChance)
+							(block (
+								(flags (if (= (itmGetCount itemToAnalyze) 1) '(installedState demonstrative escapeQuotes) '(installedState article escapeQuotes)))
+								(theName (itmGetName itemToAnalyze flags))
+								)
+							
+								(switch
+								
+									;	Analysis failed, but the original item is intact
+									
+									(gr (random 1 100) (divide failureChance 2))
+										(setq desc (typTranslate &RPG_dsRPGAnalyzeItem; 'descBotched))
+										
+									;	If this is an undamaged device then it got damaged by
+									;	the analysis.
+									
+									(itmMatches itemToAnalyze "dN")
+										(block Nil
+											(setq desc (typTranslate &RPG_dsRPGAnalyzeItem; 'descDamaged {
+															 itemName:theName
+															})
+												)
+											(setq modifiedItem (objSetItemProperty sourceObj itemToAnalyze 'damaged True))
+											)
+											
+									;	If this is an item that can be destroyed, it is.
+									
+									(itmMatches itemToAnalyze "ut~ad -Res;")
+										(block Nil
+											(setq desc (typTranslate &RPG_dsRPGAnalyzeItem; 'descDestroyed {
+															itemName:theName
+															})
+												)
+											(if (eq (itmGetCount itemToAnalyze) 1) (setq modifiedItem Nil))
+											(objRemoveItem sourceObj itemToAnalyze 1)
+											)
+									
+									;	Otherwise, failure.
+									
+									(setq desc (typTranslate &RPG_dsRPGAnalyzeItem; 'descBotched))
+									
+									)
+								)
+					
+						;	First we let the item analyze itself. If it works, then
+						;	we return the result.
+						
+						(setq result (objFireItemEvent sourceObj itemToAnalyze 'OnAnalyzeItem))
+							(block Nil
+								(setq desc (@ result 'desc))
+								(setq modifiedItem (@ result 'modifiedItem))
+								(setq remainingItem (@ result 'remainingItem))
+								)
+						
+						;	If this is an unknown item, then we identify it.
+						
+						(not (itmIsKnown itemToAnalyze))
+							(block Nil
+								(itmSetKnown itemToAnalyze)
+								(setq desc (typTranslate &RPG_dsRPGAnalyzeItem; 'descIdentified {
+												itemName:(itmGetName itemToAnalyze '(article escapeQuotes))
+												})
+									)
+								)
+								
+						;	Otherwise, nothing
+						
+						(setq desc (typTranslate &RPG_dsRPGAnalyzeItem; 'descNoEffect {
+										itemName:(itmGetName itemToAnalyze (if (eq (itmGetCount itemToAnalyze) 1) '(demonstrative escapeQuotes) '(article escapeQuotes)))
+										})
+							)
+						)
+						
+					;	Done
+					
+					{
+						desc: desc
+						modifiedItem: modifiedItem
+						remainingItem: remainingItem
+						}
+					)
+				))
+			)
+	</Globals>
+
+</TranscendenceModule>

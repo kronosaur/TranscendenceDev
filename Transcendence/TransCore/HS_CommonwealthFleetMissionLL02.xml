@@ -1,0 +1,262 @@
+<?xml version="1.0" ?>
+
+<TranscendenceModule>
+
+	<!-- Mission: Rescue Scientists ============================================
+
+	EXTRA DATA
+
+	reward:			Reward (in credits) for completing mission
+	missionXP:		XP awarded for completing mission
+	targetID:		ID of the rogue base
+	rescueID:		ID of rescue ship
+
+	======================================================================== -->
+
+	<MissionType UNID="&HS_msCSCRescueScientists;"
+			name=			"Lamplighter 02: Rescue Scientists"
+			attributes=		"commonwealthFleet, cscTaskForce, rank3, lamplighter"
+
+			level=			"5-10"
+			maxAppearing=	"1"
+
+			expireTime=			"5400"
+			failureOnReturnToSystem="5400"
+			>
+
+		<Image imageID="&HS_rsFleetEmblems;" imageX="960" imageY="480"	imageWidth="320" imageHeight="240"/>
+
+		<Events>
+			<OnCreate>
+				(block Nil
+
+					(msnSetData gSource 'missionXP 350)
+					)
+			</OnCreate>
+
+			<OnStarted>
+				(block (
+					(cscObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+					targetObj
+					)
+					;	Create the rogue base. The base position must be at least
+					;	120 light-seconds away from anything else.
+					(setq targetObj
+					 	(sysCreateStation
+							&HS_stRogueBaseRescue;
+							(sysVectorRandom cscObj (random 400 600) 120 "t")
+							)
+						)
+					(msnSetData gSource 'targetID (objGetID targetObj))
+					
+					;	Create the rescue ship
+					(setq rescueObj (sysCreateShip &HS_scAurochs; cscObj &HS_svCommonwealthFleet;))
+					(shpOrder rescueObj 'dock targetObj)
+					(shpOrder rescueObj 'wait (random 10 20))
+					(shpOrder rescueObj 'dock cscObj)
+					(shpOrder rescueObj 'wait 5)
+					(shpOrder rescueObj 'gate)
+					(msnSetData gSource 'rescueID (objGetID rescueObj))
+					(msnRegisterForEvents gSource rescueObj)
+					
+					;	Encounter
+					(if (leq (random 1 100) 60)
+						(sysAddEncounterEventAtDist (add 500 (random 0 100)) rescueObj &HS_etRogueAmbush1; (random 120 200))
+						)
+					)
+			</OnStarted>
+			
+			<OnObjDestroyed>
+				(switch
+					;	Freighter destroyed
+					(= (objGetID aObjDestroyed) (msnGetData gSource 'rescueID))
+						(msnFailure gSource)
+					)
+			</OnObjDestroyed>
+
+			<OnObjDocked>
+				(switch
+					;	Docked with target base
+					(and	(= (objGetID aObjDocked) (msnGetData gSource 'rescueID))
+							(= (objGetID aDockTarget) (msnGetData gSource 'targetID))
+							)
+						(block Nil
+							(plyMessage gPlayer "Extraction commencing")
+
+							;	Add some encounters
+							(sysAddEncounterEventAtDist (+ 500 (random 0 100)) aObjDocked &HS_etRogueAmbush2; (random 120 200))
+							(sysAddEncounterEventAtDist (+ 1000 (random 0 100)) aObjDocked &HS_etRogueAmbush1; (random 120 200))
+							)
+
+					;	Docked with CSC
+					(and	(= (objGetID aObjDocked) (msnGetData gSource 'rescueID))
+							(= (objGetID aDockTarget) (msnGetProperty gSource 'ownerID))
+							)
+						(msnSuccess gSource)
+					)
+			</OnObjDocked>
+
+			<OnSetPlayerTarget>
+				(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'rescueID)) 'escort)
+			</OnSetPlayerTarget>
+
+			<OnCompleted>
+				(switch
+					(= aReason 'failure)
+						(block Nil
+							;	Demote player
+							(objSetData gPlayerShip 'fleetXP 400)
+							(objSetData gPlayerShip 'fleetLevel 2)
+							)
+					)
+			</OnCompleted>
+
+			<OnReward>
+				(commFleet_GiveReward gSource)
+			</OnReward>
+
+			<GetGlobalAchievements>
+				(block (theList)
+					(if (msnFind "r +unid:&HS_msCSCRescueScientists;; +property:isSuccess;")
+						(setq theList (list
+							(list 
+								"Rescued Project Lamplighter scientists"
+								Nil
+								"achievements &amp; regrets"
+								)
+							))
+						)
+					(if (msnFind "r +unid:&HS_msCSCRescueScientists;; +property:isFailure;")
+						(setq theList (list
+							(list 
+								"Failed to rescue Project Lamplighter scientists"
+								Nil
+								"achievements &amp; regrets"
+								)
+							))
+						)
+
+					theList
+					)
+			</GetGlobalAchievements>
+		</Events>
+
+		<Language>
+			<Text id="Name">
+				"Rescue Scientists"
+			</Text>
+			<Text id="Summary">
+				(cat
+					(msnTranslate gSource 'textSummary)
+					"\n\n"
+					(typTranslate &RPG_dsRPGMission; 'mission.rewardSummary {
+						systemName: (sysGetName)
+						payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+						})
+					)
+			</Text>
+			<Text id="Intro">
+
+				The XO walks up to you.
+
+				"Good to see you pilot. We've got a mission for you."
+
+			</Text>
+			<Text id="Briefing">
+
+				"OK, this is a high-profile rescue mission, so I don't want any screw-ups!
+
+				"Two of our weapons designers have been kidnapped by rogue fleet elements. 
+				We're sending an Aurochs transport with an extraction team to rescue our Einsteins. 
+				All you've got to do is protect the transport to the rogue base and back.
+				
+				"Clear?"
+
+			</Text>
+			<String id="AcceptReply">
+				"Good luck, %name%!"
+			</String>
+			<String id="DeclineReply">
+				"Get the hell out of here then!"
+			</String>
+
+			<String id="InProgress">
+				"What is your major malfunction!? Get back out there and complete your mission!"
+			</String>
+			<Text id="FailureDebrief">
+
+				"That's what I get for counting on you!
+				
+				"You're demoted back to Privateer! Now get out of my sight!"
+
+			</Text>
+			<String id="SuccessDebrief">
+				"Outstanding mission! Now we can put those Einsteins back to work!"
+			</String>
+
+			<Text id="textSummary">
+
+				Your mission is to protect an Aurochs transport carrying an extraction team
+				to rescue the weapons designers.
+
+			</Text>
+		</Language>
+	</MissionType>
+
+<!-- STATION TYPES -->
+
+	<StationType UNID="&HS_stRogueBaseRescue;"
+			name=				"Rogue Fleet settlement"
+			sovereign=			"&HS_svRogueFleet;"
+			abandonedScreen=	"Main"
+			dockingPorts=		"8"
+
+			multiHull=			"true"
+			armorID=			"&HS_itP120HexphaseArmor;"
+			maxHitPoints=		"250"
+			hitPoints=			"0"
+			regen=				"6"
+			shipRegen=			"6"
+			fireRateAdj=		"20"
+			ejectaType=			"&CORE_vtWreckEjecta;"
+
+			attributes=			"enemy, envAir, envAvoidsFire, human, populated, rogue"
+			>
+
+		<Image			imageID="&HS_rsStations8;" imageX="128" imageY="896" imageWidth="128" imageHeight="128"/>
+
+		<Devices>
+			<Device deviceID="&HS_itStarCannon;"	omnidirectional="true"/>
+		</Devices>
+
+		<Ships>
+			<Ship		count="1"		class="&HS_scCenturionXRogue;" orders="patrol" patrolDist="20"/>
+			<Ship		count="1d2+1"	class="&HS_scCenturionRogue;" orders="patrol" patrolDist="20"/>
+			<Ship		count="1d2"		class="&HS_scCenturionRogue;" orders="guard"/>
+		</Ships>
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descDefault">
+						<Actions>
+							<Action name="Undock" cancel="1" default="1" key="U">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<Language>
+			<Text id="descDefault">
+
+				Smoke, debris, and blast marks remain after a ferocious battle.
+				No one is left alive.
+
+			</Text>
+		</Language>
+	</StationType>
+
+</TranscendenceModule>

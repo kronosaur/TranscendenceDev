@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- TABLES -->
+	
+	<SystemPartTable unid="&GLXY_tbOvoidTables;">
+		
+		<!-- ASTEROID FIELDS -->
+
+		<OvoidAsteroidBelt12>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt12Pattern">
+					<_AsteroidSizeA		table="OvoidSizeA"/>
+					<_AsteroidSizeB		table="OvoidSizeB"/>
+					<_AsteroidSizeC		table="OvoidSizeC"/>
+					<_AsteroidSizeD		table="OvoidSizeD"/>
+
+					<_Location			table="OvoidLabel"/>
+				</_Morphology>
+			</Lookup>
+		</OvoidAsteroidBelt12>
+
+		<OvoidAsteroidBelt25>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt25Pattern">
+					<_AsteroidSizeA		table="OvoidSizeA"/>
+					<_AsteroidSizeB		table="OvoidSizeB"/>
+					<_AsteroidSizeC		table="OvoidSizeC"/>
+					<_AsteroidSizeD		table="OvoidSizeD"/>
+
+					<_Location			table="OvoidLabel"/>
+				</_Morphology>
+			</Lookup>
+		</OvoidAsteroidBelt25>
+
+		<OvoidAsteroidBelt50>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt50Pattern">
+					<_AsteroidSizeA		table="OvoidSizeA"/>
+					<_AsteroidSizeB		table="OvoidSizeB"/>
+					<_AsteroidSizeC		table="OvoidSizeC"/>
+					<_AsteroidSizeD		table="OvoidSizeD"/>
+
+					<_Location			table="OvoidLabel"/>
+				</_Morphology>
+			</Lookup>
+		</OvoidAsteroidBelt50>
+
+		<OvoidAsteroidBelt100>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt100Pattern">
+					<_AsteroidSizeA		table="OvoidSizeA"/>
+					<_AsteroidSizeB		table="OvoidSizeB"/>
+					<_AsteroidSizeC		table="OvoidSizeC"/>
+					<_AsteroidSizeD		table="OvoidSizeD"/>
+
+					<_Location			table="OvoidLabel"/>
+				</_Morphology>
+			</Lookup>
+		</OvoidAsteroidBelt100>
+
+		<OvoidAsteroidBelt200>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt200Pattern">
+					<_AsteroidSizeA		table="OvoidSizeA"/>
+					<_AsteroidSizeB		table="OvoidSizeB"/>
+					<_AsteroidSizeC		table="OvoidSizeC"/>
+					<_AsteroidSizeD		table="OvoidSizeD"/>
+
+					<_Location			table="OvoidLabel"/>
+				</_Morphology>
+			</Lookup>
+		</OvoidAsteroidBelt200>
+
+		<!-- COMPONENTS -->
+
+		<OvoidSizeA>
+			<Table>
+				<Station chance="80" type="&GLXY_stOvoidAsteroidSizeA1;"/>
+				<Station chance="15" type="&GLXY_stOvoidAsteroidSizeA2;"/>
+				<Station chance="5" type="&GLXY_stOvoidAsteroidSizeA3;"/>
+			</Table>
+		</OvoidSizeA>
+
+		<OvoidSizeB>
+			<Table>
+				<Station chance="70" type="&GLXY_stOvoidAsteroidSizeB1;"/>
+				<Station chance="30" type="&GLXY_stOvoidAsteroidSizeB2;"/>
+			</Table>
+		</OvoidSizeB>
+
+		<OvoidSizeC>
+			<Station type="&GLXY_stOvoidAsteroidSizeC;"/>
+		</OvoidSizeC>
+
+		<OvoidSizeD>
+			<Station type="&GLXY_stOvoidAsteroidSizeD;"/>
+		</OvoidSizeD>
+
+	</SystemPartTable>
+	
+<!-- ASTEROIDS & PLANETS -->
+
+	<!-- Size A Ovoid Asteroid -->
+
+	<StationType UNID="&GLXY_stOvoidAsteroidSizeA1;"
+		name=				"ovoid asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
+		inherit=			"&GLXY_baOvoidAsteroid;"
+
+		scale=				"world"
+		size=				"1"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="0" imageY="0" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="0" imageY="32" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="0" imageY="64" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="0" imageY="96" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="0" imageY="128" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="0" imageY="160" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="0" imageY="192" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="0" imageY="224" imageWidth="32" imageHeight="32"/>
+			
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="32" imageY="0" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="32" imageY="32" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="32" imageY="64" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="32" imageY="96" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="32" imageY="128" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="32" imageY="160" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="32" imageY="192" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="32" imageY="224" imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="90"/>
+				<Lookup chance="10" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<StationType UNID="&GLXY_stOvoidAsteroidSizeA2;"
+		name=				"ovoid asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
+		inherit=			"&GLXY_baOvoidAsteroid;"
+
+		scale=				"world"
+		size=				"4"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="64" imageY="0" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="64" imageY="64" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="64" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="64" imageY="192" imageWidth="64" imageHeight="64"/>
+			
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="128" imageY="0" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="128" imageY="64" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="128" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="128" imageY="192" imageWidth="64" imageHeight="64"/>
+				
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="192" imageY="0" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="192" imageY="64" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="192" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="192" imageY="192" imageWidth="64" imageHeight="64"/>
+				
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="256" imageY="0" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="256" imageY="64" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="256" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&GLXY_rsOvoidAsteroids;" imageX="256" imageY="192" imageWidth="64" imageHeight="64"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="90"/>
+				<Lookup chance="10" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<StationType UNID="&GLXY_stOvoidAsteroidSizeA3;"
+		name=				"ovoid asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
+		inherit=			"&GLXY_baOvoidAsteroid;"
+
+		scale=				"world"
+		size=				"12"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="0"   imageY="256"   imageWidth="88" imageHeight="88"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="0"   imageY="344"   imageWidth="88" imageHeight="88"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="0"   imageY="432"   imageWidth="88" imageHeight="88"/>
+		
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="88"   imageY="256"   imageWidth="88" imageHeight="88"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="88"   imageY="344"   imageWidth="88" imageHeight="88"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="88"   imageY="432"   imageWidth="88" imageHeight="88"/>
+			
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="176"   imageY="256"   imageWidth="88" imageHeight="88"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="176"   imageY="344"   imageWidth="88" imageHeight="88"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="176"   imageY="432"   imageWidth="88" imageHeight="88"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="90"/>
+				<Lookup chance="10" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size B Ovoid Asteroid -->
+
+	<StationType UNID="&GLXY_stOvoidAsteroidSizeB1;"
+		name=				"ovoid asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
+		inherit=			"&GLXY_baOvoidAsteroid;"
+
+		scale=				"world"
+		size=				"35"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="264"  imageY="256"   imageWidth="108" imageHeight="108"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="264"  imageY="364"   imageWidth="108" imageHeight="108"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="264"  imageY="472"   imageWidth="108" imageHeight="108"/>
+		
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="372"  imageY="256"   imageWidth="108" imageHeight="108"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="372"  imageY="364"   imageWidth="108" imageHeight="108"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="372"  imageY="472"   imageWidth="108" imageHeight="108"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="90"/>
+				<Lookup chance="10" count="1d6" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<StationType UNID="&GLXY_stOvoidAsteroidSizeB2;"
+		name=				"ovoid asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
+
+		scale=				"world"
+		size=				"70"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="320"  imageY="0"   imageWidth="128" imageHeight="128"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="320"  imageY="128"   imageWidth="128" imageHeight="128"/>
+		
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="448"  imageY="0"   imageWidth="128" imageHeight="128"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="448"  imageY="128"   imageWidth="128" imageHeight="128"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="90"/>
+				<Lookup chance="10" count="1d6" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size C Ovoid Asteroid -->
+
+	<StationType UNID="&GLXY_stOvoidAsteroidSizeC;"
+		name=				"ovoid asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
+
+		scale=				"world"
+		size=				"215"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="0"  imageY="580"   imageWidth="156" imageHeight="156"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="156"  imageY="580"   imageWidth="156" imageHeight="156"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="312"  imageY="580"   imageWidth="156" imageHeight="156"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="468"  imageY="580"   imageWidth="156" imageHeight="156"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="90"/>
+				<Lookup chance="10" count="1d8" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size D Ovoid Asteroid -->
+
+	<StationType UNID="&GLXY_stOvoidAsteroidSizeD;"
+		name=				"ovoid asteroid"
+		attributes=			"asteroid, generic, inner, lifeZone, outer, ovoid"
+
+		scale=				"world"
+		size=				"320"
+		anonymous=			"true"
+
+		ejectaType=			"&GLXY_vtIceAsteroidEjecta;"
+		>
+		<ImageVariants>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="0"    imageY="736"   imageWidth="180" imageHeight="180"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="180"  imageY="736"   imageWidth="180" imageHeight="180"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="360"  imageY="736"   imageWidth="180" imageHeight="180"/>
+			
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="0"    imageY="916"   imageWidth="180" imageHeight="180"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="180"  imageY="916"   imageWidth="180" imageHeight="180"/>
+			<Image	imageID="&GLXY_rsOvoidAsteroids;" imageX="360"  imageY="916"   imageWidth="180" imageHeight="180"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="90"/>
+				<Lookup chance="10" count="1d10" table="&GLXY_tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+</TranscendenceModule>

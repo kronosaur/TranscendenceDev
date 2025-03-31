@@ -1,0 +1,2273 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- EJECTA -->
+
+	<!-- Wreck Ejecta -->
+
+	<ItemType UNID="&CORE_vtWreckEjecta;"
+			name=				"wreck ejecta"
+			attributes=			"ejecta"
+			virtual=			"true"
+			>
+
+		<Weapon
+				type=				"missile"
+
+				damage=				"kinetic:1d8+1; momentum1; WMD3"
+				missileSpeed=		"20-30"
+				lifetime=			"25"
+				>
+
+			<Effect>
+				<Image imageID="&CORE_rsMissiles;" imageX="0" imageY="112" imageWidth="16" imageHeight="16" imageFrameCount="8" imageTicksPerFrame="2" randomStartFrame="true" />
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+<!-- KINETIC EXPLOSIONS -->
+    
+	<!-- Kinetic Explosion I -->
+
+	<ItemType UNID="&CORE_vtKineticExplosion1;"
+			name=				"kinetic explosion 1"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"1"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+			
+			<Fragment
+					count=			"1d6"
+					type=			"missile"
+
+					damage=			"kinetic:1d6; momentum1; WMD1"
+					missileSpeed=	"25-35"
+					lifetime=		"8-16"
+                    
+                    effect=         "&CORE_efKineticFragmentDefault;"
+					>
+			</Fragment>
+
+			<Fragment
+					count=			"1d6"
+					type=			"missile"
+
+					damage=			"kinetic:1d6; momentum1; WMD1"
+					missileSpeed=	"15-25"
+					lifetime=		"12-20"
+                    
+                    effect=         "&CORE_efKineticFragmentDefault;"
+					>
+			</Fragment>
+			
+			<Effect effect="&CORE_efKineticExplosion;">
+                <Data>
+                    <Field id="explosionSize">1</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Kinetic Explosion II -->
+
+	<ItemType UNID="&CORE_vtKineticExplosion2;"
+			name=				"kinetic explosion 2"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"2"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+			
+			<Fragment
+					count=			"2d6"
+					type=			"missile"
+
+					damage=			"kinetic:2d6; momentum1; WMD1"
+					missileSpeed=	"25-35"
+					lifetime=		"8-16"
+                    
+                    effect=         "&CORE_efKineticFragmentDefault;"
+					>
+			</Fragment>
+
+			<Fragment
+					count=			"2d6"
+					type=			"missile"
+
+					damage=			"kinetic:2d12; momentum2; WMD2"
+					missileSpeed=	"15-25"
+					lifetime=		"12-20"
+                    
+                    effect=         "&CORE_efKineticFragmentDefault;"
+					>
+			</Fragment>
+
+			<Effect effect="&CORE_efKineticExplosion;">
+                <Data>
+                    <Field id="explosionSize">2</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Kinetic Explosion III -->
+
+	<ItemType UNID="&CORE_vtKineticExplosion3;"
+			name=				"kinetic explosion 3"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"3"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"4d6"
+					type=			"missile"
+
+					damage=			"kinetic:2d6; momentum1; WMD1"
+					missileSpeed=	"25-35"
+					lifetime=		"8-16"
+                    
+                    effect=         "&CORE_efKineticFragmentDefault;"
+					>
+			</Fragment>
+
+			<Fragment
+					count=			"4d6"
+					type=			"missile"
+
+					damage=			"kinetic:2d12; momentum2; WMD2"
+					missileSpeed=	"15-25"
+					lifetime=		"12-20"
+                    
+                    effect=         "&CORE_efKineticFragmentDefault;"
+					>
+			</Fragment>
+
+			<Effect effect="&CORE_efKineticExplosion;">
+                <Data>
+                    <Field id="explosionSize">3</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Kinetic Explosion IV -->
+
+	<ItemType UNID="&CORE_vtKineticExplosion4;"
+			name=				"kinetic explosion 4"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"4"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"8d6"
+					type=			"missile"
+
+					damage=			"kinetic:2d6; momentum1; WMD1"
+					missileSpeed=	"25-35"
+					lifetime=		"8-16"
+                    
+                    effect=         "&CORE_efKineticFragmentDefault;"
+					>
+			</Fragment>
+
+			<Fragment
+					count=			"6d6"
+					type=			"missile"
+
+					damage=			"kinetic:2d12; momentum2; WMD2"
+					missileSpeed=	"25-40"
+					lifetime=		"12-20"
+                    
+                    effect=         "&CORE_efKineticFragmentDefault;"
+					>
+			</Fragment>
+
+			<Effect effect="&CORE_efKineticExplosion;">
+                <Data>
+                    <Field id="explosionSize">4</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Kinetic Explosion V -->
+
+	<ItemType UNID="&CORE_vtKineticExplosion5;"
+			name=				"kinetic explosion 5"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"5"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"13d6"
+					type=			"missile"
+
+					damage=			"kinetic:2d6; momentum1; WMD1"
+					missileSpeed=	"25-35"
+					lifetime=		"8-16"
+                    
+                    effect=         "&CORE_efKineticFragmentDefault;"
+					>
+			</Fragment>
+
+			<Fragment
+					count=			"8d6"
+					type=			"missile"
+
+					damage=			"kinetic:2d12; momentum2; WMD2"
+					missileSpeed=	"25-40"
+					lifetime=		"12-20"
+                    
+                    effect=         "&CORE_efKineticFragmentDefault;"
+					>
+			</Fragment>
+
+			<Effect effect="&CORE_efKineticExplosion;">
+                <Data>
+                    <Field id="explosionSize">5</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Blast Explosion I -->
+
+	<ItemType UNID="&CORE_vtBlastExplosion1;"
+			name=				"blast explosion 1"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"4"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+			
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"blast:1d12"
+					minRadius=		"1"
+					maxRadius=		"3"
+					/>
+
+			<Fragment
+					count=			"1d6+1"
+					type=			"missile"
+
+					damage=			"blast:3d12; momentum1; WMD2"
+					missileSpeed=	"15-25"
+					lifetime=		"12-20"
+                    
+                    effect=         "&CORE_efBlastFragmentDefault;"
+					>
+			</Fragment>
+
+			<Effect effect="&CORE_efBlastExplosion;">
+                <Data>
+                    <Field id="explosionSize">1</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Blast Explosion II -->
+
+	<ItemType UNID="&CORE_vtBlastExplosion2;"
+			name=				"blast explosion 2"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"5"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"blast:6d12"
+					minRadius=		"1"
+					maxRadius=		"4"
+					/>
+
+			<Fragment
+					count=			"3d6+1"
+					type=			"missile"
+
+					damage=			"blast:3d12; momentum1; WMD2"
+					missileSpeed=	"15-25"
+					lifetime=		"12-20"
+                    
+                    effect=         "&CORE_efBlastFragmentDefault;"
+					>
+			</Fragment>
+
+			<Effect effect="&CORE_efBlastExplosion;">
+                <Data>
+                    <Field id="explosionSize">2</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Blast Explosion III -->
+
+	<ItemType UNID="&CORE_vtBlastExplosion3;"
+			name=				"blast explosion 3"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"6"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"blast:13d12"
+					minRadius=		"2"
+					maxRadius=		"6"
+					/>
+
+			<Fragment
+					count=			"7d6"
+					type=			"missile"
+
+					damage=			"blast:3d12; momentum1; WMD2"
+					missileSpeed=	"15-25"
+					lifetime=		"12-20"
+                    
+                    effect=         "&CORE_efBlastFragmentDefault;"
+					>
+			</Fragment>
+
+			<Effect effect="&CORE_efBlastExplosion;">
+                <Data>
+                    <Field id="explosionSize">3</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Blast Explosion IV -->
+
+	<ItemType UNID="&CORE_vtBlastExplosion4;"
+			name=				"blast explosion 4"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"7"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"blast:20d12"
+					minRadius=		"2"
+					maxRadius=		"8"
+					/>
+
+			<Fragment
+					count=			"10d6"
+					type=			"missile"
+
+					damage=			"blast:3d12; momentum2; WMD3"
+					missileSpeed=	"15-25"
+					lifetime=		"12-20"
+                    
+                    effect=         "&CORE_efBlastFragmentDefault;"
+					>
+			</Fragment>
+
+			<Effect effect="&CORE_efBlastExplosion;">
+                <Data>
+                    <Field id="explosionSize">4</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Blast Explosion V -->
+
+	<ItemType UNID="&CORE_vtBlastExplosion5;"
+			name=				"blast explosion 5"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"8"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"blast:30d12"
+					minRadius=		"2"
+					maxRadius=		"10"
+					/>
+
+			<Fragment
+					count=			"15d6"
+					type=			"missile"
+
+					damage=			"blast:3d12; momentum2; WMD3"
+					missileSpeed=	"15-25"
+					lifetime=		"12-20"
+                    
+                    effect=         "&CORE_efBlastFragmentDefault;"
+					>
+			</Fragment>
+
+			<Effect effect="&CORE_efBlastExplosion;">
+                <Data>
+                    <Field id="explosionSize">5</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Radioactive Explosion I -->
+
+	<ItemType UNID="&CORE_vtRadioactiveExplosion1;"
+			name=				"radioactive explosion 1"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"5"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"blast:3d12; radiation:1"
+					minRadius=		"1"
+					maxRadius=		"5"
+					
+					hitEffect=		"&CORE_efRadioactiveHitEffect;"
+					/>
+			
+			<Fragment
+					count=			"5d6+2"
+					type=			"missile"
+
+					damage=			"blast:2d12; radiation:2; momentum1; WMD:3"
+					missileSpeed=	"15-25"
+					lifetime=		"12-20"
+					
+					hitEffect=		"&CORE_efRadioactiveHitEffect;"
+					>
+
+				<Effect>
+					<MoltenBolt
+							width=				"4"
+							length=				"15"
+							growth=				"2"
+							primaryColor=		"#c0ffc0"
+							secondaryColor=		"#008000"
+						/>
+
+					<SmokeTrail
+							spread=			"4-6"
+							particleLifetime="16"
+							emitDuration=	"80"
+							emitRate=		"16-20"
+							emitSpeed=		"15-18"
+							>
+						<ParticleEffect>
+							<Particle
+									style=			"plain"
+									maxWidth=		"3-7"
+									primaryColor=	"#80ff80"
+									secondaryColor=	"#004000"
+									/>
+						</ParticleEffect>
+					</SmokeTrail>
+				</Effect>
+			</Fragment>
+
+			<Effect>
+				<Orb	style=			"fireblast"
+						animate=		"explode"
+						radius=			"110"
+						lifetime=		"43"
+						intensity=		"100"
+						distortion=		"50"
+						detail=			"40"
+					
+						blendMode=		"normal"
+						primaryColor=	"#00ff2b"
+						secondaryColor=	"#008015"
+						/>
+			
+				<Orb	style=			"smooth"
+						animate=		"fade"
+						radius=			"50"
+						lifetime=		"23"
+						intensity=		"60"
+					
+						blendMode=		"screen"
+						primaryColor=	"#fffff0"
+						secondaryColor=	"#ccff99"
+						/>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Radioactive Explosion II -->
+
+	<ItemType UNID="&CORE_vtRadioactiveExplosion2;"
+			name=				"radioactive explosion 2"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"6"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+			
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"blast:4d12; radiation:2"
+					minRadius=		"2"
+					maxRadius=		"7"
+					
+					hitEffect=		"&CORE_efRadioactiveHitEffect;"
+					/>
+
+			<Fragment
+					count=			"12d6"
+					type=			"missile"
+
+					damage=			"blast:2d12+1; radiation:3; momentum:1; WMD:2"
+					missileSpeed=	"15-25"
+					lifetime=		"12-20"
+					
+					hitEffect=		"&CORE_efRadioactiveHitEffect;"
+					>
+
+				<Effect>
+					<MoltenBolt
+							width=				"4"
+							length=				"15"
+							growth=				"2"
+							primaryColor=		"#c0ffc0"
+							secondaryColor=		"#008000"
+						/>
+
+					<SmokeTrail
+							spread=			"4-6"
+							particleLifetime="16"
+							emitDuration=	"80"
+							emitRate=		"16-20"
+							emitSpeed=		"15-18"
+							>
+						<ParticleEffect>
+							<Particle
+									style=			"plain"
+									maxWidth=		"3-7"
+									primaryColor=	"#80ff80"
+									secondaryColor=	"#004000"
+									/>
+						</ParticleEffect>
+					</SmokeTrail>
+				</Effect>
+			</Fragment>
+
+			<Effect>
+				<Orb	style=			"fireblast"
+						animate=		"explode"
+						radius=			"160"
+						lifetime=		"65"
+						intensity=		"100"
+						distortion=		"50"
+						detail=			"40"
+					
+						blendMode=		"normal"
+						primaryColor=	"#00ff2b"
+						secondaryColor=	"#008015"
+						/>
+			
+				<Orb	style=			"smooth"
+						animate=		"fade"
+						radius=			"80"
+						lifetime=		"30"
+						intensity=		"60"
+					
+						blendMode=		"screen"
+						primaryColor=	"#fffff0"
+						secondaryColor=	"#ccff99"
+						/>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Thermo Explosion I -->
+
+	<ItemType UNID="&CORE_vtThermoExplosion1;"
+			name=				"thermo explosion 1"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"7"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"thermo:1d12; momentum1; WMD3"
+					minRadius=		"1"
+					maxRadius=		"3"
+					/>
+
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+
+					damage=			"thermo:1d3; momentum3; WMD1"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"13"
+					>
+
+				<Effect>
+					<Shockwave
+							fadeStart=	"70"
+							blendMode=	"screen"
+							>
+						<Image imageID=				"&CORE_rsShockwave3;"
+								imageX=				"0"
+								imageY=				"0"
+								imageWidth=			"512"
+								imageHeight=		"128"/>
+					</Shockwave>
+				</Effect>
+			</Fragment>
+
+			<Fragment
+					count=			"1d8"
+					type=			"missile"
+
+					damage=			"thermo:1d12; momentum2; WMD3"
+					missileSpeed=	"15-27"
+					lifetime=		"12-20"
+                    
+                    effect=         "&CORE_efThermoShellDefault;"
+					>
+			</Fragment>
+
+			<Effect effect="&CORE_efThermoExplosion;">
+                <Data>
+                    <Field id="explosionSize">1</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Thermo Explosion II -->
+
+	<ItemType UNID="&CORE_vtThermoExplosion2;"
+			name=				"thermo explosion 2"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"8"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"thermo:5d12; momentum1; WMD3"
+					minRadius=		"1"
+					maxRadius=		"5"
+					/>
+
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+
+					damage=			"thermo:1d8; momentum3; WMD2"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"20"
+					>
+
+				<Effect>
+					<Shockwave
+							fadeStart=	"70"
+							blendMode=	"screen"
+							>
+						<Image imageID=				"&CORE_rsShockwave3;"
+								imageX=				"0"
+								imageY=				"0"
+								imageWidth=			"512"
+								imageHeight=		"128"/>
+					</Shockwave>
+				</Effect>
+			</Fragment>
+
+			<Fragment
+					count=			"2d8"
+					type=			"missile"
+
+					damage=			"thermo:1d12; momentum2; WMD3"
+					missileSpeed=	"15-27"
+					lifetime=		"18-24"
+                    
+                    effect=         "&CORE_efThermoShellDefault;"
+					>
+			</Fragment>
+
+			<Effect effect="&CORE_efThermoExplosion;">
+                <Data>
+                    <Field id="explosionSize">2</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Thermo Explosion III -->
+
+	<ItemType UNID="&CORE_vtThermoExplosion3;"
+			name=				"thermo explosion 3"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"9"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"thermo:12d12; momentum1; WMD3"
+					minRadius=		"2"
+					maxRadius=		"7"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+
+					damage=			"thermo:1d12; momentum3; WMD2"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"29"
+					>
+
+				<Effect>
+					<Shockwave
+							fadeStart=	"70"
+							blendMode=	"screen"
+							>
+						<Image imageID=				"&CORE_rsShockwave3;"
+								imageX=				"0"
+								imageY=				"0"
+								imageWidth=			"512"
+								imageHeight=		"128"/>
+					</Shockwave>
+				</Effect>
+			</Fragment>
+
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+					initialDelay=	"6" 
+
+					damage=			"thermo:1d6; momentum2; WMD1"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"22"
+					>
+
+				<Effect>
+					<Shockwave
+							fadeStart=	"70"
+							blendMode=	"screen"
+							>
+						<Image imageID=				"&CORE_rsShockwave3;"
+								imageX=				"0"
+								imageY=				"0"
+								imageWidth=			"512"
+								imageHeight=		"128"/>
+					</Shockwave>
+				</Effect>
+			</Fragment>
+
+			<Fragment
+					count=			"4d8"
+					type=			"missile"
+
+					damage=			"thermo:1d12; momentum2; WMD3"
+					missileSpeed=	"15-27"
+					lifetime=		"18-24"
+                    
+                    effect=         "&CORE_efThermoShellDefault;"
+					>
+			</Fragment>
+
+			<Effect effect="&CORE_efThermoExplosion;">
+                <Data>
+                    <Field id="explosionSize">3</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Thermo Explosion IV -->
+
+	<ItemType UNID="&CORE_vtThermoExplosion4;"
+			name=				"thermo explosion 4"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"10"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"thermo:17d12; momentum1; WMD3"
+					minRadius=		"2"
+					maxRadius=		"9"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+
+					damage=			"thermo:1d18; momentum3; WMD2"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"36"
+					>
+
+				<Effect>
+					<Shockwave
+							fadeStart=	"70"
+							blendMode=	"screen"
+							>
+						<Image imageID=				"&CORE_rsShockwave3;"
+								imageX=				"0"
+								imageY=				"0"
+								imageWidth=			"512"
+								imageHeight=		"128"/>
+					</Shockwave>
+				</Effect>
+			</Fragment>
+
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+					initialDelay=	"6"
+
+					damage=			"thermo:1d9; momentum2; WMD1"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"20"
+					>
+
+				<Effect>
+					<Shockwave
+							fadeStart=	"70"
+							blendMode=	"screen"
+							>
+						<Image imageID=				"&CORE_rsShockwave2;"
+								imageX=				"0"
+								imageY=				"0"
+								imageWidth=			"512"
+								imageHeight=		"128"/>
+					</Shockwave>
+				</Effect>
+			</Fragment>
+
+			<Fragment
+					count=			"6d8"
+					type=			"missile"
+
+					damage=			"thermo:1d12; momentum2; WMD3"
+					missileSpeed=	"15-27"
+					lifetime=		"18-24"
+                    
+                    effect=         "&CORE_efThermoShellDefault;"
+					>
+			</Fragment>
+
+			<Effect effect="&CORE_efThermoExplosion;">
+                <Data>
+                    <Field id="explosionSize">4</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<ItemType UNID="&CORE_vtThermoExplosion5;"
+			name=				"thermo explosion 5"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"11"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"thermo:27d12; momentum1; WMD3"
+					minRadius=		"3"
+					maxRadius=		"11"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+
+					damage=			"thermo:1d28; momentum3; WMD2"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"46"
+					>
+
+				<Effect>
+					<Shockwave
+							fadeStart=	"70"
+							blendMode=	"screen"
+							>
+						<Image imageID=				"&CORE_rsShockwave3;"
+								imageX=				"0"
+								imageY=				"0"
+								imageWidth=			"512"
+								imageHeight=		"128"/>
+					</Shockwave>
+				</Effect>
+			</Fragment>
+
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+					initialDelay=	"6"
+
+					damage=			"thermo:1d14; momentum2; WMD1"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"30"
+					>
+
+				<Effect>
+					<Shockwave
+							fadeStart=	"70"
+							blendMode=	"screen"
+							>
+						<Image imageID=				"&CORE_rsShockwave2;"
+								imageX=				"0"
+								imageY=				"0"
+								imageWidth=			"512"
+								imageHeight=		"128"/>
+					</Shockwave>
+				</Effect>
+			</Fragment>
+
+			<Fragment
+					count=			"10d8"
+					type=			"missile"
+
+					damage=			"thermo:1d12; momentum2; WMD3"
+					missileSpeed=	"15-27"
+					lifetime=		"18-24"
+                    
+                    effect=         "&CORE_efThermoShellDefault;"
+					>
+			</Fragment>
+
+			<Effect effect="&CORE_efThermoExplosion;">
+                <Data>
+                    <Field id="explosionSize">5</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Plasma Explosion I -->
+
+	<ItemType UNID="&CORE_vtPlasmaExplosion1;"
+			name=				"plasma explosion 1"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"10"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"plasma:2d24; WMD:4"
+					minRadius=		"1"
+					maxRadius=		"4"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"particles"
+					damage=			"plasma:200; WMD:3"
+					>
+				
+				<ParticleSystem
+						style=				"radiate"
+						emitLifetime=		"1"
+						emitRate=			"265"
+						emitSpeed=			"15-40"
+					
+						particleLifetime=	"15"
+						particleEffect=		"&CORE_efPlasmaParticleDefault;"
+						>
+				</ParticleSystem>
+			</Fragment>
+			
+			<Effect effect="&CORE_efPlasmaExplosion;">
+                <Data>
+                    <Field id="explosionSize">1</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Plasma Explosion II -->
+
+	<ItemType UNID="&CORE_vtPlasmaExplosion2;"
+			name=				"plasma explosion 2"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"11"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"plasma:13d24; WMD:4"
+					minRadius=		"1"
+					maxRadius=		"6"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"particles"
+					damage=			"plasma:1200; WMD:3"
+					>
+				
+				<ParticleSystem
+						style=				"radiate"
+						emitLifetime=		"1"
+						emitRate=			"600"
+						emitSpeed=			"15-40"
+					
+						particleLifetime=	"22"
+						particleEffect=		"&CORE_efPlasmaParticleDefault;"
+						>
+				</ParticleSystem>
+			</Fragment>
+			
+			<Effect effect="&CORE_efPlasmaExplosion;">
+                <Data>
+                    <Field id="explosionSize">2</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Plasma Explosion III -->
+
+	<ItemType UNID="&CORE_vtPlasmaExplosion3;"
+			name=				"plasma explosion 3"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"12"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"plasma:12d60; WMD:4"
+					minRadius=		"2"
+					maxRadius=		"10"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"particles"
+					damage=			"plasma:2600; WMD:3"
+					>
+				
+				<ParticleSystem
+						style=				"radiate"
+						emitLifetime=		"1"
+						emitRate=			"600"
+						emitSpeed=			"15-35"
+					
+						particleLifetime=	"33"
+						particleEffect=		"&CORE_efPlasmaParticleDefault;"
+						>
+				</ParticleSystem>
+			</Fragment>
+			
+			<Effect effect="&CORE_efPlasmaExplosion;">
+                <Data>
+                    <Field id="explosionSize">3</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Plasma Explosion IV -->
+
+	<ItemType UNID="&CORE_vtPlasmaExplosion4;"
+			name=				"plasma explosion 4"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"13"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"plasma:18d60; WMD:4"
+					minRadius=		"3"
+					maxRadius=		"10"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"particles"
+					damage=			"plasma:3800; WMD:3"
+					>
+				
+				<ParticleSystem
+						style=				"radiate"
+						emitLifetime=		"1"
+						emitRate=			"600"
+						emitSpeed=			"15-35"
+					
+						particleLifetime=	"41"
+						particleEffect=		"&CORE_efPlasmaParticleDefault;"
+						>
+				</ParticleSystem>
+			</Fragment>
+			
+			<Effect effect="&CORE_efPlasmaExplosion;">
+                <Data>
+                    <Field id="explosionSize">4</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Plasma Explosion V -->
+
+	<ItemType UNID="&CORE_vtPlasmaExplosion5;"
+			name=				"plasma explosion 5"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"14"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"plasma:24d60; WMD:4"
+					minRadius=		"3"
+					maxRadius=		"13"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"particles"
+					damage=			"plasma:5800; WMD:3"
+					>
+				
+				<ParticleSystem
+						style=				"radiate"
+						emitLifetime=		"1"
+						emitRate=			"600"
+						emitSpeed=			"15-35"
+					
+						particleLifetime=	"52"
+						particleEffect=		"&CORE_efPlasmaParticleDefault;"
+						>
+				</ParticleSystem>
+			</Fragment>
+			
+			<Effect effect="&CORE_efPlasmaExplosion;">
+                <Data>
+                    <Field id="explosionSize">5</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Antimatter Explosion I -->
+
+	<ItemType UNID="&CORE_vtAntimatterExplosion1;"
+			name=				"antimatter explosion 1"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"13"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"antimatter:1d60; WMD:4"
+					minRadius=		"1"
+					maxRadius=		"4"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+
+					damage=			"antimatter:1d8; momentum:2; WMD:2"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"21"
+					>
+
+				<Effect>
+					<Shockwave
+							style=			"cloud"
+							width=			"120"
+							intensity=		"20"
+							fadeStart=		"70"
+							
+							blendMode=		"screen"
+							primaryColor=	"#fbffcc"
+							secondaryColor=	"#ffe566"
+						/>
+				</Effect>
+			</Fragment>
+			
+			<Effect effect="&CORE_efAntimatterExplosion;">
+                <Data>
+                    <Field id="explosionSize">1</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Antimatter Explosion II -->
+
+	<ItemType UNID="&CORE_vtAntimatterExplosion2;"
+			name=				"antimatter explosion 2"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"14"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"antimatter:6d60; WMD:4"
+					minRadius=		"2"
+					maxRadius=		"6"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+
+					damage=			"antimatter:2d23; momentum:2; WMD:2"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"31"
+					>
+
+				<Effect>
+					<Shockwave
+							style=			"cloud"
+							width=			"180"
+							intensity=		"20"
+							fadeStart=		"70"
+							
+							blendMode=		"screen"
+							primaryColor=	"#fbffcc"
+							secondaryColor=	"#ffe566"
+						/>
+				</Effect>
+			</Fragment>
+			
+			<Effect effect="&CORE_efAntimatterExplosion;">
+                <Data>
+                    <Field id="explosionSize">2</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Antimatter Explosion III -->
+
+	<ItemType UNID="&CORE_vtAntimatterExplosion3;"
+			name=				"antimatter explosion 3"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"15"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"antimatter:12d60; WMD:4"
+					minRadius=		"2"
+					maxRadius=		"10"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+
+					damage=			"antimatter:5d20; momentum:2; WMD:2"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"47"
+					>
+
+				<Effect>
+					<Shockwave
+							style=			"cloud"
+							width=			"180"
+							intensity=		"20"
+							fadeStart=		"70"
+							
+							blendMode=		"screen"
+							primaryColor=	"#fbffcc"
+							secondaryColor=	"#ffe566"
+						/>
+				</Effect>
+			</Fragment>
+			
+			<Effect effect="&CORE_efAntimatterExplosion;">
+                <Data>
+                    <Field id="explosionSize">3</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Antimatter Explosion IV -->
+
+	<ItemType UNID="&CORE_vtAntimatterExplosion4;"
+			name=				"antimatter explosion 4"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"16"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"antimatter:18d60; WMD:4"
+					minRadius=		"3"
+					maxRadius=		"12"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+
+					damage=			"antimatter:7d20; momentum:2; WMD:2"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"57"
+					>
+
+				<Effect>
+					<Shockwave
+							style=			"cloud"
+							width=			"240"
+							intensity=		"20"
+							fadeStart=		"70"
+							
+							blendMode=		"screen"
+							primaryColor=	"#fbffcc"
+							secondaryColor=	"#ffe566"
+						/>
+				</Effect>
+			</Fragment>
+			
+			<Effect effect="&CORE_efAntimatterExplosion;">
+                <Data>
+                    <Field id="explosionSize">4</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+    
+	<!-- Antimatter Explosion V -->
+
+	<ItemType UNID="&CORE_vtAntimatterExplosion5;"
+			name=				"antimatter explosion 5"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"17"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"antimatter:28d60; WMD:4"
+					minRadius=		"4"
+					maxRadius=		"15"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+
+					damage=			"antimatter:11d20; momentum:2; WMD:2"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"57"
+					>
+
+				<Effect>
+					<Shockwave
+							style=			"cloud"
+							width=			"240"
+							intensity=		"20"
+							fadeStart=		"70"
+							
+							blendMode=		"screen"
+							primaryColor=	"#fbffcc"
+							secondaryColor=	"#ffe566"
+						/>
+				</Effect>
+			</Fragment>
+			
+			<Effect effect="&CORE_efAntimatterExplosion;">
+                <Data>
+                    <Field id="explosionSize">5</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+    
+	<!-- Graviton Explosion I -->
+
+	<ItemType UNID="&CORE_vtGravitonExplosion1;"
+			name=				"graviton explosion 1"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"16"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"graviton:2d60; WMD:4"
+					minRadius=		"1"
+					maxRadius=		"5"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+
+					damage=			"graviton:1d12; momentum:2; WMD:2"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"21"
+					>
+
+				<Effect>
+					<Shockwave
+							style=			"cloud"
+							width=			"60"
+							intensity=		"20"
+							fadeStart=		"70"
+							
+							blendMode=		"screen"
+							primaryColor=	"#ded7ff"
+							secondaryColor=	"#9580ff"
+						/>
+				</Effect>
+			</Fragment>
+			
+			<Effect effect="&CORE_efGravitonExplosion;">
+                <Data>
+                    <Field id="explosionSize">1</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Graviton Explosion II -->
+
+	<ItemType UNID="&CORE_vtGravitonExplosion2;"
+			name=				"graviton explosion 2"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"17"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"graviton:12d60; WMD:4"
+					minRadius=		"2"
+					maxRadius=		"7"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+
+					damage=			"graviton:4d23; momentum:2; WMD:2"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"31"
+					>
+
+				<Effect>
+					<Shockwave
+							style=			"cloud"
+							width=			"90"
+							intensity=		"20"
+							fadeStart=		"70"
+							
+							blendMode=		"screen"
+							primaryColor=	"#ded7ff"
+							secondaryColor=	"#9580ff"
+						/>
+				</Effect>
+			</Fragment>
+			
+			<Effect effect="&CORE_efGravitonExplosion;">
+                <Data>
+                    <Field id="explosionSize">2</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Graviton Explosion III -->
+
+	<ItemType UNID="&CORE_vtGravitonExplosion3;"
+			name=				"graviton explosion 3"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"18"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"graviton:24d60; WMD:4"
+					minRadius=		"3"
+					maxRadius=		"11"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+
+					damage=			"graviton:10d20; momentum:2; WMD:2"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"47"
+					>
+
+				<Effect>
+					<Shockwave
+							style=			"cloud"
+							width=			"90"
+							intensity=		"20"
+							fadeStart=		"70"
+							
+							blendMode=		"screen"
+							primaryColor=	"#ded7ff"
+							secondaryColor=	"#9580ff"
+						/>
+				</Effect>
+			</Fragment>
+			
+			<Effect effect="&CORE_efGravitonExplosion;">
+                <Data>
+                    <Field id="explosionSize">3</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+
+	<!-- Graviton Explosion IV -->
+
+	<ItemType UNID="&CORE_vtGravitonExplosion4;"
+			name=				"graviton explosion 4"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"19"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"graviton:36d60; WMD:4"
+					minRadius=		"3"
+					maxRadius=		"13"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+
+					damage=			"graviton:14d20; momentum:2; WMD:2"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"57"
+					>
+
+				<Effect>
+					<Shockwave
+							style=			"cloud"
+							width=			"120"
+							intensity=		"20"
+							fadeStart=		"70"
+							
+							blendMode=		"screen"
+							primaryColor=	"#ded7ff"
+							secondaryColor=	"#9580ff"
+						/>
+				</Effect>
+			</Fragment>
+			
+			<Effect effect="&CORE_efGravitonExplosion;">
+                <Data>
+                    <Field id="explosionSize">4</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+    
+	<!-- Graviton Explosion V -->
+
+	<ItemType UNID="&CORE_vtGravitonExplosion5;"
+			name=				"graviton explosion 5"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"20"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"graviton:56d60; WMD:4"
+					minRadius=		"4"
+					maxRadius=		"17"
+					/>
+			
+			<Fragment
+					count=			"1"
+					type=			"shockwave"
+
+					damage=			"graviton:22d20; momentum:2; WMD:2"
+					expansionSpeed=	"25"
+					missileSpeed=	"0"
+					lifetime=		"57"
+					>
+
+				<Effect>
+					<Shockwave
+							style=			"cloud"
+							width=			"120"
+							intensity=		"20"
+							fadeStart=		"70"
+							
+							blendMode=		"screen"
+							primaryColor=	"#ded7ff"
+							secondaryColor=	"#9580ff"
+						/>
+				</Effect>
+			</Fragment>
+			
+			<Effect effect="&CORE_efGravitonExplosion;">
+                <Data>
+                    <Field id="explosionSize">5</Field>
+                </Data>
+			</Effect>
+		</Weapon>
+	</ItemType>
+    
+<!-- SPECIAL EXPLOSIONS -->
+
+	<!-- Disintegration Explosion -->
+
+	<ItemType UNID="&CORE_vtDisintegrationExplosion;"
+			name=				"disintegration explosion"
+			attributes=			"explosion"
+			virtual=			"true"
+			  
+			level=				"14"
+			>
+
+		<Weapon
+				type=				"radius"
+				>
+
+			<Fragment
+					count=			"1"
+					type=			"radius"
+					
+					damage=			"antimatter:0;"
+					minRadius=		"2"
+					maxRadius=		"4"
+					/>
+			
+			<Effect>
+				<Disintegrate
+					/>
+			</Effect>
+		</Weapon>
+	</ItemType>
+    
+<!-- EFFECTS -->
+    
+	<EffectType UNID="&CORE_efKineticExplosion;"
+			>
+		<Effect>
+			<ParticleSystem
+					style=				"radiate"
+					emitSpeed=			"10-30"
+					particleLifetime=	"20-40"
+					XformTime=			"50"
+					>
+				<ParticleEffect>
+					<Particle
+                            instance=       "owner"
+       
+							style=			"plain"
+							minWidth=		"1"
+							maxWidth=		"2-5"
+							primaryColor=	"#ffffc0"
+							secondaryColor=	"#7e7e74"
+							/>
+				</ParticleEffect>
+                
+                <Events>
+                    <GetParameters>
+                        (block (
+                            (explosionSize (@ gData 'explosionSize))
+                            )
+                            {
+                                emitRate: (@ '(0 40 60 90 120 165) explosionSize)
+                                emitLifetime: (@ '(0 7 8 10 12 15) explosionSize)
+                                }
+                            )
+                    </GetParameters>
+                </Events>
+			</ParticleSystem>
+				
+			<Orb	style=			"fireblast"
+					animate=		"explode"
+					intensity=		"100"
+					distortion=		"60"
+					detail=			"40"
+					
+					blendMode=		"normal"
+					primaryColor=	"#ffd200"
+					secondaryColor=	"#ff2a00"
+					>
+                <Events>
+                    <GetParameters>
+                        (block (
+                            (explosionSize (@ gData 'explosionSize))
+                            )
+                            {
+                                radius: (@ '(0 60 90 120 165 210) explosionSize)
+                                lifetime: (@ '(0 24 36 48 66 84) explosionSize)
+                                }
+                            )
+                    </GetParameters>
+                </Events>
+            </Orb>
+			
+			<Orb	style=			"smooth"
+					animate=		"fade"
+					radius=			"45"
+					lifetime=		"12"
+					intensity=		"60"
+					
+					blendMode=		"screen"
+					primaryColor=	"#fffff0"
+					secondaryColor=	"#ffed99"
+					>
+                <Events>
+                    <GetParameters>
+                        (block (
+                            (explosionSize (@ gData 'explosionSize))
+                            )
+                            {
+                                radius: (@ '(0 40 60 80 110 140) explosionSize)
+                                lifetime: (@ '(0 24 36 48 66 84) explosionSize)
+                                }
+                            )
+                    </GetParameters>
+                </Events>
+            </Orb>
+        </Effect>
+    </EffectType>
+
+	<EffectType UNID="&CORE_efBlastExplosion;"
+			>
+		<Effect>
+			<ParticleSystem
+					style=				"radiate"
+					emitSpeed=			"10-30"
+					particleLifetime=	"20-40"
+					XformTime=			"50"
+					>
+				<ParticleEffect>
+					<Particle
+                            instance=       "owner"
+                            
+							style=			"flame"
+							minWidth=		"1"
+							maxWidth=		"2-5"
+							primaryColor=	"#ffffc0"
+							secondaryColor=	"#7e7e74"
+							/>
+				</ParticleEffect>
+                
+                <Events>
+                    <GetParameters>
+                        (block (
+                            (explosionSize (@ gData 'explosionSize))
+                            )
+                            {
+                                emitRate: (@ '(0 40 60 90 120 165) explosionSize)
+                                emitLifetime: (@ '(0 7 8 10 12 15) explosionSize)
+                                }
+                            )
+                    </GetParameters>
+                </Events>
+			</ParticleSystem>
+				
+			<Orb	style=			"fireblast"
+					animate=		"explode"
+					intensity=		"100"
+					distortion=		"50"
+					detail=			"40"
+					
+					blendMode=		"normal"
+					primaryColor=	"#ffd200"
+					secondaryColor=	"#ff2a00"
+					>
+                <Events>
+                    <GetParameters>
+                        (block (
+                            (explosionSize (@ gData 'explosionSize))
+                            )
+                            {
+                                radius: (@ '(0 68 103 154 188 239) explosionSize)
+                                lifetime: (@ '(0 27 41 62 75 96) explosionSize)
+                                }
+                            )
+                    </GetParameters>
+                </Events>
+            </Orb>
+			
+			<Orb	style=			"smooth"
+					animate=		"fade"
+					intensity=		"60"
+					
+					blendMode=		"screen"
+					primaryColor=	"#fffff0"
+					secondaryColor=	"#ffed99"
+					>
+                <Events>
+                    <GetParameters>
+                        (block (
+                            (explosionSize (@ gData 'explosionSize))
+                            )
+                            {
+                                radius: (@ '(0 45 69 103 125 159) explosionSize)
+                                lifetime: (@ '(0 27 41 62 75 96) explosionSize)
+                                }
+                            )
+                    </GetParameters>
+                </Events>
+            </Orb>
+		</Effect>
+    </EffectType>
+
+	<EffectType UNID="&CORE_efThermoExplosion;"
+            instance="owner"
+			>
+		<Effect>
+			<Orb	style=			"fireblast"
+					animate=		"explode"
+					intensity=		"80"
+					distortion=		"30"
+					detail=			"40"
+					
+					blendMode=		"normal"
+					primaryColor=	"#ffaa00"
+					secondaryColor=	"#d92400"
+					>
+                <Events>
+                    <GetParameters>
+                        (block (
+                            (explosionSize (@ gData 'explosionSize))
+                            )
+                            {
+                                radius: (@ '(0 78 117 175 214 273) explosionSize)
+                                lifetime: (@ '(0 31 47 70 86 109) explosionSize)
+                                }
+                            )
+                    </GetParameters>
+                </Events>
+            </Orb>
+			
+			<Orb	style=			"flare"
+					animate=		"fade"
+					intensity=		"50"
+					
+					blendMode=		"screen"
+					primaryColor=	"#fffff0"
+					secondaryColor=	"#fff2d4"
+					>
+                <Events>
+                    <GetParameters>
+                        (block (
+                            (explosionSize (@ gData 'explosionSize))
+                            )
+                            {
+                                radius: (@ '(0 78 117 175 214 273) explosionSize)
+                                lifetime: (@ '(0 31 47 70 86 109) explosionSize)
+                                }
+                            )
+                    </GetParameters>
+                </Events>
+            </Orb>
+		</Effect>
+    </EffectType>
+
+	<EffectType UNID="&CORE_efPlasmaExplosion;"
+            instance="owner"
+			>
+		<Effect>
+			<Orb	style=			"smooth"
+					animate=		"fade"
+					intensity=		"30"
+					
+					blendMode=		"screen"
+					primaryColor=	"#feff00"
+					secondaryColor=	"#ff7f00"
+					>
+                <Events>
+                    <GetParameters>
+                        (block (
+                            (explosionSize (@ gData 'explosionSize))
+                            )
+                            {
+                                radius: (@ '(0 89 133 200 244 311) explosionSize)
+                                lifetime: (@ '(0 31 47 70 86 109) explosionSize)
+                                }
+                            )
+                    </GetParameters>
+                </Events>
+            </Orb>
+        </Effect>
+    </EffectType>
+
+	<EffectType UNID="&CORE_efAntimatterExplosion;"
+			>
+		<Effect>
+			<ParticleSystem
+					style=				"radiate"
+					emitLifetime=		"1"
+					emitSpeed=			"10-30"
+					particleLifetime=	"40"
+					>
+				<ParticleEffect>
+					<Orb
+							instance=			"owner"
+						
+							style=				"smooth"
+							animate=			"fade"
+							radius=				"10"
+							intensity=			"50"
+							lifetime=			"40"
+						
+							blendMode=			"screen"
+							primaryColor=		"#fbffcc"
+							secondaryColor=		"#ffe566"
+							>
+					</Orb>
+				</ParticleEffect>
+                
+                <Events>
+                    <GetParameters>
+                        (block (
+                            (explosionSize (@ gData 'explosionSize))
+                            )
+                            {
+                                emitRate: (@ '(0 40 60 90 110 140) explosionSize)
+                                }
+                            )
+                    </GetParameters>
+                </Events>
+			</ParticleSystem>
+				
+			<Orb	instance=		"owner"
+					style=			"smooth"
+					animate=		"fade"
+					intensity=		"30"
+					
+					blendMode=		"screen"
+					primaryColor=	"#fbffcc"
+					secondaryColor=	"#ffe566"
+					>
+                <Events>
+                    <GetParameters>
+                        (block (
+                            (explosionSize (@ gData 'explosionSize))
+                            )
+                            {
+                                radius: (@ '(0 101 152 228 279 355) explosionSize)
+                                lifetime: (@ '(0 31 47 70 86 109) explosionSize)
+                                }
+                            )
+                    </GetParameters>
+                </Events>
+            </Orb>
+        </Effect>
+    </EffectType>
+
+	<EffectType UNID="&CORE_efGravitonExplosion;"
+			>
+		<Effect>
+			<ParticleSystem
+					style=				"radiate"
+					emitLifetime=		"1"
+					emitSpeed=			"10-30"
+					particleLifetime=	"40"
+					>
+				<ParticleEffect>
+					<Orb
+							instance=			"owner"
+						
+							style=				"smooth"
+							animate=			"fade"
+							radius=				"10"
+							intensity=			"50"
+							lifetime=			"40"
+						
+							blendMode=			"screen"
+							primaryColor=		"#9580ff"
+							secondaryColor=		"#2a00ff"
+							>
+					</Orb>
+				</ParticleEffect>
+                
+                <Events>
+                    <GetParameters>
+                        (block (
+                            (explosionSize (@ gData 'explosionSize))
+                            )
+                            {
+                                emitRate: (@ '(0 40 60 90 110 140) explosionSize)
+                                }
+                            )
+                    </GetParameters>
+                </Events>
+			</ParticleSystem>
+				
+			<Orb	instance=		"owner"
+					style=			"cloud"
+					animate=		"fade"
+					intensity=		"30"
+					
+					blendMode=		"screen"
+					primaryColor=	"#9580ff"
+					secondaryColor=	"#2a00ff"
+					>
+                <Events>
+                    <GetParameters>
+                        (block (
+                            (explosionSize (@ gData 'explosionSize))
+                            )
+                            {
+                                radius: (@ '(0 101 152 228 279 355) explosionSize)
+                                lifetime: (@ '(0 31 47 70 86 109) explosionSize)
+                                }
+                            )
+                    </GetParameters>
+                </Events>
+            </Orb>
+        </Effect>
+    </EffectType>
+
+</TranscendenceModule>

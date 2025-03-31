@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+	<!-- Jenna's Ronin Gunship	-->
+
+	<ShipClass UNID="&HS_scRoninJenna;"
+			manufacturer=		"Pacific Defense"
+			class=				"Ronin/C"
+			type=				"gunship"
+			defaultSovereign=	"&HS_svCommonwealth;"
+
+			attributes=			"commonwealth, wingmate"
+			inherit=			"&HS_scRoninC;"
+			character=			"&HS_chJenna;"
+			eventHandler=		"&HS_chJenna;"
+
+			leavesWreck=		"50"
+			>
+
+		<Names noArticle="true" personalName="true">Jenna</Names>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&HS_itCeralloyArmor;"
+			count=				"4"
+			/>
+
+		<Devices>
+			<Device deviceID="&HS_itDualParticleBeamWeapon;"/>
+			<Device deviceID="&HS_itCyclotronDeflectorIV;"/>
+			<Device deviceID="&HS_it50MWReactor;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"15"
+			fireAccuracy=		"95"
+			perception=			"4"
+			
+			combatStyle=		"advanced"
+			/>
+			
+	</ShipClass>
+
+<!-- BEHAVIOR -->
+
+	<Type unid="&HS_chJenna;"
+			inherit=	"&RPG_baStdWingmanBase;">
+
+		<Properties>
+			<Definition id="core.namePattern">": Jenna"</Definition>
+		</Properties>
+
+		<StaticData>
+			<Name>Jenna</Name>
+			<Sovereign>&HS_svCommonwealth;</Sovereign>
+
+			<!-- This is an optional field. If present, the wingman
+				will leave the player beyond a certain point. -->
+			<MaxSystemLevel>7</MaxSystemLevel>
+		</StaticData>
+		
+		<Language>
+			<Text id="ArmorRepaired">			Good as new!</Text>
+			<Text id="AttackTargetAck">			I got it!</Text>
+			<Text id="CancelAttackAck">			Roger, I'm inbound</Text>
+			<Text id="FormUpAck">				Roger, I'm inbound</Text>
+			<Text id="IcantAttackFriends">		Aren't they the good guys?</Text>
+			<Text id="IcantAttackMyself">		Yeah, right!</Text>
+			<Text id="ImFarFromHome">			Whoa, I'm pretty far from home!</Text>
+			<Text id="ImTooFarFromHome">		I don't like being so far from home</Text>
+			<Text id="ImGoingHome">				I can't follow you anymore; I'm sorry</Text>
+			<Text id="ImRepairingArmor">		Docking to repair armor</Text>
+			<Text id="MyArmorNeedsRepair">		Can we go somewhere to repair my armor?</Text>
+			<Text id="NiceShooting">			Not bad for an old-timer!</Text>
+			<Text id="NoTargetInRange">			I think you're seeing things...</Text>
+			<Text id="Status100Percent">		Ready when you are, old-timer</Text>
+			<Text id="StatusAttackingTarget">	I'm a little busy right now</Text>
+			<Text id="StatusGoingHome">			I'm sorry, my mind is made up: I'm going home</Text>
+			<Text id="StatusRepairingArmor">	I'm just repairing my armor</Text>
+			<Text id="StatusWaiting">			I'm waiting for you</Text>
+			<Text id="WaitAck">					OK, but don't be gone too long</Text>
+			<Text id="WatchYourTargets">		Hey, watch it!</Text>
+			<Text id="WingmanJoined">			Ready for action, boss</Text>
+			<Text id="WingmanKilled">			You have a sad feeling for a moment, then it passes</Text>
+
+			<Text id="Intro">
+				(list
+					{
+						desc: (cat
+							"A young woman in a flight-suit and Commonwealth insignia sits next to you:\n\n"
+							"\"I've seen you in action out there&#x97;you're not too bad for an old-timer.\""
+							)
+						}
+					{
+						desc: (cat
+							"\"I'm a pretty good pilot myself. What do you think about you and me "
+							"taking on the bad guys together\""
+							)
+						acceptLabel: "\"[O]K, you can come along.\""
+						declineLabel: "\"[S]orry, kid, I travel alone.\""
+						}
+					)
+			</Text>
+			<String id="AcceptReply">
+				"Awesome! You won't regret it, I promise!"
+			</String>
+			<Text id="DeclineReply">
+
+				"Yeah, well, I didn't think it would work out either."
+
+				She leaves you and starts to talk to another pilot at the bar.
+
+			</Text>
+		</Language>
+
+		<Events>
+			<GetGlobalAchievements>
+				(block (theList status)
+					(setq status (typGetData &HS_chJenna; "status"))
+
+					(if status
+						(setq theList (list
+							(list
+								(switch
+									(eq status 'joined) "Joined by Jenna"
+									(eq status 'declined) "Declined Jenna's company"
+									(eq status 'destroyed) "Lost Jenna"
+									(eq status 'destroyedByPlayer) "Killed Jenna"
+									(eq status 'returnedHome) "Allowed Jenna to return home"
+									(cat "ERROR: Jenna status: " (or status "Nil"))
+									)
+								Nil
+								"achievements &amp; regrets"
+								)
+							))
+						)
+						
+					theList
+					)
+			</GetGlobalAchievements>
+
+			<OrderCreateShip>
+				(sysCreateShip &HS_scRoninJenna; (@ gData 'pos) &HS_svCommonwealth;)
+			</OrderCreateShip>
+		</Events>
+	</Type>
+
+</TranscendenceModule>

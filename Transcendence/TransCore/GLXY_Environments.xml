@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<SpaceEnvironmentType UNID="&GLXY_seLightNebula;"
+			lrsJammer=			"true"
+			dragFactor=			"73"
+			attributes=			"nebula"
+
+			mapColor=			"#be83ac"
+			autoEdges=			"true"
+			>
+
+		<Image imageID="&GLXY_rsLightNebula;" 
+				imageX="0" 
+				imageY="0" 
+				imageWidth="2048" 
+				imageHeight="2048"/>
+	</SpaceEnvironmentType>
+
+<!-- BACKWARD COMPATIBILITY -->
+
+	<Effect UNID="&GLXY_efNebula;">
+		<Image imageID="&GLXY_rsNebula;" 
+				imageX="0" 
+				imageY="0" 
+				imageWidth="256" 
+				imageHeight="256"
+				imageVariants="4"/>
+	</Effect>
+
+	<SpaceEnvironmentType UNID="&GLXY_seNebula;"
+			lrsJammer=			"true"
+			dragFactor=			"73"
+			attributes=			"nebula"
+			>
+
+		<Image imageID="&GLXY_rsNebulaEnv;" 
+				imageX="0" 
+				imageY="0" 
+				imageWidth="640" 
+				imageHeight="640"/>
+	</SpaceEnvironmentType>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&GLXY_rsLightNebula;"		bitmap="Resources\LightNebula.jpg"	bitmask="Resources\LightNebulaMask.bmp"	loadOnUse="true"/>
+
+	<Image UNID="&GLXY_rsNebulaEnv;"		bitmap="Resources\Nebula.jpg"			bitmask="Resources\NebulaMask.bmp"/>
+	<Image UNID="&GLXY_rsNebula;"		bitmap="Resources\NebulaHighlights.jpg"	bitmask="Resources\NebulaHighlightsMask.bmp"/>
+
+</TranscendenceModule>

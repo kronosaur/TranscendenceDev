@@ -1,0 +1,666 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- DOCK SCREENS -->
+
+	<!-- Sisters Sanctum Screen -->
+	
+	<DockScreen unid="&HS_dsSistersSanctum;"
+			nestedScreen=		"true"
+			inherit=			"&RPG_dsDockScreenBase;"
+			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &HS_svSistersOfDomina; 'statusDisplay)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(balance (typ@ &HS_svSistersOfDomina; 'balance))
+						(level (domInitRelationship))
+						)
+						(switch
+						
+							;	If the player has not donated to the Sisters, then they
+							;	cannot contemplate.
+							
+							(and (= balance 0)
+									(not (objGetData gSource 'freeSanctum))
+									)
+								(block Nil
+									(scrSetDescTranslate gScreen 'SanctumClosed)
+									(scrEnableAction gScreen 'actionContemplate Nil)
+									(scrEnableAction gScreen 'actionOffer Nil)
+									)
+							
+							;	Otherwise, we allow contemplation
+							
+							(block Nil
+								(scrSetDescTranslate gScreen (cat "SanctumIntro:" level) {
+									rank: (fmtNoun (typ@ &RPG_unidPilgrimClass; 'levelNoun) 1 'article)
+									})
+								(scrEnableAction gScreen 'actionContemplate True)
+								(scrEnableAction gScreen 'actionOffer True)
+								)
+							)
+						)
+				</OnPaneInit>
+			
+				<Actions>
+					<Action id="actionOffer">
+						(scrShowScreen gScreen &HS_dsSistersOffer;)
+					</Action>
+
+					<Action id="actionContemplate" default="1">
+						(block (
+							(roll (random 1 100))
+							
+							(lastContemplateTime (typ@ &HS_svSistersOfDomina; 'lastContemplateTime))
+							(intervalInTicks (* (typ@ &HS_svSistersOfDomina; 'contemplateIntervalInSeconds) 60))
+							(nextContemplateTime (if lastContemplateTime (+ lastContemplateTime intervalInTicks) 0))
+							)
+							
+							;	If we have a free sanctum pass then we always get the stargate
+							;	option.
+							
+							(if (objGetData gSource 'freeSanctum)
+								(block Nil
+									(setq roll 40)
+									(objSetData gSource 'freeSanctum Nil)
+									)
+								)
+							
+							;	Figure out what happened
+							
+							(switch
+							
+								;	If we're not a Pilgrim, we always get nothing
+								
+								(!= (objGetProperty gPlayerShip 'characterClass) &RPG_unidPilgrimClass;)
+									(scrShowPane gScreen 'Nothing)
+									
+								;	If interval has not passed, then nothing
+								
+								(ls (unvGetTick) nextContemplateTime)
+									(scrShowPane gScreen 'Nothing)
+							
+								;	10% of the time, Domina reveals stations in the system
+								
+								(leq roll 10)
+									(block Nil
+										(enum (sysFindObject gPlayerShip "Ts -uncharted;") obj
+											(objSetKnown obj)
+											)
+										(typSet@ &HS_svSistersOfDomina; 'lastContemplateTime (unvGetTick))
+										(scrShowPane gScreen "MappedSystem")
+										)
+							
+								;	30% of the time, Domina reveals the stargate that leads
+								;	to the Core.
+								
+								(leq roll 40)
+									(block (
+										(stargateObj (sysGetStargateLeadingToCore))
+										systemMessage
+										)
+										(typSet@ &HS_svSistersOfDomina; 'lastContemplateTime (unvGetTick))
+										
+										(switch
+										
+											;	If we get a stargate result, then tell the player to
+											;	follow the stargate.
+											
+											stargateObj
+												(block Nil
+													(objSetKnown stargateObj)
+													(scrSetData gScreen 'stargateID (objGetID stargateObj))
+													(scrShowPane gScreen "StargateRevealed")
+													)
+													
+											;	Otherwise, see if the system has some text to explain where
+											;	to go. We need this for the Heretic system.
+											
+											(setq systemMessage (typTranslate (sysGetSystemType) 'sisters.dominaRevealStargate))
+												(block Nil
+													(scrSetData gScreen 'stargateID Nil)
+													(scrSetData gScreen 'stargateText systemMessage)
+													(scrShowPane gScreen "StargateRevealed")
+													)
+											
+											;	Otherwise, nothing
+											
+											(scrShowPane gScreen "Nothing")
+											)
+										)
+							
+								;	30% of the time we gain Domina relationship.
+							
+								(leq roll 70)
+									(block Nil
+										(domGainXP (random 20 10 10))
+										(typSet@ &HS_svSistersOfDomina; 'lastContemplateTime (unvGetTick))
+										(scrShowPane gScreen "DominaRelationship")
+										)
+							
+								;	30% of the time, nothing happens.
+
+								(block ()
+									(typSet@ &HS_svSistersOfDomina; 'lastContemplateTime (unvGetTick))
+									(scrShowPane gScreen "Nothing")
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionPowersHelp">
+						(scrShowScreen gScreen &HS_dsDominaPowersHelp;)
+					</Action>
+
+					<Action id="actionDone" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+			
+			<MappedSystem>
+				<OnPaneInit>
+					(scrSetDesc gScreen (typTranslate &HS_dsSistersSanctum; "MappedSystemDesc"))
+				</OnPaneInit>
+				
+				<Actions>
+					<Action id="actionDone" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</MappedSystem>
+			
+			<StargateRevealed>
+				<OnPaneInit>
+					(if (scrGetData gScreen 'stargateID)
+						(scrSetDesc gScreen (typTranslate &HS_dsSistersSanctum; "StargateRevealedDesc"))
+						(scrSetDesc gScreen (scrGetData gScreen 'stargateText))
+						)
+				</OnPaneInit>
+				
+				<Actions>
+					<Action id="actionDone" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</StargateRevealed>
+			
+			<DominaRelationship>
+				<OnPaneInit>
+					(scrSetDesc gScreen (typTranslate &HS_dsSistersSanctum; "DominaRelationshipDesc"))
+				</OnPaneInit>
+				
+				<Actions>
+					<Action id="actionDone" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</DominaRelationship>
+			
+			<Nothing>
+				<OnPaneInit>
+					(scrSetDesc gScreen (typTranslate &HS_dsSistersSanctum; "NothingDesc"))
+				</OnPaneInit>
+				
+				<Actions>
+					<Action id="actionDone" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Nothing>
+		</Panes>
+		
+		<Language>
+			<Text id="actionContemplate">[C]ontemplate</Text>
+			<Text id="actionOffer">[O]ffer Item</Text>
+			<Text id="actionPowersHelp">Domina [P]owers</Text>
+
+			<Text id="DominaRelationshipDesc">
+
+				Your disembodied mind hurtles through space. Stars dance like 
+				fireflies, and nebulous veils part to reveal a fragment of the 
+				Eternal Pattern.
+					
+				You feel the blessing of Domina upon you. She urges you to 
+				continue your journey to the Galactic Core.
+
+			</Text>
+			<Text id="MappedSystemDesc">
+
+				Images and patterns dance in your head like spinning galaxies.
+				You see with the eyes of Domina but the visions blast your brain 
+				like a nova.
+					
+				When you recover from your reverie you remember only some mundane 
+				information about the position of stations in this star system.
+
+			</Text>
+			<Text id="NothingDesc">
+
+				Your contemplation ends as your rational mind considers 
+				the impossibility of communicating across the light-years.
+
+			</Text>
+			<Text id="StargateRevealedDesc">
+				(block (
+					(stargateObj (objGetObjByID (scrGetData gScreen 'stargateID)))
+					)
+					(cat
+						"A connection with Domina is denied to you, but your brief attempt "
+						"points the way to your destiny's end.\n\n"
+						
+						"Step through the " (objGetName stargateObj) " to the next system "
+						"and you will be one step nearer to your goal."
+						)
+					)
+			</Text>
+			<Text id="SanctumClosed">
+
+				You are in the sanctum of the Sisters of Domina. Tools and 
+				scaffolding fill the room and various cardinal-robed techs work 
+				to repair the micro-engraved plasteel walls.
+					
+				One of the sisters oversees the work: "Sorry, but the sanctum 
+				is closed for maintenance. We would appreciate any donation you 
+				can make to help us defray the cost."
+
+			</Text>
+			<Text id="SanctumIntro:0">
+
+				You are in the sanctum of the Sisters of Domina. The plasteel 
+				walls that surround you are micro-engraved with the revelation 
+				of Domina.
+					
+				You close your eyes and open your thoughts, but no one answers.
+
+			</Text>
+			<Text id="SanctumIntro:1">
+
+				You are in the sanctum of the Sisters of Domina. The plasteel 
+				walls that surround you are micro-engraved with the revelation 
+				of Domina.
+					
+			</Text>
+			<Text id="SanctumIntro:2">
+				
+				You are in the sanctum of the Sisters of Domina. The plasteel 
+				walls that surround you are micro-engraved with the revelation 
+				of Domina.
+					
+			</Text>
+			<Text id="SanctumIntro:3">
+
+				You are in the sanctum of the Sisters of Domina. A faint glow 
+				emanates from the micro-engraved plasteel walls and you feel a 
+				peaceful presence.
+					
+			</Text>
+			<Text id="SanctumIntro:4">
+
+				You are in the sanctum of the Sisters of Domina. A faint glow 
+				emanates from the micro-engraved plasteel walls and you feel a 
+				peaceful presence.
+					
+			</Text>
+			<Text id="SanctumIntro:5">
+				
+				You are in the sanctum of the Sisters of Domina. You feel the 
+				presence of Domina within and around you.
+					
+			</Text>
+			<Text id="SanctumIntro:6">
+				
+				You are in the sanctum of the Sisters of Domina. You feel the 
+				presence of Domina within and around you.
+					
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Sisters Offer Item	-->
+
+	<DockScreen UNID="&HS_dsSistersOffer;"
+			type=				"itemPicker"
+			nestedScreen=		"true"
+			inherit=			"&RPG_dsDockScreenBase;"
+			>
+
+		<ListOptions
+			dataFrom=	"player"
+			list=		"*U"
+			>
+			(scrSet@ gScreen 'enabledFilter (lambda (theItem)
+				(block (
+					(entry (domGetDonationDesc theItem))
+					)
+					(and entry (!= (@ entry 'dominaRel) 0))
+					)
+				))
+		</ListOptions>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(theItem (scrGetItem gScreen))
+						(donationEntry (domGetDonationDesc theItem))
+						(maxCount (itmGetCount theItem))
+						)
+						(scrEnableAction gScreen 'actionDonateItem (scr@ gScreen 'selectionEnabled))
+						(scrSetData gScreen 'maxCount maxCount)
+						
+						(switch
+							(not theItem)
+								(block Nil
+									(scrEnableAction gScreen 'actionDonateItem Nil)
+									(scrSetDescTranslate gScreen 'NoItemsDesc)
+									)
+									
+							(not donationEntry)
+								(scrSetDescTranslate gScreen 'DonateGenericDesc)
+								
+							;	If the item increases Domina relationship, say so
+							
+							(gr (@ donationEntry 'dominaRel) 0)
+								(scrSetDescTranslate gScreen 'DonateDominaItemDesc {
+									itemName: (itmGetName theItem 'demonstrative)
+									})
+								
+							;	Otherwise, the item gives us no benefit, but we show the custom
+							;	text.
+							
+							(scrSetDesc gScreen 
+								(or (@ donationEntry 'desc)
+									(typTranslate &HS_dsSistersOffer; 'DonateGenericDesc)
+									)
+								)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDonateItem" default="1">
+						(block (
+							(theItem (scrGetItem gScreen))
+							(maxCount (scrGetData gScreen 'maxCount))
+							)
+							(switch
+								(gr maxCount 1)
+									(scrShowPane gScreen 'Quantity)
+
+								(= maxCount 1)
+									(block Nil
+										(scrSetData gScreen 'countDonated 1)
+										(scrShowPane gScreen 'Donate)
+										)
+								)
+							)
+					</Action>
+
+					<Action id="actionLeave" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>					
+			</Default>
+
+			<Quantity descID="descHowMany"
+					showCounter=	"true">
+
+				<OnPaneInit>
+					(block (
+						(maxCount (scrGetData gScreen 'maxCount))
+						)
+						(scrSetCounter gScreen maxCount)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDonate" default="1">
+						(block (
+							(maxCount (scrGetData gScreen 'maxCount))
+							(count (scrGetCounter gScreen))
+							)
+							(if (gr count maxCount)
+								(scrSetCounter gScreen maxCount)
+
+								(block Nil
+									(scrSetData gScreen 'countDonated count)
+									(scrShowPane gScreen 'Donate)
+									)
+								)
+							)
+					</Action>
+
+					<Action id="actionCancel" cancel="1">
+						<ShowPane pane="Default"/>
+					</Action>
+				</Actions>
+			</Quantity>
+
+			<Donate noListNavigation="true">
+				<OnPaneInit>
+					(block (
+						(countDonated (scrGetData gScreen 'countDonated))
+						(theItem (itmSetCount (scrGetItem gScreen) countDonated))
+
+						(entry (domGetDonationDesc theItem))
+						(rel (@ entry 'dominaRel))
+						(desc (@ entry 'desc))
+						)
+						;	Deal with the entry that we found
+
+						(switch
+
+							;	This should never happen, but we have it just in case
+
+							(or (not entry) 
+									(= rel 0)
+									(!= (obj@ gPlayerShip 'characterClass) &RPG_unidPilgrimClass;)
+									)
+								(scrSetDescTranslate gScreen 'descDonate.nothing)
+
+							;	Otherwise, we gain Domina relationship
+
+							(block (
+								(incRel (multiply countDonated rel))
+								)
+								;	Display the appropriate message
+
+								(scrSetDesc gScreen 
+									(cat 
+										(scrTranslate gScreen 'descDonate.intro {
+											itemName: (itmGetName theItem 'countOnly)
+											})
+										"\n\n"
+										(or desc (scrTranslate gScreen 'descDonate.default))
+										)
+									)
+								)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" cancel="1" default="1">
+						(block (
+							(countDonated (scrGetData gScreen 'countDonated))
+							(theItem (itmSetCount (scrGetItem gScreen) countDonated))
+
+							(entry (domGetDonationDesc theItem))
+							(rel (@ entry 'dominaRel))
+							(incRel (multiply countDonated rel))
+							)
+							(scrRemoveItem gScreen countDonated)
+							(objFireItemEvent gSource (scrGetData gScreen 'itemDonated) 'OnItemDonatedToSisters)
+
+							(domGainXP incRel)
+							(typIncGlobalData &HS_stDomina; 'psionicsOffered countDonated)
+
+							(scrExitScreen gScreen)
+							(if (typ@ &RPG_unidPilgrimClass; 'nextLevelNotification)
+								(scrShowScreen gScreen &HS_dsSistersPromotion;)
+								)
+							)
+					</Action>
+				</Actions>
+			</Donate>
+		</Panes>
+		
+		<Language>
+			<Text id="actionDonate">[O]ffer</Text>
+			<Text id="actionDonateItem">[O]ffer this Item</Text>
+
+			<Text id="DonateDominaItemDesc">
+
+				"You can offer %itemName% to strengthen your connection to
+				Domina."
+
+			</Text>
+			<String id="DonateGenericDesc">
+
+				"This is not an appropriate offering to Domina.
+
+				"Some items are imbued with resonant energies that can help you
+				commune with Domina. Seek those out and offer them to 
+				strengthen your connection to her."
+
+			</String>
+			<Text id="NoItemsDesc">
+
+				"You have no items to offer.
+
+				"Some items are imbued with resonant energies that can help you
+				commune with Domina. Seek those out and offer them to 
+				strengthen your connection to her."
+
+			</Text>
+
+			<Text id="descHowMany">How many items do you wish to offer?</Text>
+
+			<Text id="descDonate.intro">
+
+				You place the %itemName% on a large pedestal. A battery of 
+				high-powered lasers descend from the ceiling and illuminate your
+				offering. The blinding light forces you to close your eyes.
+			
+			</Text>
+			<String id="descDonate.default">
+
+				You feel dizzy, and for a moment you catch a glimpse of a 
+				whirling maelstrom of stars. You sense Domina's presence.
+
+				When you open your eyes, your offering is gone.
+			
+			</String>
+			<Text id="descDonate.nothing">
+
+				"We thank you for your offering and your good intentions. Go in 
+				peace."
+			
+			</Text>
+			<String id="descDonate.dominaOnly">
+
+				Your relationship to Domina is stronger.
+
+			</String>
+		</Language>
+	</DockScreen>
+
+<!-- GLOBALS -->
+	
+	<Globals>
+		(block Nil
+			(setq domGetDonationDesc (lambda (theItem)
+				(block (
+					(customRel (itm@ theItem 'sisters.donateRel))
+					(trData {
+						itemName: (itmGetName theItem 'noDeterminer)
+						itemNameWithCount: (itmGetName theItem 'countOnly)
+						})
+					(customDesc 
+						(if (gr (itmGetCount theItem) 1)
+							(or (typTranslate (itmGetType theItem) 'sisters.donateDesc.plural trData)
+								(typTranslate (itmGetType theItem) 'sisters.donateDesc trData)
+								)
+							(typTranslate (itmGetType theItem) 'sisters.donateDesc trData)
+							)
+						)
+					)
+					(switch
+						(not theItem)
+							Nil
+					
+						;	First check to see if the item itself defines the 
+						;	donation parameters
+
+						(or customRel customDesc)
+							{
+								itemType: (itmGetType theItem)
+								dominaRel: (or customRel 0)
+								desc: customDesc
+								}
+
+						;	Backwards compatibility
+
+						(setq entry 
+								(eval (or (itmGetStaticData theItem 'sisters.donation) (itmGetStaticData theItem '00182001_Donation)))
+								)
+							(block ()
+							
+								;	Evaluate functions, if necessary
+								
+								(enum '(1 2 3) var
+									(block (
+										(value (@ entry var))
+										)
+										(errBlock (err)
+											(if (= (typeOf (eval value)) 'list) (set@ entry var (eval (eval value))))
+											(printTo 'log (cat "Domina donation error: " err))
+											)
+										)
+									)
+									
+								;	Map to a structure
+					
+								{
+									itemType: (if (isint (@ entry 0)) (@ entry 0))
+									criteria: (if (not (isInt (@ entry 0))) (@ entry 0))
+									dominaRel: (@ entry 2)
+									desc: (@ entry 3)
+									}
+								)
+							
+						;	Nothing
+						)
+					)
+				))
+	
+			(setq domGetDonationEntry (lambda (theItem)
+				(block (
+					(entry (domGetDonationDesc theItem))
+					)
+					(switch
+						(not entry)
+							Nil
+
+						(list
+							(or (@ entry 'itemType) (@ entry 'criteria))
+							0
+							(@ entry 'dominaRel)
+							(@ entry 'desc)
+							)
+						)
+					)
+				))
+			)
+	</Globals>
+
+</TranscendenceModule>
