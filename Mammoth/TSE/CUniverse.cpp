@@ -1269,7 +1269,7 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 
 				else
 					{
-					if (!retsError)
+					if (retsError->IsBlank())
 						{
 						*retsError = strPatternSubst(CONSTLIT("Unable to find adventure: %08x."), Ctx.dwAdventure);
 						}
