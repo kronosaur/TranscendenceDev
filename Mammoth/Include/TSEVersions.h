@@ -17,20 +17,237 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					212;
 //
 //	 0: Unknown version (0.9 or older)
 //
-//	 1: 0.95-0.96b
+//	 1 "1": 0.95-0.96b
 //		Added support for extensions
 //		API Version specified as version="1"
 //
-//	 2: 0.97
+//	 2 "2": 0.97
 //		Changed gStation to gSource
-//
-//	 3: 1.1
+// 
+//	 3 "1.0": 1.0/1.01
+//      API Version specified as version="1.0"
 //		<SmokeTrail>: emitSpeed fixed (used in klicks per tick instead of per second)
+//		<Weapon>: shield damage modifier uses a different calculation with more bits for dmg
+// 
+//	 4 "1.1": 1.02
+//      API Version specified as version="1.1"
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=3174
+// 
+//	 5 "1.1": 1.03
+//      API Version specified as version="1.1"
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=3300
+// 
+//	 6 "1.1": 1.04
+//      API Version specified as version="1.1"
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=3563
+// 
+//	 7 "1.1": 1.05
+//      API Version specified as version="1.1"
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=3956
+// 
+//	 8 "1.1": 1.06
+//      API Version specified as version="1.1"
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=4292
+// 
+//	 9 "1.1": 1.07
+//      API Version specified as version="1.1"
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=4612
+// 
+//	 10 "1.1": 1.08
+//      API Version specified as version="1.1"
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=4889
+// 
+//	 11 "1.1": 1.08b(?)
+//      API Version specified as version="1.1"
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=4912
+// 
+//   12: (1.08c/1.08d)/1.08e
+//		1.08c and 1.08d have savegame corruption issues, do not use them.
+//      API Version specified as APIVersion="12"
+//      <TranscendenceLibrary>: Libraries added
+//		<TranscendenceAdventure><TranscendenceExtension>:
+//			If no library is selected the compatibility library is
+//			automatically loaded.
+//	 12 (later): 1.08g-1.08l (?)
+//		<MissionType>
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=5387
+// 
+//	 13: 1.2a1
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=5667
+// 
+//   14: 1.2b1
+//		Transcribed from here: https://wiki.kronosaur.com/doku.php/modding/xml/api_version?s[]=api
+//		<EffectType>: (new)
+//			Can now specify effect design types for creating dynamic effects
+//		<EnhancementAbilities>: (new)
+//			type="..."
+//				User defined string representing the category of enhancement.
+//				Enhancements of the same "type" do not stack.
+//			criteria="..."
+//				Criteria string limiting what sorts of devices can be enhanced.
+//			enhancement="{enhancementCode}:{n}"
+//				see shpEnhanceItem
+//		<MissionType>:
+//			maxAppearing=[int]
+//				limits the number of times the mission can be assigned
+//		<ShipClass>:
+//			thrustRatio=[float]
+//				now available in the <ShipClass>
+//			<Armor>:
+//				now accepts the following parameters instead of individual elements:
+//					armorID=[UNID]: the UNID of the armor to use on this ship
+//					count=[int]: the number of armor segments to have on this ship
+//			<Interior>:
+//				Allows for definition of <Compartment> elements that have
+//				separate HP pools from the main interior. Damaging them applies different
+//				debuffs
+//				type="cargo|general|mainDrive":
+//					cargo: causes a chance for cargo to be destroyed
+//					general: no effect, this is essentially a buffer of non-critical HP
+//					mainDrive: causes a chance for max speed to be halved
+//		Functions:
+//			cnvDrawLine: Draws a line on a <Canvas>
+//			objGetArmorRepairPrice:
+//		ObjectAscension:
+//		ObjectEvents:
+//			<onPlayerBlacklisted>: fires on a station when a station blackliists a player
+//			<onObjBlacklistedPlayer>: fires when a registered object blacklists the player,
+//				must use objRegisterForEvents
+//		ObjectProperties:
+//			'playerBlacklisted: Returns True/Nil if the player is blacklisted by a station
+//			'playerMissionsGiven: The number of missions this object has assigned the player
+//			'underAttack: same as (objIsUnderAttack)
+//			"property:{propertyName}" is now a valid criteria filter for boolean properties
+//				(Note: ItemType is not supported until API 24)
 //
-//	 53: 1.9.2
+//   15: 1.2b2
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=5938
+//
+//   16: 1.2b3?
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=5978
+//
+//   17: 1.2b4?
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=6061
+//
+//   18: 1.2rc1?
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=6102
+//
+//   19: 1.2?
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=6128
+//
+//   20: 1.3b1
+//		https://multiverse.kronosaur.com/news.hexm?id=258
+// 
+//	 21: 1.3b2
+//		https://multiverse.kronosaur.com/news.hexm?id=434
+// 
+//   22: 1.3rc1/1.3
+//		https://multiverse.kronosaur.com/news.hexm?id=532
+//
+//	 23: 1.5b1
+//		https://multiverse.kronosaur.com/news.hexm?id=1063
+// 
+//   24: 1.5rc1/1.5
+//		https://multiverse.kronosaur.com/news.hexm?id=1096
+// 
+//   25: 1.6b2
+//		Tlisp supports basic floating point math:
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=7116
+// 
+//   26: 1.6b3
+//		https://multiverse.kronosaur.com/news.hexm?id=1364
+// 
+//   27: 1.6b5
+//		https://forums.kronosaur.com/viewtopic.php?f=15&t=7226
+// 
+//   28: 1.6rc1?
+//		https://ministry.kronosaur.com/program.hexm?id=1&status=closed&tag=28
+// 
+//   29: 1.7preview
+//		http://ministry.kronosaur.com/record.hexm?id=8048
+// 
+//   30: 1.7a2
+//		http://ministry.kronosaur.com/record.hexm?id=54396
+// 
+//   31: 1.7b1
+//		http://ministry.kronosaur.com/record.hexm?id=57824
+// 
+//   32: 1.7b3
+//		http://ministry.kronosaur.com/record.hexm?id=61158
+// 
+//   33: 1.7b4
+//		http://ministry.kronosaur.com/record.hexm?id=62046
+// 
+//   34: 1.7b5
+//		http://ministry.kronosaur.com/record.hexm?id=66822
+//
+//	 35: 1.7b6/1.7 
+//		https://ministry.kronosaur.com/record.hexm?id=68066
+// 
+//   36: 1.8a1
+//		https://ministry.kronosaur.com/record.hexm?id=71132
+// 
+//   37: 1.8a2
+//		https://ministry.kronosaur.com/record.hexm?id=72675
+// 
+//   38: 1.8a3
+//		https://ministry.kronosaur.com/record.hexm?id=73457
+// 
+//   39: 1.8a4
+//		https://ministry.kronosaur.com/record.hexm?id=74282
+// 
+//   40: 1.8b1
+//		https://ministry.kronosaur.com/record.hexm?id=76059
+//  
+//   41: 1.8b2
+//		https://ministry.kronosaur.com/record.hexm?id=78005
+// 
+//   42: 1.8b3
+//		https://ministry.kronosaur.com/record.hexm?id=80464
+// 
+//   43: 1.8b4
+//		https://ministry.kronosaur.com/record.hexm?id=82308
+// 
+//   44: 1.8b5/1.8
+//		https://ministry.kronosaur.com/record.hexm?id=84283
+// 
+//   45: 1.9a1
+//		https://ministry.kronosaur.com/record.hexm?id=86399
+// 
+//   46: 1.9a2
+//		https://ministry.kronosaur.com/record.hexm?id=88044
+// 
+//	 47: 1.9a3
+//		https://ministry.kronosaur.com/record.hexm?id=88252
+// 
+//   48: 1.9a4
+//		https://ministry.kronosaur.com/record.hexm?id=88609
+// 
+//   49: 1.9b1
+//		https://ministry.kronosaur.com/record.hexm?id=90206
+// 
+//	 50: 1.9b2
+//		https://ministry.kronosaur.com/record.hexm?id=90690
+// 
+//	 51: 1.9b3
+//		https://ministry.kronosaur.com/record.hexm?id=93663
+// 
+//   52: 1.9b4
+//		https://ministry.kronosaur.com/record.hexm?id=94300
+// 
+//	 53: 1.9
+//		https://ministry.kronosaur.com/record.hexm?id=97615
 //
 //
 //	 54: 1.9.3a0
+//		<CoreLibrary>:
+//			Added new CoreLibrary: Compatibility UNID Library (0x00710000)
+//				Compatibility UNID Library contains pre-API 54 legacy aliases
+//				for older mods, and is automatically loaded for any pre-API 54
+//				library/adventure/extension.
+//				To continue using the legacy aliases in API 54, please explicitly
+//				include the Compatibility UNID Library:
+//					<Library unid="&CMPU_unidCompatibilityUNIDLibrary;"/>
 //		<ItemType><Weapon><Missile>:
 //			detonateOnDestroyed="true|false"
 //				Projectile will fragment even if it is killed
@@ -115,7 +332,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					212;
 //				For legacy (objDestroy obj) behavior, use (objRemove obj)
 //			(objRemove obj)
 //				Added, removes the obj from system
-//	 
 
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
