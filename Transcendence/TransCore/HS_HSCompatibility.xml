@@ -1532,7 +1532,7 @@
 						(block (newStation)
 							(setq newStation (sysCreateStation &HS_stKorolovAtCharonCons; (objGetPos gSource)))
 							(objSetKnown newStation)
-							(objDestroy gSource)
+							(objRemove gSource)
 							(typSetGlobalData &HS_stCharonPirateFortress; "status" 'allDestroyed)
 							)
 						)

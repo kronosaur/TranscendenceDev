@@ -122,7 +122,7 @@
 
 					;	Destroy all probes
 					(enum (sysFindObject Nil "T +mradProbe") theProbe
-						(objDestroy theProbe)
+						(objRemove theProbe)
 						)
 					)
 			</OnDebriefed>

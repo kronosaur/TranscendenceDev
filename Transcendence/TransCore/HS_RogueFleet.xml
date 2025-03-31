@@ -408,7 +408,7 @@
 
 							; Delete the marker, if it exists
 							(if (objGetObjRefData gSource "Target")
-								(objDestroy (objGetObjRefData gSource "Target"))
+								(objRemove (objGetObjRefData gSource "Target"))
 								)
 
 							; Pick a position to go to 

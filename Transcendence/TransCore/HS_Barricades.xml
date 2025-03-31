@@ -285,7 +285,7 @@
 							(setq recovered (itmSet@ recovered 'hp hpLeft))
 
 							(objAddItem gPlayerShip recovered)
-							(objDestroy gSource)
+							(objRemove gSource)
 							)
 					</Action>
 

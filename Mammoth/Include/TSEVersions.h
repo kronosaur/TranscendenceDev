@@ -117,6 +117,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					212;
 //				arcAngle (a uniform distribution zeroed on the middle) from the
 //				angle source picked with fragmentAngleDirection.
 //				Default: 0
+//		tlisp:
+//			(objDestroy obj sourceObj)
+//				Now requires sourceObj in API 54, still works for API 53 and below.
+//				For legacy (objDestroy obj) behavior, use (objRemove obj)
+//			(objRemove obj)
+//				Added, removes the obj from system
 //	 
 
 
