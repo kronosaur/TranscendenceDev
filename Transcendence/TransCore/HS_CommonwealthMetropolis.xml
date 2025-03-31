@@ -301,6 +301,7 @@
 								(plyCharge gPlayer 5)
 								(rpgMissionAssignment {
 									missionCriteria: (cat "n +commonwealthPub; =" (sysGetLevel) ";")
+									displayCriteria: "n +commonwealthPub;"
 									actionDoneID: 'actionLeave
 									maxPerStation: 1
 

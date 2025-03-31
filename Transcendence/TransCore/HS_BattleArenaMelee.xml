@@ -221,7 +221,7 @@
 					;	If a non-player combatant docks then destory it to trigger the
 					;	failure condition (we end the mission when there are no	ships
 					;	left becuase there is not always a survivor).
-					(objDestroy aObjDocked)
+					(objRemove aObjDocked)
 					)
 			</OnObjDocked>
 
@@ -257,7 +257,7 @@
 					(enum (msnGetData gSource 'meleeShips) shipID
 						(block Nil
 							(objUnregisterForEvents gSource (objGetObjByID shipID))
-							(objDestroy (objGetObjByID shipID))
+							(objRemove (objGetObjByID shipID))
 							)
 						)
 					;	Open arena doors
