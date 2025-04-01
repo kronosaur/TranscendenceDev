@@ -30,7 +30,7 @@
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			multiHull=			"true"
-			armorID=			"&itIthaliumArmor;"
+			armorID=			"&itAdvancedIthaliumArmor;"
 			hitPoints=			"1200"
 			regen=              "24"
 			fireRateAdj=		"10"
@@ -444,7 +444,7 @@
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			multiHull=			"true"
-			armorID=			"&itIthaliumArmor;"
+			armorID=			"&itAdvancedIthaliumArmor;"
 			hitPoints=			"1200"
 			regen=              "24"
 			fireRateAdj=		"10"
@@ -557,7 +557,7 @@
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			multiHull=			"true"
-			armorID=			"&itIthaliumArmor;"
+			armorID=			"&itAdvancedIthaliumArmor;"
 			hitPoints=			"1200"
 			regen=              "20"
 			fireRateAdj=		"10"

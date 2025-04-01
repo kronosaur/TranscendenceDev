@@ -30,7 +30,7 @@
 			name=				"(Gaian processor)"
 			sovereign=			"&svUnknownEnemy;"
 			controllingSovereign="&svGaianTerraformers;"
-			dockScreen=			"&dsAbandonedShip;"
+			dockScreen=			"&dsRPGAbandonedStation;"
 
 			scale=				"ship"
 			mobile=				"true"

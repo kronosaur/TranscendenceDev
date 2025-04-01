@@ -34,7 +34,7 @@
 		<!-- Configuration -->
 
 		<Armor
-			armorID=			"&itTevlarCompositeArmor;"
+			armorID=			"&itLightTevlarArmor;"
 			/>
 		
 		<Devices>

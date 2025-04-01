@@ -79,14 +79,27 @@
 	<!-- 0040 xxxx to 004F xxxx RESERVED FOR PART II ADVENTURE -->
 	<!-- 0050 xxxx to 005F xxxx RESERVED FOR PART III LIBRARY -->
 	<!-- 0060 xxxx to 006F xxxx RESERVED FOR PART III ADVENTURE -->
-	<!-- 0070 xxxx to 007F xxxx RESERVED FOR COMPATIBILITY LIBRARY -->
-	
+	<!-- 0070 xxxx to 007F xxxx RESERVED FOR COMPATIBILITY LIBRARIES -->
+
+	<!-- API 0-26 COMPAT TYPES LIBRARY 0070 -->
+
 	<!ENTITY unidCompatibilityLibrary	"0x00700000">
+	
+	<!-- COMPAT UNID LIBRARIES 0071 -->
+		<!-- 
+		Compat UNID libraries only store deprecated UNIDs
+		so they can have incremental UNIDs, ex 00710000,
+		00710001, etc.
+		-->
+
+	<!ENTITY CMPT_unidAPI54CompatUNIDLibrary	"0x00710000">
 	
 	<!-- 0080-00FF RESERVED -->
 	
 	<!-- 0100 - 01FF RESERVED FOR DEBUG/TUTORIAL EXTENSIONS -->
-	<!-- 0200 - 07FF RESERVED -->
+	<!-- 0200 - 02FF RESERVED -->
+	<!-- 0300 - 03FF RESERVED -->
+	<!-- 0400 - 07FF RESERVED -->
 	
 	<!-- HUMAN SPACE LIBRARY 0800-080F  -->
 
@@ -145,6 +158,7 @@
 	<CoreLibrary filename="GalaxyLibrary.xml"/>
 	<CoreLibrary filename="HumanSpaceVol01.xml"/>
 	<CoreLibrary filename="CompatibilityLibrary.xml"/>
+	<CoreLibrary filename="CMPT_API54CompatUNIDsLibrary.xml"/>
 
 <!-- CORE ADVENTURE ======================================================== -->
 
