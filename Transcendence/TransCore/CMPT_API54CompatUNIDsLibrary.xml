@@ -45,7 +45,7 @@
 	]>
 	
 <TranscendenceLibrary
-		UNID=				"&CMPU_unidCompatibilityUNIDLibrary;"
+		UNID=				"&CMPT_unidAPI54CompatUNIDLibrary;"
 		name=				"Transcendence API 54 Compatibility UNID Library" 
 		release=			"1"
 		>
