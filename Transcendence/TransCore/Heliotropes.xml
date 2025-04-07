@@ -35,7 +35,7 @@
 				 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
-			armorID=			"&itSolarArmor;"
+			armorID=			"&itLightSolarArmor;"
 			hitPoints=			"420"
 			multiHull=			"true"
 			regen=              "8"
@@ -184,7 +184,7 @@
 		<!-- Configuration -->
 		
 		<Armor
-			armorID=			"&itSolarArmor;"
+			armorID=			"&itLightSolarArmor;"
 			count=				"12"
 			/>
 		

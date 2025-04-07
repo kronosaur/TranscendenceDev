@@ -19,8 +19,7 @@
 	<!ENTITY ssEarthSpaceVolcanic		"0x00000006">
 	<!ENTITY ssEarthSpaceIceRing		"0x00000007">
 	<!ENTITY ssEarthSpaceBinary			"0x00000008">
-	<!ENTITY ssEarthSpaceAsteroidArcs	"0x00000009">
-	<!ENTITY ssEarthSpaceAsteroids2		"0x00000009">	<!-- Needed for backwards compatibility -->
+	<!ENTITY ssEarthSpaceAsteroidArcs	"0x00000009">	<!-- replaces ssEarthSpaceAsteroids2 -->
 	<!ENTITY ssEarthSpaceDesert2		"0x0000000A">
 	<!ENTITY tbHumanSystemParts			"0x0000000C">
 	
@@ -93,8 +92,7 @@
 	<!ENTITY sc1MiBattleAuton			"0x0000300E">
 	<!ENTITY sc310AAegisAuton			"0x0000300F">
 	<!ENTITY scEI500					"0x00003010">
-	<!ENTITY scWolfen					"0x00003011">
-	<!ENTITY scWolfenC					"0x00003011">	<!-- Same as scWolfen -->
+	<!ENTITY scWolfenC					"0x00003011">	<!-- Replaces scWolfen -->
 	<!ENTITY sc200ADefenderAuton		"0x00003017">
 	<!ENTITY scExplorerAuton			"0x00003018">
 	
@@ -102,8 +100,7 @@
 	<!ENTITY scEI100XPlayer				"0x00003802">
 	<!ENTITY scWolfenPlayer				"0x00003803">
 	
-	<!ENTITY itLightTitaniumPlate		"0x00004001">	<!--- itUltraLightTitaniumArmor synonym -->
-	<!ENTITY itUltraLightTitaniumArmor	"0x00004001">
+	<!ENTITY itUltraLightTitaniumArmor	"0x00004001">	<!-- Replaces itLightTitaniumPlate-->
 	<!ENTITY itHeavyReactiveArmor		"0x00004002">
 	<!ENTITY itReactiveArmor			"0x00004003">
 	<!ENTITY itDuralloyArmor			"0x00004004">
@@ -182,8 +179,7 @@
 	<!ENTITY itMartianNori				"0x00004054">
 	<!ENTITY itLaudanumAmpule			"0x00004055">
 	<!ENTITY itBlackMarketID			"0x00004056">
-	<!ENTITY itTitaniumPlate			"0x00004057">	<!-- itLightTitaniumArmor synonym -->
-	<!ENTITY itLightTitaniumArmor		"0x00004057">
+	<!ENTITY itLightTitaniumArmor		"0x00004057">	<!-- Replaces itTitaniumPlate-->
 	<!ENTITY itFragmentationMissile		"0x00004058">
 	<!ENTITY itTargetingComputerROM		"0x00004059">
 	<!ENTITY itLightPlasteelPlate		"0x0000405A">
@@ -194,19 +190,16 @@
 	<!ENTITY itKineticEnhancer			"0x0000405F">
 	<!ENTITY itUnknownBarrel			"0x00004060">
 	<!ENTITY itUnknownROM				"0x00004061">
-	<!ENTITY itHeavyTitaniumPlate		"0x00004062">	<!-- itTitaniumArmor synonym -->
-	<!ENTITY itTitaniumArmor			"0x00004062">
+	<!ENTITY itTitaniumArmor			"0x00004062">	<!-- Replaces itHeavyTitaniumPlate-->
 	<!ENTITY itTurbolaserCannon			"0x00004063">
 	<!ENTITY itDualParticleBeamWeapon	"0x00004064">
 	<!ENTITY itDragonflyMissileSystem	"0x00004065">
 	<!ENTITY itDragonflyCartridge		"0x00004066">
-	<!ENTITY itLightXMHArmor			"0x00004067">
-	<!ENTITY itXMHArmor					"0x00004067">	<!-- itLightXMHArmor synonym-->
+	<!ENTITY itLightXMHArmor			"0x00004067">	<!-- Replaces itXMHArmor-->
 	<!ENTITY itSolonShieldGenerator		"0x00004068">
 	<!ENTITY itFlenserCannon			"0x00004069">
 	<!ENTITY itPolyceramicPlate			"0x0000406A">
-	<!ENTITY itLightTevlarArmor			"0x0000406B">
-	<!ENTITY itTevlarCompositeArmor		"0x0000406B">	<!-- itLightTevlarArmor synonym -->
+	<!ENTITY itLightTevlarArmor			"0x0000406B">	<!-- Replaces itTevlarCompositeArmor -->
 	<!ENTITY itSmallArmorPatch			"0x0000406C">
 	<!ENTITY itLargeArmorPatch			"0x0000406D">
 	<!ENTITY itMAGLauncher				"0x0000406E">
@@ -223,8 +216,7 @@
 	<!ENTITY itCargoHoldExpansion		"0x00004079">
 	<!ENTITY itAdvancedReactiveArmor	"0x0000407A">
 	<!ENTITY itHardenedPlasteelPlate	"0x0000407B">
-	<!ENTITY itLightSolarArmor			"0x0000407C">
-	<!ENTITY itSolarArmor				"0x0000407C">	<!-- itLightSolarArmor synonym -->
+	<!ENTITY itLightSolarArmor			"0x0000407C">	<!-- Replaces itSolarArmor -->
 	<!ENTITY itSuperconductingShields	"0x0000407D">
 	<!ENTITY itSuperconductingCoil		"0x0000407E">
 	<!ENTITY itSolarPanelArray			"0x0000407F">
@@ -307,8 +299,7 @@
 	<!ENTITY itYoroiS100				"0x000040CD">
 	<!ENTITY itYoroiS500				"0x000040CE">
 	<!ENTITY itYoroiMX					"0x000040CF">
-	<!ENTITY itLightGusokuArmor			"0x000040D0">
-	<!ENTITY itGusokuArmor				"0x000040D0">	<!-- itLightGusokuArmor synonym -->
+	<!ENTITY itLightGusokuArmor			"0x000040D0">	<!-- Replaces itGusokuArmor -->
 	<!ENTITY itSunflareCannon			"0x000040D1">
 	<!ENTITY itBlinderCannon			"0x000040D2">
 	<!ENTITY itMonopoleDeflector		"0x000040D3">
@@ -412,11 +403,8 @@
 	<!ENTITY itLightBlastPlate			"0x0000413A">
 	<!ENTITY itHeavyBlastPlate			"0x0000413B">
 	<!ENTITY itLightIthaliumArmor		"0x0000413C">
-	<!ENTITY itAdvancedIthaliumArmor	"0x0000413D">
-	<!ENTITY itIthaliumArmor			"0x0000413D">	<!-- itAdvancedIthaliumArmor synonym -->
-	<!ENTITY itExperimentalIthaliumArmor	"0x0000413E">
-	<!ENTITY itHeavyIthaliumArmor		"0x0000413E">	<!-- itExperimentalIthaliumArmor synonym -->
-	<!ENTITY itSuperHeavyIthaliumArmor	"0x0000413E">	<!-- itExperimentalIthaliumArmor synonym -->
+	<!ENTITY itAdvancedIthaliumArmor	"0x0000413D">	<!-- Replaces itIthaliumArmor -->
+	<!ENTITY itExperimentalIthaliumArmor	"0x0000413E">	<!-- Replaces itHeavyIthaliumArmor itSuperHeavyIthaliumArmor -->
 	<!ENTITY itNephrenP25				"0x00004142">
 	<!ENTITY itNephrenB700				"0x00004143">
 	<!ENTITY itNephrenX1				"0x00004144">
@@ -524,17 +512,12 @@
 	<!ENTITY itLightArmorRepair			"0x000041AD">
 	<!ENTITY itMediumArmorRepair		"0x000041AE">
 	<!ENTITY itHeavyArmorRepair			"0x000041AF">
-	<!ENTITY itUltraLightTitaniumPlate	"0x000041B0">	<!-- itUltraLightTitaniumCasing synonym -->
-	<!ENTITY itUltraLightTitaniumCasing	"0x000041B0">
+	<!ENTITY itUltraLightTitaniumCasing	"0x000041B0">	<!-- Replaces itUltraLightTitaniumPlate -->
 	<!ENTITY itLightCeramicPlate		"0x000041B1">
 	<!ENTITY itLightReactiveArmor		"0x000041B2">
-	<!ENTITY itLightOmskArmor			"0x000041B3">
-	<!ENTITY itLightMarkIOmskArmor		"0x000041B3">	<!-- itLightOmskArmor -->
-	<!ENTITY itMediumOmskArmor			"0x000041B4">
-	<!ENTITY itMediumMarkIIOmskArmor	"0x000041B4">	<!-- itMediumOmskArmor-->
-	<!ENTITY itMassiveOmskArmor			"0x000041B5">
-	<!ENTITY itMassiveMarkIIOmskArmor	"0x000041B5">	<!-- itMassiveOmskArmor -->
-	<!ENTITY itHeavyOmskArmor			"0x000041B5">	<!-- itMassiveOmskArmor synonym -->
+	<!ENTITY itLightMarkIOmskArmor		"0x000041B3">	<!-- Replaces itLightOmskArmor -->
+	<!ENTITY itMediumMarkIIOmskArmor	"0x000041B4">	<!-- Replaces itMediumOmskArmor-->
+	<!ENTITY itMassiveMarkIIOmskArmor	"0x000041B5">	<!-- Replaces itHeavyOmskArmor itMassiveOmskArmor -->
 	<!ENTITY itOmskDeflectorI			"0x000041B6">
 	<!ENTITY itOmskDeflectorII			"0x000041B7">
 	<!ENTITY itDepletedUraniumArmor		"0x000041B8">
@@ -630,8 +613,7 @@
 	<!ENTITY sfStrengthen				"0x00009102">
 	<!ENTITY adPart1Desc				"0x00009301">
 
-	<!ENTITY dsAbandonedStation			"0x00010032"> <!-- dsRPGAbandonedStation synonym -->
-	<!ENTITY dsAbandonedStationObsolete	"0x0000A003"> 
+	<!ENTITY dsAbandonedStationObsolete	"0x0000A003"> 	<!-- use dsRPGAbandonedStation instead -->
 	<!ENTITY dsDryDock					"0x0000A004">
 	<!ENTITY dsInstallDevice			"0x0000A005">
 	<!ENTITY dsRepairArmor				"0x0000A006">
@@ -647,10 +629,8 @@
 	<!ENTITY dsUseArmorPatch			"0x0000A012">
 	<!ENTITY dsMission					"0x0000A014">
 	<!ENTITY dsRefuseContamination		"0x0000A015">
-	<!ENTITY dsAbandonedShip			"0x00010032"> <!-- dsRPGAbandonedStation synonym -->
-	<!ENTITY dsAbandonedShipObsolete	"0x0000A017">
-	<!ENTITY dsAbandonedCrate			"0x00010032"> <!-- dsRPGAbandonedStation synonym -->
-	<!ENTITY dsAbandonedCrateObsolete	"0x0000A018">
+	<!ENTITY dsAbandonedShipObsolete	"0x0000A017">	<!-- use dsRPGAbandonedStation instead -->
+	<!ENTITY dsAbandonedCrateObsolete	"0x0000A018">	<!-- use dsRPGAbandonedStation instead -->
 	<!ENTITY dsNavSign					"0x0000A019">
 	<!ENTITY dsAbandonedNavSign			"0x0000A01A">
 	<!ENTITY dsBarricade				"0x0000A01C">
@@ -679,13 +659,9 @@
 	<!ENTITY rsZubrinReactor			"0x0000F00C">
 	<!ENTITY rsWolfenShields			"0x0000F00D">
 	<!ENTITY rsWolfenArmor				"0x0000F00E">
-	<!ENTITY rsSapphireLarge			"0x0000F00F">
-	<!ENTITY rsZubrinLarge				"0x0000F00F"> <!-- rsSapphireLarge synonym -->
+	<!ENTITY rsSapphireLarge			"0x0000F00F">	<!-- Replaces rsZubrinLarge -->
 	<!ENTITY rsWolfenLarge				"0x0000F010">
-	<!ENTITY rsEI500Large				"0x0000F011">
-	<!ENTITY rsEI100XLarge				"0x0000F011"> <!-- rsEI500Large synonym -->
-	<!ENTITY rsZubrinDockScreenBkgnd	"0x0000F013">
-	<!ENTITY rsZubrinDockScreenMask		"0x0000F014">
+	<!ENTITY rsEI500Large				"0x0000F011">	<!-- Replaces rsEI100XLarge -->
 	<!ENTITY rsArmorHUDShip_EI500		"0x0000F015">
 	<!ENTITY rsArmorHUDShip_Sapphire	"0x0000F016">
 	<!ENTITY rsArmorHUDShip_Wolfen		"0x0000F017">
@@ -814,8 +790,7 @@
 	<!ENTITY ovNavSignText				"0x00102025">
 	<!ENTITY baCommonwealthStationObsolete	"0x00102026">
 
-	<!ENTITY scCenturionBlock2			"0x00103001">
-	<!ENTITY scCenturion				"0x00103001">	<!-- Backwards compatibility -->
+	<!ENTITY scCenturionBlock2			"0x00103001">	<!-- Replaces scCenturion -->
 	<!ENTITY scScarabFreighter			"0x00103002">
 	<!ENTITY scCenturionRama			"0x00103003">
 	<!ENTITY scCenturionX				"0x00103004">
@@ -1008,8 +983,7 @@
 	<!ENTITY stTempusLab				"0x00172002">
 	<!ENTITY stBlackMarketShipyard		"0x00172003">
 
-	<!ENTITY scMolotokB					"0x00173001">
-	<!ENTITY scMolotok					"0x00173001">	<!-- Backwards compatibility -->
+	<!ENTITY scMolotokB					"0x00173001">	<!-- Replaces scMolotok -->
 
 	<!ENTITY itBlackMarketContainer		"0x00174001">
 	
@@ -1145,8 +1119,7 @@
 	<!ENTITY stAresShipyard				"0x001B2004">
 
 	<!ENTITY scSandstorm				"0x001B3001">
-	<!ENTITY scAresAdvancedSentry		"0x001B3002">
-	<!ENTITY scAresCannon				"0x001B3002">	<!-- Duplicate for backwards compatibility -->
+	<!ENTITY scAresAdvancedSentry		"0x001B3002">	<!-- Replaces scAresCannon -->
 	<!ENTITY scPolar					"0x001B3003">
 	<!ENTITY scTundra					"0x001B3004">
 	<!ENTITY scCometfall				"0x001B3005">
@@ -1295,8 +1268,7 @@
 	<!ENTITY stHeliotropeOutpost		"0x08010040">
 	<!ENTITY stHeliotropeColony			"0x08010041">
 	<!ENTITY scHeliotropeGunship		"0x08010042">
-	<!ENTITY scHeliotropeFrigate		"0x08010043">	<!-- Reclassified -->
-	<!ENTITY scHeliotropeDestroyer		"0x08010043">	<!-- For compatibility -->
+	<!ENTITY scHeliotropeFrigate		"0x08010043">	<!-- Replaces scHeliotropeDestroyer -->
 	<!ENTITY itHeliotropeFuel			"0x08010044">
 	<!ENTITY svHeliotropes				"0x08010045">
 	<!ENTITY tbHeliotropeEncounters		"0x08010046">
@@ -1313,8 +1285,7 @@
 	<!ENTITY rsXenophobeWorldship		"0x08010088">
 
 	<!ENTITY stVentariColony			"0x080100C0">
-	<!ENTITY scVentariDestroyer			"0x080100C1">	<!-- Reclassified -->
-	<!ENTITY scVentariCruiser			"0x080100C1">	<!-- For compatibility -->
+	<!ENTITY scVentariDestroyer			"0x080100C1">	<!-- Replaces scVentariCruiser -->
 
 	<!ENTITY stAbbasidOutpostCompatible	"0x08010100">
 	<!ENTITY itAbbasidThanogram			"0x08010101">
@@ -1970,10 +1941,8 @@
 	<!ENTITY dsBlackMarketDelivery		"0x00100203">
 	<!ENTITY msBlackMarketHotelMeet		"0x00100204">
 	<!ENTITY baBlackMarketStation       "0x00100205">
-	<!ENTITY rsMolotokB				    "0x00100206">
-	<!ENTITY rsMolotokHD			    "0x00100206">	<!-- Backwards compatibility -->
-	<!ENTITY rsMolotokHero			    "0x00100207">
-	<!ENTITY rsMolotokBHero			    "0x00100207">	<!-- Backwards compatibility -->
+	<!ENTITY rsMolotokB				    "0x00100206">	<!-- Replaces rsMolotokHD -->
+	<!ENTITY rsMolotokBHero			    "0x00100207">	<!-- Replaces rsMolotokHero -->
 	<!ENTITY scMolotokA				    "0x00100208">
 	<!ENTITY rsMolotokA				    "0x00100209">
 	<!ENTITY rsMolotokAHero			    "0x0010020A">
@@ -2150,8 +2119,7 @@
 
 	<!-- 0390-03AF COMMONWEALTH II -->
 
-	<!ENTITY rsRoninA					"0x00100390">
-	<!ENTITY rsRoninHD					"0x00100390">	<!-- Backwards Compatible -->
+	<!ENTITY rsRoninA					"0x00100390">	<!-- Replaces rsRoninHD -->
 	<!ENTITY rsTenhoveHD				"0x00100391">
 	<!ENTITY rsCommonwealthDryDock		"0x00100392">
 	<!ENTITY scEI200Stock				"0x00100593">
@@ -2162,8 +2130,7 @@
 	<!ENTITY rsEI100Hero				"0x00100398">
 	<!ENTITY rsSapphire					"0x00100399">
 	<!ENTITY rsEI500					"0x0010039A">
-	<!ENTITY msRaisuStation				"0x0010039B">	<!-- Backwards Compatible -->
-	<!ENTITY msRaisuStation01			"0x0010039B">
+	<!ENTITY msRaisuStation01			"0x0010039B">	<!-- Replaces msRaisuStation -->
 	<!ENTITY rsRoninAHero				"0x0010039C">
 	<!ENTITY rsRoninB					"0x0010039D">
 	<!ENTITY rsRoninBHero				"0x0010039E">

@@ -758,7 +758,7 @@
 			<Ship chance="10"	class="&scSapphireYacht;"/>
 			<Ship chance="3"	class="&scScarabFreighter;"/>
 			<Ship chance="14"	class="&scRoninB;"/>
-			<Ship chance="10"	class="&scWolfen;"/>
+			<Ship chance="10"	class="&scWolfenC;"/>
 		</Table>
 	</ShipTable>
 

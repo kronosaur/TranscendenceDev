@@ -214,7 +214,7 @@
 		<!-- Image and Effects -->
 
 		<Image imageID="&rsSapphire;" imageWidth="62" imageHeight="62"	rotationCount="120" rotationColumns="12" viewportRatio="0.00475"/>
-		<HeroImage imageID="&rsZubrinLarge;" imageWidth="320" imageHeight="320"/>
+		<HeroImage imageID="&rsSapphireLarge;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="160"	posRadius="7"	posZ="0"	rotation="180"	bringToFront="*"/>
