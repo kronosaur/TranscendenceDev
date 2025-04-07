@@ -8749,16 +8749,15 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CDamageSource DamageSource(NULL, removedFromSystem);
 			if (pArgs->GetCount() > 1)
+				DamageSource = GetDamageSourceArg(*pCC, pArgs->GetElement(1));
+			else
 				{
-				if (pCtx->GetAPIVersion() <= 53)
-					DamageSource = GetDamageSourceArg(*pCC, pArgs->GetElement(1));
-				else
+				if (pCtx->GetAPIVersion() >= 54)
 					{
 					CString sError = CONSTLIT("Calling (objDestroy obj) has been deprecated in API 54+. Use (objRemove obj) instead.");
 					return pCC->CreateError(sError, pArgs->GetElement(1));
 					}
 				}
-
 			pObj->Destroy(DamageSource.GetCause(), DamageSource);
 			return pCC->CreateTrue();
 			}
