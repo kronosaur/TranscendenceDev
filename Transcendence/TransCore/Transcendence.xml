@@ -64,13 +64,14 @@
 	<!-- CORE TYPE LIBRARY 0003 -->
 	
 	<!ENTITY unidCoreTypesLibrary		"0x00030000">
+
 	
 	<!-- RESERVED 0004-000E -->
 
 	<!-- 000F 0000-000F: Human Space -->
 	<!-- 000F 1000-100F: Human Space -->
 
-	<!-- HUMAN SPACE LIBRARY 0010-001F -->
+	<!-- HUMAN SPACE VOL 1 LIBRARY 0010-001F -->
 
 	<!ENTITY unidHumanSpaceLibrary		"0x00100000">
 	
@@ -83,12 +84,24 @@
 	
 	<!ENTITY unidCompatibilityLibrary	"0x00700000">
 	
-	<!-- 0080-00FF RESERVED -->
+	<!-- 0080-009F RESERVED -->
+
+	<!-- HUMAN SPACE VOL 2 LIBRARY 00A0 -->
 	
 	<!-- 0100 - 01FF RESERVED FOR DEBUG/TUTORIAL EXTENSIONS -->
-	<!-- 0200 - 07FF RESERVED -->
+	<!-- 0200 - 02FF RESERVED -->
+	<!-- 0300 - 03FF OPENWORLD SANDBOX GAMEPLAY -->
+
+	<!-- SANDBOX LIBRARY 0300 -->
+
+	<!-- 0400 - 07FF RESERVED -->
 	
 	<!-- HUMAN SPACE LIBRARY 0800-080F  -->
+
+	<!-- 0810 - 9FFF RESERVED -->
+	<!-- A000 - CFFF REGISTERED EXTENSIONS -->
+	<!-- D000 - EFFF UNREGISTERED EXTENSIONS -->
+	<!-- F000 - FFFF DYNAMIC TYPES -->
 
 	<!-- PART I 0020 0xxx -->
 
