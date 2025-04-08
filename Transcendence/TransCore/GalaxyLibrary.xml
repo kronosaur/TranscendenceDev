@@ -61,8 +61,7 @@
 	<!ENTITY itUraniumOre				"0x000040FD">
 	<!ENTITY itHeliumRegolith			"0x000040FE">
 	<!ENTITY itCobaltThoriumOre			"0x000040FF">
-	<!ENTITY itHadronArcheolith			"0x00004104">
-	<!ENTITY itHadronArchaeolith		"0x00004104">
+	<!ENTITY itHadronArchaeolith		"0x00004104"> <!-- Replaces itHadronArcheolith -->
 	<!ENTITY itCeralloyOre				"0x0000413F">
 	<!ENTITY itOrthoSteelOre			"0x00004140">
 	<!ENTITY itIthaliumOre				"0x00004141">

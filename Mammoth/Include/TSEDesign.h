@@ -1044,6 +1044,7 @@ class CExtension
 		void SetVerified (bool bVerified = true) { m_bVerified = bVerified; }
 		void SweepImages (void);
 		bool UsesCompatibilityLibrary (void) const { return m_bUsesCompatibilityLibrary; }
+		bool UsesCompatibilityUNIDLibrary (void) const { return m_bUsesCompatibilityUNIDLibrary; }
 		bool UsesXML (void) const { return m_bUsesXML; }
 		void WriteReference (IWriteStream &Stream) const { WriteReference(Stream, this); }
 
@@ -1067,6 +1068,7 @@ class CExtension
 		void AddEntityNames (CExternalEntityTable *pEntities, TSortMap<DWORD, CString> *retMap) const;
 		void AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID = 0, DWORD dwRelease = 0, EUsage iUsage = EUsage::required);
 		void AddDefaultLibraryReferences (SDesignLoadCtx &Ctx);
+		void AddCompatibilityLibraryReferences (SDesignLoadCtx &Ctx);
 		void CleanUpXML (void);
 		ALERROR LoadDesignElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		ALERROR LoadDesignType (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDesignType **retpType = NULL);
@@ -1129,6 +1131,7 @@ class CExtension
 		bool m_bAutoInclude;				//	Extension should always be included (if appropriate)
 		bool m_bUsesXML;					//	Extension uses XML from other extensions
 		bool m_bUsesCompatibilityLibrary;	//	Extension needs the compatibility library
+		bool m_bUsesCompatibilityUNIDLibrary;	//	Extension needs the compatibility UNID library
 		bool m_bHidden;						//	Available only for backwards compatibility
 	};
 
@@ -1162,10 +1165,11 @@ class CExtensionCollection
 			//	ComputeBindOrder
 
 			FLAG_FORCE_COMPATIBILITY_LIBRARY =	0x00001000,
+			FLAG_FORCE_COMPATIBILITY_UNID_LIBRARY =	0x00002000,
 
 			//	FindBestExtension
 
-			FLAG_ALLOW_DIFFERENT_RELEASE =		0x00002000,
+			FLAG_ALLOW_DIFFERENT_RELEASE =		0x00004000,
 			};
 
 		struct SCollectionStatusOptions
@@ -1211,6 +1215,7 @@ class CExtensionCollection
 
 	private:
 		ALERROR AddCompatibilityLibrary (CExtension *pAdventure, const TArray<CExtension *> &Extensions, DWORD dwFlags, const TArray<CExtension *> &Compatibility, TArray<CExtension *> *retList, CString *retsError);
+		ALERROR AddCompatibilityUNIDLibrary (CExtension *pAdventure, const TArray<CExtension *> &Extensions, DWORD dwFlags, const TArray<CExtension *> &Compatibility, TArray<CExtension *> *retList, CString *retsError);
 		void AddOrReplace (CExtension *pExtension);
 		ALERROR AddToBindList (CExtension *pExtension, DWORD dwFlags, const TArray<CExtension *> &Compatibility, TArray<CExtension *> *retList, CString *retsError);
 		void ClearAllMarks (void);

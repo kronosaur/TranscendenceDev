@@ -576,7 +576,7 @@
 			<Table count="1d4">
 				<Ship chance="50"	count="1" class="&scCenturionM;" orders="gateOnThreat" />
 				<Ship chance="15"	count="1" class="&scEI500;" orders="gateOnThreat"/>
-				<Ship chance="10"	count="1" class="&scWolfen;" orders="gateOnThreat"/>
+				<Ship chance="10"	count="1" class="&scWolfenC;" orders="gateOnThreat"/>
 				<Ship chance="25"	count="1" class="&scFerianMiner;" orders="gateOnThreat"/>
 			</Table>
 		</Ships>
@@ -619,7 +619,7 @@
 				<Ship chance="50"	count="1" class="&scCenturionM;" orders="gateOnThreat" />
 				<Ship chance="25"	count="1" class="&scFerianMiner;" orders="gateOnThreat"/>
 				<Ship chance="15"	count="1" class="&scEI500;" orders="gateOnThreat"/>
-				<Ship chance="10"	count="1" class="&scWolfen;" orders="gateOnThreat"/>
+				<Ship chance="10"	count="1" class="&scWolfenC;" orders="gateOnThreat"/>
 			</Table>
 		</Reinforcements>
 

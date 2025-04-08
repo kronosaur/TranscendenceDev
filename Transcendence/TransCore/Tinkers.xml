@@ -30,7 +30,7 @@
 					{ item:&itLightBlastPlate;			enhancement:"+reflect:particle"		components:( { item:&itDwargChitonArmor; count:1 } { item:&itCeralloyOre; count:4 })	extraCost:0 }
 					{ item:&itCeralloyArmor;			enhancement:"+immunity:ionEffects"	components:( { item:&itHyperfiberRoll; count:2 } { item:&itCeralloyOre; count:4 })	extraCost:0 }
 					{ item:&itAdvancedReactiveArmor;	enhancement:"+hpBonus:particle:100"	components:( { item:&it400HexageneMAG; count:2 } { item:&itPlasteelOre; count:6 })	extraCost:0 }
-					{ item:&itSolarArmor;				enhancement:"+reflect:laser"		components:( { item:&itLanthanumGlass; count:1 } { item:&itPalladiumOre; count:3 })	extraCost:0 }
+					{ item:&itLightSolarArmor;			enhancement:"+reflect:laser"		components:( { item:&itLanthanumGlass; count:1 } { item:&itPalladiumOre; count:3 })	extraCost:0 }
 					
 					{ item:&itDualMarkIIIHowitzer;		enhancement:Nil						components:( { item:&itMakayevBlastEnhancer; count:1 } { item:&itMarkIIIHowitzer; count:2 })	extraCost:0 }
 					{ item:&itOmniXRayLaserCannon;		enhancement:Nil						components:( { item:&itXRayLaserCannon; count:1 } { item:&itOmniLaserCannon; count:1 })	extraCost:0 }

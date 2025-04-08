@@ -585,7 +585,7 @@
 
 					(for i 1 squadCount
 						(block (squadObj squadClass)
-							(setq squadClass (random '(&scRoninA; &scRoninA; &scRoninA; &scRoninB; &scRoninB; &scWolfen;)))
+							(setq squadClass (random '(&scRoninA; &scRoninA; &scRoninA; &scRoninB; &scRoninB; &scWolfenC;)))
 							(setq squadObj (sysCreateShip squadClass aBaseObj (objGetSovereign gSource)))
 
 							(objSetObjRefData gSource (cat "Wingman" i) squadObj)

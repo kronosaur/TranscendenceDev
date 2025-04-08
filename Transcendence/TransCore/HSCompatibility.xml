@@ -22,7 +22,7 @@
 			obsoleteVersion=			"37"
 			name=				"abandoned cargo crate"
 			sovereign=			"&svNeutral;"
-			abandonedScreen=	"&dsAbandonedCrate;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			structuralHitPoints="10"
 			ejectaType=			"&vtWreckEjecta;"
@@ -2135,14 +2135,14 @@
 				</InitialData>
 
 				<Escorts>
-					<Ship					count="1"	class="&scCenturion;"	orders="guard" controller="fleetcommand">
+					<Ship					count="1"	class="&scCenturionBlock2;"	orders="guard" controller="fleetcommand">
 						<Escorts>
-							<Ship     count="6"	class="&scCenturion;"	orders="escort" controller="fleet"/>
+							<Ship     count="6"	class="&scCenturionBlock2;"	orders="escort" controller="fleet"/>
 						</Escorts>
 					</Ship>
-					<Ship					count="1"	class="&scCenturion;"	orders="guard" controller="fleetcommand">
+					<Ship					count="1"	class="&scCenturionBlock2;"	orders="guard" controller="fleetcommand">
 						<Escorts>
-							<Ship     count="6"	class="&scCenturion;"	orders="escort" controller="fleet"/>
+							<Ship     count="6"	class="&scCenturionBlock2;"	orders="escort" controller="fleet"/>
 						</Escorts>
 					</Ship>
 				</Escorts>
@@ -2171,7 +2171,7 @@
 				</InitialData>
 
 				<Escorts>
-					<Ship     count="2d6"	class="&scCenturion;"	orders="patrol" patrolDist="15"/>
+					<Ship     count="2d6"	class="&scCenturionBlock2;"	orders="patrol" patrolDist="15"/>
 				</Escorts>
 			</Ship>
 		</Ships>
@@ -2198,7 +2198,7 @@
 				</InitialData>
 
 				<Escorts>
-					<Ship     count="2d6"	class="&scCenturion;"	orders="patrol" patrolDist="15"/>
+					<Ship     count="2d6"	class="&scCenturionBlock2;"	orders="patrol" patrolDist="15"/>
 				</Escorts>
 			</Ship>
 		</Ships>
@@ -2225,7 +2225,7 @@
 				</InitialData>
 
 				<Escorts>
-					<Ship     count="2d6"	class="&scCenturion;"	orders="patrol" patrolDist="15"/>
+					<Ship     count="2d6"	class="&scCenturionBlock2;"	orders="patrol" patrolDist="15"/>
 				</Escorts>
 			</Ship>
 		</Ships>
@@ -2252,7 +2252,7 @@
 				</InitialData>
 
 				<Escorts>
-					<Ship     count="2d6"	class="&scCenturion;"	orders="patrol" patrolDist="15"/>
+					<Ship     count="2d6"	class="&scCenturionBlock2;"	orders="patrol" patrolDist="15"/>
 				</Escorts>
 			</Ship>
 		</Ships>
@@ -2741,7 +2741,7 @@
 
 		<PlayerSettings
 			desc=				"The EI500 is slow and ungraceful, but its omnidirectional laser can hit even the fastest gunships. Six open slots for devices give you lots of upgrade flexibility."
-			largeImage=			"&rsEI100XLarge;"
+			largeImage=			"&rsEI500Large;"
 			initialClass=		"true"
 			startingCredits=	"5d20+200"
 			>
@@ -2817,7 +2817,7 @@
 
 		<PlayerSettings
 			desc=				"The versatile Sapphire yacht strikes a good balance between a gunship and a freighter."
-			largeImage=			"&rsZubrinLarge;"
+			largeImage=			"&rsSapphireLarge;"
 			initialClass=		"true"
 			startingCredits=	"10d100+1500"
 			>
@@ -3012,12 +3012,12 @@
 		<Image			imageID="&rsStations3;" imageX="128" imageY="0" imageWidth="128" imageHeight="128"/>
 
 		<Ships>
-			<Ship	count="1"	class="&scMolotok;" orders="guard"/>
+			<Ship	count="1"	class="&scMolotokB;" orders="guard"/>
 
 			<Table count="1d4">
 				<Ship chance="25"  count="1" class="&scZulu-II;" orders="gateOnThreat"/>
 				<Ship chance="15"  count="1" class="&scOromo;" orders="gateOnThreat"/>
-				<Ship chance="15"  count="1" class="&scWolfen;" orders="gateOnThreat"/>
+				<Ship chance="15"  count="1" class="&scWolfenC;" orders="gateOnThreat"/>
 				<Ship chance="30" count="1" class="&scEI500;" orders="gateOnThreat"/>
 				<Ship chance="15"  count="1" class="&scT31ArmedTransport;" orders="gateOnThreat">
 					<Items>
@@ -3245,7 +3245,7 @@
 					(setq state (objGetData gSource "behavior"))
 					(switch
 						(eq state 'katamiRescueWait)
-							(if (not (filter (staGetSubordinates (objGetObjRefData gSource "target")) theGuard (eq (objGetType theGuard) &scMolotok;)))
+							(if (not (filter (staGetSubordinates (objGetObjRefData gSource "target")) theGuard (eq (objGetType theGuard) &scMolotokB;)))
 								(block (theTarget)
 									(setq theTarget (objGetObjRefData gSource "target"))
 									(objSendMessage gPlayerShip gSource "Nice work! Clear the area; we're inbound hot!")

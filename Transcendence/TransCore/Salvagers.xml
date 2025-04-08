@@ -30,7 +30,7 @@
 	<StationType UNID="&stSalvagerEncounter;"
 			name=				"(salvager encounter)"
 			sovereign=			"&svUnknownEnemy;"
-			dockScreen=			"&dsAbandonedShip;"
+			dockScreen=			"&dsRPGAbandonedStation;"
 
 			scale=				"ship"
 			mobile=				"true"
