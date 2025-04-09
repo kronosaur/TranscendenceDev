@@ -400,7 +400,7 @@
 
 					(rpgRumorAdd 'commonwealthMining (make 'sequence 15))
 
-					(if (= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+					(if (rpgEqPlayerClass &unidPilgrimClass;)
 						(rpgRumorAdd 'commonwealthMining 'pilgrim)
 						(rpgRumorAdd 'commonwealthMining 'freelancer)
 						)

@@ -166,7 +166,7 @@
 				(list
 					{	textID: 'textIntro1	}
 					{	textID: 'textIntro2	}
-					{	textID: (if (= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+					{	textID: (if (rpgEqPlayerClass &unidPilgrimClass;)
 							'textIntro3Pilgrim
 							'textIntro3
 							)

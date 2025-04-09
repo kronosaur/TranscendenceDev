@@ -125,7 +125,7 @@
 					})
 			</Text>
 			<Text id="Intro">
-				(if (= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+				(if (rpgEqPlayerClass &unidPilgrimClass;)
 					(msnTranslate gSource 'dallWelcomePilgrim)
 					(msnTranslate gSource 'dallWelcome)
 					)
