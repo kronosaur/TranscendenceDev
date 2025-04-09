@@ -84,6 +84,11 @@
 					(!= (objGetID aOwnerObj) (typ@ gType 'stationID))
 						Nil
 
+					;	Must be a pilgrim
+					
+					(!= (rpgGetPlayerClass) &unidPilgrimClass;)
+						Nil
+
 					True
 					)
 

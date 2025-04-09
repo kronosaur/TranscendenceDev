@@ -2562,6 +2562,25 @@
 					(objAddItem storageObj theItem)
 					)
 				))
+
+			;	CHARACTER CLASS FUNCTIONS ------------------------------------------------------------------
+			;
+			;	To implement:
+			;
+			;	1.	Define class design type (generic Type), and set on starting ship (to be deprecated)
+			;	2.	To get player class use rpgGetPlayerClass
+			;	3.	To check player class equivalence use rpgEqPlayerClass classUNID
+			;	4.	To set player class (this is not yet implemented)
+			;
+
+			(setq rpgGetPlayerClass (lambda ()
+				(objGetProperty gPlayerShip 'characterClass)
+				))
+
+			(setq rpgEqPlayerClass (lambda (unidCharacterClass)
+				(= (rpgGetPlayerClass) unidCharacterClass)
+				))
+
 			)
 	</Globals>
 

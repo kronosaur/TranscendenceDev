@@ -29,7 +29,7 @@
 				(switch
 					;	If we're not a pilgrim, then nothing to do.
 						
-					(not (= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;))
+					(not (rpgEqPlayerClass &unidPilgrimClass;))
 						Nil
 							
 					;	If we're in the starting system, and if we dock with a Sisters

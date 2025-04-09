@@ -280,7 +280,7 @@
 			<Text id="WingmanKilled">			Helena, I will join you now!</Text>
 
 			<Text id="Intro">
-				(if (= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+				(if (rpgEqPlayerClass &unidPilgrimClass;)
 					(cat
 						"As the crowd breaks up, a tall man in a faded flight suit walks up to you:\n\n"
 						"\"My name is Volkov. You are going to the Core, is true? "

@@ -594,7 +594,7 @@
 				(append
 					(rpgRumorAdd 'commonwealthMilitiaOC (make 'sequence 8))
 
-					(if (= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+					(if (rpgEqPlayerClass &unidPilgrimClass;)
 						(rpgRumorAdd 'commonwealthMilitiaOC (make 'sequence 21 23))
 						(rpgRumorAdd 'commonwealthMilitiaOC (make 'sequence 41 43))
 						)

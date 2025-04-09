@@ -47,7 +47,7 @@
 				(switch
 					;	Player must be a Pilgrim
 					
-					(!= (obj@ gPlayerShip 'characterClass) &unidPilgrimClass;)
+					(!= (rpgGetPlayerClass) &unidPilgrimClass;)
 						Nil
 						
 					;	Must be an enemy station in the system

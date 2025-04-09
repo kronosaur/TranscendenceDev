@@ -166,7 +166,7 @@
 				(list
 					{	textID: 'textIntro1	}
 					{	textID: 'textIntro2	}
-					{	textID: (if (= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+					{	textID: (if (rpgEqPlayerClass &unidPilgrimClass;)
 							'textIntro3Pilgrim
 							'textIntro3
 							)
@@ -217,7 +217,10 @@
 						(= status 'betrayed)
 							(list
 								{ textID: 'textBetrayed1 }
-								{ textID: 'textBetrayed2 }
+								{ textID: (if (rpgEqPlayerClass &unidPilgrimClass;)
+									'textBetrayed2Pilgrim
+									'textBetrayed2
+									)}
 								)
 
 						(= status 'destroyedByPlayer)
@@ -231,7 +234,10 @@
 								{ textID: 'textSuccess1 }
 								{ textID: (if (geq (objGetData gPlayerShip 'fleetLevel) 6)
 									'textSuccessCaptain2
-									'textSuccess2
+									(if (rpgEqPlayerClass &unidPilgrimClass;)
+										'textSuccess2Pilgrim
+										'textSuccess2
+										)
 									)}
 								)
 
@@ -377,23 +383,37 @@
 				weapon&mdash;something that will win this war. I want you to test
 				it. Report to the dockmaster and he will explain. Good luck!"
 			</Text>
-			<Text id="textSuccess2">
+			<Text id="textSuccess2Pilgrim">
 				"Thanks for tracking down the Antarctica&mdash;we couldn't have
 				done it without you. I know you're on your way to the Core,	but
 				if you stay with the Fleet and make captain, I guarantee that
 				I'll remember your service. Good luck, and remember what I said."
+			</Text>
+			<Text id="textSuccess2">
+				"Thanks for tracking down the Antarctica&mdash;we couldn't have
+				done it without you. If you stay with the Fleet and make captain,
+				I guarantee that I'll remember your service. Good luck, and
+				remember what I said."
 			</Text>
 			<Text id="textBetrayed1">
 				The bridge grows quiet as you enter. All the officers stare at
 				you, some with disgust, others with pity. The XO walks up to you:
 				"The admiral is waiting for you in his quarters."
 			</Text>
-			<Text id="textBetrayed2">
+			<Text id="textBetrayed2Pilgrim">
 				The admiral sits at his desk quietly studying you. He says,
 				
 				"You're a cold-blooded killer, do you know that? I heard how you
 				betrayed Captain Helios. I know she deserved it, but I'm glad
 				that you're leaving Human Space. I'll see you in hell."
+			</Text>
+			<Text id="textBetrayed2">
+				The admiral sits at his desk quietly studying you. He says,
+				
+				"You're a cold-blooded killer, do you know that? I heard how you
+				betrayed Captain Helios. I know she deserved it, but even with
+				stakes this high, I wouldn't have stooped so low. Get out of my
+				sight&mdash;I'll see you in hell."
 			</Text>
 		</Language>
 	</MissionType>

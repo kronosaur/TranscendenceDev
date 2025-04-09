@@ -80,7 +80,7 @@
 							
 								;	If we're not a Pilgrim, we always get nothing
 								
-								(!= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+								(!= (rpgGetPlayerClass) &unidPilgrimClass;)
 									(scrShowPane gScreen 'Nothing)
 									
 								;	If interval has not passed, then nothing
@@ -463,7 +463,7 @@
 
 							(or (not entry) 
 									(= rel 0)
-									(!= (obj@ gPlayerShip 'characterClass) &unidPilgrimClass;)
+									(!= (rpgGetPlayerClass) &unidPilgrimClass;)
 									)
 								(scrSetDescTranslate gScreen 'descDonate.nothing)
 
