@@ -103,7 +103,7 @@
 
 			<Code id="statusDisplay">
 				(switch
-					(= (obj@ gPlayerShip 'characterClass) &unidPilgrimClass;)
+					(rpgEqPlayerClass &unidPilgrimClass;)
 						(typTranslate &unidPilgrimClass; 'rankDetails)
 
 					(typTranslate gType 'nonPilgrimStatus)
@@ -297,7 +297,7 @@
 
 								;	No Sanctum if you're not a pilgrim
 
-								(if (!= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+								(if (!= (rpgGetPlayerClass) &unidPilgrimClass;)
 									(scrShowAction gScreen 'actionSanctum Nil)
 									)
 								)
@@ -336,7 +336,7 @@
 				(block (communionItem)
 					(append
 						(if (and (setq communionItem (random (objGetItems gPlayerShip "*U +communion;")))
-								(= (obj@ gPlayerShip 'characterClass) &unidPilgrimClass;)
+								(rpgEqPlayerClass &unidPilgrimClass;)
 								)
 							(rpgRumorAdd 'sistersMission 'offerItem 100 nil {
 								itemName: (itmGetName communionItem 'article)
@@ -371,7 +371,7 @@
 					(objTranslate gSource 'descAbbessAdviceIntro)
 					"\n\n"
 					(switch
-						(= (obj@ gPlayerShip 'characterClass) &unidPilgrimClass;)
+						(rpgEqPlayerClass &unidPilgrimClass;)
 							(objTranslate gSource (cat 'descAbbessAdvice (min (sysGetLevel) 7)))
 
 						(objTranslate gSource 'descAbbessAdvice.nonPilgrim)

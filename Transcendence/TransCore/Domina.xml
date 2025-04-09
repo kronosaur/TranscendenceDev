@@ -839,7 +839,7 @@
 					(switch
 						;	Must be a pilgrim
 
-						(!= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+						(!= (rpgGetPlayerClass) &unidPilgrimClass;)
 							'notPilgrim
 
 						;	Do not show powers that are above our level
@@ -1056,7 +1056,7 @@
 				(block (level)
 					(if (not (setq level (typGetGlobalData &stDomina; "level")))
 						(block Nil
-							(if (eq (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+							(if (rpgEqPlayerClass &unidPilgrimClass;)
 								(setq level 1)
 								(setq level 0)
 								)
@@ -1083,7 +1083,7 @@
 				(block (lastInvokeTime)
 					(switch
 						; Must be a pilgrim
-						(not (eq (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;))
+						(!= (rpgGetPlayerClass) &unidPilgrimClass;)
 							Nil
 						
 						; Always show level 1 power (sustain)

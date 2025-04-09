@@ -30,7 +30,7 @@
 							
 						;	If we're a Pilgrim, then we're at least level 1.
 						
-						(= (obj@ gPlayerShip 'characterClass) &unidPilgrimClass;)
+						(rpgEqPlayerClass &unidPilgrimClass;)
 							1
 							
 						;	Otherwise Nil
