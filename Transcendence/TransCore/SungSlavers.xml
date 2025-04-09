@@ -13,7 +13,7 @@
 			>
 		<Relationships> 
 			<Relationship sovereign="&svAres;" disposition="enemy" mutual="true"/>
-			<Relationship sovereign="&svRanx;" disposition="enemy" mutual="true"/>
+			<Relationship sovereign="&svRanxEmpire;" disposition="enemy" mutual="true"/>
 			<Relationship sovereign="&svDwargRaiders;" disposition="enemy" mutual="true"/>
 		</Relationships>
 	</Sovereign>
