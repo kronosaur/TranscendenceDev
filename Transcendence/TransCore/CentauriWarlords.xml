@@ -3,7 +3,7 @@
 <TranscendenceModule>
 
 	<Sovereign UNID="&svCentauriWarlords;"
-			name=":the Centauri coalition"
+			name=":the Centauri Warlords"
 			shortName=":the Centauri"
 			adjective="Centauri"
 			demonym=":a Centauri warlord(s)"
@@ -16,7 +16,7 @@
 			name=":the Centauri coalition"
 			shortName=":the Centauri"
 			adjective="Centauri"
-			demonym=":a Centauri warlord(s)"
+			demonym=":a Centauri"
 			plural="true"
 
 			alignment="neutral"

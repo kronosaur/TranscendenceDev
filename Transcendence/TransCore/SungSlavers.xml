@@ -10,7 +10,13 @@
 			plural="true"
 
 			alignment="destructive order"
-			/>
+			>
+		<Relationships> 
+			<Relationship sovereign="&svAres;" disposition="enemy" mutual="true"/>
+			<Relationship sovereign="&svRanxEmpire;" disposition="enemy" mutual="true"/>
+			<Relationship sovereign="&svDwargRaiders;" disposition="enemy" mutual="true"/>
+		</Relationships>
+	</Sovereign>
 
 	<Sovereign UNID="&svSungSlaves;"
 			name="slaves of Sung"
