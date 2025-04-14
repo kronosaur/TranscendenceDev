@@ -12,7 +12,6 @@ const int MAX_SCREEN_HEIGHT =						1080;
 
 const int TIMER_RESOLUTION =						1;
 const int TICKS_PER_SECOND =						30;
-const int FRAME_DELAY =								(1000 / TICKS_PER_SECOND);		//	Delay in mSecs
 
 void CHumanInterface::Run (IHIController *pController, HINSTANCE hInst, int nCmdShow, LPSTR lpCmdLine)
 
@@ -153,8 +152,18 @@ void CHumanInterface::MainLoop (void)
 
 	{
 	MSG msg;
+	int frame_delay;
 
 	timeBeginPeriod(TIMER_RESOLUTION);
+
+	if (m_Options.m_bUse60fps)
+		{
+		frame_delay = 1000 / 60;
+		}
+	else
+		{
+		frame_delay = 1000 / 30;
+		}
 
 	//	Start main loop
 
@@ -162,7 +171,7 @@ void CHumanInterface::MainLoop (void)
 
 	while (TRUE)
 		{
-		DWORD dwNextFrame = dwStartTime + FRAME_DELAY;
+		DWORD dwNextFrame = dwStartTime + frame_delay;
 
 		//	Tell the main window that we're animating
 

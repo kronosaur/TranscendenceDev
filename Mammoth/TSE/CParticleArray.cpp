@@ -112,14 +112,14 @@ void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int 
 	if (m_bUseRealCoords)
 		{
 		pParticle->Pos = vPos;
-		pParticle->Vel = (vVel * g_SecondsPerUpdate);
+		pParticle->Vel = vVel;
 		PosToXY(vPos, &pParticle->x, &pParticle->y);
 		//	xVel and yVel are ignored if using real coords
 		}
 	else
 		{
 		PosToXY(vPos, &pParticle->x, &pParticle->y);
-		PosToXY(vVel * g_SecondsPerUpdate, &pParticle->xVel, &pParticle->yVel);
+		PosToXY(vVel, &pParticle->xVel, &pParticle->yVel);
 		}
 
 	pParticle->iGeneration = iGeneration;
@@ -1668,8 +1668,32 @@ void CParticleArray::Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &
 //	Updates the array based on the context
 
 	{
+	// FIXME - collisions should be part of move
 	if ((Ctx.pDamageDesc || Desc.HasWakeFactor()) && Ctx.pSystem)
 		UpdateCollisions(Desc, Ctx);
+
+
+	//	Loop to update particle lifetimes (moved here from UpdateMotionLinear)
+
+	SParticle* pParticle = m_pArray;
+	SParticle* pEnd = pParticle + m_iCount;
+
+	while (pParticle < pEnd)
+		{
+		if (pParticle->fAlive)
+			{
+			//	Update lifetime. If -1, then we're immortal
+			if (pParticle->iLifeLeft > 0) pParticle->iLifeLeft--;
+
+			//	If we hit 0, then we're dead
+			if (pParticle->iLifeLeft == 0) pParticle->fAlive = false;
+			}
+
+		//	Next
+
+		pParticle++;
+		}
+
 
 	//	If we're tracking, change velocity to follow target
 
@@ -1719,9 +1743,9 @@ void CParticleArray::UpdateBrownian (const CParticleSystemDesc &Desc, SEffectUpd
 	Metric rMaxRadius2 = rMaxRadius * rMaxRadius;
 	bool bCheckRadius = (rMaxRadius > 0.0);
 
-	Metric rCohesionSpeed = g_SecondsPerUpdate * Desc.GetXformTime() * Desc.GetCohesionFactor() * Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
-	Metric rImpulseSpeed = g_SecondsPerUpdate * Desc.GetXformTime() * IMPULSE_FACTOR * Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
-	Metric rMaxSpeed = MAX_SPEED_FACTOR * g_SecondsPerUpdate * Desc.GetXformTime() * Desc.GetEmitSpeed().GetMaxValue() * LIGHT_SPEED / 100.0;
+	Metric rCohesionSpeed = Desc.GetXformTime() * Desc.GetCohesionFactor() * Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
+	Metric rImpulseSpeed = Desc.GetXformTime() * IMPULSE_FACTOR * Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
+	Metric rMaxSpeed = MAX_SPEED_FACTOR * Desc.GetXformTime() * Desc.GetEmitSpeed().GetMaxValue() * LIGHT_SPEED / 100.0;
 
 	//	Loop over all particles
 
@@ -2075,7 +2099,7 @@ void CParticleArray::UpdateComet (const CParticleSystemDesc &Desc, SEffectUpdate
 			if (rVelAdj < 0.01)
 				rVelAdj = 0.0;
 
-			pParticle->Vel = g_SecondsPerUpdate * (m_vLastEmitSourceVel + ::PolarToVector(pParticle->iRotation, rMaxSpeed - (rSpeedRange * rVelAdj)));
+			pParticle->Vel = m_vLastEmitSourceVel + ::PolarToVector(pParticle->iRotation, rMaxSpeed - (rSpeedRange * rVelAdj));
 			pParticle->rData = rVelAdj;
 			}
 
@@ -2085,13 +2109,15 @@ void CParticleArray::UpdateComet (const CParticleSystemDesc &Desc, SEffectUpdate
 		}
 	}
 
-void CParticleArray::UpdateMotionLinear (bool *retbAlive, CVector *retvAveragePos)
+void CParticleArray::UpdateMotionLinear (Metric rSeconds, bool *retbAlive, CVector *retvAveragePos)
 
 //	UpdateMotionLinear
 //
 //	Updates the position of all particles
 
 	{
+	ASSERT(rSeconds >= 0);
+
 	//	If we've been asked for the average position, then we
 	//	need to use real coordinates
 
@@ -2131,47 +2157,36 @@ void CParticleArray::UpdateMotionLinear (bool *retbAlive, CVector *retvAveragePo
 			{
 			if (pParticle->fAlive)
 				{
-				//	Update lifetime. If -1, then we're immortal
+				iParticleCount++;
 
-				if (pParticle->iLifeLeft == -1
-						|| (--pParticle->iLifeLeft > 0))
-					{
-					iParticleCount++;
+				//	Update position
 
-					//	Update position
+				pParticle->Pos = pParticle->Pos + (pParticle->Vel * rSeconds);
 
-					pParticle->Pos = pParticle->Pos + pParticle->Vel;
+				//	Convert to integer
+				//	NOTE: If we're using real coords we always ignore integer
+				//	velocity.
 
-					//	Convert to integer
-					//	NOTE: If we're using real coords we always ignore integer
-					//	velocity.
+				PosToXY(pParticle->Pos, &pParticle->x, &pParticle->y);
 
-					PosToXY(pParticle->Pos, &pParticle->x, &pParticle->y);
+				//	Update the bounding box
 
-					//	Update the bounding box
+				if (pParticle->Pos.GetX() > xRight)
+					xRight = pParticle->Pos.GetX();
+				if (pParticle->Pos.GetX() < xLeft)
+					xLeft = pParticle->Pos.GetX();
 
-					if (pParticle->Pos.GetX() > xRight)
-						xRight = pParticle->Pos.GetX();
-					if (pParticle->Pos.GetX() < xLeft)
-						xLeft = pParticle->Pos.GetX();
+				if (pParticle->Pos.GetY() < yBottom)
+					yBottom = pParticle->Pos.GetY();
+				if (pParticle->Pos.GetY() > yTop)
+					yTop = pParticle->Pos.GetY();
 
-					if (pParticle->Pos.GetY() < yBottom)
-						yBottom = pParticle->Pos.GetY();
-					if (pParticle->Pos.GetY() > yTop)
-						yTop = pParticle->Pos.GetY();
+				//	Update center of mass
 
-					//	Update center of mass
+				if (bCalcCenterOfMass)
+					vTotalPos = vTotalPos + pParticle->Pos;
 
-					if (bCalcCenterOfMass)
-						vTotalPos = vTotalPos + pParticle->Pos;
-
-					bAllParticlesDead = false;
-					}
-
-				//	If we hit 0, then we're dead
-
-				else
-					pParticle->fAlive = false;
+				bAllParticlesDead = false;
 				}
 
 			//	Next
@@ -2214,30 +2229,24 @@ void CParticleArray::UpdateMotionLinear (bool *retbAlive, CVector *retvAveragePo
 			{
 			if (pParticle->fAlive)
 				{
-				if (pParticle->iLifeLeft == -1
-						|| (--pParticle->iLifeLeft > 0))
-					{
-					bAllParticlesDead = false;
+				bAllParticlesDead = false;
 
-					//	Update position
+				//	Update position
 
-					pParticle->x += pParticle->xVel;
-					pParticle->y += pParticle->yVel;
+				pParticle->x += mathRound(pParticle->xVel * rSeconds);
+				pParticle->y += mathRound(pParticle->yVel * rSeconds);
 
-					//	Update the bounding box
+				//	Update the bounding box
 
-					if (pParticle->x > xRight)
-						xRight = pParticle->x;
-					if (pParticle->x < xLeft)
-						xLeft = pParticle->x;
+				if (pParticle->x > xRight)
+					xRight = pParticle->x;
+				if (pParticle->x < xLeft)
+					xLeft = pParticle->x;
 
-					if (pParticle->y > yBottom)
-						yBottom = pParticle->y;
-					if (pParticle->y < yTop)
-						yTop = pParticle->y;
-					}
-				else
-					pParticle->fAlive = false;
+				if (pParticle->y > yBottom)
+					yBottom = pParticle->y;
+				if (pParticle->y < yTop)
+					yTop = pParticle->y;
 				}
 
 			//	Next

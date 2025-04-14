@@ -1613,6 +1613,7 @@ void COverlay::Update (CSpaceObject *pSource, int iScale, int iRotation, bool *r
 
 	SEffectMoveCtx MoveCtx;
 	MoveCtx.pObj = pSource;
+	MoveCtx.rSeconds = g_SecondsPerUpdate;	// FIXME - this is behavior update, but calling OnMove below
 
 	//	If our painter needs an origin, then compute it and set it.
 
