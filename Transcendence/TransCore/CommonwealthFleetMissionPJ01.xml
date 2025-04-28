@@ -598,7 +598,7 @@
 			<Text id="Briefing">
 				(list
 					{
-						textID: (if (= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+						textID: (if (rpgEqPlayerClass &unidPilgrimClass;)
 							'textBriefing1aPilgrim
 							'textBriefing1aNormal
 							)
@@ -658,7 +658,7 @@
 			</Text>
 
 			<Text id="SuccessDebrief">
-				(if (= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+				(if (rpgEqPlayerClass &unidPilgrimClass;)
 					{	textID: 'textSuccessDebriefPilgrim	}
 					{	textID: 'textSuccessDebriefNormal	}
 					)
