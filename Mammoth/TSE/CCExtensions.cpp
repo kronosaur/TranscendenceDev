@@ -13049,7 +13049,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			Ctx.vPos = vPos;
 			Ctx.vVel = PolarToVector(iDir, rSpeed);
 			Ctx.vSourcePos = pSource ? pSource->GetPos() : vPos;
-			Ctx.vSourceVec = pSource ? pSource->GetVel() : Ctx.vVel;
+			Ctx.vSourceVec = pSource ? pSource->GetVel() : NullVector;
 			Ctx.iDirection = iDir;
 			Ctx.iSourceDirection = pSource ? pSource->GetRotation() : iDir;
 			Ctx.pTarget = pTarget;

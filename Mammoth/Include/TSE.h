@@ -1055,6 +1055,7 @@ class CSpaceObject
 		const CVector &DeltaV (const CVector &vDelta) { m_vVel = m_vVel + vDelta; return m_vVel; }
 		const CVector &GetOldPos (void) const { return m_vOldPos; }
 		const CVector &GetVel (void) const { return m_vVel; }
+		const CVector &GetInheritVel (void) const { return m_vInheritVel; }
 		bool IsInsideBarrier (void) const { return m_fInsideBarrier; }
 		bool IsManuallyAnchored (void) const { return m_fManualAnchor; }
 		void Jump (const CVector &vPos);
@@ -1064,6 +1065,7 @@ class CSpaceObject
 		void SetManualAnchor (bool bAnchored = true) { m_fManualAnchor = bAnchored; }
 		void SetPos (const CVector &vPos) { m_vPos = vPos; }
 		void SetVel (const CVector &vVel) { m_vVel = vVel; }
+		void SetInheritVel (const CVector &vVel) { m_vInheritVel = vVel; }
 
 		//	Overlays
 
@@ -1525,6 +1527,7 @@ class CSpaceObject
 		int m_iDestiny = 0;								//	Random number 0..DestinyRange-1
 		CVector m_vPos;									//	Position of object in system
 		CVector m_vVel;									//	Velocity of object
+		CVector m_vInheritVel = NullVector;				//	Velocity inherited at creation
 		CVector m_vOldPos;								//	Position last tick
 		Metric m_rBoundsX = 0.0;						//	Object bounds
 		Metric m_rBoundsY = 0.0;						//	Object bounds
