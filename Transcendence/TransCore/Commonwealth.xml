@@ -1182,7 +1182,7 @@
 				(append
 					(rpgRumorAdd 'commonwealthHabitat (make 'sequence 4))
 
-					(if (= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+					(if (rpgEqPlayerClass &unidPilgrimClass;)
 						(rpgRumorAdd 'commonwealthHabitat 'pilgrim)
 						(rpgRumorAdd 'commonwealthHabitat 'freelancer)
 						)

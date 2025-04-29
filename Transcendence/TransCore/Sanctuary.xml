@@ -98,7 +98,7 @@
 
 								;	No Sanctum if you're not a pilgrim
 
-								(if (!= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+								(if (!= (rpgGetPlayerClass) &unidPilgrimClass;)
 									(scrShowAction gScreen 'actionSanctum Nil)
 									)
 								)

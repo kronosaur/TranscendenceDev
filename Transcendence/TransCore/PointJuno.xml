@@ -168,7 +168,7 @@
 
 			<Text id="descNoMissions">
 				(switch
-					(= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+					(rpgEqPlayerClass &unidPilgrimClass;)
 						(objTranslate gSource 'descNoMissionsPilgrim)
 					
 					(objTranslate gSource 'descNoMissionsNormal)
