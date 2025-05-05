@@ -217,7 +217,7 @@ ALERROR CMissile::Create (CSystem &System, SShotCreateCtx &Ctx, CMissile **retpM
 		return ERR_MEMORY;
 
 	pMissile->Place(Ctx.vPos, Ctx.vVel);
-	pMissile->SetSourceVel(Ctx.vSourceVec);
+	pMissile->SetSourceVel(Ctx.vSourceVel);
 
 	//	We can't save missiles without an UNID
 	ASSERT(!Ctx.pDesc->GetUNID().IsBlank());
@@ -362,7 +362,7 @@ void CMissile::CreateFragments (const CVector &vPos, const CVector &vVel)
 		FragCtx.pTarget = m_pTarget;
 		FragCtx.vPos = vPos;
 		FragCtx.vVel = vVel;
-		FragCtx.vSourceVec = GetVel();
+		FragCtx.vSourceVel = GetVel();
 		FragCtx.vSourcePos = GetPos();
 		FragCtx.iSourceDirection = GetRotation();
 

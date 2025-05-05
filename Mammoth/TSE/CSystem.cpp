@@ -1479,7 +1479,7 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 					if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleDirection)
 						iCenterAngle = Ctx.iSourceDirection;
 					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleVelocity)
-						iCenterAngle = VectorToPolar(Ctx.vSourceVec);
+						iCenterAngle = VectorToPolar(Ctx.vSourceVel);
 					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleTarget)
 						iCenterAngle = VectorToPolar(Ctx.vPos - Ctx.pTarget->GetPos());
 					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleTrigger)
@@ -1730,7 +1730,7 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 				FragCtx.vVel = vShotVel;
 				FragCtx.iDirection = Angles[i];
 				FragCtx.iSourceDirection = FragCtx.iDirection;
-				FragCtx.vSourceVec = vInitVel;
+				FragCtx.vSourceVel = vInitVel;
 				FragCtx.vSourcePos = FragCtx.vPos;
 				FragCtx.pTarget = Targets[i];
 				FragCtx.dwFlags = SShotCreateCtx::CWF_FRAGMENT;

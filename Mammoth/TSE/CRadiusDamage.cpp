@@ -42,7 +42,7 @@ ALERROR CRadiusDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CRadiusDama
 		return ERR_MEMORY;
 
 	pArea->Place(Ctx.vPos, Ctx.vVel);
-	pArea->SetSourceVel(Ctx.vSourceVec);
+	pArea->SetSourceVel(Ctx.vSourceVel);
 
 	//	Get notifications when other objects are destroyed
 	pArea->SetObjectDestructionHook();
@@ -401,7 +401,7 @@ void CRadiusDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			FragCtx.vVel = GetVel();
 			FragCtx.iDirection = GetRotation();
 			FragCtx.vSourcePos = FragCtx.vPos;
-			FragCtx.vSourceVec = FragCtx.vVel;
+			FragCtx.vSourceVel = FragCtx.vVel;
 			FragCtx.iSourceDirection = FragCtx.iDirection;
 
 			GetSystem()->CreateWeaponFragments(FragCtx, this);

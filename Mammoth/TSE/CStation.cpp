@@ -1117,7 +1117,7 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 				Ctx.vPos = vHitPos;
 				Ctx.vVel = GetVel() + PolarToVector(Ctx.iDirection, pEjectaType->GetInitialSpeed());
 				Ctx.vSourcePos = Ctx.vPos;
-				Ctx.vSourceVec = GetVel();
+				Ctx.vSourceVel = GetVel();
 				Ctx.dwFlags = SShotCreateCtx::CWF_EJECTA;
 
 				GetSystem()->CreateWeaponFire(Ctx);

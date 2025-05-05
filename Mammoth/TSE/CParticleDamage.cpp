@@ -57,7 +57,7 @@ ALERROR CParticleDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CParticle
 		return ERR_MEMORY;
 
 	pParticles->Place(Ctx.vPos, Ctx.vVel);
-	pParticles->SetSourceVel(Ctx.vSourceVec);
+	pParticles->SetSourceVel(Ctx.vSourceVel);
 
 	//	Get notifications when other objects are destroyed
 	pParticles->SetObjectDestructionHook();
