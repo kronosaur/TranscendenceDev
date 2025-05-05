@@ -43,7 +43,7 @@ ALERROR CAreaDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CAreaDamage *
 		return ERR_MEMORY;
 
 	pArea->Place(Ctx.vPos, Ctx.vVel);
-	pArea->SetInheritVel(Ctx.vSourceVec);
+	pArea->SetSourceVel(Ctx.vSourceVec);
 
 	//	Get notifications when other objects are destroyed
 	pArea->SetObjectDestructionHook();

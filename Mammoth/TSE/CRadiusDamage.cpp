@@ -42,7 +42,7 @@ ALERROR CRadiusDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CRadiusDama
 		return ERR_MEMORY;
 
 	pArea->Place(Ctx.vPos, Ctx.vVel);
-	pArea->SetInheritVel(Ctx.vSourceVec);
+	pArea->SetSourceVel(Ctx.vSourceVec);
 
 	//	Get notifications when other objects are destroyed
 	pArea->SetObjectDestructionHook();
