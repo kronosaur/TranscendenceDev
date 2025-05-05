@@ -482,7 +482,7 @@ struct SShotCreateCtx
 	CVector vPos;									//  Position of point of firing
 	CVector vVel;									//	Velocity to inherit
 	CVector vSourcePos;								//	Position of source, not position of point of fire
-	CVector vSourceVec;								//	Velocity of source (usually same as vVel, but not guaranteed)
+	CVector vSourceVel;								//	Velocity of source (usually same as vVel, but not guaranteed)
 	int iSourceDirection = 0;						//	Source facing, not the same as source velocity
 	int iDirection = 0;								//	Direction of firing (for proximity fragments, this is the direction to the triggering object)
 	int iRepeatingCount = 0;
