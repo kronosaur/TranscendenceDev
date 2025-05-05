@@ -2705,6 +2705,8 @@ void CWeaponClass::FireWeaponShot (CSpaceObject *pSource,
 		Ctx.iRepeatingCount = iRepeatingCount;
 		Ctx.pTarget = pTarget;
 		Ctx.dwFlags = dwFlags;
+		Ctx.vSourceVel = pSource->GetVel();
+		Ctx.vSourcePos = pSource->GetPos();
 		pSource->GetSystem()->CreateWeaponFire(Ctx, &pNewObj);
 
 		//	Remember the shot, if necessary

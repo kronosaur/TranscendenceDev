@@ -233,8 +233,12 @@ void CWeaponFireDesc::ApplyAcceleration (CSpaceObject *pMissile) const
 	{
 	if (m_iAccelerationFactor > 0)
 		{
-		if (m_iAccelerationFactor < 100
-				|| pMissile->GetVel().Length() < m_rMaxMissileSpeed)
+		CVector vSourceVel = pMissile->GetSourceVel();
+		CVector vBaseVel = pMissile->GetVel() - vSourceVel;
+		if (m_iAccelerationFactor >= 100
+				&& pMissile->GetVel().Length() < m_rMaxMissileSpeed)
+			pMissile->SetVel(vSourceVel + (vBaseVel * (Metric)(m_iAccelerationFactor / 100.0)));
+		else if (m_iAccelerationFactor < 100)
 			pMissile->SetVel(pMissile->GetVel() * (Metric)(m_iAccelerationFactor / 100.0));
 		}
 	}

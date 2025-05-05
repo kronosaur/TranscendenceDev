@@ -1479,7 +1479,7 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 					if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleDirection)
 						iCenterAngle = Ctx.iSourceDirection;
 					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleVelocity)
-						iCenterAngle = VectorToPolar(Ctx.vSourceVec);
+						iCenterAngle = VectorToPolar(Ctx.vSourceVel);
 					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleTarget)
 						iCenterAngle = VectorToPolar(Ctx.vPos - Ctx.pTarget->GetPos());
 					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleTrigger)
@@ -1647,7 +1647,7 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 			//	The initial velocity is the velocity of the missile
 			//	(unless we are MIRVed)
 
-			CVector vInitVel;
+			CVector vInitVel = NullVector;
 			if (!pFragDesc->pDesc->IsMIRV() || !pFragDesc->iVelocityType == CWeaponFireDesc::fviNone)
 				vInitVel = Ctx.vVel;
 
@@ -1690,9 +1690,9 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 
 				Metric rSpeed = pFragDesc->pDesc->GetInitialSpeed();
 
-				//	Compute Velocity (already handled fviNone by leaving vInitVel as default for that case)
-				CVector vShotVel;
-				CVector vSuperluminalShotVel = vInitVel + PolarToVector(Angles[i], rSpeed);
+				//	Compute Velocity
+				CVector vShotVel = PolarToVector(Angles[i], rSpeed); //this handles 'none' case for velocity inheritence
+				CVector vSuperluminalShotVel = vInitVel + vShotVel;
 				if (pFragDesc->iVelocityType == CWeaponFireDesc::fviSuperluminal || rSpeed > LIGHT_SPEED)
 					vShotVel = vSuperluminalShotVel;
 				else
@@ -1702,9 +1702,22 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 					if (rInitSpeed > LIGHT_SPEED)
 						vShotVel = vSuperluminalShotVel;
 					else if (pFragDesc->iVelocityType == CWeaponFireDesc::fviNewtonian)
+						{
+						Metric rSuperluminalInheritanceSpeed;
+						VectorToPolar(vSuperluminalShotVel, &rSuperluminalInheritanceSpeed);
+						if (rSuperluminalInheritanceSpeed > LIGHT_SPEED)
+							vInitVel = PolarToVector(VectorToPolar(vInitVel), rInitSpeed * LIGHT_SPEED / rSuperluminalInheritanceSpeed);
 						vShotVel = PolarToVector(VectorToPolar(vSuperluminalShotVel), LIGHT_SPEED);
+						}
 					else if (pFragDesc->iVelocityType == CWeaponFireDesc::fviRelativistic)
-						vShotVel = PolarToVector(VectorToPolar(vSuperluminalShotVel), LIGHT_SPEED - ((LIGHT_SPEED - rSpeed) * (LIGHT_SPEED - rInitSpeed)));
+						{
+						Metric rSuperluminalInheritanceSpeed;
+						VectorToPolar(vSuperluminalShotVel, &rSuperluminalInheritanceSpeed);
+						Metric rRelativisticSpeed = LIGHT_SPEED - ((LIGHT_SPEED - rSpeed) * (LIGHT_SPEED - rInitSpeed));
+						if (rSuperluminalInheritanceSpeed > rRelativisticSpeed)
+							vInitVel = PolarToVector(VectorToPolar(vInitVel), rInitSpeed * rRelativisticSpeed / rSuperluminalInheritanceSpeed);
+						vShotVel = PolarToVector(VectorToPolar(vSuperluminalShotVel), rRelativisticSpeed);
+						}
 					}
 
 				//  Create the fragment
@@ -1714,10 +1727,10 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 				FragCtx.pEnhancements = Ctx.pEnhancements;
 				FragCtx.Source = Ctx.Source;
 				FragCtx.vPos = Ctx.vPos + CVector(mathRandom(-10, 10) * g_KlicksPerPixel / 10.0, mathRandom(-10, 10) * g_KlicksPerPixel / 10.0);
-				FragCtx.vVel = vInitVel + PolarToVector(Angles[i], rSpeed);
+				FragCtx.vVel = vShotVel;
 				FragCtx.iDirection = Angles[i];
 				FragCtx.iSourceDirection = FragCtx.iDirection;
-				FragCtx.vSourceVec = FragCtx.vVel;
+				FragCtx.vSourceVel = vInitVel;
 				FragCtx.vSourcePos = FragCtx.vPos;
 				FragCtx.pTarget = Targets[i];
 				FragCtx.dwFlags = SShotCreateCtx::CWF_FRAGMENT;
