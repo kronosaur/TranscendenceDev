@@ -290,7 +290,7 @@ class CParticleArray
 		void ReadFromStream (SLoadCtx &Ctx);
 		void ResetLastEmit (int iLastDirection, const CVector &vLastEmitPos, const CVector &vLastEmitVel = NullVector);
 		void SetOrigin (const CVector &vOrigin) { m_vOrigin = vOrigin; }
-		void UpdateMotionLinear (bool *retbAlive = NULL, CVector *retvAveragePos = NULL);
+		void UpdateMotionLinear (Metric rSeconds, bool *retbAlive = NULL, CVector *retvAveragePos = NULL);
 		void UpdateRingCohesion (Metric rRadius, Metric rMinRadius, Metric rMaxRadius, int iCohesion, int iResistance);
 		void WriteToStream (IWriteStream *pStream) const;
 

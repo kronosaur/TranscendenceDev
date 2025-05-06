@@ -117,6 +117,37 @@ void CBeam::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 
 	if (m_pHit == NULL)
 		m_vPaintTo = GetPos();
+
+	//	See if the beam hit anything
+
+	if (m_pHit)
+		{
+		//	Old-style bonus
+
+		TSharedPtr<CItemEnhancementStack> pEnhancements(new CItemEnhancementStack);
+		pEnhancements->InsertHPBonus(NULL, m_iBonus);
+
+		//	Tell the object hit that it has been damaged
+
+		SDamageCtx DamageCtx(m_pHit,
+			*m_pDesc,
+			pEnhancements,
+			m_Source,
+			this,
+			GetAge(),
+			AngleMod(m_iHitDir + mathRandom(0, 30) - 15),
+			m_vPaintTo);
+
+		EDamageResults result = m_pHit->Damage(DamageCtx);
+
+		//	Set the beam to destroy itself after a hit
+
+		if (m_pDesc->GetPassthrough() == 0
+			|| result == damageNoDamage
+			|| result == damageAbsorbedByShields
+			|| mathRandom(1, 100) > m_pDesc->GetPassthrough())
+			Destroy(removedFromSystem, CDamageSource());
+		}
 	}
 
 void CBeam::ObjectDestroyedHook (const SDestroyCtx &Ctx)
@@ -232,36 +263,6 @@ void CBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	m_iTick++;
 
-	//	See if the beam hit anything
-
-	if (m_pHit)
-		{
-		//	Old-style bonus
-
-		TSharedPtr<CItemEnhancementStack> pEnhancements(new CItemEnhancementStack);
-		pEnhancements->InsertHPBonus(NULL, m_iBonus);
-
-		//	Tell the object hit that it has been damaged
-
-		SDamageCtx DamageCtx(m_pHit,
-				*m_pDesc,
-				pEnhancements,
-				m_Source,
-				this,
-				GetAge(),
-				AngleMod(m_iHitDir + mathRandom(0, 30) - 15),
-				m_vPaintTo);
-
-		EDamageResults result = m_pHit->Damage(DamageCtx);
-
-		//	Set the beam to destroy itself after a hit
-
-		if (m_pDesc->GetPassthrough() == 0
-				|| result == damageNoDamage 
-				|| result == damageAbsorbedByShields
-				|| mathRandom(1, 100) > m_pDesc->GetPassthrough())
-			bDestroy = true;
-		}
 
 	//	See if the beam has faded out
 

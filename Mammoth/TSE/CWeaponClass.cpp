@@ -121,7 +121,7 @@ const Metric MAX_TARGET_RANGE =			(24.0 * LIGHT_SECOND);
 const int MAX_COUNTER =					100;
 
 const Metric STD_FIRE_RATE_SECS =		16.0;				//	Standard fire rate (secs)
-const Metric STD_FIRE_DELAY_TICKS =     8.0;
+const Metric STD_FIRE_DELAY_TICKS =		STD_FIRE_RATE_SECS / STD_SECONDS_PER_UPDATE;
 
 const Metric STD_AMMO_BALANCE =         -90.0;				//  Balance adj from having ammo
 const Metric STD_AMMO_MASS =            10.0;               //  Std ammo mass (kg)
