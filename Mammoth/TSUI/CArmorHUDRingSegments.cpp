@@ -545,7 +545,7 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 	if (iMaxHullHP > 0)
 		{
 		int iHullCircleRadius = int(m_iArmorInnerRadius * float(iHullHP) / float(iMaxHullHP));
-		CGDraw::Circle(m_Buffer, m_xCenter, m_yCenter, iHullCircleRadius, CG32bitPixel(CG32bitPixel::Desaturate(m_rgbHull), 200), CGDraw::blendCompositeNormal);
+		CGDraw::Circle(m_Buffer, m_xCenter, m_yCenter, iHullCircleRadius, CG32bitPixel(m_rgbHull, 200), CGDraw::blendCompositeNormal);
 		DrawHullIntegrityText(m_Buffer, iHullHP, iMaxHullHP, m_HPDisplay, m_rgbHullText);
 		}
 	else
