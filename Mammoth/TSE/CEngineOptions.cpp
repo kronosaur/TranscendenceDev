@@ -139,7 +139,7 @@ bool CEngineOptions::InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElemen
 		return false;
 		}
 
-	if (m_ArmorDamageAdj[iLevel - 1].InitFromXML(Ctx, XMLDesc, true) != NOERROR)
+	if (DestTable[iLevel - 1].InitFromXML(Ctx, XMLDesc, true) != NOERROR)
 		return false;
 
 	//	Success!
