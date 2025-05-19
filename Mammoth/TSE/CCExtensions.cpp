@@ -2813,7 +2813,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(msnDecline missionObj)",
 			"i",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"msnDestroy",					fnObjSet,			FN_OBJ_DESTROY,
+		{	"msnDestroy",					fnObjSet,			FN_OBJ_REMOVE,
 			"(msnDestroy missionObj) -> True/Nil",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
