@@ -17,6 +17,10 @@
 		createCriteria: Criteria of ship types to create (optional)
 			NOTE: Use rpg.shipBrokerCriteria instead.
 		maxCount: Maximum number of ships to create.
+		minCount: Minimum number of ships to create.
+			NOTE: Will try to fill with ships with the "shipBrokerRandomizedClass"
+				attribute if there are not enough ships to use.
+		maxCount: Maximum number of ships to create.
 
 -->
 	
@@ -26,7 +30,12 @@
 			>
 		
 		<OnScreenInit>
-			(rpgGetShipInventory gSource (@ gData 'maxCount) (@ gData 'createCriteria))
+			(rpgGetShipInventory
+				gSource
+				(@ gData 'maxCount)
+				(@ gData 'createCriteria)
+				(@ gData 'minCount)
+				(@ gData 'fillPriority))
 		</OnScreenInit>
 		
 		<Display type="carouselSelector"
@@ -1078,12 +1087,27 @@
 					)
 				))
 
-			(setq rpgCreateShipsToSell (lambda (sellerObj maxCount createCriteriaArg)
+			;;;; rpgCreateShipsToSell
+			;	This function populates a ship broker's inventory of ships
+			;	that are available for sale.
+			;
+			;	Args:
+			;		sellerObj - the ship broker spaceObject (station or ship)
+			;		maxCount - the maximum number of ships to display
+			;		createCriteriaArg - optional criteria list
+			;			(default (obj@ sellerObj 'rpg.shipBrokerCriteria) "s +shipBroker;")
+			;		minCount - the minimum number of ships to try filling. Fallback activates if one pass of unique types doesnt meet minCount.
+			;			Will fallback to copies of ships with "[createCriteriaArg] +shipBrokerRandomizedClass;"
+			;		fillPriority - Default 'rarity
+			;			'rarity - spawning algorithm prioritizes removing rarer ships from inventory over filling the inventory pool
+			;			'minCount - spawning algoritm will only begin removing rarer ships if minCount is fulfilled
+			(setq rpgCreateShipsToSell (lambda (sellerObj maxCount createCriteriaArg minCount fillPriority)
 				(block (
 					(shipObj Nil)
 					(shipList Nil)
 					(extraList Nil)
 					(shipIDList Nil)
+					(outOfRandomShips Nil)
 
 					;	Make a list of all possible ship classes that we sell.
 
@@ -1094,20 +1118,28 @@
 						))
 
 					(allClasses (typFind createCriteria))
+					
+					;   make backup criteria if we dont have enough ships to sell
+
+					(fallbackCreateCriteria (cat createCriteria " +shipBrokerRandomizedClass;"))
 
 					;	Filter out any ship classes that we do not sell
 
 					(classesForSale (filter allClasses theClass (objGetShipSellPrice sellerObj { shipClass:theClass })))
 
+					;	Determine our priority for rarity vs fill rate
+					
+					(prioritizeFill (eq fillPriority 'minCount))
+
 					;	Adjust list by frequency. Ships that are less than 
-					;	common have a chance of not appearing.
+					;	common have a chance of not appearing if fillPriority is 'rarity
 
 					(shipsToCreate 
 						(or
 							(objFireEvent sellerObj 'GetShipClassesForSale { })
 							(map classesForSale 'excludeNil theClass
 								(switch
-									(gr (random) (typGetProperty theClass 'frequencyRatio))
+									(and (not prioritizeFill) (gr (random) (typGetProperty theClass 'frequencyRatio)))
 										Nil
 
 									theClass
@@ -1150,6 +1182,51 @@
 					;	Shuffle them
 					
 					(setq shipList (shuffle shipList))
+
+					;   Ensure that we have enough ships to even consider using randomized ships
+
+					(if (gr MinCount 0)
+						(while (and (ls (count shipList) minCount) (eq outOfRandomShips Nil))
+							(block (
+								(extendedShipList (map (rpgCreateShipsToSell sellerObj maxCount fallbackCreateCriteria) shipId (objGetObjByID shipId)))
+								)
+		
+								(setq shipList (append shipList extendedShipList))
+								(if (eq (count extendedShipList) 0) (setq outOfRandomShips 1))
+								)
+							)
+						)
+
+					;	If we prioritized filling out minCount first, we can stochastically remove some of the ships by rarity
+					(if prioritizeFill
+						(block (
+							;	Dont remove more than this number of ships
+							(maxRemove (- (count shipList) minCount))
+
+							;	the actual ships to remove
+							(shipsToRemove (map shipList 'excludeNil theShip (if
+								;	roll against rarity ratio to remove the ship
+								(gr (random) (typGetProperty (objGetType theShip) 'frequencyRatio))
+									shipObj
+
+									;otherwise ignore it
+									Nil
+								)))
+							)
+						
+							;shuffle the marked ships to remove
+							(setq shipsToRemove (shuffle shipsToRemove))
+
+							;only remove up to the maximum number that can be removed
+							(setq shipsToRemove (subset shipsToRemove 0 maxRemove))
+
+							;remove these from shipList
+							(setq shipList (filter shipList theShip (not (find shipsToRemove theShip))))
+
+							;delete the ships
+							(enum shipsToRemove shipObj (objDestroy shipObj))
+							)
+						)
 
 					;	Split the list in two, with the second list being extra
 					;	ships that we don't need.
@@ -1424,15 +1501,16 @@
 					)
 				))
 
-			(setq rpgGetShipInventory (lambda (sourceObj maxCount createCriteria)
+			(setq rpgGetShipInventory (lambda (sourceObj maxCount createCriteria minCount fillPriority restock)
 				(block (
 					(shipIDList (objGetData sourceObj 'shipBroker.list))
 					)
 				
 					;	If there are no ships in our list, then we need to create some
 				
-					(or shipIDList
-						(rpgCreateShipsToSell sourceObj (or maxCount (random 3 5)) createCriteria)
+					(if (or (not shipIDList) restock)) 
+						(rpgCreateShipsToSell sourceObj (or maxCount (random 3 5)) createCriteria minCount fillPriority)
+						shipIDList
 						)
 					)
 				))
