@@ -1508,7 +1508,7 @@
 				
 					;	If there are no ships in our list, then we need to create some
 				
-					(if (or (not shipIDList) restock)) 
+					(if (or (not shipIDList) restock)
 						(rpgCreateShipsToSell sourceObj (or maxCount (random 3 5)) createCriteria minCount fillPriority)
 						shipIDList
 						)
