@@ -1187,8 +1187,10 @@
 
 					(if (gr MinCount 0)
 						(while (and (ls (count shipList) minCount) (eq outOfRandomShips Nil))
-							(block
-								((extendedShipList (map (rpgCreateShipsToSell sellerObj maxCount fallbackCreateCriteria) shipId (objGetObjByID shipId))))
+							(block (
+								(extendedShipList (map (rpgCreateShipsToSell sellerObj maxCount fallbackCreateCriteria) shipId (objGetObjByID shipId)))
+								)
+		
 								(setq shipList (append shipList extendedShipList))
 								(if (eq (count extendedShipList) 0) (setq outOfRandomShips 1))
 								)
@@ -1196,13 +1198,10 @@
 						)
 
 					;	If we prioritized filling out minCount first, we can stochastically remove some of the ships by rarity
-					(if prioritizeFill (block
-						(
+					(if prioritizeFill
+						(block (
 							;	Dont remove more than this number of ships
 							(maxRemove (- (count shipList) minCount))
-
-							;	helper boolean set op function to remove elements of A if they are in B
-							(lnkCull (lambda (A B) (enum A lA (enum B lB (if (eq lA lB) (lnkRemove A (find A lA)))))))
 
 							;	the actual ships to remove
 							(shipsToRemove (map shipList 'excludeNil theShip (if
@@ -1215,18 +1214,19 @@
 								)))
 							)
 						
-						;shuffle the marked ships to remove
-						(setq shipsToRemove (shuffle shipsToRemove))
+							;shuffle the marked ships to remove
+							(setq shipsToRemove (shuffle shipsToRemove))
 
-						;only remove up to the maximum number that can be removed
-						(setq shipsToRemove (subset shipsToRemove 0 maxRemove))
+							;only remove up to the maximum number that can be removed
+							(setq shipsToRemove (subset shipsToRemove 0 maxRemove))
 
-						;remove these from shipList
-						(setq shipList (filter shipList theShip (not (find shipsToRemove theShip))))
+							;remove these from shipList
+							(setq shipList (filter shipList theShip (not (find shipsToRemove theShip))))
 
-						;delete the ships
-						(enum shipsToRemove shipObj (objDestroy shipObj))
-						))
+							;delete the ships
+							(enum shipsToRemove shipObj (objDestroy shipObj))
+							)
+						)
 
 					;	Split the list in two, with the second list being extra
 					;	ships that we don't need.
