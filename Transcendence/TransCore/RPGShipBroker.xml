@@ -1222,7 +1222,7 @@
 						(setq shipsToRemove (subset shipsToRemove 0 maxRemove))
 
 						;remove these from shipList
-						(setq shipList (lnkCull shipList shipsToRemove))
+						(setq shipList (filter shipList theShip (not (find shipsToRemove theShip))))
 
 						;delete the ships
 						(enum shipsToRemove shipObj (objDestroy shipObj))
