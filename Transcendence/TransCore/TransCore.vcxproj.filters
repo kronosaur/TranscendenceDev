@@ -1098,5 +1098,7 @@
     <Xml Include="CentauriOccupation.xml">
       <Filter>Human Space Library\Centauri Warlords</Filter>
     </Xml>
+    <Xml Include="SOTPSoundtrackUNIDsLibrary.xml" />
+    <Xml Include="CMPT_API54CompatUNIDsLibrary.xml" />
   </ItemGroup>
 </Project>

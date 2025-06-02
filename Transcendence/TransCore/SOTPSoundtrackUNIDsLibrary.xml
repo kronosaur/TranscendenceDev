@@ -4,7 +4,7 @@
 	[
 	<!-- 0071 0000-FFFF LEGACY UNID COMPATIBILITY LIBRARIES -->
 	
-	<!ENTITY CMPT_unidSOTPSoundtrackUNIDLibrary	    "0x00710001">
+	<!ENTITY unidSOTPSoundtrackUNIDLibrary	    "0x00710001">
 
 	<!-- SOUNDTRACK UNIDS -->
 	<!-- 0020-003F ADVENTURE INTRO -->
@@ -65,7 +65,7 @@
 	]>
 	
 <TranscendenceLibrary
-		UNID=				"&CMPT_unidSOTPSoundtrackUNIDLibrary;"
+		UNID=				"&unidSOTPSoundtrackUNIDLibrary;"
 		name=				"Transcendence Stars of the Pilgrim Soundtrack UNID Library" 
 		release=			"1"
 		>

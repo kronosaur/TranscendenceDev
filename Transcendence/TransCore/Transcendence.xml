@@ -94,7 +94,7 @@
 		-->
 
 	<!ENTITY CMPT_unidAPI54CompatUNIDLibrary	"0x00710000">
-	<!ENTITY CMPT_unidSOTPSoundtrackUNIDLibrary	"0x00710001">
+	<!ENTITY unidSOTPSoundtrackUNIDLibrary		"0x00710001">
 	
 	<!-- 0080-009F RESERVED -->
 
@@ -167,7 +167,7 @@
 	<CoreLibrary filename="CoreTypesLibrary.xml"/>
 	<CoreLibrary filename="RPGLibrary.xml"/>
 	<CoreLibrary filename="GalaxyLibrary.xml"/>
-	<CoreLibrary filename="CMPT_SOTPSoundtrackUNIDsLibrary.xml"/>
+	<CoreLibrary filename="SOTPSoundtrackUNIDsLibrary.xml"/>
 	<CoreLibrary filename="HumanSpaceVol01.xml"/>
 	<CoreLibrary filename="CompatibilityLibrary.xml"/>
 	<CoreLibrary filename="CMPT_API54CompatUNIDsLibrary.xml"/>

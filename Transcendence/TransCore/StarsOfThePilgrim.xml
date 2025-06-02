@@ -91,7 +91,7 @@
 	<Library unid="&unidRPGLibrary;"/>
 	<Library unid="&unidGalaxyLibrary;"/>
 	<Library unid="&unidHumanSpaceLibrary;"/>
-	<Library unid="&CMPT_unidSOTPSoundtrackUNIDLibrary;"/>
+	<Library unid="&unidSOTPSoundtrackUNIDLibrary;"/>
 
 	<AdventureDesc
 			unid=			"&adPart1Desc;"
