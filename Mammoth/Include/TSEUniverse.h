@@ -615,6 +615,7 @@ class CUniverse
 		void SetHost (IHost *pHost);
 		void SetPlayer (IPlayerController *pPlayer);
 		void UpdateTick (SSystemUpdateCtx &Ctx);
+		void UpdatePhysics (SSystemUpdateCtx& Ctx);
 		void UpdateMissions (int iTick, CSystem *pSystem);
 		void UpdateSovereigns (int iTick, CSystem *pSystem);
 
@@ -675,6 +676,8 @@ class CUniverse
 		SViewportAnnotations m_ViewportAnnotations;
 		EUpdateSpeeds m_iLastUpdateSpeed = updateNone;
 		DWORD m_dwFrame = 0;
+		int m_iFrame = 0;						// Counter for interpolated physics frames
+		Metric rFrameStep = 1.0;				// Current framestep for interpolated physics frames
 
 		//	Cached singletons
 

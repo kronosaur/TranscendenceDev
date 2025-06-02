@@ -504,7 +504,7 @@ void CParticleCloudPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged
 
 	//	Update particle motion
 
-	m_Particles.UpdateMotionLinear();
+	m_Particles.UpdateMotionLinear(Ctx.rSeconds);
 
 	//	Bounds are always changing
 

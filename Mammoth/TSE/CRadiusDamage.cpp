@@ -268,6 +268,7 @@ void CRadiusDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSec
 		{
 		SEffectMoveCtx Ctx;
 		Ctx.pObj = this;
+		Ctx.rSeconds = rSeconds;
 
 		bool bBoundsChanged;
 		m_pPainter->OnMove(Ctx, &bBoundsChanged);
