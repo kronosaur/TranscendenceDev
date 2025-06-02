@@ -79,11 +79,6 @@
 	<!ENTITY msHuaramarcaDragonSlaver	"0x00210006">
 	<!ENTITY msHuaramarcaArchcannon		"0x00210007">
 	<!ENTITY msHuaramarcaRevelation		"0x00210008">
-
-	<!-- 0082xxxx PART I SOUNDTRACK ======================================== -->
-
-	<!ENTITY muDominaMainTheme			"0x00820020">
-	<!ENTITY muDominaEndTitles01		"0x00820120">
 	]>
 	
 <TranscendenceAdventure
@@ -96,6 +91,7 @@
 	<Library unid="&unidRPGLibrary;"/>
 	<Library unid="&unidGalaxyLibrary;"/>
 	<Library unid="&unidHumanSpaceLibrary;"/>
+	<Library unid="&CMPT_unidSOTPSoundtrackUNIDLibrary;"/>
 
 	<AdventureDesc
 			unid=			"&adPart1Desc;"
