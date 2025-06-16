@@ -39,6 +39,10 @@ const Metric SAME_POS_THRESHOLD2 =				(g_KlicksPerPixel * g_KlicksPerPixel);
 
 constexpr Metric MAP_GRID_SIZE =				3000.0 * LIGHT_SECOND;
 
+
+extern double start_frame_time;
+extern double frame_duration;
+
 CSystem::CSystem (CUniverse &Universe, CTopologyNode *pTopology) : 
 		m_Universe(Universe),
 		m_pTopology(pTopology),
@@ -480,7 +484,7 @@ CG32bitPixel CSystem::CalcStarshineColor (CSpaceObject *pPOV, CSpaceObject **ret
 	return CG32bitPixel(rgbStarColor, (BYTE)(MAX_SPACE_OPACITY * iPercent / 100));
 	}
 
-void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags)
+void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags, double dFrameInterpolation)
 
 //	CalcViewportCtx
 //
@@ -490,8 +494,9 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 	DEBUG_TRY
 	ASSERT(pCenter);
 
+	Ctx.dFrameInterpolation = dFrameInterpolation;
 	Ctx.pCenter = pCenter;
-	Ctx.vCenterPos = pCenter->GetPos();
+	Ctx.vCenterPos = pCenter->GetDrawPos(Ctx);
 	Ctx.rcView = rcView;
 	Ctx.vDiagonal = CVector(g_KlicksPerPixel * (Metric)(RectWidth(rcView)) / 2,
 				g_KlicksPerPixel * (Metric)(RectHeight(rcView)) / 2);
@@ -3362,7 +3367,8 @@ void CSystem::PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest
 void CSystem::PaintViewport (CG32bitImage &Dest, 
 							 const RECT &rcView, 
 							 CSpaceObject *pCenter, 
-							 DWORD dwFlags, 
+							 DWORD dwFlags,
+	                         double dFrameInterpolation,
 							 SViewportAnnotations *pAnnotations)
 
 //	PaintViewport
@@ -3377,7 +3383,7 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	//	Initialize the viewport context
 
 	SViewportPaintCtx Ctx;
-	CalcViewportCtx(Ctx, rcView, pCenter, dwFlags);
+	CalcViewportCtx(Ctx, rcView, pCenter, dwFlags, dFrameInterpolation);
 	Dest.SetClipRect(rcView);
 
 	//	Keep track of the player object because sometimes we do special processing

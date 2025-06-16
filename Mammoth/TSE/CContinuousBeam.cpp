@@ -544,6 +544,7 @@ void CContinuousBeam::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 
 	bool bFoundHead = false;
 	CVector vHead;
+	CVector vOldHead;
 	for (i = 0; i < m_Segments.GetCount(); i++)
 		{
 		SSegment &Segment = m_Segments[i];
@@ -556,6 +557,7 @@ void CContinuousBeam::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 			if (Segment.fAlive)
 				{
 				vHead = Segment.vPos;
+				vOldHead = Segment.vPos - Segment.vDeltaPos;
 				bFoundHead = true;
 				}
 			}
@@ -565,7 +567,8 @@ void CContinuousBeam::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 
 		else if (!Segment.fAlive)
 			{
-			m_pPainter->PaintLine(Dest, vHead, Segment.vPos, Ctx);
+			m_pPainter->PaintLine(Dest, Ctx.InterpolateForDrawing(vOldHead, vHead),
+				Ctx.InterpolateForDrawing(Segment.vPos - Segment.vDeltaPos, Segment.vPos), Ctx);
 			bFoundHead = false;
 			}
 		}
