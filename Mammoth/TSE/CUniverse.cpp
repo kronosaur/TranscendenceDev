@@ -3065,16 +3065,28 @@ bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)
 //	Updates one frame. Returns TRUE if the universe was actually updated.
 
 	{
+
+	// If m_iFrame is greater than one, then we're part way through a tick
+	if (m_iFrame-- > 1)
+		{
+
+		UpdatePhysics(Ctx);
+		m_dwFrame++;
+		return true;
+
+		}
+
 	m_iLastUpdateSpeed = iUpdateMode;
 
 	switch (iUpdateMode)
 		{
 		case updateAccelerated:
-			UpdateTick(Ctx);
-			UpdateTick(Ctx);
-			UpdateTick(Ctx);
-			UpdateTick(Ctx);
-			UpdateTick(Ctx);
+			rFrameStep = 1.0;
+			for (m_iFrame = Ctx.bUse60fps ? 2 : 5; m_iFrame > 0; m_iFrame--)
+				{
+				UpdateTick(Ctx);
+				UpdatePhysics(Ctx);
+				}
 			m_dwFrame++;
 			return true;
 
@@ -3082,19 +3094,21 @@ bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)
 			return false;
 
 		case updateSlowMotion:
-			if ((m_dwFrame++ % 4) == 0)
-				{
-				UpdateTick(Ctx);
-				return true;
-				}
-			else
-				return false;
+			m_iFrame = Ctx.bUse60fps ? 8 : 4;
+			rFrameStep = 1.0 / m_iFrame;
+			break;
 
 		default:
-			UpdateTick(Ctx);
-			m_dwFrame++;
-			return true;
+			m_iFrame = Ctx.bUse60fps ? 2 : 1;
+			rFrameStep = 1.0 / m_iFrame;
+			break;
 		}
+
+	UpdateTick(Ctx);
+	UpdatePhysics(Ctx);
+	m_dwFrame++;
+	return true;
+
 	}
 
 void CUniverse::UpdateTick (SSystemUpdateCtx &Ctx)
@@ -3122,7 +3136,7 @@ void CUniverse::UpdateTick (SSystemUpdateCtx &Ctx)
 
 	//	Update system
 
-	m_pCurrentSystem->Update(Ctx, &m_ViewportAnnotations);
+	m_pCurrentSystem->UpdateBehaviors(Ctx, &m_ViewportAnnotations);
 
 	//	Fire timed events
 
@@ -3143,6 +3157,36 @@ void CUniverse::UpdateTick (SSystemUpdateCtx &Ctx)
 	//	Next
 
 	m_iTick++;
+
+	DEBUG_CATCH
+	}
+
+void CUniverse::UpdatePhysics (SSystemUpdateCtx &Ctx)
+
+//	UpdatePhysics
+//
+//	Update the system of the current point of view
+
+	{
+	DEBUG_TRY
+
+#ifdef DEBUG_MOVE_PERFORMANCE
+		Ctx.iMoveCalls = 0;
+	Ctx.iShipOnMoveCalls = 0;
+	Ctx.iShipEffectMoveCalls = 0;
+#endif
+
+	if (m_pCurrentSystem == NULL)
+		return;
+
+#ifdef DEBUG_PERFORMANCE_COUNTERS
+		m_PerformanceCounters.StartUpdate();
+	CUsePerformanceCounter Counter(*this, CONSTLIT("update.tick"));
+#endif
+
+	//	Update system
+
+	m_pCurrentSystem->UpdatePhysics(Ctx, &m_ViewportAnnotations, rFrameStep);
 
 	DEBUG_CATCH
 	}

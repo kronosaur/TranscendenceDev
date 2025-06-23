@@ -4342,25 +4342,6 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 			&& m_Universe.GetSFXOptions().IsStarshineEnabled())
 		RemoveVolumetricShadow(&Ctx.Obj);
 
-	//	Debug code to see if we ever delete a barrier in the middle of move
-
-#ifdef DEBUG_PROGRAMSTATE
-	if (g_iProgramState == psUpdatingMove)
-		{
-		if (Ctx.Obj.IsBarrier())
-			{
-			CString sObj = CONSTLIT("ERROR: Destroying barrier during move.\r\n");
-
-			ReportCrashObj(&sObj, &Ctx.Obj);
-			kernelDebugLogString(sObj);
-
-#ifdef DEBUG
-			DebugBreak();
-#endif
-			}
-		}
-#endif
-
 	DEBUG_CATCH
 	}
 
@@ -4957,15 +4938,27 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 //	Updates the system
 
 	{
+
+	UpdateBehaviors(SystemCtx, pAnnotations);
+	UpdatePhysics(SystemCtx, pAnnotations);
+
+	}
+
+void CSystem::UpdateBehaviors (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations)
+
+//	Update
+//
+//	Updates the system (behaviors)
+
+	{
 	DEBUG_TRY
 
 	int i;
 #ifdef DEBUG_PERFORMANCE
 	int iUpdateObj = 0;
-	int iMoveObj = 0;
 #endif
 
-	//	Make sure we're valid at this point.
+	//	Make sure we're valid at this point (needed before we flush deleted objects).
 
 	m_ForceResolver.BeginUpdate();
 
@@ -4989,7 +4982,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 		Ctx.SetPlayerShip(*pPlayerShip);
 
 	//	Add all objects to the grid so that we can do faster
-	//	hit tests
+	//	hit tests (this is also required for some AI functions)
 
 	m_ObjGrid.Init(this, Ctx);
 
@@ -5047,9 +5040,95 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 #endif
 		}
 
+	//  Following was at the end of CSystem::Update moving to UpdateBehaviors on
+	//  the assumption they should be run once per tick (not per frame), and can
+	//  be run separately to the Physics updates.
+
+	//	Update random encounters
+
+	SetProgramState(psUpdatingEncounters);
+	if (m_iTick >= m_iNextEncounter
+		&& !IsTimeStopped())
+		UpdateRandomEncounters();
+
+	//	Update time stopped
+
+	SetProgramState(psUpdating);
+	if (IsTimeStopped())
+		if (m_iTimeStopped > 0 && --m_iTimeStopped == 0)
+			RestartTime();
+
+	//	Update the player controller
+
+	IPlayerController PlayerController = m_Universe.GetPlayer();
+	PlayerController.Update(Ctx);
+
+	//	Give the player ship a chance to do something with data that we've
+	//	accumulated during update. For example, we use this to set the nearest
+	//	docking port.
+
+	CSpaceObject *pPlayer = GetPlayerShip();
+	if (pPlayer && !pPlayer->IsDestroyed())
+		pPlayer->UpdatePlayer(Ctx);
+
+
 	Ctx.OnEndUpdate();
 	DebugStopTimer("Updating objects");
 
+#ifdef DEBUG_PERFORMANCE
+	{
+	char szBuffer[1024];
+	wsprintf(szBuffer, "Objects: %d  Updating: %d\n",
+		GetObjectCount(),
+		iUpdateObj);
+	::OutputDebugString(szBuffer);
+	}
+#endif
+
+	//	Next
+
+	m_iTick++;
+
+	DEBUG_CATCH
+
+	}
+
+
+void CSystem::UpdatePhysics (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations, Metric timestep)
+
+//	Update
+//
+//	Updates the system (Physics)
+
+	{
+	DEBUG_TRY
+
+	int i;
+#ifdef DEBUG_PERFORMANCE
+	int iMoveObj = 0;
+#endif
+
+	//	Make sure we're valid at this point.
+
+	m_ForceResolver.BeginUpdate();
+
+	//	Set up context
+
+	SUpdateCtx Ctx;
+	Ctx.pSystem = this;
+	Ctx.pAnnotations = pAnnotations;
+	Ctx.SetNoShipEffectUpdate(SystemCtx.bNoShipEffectUpdate);
+
+	//	Initialize the player weapon context so that we can select the auto-
+	//	target.
+
+	if (CSpaceObject *pPlayerShip = GetPlayerShip())
+		Ctx.SetPlayerShip(*pPlayerShip);
+
+	//	Add all objects to the grid so that we can do faster
+	//	hit tests
+
+	m_ObjGrid.Init(this, Ctx);
 	//	Initialize a structure that holds context for motion
 
 	DebugStartTimer();
@@ -5082,7 +5161,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 
 	//	Update object velocity based on forces
 
-	m_ForceResolver.Update(*this, SystemCtx.rSecondsPerTick);
+	m_ForceResolver.Update(*this, timestep * SystemCtx.rSecondsPerTick);
 
 	//	Move all objects. Note: We always move last because we want to
 	//	paint right after a move. Otherwise, when a laser/missile hits
@@ -5102,7 +5181,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 			//	Move the objects
 
 			SetProgramState(psUpdatingMove, pObj);
-			pObj->Move(Ctx, SystemCtx.rSecondsPerTick);
+			pObj->Move(Ctx, timestep * SystemCtx.rSecondsPerTick);
 
 #ifdef DEBUG_PERFORMANCE
 			iMoveObj++;
@@ -5129,6 +5208,8 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 
 	//	Add contacts from joints
 
+	//  Note - this will need updating to use timestep * SystemCtx.rSecondsPerTick
+
 	m_Joints.AddContacts(m_ContactResolver);
 
 	//	Now resolve all contacts
@@ -5136,32 +5217,6 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	m_ContactResolver.Update();
 	m_Joints.Update(Ctx);
 
-	//	Update random encounters
-
-	SetProgramState(psUpdatingEncounters);
-	if (m_iTick >= m_iNextEncounter
-			&& !IsTimeStopped())
-		UpdateRandomEncounters();
-
-	//	Update time stopped
-
-	SetProgramState(psUpdating);
-	if (IsTimeStopped())
-		if (m_iTimeStopped > 0 && --m_iTimeStopped == 0)
-			RestartTime();
-
-	//	Update the player controller
-
-	IPlayerController PlayerController = m_Universe.GetPlayer();
-	PlayerController.Update(Ctx);
-
-	//	Give the player ship a chance to do something with data that we've
-	//	accumulated during update. For example, we use this to set the nearest
-	//	docking port.
-
-	CSpaceObject *pPlayer = GetPlayerShip();
-	if (pPlayer && !pPlayer->IsDestroyed())
-		pPlayer->UpdatePlayer(Ctx);
 
 	//	Perf output
 
@@ -5175,10 +5230,6 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	::OutputDebugString(szBuffer);
 	}
 #endif
-
-	//	Next
-
-	m_iTick++;
 
 	DEBUG_CATCH
 	}
