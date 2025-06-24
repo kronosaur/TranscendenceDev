@@ -31,8 +31,8 @@
 const int DIGEST_SIZE = 20;
 static BYTE g_BaseFileDigest[] =
 	{
-    180, 173, 175, 206,  76, 231, 147, 151, 137,  77,
-    209, 207,  24,   0, 122, 170, 227,  85, 210, 152,
+	39,  11, 178, 167, 159, 248,  50, 253, 192, 223,
+	77, 118,  61,  39,  90, 206, 128, 219, 205,  43,
 	};
 
 class CLibraryResolver : public IXMLParserController
