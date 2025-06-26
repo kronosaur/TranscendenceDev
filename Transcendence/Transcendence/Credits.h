@@ -5,6 +5,7 @@
 static constexpr const char *ADDITIONAL_PROGRAMMING[] =
 	{
 	"Owen Embury (giantcabbage)",
+	"Alexander Huitric (Arisaya)",
 	"Nathaniel Stalberg (NMS)",
 	"Lily Leung (Heliogenesis)",
 	"Alex Chen (Archcannon)",
@@ -16,7 +17,6 @@ static constexpr int ADDITIONAL_PROGRAMMING_COUNT = (sizeof(ADDITIONAL_PROGRAMMI
 
 static constexpr const char *SPECIAL_THANKS[] =
 	{
-	"Alexander Huitric (Wolfy)",
 	"Patrick Martin (Megas)",
 	"Joe Needleman (Ttech)",
 	"Jeremy Skaggs (AssumedPseudonym)",
