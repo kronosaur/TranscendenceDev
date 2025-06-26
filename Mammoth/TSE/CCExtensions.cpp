@@ -8754,6 +8754,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				if (pCtx->GetAPIVersion() >= 54)
 					{
+					//We still remove the object to prevent cascading bugs, but we emit an error message to alert the author to the deprecation
+					pObj->Destroy(DamageSource.GetCause(), DamageSource); //remove it here because we return at the end of the if
 					CString sError = CONSTLIT("Calling (objDestroy obj) has been deprecated in API 54+. Use (objRemove obj) instead.");
 					return pCC->CreateError(sError, pArgs->GetElement(1));
 					}
