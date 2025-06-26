@@ -19,6 +19,9 @@ RELEASE
 [ ] Generate .zip file and copy to Releases
 [ ] Rename Transcendence.zip or TranscendenceNext.zip
 [ ] Upload .zip to hosting server (and publish)
+[ ] Connect to DigitalOcean with FileZilla
+[ ] Upload to download.kronosaur.com in home directory
+[ ] sudo cp download.kronosaur.com/Transcendence.zip /var/www/download.kronosaur.com/
 [ ] Update Engine version in Multiverse (people will start downloading at this point)
 
 [ ] Post announcement to Multiverse (work on this ahead of time)
