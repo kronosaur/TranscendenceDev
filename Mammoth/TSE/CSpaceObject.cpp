@@ -5324,7 +5324,7 @@ CSpaceObject* CSpaceObject::HitTestProximity(
 			if (iSteps == 0)
 				{
 				iSteps = (int)(rMissileTravel / (2.0 * g_KlicksPerPixel)) + 1;
-				vStep = vEnd / iSteps;
+				vStep = vMissileTravel / iSteps;
 				}
 
 			//	Check if we hit it directly
