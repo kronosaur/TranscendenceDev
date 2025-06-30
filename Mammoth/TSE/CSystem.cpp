@@ -1596,19 +1596,22 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 						if (Angles[i] < 0)
 							continue;
 
+						//	Set the target for each fragment
+
 						auto &Target = TargetList[i % iFound];
 						Targets[i] = Target.pObj;
 						
-						//	If travel direction is prioritized and fragments can maneuver,
+						//	If travel direction is prioritized
 						//	then we just use the existing defined angle
+						//	We dont check if the fragments can maneuver, because this projectile
+						//	may create its own maneuvering fragment later.
 						
-						if (pFragDesc->pDesc->IsTracking() && (
-							pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleDirection
+						if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleDirection
 							|| pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleVelocity
 							|| pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleOrigin
 							|| pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleSystem
 							|| pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleRandom
-							))
+							)
 							continue;
 
 						//	If fragments can maneuver and we have more than one, then fire angle jitters a bit.
