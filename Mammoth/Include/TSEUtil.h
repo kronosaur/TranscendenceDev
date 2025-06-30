@@ -402,7 +402,7 @@ class DiceRange
 		int GetMinValue (void) const { return IsEmpty() ? 0 : (m_iCount + m_iBonus); }
 		bool IsConstant (void) const { return IsEmpty() ? TRUE : ((m_iFaces * m_iCount) == 0); }
 		bool IsEmpty (void) const { return (IsNotSet() || IsZero()); }
-		bool IsNotSet (void) const { return (m_iFaces == -1 && m_iCount == 0 && m_iBonus == 0); }
+		bool IsNotSet (void) const { return (m_iFaces < 0 && m_iCount == 0 && m_iBonus == 0); }
 		bool IsZero (void) const { return (m_iFaces < 0 || (m_iFaces == 1 && m_iCount == -1 * m_iBonus) || (m_iFaces == 0 && m_iBonus == 0)); }
 		int Roll (void) const;
 		int RollSeeded (int iSeed) const;
