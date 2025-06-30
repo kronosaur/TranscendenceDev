@@ -1468,8 +1468,17 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 			Targets.InsertEmpty(iFragmentCount);
 
 			//	If we have a shaped charge, then distribute
+			//	Or if we have 1 fragment and directional or global fragment angle
 
-			if (!pFragDesc->FragmentArc.IsEmpty())
+			if (!pFragDesc->FragmentArc.IsEmpty() || (
+					pFragDesc->FragmentArc.IsEmpty() && iFragmentCount == 1 && (
+						pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleDirection ||
+						pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleVelocity ||
+						pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleOrigin ||
+						pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleSystem
+						)
+					)
+				)
 				{
 
 				//handle direction setting for different APIs and settings
