@@ -888,6 +888,7 @@
 				missileSpeed=	"30"
 
 				failsafe=		"6"
+				proximityDistanceAutoTrigger="0.1"
 
 				sound=			"&snMissileLauncher;"
 				>

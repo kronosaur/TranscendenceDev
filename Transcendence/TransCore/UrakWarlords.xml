@@ -555,6 +555,8 @@
 				lifetime=			"90"
 				powerUse=			"200"
 				recoil=				"2"
+				
+				proximityDistanceAutoTrigger="0.1"
 
 				effect=				"&efBlastShellDefault;"
 				sound=				"&snRecoillessCannon;"

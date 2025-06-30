@@ -1023,6 +1023,8 @@ PLAYER DATA
 				lifetime=			"120"
 				maneuverRate=		"9"
 
+				proximityDistanceAutoTrigger="0.1"
+
 				effect=				"&efMissileNAMI;"
 				hitEffect=			"&efThermoFragmentExplosion;"
 				sound=				"&snMissileLauncher;"
