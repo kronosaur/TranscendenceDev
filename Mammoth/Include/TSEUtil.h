@@ -393,15 +393,17 @@ class DiceRange
 		DiceRange (void) { }
 		DiceRange (int iFaces, int iCount, int iBonus);
 
-		int GetAveValue (void) const { return (m_iCount * (m_iFaces + 1) / 2) + m_iBonus; }
-		Metric GetAveValueFloat (void) const { return (m_iFaces > 0 ? ((m_iCount * (m_iFaces + 1.0) / 2.0) + m_iBonus) : m_iBonus); }
+		int GetAveValue (void) const { return IsEmpty() ? 0 : (m_iCount * (m_iFaces + 1) / 2) + m_iBonus; }
+		Metric GetAveValueFloat (void) const { return IsEmpty() ? 0.0 : (m_iFaces > 0 ? ((m_iCount * (m_iFaces + 1.0) / 2.0) + m_iBonus) : m_iBonus); }
 		int GetBonus (void) const { return m_iBonus; }
 		int GetCount (void) const { return m_iCount; }
-		int GetFaces (void) const { return m_iFaces; }
-		int GetMaxValue (void) const { return m_iFaces * m_iCount + m_iBonus; }
-		int GetMinValue (void) const { return m_iCount + m_iBonus; }
-		bool IsConstant (void) const { return (m_iFaces * m_iCount) == 0; }
-		bool IsEmpty (void) const { return (m_iFaces == 0 && m_iCount == 0 && m_iBonus == 0); }
+		int GetFaces (void) const { return (m_iFaces < 0) ? 0 : m_iFaces; }
+		int GetMaxValue (void) const { return IsEmpty() ? 0 : (m_iFaces * m_iCount + m_iBonus); }
+		int GetMinValue (void) const { return IsEmpty() ? 0 : (m_iCount + m_iBonus); }
+		bool IsConstant (void) const { return IsEmpty() ? TRUE : ((m_iFaces * m_iCount) == 0); }
+		bool IsEmpty (void) const { return (IsNotSet() || IsZero()); }
+		bool IsNotSet (void) const { return (m_iFaces < 0 && m_iCount == 0 && m_iBonus == 0); }
+		bool IsZero (void) const { return (m_iFaces < 0 || (m_iFaces == 1 && m_iCount == -1 * m_iBonus) || (m_iFaces == 0 && m_iBonus == 0)); }
 		int Roll (void) const;
 		int RollSeeded (int iSeed) const;
 		ALERROR LoadFromXML (const CString &sAttrib, int iDefault, CString *retsSuffix = NULL);
@@ -415,7 +417,7 @@ class DiceRange
 		static bool LoadIfValid (const CString &sAttrib, DiceRange *retValue);
 
 	private:
-		int m_iFaces = 0;
+		int m_iFaces = -1;
 		int m_iCount = 0;
 		int m_iBonus = 0;
 	};

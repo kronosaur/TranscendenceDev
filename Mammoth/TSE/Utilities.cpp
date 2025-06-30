@@ -386,6 +386,10 @@ int DiceRange::Roll (void) const
 //	Generate a random number
 
 	{
+	if (IsEmpty()) {
+		return 0;
+		}
+
 	int iRoll = 0;
 
 	for (int i = 0; i < m_iCount; i++)
@@ -401,6 +405,10 @@ int DiceRange::RollSeeded (int iSeed) const
 //	Generate a random number
 
 	{
+	if (IsEmpty) {
+		return 0;
+		}
+
 	int iRoll = 0;
 
 	for (int i = 0; i < m_iCount; i++)
