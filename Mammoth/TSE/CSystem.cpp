@@ -1617,9 +1617,9 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 							))
 							continue;
 
-						//	If fragments can maneuver, then fire angle jitters a bit.
+						//	If fragments can maneuver and we have more than one, then fire angle jitters a bit.
 
-						else if (pFragDesc->pDesc->IsTracking())
+						else if (pFragDesc->pDesc->IsTracking() && iFragmentCount > 1)
 							Angles[i] = AngleMod(Target.iFireAngle + mathRandom(-45, 45));
 
 						//	If we've got multiple fragments to the same target, then
