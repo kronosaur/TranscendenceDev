@@ -2435,31 +2435,28 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		//	Directional preference of fragmentation arc
 		//	Travel direction should default to true, instead of target direction
 
-		if (iExtensionAPI >= 54)
-			{
-			CString sFragAngleType = pFragDesc->GetAttribute(FRAGMENT_ANGLE_DIRECTION_ATTRIB);
-			if (sFragAngleType == FRAG_ANGLE_TYPE_DIRECTION || sFragAngleType == CONSTLIT(""))
-				pNewDesc->iFragAngleType = fragAngleDirection;
-			else if (sFragAngleType == FRAG_ANGLE_TYPE_VELOCITY)
-				pNewDesc->iFragAngleType = fragAngleVelocity;
-			else if (sFragAngleType == FRAG_ANGLE_TYPE_TARGET)
-				pNewDesc->iFragAngleType = fragAngleTarget;
-			else if (sFragAngleType == FRAG_ANGLE_TYPE_TRIGGER)
-				pNewDesc->iFragAngleType = fragAngleTrigger;
-			else if (sFragAngleType == FRAG_ANGLE_TYPE_ORIGIN)
-				pNewDesc->iFragAngleType = fragAngleOrigin;
-			else if (sFragAngleType == FRAG_ANGLE_TYPE_SYSTEM)
-				pNewDesc->iFragAngleType = fragAngleSystem;
-			else if (sFragAngleType == FRAG_ANGLE_TYPE_RANDOM)
-				pNewDesc->iFragAngleType = fragAngleRandom;
-			else
-				{
-				Ctx.sError = CONSTLIT("Invalid fragmentAngleDirection attribute");
-				return ERR_FAIL;
-				}
-			}
-		else //legacy behavior through API 53
+		CString sFragAngleType = pFragDesc->GetAttribute(FRAGMENT_ANGLE_DIRECTION_ATTRIB);
+		if (sFragAngleType.IsBlank())
 			pNewDesc->iFragAngleType = fragAngleTrigger;
+		else if (sFragAngleType == FRAG_ANGLE_TYPE_DIRECTION)
+			pNewDesc->iFragAngleType = fragAngleDirection;
+		else if (sFragAngleType == FRAG_ANGLE_TYPE_VELOCITY)
+			pNewDesc->iFragAngleType = fragAngleVelocity;
+		else if (sFragAngleType == FRAG_ANGLE_TYPE_TARGET)
+			pNewDesc->iFragAngleType = fragAngleTarget;
+		else if (sFragAngleType == FRAG_ANGLE_TYPE_TRIGGER)
+			pNewDesc->iFragAngleType = fragAngleTrigger;
+		else if (sFragAngleType == FRAG_ANGLE_TYPE_ORIGIN)
+			pNewDesc->iFragAngleType = fragAngleOrigin;
+		else if (sFragAngleType == FRAG_ANGLE_TYPE_SYSTEM)
+			pNewDesc->iFragAngleType = fragAngleSystem;
+		else if (sFragAngleType == FRAG_ANGLE_TYPE_RANDOM)
+			pNewDesc->iFragAngleType = fragAngleRandom;
+		else
+			{
+			Ctx.sError = CONSTLIT("Invalid fragmentAngleDirection attribute");
+			return ERR_FAIL;
+			}
 
 		//	Set MIRV flag
 

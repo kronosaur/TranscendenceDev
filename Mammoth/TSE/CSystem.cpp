@@ -1471,34 +1471,28 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 
 			if (!pFragDesc->FragmentArc.IsEmpty())
 				{
+				//	handle direction setting for different APIs and settings
 
-				//handle direction setting for different APIs and settings
 				int iCenterAngle;
-				if (iExtAPI >= 54)
-					{
-					if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleDirection)
-						iCenterAngle = Ctx.iSourceDirection;
-					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleVelocity)
-						iCenterAngle = VectorToPolar(Ctx.vSourceVel);
-					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleTarget)
-						iCenterAngle = VectorToPolar(Ctx.vPos - Ctx.pTarget->GetPos());
-					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleTrigger)
-						iCenterAngle = Ctx.iDirection;
-					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleOrigin)
-						iCenterAngle = AngleMod(VectorToPolar(Ctx.vPos) - 180);
-					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleSystem)
-						iCenterAngle = 0;
-					else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleRandom)
-						iCenterAngle = mathRandom(0, 359);
-					else
-						iCenterAngle = Ctx.iSourceDirection;
-					}
+				if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleDirection)
+					iCenterAngle = Ctx.iSourceDirection;
+				else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleVelocity)
+					iCenterAngle = VectorToPolar(Ctx.vSourceVel);
+				else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleTarget)
+					iCenterAngle = VectorToPolar(Ctx.vPos - Ctx.pTarget->GetPos());
+				else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleTrigger)
+					iCenterAngle = Ctx.iDirection;
+				else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleOrigin)
+					iCenterAngle = AngleMod(VectorToPolar(Ctx.vPos) - 180);
+				else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleSystem)
+					iCenterAngle = 0;
+				else if (pFragDesc->iFragAngleType == CWeaponFireDesc::fragAngleRandom)
+					iCenterAngle = mathRandom(0, 359);
 				else
-					iCenterAngle = Ctx.iDirection; //	Legacy default
+					iCenterAngle = Ctx.iSourceDirection;
 
 				for (int i = 0; i < iFragmentCount; i++)
 					{
-
 					//	Handle the different arcAngle/fragmentAngle modes
 
 					if (pFragDesc->iFragArcOffsetAndMode & CWeaponFireDesc::FLAG_FRAG_ARC_ABSOLUTE)
