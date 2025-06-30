@@ -900,7 +900,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 			{
 			Defaults.iDifficulty = CDifficultyOptions::ParseID(m_Settings.GetString(CGameSettings::lastDifficulty));
 			if (Defaults.iDifficulty == CDifficultyOptions::ELevel::Unknown)
-				Defaults.iDifficulty = CDifficultyOptions::ELevel::Story;
+				Defaults.iDifficulty = CDifficultyOptions::ELevel::Normal;
 			}
 
 		//	New game screen

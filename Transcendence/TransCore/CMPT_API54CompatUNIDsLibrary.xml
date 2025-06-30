@@ -33,7 +33,7 @@
     <!ENTITY dsAbandonedStation			"0x00010032"> <!-- dsRPGAbandonedStation -->
     <!ENTITY dsAbandonedShip			"0x00010032"> <!-- dsRPGAbandonedStation -->
     <!ENTITY dsAbandonedCrate			"0x00010032"> <!-- dsRPGAbandonedStation -->
-    <!ENTITY rsMolotokHD			    "0x00100206"> <!-- rsMolotokHD -->
+    <!ENTITY rsMolotokHD			    "0x00100206"> <!-- rsMolotokB -->
     <!ENTITY rsMolotokHero			    "0x00100207"> <!-- rsMolotokBHero -->
     <!ENTITY rsRoninHD					"0x00100390"> <!-- rsRoninA -->
     <!ENTITY msRaisuStation				"0x0010039B"> <!-- msRaisuStation01 -->
