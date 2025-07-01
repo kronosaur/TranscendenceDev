@@ -1517,12 +1517,6 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 						int iArc = pFragDesc->FragmentArc.Roll();
 						int iHalfArc = iArc / 2;
 
-						//  If we hit inside of an object, we should only generate the
-						//	fraction of projectiles that would hit at the surface (180 arc)
-
-						if (bInternalHit && iExtAPI >= 54)
-							iFragmentFraction = iFraction * min(iArc, 180) / (100 * iArc);
-
 						int iMinAngle = iCenterAngle - iHalfArc + iDirOffset;
 						int iMaxAngle = iMinAngle + iArc + iDirOffset;
 
@@ -1530,12 +1524,14 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 						}
 
 					//  Handle exact 
+
 					int iAngleForwardnessOffset = AngleMod(Angles[i] - Ctx.iDirection);
 					if (bInternalHit && iAngleForwardnessOffset > 90 && iAngleForwardnessOffset < 270)
 						Angles[i] = -1;
 
 					Targets[i] = Ctx.pTarget;
 					}
+
 				iFragmentFraction = 100; //We already handle removing internal hit fragments in this code
 				}
 

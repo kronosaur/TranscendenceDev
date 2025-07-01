@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							54;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
-constexpr DWORD SYSTEM_SAVE_VERSION =					212;
+constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 
 //	Uncomment out the following define when building a stable release
 
@@ -1083,3 +1083,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					212;
 //
 //	211: 1.9
 //		Change CShockwaveHitTest
+//
+//	212: 1.9 ??
+//		????
+//
+//	213: 2.0 Alpha 2
+//		Change DiceRange to use -1 for not set

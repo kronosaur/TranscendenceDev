@@ -185,9 +185,19 @@ ALERROR DiceRange::LoadFromXML (const CString &sAttrib, int iDefault, CString *r
 
 	if (*pPos == '\0')
 		{
-		m_iCount = 0;
-		m_iFaces = 0;
-		m_iBonus = iDefault;
+		if (iDefault >= 0)
+			{
+			m_iFaces = 0;
+			m_iCount = 0;
+			m_iBonus = iDefault;
+			}
+		else
+			{
+			m_iFaces = -1;
+			m_iCount = 0;
+			m_iBonus = 0;
+			}
+
 		if (retsSuffix)
 			*retsSuffix = NULL_STR;
 		return NOERROR;
@@ -362,20 +372,32 @@ void DiceRange::ReadFromStream (SLoadCtx &Ctx)
 //	Read the range
 
 	{
-	if (Ctx.dwVersion >= 27)
+	if (Ctx.dwVersion >= 213)
 		{
-		Ctx.pStream->Read((char *)&m_iFaces, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&m_iCount, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&m_iBonus, sizeof(DWORD));
+		Ctx.pStream->Read(m_iFaces);
+		Ctx.pStream->Read(m_iCount);
+		Ctx.pStream->Read(m_iBonus);
+		}
+	else if (Ctx.dwVersion >= 27)
+		{
+		Ctx.pStream->Read(m_iFaces);
+		Ctx.pStream->Read(m_iCount);
+		Ctx.pStream->Read(m_iBonus);
+
+		if (m_iFaces == 0 && m_iCount == 0 && m_iBonus == 0)
+			m_iFaces = -1;
 		}
 	else
 		{
 		DWORD dwLoad;
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 
 		m_iFaces = HIBYTE(LOWORD(dwLoad));
 		m_iCount = LOBYTE(LOWORD(dwLoad));
 		m_iBonus = (int)(short)HIWORD(dwLoad);
+
+		if (m_iFaces == 0 && m_iCount == 0 && m_iBonus == 0)
+			m_iFaces = -1;
 		}
 	}
 
@@ -386,6 +408,9 @@ int DiceRange::Roll (void) const
 //	Generate a random number
 
 	{
+	if (IsEmpty())
+		return 0;
+
 	int iRoll = 0;
 
 	for (int i = 0; i < m_iCount; i++)
@@ -401,6 +426,9 @@ int DiceRange::RollSeeded (int iSeed) const
 //	Generate a random number
 
 	{
+	if (IsEmpty())
+		return 0;
+
 	int iRoll = 0;
 
 	for (int i = 0; i < m_iCount; i++)
@@ -416,7 +444,9 @@ CString DiceRange::SaveToXML (void) const
 //	Represents range as an attribute value
 
 	{
-	if (m_iCount > 0 && m_iFaces > 0)
+	if (IsEmpty())
+		return NULL_STR;
+	else if (m_iCount > 0 && m_iFaces > 0)
 		{
 		if (m_iBonus > 0)
 			return strPatternSubst("%dd%d+%d", m_iCount, m_iFaces, m_iBonus);
@@ -436,7 +466,9 @@ void DiceRange::Scale (Metric rScale)
 //	Adjust values by given factor
 
 	{
-	if (m_iCount == 0)
+	if (IsEmpty())
+		{ }
+	else if (m_iCount == 0)
 		m_iBonus = mathRound(m_iBonus * rScale);
 	else if (m_iCount == 1)
 		{
@@ -459,9 +491,9 @@ void DiceRange::WriteToStream (IWriteStream *pStream) const
 //	Writes the range
 
 	{
-	pStream->Write((char *)&m_iFaces, sizeof(DWORD));
-	pStream->Write((char *)&m_iCount, sizeof(DWORD));
-	pStream->Write((char *)&m_iBonus, sizeof(DWORD));
+	pStream->Write(m_iFaces);
+	pStream->Write(m_iCount);
+	pStream->Write(m_iBonus);
 	}
 
 //	Miscellaneous functions
