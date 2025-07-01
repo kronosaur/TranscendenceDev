@@ -2891,7 +2891,7 @@
 
 				maneuverRate=	"9"
 				
-				proximityDistanceAutoTrigger="0.1"
+				proximityDistanceAutoTrigger="0.05"
 
 				effect=			"&efMissileNAMI;"
 				hitEffect=		"&efThermoFragmentExplosion;"
