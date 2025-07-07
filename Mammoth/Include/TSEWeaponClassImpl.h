@@ -27,7 +27,7 @@ class CWeaponClass : public CDeviceClass
 
 		static constexpr Metric FRAG_THRESHOLD_NONE = -1.0;					//	No threshold
 		static constexpr Metric DEFAULT_FRAG_THRESHOLD = 4.0;				//	4 light-seconds (~95 pixels)
-		static constexpr Metric DEFAULT_FRAG_MIN_THRESHOLD = 0.5;			//	0.5 light-seconds
+		static constexpr Metric DEFAULT_FRAG_MIN_THRESHOLD = 0.0;			//	0.1 light-seconds
 		static constexpr Metric MAX_MIRV_TARGET_RANGE =	50.0 * LIGHT_SECOND;
 
 		//	Interaction
