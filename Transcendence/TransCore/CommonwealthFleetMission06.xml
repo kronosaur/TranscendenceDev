@@ -167,7 +167,7 @@
 
 				"A supply ship is arriving at the %gateName%.
 				Your orders are to escort it back to %cscName%
-				and defend it against all enemies. Carry On!\""
+				and defend it against all enemies. Carry On!"
 
 			</Text>
 			<String id="AcceptReply">
