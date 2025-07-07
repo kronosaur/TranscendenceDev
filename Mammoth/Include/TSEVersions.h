@@ -283,7 +283,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //					fragmentation trigger. For the intended legacy behavior, use
 //					fragmentMinRadius - this value still had a small amount of smart
 //					adjustment however.
-//				Default: 0.5
+//				Default: 0.0 (disabled)
 //			proximityDistanceFail=[float] (units: ls)
 //				The projectile will not fragment if within this distance. Automatically
 //				sets disableImpactFragmentation to True. Raises an error if it greater
