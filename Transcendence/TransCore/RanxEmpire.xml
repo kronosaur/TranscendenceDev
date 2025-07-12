@@ -607,6 +607,8 @@
 						missileSpeed=	"50"
 						lifetime=		"120"
 
+						proximityDistanceAutoTrigger="0.0"
+
 						failsafe=		"10"
 
 						hitEffect=		"&efThermoFragmentExplosion;"
