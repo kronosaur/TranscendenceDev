@@ -3553,6 +3553,10 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 		DamageDesc Damage = pShot->GetDamage();
 		iDamageType = Damage.GetDamageType();
 
+		//	Get the range (in lightseconds)
+
+		int iRange = mathRound(pShot->GetMaxRange() / LIGHT_SECOND);
+
 		//	Modify the damage based on any enhancements that the ship may have
 
 		TSharedPtr<CItemEnhancementStack> pEnhancements = Ctx.GetEnhancementStack();
@@ -3590,13 +3594,10 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 			{
 			CString sDamage = Damage.GetDesc(DamageDesc::flagAverageDamage);
 
-			//	Calculate the radius
-
-			int iRadius = mathRound(pShot->GetMaxRadius() / LIGHT_SECOND);
-
 			//	Compute result
+			//	Note: radius is the same as the range
 
-			sReference = strPatternSubst(CONSTLIT("%s in %d ls radius%s"), sDamage, iRadius, sFireRate);
+			sReference = strPatternSubst(CONSTLIT("%s in %d ls radius%s"), sDamage, iRange, sFireRate);
 			}
 
 		//	For particles...
@@ -3622,9 +3623,9 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 			int iDamageTenth = iDamage10 % 10;
 
 			if (iDamageTenth == 0)
-				sReference = strPatternSubst(CONSTLIT("%s cloud %d hp%s%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, sMult, sFireRate);
+				sReference = strPatternSubst(CONSTLIT("%s cloud %d hp with %d ls range%s%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iRange, sMult, sFireRate);
 			else
-				sReference = strPatternSubst(CONSTLIT("%s cloud %d.%d hp%s%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iDamageTenth, sMult, sFireRate);
+				sReference = strPatternSubst(CONSTLIT("%s cloud %d.%d hp with %d ls range%s%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iDamageTenth, iRange, sMult, sFireRate);
 			}
 
 		//	For large number of fragments, we have a special description
@@ -3664,6 +3665,10 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 				sDamage.Append(strPatternSubst(CONSTLIT(" (x%d)"), iMult));
 
 			sReference.Append(sDamage);
+
+			//	Add the range
+
+			sReference.Append(strPatternSubst(CONSTLIT(" with %d ls range"), iRange));
 
 			//	Compute fire rate
 
