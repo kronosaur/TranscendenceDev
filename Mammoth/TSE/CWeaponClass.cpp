@@ -5284,18 +5284,26 @@ CString CWeaponClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dw
 	{
 	CString sReference;
 
-	//	For weapons
+	//	For weapons (not launchers)
 
-	if (Ammo.IsEmpty())
+	if (!IsLauncher())
 		{
+
+		//	Give the range of this weapon
+
+		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d ls range"), mathRound(GetMaxRange(Ctx) / LIGHT_SECOND)));
+
 		//	For ammo weapons, we describe the kind of ammo we need.
 
-		CItemType *pAmmo;
-		if (!IsLauncher()
-				&& GetAmmoItemCount() == 1
-				&& (pAmmo = GetAmmoItem(0)))
+		if (Ammo.IsEmpty())
 			{
-			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("requires %s"), pAmmo->GetNounPhrase(0x02)));
+
+			CItemType *pAmmo;
+			if (GetAmmoItemCount() == 1
+					&& (pAmmo = GetAmmoItem(0)))
+				{
+				AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("requires %s"), pAmmo->GetNounPhrase(0x02)));
+				}
 			}
 		}
 
