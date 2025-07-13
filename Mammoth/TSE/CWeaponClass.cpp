@@ -3623,9 +3623,9 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 			int iDamageTenth = iDamage10 % 10;
 
 			if (iDamageTenth == 0)
-				sReference = strPatternSubst(CONSTLIT("%s cloud %d hp with %d ls range%s%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iRange, sMult, sFireRate);
+				sReference = strPatternSubst(CONSTLIT("%s cloud %d hp w/ %d ls range%s%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iRange, sMult, sFireRate);
 			else
-				sReference = strPatternSubst(CONSTLIT("%s cloud %d.%d hp with %d ls range%s%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iDamageTenth, iRange, sMult, sFireRate);
+				sReference = strPatternSubst(CONSTLIT("%s cloud %d.%d hp w/ %d ls range%s%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iDamageTenth, iRange, sMult, sFireRate);
 			}
 
 		//	For large number of fragments, we have a special description
@@ -3668,7 +3668,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 			//	Add the range
 
-			sReference.Append(strPatternSubst(CONSTLIT(" with %d ls range"), iRange));
+			sReference.Append(strPatternSubst(CONSTLIT(" w/ %d ls range"), iRange));
 
 			//	Compute fire rate
 
