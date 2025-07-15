@@ -549,6 +549,7 @@
 
 		<Weapon
 				type=				"missile"
+				damage=				"blast:5d12"
 
 				fireRate=			"36"
 				missileSpeed=		"50"
