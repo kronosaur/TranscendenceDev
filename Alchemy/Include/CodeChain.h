@@ -303,7 +303,7 @@ class ICCAtom : public ICCItem
 
 		virtual ICCItem *CloneContainer (void) const override { return Reference(); }
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
-		virtual ICCItem *GetElement (int iIndex) const override { return (iIndex == 0 ? Reference() : NULL); }
+		virtual ICCItem *GetElement (int iIndex) const override { return (iIndex == 0 ? (ICCItem*)this : NULL); }
 		virtual int GetCount (void) const override { return 1; }
 		virtual ICCItem *Head (CCodeChain *pCC) override { return Reference(); }
 		virtual bool IsAtom (void) const override { return true; }
