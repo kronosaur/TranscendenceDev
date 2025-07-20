@@ -5,7 +5,7 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							54;
+constexpr DWORD API_VERSION =							55;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
 constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 
@@ -332,6 +332,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				For legacy (objDestroy obj) behavior, use (objRemove obj)
 //			(objRemove obj)
 //				Added, removes the obj from system
+//
+//	55: 2.0 Alpha 3
+//		tlisp:
+//			(plyGetName player)
+//				Allows getting the player name without needing to use str formatting
+//
 
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------

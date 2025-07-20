@@ -1084,6 +1084,7 @@ ICCItem *fnPlyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 	ICCItem *pResult;
 
 	//	Convert the first argument into a player controller
@@ -1097,8 +1098,12 @@ ICCItem *fnPlyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	switch (dwData)
 		{
 		case FN_PLY_GET_NAME:
+			{
+			if (pCtx->GetAPIVersion() < 55)
+				return pCC->CreateError(CONSTLIT("plyGetName requires API 55 or higher"));
 			pResult = pCC->CreateString(pPlayer->GetPlayerName());
 			break;
+			}
 
 		case FN_PLY_CREDITS:
 			{
