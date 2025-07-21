@@ -610,7 +610,7 @@
 					)
 				))
 				
-			(setq mathScaleFP (lambda (x fromMin fromMax toMin toMax gamma)
+			(setq mathScaleReal (lambda (x fromMin fromMax toMin toMax gamma)
 
 			;	Scales x, which must be in the range fromMin to fromMax to the
 			;	destination scale, toMin to Max. Returns a double.
