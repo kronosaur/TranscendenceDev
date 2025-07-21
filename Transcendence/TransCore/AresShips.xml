@@ -272,12 +272,7 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itLightningCannon;"  posAngle="42" posRadius="28" posZ="0"/>
-			<Device deviceID="&itMicronukeCannon;"	posAngle="-42" posRadius="28" posZ="0">
-				<Items>
-					<Item count="3d20" item="&itMicronuke;"/>
-				</Items>
-			</Device>
+			<Device deviceID="&itAresArchcannon;"/>
 			<Device deviceID="&itCydonianShields;"/>
 		</Devices>
 
@@ -287,7 +282,7 @@
 			/>
 
 		<Items>
-			<Item count="4d6" item="&itPteracniumFuelRod;"/>
+			<Item count="1d6" item="&itPteracniumFuelRod;"/>
 		</Items>
 
 		<!-- Image and Effects -->
@@ -364,12 +359,12 @@
 
 	</ShipClass>
 
-	<!-- Level 9: Chasm Heavy Gunship -->
+	<!-- Level 9: Chasm Bomber -->
 
 	<ShipClass UNID="&scChasm;"
 			manufacturer=		"Ares Orthodoxy"
 			class=				"Chasm"
-			type=				"heavy gunship"
+			type=				"bomber"
 			defaultSovereign=	"&svAres;"
 
 			attributes=			"ares,genericClass"
@@ -388,18 +383,23 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itAresArchcannon;"/>
+			<Device deviceID="&itLightningCannon;"/>
+			<Device deviceID="&itMicronukeCannon;">
+				<Items>
+					<Item count="3d20" item="&itMicronuke;"/>
+				</Items>
+			</Device>
 			<Device deviceID="&itLightningCannon;"	posAngle="0" posRadius="0" posZ="8" fireAngle="180" fireArc="150" secondaryWeapon="true"/>
 			<Device deviceID="&itCydonianShields;"/>
 		</Devices>
 
 		<Maneuver
-			maxRotationRate=	"18.0"
-			rotationAccel=		"2.0"
-			/>
+            maxRotationRate=    "9.0"
+            rotationAccel=        "1.0"
+            />
 
 		<Items>
-			<Item count="1d6" item="&itPteracniumFuelRod;"/>
+			<Item count="4d6" item="&itPteracniumFuelRod;"/>
 		</Items>
 		
 		<!-- Image and Effects -->
@@ -420,12 +420,12 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"15"
-			fireAccuracy=		"95"
-			perception=			"6"
-			
-			combatStyle=		"advanced"
-			/>
+            fireRateAdj=        "20"
+            fireAccuracy=        "90"
+            perception=            "4"
+            combatStyle=        "advanced"
+            ignoreShieldsDown=    "true"
+            />
 
 	</ShipClass>
 
