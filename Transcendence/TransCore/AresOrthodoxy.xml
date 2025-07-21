@@ -153,14 +153,14 @@
 		<!-- Ships and Defenses -->
 
 		<Ships>
-			<Ship		count="1d2"		class="&scTundra;" orders="guard"/>
+			<Ship		count="1d2"		class="&scChasm;" orders="guard"/>
 			<Ship		count="1d6"		class="&scSandstorm;" orders="patrol" patrolDist="5"/>
 		</Ships>
 
 		<Reinforcements minShips="6">
 			<Table>
 				<Ship chance="75"	count="1d4" class="&scSandstorm;" orders="patrol" patrolDist="5"/>
-				<Ship chance="25"	count="1" class="&scTundra;" orders="guard" />
+				<Ship chance="25"	count="1" class="&scChasm;" orders="guard" />
 			</Table>
 		</Reinforcements>
 
@@ -254,10 +254,10 @@
 		<!-- Ships and Defenses -->
 
 		<Ships>
-			<Ship		count="1d2"		class="&scTundra;"					orders="guard"/>
+			<Ship		count="1d2"		class="&scChasm;"					orders="guard"/>
 			<Ship		count="1d6"		class="&scSandstorm;"				orders="patrol:5"/>
 			<Table>
-				<Ship	chance="40"	count="1d4+2"	class="&scChasm;"		orders="patrol:5"/>
+				<Ship	chance="40"	count="1d4+2"	class="&scTundra;"		orders="patrol:5"/>
 				<Ship	chance="40" count="1d2"		class="&scDeimos;"		orders="patrol:8"/>
 				<Ship	chance="10" count="4d6"		class="&scSandstorm;"	orders="patrol:8"/>
 				<Ship	chance="10" count="1"		class="&scPhobos;"		orders="guard"/>
@@ -267,8 +267,8 @@
 		<Construction constructionRate="500" maxConstruction="10">
 			<Table>
 				<Ship chance="40"	count="1"	class="&scSandstorm;"		orders="patrol:5"/>
-				<Ship chance="20"	count="1"	class="&scChasm;"			orders="patrol:5"/>
-				<Ship chance="20"	count="1"	class="&scTundra;"			orders="patrol:8"/>
+				<Ship chance="20"	count="1"	class="&scTundra;"			orders="patrol:5"/>
+				<Ship chance="20"	count="1"	class="&scChasm;"			orders="patrol:8"/>
 				<Ship chance="10"	count="1"	class="&scDeimos;"			orders="patrol:8"/>
 				<Ship chance="5"	count="1"	class="&scPhobos;"			orders="patrol:50"/>
 				<Ship chance="5"	count="1"	class="&scDeimos;"			eventHandler="&evStdWanderBehavior;"/>
@@ -359,7 +359,7 @@
 	</ShipTable>
 
 	<ShipTable UNID="&etAresAmbush3;">
-		<Ship count="1"		class="&scChasm;"		orders="attack" sovereign="&svAres;">
+		<Ship count="1"		class="&scTundra;"		orders="attack" sovereign="&svAres;">
 			<Escorts>
 				<Ship count="1d2+4" class="&scSandstorm;"	orders="escort"/>
 			</Escorts>
@@ -367,7 +367,7 @@
 	</ShipTable>
 
 	<ShipTable UNID="&etAresAmbush4;">
-		<Ship count="1"		class="&scTundra;"		orders="attack" sovereign="&svAres;">
+		<Ship count="1"		class="&scChasm;"		orders="attack" sovereign="&svAres;">
 			<Escorts>
 				<Ship count="1d2+4" class="&scSandstorm;"	orders="escort"/>
 			</Escorts>
@@ -390,7 +390,7 @@
 				</Escorts>
 			</Ship>
 
-			<Ship levelFrequency="----- --rrv" count="1"	 class="&scTundra;" eventHandler="&evStdPatrolEncounterBehavior;">
+			<Ship levelFrequency="----- --rrv" count="1"	 class="&scChasm;" eventHandler="&evStdPatrolEncounterBehavior;">
 				<Escorts>
 					<Ship					   count="1d3"	 class="&scSandstorm;" orders="escort"/>
 				</Escorts>
@@ -402,13 +402,13 @@
 				</Escorts>
 			</Ship>
 
-			<Ship levelFrequency="----- ---rr" count="1"	 class="&scTundra;" eventHandler="&evStdPatrolEncounterBehavior;">
+			<Ship levelFrequency="----- ---rr" count="1"	 class="&scChasm;" eventHandler="&evStdPatrolEncounterBehavior;">
 				<Escorts>
 					<Ship					   count="1d6" class="&scSandstorm;" orders="escort"/>
 				</Escorts>
 			</Ship>
 
-			<Ship levelFrequency="----- ---rr" count="1"	 class="&scChasm;" eventHandler="&evStdPatrolEncounterBehavior;">
+			<Ship levelFrequency="----- ---rr" count="1"	 class="&scTundra;" eventHandler="&evStdPatrolEncounterBehavior;">
 				<Escorts>
 					<Ship					   count="1d6" class="&scSandstorm;" orders="escort"/>
 				</Escorts>
