@@ -621,7 +621,7 @@
 
 				(block (toRange result)
 
-					(setq toRange (subtract toMax toMin))
+					(setq toRange (- toMax toMin))
 
 					;	Map to the result range
 
