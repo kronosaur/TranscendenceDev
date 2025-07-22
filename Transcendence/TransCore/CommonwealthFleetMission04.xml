@@ -235,7 +235,7 @@
 				</Items>
 				<Escorts>
 					<Ship	count="3d4"	 class="&scSandstorm;"	orders="escort"/>
-					<Ship	count="1d2"	 class="&scTundra;"		orders="escort"/>
+					<Ship	count="1d2"	 class="&scChasm;"		orders="escort"/>
 				</Escorts>
 			</Ship>
 			<Ship levelFrequency="---vv vrrcc" count="1" class="&scPolar;">
@@ -244,7 +244,7 @@
 				</Items>
 				<Escorts>
 					<Ship	count="3d4"	 class="&scSandstorm;"	orders="escort"/>
-					<Ship	count="1d2"	 class="&scChasm;"		orders="escort"/>
+					<Ship	count="1d2"	 class="&scTundra;"		orders="escort"/>
 				</Escorts>
 			</Ship>
 			<Ship levelFrequency="----v vvrrc" count="1" class="&scPolar2;">
@@ -253,7 +253,7 @@
 				</Items>
 				<Escorts>
 					<Ship	count="3d4"	 class="&scSandstorm;"	orders="escort"/>
-					<Ship	count="1d2"	 class="&scTundra;"	orders="escort"/>
+					<Ship	count="1d2"	 class="&scChasm;"	orders="escort"/>
 				</Escorts>
 			</Ship>
 		</LevelTable>

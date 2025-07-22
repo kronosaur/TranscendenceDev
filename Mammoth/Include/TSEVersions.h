@@ -72,10 +72,10 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //		<MissionType>
 //		https://forums.kronosaur.com/viewtopic.php?f=15&t=5387
 // 
-//	 13: 1.2a1
+//	 13: 1.2 Alpha 1
 //		https://forums.kronosaur.com/viewtopic.php?f=15&t=5667
 // 
-//   14: 1.2b1
+//   14: 1.2 Beta 1
 //		Transcribed from here: https://wiki.kronosaur.com/doku.php/modding/xml/api_version?s[]=api
 //		<EffectType>: (new)
 //			Can now specify effect design types for creating dynamic effects
@@ -120,126 +120,125 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //			"property:{propertyName}" is now a valid criteria filter for boolean properties
 //				(Note: ItemType is not supported until API 24)
 //
-//   15: 1.2b2
+//   15: 1.2 Beta 2
 //		https://forums.kronosaur.com/viewtopic.php?f=15&t=5938
 //
-//   16: 1.2b3?
+//   16: 1.2 Beta 3?
 //		https://forums.kronosaur.com/viewtopic.php?f=15&t=5978
 //
-//   17: 1.2b4?
+//   17: 1.2 Beta 4?
 //		https://forums.kronosaur.com/viewtopic.php?f=15&t=6061
 //
-//   18: 1.2rc1?
+//   18: 1.2 RC 1?
 //		https://forums.kronosaur.com/viewtopic.php?f=15&t=6102
 //
 //   19: 1.2?
 //		https://forums.kronosaur.com/viewtopic.php?f=15&t=6128
 //
-//   20: 1.3b1
+//   20: 1.3 Beta 1
 //		https://multiverse.kronosaur.com/news.hexm?id=258
 // 
-//	 21: 1.3b2
+//	 21: 1.3 Beta 2
 //		https://multiverse.kronosaur.com/news.hexm?id=434
 // 
-//   22: 1.3rc1/1.3
+//   22: 1.3 RC 1/1.3
 //		https://multiverse.kronosaur.com/news.hexm?id=532
 //
-//	 23: 1.5b1
+//	 23: 1.5 Beta 1
 //		https://multiverse.kronosaur.com/news.hexm?id=1063
 // 
-//   24: 1.5rc1/1.5
+//   24: 1.5 RC 1/1.5
 //		https://multiverse.kronosaur.com/news.hexm?id=1096
 // 
-//   25: 1.6b2
+//   25: 1.6 Beta 2
 //		Tlisp supports basic floating point math:
 //		https://forums.kronosaur.com/viewtopic.php?f=15&t=7116
 // 
-//   26: 1.6b3
+//   26: 1.6 Beta 3
 //		https://multiverse.kronosaur.com/news.hexm?id=1364
 // 
-//   27: 1.6b5
+//   27: 1.6 Beta 5
 //		https://forums.kronosaur.com/viewtopic.php?f=15&t=7226
 // 
-//   28: 1.6rc1?
+//   28: 1.6 RC 1?
 //		https://ministry.kronosaur.com/program.hexm?id=1&status=closed&tag=28
 // 
-//   29: 1.7preview
+//   29: 1.7 Preview
 //		http://ministry.kronosaur.com/record.hexm?id=8048
 // 
-//   30: 1.7a2
+//   30: 1.7 Alpha 2
 //		http://ministry.kronosaur.com/record.hexm?id=54396
 // 
-//   31: 1.7b1
+//   31: 1.7 Beta 1
 //		http://ministry.kronosaur.com/record.hexm?id=57824
 // 
-//   32: 1.7b3
+//   32: 1.7 Beta 3
 //		http://ministry.kronosaur.com/record.hexm?id=61158
 // 
-//   33: 1.7b4
+//   33: 1.7 Beta 4
 //		http://ministry.kronosaur.com/record.hexm?id=62046
 // 
-//   34: 1.7b5
+//   34: 1.7 Beta 5
 //		http://ministry.kronosaur.com/record.hexm?id=66822
 //
-//	 35: 1.7b6/1.7 
+//	 35: 1.7 Beta 6/1.7 
 //		https://ministry.kronosaur.com/record.hexm?id=68066
 // 
-//   36: 1.8a1
+//   36: 1.8 Alpha 1
 //		https://ministry.kronosaur.com/record.hexm?id=71132
 // 
-//   37: 1.8a2
+//   37: 1.8 Alpha 2
 //		https://ministry.kronosaur.com/record.hexm?id=72675
 // 
-//   38: 1.8a3
+//   38: 1.8 Alpha 3
 //		https://ministry.kronosaur.com/record.hexm?id=73457
 // 
-//   39: 1.8a4
+//   39: 1.8 Alpha 4
 //		https://ministry.kronosaur.com/record.hexm?id=74282
 // 
-//   40: 1.8b1
+//   40: 1.8 Beta 1
 //		https://ministry.kronosaur.com/record.hexm?id=76059
 //  
-//   41: 1.8b2
+//   41: 1.8 Beta 2
 //		https://ministry.kronosaur.com/record.hexm?id=78005
 // 
-//   42: 1.8b3
+//   42: 1.8 Beta 3
 //		https://ministry.kronosaur.com/record.hexm?id=80464
 // 
-//   43: 1.8b4
+//   43: 1.8 Beta 4
 //		https://ministry.kronosaur.com/record.hexm?id=82308
 // 
-//   44: 1.8b5/1.8
+//   44: 1.8 Beta 5/1.8
 //		https://ministry.kronosaur.com/record.hexm?id=84283
 // 
-//   45: 1.9a1
+//   45: 1.9 Alpha 1
 //		https://ministry.kronosaur.com/record.hexm?id=86399
 // 
-//   46: 1.9a2
+//   46: 1.9 Alpha 2
 //		https://ministry.kronosaur.com/record.hexm?id=88044
 // 
-//	 47: 1.9a3
+//	 47: 1.9 Alpha 3
 //		https://ministry.kronosaur.com/record.hexm?id=88252
 // 
-//   48: 1.9a4
+//   48: 1.9 Alpha 4
 //		https://ministry.kronosaur.com/record.hexm?id=88609
 // 
-//   49: 1.9b1
+//   49: 1.9 Beta 1
 //		https://ministry.kronosaur.com/record.hexm?id=90206
 // 
-//	 50: 1.9b2
+//	 50: 1.9 Beta 2
 //		https://ministry.kronosaur.com/record.hexm?id=90690
 // 
-//	 51: 1.9b3
+//	 51: 1.9 Beta 3
 //		https://ministry.kronosaur.com/record.hexm?id=93663
 // 
-//   52: 1.9b4
+//   52: 1.9 Beta 4
 //		https://ministry.kronosaur.com/record.hexm?id=94300
 // 
 //	 53: 1.9
 //		https://ministry.kronosaur.com/record.hexm?id=97615
 //
-//
-//	 54: 1.9.3a0
+//	 54: 2.0 Alpha 1
 //		<CoreLibrary>:
 //			Added new CoreLibrary: Compatibility UNID Library (0x00710000)
 //				Compatibility UNID Library contains pre-API 54 legacy aliases
