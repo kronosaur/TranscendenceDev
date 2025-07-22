@@ -610,6 +610,51 @@
 					)
 				))
 				
+			(setq mathScaleReal (lambda (x fromMin fromMax toMin toMax gamma)
+
+			;	Scales x, which must be in the range fromMin to fromMax to the
+			;	destination scale, toMin to Max. Returns a double.
+			;
+			;	gamma is an optional parameter that scales based on a power
+			;	function. At 1.0, the mapping is linear. At 0.5 we use a square
+			;	root function; at 2.0 we square it.
+
+				(block (toRange result)
+
+					(setq toRange (- toMax toMin))
+
+					;	Map to the result range
+
+					(setq result
+						(/
+							(*
+								(- 
+									(min (max fromMin x) fromMax)
+									fromMin
+									)
+								toRange
+								)
+							(- fromMax fromMin)
+							)
+						)
+
+					;	If we have a gamma parameter, adjust it
+
+					(if gamma
+						(setq result
+							(pow (/ result toRange) gamma)
+							)
+						)
+
+					;	Done
+
+					(if (ls toRange 0)
+						(- toMin result)
+						(+ result toMin)
+						)
+					)
+				))
+				
 			; Object functions -------------------------------------------------
 			
 			(setq objAddItemByValue (lambda (theObj theItem theValue theCurrency)
