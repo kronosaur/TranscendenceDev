@@ -1548,6 +1548,6 @@ inline CSystemMap *CTopologyNode::GetDisplayPos (int *retxPos, int *retyPos) con
 inline bool DamageDesc::IsEnergyDamage (void) const { return ::IsEnergyDamage(m_iType); }
 inline bool DamageDesc::IsMatterDamage (void) const { return ::IsMatterDamage(m_iType); }
 
-inline void IEffectPainter::PlaySound (CSpaceObject *pSource) { if (!m_bNoSound) GetCreator()->PlaySound(pSource); }
+inline void IEffectPainter::PlaySound (CSpaceObject *pSource) { if (!m_bNoSound) GetCreator()->PlaySound(pSource, &m_sSoundOptions); }
 
 inline DWORD SDesignLoadCtx::GetAPIVersion (void) const { return (pExtension ? pExtension->GetAPIVersion() : API_VERSION); }
