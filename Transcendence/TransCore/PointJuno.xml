@@ -237,7 +237,7 @@
 		<Ships>
 			<Table>
 				<Group chance="60">
-					<Ship	count="4"	class="&scChasm;"	orders="guard"	sovereign="&svAres;"/>
+					<Ship	count="4"	class="&scTundra;"	orders="guard"	sovereign="&svAres;"/>
 					<Ship	count="2d8"	class="&scSandstorm;" orders="patrol" patrolDist="10" sovereign="&svAres;"/>
 					<Ship	count="1d2"	class="&scCometfall;" orders="patrol" patrolDist="15" sovereign="&svAres;"/>
 				</Group>

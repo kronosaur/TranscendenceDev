@@ -369,7 +369,7 @@ void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText
 
 	if (m_pItem->GetReferenceDamageType(Ctx, CItem(), dwRefFlags, &iDamageType, &sDamageRef))
 		{
-		//	Paint the damage type reference
+		//	Paint the damage type reference		
 
 		PaintReferenceDamageType(m_VI,
 				Dest,
@@ -747,6 +747,7 @@ void CItemPainter::PaintReferenceDamageType (const CVisualPalette &VI, CG32bitIm
 	{
 	bool bDisabled = ((dwOptions & OPTION_DISABLED) ? true : false);
 
+	const CG16bitFont &Small = VI.GetFont(fontSmall);
 	const CG16bitFont &Medium = VI.GetFont(fontMedium);
 
 	//	Paint the icon first
@@ -759,11 +760,14 @@ void CItemPainter::PaintReferenceDamageType (const CVisualPalette &VI, CG32bitIm
 		x += DAMAGE_TYPE_ICON_WIDTH + DAMAGE_ADJ_ICON_SPACING_X;
 		}
 
+	//	Figure out what font to use
+	const CG16bitFont& Font = (sRef.GetLength() >= 64) ? Small : Medium;
+
 	//	Paint the reference text
 
 	Dest.DrawText(x,
 			y,
-			Medium,
+			Font,
 			rgbText,
 			sRef,
 			0);
