@@ -5,7 +5,7 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							54;
+constexpr DWORD API_VERSION =							55;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
 constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 
@@ -331,6 +331,23 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				For legacy (objDestroy obj) behavior, use (objRemove obj)
 //			(objRemove obj)
 //				Added, removes the obj from system
+//
+//	55: 2.0 Alpha 4
+//		Any <Type>
+//			<AttributeDesc>
+//				<ItemAttribute> and <LocationAttribute>
+//					labelColor: 24-bit or triplet RGB color for tag background
+//						Default: uses neutral/positive/negative background colors
+//					labelTextColor: 24-bit or triplet RGB color for tag text
+//						Default: uses neutral/positive/negative text colors
+//		<ItemType>
+//			<Events>
+//				<GetDisplayAttributes>
+//					Returned struct now accepts the following new values:
+//						labelColor: 24-bit or triplet RGB color for tag background
+//							Default: uses neutral/positive/negative background colors
+//						labelTextColor: 24-bit or triplet RGB color for tag text
+//							Default: uses neutral/positive/negative text colors
 
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
