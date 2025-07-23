@@ -6,38 +6,46 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 	{
 		{	"<",				fnEqualityNumerals,		FN_EQUALITY_LESSER,
 			"(< [x1 x2 ... xn]) -> True if x1 < x2 < ... < xn\n"
-			"Supports comparisons between additional types compared to ls",
+			"Nil is treated as the lowest possible value\n"
+			"Strings will be converted to ints or floats as appropriate",
 			NULL,	0,	},
 
 		{	"ls",				fnEquality,		FN_EQUALITY_LESSER,
-			"(ls [x1 x2 ... xn]) -> True if x1 < x2 < ... < xn",
+			"(ls [x1 x2 ... xn]) -> True if x1 < x2 < ... < xn\n"
+			"Nil is treated as 0",
 			NULL,	0,	},
 
 		{	"<=",				fnEqualityNumerals,		FN_EQUALITY_LESSER_EQ,
 			"(<= [x1 x2 ... xn]) -> True if x1 <= x2 <= ... <= xn\n"
-			"Supports comparisons between additional types compared to leq",
+			"Nil is treated as the lowest possible value\n"
+			"Strings will be converted to ints or floats as appropriate",
 			NULL,	0,	},
 
 		{	"leq",				fnEquality,		FN_EQUALITY_LESSER_EQ,
-			"(leq [x1 x2 ... xn]) -> True if x1 <= x2 <= ... <= xn",
+			"(leq [x1 x2 ... xn]) -> True if x1 <= x2 <= ... <= xn\n"
+			"Nil is treated as 0",
 			NULL,	0,	},
 
 		{	">",				fnEqualityNumerals,		FN_EQUALITY_GREATER,
 			"(> [x1 x2 ... xn]) -> True if x1 > x2 > ... > xn\n"
-			"Supports comparisons between additional types compared to gr",
+			"Nil is treated as the lowest possible value\n"
+			"Strings will be converted to ints or floats as appropriate",
 			NULL,	0,	},
 
 		{	"gr",				fnEquality,		FN_EQUALITY_GREATER,
-			"(gr [x1 x2 ... xn]) -> True if x1 > x2 > ... > xn",
+			"(gr [x1 x2 ... xn]) -> True if x1 > x2 > ... > xn\n"
+			"Nil is treated as 0",
 			NULL,	0,	},
 
 		{	">=",				fnEqualityNumerals,		FN_EQUALITY_GREATER_EQ,
 			"(>= [x1 x2 ... xn]) -> True if x1 >= x2 >= ... >= xn\n"
-			"Supports comparisons between additional types compared to geq",
+			"Nil is treated as the lowest possible value\n"
+			"Strings will be converted to ints or floats as appropriate",
 			NULL,	0,	},
 
 		{	"geq",				fnEquality,		FN_EQUALITY_GREATER_EQ,
-			"(geq [x1 x2 ... xn]) -> True if x1 >= x2 >= ... >= xn",
+			"(geq [x1 x2 ... xn]) -> True if x1 >= x2 >= ... >= xn\n"
+			"Nil is treated as 0",
 			NULL,	0,	},
 
 		{	"add",				fnMathListOld,		FN_MATH_ADD,
@@ -145,12 +153,14 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"s",	0,	},
 
 		{	"eq",				fnEquality,		FN_EQUALITY_EQ,
-			"(eq [x1 x2 ... xn]) -> True if all arguments are equal",
+			"(eq [x1 x2 ... xn]) -> True if all arguments are equal\n"
+			"Nil is treated as 0",
 			NULL,	0,	},
 
 		{	"=",				fnEqualityNumerals, FN_EQUALITY_EQ,
 			"(= [x1 x2 ... xn]) -> True if all arguments are equal\n"
-			"Supports comparisons between additional types compared to eq",
+			"Nil is not equal to 0, only to itself,\n"
+			"Strings will be converted to ints or floats as appropriate",
 			NULL, 0, },
 
 		{	"eval",				fnEval,			0,
