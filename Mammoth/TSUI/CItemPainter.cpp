@@ -111,29 +111,37 @@ void CItemPainter::FormatDisplayAttributes (const CVisualPalette &VI, TArray<SDi
 
 	for (int i = 0; i < Attribs.GetCount(); i++)
 		{
-		CG32bitPixel rgbBackColor;
-		CG32bitPixel rgbTextColor;
+		CG32bitPixel rgbBackColor = Attribs[i].rgbColor;
+		CG32bitPixel rgbTextColor = Attribs[i].rgbTextColor;
 
 		//	Figure out the colors
 
-		switch (Attribs[i].iType)
+		bool bNeedBackColor = !rgbBackColor.GetAlpha();
+		bool bNeedTextColor = !rgbTextColor.GetAlpha();
+
+		if (bNeedBackColor || bNeedTextColor)
 			{
-			case attribPositive:
-			case attribEnhancement:
-				rgbBackColor = VI.GetColor(colorAreaAdvantage);
-				rgbTextColor = VI.GetColor(colorTextAdvantage);
-				break;
 
-			case attribNegative:
-			case attribWeakness:
-				rgbBackColor = VI.GetColor(colorAreaDisadvantage);
-				rgbTextColor = VI.GetColor(colorTextDisadvantage);
-				break;
+			switch (Attribs[i].iType)
+				{
+				case attribPositive:
+				case attribEnhancement:
+					rgbBackColor = bNeedBackColor ? VI.GetColor(colorAreaAdvantage) : rgbBackColor;
+					rgbTextColor = bNeedTextColor ? VI.GetColor(colorTextAdvantage) : rgbTextColor;
+					break;
 
-			default:
-				rgbBackColor = RGB_MODIFIER_NORMAL_BACKGROUND;
-				rgbTextColor = RGB_MODIFIER_NORMAL_TEXT;
-				break;
+				case attribNegative:
+				case attribWeakness:
+					rgbBackColor = bNeedBackColor ? VI.GetColor(colorAreaDisadvantage) : rgbBackColor;
+					rgbTextColor = bNeedTextColor ? VI.GetColor(colorTextDisadvantage) : rgbTextColor;
+					break;
+
+				default:
+					rgbBackColor = bNeedBackColor ? RGB_MODIFIER_NORMAL_BACKGROUND : rgbBackColor;
+					rgbTextColor = bNeedTextColor ? RGB_MODIFIER_NORMAL_TEXT : rgbTextColor;
+					break;
+				}
+
 			}
 
 		//	Add to block
