@@ -5,7 +5,8 @@
 static PRIMITIVEPROCDEF g_DefPrimitives[] =
 	{
 		{	"<",				fnEqualityNumerals,		FN_EQUALITY_LESSER,
-			"(< [x1 x2 ... xn]) -> True if x1 < x2 < ... < xn",
+			"(< [x1 x2 ... xn]) -> True if x1 < x2 < ... < xn\n"
+			"Supports comparisons between additional types compared to ls",
 			NULL,	0,	},
 
 		{	"ls",				fnEquality,		FN_EQUALITY_LESSER,
@@ -13,7 +14,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			NULL,	0,	},
 
 		{	"<=",				fnEqualityNumerals,		FN_EQUALITY_LESSER_EQ,
-			"(<= [x1 x2 ... xn]) -> True if x1 <= x2 <= ... <= xn",
+			"(<= [x1 x2 ... xn]) -> True if x1 <= x2 <= ... <= xn\n"
+			"Supports comparisons between additional types compared to leq",
 			NULL,	0,	},
 
 		{	"leq",				fnEquality,		FN_EQUALITY_LESSER_EQ,
@@ -21,7 +23,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			NULL,	0,	},
 
 		{	">",				fnEqualityNumerals,		FN_EQUALITY_GREATER,
-			"(> [x1 x2 ... xn]) -> True if x1 > x2 > ... > xn",
+			"(> [x1 x2 ... xn]) -> True if x1 > x2 > ... > xn\n"
+			"Supports comparisons between additional types compared to gr",
 			NULL,	0,	},
 
 		{	"gr",				fnEquality,		FN_EQUALITY_GREATER,
@@ -29,7 +32,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			NULL,	0,	},
 
 		{	">=",				fnEqualityNumerals,		FN_EQUALITY_GREATER_EQ,
-			"(>= [x1 x2 ... xn]) -> True if x1 >= x2 >= ... >= xn",
+			"(>= [x1 x2 ... xn]) -> True if x1 >= x2 >= ... >= xn\n"
+			"Supports comparisons between additional types compared to geq",
 			NULL,	0,	},
 
 		{	"geq",				fnEquality,		FN_EQUALITY_GREATER_EQ,
@@ -145,7 +149,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			NULL,	0,	},
 
 		{	"=",				fnEqualityNumerals, FN_EQUALITY_EQ,
-			"(= [x1 x2 ... xn]) -> True if all arguments are equal",
+			"(= [x1 x2 ... xn]) -> True if all arguments are equal\n"
+			"Supports comparisons between additional types compared to eq",
 			NULL, 0, },
 
 		{	"eval",				fnEval,			0,
@@ -218,6 +223,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"join",				fnItem,			FN_JOIN,
 			"(join list [separator]) -> Concatenates items of list into a string, with separator in between each.\n"
+			"Ignores Nil elements\n"
             "(join list 'oxfordComma) -> 'a' ; 'a and b' ; 'a, b, and c' ; etc.",
 			"v*",	0,	},
 
@@ -289,11 +295,11 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"*",	0,	},
 
 		{	"multiply",			fnMathListOld,		FN_MATH_MULTIPLY,
-			"(multiply x1 x2 ... xn) -> z",
+			"(multiply x1 x2 ... xn) -> z (int32 after converting all args to int32)",
 			"v*",	0,	},
 
 		{	"*",				fnMathList,			FN_MATH_MULTIPLY,
-			"(* x1 x2 ... xn) -> z",
+			"(* x1 x2 ... xn) -> z (int32 if all args are int32, else real)",
 			"v*",	0,	},
 
 		{	"neq",				fnEquality,		FN_EQUALITY_NEQ,
@@ -301,7 +307,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			NULL,	0,	},
 
 		{	"!=",				fnEqualityNumerals,	FN_EQUALITY_NEQ,
-			"(!= x1 x2 ... xn) -> True if any arguments are not equal",
+			"(!= x1 x2 ... xn) -> True if any arguments are not equal\n"
+			"Supports comparisons between additional types",
 			NULL, 0, },
 
 		{	"not",				fnLogical,		FN_LOGICAL_NOT,
@@ -315,11 +322,13 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			NULL,	0,	},
 
 		{	"power",			fnMathFractions,		FN_MATH_POWER,
-			"(power x y) -> z",
+			"(power x y) -> z (int32)\n"
+			"Supports fractional arguments by passing a list of 2 elements for x and y\n"
+			"where element 0 is the numerator and element 1 is the denominator.",
 			"vv",	0,	},
 
 		{	"pow",				fnMathNumerals,		FN_MATH_POWER_NUMERALS,
-			"(pow x y) -> z",
+			"(pow x y) -> z (real)",
 			"nn",	0,	},
 
 		{	"regex",			fnRegEx,			0,
@@ -327,7 +336,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"ss*",	0,	},
 
 		{	"round",			fnMathNumerals,		FN_MATH_ROUND,
-			"(round ['stochastic] x) -> y",
+			"(round ['stochastic] x) -> y (int32)",
 			"*n",	0,	},
 
 		{	"quote",			fnSpecial,			FN_QUOTE,
@@ -375,7 +384,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"l",	0,	},
 
 		{	"sin",				fnMathNumerals,	FN_MATH_SIN,
-			"(sin x ['degrees]) -> z",
+			"(sin x ['degrees]) -> z (real)",
 			"n*",	0,	},
 
 		{	"sort",				fnSort,			FN_SORT,
@@ -385,15 +394,16 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"v*",	0,	},
 
 		{	"split",			fnSplit,		0,
-			"(split string [characters]) -> list",
+			"(split string [characters]) -> list\n"
+			"multiple characters in a string each count as a separate delimiter",
 			"s*",	0,	},
 
 		{	"sqrt",				fnMath,			FN_MATH_SQRT,
-			"(sqrt x) -> integer z",
+			"(sqrt x) -> z (int32)",
 			"v",	0,	},
 
 		{	"sqrtn",				fnMathNumerals,			FN_MATH_SQRT_NUMERALS,
-			"(sqrtn x) -> real z",
+			"(sqrtn x) -> z (real)",
 			"n",	0,	},
 
 		{	"strCapitalize",	fnStrCapitalize,0,
@@ -423,7 +433,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"subset",			fnSubset,		0,
 			"(subset list pos [count]) -> list\n"
-			"(subset string pos [count]) -> string",
+			"(subset string pos [count]) -> string\n"
+			"zero length strings or lists are replaced with Nil",
 			"vv*",	0,	},
 
 		{	"subst",			fnSubst,		0,
@@ -431,11 +442,11 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"s*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"subtract",			fnMathOld,			FN_MATH_SUBTRACT,
-			"(subtract x1 x2 ... xn) -> z",
+			"(subtract x1 x2 ... xn) -> z (int32)",
 			NULL,	0,	},
 
 		{	"-",				fnMathList,			FN_MATH_SUBTRACT,
-			"(- x1 x2 ... xn) -> z\n (- x) -> -x",
+			"(- x1 x2 ... xn) -> z\n (- x) -> -x (int32 or real)",
 			"v*",	0,	},
 
 		{	"switch",			fnSwitch,		0,
@@ -452,7 +463,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"sysTicks",			fnSysInfo,		FN_SYSINFO_TICKS,		"(sysTicks) -> int",		NULL,	0,	},
 
 		{	"tan",				fnMathNumerals,	FN_MATH_TAN,
-			"(tan x ['degrees]) -> z",
+			"(tan x ['degrees]) -> z (real)",
 			"n*",	0,	},
 
 		{	"typeOf",			fnItem,			FN_ITEM_TYPE,
@@ -466,7 +477,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"   'list\n"
 			"   'nil\n"
 			"   'primitive\n"
-			"   'real\n"
+			"   'real (double)\n"
 			"   'string\n"
 			"   'struct\n"
 			"   'true",
