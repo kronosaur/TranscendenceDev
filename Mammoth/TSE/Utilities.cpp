@@ -1740,6 +1740,16 @@ CG32bitPixel DWToRGBColor (const DWORD dwColor)
 
 //	Convert a dword to a color
 //
+//	Returns a 32-bit color with full alpha from a DWORD (0xRRGGBB)
+
+	{
+	return CG32bitPixel((BYTE)((dwColor & 0xff0000) >> 16), (BYTE)((dwColor & 0x00ff00) >> 8), (BYTE)(dwColor & 0x0000ff), 0xff);
+	}
+
+CG32bitPixel DWToARGBColor (const DWORD dwColor)
+
+//	Convert a dword to a color
+//
 //	Returns a 32-bit color from a DWORD (0xAARRGGBB)
 
 	{
