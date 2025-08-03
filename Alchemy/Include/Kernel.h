@@ -167,12 +167,12 @@ template <class VALUE> VALUE min (VALUE a, VALUE b)
 
 inline int max (int a, LONG b) { return (a > b ? a : b); }
 inline int max (LONG a, int b) { return (a > b ? a : b); }
-inline int max (int a, size_t b) { return (a > (int)b ? a : b); }
-inline int max (size_t a, int b) { return ((int)a > b ? a : b); }
+inline size_t max (int a, size_t b) { return ((size_t)max(0,a) > b ? (size_t)max(0,a) : b); }
+inline size_t max (size_t a, int b) { return (a > (size_t)max(0,b) ? a : (size_t)max(0,b)); }
 inline int min (int a, LONG b) { return (a < b ? a : b); }
 inline int min (LONG a, int b) { return (a < b ? a : b); }
-inline int min (int a, size_t b) { return (a < (int)b ? a : b); }
-inline int min (size_t a, int b) { return ((int)a < b ? a : b); }
+inline size_t min (int a, size_t b) { return ((size_t)max(0,a) < b ? (size_t)max(0,a) : b); }
+inline size_t min (size_t a, int b) { return (a < (size_t)max(0,b) ? a : (size_t)max(0,b)); }
 #endif
 
 inline int RectHeight(RECT *pRect) { return pRect->bottom - pRect->top; }

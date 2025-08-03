@@ -331,8 +331,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				For legacy (objDestroy obj) behavior, use (objRemove obj)
 //			(objRemove obj)
 //				Added, removes the obj from system
-// 
-//	55: 2.0 Alpha 3
+//
+//	 55: 2.0 Alpha 4
 //		<ItemType>
 //			<Weapon>
 //				soundVolume: (Double)
@@ -375,7 +375,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //						soundFalloffStart: (Double)
 //							distance (in ls) at which sound falloff starts
 //							default: 0.0
-//		
+//
 
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
