@@ -1750,7 +1750,7 @@ CG32bitPixel LoadRGBColor (const CString &sString, CG32bitPixel rgbDefault)
 
 //	LoadRGBColor
 //
-//	Returns a 16-bit color from an RGB triplet
+//	Returns a 32-bit color (full alpha) from an RGB triplet
 
 	{
 	const char *pPos = sString.GetASCIIZPointer();
@@ -1811,6 +1811,88 @@ CG32bitPixel LoadRGBColor (const CString &sString, CG32bitPixel rgbDefault)
 		//	Compose
 
 		return CG32bitPixel(dwValue1 & 0xff, dwValue2 & 0xff, dwValue3 & 0xff);
+		}
+	}
+
+CG32bitPixel LoadARGBColor (const CString &sString, CG32bitPixel rgbDefault)
+
+//	LoadRGBColor
+//
+//	Returns a 32-bit color from an ARGB triplet
+
+	{
+	const char *pPos = sString.GetASCIIZPointer();
+
+	//	Null
+
+	if (*pPos == '\0')
+		return rgbDefault;
+
+	//	If it starts with a # we expect an RGB DWORD (ex, #FFAABBCC) - Caps safe
+
+	else if (*pPos == '#')
+		{
+		pPos++;
+		DWORD dwColor = strParseIntOfBase(pPos, 16, 0);
+		return CG32bitPixel((dwColor >> 16) & 0xFF, (dwColor >> 8) & 0xFF, dwColor & 0xFF, (dwColor >> 24));
+		}
+
+	//	If it starts with an 0x we expect an ARGB DWORD (ex, 0xFFAABBCC) - Caps safe
+	//	or 3 comma separated values (R, G, B, A).
+
+	else
+		{
+		//	Alpha or entire ARGB DWORD
+
+		DWORD dwValue1 = strParseInt(pPos, 0, &pPos);
+
+		//	Skip delimiter, if any
+
+		while (strIsWhitespace(pPos))
+			pPos++;
+
+		if (*pPos)
+			pPos++;
+
+		//	See if we have more. (red)
+
+		bool bNotFound;
+		DWORD dwValue2 = strParseInt(pPos, 0, &pPos, &bNotFound);
+
+		//	If not, then we've only got a single value, so we split it into bytes.
+
+		if (bNotFound)
+			{
+			return CG32bitPixel((BYTE)((dwValue1 & 0xff0000) >> 16), (BYTE)((dwValue1 & 0x00ff00) >> 8), (BYTE)(dwValue1 & 0x0000ff), (BYTE)((dwValue1 & 0xff000000) >> 24));
+			}
+
+		//	Skip delimiter, if any
+
+		while (strIsWhitespace(pPos))
+			pPos++;
+
+		if (*pPos)
+			pPos++;
+
+		//	Next value (green)
+
+		DWORD dwValue3 = strParseInt(pPos, 0, &pPos);
+
+		//	Skip delimiter, if any
+
+		while (strIsWhitespace(pPos))
+			pPos++;
+
+		if (*pPos)
+			pPos++;
+
+		//	Last value (blue)
+
+		DWORD dwValue4 = strParseInt(pPos, 0, &pPos);
+
+		//	Compose
+
+		return CG32bitPixel(dwValue1 & 0xff, dwValue2 & 0xff, dwValue3 & 0xff, dwValue4 & 0xff);
 		}
 	}
 

@@ -332,7 +332,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //			(objRemove obj)
 //				Added, removes the obj from system
 //
-//	55: 2.0 Alpha 4
+//	 55: 2.0 Alpha 4
 //		Any <Type>
 //			<AttributeDesc>
 //				<ItemAttribute> and <LocationAttribute>
@@ -348,6 +348,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //							Default: uses neutral/positive/negative background colors
 //						labelTextColor: 24-bit or triplet RGB color for tag text
 //							Default: uses neutral/positive/negative text colors
+//
 
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
