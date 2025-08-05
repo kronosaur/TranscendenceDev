@@ -123,6 +123,10 @@
 	<!ENTITY unidPartISystemMap			"0x00200004">
 	
 	<!-- HUARI 0021 0xxx -->
+	<!ENTITY unidHuaramarcaLibrary 		"0x00210000">
+
+	<!-- PILGRIM STORY MISSIONS -->
+	<!ENTITY unidSOTPMissionLibrary 	"0x00220000">
 	
 	<!-- PART I SOUNDTRACK 0082 -->
 	]>
@@ -169,6 +173,8 @@
 	<CoreLibrary filename="GalaxyLibrary.xml"/>
 	<CoreLibrary filename="SOTPSoundtrackUNIDsLibrary.xml"/>
 	<CoreLibrary filename="HumanSpaceVol01.xml"/>
+	<CoreLibrary filename="HuaramarcaLibrary.xml"/>
+	<CoreLibrary filename="StoriesOfThePilgrim.xml"/>
 	<CoreLibrary filename="CompatibilityLibrary.xml"/>
 	<CoreLibrary filename="CMPT_API54CompatUNIDsLibrary.xml"/>
 
