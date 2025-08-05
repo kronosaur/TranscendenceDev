@@ -117,6 +117,7 @@ ICCItem *fnCount (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEquality (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEqualityNumerals (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnEqualityExact (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEval (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnFilter (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnFind (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
