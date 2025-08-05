@@ -336,6 +336,21 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //		tlisp:
 //			(plyGetName player)
 //				Allows getting the player name without needing to use str formatting
+//		Any <Type>
+//			<AttributeDesc>
+//				<ItemAttribute> and <LocationAttribute>
+//					labelColor: 24-bit or triplet RGB color for tag background
+//						Default: uses neutral/positive/negative background colors
+//					labelTextColor: 24-bit or triplet RGB color for tag text
+//						Default: uses neutral/positive/negative text colors
+//		<ItemType>
+//			<Events>
+//				<GetDisplayAttributes>
+//					Returned struct now accepts the following new values:
+//						labelColor: 24-bit or triplet RGB color for tag background
+//							Default: uses neutral/positive/negative background colors
+//						labelTextColor: 24-bit or triplet RGB color for tag text
+//							Default: uses neutral/positive/negative text colors
 //
 
 
