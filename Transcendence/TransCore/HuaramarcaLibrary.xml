@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE TranscendenceLibrary
+	[
+	<!-- 0021 0000-FFFF Huaramarca Library -->
+	
+	<!ENTITY unidHuaramarcaLibrary 	    "0x00210000">
+
+	<!-- 0021xxxx HUARI ==================================================== -->
+	
+	<!ENTITY smHuariSpace				"0x00210001">
+	<!ENTITY msHuaramarcaTuali			"0x00210002">
+	<!ENTITY msHuaramarcaDreamTest		"0x00210003">
+	<!ENTITY msHuaramarcaDefendTemple	"0x00210004">
+	<!ENTITY msHuaramarcaAttackBase		"0x00210005">
+	<!ENTITY msHuaramarcaDragonSlaver	"0x00210006">
+	<!ENTITY msHuaramarcaArchcannon		"0x00210007">
+	<!ENTITY msHuaramarcaRevelation		"0x00210008">
+
+	]>
+	
+<TranscendenceLibrary
+		UNID=				"&unidHuaramarcaLibrary;"
+		name=				"Transcendence Huaramarca Library" 
+		release=			"1"
+		>
+
+	<Library unid="&unidCoreTypesLibrary;"/>
+	<Library unid="&unidRPGLibrary;"/>
+	<Library unid="&unidGalaxyLibrary;"/>
+	<Library unid="&unidHumanSpaceLibrary;"/>
+	<Library unid="&unidSOTPSoundtrackUNIDLibrary;"/>
+
+	<Module filename="Huaramarca.xml"/>
+	<Module filename="HuaramarcaMission01.xml"/>
+	<Module filename="HuaramarcaMission02.xml"/>
+	<Module filename="HuaramarcaMission03.xml"/>
+	<Module filename="HuaramarcaMission04.xml"/>
+	<Module filename="HuaramarcaMission05.xml"/>
+	<Module filename="HuaramarcaMission06.xml"/>
+	<Module filename="HuaramarcaMission07.xml"/>
+    
+</TranscendenceLibrary>
