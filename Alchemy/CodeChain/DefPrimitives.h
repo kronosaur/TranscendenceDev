@@ -148,6 +148,12 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(= [x1 x2 ... xn]) -> True if all arguments are equal",
 			NULL, 0, },
 
+		{	"===",				fnEqualityExact, FN_EQUALITY_EQ,
+			"(=== [x1 x2 ... xn]) -> True if all arguments are exactly equal and of the same type\n"
+			"Treats strings as case sensitive. Does not treat zeros, empty lists, and strings as Nil\n"
+			"A single argument returns True if it is Nil.",
+			NULL, 0, },
+
 		{	"eval",				fnEval,			0,
 			"(eval exp) -> result\n\n"
 			
@@ -302,6 +308,12 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"!=",				fnEqualityNumerals,	FN_EQUALITY_NEQ,
 			"(!= x1 x2 ... xn) -> True if any arguments are not equal",
+			NULL, 0, },
+
+		{	"!===",				fnEqualityExact, FN_EQUALITY_NEQ,
+			"(!=== [x1 x2 ... xn]) -> True if any arguments are not equal or are of different types.\n"
+			"Treats strings as case sensitive. Does not treat zeros, empty lists, and strings as Nil\n"
+			"A single argument returns True if it is not Nil.",
 			NULL, 0, },
 
 		{	"not",				fnLogical,		FN_LOGICAL_NOT,
