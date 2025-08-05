@@ -237,7 +237,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"DEPRECATED: Use while instead.",
 			NULL,	0,	},
 
-		{	"link",				fnLink,			0,						"",		"s",	0,	},
+		{	"link",				fnLink,			0,
+			"(link str) -> expr. Converts a string into a tlisp expression that can be evaluated with (eval ...).",
+			"s",	0,	},
+
 		{	"list",				fnList,			FN_LIST,
 			"(list [i1 i2 ... in]) -> list",
 			"*",	0,	},
