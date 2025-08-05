@@ -37,6 +37,8 @@ void CContinuousBeam::AddContinuousBeam (const CVector &vPos, const CVector &vVe
 	CVector vSourceVel = (m_Source.GetObj() ? m_Source.GetObj()->GetVel() : NullVector);
 	CVector vVelRel = vVel - vSourceVel;
 
+	SetSourceVel(vSourceVel);
+
 	//	We either add a new segment or replace the last pseudo segment.
 
 	SSegment *pNewSegment;
@@ -57,15 +59,16 @@ void CContinuousBeam::AddContinuousBeam (const CVector &vPos, const CVector &vVe
 	SSegment *pPseudoSegment = m_Segments.Insert();
 
 	//	We want the beam to originate at the source, so the pseudo segment
-	//	is effectively 1 frame behind. We want the pseudo frame to be
-	//	where the source is on the NEXT frame, given the beam velocity.
+	//	should follow the source velocity for the first tick and the beam
+	//	velocity afterwards. Set the generation to one tick in the future
+	//	so we can update the position as required.
 
-	pPseudoSegment->vPos = vPos - (vVelRel * g_SecondsPerUpdate);
+	pPseudoSegment->vPos = vPos;
 	pPseudoSegment->vDeltaPos = pNewSegment->vDeltaPos;
+	pPseudoSegment->dwGeneration = pNewSegment->dwGeneration + 1;
 
-	//	Generate and damage don't matter for the pseudo frame.
+	//	Damage doesn't matter for the pseudo frame.
 
-	pPseudoSegment->dwGeneration = 0;
 	pPseudoSegment->iDamage = 0;
 
 	//	Pseudo segment is always dead (but even dead segments
@@ -130,7 +133,7 @@ ALERROR CContinuousBeam::Create (CSystem &System, SShotCreateCtx &Ctx, CContinuo
 	if (pBeam == NULL)
 		return ERR_MEMORY;
 
-	pBeam->Place(Ctx.vPos, CVector());
+	pBeam->Place(Ctx.vPos, Ctx.vVel);
 
 	//	Get notifications when other objects are destroyed
 	pBeam->SetObjectDestructionHook();
@@ -875,6 +878,7 @@ void CContinuousBeam::UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Me
 
 	{
 	CVector vPos = GetPos();
+	CVector vSourceVel = GetSourceVel();
 	bool bFoundFirst = false;
 
 	//	Reset hit information
@@ -892,6 +896,16 @@ void CContinuousBeam::UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Me
 	for (i = 0; i < m_Segments.GetCount(); i++)
 		{
 		SSegment *pSegment = &m_Segments[i];
+
+		//	Special case for tail (pseudo segment) which should
+		//	follow the source for the first tick
+
+		if (i == m_Segments.GetCount() - 1
+			&& pSegment->dwGeneration == GetUniverse().GetTicks())
+			pSegment->vDeltaPos = vSourceVel * rSeconds;
+		else
+			pSegment->vDeltaPos = GetVel() * rSeconds;
+
 		CVector vNewPos = pSegment->vPos + pSegment->vDeltaPos;
 
 		//	See if we hit anything. HitTestSegment adds hits as appropriate, but

@@ -4933,17 +4933,15 @@ void CSystem::UnregisterEventHandler (CSpaceObject *pObj)
 		}
 	}
 
-void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations)
+void CSystem::UpdateExtended (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations)
 
-//	Update
+//	UpdateExtended
 //
 //	Updates the system
 
 	{
-
 	UpdateBehaviors(SystemCtx, pAnnotations);
 	UpdatePhysics(SystemCtx, pAnnotations);
-
 	}
 
 void CSystem::UpdateBehaviors (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations)
@@ -5333,7 +5331,7 @@ void CSystem::UpdateExtended (const CTimeSpan &ExtraTime)
 
 	int iTime = mathRandom(250, 350);
 	for (i = 0; i < iTime; i++)
-		Update(UpdateCtx);
+		UpdateExtended(UpdateCtx);
 
 	//	Give all objects a chance to update
 
