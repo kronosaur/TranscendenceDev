@@ -194,7 +194,8 @@ class CContinuousBeam : public TSpaceObjectImpl<OBJID_CCONTINUOUSBEAM>
 			SSegment (void) :
 					fAlive(true),
 					fHit(false),
-					fPassthrough(false)
+					fPassthrough(false),
+					fExpiring(false)
 				{ 
 				}
 
@@ -207,7 +208,8 @@ class CContinuousBeam : public TSpaceObjectImpl<OBJID_CCONTINUOUSBEAM>
 			DWORD fAlive:1;					//	Segment is still alive
 			DWORD fHit:1;					//	We hit something last frame
 			DWORD fPassthrough:1;			//	We passed through.
-			DWORD dwSpare:29;
+			DWORD fExpiring:1;				//	Segment is expiring this tick
+			DWORD dwSpare:28;
 			};
 
 		void AddSegment (const CVector &vPos, const CVector &vVel, int iDamage);

@@ -725,11 +725,28 @@ void CContinuousBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		bAlive = true;
 
-		//	If we've expired or the segment hit something, then we're dead now
+		//	If we expired last tick, then we're dead now
 
-		if (Segment.fHit
-				|| dwNow >= Segment.dwGeneration + (DWORD)m_iLifetime)
+		if (Segment.fExpiring)
 			Segment.fAlive = false;
+
+		//	If we hit something we normally switch to expired to complete the animation
+
+		if (Segment.fHit)
+			{
+			Segment.fExpiring = true;
+
+			//	Except if the next segment is the pseudo segment. In this case just jump to dead
+			//	otherwise the tail can overtake the impact point
+			if (i == m_Segments.GetCount() - 2)
+				Segment.fAlive = false;
+			}
+
+		//	If we've expired then set the flag, segment will be kept alive for one
+		//	more tick to complete animation
+
+		if (dwNow >= Segment.dwGeneration + (DWORD)m_iLifetime)
+			Segment.fExpiring = true;
 		}
 
 	//	If no segments left, then we're done
@@ -907,12 +924,28 @@ void CContinuousBeam::UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Me
 			pSegment->vDeltaPos = GetVel() * rSeconds;
 
 		CVector vNewPos = pSegment->vPos + pSegment->vDeltaPos;
+		CVector vSplitPos;
+
+		// TODO Need a check for dead segments (tails) to make sure the do not
+		// overtake their heads (e.g. head is a fHit completing the animation cycle)
+		// For relativistic beams we can avoid artefacts by setting the deadSegment to expired / hit
+		// but this causes artifacts in slower beams (multiple segments) if we hit a middle segment
+
+		//	If we have already hit something, then our position is fixed. Segment will
+		//	be used for animation in the next tick, but can not interact
+
+		if (pSegment->fHit)
+			pSegment->vPos = pSegment->vPos; // +vSourceVel * rSeconds;
+
+		//	Otherise if we have expired, the position should be fixed relative to the source
+
+		else if (pSegment->fExpiring)
+			pSegment->vPos = pSegment->vPos + vSourceVel * rSeconds;
 
 		//	See if we hit anything. HitTestSegment adds hits as appropriate, but
 		//	it only returns TRUE if we need to split the beam at a hit point.
 
-		CVector vSplitPos;
-		if (pSegment->fAlive
+		else if (pSegment->fAlive
 				&& HitTestSegment(m_Segments[i], &vSplitPos))
 			{
 			//	Split the segment in two
@@ -921,6 +954,7 @@ void CContinuousBeam::UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Me
 			i++;
 			pSegment = &m_Segments[i];
 
+			//	Should the dead segment be starting at vSplitPos now?
 			pDeadSegment->vPos = pSegment->vPos;
 			pDeadSegment->vDeltaPos = pSegment->vDeltaPos;
 			pDeadSegment->fAlive = false;
