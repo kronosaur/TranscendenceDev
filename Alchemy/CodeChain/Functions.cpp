@@ -5150,9 +5150,25 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 		{
 		switch (pFirst->GetValueType())
 			{
-			case ICCItem::Nil:
 			case ICCItem::True:
 				return 0;
+
+			case ICCItem::Nil:
+				{
+				if (dwCoerceFlags & HELPER_COMPARE_COERCE_NONE)
+					{
+
+					//	empty lists report themselves as Nil, so we need to check if this is
+					//	truly CCNil which is a CCAtom, or a CCList which is not
+
+					if (pFirst->IsAtom())
+						return pSecond->IsAtom() ? 0 : -2;
+					else
+						return pSecond->IsAtom() ? -2 : 0;
+					}
+				else
+					return 0;
+				}
 
 			case ICCItem::Integer:
 				{
