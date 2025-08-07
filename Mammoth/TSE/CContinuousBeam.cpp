@@ -730,17 +730,10 @@ void CContinuousBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		if (Segment.fExpiring)
 			Segment.fAlive = false;
 
-		//	If we hit something we normally switch to expired to complete the animation
+		//	If we hit something this tick, then switch to expired to complete the animation
 
 		if (Segment.fHit)
-			{
 			Segment.fExpiring = true;
-
-			//	Except if the next segment is the pseudo segment. In this case just jump to dead
-			//	otherwise the tail can overtake the impact point
-			if (i == m_Segments.GetCount() - 2)
-				Segment.fAlive = false;
-			}
 
 		//	If we've expired then set the flag, segment will be kept alive for one
 		//	more tick to complete animation
