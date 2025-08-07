@@ -48,7 +48,7 @@ void CContinuousBeam::AddContinuousBeam (const CVector &vPos, const CVector &vVe
 		pNewSegment = &m_Segments[m_Segments.GetCount() - 1];
 
 	pNewSegment->vPos = vPos;
-	pNewSegment->vDeltaPos = (vVelRel + vSourceVel) * g_SecondsPerUpdate;
+	pNewSegment->vVel = vVelRel;
 	pNewSegment->dwGeneration = GetUniverse().GetTicks();
 	pNewSegment->iDamage = m_pDesc->GetDamage().RollDamage();
 	pNewSegment->fAlive = true;
@@ -64,7 +64,7 @@ void CContinuousBeam::AddContinuousBeam (const CVector &vPos, const CVector &vVe
 	//	so we can update the position as required.
 
 	pPseudoSegment->vPos = vPos;
-	pPseudoSegment->vDeltaPos = pNewSegment->vDeltaPos;
+	pPseudoSegment->vVel = pNewSegment->vVel;
 	pPseudoSegment->dwGeneration = pNewSegment->dwGeneration + 1;
 
 	//	Damage doesn't matter for the pseudo frame.
@@ -93,7 +93,7 @@ void CContinuousBeam::AddSegment (const CVector &vPos, const CVector &vVel, int 
 		pNewSegment = &m_Segments[m_Segments.GetCount() - 1];
 
 	pNewSegment->vPos = vPos;
-	pNewSegment->vDeltaPos = vVel * g_SecondsPerUpdate;
+	pNewSegment->vVel = vVel;
 	pNewSegment->dwGeneration = GetUniverse().GetTicks();
 	pNewSegment->iDamage = iDamage;
 	pNewSegment->fAlive = true;
@@ -102,8 +102,8 @@ void CContinuousBeam::AddSegment (const CVector &vPos, const CVector &vVel, int 
 	//	Now add a pseudo segment.
 
 	SSegment *pPseudoSegment = m_Segments.Insert();
-	pPseudoSegment->vPos = vPos - pNewSegment->vDeltaPos;
-	pPseudoSegment->vDeltaPos = pNewSegment->vDeltaPos;
+	pPseudoSegment->vPos = vPos - pNewSegment->vVel * g_SecondsPerUpdate;
+	pPseudoSegment->vVel = pNewSegment->vVel;
 	pPseudoSegment->dwGeneration = pNewSegment->dwGeneration;
 	pPseudoSegment->iDamage = 0;
 
@@ -643,7 +643,7 @@ void CContinuousBeam::OnReadFromStream (SLoadCtx &Ctx)
 		{
 		SSegment &Segment = m_Segments[i];
 		Ctx.pStream->Read((char *)&Segment.vPos, sizeof(CVector));
-		Ctx.pStream->Read((char *)&Segment.vDeltaPos, sizeof(CVector));
+		Ctx.pStream->Read((char *)&Segment.vVel, sizeof(CVector));
 		Ctx.pStream->Read((char *)&Segment.dwGeneration, sizeof(DWORD));
 		Ctx.pStream->Read((char *)&Segment.iDamage, sizeof(DWORD));
 
@@ -771,7 +771,7 @@ void CContinuousBeam::OnWriteToStream (IWriteStream *pStream)
 //
 //	DWORD			No. of segments
 //	CVector			vPos
-//	CVector			vDeltaPos
+//	CVector			vVel
 //	DWORD			iGeneration
 //	DWORD			iDamage
 //	DWORD			Flags
@@ -807,7 +807,7 @@ void CContinuousBeam::OnWriteToStream (IWriteStream *pStream)
 		{
 		const SSegment &Segment = m_Segments[i];
 		pStream->Write((char *)&Segment.vPos, sizeof(CVector));
-		pStream->Write((char *)&Segment.vDeltaPos, sizeof(CVector));
+		pStream->Write((char *)&Segment.vVel, sizeof(CVector));
 		pStream->Write((char *)&Segment.dwGeneration, sizeof(DWORD));
 		pStream->Write((char *)&Segment.iDamage, sizeof(DWORD));
 
@@ -914,33 +914,40 @@ void CContinuousBeam::UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Me
 		{
 		SSegment *pSegment = &m_Segments[i];
 
+		CVector vBeamDirection = pSegment->vVel.Normal();
+		CVector vBeamCrossDir = vBeamDirection.Perpendicular();
+
+		Metric rAlong = vSourceVel.Dot(vBeamDirection) * rSeconds;
+		Metric rAcross = vSourceVel.Dot(vBeamCrossDir) * rSeconds;
+
+		//	Always update position for movement of source perpendicular to beam
+		//	This prevents visual artefacts with the beam twisting or rotating.
+
+		pSegment->vPos = pSegment->vPos + rAcross * vBeamCrossDir;
+
 		//	Special case for tail (pseudo segment) which should
 		//	follow the source for the first tick
 
 		if (i == m_Segments.GetCount() - 1
 			&& pSegment->dwGeneration == GetUniverse().GetTicks())
-			pSegment->vDeltaPos = vSourceVel * rSeconds;
+			pSegment->vDeltaPos = rAlong * vBeamDirection;
 		else
-			pSegment->vDeltaPos = GetVel() * rSeconds;
+			pSegment->vDeltaPos = pSegment->vVel * rSeconds + rAlong * vBeamDirection;
 
 		CVector vNewPos = pSegment->vPos + pSegment->vDeltaPos;
 		CVector vSplitPos;
-
-		// TODO Need a check for dead segments (tails) to make sure the do not
-		// overtake their heads (e.g. head is a fHit completing the animation cycle)
-		// For relativistic beams we can avoid artefacts by setting the deadSegment to expired / hit
-		// but this causes artifacts in slower beams (multiple segments) if we hit a middle segment
 
 		//	If we have already hit something, then our position is fixed. Segment will
 		//	be used for animation in the next tick, but can not interact
 
 		if (pSegment->fHit)
-			pSegment->vPos = pSegment->vPos; // +vSourceVel * rSeconds;
+			pSegment->vPos = pSegment->vPos;
 
-		//	Otherise if we have expired, the position should be fixed relative to the source
+		//	Otherise if we have expired, the position should be fixed relative
+		//	to the source, so just need to add along-beam motion.
 
 		else if (pSegment->fExpiring)
-			pSegment->vPos = pSegment->vPos + vSourceVel * rSeconds;
+			pSegment->vPos = pSegment->vPos + rAlong * vBeamDirection;
 
 		//	See if we hit anything. HitTestSegment adds hits as appropriate, but
 		//	it only returns TRUE if we need to split the beam at a hit point.
@@ -956,7 +963,7 @@ void CContinuousBeam::UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Me
 
 			//	Should the dead segment be starting at vSplitPos now?
 			pDeadSegment->vPos = pSegment->vPos;
-			pDeadSegment->vDeltaPos = pSegment->vDeltaPos;
+			pDeadSegment->vVel = pSegment->vVel;
 			pDeadSegment->fAlive = false;
 
 			pSegment->vPos = vSplitPos;
@@ -971,6 +978,27 @@ void CContinuousBeam::UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Me
 
 		else
 			pSegment->vPos = vNewPos;
+
+
+		//	Check that this segment does not overtake the segment in front
+		//	This can happen if the head segment has hit something and this
+		//	is a tail segment which does not perform hit detection
+
+		if (i > 0)
+			{
+			SSegment *pHead = &m_Segments[i-1];
+			if (pHead->fAlive)
+				{
+				if (vBeamDirection.Dot(pHead->vPos - pSegment->vPos) < 0)
+					{
+					//	Set the head segment to dead so it will not be painted. As we
+					//	have overtaken it was can assume it has already hit/expired so
+					//	would be killed in the next update anyway
+					pHead->fAlive = false;
+					}
+				}
+			}
+
 
 		//	Our position is the first live segment
 

@@ -200,7 +200,8 @@ class CContinuousBeam : public TSpaceObjectImpl<OBJID_CCONTINUOUSBEAM>
 				}
 
 			CVector vPos;					//	Position of head of segment
-			CVector vDeltaPos;				//	Change in position per tick
+			CVector vVel;					//	Velocity of segment
+			CVector vDeltaPos;				//	Change in position per frame
 			DWORD dwGeneration;				//	Created on this tick
 			int iDamage;					//	Damage in points
 			TArray<DWORD> Hits;				//	Object ID of what we hit last tick
