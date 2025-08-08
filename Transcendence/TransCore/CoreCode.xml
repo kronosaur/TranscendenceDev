@@ -632,7 +632,7 @@
 
 						;;	Handle case where gamma is not passed
 
-						(gamma (if (= rGamma Nil) 1.0 rGamma))
+						(gamma (or rGamma 1.0))
 					)
 
 					;;	Map to the result range
