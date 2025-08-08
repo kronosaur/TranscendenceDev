@@ -3244,15 +3244,20 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_MATH_GAMMA_SCALE_NUMERALS:
 			{
-			ICCItem *pOutMin, *pOutMax;
-			double rArg1, rInMin, rArg2, rInMax, rArg3, rOutMin, rArg4, rOutMax, rInput, rGammaCorrection, rRes, rOutRange;
-			rGammaCorrection = 1.0;
+			ICCItem *pOutMin, *pOutMax, *pGamma;
+			double rInput, rArg1, rInMin, rArg2, rInMax, rArg3, rOutMin, rArg4, rOutMax, rGamma, rRes, rOutRange;
+			rGamma = 1.0;
 			bool bRetInt = false;
 			switch (pArgs->GetCount())
 				{
 				case 6:
-					rGammaCorrection = pArgs->GetElement(5)->GetDoubleValue();
+					{
+					pGamma = pArgs->GetElement(5);
+					rGamma = pGamma->GetDoubleValue();
+					if (pGamma->GetValueType() == ICCItem::ValueTypes::Integer)
+						rGamma /= 100;
 					[[fallthrough]];
+					}
 				case 5:
 					{
 					rInput = pArgs->GetElement(0)->GetDoubleValue();
@@ -3269,8 +3274,8 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					rOutRange = rOutMax - rOutMin;
 					bRetInt = pOutMin->GetValueType() == ICCItem::ValueTypes::Integer && pOutMax->GetValueType() == ICCItem::ValueTypes::Integer;
 					rRes = ((min(max(rInput, rInMin), rInMax) - rInMin) * rOutRange) / (rInMax - rInMin);
-					if (rGammaCorrection != 1.0)
-						rRes = rOutRange * pow(rRes / rOutRange, rGammaCorrection);
+					if (rGamma != 1.0)
+						rRes = rOutRange * pow(rRes / rOutRange, rGamma);
 					rRes += rOutMin;
 					if (bRetInt)
 						return pCC->CreateInteger((int)round(rRes));
