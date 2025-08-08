@@ -4012,10 +4012,12 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 			int iEnd = dwData == FN_STR_BEGINS_WITH ? sTarget.GetLength() : sSource.GetLength();
 			char *pSourceChar = sSource.GetASCIIZPointer() + iStart;
 			char *pTargetChar = sTarget.GetASCIIZPointer();
+			char cSource, cTarget;
 			for (int i = iStart; i < iEnd; i++)
 				{
-				if ((bCaseSensitive && (*pSourceChar != *pTargetChar)) ||
-					((!bCaseSensitive) && (strLowerCaseAbsolute(*pSourceChar) != strLowerCaseAbsolute(*pSourceChar))))
+				cSource = bCaseSensitive ? *pSourceChar : strLowerCaseAbsolute(*pSourceChar);
+				cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
+				if (cSource != cTarget)
 					return pCC->CreateNil();
 				pSourceChar++;
 				pTargetChar++;
@@ -4031,20 +4033,25 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
 			CString sTarget = pArgs->GetElement(1)->GetStringValue();
 			if (sSource.GetLength() < sTarget.GetLength())
-				return pCC->CreateNil();
-			int iEnd = sSource.GetLength() - sTarget.GetLength();
+				return dwData == FN_STR_CONTAINS ? pCC->CreateNil() : pCC->CreateInteger(0);
+			if (!sTarget.GetLength())
+				return dwData == FN_STR_CONTAINS ? pCC->CreateTrue() : pCC->CreateInteger(sSource.GetLength());
+			int iEnd = sSource.GetLength() - sTarget.GetLength() + 1;
+			int iTargetEnd = sTarget.GetLength();
 			char *pSourceChar = sSource.GetASCIIZPointer();
 			char* pSourceScanChar = pSourceChar;
 			char *pTargetChar = sTarget.GetASCIIZPointer();
+			char cSource, cTarget;
 			bool bFound = true;
 			int iCount = 0;
 			for (int i = 0; i < iEnd; i++)
 				{
 				bFound = true;
-				for (int k = 0; k < iEnd; k++)
+				for (int k = 0; k < iTargetEnd; k++)
 					{
-					if ((bCaseSensitive && (*pSourceScanChar != *pTargetChar)) ||
-						(!bCaseSensitive && (strLowerCaseAbsolute(*pSourceScanChar) != strLowerCaseAbsolute(*pSourceChar))))
+					cSource = bCaseSensitive ? *pSourceScanChar : strLowerCaseAbsolute(*pSourceScanChar);
+					cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
+					if (cSource != cTarget)
 						{
 						bFound = false;
 						break;

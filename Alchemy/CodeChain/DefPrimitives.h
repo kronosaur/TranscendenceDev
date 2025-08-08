@@ -404,12 +404,12 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(strCapitalize string) -> string",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"strContains",	fnStr, FN_STR_COUNT,
+		{	"strContains",	fnStr, FN_STR_CONTAINS,
 			"(strContains string substring  [caseSensitive=Nil]) -> True|Nil",
 			"ss*",	0,},
 
-		{	"strCount",	fnStr, FN_STR_CONTAINS,
-			"(strCount string substring  [caseSensitive=Nil]) -> int count of non-overlapping occurrences",
+		{	"strCount",	fnStr, FN_STR_COUNT,
+			"(strCount string substring  [caseSensitive=Nil]) -> int",
 			"ss*",	0,},
 
 		{	"strEndsWith",	fnStr, FN_STR_ENDS_WITH,
