@@ -33,9 +33,9 @@
 							)
 							
 							{
-								radius: (if (= damageHP 0) 6 (mathScale damageHP 2 30 20 60 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 2 30 8 16 50))
-								intensity: (if (= damageHP 0) 0 (mathScale damageHP 2 30 25 50 50))
+								radius: (if (= damageHP 0) 6 (gammaScale damageHP 2 30 20 60 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 2 30 8 16 50))
+								intensity: (if (= damageHP 0) 0 (gammaScale damageHP 2 30 25 50 50))
 								primaryColor: (@ laserColor 'primaryColor)
 								secondaryColor: (@ laserColor 'secondaryColor)
 								
@@ -64,9 +64,9 @@
 								style: "flare"
 								animate: "fade"
 							
-								radius: (if (= damageHP 0) 6 (mathScale damageHP 2 30 20 60 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 2 30 8 16 50))
-								intensity: (if (= damageHP 0) 0 (mathScale damageHP 2 30 25 50 50))
+								radius: (if (= damageHP 0) 6 (gammaScale damageHP 2 30 20 60 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 2 30 8 16 50))
+								intensity: (if (= damageHP 0) 0 (gammaScale damageHP 2 30 25 50 50))
 								primaryColor: (@ laserColor 'primaryColor)
 								secondaryColor: (@ laserColor 'secondaryColor)
 								}
@@ -126,7 +126,7 @@
 									}
 									
 								{
-									emitRate: (mathScale damageHP 2 30 10 60 50)
+									emitRate: (gammaScale damageHP 2 30 10 60 50)
 									}
 								)
 							)
@@ -148,9 +148,9 @@
 							)
 							
 							{
-								radius: (if (= damageHP 0) 6 (mathScale damageHP 2 30 20 60 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 2 30 8 16 50))
-								intensity: (if (= damageHP 0) 0 (mathScale damageHP 2 30 25 50 50))
+								radius: (if (= damageHP 0) 6 (gammaScale damageHP 2 30 20 60 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 2 30 8 16 50))
+								intensity: (if (= damageHP 0) 0 (gammaScale damageHP 2 30 25 50 50))
 								}
 							)
 					</GetParameters>
@@ -191,8 +191,8 @@
 							)
 							
 							{
-								radius: (if (= damageHP 0) 10 (mathScale damageHP 5 64 30 70 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 5 64 12 48 50))
+								radius: (if (= damageHP 0) 10 (gammaScale damageHP 5 64 30 70 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 5 64 12 48 50))
 								
 								noSound: (= damageHP 0)
 								}
@@ -222,12 +222,12 @@
 							)
 							
 							{
-								radius: (if (= damageHP 0) 10 (mathScale damageHP 5 64 30 70 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 5 64 12 48 50))
+								radius: (if (= damageHP 0) 10 (gammaScale damageHP 5 64 30 70 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 5 64 12 48 50))
 								primaryColor: (resColorBlend "#ffcf00" "#ffa200" (seededRandom weaponUNID 0 255))
 								
 								intensity: (seededRandom weaponUNID 50 100)
-								distortion: (mathScale damageHP 5 64 60 30 100)
+								distortion: (gammaScale damageHP 5 64 60 30 100)
 								detail: (seededRandom weaponUNID 20 40)
 								}
 							)
@@ -248,8 +248,8 @@
 							(weaponUNID (@ gData 'weaponUNID))
 							)
 							{
-								radius: (if (= damageHP 0) 10 (mathScale damageHP 5 64 20 50 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 5 64 12 48 50))
+								radius: (if (= damageHP 0) 10 (gammaScale damageHP 5 64 20 50 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 5 64 12 48 50))
 								intensity: (seededRandom weaponUNID 50 100)
 								}
 							)
@@ -291,11 +291,11 @@
 							)
 							
 							{
-								radius: (if (= damageHP 0) 10 (mathScale damageHP 5 64 40 90 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 5 64 12 48 50))
+								radius: (if (= damageHP 0) 10 (gammaScale damageHP 5 64 40 90 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 5 64 12 48 50))
 								
 								intensity: (seededRandom weaponUNID 50 70)
-								distortion: (mathScale damageHP 5 64 50 0 100)
+								distortion: (gammaScale damageHP 5 64 50 0 100)
 								detail: (seededRandom weaponUNID 20 25)
 								
 								noSound: (= damageHP 0)
@@ -326,8 +326,8 @@
 							)
 							
 							{
-								radius: (if (= damageHP 0) 10 (mathScale damageHP 10 140 30 70 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 10 140 12 48 50))
+								radius: (if (= damageHP 0) 10 (gammaScale damageHP 10 140 30 70 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 10 140 12 48 50))
 								}
 							)
 					</GetParameters>
@@ -356,9 +356,9 @@
 							)
 							
 							{
-								lifetime: (if (= damageHP 0) 10 (mathScale damageHP 10 140 12 48 50))
-								emitRate: (mathScale damageHP 10 140 50 200 50)
-								emitLifetime: (if (= damageHP 0) 2 (mathScale damageHP 10 140 6 24 50))
+								lifetime: (if (= damageHP 0) 10 (gammaScale damageHP 10 140 12 48 50))
+								emitRate: (gammaScale damageHP 10 140 50 200 50)
+								emitLifetime: (if (= damageHP 0) 2 (gammaScale damageHP 10 140 6 24 50))
 								}
 							)
 					</GetParameters>
@@ -398,12 +398,12 @@
 							(weaponUNID (@ gData 'weaponUNID))
 							)
 							{
-								radius: (if (= damageHP 0) 10 (mathScale damageHP 10 200 30 140 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 10 200 24 60 50))
+								radius: (if (= damageHP 0) 10 (gammaScale damageHP 10 200 30 140 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 10 200 24 60 50))
 								primaryColor: (resColorBlend "#ffcf00" "#ffa200" (seededRandom weaponUNID 0 255))
 								
 								intensity: (seededRandom weaponUNID 50 100)
-								distortion: (mathScale damageHP 10 200 20 0 100)
+								distortion: (gammaScale damageHP 10 200 20 0 100)
 								detail: (seededRandom weaponUNID 30 60)
 								}
 							)
@@ -424,9 +424,9 @@
 							(damageHP (@ gData 'damageHP))
 							)
 							{
-								radius: (if (= damageHP 0) 0 (mathScale damageHP 10 200 60 140 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 10 200 12 30 50))
-								intensity: (if (= damageHP 0) 0 (mathScale damageHP 10 200 25 60 50))
+								radius: (if (= damageHP 0) 0 (gammaScale damageHP 10 200 60 140 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 10 200 12 30 50))
+								intensity: (if (= damageHP 0) 0 (gammaScale damageHP 10 200 25 60 50))
 								}
 							)
 					</GetParameters>
@@ -466,8 +466,8 @@
 							)
 							
 							{
-								radius: (if (= damageHP 0) 10 (mathScale damageHP 20 300 30 100 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 20 300 12 48 50))
+								radius: (if (= damageHP 0) 10 (gammaScale damageHP 20 300 30 100 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 20 300 12 48 50))
 								}
 							)
 					</GetParameters>
@@ -496,9 +496,9 @@
 							)
 							
 							{
-								lifetime: (if (= damageHP 0) 10 (mathScale damageHP 20 300 12 48 50))
-								emitRate: (mathScale damageHP 20 300 50 200 50)
-								emitLifetime: (if (= damageHP 0) 2 (mathScale damageHP 20 300 6 24 50))
+								lifetime: (if (= damageHP 0) 10 (gammaScale damageHP 20 300 12 48 50))
+								emitRate: (gammaScale damageHP 20 300 50 200 50)
+								emitLifetime: (if (= damageHP 0) 2 (gammaScale damageHP 20 300 6 24 50))
 								}
 							)
 					</GetParameters>
@@ -538,8 +538,8 @@
 							(damageHP (@ gData 'damageHP))
 							)
 							{
-								radius: (if (= damageHP 0) 10 (mathScale damageHP 20 300 50 100 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 20 300 24 60 50))
+								radius: (if (= damageHP 0) 10 (gammaScale damageHP 20 300 50 100 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 20 300 24 60 50))
 								}
 							)
 					</GetParameters>
@@ -570,7 +570,7 @@
 									(damageHP (@ gData 'damageHP))
 									)
 									{
-										lifetime: (mathScale damageHP 20 300 12 30 50)
+										lifetime: (gammaScale damageHP 20 300 12 30 50)
 										}
 									)
 							</GetParameters>
@@ -584,8 +584,8 @@
 							(damageHP (@ gData 'damageHP))
 							)
 							{
-								emitRate: (mathScale damageHP 20 300 30 100 50)
-								particleLifetime: (mathScale damageHP 20 300 12 30 50)
+								emitRate: (gammaScale damageHP 20 300 30 100 50)
+								particleLifetime: (gammaScale damageHP 20 300 12 30 50)
 								}
 							)
 					</GetParameters>
@@ -624,8 +624,8 @@
 							(damageHP (@ gData 'damageHP))
 							)
 							{
-								radius: (if (= damageHP 0) 10 (mathScale damageHP 50 680 50 120 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 50 680 24 60 50))
+								radius: (if (= damageHP 0) 10 (gammaScale damageHP 50 680 50 120 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 50 680 24 60 50))
 								}
 							)
 					</GetParameters>
@@ -656,7 +656,7 @@
 									(damageHP (@ gData 'damageHP))
 									)
 									{
-										lifetime: (mathScale damageHP 50 680 12 30 50)
+										lifetime: (gammaScale damageHP 50 680 12 30 50)
 										}
 									)
 							</GetParameters>
@@ -670,8 +670,8 @@
 							(damageHP (@ gData 'damageHP))
 							)
 							{
-								emitRate: (mathScale damageHP 50 680 30 100 50)
-								particleLifetime: (mathScale damageHP 50 680 12 30 50)
+								emitRate: (gammaScale damageHP 50 680 30 100 50)
+								particleLifetime: (gammaScale damageHP 50 680 12 30 50)
 								}
 							)
 					</GetParameters>
@@ -711,8 +711,8 @@
 							)
 							
 							{
-								radius: (if (= damageHP 0) 10 (mathScale damageHP 50 680 30 70 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 50 680 6 24 50))
+								radius: (if (= damageHP 0) 10 (gammaScale damageHP 50 680 30 70 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 50 680 6 24 50))
 								noSound: (= damageHP 0)
 								}
 							)
@@ -744,8 +744,8 @@
 							)
 							
 							{
-								waveCount: (if (= damageHP 0) 1 (mathScale damageHP 110 1500 3 9 50))
-								waveLifetime: (mathScale damageHP 110 1500 5 12 50)
+								waveCount: (if (= damageHP 0) 1 (gammaScale damageHP 110 1500 3 9 50))
+								waveLifetime: (gammaScale damageHP 110 1500 5 12 50)
 								}
 							)
 					</GetParameters>
@@ -768,8 +768,8 @@
 							(damageHP (@ gData 'damageHP))
 							)
 							{
-								radius: (if (= damageHP 0) 10 (mathScale damageHP 110 1500 50 120 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 110 1500 24 60 50))
+								radius: (if (= damageHP 0) 10 (gammaScale damageHP 110 1500 50 120 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 110 1500 24 60 50))
 								}
 							)
 					</GetParameters>
@@ -808,8 +808,8 @@
 							(damageHP (@ gData 'damageHP))
 							)
 							{
-								radius: (if (= damageHP 0) 10 (mathScale damageHP 110 1500 50 120 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 110 1500 24 60 50))
+								radius: (if (= damageHP 0) 10 (gammaScale damageHP 110 1500 50 120 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 110 1500 24 60 50))
 								}
 							)
 					</GetParameters>
@@ -840,7 +840,7 @@
 									(damageHP (@ gData 'damageHP))
 									)
 									{
-										lifetime: (mathScale damageHP 110 1500 12 30 50)
+										lifetime: (gammaScale damageHP 110 1500 12 30 50)
 										}
 									)
 							</GetParameters>
@@ -854,8 +854,8 @@
 							(damageHP (@ gData 'damageHP))
 							)
 							{
-								emitRate: (mathScale damageHP 110 1500 30 100 50)
-								particleLifetime: (mathScale damageHP 110 1500 12 30 50)
+								emitRate: (gammaScale damageHP 110 1500 30 100 50)
+								particleLifetime: (gammaScale damageHP 110 1500 12 30 50)
 								}
 							)
 					</GetParameters>
@@ -895,8 +895,8 @@
 							)
 							
 							{
-								radius: (if (= damageHP 0) 10 (mathScale damageHP 240 3250 30 70 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 240 3250 6 24 50))
+								radius: (if (= damageHP 0) 10 (gammaScale damageHP 240 3250 30 70 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 240 3250 6 24 50))
 								noSound: (= damageHP 0)
 								}
 							)

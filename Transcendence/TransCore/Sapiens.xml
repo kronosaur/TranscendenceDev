@@ -393,11 +393,11 @@
 								)
 							
 								{
-									radius: (if (= damageHP 0) 10 (mathScale damageHP 5 64 20 45 50))
-									;lifetime: (if (= damageHP 0) 4 (mathScale damageHP 5 64 12 48 50))
+									radius: (if (= damageHP 0) 10 (gammaScale damageHP 5 64 20 45 50))
+									;lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 5 64 12 48 50))
 								
 									intensity: (seededRandom weaponUNID 50 70)
-									distortion: (mathScale damageHP 5 64 50 0 100)
+									distortion: (gammaScale damageHP 5 64 50 0 100)
 									detail: (seededRandom weaponUNID 20 25)
 									}
 								)

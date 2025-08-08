@@ -1277,7 +1277,7 @@
 									(damageHP (@ gData 'damageHP))
 									)
 									{
-										lifetime: (mathScale damageHP 50 680 4 12 50)
+										lifetime: (gammaScale damageHP 50 680 4 12 50)
 										}
 									)
 							</GetParameters>
@@ -1291,8 +1291,8 @@
 							(damageHP (@ gData 'damageHP))
 							)
 							{
-								emitRate: (mathScale damageHP 50 680 20 100 50)
-								particleLifetime: (mathScale damageHP 50 680 4 12 50)
+								emitRate: (gammaScale damageHP 50 680 20 100 50)
+								particleLifetime: (gammaScale damageHP 50 680 4 12 50)
 								}
 							)
 					</GetParameters>
@@ -1314,8 +1314,8 @@
 							(damageHP (@ gData 'damageHP))
 							)
 							{
-								radius: (mathScale damageHP 50 680 20 60 50)
-								intensity: (mathScale damageHP 50 680 20 50 50)
+								radius: (gammaScale damageHP 50 680 20 60 50)
+								intensity: (gammaScale damageHP 50 680 20 50 50)
 								}
 							)
 					</GetParameters>
@@ -1343,7 +1343,7 @@
 							)
 							
 							{
-								radius: (mathScale damageHP 50 680 30 80 50)
+								radius: (gammaScale damageHP 50 680 30 80 50)
 								intensity: (random 20 50)
 								}
 							)
@@ -1371,8 +1371,8 @@
 							(damageHP (@ gData 'damageHP))
 							)
 							{
-								radius: (if (= damageHP 0) 10 (mathScale damageHP 50 680 50 100 50))
-								lifetime: (if (= damageHP 0) 4 (mathScale damageHP 50 680 24 60 50))
+								radius: (if (= damageHP 0) 10 (gammaScale damageHP 50 680 50 100 50))
+								lifetime: (if (= damageHP 0) 4 (gammaScale damageHP 50 680 24 60 50))
 								}
 							)
 					</GetParameters>
@@ -1403,7 +1403,7 @@
 									(damageHP (@ gData 'damageHP))
 									)
 									{
-										lifetime: (mathScale damageHP 50 680 12 30 50)
+										lifetime: (gammaScale damageHP 50 680 12 30 50)
 										}
 									)
 							</GetParameters>
@@ -1417,8 +1417,8 @@
 							(damageHP (@ gData 'damageHP))
 							)
 							{
-								emitRate: (mathScale damageHP 50 680 30 100 50)
-								particleLifetime: (mathScale damageHP 50 680 12 30 50)
+								emitRate: (gammaScale damageHP 50 680 30 100 50)
+								particleLifetime: (gammaScale damageHP 50 680 12 30 50)
 								}
 							)
 					</GetParameters>
