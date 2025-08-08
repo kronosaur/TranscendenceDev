@@ -186,6 +186,12 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(for var from to exp) -> value of last expression",
 			NULL,	0,	},
 
+		{	"gammaScale",		fnMathNumerals,	FN_MATH_GAMMA_SCALE_NUMERALS,
+			"(gammaScale var inMin inMax outMin outMax [gammaCorrection=1.0]) -> int or double of gammascaled value relative to input and output range.\n"
+			"Returns int if both outMin and outMax are ints, otherwise returns a double. Gamma specifies an exponent relationship curve between input and output ranges.\n"
+			"At a gammaCorrection of 1.0 it is a linear curve, at 0.5 it is a square root function, at 2.0 it is a square function.",
+			"nnnnn*",	0,	},
+
 		{	"help",				fnHelp,			0,
 			"(help) -> this help\n"
 			"(help '*) -> all functions\n"
