@@ -396,13 +396,51 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(sqrtn x) -> real z",
 			"n",	0,	},
 
+		{	"strBeginsWith",	fnStr, FN_STR_BEGINS_WITH,
+			"(strBeginsWith string matchString [caseSensitive=Nil]) -> True|Nil",
+			"ss*",	0,},
+
 		{	"strCapitalize",	fnStrCapitalize,0,
 			"(strCapitalize string) -> string",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
+		{	"strContains",	fnStr, FN_STR_COUNT,
+			"(strContains string substring  [caseSensitive=Nil]) -> True|Nil",
+			"ss*",	0,},
+
+		{	"strCount",	fnStr, FN_STR_CONTAINS,
+			"(strCount string substring  [caseSensitive=Nil]) -> int count of non-overlapping occurrences",
+			"ss*",	0,},
+
+		{	"strEndsWith",	fnStr, FN_STR_ENDS_WITH,
+			"(strEndsWith string matchString [caseSensitive=Nil]) -> True|Nil",
+			"ss*",	0,},
+
 		{	"strFind",			fnStrFind,		0,
 			"(strFind string target) -> pos of target in string (0-based)",
 			"ss",	0,	},
+
+		{	"strJoin",	fnStr, FN_STR_JOIN,
+			"(strJoin delimiter listOfStrings) -> string. Does not ignore Nil or empty strings.",
+			"sv",	PPFLAG_SIDEEFFECTS,},
+
+		{	"strReplace",	fnStr, FN_STR_REPLACE,
+			"(strReplace string replacement [caseSensitive=Nil]) -> string. replacement can be a string or list of strings.",
+			"sv*",	PPFLAG_SIDEEFFECTS,},
+
+		{	"strSlice",	fnStr, FN_STR_SLICE,
+			"(strSlice string pos [count]) -> string.\n"
+			"If pos is negative, the index is relative to the end of the string. The last character is at pos -1.",
+			"ss*",	PPFLAG_SIDEEFFECTS,},
+
+		{	"strStrip",	fnStr, FN_STR_STRIP,
+			"(strStrip string [characters] [caseSensitive=Nil]) -> string with characters to strip removed from either end. Strips whitespace by default.",
+			"s*",	PPFLAG_SIDEEFFECTS,},
+
+		{	"strSplit",	fnStr, FN_STR_SPLIT,
+			"(strSplit string delimiter|listOfDelimiters [caseSensitive=Nil]) -> list of strings split around any delimiters.\n"
+			"Leaves empty strings where appropriate, including at the beginning and ends if it starts or ends with a delimiter string.",
+			"sv*",	PPFLAG_SIDEEFFECTS,},
 
 		{	"struct",			fnStruct,		FN_STRUCT,
 			"(struct key1 value1 [ key2 value2 ...]) -> struct\n"

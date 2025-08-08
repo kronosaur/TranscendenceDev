@@ -3980,6 +3980,99 @@ ICCItem *fnSplit (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		return pList;
 	}
 
+ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
+
+//	fnStr
+//
+//	advanced string functions
+
+	{
+	CCodeChain *pCC = pCtx->pCC;
+	ICCItem *pFirst;
+	int iArgs = pArgs->GetCount();
+	bool bCaseSensitive = false;
+	pFirst = pArgs->GetElement(0);
+	if (!iArgs || pFirst->GetValueType() != ICCItem::ValueTypes::String)
+		return pCC->CreateError(CONSTLIT("All str* functions require a string to operate on as their first argument"));
+	CString sSource = pFirst->GetStringValue();
+	
+	switch (dwData)
+		{
+		case FN_STR_BEGINS_WITH:
+		case FN_STR_ENDS_WITH:
+			{
+			if (iArgs < 2)
+				return pCC->CreateError(CONSTLIT("strBeginsWith and strEndsWith require at least 2 arguments"));
+			if (iArgs > 2)
+				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
+			CString sTarget = pArgs->GetElement(1)->GetStringValue();
+			if (sSource.GetLength() < sTarget.GetLength())
+				return pCC->CreateNil();
+			int iStart = dwData == FN_STR_BEGINS_WITH ? 0 : sSource.GetLength() - sTarget.GetLength();
+			int iEnd = dwData == FN_STR_BEGINS_WITH ? sTarget.GetLength() : sSource.GetLength();
+			char *pSourceChar = sSource.GetASCIIZPointer() + iStart;
+			char *pTargetChar = sTarget.GetASCIIZPointer();
+			for (int i = iStart; i < iEnd; i++)
+				{
+				if ((bCaseSensitive && (*pSourceChar != *pTargetChar)) ||
+					((!bCaseSensitive) && (strLowerCaseAbsolute(*pSourceChar) != strLowerCaseAbsolute(*pSourceChar))))
+					return pCC->CreateNil();
+				pSourceChar++;
+				pTargetChar++;
+				}
+			return pCC->CreateTrue();
+			}
+		case FN_STR_CONTAINS:
+		case FN_STR_COUNT:
+			{
+			if (iArgs < 2)
+				return pCC->CreateError(CONSTLIT("strContains and strCount require at least 2 arguments"));
+			if (iArgs > 2)
+				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
+			CString sTarget = pArgs->GetElement(1)->GetStringValue();
+			if (sSource.GetLength() < sTarget.GetLength())
+				return pCC->CreateNil();
+			int iEnd = sSource.GetLength() - sTarget.GetLength();
+			char *pSourceChar = sSource.GetASCIIZPointer();
+			char* pSourceScanChar = pSourceChar;
+			char *pTargetChar = sTarget.GetASCIIZPointer();
+			bool bFound = true;
+			int iCount = 0;
+			for (int i = 0; i < iEnd; i++)
+				{
+				bFound = true;
+				for (int k = 0; k < iEnd; k++)
+					{
+					if ((bCaseSensitive && (*pSourceScanChar != *pTargetChar)) ||
+						(!bCaseSensitive && (strLowerCaseAbsolute(*pSourceScanChar) != strLowerCaseAbsolute(*pSourceChar))))
+						{
+						bFound = false;
+						break;
+						}
+					pSourceScanChar++;
+					pTargetChar++;
+					}
+				if (bFound)
+					{
+					if (dwData == FN_STR_CONTAINS)
+						return pCC->CreateTrue();
+					else
+						iCount++;
+					}
+				pSourceChar++;
+				pSourceScanChar = pSourceChar;
+				pTargetChar = sTarget.GetASCIIZPointer();
+				}
+			if (dwData == FN_STR_CONTAINS && !iCount)
+				return pCC->CreateNil();
+			return pCC->CreateInteger(iCount);
+			}
+		default:
+			ASSERT(false);
+			return pCC->CreateNil();
+		}
+	}
+
 ICCItem *fnStrCapitalize (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 //	fnStrCapitalize
