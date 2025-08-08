@@ -106,6 +106,8 @@
 #define FN_MATH_LOG						102
 #define FN_HEX							103
 #define FN_SYSINFO_SELF_TEST			104
+#define FN_DEBUG_APPLY_TIMED			106
+#define FN_DEBUG_EVAL_TIMED				107
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
@@ -114,6 +116,7 @@ ICCItem *fnAtmTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnCat (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnCount (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnDebugPrimatives (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEquality (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEqualityNumerals (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

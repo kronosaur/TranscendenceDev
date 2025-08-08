@@ -23,6 +23,7 @@
 #include <Math.h>
 #include "Functions.h"
 #include "TMathList.h"
+#include <chrono>
 
 //	Forwards
 
@@ -5486,4 +5487,38 @@ ALERROR HelperSetq (CEvalContext *pCtx, ICCItem *pVar, ICCItem *pValue, ICCItem 
 		}
 
 	return NOERROR;
+	}
+
+ICCItem *fnDebugPrimatives (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
+
+//	fnDebug
+//
+//	Debug functions
+
+	{
+	CCodeChain *pCC = pEvalCtx->pCC;
+	ICCItem *pRet;
+
+	switch (dwData)
+		{
+		case FN_DEBUG_APPLY_TIMED:
+		case FN_DEBUG_EVAL_TIMED:
+			{
+			auto start = std::chrono::high_resolution_clock::now();
+			if (FN_DEBUG_APPLY_TIMED)
+				pRet = fnApply(pEvalCtx, pArgs, 0);
+			else
+				pRet = fnEval(pEvalCtx, pArgs, 0);
+			auto end = std::chrono::high_resolution_clock::now();
+			if (pRet->IsError())
+				return pRet;	//	If we had an error, return that instead
+			pRet->Discard();	//	We dont want to keep this reference around
+			std::chrono::duration<double> duration = end - start;
+			return pCC->CreateDouble(duration.count() * 1000000000.0);
+			}
+
+		default:
+			ASSERT(false);
+			return pCC->CreateNil();
+		}
 	}

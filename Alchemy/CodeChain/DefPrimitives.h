@@ -492,6 +492,18 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"while",				fnLoop,			0,
 			"(while condition exp) -> Evaluate exp until condition is Nil",
 			NULL,	0,	},
+
+		//	Debug Primative Functions
+	
+		{	"dbgApplyTimed",				fnDebugPrimatives,		FN_DEBUG_APPLY_TIMED,
+		"(dbgApplyTimed fn args) -> Time in ns to execute fn with args (double). Resolution may vary by system.",
+
+		"*",	PPFLAG_SIDEEFFECTS, },
+			
+		{	"dbgEvalTimed",					fnDebugPrimatives,		FN_DEBUG_EVAL_TIMED,
+		"(dbgEvalTimed expr) -> Time in ns to parse and execute expr (double). Resolution may vary by system.",
+
+		"*",	PPFLAG_SIDEEFFECTS, },
 	};
 
 #define DEFPRIMITIVES_COUNT		(sizeof(g_DefPrimitives) / sizeof(g_DefPrimitives[0]))
