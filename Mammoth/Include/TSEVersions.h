@@ -5,7 +5,7 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							55;
+constexpr DWORD API_VERSION =							56;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
 constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 
@@ -351,6 +351,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //							Default: uses neutral/positive/negative background colors
 //						labelTextColor: 24-bit or triplet RGB color for tag text
 //							Default: uses neutral/positive/negative text colors
+//
+//	 56: 2.0 Alpha 5
 //
 
 
