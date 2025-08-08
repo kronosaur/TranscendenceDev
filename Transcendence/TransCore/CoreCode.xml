@@ -610,7 +610,7 @@
 					)
 				))
 				
-			(setq mathScaleReal (lambda (x fromMin fromMax toMin toMax gamma)
+			(setq mathScaleReal (lambda (x rFromMin rFromMax rToMin rToMax rGamma)
 
 			;	Scales x, which must be in the range fromMin to fromMax to the
 			;	destination scale, toMin to Max. Returns a double.
@@ -619,38 +619,39 @@
 			;	function. At 1.0, the mapping is linear. At 0.5 we use a square
 			;	root function; at 2.0 we square it.
 
-				(block (toRange result)
+				(block
+					(
 
-					(setq toRange (- toMax toMin))
+						;;	Ensure ranges are always valid
 
-					;	Map to the result range
+						(fromMax (max rFromMin rFromMax))
+						(fromMin (min rFromMin rFromMax))
+						(toMax (max rToMin rToMax))
+						(toMin (min rToMin rToMax))
+						(toRange (- toMax toMin))
 
-					(setq result
-						(/
-							(*
-								(- 
-									(min (max fromMin x) fromMax)
-									fromMin
+						;;	Handle case where gamma is not passed
+
+						(gamma (if (= rGamma Nil) 1.0 rGamma))
+					)
+
+					;;	Map to the result range
+
+					(+
+						(*
+							(pow 
+								(/
+									(- 
+										(min (max fromMin x) fromMax)
+										fromMin
+										)
+									(- fromMax fromMin)
 									)
-								toRange
+								gamma
 								)
-							(- fromMax fromMin)
+							toRange
 							)
-						)
-
-					;	If we have a gamma parameter, adjust it
-
-					(if gamma
-						(setq result
-							(* toRange (pow (/ result toRange) gamma))
-							)
-						)
-
-					;	Done
-
-					(if (ls toRange 0)
-						(- toMin result)
-						(+ result toMin)
+						toMin
 						)
 					)
 				))
