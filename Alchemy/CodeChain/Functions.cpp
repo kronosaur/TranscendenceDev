@@ -3273,10 +3273,10 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					rOutMax = max(rArg3, rArg4);
 					rOutRange = rOutMax - rOutMin;
 					bRetInt = pOutMin->GetValueType() == ICCItem::ValueTypes::Integer && pOutMax->GetValueType() == ICCItem::ValueTypes::Integer;
-					rRes = ((min(max(rInput, rInMin), rInMax) - rInMin) * rOutRange) / (rInMax - rInMin);
+					rRes = (min(max(rInput, rInMin), rInMax) - rInMin) / (rInMax - rInMin);
 					if (rGamma != 1.0)
-						rRes = rOutRange * pow(rRes / rOutRange, rGamma);
-					rRes += rOutMin;
+						rRes = pow(rRes, rGamma);
+					rRes = (rRes * rOutRange) + rOutMin;
 					if (bRetInt)
 						return pCC->CreateInteger((int)round(rRes));
 					else
