@@ -642,7 +642,7 @@
 
 					(if gamma
 						(setq result
-							(pow (/ result toRange) gamma)
+							(* toRange (pow (/ result toRange) gamma))
 							)
 						)
 
