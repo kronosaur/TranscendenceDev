@@ -5504,15 +5504,29 @@ ICCItem *fnDebugPrimatives (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData
 		case FN_DEBUG_APPLY_TIMED:
 		case FN_DEBUG_EVAL_TIMED:
 			{
+			//	We pass our args through so we mark them as already evaluated
+			pArgs->SetQuoted();
+
+			//	Start our timer
 			auto start = std::chrono::high_resolution_clock::now();
-			if (FN_DEBUG_APPLY_TIMED)
+
+			//	Run the appropriate inner function
+			if (dwData == FN_DEBUG_APPLY_TIMED)
 				pRet = fnApply(pEvalCtx, pArgs, 0);
 			else
 				pRet = fnEval(pEvalCtx, pArgs, 0);
+
+			//	Stop our timer
 			auto end = std::chrono::high_resolution_clock::now();
+
+			//	If we had an error, return that instead
 			if (pRet->IsError())
-				return pRet;	//	If we had an error, return that instead
-			pRet->Discard();	//	We dont want to keep this reference around
+				return pRet;
+
+			//	We dont want to keep this reference around
+			pRet->Discard();
+
+			//	Compute the time elapsed
 			std::chrono::duration<double> duration = end - start;
 			return pCC->CreateDouble(duration.count() * 1000000000.0);
 			}
