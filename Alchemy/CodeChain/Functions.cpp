@@ -4151,6 +4151,7 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 					i += iTargetEnd;
 					pSourceChar += iTargetEnd;
 					iSpanStart = i;
+					i--; //since we do i++ in the for loop we will be one ahead otherwise
 					}
 				else
 					pSourceChar++;
