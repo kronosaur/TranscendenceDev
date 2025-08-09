@@ -237,3 +237,12 @@ Temporary Items
 /.vs/VSWorkspaceState.json
 /.vs/slnx.sqlite
 /Transcendence/Game/_releases/*
+/Alchemy/zlib-1.2.7/contrib/vstudio/vc10/Preview For Contributors/zlib.res
+/Alchemy/zlib-1.2.7/contrib/vstudio/vc10/Preview For Contributors/zlibstat.lib
+/Alchemy/zlib-1.2.7/contrib/vstudio/vc10/Preview For Contributors/zlibstat.lib.recipe
+/Alchemy/zlib-1.2.7/contrib/vstudio/vc10/Preview For Contributors/zlibstat.vcxproj.FileListAbsolute.txt
+/Mammoth/SteamUtil/Preview For Contributors/SteamUtil.lib.recipe
+/Mammoth/TSUI/Preview For Contributors/TSUI.lib
+/Mammoth/TSUI/Preview For Contributors/TSUI.lib.recipe
+/Mammoth/TSUI/Preview For Contributors/TSUI.vcxproj.FileListAbsolute.txt
+/Transcendence/Preview For Contributors/SteamUtil.lib
