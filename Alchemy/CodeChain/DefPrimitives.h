@@ -187,10 +187,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			NULL,	0,	},
 
 		{	"gammaScale",		fnMathNumerals,	FN_MATH_GAMMA_SCALE_NUMERALS,
-			"(gammaScale var inMin inMax outMin outMax [gamma=1.0]) -> scaled value (int or real)\n\n"
+			"(gammaScale var inStart inEnd outStart outEnd [gamma=1.0]) -> scaled value (int or real)\n\n"
 			
-			"Scales var from range inMin to inMax to the output scale outMin to outMax.\n"
-			"Returns int if both outMin and outMax are ints, otherwise returns a real. Gamma specifies an exponent relationship curve between input and output ranges.\n"
+			"Scales var from range inStart to inEnd to the output scale outStart to outEnd.\n"
+			"Returns int if both outStart and outEnd are ints, otherwise returns a real. Gamma specifies an exponent relationship curve between input and output ranges.\n"
 			"At a gamma of 1.0 it is a linear curve, at 0.5 it is a square root function, at 2.0 it is a square function.\n"
 			"If gamma is an integer, it should be multiplied by 100: ex, gamma 1.0 becomes 100, gamma 0.5 becomes 50, gamma 2.0 becomes 200",
 			"nnnnn*",	0,	},
