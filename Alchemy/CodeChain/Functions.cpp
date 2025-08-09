@@ -3980,6 +3980,361 @@ ICCItem *fnSplit (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		return pList;
 	}
 
+ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
+
+//	fnStr
+//
+//	advanced string functions
+
+	{
+	CCodeChain *pCC = pCtx->pCC;
+	ICCItem *pFirst;
+	int iArgs = pArgs->GetCount();
+	bool bCaseSensitive = false;
+	pFirst = pArgs->GetElement(0);
+	CString sSource = pFirst->GetStringValue();
+	
+	switch (dwData)
+		{
+		case FN_STR_BEGINS_WITH:
+		case FN_STR_ENDS_WITH:
+			{
+			if (iArgs > 2)
+				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
+			CString sTarget = pArgs->GetElement(1)->GetStringValue();
+			if (sSource.GetLength() < sTarget.GetLength())
+				return pCC->CreateNil();
+
+			int iStart = dwData == FN_STR_BEGINS_WITH ? 0 : sSource.GetLength() - sTarget.GetLength();
+			int iEnd = dwData == FN_STR_BEGINS_WITH ? sTarget.GetLength() : sSource.GetLength();
+			char *pSourceChar = sSource.GetASCIIZPointer() + iStart;
+			char *pTargetChar = sTarget.GetASCIIZPointer();
+			char cSource, cTarget;
+
+			for (int i = iStart; i < iEnd; i++)
+				{
+				cSource = bCaseSensitive ? *pSourceChar : strLowerCaseAbsolute(*pSourceChar);
+				cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
+				if (cSource != cTarget)
+					return pCC->CreateNil();
+				pSourceChar++;
+				pTargetChar++;
+				}
+
+			return pCC->CreateTrue();
+			}
+
+		case FN_STR_CONTAINS:
+		case FN_STR_COUNT:
+			{
+			if (iArgs > 2)
+				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
+			CString sTarget = pArgs->GetElement(1)->GetStringValue();
+			if (sSource.GetLength() < sTarget.GetLength())
+				return dwData == FN_STR_CONTAINS ? pCC->CreateNil() : pCC->CreateInteger(0);
+			if (!sTarget.GetLength())
+				return dwData == FN_STR_CONTAINS ? pCC->CreateTrue() : pCC->CreateInteger(sSource.GetLength());
+
+			int iEnd = sSource.GetLength() - sTarget.GetLength() + 1;
+			int iTargetEnd = sTarget.GetLength();
+			char *pSourceChar = sSource.GetASCIIZPointer();
+			char *pSourceScanChar = pSourceChar;
+			char *pTargetChar = sTarget.GetASCIIZPointer();
+			char cSource, cTarget;
+			bool bFound = true;
+			int iCount = 0;
+
+			for (int i = 0; i < iEnd; i++)
+				{
+				bFound = true;
+				for (int k = 0; k < iTargetEnd; k++)
+					{
+					cSource = bCaseSensitive ? *pSourceScanChar : strLowerCaseAbsolute(*pSourceScanChar);
+					cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
+					if (cSource != cTarget)
+						{
+						bFound = false;
+						break;
+						}
+					pSourceScanChar++;
+					pTargetChar++;
+					}
+				if (bFound)
+					{
+					if (dwData == FN_STR_CONTAINS)
+						return pCC->CreateTrue();
+					else
+						iCount++;
+					}
+				pSourceChar++;
+				pSourceScanChar = pSourceChar;
+				pTargetChar = sTarget.GetASCIIZPointer();
+				}
+
+			if (dwData == FN_STR_CONTAINS && !iCount)
+				return pCC->CreateNil();
+
+			return pCC->CreateInteger(iCount);
+			}
+
+		case FN_STR_JOIN:
+			{
+			CString sResult = CONSTLIT("");
+
+			//	If we were not provided anything to join, return an empty str
+			if (
+				(iArgs < 2) ||
+				(iArgs == 2 && pArgs->GetElement(0)->IsNil())
+				)
+				return pCC->CreateString(sResult);
+
+			if (iArgs > 2 || !pArgs->GetElement(1)->IsList())
+				return pCC->CreateError(CONSTLIT("strJoin takes only a delimiter string and a list of strings to join together"));
+
+			CString sDelim = pArgs->GetElement(0)->GetStringValue();
+			ICCList *pList = (ICCList*)pArgs->GetElement(1);
+			int iEnd = pList->GetCount();
+
+			for (int i = 0; i < iEnd; i++)
+				{
+				ICCItem* pElement = pList->GetElement(i);
+
+				//	Treat Nil as an empty string rather than "Nil"
+				if (pElement->IsNil())
+					sResult.Append(CONSTLIT(""));
+				else
+					sResult.Append(pElement->GetStringValue());
+
+				//	Add our delimiter if we have another element afterwards
+				if (i + 1 < iEnd)
+					sResult.Append(sDelim);
+				}
+
+			return pCC->CreateString(sResult);
+			}
+
+		case FN_STR_SLICE:
+			{
+			CString sSource = pArgs->GetElement(0)->GetStringValue();
+			int iStart = pArgs->GetElement(1)->GetIntegerValue();
+			int iLen = iArgs < 3 ? -1 : pArgs->GetElement(2)->GetIntegerValue();
+
+			//	If we are passed a negative position, this is relative to the end of the string
+			//	so -1 means the last index, -2 means second to last, etc
+			if (iStart < 0)
+				iStart = sSource.GetLength() + iStart;
+
+			return pCC->CreateString(strSubString(sSource, iStart, iLen));
+			}
+
+		case FN_STR_SPLIT:
+			{
+			ICCItem* pList = pCC->CreateLinkedList();
+			if (iArgs > 2)
+				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
+			CString sSource = pArgs->GetElement(0)->GetStringValue();
+			CString sTarget = pArgs->GetElement(1)->GetStringValue();
+
+			//	If we cant do anything with it then we pass the first arg via a list
+			if (!sTarget.GetLength() || sSource.GetLength() < sTarget.GetLength())
+				{
+				pList->Append(pArgs->GetElement(0));
+				return pList;
+				}
+
+			//	Otherwise we try to do the splitting
+			int iEnd = sSource.GetLength() - sTarget.GetLength() + 1;
+			int iTargetEnd = sTarget.GetLength();
+			char *pSourceChar = sSource.GetASCIIZPointer();
+			char *pSourceScanChar = pSourceChar;
+			char *pTargetChar = sTarget.GetASCIIZPointer();
+			char cSource, cTarget;
+			bool bFound = true;
+			int iSpanStart = 0;
+			for (int i = 0; i < iEnd; i++)
+				{
+				bFound = true;
+				for (int k = 0; k < iTargetEnd; k++)
+					{
+					cSource = bCaseSensitive ? *pSourceScanChar : strLowerCaseAbsolute(*pSourceScanChar);
+					cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
+					if (cSource != cTarget)
+						{
+						bFound = false;
+						break;
+						}
+					pSourceScanChar++;
+					pTargetChar++;
+					}
+				if (bFound)
+					{
+					//	Append the last span
+					pList->Append(pCC->CreateString(strSubString(sSource, iSpanStart, i - iSpanStart)));
+					//	start new span at next character after the replaced section
+					i += iTargetEnd;
+					pSourceChar += iTargetEnd;
+					iSpanStart = i;
+					i--; //since we do i++ in the for loop we will be one ahead otherwise
+					}
+				else
+					pSourceChar++;
+				pSourceScanChar = pSourceChar;
+				pTargetChar = sTarget.GetASCIIZPointer();
+				}
+			//	Handle anything left over at the end
+			if (iSpanStart < iEnd)
+				pList->Append(pCC->CreateString(strSubString(sSource, iSpanStart)));
+			//	Otherwise we split right at the end and need an empty string
+			else
+				pList->Append(pCC->CreateString(CONSTLIT("")));
+			return pList;
+			}
+		case FN_STR_STRIP:
+			{
+			CString sSource = pArgs->GetElement(0)->GetStringValue();
+			CString sTarget = iArgs > 1 ? pArgs->GetElement(1)->GetStringValue() : CONSTLIT(" \t\n\r");
+			if (iArgs > 2)
+				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
+
+			//	If we cant do anything with it then we pass the first arg through
+			if (!sTarget.GetLength())
+				return pArgs->GetElement(0);
+
+			//	Otherwise we try to do replacement.
+			int iEnd = sSource.GetLength();
+			int iTargetEnd = sTarget.GetLength();
+			char* pSourceChar = sSource.GetASCIIZPointer();
+			char* pTargetChar = sTarget.GetASCIIZPointer();
+			char cSource, cTarget;
+			bool bFound = true;
+			int iSpanStart = 0;
+			int iSpanEnd = 0;
+
+			//	Check the front of the string till we find characters not in sTarget
+			for (int i = 0; i < iEnd; i++)
+				{
+				bFound = false;
+				cSource = bCaseSensitive ? *pSourceChar : strLowerCaseAbsolute(*pSourceChar);
+				pTargetChar = sTarget.GetASCIIZPointer();
+				for (int k = 0; k < iTargetEnd; k++)
+					{
+					cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
+					if (cSource == cTarget)
+						{
+						bFound = true;
+						break;
+						}
+					pTargetChar++;
+					}
+				if (!bFound)
+					{
+					iSpanStart = i;
+					break;
+					}
+				else
+					pSourceChar++;
+				}
+
+			//	Check the back of the string till we find characters not in sTarget
+			pSourceChar = sSource.GetASCIIZPointer() + sSource.GetLength() - 1;
+			for (int i = iEnd - 1; i > -1; i--)
+				{
+				bFound = false;
+				cSource = bCaseSensitive ? *pSourceChar : strLowerCaseAbsolute(*pSourceChar);
+				pTargetChar = sTarget.GetASCIIZPointer();
+				for (int k = 0; k < iTargetEnd; k++)
+					{
+					cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
+					if (cSource == cTarget)
+						{
+						bFound = true;
+						break;
+						}
+					pTargetChar++;
+					}
+				if (!bFound)
+					{
+					iSpanEnd = i + 1;
+					break;
+					}
+				else
+					pSourceChar--;
+				}
+
+			//	Extract the stripped string
+			return pCC->CreateString(strSubString(sSource, iSpanStart, iSpanEnd - iSpanStart));
+			}
+		case FN_STR_REPLACE:
+			{
+			CString sResult = CONSTLIT("");
+			if (iArgs > 3)
+				bCaseSensitive = !pArgs->GetElement(3)->IsNil();
+			CString sSource = pArgs->GetElement(0)->GetStringValue();
+			CString sTarget = pArgs->GetElement(1)->GetStringValue();
+			CString sReplacement = pArgs->GetElement(2)->GetStringValue();
+
+			//	If we cant do anything with it then we pass the first arg through
+			if (!sTarget.GetLength() || sSource.GetLength() < sTarget.GetLength())
+				return pArgs->GetElement(0);
+
+			//	Otherwise we try to do replacement.
+			int iEnd = sSource.GetLength() - sTarget.GetLength() + 1;
+			int iTargetEnd = sTarget.GetLength();
+			char *pSourceChar = sSource.GetASCIIZPointer();
+			char *pSourceScanChar = pSourceChar;
+			char *pTargetChar = sTarget.GetASCIIZPointer();
+			char cSource, cTarget;
+			bool bFound = true;
+			int iSpanStart = 0;
+			for (int i = 0; i < iEnd; i++)
+				{
+				bFound = true;
+				for (int k = 0; k < iTargetEnd; k++)
+					{
+					cSource = bCaseSensitive ? *pSourceScanChar : strLowerCaseAbsolute(*pSourceScanChar);
+					cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
+					if (cSource != cTarget)
+						{
+						bFound = false;
+						break;
+						}
+					pSourceScanChar++;
+					pTargetChar++;
+					}
+				if (bFound)
+					{
+
+					//	Append the last span
+					sResult.Append(strSubString(sSource, iSpanStart, i - iSpanStart));
+
+					//	Append the replacement
+					sResult.Append(sReplacement);
+
+					//	start new span at next character after the replaced section
+					i += iTargetEnd;
+					pSourceChar += iTargetEnd;
+					iSpanStart = i;
+					i--; //since we do i++ in the for loop we will be one ahead otherwise
+					}
+				else
+					pSourceChar++;
+				pSourceScanChar = pSourceChar;
+				pTargetChar = sTarget.GetASCIIZPointer();
+				}
+
+			//	Handle anything left over at the end
+			if (iSpanStart < iEnd)
+				sResult.Append(strSubString(sSource, iSpanStart));
+
+			return pCC->CreateString(sResult);
+			}
+
+		default:
+			ASSERT(false);
+			return pCC->CreateNil();
+		}
+	}
+
 ICCItem *fnStrCapitalize (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 //	fnStrCapitalize
