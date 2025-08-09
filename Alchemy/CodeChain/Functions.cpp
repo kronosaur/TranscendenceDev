@@ -3247,7 +3247,7 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			ICCItem *pOutMin, *pOutMax, *pGamma;
 			double rInput, rArg1, rInMin, rArg2, rInMax, rArg3, rOutMin, rArg4, rOutMax, rGamma, rRes, rOutRange;
 			rGamma = 1.0;
-			bool bRetInt = false;
+			bool bNegativeCurve, bRetInt = false;
 			switch (pArgs->GetCount())
 				{
 				case 6:
@@ -3271,12 +3271,21 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					rArg4 = pOutMax->GetDoubleValue();
 					rOutMin = min(rArg3, rArg4);
 					rOutMax = max(rArg3, rArg4);
+					bNegativeCurve = ((rInMin == rArg1 && rOutMin != rArg3) || (rInMin != rArg1 && rOutMin == rArg3));
 					rOutRange = rOutMax - rOutMin;
 					bRetInt = pOutMin->GetValueType() == ICCItem::ValueTypes::Integer && pOutMax->GetValueType() == ICCItem::ValueTypes::Integer;
+
+					//	Do the computations
 					rRes = (min(max(rInput, rInMin), rInMax) - rInMin) / (rInMax - rInMin);
 					if (rGamma != 1.0)
 						rRes = pow(rRes, rGamma);
-					rRes = (rRes * rOutRange) + rOutMin;
+					rRes *= rOutRange;
+					if (bNegativeCurve)
+						rRes = rOutMax - rRes;
+					else
+						rRes += rOutMin;
+
+					//	Return the correct type
 					if (bRetInt)
 						return pCC->CreateInteger((int)round(rRes));
 					else
