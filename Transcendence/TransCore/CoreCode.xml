@@ -629,29 +629,36 @@
 						(toMax (max rToMin rToMax))
 						(toMin (min rToMin rToMax))
 						(toRange (- toMax toMin))
+						(negCurve (or (and (= rFromMin fromMin) (!= rToMin toMin)) (and (!= rFromMin fromMin) (= rToMin toMin))))
 
 						;;	Handle case where gamma is not passed
 
 						(gamma (or rGamma 1.0))
+
+						;;	Map to the result range
+
+						(result
+							(*
+								(pow 
+									(/
+										(- 
+											(min (max fromMin x) fromMax)
+											fromMin
+											)
+										(- fromMax fromMin)
+										)
+									gamma
+									)
+								toRange
+								)
+							)
 					)
 
-					;;	Map to the result range
+					;;	return result and account for negative curve
 
-					(+
-						(*
-							(pow 
-								(/
-									(- 
-										(min (max fromMin x) fromMax)
-										fromMin
-										)
-									(- fromMax fromMin)
-									)
-								gamma
-								)
-							toRange
-							)
-						toMin
+					(if negCurve
+						(- toMax result)
+						(+ result toMin)
 						)
 					)
 				))
