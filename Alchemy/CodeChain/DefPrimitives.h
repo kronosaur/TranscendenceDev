@@ -425,20 +425,20 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"sv",	PPFLAG_SIDEEFFECTS,},
 
 		{	"strReplace",	fnStr, FN_STR_REPLACE,
-			"(strReplace string target replacement [caseSensitive=Nil]) -> string.",
+			"(strReplace string target replacement [caseSensitive=Nil]) -> string",
 			"ssv*",	PPFLAG_SIDEEFFECTS,},
 
 		{	"strSlice",	fnStr, FN_STR_SLICE,
 			"(strSlice string pos [count]) -> string.\n"
 			"If pos is negative, the index is relative to the end of the string. The last character is at pos -1.",
-			"ss*",	PPFLAG_SIDEEFFECTS,},
+			"sv*",	PPFLAG_SIDEEFFECTS,},
 
 		{	"strStrip",	fnStr, FN_STR_STRIP,
 			"(strStrip string [characters] [caseSensitive=Nil]) -> string with characters to strip removed from either end. Strips whitespace by default.",
 			"s*",	PPFLAG_SIDEEFFECTS,},
 
 		{	"strSplit",	fnStr, FN_STR_SPLIT,
-			"(strSplit string delimiter|listOfDelimiters [caseSensitive=Nil]) -> list of strings split around any delimiters.\n"
+			"(strSplit string delimiter [caseSensitive=Nil]) -> list of strings split around delimiter.\n"
 			"Leaves empty strings where appropriate, including at the beginning and ends if it starts or ends with a delimiter string.",
 			"sv*",	PPFLAG_SIDEEFFECTS,},
 
