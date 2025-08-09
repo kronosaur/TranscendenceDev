@@ -425,8 +425,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"sv",	PPFLAG_SIDEEFFECTS,},
 
 		{	"strReplace",	fnStr, FN_STR_REPLACE,
-			"(strReplace string replacement [caseSensitive=Nil]) -> string. replacement can be a string or list of strings.",
-			"sv*",	PPFLAG_SIDEEFFECTS,},
+			"(strReplace string target replacement [caseSensitive=Nil]) -> string.",
+			"ssv*",	PPFLAG_SIDEEFFECTS,},
 
 		{	"strSlice",	fnStr, FN_STR_SLICE,
 			"(strSlice string pos [count]) -> string.\n"

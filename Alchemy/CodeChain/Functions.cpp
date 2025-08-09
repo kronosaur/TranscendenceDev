@@ -4039,7 +4039,7 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 			int iEnd = sSource.GetLength() - sTarget.GetLength() + 1;
 			int iTargetEnd = sTarget.GetLength();
 			char *pSourceChar = sSource.GetASCIIZPointer();
-			char* pSourceScanChar = pSourceChar;
+			char *pSourceScanChar = pSourceChar;
 			char *pTargetChar = sTarget.GetASCIIZPointer();
 			char cSource, cTarget;
 			bool bFound = true;
@@ -4073,6 +4073,94 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 			if (dwData == FN_STR_CONTAINS && !iCount)
 				return pCC->CreateNil();
 			return pCC->CreateInteger(iCount);
+			}
+		case FN_STR_JOIN:
+			{
+			CString sResult = CONSTLIT("");
+			//	If we were not provided anything to join, return an empty str
+			if (
+				(iArgs < 2) ||
+				(iArgs == 2 && pArgs->GetElement(0)->IsNil())
+				)
+				return pCC->CreateString(sResult);
+			if (iArgs > 2 || !pArgs->GetElement(1)->IsList())
+				return pCC->CreateError(CONSTLIT("strJoin takes only a delimiter string and a list of strings to join together"));
+			CString sDelim = pArgs->GetElement(0)->GetStringValue();
+			ICCList *pList = (ICCList*)pArgs->GetElement(1);
+			int iEnd = pList->GetCount();
+			for (int i = 0; i < iEnd; i++)
+				{
+				ICCItem* pElement = pList->GetElement(i);
+				//	Treat Nil as an empty string rather than "Nil"
+				if (pElement->IsNil())
+					sResult.Append(CONSTLIT(""));
+				else
+					sResult.Append(pElement->GetStringValue());
+				//	Add our delimiter if we have another element afterwards
+				if (i + 1 < iEnd)
+					sResult.Append(sDelim);
+				}
+			return pCC->CreateString(sResult);
+			}
+		case FN_STR_REPLACE:
+			{
+			CString sResult = CONSTLIT("");
+			if (iArgs < 3)
+				return pCC->CreateError(CONSTLIT("strReplace require at least 3 arguments"));
+			if (iArgs > 3)
+				bCaseSensitive = !pArgs->GetElement(3)->IsNil();
+			CString sSource = pArgs->GetElement(0)->GetStringValue();
+			CString sTarget = pArgs->GetElement(1)->GetStringValue();
+			CString sReplacement = pArgs->GetElement(2)->GetStringValue();
+
+			//	If we cant do anything with it then we pass the first arg through
+			if (!sTarget.GetLength() || sSource.GetLength() < sTarget.GetLength())
+				return pArgs->GetElement(0);
+
+			//	Otherwise we try to do replacement.
+			int iEnd = sSource.GetLength() - sTarget.GetLength() + 1;
+			int iTargetEnd = sTarget.GetLength();
+			char *pSourceChar = sSource.GetASCIIZPointer();
+			char *pSourceScanChar = pSourceChar;
+			char *pTargetChar = sTarget.GetASCIIZPointer();
+			char cSource, cTarget;
+			bool bFound = true;
+			int iSpanStart = 0;
+			for (int i = 0; i < iEnd; i++)
+				{
+				bFound = true;
+				for (int k = 0; k < iTargetEnd; k++)
+					{
+					cSource = bCaseSensitive ? *pSourceScanChar : strLowerCaseAbsolute(*pSourceScanChar);
+					cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
+					if (cSource != cTarget)
+						{
+						bFound = false;
+						break;
+						}
+					pSourceScanChar++;
+					pTargetChar++;
+					}
+				if (bFound)
+					{
+					//	Append the last span
+					sResult.Append(strSubString(sSource, iSpanStart, i - iSpanStart));
+					//	Append the replacement
+					sResult.Append(sReplacement);
+					//	start new span at next character after the replaced section
+					i += iTargetEnd;
+					pSourceChar += iTargetEnd;
+					iSpanStart = i;
+					}
+				else
+					pSourceChar++;
+				pSourceScanChar = pSourceChar;
+				pTargetChar = sTarget.GetASCIIZPointer();
+				}
+			//	Handle anything left over at the end
+			if (iSpanStart < iEnd)
+				sResult.Append(strSubString(sSource, iSpanStart));
+			return pCC->CreateString(sResult);
 			}
 		default:
 			ASSERT(false);
