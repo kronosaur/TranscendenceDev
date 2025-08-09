@@ -3150,6 +3150,11 @@ CString Kernel::strSubString (const CString &sString, int iOffset, int iLength)
 		}
 	}
 
+CString Kernel::strSubStringWrapAround (const CString &sString, int iOffset, int iLength)
+	{
+	return strSubString(sString, iOffset < 0 ? sString.GetLength() + iOffset : iOffset, iLength);
+	}
+
 CString Kernel::strWord (const CString &sString, int iWordPos)
 
 //	strWord

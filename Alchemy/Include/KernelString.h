@@ -260,6 +260,7 @@ Kernel::CString strRepeat (const Kernel::CString &sString, int iCount);
 Kernel::CString strRomanNumeral (int i);
 bool strStartsWith (const Kernel::CString &sString, const Kernel::CString &sStringToFind);
 Kernel::CString strSubString (const Kernel::CString &sString, int iOffset, int iLength = -1);
+Kernel::CString strSubStringWrapAround (const Kernel::CString& sString, int iOffset, int iLength = -1);
 Kernel::CString strTitleCapitalize (const Kernel::CString &sString, const char **pExceptions = NULL, int iExceptionsCount = 0);
 double strToDouble (const Kernel::CString &sString, double rFailResult, bool *retbFailed = NULL);
 Kernel::CString strToFilename (const Kernel::CString &sString);
