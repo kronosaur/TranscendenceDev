@@ -4001,18 +4001,18 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 		case FN_STR_BEGINS_WITH:
 		case FN_STR_ENDS_WITH:
 			{
-			if (iArgs < 2)
-				return pCC->CreateError(CONSTLIT("strBeginsWith and strEndsWith require at least 2 arguments"));
 			if (iArgs > 2)
 				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
 			CString sTarget = pArgs->GetElement(1)->GetStringValue();
 			if (sSource.GetLength() < sTarget.GetLength())
 				return pCC->CreateNil();
+
 			int iStart = dwData == FN_STR_BEGINS_WITH ? 0 : sSource.GetLength() - sTarget.GetLength();
 			int iEnd = dwData == FN_STR_BEGINS_WITH ? sTarget.GetLength() : sSource.GetLength();
 			char *pSourceChar = sSource.GetASCIIZPointer() + iStart;
 			char *pTargetChar = sTarget.GetASCIIZPointer();
 			char cSource, cTarget;
+
 			for (int i = iStart; i < iEnd; i++)
 				{
 				cSource = bCaseSensitive ? *pSourceChar : strLowerCaseAbsolute(*pSourceChar);
@@ -4022,13 +4022,13 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 				pSourceChar++;
 				pTargetChar++;
 				}
+
 			return pCC->CreateTrue();
 			}
+
 		case FN_STR_CONTAINS:
 		case FN_STR_COUNT:
 			{
-			if (iArgs < 2)
-				return pCC->CreateError(CONSTLIT("strContains and strCount require at least 2 arguments"));
 			if (iArgs > 2)
 				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
 			CString sTarget = pArgs->GetElement(1)->GetStringValue();
@@ -4036,6 +4036,7 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 				return dwData == FN_STR_CONTAINS ? pCC->CreateNil() : pCC->CreateInteger(0);
 			if (!sTarget.GetLength())
 				return dwData == FN_STR_CONTAINS ? pCC->CreateTrue() : pCC->CreateInteger(sSource.GetLength());
+
 			int iEnd = sSource.GetLength() - sTarget.GetLength() + 1;
 			int iTargetEnd = sTarget.GetLength();
 			char *pSourceChar = sSource.GetASCIIZPointer();
@@ -4044,6 +4045,7 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 			char cSource, cTarget;
 			bool bFound = true;
 			int iCount = 0;
+
 			for (int i = 0; i < iEnd; i++)
 				{
 				bFound = true;
@@ -4070,13 +4072,17 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 				pSourceScanChar = pSourceChar;
 				pTargetChar = sTarget.GetASCIIZPointer();
 				}
+
 			if (dwData == FN_STR_CONTAINS && !iCount)
 				return pCC->CreateNil();
+
 			return pCC->CreateInteger(iCount);
 			}
+
 		case FN_STR_JOIN:
 			{
 			CString sResult = CONSTLIT("");
+
 			//	If we were not provided anything to join, return an empty str
 			if (
 				(iArgs < 2) ||
@@ -4088,31 +4094,39 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 			CString sDelim = pArgs->GetElement(0)->GetStringValue();
 			ICCList *pList = (ICCList*)pArgs->GetElement(1);
 			int iEnd = pList->GetCount();
+
 			for (int i = 0; i < iEnd; i++)
 				{
 				ICCItem* pElement = pList->GetElement(i);
+
 				//	Treat Nil as an empty string rather than "Nil"
 				if (pElement->IsNil())
 					sResult.Append(CONSTLIT(""));
 				else
 					sResult.Append(pElement->GetStringValue());
+
 				//	Add our delimiter if we have another element afterwards
 				if (i + 1 < iEnd)
 					sResult.Append(sDelim);
 				}
+
 			return pCC->CreateString(sResult);
 			}
+
 		case FN_STR_SLICE:
 			{
 			CString sSource = pArgs->GetElement(0)->GetStringValue();
 			int iStart = pArgs->GetElement(1)->GetIntegerValue();
 			int iLen = iArgs < 3 ? -1 : pArgs->GetElement(2)->GetIntegerValue();
+
 			//	If we are passed a negative position, this is relative to the end of the string
 			//	so -1 means the last index, -2 means second to last, etc
 			if (iStart < 0)
 				iStart = sSource.GetLength() + iStart;
+
 			return pCC->CreateString(strSubString(sSource, iStart, iLen));
 			}
+
 		case FN_STR_SPLIT:
 			{
 			ICCItem* pList = pCC->CreateLinkedList();
@@ -4295,10 +4309,13 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 					}
 				if (bFound)
 					{
+
 					//	Append the last span
 					sResult.Append(strSubString(sSource, iSpanStart, i - iSpanStart));
+
 					//	Append the replacement
 					sResult.Append(sReplacement);
+
 					//	start new span at next character after the replaced section
 					i += iTargetEnd;
 					pSourceChar += iTargetEnd;
@@ -4310,11 +4327,14 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 				pSourceScanChar = pSourceChar;
 				pTargetChar = sTarget.GetASCIIZPointer();
 				}
+
 			//	Handle anything left over at the end
 			if (iSpanStart < iEnd)
 				sResult.Append(strSubString(sSource, iSpanStart));
+
 			return pCC->CreateString(sResult);
 			}
+
 		default:
 			ASSERT(false);
 			return pCC->CreateNil();
