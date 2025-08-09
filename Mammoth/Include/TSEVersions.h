@@ -338,26 +338,35 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				Allows getting the player name without needing to use str formatting
 //			(strBeginsWith str substr [caseSensitive=Nil])
 //				Returns if a string begins with substr. Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
 //			(strEndsWith str substr [caseSensitive=Nil])
 //				Returns if a string ends with substr. Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
 //			(strContains str substr [caseSensitive=Nil])
 //				Returns if a string contains substr. Optionally case sensitive.
 //				Higher speed than strCount if you just need to detect the presense of a substr.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
 //			(strCount str substr [caseSensitive=Nil])
 //				Returns the number of instances of substr in str. Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
 //			(strJoin joinStr strList)
 //				Join strs into a substr. Respects presense of Nil/"" in strList
 //				and adds consecutive delimiters rather than skipping them
+//				Warning: do not use below API55, API checking is not available for primitive functions.
 //			(strReplace str substr replaceStr [caseSensitive=Nil])
 //				Replaces instances of substr in str with replaceStr. Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
 //			(strSlice str sliceStart [sliceLen=-1])
 //				As subset, but allows negative slice stars from the end of a string.
 //				sliceLen < 0 returns remainder of the string
+//				Warning: do not use below API55, API checking is not available for primitive functions.
 //			(strSplit str delim [caseSensitive=Nil])
 //				Splits str based on delimiters. Consecutive delimiters produce empty strings "".
 //				Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
 //			(strStrip str [stripChars=" \t\n\r"] [caseSensitive=Nil])
 //				Strips stripChars from the beginning and end of str. Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
 //		Any <Type>
 //			<AttributeDesc>
 //				<ItemAttribute> and <LocationAttribute>
