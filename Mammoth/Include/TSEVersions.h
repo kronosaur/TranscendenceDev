@@ -336,6 +336,10 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //		tlisp:
 //			(plyGetName player)
 //				Allows getting the player name without needing to use str formatting
+//			(dbgApplyTimed fn argsList)
+//				Allows timing tlisp function execution
+//			(dbgEvalTimed expr)
+//				Allows timing tlisp function/block parsing & execution
 //		Any <Type>
 //			<AttributeDesc>
 //				<ItemAttribute> and <LocationAttribute>
