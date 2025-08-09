@@ -334,6 +334,13 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //
 //	 55: 2.0 Alpha 4
 //		tlisp:
+//			(gammaScale val inStart inEnd outStart outEnd [gamma=1.0])
+//				Native tlisp version of mathScale/mathScaleReal.
+//				Returns an int if outMin and outMax are both ints. Otherwise returns a double.
+//				Gamma can be an int (multiplied by 100) or a double.
+//				Note: properly handles negative curves where an input or output
+//					range goes from higher to lower value.
+//				Warning: Do not use below API55. API checking is not available for primitive functions.
 //			(plyGetName player)
 //				Allows getting the player name without needing to use str formatting
 //		Any <Type>
