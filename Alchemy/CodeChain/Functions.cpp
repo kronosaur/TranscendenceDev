@@ -3992,8 +3992,6 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 	int iArgs = pArgs->GetCount();
 	bool bCaseSensitive = false;
 	pFirst = pArgs->GetElement(0);
-	if (!iArgs || pFirst->GetValueType() != ICCItem::ValueTypes::String)
-		return pCC->CreateError(CONSTLIT("All str* functions require a string to operate on as their first argument"));
 	CString sSource = pFirst->GetStringValue();
 	
 	switch (dwData)
@@ -4089,8 +4087,10 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 				(iArgs == 2 && pArgs->GetElement(0)->IsNil())
 				)
 				return pCC->CreateString(sResult);
+
 			if (iArgs > 2 || !pArgs->GetElement(1)->IsList())
 				return pCC->CreateError(CONSTLIT("strJoin takes only a delimiter string and a list of strings to join together"));
+
 			CString sDelim = pArgs->GetElement(0)->GetStringValue();
 			ICCList *pList = (ICCList*)pArgs->GetElement(1);
 			int iEnd = pList->GetCount();
@@ -4130,8 +4130,6 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 		case FN_STR_SPLIT:
 			{
 			ICCItem* pList = pCC->CreateLinkedList();
-			if (iArgs < 2)
-				return pCC->CreateError(CONSTLIT("strSplit require at least 2 arguments"));
 			if (iArgs > 2)
 				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
 			CString sSource = pArgs->GetElement(0)->GetStringValue();
@@ -4193,8 +4191,6 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 			}
 		case FN_STR_STRIP:
 			{
-			if (iArgs < 1)
-				return pCC->CreateError(CONSTLIT("strStrip require at least 1 arguments"));
 			CString sSource = pArgs->GetElement(0)->GetStringValue();
 			CString sTarget = iArgs > 1 ? pArgs->GetElement(1)->GetStringValue() : CONSTLIT(" \t\n\r");
 			if (iArgs > 2)
@@ -4271,8 +4267,6 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 		case FN_STR_REPLACE:
 			{
 			CString sResult = CONSTLIT("");
-			if (iArgs < 3)
-				return pCC->CreateError(CONSTLIT("strReplace require at least 3 arguments"));
 			if (iArgs > 3)
 				bCaseSensitive = !pArgs->GetElement(3)->IsNil();
 			CString sSource = pArgs->GetElement(0)->GetStringValue();
