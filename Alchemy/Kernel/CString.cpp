@@ -3138,6 +3138,8 @@ CString Kernel::strSubString (const CString &sString, int iOffset, int iLength)
 		return LITERAL("");
 	else
 		{
+		if (iOffset < 0)
+			iOffset = 0;
 		if (iLength == -1)
 			iLength = sString.GetLength() - iOffset;
 		else
