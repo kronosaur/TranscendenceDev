@@ -32,17 +32,17 @@ when installing DirectX SDKs:
 
 http://support.microsoft.com/kb/2728613
 
-Use Microsoft Visual Studio 2019 or later. Open `File>Open>Project/Solution` 
+Use Microsoft Visual Studio 2019 or later. Open `File > Open > Project/Solution` 
 `<Repo Root>/Transcendence/Transcendence.sln`, which is the Transcendence 
 solution file. The following warnings, if shown under `Output` from Solution, 
 may be safely ignored:
 
 ```
-    <root dir>\Alchemy\zlib-1.2.7\contrib\vstudio\vc10\zlibstat.vcxproj : 
+    <Repo Root>\Alchemy\zlib-1.2.7\contrib\vstudio\vc10\zlibstat.vcxproj : 
     warning  : Platform 'Itanium' referenced in the project file 'zlibstat' 
     cannot be found.
 
-    <root dir>\TransCore\TransCore.vcxproj : error  : Project 
+    <Repo Root>\TransCore\TransCore.vcxproj : error  : Project 
     "...\TransCore\TransCore.vcxproj" could not be found.
 ```
 
