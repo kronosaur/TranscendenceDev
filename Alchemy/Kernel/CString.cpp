@@ -1035,6 +1035,14 @@ int Kernel::strCompareAbsolute (const CString &sString1, const CString &sString2
 //
 //	The resulting sort order does not change with locale. Use this only for
 //	internal sorting (e.g., symbol tables).
+//
+//	Case insensitive by default.
+// 
+//	In the optional case sensitive mode, alphabetical order has priority, but
+//	capital letters are less than their lower case counterparts:
+//		a < b
+//		A < a
+//		a < B
 
 	{
 	char *pPos1;
@@ -1053,23 +1061,17 @@ int Kernel::strCompareAbsolute (const CString &sString1, const CString &sString2
 		{
 		char chChar1 = *pPos1++;
 		char chChar2 = *pPos2++;
-		char chCharLower1 = strLowerCaseAbsolute(chChar1);
-		char chCharLower2 = strLowerCaseAbsolute(chChar2);
+		char chChar1Lc = strLowerCaseAbsolute(chChar1);
+		char chChar2Lc = strLowerCaseAbsolute(chChar2);
 
-		if (bCaseSensitive && chCharLower1 == chCharLower2)
-			{
-			if (chChar1 > chChar2)
-				return 1;
-			else if (chChar1 < chChar2)
-				return -1;
-			}
-		else
-			{
-			if (chCharLower1 > chCharLower2)
-				return 1;
-			else if (chCharLower1 < chCharLower2)
-				return -1;
-			}
+		if (chChar1Lc > chChar2Lc)
+			return 1;
+		else if (chChar1Lc < chChar2Lc)
+			return -1;
+		else if (bCaseSensitive && (chChar1 > chChar2))
+			return 1;
+		else if (bCaseSensitive && (chChar1 < chChar2))
+			return -1;
 		}
 
 	//	If the strings match up to a point, check to see which is 
@@ -1089,23 +1091,17 @@ int Kernel::strCompareAbsolute (LPCSTR pS1, LPCSTR pS2, bool bCaseSensitive)
 		{
 		char chChar1 = *pS1++;
 		char chChar2 = *pS2++;
-		char chCharLower1 = strLowerCaseAbsolute(chChar1);
-		char chCharLower2 = strLowerCaseAbsolute(chChar2);
+		char chChar1Lc = strLowerCaseAbsolute(chChar1);
+		char chChar2Lc = strLowerCaseAbsolute(chChar2);
 
-		if (bCaseSensitive && chCharLower1 == chCharLower2)
-			{
-			if (chChar1 > chChar2)
-				return 1;
-			else if (chChar1 < chChar2)
-				return -1;
-			}
-		else
-			{
-			if (chCharLower1 > chCharLower2)
-				return 1;
-			else if (chCharLower1 < chCharLower2)
-				return -1;
-			}
+		if (chChar1Lc > chChar2Lc)
+			return 1;
+		else if (chChar1Lc < chChar2Lc)
+			return -1;
+		else if (bCaseSensitive && (chChar1 > chChar2))
+			return 1;
+		else if (bCaseSensitive && (chChar1 < chChar2))
+			return -1;
 		}
 
 	//	If the strings match up to a point, check to see if we hit
