@@ -610,7 +610,7 @@
 					)
 				))
 				
-			(setq mathScaleReal (lambda (x rFromMin rFromMax rToMin rToMax rGamma)
+			(setq mathScaleReal (lambda (x rFromStart rFromEnd rToStart rToEnd rGamma)
 
 			;	Scales x, which must be in the range fromMin to fromMax to the
 			;	destination scale, toMin to Max. Returns a double.
@@ -621,16 +621,6 @@
 
 				(block
 					(
-
-						;;	Ensure ranges are always valid
-
-						(fromMax (max rFromMin rFromMax))
-						(fromMin (min rFromMin rFromMax))
-						(toMax (max rToMin rToMax))
-						(toMin (min rToMin rToMax))
-						(toRange (- toMax toMin))
-						(negCurve (or (and (= rFromMin fromMin) (!= rToMin toMin)) (and (!= rFromMin fromMin) (= rToMin toMin))))
-
 						;;	Handle case where gamma is not passed
 
 						(gamma (or rGamma 1.0))
@@ -638,28 +628,32 @@
 						;;	Map to the result range
 
 						(result
-							(*
-								(pow 
-									(/
-										(- 
-											(min (max fromMin x) fromMax)
-											fromMin
+							(+
+								(* 
+									(pow
+										(min
+											(max
+												(/
+													(- x rFromStart)
+													(- rFromEnd rFromStart)
+													)
+												0
+												)
+											1
 											)
-										(- fromMax fromMin)
+										rGamma
 										)
-									gamma
+									(- rtoEnd rToStart)
 									)
-								toRange
+								rtoStart
 								)
 							)
+
 					)
 
-					;;	return result and account for negative curve
+					;;	return result
 
-					(if negCurve
-						(- toMax result)
-						(+ result toMin)
-						)
+					result
 					)
 				))
 				
