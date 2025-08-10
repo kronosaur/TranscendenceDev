@@ -259,6 +259,7 @@ Kernel::CString strProcess (const Kernel::CString &sValue, DWORD dwFlags);
 Kernel::CString strRepeat (const Kernel::CString &sString, int iCount);
 Kernel::CString strRomanNumeral (int i);
 bool strStartsWith (const Kernel::CString &sString, const Kernel::CString &sStringToFind);
+Kernel::CString strSlice (const Kernel::CString& sString, int iStart, int iEnd = -1);
 Kernel::CString strSubString (const Kernel::CString &sString, int iOffset, int iLength = -1);
 Kernel::CString strSubStringWrapAround (const Kernel::CString& sString, int iOffset, int iLength = -1);
 Kernel::CString strTitleCapitalize (const Kernel::CString &sString, const char **pExceptions = NULL, int iExceptionsCount = 0);

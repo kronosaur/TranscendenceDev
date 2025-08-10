@@ -3127,6 +3127,28 @@ CString Kernel::strTrimWhitespace (const CString &sString, bool bLeading, bool b
 	return CString(pStart, pEnd - pStart);
 	}
 
+CString Kernel::strSlice (const CString& sString, int iStart, int iEnd)
+
+//	strSubString
+//
+//	Returns a substring of the given string
+//	From the character at pos iStart to the character at pos iEnd (inclusive)
+
+	{
+	int iLen = sString.GetLength();
+
+	iStart = iStart < 0 ? max(0, iLen + iStart) : iStart;
+	iEnd = iEnd < 0 ? max(0, iLen + iEnd) : min(iEnd, iLen - 1);
+
+	if (iStart > iEnd)
+		return LITERAL("");
+	else
+		{
+		CString sSub(sString.GetPointer() + iStart, iEnd - iStart + 1);
+		return sSub;
+		}
+	}
+
 CString Kernel::strSubString (const CString &sString, int iOffset, int iLength)
 
 //	strSubString
