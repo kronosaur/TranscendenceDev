@@ -32,20 +32,27 @@ when installing DirectX SDKs:
 
 http://support.microsoft.com/kb/2728613
 
-Use Microsoft Visual Studio 2019 or later. Load Transcendence/Transcendence.sln, 
-which is the Transcendence solution file. The following warnings, if shown under
-Output from Solution, may be safely ignored:
+Use Microsoft Visual Studio 2019 or later. Open `File>Open>Project/Solution` 
+`<Repo Root>/Transcendence/Transcendence.sln`, which is the Transcendence 
+solution file. The following warnings, if shown under `Output` from Solution, 
+may be safely ignored:
 
+```
     <root dir>\Alchemy\zlib-1.2.7\contrib\vstudio\vc10\zlibstat.vcxproj : 
     warning  : Platform 'Itanium' referenced in the project file 'zlibstat' 
     cannot be found.
 
     <root dir>\TransCore\TransCore.vcxproj : error  : Project 
     "...\TransCore\TransCore.vcxproj" could not be found.
+```
 
-Select the Transcendence project as the StartUp project. Ensure that the correct 
-locations of the DirectX SDK Include and Lib folders are specified for the 
-Transcendence project (under the Transcendence solution) by bringing up the 
+Then go to `View>Solution Explorer` and check the pane opened to the right side.
+Right click `Transcendence` and select `Set as Startup Project`. `Transcendence`
+should now be bolded in the Solution Explorer. 
+
+Ensure that the correct locations of the DirectX SDK Include and Lib folders 
+are specified for the Transcendence project (under the Transcendence solution) 
+by right clicking `Transcendence` and selecting `Properties` to open the 
 project's Properties page, and checking the following property sets:
 
     Configuration Properties > VC++ Directories > General > Include Directories
@@ -53,14 +60,19 @@ project's Properties page, and checking the following property sets:
     
 Always point the Library Directories variable to the \Lib\x86 folder of the SDK.
 
+In the second from the top ribbon, there is a `Debug` dropdown. Select `Debug for
+Contributors` and change the dropdown next to it from `Any CPU` to `Win32`.
 Build the solution. Executables will be placed in the Transcendence/Game 
-directory.
+directory. These can be viewed from the file system.
+
+Now the game can optionally be launched from Visual Studio with the `Local Windows
+Debugger` in the second from the top ribbon.
 
 For security reasons the source code does not include certain files to 
 communicate with the Hexarc arcology (the cloud service). The code will compile
 without it, however, as long as you add CHexarcServiceStub.cpp to the build.
 
-In Visual Studio, select the "Debug For Contributors" configuration, this will
+In Visual Studio, selecting the "Debug For Contributors" configuration will
 build the game with CHexarcServiceStub.cpp.
 
 LICENSE
