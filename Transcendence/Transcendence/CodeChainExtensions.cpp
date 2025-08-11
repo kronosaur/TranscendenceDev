@@ -52,6 +52,7 @@ ICCItem *fnScrItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 #define FN_PLY_INC_ITEM_STAT		24
 #define FN_PLY_GET_SYSTEM_STAT		25
 #define FN_PLY_INC_SYSTEM_STAT		26
+#define FN_PLY_GET_NAME				27
 
 ICCItem *fnPlyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnPlyGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
@@ -506,6 +507,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'useItemHint\n",
 
 			"is",	0, },
+
+		{	"plyGetName",				fnPlyGet,		FN_PLY_GET_NAME,
+			"(plyGetName player) -> player's name",
+			"i",	0,	},
 
 		{	"plyGetCredits",				fnPlyGet,		FN_PLY_CREDITS,
 			"(plyGetCredits player [currency]) -> credits left",
@@ -1079,6 +1084,7 @@ ICCItem *fnPlyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 	ICCItem *pResult;
 
 	//	Convert the first argument into a player controller
@@ -1091,6 +1097,14 @@ ICCItem *fnPlyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
+		case FN_PLY_GET_NAME:
+			{
+			if (pCtx->GetAPIVersion() < 55)
+				return pCC->CreateError(CONSTLIT("plyGetName requires API 55 or higher"));
+			pResult = pCC->CreateString(pPlayer->GetPlayerName());
+			break;
+			}
+
 		case FN_PLY_CREDITS:
 			{
 			const CEconomyType *pEcon = GetEconomyTypeFromItem(*pCC, (pArgs->GetCount() > 1 ? pArgs->GetElement(1) : NULL));
