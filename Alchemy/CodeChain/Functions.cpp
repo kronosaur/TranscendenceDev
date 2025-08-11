@@ -4300,7 +4300,7 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 				return pArgs->GetElement(0);
 
 			//	Otherwise we try to do replacement.
-			int iEnd = sSource.GetLength() - sTarget.GetLength() + 1;
+			int iEnd = sSource.GetLength() - sTarget.GetLength() + 2;
 			int iTargetEnd = sTarget.GetLength();
 			char *pSourceChar = sSource.GetASCIIZPointer();
 			char *pSourceScanChar = pSourceChar;
