@@ -106,6 +106,7 @@
 #define FN_MATH_LOG						102
 #define FN_HEX							103
 #define FN_SYSINFO_SELF_TEST			104
+#define FN_MATH_GAMMA_SCALE_NUMERALS	105
 #define FN_DEBUG_APPLY_TIMED			106
 #define FN_DEBUG_EVAL_TIMED				107
 
@@ -120,6 +121,7 @@ ICCItem *fnDebugPrimatives (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwDat
 ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEquality (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEqualityNumerals (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnEqualityExact (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEval (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnFilter (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnFind (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
