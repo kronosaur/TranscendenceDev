@@ -108,13 +108,13 @@
 #define FN_SYSINFO_SELF_TEST			104
 #define FN_STR_JOIN						108
 #define FN_STR_SPLIT					109
-#define FN_STR_SLICE					110
-#define FN_STR_COUNT					111
-#define FN_STR_STRIP					112
-#define FN_STR_ENDS_WITH				113
-#define FN_STR_BEGINS_WITH				114
-#define FN_STR_CONTAINS					115
-#define FN_STR_REPLACE					116
+#define FN_STR_COUNT					110
+#define FN_STR_STRIP					111
+#define FN_STR_ENDS_WITH				112
+#define FN_STR_BEGINS_WITH				113
+#define FN_STR_REPLACE					114
+#define FN_SUBSET_SUBSET				115
+#define FN_SUBSET_SLICE					116
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

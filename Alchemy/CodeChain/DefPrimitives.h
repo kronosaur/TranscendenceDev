@@ -370,6 +370,15 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(setq variable value)",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
+		{	"slice",			fnSubset,		FN_SUBSET_SLICE,
+			"(subset list start [end]) -> list\n"
+			"(subset string start [end]) -> string\n\n"
+
+			"Creates a list or string of the elements or characters starting at index pos up until index end.\n"
+			"Negative indexes are allowed and wrap around (-1 is the last element, -2 is the next last element, etc).\n"
+			"An empty version of the provided type is returned if there are no elements or characters to copy.",
+			"vi*",	0,	},
+
 		{	"shuffle",			fnShuffle,		0,
 			"(shuffle list) -> shuffled list",
 			"l",	0,	},
@@ -424,11 +433,6 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(strReplace string target replacement [caseSensitive=Nil]) -> string",
 			"ssv*",	PPFLAG_SIDEEFFECTS,},
 
-		{	"strSlice",	fnStr, FN_STR_SLICE,
-			"(strSlice string pos [count]) -> string.\n"
-			"If pos is negative, the index is relative to the end of the string. The last character is at pos -1.",
-			"sv*",	PPFLAG_SIDEEFFECTS,},
-
 		{	"strStrip",	fnStr, FN_STR_STRIP,
 			"(strStrip string [characters] [caseSensitive=Nil]) -> string with characters to strip removed from either end. Strips whitespace by default.",
 			"s*",	PPFLAG_SIDEEFFECTS,},
@@ -455,9 +459,13 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"Same as struct except values of the same key are appended into a list.",
 			"*",	0,	},
 
-		{	"subset",			fnSubset,		0,
-			"(subset list pos [count]) -> list\n"
-			"(subset string pos [count]) -> string",
+		{	"subset",			fnSubset,		FN_SUBSET_SUBSET,
+			"(subset list pos [count] ['-|'empty]) -> list\n"
+			"(subset string pos [count] ['-|'empty]) -> string\n\n"
+
+			"Creates a list or string of remaining (or count) length of the elements or characters starting at index pos.\n"
+			"'- specifies that negative indexes are allowed and wrap around (-1 is the last element, -2 is the next last element, etc).\n"
+			"'empty specifies that an empty version of the provided type is returned if there are no elements or characts to copy.",
 			"vv*",	0,	},
 
 		{	"subst",			fnSubst,		0,

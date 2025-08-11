@@ -4066,20 +4066,6 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 			return pCC->CreateString(sResult);
 			}
 
-		case FN_STR_SLICE:
-			{
-			CString sSource = pArgs->GetElement(0)->GetStringValue();
-			int iStart = pArgs->GetElement(1)->GetIntegerValue();
-			int iLen = iArgs < 3 ? -1 : pArgs->GetElement(2)->GetIntegerValue();
-
-			//	If we are passed a negative position, this is relative to the end of the string
-			//	so -1 means the last index, -2 means second to last, etc
-			if (iStart < 0)
-				iStart = sSource.GetLength() + iStart;
-
-			return pCC->CreateString(strSubString(sSource, iStart, iLen));
-			}
-
 		case FN_STR_SPLIT:
 			{
 			ICCItem* pList = pCC->CreateLinkedList();
@@ -4142,6 +4128,7 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 				pList->Append(pCC->CreateString(CONSTLIT("")));
 			return pList;
 			}
+
 		case FN_STR_STRIP:
 			{
 			CString sSource = pArgs->GetElement(0)->GetStringValue();
@@ -4217,6 +4204,7 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 			//	Extract the stripped string
 			return pCC->CreateString(strSubString(sSource, iSpanStart, iSpanEnd - iSpanStart));
 			}
+
 		case FN_STR_REPLACE:
 			{
 			CString sResult = CONSTLIT("");
@@ -4469,21 +4457,82 @@ ICCItem *fnSubset (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	int i;
+	int iArgs = pArgs->GetCount();
 	CCodeChain *pCC = pCtx->pCC;
 
-	//	Get start and end
+	//	Slice or subset codepath?
+
+	bool bSlice = dwData == FN_SUBSET_SLICE;
+
+	//	Get common data (source and start)
 
 	ICCItem *pSource = pArgs->GetElement(0);
 	int iSourceCount = (pSource->IsList() ? pSource->GetCount() : pSource->GetStringValue().GetLength());
-	int iStart = Max(0, Min(pArgs->GetElement(1)->GetIntegerValue(), iSourceCount));
-	int iCount;
-	if (pArgs->GetCount() > 2 && !pArgs->GetElement(2)->IsNil())
-		iCount = Max(0, Min(pArgs->GetElement(2)->GetIntegerValue(), iSourceCount - iStart));
+	int iStart = pArgs->GetElement(1)->GetIntegerValue();
+
+	//	Get End and other args
+
+	int iCount = -1;
+	bool bAllowNegative = bSlice;
+	bool bRetSourceType = bSlice;
+	ICCItem *pArg;
+
+	for (i = 2; i < iArgs; i++)
+		{
+		//	get the next argument
+
+		pArg = pArgs->GetElement(i);
+
+		//	check if it is the count/end argument
+
+		if (i == 2 && pArg->IsNumber())
+			iCount = pArg->GetIntegerValue();
+
+		//	Handle keyword arguments
+
+		else
+			{
+			CString sArg = pArg->GetStringValue();
+
+			//	Allow negatives for subset (always for slice)
+			if (sArg == "-")
+				bAllowNegative = true;
+
+			//	Return same type instead of Nil (always for slice)
+			else if (sArg == "empty")
+				bRetSourceType = true;
+
+			//	If we got something unexpected, cancel and give an error instead
+			else
+				return pCC->CreateError(strCat(CONSTLIT("Got an invalid keyword argument: "), sArg));
+			}
+		}
+
+	//	Adjust start and count depending on function and options
+
+	if (bAllowNegative)
+		{
+		iStart = iStart < 0 ? max(0, iSourceCount + iStart) : min(iStart, iSourceCount);
+		if (bSlice)
+			{
+			//	iCount is currently end pos to collect, need to recompute it as the count
+
+			iCount = iCount < 0 ? max(iStart, iSourceCount + iCount + 1) : min(iSourceCount, max(iStart, iCount + 1));
+			iCount -= iStart;
+			}
+		}
 	else
+		iStart = max(0, min(iStart, iSourceCount));
+
+	//	This is the default not set value for subset iCount. slice iCount is always positive at this point in the code.
+	
+	if (iCount == -1)
 		iCount = iSourceCount - iStart;
 
-	if (pSource->IsNil() || iCount == 0)
-		return pCC->CreateNil();
+	//	Return nil or empty if asked to get a count of 0 or below
+
+	if (iCount < 1)
+		return bRetSourceType ? (pSource->IsList() ? pCC->CreateLinkedList() : pCC->CreateString(CONSTLIT(""))) : pCC->CreateNil();
 
 	//	If the source is a list then we subset the list
 
