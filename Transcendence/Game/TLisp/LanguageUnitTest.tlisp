@@ -99,6 +99,31 @@
 	{	code: '(strFindAll 'abcd 'aB 'case)				result:	Nil}
 	{	code: '(strFindAll 'abCd 'Cd 'case)				result:	'(2)}
 
+	;	strJoin
+
+	{	code: '(strJoin (list 1 2 "" "a" Nil 4) "")		result:	'12a4}
+	{	code: '(strJoin (list 1 2 "" "a" Nil 4) ",")	result:	"1,2,,a,,4"}
+	{	code: '(strJoin (list 1 2 "" "a" Nil 4) "||")	result:	"1||2||||a||||4"}
+
+	;	strReplace
+
+	{	code: '(strReplace "Xx---XX---xX---XXX" "XX" "!!!")			result: "!!!---!!!---!!!---!!!X"}
+	{	code: '(strReplace "Xx---XX---xX---XXXX" "XX" "!!!")		result: "!!!---!!!---!!!---!!!!!!"}
+	{	code: '(strReplace "Xx---XX---xX---XXX" "XX" "!!!" 'case)	result: "Xx---!!!---xX---!!!X"}
+	{	code: '(strReplace "Xx---XX---xX---X" "XX" "!!!" 'case)		result: "Xx---!!!---xX---X"}
+
+	;	strStrip
+
+	{	code: '(strStrip "    \t   AAA \t\t")			result:	'AAA}
+	{	code: '(strStrip "    \t   AAA \t\tX")			result: "AAA \t\tX"}
+	{	code: '(strStrip "   X\t   AAA X\t\t")			result:	"X\t   AAA X"}
+	{	code: '(strStrip "aaAABBBaaAA" "a" 'case)		result: "AABBBaaAA"}
+	{	code: '(strStrip "aaAABBBaaAA" "a")				result: "BBB"}
+
+	;	strSplit
+
+	{	code: '(strSplit "a,b,c,d,e,," ",")				result: '("a" "b" "c" "d" "e" "" "")}
+
 	))
 
 (debugUnitTest "Language Unit Test" TEST_SUITE)

@@ -4114,7 +4114,7 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 			{
 			CString sDelim = CONSTLIT("");
 			if (iArgs >= 2)
-				CString sDelim = pArgs->GetElement(1)->GetStringValue();
+				sDelim = pArgs->GetElement(1)->GetStringValue();
 
 			CString sResult = CONSTLIT("");
 
