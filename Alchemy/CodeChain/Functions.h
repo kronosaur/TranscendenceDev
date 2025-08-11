@@ -113,8 +113,10 @@
 #define FN_STR_ENDS_WITH				112
 #define FN_STR_BEGINS_WITH				113
 #define FN_STR_REPLACE					114
-#define FN_SUBSET_SUBSET				115
-#define FN_SUBSET_SLICE					116
+#define FN_STR_FIND						115
+#define FN_STR_FINDALL					116
+#define FN_SUBSET_SUBSET				117
+#define FN_SUBSET_SLICE					118
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

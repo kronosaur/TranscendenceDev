@@ -1528,7 +1528,9 @@ int Kernel::strFindIn (const CString& sString, const CString& sStringToFind, int
 //	offset in sString at which the target starts. If the target is
 //	not found anywhere in sString then we return -1
 // 
-//	Accepts iStart and iEnd as indexes to search between
+//	Accepts iStart and iEnd as indexes to search between.
+//	If given negative indexes, it offsets from the back of the string.
+//		-1 = last character, -2 = 2nd to last, etc
 // 
 //	Case insensitive by default
 

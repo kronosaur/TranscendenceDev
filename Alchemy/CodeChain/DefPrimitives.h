@@ -406,7 +406,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"n",	0,	},
 
 		{	"strBeginsWith",	fnStr, FN_STR_BEGINS_WITH,
-			"(strBeginsWith string matchString [caseSensitive=Nil]) -> True|Nil",
+			"(strBeginsWith string target [caseSensitive=Nil]) -> True|Nil",
 			"ss*",	0,},
 
 		{	"strCapitalize",	fnStrCapitalize,0,
@@ -414,16 +414,20 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"strCount",	fnStr, FN_STR_COUNT,
-			"(strCount string substring  [caseSensitive=Nil]) -> int",
+			"(strCount string target  [caseSensitive=Nil]) -> int",
 			"ss*",	0,},
 
 		{	"strEndsWith",	fnStr, FN_STR_ENDS_WITH,
-			"(strEndsWith string matchString [caseSensitive=Nil]) -> True|Nil",
+			"(strEndsWith string target [caseSensitive=Nil]) -> True|Nil",
 			"ss*",	0,},
 
-		{	"strFind",			fnStrFind,		0,
-			"(strFind string target) -> pos of target in string (0-based)",
-			"ss",	0,	},
+		{	"strFind",			fnStr,		FN_STR_FIND,
+			"(strFind string target [caseSensitive=Nil]) -> pos of target in string (0-based)",
+			"ss*",	0,	},
+
+		{	"strFindAll",			fnStr,		FN_STR_FINDALL,
+			"(strFindAll string target [caseSensitive=Nil]) -> list of all target pos in string (0-based). If none, Nil.",
+			"ss*",	0,	},
 
 		{	"strJoin",	fnStr, FN_STR_JOIN,
 			"(strJoin list delimiter) -> string. Does not ignore Nil.",

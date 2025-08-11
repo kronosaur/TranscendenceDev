@@ -4007,7 +4007,7 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 
 			bool bRes;
 
-			if (FN_STR_BEGINS_WITH)
+			if (dwData == FN_STR_BEGINS_WITH)
 				bRes = strStartsWith(sSource, sTarget, bCaseSensitive);
 			else
 				bRes = strEndsWith(sSource, sTarget, bCaseSensitive);
@@ -4016,17 +4016,98 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 			}
 
 		case FN_STR_COUNT:
+		case FN_STR_FIND:
+		case FN_STR_FINDALL:
 			{
 			CString sSource = pFirst->GetStringValue();
+			int iSourceLen = sSource.GetLength();
 			if (iArgs > 2)
 				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
 			CString sTarget = pArgs->GetElement(1)->GetStringValue();
-			if (sSource.GetLength() < sTarget.GetLength())
-				return pCC->CreateInteger(0);
-			if (!sTarget.GetLength())
-				return pCC->CreateInteger(sSource.GetLength());
+			int iTargetLen = sTarget.GetLength();
 
-			return pCC->CreateInteger(strFindCount(sSource, sTarget, bCaseSensitive));
+			switch (dwData)
+				{
+				case FN_STR_COUNT:
+					{
+					//	Handle unsearchable inputs
+
+					if (iSourceLen < iTargetLen || !iTargetLen)
+						return pCC->CreateInteger(0);
+
+					//	Handle normal case
+
+					return pCC->CreateInteger(strFindCount(sSource, sTarget, bCaseSensitive));
+					}
+
+				case FN_STR_FIND:
+					{
+					//	Handle unsearchable inputs
+
+					if (iSourceLen < iTargetLen || !iTargetLen)
+						return pCC->CreateNil();
+
+					//	Handle normal case
+
+					int iPos = strFindIn(sSource, sTarget, 0, -1, bCaseSensitive);
+					return iPos >= 0 ? pCC->CreateInteger(iPos) : pCC->CreateNil();
+					}
+
+				case FN_STR_FINDALL:
+					{
+					//	Handle unsearchable inputs
+
+					if (iSourceLen < iTargetLen || !iTargetLen)
+						return pCC->CreateNil();
+
+					//	Check if we have at least one
+
+					int iPos = strFindIn(sSource, sTarget, 0, -1, bCaseSensitive);
+					int iOffset = iPos + iTargetLen;
+
+					//	If not, Nil
+
+					if (iPos < 0)
+						return pCC->CreateNil();
+
+					//	Otherwise, make a list (we add the first element in the loop
+
+					ICCList *pList = (ICCList *)pCC->CreateLinkedList();
+
+					//	Loop through until we cant find more
+
+					while (iPos >= 0)
+						{
+
+						//	We add our last valid position
+
+						pList->AppendInteger(iPos);
+
+						//	If there is no string left to search, just exit loop
+
+						if (iOffset > iSourceLen - iTargetLen)
+							break;
+
+						//	Search for the next valid position
+
+						iPos = strFindIn(sSource, sTarget, iOffset, -1, bCaseSensitive);
+
+						//	Set our new offset to search from next time
+
+						iOffset = iPos + iTargetLen;
+						}
+
+					//	Done, return the list
+
+					return pList;
+					}
+
+				default:
+					{
+					ASSERT(false);
+					return pCC->CreateNil();
+					}
+				}
 			}
 
 		case FN_STR_JOIN:
