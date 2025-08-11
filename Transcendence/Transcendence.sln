@@ -1056,15 +1056,20 @@ Global
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Debug|ARM.ActiveCfg = Debug|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Debug|ARM.Build.0 = Debug|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Debug|Win32.ActiveCfg = Debug|Win32
-		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Debug|Win32.Build.0 = Debug|Win32
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Debug|x64.ActiveCfg = Debug|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Debug|x64.Build.0 = Debug|x64
+		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Preview For Contributors|Any CPU.ActiveCfg = Release|x64
+		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Preview For Contributors|Any CPU.Build.0 = Release|x64
+		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Preview For Contributors|ARM.ActiveCfg = Release|x64
+		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Preview For Contributors|ARM.Build.0 = Release|x64
+		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Preview For Contributors|Win32.ActiveCfg = Release|Win32
+		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Preview For Contributors|x64.ActiveCfg = Release|x64
+		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Preview For Contributors|x64.Build.0 = Release|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Release|Any CPU.ActiveCfg = Release|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Release|Any CPU.Build.0 = Release|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Release|ARM.ActiveCfg = Release|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Release|ARM.Build.0 = Release|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Release|Win32.ActiveCfg = Release|Win32
-		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Release|Win32.Build.0 = Release|Win32
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Release|x64.ActiveCfg = Release|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.Release|x64.Build.0 = Release|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.ReleaseWithoutAsm|Any CPU.ActiveCfg = Release|x64
@@ -1080,7 +1085,6 @@ Global
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.SteamDebug|ARM.ActiveCfg = Release|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.SteamDebug|ARM.Build.0 = Release|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.SteamDebug|Win32.ActiveCfg = Release|Win32
-		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.SteamDebug|Win32.Build.0 = Release|Win32
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.SteamDebug|x64.ActiveCfg = Release|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.SteamDebug|x64.Build.0 = Release|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.SteamRelease|Any CPU.ActiveCfg = Release|x64
@@ -1088,7 +1092,6 @@ Global
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.SteamRelease|ARM.ActiveCfg = Release|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.SteamRelease|ARM.Build.0 = Release|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.SteamRelease|Win32.ActiveCfg = Release|Win32
-		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.SteamRelease|Win32.Build.0 = Release|Win32
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.SteamRelease|x64.ActiveCfg = Release|x64
 		{C68A844B-F08B-4913-BCFF-B607C7BC1F6D}.SteamRelease|x64.Build.0 = Release|x64
 	EndGlobalSection
