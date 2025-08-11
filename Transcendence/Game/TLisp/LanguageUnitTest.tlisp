@@ -42,6 +42,63 @@
 	{	code: '(strCapitalize "")							result: ""	}
 	{	code: '(strCapitalize Nil)							result: ""	}
 
+	;	Subset
+
+	{	code: '(subset 'abcd 2)							result: 'cd}
+	{	code: '(subset 'abcd 1 2)						result: 'bc}
+	{	code: '(subset 'abcd -3 2)						result: 'ab}
+	{	code: '(subset 'abcd -3 2 '-)					result: 'bc}
+	{	code: '(subset 'abcd 5)							result: Nil}
+	{	code: '(subset 'abcd 5 'empty)					result: ""}
+
+	;	Slice
+	
+	{	code: '(slice 'abcd 2)							result: 'cd}
+	{	code: '(slice 'abcdef 2 3)						result: 'cd}
+	{	code: '(slice 'abcdef -4 -2)					result: 'cde}
+	{	code: '(slice 'abcd 10 12)						result: ""}
+	{	code: '(slice 'abcd 2 1)						result: ""}
+
+	;	strBeginsWith
+
+	{	code: '(strBeginsWith 'abcd 'ab)				result:	True}
+	{	code: '(strBeginsWith 'abcd 'cd)				result:	Nil}
+	{	code: '(strEndsWith 'abcd 'Ab 'case)			result:	Nil}
+
+	;	strEndsWith
+
+	{	code: '(strEndsWith 'abcd 'ab)					result:	Nil}
+	{	code: '(strEndsWith 'abcd 'cd)					result:	True}
+	{	code: '(strEndsWith 'abcd 'cD 'case)			result:	Nil}
+
+	;	strCount
+
+	{	code: '(strCount 'abcd 'ab)						result:	1}
+	{	code: '(strCount 'abcd 'cd)						result:	1}
+	{	code: '(strCount 'abcdcd 'cd)					result:	2}
+	{	code: '(strCount 'abcDCd 'cd)					result:	2}
+	{	code: '(strCount 'abcd 'x)						result:	0}
+	{	code: '(strCount 'abcd 'aB 'case)				result:	0}
+	{	code: '(strCount 'abcDCd 'cd 'case)				result:	0}
+
+	;	strFind
+
+	{	code: '(strFind 'abcd 'ab)						result:	0}
+	{	code: '(strFind 'abcd 'cd)						result:	2}
+	{	code: '(strFind 'abcdcd 'cd)					result:	2}
+	{	code: '(strFind 'abcd 'x)						result:	Nil}
+	{	code: '(strFind 'abcd 'aB 'case)				result:	Nil}
+	{	code: '(strFind 'abCd 'Cd 'case)				result:	2}
+
+	;	strFindAll
+
+	{	code: '(strFindAll 'abcd 'ab)					result:	'(0)}
+	{	code: '(strFindAll 'abcd 'cd)					result:	'(2)}
+	{	code: '(strFindAll 'abcdcd 'cd)					result:	'(2 4)}
+	{	code: '(strFindAll 'abcd 'x)					result:	Nil}
+	{	code: '(strFindAll 'abcd 'aB 'case)				result:	Nil}
+	{	code: '(strFindAll 'abCd 'Cd 'case)				result:	'(2)}
+
 	))
 
 (debugUnitTest "Language Unit Test" TEST_SUITE)
