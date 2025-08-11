@@ -343,6 +343,10 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				Warning: Do not use below API55. API checking is not available for primitive functions.
 //			(plyGetName player)
 //				Allows getting the player name without needing to use str formatting
+//			(dbgApplyTimed fn argsList)
+//				Allows timing tlisp function execution
+//			(dbgEvalTimed expr)
+//				Allows timing tlisp function/block parsing & execution
 //			(=== [a b ...])
 //				Exact equality operator, does not coerce any types and is case sensitive
 //				Can be used to test if a variable is a real empty list (mutable) or
