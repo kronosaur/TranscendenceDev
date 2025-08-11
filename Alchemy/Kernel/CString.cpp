@@ -1445,7 +1445,7 @@ bool Kernel::strEqualsCase (const CString &sString1, const CString &sString2)
 	return true;
 	}
 
-int Kernel::strFind (const CString &sString, const CString &sStringToFind)
+int Kernel::strFind (const CString &sString, const CString &sStringToFind, bool bCaseSensitive)
 
 //	strFind
 //
@@ -1453,7 +1453,7 @@ int Kernel::strFind (const CString &sString, const CString &sStringToFind)
 //	offset in sString at which the target starts. If the target is
 //	not found anywhere in sString then we return -1
 //
-//	Find is case insensitive.
+//	Find is case insensitive by default
 
 	{
 	int iStringLen = sString.GetLength();
@@ -1474,13 +1474,48 @@ int Kernel::strFind (const CString &sString, const CString &sStringToFind)
 		{
 		CString sTest(pString + i, iTargetLen, TRUE);
 
-		if (strCompareAbsolute(sTest, sStringToFind) == 0)
+		if (strCompareAbsolute(sTest, sStringToFind, bCaseSensitive) == 0)
 			return i;
 		}
 
 	//	Didn't find it
 
 	return -1;
+	}
+
+int Kernel::strFindIn (const CString& sString, const CString& sStringToFind, int iStart, int iEnd, bool bCaseSensitive)
+
+//	strFindIn
+//
+//	Finds the target string in the given string and returns the
+//	offset in sString at which the target starts. If the target is
+//	not found anywhere in sString then we return -1
+// 
+//	Accepts iStart and iEnd as indexes to search between
+// 
+//	Case insensitive by default
+
+	{
+	int iStringLen = sString.GetLength();
+	int iTargetLen = sStringToFind.GetLength();
+
+	//	Cant match an empty string or a string that is too short
+	if (iTargetLen == 0 || iStringLen < iTargetLen)
+		return -1;
+
+	iStart = iStart < 0 ? max(0, iStringLen + iStart) : iStart;
+	iEnd = iEnd < 0 ? max(0, iStringLen + iEnd) : min(iStringLen - 1, iEnd);
+
+	char *pString = sString.GetPointer();
+
+	CString sTest(pString + iStart, iEnd - iStart + 1, TRUE);
+
+	int iRes = strFind(sTest, sStringToFind, bCaseSensitive);
+	
+	if (iRes < 0)
+		return -1;
+	else
+		return iRes + iStart;
 	}
 
 CString Kernel::strFormatBytes (DWORD dwBytes)
@@ -1961,7 +1996,7 @@ CString Kernel::strConvertToToken (const CString &sString, bool bLowercase)
 	return sResult;
 	}
 
-bool Kernel::strEndsWith (const CString &sString, const CString &sStringToFind)
+bool Kernel::strEndsWithOld (const CString &sString, const CString &sStringToFind)
 
 //	strEndsWith
 //
@@ -2701,7 +2736,7 @@ CString Kernel::strRepeat (const CString &sString, int iCount)
 	return sResult;
 	}
 
-bool Kernel::strStartsWith (const CString &sString, const CString &sStringToFind)
+bool Kernel::strStartsWithOld (const CString &sString, const CString &sStringToFind)
 
 //	strStartsWith
 //

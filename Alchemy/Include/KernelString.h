@@ -193,11 +193,14 @@ extern char g_LowerCaseAbsoluteTable[256];
 
 //	String functions (CString.cpp)
 
+//	These functions need to be declared first for inline usage
+Kernel::CString strConvert (const Kernel::CString &sText, DWORD dwFromCP, DWORD dwToCP);
+int strFindIn (const Kernel::CString& sString, const Kernel::CString& sStringToFind, int iStart, int iEnd, bool bCaseSensitive = false);
+
 Kernel::CString strCat (const Kernel::CString &sString1, const Kernel::CString &sString2);
 int strCompare (const Kernel::CString &sString1, const Kernel::CString &sString2);
 int strCompareAbsolute (const Kernel::CString &sString1, const Kernel::CString &sString2, bool bCaseSensitive = false);
 int strCompareAbsolute (LPCSTR pS1, LPCSTR pS2, bool bCaseSensitive = false);
-Kernel::CString strConvert (const Kernel::CString &sText, DWORD dwFromCP, DWORD dwToCP);
 inline Kernel::CString strANSIToUTF8 (const Kernel::CString &sText) { return Kernel::strConvert(sText, CP_ACP, CP_UTF8); }
 inline Kernel::CString strUTF8ToANSI (const Kernel::CString &sText) { return Kernel::strConvert(sText, CP_UTF8, CP_ACP); }
 
@@ -210,10 +213,11 @@ Kernel::CString strCEscapeCodes (const Kernel::CString &sString);
 Kernel::CString strConvertToToken (const Kernel::CString &sString, bool bLowercase = false);
 Kernel::CString strEncodeUTF8Char (DWORD dwCodePoint);
 Kernel::CString strEncodeW1252ToUTF8Char (char chChar);
-bool strEndsWith (const Kernel::CString &sString, const Kernel::CString &sStringToFind);
+bool strEndsWithOld (const Kernel::CString &sString, const Kernel::CString &sStringToFind);
+inline bool strEndsWith (const Kernel::CString& sString, const Kernel::CString& sStringToFind, bool bCaseSensitive = false) { return Kernel::strFindIn(sString, sStringToFind, -1 - sStringToFind.GetLength(), -1, bCaseSensitive) > -1; }
 bool strEquals (const Kernel::CString &sString1, const Kernel::CString &sString2);
 bool strEqualsCase (const Kernel::CString &sString1, const Kernel::CString &sString2);
-int strFind (const Kernel::CString &sString, const Kernel::CString &sStringToFind);
+int strFind (const Kernel::CString &sString, const Kernel::CString &sStringToFind, bool bCaseSensitive = false);
 
 Kernel::CString strFormatBytes (DWORD dwBytes);
 
@@ -258,7 +262,8 @@ Kernel::CString strProcess (const Kernel::CString &sValue, DWORD dwFlags);
 
 Kernel::CString strRepeat (const Kernel::CString &sString, int iCount);
 Kernel::CString strRomanNumeral (int i);
-bool strStartsWith (const Kernel::CString &sString, const Kernel::CString &sStringToFind);
+bool strStartsWithOld (const Kernel::CString &sString, const Kernel::CString &sStringToFind);
+inline bool strStartsWith (const Kernel::CString& sString, const Kernel::CString& sStringToFind, bool bCaseSensitive = false) { return Kernel::strFindIn(sString, sStringToFind, 0, sStringToFind.GetLength(), bCaseSensitive) > -1; }
 Kernel::CString strSlice (const Kernel::CString& sString, int iStart, int iEnd = -1);
 Kernel::CString strSubString (const Kernel::CString &sString, int iOffset, int iLength = -1);
 Kernel::CString strSubStringWrapAround (const Kernel::CString& sString, int iOffset, int iLength = -1);
@@ -271,4 +276,5 @@ Kernel::CString strToUpper (const Kernel::CString &sString);
 Kernel::CString strToXMLText (const Kernel::CString &sString, bool bInBody = false);
 Kernel::CString strTrimWhitespace (const Kernel::CString &sString, bool bLeading = true, bool bTrailing = true);
 Kernel::CString strWord (const Kernel::CString &sString, int iWordPos);
+
 
