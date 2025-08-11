@@ -148,6 +148,12 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(= [x1 x2 ... xn]) -> True if all arguments are equal",
 			NULL, 0, },
 
+		{	"===",				fnEqualityExact, FN_EQUALITY_EQ,
+			"(=== [x1 x2 ... xn]) -> True if all arguments are exactly equal and of the same type\n"
+			"Treats strings as case sensitive. Does not treat zeros, empty lists, and strings as Nil\n"
+			"A single argument returns True if it is Nil.",
+			NULL, 0, },
+
 		{	"eval",				fnEval,			0,
 			"(eval exp) -> result\n\n"
 			
@@ -187,8 +193,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			NULL,	0,	},
 
 		{	"gammaScale",		fnMathNumerals,	FN_MATH_GAMMA_SCALE_NUMERALS,
-			"(gammaScale var inMin inMax outMin outMax [gamma=1.0]) -> int or double of gammascaled value relative to input and output range.\n"
-			"Returns int if both outMin and outMax are ints, otherwise returns a double. Gamma specifies an exponent relationship curve between input and output ranges.\n"
+			"(gammaScale var inStart inEnd outStart outEnd [gamma=1.0]) -> scaled value (int or real)\n\n"
+			
+			"Scales var from range inStart to inEnd to the output scale outStart to outEnd.\n"
+			"Returns int if both outStart and outEnd are ints, otherwise returns a real. Gamma specifies an exponent relationship curve between input and output ranges.\n"
 			"At a gamma of 1.0 it is a linear curve, at 0.5 it is a square root function, at 2.0 it is a square function.\n"
 			"If gamma is an integer, it should be multiplied by 100: ex, gamma 1.0 becomes 100, gamma 0.5 becomes 50, gamma 2.0 becomes 200",
 			"nnnnn*",	0,	},
@@ -309,6 +317,12 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"!=",				fnEqualityNumerals,	FN_EQUALITY_NEQ,
 			"(!= x1 x2 ... xn) -> True if any arguments are not equal",
+			NULL, 0, },
+
+		{	"!===",				fnEqualityExact, FN_EQUALITY_NEQ,
+			"(!=== [x1 x2 ... xn]) -> True if any arguments are not equal or are of different types.\n"
+			"Treats strings as case sensitive. Does not treat zeros, empty lists, and strings as Nil\n"
+			"A single argument returns True if it is not Nil.",
 			NULL, 0, },
 
 		{	"not",				fnLogical,		FN_LOGICAL_NOT,
