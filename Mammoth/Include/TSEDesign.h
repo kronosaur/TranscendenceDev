@@ -1537,9 +1537,7 @@ ALERROR LoadDamageAdj (CXMLElement *pItem, const CString &sAttrib, int *retiAdj,
 DamageTypes LoadDamageTypeFromXML (const CString &sAttrib);
 DWORD LoadExtensionVersion (const CString &sVersion);
 CG32bitPixel LoadRGBColor (const CString &sString, CG32bitPixel rgbDefault = CG32bitPixel::Null());
-CG32bitPixel DWToRGBColor (const DWORD dwColor);
 CG32bitPixel LoadARGBColor (const CString &sString, CG32bitPixel rgbDefault = CG32bitPixel::Null());
-CG32bitPixel DWToARGBColor (const DWORD dwColor);
 ALERROR LoadUNID (SDesignLoadCtx &Ctx, const CString &sString, DWORD *retdwUNID, DWORD dwDefaultUNID = 0);
 bool SetFrequencyByLevel (CString &sLevelFrequency, int iLevel, int iFreq);
 

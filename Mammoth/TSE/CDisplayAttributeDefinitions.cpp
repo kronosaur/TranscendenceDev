@@ -16,8 +16,6 @@
 #define PERCENT_LOCATIONS_ATTRIB				CONSTLIT("percentLocations")
 #define LABEL_ATTRIB							CONSTLIT("label")
 #define LABEL_TYPE_ATTRIB						CONSTLIT("labelType")
-#define LABEL_COLOR_ATTRIB						CONSTLIT("labelColor")
-#define LABEL_TEXT_COLOR_ATTRIB					CONSTLIT("labelTextColor")
 
 #define TYPE_POSITIVE							CONSTLIT("advantage")
 #define TYPE_NEGATIVE							CONSTLIT("disadvantage")
@@ -71,18 +69,18 @@ void CDisplayAttributeDefinitions::AccumulateAttributes (const CItem &Item, TArr
 			//	True means show the attribute label defined in XML
 
 			else if (pResult->IsTrue())
-				retList->Insert(SDisplayAttribute(m_ItemAttribs[i].iType, m_ItemAttribs[i].sText, m_ItemAttribs[i].sID, m_ItemAttribs[i].rgbColor, m_ItemAttribs[i].rgbTextColor));
+				retList->Insert(SDisplayAttribute(m_ItemAttribs[i].iType, m_ItemAttribs[i].sText, m_ItemAttribs[i].sID));
 
 			//	Otherwise, we expect the result to be the attribute label.
 
 			else
-				retList->Insert(SDisplayAttribute(m_ItemAttribs[i].iType, pResult->GetStringValue(), m_ItemAttribs[i].sID, m_ItemAttribs[i].rgbColor, m_ItemAttribs[i].rgbTextColor));
+				retList->Insert(SDisplayAttribute(m_ItemAttribs[i].iType, pResult->GetStringValue(), m_ItemAttribs[i].sID));
 			}
 
 		//	Otherwise, we just add it
 
 		else
-			retList->Insert(SDisplayAttribute(m_ItemAttribs[i].iType, m_ItemAttribs[i].sText, m_ItemAttribs[i].sID, m_ItemAttribs[i].rgbColor, m_ItemAttribs[i].rgbTextColor));
+			retList->Insert(SDisplayAttribute(m_ItemAttribs[i].iType, m_ItemAttribs[i].sText, m_ItemAttribs[i].sID));
 		}
 	}
 
@@ -224,34 +222,12 @@ bool CDisplayAttributeDefinitions::InitFromCCItem (ICCItem *pEntry, SDisplayAttr
 	{
 	CString sLabel;
 	EDisplayAttributeTypes iType;
-	DWORD dwColor = 0;
-	DWORD dwTextColor = 0;
-	CString sLoadColor;
 
 	//	If this is a struct, then we expect certain fields.
 
 	if (pEntry->IsSymbolTable())
 		{
 		sLabel = pEntry->GetStringAt(LABEL_ATTRIB);
-
-		//	Color
-
-		if (dwColor = (DWORD)pEntry->GetIntegerAt(LABEL_COLOR_ATTRIB))
-			dwColor = dwColor | 0xff000000;
-		else if (sLoadColor = pEntry->GetStringAt(LABEL_COLOR_ATTRIB))
-			dwColor = LoadRGBColor(sLoadColor).AsDWORD() | 0xff000000;
-		else
-			dwColor = 0;
-
-		if (dwTextColor = (DWORD)pEntry->GetIntegerAt(LABEL_TEXT_COLOR_ATTRIB))
-			dwTextColor = dwTextColor | 0xff000000;
-		else if (sLoadColor = pEntry->GetStringAt(LABEL_TEXT_COLOR_ATTRIB))
-			dwTextColor = LoadRGBColor(sLoadColor).AsDWORD() | 0xff000000;
-		else
-			dwTextColor = 0;
-
-		//	Type
-
 		CString sType = pEntry->GetStringAt(LABEL_TYPE_ATTRIB);
 
 		if (sType.IsBlank() || strEquals(sType, TYPE_NEUTRAL))
@@ -277,7 +253,7 @@ bool CDisplayAttributeDefinitions::InitFromCCItem (ICCItem *pEntry, SDisplayAttr
 	if (sLabel.IsBlank())
 		return false;
 
-	Result = SDisplayAttribute(iType, sLabel, DWToRGBColor(dwColor), DWToRGBColor(dwTextColor));
+	Result = SDisplayAttribute(iType, sLabel);
 	return true;
 	}
 
@@ -325,27 +301,6 @@ ALERROR CDisplayAttributeDefinitions::InitFromXML (SDesignLoadCtx &Ctx, CXMLElem
 			else
 				pEntry->iType = attribNeutral;
 
-			if (Ctx.GetAPIVersion() >= 55)
-				{
-
-				//	Color
-
-				CString sLoadColor;
-
-				//if (pDesc->FindAttribute(LABEL_COLOR_ATTRIB, &sLoadColor))
-				if (sLoadColor = pDef->GetAttribute(LABEL_COLOR_ATTRIB))
-					pEntry->rgbColor = LoadRGBColor(sLoadColor);
-				else
-					pEntry->rgbColor = DWToRGBColor(0);
-
-				//if (pDesc->FindAttribute(LABEL_TEXT_COLOR_ATTRIB, &sLoadColor))
-				if (sLoadColor = pDef->GetAttribute(LABEL_TEXT_COLOR_ATTRIB))
-					pEntry->rgbTextColor = LoadRGBColor(sLoadColor);
-				else
-					pEntry->rgbTextColor = DWToRGBColor(0);
-
-				}
-
 			//	OnShow
 
 			if (CXMLElement *pOnShow = pDef->GetContentElementByTag(ON_SHOW_TAG))
@@ -373,26 +328,6 @@ ALERROR CDisplayAttributeDefinitions::InitFromXML (SDesignLoadCtx &Ctx, CXMLElem
 			pEntry->iType = attribTypeLocation;
 			pEntry->sName = sAttrib;
 			pEntry->iFrequency = pDef->GetAttributeIntegerBounded(PERCENT_LOCATIONS_ATTRIB, 1, 99, DEFAULT_LOCATION_FREQUENCY);
-
-			if (Ctx.GetAPIVersion() >= 55)
-				{
-
-				//	Color
-
-				CString sLoadColor;
-
-				if (pDesc->FindAttribute(LABEL_COLOR_ATTRIB, &sLoadColor))
-					pEntry->rgbColor = LoadRGBColor(sLoadColor);
-				else
-					pEntry->rgbColor = DWToRGBColor(0);
-
-				if (pDesc->FindAttribute(LABEL_TEXT_COLOR_ATTRIB, &sLoadColor))
-					pEntry->rgbTextColor = LoadRGBColor(sLoadColor);
-				else
-					pEntry->rgbTextColor = DWToRGBColor(0);
-
-				}
-
 			}
 		else
 			{

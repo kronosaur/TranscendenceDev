@@ -195,8 +195,8 @@ extern char g_LowerCaseAbsoluteTable[256];
 
 Kernel::CString strCat (const Kernel::CString &sString1, const Kernel::CString &sString2);
 int strCompare (const Kernel::CString &sString1, const Kernel::CString &sString2);
-int strCompareAbsolute (const Kernel::CString &sString1, const Kernel::CString &sString2, bool bCaseSensitive = false);
-int strCompareAbsolute (LPCSTR pS1, LPCSTR pS2, bool bCaseSensitive = false);
+int strCompareAbsolute (const Kernel::CString &sString1, const Kernel::CString &sString2);
+int strCompareAbsolute (LPCSTR pS1, LPCSTR pS2);
 Kernel::CString strConvert (const Kernel::CString &sText, DWORD dwFromCP, DWORD dwToCP);
 inline Kernel::CString strANSIToUTF8 (const Kernel::CString &sText) { return Kernel::strConvert(sText, CP_ACP, CP_UTF8); }
 inline Kernel::CString strUTF8ToANSI (const Kernel::CString &sText) { return Kernel::strConvert(sText, CP_UTF8, CP_ACP); }

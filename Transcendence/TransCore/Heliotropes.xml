@@ -546,8 +546,8 @@
 							(setq damageHP (@ gData 'damageHP))
 
 							{
-								length:	(gammaScale damageHP 5 64 60 220 50)
-								width: (gammaScale damageHP 5 64 10 20 50)
+								length:	(mathScale damageHP 5 64 60 220 50)
+								width: (mathScale damageHP 5 64 10 20 50)
 								intensity: 20
 								}
 							)

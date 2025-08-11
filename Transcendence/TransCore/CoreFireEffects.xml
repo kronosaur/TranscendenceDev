@@ -26,7 +26,7 @@
 							)
 							
 							{
-								radius: (gammaScale damageHP 2 30 12 28 50)
+								radius: (mathScale damageHP 2 30 12 28 50)
 								primaryColor: (@ laserColor 'primaryColor)
 								secondaryColor: (@ laserColor 'secondaryColor)
 								}
@@ -51,8 +51,8 @@
 							)
 							
 							{
-								length: (gammaScale damageHP 2 30 24 56 50)
-								width: (gammaScale damageHP 2 30 25 56 50)
+								length: (mathScale damageHP 2 30 24 56 50)
+								width: (mathScale damageHP 2 30 25 56 50)
 								primaryColor: (@ laserColor 'primaryColor)
 								secondaryColor: (@ laserColor 'secondaryColor)
 								}
@@ -84,7 +84,7 @@
 							)
 							
 							{
-								radius: (gammaScale damageHP 2 30 18 42 50)
+								radius: (mathScale damageHP 2 30 18 42 50)
 								}
 							)
 					</GetParameters>
@@ -112,7 +112,7 @@
 							)
 							
 							{
-								radius: (gammaScale damageHP 5 64 12 28 50)
+								radius: (mathScale damageHP 5 64 12 28 50)
 								}
 							)
 					</GetParameters>
@@ -136,8 +136,8 @@
 							)
 							
 							{
-								length: (gammaScale damageHP 5 64 24 56 50)
-								width: (gammaScale damageHP 5 64 18 42 50)
+								length: (mathScale damageHP 5 64 24 56 50)
+								width: (mathScale damageHP 5 64 18 42 50)
 								}
 							)
 					</GetParameters>
@@ -165,8 +165,8 @@
 							(setq damageHP (@ gData 'damageHP))
 
 							{
-								length:	(gammaScale damageHP 5 64 16 64 50)
-								width: (gammaScale damageHP 5 64 24 96 50)
+								length:	(mathScale damageHP 5 64 16 64 50)
+								width: (mathScale damageHP 5 64 24 96 50)
 								intensity: 70
 								}
 							)
@@ -195,7 +195,7 @@
 							)
 							
 							{
-								radius: (gammaScale damageHP 10 140 12 28 50)
+								radius: (mathScale damageHP 10 140 12 28 50)
 								}
 							)
 					</GetParameters>
@@ -219,8 +219,8 @@
 							)
 							
 							{
-								length: (gammaScale damageHP 10 140 24 56 50)
-								width: (gammaScale damageHP 10 140 18 42 50)
+								length: (mathScale damageHP 10 140 24 56 50)
+								width: (mathScale damageHP 10 140 18 42 50)
 								}
 							)
 					</GetParameters>
@@ -248,8 +248,8 @@
 							(setq damageHP (@ gData 'damageHP))
 
 							{
-								length:	(gammaScale damageHP 10 140 16 64 50)
-								width: (gammaScale damageHP 10 140 24 96 50)
+								length:	(mathScale damageHP 10 140 16 64 50)
+								width: (mathScale damageHP 10 140 24 96 50)
 								intensity: 70
 								}
 							)
@@ -278,7 +278,7 @@
 							)
 							
 							{
-								radius: (gammaScale damageHP 20 300 24 34 50)
+								radius: (mathScale damageHP 20 300 24 34 50)
 								}
 							)
 					</GetParameters>
@@ -302,8 +302,8 @@
 							)
 							
 							{
-								length: (gammaScale damageHP 20 300 24 56 50)
-								width: (gammaScale damageHP 20 300 18 42 50)
+								length: (mathScale damageHP 20 300 24 56 50)
+								width: (mathScale damageHP 20 300 18 42 50)
 								}
 							)
 					</GetParameters>
@@ -330,8 +330,8 @@
 							)
 							
 							{
-								radius: (gammaScale damageHP 20 300 24 120 50)
-								lifetime: (gammaScale damageHP 20 300 2 8 50)
+								radius: (mathScale damageHP 20 300 24 120 50)
+								lifetime: (mathScale damageHP 20 300 2 8 50)
 								}
 							)
 					</GetParameters>
@@ -359,7 +359,7 @@
 							)
 							
 							{
-								radius: (gammaScale damageHP 50 680 30 80 50)
+								radius: (mathScale damageHP 50 680 30 80 50)
 								intensity: (random 20 50)
 								}
 							)
@@ -396,8 +396,8 @@
 							)
 							
 							{
-								lifetime: (gammaScale damageHP 110 1500 3 10 50)
-								radius: (gammaScale damageHP 110 1500 40 100 50)
+								lifetime: (mathScale damageHP 110 1500 3 10 50)
+								radius: (mathScale damageHP 110 1500 40 100 50)
 								}
 							)
 					</GetParameters>
@@ -421,7 +421,7 @@
 							)
 							
 							{
-								lifetime: (gammaScale damageHP 110 1500 3 5 50)
+								lifetime: (mathScale damageHP 110 1500 3 5 50)
 								}
 							)
 					</GetParameters>
@@ -449,7 +449,7 @@
 							)
 							
 							{
-								radius: (gammaScale damageHP 110 1500 30 80 50)
+								radius: (mathScale damageHP 110 1500 30 80 50)
 								intensity: (random 20 50)
 								}
 							)
@@ -477,7 +477,7 @@
 							(damageHP (@ gData 'damageHP))
 							)
 							{
-								radius: (gammaScale damageHP 240 3250 30 80 50)
+								radius: (mathScale damageHP 240 3250 30 80 50)
 								intensity: 20
 								}
 							)

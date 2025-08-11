@@ -995,8 +995,6 @@ ALERROR pageLibraryInit (CCodeChain &CC);
 
 #define HELPER_COMPARE_COERCE_COMPATIBLE		0x00000001
 #define HELPER_COMPARE_COERCE_FULL				0x00000002
-#define HELPER_COMPARE_COERCE_NONE				0x00000004
-#define HELPER_COMPARE_CASE_SENSITIVE			0x00000008
 
 int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags = HELPER_COMPARE_COERCE_COMPATIBLE);
 int HelperCompareItemsLists (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce = true);
