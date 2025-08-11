@@ -1483,6 +1483,43 @@ int Kernel::strFind (const CString &sString, const CString &sStringToFind, bool 
 	return -1;
 	}
 
+int Kernel::strFindCount (const CString& sString, const CString& sStringToFind, bool bCaseSensitive)
+
+//	strFindCount
+//
+//	Finds all instances of sStringToFind in sString, returning the
+//	count of matching strings found
+// 
+//	Accepts iStart and iEnd as indexes to search between
+// 
+//	Case insensitive by default
+
+	{
+	int iStringLen = sString.GetLength();
+	int iTargetLen = sStringToFind.GetLength();
+
+	//	Cant match an empty string or a string that is too short
+	if (iTargetLen == 0 || iStringLen < iTargetLen)
+		return -1;
+
+	//	Scan through sString until we cant find sStringToFind anymore
+
+	int iCount = 0;
+	int iCurStart = 0;
+	int iLastPos = -1;
+
+	while (iCount < iStringLen)
+		{
+		iLastPos = strFindIn(sString, sStringToFind, iCurStart, -1, bCaseSensitive);
+		if (iLastPos < 0)
+			break;
+		iCount++;
+		iCurStart = iLastPos + iTargetLen;
+		}
+
+	return iCount;
+	}
+
 int Kernel::strFindIn (const CString& sString, const CString& sStringToFind, int iStart, int iEnd, bool bCaseSensitive)
 
 //	strFindIn

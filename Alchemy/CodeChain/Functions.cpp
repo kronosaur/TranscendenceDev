@@ -3992,107 +3992,60 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 	int iArgs = pArgs->GetCount();
 	bool bCaseSensitive = false;
 	pFirst = pArgs->GetElement(0);
-	CString sSource = pFirst->GetStringValue();
 	
 	switch (dwData)
 		{
 		case FN_STR_BEGINS_WITH:
 		case FN_STR_ENDS_WITH:
 			{
+			CString sSource = pFirst->GetStringValue();
 			if (iArgs > 2)
 				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
 			CString sTarget = pArgs->GetElement(1)->GetStringValue();
 			if (sSource.GetLength() < sTarget.GetLength())
 				return pCC->CreateNil();
 
-			int iStart = dwData == FN_STR_BEGINS_WITH ? 0 : sSource.GetLength() - sTarget.GetLength();
-			int iEnd = dwData == FN_STR_BEGINS_WITH ? sTarget.GetLength() : sSource.GetLength();
-			char *pSourceChar = sSource.GetASCIIZPointer() + iStart;
-			char *pTargetChar = sTarget.GetASCIIZPointer();
-			char cSource, cTarget;
+			bool bRes;
 
-			for (int i = iStart; i < iEnd; i++)
-				{
-				cSource = bCaseSensitive ? *pSourceChar : strLowerCaseAbsolute(*pSourceChar);
-				cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
-				if (cSource != cTarget)
-					return pCC->CreateNil();
-				pSourceChar++;
-				pTargetChar++;
-				}
+			if (FN_STR_BEGINS_WITH)
+				bRes = strStartsWith(sSource, sTarget, bCaseSensitive);
+			else
+				bRes = strEndsWith(sSource, sTarget, bCaseSensitive);
 
-			return pCC->CreateTrue();
+			return pCC->CreateBool(bRes);
 			}
 
-		case FN_STR_CONTAINS:
 		case FN_STR_COUNT:
 			{
+			CString sSource = pFirst->GetStringValue();
 			if (iArgs > 2)
 				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
 			CString sTarget = pArgs->GetElement(1)->GetStringValue();
 			if (sSource.GetLength() < sTarget.GetLength())
-				return dwData == FN_STR_CONTAINS ? pCC->CreateNil() : pCC->CreateInteger(0);
+				return pCC->CreateInteger(0);
 			if (!sTarget.GetLength())
-				return dwData == FN_STR_CONTAINS ? pCC->CreateTrue() : pCC->CreateInteger(sSource.GetLength());
+				return pCC->CreateInteger(sSource.GetLength());
 
-			int iEnd = sSource.GetLength() - sTarget.GetLength() + 1;
-			int iTargetEnd = sTarget.GetLength();
-			char *pSourceChar = sSource.GetASCIIZPointer();
-			char *pSourceScanChar = pSourceChar;
-			char *pTargetChar = sTarget.GetASCIIZPointer();
-			char cSource, cTarget;
-			bool bFound = true;
-			int iCount = 0;
-
-			for (int i = 0; i < iEnd; i++)
-				{
-				bFound = true;
-				for (int k = 0; k < iTargetEnd; k++)
-					{
-					cSource = bCaseSensitive ? *pSourceScanChar : strLowerCaseAbsolute(*pSourceScanChar);
-					cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
-					if (cSource != cTarget)
-						{
-						bFound = false;
-						break;
-						}
-					pSourceScanChar++;
-					pTargetChar++;
-					}
-				if (bFound)
-					{
-					if (dwData == FN_STR_CONTAINS)
-						return pCC->CreateTrue();
-					else
-						iCount++;
-					}
-				pSourceChar++;
-				pSourceScanChar = pSourceChar;
-				pTargetChar = sTarget.GetASCIIZPointer();
-				}
-
-			if (dwData == FN_STR_CONTAINS && !iCount)
-				return pCC->CreateNil();
-
-			return pCC->CreateInteger(iCount);
+			return pCC->CreateInteger(strFindCount(sSource, sTarget, bCaseSensitive));
 			}
 
 		case FN_STR_JOIN:
 			{
+			CString sDelim = CONSTLIT("");
+			if (iArgs >= 2)
+				CString sDelim = pArgs->GetElement(1)->GetStringValue();
+
 			CString sResult = CONSTLIT("");
 
+			if (!pFirst->IsList())
+				return pCC->CreateError(CONSTLIT("strJoin takes only a list of objects to join together and a delimiter to join them with"));
+
+			ICCList *pList = (ICCList*)pFirst;
+
 			//	If we were not provided anything to join, return an empty str
-			if (
-				(iArgs < 2) ||
-				(iArgs == 2 && pArgs->GetElement(0)->IsNil())
-				)
+			if (!pList->GetCount())
 				return pCC->CreateString(sResult);
 
-			if (iArgs > 2 || !pArgs->GetElement(1)->IsList())
-				return pCC->CreateError(CONSTLIT("strJoin takes only a delimiter string and a list of strings to join together"));
-
-			CString sDelim = pArgs->GetElement(0)->GetStringValue();
-			ICCList *pList = (ICCList*)pArgs->GetElement(1);
 			int iEnd = pList->GetCount();
 
 			for (int i = 0; i < iEnd; i++)

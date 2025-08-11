@@ -404,10 +404,6 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(strCapitalize string) -> string",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"strContains",	fnStr, FN_STR_CONTAINS,
-			"(strContains string substring  [caseSensitive=Nil]) -> True|Nil",
-			"ss*",	0,},
-
 		{	"strCount",	fnStr, FN_STR_COUNT,
 			"(strCount string substring  [caseSensitive=Nil]) -> int",
 			"ss*",	0,},
@@ -421,8 +417,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"ss",	0,	},
 
 		{	"strJoin",	fnStr, FN_STR_JOIN,
-			"(strJoin delimiter listOfStrings) -> string. Does not ignore Nil or empty strings.",
-			"sv",	PPFLAG_SIDEEFFECTS,},
+			"(strJoin list delimiter) -> string. Does not ignore Nil.",
+			"vs",	PPFLAG_SIDEEFFECTS,},
 
 		{	"strReplace",	fnStr, FN_STR_REPLACE,
 			"(strReplace string target replacement [caseSensitive=Nil]) -> string",

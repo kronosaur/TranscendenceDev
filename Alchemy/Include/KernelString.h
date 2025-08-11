@@ -218,6 +218,7 @@ inline bool strEndsWith (const Kernel::CString& sString, const Kernel::CString& 
 bool strEquals (const Kernel::CString &sString1, const Kernel::CString &sString2);
 bool strEqualsCase (const Kernel::CString &sString1, const Kernel::CString &sString2);
 int strFind (const Kernel::CString &sString, const Kernel::CString &sStringToFind, bool bCaseSensitive = false);
+int strFindCount (const Kernel::CString& sString, const Kernel::CString& sStringToFind, bool bCaseSensitive = false);
 
 Kernel::CString strFormatBytes (DWORD dwBytes);
 
