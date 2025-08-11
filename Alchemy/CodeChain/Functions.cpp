@@ -3242,6 +3242,79 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_MATH_TAN:
 			return pCC->CreateDouble(tan(pArgs->GetElement(0)->GetDoubleValue() * angleToRads));
 
+		case FN_MATH_GAMMA_SCALE_NUMERALS:
+			{
+			ICCItem *pOutStart, *pOutEnd, *pGamma;
+			double rInput, rInStart, rInEnd, rOutStart, rOutEnd, rGamma, rRes;
+			rGamma = 1.0;
+			bool bRetInt = false;
+			switch (pArgs->GetCount())
+				{
+				case 6:
+					{
+
+					//	If we have a gamma arg
+
+					pGamma = pArgs->GetElement(5);
+					rGamma = pGamma->GetDoubleValue();
+
+					//	Adjust gamma if it is a %-scaled int
+
+					if (pGamma->GetValueType() == ICCItem::ValueTypes::Integer)
+						rGamma /= 100;
+
+					//	Fallthrough to handle the rest of the logic
+
+					[[fallthrough]];
+					}
+				case 5:
+					{
+
+					//	Read: Input InStart InEnd OutStart OutEnd
+
+					rInput = pArgs->GetElement(0)->GetDoubleValue();
+					rInStart = pArgs->GetElement(1)->GetDoubleValue();
+					rInEnd = pArgs->GetElement(2)->GetDoubleValue();
+					pOutStart = pArgs->GetElement(3);
+					rOutStart = pOutStart->GetDoubleValue();
+					pOutEnd = pArgs->GetElement(4);
+					rOutEnd = pOutEnd->GetDoubleValue();
+
+					//	If our output range of OutStart and OutEnd are ints, an int output is desired so we need to convert later
+
+					bRetInt = pOutStart->GetValueType() == ICCItem::ValueTypes::Integer && pOutEnd->GetValueType() == ICCItem::ValueTypes::Integer;
+
+					//	Get the initial relative position of Input within In-range: [InStart,InEnd]
+
+					rRes = (rInput - rInStart) / (rInEnd - rInStart);
+
+					//	Ensure bounded by normalized In-range: [0.0,1.0]
+
+					rRes = min(max(0.0, rRes), 1.0);
+
+					//	Apply gamma
+
+					rRes = pow(rRes, rGamma);
+
+					//	Scale and position to Out-range within [OutStart,OutEnd]
+
+					rRes = rRes * (rOutEnd - rOutStart) + rOutStart;
+
+					//	Return the correct type
+
+					if (bRetInt)
+						return pCC->CreateInteger((int)round(rRes));
+					else
+						return pCC->CreateDouble(rRes);
+					}
+
+				//	Handle case where invalid args were passed
+
+				default:
+					return pCC->CreateError("gammaScale requires exactly 5 or 6 arguments");
+				}
+			}
+
 		default:
 			ASSERT(false);
 			return pCC->CreateNil();
