@@ -801,7 +801,11 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 //	This function handles both the backwards compatible fnEquality and the new
 //	fnEqualityNumerals. The only different is that the new function coerce more
 //	types (including string to integer and double).
+// 
+//	Additionally, for fnEqualityExact, it does not coerce types and handles case
+//	sensitivity.
 //
+//	Legacy operators (fnEquality)
 //	(eq exp1 exp2 ... expn)
 //	(neq exp1 exp2 ... expn)
 //	(gr exp1 exp2 ... expn)
@@ -809,12 +813,17 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 //	(ls exp1 exp2 ... expn)
 //	(leq exp1 exp2 ... expn)
 //	
+//	New operators (fnEqualityNumerals)
 //	(= exp1 exp2 ... expn)
 //	(!= exp1 exp2 ... expn)
 //	(> exp1 exp2 ... expn)
 //	(>= exp1 exp2 ... expn)
 //	(< exp1 exp2 ... expn)
 //	(<= exp1 exp2 ... expn)
+//
+//	Exact equality (fnEqualityExact)
+//	(=== exp1 exp2 ... expn)
+//	(!=== exp1 exp2 ... expn)
 
 	{
 	CCodeChain *pCC = pCtx->pCC;
@@ -839,7 +848,7 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 		}
 	else
 		{
-		ICCItem *pPrev = ((pArgs->GetCount() == 1 && (dwCoerceFlags & HELPER_COMPARE_COERCE_FULL)) ? pCC->GetNil() : NULL);
+		ICCItem *pPrev = ((pArgs->GetCount() == 1 && (dwCoerceFlags & (HELPER_COMPARE_COERCE_FULL | HELPER_COMPARE_COERCE_NONE))) ? pCC->GetNil() : NULL);
 
 		//	Loop over all arguments
 
@@ -898,6 +907,16 @@ ICCItem *fnEqualityNumerals (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwDa
 
 	{
 	return EqualityHelper(pCtx, pArguments, dwData, HELPER_COMPARE_COERCE_FULL);
+	}
+
+ICCItem *fnEqualityExact (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
+	
+//	fnEqualityNumerals
+//
+//	Equality and inequality for numerals
+
+	{
+	return EqualityHelper(pCtx, pArguments, dwData, HELPER_COMPARE_COERCE_NONE | HELPER_COMPARE_CASE_SENSITIVE);
 	}
 
 ICCItem *fnEval (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
@@ -5204,9 +5223,25 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 		{
 		switch (pFirst->GetValueType())
 			{
-			case ICCItem::Nil:
 			case ICCItem::True:
 				return 0;
+
+			case ICCItem::Nil:
+				{
+				if (dwCoerceFlags & HELPER_COMPARE_COERCE_NONE)
+					{
+
+					//	empty lists report themselves as Nil, so we need to check if this is
+					//	truly CCNil which is a CCAtom, or a CCList which is not
+
+					if (pFirst->IsAtom())
+						return pSecond->IsAtom() ? 0 : -2;
+					else
+						return pSecond->IsAtom() ? -2 : 0;
+					}
+				else
+					return 0;
+				}
 
 			case ICCItem::Integer:
 				{
@@ -5229,7 +5264,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 				}
 
 			case ICCItem::String:
-				return strCompareAbsolute(pFirst->GetStringValue(), pSecond->GetStringValue());
+				return strCompareAbsolute(pFirst->GetStringValue(), pSecond->GetStringValue(), dwCoerceFlags & HELPER_COMPARE_CASE_SENSITIVE);
 
 			case ICCItem::List:
 				{
@@ -5286,6 +5321,8 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 				return -2;
 			}
 		}
+	else if (dwCoerceFlags & HELPER_COMPARE_COERCE_NONE)
+		return -2;
 	else if (dwCoerceFlags & HELPER_COMPARE_COERCE_FULL)
 		{
 		if (pFirst->IsNil())
