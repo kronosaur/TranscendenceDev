@@ -66,12 +66,6 @@
     <ClCompile Include="CCloudService.cpp">
       <Filter>Source Files\CloudInterface Files</Filter>
     </ClCompile>
-    <ClCompile Include="CHexarcService.cpp">
-      <Filter>Source Files\CloudInterface Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CHexarcServiceStub.cpp">
-      <Filter>Source Files\CloudInterface Files</Filter>
-    </ClCompile>
     <ClCompile Include="CXelerus.cpp">
       <Filter>Source Files\CloudInterface Files</Filter>
     </ClCompile>
@@ -179,6 +173,9 @@
     </ClCompile>
     <ClCompile Include="CTimersHUD.cpp">
       <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CHexarcServiceStub.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
