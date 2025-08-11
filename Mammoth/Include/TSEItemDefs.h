@@ -141,18 +141,57 @@ enum EAttributeTypes
 struct SDisplayAttribute
 	{
 	SDisplayAttribute (void) :
-			iType(attribNeutral)
+			iType(attribNeutral),
+			rgbColor(0,0,0,0),
+			rgbTextColor(0,0,0,0)
 		{ }
 
 	SDisplayAttribute (EDisplayAttributeTypes iTypeCons, const CString &sTextCons, const CString &sIDCons) :
 			iType(iTypeCons),
 			sText(sTextCons),
-			sID(sIDCons)
+			sID(sIDCons),
+			rgbColor(0,0,0,0),
+			rgbTextColor(0,0,0,0)
 		{ }
 
 	SDisplayAttribute (EDisplayAttributeTypes iTypeCons, const CString &sTextCons, bool bDueToEnhancement = false) :
 			iType(iTypeCons),
-			sText(sTextCons)
+			sText(sTextCons),
+			rgbColor(0,0,0,0),
+			rgbTextColor(0,0,0,0)
+		{
+		if (bDueToEnhancement)
+			{
+			switch (iType)
+				{
+				case attribPositive:
+					iType = attribEnhancement;
+					if (*sText.GetASCIIZPointer() != '+')
+						sText = strPatternSubst(CONSTLIT("+%s"), sText);
+					break;
+
+				case attribNegative:
+					iType = attribWeakness;
+					if (*sText.GetASCIIZPointer() != '-')
+						sText = strPatternSubst(CONSTLIT("-%s"), sText);
+					break;
+				}
+			}
+		}
+
+	SDisplayAttribute (EDisplayAttributeTypes iTypeCons, const CString &sTextCons, const CString &sIDCons, const CG32bitPixel &rgbColor, const CG32bitPixel &rgbTextColor) :
+		iType(iTypeCons),
+		sText(sTextCons),
+		sID(sIDCons),
+		rgbColor(rgbColor, rgbColor.GetAlpha() ? 0xFF : 0x00),
+		rgbTextColor(rgbTextColor, rgbTextColor.GetAlpha() ? 0xFF : 0x00)
+		{ }
+
+	SDisplayAttribute (EDisplayAttributeTypes iTypeCons, const CString &sTextCons, const CG32bitPixel &rgbColor, const CG32bitPixel &rgbTextColor, bool bDueToEnhancement = false) :
+		iType(iTypeCons),
+		sText(sTextCons),
+		rgbColor(rgbColor, rgbColor.GetAlpha() ? 0xFF : 0x00),
+		rgbTextColor(rgbTextColor, rgbTextColor.GetAlpha() ? 0xFF : 0x00)
 		{
 		if (bDueToEnhancement)
 			{
@@ -210,6 +249,8 @@ struct SDisplayAttribute
 	EDisplayAttributeTypes iType;
 	CString sText;
 	CString sID;
+	CG32bitPixel rgbColor;
+	CG32bitPixel rgbTextColor;
 
 	RECT rcRect;					//	Reserved for callers
 	};
@@ -250,6 +291,8 @@ class CDisplayAttributeDefinitions
 			EDisplayAttributeTypes iType;
 			CString sText;					//	Text to display on item
 			CString sCriteriaName;			//	Name for the criteria
+			CG32bitPixel rgbColor = CG32bitPixel(0,0,0,0);	//	Color to use, no alpha means use type
+			CG32bitPixel rgbTextColor = CG32bitPixel(0,0,0,0);	//	Color to use, no alpha means use default
 
 			ICCItemPtr pOnShow;				//	<OnShow> event
 			};
@@ -258,6 +301,8 @@ class CDisplayAttributeDefinitions
 			{
 			EAttributeTypes iType;
 			CString sName;			//	Human readable name
+			CG32bitPixel rgbColor = CG32bitPixel(0,0,0,0);	//	Color to use, no alpha means use type
+			CG32bitPixel rgbTextColor = CG32bitPixel(0,0,0,0);	//	Color to use, no alpha means use default
 
 			//	Location attributes
 

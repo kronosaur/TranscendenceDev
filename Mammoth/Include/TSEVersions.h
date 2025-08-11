@@ -5,7 +5,7 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							54;
+constexpr DWORD API_VERSION =							55;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
 constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 
@@ -331,6 +331,56 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				For legacy (objDestroy obj) behavior, use (objRemove obj)
 //			(objRemove obj)
 //				Added, removes the obj from system
+//
+//	 55: 2.0 Alpha 4
+//		tlisp:
+//			(gammaScale val inStart inEnd outStart outEnd [gamma=1.0])
+//				Native tlisp version of mathScale/mathScaleReal.
+//				Returns an int if outMin and outMax are both ints. Otherwise returns a double.
+//				Gamma can be an int (multiplied by 100) or a double.
+//				Note: properly handles negative curves where an input or output
+//					range goes from higher to lower value.
+//				Warning: Do not use below API55. API checking is not available for primitive functions.
+//			(plyGetName player)
+//				Allows getting the player name without needing to use str formatting
+//			(dbgApplyTimed fn argsList)
+//				Allows timing tlisp function execution
+//			(dbgEvalTimed expr)
+//				Allows timing tlisp function/block parsing & execution
+//			(=== [a b ...])
+//				Exact equality operator, does not coerce any types and is case sensitive
+//				Can be used to test if a variable is a real empty list (mutable) or
+//				actually just Nil (atomic)
+//				If given 1 arg, compares that arg to Nil, returns True if (atomic) Nil
+//				WARNING, as this function may be used in performance sensitive code,
+//				it does not check that you are using API55 first. Ensure your API version
+//				is appropriately set to avoid multiverse from downloading your extension
+//				onto an incompatible version.
+//			(!=== [a b ...])
+//				Exact inequality operator, does not coerce any types and is case sensitive
+//				Can be used to test if a variable is a real empty list (mutable) or
+//				actually just Nil (atomic)
+//				If given 1 arg, compares that arg to Nil, returns True if not (atomic) Nil
+//				WARNING, as this function may be used in performance sensitive code,
+//				it does not check that you are using API55 first. Ensure your API version
+//				is appropriately set to avoid multiverse from downloading your extension
+//				onto an incompatible version.
+//		Any <Type>
+//			<AttributeDesc>
+//				<ItemAttribute> and <LocationAttribute>
+//					labelColor: 24-bit or triplet RGB color for tag background
+//						Default: uses neutral/positive/negative background colors
+//					labelTextColor: 24-bit or triplet RGB color for tag text
+//						Default: uses neutral/positive/negative text colors
+//		<ItemType>
+//			<Events>
+//				<GetDisplayAttributes>
+//					Returned struct now accepts the following new values:
+//						labelColor: 24-bit or triplet RGB color for tag background
+//							Default: uses neutral/positive/negative background colors
+//						labelTextColor: 24-bit or triplet RGB color for tag text
+//							Default: uses neutral/positive/negative text colors
+//
 
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
