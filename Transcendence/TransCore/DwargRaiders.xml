@@ -861,24 +861,39 @@
 						; Note: We don't call objGetOrderGiver because the Zoanthropes
 						; are not smart enough to notice.
 						(setq newLeader aDestroyer)
-						
-						; See if the destroyer should be the new leader
-						(if (and newLeader 
-								(objCanAttack newLeader)
-								(leq (random 1 100) 50)
-								)
-							(block (newSovereign)
+
+						; If the leader was an auton that was removed from system
+						; or destroyed without a destroyer, it was probably the
+						; auton bay. Regardless, we just reassign them to the player
+						; at this point.
+						(if (and 
+								(= (objGetSovereign aObjDestroyed) &svFriendlyAuton;)
+								(not aDestroyer))
+							(block Nil
+								(setq newLeader gPlayerShip)
 								(shpCancelOrders gSource)
 								(shpOrderEscort gSource newLeader)
-								(if (eq (objGetSovereign newLeader) &svPlayer;)
-									(setq newSovereign &svFriendlyZoanthrope;)
-									(setq newSovereign (objGetSovereign newLeader))
+								(objSetSovereign gSource &svFriendlyZoanthrope;)
+								)
+						
+							; See if the destroyer should be the new leader
+							(if (and newLeader 
+									(objCanAttack newLeader)
+									(leq (random 1 100) 50)
 									)
-								(objSetSovereign gSource newSovereign)
-								(objSendMessage newLeader gSource "WE foLLow thE stRong")
+								(block (newSovereign)
+									(shpCancelOrders gSource)
+									(shpOrderEscort gSource newLeader)
+									(if (eq (objGetSovereign newLeader) &svPlayer;)
+										(setq newSovereign &svFriendlyZoanthrope;)
+										(setq newSovereign (objGetSovereign newLeader))
+										)
+									(objSetSovereign gSource newSovereign)
+									(objSendMessage newLeader gSource "WE foLLow thE stRong")
 
-								(if (= (objGetType gSource) &scDwargBehemoth;)
-									(unvSetAchievement 'humanSpace.dwargBehemothFriend)
+									(if (= (objGetType gSource) &scDwargBehemoth;)
+										(unvSetAchievement 'humanSpace.dwargBehemothFriend)
+										)
 									)
 								)
 							)
