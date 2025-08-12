@@ -162,6 +162,38 @@
 	{	code: '(gammaScale 5 10 1 10.0 100.0 100)		result:	60.0	}
 	{	code: '(gammaScale 5 10 1 100.0 10.0 1.0)		result:	50.0	}
 	{	code: '(gammaScale 5 10 1 100.0 10.0 100)		result:	50.0	}
+	{	code: '(gammaScale 5 1 10 10 100)		result:	50	}
+	{	code: '(gammaScale 5 1 10 10 100)		result:	50	}
+	{	code: '(gammaScale 5 1 10 100 10)		result:	60	}
+	{	code: '(gammaScale 5 1 10 100 10)		result:	60	}
+	{	code: '(gammaScale 5 1 10 10.0 100.0)		result:	50.0	}
+	{	code: '(gammaScale 5 1 10 10.0 100.0)		result:	50.0	}
+	{	code: '(gammaScale 5 1 10 100.0 10.0)		result:	60.0	}
+	{	code: '(gammaScale 5 1 10 100.0 10.0)		result:	60.0	}
+	{	code: '(gammaScale 5 10 1 10 100)		result:	60	}
+	{	code: '(gammaScale 5 10 1 10 100)		result:	60	}
+	{	code: '(gammaScale 5 10 1 100 10)		result:	50	}
+	{	code: '(gammaScale 5 10 1 100 10)		result:	50	}
+	{	code: '(gammaScale 5 10 1 10.0 100.0)		result:	60.0	}
+	{	code: '(gammaScale 5 10 1 10.0 100.0)		result:	60.0	}
+	{	code: '(gammaScale 5 10 1 100.0 10.0)		result:	50.0	}
+	{	code: '(gammaScale 5 10 1 100.0 10.0)		result:	50.0	}
+	{	code: '(gammaScale 5 1 10 10 100 0.5)		result:	70	}
+	{	code: '(gammaScale 5 1 10 10 100 50)		result:	70	}
+	{	code: '(gammaScale 5 1 10 100 10 0.5)		result:	40	}
+	{	code: '(gammaScale 5 1 10 100 10 50)		result:	40	}
+	{	code: '(gammaScale 5 1 10 10.0 100.0 0.5)		result:	70.0	}
+	{	code: '(gammaScale 5 1 10 10.0 100.0 50)		result:	70.0	}
+	{	code: '(gammaScale 5 1 10 100.0 10.0 0.5)		result:	40.0	}
+	{	code: '(gammaScale 5 1 10 100.0 10.0 50)		result:	40.0	}
+	{	code: '(gammaScale 5 10 1 10 100 0.5)		result:	77	}
+	{	code: '(gammaScale 5 10 1 10 100 50)		result:	77	}
+	{	code: '(gammaScale 5 10 1 100 10 0.5)		result:	33	}
+	{	code: '(gammaScale 5 10 1 100 10 50)		result:	33	}
+	{	code: '(/ (round (* 100 (gammaScale 5 10 1 10.0 100.0 0.5))) 100.0)			result:	77.08	}
+	{	code: '(/ (round (* 100 (gammaScale 5 10 1 10.0 100.0 50))) 100.0)			result:	77.08	}
+	{	code: '(/ (round (* 100 (gammaScale 5 10 1 100.0 10.0 0.5))) 100.0)			result:	32.92	}
+	{	code: '(/ (round (* 100 (gammaScale 5 10 1 100.0 10.0 50))) 100.0)			result:	32.92	}
 
 	;	Types
 
