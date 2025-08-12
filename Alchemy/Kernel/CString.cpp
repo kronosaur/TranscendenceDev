@@ -1028,6 +1028,10 @@ int Kernel::strCompareAbsolute (const CString &sString1, const CString &sString2
 //
 //	Compares two strings are returns 1 if sString1 is > sString2; -1 if sString1
 //	is < sString2; and 0 if both strings are equal.
+// 
+//	Case sensitive operation prioritizes alphabetical order (ex, "a" < "B")
+//  however a capital letter is considered less than its lower case counterpart
+//	(ex, "A" < "a")
 //
 //	The resulting sort order does not change with locale. Use this only for
 //	internal sorting (e.g., symbol tables).

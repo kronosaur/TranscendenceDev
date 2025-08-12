@@ -23,6 +23,7 @@
 #include <Math.h>
 #include "Functions.h"
 #include "TMathList.h"
+#include <chrono>
 
 //	Forwards
 
@@ -801,7 +802,11 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 //	This function handles both the backwards compatible fnEquality and the new
 //	fnEqualityNumerals. The only different is that the new function coerce more
 //	types (including string to integer and double).
+// 
+//	Additionally, for fnEqualityExact, it does not coerce types and handles case
+//	sensitivity.
 //
+//	Legacy operators (fnEquality)
 //	(eq exp1 exp2 ... expn)
 //	(neq exp1 exp2 ... expn)
 //	(gr exp1 exp2 ... expn)
@@ -809,12 +814,17 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 //	(ls exp1 exp2 ... expn)
 //	(leq exp1 exp2 ... expn)
 //	
+//	New operators (fnEqualityNumerals)
 //	(= exp1 exp2 ... expn)
 //	(!= exp1 exp2 ... expn)
 //	(> exp1 exp2 ... expn)
 //	(>= exp1 exp2 ... expn)
 //	(< exp1 exp2 ... expn)
 //	(<= exp1 exp2 ... expn)
+//
+//	Exact equality (fnEqualityExact)
+//	(=== exp1 exp2 ... expn)
+//	(!=== exp1 exp2 ... expn)
 
 	{
 	CCodeChain *pCC = pCtx->pCC;
@@ -839,7 +849,7 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 		}
 	else
 		{
-		ICCItem *pPrev = ((pArgs->GetCount() == 1 && (dwCoerceFlags & HELPER_COMPARE_COERCE_FULL)) ? pCC->GetNil() : NULL);
+		ICCItem *pPrev = ((pArgs->GetCount() == 1 && (dwCoerceFlags & (HELPER_COMPARE_COERCE_FULL | HELPER_COMPARE_COERCE_NONE))) ? pCC->GetNil() : NULL);
 
 		//	Loop over all arguments
 
@@ -898,6 +908,16 @@ ICCItem *fnEqualityNumerals (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwDa
 
 	{
 	return EqualityHelper(pCtx, pArguments, dwData, HELPER_COMPARE_COERCE_FULL);
+	}
+
+ICCItem *fnEqualityExact (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
+	
+//	fnEqualityNumerals
+//
+//	Equality and inequality for numerals
+
+	{
+	return EqualityHelper(pCtx, pArguments, dwData, HELPER_COMPARE_COERCE_NONE | HELPER_COMPARE_CASE_SENSITIVE);
 	}
 
 ICCItem *fnEval (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
@@ -3242,6 +3262,79 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_MATH_TAN:
 			return pCC->CreateDouble(tan(pArgs->GetElement(0)->GetDoubleValue() * angleToRads));
 
+		case FN_MATH_GAMMA_SCALE_NUMERALS:
+			{
+			ICCItem *pOutStart, *pOutEnd, *pGamma;
+			double rInput, rInStart, rInEnd, rOutStart, rOutEnd, rGamma, rRes;
+			rGamma = 1.0;
+			bool bRetInt = false;
+			switch (pArgs->GetCount())
+				{
+				case 6:
+					{
+
+					//	If we have a gamma arg
+
+					pGamma = pArgs->GetElement(5);
+					rGamma = pGamma->GetDoubleValue();
+
+					//	Adjust gamma if it is a %-scaled int
+
+					if (pGamma->GetValueType() == ICCItem::ValueTypes::Integer)
+						rGamma /= 100;
+
+					//	Fallthrough to handle the rest of the logic
+
+					[[fallthrough]];
+					}
+				case 5:
+					{
+
+					//	Read: Input InStart InEnd OutStart OutEnd
+
+					rInput = pArgs->GetElement(0)->GetDoubleValue();
+					rInStart = pArgs->GetElement(1)->GetDoubleValue();
+					rInEnd = pArgs->GetElement(2)->GetDoubleValue();
+					pOutStart = pArgs->GetElement(3);
+					rOutStart = pOutStart->GetDoubleValue();
+					pOutEnd = pArgs->GetElement(4);
+					rOutEnd = pOutEnd->GetDoubleValue();
+
+					//	If our output range of OutStart and OutEnd are ints, an int output is desired so we need to convert later
+
+					bRetInt = pOutStart->GetValueType() == ICCItem::ValueTypes::Integer && pOutEnd->GetValueType() == ICCItem::ValueTypes::Integer;
+
+					//	Get the initial relative position of Input within In-range: [InStart,InEnd]
+
+					rRes = (rInput - rInStart) / (rInEnd - rInStart);
+
+					//	Ensure bounded by normalized In-range: [0.0,1.0]
+
+					rRes = min(max(0.0, rRes), 1.0);
+
+					//	Apply gamma
+
+					rRes = pow(rRes, rGamma);
+
+					//	Scale and position to Out-range within [OutStart,OutEnd]
+
+					rRes = rRes * (rOutEnd - rOutStart) + rOutStart;
+
+					//	Return the correct type
+
+					if (bRetInt)
+						return pCC->CreateInteger((int)round(rRes));
+					else
+						return pCC->CreateDouble(rRes);
+					}
+
+				//	Handle case where invalid args were passed
+
+				default:
+					return pCC->CreateError("gammaScale requires exactly 5 or 6 arguments");
+				}
+			}
+
 		default:
 			ASSERT(false);
 			return pCC->CreateNil();
@@ -5569,9 +5662,25 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 		{
 		switch (pFirst->GetValueType())
 			{
-			case ICCItem::Nil:
 			case ICCItem::True:
 				return 0;
+
+			case ICCItem::Nil:
+				{
+				if (dwCoerceFlags & HELPER_COMPARE_COERCE_NONE)
+					{
+
+					//	empty lists report themselves as Nil, so we need to check if this is
+					//	truly CCNil which is a CCAtom, or a CCList which is not
+
+					if (pFirst->IsAtom())
+						return pSecond->IsAtom() ? 0 : -2;
+					else
+						return pSecond->IsAtom() ? -2 : 0;
+					}
+				else
+					return 0;
+				}
 
 			case ICCItem::Integer:
 				{
@@ -5594,7 +5703,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 				}
 
 			case ICCItem::String:
-				return strCompareAbsolute(pFirst->GetStringValue(), pSecond->GetStringValue());
+				return strCompareAbsolute(pFirst->GetStringValue(), pSecond->GetStringValue(), dwCoerceFlags & HELPER_COMPARE_CASE_SENSITIVE);
 
 			case ICCItem::List:
 				{
@@ -5651,6 +5760,8 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 				return -2;
 			}
 		}
+	else if (dwCoerceFlags & HELPER_COMPARE_COERCE_NONE)
+		return -2;
 	else if (dwCoerceFlags & HELPER_COMPARE_COERCE_FULL)
 		{
 		if (pFirst->IsNil())
@@ -5924,4 +6035,52 @@ ALERROR HelperSetq (CEvalContext *pCtx, ICCItem *pVar, ICCItem *pValue, ICCItem 
 		}
 
 	return NOERROR;
+	}
+
+ICCItem *fnDebugPrimatives (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
+
+//	fnDebug
+//
+//	Debug functions
+
+	{
+	CCodeChain *pCC = pEvalCtx->pCC;
+	ICCItem *pRet;
+
+	switch (dwData)
+		{
+		case FN_DEBUG_APPLY_TIMED:
+		case FN_DEBUG_EVAL_TIMED:
+			{
+			//	We pass our args through so we mark them as already evaluated
+			pArgs->SetQuoted();
+
+			//	Start our timer
+			auto start = std::chrono::high_resolution_clock::now();
+
+			//	Run the appropriate inner function
+			if (dwData == FN_DEBUG_APPLY_TIMED)
+				pRet = fnApply(pEvalCtx, pArgs, 0);
+			else
+				pRet = fnEval(pEvalCtx, pArgs, 0);
+
+			//	Stop our timer
+			auto end = std::chrono::high_resolution_clock::now();
+
+			//	If we had an error, return that instead
+			if (pRet->IsError())
+				return pRet;
+
+			//	We dont want to keep this reference around
+			pRet->Discard();
+
+			//	Compute the time elapsed
+			std::chrono::duration<double> duration = end - start;
+			return pCC->CreateDouble(duration.count() * 1000000000.0);
+			}
+
+		default:
+			ASSERT(false);
+			return pCC->CreateNil();
+		}
 	}
