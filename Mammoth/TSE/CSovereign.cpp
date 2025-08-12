@@ -356,17 +356,24 @@ CSovereign::Disposition CSovereign::GetDispositionTowards (const CSovereign *pSo
 //	Returns how this sovereign feels about the given sovereign
 
 	{
-	//	Optimize checks against ourselves
 
-	if (!m_bSelfRel && pSovereign == this)
-		return dispFriend;
+	//  Check if pSovereign is NULL first
 
-	//	See if we have a specific relationship. If so, then return the
-	//	disposition there.
+	if (pSovereign) 
+		{
 
-	const SRelationship *pRel = FindRelationship(pSovereign, bCheckParent);
-	if (pRel)
-		return pRel->iDisp;
+		//	Optimize checks against ourselves
+
+		if (!m_bSelfRel && pSovereign == this)
+			return dispFriend;
+
+		//	See if we have a specific relationship. If so, then return the
+		//	disposition there.
+
+		const SRelationship* pRel = FindRelationship(pSovereign, bCheckParent);
+		if (pRel)
+			return pRel->iDisp;
+		}
 
 	//	Get the alignment of the other. We treat NULL as Neutral
 

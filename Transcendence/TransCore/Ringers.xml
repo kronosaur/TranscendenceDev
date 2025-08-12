@@ -482,8 +482,8 @@
 								)
 
 								{
-									particleCount: (mathScale damageHP 20 300 100 300 50)
-									width: (mathScale damageHP 20 300 10 20 50)
+									particleCount: (gammaScale damageHP 20 300 100 300 50)
+									width: (gammaScale damageHP 20 300 10 20 50)
 									}
 								)
 						</GetParameters>
@@ -504,7 +504,7 @@
 								(damageHP (@ gData 'damageHP))
 								)
 								{
-									width: (mathScale damageHP 20 300 15 30 50)
+									width: (gammaScale damageHP 20 300 15 30 50)
 									}
 								)
 						</GetParameters>
