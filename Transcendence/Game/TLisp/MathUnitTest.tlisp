@@ -26,6 +26,46 @@
 	{	code: '(link "0123_test")	result: "0123_test"	}
 	{	code: '(link "1.4.5")		result: "1.4.5"	}
 
+	;	Exact (Type + Case) Equality
+
+	{	code: '(=== Nil)			result: True	}
+	{	code: '(=== Nil Nil)		result: True	}
+	{	code: '(=== 0)				result: Nil		}
+	{	code: '(=== 1)				result: Nil		}
+	{	code: '(=== 1.0)			result: Nil		}
+	{	code: '(=== 0.0)			result: Nil		}
+	{	code: '(=== "")				result: Nil		}
+	{	code: '(=== (list))			result: Nil		}
+	{	code: '(=== +)				result: Nil		}
+	{	code: '(=== 1 0)			result: Nil		}
+	{	code: '(=== 1 1)			result: True	}
+	{	code: '(=== (list) Nil)		result: Nil		}
+	{	code: '(=== (list) "")		result: Nil		}
+	{	code: '(=== (list) (list))	result: True	}
+	{	code: '(=== "" "")			result: True	}
+	{	code: '(=== "a" "A")		result: Nil		}
+	{	code: '(=== Nil "")			result: Nil		}
+	{	code: '(=== 1.0 1)			result: Nil		}
+
+	{	code: '(!=== Nil)			result: Nil		}
+	{	code: '(!=== Nil Nil)		result: Nil		}
+	{	code: '(!=== 0)				result: True	}
+	{	code: '(!=== 1)				result: True	}
+	{	code: '(!=== 1.0)			result: True	}
+	{	code: '(!=== 0.0)			result: True	}
+	{	code: '(!=== "")			result: True	}
+	{	code: '(!=== (list))		result: True	}
+	{	code: '(!=== +)				result: True	}
+	{	code: '(!=== 1 0)			result: True	}
+	{	code: '(!=== 1 1)			result: Nil		}
+	{	code: '(!=== (list) Nil)	result: True	}
+	{	code: '(!=== (list) "")		result: True	}
+	{	code: '(!=== (list) (list))	result: Nil		}
+	{	code: '(!=== "" "")			result: Nil		}
+	{	code: '(!=== "a" "A")		result: True	}
+	{	code: '(!=== Nil "")		result: True	}
+	{	code: '(!=== 1.0 1)			result: True	}
+
 	;	Equality
 
 	{	code: '(= 3 2)			result: Nil		}
@@ -105,6 +145,55 @@
 	{	code: '(sqrt 4)			result: 2 }
 	{	code: '(sqrtn 4)		result: 2 }
 	{	code: '(sqrtn 0.25)		result: 0.5 }
+
+	{	code: '(gammaScale 5 1 10 10 100 1.0)		result:	50	}
+	{	code: '(gammaScale 5 1 10 10 100 100)		result:	50	}
+	{	code: '(gammaScale 5 1 10 100 10 1.0)		result:	60	}
+	{	code: '(gammaScale 5 1 10 100 10 100)		result:	60	}
+	{	code: '(gammaScale 5 1 10 10.0 100.0 1.0)		result:	50.0	}
+	{	code: '(gammaScale 5 1 10 10.0 100.0 100)		result:	50.0	}
+	{	code: '(gammaScale 5 1 10 100.0 10.0 1.0)		result:	60.0	}
+	{	code: '(gammaScale 5 1 10 100.0 10.0 100)		result:	60.0	}
+	{	code: '(gammaScale 5 10 1 10 100 1.0)		result:	60	}
+	{	code: '(gammaScale 5 10 1 10 100 100)		result:	60	}
+	{	code: '(gammaScale 5 10 1 100 10 1.0)		result:	50	}
+	{	code: '(gammaScale 5 10 1 100 10 100)		result:	50	}
+	{	code: '(gammaScale 5 10 1 10.0 100.0 1.0)		result:	60.0	}
+	{	code: '(gammaScale 5 10 1 10.0 100.0 100)		result:	60.0	}
+	{	code: '(gammaScale 5 10 1 100.0 10.0 1.0)		result:	50.0	}
+	{	code: '(gammaScale 5 10 1 100.0 10.0 100)		result:	50.0	}
+	{	code: '(gammaScale 5 1 10 10 100)		result:	50	}
+	{	code: '(gammaScale 5 1 10 10 100)		result:	50	}
+	{	code: '(gammaScale 5 1 10 100 10)		result:	60	}
+	{	code: '(gammaScale 5 1 10 100 10)		result:	60	}
+	{	code: '(gammaScale 5 1 10 10.0 100.0)		result:	50.0	}
+	{	code: '(gammaScale 5 1 10 10.0 100.0)		result:	50.0	}
+	{	code: '(gammaScale 5 1 10 100.0 10.0)		result:	60.0	}
+	{	code: '(gammaScale 5 1 10 100.0 10.0)		result:	60.0	}
+	{	code: '(gammaScale 5 10 1 10 100)		result:	60	}
+	{	code: '(gammaScale 5 10 1 10 100)		result:	60	}
+	{	code: '(gammaScale 5 10 1 100 10)		result:	50	}
+	{	code: '(gammaScale 5 10 1 100 10)		result:	50	}
+	{	code: '(gammaScale 5 10 1 10.0 100.0)		result:	60.0	}
+	{	code: '(gammaScale 5 10 1 10.0 100.0)		result:	60.0	}
+	{	code: '(gammaScale 5 10 1 100.0 10.0)		result:	50.0	}
+	{	code: '(gammaScale 5 10 1 100.0 10.0)		result:	50.0	}
+	{	code: '(gammaScale 5 1 10 10 100 0.5)		result:	70	}
+	{	code: '(gammaScale 5 1 10 10 100 50)		result:	70	}
+	{	code: '(gammaScale 5 1 10 100 10 0.5)		result:	40	}
+	{	code: '(gammaScale 5 1 10 100 10 50)		result:	40	}
+	{	code: '(gammaScale 5 1 10 10.0 100.0 0.5)		result:	70.0	}
+	{	code: '(gammaScale 5 1 10 10.0 100.0 50)		result:	70.0	}
+	{	code: '(gammaScale 5 1 10 100.0 10.0 0.5)		result:	40.0	}
+	{	code: '(gammaScale 5 1 10 100.0 10.0 50)		result:	40.0	}
+	{	code: '(gammaScale 5 10 1 10 100 0.5)		result:	77	}
+	{	code: '(gammaScale 5 10 1 10 100 50)		result:	77	}
+	{	code: '(gammaScale 5 10 1 100 10 0.5)		result:	33	}
+	{	code: '(gammaScale 5 10 1 100 10 50)		result:	33	}
+	{	code: '(/ (round (* 100 (gammaScale 5 10 1 10.0 100.0 0.5))) 100.0)			result:	77.08	}
+	{	code: '(/ (round (* 100 (gammaScale 5 10 1 10.0 100.0 50))) 100.0)			result:	77.08	}
+	{	code: '(/ (round (* 100 (gammaScale 5 10 1 100.0 10.0 0.5))) 100.0)			result:	32.92	}
+	{	code: '(/ (round (* 100 (gammaScale 5 10 1 100.0 10.0 50))) 100.0)			result:	32.92	}
 
 	;	Types
 
