@@ -146,6 +146,23 @@
 	{	code: '(sqrtn 4)		result: 2 }
 	{	code: '(sqrtn 0.25)		result: 0.5 }
 
+	{	code: '(gammaScale 5 1 10 10 100 1.0)		result:	50	}
+	{	code: '(gammaScale 5 1 10 10 100 100)		result:	50	}
+	{	code: '(gammaScale 5 1 10 100 10 1.0)		result:	60	}
+	{	code: '(gammaScale 5 1 10 100 10 100)		result:	60	}
+	{	code: '(gammaScale 5 1 10 10.0 100.0 1.0)		result:	50.0	}
+	{	code: '(gammaScale 5 1 10 10.0 100.0 100)		result:	50.0	}
+	{	code: '(gammaScale 5 1 10 100.0 10.0 1.0)		result:	60.0	}
+	{	code: '(gammaScale 5 1 10 100.0 10.0 100)		result:	60.0	}
+	{	code: '(gammaScale 5 10 1 10 100 1.0)		result:	60	}
+	{	code: '(gammaScale 5 10 1 10 100 100)		result:	60	}
+	{	code: '(gammaScale 5 10 1 100 10 1.0)		result:	50	}
+	{	code: '(gammaScale 5 10 1 100 10 100)		result:	50	}
+	{	code: '(gammaScale 5 10 1 10.0 100.0 1.0)		result:	60.0	}
+	{	code: '(gammaScale 5 10 1 10.0 100.0 100)		result:	60.0	}
+	{	code: '(gammaScale 5 10 1 100.0 10.0 1.0)		result:	50.0	}
+	{	code: '(gammaScale 5 10 1 100.0 10.0 100)		result:	50.0	}
+
 	;	Types
 
 	{	code: '(typeof 1.5)		result: 'real }
