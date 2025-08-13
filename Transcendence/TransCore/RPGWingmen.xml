@@ -344,7 +344,13 @@
 								)
 							(switch
 								; Some wingmen (like Jenna) doesn't want to proceed beyond a certain point
-								(and (setq maxSystemLevel (objGetStaticData gSource "MaxSystemLevel"))
+								; Preferentially check the level difference before checking maximum system level
+								(and (setq maxSystemLevel (or 
+											(if (and (objGetData gSource 'recruitmentSystemLevel) (objGetStaticData gSource "MaxSystemLevelsTravelled"))
+												(+ (objGetData gSource 'recruitmentSystemLevel) (objGetStaticData gSource "MaxSystemLevelsTravelled"))
+												)
+											(objGetStaticData gSource "MaxSystemLevel"))
+											)
 										(gr (sysGetLevel) maxSystemLevel)
 										)
 									(block Nil
@@ -832,6 +838,9 @@
 
 								(setq wingmanObj (sysCreateShip wingman gSource (typGetProperty wingman 'defaultSovereign)))
 								)
+							;   Get level of system when wingman is recruited
+							
+							(objSetData wingmanObj 'recruitmentSystemLevel (sysGetLevel))
 
 							;	Order them to follow the player
 
