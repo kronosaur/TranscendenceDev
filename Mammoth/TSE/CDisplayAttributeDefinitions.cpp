@@ -336,13 +336,13 @@ ALERROR CDisplayAttributeDefinitions::InitFromXML (SDesignLoadCtx &Ctx, CXMLElem
 				if (sLoadColor = pDef->GetAttribute(LABEL_COLOR_ATTRIB))
 					pEntry->rgbColor = LoadRGBColor(sLoadColor);
 				else
-					pEntry->rgbColor = DWToARGBColor(0);
+					pEntry->rgbColor = DWToRGBColor(0);
 
 				//if (pDesc->FindAttribute(LABEL_TEXT_COLOR_ATTRIB, &sLoadColor))
 				if (sLoadColor = pDef->GetAttribute(LABEL_TEXT_COLOR_ATTRIB))
 					pEntry->rgbTextColor = LoadRGBColor(sLoadColor);
 				else
-					pEntry->rgbTextColor = DWToARGBColor(0);
+					pEntry->rgbTextColor = DWToRGBColor(0);
 
 				}
 
@@ -384,12 +384,12 @@ ALERROR CDisplayAttributeDefinitions::InitFromXML (SDesignLoadCtx &Ctx, CXMLElem
 				if (pDesc->FindAttribute(LABEL_COLOR_ATTRIB, &sLoadColor))
 					pEntry->rgbColor = LoadRGBColor(sLoadColor);
 				else
-					pEntry->rgbColor = DWToARGBColor(0);
+					pEntry->rgbColor = DWToRGBColor(0);
 
 				if (pDesc->FindAttribute(LABEL_TEXT_COLOR_ATTRIB, &sLoadColor))
 					pEntry->rgbTextColor = LoadRGBColor(sLoadColor);
 				else
-					pEntry->rgbTextColor = DWToARGBColor(0);
+					pEntry->rgbTextColor = DWToRGBColor(0);
 
 				}
 
