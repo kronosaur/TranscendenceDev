@@ -525,6 +525,8 @@ class CCLambda : public ICCAtom
 		CCLambda (void);
 
 		ICCItem *CreateFromList (ICCItem *pList, bool bArgsOnly);
+		CString GetDocString (void) const { return m_sDocString; }
+		void SetDocString (CString sDocString) { m_sDocString = sDocString; }
 		void SetLocalSymbols (CCodeChain *pCC, ICCItem *pSymbols);
 
 		//	ICCItem virtuals
@@ -546,6 +548,7 @@ class CCLambda : public ICCAtom
 		ICCItem *m_pArgList;
 		ICCItem *m_pCode;
 		ICCItem *m_pLocalSymbols;
+		CString m_sDocString;
 	};
 
 //	A list is a list of items
