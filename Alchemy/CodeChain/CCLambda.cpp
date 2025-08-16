@@ -108,13 +108,13 @@ ICCItem *CCLambda::CreateFromList (ICCItem *pList, bool bArgsOnly)
 	
 	if (pBody)
 		{
-		m_sDocString = pBodyOrDocstring->GetStringValue();
+		SetHelpUnformatted(pBodyOrDocstring->GetStringValue());
 		m_pCode = pBody->Reference();
 		}
 	else
 		{
 		m_pCode = pBodyOrDocstring->Reference();
-		m_sDocString = CONSTLIT("");
+		m_sDesc = CONSTLIT("");
 		}
 
 	m_pLocalSymbols = NULL;
@@ -145,6 +145,45 @@ void CCLambda::DestroyItem (void)
 	//	Done
 
 	CCodeChain::DestroyLambda(this);
+	}
+
+void CCLambda::SetHelpUnformatted(CString sHelpRaw)
+	{
+
+	//	There may be leading tabs in sHelp depending on how the developer wrote it so we need to clean it up
+
+	m_sDesc = CONSTLIT("");
+
+	if (!(strFind(sHelpRaw, "\t") < 0 && strFind(sHelpRaw, "\n") < 0))
+		{
+		m_sDesc = CONSTLIT("");
+		int iSpanStart = 0;
+		int iEnd = sHelpRaw.GetLength();
+
+		while (iSpanStart < iEnd)
+			{
+			int iSpanLen = strFind(strSubString(sHelpRaw, iSpanStart), "\n");
+
+			if (iSpanLen < 0)
+				{
+				m_sDesc.Append(strTrimWhitespace(strSubString(sHelpRaw, iSpanStart)));
+				break;
+				}
+			else if (iSpanLen == 0)
+				{
+				iSpanStart++;
+				}
+			else
+				{
+				iSpanLen++;
+				m_sDesc.Append(strTrimWhitespace(strSubString(sHelpRaw, iSpanStart, iSpanLen)));
+				m_sDesc.Append(CONSTLIT("\n"));
+				iSpanStart += iSpanLen;
+				}
+			}
+		}
+	else
+		m_sDesc = strTrimWhitespace(sHelpRaw, true, false);
 	}
 
 ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
