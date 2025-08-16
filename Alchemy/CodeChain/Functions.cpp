@@ -1350,6 +1350,51 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		Output.Write(sHelp.GetASCIIZPointer(), sHelp.GetLength());
 		}
 
+	//	If parameter is a lambda, we show the docstring of the lambda
+
+	else if (pArgs->GetElement(0)->IsLambdaFunction())
+		{
+		CCLambda* pLambda = dynamic_cast<CCLambda *>(pArgs->GetElement(0));
+		CString sHelpRaw = pLambda->GetDocString();
+
+		//	There may be leading tabs in sHelp depending on how the developer wrote it so we need to clean it up
+
+		CString sHelpClean;
+
+		if (!(strFind(sHelpRaw, "\t") < 0 && strFind(sHelpRaw, "\n") < 0))
+			{
+			sHelpClean = CONSTLIT("");
+			int iSpanStart = 0;
+			int iEnd = sHelpRaw.GetLength();
+			
+			while (iSpanStart < iEnd)
+				{
+				int iSpanLen = strFind(strSubString(sHelpRaw, iSpanStart), "\n");
+
+				if (iSpanLen < 0)
+					{
+					sHelpClean.Append(strTrimWhitespace(strSubString(sHelpRaw, iSpanStart)));
+					break;
+					}
+				else if (iSpanLen == 0)
+					{
+					iSpanStart++;
+					}
+				else
+					{
+					iSpanLen++;
+					sHelpClean.Append(strTrimWhitespace(strSubString(sHelpRaw, iSpanStart, iSpanLen)));
+					sHelpClean.Append(CONSTLIT("\n"));
+					iSpanStart += iSpanLen;
+					}
+				}
+			}
+		else
+			sHelpClean = strTrimWhitespace(sHelpRaw, true, false);
+
+		Output.Write(sHelpClean.GetASCIIZPointer(), sHelpClean.GetLength());
+		}
+
 	//	If parameter is * then show all functions
 
 	else if (strEquals(pArgs->GetElement(0)->GetStringValue(), CONSTLIT("*")))
