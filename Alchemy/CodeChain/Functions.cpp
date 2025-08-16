@@ -4227,12 +4227,14 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 				ICCItem* pElement = pList->GetElement(i);
 
 				//	Treat Nil as an empty string rather than "Nil"
+
 				if (pElement->IsNil())
 					sResult.Append(CONSTLIT(""));
 				else
 					sResult.Append(pElement->GetStringValue());
 
 				//	Add our delimiter if we have another element afterwards
+
 				if (i + 1 < iEnd)
 					sResult.Append(sDelim);
 				}
