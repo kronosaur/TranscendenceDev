@@ -4308,13 +4308,15 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 			CString sTarget = iArgs > 1 ? pArgs->GetElement(1)->GetStringValue() : CONSTLIT(" \t\n\r");
 			if (iArgs > 2)
 				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
+			int iEnd = sSource.GetLength();
 
 			//	If we cant do anything with it then we pass the first arg through
-			if (!sTarget.GetLength())
+
+			if (!iEnd)
 				return pArgs->GetElement(0);
 
 			//	Otherwise we try to do replacement.
-			int iEnd = sSource.GetLength();
+
 			int iTargetEnd = sTarget.GetLength();
 			char* pSourceChar = sSource.GetASCIIZPointer();
 			char* pTargetChar = sTarget.GetASCIIZPointer();
@@ -4324,6 +4326,7 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 			int iSpanEnd = 0;
 
 			//	Check the front of the string till we find characters not in sTarget
+
 			for (int i = 0; i < iEnd; i++)
 				{
 				bFound = false;
@@ -4349,6 +4352,7 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 				}
 
 			//	Check the back of the string till we find characters not in sTarget
+
 			pSourceChar = sSource.GetASCIIZPointer() + sSource.GetLength() - 1;
 			for (int i = iEnd - 1; i > -1; i--)
 				{
@@ -4375,6 +4379,7 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 				}
 
 			//	Extract the stripped string
+
 			return pCC->CreateString(strSubString(sSource, iSpanStart, iSpanEnd - iSpanStart));
 			}
 
@@ -4386,59 +4391,50 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 			CString sSource = pArgs->GetElement(0)->GetStringValue();
 			CString sTarget = pArgs->GetElement(1)->GetStringValue();
 			CString sReplacement = pArgs->GetElement(2)->GetStringValue();
+			int iTargetEnd = sTarget.GetLength();
+			int iSourceEnd = sSource.GetLength();
 
-			//	If we cant do anything with it then we pass the first arg through
-			if (!sTarget.GetLength() || sSource.GetLength() < sTarget.GetLength())
+			//	If we cant do anything with it then we pass the first arg via a list
+
+			if (!iTargetEnd || iSourceEnd < iTargetEnd)
 				return pArgs->GetElement(0);
 
 			//	Otherwise we try to do replacement.
-			int iEnd = sSource.GetLength() - sTarget.GetLength() + 2;
-			int iTargetEnd = sTarget.GetLength();
-			char *pSourceChar = sSource.GetASCIIZPointer();
-			char *pSourceScanChar = pSourceChar;
-			char *pTargetChar = sTarget.GetASCIIZPointer();
-			char cSource, cTarget;
-			bool bFound = true;
+
+			int iEnd = iSourceEnd - iTargetEnd + 2;
 			int iSpanStart = 0;
-			for (int i = 0; i < iEnd; i++)
+
+			while (iSpanStart < iEnd)
 				{
-				bFound = true;
-				for (int k = 0; k < iTargetEnd; k++)
+				//	Find the next location to split (iSpanEnd is -1 if nothing was found)
+
+				int iSpanEnd = strFindIn(sSource, sTarget, iSpanStart, iSourceEnd, bCaseSensitive);
+
+				if (iSpanEnd < 0)
 					{
-					cSource = bCaseSensitive ? *pSourceScanChar : strLowerCaseAbsolute(*pSourceScanChar);
-					cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
-					if (cSource != cTarget)
-						{
-						bFound = false;
-						break;
-						}
-					pSourceScanChar++;
-					pTargetChar++;
-					}
-				if (bFound)
-					{
+					//	No further splits, treat whatever remains as the final span
 
-					//	Append the last span
-					sResult.Append(strSubString(sSource, iSpanStart, i - iSpanStart));
+					sResult.Append(strSubString(sSource, iSpanStart));
 
-					//	Append the replacement
-					sResult.Append(sReplacement);
+					//	Exit our loop
 
-					//	start new span at next character after the replaced section
-					i += iTargetEnd;
-					pSourceChar += iTargetEnd;
-					iSpanStart = i;
-					i--; //since we do i++ in the for loop we will be one ahead otherwise
+					break;
 					}
 				else
-					pSourceChar++;
-				pSourceScanChar = pSourceChar;
-				pTargetChar = sTarget.GetASCIIZPointer();
-				}
+					{
+					//	Append this span that we found
 
-			//	Handle anything left over at the end
-			if (iSpanStart < iEnd)
-				sResult.Append(strSubString(sSource, iSpanStart));
+					sResult.Append(strSubString(sSource, iSpanStart, iSpanEnd - iSpanStart));
+
+					//	Append the replacement
+
+					sResult.Append(sReplacement);
+
+					//	Figure out where we need to check for the next span
+
+					iSpanStart = iSpanEnd + iTargetEnd;
+					}
+				}
 
 			return pCC->CreateString(sResult);
 			}
