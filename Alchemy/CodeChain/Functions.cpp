@@ -4304,83 +4304,22 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 
 		case FN_STR_STRIP:
 			{
+			DWORD dwFlags = 0;
 			CString sSource = pArgs->GetElement(0)->GetStringValue();
-			CString sTarget = iArgs > 1 ? pArgs->GetElement(1)->GetStringValue() : CONSTLIT(" \t\n\r");
-			if (iArgs > 2)
-				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
-			int iEnd = sSource.GetLength();
-
-			//	If we cant do anything with it then we pass the first arg through
-
-			if (!iEnd)
-				return pArgs->GetElement(0);
-
-			//	Otherwise we try to do replacement.
-
-			int iTargetEnd = sTarget.GetLength();
-			char* pSourceChar = sSource.GetASCIIZPointer();
-			char* pTargetChar = sTarget.GetASCIIZPointer();
-			char cSource, cTarget;
-			bool bFound = true;
-			int iSpanStart = 0;
-			int iSpanEnd = 0;
-
-			//	Check the front of the string till we find characters not in sTarget
-
-			for (int i = 0; i < iEnd; i++)
+			CString sTarget;
+			if (iArgs > 1 && !pArgs->GetElement(1)->IsNil())
+				sTarget = pArgs->GetElement(1)->GetStringValue();
+			else
 				{
-				bFound = false;
-				cSource = bCaseSensitive ? *pSourceChar : strLowerCaseAbsolute(*pSourceChar);
-				pTargetChar = sTarget.GetASCIIZPointer();
-				for (int k = 0; k < iTargetEnd; k++)
-					{
-					cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
-					if (cSource == cTarget)
-						{
-						bFound = true;
-						break;
-						}
-					pTargetChar++;
-					}
-				if (!bFound)
-					{
-					iSpanStart = i;
-					break;
-					}
-				else
-					pSourceChar++;
+				dwFlags |= Kernel::STRSTRIP_DEFAULT_WHITESPACE;
+				sTarget = CONSTLIT("");
 				}
-
-			//	Check the back of the string till we find characters not in sTarget
-
-			pSourceChar = sSource.GetASCIIZPointer() + sSource.GetLength() - 1;
-			for (int i = iEnd - 1; i > -1; i--)
-				{
-				bFound = false;
-				cSource = bCaseSensitive ? *pSourceChar : strLowerCaseAbsolute(*pSourceChar);
-				pTargetChar = sTarget.GetASCIIZPointer();
-				for (int k = 0; k < iTargetEnd; k++)
-					{
-					cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
-					if (cSource == cTarget)
-						{
-						bFound = true;
-						break;
-						}
-					pTargetChar++;
-					}
-				if (!bFound)
-					{
-					iSpanEnd = i + 1;
-					break;
-					}
-				else
-					pSourceChar--;
-				}
+			if (iArgs > 2 && !pArgs->GetElement(2)->IsNil())
+				dwFlags |= Kernel::STRSTRIP_CASE_SENSITIVE;
 
 			//	Extract the stripped string
 
-			return pCC->CreateString(strSubString(sSource, iSpanStart, iSpanEnd - iSpanStart));
+			return pCC->CreateString(strStrip(sSource, sTarget, dwFlags));
 			}
 
 		case FN_STR_REPLACE:

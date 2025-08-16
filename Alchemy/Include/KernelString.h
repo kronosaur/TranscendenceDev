@@ -266,6 +266,12 @@ Kernel::CString strRomanNumeral (int i);
 bool strStartsWithOld (const Kernel::CString &sString, const Kernel::CString &sStringToFind);
 inline bool strStartsWith (const Kernel::CString& sString, const Kernel::CString& sStringToFind, bool bCaseSensitive = false) { return Kernel::strFindIn(sString, sStringToFind, 0, sStringToFind.GetLength(), bCaseSensitive) > -1; }
 Kernel::CString strSlice (const Kernel::CString& sString, int iStart, int iEnd = -1);
+
+constexpr DWORD STRSTRIP_CASE_SENSITIVE =			0x00000001;
+constexpr DWORD STRSTRIP_NO_LEADING =				0x00000002;
+constexpr DWORD STRSTRIP_NO_TRAILING =				0x00000004;
+constexpr DWORD STRSTRIP_DEFAULT_WHITESPACE =		0x00000008;
+Kernel::CString strStrip (const Kernel::CString& sString, Kernel::CString& sStripChars, DWORD dwFlags = 0);
 Kernel::CString strSubString (const Kernel::CString &sString, int iOffset, int iLength = -1);
 Kernel::CString strSubStringWrapAround (const Kernel::CString& sString, int iOffset, int iLength = -1);
 Kernel::CString strTitleCapitalize (const Kernel::CString &sString, const char **pExceptions = NULL, int iExceptionsCount = 0);

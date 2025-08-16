@@ -3247,6 +3247,111 @@ CString Kernel::strSlice (const CString& sString, int iStart, int iEnd)
 		}
 	}
 
+
+CString Kernel::strStrip (const CString& sString, CString& sStripChars, DWORD dwFlags)
+
+//	strStrip
+//
+//	removes chars in sStripChars from the beginning and end of sString.
+
+	{
+
+	int iEnd = sString.GetLength();
+	int iTargetEnd = sStripChars.GetLength();
+	bool bCaseSensitive = dwFlags & Kernel::STRSTRIP_CASE_SENSITIVE;
+	bool bLeading = !(dwFlags & Kernel::STRSTRIP_NO_LEADING);
+	bool bTrailing = !(dwFlags & Kernel::STRSTRIP_NO_TRAILING);
+	bool bDefault = !iTargetEnd && (dwFlags & Kernel::STRSTRIP_DEFAULT_WHITESPACE);
+
+	//	If we are using the default behavior (trim whitespace) do that
+
+	if (bDefault)
+		return strTrimWhitespace(sString, bLeading, bTrailing);
+
+	//	If we cant do anything with it then we pass the first arg through
+
+	if (!iEnd || !iTargetEnd || (!bLeading && !bTrailing))
+		return sString;
+
+	//	Otherwise we try to do replacement.
+
+	char* pSourceChar;
+	char* pTargetChar = sStripChars.GetASCIIZPointer();
+	char cSource, cTarget;
+	bool bFound = true;
+	int iSpanStart = 0;
+	int iSpanEnd = iEnd;
+
+	//	Check the front of the string till we find characters not in sStripChars
+
+	if (bLeading)
+		{
+		pSourceChar = sString.GetASCIIZPointer();
+		for (int i = 0; i < iEnd; i++)
+			{
+			bFound = false;
+			cSource = bCaseSensitive ? *pSourceChar : strLowerCaseAbsolute(*pSourceChar);
+			pTargetChar = sStripChars.GetASCIIZPointer();
+
+			for (int k = 0; k < iTargetEnd; k++)
+				{
+				cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
+				if (cSource == cTarget)
+					{
+					bFound = true;
+					break;
+					}
+				pTargetChar++;
+				}
+
+			if (!bFound)
+				{
+				iSpanStart = i;
+				break;
+				}
+			else
+				pSourceChar++;
+			}
+		}
+
+	//	Check the back of the string till we find characters not in sStripChars
+
+	if (bTrailing)
+		{
+		pSourceChar = sString.GetASCIIZPointer() + sString.GetLength() - 1;
+		for (int i = iEnd - 1; i > -1; i--)
+			{
+			bFound = false;
+			cSource = bCaseSensitive ? *pSourceChar : strLowerCaseAbsolute(*pSourceChar);
+			pTargetChar = sStripChars.GetASCIIZPointer();
+
+			for (int k = 0; k < iTargetEnd; k++)
+				{
+				cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
+				if (cSource == cTarget)
+					{
+					bFound = true;
+					break;
+					}
+				pTargetChar++;
+				}
+
+			if (!bFound)
+				{
+				iSpanEnd = i + 1;
+				break;
+				}
+			else
+				pSourceChar--;
+			}
+		}
+
+	//	Extract the stripped string
+
+	return strSubString(sString, iSpanStart, iSpanEnd - iSpanStart);
+	}
+
+
 CString Kernel::strSubString (const CString &sString, int iOffset, int iLength)
 
 //	strSubString
