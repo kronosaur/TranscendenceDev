@@ -334,6 +334,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //
 //	 55: 2.0 Alpha 4
 //		tlisp:
+//			(lambda args [docstring] expr)
+//				Lambda now accepts an optional docstring that can be printed out with (help lambda)
 //			(gammaScale val inStart inEnd outStart outEnd [gamma=1.0])
 //				Native tlisp version of mathScale/mathScaleReal.
 //				Returns an int if outMin and outMax are both ints. Otherwise returns a double.
@@ -343,6 +345,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				Warning: Do not use below API55. API checking is not available for primitive functions.
 //			(plyGetName player)
 //				Allows getting the player name without needing to use str formatting
+//			(help [lambda])
+//				Now accepts a lambda, and will print out the docstring if one exists
 //			(dbgApplyTimed fn argsList)
 //				Allows timing tlisp function execution
 //			(dbgEvalTimed expr)
