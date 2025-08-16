@@ -63,6 +63,7 @@
 #define MAX_RADIUS_ATTRIB						CONSTLIT("maxRadius")
 #define MIN_DAMAGE_ATTRIB						CONSTLIT("minDamage")
 #define MIN_RADIUS_ATTRIB						CONSTLIT("minRadius")
+#define MINING_METHOD_ATTRIB					CONSTLIT("miningMethod")
 #define MISSILE_SPEED_ATTRIB					CONSTLIT("missileSpeed")
 #define MULTI_TARGET_ATTRIB						CONSTLIT("multiTarget")
 #define NO_DETONATION_ON_END_OF_LIFE_ATTRIB		CONSTLIT("noDetonationOnEndOfLife")
@@ -132,6 +133,11 @@
 #define FRAG_VELOCITY_TYPE_NEWTONIAN			CONSTLIT("newtonian")
 #define FRAG_VELOCITY_TYPE_RELATIVISTIC			CONSTLIT("relativistic")
 #define FRAG_VELOCITY_TYPE_SUPERLUMINAL			CONSTLIT("superluminal")
+
+#define MINING_METHOD_ABLATIVE					CONSTLIT("ablative")
+#define MINING_METHOD_DRILL						CONSTLIT("drill")
+#define MINING_METHOD_EXPLOSIVE					CONSTLIT("explosive")
+#define MINING_METHOD_SHOCKWAVE					CONSTLIT("shockwave")
 
 #define ON_CREATE_SHOT_EVENT					CONSTLIT("OnCreateShot")
 #define ON_DAMAGE_OVERLAY_EVENT					CONSTLIT("OnDamageOverlay")
@@ -2101,6 +2107,32 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, -1);
 	m_iIdlePowerUse = pDesc->GetAttributeIntegerBounded(IDLE_POWER_USE_ATTRIB, 0, -1, (m_iPowerUse == -1 ? -1 : m_iPowerUse / 10));
+
+	//	Mining Method
+
+	CString sMiningMethod;
+	if (pDesc->FindAttribute(MINING_METHOD_ATTRIB, &sMiningMethod))
+		{
+		if (Ctx.GetAPIVersion() < 55)
+			{
+			Ctx.sError = CONSTLIT("miningMethod requires API 55 or higher");
+			return ERR_FAIL;
+			}
+
+		if (sMiningMethod == MINING_METHOD_ABLATIVE)
+			m_MiningMethod = EMiningMethod::ablation;
+		else if (sMiningMethod == MINING_METHOD_DRILL)
+			m_MiningMethod = EMiningMethod::drill;
+		else if (sMiningMethod == MINING_METHOD_EXPLOSIVE)
+			m_MiningMethod = EMiningMethod::explosion;
+		else if (sMiningMethod == MINING_METHOD_SHOCKWAVE)
+			m_MiningMethod = EMiningMethod::shockwave;
+		else
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Invalid weapon mining method: \"%s\""), sValue);
+			return ERR_FAIL;
+			}
+		}
 
 	//	Hit criteria
 
