@@ -347,6 +347,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				Allows getting the player name without needing to use str formatting
 //			(help [lambda])
 //				Now accepts a lambda, and will print out the docstring if one exists
+//			(help '[match-pattern] ['lambda])
+//				Adds option to print out any matching lambdas
 //			(dbgApplyTimed fn argsList)
 //				Allows timing tlisp function execution
 //			(dbgEvalTimed expr)
