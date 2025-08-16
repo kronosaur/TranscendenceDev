@@ -373,6 +373,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //					labelTextColor: 24-bit or triplet RGB color for tag text
 //						Default: uses neutral/positive/negative text colors
 //		<ItemType>
+//			<Weapon>
+//				miningMethod: "ablative"|"drill"|"explosive"|"shockwave"
+//					Default: uses automatic computation based on weapon desc
 //			<Events>
 //				<GetDisplayAttributes>
 //					Returned struct now accepts the following new values:
