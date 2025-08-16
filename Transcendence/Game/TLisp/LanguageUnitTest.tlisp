@@ -123,6 +123,8 @@
 	;	strSplit
 
 	{	code: '(strSplit "a,b,c,d,e,," ",")				result: '("a" "b" "c" "d" "e" "" "")}
+	{	code: '(strSplit "aabacadaeaa" "a")				result: '("" "" "b" "c" "d" "e" "" "")}
+	{	code: '(strSplit "aAbacadaeaA" "a" 'case)		result: '("" "Ab" "c" "d" "e" "A")}
 
 	))
 

@@ -4247,59 +4247,56 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
 			CString sSource = pArgs->GetElement(0)->GetStringValue();
 			CString sTarget = pArgs->GetElement(1)->GetStringValue();
+			int iTargetEnd = sTarget.GetLength();
+			int iSourceEnd = sSource.GetLength();
 
 			//	If we cant do anything with it then we pass the first arg via a list
-			if (!sTarget.GetLength() || sSource.GetLength() < sTarget.GetLength())
+
+			if (!iTargetEnd || iSourceEnd < iTargetEnd)
 				{
 				pList->Append(pArgs->GetElement(0));
 				return pList;
 				}
 
 			//	Otherwise we try to do the splitting
-			int iEnd = sSource.GetLength() - sTarget.GetLength() + 1;
-			int iTargetEnd = sTarget.GetLength();
-			char *pSourceChar = sSource.GetASCIIZPointer();
-			char *pSourceScanChar = pSourceChar;
-			char *pTargetChar = sTarget.GetASCIIZPointer();
-			char cSource, cTarget;
-			bool bFound = true;
+
+			int iEnd = iSourceEnd - iTargetEnd + 1;
 			int iSpanStart = 0;
-			for (int i = 0; i < iEnd; i++)
+
+			while (iSpanStart < iEnd)
 				{
-				bFound = true;
-				for (int k = 0; k < iTargetEnd; k++)
+
+				//	Find the next location to split (iSpanEnd is -1 if nothing was found)
+
+				int iSpanEnd = strFindIn(sSource, sTarget, iSpanStart, iSourceEnd, bCaseSensitive);
+
+				if (iSpanEnd < 0)
 					{
-					cSource = bCaseSensitive ? *pSourceScanChar : strLowerCaseAbsolute(*pSourceScanChar);
-					cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
-					if (cSource != cTarget)
-						{
-						bFound = false;
-						break;
-						}
-					pSourceScanChar++;
-					pTargetChar++;
-					}
-				if (bFound)
-					{
-					//	Append the last span
-					pList->Append(pCC->CreateString(strSubString(sSource, iSpanStart, i - iSpanStart)));
-					//	start new span at next character after the replaced section
-					i += iTargetEnd;
-					pSourceChar += iTargetEnd;
-					iSpanStart = i;
-					i--; //since we do i++ in the for loop we will be one ahead otherwise
+					//	No further splits, treat whatever remains as the final span
+
+					pList->Append(pCC->CreateString(strSubString(sSource, iSpanStart)));
+
+					//	Exit our loop
+
+					break;
 					}
 				else
-					pSourceChar++;
-				pSourceScanChar = pSourceChar;
-				pTargetChar = sTarget.GetASCIIZPointer();
+					{
+					//	Append this span that we found
+
+					pList->Append(pCC->CreateString(strSubString(sSource, iSpanStart, iSpanEnd - iSpanStart)));
+
+					//	Figure out where we need to check for the next span
+
+					iSpanStart = iSpanEnd + iTargetEnd;
+					}
 				}
-			//	Handle anything left over at the end
-			if (iSpanStart < iEnd)
-				pList->Append(pCC->CreateString(strSubString(sSource, iSpanStart)));
-			//	Otherwise we split right at the end and need an empty string
-			else
+
+			//	Handle the case where we need an empty string right at the end
+
+			if (iSpanStart == iSourceEnd)
 				pList->Append(pCC->CreateString(CONSTLIT("")));
+
 			return pList;
 			}
 
