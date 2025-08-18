@@ -171,7 +171,7 @@ class CEffectGroupCreator : public CEffectCreator
 		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx) override;
 		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) override;
 		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx) override;
-		virtual void OnEffectPlaySound (CSpaceObject *pSource) override;
+		virtual void OnEffectPlaySound (CSpaceObject *pSource, SSoundOptions *pOptions) override;
 		virtual void OnEffectMarkResources (void) override;
 
 	private:

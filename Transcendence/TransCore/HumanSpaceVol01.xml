@@ -2814,6 +2814,7 @@
 
 	<!-- Star Systems -->
 		
+	<Module filename="Elysium.xml"/>
 	<Module filename="EtaCeti.xml"/>
 	<Module filename="HumanSpaceMap.xml"/>
 	<Module filename="StdSystems.xml"/>
