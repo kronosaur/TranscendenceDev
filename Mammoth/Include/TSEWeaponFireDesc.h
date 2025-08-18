@@ -838,8 +838,8 @@ class CWeaponFireDesc
 		bool IsTrackingTime (int iTick) const { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
 		void MarkImages (void);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
-		void PlayFireSound (CSpaceObject *pSource) const { m_FireSound.PlaySound(pSource); }
-		void PlayChargeSound (CSpaceObject *pSource) const { m_ChargeSound.PlaySound(pSource); }
+		void PlayFireSound (CSpaceObject *pSource) const { m_FireSound.PlaySound(pSource, m_pFireSoundOptions); }
+		void PlayChargeSound (CSpaceObject *pSource) const { m_ChargeSound.PlaySound(pSource, m_pChargeSoundOptions); }
 		bool ProximityBlast (void) const { return (m_fProximityBlast ? true : false); }
 		bool ShowsHint (EDamageHint iHint) const;
 
@@ -909,7 +909,9 @@ class CWeaponFireDesc
 		CEffectCreatorRef m_pFireEffect;		//	Effect when we fire (muzzle flash)
 		CEffectCreatorRef m_pChargeEffect;		//	Effect when we charge (muzzle flash)
 		CSoundRef m_FireSound;					//	Sound when weapon is fired
+		SSoundOptions *m_pFireSoundOptions;		//	Sound options for fire sound
 		CSoundRef m_ChargeSound;				//	Sound when weapon is charged
+		SSoundOptions *m_pChargeSoundOptions;		//	Sound options for charge sound
 		SOldEffects *m_pOldEffects = NULL;		//  Non-painter effects.
 		CWeaponFireDescRef m_pExplosionType;	//	Explosion to create when ship is destroyed
 		bool m_bPlaySoundOncePerBurst;			//	If TRUE, play the fire sound only once per burst

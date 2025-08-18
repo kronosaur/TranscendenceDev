@@ -60,3 +60,15 @@ void CSoundRef::PlaySound (CSpaceObject *pSource) const
 	if (m_pSound)
 		g_pUniverse->PlaySound(pSource, m_pSound->GetSound());
 	}
+
+
+void CSoundRef::PlaySound (CSpaceObject *pSource, SSoundOptions *pOptions) const
+
+//	PlaySound
+//
+//	Plays the sound
+
+	{
+	if (m_pSound)
+		g_pUniverse->PlaySound(pSource, m_pSound->GetSound(), pOptions);
+	}

@@ -26,6 +26,9 @@
 #define CHARGE_EFFECT_ATTRIB					CONSTLIT("chargeEffect")
 #define CHARGE_TIME_ATTRIB						CONSTLIT("chargeTime")
 #define CHARGE_SOUND_ATTRIB						CONSTLIT("chargeSound")
+#define CHARGE_SOUND_FALLOFF_ATTRIB				CONSTLIT("chargeSoundFalloffFactor")
+#define CHARGE_SOUND_FALLOFF_START_ATTRIB		CONSTLIT("chargeSoundFalloffStart")
+#define CHARGE_SOUND_VOLUME_ATTRIB				CONSTLIT("chargeSoundVolume")
 #define COUNT_ATTRIB							CONSTLIT("count")
 #define EXHAUST_RATE_ATTRIB						CONSTLIT("creationRate")
 #define DAMAGE_ATTRIB							CONSTLIT("damage")
@@ -97,6 +100,9 @@
 #define BEAM_CONTINUOUS_ATTRIB					CONSTLIT("repeating")
 #define CONTINUOUS_FIRE_DELAY_ATTRIB			CONSTLIT("repeatingDelay")
 #define SOUND_ATTRIB							CONSTLIT("sound")
+#define FIRE_SOUND_FALLOFF_ATTRIB				CONSTLIT("soundFalloffFactor")
+#define FIRE_SOUND_FALLOFF_START_ATTRIB			CONSTLIT("soundFalloffStart")
+#define FIRE_SOUND_VOLUME_ATTRIB				CONSTLIT("soundVolume")
 #define SPEED_ATTRIB							CONSTLIT("speed")
 #define STEALTH_ATTRIB							CONSTLIT("stealth")
 #define TARGET_REQUIRED_ATTRIB					CONSTLIT("targetRequired")
@@ -2023,7 +2029,9 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	//	Sound
 
 	m_FireSound = CSoundRef();
+	m_pFireSoundOptions = NULL;
 	m_ChargeSound = CSoundRef();
+	m_pChargeSoundOptions = NULL;
 	m_bPlaySoundOncePerBurst = false;
 
 	//	Compute max effective range
@@ -2656,6 +2664,26 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		return error;
 	if (error = m_ChargeSound.LoadUNID(Ctx, pDesc->GetAttribute(CHARGE_SOUND_ATTRIB)))
 		return error;
+
+	m_pFireSoundOptions = new SSoundOptions;
+	m_pChargeSoundOptions = new SSoundOptions;
+
+	if (Ctx.GetAPIVersion() >= 55)
+		{
+
+		//	Fire Sound Options
+
+		m_pFireSoundOptions->rFalloffFactor = pDesc->GetAttributeDoubleBounded(FIRE_SOUND_FALLOFF_ATTRIB, 0.0, -1.0, 1.0);
+		m_pFireSoundOptions->rFalloffStart = pDesc->GetAttributeDoubleBounded(FIRE_SOUND_FALLOFF_START_ATTRIB, 0.0, -1.0, 0.0);
+		m_pFireSoundOptions->rVolumeMultiplier = pDesc->GetAttributeDoubleBounded(FIRE_SOUND_VOLUME_ATTRIB, 0.0, -1.0, 1.0);
+
+		//	Charge Sound Options
+
+		m_pChargeSoundOptions->rFalloffFactor = pDesc->GetAttributeDoubleBounded(CHARGE_SOUND_FALLOFF_ATTRIB, 0.0, -1.0, 1.0);
+		m_pChargeSoundOptions->rFalloffStart = pDesc->GetAttributeDoubleBounded(CHARGE_SOUND_FALLOFF_START_ATTRIB, 0.0, -1.0, 0.0);
+		m_pChargeSoundOptions->rVolumeMultiplier = pDesc->GetAttributeDoubleBounded(CHARGE_SOUND_VOLUME_ATTRIB, 0.0, -1.0, 1.0);
+		}
+
 	m_bPlaySoundOncePerBurst = pDesc->GetAttributeBool(PLAY_SOUND_ONCE_PER_BURST_ATTRIB);
 
 	//	Events
@@ -2989,7 +3017,9 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	m_pFireEffect = Src.m_pFireEffect;
 	m_pChargeEffect = Src.m_pChargeEffect;
 	m_FireSound = Src.m_FireSound;
+	m_pFireSoundOptions = Src.m_pFireSoundOptions;
 	m_ChargeSound = Src.m_ChargeSound;
+	m_pChargeSoundOptions = Src.m_pChargeSoundOptions;
 	m_bPlaySoundOncePerBurst = Src.m_bPlaySoundOncePerBurst;
 	m_pOldEffects = (Src.m_pOldEffects ? new SOldEffects(*Src.m_pOldEffects) : NULL);
 	m_pExplosionType = Src.m_pExplosionType;

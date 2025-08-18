@@ -410,6 +410,47 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //							Default: uses neutral/positive/negative background colors
 //						labelTextColor: 24-bit or triplet RGB color for tag text
 //							Default: uses neutral/positive/negative text colors
+//			<Weapon>
+//				soundVolume: (Double)
+//					linear multiplier to fire effect sound volume (relative to max volume)
+//					default: 1.0
+//				soundFalloffFactor: (Double)
+//					distance multiplier to fire effect sound falloff (affects quadratic falloff curve)
+//					default: 1.0
+//				soundFalloffStart: (Double)
+//					distance (in ls) at which fire effect sound falloff starts
+//					default: 0.0
+//				chargeSoundVolume: (Double)
+//					linear multiplier to charge effect sound volume (relative to max volume)
+//					default: 1.0
+//				chargeSoundFalloffFactor: (Double)
+//					distance multiplier to charge effect sound falloff (affects quadratic falloff curve)
+//					default: 1.0
+//				chargeSoundFalloffStart: (Double)
+//					distance (in ls) at which charge effect sound falloff starts
+//					default: 0.0
+//		<EffectType>
+//			soundVolume: (Double)
+//				linear multiplier to effect sound volume (relative to max volume)
+//				default: 1.0
+//			soundFalloffFactor: (Double)
+//				distance multiplier to effect sound falloff (affects quadratic falloff curve)
+//				default: 1.0
+//			soundFalloffStart: (Double)
+//				distance (in ls) at which effect sound falloff starts
+//				default: 0.0
+//			<Events>
+//				<GetParameters>
+//					Return struct now accepts the following additional sound options:
+//						soundVolume: (Double)
+//							linear multiplier to sound volume (relative to max volume)
+//							default: 1.0
+//						soundFalloffFactor: (Double)
+//							distance multiplier to sound falloff (affects quadratic falloff curve)
+//							default: 1.0
+//						soundFalloffStart: (Double)
+//							distance (in ls) at which sound falloff starts
+//							default: 0.0
 //
 
 
