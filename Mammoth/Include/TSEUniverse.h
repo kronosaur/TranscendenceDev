@@ -460,7 +460,8 @@ class CUniverse
 		ALERROR LoadNewExtension (const CString &sFilespec, const CIntegerIP &FileDigest, CString *retsError) { return m_Extensions.LoadNewExtension(sFilespec, FileDigest, retsError); }
 		bool LogImageLoad (void) const { return (m_iLogImageLoad == 0); }
 		void LogOutput (const CString &sLine) const { m_pHost->LogOutput(sLine); }
-		void PlaySound (CSpaceObject *pSource, int iChannel);
+		void PlaySound (CSpaceObject *pSource, int iChannel) { PlaySound(pSource, iChannel, NULL); }
+		void PlaySound (CSpaceObject *pSource, int iChannel, SSoundOptions *pOptions);
 		void PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CSystemEventList &SavedEvents);
 		void RefreshCurrentMission (void);
 		void RegisterForNotifications (INotifications *pSubscriber) { m_Subscribers.Insert(pSubscriber); }
@@ -684,6 +685,7 @@ class CUniverse
 		mutable const CEconomyType *m_pCreditCurrency = NULL;
 		CNamedEffects m_NamedEffects;
 		CEngineLanguage m_Language;
+		SSoundOptions m_DefaultSoundOptions;
 
 		//	Debugging structures
 
