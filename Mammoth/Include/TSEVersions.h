@@ -378,10 +378,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //			(strCount str substr [caseSensitive=Nil])
 //				Returns the number of instances of substr in str. Optionally case sensitive.
 //				Warning: do not use below API55, API checking is not available for primitive functions.
-//			(strJoin joinStr strList)
-//				Join strs into a substr. Respects presense of Nil/"" in strList
-//				and adds consecutive delimiters rather than skipping them
-//				Warning: do not use below API55, API checking is not available for primitive functions.
 //			(strReplace str substr replaceStr [caseSensitive=Nil])
 //				Replaces instances of substr in str with replaceStr. Optionally case sensitive.
 //				Warning: do not use below API55, API checking is not available for primitive functions.

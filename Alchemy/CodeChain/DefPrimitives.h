@@ -453,10 +453,6 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(strFindAll string target [caseSensitive=Nil]) -> list of all target pos in string (0-based). If none, Nil.",
 			"ss*",	0,	},
 
-		{	"strJoin",	fnStr, FN_STR_JOIN,
-			"(strJoin list delimiter) -> string. Does not ignore Nil.",
-			"vs",	PPFLAG_SIDEEFFECTS,},
-
 		{	"strReplace",	fnStr, FN_STR_REPLACE,
 			"(strReplace string target replacement [caseSensitive=Nil]) -> string",
 			"ssv*",	PPFLAG_SIDEEFFECTS,},
