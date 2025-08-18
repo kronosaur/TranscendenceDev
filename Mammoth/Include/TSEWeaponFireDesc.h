@@ -572,6 +572,20 @@ class CConfigurationDesc
 
 #include "TSEConfigurationDescInlines.h"
 
+//	Mining ---------------------------------------------------------------------
+
+enum class EMiningMethod
+	{
+	unknown = -1,
+
+	ablation = 0,
+	drill = 1,
+	explosion = 2,
+	shockwave = 3,
+	};
+
+constexpr int EMiningMethodCount = 4;
+
 //	WeaponFireDesc -------------------------------------------------------------
 
 struct SExplosionType
@@ -783,6 +797,7 @@ class CWeaponFireDesc
 		int GetMinDamage (void) const { return m_MinDamage.Roll(); }
 		Metric GetMinRadius (void) const { return m_rMinRadius; }
 		Metric GetMaxRange (void) const;
+		EMiningMethod GetMiningMethod (void) const { return m_MiningMethod; }
 		CEffectCreator *GetParticleEffect (void) const;
 		const CParticleSystemDesc *GetParticleSystemDesc (void) const { return m_pParticleDesc; }
 		int GetPassthrough (void) const { return m_iPassthrough; }
@@ -876,6 +891,7 @@ class CWeaponFireDesc
 		int m_iFireRate = -1;					//	Ticks between shots (-1 = default to weapon class)
 		int m_iPowerUse = -1;					//	Power use in 1/10th MWs (-1 = default to weapon class)
 		int m_iIdlePowerUse = -1;				//	Power use while idle (-1 = default to weapon class)
+		EMiningMethod m_MiningMethod = EMiningMethod::unknown;	//	Mining method
 
 		Metric m_rMissileSpeed = 0.0;			//	Speed of missile
 		DiceRange m_MissileSpeed;				//	Speed of missile (if random)
