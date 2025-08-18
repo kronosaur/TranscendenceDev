@@ -528,7 +528,7 @@
     <ClCompile Include="CBackgroundProcessor.cpp" />
     <ClCompile Include="CExtensionListMap.cpp" />
     <ClCompile Include="CGalacticMapSystemDetails.cpp" />
-    <ClCompile Include="CHexarcServiceStub.cpp" />
+    <ClCompile Include="CHexarcService.cpp" />
     <ClCompile Include="CHoverDescriptionPainter.cpp" />
     <ClCompile Include="CHumanInterface.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
