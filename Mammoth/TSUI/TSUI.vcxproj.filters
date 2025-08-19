@@ -177,6 +177,9 @@
     <ClCompile Include="CHexarcService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CHexarcServiceStub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
