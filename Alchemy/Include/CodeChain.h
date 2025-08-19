@@ -548,6 +548,8 @@ class CCLambda : public ICCAtom
 		virtual void DestroyItem (void) override;
 
 	private:
+		void initDesc (CString sHelp);
+
 		ICCItem *m_pArgList;
 		ICCItem *m_pCode;
 		ICCItem *m_pLocalSymbols;

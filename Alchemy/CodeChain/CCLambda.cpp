@@ -49,6 +49,8 @@ ICCItem *CCLambda::Clone (CCodeChain *pCC)
 	else
 		pClone->m_pLocalSymbols = NULL;
 
+	pClone->m_sDesc = m_sDesc;
+
 	return pClone;
 	}
 
@@ -152,11 +154,11 @@ void CCLambda::SetHelpUnformatted(CString sHelpRaw)
 
 	//	There may be leading tabs in sHelp depending on how the developer wrote it so we need to clean it up
 
-	m_sDesc = CONSTLIT("");
+	CString sHelp = CONSTLIT("");
 
 	if (!(strFind(sHelpRaw, "\t") < 0 && strFind(sHelpRaw, "\n") < 0))
 		{
-		m_sDesc = CONSTLIT("");
+		sHelp = CONSTLIT("");
 		int iSpanStart = 0;
 		int iEnd = sHelpRaw.GetLength();
 
@@ -166,7 +168,7 @@ void CCLambda::SetHelpUnformatted(CString sHelpRaw)
 
 			if (iSpanLen < 0)
 				{
-				m_sDesc.Append(strTrimWhitespace(strSubString(sHelpRaw, iSpanStart)));
+				sHelp.Append(strTrimWhitespace(strSubString(sHelpRaw, iSpanStart)));
 				break;
 				}
 			else if (iSpanLen == 0)
@@ -183,7 +185,9 @@ void CCLambda::SetHelpUnformatted(CString sHelpRaw)
 			}
 		}
 	else
-		m_sDesc = strTrimWhitespace(sHelpRaw, true, false);
+		sHelp = strTrimWhitespace(sHelpRaw, true, false);
+
+	initDesc(sHelp);
 	}
 
 ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
@@ -413,3 +417,35 @@ void CCLambda::SetLocalSymbols (CCodeChain *pCC, ICCItem *pSymbols)
 #endif
 	}
 
+void CCLambda::initDesc(CString sHelp)
+
+//	initDesc
+//
+//	initialize m_sDesc with the function signature and any docstring
+
+	{
+	//	We only need to do this if m_sDesc was not populated
+	CString sKey = CONSTLIT("%s");
+	ICCItem* pLambdaArgs = GetArgList();
+
+	if (sHelp.GetLength())
+		{
+		if (pLambdaArgs)
+			if (pLambdaArgs->IsNil())
+				m_sDesc = strPatternSubst(CONSTLIT("(%s)\n\n%s\n"), sKey, sHelp);
+			else
+				m_sDesc = strPatternSubst(CONSTLIT("(%s %s)\n\n%s\n"), sKey, pLambdaArgs->Print(PRFLAG_NO_LIST_LAMBDA_ARGS), sHelp);
+		else
+			m_sDesc = strPatternSubst(CONSTLIT("(%s ...)\n\n%s\n"), sKey, sHelp);
+		}
+	else
+		{
+		if (pLambdaArgs)
+			if (pLambdaArgs->IsNil())
+				m_sDesc = strPatternSubst(CONSTLIT("(%s)"), sKey);
+			else
+				m_sDesc = strPatternSubst(CONSTLIT("(%s %s)"), sKey, pLambdaArgs->Print(PRFLAG_NO_LIST_LAMBDA_ARGS));
+		else
+			m_sDesc = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
+		}
+	}

@@ -1364,33 +1364,6 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		CCLambda *pLambda = (CCLambda *)pFirst;
 		CString sHelp = pLambda->GetHelp();
 
-		//	if we found nothing we need to dynamically generate this from the args list
-
-		if (sHelp.IsBlank())
-			{
-			//	Need to get the real name of this lambda
-
-			CString sKey = CONSTLIT("");
-			ICCItem *pGlobals = pCC->GetGlobals();
-			for (i = 0; i < pGlobals->GetCount(); i++)
-				{
-				if (pGlobals->GetElement(i) == pLambda)
-					{
-					sKey = pGlobals->GetKey(i);
-					break;
-					}
-				}
-
-			ICCItem* pLambdaArgs = pLambda->GetArgList();
-			if (pLambdaArgs)
-				if (pLambdaArgs->IsNil())
-					sHelp = strPatternSubst(CONSTLIT("(%s)"), sKey);
-				else
-					sHelp = strPatternSubst(CONSTLIT("(%s %s)"), sKey, pLambdaArgs->Print(PRFLAG_NO_LIST_LAMBDA_ARGS));
-			else
-				sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
-			}
-
 		Output.Write(sHelp.GetASCIIZPointer(), sHelp.GetLength());
 		}
 
@@ -1413,23 +1386,11 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					{
 
 					//	If the help text is blank, then we generate our own
+					//	Lambdas should never be blank, this only happens with primitives
 
 					if (sHelp.IsBlank())
 						{
-						if (pItem->IsLambdaFunction())
-							{
-							CCLambda *pLambda = (CCLambda *)pItem;
-							ICCItem* pLambdaArgs = pLambda->GetArgList();
-							if (pLambdaArgs)
-								if (pLambdaArgs->IsNil())
-									sHelp = strPatternSubst(CONSTLIT("(%s)"), pGlobals->GetKey(i));
-								else
-									sHelp = strPatternSubst(CONSTLIT("(%s %s)"), pGlobals->GetKey(i), pLambdaArgs->Print(PRFLAG_NO_LIST_LAMBDA_ARGS));
-							else
-								sHelp = strPatternSubst(CONSTLIT("(%s ...)"), pGlobals->GetKey(i));
-;							}
-						else
-							sHelp = strPatternSubst(CONSTLIT("(%s ...)"), pGlobals->GetKey(i));
+						sHelp = strPatternSubst(CONSTLIT("(%s ...)"), pGlobals->GetKey(i));
 						}
 
 					OutputFunctionName(Output, sHelp);
@@ -1471,25 +1432,11 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				CString sHelp = pItem->GetHelp();
 
 				//	If the help text is blank, then we generate our own
+				//	Lambdas should never be blank, this only happens with primitives
 
 				if (sHelp.IsBlank())
 					{
-					if (pItem->IsLambdaFunction())
-						{
-						CCLambda *pLambda = (CCLambda *)pItem;
-						ICCItem* pLambdaArgs = pLambda->GetArgList();
-						if (pLambdaArgs)
-							if (pLambdaArgs->IsNil())
-								sHelp = strPatternSubst(CONSTLIT("(%s)"), pGlobals->GetKey(i));
-							else
-								sHelp = strPatternSubst(CONSTLIT("(%s %s)"), pGlobals->GetKey(i), pLambdaArgs->Print(PRFLAG_NO_LIST_LAMBDA_ARGS));
-						else
-							sHelp = strPatternSubst(CONSTLIT("(%s ...)"), pGlobals->GetKey(i));
-						;							}
-					else
 						sHelp = strPatternSubst(CONSTLIT("(%s ...)"), pGlobals->GetKey(i));
-
-					Help.Insert(sHelp);
 					}
 
 				//	If the help text starts with DEPRECATED, then we skip it.
