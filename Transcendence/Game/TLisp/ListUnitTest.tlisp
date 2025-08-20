@@ -53,7 +53,10 @@
 	{	code: '(subset (list 1 2 3 4) 5)						result: Nil}
 	{	code: '(subset (list 1 2 3 4) 5 5)						result: Nil}
 	{	code: '(subset (list 1 2 3 4) 2 5)						result: '(3 4)}
+	{	code: '(subset (list 1 2 3 4) -2 5 '-)					result: '(3 4)}
 	{	code: '(subset (list 1 2 3 4) 5 'empty)					result: '()}
+	{	code: '(subset (list 1 2 3 4) 5 5 'empty)				result: '()}
+	{	code: '(subset (list 1 2 3 4) 5 5 'empty '-)			result: '()}
 
 	;	Slice
 	
