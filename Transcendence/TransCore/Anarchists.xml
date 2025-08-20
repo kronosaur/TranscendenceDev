@@ -317,27 +317,43 @@
 
 	<!-- Level 1: Hornet Battlepod -->
 
-	<ShipClass UNID="&scHornet;"
+	<ShipClass UNID="&scHornetStock;"
 			manufacturer=		"Earth Industries"
 			class=				"Hornet"
 			type=				"battlepod"
-			defaultSovereign=	"&svAnarchists;"
+			defaultSovereign=	"&svIndependent;"
 
-			size=				"10"
-			mass=				"5"
-			cargoSpace=			"0"
-			thrustRatio=		"16"
-			maxSpeed=			"35"
-
-			attributes=			"anarchists, EI, genericClass"
+			attributes=			"EI, genericClass"
 			>
 
-		<Armor>
-			<ArmorSection start="0" span="360" armorID="&itUltraLightTitaniumCasing;"/>
-		</Armor>
+		<Hull
+			size=				"10"
+			mass=				"5"
+
+			cargoSpace=			"0"
+			maxCargoSpace=		"10"
+			maxReactorPower=	"10000"
+			maxDevices=			"3"
+			stdArmor=			"ultralight"
+			maxArmor=			"ultralight"
+			/>
+
+		<Drive
+			thrustRatio=		"16"
+			maxSpeed=			"35"
+			/>
+
+		<Armor
+			armorID=			"&itUltraLightTitaniumCasing;"
+			count=				"1"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot id="main"		criteria="w"/>
+		</DeviceSlots>
 
 		<Devices>
-			<Device deviceID="&itLaserCannon;"/>
+			<Device slotID="main"		deviceID="&itLaserCannon;"/>
 		</Devices>
 
 		<Maneuver
@@ -353,10 +369,32 @@
 		</Effects>
 
 		<AISettings
-			fireRateAdj=		"30"
-			fireAccuracy=		"70"
+			fireRateAdj=		"10"
+			fireAccuracy=		"100"
 			perception=			"4"
 			/>
+
+	</ShipClass>
+
+	<ShipClass UNID="&scHornet;"
+			inherit="&scHornetStock;"
+			defaultSovereign=	"&svAnarchists;"
+			attributes=			"anarchists, EI, genericClass, poorQualityHull"
+			>
+
+		<DeviceSlots>
+			<DeviceSlot id="main"		criteria="w">
+				<EnhancementAbilities>
+					<Enhance type=			"Poor Quality Hull"
+							 enhancement=	"-speed:33;"
+							 />
+				</EnhancementAbilities>
+			</DeviceSlot>
+		</DeviceSlots>
+
+		<Devices>
+			<Device slotID="main"		deviceID="&itLaserCannon;"/>
+		</Devices>
 
 	</ShipClass>
 
