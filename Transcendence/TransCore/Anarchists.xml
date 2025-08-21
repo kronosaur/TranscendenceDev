@@ -396,6 +396,12 @@
 			<Device slotID="main"		deviceID="&itLaserCannon;"/>
 		</Devices>
 
+		<AISettings
+			fireRateAdj=		"10"
+			fireAccuracy=		"70"
+			perception=			"4"
+			/>
+			
 	</ShipClass>
 
 	<!-- Level 1: Earthzone 100 Armed Shuttle -->
