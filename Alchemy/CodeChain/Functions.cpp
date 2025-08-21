@@ -4634,7 +4634,7 @@ ICCItem *fnSubset (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	This is the default not set value for subset iCount. slice iCount is always positive at this point in the code.
 	
-	if (iCount == -1)
+	if (iCount == -1 || (iStart + iCount) > iSourceCount)
 		iCount = iSourceCount - iStart;
 
 	//	Return nil or empty if asked to get a count of 0 or below
