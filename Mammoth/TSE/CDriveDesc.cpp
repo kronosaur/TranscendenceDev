@@ -234,7 +234,7 @@ ALERROR CDriveDesc::InitFromShipClassXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 
 		//	-1 means default. We will compute a proper default in Bind
 		m_iPowerUse = pDesc->GetAttributeIntegerBounded(DRIVE_POWER_USE_ATTRIB, 0, -1, -1);
-		m_rPowerUseRatio = pDrive->GetAttributeDoubleBounded(POWER_USE_RATIO_ATTRIB, 0.0, -1.0, 1.0);
+		m_rPowerUseRatio = pDesc->GetAttributeDoubleBounded(POWER_USE_RATIO_ATTRIB, 0.0, -1.0, 1.0);
 		if (Ctx.GetAPIVersion() < 56 && m_rPowerUseRatio != 1.0)
 			{
 			Ctx.sError = CONSTLIT("powerUseRatio requires API56 or greater");
