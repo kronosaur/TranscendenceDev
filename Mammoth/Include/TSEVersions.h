@@ -453,6 +453,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //							default: 0.0
 //
 //	 56: 2.0 Alpha 5
+//		<ShipClass>
+//			<Drive>
+//				powerUseRatio: (Double)
+//					ratio to apply to auto-computed power use, ex: 2.0 doubles power consumption.
+//					Ignored if explicit powerUse is set.
+//					default: 1.0
 //
 
 
