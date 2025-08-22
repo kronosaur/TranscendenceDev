@@ -492,10 +492,13 @@ CString CCLinkedList::Print (DWORD dwFlags) const
 
 		//	Open paren
 
-		if (IsQuoted())
-			Stream.Write("'(", 2);
-		else
-			Stream.Write("(", 1);
+		if (!(dwFlags & PRFLAG_NO_LIST_LAMBDA_ARGS))
+			{
+			if (IsQuoted())
+				Stream.Write("'(", 2);
+			else
+				Stream.Write("(", 1);
+			}
 
 		//	Items
 
@@ -512,7 +515,8 @@ CString CCLinkedList::Print (DWORD dwFlags) const
 
 		//	Close paren
 
-		Stream.Write(")", 1);
+		if (!(dwFlags & PRFLAG_NO_LIST_LAMBDA_ARGS))
+			Stream.Write(")", 1);
 		return CString(Stream.GetPointer(), Stream.GetLength());
 		}
 	else
@@ -522,10 +526,13 @@ CString CCLinkedList::Print (DWORD dwFlags) const
 
 		//	Open paren
 
-		if (IsQuoted())
-			sString = LITERAL("'(");
-		else
-			sString = LITERAL("(");
+		if (!(dwFlags & PRFLAG_NO_LIST_LAMBDA_ARGS))
+			{
+			if (IsQuoted())
+				sString = LITERAL("'(");
+			else
+				sString = LITERAL("(");
+			}
 
 		//	Items
 
@@ -541,7 +548,8 @@ CString CCLinkedList::Print (DWORD dwFlags) const
 
 		//	Close paren
 
-		sString.Append(LITERAL(")"));
+		if (!(dwFlags & PRFLAG_NO_LIST_LAMBDA_ARGS))
+			sString.Append(LITERAL(")"));
 		return sString;
 		}
 	}

@@ -453,6 +453,13 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //							default: 0.0
 //
 //	 56: 2.0 Alpha 5
+//      tlisp:
+//			(lambda args [docstring] expr)
+//				Lambda now accepts an optional docstring that can be printed out with (help lambda)
+//			(help [lambda])
+//				Now accepts a lambda, and will print out the docstring if one exists
+//			(help '[match-pattern] ['lambda])
+//				Adds option to print out any matching lambdas
 //
 
 
