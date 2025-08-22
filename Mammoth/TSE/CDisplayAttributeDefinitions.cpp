@@ -277,7 +277,7 @@ bool CDisplayAttributeDefinitions::InitFromCCItem (ICCItem *pEntry, SDisplayAttr
 	if (sLabel.IsBlank())
 		return false;
 
-	Result = SDisplayAttribute(iType, sLabel, DWToRGBColor(dwColor), DWToRGBColor(dwTextColor));
+	Result = SDisplayAttribute(iType, sLabel, DWToARGBColor(dwColor), DWToARGBColor(dwTextColor));
 	return true;
 	}
 
