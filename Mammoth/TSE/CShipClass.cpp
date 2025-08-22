@@ -3384,7 +3384,7 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (m_DriveDesc.GetPowerUse() < 0)
 		{
 		if (GetAPIVersion() >= 29)
-			m_DriveDesc.SetPowerUse((int)Max(1.0, DRIVE_POWER_FACTOR * pow(m_DriveDesc.GetThrust() / 100.0, DRIVE_POWER_EXP)));
+			m_DriveDesc.SetPowerUse((int)Max(1.0, DRIVE_POWER_FACTOR * m_DriveDesc.GetPowerUseRatio() * pow(m_DriveDesc.GetThrust() / 100.0, DRIVE_POWER_EXP)));
 
 		//	Otherwise, use the default
 

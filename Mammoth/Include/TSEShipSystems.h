@@ -669,6 +669,7 @@ class CDriveDesc
 		int GetMaxSpeedInc (void) const { return m_iMaxSpeedInc; }
 		int GetMaxSpeedLimit (void) const { return m_iMaxSpeedLimit; }
 		int GetPowerUse (void) const { return m_iPowerUse; }
+		Metric GetPowerUseRatio (void) const { return m_rPowerUseRatio; }
 		int GetThrust (void) const { return m_iThrust; }
 		int GetThrustProperty (void) const { return 2 * m_iThrust; }
 		DWORD GetUNID (void) const { return m_dwUNID; }
@@ -694,6 +695,7 @@ class CDriveDesc
 		int m_iPowerUse;					//	Power used while thrusting (1/10 megawatt)
 
 		Metric m_rMaxSpeed;					//	Computed max speed (Km/sec)
+		Metric m_rPowerUseRatio;			//	Ratio to apply to auto-computed power usage for built-in drives
 
 		DWORD m_fInertialess:1;				//	Inertialess drive
 		DWORD m_dwSpare:31;

@@ -12,6 +12,7 @@
 #define MAX_SPEED_ATTRIB						CONSTLIT("maxSpeed")
 #define MAX_SPEED_INC_ATTRIB					CONSTLIT("maxSpeedInc")
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
+#define POWER_USE_RATIO_ATTRIB					CONSTLIT("powerUseRatio")
 #define POWER_USED_ATTRIB						CONSTLIT("powerUsed")
 #define THRUST_ATTRIB							CONSTLIT("thrust")
 #define THRUST_RATIO_ATTRIB						CONSTLIT("thrustRatio")
@@ -208,6 +209,12 @@ ALERROR CDriveDesc::InitFromShipClassXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 
 		//	-1 means default. We will compute a proper default in Bind
 		m_iPowerUse = pDrive->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, -1);
+		m_rPowerUseRatio = pDrive->GetAttributeDoubleBounded(POWER_USE_RATIO_ATTRIB, 0.0, -1.0, 1.0);
+		if (Ctx.GetAPIVersion() < 56 && m_rPowerUseRatio != 1.0)
+			{
+			Ctx.sError = CONSTLIT("powerUseRatio requires API56 or greater");
+			return ERR_FAIL;
+			}
 		m_fInertialess = pDrive->GetAttributeBool(INERTIALESS_DRIVE_ATTRIB);
 		}
 	else
@@ -227,6 +234,12 @@ ALERROR CDriveDesc::InitFromShipClassXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 
 		//	-1 means default. We will compute a proper default in Bind
 		m_iPowerUse = pDesc->GetAttributeIntegerBounded(DRIVE_POWER_USE_ATTRIB, 0, -1, -1);
+		m_rPowerUseRatio = pDesc->GetAttributeDoubleBounded(POWER_USE_RATIO_ATTRIB, 0.0, -1.0, 1.0);
+		if (Ctx.GetAPIVersion() < 56 && m_rPowerUseRatio != 1.0)
+			{
+			Ctx.sError = CONSTLIT("powerUseRatio requires API56 or greater");
+			return ERR_FAIL;
+			}
 		m_fInertialess = pDesc->GetAttributeBool(INERTIALESS_DRIVE_ATTRIB);
 		}
 
