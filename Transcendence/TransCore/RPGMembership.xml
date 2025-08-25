@@ -145,6 +145,36 @@
 					)
 				)
 			))
+		
+		(setq rpgRankInit (lambda (theType defaultRank)
+
+			;	Initialize the given membership by setting rpg.rank if it
+			;	has not already been set.
+			
+			(if (not (typ@ theType 'rpg.rank))
+				(typSet@ theType 'rpg.rank (or defaultRank 0))
+				)
+			))
+
+		(setq rpgRankNoun (lambda (theType rank)
+			(typTranslate
+				theType
+				(cat "rank." (or rank (typ@ theType 'rpg.rank)))
+				{
+					gender:(plyGetGenome gPlayer)
+				})
+			))
+		
+		(setq rpgRankAchievements (lambda (theType)
+			(if (typ@ theType 'rpg.rank)
+				(list
+					(list
+						(typTranslate theType 'rpg.rankTypeDesc)
+						(fmtNoun (typ@ theType 'rankNoun) 1 'titleCapitalize)
+						)
+					)
+				)
+			))
 		)
 	</Globals>
 
