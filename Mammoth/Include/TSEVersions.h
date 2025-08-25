@@ -334,15 +334,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //
 //	 55: 2.0 Alpha 4
 //		tlisp:
-//			(gammaScale val inStart inEnd outStart outEnd [gamma=1.0])
-//				Native tlisp version of mathScale/mathScaleReal.
-//				Returns an int if outMin and outMax are both ints. Otherwise returns a double.
-//				Gamma can be an int (multiplied by 100) or a double.
-//				Note: properly handles negative curves where an input or output
-//					range goes from higher to lower value.
-//				Warning: Do not use below API55. API checking is not available for primitive functions.
-//			(plyGetName player)
-//				Allows getting the player name without needing to use str formatting
 //			(dbgApplyTimed fn argsList)
 //				Allows timing tlisp function execution
 //			(dbgEvalTimed expr)
@@ -365,6 +356,42 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				it does not check that you are using API55 first. Ensure your API version
 //				is appropriately set to avoid multiverse from downloading your extension
 //				onto an incompatible version.
+//			(gammaScale val inStart inEnd outStart outEnd [gamma=1.0])
+//				Native tlisp version of mathScale/mathScaleReal.
+//				Returns an int if outMin and outMax are both ints. Otherwise returns a double.
+//				Gamma can be an int (multiplied by 100) or a double.
+//				Note: properly handles negative curves where an input or output
+//					range goes from higher to lower value.
+//				Warning: Do not use below API55. API checking is not available for primitive functions.
+//			(plyGetName player)
+//				Allows getting the player name without needing to use str formatting
+//			(strBeginsWith str substr [caseSensitive=Nil])
+//				Returns if a string begins with substr. Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
+//			(strEndsWith str substr [caseSensitive=Nil])
+//				Returns if a string ends with substr. Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
+//			(strContains str substr [caseSensitive=Nil])
+//				Returns if a string contains substr. Optionally case sensitive.
+//				Higher speed than strCount if you just need to detect the presense of a substr.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
+//			(strCount str substr [caseSensitive=Nil])
+//				Returns the number of instances of substr in str. Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
+//			(strReplace str substr replaceStr [caseSensitive=Nil])
+//				Replaces instances of substr in str with replaceStr. Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
+//			(strSlice str sliceStart [sliceLen=-1])
+//				As subset, but allows negative slice stars from the end of a string.
+//				sliceLen < 0 returns remainder of the string
+//				Warning: do not use below API55, API checking is not available for primitive functions.
+//			(strSplit str delim [caseSensitive=Nil])
+//				Splits str based on delimiters. Consecutive delimiters produce empty strings "".
+//				Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
+//			(strStrip str [stripChars=" \t\n\r"] [caseSensitive=Nil])
+//				Strips stripChars from the beginning and end of str. Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
 //		Any <Type>
 //			<AttributeDesc>
 //				<ItemAttribute> and <LocationAttribute>
@@ -373,6 +400,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //					labelTextColor: 24-bit or triplet RGB color for tag text
 //						Default: uses neutral/positive/negative text colors
 //		<ItemType>
+//			<Weapon>
+//				miningMethod: "ablative"|"drill"|"explosive"|"shockwave"
+//					Default: uses automatic computation based on weapon desc
 //			<Events>
 //				<GetDisplayAttributes>
 //					Returned struct now accepts the following new values:
@@ -380,6 +410,47 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //							Default: uses neutral/positive/negative background colors
 //						labelTextColor: 24-bit or triplet RGB color for tag text
 //							Default: uses neutral/positive/negative text colors
+//			<Weapon>
+//				soundVolume: (Double)
+//					linear multiplier to fire effect sound volume (relative to max volume)
+//					default: 1.0
+//				soundFalloffFactor: (Double)
+//					distance multiplier to fire effect sound falloff (affects quadratic falloff curve)
+//					default: 1.0
+//				soundFalloffStart: (Double)
+//					distance (in ls) at which fire effect sound falloff starts
+//					default: 0.0
+//				chargeSoundVolume: (Double)
+//					linear multiplier to charge effect sound volume (relative to max volume)
+//					default: 1.0
+//				chargeSoundFalloffFactor: (Double)
+//					distance multiplier to charge effect sound falloff (affects quadratic falloff curve)
+//					default: 1.0
+//				chargeSoundFalloffStart: (Double)
+//					distance (in ls) at which charge effect sound falloff starts
+//					default: 0.0
+//		<EffectType>
+//			soundVolume: (Double)
+//				linear multiplier to effect sound volume (relative to max volume)
+//				default: 1.0
+//			soundFalloffFactor: (Double)
+//				distance multiplier to effect sound falloff (affects quadratic falloff curve)
+//				default: 1.0
+//			soundFalloffStart: (Double)
+//				distance (in ls) at which effect sound falloff starts
+//				default: 0.0
+//			<Events>
+//				<GetParameters>
+//					Return struct now accepts the following additional sound options:
+//						soundVolume: (Double)
+//							linear multiplier to sound volume (relative to max volume)
+//							default: 1.0
+//						soundFalloffFactor: (Double)
+//							distance multiplier to sound falloff (affects quadratic falloff curve)
+//							default: 1.0
+//						soundFalloffStart: (Double)
+//							distance (in ls) at which sound falloff starts
+//							default: 0.0
 //
 
 

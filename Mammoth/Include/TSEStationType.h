@@ -403,18 +403,6 @@ enum class EAsteroidType
 
 constexpr int EAsteroidTypeCount = 6;
 
-enum class EMiningMethod
-	{
-	unknown = -1,
-
-	ablation = 0,
-	drill = 1,
-	explosion = 2,
-	shockwave = 3,
-	};
-
-constexpr int EMiningMethodCount = 4;
-
 class CAsteroidDesc
 	{
 	public:
