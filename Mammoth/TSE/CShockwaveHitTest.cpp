@@ -193,7 +193,7 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 	SSpaceObjectGridEnumerator i;
 	Grid.EnumStart(i, vUR, vLL, 0);
 
-	//	Loop over all objects in the system
+	//	Loop over all objects in and near the grid rectangle
 
 	while (Grid.EnumHasMore(i))
 		{
