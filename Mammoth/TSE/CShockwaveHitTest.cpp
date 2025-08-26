@@ -197,12 +197,14 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 
 	while (Grid.EnumHasMore(i))
 		{
-		CSpaceObject *pObj = Grid.EnumGetNextFast(i);
+
+		//	EnumGetNext checks if the object is within bound and not destroyed
+
+		CSpaceObject* pObj = Grid.EnumGetNext(i);
 		if (pObj 
 				&& Ctx.pObj->CanHit(pObj)
 				&& pObj->CanBeHit()
 				&& pObj->CanBeHitBy(Ctx.pDamageDesc->GetDamage())
-				&& !pObj->IsDestroyed()
 				&& pObj != Ctx.pObj)
 			{
 			//	Figure out the bounds of the object in polar coordinates relative
