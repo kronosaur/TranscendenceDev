@@ -195,11 +195,10 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 
 	//	Loop over all objects in the system
 
-	while (Grid.EnumGetNext(i))
+	while (Grid.EnumHasMore(i))
 		{
-		CSpaceObject *pObj = i.pObj;
+		CSpaceObject *pObj = Grid.EnumGetNextFast(i);
 		if (pObj 
-				&& pObj->InBox(vUR, vLL)
 				&& Ctx.pObj->CanHit(pObj)
 				&& pObj->CanBeHit()
 				&& pObj->CanBeHitBy(Ctx.pDamageDesc->GetDamage())
