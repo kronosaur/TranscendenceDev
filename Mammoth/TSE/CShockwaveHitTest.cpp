@@ -163,7 +163,7 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 //	Hit test and update (doing damage, if necessary)
 
 	{
-	int i, j;
+	int j;
 
 	//	Compute some stuff
 
@@ -189,11 +189,15 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 	TArray<SHitData> SegHit;
 	SegHit.InsertEmpty(m_Segments.GetCount());
 
+	const CSpaceObjectGrid &Grid = Ctx.pSystem->GetObjectGrid();
+	SSpaceObjectGridEnumerator i;
+	Grid.EnumStart(i, vUR, vLL, 0);
+
 	//	Loop over all objects in the system
 
-	for (i = 0; i < Ctx.pSystem->GetObjectCount(); i++)
+	while (Grid.EnumGetNext(i))
 		{
-		CSpaceObject *pObj = Ctx.pSystem->GetObject(i);
+		CSpaceObject *pObj = i.pObj;
 		if (pObj 
 				&& pObj->InBox(vUR, vLL)
 				&& Ctx.pObj->CanHit(pObj)
