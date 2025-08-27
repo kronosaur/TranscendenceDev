@@ -203,7 +203,7 @@ int CStationEncounterDesc::GetFrequencyByDistance (int iDistance) const
 	else if (iDistance < 0)
 		return ::GetFrequencyByLevel(m_sDistanceFrequency, iDistance + 6);
 	else if (iDistance > 5)
-		return ftNotRandom;
+		return ::GetFrequencyByLevel(m_sDistanceFrequency, 11);
 	else
 		return ::GetFrequencyByLevel(m_sDistanceFrequency, iDistance + 5);
 	}
