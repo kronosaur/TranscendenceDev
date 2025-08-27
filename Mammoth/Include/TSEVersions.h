@@ -453,6 +453,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //							default: 0.0
 //
 //	 56: 2.0 Alpha 5
+//		<StationType>
+//			<Encounter>
+//				distanceFrequency: (str)
+//					Now supports distances beyond 5 at a single frequency
+//					Ex: "ccccc|curvv v"
+//					Default (if not specified) is NotRandom
 //
 
 
