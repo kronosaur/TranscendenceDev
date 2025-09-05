@@ -47,6 +47,79 @@ static char g_ImageYAttrib[] = "imageY";
 static char g_ImageFrameCountAttrib[] = "imageFrameCount";
 static char g_ImageTicksPerFrameAttrib[] = "imageTicksPerFrame";
 
+// CSpritePaintWorker ----------------------------------------------------------------------------------
+
+class CSpritePaintWorker : public IThreadPoolTask
+	{
+	public:
+		enum ePaintMode
+			{
+			ePaintImage,
+			
+			ePaintModeCount
+			};
+		struct SCtx
+			{
+			//	Call Ctx
+			int xDest = 0;
+			int yDest = 0;
+			int iTick = 0;
+			int iRotation = 0;
+			int iMode = ePaintMode::ePaintImage;
+
+			//	Src Ctx
+			const CObjectImageArray *pSrc = NULL;
+			int xSrc = 0;
+			int ySrc = 0;
+
+			//	Flags
+			DWORD fComposite : 1 = 0;
+			DWORD dwSpare : 31 = 0;
+
+			};
+
+		CSpritePaintWorker (CG32bitImage &Dest, int yOffset, int cyHeight, SCtx &Ctx) :
+			m_Dest(Dest),
+			m_y(yOffset),
+			m_cyHeight(cyHeight),
+			m_Ctx(Ctx)
+			{ }
+
+		void RunPaintImage (void)
+			{
+			if (m_Ctx.pSrc)
+				m_Ctx.pSrc->PaintImage(
+					m_Dest,
+					m_Ctx.xDest,
+					m_Ctx.yDest,
+					m_Ctx.iTick,
+					m_Ctx.iRotation,
+					m_Ctx.fComposite,
+					NULL,
+					m_y,
+					m_cyHeight
+				);
+			};
+
+		virtual void Run (void)
+			{
+			switch (m_Ctx.iMode)
+				{
+				case (ePaintImage):
+				default:
+					RunPaintImage();
+				}
+			};
+
+	private:
+		SCtx &m_Ctx;
+		CG32bitImage &m_Dest;
+		int m_y;
+		int m_cyHeight;
+	};
+
+// CObjectImageArray ---------------------------------------------------------------------------------
+
 CG32bitImage CObjectImageArray::m_NullImage;
 CObjectImageArray CObjectImageArray::m_Null;
 
@@ -1359,66 +1432,105 @@ ALERROR CObjectImageArray::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, bool bComposite) const
-
 //	PaintImage
-//
-//	Paints the image on the destination
-
+//	
+//	Paints the image with MT if Ctx defines m_pThreadPool
+//	Otherwise uses standard painting
+//	
+void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick, int iRotation, bool bComposite, SViewportPaintCtx* Ctx, int iOffsetY, int iOffsetCY) const
 	{
 	DEBUG_TRY
 
+	CG32bitImage* pSource = m_pImage->GetRawImage(NULL_STR);
+	if (pSource == NULL)
+		return;
+
 	if (m_pImage)
 		{
-		CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
-		if (pSource == NULL)
-			return;
+		bool bUseThreadPool = Ctx ? Ctx->pThreadPool : false;
 
-		int xSrc;
-		int ySrc;
-		ComputeSourceXY(iTick, iRotation, &xSrc, &ySrc);
-
-		if (m_pRotationOffset)
+		if (bUseThreadPool)
 			{
-			x += m_pRotationOffset[iRotation % m_iRotationCount].x;
-			y -= m_pRotationOffset[iRotation % m_iRotationCount].y;
+
+			//	Group scanlines per worker
+			int iScanLines = RectHeight(m_rcImage);
+			int iNumWorkers = min(Ctx->pThreadPool->GetThreadCount() -1, iScanLines);
+			int iScanLinesPerWorker = iScanLines / iNumWorkers;
+			int iScanLinesRemainder = iScanLines % iNumWorkers;
+			int iYOffset = 0;
+
+			for (int i = 0; i < iNumWorkers; i++)
+				{
+				CSpritePaintWorker::SCtx WorkerCtx = CSpritePaintWorker::SCtx();
+				WorkerCtx.pSrc = this;
+				WorkerCtx.xDest = x;
+				WorkerCtx.xSrc = m_rcImage.left;
+				WorkerCtx.yDest = y;
+				WorkerCtx.ySrc = m_rcImage.top;
+				WorkerCtx.iTick = iTick;
+				WorkerCtx.iRotation = iRotation;
+				WorkerCtx.fComposite = bComposite ? 1 : 0;
+				int iCY = iScanLinesPerWorker + (i < iScanLinesRemainder ? 1 : 0);
+				CSpritePaintWorker *pTask = new CSpritePaintWorker(Dest, iYOffset, iCY, WorkerCtx);	//	Gets cleaned up by CThreadPool.Run()
+				iYOffset += iCY;
+				Ctx->pThreadPool->AddTask(pTask);
+				}
+			Ctx->pThreadPool->Run();
 			}
-
-		if (bComposite)
+		else
 			{
-			Dest.Composite(xSrc,
+
+			int xSrc;
+			int ySrc;
+			ComputeSourceXY(iTick, iRotation, &xSrc, &ySrc);
+
+			ySrc += (iOffsetY > 0) ? iOffsetY : 0;
+
+			if (m_pRotationOffset)
+				{
+				x += m_pRotationOffset[iRotation % m_iRotationCount].x;
+				y -= m_pRotationOffset[iRotation % m_iRotationCount].y;
+				}
+
+			int ySprite = RectHeight(m_rcImage);
+			int cy = (iOffsetCY > 0) ? min(iOffsetCY, ySprite) : ySprite;
+			int yDest = y - (ySprite / 2) + iOffsetY;
+
+			if (bComposite)
+				{
+				Dest.Composite(xSrc,
 					ySrc,
 					RectWidth(m_rcImage),
-					RectHeight(m_rcImage),
+					cy,
 					255,
 					*pSource,
 					x - (RectWidth(m_rcImage) / 2),
-					y - (RectHeight(m_rcImage) / 2));
-			}
-		else if (m_iBlending == blendLighten)
-			{
-			CGDraw::BltLighten(Dest,
+					yDest);
+				}
+			else if (m_iBlending == blendLighten)
+				{
+				CGDraw::BltLighten(Dest,
 					x - (RectWidth(m_rcImage) / 2),
-					y - (RectHeight(m_rcImage) / 2),
+					yDest,
 					*pSource,
 					xSrc,
 					ySrc,
 					RectWidth(m_rcImage),
-					RectHeight(m_rcImage));
-			}
-		else
-			{
-			Dest.Blt(xSrc,
+					cy);
+				}
+			else
+				{
+				Dest.Blt(xSrc,
 					ySrc,
 					RectWidth(m_rcImage),
-					RectHeight(m_rcImage),
+					cy,
 					255,
 					*pSource,
 					x - (RectWidth(m_rcImage) / 2),
-					y - (RectHeight(m_rcImage) / 2));
+					yDest);
+				}
 			}
 		}
-
 	DEBUG_CATCH
 	}
 
