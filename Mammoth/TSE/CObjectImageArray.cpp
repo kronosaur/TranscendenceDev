@@ -1434,7 +1434,7 @@ ALERROR CObjectImageArray::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 //	PaintImage
 //	
-//	Paints the image with MT if Ctx defines m_pThreadPool
+//	Paints the image with MT if Ctx is not NULL and defines m_pThreadPool
 //	Otherwise uses standard painting
 //	
 void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick, int iRotation, bool bComposite, SViewportPaintCtx* Ctx, int iOffsetY, int iOffsetCY) const
@@ -1447,9 +1447,8 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 
 	if (m_pImage)
 		{
-		bool bUseThreadPool = Ctx ? Ctx->pThreadPool : false;
 
-		if (bUseThreadPool)
+		if (Ctx && Ctx->pThreadPool)
 			{
 
 			//	Group scanlines per worker
@@ -1458,6 +1457,8 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 			int iScanLinesPerWorker = iScanLines / iNumWorkers;
 			int iScanLinesRemainder = iScanLines % iNumWorkers;
 			int iYOffset = 0;
+
+			//	Create Tasks
 
 			for (int i = 0; i < iNumWorkers; i++)
 				{
@@ -1469,12 +1470,16 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 				WorkerCtx.ySrc = m_rcImage.top;
 				WorkerCtx.iTick = iTick;
 				WorkerCtx.iRotation = iRotation;
+				WorkerCtx.iMode = CSpritePaintWorker::ePaintImage;
 				WorkerCtx.fComposite = bComposite ? 1 : 0;
 				int iCY = iScanLinesPerWorker + (i < iScanLinesRemainder ? 1 : 0);
 				CSpritePaintWorker *pTask = new CSpritePaintWorker(Dest, iYOffset, iCY, WorkerCtx);	//	Gets cleaned up by CThreadPool.Run()
 				iYOffset += iCY;
 				Ctx->pThreadPool->AddTask(pTask);
 				}
+
+			//	Run tasks
+
 			Ctx->pThreadPool->Run();
 			}
 		else
