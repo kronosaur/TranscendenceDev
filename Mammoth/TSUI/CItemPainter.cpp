@@ -428,7 +428,8 @@ void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText
 				iLevel,
 				iHP,
 				iDamageAdj,
-                rgbColorRef,
+				rgbColorRef,
+				rgbDisadvantage,
 				dwOptions,
 				m_pItem->IsArmor() ? Universe.GetArmorDamageAdj(iLevel) : Universe.GetShieldDamageAdj(iLevel));
 
@@ -617,7 +618,7 @@ void CItemPainter::PaintItemEnhancement (const CVisualPalette &VI, CG32bitImage 
 		*retcyHeight = Max(ENHANCEMENT_ICON_HEIGHT, cyTotalHeight);
 	}
 
-void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbText, DWORD dwOptions, const CDamageAdjDesc *pDamageAdjCurve)
+void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbAdvantage, CG32bitPixel rgbDisadvantage, DWORD dwOptions, const CDamageAdjDesc *pDamageAdjCurve)
 
 //	PaintReferenceDamageAdj
 //
@@ -631,13 +632,16 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 		int iDamageType;
 		int iDamageAdj;
 		int iDisplayAdj;
+		bool bAdvantage;
 		};
 
+	//	Eventually these should become adventure options
 	bool bSortByDamageType = true;
 	bool bOptionShowDamageAdjAsHP = false;
-	bool bPrettyPercent = true;	//	round to nearest 5%
+	bool bPrettyPercent = true;					//	round to nearest 5%
 	bool bCompressIdentical = true;
 	bool bUseDamageLevelsAsFallback = true;
+	bool bMarkDisadvantageWithCurves = false;	//	Enabling this causes things that seem like buffs to be marked as disadvantages if they are below the adj curve
 
 	const CG16bitFont &Small = VI.GetFont(fontSmall);
 	const CG16bitFont &Medium = VI.GetFont(fontMedium);
@@ -692,8 +696,14 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 		//	Add to list
 
 		SEntry *pEntry = Sorted.SetAt(sKey);
+
+		//	Fill basic entry data
+
 		pEntry->iDamageType = i;
 		pEntry->iDamageAdj = iDamageAdj[i];
+
+		//	Fill display data, so we can collapse entries as needed
+
 		if (bOptionShowDamageAdjAsHP)
 			pEntry->iDisplayAdj = iDamageAdj[i];
 		else
@@ -704,6 +714,19 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 			else
 				pEntry->iDamageAdj = iPercentAdj;
 			}
+
+		//	Indicate if this is an advantage or disadvantage
+
+		if (bMarkDisadvantageWithCurves && pDamageAdjCurve && pEntry->iDamageAdj >= 0)
+			{
+			//	We need to compute what the expected displayAdj is and compare
+			
+			int iRawAdj = pDamageAdjCurve->GetAdj(dmgType);
+			int iComputedAdj = (iDamageAdj[i] / iHP);
+			pEntry->bAdvantage = iComputedAdj >= iRawAdj;
+			}
+		else
+			pEntry->bAdvantage = (bOptionShowDamageAdjAsHP ? pEntry->iDisplayAdj >= iHP : pEntry->iDisplayAdj >= 0 ) || pEntry->iDamageAdj < 0;
 
 		//	Estimate how many entries we will have (so we can decide the font size)
 		//	We assume that immune entries get collapsed.
@@ -804,7 +827,7 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 		Dest.DrawText(x,
 				y + cyOffset,
 				TheFont,
-				rgbText,
+				Entry.bAdvantage ? rgbAdvantage : rgbDisadvantage,
 				sStat,
 				0,
 				&x);
