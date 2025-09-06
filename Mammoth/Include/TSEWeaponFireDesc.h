@@ -170,6 +170,7 @@ class DamageDesc
 		DamageTypes GetDamageType (void) const { return m_iType; }
 		Metric GetDamageValue (DWORD dwFlags = 0) const;
 		CString GetDesc (DWORD dwFlags = 0);
+		CString GetDPSDesc (Metric rFireRate, Metric rMultiplier = 1.0, DWORD dwFlags = 0);
 		int GetMinDamage (void) const;
 		int GetMaxDamage (void) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
