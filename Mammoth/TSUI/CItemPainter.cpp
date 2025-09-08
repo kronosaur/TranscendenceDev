@@ -636,7 +636,7 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 		};
 
 	//	Eventually these should become adventure options
-	bool bSortByDamageType = true;
+	bool bSortByDamageType = false;
 	bool bOptionShowDamageAdjAsHP = false;
 	bool bPrettyPercent = true;					//	round to nearest 5%
 	bool bCompressIdentical = true;
