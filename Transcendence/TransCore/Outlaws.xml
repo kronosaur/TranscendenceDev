@@ -13,7 +13,11 @@
 			displayOn="&smHumanSpace;"
 			>
 		<TopologyProcessor priority="secondaryColony">
-			<System criteria="+humanSpace;"	attributes="outlawSpace"/>
+			<System criteria="+newBeyond;"	attributes="outlawSpace"/>
+			<System criteria="+nodeID:SK;"	attributes="outlawSpace"/>
+			<System criteria="+ungoverned;"	attributes="outlawSpace"/>
+			<System criteria="+outerRealm;"	attributes="outlawSpace"/>
+			<System criteria="+nearStars;"	attributes="outlawSpace"/>
 		</TopologyProcessor>
 	</SystemMap>
 
