@@ -49,6 +49,7 @@
 #define PROPERTY_LAST_VISITED_GAME_SECONDS		CONSTLIT("lastVisitSeconds")
 #define PROPERTY_LAST_VISITED_ON				CONSTLIT("lastVisitOn")
 #define PROPERTY_LEVEL							CONSTLIT("level")
+#define PROPERTY_LINK_COLOR						CONSTLIT("linkColor")
 #define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_NODE_ID						CONSTLIT("nodeID")
 #define PROPERTY_POS							CONSTLIT("pos")
@@ -652,6 +653,22 @@ ICCItemPtr CTopologyNode::GetStargateProperty (const CString &sName, const CStri
 
 	else if (strEquals(sProperty, PROPERTY_UNCHARTED))
 		return ICCItemPtr((bool)pDesc->fUncharted);
+
+	else if (strEquals(sProperty, PROPERTY_LINK_COLOR))
+		{
+		DWORD dwColor = pDesc->dwColor;
+		CString sColor;
+		if (dwColor & 0xFF000000)
+			{
+			sColor = DWToARGBColor(dwColor).AsHTMLColor();
+			return ICCItemPtr(sColor);
+			}
+		else
+			{
+			sColor = m_pMap->GetStargateLineColor().AsHTMLColor();
+			return ICCItemPtr(sColor);
+			}
+		}
 
 	else
 		return ICCItemPtr(ICCItem::Nil);
