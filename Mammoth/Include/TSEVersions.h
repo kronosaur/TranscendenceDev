@@ -6,7 +6,7 @@
 #pragma once
 
 constexpr DWORD API_VERSION =							56;
-constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
+constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
 constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 
 //	Uncomment out the following define when building a stable release
@@ -562,6 +562,10 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //
 //	40: 1.9 Beta 4
 //		Added design type in dwFlags or CDesignType.
+//
+//	41: 2.0 Alpha 6
+//		Add gate node RGB color
+//
 
 
 //	SYSTEM VERSION HISTORY -----------------------------------------------------
@@ -1211,3 +1215,4 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //
 //	213: 2.0 Alpha 2
 //		Change DiceRange to use -1 for not set
+//

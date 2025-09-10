@@ -131,6 +131,8 @@ ALERROR CTopologyNode::AddStargate (const SStargateDesc &GateDesc)
 
 	pDesc->fUncharted = GateDesc.bUncharted;
 
+	pDesc->dwColor = GateDesc.rgbColor.AsDWORD();
+
 	return NOERROR;
 	}
 
@@ -220,6 +222,7 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 //	CString		gate: sName
 //	CString		gate: sDestNode
 //	CString		gate: sDestEntryPoint
+//  DWORD		gate: dwColor
 //	DWORD		gate: flags
 //	DWORD		gate: xMid
 //	DWORD		gate: yMid
@@ -286,6 +289,14 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 
 		pDesc->sDestNode.ReadFromStream(Ctx.pStream);
 		pDesc->sDestEntryPoint.ReadFromStream(Ctx.pStream);
+
+		if (Ctx.dwVersion >= 41)
+			{
+			DWORD* pColor = &(pDesc->dwColor);
+			Ctx.pStream->Read((char*)pColor, sizeof(DWORD));
+			}
+		else
+			pDesc->dwColor = 0;
 
 		if (Ctx.dwVersion >= 27)
 			{
@@ -665,6 +676,8 @@ void CTopologyNode::GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRou
 	retRouteDesc->sToName = pDesc->sDestEntryPoint;
 	retRouteDesc->MidPoints = pDesc->MidPoints;
 
+	retRouteDesc->rgbColor = DWToARGBColor(pDesc->dwColor);
+
 	retRouteDesc->bUncharted = pDesc->fUncharted;
 	}
 
@@ -999,6 +1012,10 @@ void CTopologyNode::WriteToStream (IWriteStream *pStream)
 //	CString		gate: sName
 //	CString		gate: sDestNode
 //	CString		gate: sDestEntryPoint
+//  DWORD		gate: dwColor
+//	DWORD		gate: flags
+//	DWORD		gate: xMid
+//	DWORD		gate: yMid
 //
 //	DWORD		No of variant labels
 //	CString		variant label
@@ -1038,6 +1055,7 @@ void CTopologyNode::WriteToStream (IWriteStream *pStream)
 		sName.WriteToStream(pStream);
 		pDesc->sDestNode.WriteToStream(pStream);
 		pDesc->sDestEntryPoint.WriteToStream(pStream);
+		pStream->Write((char *)&(pDesc->dwColor), sizeof(DWORD));
 
 		DWORD dwFlags = 0;
 		dwFlags |= (pDesc->MidPoints.GetCount() > 0 ?	0x00000001 : 0);
