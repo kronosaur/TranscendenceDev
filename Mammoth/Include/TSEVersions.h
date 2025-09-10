@@ -452,7 +452,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //							distance (in ls) at which sound falloff starts
 //							default: 0.0
 //
-//	 56: 2.0 Alpha 5
+//	 56: 2.0 Alpha 6
 //
 
 
