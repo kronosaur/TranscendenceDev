@@ -4336,7 +4336,7 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 			//	If we cant do anything with it then we pass the first arg via a list
 
 			if (!iTargetEnd || iSourceEnd < iTargetEnd)
-				return pArgs->GetElement(0);
+				return pArgs->GetElement(0)->Reference();
 
 			//	Otherwise we try to do replacement.
 
