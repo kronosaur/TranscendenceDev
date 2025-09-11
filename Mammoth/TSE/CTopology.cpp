@@ -478,8 +478,10 @@ ALERROR CTopology::AddStargateRoute (const CTopologyNode::SStargateRouteDesc &De
 
 	CTopologyNode::SStargateDesc GateDesc;
 	GateDesc.sName = sSourceGate;
+	GateDesc.sFromNode = Desc.sXMLFromNode;
 	GateDesc.sDestNode = Desc.pToNode->GetID();
 	GateDesc.sDestName = sDestGate;
+	GateDesc.sAttributes = Desc.sAttributes;
 	GateDesc.pMidPoints = &Desc.MidPoints;
 	GateDesc.bUncharted = Desc.bUncharted;
 	GateDesc.rgbColor = Desc.rgbColor;
@@ -559,6 +561,7 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 		{
 		CString sSource;
 		CTopologyNode::ParseStargateString(pGateDesc->GetAttribute(FROM_ATTRIB), &sSource, &GateDesc.sName);
+		GateDesc.sFromNode = sSource;
 		CTopologyNode::ParseStargateString(pGateDesc->GetAttribute(TO_ATTRIB), &GateDesc.sDestNode, &GateDesc.sDestName);
 		bOneWay = pGateDesc->GetAttributeBool(ONE_WAY_ATTRIB);
 
@@ -599,6 +602,10 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 		}
 	else
 		{
+		//	FromNode is populated by the current node ID
+
+		GateDesc.sFromNode = pNode->GetID();
+
 		//	Get basic data from the element
 
 		GateDesc.sName = pGateDesc->GetAttribute(NAME_ATTRIB);
@@ -626,6 +633,7 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 	//	At this point we have:
 	//
 	//	pNode is a valid source node
+	//	sFromNode is the id of pNode and corresponds to the fronfield in the xml
 	//	sDest is a non-empty destination node
 	//	sGateName is the name of the source gate (may be NULL)
 	//	sDestEntryPoint is the name of the dest gate (may be NULL)
@@ -703,11 +711,22 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 	//	Prepare the route descriptor
 
 	CTopologyNode::SStargateRouteDesc RouteDesc;
+	RouteDesc.sXMLFromNode = GateDesc.sFromNode;
 	RouteDesc.pFromNode = pNode;
 	RouteDesc.sFromName = GateDesc.sName;
 	RouteDesc.pToNode = pDest;
 	RouteDesc.sToName = GateDesc.sDestName;
 	RouteDesc.bOneWay = bOneWay;
+
+	//	Attempt to retrieve stargate attributes
+	//	otherwise just leave it initialized to an empty string
+
+	CString sAttribs;
+	if (pGateDesc->FindAttribute(ATTRIBUTES_ATTRIB, &sAttribs))
+		RouteDesc.sAttributes = sAttribs;
+	else
+		RouteDesc.sAttributes = CONSTLIT("");
+		
 
 	CString sColor;
 	if (pGateDesc->FindAttribute(LINK_COLOR_ATTRIB, &sColor) && !sColor.IsBlank())

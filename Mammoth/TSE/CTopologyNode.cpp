@@ -56,6 +56,8 @@
 #define PROPERTY_STD_CHALLENGE_RATING			CONSTLIT("stdChallengeRating")
 #define PROPERTY_STD_TREASURE_VALUE				CONSTLIT("stdTreasureValue")
 #define PROPERTY_UNCHARTED						CONSTLIT("uncharted")
+#define PROPERTY_FROM_GATE_ID					CONSTLIT("xmlFromNodeID")
+#define PROPERTY_TO_GATE_ID						CONSTLIT("xmlToNodeID")
 
 #define SPECIAL_LEVEL							CONSTLIT("level:")
 #define SPECIAL_NODE_ID							CONSTLIT("nodeID:")
@@ -124,8 +126,10 @@ ALERROR CTopologyNode::AddStargate (const SStargateDesc &GateDesc)
 
 	//	Initialize
 
+	pDesc->sFromNode = GateDesc.sFromNode;
 	pDesc->sDestNode = GateDesc.sDestNode;
 	pDesc->sDestEntryPoint = GateDesc.sDestName;
+	pDesc->sAttributes = GateDesc.sAttributes;
 
 	if (GateDesc.pMidPoints)
 		pDesc->MidPoints = *GateDesc.pMidPoints;
@@ -164,8 +168,11 @@ ALERROR CTopologyNode::AddStargateAndReturn (const SStargateDesc &GateDesc)
 
 		SStargateDesc ReturnGateDesc;
 		ReturnGateDesc.sName = GateDesc.sDestName;
+		ReturnGateDesc.sFromNode = GateDesc.sFromNode;
 		ReturnGateDesc.sDestNode = GetID();
 		ReturnGateDesc.sDestName = GateDesc.sName;
+		ReturnGateDesc.sAttributes = GateDesc.sAttributes;
+		ReturnGateDesc.rgbColor = GateDesc.rgbColor;
 
 		if (pDestNode->AddStargate(ReturnGateDesc) != NOERROR)
 			{
@@ -221,8 +228,10 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 //
 //	DWORD		No of named gates
 //	CString		gate: sName
+//	CString		gate: sFromNode
 //	CString		gate: sDestNode
 //	CString		gate: sDestEntryPoint
+//	CString		gate: sAttributes
 //  DWORD		gate: dwColor
 //	DWORD		gate: flags
 //	DWORD		gate: xMid
@@ -288,16 +297,33 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 		sName.ReadFromStream(Ctx.pStream);
 		SStargateEntry *pDesc = pNode->m_NamedGates.SetAt(sName);
 
-		pDesc->sDestNode.ReadFromStream(Ctx.pStream);
+		if (Ctx.dwVersion >= 41)
+			{
+			pDesc->sFromNode.ReadFromStream(Ctx.pStream);
+			pDesc->sDestNode.ReadFromStream(Ctx.pStream);
+			}
+		else
+			{
+			//	If we are operating on an old save, we pretend that the lower value string is the FromNode.
+			//	This keeps it consistent for any new tlisp, even if its not necessarily correct
+
+			pDesc->sDestNode.ReadFromStream(Ctx.pStream);
+			pDesc->sFromNode = strCompareAbsolute(pNode->m_sName, pDesc->sDestNode) <= 0 ? pNode->m_sName : pDesc->sDestNode;
+			}
+
 		pDesc->sDestEntryPoint.ReadFromStream(Ctx.pStream);
 
 		if (Ctx.dwVersion >= 41)
 			{
+			pDesc->sAttributes.ReadFromStream(Ctx.pStream);
 			DWORD* pColor = &(pDesc->dwColor);
 			Ctx.pStream->Read((char*)pColor, sizeof(DWORD));
 			}
 		else
+			{
+			pDesc->sAttributes = CONSTLIT("");
 			pDesc->dwColor = 0;
+			}
 
 		if (Ctx.dwVersion >= 27)
 			{
@@ -651,8 +677,17 @@ ICCItemPtr CTopologyNode::GetStargateProperty (const CString &sName, const CStri
 	else if (strEquals(sProperty, PROPERTY_NODE_ID))
 		return ICCItemPtr(GetID());
 
+	else if (strEquals(sProperty, PROPERTY_FROM_GATE_ID))
+		return ICCItemPtr(pDesc->sFromNode);
+
+	else if (strEquals(sProperty, PROPERTY_TO_GATE_ID))
+		return ICCItemPtr(strEquals(pDesc->sFromNode, pDesc->sDestNode) ? GetID() : pDesc->sDestNode);
+
 	else if (strEquals(sProperty, PROPERTY_UNCHARTED))
 		return ICCItemPtr((bool)pDesc->fUncharted);
+
+	else if (strEquals(sProperty, PROPERTY_ATTRIBUTES))
+		return ICCItemPtr(pDesc->sAttributes);
 
 	else if (strEquals(sProperty, PROPERTY_LINK_COLOR))
 		{
@@ -1027,8 +1062,10 @@ void CTopologyNode::WriteToStream (IWriteStream *pStream)
 //
 //	DWORD		No of named gates
 //	CString		gate: sName
+//	CString		gate: sFromNode
 //	CString		gate: sDestNode
 //	CString		gate: sDestEntryPoint
+//  CString		gate: sAttributes
 //  DWORD		gate: dwColor
 //	DWORD		gate: flags
 //	DWORD		gate: xMid
@@ -1070,8 +1107,10 @@ void CTopologyNode::WriteToStream (IWriteStream *pStream)
 		SStargateEntry *pDesc = &m_NamedGates[i];
 		CString sName = m_NamedGates.GetKey(i);
 		sName.WriteToStream(pStream);
+		pDesc->sFromNode.WriteToStream(pStream);
 		pDesc->sDestNode.WriteToStream(pStream);
 		pDesc->sDestEntryPoint.WriteToStream(pStream);
+		pDesc->sAttributes.WriteToStream(pStream);
 		pStream->Write((char *)&(pDesc->dwColor), sizeof(DWORD));
 
 		DWORD dwFlags = 0;

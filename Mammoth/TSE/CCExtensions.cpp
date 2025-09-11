@@ -507,6 +507,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_ITEM_FREQUENCY			42
 #define FN_SYS_NEXT_NODE_TO				43
 #define FN_SYS_ADD_STARGATE_TOPOLOGY_COLORED	44
+#define FN_SYS_STARGATE_HAS_ATTRIBUTE	45
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -3346,12 +3347,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"property:\n\n"
 			
+			"   'attributes: Attribute string\n"
 			"   'destGateID: Destination gate ID\n"
 			"   'destID: Destination node\n"
 			"   'gateID: ID of this gate\n"
 			"   'nodeID: NodeID of this gate\n"
-			"	'linkColor: html5 stargate link map color\n"
-			"   'uncharted: True if uncharted\n",
+			"   'linkColor: html5 stargate link map color\n"
+			"   'uncharted: True if uncharted\n"
+			"   'xmlFromNodeID: ID of the node originally specified as the from node in the xml\n"
+			"   'xmlToNodeID: ID of the node originally specified as the to node in the xml\n",
 
 			"ss*",	0,	},
 
@@ -3374,6 +3378,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysHasAttribute",				fnSystemGet,	FN_SYS_HAS_ATTRIBUTE,
 			"(sysHasAttribute [nodeID] attrib) -> True/Nil",
 			"s*",	0,	},
+
+		{	"sysStargateHasAttribute",				fnSystemGet,	FN_SYS_STARGATE_HAS_ATTRIBUTE,
+			"(sysStargateHasAttribute [nodeID] gateID attrib) -> True/Nil",
+			"ss*",	0,	},
 
 		{	"sysHitScan",					fnSystemGet,	FN_SYS_HIT_SCAN,
 			"(sysHitScan source startPos endPos [options]) -> (obj hitPos) or Nil\n\n"
@@ -13537,8 +13545,11 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 
 		CTopologyNode::SStargateDesc GateDesc;
 		GateDesc.sName = sStargateName;
+		GateDesc.sFromNode = pNode->GetID();
 		GateDesc.sDestNode = sDestNode;
 		GateDesc.sDestName = sDestName;
+		GateDesc.sAttributes = CONSTLIT("");
+		GateDesc.rgbColor = DWToARGBColor(0);
 		if (pNode->AddStargateAndReturn(GateDesc) != NOERROR)
 			return pCC->CreateError(CONSTLIT("Unable to add stargate to topology node"), NULL);
 
@@ -14929,6 +14940,30 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 			else
 				return fnTopologyGet(pEvalCtx, pArgs, FN_NODE_HAS_ATTRIBUTE);
+			}
+
+		case FN_SYS_STARGATE_HAS_ATTRIBUTE:
+			{
+			int iArg = 0;
+
+			CTopologyNode *pNode;
+			if (pArgs->GetCount() > 2)
+				{
+				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				if (pNode == NULL)
+					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
+				}
+			else
+				{
+				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
+				if (pNode == NULL)
+					return pCC->CreateNil();
+				}
+
+			CString sGateID = pArgs->GetElement(iArg++)->GetStringValue();
+			CString sMatch = pArgs->GetElement(iArg++)->GetStringValue();
+
+			return pCC->CreateBool(pNode->HasStargateAttribute(sGateID, sMatch));
 			}
 
 		case FN_SYS_NAV_PATH_POINT:

@@ -460,11 +460,16 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				If Alpha is not specified, argbLinkColor is assumed to have full alpha (0xFF)
 //			(sysGetStargateProperty [nodeID] gateID property)
 //				'linkColor: new property to retrieve linkColor as HTML color string if present
+//				'attributes: new property to retrieve <Stargate> attributes
+//				'xmlFromNodeID: the original node ID specified as 'from' in the xml
+//				'xmlToNodeID: the original node ID specified as 'to' in the xml
 //		<SystemMap>
 //			<...><Stargate>
 //				linkColor: (string: html argb color)
 //					The color to display this stargate link in on the galaxy map.
 //					If Alpha is not specified, linkColor is assumed to have full alpha (0xFF)
+//				attributes: (string)
+//					An attributes string. See trnCreateAllStargates for special known-fields.
 //
 
 
