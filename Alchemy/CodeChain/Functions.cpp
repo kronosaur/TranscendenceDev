@@ -4334,6 +4334,7 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 			int iSourceEnd = sSource.GetLength();
 
 			//	If we cant do anything with it then we pass the first arg via a list
+			//	We need to re-reference it to keep the reference count consistent
 
 			if (!iTargetEnd || iSourceEnd < iTargetEnd)
 				return pArgs->GetElement(0)->Reference();
