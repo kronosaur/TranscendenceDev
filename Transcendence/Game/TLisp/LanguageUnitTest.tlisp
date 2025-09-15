@@ -105,6 +105,8 @@
 	{	code: '(strReplace "Xx---XX---xX---XXXX" "XX" "!!!")		result: "!!!---!!!---!!!---!!!!!!"}
 	{	code: '(strReplace "Xx---XX---xX---XXX" "XX" "!!!" 'case)	result: "Xx---!!!---xX---!!!X"}
 	{	code: '(strReplace "Xx---XX---xX---X" "XX" "!!!" 'case)		result: "Xx---!!!---xX---X"}
+	{	code: '(strReplace "Xx" "AAA" "!!!" 'case)					result: "Xx"}
+	{	code: '(strReplace (strReplace "Xx" "AAA" "!!!" 'case) "BBB" "!!!")					result: "Xx"}
 
 	;	strStrip
 
