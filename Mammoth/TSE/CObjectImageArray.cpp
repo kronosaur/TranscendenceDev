@@ -78,7 +78,7 @@ class CSpritePaintWorker : public IThreadPoolTask
 
 			};
 
-		CSpritePaintWorker (CG32bitImage &Dest, int yOffset, int cyHeight, SCtx &Ctx) :
+		CSpritePaintWorker (CG32bitImage &Dest, int yOffset, int cyHeight, const SCtx &Ctx) :
 			m_Dest(Dest),
 			m_y(yOffset),
 			m_cyHeight(cyHeight),
@@ -112,7 +112,7 @@ class CSpritePaintWorker : public IThreadPoolTask
 			};
 
 	private:
-		SCtx &m_Ctx;
+		SCtx m_Ctx;
 		CG32bitImage &m_Dest;
 		int m_y;
 		int m_cyHeight;
@@ -1453,7 +1453,7 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 
 			//	Group scanlines per worker
 			int iScanLines = RectHeight(m_rcImage);
-			int iNumWorkers = min(Ctx->pThreadPool->GetThreadCount() -1, iScanLines);
+			int iNumWorkers = min(Ctx->pThreadPool->GetThreadCount(), iScanLines);
 			int iScanLinesPerWorker = iScanLines / iNumWorkers;
 			int iScanLinesRemainder = iScanLines % iNumWorkers;
 			int iYOffset = 0;
