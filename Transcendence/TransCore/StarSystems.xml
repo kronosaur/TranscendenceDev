@@ -1317,7 +1317,7 @@
 			;	own mod to enable debug logging during stargate creation.
 			;	This prints out diagnostic info to debug.log
 
-			(setq dbgLogCreateAllStargates 1)
+			(setq dbgLogCreateAllStargates Nil)
 		
 			(setq trnCreateAllStargates (lambda (options)
 
