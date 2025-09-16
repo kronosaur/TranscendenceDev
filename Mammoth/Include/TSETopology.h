@@ -22,6 +22,8 @@ class CTopologyNode
 
 			const TArray<SPoint> *pMidPoints = NULL;	//	Gate line mid-points (optional)
 			bool bUncharted = false;				//	Gate is uncharted
+
+			CG32bitPixel rgbColor;					//	Gate link map color, 0-alpha is default
 			};
 
 		struct SStargateRouteDesc
@@ -45,6 +47,8 @@ class CTopologyNode
 			TArray<SPoint> MidPoints;
 			bool bOneWay = false;
 			bool bUncharted = false;
+
+			CG32bitPixel rgbColor;
 
 			private:
 				mutable Metric m_rDistance = 0.0;
@@ -153,6 +157,8 @@ class CTopologyNode
 			DWORD fSpare7:1;
 			DWORD fSpare8:1;
 			DWORD dwSpare:24;
+
+			DWORD dwColor;
 
 			mutable CTopologyNode *pDestNode = NULL;	//	Cached for efficiency (may be NULL)
 			};

@@ -428,8 +428,10 @@ void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText
 				iLevel,
 				iHP,
 				iDamageAdj,
-                rgbColorRef,
-				dwOptions);
+				rgbColorRef,
+				rgbDisadvantage,
+				dwOptions,
+				m_pItem->IsArmor() ? Universe.GetArmorDamageAdj(iLevel) : Universe.GetShieldDamageAdj(iLevel));
 
 		rcDrawRect.top += cyHeight;
 
@@ -616,7 +618,7 @@ void CItemPainter::PaintItemEnhancement (const CVisualPalette &VI, CG32bitImage 
 		*retcyHeight = Max(ENHANCEMENT_ICON_HEIGHT, cyTotalHeight);
 	}
 
-void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbText, DWORD dwOptions)
+void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbAdvantage, CG32bitPixel rgbDisadvantage, DWORD dwOptions, const CDamageAdjDesc *pDamageAdjCurve)
 
 //	PaintReferenceDamageAdj
 //
@@ -629,10 +631,17 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 		{
 		int iDamageType;
 		int iDamageAdj;
+		int iDisplayAdj;
+		bool bAdvantage;
 		};
 
-	bool bSortByDamageType = true;
+	//	Eventually these should become adventure options
+	bool bSortByDamageType = false;
 	bool bOptionShowDamageAdjAsHP = false;
+	bool bPrettyPercent = true;					//	round to nearest 5%
+	bool bCompressIdentical = true;
+	bool bUseDamageLevelsAsFallback = true;
+	bool bMarkDisadvantageWithCurves = false;	//	Enabling this causes things that seem like buffs to be marked as disadvantages if they are below the adj curve
 
 	const CG16bitFont &Small = VI.GetFont(fontSmall);
 	const CG16bitFont &Medium = VI.GetFont(fontMedium);
@@ -649,11 +658,24 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 	int iImmuneCount = 0;
 	for (int i = 0; i < damageCount; i++)
 		{
-		//	Skip if this damage type is not appropriate to our level
+		//	Skip if this damage type is irrelevant
+		//	Check against supplied pDamageAdjCurve first
 
-		int iDamageLevel = GetDamageTypeLevel((DamageTypes)i);
-		if (iDamageLevel < iLevel - 5 || iDamageLevel > iLevel + 3)
+		DamageTypes dmgType = (DamageTypes)i;
+
+		//	ignore anything that by default does < 10% damage at this level, or > 100% damage at this level
+
+		if (pDamageAdjCurve && (pDamageAdjCurve->GetAdj(dmgType) < 10 || pDamageAdjCurve->GetAdj(dmgType) > 100))
 			continue;
+
+		//	otherwise we fall back to checking level, if that option is set
+
+		else if (bUseDamageLevelsAsFallback)
+			{
+			int iDamageLevel = GetDamageTypeLevel((DamageTypes)i);
+			if (iDamageLevel < iLevel - 5 || iDamageLevel > iLevel + 3)
+				continue;
+			}
 
 		//	Skip if the damage adj is 100%
 
@@ -674,8 +696,37 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 		//	Add to list
 
 		SEntry *pEntry = Sorted.SetAt(sKey);
+
+		//	Fill basic entry data
+
 		pEntry->iDamageType = i;
 		pEntry->iDamageAdj = iDamageAdj[i];
+
+		//	Fill display data, so we can collapse entries as needed
+
+		if (bOptionShowDamageAdjAsHP)
+			pEntry->iDisplayAdj = iDamageAdj[i];
+		else
+			{
+			int iPercentAdj = (100 * (iDamageAdj[i] - iHP) / iHP);
+			if (bPrettyPercent)
+				pEntry->iDisplayAdj = 5 * ((iPercentAdj + 2 * Sign(iPercentAdj)) / 5);
+			else
+				pEntry->iDamageAdj = iPercentAdj;
+			}
+
+		//	Indicate if this is an advantage or disadvantage
+
+		if (bMarkDisadvantageWithCurves && pDamageAdjCurve && pEntry->iDamageAdj >= 0)
+			{
+			//	We need to compute what the expected displayAdj is and compare
+			
+			int iRawAdj = pDamageAdjCurve->GetAdj(dmgType);
+			int iComputedAdj = (iDamageAdj[i] / iHP);
+			pEntry->bAdvantage = iComputedAdj >= iRawAdj;
+			}
+		else
+			pEntry->bAdvantage = (bOptionShowDamageAdjAsHP ? pEntry->iDisplayAdj >= iHP : pEntry->iDisplayAdj >= 0 ) || pEntry->iDamageAdj < 0;
 
 		//	Estimate how many entries we will have (so we can decide the font size)
 		//	We assume that immune entries get collapsed.
@@ -699,28 +750,67 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 		const SEntry &Entry = Sorted[i];
 		int iDamageType = Entry.iDamageType;
 		int iDamageAdj = Entry.iDamageAdj;
-		int iPercentAdj = (100 * (iDamageAdj - iHP) / iHP);
+		int iDisplayPercent = Entry.iDisplayAdj;
 
-		//	Prettify the % by rounding to a number divisible by 5
+		//	Skip if display number is 0
 
-		int iPrettyPercent = 5 * ((iPercentAdj + 2 * Sign(iPercentAdj)) / 5);
-
-		//	Skip if prettify results in 0%
-
-		if (bOptionShowDamageAdjAsHP && iPrettyPercent == 0)
+		if (iDisplayPercent == 0)
 			continue;
 
-		//	Draw icon
+		//	Do we need to compress other entries with identical stats?
+		
+		if (bCompressIdentical)
+			{
 
-		VI.DrawDamageTypeIcon(Dest, x, y, (DamageTypes)iDamageType, bDisabled);
-		x += DAMAGE_TYPE_ICON_WIDTH + DAMAGE_ADJ_ICON_SPACING_X;
+			bool bSkip = false;
 
-		//	If we have a bunch of entries with "immune", then compress them
+			for (int k = 0; k < Sorted.GetCount(); k++)
+				{
 
-		if (i < (Sorted.GetCount() - 1)
+				//	If we encounter another with identical adjustment before us, assume it has already included us so we skip
+
+				if (Sorted[k].iDisplayAdj == iDisplayPercent && k < i)
+					{
+					bSkip = true;
+					break;
+					}
+
+				//	We draw our own icon, we only reach this if no duplicates showed up before us
+
+				else if (k == i)
+					{
+					VI.DrawDamageTypeIcon(Dest, x, y, (DamageTypes)iDamageType, bDisabled);
+					x += DAMAGE_TYPE_ICON_WIDTH + DAMAGE_ADJ_ICON_SPACING_X;
+					}
+
+				//	We draw the icons for other types with the same adj as us
+
+				else if (Sorted[k].iDisplayAdj == iDisplayPercent)
+					{
+					VI.DrawDamageTypeIcon(Dest, x, y, (DamageTypes)Sorted[k].iDamageType, bDisabled);
+					x += DAMAGE_TYPE_ICON_WIDTH + DAMAGE_ADJ_ICON_SPACING_X;
+					}
+
+				}
+
+			if (bSkip)
+				continue;
+			}
+		else
+			{
+
+			//	Draw icon
+
+			VI.DrawDamageTypeIcon(Dest, x, y, (DamageTypes)iDamageType, bDisabled);
+			x += DAMAGE_TYPE_ICON_WIDTH + DAMAGE_ADJ_ICON_SPACING_X;
+
+			//	If we have a bunch of entries with "immune", we always compress them
+
+			if (i < (Sorted.GetCount() - 1)
 				&& iDamageAdj == -1
 				&& (iDamageAdj == Sorted[i + 1].iDamageAdj))
-			continue;
+				continue;
+			}
 
 		//	Figure out how to display damage adj
 
@@ -730,14 +820,14 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 		else if (bOptionShowDamageAdjAsHP)
 			sStat = strFromInt(iDamageAdj);
 		else
-			sStat = strPatternSubst(CONSTLIT("%s%d%%"), (iPrettyPercent > 0 ? CONSTLIT("+") : NULL_STR), iPrettyPercent);
+			sStat = strPatternSubst(CONSTLIT("%s%d%%"), (iDisplayPercent > 0 ? CONSTLIT("+") : NULL_STR), iDisplayPercent);
 		
 		//	Draw
 
 		Dest.DrawText(x,
 				y + cyOffset,
 				TheFont,
-				rgbText,
+				Entry.bAdvantage ? rgbAdvantage : rgbDisadvantage,
 				sStat,
 				0,
 				&x);

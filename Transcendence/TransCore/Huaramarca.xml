@@ -180,7 +180,7 @@
 					(if gateway
 						(block Nil
 							(typSetGlobalData &svHuariEmpire; "huaramarcaGateway" gateway)
-							(sysAddStargateTopology gateway "GateToHuaramarca" "Huaramarca" "Inbound")
+							(sysAddStargateTopologyColored gateway "GateToHuaramarca" "Huaramarca" "Inbound" "#B000E0")
 							)
 						)
 					)
