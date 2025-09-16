@@ -509,7 +509,19 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_ADD_STARGATE_TOPOLOGY_COLORED	44
 #define FN_SYS_STARGATE_HAS_ATTRIBUTE	45
 
-#define OPT_SYS_ADD_STARGATE_TOPOLOGY_COLOR CONSTLIT("color")
+#define OPT_SYS_ADD_STARGATE_TOPOLOGY_COLOR		CONSTLIT("color")
+#define OPT_SYS_ADD_STARGATE_ATTRIBUTES			CONSTLIT("attributes")
+#define OPT_SYS_ADD_STARGATE_LOCATION_CRITERIA	CONSTLIT("locationCriteria")
+#define OPT_SYS_ADD_STARGATE_TYPE				CONSTLIT("gateType")
+#define OPT_SYS_ADD_STARGATE_BEACON_TYPE		CONSTLIT("beaconType")
+#define OPT_SYS_ADD_STARGATE_ATTRIBUTES_FROM	CONSTLIT("fromAttributes")
+#define OPT_SYS_ADD_STARGATE_LOCATION_CRITERIA_FROM	CONSTLIT("fromLocationCriteria")
+#define OPT_SYS_ADD_STARGATE_TYPE_FROM			CONSTLIT("fromGateType")
+#define OPT_SYS_ADD_STARGATE_BEACON_TYPE_FROM	CONSTLIT("fromBeaconType")
+#define OPT_SYS_ADD_STARGATE_ATTRIBUTES_TO		CONSTLIT("toAttributes")
+#define OPT_SYS_ADD_STARGATE_LOCATION_CRITERIA_TO	CONSTLIT("toLocationCriteria")
+#define OPT_SYS_ADD_STARGATE_TYPE_TO			CONSTLIT("toGateType")
+#define OPT_SYS_ADD_STARGATE_BEACON_TYPE_TO		CONSTLIT("toBeaconType")
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -13887,6 +13899,111 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					if (GateDesc.rgbColor.GetAlpha() == 0)
 						GateDesc.rgbColor.SetAlpha(0xFF);
 					}
+				else
+					GateDesc.rgbColor = DWToARGBColor(0);
+				
+				//	Load the attributes
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_ATTRIBUTES);
+				if (pOptionValue)
+					{
+					GateDesc.sFromAttributes = pOptionValue->GetStringValue();
+					GateDesc.sToAttributes = pOptionValue->GetStringValue();
+					}
+				else
+					{
+					GateDesc.sFromAttributes = CONSTLIT("");
+					GateDesc.sToAttributes = CONSTLIT("");
+					}
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_ATTRIBUTES_FROM);
+				if (pOptionValue)
+					GateDesc.sFromAttributes = pOptionValue->GetStringValue();
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_ATTRIBUTES_TO);
+				if (pOptionValue)
+					GateDesc.sToAttributes = pOptionValue->GetStringValue();
+
+				//	Load the location criteria
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_LOCATION_CRITERIA);
+				if (pOptionValue)
+					{
+					GateDesc.sFromLocationCriteria = pOptionValue->GetStringValue();
+					GateDesc.sToLocationCriteria = pOptionValue->GetStringValue();
+					}
+				else
+					{
+					GateDesc.sFromLocationCriteria = CONSTLIT("");
+					GateDesc.sToLocationCriteria = CONSTLIT("");
+					}
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_LOCATION_CRITERIA_FROM);
+				if (pOptionValue)
+					GateDesc.sFromLocationCriteria = pOptionValue->GetStringValue();
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_LOCATION_CRITERIA_TO);
+				if (pOptionValue)
+					GateDesc.sToLocationCriteria = pOptionValue->GetStringValue();
+
+				//	Load the gate type
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_TYPE);
+				if (pOptionValue)
+					{
+					GateDesc.dwFromGateType = pOptionValue->GetIntegerValue();
+					GateDesc.dwToGateType = pOptionValue->GetIntegerValue();
+					}
+				else
+					{
+					GateDesc.dwFromGateType = 0;
+					GateDesc.dwToGateType = 0;
+					}
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_TYPE_FROM);
+				if (pOptionValue)
+					GateDesc.dwFromGateType = pOptionValue->GetIntegerValue();
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_TYPE_TO);
+				if (pOptionValue)
+					GateDesc.dwToGateType = pOptionValue->GetIntegerValue();
+
+				//	Load the beacon type
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_BEACON_TYPE);
+				if (pOptionValue)
+					{
+					GateDesc.dwFromBeaconType = pOptionValue->GetIntegerValue();
+					GateDesc.dwToBeaconType = pOptionValue->GetIntegerValue();
+					}
+				else
+					{
+					GateDesc.dwFromBeaconType = 0;
+					GateDesc.dwToBeaconType = 0;
+					}
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_BEACON_TYPE_FROM);
+				if (pOptionValue)
+					GateDesc.dwFromBeaconType = pOptionValue->GetIntegerValue();
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_BEACON_TYPE_TO);
+				if (pOptionValue)
+					GateDesc.dwToBeaconType = pOptionValue->GetIntegerValue();
+
+				}
+
+			//	Handle case where we have no options
+
+			else
+				{
+				GateDesc.dwFromBeaconType = 0;
+				GateDesc.dwFromGateType = 0;
+				GateDesc.dwToBeaconType = 0;
+				GateDesc.dwToGateType = 0;
+				GateDesc.sFromAttributes = CONSTLIT("");
+				GateDesc.sFromLocationCriteria = CONSTLIT("");
+				GateDesc.sToAttributes = CONSTLIT("");
+				GateDesc.sToLocationCriteria = CONSTLIT("");
 				}
 
 			if (pNode->FindStargate(GateDesc.sName))
