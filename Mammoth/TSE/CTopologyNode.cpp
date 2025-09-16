@@ -726,12 +726,18 @@ void CTopologyNode::GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRou
 
 	retRouteDesc->pFromNode = this;
 	retRouteDesc->sFromName = m_NamedGates.GetKey(iIndex);
+	retRouteDesc->sFromAttributes = pDesc->sAttributes;
+	retRouteDesc->dwFromBeaconType = pDesc->dwBeaconType;
+	retRouteDesc->dwFromGateType = pDesc->dwGateType;
 
 	if (pDesc->pDestNode == NULL)
 		pDesc->pDestNode = m_Topology.FindTopologyNode(pDesc->sDestNode);
 
 	retRouteDesc->pToNode = pDesc->pDestNode;
 	retRouteDesc->sToName = pDesc->sDestEntryPoint;
+	retRouteDesc->sToAttributes = pDesc->pDestNode->GetStargateProperty(pDesc->sDestEntryPoint, PROPERTY_ATTRIBUTES)->GetStringValue();
+	retRouteDesc->dwToGateType = pDesc->pDestNode->GetStargateProperty(pDesc->sDestEntryPoint, PROPERTY_TYPE_GATE)->GetIntegerValue();
+	retRouteDesc->dwToBeaconType = pDesc->pDestNode->GetStargateProperty(pDesc->sDestEntryPoint, PROPERTY_TYPE_BEACON)->GetIntegerValue();
 	retRouteDesc->MidPoints = pDesc->MidPoints;
 
 	retRouteDesc->rgbColor = DWToARGBColor(pDesc->dwColor);

@@ -487,12 +487,12 @@ ALERROR CTopology::AddStargateRoute (const CTopologyNode::SStargateRouteDesc &De
 	GateDesc.sName = sSourceGate;
 	GateDesc.sDestNode = Desc.pToNode->GetID();
 	GateDesc.sDestName = sDestGate;
-	GateDesc.sFromAttributes = Desc.sToAttributes;
-	GateDesc.dwFromGateType = Desc.dwToGateType;
+	GateDesc.sFromAttributes = Desc.sFromAttributes;
+	GateDesc.dwFromGateType = Desc.dwFromGateType;
 	GateDesc.dwFromBeaconType = Desc.dwFromBeaconType;
-	GateDesc.sToAttributes = Desc.sFromAttributes;
-	GateDesc.dwToGateType = Desc.dwFromGateType;
-	GateDesc.dwToBeaconType = Desc.dwFromBeaconType;
+	GateDesc.sToAttributes = Desc.sToAttributes;
+	GateDesc.dwToGateType = Desc.dwToGateType;
+	GateDesc.dwToBeaconType = Desc.dwToBeaconType;
 	GateDesc.pMidPoints = &Desc.MidPoints;
 	GateDesc.bUncharted = Desc.bUncharted;
 	GateDesc.rgbColor = Desc.rgbColor;
@@ -510,13 +510,24 @@ ALERROR CTopology::AddStargateRoute (const CTopologyNode::SStargateRouteDesc &De
 
 	if (!bExists && !Desc.bOneWay && !pToNode->IsEndGame())
 		{
-		GateDesc.sName = sDestGate;
-		GateDesc.sDestNode = Desc.pFromNode->GetID();
-		GateDesc.sDestName = sSourceGate;
-		GateDesc.pMidPoints = &Desc.MidPoints;
-		GateDesc.bUncharted = Desc.bUncharted;
 
-		if (error = pToNode->AddStargate(GateDesc))
+		//	Create a new desc with inverted from and to values to get the gate going in the opposite direction
+
+		CTopologyNode::SStargateDesc DestGateDesc;
+		DestGateDesc.sName = sDestGate;
+		DestGateDesc.sDestNode = Desc.pFromNode->GetID();
+		DestGateDesc.sDestName = sSourceGate;
+		DestGateDesc.sFromAttributes = Desc.sToAttributes;
+		DestGateDesc.dwFromGateType = Desc.dwToGateType;
+		DestGateDesc.dwFromBeaconType = Desc.dwToBeaconType;
+		DestGateDesc.sToAttributes = Desc.sFromAttributes;
+		DestGateDesc.dwToGateType = Desc.dwFromGateType;
+		DestGateDesc.dwToBeaconType = Desc.dwFromBeaconType;
+		DestGateDesc.pMidPoints = &Desc.MidPoints;
+		DestGateDesc.bUncharted = Desc.bUncharted;
+		DestGateDesc.rgbColor = Desc.rgbColor;
+
+		if (error = pToNode->AddStargate(DestGateDesc))
 			return ERR_FAIL;
 		}
 
@@ -785,7 +796,7 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 	RouteDesc.dwFromGateType = GateDesc.dwFromGateType;
 	RouteDesc.dwToGateType = GateDesc.dwToGateType;
 	RouteDesc.dwFromBeaconType = GateDesc.dwFromBeaconType;
-	RouteDesc.dwToBeaconType = GateDesc.dwToGateType;
+	RouteDesc.dwToBeaconType = GateDesc.dwToBeaconType;
 		
 
 	CString sColor;
