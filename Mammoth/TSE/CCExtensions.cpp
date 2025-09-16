@@ -3355,6 +3355,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"	'gateType: UNID of the gate type (0x0 = default)\n"
 			"   'nodeID: NodeID of this gate\n"
 			"   'linkColor: html5 stargate link map color\n"
+			"   'locationCriteria: in-system location criteria used to place this gate\n"
 			"   'uncharted: True if uncharted\n",
 
 			"ss*",	0,	},
@@ -13548,9 +13549,11 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 		GateDesc.sDestNode = sDestNode;
 		GateDesc.sDestName = sDestName;
 		GateDesc.sFromAttributes = CONSTLIT("");
+		GateDesc.sFromLocationCriteria = CONSTLIT("");
 		GateDesc.dwFromGateType = 0;
 		GateDesc.dwFromBeaconType = 0;
 		GateDesc.sToAttributes = CONSTLIT("");
+		GateDesc.sToLocationCriteria = CONSTLIT("");
 		GateDesc.dwToGateType = 0;
 		GateDesc.dwToBeaconType = 0;
 		GateDesc.rgbColor = DWToARGBColor(0);

@@ -33,6 +33,7 @@
 #define ID_ATTRIB								CONSTLIT("ID")
 #define LEVEL_ATTRIB							CONSTLIT("level")
 #define LINK_COLOR_ATTRIB						CONSTLIT("linkColor")
+#define LOCATION_CRITERIA_ATTRIB				CONSTLIT("locationCriteria")
 #define MIN_SEPARATION_ATTRIB					CONSTLIT("minSeparation")
 #define NAME_ATTRIB								CONSTLIT("name")
 #define NODE_ID_ATTRIB							CONSTLIT("nodeID")
@@ -488,9 +489,11 @@ ALERROR CTopology::AddStargateRoute (const CTopologyNode::SStargateRouteDesc &De
 	GateDesc.sDestNode = Desc.pToNode->GetID();
 	GateDesc.sDestName = sDestGate;
 	GateDesc.sFromAttributes = Desc.sFromAttributes;
+	GateDesc.sFromLocationCriteria = Desc.sFromLocationCriteria;
 	GateDesc.dwFromGateType = Desc.dwFromGateType;
 	GateDesc.dwFromBeaconType = Desc.dwFromBeaconType;
 	GateDesc.sToAttributes = Desc.sToAttributes;
+	GateDesc.sToLocationCriteria = Desc.sToLocationCriteria;
 	GateDesc.dwToGateType = Desc.dwToGateType;
 	GateDesc.dwToBeaconType = Desc.dwToBeaconType;
 	GateDesc.pMidPoints = &Desc.MidPoints;
@@ -518,9 +521,11 @@ ALERROR CTopology::AddStargateRoute (const CTopologyNode::SStargateRouteDesc &De
 		DestGateDesc.sDestNode = Desc.pFromNode->GetID();
 		DestGateDesc.sDestName = sSourceGate;
 		DestGateDesc.sFromAttributes = Desc.sToAttributes;
+		DestGateDesc.sFromLocationCriteria = Desc.sToLocationCriteria;
 		DestGateDesc.dwFromGateType = Desc.dwToGateType;
 		DestGateDesc.dwFromBeaconType = Desc.dwToBeaconType;
 		DestGateDesc.sToAttributes = Desc.sFromAttributes;
+		DestGateDesc.sToLocationCriteria = Desc.sFromLocationCriteria;
 		DestGateDesc.dwToGateType = Desc.dwFromGateType;
 		DestGateDesc.dwToBeaconType = Desc.dwFromBeaconType;
 		DestGateDesc.pMidPoints = &Desc.MidPoints;
@@ -648,9 +653,10 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 		return ERR_FAIL;
 		}
 
-	//	Get bi-directional gate attributes
+	//	Get bi-directional gate attributes and locationCriteria
 
 	CString sAttributes = pGateDesc->GetAttribute(ATTRIBUTES_ATTRIB);
+	CString sLocationCriteria = pGateDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB);
 
 	//	Get bi-directional gate overrides
 	
@@ -673,12 +679,17 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 		GateDesc.sFromAttributes = pFromDesc->GetAttribute(ATTRIBUTES_ATTRIB);
 		if (GateDesc.sFromAttributes.IsBlank())
 			GateDesc.sFromAttributes = sAttributes;
+
+		GateDesc.sFromLocationCriteria = pFromDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB);
+		if (GateDesc.sFromLocationCriteria.IsBlank())
+			GateDesc.sFromLocationCriteria = sLocationCriteria;
 		}
 	else
 		{
 		GateDesc.dwFromGateType = dwGateType;
 		GateDesc.dwFromBeaconType = dwBeaconType;
 		GateDesc.sFromAttributes = sAttributes;
+		GateDesc.sFromLocationCriteria = sLocationCriteria;
 		}
 
 	CXMLElement* pToDesc = pGateDesc->GetContentElementByTag(STARGATE_TO_TAG);
@@ -695,12 +706,17 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 		GateDesc.sToAttributes = pToDesc->GetAttribute(ATTRIBUTES_ATTRIB);
 		if (GateDesc.sToAttributes.IsBlank())
 			GateDesc.sToAttributes = sAttributes;
+
+		GateDesc.sToLocationCriteria = pToDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB);
+		if (GateDesc.sToLocationCriteria.IsBlank())
+			GateDesc.sToLocationCriteria = sLocationCriteria;
 		}
 	else
 		{
 		GateDesc.dwToGateType = dwGateType;
 		GateDesc.dwToBeaconType = dwBeaconType;
 		GateDesc.sToAttributes = sAttributes;
+		GateDesc.sToLocationCriteria = sLocationCriteria;
 		}
 
 
@@ -793,6 +809,8 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 	RouteDesc.bOneWay = bOneWay;
 	RouteDesc.sFromAttributes = GateDesc.sFromAttributes;
 	RouteDesc.sToAttributes = GateDesc.sToAttributes;
+	RouteDesc.sFromLocationCriteria = GateDesc.sFromLocationCriteria;
+	RouteDesc.sToLocationCriteria = GateDesc.sToLocationCriteria;
 	RouteDesc.dwFromGateType = GateDesc.dwFromGateType;
 	RouteDesc.dwToGateType = GateDesc.dwToGateType;
 	RouteDesc.dwFromBeaconType = GateDesc.dwFromBeaconType;
@@ -802,7 +820,7 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 	CString sColor;
 	if (pGateDesc->FindAttribute(LINK_COLOR_ATTRIB, &sColor) && !sColor.IsBlank())
 		{
-		//	Load full ARGB color, because by default node lines are not full alpha
+		//	Load full ARGB color, to support transparent node lines
 
 		RouteDesc.rgbColor = LoadARGBColor(sColor);
 

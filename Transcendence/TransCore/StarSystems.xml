@@ -1317,7 +1317,7 @@
 			;	own mod to enable debug logging during stargate creation.
 			;	This prints out diagnostic info to debug.log
 
-			(setq dbgLogCreateAllStargates Nil)
+			(setq dbgLogCreateAllStargates 1)
 		
 			(setq trnCreateAllStargates (lambda (options)
 
@@ -1418,7 +1418,7 @@
 				(
 					theGate									;	The gate to create
 					isCorewardGate							;	If this gate should be treated as corewards
-					locationCriteria						;	The location criteria to use for creating this gate
+					defaultLocationCriteria					;	The default location criteria to use for creating this gate if no override is specified in stargate properties
 					defaultStargateUNID						;	The default stargate type to create if not uncharted and no override is specified in stargate properties
 					defaultBeaconUNID						;	The default stargate beacon type to create if not uncharted and no override is specified in stargate properties
 					defaultUnchartedStargateUNID			;	The default stargate type to create if not uncharted and no override is specified in stargate properties
@@ -1427,15 +1427,23 @@
 				(block (
 						;	Populate args with defaults if any are Nil and default needs to be non-nil
 
-						(locationCriteria (or locationCriteria "++outerSystem; -asteroids; -gasGiant; -void;"))
 						(defaultStargateUNID (or defaultStargateUNID &stStargate;))
 						(defaultBeaconUNID (or defaultBeaconUNID &stStargateBeacon;))
 						(defaultUnchartedStargateUNID (or defaultUnchartedStargateUNID &stUnchartedMajellenStargate;))
 						(defaultUnchartedBeaconUNID (or defaultUnchartedBeaconUNID &stStargateBeacon;))
 
+						;	Determine the location criteria
+						
+						(locationCriteriaOverride (sysGetStargateProperty theGate 'locationCriteria))
+						(locationCriteria (or
+							(if (!= locationCriteriaOverride "") locationCriteriaOverride)
+							defaultLocationCriteria
+							"++outerSystem; -asteroids; -gasGiant; -void;"
+							))
+
 						;	Fetch the override types for this gate, if available
 
-						(rawGateOverrideUNID ( sysGetStargateProperty theGate 'gateType))
+						(rawGateOverrideUNID (sysGetStargateProperty theGate 'gateType))
 						(gateOverrideUNID (if (= rawGateOverrideUNID 0) Nil rawGateOverrideUNID))		;	if 0 convert to Nil for use in or-assignment
 
 						;	Fetch the override types for this beacon, if available
@@ -1462,6 +1470,8 @@
 							"\n  (current node): " (sysGetNode)
 							"\n  theGate: " theGate
 							"\n  isCorewardGate: " isCorewardGate
+							"\n  defaultlocationCriteria: " defaultLocationCriteria
+							"\n  locationCriteriaOverride: " locationCriteriaOverride
 							"\n  locationCriteria: " locationCriteria
 							"\n  defaultStargateUNID: " (fmtUNID defaultStargateUNID)
 							"\n  defaultBeaconUNID: " (fmtUNID defaultBeaconUNID)

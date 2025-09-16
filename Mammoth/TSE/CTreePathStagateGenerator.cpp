@@ -91,8 +91,10 @@ void CTreePathStargateGenerator::Generate (DWORD dwFirstNode, TArray<CTopologyNo
 			pRouteDesc->pToNode = m_Nodes[m_Graph.GetNodeIndex(dwTo)];
 
 			//	Initialize parts of desc that do not get initialized later
+			pRouteDesc->sFromLocationCriteria = CONSTLIT("");
 			pRouteDesc->dwFromBeaconType = 0;
 			pRouteDesc->dwFromGateType = 0;
+			pRouteDesc->sToLocationCriteria = CONSTLIT("");
 			pRouteDesc->dwToBeaconType = 0;
 			pRouteDesc->dwToGateType = 0;
 			pRouteDesc->rgbColor = DWToARGBColor(0);

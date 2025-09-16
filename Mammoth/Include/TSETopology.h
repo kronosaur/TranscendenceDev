@@ -22,10 +22,12 @@ class CTopologyNode
 
 			//	From and To overrides
 			CString sFromAttributes;
+			CString sFromLocationCriteria;
 			DWORD dwFromGateType;
 			DWORD dwFromBeaconType;
 
 			CString sToAttributes;
+			CString sToLocationCriteria;
 			DWORD dwToGateType;
 			DWORD dwToBeaconType;
 
@@ -50,12 +52,14 @@ class CTopologyNode
 			const CTopologyNode *pFromNode = NULL;
 			CString sFromName;
 			CString sFromAttributes;
+			CString sFromLocationCriteria;
 			DWORD dwFromGateType;
 			DWORD dwFromBeaconType;
 
 			const CTopologyNode *pToNode = NULL;
 			CString sToName;
 			CString sToAttributes;
+			CString sToLocationCriteria;
 			DWORD dwToGateType;
 			DWORD dwToBeaconType;
 
@@ -158,6 +162,7 @@ class CTopologyNode
 				{ }
 
 			CString sAttributes;
+			CString sLocationCriteria;
 			DWORD dwGateType;
 			DWORD dwBeaconType;
 
