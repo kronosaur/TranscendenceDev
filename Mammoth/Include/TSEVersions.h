@@ -454,10 +454,11 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //
 //	 56: 2.0 Alpha 6
 //		tlisp:
-//			(sysAddStargateTopologyColored [nodeID] gateID destNodeID destGateID argbLinkColor)
-//				Allows creating a gate frome nodeID (or current system) to destNodeID, and colors
-//				the topology link with the html color string specified in argbLinkColor
-//				If Alpha is not specified, argbLinkColor is assumed to have full alpha (0xFF)
+//			(sysAddStargateTopology [nodeID] gateID destNodeID destGateID [optionsStruct])
+//				optionsStruct: (struct)
+//					color: (string: html argb color)
+//						Specifies an argb color to use for the topology gate link on the galaxy map
+//						If Alpha is not specified, argbLinkColor is assumed to have full alpha (0xFF)
 //			(sysGetStargateProperty [nodeID] gateID property)
 //				'attributes: new property to retrieve <Stargate> attributes
 //				'linkColor: new property to retrieve linkColor as HTML color string if present
