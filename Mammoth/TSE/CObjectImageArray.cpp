@@ -1459,19 +1459,19 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 			int iYOffset = 0;
 
 			//	Create Tasks
+			CSpritePaintWorker::SCtx WorkerCtx = CSpritePaintWorker::SCtx();
+			WorkerCtx.pSrc = this;
+			WorkerCtx.xDest = x;
+			WorkerCtx.xSrc = m_rcImage.left;
+			WorkerCtx.yDest = y;
+			WorkerCtx.ySrc = m_rcImage.top;
+			WorkerCtx.iTick = iTick;
+			WorkerCtx.iRotation = iRotation;
+			WorkerCtx.iMode = CSpritePaintWorker::ePaintImage;
+			WorkerCtx.fComposite = bComposite ? 1 : 0;
 
 			for (int i = 0; i < iNumWorkers; i++)
 				{
-				CSpritePaintWorker::SCtx WorkerCtx = CSpritePaintWorker::SCtx();
-				WorkerCtx.pSrc = this;
-				WorkerCtx.xDest = x;
-				WorkerCtx.xSrc = m_rcImage.left;
-				WorkerCtx.yDest = y;
-				WorkerCtx.ySrc = m_rcImage.top;
-				WorkerCtx.iTick = iTick;
-				WorkerCtx.iRotation = iRotation;
-				WorkerCtx.iMode = CSpritePaintWorker::ePaintImage;
-				WorkerCtx.fComposite = bComposite ? 1 : 0;
 				int iCY = iScanLinesPerWorker + (i < iScanLinesRemainder ? 1 : 0);
 				CSpritePaintWorker *pTask = new CSpritePaintWorker(Dest, iYOffset, iCY, WorkerCtx);	//	Gets cleaned up by CThreadPool.Run()
 				iYOffset += iCY;
