@@ -104,7 +104,7 @@ IThreadPoolTask *CThreadPool::GetTaskToRun (void)
 
 //	GetTaskToRun
 //
-//	Pull task off the queueu
+//	Pull task off the queue
 
 	{
 	IThreadPoolTask *pTask;
