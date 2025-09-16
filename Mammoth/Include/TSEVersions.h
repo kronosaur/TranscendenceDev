@@ -459,17 +459,39 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				the topology link with the html color string specified in argbLinkColor
 //				If Alpha is not specified, argbLinkColor is assumed to have full alpha (0xFF)
 //			(sysGetStargateProperty [nodeID] gateID property)
-//				'linkColor: new property to retrieve linkColor as HTML color string if present
 //				'attributes: new property to retrieve <Stargate> attributes
-//				'xmlFromNodeID: the original node ID specified as 'from' in the xml
-//				'xmlToNodeID: the original node ID specified as 'to' in the xml
+//				'linkColor: new property to retrieve linkColor as HTML color string if present
+//				'locationCriteria: new property for location criteria to use for placing the gate
+//				'gateType: the unid of the stargate
+//				'beaconType: the unid of the stargate beacons
 //		<SystemMap>
 //			<...><Stargate>
+//				(NOTE:) modded systemTypes that do not use trnCreateAllStargates may not respect the
+//					following fields except for linkColor.
+//				attributes: (string)
+//					An attributes string. See trnCreateAllStargates for special known-fields.
+//				beaconType: (unid)
+//					The type of beacon to spawn
+//				gateType: (unid)
+//					The type of gate to spawn
 //				linkColor: (string: html argb color)
 //					The color to display this stargate link in on the galaxy map.
 //					If Alpha is not specified, linkColor is assumed to have full alpha (0xFF)
-//				attributes: (string)
-//					An attributes string. See trnCreateAllStargates for special known-fields.
+//				locationCriteria: (string)
+//					the in-system location criteria to use for placing the gate
+//				<FromGate>/<ToGate>
+//					attributes: (string)
+//						An attributes string. See trnCreateAllStargates for special known-fields.
+//						Overrides the <Stargate> attribute string.
+//					beaconType: (unid)
+//						The type of beacon to spawn for this side of the gate
+//						Overrides the <Stargate> beaconType.
+//					gateType: (unid)
+//						The type of gate to spawn for this side of the gate
+//						Overrides the <Stargate> gateType.
+//					locationCriteria: (string)
+//						the in-system location criteria to use for placing the gate
+//						Overrides the <Stargate> locationCriteria string.
 //
 
 
