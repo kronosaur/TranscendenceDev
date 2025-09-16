@@ -50,6 +50,19 @@ void CDelaunayStargateGenerator::Generate (TArray<CTopologyNode::SStargateRouteD
 			CTopologyNode::SStargateRouteDesc *pRouteDesc = Routes.Insert();
 			pRouteDesc->pFromNode = pFrom;
 			pRouteDesc->pToNode = pTo;
+
+			//	Initialize parts of desc that do not get initialized later
+			pRouteDesc->dwFromBeaconType = 0;
+			pRouteDesc->dwFromGateType = 0;
+			pRouteDesc->dwToBeaconType = 0;
+			pRouteDesc->dwToGateType = 0;
+			pRouteDesc->rgbColor = DWToARGBColor(0);
+
+			//	Since we never have attributes using this codepath
+			//	mark that we were created by the randomTopologyCreator
+
+			pRouteDesc->sFromAttributes = CONSTLIT("randomTopology");
+			pRouteDesc->sToAttributes = CONSTLIT("randomTopology");
 			}
 		}
 	}
