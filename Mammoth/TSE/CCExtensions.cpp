@@ -3355,7 +3355,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'gateID: ID of this gate\n"
 			"   'nodeID: NodeID of this gate\n"
 			"   'linkColor: html5 stargate link map color\n"
-			"   'uncharted: True if uncharted\n"
+			"   'uncharted: True if uncharted\n",
 
 			"ss*",	0,	},
 
