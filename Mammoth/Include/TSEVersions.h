@@ -6,7 +6,7 @@
 #pragma once
 
 constexpr DWORD API_VERSION =							56;
-constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
+constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
 constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 
 //	Uncomment out the following define when building a stable release
@@ -452,13 +452,25 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //							distance (in ls) at which sound falloff starts
 //							default: 0.0
 //
-//	 56: 2.0 Alpha 5
+//	 56: 2.0 Alpha 6
+//		tlisp:
+//			(sysAddStargateTopologyColored [nodeID] gateID destNodeID destGateID argbLinkColor)
+//				Allows creating a gate frome nodeID (or current system) to destNodeID, and colors
+//				the topology link with the html color string specified in argbLinkColor
+//				If Alpha is not specified, argbLinkColor is assumed to have full alpha (0xFF)
+//			(sysGetStargateProperty [nodeID] gateID property)
+//				'linkColor: new property to retrieve linkColor as HTML color string if present
 //		<StationType>
 //			<Encounter>
 //				distanceFrequency: (str)
 //					Now supports distances beyond 5 at a single frequency
 //					Ex: "ccccc|curvv v"
 //					Default (if not specified) is NotRandom
+//		<SystemMap>
+//			<...><Stargate>
+//				linkColor: (string: html argb color)
+//					The color to display this stargate link in on the galaxy map.
+//					If Alpha is not specified, linkColor is assumed to have full alpha (0xFF)
 //
 
 
@@ -568,6 +580,10 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //
 //	40: 1.9 Beta 4
 //		Added design type in dwFlags or CDesignType.
+//
+//	41: 2.0 Alpha 6
+//		Add gate node RGB color
+//
 
 
 //	SYSTEM VERSION HISTORY -----------------------------------------------------
@@ -1217,3 +1233,4 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //
 //	213: 2.0 Alpha 2
 //		Change DiceRange to use -1 for not set
+//

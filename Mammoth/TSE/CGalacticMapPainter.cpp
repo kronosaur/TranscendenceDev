@@ -190,7 +190,7 @@ void CGalacticMapPainter::DrawNodeIcon (CG32bitImage &Dest, const CTopologyNode 
 	m_SystemMapThumbnails.DrawThumbnail(pNode, Dest, x, y, bFullSystem, rScale);
 	}
 
-void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y) const
+void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, CG32bitPixel rgbDefaultConnectionColor) const
 
 //	DrawNodeConnections
 //
@@ -201,7 +201,6 @@ void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, const CTopolo
 
 	//	Compute some visual attributes.
 
-	CG32bitPixel rgbStargateColor = (m_pMap ? m_pMap->GetStargateLineColor() : RGB_STARGATE);
     int iStargateLine = Max(1, mathRound(STARGATE_LINE_WIDTH * (Metric)m_iScale / 100.0));
 
 	//	Paint each gate line
@@ -222,6 +221,10 @@ void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, const CTopolo
 			RouteDesc.pToNode->GetDisplayPos(&End.x, &End.y);
 			End = Xform(End);
 
+			//	Set the custom color if available
+
+			CG32bitPixel rgbConnectionColor = RouteDesc.rgbColor.GetAlpha() ? RouteDesc.rgbColor : rgbDefaultConnectionColor;
+
 			//	If this is a curved path, the draw it
 
 			if (RouteDesc.MidPoints.GetCount() > 0)
@@ -238,7 +241,7 @@ void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, const CTopolo
 						{
 						SPoint ptFrom = Xform(RouteDesc.MidPoints[iCurMid - 1]);
 
-						Dest.DrawLine(ptFrom.x, ptFrom.y, End.x, End.y, iStargateLine, rgbStargateColor);
+						Dest.DrawLine(ptFrom.x, ptFrom.y, End.x, End.y, iStargateLine, rgbConnectionColor);
 						}
 
 					//	Otherwise, we draw a curve
@@ -250,7 +253,7 @@ void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, const CTopolo
 						SPoint ptFrom = (iCurMid > 0 ? Xform(RouteDesc.MidPoints[iCurMid - 1]) : ptStart);
 						SPoint ptTo = (iCurMid + 1 < RouteDesc.MidPoints.GetCount() ? Xform(RouteDesc.MidPoints[iCurMid + 1]) : End);
 
-						CGDraw::QuadCurve(Dest, ptFrom.x, ptFrom.y, ptTo.x, ptTo.y, ptMid.x, ptMid.y, iStargateLine, rgbStargateColor);
+						CGDraw::QuadCurve(Dest, ptFrom.x, ptFrom.y, ptTo.x, ptTo.y, ptMid.x, ptMid.y, iStargateLine, rgbConnectionColor);
 						}
 
 					iCurMid += 2;
@@ -271,7 +274,7 @@ void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, const CTopolo
 			//	Otherwise, straight line
 
 			else
-				Dest.DrawLine(x, y, End.x, End.y, iStargateLine, rgbStargateColor);
+				Dest.DrawLine(x, y, End.x, End.y, iStargateLine, rgbConnectionColor);
 			}
 		}
 	}
@@ -543,7 +546,7 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 			//	Draw gate connections
 
 			if (pNode->IsKnown())
-				DrawNodeConnections(Dest, pNode, Start.x, Start.y);
+				DrawNodeConnections(Dest, pNode, Start.x, Start.y, rgbStargateColor);
 			rgbNodeColor;
 
 			pNode->SetMarked();

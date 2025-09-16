@@ -506,6 +506,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_GET_ASCENDED_OBJECTS		41
 #define FN_SYS_ITEM_FREQUENCY			42
 #define FN_SYS_NEXT_NODE_TO				43
+#define FN_SYS_ADD_STARGATE_TOPOLOGY_COLORED	44
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -3030,6 +3031,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysAddStargateTopology [nodeID] gateID destNodeID destGateID) -> True/Nil",
 			"sss*",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"sysAddStargateTopologyColored",			fnSystemGet,	FN_SYS_ADD_STARGATE_TOPOLOGY_COLORED,
+			"(sysAddStargateTopologyColored [nodeID] gateID destNodeID destGateID argbLinkColor) -> True/Nil",
+			"ssss*",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"sysAscendObject",				fnSystemGet,	FN_SYS_ASCEND_OBJECT,
 			"(sysAscendObject obj) -> True/Nil",
 			"i",	PPFLAG_SIDEEFFECTS,	},
@@ -3345,6 +3350,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'destID: Destination node\n"
 			"   'gateID: ID of this gate\n"
 			"   'nodeID: NodeID of this gate\n"
+			"	'linkColor: html5 stargate link map color\n"
 			"   'uncharted: True if uncharted\n",
 
 			"ss*",	0,	},
@@ -13807,15 +13813,17 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
+		case FN_SYS_ADD_STARGATE_TOPOLOGY_COLORED:
 		case FN_SYS_ADD_STARGATE_TOPOLOGY:
 			{
 			CTopologyNode *pNode;
 			int iArg = 0;
+			bool bColored = dwData == FN_SYS_ADD_STARGATE_TOPOLOGY_COLORED;
 
 			//	If we have more than one arg, then the first arg is
 			//	the node ID.
 
-			if (pArgs->GetCount() == 3)
+			if (pArgs->GetCount() == (bColored ? 4 : 3))
 				{
 				CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
 				if (pSystem == NULL)
@@ -13833,6 +13841,13 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			GateDesc.sName = pArgs->GetElement(iArg++)->GetStringValue();
 			GateDesc.sDestNode = pArgs->GetElement(iArg++)->GetStringValue();
 			GateDesc.sDestName = pArgs->GetElement(iArg++)->GetStringValue();
+			
+			if (bColored)
+				{
+				GateDesc.rgbColor = LoadARGBColor(pArgs->GetElement(iArg++)->GetStringValue());
+				if (GateDesc.rgbColor.GetAlpha() == 0)
+					GateDesc.rgbColor.SetAlpha(0xFF);
+				}
 
 			if (pNode->FindStargate(GateDesc.sName))
 				return pCC->CreateNil();
