@@ -603,7 +603,11 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //		Added design type in dwFlags or CDesignType.
 //
 //	41: 2.0 Alpha 6
-//		Add gate node RGB color
+//		Add gate link RGB color
+//		Add gate type
+//		Add gate beacon type
+//		Add gate link attributes
+//		Add gate location criteria
 //
 
 
