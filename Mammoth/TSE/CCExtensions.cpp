@@ -508,6 +508,8 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_NEXT_NODE_TO				43
 #define FN_SYS_ADD_STARGATE_TOPOLOGY_COLORED	44
 
+#define OPT_SYS_ADD_STARGATE_TOPOLOGY_COLOR CONSTLIT("color")
+
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
 #define FN_SYS_STOP_TIME				1
@@ -3028,12 +3030,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iis",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddStargateTopology",			fnSystemGet,	FN_SYS_ADD_STARGATE_TOPOLOGY,
-			"(sysAddStargateTopology [nodeID] gateID destNodeID destGateID) -> True/Nil",
+			"(sysAddStargateTopology [nodeID] gateID destNodeID destGateID [options]) -> True/Nil",
 			"sss*",	PPFLAG_SIDEEFFECTS,	},
-
-		{	"sysAddStargateTopologyColored",			fnSystemGet,	FN_SYS_ADD_STARGATE_TOPOLOGY_COLORED,
-			"(sysAddStargateTopologyColored [nodeID] gateID destNodeID destGateID argbLinkColor) -> True/Nil",
-			"ssss*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAscendObject",				fnSystemGet,	FN_SYS_ASCEND_OBJECT,
 			"(sysAscendObject obj) -> True/Nil",
@@ -13813,17 +13811,17 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
-		case FN_SYS_ADD_STARGATE_TOPOLOGY_COLORED:
 		case FN_SYS_ADD_STARGATE_TOPOLOGY:
 			{
-			CTopologyNode *pNode;
+			CTopologyNode *pNode = NULL;
 			int iArg = 0;
-			bool bColored = dwData == FN_SYS_ADD_STARGATE_TOPOLOGY_COLORED;
+			int iNumArgs = pArgs->GetCount();
+			ICCItem *pOptions = NULL;
 
 			//	If we have more than one arg, then the first arg is
 			//	the node ID.
 
-			if (pArgs->GetCount() == (bColored ? 4 : 3))
+			if (iNumArgs == 3)
 				{
 				CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
 				if (pSystem == NULL)
@@ -13832,7 +13830,21 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pNode = pSystem->GetTopology();
 				}
 			else
-				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				{
+				//	Figure out if we have a node to get, options to get, or both
+				//	check if the last argument is options
+
+				ICCItem *pPossiblyOptions = pArgs->GetElement(iNumArgs - 1);
+				if (pPossiblyOptions && pPossiblyOptions->IsSymbolTable())
+					pOptions = pPossiblyOptions;
+
+				//	Determine if the first argument is a node depending on the number of args
+
+				if ((pOptions && iNumArgs == 5) || (pOptions == NULL && iNumArgs == 4))
+					pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				else if (pOptions == NULL && iNumArgs >= 5)
+					return pCC->CreateError(CONSTLIT("Invalid argument, 5th arg when a node is specified must be an options struct."), pArgs->GetElement(4));
+				}
 
 			if (pNode == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
@@ -13842,11 +13854,21 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			GateDesc.sDestNode = pArgs->GetElement(iArg++)->GetStringValue();
 			GateDesc.sDestName = pArgs->GetElement(iArg++)->GetStringValue();
 			
-			if (bColored)
+			if (pOptions)
 				{
-				GateDesc.rgbColor = LoadARGBColor(pArgs->GetElement(iArg++)->GetStringValue());
-				if (GateDesc.rgbColor.GetAlpha() == 0)
-					GateDesc.rgbColor.SetAlpha(0xFF);
+				ICCItem *pOptionValue;
+
+				//	We will reuse pOptionValue for each option
+
+				//	Load the color option if present
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_TOPOLOGY_COLOR);
+				if (pOptionValue)
+					{
+					GateDesc.rgbColor = LoadARGBColor(pOptionValue->GetStringValue());
+					if (GateDesc.rgbColor.GetAlpha() == 0)
+						GateDesc.rgbColor.SetAlpha(0xFF);
+					}
 				}
 
 			if (pNode->FindStargate(GateDesc.sName))
