@@ -1387,7 +1387,7 @@
 							(sysHasAttribute (sysGetStargateDestinationNode theGate) 'noAutoGateCreate)
 								Nil
 
-							;	If the gate itself does not want us to create gates, then skip.
+							;	If the gate itself does not want us to create this gate, then skip.
 							
 							(sysStargateHasAttribute theGate 'noAutoGateCreate)
 								Nil
@@ -1414,10 +1414,10 @@
 					theGate									;	The gate to create
 					isCorewardGate							;	If this gate should be treated as corewards
 					locationCriteria						;	The location criteria to use for creating this gate
-					defaultStargateUNID						;	The default stargate type to create if not uncharted and no override is specified in stargate attributes
-					defaultBeaconUNID						;	The default stargate beacon type to create if not uncharted and no override is specified in stargate attributes
-					defaultUnchartedStargateUNID			;	The default stargate type to create if not uncharted and no override is specified in stargate attributes
-					defaultUnchartedBeaconUNID				;	The default stargate beacon type to create if not uncharted and no override is specified in stargate attributes
+					defaultStargateUNID						;	The default stargate type to create if not uncharted and no override is specified in stargate properties
+					defaultBeaconUNID						;	The default stargate beacon type to create if not uncharted and no override is specified in stargate properties
+					defaultUnchartedStargateUNID			;	The default stargate type to create if not uncharted and no override is specified in stargate properties
+					defaultUnchartedBeaconUNID				;	The default stargate beacon type to create if not uncharted and no override is specified in stargate properties
 				)
 				(block (
 						;	Populate args with defaults if any are Nil and default needs to be non-nil
@@ -1428,50 +1428,30 @@
 						(defaultUnchartedStargateUNID (or defaultUnchartedStargateUNID &stUnchartedMajellenStargate;))
 						(defaultUnchartedBeaconUNID (or defaultUnchartedBeaconUNID &stStargateBeacon;))
 
-						;	Fetch the attribute string for this gate and normalize the delimiters
+						;	Fetch the override types for this gate, if available
 
-						(gateAttributesRaw (sysGetStargateProperty theGate 'attributes))
-						(gateAttributesNormalized (strReplace (strReplace gateAttributesRaw ";" " ") "," " "))
-						(gateAttributes (strSplit gateAttributesNormalized " "))
+						(gateOverrideType (sysGetStargateProperty theGate 'gateType))
+						(gateOverrideUNID (if (= gateOverrideType 0) () gateOverrideType))			;	if 0 convert to Nil for use in or-assignment
 
-						;	Check if we have have a global gate or beacon type override
+						;	Fetch the override types for this beacon, if available
 
-						(globalGateOverrideType (@ (map gateAttributes 'excludeNil theAttribute (if (strBeginsWith theAttribute "stargateUNID:") theAttribute)) 0))
-						(globalBeaconOverrideType (@ (map gateAttributes 'excludeNil theAttribute (if (strBeginsWith theAttribute "beaconUNID:") theAttribute)) 0))
-
-						;	Check which local override we need to check for
-
-						(isFromNode (= (sysGetNode) (sysGetStargateProperty theGate 'xmlFromNodeID)))
-						(localGateOverrideAttribute (if isFromNode "fromStargateUNID:" "toStargateUNID:"))
-						(localBeaconOverrideAttribute (if isFromNode "fromBeaconUNID:" "toBeaconUNID:"))
-
-						;	Get local override if one exists
-
-						(localGateOverrideType (@ (map gateAttributes 'excludeNil theAttribute (if (strBeginsWith theAttribute localGateOverrideAttribute) theAttribute)) 0))
-						(localBeaconOverrideType (@ (map gateAttributes 'excludeNil theAttribute (if (strBeginsWith theAttribute localBeaconOverrideAttribute) theAttribute)) 0))
+						(beaconOverrideType (sysGetStargateProperty theGate 'beaconType))
+						(beaconOverrideUNID (if (= beaconOverrideType 0) () beaconOverrideType))	;	if 0 convert to Nil for use in or-assginment
 
 						;	Figure out which default to use
 
 						(defaultStargateType (if (sysGetStargateProperty theGate 'uncharted) defaultUnchartedStargateUNID defaultStargateUNID))
 						(defaultBeaconType (if (sysGetStargateProperty theGate 'uncharted) defaultUnchartedBeaconUNID defaultBeaconUNID))
 
-						;	Clean up the override stargates and convert to actual UNIDs
-
-						(localGateOverrideUNID (if localGateOverrideType (int (@ (strSplit (@ localGateOverrideType 0) ":") 1))))
-						(globalGateOverrideUNID (if globalGateOverrideType (int (@ (strSplit (@ globalGateOverrideType 0) ":") 1))))
-						(localBeaconOverrideUNID (if localBeaconOverrideType (int (@ (strSplit (@ localBeaconOverrideType 0) ":") 1))))
-						(globalBeaconOverrideUNID (if globalBeaconOverrideType (int (@ (strSplit (@ globalBeaconOverrideType 0) ":") 1))))
-
 						;	Figure out the actual stargate and beacon to make
 
-						(thisStargateUNID (or localGateOverrideUNID globalGateOverrideUNID defaultStargateType))
-						(thisBeaconUNID (or localBeaconOverrideUNID globalBeaconOverrideUNID defaultBeaconType))
+						(thisStargateUNID (or gateOverrideUNID defaultStargateUNID))
+						(thisBeaconUNID (or beaconOverrideUNID defaultBeaconUNID))
 
 						)
 					(if dbgLogCreateAllStargates (dbgLog (cat
 						"\ntrnCreateStargate called:"
 							"\n  (current node): " (sysGetNode)
-							"\n  (is From node): " isFromNode
 							"\n  theGate: " theGate
 							"\n  isCorewardGate: " isCorewardGate
 							"\n  locationCriteria: " locationCriteria
@@ -1479,12 +1459,10 @@
 							"\n  defaultBeaconUNID: " defaultBeaconUNID
 							"\n  defaultUnchartedStargateUNID: " defaultUnchartedStargateUNID
 							"\n  defaultUnchartedBeaconUNID: " defaultUnchartedBeaconUNID
-							"\n  gateAttributes: " gateAttributes
-							"\n  globalGateOverrideType: " globalGateOverrideUNID
-							"\n  globalBeaconOverrideType: " globalBeaconOverrideUNID
-							"\n  localGateOverrideType:" localGateOverrideUNID
-							"\n  localBeaconOverrideType:" localBeaconOverrideUNID
+							"\n  gateOverrideUNID:" gateOverrideUNID
+							"\n  beaconOverrideUNID:" beaconOverrideUNID
 							"\n  thisStargateUNID:" thisStargateUNID
+							"\n  thisBeaconUNID:" thisBeaconUNID
 						)))
 
 					(if (sysGetStargateProperty theGate 'uncharted)

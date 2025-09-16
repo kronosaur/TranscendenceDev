@@ -17,6 +17,8 @@
 #define STARGATE_TAG							CONSTLIT("Stargate")
 #define STARGATES_TAG							CONSTLIT("Stargates")
 #define STARGATE_TABLE_TAG						CONSTLIT("StargateTable")
+#define STARGATE_FROM_TAG						CONSTLIT("FromGate")
+#define STARGATE_TO_TAG							CONSTLIT("ToGate")
 
 #define ATTRIBUTES_ATTRIB						CONSTLIT("attributes")
 #define CHANCE_ATTRIB							CONSTLIT("chance")
@@ -39,6 +41,8 @@
 #define RADIUS_ATTRIB							CONSTLIT("radius")
 #define ROOT_NODE_ATTRIB						CONSTLIT("rootNode")
 #define TO_ATTRIB								CONSTLIT("to")
+#define TYPE_BEACON_ATTRIB						CONSTLIT("beaconType")
+#define TYPE_GATE_ATTRIB						CONSTLIT("gateType")
 #define UNCHARTED_ATTRIB						CONSTLIT("uncharted")
 #define UNID_ATTRIB								CONSTLIT("UNID")
 #define VARIANT_ATTRIB							CONSTLIT("variant")
@@ -390,10 +394,13 @@ ALERROR CTopology::AddStargateFromXML (STopologyCreateCtx &Ctx, CXMLElement *pDe
 	ALERROR error;
 	int i;
 
-	//	If this is a <Stargates> tag or a <Stargate> tag with content
+	//	If this is a <Stargates> tag or
+	//	a <Stargate> tag with nested <Stargate> tags
 	//	elements, then treat it as a group.
+	//	If a <Stargate> tag has assymmetric <FromGate> or <ToGate>
+	//	Then we treat it as a single gate.
 
-	if (pDesc->GetContentElementCount() > 0)
+	if (pDesc->GetContentElementCount() > 0 && !(strEquals(pDesc->GetTag(), STARGATE_TAG) && (pDesc->GetContentElementByTag(STARGATE_FROM_TAG) || pDesc->GetContentElementByTag(STARGATE_TO_TAG))))
 		{
 		IElementGenerator::SCtx GenCtx;
 		GenCtx.pTopology = this;
@@ -478,10 +485,14 @@ ALERROR CTopology::AddStargateRoute (const CTopologyNode::SStargateRouteDesc &De
 
 	CTopologyNode::SStargateDesc GateDesc;
 	GateDesc.sName = sSourceGate;
-	GateDesc.sFromNode = Desc.sXMLFromNode;
 	GateDesc.sDestNode = Desc.pToNode->GetID();
 	GateDesc.sDestName = sDestGate;
-	GateDesc.sAttributes = Desc.sAttributes;
+	GateDesc.sFromAttributes = Desc.sToAttributes;
+	GateDesc.dwFromGateType = Desc.dwToGateType;
+	GateDesc.dwFromBeaconType = Desc.dwFromBeaconType;
+	GateDesc.sToAttributes = Desc.sFromAttributes;
+	GateDesc.dwToGateType = Desc.dwFromGateType;
+	GateDesc.dwToBeaconType = Desc.dwFromBeaconType;
 	GateDesc.pMidPoints = &Desc.MidPoints;
 	GateDesc.bUncharted = Desc.bUncharted;
 	GateDesc.rgbColor = Desc.rgbColor;
@@ -561,7 +572,6 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 		{
 		CString sSource;
 		CTopologyNode::ParseStargateString(pGateDesc->GetAttribute(FROM_ATTRIB), &sSource, &GateDesc.sName);
-		GateDesc.sFromNode = sSource;
 		CTopologyNode::ParseStargateString(pGateDesc->GetAttribute(TO_ATTRIB), &GateDesc.sDestNode, &GateDesc.sDestName);
 		bOneWay = pGateDesc->GetAttributeBool(ONE_WAY_ATTRIB);
 
@@ -602,9 +612,6 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 		}
 	else
 		{
-		//	FromNode is populated by the current node ID
-
-		GateDesc.sFromNode = pNode->GetID();
 
 		//	Get basic data from the element
 
@@ -630,6 +637,62 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 		return ERR_FAIL;
 		}
 
+	//	Get bi-directional gate attributes
+
+	CString sAttributes = pGateDesc->GetAttribute(ATTRIBUTES_ATTRIB);
+
+	//	Get bi-directional gate overrides
+	
+	DWORD dwGateType = pGateDesc->GetAttributeInteger(TYPE_GATE_ATTRIB);
+	DWORD dwBeaconType = pGateDesc->GetAttributeInteger(TYPE_BEACON_ATTRIB);
+
+	//	Populate the From and To overrides if present
+
+	CXMLElement *pFromDesc = pGateDesc->GetContentElementByTag(STARGATE_FROM_TAG);
+	if (pFromDesc)
+		{
+		GateDesc.dwFromGateType = pFromDesc->GetAttributeInteger(TYPE_GATE_ATTRIB);
+		if (GateDesc.dwFromGateType == 0)
+			GateDesc.dwFromGateType = dwGateType;
+
+		GateDesc.dwFromBeaconType = pFromDesc->GetAttributeInteger(TYPE_BEACON_ATTRIB);
+		if (GateDesc.dwFromBeaconType == 0)
+			GateDesc.dwFromBeaconType = dwBeaconType;
+
+		GateDesc.sFromAttributes = pFromDesc->GetAttribute(ATTRIBUTES_ATTRIB);
+		if (GateDesc.sFromAttributes.IsBlank())
+			GateDesc.sFromAttributes = sAttributes;
+		}
+	else
+		{
+		GateDesc.dwFromGateType = dwGateType;
+		GateDesc.dwFromBeaconType = dwBeaconType;
+		GateDesc.sFromAttributes = sAttributes;
+		}
+
+	CXMLElement* pToDesc = pGateDesc->GetContentElementByTag(STARGATE_TO_TAG);
+	if (pToDesc)
+		{
+		GateDesc.dwToGateType = pFromDesc->GetAttributeInteger(TYPE_GATE_ATTRIB);
+		if (GateDesc.dwToGateType == 0)
+			GateDesc.dwToGateType = dwGateType;
+
+		GateDesc.dwToBeaconType = pFromDesc->GetAttributeInteger(TYPE_BEACON_ATTRIB);
+		if (GateDesc.dwToBeaconType == 0)
+			GateDesc.dwToBeaconType = dwBeaconType;
+
+		GateDesc.sToAttributes = pFromDesc->GetAttribute(ATTRIBUTES_ATTRIB);
+		if (GateDesc.sToAttributes.IsBlank())
+			GateDesc.sToAttributes = sAttributes;
+		}
+	else
+		{
+		GateDesc.dwToGateType = dwGateType;
+		GateDesc.dwToBeaconType = dwBeaconType;
+		GateDesc.sToAttributes = sAttributes;
+		}
+
+
 	//	At this point we have:
 	//
 	//	pNode is a valid source node
@@ -638,8 +701,9 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 	//	sGateName is the name of the source gate (may be NULL)
 	//	sDestEntryPoint is the name of the dest gate (may be NULL)
 	//	bOneWay is TRUE if we only want a one-way gate
-
+	// 
 	//	If the destination is PREV_DEST, then we handle it
+
 
 	if (strEquals(GateDesc.sDestNode, PREV_DEST))
 		{
@@ -711,21 +775,17 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 	//	Prepare the route descriptor
 
 	CTopologyNode::SStargateRouteDesc RouteDesc;
-	RouteDesc.sXMLFromNode = GateDesc.sFromNode;
 	RouteDesc.pFromNode = pNode;
 	RouteDesc.sFromName = GateDesc.sName;
 	RouteDesc.pToNode = pDest;
 	RouteDesc.sToName = GateDesc.sDestName;
 	RouteDesc.bOneWay = bOneWay;
-
-	//	Attempt to retrieve stargate attributes
-	//	otherwise just leave it initialized to an empty string
-
-	CString sAttribs;
-	if (pGateDesc->FindAttribute(ATTRIBUTES_ATTRIB, &sAttribs))
-		RouteDesc.sAttributes = sAttribs;
-	else
-		RouteDesc.sAttributes = CONSTLIT("");
+	RouteDesc.sFromAttributes = GateDesc.sFromAttributes;
+	RouteDesc.sToAttributes = GateDesc.sToAttributes;
+	RouteDesc.dwFromGateType = GateDesc.dwFromGateType;
+	RouteDesc.dwToGateType = GateDesc.dwToGateType;
+	RouteDesc.dwFromBeaconType = GateDesc.dwFromBeaconType;
+	RouteDesc.dwToBeaconType = GateDesc.dwToGateType;
 		
 
 	CString sColor;

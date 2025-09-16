@@ -3348,14 +3348,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property:\n\n"
 			
 			"   'attributes: Attribute string\n"
+			"	'gateType: UNID of the gate type (0x0 = default)\n"
+			"	'beaconType: UNID of the beacon type (0x0 = default)\n"
 			"   'destGateID: Destination gate ID\n"
 			"   'destID: Destination node\n"
 			"   'gateID: ID of this gate\n"
 			"   'nodeID: NodeID of this gate\n"
 			"   'linkColor: html5 stargate link map color\n"
 			"   'uncharted: True if uncharted\n"
-			"   'xmlFromNodeID: ID of the node originally specified as the from node in the xml\n"
-			"   'xmlToNodeID: ID of the node originally specified as the to node in the xml\n",
 
 			"ss*",	0,	},
 
@@ -13545,10 +13545,14 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 
 		CTopologyNode::SStargateDesc GateDesc;
 		GateDesc.sName = sStargateName;
-		GateDesc.sFromNode = pNode->GetID();
 		GateDesc.sDestNode = sDestNode;
 		GateDesc.sDestName = sDestName;
-		GateDesc.sAttributes = CONSTLIT("");
+		GateDesc.sFromAttributes = CONSTLIT("");
+		GateDesc.dwFromGateType = 0;
+		GateDesc.dwFromBeaconType = 0;
+		GateDesc.sToAttributes = CONSTLIT("");
+		GateDesc.dwToGateType = 0;
+		GateDesc.dwToBeaconType = 0;
 		GateDesc.rgbColor = DWToARGBColor(0);
 		if (pNode->AddStargateAndReturn(GateDesc) != NOERROR)
 			return pCC->CreateError(CONSTLIT("Unable to add stargate to topology node"), NULL);

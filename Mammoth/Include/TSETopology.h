@@ -17,10 +17,17 @@ class CTopologyNode
 		struct SStargateDesc
 			{
 			CString sName;							//	Name of the gate
-			CString sFromNode;						//	Node originally declared as the origin node in XML. Used for tlisp handling of asymmetric links.
 			CString sDestNode;						//	Destination node
 			CString sDestName;						//	Destination entry point
-			CString sAttributes;					//	Attributes
+
+			//	From and To overrides
+			CString sFromAttributes;
+			DWORD dwFromGateType;
+			DWORD dwFromBeaconType;
+
+			CString sToAttributes;
+			DWORD dwToGateType;
+			DWORD dwToBeaconType;
 
 			const TArray<SPoint> *pMidPoints = NULL;	//	Gate line mid-points (optional)
 			bool bUncharted = false;				//	Gate is uncharted
@@ -40,14 +47,17 @@ class CTopologyNode
 				return m_rDistance;
 				}
 
-			CString sXMLFromNode;					//	This node ID corresponds to the actual xml From field
 			const CTopologyNode *pFromNode = NULL;
 			CString sFromName;
+			CString sFromAttributes;
+			DWORD dwFromGateType;
+			DWORD dwFromBeaconType;
 
 			const CTopologyNode *pToNode = NULL;
 			CString sToName;
-
-			CString sAttributes;
+			CString sToAttributes;
+			DWORD dwToGateType;
+			DWORD dwToBeaconType;
 
 			TArray<SPoint> MidPoints;
 			bool bOneWay = false;
@@ -147,10 +157,12 @@ class CTopologyNode
 					fUncharted(false)
 				{ }
 
-			CString sFromNode;					//	This is the from-node as defined in XML. We store this for asymmetric link pairs (ex a damaged gate to a normal gate)
+			CString sAttributes;
+			DWORD dwGateType;
+			DWORD dwBeaconType;
+
 			CString sDestNode;
 			CString sDestEntryPoint;
-			CString sAttributes;
 
 			TArray<SPoint> MidPoints;			//	If the stargate line is curved, these are 
 												//	the intermediate points.
