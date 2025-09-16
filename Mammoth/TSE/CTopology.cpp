@@ -30,6 +30,7 @@
 #define FROM_ATTRIB								CONSTLIT("from")
 #define ID_ATTRIB								CONSTLIT("ID")
 #define LEVEL_ATTRIB							CONSTLIT("level")
+#define LINK_COLOR_ATTRIB						CONSTLIT("linkColor")
 #define MIN_SEPARATION_ATTRIB					CONSTLIT("minSeparation")
 #define NAME_ATTRIB								CONSTLIT("name")
 #define NODE_ID_ATTRIB							CONSTLIT("nodeID")
@@ -481,6 +482,7 @@ ALERROR CTopology::AddStargateRoute (const CTopologyNode::SStargateRouteDesc &De
 	GateDesc.sDestName = sDestGate;
 	GateDesc.pMidPoints = &Desc.MidPoints;
 	GateDesc.bUncharted = Desc.bUncharted;
+	GateDesc.rgbColor = Desc.rgbColor;
 
 	if (error = pFromNode->AddStargate(GateDesc))
 		return ERR_FAIL;
@@ -706,6 +708,21 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 	RouteDesc.pToNode = pDest;
 	RouteDesc.sToName = GateDesc.sDestName;
 	RouteDesc.bOneWay = bOneWay;
+
+	CString sColor;
+	if (pGateDesc->FindAttribute(LINK_COLOR_ATTRIB, &sColor) && !sColor.IsBlank())
+		{
+		//	Load full ARGB color, because by default node lines are not full alpha
+
+		RouteDesc.rgbColor = LoadARGBColor(sColor);
+
+		//	If we dont have any alpha set, we assume 0xFF
+
+		if (!RouteDesc.rgbColor.GetAlpha())
+			RouteDesc.rgbColor.SetAlpha(0xFF);
+		}
+	else
+		RouteDesc.rgbColor = CG32bitPixel::Null();
 
 	//	Collect any stargate options
 
