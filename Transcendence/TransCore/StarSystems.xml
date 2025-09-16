@@ -1312,7 +1312,12 @@
 
 	<Globals>
 		(block Nil
-			(setq dbgLogCreateAllStargates Nil)
+
+			;	Set this to a non-Nil value in the globals element of your
+			;	own mod to enable debug logging during stargate creation.
+			;	This prints out diagnostic info to debug.log
+
+			(setq dbgLogCreateAllStargates 1)
 		
 			(setq trnCreateAllStargates (lambda (options)
 
@@ -1430,40 +1435,49 @@
 
 						;	Fetch the override types for this gate, if available
 
-						(gateOverrideType (sysGetStargateProperty theGate 'gateType))
-						(gateOverrideUNID (if (= gateOverrideType 0) () gateOverrideType))			;	if 0 convert to Nil for use in or-assignment
+						(rawGateOverrideUNID ( sysGetStargateProperty theGate 'gateType))
+						(gateOverrideUNID (if (= rawGateOverrideUNID 0) Nil rawGateOverrideUNID))		;	if 0 convert to Nil for use in or-assignment
 
 						;	Fetch the override types for this beacon, if available
 
-						(beaconOverrideType (sysGetStargateProperty theGate 'beaconType))
-						(beaconOverrideUNID (if (= beaconOverrideType 0) () beaconOverrideType))	;	if 0 convert to Nil for use in or-assginment
+						(rawBeaconOverrideUNID (sysGetStargateProperty theGate 'beaconType))
+						(beaconOverrideUNID (if (= rawBeaconOverrideUNID 0) Nil rawBeaconOverrideUNID))	;	if 0 convert to Nil for use in or-assginment
 
 						;	Figure out which default to use
 
-						(defaultStargateType (if (sysGetStargateProperty theGate 'uncharted) defaultUnchartedStargateUNID defaultStargateUNID))
-						(defaultBeaconType (if (sysGetStargateProperty theGate 'uncharted) defaultUnchartedBeaconUNID defaultBeaconUNID))
+						(isUncharted (sysGetStargateProperty theGate 'uncharted))
+						(finalDefaultStargateUNID (if isUncharted defaultUnchartedStargateUNID defaultStargateUNID))
+						(finalDefaultBeaconUNID (if isUncharted defaultUnchartedBeaconUNID defaultBeaconUNID))
 
 						;	Figure out the actual stargate and beacon to make
 
-						(thisStargateUNID (or gateOverrideUNID defaultStargateUNID))
-						(thisBeaconUNID (or beaconOverrideUNID defaultBeaconUNID))
-
+						(thisStargateUNID (or gateOverrideUNID finalDefaultStargateUNID))
+						(thisBeaconUNID (or beaconOverrideUNID finalDefaultBeaconUNID))
 						)
+
+					;	If we have debug logging set, print out diagnostic info for developers
+
 					(if dbgLogCreateAllStargates (dbgLog (cat
 						"\ntrnCreateStargate called:"
 							"\n  (current node): " (sysGetNode)
 							"\n  theGate: " theGate
 							"\n  isCorewardGate: " isCorewardGate
 							"\n  locationCriteria: " locationCriteria
-							"\n  defaultStargateUNID: " defaultStargateUNID
-							"\n  defaultBeaconUNID: " defaultBeaconUNID
-							"\n  defaultUnchartedStargateUNID: " defaultUnchartedStargateUNID
-							"\n  defaultUnchartedBeaconUNID: " defaultUnchartedBeaconUNID
-							"\n  gateOverrideUNID:" gateOverrideUNID
-							"\n  beaconOverrideUNID:" beaconOverrideUNID
-							"\n  thisStargateUNID:" thisStargateUNID
-							"\n  thisBeaconUNID:" thisBeaconUNID
+							"\n  defaultStargateUNID: " (fmtUNID defaultStargateUNID)
+							"\n  defaultBeaconUNID: " (fmtUNID defaultBeaconUNID)
+							"\n  defaultUnchartedStargateUNID: " (fmtUNID defaultUnchartedStargateUNID)
+							"\n  defaultUnchartedBeaconUNID: " (fmtUNID defaultUnchartedBeaconUNID)
+							"\n  finalDefaultStargateUNID: " (fmtUNID finalDefaultStargateUNID)
+							"\n  finalDefaultBeaconUNID: " (fmtUNID finalDefaultBeaconUNID)
+							"\n  rawGateOverrideUNID:" (fmtUNID rawGateOverrideUNID)
+							"\n  gateOverrideUNID:" (fmtUNID gateOverrideUNID)
+							"\n  rawBeaconOverrideUNID:" (fmtUNID rawBeaconOverrideUNID)
+							"\n  beaconOverrideUNID:" (fmtUNID beaconOverrideUNID)
+							"\n  thisStargateUNID:" (fmtUNID thisStargateUNID)
+							"\n  thisBeaconUNID:" (fmtUNID thisBeaconUNID)
 						)))
+
+					;	Create the gate
 
 					(if (sysGetStargateProperty theGate 'uncharted)
 						;	If this is an uncharted stargate, then create the gate somewhere
