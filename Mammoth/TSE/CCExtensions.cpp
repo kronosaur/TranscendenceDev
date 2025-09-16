@@ -3043,7 +3043,23 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iis",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddStargateTopology",			fnSystemGet,	FN_SYS_ADD_STARGATE_TOPOLOGY,
-			"(sysAddStargateTopology [nodeID] gateID destNodeID destGateID [options]) -> True/Nil",
+			"(sysAddStargateTopology [nodeID] gateID destNodeID destGateID [options]) -> True/Nil\n\n"
+			
+			"options is a struct with one or more of the following keys:\n\n"
+			
+			"   'color                    HTML color for the gate line in the galaxy map. Accepts alpha. 0 alpha is read as full alpha.\n"
+			"   'attributes               stargate link attributes string (applies to both sides)\n"
+			"   'locationCriteria         stargate location criteria string (applies to both sides)\n"
+			"   'gateType                 UNID (int) of the stargate stations to use (applies to both sides)\n"
+			"   'beaconType               UNID (int) of the beacon stations to use (applies to both sides)\n"
+			"   'fromAttributes           stargate link attributes string for this side\n"
+			"   'fromLocationCriteria     stargate location criteria string for this side\n"
+			"   'fromGateType             UNID (int) of the stargate stations to use for this side\n"
+			"   'fromBeaconType           UNID (int) of the beacon stations to use for this side\n"
+			"   'toAttributes             stargate link attributes string for the dest side\n"
+			"   'toLocationCriteria       stargate location criteria string for the dest side\n"
+			"   'toGateType               UNID (int) of the stargate stations to use for the dest side\n"
+			"   'toBeaconType             UNID (int) of the beacon stations to use for the dest side\n",
 			"sss*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAscendObject",				fnSystemGet,	FN_SYS_ASCEND_OBJECT,
