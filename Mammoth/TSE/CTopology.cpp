@@ -673,15 +673,15 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 	CXMLElement* pToDesc = pGateDesc->GetContentElementByTag(STARGATE_TO_TAG);
 	if (pToDesc)
 		{
-		GateDesc.dwToGateType = pFromDesc->GetAttributeInteger(TYPE_GATE_ATTRIB);
+		GateDesc.dwToGateType = pToDesc->GetAttributeInteger(TYPE_GATE_ATTRIB);
 		if (GateDesc.dwToGateType == 0)
 			GateDesc.dwToGateType = dwGateType;
 
-		GateDesc.dwToBeaconType = pFromDesc->GetAttributeInteger(TYPE_BEACON_ATTRIB);
+		GateDesc.dwToBeaconType = pToDesc->GetAttributeInteger(TYPE_BEACON_ATTRIB);
 		if (GateDesc.dwToBeaconType == 0)
 			GateDesc.dwToBeaconType = dwBeaconType;
 
-		GateDesc.sToAttributes = pFromDesc->GetAttribute(ATTRIBUTES_ATTRIB);
+		GateDesc.sToAttributes = pToDesc->GetAttribute(ATTRIBUTES_ATTRIB);
 		if (GateDesc.sToAttributes.IsBlank())
 			GateDesc.sToAttributes = sAttributes;
 		}
