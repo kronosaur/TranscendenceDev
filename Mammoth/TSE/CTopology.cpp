@@ -598,7 +598,7 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 			return ERR_FAIL;
 			}
 
-		//	Initialize some conext, in case we need it when adding the node
+		//	Initialize some context, in case we need it when adding the node
 
 		STopologyCreateCtx AddCtx(Ctx);
 		AddCtx.pGateDesc = pGateDesc;
