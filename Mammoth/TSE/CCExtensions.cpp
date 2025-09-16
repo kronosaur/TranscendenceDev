@@ -3348,11 +3348,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property:\n\n"
 			
 			"   'attributes: Attribute string\n"
-			"	'gateType: UNID of the gate type (0x0 = default)\n"
 			"	'beaconType: UNID of the beacon type (0x0 = default)\n"
 			"   'destGateID: Destination gate ID\n"
 			"   'destID: Destination node\n"
 			"   'gateID: ID of this gate\n"
+			"	'gateType: UNID of the gate type (0x0 = default)\n"
 			"   'nodeID: NodeID of this gate\n"
 			"   'linkColor: html5 stargate link map color\n"
 			"   'uncharted: True if uncharted\n",
