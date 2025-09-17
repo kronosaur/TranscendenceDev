@@ -152,7 +152,7 @@ void CCLambda::DestroyItem (void)
 void CCLambda::SetHelpUnformatted(CString sHelpRaw)
 	{
 
-	//	There may be leading tabs in sHelp depending on how the developer wrote it so we need to clean it up
+	//	There may be extra leading whitespace in sHelp depending on how the developer wrote it so we try to clean it up
 
 	CString sHelp = CONSTLIT("");
 
@@ -161,24 +161,49 @@ void CCLambda::SetHelpUnformatted(CString sHelpRaw)
 		sHelp = CONSTLIT("");
 		int iSpanStart = 0;
 		int iEnd = sHelpRaw.GetLength();
+		CString sInitialWhitespace = CONSTLIT("");
+		CString sRawLine;
 
 		while (iSpanStart < iEnd)
 			{
 			int iSpanLen = strFind(strSubString(sHelpRaw, iSpanStart), "\n");
 
+			//	Get the initial whitespace if this is the first line
+
+			if (iSpanStart == 0)
+				sInitialWhitespace = strSubString(sHelpRaw, 0, iSpanLen - strTrimWhitespace(strSubString(sHelpRaw, 0, iSpanLen)).GetLength());
+
+			//	On subsequent lines we try to clean up
+
 			if (iSpanLen < 0)
 				{
-				sHelp.Append(strTrimWhitespace(strSubString(sHelpRaw, iSpanStart)));
+				//	At the end, Append what remains
+
+				sRawLine = strSubString(sHelpRaw, iSpanStart);
+				if (strStartsWith(sRawLine, sInitialWhitespace))
+					sRawLine = strSubString(sRawLine, sInitialWhitespace.GetLength());
+
+				sHelp.Append(sRawLine);
 				break;
 				}
 			else if (iSpanLen == 0)
 				{
+				//	Allow newline formatting, but dont waste time on string processing
+
 				iSpanStart++;
+				m_sDesc.Append(CONSTLIT("\n"));
 				}
 			else
 				{
+				//	Attach the next span
+
 				iSpanLen++;
-				m_sDesc.Append(strTrimWhitespace(strSubString(sHelpRaw, iSpanStart, iSpanLen)));
+
+				sRawLine = strSubString(sHelpRaw, iSpanStart, iSpanLen);
+				if (strStartsWith(sRawLine, sInitialWhitespace))
+					sRawLine = strSubString(sRawLine, sInitialWhitespace.GetLength());
+
+				m_sDesc.Append(sRawLine);
 				m_sDesc.Append(CONSTLIT("\n"));
 				iSpanStart += iSpanLen;
 				}
