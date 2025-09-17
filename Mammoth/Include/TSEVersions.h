@@ -492,6 +492,20 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				'gateType: the unid of the stargate
 //				'beaconType: the unid of the stargate beacons
 //		<SystemMap>
+//			<...><Random>
+//				(NOTE:) modded systemTypes that do not use trnCreateAllStargates may not respect the
+//					following fields except for linkColor.
+//				gateLocationCriteria: (string)
+//					the in-system location criteria to use for placing the gate
+//				beaconType: (unid)
+//					The type of beacons to spawn
+//				gateType: (unid)
+//					The type of gates to spawn
+//				linkAttributes: (string)
+//					An attributes string. See trnCreateAllStargates for special known-fields.
+//				linkColor: (string: html argb color)
+//					The color to display this stargate link in on the galaxy map.
+//					If Alpha is not specified, linkColor is assumed to have full alpha (0xFF)
 //			<...><Stargate>
 //				(NOTE:) modded systemTypes that do not use trnCreateAllStargates may not respect the
 //					following fields except for linkColor.

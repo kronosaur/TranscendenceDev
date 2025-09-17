@@ -17,7 +17,7 @@
 #define GATE_LOCATION_CRITERIA_ATTRIB			CONSTLIT("gateLocationCriteria")
 #define GATE_TYPE_ATTRIB						CONSTLIT("gateType")
 #define LINK_ATTRIBUTES_ATTRIB					CONSTLIT("linkAttributes")
-#define LINK_COLOR_ATTRIB						CONSTLIT("color")
+#define LINK_COLOR_ATTRIB						CONSTLIT("linkColor")
 #define MIN_SEPARATION_ATTRIB					CONSTLIT("minSeparation")
 #define NETWORK_TYPE_ATTRIB						CONSTLIT("networkType")
 
