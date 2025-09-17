@@ -70,7 +70,7 @@ bool CSimplePathStargateGenerator::FindConnection (const CLargeSet &Connected, c
 	return true;
 	}
 
-void CSimplePathStargateGenerator::Generate (DWORD dwFirstNode, TArray<CTopologyNode::SStargateRouteDesc> &Routes)
+void CSimplePathStargateGenerator::Generate (DWORD dwFirstNode, TArray<CTopologyNode::SStargateRouteDesc> &Routes, CTopologyNode::SStargateRouteDesc templateDesc)
 
 //	Generate
 //
@@ -119,20 +119,17 @@ void CSimplePathStargateGenerator::Generate (DWORD dwFirstNode, TArray<CTopology
 		pRouteDesc->pFromNode = m_Nodes[m_Graph.GetNodeIndex(dwFrom)];
 		pRouteDesc->pToNode = m_Nodes[m_Graph.GetNodeIndex(dwTo)];
 
-		//	Initialize parts of desc that do not get initialized later
-		pRouteDesc->sFromLocationCriteria = CONSTLIT("");
-		pRouteDesc->dwFromBeaconType = 0;
-		pRouteDesc->dwFromGateType = 0;
-		pRouteDesc->sToLocationCriteria = CONSTLIT("");
-		pRouteDesc->dwToBeaconType = 0;
-		pRouteDesc->dwToGateType = 0;
-		pRouteDesc->rgbColor = DWToARGBColor(0);
+		//	Initialize rest of the desc from the templateDesc
 
-		//	Since we never have attributes using this codepath
-		//	mark that we were created by the randomTopologyCreator
-
-		pRouteDesc->sFromAttributes = CONSTLIT("randomTopology");
-		pRouteDesc->sToAttributes = CONSTLIT("randomTopology");
+		pRouteDesc->sFromAttributes = templateDesc.sFromAttributes;
+		pRouteDesc->sToAttributes = templateDesc.sToAttributes;
+		pRouteDesc->sFromLocationCriteria = templateDesc.sFromLocationCriteria;
+		pRouteDesc->dwFromBeaconType = templateDesc.dwFromBeaconType;
+		pRouteDesc->dwFromGateType = templateDesc.dwFromGateType;
+		pRouteDesc->sToLocationCriteria = templateDesc.sToLocationCriteria;
+		pRouteDesc->dwToBeaconType = templateDesc.dwToBeaconType;
+		pRouteDesc->dwToGateType = templateDesc.dwToGateType;
+		pRouteDesc->rgbColor = templateDesc.rgbColor;
 
 		//	The To node is now connected
 
