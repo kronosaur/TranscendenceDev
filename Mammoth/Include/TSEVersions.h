@@ -454,6 +454,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //
 //	 56: 2.0 Alpha 6
 //		tlisp:
+//			(lambda args [docstring] expr)
+//				Lambda now accepts an optional docstring that can be printed out with (help lambda)
+//			(help [lambda])
+//				Now accepts a lambda, and will print out the docstring if one exists
+//			(help '[match-pattern] ['lambda])
+//				Adds option to print out any matching lambdas
 //			(sysAddStargateTopologyColored [nodeID] gateID destNodeID destGateID argbLinkColor)
 //				Allows creating a gate frome nodeID (or current system) to destNodeID, and colors
 //				the topology link with the html color string specified in argbLinkColor
