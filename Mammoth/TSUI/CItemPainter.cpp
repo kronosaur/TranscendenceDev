@@ -740,10 +740,10 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 	//	If we have six or more icons, then we need to paint smaller
 
 	iLengthEstimate += Min(2, iImmuneCount);
-	const CG16bitFont &TheFont = (iLengthEstimate >= 6 ? Small : Medium);
+	const CG16bitFont &TheFont = ((iLengthEstimate >= 6 || iImmuneCount >= 8) ? Small : Medium);
 	int cyOffset = (Medium.GetHeight() - TheFont.GetHeight()) / 2;
-	int iDamageIconSpacingX = (iLengthEstimate < 8 && iImmuneCount < 8) ? DAMAGE_ADJ_ICON_SPACING_X : 0;
-	int iDamageAdjSpacingX = (iLengthEstimate < 8 && iImmuneCount < 8) ? DAMAGE_ADJ_SPACING_X : 2;
+	int iDamageIconSpacingX = (iLengthEstimate < 8 && iImmuneCount < 10) ? DAMAGE_ADJ_ICON_SPACING_X : 0;
+	int iDamageAdjSpacingX = (iLengthEstimate < 8 && iImmuneCount < 10) ? DAMAGE_ADJ_SPACING_X : 2;
 	
 	//	Paint the icons
 
