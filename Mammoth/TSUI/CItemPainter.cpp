@@ -742,6 +742,8 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 	iLengthEstimate += Min(2, iImmuneCount);
 	const CG16bitFont &TheFont = (iLengthEstimate >= 6 ? Small : Medium);
 	int cyOffset = (Medium.GetHeight() - TheFont.GetHeight()) / 2;
+	int iDamageIconSpacingX = (iLengthEstimate < 8 && iImmuneCount < 8) ? DAMAGE_ADJ_ICON_SPACING_X : 0;
+	int iDamageAdjSpacingX = (iLengthEstimate < 8 && iImmuneCount < 8) ? DAMAGE_ADJ_SPACING_X : 2;
 	
 	//	Paint the icons
 
@@ -780,7 +782,7 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 				else if (k == i)
 					{
 					VI.DrawDamageTypeIcon(Dest, x, y, (DamageTypes)iDamageType, bDisabled);
-					x += DAMAGE_TYPE_ICON_WIDTH + DAMAGE_ADJ_ICON_SPACING_X;
+					x += DAMAGE_TYPE_ICON_WIDTH + iDamageIconSpacingX;
 					}
 
 				//	We draw the icons for other types with the same adj as us
@@ -788,7 +790,7 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 				else if (Sorted[k].iDisplayAdj == iDisplayPercent)
 					{
 					VI.DrawDamageTypeIcon(Dest, x, y, (DamageTypes)Sorted[k].iDamageType, bDisabled);
-					x += DAMAGE_TYPE_ICON_WIDTH + DAMAGE_ADJ_ICON_SPACING_X;
+					x += DAMAGE_TYPE_ICON_WIDTH + iDamageIconSpacingX;
 					}
 
 				}
@@ -802,7 +804,7 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 			//	Draw icon
 
 			VI.DrawDamageTypeIcon(Dest, x, y, (DamageTypes)iDamageType, bDisabled);
-			x += DAMAGE_TYPE_ICON_WIDTH + DAMAGE_ADJ_ICON_SPACING_X;
+			x += DAMAGE_TYPE_ICON_WIDTH + iDamageIconSpacingX;
 
 			//	If we have a bunch of entries with "immune", we always compress them
 
@@ -832,7 +834,7 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 				0,
 				&x);
 
-		x += DAMAGE_ADJ_SPACING_X;
+		x += iDamageAdjSpacingX;
 		}
 	}
 
