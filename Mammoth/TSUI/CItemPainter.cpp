@@ -670,7 +670,7 @@ void CItemPainter::PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitIma
 
 		//	otherwise we fall back to checking level, if that option is set
 
-		else if (bUseDamageLevelsAsFallback)
+		else if (bUseDamageLevelsAsFallback && pDamageAdjCurve == NULL)
 			{
 			int iDamageLevel = GetDamageTypeLevel((DamageTypes)i);
 			if (iDamageLevel < iLevel - 5 || iDamageLevel > iLevel + 3)
