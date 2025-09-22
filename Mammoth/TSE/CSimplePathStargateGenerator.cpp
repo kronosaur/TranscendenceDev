@@ -70,7 +70,7 @@ bool CSimplePathStargateGenerator::FindConnection (const CLargeSet &Connected, c
 	return true;
 	}
 
-void CSimplePathStargateGenerator::Generate (DWORD dwFirstNode, TArray<CTopologyNode::SStargateRouteDesc> &Routes)
+void CSimplePathStargateGenerator::Generate (DWORD dwFirstNode, TArray<CTopologyNode::SStargateRouteDesc> &Routes, CTopologyNode::SStargateRouteDesc templateDesc)
 
 //	Generate
 //
@@ -118,6 +118,18 @@ void CSimplePathStargateGenerator::Generate (DWORD dwFirstNode, TArray<CTopology
 		CTopologyNode::SStargateRouteDesc *pRouteDesc = Routes.Insert();
 		pRouteDesc->pFromNode = m_Nodes[m_Graph.GetNodeIndex(dwFrom)];
 		pRouteDesc->pToNode = m_Nodes[m_Graph.GetNodeIndex(dwTo)];
+
+		//	Initialize rest of the desc from the templateDesc
+
+		pRouteDesc->sFromAttributes = templateDesc.sFromAttributes;
+		pRouteDesc->sToAttributes = templateDesc.sToAttributes;
+		pRouteDesc->sFromLocationCriteria = templateDesc.sFromLocationCriteria;
+		pRouteDesc->dwFromBeaconType = templateDesc.dwFromBeaconType;
+		pRouteDesc->dwFromGateType = templateDesc.dwFromGateType;
+		pRouteDesc->sToLocationCriteria = templateDesc.sToLocationCriteria;
+		pRouteDesc->dwToBeaconType = templateDesc.dwToBeaconType;
+		pRouteDesc->dwToGateType = templateDesc.dwToGateType;
+		pRouteDesc->rgbColor = templateDesc.rgbColor;
 
 		//	The To node is now connected
 
