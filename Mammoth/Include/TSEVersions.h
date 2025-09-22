@@ -466,6 +466,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //					ratio to apply to auto-computed power use, ex: 2.0 doubles power consumption.
 //					Ignored if explicit powerUse is set.
 //					default: 1.0
+//		<StationType>
+//			<Encounter>
+//				distanceFrequency: (str)
+//					Now supports distances beyond 5 at a single frequency
+//					Ex: "ccccc|curvv v"
+//					Default (if not specified) is NotRandom
 //		<SystemMap>
 //			<...><Stargate>
 //				linkColor: (string: html argb color)
