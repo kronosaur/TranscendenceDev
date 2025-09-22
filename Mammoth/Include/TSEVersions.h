@@ -460,6 +460,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				If Alpha is not specified, argbLinkColor is assumed to have full alpha (0xFF)
 //			(sysGetStargateProperty [nodeID] gateID property)
 //				'linkColor: new property to retrieve linkColor as HTML color string if present
+//		<ShipClass>
+//			<Drive>
+//				powerUseRatio: (Double)
+//					ratio to apply to auto-computed power use, ex: 2.0 doubles power consumption.
+//					Ignored if explicit powerUse is set.
+//					default: 1.0
 //		<StationType>
 //			<Encounter>
 //				distanceFrequency: (str)
