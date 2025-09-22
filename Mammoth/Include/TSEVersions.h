@@ -460,6 +460,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				If Alpha is not specified, argbLinkColor is assumed to have full alpha (0xFF)
 //			(sysGetStargateProperty [nodeID] gateID property)
 //				'linkColor: new property to retrieve linkColor as HTML color string if present
+//		<StationType>
+//			<Encounter>
+//				distanceFrequency: (str)
+//					Now supports distances beyond 5 at a single frequency
+//					Ex: "ccccc|curvv v"
+//					Default (if not specified) is NotRandom
 //		<SystemMap>
 //			<...><Stargate>
 //				linkColor: (string: html argb color)
