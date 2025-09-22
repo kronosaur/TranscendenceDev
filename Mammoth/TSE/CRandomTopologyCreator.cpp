@@ -415,26 +415,26 @@ ALERROR CRandomTopologyCreator::Create (STopologyCreateCtx &Ctx, CTopology &Topo
 
 	//	Create a template for the RouteDesc
 
-	CTopologyNode::SStargateRouteDesc sTemplate = CTopologyNode::SStargateRouteDesc();
+	CTopologyNode::SStargateRouteDesc Template = CTopologyNode::SStargateRouteDesc();
 
 	CString sRawAttributes = pXML->GetAttribute(ATTRIBUTES_ATTRIB);
 	CString sRandomTopologyAttributes = strCat(CONSTLIT("randomTopology"), sRawAttributes.IsBlank() ? CONSTLIT("") : CONSTLIT(","));
 
-	sTemplate.sFromAttributes = strCat(sRandomTopologyAttributes, sRawAttributes);
-	sTemplate.sToAttributes = sTemplate.sFromAttributes;
+	Template.sFromAttributes = strCat(sRandomTopologyAttributes, sRawAttributes);
+	Template.sToAttributes = Template.sFromAttributes;
 
-	sTemplate.sFromLocationCriteria = pXML->GetAttribute(GATE_LOCATION_CRITERIA_ATTRIB);
-	sTemplate.sToLocationCriteria = sTemplate.sFromLocationCriteria;
+	Template.sFromLocationCriteria = pXML->GetAttribute(GATE_LOCATION_CRITERIA_ATTRIB);
+	Template.sToLocationCriteria = Template.sFromLocationCriteria;
 
-	sTemplate.dwFromGateType = pXML->GetAttributeInteger(GATE_TYPE_ATTRIB);
-	sTemplate.dwToGateType = sTemplate.dwFromGateType;
+	Template.dwFromGateType = pXML->GetAttributeInteger(GATE_TYPE_ATTRIB);
+	Template.dwToGateType = Template.dwFromGateType;
 	
-	sTemplate.dwFromBeaconType = pXML->GetAttributeInteger(BEACON_TYPE_ATTRIB);
-	sTemplate.dwToBeaconType = sTemplate.dwFromBeaconType;
+	Template.dwFromBeaconType = pXML->GetAttributeInteger(BEACON_TYPE_ATTRIB);
+	Template.dwToBeaconType = Template.dwFromBeaconType;
 
-	sTemplate.rgbColor = LoadARGBColor(pXML->GetAttribute(LINK_COLOR_ATTRIB));
-	if (sTemplate.rgbColor.AsDWORD() && sTemplate.rgbColor.GetAlpha() == 0)
-		sTemplate.rgbColor.SetAlpha(0xFF);
+	Template.rgbColor = LoadARGBColor(pXML->GetAttribute(LINK_COLOR_ATTRIB));
+	if (Template.rgbColor.AsDWORD() && Template.rgbColor.GetAlpha() == 0)
+		Template.rgbColor.SetAlpha(0xFF);
 
 	//	Generate random connections between the nodes based on the network type
 
@@ -444,21 +444,21 @@ ALERROR CRandomTopologyCreator::Create (STopologyCreateCtx &Ctx, CTopology &Topo
 		case netLine:
 			{
 			CSimplePathStargateGenerator Generator(Graph, Nodes);
-			Generator.Generate(dwFirstNode, Routes, sTemplate);
+			Generator.Generate(dwFirstNode, Routes, Template);
 			break;
 			}
 
 		case netTree:
 			{
 			CTreePathStargateGenerator Generator(Graph, Nodes);
-			Generator.Generate(dwFirstNode, Routes, sTemplate);
+			Generator.Generate(dwFirstNode, Routes, Template);
 			break;
 			}
 
 		case netWeb:
 			{
 			CDelaunayStargateGenerator Generator(Graph, Nodes);
-			Generator.Generate(Routes, sTemplate);
+			Generator.Generate(Routes, Template);
 			break;
 			}
 
