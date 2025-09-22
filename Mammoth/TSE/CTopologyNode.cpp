@@ -50,11 +50,14 @@
 #define PROPERTY_LAST_VISITED_ON				CONSTLIT("lastVisitOn")
 #define PROPERTY_LEVEL							CONSTLIT("level")
 #define PROPERTY_LINK_COLOR						CONSTLIT("linkColor")
+#define PROPERTY_LOCATION_CRITERIA				CONSTLIT("locationCriteria")
 #define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_NODE_ID						CONSTLIT("nodeID")
 #define PROPERTY_POS							CONSTLIT("pos")
 #define PROPERTY_STD_CHALLENGE_RATING			CONSTLIT("stdChallengeRating")
 #define PROPERTY_STD_TREASURE_VALUE				CONSTLIT("stdTreasureValue")
+#define PROPERTY_TYPE_GATE						CONSTLIT("gateType")
+#define PROPERTY_TYPE_BEACON					CONSTLIT("beaconType")
 #define PROPERTY_UNCHARTED						CONSTLIT("uncharted")
 
 #define SPECIAL_LEVEL							CONSTLIT("level:")
@@ -124,6 +127,11 @@ ALERROR CTopologyNode::AddStargate (const SStargateDesc &GateDesc)
 
 	//	Initialize
 
+	pDesc->sAttributes = GateDesc.sFromAttributes;
+	pDesc->sLocationCriteria = GateDesc.sFromLocationCriteria;
+	pDesc->dwGateType = GateDesc.dwFromGateType;
+	pDesc->dwBeaconType = GateDesc.dwFromBeaconType;
+
 	pDesc->sDestNode = GateDesc.sDestNode;
 	pDesc->sDestEntryPoint = GateDesc.sDestName;
 
@@ -164,8 +172,20 @@ ALERROR CTopologyNode::AddStargateAndReturn (const SStargateDesc &GateDesc)
 
 		SStargateDesc ReturnGateDesc;
 		ReturnGateDesc.sName = GateDesc.sDestName;
+
+		ReturnGateDesc.sFromAttributes = GateDesc.sToAttributes;
+		ReturnGateDesc.sFromLocationCriteria = GateDesc.sToLocationCriteria;
+		ReturnGateDesc.dwFromGateType = GateDesc.dwToGateType;
+		ReturnGateDesc.dwFromBeaconType = GateDesc.dwToBeaconType;
+
 		ReturnGateDesc.sDestNode = GetID();
 		ReturnGateDesc.sDestName = GateDesc.sName;
+		ReturnGateDesc.sToAttributes = GateDesc.sFromAttributes;
+		ReturnGateDesc.sToLocationCriteria = GateDesc.sFromLocationCriteria;
+		ReturnGateDesc.dwToGateType = GateDesc.dwFromGateType;
+		ReturnGateDesc.dwToBeaconType = GateDesc.dwFromBeaconType;
+
+		ReturnGateDesc.rgbColor = GateDesc.rgbColor;
 
 		if (pDestNode->AddStargate(ReturnGateDesc) != NOERROR)
 			{
@@ -223,6 +243,10 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 //	CString		gate: sName
 //	CString		gate: sDestNode
 //	CString		gate: sDestEntryPoint
+//	CString		gate: sAttributes
+//	CString		gate: sLocationCriteria
+//	DWORD		gate: dwGateType
+//  DWORD		gate: dwBeaconType
 //  DWORD		gate: dwColor
 //	DWORD		gate: flags
 //	DWORD		gate: xMid
@@ -287,17 +311,33 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 		CString sName;
 		sName.ReadFromStream(Ctx.pStream);
 		SStargateEntry *pDesc = pNode->m_NamedGates.SetAt(sName);
-
 		pDesc->sDestNode.ReadFromStream(Ctx.pStream);
+
 		pDesc->sDestEntryPoint.ReadFromStream(Ctx.pStream);
 
 		if (Ctx.dwVersion >= 41)
 			{
+			pDesc->sAttributes.ReadFromStream(Ctx.pStream);
+
+			pDesc->sLocationCriteria.ReadFromStream(Ctx.pStream);
+
+			DWORD* pGateType = &(pDesc->dwGateType);
+			Ctx.pStream->Read((char *)pGateType, sizeof(DWORD));
+			
+			DWORD* pBeaconType = &(pDesc->dwBeaconType);
+			Ctx.pStream->Read((char *)pBeaconType, sizeof(DWORD));
+
 			DWORD* pColor = &(pDesc->dwColor);
 			Ctx.pStream->Read((char*)pColor, sizeof(DWORD));
 			}
 		else
+			{
+			pDesc->sAttributes = CONSTLIT("");
+			pDesc->sLocationCriteria = CONSTLIT("");
+			pDesc->dwGateType = 0;
+			pDesc->dwBeaconType = 0;
 			pDesc->dwColor = 0;
+			}
 
 		if (Ctx.dwVersion >= 27)
 			{
@@ -654,6 +694,18 @@ ICCItemPtr CTopologyNode::GetStargateProperty (const CString &sName, const CStri
 	else if (strEquals(sProperty, PROPERTY_UNCHARTED))
 		return ICCItemPtr((bool)pDesc->fUncharted);
 
+	else if (strEquals(sProperty, PROPERTY_ATTRIBUTES))
+		return ICCItemPtr(pDesc->sAttributes);
+
+	else if (strEquals(sProperty, PROPERTY_LOCATION_CRITERIA))
+		return ICCItemPtr(pDesc->sLocationCriteria);
+
+	else if (strEquals(sProperty, PROPERTY_TYPE_GATE))
+		return ICCItemPtr(pDesc->dwGateType);
+
+	else if (strEquals(sProperty, PROPERTY_TYPE_BEACON))
+		return ICCItemPtr(pDesc->dwBeaconType);
+
 	else if (strEquals(sProperty, PROPERTY_LINK_COLOR))
 		{
 		DWORD dwColor = pDesc->dwColor;
@@ -685,12 +737,20 @@ void CTopologyNode::GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRou
 
 	retRouteDesc->pFromNode = this;
 	retRouteDesc->sFromName = m_NamedGates.GetKey(iIndex);
+	retRouteDesc->sFromAttributes = pDesc->sAttributes;
+	retRouteDesc->sFromLocationCriteria = pDesc->sLocationCriteria;
+	retRouteDesc->dwFromBeaconType = pDesc->dwBeaconType;
+	retRouteDesc->dwFromGateType = pDesc->dwGateType;
 
 	if (pDesc->pDestNode == NULL)
 		pDesc->pDestNode = m_Topology.FindTopologyNode(pDesc->sDestNode);
 
 	retRouteDesc->pToNode = pDesc->pDestNode;
 	retRouteDesc->sToName = pDesc->sDestEntryPoint;
+	retRouteDesc->sToAttributes = pDesc->pDestNode->GetStargateProperty(pDesc->sDestEntryPoint, PROPERTY_ATTRIBUTES)->GetStringValue();
+	retRouteDesc->sToLocationCriteria = pDesc->pDestNode->GetStargateProperty(pDesc->sDestEntryPoint, PROPERTY_LOCATION_CRITERIA)->GetStringValue();
+	retRouteDesc->dwToGateType = pDesc->pDestNode->GetStargateProperty(pDesc->sDestEntryPoint, PROPERTY_TYPE_GATE)->GetIntegerValue();
+	retRouteDesc->dwToBeaconType = pDesc->pDestNode->GetStargateProperty(pDesc->sDestEntryPoint, PROPERTY_TYPE_BEACON)->GetIntegerValue();
 	retRouteDesc->MidPoints = pDesc->MidPoints;
 
 	retRouteDesc->rgbColor = DWToARGBColor(pDesc->dwColor);
@@ -1029,6 +1089,10 @@ void CTopologyNode::WriteToStream (IWriteStream *pStream)
 //	CString		gate: sName
 //	CString		gate: sDestNode
 //	CString		gate: sDestEntryPoint
+//  CString		gate: sAttributes
+//	CString		gate: sLocationCriteria
+//  DWORD		gate: dwGateType
+//  DWORD		gate: dwBeaconType
 //  DWORD		gate: dwColor
 //	DWORD		gate: flags
 //	DWORD		gate: xMid
@@ -1072,6 +1136,10 @@ void CTopologyNode::WriteToStream (IWriteStream *pStream)
 		sName.WriteToStream(pStream);
 		pDesc->sDestNode.WriteToStream(pStream);
 		pDesc->sDestEntryPoint.WriteToStream(pStream);
+		pDesc->sAttributes.WriteToStream(pStream);
+		pDesc->sLocationCriteria.WriteToStream(pStream);
+		pStream->Write((char *)&(pDesc->dwGateType), sizeof(DWORD));
+		pStream->Write((char *)&(pDesc->dwBeaconType), sizeof(DWORD));
 		pStream->Write((char *)&(pDesc->dwColor), sizeof(DWORD));
 
 		DWORD dwFlags = 0;

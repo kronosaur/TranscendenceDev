@@ -43,7 +43,7 @@ DWORD CTreePathStargateGenerator::FindConnection (DWORD dwFrom, const CLargeSet 
 	return CLargeSet::INVALID_VALUE;
 	}
 
-void CTreePathStargateGenerator::Generate (DWORD dwFirstNode, TArray<CTopologyNode::SStargateRouteDesc> &Routes)
+void CTreePathStargateGenerator::Generate (DWORD dwFirstNode, TArray<CTopologyNode::SStargateRouteDesc> &Routes, CTopologyNode::SStargateRouteDesc templateDesc)
 
 //	Generate
 //
@@ -89,6 +89,18 @@ void CTreePathStargateGenerator::Generate (DWORD dwFirstNode, TArray<CTopologyNo
 			CTopologyNode::SStargateRouteDesc *pRouteDesc = Routes.Insert();
 			pRouteDesc->pFromNode = m_Nodes[m_Graph.GetNodeIndex(dwNodeID)];
 			pRouteDesc->pToNode = m_Nodes[m_Graph.GetNodeIndex(dwTo)];
+
+			//	Initialize rest of the desc from the templateDesc
+
+			pRouteDesc->sFromAttributes = templateDesc.sFromAttributes;
+			pRouteDesc->sToAttributes = templateDesc.sToAttributes;
+			pRouteDesc->sFromLocationCriteria = templateDesc.sFromLocationCriteria;
+			pRouteDesc->dwFromBeaconType = templateDesc.dwFromBeaconType;
+			pRouteDesc->dwFromGateType = templateDesc.dwFromGateType;
+			pRouteDesc->sToLocationCriteria = templateDesc.sToLocationCriteria;
+			pRouteDesc->dwToBeaconType = templateDesc.dwToBeaconType;
+			pRouteDesc->dwToGateType = templateDesc.dwToGateType;
+			pRouteDesc->rgbColor = templateDesc.rgbColor;
 
 			//	The To node is now connected
 
