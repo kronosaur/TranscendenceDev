@@ -491,6 +491,18 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				'locationCriteria: new property for location criteria to use for placing the gate
 //				'gateType: the unid of the stargate
 //				'beaconType: the unid of the stargate beacons
+//		<ShipClass>
+//			<Drive>
+//				powerUseRatio: (Double)
+//					ratio to apply to auto-computed power use, ex: 2.0 doubles power consumption.
+//					Ignored if explicit powerUse is set.
+//					default: 1.0
+//		<StationType>
+//			<Encounter>
+//				distanceFrequency: (str)
+//					Now supports distances beyond 5 at a single frequency
+//					Ex: "ccccc|curvv v"
+//					Default (if not specified) is NotRandom
 //		<SystemMap>
 //			<...><Random>
 //				(NOTE:) modded systemTypes that do not use trnCreateAllStargates may not respect the
