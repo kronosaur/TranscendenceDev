@@ -5,7 +5,7 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							56;
+constexpr DWORD API_VERSION =							57;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
 constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 
@@ -545,6 +545,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //					locationCriteria: (string)
 //						the in-system location criteria to use for placing the gate
 //						Overrides the <Stargate> locationCriteria string.
+//
+//	 57: 2.0 Alpha 7
+//
 //
 
 
