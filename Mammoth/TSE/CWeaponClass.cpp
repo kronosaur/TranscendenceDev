@@ -3912,6 +3912,7 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 										   const CInstalledDevice *pDevice,
 										   CString *retsLabel,
 										   int *retiAmmoLeft,
+										   CItemType **retpAmmoType,
 										   CItemType **retpType,
 										   bool bUseCustomAmmoCountHandler)
 
@@ -3933,6 +3934,8 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 			*retiAmmoLeft = 0;
 		if (retpType)
 			*retpType = NULL;
+		if (retpAmmoType)
+			*retpAmmoType = NULL;
 		}
 
 	//  If we use ammo, return that
@@ -3994,7 +3997,10 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 			}
 
 		if (retpType)
-			*retpType = pShot->GetAmmoType();
+			*retpType = GetItemType();
+
+		if (retpAmmoType)
+			*retpAmmoType = pShot->GetAmmoType();
 		}
 
 	//	Else if we use charges, return that
@@ -4011,6 +4017,9 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 			else
 				*retiAmmoLeft = pDevice->GetCharges(pSource);
 			}
+
+		if (retpAmmoType)
+			*retpAmmoType = NULL;
 
 		if (retpType)
 			*retpType = GetItemType();
@@ -4030,6 +4039,9 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 			else
 				*retiAmmoLeft = -1;
 			}
+
+		if (retpAmmoType)
+			*retpAmmoType = NULL;
 
 		if (retpType)
 			*retpType = GetItemType();

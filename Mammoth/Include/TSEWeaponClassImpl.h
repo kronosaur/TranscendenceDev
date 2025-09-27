@@ -159,6 +159,7 @@ class CWeaponClass : public CDeviceClass
 											 const CInstalledDevice *pDevice,
 											 CString *retsLabel,
 											 int *retiAmmoLeft,
+											 CItemType **retpAmmoType = NULL,
 											 CItemType **retpType = NULL,
 											 bool bUseCustomAmmoCountHandler = false) override;
 		virtual Metric GetShotSpeed (CItemCtx &Ctx) const override;

@@ -150,6 +150,7 @@ void CCyberDeckClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 											  const CInstalledDevice *pDevice,
 											  CString *retsLabel,
 											  int *retiAmmoLeft,
+											  CItemType **retpAmmoType,
 											  CItemType **retpType,
 											  bool bUseCustomAmmoCountHandler)
 
@@ -163,6 +164,9 @@ void CCyberDeckClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 
 	if (retiAmmoLeft)
 		*retiAmmoLeft = -1;
+
+	if (retpAmmoType)
+		*retpAmmoType = NULL;
 
 	if (retpType)
 		*retpType = GetItemType();
