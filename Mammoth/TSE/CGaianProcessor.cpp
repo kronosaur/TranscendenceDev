@@ -217,7 +217,7 @@ void CGaianProcessorAI::CalcDevices (void)
 				if (m_dwAmmo == 0)
 					{
 					CItemType *pAmmoType = NULL;
-					Weapon.GetSelectedVariantInfo(m_pShip, NULL, NULL, NULL, &pAmmoType);
+					Weapon.GetSelectedVariantInfo(m_pShip, NULL, NULL, &pAmmoType);
 					if (pAmmoType)
 						m_dwAmmo = pAmmoType->GetUNID();
 					}
