@@ -1496,26 +1496,11 @@
 					(if (sysGetStargateProperty theGate 'uncharted)
 						;	If this is an uncharted stargate, then create the gate somewhere
 						;	out in the distance.
-						(block (
-							beacon1Pos beacon2Pos
-							)
-
-							(setq gateObj (sysCreateStargate thisStargateUNID
-								(sysVectorRandom Nil (random 1200 1500) 300 "t")
-								theGate
-								))
-
-							;	Uncharted gates always use the non coreward beacon positions
-							
-							(setq beacon1Pos (sysVectorPolarOffset gateObj 270 12))
-							(setq beacon2Pos (sysVectorPolarOffset gateObj 0 12))
-								
-							;	Create beacons
-
-							(sysCreateStation thisBeaconUNID beacon1Pos)
-							(sysCreateStation thisBeaconUNID beacon2Pos)
-							
-							)
+						
+						(setq gateObj (sysCreateStargate thisStargateUNID
+							(sysVectorRandom Nil (random 1200 1500) 300 "t")
+							theGate
+							))
 
 						;	Otherwise, create a standard gate
 
