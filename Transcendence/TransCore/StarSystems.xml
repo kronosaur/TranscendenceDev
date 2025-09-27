@@ -1376,10 +1376,10 @@
 						)
 					)
 
-					; Enumerate all the stargates that this system should have.
-					; Create those that are needed.
+					; Map-enum all the stargates that this system should have.
+					; Create those that are needed and return in a list.
 					
-					(enum allStargates theGate
+					(map allStargates 'excludeNil theGate
 						(switch
 							;	If this stargate already exists here, then no need to do anything
 
@@ -1406,7 +1406,7 @@
 								stargateType
 								beaconType
 								&stUnchartedMajellenStargate;
-								beaconType
+								Nil
 								)
 							)
 						)
@@ -1430,7 +1430,7 @@
 						(defaultStargateUNID (or defaultStargateUNID &stStargate;))
 						(defaultBeaconUNID (or defaultBeaconUNID &stStargateBeacon;))
 						(defaultUnchartedStargateUNID (or defaultUnchartedStargateUNID &stUnchartedMajellenStargate;))
-						(defaultUnchartedBeaconUNID (or defaultUnchartedBeaconUNID &stStargateBeacon;))
+						(defaultUnchartedBeaconUNID (or defaultUnchartedBeaconUNID ()))	;;	Uncharted gates dont normally get beacons
 
 						;	Determine the location criteria
 						
@@ -1461,6 +1461,10 @@
 
 						(thisStargateUNID (or gateOverrideUNID finalDefaultStargateUNID))
 						(thisBeaconUNID (or beaconOverrideUNID finalDefaultBeaconUNID))
+
+						;	gate object to return
+
+						gateObj
 						)
 
 					;	If we have debug logging set, print out diagnostic info for developers
@@ -1490,17 +1494,44 @@
 					;	Create the gate
 
 					(if (sysGetStargateProperty theGate 'uncharted)
+
 						;	If this is an uncharted stargate, then create the gate somewhere
 						;	out in the distance.
-						(sysCreateStargate thisStargateUNID
-							(sysVectorRandom Nil (random 1200 1500) 300 "t")
-							theGate
+
+						(block ()
+
+							;	Create the uncharted stargate far away from the system center
+
+							(setq gateObj (sysCreateStargate thisStargateUNID
+								(sysVectorRandom Nil (random 1200 1500) 300 "t")
+								theGate
+								))
+
+							;	Create beacons for uncharted gates only if a type is specified
+							
+							(if thisBeaconUNID
+								(block (
+									beacon1Pos beacon2Pos
+									)
+
+									;	Uncharted gates always use the non coreward beacon positions
+									
+									(setq beacon1Pos (sysVectorPolarOffset gateObj 270 12))
+									(setq beacon2Pos (sysVectorPolarOffset gateObj 0 12))
+										
+									;	Create beacons
+
+									(sysCreateStation thisBeaconUNID beacon1Pos)
+									(sysCreateStation thisBeaconUNID beacon2Pos)
+									)
+								)
+							
 							)
 
 						;	Otherwise, create a standard gate
 
 						(block (
-							gateObj beacon1Pos beacon2Pos
+							beacon1Pos beacon2Pos
 							)
 
 							;	Create the stargate
@@ -1537,6 +1568,7 @@
 							(sysCreateStation thisBeaconUNID beacon2Pos)
 							)
 						)
+					gateObj
 					)
 			))
 				
