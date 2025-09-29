@@ -49,6 +49,7 @@ fileList.bin
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
+[Dd]ebug with Address Sanitizer/
 [Rr]elease/
 [Rr]eleases/
 [Ss]team[Dd]ebug/
