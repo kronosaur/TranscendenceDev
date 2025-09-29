@@ -17,7 +17,11 @@
 
 	<Globals>
 		(block Nil
-			;	Diagnostics Helper Functions -----------------------------------
+			;	Diagnostics and Debugging Helper Functions -----------------------------------
+
+			;	Print UNIDs in hexadecimal
+
+			(setq fmtUNID (lambda (unid) (if (isInt unid) (cat "0x" (hex unid 8)))))
 
 			(setq diagAssert (lambda (expr errorMsg)
 				(if (not expr)
@@ -39,7 +43,7 @@
 						SuccessDebrief
 						FailureDebrief
 						))
-					(hexUNID (hex (msn@ missionObj 'unid)))
+					(hexUNID (fmtUNID (msn@ missionObj 'unid)))
 					)
 					(diagAssert missionName "No mission name")
 					(enum validateList textID
