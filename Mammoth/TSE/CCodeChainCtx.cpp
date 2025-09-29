@@ -370,7 +370,7 @@ CWeaponFireDesc *CCodeChainCtx::AsWeaponFireDesc (ICCItem *pItem) const
 
 	//	Otherwise we expect an integer value.
 
-	else if (pType = GetUniverse().FindItemType(pItem->GetElement(0)->GetIntegerValue()))
+	else if (!pItem->IsList() && (pType = GetUniverse().FindItemType(pItem->GetIntegerValue())))
 		{
 		CItemCtx ItemCtx;
 		return pType->GetWeaponFireDesc(ItemCtx);
