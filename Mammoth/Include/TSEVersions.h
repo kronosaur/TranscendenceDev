@@ -334,15 +334,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //
 //	 55: 2.0 Alpha 4
 //		tlisp:
-//			(gammaScale val inStart inEnd outStart outEnd [gamma=1.0])
-//				Native tlisp version of mathScale/mathScaleReal.
-//				Returns an int if outMin and outMax are both ints. Otherwise returns a double.
-//				Gamma can be an int (multiplied by 100) or a double.
-//				Note: properly handles negative curves where an input or output
-//					range goes from higher to lower value.
-//				Warning: Do not use below API55. API checking is not available for primitive functions.
-//			(plyGetName player)
-//				Allows getting the player name without needing to use str formatting
 //			(dbgApplyTimed fn argsList)
 //				Allows timing tlisp function execution
 //			(dbgEvalTimed expr)
@@ -365,6 +356,42 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				it does not check that you are using API55 first. Ensure your API version
 //				is appropriately set to avoid multiverse from downloading your extension
 //				onto an incompatible version.
+//			(gammaScale val inStart inEnd outStart outEnd [gamma=1.0])
+//				Native tlisp version of mathScale/mathScaleReal.
+//				Returns an int if outMin and outMax are both ints. Otherwise returns a double.
+//				Gamma can be an int (multiplied by 100) or a double.
+//				Note: properly handles negative curves where an input or output
+//					range goes from higher to lower value.
+//				Warning: Do not use below API55. API checking is not available for primitive functions.
+//			(plyGetName player)
+//				Allows getting the player name without needing to use str formatting
+//			(strBeginsWith str substr [caseSensitive=Nil])
+//				Returns if a string begins with substr. Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
+//			(strEndsWith str substr [caseSensitive=Nil])
+//				Returns if a string ends with substr. Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
+//			(strContains str substr [caseSensitive=Nil])
+//				Returns if a string contains substr. Optionally case sensitive.
+//				Higher speed than strCount if you just need to detect the presense of a substr.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
+//			(strCount str substr [caseSensitive=Nil])
+//				Returns the number of instances of substr in str. Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
+//			(strReplace str substr replaceStr [caseSensitive=Nil])
+//				Replaces instances of substr in str with replaceStr. Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
+//			(strSlice str sliceStart [sliceLen=-1])
+//				As subset, but allows negative slice stars from the end of a string.
+//				sliceLen < 0 returns remainder of the string
+//				Warning: do not use below API55, API checking is not available for primitive functions.
+//			(strSplit str delim [caseSensitive=Nil])
+//				Splits str based on delimiters. Consecutive delimiters produce empty strings "".
+//				Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
+//			(strStrip str [stripChars=" \t\n\r"] [caseSensitive=Nil])
+//				Strips stripChars from the beginning and end of str. Optionally case sensitive.
+//				Warning: do not use below API55, API checking is not available for primitive functions.
 //		Any <Type>
 //			<AttributeDesc>
 //				<ItemAttribute> and <LocationAttribute>
@@ -373,6 +400,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //					labelTextColor: 24-bit or triplet RGB color for tag text
 //						Default: uses neutral/positive/negative text colors
 //		<ItemType>
+//			<Weapon>
+//				miningMethod: "ablative"|"drill"|"explosive"|"shockwave"
+//					Default: uses automatic computation based on weapon desc
 //			<Events>
 //				<GetDisplayAttributes>
 //					Returned struct now accepts the following new values:
@@ -380,8 +410,168 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //							Default: uses neutral/positive/negative background colors
 //						labelTextColor: 24-bit or triplet RGB color for tag text
 //							Default: uses neutral/positive/negative text colors
+//			<Weapon>
+//				soundVolume: (Double)
+//					linear multiplier to fire effect sound volume (relative to max volume)
+//					default: 1.0
+//				soundFalloffFactor: (Double)
+//					distance multiplier to fire effect sound falloff (affects quadratic falloff curve)
+//					default: 1.0
+//				soundFalloffStart: (Double)
+//					distance (in ls) at which fire effect sound falloff starts
+//					default: 0.0
+//				chargeSoundVolume: (Double)
+//					linear multiplier to charge effect sound volume (relative to max volume)
+//					default: 1.0
+//				chargeSoundFalloffFactor: (Double)
+//					distance multiplier to charge effect sound falloff (affects quadratic falloff curve)
+//					default: 1.0
+//				chargeSoundFalloffStart: (Double)
+//					distance (in ls) at which charge effect sound falloff starts
+//					default: 0.0
+//		<EffectType>
+//			soundVolume: (Double)
+//				linear multiplier to effect sound volume (relative to max volume)
+//				default: 1.0
+//			soundFalloffFactor: (Double)
+//				distance multiplier to effect sound falloff (affects quadratic falloff curve)
+//				default: 1.0
+//			soundFalloffStart: (Double)
+//				distance (in ls) at which effect sound falloff starts
+//				default: 0.0
+//			<Events>
+//				<GetParameters>
+//					Return struct now accepts the following additional sound options:
+//						soundVolume: (Double)
+//							linear multiplier to sound volume (relative to max volume)
+//							default: 1.0
+//						soundFalloffFactor: (Double)
+//							distance multiplier to sound falloff (affects quadratic falloff curve)
+//							default: 1.0
+//						soundFalloffStart: (Double)
+//							distance (in ls) at which sound falloff starts
+//							default: 0.0
 //
-
+//	 56: 2.0 Alpha 6
+//		tlisp:
+//			(sysAddStargateTopology [nodeID] gateID destNodeID destGateID [optionsStruct])
+//				optionsStruct: (struct)
+//					color: (string: html argb color)
+//						Specifies an argb color to use for the topology gate link on the galaxy map
+//						If Alpha is not specified, argbLinkColor is assumed to have full alpha (0xFF)
+//					attributes: (string)
+//						An attributes string. See trnCreateAllStargates for special known-fields.
+//					beaconType: (unid)
+//						The type of beacon to spawn
+//					gateType: (unid)
+//						The type of gate to spawn
+//					locationCriteria: (string)
+//						the in-system location criteria to use for placing the gate
+//					fromAttributes: (string)
+//						An attributes string for the from-side link.
+//						See trnCreateAllStargates for special known-fields.
+//					fromBeaconType: (unid)
+//						The type of beacon to spawn on the from side
+//					fromGateType: (unid)
+//						The type of gate to spawn on the from side
+//					fromLocationCriteria: (string)
+//						the in-system location criteria to use for placing the gate on the from side
+//					toAttributes: (string)
+//						An attributes string for the to-side link.
+//						See trnCreateAllStargates for special known-fields.
+//					toBeaconType: (unid)
+//						The type of beacon to spawn on the to side
+//					toGateType: (unid)
+//						The type of gate to spawn on the to side
+//					toLocationCriteria: (string)
+//						the in-system location criteria to use for placing the gate on the to side
+//			(sysGetStargateProperty [nodeID] gateID property)
+//				'attributes: new property to retrieve <Stargate> attributes
+//				'linkColor: new property to retrieve linkColor as HTML color string if present
+//				'locationCriteria: new property for location criteria to use for placing the gate
+//				'gateType: the unid of the stargate
+//				'beaconType: the unid of the stargate beacons
+//		<ShipClass>
+//			<Drive>
+//				powerUseRatio: (Double)
+//					ratio to apply to auto-computed power use, ex: 2.0 doubles power consumption.
+//					Ignored if explicit powerUse is set.
+//					default: 1.0
+//		<StationType>
+//			<Encounter>
+//				distanceFrequency: (str)
+//					Now supports distances beyond 5 at a single frequency
+//					Ex: "ccccc|curvv v"
+//					Default (if not specified) is NotRandom
+//		<SystemMap>
+//			<...><Random>
+//				(NOTE:) modded systemTypes that do not use trnCreateAllStargates may not respect the
+//					following fields except for linkColor.
+//				gateLocationCriteria: (string)
+//					the in-system location criteria to use for placing the gate
+//				beaconType: (unid)
+//					The type of beacons to spawn
+//				gateType: (unid)
+//					The type of gates to spawn
+//				linkAttributes: (string)
+//					An attributes string. See trnCreateAllStargates for special known-fields.
+//				linkColor: (string: html argb color)
+//					The color to display this stargate link in on the galaxy map.
+//					If Alpha is not specified, linkColor is assumed to have full alpha (0xFF)
+//			<...><Stargate>
+//				(NOTE:) modded systemTypes that do not use trnCreateAllStargates may not respect the
+//					following fields except for linkColor.
+//				attributes: (string)
+//					An attributes string. See trnCreateAllStargates for special known-fields.
+//				beaconType: (unid)
+//					The type of beacon to spawn
+//				gateType: (unid)
+//					The type of gate to spawn
+//				linkColor: (string: html argb color)
+//					The color to display this stargate link in on the galaxy map.
+//					If Alpha is not specified, linkColor is assumed to have full alpha (0xFF)
+//				locationCriteria: (string)
+//					the in-system location criteria to use for placing the gate
+//				<FromGate>/<ToGate>
+//					attributes: (string)
+//						An attributes string. See trnCreateAllStargates for special known-fields.
+//						Overrides the <Stargate> attribute string.
+//					beaconType: (unid)
+//						The type of beacon to spawn for this side of the gate
+//						Overrides the <Stargate> beaconType.
+//					gateType: (unid)
+//						The type of gate to spawn for this side of the gate
+//						Overrides the <Stargate> gateType.
+//					locationCriteria: (string)
+//						the in-system location criteria to use for placing the gate
+//						Overrides the <Stargate> locationCriteria string.
+//
+//	 57: 2.0 Alpha 7
+//		tlisp:
+//			(bAnd x1 [x2 ... xn])
+//				Returns the bitwise AND of all arguments.
+//				All arguments are coerced to 32-bit integers.
+//			(bOr x1 [x2 ... xn])
+//				Returns the bitwise OR of all arguments.
+//				All arguments are coerced to 32-bit integers.
+//			(bXor x1 [x2 ... xn])
+//				Returns the bitwise XOR of all arguments.
+//				All arguments are coerced to 32-bit integers.
+//			(bNot x)
+//				Returns the bitwise NOT of x.
+//				Argument is coerced to a 32-bit integer; result is also 32-bit signed.
+//			(bShL x count)
+//				Returns x shifted left by count bits (logical).
+//				Low bits are filled with zeros; high bits are discarded.
+//			(bShR x count)
+//				Returns x shifted right by count bits (logical).
+//				High bits are filled with zeros; low bits are discarded.
+//			(bRoL x count)
+//				Returns x rotated left by count bits in 32-bit space.
+//				Bits shifted out of the high end wrap around to the low end.
+//			(bRoR x count)
+//				Returns x rotated right by count bits in 32-bit space.
+//				Bits shifted out of the low end wrap around to the high end.
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
 //

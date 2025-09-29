@@ -109,14 +109,14 @@
 #define FN_MATH_GAMMA_SCALE_NUMERALS	105
 #define FN_DEBUG_APPLY_TIMED			106
 #define FN_DEBUG_EVAL_TIMED				107
-#define FN_BITWISE_AND                  108
-#define FN_BITWISE_OR                   109
-#define FN_BITWISE_XOR                  110
-#define FN_BITWISE_NOT                  111
-#define FN_BITWISE_SHL                  112
-#define FN_BITWISE_SHR                  113
-#define FN_BITWISE_ROL                  114
-#define FN_BITWISE_ROR                  115
+#define FN_BITWISE_AND                  119
+#define FN_BITWISE_OR                   120
+#define FN_BITWISE_XOR                  121
+#define FN_BITWISE_NOT                  122
+#define FN_BITWISE_SHL                  123
+#define FN_BITWISE_SHR                  124
+#define FN_BITWISE_ROL                  125
+#define FN_BITWISE_ROR                  126
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
