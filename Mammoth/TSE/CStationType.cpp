@@ -1420,7 +1420,7 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 
 		//	NOTE: Can't call GetLevel because it relies on m_AverageDevices.
 
-		int iLevel = Max(m_iLevel, GetEncounterDesc().CalcLevelFromFrequency());
+		int iLevel = Max(1, Max(m_iLevel, GetEncounterDesc().CalcLevelFromFrequency()));
 		GenerateDevices(iLevel, m_AverageDevices);
 		}
 
