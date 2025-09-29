@@ -109,6 +109,14 @@
 #define FN_MATH_GAMMA_SCALE_NUMERALS	105
 #define FN_DEBUG_APPLY_TIMED			106
 #define FN_DEBUG_EVAL_TIMED				107
+#define FN_BITWISE_AND                  108
+#define FN_BITWISE_OR                   109
+#define FN_BITWISE_XOR                  110
+#define FN_BITWISE_NOT                  111
+#define FN_BITWISE_SHL                  112
+#define FN_BITWISE_SHR                  113
+#define FN_BITWISE_ROL                  114
+#define FN_BITWISE_ROR                  115
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
@@ -168,3 +176,4 @@ ICCItem *fnVecCreateOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnVector (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnVecMath (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnVecIndex (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

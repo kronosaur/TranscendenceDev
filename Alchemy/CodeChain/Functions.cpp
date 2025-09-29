@@ -5204,6 +5204,183 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 		}
 	}
 
+// helpers for left shift and right rotate
+static inline uint32_t cc_rotl32 (uint32_t x, uint32_t r) { r &= 31u; return (x << r) | (x >> (32u - r)); }
+static inline uint32_t cc_rotr32 (uint32_t x, uint32_t r) { r &= 31u; return (x >> r) | (x << (32u - r)); }
+
+// Coerce ICCItem to int32 (accept ints or doubles; same coercion style used elsewhere)
+static inline bool cc_to_int32 (ICCItem *pVal, int32_t &out)
+{
+	if (pVal == NULL) return false;
+	if (pVal->IsInteger()) { out = (int32_t)pVal->GetIntegerValue(); return true; }
+	if (pVal->IsDouble())  { out = (int32_t)pVal->GetDoubleValue();  return true; }
+	return false;
+}
+
+ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
+// FnBitwise
+//
+// Bitwise ops
+//
+// (bAnd x1 [x2 ... xn])
+// (bOr  x1 [x2 ... xn])
+// (bXor x1 [x2 ... xn])
+// (bNot x)
+// (bShL  x count)
+// (bShR  x count)          ; logical
+// (bRoL  x count)          ; 32-bit rotate
+// (bRoR  x count)
+{
+	CCodeChain *pCC = pCtx->pCC;
+
+	auto err = [&](LPCTSTR msg) -> ICCItem *
+		{
+		return pCC->CreateError(CONSTLIT(msg), pArguments);
+		};
+
+	// Helper to eval one argument expression at index i
+	auto evalArg = [&](int i) -> ICCItem *
+		{
+		ICCItem *pExpr = pArguments->GetElement(i);
+		return pCC->Eval(pCtx, pExpr);
+		};
+
+	const int argc = (pArguments ? pArguments->GetCount() : 0);
+
+	switch (dwData)
+		{
+		case FN_BITWISE_AND:
+		case FN_BITWISE_OR:
+		case FN_BITWISE_XOR:
+			{
+			if (argc < 1)
+				return err("Expected at least 1 integer");
+
+			ICCItem *pV0 = evalArg(0);
+			if (pV0->IsError())
+				return pV0;
+
+			int32_t v0;
+			if (!cc_to_int32(pV0, v0))
+				{
+				pV0->Discard();
+				return err("Expected integer");
+				}
+			uint32_t acc = (uint32_t)v0;
+			pV0->Discard();
+
+			for (int i = 1; i < argc; ++i)
+				{
+				ICCItem *pVi = evalArg(i);
+				if (pVi->IsError())
+					return pVi;
+
+				int32_t vi;
+				if (!cc_to_int32(pVi, vi))
+					{
+					pVi->Discard();
+					return err("Expected integer");
+					}
+
+				uint32_t u = (uint32_t)vi;
+				if (dwData == FN_BITWISE_AND)      acc &= u;
+				else if (dwData == FN_BITWISE_OR)  acc |= u;
+				else /* XOR */                     acc ^= u;
+
+				pVi->Discard();
+				}
+
+			return pCC->CreateInteger((int32_t)acc);
+			}
+
+		case FN_BITWISE_NOT:
+			{
+			if (argc != 1)
+				return err("Expected 1 integer");
+
+			ICCItem *pX = evalArg(0);
+			if (pX->IsError())
+				return pX;
+
+			int32_t x;
+			if (!cc_to_int32(pX, x))
+				{
+				pX->Discard();
+				return err("Expected integer");
+				}
+			pX->Discard();
+
+			return pCC->CreateInteger((int32_t)(~(uint32_t)x));
+			}
+
+		case FN_BITWISE_SHL:
+		case FN_BITWISE_SHR:
+			{
+			if (argc != 2)
+				return err("Expected 2 integers");
+
+			ICCItem *pX = evalArg(0);
+			if (pX->IsError())
+				return pX;
+			ICCItem *pC = evalArg(1);
+			if (pC->IsError())
+				{ pX->Discard(); return pC; }
+
+			int32_t x, c;
+			if (!cc_to_int32(pX, x) || !cc_to_int32(pC, c))
+				{
+				pX->Discard();
+				pC->Discard();
+				return err("Expected 2 integers");
+				}
+
+			pX->Discard();
+			pC->Discard();
+
+			uint32_t ux = (uint32_t)x;
+			uint32_t k  = ((uint32_t)c) & 31u;
+			uint32_t r  = (dwData == FN_BITWISE_SHL ? (ux << k) : (ux >> k)); // logical SR
+			return pCC->CreateInteger((int32_t)r);
+			}
+
+		case FN_BITWISE_ROL:
+		case FN_BITWISE_ROR:
+			{
+			if (argc != 2)
+				return err("Expected 2 integers");
+
+			ICCItem *pX = evalArg(0);
+			if (pX->IsError())
+				return pX;
+			ICCItem *pC = evalArg(1);
+			if (pC->IsError())
+				{ pX->Discard(); return pC; }
+
+			int32_t x, c;
+			if (!cc_to_int32(pX, x) || !cc_to_int32(pC, c))
+				{
+				pX->Discard();
+				pC->Discard();
+				return err("Expected 2 integers");
+				}
+
+			pX->Discard();
+			pC->Discard();
+
+			uint32_t ux = (uint32_t)x;
+			uint32_t r  = (dwData == FN_BITWISE_ROL ? cc_rotl32(ux, (uint32_t)c)
+			                                        : cc_rotr32(ux, (uint32_t)c));
+			return pCC->CreateInteger((int32_t)r);
+			}
+
+		default:
+			{
+			ASSERT(false);
+			return NULL;
+			}
+		}
+}
+
 //	Helper Functions -----------------------------------------------------------
 
 int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
