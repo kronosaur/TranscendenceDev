@@ -5,7 +5,7 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							56;
+constexpr DWORD API_VERSION =							57;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
 constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 
@@ -545,6 +545,16 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //					locationCriteria: (string)
 //						the in-system location criteria to use for placing the gate
 //						Overrides the <Stargate> locationCriteria string.
+//
+//	 57: 2.0 Alpha 7
+//      tlisp:
+//			(lambda args [docstring] expr)
+//				Lambda now accepts an optional docstring that can be printed out with (help lambda)
+//			(help [lambda])
+//				Now accepts a lambda, and will print out the docstring if one exists
+//			(help '[match-pattern] ['lambda])
+//				Adds option to print out any matching lambdas
+//
 //
 
 
