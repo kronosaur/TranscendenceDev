@@ -139,6 +139,7 @@ class CCyberDeckClass : public CDeviceClass
 											 const CInstalledDevice *pDevice,
 											 CString *retsLabel,
 											 int *retiAmmoLeft,
+											 CItemType **retpAmmoType = NULL,
 											 CItemType **retpType = NULL,
 											 bool bUseCustomAmmoCountHandler = false) override;
 		virtual DWORD GetTargetTypes (const CDeviceItem &DeviceItem) const override { return CTargetList::SELECT_ATTACKERS | CTargetList::SELECT_FORTIFICATION; }

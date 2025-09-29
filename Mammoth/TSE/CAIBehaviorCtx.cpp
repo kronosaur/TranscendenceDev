@@ -829,11 +829,16 @@ int CAIBehaviorCtx::CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInsta
 	//	or the ammo)
 
 	CItemType *pType;
+	CItemType *pAmmoType;
 	pWeapon->GetClass()->GetSelectedVariantInfo(pShip,
 			pWeapon,
 			NULL,
 			NULL,
+			&pAmmoType,
 			&pType);
+
+	if (pAmmoType)
+		pType = pAmmoType;
 
 	//	Base score is based on the level of the variant
 
