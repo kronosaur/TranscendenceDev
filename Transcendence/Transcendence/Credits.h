@@ -5,7 +5,9 @@
 static constexpr const char *ADDITIONAL_PROGRAMMING[] =
 	{
 	"Owen Embury (giantcabbage)",
-	"Alexander Huitric (Arisaya)",
+	"Alex Huitric (Arisaya)",
+	"Lily Leung (Heliogenesis)",
+	"Alana Huitric (Skarrlyth)",
 	"Nathaniel Stalberg (NMS)",
 	"Lily Leung (Heliogenesis)",
 	"Alex Chen (Archcannon)",
@@ -49,11 +51,12 @@ static constexpr const char *FEEDBACK[] =
 	"Amariithynar",
 	"Anakey",
 	"Androgeos",
-	"Barják András",
+	"Barjï¿½k Andrï¿½s",
 	"Aniki",
 	"Apemant",
 	"Aquilai",
 	"Arkheias",
+	"Avellis",
 	"avorite",
 	"Azmond",
 
@@ -191,6 +194,7 @@ static constexpr const char *FEEDBACK[] =
 	"Premier",
 	"Psycholis",
 	"ptbptb",
+	"Pteryx",
 	"puffo12346",
 
 	"Quaziz",
