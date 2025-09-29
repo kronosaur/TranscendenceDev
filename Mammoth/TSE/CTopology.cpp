@@ -17,6 +17,8 @@
 #define STARGATE_TAG							CONSTLIT("Stargate")
 #define STARGATES_TAG							CONSTLIT("Stargates")
 #define STARGATE_TABLE_TAG						CONSTLIT("StargateTable")
+#define STARGATE_FROM_TAG						CONSTLIT("FromGate")
+#define STARGATE_TO_TAG							CONSTLIT("ToGate")
 
 #define ATTRIBUTES_ATTRIB						CONSTLIT("attributes")
 #define CHANCE_ATTRIB							CONSTLIT("chance")
@@ -31,6 +33,7 @@
 #define ID_ATTRIB								CONSTLIT("ID")
 #define LEVEL_ATTRIB							CONSTLIT("level")
 #define LINK_COLOR_ATTRIB						CONSTLIT("linkColor")
+#define LOCATION_CRITERIA_ATTRIB				CONSTLIT("locationCriteria")
 #define MIN_SEPARATION_ATTRIB					CONSTLIT("minSeparation")
 #define NAME_ATTRIB								CONSTLIT("name")
 #define NODE_ID_ATTRIB							CONSTLIT("nodeID")
@@ -39,6 +42,8 @@
 #define RADIUS_ATTRIB							CONSTLIT("radius")
 #define ROOT_NODE_ATTRIB						CONSTLIT("rootNode")
 #define TO_ATTRIB								CONSTLIT("to")
+#define TYPE_BEACON_ATTRIB						CONSTLIT("beaconType")
+#define TYPE_GATE_ATTRIB						CONSTLIT("gateType")
 #define UNCHARTED_ATTRIB						CONSTLIT("uncharted")
 #define UNID_ATTRIB								CONSTLIT("UNID")
 #define VARIANT_ATTRIB							CONSTLIT("variant")
@@ -390,10 +395,13 @@ ALERROR CTopology::AddStargateFromXML (STopologyCreateCtx &Ctx, CXMLElement *pDe
 	ALERROR error;
 	int i;
 
-	//	If this is a <Stargates> tag or a <Stargate> tag with content
+	//	If this is a <Stargates> tag or
+	//	a <Stargate> tag with nested <Stargate> tags
 	//	elements, then treat it as a group.
+	//	If a <Stargate> tag has assymmetric <FromGate> or <ToGate>
+	//	Then we treat it as a single gate.
 
-	if (pDesc->GetContentElementCount() > 0)
+	if (pDesc->GetContentElementCount() > 0 && !(strEquals(pDesc->GetTag(), STARGATE_TAG) && (pDesc->GetContentElementByTag(STARGATE_FROM_TAG) || pDesc->GetContentElementByTag(STARGATE_TO_TAG))))
 		{
 		IElementGenerator::SCtx GenCtx;
 		GenCtx.pTopology = this;
@@ -480,6 +488,14 @@ ALERROR CTopology::AddStargateRoute (const CTopologyNode::SStargateRouteDesc &De
 	GateDesc.sName = sSourceGate;
 	GateDesc.sDestNode = Desc.pToNode->GetID();
 	GateDesc.sDestName = sDestGate;
+	GateDesc.sFromAttributes = Desc.sFromAttributes;
+	GateDesc.sFromLocationCriteria = Desc.sFromLocationCriteria;
+	GateDesc.dwFromGateType = Desc.dwFromGateType;
+	GateDesc.dwFromBeaconType = Desc.dwFromBeaconType;
+	GateDesc.sToAttributes = Desc.sToAttributes;
+	GateDesc.sToLocationCriteria = Desc.sToLocationCriteria;
+	GateDesc.dwToGateType = Desc.dwToGateType;
+	GateDesc.dwToBeaconType = Desc.dwToBeaconType;
 	GateDesc.pMidPoints = &Desc.MidPoints;
 	GateDesc.bUncharted = Desc.bUncharted;
 	GateDesc.rgbColor = Desc.rgbColor;
@@ -497,13 +513,26 @@ ALERROR CTopology::AddStargateRoute (const CTopologyNode::SStargateRouteDesc &De
 
 	if (!bExists && !Desc.bOneWay && !pToNode->IsEndGame())
 		{
-		GateDesc.sName = sDestGate;
-		GateDesc.sDestNode = Desc.pFromNode->GetID();
-		GateDesc.sDestName = sSourceGate;
-		GateDesc.pMidPoints = &Desc.MidPoints;
-		GateDesc.bUncharted = Desc.bUncharted;
 
-		if (error = pToNode->AddStargate(GateDesc))
+		//	Create a new desc with inverted from and to values to get the gate going in the opposite direction
+
+		CTopologyNode::SStargateDesc DestGateDesc;
+		DestGateDesc.sName = sDestGate;
+		DestGateDesc.sDestNode = Desc.pFromNode->GetID();
+		DestGateDesc.sDestName = sSourceGate;
+		DestGateDesc.sFromAttributes = Desc.sToAttributes;
+		DestGateDesc.sFromLocationCriteria = Desc.sToLocationCriteria;
+		DestGateDesc.dwFromGateType = Desc.dwToGateType;
+		DestGateDesc.dwFromBeaconType = Desc.dwToBeaconType;
+		DestGateDesc.sToAttributes = Desc.sFromAttributes;
+		DestGateDesc.sToLocationCriteria = Desc.sFromLocationCriteria;
+		DestGateDesc.dwToGateType = Desc.dwFromGateType;
+		DestGateDesc.dwToBeaconType = Desc.dwFromBeaconType;
+		DestGateDesc.pMidPoints = &Desc.MidPoints;
+		DestGateDesc.bUncharted = Desc.bUncharted;
+		DestGateDesc.rgbColor = Desc.rgbColor;
+
+		if (error = pToNode->AddStargate(DestGateDesc))
 			return ERR_FAIL;
 		}
 
@@ -574,7 +603,7 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 			return ERR_FAIL;
 			}
 
-		//	Initialize some conext, in case we need it when adding the node
+		//	Initialize some context, in case we need it when adding the node
 
 		STopologyCreateCtx AddCtx(Ctx);
 		AddCtx.pGateDesc = pGateDesc;
@@ -599,6 +628,7 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 		}
 	else
 		{
+
 		//	Get basic data from the element
 
 		GateDesc.sName = pGateDesc->GetAttribute(NAME_ATTRIB);
@@ -623,15 +653,84 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 		return ERR_FAIL;
 		}
 
+	//	Get bi-directional gate attributes and locationCriteria
+
+	CString sAttributes = pGateDesc->GetAttribute(ATTRIBUTES_ATTRIB);
+	CString sLocationCriteria = pGateDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB);
+
+	//	Get bi-directional gate overrides
+	
+	DWORD dwGateType = pGateDesc->GetAttributeInteger(TYPE_GATE_ATTRIB);
+	DWORD dwBeaconType = pGateDesc->GetAttributeInteger(TYPE_BEACON_ATTRIB);
+
+	//	Populate the From and To overrides if present
+
+	CXMLElement *pFromDesc = pGateDesc->GetContentElementByTag(STARGATE_FROM_TAG);
+	if (pFromDesc)
+		{
+		GateDesc.dwFromGateType = pFromDesc->GetAttributeInteger(TYPE_GATE_ATTRIB);
+		if (GateDesc.dwFromGateType == 0)
+			GateDesc.dwFromGateType = dwGateType;
+
+		GateDesc.dwFromBeaconType = pFromDesc->GetAttributeInteger(TYPE_BEACON_ATTRIB);
+		if (GateDesc.dwFromBeaconType == 0)
+			GateDesc.dwFromBeaconType = dwBeaconType;
+
+		GateDesc.sFromAttributes = pFromDesc->GetAttribute(ATTRIBUTES_ATTRIB);
+		if (GateDesc.sFromAttributes.IsBlank())
+			GateDesc.sFromAttributes = sAttributes;
+
+		GateDesc.sFromLocationCriteria = pFromDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB);
+		if (GateDesc.sFromLocationCriteria.IsBlank())
+			GateDesc.sFromLocationCriteria = sLocationCriteria;
+		}
+	else
+		{
+		GateDesc.dwFromGateType = dwGateType;
+		GateDesc.dwFromBeaconType = dwBeaconType;
+		GateDesc.sFromAttributes = sAttributes;
+		GateDesc.sFromLocationCriteria = sLocationCriteria;
+		}
+
+	CXMLElement* pToDesc = pGateDesc->GetContentElementByTag(STARGATE_TO_TAG);
+	if (pToDesc)
+		{
+		GateDesc.dwToGateType = pToDesc->GetAttributeInteger(TYPE_GATE_ATTRIB);
+		if (GateDesc.dwToGateType == 0)
+			GateDesc.dwToGateType = dwGateType;
+
+		GateDesc.dwToBeaconType = pToDesc->GetAttributeInteger(TYPE_BEACON_ATTRIB);
+		if (GateDesc.dwToBeaconType == 0)
+			GateDesc.dwToBeaconType = dwBeaconType;
+
+		GateDesc.sToAttributes = pToDesc->GetAttribute(ATTRIBUTES_ATTRIB);
+		if (GateDesc.sToAttributes.IsBlank())
+			GateDesc.sToAttributes = sAttributes;
+
+		GateDesc.sToLocationCriteria = pToDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB);
+		if (GateDesc.sToLocationCriteria.IsBlank())
+			GateDesc.sToLocationCriteria = sLocationCriteria;
+		}
+	else
+		{
+		GateDesc.dwToGateType = dwGateType;
+		GateDesc.dwToBeaconType = dwBeaconType;
+		GateDesc.sToAttributes = sAttributes;
+		GateDesc.sToLocationCriteria = sLocationCriteria;
+		}
+
+
 	//	At this point we have:
 	//
 	//	pNode is a valid source node
+	//	sFromNode is the id of pNode and corresponds to the fronfield in the xml
 	//	sDest is a non-empty destination node
 	//	sGateName is the name of the source gate (may be NULL)
 	//	sDestEntryPoint is the name of the dest gate (may be NULL)
 	//	bOneWay is TRUE if we only want a one-way gate
-
+	// 
 	//	If the destination is PREV_DEST, then we handle it
+
 
 	if (strEquals(GateDesc.sDestNode, PREV_DEST))
 		{
@@ -708,11 +807,20 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 	RouteDesc.pToNode = pDest;
 	RouteDesc.sToName = GateDesc.sDestName;
 	RouteDesc.bOneWay = bOneWay;
+	RouteDesc.sFromAttributes = GateDesc.sFromAttributes;
+	RouteDesc.sToAttributes = GateDesc.sToAttributes;
+	RouteDesc.sFromLocationCriteria = GateDesc.sFromLocationCriteria;
+	RouteDesc.sToLocationCriteria = GateDesc.sToLocationCriteria;
+	RouteDesc.dwFromGateType = GateDesc.dwFromGateType;
+	RouteDesc.dwToGateType = GateDesc.dwToGateType;
+	RouteDesc.dwFromBeaconType = GateDesc.dwFromBeaconType;
+	RouteDesc.dwToBeaconType = GateDesc.dwToBeaconType;
+		
 
 	CString sColor;
 	if (pGateDesc->FindAttribute(LINK_COLOR_ATTRIB, &sColor) && !sColor.IsBlank())
 		{
-		//	Load full ARGB color, because by default node lines are not full alpha
+		//	Load full ARGB color, to support transparent node lines
 
 		RouteDesc.rgbColor = LoadARGBColor(sColor);
 

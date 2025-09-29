@@ -20,6 +20,17 @@ class CTopologyNode
 			CString sDestNode;						//	Destination node
 			CString sDestName;						//	Destination entry point
 
+			//	From and To overrides
+			CString sFromAttributes;
+			CString sFromLocationCriteria;
+			DWORD dwFromGateType;
+			DWORD dwFromBeaconType;
+
+			CString sToAttributes;
+			CString sToLocationCriteria;
+			DWORD dwToGateType;
+			DWORD dwToBeaconType;
+
 			const TArray<SPoint> *pMidPoints = NULL;	//	Gate line mid-points (optional)
 			bool bUncharted = false;				//	Gate is uncharted
 
@@ -40,9 +51,17 @@ class CTopologyNode
 
 			const CTopologyNode *pFromNode = NULL;
 			CString sFromName;
+			CString sFromAttributes;
+			CString sFromLocationCriteria;
+			DWORD dwFromGateType;
+			DWORD dwFromBeaconType;
 
 			const CTopologyNode *pToNode = NULL;
 			CString sToName;
+			CString sToAttributes;
+			CString sToLocationCriteria;
+			DWORD dwToGateType;
+			DWORD dwToBeaconType;
 
 			TArray<SPoint> MidPoints;
 			bool bOneWay = false;
@@ -95,6 +114,7 @@ class CTopologyNode
 		const CTradingEconomy &GetTradingEconomy (void) const { return m_Trading; }
 		CUniverse &GetUniverse (void) const;
 		bool HasAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
+		bool HasStargateAttribute (const CString& sName, const CString& sAttrib) const { return ::HasModifier(m_NamedGates.GetAt(sName) ? m_NamedGates.GetAt(sName)->sAttributes : CONSTLIT(""), sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
 		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
 		ALERROR InitFromAdditionalXML (CTopology &Topology, CXMLElement *pDesc, CString *retsError);
@@ -140,6 +160,11 @@ class CTopologyNode
 			SStargateEntry (void) :
 					fUncharted(false)
 				{ }
+
+			CString sAttributes;
+			CString sLocationCriteria;
+			DWORD dwGateType;
+			DWORD dwBeaconType;
 
 			CString sDestNode;
 			CString sDestEntryPoint;
