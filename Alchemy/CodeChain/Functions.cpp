@@ -5578,15 +5578,15 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	}
 
 // helpers for left shift and right rotate
-static inline uint32_t cc_rotl32 (uint32_t x, uint32_t r) { r &= 31u; return (x << r) | (x >> (32u - r)); }
-static inline uint32_t cc_rotr32 (uint32_t x, uint32_t r) { r &= 31u; return (x >> r) | (x << (32u - r)); }
+static inline DWORD cc_rotl32 (DWORD x, DWORD r) { r &= 31u; return (x << r) | (x >> (32u - r)); }
+static inline DWORD cc_rotr32 (DWORD x, DWORD r) { r &= 31u; return (x >> r) | (x << (32u - r)); }
 
 // Coerce ICCItem to int32 (accept ints or doubles; same coercion style used elsewhere)
-static inline bool cc_to_int32 (ICCItem *pVal, int32_t &out)
+static inline bool cc_to_int32 (ICCItem *pVal, int &out)
 {
 	if (pVal == NULL) return false;
-	if (pVal->IsInteger()) { out = (int32_t)pVal->GetIntegerValue(); return true; }
-	if (pVal->IsDouble())  { out = (int32_t)pVal->GetDoubleValue();  return true; }
+	if (pVal->IsInteger()) { out = (int)pVal->GetIntegerValue(); return true; }
+	if (pVal->IsDouble())  { out = (int)pVal->GetDoubleValue();  return true; }
 	return false;
 }
 
@@ -5633,13 +5633,13 @@ ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			if (pV0->IsError())
 				return pV0;
 
-			int32_t v0;
+			int v0;
 			if (!cc_to_int32(pV0, v0))
 				{
 				pV0->Discard();
 				return err("Expected integer");
 				}
-			uint32_t acc = (uint32_t)v0;
+			DWORD acc = (DWORD)v0;
 			pV0->Discard();
 
 			for (int i = 1; i < argc; ++i)
@@ -5648,14 +5648,14 @@ ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 				if (pVi->IsError())
 					return pVi;
 
-				int32_t vi;
+				int vi;
 				if (!cc_to_int32(pVi, vi))
 					{
 					pVi->Discard();
 					return err("Expected integer");
 					}
 
-				uint32_t u = (uint32_t)vi;
+				DWORD u = (DWORD)vi;
 				if (dwData == FN_BITWISE_AND)      acc &= u;
 				else if (dwData == FN_BITWISE_OR)  acc |= u;
 				else /* XOR */                     acc ^= u;
@@ -5663,7 +5663,7 @@ ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 				pVi->Discard();
 				}
 
-			return pCC->CreateInteger((int32_t)acc);
+			return pCC->CreateInteger((int)acc);
 			}
 
 		case FN_BITWISE_NOT:
@@ -5675,7 +5675,7 @@ ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			if (pX->IsError())
 				return pX;
 
-			int32_t x;
+			int x;
 			if (!cc_to_int32(pX, x))
 				{
 				pX->Discard();
@@ -5683,7 +5683,7 @@ ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 				}
 			pX->Discard();
 
-			return pCC->CreateInteger((int32_t)(~(uint32_t)x));
+			return pCC->CreateInteger((int)(~(DWORD)x));
 			}
 
 		case FN_BITWISE_SHL:
@@ -5699,7 +5699,7 @@ ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			if (pC->IsError())
 				{ pX->Discard(); return pC; }
 
-			int32_t x, c;
+			int x, c;
 			if (!cc_to_int32(pX, x) || !cc_to_int32(pC, c))
 				{
 				pX->Discard();
@@ -5710,10 +5710,10 @@ ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			pX->Discard();
 			pC->Discard();
 
-			uint32_t ux = (uint32_t)x;
-			uint32_t k  = ((uint32_t)c) & 31u;
-			uint32_t r  = (dwData == FN_BITWISE_SHL ? (ux << k) : (ux >> k)); // logical SR
-			return pCC->CreateInteger((int32_t)r);
+			DWORD ux = (DWORD)x;
+			DWORD k  = ((DWORD)c) & 31u;
+			DWORD r  = (dwData == FN_BITWISE_SHL ? (ux << k) : (ux >> k)); // logical SR
+			return pCC->CreateInteger((int)r);
 			}
 
 		case FN_BITWISE_ROL:
@@ -5729,7 +5729,7 @@ ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			if (pC->IsError())
 				{ pX->Discard(); return pC; }
 
-			int32_t x, c;
+			int x, c;
 			if (!cc_to_int32(pX, x) || !cc_to_int32(pC, c))
 				{
 				pX->Discard();
@@ -5740,10 +5740,10 @@ ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			pX->Discard();
 			pC->Discard();
 
-			uint32_t ux = (uint32_t)x;
-			uint32_t r  = (dwData == FN_BITWISE_ROL ? cc_rotl32(ux, (uint32_t)c)
-			                                        : cc_rotr32(ux, (uint32_t)c));
-			return pCC->CreateInteger((int32_t)r);
+			DWORD ux = (DWORD)x;
+			DWORD r  = (dwData == FN_BITWISE_ROL ? cc_rotl32(ux, (DWORD)c)
+			                                        : cc_rotr32(ux, (DWORD)c));
+			return pCC->CreateInteger((int)r);
 			}
 
 		default:
