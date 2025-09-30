@@ -572,6 +572,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //			(bRoR x count)
 //				Returns x rotated right by count bits in 32-bit space.
 //				Bits shifted out of the low end wrap around to the high end.
+//
+//
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
 //
