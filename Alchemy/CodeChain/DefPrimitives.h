@@ -394,6 +394,15 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(setq variable value)",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
+		{	"slice",			fnSubset,		FN_SUBSET_SLICE,
+			"(subset list start [end]) -> list\n"
+			"(subset string start [end]) -> string\n\n"
+
+			"Creates a list or string of the elements or characters starting at index pos up until index end.\n"
+			"Negative indexes are allowed and wrap around (-1 is the last element, -2 is the next last element, etc).\n"
+			"An empty version of the provided type is returned if there are no elements or characters to copy.",
+			"vi*",	0,	},
+
 		{	"shuffle",			fnShuffle,		0,
 			"(shuffle list) -> shuffled list",
 			"l",	0,	},
@@ -420,13 +429,42 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(sqrtn x) -> real z",
 			"n",	0,	},
 
+		{	"strBeginsWith",	fnStr, FN_STR_BEGINS_WITH,
+			"(strBeginsWith string target [caseSensitive=Nil]) -> True|Nil",
+			"ss*",	0,},
+
 		{	"strCapitalize",	fnStrCapitalize,0,
 			"(strCapitalize string) -> string",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"strFind",			fnStrFind,		0,
-			"(strFind string target) -> pos of target in string (0-based)",
-			"ss",	0,	},
+		{	"strCount",	fnStr, FN_STR_COUNT,
+			"(strCount string target  [caseSensitive=Nil]) -> int",
+			"ss*",	0,},
+
+		{	"strEndsWith",	fnStr, FN_STR_ENDS_WITH,
+			"(strEndsWith string target [caseSensitive=Nil]) -> True|Nil",
+			"ss*",	0,},
+
+		{	"strFind",			fnStr,		FN_STR_FIND,
+			"(strFind string target [caseSensitive=Nil]) -> pos of target in string (0-based)",
+			"ss*",	0,	},
+
+		{	"strFindAll",			fnStr,		FN_STR_FINDALL,
+			"(strFindAll string target [caseSensitive=Nil]) -> list of all target pos in string (0-based). If none, Nil.",
+			"ss*",	0,	},
+
+		{	"strReplace",	fnStr, FN_STR_REPLACE,
+			"(strReplace string target replacement [caseSensitive=Nil]) -> string",
+			"ssv*",	PPFLAG_SIDEEFFECTS,},
+
+		{	"strStrip",	fnStr, FN_STR_STRIP,
+			"(strStrip string [characters] [caseSensitive=Nil]) -> string with characters to strip removed from either end. Strips whitespace by default.",
+			"s*",	PPFLAG_SIDEEFFECTS,},
+
+		{	"strSplit",	fnStr, FN_STR_SPLIT,
+			"(strSplit string delimiter [caseSensitive=Nil]) -> list of strings split around delimiter.\n"
+			"Leaves empty strings where appropriate, including at the beginning and ends if it starts or ends with a delimiter string.",
+			"sv*",	PPFLAG_SIDEEFFECTS,},
 
 		{	"struct",			fnStruct,		FN_STRUCT,
 			"(struct key1 value1 [ key2 value2 ...]) -> struct\n"
@@ -445,9 +483,13 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"Same as struct except values of the same key are appended into a list.",
 			"*",	0,	},
 
-		{	"subset",			fnSubset,		0,
-			"(subset list pos [count]) -> list\n"
-			"(subset string pos [count]) -> string",
+		{	"subset",			fnSubset,		FN_SUBSET_SUBSET,
+			"(subset list pos [count] ['-|'empty]) -> list\n"
+			"(subset string pos [count] ['-|'empty]) -> string\n\n"
+
+			"Creates a list or string of remaining (or count) length of the elements or characters starting at index pos.\n"
+			"'- specifies that negative indexes are allowed and wrap around (-1 is the last element, -2 is the next last element, etc).\n"
+			"'empty specifies that an empty version of the provided type is returned if there are no elements or characts to copy.",
 			"vv*",	0,	},
 
 		{	"subst",			fnSubst,		0,

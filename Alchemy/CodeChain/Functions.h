@@ -109,6 +109,17 @@
 #define FN_MATH_GAMMA_SCALE_NUMERALS	105
 #define FN_DEBUG_APPLY_TIMED			106
 #define FN_DEBUG_EVAL_TIMED				107
+#define FN_STR_JOIN						108
+#define FN_STR_SPLIT					109
+#define FN_STR_COUNT					110
+#define FN_STR_STRIP					111
+#define FN_STR_ENDS_WITH				112
+#define FN_STR_BEGINS_WITH				113
+#define FN_STR_REPLACE					114
+#define FN_STR_FIND						115
+#define FN_STR_FINDALL					116
+#define FN_SUBSET_SUBSET				117
+#define FN_SUBSET_SLICE					118
 #define FN_BITWISE_AND                  119
 #define FN_BITWISE_OR                   120
 #define FN_BITWISE_XOR                  121
@@ -162,6 +173,7 @@ ICCItem *fnShuffle (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnSort (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnSpecial (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnSplit (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
+ICCItem *fnStr (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnStrCapitalize (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnStrFind (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);

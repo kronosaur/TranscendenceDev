@@ -798,6 +798,41 @@ CString DamageDesc::GetDesc (DWORD dwFlags)
 		}
 	}
 
+CString DamageDesc::GetDPSDesc (Metric rFireRate, Metric rMultiplier, DWORD dwFlags)
+
+//	GetDesc
+//
+//	Returns a description of the damage:
+//
+//	laser 15 hp/sec (+50%)
+
+	{
+	CString sDamageType;
+	if (!(dwFlags & flagNoDamageType))
+		sDamageType = strPatternSubst(CONSTLIT("%s "), GetDamageShortName(m_iType));
+
+	//	We always use average damage computation for DPS
+
+	Metric rDamage = GetDamageValue(DamageDesc::flagIncludeBonus) * rFireRate * rMultiplier;
+
+	//	For shockwaves, we adjust for the fact that we might get hit multiple
+	//	times.
+
+	if (dwFlags & flagShockwaveDamage)
+		rDamage *= SHOCKWAVE_DAMAGE_FACTOR;
+
+	//	Compute result
+
+	int iDamage10 = mathRound(rDamage * 10.0);
+	int iDamage = iDamage10 / 10;
+	int iDamageTenth = iDamage10 % 10;
+
+	if (iDamageTenth == 0)
+		return strPatternSubst(CONSTLIT("%s%d hp/sec"), sDamageType, iDamage);
+	else
+		return strPatternSubst(CONSTLIT("%s%d.%d hp/sec"), sDamageType, iDamage, iDamageTenth);
+	}
+
 int DamageDesc::GetMinDamage (void) const
 	{
 	return m_Damage.GetCount() + m_Damage.GetBonus();

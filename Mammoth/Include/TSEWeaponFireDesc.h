@@ -170,6 +170,7 @@ class DamageDesc
 		DamageTypes GetDamageType (void) const { return m_iType; }
 		Metric GetDamageValue (DWORD dwFlags = 0) const;
 		CString GetDesc (DWORD dwFlags = 0);
+		CString GetDPSDesc (Metric rFireRate, Metric rMultiplier = 1.0, DWORD dwFlags = 0);
 		int GetMinDamage (void) const;
 		int GetMaxDamage (void) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
@@ -572,6 +573,20 @@ class CConfigurationDesc
 
 #include "TSEConfigurationDescInlines.h"
 
+//	Mining ---------------------------------------------------------------------
+
+enum class EMiningMethod
+	{
+	unknown = -1,
+
+	ablation = 0,
+	drill = 1,
+	explosion = 2,
+	shockwave = 3,
+	};
+
+constexpr int EMiningMethodCount = 4;
+
 //	WeaponFireDesc -------------------------------------------------------------
 
 struct SExplosionType
@@ -783,6 +798,7 @@ class CWeaponFireDesc
 		int GetMinDamage (void) const { return m_MinDamage.Roll(); }
 		Metric GetMinRadius (void) const { return m_rMinRadius; }
 		Metric GetMaxRange (void) const;
+		EMiningMethod GetMiningMethod (void) const { return m_MiningMethod; }
 		CEffectCreator *GetParticleEffect (void) const;
 		const CParticleSystemDesc *GetParticleSystemDesc (void) const { return m_pParticleDesc; }
 		int GetPassthrough (void) const { return m_iPassthrough; }
@@ -823,8 +839,8 @@ class CWeaponFireDesc
 		bool IsTrackingTime (int iTick) const { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
 		void MarkImages (void);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
-		void PlayFireSound (CSpaceObject *pSource) const { m_FireSound.PlaySound(pSource); }
-		void PlayChargeSound (CSpaceObject *pSource) const { m_ChargeSound.PlaySound(pSource); }
+		void PlayFireSound (CSpaceObject *pSource) const { m_FireSound.PlaySound(pSource, m_pFireSoundOptions); }
+		void PlayChargeSound (CSpaceObject *pSource) const { m_ChargeSound.PlaySound(pSource, m_pChargeSoundOptions); }
 		bool ProximityBlast (void) const { return (m_fProximityBlast ? true : false); }
 		bool ShowsHint (EDamageHint iHint) const;
 
@@ -876,6 +892,7 @@ class CWeaponFireDesc
 		int m_iFireRate = -1;					//	Ticks between shots (-1 = default to weapon class)
 		int m_iPowerUse = -1;					//	Power use in 1/10th MWs (-1 = default to weapon class)
 		int m_iIdlePowerUse = -1;				//	Power use while idle (-1 = default to weapon class)
+		EMiningMethod m_MiningMethod = EMiningMethod::unknown;	//	Mining method
 
 		Metric m_rMissileSpeed = 0.0;			//	Speed of missile
 		DiceRange m_MissileSpeed;				//	Speed of missile (if random)
@@ -893,7 +910,9 @@ class CWeaponFireDesc
 		CEffectCreatorRef m_pFireEffect;		//	Effect when we fire (muzzle flash)
 		CEffectCreatorRef m_pChargeEffect;		//	Effect when we charge (muzzle flash)
 		CSoundRef m_FireSound;					//	Sound when weapon is fired
+		SSoundOptions *m_pFireSoundOptions;		//	Sound options for fire sound
 		CSoundRef m_ChargeSound;				//	Sound when weapon is charged
+		SSoundOptions *m_pChargeSoundOptions;		//	Sound options for charge sound
 		SOldEffects *m_pOldEffects = NULL;		//  Non-painter effects.
 		CWeaponFireDescRef m_pExplosionType;	//	Explosion to create when ship is destroyed
 		bool m_bPlaySoundOncePerBurst;			//	If TRUE, play the fire sound only once per burst

@@ -4073,6 +4073,318 @@ ICCItem *fnSplit (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		return pList;
 	}
 
+ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
+
+//	fnStr
+//
+//	advanced string functions
+
+	{
+	CCodeChain *pCC = pCtx->pCC;
+	ICCItem *pFirst;
+	int iArgs = pArgs->GetCount();
+	bool bCaseSensitive = false;
+	pFirst = pArgs->GetElement(0);
+	
+	switch (dwData)
+		{
+		case FN_STR_BEGINS_WITH:
+		case FN_STR_ENDS_WITH:
+			{
+			CString sSource = pFirst->GetStringValue();
+			if (iArgs > 2)
+				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
+			CString sTarget = pArgs->GetElement(1)->GetStringValue();
+			if (sSource.GetLength() < sTarget.GetLength())
+				return pCC->CreateNil();
+
+			bool bRes;
+
+			if (dwData == FN_STR_BEGINS_WITH)
+				bRes = strStartsWith(sSource, sTarget, bCaseSensitive);
+			else
+				bRes = strEndsWith(sSource, sTarget, bCaseSensitive);
+
+			return pCC->CreateBool(bRes);
+			}
+
+		case FN_STR_COUNT:
+		case FN_STR_FIND:
+		case FN_STR_FINDALL:
+			{
+			CString sSource = pFirst->GetStringValue();
+			int iSourceLen = sSource.GetLength();
+			if (iArgs > 2)
+				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
+			CString sTarget = pArgs->GetElement(1)->GetStringValue();
+			int iTargetLen = sTarget.GetLength();
+
+			switch (dwData)
+				{
+				case FN_STR_COUNT:
+					{
+					//	Handle unsearchable inputs
+
+					if (iSourceLen < iTargetLen || !iTargetLen)
+						return pCC->CreateInteger(0);
+
+					//	Handle normal case
+
+					return pCC->CreateInteger(strFindCount(sSource, sTarget, bCaseSensitive));
+					}
+
+				case FN_STR_FIND:
+					{
+					//	Handle unsearchable inputs
+
+					if (iSourceLen < iTargetLen || !iTargetLen)
+						return pCC->CreateNil();
+
+					//	Handle normal case
+
+					int iPos = strFindIn(sSource, sTarget, 0, -1, bCaseSensitive);
+					return iPos >= 0 ? pCC->CreateInteger(iPos) : pCC->CreateNil();
+					}
+
+				case FN_STR_FINDALL:
+					{
+					//	Handle unsearchable inputs
+
+					if (iSourceLen < iTargetLen || !iTargetLen)
+						return pCC->CreateNil();
+
+					//	Check if we have at least one
+
+					int iPos = strFindIn(sSource, sTarget, 0, -1, bCaseSensitive);
+					int iOffset = iPos + iTargetLen;
+
+					//	If not, Nil
+
+					if (iPos < 0)
+						return pCC->CreateNil();
+
+					//	Otherwise, make a list (we add the first element in the loop
+
+					ICCList *pList = (ICCList *)pCC->CreateLinkedList();
+
+					//	Loop through until we cant find more
+
+					while (iPos >= 0)
+						{
+
+						//	We add our last valid position
+
+						pList->AppendInteger(iPos);
+
+						//	If there is no string left to search, just exit loop
+
+						if (iOffset > iSourceLen - iTargetLen)
+							break;
+
+						//	Search for the next valid position
+
+						iPos = strFindIn(sSource, sTarget, iOffset, -1, bCaseSensitive);
+
+						//	Set our new offset to search from next time
+
+						iOffset = iPos + iTargetLen;
+						}
+
+					//	Done, return the list
+
+					return pList;
+					}
+
+				default:
+					{
+					ASSERT(false);
+					return pCC->CreateNil();
+					}
+				}
+			}
+
+		case FN_STR_JOIN:
+			{
+			CString sDelim = CONSTLIT("");
+			if (iArgs >= 2)
+				sDelim = pArgs->GetElement(1)->GetStringValue();
+
+			CString sResult = CONSTLIT("");
+
+			if (!pFirst->IsList())
+				return pCC->CreateError(CONSTLIT("strJoin takes only a list of objects to join together and a delimiter to join them with"));
+
+			ICCList *pList = (ICCList*)pFirst;
+
+			//	If we were not provided anything to join, return an empty str
+			if (!pList->GetCount())
+				return pCC->CreateString(sResult);
+
+			int iEnd = pList->GetCount();
+
+			for (int i = 0; i < iEnd; i++)
+				{
+				ICCItem* pElement = pList->GetElement(i);
+
+				//	Treat Nil as an empty string rather than "Nil"
+
+				if (pElement->IsNil())
+					sResult.Append(CONSTLIT(""));
+				else
+					sResult.Append(pElement->GetStringValue());
+
+				//	Add our delimiter if we have another element afterwards
+
+				if (i + 1 < iEnd)
+					sResult.Append(sDelim);
+				}
+
+			return pCC->CreateString(sResult);
+			}
+
+		case FN_STR_SPLIT:
+			{
+			ICCItem* pList = pCC->CreateLinkedList();
+			if (iArgs > 2)
+				bCaseSensitive = !pArgs->GetElement(2)->IsNil();
+			CString sSource = pArgs->GetElement(0)->GetStringValue();
+			CString sTarget = pArgs->GetElement(1)->GetStringValue();
+			int iTargetEnd = sTarget.GetLength();
+			int iSourceEnd = sSource.GetLength();
+
+			//	If we cant do anything with it then we pass the first arg via a list
+
+			if (!iTargetEnd || iSourceEnd < iTargetEnd)
+				{
+				pList->Append(pArgs->GetElement(0));
+				return pList;
+				}
+
+			//	Otherwise we try to do the splitting
+
+			int iEnd = iSourceEnd - iTargetEnd + 1;
+			int iSpanStart = 0;
+
+			while (iSpanStart < iEnd)
+				{
+
+				//	Find the next location to split (iSpanEnd is -1 if nothing was found)
+
+				int iSpanEnd = strFindIn(sSource, sTarget, iSpanStart, iSourceEnd, bCaseSensitive);
+
+				if (iSpanEnd < 0)
+					{
+					//	No further splits, treat whatever remains as the final span
+
+					pList->Append(pCC->CreateString(strSubString(sSource, iSpanStart)));
+
+					//	Exit our loop
+
+					break;
+					}
+				else
+					{
+					//	Append this span that we found
+
+					pList->Append(pCC->CreateString(strSubString(sSource, iSpanStart, iSpanEnd - iSpanStart)));
+
+					//	Figure out where we need to check for the next span
+
+					iSpanStart = iSpanEnd + iTargetEnd;
+					}
+				}
+
+			//	Handle the case where we need an empty string right at the end
+
+			if (iSpanStart == iSourceEnd)
+				pList->Append(pCC->CreateString(CONSTLIT("")));
+
+			return pList;
+			}
+
+		case FN_STR_STRIP:
+			{
+			DWORD dwFlags = 0;
+			CString sSource = pArgs->GetElement(0)->GetStringValue();
+			CString sTarget;
+			if (iArgs > 1 && !pArgs->GetElement(1)->IsNil())
+				sTarget = pArgs->GetElement(1)->GetStringValue();
+			else
+				{
+				dwFlags |= Kernel::STRSTRIP_DEFAULT_WHITESPACE;
+				sTarget = CONSTLIT("");
+				}
+			if (iArgs > 2 && !pArgs->GetElement(2)->IsNil())
+				dwFlags |= Kernel::STRSTRIP_CASE_SENSITIVE;
+
+			//	Extract the stripped string
+
+			return pCC->CreateString(strStrip(sSource, sTarget, dwFlags));
+			}
+
+		case FN_STR_REPLACE:
+			{
+			CString sResult = CONSTLIT("");
+			if (iArgs > 3)
+				bCaseSensitive = !pArgs->GetElement(3)->IsNil();
+			CString sSource = pArgs->GetElement(0)->GetStringValue();
+			CString sTarget = pArgs->GetElement(1)->GetStringValue();
+			CString sReplacement = pArgs->GetElement(2)->GetStringValue();
+			int iTargetEnd = sTarget.GetLength();
+			int iSourceEnd = sSource.GetLength();
+
+			//	If we cant do anything with it then we pass the first arg via a list
+			//	We need to re-reference it to keep the reference count consistent
+
+			if (!iTargetEnd || iSourceEnd < iTargetEnd)
+				return pArgs->GetElement(0)->Reference();
+
+			//	Otherwise we try to do replacement.
+
+			int iEnd = iSourceEnd - iTargetEnd + 2;
+			int iSpanStart = 0;
+
+			while (iSpanStart < iEnd)
+				{
+				//	Find the next location to split (iSpanEnd is -1 if nothing was found)
+
+				int iSpanEnd = strFindIn(sSource, sTarget, iSpanStart, iSourceEnd, bCaseSensitive);
+
+				if (iSpanEnd < 0)
+					{
+					//	No further splits, treat whatever remains as the final span
+
+					sResult.Append(strSubString(sSource, iSpanStart));
+
+					//	Exit our loop
+
+					break;
+					}
+				else
+					{
+					//	Append this span that we found
+
+					sResult.Append(strSubString(sSource, iSpanStart, iSpanEnd - iSpanStart));
+
+					//	Append the replacement
+
+					sResult.Append(sReplacement);
+
+					//	Figure out where we need to check for the next span
+
+					iSpanStart = iSpanEnd + iTargetEnd;
+					}
+				}
+
+			return pCC->CreateString(sResult);
+			}
+
+		default:
+			ASSERT(false);
+			return pCC->CreateNil();
+		}
+	}
+
 ICCItem *fnStrCapitalize (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 //	fnStrCapitalize
@@ -4254,21 +4566,82 @@ ICCItem *fnSubset (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	int i;
+	int iArgs = pArgs->GetCount();
 	CCodeChain *pCC = pCtx->pCC;
 
-	//	Get start and end
+	//	Slice or subset codepath?
+
+	bool bSlice = dwData == FN_SUBSET_SLICE;
+
+	//	Get common data (source and start)
 
 	ICCItem *pSource = pArgs->GetElement(0);
 	int iSourceCount = (pSource->IsList() ? pSource->GetCount() : pSource->GetStringValue().GetLength());
-	int iStart = Max(0, Min(pArgs->GetElement(1)->GetIntegerValue(), iSourceCount));
-	int iCount;
-	if (pArgs->GetCount() > 2 && !pArgs->GetElement(2)->IsNil())
-		iCount = Max(0, Min(pArgs->GetElement(2)->GetIntegerValue(), iSourceCount - iStart));
+	int iStart = pArgs->GetElement(1)->GetIntegerValue();
+
+	//	Get End and other args
+
+	int iCount = -1;
+	bool bAllowNegative = bSlice;
+	bool bRetSourceType = bSlice;
+	ICCItem *pArg;
+
+	for (i = 2; i < iArgs; i++)
+		{
+		//	get the next argument
+
+		pArg = pArgs->GetElement(i);
+
+		//	check if it is the count/end argument
+
+		if (i == 2 && pArg->IsNumber())
+			iCount = pArg->GetIntegerValue();
+
+		//	Handle keyword arguments
+
+		else
+			{
+			CString sArg = pArg->GetStringValue();
+
+			//	Allow negatives for subset (always for slice)
+			if (sArg == "-")
+				bAllowNegative = true;
+
+			//	Return same type instead of Nil (always for slice)
+			else if (sArg == "empty")
+				bRetSourceType = true;
+
+			//	If we got something unexpected, cancel and give an error instead
+			else
+				return pCC->CreateError(strCat(CONSTLIT("Got an invalid keyword argument: "), sArg));
+			}
+		}
+
+	//	Adjust start and count depending on function and options
+
+	if (bAllowNegative)
+		{
+		iStart = iStart < 0 ? max(0, iSourceCount + iStart) : min(iStart, iSourceCount);
+		if (bSlice)
+			{
+			//	iCount is currently end pos to collect, need to recompute it as the count
+
+			iCount = iCount < 0 ? max(iStart, iSourceCount + iCount + 1) : min(iSourceCount, max(iStart, iCount + 1));
+			iCount -= iStart;
+			}
+		}
 	else
+		iStart = max(0, min(iStart, iSourceCount));
+
+	//	This is the default not set value for subset iCount. slice iCount is always positive at this point in the code.
+	
+	if (iCount == -1 || (iStart + iCount) > iSourceCount)
 		iCount = iSourceCount - iStart;
 
-	if (pSource->IsNil() || iCount == 0)
-		return pCC->CreateNil();
+	//	Return nil or empty if asked to get a count of 0 or below
+
+	if (iCount < 1)
+		return bRetSourceType ? (pSource->IsList() ? pCC->CreateLinkedList() : pCC->CreateString(CONSTLIT(""))) : pCC->CreateNil();
 
 	//	If the source is a list then we subset the list
 
