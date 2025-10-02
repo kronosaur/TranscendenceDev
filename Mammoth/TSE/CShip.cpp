@@ -2492,7 +2492,7 @@ int CShip::GetAmmoForSelectedLinkedFireWeapons (CInstalledDevice *pDevice)
 							//  If it is an ammo weapon, but does not require items, then it is a charges weapon. Add its ammo to the count.
 							{
 							int iAmmoLeft = 0;
-							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, NULL, true);
+							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, NULL, NULL, true);
 							iAmmoCount += iAmmoLeft;
 							}
 
@@ -2503,7 +2503,7 @@ int CShip::GetAmmoForSelectedLinkedFireWeapons (CInstalledDevice *pDevice)
 							bool ammoIsAdded = false;
 							int iAmmoLeft = 0;
 							CItemType *pAmmoType;
-							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, &pAmmoType, true);
+							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, NULL, &pAmmoType, true);
 							AmmoItemTypes.Find(pAmmoType, &ammoIsAdded);
 							if (!ammoIsAdded)
 								{

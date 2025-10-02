@@ -70,7 +70,7 @@ class CDelaunayStargateGenerator
 	public:
 		CDelaunayStargateGenerator (CIntGraph &Graph, const TArray<CTopologyNode *> &Nodes);
 
-		void Generate (TArray<CTopologyNode::SStargateRouteDesc> &Routes);
+		void Generate (TArray<CTopologyNode::SStargateRouteDesc> &Routes, CTopologyNode::SStargateRouteDesc templateDesc);
 
 	private:
 		CIntGraph &m_Graph;
@@ -82,7 +82,7 @@ class CSimplePathStargateGenerator
 	public:
 		CSimplePathStargateGenerator (CIntGraph &Graph, const TArray<CTopologyNode *> &Nodes);
 
-		void Generate (DWORD dwFirstNode, TArray<CTopologyNode::SStargateRouteDesc> &Routes);
+		void Generate (DWORD dwFirstNode, TArray<CTopologyNode::SStargateRouteDesc> &Routes, CTopologyNode::SStargateRouteDesc templateDesc);
 
 	private:
 		bool FindConnection (const CLargeSet &Connected, const CLargeSet &Unconnected, DWORD *retdwFrom, DWORD *retdwTo) const;
@@ -99,7 +99,7 @@ class CTreePathStargateGenerator
 	public:
 		CTreePathStargateGenerator (CIntGraph &Graph, const TArray<CTopologyNode *> &Nodes);
 
-		void Generate (DWORD dwFirstNode, TArray<CTopologyNode::SStargateRouteDesc> &Routes);
+		void Generate (DWORD dwFirstNode, TArray<CTopologyNode::SStargateRouteDesc> &Routes, CTopologyNode::SStargateRouteDesc templateDesc);
 
 	private:
 		DWORD FindConnection (DWORD dwFrom, const CLargeSet &Unconnected) const;
