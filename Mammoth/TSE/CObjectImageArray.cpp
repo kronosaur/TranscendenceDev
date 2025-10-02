@@ -129,6 +129,7 @@ CObjectImageArray::CObjectImageArray (const CObjectImageArray &Source)
 
 	{
 	CopyFrom(Source);
+	m_cs = CCriticalSection();
 	}
 
 CObjectImageArray::~CObjectImageArray (void)
@@ -561,6 +562,8 @@ void CObjectImageArray::CopyFrom (const CObjectImageArray &Source)
 	m_pGlowImages = NULL;
 	m_pScaledImages = NULL;
 	m_cxScaledImage = -1;
+
+	m_cs = CCriticalSection();
 	}
 
 void CObjectImageArray::CopyImage (CG32bitImage &Dest, int x, int y, int iFrame, int iRotation) const
@@ -1441,7 +1444,9 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 	{
 	DEBUG_TRY
 
+	m_cs.Lock();
 	CG32bitImage* pSource = m_pImage->GetRawImage(NULL_STR);
+	m_cs.Unlock();
 	if (pSource == NULL)
 		return;
 

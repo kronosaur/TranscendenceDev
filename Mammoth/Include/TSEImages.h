@@ -206,7 +206,7 @@ class CObjectImageArray
 			FLAG_CACHED =		0x00000004,	//	Cache scaled image
 			};
 
-		CObjectImageArray (void) { }
+		CObjectImageArray (void) { m_cs = CCriticalSection(); }
 		CObjectImageArray (const CObjectImageArray &Source);
 		~CObjectImageArray (void);
 
@@ -335,6 +335,11 @@ class CObjectImageArray
 
 		static CObjectImageArray m_Null;
 		static CG32bitImage m_NullImage;
+
+		//	Multithreading lock
+
+		mutable CCriticalSection m_cs = CCriticalSection();
+
 	};
 
 const DWORD DEFAULT_SELECTOR_ID = 0;
