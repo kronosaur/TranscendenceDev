@@ -236,6 +236,11 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 			int iHitCount = 0;
 			utlMemSet(&SegHit[0], sizeof(SHitData) * SegHit.GetCount(), 0);
 
+			//	Prepare for point in object calculations
+
+			SPointInObjectCtx PiOCtx;
+			pObj->PointInObjectInit(PiOCtx);
+
 			//	Loop through the grid to see if we hit anything
 
 			Metric rTestRadius = rStartRadius;
@@ -272,7 +277,7 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 							&& m_Segments[iSegment].dwLastHitID != pObj->GetID())
 						{
 						CVector vHitTest = vPos + PolarToVector((int)(rTheAngle + rRandomOffset), rTestRadius);
-						if (pObj->PointInObject(pObj->GetPos(), vHitTest))
+						if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vHitTest))
 							{
 							SegHit[iSegment].bHit = true;
 							SegHit[iSegment].iAngle = (int)rTheAngle;

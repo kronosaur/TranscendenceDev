@@ -1824,20 +1824,22 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 	CVector vLL;
 	GetBounds(&vUR, &vLL);
 
-	//	Loop over all objects in the system
+	const CSpaceObjectGrid &Grid = Ctx.pSystem->GetObjectGrid();
+	SSpaceObjectGridEnumerator i;
+	Grid.EnumStart(i, vUR, vLL, 0);
 
-	for (int i = 0; i < Ctx.pSystem->GetObjectCount(); i++)
+	//	Loop over all objects in the grid box
+
+	while (Grid.EnumHasMore(i))
 		{
-		CSpaceObject *pObj = Ctx.pSystem->GetObject(i);
+		CSpaceObject *pObj = Grid.EnumGetNext(i);
 
 		//	If the object is in the bounding box then remember
 		//	it so that we can do a more accurate calculation.
 
 		if (pObj 
-				&& pObj->InBox(vUR, vLL)
 				&& Ctx.pObj->CanHit(pObj) 
 				&& pObj->CanBeHit() 
-				&& !pObj->IsDestroyed()
 				&& pObj != Ctx.pObj)
 			{
 
