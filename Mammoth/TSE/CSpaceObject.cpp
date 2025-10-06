@@ -6548,10 +6548,7 @@ bool CSpaceObject::IsLineOfFireClear (const CInstalledDevice *pWeapon,
 
 				if (rDistFromTarget2 < BOUNDS_CHECK_DIST2)
 					{
-					CVector vUR, vLL;
-					pObj->GetBoundingRect(&vUR, &vLL);
-
-					if (rDistFromTarget2 < 2.0 * vUR.Length2()
+					if (pObj->PointInBounds(vTarget)
 							&& pObj->PointInObject(pObj->GetPos(), vTarget))
 						{
 						if (retpFriend) *retpFriend = pObj;

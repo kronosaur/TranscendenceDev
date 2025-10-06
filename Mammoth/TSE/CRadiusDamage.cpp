@@ -139,13 +139,18 @@ void CRadiusDamage::DamageAll (SUpdateCtx &Ctx)
 		CVector vDist = (pObj->GetPos() - GetPos());
 		int iAngle = VectorToPolar(vDist);
 
+		//	Prepare for point in object calculations
+
+		SPointInObjectCtx PiOCtx;
+		pObj->PointInObjectInit(PiOCtx);
+
 		//	Figure out where we hit this object
 
 		Metric rObjRadius = 0.5 * pObj->GetHitSize();
 		CVector vHitPos = pObj->GetPos() - PolarToVector(iAngle, rObjRadius);
 		CVector vInc = PolarToVector(iAngle, 2.0 * g_KlicksPerPixel);
 		int iMax = mathRound(2.0 * rObjRadius / (2.0 * g_KlicksPerPixel));
-		while (!pObj->PointInObject(pObj->GetPos(), vHitPos) && iMax-- > 0)
+		while (!pObj->PointInObject(PiOCtx, pObj->GetPos(), vHitPos) && iMax-- > 0)
 			vHitPos = vHitPos + vInc;
 
 		//	The hit position is what we use to figure out damage
