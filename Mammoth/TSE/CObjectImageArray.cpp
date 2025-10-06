@@ -129,7 +129,6 @@ CObjectImageArray::CObjectImageArray (const CObjectImageArray &Source)
 
 	{
 	CopyFrom(Source);
-	m_cs = CCriticalSection();
 	}
 
 CObjectImageArray::~CObjectImageArray (void)
@@ -1447,11 +1446,14 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 	m_cs.Lock();
 	CG32bitImage* pSource = m_pImage->GetRawImage(NULL_STR);
 	m_cs.Unlock();
+
 	if (pSource == NULL)
 		return;
 
 	if (m_pImage)
 		{
+
+		//	If we are on the main thread and we have a thread pool in the paint context, use multithreading
 
 		if (Ctx && Ctx->pThreadPool)
 			{
@@ -1487,6 +1489,9 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 
 			Ctx->pThreadPool->Run();
 			}
+
+		//	Otherwise we are a worker or painting on one thread
+
 		else
 			{
 

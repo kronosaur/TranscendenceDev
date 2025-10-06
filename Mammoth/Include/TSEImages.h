@@ -206,7 +206,7 @@ class CObjectImageArray
 			FLAG_CACHED =		0x00000004,	//	Cache scaled image
 			};
 
-		CObjectImageArray (void) { m_cs = CCriticalSection(); }
+		CObjectImageArray (void) { }
 		CObjectImageArray (const CObjectImageArray &Source);
 		~CObjectImageArray (void);
 
