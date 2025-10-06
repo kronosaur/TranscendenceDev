@@ -2145,7 +2145,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Mining Level
 
-	m_iMaxMiningLevel = pDesc->GetAttributeInteger(MINING_LEVEL_ATTRIB);
+	m_iMaxMiningLevel = pDesc->GetAttributeIntegerBounded(MINING_LEVEL_ATTRIB, 0, -1, -1);
 	if (m_iMaxMiningLevel && Ctx.GetAPIVersion() < 57)
 		{
 		Ctx.sError = CONSTLIT("miningMaxOreLevel requires API 57 or higher");

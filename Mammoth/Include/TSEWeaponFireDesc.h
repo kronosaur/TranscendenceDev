@@ -894,7 +894,7 @@ class CWeaponFireDesc
 		int m_iPowerUse = -1;					//	Power use in 1/10th MWs (-1 = default to weapon class)
 		int m_iIdlePowerUse = -1;				//	Power use while idle (-1 = default to weapon class)
 		EMiningMethod m_MiningMethod = EMiningMethod::unknown;	//	Mining method
-		int m_iMaxMiningLevel = 0;				//	Max level of ore that can be mined (0 = default damage table)
+		int m_iMaxMiningLevel = -1;				//	Max level of ore that can be mined (-1 = default damage table, 0 = sense ore only)
 
 		Metric m_rMissileSpeed = 0.0;			//	Speed of missile
 		DiceRange m_MissileSpeed;				//	Speed of missile (if random)

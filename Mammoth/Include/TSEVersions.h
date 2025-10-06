@@ -551,7 +551,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //			<Weapon>
 //				miningMaxOreLevel: (int: 0-25)
 //					The maximum level ore that this weapon shot can extract
-//					0 uses the adventure default settings
+//					0 allows the damage to probe for ore but does not mine
+//					-1 uses the adventure default settings
 //
 //
 

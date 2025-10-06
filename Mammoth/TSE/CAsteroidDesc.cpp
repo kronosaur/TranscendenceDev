@@ -157,7 +157,7 @@ void CAsteroidDesc::CalcMining (int iMiningLevel, int iMiningDifficulty, EAstero
 	//	given shot.
 
 	int iMaxOreLevel = DamageCtx.GetDesc().GetMiningLevel();
-	if (iMaxOreLevel)
+	if (iMaxOreLevel >= 0)
 		retMining.iMaxOreLevel = iMaxOreLevel;
 	else
 		retMining.iMaxOreLevel = CalcMaxOreLevel(DamageCtx.Damage.GetDamageType());
