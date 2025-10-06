@@ -249,7 +249,7 @@ class CObjectImageArray
 		bool IsLoaded (void) const { return (m_pImage != NULL); }
         bool IsMarked (void) const { return (m_pImage && m_pImage->IsMarked()); }
 		void MarkImage (void) const;
-		void PaintImage (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, bool bComposite = false) const;
+		void PaintImage (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, bool bComposite = false, SViewportPaintCtx *Ctx = NULL, int iOffsetY = -1, int iOffsetCY = -1) const;
 		void PaintImageGrayed (CG32bitImage &Dest, int x, int y, int iTick, int iRotation) const;
 		void PaintImageShimmering (CG32bitImage &Dest,
 								   int x,
@@ -335,6 +335,11 @@ class CObjectImageArray
 
 		static CObjectImageArray m_Null;
 		static CG32bitImage m_NullImage;
+
+		//	Multithreading lock
+
+		mutable CCriticalSection m_cs = CCriticalSection();
+
 	};
 
 const DWORD DEFAULT_SELECTOR_ID = 0;
