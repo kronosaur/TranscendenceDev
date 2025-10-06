@@ -547,6 +547,11 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //						Overrides the <Stargate> locationCriteria string.
 //
 //	 57: 2.0 Alpha 7
+//		<ItemType>
+//			<Weapon>
+//				miningMaxOreLevel: (int: 0-25)
+//					The maximum level ore that this weapon shot can extract
+//					0 uses the adventure default settings
 //
 //
 

@@ -798,6 +798,7 @@ class CWeaponFireDesc
 		int GetMinDamage (void) const { return m_MinDamage.Roll(); }
 		Metric GetMinRadius (void) const { return m_rMinRadius; }
 		Metric GetMaxRange (void) const;
+		int GetMiningLevel (void) const { return m_iMaxMiningLevel; }
 		EMiningMethod GetMiningMethod (void) const { return m_MiningMethod; }
 		CEffectCreator *GetParticleEffect (void) const;
 		const CParticleSystemDesc *GetParticleSystemDesc (void) const { return m_pParticleDesc; }
@@ -893,6 +894,7 @@ class CWeaponFireDesc
 		int m_iPowerUse = -1;					//	Power use in 1/10th MWs (-1 = default to weapon class)
 		int m_iIdlePowerUse = -1;				//	Power use while idle (-1 = default to weapon class)
 		EMiningMethod m_MiningMethod = EMiningMethod::unknown;	//	Mining method
+		int m_iMaxMiningLevel = 0;				//	Max level of ore that can be mined (0 = default damage table)
 
 		Metric m_rMissileSpeed = 0.0;			//	Speed of missile
 		DiceRange m_MissileSpeed;				//	Speed of missile (if random)

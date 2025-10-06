@@ -156,7 +156,11 @@ void CAsteroidDesc::CalcMining (int iMiningLevel, int iMiningDifficulty, EAstero
 	//	Max ore level is the maximum level of ore that we can extract with the 
 	//	given shot.
 
-	retMining.iMaxOreLevel = CalcMaxOreLevel(DamageCtx.Damage.GetDamageType());
+	int iMaxOreLevel = DamageCtx.GetDesc().GetMiningLevel();
+	if (iMaxOreLevel)
+		retMining.iMaxOreLevel = iMaxOreLevel;
+	else
+		retMining.iMaxOreLevel = CalcMaxOreLevel(DamageCtx.Damage.GetDamageType());
 	}
 
 EMiningMethod CAsteroidDesc::CalcMiningMethod (const CWeaponFireDesc &Desc)
