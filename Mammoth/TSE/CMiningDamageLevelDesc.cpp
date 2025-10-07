@@ -5,7 +5,7 @@
 
 #include "PreComp.h"
 
-#define MINING_DAMAGE_LEVEL_ATTRIB					CONSTLIT("miningDamageLevels")
+#define MINING_DAMAGE_LEVEL_ATTRIB					CONSTLIT("miningMaxOreLevel")
 #define MINING_RELATIVE_OFFSET						2 * MAX_ITEM_LEVEL
 
 static int DAMAGE_LEVEL_API48[damageCount] =
@@ -106,14 +106,24 @@ ALERROR CMiningDamageLevelDesc::InitFromArray (int *pTable)
 	return NOERROR;
 	}
 
-ALERROR CMiningDamageLevelDesc::InitFromDamageAdj (SDesignLoadCtx &Ctx, const CString &sAttrib, bool bNoDefault)
+ALERROR CMiningDamageLevelDesc::InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, const CString &sAttrib, bool bNoDefault)
 
-//	InitFromDamageAdj
+//	InitFromMiningDamageLevel
 //
 //	Loads a damage adjustment descriptor as follows:
 //
-//	100,100,...
-//	laser:100; kinetic:100; ...
+//	Absolute levels:
+//	5,5,...
+//	laser:5; kinetic:5; ...
+// 
+//	Relative level to mining item:
+//	+5,-5,...
+//	laser:+5; kinetic:-5; ...
+//
+//	Absolute max/min:
+//  *,0,...
+//  laser:*; kinetic:0; ...
+//
 
 	{
 	ALERROR error;
@@ -131,140 +141,106 @@ ALERROR CMiningDamageLevelDesc::InitFromDamageAdj (SDesignLoadCtx &Ctx, const CS
 		return NOERROR;
 		}
 
-	//	We expect a list of damageAdj percent values, either with a damageType
+	//	We expect a list of per damage max ore level values, either with a damageType
 	//	label or ordered by damageType.
 
 	TArray<CString> DamageAdj;
 	if (error = ParseDamageTypeList(sAttrib, &DamageAdj))
 		{
-		Ctx.sError = CONSTLIT("Invalid damageAdj definition.");
+		Ctx.sError = CONSTLIT("Invalid miningMaxOreLevel definition.");
 		return error;
 		}
 
-	//	Apply damage adj
+	//	Get level
 
 	for (i = 0; i < damageCount; i++)
 		{
+
+		//	If we have nothing
+
 		if (DamageAdj[i].IsBlank())
 			{
 			m_Desc[i].dwLevelType = (bNoDefault ? levelAbsolute : levelDefault);
-			m_Desc[i].dwLevelValue = (bNoDefault ? 100 : 0);
+			m_Desc[i].dwLevelValue = (bNoDefault ? MAX_ITEM_LEVEL : 0);
 			}
 		else
 			{
 			int iValue = strToInt(DamageAdj[i], 0);
-			if (iValue < 0)
+
+			//	If we have a positive item level offset
+
+			if (strStartsWith(DamageAdj[i], CONSTLIT("+")))
 				{
-				Ctx.sError = CONSTLIT("damageAdj values cannot be negative.");
-				return ERR_FAIL;
-				}
-			else if (iValue > 32767)
-				{
-				Ctx.sError = strPatternSubst(CONSTLIT("damageAdj value is out of range: %d."), iValue);
-				return ERR_FAIL;
-				}
 
-			m_Desc[i].dwLevelType = levelAbsolute;
-			m_Desc[i].dwLevelValue = (WORD)iValue;
+				//	Negative values should not be reachable in this code
 
-			//	If this table doesn't have a default, then it is the default table.
-			//	Initialize m_iMiningLevel so we don't have to bind.
-
-			if (bNoDefault)
-				m_iMiningLevel[i] = iValue;
-			}
-		}
-
-	//	Done
-
-	return NOERROR;
-	}
-
-ALERROR CMiningDamageLevelDesc::InitFromHPBonus (SDesignLoadCtx &Ctx, const CString &sAttrib)
-
-//	InitFromHPBonus
-//
-//	Loads an HP bonus descriptor as follows:
-//
-//	+25, -25, ...
-//	laser:+25; kinetic:-25; ...
-
-	{
-	ALERROR error;
-	int i;
-
-	//	Short-circuit null values
-
-	if (sAttrib.IsBlank())
-		{
-		for (i = 0; i < damageCount; i++)
-			{
-			m_Desc[i].dwLevelType = levelDefault;
-			m_Desc[i].dwLevelValue = 0;
-			}
-		return NOERROR;
-		}
-
-	//	We expect a list of percent adjustments
-
-	TArray<CString> DamageAdj;
-	if (error = ParseDamageTypeList(sAttrib, &DamageAdj))
-		{
-		Ctx.sError = CONSTLIT("Invalid hpBonus definition.");
-		return error;
-		}
-
-	//	Apply damage adj
-
-	for (i = 0; i < damageCount; i++)
-		{
-		//	An omitted value means default
-
-		if (DamageAdj[i].IsBlank())
-			{
-			m_Desc[i].dwLevelType = levelDefault;
-			m_Desc[i].dwLevelValue = 0;
-			}
-
-		//	A star means no damage
-
-		else if (*DamageAdj[i].GetASCIIZPointer() == '*')
-			{
-			m_Desc[i].dwLevelType = levelAbsolute;
-			m_Desc[i].dwLevelValue = 0;
-			}
-
-		//	Otherwise, this is a relative value
-
-		else
-			{
-			bool bNull;
-			int iValue;
-			iValue = strToInt(DamageAdj[i], 0, &bNull);
-			if (bNull)
-				{
-				Ctx.sError = strPatternSubst(CONSTLIT("Invalid hpBonus value: %s."), DamageAdj[i]);
-				return ERR_FAIL;
-				}
-
-			if (iValue == 0)
-				{
-				m_Desc[i].dwLevelType = levelDefault;
-				m_Desc[i].dwLevelValue = 0;
-				}
-			else
-				{
-				if (iValue > 32767 || iValue < -32768)
+				if (iValue > MAX_ITEM_LEVEL)
 					{
-					Ctx.sError = strPatternSubst(CONSTLIT("hpBonus is out of range: %d."), iValue);
+					Ctx.sError = strPatternSubst(CONSTLIT("miningMaxOreLevel value is out of range: %d."), iValue);
 					return ERR_FAIL;
 					}
 
 				m_Desc[i].dwLevelType = levelRelative;
-				m_Desc[i].dwLevelValue = (WORD)(DWORD)iValue;
+				m_Desc[i].dwLevelValue = (WORD)iValue;
+
+				//	If this table doesn't have a default, then it is the default table.
+				//	Initialize m_iMiningLevel so we don't have to bind.
+
+				if (bNoDefault)
+					m_iMiningLevel[i] = MINING_RELATIVE_OFFSET + iValue;
+
+				}
+
+			//	If we have a negative item level offset
+
+			else if (strStartsWith(DamageAdj[i], CONSTLIT("-")))
+				{
+
+				//	Positive values should not be reachable in this code
+
+				if (iValue < -1 * MAX_ITEM_LEVEL)
+					{
+					Ctx.sError = strPatternSubst(CONSTLIT("miningMaxOreLevel value is out of range: %d."), iValue);
+					return ERR_FAIL;
+					}
+
+				m_Desc[i].dwLevelType = levelRelative;
+				m_Desc[i].dwLevelValue = (WORD)iValue;
+
+				//	If this table doesn't have a default, then it is the default table.
+				//	Initialize m_iMiningLevel so we don't have to bind.
+
+				if (bNoDefault)
+					m_iMiningLevel[i] = MINING_RELATIVE_OFFSET + iValue;
+
+				}
+
+			//	If we have an absolute item level
+
+			else
+				{
+
+				//	Negative values should not be reachable in this code
+
+				if (iValue > MAX_ITEM_LEVEL)
+					{
+					Ctx.sError = strPatternSubst(CONSTLIT("miningMaxOreLevel value is out of range: %d."), iValue);
+					return ERR_FAIL;
+					}
+
+				m_Desc[i].dwLevelType = levelAbsolute;
+				m_Desc[i].dwLevelValue = (WORD)iValue;
+
+				//	If this table doesn't have a default, then it is the default table.
+				//	Initialize m_iMiningLevel so we don't have to bind.
+
+				if (bNoDefault)
+					m_iMiningLevel[i] = iValue;
 				}
 			}
 		}
+
+	//	Done
 
 	return NOERROR;
 	}
@@ -282,27 +258,16 @@ ALERROR CMiningDamageLevelDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElem
 	int i;
 	CString sValue;
 
-	if (XMLDesc.FindAttribute(HP_BONUS_ATTRIB, &sValue))
+	if (XMLDesc.FindAttribute(MINING_DAMAGE_LEVEL_ATTRIB, &sValue))
 		{
-		if (bIsDefault)
-			{
-			Ctx.sError = CONSTLIT("Default damageAdj tables must have absolute values.");
-			return ERR_FAIL;
-			}
-
-		if (error = InitFromHPBonus(Ctx, sValue))
-			return error;
-		}
-	else if (XMLDesc.FindAttribute(MINING_DAMAGE_LEVEL_ATTRIB, &sValue))
-		{
-		if (error = InitFromDamageAdj(Ctx, sValue, bIsDefault))
+		if (error = InitFromMiningDamageLevel(Ctx, sValue, bIsDefault))
 			return error;
 		}
 	else
 		{
 		if (bIsDefault)
 			{
-			Ctx.sError = CONSTLIT("Default damageAdj tables must have absolute values.");
+			Ctx.sError = CONSTLIT("Default miningMaxOreLevel tables must have absolute values.");
 			return ERR_FAIL;
 			}
 
@@ -342,7 +307,7 @@ DamageTypes CMiningDamageLevelDesc::ParseDamageTypeFromProperty (const CString &
 //
 //	EXAMPLE
 //
-//	damageAdj.laser
+//	miningMaxOreLevel.laser
 //
 //	If no damage type is encoded, we return damageGeneric. If there is a parsing
 //	error, we return damageError.

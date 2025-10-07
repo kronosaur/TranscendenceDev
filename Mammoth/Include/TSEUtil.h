@@ -661,8 +661,7 @@ class CMiningDamageLevelDesc
 		int GetMaxOreLevel (DamageTypes iDamageType) const { return (iDamageType == damageGeneric ? MAX_MINING_LEVEL : m_iMiningLevel[iDamageType]); }
 		void GetMaxOreLevelAndDefault (DamageTypes iDamageType, int *retiAdj, int *retiDefault) const;
 		ALERROR InitFromArray (int *pTable);
-		ALERROR InitFromDamageAdj (SDesignLoadCtx &Ctx, const CString &sAttrib, bool bNoDefault);
-		ALERROR InitFromHPBonus (SDesignLoadCtx &Ctx, const CString &sAttrib);
+		ALERROR InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, const CString &sAttrib, bool bNoDefault);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, bool bIsDefault = false);
 		bool IsEmpty (void) const;
 
