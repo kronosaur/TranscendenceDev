@@ -649,6 +649,47 @@ class CDamageAdjDesc
 		const CDamageAdjDesc *m_pDefault;		//	Default table
 	};
 
+class CMiningDamageLevelDesc
+	{
+	public:
+		static constexpr int MAX_MINING_LEVEL = 25;
+		
+		CMiningDamageLevelDesc (void) : m_pDefault(NULL)
+			{ }
+
+		ALERROR Bind (SDesignLoadCtx &Ctx, const CMiningDamageLevelDesc *pDefault);
+		int GetMaxOreLevel (DamageTypes iDamageType) const { return (iDamageType == damageGeneric ? MAX_MINING_LEVEL : m_iMiningLevel[iDamageType]); }
+		void GetMaxOreLevelAndDefault (DamageTypes iDamageType, int *retiAdj, int *retiDefault) const;
+		ALERROR InitFromArray (int *pTable);
+		ALERROR InitFromDamageAdj (SDesignLoadCtx &Ctx, const CString &sAttrib, bool bNoDefault);
+		ALERROR InitFromHPBonus (SDesignLoadCtx &Ctx, const CString &sAttrib);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, bool bIsDefault = false);
+		bool IsEmpty (void) const;
+
+		static DamageTypes ParseDamageTypeFromProperty (const CString &sProperty);
+
+	private:
+		enum ELevelTypes
+			{
+			levelDefault,						//	Use default table
+			levelAbsolute,						//	dwLevelValue is an absolute adjustment
+			levelRelative,						//	dwLevelValue is an int offset of item level
+			};
+
+		struct SMiningLevelDesc
+			{
+			DWORD dwLevelType:16;				//	Type of adjustment
+			DWORD dwLevelValue:16;				//	Adjustment value
+			};
+
+		void Compute (const CMiningDamageLevelDesc *pDefault);
+
+		SMiningLevelDesc m_Desc[damageCount];	//	Descriptor for computing adjustment
+		int m_iMiningLevel[damageCount];		//	Computed mining level for type
+
+		const CMiningDamageLevelDesc *m_pDefault;	//	Default table
+	};
+
 struct SVisibleDamage
 	{
 	int iShieldLevel = -1;				//	0-100: shield level; -1 = no shields
