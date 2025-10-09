@@ -7,6 +7,8 @@
 
 #define LEVEL_ATTRIB							CONSTLIT("level")
 
+//	Damage Adjustment
+
 static int g_StdArmorDamageAdj[MAX_ITEM_LEVEL][damageCount] =
 	{
 		//	lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
@@ -79,9 +81,88 @@ static bool g_bDamageAdjInit = false;
 static CDamageAdjDesc g_ArmorDamageAdj[MAX_ITEM_LEVEL];
 static CDamageAdjDesc g_ShieldDamageAdj[MAX_ITEM_LEVEL];
 
-CEngineOptions::CEngineOptions (void)
+//	Mining
+
+//	This table is used for API0-47 adventures
+
+static int g_StdMiningMaxOreLevelsAPI0[damageCount] =
+		//	lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+		{	 25, 25, 25, 25,  25, 25, 25, 25,  25, 25, 25, 25,  25, 25, 25, 25 };
+
+//	This table is used for API48-52 adventures
+
+static int g_StdMiningMaxOreLevelsAPI48[damageCount] =
+		//	lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+		{	  4,  4,  7,  7,  10, 10, 13, 13,  16, 16, 19, 19,  22, 22, 25, 25 };
+
+//	This table is used for API53-56 adventures
+
+static int g_StdMiningMaxOreLevelsAPI53[damageCount] =
+		//	lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+		{	  5,  5,  8,  8,  11, 11, 14, 14,  17, 17, 20, 20,  23, 23, 25, 25 };
+
+//	This table is used for API57+ adventures
+
+static int g_StdMiningMaxOreLevelsAPI57[damageCount] =
+	{
+		MAX_ITEM_LEVEL,	//	laser
+		MAX_ITEM_LEVEL,	//	kinetic
+		MAX_ITEM_LEVEL,	//	particle
+		MAX_ITEM_LEVEL,	//	blast
+
+		MAX_ITEM_LEVEL,	//	ion
+		MAX_ITEM_LEVEL,	//	thermo
+		MAX_ITEM_LEVEL,	//	positron
+		MAX_ITEM_LEVEL,	//	plasma
+
+		MAX_ITEM_LEVEL,	//	antimatter
+		MAX_ITEM_LEVEL,	//	nanite
+		MAX_ITEM_LEVEL,	//	graviton
+		MAX_ITEM_LEVEL,	//	singularity
+
+		MAX_ITEM_LEVEL,	//	dark acid
+		MAX_ITEM_LEVEL,	//	dark steel
+		MAX_ITEM_LEVEL,	//	dark lightning
+		MAX_ITEM_LEVEL,	//	dark fire
+	};
+
+static int g_iMiningMaxOreLevelInit = -1;	//	This is the API version it is initialized to. Values <0 are treated as invalid API Versions
+static CMiningDamageLevelDesc g_MiningMaxOreLevel;
+
+int GetAPIForMiningMaxOreLevel (int apiVersion)
+
+	//	Translates actual API versions into the known versions
+	//	used for the MiningMaxOreLevel system
+
+	{
+	if (apiVersion >= 57)
+		return 57;
+	else if (apiVersion >= 53)
+		return 53;
+	else if (apiVersion >= 48)
+		return 48;
+	else
+		return 0;
+	}
+
+CEngineOptions::CEngineOptions (int apiVersion)
 
 //	CEngineOptions constructor
+
+	{
+	//	Set api version we are loading defaults for
+
+	m_iDefaultForAPIVersion = apiVersion;
+
+	//	Initialize globals
+
+	InitDefaultGlobals();
+	}
+
+void CEngineOptions::InitDefaultGlobals (void)
+
+//	Initialize or re-initialize default globals based on whatever
+//	API version we need
 
 	{
 	//	Initialize armor and shield damage adjustment tables
@@ -92,6 +173,14 @@ CEngineOptions::CEngineOptions (void)
 		m_ArmorDamageAdj[i - 1] = g_ArmorDamageAdj[i - 1];
 		m_ShieldDamageAdj[i - 1] = g_ShieldDamageAdj[i - 1];
 		}
+	m_bCustomArmorDamageAdj = false;
+	m_bCustomShieldDamageAdj = false;
+
+	//	Initialize mining tables
+
+	InitDefaultMiningMaxOreLevels(m_iDefaultForAPIVersion);
+	m_MiningDamageMaxOreLevels = g_MiningMaxOreLevel;
+	m_bCustomMiningMaxOreLevels = false;
 	}
 
 bool CEngineOptions::HidesArmorImmunity (SpecialDamageTypes iSpecial) const
@@ -147,6 +236,52 @@ bool CEngineOptions::InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElemen
 	return true;
 	}
 
+bool CEngineOptions::InitMiningMaxOreLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
+
+//	InitDamageAdjFromXML
+//
+//	Initializes from XML.
+
+	{
+	if(m_MiningDamageMaxOreLevels.InitFromXML(Ctx, XMLDesc, true) != NOERROR)
+		return false;
+
+	//	Success!
+
+	return true;
+	}
+
+void CEngineOptions::InitDefaultMiningMaxOreLevels (int apiVersion)
+
+//	InitDefaultDamageAdj
+//
+//	Initialize default tables
+
+	{
+	int iMiningAPIVersion = GetAPIForMiningMaxOreLevel(apiVersion);
+
+	if (g_iMiningMaxOreLevelInit != iMiningAPIVersion)
+		{
+		switch (iMiningAPIVersion)
+			{
+			case 0:
+				g_MiningMaxOreLevel.InitFromArray(g_StdMiningMaxOreLevelsAPI0);
+				break;
+			case 48:
+				g_MiningMaxOreLevel.InitFromArray(g_StdMiningMaxOreLevelsAPI48);
+				break;
+			case 53:
+				g_MiningMaxOreLevel.InitFromArray(g_StdMiningMaxOreLevelsAPI53);
+				break;
+			case 57:
+			default:
+				g_MiningMaxOreLevel.InitFromArray(g_StdMiningMaxOreLevelsAPI57);
+			}
+
+		g_iMiningMaxOreLevelInit = iMiningAPIVersion;
+		}
+	}
+
 void CEngineOptions::InitDefaultDamageAdj (void)
 
 //	InitDefaultDamageAdj
@@ -176,6 +311,11 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 
 	{
 	CCodeChainCtx CCX(Ctx.GetUniverse());
+	m_iDefaultForAPIVersion = CCX.GetAPIVersion();
+
+	//	Reinitialize global defaults as necessary for the correct API version
+	InitDefaultGlobals();
+
 	ICCItemPtr pValue;
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_DEFAULT_INTERACTION);
@@ -199,6 +339,16 @@ void CEngineOptions::Merge (const CEngineOptions &Src)
 //	Merges with source.
 
 	{
+
+	if (Src.m_iDefaultForAPIVersion > m_iDefaultForAPIVersion)
+		{
+		m_iDefaultForAPIVersion = Src.m_iDefaultForAPIVersion;
+		InitDefaultGlobals();
+		}
+	
+	if (Src.m_bCustomMiningMaxOreLevels)
+		m_MiningDamageMaxOreLevels = Src.m_MiningDamageMaxOreLevels;
+
 	if (Src.m_bCustomArmorDamageAdj)
 		{
 		for (int i = 0; i < MAX_ITEM_LEVEL; i++)
@@ -221,4 +371,42 @@ void CEngineOptions::Merge (const CEngineOptions &Src)
 	m_bHideIonizeImmune = m_bHideIonizeImmune || Src.m_bHideIonizeImmune;
 	m_bHideRadiationImmune = m_bHideRadiationImmune || Src.m_bHideRadiationImmune;
 	m_bHideShatterImmune = m_bHideShatterImmune || Src.m_bHideShatterImmune;
+	}
+
+
+void CEngineOptions::Switch (const CEngineOptions &Src)
+
+//	Switch
+//
+//	Switches to source.
+
+	{
+	m_iDefaultForAPIVersion = Src.m_iDefaultForAPIVersion;
+	InitDefaultGlobals();
+
+	if (Src.m_bCustomMiningMaxOreLevels || m_bCustomMiningMaxOreLevels)
+		m_MiningDamageMaxOreLevels = Src.m_MiningDamageMaxOreLevels;
+
+	if (Src.m_bCustomArmorDamageAdj || m_bCustomArmorDamageAdj)
+		{
+		for (int i = 0; i < MAX_ITEM_LEVEL; i++)
+			m_ArmorDamageAdj[i] = Src.m_ArmorDamageAdj[i];
+		}
+
+	if (Src.m_bCustomShieldDamageAdj || m_bCustomShieldDamageAdj)
+		{
+		for (int i = 0; i < MAX_ITEM_LEVEL; i++)
+			m_ShieldDamageAdj[i] = Src.m_ShieldDamageAdj[i];
+		}
+
+	if (Src.m_iDefaultInteraction != -1 || m_iDefaultInteraction != -1)
+		m_iDefaultInteraction = Src.m_iDefaultInteraction;
+
+	if (Src.m_iDefaultShotHP != -1 || m_iDefaultShotHP != -1)
+		m_iDefaultShotHP = Src.m_iDefaultShotHP;
+
+	m_bHideDisintegrationImmune = Src.m_bHideDisintegrationImmune;
+	m_bHideIonizeImmune = Src.m_bHideIonizeImmune;
+	m_bHideRadiationImmune = Src.m_bHideRadiationImmune;
+	m_bHideShatterImmune = Src.m_bHideShatterImmune;
 	}

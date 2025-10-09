@@ -649,6 +649,52 @@ class CDamageAdjDesc
 		const CDamageAdjDesc *m_pDefault;		//	Default table
 	};
 
+class CMiningDamageLevelDesc
+	{
+	public:
+		static constexpr int MAX_MINING_LEVEL = 25;
+		
+		CMiningDamageLevelDesc (void) : m_pDefault(NULL)
+			{ }
+
+		ALERROR Bind (SDesignLoadCtx &Ctx, const CMiningDamageLevelDesc *pDefault);
+		int GetMaxOreLevel (DamageTypes iDamageType, int iMiningItemLevel) const { return iDamageType == damageGeneric ? MAX_MINING_LEVEL : (iMiningItemLevel ? GetRelativeMaxOreLevel(iDamageType, iMiningItemLevel) : GetRawMaxOreLevel(iDamageType)); }
+		void GetMaxOreLevelAndDefault (DamageTypes iDamageType, int iMiningItemLevel, int *retiAdj, int *retiDefault) const;
+		ALERROR InitFromArray (int *pTable);
+		ALERROR InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, const CString &sAttrib, bool bNoDefault);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, bool bIsDefault = false);
+		bool IsEmpty (void) const;
+
+		static DamageTypes ParseDamageTypeFromProperty (const CString &sProperty);
+
+	private:
+		enum ELevelTypes
+			{
+			levelDefault,						//	Use default table
+			levelAbsolute,						//	dwLevelValue is an absolute adjustment
+			levelRelative,						//	dwLevelValue is an int offset of item level
+			};
+
+		struct SMiningLevelDesc
+			{
+			DWORD dwLevelType:16;				//	Type of adjustment
+			DWORD dwLevelValue:16;				//	Adjustment value
+			};
+
+		void Compute (const CMiningDamageLevelDesc *pDefault);
+
+		//	Used for computing actual ore level for damage type and item
+		int GetRelativeMaxOreLevel(DamageTypes iDamageType, int iMiningItemLevel) const { return m_iMiningLevel[iDamageType] > MAX_ITEM_LEVEL ? min(1, iMiningItemLevel + m_iMiningLevel[iDamageType] - (2 * MAX_ITEM_LEVEL)) : m_iMiningLevel[iDamageType]; }
+
+		//	Used for copying over levels including relative level offset
+		int GetRawMaxOreLevel(DamageTypes iDamageType) const { return m_iMiningLevel[iDamageType]; }
+
+		SMiningLevelDesc m_Desc[damageCount];	//	Descriptor for computing adjustment
+		int m_iMiningLevel[damageCount];		//	Computed mining level for type
+
+		const CMiningDamageLevelDesc *m_pDefault;	//	Default table
+	};
+
 struct SVisibleDamage
 	{
 	int iShieldLevel = -1;				//	0-100: shield level; -1 = no shields

@@ -1062,6 +1062,7 @@
     <ClCompile Include="CItemEncounterDefinitions.cpp" />
     <ClCompile Include="CItemLevelCriteria.cpp" />
     <ClCompile Include="CItemTypeProbabilityTable.cpp" />
+    <ClCompile Include="CMiningDamageLevelDesc.cpp" />
     <ClCompile Include="COrbitExactOrder.cpp" />
     <ClCompile Include="CLabelPainter.cpp" />
     <ClCompile Include="CLanguage.cpp" />

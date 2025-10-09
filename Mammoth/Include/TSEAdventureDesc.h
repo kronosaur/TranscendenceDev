@@ -10,32 +10,52 @@
 class CEngineOptions
 	{
 	public:
-		CEngineOptions (void);
+		CEngineOptions (int apiVersion = API_VERSION);
 
 		const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ArmorDamageAdj[iLevel - 1]; }
 		int GetDefaultInteraction (void) const { return m_iDefaultInteraction; }
 		int GetDefaultShotHP (void) const { return m_iDefaultShotHP; }
+		const CMiningDamageLevelDesc *GetMiningMaxOreLevels (void) const { return &m_MiningDamageMaxOreLevels; }
 		const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ShieldDamageAdj[iLevel - 1]; }
 		bool HidesArmorImmunity (SpecialDamageTypes iSpecial) const;
 		bool InitArmorDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomArmorDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ArmorDamageAdj); }
 		bool InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType &Type);
+		bool InitMiningMaxOreLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
 		bool InitShieldDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomShieldDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ShieldDamageAdj); }
 		bool IsDamageShown () const { return m_bShowDamageDone; }
 		void Merge (const CEngineOptions &Src);
 		void SetShowDamageDone (bool bValue = true) { m_bShowDamageDone = bValue; }
+		void Switch (const CEngineOptions &Src);
 
 	private:
 		bool InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable);
 
+		void InitDefaultGlobals (void);
 		static void InitDefaultDamageAdj (void);
+		static void InitDefaultMiningMaxOreLevels (int apiVersion = API_VERSION);
+
+		int m_iDefaultForAPIVersion = -1;
+
+		//	Default damage adj curves
 
 		CDamageAdjDesc m_ArmorDamageAdj[MAX_ITEM_LEVEL];
 		CDamageAdjDesc m_ShieldDamageAdj[MAX_ITEM_LEVEL];
-		int m_iDefaultInteraction = -1;
-		int m_iDefaultShotHP = -1;
 
 		bool m_bCustomArmorDamageAdj = false;
 		bool m_bCustomShieldDamageAdj = false;
+
+		//	Default mining damage max ore curve
+
+		CMiningDamageLevelDesc m_MiningDamageMaxOreLevels;
+
+		bool m_bCustomMiningMaxOreLevels = false;
+
+		//	Default shot interaction
+
+		int m_iDefaultInteraction = -1;
+		int m_iDefaultShotHP = -1;
+
+		//	Default Item Stat Card UI
 
 		bool m_bHideDisintegrationImmune = false;
 		bool m_bHideIonizeImmune = false;
