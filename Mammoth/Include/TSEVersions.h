@@ -572,6 +572,15 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //			(bRoR x count)
 //				Returns x rotated right by count bits in 32-bit space.
 //				Bits shifted out of the low end wrap around to the high end.
+//		<AdventureDesc>
+//			<Constants>
+//				<MiningMaxOreLevels>
+//					miningMaxOreLevel: (damageAdj-style list of ints)
+//						The maximum level ore that this weapon shot can extract
+//						Specifying a "+" before a level means this is a positive
+//							offset relative to the level of the item
+//						Specifying a "-" before a level means this is a negative
+//							offset relative to the level of the item
 //		<ItemType>
 //			<Weapon>
 //				miningMaxOreLevel: (int: 0-25)
