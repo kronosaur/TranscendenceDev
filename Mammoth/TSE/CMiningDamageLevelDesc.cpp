@@ -47,7 +47,7 @@ void CMiningDamageLevelDesc::Compute (const CMiningDamageLevelDesc *pDefault)
 			{
 			case levelDefault:
 				if (pDefault)
-					m_iMiningLevel[i] = pDefault->GetMaxOreLevel((DamageTypes)i);
+					m_iMiningLevel[i] = pDefault->GetMaxOreLevel((DamageTypes)i, 0);
 				else
 					m_iMiningLevel[i] = MAX_ITEM_LEVEL;
 				break;
@@ -69,7 +69,7 @@ void CMiningDamageLevelDesc::Compute (const CMiningDamageLevelDesc *pDefault)
 		}
 	}
 
-void CMiningDamageLevelDesc::GetMaxOreLevelAndDefault (DamageTypes iDamageType, int *retiAdj, int *retiDefault) const
+void CMiningDamageLevelDesc::GetMaxOreLevelAndDefault (DamageTypes iDamageType, int iMiningItemLevel, int *retiAdj, int *retiDefault) const
 
 //	GetAdjAndDefault
 //
@@ -77,10 +77,10 @@ void CMiningDamageLevelDesc::GetMaxOreLevelAndDefault (DamageTypes iDamageType, 
 
 	{
 	if (retiAdj)
-		*retiAdj = GetMaxOreLevel(iDamageType);
+		*retiAdj = GetMaxOreLevel(iDamageType, iMiningItemLevel);
 
 	if (retiDefault)
-		*retiDefault = (m_pDefault ? m_pDefault->GetMaxOreLevel(iDamageType) : MAX_ITEM_LEVEL);
+		*retiDefault = (m_pDefault ? m_pDefault->GetMaxOreLevel(iDamageType, iMiningItemLevel) : MAX_ITEM_LEVEL);
 	}
 
 ALERROR CMiningDamageLevelDesc::InitFromArray (int *pTable)

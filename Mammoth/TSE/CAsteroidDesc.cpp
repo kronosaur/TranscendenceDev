@@ -165,18 +165,10 @@ void CAsteroidDesc::CalcMining (int iMiningLevel, int iMiningDifficulty, EAstero
 	if (iMaxOreLevel >= 0)
 		retMining.iMaxOreLevel = iMaxOreLevel;
 
-	//	If a device is from a mod or expansion that predates API 48
-	//	it assumes all damages can mine all levels of ore
-
-	else if (DamageCtx.GetDesc().GetWeaponType()->GetAPIVersion() < 48)
-		retMining.iMaxOreLevel = MAX_ITEM_LEVEL;
-
-	//	otherwise we assume that this device knows about ore levels
-	//	and is appropriately statted, using an override, or for an
-	//	adventure with its own custom mining levels
+	//	Otherwise we load this from the engine options
 
 	else
-		retMining.iMaxOreLevel = CalcMaxOreLevel(DamageCtx.Damage.GetDamageType());
+		retMining.iMaxOreLevel = g_pUniverse->GetEngineOptions().GetMiningMaxOreLevels()->GetMaxOreLevel(DamageCtx.Damage.GetDamageType(), DamageCtx.GetDesc().GetWeaponType()->GetLevel());
 	}
 
 EMiningMethod CAsteroidDesc::CalcMiningMethod (const CWeaponFireDesc &Desc)

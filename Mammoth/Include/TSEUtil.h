@@ -658,8 +658,8 @@ class CMiningDamageLevelDesc
 			{ }
 
 		ALERROR Bind (SDesignLoadCtx &Ctx, const CMiningDamageLevelDesc *pDefault);
-		int GetMaxOreLevel (DamageTypes iDamageType) const { return (iDamageType == damageGeneric ? MAX_MINING_LEVEL : m_iMiningLevel[iDamageType]); }
-		void GetMaxOreLevelAndDefault (DamageTypes iDamageType, int *retiAdj, int *retiDefault) const;
+		int GetMaxOreLevel (DamageTypes iDamageType, int iMiningItemLevel) const { return iDamageType == damageGeneric ? MAX_MINING_LEVEL : (iMiningItemLevel ? GetRelativeMaxOreLevel(iDamageType, iMiningItemLevel) : GetRawMaxOreLevel(iDamageType)); }
+		void GetMaxOreLevelAndDefault (DamageTypes iDamageType, int iMiningItemLevel, int *retiAdj, int *retiDefault) const;
 		ALERROR InitFromArray (int *pTable);
 		ALERROR InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, const CString &sAttrib, bool bNoDefault);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, bool bIsDefault = false);
@@ -682,6 +682,12 @@ class CMiningDamageLevelDesc
 			};
 
 		void Compute (const CMiningDamageLevelDesc *pDefault);
+
+		//	Used for computing actual ore level for damage type and item
+		int GetRelativeMaxOreLevel(DamageTypes iDamageType, int iMiningItemLevel) const { return m_iMiningLevel[iDamageType] > MAX_ITEM_LEVEL ? min(1, iMiningItemLevel + m_iMiningLevel[iDamageType] - (2 * MAX_ITEM_LEVEL)) : m_iMiningLevel[iDamageType]; }
+
+		//	Used for copying over levels including relative level offset
+		int GetRawMaxOreLevel(DamageTypes iDamageType) const { return m_iMiningLevel[iDamageType]; }
 
 		SMiningLevelDesc m_Desc[damageCount];	//	Descriptor for computing adjustment
 		int m_iMiningLevel[damageCount];		//	Computed mining level for type
