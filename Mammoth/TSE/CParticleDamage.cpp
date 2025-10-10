@@ -251,6 +251,7 @@ void CParticleDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rS
 		Ctx.pObj = this;
 		Ctx.vOldPos = vOldPos;
 		Ctx.rSeconds = rSeconds;
+		Ctx.iTick = m_iTick;
 
 		m_pEffectPainter->OnMove(Ctx);
 
@@ -282,6 +283,7 @@ void CParticleDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rS
 		SEffectMoveCtx Ctx;
 		Ctx.pObj = this;
 		Ctx.rSeconds = rSeconds;
+		Ctx.iTick = m_iTick;
 
 		m_pParticlePainter->OnMove(Ctx);
 		}
@@ -290,7 +292,12 @@ void CParticleDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rS
 
 	bool bAlive;
 	CVector vNewPos;
-	m_Particles.UpdateMotionLinear(rSeconds, &bAlive, &vNewPos);
+
+	SEffectMoveCtx MoveCtx;
+	MoveCtx.pObj = this;
+	MoveCtx.rSeconds = rSeconds;
+	MoveCtx.iTick = m_iTick;
+	m_Particles.UpdateMotionLinear(MoveCtx, &bAlive, &vNewPos);
 
 	//	If we're still alive, then set our position and bounds based on the
 	//	particles.

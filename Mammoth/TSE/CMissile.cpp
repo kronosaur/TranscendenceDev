@@ -807,6 +807,7 @@ void CMissile::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 		Ctx.pObj = this;
 		Ctx.vOldPos = vOldPos;
 		Ctx.rSeconds = rSeconds;
+		Ctx.iTick = m_iTick;
 
 		bool bBoundsChanged;
 		m_pPainter->OnMove(Ctx, &bBoundsChanged);
@@ -1377,7 +1378,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 				{
 				SExhaustParticle &Particle = m_pExhaust->GetAt(i);
 				Particle.vVel = m_pDesc->GetExhaust().rExhaustDrag * Particle.vVel;
-				Particle.vPos = Particle.vPos + Particle.vVel * g_SecondsPerUpdate;
+				Particle.vPos = Particle.vPos + Particle.vVel * rSecondsPerTick;
 				}
 			}
 

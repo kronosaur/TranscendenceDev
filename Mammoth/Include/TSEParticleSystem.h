@@ -6,6 +6,7 @@
 #pragma once
 
 struct SEffectUpdateCtx;
+struct SEffectMoveCtx;
 class CEffectParamDesc;
 
 enum ParticlePaintStyles
@@ -256,7 +257,8 @@ class CParticleArray
 			Metric rData;						//	Miscellaneous data for particle
 
 			bool fAlive;						//	TRUE if particle is alive
-			DWORD dwSpare:32;					//	Spare
+			int iExpiration;					//	Expire on this tick
+			DWORD dwSpare:31;					//	Spare
 			};
 
 		CParticleArray (void);
@@ -290,7 +292,7 @@ class CParticleArray
 		void ReadFromStream (SLoadCtx &Ctx);
 		void ResetLastEmit (int iLastDirection, const CVector &vLastEmitPos, const CVector &vLastEmitVel = NullVector);
 		void SetOrigin (const CVector &vOrigin) { m_vOrigin = vOrigin; }
-		void UpdateMotionLinear (Metric rSeconds, bool *retbAlive = NULL, CVector *retvAveragePos = NULL);
+		void UpdateMotionLinear (SEffectMoveCtx &Ctx, bool *retbAlive = NULL, CVector *retvAveragePos = NULL);
 		void UpdateRingCohesion (Metric rRadius, Metric rMinRadius, Metric rMaxRadius, int iCohesion, int iResistance);
 		void WriteToStream (IWriteStream *pStream) const;
 

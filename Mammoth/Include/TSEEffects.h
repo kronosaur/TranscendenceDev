@@ -21,6 +21,7 @@ struct SEffectMoveCtx
 	CSpaceObject *pObj = NULL;					//	The object that owns the effect
 	CVector vOldPos;							//	Old position of object
 	Metric rSeconds = -1;						//	Time since last move
+	int iTick = 0;								//	Effect tick
 
 	bool bUseOrigin = false;					//	If TRUE, vOrigin is valid.
 	CVector vOrigin;							//	Effect origin
