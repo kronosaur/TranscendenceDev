@@ -24,6 +24,8 @@
 #define DEBUG_SHOW_ATTRIBUTES_ATTRIB		CONSTLIT("debugShowAttributes")
 #define PRIMARY_MAP_ATTRIB					CONSTLIT("displayOn")
 #define GRADIENT_RANGE_ATTRIB				CONSTLIT("gradientRange")
+#define ICON_SCALE_ATTRIB					CONSTLIT("iconScale")
+#define ICON_SCALE_FACTOR_ATTRIB			CONSTLIT("iconScaleFactor")
 #define ID_ATTRIB							CONSTLIT("id")
 #define ID_PREFIX_ATTRIB					CONSTLIT("idPrefix")
 #define INITIAL_SCALE_ATTRIB				CONSTLIT("initialScale")
@@ -444,6 +446,8 @@ ALERROR CSystemMap::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_iInitialScale = pDesc->GetAttributeIntegerBounded(INITIAL_SCALE_ATTRIB, 10, 1000, 100);
 	m_iMaxScale = pDesc->GetAttributeIntegerBounded(MAX_SCALE_ATTRIB, 100, 1000, 200);
 	m_iMinScale = pDesc->GetAttributeIntegerBounded(MIN_SCALE_ATTRIB, 10, 100, 50);
+	m_rIconScale = pDesc->GetAttributeIntegerBounded(ICON_SCALE_ATTRIB, 10, 1000, 100) / 100.0;
+	m_rIconScaleFactor = pDesc->GetAttributeDoubleBounded(ICON_SCALE_FACTOR_ATTRIB, 0.0, 1.0, 1.0);
 
 	//  Other display information
 
