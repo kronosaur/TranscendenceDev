@@ -101,6 +101,12 @@ void CAIBehaviorCtx::CalcAvoidPotential (CShip *pShip, CSpaceObject *pTarget)
 
 					if (m_iBarrierClock != -1)
 						{
+
+						//	Prepare for point in object calculations
+
+						SPointInObjectCtx PiOCtx;
+						pObj->PointInObjectInit(PiOCtx);
+
 						int iRange;
 						int iAngle;
 						for (iRange = 1; iRange < 8; iRange++)
@@ -111,7 +117,7 @@ void CAIBehaviorCtx::CalcAvoidPotential (CShip *pShip, CSpaceObject *pTarget)
 							for (iAngle = 0; iAngle < 360; iAngle += 30)
 								{
 								CVector vTest = PolarToVector(iAngle, 1.0);
-								if (pObj->PointInObject(pObj->GetPos(), pShip->GetPos() + (rRange * vTest)))
+								if (pObj->PointInObject(PiOCtx, pObj->GetPos(), pShip->GetPos() + (rRange * vTest)))
 									{
 									m_vPotential = m_vPotential - (rStrength * vTest);
 									m_fHasAvoidPotential = true;
@@ -829,11 +835,16 @@ int CAIBehaviorCtx::CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInsta
 	//	or the ammo)
 
 	CItemType *pType;
+	CItemType *pAmmoType;
 	pWeapon->GetClass()->GetSelectedVariantInfo(pShip,
 			pWeapon,
 			NULL,
 			NULL,
+			&pAmmoType,
 			&pType);
+
+	if (pAmmoType)
+		pType = pAmmoType;
 
 	//	Base score is based on the level of the variant
 
