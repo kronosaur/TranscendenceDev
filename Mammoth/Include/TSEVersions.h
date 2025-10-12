@@ -8,6 +8,7 @@
 constexpr DWORD API_VERSION =							56;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
 constexpr DWORD SYSTEM_SAVE_VERSION =					213;
+constexpr DWORD SETTINGS_VERSION =						1;
 
 //	Uncomment out the following define when building a stable release
 
@@ -1311,4 +1312,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //
 //	213: 2.0 Alpha 2
 //		Change DiceRange to use -1 for not set
+//
+
+//	SETTINGS VERSION HISTORY ---------------------------------------------------
+//
+//	 0: Unknown version (2.0 Alpha 6 or older)
+//
+//	 1: 2.0 Alpha 7
+//		Added versioning for settings file
 //

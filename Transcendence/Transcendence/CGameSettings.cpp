@@ -13,6 +13,7 @@
 #define NAME_ATTRIB								CONSTLIT("name")
 #define PATH_ATTRIB								CONSTLIT("path")
 #define VALUE_ATTRIB							CONSTLIT("value")
+#define VERSION_ATTRIB							CONSTLIT("version")
 
 #define REGISTRY_COMPANY_NAME					CONSTLIT("Neurohack")
 #define REGISTRY_PRODUCT_NAME					CONSTLIT("Transcendence")
@@ -72,6 +73,7 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"noAutoUpdate",				optionBoolean,	"false",	0	},
 
 		//	Video options
+
 		{	"forceDirectX",				optionBoolean,	"false",	0	},
 		{	"forceNonDirectX",			optionBoolean,	"false",	0	},
 		{	"forceExclusive",			optionBoolean,	"false",	0	},
@@ -90,6 +92,7 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"use60fps",					optionBoolean,	"true",		0	},
 
 		//	Sounds options
+
 		{	"noSound",					optionBoolean,	"false",	0	},
 		{	"noMusic",					optionBoolean,	"false",	0	},
 		{	"soundVolume",				optionInteger,	"7",		0	},
@@ -97,6 +100,7 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"musicPath",				optionString,	"",			0	},
 		
 		//	Accessibility options
+
 		{	"colorIFFPlayer",			optionString,	"#FFFFFF",	0	},
 		{	"colorIFFFriendly",			optionString,	"#50FF50",	0	},	//	H:120 S:69  B:100
 		{	"colorIFFNeutral",			optionString,	"#4FA7FF",	0	},	//	H:210 S:69  B:100
@@ -106,6 +110,7 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"colorIFFProjectile",		optionString,	"#FFFF00",	0	},	//	H:60  S:100 B:100
 
 		//	Debug options
+
 		{	"debugMode",				optionBoolean,	"false",	0	},
 		{	"debugGame",				optionBoolean,	"false",	0	},
 		{	"debugSaveFiles",			optionBoolean,	"false",	0	},
@@ -209,6 +214,26 @@ ALERROR CGameSettings::Load (const CString &sFilespec, CString *retsError)
 			return error;
 			}
 		}
+
+	//	Get the version of the settings file
+	//	Default is settings version 0, which means that this settings file was
+	//	made prior to version 2.0 Alpha 7
+
+	int iSettingsVersion = pData->GetAttributeIntegerBounded(VERSION_ATTRIB, 0, -1, 0);
+
+	//	If the settings version is older than the current settings version, we will
+	//	need to mark it as modified to ensure that it gets saved in the new format
+
+	if (iSettingsVersion < SETTINGS_VERSION)
+		m_bModified = true;
+
+	//	If the settings version is newer than the current settings version, we need
+	//	to do something (TBD). For now lets just attempt to load and resave it but
+	//	this should be changed in the future.
+
+	if (iSettingsVersion > SETTINGS_VERSION)
+		m_bModified = true;
+		
 
 	//	Keep track of which settings we've seen
 
@@ -374,7 +399,7 @@ ALERROR CGameSettings::Save (const CString &sFilespec)
 
 	//	Write the XML header
 
-	CString sData = CONSTLIT("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\r\n\r\n<TranscendenceSettings>\r\n\r\n");
+	CString sData = strPatternSubst(CONSTLIT("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\r\n\r\n<TranscendenceSettings version=\"%s\">\r\n\r\n"), strFromInt(SETTINGS_VERSION));
 	if (error = DataFile.Write(sData.GetPointer(), sData.GetLength(), NULL))
 		return error;
 
