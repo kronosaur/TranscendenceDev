@@ -87,7 +87,7 @@ ALERROR CDistributeNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &No
 
 	if (NewNodeList.GetCount() < iDistCount)
 		{
-		*retsError = CONSTLIT("<DistributeNodes>: Not enough available nodes.");
+		*retsError = strCat(CONSTLIT("<DistributeNodes>: Not enough available nodes with criteria: "), m_Criteria.GetAttributeCriteria().AsString());
 		return ERR_FAIL;
 		}
 
