@@ -554,9 +554,32 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //				Now accepts a lambda, and will print out the docstring if one exists
 //			(help '[match-pattern] ['lambda])
 //				Adds option to print out any matching lambdas
+//			(bAnd x1 [x2 ... xn])
+//				Returns the bitwise AND of all arguments.
+//				All arguments are coerced to 32-bit integers.
+//			(bOr x1 [x2 ... xn])
+//				Returns the bitwise OR of all arguments.
+//				All arguments are coerced to 32-bit integers.
+//			(bXor x1 [x2 ... xn])
+//				Returns the bitwise XOR of all arguments.
+//				All arguments are coerced to 32-bit integers.
+//			(bNot x)
+//				Returns the bitwise NOT of x.
+//				Argument is coerced to a 32-bit integer; result is also 32-bit signed.
+//			(bShL x count)
+//				Returns x shifted left by count bits (logical).
+//				Low bits are filled with zeros; high bits are discarded.
+//			(bShR x count)
+//				Returns x shifted right by count bits (logical).
+//				High bits are filled with zeros; low bits are discarded.
+//			(bRoL x count)
+//				Returns x rotated left by count bits in 32-bit space.
+//				Bits shifted out of the high end wrap around to the low end.
+//			(bRoR x count)
+//				Returns x rotated right by count bits in 32-bit space.
+//				Bits shifted out of the low end wrap around to the high end.
 //
 //
-
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
 //

@@ -7397,29 +7397,27 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					if (pLauncher)
 						{
 						CItemType *pType;
-						pLauncher->GetSelectedVariantInfo(pShip, NULL, NULL, &pType);
-						if (pType)
+						CItemType *pAmmoType;
+						pLauncher->GetSelectedVariantInfo(pShip, NULL, NULL, &pAmmoType, &pType);
+						if (pAmmoType)
 							{
-							if (pType->IsMissile())
+							CItemListManipulator ItemList(pShip->GetItemList());
+							CItem theItem(pAmmoType, 1);
+							if (ItemList.SetCursorAtItem(theItem))
 								{
-								CItemListManipulator ItemList(pShip->GetItemList());
-								CItem theItem(pType, 1);
-								if (ItemList.SetCursorAtItem(theItem))
-									{
-									ICCItem *pItem = CreateListFromItem(theItem);
-									pList->Append(pItem);
-									pItem->Discard();
-									}
+								ICCItem *pItem = CreateListFromItem(theItem);
+								pList->Append(pItem);
+								pItem->Discard();
 								}
-							else
+							}
+						else if (pType)
+							{
+							CItem theItem = pShip->GetNamedDeviceItem(devMissileWeapon);
+							if (theItem.GetType())
 								{
-								CItem theItem = pShip->GetNamedDeviceItem(devMissileWeapon);
-								if (theItem.GetType())
-									{
-									ICCItem *pItem = CreateListFromItem(theItem);
-									pList->Append(CreateListFromItem(theItem));
-									pItem->Discard();
-									}
+								ICCItem *pItem = CreateListFromItem(theItem);
+								pList->Append(CreateListFromItem(theItem));
+								pItem->Discard();
 								}
 							}
 						}
