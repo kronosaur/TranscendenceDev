@@ -297,6 +297,8 @@ class CSystemMapDisplay
 		RECT m_rcScreen;
 
 		CMapScaleCounter m_Scale;           //  Track current map scale
+		Metric m_rIconScale;				//	Relative base scale of icons
+		Metric m_rIconScaleFactor;			//	Factor for scale impact on icons
 		CMapLegendPainter m_HelpPainter;
 	};
 

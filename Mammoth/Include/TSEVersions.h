@@ -587,6 +587,13 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //					The maximum level ore that this weapon shot can extract
 //					0 allows the damage to probe for ore but does not mine
 //					-1 uses the adventure default settings
+//		<SystemMap>
+//			iconScale: (int)
+//				the % size to draw icons on the map when the map is zoomed at 100% scale.
+//				Default: 100
+//			iconScaleFactor: (double)
+//				the relative amount to scale the icons as the map is zoomed in or out.
+//				1.0 = normal scale, 0.0 = no change in scale. Default: 1.0
 //
 //
 
