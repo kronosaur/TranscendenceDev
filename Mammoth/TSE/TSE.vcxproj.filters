@@ -1651,5 +1651,8 @@
     <ClCompile Include="CAchievementRecord.cpp">
       <Filter>Source Files\Achievements</Filter>
     </ClCompile>
+    <ClCompile Include="CMiningDamageLevelDesc.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
