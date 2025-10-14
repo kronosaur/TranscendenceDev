@@ -123,6 +123,7 @@ void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int 
 		}
 
 	pParticle->iGeneration = iGeneration;
+	pParticle->iExpiration = iGeneration + iLifeLeft;
 	pParticle->iLifeLeft = iLifeLeft;
 	pParticle->iDestiny = (iDestiny == -1 ? mathRandom(0, g_DestinyRange - 1) : iDestiny);
 	pParticle->iRotation = iRotation;
@@ -2111,13 +2112,14 @@ void CParticleArray::UpdateComet (const CParticleSystemDesc &Desc, SEffectUpdate
 		}
 	}
 
-void CParticleArray::UpdateMotionLinear (Metric rSeconds, bool *retbAlive, CVector *retvAveragePos)
+void CParticleArray::UpdateMotionLinear (SEffectMoveCtx &Ctx, bool *retbAlive, CVector *retvAveragePos)
 
 //	UpdateMotionLinear
 //
 //	Updates the position of all particles
 
 	{
+	Metric rSeconds = Ctx.rSeconds;
 	ASSERT(rSeconds >= 0);
 
 	//	If we've been asked for the average position, then we
@@ -2159,6 +2161,15 @@ void CParticleArray::UpdateMotionLinear (Metric rSeconds, bool *retbAlive, CVect
 			{
 			if (pParticle->fAlive)
 				{
+
+				//	Check particle life times again
+
+				if (pParticle->iExpiration == Ctx.iTick)
+					{
+					pParticle->fAlive = false;
+					continue;
+					}
+
 				iParticleCount++;
 
 				//	Update position
@@ -2231,6 +2242,12 @@ void CParticleArray::UpdateMotionLinear (Metric rSeconds, bool *retbAlive, CVect
 			{
 			if (pParticle->fAlive)
 				{
+				if (pParticle->iExpiration == Ctx.iTick)
+					{
+					pParticle->fAlive = false;
+					continue;
+					}
+
 				bAllParticlesDead = false;
 
 				//	Update position

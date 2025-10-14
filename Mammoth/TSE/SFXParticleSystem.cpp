@@ -460,7 +460,7 @@ void CParticleSystemEffectPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBounds
 
 	//	Update particle motion
 
-	m_Particles.UpdateMotionLinear(Ctx.rSeconds);
+	m_Particles.UpdateMotionLinear(Ctx);
 
 	//	If we're using the object's motion, adjust now
 
