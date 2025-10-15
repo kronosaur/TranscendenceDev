@@ -10,7 +10,8 @@
 class CEngineOptions
 	{
 	public:
-		CEngineOptions (int apiVersion = API_VERSION);
+
+		explicit CEngineOptions (int apiVersion = API_VERSION);
 
 		const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ArmorDamageAdj[iLevel - 1]; }
 		int GetDefaultInteraction (void) const { return m_iDefaultInteraction; }
@@ -23,16 +24,15 @@ class CEngineOptions
 		bool InitMiningMaxOreLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
 		bool InitShieldDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomShieldDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ShieldDamageAdj); }
 		bool IsDamageShown () const { return m_bShowDamageDone; }
-		void Merge (const CEngineOptions &Src);
 		void SetShowDamageDone (bool bValue = true) { m_bShowDamageDone = bValue; }
-		void Switch (const CEngineOptions &Src);
 
 	private:
+
 		bool InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable);
 
 		void InitDefaultGlobals (void);
 		static void InitDefaultDamageAdj (void);
-		static void InitDefaultMiningMaxOreLevels (int apiVersion = API_VERSION);
+		static CMiningDamageLevelDesc GetDefaultMiningMaxOreLevels (int apiVersion);
 
 		int m_iDefaultForAPIVersion = -1;
 

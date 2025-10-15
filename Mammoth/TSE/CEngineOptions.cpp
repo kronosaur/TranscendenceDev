@@ -85,25 +85,25 @@ static CDamageAdjDesc g_ShieldDamageAdj[MAX_ITEM_LEVEL];
 
 //	This table is used for API0-47 adventures
 
-static int g_StdMiningMaxOreLevelsAPI0[damageCount] =
+static const TArray<int> g_StdMiningMaxOreLevelsAPI0 =
 		//	lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
 		{	 25, 25, 25, 25,  25, 25, 25, 25,  25, 25, 25, 25,  25, 25, 25, 25 };
 
 //	This table is used for API48-52 adventures
 
-static int g_StdMiningMaxOreLevelsAPI48[damageCount] =
+static const TArray<int> g_StdMiningMaxOreLevelsAPI48 =
 		//	lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
 		{	  4,  4,  7,  7,  10, 10, 13, 13,  16, 16, 19, 19,  22, 22, 25, 25 };
 
 //	This table is used for API53-56 adventures
 
-static int g_StdMiningMaxOreLevelsAPI53[damageCount] =
+static const TArray<int> g_StdMiningMaxOreLevelsAPI53 =
 		//	lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
 		{	  5,  5,  8,  8,  11, 11, 14, 14,  17, 17, 20, 20,  23, 23, 25, 25 };
 
 //	This table is used for API57+ adventures
 
-static int g_StdMiningMaxOreLevelsAPI57[damageCount] =
+static const TArray<int> g_StdMiningMaxOreLevelsAPI57 =
 	{
 		MAX_ITEM_LEVEL,	//	laser
 		MAX_ITEM_LEVEL,	//	kinetic
@@ -125,9 +125,6 @@ static int g_StdMiningMaxOreLevelsAPI57[damageCount] =
 		MAX_ITEM_LEVEL,	//	dark lightning
 		MAX_ITEM_LEVEL,	//	dark fire
 	};
-
-static int g_iMiningMaxOreLevelInit = -1;	//	This is the API version it is initialized to. Values <0 are treated as invalid API Versions
-static CMiningDamageLevelDesc g_MiningMaxOreLevel;
 
 int GetAPIForMiningMaxOreLevel (int apiVersion)
 
@@ -178,8 +175,7 @@ void CEngineOptions::InitDefaultGlobals (void)
 
 	//	Initialize mining tables
 
-	InitDefaultMiningMaxOreLevels(m_iDefaultForAPIVersion);
-	m_MiningDamageMaxOreLevels = g_MiningMaxOreLevel;
+	m_MiningDamageMaxOreLevels = GetDefaultMiningMaxOreLevels(m_iDefaultForAPIVersion);
 	m_bCustomMiningMaxOreLevels = false;
 	}
 
@@ -243,7 +239,7 @@ bool CEngineOptions::InitMiningMaxOreLevelsFromXML (SDesignLoadCtx& Ctx, const C
 //	Initializes from XML.
 
 	{
-	if(m_MiningDamageMaxOreLevels.InitFromXML(Ctx, XMLDesc, true) != NOERROR)
+	if (m_MiningDamageMaxOreLevels.InitFromXML(Ctx, XMLDesc) != NOERROR)
 		return false;
 
 	//	Success!
@@ -251,35 +247,32 @@ bool CEngineOptions::InitMiningMaxOreLevelsFromXML (SDesignLoadCtx& Ctx, const C
 	return true;
 	}
 
-void CEngineOptions::InitDefaultMiningMaxOreLevels (int apiVersion)
+CMiningDamageLevelDesc CEngineOptions::GetDefaultMiningMaxOreLevels (int apiVersion)
 
-//	InitDefaultDamageAdj
+//	GetDefaultMiningMaxOreLevels
 //
-//	Initialize default tables
+//	Returns the default table basedon API version
 
 	{
-	int iMiningAPIVersion = GetAPIForMiningMaxOreLevel(apiVersion);
+	CMiningDamageLevelDesc Desc;
 
-	if (g_iMiningMaxOreLevelInit != iMiningAPIVersion)
+	switch (GetAPIForMiningMaxOreLevel(apiVersion))
 		{
-		switch (iMiningAPIVersion)
-			{
-			case 0:
-				g_MiningMaxOreLevel.InitFromArray(g_StdMiningMaxOreLevelsAPI0);
-				break;
-			case 48:
-				g_MiningMaxOreLevel.InitFromArray(g_StdMiningMaxOreLevelsAPI48);
-				break;
-			case 53:
-				g_MiningMaxOreLevel.InitFromArray(g_StdMiningMaxOreLevelsAPI53);
-				break;
-			case 57:
-			default:
-				g_MiningMaxOreLevel.InitFromArray(g_StdMiningMaxOreLevelsAPI57);
-			}
-
-		g_iMiningMaxOreLevelInit = iMiningAPIVersion;
+		case 0:
+			Desc.InitFromArray(g_StdMiningMaxOreLevelsAPI0);
+			break;
+		case 48:
+			Desc.InitFromArray(g_StdMiningMaxOreLevelsAPI48);
+			break;
+		case 53:
+			Desc.InitFromArray(g_StdMiningMaxOreLevelsAPI53);
+			break;
+		case 57:
+		default:
+			Desc.InitFromArray(g_StdMiningMaxOreLevelsAPI57);
 		}
+
+	return Desc;
 	}
 
 void CEngineOptions::InitDefaultDamageAdj (void)
@@ -332,81 +325,3 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 	return true;
 	}
 
-void CEngineOptions::Merge (const CEngineOptions &Src)
-
-//	Merge
-//
-//	Merges with source.
-
-	{
-
-	if (Src.m_iDefaultForAPIVersion > m_iDefaultForAPIVersion)
-		{
-		m_iDefaultForAPIVersion = Src.m_iDefaultForAPIVersion;
-		InitDefaultGlobals();
-		}
-	
-	if (Src.m_bCustomMiningMaxOreLevels)
-		m_MiningDamageMaxOreLevels = Src.m_MiningDamageMaxOreLevels;
-
-	if (Src.m_bCustomArmorDamageAdj)
-		{
-		for (int i = 0; i < MAX_ITEM_LEVEL; i++)
-			m_ArmorDamageAdj[i] = Src.m_ArmorDamageAdj[i];
-		}
-
-	if (Src.m_bCustomShieldDamageAdj)
-		{
-		for (int i = 0; i < MAX_ITEM_LEVEL; i++)
-			m_ShieldDamageAdj[i] = Src.m_ShieldDamageAdj[i];
-		}
-
-	if (Src.m_iDefaultInteraction != -1)
-		m_iDefaultInteraction = Src.m_iDefaultInteraction;
-
-	if (Src.m_iDefaultShotHP != -1)
-		m_iDefaultShotHP = Src.m_iDefaultShotHP;
-
-	m_bHideDisintegrationImmune = m_bHideDisintegrationImmune || Src.m_bHideDisintegrationImmune;
-	m_bHideIonizeImmune = m_bHideIonizeImmune || Src.m_bHideIonizeImmune;
-	m_bHideRadiationImmune = m_bHideRadiationImmune || Src.m_bHideRadiationImmune;
-	m_bHideShatterImmune = m_bHideShatterImmune || Src.m_bHideShatterImmune;
-	}
-
-
-void CEngineOptions::Switch (const CEngineOptions &Src)
-
-//	Switch
-//
-//	Switches to source.
-
-	{
-	m_iDefaultForAPIVersion = Src.m_iDefaultForAPIVersion;
-	InitDefaultGlobals();
-
-	if (Src.m_bCustomMiningMaxOreLevels || m_bCustomMiningMaxOreLevels)
-		m_MiningDamageMaxOreLevels = Src.m_MiningDamageMaxOreLevels;
-
-	if (Src.m_bCustomArmorDamageAdj || m_bCustomArmorDamageAdj)
-		{
-		for (int i = 0; i < MAX_ITEM_LEVEL; i++)
-			m_ArmorDamageAdj[i] = Src.m_ArmorDamageAdj[i];
-		}
-
-	if (Src.m_bCustomShieldDamageAdj || m_bCustomShieldDamageAdj)
-		{
-		for (int i = 0; i < MAX_ITEM_LEVEL; i++)
-			m_ShieldDamageAdj[i] = Src.m_ShieldDamageAdj[i];
-		}
-
-	if (Src.m_iDefaultInteraction != -1 || m_iDefaultInteraction != -1)
-		m_iDefaultInteraction = Src.m_iDefaultInteraction;
-
-	if (Src.m_iDefaultShotHP != -1 || m_iDefaultShotHP != -1)
-		m_iDefaultShotHP = Src.m_iDefaultShotHP;
-
-	m_bHideDisintegrationImmune = Src.m_bHideDisintegrationImmune;
-	m_bHideIonizeImmune = Src.m_bHideIonizeImmune;
-	m_bHideRadiationImmune = Src.m_bHideRadiationImmune;
-	m_bHideShatterImmune = Src.m_bHideShatterImmune;
-	}

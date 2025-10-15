@@ -6,84 +6,30 @@
 #include "PreComp.h"
 
 #define MINING_DAMAGE_LEVEL_ATTRIB					CONSTLIT("miningMaxOreLevel")
-#define MINING_RELATIVE_OFFSET						2 * MAX_ITEM_LEVEL
 
-static int DAMAGE_LEVEL_API48[damageCount] =
-	//	las   kin   par   bls   ion   the   pos   plm   ant   nan   grv   sin   dac   dst   dlg   dfr
-
-	{     5,    5,    8,    8,   11,   11,   14,   14,   17,   17,   20,   20,   23,   23,   25,   25 };
-
-//	This compatibility table is loaded for pre-API48 adventures
-static int DAMAGE_LEVEL_COMPATIBILITY[damageCount] =
-	//	las   kin   par   bls   ion   the   pos   plm   ant   nan   grv   sin   dac   dst   dlg   dfr
-
-	{    25,   25,   25,   25,   25,   25,   25,   25,   25,   25,   25,   25,   25,   25,   25,   25 };
-
-ALERROR CMiningDamageLevelDesc::Bind (SDesignLoadCtx &Ctx, const CMiningDamageLevelDesc *pDefault)
-
-//	Bind
-//
-//	Bind the design
-
+int CMiningDamageLevelDesc::GetMaxOreLevel (DamageTypes iDamageType, int iMiningItemLevel) const
 	{
-	Compute(pDefault);
-	return NOERROR;
-	}
+	ASSERT(iMiningItemLevel >= 0 && iMiningItemLevel <= MAX_ITEM_LEVEL);
 
-void CMiningDamageLevelDesc::Compute (const CMiningDamageLevelDesc *pDefault)
-
-//	Compute
-//
-//	Compute the m_iMiningLevel table based on the descriptors
-
-	{
-	int i;
-
-	m_pDefault = pDefault;
-
-	for (i = 0; i < damageCount; i++)
+	if (iDamageType == damageGeneric)
+		return MAX_MINING_LEVEL;
+	else
 		{
-		switch (m_Desc[i].dwLevelType)
+		switch (m_Desc[iDamageType].iAdjType)
 			{
-			case levelDefault:
-				if (pDefault)
-					m_iMiningLevel[i] = pDefault->GetMaxOreLevel((DamageTypes)i, 0);
-				else
-					m_iMiningLevel[i] = MAX_ITEM_LEVEL;
-				break;
+			case levelRelative:
+				return Min(Max(1, iMiningItemLevel + m_Desc[iDamageType].iLevelValue), MAX_ITEM_LEVEL);
 
 			case levelAbsolute:
-				m_iMiningLevel[i] = (int)(DWORD)m_Desc[i].dwLevelValue;
-				break;
-
-			case levelRelative:
-				if (pDefault)
-					m_iMiningLevel[i] = MINING_RELATIVE_OFFSET + (int)(DWORD)m_Desc[i].dwLevelValue;
-				else
-					m_iMiningLevel[i] = MAX_ITEM_LEVEL;
-				break;
+				return m_Desc[iDamageType].iLevelValue;
 
 			default:
-				ASSERT(false);
+				throw CException(ERR_FAIL);
 			}
 		}
 	}
 
-void CMiningDamageLevelDesc::GetMaxOreLevelAndDefault (DamageTypes iDamageType, int iMiningItemLevel, int *retiAdj, int *retiDefault) const
-
-//	GetAdjAndDefault
-//
-//	Returns the adjustment and the default
-
-	{
-	if (retiAdj)
-		*retiAdj = GetMaxOreLevel(iDamageType, iMiningItemLevel);
-
-	if (retiDefault)
-		*retiDefault = (m_pDefault ? m_pDefault->GetMaxOreLevel(iDamageType, iMiningItemLevel) : MAX_ITEM_LEVEL);
-	}
-
-ALERROR CMiningDamageLevelDesc::InitFromArray (int *pTable)
+ALERROR CMiningDamageLevelDesc::InitFromArray (const TArray<int>& Levels)
 
 //	InitFromArray
 //
@@ -93,20 +39,24 @@ ALERROR CMiningDamageLevelDesc::InitFromArray (int *pTable)
 //	In this path there is no need for Bind.
 
 	{
-	int i;
-
-	for (i = 0; i < damageCount; i++)
+	for (int i = 0; i < damageCount; i++)
 		{
-		m_Desc[i].dwLevelType = levelAbsolute;
-		m_Desc[i].dwLevelValue = (DWORD)pTable[i];
-
-		m_iMiningLevel[i] = pTable[i];
+		if (i < Levels.GetCount())
+			{
+			m_Desc[i].iAdjType = levelAbsolute;
+			m_Desc[i].iLevelValue = Levels[i];
+			}
+		else
+			{
+			m_Desc[i].iAdjType = levelRelative;
+			m_Desc[i].iLevelValue = 0;
+			}
 		}
 
 	return NOERROR;
 	}
 
-ALERROR CMiningDamageLevelDesc::InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, const CString &sAttrib, bool bNoDefault)
+ALERROR CMiningDamageLevelDesc::InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, const CString &sAttrib)
 
 //	InitFromMiningDamageLevel
 //
@@ -127,16 +77,15 @@ ALERROR CMiningDamageLevelDesc::InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, 
 
 	{
 	ALERROR error;
-	int i;
 
 	//	Short-circuit
 
 	if (sAttrib.IsBlank())
 		{
-		for (i = 0; i < damageCount; i++)
+		for (int i = 0; i < damageCount; i++)
 			{
-			m_Desc[i].dwLevelType = (bNoDefault ? levelAbsolute : levelDefault);
-			m_Desc[i].dwLevelValue = (bNoDefault ? 100 : 0);
+			m_Desc[i].iAdjType = levelRelative;
+			m_Desc[i].iLevelValue = 0;
 			}
 		return NOERROR;
 		}
@@ -153,15 +102,15 @@ ALERROR CMiningDamageLevelDesc::InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, 
 
 	//	Get level
 
-	for (i = 0; i < damageCount; i++)
+	for (int i = 0; i < damageCount; i++)
 		{
 
 		//	If we have nothing
 
 		if (DamageAdj[i].IsBlank())
 			{
-			m_Desc[i].dwLevelType = (bNoDefault ? levelAbsolute : levelDefault);
-			m_Desc[i].dwLevelValue = (bNoDefault ? MAX_ITEM_LEVEL : 0);
+			m_Desc[i].iAdjType = levelRelative;
+			m_Desc[i].iLevelValue = 0;
 			}
 		else
 			{
@@ -180,15 +129,8 @@ ALERROR CMiningDamageLevelDesc::InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, 
 					return ERR_FAIL;
 					}
 
-				m_Desc[i].dwLevelType = levelRelative;
-				m_Desc[i].dwLevelValue = (WORD)iValue;
-
-				//	If this table doesn't have a default, then it is the default table.
-				//	Initialize m_iMiningLevel so we don't have to bind.
-
-				if (bNoDefault)
-					m_iMiningLevel[i] = MINING_RELATIVE_OFFSET + iValue;
-
+				m_Desc[i].iAdjType = levelRelative;
+				m_Desc[i].iLevelValue = iValue;
 				}
 
 			//	If we have a negative item level offset
@@ -204,15 +146,8 @@ ALERROR CMiningDamageLevelDesc::InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, 
 					return ERR_FAIL;
 					}
 
-				m_Desc[i].dwLevelType = levelRelative;
-				m_Desc[i].dwLevelValue = (WORD)iValue;
-
-				//	If this table doesn't have a default, then it is the default table.
-				//	Initialize m_iMiningLevel so we don't have to bind.
-
-				if (bNoDefault)
-					m_iMiningLevel[i] = MINING_RELATIVE_OFFSET + iValue;
-
+				m_Desc[i].iAdjType = levelRelative;
+				m_Desc[i].iLevelValue = iValue;
 				}
 
 			//	If we have an absolute item level
@@ -228,14 +163,8 @@ ALERROR CMiningDamageLevelDesc::InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, 
 					return ERR_FAIL;
 					}
 
-				m_Desc[i].dwLevelType = levelAbsolute;
-				m_Desc[i].dwLevelValue = (WORD)iValue;
-
-				//	If this table doesn't have a default, then it is the default table.
-				//	Initialize m_iMiningLevel so we don't have to bind.
-
-				if (bNoDefault)
-					m_iMiningLevel[i] = iValue;
+				m_Desc[i].iAdjType = levelAbsolute;
+				m_Desc[i].iLevelValue = iValue;
 				}
 			}
 		}
@@ -245,7 +174,7 @@ ALERROR CMiningDamageLevelDesc::InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, 
 	return NOERROR;
 	}
 
-ALERROR CMiningDamageLevelDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, bool bIsDefault)
+ALERROR CMiningDamageLevelDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc)
 
 //	InitFromXML
 //
@@ -255,48 +184,22 @@ ALERROR CMiningDamageLevelDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElem
 
 	{
 	ALERROR error;
-	int i;
 	CString sValue;
 
 	if (XMLDesc.FindAttribute(MINING_DAMAGE_LEVEL_ATTRIB, &sValue))
 		{
-		if (error = InitFromMiningDamageLevel(Ctx, sValue, bIsDefault))
+		if (error = InitFromMiningDamageLevel(Ctx, sValue))
 			return error;
 		}
 	else
 		{
-		if (bIsDefault)
-			{
-			Ctx.sError = CONSTLIT("Default miningMaxOreLevel tables must have absolute values.");
-			return ERR_FAIL;
-			}
-
-		for (i = 0; i < damageCount; i++)
-			{
-			m_Desc[i].dwLevelType = levelDefault;
-			m_Desc[i].dwLevelValue = 0;
-			}
+		Ctx.sError = CONSTLIT("Missing miningMaxOreLevel attribute.");
+		return ERR_FAIL;
 		}
 
 	//	Done
 
 	return NOERROR;
-	}
-
-bool CMiningDamageLevelDesc::IsEmpty (void) const
-
-//	IsEmpty
-//
-//	Returns TRUE if all values are default.
-
-	{
-	int i;
-
-	for (i = 0; i < damageCount; i++)
-		if (m_Desc[i].dwLevelType != levelDefault)
-			return false;
-
-	return true;
 	}
 
 DamageTypes CMiningDamageLevelDesc::ParseDamageTypeFromProperty (const CString &sProperty)
