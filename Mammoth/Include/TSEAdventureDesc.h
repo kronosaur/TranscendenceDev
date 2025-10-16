@@ -31,6 +31,7 @@ class CEngineOptions
 		bool InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable);
 
 		void InitDefaultGlobals (void);
+		void InitDefaultDescs (void);
 		static void InitDefaultDamageAdj (void);
 		static CMiningDamageLevelDesc GetDefaultMiningMaxOreLevels (int apiVersion);
 
