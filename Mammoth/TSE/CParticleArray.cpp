@@ -13,6 +13,8 @@ const CG32bitPixel FLAME_OUTER_COLOR =			CG32bitPixel(255,59,27);
 
 const int DEFAULT_LINE_LENGTH =					30;
 
+const int MSEC_PER_UPDATE = int(1000 * g_SecondsPerUpdate);
+
 #define PAINT_GASEOUS_PARTICLE(Dest,x,y,iWidth,rgbColor,iFade,iFade2)	\
 	{	\
 	switch (iWidth)	\
@@ -77,7 +79,7 @@ CParticleArray::~CParticleArray (void)
 		delete [] m_pArray;
 	}
 
-void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft, int iRotation, int iDestiny, int iGeneration, Metric rData)
+void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeftTicks, int iRotation, int iDestiny, int iGeneration, Metric rData)
 
 //	AddParticle
 //
@@ -122,8 +124,13 @@ void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int 
 		PosToXY(vVel, &pParticle->xVel, &pParticle->yVel);
 		}
 
+	//	Convert life left to milliseconds
+	int iLifeLeft;
+	iLifeLeft = iLifeLeftTicks;
+	if (iLifeLeft > 0)
+		iLifeLeft *= MSEC_PER_UPDATE;
+
 	pParticle->iGeneration = iGeneration;
-	pParticle->iExpiration = iGeneration + iLifeLeft;
 	pParticle->iLifeLeft = iLifeLeft;
 	pParticle->iDestiny = (iDestiny == -1 ? mathRandom(0, g_DestinyRange - 1) : iDestiny);
 	pParticle->iRotation = iRotation;
@@ -1167,7 +1174,7 @@ void CParticleArray::PaintFireAndSmoke (CG32bitImage &Dest,
 		{
 		if (pParticle->fAlive)
 			{
-			int iLifeLeft = (pParticle->iLifeLeft == -1 ? iLifetime : Min(pParticle->iLifeLeft, iLifetime));
+			int iLifeLeft = (pParticle->iLifeLeft == -1 ? iLifetime : Min(pParticle->iLifeLeft / MSEC_PER_UPDATE, iLifetime));
 			int iAge = iLifetime - iLifeLeft;
 
 			//	Compute properties of the particle based on its life
@@ -1263,7 +1270,7 @@ void CParticleArray::PaintGaseous (CG32bitImage &Dest,
 		{
 		if (pParticle->fAlive)
 			{
-			int iLifeLeft = (pParticle->iLifeLeft == -1 ? iMaxLifetime : Min(pParticle->iLifeLeft, iMaxLifetime));
+			int iLifeLeft = (pParticle->iLifeLeft == -1 ? iMaxLifetime : Min(pParticle->iLifeLeft / MSEC_PER_UPDATE, iMaxLifetime));
 			int iAge = iMaxLifetime - iLifeLeft;
 
 			//	Compute properties of the particle based on its life
@@ -1674,28 +1681,6 @@ void CParticleArray::Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &
 		UpdateCollisions(Desc, Ctx);
 
 
-	//	Loop to update particle lifetimes (moved here from UpdateMotionLinear)
-
-	SParticle* pParticle = m_pArray;
-	SParticle* pEnd = pParticle + m_iCount;
-
-	while (pParticle < pEnd)
-		{
-		if (pParticle->fAlive)
-			{
-			//	Update lifetime. If -1, then we're immortal
-			if (pParticle->iLifeLeft > 0) pParticle->iLifeLeft--;
-
-			//	If we hit 0, then we're dead
-			if (pParticle->iLifeLeft == 0) pParticle->fAlive = false;
-			}
-
-		//	Next
-
-		pParticle++;
-		}
-
-
 	//	If we're tracking, change velocity to follow target
 
 	if (IsTrackingTime(Ctx))
@@ -1967,7 +1952,7 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 								pParticle->Vel = vNewVel;
 
 								if (pParticle->iLifeLeft != -1)
-									pParticle->iLifeLeft = Max(1, pParticle->iLifeLeft - mathRandom(2, 5));
+									pParticle->iLifeLeft = Max(1, pParticle->iLifeLeft - MSEC_PER_UPDATE * mathRandom(2, 5));
 								}
 							else
 								pParticle->fAlive = false;
@@ -2159,17 +2144,17 @@ void CParticleArray::UpdateMotionLinear (SEffectMoveCtx &Ctx, bool *retbAlive, C
 
 		while (pParticle < pEnd)
 			{
+
+			//	Update lifetime. If -1, then we're immortal
+
+			if (pParticle->fAlive && pParticle->iLifeLeft != -1)
+				{
+				pParticle->iLifeLeft -= int(1000 * rSeconds);
+				pParticle->fAlive = pParticle->iLifeLeft >= MSEC_PER_UPDATE;
+				}
+
 			if (pParticle->fAlive)
 				{
-
-				//	Check particle life times again
-
-				if (pParticle->iExpiration == Ctx.iTick)
-					{
-					pParticle->fAlive = false;
-					continue;
-					}
-
 				iParticleCount++;
 
 				//	Update position
@@ -2240,14 +2225,16 @@ void CParticleArray::UpdateMotionLinear (SEffectMoveCtx &Ctx, bool *retbAlive, C
 
 		while (pParticle < pEnd)
 			{
+			//	Update lifetime. If -1, then we're immortal
+
+			if (pParticle->fAlive && pParticle->iLifeLeft != -1)
+				{
+				pParticle->iLifeLeft -= int(1000 * rSeconds);
+				pParticle->fAlive = pParticle->iLifeLeft >= MSEC_PER_UPDATE;
+				}
+
 			if (pParticle->fAlive)
 				{
-				if (pParticle->iExpiration == Ctx.iTick)
-					{
-					pParticle->fAlive = false;
-					continue;
-					}
-
 				bAllParticlesDead = false;
 
 				//	Update position
