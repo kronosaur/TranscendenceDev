@@ -581,6 +581,10 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //							offset relative to the level of the item
 //						Specifying a "-" before a level means this is a negative
 //							offset relative to the level of the item
+//		<Image> (Type)
+//			pngBitmaskAlphaSource: (str: "alpha"|"red"|"green"|"blue")
+//				Specify a specific channel to use from a png as a bitmask alpha source
+//				Default: "alpha"
 //		<ItemType>
 //			<Weapon>
 //				miningMaxOreLevel: (int: 0-25)
