@@ -257,8 +257,7 @@ class CParticleArray
 			Metric rData;						//	Miscellaneous data for particle
 
 			bool fAlive;						//	TRUE if particle is alive
-			int iExpiration;					//	Expire on this tick
-			DWORD dwSpare:31;					//	Spare
+			DWORD dwSpare:32;					//	Spare
 			};
 
 		CParticleArray (void);
@@ -268,7 +267,7 @@ class CParticleArray
 		void Paint (const CParticleSystemDesc &Desc, CG32bitImage &Dest, int xPos, int yPos, IEffectPainter *pPainter, SViewportPaintCtx &Ctx);
 		void Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx);
 
-		void AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft = -1, int iRotation = -1, int iDestiny = -1, int iGeneration = 0, Metric rData = 0.0);
+		void AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeftTicks = -1, int iRotation = -1, int iDestiny = -1, int iGeneration = 0, Metric rData = 0.0);
 		SParticle *GetArray (int *retiCount = NULL) const { if (retiCount) *retiCount = m_iCount; return m_pArray; }
 		const RECT &GetBounds (void) const { return m_rcBounds; }
 		void GetBounds (CVector *retvUR, CVector *retvLL);
