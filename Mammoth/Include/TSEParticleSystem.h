@@ -9,6 +9,8 @@ struct SEffectUpdateCtx;
 struct SEffectMoveCtx;
 class CEffectParamDesc;
 
+#define MSEC_PER_UPDATE ((int)(1000 * g_SecondsPerUpdate))
+
 enum ParticlePaintStyles
 	{
 	paintUnknown =						0,
@@ -237,6 +239,9 @@ class CParticleSystemDesc
 class CParticleArray
 	{
 	public:
+		//	NOTE: This structure is saved. Any size changes need to be
+		//	versioned.
+
 		struct SParticle
 			{
 			CVector Pos;						//	Position. Valid if we use real coordinates
@@ -251,7 +256,7 @@ class CParticleArray
 												//		(not valid if using real coordinates)
 
 			int iGeneration;					//	Created on this tick
-			int iLifeLeft;						//	Ticks of life left
+			int iLifeLeftMS;					//	Life left in milliseconds (game time)
 			int iDestiny;						//	Random number from 1-360
 			int iRotation;						//	Particle rotation
 			Metric rData;						//	Miscellaneous data for particle
@@ -296,6 +301,7 @@ class CParticleArray
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
+
 		struct SParticle64
 			{
 			CVector Pos;						//	Position. Valid if we use real coordinates
@@ -364,6 +370,8 @@ class CParticleArray
 			DWORD dwSpare : 31;					//	Spare
 			};
 
+		static int CalcLifeLeftTicks (const SParticle& Particle, int iLifetimeTicks);
+		static int ConvertToLifeLeftMS (int iLifeLeftTicks) { return (iLifeLeftTicks < 0 ? -1 : iLifeLeftTicks * MSEC_PER_UPDATE); }
 		void CleanUp (void);
 		void CreateInterpolatedParticles (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void CreateLinearParticles (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
