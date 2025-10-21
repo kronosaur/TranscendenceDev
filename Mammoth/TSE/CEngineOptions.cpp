@@ -158,8 +158,7 @@ CEngineOptions::CEngineOptions (int apiVersion)
 
 void CEngineOptions::InitDefaultGlobals (void)
 
-//	Initialize or re-initialize default globals based on whatever
-//	API version we need
+//	Initialize default globals based on whatever API version we need
 
 	{
 	//	Initialize armor and shield damage adjustment tables
@@ -177,6 +176,28 @@ void CEngineOptions::InitDefaultGlobals (void)
 
 	m_MiningDamageMaxOreLevels = GetDefaultMiningMaxOreLevels(m_iDefaultForAPIVersion);
 	m_bCustomMiningMaxOreLevels = false;
+	}
+
+void CEngineOptions::InitDefaultDescs (void)
+
+//	Initiate defaults where necessary based on whatever API version we need
+//	Assumes that InitDefaultGlobals was called during our constructor
+
+	{
+	//	Initialize armor and shield damage adjustment tables
+
+	for (int i = 1; i <= MAX_ITEM_LEVEL; i++)
+		{
+		if (!m_bCustomArmorDamageAdj)
+			m_ArmorDamageAdj[i - 1] = g_ArmorDamageAdj[i - 1];
+		if (!m_bCustomShieldDamageAdj)
+			m_ShieldDamageAdj[i - 1] = g_ShieldDamageAdj[i - 1];
+		}
+
+	//	Initialize mining tables
+
+	if (!m_bCustomMiningMaxOreLevels)
+		m_MiningDamageMaxOreLevels = GetDefaultMiningMaxOreLevels(m_iDefaultForAPIVersion);
 	}
 
 bool CEngineOptions::HidesArmorImmunity (SpecialDamageTypes iSpecial) const
@@ -239,6 +260,8 @@ bool CEngineOptions::InitMiningMaxOreLevelsFromXML (SDesignLoadCtx& Ctx, const C
 //	Initializes from XML.
 
 	{
+	m_bCustomMiningMaxOreLevels = true;
+
 	if (m_MiningDamageMaxOreLevels.InitFromXML(Ctx, XMLDesc) != NOERROR)
 		return false;
 
@@ -307,7 +330,7 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 	m_iDefaultForAPIVersion = CCX.GetAPIVersion();
 
 	//	Reinitialize global defaults as necessary for the correct API version
-	InitDefaultGlobals();
+	InitDefaultDescs();
 
 	ICCItemPtr pValue;
 
