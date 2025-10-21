@@ -5,7 +5,7 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							56;
+constexpr DWORD API_VERSION =							57;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
 constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 
@@ -546,7 +546,56 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //						the in-system location criteria to use for placing the gate
 //						Overrides the <Stargate> locationCriteria string.
 //
-
+//	 57: 2.0 Alpha 7
+//		tlisp:
+//			(bAnd x1 [x2 ... xn])
+//				Returns the bitwise AND of all arguments.
+//				All arguments are coerced to 32-bit integers.
+//			(bOr x1 [x2 ... xn])
+//				Returns the bitwise OR of all arguments.
+//				All arguments are coerced to 32-bit integers.
+//			(bXor x1 [x2 ... xn])
+//				Returns the bitwise XOR of all arguments.
+//				All arguments are coerced to 32-bit integers.
+//			(bNot x)
+//				Returns the bitwise NOT of x.
+//				Argument is coerced to a 32-bit integer; result is also 32-bit signed.
+//			(bShL x count)
+//				Returns x shifted left by count bits (logical).
+//				Low bits are filled with zeros; high bits are discarded.
+//			(bShR x count)
+//				Returns x shifted right by count bits (logical).
+//				High bits are filled with zeros; low bits are discarded.
+//			(bRoL x count)
+//				Returns x rotated left by count bits in 32-bit space.
+//				Bits shifted out of the high end wrap around to the low end.
+//			(bRoR x count)
+//				Returns x rotated right by count bits in 32-bit space.
+//				Bits shifted out of the low end wrap around to the high end.
+//		<AdventureDesc>
+//			<Constants>
+//				<MiningMaxOreLevels>
+//					miningMaxOreLevel: (damageAdj-style list of ints)
+//						The maximum level ore that this weapon shot can extract
+//						Specifying a "+" before a level means this is a positive
+//							offset relative to the level of the item
+//						Specifying a "-" before a level means this is a negative
+//							offset relative to the level of the item
+//		<ItemType>
+//			<Weapon>
+//				miningMaxOreLevel: (int: 0-25)
+//					The maximum level ore that this weapon shot can extract
+//					0 allows the damage to probe for ore but does not mine
+//					-1 uses the adventure default settings
+//		<SystemMap>
+//			iconScale: (int)
+//				the % size to draw icons on the map when the map is zoomed at 100% scale.
+//				Default: 100
+//			iconScaleFactor: (double)
+//				the relative amount to scale the icons as the map is zoomed in or out.
+//				1.0 = normal scale, 0.0 = no change in scale. Default: 1.0
+//
+//
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
 //
