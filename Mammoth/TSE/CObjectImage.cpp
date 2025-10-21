@@ -13,6 +13,12 @@
 #define NO_PM_ATTRIB						CONSTLIT("noPM")
 #define SHADOW_MASK_ATTRIB					CONSTLIT("shadowMask")
 #define SPRITE_ATTRIB						CONSTLIT("sprite")
+#define PNG_MASK_ALPHA_SOURCE				CONSTLIT("pngBitmaskAlphaSource")
+
+#define CHANNEL_NAME_ALPHA					CONSTLIT("alpha")
+#define CHANNEL_NAME_RED					CONSTLIT("red")
+#define CHANNEL_NAME_GREEN					CONSTLIT("green")
+#define CHANNEL_NAME_BLUE					CONSTLIT("blue")
 
 #define FIELD_IMAGE_DESC					CONSTLIT("imageDesc")
 
@@ -311,7 +317,7 @@ CG32bitImage *CObjectImage::LoadImageFromDb (CResourceDb &ResDb, const CString &
 	//	Load the images
 
 	TUniquePtr<CG32bitImage> pBitmap;
-	if (error = ResDb.LoadImageFile(m_sBitmap, m_sBitmask, pBitmap, m_bPreMult, retsError))
+	if (error = ResDb.LoadImageFile(m_sBitmap, m_sBitmask, pBitmap, m_bPreMult, retsError, m_iPNGMaskAlphaChannel))
 		return NULL;
 
 	//	Done
