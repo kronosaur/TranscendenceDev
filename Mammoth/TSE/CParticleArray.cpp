@@ -77,7 +77,7 @@ CParticleArray::~CParticleArray (void)
 		delete [] m_pArray;
 	}
 
-void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft, int iRotation, int iDestiny, int iGeneration, Metric rData)
+void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeftTicks, int iRotation, int iDestiny, int iGeneration, Metric rData)
 
 //	AddParticle
 //
@@ -122,8 +122,14 @@ void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int 
 		PosToXY(vVel, &pParticle->xVel, &pParticle->yVel);
 		}
 
+	//	Convert life left to milliseconds
+	int iLifeLeftMS;
+	iLifeLeftMS = iLifeLeftTicks;
+	if (iLifeLeftMS > 0)
+		iLifeLeftMS *= MSEC_PER_UPDATE;
+
 	pParticle->iGeneration = iGeneration;
-	pParticle->iLifeLeft = iLifeLeft;
+	pParticle->iLifeLeftMS = iLifeLeftMS;
 	pParticle->iDestiny = (iDestiny == -1 ? mathRandom(0, g_DestinyRange - 1) : iDestiny);
 	pParticle->iRotation = iRotation;
 	pParticle->rData = rData;
@@ -131,6 +137,11 @@ void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int 
 	pParticle->fAlive = true;
 
 	m_iLastAdded = iSlot;
+	}
+
+int CParticleArray::CalcLifeLeftTicks (const SParticle& Particle, int iLifetimeTicks)
+	{
+	return (Particle.iLifeLeftMS == -1 ? iLifetimeTicks : Min(Particle.iLifeLeftMS / MSEC_PER_UPDATE, iLifetimeTicks));
 	}
 
 void CParticleArray::CleanUp (void)
@@ -1166,7 +1177,7 @@ void CParticleArray::PaintFireAndSmoke (CG32bitImage &Dest,
 		{
 		if (pParticle->fAlive)
 			{
-			int iLifeLeft = (pParticle->iLifeLeft == -1 ? iLifetime : Min(pParticle->iLifeLeft, iLifetime));
+			int iLifeLeft = CalcLifeLeftTicks(*pParticle, iLifetime);
 			int iAge = iLifetime - iLifeLeft;
 
 			//	Compute properties of the particle based on its life
@@ -1262,7 +1273,7 @@ void CParticleArray::PaintGaseous (CG32bitImage &Dest,
 		{
 		if (pParticle->fAlive)
 			{
-			int iLifeLeft = (pParticle->iLifeLeft == -1 ? iMaxLifetime : Min(pParticle->iLifeLeft, iMaxLifetime));
+			int iLifeLeft = CalcLifeLeftTicks(*pParticle, iMaxLifetime);
 			int iAge = iMaxLifetime - iLifeLeft;
 
 			//	Compute properties of the particle based on its life
@@ -1547,10 +1558,24 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 
 	m_pArray = new SParticle [m_iCount];
 	
-	//	Previous version didn't have everything
-
-	if (Ctx.dwVersion >= 212)
+	if (Ctx.dwVersion >= 214)
+		{
 		Ctx.pStream->Read((char *)m_pArray, sizeof(SParticle) * m_iCount);
+		}
+
+	//	Old version had life left in updates
+
+	else if (Ctx.dwVersion >= 212)
+		{
+		Ctx.pStream->Read((char *)m_pArray, sizeof(SParticle) * m_iCount);
+
+		//	Convert life left to milliseconds
+
+		for (i = 0; i < m_iCount; i++)
+			m_pArray[i].iLifeLeftMS = ConvertToLifeLeftMS(m_pArray[i].iLifeLeftMS);
+		}
+
+	//	Previous version didn't have everything
 
 	else if (Ctx.dwVersion >= 120)
 		{
@@ -1566,7 +1591,7 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 			m_pArray[i].xVel = pOldArray[i].xVel;
 			m_pArray[i].yVel = pOldArray[i].yVel;
 			m_pArray[i].iGeneration = pOldArray[i].iGeneration;
-			m_pArray[i].iLifeLeft = pOldArray[i].iLifeLeft;
+			m_pArray[i].iLifeLeftMS = ConvertToLifeLeftMS(pOldArray[i].iLifeLeft);
 			m_pArray[i].iDestiny = pOldArray[i].iDestiny;
 			m_pArray[i].iRotation = pOldArray[i].iRotation;
 			m_pArray[i].rData = pOldArray[i].rData;
@@ -1587,7 +1612,7 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 			m_pArray[i].xVel = pOldArray[i].xVel;
 			m_pArray[i].yVel = pOldArray[i].yVel;
 			m_pArray[i].iGeneration = pOldArray[i].iGeneration;
-			m_pArray[i].iLifeLeft = pOldArray[i].iLifeLeft;
+			m_pArray[i].iLifeLeftMS = ConvertToLifeLeftMS(pOldArray[i].iLifeLeft);
 			m_pArray[i].iDestiny = pOldArray[i].iDestiny;
 			m_pArray[i].iRotation = pOldArray[i].iRotation;
 			m_pArray[i].rData = pOldArray[i].dwData;
@@ -1608,7 +1633,7 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 			m_pArray[i].xVel = pOldArray[i].xVel;
 			m_pArray[i].yVel = pOldArray[i].yVel;
 			m_pArray[i].iGeneration = 0;
-			m_pArray[i].iLifeLeft = pOldArray[i].iLifeLeft;
+			m_pArray[i].iLifeLeftMS = ConvertToLifeLeftMS(pOldArray[i].iLifeLeft);
 			m_pArray[i].iDestiny = pOldArray[i].iDestiny;
 			m_pArray[i].iRotation = pOldArray[i].iRotation;
 			m_pArray[i].rData = pOldArray[i].dwData;
@@ -1623,9 +1648,11 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 			Ctx.pStream->Read((char *)&m_pArray[i].y, sizeof(DWORD));
 			Ctx.pStream->Read((char *)&m_pArray[i].xVel, sizeof(DWORD));
 			Ctx.pStream->Read((char *)&m_pArray[i].yVel, sizeof(DWORD));
-			Ctx.pStream->Read((char *)&m_pArray[i].iLifeLeft, sizeof(DWORD));
+			Ctx.pStream->Read((char *)&m_pArray[i].iLifeLeftMS, sizeof(DWORD));
 			Ctx.pStream->Read((char *)&m_pArray[i].iDestiny, sizeof(DWORD));
 			Ctx.pStream->Read((char *)&m_pArray[i].iRotation, sizeof(DWORD));
+
+			m_pArray[i].iLifeLeftMS = ConvertToLifeLeftMS(m_pArray[i].iLifeLeftMS);
 
 			DWORD dwData;
 			Ctx.pStream->Read((char *)&dwData, sizeof(DWORD));
@@ -1671,28 +1698,6 @@ void CParticleArray::Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &
 	// FIXME - collisions should be part of move
 	if ((Ctx.pDamageDesc || Desc.HasWakeFactor()) && Ctx.pSystem)
 		UpdateCollisions(Desc, Ctx);
-
-
-	//	Loop to update particle lifetimes (moved here from UpdateMotionLinear)
-
-	SParticle* pParticle = m_pArray;
-	SParticle* pEnd = pParticle + m_iCount;
-
-	while (pParticle < pEnd)
-		{
-		if (pParticle->fAlive)
-			{
-			//	Update lifetime. If -1, then we're immortal
-			if (pParticle->iLifeLeft > 0) pParticle->iLifeLeft--;
-
-			//	If we hit 0, then we're dead
-			if (pParticle->iLifeLeft == 0) pParticle->fAlive = false;
-			}
-
-		//	Next
-
-		pParticle++;
-		}
 
 
 	//	If we're tracking, change velocity to follow target
@@ -1965,8 +1970,8 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 								CVector vNewVel = PolarToVector(iDir, mathRandom(5, 30) * rSpeed / 100.0);
 								pParticle->Vel = vNewVel;
 
-								if (pParticle->iLifeLeft != -1)
-									pParticle->iLifeLeft = Max(1, pParticle->iLifeLeft - mathRandom(2, 5));
+								if (pParticle->iLifeLeftMS != -1)
+									pParticle->iLifeLeftMS = Max(1, pParticle->iLifeLeftMS - MSEC_PER_UPDATE * mathRandom(2, 5));
 								}
 							else
 								pParticle->fAlive = false;
@@ -2111,13 +2116,14 @@ void CParticleArray::UpdateComet (const CParticleSystemDesc &Desc, SEffectUpdate
 		}
 	}
 
-void CParticleArray::UpdateMotionLinear (Metric rSeconds, bool *retbAlive, CVector *retvAveragePos)
+void CParticleArray::UpdateMotionLinear (SEffectMoveCtx &Ctx, bool *retbAlive, CVector *retvAveragePos)
 
 //	UpdateMotionLinear
 //
 //	Updates the position of all particles
 
 	{
+	Metric rSeconds = Ctx.rSeconds;
 	ASSERT(rSeconds >= 0);
 
 	//	If we've been asked for the average position, then we
@@ -2157,6 +2163,15 @@ void CParticleArray::UpdateMotionLinear (Metric rSeconds, bool *retbAlive, CVect
 
 		while (pParticle < pEnd)
 			{
+
+			//	Update lifetime. If -1, then we're immortal
+
+			if (pParticle->fAlive && pParticle->iLifeLeftMS != -1)
+				{
+				pParticle->iLifeLeftMS -= int(1000 * rSeconds);
+				pParticle->fAlive = pParticle->iLifeLeftMS >= MSEC_PER_UPDATE;
+				}
+
 			if (pParticle->fAlive)
 				{
 				iParticleCount++;
@@ -2229,6 +2244,14 @@ void CParticleArray::UpdateMotionLinear (Metric rSeconds, bool *retbAlive, CVect
 
 		while (pParticle < pEnd)
 			{
+			//	Update lifetime. If -1, then we're immortal
+
+			if (pParticle->fAlive && pParticle->iLifeLeftMS != -1)
+				{
+				pParticle->iLifeLeftMS -= int(1000 * rSeconds);
+				pParticle->fAlive = pParticle->iLifeLeftMS >= MSEC_PER_UPDATE;
+				}
+
 			if (pParticle->fAlive)
 				{
 				bAllParticlesDead = false;

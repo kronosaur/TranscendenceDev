@@ -7,7 +7,9 @@
 			backgroundImage=	"&rsHumanSpace;"
 			backgroundImageScale="200"
 			initialScale=		"200"
-			minScale=			"100" 
+			minScale=			"100"
+			iconScale=			"100"
+			iconScaleFactor=	"1.0"
 			maxScale=			"250" 
 			lightYearsPerPixel= "0.4"
 			   

@@ -1453,7 +1453,7 @@
 
 						;	Figure out which default to use
 
-						(isUncharted (sysGetStargateProperty theGate 'uncharted))
+						(isUncharted (or (sysGetStargateProperty theGate 'uncharted) (sysStargateHasAttribute theGate 'unchartedLocation)))
 						(finalDefaultStargateUNID (if isUncharted defaultUnchartedStargateUNID defaultStargateUNID))
 						(finalDefaultBeaconUNID (if isUncharted defaultUnchartedBeaconUNID defaultBeaconUNID))
 
