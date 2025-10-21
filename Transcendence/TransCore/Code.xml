@@ -571,7 +571,8 @@
 							(sysSetData "08040003_oreTable" oreTable)
 							)
 						)
-						oreTable
+						
+					oreTable
 					)
 				))
 			
@@ -590,10 +591,9 @@
 					; ore type. The first entry has Nil followed by the total
 					; probability count.
 
-					(setq oreTable (sysGetData "08040003_oreTable"))
-					(if (not oreTable) (setq oreTable (sysGetOreDistributionTable)))
+					(setq oreTable (sysGetOreDistributionTable))
 					(if (or requiredAttributes excludedAttributes)
-						; create a filtered table with only ore with those attributes
+						; then create a filtered table with only ore with those attributes
 						(block
 							(
 								(bypassRequiredAttributes (= requiredAttributes Nil))
@@ -620,7 +620,8 @@
 								filteredEntries
 								)
 							)
-						; otherwise we dont need to filter and just return the oreTable
+							
+						; else we dont need to filter and just return the oreTable
 						oreTable
 						)
 					)
