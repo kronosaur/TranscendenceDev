@@ -937,6 +937,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'linkedFireOptions\n"
 			"   'maxDamage           Maximum damage per shot\n"
 			"   'minDamage           Minimum damage per shot\n"
+			"	'miningMaxOreLevel   Maximum ore level that can be mined\n"
 			"   'missileSpeed\n"
 			"   'multiShot\n"
 			"   'omnidirectional\n"

@@ -382,6 +382,23 @@ CG32bitPixel CG32bitPixel::PreMult (CG32bitPixel rgbColor, BYTE byAlpha)
 		}
 	}
 
+void CG32bitPixel::PreMultSelf()
+	{
+	DWORD dwAlpha = m_dwPixel & 0xff000000;
+	if (dwAlpha == 0)
+		m_dwPixel = 0;
+	else if (dwAlpha < 0xff000000)
+		{
+		BYTE byAlpha = m_dwPixel >> 24;
+		BYTE byRed = (m_dwPixel >> 16) & 0xff;
+		BYTE byGreen = (m_dwPixel >> 8) & 0xff;
+		BYTE byBlue = m_dwPixel & 0xff;
+		BYTE* pAlpha = CG32bitPixel::AlphaTable(byAlpha);
+		m_dwPixel = dwAlpha | (pAlpha[byRed] << 16) | (pAlpha[byGreen] << 8) | pAlpha[byBlue];
+		}
+	//	Dont need to do anything on 0xff
+	}
+
 CG32bitPixel CG32bitPixel::Screen (CG32bitPixel rgbDest, CG32bitPixel rgbSrc)
 
 //	Screen

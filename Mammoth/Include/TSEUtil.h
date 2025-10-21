@@ -649,6 +649,34 @@ class CDamageAdjDesc
 		const CDamageAdjDesc *m_pDefault;		//	Default table
 	};
 
+class CMiningDamageLevelDesc
+	{
+	public:
+		static constexpr int MAX_MINING_LEVEL = 25;
+		
+		int GetMaxOreLevel (DamageTypes iDamageType, int iMiningItemLevel) const;
+		ALERROR InitFromArray (const TArray<int>& Levels);
+		ALERROR InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, const CString &sAttrib);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
+
+		static DamageTypes ParseDamageTypeFromProperty (const CString &sProperty);
+
+	private:
+		enum ELevelTypes
+			{
+			levelAbsolute,						//	dwLevelValue is an absolute adjustment
+			levelRelative,						//	dwLevelValue is an int offset of item level
+			};
+
+		struct SMiningLevelDesc
+			{
+			ELevelTypes iAdjType = levelRelative;	//	Type of adjustment
+			int iLevelValue = 0;					//	Adjustment value
+			};
+
+		SMiningLevelDesc m_Desc[damageCount];	//	Descriptor for computing adjustment
+	};
+
 struct SVisibleDamage
 	{
 	int iShieldLevel = -1;				//	0-100: shield level; -1 = no shields

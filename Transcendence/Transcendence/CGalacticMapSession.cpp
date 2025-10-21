@@ -169,6 +169,8 @@ ALERROR CGalacticMapSession::OnInit (CString *retsError)
     //  Initialize
 
     m_Scale.Init(iScale, iMinScale, iMaxScale);
+	m_rIconScale = m_pMap->GetIconScale();
+	m_rIconScaleFactor = m_pMap->GetIconScaleFactor();
 
 	//	Create a painter
 
@@ -542,7 +544,17 @@ void CGalacticMapSession::OnUpdate (bool bTopMost)
 
     if (m_Scale.Update())
         {
-        m_pPainter->SetScale(m_Scale.GetScale());
+		int iScale = m_Scale.GetScale();
+		int iIconScale = iScale;
+		if (m_rIconScale != 1.0)
+			{
+			Metric rScale = iScale / 100.0;
+			if (m_rIconScaleFactor != 1.0)
+				iIconScale = (int)(100 * (m_rIconScale + (rScale - 1.0) * m_rIconScaleFactor));
+			else
+				iIconScale = (int)(100 * m_rIconScale * rScale);
+			}
+        m_pPainter->SetScale(iScale, iIconScale);
 		HIInvalidate();
         }
 

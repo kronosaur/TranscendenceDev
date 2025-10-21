@@ -135,6 +135,8 @@ class CGalacticMapSession : public IHISession
 		RECT m_rcView;
 
 		CMapScaleCounter m_Scale;           //  Map scale (100 = normal)
+		Metric m_rIconScaleFactor;			//	Relative amount to zoom icons by
+		Metric m_rIconScale;				//	Base scale for icons at 100 zoom (1.0 = normal)
 		int m_xCenter;                      //  Current center (in galactic coordinates)
 		int m_yCenter;
 

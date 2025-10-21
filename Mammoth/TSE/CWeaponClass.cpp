@@ -96,6 +96,7 @@
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
 #define PROPERTY_MAX_DAMAGE						CONSTLIT("maxDamage")
 #define PROPERTY_MIN_DAMAGE						CONSTLIT("minDamage")
+#define PROPERTY_MINING_LEVEL					CONSTLIT("miningMaxOreLevel")
 #define PROPERTY_MULTI_SHOT						CONSTLIT("multiShot")
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
 #define PROPERTY_REPEATING						CONSTLIT("repeating")
@@ -3175,6 +3176,22 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
 	else if (strEquals(sProperty, PROPERTY_MIN_DAMAGE))
 		return CC.CreateDouble(CalcDamagePerShot(*pShot, pEnhancements, DamageDesc::flagMinDamage));
+
+	else if (strEquals(sProperty, PROPERTY_MINING_LEVEL))
+		{
+		int iMiningLevel = pShot->GetMiningLevel();
+
+		//	If we have one specified, return it
+
+		if (iMiningLevel)
+			return CC.CreateInteger(iMiningLevel);
+
+		//	Otherwise we need to get the adventure default
+		//	PLACEHOLDER
+
+		else
+			return CC.CreateInteger(0);
+		}
 
 	else if (strEquals(sProperty, PROPERTY_MULTI_SHOT))
 		return CC.CreateBool(GetConfiguration(*pShot).GetType() != CConfigurationDesc::ctSingle);

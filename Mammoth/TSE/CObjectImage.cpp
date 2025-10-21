@@ -13,6 +13,12 @@
 #define NO_PM_ATTRIB						CONSTLIT("noPM")
 #define SHADOW_MASK_ATTRIB					CONSTLIT("shadowMask")
 #define SPRITE_ATTRIB						CONSTLIT("sprite")
+#define PNG_MASK_ALPHA_SOURCE_ATTRIB		CONSTLIT("pngBitmaskAlphaSource")
+
+#define CHANNEL_NAME_ALPHA					CONSTLIT("alpha")
+#define CHANNEL_NAME_RED					CONSTLIT("red")
+#define CHANNEL_NAME_GREEN					CONSTLIT("green")
+#define CHANNEL_NAME_BLUE					CONSTLIT("blue")
 
 #define FIELD_IMAGE_DESC					CONSTLIT("imageDesc")
 
@@ -311,7 +317,7 @@ CG32bitImage *CObjectImage::LoadImageFromDb (CResourceDb &ResDb, const CString &
 	//	Load the images
 
 	TUniquePtr<CG32bitImage> pBitmap;
-	if (error = ResDb.LoadImageFile(m_sBitmap, m_sBitmask, pBitmap, m_bPreMult, retsError))
+	if (error = ResDb.LoadImageFile(m_sBitmap, m_sBitmask, pBitmap, m_bPreMult, retsError, m_iPNGMaskAlphaChannel))
 		return NULL;
 
 	//	Done
@@ -432,6 +438,31 @@ ALERROR CObjectImage::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	pre-multiplied. Thus we need to premultiply it when we load it.
 
 	m_bPreMult = pDesc->GetAttributeBool(NO_PM_ATTRIB);
+
+	// Allow selection of the color channel to use for png bitmasks
+
+	CString sPNGAlphaChannel;
+	if (pDesc->FindAttribute(PNG_MASK_ALPHA_SOURCE_ATTRIB, &sPNGAlphaChannel))
+		{
+		if (Ctx.pExtension && Ctx.pExtension->GetAPIVersion() < 57)
+			{
+			Ctx.sError = CONSTLIT("pngBitmaskAlphaSource requires API 57+");
+			return ERR_FAIL;
+			}
+		else if (strEquals(sPNGAlphaChannel, CHANNEL_NAME_ALPHA))
+			m_iPNGMaskAlphaChannel = channelAlpha;
+		else if (strEquals(sPNGAlphaChannel, CHANNEL_NAME_RED))
+			m_iPNGMaskAlphaChannel = channelRed;
+		else if (strEquals(sPNGAlphaChannel, CHANNEL_NAME_GREEN))
+			m_iPNGMaskAlphaChannel = channelGreen;
+		else if (strEquals(sPNGAlphaChannel, CHANNEL_NAME_BLUE))
+			m_iPNGMaskAlphaChannel = channelBlue;
+		else
+			{
+			Ctx.sError = strCat(sPNGAlphaChannel, CONSTLIT(" is not a valid channel name."));
+			return ERR_FAIL;
+			}
+		}
 
 	//	Initialize
 

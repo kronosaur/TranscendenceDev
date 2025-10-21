@@ -167,6 +167,16 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 			{
 			Src.m_pBlock = NULL;
 			}
+		TArray (std::initializer_list<VALUE> Src) : CArrayBase(NULL, DEFAULT_ARRAY_GRANULARITY)
+			{
+			InsertBytes(0, NULL, (int)Src.size() * sizeof(VALUE), GetGranularity() * sizeof(VALUE));
+			int i = 0;
+			for (const VALUE &Value : Src)
+				{
+				VALUE *pElement = new(placement_new, GetBytes() + (i * sizeof(VALUE))) VALUE(Value);
+				i++;
+				}
+			}
 
 		~TArray (void) { DeleteAll(); }
 
