@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							57;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
-constexpr DWORD SYSTEM_SAVE_VERSION =					213;
+constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 
 //	Uncomment out the following define when building a stable release
 
@@ -581,6 +581,10 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //							offset relative to the level of the item
 //						Specifying a "-" before a level means this is a negative
 //							offset relative to the level of the item
+//		<Image> (Type)
+//			pngBitmaskAlphaSource: (str: "alpha"|"red"|"green"|"blue")
+//				Specify a specific channel to use from a png as a bitmask alpha source
+//				Default: "alpha"
 //		<ItemType>
 //			<Weapon>
 //				miningMaxOreLevel: (int: 0-25)
@@ -1361,3 +1365,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //	213: 2.0 Alpha 2
 //		Change DiceRange to use -1 for not set
 //
+//	214: 2.0 Alpha 7
+//		Change CParticleArray::m_iLifeLeft to milliseconds game time
+//		(instead of ticks)
