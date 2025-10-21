@@ -7,6 +7,7 @@
 #include "Transcendence.h"
 
 #define FIELD_ENABLED				CONSTLIT("enabled")
+#define FIELD_DISABLED				CONSTLIT("disabled")
 #define FIELD_ITEM					CONSTLIT("item")
 #define FIELD_ITEMS					CONSTLIT("items")
 #define FIELD_SOURCE				CONSTLIT("source")
@@ -83,8 +84,8 @@ bool CGItemListDisplayArea::InitFromItemList (ICCItem *pItemList)
 			if (pItem)
 				pEntry->Item = Ctx.AsItem(pItem);
 
-			ICCItem *pEnabled = pItemDesc->GetElement(FIELD_ENABLED);
-			pEntry->bGrayed = (pEnabled && pEnabled->IsNil());
+			ICCItem *pDisabled = pItemDesc->GetElement(FIELD_DISABLED);
+			pEntry->bGrayed = (pDisabled && pDisabled->IsTrue());
 			}
 		else
 			pEntry->Item = Ctx.AsItem(pItemDesc);
@@ -151,9 +152,11 @@ int CGItemListDisplayArea::Justify (const RECT &rcRect)
 		m_iCols = Max(1, RectWidth(rcInner) / m_cxBox);
 		m_iRows = AlignUp(m_ItemList.GetCount(), m_iCols) / m_iCols;
 		m_xOffset = (RectWidth(rcInner) - (m_cxBox * m_iCols)) / 2;
+		m_xLastRowOffset = m_xOffset;
 
 		int iLastRowCols = m_ItemList.GetCount() % m_iCols;
-		m_xLastRowOffset = (RectWidth(rcInner) - (m_cxBox * iLastRowCols)) / 2;
+		if (iLastRowCols > 0)
+			m_xLastRowOffset = (RectWidth(rcInner) - (m_cxBox * iLastRowCols)) / 2;
 
 		//	Return the height
 
