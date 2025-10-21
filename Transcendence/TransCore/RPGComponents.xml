@@ -1,7 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <TranscendenceModule>
+
+<!-- MISSIONS -->
+
+	<!-- Component Reminder ====================================================
+
+	This is a template for crafting reminder missions (e.g. Tinker recipe).
+
+	Missions should be created by passing a fabInfo structure as gData
+
+
+	======================================================================== -->
 	
+	<MissionType UNID="&baComponentReminder;"
+			name=				"Component Reminder"
+			attributes=			"componentReminder"
+
+			allowPlayerDelete=	"true"
+			noDebrief=			"true"
+			noInProgress=		"true"
+			noStats=			"true"
+			>
+
+		<Properties>
+			<Data id="item"></Data>
+			<Data id="componentsNeeded"></Data>
+			<Data id="componentTypeList"></Data>
+
+			<Variant id="destID">(objGetID aOwnerObj)</Variant>
+			<Variant id="destName">(objGetName aOwnerObj)</Variant>
+			<Variant id="destSystem">(sysGetNode)</Variant>
+
+			<!-- Force the summary to be refreshed on every access -->
+
+			<DynamicData id="summary">(msnTranslate gSource 'Summary)</DynamicData>
+
+			<!-- Dynamic properties to recalculate available components -->
+
+			<DynamicData id="availableComponents">
+				(map (msn@ gSource 'componentsNeeded) theItem
+					{
+						item: theItem
+						available: (@ (rpgCalcComponentsAvailable gPlayerShip theItem) 'availCount)
+						}
+					)
+			</DynamicData>
+
+			<DynamicData id="rpg.itemListDisplay">
+				(map (msn@ gSource 'availableComponents) 'excludeNil theEntry
+					{
+						item: (@ theEntry 'item)
+						disabled: (gr (itmGetCount (@ theEntry 'item)) (@ theEntry 'available))
+						}
+					)
+			</DynamicData>
+		</Properties>
+
+		<Events>
+			<!-- Only allow one active remider for each recipe -->
+
+			<CanCreate>
+				(not (map (msnFind (cat "a +unid:" gType ";")) 'excludeNil theMission
+					(itmIsEqual gData (msn@ theMission 'item) 'ignoreData)
+					))
+			</CanCreate>
+
+			<OnCreate>
+				(block ()
+
+					;	Store the parameters of the mission
+
+					(msnSet@ gSource 'item (@ gData 'item))
+					(msnSet@ gSource 'componentsNeeded (@ gData 'componentsNeeded))
+					(msnSet@ gSource 'componentTypeList
+						(map (@ gData 'componentsNeeded) theItem (itmGetType theItem))
+						)
+					)
+			</OnCreate>
+		</Events>
+
+		<Language>
+			<Text id="Name">
+				(msnTranslate gSource 'descName {
+					itemName:(itmGetName (msn@ gSource 'item) '(countOnly actual))
+					})
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'descSummary {
+					itemName: (itmGetName (msn@ gSource 'item) '(count actual))
+					destName: (msn@ gSource 'destName)
+					systemName: (sysGetName (msn@ gSource 'destSystem))
+
+					componentList: (join (map (msn@ gSource 'availableComponents) theComponent
+						(msnTranslate gSource 'descComponent {
+							avail: (@ theComponent 'available)
+							count: (itmGetCount (@ theComponent 'item))
+							itemName: (itmGetName (@ theComponent 'item) '(plural actual))
+							})) "\n")
+					})
+			</Text>
+
+			<Text id="descName">
+				[Foundry] %ItemName%
+			</Text>
+			<Text id="descSummary">
+
+				Acquire components needed to create %itemName% at %destName% in %systemName%.
+
+				%componentList%
+
+				System: %systemName%
+
+			</Text>
+			<Text id="descComponent">[%avail% / %count%] %itemName%</Text>
+			<Text id="FailureMsg"></Text>
+		</Language>
+	</MissionType>
+
+
+	<!-- Define attribute label for items that we are looking for. -->
+
+	<Type UNID="&unidComponentReminder;">
+		<AttributeDesc>
+			<ItemAttribute	label="Component"	labelType="advantage"	criteria="*">
+				<OnShow>
+					(block (
+						(theType (itmGetType gItem))
+						)
+						(if
+							(map (msnFind "a +componentReminder;") 'excludeNil theMission
+								(find (msn@ theMission 'componentTypeList) theType)
+								)
+							True
+							)
+						)
+				</OnShow>
+			</ItemAttribute>
+		</AttributeDesc>
+	</Type>
+
+
 <!-- GLOBALS -->
 	
 	<Globals>
@@ -204,7 +343,7 @@
 							(map availableComponents 'excludeNil theEntry
 								{
 									item: (@ theEntry 'item)
-									enabled: (geq (@ theEntry 'available) (itmGetCount (@ theEntry 'item)))
+									disabled: (gr (itmGetCount (@ theEntry 'item)) (@ theEntry 'available))
 									}
 								)
 						
@@ -233,6 +372,14 @@
 					)
 				))
 				
+			(setq rpgClearComponentReminder (lambda (theSource theItem criteria)
+				(enum (msnFind theSource (or criteria "a +componentReminder;")) theMission
+					(if (itmIsEqual theItem (msn@ theMission 'item) 'ignoreData)
+						(msnSuccess theMission)
+						)
+					)
+				))
+
 			(setq rpgCreateFromComponents (lambda (createCtx theSource theFoundry theCount options)
 				(block (
 					(itemToCreate (itmSetCount (@ createCtx 'item) (* (itmGetCount (@ createCtx 'item)) theCount)))
@@ -283,11 +430,7 @@
 					;	Loop over player missions and see if we've accomplished any of them
 					
 					(if (@ options 'reminderCriteria)
-						(enum (msnFind theFoundry (@ options 'reminderCriteria)) theMission
-							(if (itmIsEqual itemToCreate (@ (msnGetData theMission 'forgeInfo) 'item))
-								(msnSuccess theMission)
-								)
-							)
+						(rpgClearComponentReminder theFoundry itemToCreate (@ options 'reminderCriteria))
 						)
 					
 					;	Return result
