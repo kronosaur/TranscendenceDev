@@ -713,7 +713,15 @@
 
 					;	Pick several random ore types
 
-					(oreList (list (sysGetRandomOreType) (sysGetRandomOreType) (sysGetRandomOreType) (sysGetRandomOreType)))
+					(filteredOreTable (sysGetFilteredOreDistributionTable Nil "t +noEncounters|t +noFerrianEncounters"))
+
+					(oreList
+						(list
+							(mathProbTableLookup filteredOreTable)
+							(mathProbTableLookup filteredOreTable)
+							(mathProbTableLookup filteredOreTable)
+							(mathProbTableLookup filteredOreTable)
+							))
 
 					;	Choose the highest priced one (to minimize the amount
 					;	that the player has to carry).

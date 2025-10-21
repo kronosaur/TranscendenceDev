@@ -498,11 +498,12 @@
 					)
 				))
 			
-			(setq sysGetRandomOreType (lambda ()
 			
-			; Returns a random ore type appropriate to the system. This function
-			; computes the probability of any one ore type appearing in the
-			; system based on the distribution of ore items in asteroids.
+			(setq sysGetOreDistributionTable (lambda ()
+			
+			; Generates a table of ore types that occur in the system. This
+			; table can be used for computing a random ore type derived from
+			; the distribution of ore in the table
 			; ------------------------------------------------------------------
 			
 				(block (oreTable)
@@ -570,9 +571,69 @@
 							(sysSetData "08040003_oreTable" oreTable)
 							)
 						)
-						
-					(mathProbTableLookup oreTable)
+						oreTable
 					)
+				))
+			
+			(setq sysGetFilteredOreDistributionTable (lambda (requiredAttributes excludedAttributes)
+			
+			; Generates a table of ore types that occur in the system. This
+			; table can be used for computing a random ore type derived from
+			; the distribution of ore in the table
+			; this table is filtered based on item attributes
+			; ------------------------------------------------------------------
+
+				(block (oreTable)
+					; Generate a filtered probability table from the ore-bearing 
+					; asteroids in the system. The probability table is a list
+					; of entries. Each entry is a probability followed by an
+					; ore type. The first entry has Nil followed by the total
+					; probability count.
+
+					(setq oreTable (sysGetData "08040003_oreTable"))
+					(if (not oreTable) (setq oreTable (sysGetOreDistributionTable)))
+					(if (or requiredAttributes excludedAttributes)
+						; create a filtered table with only ore with those attributes
+						(block
+							(
+								(bypassRequiredAttributes (= requiredAttributes Nil))
+								(bypassExcludedAttributes (= excludedAttributes Nil))
+								(totalProb 0)
+								(headlessOreTable (slice oreTable 1 -1))
+								(filteredEntries (map headlessOreTable 'excludeNil theRow
+									(if
+										(and
+											(or bypassExcludedAttributes (not (itmMatches (@ theRow 1) excludedAttributes)))
+											(or bypassRequiredAttributes (itmMatches (@ theRow 1) requiredAttributes))
+											)
+										; keep it if it fits
+										theRow
+										; discard it
+										Nil
+										)
+									))
+							)
+							(enum filteredEntries theEntry (setq totalProb (+ totalProb (@ theEntry 0))))
+							; construct and return the final table with the required header row
+							(append
+								(list (list totalProb Nil))
+								filteredEntries
+								)
+							)
+						; otherwise we dont need to filter and just return the oreTable
+						oreTable
+						)
+					)
+				))
+
+			(setq sysGetRandomOreType (lambda (requiredAttributes excludedAttributes)
+			
+			; Returns a random ore type appropriate to the system. This function
+			; computes the probability of any one ore type appearing in the
+			; system based on the distribution of ore items in asteroids.
+			; ------------------------------------------------------------------
+						
+				(mathProbTableLookup (sysGetFilteredOreDistributionTable requiredAttributes excludedAttributes))
 				))
 			)
 	</Globals>
