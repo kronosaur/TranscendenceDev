@@ -717,10 +717,10 @@
 
 					(oreList
 						(list
-							(mathProbTableLookup filteredOreTable)
-							(mathProbTableLookup filteredOreTable)
-							(mathProbTableLookup filteredOreTable)
-							(mathProbTableLookup filteredOreTable)
+							(sysGetRandomOreType filteredOreTable)
+							(sysGetRandomOreType filteredOreTable)
+							(sysGetRandomOreType filteredOreTable)
+							(sysGetRandomOreType filteredOreTable)
 							))
 
 					;	Choose the highest priced one (to minimize the amount

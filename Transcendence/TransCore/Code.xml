@@ -627,14 +627,14 @@
 					)
 				))
 
-			(setq sysGetRandomOreType (lambda (requiredAttributes excludedAttributes)
+			(setq sysGetRandomOreType (lambda (oreTable)
 			
 			; Returns a random ore type appropriate to the system. This function
 			; computes the probability of any one ore type appearing in the
 			; system based on the distribution of ore items in asteroids.
 			; ------------------------------------------------------------------
-						
-				(mathProbTableLookup (sysGetFilteredOreDistributionTable requiredAttributes excludedAttributes))
+
+				(mathProbTableLookup (or oreTable (sysGetOreDistributionTable)))
 				))
 			)
 	</Globals>

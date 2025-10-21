@@ -663,7 +663,7 @@
 							(objAddItemByValue gSource baseOre maxLootValue 'credit)
 
 						; Otherwise we add ore appropriate to the system
-						(objAddItemByValue gSource (itmCreate (sysGetRandomOreType Nil "t +noEncounters|t +noOutlawEncounters") 1) maxLootValue 'credit)
+						(objAddItemByValue gSource (itmCreate (sysGetRandomOreType (sysGetFilteredOreDistributionTable Nil "t +noEncounters|t +noOutlawEncounters")) 1) maxLootValue 'credit)
 						)
 					)
 			</OnCreate>
@@ -719,7 +719,7 @@
 							(objAddItemByValue gSource baseOre maxLootValue 'credit)
 								
 						; Otherwise we add ore appropriate to the system
-						(objAddItemByValue gSource (itmCreate (sysGetRandomOreType Nil "t +noEncounters|t +noOutlawEncounters") 1) maxLootValue 'credit)
+						(objAddItemByValue gSource (itmCreate (sysGetRandomOreType (sysGetFilteredOreDistributionTable Nil "t +noEncounters|t +noOutlawEncounters")) 1) maxLootValue 'credit)
 						)
 						
 					; Chance of fuel rods in addition
@@ -780,7 +780,7 @@
 							(objAddItemByValue gSource baseOre maxLootValue 'credit)
 								
 						; Otherwise we add ore appropriate to the system
-						(objAddItemByValue gSource (itmCreate (sysGetRandomOreType Nil "t +noEncounters|t +noOutlawEncounters") 1) maxLootValue 'credit)
+						(objAddItemByValue gSource (itmCreate (sysGetRandomOreType (sysGetFilteredOreDistributionTable Nil "t +noEncounters|t +noOutlawEncounters")) 1) maxLootValue 'credit)
 						)
 						
 					; Chance of fuel rods in addition
@@ -1295,7 +1295,7 @@
 	
 	<Type unid="&baOutlawMine;">
 		<Properties>
-			<Variant id="oreType">(sysGetRandomOreType Nil "t +noEncounters|t +noOutlawEncounters")</Variant>
+			<Variant id="oreType">(sysGetRandomOreType (sysGetFilteredOreDistributionTable Nil "t +noEncounters|t +noOutlawEncounters"))</Variant>
 		</Properties>
 
 		<Events>
