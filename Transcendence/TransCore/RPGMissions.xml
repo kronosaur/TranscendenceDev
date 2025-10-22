@@ -1410,6 +1410,26 @@
 					)
 				))
 
+			(setq rpgMissionReward (lambda (missionObj)
+
+				;	Mission reward (payment and XP) is taked from standard properties
+				;	on the mission object.
+
+				(block (
+					(reward (msn@ missionObj 'reward))
+					(currency (msn@ missionObj 'rewardCurrency))
+					(membership (msn@ missionObj 'membership))
+					(rewardXP (msn@ missionObj 'rewardXP))
+					)
+					(if reward
+						(rpgMissionRewardPayment reward currency)
+						)
+					(if membership
+						(rpgMissionRewardXP membership rewardXP missionObj)
+						)
+					)
+				))
+
 			(setq intMissionAchievementString rpgMissionAchievementString)
 			(setq intMissionRewardPayment rpgMissionRewardPayment)
 			)

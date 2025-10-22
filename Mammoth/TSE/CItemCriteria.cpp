@@ -366,7 +366,7 @@ bool CItemCriteria::MatchesItemCategory (const CItemType &ItemType) const
 		{ }
 
 	//	If we're looking for usable items and this item is
-	//	isable, then we continue
+	//	usable, then we continue
 
 	else if ((m_dwItemCategories & itemcatUseful)
 			&& ItemType.IsUsable())

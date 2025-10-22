@@ -349,13 +349,18 @@ bool CContinuousBeam::HitTestSegment (SSegment &Segment, CVector *retvHitPos)
 						|| pObj == this)
 					continue;
 
+				//	Prepare for point in object calculations
+
+				SPointInObjectCtx PiOCtx;
+				pObj->PointInObjectInit(PiOCtx);
+
 				//	See where we hit this object (if at all)
 
 				Metric rTest = 0.0;
 				CVector vTest = vCurrPos;
 				while (rTest < rLength)
 					{
-					if (pObj->PointInObject(pObj->GetPos(), vTest))
+					if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vTest))
 						{
 						Hits.Insert(rTest, CHitCtx(pObj, vTest, iHitDir));
 						break;
@@ -424,13 +429,18 @@ bool CContinuousBeam::HitTestSegment (SSegment &Segment, CVector *retvHitPos)
 						|| pObj == this)
 					continue;
 
+				//	Prepare for point in object calculations
+
+				SPointInObjectCtx PiOCtx;
+				pObj->PointInObjectInit(PiOCtx);
+
 				//	See where we hit this object (if at all)
 
 				Metric rTest = 0.0;
 				CVector vTest = vCurrPos;
 				while (rTest < rBestDist)
 					{
-					if (pObj->PointInObject(pObj->GetPos(), vTest))
+					if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vTest))
 						{
 						pHit = pObj;
 						vBestHit = vTest;
