@@ -1495,7 +1495,7 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 			int iYOffset = 0;
 			CSpritePaintWorker::ePaintMode iPaintMode = CSpritePaintWorker::eDebugTask;
 
-			//	Create Tasks
+			//	Create context
 			CSpritePaintWorker::SCtx WorkerCtx = CSpritePaintWorker::SCtx();
 			WorkerCtx.pSrc = this;
 			WorkerCtx.pDest = &Dest;
@@ -1507,6 +1507,8 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 			WorkerCtx.iRotation = iRotation;
 			WorkerCtx.iMode = iPaintMode;
 			WorkerCtx.fComposite = bComposite ? 1 : 0;
+
+			//	Create tasks
 
 			for (int i = 0; i < iNumWorkers; i++)
 				{
