@@ -578,6 +578,17 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //			(bRoR x count)
 //				Returns x rotated right by count bits in 32-bit space.
 //				Bits shifted out of the low end wrap around to the high end.
+//			(help function)
+//				Returns the docstring for the function (accepts both primitives
+//				and lambdas)
+//			(help strFilter [typefilter])
+//				Upgraded to accept a typeFilter argument
+//					typFilter: (str: '*|'l|'lambda|'lambdas|'p|'primitive|'primitives)
+//						This argument allows including:
+//							*: all functions
+//							lambdas: only lambdas
+//							primitives: only primitives
+//						Default: 'primitives
 //		<AdventureDesc>
 //			<Constants>
 //				<MiningMaxOreLevels>
