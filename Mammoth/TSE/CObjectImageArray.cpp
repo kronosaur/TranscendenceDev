@@ -98,12 +98,35 @@ class CSpritePaintWorker : public IThreadPoolTask
 					break;
 					}
 				case (eDebugTask):
-				default:
+					{
 					RunDebugTask();
+					break;
+					}
+				default:
+					ASSERT(false);
 				}
 			}
 
 	private:
+
+		//	Task code
+
+		void RunPaintImage (void)
+			{
+			if (m_Ctx.pSrc)
+				m_Ctx.pSrc->WorkerPaintImage(
+					*m_Ctx.pDest,
+					m_Ctx.xDest,
+					m_Ctx.yDest,
+					m_Ctx.iTick,
+					m_Ctx.iRotation,
+					m_Ctx.fComposite,
+					m_y,
+					m_cyHeight
+				);
+			}
+
+		//	Debug task code
 
 		int DebugTask (int i)
 			{
@@ -125,21 +148,6 @@ class CSpritePaintWorker : public IThreadPoolTask
 		void RunDebugTask (void)
 			{
 			DebugTask(m_Ctx.xDest + m_Ctx.yDest + m_Ctx.iTick + m_Ctx.iRotation + m_Ctx.fComposite + m_y + m_cyHeight);
-			}
-
-		void RunPaintImage (void)
-			{
-			if (m_Ctx.pSrc)
-				m_Ctx.pSrc->WorkerPaintImage(
-					*m_Ctx.pDest,
-					m_Ctx.xDest,
-					m_Ctx.yDest,
-					m_Ctx.iTick,
-					m_Ctx.iRotation,
-					m_Ctx.fComposite,
-					m_y,
-					m_cyHeight
-				);
 			}
 
 		const SCtx m_Ctx;
@@ -1522,6 +1530,11 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 
 			Ctx->pThreadPool->Run();
 
+			//	This is debug code that will normally be optimized out as unreachable by the compiler
+			//	It is left in here for easy debugging of changes to blt or CThreadPool in case someone
+			//	accidentally adds thread-unsafe code to them and needs to debug it in isolation from
+			//	isolate it from the rest of the multithreading code, using the safe eDebugTask function
+			//	to simulate a load
 			if (iPaintMode == CSpritePaintWorker::eDebugTask)
 				{
 				//	if debugging, we need to paint normally since the debug task is just math
@@ -1557,7 +1570,6 @@ void CObjectImageArray::WorkerPaintImage (CG32bitImage& Dest, int x, int y, int 
 
 	if (m_pImage)
 		{
-		//m_cs.Lock(); //debug...
 		int xSrc;
 		int ySrc;
 		ComputeSourceXY(iTick, iRotation, &xSrc, &ySrc);
@@ -1607,7 +1619,6 @@ void CObjectImageArray::WorkerPaintImage (CG32bitImage& Dest, int x, int y, int 
 				x - (RectWidth(m_rcImage) / 2),
 				yDest);
 			}
-		//m_cs.Unlock(); //debug...
 			
 		}
 	DEBUG_CATCH
