@@ -284,6 +284,7 @@ class CObjectImageArray
 		void SetImage (TSharedPtr<CObjectImage> pImage);
 		void SetRotationCount (int iRotationCount);
 		void TakeHandoff (CObjectImageArray &Source);
+		void WorkerPaintImage (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, bool bComposite = false, int iOffsetY = -1, int iOffsetCY = -1) const;
 		void WriteToStream (IWriteStream *pStream) const;
 
 		static const CObjectImageArray &Null (void) { return m_Null; }
@@ -333,12 +334,14 @@ class CObjectImageArray
 		mutable CG32bitImage *m_pScaledImages = NULL;
 		mutable int m_cxScaledImage = -1;
 
-		static CObjectImageArray m_Null;
-		static CG32bitImage m_NullImage;
-
 		//	Multithreading lock
 
 		mutable CCriticalSection m_cs = CCriticalSection();
+
+		//	Static members
+
+		static CObjectImageArray m_Null;
+		static CG32bitImage m_NullImage;
 
 	};
 
