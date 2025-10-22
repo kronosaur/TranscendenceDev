@@ -548,12 +548,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //
 //	 57: 2.0 Alpha 7
 //      tlisp:
-//			(lambda args [docstring] expr)
-//				Lambda now accepts an optional docstring that can be printed out with (help lambda)
-//			(help [lambda])
-//				Now accepts a lambda, and will print out the docstring if one exists
-//			(help '[match-pattern] ['lambda])
-//				Adds option to print out any matching lambdas
 //			(bAnd x1 [x2 ... xn])
 //				Returns the bitwise AND of all arguments.
 //				All arguments are coerced to 32-bit integers.
@@ -589,6 +583,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //							lambdas: only lambdas
 //							primitives: only primitives
 //						Default: 'primitives
+//			(lambda args [docstring] expr)
+//				Lambda now accepts an optional docstring that can be printed out with (help lambda)
 //		<AdventureDesc>
 //			<Constants>
 //				<MiningMaxOreLevels>
