@@ -1363,6 +1363,55 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		CString sHelp = pFirst->GetHelp();
 
+		//	Handle formatting lambdas as well as primitives that are missing
+		//	docstrings
+
+		if (pFirst->IsLambdaFunction() || sHelp.IsBlank())
+			{
+
+			//	Attempt to get the key from globals since we cant see
+			//	what symbol we were directly called with.
+			// 
+			//	If we cant find it, we just assume it is a local lambda
+			//	because primitive functions are always in globals
+
+			CCSymbolTable *pGlobals = (CCSymbolTable *)pCC->GetGlobals();
+			CString sKey = CONSTLIT("localLambda");
+			for (int i = 0; i < pGlobals->GetCount(); i++)
+				{
+				if (pGlobals->GetElement(i) == pFirst)
+					{
+					sKey = pGlobals->GetKey(i);
+					break;
+					}
+				}
+
+			//	If this is a lambda, we need to format it with sKey because it
+			//	does not keep track of what its own symbol is, because it can
+			//	be aliased
+
+			if (pFirst->IsLambdaFunction())
+				{
+
+				//	sHelp from a lambda should never be empty
+				//	if it is empty this is a bug and we need to log it
+				if (sHelp.IsBlank())
+					{
+					kernelDebugLogPattern(CONSTLIT("Error in (help '* 'lambdas): GetHelp() returned a blank string for lambda %s"), sKey);
+					sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
+					}
+				else
+					sHelp = strPatternSubst(sHelp, sKey);
+
+				}
+
+			//	If the help text is blank, then we generate our own
+			//	Lambdas should never be blank, this only happens with primitives
+
+			else if (sHelp.IsBlank())
+				sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
+			}
+
 		Output.Write(sHelp.GetASCIIZPointer(), sHelp.GetLength());
 		}
 
@@ -1370,6 +1419,7 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	else
 		{
+		CCSymbolTable *pGlobals = (CCSymbolTable *)pCC->GetGlobals();
 		
 		//	Determine what to show.
 
@@ -1406,7 +1456,6 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 		if (pFirst->GetStringValue() == CONSTLIT("*"))
 			{
-			ICCItem *pGlobals = pCC->GetGlobals();
 			for (i = 0; i < pGlobals->GetCount(); i++)
 				{
 				ICCItem *pItem = pGlobals->GetElement(i);
@@ -1438,7 +1487,7 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 								sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
 								}
 							else
-								sHelp = strPatternSubst(sHelp, pGlobals->GetKey(i));
+								sHelp = strPatternSubst(sHelp, sKey);
 
 							}
 
@@ -1476,7 +1525,6 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			//	Compile a list of all functions that match
 
 			int iExactMatch = -1;
-			CCSymbolTable *pGlobals = (CCSymbolTable *)pCC->GetGlobals();
 			for (i = 0; i < pGlobals->GetCount(); i++)
 				{
 				ICCItem *pItem = pGlobals->GetElement(i);
@@ -1505,7 +1553,7 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 							sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
 							}
 						else
-							sHelp = strPatternSubst(sHelp, pGlobals->GetKey(i));
+							sHelp = strPatternSubst(sHelp, sKey);
 
 						}
 
