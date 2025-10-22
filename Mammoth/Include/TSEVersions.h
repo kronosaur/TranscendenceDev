@@ -547,7 +547,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //						Overrides the <Stargate> locationCriteria string.
 //
 //	 57: 2.0 Alpha 7
-//		tlisp:
+//      tlisp:
 //			(bAnd x1 [x2 ... xn])
 //				Returns the bitwise AND of all arguments.
 //				All arguments are coerced to 32-bit integers.
@@ -572,6 +572,19 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //			(bRoR x count)
 //				Returns x rotated right by count bits in 32-bit space.
 //				Bits shifted out of the low end wrap around to the high end.
+//			(help function)
+//				Returns the docstring for the function (accepts both primitives
+//				and lambdas)
+//			(help strFilter [typefilter])
+//				Upgraded to accept a typeFilter argument
+//					typFilter: (str: '*|'l|'lambda|'lambdas|'p|'primitive|'primitives)
+//						This argument allows including:
+//							*: all functions
+//							lambdas: only lambdas
+//							primitives: only primitives
+//						Default: 'primitives
+//			(lambda args [docstring] expr)
+//				Lambda now accepts an optional docstring that can be printed out with (help lambda)
 //		<AdventureDesc>
 //			<Constants>
 //				<MiningMaxOreLevels>

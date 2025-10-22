@@ -163,7 +163,7 @@ class CFunctionContextWrapper : public ICCAtom
 		//	ICCItem virtuals
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual ICCItem *Execute (CEvalContext *pCtx, ICCItem *pArgs) override;
-		virtual CString GetHelp (void) override { return NULL_STR; }
+		virtual CString GetHelp (void) override { return m_pFunction->GetHelp(); }
 		virtual CString GetStringValue (void) const override { return m_pFunction->GetStringValue(); }
 		virtual ValueTypes GetValueType (void) const override { return Function; }
 		virtual bool IsIdentifier (void) const override { return false; }

@@ -74,6 +74,7 @@ class CCons
 const DWORD PRFLAG_NO_QUOTES =						0x00000001;
 const DWORD	PRFLAG_ENCODE_FOR_DISPLAY =				0x00000002;
 const DWORD PRFLAG_FORCE_QUOTES =					0x00000004;
+const DWORD PRFLAG_NO_LIST_LAMBDA_ARGS =			0x00000008;
 
 //	Some helper classes
 
@@ -525,12 +526,15 @@ class CCLambda : public ICCAtom
 		CCLambda (void);
 
 		ICCItem *CreateFromList (ICCItem *pList, bool bArgsOnly);
+		ICCItem *GetArgList (void) { return m_pArgList ? (m_pArgList->IsList() ? m_pArgList : ((CCLambda *)m_pArgList)->GetArgList()) : NULL; }
+		void SetHelp (CString sHelp) { initDesc(sHelp); }
 		void SetLocalSymbols (CCodeChain *pCC, ICCItem *pSymbols);
 
 		//	ICCItem virtuals
 
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual ICCItem *Execute (CEvalContext *pCtx, ICCItem *pArgs) override;
+		virtual CString GetHelp (void) override { return m_sDesc; }
 		virtual CString GetStringValue (void) const override { return LITERAL("[lambda expression]"); }
 		virtual ValueTypes GetValueType (void) const override { return Function; }
 		virtual bool IsIdentifier (void) const override { return false; }
@@ -543,9 +547,12 @@ class CCLambda : public ICCAtom
 		virtual void DestroyItem (void) override;
 
 	private:
+		void initDesc (CString sHelp);
+
 		ICCItem *m_pArgList;
 		ICCItem *m_pCode;
 		ICCItem *m_pLocalSymbols;
+		CString m_sDesc;
 	};
 
 //	A list is a list of items
