@@ -5,9 +5,9 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							55;
-constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
-constexpr DWORD SYSTEM_SAVE_VERSION =					213;
+constexpr DWORD API_VERSION =							56;
+constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
+constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 
 //	Uncomment out the following define when building a stable release
 
@@ -452,6 +452,100 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //							distance (in ls) at which sound falloff starts
 //							default: 0.0
 //
+//	 56: 2.0 Alpha 6
+//		tlisp:
+//			(sysAddStargateTopology [nodeID] gateID destNodeID destGateID [optionsStruct])
+//				optionsStruct: (struct)
+//					color: (string: html argb color)
+//						Specifies an argb color to use for the topology gate link on the galaxy map
+//						If Alpha is not specified, argbLinkColor is assumed to have full alpha (0xFF)
+//					attributes: (string)
+//						An attributes string. See trnCreateAllStargates for special known-fields.
+//					beaconType: (unid)
+//						The type of beacon to spawn
+//					gateType: (unid)
+//						The type of gate to spawn
+//					locationCriteria: (string)
+//						the in-system location criteria to use for placing the gate
+//					fromAttributes: (string)
+//						An attributes string for the from-side link.
+//						See trnCreateAllStargates for special known-fields.
+//					fromBeaconType: (unid)
+//						The type of beacon to spawn on the from side
+//					fromGateType: (unid)
+//						The type of gate to spawn on the from side
+//					fromLocationCriteria: (string)
+//						the in-system location criteria to use for placing the gate on the from side
+//					toAttributes: (string)
+//						An attributes string for the to-side link.
+//						See trnCreateAllStargates for special known-fields.
+//					toBeaconType: (unid)
+//						The type of beacon to spawn on the to side
+//					toGateType: (unid)
+//						The type of gate to spawn on the to side
+//					toLocationCriteria: (string)
+//						the in-system location criteria to use for placing the gate on the to side
+//			(sysGetStargateProperty [nodeID] gateID property)
+//				'attributes: new property to retrieve <Stargate> attributes
+//				'linkColor: new property to retrieve linkColor as HTML color string if present
+//				'locationCriteria: new property for location criteria to use for placing the gate
+//				'gateType: the unid of the stargate
+//				'beaconType: the unid of the stargate beacons
+//		<ShipClass>
+//			<Drive>
+//				powerUseRatio: (Double)
+//					ratio to apply to auto-computed power use, ex: 2.0 doubles power consumption.
+//					Ignored if explicit powerUse is set.
+//					default: 1.0
+//		<StationType>
+//			<Encounter>
+//				distanceFrequency: (str)
+//					Now supports distances beyond 5 at a single frequency
+//					Ex: "ccccc|curvv v"
+//					Default (if not specified) is NotRandom
+//		<SystemMap>
+//			<...><Random>
+//				(NOTE:) modded systemTypes that do not use trnCreateAllStargates may not respect the
+//					following fields except for linkColor.
+//				gateLocationCriteria: (string)
+//					the in-system location criteria to use for placing the gate
+//				beaconType: (unid)
+//					The type of beacons to spawn
+//				gateType: (unid)
+//					The type of gates to spawn
+//				linkAttributes: (string)
+//					An attributes string. See trnCreateAllStargates for special known-fields.
+//				linkColor: (string: html argb color)
+//					The color to display this stargate link in on the galaxy map.
+//					If Alpha is not specified, linkColor is assumed to have full alpha (0xFF)
+//			<...><Stargate>
+//				(NOTE:) modded systemTypes that do not use trnCreateAllStargates may not respect the
+//					following fields except for linkColor.
+//				attributes: (string)
+//					An attributes string. See trnCreateAllStargates for special known-fields.
+//				beaconType: (unid)
+//					The type of beacon to spawn
+//				gateType: (unid)
+//					The type of gate to spawn
+//				linkColor: (string: html argb color)
+//					The color to display this stargate link in on the galaxy map.
+//					If Alpha is not specified, linkColor is assumed to have full alpha (0xFF)
+//				locationCriteria: (string)
+//					the in-system location criteria to use for placing the gate
+//				<FromGate>/<ToGate>
+//					attributes: (string)
+//						An attributes string. See trnCreateAllStargates for special known-fields.
+//						Overrides the <Stargate> attribute string.
+//					beaconType: (unid)
+//						The type of beacon to spawn for this side of the gate
+//						Overrides the <Stargate> beaconType.
+//					gateType: (unid)
+//						The type of gate to spawn for this side of the gate
+//						Overrides the <Stargate> gateType.
+//					locationCriteria: (string)
+//						the in-system location criteria to use for placing the gate
+//						Overrides the <Stargate> locationCriteria string.
+//
 
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
@@ -560,6 +654,14 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //
 //	40: 1.9 Beta 4
 //		Added design type in dwFlags or CDesignType.
+//
+//	41: 2.0 Alpha 6
+//		Add gate link RGB color
+//		Add gate type
+//		Add gate beacon type
+//		Add gate link attributes
+//		Add gate location criteria
+//
 
 
 //	SYSTEM VERSION HISTORY -----------------------------------------------------
@@ -1209,3 +1311,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //
 //	213: 2.0 Alpha 2
 //		Change DiceRange to use -1 for not set
+//
+//	214: 2.0 Alpha 7
+//		Change CParticleArray::m_iLifeLeft to milliseconds game time
+//		(instead of ticks)

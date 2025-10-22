@@ -1312,6 +1312,12 @@
 
 	<Globals>
 		(block Nil
+
+			;	Set this to a non-Nil value in the globals element of your
+			;	own mod to enable debug logging during stargate creation.
+			;	This prints out diagnostic info to debug.log
+
+			(setq dbgLogCreateAllStargates 1)
 		
 			(setq trnCreateAllStargates (lambda (options)
 
@@ -1370,10 +1376,10 @@
 						)
 					)
 
-					; Enumerate all the stargates that this system should have.
-					; Create those that are needed.
+					; Map-enum all the stargates that this system should have.
+					; Create those that are needed and return in a list.
 					
-					(enum allStargates theGate
+					(map allStargates 'excludeNil theGate
 						(switch
 							;	If this stargate already exists here, then no need to do anything
 
@@ -1386,65 +1392,185 @@
 							(sysHasAttribute (sysGetStargateDestinationNode theGate) 'noAutoGateCreate)
 								Nil
 
-							;	If this is an uncharted stargate, then create a Majellen gate somewhere
-							;	out in the distance.
+							;	If the gate itself does not want us to create this gate, then skip.
+							
+							(sysStargateHasAttribute theGate 'noAutoGateCreate)
+								Nil
 
-							(sysGetStargateProperty theGate 'uncharted)
-								(block ()
-									(sysCreateStargate &stUnchartedMajellenStargate;
-										(sysVectorRandom Nil (random 1200 1500) 300 "t")
-										theGate
-										)
-									)
-
-							;	Otherwise, create a standard gate
-
-							(block (
-								;	The coreward gate is usually in the inner system.
-								;	The others are in the outer system.
-
-								(locationCriteria (if (= theGate corewardGate)
-									(list 'location corewardLocationCriteria)
-									(list 'location edgewardLocationCriteria)
-									))
-
-								gateObj beacon1Pos beacon2Pos
-								)
-
-								;	Create the stargate
-
-								(setq gateObj (sysCreateStargate
-									stargateType
-									locationCriteria
-									theGate
-									))
-									
-								;	If we could not create the gate, it is probably because we did not
-								;	have enough locations. This should never happen, but just in case we
-								;	handle it here.
-								
-								(if (not gateObj)
-									(setq gateObj (sysCreateStargate stargateType (sysVectorRandom Nil 120 10) theGate))
-									)
-									
-								;	The position of the beacons depends on whether the gate leads
-								;	to the core or not.
-								
-								(setq beacon1Pos (sysVectorPolarOffset gateObj 270 12))
-								(if (eq theGate corewardGate)
-									(setq beacon2Pos (sysVectorPolarOffset gateObj 90 12))
-									(setq beacon2Pos (sysVectorPolarOffset gateObj 0 12))
-									)
-									
-								;	Create beacons
-
-								(sysCreateStation beaconType beacon1Pos)
-								(sysCreateStation beaconType beacon2Pos)
+							;	Otherwise we try to make a gate
+							
+							(trnCreateStargate
+								theGate
+								(= theGate corewardGate)
+								(if (= theGate corewardGate) corewardLocationCriteria edgewardLocationCriteria)
+								stargateType
+								beaconType
+								&stUnchartedMajellenStargate;
+								Nil
 								)
 							)
 						)
 					)
 				))
+			
+			(setq trnCreateStargate (lambda 
+				;	Args
+				(
+					theGate									;	The gate to create
+					isCorewardGate							;	If this gate should be treated as corewards
+					defaultLocationCriteria					;	The default location criteria to use for creating this gate if no override is specified in stargate properties
+					defaultStargateUNID						;	The default stargate type to create if not uncharted and no override is specified in stargate properties
+					defaultBeaconUNID						;	The default stargate beacon type to create if not uncharted and no override is specified in stargate properties
+					defaultUnchartedStargateUNID			;	The default stargate type to create if not uncharted and no override is specified in stargate properties
+					defaultUnchartedBeaconUNID				;	The default stargate beacon type to create if not uncharted and no override is specified in stargate properties
+				)
+				(block (
+						;	Populate args with defaults if any are Nil and default needs to be non-nil
+
+						(defaultStargateUNID (or defaultStargateUNID &stStargate;))
+						(defaultBeaconUNID (or defaultBeaconUNID &stStargateBeacon;))
+						(defaultUnchartedStargateUNID (or defaultUnchartedStargateUNID &stUnchartedMajellenStargate;))
+						(defaultUnchartedBeaconUNID (or defaultUnchartedBeaconUNID ()))	;;	Uncharted gates dont normally get beacons
+
+						;	Determine the location criteria
+						
+						(locationCriteriaOverride (sysGetStargateProperty theGate 'locationCriteria))
+						(locationCriteria (or
+							(if (!= locationCriteriaOverride "") locationCriteriaOverride)
+							defaultLocationCriteria
+							"++outerSystem; -asteroids; -gasGiant; -void;"
+							))
+
+						;	Fetch the override types for this gate, if available
+
+						(rawGateOverrideUNID (sysGetStargateProperty theGate 'gateType))
+						(gateOverrideUNID (if (= rawGateOverrideUNID 0) Nil rawGateOverrideUNID))		;	if 0 convert to Nil for use in or-assignment
+
+						;	Fetch the override types for this beacon, if available
+
+						(rawBeaconOverrideUNID (sysGetStargateProperty theGate 'beaconType))
+						(beaconOverrideUNID (if (= rawBeaconOverrideUNID 0) Nil rawBeaconOverrideUNID))	;	if 0 convert to Nil for use in or-assginment
+
+						;	Figure out which default to use
+
+						(isUncharted (or (sysGetStargateProperty theGate 'uncharted) (sysStargateHasAttribute theGate 'unchartedLocation)))
+						(finalDefaultStargateUNID (if isUncharted defaultUnchartedStargateUNID defaultStargateUNID))
+						(finalDefaultBeaconUNID (if isUncharted defaultUnchartedBeaconUNID defaultBeaconUNID))
+
+						;	Figure out the actual stargate and beacon to make
+
+						(thisStargateUNID (or gateOverrideUNID finalDefaultStargateUNID))
+						(thisBeaconUNID (or beaconOverrideUNID finalDefaultBeaconUNID))
+
+						;	gate object to return
+
+						gateObj
+						)
+
+					;	If we have debug logging set, print out diagnostic info for developers
+
+					(if dbgLogCreateAllStargates (dbgLog (cat
+						"\ntrnCreateStargate called:"
+							"\n  (current node): " (sysGetNode)
+							"\n  theGate: " theGate
+							"\n  isCorewardGate: " isCorewardGate
+							"\n  defaultlocationCriteria: " defaultLocationCriteria
+							"\n  locationCriteriaOverride: " locationCriteriaOverride
+							"\n  locationCriteria: " locationCriteria
+							"\n  defaultStargateUNID: " (fmtUNID defaultStargateUNID)
+							"\n  defaultBeaconUNID: " (fmtUNID defaultBeaconUNID)
+							"\n  defaultUnchartedStargateUNID: " (fmtUNID defaultUnchartedStargateUNID)
+							"\n  defaultUnchartedBeaconUNID: " (fmtUNID defaultUnchartedBeaconUNID)
+							"\n  finalDefaultStargateUNID: " (fmtUNID finalDefaultStargateUNID)
+							"\n  finalDefaultBeaconUNID: " (fmtUNID finalDefaultBeaconUNID)
+							"\n  rawGateOverrideUNID:" (fmtUNID rawGateOverrideUNID)
+							"\n  gateOverrideUNID:" (fmtUNID gateOverrideUNID)
+							"\n  rawBeaconOverrideUNID:" (fmtUNID rawBeaconOverrideUNID)
+							"\n  beaconOverrideUNID:" (fmtUNID beaconOverrideUNID)
+							"\n  thisStargateUNID:" (fmtUNID thisStargateUNID)
+							"\n  thisBeaconUNID:" (fmtUNID thisBeaconUNID)
+						)))
+
+					;	Create the gate
+
+					(if (sysGetStargateProperty theGate 'uncharted)
+
+						;	If this is an uncharted stargate, then create the gate somewhere
+						;	out in the distance.
+
+						(block ()
+
+							;	Create the uncharted stargate far away from the system center
+
+							(setq gateObj (sysCreateStargate thisStargateUNID
+								(sysVectorRandom Nil (random 1200 1500) 300 "t")
+								theGate
+								))
+
+							;	Create beacons for uncharted gates only if a type is specified
+							
+							(if thisBeaconUNID
+								(block (
+									beacon1Pos beacon2Pos
+									)
+
+									;	Uncharted gates always use the non coreward beacon positions
+									
+									(setq beacon1Pos (sysVectorPolarOffset gateObj 270 12))
+									(setq beacon2Pos (sysVectorPolarOffset gateObj 0 12))
+										
+									;	Create beacons
+
+									(sysCreateStation thisBeaconUNID beacon1Pos)
+									(sysCreateStation thisBeaconUNID beacon2Pos)
+									)
+								)
+							
+							)
+
+						;	Otherwise, create a standard gate
+
+						(block (
+							beacon1Pos beacon2Pos
+							)
+
+							;	Create the stargate
+
+							(setq gateObj (sysCreateStargate
+								thisStargateUNID
+								(list 'location locationCriteria)
+								theGate
+								))
+								
+							;	If we could not create the gate, it is probably because we did not
+							;	have enough locations. This should never happen, but just in case we
+							;	handle it here.
+							
+							(if (not gateObj)
+								(if (or (strFind locationCriteria '+innerSystem) (strFind locationCriteria '*innerSystem))
+									(setq gateObj (sysCreateStargate thisStargateUNID (sysVectorRandom Nil (random 120 150) 10) theGate))
+									(setq gateObj (sysCreateStargate thisStargateUNID (sysVectorRandom Nil (random 500 600) 10) theGate))
+									)
+								)
+								
+							;	The position of the beacons depends on whether the gate leads
+							;	to the core or not.
+							
+							(setq beacon1Pos (sysVectorPolarOffset gateObj 270 12))
+							(if isCorewardGate
+								(setq beacon2Pos (sysVectorPolarOffset gateObj 90 12))
+								(setq beacon2Pos (sysVectorPolarOffset gateObj 0 12))
+								)
+								
+							;	Create beacons
+
+							(sysCreateStation thisBeaconUNID beacon1Pos)
+							(sysCreateStation thisBeaconUNID beacon2Pos)
+							)
+						)
+					gateObj
+					)
+			))
 				
 			(setq trnCreateOreDeposits (lambda (depositCount)
 				(block (
