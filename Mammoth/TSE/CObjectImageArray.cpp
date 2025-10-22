@@ -1493,7 +1493,7 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 			int iScanLinesPerWorker = iScanLines / iNumWorkers;
 			int iScanLinesRemainder = iScanLines % iNumWorkers;
 			int iYOffset = 0;
-			CSpritePaintWorker::ePaintMode iPaintMode = CSpritePaintWorker::eDebugTask;
+			CSpritePaintWorker::ePaintMode iPaintMode = CSpritePaintWorker::ePaintImage;
 
 			//	Create context
 			CSpritePaintWorker::SCtx WorkerCtx = CSpritePaintWorker::SCtx();
