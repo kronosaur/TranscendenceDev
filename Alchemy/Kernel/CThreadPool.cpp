@@ -26,7 +26,13 @@ bool CThreadPool::Boot (int iThreadCount)
 //	Start the thread pool.
 
 	{
-	int i;
+	m_cs.Lock();
+
+	ASSERT(m_iState == eNotBooted);
+
+	m_iState = eBooting;
+
+	AssertInOwnerThread();
 
 	ASSERT(iThreadCount > 0);
 
@@ -42,12 +48,16 @@ bool CThreadPool::Boot (int iThreadCount)
 	//	Start all the threads
 
 	m_Threads.InsertEmpty(iThreadCount - 1);
-	for (i = 0; i < m_Threads.GetCount(); i++)
+	for (int i = 0; i < m_Threads.GetCount(); i++)
 		m_Threads[i].hThread = ::kernelCreateThread(WorkerThreadStub, this);
 
 	m_iTasksRemaining = 0;
 
 	//	Done
+
+	m_iState = eBooted;
+
+	m_cs.Unlock();
 
 	return true;
 	}
@@ -60,7 +70,11 @@ void CThreadPool::CleanUp (void)
 //	that calls Run.
 
 	{
-	int i;
+	AssertInOwnerThread();
+
+	ASSERT(m_iState < eDeleting);
+
+	m_iState = eDeleting;
 
 	//	Ask all the threads to quit
 
@@ -71,7 +85,7 @@ void CThreadPool::CleanUp (void)
 	if (m_Threads.GetCount() > 0)
 		{
 		HANDLE *pThreads = new HANDLE [m_Threads.GetCount()];
-		for (i = 0; i < m_Threads.GetCount(); i++)
+		for (int i = 0; i < m_Threads.GetCount(); i++)
 			pThreads[i] = m_Threads[i].hThread;
 
 		::WaitForMultipleObjects(m_Threads.GetCount(), pThreads, TRUE, 5000);
@@ -80,7 +94,7 @@ void CThreadPool::CleanUp (void)
 
 		//	Close all the handles
 
-		for (i = 0; i < m_Threads.GetCount(); i++)
+		for (int i = 0; i < m_Threads.GetCount(); i++)
 			::CloseHandle(m_Threads[i].hThread);
 
 		m_Threads.DeleteAll();
@@ -88,16 +102,20 @@ void CThreadPool::CleanUp (void)
 
 	//	Free up any tasks
 
-	for (i = 0; i < m_Tasks.GetCount(); i++)
+	for (int i = 0; i < m_Tasks.GetCount(); i++)
 		delete m_Tasks[i];
 
 	m_Tasks.DeleteAll();
 
-	for (i = 0; i < m_Completed.GetCount(); i++)
+	for (int i = 0; i < m_Completed.GetCount(); i++)
 		delete m_Completed[i];
 
 	m_Completed.DeleteAll();
 	m_iTasksRemaining = 0;
+
+	//	Mark as deleted
+
+	m_iState = eDeleted;
 	}
 
 IThreadPoolTask *CThreadPool::GetTaskToRun (void)
@@ -134,7 +152,10 @@ void CThreadPool::Run (void)
 //	a single thread.
 
 	{
-	int i;
+	AssertInOwnerThread();
+
+	ASSERT(m_iState == eBooted);
+
 	IThreadPoolTask *pTask = NULL;
 
 	//	If we have no threads then we just run all the tasks
@@ -191,7 +212,7 @@ void CThreadPool::Run (void)
 
 	//	Clean up all tasks
 
-	for (i = 0; i < m_Completed.GetCount(); i++)
+	for (int i = 0; i < m_Completed.GetCount(); i++)
 		delete m_Completed[i];
 
 	m_Completed.DeleteAll();
@@ -210,8 +231,23 @@ void CThreadPool::RunTask (IThreadPoolTask *pTask)
 		{
 		pTask->Run();
 		}
+	catch (const ::CException& e)
+		{
+		m_cs.Lock();
+		::kernelDebugLogPattern("Exception in worker thread: %s", e.GetErrorMessage());
+		m_cs.Unlock();
+		}
+	catch (const std::exception& e)
+		{
+		m_cs.Lock();
+		::kernelDebugLogPattern("Exception in worker thread: %s", e.what());
+		m_cs.Unlock();
+		}
 	catch (...)
 		{
+		m_cs.Lock();
+		::kernelDebugLogPattern("Exception in worker thread: unknown exception");
+		m_cs.Unlock();
 		}
 
 	//	Done with task
