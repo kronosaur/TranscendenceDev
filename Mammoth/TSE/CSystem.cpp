@@ -551,6 +551,16 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 
 	Ctx.pThreadPool = m_pThreadPool;
 
+	//	If we don't have a background thread pool yet, create it
+
+	if (m_pBkrndThreadPool == NULL)
+	{
+		m_pBkrndThreadPool = new CThreadPool;
+		m_pBkrndThreadPool->Boot(Min(MAX_THREAD_COUNT, sysGetProcessorCount()));
+	}
+
+	Ctx.pBkrndThreadPool = m_pBkrndThreadPool;
+
 	DEBUG_CATCH
 	}
 
