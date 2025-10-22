@@ -15,8 +15,14 @@ void CThreadPool::AddTask (IThreadPoolTask *pTask)
 //	should not call this method while the worker threads are running.
 
 	{
+	ASSERT(m_iState == eBooted);
+
+	AssertInOwnerThread();
+
+	m_cs.Lock();
 	m_Tasks.Enqueue(pTask);
 	m_iTasksRemaining++;
+	m_cs.Unlock();
 	}
 
 bool CThreadPool::Boot (int iThreadCount)
