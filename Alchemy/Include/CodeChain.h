@@ -527,8 +527,7 @@ class CCLambda : public ICCAtom
 
 		ICCItem *CreateFromList (ICCItem *pList, bool bArgsOnly);
 		ICCItem *GetArgList (void) { return m_pArgList ? (m_pArgList->IsList() ? m_pArgList : ((CCLambda *)m_pArgList)->GetArgList()) : NULL; }
-		void SetHelp (CString sHelp) { m_sDesc = sHelp; }
-		void SetHelpUnformatted (CString sHelp);
+		void SetHelp (CString sHelp) { initDesc(sHelp); }
 		void SetLocalSymbols (CCodeChain *pCC, ICCItem *pSymbols);
 
 		//	ICCItem virtuals
