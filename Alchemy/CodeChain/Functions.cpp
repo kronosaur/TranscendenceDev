@@ -1376,13 +1376,32 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			//	because primitive functions are always in globals
 
 			CCSymbolTable *pGlobals = (CCSymbolTable *)pCC->GetGlobals();
+			CCSymbolTable *pLocals = (CCSymbolTable *)pCtx->pLocalSymbols;
 			CString sKey = CONSTLIT("localLambda");
+			bool bFoundKey = false;
+
 			for (int i = 0; i < pGlobals->GetCount(); i++)
 				{
 				if (pGlobals->GetElement(i) == pFirst)
 					{
 					sKey = pGlobals->GetKey(i);
+					bFoundKey = true;
 					break;
+					}
+				}
+
+			//	If we didnt find it in the global table, attempt to check
+			//	in the local symbol table if one exists
+
+			if (!bFoundKey && pLocals)
+				{
+				for (int i = 0; i < pLocals->GetCount(); i++)
+					{
+					if (pLocals->GetElement(i) == pFirst)
+						{
+						sKey = pLocals->GetKey(i);
+						break;
+						}
 					}
 				}
 
