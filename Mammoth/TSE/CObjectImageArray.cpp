@@ -1585,6 +1585,7 @@ void CObjectImageArray::WorkerPaintImage (CG32bitImage& Dest, int x, int y, int 
 		int ySprite = RectHeight(m_rcImage);
 		int cy = (iOffsetCY > 0) ? min(iOffsetCY, ySprite) : ySprite;
 		int yDest = y - (ySprite / 2) + iOffsetY;
+		int xDest = x - (RectWidth(m_rcImage) / 2);
 
 		if (bComposite)
 			{
@@ -1594,13 +1595,13 @@ void CObjectImageArray::WorkerPaintImage (CG32bitImage& Dest, int x, int y, int 
 				cy,
 				255,
 				*pSource,
-				x - (RectWidth(m_rcImage) / 2),
+				xDest,
 				yDest);
 			}
 		else if (m_iBlending == blendLighten)
 			{
 			CGDraw::BltLighten(Dest,
-				x - (RectWidth(m_rcImage) / 2),
+				xDest,
 				yDest,
 				*pSource,
 				xSrc,
@@ -1616,9 +1617,12 @@ void CObjectImageArray::WorkerPaintImage (CG32bitImage& Dest, int x, int y, int 
 				cy,
 				255,
 				*pSource,
-				x - (RectWidth(m_rcImage) / 2),
+				xDest,
 				yDest);
 			}
+
+		if (g_pUniverse->GetDebugOptions().IsShowPaintLocationEnabled())
+			Dest.SetPixel(xDest, yDest, CG32bitPixel(255, 0, 255));
 			
 		}
 	DEBUG_CATCH

@@ -14,6 +14,7 @@
 #define PROPERTY_SHOW_NAV_PATHS				CONSTLIT("showNavPaths")
 #define PROPERTY_SHOW_NODE_INFO				CONSTLIT("showNodeInfo")
 #define PROPERTY_SHOW_ORDER_INFO			CONSTLIT("showOrderInfo")
+#define PROPERTY_SHOW_PAINT_LOCATION		CONSTLIT("showPaintLocation")
 
 #define ERR_MUST_BE_IN_DEBUG_MODE			CONSTLIT("Must be in debug mode to set a debug property.")
 
@@ -72,6 +73,9 @@ ICCItemPtr CDebugOptions::GetProperty (const CString &sProperty) const
 	else if (strEquals(sProperty, PROPERTY_SHOW_ORDER_INFO))
 		return ICCItemPtr(m_bShowOrderInfo);
 
+	else if (strEquals(sProperty, PROPERTY_SHOW_PAINT_LOCATION))
+		return ICCItemPtr(m_bShowPaintLocation);
+
 	else
 		return ICCItemPtr(ICCItem::Nil);
 	}
@@ -115,6 +119,9 @@ bool CDebugOptions::SetProperty (const CString &sProperty, ICCItem *pValue, CStr
 
 	else if (strEquals(sProperty, PROPERTY_SHOW_ORDER_INFO))
 		m_bShowOrderInfo = !pValue->IsNil();
+
+	else if (strEquals(sProperty, PROPERTY_SHOW_PAINT_LOCATION))
+		m_bShowPaintLocation = !pValue->IsNil();
 
 	else
 		{

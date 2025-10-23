@@ -57,6 +57,7 @@ class CDebugOptions
 		ICCItemPtr GetProperty (const CString &sProperty) const;
 		bool IsShowAIDebugEnbled (void) const { return m_bShowAIDebug; }
 		bool IsShowBoundsEnabled (void) const { return m_bShowBounds; }
+		bool IsShowPaintLocationEnabled (void) const { return m_bShowPaintLocation; }
 		bool IsShowFacingsAngleEnabled (void) const { return m_bShowFacingsAngle; }
 		bool IsShowLineOfFireEnabled (void) const { return m_bShowLineOfFire; }
 		bool IsShowNavPathsEnabled (void) const { return m_bShowNavPaths; }
@@ -71,6 +72,7 @@ class CDebugOptions
 
 		bool m_bShowAIDebug = false;
 		bool m_bShowBounds = false;
+		bool m_bShowPaintLocation = false;
 		bool m_bShowLineOfFire = false;
 		bool m_bShowNavPaths = false;
 		bool m_bShowFacingsAngle = false;
