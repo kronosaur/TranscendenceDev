@@ -17,7 +17,7 @@ constexpr Metric TIDAL_KILL_THRESHOLD =			7250.0;	//	Acceleration at which we ge
 
 constexpr BYTE MAX_SPACE_OPACITY =				128;
 
-constexpr int MAX_THREAD_COUNT =				16;
+constexpr int MAX_THREAD_COUNT =				64;
 
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
 #define ON_OBJ_JUMP_POS_ADJ						CONSTLIT("OnObjJumpPosAdj")
