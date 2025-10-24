@@ -144,6 +144,8 @@ class CSFXOptions
 		CSFXOptions (void) { SetSFXQuality(sfxMaximum); }
 
 		BYTE GetHUDOpacity (void) const { return (m_bHUDTransparent ? 200 : 255); }
+		int GetMaxBkrndPaintWorkers (void) const { return m_iMaxBkrndPaintWorkers; }
+		int GetMaxSpritePaintWorkers (void) const { return m_iMaxSpritePaintWorkers; }
 		bool Is3DExtrasEnabled (void) const { return m_b3DExtras; }
 		bool Is3DSystemMapEnabled (void) const { return m_b3DSystemMap; }
 		bool IsDockScreenTransparent (void) const { return m_bDockScreenTransparent; }
@@ -158,19 +160,28 @@ class CSFXOptions
 		void SetSFXQuality (ESFXQuality iQuality);
 		void SetSFXQualityAuto (void);
 		void SetSpaceBackground (bool bEnabled = true) { m_bSpaceBackground = bEnabled; }
+		void SetUseMTPaint (bool bEnabled = true) { m_bUseMTPaint = bEnabled; }
 
 	private:
+		void CalcPaintThreads (void);
+
 		ESFXQuality m_iQuality;
 
-		bool m_b3DSystemMap;				//	3D effect on system map
-		bool m_b3DExtras;					//	Show extra 3D objects, like parallax asteroids
-		bool m_bHUDTransparent;				//	HUD has transparency effect
-		bool m_bManeuveringEffect;			//	Show maneuvering thruster effects
-		bool m_bSpaceBackground;			//	Show system image background
-		bool m_bStargateTravelEffect;		//	Show effect when changing systems
-		bool m_bStarGlow;					//	Show star glow in system map
-		bool m_bStarshine;					//	Show starshine effect
-		bool m_bDockScreenTransparent;		//	Show SRS behind dock screen
+		const SProcessorInfo m_sProcessorInfo = sysGetProcessorInfo();	//	Info about the processor for setting MT paint options
+
+		int m_iMaxBkrndPaintWorkers = 0;			//	Max number of additional threads to use for background painting. <2 means to run on main thread.
+		int m_iMaxSpritePaintWorkers = 0;			//	Max number of additional threads to use for sprite painting. <2 means to run on main thread.
+
+		bool m_b3DSystemMap = false;				//	3D effect on system map
+		bool m_b3DExtras = false;					//	Show extra 3D objects, like parallax asteroids
+		bool m_bHUDTransparent = false;				//	HUD has transparency effect
+		bool m_bManeuveringEffect = false;			//	Show maneuvering thruster effects
+		bool m_bSpaceBackground = false;			//	Show system image background
+		bool m_bStargateTravelEffect = false;		//	Show effect when changing systems
+		bool m_bStarGlow = false;					//	Show star glow in system map
+		bool m_bStarshine = false;					//	Show starshine effect
+		bool m_bDockScreenTransparent = false;		//	Show SRS behind dock screen
+		bool m_bUseMTPaint = false;					//	Use multithreaded paint. This option has no effect on 1-core systems or if dbg option ForceSTPaint is enabled.
 	};
 
 //	Engine Strings -------------------------------------------------------------
