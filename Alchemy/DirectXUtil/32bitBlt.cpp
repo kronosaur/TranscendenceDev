@@ -612,7 +612,7 @@ void CG32bitImage::Copy (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG
 		}
 	}
 
-void CG32bitImage::CopyChannel (ChannelTypes iChannel, int xSrc, int ySrc, int cxWidth, int cyHeight, const CG32bitImage &Source, int xDest, int yDest)
+void CG32bitImage::CopyChannel (ChannelTypes iChannel, int xSrc, int ySrc, int cxWidth, int cyHeight, const CG32bitImage &Source, int xDest, int yDest, DWORD dwFlags, ChannelTypes iDestChannel)
 
 //	CopyChannel
 //
@@ -629,10 +629,13 @@ void CG32bitImage::CopyChannel (ChannelTypes iChannel, int xSrc, int ySrc, int c
 	CG32bitPixel *pSrcRow = Source.GetPixelPos(xSrc, ySrc);
 	CG32bitPixel *pSrcRowEnd = Source.GetPixelPos(xSrc, ySrc + cyHeight);
 	CG32bitPixel *pDestRow = GetPixelPos(xDest, yDest);
+	int iUnrolledChannelMap = iChannel | (iDestChannel << 8);
+	bool bNeedsPreMult = (dwFlags & FLAG_PRE_MULT_ALPHA) && (iDestChannel == channelAlpha || (iUnrolledChannelMap == channelMapAlpha));
 
-	switch (iChannel)
+	switch (iUnrolledChannelMap)
 		{
-		case channelAlpha:
+		case channelMapAlpha:
+		case channelMapAlphaToAlpha:
 			while (pSrcRow < pSrcRowEnd)
 				{
 				CG32bitPixel *pSrcPos = pSrcRow;
@@ -641,7 +644,9 @@ void CG32bitImage::CopyChannel (ChannelTypes iChannel, int xSrc, int ySrc, int c
 
 				while (pSrcPos < pSrcPosEnd)
 					{
-					pDestPos->SetAlpha(pSrcPos->GetAlpha());
+					pDestPos->CopyAlpha(pSrcPos);
+					if (bNeedsPreMult)
+						pDestPos->PreMultSelf();
 
 					pSrcPos++;
 					pDestPos++;
@@ -652,7 +657,7 @@ void CG32bitImage::CopyChannel (ChannelTypes iChannel, int xSrc, int ySrc, int c
 				}
 			break;
 
-		case channelRed:
+		case channelMapAlphaToBlue:
 			while (pSrcRow < pSrcRowEnd)
 				{
 				CG32bitPixel *pSrcPos = pSrcRow;
@@ -661,7 +666,7 @@ void CG32bitImage::CopyChannel (ChannelTypes iChannel, int xSrc, int ySrc, int c
 
 				while (pSrcPos < pSrcPosEnd)
 					{
-					pDestPos->SetRed(pSrcPos->GetRed());
+					pDestPos->SetBlue(pSrcPos->GetAlpha());
 
 					pSrcPos++;
 					pDestPos++;
@@ -672,7 +677,7 @@ void CG32bitImage::CopyChannel (ChannelTypes iChannel, int xSrc, int ySrc, int c
 				}
 			break;
 
-		case channelGreen:
+		case channelMapAlphaToGreen:
 			while (pSrcRow < pSrcRowEnd)
 				{
 				CG32bitPixel *pSrcPos = pSrcRow;
@@ -681,7 +686,7 @@ void CG32bitImage::CopyChannel (ChannelTypes iChannel, int xSrc, int ySrc, int c
 
 				while (pSrcPos < pSrcPosEnd)
 					{
-					pDestPos->SetGreen(pSrcPos->GetGreen());
+					pDestPos->SetGreen(pSrcPos->GetAlpha());
 
 					pSrcPos++;
 					pDestPos++;
@@ -692,7 +697,7 @@ void CG32bitImage::CopyChannel (ChannelTypes iChannel, int xSrc, int ySrc, int c
 				}
 			break;
 
-		case channelBlue:
+		case channelMapAlphaToRed:
 			while (pSrcRow < pSrcRowEnd)
 				{
 				CG32bitPixel *pSrcPos = pSrcRow;
@@ -701,7 +706,256 @@ void CG32bitImage::CopyChannel (ChannelTypes iChannel, int xSrc, int ySrc, int c
 
 				while (pSrcPos < pSrcPosEnd)
 					{
-					pDestPos->SetBlue(pSrcPos->GetBlue());
+					pDestPos->SetRed(pSrcPos->GetAlpha());
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Source.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelMapRed:
+		case channelMapRedToRed:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxWidth;
+				CG32bitPixel *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					pDestPos->CopyRed(pSrcPos);
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Source.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelMapRedToAlpha:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxWidth;
+				CG32bitPixel *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					pDestPos->SetAlpha(pSrcPos->GetRed());
+					if (bNeedsPreMult)
+						pDestPos->PreMultSelf();
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Source.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelMapRedToGreen:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxWidth;
+				CG32bitPixel *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					pDestPos->SetGreen(pSrcPos->GetRed());
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Source.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelMapRedToBlue:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxWidth;
+				CG32bitPixel *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					pDestPos->SetBlue(pSrcPos->GetRed());
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Source.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelMapGreen:
+		case channelMapGreenToGreen:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxWidth;
+				CG32bitPixel *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					pDestPos->CopyGreen(pSrcPos);
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Source.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelMapGreenToAlpha:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxWidth;
+				CG32bitPixel *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					pDestPos->SetAlpha(pSrcPos->GetGreen());
+					if (bNeedsPreMult)
+						pDestPos->PreMultSelf();
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Source.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelMapGreenToRed:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxWidth;
+				CG32bitPixel *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					pDestPos->SetRed(pSrcPos->GetGreen());
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Source.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelMapGreenToBlue:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxWidth;
+				CG32bitPixel *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					pDestPos->SetBlue(pSrcPos->GetGreen());
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Source.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelMapBlue:
+		case channelMapBlueToBlue:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxWidth;
+				CG32bitPixel *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					pDestPos->CopyBlue(pSrcPos);
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Source.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelMapBlueToAlpha:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxWidth;
+				CG32bitPixel *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					pDestPos->SetAlpha(pSrcPos->GetBlue());
+					if (bNeedsPreMult)
+						pDestPos->PreMultSelf();
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Source.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelMapBlueToRed:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxWidth;
+				CG32bitPixel *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					pDestPos->SetRed(pSrcPos->GetBlue());
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Source.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelMapBlueToGreen:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxWidth;
+				CG32bitPixel *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					pDestPos->SetGreen(pSrcPos->GetBlue());
 
 					pSrcPos++;
 					pDestPos++;

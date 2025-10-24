@@ -479,7 +479,7 @@ class CUniverse
 		void SetDebugMode (bool bDebug = true) { m_bDebugMode = bDebug; }
 		bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
 		void SetDifficultyLevel (CDifficultyOptions::ELevel iLevel) { m_Difficulty.SetLevel(iLevel); }
-		void SetEngineOptions (const CEngineOptions &Options) { m_EngineOptions.Merge(Options); }
+		void SetEngineOptions (const CEngineOptions &Options) { m_EngineOptions = Options; }
 		bool SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData);
 		void SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV = NULL);
 		bool SetPOV (CSpaceObject *pPOV);
