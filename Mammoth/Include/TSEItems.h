@@ -645,6 +645,12 @@ class CItemCtx
 		CItemCtx (const CSpaceObject *pSource, const CInstalledArmor *pArmor) : m_pSource(const_cast<CSpaceObject *>(pSource)), m_pArmor(const_cast<CInstalledArmor *>(pArmor)) { }
 		CItemCtx (const CSpaceObject *pSource, const CInstalledDevice *pDevice) : m_pSource(const_cast<CSpaceObject *>(pSource)), m_pDevice(const_cast<CInstalledDevice *>(pDevice)) { }
 
+		CItemCtx (const CItemCtx& Src) { Copy(Src); }
+		CItemCtx (CItemCtx&& Src) noexcept { Copy(Src); }
+
+		CItemCtx& operator= (const CItemCtx& Src) { Copy(Src); return *this; }
+		CItemCtx& operator= (CItemCtx&& Src) noexcept { Copy(Src); return *this; }
+
 		void ClearItemCache (void);
 		ICCItem *CreateItemVariable (CCodeChain &CC);
 		CInstalledArmor *GetArmor (void) const;
@@ -670,6 +676,8 @@ class CItemCtx
 		bool ResolveVariant (void);
 
 	private:
+
+		void Copy (const CItemCtx &Src);
 		const CItem *GetItemPointer (void) const;
 
 		mutable const CItem *m_pItem = NULL;	//	The item

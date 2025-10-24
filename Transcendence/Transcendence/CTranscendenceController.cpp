@@ -659,6 +659,7 @@ ALERROR CTranscendenceController::OnBoot (char *pszCommandLine, SHIOptions *retO
 	retOptions->m_bForceNonExclusiveMode = (m_Settings.GetBoolean(CGameSettings::forceNonExclusive) && !retOptions->m_bForceExclusiveMode);
 	retOptions->m_bForceScreenSize = m_Settings.GetBoolean(CGameSettings::force1024Res) || m_Settings.GetBoolean(CGameSettings::force1280Res);
 	retOptions->m_bNoGPUAcceleration = m_Settings.GetBoolean(CGameSettings::noGPUAcceleration);
+	retOptions->m_bUse60fps = m_Settings.GetBoolean(CGameSettings::use60fps);
 	retOptions->m_iSoundVolume = m_Settings.GetInteger(CGameSettings::soundVolume);
 	retOptions->m_sMusicFolder = m_Settings.GetString(CGameSettings::musicPath);
 	retOptions->m_bDebugVideo = m_Settings.GetBoolean(CGameSettings::debugVideo);
@@ -899,7 +900,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 			{
 			Defaults.iDifficulty = CDifficultyOptions::ParseID(m_Settings.GetString(CGameSettings::lastDifficulty));
 			if (Defaults.iDifficulty == CDifficultyOptions::ELevel::Unknown)
-				Defaults.iDifficulty = CDifficultyOptions::ELevel::Story;
+				Defaults.iDifficulty = CDifficultyOptions::ELevel::Normal;
 			}
 
 		//	New game screen

@@ -19,6 +19,41 @@ void CItemCtx::ClearItemCache (void)
 		m_pItem = NULL;
 	}
 
+void CItemCtx::Copy (const CItemCtx &Src)
+
+//	Copy
+//
+//	Copy from source
+
+	{
+	//	Sometimes m_pItem points to a local CItem. In that case, we need to
+	//	change it to point to us.
+
+	m_Item = Src.m_Item;
+	if (Src.m_pItem == &Src.m_Item)
+		{
+		m_pItem = &m_Item;
+		}
+
+	//	Otherwise, we assume the pointer is valid.
+
+	else
+		{
+		m_pItem = Src.m_pItem;
+		}
+
+	//	Other fields
+
+	m_pSource = Src.m_pSource;
+	m_pSourceShipClass = Src.m_pSourceShipClass;
+	m_pArmor = Src.m_pArmor;
+	m_pDevice = Src.m_pDevice;
+	m_pEnhancements = Src.m_pEnhancements;
+	m_pWeapon = Src.m_pWeapon;
+	m_iVariant = Src.m_iVariant;
+	m_Weapon = Src.m_Weapon;
+	}
+
 ICCItem *CItemCtx::CreateItemVariable (CCodeChain &CC)
 
 //	CreateItemVariable

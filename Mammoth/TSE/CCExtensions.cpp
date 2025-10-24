@@ -257,6 +257,7 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_GET_REMOVE_CONDITION_PRICE	148
 #define FN_OBJ_SQUADRON_COMMS		149
 #define FN_OBJ_SQUADRON_COMMS_MESSAGES	150
+#define FN_OBJ_REMOVE				151
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -505,6 +506,22 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_GET_ASCENDED_OBJECTS		41
 #define FN_SYS_ITEM_FREQUENCY			42
 #define FN_SYS_NEXT_NODE_TO				43
+#define FN_SYS_ADD_STARGATE_TOPOLOGY_COLORED	44
+#define FN_SYS_STARGATE_HAS_ATTRIBUTE	45
+
+#define OPT_SYS_ADD_STARGATE_TOPOLOGY_COLOR		CONSTLIT("color")
+#define OPT_SYS_ADD_STARGATE_ATTRIBUTES			CONSTLIT("attributes")
+#define OPT_SYS_ADD_STARGATE_LOCATION_CRITERIA	CONSTLIT("locationCriteria")
+#define OPT_SYS_ADD_STARGATE_TYPE				CONSTLIT("gateType")
+#define OPT_SYS_ADD_STARGATE_BEACON_TYPE		CONSTLIT("beaconType")
+#define OPT_SYS_ADD_STARGATE_ATTRIBUTES_FROM	CONSTLIT("fromAttributes")
+#define OPT_SYS_ADD_STARGATE_LOCATION_CRITERIA_FROM	CONSTLIT("fromLocationCriteria")
+#define OPT_SYS_ADD_STARGATE_TYPE_FROM			CONSTLIT("fromGateType")
+#define OPT_SYS_ADD_STARGATE_BEACON_TYPE_FROM	CONSTLIT("fromBeaconType")
+#define OPT_SYS_ADD_STARGATE_ATTRIBUTES_TO		CONSTLIT("toAttributes")
+#define OPT_SYS_ADD_STARGATE_LOCATION_CRITERIA_TO	CONSTLIT("toLocationCriteria")
+#define OPT_SYS_ADD_STARGATE_TYPE_TO			CONSTLIT("toGateType")
+#define OPT_SYS_ADD_STARGATE_BEACON_TYPE_TO		CONSTLIT("toBeaconType")
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -920,8 +937,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'linkedFireOptions\n"
 			"   'maxDamage           Maximum damage per shot\n"
 			"   'minDamage           Minimum damage per shot\n"
+			"   'missileSpeed\n"
 			"   'multiShot\n"
 			"   'omnidirectional\n"
+			"   'range\n"
 			"   'repeating\n"
 			"	'shipCounterPerShot\n"
 			"   'stdCost\n"
@@ -1751,8 +1770,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objDestroy",					fnObjSet,		FN_OBJ_DESTROY,
-			"(objDestroy obj [objSource]) -> True/Nil",
+			"(objDestroy obj [objSource]) -> True/Nil\n\n"
+			"objSource: required in API 54+. For old 1 argument behavior, see objRemove.\n",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objRemove",					fnObjSet,		FN_OBJ_REMOVE,
+			"(objRemove obj) -> True/Nil",
+			"i",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objEnhanceItem",		fnObjSet,		FN_OBJ_ENHANCE_ITEM,
 			"(objEnhanceItem obj item enhancementType|item|enhancementDesc) -> result\n\n"
@@ -2805,7 +2829,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(msnDecline missionObj)",
 			"i",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"msnDestroy",					fnObjSet,			FN_OBJ_DESTROY,
+		{	"msnDestroy",					fnObjSet,			FN_OBJ_REMOVE,
 			"(msnDestroy missionObj) -> True/Nil",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -3019,7 +3043,23 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iis",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddStargateTopology",			fnSystemGet,	FN_SYS_ADD_STARGATE_TOPOLOGY,
-			"(sysAddStargateTopology [nodeID] gateID destNodeID destGateID) -> True/Nil",
+			"(sysAddStargateTopology [nodeID] gateID destNodeID destGateID [options]) -> True/Nil\n\n"
+			
+			"options is a struct with one or more of the following keys:\n\n"
+			
+			"   'color                    HTML color for the gate line in the galaxy map. Accepts alpha. 0 alpha is read as full alpha.\n"
+			"   'attributes               stargate link attributes string (applies to both sides)\n"
+			"   'locationCriteria         stargate location criteria string (applies to both sides)\n"
+			"   'gateType                 UNID (int) of the stargate stations to use (applies to both sides)\n"
+			"   'beaconType               UNID (int) of the beacon stations to use (applies to both sides)\n"
+			"   'fromAttributes           stargate link attributes string for this side\n"
+			"   'fromLocationCriteria     stargate location criteria string for this side\n"
+			"   'fromGateType             UNID (int) of the stargate stations to use for this side\n"
+			"   'fromBeaconType           UNID (int) of the beacon stations to use for this side\n"
+			"   'toAttributes             stargate link attributes string for the dest side\n"
+			"   'toLocationCriteria       stargate location criteria string for the dest side\n"
+			"   'toGateType               UNID (int) of the stargate stations to use for the dest side\n"
+			"   'toBeaconType             UNID (int) of the beacon stations to use for the dest side\n",
 			"sss*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAscendObject",				fnSystemGet,	FN_SYS_ASCEND_OBJECT,
@@ -3333,10 +3373,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"property:\n\n"
 			
+			"   'attributes: Attribute string\n"
+			"	'beaconType: UNID of the beacon type (0x0 = default)\n"
 			"   'destGateID: Destination gate ID\n"
 			"   'destID: Destination node\n"
 			"   'gateID: ID of this gate\n"
+			"	'gateType: UNID of the gate type (0x0 = default)\n"
 			"   'nodeID: NodeID of this gate\n"
+			"   'linkColor: html5 stargate link map color\n"
+			"   'locationCriteria: in-system location criteria used to place this gate\n"
 			"   'uncharted: True if uncharted\n",
 
 			"ss*",	0,	},
@@ -3360,6 +3405,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysHasAttribute",				fnSystemGet,	FN_SYS_HAS_ATTRIBUTE,
 			"(sysHasAttribute [nodeID] attrib) -> True/Nil",
 			"s*",	0,	},
+
+		{	"sysStargateHasAttribute",				fnSystemGet,	FN_SYS_STARGATE_HAS_ATTRIBUTE,
+			"(sysStargateHasAttribute [nodeID] gateID attrib) -> True/Nil",
+			"ss*",	0,	},
 
 		{	"sysHitScan",					fnSystemGet,	FN_SYS_HIT_SCAN,
 			"(sysHitScan source startPos endPos [options]) -> (obj hitPos) or Nil\n\n"
@@ -7104,6 +7153,11 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				FragCtx.Source = DamageCtx.Attacker;
 				FragCtx.pTarget = (!pObj->IsDestroyed() ? pObj : NULL);
 				FragCtx.vPos = vHitPos;
+				FragCtx.vVel = pObj->GetVel();
+				FragCtx.vSourcePos = vHitPos;
+				FragCtx.vSourceVel = FragCtx.vVel;
+				FragCtx.iDirection = VectorToPolar(vHitPos - pObj->GetPos());
+				FragCtx.iSourceDirection = FragCtx.iDirection;
 
 				pSystem->CreateWeaponFragments(FragCtx, DamageCtx.pCause);
 				}
@@ -7343,29 +7397,27 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					if (pLauncher)
 						{
 						CItemType *pType;
-						pLauncher->GetSelectedVariantInfo(pShip, NULL, NULL, &pType);
-						if (pType)
+						CItemType *pAmmoType;
+						pLauncher->GetSelectedVariantInfo(pShip, NULL, NULL, &pAmmoType, &pType);
+						if (pAmmoType)
 							{
-							if (pType->IsMissile())
+							CItemListManipulator ItemList(pShip->GetItemList());
+							CItem theItem(pAmmoType, 1);
+							if (ItemList.SetCursorAtItem(theItem))
 								{
-								CItemListManipulator ItemList(pShip->GetItemList());
-								CItem theItem(pType, 1);
-								if (ItemList.SetCursorAtItem(theItem))
-									{
-									ICCItem *pItem = CreateListFromItem(theItem);
-									pList->Append(pItem);
-									pItem->Discard();
-									}
+								ICCItem *pItem = CreateListFromItem(theItem);
+								pList->Append(pItem);
+								pItem->Discard();
 								}
-							else
+							}
+						else if (pType)
+							{
+							CItem theItem = pShip->GetNamedDeviceItem(devMissileWeapon);
+							if (theItem.GetType())
 								{
-								CItem theItem = pShip->GetNamedDeviceItem(devMissileWeapon);
-								if (theItem.GetType())
-									{
-									ICCItem *pItem = CreateListFromItem(theItem);
-									pList->Append(CreateListFromItem(theItem));
-									pItem->Discard();
-									}
+								ICCItem *pItem = CreateListFromItem(theItem);
+								pList->Append(CreateListFromItem(theItem));
+								pItem->Discard();
 								}
 							}
 						}
@@ -8737,6 +8789,21 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CDamageSource DamageSource(NULL, removedFromSystem);
 			if (pArgs->GetCount() > 1)
 				DamageSource = GetDamageSourceArg(*pCC, pArgs->GetElement(1));
+			else
+				{
+				if (pCtx->GetAPIVersion() >= 54)
+					{
+					CString sError = CONSTLIT("Calling (objDestroy obj) has been deprecated in API 54+. Use (objRemove obj) instead.");
+					return pCC->CreateError(sError, pArgs->GetElement(1));
+					}
+				}
+			pObj->Destroy(DamageSource.GetCause(), DamageSource);
+			return pCC->CreateTrue();
+			}
+
+		case FN_OBJ_REMOVE:
+			{
+			CDamageSource DamageSource(NULL, removedFromSystem);
 
 			pObj->Destroy(DamageSource.GetCause(), DamageSource);
 			return pCC->CreateTrue();
@@ -11285,6 +11352,15 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 				}
 
+			if (pTarget && pTarget->IsAscended())
+				{
+				if (pCtx->GetUniverse().InDebugMode())
+					return pCC->CreateError(CONSTLIT("shpOrder target is ascended"), pArgs->GetElement(1));
+
+				::kernelDebugLogPattern("ERROR: shpOrder %s target ascended.", pArgs->GetElement(1)->GetStringValue());
+				return pCC->CreateNil();
+				}
+
 			//	Get the data
 
 			COrderDesc OrderDesc = COrderDesc::ParseFromCCItem(*pCtx, iOrder, pTarget, *pArgs, iArg);
@@ -13011,7 +13087,10 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			Ctx.Source = Source;
 			Ctx.vPos = vPos;
 			Ctx.vVel = PolarToVector(iDir, rSpeed);
+			Ctx.vSourcePos = pSource ? pSource->GetPos() : vPos;
+			Ctx.vSourceVel = pSource ? pSource->GetVel() : NullVector;
 			Ctx.iDirection = iDir;
+			Ctx.iSourceDirection = pSource ? pSource->GetRotation() : iDir;
 			Ctx.pTarget = pTarget;
 			Ctx.dwFlags = (bDetonateNow ? SShotCreateCtx::CWF_EXPLOSION : SShotCreateCtx::CWF_WEAPON_FIRE);
 
@@ -13493,6 +13572,15 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 		GateDesc.sName = sStargateName;
 		GateDesc.sDestNode = sDestNode;
 		GateDesc.sDestName = sDestName;
+		GateDesc.sFromAttributes = CONSTLIT("");
+		GateDesc.sFromLocationCriteria = CONSTLIT("");
+		GateDesc.dwFromGateType = 0;
+		GateDesc.dwFromBeaconType = 0;
+		GateDesc.sToAttributes = CONSTLIT("");
+		GateDesc.sToLocationCriteria = CONSTLIT("");
+		GateDesc.dwToGateType = 0;
+		GateDesc.dwToBeaconType = 0;
+		GateDesc.rgbColor = DWToARGBColor(0);
 		if (pNode->AddStargateAndReturn(GateDesc) != NOERROR)
 			return pCC->CreateError(CONSTLIT("Unable to add stargate to topology node"), NULL);
 
@@ -13769,13 +13857,15 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_SYS_ADD_STARGATE_TOPOLOGY:
 			{
-			CTopologyNode *pNode;
+			CTopologyNode *pNode = NULL;
 			int iArg = 0;
+			int iNumArgs = pArgs->GetCount();
+			ICCItem *pOptions = NULL;
 
 			//	If we have more than one arg, then the first arg is
 			//	the node ID.
 
-			if (pArgs->GetCount() == 3)
+			if (iNumArgs == 3)
 				{
 				CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
 				if (pSystem == NULL)
@@ -13784,7 +13874,21 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pNode = pSystem->GetTopology();
 				}
 			else
-				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				{
+				//	Figure out if we have a node to get, options to get, or both
+				//	check if the last argument is options
+
+				ICCItem *pPossiblyOptions = pArgs->GetElement(iNumArgs - 1);
+				if (pPossiblyOptions && pPossiblyOptions->IsSymbolTable())
+					pOptions = pPossiblyOptions;
+
+				//	Determine if the first argument is a node depending on the number of args
+
+				if ((pOptions && iNumArgs == 5) || (pOptions == NULL && iNumArgs == 4))
+					pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				else if (pOptions == NULL && iNumArgs >= 5)
+					return pCC->CreateError(CONSTLIT("Invalid argument, 5th arg when a node is specified must be an options struct."), pArgs->GetElement(4));
+				}
 
 			if (pNode == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
@@ -13793,6 +13897,128 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			GateDesc.sName = pArgs->GetElement(iArg++)->GetStringValue();
 			GateDesc.sDestNode = pArgs->GetElement(iArg++)->GetStringValue();
 			GateDesc.sDestName = pArgs->GetElement(iArg++)->GetStringValue();
+			
+			if (pOptions)
+				{
+				ICCItem *pOptionValue;
+
+				//	We will reuse pOptionValue for each option
+
+				//	Load the color option if present
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_TOPOLOGY_COLOR);
+				if (pOptionValue)
+					{
+					GateDesc.rgbColor = LoadARGBColor(pOptionValue->GetStringValue());
+					if (GateDesc.rgbColor.GetAlpha() == 0)
+						GateDesc.rgbColor.SetAlpha(0xFF);
+					}
+				else
+					GateDesc.rgbColor = DWToARGBColor(0);
+				
+				//	Load the attributes
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_ATTRIBUTES);
+				if (pOptionValue)
+					{
+					GateDesc.sFromAttributes = pOptionValue->GetStringValue();
+					GateDesc.sToAttributes = pOptionValue->GetStringValue();
+					}
+				else
+					{
+					GateDesc.sFromAttributes = CONSTLIT("");
+					GateDesc.sToAttributes = CONSTLIT("");
+					}
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_ATTRIBUTES_FROM);
+				if (pOptionValue)
+					GateDesc.sFromAttributes = pOptionValue->GetStringValue();
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_ATTRIBUTES_TO);
+				if (pOptionValue)
+					GateDesc.sToAttributes = pOptionValue->GetStringValue();
+
+				//	Load the location criteria
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_LOCATION_CRITERIA);
+				if (pOptionValue)
+					{
+					GateDesc.sFromLocationCriteria = pOptionValue->GetStringValue();
+					GateDesc.sToLocationCriteria = pOptionValue->GetStringValue();
+					}
+				else
+					{
+					GateDesc.sFromLocationCriteria = CONSTLIT("");
+					GateDesc.sToLocationCriteria = CONSTLIT("");
+					}
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_LOCATION_CRITERIA_FROM);
+				if (pOptionValue)
+					GateDesc.sFromLocationCriteria = pOptionValue->GetStringValue();
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_LOCATION_CRITERIA_TO);
+				if (pOptionValue)
+					GateDesc.sToLocationCriteria = pOptionValue->GetStringValue();
+
+				//	Load the gate type
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_TYPE);
+				if (pOptionValue)
+					{
+					GateDesc.dwFromGateType = pOptionValue->GetIntegerValue();
+					GateDesc.dwToGateType = pOptionValue->GetIntegerValue();
+					}
+				else
+					{
+					GateDesc.dwFromGateType = 0;
+					GateDesc.dwToGateType = 0;
+					}
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_TYPE_FROM);
+				if (pOptionValue)
+					GateDesc.dwFromGateType = pOptionValue->GetIntegerValue();
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_TYPE_TO);
+				if (pOptionValue)
+					GateDesc.dwToGateType = pOptionValue->GetIntegerValue();
+
+				//	Load the beacon type
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_BEACON_TYPE);
+				if (pOptionValue)
+					{
+					GateDesc.dwFromBeaconType = pOptionValue->GetIntegerValue();
+					GateDesc.dwToBeaconType = pOptionValue->GetIntegerValue();
+					}
+				else
+					{
+					GateDesc.dwFromBeaconType = 0;
+					GateDesc.dwToBeaconType = 0;
+					}
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_BEACON_TYPE_FROM);
+				if (pOptionValue)
+					GateDesc.dwFromBeaconType = pOptionValue->GetIntegerValue();
+
+				pOptionValue = pOptions->GetElement(OPT_SYS_ADD_STARGATE_BEACON_TYPE_TO);
+				if (pOptionValue)
+					GateDesc.dwToBeaconType = pOptionValue->GetIntegerValue();
+
+				}
+
+			//	Handle case where we have no options
+
+			else
+				{
+				GateDesc.dwFromBeaconType = 0;
+				GateDesc.dwFromGateType = 0;
+				GateDesc.dwToBeaconType = 0;
+				GateDesc.dwToGateType = 0;
+				GateDesc.sFromAttributes = CONSTLIT("");
+				GateDesc.sFromLocationCriteria = CONSTLIT("");
+				GateDesc.sToAttributes = CONSTLIT("");
+				GateDesc.sToLocationCriteria = CONSTLIT("");
+				}
 
 			if (pNode->FindStargate(GateDesc.sName))
 				return pCC->CreateNil();
@@ -14874,6 +15100,30 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 			else
 				return fnTopologyGet(pEvalCtx, pArgs, FN_NODE_HAS_ATTRIBUTE);
+			}
+
+		case FN_SYS_STARGATE_HAS_ATTRIBUTE:
+			{
+			int iArg = 0;
+
+			CTopologyNode *pNode;
+			if (pArgs->GetCount() > 2)
+				{
+				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				if (pNode == NULL)
+					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
+				}
+			else
+				{
+				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
+				if (pNode == NULL)
+					return pCC->CreateNil();
+				}
+
+			CString sGateID = pArgs->GetElement(iArg++)->GetStringValue();
+			CString sMatch = pArgs->GetElement(iArg++)->GetStringValue();
+
+			return pCC->CreateBool(pNode->HasStargateAttribute(sGateID, sMatch));
 			}
 
 		case FN_SYS_NAV_PATH_POINT:

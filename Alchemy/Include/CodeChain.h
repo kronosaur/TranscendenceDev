@@ -303,7 +303,7 @@ class ICCAtom : public ICCItem
 
 		virtual ICCItem *CloneContainer (void) const override { return Reference(); }
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
-		virtual ICCItem *GetElement (int iIndex) const override { return (iIndex == 0 ? Reference() : NULL); }
+		virtual ICCItem *GetElement (int iIndex) const override { return (iIndex == 0 ? (ICCItem*)this : NULL); }
 		virtual int GetCount (void) const override { return 1; }
 		virtual ICCItem *Head (CCodeChain *pCC) override { return Reference(); }
 		virtual bool IsAtom (void) const override { return true; }
@@ -995,6 +995,8 @@ ALERROR pageLibraryInit (CCodeChain &CC);
 
 #define HELPER_COMPARE_COERCE_COMPATIBLE		0x00000001
 #define HELPER_COMPARE_COERCE_FULL				0x00000002
+#define HELPER_COMPARE_COERCE_NONE				0x00000004
+#define HELPER_COMPARE_CASE_SENSITIVE			0x00000008
 
 int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags = HELPER_COMPARE_COERCE_COMPATIBLE);
 int HelperCompareItemsLists (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce = true);

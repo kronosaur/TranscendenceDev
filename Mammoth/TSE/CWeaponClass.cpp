@@ -121,7 +121,7 @@ const Metric MAX_TARGET_RANGE =			(24.0 * LIGHT_SECOND);
 const int MAX_COUNTER =					100;
 
 const Metric STD_FIRE_RATE_SECS =		16.0;				//	Standard fire rate (secs)
-const Metric STD_FIRE_DELAY_TICKS =     8.0;
+const Metric STD_FIRE_DELAY_TICKS =		STD_FIRE_RATE_SECS / STD_SECONDS_PER_UPDATE;
 
 const Metric STD_AMMO_BALANCE =         -90.0;				//  Balance adj from having ammo
 const Metric STD_AMMO_MASS =            10.0;               //  Std ammo mass (kg)
@@ -1265,7 +1265,12 @@ CShotArray CWeaponClass::CalcShotsFired (CInstalledDevice &Device, const CWeapon
 
 				Shots[i].pTarget = Target.pObj;
 				if (bCanRotate)
-					Shots[i].iDir = Target.iFireAngle;
+					{
+					int iDeviceSlotAvgAngle = iRotationType != CDeviceRotationDesc::rotOmnidirectional ? AngleMod(Device.GetMinFireArc() + abs(Device.GetMaxFireArc() - Device.GetMinFireArc()) / 2) : 0;
+					int iSourceDirection = Device.GetSource()->GetRotation();
+					int iConfigurationOffsetAngle = AngleMod(Shots[i].iDir - iSourceDirection - iDeviceSlotAvgAngle);
+					Shots[i].iDir = AngleMod(iConfigurationOffsetAngle + Target.iFireAngle);
+					}
 				}
 			}
 
@@ -2700,6 +2705,8 @@ void CWeaponClass::FireWeaponShot (CSpaceObject *pSource,
 		Ctx.iRepeatingCount = iRepeatingCount;
 		Ctx.pTarget = pTarget;
 		Ctx.dwFlags = dwFlags;
+		Ctx.vSourceVel = pSource->GetVel();
+		Ctx.vSourcePos = pSource->GetPos();
 		pSource->GetSystem()->CreateWeaponFire(Ctx, &pNewObj);
 
 		//	Remember the shot, if necessary
@@ -3505,7 +3512,7 @@ CString GetReferenceFireRate (int iFireRate)
 	if (iFireRate <= 0)
 		return NULL_STR;
 
-	return strPatternSubst(CONSTLIT(" @ %s"), CLanguage::ComposeNumber(CLanguage::numberFireRate, iFireRate));
+	return strPatternSubst(CONSTLIT(" • %s"), CLanguage::ComposeNumber(CLanguage::numberFireRate, iFireRate));
 	}
 
 bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const
@@ -3525,7 +3532,9 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 	//	Fire rate
 
-	CString sFireRate = GetReferenceFireRate(CalcActivateDelay(Ctx));
+	int iShotDelay = CalcActivateDelay(Ctx);
+	Metric rFireRate = iShotDelay > 0 ? g_TicksPerSecond / (Metric)iShotDelay : 0;
+	CString sFireRate = GetReferenceFireRate(iShotDelay);
 
 	//	Compute the damage string and special string
 
@@ -3546,6 +3555,19 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 		DamageDesc Damage = pShot->GetDamage();
 		iDamageType = Damage.GetDamageType();
 
+		//	We display fragments as a radius if the fragment count is sufficiently high and not of a directional type
+		bool bDisplayFragmentRadius = (iFragments >= 8) && (pShot->fragAngleDirection == CWeaponFireDesc::fragAngleTarget || pShot->fragAngleDirection == CWeaponFireDesc::fragAngleTrigger);
+
+		//	Get the range (in lightseconds)
+
+		int iRange = mathRound(pRootShot->GetMaxRange() / LIGHT_SECOND);
+		bool bRemoveRadius = (pShot->GetType() == CWeaponFireDesc::ftArea
+			|| pShot->GetType() == CWeaponFireDesc::ftRadius
+			|| (pRootShot != pShot && bDisplayFragmentRadius));
+		CString sRange;
+		if (!bRemoveRadius)
+			sRange = iRange ? strPatternSubst(CONSTLIT(" • %d ls range"), iRange) : CONSTLIT("");
+
 		//	Modify the damage based on any enhancements that the ship may have
 
 		TSharedPtr<CItemEnhancementStack> pEnhancements = Ctx.GetEnhancementStack();
@@ -3556,40 +3578,55 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 		if (pShot->GetType() == CWeaponFireDesc::ftArea)
 			{
-			//	Compute total damage. NOTE: For particle weapons the damage 
-			//	specified is the total damage if ALL particle were to hit.
+			//	Compute DPS.
 
 			Metric rDamage = SHOCKWAVE_DAMAGE_FACTOR * Damage.GetDamageValue(DamageDesc::flagIncludeBonus);
+			Metric rDPS = rDamage * rFireRate;
 
 			//	Calculate the radius of the shockwave
 
 			int iRadius = mathRound((pShot->GetAveExpansionSpeed() * pShot->GetAveLifetime() * g_SecondsPerUpdate) / LIGHT_SECOND);
+
+			//	Generate the range
+			if (bRemoveRadius)
+				{
+				iRange = max(iRange - iRadius, 0);
+				sRange = iRange ? strPatternSubst(CONSTLIT(" • %d ls range"), iRange) : CONSTLIT("");
+				}
 
 			//	Compute result
 
 			int iDamage10 = mathRound(rDamage * 10.0);
 			int iDamage = iDamage10 / 10;
 			int iDamageTenth = iDamage10 % 10;
+			CString sDamage = iDamageTenth ? strPatternSubst(CONSTLIT("%d.%d"), iDamage, iDamageTenth) : strPatternSubst(CONSTLIT("%d"), iDamage);
 
-			if (iDamageTenth == 0)
-				sReference = strPatternSubst(CONSTLIT("%s shockwave %d hp in %d ls radius%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iRadius, sFireRate);
-			else
-				sReference = strPatternSubst(CONSTLIT("%s shockwave %d.%d hp in %d ls radius%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iDamageTenth, iRadius, sFireRate);
+			int iDPS10 = mathRound(rDPS * 10.0);
+			int iDPS = iDPS10 / 10;
+			int iDPSTenth = iDPS10 % 10;
+			CString sDPS = iDPSTenth ? strPatternSubst(CONSTLIT("%d.%d"), iDPS, iDPSTenth) : strPatternSubst(CONSTLIT("%d"), iDPS);
+
+			sReference = strPatternSubst(CONSTLIT("%s shockwave %s hp/sec (%s hp/shot) • %d ls radius%s%s"), GetDamageShortName(Damage.GetDamageType()), sDPS, sDamage, iRadius, sRange, sFireRate);
 			}
 
 		//	For area weapons...
 
 		else if (pShot->GetType() == CWeaponFireDesc::ftRadius)
 			{
-			CString sDamage = Damage.GetDesc(DamageDesc::flagAverageDamage);
-
-			//	Calculate the radius
-
-			int iRadius = mathRound(pShot->GetMaxRadius() / LIGHT_SECOND);
+			CString sDamage = Damage.GetDesc(DamageDesc::flagAverageDamage | DamageDesc::flagNoDamageType);
+			CString sDPS = Damage.GetDPSDesc(rFireRate, DamageDesc::flagAverageDamage);
 
 			//	Compute result
+			int iRadius = mathRound(pShot->GetMaxRange() / LIGHT_SECOND);
 
-			sReference = strPatternSubst(CONSTLIT("%s in %d ls radius%s"), sDamage, iRadius, sFireRate);
+			//	Generate the range
+			if (bRemoveRadius)
+				{
+				iRange = max(iRange - iRadius, 0);
+				sRange = iRange ? strPatternSubst(CONSTLIT(" • %d ls range"), iRange) : CONSTLIT("");
+				}
+
+			sReference = strPatternSubst(CONSTLIT("%s (%s/shot) • %d ls radius%s%s"), sDPS, sDamage, iRadius, sRange, sFireRate);
 			}
 
 		//	For particles...
@@ -3598,26 +3635,28 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 			{
 			//	Some weapons fire multiple shots (e.g., Avalanche cannon)
 
-			CString sMult;
 			int iMult = mathRound(CalcConfigurationMultiplier(pRootShot, false));
-			if (iMult != 1)
-				sMult = strPatternSubst(CONSTLIT(" (x%d)"), iMult);
+			CString sMult = iMult > 1 ? strPatternSubst(CONSTLIT(" (x%d)"), iMult) : CONSTLIT("");
 
 			//	Compute total damage. NOTE: For particle weapons the damage 
 			//	specified is the total damage if ALL particle were to hit.
 
 			Metric rDamage = PARTICLE_CLOUD_DAMAGE_FACTOR * Damage.GetDamageValue(DamageDesc::flagIncludeBonus);
+			Metric rDPS = rDamage * rFireRate * iMult;
 
 			//	Compute result
 
 			int iDamage10 = mathRound(rDamage * 10.0);
 			int iDamage = iDamage10 / 10;
 			int iDamageTenth = iDamage10 % 10;
+			CString sDamage = iDamageTenth ? strPatternSubst(CONSTLIT("%d.%d"), iDamage, iDamageTenth) : strPatternSubst(CONSTLIT("%d"), iDamage);
 
-			if (iDamageTenth == 0)
-				sReference = strPatternSubst(CONSTLIT("%s cloud %d hp%s%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, sMult, sFireRate);
-			else
-				sReference = strPatternSubst(CONSTLIT("%s cloud %d.%d hp%s%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iDamageTenth, sMult, sFireRate);
+			int iDPS10 = mathRound(rDPS * 10.0);
+			int iDPS = iDPS10 / 10;
+			int iDPSTenth = iDPS10 % 10;
+			CString sDPS = iDPSTenth ? strPatternSubst(CONSTLIT("%d.%d"), iDPS, iDPSTenth) : strPatternSubst(CONSTLIT("%d"), iDPS);
+
+			sReference = strPatternSubst(CONSTLIT("%s cloud %s hp/sec (%s hp/shot%s)%s%s"), GetDamageShortName(Damage.GetDamageType()), sDPS, sDamage, sMult, sRange, sFireRate);
 			}
 
 		//	For large number of fragments, we have a special description
@@ -3626,37 +3665,53 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 			{
 			//	Compute total damage
 
-			Metric rDamage = EXPECTED_FRAGMENT_HITS * iFragments * Damage.GetDamageValue(DamageDesc::flagIncludeBonus);
+			Metric rDamage = EXPECTED_FRAGMENT_HITS * iFragments * Damage.GetDamageValue(DamageDesc::flagIncludeBonus) * rFireRate;
+			Metric rDPS = rDamage * rFireRate;
 
 			//	Compute radius
 
 			int iRadius = mathRound(pShot->GetRatedSpeed() * pShot->GetAveLifetime() * g_SecondsPerUpdate / LIGHT_SECOND);
+
+			//	Generate the range
+			if (bRemoveRadius)
+				{
+				iRange = max(iRange - iRadius, 0);
+				sRange = iRange ? strPatternSubst(CONSTLIT(" • %d ls range"), iRange) : CONSTLIT("");
+				}
 
 			//	Compute result
 
 			int iDamage10 = mathRound(rDamage * 10.0);
 			int iDamage = iDamage10 / 10;
 			int iDamageTenth = iDamage10 % 10;
+			CString sDamage = iDamageTenth ? strPatternSubst(CONSTLIT("%d.%d"), iDamage, iDamageTenth) : strPatternSubst(CONSTLIT("%d"), iDamage);
 
-			if (iDamageTenth == 0)
-				sReference = strPatternSubst(CONSTLIT("%s fragmentation %d hp in %d ls radius%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iRadius, sFireRate);
-			else
-				sReference = strPatternSubst(CONSTLIT("%s fragmentation %d.%d hp in %d ls radius%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iDamageTenth, iRadius, sFireRate);
+			int iDPS10 = mathRound(rDPS * 10.0);
+			int iDPS = iDPS10 / 10;
+			int iDPSTenth = iDPS10 % 10;
+			CString sDPS = iDPSTenth ? strPatternSubst(CONSTLIT("%d.%d"), iDPS, iDPSTenth) : strPatternSubst(CONSTLIT("%d"), iDPS);
+
+			sReference = strPatternSubst(CONSTLIT("%s fragmentation %s hp/sec (%s hp/shot) • %d ls radius%s%s"), GetDamageShortName(Damage.GetDamageType()), sDPS, sDamage, iRadius, sRange, sFireRate);
 			}
 
 		//	Otherwise, a normal description
 
 		else
 			{
-			CString sDamage = Damage.GetDesc(DamageDesc::flagAverageDamage);
 
-			//	Add the multiplier
+			//	Get the multiplier
 
 			int iMult = mathRound(CalcConfigurationMultiplier(pRootShot));
-			if (iMult > 1)
-				sDamage.Append(strPatternSubst(CONSTLIT(" (x%d)"), iMult));
 
-			sReference.Append(sDamage);
+			sReference = Damage.GetDPSDesc(rFireRate, iMult, DamageDesc::flagAverageDamage);
+			CString sDamage = Damage.GetDesc(DamageDesc::flagAverageDamage | DamageDesc::flagNoDamageType);
+			CString sMult = iMult > 1 ? strPatternSubst(CONSTLIT(" (x%d)"), iMult) : CONSTLIT("");
+
+			sReference.Append(strPatternSubst(CONSTLIT(" (%s/shot%s)"), sDamage, sMult));
+
+			//	Add the range
+
+			sReference.Append(sRange);
 
 			//	Compute fire rate
 
@@ -3857,6 +3912,7 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 										   const CInstalledDevice *pDevice,
 										   CString *retsLabel,
 										   int *retiAmmoLeft,
+										   CItemType **retpAmmoType,
 										   CItemType **retpType,
 										   bool bUseCustomAmmoCountHandler)
 
@@ -3878,6 +3934,8 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 			*retiAmmoLeft = 0;
 		if (retpType)
 			*retpType = NULL;
+		if (retpAmmoType)
+			*retpAmmoType = NULL;
 		}
 
 	//  If we use ammo, return that
@@ -3939,7 +3997,10 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 			}
 
 		if (retpType)
-			*retpType = pShot->GetAmmoType();
+			*retpType = GetItemType();
+
+		if (retpAmmoType)
+			*retpAmmoType = pShot->GetAmmoType();
 		}
 
 	//	Else if we use charges, return that
@@ -3956,6 +4017,9 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 			else
 				*retiAmmoLeft = pDevice->GetCharges(pSource);
 			}
+
+		if (retpAmmoType)
+			*retpAmmoType = NULL;
 
 		if (retpType)
 			*retpType = GetItemType();
@@ -3975,6 +4039,9 @@ void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource,
 			else
 				*retiAmmoLeft = -1;
 			}
+
+		if (retpAmmoType)
+			*retpAmmoType = NULL;
 
 		if (retpType)
 			*retpType = GetItemType();

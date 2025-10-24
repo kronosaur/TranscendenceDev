@@ -549,11 +549,12 @@
 
 		<Weapon
 				type=				"missile"
+				damage=				"blast:5d12"
 
 				fireRate=			"36"
 				missileSpeed=		"50"
 				lifetime=			"90"
-				powerUse=			"200"
+				powerUse=			"250"
 				recoil=				"2"
 
 				effect=				"&efBlastShellDefault;"
@@ -564,7 +565,7 @@
 					count=			"30-36"
 					type=			"missile"
 					lifetime=		"10"
-					damage=			"blast:1d6; momentum:1; WMD:4"
+					damage=			"blast:1d6; momentum:1; WMD:5"
 					missileSpeed=	"32-48"
 					>
 

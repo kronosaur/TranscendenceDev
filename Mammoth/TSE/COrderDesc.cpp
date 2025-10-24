@@ -828,7 +828,7 @@ COrderDesc COrderDesc::ParseFromString (const CString &sValue)
 		return COrderDesc(iOrder);
 	}
 
-void COrderDesc::ReadFromStream (SLoadCtx &Ctx)
+void COrderDesc::ReadFromStream (SLoadCtx &Ctx, bool bOptional)
 
 //	ReadFromStream
 //
@@ -850,7 +850,7 @@ void COrderDesc::ReadFromStream (SLoadCtx &Ctx)
 			m_fCancelOnReactionOrder = ((dwFlags & 0x00000001) ? true : false);
 			}
 
-		CSystem::ReadObjRefFromStream(Ctx, &m_pTarget);
+		CSystem::ReadObjRefFromStream(Ctx, &m_pTarget, bOptional);
 
 		switch (GetDataType())
 			{
@@ -902,7 +902,7 @@ void COrderDesc::ReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read(dwLoad);
 		m_dwOrderType = LOWORD(dwLoad);
 
-		CSystem::ReadObjRefFromStream(Ctx, &m_pTarget);
+		CSystem::ReadObjRefFromStream(Ctx, &m_pTarget, bOptional);
 
 		switch (HIWORD(dwLoad))
 			{
@@ -992,7 +992,7 @@ void COrderDesc::ReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read(dwLoad);
 		m_dwOrderType = dwLoad;
 
-		CSystem::ReadObjRefFromStream(Ctx, &m_pTarget);
+		CSystem::ReadObjRefFromStream(Ctx, &m_pTarget, bOptional);
 
 		Ctx.pStream->Read(dwLoad);
 		m_dwDataType = (DWORD)EDataType::Int32;

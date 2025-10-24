@@ -146,6 +146,8 @@ struct SDesignTypeInfo
 
 typedef TSortMap<DWORD, SDesignTypeInfo> CDesignTypeStats;
 
+#include "ExportProcess.h"
+
 //	Functions
 
 const char *FrequencyChar (int iFreq);
@@ -161,6 +163,7 @@ void DoEffectPerformanceTest (CUniverse &Universe, CXMLElement *pCmdLine);
 void DoRandomNumberTest (void);
 void DoSmokeTest (CUniverse &Universe, CXMLElement *pCmdLine);
 void DoTradeSim (CUniverse &Universe, CXMLElement *pCmdLine);
+void ExportData (CUniverse& Universe, const CXMLElement& CmdLine);
 void GenerateAchievementsTable (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateArmorTable (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateAttributeList (CUniverse &Universe, CXMLElement *pCmdLine);

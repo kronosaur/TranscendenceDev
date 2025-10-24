@@ -14,7 +14,7 @@ CDelaunayStargateGenerator::CDelaunayStargateGenerator (CIntGraph &Graph, const 
 	{
 	}
 
-void CDelaunayStargateGenerator::Generate (TArray<CTopologyNode::SStargateRouteDesc> &Routes)
+void CDelaunayStargateGenerator::Generate (TArray<CTopologyNode::SStargateRouteDesc> &Routes, CTopologyNode::SStargateRouteDesc templateDesc)
 
 //	Generate
 //
@@ -50,6 +50,18 @@ void CDelaunayStargateGenerator::Generate (TArray<CTopologyNode::SStargateRouteD
 			CTopologyNode::SStargateRouteDesc *pRouteDesc = Routes.Insert();
 			pRouteDesc->pFromNode = pFrom;
 			pRouteDesc->pToNode = pTo;
+
+			//	Initialize rest of the desc from the templateDesc
+
+			pRouteDesc->sFromAttributes = templateDesc.sFromAttributes;
+			pRouteDesc->sToAttributes = templateDesc.sToAttributes;
+			pRouteDesc->sFromLocationCriteria = templateDesc.sFromLocationCriteria;
+			pRouteDesc->dwFromBeaconType = templateDesc.dwFromBeaconType;
+			pRouteDesc->dwFromGateType = templateDesc.dwFromGateType;
+			pRouteDesc->sToLocationCriteria = templateDesc.sToLocationCriteria;
+			pRouteDesc->dwToBeaconType = templateDesc.dwToBeaconType;
+			pRouteDesc->dwToGateType = templateDesc.dwToGateType;
+			pRouteDesc->rgbColor = templateDesc.rgbColor;
 			}
 		}
 	}

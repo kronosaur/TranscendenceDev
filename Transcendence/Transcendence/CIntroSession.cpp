@@ -1792,6 +1792,7 @@ void CIntroSession::Update (void)
 	//	Update the universe
 
 	SSystemUpdateCtx Ctx;
+	Ctx.bUse60fps = m_Settings.GetBoolean(CGameSettings::use60fps);
 	Ctx.bForceEventFiring = true;
 	if (!g_pTrans->m_bPaused)
 		{

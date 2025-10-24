@@ -19,6 +19,9 @@ RELEASE
 [ ] Generate .zip file and copy to Releases
 [ ] Rename Transcendence.zip or TranscendenceNext.zip
 [ ] Upload .zip to hosting server (and publish)
+[ ] Connect to DigitalOcean with FileZilla
+[ ] Upload to download.kronosaur.com in home directory
+[ ] sudo cp download.kronosaur.com/Transcendence.zip /var/www/download.kronosaur.com/
 [ ] Update Engine version in Multiverse (people will start downloading at this point)
 
 [ ] Post announcement to Multiverse (work on this ahead of time)
@@ -41,6 +44,17 @@ STEAM RELEASE
 [ ] Set the newly uploaded build to default
 [ ] Click Preview Changes and accept
 [ ] Run Steam client to test.
+
+TRANSDATA RELEASE
+-------------------------------------------------------------------------------
+[ ] Set version number in TransData resource file
+[ ] Build TransData in release mode
+[ ] Sign executable (signall.bat)
+[ ] Generate .zip file.
+[ ] Upload .zip to hosting server (and publish)
+[ ] Connect to DigitalOcean with FileZilla
+[ ] Upload to download.kronosaur.com in home directory
+[ ] sudo cp download.kronosaur.com/TranData.zip /var/www/download.kronosaur.com/
 
 WINDOWS STORE PACKAGE
 -------------------------------------------------------------------------------

@@ -43,6 +43,7 @@ ALERROR CAreaDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CAreaDamage *
 		return ERR_MEMORY;
 
 	pArea->Place(Ctx.vPos, Ctx.vVel);
+	pArea->SetSourceVel(Ctx.vSourceVel);
 
 	//	Get notifications when other objects are destroyed
 	pArea->SetObjectDestructionHook();
@@ -126,6 +127,7 @@ void CAreaDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSecon
 		{
 		SEffectMoveCtx Ctx;
 		Ctx.pObj = this;
+		Ctx.rSeconds = rSeconds;
 		bool bBoundsChanged;
 
 		m_pPainter->OnMove(Ctx, &bBoundsChanged);

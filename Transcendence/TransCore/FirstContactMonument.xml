@@ -153,7 +153,7 @@
 			<GetRumors>
 				(append
 					(rpgRumorAdd 'iocrymMonumentPub (make 'sequence 1 6) 20)
-					(if (eq (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+					(if (rpgEqPlayerClass &unidPilgrimClass;)
 						(rpgRumorAdd 'iocrymMonumentPub 'pilgrim.1 20)
 						(rpgRumorAdd 'iocrymMonumentPub 'quarantine.1 20)
 						)

@@ -29,7 +29,6 @@
 #define USE_COMPOSITE_LAYERS
 
 #ifdef DEBUG
-//#define DEBUG_USE_DX7
 //#define DEBUG_MAX_FRAME_RATE
 #endif
 
@@ -684,6 +683,7 @@ struct SHIOptions
 			m_bForceNonExclusiveMode(false),
 			m_bForceScreenSize(false),
 			m_bNoGPUAcceleration(false),
+			m_bUse60fps(false),
 			m_iSoundVolume(DEFAULT_SOUND_VOLUME),
 			m_bDebugVideo(false)
 		{ }
@@ -708,6 +708,7 @@ struct SHIOptions
 	bool m_bForceNonExclusiveMode;
 	bool m_bForceScreenSize;
 	bool m_bNoGPUAcceleration;
+	bool m_bUse60fps;					//	If TRUE, run at 60 fps
 
 	//	Sound options
 	int m_iSoundVolume;
@@ -739,11 +740,7 @@ class CHumanInterface
 		const SHIOptions &GetOptions (void) { return m_Options; }
 		CReanimator &GetReanimator (void);
 		CG32bitImage &GetScreen (void) { return m_ScreenMgr.GetScreen(); }
-#ifdef DEBUG_USE_DX7
-		CScreenMgr &GetScreenMgr (void) { return m_ScreenMgr; }
-#else
 		CScreenMgr3D &GetScreenMgr (void) { return m_ScreenMgr; }
-#endif
 		int GetScreenHeight (void) const { return m_ScreenMgr.GetHeight(); }
 		int GetScreenWidth (void) const { return m_ScreenMgr.GetWidth(); }
 		IHISession *GetSession (void) { return m_pCurSession; }
@@ -840,11 +837,7 @@ class CHumanInterface
 		TArray<IHISession *> m_BackgroundSessions;
 
 		HWND m_hWnd;
-#ifdef DEBUG_USE_DX7
-		CScreenMgr m_ScreenMgr;
-#else
 		CScreenMgr3D m_ScreenMgr;
-#endif
 		CBackgroundProcessor m_Background;
 		CBackgroundProcessor m_BackgroundLowPriority;
 		CTimerRegistry m_Timers;

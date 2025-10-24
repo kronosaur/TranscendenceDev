@@ -11,6 +11,7 @@ class CSystemMapThumbnails;
 
 const int SYSTEM_MAP_THUMB_WIDTH =              320;
 const int SYSTEM_MAP_THUMB_HEIGHT =             320;
+const CG32bitPixel RGB_NOT_SET =		    CG32bitPixel(0, 0, 0, 0);
 
 class CGalacticMapPainter
 	{
@@ -40,8 +41,11 @@ class CGalacticMapPainter
         void ViewToGalactic (int x, int y, int xCenter, int yCenter, int iScale, int *retx, int *rety) const;
 
 	private:
-		void DrawNode (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const;
-		void DrawNodeConnections (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y) const;
+		void DrawNode (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbLabelColor, CG32bitPixel rgbLabelBackColor) const;
+		void DrawNodeLabel (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbLabelColor, CG32bitPixel rgbLabelBackColor) const;
+		void DrawNodeLabel (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale) const { DrawNodeLabel(Dest, pNode, x, y, rScale, RGB_NOT_SET, RGB_NOT_SET); };
+		void DrawNodeIcon (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale) const;
+		void DrawNodeConnections (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, CG32bitPixel rgbDefaultConnectionColor) const;
         void DrawSelection (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbColor) const;
 		void DrawUnknownNode (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const;
 		int GetImageGalacticHeight (void) const { return (m_pImage ? (int)(m_pImage->GetHeight() / m_rImageScale) : 0); }

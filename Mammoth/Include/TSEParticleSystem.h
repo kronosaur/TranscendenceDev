@@ -6,7 +6,10 @@
 #pragma once
 
 struct SEffectUpdateCtx;
+struct SEffectMoveCtx;
 class CEffectParamDesc;
+
+#define MSEC_PER_UPDATE ((int)(1000 * g_SecondsPerUpdate))
 
 enum ParticlePaintStyles
 	{
@@ -236,6 +239,9 @@ class CParticleSystemDesc
 class CParticleArray
 	{
 	public:
+		//	NOTE: This structure is saved. Any size changes need to be
+		//	versioned.
+
 		struct SParticle
 			{
 			CVector Pos;						//	Position. Valid if we use real coordinates
@@ -250,13 +256,13 @@ class CParticleArray
 												//		(not valid if using real coordinates)
 
 			int iGeneration;					//	Created on this tick
-			int iLifeLeft;						//	Ticks of life left
+			int iLifeLeftMS;					//	Life left in milliseconds (game time)
 			int iDestiny;						//	Random number from 1-360
 			int iRotation;						//	Particle rotation
 			Metric rData;						//	Miscellaneous data for particle
 
-			DWORD fAlive:1;						//	TRUE if particle is alive
-			DWORD dwSpare:31;					//	Spare
+			bool fAlive;						//	TRUE if particle is alive
+			DWORD dwSpare:32;					//	Spare
 			};
 
 		CParticleArray (void);
@@ -266,7 +272,7 @@ class CParticleArray
 		void Paint (const CParticleSystemDesc &Desc, CG32bitImage &Dest, int xPos, int yPos, IEffectPainter *pPainter, SViewportPaintCtx &Ctx);
 		void Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx);
 
-		void AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft = -1, int iRotation = -1, int iDestiny = -1, int iGeneration = 0, Metric rData = 0.0);
+		void AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeftTicks = -1, int iRotation = -1, int iDestiny = -1, int iGeneration = 0, Metric rData = 0.0);
 		SParticle *GetArray (int *retiCount = NULL) const { if (retiCount) *retiCount = m_iCount; return m_pArray; }
 		const RECT &GetBounds (void) const { return m_rcBounds; }
 		void GetBounds (CVector *retvUR, CVector *retvLL);
@@ -290,11 +296,12 @@ class CParticleArray
 		void ReadFromStream (SLoadCtx &Ctx);
 		void ResetLastEmit (int iLastDirection, const CVector &vLastEmitPos, const CVector &vLastEmitVel = NullVector);
 		void SetOrigin (const CVector &vOrigin) { m_vOrigin = vOrigin; }
-		void UpdateMotionLinear (bool *retbAlive = NULL, CVector *retvAveragePos = NULL);
+		void UpdateMotionLinear (SEffectMoveCtx &Ctx, bool *retbAlive = NULL, CVector *retvAveragePos = NULL);
 		void UpdateRingCohesion (Metric rRadius, Metric rMinRadius, Metric rMaxRadius, int iCohesion, int iResistance);
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
+
 		struct SParticle64
 			{
 			CVector Pos;						//	Position. Valid if we use real coordinates
@@ -340,6 +347,31 @@ class CParticleArray
 			DWORD dwSpare:31;					//	Spare
 			};
 
+		struct SParticle212
+			{
+			CVector Pos;						//	Position. Valid if we use real coordinates
+			CVector Vel;						//	Velocity. Valid if we use real coordinates
+												//		NOTE: In Km per tick (unlike normal velocities)
+
+			int x;								//	Offset from center of particle cloud
+			int y;								//		(screen-coords, in 256ths of pixels)
+												//		(valid in all cases)
+			int xVel;							//	Velocity relative to particle cloud
+			int yVel;							//		(screen-coords, in 256ths of pixels per tick)
+												//		(not valid if using real coordinates)
+
+			int iGeneration;					//	Created on this tick
+			int iLifeLeft;						//	Ticks of life left
+			int iDestiny;						//	Random number from 1-360
+			int iRotation;						//	Particle rotation
+			Metric rData;						//	Miscellaneous data for particle
+
+			DWORD fAlive : 1;						//	TRUE if particle is alive
+			DWORD dwSpare : 31;					//	Spare
+			};
+
+		static int CalcLifeLeftTicks (const SParticle& Particle, int iLifetimeTicks);
+		static int ConvertToLifeLeftMS (int iLifeLeftTicks) { return (iLifeLeftTicks < 0 ? -1 : iLifeLeftTicks * MSEC_PER_UPDATE); }
 		void CleanUp (void);
 		void CreateInterpolatedParticles (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void CreateLinearParticles (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);

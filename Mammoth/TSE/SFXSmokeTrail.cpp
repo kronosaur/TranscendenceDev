@@ -30,6 +30,7 @@ class CSmokeTrailPainter : public IEffectPainter
 		virtual int GetFadeLifetime (bool bHit) const override { return m_pCreator->GetParticleLifetimeMax(); }
 		virtual void GetRect (RECT *retRect) const override;
 		virtual void OnBeginFade (void) override { m_iEmitLifetime = 0; }
+		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged = NULL) override;
 		virtual void OnUpdate (SEffectUpdateCtx &Ctx) override;
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override { Paint(Dest, x, y, Ctx); }
@@ -267,6 +268,24 @@ void CSmokeTrailPainter::OnReadFromStream (SLoadCtx &Ctx)
 	m_pParticlePainter = CEffectCreator::CreatePainterFromStreamAndCreator(Ctx, m_pCreator->GetParticleEffect());
 	}
 
+void CSmokeTrailPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged)
+
+//	OnMove
+//
+//	Move the particles
+
+	{
+
+	//	Update particle motion
+
+	m_Particles.UpdateMotionLinear(Ctx);
+
+	//	Bounds are always changing
+
+	if (retbBoundsChanged)
+		*retbBoundsChanged = true;
+	}
+
 void CSmokeTrailPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 
 //	OnUpdate
@@ -276,9 +295,7 @@ void CSmokeTrailPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 	{
 	if (m_iLastDirection != -1)
 		{
-		//	Update particle motion
-
-		m_Particles.UpdateMotionLinear();
+		//	Particle motion is now in OnMove
 
 		//	Create new particles (we create the particles after we update
 		//	the motion because we start out with some particles)

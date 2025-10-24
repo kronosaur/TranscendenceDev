@@ -3,18 +3,6 @@
 //	CExtension class
 //	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 //
-//	API VERSION HISTORY
-//
-//	 0: Unknown version
-//
-//	 1: 95-0.96b
-//		Original Extensions
-//
-//	 2: 0.97
-//		Changed gStation to gSource
-//
-//	 3: 1.1
-//		<SmokeTrail>: emitSpeed fixed (used in klicks per tick instead of per second)
 //
 //	See: LoadExtensionVersion in Utilities.cpp
 
@@ -93,6 +81,7 @@ CExtension::CExtension (void) :
 		m_bDeleted(false),
 		m_bUsesXML(false),
 		m_bUsesCompatibilityLibrary(false),
+		m_bUsesCompatibilityUNIDLibrary(false),
 		m_bHidden(false)
 
 //	CExtension constructor
@@ -148,6 +137,28 @@ void CExtension::AccumulateStats (SStats &Stats) const
 		Stats.dwTotalXMLMemory += (DWORDLONG)m_ModuleXML[i]->GetMemoryUsage();
 	}
 
+void CExtension::AddCompatibilityLibraryReferences (SDesignLoadCtx &Ctx)
+
+//	AddDefaultLibraryReferences
+//
+//	Adds default references if we have no other libraries
+
+	{
+
+	//	Add compatibility library if api version is pre-1.08e
+	//  1.08e is the first stable version that requires manual library definition
+	//	Note that API 25 and below still load the compatibility library as a fallback
+	//	if no other libraries were loaded by the extension.
+
+	if (GetAPIVersion() < 12 && GetFolderType() != folderBase)
+		m_bUsesCompatibilityLibrary = true;
+
+	//	Check if we are an older extension and use the non-namespaced legacy UNIDs
+
+	if (GetAPIVersion() < 54 && GetFolderType() != folderBase)
+		m_bUsesCompatibilityUNIDLibrary = true;
+	}
+
 void CExtension::AddDefaultLibraryReferences (SDesignLoadCtx &Ctx)
 
 //	AddDefaultLibraryReferences
@@ -164,6 +175,11 @@ void CExtension::AddDefaultLibraryReferences (SDesignLoadCtx &Ctx)
 		if (GetAPIVersion() < 26 && GetFolderType() != folderBase)
 			m_bUsesCompatibilityLibrary = true;
 		}
+
+	//	Check if we are an older extension and use the non-namespaced legacy UNIDs
+
+	if (GetAPIVersion() < 54 && GetFolderType() != folderBase)
+		m_bUsesCompatibilityUNIDLibrary = true;
 	}
 
 void CExtension::AddEntityNames (CExternalEntityTable *pEntities, TSortMap<DWORD, CString> *retMap) const
@@ -411,6 +427,7 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, EGameTypes iGame, CXMLE
 	pExtension->m_bAutoInclude = true;
 	pExtension->m_bUsesXML = false;
 	pExtension->m_bUsesCompatibilityLibrary = false;
+	pExtension->m_bUsesCompatibilityUNIDLibrary = false;
 
 	//	Load the apiVersion
 

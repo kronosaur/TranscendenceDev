@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE TranscendenceLibrary
+	[
+	<!-- 0071 0000-FFFF LEGACY UNID COMPATIBILITY LIBRARIES -->
+	
+	<!ENTITY unidSOTPSoundtrackUNIDLibrary	    "0x00710001">
+
+	<!-- SOUNDTRACK UNIDS -->
+	<!-- 0020-003F ADVENTURE INTRO -->
+
+	<!ENTITY muDominaMainTheme				"0x00820020"><!-- muDominaIntro -->
+
+	<!-- 0040-007F TRAVEL BED -->
+
+	<!ENTITY muHumanSpace01					"0x00820040">
+	<!ENTITY muHumanSpace02					"0x00820041">
+	<!ENTITY muHumanSpace03					"0x00820042">
+	<!ENTITY muHumanSpace04					"0x00820043">
+	<!ENTITY muHumanSpace05					"0x00820044">
+	<!ENTITY muHumanSpace06					"0x00820045">
+	<!ENTITY muHumanSpace07					"0x00820046">
+	<!ENTITY muHumanSpace08					"0x00820047">
+
+	<!-- 0080-00BF COMBAT -->
+
+	<!ENTITY muUnknownHostiles01			"0x00820080">
+	<!ENTITY muUnknownHostiles02			"0x00820081">
+	<!ENTITY muUnknownHostiles03			"0x00820082">
+	<!ENTITY muUnknownHostiles04			"0x00820083">
+
+	<!-- 00C0-00DF COMMONWEALTH SYSTEMS -->
+
+	<!ENTITY muCommonwealthTheme01			"0x008200C0">
+	<!ENTITY muCommonwealthTheme02			"0x008200C1">
+
+	<!-- 00E0-00FF SUNG SYSTEMS -->
+	
+	<!ENTITY muSungSpace01					"0x008200E0">
+
+	<!-- 0100-011F FLEET VS ARES -->
+	
+	<!ENTITY muFleetAndAres01				"0x00820100">
+	
+	<!-- 0120-013F END TITLES -->
+
+	<!ENTITY muDominaEndTitles01			"0x00820120"><!-- muEndTitles01 -->
+
+	<!-- 0140-015F SPECIAL SYSTEM TRACKS -->
+	
+	<!ENTITY muRigelAurelius01				"0x00820140">
+	
+	<!-- 0160-016F BATTLE ARENA TRACKS -->
+	
+	<!ENTITY muArenaSlicer					"0x00820160"><!-- muArena01 -->
+	<!ENTITY muArenaSurvivor				"0x00820161">
+	<!ENTITY muArenaContender				"0x00820162">
+	<!ENTITY muArenaVictor					"0x00820163">
+	<!ENTITY muArenaChampion				"0x00820164">
+
+    <!-- COMPATIBILITY ALIASES -->
+	<!ENTITY muDominaIntro					"0x00820020"><!-- muDominaMainTheme -->
+	<!ENTITY muEndTitles01					"0x00820120"><!-- muDominaEndTitles01 -->
+	<!ENTITY muArena01						"0x00820160"><!-- muArenaSlicer -->
+	]>
+	
+<TranscendenceLibrary
+		UNID=				"&unidSOTPSoundtrackUNIDLibrary;"
+		name=				"Transcendence Stars of the Pilgrim Soundtrack UNID Library" 
+		release=			"1"
+		>
+</TranscendenceLibrary>

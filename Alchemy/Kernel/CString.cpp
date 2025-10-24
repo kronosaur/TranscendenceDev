@@ -1022,15 +1022,27 @@ int Kernel::strCompare (const CString &sString1, const CString &sString2)
 		return 0;
 	}
 
-int Kernel::strCompareAbsolute (const CString &sString1, const CString &sString2)
+int Kernel::strCompareAbsolute (const CString &sString1, const CString &sString2, bool bCaseSensitive)
 
 //	strCompareAbsolute
 //
 //	Compares two strings are returns 1 if sString1 is > sString2; -1 if sString1
 //	is < sString2; and 0 if both strings are equal.
+// 
+//	Case sensitive operation prioritizes alphabetical order (ex, "a" < "B")
+//  however a capital letter is considered less than its lower case counterpart
+//	(ex, "A" < "a")
 //
 //	The resulting sort order does not change with locale. Use this only for
 //	internal sorting (e.g., symbol tables).
+//
+//	Case insensitive by default.
+// 
+//	In the optional case sensitive mode, alphabetical order has priority, but
+//	capital letters are less than their lower case counterparts:
+//		a < b
+//		A < a
+//		a < B
 
 	{
 	char *pPos1;
@@ -1047,12 +1059,18 @@ int Kernel::strCompareAbsolute (const CString &sString1, const CString &sString2
 
 	for (i = 0; i < iLen; i++)
 		{
-		char chChar1 = strLowerCaseAbsolute(*pPos1++);
-		char chChar2 = strLowerCaseAbsolute(*pPos2++);
+		char chChar1 = *pPos1++;
+		char chChar2 = *pPos2++;
+		char chChar1Lc = strLowerCaseAbsolute(chChar1);
+		char chChar2Lc = strLowerCaseAbsolute(chChar2);
 
-		if (chChar1 > chChar2)
+		if (chChar1Lc > chChar2Lc)
 			return 1;
-		else if (chChar1 < chChar2)
+		else if (chChar1Lc < chChar2Lc)
+			return -1;
+		else if (bCaseSensitive && (chChar1 > chChar2))
+			return 1;
+		else if (bCaseSensitive && (chChar1 < chChar2))
 			return -1;
 		}
 
@@ -1067,16 +1085,22 @@ int Kernel::strCompareAbsolute (const CString &sString1, const CString &sString2
 		return 0;
 	}
 
-int Kernel::strCompareAbsolute (LPCSTR pS1, LPCSTR pS2)
+int Kernel::strCompareAbsolute (LPCSTR pS1, LPCSTR pS2, bool bCaseSensitive)
 	{
 	while (*pS1 != '\0' && *pS2 != '\0')
 		{
-		char chChar1 = strLowerCaseAbsolute(*pS1++);
-		char chChar2 = strLowerCaseAbsolute(*pS2++);
+		char chChar1 = *pS1++;
+		char chChar2 = *pS2++;
+		char chChar1Lc = strLowerCaseAbsolute(chChar1);
+		char chChar2Lc = strLowerCaseAbsolute(chChar2);
 
-		if (chChar1 > chChar2)
+		if (chChar1Lc > chChar2Lc)
 			return 1;
-		else if (chChar1 < chChar2)
+		else if (chChar1Lc < chChar2Lc)
+			return -1;
+		else if (bCaseSensitive && (chChar1 > chChar2))
+			return 1;
+		else if (bCaseSensitive && (chChar1 < chChar2))
 			return -1;
 		}
 
@@ -1425,7 +1449,7 @@ bool Kernel::strEqualsCase (const CString &sString1, const CString &sString2)
 	return true;
 	}
 
-int Kernel::strFind (const CString &sString, const CString &sStringToFind)
+int Kernel::strFind (const CString &sString, const CString &sStringToFind, bool bCaseSensitive)
 
 //	strFind
 //
@@ -1433,7 +1457,7 @@ int Kernel::strFind (const CString &sString, const CString &sStringToFind)
 //	offset in sString at which the target starts. If the target is
 //	not found anywhere in sString then we return -1
 //
-//	Find is case insensitive.
+//	Find is case insensitive by default
 
 	{
 	int iStringLen = sString.GetLength();
@@ -1454,13 +1478,87 @@ int Kernel::strFind (const CString &sString, const CString &sStringToFind)
 		{
 		CString sTest(pString + i, iTargetLen, TRUE);
 
-		if (strCompareAbsolute(sTest, sStringToFind) == 0)
+		if (strCompareAbsolute(sTest, sStringToFind, bCaseSensitive) == 0)
 			return i;
 		}
 
 	//	Didn't find it
 
 	return -1;
+	}
+
+int Kernel::strFindCount (const CString& sString, const CString& sStringToFind, bool bCaseSensitive)
+
+//	strFindCount
+//
+//	Finds all instances of sStringToFind in sString, returning the
+//	count of matching strings found
+// 
+//	Accepts iStart and iEnd as indexes to search between
+// 
+//	Case insensitive by default
+
+	{
+	int iStringLen = sString.GetLength();
+	int iTargetLen = sStringToFind.GetLength();
+
+	//	Cant match an empty string or a string that is too short
+	if (iTargetLen == 0 || iStringLen < iTargetLen)
+		return -1;
+
+	//	Scan through sString until we cant find sStringToFind anymore
+
+	int iCount = 0;
+	int iCurStart = 0;
+	int iLastPos = -1;
+
+	while (iCount < iStringLen)
+		{
+		iLastPos = strFindIn(sString, sStringToFind, iCurStart, -1, bCaseSensitive);
+		if (iLastPos < 0)
+			break;
+		iCount++;
+		iCurStart = iLastPos + iTargetLen;
+		}
+
+	return iCount;
+	}
+
+int Kernel::strFindIn (const CString& sString, const CString& sStringToFind, int iStart, int iEnd, bool bCaseSensitive)
+
+//	strFindIn
+//
+//	Finds the target string in the given string and returns the
+//	offset in sString at which the target starts. If the target is
+//	not found anywhere in sString then we return -1
+// 
+//	Accepts iStart and iEnd as indexes to search between.
+//	If given negative indexes, it offsets from the back of the string.
+//		-1 = last character, -2 = 2nd to last, etc
+// 
+//	Case insensitive by default
+
+	{
+	int iStringLen = sString.GetLength();
+	int iTargetLen = sStringToFind.GetLength();
+
+	//	Cant match an empty string or a string that is too short
+	if (iTargetLen == 0 || iStringLen < iTargetLen)
+		return -1;
+
+	iStart = iStart < 0 ? max(0, iStringLen + iStart) : iStart;
+	iEnd = iEnd < 0 ? max(0, iStringLen + iEnd) : min(iStringLen - 1, iEnd);
+
+	char *pString = sString.GetPointer();
+
+	CString sTest(pString + iStart, iEnd - iStart + 1, TRUE);
+
+	int iRes = strFind(sTest, sStringToFind, bCaseSensitive);
+	
+	if (iRes < 0)
+		return -1;
+	else
+		return iRes + iStart;
 	}
 
 CString Kernel::strFormatBytes (DWORD dwBytes)
@@ -1941,7 +2039,7 @@ CString Kernel::strConvertToToken (const CString &sString, bool bLowercase)
 	return sResult;
 	}
 
-bool Kernel::strEndsWith (const CString &sString, const CString &sStringToFind)
+bool Kernel::strEndsWithOld (const CString &sString, const CString &sStringToFind)
 
 //	strEndsWith
 //
@@ -2681,7 +2779,7 @@ CString Kernel::strRepeat (const CString &sString, int iCount)
 	return sResult;
 	}
 
-bool Kernel::strStartsWith (const CString &sString, const CString &sStringToFind)
+bool Kernel::strStartsWithOld (const CString &sString, const CString &sStringToFind)
 
 //	strStartsWith
 //
@@ -3127,6 +3225,133 @@ CString Kernel::strTrimWhitespace (const CString &sString, bool bLeading, bool b
 	return CString(pStart, pEnd - pStart);
 	}
 
+CString Kernel::strSlice (const CString& sString, int iStart, int iEnd)
+
+//	strSubString
+//
+//	Returns a substring of the given string
+//	From the character at pos iStart to the character at pos iEnd (inclusive)
+
+	{
+	int iLen = sString.GetLength();
+
+	iStart = iStart < 0 ? max(0, iLen + iStart) : iStart;
+	iEnd = iEnd < 0 ? max(0, iLen + iEnd) : min(iEnd, iLen - 1);
+
+	if (iStart > iEnd)
+		return LITERAL("");
+	else
+		{
+		CString sSub(sString.GetPointer() + iStart, iEnd - iStart + 1);
+		return sSub;
+		}
+	}
+
+
+CString Kernel::strStrip (const CString& sString, CString& sStripChars, DWORD dwFlags)
+
+//	strStrip
+//
+//	removes chars in sStripChars from the beginning and end of sString.
+
+	{
+
+	int iEnd = sString.GetLength();
+	int iTargetEnd = sStripChars.GetLength();
+	bool bCaseSensitive = dwFlags & Kernel::STRSTRIP_CASE_SENSITIVE;
+	bool bLeading = !(dwFlags & Kernel::STRSTRIP_NO_LEADING);
+	bool bTrailing = !(dwFlags & Kernel::STRSTRIP_NO_TRAILING);
+	bool bDefault = !iTargetEnd && (dwFlags & Kernel::STRSTRIP_DEFAULT_WHITESPACE);
+
+	//	If we are using the default behavior (trim whitespace) do that
+
+	if (bDefault)
+		return strTrimWhitespace(sString, bLeading, bTrailing);
+
+	//	If we cant do anything with it then we pass the first arg through
+
+	if (!iEnd || !iTargetEnd || (!bLeading && !bTrailing))
+		return sString;
+
+	//	Otherwise we try to do replacement.
+
+	char* pSourceChar;
+	char* pTargetChar = sStripChars.GetASCIIZPointer();
+	char cSource, cTarget;
+	bool bFound = true;
+	int iSpanStart = 0;
+	int iSpanEnd = iEnd;
+
+	//	Check the front of the string till we find characters not in sStripChars
+
+	if (bLeading)
+		{
+		pSourceChar = sString.GetASCIIZPointer();
+		for (int i = 0; i < iEnd; i++)
+			{
+			bFound = false;
+			cSource = bCaseSensitive ? *pSourceChar : strLowerCaseAbsolute(*pSourceChar);
+			pTargetChar = sStripChars.GetASCIIZPointer();
+
+			for (int k = 0; k < iTargetEnd; k++)
+				{
+				cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
+				if (cSource == cTarget)
+					{
+					bFound = true;
+					break;
+					}
+				pTargetChar++;
+				}
+
+			if (!bFound)
+				{
+				iSpanStart = i;
+				break;
+				}
+			else
+				pSourceChar++;
+			}
+		}
+
+	//	Check the back of the string till we find characters not in sStripChars
+
+	if (bTrailing)
+		{
+		pSourceChar = sString.GetASCIIZPointer() + sString.GetLength() - 1;
+		for (int i = iEnd - 1; i > -1; i--)
+			{
+			bFound = false;
+			cSource = bCaseSensitive ? *pSourceChar : strLowerCaseAbsolute(*pSourceChar);
+			pTargetChar = sStripChars.GetASCIIZPointer();
+
+			for (int k = 0; k < iTargetEnd; k++)
+				{
+				cTarget = bCaseSensitive ? *pTargetChar : strLowerCaseAbsolute(*pTargetChar);
+				if (cSource == cTarget)
+					{
+					bFound = true;
+					break;
+					}
+				pTargetChar++;
+				}
+
+			if (!bFound)
+				{
+				iSpanEnd = i + 1;
+				break;
+				}
+			else
+				pSourceChar--;
+			}
+		}
+
+	//	Extract the stripped string
+
+	return strSubString(sString, iSpanStart, iSpanEnd - iSpanStart);
+	}
+
+
 CString Kernel::strSubString (const CString &sString, int iOffset, int iLength)
 
 //	strSubString
@@ -3138,6 +3363,8 @@ CString Kernel::strSubString (const CString &sString, int iOffset, int iLength)
 		return LITERAL("");
 	else
 		{
+		if (iOffset < 0)
+			iOffset = 0;
 		if (iLength == -1)
 			iLength = sString.GetLength() - iOffset;
 		else
@@ -3146,6 +3373,11 @@ CString Kernel::strSubString (const CString &sString, int iOffset, int iLength)
 		CString sSub(sString.GetPointer() + iOffset, iLength);
 		return sSub;
 		}
+	}
+
+CString Kernel::strSubStringWrapAround (const CString &sString, int iOffset, int iLength)
+	{
+	return strSubString(sString, iOffset < 0 ? sString.GetLength() + iOffset : iOffset, iLength);
 	}
 
 CString Kernel::strWord (const CString &sString, int iWordPos)

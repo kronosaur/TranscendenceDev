@@ -204,7 +204,6 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 		//	DX and Window Functions
 
 		void BltToDC (HDC hDC, int x, int y) const;
-		void BltToSurface (LPDIRECTDRAWSURFACE7 pSurface, SurfaceTypes iType);
 		bool CopyToClipboard (void);
 		size_t GetMemoryUsage (void) const;
 		bool SaveAsWindowsBMP (const CString &sFilespec);

@@ -1017,7 +1017,7 @@
 			(setq rpgCleanUpSuspendedAuton (lambda (sourceObj)
 				(block (auton)
 					(if (setq auton (objGetObjRefData sourceObj 'rpgSuspendedAuton))
-						(objDestroy auton)
+						(objRemove auton)
 						)
 						
 					(objSetObjRefData sourceObj 'rpgSuspendedAuton Nil)

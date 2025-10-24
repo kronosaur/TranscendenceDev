@@ -1,16 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!DOCTYPE TranscendenceModule
-	[
-	<!-- 0160-016F BATTLE ARENA TRACKS -->
-	
-	<!ENTITY muArenaSlicer					"0x00820160">
-	<!ENTITY muArenaSurvivor				"0x00820161">
-	<!ENTITY muArenaContender				"0x00820162">
-	<!ENTITY muArenaVictor					"0x00820163">
-	<!ENTITY muArenaChampion				"0x00820164">
-	]>
-
 <TranscendenceModule>
 
 	<Sovereign UNID="&svGladiator;"
@@ -780,7 +769,7 @@
 			</Text>
 			<Text id="descNoIllegalMissiles">
 
-				"You cannot use illegal missile! You'll have to get rid of them 
+				"You cannot use illegal missiles! You'll have to get rid of them 
 				if you want to fight."
 			
 			</Text>
@@ -1731,7 +1720,7 @@
 						(if (and (sysVectorInPolygon theObj (obj@ arenaObj 'arenaPolygon))
 								(objGetItems theObj "m +military; | m +illegal; | * +auton;")
 								)
-							(objDestroy theObj)
+							(objRemove theObj)
 							)
 						)
 					)

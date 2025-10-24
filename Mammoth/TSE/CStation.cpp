@@ -1113,8 +1113,11 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 				Ctx.iDirection = AngleMod(iDirection 
 						+ (mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12))
 						+ (360 - 30));
+				Ctx.iSourceDirection = Ctx.iDirection; //stations dont have a rotation
 				Ctx.vPos = vHitPos;
 				Ctx.vVel = GetVel() + PolarToVector(Ctx.iDirection, pEjectaType->GetInitialSpeed());
+				Ctx.vSourcePos = Ctx.vPos;
+				Ctx.vSourceVel = GetVel();
 				Ctx.dwFlags = SShotCreateCtx::CWF_EJECTA;
 
 				GetSystem()->CreateWeaponFire(Ctx);
@@ -1735,6 +1738,8 @@ void CStation::FinishCreation (SSystemCreateCtx *pSysCreateCtx)
 	OnCreate.pCreateCtx = pSysCreateCtx;
 	OnCreate.pOrbit = m_pMapOrbit;
 	FireOnCreate(OnCreate);
+	if (IsDestroyed())
+		return;
 
 	//	Add the object to the universe. We wait until the end in case
 	//	OnCreate ends up setting the name (or something).
@@ -3144,6 +3149,11 @@ void CStation::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	m_Targets.Delete(&Ctx.Obj);
 	m_WeaponTargets.Delete(Ctx.Obj);
 
+	//  Notify devices so they can retarget or take other
+	//	actions if necessary
+
+	OnObjDestroyUpdateDevices(Ctx);
+
 	//	If this was our base, remove it.
 
 	if (Ctx.Obj == m_pBase)
@@ -3540,7 +3550,7 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		Image.PaintImageWithGlow(Dest, x, y, iTick, iVariant, CG32bitPixel(0, 255, 0));
 
 	else
-		Image.PaintImage(Dest, x, y, iTick, iVariant);
+		Image.PaintImage(Dest, x, y, iTick, iVariant, false, &Ctx);
 
 	//  Paint satellites in front of the station.
 

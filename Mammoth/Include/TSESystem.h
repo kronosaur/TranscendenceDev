@@ -103,6 +103,7 @@ struct SSystemUpdateCtx
 	bool bForcePainted = false;						//	If TRUE, mark objects as painted 
 	bool bTrackPlayerObjs = false;					//	If TRUE, make a list of player objects
 	bool bNoShipEffectUpdate = false;				//	If TRUE, do not update ship effects
+	bool bUse60fps = false;							//  If TRUE, run at 60 fps (two frames per tick)
 
 #ifdef DEBUG_MOVE_PERFORMANCE
 	int iMoveCalls = 0;
@@ -460,7 +461,7 @@ class CSystem
 							   SObjCreateCtx &CreateCtx,
 							   CSpaceObject **retpStation = NULL);
 		ALERROR CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot = NULL);
-		ALERROR CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMissileSource, int iFraction = 100);
+		ALERROR CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMissileSource, int iFraction = 100, bool bInternalHit = false);
 
 		bool AddJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo, CObjectJoint **retpJoint = NULL);
 		bool AddJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo, ICCItem *pOptions, DWORD *retdwID = NULL);
@@ -550,6 +551,7 @@ class CSystem
 		CSpaceObject *HitScan (CSpaceObject *pExclude, const CVector &vStart, const CVector &vEnd, bool bExcludeWorlds, CVector *retvHitPos = NULL);
 		CSpaceObject *HitTest (CSpaceObject *pExclude, const CVector &vPos, bool bExcludeWorlds);
 		bool IsCreationInProgress (void) const { return (m_fInCreate ? true : false); }
+		bool IsInPlay () const;
 		bool IsPlayerUnderAttack (void) const { return m_fPlayerUnderAttack; }
 		bool IsStarAtPos (const CVector &vPos);
 		bool IsStationInSystem (CStationType *pType);
@@ -589,7 +591,9 @@ class CSystem
 		void TransferObjEventsOut (CSpaceObject *pObj, CSystemEventList &ObjEvents);
 		void UnnameObject (CSpaceObject &Obj);
 		void UnregisterEventHandler (CSpaceObject *pObj);
-		void Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations = NULL);
+		void UpdateExtended (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations = NULL);
+		void UpdateBehaviors(SSystemUpdateCtx& SystemCtx, SViewportAnnotations* pAnnotations = NULL);
+		void UpdatePhysics(SSystemUpdateCtx& SystemCtx, SViewportAnnotations* pAnnotations = NULL, Metric timestep=1.0);
 		void UpdateExtended (const CTimeSpan &ExtraTime);
 		void ValidateExclusionRadius (void) const;
 		void ValidateExclusionRadius (CSpaceObject *pObj, const CStationEncounterDesc::SExclusionDesc &Exclusion) const;
@@ -683,40 +687,40 @@ class CSystem
 
 		//	Game instance data
 
-		CUniverse &m_Universe;					//	Universe that we belong to
-		DWORD m_dwID;							//	System ID
-		CSystemType *m_pType;					//	System type definition
-		CString m_sName;						//	Name of system
-		CTopologyNode *m_pTopology;				//	Topology descriptor
+		CUniverse &m_Universe;						//	Universe that we belong to
+		DWORD m_dwID = OBJID_NULL;					//	System ID
+		CSystemType *m_pType = NULL;				//	System type definition
+		CString m_sName;							//	Name of system
+		CTopologyNode *m_pTopology = NULL;			//	Topology descriptor
 
-		TArray<CSpaceObject *> m_AllObjects;	//	Array of CSpaceObject
+		TArray<CSpaceObject *> m_AllObjects;		//	Array of CSpaceObject
 		TSortMap<CString, CSpaceObject *> m_NamedObjects;			//	Indexed array of named objects (CSpaceObject *)
 
-		CSystemEventList m_TimedEvents;			//	Array of CTimedEvent
-		CEnvironmentGrid mutable *m_pEnvironment;		//	Nebulas, etc.
+		CSystemEventList m_TimedEvents;				//	Array of CTimedEvent
+		CEnvironmentGrid mutable *m_pEnvironment = NULL;		//	Nebulas, etc.
 		CSystemEventHandlerNode m_EventHandlers;	//	List of system event handler
-		CNavigationPathNode m_NavPaths;			//	List of navigation paths
-		CLocationList m_Locations;				//	List of point locations
-		CTerritoryList m_Territories;			//	List of defined territories
-		CObjectJointList m_Joints;				//	List of object joints
+		CNavigationPathNode m_NavPaths;				//	List of navigation paths
+		CLocationList m_Locations;					//	List of point locations
+		CTerritoryList m_Territories;				//	List of defined territories
+		CObjectJointList m_Joints;					//	List of object joints
 
-		int m_iTick;							//	Ticks since beginning of time
-		int m_iNextEncounter;					//	Time of next random encounter
-		int m_iTimeStopped;						//	Ticks until time restarts
-		Metric m_rKlicksPerPixel;				//	Space scale
-		Metric m_rTimeScale;					//	Time scale
-		int m_iLastUpdated;						//	Tick on which system was last updated (-1 = never)
+		int m_iTick = 0;							//	Ticks since beginning of time
+		int m_iNextEncounter = 0;					//	Time of next random encounter
+		int m_iTimeStopped = 0;						//	Ticks until time restarts
+		Metric m_rKlicksPerPixel = KLICKS_PER_PIXEL;	//	Space scale
+		Metric m_rTimeScale = TIME_SCALE;			//	Time scale
+		int m_iLastUpdated = -1;					//	Tick on which system was last updated (-1 = never)
 
-		DWORD m_fNoRandomEncounters:1;			//	TRUE if no random encounters in this system
-		DWORD m_fInCreate:1;					//	TRUE if system in being created
-		DWORD m_fUseDefaultTerritories:1;		//	TRUE if we should use defaults for innerZone, lifeZone, outerZone
-		DWORD m_fEnemiesInLRS:1;				//	TRUE if we found enemies in last LRS update
-		DWORD m_fEnemiesInSRS:1;				//	TRUE if we found enemies in last SRS update
-		DWORD m_fPlayerUnderAttack:1;			//	TRUE if at least one object has player as target
-		DWORD m_fLocationsBlocked:1;			//	TRUE if we're already computed overlapping locations
-		DWORD m_fFlushEventHandlers:1;			//	TRUE if we need to flush m_EventHandlers
+		DWORD m_fNoRandomEncounters:1 = false;		//	TRUE if no random encounters in this system
+		DWORD m_fInCreate:1 = false;				//	TRUE if system in being created
+		DWORD m_fUseDefaultTerritories:1 = true;	//	TRUE if we should use defaults for innerZone, lifeZone, outerZone
+		DWORD m_fEnemiesInLRS:1 = false;			//	TRUE if we found enemies in last LRS update
+		DWORD m_fEnemiesInSRS:1 = false;			//	TRUE if we found enemies in last SRS update
+		DWORD m_fPlayerUnderAttack:1 = false;		//	TRUE if at least one object has player as target
+		DWORD m_fLocationsBlocked:1 = false;		//	TRUE if we're already computed overlapping locations
+		DWORD m_fFlushEventHandlers:1 = false;		//	TRUE if we need to flush m_EventHandlers
+		DWORD m_fNotInUI:1 = false;					//	TRUE if we're not showing in the UI.
 
-		DWORD m_fSpare1:1;
 		DWORD m_fSpare2:1;
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
@@ -729,19 +733,20 @@ class CSystem
 
 		//	Support structures
 
-		CThreadPool *m_pThreadPool;				//	Thread pool for painting
+		CThreadPool *m_pThreadPool = NULL;			//	Thread pool for painting
+		CThreadPool *m_pBkrndThreadPool = NULL;		//	Thread pool for painting
 		CRandomEncounterObjTable m_EncounterObjTable;
 		CRandomEncounterTypeTable m_EncounterTypeTable;
 
-		TArray<SStarDesc> m_Stars;				//	List of stars in the system
-		CSpaceObjectGrid m_ObjGrid;				//	Grid to help us hit test
-		CSpaceObjectList m_DeletedObjects;		//	List of objects deleted in the current update
+		TArray<SStarDesc> m_Stars;					//	List of stars in the system
+		CSpaceObjectGrid m_ObjGrid;					//	Grid to help us hit test
+		CSpaceObjectList m_DeletedObjects;			//	List of objects deleted in the current update
 		TArray<SDeferredOnCreateCtx> m_DeferredOnCreate;	//	Ordered list of objects that need an OnSystemCreated call
-		CSystemSpacePainter m_SpacePainter;		//	Paints space background
-		CMapGridPainter m_GridPainter;			//	Structure to paint a grid
+		CSystemSpacePainter m_SpacePainter;			//	Paints space background
+		CMapGridPainter m_GridPainter;				//	Structure to paint a grid
 		CPhysicsContactResolver m_ContactResolver;	//	Resolves physics contacts
-		CPhysicsForceResolver m_ForceResolver;	//	Resolves physics forces
-		CGateTimerManager m_GateTimer;			//	Assign delay when ships exit a gate
+		CPhysicsForceResolver m_ForceResolver;		//	Resolves physics forces
+		CGateTimerManager m_GateTimer;				//	Assign delay when ships exit a gate
 
 		//	Property table
 

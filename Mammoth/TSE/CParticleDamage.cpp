@@ -57,6 +57,7 @@ ALERROR CParticleDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CParticle
 		return ERR_MEMORY;
 
 	pParticles->Place(Ctx.vPos, Ctx.vVel);
+	pParticles->SetSourceVel(Ctx.vSourceVel);
 
 	//	Get notifications when other objects are destroyed
 	pParticles->SetObjectDestructionHook();
@@ -249,6 +250,8 @@ void CParticleDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rS
 		SEffectMoveCtx Ctx;
 		Ctx.pObj = this;
 		Ctx.vOldPos = vOldPos;
+		Ctx.rSeconds = rSeconds;
+		Ctx.iTick = m_iTick;
 
 		m_pEffectPainter->OnMove(Ctx);
 
@@ -269,7 +272,7 @@ void CParticleDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rS
 		//	Continue moving (otherwise, exhaust trail effects won't work 
 		//	properly).
 
-		SetPos(vOldPos + (GetVel() * g_SecondsPerUpdate));
+		SetPos(vOldPos + (GetVel() * rSeconds));
 		return;
 		}
 
@@ -279,6 +282,8 @@ void CParticleDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rS
 		{
 		SEffectMoveCtx Ctx;
 		Ctx.pObj = this;
+		Ctx.rSeconds = rSeconds;
+		Ctx.iTick = m_iTick;
 
 		m_pParticlePainter->OnMove(Ctx);
 		}
@@ -287,7 +292,12 @@ void CParticleDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rS
 
 	bool bAlive;
 	CVector vNewPos;
-	m_Particles.UpdateMotionLinear(&bAlive, &vNewPos);
+
+	SEffectMoveCtx MoveCtx;
+	MoveCtx.pObj = this;
+	MoveCtx.rSeconds = rSeconds;
+	MoveCtx.iTick = m_iTick;
+	m_Particles.UpdateMotionLinear(MoveCtx, &bAlive, &vNewPos);
 
 	//	If we're still alive, then set our position and bounds based on the
 	//	particles.

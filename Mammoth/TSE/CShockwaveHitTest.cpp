@@ -163,7 +163,7 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 //	Hit test and update (doing damage, if necessary)
 
 	{
-	int i, j;
+	int j;
 
 	//	Compute some stuff
 
@@ -189,17 +189,22 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 	TArray<SHitData> SegHit;
 	SegHit.InsertEmpty(m_Segments.GetCount());
 
-	//	Loop over all objects in the system
+	const CSpaceObjectGrid &Grid = Ctx.pSystem->GetObjectGrid();
+	SSpaceObjectGridEnumerator i;
+	Grid.EnumStart(i, vUR, vLL, 0);
 
-	for (i = 0; i < Ctx.pSystem->GetObjectCount(); i++)
+	//	Loop over all objects in and near the grid rectangle
+
+	while (Grid.EnumHasMore(i))
 		{
-		CSpaceObject *pObj = Ctx.pSystem->GetObject(i);
+
+		//	EnumGetNext checks if the object is within bound and not destroyed
+
+		CSpaceObject* pObj = Grid.EnumGetNext(i);
 		if (pObj 
-				&& pObj->InBox(vUR, vLL)
 				&& Ctx.pObj->CanHit(pObj)
 				&& pObj->CanBeHit()
 				&& pObj->CanBeHitBy(Ctx.pDamageDesc->GetDamage())
-				&& !pObj->IsDestroyed()
 				&& pObj != Ctx.pObj)
 			{
 			//	Figure out the bounds of the object in polar coordinates relative
@@ -230,6 +235,11 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 
 			int iHitCount = 0;
 			utlMemSet(&SegHit[0], sizeof(SHitData) * SegHit.GetCount(), 0);
+
+			//	Prepare for point in object calculations
+
+			SPointInObjectCtx PiOCtx;
+			pObj->PointInObjectInit(PiOCtx);
 
 			//	Loop through the grid to see if we hit anything
 
@@ -267,7 +277,7 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 							&& m_Segments[iSegment].dwLastHitID != pObj->GetID())
 						{
 						CVector vHitTest = vPos + PolarToVector((int)(rTheAngle + rRandomOffset), rTestRadius);
-						if (pObj->PointInObject(pObj->GetPos(), vHitTest))
+						if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vHitTest))
 							{
 							SegHit[iSegment].bHit = true;
 							SegHit[iSegment].iAngle = (int)rTheAngle;

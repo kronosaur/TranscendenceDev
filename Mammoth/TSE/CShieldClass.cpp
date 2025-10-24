@@ -28,6 +28,9 @@
 #define REGEN_ADJ_PER_CHARGE_ATTRIB				CONSTLIT("regenHPBonusPerCharge")
 #define REGEN_TIME_ATTRIB						CONSTLIT("regenTime")
 #define REGEN_TYPE_ATTRIB						CONSTLIT("regenType")
+#define SHIELD_AMMO_CRITERIA_ATTRIB				CONSTLIT("shieldAmmoCriteria")
+#define SHIELD_AMMO_AI_POLLING_ATTRIB			CONSTLIT("shieldAmmoAIPollRate")
+#define SHIELD_AMMO_AI_RECHARGE_AT_ATTRIB		CONSTLIT("shieldAmmoAIRechargeAtPercent")
 #define TIME_BETWEEN_FLASH_EFFECTS_ATTRIB		CONSTLIT("timeBetweenFlashEffects")
 #define WEAPON_SUPPRESS_ATTRIB					CONSTLIT("weaponSuppress")
 
@@ -59,7 +62,7 @@
 
 #define MAX_REFLECTION_CHANCE					95
 const Metric MAX_REFLECTION_TARGET =			50.0 * LIGHT_SECOND;
-const Metric STD_FIRE_DELAY_TICKS =				8.0;
+const Metric STD_FIRE_DELAY_TICKS =				16.0 / STD_SECONDS_PER_UPDATE;;
 const Metric STD_DEFENSE_RATIO =				0.8;
 const int STD_DEPLETION_DELAY =					360;
 
@@ -683,6 +686,12 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 	//	on the item type.
 
 	InitCtx.iMaxCharges = pDesc->GetAttributeIntegerBounded(MAX_CHARGES_ATTRIB, 0, -1, -1);
+
+	//  Store shield ammo filter
+
+	pShield->m_sShieldAmmoCriteria = pDesc->GetAttribute(SHIELD_AMMO_CRITERIA_ATTRIB);
+	pShield->m_iShieldAmmoAIRegenAt = pDesc->GetAttributeIntegerBounded(SHIELD_AMMO_AI_RECHARGE_AT_ATTRIB, 0, 99, 0);
+	pShield->m_iShieldAmmoAIPollInterval = pDesc->GetAttributeIntegerBounded(SHIELD_AMMO_AI_POLLING_ATTRIB, 1, INT_MAX, 61);
 
 	//	Load regen value
 
@@ -1791,26 +1800,15 @@ CString CShieldClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dw
 	else
 		sReference = strPatternSubst("regen @ %s", CLanguage::ComposeNumber(CLanguage::numberRegenRate, rRegen));
 
-	//	If we have a non-standard depletion delay, show that.
+	//	Show time to recover when depleted
 
-	if (m_iDepletionTicks != STD_DEPLETION_DELAY && rRegen > 0.0)
-		{
-		int iPercent = GetReferenceDepletionDelay();
-		if (iPercent == 0)
-			AppendReferenceString(&sReference, CONSTLIT("instant recovery time"));
-		else if (iPercent >= 100)
-			{
-			int iMultiple10 = mathRound(10.0 * (iPercent + 100.0) / 100.0);
-			if ((iMultiple10 % 10) == 0)
-				AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d%&times; longer recovery"), iMultiple10 / 10));
-			else
-				AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d.%d%&times; longer recovery"), iMultiple10 / 10, iMultiple10 % 10));
-			}
-		else if (iPercent > 0)
-			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d%% longer recovery"), iPercent));
-		else
-			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d%% shorter recovery"), -iPercent));
-		}
+	int iDepletionMultiple = mathRound(((Metric)m_iDepletionTicks / g_TicksPerSecond) * 10);
+	int iDepletion = iDepletionMultiple / 10;
+	int iDepletionRemainder = iDepletionMultiple % 10;
+	if (iDepletionRemainder)
+		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d.%d sec recovery"), iDepletion, iDepletionRemainder));
+	else
+		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d sec recovery"), iDepletion));
 
 	return sReference;
 	}
@@ -1879,12 +1877,7 @@ bool CShieldClass::RequiresItems (void) const
 //	Shield requires some other item to function
 
 	{
-#ifdef LATER
-	//	Need to explicitly list superconducting coils as a required
-	//	item for these shields to function
-#else
-	return m_Regen.IsEmpty();
-#endif
+	return (m_Regen.IsEmpty() && UsesShieldAmmo());
 	}
 
 void CShieldClass::Reset (CInstalledDevice *pDevice, CSpaceObject *pSource)

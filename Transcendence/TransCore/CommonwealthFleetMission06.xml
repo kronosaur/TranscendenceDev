@@ -167,7 +167,7 @@
 
 				"A supply ship is arriving at the %gateName%.
 				Your orders are to escort it back to %cscName%
-				and defend it against all enemies. Carry On!\""
+				and defend it against all enemies. Carry On!"
 
 			</Text>
 			<String id="AcceptReply">
@@ -197,17 +197,17 @@
 			<Ship levelFrequency="----r crv--"	count="1d4+2"	class="&scSandstorm;"	orders="attack"	sovereign="&svAres;"/>
 			<Ship levelFrequency="----- rcrv-"	count="2d6"		class="&scSandstorm;"	orders="attack"	sovereign="&svAres;"/>
 			<Ship levelFrequency="----- -rcrv"	count="3d6"		class="&scSandstorm;"	orders="attack"	sovereign="&svAres;"/>
-			<Ship levelFrequency="----- -rcrv"	count="1"		class="&scTundra;"		orders="attack"	sovereign="&svAres;">
+			<Ship levelFrequency="----- -rcrv"	count="1"		class="&scChasm;"		orders="attack"	sovereign="&svAres;">
 				<Escorts>
 					<Ship						count="1d6"		class="&scSandstorm;"	orders="escort"	sovereign="&svAres;"/>
 				</Escorts>
 			</Ship>
-			<Ship levelFrequency="----- --rcr"	count="2"		class="&scTundra;"		orders="attack"	sovereign="&svAres;">
+			<Ship levelFrequency="----- --rcr"	count="2"		class="&scChasm;"		orders="attack"	sovereign="&svAres;">
 				<Escorts>
 					<Ship						count="1d6"		class="&scSandstorm;"	orders="escort"	sovereign="&svAres;"/>
 				</Escorts>
 			</Ship>
-			<Ship levelFrequency="----- ---rc"	count="1"		class="&scChasm;"		orders="attack"	sovereign="&svAres;">
+			<Ship levelFrequency="----- ---rc"	count="1"		class="&scTundra;"		orders="attack"	sovereign="&svAres;">
 				<Escorts>
 					<Ship						count="1d6"		class="&scSandstorm;"	orders="escort"	sovereign="&svAres;"/>
 				</Escorts>

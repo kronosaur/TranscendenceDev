@@ -1269,7 +1269,10 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 
 				else
 					{
-					*retsError = strPatternSubst(CONSTLIT("Unable to find adventure: %08x."), Ctx.dwAdventure);
+					if (retsError->IsBlank())
+						{
+						*retsError = strPatternSubst(CONSTLIT("Unable to find adventure: %08x."), Ctx.dwAdventure);
+						}
 					return ERR_FAIL;
 					}
 				}
@@ -2267,43 +2270,48 @@ void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMap
 	m_iPaintTick++;
 	}
 
-void CUniverse::PlaySound (CSpaceObject *pSource, int iChannel)
+void CUniverse::PlaySound (CSpaceObject *pSource, int iChannel, SSoundOptions *pOptions)
 
 //	PlaySound
 //
 //	Plays a sound from the given source
 
 	{
-	if (!m_bNoSound 
-			&& m_pSoundMgr 
-			&& iChannel != -1)
+	if (m_bNoSound || !m_pSoundMgr || iChannel == -1)
+		return;
+
+	//	If the system is not active, then skip.
+
+	if (pSource && (!pSource->GetSystem() || !pSource->GetSystem()->IsInPlay()))
+		return;
+
+	//	Default to full volume
+
+	int iVolume = 0;
+	int iPan = 0;
+
+	//	Figure out how close the source is to the POV. The sound fades as we get
+	//	further away.
+
+	if (pSource && m_pPOV)
 		{
-		//	Default to full volume
+		if (!pOptions)
+			pOptions = &m_DefaultSoundOptions;
+		CVector vDist = (pSource->GetPos() - m_pPOV->GetPos()) * pOptions->rFalloffFactor;
+		Metric rDist2 = max(vDist.Length2() - (pOptions->rFalloffStart * pOptions->rFalloffStart), 0.0);
+		iVolume = -(int)(10000.0 * rDist2 / (MAX_SOUND_DISTANCE * MAX_SOUND_DISTANCE * pOptions->rVolumeMultiplier));
 
-		int iVolume = 0;
-		int iPan = 0;
+		//	If below a certain level, then it is silent anyway
 
-		//	Figure out how close the source is to the POV. The sound fades as we get
-		//	further away.
+		if (iVolume <= -10000)
+			return;
 
-		if (pSource && m_pPOV)
-			{
-			CVector vDist = pSource->GetPos() - m_pPOV->GetPos();
-			Metric rDist2 = vDist.Length2();
-			iVolume = -(int)(10000.0 * rDist2 / (MAX_SOUND_DISTANCE * MAX_SOUND_DISTANCE));
+		//	Adjust left/right volume based on direction
 
-			//	If below a certain level, then it is silent anyway
-
-			if (iVolume <= -10000)
-				return;
-
-			//	Adjust left/right volume based on direction
-
-			iPan = (int)(10000.0 * (vDist.GetX() / MAX_SOUND_DISTANCE));
-			}
-
-		m_pSoundMgr->Play(iChannel, iVolume, iPan);
+		iPan = (int)(10000.0 * (vDist.GetX() / MAX_SOUND_DISTANCE));
 		}
+
+	m_pSoundMgr->Play(iChannel, iVolume, iPan);
 	}
 
 void CUniverse::PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CSystemEventList &SavedEvents)
@@ -3059,16 +3067,28 @@ bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)
 //	Updates one frame. Returns TRUE if the universe was actually updated.
 
 	{
+
+	// If m_iFrame is greater than one, then we're part way through a tick
+	if (m_iFrame-- > 1)
+		{
+
+		UpdatePhysics(Ctx);
+		m_dwFrame++;
+		return true;
+
+		}
+
 	m_iLastUpdateSpeed = iUpdateMode;
 
 	switch (iUpdateMode)
 		{
 		case updateAccelerated:
-			UpdateTick(Ctx);
-			UpdateTick(Ctx);
-			UpdateTick(Ctx);
-			UpdateTick(Ctx);
-			UpdateTick(Ctx);
+			rFrameStep = 1.0;
+			for (m_iFrame = Ctx.bUse60fps ? 2 : 5; m_iFrame > 0; m_iFrame--)
+				{
+				UpdateTick(Ctx);
+				UpdatePhysics(Ctx);
+				}
 			m_dwFrame++;
 			return true;
 
@@ -3076,19 +3096,21 @@ bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)
 			return false;
 
 		case updateSlowMotion:
-			if ((m_dwFrame++ % 4) == 0)
-				{
-				UpdateTick(Ctx);
-				return true;
-				}
-			else
-				return false;
+			m_iFrame = Ctx.bUse60fps ? 8 : 4;
+			rFrameStep = 1.0 / m_iFrame;
+			break;
 
 		default:
-			UpdateTick(Ctx);
-			m_dwFrame++;
-			return true;
+			m_iFrame = Ctx.bUse60fps ? 2 : 1;
+			rFrameStep = 1.0 / m_iFrame;
+			break;
 		}
+
+	UpdateTick(Ctx);
+	UpdatePhysics(Ctx);
+	m_dwFrame++;
+	return true;
+
 	}
 
 void CUniverse::UpdateTick (SSystemUpdateCtx &Ctx)
@@ -3116,7 +3138,7 @@ void CUniverse::UpdateTick (SSystemUpdateCtx &Ctx)
 
 	//	Update system
 
-	m_pCurrentSystem->Update(Ctx, &m_ViewportAnnotations);
+	m_pCurrentSystem->UpdateBehaviors(Ctx, &m_ViewportAnnotations);
 
 	//	Fire timed events
 
@@ -3137,6 +3159,36 @@ void CUniverse::UpdateTick (SSystemUpdateCtx &Ctx)
 	//	Next
 
 	m_iTick++;
+
+	DEBUG_CATCH
+	}
+
+void CUniverse::UpdatePhysics (SSystemUpdateCtx &Ctx)
+
+//	UpdatePhysics
+//
+//	Update the system of the current point of view
+
+	{
+	DEBUG_TRY
+
+#ifdef DEBUG_MOVE_PERFORMANCE
+		Ctx.iMoveCalls = 0;
+	Ctx.iShipOnMoveCalls = 0;
+	Ctx.iShipEffectMoveCalls = 0;
+#endif
+
+	if (m_pCurrentSystem == NULL)
+		return;
+
+#ifdef DEBUG_PERFORMANCE_COUNTERS
+		m_PerformanceCounters.StartUpdate();
+	CUsePerformanceCounter Counter(*this, CONSTLIT("update.tick"));
+#endif
+
+	//	Update system
+
+	m_pCurrentSystem->UpdatePhysics(Ctx, &m_ViewportAnnotations, rFrameStep);
 
 	DEBUG_CATCH
 	}

@@ -516,7 +516,7 @@
 							;	If no mission object, then go to standard loot screen
 							
 							(not missionObj)
-								(scrShowScreen gScreen &dsAbandonedShip;)
+								(scrShowScreen gScreen &dsRPGAbandonedStation;)
 								
 							;	If Sandoval is dead, we go to special text without Sandoval
 							;	[This can't happen because the mission fails if Sandoval is dead.]

@@ -39,25 +39,25 @@
 						chance: 40
 
 						ships: (
-							{	principalType: &scPolar;	escortTypes: (&scTundra; &scSandstorm; &scSandstorm; &scSandstorm; &scSandstorm;) }
+							{	principalType: &scPolar;	escortTypes: (&scChasm; &scSandstorm; &scSandstorm; &scSandstorm; &scSandstorm;) }
 							{	principalType: &scPolar;	escortTypes: (&scSandstorm; &scSandstorm; &scSandstorm; &scSandstorm;) }
-							{	principalType: &scPolar;	escortTypes: (&scTundra; &scSandstorm; &scSandstorm; &scSandstorm; &scSandstorm;) }
+							{	principalType: &scPolar;	escortTypes: (&scChasm; &scSandstorm; &scSandstorm; &scSandstorm; &scSandstorm;) }
 							{	principalType: &scPolar;	escortTypes: (&scSandstorm; &scSandstorm; &scSandstorm; &scSandstorm;) }
-							{	principalType: &scPolar;	escortTypes: (&scTundra; &scSandstorm; &scSandstorm; &scSandstorm; &scSandstorm;) }
+							{	principalType: &scPolar;	escortTypes: (&scChasm; &scSandstorm; &scSandstorm; &scSandstorm; &scSandstorm;) }
 							)
 						}
 					{
-						id: "chasmEscort"
+						id: "tundraEscort"
 						minLevel: 8
 						maxLevel: 10
 						chance: 30
 
 						ships: (
-							{	principalType: &scPolar;	escortTypes: (&scChasm;) }
-							{	principalType: &scPolar;	escortTypes: (&scChasm;) }
-							{	principalType: &scPolar;	escortTypes: (&scChasm;) }
-							{	principalType: &scPolar;	escortTypes: (&scChasm;) }
-							{	principalType: &scPolar;	escortTypes: (&scChasm;) }
+							{	principalType: &scPolar;	escortTypes: (&scTundra;) }
+							{	principalType: &scPolar;	escortTypes: (&scTundra;) }
+							{	principalType: &scPolar;	escortTypes: (&scTundra;) }
+							{	principalType: &scPolar;	escortTypes: (&scTundra;) }
+							{	principalType: &scPolar;	escortTypes: (&scTundra;) }
 							)
 						}
 					{

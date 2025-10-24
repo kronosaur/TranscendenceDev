@@ -477,7 +477,7 @@ class COrderDesc
 		bool IsEmpty () const { return GetOrder() == IShipController::orderNone; }
 		bool IsIntegerOrPair () const { return (GetDataType() == EDataType::Int32 || GetDataType() == EDataType::Int16Pair); }
 		bool IsVector () const { return (GetDataType() == EDataType::Vector); }
-		void ReadFromStream (SLoadCtx &Ctx);
+		void ReadFromStream (SLoadCtx &Ctx, bool bOptional = false);
 		void SetCancelOnReactionOrder (bool bValue = true) { m_fCancelOnReactionOrder = bValue; }
 		void SetDataInteger (DWORD dwData);
 		void SetDataInteger (DWORD dwData1, DWORD dwData2);

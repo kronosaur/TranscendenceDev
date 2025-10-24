@@ -166,6 +166,14 @@ EMiningMethod CAsteroidDesc::CalcMiningMethod (const CWeaponFireDesc &Desc)
 //	Compute the mining method based on shot descriptor
 
 	{
+	//	Use the weapon's specified mining method if it is available
+
+	EMiningMethod eSpecifiedMethod = Desc.GetMiningMethod();
+	if (eSpecifiedMethod != EMiningMethod::unknown)
+		return eSpecifiedMethod;
+
+	//	Otherwise we compute it at runtime
+
 	switch (Desc.GetFireType())
 		{
 		case CWeaponFireDesc::ftArea:

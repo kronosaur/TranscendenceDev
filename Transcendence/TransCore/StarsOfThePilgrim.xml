@@ -12,78 +12,10 @@
 	<!-- HUMAN SPACE LIBRARY 0x00200003 -->
 	<!ENTITY unidPartISystemMap			"0x00200004">
 	<!ENTITY msReachGalacticCore		"0x00200005">
-	<!ENTITY unidBenedictStoryArc		"0x00200006">
-	<!ENTITY dsBenedictIntro			"0x00200007">
-	<!ENTITY msBenedictsDrones			"0x00200008">
-	<!ENTITY msBenedictAndFiona			"0x00200009">
-	<!-- UNUSED 0x0020000A -->
-	<!ENTITY msBenedictToKorolov		"0x0020000B">
-	<!ENTITY msBenedictTraining			"0x0020000C">
+	<!-- 0006 - 000C in Stories of the Pilgrim Library-->
 	<!ENTITY rsGalacticCoreMissionTile	"0x0020000D">
 	<!ENTITY unidAchievements			"0x0020000E">
-	
-	<!-- 0010-005F BENEDICT MISSION ARC -->
-	
-	<!ENTITY msBenedictInNewBeyond		"0x00200010">
-	<!ENTITY tbBenedict04Encounters		"0x00200011">
-	<!ENTITY msFionaInStKats			"0x00200012">
-	<!ENTITY msFindHandOfSolace			"0x00200013">
-	<!ENTITY stHandOfSolaceWreck		"0x00200014">
-	<!ENTITY ovBenedict05ScanRange		"0x00200015">
-	<!ENTITY tbBenedict05Encounters		"0x00200016">
-	<!ENTITY msInfiltratePenitents		"0x00200017">
-	<!ENTITY svBenedict06Infiltrate		"0x00200018">
-	<!ENTITY evBenedict06PenitentBase	"0x00200019">
-	<!ENTITY ovBenedict06Disarm			"0x0020001A">
-	<!ENTITY msRescueBenedict			"0x0020001B">
-	<!ENTITY evBenedict07PenitentWreck	"0x0020001C">
-	<!ENTITY msRescueChildrenFromPenitents	"0x0020001D">
-	<!ENTITY evBenedict08PenitentBase	"0x0020001E">
-	<!ENTITY evBenedict07FionaWreck		"0x0020001F">
-	<!ENTITY evBenedict06PenitentShip	"0x00200020">
-	<!ENTITY evBenedict07Wingman		"0x00200021">
-	<!ENTITY evBenedict02FionaWreck		"0x00200022">
-	<!ENTITY baBenedictMission			"0x00200023">
-	<!ENTITY rsBenedictMission			"0x00200024">
-	<!ENTITY evBenedict05ASandoval		"0x00200025">
-
-	<!-- 0060-007F HERETIC MISSION ARC -->
-	
-	<!ENTITY msHereticIocrymAttack		"0x00200060">
-	<!ENTITY msHereticIocrymAttackMsg	"0x00200061">
-	<!ENTITY msHereticSvalbard			"0x00200062">
-	<!ENTITY dsHereticSvalbardDonate	"0x00200063">
-	<!ENTITY msHereticControlPoint		"0x00200064">
-	<!ENTITY msHereticFurtherResearch	"0x00200065">
-	<!ENTITY msHereticSettlement		"0x00200066">
-	<!ENTITY msHereticMaryamsArchive	"0x00200067">
-	<!ENTITY stMaryamsArchive			"0x00200068">
-	<!ENTITY msHereticHuygensExplorer	"0x00200069">
-	<!ENTITY evHereticHuygensExplorer	"0x0020006A">
-	<!ENTITY msHereticIocrymArtifact	"0x0020006B">
-	<!ENTITY msHereticIocrymOutpost		"0x0020006C">
-	<!ENTITY msHereticMRADExperiment	"0x0020006D">
-
-	<!-- 0080-00BF MISCELLANEOUS MISSIONS -->
-
-	<!ENTITY msPsychEval01				"0x00200080">
-	<!ENTITY msPsychEval00				"0x00200081">
-
-	<!-- 0021xxxx HUARI ==================================================== -->
-	
-	<!ENTITY smHuariSpace				"0x00210001">
-	<!ENTITY msHuaramarcaTuali			"0x00210002">
-	<!ENTITY msHuaramarcaDreamTest		"0x00210003">
-	<!ENTITY msHuaramarcaDefendTemple	"0x00210004">
-	<!ENTITY msHuaramarcaAttackBase		"0x00210005">
-	<!ENTITY msHuaramarcaDragonSlaver	"0x00210006">
-	<!ENTITY msHuaramarcaArchcannon		"0x00210007">
-	<!ENTITY msHuaramarcaRevelation		"0x00210008">
-
-	<!-- 0082xxxx PART I SOUNDTRACK ======================================== -->
-
-	<!ENTITY muDominaMainTheme			"0x00820020">
-	<!ENTITY muDominaEndTitles01		"0x00820120">
+	<!-- 0010-00BF in Stories of the Pilgrim Library-->
 	]>
 	
 <TranscendenceAdventure
@@ -96,6 +28,9 @@
 	<Library unid="&unidRPGLibrary;"/>
 	<Library unid="&unidGalaxyLibrary;"/>
 	<Library unid="&unidHumanSpaceLibrary;"/>
+	<Library unid="&unidHuaramarcaLibrary;"/>
+	<Library unid="&unidSOTPMissionLibrary;"/>
+	<Library unid="&unidSOTPSoundtrackUNIDLibrary;"/>
 
 	<AdventureDesc
 			unid=			"&adPart1Desc;"
@@ -243,42 +178,97 @@
 			<Text id="achieve.leftHumanSpace">Left Human Space</Text>
 			<Text id="achieve.neverLeftHumanSpace">Never left Human Space</Text>
 		</Language>
+		
+		<Constants>
+			<!--
+			lsr: laser
+			knt: kinetic
+			par: particle
+			blt: blast
+			ion: ion
+			thr: thermo
+			pos: positron
+			pls: plasma
+			a-m: antimatter
+			nan: nanite
+			grv: graviton
+			sng: singularity
+			dac: dark acid
+			dst: dark steel
+			dlg: dark lightning
+			dfr: dark fire
+			                                    #  lsr,knt,par,blt, ion,thr,pos,pls, a-m,nan,grv,sng, dac,dst,dlg,dfr
+			-->
+			<!-- Armor -->
+			
+			<ArmorDamageAdj level="1"	damageAdj="100,100,100,100, 100,100,100,100, 125,125,200,200, 300,300,500,500"/>
+			<ArmorDamageAdj level="2"	damageAdj=" 80, 80,100,100, 100,100,100,100, 125,125,200,200, 300,300,500,500"/>
+			<ArmorDamageAdj level="3"	damageAdj=" 60, 60,100,100, 100,100,100,100, 125,125,200,200, 300,300,500,500"/>
+			<ArmorDamageAdj level="4"	damageAdj=" 40, 40,100,100, 100,100,100,100, 100,100,125,125, 200,200,300,300"/>
+			<ArmorDamageAdj level="5"	damageAdj=" 25, 25, 80, 80, 100,100,100,100, 100,100,125,125, 200,200,300,300"/>
+			
+			<ArmorDamageAdj level="6"	damageAdj=" 14, 14, 60, 60, 100,100,100,100, 100,100,125,125, 200,200,300,300"/>
+			<ArmorDamageAdj level="7"	damageAdj="  8,  8, 40, 40, 100,100,100,100, 100,100,100,100, 125,125,200,200"/>
+			<ArmorDamageAdj level="8"	damageAdj="  4,  4, 25, 25,  80, 80,100,100, 100,100,100,100, 125,125,200,200"/>
+			<ArmorDamageAdj level="9"	damageAdj="  2,  2, 14, 14,  60, 60,100,100, 100,100,100,100, 125,125,200,200"/>
+			<ArmorDamageAdj level="10"	damageAdj="  1,  1,  8,  8,  40, 40,100,100, 100,100,100,100, 100,100,125,125"/>
+			
+			<ArmorDamageAdj level="11"	damageAdj="  0,  0,  4,  4,  25, 25, 80, 80, 100,100,100,100, 100,100,125,125"/>
+			<ArmorDamageAdj level="12"	damageAdj="  0,  0,  2,  2,  14, 14, 60, 60, 100,100,100,100, 100,100,125,125"/>
+			<ArmorDamageAdj level="13"	damageAdj="  0,  0,  1,  1,   8,  8, 40, 40, 100,100,100,100, 100,100,100,100"/>
+			<ArmorDamageAdj level="14"	damageAdj="  0,  0,  0,  0,   4,  4, 25, 25,  80, 80,100,100, 100,100,100,100"/>
+			<ArmorDamageAdj level="15"	damageAdj="  0,  0,  0,  0,   2,  2, 14, 14,  60, 60,100,100, 100,100,100,100"/>
+			
+			<ArmorDamageAdj level="16"	damageAdj="  0,  0,  0,  0,   1,  1,  8,  8,  40, 40,100,100, 100,100,100,100"/>
+			<ArmorDamageAdj level="17"	damageAdj="  0,  0,  0,  0,   0,  0,  4,  4,  25, 25, 80, 80, 100,100,100,100"/>
+			<ArmorDamageAdj level="18"	damageAdj="  0,  0,  0,  0,   0,  0,  2,  2,  14, 14, 60, 60, 100,100,100,100"/>
+			<ArmorDamageAdj level="19"	damageAdj="  0,  0,  0,  0,   0,  0,  1,  1,   8,  8, 40, 40, 100,100,100,100"/>
+			<ArmorDamageAdj level="20"	damageAdj="  0,  0,  0,  0,   0,  0,  0,  0,   4,  4, 25, 25,  80, 80,100,100"/>
+			
+			<ArmorDamageAdj level="21"	damageAdj="  0,  0,  0,  0,   0,  0,  0,  0,   2,  2, 14, 14,  60, 60,100,100"/>
+			<ArmorDamageAdj level="22"	damageAdj="  0,  0,  0,  0,   0,  0,  0,  0,   1,  1,  8,  8,  40, 40,100,100"/>
+			<ArmorDamageAdj level="23"	damageAdj="  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  4,  4,  25, 25, 80, 80"/>
+			<ArmorDamageAdj level="24"	damageAdj="  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  2,  2,  14, 14, 60, 60"/>
+			<ArmorDamageAdj level="25"	damageAdj="  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  1,  1,   8,  8, 40, 40"/>
+			
+			<!-- Shields -->
+			
+			<ShieldDamageAdj level="1"	damageAdj="100,100,100,100, 100,100,160,160, 225,225,300,300, 375,375,500,500"/>
+			<ShieldDamageAdj level="2"	damageAdj=" 95, 95,100,100, 100,100,140,140, 200,200,275,275, 350,350,450,450"/>
+			<ShieldDamageAdj level="3"	damageAdj=" 90, 90,100,100, 100,100,120,120, 180,180,250,250, 325,325,400,400"/>
+			<ShieldDamageAdj level="4"	damageAdj=" 85, 85,100,100, 100,100,100,100, 160,160,225,225, 300,300,375,375"/>
+			<ShieldDamageAdj level="5"	damageAdj=" 80, 80, 95, 95, 100,100,100,100, 140,140,200,200, 275,275,350,350"/>
+			
+			<ShieldDamageAdj level="6"	damageAdj=" 75, 75, 90, 90, 100,100,100,100, 120,120,180,180, 250,250,325,325"/>
+			<ShieldDamageAdj level="7"	damageAdj=" 70, 70, 85, 85, 100,100,100,100, 100,100,160,160, 225,225,300,300"/>
+			<ShieldDamageAdj level="8"	damageAdj=" 65, 65, 80, 80,  95, 95,100,100, 100,100,140,140, 200,200,275,275"/>
+			<ShieldDamageAdj level="9"	damageAdj=" 60, 60, 75, 75,  90, 90,100,100, 100,100,120,120, 180,180,250,250"/>
+			<ShieldDamageAdj level="10"	damageAdj=" 55, 55, 70, 70,  85, 85,100,100, 100,100,100,100, 160,160,225,225"/>
+			
+			<ShieldDamageAdj level="11"	damageAdj=" 50, 50, 65, 65,  80, 80, 95, 95, 100,100,100,100, 140,140,200,200"/>
+			<ShieldDamageAdj level="12"	damageAdj=" 40, 40, 60, 60,  75, 75, 90, 90, 100,100,100,100, 120,120,180,180"/>
+			<ShieldDamageAdj level="13"	damageAdj=" 30, 30, 55, 55,  70, 70, 85, 85, 100,100,100,100, 100,100,160,160"/>
+			<ShieldDamageAdj level="14"	damageAdj=" 20, 20, 50, 50,  65, 65, 80, 80,  95, 95,100,100, 100,100,140,140"/>
+			<ShieldDamageAdj level="15"	damageAdj=" 10, 10, 40, 40,  60, 60, 75, 75,  90, 90,100,100, 100,100,120,120"/>
+			
+			<ShieldDamageAdj level="16"	damageAdj="  0,  0, 30, 30,  55, 55, 70, 70,  85, 85,100,100, 100,100,100,100"/>
+			<ShieldDamageAdj level="17"	damageAdj="  0,  0, 20, 20,  50, 50, 65, 65,  80, 80, 95, 95, 100,100,100,100"/>
+			<ShieldDamageAdj level="18"	damageAdj="  0,  0, 10, 10,  40, 40, 60, 60,  75, 75, 90, 90, 100,100,100,10"/>
+			<ShieldDamageAdj level="19"	damageAdj="  0,  0,  0,  0,  30, 30, 55, 55,  70, 70, 85, 85, 100,100,100,100"/>
+			<ShieldDamageAdj level="20"	damageAdj="  0,  0,  0,  0,  20, 20, 50, 50,  65, 65, 80, 80,  95, 95,100,100"/>
+			
+			<ShieldDamageAdj level="21"	damageAdj="  0,  0,  0,  0,  10, 10, 40, 40,  60, 60, 75, 75,  90, 90,100,100"/>
+			<ShieldDamageAdj level="22"	damageAdj="  0,  0,  0,  0,   0,  0, 30, 30,  55, 55, 70, 70,  85, 85,100,100"/>
+			<ShieldDamageAdj level="23"	damageAdj="  0,  0,  0,  0,   0,  0, 20, 20,  50, 50, 65, 65,  80, 80, 95, 95"/>
+			<ShieldDamageAdj level="24"	damageAdj="  0,  0,  0,  0,   0,  0, 10, 10,  40, 40, 60, 60,  75, 75, 90, 90"/>
+			<ShieldDamageAdj level="25"	damageAdj="  0,  0,  0,  0,   0,  0,  0,  0,  30, 30, 55, 55,  70, 70, 85, 85"/>
+			
+		</Constants>
 	</AdventureDesc>
 		
 	<Module filename="Achievements.xml"/>
-	<Module filename="Benedict00.xml"/>
-	<Module filename="Benedict01.xml"/>
-	<Module filename="Benedict02.xml"/>
-	<!-- Benedict03 is obsolete. -->
-	<Module filename="Benedict04.xml"/>
-	<Module filename="Benedict05.xml"/>
-	<Module filename="Benedict05A.xml"/>
-	<Module filename="Benedict06.xml"/>
-	<Module filename="Benedict07.xml"/>
-	<Module filename="Benedict08.xml"/>
-	<Module filename="BenedictStoryArc.xml"/>
-	<Module filename="Elysium.xml"/>
-	<Module filename="Heretic00.xml"/>
-	<Module filename="Heretic01.xml"/>
-	<Module filename="Heretic02.xml"/>
-	<Module filename="Heretic03.xml"/>
-	<Module filename="Heretic04.xml"/>
-	<Module filename="Heretic05.xml"/>
-	<Module filename="Heretic06.xml"/>
-	<Module filename="Heretic07.xml"/>
-	<Module filename="Heretic08.xml"/>
-	<Module filename="Huaramarca.xml"/>
-	<Module filename="HuaramarcaMission01.xml"/>
-	<Module filename="HuaramarcaMission02.xml"/>
-	<Module filename="HuaramarcaMission03.xml"/>
-	<Module filename="HuaramarcaMission04.xml"/>
-	<Module filename="HuaramarcaMission05.xml"/>
-	<Module filename="HuaramarcaMission06.xml"/>
-	<Module filename="HuaramarcaMission07.xml"/>
 	<Module filename="Part1Compatibility.xml"/>
 	<Module filename="PlayerShips.xml"/>
-	<Module filename="Psych00.xml"/>
-	<Module filename="Psych01.xml"/>
 		
 <!-- ADVENTURE MAP -->
 

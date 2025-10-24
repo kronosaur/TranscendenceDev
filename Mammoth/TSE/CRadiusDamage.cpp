@@ -42,6 +42,7 @@ ALERROR CRadiusDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CRadiusDama
 		return ERR_MEMORY;
 
 	pArea->Place(Ctx.vPos, Ctx.vVel);
+	pArea->SetSourceVel(Ctx.vSourceVel);
 
 	//	Get notifications when other objects are destroyed
 	pArea->SetObjectDestructionHook();
@@ -138,13 +139,18 @@ void CRadiusDamage::DamageAll (SUpdateCtx &Ctx)
 		CVector vDist = (pObj->GetPos() - GetPos());
 		int iAngle = VectorToPolar(vDist);
 
+		//	Prepare for point in object calculations
+
+		SPointInObjectCtx PiOCtx;
+		pObj->PointInObjectInit(PiOCtx);
+
 		//	Figure out where we hit this object
 
 		Metric rObjRadius = 0.5 * pObj->GetHitSize();
 		CVector vHitPos = pObj->GetPos() - PolarToVector(iAngle, rObjRadius);
 		CVector vInc = PolarToVector(iAngle, 2.0 * g_KlicksPerPixel);
 		int iMax = mathRound(2.0 * rObjRadius / (2.0 * g_KlicksPerPixel));
-		while (!pObj->PointInObject(pObj->GetPos(), vHitPos) && iMax-- > 0)
+		while (!pObj->PointInObject(PiOCtx, pObj->GetPos(), vHitPos) && iMax-- > 0)
 			vHitPos = vHitPos + vInc;
 
 		//	The hit position is what we use to figure out damage
@@ -267,6 +273,7 @@ void CRadiusDamage::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSec
 		{
 		SEffectMoveCtx Ctx;
 		Ctx.pObj = this;
+		Ctx.rSeconds = rSeconds;
 
 		bool bBoundsChanged;
 		m_pPainter->OnMove(Ctx, &bBoundsChanged);
@@ -398,6 +405,10 @@ void CRadiusDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			FragCtx.pTarget = m_pTarget;
 			FragCtx.vPos = GetPos();
 			FragCtx.vVel = GetVel();
+			FragCtx.iDirection = GetRotation();
+			FragCtx.vSourcePos = FragCtx.vPos;
+			FragCtx.vSourceVel = FragCtx.vVel;
+			FragCtx.iSourceDirection = FragCtx.iDirection;
 
 			GetSystem()->CreateWeaponFragments(FragCtx, this);
 			}
