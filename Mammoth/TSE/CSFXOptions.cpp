@@ -170,14 +170,24 @@ void CSFXOptions::CalcPaintThreads(void)
 
 	kernelDebugLogPattern("Calculated number of sprite-painting threads to use: %d", m_iMaxSpritePaintWorkers);
 
-	//	Set the default state of m_bUseMTPaint. This may be modified by settings later
+	//	Set the default state of sprite painting. This may be modified by settings later
 
-	if (m_iMaxSpritePaintWorkers < 2 && m_iMaxBkrndPaintWorkers < 2)
+	if (m_iMaxSpritePaintWorkers < 2)
 		{
-		m_bUseMTPaint = false;
-		kernelDebugLogString(CONSTLIT("Insufficient logical cores available for multithreaded painting."));
+		m_bUseMTSpritePaint = false;
+		kernelDebugLogString(CONSTLIT("Insufficient logical cores available for multithreaded sprite painting."));
 		}
 	else
-		m_bUseMTPaint = true;
+		m_bUseMTSpritePaint = true;
+
+	//	Set the default state of background painting. This may be modified by settings later
+
+	if (m_iMaxBkrndPaintWorkers < 2)
+		{
+		m_bUseMTBkrndPaint = false;
+		kernelDebugLogString(CONSTLIT("Insufficient logical cores available for multithreaded background painting."));
+		}
+	else
+		m_bUseMTBkrndPaint = true;
 	}
 

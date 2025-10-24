@@ -88,7 +88,8 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"noGPUAcceleration",		optionBoolean,	"false",	0	},
 		{	"noSpaceBackground",		optionBoolean,	"false",	0	},
 		{	"use60fps",					optionBoolean,	"true",		0	},
-		{	"useMTPaint",				optionBoolean,	"true",		0	},
+		{	"useMTSpritePaint",			optionBoolean,	"true",		0	},
+		{	"useMTBkrndPaint",			optionBoolean,	"true",		0	},
 
 		//	Sounds options
 		{	"noSound",					optionBoolean,	"false",	0	},

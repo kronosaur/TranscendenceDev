@@ -154,13 +154,16 @@ class CSFXOptions
 		bool IsStargateTravelEffectEnabled (void) const { return m_bStargateTravelEffect; }
 		bool IsStarGlowEnabled (void) const { return m_bStarGlow; }
 		bool IsStarshineEnabled (void) const { return m_bStarshine; }
+		bool IsMTBkrndPaintEnabled(void) const { return m_bUseMTBkrndPaint; }
+		bool IsMTSpritePaintEnabled(void) const { return m_bUseMTSpritePaint; }
 		void Set3DExtrasEnabled (bool bEnabled = true) { m_b3DExtras = bEnabled; }
 		void Set3DSystemMapEnabled (bool bEnabled = true) { m_b3DSystemMap = bEnabled; }
 		void SetManeuveringEffectEnabled (bool bEnabled = true) { m_bManeuveringEffect = bEnabled; }
 		void SetSFXQuality (ESFXQuality iQuality);
 		void SetSFXQualityAuto (void);
 		void SetSpaceBackground (bool bEnabled = true) { m_bSpaceBackground = bEnabled; }
-		void SetUseMTPaint (bool bEnabled = true) { m_bUseMTPaint = bEnabled; }
+		void SetUseMTBkrndPaint(bool bEnabled = true) { m_bUseMTBkrndPaint = bEnabled; }
+		void SetUseMTSpritePaint (bool bEnabled = true) { m_bUseMTSpritePaint = bEnabled; }
 
 	private:
 		void CalcPaintThreads (void);
@@ -181,7 +184,8 @@ class CSFXOptions
 		bool m_bStarGlow = false;					//	Show star glow in system map
 		bool m_bStarshine = false;					//	Show starshine effect
 		bool m_bDockScreenTransparent = false;		//	Show SRS behind dock screen
-		bool m_bUseMTPaint = false;					//	Use multithreaded paint. This option has no effect on 1-core systems or if dbg option ForceSTPaint is enabled.
+		bool m_bUseMTBkrndPaint = false;			//	Use multithreaded bkrnd paint. This option has no effect on 1-core systems.
+		bool m_bUseMTSpritePaint = false;			//	Use multithreaded sprite paint. This option has no effect on 1-core systems or if (dbgSet 'ForceSTPaint ...) is enabled (API57+).
 	};
 
 //	Engine Strings -------------------------------------------------------------

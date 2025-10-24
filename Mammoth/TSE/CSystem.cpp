@@ -539,25 +539,34 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 
 	Ctx.rIndicatorRadius = Min(RectWidth(rcView), RectHeight(rcView)) / 2.0;
 
-	
+	//	Initialize MT paint if we are configured to do so
 
-	//	If we don't have a thread pool yet, create it
+	bool bUseMTSpritePaint = GetUniverse().GetSFXOptions().IsMTSpritePaintEnabled();
 
-	if (m_pThreadPool == NULL)
+	//	MT Sprite paint thread pool can be safely left NULL, as this is
+	//	explicitly checked in its logic.
+
+	if (bUseMTSpritePaint)
 		{
-		m_pThreadPool = new CThreadPool;
-		m_pThreadPool->Boot(GetUniverse().GetSFXOptions().GetMaxSpritePaintWorkers());
+		//	If we don't have a thread pool yet, create it
+
+		if (m_pThreadPool == NULL)
+			{
+			m_pThreadPool = new CThreadPool;
+			m_pThreadPool->Boot(GetUniverse().GetSFXOptions().GetMaxSpritePaintWorkers());
+			}
+
+		Ctx.pThreadPool = m_pThreadPool;
 		}
 
-	Ctx.pThreadPool = m_pThreadPool;
-
 	//	If we don't have a background thread pool yet, create it
+	//	It is not currently safe to leave this NULL
 
 	if (m_pBkrndThreadPool == NULL)
-	{
+		{
 		m_pBkrndThreadPool = new CThreadPool;
 		m_pBkrndThreadPool->Boot(GetUniverse().GetSFXOptions().GetMaxBkrndPaintWorkers());
-	}
+		}
 
 	Ctx.pBkrndThreadPool = m_pBkrndThreadPool;
 
