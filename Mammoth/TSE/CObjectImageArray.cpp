@@ -78,7 +78,8 @@ class CSpritePaintWorker : public IThreadPoolTask
 
 			//	Flags
 			DWORD fComposite : 1 = 0;
-			DWORD dwSpare : 31 = 0;
+			DWORD fDbgShowPaintLocation : 1 = 0;
+			DWORD dwSpare : 30 = 0;
 
 			};
 
@@ -122,7 +123,8 @@ class CSpritePaintWorker : public IThreadPoolTask
 					m_Ctx.iRotation,
 					m_Ctx.fComposite,
 					m_y,
-					m_cyHeight
+					m_cyHeight,
+					m_Ctx.fDbgShowPaintLocation
 				);
 			}
 
@@ -1489,10 +1491,17 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 
 	if (m_pImage)
 		{
+		
+		//	capture draw performance if that debug setting is configured
+
+		LARGE_INTEGER iPerfStart;
+		LARGE_INTEGER iPerfEnd;
+		if (Ctx && Ctx->bDbgShowPaintTime)
+			QueryPerformanceCounter(&iPerfStart);
 
 		//	If we are on the main thread and we have a thread pool in the paint context, use multithreading
 
-		if (Ctx && Ctx->pThreadPool)
+		if (Ctx && Ctx->pThreadPool && !Ctx->bForceSTPaint)
 			{
 
 			//	Group scanlines per worker
@@ -1515,6 +1524,7 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 			WorkerCtx.iRotation = iRotation;
 			WorkerCtx.iMode = iPaintMode;
 			WorkerCtx.fComposite = bComposite ? 1 : 0;
+			WorkerCtx.fDbgShowPaintLocation = Ctx->bDbgShowPaintLocations ? 1 : 0;
 
 			//	Create tasks
 
@@ -1538,7 +1548,7 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 			if (iPaintMode == CSpritePaintWorker::eDebugTask)
 				{
 				//	if debugging, we need to paint normally since the debug task is just math
-				WorkerPaintImage(Dest, x, y, iTick, iRotation, bComposite, -1, -1);
+				WorkerPaintImage(Dest, x, y, iTick, iRotation, bComposite, -1, -1, Ctx->bDbgShowPaintLocations);
 				}
 			}
 
@@ -1546,8 +1556,24 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 
 		else
 			{
-			WorkerPaintImage(Dest, x, y, iTick, iRotation, bComposite, -1, -1);
+			WorkerPaintImage(Dest, x, y, iTick, iRotation, bComposite, -1, -1, Ctx ? Ctx->bDbgShowPaintLocations : false);
 			}
+
+		//	Show total execution time if this debug option is enabled
+
+		if (Ctx && Ctx->bDbgShowPaintTime)
+			{
+			QueryPerformanceCounter(&iPerfEnd);
+			LARGE_INTEGER iFrequency;
+			QueryPerformanceFrequency(&iFrequency);
+			UINT64 iPerfElapsed = (iPerfEnd.QuadPart - iPerfStart.QuadPart) * 1000000 / iFrequency.QuadPart;
+			const CG16bitFont *pMediumFont = &g_pUniverse->GetFont(CONSTLIT("Medium"));
+			int iDestX = x - RectWidth(m_rcImage) / 2;
+			int iDestY = y - RectHeight(m_rcImage) / 2;
+			CString sPerf = strPatternSubst(CONSTLIT("%l05d"), iPerfElapsed);
+			pMediumFont->DrawText(Dest, iDestX, iDestY, CG32bitPixel(255, 0, 0), sPerf);
+			}
+		
 		}
 	DEBUG_CATCH_MT
 	}
@@ -1557,7 +1583,7 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 //	Paints the image with MT if Ctx is not NULL and defines m_pThreadPool
 //	Otherwise uses standard painting
 //	
-void CObjectImageArray::WorkerPaintImage (CG32bitImage& Dest, int x, int y, int iTick, int iRotation, bool bComposite, int iOffsetY, int iOffsetCY) const
+void CObjectImageArray::WorkerPaintImage (CG32bitImage& Dest, int x, int y, int iTick, int iRotation, bool bComposite, int iOffsetY, int iOffsetCY, bool bDbgShowPaintLocation) const
 	{
 	DEBUG_TRY
 
@@ -1584,14 +1610,15 @@ void CObjectImageArray::WorkerPaintImage (CG32bitImage& Dest, int x, int y, int 
 
 		int ySprite = RectHeight(m_rcImage);
 		int cy = (iOffsetCY > 0) ? min(iOffsetCY, ySprite) : ySprite;
+		int cx = RectWidth(m_rcImage);
 		int yDest = y - (ySprite / 2) + iOffsetY;
-		int xDest = x - (RectWidth(m_rcImage) / 2);
+		int xDest = x - (cx / 2);
 
 		if (bComposite)
 			{
 			Dest.Composite(xSrc,
 				ySrc,
-				RectWidth(m_rcImage),
+				cx,
 				cy,
 				255,
 				*pSource,
@@ -1606,14 +1633,14 @@ void CObjectImageArray::WorkerPaintImage (CG32bitImage& Dest, int x, int y, int 
 				*pSource,
 				xSrc,
 				ySrc,
-				RectWidth(m_rcImage),
+				cx,
 				cy);
 			}
 		else
 			{
 			Dest.Blt(xSrc,
 				ySrc,
-				RectWidth(m_rcImage),
+				cx,
 				cy,
 				255,
 				*pSource,
@@ -1622,7 +1649,13 @@ void CObjectImageArray::WorkerPaintImage (CG32bitImage& Dest, int x, int y, int 
 			}
 
 		if (g_pUniverse->GetDebugOptions().IsShowPaintLocationEnabled())
+			{
+			//	Put a magenta marker on the first pixel
 			Dest.SetPixel(xDest, yDest, CG32bitPixel(255, 0, 255));
+
+			//	Put a green marker on the last pixel
+			Dest.SetPixel(xDest + cx, yDest + cy -1, CG32bitPixel(0, 255, 0));
+			}
 			
 		}
 	DEBUG_CATCH

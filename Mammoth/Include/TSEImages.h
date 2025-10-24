@@ -284,7 +284,7 @@ class CObjectImageArray
 		void SetImage (TSharedPtr<CObjectImage> pImage);
 		void SetRotationCount (int iRotationCount);
 		void TakeHandoff (CObjectImageArray &Source);
-		void WorkerPaintImage (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, bool bComposite = false, int iOffsetY = -1, int iOffsetCY = -1) const;
+		void WorkerPaintImage (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, bool bComposite = false, int iOffsetY = -1, int iOffsetCY = -1, bool bDbgShowPaintLocation = false) const;
 		void WriteToStream (IWriteStream *pStream) const;
 
 		static const CObjectImageArray &Null (void) { return m_Null; }
