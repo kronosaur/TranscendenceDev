@@ -125,6 +125,24 @@ void CSFXOptions::SetSFXQualityAuto (void)
 		}
 	}
 
+// SetMinSpriteChunkSize
+// 
+//	Sets the min sprite chunk size, rounded down to the
+//  nearest power of two.
+//	
+//	This is expressed as an exponent 
+//
+void CSFXOptions::SetMinSpriteChunkSize(int iMinSize)
+	{
+	m_iMinSpriteChunkSizePow = 0;
+	DWORD dwMinSize = (DWORD)iMinSize;
+	if (dwMinSize)
+		{
+		for (m_iMinSpriteChunkSizePow = 0; dwMinSize > 1; m_iMinSpriteChunkSizePow++)
+			dwMinSize = dwMinSize >> 1;
+		}
+	}
+
 //	CalcPaintThreads
 //
 //	Determine the maximum threads to use for

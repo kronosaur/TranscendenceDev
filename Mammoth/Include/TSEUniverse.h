@@ -146,6 +146,7 @@ class CSFXOptions
 		BYTE GetHUDOpacity (void) const { return (m_bHUDTransparent ? 200 : 255); }
 		int GetMaxBkrndPaintWorkers (void) const { return m_iMaxBkrndPaintWorkers; }
 		int GetMaxSpritePaintWorkers (void) const { return m_iMaxSpritePaintWorkers; }
+		DWORD GetMinSpriteChunkSizePower (void) const { return m_dwMinSpriteChunkSizePow; }
 		bool Is3DExtrasEnabled (void) const { return m_b3DExtras; }
 		bool Is3DSystemMapEnabled (void) const { return m_b3DSystemMap; }
 		bool IsDockScreenTransparent (void) const { return m_bDockScreenTransparent; }
@@ -164,6 +165,7 @@ class CSFXOptions
 		void SetSpaceBackground (bool bEnabled = true) { m_bSpaceBackground = bEnabled; }
 		void SetUseMTBkrndPaint(bool bEnabled = true) { m_bUseMTBkrndPaint = bEnabled; }
 		void SetUseMTSpritePaint (bool bEnabled = true) { m_bUseMTSpritePaint = bEnabled; }
+		void SetMinSpriteChunkSize (int iMinSize = 1 << 12);
 
 	private:
 		void CalcPaintThreads (void);
@@ -174,6 +176,7 @@ class CSFXOptions
 
 		int m_iMaxBkrndPaintWorkers = 0;			//	Max number of additional threads to use for background painting. <2 means to run on main thread.
 		int m_iMaxSpritePaintWorkers = 0;			//	Max number of additional threads to use for sprite painting. <2 means to run on main thread.
+		DWORD m_dwMinSpriteChunkSizePow = 0;		//	Min size of a sprite chunk for sprite-based multithreading. Expressed as a power of 2.
 
 		bool m_b3DSystemMap = false;				//	3D effect on system map
 		bool m_b3DExtras = false;					//	Show extra 3D objects, like parallax asteroids

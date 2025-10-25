@@ -541,6 +541,7 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 
 	//	Initialize MT paint if we are configured to do so
 
+	Ctx.dwMinChunkSizePow = GetUniverse().GetSFXOptions().GetMinSpriteChunkSizePower();
 	bool bUseMTSpritePaint = GetUniverse().GetSFXOptions().IsMTSpritePaintEnabled();
 
 	//	MT Sprite paint thread pool can be safely left NULL, as this is

@@ -252,6 +252,7 @@ class CGameSettings
 			use60fps,						//	Run at 60 fps (two frames per tick)
 			useMTSpritePaint,				//	Use multiple threads for painting sprites
 			useMTBkrndPaint,				//	Use multiple threads for painting background
+			minMTSpriteChunk,				//	Minimum size of MT sprite chunk. Rounded down to nearest power of 2.
 
 			//	Sounds options
 			noSound,						//	No sound (either music or sound effects)

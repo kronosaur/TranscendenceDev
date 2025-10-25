@@ -1497,9 +1497,9 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 		//	we do not use excessive threads on a small ship
 		int iScanLines = RectHeight(m_rcImage);
 		int iScanLineLength = RectWidth(m_rcImage);
-		int iProjectedExtraWorkers = iScanLineLength >> MT_REQUIRED_PIXEL_COUNT_SHIFT ? iScanLineLength - 1 : (iScanLines * iScanLineLength) >> MT_REQUIRED_PIXEL_COUNT_SHIFT;
+		int iProjectedExtraWorkers = (Ctx && Ctx->pThreadPool) ? (iScanLineLength >> Ctx->dwMinChunkSizePow ? iScanLineLength - 1 : (iScanLines * iScanLineLength) >> Ctx->dwMinChunkSizePow) : 0;
 
-		if (Ctx && Ctx->pThreadPool && iProjectedExtraWorkers)
+		if (iProjectedExtraWorkers)
 			{
 
 			//	Group scanlines per worker
