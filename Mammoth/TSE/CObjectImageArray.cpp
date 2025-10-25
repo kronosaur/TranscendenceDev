@@ -22,7 +22,7 @@
 #define	GLOW_SIZE						4
 #define FILTER_SIZE						5
 #define FIXED_POINT						65536
-#define MT_REQUIRED_PIXEL_COUNT_SHIFT	13
+#define MT_REQUIRED_PIXEL_COUNT_SHIFT	12
 #define MT_REQUIRED_PIXELS				1 << MT_REQUIRED_PIXEL_COUNT_SHIFT
 
 static int g_FilterOffset[FILTER_SIZE] =
