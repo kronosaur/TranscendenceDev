@@ -1149,6 +1149,8 @@ ALERROR CTranscendenceModel::InitBackground (const CGameSettings &Settings, cons
 	if (!Settings.GetBoolean(CGameSettings::useMTSpritePaint))
 		m_Universe.GetSFXOptions().SetUseMTSpritePaint(false);
 
+	m_Universe.GetSFXOptions().SetMinSpriteChunkSize(Settings.GetInteger(CGameSettings::minMTSpriteChunk));
+
 	if (!Settings.GetBoolean(CGameSettings::useMTBkrndPaint))
 		m_Universe.GetSFXOptions().SetUseMTBkrndPaint(false);
 
