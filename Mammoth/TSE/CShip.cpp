@@ -5273,7 +5273,7 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 	else if (IsRadioactive())
 		Image.PaintImageWithGlow(Dest, x, y, Ctx.iTick, m_Rotation.GetFrameIndex(), CG32bitPixel(0, 255, 0));
 	else
-		Image.PaintImage(Dest, x, y, Ctx.iTick, m_Rotation.GetFrameIndex());
+		Image.PaintImage(Dest, x, y, Ctx.iTick, m_Rotation.GetFrameIndex(), false, &Ctx);
 
 	//	Paint effects in front of the ship.
 

@@ -572,6 +572,21 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //			(bRoR x count)
 //				Returns x rotated right by count bits in 32-bit space.
 //				Bits shifted out of the low end wrap around to the high end.
+//			(dbgGet [option] value)
+//				New option parameters:
+//					'forceSTPaint: forces single threaded painting
+//					'showPaintLocation: shows the upper left and lower right corners of
+//						each thread's painted area
+//					'showPaintTime: shows the time to paint the sprite in
+//						microseconds
+//			(dbgSet [option] value)
+//				New option parameters:
+//					'forceSTPaint: forces single threaded painting
+//					'showPaintLocation: shows the upper left and lower right corners of
+//						each thread's painted area
+//					'showPaintTime: shows the time to paint the sprite in
+//						microseconds
+//				
 //		<AdventureDesc>
 //			<Constants>
 //				<MiningMaxOreLevels>

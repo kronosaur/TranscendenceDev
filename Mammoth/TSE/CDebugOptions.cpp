@@ -6,6 +6,7 @@
 #include "PreComp.h"
 
 #define PROPERTY_DEBUG_MODE					CONSTLIT("debugMode")
+#define PROPERTY_FORCE_ST_PAINT				CONSTLIT("forceSTPaint")
 #define PROPERTY_MEMORY_USE					CONSTLIT("memoryUse")
 #define PROPERTY_SHOW_AI_DEBUG				CONSTLIT("showAIDebug")
 #define PROPERTY_SHOW_BOUNDS				CONSTLIT("showBounds")
@@ -14,6 +15,8 @@
 #define PROPERTY_SHOW_NAV_PATHS				CONSTLIT("showNavPaths")
 #define PROPERTY_SHOW_NODE_INFO				CONSTLIT("showNodeInfo")
 #define PROPERTY_SHOW_ORDER_INFO			CONSTLIT("showOrderInfo")
+#define PROPERTY_SHOW_PAINT_LOCATION		CONSTLIT("showPaintLocation")
+#define PROPERTY_SHOW_PAINT_TIME			CONSTLIT("showPaintTime")
 
 #define ERR_MUST_BE_IN_DEBUG_MODE			CONSTLIT("Must be in debug mode to set a debug property.")
 
@@ -51,6 +54,9 @@ ICCItemPtr CDebugOptions::GetProperty (const CString &sProperty) const
 	else if (strEquals(sProperty, PROPERTY_DEBUG_MODE))
 		return ICCItemPtr(g_pUniverse->InDebugMode());
 
+	else if (strEquals(sProperty, PROPERTY_FORCE_ST_PAINT))
+		return ICCItemPtr(m_bForceSTPaint);
+
 	else if (strEquals(sProperty, PROPERTY_SHOW_AI_DEBUG))
 		return ICCItemPtr(m_bShowAIDebug);
 
@@ -71,6 +77,12 @@ ICCItemPtr CDebugOptions::GetProperty (const CString &sProperty) const
 
 	else if (strEquals(sProperty, PROPERTY_SHOW_ORDER_INFO))
 		return ICCItemPtr(m_bShowOrderInfo);
+
+	else if (strEquals(sProperty, PROPERTY_SHOW_PAINT_LOCATION))
+		return ICCItemPtr(m_bShowPaintLocation);
+
+	else if (strEquals(sProperty, PROPERTY_SHOW_PAINT_TIME))
+		return ICCItemPtr(m_bShowPaintTime);
 
 	else
 		return ICCItemPtr(ICCItem::Nil);
@@ -95,7 +107,10 @@ bool CDebugOptions::SetProperty (const CString &sProperty, ICCItem *pValue, CStr
 
 	//	Set a property
 
-	if (strEquals(sProperty, PROPERTY_SHOW_AI_DEBUG))
+	if (strEquals(sProperty, PROPERTY_FORCE_ST_PAINT))
+		m_bForceSTPaint = !pValue->IsNil();
+
+	else if (strEquals(sProperty, PROPERTY_SHOW_AI_DEBUG))
 		m_bShowAIDebug = !pValue->IsNil();
 
 	else if (strEquals(sProperty, PROPERTY_SHOW_BOUNDS))
@@ -115,6 +130,12 @@ bool CDebugOptions::SetProperty (const CString &sProperty, ICCItem *pValue, CStr
 
 	else if (strEquals(sProperty, PROPERTY_SHOW_ORDER_INFO))
 		m_bShowOrderInfo = !pValue->IsNil();
+
+	else if (strEquals(sProperty, PROPERTY_SHOW_PAINT_LOCATION))
+		m_bShowPaintLocation = !pValue->IsNil();
+
+	else if (strEquals(sProperty, PROPERTY_SHOW_PAINT_TIME))
+		m_bShowPaintTime = !pValue->IsNil();
 
 	else
 		{
