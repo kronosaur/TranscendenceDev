@@ -603,7 +603,7 @@ void CEnvironmentGrid::Paint (SViewportPaintCtx &Ctx, CG32bitImage &Dest)
 	//	Figure out how high each horizontal chunk is
 
 	int cyTotal = yEnd - yStart;
-	int cyChunk = Max(1, cyTotal / Ctx.pThreadPool->GetThreadCount());
+	int cyChunk = Max(1, cyTotal / Ctx.pBkrndThreadPool->GetThreadCount());
 
 	//	Start async tasks
 
@@ -611,12 +611,12 @@ void CEnvironmentGrid::Paint (SViewportPaintCtx &Ctx, CG32bitImage &Dest)
 	while (y < yEnd)
 		{
 		int yChunkEnd = Min(yEnd, y + cyChunk);
-		Ctx.pThreadPool->AddTask(new CEnvironmentTilePainter(Ctx, Dest, this, xStart, y, xEnd, yChunkEnd));
+		Ctx.pBkrndThreadPool->AddTask(new CEnvironmentTilePainter(Ctx, Dest, this, xStart, y, xEnd, yChunkEnd));
 
 		y = yChunkEnd;
 		}
 
-	Ctx.pThreadPool->Run();
+	Ctx.pBkrndThreadPool->Run();
 
 #ifdef DEBUG_PAINT_TIMINGS
 	g_dwTotalTime += ::GetTickCount() - dwStart;
