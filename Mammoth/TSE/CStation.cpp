@@ -3550,7 +3550,7 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		Image.PaintImageWithGlow(Dest, x, y, iTick, iVariant, CG32bitPixel(0, 255, 0));
 
 	else
-		Image.PaintImage(Dest, x, y, iTick, iVariant);
+		Image.PaintImage(Dest, x, y, iTick, iVariant, false, &Ctx);
 
 	//  Paint satellites in front of the station.
 

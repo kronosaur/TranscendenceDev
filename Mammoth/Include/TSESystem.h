@@ -734,6 +734,7 @@ class CSystem
 		//	Support structures
 
 		CThreadPool *m_pThreadPool = NULL;			//	Thread pool for painting
+		CThreadPool *m_pBkrndThreadPool = NULL;		//	Thread pool for painting
 		CRandomEncounterObjTable m_EncounterObjTable;
 		CRandomEncounterTypeTable m_EncounterTypeTable;
 

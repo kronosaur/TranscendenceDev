@@ -144,6 +144,9 @@ class CSFXOptions
 		CSFXOptions (void) { SetSFXQuality(sfxMaximum); }
 
 		BYTE GetHUDOpacity (void) const { return (m_bHUDTransparent ? 200 : 255); }
+		int GetMaxBkrndPaintWorkers (void) const { return m_iMaxBkrndPaintWorkers; }
+		int GetMaxSpritePaintWorkers (void) const { return m_iMaxSpritePaintWorkers; }
+		DWORD GetMinSpriteChunkSizePower (void) const { return m_dwMinSpriteChunkSizePow; }
 		bool Is3DExtrasEnabled (void) const { return m_b3DExtras; }
 		bool Is3DSystemMapEnabled (void) const { return m_b3DSystemMap; }
 		bool IsDockScreenTransparent (void) const { return m_bDockScreenTransparent; }
@@ -152,25 +155,40 @@ class CSFXOptions
 		bool IsStargateTravelEffectEnabled (void) const { return m_bStargateTravelEffect; }
 		bool IsStarGlowEnabled (void) const { return m_bStarGlow; }
 		bool IsStarshineEnabled (void) const { return m_bStarshine; }
+		bool IsMTBkrndPaintEnabled(void) const { return m_bUseMTBkrndPaint; }
+		bool IsMTSpritePaintEnabled(void) const { return m_bUseMTSpritePaint; }
 		void Set3DExtrasEnabled (bool bEnabled = true) { m_b3DExtras = bEnabled; }
 		void Set3DSystemMapEnabled (bool bEnabled = true) { m_b3DSystemMap = bEnabled; }
 		void SetManeuveringEffectEnabled (bool bEnabled = true) { m_bManeuveringEffect = bEnabled; }
 		void SetSFXQuality (ESFXQuality iQuality);
 		void SetSFXQualityAuto (void);
 		void SetSpaceBackground (bool bEnabled = true) { m_bSpaceBackground = bEnabled; }
+		void SetUseMTBkrndPaint(bool bEnabled = true) { m_bUseMTBkrndPaint = bEnabled; }
+		void SetUseMTSpritePaint (bool bEnabled = true) { m_bUseMTSpritePaint = bEnabled; }
+		void SetMinSpriteChunkSize (int iMinSize = 1 << 12);
 
 	private:
+		void CalcPaintThreads (void);
+
 		ESFXQuality m_iQuality;
 
-		bool m_b3DSystemMap;				//	3D effect on system map
-		bool m_b3DExtras;					//	Show extra 3D objects, like parallax asteroids
-		bool m_bHUDTransparent;				//	HUD has transparency effect
-		bool m_bManeuveringEffect;			//	Show maneuvering thruster effects
-		bool m_bSpaceBackground;			//	Show system image background
-		bool m_bStargateTravelEffect;		//	Show effect when changing systems
-		bool m_bStarGlow;					//	Show star glow in system map
-		bool m_bStarshine;					//	Show starshine effect
-		bool m_bDockScreenTransparent;		//	Show SRS behind dock screen
+		const SProcessorInfo m_sProcessorInfo = sysGetProcessorInfo();	//	Info about the processor for setting MT paint options
+
+		int m_iMaxBkrndPaintWorkers = 0;			//	Max number of additional threads to use for background painting. <2 means to run on main thread.
+		int m_iMaxSpritePaintWorkers = 0;			//	Max number of additional threads to use for sprite painting. <2 means to run on main thread.
+		DWORD m_dwMinSpriteChunkSizePow = 0;		//	Min size of a sprite chunk for sprite-based multithreading. Expressed as a power of 2.
+
+		bool m_b3DSystemMap = false;				//	3D effect on system map
+		bool m_b3DExtras = false;					//	Show extra 3D objects, like parallax asteroids
+		bool m_bHUDTransparent = false;				//	HUD has transparency effect
+		bool m_bManeuveringEffect = false;			//	Show maneuvering thruster effects
+		bool m_bSpaceBackground = false;			//	Show system image background
+		bool m_bStargateTravelEffect = false;		//	Show effect when changing systems
+		bool m_bStarGlow = false;					//	Show star glow in system map
+		bool m_bStarshine = false;					//	Show starshine effect
+		bool m_bDockScreenTransparent = false;		//	Show SRS behind dock screen
+		bool m_bUseMTBkrndPaint = false;			//	Use multithreaded bkrnd paint. This option has no effect on 1-core systems.
+		bool m_bUseMTSpritePaint = false;			//	Use multithreaded sprite paint. This option has no effect on 1-core systems or if (dbgSet 'ForceSTPaint ...) is enabled (API57+).
 	};
 
 //	Engine Strings -------------------------------------------------------------

@@ -23,16 +23,202 @@ DWORD Kernel::sysGetTicksElapsed (DWORD dwTick, DWORD *retdwNow)
 		return dwNow - dwTick;
 	}
 
-int Kernel::sysGetProcessorCount (void)
-
-//	sysGetProcessorCount
+//	sysGetProcessorsInMask
 //
-//	Returns the number of processors on the machine
+//	Gets the number of processors in a KAFFINITY mask
+//	Note that this can only accurately count up to 32 processors
+//	in a 32-bit app
+//
+DWORD Kernel::sysGetProcessorsInMask(KAFFINITY &AffinityMask)
+	{
+	return std::popcount(AffinityMask);
+	}
 
+//	sysGetProcessorInfo
+// 
+//	Returns an SProcessorInfo struct with high level details
+//	about the number of cores and processor groups in the cpu
+//	It can return core counts above 32 (32-bit) or 64 (64-bit)
+//	Note that these may span multiple processor groups
+//
+SProcessorInfo Kernel::sysGetProcessorInfo(void)
+	{
+	SProcessorInfo sInfo = SProcessorInfo();
+	DWORD dwLength = 0;
+	DWORD dwWinError = 0;
+	GetLogicalProcessorInformationEx(RelationAll, NULL, &dwLength);
+	dwWinError = GetLastError();
+	if (dwWinError != ERROR_INSUFFICIENT_BUFFER)
+		{
+		ASSERT(false);
+		//	sInfo.fSuccess defaults to false
+		return sInfo;
+		}
+	//	This buffer must be treated as a buffer of bytes, because the SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX structs
+	//	have variable length, as demarkated in their size field.
+	union
+		{
+		BYTE* pBuffer;
+		PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX pSysInfo;
+		};
+	union
+		{
+		BYTE* pBufferPos;
+		PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX pCurSysInfo;
+		};
+	pSysInfo = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX)malloc(dwLength);
+	DWORD dwMaxLength = dwLength;
+
+	//	We call this differently in 32bit vs 64bit
+	//  Calling with RelativeProcessorCore as the type has special behavior
+	//  for getting the true count of cores on a 32bit system, because
+	//	the KAFFINITY mask struct can only show 32 bits on a 32bit system
+	// 
+	//	Attempts to get an accurate number but will fall back to
+	//	sysGetProcessorCountLegacy.
+	//  The actual number of processors in the cpu is at least this high
+	// 
+	//	https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getlogicalprocessorinformationex
+
+	if (GetLogicalProcessorInformationEx(RelationAll, pSysInfo, &dwLength))
+		{
+		SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX CurInfo;
+		for (DWORD dwOffset = 0; dwOffset < dwLength; dwOffset += CurInfo.Size)
+			{
+
+			//	Intellisense thinks pBuffer is NULL because it doesnt
+			//	handle the union correctly. Its actually non-NULL.
+
+			pBufferPos = &(pBuffer[dwOffset]);
+			CurInfo = *pCurSysInfo;
+
+			//	If this has data about cpu cores
+
+			if (CurInfo.Relationship == RelationProcessorCore)
+				{
+
+				//	A relation processor core always corresponds to 1 physical core 
+
+				sInfo.dwNumPhysical++;
+
+				//	if this has SMT, we need to count logical cores based on mask bits
+
+				if (CurInfo.Processor.Flags & LTP_PC_SMT)
+					{
+
+					//	RelationProcessorCore only ever has 1 GroupMask.
+					//	https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-processor_relationship
+					// 
+					//	Note: In 32bit apps KAFFINITY is only 32bits and the
+					//	upper 32 processors are mirrored onto the lower 32 processors
+					//	As a result it works up till 32-way SMT
+
+					sInfo.dwNumLogical += sysGetProcessorsInMask(CurInfo.Processor.GroupMask[0].Mask);
+					}
+
+				//	otherwise it only has 1 logical core
+
+				else
+					sInfo.dwNumLogical++;
+				}
+
+			//	If this has data about processor groups
+
+			else if (CurInfo.Relationship == RelationGroup)
+				{
+				sInfo.dwNumProcessorGroups += CurInfo.Group.ActiveGroupCount;
+				if (CurInfo.Group.ActiveGroupCount != CurInfo.Group.MaximumGroupCount)
+					sInfo.fCanAddProcessorGroups = 1;
+				}
+			}
+		sInfo.fReliablePhysicalProcessorCount = 1;
+		sInfo.fReliableLogicalProcessorCount = sInfo.dwNumLogical < 32 || RELIABLE_AFFINITY_MASK ? 1 : 0;
+		sInfo.fReliableProcessorGroups = 1;
+		}
+	else
+		{
+			ASSERT(false);
+			//	sInfo.fSuccess defaults to false
+			return sInfo;
+		}
+
+	//	fallback implementation
+
+	if (!(sInfo.dwNumPhysical && sInfo.dwNumLogical && sInfo.dwNumProcessorGroups))
+		{
+		//	If we know that our logical processor count is reliable, we can
+		//	Interpolate the other values based on it, even though we cant
+		//	know for sure if the physical processor count is accurate
+
+		if (sInfo.fReliableLogicalProcessorCount)
+			{
+			sInfo.dwNumPhysical = sInfo.dwNumLogical;
+			sInfo.dwNumProcessorGroups = (sInfo.dwNumLogical >> 6) + 1;
+			}
+
+		//	Otherwise we have to guess
+
+		else
+			{
+			sInfo.dwNumLogical = sysGetProcessorCountLegacy();
+			if (!sInfo.dwNumPhysical)
+				sInfo.dwNumPhysical = sInfo.dwNumLogical;
+			if (!sInfo.dwNumProcessorGroups)
+				sInfo.dwNumProcessorGroups = 1;
+
+			//	If we have fewer than 32 logical processors its accurate
+			//	aside from some extremely weird system configurations where
+			//	someone is manually using tiny processor groups, probably
+			//	to box in processor group unaware apps deliberately.
+			//
+			//	Ex, on older multi-socket systems to keep things on
+			//	a single socket without using affinity masks.
+			//
+			//	As a result we assume that this is accurate and just
+			//	pretend to be a processor group unaware app by limiting
+			//	ourselves to 1.
+
+			if (sInfo.dwNumLogical < 32)
+				sInfo.fReliableLogicalProcessorCount = true;
+			sInfo.fReliableProcessorGroups = 1;
+			sInfo.dwNumProcessorGroups = 1;
+			}
+		}
+	else
+		sInfo.fSuccess = true;
+
+	free(pBuffer);
+
+	return sInfo;
+	}
+
+//	sysGetProcessorCountLegacy
+// 
+//  Returns the number of processors in the current processor group.
+// 	This is a max of 32 on 32-bit windows or 64 or 64-bit windows.
+//  The actual number of processors in the cpu is at least this high
+//
+int Kernel::sysGetProcessorCountLegacy(void)
 	{
 	SYSTEM_INFO si;
 	::GetSystemInfo(&si);
 	return si.dwNumberOfProcessors;
+	}
+
+
+//	sysGetProcessorCountLegacy
+// 
+//  Returns a number of processors in the cpu. Attempts to get an
+//	accurate number but will fall back to sysGetProcessorCountLegacy.
+//  The actual number of processors in the cpu is at least this high
+//
+int Kernel::sysGetProcessorCount(void)
+	{
+	SProcessorInfo sInfo = sysGetProcessorInfo();
+	if (sInfo.fSuccess)
+		return sInfo.dwNumLogical;
+	else
+		return sysGetProcessorCountLegacy();
 	}
 
 CString Kernel::sysGetUserName (void)
