@@ -134,11 +134,11 @@ void CSFXOptions::SetSFXQualityAuto (void)
 //
 void CSFXOptions::SetMinSpriteChunkSize(int iMinSize)
 	{
-	m_iMinSpriteChunkSizePow = 0;
+	m_dwMinSpriteChunkSizePow = 0;
 	DWORD dwMinSize = (DWORD)iMinSize;
 	if (dwMinSize)
 		{
-		for (m_iMinSpriteChunkSizePow = 0; dwMinSize > 1; m_iMinSpriteChunkSizePow++)
+		for (m_dwMinSpriteChunkSizePow = 0; dwMinSize > 1; m_dwMinSpriteChunkSizePow++)
 			dwMinSize = dwMinSize >> 1;
 		}
 	}
