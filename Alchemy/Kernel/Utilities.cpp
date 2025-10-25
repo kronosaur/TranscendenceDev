@@ -125,7 +125,11 @@ SProcessorInfo Kernel::sysGetProcessorInfo(void)
 			//	If this has data about processor groups
 
 			else if (CurInfo.Relationship == RelationGroup)
-				sInfo.dwNumProcessorGroups++;
+				{
+				sInfo.dwNumProcessorGroups += CurInfo.Group.ActiveGroupCount;
+				if (CurInfo.Group.ActiveGroupCount != CurInfo.Group.MaximumGroupCount)
+					sInfo.fCanAddProcessorGroups = 1;
+				}
 			}
 		sInfo.fReliablePhysicalProcessorCount = 1;
 		sInfo.fReliableLogicalProcessorCount = sInfo.dwNumLogical < 32 || RELIABLE_AFFINITY_MASK ? 1 : 0;
