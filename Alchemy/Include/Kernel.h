@@ -1453,7 +1453,8 @@ struct SProcessorInfo
 	DWORD fReliableLogicalProcessorCount : 1 = 0;
 	DWORD fReliableProcessorGroups : 1 = 0;
 	DWORD fSuccess : 1 = 0;
-	DWORD dwSpare : 28 = 0;
+	DWORD fCanAddProcessorGroups : 1 = 0;
+	DWORD dwSpare : 27 = 0;
 	};
 
 #ifdef WIN32
