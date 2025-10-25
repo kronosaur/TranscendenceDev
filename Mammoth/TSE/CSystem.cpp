@@ -17,8 +17,6 @@ constexpr Metric TIDAL_KILL_THRESHOLD =			7250.0;	//	Acceleration at which we ge
 
 constexpr BYTE MAX_SPACE_OPACITY =				128;
 
-constexpr int MAX_THREAD_COUNT =				16;
-
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
 #define ON_OBJ_JUMP_POS_ADJ						CONSTLIT("OnObjJumpPosAdj")
 
@@ -544,23 +542,35 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 
 	Ctx.rIndicatorRadius = Min(RectWidth(rcView), RectHeight(rcView)) / 2.0;
 
-	//	If we don't have a thread pool yet, create it
+	//	Initialize MT paint if we are configured to do so
 
-	if (m_pThreadPool == NULL)
+	Ctx.dwMinChunkSizePow = GetUniverse().GetSFXOptions().GetMinSpriteChunkSizePower();
+	bool bUseMTSpritePaint = GetUniverse().GetSFXOptions().IsMTSpritePaintEnabled();
+
+	//	MT Sprite paint thread pool can be safely left NULL, as this is
+	//	explicitly checked in its logic.
+
+	if (bUseMTSpritePaint)
 		{
-		m_pThreadPool = new CThreadPool;
-		m_pThreadPool->Boot(Min(MAX_THREAD_COUNT, sysGetProcessorCount()));
+		//	If we don't have a thread pool yet, create it
+
+		if (m_pThreadPool == NULL)
+			{
+			m_pThreadPool = new CThreadPool;
+			m_pThreadPool->Boot(GetUniverse().GetSFXOptions().GetMaxSpritePaintWorkers());
+			}
+
+		Ctx.pThreadPool = m_pThreadPool;
 		}
 
-	Ctx.pThreadPool = m_pThreadPool;
-
 	//	If we don't have a background thread pool yet, create it
+	//	It is not currently safe to leave this NULL
 
 	if (m_pBkrndThreadPool == NULL)
-	{
+		{
 		m_pBkrndThreadPool = new CThreadPool;
-		m_pBkrndThreadPool->Boot(Min(MAX_THREAD_COUNT, sysGetProcessorCount()));
-	}
+		m_pBkrndThreadPool->Boot(GetUniverse().GetSFXOptions().GetMaxBkrndPaintWorkers());
+		}
 
 	Ctx.pBkrndThreadPool = m_pBkrndThreadPool;
 
