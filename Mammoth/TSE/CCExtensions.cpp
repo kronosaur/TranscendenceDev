@@ -83,6 +83,9 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_ITEM_GET_TYPE_DATA		36
 #define FN_ITEM_IS_EQUAL			37
 #define FN_ITEM_SET_KNOWN			38
+#define FN_ITEM_DATA_KEYS			39
+#define FN_ITEM_GET_STATIC_DATA_KEYS	40
+#define FN_ITEM_GET_TYPE_DATA_KEYS	41
 
 ICCItem *fnItemGetTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -513,6 +516,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_NEXT_NODE_TO				43
 #define FN_SYS_ADD_STARGATE_TOPOLOGY_COLORED	44
 #define FN_SYS_STARGATE_HAS_ATTRIBUTE	45
+#define FN_SYS_GET_DATA_KEYS			46
 
 #define OPT_SYS_ADD_STARGATE_TOPOLOGY_COLOR		CONSTLIT("color")
 #define OPT_SYS_ADD_STARGATE_ATTRIBUTES			CONSTLIT("attributes")
@@ -840,6 +844,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(itmGetDamageType item|type) -> damage type",
 			"v",	0,	},
 
+		{	"itmGetDataKeys",				fnItemGet,		FN_ITEM_DATA_KEYS,
+			"(itmGetDataKeys item) -> list of data keys",
+			"v",	0,	},
+
 		{	"itmGetData",					fnItemGet,		FN_ITEM_DATA,
 			"(itmGetData item attrib) -> data",
 			"vs",	0,	},
@@ -1001,6 +1009,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(itmGetStaticData item attrib) -> data",
 			"vs",	0,	},
 
+		{	"itmGetStaticDataKeys",				fnItemGet,		FN_ITEM_GET_STATIC_DATA_KEYS,
+			"(itmGetStaticDataKeys item) -> list of static data keys",
+			"v",	0,	},
+
 		{	"itmGetType",					fnItemGet,		FN_ITEM_UNID,
 			"(itmGetType item) -> itemUNID",
 			"v",	0,	},
@@ -1008,6 +1020,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"itmGetTypeData",				fnItemGet,		FN_ITEM_GET_TYPE_DATA,
 			"(itmGetTypeData item|type attrib) -> data",
 			"v*",	0,	},
+
+		{	"itmGetTypeDataKeys",				fnItemGet,		FN_ITEM_GET_TYPE_DATA_KEYS,
+			"(itmGetTypeDataKeys item|type) -> list of type data keys",
+			"v",	0,	},
 
 		{	"itmGetTypes",				fnItemGetTypes,			0,
 			"(itmGetTypes criteria) -> list of itemUNIDs\n\n"
@@ -3303,6 +3319,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysGetData",					fnSystemGet,	FN_SYS_GET_DATA,
 			"(sysGetData [nodeID] attrib) -> data",
 			"s*",	0,	},
+
+		{	"sysGetDataKeys",				fnSystemGet,	FN_SYS_GET_DATA,
+			"(sysGetDataKeys [nodeID]) -> list of data keys",
+			"*",	0,	},
 
 		{	"sysGetEnvironment",			fnSystemGet,	FN_SYS_ENVIRONMENT,
 			"(sysGetEnvironment pos) -> environmentUNID",
@@ -5621,6 +5641,9 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			break;
 			}
 
+		case FN_ITEM_DATA_KEYS:
+			return Item.GetDataKeysAsItem()->Reference();
+
 		case FN_ITEM_DATA:
 			return Item.GetDataAsItem(pArgs->GetElement(1)->GetStringValue())->Reference();
 
@@ -5671,6 +5694,21 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			pResult = pCC->CreateBool(Item.IsEqual(Item2, dwFlags));
 			break;
+			}
+
+		case FN_ITEM_GET_STATIC_DATA_KEYS:
+		case FN_ITEM_GET_TYPE_DATA_KEYS:
+			{
+			EDesignDataTypes iDataType = FN_ITEM_GET_TYPE_DATA_KEYS ? EDesignDataTypes::eGlobalData : EDesignDataTypes::eStaticData;
+
+			TArray<CString> aRet = pType->GetDataKeys(iDataType);
+
+			ICCItemPtr pList = ICCItemPtr(ICCItem::List);
+
+			for (int i = 0; i < aRet.GetCount(); i++)
+				pList->AppendString(aRet[i]);
+
+			return pList->Reference();
 			}
 
 		case FN_ITEM_GET_STATIC_DATA:
@@ -14725,6 +14763,31 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Increment
 
 			return pNode->IncData(sAttrib, pInc)->Reference();
+			}
+
+		case FN_SYS_GET_DATA_KEYS:
+			{
+			CTopologyNode* pNode;
+
+			//	If we have an arg, then the first arg is
+			//	the node ID.
+
+			if (pArgs->GetCount() == 1)
+				{
+				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
+				if (pNode == NULL)
+					return pCC->CreateNil();
+				}
+			else
+				{
+				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(0)->GetStringValue());
+				if (pNode == NULL)
+					return pCC->CreateNil();
+				}
+
+			//	Get the data keys
+
+			return pNode->GetDataKeys()->Reference();
 			}
 
 		case FN_SYS_GET_DATA:

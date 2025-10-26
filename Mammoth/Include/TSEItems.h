@@ -333,6 +333,7 @@ class CItem
 		inline const CEconomyType *GetCurrencyType (void) const;
 		int GetDamagedHP (void) const;
 		ICCItemPtr GetDataAsItem (const CString &sAttrib) const;
+		ICCItemPtr GetDataKeysAsItem (void) const;
 		CString GetDesc (bool bActual = false) const;
 		inline CDeviceClass *GetDeviceClass (void) const;
 		bool GetDisplayAttributes (TArray<SDisplayAttribute> *retList, ICCItem *pData = NULL, bool bActual = false) const;
