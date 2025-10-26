@@ -1897,6 +1897,11 @@ size_t CDesignType::GetAllocMemoryUsage (void) const
 TArray<CString> CDesignType::GetDataKeys(const EDataTypes iDataType)
 	{
 	TArray<CString> retA;
+	if (m_pInheritFrom)
+		retA = m_pInheritFrom->GetDataKeys(iDataType);
+	TMap<CString, int> mapSeen;
+	for (int i = 0; i < retA.GetCount(); i++)
+		mapSeen.Insert(retA[i]);
 	if (m_pExtra)
 		{
 		switch (iDataType)
@@ -1904,19 +1909,34 @@ TArray<CString> CDesignType::GetDataKeys(const EDataTypes iDataType)
 			case ePropertyData:
 				{
 				for (int i = 0; i < m_pExtra->PropertyDefs.GetCount(); i++)
-					retA.Insert(m_pExtra->PropertyDefs.GetName(i));
+					{
+					CString sKey = m_pExtra->PropertyDefs.GetName(i);
+					if (mapSeen.Find(sKey))
+						continue;
+					retA.Insert(sKey);
+					}
 				return retA;
 				}
 			case eStaticData:
 				{
 				for (int i = 0; i < m_pExtra->StaticData.GetDataCount(); i++)
-					retA.Insert(m_pExtra->StaticData.GetDataAttrib(i));
+					{
+					CString sKey = m_pExtra->StaticData.GetDataAttrib(i);
+					if (mapSeen.Find(sKey))
+						continue;
+					retA.Insert(sKey);
+					}
 				return retA;
 				}
 			case eGlobalData:
 				{
 				for (int i = 0; i < m_pExtra->GlobalData.GetDataCount(); i++)
-					retA.Insert(m_pExtra->GlobalData.GetDataAttrib(i));
+					{
+					CString sKey = m_pExtra->GlobalData.GetDataAttrib(i);
+					if (mapSeen.Find(sKey))
+						continue;
+					retA.Insert(sKey);
+					}
 				return retA;
 				}
 			case eInstanceData:
