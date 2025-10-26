@@ -561,6 +561,9 @@ ICCItem *fnTopologyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_DESIGN_GET_IMAGE_DESC		23
 #define FN_DESIGN_HAS_PROPERTY			24
 #define FN_DESIGN_FIRE_OBJ_ITEM_EVENT	25
+#define FN_DESIGN_GET_GLOBAL_DATA_KEYS	26
+#define FN_DESIGN_GET_STATIC_DATA_KEYS	27
+#define FN_DESIGN_GET_PROPERTY_KEYS	28
 
 ICCItem *fnDesignCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -3684,6 +3687,18 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(typGetData unid attrib) -> data",
 			"is",	0,	},
 
+		{	"typGetDataKeys",			fnDesignGet,		FN_DESIGN_GET_GLOBAL_DATA_KEYS,
+			"(typGetDataKeys unid) -> list of keys",
+			"i",	0,	},
+
+		{	"typGetCustomPropertyKeys",			fnDesignGet,		FN_DESIGN_GET_PROPERTY_KEYS,
+			"(typGetCustomPropertyKeys unid) -> list of keys",
+			"i",	0,	},
+
+		{	"typGetStaticDataKeys",			fnDesignGet,		FN_DESIGN_GET_STATIC_DATA_KEYS,
+			"(typGetStaticDataKeys unid) -> list of keys",
+			"i",	0,	},
+
 		{	"typGetDataField",				fnDesignGet,		FN_DESIGN_GET_DATA_FIELD,
 			"(typGetDataField unid field) -> data\n\n"
 			
@@ -5041,6 +5056,18 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			ICCItem *pResult;
 			pType->FireCustomEvent(sEvent, eventDoEvent, pData, &pResult);
 			return pResult;
+			}
+
+		case FN_DESIGN_GET_PROPERTY_KEYS:
+		case FN_DESIGN_GET_STATIC_DATA_KEYS:
+		case FN_DESIGN_GET_GLOBAL_DATA_KEYS:
+			{
+			CCLinkedList *pRet = new CCLinkedList();
+			CDesignType::EDataTypes iDataType = dwData == FN_DESIGN_GET_PROPERTY_KEYS ? CDesignType::ePropertyData : (dwData == FN_DESIGN_GET_GLOBAL_DATA_KEYS ? CDesignType::eGlobalData : CDesignType::eStaticData);
+			TArray<CString> aKeys = pType->GetDataKeys(iDataType);
+			for (int i = 0; i < aKeys.GetCount(); i++)
+				pRet->AppendString(aKeys[i]);
+			return pRet->Reference();
 			}
 
 		case FN_DESIGN_GET_DATA_FIELD:

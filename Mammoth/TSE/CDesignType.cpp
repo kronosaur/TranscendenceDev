@@ -4,6 +4,7 @@
 //	Copyright (c) 2017 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
+#include "TSEDesign.h"
 
 #define ACHIEVEMENTS_TAG						CONSTLIT("Achievements")
 #define ADVENTURE_DESC_TAG						CONSTLIT("AdventureDesc")
@@ -1891,6 +1892,40 @@ size_t CDesignType::GetAllocMemoryUsage (void) const
 	//	LATER: Include allocated memory from member variables.
 
 	return dwTotal;
+	}
+
+TArray<CString> CDesignType::GetDataKeys(const EDataTypes iDataType)
+	{
+	TArray<CString> retA;
+	if (m_pExtra)
+		{
+		switch (iDataType)
+			{
+			case ePropertyData:
+				{
+				for (int i = 0; i < m_pExtra->PropertyDefs.GetCount(); i++)
+					retA.Insert(m_pExtra->PropertyDefs.GetName(i));
+				return retA;
+				}
+			case eStaticData:
+				{
+				for (int i = 0; i < m_pExtra->StaticData.GetDataCount(); i++)
+					retA.Insert(m_pExtra->StaticData.GetDataAttrib(i));
+				return retA;
+				}
+			case eGlobalData:
+				{
+				for (int i = 0; i < m_pExtra->GlobalData.GetDataCount(); i++)
+					retA.Insert(m_pExtra->GlobalData.GetDataAttrib(i));
+				return retA;
+				}
+			case eInstanceData:
+			case eEngineData:
+			default:
+				return retA;
+			}
+		}
+	return retA;
 	}
 
 CString CDesignType::GetEntityName (void) const
