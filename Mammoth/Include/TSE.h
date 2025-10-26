@@ -641,6 +641,7 @@ class CSpaceObject
 		const CAttributeDataBlock &GetData (void) const { return m_Data; }
 		ICCItemPtr GetData (const CString &sAttrib) const { return m_Data.GetDataAsItem(sAttrib); }
 		CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
+		TArray<CString> GetDataKeys (void);
 		ICCItemPtr GetGlobalData (const CString &sAttribute) const;
 		CSpaceObject *GetObjRefData (const CString &sAttrib) { return m_Data.GetObjRefData(sAttrib); }
 		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
@@ -1140,6 +1141,8 @@ class CSpaceObject
 
 		ICCItemPtr GetProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
 		ICCItemPtr GetProperty (const CString &sProperty) const { CCodeChainCtx CCX(GetUniverse()); return GetProperty(CCX, sProperty); }
+		ICCItemPtr GetPropertyKeys (CCodeChainCtx& CCX, EDesignDataTypes iDataType = EDesignDataTypes::ePropertyData) const;
+		ICCItemPtr GetPropertyKeys (EDesignDataTypes iDataType = EDesignDataTypes::ePropertyData) const { CCodeChainCtx CCX(GetUniverse()); return GetPropertyKeys(CCX, iDataType); }
 		bool IncProperty (const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 

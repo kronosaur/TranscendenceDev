@@ -1894,7 +1894,7 @@ size_t CDesignType::GetAllocMemoryUsage (void) const
 	return dwTotal;
 	}
 
-TArray<CString> CDesignType::GetDataKeys(const EDataTypes iDataType)
+TArray<CString> CDesignType::GetDataKeys(const EDesignDataTypes iDataType)
 	{
 	TArray<CString> retA;
 	if (m_pInheritFrom)
@@ -1906,7 +1906,12 @@ TArray<CString> CDesignType::GetDataKeys(const EDataTypes iDataType)
 		{
 		switch (iDataType)
 			{
-			case ePropertyData:
+			//	TODO: figure out a dynamic way to support ePropertyEngineData
+			case EDesignDataTypes::ePropertyEngineData:
+				return retA;
+			//	TODO: implement getting engine data for ePropertyData
+			case EDesignDataTypes::ePropertyCustomData:
+			case EDesignDataTypes::ePropertyData:
 				{
 				for (int i = 0; i < m_pExtra->PropertyDefs.GetCount(); i++)
 					{
@@ -1917,7 +1922,7 @@ TArray<CString> CDesignType::GetDataKeys(const EDataTypes iDataType)
 					}
 				return retA;
 				}
-			case eStaticData:
+			case EDesignDataTypes::eStaticData:
 				{
 				for (int i = 0; i < m_pExtra->StaticData.GetDataCount(); i++)
 					{
@@ -1928,7 +1933,7 @@ TArray<CString> CDesignType::GetDataKeys(const EDataTypes iDataType)
 					}
 				return retA;
 				}
-			case eGlobalData:
+			case EDesignDataTypes::eGlobalData:
 				{
 				for (int i = 0; i < m_pExtra->GlobalData.GetDataCount(); i++)
 					{
@@ -1939,8 +1944,7 @@ TArray<CString> CDesignType::GetDataKeys(const EDataTypes iDataType)
 					}
 				return retA;
 				}
-			case eInstanceData:
-			case eEngineData:
+			case EDesignDataTypes::eInstanceData:
 			default:
 				return retA;
 			}

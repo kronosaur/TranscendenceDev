@@ -103,6 +103,9 @@ ICCItem *fnItemTypeGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_OBJ_GET_GLOBAL_DATA		7
 #define FN_OBJ_SET_GLOBAL_DATA		8
 #define FN_OBJ_GET_STATIC_DATA_FOR_STATION_TYPE	9
+#define FN_OBJ_GETDATA_KEYS			10
+#define FN_OBJ_GET_STATIC_DATA_KEYS	11
+#define FN_OBJ_GET_GLOBAL_DATA_KEYS	12
 
 ICCItem *fnObjAddRandomItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
@@ -258,6 +261,8 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_SQUADRON_COMMS		149
 #define FN_OBJ_SQUADRON_COMMS_MESSAGES	150
 #define FN_OBJ_REMOVE				151
+#define FN_OBJ_GET_OVERLAY_DATA_KEYS	152
+#define FN_OBJ_GET_ITEM_PROPERTY_KEYS	153
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -563,7 +568,7 @@ ICCItem *fnTopologyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_DESIGN_FIRE_OBJ_ITEM_EVENT	25
 #define FN_DESIGN_GET_GLOBAL_DATA_KEYS	26
 #define FN_DESIGN_GET_STATIC_DATA_KEYS	27
-#define FN_DESIGN_GET_PROPERTY_KEYS	28
+#define FN_DESIGN_GET_PROPERTY_KEYS		28
 
 ICCItem *fnDesignCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -1910,6 +1915,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objGetData obj attrib) -> data",
 			NULL,	0,	},
 
+		{	"objGetDataKeys",				fnObjData,		FN_OBJ_GETDATA_KEYS,
+			"(objGetDataKeys obj) -> list of data keys",
+			NULL,	0,	},
+
 		{	"objGetDataField",				fnObjGet,		FN_OBJ_DATA_FIELD,
 			"(objGetDataField obj field) -> data",
 			"is",	0,	},
@@ -2039,6 +2048,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objGetOverlayData",			fnObjGet,		FN_OBJ_GET_OVERLAY_DATA,
 			"(objGetOverlayData obj overlayID attrib) -> data",
 			"iis",	0,	},
+
+		{	"objGetOverlayDataKeys",		fnObjGet,		FN_OBJ_GET_OVERLAY_DATA_KEYS,
+			"(objGetOverlayDataKeys obj overlayID) -> list of data keys",
+			"ii",	0,	},
 
 		{	"objGetOverlayPos",			fnObjGet,		FN_OBJ_GET_OVERLAY_POS,
 			"(objGetOverlayPos obj overlayID) -> vector",
@@ -2267,6 +2280,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"DEPRECATED: Use (obj@ ...) instead.",
 			"is",	0,	},
 
+		{	"obj@Keys",						fnObjGet,		FN_OBJ_GET_ITEM_PROPERTY_KEYS,
+			"(obj@Keys obj) -> list of custom property keys",
+			"i",	0,	},
+
 		{	"objGetRefuelItemAndPrice",		fnObjGet,		FN_OBJ_GET_REFUEL_ITEM,	
 			"(objGetRefuelItemAndPrice obj objToRefuel) -> (item price)",
 			"ii",		0,	},
@@ -2306,6 +2323,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objGetStaticData obj attrib) -> data",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
+		{	"objGetStaticDataKeys",			fnObjData,		FN_OBJ_GET_STATIC_DATA_KEYS,
+			"(objGetStaticDataKeys obj) -> list of data keys",
+			NULL,	PPFLAG_SIDEEFFECTS,	},
+
 		{	"objGetTarget",					fnObjGetOld,		FN_OBJ_TARGET,
 			"(objGetTarget obj) -> obj",
 			NULL,	0,	},
@@ -2316,6 +2337,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"objGetTypeData",				fnObjData,		FN_OBJ_GET_GLOBAL_DATA,
 			"(objGetTypeData obj attrib) -> data",
+			NULL,	0,	},
+
+		{	"objGetTypeDataKeys",			fnObjData,		FN_OBJ_GET_GLOBAL_DATA_KEYS,
+			"(objGetTypeDataKeys obj) -> list of data keys",
 			NULL,	0,	},
 
 		{	"objGetVel",					fnObjGet,		FN_OBJ_VELOCITY,	
@@ -2868,6 +2893,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(msnGetData missionObj attrib) -> data",
 			NULL,	0,	},
 
+		{	"msnGetDataKeys",				fnObjData,		FN_OBJ_GETDATA_KEYS,
+			"(msnGetDataKeys obj) -> list of data keys",
+			NULL,	0,	},
+
 		{	"msnGetObjRefData",				fnObjData,		FN_OBJ_GET_OBJREF_DATA,
 			"(msnGetObjRefData missionObj attrib) -> obj",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
@@ -2917,8 +2946,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(msnGetStaticData missionObj attrib) -> data",
 			NULL,	0,	},
 
+		{	"msnGetStaticDataKeys",			fnObjData,		FN_OBJ_GET_STATIC_DATA_KEYS,
+			"(msnGetStaticDataKeys missionObj) -> list of data keys",
+			NULL,	0,	},
+
 		{	"msnGetTypeData",				fnObjData,		FN_OBJ_GET_GLOBAL_DATA,
 			"(msnGetTypeData missionObj attrib) -> data",
+			NULL,	0,	},
+
+		{	"msnGetTypeDataKeys",			fnObjData,		FN_OBJ_GET_GLOBAL_DATA_KEYS,
+			"(msnGetTypeDataKeys missionObj) -> list of data keys",
 			NULL,	0,	},
 
 		{	"msnIncData",					fnObjData,		FN_OBJ_INCREMENT_DATA,
@@ -3688,15 +3725,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"is",	0,	},
 
 		{	"typGetDataKeys",			fnDesignGet,		FN_DESIGN_GET_GLOBAL_DATA_KEYS,
-			"(typGetDataKeys unid) -> list of keys",
+			"(typGetDataKeys unid) -> list of data keys",
 			"i",	0,	},
 
-		{	"typGetCustomPropertyKeys",			fnDesignGet,		FN_DESIGN_GET_PROPERTY_KEYS,
-			"(typGetCustomPropertyKeys unid) -> list of keys",
+		{	"typ@Keys",					fnDesignGet,		FN_DESIGN_GET_PROPERTY_KEYS,
+			"(typ@Keys unid) -> list of property keys",
 			"i",	0,	},
 
 		{	"typGetStaticDataKeys",			fnDesignGet,		FN_DESIGN_GET_STATIC_DATA_KEYS,
-			"(typGetStaticDataKeys unid) -> list of keys",
+			"(typGetStaticDataKeys unid) -> list of static data keys",
 			"i",	0,	},
 
 		{	"typGetDataField",				fnDesignGet,		FN_DESIGN_GET_DATA_FIELD,
@@ -5063,7 +5100,7 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_DESIGN_GET_GLOBAL_DATA_KEYS:
 			{
 			CCLinkedList *pRet = new CCLinkedList();
-			CDesignType::EDataTypes iDataType = dwData == FN_DESIGN_GET_PROPERTY_KEYS ? CDesignType::ePropertyData : (dwData == FN_DESIGN_GET_GLOBAL_DATA_KEYS ? CDesignType::eGlobalData : CDesignType::eStaticData);
+			EDesignDataTypes iDataType = dwData == FN_DESIGN_GET_PROPERTY_KEYS ? EDesignDataTypes::ePropertyData : (dwData == FN_DESIGN_GET_GLOBAL_DATA_KEYS ? EDesignDataTypes::eGlobalData : EDesignDataTypes::eStaticData);
 			TArray<CString> aKeys = pType->GetDataKeys(iDataType);
 			for (int i = 0; i < aKeys.GetCount(); i++)
 				pRet->AppendString(aKeys[i]);
@@ -6093,7 +6130,11 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Evaluate the arguments and validate them
 
-	if (dwData == FN_OBJ_GETDATA 
+	if (dwData == FN_OBJ_GETDATA_KEYS
+			|| dwData == FN_OBJ_GET_STATIC_DATA_KEYS
+			|| dwData == FN_OBJ_GET_GLOBAL_DATA_KEYS)
+		pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("i"));
+	else if (dwData == FN_OBJ_GETDATA 
 			|| dwData == FN_OBJ_GET_OBJREF_DATA 
 			|| dwData == FN_OBJ_GET_STATIC_DATA
 			|| dwData == FN_OBJ_GET_STATIC_DATA_FOR_STATION_TYPE
@@ -6128,6 +6169,29 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			{
 			pArgs->Discard();
 			return pCC->CreateNil();
+			}
+		}
+
+	//	If we are only retrieving keys, do that
+	switch (dwData)
+		{
+		case FN_OBJ_GETDATA_KEYS:
+			{
+			TArray<CString> aKeys = pObj->GetDataKeys();
+			CCLinkedList* pRet = new CCLinkedList();
+			for (int i = 0; i < aKeys.GetCount(); i++)
+				pRet->AppendString(aKeys[i]);
+			return pRet->Reference();
+			}
+		case FN_OBJ_GET_STATIC_DATA_KEYS:
+		case FN_OBJ_GET_GLOBAL_DATA_KEYS:
+			{
+			CDesignType *pType = pObj->GetType();
+			TArray<CString> aKeys = pType->GetDataKeys(dwData == FN_OBJ_GET_GLOBAL_DATA_KEYS ? EDesignDataTypes::eGlobalData : EDesignDataTypes::eStaticData);
+			CCLinkedList *pRet = new CCLinkedList();
+			for (int i = 0; i < aKeys.GetCount(); i++)
+				pRet->AppendString(aKeys[i]);
+			return pRet->Reference();
 			}
 		}
 
@@ -7379,6 +7443,20 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else
 				{
 				return pObj->GetProperty(*pCtx, pArgs->GetElement(1)->GetStringValue())->Reference();
+				}
+			}
+
+		case FN_OBJ_GET_ITEM_PROPERTY_KEYS:
+			{
+			if (pArgs->GetCount() == 2)
+				{
+				//	Not yet implemented
+
+				return pCC->CreateNil();
+				}
+			else
+				{
+				return pObj->GetPropertyKeys(*pCtx)->Reference();
 				}
 			}
 
