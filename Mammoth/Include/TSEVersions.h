@@ -572,6 +572,22 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //			(bRoR x count)
 //				Returns x rotated right by count bits in 32-bit space.
 //				Bits shifted out of the low end wrap around to the high end.
+//			(msnGetDataKeys obj)
+//				Returns a list of typData keys for the given msn
+//			(msnGetDataKeys obj)
+//				Returns a list of typData keys for the given msn type
+//			(msnGetStaticDataKeys type)
+//				Returns a list of static datakeys for the given msn type
+//			(msnGetPropertyKeys type)
+//				Returns a list of all instance property and custom global property keys for the given msn
+//			(objGetDataKeys obj)
+//				Returns a list of typData keys for the given obj
+//			(objGetDataKeys obj)
+//				Returns a list of typData keys for the given obj type
+//			(objGetStaticDataKeys type)
+//				Returns a list of static datakeys for the given obj type
+//			(objGetPropertyKeys type)
+//				Returns a list of all instance property and custom global property keys for the given obj
 //			(typGetDataKeys type)
 //				Returns a list of typData keys for the given type
 //			(typGetStaticDataKeys type)
