@@ -572,6 +572,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //			(bRoR x count)
 //				Returns x rotated right by count bits in 32-bit space.
 //				Bits shifted out of the low end wrap around to the high end.
+//			(typGetDataKeys type)
+//				Returns a list of typData keys for the given type
+//			(typGetStaticDataKeys type)
+//				Returns a list of static datakeys for the given type
+//			(typGetPropertyKeys type)
+//				Returns a list of custom global property keys for the given type
 //		<AdventureDesc>
 //			<Constants>
 //				<MiningMaxOreLevels>
