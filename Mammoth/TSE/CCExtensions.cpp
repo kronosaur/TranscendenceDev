@@ -3320,7 +3320,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysGetData [nodeID] attrib) -> data",
 			"s*",	0,	},
 
-		{	"sysGetDataKeys",				fnSystemGet,	FN_SYS_GET_DATA,
+		{	"sysGetDataKeys",				fnSystemGet,	FN_SYS_GET_DATA_KEYS,
 			"(sysGetDataKeys [nodeID]) -> list of data keys",
 			"*",	0,	},
 
