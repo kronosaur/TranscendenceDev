@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							57;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
-constexpr DWORD SYSTEM_SAVE_VERSION =					214;
+constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 
 //	Uncomment out the following define when building a stable release
 
@@ -1368,3 +1368,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //	214: 2.0 Alpha 7
 //		Change CParticleArray::m_iLifeLeft to milliseconds game time
 //		(instead of ticks)
+//
+//	215: 2.0 Alpha 7
+//		Add DamageDesc::m_fMiningScan
+//
