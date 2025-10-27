@@ -14772,7 +14772,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	If we have an arg, then the first arg is
 			//	the node ID.
 
-			if (pArgs->GetCount() == 1)
+			if (pArgs->GetCount() == 0)
 				{
 				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
 				if (pNode == NULL)
