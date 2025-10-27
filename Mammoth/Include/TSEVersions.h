@@ -591,6 +591,11 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //					The maximum level ore that this weapon shot can extract
 //					0 allows the damage to probe for ore but does not mine
 //					-1 uses the adventure default settings
+//				damage:
+//					Now accepts special damage type miningScan[:0-1]
+//						miningScan: sets aMiningScan to True in obj <onMining>
+//							In SotP this is used to scan without actually mining
+//							the ore.
 //		<SystemMap>
 //			iconScale: (int)
 //				the % size to draw icons on the map when the map is zoomed at 100% scale.
