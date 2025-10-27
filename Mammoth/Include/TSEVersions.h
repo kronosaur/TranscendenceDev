@@ -572,13 +572,17 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //			(bRoR x count)
 //				Returns x rotated right by count bits in 32-bit space.
 //				Bits shifted out of the low end wrap around to the high end.
+//			(itmGetDataKeys item)
+//				Returns a list of data keys for the given item
+//			(itm@Keys item)
+//				Returns a list of property keys for the given item
 //			(msnGetDataKeys obj)
 //				Returns a list of typData keys for the given msn
 //			(msnGetDataKeys obj)
 //				Returns a list of typData keys for the given msn type
 //			(msnGetStaticDataKeys type)
-//				Returns a list of static datakeys for the given msn type
-//			(msnGetPropertyKeys type)
+//				Returns a list of static data keys for the given msn type
+//			(msn@Keys type)
 //				Returns a list of all instance property and custom global property keys for the given msn
 //			(objGetDataKeys obj)
 //				Returns a list of typData keys for the given obj
@@ -586,13 +590,18 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //				Returns a list of typData keys for the given obj type
 //			(objGetStaticDataKeys type)
 //				Returns a list of static datakeys for the given obj type
-//			(objGetPropertyKeys type)
+//			(obj@Keys type)
 //				Returns a list of all instance property and custom global property keys for the given obj
+//			(objGetOverlayDataKeys obj overlayID)
+//				Returns a list of all data keys for the given overlay on the given obj
+//			(sysGetDataKeys [node])
+//				Returns a list of all data keys for the given system.
+//				If [node] is Nil/not provided, it gets the current system.
 //			(typGetDataKeys type)
 //				Returns a list of typData keys for the given type
 //			(typGetStaticDataKeys type)
 //				Returns a list of static datakeys for the given type
-//			(typGetPropertyKeys type)
+//			(typ@Keys type)
 //				Returns a list of custom global property keys for the given type
 //		<AdventureDesc>
 //			<Constants>
