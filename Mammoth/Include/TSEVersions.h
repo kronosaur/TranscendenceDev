@@ -596,6 +596,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //						miningScan: sets aMiningScan to True in obj <onMining>
 //							In SotP this is used to scan without actually mining
 //							the ore.
+//							NOTE: API 48-56 weapons with generic:# and mining:#
+//							are treated as having miningScan:1
 //		<SystemMap>
 //			iconScale: (int)
 //				the % size to draw icons on the map when the map is zoomed at 100% scale.
