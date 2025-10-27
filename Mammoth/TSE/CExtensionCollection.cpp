@@ -1919,8 +1919,7 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 	CExtension *pExtension;
 	if (error = CExtension::CreateExtension(ExtCtx, pDesc, CExtension::folderBase, pExtEntities, &pExtension))
 		{
-		if (pRoot)
-			delete pRoot;
+		delete pRoot;
 		delete pExtEntities;
 		Ctx.sError = ExtCtx.sError;
 		Ctx.sErrorFilespec = ExtCtx.sErrorFilespec;

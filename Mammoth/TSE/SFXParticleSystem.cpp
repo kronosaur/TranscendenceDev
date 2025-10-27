@@ -99,11 +99,9 @@ CParticleSystemEffectCreator::~CParticleSystemEffectCreator (void)
 //	CRayEffectCreator destructor
 
 	{
-	if (m_pSingleton)
-		delete m_pSingleton;
+	delete m_pSingleton;
 
-	if (m_pParticleEffect)
-		delete m_pParticleEffect;
+	delete m_pParticleEffect;
 	}
 
 IEffectPainter *CParticleSystemEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
@@ -259,11 +257,8 @@ ALERROR CParticleSystemEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 
 	//	Clean up, because we might want to recompute for next time.
 
-	if (m_pSingleton)
-		{
-		delete m_pSingleton;
-		m_pSingleton = NULL;
-		}
+	delete m_pSingleton;
+	m_pSingleton = NULL;
 
 	if (m_pParticleEffect)
 		{

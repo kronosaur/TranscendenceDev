@@ -50,11 +50,9 @@ CShapeEffectCreator::~CShapeEffectCreator (void)
 //	CShapeEffectCreator destructor
 
 	{
-	if (m_Points)
-		delete [] m_Points;
+	delete [] m_Points;
 
-	if (m_TransBuffer)
-		delete [] m_TransBuffer;
+	delete [] m_TransBuffer;
 	}
 
 IEffectPainter *CShapeEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)

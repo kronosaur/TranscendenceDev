@@ -758,7 +758,7 @@ class CParticleEffect : public TSpaceObjectImpl<OBJID_CPARTICLEEFFECT>
 
 			~SParticleType (void)
 				{
-				if (m_fFreeDesc && pDamageDesc)
+				if (m_fFreeDesc)
 					delete pDamageDesc;
 				}
 
@@ -871,11 +871,9 @@ class CParticleEffect : public TSpaceObjectImpl<OBJID_CPARTICLEEFFECT>
 			{
 			~SParticleArray (void)
 				{
-				if (pType)
-					delete pType;
+				delete pType;
 
-				if (pParticles)
-					delete [] pParticles;
+				delete [] pParticles;
 				}
 
 			SParticleType *pType;

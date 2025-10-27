@@ -65,11 +65,9 @@ CSystem::~CSystem (void)
 	if (m_pTopology)
 		m_pTopology->SetSystem(NULL);
 
-	if (m_pEnvironment)
-		delete m_pEnvironment;
+	delete m_pEnvironment;
 
-	if (m_pThreadPool)
-		delete m_pThreadPool;
+	delete m_pThreadPool;
 
 	//	Clear out any attached object because those are freed by their owners.
 
@@ -80,8 +78,7 @@ CSystem::~CSystem (void)
 	//	Free objects
 
 	for (i = 0; i < m_AllObjects.GetCount(); i++)
-		if (m_AllObjects[i])
-			delete m_AllObjects[i];
+		delete m_AllObjects[i];
 
 	//	Deleted objects
 
@@ -1094,8 +1091,7 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 
 		//	On this path, we don't need the controller.
 
-		if (pController)
-			delete pController;
+		delete pController;
 
 		return NOERROR;
 		}

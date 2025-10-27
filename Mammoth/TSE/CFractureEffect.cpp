@@ -22,8 +22,7 @@ CFractureEffect::~CFractureEffect (void)
 //	CFractureEffect destructor
 
 	{
-	if (m_pParticles)
-		delete [] m_pParticles;
+	delete [] m_pParticles;
 	}
 
 ALERROR CFractureEffect::CreateExplosion (CSystem &System,

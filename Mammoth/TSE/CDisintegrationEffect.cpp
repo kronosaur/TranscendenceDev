@@ -28,8 +28,7 @@ CDisintegrationEffect::~CDisintegrationEffect (void)
 //	CDisintegrationEffect destructor
 
 	{
-	if (m_pParticles)
-		delete [] m_pParticles;
+	delete [] m_pParticles;
 	}
 
 ALERROR CDisintegrationEffect::Create (CSystem &System,

@@ -344,11 +344,8 @@ void CCompositeImageDesc::CleanUp (void)
     {
 	m_pDesc = NULL;
 
-    if (m_pRoot)
-        {
-        delete m_pRoot;
-        m_pRoot = NULL;
-        }
+    delete m_pRoot;
+	m_pRoot = NULL;
 
     m_bConstant = true;
     }
@@ -806,11 +803,8 @@ ALERROR CCompositeImageDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 	//	Clean up our previous load, if necessary.
 
-	if (m_pRoot)
-		{
-		delete m_pRoot;
-		m_pRoot = NULL;
-		}
+	delete m_pRoot;
+	m_pRoot = NULL;
 
 	//	Now that all types are loaded, parse the directives
 
@@ -1320,8 +1314,7 @@ CFilterColorizeEntry::~CFilterColorizeEntry (void)
 //	CFilterColorizeEntry destructor
 
 	{
-	if (m_pSource)
-		delete m_pSource;
+	delete m_pSource;
 	}
 
 IImageEntry *CFilterColorizeEntry::Clone (void)

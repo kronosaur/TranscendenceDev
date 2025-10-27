@@ -198,14 +198,11 @@ CWeaponFireDesc::~CWeaponFireDesc (void)
 		delete pDelete;
 		}
 
-	if (m_pParticleDesc)
-		delete m_pParticleDesc;
+	delete m_pParticleDesc;
 
-	if (m_pOldEffects)
-		delete m_pOldEffects;
+	delete m_pOldEffects;
 
-	if (m_pScalable)
-		delete[] m_pScalable;
+	delete[] m_pScalable;
 	}
 
 void CWeaponFireDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)

@@ -55,14 +55,11 @@ void CObjectImage::CleanUp (void)
 
 	if (m_bFreeBitmap)
 		{
-		if (m_pBitmap)
-			delete m_pBitmap;
+		delete m_pBitmap;
 
-		if (m_pHitMask)
-			delete m_pHitMask;
+		delete m_pHitMask;
 
-		if (m_pShadowMask)
-			delete m_pShadowMask;
+		delete m_pShadowMask;
 		}
 
 	m_pBitmap = NULL;

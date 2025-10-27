@@ -26,14 +26,11 @@ CMissile::~CMissile (void)
 	if (m_pPainter)
 		m_pPainter->Delete();
 
-	if (m_pExhaust)
-		delete m_pExhaust;
+	delete m_pExhaust;
 
-	if (m_pVaporTrailRegions)
-		delete [] m_pVaporTrailRegions;
+	delete [] m_pVaporTrailRegions;
 
-	if (m_pSavedRotations)
-		delete [] m_pSavedRotations;
+	delete [] m_pSavedRotations;
 	}
 
 void CMissile::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iPosZ, int iLifeLeft, DWORD *retdwID)
@@ -68,8 +65,7 @@ int CMissile::ComputeVaporTrail (void)
 
 		//	Allocate array of regions
 
-		if (m_pVaporTrailRegions)
-			delete [] m_pVaporTrailRegions;
+		delete [] m_pVaporTrailRegions;
 
 		m_pVaporTrailRegions = new CG16bitBinaryRegion [m_iSavedRotationsCount];
 

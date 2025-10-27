@@ -106,11 +106,8 @@ class CSystemMapThumbnails
 
             ~SThumbnailCacheEntry (void)
                 {
-                if (pFullSystem)
-                    delete pFullSystem;
-
-                if (pStarsOnly)
-                    delete pStarsOnly;
+                delete pFullSystem;
+                delete pStarsOnly;
                 }
 
             CG32bitImage *pFullSystem;

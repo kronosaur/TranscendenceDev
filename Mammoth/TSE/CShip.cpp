@@ -79,28 +79,22 @@ CShip::~CShip (void)
 //	CShip destructor
 
 	{
-	if (m_pController)
-		delete m_pController;
+	delete m_pController;
 
-	if (m_pIrradiatedBy)
-		delete m_pIrradiatedBy;
+	delete m_pIrradiatedBy;
 
-	if (m_pTrade)
-		delete m_pTrade;
+	delete m_pTrade;
 
-	if (m_pMoney)
-		delete m_pMoney;
+	delete m_pMoney;
 
-	if (m_pPowerUse)
-		delete m_pPowerUse;
+	delete m_pPowerUse;
 
 	//	We own any attached objects.
 
 	for (int i = 0; i < m_Interior.GetCount(); i++)
 		{
 		CSpaceObject *pAttached = m_Interior.GetAttached(i);
-		if (pAttached)
-			delete pAttached;
+		delete pAttached;
 		}
 	}
 
@@ -6028,11 +6022,8 @@ EConditionResult CShip::OnRemoveCondition (ECondition iCondition, const SApplyCo
 			{
 			if (m_fRadioactive)
 				{
-				if (m_pIrradiatedBy)
-					{
-					delete m_pIrradiatedBy;
-					m_pIrradiatedBy = NULL;
-					}
+				delete m_pIrradiatedBy;
+				m_pIrradiatedBy = NULL;
 
 				m_iContaminationTimer = 0;
 				m_fRadioactive = false;
@@ -7172,7 +7163,7 @@ void CShip::SetController (IShipController *pController, bool bFreeOldController
 	{
 	ASSERT(pController);
 
-	if (bFreeOldController && m_pController)
+	if (bFreeOldController)
 		delete m_pController;
 
 	m_pController = pController;
@@ -7687,7 +7678,7 @@ void CShip::TrackFuel (bool bTrack)
 		m_pPowerUse = new CPowerConsumption;
 		m_pPowerUse->SetFuelLeft(GetMaxFuel());
 		}
-	else if (!bTrack && m_pPowerUse != NULL)
+	else if (!bTrack)
 		{
 		delete m_pPowerUse;
 		m_pPowerUse = NULL;

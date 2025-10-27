@@ -69,8 +69,7 @@ void CDockingPorts::CleanUp (void)
 //	Free resources
 
 	{
-	if (m_pPort)
-		delete [] m_pPort;
+	delete [] m_pPort;
 
 	m_iPortCount = 0;
 	m_pPort = NULL;

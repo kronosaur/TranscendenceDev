@@ -2517,8 +2517,7 @@ ALERROR CreateSiblings (SSystemCreateCtx *pCtx,
 			iPos = (iPos + 1) % iCount;
 			}
 
-		if (pAngles)
-			delete [] pAngles;
+		delete [] pAngles;
 		}
 
 	pCtx->ZAdjust = OldZAdjust;
