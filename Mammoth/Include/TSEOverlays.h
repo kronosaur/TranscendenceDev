@@ -48,6 +48,7 @@ class COverlay
 		CConditionSet GetConditions (CSpaceObject *pSource) const;
 		int GetCounter (void) const { return m_iCounter; }
 		ICCItemPtr GetData (const CString &sAttrib) const { return m_Data.GetDataAsItem(sAttrib); }
+		ICCItemPtr GetDataKeys(void) const { ICCItemPtr pList = ICCItemPtr(ICCItem::List); for (int i = 0; i < m_Data.GetDataCount(); i++) { pList->AppendString(m_Data.GetDataAttrib(i)); } return pList; }
 		int GetDevice (void) const { return m_iDevice; }
 		Metric GetDrag (CSpaceObject *pSource) const { return m_pType->GetDrag(); }
 		DWORD GetID (void) const { return m_dwID; }

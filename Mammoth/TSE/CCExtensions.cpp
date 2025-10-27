@@ -86,6 +86,7 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_ITEM_DATA_KEYS			39
 #define FN_ITEM_GET_STATIC_DATA_KEYS	40
 #define FN_ITEM_GET_TYPE_DATA_KEYS	41
+#define FN_ITEM_PROPERTY_KEYS		42
 
 ICCItem *fnItemGetTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -907,6 +908,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"itmGetPrice",					fnItemGet,		FN_ITEM_PRICE,
 			"(itmGetPrice item|type [currency]) -> price of a single item",
 			"v*",	0,	},
+
+		{	"itm@Keys",						fnItemGet,		FN_ITEM_PROPERTY_KEYS,
+			"(itm@Keys item|type) -> list of property keys",
+			"v",	0,	},
 
 		{	"itm@",							fnItemGet,		FN_ITEM_PROPERTY,
 			"(itm@ item|type property) -> value\n\n"
@@ -5801,6 +5806,20 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			break;
 			}
 
+		case FN_ITEM_PROPERTY_KEYS:
+			{
+			if (CSpaceObject *pSource = Item.GetSource())
+				{
+				CItemCtx ItemCtx(&Item, pSource);
+				return Item.GetItemPropertyKeys(*pCtx, ItemCtx, bOnType)->Reference();
+				}
+			else
+				{
+				CItemCtx ItemCtx(Item);
+				return Item.GetItemPropertyKeys(*pCtx, ItemCtx, bOnType)->Reference();
+				}
+			}
+
 		case FN_ITEM_PROPERTY:
 			{
 			if (CSpaceObject *pSource = Item.GetSource())
@@ -7584,6 +7603,12 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			DWORD dwID = (DWORD)pArgs->GetElement(1)->GetIntegerValue();
 			CString sAttrib = pArgs->GetElement(2)->GetStringValue();
 			return pObj->GetOverlayData(dwID, sAttrib)->Reference();
+			}
+
+		case FN_OBJ_GET_OVERLAY_DATA_KEYS:
+			{
+			DWORD dwID = (DWORD)pArgs->GetElement(1)->GetIntegerValue();
+			return pObj->GetOverlay(dwID)->GetDataKeys()->Reference();
 			}
 
 		case FN_OBJ_GET_OVERLAY_POS:
