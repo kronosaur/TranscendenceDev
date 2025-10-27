@@ -5,7 +5,7 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							57;
+constexpr DWORD API_VERSION =							58;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
 constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 
@@ -598,6 +598,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //			iconScaleFactor: (double)
 //				the relative amount to scale the icons as the map is zoomed in or out.
 //				1.0 = normal scale, 0.0 = no change in scale. Default: 1.0
+//
+//	 58: 2.0 Alpha 8
 //
 //
 
