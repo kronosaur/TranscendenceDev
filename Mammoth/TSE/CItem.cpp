@@ -1108,7 +1108,7 @@ ICCItemPtr CItem::GetDataAsItem (const CString &sAttrib) const
 	return ICCItemPtr(GetUniverse().GetCC().CreateNil());
 	}
 
-ICCItemPtr CItem::GetDataKeysAsItem (void) const
+ICCItem *CItem::GetDataKeysAsItem (void) const
 
 //	GetDataAsItem
 //
@@ -1117,7 +1117,7 @@ ICCItemPtr CItem::GetDataKeysAsItem (void) const
 	{
 	if (m_pExtra)
 		{
-		ICCItemPtr pList(ICCItem::List);
+		ICCItem *pList = CCodeChain::CreateLinkedList();
 		
 		for (int i = 0; i < m_pExtra->m_Data.GetDataCount(); i++)
 			pList->AppendString(m_pExtra->m_Data.GetDataAttrib(i));

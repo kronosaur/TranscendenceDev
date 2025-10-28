@@ -5653,7 +5653,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_ITEM_DATA_KEYS:
-			return Item.GetDataKeysAsItem()->Reference();
+			return Item.GetDataKeysAsItem();
 
 		case FN_ITEM_DATA:
 			return Item.GetDataAsItem(pArgs->GetElement(1)->GetStringValue())->Reference();
