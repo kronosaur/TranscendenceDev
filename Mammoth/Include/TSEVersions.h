@@ -624,6 +624,10 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //						miningScan: sets aMiningScan to True in obj <onMining>
 //							In SotP this is used to scan without actually mining
 //							the ore.
+//							You can optionally specify miningScan:N and it will
+//							treat it as miningScan:1 mining:N. If mining:# is also
+//							specified, it will always override the value in
+//							miningScan:#.
 //							NOTE: API 48-56 weapons with generic:# and mining:#
 //							are treated as having miningScan:1
 //		<SystemMap>
