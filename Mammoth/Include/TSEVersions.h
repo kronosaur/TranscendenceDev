@@ -547,7 +547,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //						Overrides the <Stargate> locationCriteria string.
 //
 //	 57: 2.0 Alpha 7
-//      tlisp:
+//		tlisp:
 //			(bAnd x1 [x2 ... xn])
 //				Returns the bitwise AND of all arguments.
 //				All arguments are coerced to 32-bit integers.
