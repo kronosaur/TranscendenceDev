@@ -1317,7 +1317,7 @@
 			;	own mod to enable debug logging during stargate creation.
 			;	This prints out diagnostic info to debug.log
 
-			(setq dbgLogCreateAllStargates 1)
+			(setq dbgLogCreateAllStargates Nil)
 		
 			(setq trnCreateAllStargates (lambda (options)
 
@@ -1572,9 +1572,10 @@
 					)
 			))
 				
-			(setq trnCreateOreDeposits (lambda (depositCount)
+			(setq trnCreateOreDeposits (lambda (depositCount oreTable)
 				(block (
 					(triesLeft (* depositCount 10))
+					(oreTableUNID (or oreTable &tbAsteroidOre;))
 					)
 					
 					(loop (and (gr depositCount 0) (gr triesLeft 0))
@@ -1620,7 +1621,7 @@
 								
 									(enum allAsteroids asteroidObj
 										(block Nil
-											(objAddRandomItems asteroidObj &tbAsteroidOre; (random 1 12))
+											(objAddRandomItems asteroidObj oreTableUNID (random 1 12))
 										
 											;	Mark the asteroid so we know it is part of an 
 											;	ore deposit.

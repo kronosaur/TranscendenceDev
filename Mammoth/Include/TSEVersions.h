@@ -1306,8 +1306,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //	211: 1.9
 //		Change CShockwaveHitTest
 //
-//	212: 1.9 ??
-//		????
+//	212: 1.9
+//		R/W entire SParticle struct directly
 //
 //	213: 2.0 Alpha 2
 //		Change DiceRange to use -1 for not set

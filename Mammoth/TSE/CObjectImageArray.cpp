@@ -22,6 +22,8 @@
 #define	GLOW_SIZE						4
 #define FILTER_SIZE						5
 #define FIXED_POINT						65536
+#define MT_REQUIRED_PIXEL_COUNT_SHIFT	12
+#define MT_REQUIRED_PIXELS				1 << MT_REQUIRED_PIXEL_COUNT_SHIFT
 
 static int g_FilterOffset[FILTER_SIZE] =
 	{
@@ -1495,9 +1497,9 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 		//	we do not use excessive threads on a small ship
 		int iScanLines = RectHeight(m_rcImage);
 		int iScanLineLength = RectWidth(m_rcImage);
-		int iProjectedExtraWorkers = (Ctx && Ctx->pThreadPool) ? (iScanLineLength >> Ctx->dwMinChunkSizePow ? iScanLineLength - 1 : (iScanLines * iScanLineLength) >> Ctx->dwMinChunkSizePow) : 0;
+		int iProjectedExtraWorkers = iScanLineLength >> MT_REQUIRED_PIXEL_COUNT_SHIFT ? iScanLineLength - 1 : (iScanLines * iScanLineLength) >> MT_REQUIRED_PIXEL_COUNT_SHIFT;
 
-		if (iProjectedExtraWorkers)
+		if (Ctx && Ctx->pThreadPool && iProjectedExtraWorkers)
 			{
 
 			//	Group scanlines per worker
