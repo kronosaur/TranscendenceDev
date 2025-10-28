@@ -5130,7 +5130,7 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_DESIGN_GET_STATIC_DATA_KEYS:
 		case FN_DESIGN_GET_GLOBAL_DATA_KEYS:
 			{
-			CCLinkedList *pRet = pCC->CreateLinkedList();
+			ICCItem *pRet = pCC->CreateLinkedList();
 			EDesignDataTypes iDataType = dwData == FN_DESIGN_GET_PROPERTY_KEYS ? EDesignDataTypes::ePropertyData : (dwData == FN_DESIGN_GET_GLOBAL_DATA_KEYS ? EDesignDataTypes::eGlobalData : EDesignDataTypes::eStaticData);
 			TArray<CString> aKeys = pType->GetDataKeys(iDataType);
 			for (int i = 0; i < aKeys.GetCount(); i++)
