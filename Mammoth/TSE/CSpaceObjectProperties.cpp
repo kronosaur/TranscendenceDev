@@ -379,7 +379,7 @@ ICCItemPtr CSpaceObject::GetPropertyKeys(CCodeChainCtx& CCX, EDesignDataTypes iD
 					}
 				}
 
-			ICCItemPtr pList = ICCItemPtr(ICCItem::List);
+			ICCItemPtr pList(ICCItem::List);
 
 			for (int i = 0; i < aKeys.GetCount(); i++)
 				pList->AppendString(aKeys[i]);

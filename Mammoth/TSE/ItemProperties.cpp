@@ -96,7 +96,7 @@ ICCItemPtr CItem::GetItemPropertyKeys(CCodeChainCtx& CCCtx, CItemCtx& Ctx, bool 
 	if (!m_pItemType)
 		return ICCItemPtr(ICCItem::Nil);
 
-	ICCItemPtr pList = ICCItemPtr(ICCItem::List);
+	ICCItemPtr pList(ICCItem::List);
 	TMap<CString, int> mapSeen;
 
 	//	Check type & custom properties

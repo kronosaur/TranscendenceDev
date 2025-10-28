@@ -1117,7 +1117,7 @@ ICCItemPtr CItem::GetDataKeysAsItem (void) const
 	{
 	if (m_pExtra)
 		{
-		ICCItemPtr pList = ICCItemPtr(ICCItem::List);
+		ICCItemPtr pList(ICCItem::List);
 		
 		for (int i = 0; i < m_pExtra->m_Data.GetDataCount(); i++)
 			pList->AppendString(m_pExtra->m_Data.GetDataAttrib(i));

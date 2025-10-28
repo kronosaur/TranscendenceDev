@@ -5714,7 +5714,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			TArray<CString> aRet = pType->GetDataKeys(iDataType);
 
-			ICCItemPtr pList = ICCItemPtr(ICCItem::List);
+			ICCItemPtr pList(ICCItem::List);
 
 			for (int i = 0; i < aRet.GetCount(); i++)
 				pList->AppendString(aRet[i]);
