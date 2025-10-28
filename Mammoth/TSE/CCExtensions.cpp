@@ -5124,12 +5124,12 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_DESIGN_GET_STATIC_DATA_KEYS:
 		case FN_DESIGN_GET_GLOBAL_DATA_KEYS:
 			{
-			CCLinkedList *pRet = new CCLinkedList();
+			CCLinkedList *pRet = pCC->CreateLinkedList();
 			EDesignDataTypes iDataType = dwData == FN_DESIGN_GET_PROPERTY_KEYS ? EDesignDataTypes::ePropertyData : (dwData == FN_DESIGN_GET_GLOBAL_DATA_KEYS ? EDesignDataTypes::eGlobalData : EDesignDataTypes::eStaticData);
 			TArray<CString> aKeys = pType->GetDataKeys(iDataType);
 			for (int i = 0; i < aKeys.GetCount(); i++)
 				pRet->AppendString(aKeys[i]);
-			return pRet->Reference();
+			return pRet;
 			}
 
 		case FN_DESIGN_GET_DATA_FIELD:
@@ -6235,20 +6235,20 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 		case FN_OBJ_GETDATA_KEYS:
 			{
 			TArray<CString> aKeys = pObj->GetDataKeys();
-			CCLinkedList* pRet = new CCLinkedList();
+			CCLinkedList* pRet = (CCLinkedList*)pCC->CreateLinkedList();
 			for (int i = 0; i < aKeys.GetCount(); i++)
 				pRet->AppendString(aKeys[i]);
-			return pRet->Reference();
+			return pRet;
 			}
 		case FN_OBJ_GET_STATIC_DATA_KEYS:
 		case FN_OBJ_GET_GLOBAL_DATA_KEYS:
 			{
 			CDesignType *pType = pObj->GetType();
 			TArray<CString> aKeys = pType->GetDataKeys(dwData == FN_OBJ_GET_GLOBAL_DATA_KEYS ? EDesignDataTypes::eGlobalData : EDesignDataTypes::eStaticData);
-			CCLinkedList *pRet = new CCLinkedList();
+			CCLinkedList *pRet = (CCLinkedList*)pCC->CreateLinkedList();
 			for (int i = 0; i < aKeys.GetCount(); i++)
 				pRet->AppendString(aKeys[i]);
-			return pRet->Reference();
+			return pRet;
 			}
 		}
 
