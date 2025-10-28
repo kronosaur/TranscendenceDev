@@ -203,9 +203,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"help",				fnHelp,			0,
 			"(help) -> this help\n"
-			"(help '*) -> all functions\n"
-			"(help 'partial-string) -> all functions starting with partial-string\n"
-			"(help 'function-name) -> help on function-name\n",
+			"(help '* ['lambdas]) -> all functions\n"
+			"(help 'partial-string ['lambdas]) -> all functions starting with partial-string\n"
+			"(help 'function-name ['lambdas]) -> help on function-name\n"
+			"(help lambda) -> help on the provided lambda",
 			"*",	0,	},
 
 		{	"hex",				fnItem,			FN_HEX,
@@ -237,7 +238,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"v*",	0,	},
 
 		{	"lambda",			fnLambda,		0,
-			"(lambda args-list exp) -> lambda function",
+			"(lambda args-list [docstring] exp) -> lambda function",
 			NULL,	0,	},
 
 		{	"log",				fnMathNumerals,	FN_MATH_LOG,
