@@ -1334,6 +1334,8 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pCtx->pCC;
+	ICCItem *pFirst = pArgs->GetElement(0);
+	ICCItem *pSecond = pArgs->GetElement(1);
 	int i;
 
 	//	Prepare some output
@@ -1344,114 +1346,286 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	If no parameters, then we show some help on help
 
-	if (pArgs->GetCount() == 0)
+	if (!pFirst)
 		{
-		CString sHelp = CONSTLIT("(help) -> this help\n(help '*) -> all functions\n(help 'partial-string) -> all functions starting with partial-string\n(help 'function-name) -> help on function-name\n");
+		CString sHelp = CONSTLIT(
+			"(help) -> this help\n"
+			"(help '* ['*|'lambdas|'primitives]) -> all functions\n"
+			"(help 'partial-string ['*|'lambdas|'primitives]) -> all functions starting with partial-string\n"
+			"(help 'function-name ['*|'lambdas|'primitives]) -> help on function-name\n"
+			"(help function|lambda) -> help on the function or lambda\n");
 		Output.Write(sHelp.GetASCIIZPointer(), sHelp.GetLength());
 		}
 
-	//	If parameter is * then show all functions
+	//	If first parameter is a function, we show the docstring of the function
 
-	else if (strEquals(pArgs->GetElement(0)->GetStringValue(), CONSTLIT("*")))
+	else if (pFirst->IsFunction())
 		{
-		ICCItem *pGlobals = pCC->GetGlobals();
-		for (i = 0; i < pGlobals->GetCount(); i++)
+		CString sHelp = pFirst->GetHelp();
+
+		//	Handle formatting lambdas as well as primitives that are missing
+		//	docstrings
+
+		if (pFirst->IsLambdaFunction() || sHelp.IsBlank())
 			{
-			ICCItem *pItem = pGlobals->GetElement(i);
-			if (pItem->IsFunction())
+
+			//	Attempt to get the key from globals since we cant see
+			//	what symbol we were directly called with.
+			// 
+			//	If we cant find it, we just assume it is a local lambda
+			//	because primitive functions are always in globals
+
+			CCSymbolTable *pGlobals = (CCSymbolTable *)pCC->GetGlobals();
+			CCSymbolTable *pLocals = (CCSymbolTable *)pCtx->pLocalSymbols;
+			CString sKey = CONSTLIT("localLambda");
+			bool bFoundKey = false;
+
+			for (int i = 0; i < pGlobals->GetCount(); i++)
 				{
-				CString sHelp = pItem->GetHelp();
-
-				//	If blank or deprecated, skip
-
-				if (!sHelp.IsBlank() && !strStartsWith(sHelp, CONSTLIT("DEPRECATED")))
+				if (pGlobals->GetElement(i) == pFirst)
 					{
-					OutputFunctionName(Output, sHelp);
+					sKey = pGlobals->GetKey(i);
+					bFoundKey = true;
+					break;
+					}
+				}
+
+			//	If we didnt find it in the global table, attempt to check
+			//	in the local symbol table if one exists
+
+			if (!bFoundKey && pLocals)
+				{
+				for (int i = 0; i < pLocals->GetCount(); i++)
+					{
+					if (pLocals->GetElement(i) == pFirst)
+						{
+						sKey = pLocals->GetKey(i);
+						break;
+						}
+					}
+				}
+
+			//	If this is a lambda, we need to format it with sKey because it
+			//	does not keep track of what its own symbol is, because it can
+			//	be aliased
+
+			if (pFirst->IsLambdaFunction())
+				{
+
+				//	sHelp from a lambda should never be empty
+				//	if it is empty this is a bug and we need to log it
+				if (sHelp.IsBlank())
+					{
+					kernelDebugLogPattern(CONSTLIT("Error in (help '* 'lambdas): GetHelp() returned a blank string for lambda %s"), sKey);
+					sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
+					}
+				else
+					sHelp = strPatternSubst(sHelp, sKey);
+
+				}
+
+			//	If the help text is blank, then we generate our own
+			//	Lambdas should never be blank, this only happens with primitives
+
+			else if (sHelp.IsBlank())
+				sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
+			}
+
+		Output.Write(sHelp.GetASCIIZPointer(), sHelp.GetLength());
+		}
+
+	//	Otherwise we have a string to search for or filter results by
+
+	else
+		{
+		CCSymbolTable *pGlobals = (CCSymbolTable *)pCC->GetGlobals();
+		
+		//	Determine what to show.
+
+		bool bShowLambdas = false;
+		bool bShowPrimitives = false;
+
+		if (pSecond)
+			{
+			CString sSecond = pSecond->GetStringValue();
+
+			//	Check if we are supposed to include lambdas
+
+			if (strEquals(sSecond, CONSTLIT("lambdas"))
+				|| strEquals(sSecond, CONSTLIT("lambda"))
+				|| strEquals(sSecond, CONSTLIT("l"))
+				|| strEquals(sSecond, CONSTLIT("*")))
+				bShowLambdas = true;
+
+			//	Check if we are supposed to include primitives
+
+			if (strEquals(sSecond, CONSTLIT("primitives"))
+				|| strEquals(sSecond, CONSTLIT("primitive"))
+				|| strEquals(sSecond, CONSTLIT("p"))
+				|| strEquals(sSecond, CONSTLIT("*")))
+				bShowPrimitives = true;
+			}
+
+		//	By default (no second argument) we show only primitives
+
+		else
+			bShowPrimitives = true;
+
+		//	If first parameter is * then show all functions
+
+		if (pFirst->GetStringValue() == CONSTLIT("*"))
+			{
+			for (i = 0; i < pGlobals->GetCount(); i++)
+				{
+				ICCItem *pItem = pGlobals->GetElement(i);
+				if (pItem->IsFunction()
+					&& ((pItem->IsPrimitive() && bShowPrimitives)
+						|| (bShowLambdas && pItem->IsLambdaFunction())))
+					{
+					CString sHelp = pItem->GetHelp();
+
+					//	If deprecated, skip
+
+					if (!strStartsWith(sHelp, CONSTLIT("DEPRECATED")))
+						{
+
+						CString sKey = pGlobals->GetKey(i);
+
+						//	If the help text is from a lambda, we need to convert the first
+						//	strPattern into the actual key we are referencing the lambda by
+						//	because the lambda itself cannot know what that is
+
+						if (pItem->IsLambdaFunction())
+							{
+
+							//	sHelp from a lambda should never be empty
+							//	if it is empty this is a bug and we need to log it
+							if (sHelp.IsBlank())
+								{
+								kernelDebugLogPattern(CONSTLIT("Error in (help '* 'lambdas): GetHelp() returned a blank string for lambda %s"), sKey);
+								sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
+								}
+							else
+								sHelp = strPatternSubst(sHelp, sKey);
+
+							}
+
+						//	If the help text is blank, then we generate our own
+						//	Lambdas should never be blank, this only happens with primitives
+
+						else if (sHelp.IsBlank())
+							sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
+
+						OutputFunctionName(Output, sHelp);
+						Output.Write("\n", 1);
+						}
+					}
+				}
+			}
+
+		//	Otherwise, look for the function using the first parameter as a filter
+
+		else
+			{
+			CString sPartial = pFirst->GetStringValue();
+			TArray<CString> Help;
+
+			//	If we have a trailing '*' then we force a list, even on an exact
+			//	match. This helps us when there is a function whose name is a
+			//	subset of other function names.
+
+			bool bForcePartial = false;
+			if (strEndsWith(sPartial, CONSTLIT("*")))
+				{
+				bForcePartial = true;
+				sPartial = strSubString(sPartial, 0, sPartial.GetLength() - 1);
+				}
+
+			//	Compile a list of all functions that match
+
+			int iExactMatch = -1;
+			for (i = 0; i < pGlobals->GetCount(); i++)
+				{
+				ICCItem *pItem = pGlobals->GetElement(i);
+
+				if (pItem->IsFunction()
+					&& ((pItem->IsPrimitive() && bShowPrimitives)
+						|| (bShowLambdas && pItem->IsLambdaFunction()))
+					&& strStartsWith(pGlobals->GetKey(i), sPartial))
+					{
+					CString sHelp = pItem->GetHelp();
+
+					CString sKey = pGlobals->GetKey(i);
+
+					//	If the help text is from a lambda, we need to convert the first
+					//	strPattern into the actual key we are referencing the lambda by
+					//	because the lambda itself cannot know what that is
+
+					if (pItem->IsLambdaFunction())
+						{
+
+						//	sHelp from a lambda should never be empty
+						//	if it is empty this is a bug and we need to log it
+						if (sHelp.IsBlank())
+							{
+							kernelDebugLogPattern(CONSTLIT("Error in (help '* 'lambdas): GetHelp() returned a blank string for lambda %s"), sKey);
+							sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
+							}
+						else
+							sHelp = strPatternSubst(sHelp, sKey);
+
+						}
+
+					//	If the help text is blank, then we generate our own
+					//	Lambdas should never be blank, this only happens with primitives
+
+					else if (sHelp.IsBlank())
+						sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
+
+					//	If the help text starts with DEPRECATED, then we skip it.
+
+					if (strStartsWith(sHelp, CONSTLIT("DEPRECATED")))
+						{
+						}
+
+					//	If the help text does not match the function, then it means 
+					//	that this is an alias, so we skip it.
+					//	We skip this check for lambdas since their help strings
+					//	always pass this check anyways due to the runtime strPatternSubst
+					//	construction of their help strings with their global key
+
+					else if (pItem->IsPrimitive() && !strStartsWith(strSubString(sHelp, 1), pGlobals->GetKey(i)))
+						{
+						}
+
+					//	Otherwise, we add to the list
+
+					else
+						{
+						if (iExactMatch == -1 && strEquals(pGlobals->GetKey(i), sPartial))
+							iExactMatch = Help.GetCount();
+
+						Help.Insert(sHelp);
+						}
+					}
+				}
+
+			//	Output
+
+			if (iExactMatch != -1 && !bForcePartial)
+				Output.Write(Help[iExactMatch].GetASCIIZPointer(), Help[iExactMatch].GetLength());
+			else if (Help.GetCount() == 1)
+				Output.Write(Help[0].GetASCIIZPointer(), Help[0].GetLength());
+			else
+				{
+				for (i = 0; i < Help.GetCount(); i++)
+					{
+					OutputFunctionName(Output, Help[i]);
 					Output.Write("\n", 1);
 					}
 				}
 			}
-		}
 
-	//	Otherwise, look for the function
-
-	else
-		{
-		CString sPartial = pArgs->GetElement(0)->GetStringValue();
-		TArray<CString> Help;
-
-		//	If we have a trailing '*' then we force a list, even on an exact
-		//	match. This helps us when there is a function whose name is a
-		//	subset of other function names.
-
-		bool bForcePartial = false;
-		if (strEndsWith(sPartial, CONSTLIT("*")))
-			{
-			bForcePartial = true;
-			sPartial = strSubString(sPartial, 0, sPartial.GetLength() - 1);
-			}
-
-		//	Compile a list of all functions that match
-
-		int iExactMatch = -1;
-		CCSymbolTable *pGlobals = (CCSymbolTable *)pCC->GetGlobals();
-		for (i = 0; i < pGlobals->GetCount(); i++)
-			{
-			ICCItem *pItem = pGlobals->GetElement(i);
-
-			if (pItem->IsPrimitive() && strStartsWith(pGlobals->GetKey(i), sPartial))
-				{
-				CString sHelp = pItem->GetHelp();
-
-				//	If the help text is blank, then we generate our own
-
-				if (sHelp.IsBlank())
-					{
-					if (iExactMatch == -1 && strEquals(pGlobals->GetKey(i), sPartial))
-						iExactMatch = Help.GetCount();
-
-					Help.Insert(strPatternSubst(CONSTLIT("(%s ...)"), pGlobals->GetKey(i)));
-					}
-
-				//	If the help text starts with DEPRECATED, then we skip it.
-
-				else if (strStartsWith(sHelp, CONSTLIT("DEPRECATED")))
-					{
-					}
-
-				//	If the help text does not match the function, then it means 
-				//	that this is an alias, so we skip it.
-
-				else if (!strStartsWith(strSubString(sHelp, 1), pGlobals->GetKey(i)))
-					{
-					}
-
-				//	Otherwise, we add to the list
-
-				else
-					{
-					if (iExactMatch == -1 && strEquals(pGlobals->GetKey(i), sPartial))
-						iExactMatch = Help.GetCount();
-
-					Help.Insert(sHelp);
-					}
-				}
-			}
-
-		//	Output
-
-		if (iExactMatch != -1 && !bForcePartial)
-			Output.Write(Help[iExactMatch].GetASCIIZPointer(), Help[iExactMatch].GetLength());
-		else if (Help.GetCount() == 1)
-			Output.Write(Help[0].GetASCIIZPointer(), Help[0].GetLength());
-		else
-			{
-			for (i = 0; i < Help.GetCount(); i++)
-				{
-				OutputFunctionName(Output, Help[i]);
-				Output.Write("\n", 1);
-				}
-			}
 		}
 
 	//	Done
