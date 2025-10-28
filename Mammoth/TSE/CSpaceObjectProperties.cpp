@@ -328,7 +328,7 @@ bool CSpaceObject::FindCustomProperty (const CString &sProperty, ICCItemPtr &pRe
 //
 //	Returns either Nil or a linked list of property item keys
 //
-ICCItemPtr CSpaceObject::GetPropertyKeys(CCodeChainCtx& CCX, EDesignDataTypes iDataType) const
+ICCItem *CSpaceObject::GetPropertyKeys(CCodeChainCtx& CCX, EDesignDataTypes iDataType) const
 	{
 	switch (iDataType)
 		{
@@ -379,7 +379,7 @@ ICCItemPtr CSpaceObject::GetPropertyKeys(CCodeChainCtx& CCX, EDesignDataTypes iD
 					}
 				}
 
-			ICCItemPtr pList(ICCItem::List);
+			ICCItem *pList = CCX.GetCC().CreateLinkedList();
 
 			for (int i = 0; i < aKeys.GetCount(); i++)
 				pList->AppendString(aKeys[i]);
@@ -387,7 +387,7 @@ ICCItemPtr CSpaceObject::GetPropertyKeys(CCodeChainCtx& CCX, EDesignDataTypes iD
 			return pList;
 			}
 		default:
-			return ICCItemPtr(ICCItem::Nil);
+			return CCX.GetCC().CreateNil();
 		}
 	}
 

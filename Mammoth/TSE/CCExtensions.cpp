@@ -5817,12 +5817,12 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (CSpaceObject *pSource = Item.GetSource())
 				{
 				CItemCtx ItemCtx(&Item, pSource);
-				return &*Item.GetItemPropertyKeys(*pCtx, ItemCtx, bOnType);
+				return Item.GetItemPropertyKeys(*pCtx, ItemCtx, bOnType);
 				}
 			else
 				{
 				CItemCtx ItemCtx(Item);
-				return &*Item.GetItemPropertyKeys(*pCtx, ItemCtx, bOnType);
+				return Item.GetItemPropertyKeys(*pCtx, ItemCtx, bOnType);
 				}
 			}
 
@@ -7519,7 +7519,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 			else
 				{
-				return &*pObj->GetPropertyKeys(*pCtx);
+				return pObj->GetPropertyKeys(*pCtx);
 				}
 			}
 
@@ -7614,7 +7614,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_OBJ_GET_OVERLAY_DATA_KEYS:
 			{
 			DWORD dwID = (DWORD)pArgs->GetElement(1)->GetIntegerValue();
-			return &*pObj->GetOverlay(dwID)->GetDataKeys();
+			return pObj->GetOverlay(dwID)->GetDataKeys();
 			}
 
 		case FN_OBJ_GET_OVERLAY_POS:
@@ -14818,7 +14818,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get the data keys
 
-			return &*pNode->GetDataKeys();
+			return pNode->GetDataKeys();
 			}
 
 		case FN_SYS_GET_DATA:
