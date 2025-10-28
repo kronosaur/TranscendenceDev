@@ -109,6 +109,7 @@ struct SViewportPaintCtx
 		const CG8bitSparseImage *pVolumetricMask = NULL;	//	Volumetric mask for starshine
 
 		CThreadPool *pThreadPool = NULL;		//	Thread pool for painting.
+		CThreadPool *pBkrndThreadPool = NULL;	//	Thread pool for background painting.
 
 		//	Options
 
