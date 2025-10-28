@@ -698,6 +698,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property:\n\n"
 			
 			"   'debugMode\n"
+			"	'forceSTPaint\n"
 			"   'memoryUse\n"
 			"   'showAIDebug\n"
 			"   'showBounds\n"
@@ -707,6 +708,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'showNavPaths\n"
 			"   'showNodeInfo\n"
 			"   'showOrderInfo\n"
+			"	'showPaintLocation\n"
+			"	'showPaintTime\n"
 			"   'translateLog\n",
 
 			"s",	0, },
@@ -734,6 +737,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"property:\n\n"
 			
+			"	'forceSTPaint True/Nil\n"
 			"   'showAIDebug True/Nil\n"
 			"   'showBounds True/Nil\n"
 			"   'showDamageDone True/Nil\n"
@@ -741,7 +745,9 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'showLineOfFire True/Nil\n"
 			"   'showNavPaths True/Nil\n"
 			"   'showNodeInfo True/Nil\n"
-			"   'showOrderInfo True/Nil\n",
+			"   'showOrderInfo True/Nil\n"
+			"	'showPaintLocation True/Nil\n"
+			"	'showPaintTime True/Nil\n",
 
 			"sv",	PPFLAG_SIDEEFFECTS, },
 

@@ -522,12 +522,15 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 	Ctx.fNoStarshine = !m_Universe.GetSFXOptions().IsStarshineEnabled();
 	Ctx.fNoSpaceBackground = !m_Universe.GetSFXOptions().IsSpaceBackgroundEnabled();
 	Ctx.bNo3DExtras = !m_Universe.GetSFXOptions().Is3DExtrasEnabled();
+	Ctx.bForceSTPaint = m_Universe.GetDebugOptions().IsForceSTPaintEnabled(); //TODO: add an or condition with GetSFXOptions
 
 	//	Debug options
 
 	Ctx.bShowBounds = m_Universe.GetDebugOptions().IsShowBoundsEnabled();
 	Ctx.bShowFacingsAngle = m_Universe.GetDebugOptions().IsShowFacingsAngleEnabled();
 	Ctx.bShowOrderInfo = m_Universe.GetDebugOptions().IsShowOrderInfoEnabled();
+	Ctx.bDbgShowPaintLocations = m_Universe.GetDebugOptions().IsShowPaintLocationEnabled();
+	Ctx.bDbgShowPaintTime = m_Universe.GetDebugOptions().IsShowPaintTimeEnabled();
 
 	//	Figure out what color space should be. Space gets lighter as we get
 	//	near the central star
@@ -568,16 +571,6 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 		m_pBkrndThreadPool = new CThreadPool;
 		m_pBkrndThreadPool->Boot(GetUniverse().GetSFXOptions().GetMaxBkrndPaintWorkers());
 		}
-
-	Ctx.pBkrndThreadPool = m_pBkrndThreadPool;
-
-	//	If we don't have a background thread pool yet, create it
-
-	if (m_pBkrndThreadPool == NULL)
-	{
-		m_pBkrndThreadPool = new CThreadPool;
-		m_pBkrndThreadPool->Boot(Min(MAX_THREAD_COUNT, sysGetProcessorCount()));
-	}
 
 	Ctx.pBkrndThreadPool = m_pBkrndThreadPool;
 
