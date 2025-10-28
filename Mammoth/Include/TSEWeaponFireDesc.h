@@ -98,6 +98,7 @@ enum SpecialDamageTypes
 	specialTimeStop			= 16,
 	specialAttract			= 17,
 	specialRepel			= 18,
+	specialMiningScan		= 19,
 	};
 
 class CSpecialDamageSet
@@ -158,7 +159,8 @@ class DamageDesc
 				m_MassDestructionAdj(0),
 				m_MiningAdj(0),
 				m_ShatterDamage(0),
-				m_ShieldPenetratorAdj(0)
+				m_ShieldPenetratorAdj(0),
+				m_fMiningScan(0)
 			{ }
 
 		void AddEnhancements (const CItemEnhancementStack *pEnhancements);
@@ -204,6 +206,7 @@ class DamageDesc
 		int GetMassDestructionLevel (void) const;
 		int GetMiningAdj (void) const { return (int)(m_MiningAdj ? (2 * (m_MiningAdj * m_MiningAdj) + 2) : 0); }
 		int GetMiningDamage (void) const { return m_MiningAdj; }
+		int GetMiningScan (void) const { return m_fMiningScan; }
 		int GetMiningWMDAdj (void);
 		int GetRadiationDamage (void) const { return (int)m_RadiationDamage; }
 		int GetShatterDamage (void) const { return (int)m_ShatterDamage; }
@@ -236,6 +239,7 @@ class DamageDesc
 		DestructionTypes m_iCause = killedByDamage;		//	Cause of damage
 
 		//	Extra damage
+		//	Extra damage 1 (DWORD)
 		DWORD m_EMPDamage:3;					//	Ion (paralysis) damage
 		DWORD m_RadiationDamage:3;				//	Radiation damage
 		DWORD m_DeviceDisruptDamage:3;			//	Disrupt devices damage
@@ -250,11 +254,14 @@ class DamageDesc
 		DWORD m_fNoSRSFlash:1;					//	If TRUE, damage should not cause SRS flash
 		DWORD m_fAutomatedWeapon:1;				//	TRUE if this damage is caused by automated weapon
 
+		//	Extra damage 2 (DWORD)
 		DWORD m_DeviceDamage:3;					//	Damage to devices
 		DWORD m_MiningAdj:3;					//	Adj for mining capability
 		DWORD m_ShatterDamage:3;				//	Shatter damage
-		DWORD m_dwSpare2:23;
+		DWORD m_fMiningScan:1;					//	Scans for ore instead of actually mining it
+		DWORD m_dwSpare2:22;
 
+		//	Extra damage 3 (DWORD)
 		BYTE m_ShieldDamage = 0;				//	Shield damage (level)	shield:level
 		BYTE m_ArmorDamage = 0;					//	Armor damage (level)
 		BYTE m_TimeStopDamage = 0;				//	Time stop (level)
