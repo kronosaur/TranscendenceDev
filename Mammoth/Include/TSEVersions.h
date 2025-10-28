@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							57;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
-constexpr DWORD SYSTEM_SAVE_VERSION =					214;
+constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 
 //	Uncomment out the following define when building a stable release
 
@@ -591,6 +591,13 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //					The maximum level ore that this weapon shot can extract
 //					0 allows the damage to probe for ore but does not mine
 //					-1 uses the adventure default settings
+//				damage:
+//					Now accepts special damage type miningScan[:0-1]
+//						miningScan: sets aMiningScan to True in obj <onMining>
+//							In SotP this is used to scan without actually mining
+//							the ore.
+//							NOTE: API 48-56 weapons with generic:# and mining:#
+//							are treated as having miningScan:1
 //		<SystemMap>
 //			iconScale: (int)
 //				the % size to draw icons on the map when the map is zoomed at 100% scale.
@@ -1368,3 +1375,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //	214: 2.0 Alpha 7
 //		Change CParticleArray::m_iLifeLeft to milliseconds game time
 //		(instead of ticks)
+//
+//	215: 2.0 Alpha 7
+//		Add DamageDesc::m_fMiningScan
+//
