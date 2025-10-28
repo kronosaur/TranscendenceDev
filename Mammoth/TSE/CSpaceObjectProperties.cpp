@@ -344,7 +344,14 @@ ICCItemPtr CSpaceObject::GetPropertyKeys (CCodeChainCtx& CCX, EDesignDataTypes i
 				aKeys = m_pOverride->GetDataKeys(iDataType);
 			TMap<CString, int> mapSeen;
 			for (int i = 0; i < aKeys.GetCount(); i++)
+				{
+				if (aKeys[i].IsBlank())
+					{
+					int a = 0;
+					}
+
 				mapSeen.Insert(aKeys[i]);
+				}
 
 			//	Next check our type for keys
 			//	Note that GetDataKeys uses the iDataType we are given
@@ -357,6 +364,12 @@ ICCItemPtr CSpaceObject::GetPropertyKeys (CCodeChainCtx& CCX, EDesignDataTypes i
 				for (int i = 0; i < aTypeKeys.GetCount(); i++)
 					{
 					CString sKey = aTypeKeys[i];
+					if (sKey.IsBlank())
+						{
+						int a = 0;
+						}
+
+
 					if (mapSeen.Find(sKey))
 						continue;
 					mapSeen.Insert(sKey);
@@ -369,9 +382,14 @@ ICCItemPtr CSpaceObject::GetPropertyKeys (CCodeChainCtx& CCX, EDesignDataTypes i
 			//	If we dont exclude engine keys...
 			if (!(iDataType == EDesignDataTypes::ePropertyCustomData))
 				{
-				for (int i = 0; i <= m_BasePropertyTable.GetPropertyCount(); i++)
+				for (int i = 0; i < m_BasePropertyTable.GetPropertyCount(); i++)
 					{
 					CString sKey = m_BasePropertyTable.GetPropertyName(i);
+					if (sKey.IsBlank())
+						{
+						int a = 0;
+						}
+
 					if (mapSeen.Find(sKey))
 						continue;
 					mapSeen.Insert(sKey);
