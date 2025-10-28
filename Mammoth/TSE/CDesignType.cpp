@@ -4,6 +4,7 @@
 //	Copyright (c) 2017 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
+#include "TSEDesign.h"
 
 #define ACHIEVEMENTS_TAG						CONSTLIT("Achievements")
 #define ADVENTURE_DESC_TAG						CONSTLIT("AdventureDesc")
@@ -1891,6 +1892,64 @@ size_t CDesignType::GetAllocMemoryUsage (void) const
 	//	LATER: Include allocated memory from member variables.
 
 	return dwTotal;
+	}
+
+TArray<CString> CDesignType::GetDataKeys(const EDesignDataTypes iDataType)
+	{
+	TArray<CString> retA;
+	if (m_pInheritFrom)
+		retA = m_pInheritFrom->GetDataKeys(iDataType);
+	TMap<CString, int> mapSeen;
+	for (int i = 0; i < retA.GetCount(); i++)
+		mapSeen.Insert(retA[i]);
+	if (m_pExtra)
+		{
+		switch (iDataType)
+			{
+			//	TODO: figure out a dynamic way to support ePropertyEngineData
+			case EDesignDataTypes::ePropertyEngineData:
+				return retA;
+			//	TODO: implement getting engine data for ePropertyData
+			case EDesignDataTypes::ePropertyCustomData:
+			case EDesignDataTypes::ePropertyData:
+				{
+				for (int i = 0; i < m_pExtra->PropertyDefs.GetCount(); i++)
+					{
+					CString sKey = m_pExtra->PropertyDefs.GetName(i);
+					if (mapSeen.Find(sKey))
+						continue;
+					retA.Insert(sKey);
+					}
+				return retA;
+				}
+			case EDesignDataTypes::eStaticData:
+				{
+				for (int i = 0; i < m_pExtra->StaticData.GetDataCount(); i++)
+					{
+					CString sKey = m_pExtra->StaticData.GetDataAttrib(i);
+					if (mapSeen.Find(sKey))
+						continue;
+					retA.Insert(sKey);
+					}
+				return retA;
+				}
+			case EDesignDataTypes::eGlobalData:
+				{
+				for (int i = 0; i < m_pExtra->GlobalData.GetDataCount(); i++)
+					{
+					CString sKey = m_pExtra->GlobalData.GetDataAttrib(i);
+					if (mapSeen.Find(sKey))
+						continue;
+					retA.Insert(sKey);
+					}
+				return retA;
+				}
+			case EDesignDataTypes::eInstanceData:
+			default:
+				return retA;
+			}
+		}
+	return retA;
 	}
 
 CString CDesignType::GetEntityName (void) const

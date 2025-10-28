@@ -3922,6 +3922,14 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 	return GetDefaultDockScreen(retsScreen, retpData);
 	}
 
+TArray<CString> CSpaceObject::GetDataKeys(void)
+	{
+	TArray<CString> aRet = TArray<CString>();
+	for (int i = 0; i < m_Data.GetDataCount(); i++)
+		aRet.Insert(m_Data.GetDataAttrib(i));
+	return aRet;
+	}
+
 ICCItemPtr CSpaceObject::GetGlobalData (const CString &sAttribute) const
 
 //	GetGlobalData

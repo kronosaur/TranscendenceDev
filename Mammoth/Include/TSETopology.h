@@ -90,6 +90,7 @@ class CTopologyNode
 		int GetCalcDistance (void) const { return m_iCalcDistance; }
 		const CString &GetCreatorID (void) const { return (m_sCreatorID.IsBlank() ? m_sID : m_sCreatorID); }
 		ICCItemPtr GetData (const CString &sAttrib) const { return m_Data.GetDataAsItem(sAttrib); }
+		ICCItem *GetDataKeys (void) const { ICCItem *pList = CCodeChain::CreateLinkedList(); for (int i = 0; i < m_Data.GetDataCount(); i++) { pList->AppendString(m_Data.GetDataAttrib(i)); } return pList; };
 		inline CSystemMap *GetDisplayPos (int *retxPos = NULL, int *retyPos = NULL) const;
 		const CString &GetEndGameReason (void) { return m_sEndGameReason; }
 		const CString &GetEpitaph (void) { return m_sEpitaph; }

@@ -547,7 +547,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //						Overrides the <Stargate> locationCriteria string.
 //
 //	 57: 2.0 Alpha 7
-//      tlisp:
+//		tlisp:
 //			(bAnd x1 [x2 ... xn])
 //				Returns the bitwise AND of all arguments.
 //				All arguments are coerced to 32-bit integers.
@@ -597,9 +597,39 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //							lambdas: only lambdas
 //							primitives: only primitives
 //						Default: 'primitives
+//			(itmGetDataKeys item)
+//				Returns a list of data keys for the given item
+//			(itm@Keys item)
+//				Returns a list of property keys for the given item
 //			(lambda args [docstring] expr)
 //				Lambda now accepts an optional docstring that can be printed out with (help lambda)
-//				
+//			(msnGetDataKeys obj)
+//				Returns a list of typData keys for the given msn
+//			(msnGetDataKeys obj)
+//				Returns a list of typData keys for the given msn type
+//			(msnGetStaticDataKeys type)
+//				Returns a list of static data keys for the given msn type
+//			(msn@Keys type)
+//				Returns a list of all instance property and custom global property keys for the given msn
+//			(objGetDataKeys obj)
+//				Returns a list of typData keys for the given obj
+//			(objGetDataKeys obj)
+//				Returns a list of typData keys for the given obj type
+//			(objGetStaticDataKeys type)
+//				Returns a list of static datakeys for the given obj type
+//			(obj@Keys type)
+//				Returns a list of all instance property and custom global property keys for the given obj
+//			(objGetOverlayDataKeys obj overlayID)
+//				Returns a list of all data keys for the given overlay on the given obj
+//			(sysGetDataKeys [node])
+//				Returns a list of all data keys for the given system.
+//				If [node] is Nil/not provided, it gets the current system.
+//			(typGetDataKeys type)
+//				Returns a list of typData keys for the given type
+//			(typGetStaticDataKeys type)
+//				Returns a list of static datakeys for the given type
+//			(typ@Keys type)
+//				Returns a list of custom global property keys for the given type
 //		<AdventureDesc>
 //			<Constants>
 //				<MiningMaxOreLevels>
