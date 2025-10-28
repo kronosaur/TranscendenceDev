@@ -91,12 +91,12 @@ bool CItem::FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult) c
 		}
 	}
 
-ICCItem *CItem::GetItemPropertyKeys(CCodeChainCtx& CCCtx, CItemCtx& Ctx, bool bOnType) const
+ICCItemPtr CItem::GetItemPropertyKeys (CCodeChainCtx& CCCtx, CItemCtx& Ctx, bool bOnType) const
 	{	
 	if (!m_pItemType)
-		return CCCtx.GetCC().CreateNil();
+		return ICCItemPtr::Nil();
 
-	ICCItem *pList = CCCtx.GetCC().CreateLinkedList();
+	ICCItemPtr pList(CCCtx.GetCC().CreateLinkedList());
 	TMap<CString, int> mapSeen;
 
 	//	Check type & custom properties

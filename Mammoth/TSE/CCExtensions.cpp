@@ -5653,7 +5653,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_ITEM_DATA_KEYS:
-			return Item.GetDataKeysAsItem();
+			return Item.GetDataKeysAsItem()->Reference();
 
 		case FN_ITEM_DATA:
 			return Item.GetDataAsItem(pArgs->GetElement(1)->GetStringValue())->Reference();
@@ -5817,12 +5817,12 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (CSpaceObject *pSource = Item.GetSource())
 				{
 				CItemCtx ItemCtx(&Item, pSource);
-				return Item.GetItemPropertyKeys(*pCtx, ItemCtx, bOnType);
+				return Item.GetItemPropertyKeys(*pCtx, ItemCtx, bOnType)->Reference();
 				}
 			else
 				{
 				CItemCtx ItemCtx(Item);
-				return Item.GetItemPropertyKeys(*pCtx, ItemCtx, bOnType);
+				return Item.GetItemPropertyKeys(*pCtx, ItemCtx, bOnType)->Reference();
 				}
 			}
 
@@ -6251,7 +6251,7 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			{
 			CDesignType *pType = pObj->GetType();
 			TArray<CString> aKeys = pType->GetDataKeys(dwData == FN_OBJ_GET_GLOBAL_DATA_KEYS ? EDesignDataTypes::eGlobalData : EDesignDataTypes::eStaticData);
-			ICCItem*pRet = pCC->CreateLinkedList();
+			ICCItem* pRet = pCC->CreateLinkedList();
 			for (int i = 0; i < aKeys.GetCount(); i++)
 				pRet->AppendString(aKeys[i]);
 			return pRet;
@@ -7519,7 +7519,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 			else
 				{
-				return pObj->GetPropertyKeys(*pCtx);
+				return pObj->GetPropertyKeys(*pCtx)->Reference();
 				}
 			}
 
@@ -7614,7 +7614,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_OBJ_GET_OVERLAY_DATA_KEYS:
 			{
 			DWORD dwID = (DWORD)pArgs->GetElement(1)->GetIntegerValue();
-			return pObj->GetOverlay(dwID)->GetDataKeys();
+			return pObj->GetOverlay(dwID)->GetDataKeys()->Reference();
 			}
 
 		case FN_OBJ_GET_OVERLAY_POS:
@@ -14818,7 +14818,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get the data keys
 
-			return pNode->GetDataKeys();
+			return pNode->GetDataKeys()->Reference();
 			}
 
 		case FN_SYS_GET_DATA:

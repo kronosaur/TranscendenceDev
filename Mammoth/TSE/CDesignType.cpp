@@ -1894,7 +1894,7 @@ size_t CDesignType::GetAllocMemoryUsage (void) const
 	return dwTotal;
 	}
 
-TArray<CString> CDesignType::GetDataKeys(const EDesignDataTypes iDataType)
+TArray<CString> CDesignType::GetDataKeys (const EDesignDataTypes iDataType)
 	{
 	TArray<CString> retA;
 	if (m_pInheritFrom)

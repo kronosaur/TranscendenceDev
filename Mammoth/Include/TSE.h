@@ -1142,8 +1142,8 @@ class CSpaceObject
 
 		ICCItemPtr GetProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
 		ICCItemPtr GetProperty (const CString &sProperty) const { CCodeChainCtx CCX(GetUniverse()); return GetProperty(CCX, sProperty); }
-		ICCItem *GetPropertyKeys (CCodeChainCtx& CCX, EDesignDataTypes iDataType = EDesignDataTypes::ePropertyData) const;
-		ICCItem *GetPropertyKeys (EDesignDataTypes iDataType = EDesignDataTypes::ePropertyData) const { CCodeChainCtx CCX(GetUniverse()); return GetPropertyKeys(CCX, iDataType); }
+		ICCItemPtr GetPropertyKeys (CCodeChainCtx& CCX, EDesignDataTypes iDataType = EDesignDataTypes::ePropertyData) const;
+		ICCItemPtr GetPropertyKeys (EDesignDataTypes iDataType = EDesignDataTypes::ePropertyData) const { CCodeChainCtx CCX(GetUniverse()); return GetPropertyKeys(CCX, iDataType); }
 		bool IncProperty (const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 
