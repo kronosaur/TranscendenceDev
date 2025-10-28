@@ -17,8 +17,6 @@ const int BRIGHT_STAR_CHANCE =					20;
 
 const CG32bitPixel RGB_DEFAULT_SPACE_COLOR =	CG32bitPixel(0,0,8);
 
-const int MAX_THREAD_COUNT =					16;
-
 #ifdef DEBUG_PAINT_TIMINGS
 static int g_iTimingCount = 0;
 static DWORD g_dwTotalTime = 0;
@@ -350,7 +348,7 @@ void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, int xCenter,
 	//	Compute the chunks
 
 	int cyLeft = RectHeight(Ctx.rcView);
-	int cyChunk = cyLeft / Ctx.pThreadPool->GetThreadCount();
+	int cyChunk = cyLeft / Ctx.pBkrndThreadPool->GetThreadCount();
 	int yStart = 0;
 
 	//	Start asynchronous tasks
@@ -358,13 +356,13 @@ void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, int xCenter,
 	while (cyLeft > 0)
 		{
 		int cyHeight = Min((int)cyLeft, cyChunk);
-		Ctx.pThreadPool->AddTask(new CSpaceBackgroundPainter(Dest, yStart, cyHeight, PainterCtx));
+		Ctx.pBkrndThreadPool->AddTask(new CSpaceBackgroundPainter(Dest, yStart, cyHeight, PainterCtx));
 
 		yStart += cyHeight;
 		cyLeft -= cyHeight;
 		}
 
-	Ctx.pThreadPool->Run();
+	Ctx.pBkrndThreadPool->Run();
 	}
 
 void CSystemSpacePainter::PaintStarfield (CG32bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, CG32bitPixel rgbSpaceColor)
@@ -495,7 +493,7 @@ void CSystemSpacePainter::PaintStarshine (CG32bitImage &Dest, int xCenter, int y
 	//	Compute the chunks
 
 	int cyLeft = RectHeight(Ctx.rcView);
-	int cyChunk = cyLeft / Ctx.pThreadPool->GetThreadCount();
+	int cyChunk = cyLeft / Ctx.pBkrndThreadPool->GetThreadCount();
 	int yStart = 0;
 
 	//	Start asynchronous tasks
@@ -503,13 +501,13 @@ void CSystemSpacePainter::PaintStarshine (CG32bitImage &Dest, int xCenter, int y
 	while (cyLeft > 0)
 		{
 		int cyHeight = Min((int)cyLeft, cyChunk);
-		Ctx.pThreadPool->AddTask(new CStarshinePainter(Dest, yStart, cyHeight, StarshineCtx));
+		Ctx.pBkrndThreadPool->AddTask(new CStarshinePainter(Dest, yStart, cyHeight, StarshineCtx));
 
 		yStart += cyHeight;
 		cyLeft -= cyHeight;
 		}
 
-	Ctx.pThreadPool->Run();
+	Ctx.pBkrndThreadPool->Run();
 	}
 
 void CSystemSpacePainter::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSystemType *pType, CMapViewportCtx &Ctx)
