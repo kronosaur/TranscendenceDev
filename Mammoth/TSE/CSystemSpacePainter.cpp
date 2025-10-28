@@ -17,8 +17,6 @@ const int BRIGHT_STAR_CHANCE =					20;
 
 const CG32bitPixel RGB_DEFAULT_SPACE_COLOR =	CG32bitPixel(0,0,8);
 
-const int MAX_THREAD_COUNT =					16;
-
 #ifdef DEBUG_PAINT_TIMINGS
 static int g_iTimingCount = 0;
 static DWORD g_dwTotalTime = 0;

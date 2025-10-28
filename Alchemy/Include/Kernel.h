@@ -1435,10 +1435,38 @@ void UncompressRunLengthByte (IWriteStream *pOutput, IReadBlock *pInput);
 
 DWORD sysGetAPIFlags (void);
 DWORD sysGetTicksElapsed (DWORD dwTick, DWORD *retdwNow = NULL);
-int sysGetProcessorCount (void);
 CString sysGetUserName (void);
 bool sysIsBigEndian (void);
 bool sysOpenURL (const CString &sURL);
+
+//	Processor info functions
+
+struct SProcessorInfo
+	{
+	DWORD dwNumLogical = 0;
+	DWORD dwNumPhysical = 0;
+	DWORD dwNumProcessorGroups = 0;
+
+	//	flags
+
+	DWORD fReliablePhysicalProcessorCount : 1 = 0;
+	DWORD fReliableLogicalProcessorCount : 1 = 0;
+	DWORD fReliableProcessorGroups : 1 = 0;
+	DWORD fSuccess : 1 = 0;
+	DWORD fCanAddProcessorGroups : 1 = 0;
+	DWORD dwSpare : 27 = 0;
+	};
+
+#ifdef WIN32
+#define RELIABLE_AFFINITY_MASK false
+#else
+#define RELIABLE_AFFINITY_MASK true
+#endif
+
+DWORD sysGetProcessorsInMask(KAFFINITY& AffinityMask);
+SProcessorInfo sysGetProcessorInfo(void);
+int sysGetProcessorCountLegacy(void);
+int sysGetProcessorCount(void);
 
 //	Utility functions (Utilities.cpp)
 
