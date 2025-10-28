@@ -2,6 +2,67 @@
 
 <TranscendenceModule>
 
+<!-- RPG Characters (NPCs)======================================================
+
+	Station characters:
+		Assign random character names to specific station roles (station master,
+		bartender etc.) using rpgCharacterRandom. These can be used to make minor
+		customisations to mission text. Example - Korolov Shipping
+
+		Add variant property "rpgCharacter.assistantDirector" to station:
+			(rpgCharacterRandom gSource "x +assistantDirector; +korolov;" 'assistantDirector)
+
+		This will find suitable types with matching attributes and Static data "CharacterTable"
+
+		Implementation
+
+		Static Data on character types: CharacterTable
+		Alternative property rpg.characterTable is not fully implemented
+
+		Global data on space object type:
+			rpgCharacterList.<role>
+			rpgCharacterNext.<role>
+
+		Property on space object: rpgCharacter.<role>
+
+
+	Mission giver characters:
+		Variant property set on mission. Used to provide alternative mission text.
+		Example - Commonwealth Mining, Commonwealth Volunteer missions
+
+		Note - current examples used in Eridani with custom tlisp calls to
+		typTranslate. But these could probably be reworked to fit the station
+		character system and use rpgCharacterTranslate
+
+
+	Major characters:
+		Typically used by characters which have an associated ship and can assign
+		missions across different systems. Example: Benedict, Kate Morgental
+
+		The character type defines following data
+
+		Static Data:
+			MissionAttribute
+			Name
+			Sovereign
+
+		Dynamic [legacy type Data]:
+			char.firstMeetingOn [firstPlayerMeetingTime]
+			char.latestMeetingOn [latestPlayerMeetingTime]
+				[lastNodeID]
+				[lastShipClass]
+				[objID_<unid>]
+				[lastOrders]
+				[lastSystemPos]
+				[lastKnown]
+				[playerRel]
+				[status]
+				[screenData]
+
+		Events:
+			OnCharacterCanBeMet
+-->
+
 <!-- CHARACTER SCREEN ==========================================================
 
 	USAGE
@@ -707,6 +768,8 @@
 			;	4.	Use rpgCharacterGetInfo to get the full block of data for 
 			;		the randomly chosen character.
 
+			;	DEPRECATED. Assign sourceType charID in property
+
 			(setq rpgCharacterAssign (lambda (sourceObj role sourceType charID)
 				(block (
 					(characterRole (or role "npc"))
@@ -718,6 +781,8 @@
 						)
 					)
 				))
+
+			;	DEPRECATED. Use rpgCharacterRandom in a variant property
 
 			(setq rpgCharacterAssignRandom (lambda (sourceObj criteria role)
 				
