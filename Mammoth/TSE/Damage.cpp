@@ -1038,8 +1038,18 @@ ALERROR DamageDesc::LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, 
 			m_MiningAdj = (DWORD)Min(iCount, MAX_INTENSITY);
 		else if (strEquals(sType, GetSpecialDamageName(specialShatter)))
 			m_ShatterDamage = (DWORD)Min(iCount, MAX_INTENSITY);
+
 		else if (strEquals(sType, GetSpecialDamageName(specialMiningScan)))
+			{
 			m_fMiningScan = (DWORD)Min(iCount, MAX_BINARY);
+
+			//	MiningScan:# automatically enables m_MiningAdj if m_MiningAdj is 0
+			//	We dont care if miningScan: was processed before mining:, because
+			//	mining will override the value that m_fMiningScan sets.
+
+			if (!m_MiningAdj)
+				m_MiningAdj = (DWORD)Min(iCount, MAX_INTENSITY);
+			}
 
 		//	These special damage types translate to momentum
 

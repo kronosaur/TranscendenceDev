@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 #include <cstring>
+#include <bit>
 
 DWORD Kernel::sysGetTicksElapsed (DWORD dwTick, DWORD *retdwNow)
 
