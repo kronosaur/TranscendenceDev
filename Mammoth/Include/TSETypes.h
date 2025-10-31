@@ -230,6 +230,7 @@ extern Metric g_SecondsPerUpdate;
 enum DamageTypes
 	{
 	damageError			= -100,					//	invalid damage
+	damageNull			= -2,					//	null damage
 	damageGeneric		= -1,					//	generic damage
 
 	damageLaser			= 0,					//	standard lasers
@@ -249,7 +250,11 @@ enum DamageTypes
 	damageDarkLightning	= 14,					//	exotics
 	damageDarkFire		= 15,					//	exotics
 
-	damageCount			= 16
+	damageCount			= 16,
+	
+	//	We keep this separate from damageCount, which enumerates standard damage types
+	damageMax			= 15,					//	Damage types above this are not valid
+	damageMin			= -2					//	Damage types below this are not valid
 	};
 
 //	Utility types

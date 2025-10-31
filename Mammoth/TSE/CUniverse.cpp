@@ -875,7 +875,7 @@ CEffectCreator &CUniverse::GetDefaultFireEffect (DamageTypes iDamage)
 //	Returns the default hit effect for the given damage type
 
 	{
-	if (iDamage < damageGeneric || iDamage >= damageCount)
+	if (iDamage < damageMin || iDamage > damageMax)
 		throw CException(ERR_FAIL, CONSTLIT("DamageTypes value out of range."));
 
 	return m_NamedEffects.GetFireEffect(m_Design, iDamage);
@@ -888,7 +888,7 @@ CEffectCreator &CUniverse::GetDefaultHitEffect (DamageTypes iDamage)
 //	Returns the default hit effect for the given damage type
 
 	{
-	if (iDamage < damageGeneric || iDamage >= damageCount)
+	if (iDamage < damageMin || iDamage > damageMax)
 		throw CException(ERR_FAIL, CONSTLIT("DamageTypes value out of range."));
 
 	return m_NamedEffects.GetHitEffect(m_Design, iDamage);

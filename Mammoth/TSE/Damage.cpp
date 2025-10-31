@@ -163,6 +163,8 @@ CString GetDamageType (DamageTypes iType)
 	{
 	if (iType == damageGeneric)
 		return CONSTLIT("generic");
+	else if (iType == damageNull)
+		return CONSTLIT("null");
 	else
 		return CString(DAMAGE_TYPE_DATA[iType].pszID);
 	}
@@ -179,6 +181,11 @@ DamageTypes LoadDamageTypeFromXML (const CString &sAttrib)
 	for (iType = 0; iType < damageCount; iType++)
 		if (strEquals(sAttrib, CString(DAMAGE_TYPE_DATA[iType].pszID)))
 			return (DamageTypes)iType;
+
+	//	Null
+
+	if (strEquals(sAttrib, CONSTLIT("null")))
+		return damageNull;
 
 	//	Generic
 
@@ -356,7 +363,7 @@ int DamageDesc::GetDamageLevel (DamageTypes iType)
 //  Returns the damage tier based on damage type.
 
 	{
-	if (iType == damageGeneric)
+	if (iType == damageGeneric || iType == damageNull)
 		return 1;
 	else
 		return DAMAGE_TYPE_DATA[iType].iLevel;
@@ -369,7 +376,7 @@ int DamageDesc::GetDamageTier (DamageTypes iType)
 //  Returns the damage tier based on damage type.
 
 	{
-	if (iType == damageGeneric)
+	if (iType == damageGeneric || iType == damageNull)
 		return 1;
 	else
 		return DAMAGE_TYPE_DATA[iType].iTier;
