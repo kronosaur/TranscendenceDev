@@ -114,6 +114,7 @@ ALERROR CParticleEffect::Create (CSystem &System,
 	if (pDesc->FindAttribute(DAMAGE_ATTRIB, &sDamage))
 		{
 		SDesignLoadCtx Ctx;
+		Ctx.pExtension = System.GetType()->GetExtension();
 		DamageDesc Damage;
 		if (error = Damage.LoadFromXML(Ctx, sDamage))
 			return error;
