@@ -224,7 +224,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"@",				fnItem,			FN_ITEM,
 			"(@ list index) -> item index from list (0-based)\n"
-			"(@ struct key) -> value corresponding to key from struct",
+			"(@ struct key) -> value corresponding to key from struct\n"
+			"(@ struct) -> list of keys of the struct",
 			"v*",	0,	},
 
 		{	"item",				fnItem,			FN_ITEM,
