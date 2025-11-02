@@ -75,6 +75,43 @@ without it, however, as long as you add CHexarcServiceStub.cpp to the build.
 In Visual Studio, selecting the "Debug For Contributors" configuration will
 build the game with CHexarcServiceStub.cpp.
 
+CONTRIBUTION GUIDELINES
+
+General contributions standards are documented here:
+
+https://ministry.kronosaur.com/record.hexm?id=91287
+
+Note: it is recommended to split up multiple unrelated (or extremely large)
+changes into multiple PRs to make it easier to review. We have a limited amount
+of time each week to review PRs, so oversized PRs may take multiple weeks to
+review or outright rejected as too big to review.
+
+To enable whitesmith indentation style in Visual Studio, open `Tools > Options`:
+
+Then select `Text Editor > C/C++ > Tabs` and ensure that:
+
+    Tab size = 4
+    Indent size = 4
+    Keep Tabs = True
+
+Then select `Text Editor > C/C++ > Code Style > Formatting > Indentation` and
+ensure that:
+
+    Indent braces = True
+    Indent each line relatively to = `Innermost paranthesis`
+    Within parenthesis, align new lines when I type them = `Indent new lines`
+    Indent case contents = True
+    Indent braces following a case statement = True
+    Indent braces of lambdas = True
+    
+Then select `Text Editor > C/C++ > Code Style > Formatting > Spacing` and ensure
+that:
+
+    `Spacing for operators > Pointer/reference Alignment > Leave unchanged` = True
+
+If you find additional settings that should be changed to provide for an easier
+editing experience, please update this readme with them.
+
 LICENSE
 
 Please see the LICENSE file in the root directory.
