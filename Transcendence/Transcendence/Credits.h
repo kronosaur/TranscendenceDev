@@ -9,6 +9,7 @@ static constexpr const char *ADDITIONAL_PROGRAMMING[] =
 	"Lily Leung (Heliogenesis)",
 	"Alana Huitric (Skarrlyth)",
 	"Nathaniel Stalberg (NMS)",
+	"Ihlosi",
 	"Alex Chen (Archcannon)",
 	"Brian Merchant",
 	"Benn Bollay"
