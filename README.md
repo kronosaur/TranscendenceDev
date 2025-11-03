@@ -135,7 +135,16 @@ build the game with CHexarcServiceStub.cpp.
 Please see the contribution guidelines for information about best practices and
 style guides.
 
-[General Contribution Guidelines](CONTRIBUTORS.md)
+[General Contribution Guidelines](Docs/Contributor_Guidelines.md)
+
+Style & Contribution Guidelines:
+
+* [C++ Style Guide](Docs/Style_Guides/C++.md)
+* [TLisp Style Guide](Docs/Style_Guides/TLisp.md)
+* [XML Style Guide](Docs/Style_Guides/XML.md)
+* [Markdown (Documentation) Style Guide](Docs/Style_Guides/Markdown.md)
+* [In-game Text Style Guide](Docs/Style_Guides/Ingame_Text.md)
+* [Asset Style Guide](Docs/Style_Guides/Assets.md)
 
 ### PULL REQUESTS
 
