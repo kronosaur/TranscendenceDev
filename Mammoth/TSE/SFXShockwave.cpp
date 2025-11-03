@@ -118,8 +118,7 @@ CShockwaveEffectCreator::~CShockwaveEffectCreator (void)
 //	CShockwaveEffectCreator destructor
 
 	{
-	if (m_pSingleton)
-		delete m_pSingleton;
+	delete m_pSingleton;
 	}
 
 IEffectPainter *CShockwaveEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)

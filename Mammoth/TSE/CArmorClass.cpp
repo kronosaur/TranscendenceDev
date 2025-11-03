@@ -210,8 +210,7 @@ CArmorClass::~CArmorClass (void)
 //  CArmorClass destructor
 
 	{
-	if (m_pScalable)
-		delete[] m_pScalable;
+	delete[] m_pScalable;
 	}
 
 EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)

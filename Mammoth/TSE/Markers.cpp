@@ -29,8 +29,7 @@ CMarker::~CMarker (void)
 //  CMarker destructor
 
     {
-    if (m_pMapOrbit)
-        delete m_pMapOrbit;
+    delete m_pMapOrbit;
     }
 
 ALERROR CMarker::Create (CSystem &System,
@@ -339,8 +338,7 @@ void CMarker::SetOrbit (const COrbit &Orbit)
 //  Sets the orbit to paint on the map
 
     {
-    if (m_pMapOrbit)
-        delete m_pMapOrbit;
+    delete m_pMapOrbit;
 
     m_pMapOrbit = new COrbit(Orbit);
     }

@@ -122,8 +122,7 @@ ALERROR CLocateNodesProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 			{
 			if (pItem->GetContentElementCount() > 0)
 				{
-				if (m_pMapFunction)
-					delete m_pMapFunction;
+				delete m_pMapFunction;
 
 				if (error = I2DFunction::CreateFromXML(Ctx, pItem->GetContentElement(0), &m_pMapFunction))
 					return error;

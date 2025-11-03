@@ -52,8 +52,7 @@ CTopologyDesc::~CTopologyDesc (void)
 //	CTopologyDesc destructor
 
 	{
-	if (m_pDescList)
-		delete m_pDescList;
+	delete m_pDescList;
 	}
 
 ALERROR CTopologyDesc::BindDesign (SDesignLoadCtx &Ctx)

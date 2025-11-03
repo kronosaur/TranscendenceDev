@@ -64,7 +64,7 @@ CGalacticMapPainter::~CGalacticMapPainter (void)
 //	CGalacticMapPainter destructor
 
 	{
-	if (m_pImage && m_bFreeImage)
+	if (m_bFreeImage)
 		delete m_pImage;
 	}
 

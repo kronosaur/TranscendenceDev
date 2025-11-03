@@ -98,8 +98,7 @@ CLightningStormEffectCreator::~CLightningStormEffectCreator (void)
 //	CLightningStormEffectCreator destructor
 
 	{
-	if (m_pSingleton)
-		delete m_pSingleton;
+	delete m_pSingleton;
 	}
 
 IEffectPainter *CLightningStormEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
@@ -179,11 +178,8 @@ ALERROR CLightningStormEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 	{
 	//	Clean up, because we might want to recompute for next time.
 
-	if (m_pSingleton)
-		{
-		delete m_pSingleton;
-		m_pSingleton = NULL;
-		}
+	delete m_pSingleton;
+	m_pSingleton = NULL;
 
 	return NOERROR;
 	}

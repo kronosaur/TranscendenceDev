@@ -38,8 +38,7 @@ CEffectCreator::~CEffectCreator (void)
 //	CEffectCreator destructor
 
 	{
-	if (m_pDamage)
-		delete m_pDamage;
+	delete m_pDamage;
 	}
 
 ALERROR CEffectCreator::CreateBeamEffect (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CEffectCreator **retpCreator)

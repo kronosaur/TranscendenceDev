@@ -130,17 +130,13 @@ CStation::~CStation (void)
 //	CStation destructor
 
 	{
-	if (m_pRotation)
-		delete m_pRotation;
+	delete m_pRotation;
 
-	if (m_pMapOrbit)
-		delete m_pMapOrbit;
+	delete m_pMapOrbit;
 
-	if (m_pMoney)
-		delete m_pMoney;
+	delete m_pMoney;
 
-	if (m_pTrade)
-		delete m_pTrade;
+	delete m_pTrade;
 	}
 
 void CStation::Abandon (DestructionTypes iCause, const CDamageSource &Attacker, CWeaponFireDesc *pWeaponDesc)
@@ -5453,8 +5449,7 @@ void CStation::SetMapOrbit (const COrbit &oOrbit)
 //	Sets the orbit description
 
 	{
-	if (m_pMapOrbit)
-		delete m_pMapOrbit;
+	delete m_pMapOrbit;
 
 	m_pMapOrbit = new COrbit(oOrbit);
 	m_fShowMapOrbit = true;
@@ -5744,11 +5739,8 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 		{
 		if (pValue->IsNil())
 			{
-			if (m_pMapOrbit)
-				{
-				delete m_pMapOrbit;
-				m_pMapOrbit = NULL;
-				}
+			delete m_pMapOrbit;
+			m_pMapOrbit = NULL;
 
 			m_fShowMapOrbit = false;
 			return true;

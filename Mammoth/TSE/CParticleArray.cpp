@@ -73,8 +73,7 @@ CParticleArray::~CParticleArray (void)
 //	CParticleArray destructor
 
 	{
-	if (m_pArray)
-		delete [] m_pArray;
+	delete [] m_pArray;
 	}
 
 void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeftTicks, int iRotation, int iDestiny, int iGeneration, Metric rData)
@@ -151,11 +150,8 @@ void CParticleArray::CleanUp (void)
 //	Deletes the array
 
 	{
-	if (m_pArray)
-		{
-		delete [] m_pArray;
-		m_pArray = NULL;
-		}
+	delete [] m_pArray;
+	m_pArray = NULL;
 
 	m_iCount = 0;
 	}
