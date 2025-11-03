@@ -49,6 +49,8 @@ ICCItem *CCLambda::Clone (CCodeChain *pCC)
 	else
 		pClone->m_pLocalSymbols = NULL;
 
+	pClone->m_sDesc = strCat(CONSTLIT(""), m_sDesc);
+
 	return pClone;
 	}
 
@@ -57,21 +59,24 @@ ICCItem *CCLambda::CreateFromList (ICCItem *pList, bool bArgsOnly)
 //	CreateFromList
 //
 //	Initializes from a lambda list. Returns True if successful; error otherwise.
-//	The list must have exactly three elements: 
-//		the symbol lambda
+//	The list must have three to four elements, unless bArgsOnly is specified.
+//		the symbol lambda (omitted if bArgsOnly)
 //		a list of arguments
+//		a docstring (optional)
 //		a body of code
 
 	{
 	ICCItem *pArgs;
-	ICCItem *pBody;
+	ICCItem *pBodyOrDocstring;
+	ICCItem	*pBody;
 
-	//	The first element must be the symbol lambda
+	//	The first element must be the symbol lambda (unless args only)
 
 	if (bArgsOnly)
 		{
 		pArgs = pList->GetElement(0);
-		pBody = pList->GetElement(1);
+		pBodyOrDocstring = pList->GetElement(1);
+		pBody = pList->GetElement(2);
 		}
 	else
 		{
@@ -80,7 +85,8 @@ ICCItem *CCLambda::CreateFromList (ICCItem *pList, bool bArgsOnly)
 			return CCodeChain::CreateError(LITERAL("Lambda symbol expected"), pArgs);
 
 		pArgs = pList->GetElement(1);
-		pBody = pList->GetElement(2);
+		pBodyOrDocstring = pList->GetElement(2);
+		pBody = pList->GetElement(3);
 		}
 
 	//	The next item must be a list of arguments
@@ -90,16 +96,29 @@ ICCItem *CCLambda::CreateFromList (ICCItem *pList, bool bArgsOnly)
 
 	m_pArgList = pArgs->Reference();
 
-	//	The next item must exist
+	//	The next item must exist, and is either the body or docstring
 
-	if (pBody == NULL)
+	if (pBodyOrDocstring == NULL)
 		{
 		m_pArgList->Discard();
 		m_pArgList = NULL;
-		return CCodeChain::CreateError(LITERAL("Code expected"), pList);
+		return CCodeChain::CreateError(LITERAL("Code or docstring expected"), pList);
 		}
 
-	m_pCode = pBody->Reference();
+	//	If the final item exists, it is the code and the previous one is a docstring
+	//	Otherwise the previous one is the code and there is no docstring
+	
+	if (pBody)
+		{
+		initDesc(pBodyOrDocstring->GetStringValue());
+		m_pCode = pBody->Reference();
+		}
+	else
+		{
+		m_pCode = pBodyOrDocstring->Reference();
+		initDesc(CONSTLIT(""));
+		}
+
 	m_pLocalSymbols = NULL;
 
 	//	Done
@@ -357,3 +376,35 @@ void CCLambda::SetLocalSymbols (CCodeChain *pCC, ICCItem *pSymbols)
 #endif
 	}
 
+void CCLambda::initDesc(CString sHelp)
+
+//	initDesc
+//
+//	initialize m_sDesc with the function signature and any docstring
+
+	{
+	//	We only need to do this if m_sDesc was not populated
+	CString sKey = CONSTLIT("%s");
+	ICCItem* pLambdaArgs = GetArgList();
+
+	if (sHelp.GetLength())
+		{
+		if (pLambdaArgs)
+			if (pLambdaArgs->IsNil())
+				m_sDesc = strPatternSubst(CONSTLIT("(%s)\n\n%s\n"), sKey, sHelp);
+			else
+				m_sDesc = strPatternSubst(CONSTLIT("(%s %s)\n\n%s\n"), sKey, pLambdaArgs->Print(PRFLAG_NO_LIST_LAMBDA_ARGS), sHelp);
+		else
+			m_sDesc = strPatternSubst(CONSTLIT("(%s ...)\n\n%s\n"), sKey, sHelp);
+		}
+	else
+		{
+		if (pLambdaArgs)
+			if (pLambdaArgs->IsNil())
+				m_sDesc = strPatternSubst(CONSTLIT("(%s)"), sKey);
+			else
+				m_sDesc = strPatternSubst(CONSTLIT("(%s %s)"), sKey, pLambdaArgs->Print(PRFLAG_NO_LIST_LAMBDA_ARGS));
+		else
+			m_sDesc = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
+		}
+	}

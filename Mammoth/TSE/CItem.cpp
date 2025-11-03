@@ -1106,6 +1106,26 @@ ICCItemPtr CItem::GetDataAsItem (const CString &sAttrib) const
 	return ICCItemPtr(GetUniverse().GetCC().CreateNil());
 	}
 
+ICCItemPtr CItem::GetDataKeysAsItem (void) const
+
+//	GetDataAsItem
+//
+//	Returns data
+
+	{
+	if (m_pExtra)
+		{
+		ICCItemPtr pList(CCodeChain::CreateLinkedList());
+		
+		for (int i = 0; i < m_pExtra->m_Data.GetDataCount(); i++)
+			pList->AppendString(m_pExtra->m_Data.GetDataAttrib(i));
+
+		return pList;
+		}
+
+	return ICCItemPtr::Nil();
+	}
+
 CString CItem::GetDesc (bool bActual) const
 
 //	GetDesc

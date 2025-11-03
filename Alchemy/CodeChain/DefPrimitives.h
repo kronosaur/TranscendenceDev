@@ -203,9 +203,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"help",				fnHelp,			0,
 			"(help) -> this help\n"
-			"(help '*) -> all functions\n"
-			"(help 'partial-string) -> all functions starting with partial-string\n"
-			"(help 'function-name) -> help on function-name\n",
+			"(help '* ['*|'lambdas|'primitives]) -> all functions\n"
+			"(help 'partial-string ['*|'lambdas|'primitives]) -> all functions starting with partial-string\n"
+			"(help 'function-name ['*|'lambdas|'primitives]) -> help on function-name\n"
+			"(help function|lambda) -> help on the function or lambda\n",
 			"*",	0,	},
 
 		{	"hex",				fnItem,			FN_HEX,
@@ -238,7 +239,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"v*",	0,	},
 
 		{	"lambda",			fnLambda,		0,
-			"(lambda args-list exp) -> lambda function",
+			"(lambda args-list [docstring] exp) -> lambda function",
 			NULL,	0,	},
 
 		{	"log",				fnMathNumerals,	FN_MATH_LOG,
@@ -573,6 +574,39 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		"Arguments are the same as (eval expr). Resolution may vary by system.",
 		"v",	PPFLAG_SIDEEFFECTS, },
+
+		{   "bAnd", fnBitwise, FN_BITWISE_AND,
+			"(bAnd x1 [x2 ... xn]) -> bitwise AND (int32)",
+			"v*", 0, },
+
+		{   "bOr",  fnBitwise, FN_BITWISE_OR,
+			"(bOr x1 [x2 ... xn]) -> bitwise OR (int32)",
+			"v*", 0, },
+
+		{   "bXor", fnBitwise, FN_BITWISE_XOR,
+			"(bXor x1 [x2 ... xn]) -> bitwise XOR (int32)",
+			"v*", 0, },
+
+		{   "bNot", fnBitwise, FN_BITWISE_NOT,
+			"(bNot x) -> bitwise NOT (int32)",
+			"v", 0, },
+
+		{   "bShL",  fnBitwise, FN_BITWISE_SHL,
+			"(bShL x count) -> logical left shift (int32)",
+			"vv", 0, },
+
+		{   "bShR",  fnBitwise, FN_BITWISE_SHR,
+			"(bShR x count) -> logical right shift (int32)",
+			"vv", 0, },
+
+		{   "bRoL",  fnBitwise, FN_BITWISE_ROL,
+			"(bRoL x count) -> rotate left 32-bit (int32)",
+			"vv", 0, },
+
+		{   "bRoR",  fnBitwise, FN_BITWISE_ROR,
+			"(bRoR x count) -> rotate right 32-bit (int32)",
+			"vv", 0, },
+
 	};
 
 #define DEFPRIMITIVES_COUNT		(sizeof(g_DefPrimitives) / sizeof(g_DefPrimitives[0]))

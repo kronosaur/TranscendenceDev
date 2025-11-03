@@ -55,6 +55,7 @@ class CDebugOptions
 	{
 	public:
 		ICCItemPtr GetProperty (const CString &sProperty) const;
+		bool IsForceSTPaintEnabled (void) const { return m_bForceSTPaint; }
 		bool IsShowAIDebugEnbled (void) const { return m_bShowAIDebug; }
 		bool IsShowBoundsEnabled (void) const { return m_bShowBounds; }
 		bool IsShowFacingsAngleEnabled (void) const { return m_bShowFacingsAngle; }
@@ -62,6 +63,8 @@ class CDebugOptions
 		bool IsShowNavPathsEnabled (void) const { return m_bShowNavPaths; }
 		bool IsShowNodeAttributesEnabled (void) const { return m_bShowNodeAttributes; }
 		bool IsShowOrderInfoEnabled () const { return m_bShowOrderInfo; }
+		bool IsShowPaintLocationEnabled (void) const { return m_bShowPaintLocation; }
+		bool IsShowPaintTimeEnabled (void) const { return m_bShowPaintTime; }
 		bool IsVerboseCreate (void) const { return m_bVerboseCreate; }
 		bool SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
 		void SetVerboseCreate (bool bValue = true) { m_bVerboseCreate = bValue; }
@@ -69,14 +72,17 @@ class CDebugOptions
 	private:
 		ICCItemPtr GetMemoryUse (void) const;
 
+		bool m_bForceSTPaint = false;
 		bool m_bShowAIDebug = false;
 		bool m_bShowBounds = false;
 		bool m_bShowLineOfFire = false;
 		bool m_bShowNavPaths = false;
 		bool m_bShowFacingsAngle = false;
 		bool m_bShowNodeAttributes = false;
-		bool m_bVerboseCreate = false;
 		bool m_bShowOrderInfo = false;
+		bool m_bShowPaintLocation = false;
+		bool m_bShowPaintTime = false;
+		bool m_bVerboseCreate = false;
 	};
 
 class CPerformanceCounters
@@ -491,7 +497,7 @@ class CUniverse
 		void SetDebugMode (bool bDebug = true) { m_bDebugMode = bDebug; }
 		bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
 		void SetDifficultyLevel (CDifficultyOptions::ELevel iLevel) { m_Difficulty.SetLevel(iLevel); }
-		void SetEngineOptions (const CEngineOptions &Options) { m_EngineOptions.Merge(Options); }
+		void SetEngineOptions (const CEngineOptions &Options) { m_EngineOptions = Options; }
 		bool SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData);
 		void SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV = NULL);
 		bool SetPOV (CSpaceObject *pPOV);

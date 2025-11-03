@@ -5,9 +5,9 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							56;
+constexpr DWORD API_VERSION =							57;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
-constexpr DWORD SYSTEM_SAVE_VERSION =					214;
+constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 
 //	Uncomment out the following define when building a stable release
 
@@ -546,7 +546,129 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //						the in-system location criteria to use for placing the gate
 //						Overrides the <Stargate> locationCriteria string.
 //
-
+//	 57: 2.0 Alpha 7
+//		tlisp:
+//			(bAnd x1 [x2 ... xn])
+//				Returns the bitwise AND of all arguments.
+//				All arguments are coerced to 32-bit integers.
+//			(bOr x1 [x2 ... xn])
+//				Returns the bitwise OR of all arguments.
+//				All arguments are coerced to 32-bit integers.
+//			(bXor x1 [x2 ... xn])
+//				Returns the bitwise XOR of all arguments.
+//				All arguments are coerced to 32-bit integers.
+//			(bNot x)
+//				Returns the bitwise NOT of x.
+//				Argument is coerced to a 32-bit integer; result is also 32-bit signed.
+//			(bShL x count)
+//				Returns x shifted left by count bits (logical).
+//				Low bits are filled with zeros; high bits are discarded.
+//			(bShR x count)
+//				Returns x shifted right by count bits (logical).
+//				High bits are filled with zeros; low bits are discarded.
+//			(bRoL x count)
+//				Returns x rotated left by count bits in 32-bit space.
+//				Bits shifted out of the high end wrap around to the low end.
+//			(bRoR x count)
+//				Returns x rotated right by count bits in 32-bit space.
+//				Bits shifted out of the low end wrap around to the high end.
+//			(dbgGet [option] value)
+//				New option parameters:
+//					'forceSTPaint: forces single threaded painting
+//					'showPaintLocation: shows the upper left and lower right corners of
+//						each thread's painted area
+//					'showPaintTime: shows the time to paint the sprite in
+//						microseconds
+//			(dbgSet [option] value)
+//				New option parameters:
+//					'forceSTPaint: forces single threaded painting
+//					'showPaintLocation: shows the upper left and lower right corners of
+//						each thread's painted area
+//					'showPaintTime: shows the time to paint the sprite in
+//						microseconds
+//			(help function)
+//				Returns the docstring for the function (accepts both primitives
+//				and lambdas)
+//			(help strFilter [typefilter])
+//				Upgraded to accept a typeFilter argument
+//					typFilter: (str: '*|'l|'lambda|'lambdas|'p|'primitive|'primitives)
+//						This argument allows including:
+//							*: all functions
+//							lambdas: only lambdas
+//							primitives: only primitives
+//						Default: 'primitives
+//			(itmGetDataKeys item)
+//				Returns a list of data keys for the given item
+//			(itm@Keys item)
+//				Returns a list of property keys for the given item
+//			(lambda args [docstring] expr)
+//				Lambda now accepts an optional docstring that can be printed out with (help lambda)
+//			(msnGetDataKeys obj)
+//				Returns a list of typData keys for the given msn
+//			(msnGetDataKeys obj)
+//				Returns a list of typData keys for the given msn type
+//			(msnGetStaticDataKeys type)
+//				Returns a list of static data keys for the given msn type
+//			(msn@Keys type)
+//				Returns a list of all instance property and custom global property keys for the given msn
+//			(objGetDataKeys obj)
+//				Returns a list of typData keys for the given obj
+//			(objGetDataKeys obj)
+//				Returns a list of typData keys for the given obj type
+//			(objGetStaticDataKeys type)
+//				Returns a list of static datakeys for the given obj type
+//			(obj@Keys type)
+//				Returns a list of all instance property and custom global property keys for the given obj
+//			(objGetOverlayDataKeys obj overlayID)
+//				Returns a list of all data keys for the given overlay on the given obj
+//			(sysGetDataKeys [node])
+//				Returns a list of all data keys for the given system.
+//				If [node] is Nil/not provided, it gets the current system.
+//			(typGetDataKeys type)
+//				Returns a list of typData keys for the given type
+//			(typGetStaticDataKeys type)
+//				Returns a list of static datakeys for the given type
+//			(typ@Keys type)
+//				Returns a list of custom global property keys for the given type
+//		<AdventureDesc>
+//			<Constants>
+//				<MiningMaxOreLevels>
+//					miningMaxOreLevel: (damageAdj-style list of ints)
+//						The maximum level ore that this weapon shot can extract
+//						Specifying a "+" before a level means this is a positive
+//							offset relative to the level of the item
+//						Specifying a "-" before a level means this is a negative
+//							offset relative to the level of the item
+//		<Image> (Type)
+//			pngBitmaskAlphaSource: (str: "alpha"|"red"|"green"|"blue")
+//				Specify a specific channel to use from a png as a bitmask alpha source
+//				Default: "alpha"
+//		<ItemType>
+//			<Weapon>
+//				miningMaxOreLevel: (int: 0-25)
+//					The maximum level ore that this weapon shot can extract
+//					0 allows the damage to probe for ore but does not mine
+//					-1 uses the adventure default settings
+//				damage:
+//					Now accepts special damage type miningScan[:0-1]
+//						miningScan: sets aMiningScan to True in obj <onMining>
+//							In SotP this is used to scan without actually mining
+//							the ore.
+//							You can optionally specify miningScan:N and it will
+//							treat it as miningScan:1 mining:N. If mining:# is also
+//							specified, it will always override the value in
+//							miningScan:#.
+//							NOTE: API 48-56 weapons with generic:# and mining:#
+//							are treated as having miningScan:1
+//		<SystemMap>
+//			iconScale: (int)
+//				the % size to draw icons on the map when the map is zoomed at 100% scale.
+//				Default: 100
+//			iconScaleFactor: (double)
+//				the relative amount to scale the icons as the map is zoomed in or out.
+//				1.0 = normal scale, 0.0 = no change in scale. Default: 1.0
+//
+//
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
 //
@@ -1315,3 +1437,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					214;
 //	214: 2.0 Alpha 7
 //		Change CParticleArray::m_iLifeLeft to milliseconds game time
 //		(instead of ticks)
+//
+//	215: 2.0 Alpha 7
+//		Add DamageDesc::m_fMiningScan
+//

@@ -103,6 +103,7 @@ SSpecialDamageData SPECIAL_DAMAGE_DATA[] =
 		{	"timeStop",			"damageTimeStop" },
 		{	"attract",			"damageAttract" },
 		{	"repel",			"damageRepel" },
+		{	"miningScan",		"damageMiningScan" },
 
 		{	NULL,				NULL }
 	};
@@ -253,6 +254,7 @@ CString DamageDesc::AsString (void) const
 	WriteValue(Output, CONSTLIT("shieldPenetrate"), m_ShieldPenetratorAdj);
 	WriteValue(Output, CONSTLIT("timeStop"), m_TimeStopDamage);
 	WriteValue(Output, CONSTLIT("WMD"), m_MassDestructionAdj);
+	WriteValue(Output, CONSTLIT("miningScan"), m_fMiningScan);
 
 	return CString(Output.GetPointer(), Output.GetLength());
 	}
@@ -488,6 +490,9 @@ int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags) co
 
 		case specialMining:
 			return ((dwFlags & flagSpecialAdj) ? GetMiningAdj() : m_MiningAdj);
+
+		case specialMiningScan:
+			return m_fMiningScan;
 
 		case specialMomentum:
 			return (m_MomentumDamage > 0 ? ConvertToOldMomentum(m_MomentumDamage) : 0);
@@ -915,6 +920,7 @@ ALERROR DamageDesc::LoadFromXML (SDesignLoadCtx &Ctx, const CString &sAttrib)
 	m_MassDestructionAdj = 0;
 	m_MiningAdj = 0;
 	m_ShatterDamage = 0;
+	m_fMiningScan = 0;
 
 	//	Loop over all segments separated by semi-colons
 
@@ -938,6 +944,16 @@ ALERROR DamageDesc::LoadFromXML (SDesignLoadCtx &Ctx, const CString &sAttrib)
 		if (error = LoadTermFromXML(Ctx, sKeyword, sValue))
 			return error;
 		}
+	
+	//	Handle backwards compatibility
+
+	DWORD dwAPIVersion = Ctx.GetAPIVersion();
+
+	//	For APIs 48-56, genericDamage mining weapons scanned instead of mined
+	//	Prior to API 48, the concept of mining scanning didnt exist
+
+	if (dwAPIVersion >= 48 && dwAPIVersion < 57 && m_MiningAdj && m_iType == damageGeneric)
+		m_fMiningScan = 1;
 
 	return NOERROR;
 	}
@@ -1022,6 +1038,18 @@ ALERROR DamageDesc::LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, 
 			m_MiningAdj = (DWORD)Min(iCount, MAX_INTENSITY);
 		else if (strEquals(sType, GetSpecialDamageName(specialShatter)))
 			m_ShatterDamage = (DWORD)Min(iCount, MAX_INTENSITY);
+
+		else if (strEquals(sType, GetSpecialDamageName(specialMiningScan)))
+			{
+			m_fMiningScan = (DWORD)Min(iCount, MAX_BINARY);
+
+			//	MiningScan:# automatically enables m_MiningAdj if m_MiningAdj is 0
+			//	We dont care if miningScan: was processed before mining:, because
+			//	mining will override the value that m_fMiningScan sets.
+
+			if (!m_MiningAdj)
+				m_MiningAdj = (DWORD)Min(iCount, MAX_INTENSITY);
+			}
 
 		//	These special damage types translate to momentum
 
@@ -1169,6 +1197,7 @@ void DamageDesc::ReadFromStream (SLoadCtx &Ctx)
 //	DWORD		m_iCause
 //	DWORD		Extra damage
 //	DWORD		Extra damage 2
+//	DWORD		Extra damage 3
 
 	{
 	DWORD dwLoad;
@@ -1186,6 +1215,8 @@ void DamageDesc::ReadFromStream (SLoadCtx &Ctx)
 		}
 	else
 		m_iCause = killedByDamage;
+
+	//	Extra damage 1
 
 	Ctx.pStream->Read(dwLoad);
 	m_EMPDamage = dwLoad & 0x07;
@@ -1213,12 +1244,33 @@ void DamageDesc::ReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion < 18 && ((dwLoad >> 30) & 0x01))
 		m_iCause = killedByWeaponMalfunction;
 
+	//	Extra Damage 2
+
 	Ctx.pStream->Read(dwLoad);
 	m_DeviceDamage = dwLoad & 0x07;
 	m_MassDestructionAdj = (dwLoad >> 3) & 0x07;
 	m_MiningAdj = (dwLoad >> 6) & 0x07;
 	m_ShatterDamage = (dwLoad >> 9) & 0x07;
+	
+	if (Ctx.dwVersion >= 215)
+		m_fMiningScan = (dwLoad >> 10) & 0x01;
+
+	//	In API 48, mining scan was done by using miningAdj + damageGeneric
+
+	else if (Ctx.dwVersion >= 177)
+		{
+		//	177 corresponds to 1.9a4 (API48)
+		m_fMiningScan = (m_iType == damageGeneric && m_MiningAdj) ? 1 : 0;
+		}
+
+	//	Mining scan was not a feature prior to 1.9a4
+
+	else
+		m_fMiningScan = 0;
+
 	m_dwSpare2 = 0;
+
+	//	Extra Damage 3
 
 	if (Ctx.dwVersion >= 73)
 		{
@@ -1280,6 +1332,8 @@ void DamageDesc::WriteToStream (IWriteStream *pStream) const
 	dwSave = m_iCause;
 	pStream->Write(dwSave);
 
+	//	Extra Damage 1
+
 	dwSave = m_EMPDamage;
 	//	Spare: dwSave |= m_MomentumDamage << 3;
 	dwSave |= m_RadiationDamage << 6;
@@ -1294,11 +1348,16 @@ void DamageDesc::WriteToStream (IWriteStream *pStream) const
 	dwSave |= m_fAutomatedWeapon << 31;
 	pStream->Write(dwSave);
 
+	//	Extra Damage 2
+
 	dwSave = m_DeviceDamage;
 	dwSave |= m_MassDestructionAdj << 3;
 	dwSave |= m_MiningAdj << 6;
 	dwSave |= m_ShatterDamage << 9;
+	dwSave |= m_fMiningScan << 10;
 	pStream->Write(dwSave);
+
+	//	Extra Damage 3
 
 	dwSave = ((BYTE)m_MomentumDamage << 24) | (m_TimeStopDamage << 16) | (m_ArmorDamage << 8) | m_ShieldDamage;
 	pStream->Write(dwSave);

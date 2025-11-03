@@ -66,6 +66,7 @@
 #define MAX_RADIUS_ATTRIB						CONSTLIT("maxRadius")
 #define MIN_DAMAGE_ATTRIB						CONSTLIT("minDamage")
 #define MIN_RADIUS_ATTRIB						CONSTLIT("minRadius")
+#define MINING_LEVEL_ATTRIB						CONSTLIT("miningMaxOreLevel")
 #define MINING_METHOD_ATTRIB					CONSTLIT("miningMethod")
 #define MISSILE_SPEED_ATTRIB					CONSTLIT("missileSpeed")
 #define MULTI_TARGET_ATTRIB						CONSTLIT("multiTarget")
@@ -2137,6 +2138,15 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			Ctx.sError = strPatternSubst(CONSTLIT("Invalid weapon mining method: \"%s\""), sValue);
 			return ERR_FAIL;
 			}
+		}
+
+	//	Mining Level
+
+	m_iMaxMiningLevel = pDesc->GetAttributeIntegerBounded(MINING_LEVEL_ATTRIB, 0, MAX_ITEM_LEVEL, -1);
+	if (m_iMaxMiningLevel >= 0 && Ctx.GetAPIVersion() < 57)
+		{
+		Ctx.sError = CONSTLIT("miningMaxOreLevel requires API 57 or higher");
+		return ERR_FAIL;
 		}
 
 	//	Hit criteria

@@ -144,6 +144,7 @@
 			;		succeed.
 			;	aWeaponType: UNID of mining weapon
 			;	aYieldAdj: Adjustment to the yield as a factor (double)
+			;	aMiningScan: True if this weapon should only scan instead of mine
 
 				(block (
 					;	This table is used to calc the number of HP required 
@@ -188,6 +189,7 @@
 							(dbgOutput "Chance: " aSuccessChance)
 							(dbgOutput "Yield Adj (Base): " aYieldAdj)
 							(dbgOutput "Yield Adj (Player): " (* (typGetProperty &unidMiningSkill; 'rpg.miningYieldAdj) aYieldAdj))
+							(dbgOutput "Scans instead of mines: " aMiningScan)
 							)
 						)
 				
@@ -219,10 +221,10 @@
 									)
 								)
 
-						;	Generic damage just scans (does not extract, and no experience is
+						;	aMiningScan just scans (does not extract, and no experience is
 						;	gained).
 
-						(= aDamageType 'generic)
+						aMiningScan
 							(block ()
 								(setq setExplored True)
 								(setq addCounter True)

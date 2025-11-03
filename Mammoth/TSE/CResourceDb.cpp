@@ -617,7 +617,7 @@ ALERROR CResourceDb::LoadImage (const CString &sFolder, const CString &sFilename
 	return NOERROR;
 	}
 
-ALERROR CResourceDb::LoadImageFile (const CString &sImageFilename, const CString &sMaskFilename, TUniquePtr<CG32bitImage> &pImage, bool bPreMult, CString *retsError)
+ALERROR CResourceDb::LoadImageFile (const CString &sImageFilename, const CString &sMaskFilename, TUniquePtr<CG32bitImage> &pImage, bool bPreMult, CString *retsError, ChannelTypes iPNGMaskAlphaChannel)
 
 //	LoadImageFile
 //
@@ -630,22 +630,55 @@ ALERROR CResourceDb::LoadImageFile (const CString &sImageFilename, const CString
 		{
 		//	Different paths depending on file type. JPEG and BMP files need a
 		//	separate mask file, so we need separate code.
+		//	Additionally, PNG files cannot be loaded with WINAPI and therefor
+		//  also need separate code.
 		//
 		//	NOTE: If we don't have an image filename, we expect to have a mask.
 
 		CString sType = pathGetExtension(sImageFilename);
+		CString sMaskType = pathGetExtension(sMaskFilename);
+
 		if (sImageFilename.IsBlank() || strEquals(sType, CONSTLIT("jpg")) || strEquals(sType, CONSTLIT("bmp")))
 			{
-			if (error = LoadImageFileAndMask(sImageFilename, sMaskFilename, pImage, bPreMult, retsError))
-				return error;
+
+			//	PNG masks must use new code
+
+			if (strEquals(sMaskType, CONSTLIT("png")))
+				{
+				if (error = LoadImageFileAndMask(sImageFilename, CONSTLIT(""), pImage, false, retsError))
+					return error;
+
+				if (error = LoadPNGMaskAndApply(sMaskFilename, pImage, bPreMult, retsError, iPNGMaskAlphaChannel))
+					return error;
+				}
+			
+			//	JPG, BMP, and missing masks can use legacy code
+
+			else
+				{
+				if (error = LoadImageFileAndMask(sImageFilename, sMaskFilename, pImage, bPreMult, retsError))
+					return error;
+				}
+
 			}
 
-		//	PNG files have a built-in mask.
+		//	PNG files have a built-in mask via alpha layer, but we still need to handle
+		//	cases where that mask is overwritten too by another PNG
 
 		else if (strEquals(sType, CONSTLIT("png")))
 			{
+
 			if (error = LoadPNGFile(sImageFilename, pImage, retsError))
 				return error;
+
+			//	handle case where we have another png image containing an override mask
+
+			if (strEquals(sMaskType, CONSTLIT("png")))
+				{
+				if (error = LoadPNGMaskAndApply(sMaskFilename, pImage, bPreMult, retsError, iPNGMaskAlphaChannel))
+					return error;
+				}
+			
 			}
 
 		//	Otherwise, unknown image type.
@@ -663,6 +696,32 @@ ALERROR CResourceDb::LoadImageFile (const CString &sImageFilename, const CString
 			*retsError = strPatternSubst(CONSTLIT("Crash loading image from resource db: %s."), sImageFilename);
 		return ERR_FAIL;
 		}
+
+	return NOERROR;
+	}
+
+ALERROR CResourceDb::LoadPNGMaskAndApply (const CString& sMaskFilename, TUniquePtr<CG32bitImage> &pImage, bool bPreMult, CString* retsError, ChannelTypes iSrcChannel)
+
+//	Load a PNG image as a mask and apply it to the alpha channel of another PNG image
+
+	{
+	ALERROR error;
+	TUniquePtr<CG32bitImage> pMask;
+
+	if (error = LoadPNGFile(sMaskFilename, pMask, retsError))
+		return error;
+
+	//	Now we copy over the appropriate channel as alpha
+
+	int cxSafeHeight = min(pMask->GetHeight(), pImage->GetHeight());
+	int cxSafeWidth = min(pMask->GetWidth(), pImage->GetWidth());
+
+	pImage->CopyChannel(iSrcChannel, 0, 0, cxSafeWidth, cxSafeHeight, *(pMask.GetHandoff()), 0, 0, channelAlpha);
+	pImage->SetAlphaType(CG32bitImage::alpha8);
+
+	//	Now we cleanup the temporary image we loaded
+
+	delete pMask;
 
 	return NOERROR;
 	}

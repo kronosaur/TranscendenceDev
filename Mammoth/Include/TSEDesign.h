@@ -228,6 +228,17 @@ class CAchievementDataBlock
 
 //	CDesignType
 
+enum class EDesignDataTypes
+	{
+	ePropertyData,			//	properties (ex, typ@)
+	eGlobalData,			//	type data (ex, typSetData)
+	eInstanceData,			//	instance data (ex, objSetData)
+	eStaticData,			//	static data (ex, typGetStaticData)
+
+	ePropertyEngineData,	//	Engine-defined properties (ex, typ@)
+	ePropertyCustomData,	//	Custom-defined properties (ex, typ@)
+	};
+
 class CDesignType
 	{
 	public:
@@ -343,6 +354,7 @@ class CDesignType
 		const CAchievementDataBlock &GetAchievementDefinitions () const { return (m_pExtra ? m_pExtra->Achievements : CAchievementDataBlock::Null()); }
 		const CArmorMassDefinitions &GetArmorMassDefinitions (void) const { return (m_pExtra ? m_pExtra->ArmorDefinitions : CArmorMassDefinitions::Null); }
 		const CString &GetAttributes (void) const { return m_sAttributes; }
+		TArray<CString> GetDataKeys (const EDesignDataTypes iDataType );
 		CString GetDataField (const CString &sField) const { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
 		const CEconomyType &GetDefaultCurrency (void) const { return OnGetDefaultCurrency(); }
