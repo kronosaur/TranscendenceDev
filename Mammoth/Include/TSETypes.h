@@ -254,7 +254,9 @@ enum DamageTypes
 	
 	//	We keep this separate from damageCount, which enumerates standard damage types
 	damageMax			= 15,					//	Damage types above this are not valid
-	damageMin			= -2					//	Damage types below this are not valid
+	damageMaxListed		= 15,					//	Damage types above this cannot be found in std damage lists
+	damageMin			= -2,					//	Damage types below this are not valid
+	damageMinListed		= 0,					//	Damage types below this cannot be found in std damage lists
 	};
 
 //	Utility types
