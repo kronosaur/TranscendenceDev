@@ -51,7 +51,9 @@ Use tabs to indent. Set the indent at 4 spaces.
    }
 ```
 
-### Distinguish Between Function Declaration and Calls
+### Function Declaration and Calls
+
+#### Distinguish Between Declarations and Calls
 
 Add a space between the function name and the opening parenthesis when
 declaring or defining a function. Do not add space when calling the function:
@@ -68,6 +70,17 @@ function(10);
 
 //      ^
 //   No space here
+```
+
+#### Omit void if no parameters
+
+```
+int function ()
+//            ^
+//          Empty
+   {
+   return 0;
+   }
 ```
 
 ## Layering
