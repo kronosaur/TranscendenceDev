@@ -184,8 +184,7 @@ COrbEffectCreator::~COrbEffectCreator (void)
 //	COrbEffectCreator destructor
 
 	{
-	if (m_pSingleton)
-		delete m_pSingleton;
+	delete m_pSingleton;
 	}
 
 IEffectPainter *COrbEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
@@ -297,11 +296,8 @@ ALERROR COrbEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 	{
 	//	Clean up, because we might want to recompute for next time.
 
-	if (m_pSingleton)
-		{
-		delete m_pSingleton;
-		m_pSingleton = NULL;
-		}
+	delete m_pSingleton;
+	m_pSingleton = NULL;
 
 	return NOERROR;
 	}
@@ -1068,11 +1064,8 @@ void COrbEffectPainter::CleanUp (void)
 //	Clean up all structures
 
 	{
-	if (m_pPainter)
-		{
-		delete m_pPainter;
-		m_pPainter = NULL;
-		}
+	delete m_pPainter;
+	m_pPainter = NULL;
 
 	m_iTextureType = CFractalTextureLibrary::typeNone;
 	m_ColorTable.DeleteAll();

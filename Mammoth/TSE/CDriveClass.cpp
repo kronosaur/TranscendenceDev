@@ -33,14 +33,11 @@ CDriveClass::~CDriveClass (void)
 //  CDriveClass destructor
 
 	{
-	if (m_pDesc)
-		delete[] m_pDesc;
+	delete[] m_pDesc;
 
-	if (m_pDamagedDesc)
-		delete[] m_pDamagedDesc;
+	delete[] m_pDamagedDesc;
 
-	if (m_pEnhancedDesc)
-		delete[] m_pEnhancedDesc;
+	delete[] m_pEnhancedDesc;
 	}
 
 ALERROR CDriveClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDrive)

@@ -239,8 +239,7 @@ ALERROR IDeviceGenerator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 	if (error = pGenerator->LoadFromXML(Ctx, pDesc))
 		{
-		if (pGenerator)
-			delete pGenerator;
+		delete pGenerator;
 		return error;
 		}
 
@@ -346,8 +345,7 @@ CSingleDevice::~CSingleDevice (void)
 //	CSingleDevice destructor
 
 	{
-	if (m_pExtraItems)
-		delete m_pExtraItems;
+	delete m_pExtraItems;
 	}
 
 void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
@@ -808,8 +806,7 @@ CTableOfDeviceGenerators::~CTableOfDeviceGenerators (void)
 	int i;
 
 	for (i = 0; i < m_Table.GetCount(); i++)
-		if (m_Table[i].pDevice)
-			delete m_Table[i].pDevice;
+		delete m_Table[i].pDevice;
 	}
 
 void CTableOfDeviceGenerators::AddDevices (SDeviceGenerateCtx &Ctx)
@@ -949,8 +946,7 @@ CLevelTableOfDeviceGenerators::~CLevelTableOfDeviceGenerators (void)
 	int i;
 
 	for (i = 0; i < m_Table.GetCount(); i++)
-		if (m_Table[i].pDevice)
-			delete m_Table[i].pDevice;
+		delete m_Table[i].pDevice;
 	}
 
 void CLevelTableOfDeviceGenerators::AddDevices (SDeviceGenerateCtx &Ctx)
@@ -1106,8 +1102,7 @@ CGroupOfDeviceGenerators::~CGroupOfDeviceGenerators (void)
 	int i;
 
 	for (i = 0; i < m_Table.GetCount(); i++)
-		if (m_Table[i].pDevice)
-			delete m_Table[i].pDevice;
+		delete m_Table[i].pDevice;
 	}
 
 void CGroupOfDeviceGenerators::AddDevices (SDeviceGenerateCtx &Ctx)

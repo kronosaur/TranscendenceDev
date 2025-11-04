@@ -21,8 +21,7 @@ CMoveCtx::~CMoveCtx (void)
 //	CMoveCtx destrutor
 
 	{
-	if (m_pArray)
-		delete [] m_pArray;
+	delete [] m_pArray;
 	}
 
 void CMoveCtx::AddObj (CSpaceObject *pObj)
