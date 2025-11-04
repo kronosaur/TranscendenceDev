@@ -35,8 +35,7 @@ CHexarcDownloader::~CHexarcDownloader (void)
 		m_Requests.Dequeue();
 		}
 
-	if (m_pCurrent)
-		delete m_pCurrent;
+	delete m_pCurrent;
 	}
 
 void CHexarcDownloader::AddRequest (const CString &sAPI,

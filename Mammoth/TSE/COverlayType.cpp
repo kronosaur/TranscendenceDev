@@ -49,11 +49,9 @@ COverlayType::~COverlayType (void)
 //	COverlayType destructor
 
 	{
-	if (m_pEffect)
-		delete m_pEffect;
+	delete m_pEffect;
 
-	if (m_pHitEffect)
-		delete m_pHitEffect;
+	delete m_pHitEffect;
 	}
 
 bool COverlayType::AbsorbsWeaponFire (CInstalledDevice *pWeapon)

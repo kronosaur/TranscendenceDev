@@ -114,8 +114,7 @@ CUniverse::~CUniverse (void)
 
 	//	We own m_pPlayer;
 
-	if (m_pPlayer)
-		delete m_pPlayer;
+	delete m_pPlayer;
 
 	//	Done
 
@@ -2903,8 +2902,7 @@ void CUniverse::SetPlayer (IPlayerController *pPlayer)
 	{
 	CCodeChain &CC = GetCC();
 
-	if (m_pPlayer)
-		delete m_pPlayer;
+	delete m_pPlayer;
 
 	m_pPlayer = pPlayer;
 

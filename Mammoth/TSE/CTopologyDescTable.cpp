@@ -99,11 +99,8 @@ void CTopologyDescTable::CleanUp (void)
 
 	m_Table.DeleteAll();
 
-	if (m_pIDToDesc)
-		{
-		delete m_pIDToDesc;
-		m_pIDToDesc = NULL;
-		}
+	delete m_pIDToDesc;
+	m_pIDToDesc = NULL;
 	}
 
 CEffectCreator *CTopologyDescTable::FindEffectCreator (const CString &sUNID)

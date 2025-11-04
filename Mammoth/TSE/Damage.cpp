@@ -954,7 +954,7 @@ ALERROR DamageDesc::LoadFromXML (SDesignLoadCtx &Ctx, const CString &sAttrib)
 	
 	//	Handle backwards compatibility
 
-	DWORD dwAPIVersion = Ctx.pExtension->GetAPIVersion();
+	DWORD dwAPIVersion = Ctx.GetAPIVersion();
 
 	//	For APIs 48-56, genericDamage mining weapons scanned instead of mined
 	//	Prior to API 48, the concept of mining scanning didnt exist

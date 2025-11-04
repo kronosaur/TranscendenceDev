@@ -105,8 +105,7 @@ ALERROR IItemGenerator::CreateFromXML (SDesignLoadCtx &Ctx, const CXMLElement *p
 
 	if (error = pGenerator->LoadFromXML(Ctx, pDesc))
 		{
-		if (pGenerator)
-			delete pGenerator;
+		delete pGenerator;
 		return error;
 		}
 
@@ -151,8 +150,7 @@ CItemTable::~CItemTable (void)
 //	CItemTable destructor
 
 	{
-	if (m_pGenerator)
-		delete m_pGenerator;
+	delete m_pGenerator;
 	}
 
 bool CItemTable::FindDataField (const CString &sField, CString *retsValue) const
@@ -235,8 +233,7 @@ CGroupOfGenerators::~CGroupOfGenerators (void)
 	int i;
 
 	for (i = 0; i < m_Table.GetCount(); i++)
-		if (m_Table[i].pItem)
-			delete m_Table[i].pItem;
+		delete m_Table[i].pItem;
 	}
 
 void CGroupOfGenerators::AddItems (SItemAddCtx &Ctx)
@@ -957,8 +954,7 @@ CLocationCriteriaTableOfItemGenerators::~CLocationCriteriaTableOfItemGenerators 
 	int i;
 
 	for (i = 0; i < m_Table.GetCount(); i++)
-		if (m_Table[i].pEntry)
-			delete m_Table[i].pEntry;
+		delete m_Table[i].pEntry;
 	}
 
 void CLocationCriteriaTableOfItemGenerators::AddItems (SItemAddCtx &Ctx)
@@ -1281,8 +1277,7 @@ CTableOfGenerators::~CTableOfGenerators (void)
 	int i;
 
 	for (i = 0; i < m_Table.GetCount(); i++)
-		if (m_Table[i].pItem)
-			delete m_Table[i].pItem;
+		delete m_Table[i].pItem;
 	}
 
 void CTableOfGenerators::AddItems (SItemAddCtx &Ctx)

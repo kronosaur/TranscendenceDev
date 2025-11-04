@@ -109,7 +109,7 @@ void CReactorDesc::CleanUp (void)
 //  Free allocations
 
 	{
-	if (m_pFuelCriteria && m_fFreeFuelCriteria)
+	if (m_fFreeFuelCriteria)
 		delete m_pFuelCriteria;
 	}
 

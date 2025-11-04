@@ -3571,11 +3571,10 @@ CEffectCreatorRef::CEffectCreatorRef (const CEffectCreatorRef &Source)
 
 CEffectCreatorRef::~CEffectCreatorRef (void)
 	{
-	if (m_bDelete && m_pType)
+	if (m_bDelete)
 		delete m_pType;
 
-	if (m_pSingleton)
-		delete m_pSingleton;
+	delete m_pSingleton;
 	}
 
 CEffectCreatorRef &CEffectCreatorRef::operator= (const CEffectCreatorRef &Source)
@@ -3585,7 +3584,7 @@ CEffectCreatorRef &CEffectCreatorRef::operator= (const CEffectCreatorRef &Source
 	{
 	//	Free our current type, if necessary
 
-	if (m_bDelete && m_pType)
+	if (m_bDelete)
 		delete m_pType;
 
 	m_dwUNID = Source.m_dwUNID;
@@ -3782,7 +3781,7 @@ void CEffectCreatorRef::Set (CEffectCreator *pEffect)
 //	Sets the effect
 
 	{
-	if (m_bDelete && m_pType)
+	if (m_bDelete)
 		delete m_pType;
 
 	m_pType = pEffect;

@@ -1291,8 +1291,7 @@ class CDynamicDesignTable
 				if (pType)
 					pType->Delete();
 
-				if (pSource)
-					delete pSource;
+				delete pSource;
 				}
 
 			CExtension *pExtension;

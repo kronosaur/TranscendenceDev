@@ -123,8 +123,7 @@ CResourceDb::~CResourceDb (void)
 //	CResourceDb destructor
 
 	{
-	if (m_pDb)
-		delete m_pDb;
+	delete m_pDb;
 
 	SetEntities(NULL);
 	}
@@ -1294,7 +1293,7 @@ void CResourceDb::SetEntities (IXMLParserController *pEntities, bool bFree)
 //	Sets the entities parameter
 
 	{
-	if (m_pEntities && m_bFreeEntities)
+	if (m_bFreeEntities)
 		delete m_pEntities;
 
 	m_pEntities = pEntities;

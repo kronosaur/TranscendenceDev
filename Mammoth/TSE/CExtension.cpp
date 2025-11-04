@@ -320,11 +320,8 @@ void CExtension::CleanUp (void)
 
 	//	Delete entities
 
-	if (m_pEntities)
-		{
-		delete m_pEntities;
-		m_pEntities = NULL;
-		}
+	delete m_pEntities;
+	m_pEntities = NULL;
 
 	//	Delete design types
 
@@ -361,11 +358,8 @@ void CExtension::CleanUpXML (void)
 	{
 	int i;
 
-	if (m_pRootXML)
-		{
-		delete m_pRootXML;
-		m_pRootXML = NULL;
-		}
+	delete m_pRootXML;
+	m_pRootXML = NULL;
 
 	for (i = 0; i < m_ModuleXML.GetCount(); i++)
 		delete m_ModuleXML[i];
@@ -1736,11 +1730,8 @@ void CExtension::SweepImages (void)
 //	Deletes images to save space.
 
 	{
-	if (m_pCoverImage)
-		{
-		delete m_pCoverImage;
-		m_pCoverImage = NULL;
-		}
+	delete m_pCoverImage;
+	m_pCoverImage = NULL;
 	}
 
 void CExtension::WriteReference (IWriteStream &Stream, const CExtension *pExtension)

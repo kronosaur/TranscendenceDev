@@ -259,22 +259,22 @@ CShipClass::~CShipClass (void)
 //	CShip destructor
 
 	{
-	if (m_pDeviceSlots && !m_fInheritedDeviceSlots)
+	if (!m_fInheritedDeviceSlots)
 		delete m_pDeviceSlots;
 
-	if (m_pDevices && !m_fInheritedDevices)
+	if (!m_fInheritedDevices)
 		delete m_pDevices;
 
 	if (m_fOwnPlayerSettings)
 		delete m_pPlayerSettings;
 
-	if (m_pItems && !m_fInheritedItems)
+	if (!m_fInheritedItems)
 		delete m_pItems;
 
-	if (m_pEscorts && !m_fInheritedEscorts)
+	if (!m_fInheritedEscorts)
 		delete m_pEscorts;
 
-	if (m_pTrade && !m_fInheritedTrade)
+	if (!m_fInheritedTrade)
 		delete m_pTrade;
 	}
 

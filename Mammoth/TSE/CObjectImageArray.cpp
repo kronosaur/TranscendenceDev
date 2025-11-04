@@ -346,17 +346,11 @@ void CObjectImageArray::CleanUp (void)
 //	Cleans up the image to free resources
 
 	{
-	if (m_pRotationOffset)
-		{
-		delete [] m_pRotationOffset;
-		m_pRotationOffset = NULL;
-		}
+	delete [] m_pRotationOffset;
+	m_pRotationOffset = NULL;
 
-	if (m_pGlowImages)
-		{
-		delete [] m_pGlowImages;
-		m_pGlowImages = NULL;
-		}
+	delete [] m_pGlowImages;
+	m_pGlowImages = NULL;
 
 	if (m_pScaledImages)
 		{
@@ -524,8 +518,7 @@ void CObjectImageArray::ComputeRotationOffsets (void)
 	{
 	if (m_iRotationOffset != 0 && m_iRotationCount > 0)
 		{
-		if (m_pRotationOffset)
-			delete [] m_pRotationOffset;
+		delete [] m_pRotationOffset;
 
 		m_pRotationOffset = new OffsetStruct[m_iRotationCount];
 		for (int i = 0; i < m_iRotationCount; i++)
@@ -540,8 +533,7 @@ void CObjectImageArray::ComputeRotationOffsets (void)
 		}
 	else
 		{
-		if (m_pRotationOffset)
-			delete [] m_pRotationOffset;
+		delete [] m_pRotationOffset;
 
 		m_pRotationOffset = NULL;
 		}
@@ -556,8 +548,7 @@ void CObjectImageArray::ComputeRotationOffsets (int xOffset, int yOffset)
 	{
 	if (m_iRotationCount != 0)
 		{
-		if (m_pRotationOffset)
-			delete [] m_pRotationOffset;
+		delete [] m_pRotationOffset;
 
 		m_pRotationOffset = new OffsetStruct[m_iRotationCount];
 		for (int i = 0; i < m_iRotationCount; i++)
@@ -752,8 +743,7 @@ void CObjectImageArray::GenerateScaledImages (int iRotation, int cxWidth, int cy
 
 	if (m_pScaledImages == NULL || cxWidth != m_cxScaledImage)
 		{
-		if (m_pScaledImages)
-			delete [] m_pScaledImages;
+		delete [] m_pScaledImages;
 
 		m_pScaledImages = new CG32bitImage [m_iRotationCount];
 		m_cxScaledImage = cxWidth;
@@ -2221,11 +2211,8 @@ void CObjectImageArray::SetRotationCount (int iRotationCount)
 
 		ComputeRotationOffsets();
 
-		if (m_pGlowImages)
-			{
-			delete [] m_pGlowImages;
-			m_pGlowImages = NULL;
-			}
+		delete [] m_pGlowImages;
+		m_pGlowImages = NULL;
 
 		if (m_pScaledImages)
 			{
