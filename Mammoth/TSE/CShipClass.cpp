@@ -265,7 +265,8 @@ CShipClass::~CShipClass (void)
 	if (!m_fInheritedDevices)
 		delete m_pDevices;
 
-	delete m_pPlayerSettings;
+	if (m_fOwnPlayerSettings)
+		delete m_pPlayerSettings;
 
 	if (!m_fInheritedItems)
 		delete m_pItems;
