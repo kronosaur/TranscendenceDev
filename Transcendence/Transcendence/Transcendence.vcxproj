@@ -2063,7 +2063,7 @@
     <None Include="..\..\Docs\Style_Guides\XML.md" />
     <None Include="..\..\Docs\Tlisp.md" />
     <None Include="..\..\LICENSE" />
-    <None Include="..\..\README" />
+    <None Include="..\..\README.md" />
     <None Include="..\Game\Readme.htm">
       <DeploymentContent>true</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>

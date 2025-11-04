@@ -426,9 +426,6 @@
     <None Include="..\..\LICENSE">
       <Filter>Notes and Documents</Filter>
     </None>
-    <None Include="..\..\README">
-      <Filter>Notes and Documents</Filter>
-    </None>
     <None Include="..\Game\Readme.htm">
       <Filter>PackageContents</Filter>
     </None>
@@ -458,6 +455,9 @@
       <Filter>Notes and Documents</Filter>
     </None>
     <None Include="..\..\Docs\Style_Guides\XML.md">
+      <Filter>Notes and Documents</Filter>
+    </None>
+    <None Include="..\..\README.md">
       <Filter>Notes and Documents</Filter>
     </None>
   </ItemGroup>
