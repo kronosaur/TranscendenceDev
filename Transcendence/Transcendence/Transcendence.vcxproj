@@ -2054,6 +2054,14 @@
     <None Include="..\..\.editorconfig" />
     <None Include="..\..\.gitattributes" />
     <None Include="..\..\.gitignore" />
+    <None Include="..\..\Docs\Contributor_Guidelines.md" />
+    <None Include="..\..\Docs\Style_Guides\Assets.md" />
+    <None Include="..\..\Docs\Style_Guides\C++.md" />
+    <None Include="..\..\Docs\Style_Guides\Ingame_Text.md" />
+    <None Include="..\..\Docs\Style_Guides\Markdown.md" />
+    <None Include="..\..\Docs\Style_Guides\TLisp.md" />
+    <None Include="..\..\Docs\Style_Guides\XML.md" />
+    <None Include="..\..\Docs\Tlisp.md" />
     <None Include="..\..\LICENSE" />
     <None Include="..\..\README" />
     <None Include="..\Game\Readme.htm">

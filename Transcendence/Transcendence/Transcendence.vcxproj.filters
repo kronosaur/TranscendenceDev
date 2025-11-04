@@ -436,6 +436,30 @@
       <Filter>PackageContents</Filter>
     </None>
     <None Include="..\Game\TranscendenceIntro.mp3" />
+    <None Include="..\..\Docs\Tlisp.md">
+      <Filter>Notes and Documents</Filter>
+    </None>
+    <None Include="..\..\Docs\Contributor_Guidelines.md">
+      <Filter>Notes and Documents</Filter>
+    </None>
+    <None Include="..\..\Docs\Style_Guides\Assets.md">
+      <Filter>Notes and Documents</Filter>
+    </None>
+    <None Include="..\..\Docs\Style_Guides\C++.md">
+      <Filter>Notes and Documents</Filter>
+    </None>
+    <None Include="..\..\Docs\Style_Guides\Ingame_Text.md">
+      <Filter>Notes and Documents</Filter>
+    </None>
+    <None Include="..\..\Docs\Style_Guides\Markdown.md">
+      <Filter>Notes and Documents</Filter>
+    </None>
+    <None Include="..\..\Docs\Style_Guides\TLisp.md">
+      <Filter>Notes and Documents</Filter>
+    </None>
+    <None Include="..\..\Docs\Style_Guides\XML.md">
+      <Filter>Notes and Documents</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Transcendence.rc">
