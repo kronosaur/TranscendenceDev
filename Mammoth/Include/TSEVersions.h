@@ -669,6 +669,10 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //				1.0 = normal scale, 0.0 = no change in scale. Default: 1.0
 //
 //	 58: 2.0 Alpha 8
+//		<ItemType>
+//			<Weapon>
+//				damage: (str: damage desc)
+//					Now accepts null-type damage, which everything is treated as immune to.
 //
 //
 
