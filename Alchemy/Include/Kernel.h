@@ -1280,6 +1280,7 @@ class CThreadPool
 			};
 
 		void AssertInOwnerThread (void) const { ASSERT(m_dwOwner == GetCurrentThreadId()); }
+		void AssertNotInOurThreads () const;
 		IThreadPoolTask *GetTaskToRun (void);
 		void RunTask (IThreadPoolTask *pTask);
 		void WorkerThread (void);

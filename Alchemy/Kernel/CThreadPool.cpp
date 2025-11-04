@@ -25,6 +25,17 @@ void CThreadPool::AddTask (IThreadPoolTask *pTask)
 	m_cs.Unlock();
 	}
 
+void CThreadPool::AssertNotInOurThreads () const
+	{
+#ifdef DEBUG
+	//	NOTE: We can't add threads after we've booted, so we don't need to lock.
+
+	for (int i = 0; i < m_Threads.GetCount(); i++)
+		if (m_Threads[i].hThread == ::GetCurrentThread())
+			ASSERT(false);
+#endif
+	}
+
 bool CThreadPool::Boot (int iThreadCount)
 
 //	Boot
@@ -76,7 +87,7 @@ void CThreadPool::CleanUp (void)
 //	that calls Run.
 
 	{
-	AssertInOwnerThread();
+	AssertNotInOurThreads();
 
 	ASSERT(m_iState < eDeleting);
 
