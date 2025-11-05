@@ -81,8 +81,7 @@ CDisintegrateEffectCreator::~CDisintegrateEffectCreator (void)
 //	CDisintegrateEffectCreator destructor
 
 	{
-	if (m_pSingleton)
-		delete m_pSingleton;
+	delete m_pSingleton;
 	}
 
 IEffectPainter *CDisintegrateEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
@@ -151,11 +150,8 @@ ALERROR CDisintegrateEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 	{
 	//	Clean up, because we might want to recompute for next time.
 
-	if (m_pSingleton)
-		{
-		delete m_pSingleton;
-		m_pSingleton = NULL;
-		}
+	delete m_pSingleton;
+	m_pSingleton = NULL;
 
 	return NOERROR;
 	}

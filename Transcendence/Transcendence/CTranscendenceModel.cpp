@@ -1144,6 +1144,16 @@ ALERROR CTranscendenceModel::InitBackground (const CGameSettings &Settings, cons
 	if (Settings.GetBoolean(CGameSettings::noSpaceBackground))
 		m_Universe.GetSFXOptions().SetSpaceBackground(false);
 
+	// Set graphics performance options
+
+	if (!Settings.GetBoolean(CGameSettings::useMTSpritePaint))
+		m_Universe.GetSFXOptions().SetUseMTSpritePaint(false);
+
+	m_Universe.GetSFXOptions().SetMinSpriteChunkSize(Settings.GetInteger(CGameSettings::minMTSpriteChunk));
+
+	if (!Settings.GetBoolean(CGameSettings::useMTBkrndPaint))
+		m_Universe.GetSFXOptions().SetUseMTBkrndPaint(false);
+
 	DWORD dwAdventure = Settings.GetInteger(CGameSettings::lastAdventure);
 	if (dwAdventure == 0)
 		dwAdventure = DEFAULT_ADVENTURE_EXTENSION_UNID;
@@ -2053,6 +2063,8 @@ ALERROR CTranscendenceModel::SaveGame (DWORD dwFlags, CString *retsError)
 //	Saves the game to a file
 
 	{
+	DEBUG_TRY
+
 	ALERROR error;
 
 	//	Skip if we already saved the game this tick.
@@ -2073,7 +2085,7 @@ ALERROR CTranscendenceModel::SaveGame (DWORD dwFlags, CString *retsError)
 	//	we can stop. This can happen if we end the game inside of <OnAcceptedUndock>
 
 	if ((dwFlags & CGameFile::FLAG_ACCEPT_MISSION) 
-			&& m_iState == statePlayerInEndGame)
+			&& (m_iState == statePlayerInEndGame || m_iState == statePlayerDestroyed))
 		return NOERROR;
 
 	//	Fire and event to give global types a chance to save any volatiles
@@ -2081,9 +2093,22 @@ ALERROR CTranscendenceModel::SaveGame (DWORD dwFlags, CString *retsError)
 	ASSERT(m_GameFile.IsOpen());
 	m_Universe.FireOnGlobalUniverseSave();
 
-	//  Make sure we've updated current system data to global data.
+	//	Figure out the current system. When we die, the player may not have the
+	//	current system set.
 
 	CSystem *pSystem = m_pPlayer->GetShip()->GetSystem();
+	if (!pSystem)
+		pSystem = m_Universe.GetCurrentSystem();
+
+	if (!pSystem)
+		{
+		if (retsError)
+			*retsError = CONSTLIT("Error unable to find current system.");
+		return ERR_FAIL;
+		}
+
+	//  Make sure we've updated current system data to global data.
+
 	m_Universe.GetGlobalObjects().Refresh(pSystem);
 
 	//	Generate and save game stats
@@ -2118,6 +2143,8 @@ ALERROR CTranscendenceModel::SaveGame (DWORD dwFlags, CString *retsError)
 		}
 
 	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 ALERROR CTranscendenceModel::SaveHighScoreList (CString *retsError)
@@ -2159,6 +2186,8 @@ ALERROR CTranscendenceModel::SaveGameStats (const CGameStats &Stats, bool bGameO
 //	Saves stats to the current save file
 
 	{
+	DEBUG_TRY
+
 	ALERROR error;
 
 	if (error = m_GameFile.SaveGameStats(Stats))
@@ -2185,6 +2214,8 @@ ALERROR CTranscendenceModel::SaveGameStats (const CGameStats &Stats, bool bGameO
 	//	Done
 
 	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 ALERROR CTranscendenceModel::ShowPane (const CString &sPane)

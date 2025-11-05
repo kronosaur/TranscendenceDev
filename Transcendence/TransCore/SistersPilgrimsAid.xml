@@ -22,7 +22,7 @@
 			<Default>
 				<OnPaneInit>
 					(switch
-						(= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+						(rpgEqPlayerClass &unidPilgrimClass;)
 							(scrSetDesc gScreen (typTranslate &dsSistersDockServices; 'Welcome))
 
 						(block ()							

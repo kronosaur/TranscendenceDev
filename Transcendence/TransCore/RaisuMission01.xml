@@ -893,7 +893,7 @@
 					(objSetProperty gSource 'shipConstructionEnabled Nil)
 
 					;	Remove Commonwealth ships
-					(enum (sysFindObject gSource "sO:docked;") theShip (objDestroy theShip))
+					(enum (sysFindObject gSource "sO:docked;") theShip (objRemove theShip))
 					)
 			</OnEventHandlerInit>
 

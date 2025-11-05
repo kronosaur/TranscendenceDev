@@ -176,11 +176,8 @@ void CSpaceObjectGrid::EnumStart (SSpaceObjectGridEnumerator &i, const CVector &
 	i.vLL = vLL;
 	i.vUR = vUR;
 	i.bCheckBox = ((dwFlags & gridNoBoxCheck) ? false : true);
-	if (i.pGridIndexList)
-		{
-		delete [] i.pGridIndexList;
-		i.pGridIndexList = NULL;
-		}
+	delete [] i.pGridIndexList;
+	i.pGridIndexList = NULL;
 
 	//	Figure out coordinates relative to the origin of the grid
 

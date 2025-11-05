@@ -86,6 +86,13 @@ bool CItemCriteria::GetExplicitLevelMatched (int *retiMin, int *retiMax) const
 //	criteria are missing, we return -1.
 
 	{
+
+	//	First we set our defaults. We overwrite them if necessary, but we assume we dont need to display them.
+	//	min == -1 && max == -1 is used to disable displaying a fuel level range.
+
+	*retiMin = -1;
+	*retiMax = -1;
+
 	if (!m_sLookup.IsBlank())
 		{
 		const CItemCriteria *pCriteria = g_pUniverse->GetDesignCollection().GetDisplayAttributes().FindCriteriaByID(m_sLookup);
@@ -94,10 +101,19 @@ bool CItemCriteria::GetExplicitLevelMatched (int *retiMin, int *retiMax) const
 
 		return pCriteria->GetExplicitLevelMatched(retiMin, retiMax);
 		}
+
+	//	If we have a level range in the criteria, use that
+
 	else if (!m_LevelRange.IsEmpty())
 		return m_LevelRange.GetRange(retiMin, retiMax);
+
+	//	If we have a level range for repairs in the criteria, use that
+
 	else if (!m_RepairLevelRange.IsEmpty())
 		return m_RepairLevelRange.GetRange(retiMin, retiMax);
+
+	//	This criteria doesnt specify a level, so we dont display a levelrange (-1, -1)
+
 	else
 		return false;
 	}
@@ -350,7 +366,7 @@ bool CItemCriteria::MatchesItemCategory (const CItemType &ItemType) const
 		{ }
 
 	//	If we're looking for usable items and this item is
-	//	isable, then we continue
+	//	usable, then we continue
 
 	else if ((m_dwItemCategories & itemcatUseful)
 			&& ItemType.IsUsable())
@@ -674,7 +690,7 @@ void CItemCriteria::ParseSubExpression (const char *pPos, DWORD dwFlags)
 					//	Get the modifier
 
 					const char *pStart = pPos;
-					while (*pPos != '\0' && *pPos != ';' && *pPos != ' ' && *pPos != '\t')
+					while (*pPos != '\0' && *pPos != ';' && *pPos != ' ' && *pPos != '\t' && *pPos != '|')
 						{
 						if (*pPos == ':')
 							bSpecialAttrib = true;
@@ -703,6 +719,12 @@ void CItemCriteria::ParseSubExpression (const char *pPos, DWORD dwFlags)
 					//	No trailing semi
 
 					if (*pPos == '\0')
+						pPos--;
+
+					//	Decrement pPos so that we are at the right spot
+					//	to handle the OR criteria
+
+					if (*pPos == '|')
 						pPos--;
 
 					break;

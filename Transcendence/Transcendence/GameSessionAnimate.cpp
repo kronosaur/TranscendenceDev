@@ -25,6 +25,8 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 	SSystemUpdateCtx UpdateCtx;
 
+	UpdateCtx.bUse60fps = m_Settings.GetBoolean(CGameSettings::use60fps);
+
 	try
 		{
 		SetProgramState(psAnimating);

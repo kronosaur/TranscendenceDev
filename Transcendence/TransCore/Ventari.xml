@@ -12,7 +12,11 @@
 			plural="true"
 
 			alignment="destructive order"
-			/>
+			>
+		<Relationships> 
+			<Relationship sovereign="&svAres;" disposition="enemy" mutual="false"/>
+		</Relationships>
+	</Sovereign>
 
 	<SystemMap unid="&smVentariSpace;"
 			displayOn="&smHumanSpace;"

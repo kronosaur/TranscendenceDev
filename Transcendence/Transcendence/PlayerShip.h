@@ -268,6 +268,7 @@ class CPlayerShipController : public IShipController
 		virtual void OnProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program) override;
 		virtual void OnShipStatus (EShipStatusNotifications iEvent, DWORD dwData = 0) override;
 		virtual void OnStationDestroyed (const SDestroyCtx &Ctx) override;
+		virtual void OnSystemLoaded (void) override;
 		virtual void OnUpdatePlayer (SUpdateCtx &Ctx) override;
 		virtual void OnWeaponStatusChanged (void) override;
 		virtual void OnWreckCreated (CSpaceObject *pWreck) override;

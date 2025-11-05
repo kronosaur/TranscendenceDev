@@ -7,38 +7,40 @@
 
 #define LEVEL_ATTRIB							CONSTLIT("level")
 
+//	Damage Adjustment
+
 static int g_StdArmorDamageAdj[MAX_ITEM_LEVEL][damageCount] =
 	{
-		//	lsr knt par blt ion thr pos pls am  nan grv sng dac dst dlg dfr
-		{	100,100,100,100,100,100,100,100,125,125,200,200,300,300,500,500 },
-		{	 80, 80,100,100,100,100,100,100,125,125,200,200,300,300,500,500 },
-		{	 60, 60,100,100,100,100,100,100,125,125,200,200,300,300,500,500 },
-		{	 40, 40,100,100,100,100,100,100,100,100,125,125,200,200,300,300 },
-		{	 25, 25, 80, 80,100,100,100,100,100,100,125,125,200,200,300,300 },
+		//	lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+		{	100,100,100,100, 100,100,100,100, 125,125,200,200, 300,300,500,500 },
+		{	 80, 80,100,100, 100,100,100,100, 125,125,200,200, 300,300,500,500 },
+		{	 60, 60,100,100, 100,100,100,100, 125,125,200,200, 300,300,500,500 },
+		{	 40, 40,100,100, 100,100,100,100, 100,100,125,125, 200,200,300,300 },
+		{	 25, 25, 80, 80, 100,100,100,100, 100,100,125,125, 200,200,300,300 },
 
-		{	 14, 14, 60, 60,100,100,100,100,100,100,125,125,200,200,300,300 },
-		{	  8,  8, 40, 40,100,100,100,100,100,100,100,100,125,125,200,200 },
-		{	  4,  4, 25, 25, 80, 80,100,100,100,100,100,100,125,125,200,200 },
-		{	  2,  2, 14, 14, 60, 60,100,100,100,100,100,100,125,125,200,200 },
-		{	  1,  1,  8,  8, 40, 40,100,100,100,100,100,100,100,100,125,125 },
+		{	 14, 14, 60, 60, 100,100,100,100, 100,100,125,125, 200,200,300,300 },
+		{	  8,  8, 40, 40, 100,100,100,100, 100,100,100,100, 125,125,200,200 },
+		{	  4,  4, 25, 25,  80, 80,100,100, 100,100,100,100, 125,125,200,200 },
+		{	  2,  2, 14, 14,  60, 60,100,100, 100,100,100,100, 125,125,200,200 },
+		{	  1,  1,  8,  8,  40, 40,100,100, 100,100,100,100, 100,100,125,125 },
 
-		{	  0,  0,  4,  4, 25, 25, 80, 80,100,100,100,100,100,100,125,125 },
-		{	  0,  0,  2,  2, 14, 14, 60, 60,100,100,100,100,100,100,125,125 },
-		{	  0,  0,  1,  1,  8,  8, 40, 40,100,100,100,100,100,100,100,100 },
-		{	  0,  0,  0,  0,  4,  4, 25, 25, 80, 80,100,100,100,100,100,100 },
-		{	  0,  0,  0,  0,  2,  2, 14, 14, 60, 60,100,100,100,100,100,100 },
+		{	  0,  0,  4,  4,  25, 25, 80, 80, 100,100,100,100, 100,100,125,125 },
+		{	  0,  0,  2,  2,  14, 14, 60, 60, 100,100,100,100, 100,100,125,125 },
+		{	  0,  0,  1,  1,   8,  8, 40, 40, 100,100,100,100, 100,100,100,100 },
+		{	  0,  0,  0,  0,   4,  4, 25, 25,  80, 80,100,100, 100,100,100,100 },
+		{	  0,  0,  0,  0,   2,  2, 14, 14,  60, 60,100,100, 100,100,100,100 },
 
-		{	  0,  0,  0,  0,  1,  1,  8,  8, 40, 40,100,100,100,100,100,100 },
-		{	  0,  0,  0,  0,  0,  0,  4,  4, 25, 25, 80, 80,100,100,100,100 },
-		{	  0,  0,  0,  0,  0,  0,  2,  2, 14, 14, 60, 60,100,100,100,100 },
-		{	  0,  0,  0,  0,  0,  0,  1,  1,  8,  8, 40, 40,100,100,100,100 },
-		{	  0,  0,  0,  0,  0,  0,  0,  0,  4,  4, 25, 25, 80, 80,100,100 },
+		{	  0,  0,  0,  0,   1,  1,  8,  8,  40, 40,100,100, 100,100,100,100 },
+		{	  0,  0,  0,  0,   0,  0,  4,  4,  25, 25, 80, 80, 100,100,100,100 },
+		{	  0,  0,  0,  0,   0,  0,  2,  2,  14, 14, 60, 60, 100,100,100,100 },
+		{	  0,  0,  0,  0,   0,  0,  1,  1,   8,  8, 40, 40, 100,100,100,100 },
+		{	  0,  0,  0,  0,   0,  0,  0,  0,   4,  4, 25, 25,  80, 80,100,100 },
 
-		{	  0,  0,  0,  0,  0,  0,  0,  0,  2,  2, 14, 14, 60, 60,100,100 },
-		{	  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  8,  8, 40, 40,100,100 },
-		{	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,  4, 25, 25, 80, 80 },
-		{	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  2, 14, 14, 60, 60 },
-		{	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  8,  8, 40, 40 },
+		{	  0,  0,  0,  0,   0,  0,  0,  0,   2,  2, 14, 14,  60, 60,100,100 },
+		{	  0,  0,  0,  0,   0,  0,  0,  0,   1,  1,  8,  8,  40, 40,100,100 },
+		{	  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  4,  4,  25, 25, 80, 80 },
+		{	  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  2,  2,  14, 14, 60, 60 },
+		{	  0,  0,  0,  0,   0,  0,  0,  0,   0,  0,  1,  1,   8,  8, 40, 40 },
 	};
 
 static int g_StdShieldDamageAdj[MAX_ITEM_LEVEL][damageCount] =
@@ -79,9 +81,84 @@ static bool g_bDamageAdjInit = false;
 static CDamageAdjDesc g_ArmorDamageAdj[MAX_ITEM_LEVEL];
 static CDamageAdjDesc g_ShieldDamageAdj[MAX_ITEM_LEVEL];
 
-CEngineOptions::CEngineOptions (void)
+//	Mining
+
+//	This table is used for API0-47 adventures
+
+static const TArray<int> g_StdMiningMaxOreLevelsAPI0 =
+		//	lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+		{	 25, 25, 25, 25,  25, 25, 25, 25,  25, 25, 25, 25,  25, 25, 25, 25 };
+
+//	This table is used for API48-52 adventures
+
+static const TArray<int> g_StdMiningMaxOreLevelsAPI48 =
+		//	lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+		{	  4,  4,  7,  7,  10, 10, 13, 13,  16, 16, 19, 19,  22, 22, 25, 25 };
+
+//	This table is used for API53-56 adventures
+
+static const TArray<int> g_StdMiningMaxOreLevelsAPI53 =
+		//	lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+		{	  5,  5,  8,  8,  11, 11, 14, 14,  17, 17, 20, 20,  23, 23, 25, 25 };
+
+//	This table is used for API57+ adventures
+
+static const TArray<int> g_StdMiningMaxOreLevelsAPI57 =
+	{
+		MAX_ITEM_LEVEL,	//	laser
+		MAX_ITEM_LEVEL,	//	kinetic
+		MAX_ITEM_LEVEL,	//	particle
+		MAX_ITEM_LEVEL,	//	blast
+
+		MAX_ITEM_LEVEL,	//	ion
+		MAX_ITEM_LEVEL,	//	thermo
+		MAX_ITEM_LEVEL,	//	positron
+		MAX_ITEM_LEVEL,	//	plasma
+
+		MAX_ITEM_LEVEL,	//	antimatter
+		MAX_ITEM_LEVEL,	//	nanite
+		MAX_ITEM_LEVEL,	//	graviton
+		MAX_ITEM_LEVEL,	//	singularity
+
+		MAX_ITEM_LEVEL,	//	dark acid
+		MAX_ITEM_LEVEL,	//	dark steel
+		MAX_ITEM_LEVEL,	//	dark lightning
+		MAX_ITEM_LEVEL,	//	dark fire
+	};
+
+int GetAPIForMiningMaxOreLevel (int apiVersion)
+
+	//	Translates actual API versions into the known versions
+	//	used for the MiningMaxOreLevel system
+
+	{
+	if (apiVersion >= 57)
+		return 57;
+	else if (apiVersion >= 53)
+		return 53;
+	else if (apiVersion >= 48)
+		return 48;
+	else
+		return 0;
+	}
+
+CEngineOptions::CEngineOptions (int apiVersion)
 
 //	CEngineOptions constructor
+
+	{
+	//	Set api version we are loading defaults for
+
+	m_iDefaultForAPIVersion = apiVersion;
+
+	//	Initialize globals
+
+	InitDefaultGlobals();
+	}
+
+void CEngineOptions::InitDefaultGlobals (void)
+
+//	Initialize default globals based on whatever API version we need
 
 	{
 	//	Initialize armor and shield damage adjustment tables
@@ -92,6 +169,35 @@ CEngineOptions::CEngineOptions (void)
 		m_ArmorDamageAdj[i - 1] = g_ArmorDamageAdj[i - 1];
 		m_ShieldDamageAdj[i - 1] = g_ShieldDamageAdj[i - 1];
 		}
+	m_bCustomArmorDamageAdj = false;
+	m_bCustomShieldDamageAdj = false;
+
+	//	Initialize mining tables
+
+	m_MiningDamageMaxOreLevels = GetDefaultMiningMaxOreLevels(m_iDefaultForAPIVersion);
+	m_bCustomMiningMaxOreLevels = false;
+	}
+
+void CEngineOptions::InitDefaultDescs (void)
+
+//	Initiate defaults where necessary based on whatever API version we need
+//	Assumes that InitDefaultGlobals was called during our constructor
+
+	{
+	//	Initialize armor and shield damage adjustment tables
+
+	for (int i = 1; i <= MAX_ITEM_LEVEL; i++)
+		{
+		if (!m_bCustomArmorDamageAdj)
+			m_ArmorDamageAdj[i - 1] = g_ArmorDamageAdj[i - 1];
+		if (!m_bCustomShieldDamageAdj)
+			m_ShieldDamageAdj[i - 1] = g_ShieldDamageAdj[i - 1];
+		}
+
+	//	Initialize mining tables
+
+	if (!m_bCustomMiningMaxOreLevels)
+		m_MiningDamageMaxOreLevels = GetDefaultMiningMaxOreLevels(m_iDefaultForAPIVersion);
 	}
 
 bool CEngineOptions::HidesArmorImmunity (SpecialDamageTypes iSpecial) const
@@ -139,12 +245,57 @@ bool CEngineOptions::InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElemen
 		return false;
 		}
 
-	if (m_ArmorDamageAdj[iLevel - 1].InitFromXML(Ctx, XMLDesc, true) != NOERROR)
+	if (DestTable[iLevel - 1].InitFromXML(Ctx, XMLDesc, true) != NOERROR)
 		return false;
 
 	//	Success!
 
 	return true;
+	}
+
+bool CEngineOptions::InitMiningMaxOreLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
+
+//	InitDamageAdjFromXML
+//
+//	Initializes from XML.
+
+	{
+	m_bCustomMiningMaxOreLevels = true;
+
+	if (m_MiningDamageMaxOreLevels.InitFromXML(Ctx, XMLDesc) != NOERROR)
+		return false;
+
+	//	Success!
+
+	return true;
+	}
+
+CMiningDamageLevelDesc CEngineOptions::GetDefaultMiningMaxOreLevels (int apiVersion)
+
+//	GetDefaultMiningMaxOreLevels
+//
+//	Returns the default table basedon API version
+
+	{
+	CMiningDamageLevelDesc Desc;
+
+	switch (GetAPIForMiningMaxOreLevel(apiVersion))
+		{
+		case 0:
+			Desc.InitFromArray(g_StdMiningMaxOreLevelsAPI0);
+			break;
+		case 48:
+			Desc.InitFromArray(g_StdMiningMaxOreLevelsAPI48);
+			break;
+		case 53:
+			Desc.InitFromArray(g_StdMiningMaxOreLevelsAPI53);
+			break;
+		case 57:
+		default:
+			Desc.InitFromArray(g_StdMiningMaxOreLevelsAPI57);
+		}
+
+	return Desc;
 	}
 
 void CEngineOptions::InitDefaultDamageAdj (void)
@@ -176,6 +327,11 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 
 	{
 	CCodeChainCtx CCX(Ctx.GetUniverse());
+	m_iDefaultForAPIVersion = CCX.GetAPIVersion();
+
+	//	Reinitialize global defaults as necessary for the correct API version
+	InitDefaultDescs();
+
 	ICCItemPtr pValue;
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_DEFAULT_INTERACTION);
@@ -192,33 +348,3 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 	return true;
 	}
 
-void CEngineOptions::Merge (const CEngineOptions &Src)
-
-//	Merge
-//
-//	Merges with source.
-
-	{
-	if (Src.m_bCustomArmorDamageAdj)
-		{
-		for (int i = 0; i < MAX_ITEM_LEVEL; i++)
-			m_ArmorDamageAdj[i] = Src.m_ArmorDamageAdj[i];
-		}
-
-	if (Src.m_bCustomShieldDamageAdj)
-		{
-		for (int i = 0; i < MAX_ITEM_LEVEL; i++)
-			m_ShieldDamageAdj[i] = Src.m_ShieldDamageAdj[i];
-		}
-
-	if (Src.m_iDefaultInteraction != -1)
-		m_iDefaultInteraction = Src.m_iDefaultInteraction;
-
-	if (Src.m_iDefaultShotHP != -1)
-		m_iDefaultShotHP = Src.m_iDefaultShotHP;
-
-	m_bHideDisintegrationImmune = m_bHideDisintegrationImmune || Src.m_bHideDisintegrationImmune;
-	m_bHideIonizeImmune = m_bHideIonizeImmune || Src.m_bHideIonizeImmune;
-	m_bHideRadiationImmune = m_bHideRadiationImmune || Src.m_bHideRadiationImmune;
-	m_bHideShatterImmune = m_bHideShatterImmune || Src.m_bHideShatterImmune;
-	}

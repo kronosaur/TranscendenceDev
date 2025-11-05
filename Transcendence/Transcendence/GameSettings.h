@@ -206,7 +206,7 @@ class CGameSettings
 		//	TO ADD A NEW OPTION:
 		//
 		//	1.	Add an entry here. OK to add in the middle.
-		//	2.	Increment OPTIONS_COUNT
+		//	2.	Increment/Set OPTIONS_COUNT (unless the default is correct)
 		//	3.	In CGameSettings.cpp add an entry to g_OptionData at the appropriate spot.
 
 		enum Options
@@ -249,6 +249,10 @@ class CGameSettings
 			maxResolution,					//	Maximum vertical resolution
 			noGPUAcceleration,				//	Do not use GPU textures for blts
 			noSpaceBackground,				//	Show old starfield background
+			use60fps,						//	Run at 60 fps (two frames per tick)
+			useMTSpritePaint,				//	Use multiple threads for painting sprites
+			useMTBkrndPaint,				//	Use multiple threads for painting background
+			minMTSpriteChunk,				//	Minimum size of MT sprite chunk. Rounded down to nearest power of 2.
 
 			//	Sounds options
 			noSound,						//	No sound (either music or sound effects)
@@ -279,7 +283,7 @@ class CGameSettings
 			introSpoilers,					//	Show high-level ships in intro
 
 			//	Constants
-			OPTIONS_COUNT = 54,
+			OPTIONS_COUNT,
 			};
 
 		CGameSettings (IExtraSettingsHandler *pExtra = NULL) : m_pExtra(pExtra) { }

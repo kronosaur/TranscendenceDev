@@ -214,8 +214,7 @@ CRayEffectCreator::~CRayEffectCreator (void)
 //	CRayEffectCreator destructor
 
 	{
-	if (m_pSingleton)
-		delete m_pSingleton;
+	delete m_pSingleton;
 	}
 
 IEffectPainter *CRayEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
@@ -323,11 +322,8 @@ ALERROR CRayEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 	{
 	//	Clean up, because we might want to recompute for next time.
 
-	if (m_pSingleton)
-		{
-		delete m_pSingleton;
-		m_pSingleton = NULL;
-		}
+	delete m_pSingleton;
+	m_pSingleton = NULL;
 
 	return NOERROR;
 	}

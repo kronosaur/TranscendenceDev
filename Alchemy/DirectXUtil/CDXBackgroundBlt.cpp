@@ -6,10 +6,7 @@
 #include "PreComp.h"
 
 CDXBackgroundBlt::CDXBackgroundBlt (CDXScreen &DX) :
-		m_DX(DX),
-		m_hBackgroundThread(INVALID_HANDLE_VALUE),
-		m_hWorkEvent(INVALID_HANDLE_VALUE),
-		m_hQuitEvent(INVALID_HANDLE_VALUE)
+		m_DX(DX)
 
 //	CDXBackgroundBlt constructor
 

@@ -81,7 +81,7 @@
 							)
 							;	Replace the destroyed korolov with new construction
 							(objSetKnown newStation)
-							(objDestroy oldStation)
+							(objRemove oldStation)
 
 							;	Debrief at the new station
 							(msnSetProperty gSource 'debrieferID (objGetID newStation))

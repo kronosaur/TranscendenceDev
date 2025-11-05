@@ -11,8 +11,8 @@
 
 	The membership type (usually the sovereign) must have the following elements:
 
-	RankTable (StaticData): We expect this to be a struct of ranks, indexed by ranks
-		(starting at 1), and containing an xpNeeded field.
+	rankTable (Definition): We expect this to be a struct (or list) of ranks, indexed
+		by rank, and containing an xpNeeded field.
 
 	rpg.descPromotion: This series of language elements should define the
 		text shown to the player when they are promoted to a given rank (starting
@@ -24,6 +24,14 @@
 
 	rpg.xp: This is the player's current XP.
 
+	EVENTS
+
+	CheckPromotion: If present this even can provide custom promotion criteria to
+		be used instead of XP.
+
+	OnPromotion: This event will be called from the promotion screen. Allowing additional
+		rewards (e.g. military ID) to be given to the player.
+
 -->
 
 <!-- DOCK SCREENS -->
@@ -32,6 +40,12 @@
 			inherit=			"&dsDockScreenBase;"
 			nestedScreen=		"true"
 			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(or (@ gData 'rankDetails) (objTranslate gSource 'rpg.statusDetails))
+			</OnDisplayInit>
+		</Display>
+
 		<Panes>
 			<Default>
 				<OnPaneInit>
@@ -39,6 +53,8 @@
 						(membership (@ gData 'membership))
 						(newRank (rpgIsPromoted membership))
 						)
+
+						(typSet@ membership 'rpg.rank newRank)
 						(scrSetDesc gScreen (typTranslate membership "rpg.descPromotion" {
 							sourceObj: gSource
 							membership: membership
@@ -49,11 +65,8 @@
 
 				<Actions>
 					<Action id="actionContinue">
-						(block (
-							(membership (@ gData 'membership))
-							(newRank (rpgIsPromoted membership))
-							)
-							(typSetData membership 'rpg.rank newRank)
+						(block Nil
+							(typFireEvent (@ gData 'membership) 'OnPromotion)
 							(scrExitScreen gScreen)
 							)
 					</Action>
@@ -67,13 +80,26 @@
 	<Globals>
 	(block ()
 		(setq rpgIsPromoted (lambda (membership)
+			;	Check if the player should be promoted, returning their new rank (or Nil)
 			(block (
-				(rank (or (typGetData membership 'rpg.rank) 1))
-				(xp (or (typGetData membership 'rpg.xp) 0))
-				(rankTable (typGetStaticData membership 'RankTable))
-				(nextRankDesc (@ rankTable (+ rank 1)))
+				(rank (or (typ@ membership 'rpg.rank) 0))
+				(xp (or (typ@ membership 'rpg.xp) 0))
+				(rankTable (typ@ membership 'rankTable))
+				(nextRank (or (@ (@ rankTable rank) 'nextRank) (+ rank 1)))
+				(nextRankDesc (@ rankTable nextRank))
 				)
+
 				(switch
+					;	Use the custom event if it exists
+
+					(typHasEvent membership 'CheckPromotion)
+						(typFireEvent membership 'CheckPromotion)
+
+					;	If we previously had no rank (Nil) then promote to rank zero
+
+					(not (typ@ membership 'rpg.rank))
+						rank
+
 					;	If no rank table of if we're already at the highest
 					;	rank, then no promotion.
 
@@ -93,11 +119,11 @@
 			))
 
 		(setq rpgMissionRewardXP (lambda (membership xpReward missionObj)
-			(block (promotionScreen)
+			(block Nil
 
 				;	Increment XP
 
-				(typIncData membership 'rpg.xp xpReward)
+				(typInc@ membership 'rpg.xp xpReward)
 
 				;	If we're debriefing a mission, and we've been promoted,
 				;	then set the appropriate promotion screen.
@@ -115,6 +141,36 @@
 							membership: membership
 							missionObj: missionObj
 							})
+						)
+					)
+				)
+			))
+		
+		(setq rpgRankInit (lambda (theType defaultRank)
+
+			;	Initialize the given membership by setting rpg.rank if it
+			;	has not already been set.
+			
+			(if (not (typ@ theType 'rpg.rank))
+				(typSet@ theType 'rpg.rank (or defaultRank 0))
+				)
+			))
+
+		(setq rpgRankNoun (lambda (theType rank)
+			(typTranslate
+				theType
+				(cat "rank." (or rank (typ@ theType 'rpg.rank)))
+				{
+					gender:(plyGetGenome gPlayer)
+				})
+			))
+		
+		(setq rpgRankAchievements (lambda (theType)
+			(if (typ@ theType 'rpg.rank)
+				(list
+					(list
+						(typTranslate theType 'rpg.rankTypeDesc)
+						(fmtNoun (typ@ theType 'rankNoun) 1 'titleCapitalize)
 						)
 					)
 				)

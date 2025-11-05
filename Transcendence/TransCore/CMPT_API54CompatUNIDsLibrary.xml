@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE TranscendenceLibrary
+	[
+	<!-- 0071 0000-FFFF LEGACY UNID COMPATIBILITY LIBRARIES -->
+	
+	<!ENTITY CMPT_unidAPI54CompatUNIDLibrary	"0x00710000">
+
+	<!-- LEGACY UNIDS -->
+    <!-- These are all the pre-API 54 deprecated UNIDs for mod backwards compatibility -->
+    <!ENTITY ssEarthSpaceAsteroids2		"0x00000009"> <!-- ssEarthSpaceAsteroidArcs -->
+    <!ENTITY scWolfen					"0x00003011"> <!-- scWolfenC -->
+    <!ENTITY itLightTitaniumPlate		"0x00004001"> <!-- itUltraLightTitaniumArmor -->
+    <!ENTITY itTitaniumPlate			"0x00004057"> <!-- itLightTitaniumArmor -->
+    <!ENTITY itHeavyTitaniumPlate		"0x00004062"> <!-- itTitaniumArmor -->
+    <!ENTITY itXMHArmor					"0x00004067"> <!-- itLightXMHArmor -->
+    <!ENTITY itTevlarCompositeArmor		"0x0000406B"> <!-- itLightTevlarArmor -->
+    <!ENTITY itSolarArmor				"0x0000407C"> <!-- itLightSolarArmor -->
+    <!ENTITY itGusokuArmor				"0x000040D0"> <!-- itLightGusokuArmor -->
+    <!ENTITY itHadronArcheolith			"0x00004104"> <!-- itHadronArchaeolith -->
+    <!ENTITY itIthaliumArmor			"0x0000413D"> <!-- itAdvancedIthaliumArmor -->
+    <!ENTITY itHeavyIthaliumArmor		"0x0000413E"> <!-- itExperimentalIthaliumArmor -->
+    <!ENTITY itSuperHeavyIthaliumArmor	"0x0000413E"> <!-- itExperimentalIthaliumArmor -->
+    <!ENTITY itUltraLightTitaniumPlate	"0x000041B0"> <!-- itUltraLightTitaniumCasing -->
+    <!ENTITY itLightOmskArmor			"0x000041B3"> <!-- itLightMarkIOmskArmor -->
+    <!ENTITY itMediumOmskArmor			"0x000041B4"> <!-- itMediumMarkIIOmskArmor -->
+    <!ENTITY itMassiveOmskArmor			"0x000041B5"> <!-- itMassiveMarkIIOmskArmor -->
+    <!ENTITY itHeavyOmskArmor			"0x000041B5"> <!-- itMassiveMarkIIOmskArmor -->
+    <!ENTITY rsZubrinLarge				"0x0000F00F"> <!-- rsSapphireLarge -->
+    <!ENTITY rsEI100XLarge				"0x0000F011"> <!-- rsEI500Large -->
+    <!ENTITY rsZubrinDockScreenBkgnd	"0x0000F013"> <!-- rsDefaultDockScreenBkgnd -->
+    <!ENTITY rsZubrinDockScreenMask		"0x0000F014"> <!-- rsDefaultDockScreenMask -->
+    <!ENTITY dsAbandonedStation			"0x00010032"> <!-- dsRPGAbandonedStation -->
+    <!ENTITY dsAbandonedShip			"0x00010032"> <!-- dsRPGAbandonedStation -->
+    <!ENTITY dsAbandonedCrate			"0x00010032"> <!-- dsRPGAbandonedStation -->
+    <!ENTITY rsMolotokHD			    "0x00100206"> <!-- rsMolotokB -->
+    <!ENTITY rsMolotokHero			    "0x00100207"> <!-- rsMolotokBHero -->
+    <!ENTITY rsRoninHD					"0x00100390"> <!-- rsRoninA -->
+    <!ENTITY msRaisuStation				"0x0010039B"> <!-- msRaisuStation01 -->
+    <!ENTITY scCenturion				"0x00103001"> <!-- scCenturionBlock2 -->
+    <!ENTITY scMolotok					"0x00173001"> <!-- scMolotokB -->
+    <!ENTITY scAresCannon				"0x001B3002"> <!-- scAresAdvancedSentry -->
+    <!ENTITY scHeliotropeDestroyer		"0x08010043"> <!-- scHeliotropeFrigate -->
+    <!ENTITY scVentariCruiser			"0x080100C1"> <!-- scVentariDestroyer -->
+	]>
+	
+<TranscendenceLibrary
+		UNID=				"&CMPT_unidAPI54CompatUNIDLibrary;"
+		name=				"Transcendence API 54 Compatibility UNID Library" 
+		release=			"1"
+		>
+    <!--
+    To set an UNID compatibility library to be forceloaded below a specific API version,
+    add the appropriate code to CExtensionCollection::ComputeCoreLibraries in
+    CExtensionCollection.cpp
+    -->
+</TranscendenceLibrary>

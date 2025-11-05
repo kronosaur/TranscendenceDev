@@ -67,6 +67,38 @@ enum ChannelTypes
 	channelBlue,
 	};
 
+//	ChannelMap is meant to be computed from two ChannelTypes
+//	iChannelMap = iSrcChannel | (iDestChannel << 8);
+enum ChannelMap
+	{
+	channelMapNone,				//0x0
+	//	Mapping a channel to itself or none
+	channelMapAlpha,				//0x1
+	channelMapRed,					//0x2
+	channelMapGreen,				//0x3
+	channelMapBlue,					//0x4
+	channelMapAlphaToAlpha =		0x0101,
+	channelMapRedToRed =			0x0202,
+	channelMapGreenToGreen =		0x0303,
+	channelMapBlueToBlue =			0x0404,
+
+	channelMapAlphaToRed =			0x0201,
+	channelMapAlphaToGreen =		0x0301,
+	channelMapAlphaToBlue =			0x0401,
+
+	channelMapRedToAlpha =			0x0102,
+	channelMapRedToGreen =			0x0302,
+	channelMapRedToBlue =			0x0402,
+
+	channelMapGreenToAlpha =		0x0103,
+	channelMapGreenToRed =			0x0203,
+	channelMapGreenToBlue =			0x0403,
+	
+	channelMapBlueToAlpha =			0x0104,
+	channelMapBlueToRed =			0x0204,
+	channelMapBlueToGreen =			0x0304,
+	};
+
 enum GradientDirections
 	{
 	gradientNone,
@@ -213,7 +245,6 @@ bool dxLoadImageFile (const CString &sFilespec, HBITMAP *rethDIB, EBitmapTypes *
 
 //	Screen Manager ------------------------------------------------------------
 
-#include "DXScreenMgr.h"
 #include "DXScreenMgr3D.h"
 
 //	Inlines

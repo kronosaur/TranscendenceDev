@@ -194,12 +194,14 @@ class CContinuousBeam : public TSpaceObjectImpl<OBJID_CCONTINUOUSBEAM>
 			SSegment (void) :
 					fAlive(true),
 					fHit(false),
-					fPassthrough(false)
+					fPassthrough(false),
+					fExpiring(false)
 				{ 
 				}
 
 			CVector vPos;					//	Position of head of segment
-			CVector vDeltaPos;				//	Change in position per tick
+			CVector vVel;					//	Velocity of segment
+			CVector vDeltaPos;				//	Change in position per frame
 			DWORD dwGeneration;				//	Created on this tick
 			int iDamage;					//	Damage in points
 			TArray<DWORD> Hits;				//	Object ID of what we hit last tick
@@ -207,7 +209,8 @@ class CContinuousBeam : public TSpaceObjectImpl<OBJID_CCONTINUOUSBEAM>
 			DWORD fAlive:1;					//	Segment is still alive
 			DWORD fHit:1;					//	We hit something last frame
 			DWORD fPassthrough:1;			//	We passed through.
-			DWORD dwSpare:29;
+			DWORD fExpiring:1;				//	Segment is expiring this tick
+			DWORD dwSpare:28;
 			};
 
 		void AddSegment (const CVector &vPos, const CVector &vVel, int iDamage);
@@ -755,7 +758,7 @@ class CParticleEffect : public TSpaceObjectImpl<OBJID_CPARTICLEEFFECT>
 
 			~SParticleType (void)
 				{
-				if (m_fFreeDesc && pDamageDesc)
+				if (m_fFreeDesc)
 					delete pDamageDesc;
 				}
 
@@ -868,11 +871,9 @@ class CParticleEffect : public TSpaceObjectImpl<OBJID_CPARTICLEEFFECT>
 			{
 			~SParticleArray (void)
 				{
-				if (pType)
-					delete pType;
+				delete pType;
 
-				if (pParticles)
-					delete [] pParticles;
+				delete [] pParticles;
 				}
 
 			SParticleType *pType;
@@ -1029,6 +1030,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool IsMultiHull (void) const override { return m_pClass->GetInteriorDesc().IsMultiHull(); }
 
 		void GetAttachedSectionInfo (TArray<SAttachedSectionInfo> &Result) const;
+		const CShipInterior& GetInteriorDesc (void) const { return m_Interior; }
 		bool HasAttachedSections (void) const { return m_fHasShipCompartments; }
 		bool IsShipSection (void) const { return m_fShipCompartment; }
 		bool RepairInterior (int iRepairHP) { return m_Interior.RepairHitPoints(this, m_pClass->GetInteriorDesc(), iRepairHP); }

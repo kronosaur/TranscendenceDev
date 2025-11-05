@@ -98,6 +98,7 @@ enum SpecialDamageTypes
 	specialTimeStop			= 16,
 	specialAttract			= 17,
 	specialRepel			= 18,
+	specialMiningScan		= 19,
 	};
 
 class CSpecialDamageSet
@@ -158,7 +159,8 @@ class DamageDesc
 				m_MassDestructionAdj(0),
 				m_MiningAdj(0),
 				m_ShatterDamage(0),
-				m_ShieldPenetratorAdj(0)
+				m_ShieldPenetratorAdj(0),
+				m_fMiningScan(0)
 			{ }
 
 		void AddEnhancements (const CItemEnhancementStack *pEnhancements);
@@ -170,6 +172,7 @@ class DamageDesc
 		DamageTypes GetDamageType (void) const { return m_iType; }
 		Metric GetDamageValue (DWORD dwFlags = 0) const;
 		CString GetDesc (DWORD dwFlags = 0);
+		CString GetDPSDesc (Metric rFireRate, Metric rMultiplier = 1.0, DWORD dwFlags = 0);
 		int GetMinDamage (void) const;
 		int GetMaxDamage (void) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
@@ -203,6 +206,7 @@ class DamageDesc
 		int GetMassDestructionLevel (void) const;
 		int GetMiningAdj (void) const { return (int)(m_MiningAdj ? (2 * (m_MiningAdj * m_MiningAdj) + 2) : 0); }
 		int GetMiningDamage (void) const { return m_MiningAdj; }
+		int GetMiningScan (void) const { return m_fMiningScan; }
 		int GetMiningWMDAdj (void);
 		int GetRadiationDamage (void) const { return (int)m_RadiationDamage; }
 		int GetShatterDamage (void) const { return (int)m_ShatterDamage; }
@@ -235,6 +239,7 @@ class DamageDesc
 		DestructionTypes m_iCause = killedByDamage;		//	Cause of damage
 
 		//	Extra damage
+		//	Extra damage 1 (DWORD)
 		DWORD m_EMPDamage:3;					//	Ion (paralysis) damage
 		DWORD m_RadiationDamage:3;				//	Radiation damage
 		DWORD m_DeviceDisruptDamage:3;			//	Disrupt devices damage
@@ -249,11 +254,14 @@ class DamageDesc
 		DWORD m_fNoSRSFlash:1;					//	If TRUE, damage should not cause SRS flash
 		DWORD m_fAutomatedWeapon:1;				//	TRUE if this damage is caused by automated weapon
 
+		//	Extra damage 2 (DWORD)
 		DWORD m_DeviceDamage:3;					//	Damage to devices
 		DWORD m_MiningAdj:3;					//	Adj for mining capability
 		DWORD m_ShatterDamage:3;				//	Shatter damage
-		DWORD m_dwSpare2:23;
+		DWORD m_fMiningScan:1;					//	Scans for ore instead of actually mining it
+		DWORD m_dwSpare2:22;
 
+		//	Extra damage 3 (DWORD)
 		BYTE m_ShieldDamage = 0;				//	Shield damage (level)	shield:level
 		BYTE m_ArmorDamage = 0;					//	Armor damage (level)
 		BYTE m_TimeStopDamage = 0;				//	Time stop (level)
@@ -479,9 +487,12 @@ struct SShotCreateCtx
 	CWeaponFireDesc *pDesc = NULL;
 	TSharedPtr<CItemEnhancementStack> pEnhancements;
 	CDamageSource Source;
-	CVector vPos;
-	CVector vVel;
-	int iDirection = 0;
+	CVector vPos;									//  Position of point of firing
+	CVector vVel;									//	Velocity to inherit
+	CVector vSourcePos;								//	Position of source, not position of point of fire
+	CVector vSourceVel;								//	Velocity of source (usually same as vVel, but not guaranteed)
+	int iSourceDirection = 0;						//	Source facing, not the same as source velocity
+	int iDirection = 0;								//	Direction of firing (for proximity fragments, this is the direction to the triggering object)
 	int iRepeatingCount = 0;
 	CSpaceObject *pTarget = NULL;
 	DWORD dwFlags = 0;
@@ -569,6 +580,20 @@ class CConfigurationDesc
 
 #include "TSEConfigurationDescInlines.h"
 
+//	Mining ---------------------------------------------------------------------
+
+enum class EMiningMethod
+	{
+	unknown = -1,
+
+	ablation = 0,
+	drill = 1,
+	explosion = 2,
+	shockwave = 3,
+	};
+
+constexpr int EMiningMethodCount = 4;
+
 //	WeaponFireDesc -------------------------------------------------------------
 
 struct SExplosionType
@@ -607,14 +632,38 @@ class CWeaponFireDesc
 			evtCount					= 8,
 			};
 
+		enum EFragmentVelocityInheritanceTypes
+			{
+			fviNone,						//	Does not inherit parent projectile's motion (default for non-MIRVs)
+			fviNewtonian,					//	Adds the parent projectile's motion, but will not exceed 1.0c
+			fviRelativistic,				//	Asymptotically inherits the parent projectile's motion to not exceed 1.0c
+			fviSuperluminal,				//	Adds the parent projectile's motion (default for non-MIRVs)
+			};
+
+		enum EFragmentAngleTypes
+			{
+			fragAngleDirection,				//Facing of projectile (API 54 default)
+			fragAngleVelocity,				//Direction of travel of projectile
+			fragAngleTrigger,				//Direction from projectile to trigger (API <54 and older default)
+			fragAngleTarget,				//Direction from projectile to target
+			fragAngleOrigin,				//Direction from projectile to origin (used for effects)
+			fragAngleSystem,				//Relative to system's 0 degree angle (0=right, 90=up, 180=left, 270=down)
+			fragAngleRandom,				//Relative to a random angle
+			};
+
 		static constexpr int DEFAULT_FRAGMENT_DIRECTION = 360;
+		static constexpr int FLAG_FRAG_ARC_ABSOLUTE = 0x200;
+		static constexpr int FLAG_FRAG_ARC_DATA_BITS = 0x1FF; //0-512 needed to hold 0-359
 
 		struct SFragmentDesc
 			{
 			CWeaponFireDesc *pDesc;			//	Data for fragments
 			DiceRange Count;				//	Number of fragments
-			DiceRange Direction;			//	Fragmentation direction relative to trigger (or path) (360 = random)
+			DiceRange Direction;			//	Fragmentation direction relative to fragment angle type (see EFragmentAngleTypes) (360 = random)
 			DiceRange FragmentArc;			//	Angle of arc of fragmentation (0 = omnidirectional).
+			EFragmentAngleTypes iFragAngleType;					//	If the travel direction should be prioritized over the target direction (see EFragmentAngleTypes
+			EFragmentVelocityInheritanceTypes iVelocityType;	//	Type of velocity inheretance to use
+			int iFragArcOffsetAndMode;		//	0 to 359 = exact offset - FragmentArc.center with 1dFragmentArc distribution, 0 to 359 + FLAG_FRAG_ARC_ABSOLUTE = exact offset with FragmentArc roll per fragment
 
 			SFragmentDesc *pNext;
 			};
@@ -736,6 +785,12 @@ class CWeaponFireDesc
 		SFragmentDesc *GetFirstFragment (void) const { return m_pFirstFragment; }
 		Metric GetFragmentationMaxThreshold (void) const { return m_rMaxFragThreshold; }
 		Metric GetFragmentationMinThreshold (void) const { return m_rMinFragThreshold; }
+		Metric GetFragDistanceArmed (void) const { return m_rFragDistanceArmed; }
+		Metric GetFragDistanceAutoTrigger (void) const { return m_rFragDistanceAutoTrigger; }
+		Metric GetFragDistanceFail (void) const { return m_rFragDistanceFail; }
+		Metric GetFragDistanceFailsafe (void) const { return m_rFragDistanceFailsafe; }
+		Metric GetFragDistanceImpactTarget (void) const { return m_rFragDistanceImpactTarget; }
+		Metric GetFragSensorArc (void) const { return m_iProximitySensorArc; }
 		int GetHitPoints (void) const { return m_iHitPoints; }
 		int GetIdlePowerUse (void) const { return m_iIdlePowerUse; }
 		const CObjectImageArray &GetImage (void) const { return GetOldEffects().Image; }
@@ -750,6 +805,8 @@ class CWeaponFireDesc
 		int GetMinDamage (void) const { return m_MinDamage.Roll(); }
 		Metric GetMinRadius (void) const { return m_rMinRadius; }
 		Metric GetMaxRange (void) const;
+		int GetMiningLevel (void) const { return m_iMaxMiningLevel; }
+		EMiningMethod GetMiningMethod (void) const { return m_MiningMethod; }
 		CEffectCreator *GetParticleEffect (void) const;
 		const CParticleSystemDesc *GetParticleSystemDesc (void) const { return m_pParticleDesc; }
 		int GetPassthrough (void) const { return m_iPassthrough; }
@@ -774,6 +831,8 @@ class CWeaponFireDesc
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const SInitOptions &Options);
 		ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem, CWeaponClass *pWeapon);
 		bool IsDetonatingOnEndOfLife () const { return (ProximityBlast() && !m_fNoDetonationOnEndOfLife); }
+		bool IsDetonatingOnDestroyed () const { return (ProximityBlast() && m_fDetonateOnDestroyed); }
+		bool IsDetonatingOnImpact () const { return (ProximityBlast() && !m_fNoDetonationOnImpact); }
 		bool IsCurvedBeam (void) const { return false; }
 		bool IsDirectionalImage (void) const { return m_fDirectional; }
 		bool IsFragment (void) const { return m_fFragment; }
@@ -788,8 +847,8 @@ class CWeaponFireDesc
 		bool IsTrackingTime (int iTick) const { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
 		void MarkImages (void);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
-		void PlayFireSound (CSpaceObject *pSource) const { m_FireSound.PlaySound(pSource); }
-		void PlayChargeSound (CSpaceObject *pSource) const { m_ChargeSound.PlaySound(pSource); }
+		void PlayFireSound (CSpaceObject *pSource) const { m_FireSound.PlaySound(pSource, m_pFireSoundOptions); }
+		void PlayChargeSound (CSpaceObject *pSource) const { m_ChargeSound.PlaySound(pSource, m_pChargeSoundOptions); }
 		bool ProximityBlast (void) const { return (m_fProximityBlast ? true : false); }
 		bool ShowsHint (EDamageHint iHint) const;
 
@@ -841,6 +900,8 @@ class CWeaponFireDesc
 		int m_iFireRate = -1;					//	Ticks between shots (-1 = default to weapon class)
 		int m_iPowerUse = -1;					//	Power use in 1/10th MWs (-1 = default to weapon class)
 		int m_iIdlePowerUse = -1;				//	Power use while idle (-1 = default to weapon class)
+		EMiningMethod m_MiningMethod = EMiningMethod::unknown;	//	Mining method
+		int m_iMaxMiningLevel = -1;				//	Max level of ore that can be mined (-1 = default damage table, 0 = sense ore only)
 
 		Metric m_rMissileSpeed = 0.0;			//	Speed of missile
 		DiceRange m_MissileSpeed;				//	Speed of missile (if random)
@@ -858,7 +919,9 @@ class CWeaponFireDesc
 		CEffectCreatorRef m_pFireEffect;		//	Effect when we fire (muzzle flash)
 		CEffectCreatorRef m_pChargeEffect;		//	Effect when we charge (muzzle flash)
 		CSoundRef m_FireSound;					//	Sound when weapon is fired
+		SSoundOptions *m_pFireSoundOptions;		//	Sound options for fire sound
 		CSoundRef m_ChargeSound;				//	Sound when weapon is charged
+		SSoundOptions *m_pChargeSoundOptions;		//	Sound options for charge sound
 		SOldEffects *m_pOldEffects = NULL;		//  Non-painter effects.
 		CWeaponFireDescRef m_pExplosionType;	//	Explosion to create when ship is destroyed
 		bool m_bPlaySoundOncePerBurst;			//	If TRUE, play the fire sound only once per burst
@@ -888,8 +951,14 @@ class CWeaponFireDesc
 		SFragmentDesc *m_pFirstFragment = NULL;	//	Pointer to first fragment desc (or NULL)
 		int m_iProximityFailsafe = 0;			//	Min ticks before proximity is active
 		DiceRange m_FragInterval;				//	If not empty, we keep fragmenting
-		Metric m_rMaxFragThreshold = 0.0;		//	Max fragmentation distance
-		Metric m_rMinFragThreshold = 0.0;		//	Min fragmentation distance
+		Metric m_rMaxFragThreshold = 0.0;		//	Max fragmentation distance (legacy behavior)
+		Metric m_rMinFragThreshold = 0.0;		//	Min fragmentation distance (legacy behavior)
+		int m_iProximitySensorArc = 360;		//	Arc of coverage of the Proximity sensor
+		Metric m_rFragDistanceArmed = 0.0;		//	Max fragmentation distance (accounts for target size)
+		Metric m_rFragDistanceAutoTrigger = 0.0;//	Min/Forced fragmentation distance (accounts for target size)
+		Metric m_rFragDistanceFail = 0.0;		//	Fragmentation does not occur under this distance
+		Metric m_rFragDistanceFailsafe = 0.0;	//	Fragmentation does not occur under this distance from the source
+		Metric m_rFragDistanceImpactTarget = 0.0;	//	Force fragmentation if we are going to impact a target within this distance
 
 		//	Events
 		CEventHandler m_Events;					//	Events
@@ -925,8 +994,8 @@ class CWeaponFireDesc
 		DWORD m_fNoWMDHint:1 = false;			//	If TRUE, do not show WMD-needed hint
 		DWORD m_fNoMiningHint:1 = false;		//	If TRUE, do not show mining-needed hint
 		DWORD m_fNoDetonationOnEndOfLife:1 = false;	//	If TRUE, do not detonate when life expires
-		DWORD m_fSpare6:1;
-		DWORD m_fSpare7:1;
+		DWORD m_fNoDetonationOnImpact:1 = false;//	If TRUE, do not detonate when impacting an object
+		DWORD m_fDetonateOnDestroyed:1 = false;	//	If TRUE, detonate when destroyedd
 		DWORD m_fSpare8:1;
 
 		DWORD m_dwSpare:8;

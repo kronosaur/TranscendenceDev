@@ -686,6 +686,7 @@ void COverlay::FireOnMining (CSpaceObject &Source, EAsteroidType iType, SDamageC
 	CCX.DefineInteger(CONSTLIT("aHP"), Ctx.iDamage);
 	CCX.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
 	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.GetDesc().GetWeaponType());
+	CCX.DefineBool(CONSTLIT("aMiningScan"), Ctx.Damage.GetMiningScan());
 
 	ICCItemPtr pResult = CCX.RunCode(Event);
 	if (pResult->IsError())
@@ -1613,6 +1614,7 @@ void COverlay::Update (CSpaceObject *pSource, int iScale, int iRotation, bool *r
 
 	SEffectMoveCtx MoveCtx;
 	MoveCtx.pObj = pSource;
+	MoveCtx.rSeconds = g_SecondsPerUpdate;	// FIXME - this is behavior update, but calling OnMove below
 
 	//	If our painter needs an origin, then compute it and set it.
 

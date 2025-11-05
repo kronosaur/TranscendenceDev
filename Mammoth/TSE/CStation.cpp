@@ -130,17 +130,13 @@ CStation::~CStation (void)
 //	CStation destructor
 
 	{
-	if (m_pRotation)
-		delete m_pRotation;
+	delete m_pRotation;
 
-	if (m_pMapOrbit)
-		delete m_pMapOrbit;
+	delete m_pMapOrbit;
 
-	if (m_pMoney)
-		delete m_pMoney;
+	delete m_pMoney;
 
-	if (m_pTrade)
-		delete m_pTrade;
+	delete m_pTrade;
 	}
 
 void CStation::Abandon (DestructionTypes iCause, const CDamageSource &Attacker, CWeaponFireDesc *pWeaponDesc)
@@ -1113,8 +1109,11 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 				Ctx.iDirection = AngleMod(iDirection 
 						+ (mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12))
 						+ (360 - 30));
+				Ctx.iSourceDirection = Ctx.iDirection; //stations dont have a rotation
 				Ctx.vPos = vHitPos;
 				Ctx.vVel = GetVel() + PolarToVector(Ctx.iDirection, pEjectaType->GetInitialSpeed());
+				Ctx.vSourcePos = Ctx.vPos;
+				Ctx.vSourceVel = GetVel();
 				Ctx.dwFlags = SShotCreateCtx::CWF_EJECTA;
 
 				GetSystem()->CreateWeaponFire(Ctx);
@@ -1735,6 +1734,8 @@ void CStation::FinishCreation (SSystemCreateCtx *pSysCreateCtx)
 	OnCreate.pCreateCtx = pSysCreateCtx;
 	OnCreate.pOrbit = m_pMapOrbit;
 	FireOnCreate(OnCreate);
+	if (IsDestroyed())
+		return;
 
 	//	Add the object to the universe. We wait until the end in case
 	//	OnCreate ends up setting the name (or something).
@@ -3144,6 +3145,11 @@ void CStation::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	m_Targets.Delete(&Ctx.Obj);
 	m_WeaponTargets.Delete(Ctx.Obj);
 
+	//  Notify devices so they can retarget or take other
+	//	actions if necessary
+
+	OnObjDestroyUpdateDevices(Ctx);
+
 	//	If this was our base, remove it.
 
 	if (Ctx.Obj == m_pBase)
@@ -3540,7 +3546,7 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		Image.PaintImageWithGlow(Dest, x, y, iTick, iVariant, CG32bitPixel(0, 255, 0));
 
 	else
-		Image.PaintImage(Dest, x, y, iTick, iVariant);
+		Image.PaintImage(Dest, x, y, iTick, iVariant, false, &Ctx);
 
 	//  Paint satellites in front of the station.
 
@@ -5443,8 +5449,7 @@ void CStation::SetMapOrbit (const COrbit &oOrbit)
 //	Sets the orbit description
 
 	{
-	if (m_pMapOrbit)
-		delete m_pMapOrbit;
+	delete m_pMapOrbit;
 
 	m_pMapOrbit = new COrbit(oOrbit);
 	m_fShowMapOrbit = true;
@@ -5734,11 +5739,8 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 		{
 		if (pValue->IsNil())
 			{
-			if (m_pMapOrbit)
-				{
-				delete m_pMapOrbit;
-				m_pMapOrbit = NULL;
-				}
+			delete m_pMapOrbit;
+			m_pMapOrbit = NULL;
 
 			m_fShowMapOrbit = false;
 			return true;

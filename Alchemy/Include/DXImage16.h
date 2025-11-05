@@ -92,7 +92,6 @@ class CG16bitImage : public TImagePlane<CG16bitImage>
 		CG16bitImage &operator= (const CG16bitImage &Src);
 
 		int AdjustTextX (const CG16bitFont &Font, const CString &sText, AlignmentStyles iAlign, int x);
-		void AssociateSurface (LPDIRECTDRAW7 pDD);
 		void ConvertToSprite (void);
 		ALERROR CreateBlank (int cxWidth, int cyHeight, bool bAlphaMask, WORD wInitColor = 0, BYTE byInitAlpha = 0xff);
 		ALERROR CreateBlankAlpha (int cxWidth, int cyHeight);
@@ -109,7 +108,6 @@ class CG16bitImage : public TImagePlane<CG16bitImage>
 											Metric rScaleY, 
 											Metric rRotation);
 		void Destroy (void) { DeleteData(); }
-		void DiscardSurface (void);
 		void SetBlending (WORD wAlpha);
 		void SetTransparentColor (WORD wColor = DEFAULT_TRANSPARENT_COLOR);
 
@@ -117,8 +115,6 @@ class CG16bitImage : public TImagePlane<CG16bitImage>
 		void BltGray (int xSrc, int ySrc, int cxWidth, int cyHeight, int iAlpha, const CG16bitImage &Source, int xDest, int yDest);
 		void BltLighten (int xSrc, int ySrc, int cxWidth, int cyHeight, int iAlpha, const CG16bitImage &Source, int xDest, int yDest);
 		void BltToDC (HDC hDC, int x, int y);
-		void BltToSurface (LPDIRECTDRAWSURFACE7 pSurface, SurfaceTypes iType);
-		void BltToSurface (LPDIRECTDRAWSURFACE7 pSurface, SurfaceTypes iType, const RECT &rcDest);
 		void BltWithMask (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG16bitImage &Mask, const CG16bitImage &Source, int xDest, int yDest);
 		void ColorTransBlt (int xSrc, int ySrc, int cxWidth, int cyHeight, DWORD dwOpacity, const CG16bitImage &Source, int xDest, int yDest);
 		void CompositeTransBlt (int xSrc, int ySrc, int cxWidth, int cyHeight, DWORD dwOpacity, const CG16bitImage &Source, int xDest, int yDest);
@@ -165,8 +161,6 @@ class CG16bitImage : public TImagePlane<CG16bitImage>
 		WORD *GetPixel (WORD *pRowStart, int x) const { return pRowStart + x; }
 		WORD GetPixelAlpha (int x, int y);
 		WORD *GetRowStart (int y) const { return (WORD *)(m_pRGB + y * m_iRGBRowSize); }
-		LPDIRECTDRAWSURFACE7 GetSurface (void) const { return m_pSurface; }
-		static SurfaceTypes GetSurfaceType (LPDIRECTDRAWSURFACE7 pSurface);
 		bool HasAlpha (void) const { return (m_pAlpha != NULL); }
 		bool HasMask (void) const { return m_bHasMask; }
 		bool HasRGB (void) const { return (m_pRGB != NULL); }
@@ -277,7 +271,6 @@ class CG16bitImage : public TImagePlane<CG16bitImage>
 		CG16bitSprite *m_pSprite;
 
 		//	DirectDraw
-		LPDIRECTDRAWSURFACE7 m_pSurface;
 		BITMAPINFO *m_pBMI;			//	Used for blting to a DC
 	};
 

@@ -333,6 +333,7 @@ class CItem
 		inline const CEconomyType *GetCurrencyType (void) const;
 		int GetDamagedHP (void) const;
 		ICCItemPtr GetDataAsItem (const CString &sAttrib) const;
+		ICCItemPtr GetDataKeysAsItem (void) const;
 		CString GetDesc (bool bActual = false) const;
 		inline CDeviceClass *GetDeviceClass (void) const;
 		bool GetDisplayAttributes (TArray<SDisplayAttribute> *retList, ICCItem *pData = NULL, bool bActual = false) const;
@@ -348,6 +349,7 @@ class CItem
 		CInstalledArmor *GetInstalledArmor (void) { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Armor) return (CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
 		const CInstalledDevice *GetInstalledDevice (void) const { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Device) return (const CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
 		CInstalledDevice *GetInstalledDevice (void) { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Device) return (CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
+		ICCItemPtr GetItemPropertyKeys (CCodeChainCtx& CCCtx, CItemCtx& Ctx,  bool bOnType) const;
 		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty, bool bOnType) const;
 		Metric GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		int GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
@@ -645,6 +647,12 @@ class CItemCtx
 		CItemCtx (const CSpaceObject *pSource, const CInstalledArmor *pArmor) : m_pSource(const_cast<CSpaceObject *>(pSource)), m_pArmor(const_cast<CInstalledArmor *>(pArmor)) { }
 		CItemCtx (const CSpaceObject *pSource, const CInstalledDevice *pDevice) : m_pSource(const_cast<CSpaceObject *>(pSource)), m_pDevice(const_cast<CInstalledDevice *>(pDevice)) { }
 
+		CItemCtx (const CItemCtx& Src) { Copy(Src); }
+		CItemCtx (CItemCtx&& Src) noexcept { Copy(Src); }
+
+		CItemCtx& operator= (const CItemCtx& Src) { Copy(Src); return *this; }
+		CItemCtx& operator= (CItemCtx&& Src) noexcept { Copy(Src); return *this; }
+
 		void ClearItemCache (void);
 		ICCItem *CreateItemVariable (CCodeChain &CC);
 		CInstalledArmor *GetArmor (void) const;
@@ -670,6 +678,8 @@ class CItemCtx
 		bool ResolveVariant (void);
 
 	private:
+
+		void Copy (const CItemCtx &Src);
 		const CItem *GetItemPointer (void) const;
 
 		mutable const CItem *m_pItem = NULL;	//	The item

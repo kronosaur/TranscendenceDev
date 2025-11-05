@@ -63,6 +63,7 @@
 #define FIELD_SHIELD_INTERFERENCE				CONSTLIT("shieldInterference")
 
 #define MASS_CLASS_STANDARD_ID					CONSTLIT("medium")
+#define MASS_CLASS_MAX_ID						CONSTLIT("maximum")
 
 #define PROPERTY_ARMOR_CLASS					CONSTLIT("armorClass")
 #define PROPERTY_BALANCE_ADJ					CONSTLIT("balanceAdj")
@@ -209,8 +210,7 @@ CArmorClass::~CArmorClass (void)
 //  CArmorClass destructor
 
 	{
-	if (m_pScalable)
-		delete[] m_pScalable;
+	delete[] m_pScalable;
 	}
 
 EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
@@ -1100,10 +1100,11 @@ Metric CArmorClass::CalcBalanceMass (const CArmorItem &ArmorItem, const SScalabl
 	Metric rStdMass = GetUniverse().GetDesignCollection().GetArmorMassDefinitions().GetMassClassMass(MASS_CLASS_STANDARD_ID) / 1000.0;
 	Metric rAdj = (rStdMass > 0.0 ? MASS_BALANCE_STD_MASS / rStdMass : 1.0);
 
-	//	Because this is an x^2 curve, we need a limit on mass or else we will start
-	//	to curve up (more mass = bonus, which we don't want).
+	//	Need to account for everything up to the maximum defined mass class.
+	//  Anything beyond that is considered bespoke.
 
-	rMass = Min(rAdj * rMass, MASS_BALANCE_LIMIT);
+	Metric rMaxMass = GetUniverse().GetDesignCollection().GetArmorMassDefinitions().GetMassClassMass(MASS_CLASS_MAX_ID);
+	rMass = Min(rAdj * rMass, rMaxMass > 0.0 ? rMaxMass : MASS_BALANCE_LIMIT);
 
 	//	Compute the standard mass that results in 0 balance.
 

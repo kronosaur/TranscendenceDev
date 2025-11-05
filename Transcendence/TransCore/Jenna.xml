@@ -57,10 +57,8 @@
 		<StaticData>
 			<Name>Jenna</Name>
 			<Sovereign>&svCommonwealth;</Sovereign>
-
-			<!-- This is an optional field. If present, the wingman
-				will leave the player beyond a certain point. -->
-			<MaxSystemLevel>7</MaxSystemLevel>
+			<MaxSystemSpawnLevel>6</MaxSystemSpawnLevel>
+			<MaxSystemLevelsTravelled>2</MaxSystemLevelsTravelled>
 		</StaticData>
 		
 		<Language>

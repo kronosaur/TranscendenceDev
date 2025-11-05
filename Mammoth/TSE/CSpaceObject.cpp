@@ -1686,45 +1686,52 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 		case eisCantReplaceDefect:
 		case eisCantReplaceEnhancement:
 			return iResult;
-
-		case eisItemRepaired:
-			ItemList.SetDamagedAtCursor(false);
-			return iResult;
 		}
 
 	//	Notify any dock screens that we might modify an item
 
+	DWORD dwID = OBJID_NULL;
+
 	IDockScreenUI::SModifyItemCtx ModifyCtx;
 	OnModifyItemBegin(ModifyCtx, TargetItem);
 
-	//	Enhance
+	//	If repairing, then do it here.
 
-	DWORD dwID;
-	switch (Enhancement.GetModCode())
+	if (iResult == eisItemRepaired)
 		{
-		case etBinaryEnhancement:
-			dwID = OBJID_NULL;
-			ItemList.SetEnhancedAtCursor(true);
-			break;
-
-		default:
-			//	NOTE: This call handles etNone properly by removing the 
-			//	enhancement and returning a null ID.
-
-			dwID = ItemList.AddItemEnhancementAtCursor(Enhancement);
-			break;
+		ItemList.SetDamagedAtCursor(false);
 		}
 
-	//	Deal with installed items
+	//	Enhance
 
-	ItemEnhancementModified(ItemList);
-
-	//	Fire On event to the enhancement
-
-	if (Mods.GetEnhancementType() && ItemList.IsCursorValid())
+	else
 		{
-		CItem theEnhancement(Mods.GetEnhancementType(), 1);
-		theEnhancement.FireOnAddedAsEnhancement(this, ItemList.GetItemAtCursor(), iResult);
+		switch (Enhancement.GetModCode())
+			{
+			case etBinaryEnhancement:
+				dwID = OBJID_NULL;
+				ItemList.SetEnhancedAtCursor(true);
+				break;
+
+			default:
+				//	NOTE: This call handles etNone properly by removing the 
+				//	enhancement and returning a null ID.
+
+				dwID = ItemList.AddItemEnhancementAtCursor(Enhancement);
+				break;
+			}
+
+		//	Deal with installed items
+
+		ItemEnhancementModified(ItemList);
+
+		//	Fire On event to the enhancement
+
+		if (Mods.GetEnhancementType() && ItemList.IsCursorValid())
+			{
+			CItem theEnhancement(Mods.GetEnhancementType(), 1);
+			theEnhancement.FireOnAddedAsEnhancement(this, ItemList.GetItemAtCursor(), iResult);
+			}
 		}
 
 	//	Update the object
@@ -2099,6 +2106,18 @@ bool CSpaceObject::FireCanRemoveItem (const CItem &Item, int iSlot, CString *ret
 		}
 	else
 		return true;
+	}
+
+int CSpaceObject::GetNextAutoDefenseDeviceIndex (int iDev)
+	{
+	if(iDev < 0)
+		return iDev;
+	for (int i = iDev; i < GetDeviceCount(); i++)
+		{
+		if (GetDevice(i)->IsAutomatedWeapon())
+			return i;
+		}
+	return -1;
 	}
 
 void CSpaceObject::FireCustomEvent (const CString &sEvent, ECodeChainEvents iEvent, ICCItem *pData, ICCItem **retpResult)
@@ -2899,6 +2918,7 @@ void CSpaceObject::FireOnMining (const SDamageCtx &Ctx, EAsteroidType iType)
 	CCX.DefineInteger(CONSTLIT("aHP"), Ctx.iDamage);
 	CCX.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
 	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.GetDesc().GetWeaponType());
+	CCX.DefineBool(CONSTLIT("aMiningScan"), Ctx.Damage.GetMiningScan());
 
 	ICCItemPtr pResult = CCX.RunCode(Event);
 	if (pResult->IsError())
@@ -3907,6 +3927,14 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 	return GetDefaultDockScreen(retsScreen, retpData);
 	}
 
+TArray<CString> CSpaceObject::GetDataKeys (void)
+	{
+	TArray<CString> aRet = TArray<CString>();
+	for (int i = 0; i < m_Data.GetDataCount(); i++)
+		aRet.Insert(m_Data.GetDataAttrib(i));
+	return aRet;
+	}
+
 ICCItemPtr CSpaceObject::GetGlobalData (const CString &sAttribute) const
 
 //	GetGlobalData
@@ -4378,12 +4406,14 @@ CG32bitPixel CSpaceObject::GetSymbolColor (void) const
 	{
 	CAccessibilitySettings cAccessibilitySettings = GetUniverse().GetAccessibilitySettings();
 	CSovereign *pPlayer = GetUniverse().GetPlayerSovereign();
+	CSovereign *pSovereign = GetSovereign();
 	CSpaceObject *pPlayerShip;
 	CG32bitPixel rgbColor;
 
 	//	Player & player's assets
 
-	if ((GetSovereign() == pPlayer) || (GetSovereign()->IsPlayerOwned()))
+	if (pSovereign 
+			&& ((pSovereign == pPlayer) || pSovereign->IsPlayerOwned()))
 		rgbColor = cAccessibilitySettings.GetIFFColor(CAccessibilitySettings::IFFType::player);
 
 	//	Angered ships
@@ -4999,7 +5029,393 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 	DEBUG_CATCH_OBJ_LOOP
 	}
 
-CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart, 
+CSpaceObject* CSpaceObject::HitTestProximity(
+		const CVector& vStart,
+		const CWeaponFireDesc* pDesc,
+		const CTargetList::STargetOptions& TargetOptions,
+		const CSpaceObject* pTarget,
+		CVector* retvHitPos,
+		int* retiHitDir)
+
+//	HitTest (API 54+)
+//
+//	Returns the object that the beam hit or NULL if no object was hit.
+//	retiHitDir is -1 for all hit types except direct hits
+
+	{
+	DEBUG_TRY_OBJ_LOOP
+
+	CUsePerformanceCounter Counter(GetUniverse(), CONSTLIT("update.hitTestProximity"));
+
+	const Metric OBJ_RADIUS_ADJ_MIN = 0.25;
+	const Metric OBJ_RADIUS_ADJ_MAX = 1.0;
+	const Metric IMPACT_SCAN_SECONDS = 2.0 * g_SecondsPerUpdate; //universe seconds (half tick), not real seconds
+	const Metric IMPACT_SECONDS = g_SecondsPerUpdate; //universe seconds, not real seconds
+
+	//	Get our proximity detection settings
+	//	Note: (the source proximity failsafe option should be handled prior to calling HitTestProximity)
+
+	bool bIsStatic = GetVel().IsNull();
+
+	Metric rSensorRange = max(pDesc->GetFragDistanceArmed(), pDesc->GetFragmentationMaxThreshold()); //ok this DOES seem to detect handle intersecting big objects
+	Metric rDetonatorAutoActivationRange = max(pDesc->GetFragDistanceAutoTrigger(), pDesc->GetFragmentationMinThreshold());
+	Metric rDetonatorFailRange = pDesc->GetFragDistanceFail();
+	Metric rDetonatorImpactActivationRange = pDesc->GetFragDistanceImpactTarget();
+	Metric rDetonatorAutoActivationRange2 = rDetonatorAutoActivationRange * rDetonatorAutoActivationRange;
+	Metric rDetonatorFailRange2 = rDetonatorFailRange * rDetonatorFailRange;
+	int iSensorAngle = (int)pDesc->GetFragSensorArc();
+	int iFacingDir = GetRotation();
+
+	//	Update sensor range if we have a larger impact activation range and are not static
+	
+	Metric rMaxSensorRange = bIsStatic ? rSensorRange : max(rSensorRange, rDetonatorImpactActivationRange);
+	Metric rSensorRange2 = rSensorRange * rSensorRange;
+
+	//	Get the list of objects that intersect the object
+	//	Technically GetPos() is ahead of where we were last painted
+
+	SSpaceObjectGridEnumerator i;
+	GetSystem()->EnumObjectsInBoxStart(i, GetPos(), max(rMaxSensorRange, IMPACT_SCAN_SECONDS * LIGHT_SECOND));
+
+	//	We need some variables for stepping
+
+	int iSteps = 0;
+	int iScanSteps = 0;
+	CVector vStep;
+	CVector vMissileTravel = bIsStatic ? GetVel() : (GetVel() * g_SecondsPerUpdate);
+	Metric rMissileTravel = bIsStatic ? 0.0 : vMissileTravel.Length();
+	CVector vEnd = bIsStatic ? vStart : (vStart + vMissileTravel);
+
+	//	We need some variables to track the closest object
+
+	Metric rClosestApproach2 = rSensorRange * rSensorRange;	//	We track the square of the closest approach to avoid doing a lot of expensive sqrt ops
+	CVector vClosestPos;
+	CSpaceObject *pClosestHit = NULL;
+	CVector vCurrentClosestPos;
+	int iCurrentClosestPosAngle = 0;
+
+	//	See if the beam hit anything. We start with a crude first pass.
+	//	Any objects near the beam are then analyzed further to see if
+	//	the beam hit them.
+
+	CVector vClosestFinalPos;
+	while (GetSystem()->EnumObjectsInBoxHasMore(i))
+		{
+		pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
+
+		//	Skip objects that we cannot hit
+
+		if (!CanHit(pObj)
+			|| !pObj->CanBeHitBy(pDesc->GetDamage())
+			|| pObj == this)
+			continue;
+
+		//	Skip anything that isnt visible to our sensor
+
+		if (!(pDesc->GetFragSensorArc() == 360))
+			{
+			int iSensorStart = AngleMod((iSensorAngle / 2) - iFacingDir);
+			int iSensorEnd = AngleMod(iSensorStart + iSensorAngle);
+			int iObjDir = VectorToPolar(pObj->GetPos());
+			int iClosestSensorSide = abs(iObjDir - iSensorStart) < abs(iObjDir - iSensorEnd) ? iSensorStart : iSensorEnd;
+			bool bRunBorderlineTest = false;
+
+			//	Check if the object is outside of sensor range
+
+			if (iSensorStart < iSensorEnd && (iObjDir > iSensorEnd || iObjDir < iSensorStart))
+					bRunBorderlineTest = true;
+			else if (iObjDir < iSensorEnd && iObjDir > iSensorStart)
+					bRunBorderlineTest = true;
+
+			//	Figure out if its just on the border of the scanner's range with a low res hit detection
+			//	skip it if it doesnt show up. Only miniscule targets will tend to get missed by this.
+
+			if (bRunBorderlineTest && !IntersectionTestScan(pObj, vStart, PolarToVector(iClosestSensorSide, LIGHT_SECOND / 2), (int)(2 * rSensorRange / LIGHT_SECOND)))
+				continue;
+			}
+
+		//	Prepare to skip anything that we dont directly impact and cant otherwise detonate on
+
+		bool bCanTriggerDetonation = CTargetList::CanDetonate(*this, pTarget, TargetOptions, *pObj);
+
+		//	Get our adjusted size thresholds for pre-emptive detonation
+		//max(OBJ_RADIUS_ADJ_MIN * pClosestHit->GetHitSize(), rMaxThreshold + (OBJ_RADIUS_ADJ_MAX * max(1.0, (pClosestHit->GetHitSize() * g_KlicksPerPixel - rMaxThreshold)) / rMaxThreshold))
+		Metric rAutoActivationRangeAdj = rDetonatorAutoActivationRange ? max(
+			OBJ_RADIUS_ADJ_MIN * pObj->GetHitSize(),
+			rDetonatorAutoActivationRange + (OBJ_RADIUS_ADJ_MAX * max(1.0, (pObj->GetHitSize() * g_KlicksPerPixel - rDetonatorAutoActivationRange)) / rDetonatorAutoActivationRange)) : 0.0;
+		Metric rAutoActivationRangeAdj2 = rAutoActivationRangeAdj * rAutoActivationRangeAdj;
+		Metric rDetonatorImpactActivationRangeAdj = rDetonatorImpactActivationRange ? max(
+			OBJ_RADIUS_ADJ_MIN * pObj->GetHitSize(),
+			rDetonatorImpactActivationRange + (OBJ_RADIUS_ADJ_MAX * max(1.0, (pObj->GetHitSize() * g_KlicksPerPixel - rDetonatorImpactActivationRange)) / rDetonatorImpactActivationRange)) : 0.0;
+
+		//	If we are static (non-moving), then check if anything else collides with us or passes close by
+
+		if (bIsStatic)
+			{
+			//	If the object is also static, we just do a simple check
+
+			if (pObj->GetVel().IsNull())
+				{
+
+				//	Check if we are within auto activation range
+				//	This is cheaper so we check this before actually checking collision
+
+				Metric rObjDistance2 = (pObj->GetPos() - vStart).Length2();
+
+				if (rObjDistance2 < rAutoActivationRangeAdj2)
+					{
+					//	We detonate
+
+					if (retvHitPos)
+						*retvHitPos = vStart;
+
+					if (retiHitDir)
+						*retiHitDir = -1;
+
+					return pObj;
+					}
+
+				//	Check if we are already collided (ex, someone dropped a mine on top of a station)
+
+				if (pTarget->PointInBounds(GetPos()))
+					{
+					SPointInObjectCtx PiOCtx;
+					pTarget->PointInObjectInit(PiOCtx);
+
+					if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vStart))
+						{
+						//	We are already collided
+
+						if (retvHitPos)
+							*retvHitPos = vStart;
+
+						if (retiHitDir)
+							*retiHitDir = 0; //has to be >=0 to register as a direct hit //VectorToPolar(pObj->GetPos() - GetPos());
+
+						return pObj;
+						}
+					}
+
+				//	Otherwise record it if it is our best candidate
+
+				if (rObjDistance2 < rClosestApproach2 && rObjDistance2 >= rDetonatorFailRange2 && bCanTriggerDetonation)
+					{
+					vClosestPos = pObj->GetPos();
+					pClosestHit = pObj;
+					rClosestApproach2 = rObjDistance2;
+					}
+				}
+
+			//	If the object is not static, we need to do a reverse-proximity check because otherwise we cant see its motion
+
+			else
+				{
+				//	We have to do this separately for each candidate
+				CVector vObjPos = pObj->GetPos();
+				CVector vObjTravel = pObj->GetVel() * g_SecondsPerUpdate;
+				CVector vObjEnd = vObjPos + vObjTravel;
+				Metric rObjTravel = vObjTravel.Length();
+				iSteps = (int)(rObjTravel / (2.0 * g_KlicksPerPixel)) + 1;
+
+				//	Discard anything too close if we have a fail range
+				if (rDetonatorFailRange2)
+					{
+					Metric rStartDistance2 = (vObjPos - vStart).Length2();
+					Metric rEndDistance2 = (vObjEnd - vStart).Length2();
+
+					//	Only skip if the entire line segment is within the fail range
+					if (rStartDistance2 < rDetonatorFailRange2 && rEndDistance2 < rDetonatorFailRange2)
+						continue;
+					}
+
+				//	Check if they collide with us or come within auto activation range
+
+				if (pObj->IntersectionTestScan(this, vObjPos, vObjEnd, iSteps, true, &vCurrentClosestPos, &iCurrentClosestPosAngle))
+					{
+
+					//	If they collided with us
+
+					if (retvHitPos)
+						*retvHitPos = vStart;
+
+					if (retiHitDir)
+						*retiHitDir = VectorToPolar(vStart - pObj->GetPos());
+
+					return pObj;
+					}
+				else if ((GetPos() - vCurrentClosestPos).Length2() <= rAutoActivationRangeAdj2)
+					{
+
+					//	If they activated automatic activation range
+
+					if (retvHitPos)
+						*retvHitPos = vStart;
+
+					if (retiHitDir)
+						*retiHitDir = -1;
+
+					return pObj;
+					}
+				else
+					{
+					//	Skip if we dont track proximity for this object
+
+					if (!bCanTriggerDetonation)
+						continue;
+
+					//	we check if this triggers our proximity sensor
+					CVector vDistance = GetPos() - vCurrentClosestPos;
+					Metric rObjDistance2 = vDistance.Length2();
+
+					if (vCurrentClosestPos != vObjEnd && rObjDistance2 < rClosestApproach2)
+						{
+						vClosestPos = pObj->GetPos();
+						pClosestHit = pObj;
+						rClosestApproach2 = vDistance.Length2();
+						}
+					}
+				}
+			}
+
+		//	Else, we check if anything nearby sets off our proximity or we collide
+
+		else
+			{
+
+			//	Discard anything too close if we have a fail range
+
+			if (rDetonatorFailRange2)
+				{
+				Metric rStartDistance2 = (vStart - pObj->GetPos()).Length2();
+				Metric rEndDistance2 = (vEnd - pObj->GetPos()).Length2();
+
+				//	Only skip if the entire line segment is within the fail range
+				if (rStartDistance2 < rDetonatorFailRange2 && rEndDistance2 < rDetonatorFailRange2)
+					continue;
+				}
+
+			//	If we have a pre-emptive impact detection range, do a med-granularity check on that first
+			if (rDetonatorImpactActivationRangeAdj)
+				{
+				int iImpactSteps = (int)(rMissileTravel / (4.0 * g_KlicksPerPixel)) + 1;
+				CVector vImpactDistance = PolarToVector(GetRotation(), rDetonatorImpactActivationRangeAdj);
+				CVector vImpactStep = vImpactDistance / iImpactSteps;
+
+				if (IntersectionTestScan(pObj, vStart, vImpactStep, iImpactSteps, true, &vCurrentClosestPos, &iCurrentClosestPosAngle))
+					{
+					//	We have detected a target in front of us
+					//	In this case we want to treat it as a proximity detonation
+
+					if (retvHitPos)
+						*retvHitPos = vStart;
+
+					if (retiHitDir)
+						*retiHitDir = -1;
+
+					return pObj;
+					}
+				}
+
+			//	If we have a pre-emptive impact detection range, and its bigger than our normal sensor range
+			//	skip the stuff that we cant normally see
+			if (rDetonatorAutoActivationRange > rSensorRange && (pObj->GetPos() - vStart).Length2() > rSensorRange2)
+				{
+				CVector vLL;
+				CVector vUR;
+				pObj->GetBoundingRect(&vUR, &vLL);
+				if ((vLL - vStart).Length2() > rSensorRange2 && (vUR - vStart).Length2() > rSensorRange2)
+					{
+					CVector vUL = CVector(vLL.GetX(), vUR.GetY());
+					CVector vLR = CVector(vUR.GetX(), vLL.GetY());
+					if ((vLR - vStart).Length2() > rSensorRange2 && (vUL - vStart).Length2() > rSensorRange2)
+						continue;
+					}
+				}
+
+			//	Step towards this object and see if we hit it. Start by computing 
+			//	the step vector, which should be 2 pixels long.
+
+			if (iSteps == 0)
+				{
+				iSteps = (int)(rMissileTravel / (2.0 * g_KlicksPerPixel)) + 1;
+				vStep = vMissileTravel / iSteps;
+				}
+
+			//	Check if we hit it directly
+
+			if (IntersectionTestScan(pObj, vStart, vStep, iSteps, true, &vCurrentClosestPos, &iCurrentClosestPosAngle))
+				{
+				//	We have direct impact
+
+				if (retvHitPos)
+					*retvHitPos = vCurrentClosestPos;
+
+				if (retiHitDir)
+					*retiHitDir = VectorToPolar(-1 * vStep);
+
+				return pObj;
+				}
+
+			//	Check if we are in auto activation range vs proximity
+
+			else if ((pObj->GetPos() - vCurrentClosestPos).Length2() <= rAutoActivationRangeAdj2)
+				{
+				//	We are close enough to something we immediately detonate
+
+				if (retvHitPos)
+					*retvHitPos = vStart;
+
+				if (retiHitDir)
+					*retiHitDir = -1;
+
+				return pObj;
+				}
+
+			//	Check if this is our most promising proximity candidate
+
+			else
+				{
+				//	Skip if we dont track proximity for this object
+				if (!bCanTriggerDetonation)
+					continue;
+
+				//	we check if this triggers our proximity sensor
+				CVector vDistance = pObj->GetPos() - vCurrentClosestPos;
+				Metric rDistance2 = vDistance.Length2();
+
+				if (vCurrentClosestPos != vEnd && rDistance2 < rClosestApproach2)
+					{
+					vClosestPos = vCurrentClosestPos;
+					pClosestHit = pObj;
+					rClosestApproach2 = vDistance.Length2();
+					}
+				}
+			}
+		}
+
+	pObj = NULL;
+
+	//	See if we are going to be passing by anything sufficiently close
+
+	if (pClosestHit)
+		{
+		if (retvHitPos)
+			*retvHitPos = vClosestPos;
+
+		if (retiHitDir)
+			*retiHitDir = -1; //iCurrentClosestPosAngle;
+
+		return pClosestHit;
+		}
+
+	//	We didn't hit anything.
+
+	return NULL;
+
+	DEBUG_CATCH_OBJ_LOOP
+	}
+
+CSpaceObject *CSpaceObject::HitTestProximityLegacy (const CVector &vStart, 
 											  Metric rMinThreshold, 
 											  Metric rMaxThreshold, 
 											  const DamageDesc &Damage, 
@@ -5008,7 +5424,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 											  CVector *retvHitPos, 
 											  int *retiHitDir)
 
-//	HitTest
+//	HitTest (API 53 and below)
 //
 //	Returns the object that the beam hit or NULL if no object was hit.
 //	If rThreshold > 0 and the object passes within the threshold distance
@@ -5019,7 +5435,8 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 
 	CUsePerformanceCounter Counter(GetUniverse(), CONSTLIT("update.hitTestProximity"));
 
-	const Metric OBJ_RADIUS_ADJ = 0.25;
+	const Metric OBJ_RADIUS_ADJ_MIN = 0.25;
+	const Metric OBJ_RADIUS_ADJ_MAX = 1.00;
 
 	//	Get the list of objects that intersect the object
 
@@ -5043,6 +5460,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 	//	the beam hit them.
 
 	int k;
+	CVector vClosestFinalPos;
 	while (GetSystem()->EnumObjectsInBoxHasMore(i))
 		{
 		pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
@@ -5119,6 +5537,10 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 					}
 				}
 
+			//	Store the best final pos if this is the best candidate
+			if (pClosestHit == pObj)
+				vClosestFinalPos = vTest;
+
 			//	Next
 
 			vPrev = vTest;
@@ -5182,8 +5604,9 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 
 		else
 			{
-			CVector vDist = GetPos() - pClosestHit->GetPos();
-			Metric rDist = vDist.Length() - (OBJ_RADIUS_ADJ * pClosestHit->GetHitSize());
+			//Compute the projected distance to the best candidate at next tick
+			CVector vDist = vClosestFinalPos - pClosestHit->GetPos();
+			Metric rDist = vDist.Length() + (OBJ_RADIUS_ADJ_MIN * pClosestHit->GetHitSize());
 
 			if (rDist > rClosestApproach)
 				{
@@ -5203,6 +5626,261 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 	return NULL;
 
 	DEBUG_CATCH_OBJ_LOOP
+	}
+
+bool CSpaceObject::IntersectionTestScan(const CSpaceObject* pTarget, const CVector& vStart, const CVector& vStep, const int iSteps, const bool bComputeProximity, CVector* retvHitPos, int* retiHitDir, CVector* retvDetectPos, int* retiTriangulationDir)
+
+//	IntersectionTestScan
+//
+//  Check if a scan vector over a number of steps intersects an object's image
+//	Returns true if an intersection was detected - returns intersection data
+//		retvHitPos: the coordinate of the detected hit
+//		retiHitDir: the direction of the detected hit (the direction it came from, not the direction it was going)
+//		retvDetectPos: retvHitPos
+//		retiTriangulationDir: the direction from the hit to the target
+//	Returns false if there was no intersection.
+//	If bComputeProximity is set, with the closest point to the target - returns triangulation data to the target's pivot
+//		retvHitPos: vStart
+//		retiHitDir: -1
+//		retvDetectPos: the closest scan step to the target's pivot
+//		retiTriangulationDir: the direction from the hit to the target
+//	If bComputeProximity is not set to save on cpu cycles by not doing a bunch of extra trigonometry
+//		retvHitPos: vStart
+//		retvHitDir: -1
+//		retvDetectPos: vStart + iSteps * vStep
+//		retiTriangulationDir: -1
+
+	{
+	SPointInObjectCtx PiOCtx;
+	pTarget->PointInObjectInit(PiOCtx);
+
+	CVector vTarget = pTarget->GetPos();
+	CVector vEnd = vStart + iSteps * vStep;
+	CVector vPath = vEnd - vStart;
+	bool bCanIntersect = true;
+
+	//	Is it even possible to hit the target? If not, we can skip some checks later
+	//	Its automatically possible to hit if either start or end are already inside of the bounds
+	
+	if (!(pTarget->PointInBounds(vStart) || pTarget->PointInBounds(vEnd)))
+		{
+		//	Check if we cross through the bounding box
+
+		CVector vTargetUR; //	upper right corner of bounds
+		CVector vTargetLL; //	lower left corner of bounds
+
+		//	Easy low-cost pre-checks
+
+		Metric rEX = vEnd.GetX();
+		Metric rSX = vStart.GetX();
+		Metric rEY = vEnd.GetY();
+		Metric rSY = vStart.GetY();
+		Metric rLX = vTargetLL.GetX();
+		Metric rLY = vTargetLL.GetY();
+		Metric rRX = vTargetUR.GetX();
+		Metric rUY = vTargetUR.GetY();
+
+		//	Too far to the left to intersect
+
+		if (rEX < rLX && rSX < rLX)
+			bCanIntersect = false;
+
+		//	Too far to the right to intersect
+
+		else if (rEX > rRX && rSX > rRX)
+			bCanIntersect = false;
+
+		//	Too far up to intersect
+
+		else if (rEY > rUY && rSY > rUY)
+			bCanIntersect = false;
+
+		//	Too far down to intersect
+
+		else if (rEY < rLY && rSY < rLY)
+			bCanIntersect = false;
+
+		//	Check for all the way through horiz intersect
+
+		else if (rEY < rUY && rSY < rUY && rEY > rLY && rSY > rLY)
+			bCanIntersect = true;	//	optimized away as a no-op
+
+		//	Check for all the way through vert intersect
+
+		else if (rEX < rRX && rSX < rRX && rEX > rLX && rSX > rLX)
+			bCanIntersect = true;	//	optimized away as a op-op
+
+		//	Only remaining cases are cutting through one of the corners
+		//	Narrow down which corner to check
+		//	Check if we can cut either of the left corners
+
+		else
+			{
+			bool bCanCutLeft = (rEX < rLX && rSX > rLX) || (rEX > rLX && rSX < rLX);
+			bool bCanCutBottom = (rEY < rLY && rSY > rLY) || (rEY > rLY && rSY < rLY);
+			Metric rSlope = vPath.GetY() / vPath.GetX();
+
+			//	Check where our line is relative to that corner
+
+			if (bCanCutBottom && bCanCutLeft)
+				{
+				//  check if our line goes below bottom left corner
+				CVector vLeftPoint = rEX < rSX ? vEnd : vStart;
+				CVector vLeftToLL = vTargetLL - vLeftPoint;
+				Metric rSlopeToLL = vLeftToLL.GetY() / vLeftToLL.GetX();
+				if (rSlope < rSlopeToLL)
+					bCanIntersect = false;
+				}
+			else if (bCanCutBottom && !bCanCutLeft)
+				{
+				//	check if our line goes below bottom right corner
+				CVector vLeftPoint = rEX < rSX ? vEnd : vStart;
+				CVector vLeftToLR = CVector(rRX, rLY) - vLeftPoint;
+				Metric rSlopeToLR = vLeftToLR.GetY() / vLeftToLR.GetX();
+				if (rSlope < rSlopeToLR)
+					bCanIntersect = false;
+				}
+			else if (!bCanCutBottom && bCanCutLeft)
+				{
+				//	check if our line goes above top left corner
+				CVector vLeftPoint = rEX < rSX ? vEnd : vStart;
+				CVector vLeftToUL = CVector(rLX, rUY) - vLeftPoint;
+				Metric rSlopeToUL = vLeftToUL.GetY() / vLeftToUL.GetX();
+				if (rSlope > rSlopeToUL)
+					bCanIntersect = false;
+				}
+			else
+				{
+				//	check if our line goes above top right corner
+				CVector vLeftPoint = rEX < rSX ? vEnd : vStart;
+				CVector vLeftToUR = vTargetUR - vLeftPoint;
+				Metric rSlopeToUR = vLeftToUR.GetY() / vLeftToUR.GetX();
+				if (rSlope > rSlopeToUR)
+					bCanIntersect = false;
+				}
+			}
+		}
+
+	//	Check if we should probe for proximity or not
+	//	If the inner angles of start to target and end to target vs start to end are on either side of 90 degrees because they form an acute triangle
+	//	Otherwise we just pick the closer of vStart or vEnd
+	
+	bool bCheckProximity = bComputeProximity && (retvHitPos || retiHitDir);
+	if (bComputeProximity && (retvHitPos || retiHitDir))
+		{
+		//	We only do this on command to save on CPU cycles doing trigonometry
+
+		CVector vEndToTarget = vTarget - vEnd;
+		CVector vStartToTarget = vTarget - vStart;
+		int iPathAngle = VectorToPolar(vPath);
+
+		//	Both of these will be either positive 0-180 or negative -180-0 beccause they form a triangle
+
+		int iEndToTargetAngle = VectorToPolar(vEndToTarget)-iPathAngle;
+		int iStartToTargetAngle = VectorToPolar(vStartToTarget)-iPathAngle;
+
+		if ((iEndToTargetAngle > 90 && iStartToTargetAngle < 90)
+			|| (iEndToTargetAngle < 90 && iStartToTargetAngle > 90)
+			|| (iEndToTargetAngle > -90 && iStartToTargetAngle < -90)
+			|| (iEndToTargetAngle < -90 && iStartToTargetAngle > -90))
+			bCheckProximity = true;
+		else
+			{
+			//	Our best point is either a hit, our start, or our end
+
+			Metric rDistEnd = vEndToTarget.Distance(CVector());
+			Metric rDistStart = vStartToTarget.Distance(CVector());
+			//	Set these now, they will be overwritten if we actually have a hit
+			if (retvHitPos)
+				*retvHitPos = vStart;
+			if (retiHitDir)
+				*retiHitDir = -1;
+			if (retvDetectPos)
+				*retvDetectPos = rDistEnd < rDistStart ? vEnd : vStart;
+			if (retiTriangulationDir)
+				*retiTriangulationDir = rDistEnd < rDistStart ? iEndToTargetAngle : iStartToTargetAngle;
+			}
+		}
+	else
+		{
+		if (retvHitPos)
+			*retvHitPos = vStart;
+		if (retiHitDir)
+			*retiHitDir = -1;
+		if (retvDetectPos)
+			*retvDetectPos = vEnd;
+		if (retiTriangulationDir)
+			*retiTriangulationDir = -1;
+		}
+
+	//	Step
+
+	CVector vPrev = vStart;
+	CVector vTest = vStart;
+
+	CVector vClosestPos;
+	Metric rClosestApproach2 = INFINITY; //	This stores a squared value for efficiency purposes
+	for (int k = 0; k < iSteps; k++)
+		{
+		//	Check for collision
+		//	First pass to check if we are in the bounds
+
+		if (bCanIntersect && pTarget->PointInBounds(vTest))
+			{
+			if (pTarget->PointInObject(PiOCtx, pTarget->GetPos(), vTest))
+				{
+				if (retvHitPos)
+					*retvHitPos = vPrev;
+
+				//	Figure out the direction that the hit came from
+
+				if (retiHitDir)
+					*retiHitDir = VectorToPolar(-vStep, NULL);
+
+				if (retvDetectPos)
+					*retvDetectPos = vPrev;
+
+				if (retiTriangulationDir)
+					*retiTriangulationDir = VectorToPolar(vTarget - vPrev);
+
+				return true;
+				}
+			}
+
+		//	If we know our closest point is between beginning and end
+		
+		if (bCheckProximity)
+			{
+			CVector vDist = vTest - pTarget->GetPos();
+			Metric rDist2 = vDist.Length2();
+
+			if (rDist2 < rClosestApproach2)
+				{
+				rClosestApproach2 = rDist2;
+				vClosestPos = vTest;
+				}
+			}
+
+		//	Next
+
+		vPrev = vTest;
+		vTest = vTest + vStep;
+		}
+	
+	//	Didnt hit, so set our best point if we had to check for proximity
+	if (bCheckProximity)
+		{
+		if (retvHitPos)
+			*retvHitPos = vClosestPos;
+		if (retiHitDir)
+			*retiHitDir = -1;
+		if (retvDetectPos)
+			*retvDetectPos = vClosestPos;
+		if (retiTriangulationDir)
+			*retiTriangulationDir = VectorToPolar(vTarget - vClosestPos);
+		}
+
+	return false;
 	}
 
 bool CSpaceObject::ImagesIntersect (const CObjectImageArray &Image1, int iTick1, int iRotation1, const CVector &vPos1,
@@ -5884,10 +6562,7 @@ bool CSpaceObject::IsLineOfFireClear (const CInstalledDevice *pWeapon,
 
 				if (rDistFromTarget2 < BOUNDS_CHECK_DIST2)
 					{
-					CVector vUR, vLL;
-					pObj->GetBoundingRect(&vUR, &vLL);
-
-					if (rDistFromTarget2 < 2.0 * vUR.Length2()
+					if (pObj->PointInBounds(vTarget)
 							&& pObj->PointInObject(pObj->GetPos(), vTarget))
 						{
 						if (retpFriend) *retpFriend = pObj;
@@ -6371,7 +7046,7 @@ void CSpaceObject::Move (SUpdateCtx &Ctx, Metric rSeconds)
 	//	Move the object on a straight line along the velocity vector
 
 	if (!m_vVel.IsNull() && !m_fNonLinearMove && !IsAnchored())
-		m_vPos = m_vPos + (m_vVel * g_SecondsPerUpdate);
+		m_vPos = m_vPos + (m_vVel * rSeconds);
 
 	//	Let descendants process the move (if necessary)
 
@@ -6383,7 +7058,7 @@ void CSpaceObject::Move (SUpdateCtx &Ctx, Metric rSeconds)
 
 	//	Set a flag so we check collisions
 
-	if (IsAnchored())
+	if (IsAnchored() || m_vVel.IsNull())
 		SetCollisionTestNeeded(false);
 	else if (Ctx.bHasShipBarriers)
 		SetCollisionTestNeeded(GetCategory() == CSpaceObject::catShip || GetCategory() == CSpaceObject::catStation);
@@ -7454,6 +8129,16 @@ bool CSpaceObject::SetCursorAtDevice (CItemListManipulator &ItemList, CInstalled
 
 	{
 	return SetCursorAtDevice(ItemList, pDevice->GetDeviceSlot());
+	}
+
+void CSpaceObject::OnObjDestroyUpdateDevices (const SDestroyCtx& Ctx)
+	{
+	for (int i = 0; i < GetDeviceCount(); i++)
+		{
+		CDeviceClass* pDeviceClass = GetDevice(i)->GetClass();
+		if(pDeviceClass)
+			pDeviceClass->OnObjDestroyed(GetDevice(i), this, Ctx);
+		}
 	}
 
 void CSpaceObject::SetCursorAtRandomItem (CItemListManipulator &ItemList, const CItemCriteria &Crit)

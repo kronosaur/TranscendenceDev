@@ -11,8 +11,13 @@
 #define SYSTEM_TAG								CONSTLIT("System")
 
 #define ATTRIBUTES_ATTRIB						CONSTLIT("attributes")
+#define BEACON_TYPE_ATTRIB						CONSTLIT("beaconType")
 #define COUNT_ATTRIB							CONSTLIT("count")
 #define DEBUG_ATTRIB							CONSTLIT("debug")
+#define GATE_LOCATION_CRITERIA_ATTRIB			CONSTLIT("gateLocationCriteria")
+#define GATE_TYPE_ATTRIB						CONSTLIT("gateType")
+#define LINK_ATTRIBUTES_ATTRIB					CONSTLIT("linkAttributes")
+#define LINK_COLOR_ATTRIB						CONSTLIT("linkColor")
 #define MIN_SEPARATION_ATTRIB					CONSTLIT("minSeparation")
 #define NETWORK_TYPE_ATTRIB						CONSTLIT("networkType")
 
@@ -408,6 +413,29 @@ ALERROR CRandomTopologyCreator::Create (STopologyCreateCtx &Ctx, CTopology &Topo
 	DWORD dwFirstNode;
 	Graph.FindNearestNode(xEntrance, yEntrance, &dwFirstNode);
 
+	//	Create a template for the RouteDesc
+
+	CTopologyNode::SStargateRouteDesc Template = CTopologyNode::SStargateRouteDesc();
+
+	CString sRawAttributes = pXML->GetAttribute(ATTRIBUTES_ATTRIB);
+	CString sRandomTopologyAttributes = strCat(CONSTLIT("randomTopology"), sRawAttributes.IsBlank() ? CONSTLIT("") : CONSTLIT(","));
+
+	Template.sFromAttributes = strCat(sRandomTopologyAttributes, sRawAttributes);
+	Template.sToAttributes = Template.sFromAttributes;
+
+	Template.sFromLocationCriteria = pXML->GetAttribute(GATE_LOCATION_CRITERIA_ATTRIB);
+	Template.sToLocationCriteria = Template.sFromLocationCriteria;
+
+	Template.dwFromGateType = pXML->GetAttributeInteger(GATE_TYPE_ATTRIB);
+	Template.dwToGateType = Template.dwFromGateType;
+	
+	Template.dwFromBeaconType = pXML->GetAttributeInteger(BEACON_TYPE_ATTRIB);
+	Template.dwToBeaconType = Template.dwFromBeaconType;
+
+	Template.rgbColor = LoadARGBColor(pXML->GetAttribute(LINK_COLOR_ATTRIB));
+	if (Template.rgbColor.AsDWORD() && Template.rgbColor.GetAlpha() == 0)
+		Template.rgbColor.SetAlpha(0xFF);
+
 	//	Generate random connections between the nodes based on the network type
 
 	TArray<CTopologyNode::SStargateRouteDesc> Routes;
@@ -416,21 +444,21 @@ ALERROR CRandomTopologyCreator::Create (STopologyCreateCtx &Ctx, CTopology &Topo
 		case netLine:
 			{
 			CSimplePathStargateGenerator Generator(Graph, Nodes);
-			Generator.Generate(dwFirstNode, Routes);
+			Generator.Generate(dwFirstNode, Routes, Template);
 			break;
 			}
 
 		case netTree:
 			{
 			CTreePathStargateGenerator Generator(Graph, Nodes);
-			Generator.Generate(dwFirstNode, Routes);
+			Generator.Generate(dwFirstNode, Routes, Template);
 			break;
 			}
 
 		case netWeb:
 			{
 			CDelaunayStargateGenerator Generator(Graph, Nodes);
-			Generator.Generate(Routes);
+			Generator.Generate(Routes, Template);
 			break;
 			}
 

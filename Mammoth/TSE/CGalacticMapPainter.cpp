@@ -64,7 +64,7 @@ CGalacticMapPainter::~CGalacticMapPainter (void)
 //	CGalacticMapPainter destructor
 
 	{
-	if (m_pImage && m_bFreeImage)
+	if (m_bFreeImage)
 		delete m_pImage;
 	}
 
@@ -101,42 +101,51 @@ void CGalacticMapPainter::AdjustCenter (int xCenter, int yCenter, int iScale, in
 		*retyCenter = (cyHeight / 2) - yMapCenter;
 	}
 
-void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const
+void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, Metric rIconScale, CG32bitPixel rgbLabelColor, CG32bitPixel rgbLabelBackColor) const
 
 //	DrawNode
 //
 //	Draws a topology node
 
 	{
-    //  Draw selection, if necessary
 
-    if (pNode == m_pSelected)
-        DrawSelection(Dest, x, y, m_rgbSelection);
+	//	First draw the star and selection
 
-    //  Draw the node (either as a full system thumbnail or just the stars)
+	DrawNodeIcon(Dest, pNode, x, y, rIconScale);
 
-#ifdef FULL_SYSTEM_THUMBNAILS
-    bool bFullSystem = ((pNode->GetLastVisitedTime() != 0xffffffff) && rScale > MIN_SYSTEM_THUMB_SCALE);
-#else
-    bool bFullSystem = false;
-#endif
+	//	Next, draw the label (and any debug info)
 
-    m_SystemMapThumbnails.DrawThumbnail(pNode, Dest, x, y, bFullSystem, rScale);
+	DrawNodeLabel(Dest, pNode, x, y, rScale, rgbLabelColor, rgbLabelBackColor);
+	}
 
-    //  Draw the name label
+void CGalacticMapPainter::DrawNodeLabel (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbLabelColor, CG32bitPixel rgbLabelBackColor) const
 
-    int cxName = m_MediumFont.MeasureText(pNode->GetSystemName());
-    int cxNameBack = cxName + 2 * NAME_PADDING_X;
-    int xNameBack = x - (cxNameBack / 2);
-    int yName = y + NODE_RADIUS + NAME_SPACING_Y;
+//	DrawNode
+//
+//	Draws a topology node
 
-    CGDraw::RoundedRect(Dest, xNameBack, yName, cxNameBack, m_MediumFont.GetHeight(), CORNER_RADIUS, RGB_SYSTEM_NAME_BACK);
+	{
+
+	//  Draw the name label
+
+	int cxName = m_MediumFont.MeasureText(pNode->GetSystemName());
+	int cxNameBack = cxName + 2 * NAME_PADDING_X;
+	int xNameBack = x - (cxNameBack / 2);
+	int yName = y + NODE_RADIUS + NAME_SPACING_Y;
+
+	CGDraw::RoundedRect(Dest,
+		xNameBack,
+		yName,
+		cxNameBack,
+		m_MediumFont.GetHeight(),
+		CORNER_RADIUS,
+		(rgbLabelBackColor == RGB_NOT_SET ? RGB_SYSTEM_NAME_BACK : rgbLabelBackColor));
 
 	m_MediumFont.DrawText(Dest,
-			xNameBack + NAME_PADDING_X, yName,
-			RGB_SYSTEM_NAME,
-			pNode->GetSystemName(),
-			0);
+		xNameBack + NAME_PADDING_X, yName,
+		(rgbLabelColor == RGB_NOT_SET ? RGB_SYSTEM_NAME : rgbLabelColor),
+		pNode->GetSystemName(),
+		0);
 
 	//	Debug info
 
@@ -150,15 +159,38 @@ void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, const CTopologyNode *pNo
 #endif
 
 		m_MediumFont.DrawText(Dest,
-				x,
-				y + NODE_RADIUS + 2 + m_MediumFont.GetHeight(),
-				CG32bitPixel(128, 128, 128),
-				sLine,
-				CG16bitFont::AlignCenter);
+			x,
+			y + NODE_RADIUS + 2 + m_MediumFont.GetHeight(),
+			CG32bitPixel(128, 128, 128),
+			sLine,
+			CG16bitFont::AlignCenter);
 		}
 	}
 
-void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y) const
+void CGalacticMapPainter::DrawNodeIcon (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale) const
+
+//	DrawNode
+//
+//	Draws a topology node
+
+	{
+	//  Draw selection, if necessary
+
+	if (pNode == m_pSelected)
+		DrawSelection(Dest, x, y, m_rgbSelection);
+
+	//  Draw the node (either as a full system thumbnail or just the stars)
+
+#ifdef FULL_SYSTEM_THUMBNAILS
+	bool bFullSystem = ((pNode->GetLastVisitedTime() != 0xffffffff) && rScale > MIN_SYSTEM_THUMB_SCALE);
+#else
+	bool bFullSystem = false;
+#endif
+
+	m_SystemMapThumbnails.DrawThumbnail(pNode, Dest, x, y, bFullSystem, rScale);
+	}
+
+void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbDefaultConnectionColor) const
 
 //	DrawNodeConnections
 //
@@ -169,8 +201,7 @@ void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, const CTopolo
 
 	//	Compute some visual attributes.
 
-	CG32bitPixel rgbStargateColor = (m_pMap ? m_pMap->GetStargateLineColor() : RGB_STARGATE);
-    int iStargateLine = Max(1, mathRound(STARGATE_LINE_WIDTH * (Metric)m_iScale / 100.0));
+    int iStargateLine = Max(1, mathRound(STARGATE_LINE_WIDTH * rScale));
 
 	//	Paint each gate line
 
@@ -190,6 +221,10 @@ void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, const CTopolo
 			RouteDesc.pToNode->GetDisplayPos(&End.x, &End.y);
 			End = Xform(End);
 
+			//	Set the custom color if available
+
+			CG32bitPixel rgbConnectionColor = RouteDesc.rgbColor.GetAlpha() ? RouteDesc.rgbColor : rgbDefaultConnectionColor;
+
 			//	If this is a curved path, the draw it
 
 			if (RouteDesc.MidPoints.GetCount() > 0)
@@ -206,7 +241,7 @@ void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, const CTopolo
 						{
 						SPoint ptFrom = Xform(RouteDesc.MidPoints[iCurMid - 1]);
 
-						Dest.DrawLine(ptFrom.x, ptFrom.y, End.x, End.y, iStargateLine, rgbStargateColor);
+						Dest.DrawLine(ptFrom.x, ptFrom.y, End.x, End.y, iStargateLine, rgbConnectionColor);
 						}
 
 					//	Otherwise, we draw a curve
@@ -218,7 +253,7 @@ void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, const CTopolo
 						SPoint ptFrom = (iCurMid > 0 ? Xform(RouteDesc.MidPoints[iCurMid - 1]) : ptStart);
 						SPoint ptTo = (iCurMid + 1 < RouteDesc.MidPoints.GetCount() ? Xform(RouteDesc.MidPoints[iCurMid + 1]) : End);
 
-						CGDraw::QuadCurve(Dest, ptFrom.x, ptFrom.y, ptTo.x, ptTo.y, ptMid.x, ptMid.y, iStargateLine, rgbStargateColor);
+						CGDraw::QuadCurve(Dest, ptFrom.x, ptFrom.y, ptTo.x, ptTo.y, ptMid.x, ptMid.y, iStargateLine, rgbConnectionColor);
 						}
 
 					iCurMid += 2;
@@ -239,7 +274,7 @@ void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, const CTopolo
 			//	Otherwise, straight line
 
 			else
-				Dest.DrawLine(x, y, End.x, End.y, iStargateLine, rgbStargateColor);
+				Dest.DrawLine(x, y, End.x, End.y, iStargateLine, rgbConnectionColor);
 			}
 		}
 	}
@@ -418,13 +453,12 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 
 	ASSERT(m_iScale > 0);
 
-    //  System thumbnails are full-res at x4
+	//	Compute scale factors to use
 
-    Metric rScale = m_iScale / 400.0;
-
-    //  Compute the stargate line width based on scale
-
-    int iStargateLine = Max(1, mathRound(STARGATE_LINE_WIDTH * (Metric)m_iScale / 100.0));
+	Metric rImgScale = m_iScale / (100 * m_rImageScale);
+    Metric rLabelScale = m_iScale / 400.0;
+	Metric rLineScale = m_iIconScale / 100.0;
+	Metric rIconScale = m_iIconScale / 400.0;
 
 	//	Paint the image, if we have it
 
@@ -440,8 +474,8 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 
 		//	Compute the dimensions of the map to paint
 
-		int cxMap = (int)((100 * RectWidth(m_rcView) / m_iScale) * m_rImageScale);
-		int cyMap = (int)((100 * RectHeight(m_rcView) / m_iScale) * m_rImageScale);
+		int cxMap = (int)(RectWidth(m_rcView) / rImgScale);
+		int cyMap = (int)(RectHeight(m_rcView) / rImgScale);
 
 		//	Compute the given center in map image coordinates
 
@@ -457,25 +491,25 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 
 		if (xMap < 0)
 			{
-			int cx = -(int)(xMap * m_iScale / m_rImageScale) / 100;
+			int cx = -(int)(xMap * rImgScale);
 			Dest.Fill(m_rcView.left, m_rcView.top, cx, RectHeight(m_rcView), 0);
 			}
 
 		if (yMap < 0)
 			{
-			int cy = -(int)(yMap * m_iScale / m_rImageScale) / 100;
+			int cy = -(int)(yMap * rImgScale);
 			Dest.Fill(m_rcView.left, m_rcView.top, RectWidth(m_rcView), cy, 0);
 			}
 
 		if (xMap + cxMap > cxWidth)
 			{
-			int cx = (int)((m_iScale * ((xMap + cxMap) - cxWidth)) / m_rImageScale) / 100;
+			int cx = (int)(rImgScale * ((xMap + cxMap) - cxWidth));
 			Dest.Fill(m_rcView.right - cx, m_rcView.top, cx, RectHeight(m_rcView), 0);
 			}
 
 		if (yMap + cyMap > cyHeight)
 			{
-			int cy = (int)((m_iScale * ((yMap + cyMap) - cyHeight)) / m_rImageScale) / 100;
+			int cy = (int)(rImgScale * ((yMap + cyMap) - cyHeight));
 			Dest.Fill(m_rcView.left, m_rcView.bottom - cy, RectWidth(m_rcView), cy, 0);
 			}
 
@@ -484,19 +518,19 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 		if (m_pImage)
 			CGDraw::BltScaled(Dest, m_rcView.left, m_rcView.top, RectWidth(m_rcView), RectHeight(m_rcView), *m_pImage, xMap, yMap, cxMap, cyMap);
 
-		//	Loop over all nodes and clear marks on the ones that we need to draw
 
 		for (int i = 0; i < Topology.GetTopologyNodeCount(); i++)
 			{
 			const CTopologyNode *pNode = Topology.GetTopologyNode(i);
 			
 			int xPos, yPos;
-			pNode->SetMarked(pNode->GetDisplayPos(&xPos, &yPos) != m_pMap 
-					|| !pNode->IsPositionKnown() 
-					|| pNode->IsEndGame());
+			bool bIsMarked = (pNode->GetDisplayPos(&xPos, &yPos) != m_pMap
+				|| !pNode->IsPositionKnown()
+				|| pNode->IsEndGame());
+			pNode->SetMarked(bIsMarked);
 			}
 
-		//	Paint the nodes
+		//	First, we need to paint the node connections, so that they are always under the nodes
 
 		for (int i = 0; i < Topology.GetTopologyNodeCount(); i++)
 			{
@@ -511,16 +545,81 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 			//	Draw gate connections
 
 			if (pNode->IsKnown())
-				DrawNodeConnections(Dest, pNode, Start.x, Start.y);
+				DrawNodeConnections(Dest, pNode, Start.x, Start.y, rLineScale, rgbStargateColor);
+			rgbNodeColor;
+
+			pNode->SetMarked();
+			}
+
+		//	Loop over all nodes and clear marks on the ones that we need to draw'
+
+		for (int i = 0; i < Topology.GetTopologyNodeCount(); i++)
+			{
+			const CTopologyNode *pNode = Topology.GetTopologyNode(i);
+
+			int xPos, yPos;
+			bool bIsMarked = (pNode->GetDisplayPos(&xPos, &yPos) != m_pMap
+				|| !pNode->IsPositionKnown()
+				|| pNode->IsEndGame());
+			pNode->SetMarked(bIsMarked);
+			}
+
+		//	Paint the nodes, so they are always over the node connections
+
+		for (int i = 0; i < Topology.GetTopologyNodeCount(); i++)
+			{
+			const CTopologyNode *pNode = Topology.GetTopologyNode(i);
+			if (pNode->IsMarked())
+				continue;
+
+			SPoint Start;
+			pNode->GetDisplayPos(&Start.x, &Start.y);
+			Start = Xform(Start);
 
 			//	Draw star system
 
 			if (Start.x >= m_rcView.left && Start.x < m_rcView.right && Start.y >= m_rcView.top && Start.y < m_rcView.bottom)
 				{
 				if (pNode->IsKnown())
-					DrawNode(Dest, pNode, Start.x, Start.y, rScale, rgbNodeColor);
+					DrawNodeIcon(Dest, pNode, Start.x, Start.y, rIconScale);
 				else
-					DrawUnknownNode(Dest, pNode, Start.x, Start.y, rScale, rgbNodeColor);
+					DrawUnknownNode(Dest, pNode, Start.x, Start.y, rIconScale, rgbNodeColor);
+				}
+
+			pNode->SetMarked();
+			}
+
+		//	Loop over all nodes and clear marks on the ones that we need to draw'
+
+		for (int i = 0; i < Topology.GetTopologyNodeCount(); i++)
+			{
+			const CTopologyNode *pNode = Topology.GetTopologyNode(i);
+
+			int xPos, yPos;
+			bool bIsMarked = (pNode->GetDisplayPos(&xPos, &yPos) != m_pMap
+				|| !pNode->IsPositionKnown()
+				|| pNode->IsEndGame());
+			pNode->SetMarked(bIsMarked);
+			}
+
+		//	Paint the nodes, so they are always over the node connections
+
+		for (int i = 0; i < Topology.GetTopologyNodeCount(); i++)
+			{
+			const CTopologyNode *pNode = Topology.GetTopologyNode(i);
+			if (pNode->IsMarked())
+				continue;
+
+			SPoint Start;
+			pNode->GetDisplayPos(&Start.x, &Start.y);
+			Start = Xform(Start);
+
+			//	Draw star system
+
+			if (Start.x >= m_rcView.left && Start.x < m_rcView.right && Start.y >= m_rcView.top && Start.y < m_rcView.bottom)
+				{
+				if (pNode->IsKnown())
+					DrawNodeLabel(Dest, pNode, Start.x, Start.y, rLabelScale);
 				}
 
 			pNode->SetMarked();

@@ -393,19 +393,19 @@ class DiceRange
 		DiceRange (void) { }
 		DiceRange (int iFaces, int iCount, int iBonus);
 
-		int GetAveValue (void) const { return (m_iCount * (m_iFaces + 1) / 2) + m_iBonus; }
+		int GetAveValue (void) const { return (IsEmpty() ? 0 : (m_iCount * (m_iFaces + 1) / 2) + m_iBonus); }
 		Metric GetAveValueFloat (void) const { return (m_iFaces > 0 ? ((m_iCount * (m_iFaces + 1.0) / 2.0) + m_iBonus) : m_iBonus); }
 		int GetBonus (void) const { return m_iBonus; }
 		int GetCount (void) const { return m_iCount; }
-		int GetFaces (void) const { return m_iFaces; }
+		int GetFaces (void) const { return (IsEmpty() ? 0 : m_iFaces); }
 		int GetMaxValue (void) const { return m_iFaces * m_iCount + m_iBonus; }
 		int GetMinValue (void) const { return m_iCount + m_iBonus; }
 		bool IsConstant (void) const { return (m_iFaces * m_iCount) == 0; }
-		bool IsEmpty (void) const { return (m_iFaces == 0 && m_iCount == 0 && m_iBonus == 0); }
+		bool IsEmpty (void) const { return m_iFaces < 0; }
 		int Roll (void) const;
 		int RollSeeded (int iSeed) const;
 		ALERROR LoadFromXML (const CString &sAttrib, int iDefault, CString *retsSuffix = NULL);
-		ALERROR LoadFromXML (const CString &sAttrib, CString *retsSuffix = NULL) { return LoadFromXML(sAttrib, 0, retsSuffix); }
+		ALERROR LoadFromXML (const CString &sAttrib, CString *retsSuffix = NULL) { return LoadFromXML(sAttrib, -1, retsSuffix); }
 		void ReadFromStream (SLoadCtx &Ctx);
 		CString SaveToXML (void) const;
 		void Scale (Metric rScale);
@@ -415,7 +415,7 @@ class DiceRange
 		static bool LoadIfValid (const CString &sAttrib, DiceRange *retValue);
 
 	private:
-		int m_iFaces = 0;
+		int m_iFaces = -1;
 		int m_iCount = 0;
 		int m_iBonus = 0;
 	};
@@ -647,6 +647,34 @@ class CDamageAdjDesc
 		int m_iDamageAdj[damageCount];			//	Computed adjustment for type
 
 		const CDamageAdjDesc *m_pDefault;		//	Default table
+	};
+
+class CMiningDamageLevelDesc
+	{
+	public:
+		static constexpr int MAX_MINING_LEVEL = 25;
+		
+		int GetMaxOreLevel (DamageTypes iDamageType, int iMiningItemLevel) const;
+		ALERROR InitFromArray (const TArray<int>& Levels);
+		ALERROR InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, const CString &sAttrib);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
+
+		static DamageTypes ParseDamageTypeFromProperty (const CString &sProperty);
+
+	private:
+		enum ELevelTypes
+			{
+			levelAbsolute,						//	dwLevelValue is an absolute adjustment
+			levelRelative,						//	dwLevelValue is an int offset of item level
+			};
+
+		struct SMiningLevelDesc
+			{
+			ELevelTypes iAdjType = levelRelative;	//	Type of adjustment
+			int iLevelValue = 0;					//	Adjustment value
+			};
+
+		SMiningLevelDesc m_Desc[damageCount];	//	Descriptor for computing adjustment
 	};
 
 struct SVisibleDamage

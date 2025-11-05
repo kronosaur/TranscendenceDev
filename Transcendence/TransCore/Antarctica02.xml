@@ -446,12 +446,18 @@
 						(list { textID: 'textUnderAttack } )
 
 					(= (msnGetData gSource 'msgProgress) 'alreadyDebriefed)
-						(list { textID: 'AlreadyDebriefed } )
+						(list { textID: (if (rpgEqPlayerClass &unidPilgrimClass;)
+							'AlreadyDebriefedPilgrim
+							'AlreadyDebriefed
+							)})
 
 					(= (msnGetData gSource 'msgProgress) 'success)
 						(list
 							{ textID: 'textSuccessDebrief1 }
-							{ textID: 'textSuccessDebrief2 }
+							{ textID: (if (rpgEqPlayerClass &unidPilgrimClass;)
+								'textSuccessDebrief2Pilgrim
+								'textSuccessDebrief2
+								)}
 							{ textID: 'textSuccessDebrief3 }
 							)
 					)
@@ -561,10 +567,17 @@
 				"We did it! When we get back to St. Katharine's we will
 				bring the Ares peace plan to the Commonwealth!"
 			</Text>
-			<Text id="textSuccessDebrief2">
+			<Text id="textSuccessDebrief2Pilgrim">
 				"I know that your path lies elsewhere and that your journey
 				is just beginning. Thank you for helping us in our need.
 				In return, I want you to have this. It may help you someday."
+
+				And with that, Captain Helios places a small glowing gem in your hand.
+			</Text>
+			<Text id="textSuccessDebrief2">
+				"I know that your path lies elsewhere, but thank you for
+				helping us in our time of need. In return, I want you to
+				have this. It may help you someday."
 
 				And with that, Captain Helios places a small glowing gem in your hand.
 			</Text>
@@ -586,11 +599,17 @@
 			<Text id="textUnderAttack">
 				The captain is on the bridge directing the battle. She looks at you only briefly.
 			</Text>
-			<Text id="AlreadyDebriefed">
+			<Text id="AlreadyDebriefedPilgrim">
 				The captain of the CSC Antarctica welcomes you aboard:
 
 				"%Name%! It's good to see you again. We're heading back to St. Katharine's.
 				I know your journey is just beginning, but maybe we'll see each other there someday."
+			</Text>
+			<Text id="AlreadyDebriefed">
+				The captain of the CSC Antarctica welcomes you aboard:
+
+				"%Name%! It's good to see you again. We're heading back to St. Katharine's.
+				I know you have other places to be, but maybe we'll see each other there someday."
 			</Text>
 			<Text id="textRefuseDock">
 				As you exit the docking ramp, troopers train their weapons on you:

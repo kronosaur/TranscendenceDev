@@ -31,8 +31,8 @@
 const int DIGEST_SIZE = 20;
 static BYTE g_BaseFileDigest[] =
 	{
-	147, 154,  23, 247, 162, 195, 196, 146, 127, 249,
-	 18, 241, 161,  61,  17,   4, 128,   8, 179,  53,
+	217,  65,  50, 198,  65, 150,  12,  27, 251, 185,
+	236,   9, 220,  19, 247, 113, 206, 117,  46,  68,
 	};
 
 class CLibraryResolver : public IXMLParserController
@@ -93,7 +93,7 @@ ALERROR CExtensionCollection::AddCompatibilityLibrary (CExtension *pAdventure, c
 
 	//	In debug mode we output which extension required us to include this library.
 
-	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
 	CString sExtensionName;
 
 	bool bNeedLibrary = false;
@@ -139,6 +139,76 @@ ALERROR CExtensionCollection::AddCompatibilityLibrary (CExtension *pAdventure, c
 	if (!FindBestExtension(DEFAULT_COMPATIBILITY_LIBRARY_UNID, 1, dwFlags, &pLibrary))
 		{
 		if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to find compatibility library: %08x"), DEFAULT_COMPATIBILITY_LIBRARY_UNID);
+		return ERR_FAIL;
+		}
+
+	if (AddToBindList(pLibrary, dwFlags, Compatibility, retList, retsError) != NOERROR)
+		return ERR_FAIL;
+
+	return NOERROR;
+	}
+
+ALERROR CExtensionCollection::AddCompatibilityUNIDLibrary (CExtension *pAdventure, const TArray<CExtension *> &Extensions, DWORD dwFlags, const TArray<CExtension *> &Compatibility, TArray<CExtension *> *retList, CString *retsError)
+
+//	AddCompatibilityLibrary
+//
+//	Examines the adventure and extensions and, if necessary, adds the compatibility
+//	library to the bind list.
+
+	{
+	int i;
+
+	//	In debug mode we output which extension required us to include this library.
+
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
+	CString sExtensionName;
+
+	bool bNeedLibrary = false;
+
+	//	If we're forcing include, then do it.
+
+	if (dwFlags & FLAG_FORCE_COMPATIBILITY_LIBRARY)
+		{
+		bNeedLibrary = true;
+		sExtensionName = CONSTLIT("save file");
+		}
+
+	//	See if the adventure needs it
+
+	else if (pAdventure->UsesCompatibilityUNIDLibrary())
+		{
+		bNeedLibrary = true;
+		sExtensionName = pAdventure->GetName();
+		}
+
+	//	Otherwise, see if any extensions need it
+
+	else
+		{
+		for (i = 0; i < Extensions.GetCount(); i++)
+			{
+			sExtensionName = Extensions[i]->GetName();
+			int iAPIVer = Extensions[i]->GetAPIVersion();
+			if (Extensions[i]->UsesCompatibilityUNIDLibrary())
+				{
+				bNeedLibrary = true;
+				break;
+				}
+			}
+		}
+
+	if (!bNeedLibrary)
+		return NOERROR;
+
+	if (bDebugMode)
+		::kernelDebugLogPattern("Adding compatibility UNID library because of %s.", sExtensionName);
+
+	//	Add the library
+
+	CExtension *pLibrary;
+	if (!FindBestExtension(DEFAULT_COMPATIBILITY_UNID_LIBRARY_UNID, 1, dwFlags, &pLibrary))
+		{
+		if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to find compatibility UNID library: %08x"), DEFAULT_COMPATIBILITY_UNID_LIBRARY_UNID);
 		return ERR_FAIL;
 		}
 
@@ -233,7 +303,7 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 	if (pExtension->IsMarked())
 		return NOERROR;
 
-	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
 
 	//	Mark now in case there is a circular dependency (in that case, we will
 	//	ignore the circular dependency.)
@@ -253,9 +323,9 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 	Resolver.ReportLibraryErrors();
 
 	CExtension::SLoadOptions LoadOptions;
-	LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
-	LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
-	LoadOptions.bLoadDiagnostics = ((dwFlags & FLAG_DIAGNOSTICS) == FLAG_DIAGNOSTICS);
+	LoadOptions.bNoResources = (dwFlags & FLAG_NO_RESOURCES);
+	LoadOptions.bNoDigestCheck = (dwFlags & FLAG_NO_COLLECTION_CHECK);
+	LoadOptions.bLoadDiagnostics = (dwFlags & FLAG_DIAGNOSTICS);
 
 	//	Make sure the extension is loaded completely.
 
@@ -459,8 +529,8 @@ ALERROR CExtensionCollection::ComputeAvailableAdventures (DWORD dwFlags, TArray<
 
 	//	Initialize
 
-	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
-	bool bRegisteredOnly = ((dwFlags & FLAG_REGISTERED_ONLY) == FLAG_REGISTERED_ONLY);
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
+	bool bRegisteredOnly = (dwFlags & FLAG_REGISTERED_ONLY);
 	retList->DeleteAll();
 
 	//	Loop by UNID because we allow at most one of each UNID.
@@ -535,12 +605,12 @@ ALERROR CExtensionCollection::ComputeAvailableExtensions (CExtension *pAdventure
 
 	//	Initialize
 
-	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
 	bool bAllExtensions = (Extensions.GetCount() == 0);
-	bool bAutoOnly = ((dwFlags & FLAG_AUTO_ONLY) == FLAG_AUTO_ONLY);
-	bool bIncludeAuto = bAutoOnly || ((dwFlags & FLAG_INCLUDE_AUTO) == FLAG_INCLUDE_AUTO);
-	bool bRegisteredOnly = ((dwFlags & FLAG_REGISTERED_ONLY) == FLAG_REGISTERED_ONLY);
-	bool bNoDiagnostics = !((dwFlags & FLAG_DIAGNOSTICS) == FLAG_DIAGNOSTICS);
+	bool bAutoOnly = (dwFlags & FLAG_AUTO_ONLY);
+	bool bIncludeAuto = bAutoOnly || (dwFlags & FLAG_INCLUDE_AUTO);
+	bool bRegisteredOnly = (dwFlags & FLAG_REGISTERED_ONLY);
+	bool bNoDiagnostics = !(dwFlags & FLAG_DIAGNOSTICS);
 
 	if (!(dwFlags & FLAG_ACCUMULATE))
 		retList->DeleteAll();
@@ -678,7 +748,7 @@ ALERROR CExtensionCollection::ComputeBindOrder (CExtension *pAdventure,
 	ALERROR error;
 	int i;
 
-	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
 
 	//	Initialize
 
@@ -722,6 +792,11 @@ ALERROR CExtensionCollection::ComputeBindOrder (CExtension *pAdventure,
 	//	See if we need the compatibility library
 
 	if (error = AddCompatibilityLibrary(pAdventure, DesiredExtensions, dwFlags, CompatibilityLibraries, retList, retsError))
+		return error;
+
+	//	See if we need the compatibility UNID library
+
+	if (error = AddCompatibilityUNIDLibrary(pAdventure, DesiredExtensions, dwFlags, CompatibilityLibraries, retList, retsError))
 		return error;
 
 	//	Now add the adventure and any dependencies
@@ -768,7 +843,7 @@ void CExtensionCollection::ComputeCompatibilityLibraries (CExtension *pAdventure
 
 	//	Initialize
 
-	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
 	retList->DeleteAll();
 
 	//	Loop by UNID because we allow at most one of each UNID.
@@ -845,11 +920,29 @@ void CExtensionCollection::ComputeCoreLibraries (CExtension *pExtension, TArray<
 				retList->Insert(pLibrary);
 
 			//	Prior to API 26 we expected these UNIDs to be defined, so we 
-			//	need to add them.
+			//	need to add them. 
 
 			if (pExtension->GetAPIVersion() < 26)
 				{
 				if (FindBestExtension(UNID_HUMAN_SPACE_LIBRARY, 1, 0, &pLibrary))
+					retList->Insert(pLibrary);
+				}
+
+			//	Prior to API 12 we expected these UNIDs to be defined, so we 
+			//	need to add them.
+
+			if (pExtension->GetAPIVersion() < 12)
+				{
+				if (FindBestExtension(DEFAULT_COMPATIBILITY_LIBRARY_UNID, 1, 0, &pLibrary))
+					retList->Insert(pLibrary);
+				}
+
+			//	Prior to API 53 we expected these UNIDs to have valid entities, so we
+			//	need to add them
+
+			if (pExtension->GetAPIVersion() < 54)
+				{
+				if (FindBestExtension(DEFAULT_COMPATIBILITY_UNID_LIBRARY_UNID, 1, 0, &pLibrary))
 					retList->Insert(pLibrary);
 				}
 
@@ -1135,7 +1228,7 @@ bool CExtensionCollection::FindAdventureFromDesc (DWORD dwUNID, DWORD dwFlags, C
 	CSmartLock Lock(m_cs);
 	int i;
 
-	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
 
 	//	Look for the adventure
 
@@ -1182,8 +1275,8 @@ bool CExtensionCollection::FindBestExtension (DWORD dwUNID, DWORD dwRelease, DWO
 	{
 	CSmartLock Lock(m_cs);
 
-	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
-	bool bAllowAltRelease = ((dwFlags & FLAG_ALLOW_DIFFERENT_RELEASE) == FLAG_ALLOW_DIFFERENT_RELEASE);
+	bool bDebugMode = (dwFlags & FLAG_DEBUG_MODE);
+	bool bAllowAltRelease = (dwFlags & FLAG_ALLOW_DIFFERENT_RELEASE);
 
 	int iPos;
 	if (!m_ByUNID.FindPos(dwUNID, &iPos))
@@ -1535,7 +1628,7 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, const TSortMap<DWO
 	if (!m_bReloadNeeded)
 		return NOERROR;
 
-	m_bLoadedInDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	m_bLoadedInDebugMode = (dwFlags & FLAG_DEBUG_MODE);
 	m_DisabledExtensions = DisabledExtensions;
 
 	//	Default adventure can never be disabled.
@@ -1582,9 +1675,9 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, const TSortMap<DWO
 		Resolver.AddDefaults(pExtension);
 
 		CExtension::SLoadOptions LoadOptions;
-		LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
-		LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
-		LoadOptions.bLoadDiagnostics = ((dwFlags & FLAG_DIAGNOSTICS) == FLAG_DIAGNOSTICS);
+		LoadOptions.bNoResources = (dwFlags & FLAG_NO_RESOURCES);
+		LoadOptions.bNoDigestCheck = (dwFlags & FLAG_NO_COLLECTION_CHECK);
+		LoadOptions.bLoadDiagnostics = (dwFlags & FLAG_DIAGNOSTICS);
 
 		//	If this extension has been manually disabled, then don't bother with
 		//	the digest because it is expensive. We'll compute it later.
@@ -1826,8 +1919,7 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 	CExtension *pExtension;
 	if (error = CExtension::CreateExtension(ExtCtx, pDesc, CExtension::folderBase, pExtEntities, &pExtension))
 		{
-		if (pRoot)
-			delete pRoot;
+		delete pRoot;
 		delete pExtEntities;
 		Ctx.sError = ExtCtx.sError;
 		Ctx.sErrorFilespec = ExtCtx.sErrorFilespec;
@@ -1866,8 +1958,8 @@ ALERROR CExtensionCollection::LoadFile (const CString &sFilespec, CExtension::EF
 	Resolver.AddDefaults(pExtension);
 
 	CExtension::SLoadOptions LoadOptions;
-	LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
-	LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
+	LoadOptions.bNoResources = (dwFlags & FLAG_NO_RESOURCES);
+	LoadOptions.bNoDigestCheck = (dwFlags & FLAG_NO_COLLECTION_CHECK);
 
 	//	Load it
 

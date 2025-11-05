@@ -304,20 +304,15 @@ CStationType::~CStationType (void)
 //	CStationType destructor
 
 	{
-	if (m_pDevices)
-		delete m_pDevices;
+	delete m_pDevices;
 
-	if (m_pItems)
-		delete m_pItems;
+	delete m_pItems;
 
-	if (m_pEncounters)
-		delete m_pEncounters;
+	delete m_pEncounters;
 
-	if (m_pAnimations)
-		delete [] m_pAnimations;
+	delete [] m_pAnimations;
 
-	if (m_pTrade)
-		delete m_pTrade;
+	delete m_pTrade;
 	}
 
 void CStationType::AddTypesUsedByXML (CXMLElement *pElement, TSortMap<DWORD, bool> *retTypesUsed)
@@ -1420,7 +1415,7 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 
 		//	NOTE: Can't call GetLevel because it relies on m_AverageDevices.
 
-		int iLevel = Max(m_iLevel, GetEncounterDesc().CalcLevelFromFrequency());
+		int iLevel = Max(1, Max(m_iLevel, GetEncounterDesc().CalcLevelFromFrequency()));
 		GenerateDevices(iLevel, m_AverageDevices);
 		}
 

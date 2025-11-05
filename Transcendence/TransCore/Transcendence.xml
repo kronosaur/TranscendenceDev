@@ -64,13 +64,14 @@
 	<!-- CORE TYPE LIBRARY 0003 -->
 	
 	<!ENTITY unidCoreTypesLibrary		"0x00030000">
+
 	
 	<!-- RESERVED 0004-000E -->
 
 	<!-- 000F 0000-000F: Human Space -->
 	<!-- 000F 1000-100F: Human Space -->
 
-	<!-- HUMAN SPACE LIBRARY 0010-001F -->
+	<!-- HUMAN SPACE VOL 1 LIBRARY 0010-001F -->
 
 	<!ENTITY unidHumanSpaceLibrary		"0x00100000">
 	
@@ -79,16 +80,39 @@
 	<!-- 0040 xxxx to 004F xxxx RESERVED FOR PART II ADVENTURE -->
 	<!-- 0050 xxxx to 005F xxxx RESERVED FOR PART III LIBRARY -->
 	<!-- 0060 xxxx to 006F xxxx RESERVED FOR PART III ADVENTURE -->
-	<!-- 0070 xxxx to 007F xxxx RESERVED FOR COMPATIBILITY LIBRARY -->
-	
+	<!-- 0070 xxxx to 007F xxxx RESERVED FOR COMPATIBILITY LIBRARIES -->
+
+	<!-- API 0-26 COMPAT TYPES LIBRARY 0070 -->
+
 	<!ENTITY unidCompatibilityLibrary	"0x00700000">
+
+	<!-- COMPAT UNID LIBRARIES 0071 -->
+		<!-- 
+		Compat UNID libraries only store deprecated UNIDs
+		so they can have incremental UNIDs, ex 00710000,
+		00710001, etc.
+		-->
+
+	<!ENTITY CMPT_unidAPI54CompatUNIDLibrary	"0x00710000">
+	<!ENTITY unidSOTPSoundtrackUNIDLibrary		"0x00710001">
 	
-	<!-- 0080-00FF RESERVED -->
+	<!-- 0080-009F RESERVED -->
+
+	<!-- HUMAN SPACE VOL 2 LIBRARY 00A0 -->
 	
 	<!-- 0100 - 01FF RESERVED FOR DEBUG/TUTORIAL EXTENSIONS -->
-	<!-- 0200 - 07FF RESERVED -->
+	<!-- 0200 - 02FF RESERVED -->
+	<!-- 0300 - 03FF OPENWORLD SANDBOX GAMEPLAY -->
+
+	<!-- SANDBOX LIBRARY 0300 -->
+	<!-- 0400 - 07FF RESERVED -->
 	
 	<!-- HUMAN SPACE LIBRARY 0800-080F  -->
+
+	<!-- 0810 - 9FFF RESERVED -->
+	<!-- A000 - CFFF REGISTERED EXTENSIONS -->
+	<!-- D000 - EFFF UNREGISTERED EXTENSIONS -->
+	<!-- F000 - FFFF DYNAMIC TYPES -->
 
 	<!-- PART I 0020 0xxx -->
 
@@ -99,12 +123,16 @@
 	<!ENTITY unidPartISystemMap			"0x00200004">
 	
 	<!-- HUARI 0021 0xxx -->
+	<!ENTITY unidHuaramarcaLibrary 		"0x00210000">
+
+	<!-- PILGRIM STORY MISSIONS -->
+	<!ENTITY unidSOTPMissionLibrary 	"0x00220000">
 	
 	<!-- PART I SOUNDTRACK 0082 -->
 	]>
 
 <TranscendenceUniverse
-		apiVersion=						"54"
+		apiVersion=						"58"
 		>
 
 <!-- TRANSCENDENCE =============================================================
@@ -143,8 +171,12 @@
 	<CoreLibrary filename="CoreTypesLibrary.xml"/>
 	<CoreLibrary filename="RPGLibrary.xml"/>
 	<CoreLibrary filename="GalaxyLibrary.xml"/>
+	<CoreLibrary filename="SOTPSoundtrackUNIDsLibrary.xml"/>
 	<CoreLibrary filename="HumanSpaceVol01.xml"/>
+	<CoreLibrary filename="HuaramarcaLibrary.xml"/>
+	<CoreLibrary filename="StoriesOfThePilgrim.xml"/>
 	<CoreLibrary filename="CompatibilityLibrary.xml"/>
+	<CoreLibrary filename="CMPT_API54CompatUNIDsLibrary.xml"/>
 
 <!-- CORE ADVENTURE ======================================================== -->
 

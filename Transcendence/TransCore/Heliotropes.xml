@@ -35,7 +35,7 @@
 				 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
-			armorID=			"&itSolarArmor;"
+			armorID=			"&itLightSolarArmor;"
 			hitPoints=			"420"
 			multiHull=			"true"
 			regen=              "8"
@@ -184,7 +184,7 @@
 		<!-- Configuration -->
 		
 		<Armor
-			armorID=			"&itSolarArmor;"
+			armorID=			"&itLightSolarArmor;"
 			count=				"12"
 			/>
 		
@@ -546,8 +546,8 @@
 							(setq damageHP (@ gData 'damageHP))
 
 							{
-								length:	(mathScale damageHP 5 64 60 220 50)
-								width: (mathScale damageHP 5 64 10 20 50)
+								length:	(gammaScale damageHP 5 64 60 220 50)
+								width: (gammaScale damageHP 5 64 10 20 50)
 								intensity: 20
 								}
 							)

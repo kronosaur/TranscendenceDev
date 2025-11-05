@@ -2517,8 +2517,7 @@ ALERROR CreateSiblings (SSystemCreateCtx *pCtx,
 			iPos = (iPos + 1) % iCount;
 			}
 
-		if (pAngles)
-			delete [] pAngles;
+		delete [] pAngles;
 		}
 
 	pCtx->ZAdjust = OldZAdjust;
@@ -4014,10 +4013,12 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 
 	//	Store the current system. We need this so that any OnCreate code can
 	//	get the right system. But we need to remember the old system because we
-	//	set it back at the end.
+	//	set it back at the end. Also, we set the m_fNotInUI flag so that we can
+	//	still tell that the universe is not being shown yet.
 
 	CSystem *pOldSystem = Universe.GetCurrentSystem();
 	Universe.SetCurrentSystem(pSystem);
+	pSystem->m_fNotInUI = true;
 
 	//	Create the group
 
@@ -4231,6 +4232,8 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 	//	Done
 
 	Universe.SetCurrentSystem(pOldSystem);
+	pSystem->m_fNotInUI = false;
+
 	*retpSystem = pSystem;
 
 	return NOERROR;

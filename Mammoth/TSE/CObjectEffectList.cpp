@@ -82,7 +82,7 @@ void CObjectEffectList::Init (const CObjectEffectDesc &Desc, const TArray<IEffec
 		m_FixedEffects[i].pPainter = Painters[i];
 	}
 
-void CObjectEffectList::Move (CSpaceObject *pObj, const CVector &vOldPos, bool *retbBoundsChanged)
+void CObjectEffectList::Move (CSpaceObject *pObj, const CVector &vOldPos, Metric rSeconds, bool *retbBoundsChanged)
 
 //	Move
 //
@@ -95,6 +95,7 @@ void CObjectEffectList::Move (CSpaceObject *pObj, const CVector &vOldPos, bool *
 	SEffectMoveCtx MoveCtx;
 	MoveCtx.pObj = pObj;
 	MoveCtx.vOldPos = vOldPos;
+	MoveCtx.rSeconds = rSeconds;
 
 	for (i = 0; i < m_FixedEffects.GetCount(); i++)
 		if (m_FixedEffects[i].pPainter)

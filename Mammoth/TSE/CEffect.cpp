@@ -114,6 +114,7 @@ void CEffect::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 		{
 		SEffectMoveCtx Ctx;
 		Ctx.pObj = this;
+		Ctx.rSeconds = rSeconds;
 
 		//	Tell the painter about the new absolute position
 

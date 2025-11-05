@@ -53,7 +53,7 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"playerGenome",				optionString,	"",			0	},
 		{	"playerShipClass",			optionInteger,	"0",		OPTION_FLAG_HEX	},
 		{	"lastAdventure",			optionInteger,	"0",		OPTION_FLAG_HEX	},
-		{	"lastDifficulty",			optionString,	"story",	0	},
+		{	"lastDifficulty",			optionString,	"normal",	0	},
 
 		{	"dockPortIndicator",		optionString,	"enabled",	0	},
 		{	"invokeLetterHotKeys",		optionBoolean,	"false",	0	},
@@ -87,6 +87,10 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"maxResolution",			optionInteger,	"1200",		0	},
 		{	"noGPUAcceleration",		optionBoolean,	"false",	0	},
 		{	"noSpaceBackground",		optionBoolean,	"false",	0	},
+		{	"use60fps",					optionBoolean,	"true",		0	},
+		{	"useMTSpritePaint",			optionBoolean,	"true",		0	},
+		{	"useMTBkrndPaint",			optionBoolean,	"true",		0	},
+		{	"minMTSpriteChunk",			optionInteger,	"4096",		OPTION_FLAG_HEX },
 
 		//	Sounds options
 		{	"noSound",					optionBoolean,	"false",	0	},

@@ -20,6 +20,8 @@ struct SEffectMoveCtx
 	{
 	CSpaceObject *pObj = NULL;					//	The object that owns the effect
 	CVector vOldPos;							//	Old position of object
+	Metric rSeconds = -1;						//	Time since last move
+	int iTick = 0;								//	Effect tick
 
 	bool bUseOrigin = false;					//	If TRUE, vOrigin is valid.
 	CVector vOrigin;							//	Effect origin
@@ -253,6 +255,9 @@ class IEffectPainter
 		void ReadFromStream (SLoadCtx &Ctx) { OnReadFromStream(Ctx); }
 		static CString ReadUNID (SLoadCtx &Ctx);
 		void SetNoSound (bool bNoSound = true) { m_bNoSound = bNoSound; }
+		void SetSoundVolume (Metric rVolume) { m_sSoundOptions.rVolumeMultiplier = rVolume; }
+		void SetSoundFalloffStart (Metric rFalloffStart) { m_sSoundOptions.rFalloffStart = rFalloffStart; }
+		void SetSoundFalloffFactor (Metric rFalloffFactor) { m_sSoundOptions.rFalloffFactor = rFalloffFactor; }
 		bool SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 			{
 			//	If we don't have a value, see if there is a default.
@@ -325,6 +330,7 @@ class IEffectPainter
 
 		bool m_bSingleton = false;
 		bool m_bNoSound = false;
+		SSoundOptions m_sSoundOptions;
 	};
 
 class CEffectPainterRef
@@ -404,7 +410,7 @@ class CObjectEffectList
 
 		void AccumulateBounds (CSpaceObject *pObj, const CObjectEffectDesc &Desc, int iRotation, RECT *ioBounds);
 		void Init (const CObjectEffectDesc &Desc, const TArray<IEffectPainter *> &Painters);
-		void Move (CSpaceObject *pObj, const CVector &vOldPos, bool *retbBoundsChanged = NULL);
+		void Move (CSpaceObject *pObj, const CVector &vOldPos, Metric rSeconds, bool *retbBoundsChanged = NULL);
 		void Paint (SViewportPaintCtx &Ctx, const CObjectEffectDesc &Desc, DWORD dwEffects, CG32bitImage &Dest, int x, int y);
 		void PaintAll (SViewportPaintCtx &Ctx, const CObjectEffectDesc &Desc, CG32bitImage &Dest, int x, int y);
 		void Update (CSpaceObject *pObj, const CObjectEffectDesc &Desc, int iRotation, DWORD dwEffects);
@@ -472,7 +478,7 @@ class CEffectCreator : public CDesignType
 		const CString &GetUNIDString (void) { return m_sUNID; }
 		bool IsLooping (void) const { return m_bLoop; }
 		bool IsValidUNID (void);
-		void PlaySound (CSpaceObject *pSource = NULL);
+		void PlaySound (CSpaceObject *pSource = NULL, SSoundOptions *pOptions = NULL);
 		void SetLooping (bool bLoop = true) { m_bLoop = bLoop; }
 
 		//	Virtuals
@@ -510,7 +516,7 @@ class CEffectCreator : public CDesignType
 		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) { return NOERROR; }
 		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual void OnEffectMarkResources (void) { }
-		virtual void OnEffectPlaySound (CSpaceObject *pSource);
+		virtual void OnEffectPlaySound (CSpaceObject *pSource, SSoundOptions *pOptions);
 
 		void InitPainterParameters (CCreatePainterCtx &Ctx, IEffectPainter *pPainter);
 
@@ -520,6 +526,7 @@ class CEffectCreator : public CDesignType
 
 		CString m_sUNID;
 		CSoundRef m_Sound;
+		SSoundOptions m_sSoundOptions;
 		EInstanceTypes m_iInstance = instCreator;
 		bool m_bLoop = false;
 

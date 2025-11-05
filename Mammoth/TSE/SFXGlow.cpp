@@ -119,8 +119,7 @@ CGlowEffectCreator::~CGlowEffectCreator (void)
 //	CGlowEffectCreator destructor
 
 	{
-	if (m_pSingleton)
-		delete m_pSingleton;
+	delete m_pSingleton;
 	}
 
 IEffectPainter *CGlowEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
@@ -205,11 +204,8 @@ ALERROR CGlowEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 	{
 	//	Clean up, because we might want to recompute for next time.
 
-	if (m_pSingleton)
-		{
-		delete m_pSingleton;
-		m_pSingleton = NULL;
-		}
+	delete m_pSingleton;
+	m_pSingleton = NULL;
 
 	return NOERROR;
 	}

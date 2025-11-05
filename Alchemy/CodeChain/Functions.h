@@ -106,6 +106,28 @@
 #define FN_MATH_LOG						102
 #define FN_HEX							103
 #define FN_SYSINFO_SELF_TEST			104
+#define FN_MATH_GAMMA_SCALE_NUMERALS	105
+#define FN_DEBUG_APPLY_TIMED			106
+#define FN_DEBUG_EVAL_TIMED				107
+#define FN_STR_JOIN						108
+#define FN_STR_SPLIT					109
+#define FN_STR_COUNT					110
+#define FN_STR_STRIP					111
+#define FN_STR_ENDS_WITH				112
+#define FN_STR_BEGINS_WITH				113
+#define FN_STR_REPLACE					114
+#define FN_STR_FIND						115
+#define FN_STR_FINDALL					116
+#define FN_SUBSET_SUBSET				117
+#define FN_SUBSET_SLICE					118
+#define FN_BITWISE_AND                  119
+#define FN_BITWISE_OR                   120
+#define FN_BITWISE_XOR                  121
+#define FN_BITWISE_NOT                  122
+#define FN_BITWISE_SHL                  123
+#define FN_BITWISE_SHR                  124
+#define FN_BITWISE_ROL                  125
+#define FN_BITWISE_ROR                  126
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
@@ -114,9 +136,11 @@ ICCItem *fnAtmTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnCat (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnCount (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnDebugPrimatives (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEquality (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEqualityNumerals (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnEqualityExact (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEval (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnFilter (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnFind (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
@@ -149,6 +173,7 @@ ICCItem *fnShuffle (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnSort (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnSpecial (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnSplit (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
+ICCItem *fnStr (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnStrCapitalize (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnStrFind (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
@@ -163,3 +188,4 @@ ICCItem *fnVecCreateOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnVector (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnVecMath (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnVecIndex (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

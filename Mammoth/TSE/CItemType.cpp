@@ -226,20 +226,16 @@ CItemType::~CItemType (void)
 //	CItemType destructor
 
 	{
-	if (m_pComponents)
-		delete m_pComponents;
+	delete m_pComponents;
 
 	if (m_pUseCode)
 		m_pUseCode->Discard();
 
-	if (m_pArmor)
-		delete m_pArmor;
+	delete m_pArmor;
 
-	if (m_pDevice)
-		delete m_pDevice;
+	delete m_pDevice;
 
-	if (m_pMissile)
-		delete m_pMissile;
+	delete m_pMissile;
 	}
 
 bool CItemType::IsAmmunition (void) const

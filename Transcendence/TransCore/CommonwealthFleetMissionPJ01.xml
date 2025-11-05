@@ -16,11 +16,11 @@
 			cometfalls on timer & force-accept (so we can display an alternate
 			success screen)
 
-	Alpha	Tundra and 36 Sandstorms
+	Alpha	Chasm and 36 Sandstorms
 		Will start attack on Point Juno when mission is started (either
 		when accepted by the player or 1600 ticks after creation)
 
-	Beta	Chasm and 36 Sandstorms
+	Beta	Tundra and 36 Sandstorms
 		Will start attack on Point Juno 3600 ticks after Alpha OR if
 		alpha is destroyed before the player accepts the mission.
 
@@ -598,7 +598,7 @@
 			<Text id="Briefing">
 				(list
 					{
-						textID: (if (= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+						textID: (if (rpgEqPlayerClass &unidPilgrimClass;)
 							'textBriefing1aPilgrim
 							'textBriefing1aNormal
 							)
@@ -658,7 +658,7 @@
 			</Text>
 
 			<Text id="SuccessDebrief">
-				(if (= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+				(if (rpgEqPlayerClass &unidPilgrimClass;)
 					{	textID: 'textSuccessDebriefPilgrim	}
 					{	textID: 'textSuccessDebriefNormal	}
 					)
@@ -879,7 +879,7 @@
 	</MissionType>
 
 	<ShipTable unid="&tbCSCPointJunoAlphaFleet;">
-		<Ship count="1" class="&scChasm;" orders="hold">
+		<Ship count="1" class="&scTundra;" orders="hold">
 			<Escorts>
 				<Ship count="6" class="&scTundra;" orders="escort" controller="fleet"/>
 				<Ship count="32" class="&scSandstorm;" orders="escort" controller="fleet"/>

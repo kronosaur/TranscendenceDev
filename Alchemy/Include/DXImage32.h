@@ -41,6 +41,10 @@ class CG32bitPixel
 		DWORD AsR5G5B5 (void) const { return (((m_dwPixel & 0x00f80000) >> 9) | ((m_dwPixel & 0x0000f800) >> 6) | ((m_dwPixel & 0x000000f8) >> 3)); }
 		DWORD AsR5G6B5 (void) const { return (((m_dwPixel & 0x00f80000) >> 8) | ((m_dwPixel & 0x0000fc00) >> 5) | ((m_dwPixel & 0x000000f8) >> 3)); }
 		DWORD AsR8G8B8 (void) const { return m_dwPixel; }
+		void CopyAlpha (CG32bitPixel* pSrc) { m_dwPixel = (m_dwPixel & 0x00ffffff) | (pSrc->AsDWORD() & 0xff000000); }
+		void CopyBlue (CG32bitPixel* pSrc) { m_dwPixel = (m_dwPixel & 0xffffff00) | (pSrc->AsDWORD() & 0x000000ff); }
+		void CopyGreen (CG32bitPixel* pSrc) { m_dwPixel = (m_dwPixel & 0xffff00ff) | (pSrc->AsDWORD() & 0x0000ff00); }
+		void CopyRed (CG32bitPixel* pSrc) { m_dwPixel = (m_dwPixel & 0xff00ffff) | (pSrc->AsDWORD() & 0x00ff0000); }
 		CString AsHTMLColor () const;
 		BYTE GetAlpha (void) const { return (BYTE)((m_dwPixel & 0xff000000) >> 24); }
 		BYTE GetBlue (void) const { return (BYTE)(m_dwPixel & 0x000000ff); }
@@ -53,6 +57,7 @@ class CG32bitPixel
 		void SetBlue (BYTE byValue) { m_dwPixel = (m_dwPixel & 0xffffff00) | (DWORD)byValue; }
 		void SetGreen (BYTE byValue) { m_dwPixel = (m_dwPixel & 0xffff00ff) | ((DWORD)byValue << 8); }
 		void SetRed (BYTE byValue) { m_dwPixel = (m_dwPixel & 0xff00ffff) | ((DWORD)byValue << 16); }
+		void PreMultSelf();
 
 		static BYTE *AlphaTable (BYTE byOpacity) { return g_Alpha8[byOpacity]; }
 		static BYTE *ScreenTable (BYTE byValue) { return g_Screen8[byValue]; }
@@ -160,6 +165,7 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 		bool IsEmpty (void) const { return (m_pRGBA == NULL); }
 		bool IsMarked (void) const { return m_bMarked; }
 		CG32bitPixel *NextRow (CG32bitPixel *pPos) const { return (CG32bitPixel *)((BYTE *)pPos + m_iPitch); }
+		void SetAlphaType (EAlphaTypes iAlphaType) { m_AlphaType = iAlphaType; }
 		void SetMarked (bool bMarked = true) { m_bMarked = bMarked; }
 
 		//	Basic Drawing Interface
@@ -169,7 +175,7 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 		void BltMask (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG32bitImage &Mask, const CG32bitImage &Source, int xDest, int yDest);
 		void Composite (int xSrc, int ySrc, int cxWidth, int cyHeight, BYTE byOpacity, const CG32bitImage &Source, int xDest, int yDest);
 		void Copy (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG32bitImage &Source, int xDest, int yDest);
-		void CopyChannel (ChannelTypes iChannel, int xSrc, int ySrc, int cxWidth, int cyHeight, const CG32bitImage &Source, int xDest, int yDest);
+		void CopyChannel (ChannelTypes iChannel, int xSrc, int ySrc, int cxWidth, int cyHeight, const CG32bitImage &Source, int xDest, int yDest, DWORD dwFlags = 0, ChannelTypes iDestChannel = channelNone);
 		void CopyTransformed (const RECT &rcDest, const CG32bitImage &Src, const RECT &rcSrc, const CXForm &SrcToDest, const CXForm &DestToSrc, const RECT &rcDestXForm);
 		void DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMarker);
 		void DrawLine (int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor);
@@ -204,7 +210,6 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 		//	DX and Window Functions
 
 		void BltToDC (HDC hDC, int x, int y) const;
-		void BltToSurface (LPDIRECTDRAWSURFACE7 pSurface, SurfaceTypes iType);
 		bool CopyToClipboard (void);
 		size_t GetMemoryUsage (void) const;
 		bool SaveAsWindowsBMP (const CString &sFilespec);

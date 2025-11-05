@@ -545,14 +545,15 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 			return CC.CreateNil();
 
 		CItemType *pType;
-		pLauncher->GetSelectedVariantInfo(this, NULL, NULL, &pType);
+		CItemType *pAmmoType;
+		pLauncher->GetSelectedVariantInfo(this, NULL, NULL, &pAmmoType, &pType);
 		if (pType == NULL)
 			return CC.CreateNil();
 
-		if (pType->IsMissile())
+		if (pAmmoType)
 			{
 			CItemListManipulator ItemList(const_cast<CShip *>(this)->GetItemList());
-			CItem theItem(pType, 1);
+			CItem theItem(pAmmoType, 1);
 			if (!ItemList.SetCursorAtItem(theItem))
 				return CC.CreateNil();
 

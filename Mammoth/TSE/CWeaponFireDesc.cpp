@@ -26,10 +26,14 @@
 #define CHARGE_EFFECT_ATTRIB					CONSTLIT("chargeEffect")
 #define CHARGE_TIME_ATTRIB						CONSTLIT("chargeTime")
 #define CHARGE_SOUND_ATTRIB						CONSTLIT("chargeSound")
+#define CHARGE_SOUND_FALLOFF_ATTRIB				CONSTLIT("chargeSoundFalloffFactor")
+#define CHARGE_SOUND_FALLOFF_START_ATTRIB		CONSTLIT("chargeSoundFalloffStart")
+#define CHARGE_SOUND_VOLUME_ATTRIB				CONSTLIT("chargeSoundVolume")
 #define COUNT_ATTRIB							CONSTLIT("count")
 #define EXHAUST_RATE_ATTRIB						CONSTLIT("creationRate")
 #define DAMAGE_ATTRIB							CONSTLIT("damage")
 #define DAMAGE_AT_MAX_RANGE_ATTRIB				CONSTLIT("damageAtMaxRange")
+#define DETONATE_ON_DESTROYED_ATTRIB			CONSTLIT("detonateOnDestroyed")
 #define DIRECTIONAL_ATTRIB						CONSTLIT("directional")
 #define DIRECTION_ATTRIB						CONSTLIT("direction")
 #define EXHAUST_DRAG_ATTRIB						CONSTLIT("drag")
@@ -39,12 +43,16 @@
 #define FAILSAFE_ATTRIB							CONSTLIT("failsafe")
 #define FIRE_EFFECT_ATTRIB						CONSTLIT("fireEffect")
 #define FIRE_RATE_ATTRIB						CONSTLIT("fireRate")
+#define FRAGMENT_ANGLE_DIRECTION_ATTRIB			CONSTLIT("fragmentAngleDirection")
+#define FRAGMENT_ANGLE_OFFSET_ATTRIB			CONSTLIT("fragmentAngleOffset")
+#define FRAGMENT_ANGLE_ATTRIB					CONSTLIT("fragmentAngle")
 #define FRAGMENT_COUNT_ATTRIB					CONSTLIT("fragmentCount")
 #define FRAGMENT_INTERVAL_ATTRIB				CONSTLIT("fragmentInterval")
 #define FRAGMENT_MAX_RADIUS_ATTRIB				CONSTLIT("fragmentMaxRadius")
 #define FRAGMENT_MIN_RADIUS_ATTRIB				CONSTLIT("fragmentMinRadius")
 #define FRAGMENT_RADIUS_ATTRIB					CONSTLIT("fragmentRadius")
 #define FRAGMENT_TARGET_ATTRIB					CONSTLIT("fragmentTarget")
+#define FRAGMENT_VELOCITY_INHERITANCE_ATTRIB	CONSTLIT("fragmentVelocityInheritance")
 #define HIT_EFFECT_ATTRIB						CONSTLIT("hitEffect")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")
@@ -58,9 +66,12 @@
 #define MAX_RADIUS_ATTRIB						CONSTLIT("maxRadius")
 #define MIN_DAMAGE_ATTRIB						CONSTLIT("minDamage")
 #define MIN_RADIUS_ATTRIB						CONSTLIT("minRadius")
+#define MINING_LEVEL_ATTRIB						CONSTLIT("miningMaxOreLevel")
+#define MINING_METHOD_ATTRIB					CONSTLIT("miningMethod")
 #define MISSILE_SPEED_ATTRIB					CONSTLIT("missileSpeed")
 #define MULTI_TARGET_ATTRIB						CONSTLIT("multiTarget")
 #define NO_DETONATION_ON_END_OF_LIFE_ATTRIB		CONSTLIT("noDetonationOnEndOfLife")
+#define NO_DETONATION_ON_IMPACT_ATTRIB			CONSTLIT("noDetonationOnImpact")
 #define NO_FRIENDLY_FIRE_ATTRIB					CONSTLIT("noFriendlyFire")
 #define NO_IMMOBILE_HITS_ATTRIB					CONSTLIT("noImmobileHits")
 #define NO_IMMUTABLE_HITS_ATTRIB				CONSTLIT("noImmutableHits")
@@ -76,6 +87,13 @@
 #define PARTICLE_SPREAD_ANGLE_ATTRIB			CONSTLIT("particleSpreadAngle")
 #define PARTICLE_SPREAD_WIDTH_ATTRIB			CONSTLIT("particleSpreadWidth")
 #define PASSTHROUGH_ATTRIB						CONSTLIT("passthrough")
+#define PROXIMITY_SENSOR_ARC					CONSTLIT("proximitySensorArc")
+#define PROXIMITY_DISTANCE_ARMED_ATTRIB			CONSTLIT("proximityDistanceArmed")
+#define PROXIMITY_DISTANCE_AUTO_TRIGGER_ATTRIB	CONSTLIT("proximityDistanceAutoTrigger")
+#define PROXIMITY_DISTANCE_FAIL_ATTRIB			CONSTLIT("proximityDistanceFail")
+#define PROXIMITY_DISTANCE_FAILSAFE_ATTRIB		CONSTLIT("proximityDistanceFailsafe")
+#define PROXIMITY_DISTANCE_IMPACT_TRIGGER_ATTRIB	CONSTLIT("proximityDistanceImpactTrigger")
+#define PROXIMITY_TRIGGER_ON_TARGET_ONLY_ATTRIB	CONSTLIT("proximityTriggerOnTargetOnly")
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
 #define PLAY_SOUND_ONCE_PER_BURST_ATTRIB		CONSTLIT("playSoundOncePerBurst")
 #define RANGE_ATTRIB							CONSTLIT("range")
@@ -83,6 +101,9 @@
 #define BEAM_CONTINUOUS_ATTRIB					CONSTLIT("repeating")
 #define CONTINUOUS_FIRE_DELAY_ATTRIB			CONSTLIT("repeatingDelay")
 #define SOUND_ATTRIB							CONSTLIT("sound")
+#define FIRE_SOUND_FALLOFF_ATTRIB				CONSTLIT("soundFalloffFactor")
+#define FIRE_SOUND_FALLOFF_START_ATTRIB			CONSTLIT("soundFalloffStart")
+#define FIRE_SOUND_VOLUME_ATTRIB				CONSTLIT("soundVolume")
 #define SPEED_ATTRIB							CONSTLIT("speed")
 #define STEALTH_ATTRIB							CONSTLIT("stealth")
 #define TARGET_REQUIRED_ATTRIB					CONSTLIT("targetRequired")
@@ -107,6 +128,24 @@
 #define FIRE_TYPE_RADIUS						CONSTLIT("radius")
 #define FIRE_TYPE_SHOCKWAVE						CONSTLIT("shockwave")
 
+#define FRAG_ANGLE_TYPE_DIRECTION				CONSTLIT("direction")
+#define FRAG_ANGLE_TYPE_VELOCITY				CONSTLIT("velocity")
+#define FRAG_ANGLE_TYPE_TARGET					CONSTLIT("target")
+#define FRAG_ANGLE_TYPE_TRIGGER					CONSTLIT("trigger")
+#define FRAG_ANGLE_TYPE_ORIGIN					CONSTLIT("origin")
+#define FRAG_ANGLE_TYPE_SYSTEM					CONSTLIT("system")
+#define FRAG_ANGLE_TYPE_RANDOM					CONSTLIT("random")
+
+#define FRAG_VELOCITY_TYPE_NONE					CONSTLIT("none")
+#define FRAG_VELOCITY_TYPE_NEWTONIAN			CONSTLIT("newtonian")
+#define FRAG_VELOCITY_TYPE_RELATIVISTIC			CONSTLIT("relativistic")
+#define FRAG_VELOCITY_TYPE_SUPERLUMINAL			CONSTLIT("superluminal")
+
+#define MINING_METHOD_ABLATIVE					CONSTLIT("ablative")
+#define MINING_METHOD_DRILL						CONSTLIT("drill")
+#define MINING_METHOD_EXPLOSIVE					CONSTLIT("explosive")
+#define MINING_METHOD_SHOCKWAVE					CONSTLIT("shockwave")
+
 #define ON_CREATE_SHOT_EVENT					CONSTLIT("OnCreateShot")
 #define ON_DAMAGE_OVERLAY_EVENT					CONSTLIT("OnDamageOverlay")
 #define ON_DAMAGE_SHIELDS_EVENT					CONSTLIT("OnDamageShields")
@@ -120,6 +159,8 @@
 #define PROPERTY_INTERACTION					CONSTLIT("interaction")
 #define PROPERTY_LIFETIME						CONSTLIT("lifetime")
 #define PROPERTY_MINING_TYPE					CONSTLIT("miningType")
+#define PROPERTY_MISSILE_SPEED					CONSTLIT("missileSpeed")
+#define PROPERTY_RANGE							CONSTLIT("range")
 #define PROPERTY_SHOTS_PER_AMMO_ITEM			CONSTLIT("shotsPerAmmoItem")
 #define PROPERTY_STD_HP							CONSTLIT("stdHP")
 #define PROPERTY_STD_INTERACTION				CONSTLIT("stdInteraction")
@@ -158,14 +199,11 @@ CWeaponFireDesc::~CWeaponFireDesc (void)
 		delete pDelete;
 		}
 
-	if (m_pParticleDesc)
-		delete m_pParticleDesc;
+	delete m_pParticleDesc;
 
-	if (m_pOldEffects)
-		delete m_pOldEffects;
+	delete m_pOldEffects;
 
-	if (m_pScalable)
-		delete[] m_pScalable;
+	delete[] m_pScalable;
 	}
 
 void CWeaponFireDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
@@ -205,8 +243,12 @@ void CWeaponFireDesc::ApplyAcceleration (CSpaceObject *pMissile) const
 	{
 	if (m_iAccelerationFactor > 0)
 		{
-		if (m_iAccelerationFactor < 100
-				|| pMissile->GetVel().Length() < m_rMaxMissileSpeed)
+		CVector vSourceVel = pMissile->GetSourceVel();
+		CVector vBaseVel = pMissile->GetVel() - vSourceVel;
+		if (m_iAccelerationFactor >= 100
+				&& pMissile->GetVel().Length() < m_rMaxMissileSpeed)
+			pMissile->SetVel(vSourceVel + (vBaseVel * (Metric)(m_iAccelerationFactor / 100.0)));
+		else if (m_iAccelerationFactor < 100)
 			pMissile->SetVel(pMissile->GetVel() * (Metric)(m_iAccelerationFactor / 100.0));
 		}
 	}
@@ -961,8 +1003,14 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 			return CC.CreateNil();
 		}
 
+	else if (strEquals(sProperty, PROPERTY_MISSILE_SPEED))
+		return CC.CreateNumber(mathRound(100 * ((m_rMissileSpeed + m_rMaxMissileSpeed) / (2 * LIGHT_SECOND))));
+
 	else if (strEquals(sProperty, PROPERTY_LIFETIME))
 		return CC.CreateNumber(m_Lifetime.GetAveValueFloat());
+
+	else if (strEquals(sProperty, PROPERTY_RANGE))
+		return CC.CreateNumber(GetMaxRange() / LIGHT_SECOND);
 
 	else if (strEquals(sProperty, PROPERTY_SHOTS_PER_AMMO_ITEM))
 		{
@@ -1979,7 +2027,9 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	//	Sound
 
 	m_FireSound = CSoundRef();
+	m_pFireSoundOptions = NULL;
 	m_ChargeSound = CSoundRef();
+	m_pChargeSoundOptions = NULL;
 	m_bPlaySoundOncePerBurst = false;
 
 	//	Compute max effective range
@@ -2025,6 +2075,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	int i;
 
 	m_pExtension = Ctx.pExtension;
+	int iExtensionAPI = m_pExtension->GetAPIVersion();
 	m_iLevel = Max(1, Options.iLevel);
 	m_fFragment = Options.bIsFragment;
 
@@ -2062,6 +2113,41 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, -1);
 	m_iIdlePowerUse = pDesc->GetAttributeIntegerBounded(IDLE_POWER_USE_ATTRIB, 0, -1, (m_iPowerUse == -1 ? -1 : m_iPowerUse / 10));
+
+	//	Mining Method
+
+	CString sMiningMethod;
+	if (pDesc->FindAttribute(MINING_METHOD_ATTRIB, &sMiningMethod))
+		{
+		if (Ctx.GetAPIVersion() < 55)
+			{
+			Ctx.sError = CONSTLIT("miningMethod requires API 55 or higher");
+			return ERR_FAIL;
+			}
+
+		if (sMiningMethod == MINING_METHOD_ABLATIVE)
+			m_MiningMethod = EMiningMethod::ablation;
+		else if (sMiningMethod == MINING_METHOD_DRILL)
+			m_MiningMethod = EMiningMethod::drill;
+		else if (sMiningMethod == MINING_METHOD_EXPLOSIVE)
+			m_MiningMethod = EMiningMethod::explosion;
+		else if (sMiningMethod == MINING_METHOD_SHOCKWAVE)
+			m_MiningMethod = EMiningMethod::shockwave;
+		else
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Invalid weapon mining method: \"%s\""), sValue);
+			return ERR_FAIL;
+			}
+		}
+
+	//	Mining Level
+
+	m_iMaxMiningLevel = pDesc->GetAttributeIntegerBounded(MINING_LEVEL_ATTRIB, 0, MAX_ITEM_LEVEL, -1);
+	if (m_iMaxMiningLevel >= 0 && Ctx.GetAPIVersion() < 57)
+		{
+		Ctx.sError = CONSTLIT("miningMaxOreLevel requires API 57 or higher");
+		return ERR_FAIL;
+		}
 
 	//	Hit criteria
 
@@ -2289,6 +2375,8 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	m_fNoMiningHint = pDesc->GetAttributeBool(NO_MINING_HINT_ATTRIB);
 	m_fNoWMDHint = pDesc->GetAttributeBool(NO_WMD_HINT_ATTRIB);
 	m_fNoDetonationOnEndOfLife = pDesc->GetAttributeBool(NO_DETONATION_ON_END_OF_LIFE_ATTRIB);
+	m_fNoDetonationOnImpact = pDesc->GetAttributeBool(NO_DETONATION_ON_IMPACT_ATTRIB);
+	m_fDetonateOnDestroyed = pDesc->GetAttributeBool(DETONATE_ON_DESTROYED_ATTRIB);
 
 	//	Load continuous and passthrough
 
@@ -2382,11 +2470,60 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 		pNewDesc->Direction.LoadFromXML(pFragDesc->GetAttribute(DIRECTION_ATTRIB), DEFAULT_FRAGMENT_DIRECTION);
 		pNewDesc->FragmentArc.LoadFromXML(pFragDesc->GetAttribute(ARC_ANGLE_ATTRIB), 0);
+		pNewDesc->iFragArcOffsetAndMode = AngleMod(pFragDesc->GetAttributeInteger(FRAGMENT_ANGLE_OFFSET_ATTRIB));
+		CString sFragmentAngleDiceExpr;
+		sFragmentAngleDiceExpr = pFragDesc->GetAttribute(FRAGMENT_ANGLE_ATTRIB);
+		if (sFragmentAngleDiceExpr)
+			{
+			pNewDesc->FragmentArc.LoadFromXML(sFragmentAngleDiceExpr);
+			pNewDesc->iFragArcOffsetAndMode = pNewDesc->iFragArcOffsetAndMode | FLAG_FRAG_ARC_ABSOLUTE;
+			}
+
+		//	Directional preference of fragmentation arc
+		//	Travel direction should default to true, instead of target direction
+
+		CString sFragAngleType = pFragDesc->GetAttribute(FRAGMENT_ANGLE_DIRECTION_ATTRIB);
+		if (sFragAngleType.IsBlank())
+			pNewDesc->iFragAngleType = fragAngleTrigger;
+		else if (sFragAngleType == FRAG_ANGLE_TYPE_DIRECTION)
+			pNewDesc->iFragAngleType = fragAngleDirection;
+		else if (sFragAngleType == FRAG_ANGLE_TYPE_VELOCITY)
+			pNewDesc->iFragAngleType = fragAngleVelocity;
+		else if (sFragAngleType == FRAG_ANGLE_TYPE_TARGET)
+			pNewDesc->iFragAngleType = fragAngleTarget;
+		else if (sFragAngleType == FRAG_ANGLE_TYPE_TRIGGER)
+			pNewDesc->iFragAngleType = fragAngleTrigger;
+		else if (sFragAngleType == FRAG_ANGLE_TYPE_ORIGIN)
+			pNewDesc->iFragAngleType = fragAngleOrigin;
+		else if (sFragAngleType == FRAG_ANGLE_TYPE_SYSTEM)
+			pNewDesc->iFragAngleType = fragAngleSystem;
+		else if (sFragAngleType == FRAG_ANGLE_TYPE_RANDOM)
+			pNewDesc->iFragAngleType = fragAngleRandom;
+		else
+			{
+			Ctx.sError = CONSTLIT("Invalid fragmentAngleDirection attribute");
+			return ERR_FAIL;
+			}
 
 		//	Set MIRV flag
 
 		if (pDesc->GetAttributeBool(FRAGMENT_TARGET_ATTRIB))
 			pNewDesc->pDesc->m_fMIRV = true;
+
+		CString sFragVelocityType = pFragDesc->GetAttribute(FRAGMENT_VELOCITY_INHERITANCE_ATTRIB);
+		if (sFragVelocityType == FRAG_VELOCITY_TYPE_NONE || (sFragVelocityType == CONSTLIT("") && pNewDesc->pDesc->m_fMIRV))
+			pNewDesc->iVelocityType = fviNone;
+		else if (sFragVelocityType == FRAG_VELOCITY_TYPE_NEWTONIAN)
+			pNewDesc->iVelocityType = fviNewtonian;
+		else if (sFragVelocityType == FRAG_VELOCITY_TYPE_RELATIVISTIC)
+			pNewDesc->iVelocityType = fviRelativistic;
+		else if (sFragVelocityType == FRAG_VELOCITY_TYPE_SUPERLUMINAL || (sFragVelocityType == CONSTLIT("") && !pNewDesc->pDesc->m_fMIRV))
+			pNewDesc->iVelocityType = fviSuperluminal;
+		else
+			{
+			Ctx.sError = CONSTLIT("Invalid fragmentVelocityInheritance attribute");
+			return ERR_FAIL;
+			}
 		}
 
 	//	If we've got a fragment interval set, then it means we periodically 
@@ -2414,13 +2551,46 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		m_fProximityBlast = (iFragCount != 0);
 		m_iProximityFailsafe = pDesc->GetAttributeInteger(FAILSAFE_ATTRIB);
 
+		m_iProximitySensorArc = pDesc->GetAttributeIntegerBounded(PROXIMITY_SENSOR_ARC, 0, 360, 360);
+
+		//  Configure legacy fragment distance
+
 		Metric rMax = pDesc->GetAttributeDoubleBounded(FRAGMENT_MAX_RADIUS_ATTRIB, 0.0, -1.0, -1.0);
 		if (rMax == -1.0)
 			rMax = pDesc->GetAttributeDoubleBounded(FRAGMENT_RADIUS_ATTRIB, 0.0, -1.0, -1.0);
 
 		Metric rMin = pDesc->GetAttributeDoubleBounded(FRAGMENT_MIN_RADIUS_ATTRIB, 0.0, -1.0, -1.0);
 
-		//	Set defaults, based on which values are defined.
+		//  Configure fragment distance
+
+		if (iExtensionAPI >= 54)
+			{
+			if (rMax == -1.0)
+				m_rFragDistanceArmed = Min(-1.0, LIGHT_SECOND * pDesc->GetAttributeDoubleBounded(PROXIMITY_DISTANCE_ARMED_ATTRIB, 0.0, -1.0, CWeaponClass::FRAG_THRESHOLD_NONE));
+
+			if (rMin == -1.0)
+				m_rFragDistanceAutoTrigger = Min(-1.0, LIGHT_SECOND * pDesc->GetAttributeDoubleBounded(PROXIMITY_DISTANCE_AUTO_TRIGGER_ATTRIB, 0.0, -1.0, CWeaponClass::FRAG_THRESHOLD_NONE));
+
+			m_rFragDistanceArmed = Max(m_rFragDistanceArmed, m_rFragDistanceAutoTrigger);
+
+			m_rFragDistanceFail = Min(-1.0, LIGHT_SECOND * pDesc->GetAttributeDoubleBounded(PROXIMITY_DISTANCE_FAIL_ATTRIB, 0.0, -1.0, CWeaponClass::FRAG_THRESHOLD_NONE));
+			if (m_rFragDistanceFail >= 0.0 && (m_rFragDistanceFail >= m_rFragDistanceAutoTrigger || m_rFragDistanceFail >= m_rFragDistanceArmed))
+				{
+				Ctx.sError = CONSTLIT("proximityDistanceFail cannot be equal to or greater than proximityDistanceArmed or proximityDistance");
+				return ERR_FAIL;
+				}
+
+			m_rFragDistanceImpactTarget = Min(-1.0, LIGHT_SECOND * pDesc->GetAttributeDoubleBounded(PROXIMITY_DISTANCE_IMPACT_TRIGGER_ATTRIB, 0.0, -1.0, CWeaponClass::FRAG_THRESHOLD_NONE));
+			}
+		else
+			{
+			m_rFragDistanceArmed = CWeaponClass::FRAG_THRESHOLD_NONE;
+			m_rFragDistanceAutoTrigger = CWeaponClass::FRAG_THRESHOLD_NONE;
+			m_rFragDistanceFail = CWeaponClass::FRAG_THRESHOLD_NONE;
+			m_rFragDistanceImpactTarget = CWeaponClass::FRAG_THRESHOLD_NONE;
+			}
+
+		//	Set legacy defaults, based on which values are defined.
 
 		if (rMax == -1.0 && rMin == -1.0)
 			{
@@ -2435,6 +2605,9 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			{
 			rMax = Max(rMin, CWeaponClass::DEFAULT_FRAG_THRESHOLD);
 			}
+
+		rMax = Max(rMax, m_rFragDistanceArmed);
+		rMin = Min(Max(rMin, m_rFragDistanceAutoTrigger), rMax);
 
 		//	Convert to light-seconds
 
@@ -2498,6 +2671,26 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		return error;
 	if (error = m_ChargeSound.LoadUNID(Ctx, pDesc->GetAttribute(CHARGE_SOUND_ATTRIB)))
 		return error;
+
+	m_pFireSoundOptions = new SSoundOptions;
+	m_pChargeSoundOptions = new SSoundOptions;
+
+	if (Ctx.GetAPIVersion() >= 55)
+		{
+
+		//	Fire Sound Options
+
+		m_pFireSoundOptions->rFalloffFactor = pDesc->GetAttributeDoubleBounded(FIRE_SOUND_FALLOFF_ATTRIB, 0.0, -1.0, 1.0);
+		m_pFireSoundOptions->rFalloffStart = pDesc->GetAttributeDoubleBounded(FIRE_SOUND_FALLOFF_START_ATTRIB, 0.0, -1.0, 0.0);
+		m_pFireSoundOptions->rVolumeMultiplier = pDesc->GetAttributeDoubleBounded(FIRE_SOUND_VOLUME_ATTRIB, 0.0, -1.0, 1.0);
+
+		//	Charge Sound Options
+
+		m_pChargeSoundOptions->rFalloffFactor = pDesc->GetAttributeDoubleBounded(CHARGE_SOUND_FALLOFF_ATTRIB, 0.0, -1.0, 1.0);
+		m_pChargeSoundOptions->rFalloffStart = pDesc->GetAttributeDoubleBounded(CHARGE_SOUND_FALLOFF_START_ATTRIB, 0.0, -1.0, 0.0);
+		m_pChargeSoundOptions->rVolumeMultiplier = pDesc->GetAttributeDoubleBounded(CHARGE_SOUND_VOLUME_ATTRIB, 0.0, -1.0, 1.0);
+		}
+
 	m_bPlaySoundOncePerBurst = pDesc->GetAttributeBool(PLAY_SOUND_ONCE_PER_BURST_ATTRIB);
 
 	//	Events
@@ -2831,7 +3024,9 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	m_pFireEffect = Src.m_pFireEffect;
 	m_pChargeEffect = Src.m_pChargeEffect;
 	m_FireSound = Src.m_FireSound;
+	m_pFireSoundOptions = Src.m_pFireSoundOptions;
 	m_ChargeSound = Src.m_ChargeSound;
+	m_pChargeSoundOptions = Src.m_pChargeSoundOptions;
 	m_bPlaySoundOncePerBurst = Src.m_bPlaySoundOncePerBurst;
 	m_pOldEffects = (Src.m_pOldEffects ? new SOldEffects(*Src.m_pOldEffects) : NULL);
 	m_pExplosionType = Src.m_pExplosionType;

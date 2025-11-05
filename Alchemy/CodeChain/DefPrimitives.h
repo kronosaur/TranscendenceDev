@@ -148,6 +148,12 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(= [x1 x2 ... xn]) -> True if all arguments are equal",
 			NULL, 0, },
 
+		{	"===",				fnEqualityExact, FN_EQUALITY_EQ,
+			"(=== [x1 x2 ... xn]) -> True if all arguments are exactly equal and of the same type\n"
+			"Treats strings as case sensitive. Does not treat zeros, empty lists, and strings as Nil\n"
+			"A single argument returns True if it is Nil.",
+			NULL, 0, },
+
 		{	"eval",				fnEval,			0,
 			"(eval exp) -> result\n\n"
 			
@@ -186,11 +192,21 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(for var from to exp) -> value of last expression",
 			NULL,	0,	},
 
+		{	"gammaScale",		fnMathNumerals,	FN_MATH_GAMMA_SCALE_NUMERALS,
+			"(gammaScale var inStart inEnd outStart outEnd [gamma=1.0]) -> scaled value (int or real)\n\n"
+			
+			"Scales var from range inStart to inEnd to the output scale outStart to outEnd.\n"
+			"Returns int if both outStart and outEnd are ints, otherwise returns a real. Gamma specifies an exponent relationship curve between input and output ranges.\n"
+			"At a gamma of 1.0 it is a linear curve, at 0.5 it is a square root function, at 2.0 it is a square function.\n"
+			"If gamma is an integer, it should be multiplied by 100: ex, gamma 1.0 becomes 100, gamma 0.5 becomes 50, gamma 2.0 becomes 200",
+			"nnnnn*",	0,	},
+
 		{	"help",				fnHelp,			0,
 			"(help) -> this help\n"
-			"(help '*) -> all functions\n"
-			"(help 'partial-string) -> all functions starting with partial-string\n"
-			"(help 'function-name) -> help on function-name\n",
+			"(help '* ['*|'lambdas|'primitives]) -> all functions\n"
+			"(help 'partial-string ['*|'lambdas|'primitives]) -> all functions starting with partial-string\n"
+			"(help 'function-name ['*|'lambdas|'primitives]) -> help on function-name\n"
+			"(help function|lambda) -> help on the function or lambda\n",
 			"*",	0,	},
 
 		{	"hex",				fnItem,			FN_HEX,
@@ -209,7 +225,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"@",				fnItem,			FN_ITEM,
 			"(@ list index) -> item index from list (0-based)\n"
-			"(@ struct key) -> value corresponding to key from struct",
+			"(@ struct key) -> value corresponding to key from struct\n"
+			"(@ struct) -> list of keys of the struct",
 			"v*",	0,	},
 
 		{	"item",				fnItem,			FN_ITEM,
@@ -222,7 +239,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"v*",	0,	},
 
 		{	"lambda",			fnLambda,		0,
-			"(lambda args-list exp) -> lambda function",
+			"(lambda args-list [docstring] exp) -> lambda function",
 			NULL,	0,	},
 
 		{	"log",				fnMathNumerals,	FN_MATH_LOG,
@@ -237,7 +254,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"DEPRECATED: Use while instead.",
 			NULL,	0,	},
 
-		{	"link",				fnLink,			0,						"",		"s",	0,	},
+		{	"link",				fnLink,			0,
+			"(link str) -> expr. Converts a string into a tlisp expression that can be evaluated with (eval ...).",
+			"s",	0,	},
+
 		{	"list",				fnList,			FN_LIST,
 			"(list [i1 i2 ... in]) -> list",
 			"*",	0,	},
@@ -302,6 +322,12 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"!=",				fnEqualityNumerals,	FN_EQUALITY_NEQ,
 			"(!= x1 x2 ... xn) -> True if any arguments are not equal",
+			NULL, 0, },
+
+		{	"!===",				fnEqualityExact, FN_EQUALITY_NEQ,
+			"(!=== [x1 x2 ... xn]) -> True if any arguments are not equal or are of different types.\n"
+			"Treats strings as case sensitive. Does not treat zeros, empty lists, and strings as Nil\n"
+			"A single argument returns True if it is not Nil.",
 			NULL, 0, },
 
 		{	"not",				fnLogical,		FN_LOGICAL_NOT,
@@ -370,6 +396,15 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(setq variable value)",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
+		{	"slice",			fnSubset,		FN_SUBSET_SLICE,
+			"(subset list start [end]) -> list\n"
+			"(subset string start [end]) -> string\n\n"
+
+			"Creates a list or string of the elements or characters starting at index pos up until index end.\n"
+			"Negative indexes are allowed and wrap around (-1 is the last element, -2 is the next last element, etc).\n"
+			"An empty version of the provided type is returned if there are no elements or characters to copy.",
+			"vi*",	0,	},
+
 		{	"shuffle",			fnShuffle,		0,
 			"(shuffle list) -> shuffled list",
 			"l",	0,	},
@@ -396,13 +431,42 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(sqrtn x) -> real z",
 			"n",	0,	},
 
+		{	"strBeginsWith",	fnStr, FN_STR_BEGINS_WITH,
+			"(strBeginsWith string target [caseSensitive=Nil]) -> True|Nil",
+			"ss*",	0,},
+
 		{	"strCapitalize",	fnStrCapitalize,0,
 			"(strCapitalize string) -> string",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"strFind",			fnStrFind,		0,
-			"(strFind string target) -> pos of target in string (0-based)",
-			"ss",	0,	},
+		{	"strCount",	fnStr, FN_STR_COUNT,
+			"(strCount string target  [caseSensitive=Nil]) -> int",
+			"ss*",	0,},
+
+		{	"strEndsWith",	fnStr, FN_STR_ENDS_WITH,
+			"(strEndsWith string target [caseSensitive=Nil]) -> True|Nil",
+			"ss*",	0,},
+
+		{	"strFind",			fnStr,		FN_STR_FIND,
+			"(strFind string target [caseSensitive=Nil]) -> pos of target in string (0-based)",
+			"ss*",	0,	},
+
+		{	"strFindAll",			fnStr,		FN_STR_FINDALL,
+			"(strFindAll string target [caseSensitive=Nil]) -> list of all target pos in string (0-based). If none, Nil.",
+			"ss*",	0,	},
+
+		{	"strReplace",	fnStr, FN_STR_REPLACE,
+			"(strReplace string target replacement [caseSensitive=Nil]) -> string",
+			"ssv*",	PPFLAG_SIDEEFFECTS,},
+
+		{	"strStrip",	fnStr, FN_STR_STRIP,
+			"(strStrip string [characters] [caseSensitive=Nil]) -> string with characters to strip removed from either end. Strips whitespace by default.",
+			"s*",	PPFLAG_SIDEEFFECTS,},
+
+		{	"strSplit",	fnStr, FN_STR_SPLIT,
+			"(strSplit string delimiter [caseSensitive=Nil]) -> list of strings split around delimiter.\n"
+			"Leaves empty strings where appropriate, including at the beginning and ends if it starts or ends with a delimiter string.",
+			"sv*",	PPFLAG_SIDEEFFECTS,},
 
 		{	"struct",			fnStruct,		FN_STRUCT,
 			"(struct key1 value1 [ key2 value2 ...]) -> struct\n"
@@ -421,9 +485,13 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"Same as struct except values of the same key are appended into a list.",
 			"*",	0,	},
 
-		{	"subset",			fnSubset,		0,
-			"(subset list pos [count]) -> list\n"
-			"(subset string pos [count]) -> string",
+		{	"subset",			fnSubset,		FN_SUBSET_SUBSET,
+			"(subset list pos [count] ['-|'empty]) -> list\n"
+			"(subset string pos [count] ['-|'empty]) -> string\n\n"
+
+			"Creates a list or string of remaining (or count) length of the elements or characters starting at index pos.\n"
+			"'- specifies that negative indexes are allowed and wrap around (-1 is the last element, -2 is the next last element, etc).\n"
+			"'empty specifies that an empty version of the provided type is returned if there are no elements or characts to copy.",
 			"vv*",	0,	},
 
 		{	"subst",			fnSubst,		0,
@@ -492,6 +560,53 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"while",				fnLoop,			0,
 			"(while condition exp) -> Evaluate exp until condition is Nil",
 			NULL,	0,	},
+
+		//	Debug Primative Functions
+	
+		{	"dbgApplyTimed",				fnDebugPrimatives,		FN_DEBUG_APPLY_TIMED,
+		"(dbgApplyTimed fn args) -> Time in ns to execute fn with args (double).\n\n"
+
+		"Arguments are the same as (apply fn args). Resolution may vary by system.",
+		"v*",	PPFLAG_SIDEEFFECTS, },
+			
+		{	"dbgEvalTimed",					fnDebugPrimatives,		FN_DEBUG_EVAL_TIMED,
+		"(dbgEvalTimed expr) -> Time in ns to parse and execute expr (double).\n\n"
+
+		"Arguments are the same as (eval expr). Resolution may vary by system.",
+		"v",	PPFLAG_SIDEEFFECTS, },
+
+		{   "bAnd", fnBitwise, FN_BITWISE_AND,
+			"(bAnd x1 [x2 ... xn]) -> bitwise AND (int32)",
+			"v*", 0, },
+
+		{   "bOr",  fnBitwise, FN_BITWISE_OR,
+			"(bOr x1 [x2 ... xn]) -> bitwise OR (int32)",
+			"v*", 0, },
+
+		{   "bXor", fnBitwise, FN_BITWISE_XOR,
+			"(bXor x1 [x2 ... xn]) -> bitwise XOR (int32)",
+			"v*", 0, },
+
+		{   "bNot", fnBitwise, FN_BITWISE_NOT,
+			"(bNot x) -> bitwise NOT (int32)",
+			"v", 0, },
+
+		{   "bShL",  fnBitwise, FN_BITWISE_SHL,
+			"(bShL x count) -> logical left shift (int32)",
+			"vv", 0, },
+
+		{   "bShR",  fnBitwise, FN_BITWISE_SHR,
+			"(bShR x count) -> logical right shift (int32)",
+			"vv", 0, },
+
+		{   "bRoL",  fnBitwise, FN_BITWISE_ROL,
+			"(bRoL x count) -> rotate left 32-bit (int32)",
+			"vv", 0, },
+
+		{   "bRoR",  fnBitwise, FN_BITWISE_ROR,
+			"(bRoR x count) -> rotate right 32-bit (int32)",
+			"vv", 0, },
+
 	};
 
 #define DEFPRIMITIVES_COUNT		(sizeof(g_DefPrimitives) / sizeof(g_DefPrimitives[0]))

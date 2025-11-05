@@ -260,7 +260,7 @@
 					<Default>
 						<OnPaneInit>
 							(switch
-								(eq (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+								(rpgEqPlayerClass &unidPilgrimClass;)
 									(scrSetDescTranslate gScreen 'descWelcomePilgrim)
 									
 								(scrSetDescTranslate gScreen 'descWelcome)

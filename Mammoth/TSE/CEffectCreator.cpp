@@ -12,9 +12,15 @@
 #define LENGTH_ATTRIB							CONSTLIT("length")
 #define LOOP_ATTRIB								CONSTLIT("loop")
 #define SOUND_ATTRIB							CONSTLIT("sound")
+#define SOUND_FALLOFF_ATTRIB					CONSTLIT("soundFalloffFactor")
+#define SOUND_FALLOFF_START_ATTRIB				CONSTLIT("soundFalloffStart")
+#define SOUND_VOLUME_ATTRIB						CONSTLIT("soundVolume")
 #define UNID_ATTRIB								CONSTLIT("UNID")
 
 #define FIELD_NO_SOUND							CONSTLIT("noSound")
+#define FIELD_VOLUME							CONSTLIT("soundVolume")
+#define FIELD_SOUND_FALLOFF						CONSTLIT("soundFalloffMultiplier")
+#define FIELD_SOUND_FALLOFF_START				CONSTLIT("soundFalloffStart")
 
 #define INSTANCE_CREATOR						CONSTLIT("creator")
 #define INSTANCE_GAME							CONSTLIT("game")
@@ -32,8 +38,7 @@ CEffectCreator::~CEffectCreator (void)
 //	CEffectCreator destructor
 
 	{
-	if (m_pDamage)
-		delete m_pDamage;
+	delete m_pDamage;
 	}
 
 ALERROR CEffectCreator::CreateBeamEffect (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CEffectCreator **retpCreator)
@@ -512,6 +517,15 @@ ALERROR CEffectCreator::InitBasicsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDe
 	if (error = m_Sound.LoadUNID(Ctx, pDesc->GetAttribute(SOUND_ATTRIB)))
 		return error;
 
+	if (Ctx.GetAPIVersion() >= 55)
+		{
+
+		m_sSoundOptions.rVolumeMultiplier = pDesc->GetAttributeDoubleBounded(SOUND_VOLUME_ATTRIB, 0.0, -1.0, 1.0);
+		m_sSoundOptions.rFalloffFactor = pDesc->GetAttributeDoubleBounded(SOUND_FALLOFF_ATTRIB, 0.0, -1.0, 1.0);
+		m_sSoundOptions.rFalloffStart = pDesc->GetAttributeDoubleBounded(SOUND_FALLOFF_START_ATTRIB, 0.0, -1.0, 0.0);
+
+		}
+
 	//	Figure out what kind of instancing model we use
 
 	if (error = InitInstanceFromXML(Ctx, pDesc))
@@ -757,14 +771,14 @@ ALERROR CEffectCreator::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	return NOERROR;
 	}
 
-void CEffectCreator::OnEffectPlaySound (CSpaceObject *pSource)
+void CEffectCreator::OnEffectPlaySound (CSpaceObject *pSource, SSoundOptions *pOptions)
 
 //	OnEffectPlaySound
 //
 //	Play a sound
 
 	{
-	m_Sound.PlaySound(pSource);
+	m_Sound.PlaySound(pSource, pOptions ? pOptions : &m_sSoundOptions);
 	}
 
 CEffectCreator *CEffectCreator::OnFindEffectCreator (const CString &sUNID)
@@ -834,14 +848,14 @@ bool CEffectCreator::OnFindEventHandler (const CString &sEvent, SEventHandlerDes
 	return false;
 	}
 
-void CEffectCreator::PlaySound (CSpaceObject *pSource)
+void CEffectCreator::PlaySound (CSpaceObject *pSource, SSoundOptions *pOptions)
 
 //	PlaySound
 //
 //	Play the sound effect
 
 	{
-	OnEffectPlaySound(pSource);
+	OnEffectPlaySound(pSource, pOptions);
 	}
 
 void CEffectCreator::WritePainterToStream (IWriteStream *pStream, IEffectPainter *pPainter)
@@ -1053,9 +1067,29 @@ bool IEffectPainter::SetParamFromItem (CCreatePainterCtx &Ctx, const CString &sP
 	//	Some parameters are special (and valid for all parameterized
 	//	effects).
 
+	//	Handle sound parameters (valid for all)
+
 	if (strEquals(sParam, FIELD_NO_SOUND))
 		{
 		SetNoSound(!pValue->IsNil());
+		return true;
+		}
+
+	if (Ctx.GetAPIVersion() >= 55 && strEquals(sParam, FIELD_VOLUME))
+		{
+		SetSoundVolume(pValue->GetDoubleValue());
+		return true;
+		}
+
+	if (Ctx.GetAPIVersion() >= 55 && strEquals(sParam, FIELD_SOUND_FALLOFF))
+		{
+		SetSoundFalloffFactor(pValue->GetDoubleValue());
+		return true;
+		}
+
+	if (Ctx.GetAPIVersion() >= 55 && strEquals(sParam, FIELD_SOUND_FALLOFF_START))
+		{
+		SetSoundFalloffStart(pValue->GetDoubleValue());
 		return true;
 		}
 

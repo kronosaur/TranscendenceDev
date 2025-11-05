@@ -89,7 +89,7 @@ class CAIBehaviorCtx
 		bool HasLowManeuverability () const { return m_fLowManeuverability; }
 		bool HasMultipleWeapons (void) const { return m_fHasMultipleWeapons; }
 		bool HasSecondaryWeapons (void) const { return m_fHasSecondaryWeapons; }
-		bool HasSuperconductingShields (void) const { return m_fSuperconductingShields; }
+		bool HasAmmoShields (void) const { return m_fAmmoShields; }
 		bool IsAggressor (void) const { return m_AISettings.IsAggressor(); }
 		bool IsBeingAttacked (DWORD dwThreshold = 150) const;
 		bool IsDockingRequested (void) const { return m_fDockingRequested; }
@@ -232,7 +232,7 @@ class CAIBehaviorCtx
 		int m_iPrematureFireChance = 0;				//	Chance of firing prematurely
 
 		DWORD m_fImmobile:1 = false;				//	TRUE if ship does not move
-		DWORD m_fSuperconductingShields:1 = false;	//	TRUE if ship has superconducting shields
+		DWORD m_fAmmoShields:1 = false;	//	TRUE if ship has superconducting shields
 		DWORD m_fHasMultipleWeapons:1 = false;		//	TRUE if ship has more than 1 primary
 		DWORD m_fThrustThroughTurn:1 = false;		//	TRUE if ship thrusts through a turn
 		DWORD m_fAvoidExplodingStations:1 = false;	//	TRUE if ship avoids exploding stations

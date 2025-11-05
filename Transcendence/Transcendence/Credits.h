@@ -5,8 +5,10 @@
 static constexpr const char *ADDITIONAL_PROGRAMMING[] =
 	{
 	"Owen Embury (giantcabbage)",
+	"Alex Huitric (Arisaya)",
+	"Lily Leung (Heliogenesis)",
+	"Alana Huitric (Skarrlyth)",
 	"Nathaniel Stalberg (NMS)",
-	"Bryon Leung (Heliogenesis)",
 	"Alex Chen (Archcannon)",
 	"Brian Merchant",
 	"Benn Bollay"
@@ -16,7 +18,6 @@ static constexpr int ADDITIONAL_PROGRAMMING_COUNT = (sizeof(ADDITIONAL_PROGRAMMI
 
 static constexpr const char *SPECIAL_THANKS[] =
 	{
-	"Alexander Huitric (Wolfy)",
 	"Patrick Martin (Megas)",
 	"Joe Needleman (Ttech)",
 	"Jeremy Skaggs (AssumedPseudonym)",
@@ -54,6 +55,7 @@ static constexpr const char *FEEDBACK[] =
 	"Apemant",
 	"Aquilai",
 	"Arkheias",
+	"Avellis",
 	"avorite",
 	"Azmond",
 
@@ -172,6 +174,7 @@ static constexpr const char *FEEDBACK[] =
 	"Narok",
 	"Narthan",
 	"Nate879",
+	"Nemiah",
 	"Jeremy Nicoll",
 	"Jan Nielsen",
 	"Nimatek",
@@ -191,6 +194,7 @@ static constexpr const char *FEEDBACK[] =
 	"Premier",
 	"Psycholis",
 	"ptbptb",
+	"Pteryx",
 	"puffo12346",
 
 	"Quaziz",

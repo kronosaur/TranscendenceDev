@@ -984,7 +984,7 @@
 		<LevelTable>
 			<Ship levelFrequency="cccr- -----" count="1" class="&scRoninA;" orders="guard"/>
 			<Ship levelFrequency="ruucc cr---" count="1" class="&scRoninB;" orders="guard"/>
-			<Ship levelFrequency="uuucc cur--" count="1" class="&scWolfen;" orders="guard"/>
+			<Ship levelFrequency="uuucc cur--" count="1" class="&scWolfenC;" orders="guard"/>
 			<Ship levelFrequency="---uu ccccu" count="1" class="&scRoninC;" orders="guard"/>
 			<Ship levelFrequency="ccccc ccccc" count="1" class="&scCenturionBlock2;" orders="guard"/>
 			<Ship levelFrequency="--ruc cuuuu" count="1" class="&scManticore;" orders="guard"/>

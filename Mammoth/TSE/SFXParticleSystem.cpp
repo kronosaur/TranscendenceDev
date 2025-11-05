@@ -99,11 +99,9 @@ CParticleSystemEffectCreator::~CParticleSystemEffectCreator (void)
 //	CRayEffectCreator destructor
 
 	{
-	if (m_pSingleton)
-		delete m_pSingleton;
+	delete m_pSingleton;
 
-	if (m_pParticleEffect)
-		delete m_pParticleEffect;
+	delete m_pParticleEffect;
 	}
 
 IEffectPainter *CParticleSystemEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
@@ -259,11 +257,8 @@ ALERROR CParticleSystemEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 
 	//	Clean up, because we might want to recompute for next time.
 
-	if (m_pSingleton)
-		{
-		delete m_pSingleton;
-		m_pSingleton = NULL;
-		}
+	delete m_pSingleton;
+	m_pSingleton = NULL;
 
 	if (m_pParticleEffect)
 		{
@@ -460,7 +455,7 @@ void CParticleSystemEffectPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBounds
 
 	//	Update particle motion
 
-	m_Particles.UpdateMotionLinear();
+	m_Particles.UpdateMotionLinear(Ctx);
 
 	//	If we're using the object's motion, adjust now
 
@@ -475,7 +470,7 @@ void CParticleSystemEffectPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBounds
 		else
 			{
 			Metric rSpeed = Ctx.pObj->GetVel().Length();
-			vToOldPos = ::PolarToVector(180 + m_Particles.GetLastEmitDirection(), rSpeed * g_SecondsPerUpdate);
+			vToOldPos = ::PolarToVector(180 + m_Particles.GetLastEmitDirection(), rSpeed * Ctx.rSeconds);
 			}
 
 		//	Move all particles by the given amount

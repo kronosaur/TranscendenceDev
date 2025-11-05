@@ -641,6 +641,7 @@ class CSpaceObject
 		const CAttributeDataBlock &GetData (void) const { return m_Data; }
 		ICCItemPtr GetData (const CString &sAttrib) const { return m_Data.GetDataAsItem(sAttrib); }
 		CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
+		TArray<CString> GetDataKeys (void);
 		ICCItemPtr GetGlobalData (const CString &sAttribute) const;
 		CSpaceObject *GetObjRefData (const CString &sAttrib) { return m_Data.GetObjRefData(sAttrib); }
 		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
@@ -663,6 +664,7 @@ class CSpaceObject
 		virtual bool FindDeviceSlotDesc (const CString &ID, SDeviceDesc *retDesc) { return false; }
 		bool FireCanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, CString *retsResult);
 		bool FireCanRemoveItem (const CItem &Item, int iSlot, CString *retsResult);
+		int GetNextAutoDefenseDeviceIndex (int iDev);
 		CInstalledDevice *GetDevice (int iDev) { return &GetDeviceSystem().GetDevice(iDev); }
 		int GetDeviceCount (void) const { return GetDeviceSystem().GetCount(); }
 		CDeviceItem GetDeviceItem (int iDev) const { return GetDeviceSystem().GetDeviceItem(iDev); }
@@ -678,6 +680,7 @@ class CSpaceObject
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, int iDevSlot);
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, CInstalledDevice *pDevice);
 		void SetDeviceSlotAtID (const CString id, const int iDeviceSlotIndex) { if (iDeviceSlotIndex < 0 || iDeviceSlotIndex >= GetDeviceSystem().GetCount()) throw CException(ERR_FAIL); m_DeviceSlotsGivenID.SetAt(id, iDeviceSlotIndex); }
+		void OnObjDestroyUpdateDevices (const SDestroyCtx& Ctx);
 
 		//	Docking
 
@@ -1057,6 +1060,7 @@ class CSpaceObject
 		const CVector &DeltaV (const CVector &vDelta) { m_vVel = m_vVel + vDelta; return m_vVel; }
 		const CVector &GetOldPos (void) const { return m_vOldPos; }
 		const CVector &GetVel (void) const { return m_vVel; }
+		const CVector &GetSourceVel (void) const { return m_vSourceVel; }
 		bool IsInsideBarrier (void) const { return m_fInsideBarrier; }
 		bool IsManuallyAnchored (void) const { return m_fManualAnchor; }
 		void Jump (const CVector &vPos);
@@ -1066,6 +1070,7 @@ class CSpaceObject
 		void SetManualAnchor (bool bAnchored = true) { m_fManualAnchor = bAnchored; }
 		void SetPos (const CVector &vPos) { m_vPos = vPos; }
 		void SetVel (const CVector &vVel) { m_vVel = vVel; }
+		void SetSourceVel (const CVector &vVel) { m_vSourceVel = vVel; }
 
 		//	Overlays
 
@@ -1140,6 +1145,8 @@ class CSpaceObject
 
 		ICCItemPtr GetProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
 		ICCItemPtr GetProperty (const CString &sProperty) const { CCodeChainCtx CCX(GetUniverse()); return GetProperty(CCX, sProperty); }
+		ICCItemPtr GetPropertyKeys (CCodeChainCtx& CCX, EDesignDataTypes iDataType = EDesignDataTypes::ePropertyData) const;
+		ICCItemPtr GetPropertyKeys (EDesignDataTypes iDataType = EDesignDataTypes::ePropertyData) const { CCodeChainCtx CCX(GetUniverse()); return GetPropertyKeys(CCX, iDataType); }
 		bool IncProperty (const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 
@@ -1473,7 +1480,12 @@ class CSpaceObject
 		const CEnhancementDesc *GetSystemEnhancements (void) const;
 		ICCItemPtr GetTypeProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
 		CSpaceObject *HitTest (const CVector &vStart, const DamageDesc &Damage, CVector *retvHitPos, int *retiHitDir);
-		CSpaceObject *HitTestProximity (const CVector &vStart, Metric rMinThreshold, Metric rMaxThreshold, const DamageDesc &Damage, const CTargetList::STargetOptions &TargetOptions, const CSpaceObject *pTarget, CVector *retvHitPos, int *retiHitDir);
+		CSpaceObject *HitTestProximity (const CVector &vStart, const CWeaponFireDesc *pDesc, const CTargetList::STargetOptions &TargetOptions, const CSpaceObject *pTarget, CVector *retvHitPos, int *retiHitDir);
+		CSpaceObject *HitTestProximityLegacy (const CVector &vStart, Metric rMinThreshold, Metric rMaxThreshold, const DamageDesc &Damage, const CTargetList::STargetOptions &TargetOptions, const CSpaceObject *pTarget, CVector *retvHitPos, int *retiHitDir);
+		bool IntersectionTestScan(const CSpaceObject* pTarget, const CVector& vStart, const CVector& vStep, const int iSteps, const bool bComputeProximity, CVector* retvHitPos, int* retiHitDir, CVector* retvDetectPos, int* retiTriangulationDir);
+		bool IntersectionTestScan (const CSpaceObject* pTarget, const CVector& vStart, const CVector& vStep, const int iSteps) { return IntersectionTestScan(pTarget, vStart, vStep, iSteps, false, NULL, NULL, NULL, NULL); };
+		bool IntersectionTestScan (const CSpaceObject *pTarget, const CVector &vStart, const CVector &vStep, const int iSteps, CVector *retvHitPos, int *retiHitDir) { return IntersectionTestScan(pTarget, vStart, vStep, iSteps, true, retvHitPos, retiHitDir, NULL, NULL); };
+		bool IntersectionTestScan (const CSpaceObject* pTarget, const CVector& vStart, const CVector& vStep, const int iSteps, const bool bComputeProximity, CVector* retvHitPos, int* retiHitDir) { return IntersectionTestScan(pTarget, vStart, vStep, iSteps, true, retvHitPos, retiHitDir, NULL, NULL); };
 		bool ImagesIntersect (const CObjectImageArray &Image1, int iTick1, int iRotation1, const CVector &vPos1,
 				const CObjectImageArray &Image2, int iTick2, int iRotation2, const CVector &vPos2);
 		bool IsObjectDestructionHooked (void) { return (m_fHookObjectDestruction ? true : false); }
@@ -1522,6 +1534,7 @@ class CSpaceObject
 		int m_iDestiny = 0;								//	Random number 0..DestinyRange-1
 		CVector m_vPos;									//	Position of object in system
 		CVector m_vVel;									//	Velocity of object
+		CVector m_vSourceVel = NullVector;				//	Velocity inherited at creation
 		CVector m_vOldPos;								//	Position last tick
 		Metric m_rBoundsX = 0.0;						//	Object bounds
 		Metric m_rBoundsY = 0.0;						//	Object bounds
