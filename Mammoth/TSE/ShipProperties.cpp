@@ -4,6 +4,10 @@
 //	Copyright (c) 2021 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
+#include <set>
+
+#define FIELD_DEVICE_SLOT				CONSTLIT("deviceSlot")
+#define FIELD_SLOT_ID					CONSTLIT("slotID")
 
 #define PROPERTY_ALWAYS_LEAVE_WRECK				CONSTLIT("alwaysLeaveWreck")
 #define PROPERTY_ARMOR_COUNT					CONSTLIT("armorCount")
@@ -25,6 +29,8 @@
 #define PROPERTY_CHARACTER_NAME					CONSTLIT("characterName")
 #define PROPERTY_DEVICE_DAMAGE_IMMUNE			CONSTLIT("deviceDamageImmune")
 #define PROPERTY_DEVICE_DISRUPT_IMMUNE			CONSTLIT("deviceDisruptImmune")
+#define PROPERTY_DEVICE_AT_SLOT					CONSTLIT("deviceAtSlot")
+#define PROPERTY_DEVICE_SLOT_IDS				CONSTLIT("deviceSlotIDs")
 #define PROPERTY_DISINTEGRATION_IMMUNE			CONSTLIT("disintegrationImmune")
 #define PROPERTY_DOCKED_AT_ID					CONSTLIT("dockedAtID")
 #define PROPERTY_DOCKING_ENABLED				CONSTLIT("dockingEnabled")
@@ -260,6 +266,68 @@ ICCItemPtr CShip::OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) 
 		return ICCItemPtr();
 	}
 
+ICCItem* CShip::GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const ICCItem* pArgs) const
+
+//	GetDeviceSlotProperty
+//
+//	Returns a device slot property
+
+	{
+		int iDeviceSlot = -1;
+		if (pArgs->GetCount() >= 3)
+			{
+			CString sProperty = pArgs->GetElement(2)->GetStringValue();
+			const IDeviceGenerator *pDevSlots = this->GetDeviceSystem().GetSlots();
+			int numSlots = pDevSlots->GetNumberOfDescs();
+			ICCItem *pOptions = pArgs->GetElement(1);
+			if (pOptions->IsInteger())
+				iDeviceSlot = pOptions->GetIntegerValue();
+			else
+				{
+				ICCItem *pDeviceSlot = pOptions->GetElement(FIELD_DEVICE_SLOT);
+				ICCItem *pDeviceSlotID = pOptions->GetElement(FIELD_SLOT_ID);
+				if (pDeviceSlot && !pDeviceSlot->IsNil())
+					iDeviceSlot = pDeviceSlot->GetIntegerValue();
+
+				if (pDeviceSlotID && !pDeviceSlotID->IsNil())
+					{
+					CString sDeviceSlotID = pDeviceSlotID->GetStringValue();
+					iDeviceSlot = pDevSlots->GetDescIndexGivenId(sDeviceSlotID);
+					if (iDeviceSlot == -1)
+						return pCC->CreateError(CONSTLIT("Invalid device slot ID"), pDeviceSlotID);
+					}
+				}
+			if (iDeviceSlot != -1)
+				{
+				if (iDeviceSlot < 0 || iDeviceSlot >= numSlots)
+					return pCC->CreateError(CONSTLIT("Invalid device slot"), pOptions);
+				}
+
+			if (iDeviceSlot < 0)
+				return pCC->CreateError(CONSTLIT("Invalid device slot"), pOptions);
+
+			if (strEquals(sProperty, PROPERTY_DEVICE_AT_SLOT))
+				{
+				ICCItem* pDeviceSlotID = pOptions->GetElement(FIELD_SLOT_ID);
+				if (pDeviceSlotID && !pDeviceSlotID->IsNil())
+					{
+					int iDeviceIndex = GetDeviceSlotAtID(pDeviceSlotID->GetStringValue());
+					if (iDeviceIndex != -1)
+						return CreateListFromItem(m_Devices.GetDevice(iDeviceIndex).GetDeviceItem());
+					else
+						return pCC->CreateNil();
+					}
+				else
+					return pCC->CreateError(CONSTLIT("deviceAtSlot requires slotID to be defined"), pOptions);
+				}
+
+			return pDevSlots->GetDeviceSlotProperty(iDeviceSlot, pCC, sProperty, pArgs);
+			}
+		else
+			return pCC->CreateError(CONSTLIT("Insufficient arguments"));
+
+	}
+
 ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const
 
 //	GetProperty
@@ -269,6 +337,8 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult;
+
+	//	Device slot properties
 
 	if (strEquals(sName, PROPERTY_ALWAYS_LEAVE_WRECK))
 		return CC.CreateBool(m_fAlwaysLeaveWreck || m_pClass->GetWreckChance() >= 100);
@@ -335,7 +405,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_CHALLENGE_RATING))
 		return CC.CreateInteger(CChallengeRatingCalculator::CalcChallengeRating(*this));
-		
+
 	else if (strEquals(sName, PROPERTY_CHARACTER))
 		return (m_pCharacter ? CC.CreateInteger(m_pCharacter->GetUNID()) : CC.CreateNil());
 
@@ -347,6 +417,15 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_DEVICE_DISRUPT_IMMUNE))
 		return CC.CreateBool(m_Armor.IsImmune(specialDeviceDisrupt));
+
+	else if (strEquals(sName, PROPERTY_DEVICE_SLOT_IDS))
+		{
+		TArray<CString> ids = GetDeviceSystem().GetSlots()->GetDeviceSlotIds();
+		ICCItem* pIDs = CC.CreateLinkedList();
+		for (int i = 0; i < ids.GetCount(); i++)
+			pIDs->AppendString(ids[i]);
+		return pIDs;
+		}
 
 	else if (strEquals(sName, PROPERTY_DISINTEGRATION_IMMUNE))
 		return CC.CreateBool(m_Armor.IsImmune(specialDisintegration));

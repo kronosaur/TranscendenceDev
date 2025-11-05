@@ -1046,6 +1046,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		bool FindDeviceAtPos (const CVector &vPos, CInstalledDevice **retpDevice);
 		int GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice);
 		DeviceNames GetDeviceNameForCategory (ItemCategories iCategory);
+		ICCItem* GetDeviceSlotProperty(CCodeChain* pCC, CCodeChainCtx& Ctx, const ICCItem* pArgs) const;
 		int GetItemDeviceName (const CItem &Item) const;
 		bool HasNamedDevice (DeviceNames iDev) const;
 		void InstallItemAsDevice (CItemListManipulator &ItemList, const CDeviceSystem::SSlotDesc &RecommendedSlot = CDeviceSystem::SSlotDesc());
@@ -1140,7 +1141,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool CanAttack (void) const override;
 		virtual bool CanBeAttacked (void) const override { return CanAttack(); }
 		virtual bool CanBeDestroyedBy (CSpaceObject &Attacker) const override;
-		virtual bool CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot = CDeviceSystem::SSlotDesc(), InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL) override;
+		virtual bool CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot = CDeviceSystem::SSlotDesc(), bool bForceUseOfDeviceSlot = false, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL) override;
 		virtual bool CanMove (void) const override { return true; }
 		virtual RequestDockResults CanObjRequestDock (CSpaceObject *pObj = NULL) const override;
 		virtual bool CanThrust (void) const override { return (GetThrust() > 0.0); }
@@ -1156,6 +1157,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
 		virtual CInstalledDevice *FindDevice (const CItem &Item) override;
 		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) override { return m_pClass->FindDeviceSlotDesc(this, Item, retDesc); }
+		virtual bool FindDeviceSlotDesc (const CString &ID, SDeviceDesc *retDesc) override { return m_pClass->FindDeviceSlotDesc(this, ID, retDesc); }
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) override;
 		virtual AbilityStatus GetAbility (Abilities iAbility) const override;
 		virtual int GetAISettingInteger (const CString &sSetting) override { return m_pController->GetAISettingInteger(sSetting); }
