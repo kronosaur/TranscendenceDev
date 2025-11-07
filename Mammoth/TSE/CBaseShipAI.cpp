@@ -584,7 +584,7 @@ void CBaseShipAI::DebugPaintAnnotations (CG32bitImage &Dest, int x, int y, SView
 					constexpr Metric MIN_STATION_TARGET_DIST =	(10.0 * LIGHT_SECOND);
 					Metric rRadius = pTarget->GetHitSize() + MIN_STATION_TARGET_DIST + (LIGHT_SECOND * (m_pShip->GetDestiny() % 100) / 10.0);
 					CVector vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius);
-					CVector vDirection = m_AICtx.CalcManeuverFormation(m_pShip, vPos, CVector(), iAngle);
+					CVector vDirection = m_AICtx.CalcManeuverFormation(m_pShip, vPos, CVector(), iAngle, false);
 
 					if (vDirection.Length2() < MIN_POTENTIAL2)
 						m_pShip->PaintAnnotationText(Dest, x, y, CONSTLIT("Aim"), Ctx);

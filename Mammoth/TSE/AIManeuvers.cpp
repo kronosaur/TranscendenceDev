@@ -417,7 +417,7 @@ CVector CAIBehaviorCtx::CalcManeuverCloseOnTarget (CShip *pShip,
 	return vInterceptPoint;
 	}
 
-CVector CAIBehaviorCtx::CalcManeuverFormation (CShip *pShip, const CVector vDest, const CVector vDestVel, int iDestFacing) const
+CVector CAIBehaviorCtx::CalcManeuverFormation (CShip *pShip, const CVector vDest, const CVector vDestVel, int iDestFacing, bool bCheatPositioning) const
 
 //	CalcManeuverFormation
 //
@@ -432,7 +432,7 @@ CVector CAIBehaviorCtx::CalcManeuverFormation (CShip *pShip, const CVector vDest
 	//	If we're close enough to the velocity, cheat a little by
 	//	accelerating without using the main engine
 
-	if (bCloseEnough)
+	if (bCheatPositioning && bCloseEnough)
 		{
 		if (!pShip->IsParalyzed())
 			{
@@ -715,7 +715,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				//	(Note that we don't combine the potential because we've already accounted for
 				//	it above).
 
-				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle);
+				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle, false);
 				}
 
 			//	If we're attacking a station, then keep our distance so that
@@ -828,7 +828,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				//	(Note that we don't combine the potential because we've already accounted for
 				//	it above).
 
-				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle);
+				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle, false);
 				}
 
 			//	If we're not well in range of our primary weapon then
@@ -867,7 +867,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 					//	Maneuver to that point
 
-					vDirection = CalcManeuverFormation(pShip, vPos, vVel, 0);
+					vDirection = CalcManeuverFormation(pShip, vPos, vVel, 0, false);
 					}
 
 				//	Otherwise, we just try to close as best as possible
@@ -960,7 +960,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	(Note that we don't combine the potential because we've already accounter for
 			//	it above).
 
-			vDirection = CalcManeuverFormation(pShip, vPos, pTarget->GetVel(), iTargetAngle);
+			vDirection = CalcManeuverFormation(pShip, vPos, pTarget->GetVel(), iTargetAngle, false);
 
 			//	We don't want to thrust unless we're in position
 
