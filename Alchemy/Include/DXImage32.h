@@ -583,10 +583,11 @@ class CGImageCache
 	};
 
 class CGPNG
-	{
-	public:
-		static bool Load (IReadBlock &Data, CG32bitImage &Image, CString *retsError);
-	};
+        {
+        public:
+                static bool Load (IReadBlock &Data, CG32bitImage &Image, CString *retsError);
+                static bool Save (IWriteStream &Stream, const CG32bitImage &Image, CString *retsError = NULL);
+        };
 
 //	Inlines --------------------------------------------------------------------
 
