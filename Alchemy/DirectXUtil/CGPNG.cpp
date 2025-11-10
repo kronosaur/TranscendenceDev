@@ -54,131 +54,132 @@ bool CGPNG::Load (IReadBlock &Data, CG32bitImage &Image, CString *retsError)
 		pSrcRow += dwWidth;
 		}
 
-        free(pOutput);
+	free(pOutput);
 
-        return true;
-        }
+	return true;
+	}
 
 bool CGPNG::Save (IWriteStream &Stream, const CG32bitImage &Image, CString *retsError)
 
-//      Save
+//	Save
 //
-//      Encodes the given image as PNG and writes it to the stream. Returns FALSE if
-//      error.
+//	Encodes the given image as PNG and writes it to the stream. Returns FALSE if
+//	error.
 
-        {
-        int cxWidth = Image.GetWidth();
-        int cyHeight = Image.GetHeight();
-        if (cxWidth <= 0 || cyHeight <= 0)
-                {
-                if (retsError) *retsError = CONSTLIT("Invalid image size.");
-                return false;
-                }
+	{
+	int cxWidth = Image.GetWidth();
+	int cyHeight = Image.GetHeight();
+	if (cxWidth <= 0 || cyHeight <= 0)
+		{
+		if (retsError) *retsError = CONSTLIT("Invalid image size.");
+		return false;
+		}
 
-        DWORDLONG cbBuffer = (DWORDLONG)cxWidth * (DWORDLONG)cyHeight * 4;
-        if (cbBuffer == 0)
-                {
-                if (retsError) *retsError = CONSTLIT("Invalid image size.");
-                return false;
-                }
+	DWORDLONG cbBuffer = (DWORDLONG)cxWidth * (DWORDLONG)cyHeight * 4;
+	if (cbBuffer == 0)
+		{
+		if (retsError) *retsError = CONSTLIT("Invalid image size.");
+		return false;
+		}
 
-        if (cbBuffer > (DWORDLONG)0x7fffffff)
-                {
-                if (retsError) *retsError = CONSTLIT("Image too large to encode.");
-                return false;
-                }
+	if (cbBuffer > (DWORDLONG)INT_MAX)
+		{
+		if (retsError) *retsError = CONSTLIT("Image too large to encode.");
+		return false;
+		}
 
-        TArray<BYTE> RGBAData;
-        BYTE *pRGBA = RGBAData.InsertEmpty((int)cbBuffer);
-        if (pRGBA == NULL)
-                {
-                if (retsError) *retsError = CONSTLIT("Unable to allocate image buffer.");
-                return false;
-                }
+	TArray<BYTE> RGBAData;
+	RGBAData.InsertEmpty((int)cbBuffer);
+	BYTE* pRGBA = &RGBAData[0];
+	if (pRGBA == NULL)
+		{
+		if (retsError) *retsError = CONSTLIT("Unable to allocate image buffer.");
+		return false;
+		}
 
-        BYTE *pDest = pRGBA;
-        const CG32bitPixel *pSrcRow = Image.GetPixelPos(0, 0);
-        const CG32bitPixel *pSrcRowEnd = Image.GetPixelPos(0, cyHeight);
+	BYTE *pDest = pRGBA;
+	const CG32bitPixel *pSrcRow = Image.GetPixelPos(0, 0);
+	const CG32bitPixel *pSrcRowEnd = Image.GetPixelPos(0, cyHeight);
 
-        while (pSrcRow < pSrcRowEnd)
-                {
-                const CG32bitPixel *pSrc = pSrcRow;
-                const CG32bitPixel *pSrcEnd = pSrcRow + cxWidth;
+	while (pSrcRow < pSrcRowEnd)
+		{
+		const CG32bitPixel *pSrc = pSrcRow;
+		const CG32bitPixel *pSrcEnd = pSrcRow + cxWidth;
 
-                while (pSrc < pSrcEnd)
-                        {
-                        CG32bitPixel rgbPixel = *pSrc++;
+		while (pSrc < pSrcEnd)
+			{
+			CG32bitPixel rgbPixel = *pSrc++;
 
-                        BYTE byAlpha = rgbPixel.GetAlpha();
-                        BYTE byRed;
-                        BYTE byGreen;
-                        BYTE byBlue;
+			BYTE byAlpha = rgbPixel.GetAlpha();
+			BYTE byRed;
+			BYTE byGreen;
+			BYTE byBlue;
 
-                        if (byAlpha == 0)
-                                {
-                                byRed = 0;
-                                byGreen = 0;
-                                byBlue = 0;
-                                }
-                        else if (byAlpha == 0xff)
-                                {
-                                byRed = rgbPixel.GetRed();
-                                byGreen = rgbPixel.GetGreen();
-                                byBlue = rgbPixel.GetBlue();
-                                }
-                        else
-                                {
-                                int iAlpha = byAlpha;
-                                int iRed = (rgbPixel.GetRed() * 255 + (iAlpha / 2)) / iAlpha;
-                                int iGreen = (rgbPixel.GetGreen() * 255 + (iAlpha / 2)) / iAlpha;
-                                int iBlue = (rgbPixel.GetBlue() * 255 + (iAlpha / 2)) / iAlpha;
+			if (byAlpha == 0)
+				{
+				byRed = 0;
+				byGreen = 0;
+				byBlue = 0;
+				}
+			else if (byAlpha == 0xff)
+				{
+				byRed = rgbPixel.GetRed();
+				byGreen = rgbPixel.GetGreen();
+				byBlue = rgbPixel.GetBlue();
+				}
+			else
+				{
+				int iAlpha = byAlpha;
+				int iRed = (rgbPixel.GetRed() * 255 + (iAlpha / 2)) / iAlpha;
+				int iGreen = (rgbPixel.GetGreen() * 255 + (iAlpha / 2)) / iAlpha;
+				int iBlue = (rgbPixel.GetBlue() * 255 + (iAlpha / 2)) / iAlpha;
 
-                                if (iRed > 255) iRed = 255;
-                                if (iGreen > 255) iGreen = 255;
-                                if (iBlue > 255) iBlue = 255;
+				if (iRed > 255) iRed = 255;
+				if (iGreen > 255) iGreen = 255;
+				if (iBlue > 255) iBlue = 255;
 
-                                byRed = (BYTE)iRed;
-                                byGreen = (BYTE)iGreen;
-                                byBlue = (BYTE)iBlue;
-                                }
+				byRed = (BYTE)iRed;
+				byGreen = (BYTE)iGreen;
+				byBlue = (BYTE)iBlue;
+				}
 
-                        *pDest++ = byRed;
-                        *pDest++ = byGreen;
-                        *pDest++ = byBlue;
-                        *pDest++ = byAlpha;
-                        }
+			*pDest++ = byRed;
+			*pDest++ = byGreen;
+			*pDest++ = byBlue;
+			*pDest++ = byAlpha;
+			}
 
-                pSrcRow = (const CG32bitPixel *)Image.NextRow(const_cast<CG32bitPixel *>(pSrcRow));
-                }
+		pSrcRow = (const CG32bitPixel *)Image.NextRow(const_cast<CG32bitPixel *>(pSrcRow));
+		}
 
-        unsigned char *pPNG = NULL;
-        size_t cbPNG = 0;
-        unsigned int dwWidth = (unsigned int)cxWidth;
-        unsigned int dwHeight = (unsigned int)cyHeight;
+	unsigned char *pPNG = NULL;
+	size_t cbPNG = 0;
+	unsigned int dwWidth = (unsigned int)cxWidth;
+	unsigned int dwHeight = (unsigned int)cyHeight;
 
-        unsigned int error = lodepng_encode32(&pPNG, &cbPNG, (const unsigned char *)pRGBA, dwWidth, dwHeight);
-        if (error)
-                {
-                if (pPNG) free(pPNG);
-                if (retsError) *retsError = CString(lodepng_error_text(error));
-                return false;
-                }
+	unsigned int error = lodepng_encode32(&pPNG, &cbPNG, (const unsigned char *)pRGBA, dwWidth, dwHeight);
+	if (error)
+		{
+		if (pPNG) free(pPNG);
+		if (retsError) *retsError = CString(lodepng_error_text(error));
+		return false;
+		}
 
-        if (cbPNG > (size_t)0x7fffffff)
-                {
-                free(pPNG);
-                if (retsError) *retsError = CONSTLIT("Encoded PNG too large to write.");
-                return false;
-                }
+	if (cbPNG > (size_t)INT_MAX)
+		{
+		free(pPNG);
+		if (retsError) *retsError = CONSTLIT("Encoded PNG too large to write.");
+		return false;
+		}
 
-        if (Stream.Write((const char *)pPNG, (int)cbPNG) != NOERROR)
-                {
-                free(pPNG);
-                if (retsError) *retsError = CONSTLIT("Unable to write PNG data.");
-                return false;
-                }
+	if (Stream.Write((const char *)pPNG, (int)cbPNG) != NOERROR)
+		{
+		free(pPNG);
+		if (retsError) *retsError = CONSTLIT("Unable to write PNG data.");
+		return false;
+		}
 
-        free(pPNG);
+	free(pPNG);
 
-        return true;
-        }
+	return true;
+	}
