@@ -216,6 +216,9 @@
     <ClCompile Include="ExportData.cpp">
       <Filter>Source Files\CmdExport</Filter>
     </ClCompile>
+    <ClCompile Include="ExportImages.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

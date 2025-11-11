@@ -34,6 +34,7 @@
 #define ENCOUNTER_FREQ_SWITCH				CONSTLIT("encounterfreq")
 #define ENCOUNTER_SIM_SWITCH				CONSTLIT("encountersim")
 #define EXPORT_SWITCH						CONSTLIT("export")
+#define EXPORT_IMAGES_SWITCH				CONSTLIT("exportImages")
 #define ENCOUNTER_TABLE_SWITCH				CONSTLIT("encountertable")
 #define ENTITIES_SWITCH						CONSTLIT("entitiesReference")
 #define EXTENSION_FOLDER_ATTRIB				CONSTLIT("extensionFolder")
@@ -381,6 +382,8 @@ void AlchemyMain (CXMLElement *pCmdLine)
 		GenerateEncounterTable(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(EXPORT_SWITCH))
 		ExportData(Universe, *pCmdLine);
+	else if (pCmdLine->GetAttributeBool(EXPORT_IMAGES_SWITCH))
+		ExportImages(Universe, *pCmdLine);
 	else if (pCmdLine->GetAttributeBool(EXTENSION_TABLE_SWITCH))
 		GenerateExtensionTable(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(IMAGES_SWITCH))

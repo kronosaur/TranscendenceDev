@@ -1026,6 +1026,7 @@
     <ClCompile Include="EncounterTable.cpp" />
     <ClCompile Include="Entities.cpp" />
     <ClCompile Include="ExportData.cpp" />
+    <ClCompile Include="ExportImages.cpp" />
     <ClCompile Include="ExtensionTable.cpp" />
     <ClCompile Include="Help.cpp" />
     <ClCompile Include="Hexarc.cpp" />
