@@ -763,7 +763,7 @@ ICCItemPtr CDockScreen::GetPropertyKeys () const
 
 	//	Ensure that pList is never true (atomic) Nil
 
-	if (pList->IsAtom())
+	if (!pList || pList->IsAtom())
 		pList = ICCItemPtr(ICCItem::List);
 
 	//	Always include the generic properties

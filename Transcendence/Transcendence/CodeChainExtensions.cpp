@@ -288,7 +288,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"is",	0,	},
 
-		{ "scr@Keys",						fnScrGet,		FN_SCR_GET_PROPERTY_KEYS,
+		{	"scr@Keys",						fnScrGet,		FN_SCR_GET_PROPERTY_KEYS,
 			"(scr@Keys screen) -> list of property keys",
 
 			"i",	0, },
@@ -1615,6 +1615,9 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			return pCC->CreateString(sDesc);
 			}
+
+		case FN_SCR_GET_PROPERTY_KEYS:
+			return DockSession.GetPropertyKeys()->Reference();
 
 		case FN_SCR_GET_PROPERTY:
 			return DockSession.GetProperty(pArgs->GetElement(1)->GetStringValue())->Reference();

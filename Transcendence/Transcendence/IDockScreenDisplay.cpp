@@ -314,7 +314,7 @@ ICCItemPtr IDockScreenDisplay::GetPropertyKeys () const
 
 	//	Need to make sure this isnt a true Nil, otherwise we cant append
 
-	if (pList->IsAtom())
+	if (!pList || pList->IsAtom())
 		pList = ICCItemPtr(ICCItem::List);
 	
 	//	If we need to, add in PROPERTY_LIST_SOURCE
