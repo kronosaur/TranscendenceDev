@@ -159,6 +159,7 @@ class CDockSession
 		const SScreenSetTab *FindTab (const CString &sID) const;
 		const SDockFrame &GetCurrentFrame (void) const { return m_DockFrames.GetCurrent(); }
 		ICCItemPtr GetData (const CString &sAttrib) const;
+		ICCItemPtr GetDataKeys () const;
 		CDockScreenStack &GetFrameStack (void) { return m_DockFrames; }
 		const CDockScreenStack &GetFrameStack (void) const { return m_DockFrames; }
 		ICCItemPtr GetProperty (const CString &sProperty) const;

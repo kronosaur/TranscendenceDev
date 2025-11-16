@@ -1607,6 +1607,9 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_SCR_DATA:
 			return DockSession.GetData(pArgs->GetElement(1)->GetStringValue())->Reference();
 
+		case FN_SCR_GET_DATA_KEYS:
+			return DockSession.GetDataKeys()->Reference();
+
 		case FN_SCR_DESC:
 			{
 			const CString &sDesc = DockSession.GetUI().GetDescription();
