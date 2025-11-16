@@ -285,11 +285,11 @@ bool IDockScreenDisplay::GetDisplayOptions (SInitCtx &Ctx, SDisplayOptions *retO
 	DEBUG_CATCH
 	}
 
-ICCItemPtr IDockScreenDisplay::GetProperty (const CString &sProperty) const
-
 //	GetProperty
 //
 //	Returns a property
+//
+ICCItemPtr IDockScreenDisplay::GetProperty (const CString &sProperty) const
 
 	{
 	if (strEquals(sProperty, PROPERTY_LIST_SOURCE))
@@ -302,6 +302,32 @@ ICCItemPtr IDockScreenDisplay::GetProperty (const CString &sProperty) const
 		}
 	else
 		return OnGetProperty(sProperty);
+	}
+
+//	GetPropertyKeys
+//
+//	Returns a list of property keys
+//
+ICCItemPtr IDockScreenDisplay::GetPropertyKeys () const
+	{
+	ICCItemPtr pList = OnGetPropertyKeys();
+
+	//	Need to make sure this isnt a true Nil, otherwise we cant append
+
+	if (pList->IsAtom())
+		pList = ICCItemPtr(ICCItem::List);
+	
+	//	If we need to, add in PROPERTY_LIST_SOURCE
+
+	TMap<CString, int> mSeen;
+
+	for (int i = 0; i < pList->GetCount(); i++)
+		mSeen.Insert(pList->GetElement(i)->GetStringValue());
+
+	if (!mSeen.Find(PROPERTY_LIST_SOURCE))
+		pList->AppendString(PROPERTY_LIST_SOURCE);
+
+	return pList;
 	}
 
 bool IDockScreenDisplay::SetProperty (const CString &sProperty, const ICCItem &Value)
@@ -458,11 +484,21 @@ ICCItemPtr IDockScreenDisplay::OnGetListAsCCItem (void) const
 	return pList->GetAsCCItem();
 	}
 
-ICCItemPtr IDockScreenDisplay::OnGetProperty (const CString &sProperty) const
-
 //	OnGetProperty
 //
 //	Default has no properties
+//
+ICCItemPtr IDockScreenDisplay::OnGetProperty (const CString &sProperty) const
+
+	{
+	return NULL;
+	}
+
+//	OnGetPropertyKeys
+//
+//	Default has no properties
+//
+ICCItemPtr IDockScreenDisplay::OnGetPropertyKeys () const
 
 	{
 	return NULL;

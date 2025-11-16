@@ -98,6 +98,8 @@ ICCItem *fnPlySetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 #define FN_SCR_LIST					37
 #define FN_SCR_SESSION_DATA			38
 #define FN_SCR_ADD_UNDOCK_EVENT		39
+#define FN_SCR_GET_PROPERTY_KEYS	40
+#define FN_SCR_GET_DATA_KEYS		41
 
 ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnScrGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
@@ -244,6 +246,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(scrGetData screen attrib) -> data",
 			"is",	0,	},
 
+		{ "scrGetDataKeys",					fnScrGet,		FN_SCR_GET_DATA_KEYS,
+			"(scrGetDataKeys screen) -> list of data keys",
+			"i",	0, },
+
 		{	"scrGetDesc",					fnScrGet,		FN_SCR_DESC,
 			"(scrGetDesc screen) -> text",
 			"i",	0,	},
@@ -281,6 +287,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'stack\n",
 
 			"is",	0,	},
+
+		{ "scr@Keys",						fnScrGet,		FN_SCR_GET_PROPERTY_KEYS,
+			"(scr@Keys screen) -> list of property keys",
+
+			"i",	0, },
 
 		{	"scrGetProperty",				fnScrGet,		FN_SCR_GET_PROPERTY,
 			"RENAMED: Used (scr@ ...) instead.",
