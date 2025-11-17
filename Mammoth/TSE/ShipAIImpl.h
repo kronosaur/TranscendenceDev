@@ -44,6 +44,11 @@ class CAIBehaviorCtx
 
 		static constexpr int DETER_CHASE_MAX_TIME = 450;
 
+		//	When adjusting formation positions, we cheat by this factor if we're
+		//	really close.
+
+		static constexpr Metric CHEAT_FORMATION_FACTOR = 0.2;
+
 		CAIBehaviorCtx (void) { }
 		CAIBehaviorCtx (const CAIBehaviorCtx &Src) = delete;
 		CAIBehaviorCtx (CAIBehaviorCtx &&Src) = delete;

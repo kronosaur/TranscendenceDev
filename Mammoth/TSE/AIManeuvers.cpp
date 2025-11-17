@@ -716,7 +716,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				//	it above).
 				//	We cheat a little to dampen our movements against stationary targets.
 
-				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle, 0.2);
+				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle, CHEAT_FORMATION_FACTOR);
 				}
 
 			//	If we're attacking a station, then keep our distance so that
@@ -830,7 +830,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				//	it above).
 				//	We cheat a little to dampen our movements against stationary targets.
 
-				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle, 0.2);
+				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle, CHEAT_FORMATION_FACTOR);
 				}
 
 			//	If we're not well in range of our primary weapon then
@@ -869,7 +869,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 					//	Maneuver to that point - cheat a little if the target is stationary to dampen our movement.
 
-					vDirection = CalcManeuverFormation(pShip, vPos, vVel, 0, pTarget->GetVel().Length2() ? 0.0 : 0.2);
+					vDirection = CalcManeuverFormation(pShip, vPos, vVel, 0, pTarget->GetVel().Length2() ? 0.0 : CHEAT_FORMATION_FACTOR);
 					}
 
 				//	Otherwise, we just try to close as best as possible
@@ -963,7 +963,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	it above).
 			//	Cheat a little if the target cant move or is stationary to dampen our movements
 
-			vDirection = CalcManeuverFormation(pShip, vPos, pTarget->GetVel(), iTargetAngle, pTarget->CanThrust() && pTarget->GetVel().Length2() ? 0.0 : 0.2);
+			vDirection = CalcManeuverFormation(pShip, vPos, pTarget->GetVel(), iTargetAngle, pTarget->CanThrust() && pTarget->GetVel().Length2() ? 0.0 : CHEAT_FORMATION_FACTOR);
 
 			//	We don't want to thrust unless we're in position
 
