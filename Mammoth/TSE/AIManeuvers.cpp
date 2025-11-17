@@ -417,7 +417,7 @@ CVector CAIBehaviorCtx::CalcManeuverCloseOnTarget (CShip *pShip,
 	return vInterceptPoint;
 	}
 
-CVector CAIBehaviorCtx::CalcManeuverFormation (CShip *pShip, const CVector vDest, const CVector vDestVel, int iDestFacing, bool bCheatPositioning) const
+CVector CAIBehaviorCtx::CalcManeuverFormation (CShip *pShip, const CVector vDest, const CVector vDestVel, int iDestFacing, Metric rCheatThrustFactor) const
 
 //	CalcManeuverFormation
 //
@@ -432,11 +432,11 @@ CVector CAIBehaviorCtx::CalcManeuverFormation (CShip *pShip, const CVector vDest
 	//	If we're close enough to the velocity, cheat a little by
 	//	accelerating without using the main engine
 
-	if (bCheatPositioning && bCloseEnough)
+	if (rCheatThrustFactor && bCloseEnough)
 		{
 		if (!pShip->IsParalyzed())
 			{
-			pShip->AddForce(vDeltaV * pShip->GetMass() / 2000.0);
+			pShip->AddForce(vDeltaV * rCheatThrustFactor * max(1.0, pShip->GetMass() / 2000.0));
 
 #ifdef DEBUG_ATTACK_TARGET_MANEUVERS
 			pShip->SetDebugVector(vDeltaV.Normal() * 100. * g_KlicksPerPixel);
@@ -694,10 +694,10 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2, bFaster));
 				}
 
-			//	If we're attacking a static target then find a good spot
+			//	If we're attacking a static or non-moving target then find a good spot
 			//	and shoot from there.
 
-			else if (!pTarget->CanThrust())
+			else if (!(pTarget->CanThrust() || pTarget->GetVel().Length2()))
 				{
 				int iClock = pShip->GetUniverse().GetTicks() / (170 + pShip->GetDestiny() / 3);
 				int iAngle = pShip->AlignToRotationAngle((pShip->GetDestiny() + (iClock * 141 * (1 + pShip->GetDestiny()))) % 360);
@@ -714,8 +714,9 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				//	Figure out which way we need to move to end up where we want
 				//	(Note that we don't combine the potential because we've already accounted for
 				//	it above).
+				//	We cheat a little to dampen our movements against stationary targets.
 
-				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle, false);
+				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle, 0.2);
 				}
 
 			//	If we're attacking a station, then keep our distance so that
@@ -810,7 +811,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	NOTE: We need to check this before the code below because otherwise we
 			//	won't get here.
 
-			else if (!pTarget->CanThrust())
+			else if (!(pTarget->CanThrust() || pTarget->GetVel().Length2()))
 				{
 				int iClock = pShip->GetUniverse().GetTicks() / (170 + pShip->GetDestiny() / 3);
 				int iAngle = pShip->AlignToRotationAngle((pShip->GetDestiny() + (iClock * 141 * (1 + pShip->GetDestiny()))) % 360);
@@ -827,8 +828,9 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				//	Figure out which way we need to move to end up where we want
 				//	(Note that we don't combine the potential because we've already accounted for
 				//	it above).
+				//	We cheat a little to dampen our movements against stationary targets.
 
-				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle, false);
+				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle, 0.2);
 				}
 
 			//	If we're not well in range of our primary weapon then
@@ -865,9 +867,9 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 					CVector vVel = pTarget->GetVel() + (vToTargetN * (1.0 - Min(0.7, rBravery)) * pShip->GetMaxSpeed());
 
-					//	Maneuver to that point
+					//	Maneuver to that point - cheat a little if the target is stationary to dampen our movement.
 
-					vDirection = CalcManeuverFormation(pShip, vPos, vVel, 0, false);
+					vDirection = CalcManeuverFormation(pShip, vPos, vVel, 0, pTarget->GetVel().Length2() ? 0.0 : 0.2);
 					}
 
 				//	Otherwise, we just try to close as best as possible
@@ -957,10 +959,11 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				vPos = pTarget->GetPos() + PolarToVector(iTargetMotion + 180, rRange);
 
 			//	Figure out which way we need to move to end up where we want
-			//	(Note that we don't combine the potential because we've already accounter for
+			//	(Note that we don't combine the potential because we've already accounted for
 			//	it above).
+			//	Cheat a little if the target cant move or is stationary to dampen our movements
 
-			vDirection = CalcManeuverFormation(pShip, vPos, pTarget->GetVel(), iTargetAngle, false);
+			vDirection = CalcManeuverFormation(pShip, vPos, pTarget->GetVel(), iTargetAngle, pTarget->CanThrust() && pTarget->GetVel().Length2() ? 0.0 : 0.2);
 
 			//	We don't want to thrust unless we're in position
 
