@@ -40,7 +40,6 @@ constexpr Metric MAP_GRID_SIZE =				3000.0 * LIGHT_SECOND;
 CSystem::CSystem (CUniverse &Universe, CTopologyNode *pTopology) : 
 		m_Universe(Universe),
 		m_pTopology(pTopology),
-		m_pThreadPool(NULL),
 		m_ObjGrid(GRID_SIZE, CELL_SIZE, CELL_BORDER)
 
 //	CSystem constructor
@@ -66,6 +65,7 @@ CSystem::~CSystem (void)
 	delete m_pEnvironment;
 
 	delete m_pThreadPool;
+	delete m_pBkrndThreadPool;
 
 	//	Clear out any attached object because those are freed by their owners.
 
