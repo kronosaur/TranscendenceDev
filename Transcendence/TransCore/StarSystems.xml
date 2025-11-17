@@ -1493,7 +1493,7 @@
 
 					;	Create the gate
 
-					(if (sysGetStargateProperty theGate 'uncharted)
+					(if isUncharted
 
 						;	If this is an uncharted stargate, then create the gate somewhere
 						;	out in the distance.

@@ -302,6 +302,7 @@ void ShowHelp (CXMLElement *pCmdLine)
 		printf("      [/criteria:xxx]       Ships must match criteria.\n");
 		printf("\n");
 		printf("      [/armorItems]         installed armor items.\n");
+		printf("	  [/balance]            stats about combat and defense.\n");
 		printf("      [/balanceType]        designation based on combat strength.\n");
 		printf("      [/cargoSpace]         cargo space available (in tons).\n");
 		printf("      [/combatStrength]     combat power (absolute).\n");
