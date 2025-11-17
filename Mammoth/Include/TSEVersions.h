@@ -669,7 +669,13 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //				1.0 = normal scale, 0.0 = no change in scale. Default: 1.0
 //
 //	 58: 2.0 Alpha 8
-//
+//		tlisp:
+//			(scrGetDataKeys obj)
+//				Returns a list of typData keys for the given obj type
+//			(scrGetStaticDataKeys type)
+//				Returns a list of static datakeys for the given obj type
+//			(scr@Keys type)
+//				Returns a list of all instance property and custom global property keys for the given obj
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
