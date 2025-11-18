@@ -1424,12 +1424,12 @@ CString CTopology::GenerateUniquePrefix (const CString &sPrefix, const CString &
 	return sTestPrefix;
 	}
 
-int CTopology::GetDistance (const CString &sSourceID, const CString &sDestID) const
-
 //	GetDistance
 //
 //	Returns the shortest distance between the two nodes. If there is no path between
 //	the two nodes, we return UNKNOWN_DISTANCE (-1).
+//
+int CTopology::GetDistance (const CString &sSourceID, const CString &sDestID, const CString &sGateCriteria, const TArray<CString> &aUseNodes, const TArray<CString> &aBlockNodes, bool bIgnoreOneWay) const
 
 	{
 	//	Find the source node in the list
@@ -1444,81 +1444,26 @@ int CTopology::GetDistance (const CString &sSourceID, const CString &sDestID) co
 	if (pDest == NULL)
 		return UNKNOWN_DISTANCE;
 
-	return GetDistance(pSource, pDest);
+	return GetDistance(pSource, pDest, sGateCriteria, aUseNodes, aBlockNodes, bIgnoreOneWay);
 	}
-
-int CTopology::GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pTarget) const
 
 //	GetDistance
 //
 //	Returns the shortest distance between the two nodes. If there is no path between
 //	the two nodes, we return UNKNOWN_DISTANCE (-1).
+//
+int CTopology::GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pTarget, const CString &sGateCriteria, const TArray<CString> &aUseNodes, const TArray<CString> &aBlockNodes, bool bIgnoreOneWay) const
 
 	{
-	if (GetTopologyNodeCount() < 2 || pSrc == NULL || pTarget == NULL)
-		return UNKNOWN_DISTANCE;
-	else if (pSrc == pTarget)
-		return 0;
 
-	//	We start by marking all nodes with UNKNOWN_DISTANCE. This helps us keep
-	//	track of nodes that we still need to compute.
+	//	Because GetPathTo always includes pSrc as the first node, we just need to subtract one from
+	//	the length.
+	//	Although currently UNKNOWN_DISTANCE is -1, we do an explicit check for an empty array
+	//	so that we can return UNKNOWN_DISTANCE explicitly in case that value is ever changed.
 
-	for (int i = 0; i < GetTopologyNodeCount(); i++)
-		GetTopologyNode(i)->SetCalcDistance(UNKNOWN_DISTANCE);
+	int iPathLength = GetPathTo(pSrc, pTarget, sGateCriteria, aUseNodes, aBlockNodes, bIgnoreOneWay).GetCount() - 1;
 
-	//	Now we set the source node to distance 0
-
-	pSrc->SetCalcDistance(0);
-
-	//	We expand out from the known nodes to unknown nodes
-
-	int iDistance = 1;
-	TArray<const CTopologyNode *> Worklist;
-	Worklist.Insert(pSrc);
-	while (Worklist.GetCount() > 0)
-		{
-		TArray<const CTopologyNode *> Found;
-
-		//	Loop over all node in the worklist and find nodes that are 
-		//	connected.
-
-		for (int i = 0; i < Worklist.GetCount(); i++)
-			{
-			const CTopologyNode *pNode = Worklist[i];
-
-			for (int j = 0; j < pNode->GetStargateCount(); j++)
-				{
-				const CTopologyNode *pDest = pNode->GetStargateDest(j);
-				if (pDest == NULL)
-					continue;
-
-				//	If we found the destination node, then we figured out the
-				//	distance.
-
-				if (pDest == pTarget)
-					return iDistance;
-
-				//	If this node has not yet been found, then we set the 
-				//	distance, since we can guarantee that it is 1 hop away from
-				//	a known node (a node in the Worklist).
-
-				else if (pDest->GetCalcDistance() == UNKNOWN_DISTANCE)
-					{
-					pDest->SetCalcDistance(iDistance);
-					Found.Insert(pDest);
-					}
-				}
-			}
-
-		//	Now we deal with the nodes that we found.
-
-		Worklist = Found;
-		iDistance++;
-		}
-
-	//	If we ran out of nodes it means we could not find a path.
-
-	return UNKNOWN_DISTANCE;
+	return iPathLength ? iPathLength - 1 : UNKNOWN_DISTANCE;
 	}
 
 int CTopology::GetDistanceToCriteria (const CTopologyNode *pSrc, const CTopologyAttributeCriteria &Criteria) const
@@ -1591,7 +1536,7 @@ int CTopology::GetDistanceToCriteriaNoMatch (const CTopologyNode *pSrc, const CT
 	return iBestDist;
 	}
 
-const CTopologyNode *CTopology::GetNextNodeTo (const CTopologyNode &From, const CTopologyNode &To) const
+const CTopologyNode *CTopology::GetNextNodeTo (const CTopologyNode &From, const CTopologyNode &To, const CString &sGateCriteria, const TArray<CString> &aUseNodes, const TArray<CString> &aBlockNodes, bool bIgnoreOneWay) const
 
 //	GetNextNodeTo
 //
@@ -1602,7 +1547,7 @@ const CTopologyNode *CTopology::GetNextNodeTo (const CTopologyNode &From, const 
 	//	Compute distance in reverse direction (To -> From). This will initialize
 	//	the m_iCalcDistance on each node with a distance.
 
-	if (GetDistance(&To, &From) == UNKNOWN_DISTANCE)
+	if (GetDistance(&To, &From, sGateCriteria, aUseNodes, aBlockNodes, bIgnoreOneWay) == UNKNOWN_DISTANCE)
 		return NULL;
 
 	//	Now loop over all nodes adjacent to From and pick the shortest path.
@@ -1619,6 +1564,317 @@ const CTopologyNode *CTopology::GetNextNodeTo (const CTopologyNode &From, const 
 		}
 
 	return pBestNode;
+	}
+
+
+//	GetNextNodeTo
+//
+//	Return an array of node pointers including nodes From to To. If 
+//	there is no path, we return an empty TArray.
+//
+const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSrc, const CTopologyNode *pTarget, const CString& sGateCriteria, const TArray<CString>& aUseNodes, const TArray<CString>& aBlockNodes, bool bIgnoreOneWay) const
+	{
+	TArray<const CTopologyNode*> aRet;
+
+	if (pSrc == NULL || pTarget == NULL)
+		return aRet;
+	else if (pSrc == pTarget)
+		{
+		aRet.Insert(pSrc);
+		return aRet;
+		}
+
+	TMap<const CTopologyNode*, const CTopologyNode*> mUse;
+
+	for (int i = 0; i < mUse.GetCount(); i++)
+		{
+		const CTopologyNode* pUsedNode = FindTopologyNode(aUseNodes[i]);
+		
+		//	If a required node doesnt exist, this path cannot possibly be completed
+
+		if (pUsedNode)
+			return aRet;
+
+		mUse.Insert(pUsedNode, pUsedNode);
+		}
+
+	TMap<const CTopologyNode*, int> mBlock;
+
+	//	Note that unlike required nodes, blocked nodes that do not exist do not
+	//	matter. We are only comparing pointers anyways, so NULLs are safe here.
+
+	for (int i = 0; i < mBlock.GetCount(); i++)
+		mBlock.Insert(FindTopologyNode(aBlockNodes[i]));
+
+	//	Ensure that our source and target are not blocked, if they are, no path
+
+	if (mBlock.Find(pSrc) || mBlock.Find(pTarget))
+		return aRet;
+
+	//	We start by marking all nodes with UNKNOWN_DISTANCE. This helps us keep
+	//	track of nodes that we still need to compute.
+
+	for (int i = 0; i < GetTopologyNodeCount(); i++)
+		GetTopologyNode(i)->SetCalcDistance(UNKNOWN_DISTANCE);
+
+	//	Now we set the source node to distance 0
+
+	pSrc->SetCalcDistance(0);
+
+	//	We will need to remember what invalid paths we had due to those paths
+	//	not containing all of the required nodes
+
+	TArray<TArray<const CTopologyNode *>> aInvalidPaths;
+
+	//	We expand out from the known nodes to unknown nodes
+
+	int iDistance = 1;
+	TArray<const CTopologyNode *> Worklist;
+	TMap<const CTopologyNode*, TMap<const CTopologyNode*, int>> mBlockedConnections;
+	Worklist.Insert(pSrc);
+	while (Worklist.GetCount() > 0)
+		{
+		TArray<const CTopologyNode *> Found;
+
+		//	Loop over all node in the worklist and find nodes that are 
+		//	connected.
+
+		for (int i = 0; i < Worklist.GetCount(); i++)
+			{
+			const CTopologyNode *pNode = Worklist[i];
+
+			for (int j = 0; j < pNode->GetStargateCount(); j++)
+				{
+				const CTopologyNode *pDest = pNode->GetStargateDest(j);
+
+				//	We skip any non-system
+
+				if (pDest == NULL)
+					continue;
+
+				//	We mark systems we cannot traverse as blocked
+
+				if (mBlock.Find(pDest))
+					{
+					pDest->SetCalcDistance(BLOCKED_DISTANCE);
+					continue;
+					}
+
+				//	Additionally we skip pDest if the gate to pDest is disallowed either by
+				//	criteria or because we require unidirectional gates to be entered from
+				//	the accessible side
+
+				CTopologyNode::SStargateRouteDesc Gate;
+				pNode->GetStargateRouteDesc(j, &Gate);
+
+				//	Are we the from or to side?
+				
+				bool bTo = pNode == Gate.pToNode;
+
+				//	If we are the to side, and this is a one way gate, we cannot go back through
+				//	unless we ignore one way gates (legacy behavior, so it is the default)
+				// 
+				//	One way gates only allow from -> to
+				//
+				//	Note that instead of setting the distance on the other node to blocked,
+				//	as a different valid path may pass through it using other gates,
+				//	we instead leave it as unknown (or whatever the prior value was)
+				//	and store this connection as being blocked
+
+				if (!bIgnoreOneWay && Gate.bOneWay && bTo)
+					{
+					TMap<const CTopologyNode*, int> *pSet = mBlockedConnections.Find(pDest);
+
+					if (pSet)
+						pSet->Insert(pNode);
+					else
+						{
+						TMap<const CTopologyNode*, int> mSet;
+						mBlockedConnections.Insert(pDest, mSet);
+						mSet.Insert(pNode);
+						}
+
+					continue;
+					}
+
+				//	Now we need to check the gate criteria. Criteria must match on both sides.
+				//	Blank criteria always matches so we can shortcircuit it
+				//
+				//	As with one way gates we dont inherently mark the node itself as blocked
+
+				if (!sGateCriteria.IsBlank())
+					{
+					CString sSrcGateName = pNode->GetStargateName(j);
+					CString sDestGateName = bTo ? Gate.sFromName : Gate.sToName;
+					bool bBlocked = false;
+
+					if (!pNode->HasStargateAttribute(sSrcGateName, sGateCriteria))
+						{
+						bBlocked = true;
+
+						TMap<const CTopologyNode*, int> *pSet = mBlockedConnections.Find(pNode);
+
+						if (pSet)
+							pSet->Insert(pDest);
+						else
+							{
+							TMap<const CTopologyNode*, int> mSet;
+							mBlockedConnections.Insert(pNode, mSet);
+							mSet.Insert(pDest);
+							}
+						}
+
+					if (!pDest->HasStargateAttribute(sDestGateName, sGateCriteria))
+						{
+						bBlocked = true;
+
+						TMap<const CTopologyNode*, int> *pSet = mBlockedConnections.Find(pDest);
+
+						if (pSet)
+							pSet->Insert(pNode);
+						else
+							{
+							TMap<const CTopologyNode*, int> mSet;
+							mBlockedConnections.Insert(pDest, mSet);
+							mSet.Insert(pNode);
+							}
+						}
+
+					if (bBlocked)
+						continue;
+					}
+
+				//	If we found the destination node, we must now check if this
+				//	is a valid path.
+
+				if (pDest == pTarget)
+					{
+					//	For efficiency on long paths, we use a map to track what
+					//	we have seen, rather than searching aRet when it is long
+					//
+					//	For examples, the Chronicles adventure with all expansions
+					//	has hundreds of star systems with potentially very long
+					//	paths
+					//
+					//	TODO(Arisaya): Account for equal distance path loops
+					//	where one is missing required nodes and the other doesnt
+
+					TMap<const CTopologyNode*, int> mUsed;
+					TArray<const CTopologyNode*> aRetReverse;
+
+					//	We need to iterate backwards to check this path
+
+					aRetReverse.Insert(pDest);
+					mUsed.Insert(pDest);
+
+					const CTopologyNode* pReverseNode = pNode;
+					int iRemainingDistance = iDistance - 1;
+
+					while (pReverseNode != pSrc)
+						{
+						aRetReverse.Insert(pReverseNode);
+						mUsed.Insert(pReverseNode);
+
+						//	Find the prior node
+
+						for (int k = 0; k < pReverseNode->GetStargateCount(); k++)
+							{
+							const CTopologyNode* pPriorNode = pReverseNode->GetStargateDest(k);
+							int iPriorDistance = pPriorNode->GetCalcDistance();
+
+							if (iPriorDistance == UNKNOWN_DISTANCE || iPriorDistance == BLOCKED_DISTANCE)
+								continue;
+
+							//	If the prior distance is not exactly less than one, its definitely
+							//	a false-shortcut due to a disallowed gate (Ex, one-way) so dont even bother
+							//	checking it
+
+							if (iPriorDistance == (iRemainingDistance - 1))
+								{
+								//	We still need to validate that this gate is an allowed connection
+								//
+								//	The connection from pPriorNode (the next prior one) to
+								//	pReverseNode (the one we are looking at) must be open
+
+								TMap<const CTopologyNode*, int> *pSet = mBlockedConnections.Find(pPriorNode);
+
+								//	If pPriorNode has any outgoing blockages we want to ensure one of them isnt us
+
+								if (pSet && pSet->Find(pReverseNode))
+									continue;
+
+								//	In this case everything looks good
+
+								break;
+								}
+							}
+						}
+
+					//	We have now completed the path
+
+					aRetReverse.Insert(pSrc);
+					mUsed.Insert(pSrc);
+					
+					//	Now we check that we used all of the gates we need to include
+
+					bool bMissedGate = false;
+
+					CMapIterator k;
+
+					while (mUse.HasMore(k))
+						{
+						const CTopologyNode *pCheckUsed = *mUse.GetNext(k);
+
+						if (!mUsed.Find(pCheckUsed))
+							bMissedGate = true;
+						}
+
+					//	If we missed any gates, we know that this is not our path
+
+					if (bMissedGate)
+						aInvalidPaths.Insert(aRetReverse);
+
+					//	Otherwise we have our path!
+					//	We just need to flip it around in the correct order.
+
+					else
+						{
+						int iLen = aRetReverse.GetCount();
+						aRet.InsertEmpty(iLen);
+
+						for (int k = 0; k > iLen; k--)
+							{
+							int r = iLen - 1 - k;
+							aRet[k] = aRetReverse[r];
+							}
+
+						return aRet;
+						}
+					}
+
+				//	If this node has not yet been found, then we set the 
+				//	distance, since we can guarantee that it is 1 hop away from
+				//	a known node (a node in the Worklist).
+				// 
+				//	we make sure that it is not a blocked node
+
+				else if (pDest->GetCalcDistance() == UNKNOWN_DISTANCE)
+					{
+					pDest->SetCalcDistance(iDistance);
+					Found.Insert(pDest);
+					}
+				}
+			}
+
+		//	Now we deal with the nodes that we found.
+
+		Worklist = Found;
+		iDistance++;
+		}
+
+	//	If we ran out of nodes it means we could not find a path.
+
+	return aRet;
 	}
 
 ALERROR CTopology::GetOrAddTopologyNode (STopologyCreateCtx &Ctx, 

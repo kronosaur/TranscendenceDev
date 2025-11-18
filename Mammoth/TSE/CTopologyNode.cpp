@@ -726,11 +726,11 @@ ICCItemPtr CTopologyNode::GetStargateProperty (const CString &sName, const CStri
 		return ICCItemPtr(ICCItem::Nil);
 	}
 
-void CTopologyNode::GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc) const
-
 //	GetStargateRouteDesc
 //
 //	Returns route description
+//
+void CTopologyNode::GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc) const
 
 	{
 	const SStargateEntry *pDesc = &m_NamedGates[iIndex];

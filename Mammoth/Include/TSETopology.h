@@ -106,6 +106,7 @@ class CTopologyNode
 		CTopologyNode *GetStargateDest (int iIndex, CString *retsEntryPoint = NULL) const;
 		ICCItemPtr GetStargateProperty (const CString &sName, const CString &sProperty) const;
 		void GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc) const;
+		CString GetStargateName (int iIndex) const { return m_NamedGates.GetKey(iIndex); }
 		CSystem *GetSystem (void) { return m_pSystem; }
 		DWORD GetSystemID (void) { return m_dwID; }
 		const CString &GetSystemName (void) const { return m_sName; }
@@ -385,6 +386,7 @@ class CTopology
 	{
 	public:
 		static const int UNKNOWN_DISTANCE =	-1;
+		static const int BLOCKED_DISTANCE =	-2;
 
 		struct SNodeCreateCtx
 			{
@@ -427,11 +429,12 @@ class CTopology
 		const CTopologyNode *FindTopologyNode (const CString &sID) const;
 		CTopologyNode *FindTopologyNode (const CString &sID);
 		CString GenerateUniquePrefix (const CString &sPrefix, const CString &sTestNodeID);
-		int GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pTarget) const;
-		int GetDistance (const CString &sSourceID, const CString &sDestID) const;
+		int GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pTarget, const CString &sGateCriteria = NULL_STR, const TArray<CString> &aUseNodes = TArray<CString>(), const TArray<CString> &aBlockNodes = TArray<CString>(), bool bIgnoreOneWay = true) const;
+		int GetDistance (const CString &sSourceID, const CString &sDestID, const CString &sGateCriteria = NULL_STR, const TArray<CString> &aUseNodes = TArray<CString>(), const TArray<CString> &aBlockNodes = TArray<CString>(), bool bIgnoreOneWay = true) const;
 		int GetDistanceToCriteria (const CTopologyNode *pSrc, const CTopologyAttributeCriteria &Criteria) const;
 		int GetDistanceToCriteriaNoMatch (const CTopologyNode *pSrc, const CTopologyAttributeCriteria &Criteria) const;
-		const CTopologyNode *GetNextNodeTo (const CTopologyNode &From, const CTopologyNode &To) const;
+		const CTopologyNode *GetNextNodeTo (const CTopologyNode &From, const CTopologyNode &To, const CString &sGateCriteria = NULL_STR, const TArray<CString> &aUseNodes = TArray<CString>(), const TArray<CString> &aBlockNodes = TArray<CString>(), bool bIgnoreOneWay = true) const;
+		const TArray<const CTopologyNode*> GetPathTo (const CTopologyNode *pSrc, const CTopologyNode *pTarget, const CString &sGateCriteria = NULL_STR, const TArray<CString> &aUseNodes = TArray<CString>(), const TArray<CString> &aBlockNodes = TArray<CString>(), bool bIgnoreOneWay = true) const;
 		CTopologyNodeList &GetTopologyNodeList (void) { return m_Topology; }
 		CTopologyNode *GetTopologyNode (int iIndex) { return &m_Topology[iIndex]; }
 		const CTopologyNode *GetTopologyNode (int iIndex) const { return &m_Topology[iIndex]; }
