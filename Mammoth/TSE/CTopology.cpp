@@ -1896,7 +1896,7 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 							}
 
 						//	If any of the gates lead to systems we are required to take, try using those gates
-						const CTopologyNode* pNextReverseNode;
+						const CTopologyNode* pNextReverseNode = NULL;
 
 						if (mUse.GetCount())
 							{
