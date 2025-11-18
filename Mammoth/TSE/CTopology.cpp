@@ -1755,12 +1755,20 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 					//	For examples, the Chronicles adventure with all expansions
 					//	has hundreds of star systems with potentially very long
 					//	paths
-					//
-					//	TODO(Arisaya): Account for equal distance path loops
-					//	where one is missing required nodes and the other doesnt
 
 					TMap<const CTopologyNode*, int> mUsed;
 					TArray<const CTopologyNode*> aRetReverse;
+					TArray<const CTopologyNode*> aForkInRoadStack;
+					TMap<const CTopologyNode*, TArray<int>> mForkPaths;
+					TMap<const CTopologyNode*, const CTopologyNode*> mRemainingToUse;
+
+					CMapIterator k;
+
+					while (mUse.HasMore(k))
+						{
+						const CTopologyNode *pNeedToUse = *mUse.GetNext(k);
+						mRemainingToUse.Insert(pNeedToUse, pNeedToUse);
+						}
 
 					//	We need to iterate backwards to check this path
 
@@ -1775,11 +1783,89 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 						aRetReverse.Insert(pReverseNode);
 						mUsed.Insert(pReverseNode);
 
-						//	Find the prior node
+						//	If we have required nodes check if completing this is even possible
+
+						TArray<int> aPossibleGates;
+
+						//	Check if its even possible to complete a path with all required nodes
+
+						if (mUse.GetCount() && mRemainingToUse.GetCount() > iRemainingDistance)
+							{
+
+							//	We need to backtrack to the last fork, if one is available
+							//	If none are available, we are done with this check, this isnt a viable path.
+
+							if (!aForkInRoadStack.GetCount())
+								break;
+
+							//	We aren't immediately popping the stack in case we need to keep it on the stack
+							//	So instead we just peek
+
+							const CTopologyNode *pForkNode = aForkInRoadStack[aForkInRoadStack.GetCount() - 1];
+
+							//	Pop the gate we are going to use
+
+							TArray<int>* pRemainingGates = mForkPaths.Find(pForkNode);
+
+							int iGateToTry = pRemainingGates->Pop();
+
+							//	Clean this up we are out of gates to try
+
+							if (!pRemainingGates->GetCount())
+								{
+								mForkPaths.Delete(pForkNode);
+								delete pRemainingGates;
+								aForkInRoadStack.Pop();
+								}
+
+							//	Perform rollback of tracking arrays and maps
+
+							TArray<const CTopologyNode*> aRolledBack;
+
+							const CTopologyNode* pNextRollback;
+
+							while (aRetReverse.GetCount())
+								{
+								pNextRollback = aRetReverse[aRetReverse.GetCount() - 1];
+								if (pNextRollback == pForkNode)
+									break;
+								aRetReverse.Pop();
+								aRolledBack.Insert(pNextRollback);
+								}
+
+							//	Now that we know what nodes have been undone
+							//		1) Delete from mUsed
+							//		2) Add to mRemainingToUse if in mUse
+
+							for (int k = 0; k < aRolledBack.GetCount(); k++)
+								{
+								const CTopologyNode* pRolledBack = aRolledBack[k];
+
+								mUsed.Delete(pRolledBack);
+
+								if (mUse.Find(pRolledBack))
+									mRemainingToUse.Insert(pRolledBack, pRolledBack);
+								}
+
+							//	prepare for the next iteration
+
+							pReverseNode = pForkNode->GetStargateDest(iGateToTry);
+							continue;
+							}
+
+						//	Check what gates we can use
+						// 
+						//	We also check if we are at a fork in the road
+						// 
+						//	This is when 2+ next distances are all valid
+						//	We keep these in mind to backtrack to
 
 						for (int k = 0; k < pReverseNode->GetStargateCount(); k++)
 							{
 							const CTopologyNode* pPriorNode = pReverseNode->GetStargateDest(k);
+							if (!pPriorNode)
+								continue;
+
 							int iPriorDistance = pPriorNode->GetCalcDistance();
 
 							if (iPriorDistance == UNKNOWN_DISTANCE || iPriorDistance == BLOCKED_DISTANCE)
@@ -1805,9 +1891,43 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 
 								//	In this case everything looks good
 
-								break;
+								aPossibleGates.Insert(k);
 								}
 							}
+
+						//	If any of the gates lead to systems we are required to take, try using those gates
+						const CTopologyNode* pNextReverseNode;
+
+						if (mUse.GetCount())
+							{
+							for (int k = 0; k < aPossibleGates.GetCount(); k++)
+								{
+								const CTopologyNode* pGateDest = pReverseNode->GetStargateDest(aPossibleGates[k]);
+								if (mUse.Find(pGateDest))
+									{
+									pNextReverseNode = pGateDest;
+									break;
+									}
+								}
+							}
+
+						//	Otherwise we just grab a gate and try that
+
+						if (!pNextReverseNode)
+							pNextReverseNode = pReverseNode->GetStargateDest(aPossibleGates.Pop());
+
+						//	If we have multiple possible gates we need to remember that this is a fork in the road and try one
+
+						if (aPossibleGates.GetCount() > 1)
+							{
+							aForkInRoadStack.Insert(pReverseNode);
+							mForkPaths.Insert(pReverseNode, aPossibleGates);
+							}
+
+						//	Prepare for the next iteration...
+
+						pReverseNode = pNextReverseNode;
+							
 						}
 
 					//	We have now completed the path
@@ -1819,7 +1939,7 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 
 					bool bMissedGate = false;
 
-					CMapIterator k;
+					mUse.Reset(k);
 
 					while (mUse.HasMore(k))
 						{

@@ -3381,10 +3381,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysGetNextNodeTo [fromNodeID] toNodeID [options]) -> nodeID\n\n"
 
 			"options (struct):\n\n"
-			
+
+			"	respectOneWayGates: Respects directionality of one-way gates when pathing through them. Does not respect one-way gates by default.\n"
 			"   gateCriteria:   Only gates that match criteria can be used for the path calculations\n"
 			"   useNodes:       A list of nodes that must be included in the path calculations\n"
-			"   blockedNodes:   A list of nodes that cannot be included in the path calculations\n",
+			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n",
 
 			"*s*",	0,	},
 
@@ -3413,9 +3414,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"options (struct):\n\n"
 			
+			"	respectOneWayGates: Respects directionality of one-way gates when pathing through them. Does not respect one-way gates by default.\n"
 			"   gateCriteria:   Only gates that match criteria can be used for the path calculations\n"
 			"   useNodes:       A list of nodes that must be included in the path calculations\n"
-			"   blockedNodes:   A list of nodes that cannot be included in the path calculations\n",
+			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n",
 
 			"*s*",	0,	},
 
@@ -14619,6 +14621,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			TArray<CString> aUseNodes;
 			TArray<CString> aBlockNodes;
 			CString sGateCriteria;
+			bool bRespectOneWayGates;
 
 			if (pOptions)
 				{
@@ -14626,6 +14629,10 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				if (pOptions->IsSymbolTable())
 					{
+					//	By default we do not respect one way gates (this is legacy behavior)
+
+					bRespectOneWayGates = pOptions->GetBooleanAt(CONSTLIT("respectOneWayGates"));
+
 					//	Empty gate criteria is ignored
 
 					sGateCriteria = pOptions->GetStringAt(CONSTLIT("gateCriteria"));
@@ -14679,7 +14686,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (dwData == FN_SYS_NEXT_NODE_TO)
 				{
-				const CTopologyNode *pNextNode = pCtx->GetUniverse().GetTopology().GetNextNodeTo(*pFromNode, *pToNode, sGateCriteria, aUseNodes, aBlockNodes);
+				const CTopologyNode *pNextNode = pCtx->GetUniverse().GetTopology().GetNextNodeTo(*pFromNode, *pToNode, sGateCriteria, aUseNodes, aBlockNodes, !bRespectOneWayGates);
 				if (!pNextNode)
 					return pCC->CreateNil();
 
@@ -14689,13 +14696,11 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				ICCItem *pList = pCC->CreateLinkedList();
 
-				const CTopologyNode *pAtNode = pFromNode;
-				pList->AppendString(pAtNode->GetID());
-				while (pAtNode != pToNode)
-					{
-					pAtNode = pCtx->GetUniverse().GetTopology().GetNextNodeTo(*pAtNode, *pToNode, sGateCriteria, aUseNodes, aBlockNodes);
-					pList->AppendString(pAtNode->GetID());
-					}
+				TArray<const CTopologyNode *> aPath;
+				aPath = pCtx->GetUniverse().GetTopology().GetPathTo(pFromNode, pToNode, sGateCriteria, aUseNodes, aBlockNodes, !bRespectOneWayGates);
+
+				for (int i = 0; i < aPath.GetCount(); i++)
+					pList->AppendString(aPath[i]->GetID());
 
 				return pList;
 				}
