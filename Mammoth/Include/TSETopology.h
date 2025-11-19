@@ -128,6 +128,7 @@ class CTopologyNode
 		bool IsMarked (void) const { return m_bMarked; }
 		bool IsNull (void) const { return (m_SystemUNID == 0 || IsEndGame()); }
 		bool IsPositionKnown (void) const { return (m_bKnown || m_bPosKnown); }
+		bool MatchesStargateAttribs (const CString &sName, const CString &sMatch) const;
 		void SetCalcDistance (int iDist) const { m_iCalcDistance = iDist; }
 		void SetCreatorID (const CString &sID) { m_sCreatorID = sID; }
 		void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
@@ -189,6 +190,8 @@ class CTopologyNode
 
 			mutable CTopologyNode *pDestNode = NULL;	//	Cached for efficiency (may be NULL)
 			};
+
+		bool MatchesStargateAttribs (const CTopologyNode::SStargateEntry* pGate, const CString &sMatch) const;
 
 		CTopology &m_Topology;					//	Topology that we're a part of
 		CString m_sID;							//	ID of node

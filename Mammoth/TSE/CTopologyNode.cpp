@@ -869,6 +869,100 @@ ALERROR CTopologyNode::InitFromSystemXML (CTopology &Topology, CXMLElement *pSys
 	return NOERROR;
 	}
 
+//	MatchesStargateAttribs
+// 
+//	Checks if a stargate's link attributes match the pattern in the match string
+//	This is done criteria-style, but only checks against attributes
+//
+bool CTopologyNode::MatchesStargateAttribs(const CString& sName, const CString& sMatch) const
+	{
+	CTopologyNode::SStargateEntry Gate;
+
+	//	An invalid gate never matches
+	if (!m_NamedGates.Find(sName, &Gate))
+		return false;
+
+	//	Empty match string always matches a valid gate
+	if (sMatch.IsBlank())
+		return true;
+
+	return MatchesStargateAttribs(&Gate, sMatch);
+	}
+
+//	MatchesStargateAttribs
+// 
+//	Checks if a stargate's link attributes match the pattern in the match string
+//	This is done criteria-style, but only checks against attributes
+//
+bool CTopologyNode::MatchesStargateAttribs(const CTopologyNode::SStargateEntry *pGate, const CString& sMatch) const
+	{
+	//	If a single non-or criteria fails, we do not match unless
+	//	we succeed on any or-criteria
+
+	bool bMatches = true;
+
+	//	iterate through the string looking for + or - attributes
+
+	char* pPos = sMatch.GetPointer();
+	char* pInitialPos = pPos;
+
+	//	cease if we hit a null terminator or OR criteria
+
+	while (*pPos && *pPos != '|')
+		{
+		//	if we are in whitespace, skip ahead
+
+		while (strIsWhitespace(pPos))
+			pPos++;
+
+		//	we have reached something now
+		//	if it is a null terminator or OR criteria, just leave
+
+		if (!*pPos || *pPos == '|')
+			break;
+
+		//	otherwise we check if this is a '-' for a negative criteria
+
+		bool bIsNegative = *pPos == '-';
+
+		//	skip ahead by one if this is a '+' or '-' to the actual attribute
+
+		if (*pPos == '-' || *pPos == '+')
+			pPos++;
+
+		char *pAttribStart = pPos;
+
+		//	scan ahead until we hit a delimiter
+		while (*pPos && *pPos != '|' && *pPos != ',' && *pPos != ';' && !strIsWhitespace(pPos))
+			pPos++;
+
+		CString sSelectedAttrib = strSubString(sMatch, pAttribStart - pInitialPos, pPos - pAttribStart);
+
+		//	determine if we satisfy the criteria
+
+		bool bMatchedAttrib = HasModifier(pGate->sAttributes, sSelectedAttrib);
+
+		bMatches = bMatchedAttrib != bIsNegative;
+
+		//	if we failed, stop evaluating
+
+		if (!bMatches)
+			break;
+		}
+
+	//	If we failed to match, we try the next or condition if one exists
+
+	if (!bMatches && *pPos == '|')
+		{
+		//	Always start 1 char after the '|' criteria
+		CString sOrMatch = strSubString(sMatch, strFind(sMatch, CONSTLIT("|")) + 1);
+		if (!sOrMatch.IsBlank())
+			bMatches = MatchesStargateAttribs(pGate, sOrMatch);
+		}
+
+	return bMatches;
+	}
+
 ALERROR CTopologyNode::ParsePointList (const CString &sValue, TArray<SPoint> *retPoints)
 
 //	ParsePointList

@@ -1708,7 +1708,7 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 					CString sDestGateName = bTo ? Gate.sFromName : Gate.sToName;
 					bool bBlocked = false;
 
-					if (!pNode->HasStargateAttribute(sSrcGateName, sGateCriteria))
+					if (!pNode->MatchesStargateAttribs(sSrcGateName, sGateCriteria))
 						{
 						bBlocked = true;
 
@@ -1724,7 +1724,7 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 							}
 						}
 
-					if (!pDest->HasStargateAttribute(sDestGateName, sGateCriteria))
+					if (!pDest->MatchesStargateAttribs(sDestGateName, sGateCriteria))
 						{
 						bBlocked = true;
 

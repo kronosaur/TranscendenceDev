@@ -14585,15 +14585,20 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			int iArg = 0;
 
-			//	If we have more than 1 args, then the first arg is the fromID
+			//	If we have 2 args and the last is not the option structs,
+			//  or we have 3 args, then the first arg is the fromID
 
 			const CTopologyNode *pFromNode;
-			if (pArgs->GetCount() > 1 && pArgs->GetElement(0)->IsIdentifier())
+			if ((pArgs->GetCount() == 2 && pArgs->GetElement(0)->IsIdentifier() && !pArgs->GetElement(1)->IsSymbolTable())
+				|| pArgs->GetCount() == 3)
 				{
 				pFromNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
 				if (pFromNode == NULL)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 				}
+
+			else if (pArgs->GetCount() > 3)
+				return pCC->CreateError(CONSTLIT("Too many args"), pArgs);
 
 			//	Otherwise, we assume the current system.
 
