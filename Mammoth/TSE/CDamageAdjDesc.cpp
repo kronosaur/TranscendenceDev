@@ -126,7 +126,7 @@ int CDamageAdjDesc::GetAdj(DamageTypes iDamageType) const
 		case damageNull:
 		case damageError:
 			return 0;
-		//	Default
+		default:
 			return m_iDamageAdj[iDamageType];
 		}
 	}
