@@ -233,7 +233,10 @@ class DamageDesc
 		ALERROR ParseTerm (SDesignLoadCtx &Ctx, char *pPos, CString *retsKeyword, CString *retsValue, char **retpPos);
 		static void WriteValue (CMemoryWriteStream &Stream, const CString &sField, int iValue);
 
-		DamageTypes m_iType = damageGeneric;	//	Type of damage
+		//	We default to Null damage so that items or damage sources that
+		//	dont initialize damage from XML display properly at a glance in
+		//	the UI as doing Null damage, rather than as doing generic damage
+		DamageTypes m_iType = damageNull;		//	Type of damage
 		DiceRange m_Damage;						//	Amount of damage
 		int m_iBonus = 0;						//	Bonus to damage (%)
 		DestructionTypes m_iCause = killedByDamage;		//	Cause of damage
