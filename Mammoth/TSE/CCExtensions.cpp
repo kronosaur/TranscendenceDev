@@ -3384,7 +3384,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"	respectOneWayGates: Respects directionality of one-way gates when pathing through them. Does not respect one-way gates by default.\n"
 			"   gateCriteria:   Only gates that match criteria can be used for the path calculations\n"
-			"   useNodes:       A list of nodes that must be included in the path calculations\n"
 			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n",
 
 			"*",	0,	},
@@ -3416,7 +3415,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"	respectOneWayGates: Respects directionality of one-way gates when pathing through them. Does not respect one-way gates by default.\n"
 			"   gateCriteria:   Only gates that match criteria can be used for the path calculations\n"
-			"   useNodes:       A list of nodes that must be included in the path calculations\n"
 			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n",
 
 			"*",	0,	},

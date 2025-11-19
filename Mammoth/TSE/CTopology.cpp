@@ -1624,6 +1624,7 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(
 	aRet.DeleteAll();
 
 	//	Not implemented yet
+	ASSERT(false);
 	return aRet;
 	}
 
