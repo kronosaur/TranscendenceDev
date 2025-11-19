@@ -1623,8 +1623,213 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(
 
 	aRet.DeleteAll();
 
-	//	Not implemented yet
-	return aRet;
+	TArray<const CTopologyNode*> aNodes;
+
+	//	These numbers include the src and dest nodes
+
+	int iNumSequences = aUseNodes.GetCount() + 1;
+	int iNumNodes = aUseNodes.GetCount() + 2;
+
+	aNodes.InsertEmpty(iNumNodes);
+	aNodes[0] = pSrc;
+
+	for (int i = 0; i < aUseNodes.GetCount(); i++)
+		{
+		const CTopologyNode* pUsedNode = FindTopologyNode(aUseNodes[i]);
+
+		//	If a required node doesnt exist, this path cannot possibly be completed
+
+		if (!pUsedNode)
+			return aRet;
+
+		aNodes[i + 1] = pUsedNode;
+		}
+	aNodes[aUseNodes.GetCount() + 1] = pTarget;
+
+	const CTopologyNode* pCurSrc = pSrc;
+	const CTopologyNode* pCurDest = NULL;
+
+	if (bAllowUseNodeBacktrack)
+		{
+		//	unfortunately due to needing to be able to wrap around we do need to
+		//  consider all O(n^2) rows because a gate may be blocked on one side by
+		//	either criteria or being oneWay
+		//
+		//	The last node cant be pathed to anything else so we can skip that too
+
+		struct SPath
+			{
+			const CTopologyNode* pSrc = NULL;
+			const CTopologyNode* pDest = NULL;
+			TArray<const CTopologyNode*> aPath;
+			};
+		TArray<TArray<SPath>> aAllPaths;
+
+		aAllPaths.InsertEmpty(iNumSequences);
+		for (int i = 0; i < aNodes.GetCount() - 1; i++)
+			{
+			int iRowStart = i + 1;
+			TArray<SPath> aRow;
+			aRow.InsertEmpty(aNodes.GetCount() - iRowStart);
+
+			for (int k = iRowStart; k < aNodes.GetCount(); k++)
+				{
+				const CTopologyNode* pLocalSrc = aNodes[i];
+				const CTopologyNode* pLocalDest = aNodes[k];
+				int iK = k - iRowStart;
+				aRow[iK].pSrc = pLocalSrc;
+				aRow[iK].pDest = pLocalDest;
+				aRow[iK].aPath = GetPathTo(pLocalSrc, pLocalDest, sGateCriteria, aBlockNodes, bIgnoreOneWay);
+				}
+
+			aAllPaths[i] = aRow;
+			}
+
+		//	Now that we have all the paths, we find the optimal one that satisfies the criteria
+
+		TArray<SPath> aBestSequence;
+		aBestSequence.InsertEmpty(iNumSequences);
+		TArray<SPath> aCurSequence;
+		aCurSequence.InsertEmpty(iNumSequences);
+		TArray<int> aRowIdx;
+		aRowIdx.InsertEmpty(iNumSequences);
+
+		//	For some reason InsertEmpty isnt actually zeroing it out
+		//	or InsertEmpty is misleadingly named
+
+		for (int i = 0; i < aRowIdx.GetCount(); i++)
+			aRowIdx[i] = 0;
+
+		int iLastCheckedRow = 0;
+		int iBestPathLength = 0;
+
+		bool bProcessing = true;
+		bool bSkip = false;
+
+		while (bProcessing)
+			{
+			//	create the sequence for the current row indexes
+
+			int iCurPathLength = 0;
+			for (int i = 0; i < aRowIdx.GetCount(); i++)
+				{
+				int r = aRowIdx[i];
+				SPath sCurPath = aAllPaths[i][r];
+				aCurSequence[i] = sCurPath;
+				iCurPathLength += sCurPath.aPath.GetCount();
+
+				//	short circuit if the path is already too long
+
+				if (iBestPathLength && iCurPathLength > iBestPathLength)
+					{
+					bSkip = true;
+					iLastCheckedRow = i;
+					break;
+					}
+				}
+
+			//	copy the current sequence over if it is best
+
+			if (iCurPathLength < iBestPathLength || !iBestPathLength)
+				{
+				for (int i = 0; i < aCurSequence.GetCount(); i++)
+					aBestSequence[i] = aCurSequence[i];
+				}
+
+			//	check the next permutation
+			// 
+			//	If we skip, we know that this point in the permutation sequence
+			//	is already bad so dont even bother checking any others past it
+			//
+			//	We also check if we are still processing
+
+			bProcessing = false;
+
+			for (int i = aRowIdx.GetCount() - 2; i >= 0; i--)
+				{
+				//	check if we have room to increment this row
+
+				if (aRowIdx[i] < aAllPaths[i].GetCount() - 1)
+					{
+					//	We are still processing, even if we don't bump this row
+
+					bProcessing = true;
+
+					//	If we are skipping and too low, we just jump ahead to edit this row
+
+					if (bSkip && i < iLastCheckedRow)
+						i = iLastCheckedRow + 1;
+
+					//	Bump the index on this row and exit out
+
+					aRowIdx[i]++;
+					break;
+					}
+
+				//	otherwise we try to reset this row and bump the next one
+				aRowIdx[i] = 0;
+				}
+			}
+
+		//	now we populate aRet
+
+		aRet.Insert(pSrc);
+		for (int i = 0; i < aBestSequence.GetCount(); i++)
+			{
+			//	we skip the first element of each path since we do it in the previous
+			//	iteration
+
+			for (int k = 0; k < aBestSequence[i].aPath.GetCount(); k++)
+				aRet.Insert(aBestSequence[i].aPath[k]);
+			}
+
+		return aRet;
+		}
+	else
+		{
+		//	Not supporting this yet
+		return aRet;
+
+		//	if we can't backtrack, the permutations become truly cursed
+		//	we go depth-first in this case since it lets us start culling bad results early.
+		struct SPath
+			{
+			const CTopologyNode* pSrc = NULL;
+			const CTopologyNode* pDest = NULL;
+			SPath* pParent = NULL;
+			TArray<const CTopologyNode*> aPath;
+			TArray<CString> aBlocked;
+			TMap<const CTopologyNode*, SPath> mBranches;
+			};
+
+		TArray<SPath> aPaths;
+		aPaths.InsertEmpty(aNodes.GetCount() - 1);
+		TArray<int> aRowIdx;
+		aRowIdx.InsertEmpty(aPaths.GetCount());
+		int iDepth = 0;
+		SPath *pCurPath;
+		TArray<const CTopologyNode*> aUsedStack;
+		TMap<const CTopologyNode*, int> mUsed;
+		TArray<const CTopologyNode*> aRemaining;
+
+		aRemaining.InsertEmpty(aNodes.GetCount() - 1);
+		for (int i = 0; i < aRemaining.GetCount(); i++)
+			aRemaining[i] = aNodes[i];
+
+		for (int i = 0; i < aNodes.GetCount() - 1; i++)
+			{
+			pCurPath = &aPaths[i];
+			while (iDepth < aNodes.GetCount() - 1)
+				{
+				//	first we need to see what
+
+				//TArray<const CTopologyNode*> aAttemptedPath = GetPathTo(aRowIdx[k].pSrc, aRow[k].pDest, sGateCriteria, aBlockNodes, bIgnoreOneWay);
+				}
+
+
+
+			}
+		}
 	}
 
 //	GetPathTo
