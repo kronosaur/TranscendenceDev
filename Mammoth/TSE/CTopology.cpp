@@ -1586,13 +1586,13 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 
 	TMap<const CTopologyNode*, const CTopologyNode*> mUse;
 
-	for (int i = 0; i < mUse.GetCount(); i++)
+	for (int i = 0; i < aUseNodes.GetCount(); i++)
 		{
 		const CTopologyNode* pUsedNode = FindTopologyNode(aUseNodes[i]);
 		
 		//	If a required node doesnt exist, this path cannot possibly be completed
 
-		if (pUsedNode)
+		if (!pUsedNode)
 			return aRet;
 
 		mUse.Insert(pUsedNode, pUsedNode);
@@ -1603,7 +1603,7 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 	//	Note that unlike required nodes, blocked nodes that do not exist do not
 	//	matter. We are only comparing pointers anyways, so NULLs are safe here.
 
-	for (int i = 0; i < mBlock.GetCount(); i++)
+	for (int i = 0; i < aBlockNodes.GetCount(); i++)
 		mBlock.Insert(FindTopologyNode(aBlockNodes[i]));
 
 	//	Ensure that our source and target are not blocked, if they are, no path
@@ -1762,11 +1762,11 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 					TMap<const CTopologyNode*, TArray<int>> mForkPaths;
 					TMap<const CTopologyNode*, const CTopologyNode*> mRemainingToUse;
 
-					CMapIterator k;
+					CMapIterator mI;
 
-					while (mUse.HasMore(k))
+					while (mUse.HasMore(mI))
 						{
-						const CTopologyNode *pNeedToUse = *mUse.GetNext(k);
+						const CTopologyNode *pNeedToUse = *mUse.GetNext(mI);
 						mRemainingToUse.Insert(pNeedToUse, pNeedToUse);
 						}
 
@@ -1849,6 +1849,7 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 
 							//	prepare for the next iteration
 
+							iRemainingDistance += aRolledBack.GetCount();
 							pReverseNode = pForkNode->GetStargateDest(iGateToTry);
 							continue;
 							}
@@ -1927,7 +1928,7 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 						//	Prepare for the next iteration...
 
 						pReverseNode = pNextReverseNode;
-							
+						iRemainingDistance--;
 						}
 
 					//	We have now completed the path
@@ -1939,11 +1940,11 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 
 					bool bMissedGate = false;
 
-					mUse.Reset(k);
+					mUse.Reset(mI);
 
-					while (mUse.HasMore(k))
+					while (mUse.HasMore(mI))
 						{
-						const CTopologyNode *pCheckUsed = *mUse.GetNext(k);
+						const CTopologyNode *pCheckUsed = *mUse.GetNext(mI);
 
 						if (!mUsed.Find(pCheckUsed))
 							bMissedGate = true;
@@ -1962,7 +1963,7 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 						int iLen = aRetReverse.GetCount();
 						aRet.InsertEmpty(iLen);
 
-						for (int k = 0; k > iLen; k--)
+						for (int k = 0; k < iLen; k++)
 							{
 							int r = iLen - 1 - k;
 							aRet[k] = aRetReverse[r];

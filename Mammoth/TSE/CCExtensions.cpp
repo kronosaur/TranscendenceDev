@@ -3387,7 +3387,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   useNodes:       A list of nodes that must be included in the path calculations\n"
 			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n",
 
-			"*s*",	0,	},
+			"*",	0,	},
 
 		{	"sysGetNode",					fnSystemGet,	FN_SYS_NODE,
 			"(sysGetNode) -> nodeID",
@@ -3419,7 +3419,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   useNodes:       A list of nodes that must be included in the path calculations\n"
 			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n",
 
-			"*s*",	0,	},
+			"*",	0,	},
 
 		{	"sys@",							fnSystemGet,	FN_SYS_GET_PROPERTY,
 			"(sys@ [nodeID] property) -> value\n\n"
