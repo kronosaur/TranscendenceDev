@@ -1429,7 +1429,14 @@ CString CTopology::GenerateUniquePrefix (const CString &sPrefix, const CString &
 //	Returns the shortest distance between the two nodes. If there is no path between
 //	the two nodes, we return UNKNOWN_DISTANCE (-1).
 //
-int CTopology::GetDistance (const CString &sSourceID, const CString &sDestID, const CString &sGateCriteria, const TArray<CString> &aUseNodes, const TArray<CString> &aBlockNodes, bool bIgnoreOneWay) const
+int CTopology::GetDistance (
+	const CString &sSourceID,
+	const CString &sDestID,
+	const CString &sGateCriteria,
+	const TArray<CString> &aUseNodes,
+	const TArray<CString> &aBlockNodes,
+	bool bIgnoreOneWay,
+	bool bAllowUseNodeBacktrack) const
 
 	{
 	//	Find the source node in the list
@@ -1452,7 +1459,14 @@ int CTopology::GetDistance (const CString &sSourceID, const CString &sDestID, co
 //	Returns the shortest distance between the two nodes. If there is no path between
 //	the two nodes, we return UNKNOWN_DISTANCE (-1).
 //
-int CTopology::GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pTarget, const CString &sGateCriteria, const TArray<CString> &aUseNodes, const TArray<CString> &aBlockNodes, bool bIgnoreOneWay) const
+int CTopology::GetDistance (
+	const CTopologyNode *pSrc,
+	const CTopologyNode *pTarget,
+	const CString &sGateCriteria,
+	const TArray<CString> &aUseNodes,
+	const TArray<CString> &aBlockNodes,
+	bool bIgnoreOneWay,
+	bool bAllowUseNodeBacktrack) const
 
 	{
 
@@ -1536,7 +1550,14 @@ int CTopology::GetDistanceToCriteriaNoMatch (const CTopologyNode *pSrc, const CT
 	return iBestDist;
 	}
 
-const CTopologyNode *CTopology::GetNextNodeTo (const CTopologyNode &From, const CTopologyNode &To, const CString &sGateCriteria, const TArray<CString> &aUseNodes, const TArray<CString> &aBlockNodes, bool bIgnoreOneWay) const
+const CTopologyNode *CTopology::GetNextNodeTo (
+	const CTopologyNode &From,
+	const CTopologyNode &To,
+	const CString &sGateCriteria,
+	const TArray<CString> &aUseNodes,
+	const TArray<CString> &aBlockNodes,
+	bool bIgnoreOneWay,
+	bool bAllowUseNodeBacktrack) const
 
 //	GetNextNodeTo
 //
@@ -1566,13 +1587,57 @@ const CTopologyNode *CTopology::GetNextNodeTo (const CTopologyNode &From, const 
 	return pBestNode;
 	}
 
-
-//	GetNextNodeTo
+//	GetPathTo
 //
 //	Return an array of node pointers including nodes From to To. If 
 //	there is no path, we return an empty TArray.
 //
-const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSrc, const CTopologyNode *pTarget, const CString& sGateCriteria, const TArray<CString>& aUseNodes, const TArray<CString>& aBlockNodes, bool bIgnoreOneWay) const
+const TArray<const CTopologyNode*> CTopology::GetPathTo(
+	const CTopologyNode* pSrc,
+	const CTopologyNode* pTarget,
+	const CString& sGateCriteria,
+	const TArray<CString>& aUseNodes,
+	const TArray<CString>& aBlockNodes,
+	bool bIgnoreOneWay,
+	bool bAllowUseNodeBacktrack) const
+	{
+	//	We handle aUseNodes separately to dramatically simplify the rest of the GetPathTo logic
+	// 
+	//	If we dont even have aUseNodes, just passthrough and skip the rest of this function
+
+	if (!aUseNodes.GetCount())
+		return GetPathTo(pSrc, pTarget, sGateCriteria, aBlockNodes, bIgnoreOneWay);
+
+	//	Otherwise we need to do special handling for all of the useNodes to ensure we hit them
+	//
+	//	Its generally not expected that this is going to be performance-sensitive code, so we
+	//	dont need to have a super-optimal solution, but its still dramatically more complex
+	//	than skipping nodes or gates
+
+	//	Check if its even possible to reach pTarget from pSrc to save some time
+
+	TArray<const CTopologyNode*> aRet = GetPathTo(pSrc, pTarget, sGateCriteria, aBlockNodes, bIgnoreOneWay);
+	
+	if (!aRet.GetCount())
+		return aRet;
+
+	aRet.DeleteAll();
+
+	//	Not implemented yet
+	return aRet;
+	}
+
+//	GetPathTo
+//
+//	Return an array of node pointers including nodes From to To. If 
+//	there is no path, we return an empty TArray.
+//
+const TArray<const CTopologyNode*> CTopology::GetPathTo(
+	const CTopologyNode *pSrc,
+	const CTopologyNode *pTarget,
+	const CString& sGateCriteria,
+	const TArray<CString>& aBlockNodes,
+	bool bIgnoreOneWay) const
 	{
 	TArray<const CTopologyNode*> aRet;
 
@@ -1582,20 +1647,6 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 		{
 		aRet.Insert(pSrc);
 		return aRet;
-		}
-
-	TMap<const CTopologyNode*, const CTopologyNode*> mUse;
-
-	for (int i = 0; i < aUseNodes.GetCount(); i++)
-		{
-		const CTopologyNode* pUsedNode = FindTopologyNode(aUseNodes[i]);
-		
-		//	If a required node doesnt exist, this path cannot possibly be completed
-
-		if (!pUsedNode)
-			return aRet;
-
-		mUse.Insert(pUsedNode, pUsedNode);
 		}
 
 	TMap<const CTopologyNode*, int> mBlock;
@@ -1749,110 +1800,30 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 
 				if (pDest == pTarget)
 					{
-					//	For efficiency on long paths, we use a map to track what
-					//	we have seen, rather than searching aRet when it is long
-					//
-					//	For examples, the Chronicles adventure with all expansions
-					//	has hundreds of star systems with potentially very long
-					//	paths
+					//	We backtrack from the highest to lowest distance nodes
+					//	
+					//	We know that the next node in a valid path is distance-1
+					// 
+					//	We skip any seeming 'shortcuts' because those are caused by
+					//	Impassible gates (we still need to validate, because a
+					//	set of parallel systems forming a 'ladder' topology where
+					//	some of the adjacent systems may seem to be valid connections
+					//	by this rule alone, but the gate connecting them may still
+					//	be prohibited
 
-					TMap<const CTopologyNode*, int> mUsed;
 					TArray<const CTopologyNode*> aRetReverse;
-					TArray<const CTopologyNode*> aForkInRoadStack;
-					TMap<const CTopologyNode*, TArray<int>> mForkPaths;
-					TMap<const CTopologyNode*, const CTopologyNode*> mRemainingToUse;
-
-					CMapIterator mI;
-
-					while (mUse.HasMore(mI))
-						{
-						const CTopologyNode *pNeedToUse = *mUse.GetNext(mI);
-						mRemainingToUse.Insert(pNeedToUse, pNeedToUse);
-						}
 
 					//	We need to iterate backwards to check this path
 
 					aRetReverse.Insert(pDest);
-					mUsed.Insert(pDest);
 
 					const CTopologyNode* pReverseNode = pNode;
 					int iRemainingDistance = iDistance - 1;
+					const CTopologyNode* pNextReverseNode = NULL;
 
 					while (pReverseNode != pSrc)
 						{
 						aRetReverse.Insert(pReverseNode);
-						mUsed.Insert(pReverseNode);
-
-						//	If we have required nodes check if completing this is even possible
-
-						TArray<int> aPossibleGates;
-
-						//	Check if its even possible to complete a path with all required nodes
-
-						if (mUse.GetCount() && mRemainingToUse.GetCount() > iRemainingDistance)
-							{
-
-							//	We need to backtrack to the last fork, if one is available
-							//	If none are available, we are done with this check, this isnt a viable path.
-
-							if (!aForkInRoadStack.GetCount())
-								break;
-
-							//	We aren't immediately popping the stack in case we need to keep it on the stack
-							//	So instead we just peek
-
-							const CTopologyNode *pForkNode = aForkInRoadStack[aForkInRoadStack.GetCount() - 1];
-
-							//	Pop the gate we are going to use
-
-							TArray<int>* pRemainingGates = mForkPaths.Find(pForkNode);
-
-							int iGateToTry = pRemainingGates->Pop();
-
-							//	Clean this up we are out of gates to try
-
-							if (!pRemainingGates->GetCount())
-								{
-								mForkPaths.Delete(pForkNode);
-								delete pRemainingGates;
-								aForkInRoadStack.Pop();
-								}
-
-							//	Perform rollback of tracking arrays and maps
-
-							TArray<const CTopologyNode*> aRolledBack;
-
-							const CTopologyNode* pNextRollback;
-
-							while (aRetReverse.GetCount())
-								{
-								pNextRollback = aRetReverse[aRetReverse.GetCount() - 1];
-								if (pNextRollback == pForkNode)
-									break;
-								aRetReverse.Pop();
-								aRolledBack.Insert(pNextRollback);
-								}
-
-							//	Now that we know what nodes have been undone
-							//		1) Delete from mUsed
-							//		2) Add to mRemainingToUse if in mUse
-
-							for (int k = 0; k < aRolledBack.GetCount(); k++)
-								{
-								const CTopologyNode* pRolledBack = aRolledBack[k];
-
-								mUsed.Delete(pRolledBack);
-
-								if (mUse.Find(pRolledBack))
-									mRemainingToUse.Insert(pRolledBack, pRolledBack);
-								}
-
-							//	prepare for the next iteration
-
-							iRemainingDistance += aRolledBack.GetCount();
-							pReverseNode = pForkNode->GetStargateDest(iGateToTry);
-							continue;
-							}
 
 						//	Check what gates we can use
 						// 
@@ -1890,40 +1861,17 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 								if (pSet && pSet->Find(pReverseNode))
 									continue;
 
-								//	In this case everything looks good
+								//	In this case everything looks good - pick this gate
 
-								aPossibleGates.Insert(k);
+								pNextReverseNode = pReverseNode->GetStargateDest(k);
+								break;
 								}
 							}
 
-						//	If any of the gates lead to systems we are required to take, try using those gates
-						const CTopologyNode* pNextReverseNode = NULL;
+						//	We should always have found a valid path back
+						//	This debug assert is here to catch cases where that doesnt happen (ex, due to code changes)
 
-						if (mUse.GetCount())
-							{
-							for (int k = 0; k < aPossibleGates.GetCount(); k++)
-								{
-								const CTopologyNode* pGateDest = pReverseNode->GetStargateDest(aPossibleGates[k]);
-								if (mUse.Find(pGateDest))
-									{
-									pNextReverseNode = pGateDest;
-									break;
-									}
-								}
-							}
-
-						//	Otherwise we just grab a gate and try that
-
-						if (!pNextReverseNode)
-							pNextReverseNode = pReverseNode->GetStargateDest(aPossibleGates.Pop());
-
-						//	If we have multiple possible gates we need to remember that this is a fork in the road and try one
-
-						if (aPossibleGates.GetCount() > 1)
-							{
-							aForkInRoadStack.Insert(pReverseNode);
-							mForkPaths.Insert(pReverseNode, aPossibleGates);
-							}
+						ASSERT(pNextReverseNode);
 
 						//	Prepare for the next iteration...
 
@@ -1931,46 +1879,23 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(const CTopologyNode *pSr
 						iRemainingDistance--;
 						}
 
-					//	We have now completed the path
+					//	We just to add the source node to complete our path.
 
 					aRetReverse.Insert(pSrc);
-					mUsed.Insert(pSrc);
-					
-					//	Now we check that we used all of the gates we need to include
 
-					bool bMissedGate = false;
-
-					mUse.Reset(mI);
-
-					while (mUse.HasMore(mI))
-						{
-						const CTopologyNode *pCheckUsed = *mUse.GetNext(mI);
-
-						if (!mUsed.Find(pCheckUsed))
-							bMissedGate = true;
-						}
-
-					//	If we missed any gates, we know that this is not our path
-
-					if (bMissedGate)
-						aInvalidPaths.Insert(aRetReverse);
-
-					//	Otherwise we have our path!
+					//	We have our path!
 					//	We just need to flip it around in the correct order.
 
-					else
+					int iLen = aRetReverse.GetCount();
+					aRet.InsertEmpty(iLen);
+
+					for (int k = 0; k < iLen; k++)
 						{
-						int iLen = aRetReverse.GetCount();
-						aRet.InsertEmpty(iLen);
-
-						for (int k = 0; k < iLen; k++)
-							{
-							int r = iLen - 1 - k;
-							aRet[k] = aRetReverse[r];
-							}
-
-						return aRet;
+						int r = iLen - 1 - k;
+						aRet[k] = aRetReverse[r];
 						}
+
+					return aRet;
 					}
 
 				//	If this node has not yet been found, then we set the 
