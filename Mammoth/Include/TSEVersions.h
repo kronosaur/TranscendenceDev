@@ -682,11 +682,13 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //					blockNodes (list): do not path through these nodes
 //					respectOneWayGates (bool): if pathing must obey the directionality of one way gates (default: false)
 //					gateCriteria (string): criteria to match against stargate topology attributes (not the stations)
+//					useNodes (list): these nodes must be pathed through
 //			(sysGetPathTo [srcNode] destNode [options])
 //				options:
 //					blockNodes (list): do not path through these nodes
 //					respectOneWayGates (bool): if pathing must obey the directionality of one way gates (default: false)
 //					gateCriteria (string): criteria to match against stargate topology attributes (not the stations)
+//					useNodes (list): these nodes must be pathed through
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
