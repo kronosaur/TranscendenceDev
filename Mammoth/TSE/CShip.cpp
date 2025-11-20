@@ -4384,7 +4384,8 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			}
 		}
 
-	GetSystem()->FireOnSystemObjAttacked(Ctx);
+	if (bIsHostile)
+		GetSystem()->FireOnSystemObjAttacked(Ctx);
 
 	//	See if the damage is blocked by some external defense
 

@@ -129,12 +129,9 @@ int COverlayType::GetDamageAbsorbed (CSpaceObject *pSource, SDamageCtx &Ctx)
 
 	if (iType == damageNull)
 		{
-		//	For null damage, we absorb the max of all other damage types
+		//	For null damage, we do not absorb damage
 
-		int iMax = 0;
-		for (int i = 0; i < damageCount; i++)
-			if (m_AbsorbAdj.GetAbsorbAdj((DamageTypes)i) > iMax)
-				iMax = m_AbsorbAdj.GetAbsorbAdj((DamageTypes)i);
+		return 0;
 		}
 
 	return (Ctx.iDamage * m_AbsorbAdj.GetAbsorbAdj(iType)) / 100;

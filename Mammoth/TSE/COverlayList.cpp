@@ -231,11 +231,6 @@ bool COverlayList::Damage (CSpaceObject *pSource, SDamageCtx &Ctx)
 	{
 	DEBUG_TRY
 
-	//	We never take Null damage
-
-	if (Ctx.Damage.GetDamageType() == damageNull)
-		return false;
-
 	bool bDamageAbsorbed = false;
 
 	COverlay *pField = m_pFirst;
