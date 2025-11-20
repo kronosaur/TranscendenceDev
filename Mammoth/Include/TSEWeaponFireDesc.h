@@ -180,7 +180,7 @@ class DamageDesc
 		bool HasMiningDamage (void) const { return (m_MiningAdj > 0); }
 		void InterpolateTo (const DamageDesc &End, Metric rSlider);
 		bool IsAutomatedWeapon (void) const { return (m_fAutomatedWeapon ? true : false); }
-		bool IsEmpty (void) const { return (m_Damage.IsEmpty() && m_iType == damageGeneric); }
+		bool IsEmpty (void) const { return (m_Damage.IsEmpty() && m_iType == damageNull); }
 		bool IsEnergyDamage (void) const;
 		bool IsMatterDamage (void) const;
 		ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CString &sAttrib);
@@ -435,10 +435,10 @@ class DamageTypeSet
 		DamageTypeSet (void) : m_dwSet(0) { }
 
 		ALERROR InitFromXML (const CString &sAttrib);
-		void Add (int iType) { if (iType > damageGeneric) m_dwSet |= (1 << iType); }
-		bool InSet (int iType) const { return (iType <= damageGeneric ? false : ((m_dwSet & (1 << iType)) ? true : false)); }
+		void Add (int iType) { if (iType >= damageMinListed) m_dwSet |= (1 << iType); }
+		bool InSet (int iType) const { return (iType < damageMinListed ? false : ((m_dwSet & (1 << iType)) ? true : false)); }
 		bool IsEmpty (void) const { return (m_dwSet == 0); }
-		void Remove (int iType) { if (iType > damageGeneric) m_dwSet &= ~(1 << iType); }
+		void Remove (int iType) { if (iType >= damageMinListed) m_dwSet &= ~(1 << iType); }
 
 	private:
 		DWORD m_dwSet;

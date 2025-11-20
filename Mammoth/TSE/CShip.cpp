@@ -2747,6 +2747,7 @@ DamageTypes CShip::GetDamageType (void)
 		CItemCtx ItemCtx(this, pWeapon);
 		return (DamageTypes)pWeapon->GetDamageType(ItemCtx);
 		}
+	//	We return damageGeneric since this ship may have secondary weapons
 	else
 		return damageGeneric;
 	}

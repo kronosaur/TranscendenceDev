@@ -137,6 +137,8 @@ CString GetDamageName (DamageTypes iType)
 	{
 	if (iType == damageGeneric)
 		return CONSTLIT("generic");
+	else if (iType == damageNull)
+		return CONSTLIT("null");
 	else
 		return CString(DAMAGE_TYPE_DATA[iType].pszName);
 	}
@@ -150,6 +152,8 @@ CString GetDamageShortName (DamageTypes iType)
 	{
 	if (iType == damageGeneric)
 		return CONSTLIT("generic");
+	else if (iType == damageNull)
+		return CONSTLIT("null");
 	else
 		return CString(DAMAGE_TYPE_DATA[iType].pszShortName);
 	}
@@ -905,7 +909,7 @@ ALERROR DamageDesc::LoadFromXML (SDesignLoadCtx &Ctx, const CString &sAttrib)
 
 	//	Initialize
 
-	m_iType = damageGeneric;
+	m_iType = damageNull;
 	m_iBonus = 0;
 	m_iCause = killedByDamage;
 	m_EMPDamage = 0;
@@ -1414,7 +1418,7 @@ ALERROR DamageTypeSet::InitFromXML (const CString &sAttrib)
 	for (i = 0; i < ArraySet.GetCount(); i++)
 		{
 		int iType = LoadDamageTypeFromXML(ArraySet[i]);
-		if (iType == damageError || iType == damageGeneric)
+		if (iType < damageMinListed)
 			return ERR_FAIL;
 
 		Add(iType);
