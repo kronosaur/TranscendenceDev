@@ -222,14 +222,19 @@ CConditionSet COverlayList::CalcConditions (CSpaceObject *pSource) const
 	return AllConditions;
 	}
 
-bool COverlayList::Damage (CSpaceObject *pSource, SDamageCtx &Ctx)
-
 //	Damage
 //
 //	Takes damage (returns TRUE if damage was absorbed)
+//
+bool COverlayList::Damage (CSpaceObject *pSource, SDamageCtx &Ctx)
 
 	{
 	DEBUG_TRY
+
+	//	We never take Null damage
+
+	if (Ctx.Damage.GetDamageType() == damageNull)
+		return false;
 
 	bool bDamageAbsorbed = false;
 

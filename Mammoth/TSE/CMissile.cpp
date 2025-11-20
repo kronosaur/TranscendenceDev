@@ -695,11 +695,11 @@ bool CMissile::IsTrackingTime (int iTick) const
 			|| (!m_fFragment && m_pEnhancements && m_pEnhancements->IsTracking()));
 	}
 
-EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
-
 //	Damage
 //
 //	Object takes damage from the given source
+//
+EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 
 	{
 	DEBUG_TRY
@@ -720,6 +720,12 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
 		AddForce(vAccel);
 		}
+
+	//	If we are null damage, we dont actually do any damage
+	//	but we needed to confer statuses first (ex momentum)
+
+	if (Ctx.Damage.GetDamageType() == damageNull)
+		return damageNoDamage;
 
 	//	Create a hit effect
 

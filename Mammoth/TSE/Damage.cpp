@@ -358,6 +358,19 @@ ICCItem *DamageDesc::FindProperty (const CString &sName) const
 		return NULL;
 	}
 
+//	IsHostile
+//
+//	Checks if this damage desc confers any hostile intent via status
+//	effects or actual damage
+//
+bool DamageDesc::IsHostile () const
+	{
+	return (m_Damage.GetMaxValue() && m_iType != damageNull)
+		|| (GetExtra1() & HOSTILE_EXTRA1_FLAGS)
+		|| (GetExtra2() & HOSTILE_EXTRA2_FLAGS)
+		|| (GetExtra3() & HOSTILE_EXTRA3_FLAGS);
+	}
+
 int DamageDesc::GetDamageLevel (DamageTypes iType)
 
 //  GetDamageTier
@@ -1317,8 +1330,6 @@ int DamageDesc::RollDamage (void) const
 		return Max(0, iDamage);
 	}
 
-void DamageDesc::WriteToStream (IWriteStream *pStream) const
-
 //	WriteToStream
 //
 //	Writes out to a stream
@@ -1330,6 +1341,8 @@ void DamageDesc::WriteToStream (IWriteStream *pStream) const
 //	DWORD		Extra damage
 //	DWORD		Extra damage 2
 //	DWORD		Extra damage 3
+//
+void DamageDesc::WriteToStream (IWriteStream *pStream) const
 
 	{
 	DWORD dwSave;
@@ -1343,44 +1356,73 @@ void DamageDesc::WriteToStream (IWriteStream *pStream) const
 
 	//	Extra Damage 1
 
-	dwSave = m_EMPDamage;
-	//	Spare: dwSave |= m_MomentumDamage << 3;
-	dwSave |= m_RadiationDamage << 6;
-	dwSave |= m_DeviceDisruptDamage << 9;
-	dwSave |= m_BlindingDamage << 12;
-	dwSave |= m_SensorDamage << 15;
-	dwSave |= m_ShieldPenetratorAdj << 18;
-	dwSave |= m_WormholeDamage << 21;
-	dwSave |= m_FuelDamage << 24;
-	dwSave |= m_DisintegrationDamage << 27;
-	dwSave |= m_fNoSRSFlash << 30;
-	dwSave |= m_fAutomatedWeapon << 31;
+	dwSave = GetExtra3();
 	pStream->Write(dwSave);
 
 	//	Extra Damage 2
 
-	dwSave = m_DeviceDamage;
-	dwSave |= m_MassDestructionAdj << 3;
-	dwSave |= m_MiningAdj << 6;
-	dwSave |= m_ShatterDamage << 9;
-	dwSave |= m_fMiningScan << 10;
+	dwSave = GetExtra2();
 	pStream->Write(dwSave);
 
 	//	Extra Damage 3
 
-	dwSave = ((BYTE)m_MomentumDamage << 24) | (m_TimeStopDamage << 16) | (m_ArmorDamage << 8) | m_ShieldDamage;
+	dwSave = GetExtra3();
 	pStream->Write(dwSave);
 	}
-
-void DamageDesc::WriteValue (CMemoryWriteStream &Stream, const CString &sField, int iValue)
 
 //	WriteValue
 //
 //	Writes the given value as a string.
+//
+void DamageDesc::WriteValue (CMemoryWriteStream &Stream, const CString &sField, int iValue)
 
 	{
 	if (iValue)
 		Stream.Write(strPatternSubst(CONSTLIT(" %s:%d;"), sField, iValue));
+	}
+
+//	GetExtra1
+//
+//	Retrieve the Extra1 damage data as a single dword
+//
+DWORD DamageDesc::GetExtra1() const
+	{
+	DWORD dwRet = m_EMPDamage;
+	//	Spare: dwRet |= m_MomentumDamage << 3;
+	dwRet |= m_RadiationDamage << 6;
+	dwRet |= m_DeviceDisruptDamage << 9;
+	dwRet |= m_BlindingDamage << 12;
+	dwRet |= m_SensorDamage << 15;
+	dwRet |= m_ShieldPenetratorAdj << 18;
+	dwRet |= m_WormholeDamage << 21;
+	dwRet |= m_FuelDamage << 24;
+	dwRet |= m_DisintegrationDamage << 27;
+	dwRet |= m_fNoSRSFlash << 30;
+	dwRet |= m_fAutomatedWeapon << 31;
+	return dwRet;
+	}
+
+//	GetExtra2
+//
+//	Retrieve the Extra2 damage data as a single dword
+//
+DWORD DamageDesc::GetExtra2() const
+	{
+	DWORD dwRet = m_DeviceDamage;
+	dwRet |= m_MassDestructionAdj << 3;
+	dwRet |= m_MiningAdj << 6;
+	dwRet |= m_ShatterDamage << 9;
+	dwRet |= m_fMiningScan << 10;
+	return dwRet;
+	}
+
+//	GetExtra3
+//
+//	Retrieve the Extra3 damage data as a single dword
+//
+DWORD DamageDesc::GetExtra3() const
+	{
+	return ((BYTE)m_MomentumDamage << 24) | (m_TimeStopDamage << 16) | (m_ArmorDamage << 8) | m_ShieldDamage;
 	}
 
 //	DamageTypeSet --------------------------------------------------------------

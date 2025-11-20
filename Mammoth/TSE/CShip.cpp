@@ -310,13 +310,18 @@ void CShip::CalcArmorBonus (void)
 	DEBUG_CATCH
 	}
 
-EAttackResponse CShip::CalcAttackResponse (SDamageCtx &Ctx)
-
 //	CalcAttackResponse
 //
 //	Figures out whether to call <OnAttackedByPlayer>, etc.
+//
+EAttackResponse CShip::CalcAttackResponse (SDamageCtx &Ctx)
 
 	{
+	//	Short circuit on non-hostile attacks
+	
+	if (!Ctx.Damage.IsHostile())
+		return EAttackResponse::Ignore;
+
 	//	Ignore automated weapons
 	
 	if (Ctx.Damage.IsAutomatedWeapon())
@@ -4317,11 +4322,11 @@ void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
 	DEBUG_CATCH
 	}
 
-EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
-
 //	Damage
 //
 //	Ship takes damage from the given source
+//
+EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	{
 	DEBUG_TRY
@@ -4333,6 +4338,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	if (Ctx.iDamage == 0 || GetSystem() == NULL)
 		return damageNoDamage;
 
+	bool bIsHostile = Ctx.Damage.IsHostile();
 	bool bIsPlayer = IsPlayer();
 
 	//	We're hit
@@ -4445,18 +4451,23 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Damage any devices that are outside the hull (e.g., Patch Spiders)
 	//	Ignore devices with overlays because they get damaged in the overlay
 	//	damage section.
+	// 
+	//	Skip for Null or 0 damage.
 
-	for (CDeviceItem DeviceItem : GetDeviceSystem())
+	if (Ctx.iDamage && Ctx.Damage.GetDamageType() != damageNull)
 		{
-		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
-		if (Device.IsExternal()
-				&& Device.GetOverlay() == NULL)
+		for (CDeviceItem DeviceItem : GetDeviceSystem())
 			{
-			//	The chance that the device got hit depends on the number of armor segments
-			//	A device takes up 1/9th of the surface area of a segment.
+			CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+			if (Device.IsExternal()
+				&& Device.GetOverlay() == NULL)
+				{
+				//	The chance that the device got hit depends on the number of armor segments
+				//	A device takes up 1/9th of the surface area of a segment.
 
-			if (mathRandom(1, GetArmorSectionCount() * 9) == 7)
-				DamageExternalDevice(Device.GetDeviceSlot(), Ctx);
+				if (mathRandom(1, GetArmorSectionCount() * 9) == 7)
+					DamageExternalDevice(Device.GetDeviceSlot(), Ctx);
+				}
 			}
 		}
 
@@ -4579,7 +4590,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		{
 		//	Tell our attacker that we got hit
 
-		CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
+		CSpaceObject* pOrderGiver = Ctx.GetOrderGiver();
 		if (pOrderGiver && pOrderGiver->CanAttack())
 			pOrderGiver->OnObjHit(Ctx);
 
@@ -4599,15 +4610,15 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		}
 
 	//	Otherwise, if we have interior compartments (like a capital ship) then
-	//	we do damage.
+	//	we do damage as long as this is not null damage.
 
-	else if (!m_Interior.IsEmpty())
+	else if (!m_Interior.IsEmpty() && Ctx.Damage.GetDamageType() != damageNull)
 		{
 		EDamageResults iResult = m_Interior.Damage(this, m_pClass->GetInteriorDesc(), Ctx);
 
 		//	Tell our attacker that we got hit
 
-		CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
+		CSpaceObject* pOrderGiver = Ctx.GetOrderGiver();
 		if (pOrderGiver && pOrderGiver->CanAttack())
 			pOrderGiver->OnObjHit(Ctx);
 
@@ -4623,6 +4634,11 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 		return iResult;
 		}
+
+	//	If this was only null damage we're ok
+
+	else if (Ctx.Damage.GetDamageType() == damageNull)
+		return damageNoDamage;
 
 	//	Otherwise we're in big trouble
 

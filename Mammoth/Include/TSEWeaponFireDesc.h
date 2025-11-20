@@ -182,6 +182,7 @@ class DamageDesc
 		bool IsAutomatedWeapon (void) const { return (m_fAutomatedWeapon ? true : false); }
 		bool IsEmpty (void) const { return (m_Damage.IsEmpty() && m_iType == damageNull); }
 		bool IsEnergyDamage (void) const;
+		bool IsHostile (void) const;
 		bool IsMatterDamage (void) const;
 		ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CString &sAttrib);
 		void ReadFromStream (SLoadCtx &Ctx);
@@ -232,6 +233,22 @@ class DamageDesc
 		ALERROR LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, const CString &sArg);
 		ALERROR ParseTerm (SDesignLoadCtx &Ctx, char *pPos, CString *retsKeyword, CString *retsValue, char **retpPos);
 		static void WriteValue (CMemoryWriteStream &Stream, const CString &sField, int iValue);
+		DWORD GetExtra1 () const;
+		DWORD GetExtra2 () const;
+		DWORD GetExtra3 () const;
+
+		//	These flags mark what extra effects are considered hostile
+		//	x86 and ARM are both little-endian and assign storage units
+		//	from least significant to most significant
+
+		//	Extra Damage 1 flags:					   PD* WMD shl dsn fue tlp lrs srs dis rad emp
+		static constexpr DWORD HOSTILE_EXTRA1_FLAGS = 0b00'000'000'111'111'000'111'111'111'111'111;
+
+		//	Extra Damage 2 flags:						S Stt Min Dev
+		static constexpr DWORD HOSTILE_EXTRA2_FLAGS = 0b0'111'000'111;
+
+		//	Extra Damage 3 flags:						shldAdj  armorAdj timestop momentum
+		static constexpr DWORD HOSTILE_EXTRA3_FLAGS = 0b00000000'00000000'11111111'00000000;
 
 		//	We default to Null damage so that items or damage sources that
 		//	dont initialize damage from XML display properly at a glance in

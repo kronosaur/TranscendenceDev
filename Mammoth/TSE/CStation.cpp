@@ -2549,11 +2549,11 @@ EConditionResult CStation::OnCanRemoveCondition (ECondition iCondition, const SA
 		}
 	}
 
-EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
-
 //	Damage
 //
 //	Station takes damage
+//
+EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	{
 	DEBUG_TRY
@@ -2566,7 +2566,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	//	Short-circuit
 
-	if (Ctx.iDamage == 0)
+	if (Ctx.iDamage == 0 || Ctx.Damage.GetDamageType() == damageNull)
 		{
 		if (IsImmutable())
 			return damageNoDamageNoPassthrough;
