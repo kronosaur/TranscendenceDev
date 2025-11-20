@@ -143,29 +143,12 @@ class DamageDesc
 
 		DamageDesc (void) { }
 		DamageDesc (DamageTypes iType, const DiceRange &Damage) : m_iType(iType),
-				m_Damage(Damage),
-				m_EMPDamage(0),
-				m_MomentumDamage(0),
-				m_RadiationDamage(0),
-				m_DisintegrationDamage(0),
-				m_DeviceDisruptDamage(0),
-				m_BlindingDamage(0),
-				m_SensorDamage(0),
-				m_WormholeDamage(0),
-				m_FuelDamage(0),
-				m_fNoSRSFlash(0),
-				m_fAutomatedWeapon(0),
-				m_DeviceDamage(0),
-				m_MassDestructionAdj(0),
-				m_MiningAdj(0),
-				m_ShatterDamage(0),
-				m_ShieldPenetratorAdj(0),
-				m_fMiningScan(0)
+				m_Damage(Damage)
 			{ }
 
 		void AddEnhancements (const CItemEnhancementStack *pEnhancements);
 		CString AsString (void) const;
-		bool CausesSRSFlash (void) const { return (m_fNoSRSFlash ? false : true); }
+		bool CausesSRSFlash (void) const { return (m_sExtra.fNoSRSFlash ? false : true); }
 		ICCItem *FindProperty (const CString &sName) const;
 		DestructionTypes GetCause (void) const { return m_iCause; }
 		const DiceRange &GetDamageRange (void) const { return m_Damage; }
@@ -177,9 +160,9 @@ class DamageDesc
 		int GetMaxDamage (void) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
 		bool HasImpulseDamage (Metric *retrImpulse = NULL) const;
-		bool HasMiningDamage (void) const { return (m_MiningAdj > 0); }
+		bool HasMiningDamage (void) const { return (m_sExtra.MiningAdj > 0); }
 		void InterpolateTo (const DamageDesc &End, Metric rSlider);
-		bool IsAutomatedWeapon (void) const { return (m_fAutomatedWeapon ? true : false); }
+		bool IsAutomatedWeapon (void) const { return (m_sExtra.fAutomatedWeapon ? true : false); }
 		bool IsEmpty (void) const { return (m_Damage.IsEmpty() && m_iType == damageNull); }
 		bool IsEnergyDamage (void) const;
 		bool IsHostile (void) const;
@@ -188,32 +171,32 @@ class DamageDesc
 		void ReadFromStream (SLoadCtx &Ctx);
 		int RollDamage (void) const;
 		void ScaleDamage (Metric rAdj) { m_Damage.Scale(rAdj); }
-		void SetAutomatedWeapon (void) { m_fAutomatedWeapon = true; }
+		void SetAutomatedWeapon (void) { m_sExtra.fAutomatedWeapon = true; }
 		void SetCause (DestructionTypes iCause) { m_iCause = iCause; }
 		void SetDamage (int iDamage);
 		void SetDamageType (DamageTypes iType) { m_iType = iType; }
-		void SetNoSRSFlash (void) { m_fNoSRSFlash = true; }
+		void SetNoSRSFlash (void) { m_sExtra.fNoSRSFlash = true; }
 		void SetSpecialDamage (SpecialDamageTypes iSpecial, int iLevel);
 		void WriteToStream (IWriteStream *pStream) const;
 
-		int GetArmorDamageLevel (void) const { return (int)m_ArmorDamage; }
-		int GetBlindingDamage (void) const { return (int)m_BlindingDamage; }
-		int GetDeviceDamage (void) const { return (int)m_DeviceDamage; }
-		int GetDeviceDisruptDamage (void) const { return (int)m_DeviceDisruptDamage; }
-		int GetDisintegrationDamage (void) const { return (int)m_DisintegrationDamage; }
-		int GetEMPDamage (void) const { return (int)m_EMPDamage; }
+		int GetArmorDamageLevel (void) const { return (int)m_sExtra.ArmorDamage; }
+		int GetBlindingDamage (void) const { return (int)m_sExtra.BlindingDamage; }
+		int GetDeviceDamage (void) const { return (int)m_sExtra.DeviceDamage; }
+		int GetDeviceDisruptDamage (void) const { return (int)m_sExtra.DeviceDisruptDamage; }
+		int GetDisintegrationDamage (void) const { return (int)m_sExtra.DisintegrationDamage; }
+		int GetEMPDamage (void) const { return (int)m_sExtra.EMPDamage; }
 		int GetMassDestructionAdj (void) const;
-		int GetMassDestructionDamage (void) const { return m_MassDestructionAdj; }
+		int GetMassDestructionDamage (void) const { return m_sExtra.MassDestructionAdj; }
 		int GetMassDestructionLevel (void) const;
-		int GetMiningAdj (void) const { return (int)(m_MiningAdj ? (2 * (m_MiningAdj * m_MiningAdj) + 2) : 0); }
-		int GetMiningDamage (void) const { return m_MiningAdj; }
-		int GetMiningScan (void) const { return m_fMiningScan; }
+		int GetMiningAdj (void) const { return (int)(m_sExtra.MiningAdj ? (2 * (m_sExtra.MiningAdj * m_sExtra.MiningAdj) + 2) : 0); }
+		int GetMiningDamage (void) const { return m_sExtra.MiningAdj; }
+		int GetMiningScan (void) const { return m_sExtra.fMiningScan; }
 		int GetMiningWMDAdj (void);
-		int GetRadiationDamage (void) const { return (int)m_RadiationDamage; }
-		int GetShatterDamage (void) const { return (int)m_ShatterDamage; }
-		int GetShieldDamageLevel (void) const { return (int)m_ShieldDamage; }
-		int GetShieldPenetratorAdj (void) const { return (int)(m_ShieldPenetratorAdj ? (2 * (m_ShieldPenetratorAdj * m_ShieldPenetratorAdj) + 2) : 0); }
-		int GetTimeStopDamageLevel (void) const { return (int)m_TimeStopDamage; }
+		int GetRadiationDamage (void) const { return (int)m_sExtra.RadiationDamage; }
+		int GetShatterDamage (void) const { return (int)m_sExtra.ShatterDamage; }
+		int GetShieldDamageLevel (void) const { return (int)m_sExtra.ShieldDamage; }
+		int GetShieldPenetratorAdj (void) const { return (int)(m_sExtra.ShieldPenetratorAdj ? (2 * (m_sExtra.ShieldPenetratorAdj * m_sExtra.ShieldPenetratorAdj) + 2) : 0); }
+		int GetTimeStopDamageLevel (void) const { return (int)m_sExtra.TimeStopDamage; }
 		int GetTimeStopResistChance (int iTargetLevel) const;
 
 		static SpecialDamageTypes ConvertPropertyToSpecialDamageTypes (const CString &sValue);
@@ -226,6 +209,64 @@ class DamageDesc
 		static int GetMassDestructionLevelFromValue (int iValue);
 
 	private:
+
+		//	SExtraDamage is a struct for storing extra damage data that is persisted
+		//	in save files.
+		//
+		//	CAUTION: when editing this struct, ensure that each DWORD is exactly
+		//	32bits - being off by even 1 bit will cause save corruption.
+		//	
+		//	If you expand these in an incompatible way (ex, increasing their size)
+		//  make a copy of the existing struct and append the previous save version
+		//	to the name. For example, if the last version of SExtraDamage was from
+		//  Save Version 216, then call this compatibility copy "SExtraDamage216"
+		// 
+		//	Next, inside of the method "ReadFromStream", add compatibility logic for
+		//  that particular range of versions (ex, if you made a change in save
+		//	version 240, you would use the following conditional:
+		//		Ctx.dwVersion < 240 && Ctx.dsVersion >= 216
+		//		)
+		//	and then read that save version's data to an instance of SExtraDamage216
+		//  and then use compatibility logic to convert it to the current SExtraDamage
+		//  stored in m_sExtra.
+		//
+		struct SExtraDamage	//Save version 216
+			{
+			//	Extra damage 1 (DWORD)
+			DWORD EMPDamage:3 = 0;					//	Ion (paralysis) damage
+			DWORD RadiationDamage:3 = 0;			//	Radiation damage
+			DWORD DeviceDisruptDamage:3 = 0;		//	Disrupt devices damage
+				//9 bits
+			DWORD BlindingDamage:3 = 0;				//	Optical sensor damage
+			DWORD SensorDamage:3 = 0;				//	Long-range sensor damage
+			DWORD WormholeDamage:3 = 0;				//	Teleport
+				//18 bits
+			DWORD FuelDamage:3 = 0;					//	Drain fuel
+			DWORD DisintegrationDamage:3 = 0;		//	Disintegration damage
+			DWORD ShieldPenetratorAdj:3 = 0;		//	Shield penetrator damage	shieldPenetrate:n
+				//27 bits
+			DWORD MassDestructionAdj:3 = 0;			//	Adj for mass destruction
+			DWORD fNoSRSFlash:1 = 0;				//	If TRUE, damage should not cause SRS flash
+			DWORD fAutomatedWeapon:1 = 0;			//	TRUE if this damage is caused by automated weapon
+				//32 bits
+
+			//	Extra damage 2 (DWORD)
+			DWORD DeviceDamage:3 = 0;				//	Damage to devices
+			DWORD MiningAdj:3 = 0;					//	Adj for mining capability
+			DWORD ShatterDamage:3 = 0;				//	Shatter damage
+			DWORD fMiningScan:1 = 0;				//	Scans for ore instead of actually mining it
+				//10 bits
+			DWORD dwSpare2:22 = 0;
+				//32 bits
+
+			//	Extra damage 3 (DWORD)
+			BYTE ShieldDamage = 0;					//	Shield damage (level)	shield:level
+			BYTE ArmorDamage = 0;					//	Armor damage (level)
+			BYTE TimeStopDamage = 0;				//	Time stop (level)
+			INT8 MomentumDamage = 0;				//	Impulse/Tractor (100 to -100)
+				//32 bits
+			};
+
 		void AddBonus (int iBonus) { m_iBonus += iBonus; }
 		static int ConvertOldMomentum (int iValue);
 		static int ConvertToOldMomentum (int iValue);
@@ -233,22 +274,6 @@ class DamageDesc
 		ALERROR LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, const CString &sArg);
 		ALERROR ParseTerm (SDesignLoadCtx &Ctx, char *pPos, CString *retsKeyword, CString *retsValue, char **retpPos);
 		static void WriteValue (CMemoryWriteStream &Stream, const CString &sField, int iValue);
-		DWORD GetExtra1 () const;
-		DWORD GetExtra2 () const;
-		DWORD GetExtra3 () const;
-
-		//	These flags mark what extra effects are considered hostile
-		//	x86 and ARM are both little-endian and assign storage units
-		//	from least significant to most significant
-
-		//	Extra Damage 1 flags:					   PD* WMD shl dsn fue tlp lrs srs dis rad emp
-		static constexpr DWORD HOSTILE_EXTRA1_FLAGS = 0b00'000'000'111'111'000'111'111'111'111'111;
-
-		//	Extra Damage 2 flags:						S Stt Min Dev
-		static constexpr DWORD HOSTILE_EXTRA2_FLAGS = 0b0'111'000'111;
-
-		//	Extra Damage 3 flags:						shldAdj  armorAdj timestop momentum
-		static constexpr DWORD HOSTILE_EXTRA3_FLAGS = 0b00000000'00000000'11111111'00000000;
 
 		//	We default to Null damage so that items or damage sources that
 		//	dont initialize damage from XML display properly at a glance in
@@ -259,33 +284,10 @@ class DamageDesc
 		DestructionTypes m_iCause = killedByDamage;		//	Cause of damage
 
 		//	Extra damage
-		//	Extra damage 1 (DWORD)
-		DWORD m_EMPDamage:3;					//	Ion (paralysis) damage
-		DWORD m_RadiationDamage:3;				//	Radiation damage
-		DWORD m_DeviceDisruptDamage:3;			//	Disrupt devices damage
-		DWORD m_BlindingDamage:3;				//	Optical sensor damage
-		DWORD m_SensorDamage:3;					//	Long-range sensor damage
-		DWORD m_WormholeDamage:3;				//	Teleport
-		DWORD m_FuelDamage:3;					//	Drain fuel
-		DWORD m_DisintegrationDamage:3;			//	Disintegration damage
-		DWORD m_ShieldPenetratorAdj:3;			//	Shield penetrator damage	shieldPenetrate:n
-		DWORD m_MassDestructionAdj:3;			//	Adj for mass destruction
+		SExtraDamage m_sExtra;
 
-		DWORD m_fNoSRSFlash:1;					//	If TRUE, damage should not cause SRS flash
-		DWORD m_fAutomatedWeapon:1;				//	TRUE if this damage is caused by automated weapon
-
-		//	Extra damage 2 (DWORD)
-		DWORD m_DeviceDamage:3;					//	Damage to devices
-		DWORD m_MiningAdj:3;					//	Adj for mining capability
-		DWORD m_ShatterDamage:3;				//	Shatter damage
-		DWORD m_fMiningScan:1;					//	Scans for ore instead of actually mining it
-		DWORD m_dwSpare2:22;
-
-		//	Extra damage 3 (DWORD)
-		BYTE m_ShieldDamage = 0;				//	Shield damage (level)	shield:level
-		BYTE m_ArmorDamage = 0;					//	Armor damage (level)
-		BYTE m_TimeStopDamage = 0;				//	Time stop (level)
-		INT8 m_MomentumDamage = 0;				//	Impulse/Tractor (100 to -100)
+		//	SAVE COMPATIBILITY STRUCTS -----
+		
 	};
 
 //	SDamageCtx -----------------------------------------------------------------

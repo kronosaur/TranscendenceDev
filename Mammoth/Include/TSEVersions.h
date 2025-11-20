@@ -1456,4 +1456,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //
 //	215: 2.0 Alpha 7
 //		Add DamageDesc::m_fMiningScan
+// 
+//	216: 2.0 Alpha 8
+//		Fix DamageDesc::m_MassDestructionAdj
+//		makes extra DWORDs in DamageDesc a little bit more change-safe
 //
