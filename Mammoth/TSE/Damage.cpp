@@ -173,16 +173,14 @@ CString GetDamageType (DamageTypes iType)
 		return CString(DAMAGE_TYPE_DATA[iType].pszID);
 	}
 
-DamageTypes LoadDamageTypeFromXML (const CString &sAttrib)
-
 //	LoadDamageTypeFromXML
 //
 //	Converts from string to DamageType
+//
+DamageTypes LoadDamageTypeFromXML (const CString &sAttrib)
 
 	{
-	int iType;
-
-	for (iType = 0; iType < damageCount; iType++)
+	for (int iType = 0; iType < damageCount; iType++)
 		if (strEquals(sAttrib, CString(DAMAGE_TYPE_DATA[iType].pszID)))
 			return (DamageTypes)iType;
 
