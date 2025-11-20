@@ -679,7 +679,11 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //		<ItemType>
 //			<Weapon>
 //				damage: (str: damage desc)
-//					Now accepts null-type damage, which everything is treated as immune to.
+//					null: New special damage type
+//						Null damage does not trigger hostile onAttacked events
+//						Null damage does trigger onHit type events
+//						Null damage is treated as non-hostile as long as no hostile
+//							status effects are applied
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
