@@ -48,9 +48,9 @@
 			>
 		<Properties>
 			<Variant id="rpg.buyCriteria">(@ gData 'buyCriteria)</Variant>
-			<Variant id="rpg.checkMilitaryID">(or (objGetProperty gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
+			<Variant id="rpg.checkMilitaryID">(or (rpgObj@ gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
 			<Variant id="rpg.sellCriteria">(@ gData 'sellCriteria)</Variant>
-			<Variant id="rpg.showActualItem">(or (objGetProperty gSource 'rpg.showActualItem) (@ gData 'showActualItem))</Variant>
+			<Variant id="rpg.showActualItem">(or (rpgObj@ gSource 'rpg.showActualItem) (@ gData 'showActualItem))</Variant>
 			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
 		</Properties>
 
@@ -136,9 +136,9 @@
 			>
 		
 		<Properties>
-			<Variant id="rpg.checkMilitaryID">(or (objGetProperty gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
+			<Variant id="rpg.checkMilitaryID">(or (rpgObj@ gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
 			<Variant id="rpg.criteria">(@ gData 'criteria)</Variant>
-			<Variant id="rpg.showActualItem">(or (objGetProperty gSource 'rpg.showActualItem) (@ gData 'showActualItem))</Variant>
+			<Variant id="rpg.showActualItem">(or (rpgObj@ gSource 'rpg.showActualItem) (@ gData 'showActualItem))</Variant>
 			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
 		</Properties>
 
@@ -700,7 +700,7 @@
 			<Variant id="title">(or (@ gData 'title) (objGetName gSource '(demonstrative capitalize)))</Variant>
 
 			<DynamicData id="baseCost">
-				(itmGetPrice (scrGetItem gScreen) (obj@ gSource 'currency))
+				(itmGetPrice (scrGetItem gScreen) (rpgObj@ gSource 'currency))
 			</DynamicData>
 			<DynamicData id="offerPrice">
 				(block (
@@ -782,7 +782,7 @@
 			<DynamicData id="itemCtx">
 				(block (
 					(theItem (scrGetItem gScreen))
-					(currencyUsed (obj@ gSource 'currency))
+					(currencyUsed (rpgObj@ gSource 'currency))
 					(tradeCtx (scr@ gScreen 'tradeCtx))
 
 					(baseCost (scr@ gScreen 'baseCost))
@@ -855,7 +855,7 @@
 						(theItem (scrGetItem gScreen))
 
 						(offerPrice (scr@ gScreen 'offerPrice))
-						(currencyUsed (obj@ gSource 'currency))
+						(currencyUsed (rpgObj@ gSource 'currency))
 
 						;	Trade context
 						(itemCtx (scr@ gScreen 'itemCtx))
@@ -1042,7 +1042,7 @@
 						(maxCount (scr@ gScreen 'maxCount))
 						(itemCost (scr@ gScreen 'itemCost))
 						)
-						(scrSetDescTranslate gScreen 'descSellQuantity { value: (fmtCurrency (obj@ gSource 'currency) itemCost) })
+						(scrSetDescTranslate gScreen 'descSellQuantity { value: (fmtCurrency (rpgObj@ gSource 'currency) itemCost) })
 						(scrSetCounter gScreen maxCount)
 						)
 				</OnPaneInit>

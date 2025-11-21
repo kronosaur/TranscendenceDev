@@ -706,10 +706,10 @@
 			nestedScreen=		"true"
 			>
 		<Properties>
-			<Variant id="rpg.checkMilitaryID">(or (objGetProperty gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
+			<Variant id="rpg.checkMilitaryID">(or (rpgObj@ gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
 			<Variant id="rpg.criteria">(or (@ gData 'criteria) "dUN")</Variant>
 			<Variant id="rpg.replaceItem">(@ gData 'replaceItem)</Variant>
-			<Variant id="rpg.showActualItem">(objGetProperty gSource 'rpg.showActualItem)</Variant>
+			<Variant id="rpg.showActualItem">(rpgObj@ gSource 'rpg.showActualItem)</Variant>
 			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
 		</Properties>
 
