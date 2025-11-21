@@ -1088,6 +1088,18 @@ void CDockScreen::HandleKeyDown (int iVirtKey)
 
 	else
 		{
+
+		//	If the screen is null, create a blank screen and log an error
+		//	This prevents crashing, and enables the user to escape the broken screen
+
+		if (m_pDisplay == NULL)
+			{
+			m_pDisplay = IDockScreenDisplay::Create(*this, NULL_STR);
+			ReportError(CONSTLIT("Error, no display defined in this dockscreen."));
+			}
+
+		//	Continue handling as normal
+
 		IDockScreenDisplay::EResults iResult = m_pDisplay->HandleKeyDown(iVirtKey);
 
 		switch (iResult)
