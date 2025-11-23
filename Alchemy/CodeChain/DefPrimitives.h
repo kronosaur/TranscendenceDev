@@ -229,6 +229,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(@ struct) -> list of keys of the struct",
 			"v*",	0,	},
 
+		{	"@@",				fnItem,			FN_ITEM_RECURSIVE,
+			"(@@ nestedListsOrStructs [idxOrKey1 idxOrKey2 ...]) -> item index from innermost list or structs (lists are 0-based)\n",
+			"v*",	0,	},
+
 		{	"item",				fnItem,			FN_ITEM,
 			"DEPRECATED: Alias of @",
 			"vv",	0,	},

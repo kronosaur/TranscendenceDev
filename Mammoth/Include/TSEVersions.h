@@ -670,6 +670,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //
 //	 58: 2.0 Alpha 8
 //		tlisp:
+//			(@@ nestedListsOrStructs idxOrKey1 [idxOrKey2 ...])
+//				Returns item index from innermost list or structs (lists are 0-based)
 //			(scrGetDataKeys obj)
 //				Returns a list of typData keys for the given obj type
 //			(scrGetStaticDataKeys type)

@@ -1730,6 +1730,86 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateString(strPatternSubst(sPattern, pValue->GetIntegerValue()));
 				}
 			}
+			
+		case FN_ITEM_RECURSIVE:
+			{
+			ICCItem* pCurData = pArgs->GetElement(0);
+			ICCItem* pArg = NULL;
+
+			for (int i = 1; i < pArgs->GetCount(); i++)
+				{
+				//	we can only function if pCurData is a list or struct
+				//	we have to filter out atoms because Nil reports itself as a list but isnt.
+
+				if (!pCurData
+					|| pCurData->IsAtom()
+					|| !(pCurData->IsList() || pCurData->IsSymbolTable()))
+					return pCC->CreateNil();
+
+				//	get the next index arg
+
+				pArg = pArgs->GetElement(i);
+
+				//	if the index arg is ever NULL or is Nil (incl empty list nil), we return Nil
+
+				if (!pArg || pArg->IsNil())
+					return pCC->CreateNil();
+
+				//	process arg if it is appropriate for pCurData's type
+				//	we dont want to reference anything until we return so we only
+				//	do GetElement
+
+				if (pCurData->IsSymbolTable())
+					{
+					bool bFound = false;
+					pCurData = pCurData->LookupEx(pCC, pArg, &bFound);
+
+					//	We pre-emptively discard, because this is either Nil or something with
+					//	at least 1 reference anyways, and we reference what we use before we
+					//	return it
+					//	Should also never be null. If you get a nullptr here, it means LookupEx
+					//	is broken
+
+					if (pCurData)
+						pCurData->Discard();
+					else
+						return pCC->CreateError(CONSTLIT("Nullptr exception occurred in '@@'"));
+
+					//	Handle invalid key
+
+					if (!bFound)
+						return pCC->CreateNil();
+
+					}
+
+				else if (pCurData->IsList() && pArg->IsInteger())
+					{
+					int iListIdx = pArg->GetIntegerValue();
+					iListIdx = iListIdx < 0 ? pCurData->GetCount() + iListIdx : iListIdx;
+					
+					//	Handle impossible range
+
+					if (iListIdx < 0)
+						return pCC->CreateNil();
+
+					//	Treat as 0-based
+
+					pCurData = pCurData->GetElement(iListIdx);
+
+					//	Handle out of range index
+
+					if (!pCurData)
+						return pCC->CreateNil();
+					}
+
+				//	Handle invalid configurations
+
+				else
+					return pCC->CreateNil();
+				}
+
+			return pCurData->Reference();
+			}
 
 		case FN_ITEM:
 			{
