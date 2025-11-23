@@ -226,11 +226,19 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"@",				fnItem,			FN_ITEM,
 			"(@ list index) -> item index from list (0-based)\n"
 			"(@ struct key) -> value corresponding to key from struct\n"
-			"(@ struct) -> list of keys of the struct",
+			"(@ nestedListsOrStructs [idxOrKey1 idxOrKey2 ...]) -> item index from innermost list or structs (lists are 0-based)\n"
+			"(@ struct) -> list of keys of the struct, Nil on non-structs\n\n"
+			
+			"list indexes below 0 are converted to 0",
 			"v*",	0,	},
 
-		{	"@@",				fnItem,			FN_ITEM_RECURSIVE,
-			"(@@ nestedListsOrStructs [idxOrKey1 idxOrKey2 ...]) -> item index from innermost list or structs (lists are 0-based)\n",
+		{	"@@",				fnItem,			FN_ITEM_REVERSE,
+			"(@@ list index) -> item index from list (0-based)\n"
+			"(@@ struct key) -> value corresponding to key from struct\n"
+			"(@@ nestedListsOrStructs [idxOrKey1 idxOrKey2 ...]) -> item index from innermost list or structs (lists are 0-based)\n"
+			"(@@ struct) -> list of keys of the struct, Nil on non-structs\n\n"
+			
+			"list indexes below 0 address in reverse from the end",
 			"v*",	0,	},
 
 		{	"item",				fnItem,			FN_ITEM,

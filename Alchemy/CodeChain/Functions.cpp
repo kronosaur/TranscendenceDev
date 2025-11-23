@@ -1730,11 +1730,35 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateString(strPatternSubst(sPattern, pValue->GetIntegerValue()));
 				}
 			}
-			
-		case FN_ITEM_RECURSIVE:
+
+		case FN_ITEM:
+		case FN_ITEM_REVERSE:
 			{
 			ICCItem* pCurData = pArgs->GetElement(0);
 			ICCItem* pArg = NULL;
+
+			//	If no second parameter, then we return keys
+
+			if (pArgs->GetCount() < 2)
+				{
+				if (pCurData->IsSymbolTable() && pCurData->GetCount() > 0)
+					{
+					ICCItem *pResult = pCC->CreateLinkedList();
+					for (i = 0; i < pCurData->GetCount(); i++)
+						pResult->AppendString(pCurData->GetKey(i));
+
+					return pResult;
+					}
+				else
+					return pCC->CreateNil();
+				}
+
+			//	Otherwise we read all the keys and index through nested elements
+			//
+			//	Return Nil if we try to get an element from a non-list or non-struct
+			//	Or if it is ever out of range:
+			//		FN_ITEM index < 0 on a list = 0
+			//		FN_ITEM_REVERSE index < 0 on a list addresses from the last element
 
 			for (int i = 1; i < pArgs->GetCount(); i++)
 				{
@@ -1785,12 +1809,22 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				else if (pCurData->IsList() && pArg->IsInteger())
 					{
 					int iListIdx = pArg->GetIntegerValue();
-					iListIdx = iListIdx < 0 ? pCurData->GetCount() + iListIdx : iListIdx;
-					
-					//	Handle impossible range
 
-					if (iListIdx < 0)
-						return pCC->CreateNil();
+					//	Handle the different logic for legacy FN_ITEM vs FN_ITEM_REVERSE
+
+					if (dwData == FN_ITEM)
+						iListIdx = iListIdx < 0 ? 0 : iListIdx;
+					else if (dwData == FN_ITEM_REVERSE)
+						{
+						//	We add iListIdx to count IF it is negative to index from the end
+
+						iListIdx = iListIdx < 0 ? pCurData->GetCount() + iListIdx : iListIdx;
+
+						//	Handle if FN_ITEM_REVERSE is too negative
+
+						if (iListIdx < 0)
+							return pCC->CreateNil();
+						}
 
 					//	Treat as 0-based
 
@@ -1809,58 +1843,6 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				}
 
 			return pCurData->Reference();
-			}
-
-		case FN_ITEM:
-			{
-			ICCItem *pList = pArgs->GetElement(0);
-
-			//	If no second parameter, then we return keys
-
-			if (pArgs->GetCount() < 2)
-				{
-				if (pList->IsSymbolTable() && pList->GetCount() > 0)
-					{
-					ICCItem *pResult = pCC->CreateLinkedList();
-					for (i = 0; i < pList->GetCount(); i++)
-						pResult->AppendString(pList->GetKey(i));
-
-					return pResult;
-					}
-				else
-					return pCC->CreateNil();
-				}
-
-			//	If index is nil then we always return nil
-
-			else if (pArgs->GetElement(1)->IsNil())
-				return pCC->CreateNil();
-
-			//	Handle symbol tables differently
-
-			else if (pList->IsSymbolTable())
-				{
-				bool bFound;
-				ICCItem *pResult = pList->LookupEx(pCC, pArgs->GetElement(1), &bFound);
-				if (!bFound)
-					{
-					pResult->Discard();
-					return pCC->CreateNil();
-					}
-
-				return pResult;
-				}
-
-			//	Normal lists
-
-			else
-				{
-				ICCItem *pResult = pList->GetElement(pArgs->GetElement(1)->GetIntegerValue());
-				if (pResult == NULL)
-					return pCC->CreateNil();
-				else
-					return pResult->Reference();
-				}
 			}
 
 		case FN_ITEM_CONVERT_TO:
