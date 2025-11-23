@@ -220,7 +220,7 @@ ICCItemPtr CAttributeDataBlock::GetData (int iIndex) const
 	return Entry.pData;
 	}
 
-ICCItemPtr CAttributeDataBlock::GetDataAsItem (const CString &sAttrib) const
+ICCItemPtr CAttributeDataBlock::GetDataAsItem (const CString &sAttrib, bool *retbFound) const
 
 //	GetDataAsItem
 //
@@ -237,6 +237,11 @@ ICCItemPtr CAttributeDataBlock::GetDataAsItem (const CString &sAttrib) const
 			pResult->SetAt(m_Data.GetKey(i), pValue);
 			}
 
+		//	getting the table always counts as found (our caller handles if m_pExtra is NULL)
+
+		if (retbFound)
+			*retbFound = true;
+
 		if (pResult->GetCount() == 0)
 			return ICCItemPtr::Nil();
 		else
@@ -246,7 +251,15 @@ ICCItemPtr CAttributeDataBlock::GetDataAsItem (const CString &sAttrib) const
 		{
 		const SDataEntry *pEntry = m_Data.GetAt(sAttrib);
 		if (pEntry == NULL)
+			{
+			if (retbFound)
+				*retbFound = false;
+
 			return ICCItemPtr(ICCItem::Nil);
+			}
+
+		if (retbFound)
+			*retbFound = true;
 
 		return ICCItemPtr(pEntry->pData->CloneContainer());
 		}

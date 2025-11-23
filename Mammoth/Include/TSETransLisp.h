@@ -253,7 +253,7 @@ class CAttributeDataBlock
 		bool FindDataAsItem (const CString &sAttrib, ICCItemPtr &pResult) const;
 		bool FindObjRefData (CSpaceObject *pObj, CString *retsAttrib = NULL) const;
 		ICCItemPtr GetData (int iIndex) const;
-		ICCItemPtr GetDataAsItem (const CString &sAttrib) const;
+		ICCItemPtr GetDataAsItem (const CString &sAttrib, bool *retbFound) const;
 		const CString &GetDataAttrib (int iIndex) const { return m_Data.GetKey(iIndex); }
 		int GetDataCount (void) const { return m_Data.GetCount(); }
 		CSpaceObject *GetObjRefData (const CString &sAttrib) const;
