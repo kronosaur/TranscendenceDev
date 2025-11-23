@@ -486,6 +486,7 @@
 
 				noFriendlyFire=	"true"
 				noDetonationOnEndOfLife="true"
+				proximityDistanceAutoTrigger="0.2"
 
 				hitEffect=		"&efBlastHitDefault;"
 				sound=			"&snMissileLauncher;"
