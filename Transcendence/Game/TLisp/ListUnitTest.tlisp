@@ -69,6 +69,9 @@
 
 	;	Get Element (basic) - caps negative indexes to 0
 
+	{	code: '(@@ {a:'abstract b:'base c:'class d:(list 9 8 7)})								result: '(a b c d)}
+	{	code: '(@@ (list 1 2 3 4))																result: '()}
+
 	{	code: '(@ (list 1 2 3 4) 0)								result: '1}
 	{	code: '(@ (list 1 2 3 4) -1)							result: '1}
 	{	code: '(@ (list 1 2 3 4) 4)								result: '()}
@@ -86,6 +89,9 @@
 	{	code: '(@ () 1 2 3)																		result: '()}
 
 	;	Get Element (recursive) - supports negative indexes
+
+	{	code: '(@@ {a:'abstract b:'base c:'class d:(list 9 8 7)})								result: '(a b c d)}
+	{	code: '(@@ (list 1 2 3 4))																result: '()}
 
 	{	code: '(@@ (list 1 2 3 4) 0)							result: '1}
 	{	code: '(@@ (list 1 2 3 4) -1)							result: '4}
