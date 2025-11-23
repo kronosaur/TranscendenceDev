@@ -169,6 +169,20 @@ void CAttributeDataBlock::CopyObjRefs (SObjRefEntry *pSrc)
 		}
 	}
 
+void CAttributeDataBlock::DeleteEntry(const CString & sAttrib)
+	{
+	SDataEntry *pEntry = m_Data.GetAt(sAttrib);
+	
+	if (pEntry)
+		{
+		//	remove our reference to this data
+		pEntry->pData->Discard();
+
+		//	delete it from our data
+		m_Data.DeleteAt(sAttrib);
+		}
+	}
+
 bool CAttributeDataBlock::FindDataAsItem (const CString &sAttrib, ICCItemPtr &pResult) const
 
 //	FindDataAsItem

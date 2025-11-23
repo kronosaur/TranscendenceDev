@@ -241,25 +241,26 @@ class CAttributeDataBlock
 			ETransferOptions iOption;
 			};
 
-		CAttributeDataBlock (void);
+		CAttributeDataBlock ();
 		CAttributeDataBlock (const CAttributeDataBlock &Src);
 		CAttributeDataBlock (CAttributeDataBlock &&Src) noexcept;
 		CAttributeDataBlock &operator= (const CAttributeDataBlock &Src);
 		CAttributeDataBlock &operator= (CAttributeDataBlock &&Src) noexcept;
-		~CAttributeDataBlock (void);
+		~CAttributeDataBlock ();
 
 		void Copy (const CAttributeDataBlock &Src, const TSortMap<CString, STransferDesc> &Options);
-		void DeleteAll (void) { CleanUp(); }
+		void DeleteAll () { CleanUp(); }
+		void DeleteEntry (const CString &sAttrib);
 		bool FindDataAsItem (const CString &sAttrib, ICCItemPtr &pResult) const;
 		bool FindObjRefData (CSpaceObject *pObj, CString *retsAttrib = NULL) const;
 		ICCItemPtr GetData (int iIndex) const;
-		ICCItemPtr GetDataAsItem (const CString &sAttrib, bool *retbFound) const;
+		ICCItemPtr GetDataAsItem (const CString &sAttrib, bool *retbFound = NULL) const;
 		const CString &GetDataAttrib (int iIndex) const { return m_Data.GetKey(iIndex); }
-		int GetDataCount (void) const { return m_Data.GetCount(); }
+		int GetDataCount () const { return m_Data.GetCount(); }
 		CSpaceObject *GetObjRefData (const CString &sAttrib) const;
 		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL);
 		bool IsDataNil (const CString &sAttrib) const;
-		bool IsEmpty (void) const { return (m_Data.GetCount() == 0 && m_pObjRefData == NULL); }
+		bool IsEmpty () const { return (m_Data.GetCount() == 0 && m_pObjRefData == NULL); }
 		bool IsEqual (const CAttributeDataBlock &Src);
 		void LoadObjReferences (CSystem *pSystem);
 		void MergeFrom (const CAttributeDataBlock &Src);
