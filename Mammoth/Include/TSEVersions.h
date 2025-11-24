@@ -686,6 +686,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //							are marked as hostile
 //						0-damage shots trigger onHit events if they are marked as
 //							hostile
+//						0-damage shots will still impart momentum
 //					null: New special damage type
 //						Null damage is treated as non-hostile
 //						Null damage does not trigger hostile onAttacked events
