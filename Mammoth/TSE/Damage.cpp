@@ -366,10 +366,13 @@ ICCItem *DamageDesc::FindProperty (const CString &sName) const
 //
 bool DamageDesc::IsHostile () const
 	{
-	//	Dealing non-zero non-null damage is hostile
-	return (m_Damage.GetMaxValue() && m_iType != damageNull)
+	//	null damage is never considered hostile
+	return m_iType != damageNull
+		//	otherwise if we can potentially do any amount of damage
+		//	then we are considered hostile
+		&& (m_Damage.GetMaxValue()
 		//	similarly any hostile status/special effects also count
-		//	movement alone does not count as hostile
+		//	however, movement alone does not count as hostile
 		|| m_sExtra.EMPDamage
 		|| m_sExtra.RadiationDamage
 		|| m_sExtra.DeviceDamage
@@ -379,7 +382,7 @@ bool DamageDesc::IsHostile () const
 		|| m_sExtra.FuelDamage
 		|| m_sExtra.DisintegrationDamage
 		|| m_sExtra.ShatterDamage
-		|| m_sExtra.TimeStopDamage;
+		|| m_sExtra.TimeStopDamage);
 	}
 
 int DamageDesc::GetDamageLevel (DamageTypes iType)
