@@ -706,13 +706,9 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 
 	Ctx.iSectHit = -1;
 
-	//	Short-circuit
-
-	bool bDestroy = false;
-	if (Ctx.iDamage == 0)
-		return damageNoDamage;
-
 	//	If this is a momentum attack then we are pushed
+	//	
+	//	We always allow this to happen first before short-circuiting
 
 	Metric rImpulse;
 	if (Ctx.Damage.HasImpulseDamage(&rImpulse))
@@ -721,10 +717,10 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 		AddForce(vAccel);
 		}
 
-	//	If we are null damage, we dont actually do any damage
-	//	but we needed to confer statuses first (ex momentum)
+	//	Short-circuit
 
-	if (Ctx.Damage.GetDamageType() == damageNull)
+	bool bDestroy = false;
+	if (Ctx.iDamage == 0 || Ctx.Damage.GetDamageType() == damageNull)
 		return damageNoDamage;
 
 	//	Create a hit effect
