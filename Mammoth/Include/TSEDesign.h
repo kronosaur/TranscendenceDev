@@ -228,9 +228,6 @@ class CAchievementDataBlock
 
 //	CDesignType
 
-#define PFX_PROPERTY_OVERRIDE CONSTLIT("@.core.override.")
-#define PFX_PROPERTY_OVERRIDE_LENGTH 16	//	this is used for strSlice to remove the prefix when reporting keys
-
 enum class EDesignDataTypes
 	{
 	eNone,

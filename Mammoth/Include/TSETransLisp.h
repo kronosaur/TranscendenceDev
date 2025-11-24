@@ -16,6 +16,9 @@ struct SSystemCreateCtx;
 
 //	CodeChain context
 
+#define PFX_PROPERTY_OVERRIDE CONSTLIT("@.core.override.")
+#define PFX_PROPERTY_OVERRIDE_LENGTH 16	//	this is used for strSlice to remove the prefix when reporting keys
+
 enum ECodeChainEvents
 	{
 	eventNone =							0,
@@ -294,6 +297,9 @@ class CAttributeDataBlock
 
 		void CleanUp (void);
 		void CleanUpObjRefs (void);
+		CString ConvertToOverrideKey (CString &sAttrib) { return strCat(PFX_PROPERTY_OVERRIDE, sAttrib); }
+		CString ConvertFromOverrideKey (CString &sAttrib) { return strSlice(sAttrib, PFX_PROPERTY_OVERRIDE_LENGTH); }
+		bool IsOverrideKey (CString &sAttrib) { return strStartsWith(sAttrib, PFX_PROPERTY_OVERRIDE); }
 		void Copy (const CAttributeDataBlock &Copy);
 		void CopyObjRefs (SObjRefEntry *pSrc);
 		bool IsXMLText (const CString &sData) const;

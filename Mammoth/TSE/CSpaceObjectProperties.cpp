@@ -901,10 +901,7 @@ ICCItemPtr CSpaceObject::GetTypeProperty (CCodeChainCtx &CCX, const CString &sPr
 //	Sets an object property override
 //
 bool CSpaceObject::ClearPropertyOverride (const CString& sName)
-	{
-	CString sOverrideKey = strCat(PFX_PROPERTY_OVERRIDE, sName);
-
-	ClearDataOverride(sOverrideKey);
+	{ClearDataOverride(sName);
 
 	return true;
 	}
@@ -914,10 +911,7 @@ bool CSpaceObject::ClearPropertyOverride (const CString& sName)
 //	Sets an object property override
 //
 bool CSpaceObject::SetPropertyOverride (const CString& sName, ICCItem* pValue)
-	{
-	CString sOverrideKey = strCat(PFX_PROPERTY_OVERRIDE, sName);
-
-	SetDataOverride(sOverrideKey, pValue);
+	{SetDataOverride(sName, pValue);
 
 	return true;
 	}

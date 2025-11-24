@@ -3375,9 +3375,7 @@ bool CDesignType::ClearTypePropertyOverride (const CString &sProperty)
 
 	else
 		{
-		CString sOverrideKey = strCat(PFX_PROPERTY_OVERRIDE, sProperty);
-
-		ClearGlobalDataOverride(sOverrideKey);
+		ClearGlobalDataOverride(sProperty);
 
 		return true;
 		}
@@ -3419,9 +3417,7 @@ bool CDesignType::SetTypePropertyOverride (const CString &sProperty, const ICCIt
 
 	else
 		{
-		CString sOverrideKey = strCat(PFX_PROPERTY_OVERRIDE, sProperty);
-
-		SetGlobalDataOverride(sOverrideKey, &Value);
+		SetGlobalDataOverride(sProperty, &Value);
 
 		return true;
 		}
