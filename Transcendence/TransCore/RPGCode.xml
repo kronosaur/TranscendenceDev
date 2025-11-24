@@ -1664,6 +1664,7 @@
 					(and
 						(not (objIsRadioactive theObj))
 						(not (objGetData theObj (or lootedVar 'core.salvaged)))
+						(not (objGetData theObj 'core.noSalvage))
 						(not (obj@ theObj 'core.noSalvage))
 						)
 					)
