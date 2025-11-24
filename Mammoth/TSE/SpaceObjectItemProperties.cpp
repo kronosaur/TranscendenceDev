@@ -394,3 +394,51 @@ bool CSpaceObject::SetItemPropertyOverride (const CItem &Item, const CString &sN
 
 	return true;
 	}
+
+//	ClearItemPropertyOverride
+//
+//	Sets the item property override
+//
+//	NOTE: pValue may be NULL.
+//
+bool CSpaceObject::ClearItemPropertyOverride(const CItem &Item, const CString &sName, int iCount, CItem *retItem, CString *retsError)
+
+	{
+	//	Select the item to make sure it exists on this object.
+
+	CItemListManipulator ItemList(GetItemList());
+	if (!ItemList.SetCursorAtItem(Item))
+		{
+		if (retsError) *retsError = CONSTLIT("Item not found on object.");
+		return false;
+		}
+
+	//	Notify any dock screens that we might modify an item
+
+	IDockScreenUI::SModifyItemCtx ModifyCtx;
+	OnModifyItemBegin(ModifyCtx, Item);
+
+	//	Just clear the property, but pass enough context (this object)
+	//	so that it can find the appropriate device.
+	//	Attempting to clear overrides that cant be set result in a no-op
+
+	if (!ItemList.ClearPropertyOverrideAtCursor(this, sName, iCount, retsError))
+		return false;
+
+	//	Update the object
+
+	ItemEnhancementModified(ItemList);
+
+	//	Return the newly changed item. We do this before the notification 
+	//	because the notification might change the underlying item list (because
+	//	it sorts).
+
+	if (retItem)
+		*retItem = ItemList.GetItemAtCursor();
+
+	//	Update the object
+
+	OnModifyItemComplete(ModifyCtx, ItemList.GetItemAtCursor());
+
+	return true;
+	}

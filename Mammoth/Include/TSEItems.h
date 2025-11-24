@@ -307,6 +307,7 @@ class CItem
 		void ClearEnhanced (void) { m_dwFlags &= ~flagEnhanced; }
 		void ClearExtra (void) { delete m_pExtra; m_pExtra = NULL; }
 		void ClearInstalled (void);
+		ESetPropertyResult ClearPropertyOverride(CItemCtx &Ctx, const CString &sName, bool bOnType, CString *retsError = NULL);
 		static CItem CreateItemByName (CUniverse &Universe, const CString &sName, const CItemCriteria &Criteria, bool bActualName = false);
 		bool IsEqual (const CItem &Item, DWORD dwFlags = 0) const;
 		bool IsUsed (void) const;
@@ -603,6 +604,7 @@ class CItemListManipulator
 		DWORD AddItemEnhancementAtCursor (const CItemEnhancement &Mods, int iCount = 1);
 		void ClearDisruptedAtCursor (int iCount = 1);
 		void ClearInstalledAtCursor (void);
+		bool ClearPropertyOverrideAtCursor(CSpaceObject *pSource, const CString &sName, int iCount, CString *retsError);
 		void DeleteAtCursor (int iCount);
 		void DeleteMarkedItems (void);
 		const CItem &GetItemAtCursor (void) const;

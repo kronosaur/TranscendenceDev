@@ -87,6 +87,9 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_ITEM_GET_STATIC_DATA_KEYS	40
 #define FN_ITEM_GET_TYPE_DATA_KEYS	41
 #define FN_ITEM_PROPERTY_KEYS		42
+#define FN_ITEM_PROPERTY_OVERRIDE	43
+#define FN_ITEM_PROPERTY_OVERRIDE_KEYS	44
+#define FN_ITEM_CLEAR_PROPERTY_OVERRIDE	45
 
 ICCItem *fnItemGetTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -800,6 +803,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	Item functions
 		//	--------------
 
+		{ "itmClearOverride@",				fnItemGet,		FN_ITEM_CLEAR_PROPERTY_OVERRIDE,
+			"(itmClearOverride@ item|type property) -> bool",
+			"v",	0, },
+
 		{	"itmCreate",					fnItemCreate,	0,	
 			"(itmCreate itemUNID count) -> item",
 			"ii",	PPFLAG_SIDEEFFECTS,	},
@@ -923,6 +930,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"itm@Keys",						fnItemGet,		FN_ITEM_PROPERTY_KEYS,
 			"(itm@Keys item|type) -> list of property keys",
+			"v",	0,	},
+
+		{	"itmOverride@Keys",						fnItemGet,		FN_ITEM_PROPERTY_OVERRIDE_KEYS,
+			"(itmOverride@Keys item|type) -> list of property override keys",
 			"v",	0,	},
 
 		{	"itm@",							fnItemGet,		FN_ITEM_PROPERTY,
@@ -1139,6 +1150,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"itmSetKnown",					fnItemSet,		FN_ITEM_SET_KNOWN,
 			"(itmSetKnown type|item [True/Nil]) -> True/Nil",
 			"v*",	PPFLAG_SIDEEFFECTS,	},
+
+		{ "itmSetOverride@",				fnItemSet,		FN_ITEM_PROPERTY_OVERRIDE,
+			"(itmSetOverride@ item property value) -> item\n\n"
+
+			"Caution: This function allows for a hard override of any property (even if undefined) without safeties.\n"
+			"Use itmClearOverride@ to remove an override and restore the original property.",
+
+			"vs*",	0, },
 
 		{	"itmSet@",						fnItemSet,		FN_ITEM_PROPERTY,
 			"(itmSet@ item property value) -> item\n\n"
@@ -1751,6 +1770,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objClearIdentified",			fnObjSet,		FN_OBJ_CLEAR_IDENTIFIED,
 			"(objClearIdentified obj) -> True/Nil",
 			"i",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objClearOverride@",						fnObjSet,		FN_OBJ_CLEAR_ITEM_PROPERTY_OVERRIDE,
+			"(objClearOverride@ obj property) -> True/Nil\n"
+			"(objClearOverride@ obj item property) -> item",
+
+			"i*",	PPFLAG_SIDEEFFECTS, },
 
 		{	"objClearShowAsDestination",		fnObjSet,		FN_OBJ_CLEAR_AS_DESTINATION,
 			"(objClearShowAsDestination obj) -> True/Nil",
@@ -2647,6 +2672,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objSetPos",					fnObjSet,		FN_OBJ_POSITION,
 			"(objSetPos obj vector [rotation])",
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
+
+		{ "objSetOverride@",						fnObjSet,		FN_OBJ_SET_ITEM_PROPERTY_OVERRIDE,
+			"(objSetOverride@ obj property value) -> True/Nil\n"
+			"(objSetOverride@ obj item property value [count]) -> item\n\n"
+
+			"Caution: This function allows for a hard override of any property (even if undefined) without safeties.\n"
+			"Use objClearOverride@ to remove an override and restore the original property.",
+
+			"i*",	PPFLAG_SIDEEFFECTS, },
 
 		{	"objSet@",						fnObjSet,		FN_OBJ_SET_ITEM_PROPERTY,
 			"(objSet@ obj property value) -> True/Nil\n\n"
@@ -5890,17 +5924,20 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			break;
 			}
 
+		case FN_ITEM_PROPERTY_OVERRIDE_KEYS:
 		case FN_ITEM_PROPERTY_KEYS:
 			{
+			EDesignDataTypes iDataType = dwData == FN_ITEM_PROPERTY_KEYS ? EDesignDataTypes::ePropertyData : EDesignDataTypes::ePropertyOverrideData;
+
 			if (CSpaceObject *pSource = Item.GetSource())
 				{
 				CItemCtx ItemCtx(&Item, pSource);
-				return Item.GetItemPropertyKeys(*pCtx, ItemCtx, bOnType)->Reference();
+				return Item.GetItemPropertyKeys(*pCtx, ItemCtx, bOnType, iDataType)->Reference();
 				}
 			else
 				{
 				CItemCtx ItemCtx(Item);
-				return Item.GetItemPropertyKeys(*pCtx, ItemCtx, bOnType)->Reference();
+				return Item.GetItemPropertyKeys(*pCtx, ItemCtx, bOnType, iDataType)->Reference();
 				}
 			}
 
@@ -9870,6 +9907,56 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return CreateListFromItem(Result);
 			}
 
+		case FN_OBJ_CLEAR_ITEM_PROPERTY_OVERRIDE:
+			{
+			//	check number of args to determine correct property
+
+			//	If 3, we are clearing an item property override
+
+			if (pArgs->GetCount() >= 3)
+				{
+				//	Get the item
+
+				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
+				if (Item.GetType() == NULL)
+					return pCC->CreateNil();
+
+				//	Get the property
+
+				CString sProperty = pArgs->GetElement(2)->GetStringValue();
+				int iCount = (pArgs->GetCount() > 3 ? Max(0, pArgs->GetElement(3)->GetIntegerValue()) : 1);
+
+				//	Clear property override
+				//	Set it
+
+				CString sError;
+				if (!pObj->ClearItemPropertyOverride(Item, sProperty, iCount, &Item, &sError))
+					{
+					if (sError.IsBlank())
+						return pCC->CreateNil();
+					else
+						return pCC->CreateError(sError);
+					}
+
+				//	Return the newly changed item
+
+				return CreateListFromItem(Item);
+				}
+
+			//	We are clearing an object property override
+
+			else if (pArgs->GetCount() == 2)
+				{
+				pObj->ClearDataOverride(pArgs->GetElement(1)->GetStringValue());
+				pCC->CreateBool(true);
+				}
+
+			//	Invalid number of arguments
+
+			else
+				pCC->CreateError(CONSTLIT("Invalid number of arguments."));
+			}
+
 		case FN_OBJ_SET_ITEM_PROPERTY:
 			{
 			if (pArgs->GetCount() > 3)
@@ -9917,21 +10004,6 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else
 				{
 				return pCC->CreateError(CONSTLIT("Insufficient arguments."));
-				}
-			}
-
-		case FN_OBJ_CLEAR_ITEM_PROPERTY_OVERRIDE:
-			{
-			if (pArgs->GetCount() == 2)
-				{
-				if (pObj->ClearPropertyOverride(pArgs->GetElement(1)->GetStringValue()))
-					return pCC->CreateTrue();
-
-				return pCC->CreateError(CONSTLIT("Unable to clear property override"), pArgs->GetElement(1));
-				}
-			else
-				{
-				return pCC->CreateError(CONSTLIT("Invalid number of arguments."));
 				}
 			}
 

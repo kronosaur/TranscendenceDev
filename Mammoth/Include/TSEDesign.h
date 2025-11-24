@@ -302,7 +302,7 @@ class CDesignType
 		static CDesignType *AsType (CDesignType *pType) { return pType; }
 		int CalcAffinity (const CAffinityCriteria &Criteria) const;
 		void ClearMark (void) { OnClearMark(); }
-		void ClearGlobalDataOverride (const CString &sAttrib) { SetExtra()->GlobalData.ClearDataOverride(sAttrib); }
+		void ClearGlobalDataOverride (const CString &sAttrib) { SetExtra()->GlobalData.ClearPropertyOverride(sAttrib); }
 		bool ClearTypePropertyOverride (const CString &sProperty);
 		bool FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult, EPropertyType *retiType = NULL) const;
 		CEffectCreator *FindEffectCreatorInType (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
@@ -412,7 +412,7 @@ class CDesignType
 		void MarkImages (void) { OnMarkImages(); }
 		void ReportEventError (const CString &sEvent, const ICCItem *pError) const;
 		void SetGlobalData (const CString &sAttrib, const ICCItem *pData) { SetExtra()->GlobalData.SetData(sAttrib, pData); }
-		void SetGlobalDataOverride (const CString &sAttrib, const ICCItem *pData) { SetExtra()->GlobalData.SetDataOverride(sAttrib, pData); }
+		void SetGlobalDataOverride (const CString &sAttrib, const ICCItem *pData) { SetExtra()->GlobalData.SetPropertyOverride(sAttrib, pData); }
 		void SetHierarchyResolved (bool bValue = true) { m_bHierarchyResolved = bValue; }
 		void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
 		void SetMerged (bool bValue = true) { m_bIsMerged = true; }

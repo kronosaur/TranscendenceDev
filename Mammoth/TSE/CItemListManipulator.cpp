@@ -904,6 +904,28 @@ bool CItemListManipulator::SetPropertyAtCursor (CSpaceObject *pSource, const CSt
 	return true;
 	}
 
+//	ClearPropertyOverrideAtCursor
+//
+//	Clears the property override
+//
+bool CItemListManipulator::ClearPropertyOverrideAtCursor(CSpaceObject *pSource, const CString &sName, int iCount, CString *retsError)
+
+	{
+	ASSERT(m_iCursor != -1);
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	if (iCount != -1)
+		NewItem.SetCount(Max(0, Min(iCount, OldItem.GetCount())));
+
+	CItemCtx ItemCtx(&NewItem, pSource);
+	if (NewItem.ClearPropertyOverride(ItemCtx, sName, false, retsError) != ESetPropertyResult::set)
+		return false;
+
+	MoveItemTo(NewItem, OldItem);
+
+	return true;
+	}
+
 //	SetPropertyOverrideAtCursor
 //
 //	Sets the property override

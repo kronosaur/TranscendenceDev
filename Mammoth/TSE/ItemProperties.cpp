@@ -769,7 +769,7 @@ ESetPropertyResult CItem::SetPropertyOverride (CItemCtx &Ctx, const CString &sNa
 
 	if (IsEmpty())
 		{
-		if (retsError) *retsError = CONSTLIT("Unable to set property on a null item.");
+		if (retsError) *retsError = CONSTLIT("Unable to set property override on a null item.");
 		return ESetPropertyResult::error;
 		}
 
@@ -797,7 +797,35 @@ ESetPropertyResult CItem::SetPropertyOverride (CItemCtx &Ctx, const CString &sNa
 		return ESetPropertyResult::set;
 	//	Otherwise, nothing
 
-	if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to set item property %s"), sName);
+	if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to set item property override %s"), sName);
 	return ESetPropertyResult::notFound;
 	}
+
+//	ClearPropertyOverride
+//
+//	Sets item property override. If we cannot set the property we return an error. If
+//	retsError is blank then we cannot set the property because the value is Nil.
+//
+ESetPropertyResult CItem::ClearPropertyOverride(CItemCtx &Ctx, const CString &sName, bool bOnType, CString *retsError)
+
+	{
+	CString sError;
+	ICCItemPtr pUnused;
+
+	if (IsEmpty())
+		{
+		if (retsError) *retsError = CONSTLIT("Unable to clear property override on a null item.");
+		return ESetPropertyResult::error;
+		}
+
+	//	Otherwise clear a custom property override if it is present
+
+	else if (ClearCustomPropertyOverride(sName))
+		return ESetPropertyResult::set;
+	//	Otherwise, nothing
+
+	if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to clear item property override %s"), sName);
+	return ESetPropertyResult::notFound;
+	}
+
 

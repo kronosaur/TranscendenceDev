@@ -636,7 +636,7 @@ class CSpaceObject
 
 		//	Data
 
-		void ClearDataOverride (const CString &sAttrib) { m_Data.ClearDataOverride(sAttrib); }
+		void ClearDataOverride (const CString &sAttrib) { m_Data.ClearPropertyOverride(sAttrib); }
 		void ClearObjReferences (void) { m_Data.OnSystemChanged(NULL); }
 		CAttributeDataBlock &GetData (void) { return m_Data; }
 		const CAttributeDataBlock &GetData (void) const { return m_Data; }
@@ -648,7 +648,7 @@ class CSpaceObject
 		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
 		void LoadObjReferences (CSystem *pSystem) { m_Data.LoadObjReferences(pSystem); }
 		void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
-		void SetDataOverride (const CString &sAttrib, ICCItem *pData) { m_Data.SetDataOverride(sAttrib, pData); }
+		void SetDataOverride (const CString &sAttrib, ICCItem *pData) { m_Data.SetPropertyOverride(sAttrib, pData); }
 		void SetDataFromDataBlock (const CAttributeDataBlock &Block) { m_Data.MergeFrom(Block); }
 		void SetDataFromXML (CXMLElement *pData) { m_Data.SetFromXML(pData); }
 		void SetGlobalData (const CString &sAttribute, ICCItem *pData);
@@ -765,6 +765,7 @@ class CSpaceObject
 		EnhanceItemStatus AddItemEnhancement (CItemListManipulator &ItemList, CItemType *pEnhancement, int iLifetime, DWORD *retdwID);
 		static ICCItemPtr AsCCItem (CCodeChainCtx &Ctx, const CItem::SEnhanceItemResult &Result);
 		CItem::SEnhanceItemResult CanEnhanceItem (CItemListManipulator &ItemList, const CItem &EnhancementItem, CString *retsError = NULL) const;
+		bool ClearItemPropertyOverride(const CItem &Item, const CString &sName, int iCount, CItem *retItem, CString *retsError);
 		void DamageItem (CInstalledDevice *pDevice);
 		void DamageItem (CItemListManipulator &ItemList);
 		void DisruptItem (CItemListManipulator &ItemList, DWORD dwDuration);

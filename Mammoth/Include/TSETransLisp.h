@@ -251,7 +251,7 @@ class CAttributeDataBlock
 		CAttributeDataBlock &operator= (CAttributeDataBlock &&Src) noexcept;
 		~CAttributeDataBlock ();
 
-		void ClearDataOverride (const CString &sAttrib);
+		void ClearPropertyOverride (const CString &sAttrib);
 		void Copy (const CAttributeDataBlock &Src, const TSortMap<CString, STransferDesc> &Options);
 		void DeleteAll () { CleanUp(); }
 		void DeleteEntry (const CString &sAttrib);
@@ -273,7 +273,7 @@ class CAttributeDataBlock
 		void ReadFromStream (SLoadCtx &Ctx);
 		void ReadFromStream (IReadStream *pStream);
 		void SetData (const CString &sAttrib, const ICCItem *pItem);
-		void SetDataOverride (const CString &sAttrib, const ICCItem *pItem);
+		void SetPropertyOverride (const CString &sAttrib, const ICCItem *pItem);
 		void SetFromXML (CXMLElement *pData);
 		void SetObjRefData (const CString &sAttrib, CSpaceObject *pObj);
 		void WriteToStream (IWriteStream *pStream, CSystem *pSystem = NULL);

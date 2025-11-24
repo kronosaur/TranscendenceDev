@@ -183,12 +183,14 @@ void CAttributeDataBlock::DeleteEntry(const CString & sAttrib)
 		}
 	}
 
-bool CAttributeDataBlock::FindDataAsItem (const CString &sAttrib, ICCItemPtr &pResult) const
-
 //	FindDataAsItem
 //
 //	Returns a CodeChain item (which must be freed by the caller). Returns NULL
 //	if the data is not found.
+//  The distinction between returning NULL & false vs Nil & true is important for
+//  property overrides, which may exist and be Nil.
+//
+bool CAttributeDataBlock::FindDataAsItem (const CString &sAttrib, ICCItemPtr &pResult) const
 
 	{
 	const SDataEntry *pEntry = m_Data.GetAt(sAttrib);
@@ -668,6 +670,11 @@ void CAttributeDataBlock::ReadFromStream (IReadStream *pStream)
 void CAttributeDataBlock::SetData (const CString &sAttrib, const ICCItem *pItem)
 
 	{
+	//	You must use SetDataOverride to set these
+
+	if (strStartsWith(sAttrib, PFX_PROPERTY_OVERRIDE))
+		return;
+
 	if (strEquals(sAttrib, CONSTLIT("*")))
 		{
 		m_Data.DeleteAll();
@@ -700,26 +707,26 @@ void CAttributeDataBlock::SetData (const CString &sAttrib, const ICCItem *pItem)
 		}
 	}
 
-//	ClearDataOverride
+//	ClearPropertyOverride
 //
 //	Deletes the entry at sAttrib. Normally this
 //	is done by setting Nil, but an override may
 //	need to explicitly be Nil, thus an explicit
 //	clear is needed.
 //
-void CAttributeDataBlock::ClearDataOverride (const CString &sAttrib)
+void CAttributeDataBlock::ClearPropertyOverride (const CString &sAttrib)
 
 	{
 	CString sKey = ConvertFromOverrideKey(sAttrib);
 	m_Data.DeleteAt(sKey);
 	}
 
-//	SetDataOverride
+//	SetPropertyOverride
 //
 //	Sets string data associated with attribute
 //	Sets data even if it is Nil
 //
-void CAttributeDataBlock::SetDataOverride (const CString &sAttrib, const ICCItem *pItem)
+void CAttributeDataBlock::SetPropertyOverride (const CString &sAttrib, const ICCItem *pItem)
 
 	{
 	if (strEquals(sAttrib, CONSTLIT("*")))
