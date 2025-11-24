@@ -297,8 +297,8 @@ class CAttributeDataBlock
 
 		void CleanUp (void);
 		void CleanUpObjRefs (void);
-		CString ConvertToOverrideKey (CString &sAttrib) { return strCat(PFX_PROPERTY_OVERRIDE, sAttrib); }
-		CString ConvertFromOverrideKey (CString &sAttrib) { return strSlice(sAttrib, PFX_PROPERTY_OVERRIDE_LENGTH); }
+		CString ConvertToOverrideKey (const CString &sAttrib) const { return strCat(PFX_PROPERTY_OVERRIDE, sAttrib); }
+		CString ConvertFromOverrideKey (const CString &sAttrib) const { return strSlice(sAttrib, PFX_PROPERTY_OVERRIDE_LENGTH); }
 		bool IsOverrideKey (CString &sAttrib) { return strStartsWith(sAttrib, PFX_PROPERTY_OVERRIDE); }
 		void Copy (const CAttributeDataBlock &Copy);
 		void CopyObjRefs (SObjRefEntry *pSrc);

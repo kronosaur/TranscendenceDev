@@ -710,7 +710,7 @@ void CAttributeDataBlock::SetData (const CString &sAttrib, const ICCItem *pItem)
 void CAttributeDataBlock::ClearDataOverride (const CString &sAttrib)
 
 	{
-	CString sKey = strCat(PFX_PROPERTY_OVERRIDE, sAttrib);
+	CString sKey = ConvertFromOverrideKey(sAttrib);
 	m_Data.DeleteAt(sKey);
 	}
 
@@ -725,7 +725,8 @@ void CAttributeDataBlock::SetDataOverride (const CString &sAttrib, const ICCItem
 	if (strEquals(sAttrib, CONSTLIT("*")))
 		return SetData(sAttrib, pItem);
 
-	SDataEntry *pEntry = m_Data.SetAt(sAttrib);
+	CString sKey = ConvertToOverrideKey(sAttrib);
+	SDataEntry *pEntry = m_Data.SetAt(sKey);
 	pEntry->pData = ICCItemPtr(pItem->CloneContainer());
 	}
 
