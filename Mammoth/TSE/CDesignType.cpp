@@ -116,6 +116,7 @@
 #define PROPERTY_MERGED							CONSTLIT("merged")
 #define PROPERTY_NAME_PATTERN					CONSTLIT("namePattern")
 #define PROPERTY_OBSOLETE_VERSION				CONSTLIT("obsoleteVersion")
+#define PROPERTY_OBJECT_DATA					CONSTLIT("data")	//	This is here to catch certain overwrite edgecases, not as an implemented property
 #define PROPERTY_REQUIRED_VERSION				CONSTLIT("requiredVersion")
 #define PROPERTY_STATIC_DATA					CONSTLIT("staticData")
 #define PROPERTY_TRADE_DESC						CONSTLIT("tradeDesc")
@@ -923,6 +924,25 @@ bool CDesignType::FindEventHandler (const CString &sEvent, SEventHandlerDesc *re
 		return m_pInheritFrom->FindEventHandler(sEvent, retEvent);
 
 	//	Otherwise, nothing
+
+	return false;
+	}
+
+bool CDesignType::FindPropertyOverride(const CString& sProperty, ICCItemPtr& pResult, EPropertyType* retiType) const
+	{
+	CString sOverride = strCat(PFX_PROPERTY_OVERRIDE, sProperty);
+
+	//	Since we are a design type, we only have access to global data
+
+	if (m_pExtra)
+		{
+		if (m_pExtra->GlobalData.FindDataAsItem(sOverride, pResult))
+			{
+			if (retiType)
+				*retiType = EPropertyType::propGlobalOverride;
+			return true;
+			}
+		}
 
 	return false;
 	}
@@ -1894,14 +1914,28 @@ size_t CDesignType::GetAllocMemoryUsage (void) const
 	return dwTotal;
 	}
 
+//	GetDataKeys
+//
+//	Retrieve the data keys for different type data
+//
 TArray<CString> CDesignType::GetDataKeys (const EDesignDataTypes iDataType)
 	{
 	TArray<CString> retA;
+
+	if (iDataType == EDesignDataTypes::eNone)
+		return retA;
+
+	//	Get keys from parent types
+
 	if (m_pInheritFrom)
 		retA = m_pInheritFrom->GetDataKeys(iDataType);
+
 	TMap<CString, int> mapSeen;
 	for (int i = 0; i < retA.GetCount(); i++)
 		mapSeen.Insert(retA[i]);
+
+	//	If we have data, attempt to get keys from it
+
 	if (m_pExtra)
 		{
 		switch (iDataType)
@@ -1909,6 +1943,7 @@ TArray<CString> CDesignType::GetDataKeys (const EDesignDataTypes iDataType)
 			//	TODO: figure out a dynamic way to support ePropertyEngineData
 			case EDesignDataTypes::ePropertyEngineData:
 				return retA;
+
 			//	TODO: implement getting engine data for ePropertyData
 			case EDesignDataTypes::ePropertyCustomData:
 			case EDesignDataTypes::ePropertyData:
@@ -1916,39 +1951,65 @@ TArray<CString> CDesignType::GetDataKeys (const EDesignDataTypes iDataType)
 				for (int i = 0; i < m_pExtra->PropertyDefs.GetCount(); i++)
 					{
 					CString sKey = m_pExtra->PropertyDefs.GetName(i);
+
 					if (mapSeen.Find(sKey))
 						continue;
+
 					retA.Insert(sKey);
 					}
 				return retA;
 				}
+
 			case EDesignDataTypes::eStaticData:
 				{
 				for (int i = 0; i < m_pExtra->StaticData.GetDataCount(); i++)
 					{
 					CString sKey = m_pExtra->StaticData.GetDataAttrib(i);
+
 					if (mapSeen.Find(sKey))
 						continue;
+
 					retA.Insert(sKey);
 					}
 				return retA;
 				}
+
+			case EDesignDataTypes::ePropertyOverrideData:
 			case EDesignDataTypes::eGlobalData:
 				{
 				for (int i = 0; i < m_pExtra->GlobalData.GetDataCount(); i++)
 					{
 					CString sKey = m_pExtra->GlobalData.GetDataAttrib(i);
+
 					if (mapSeen.Find(sKey))
 						continue;
-					retA.Insert(sKey);
+
+					if (strStartsWith(sKey, PFX_PROPERTY_OVERRIDE))
+						{
+						if (iDataType == EDesignDataTypes::ePropertyOverrideData)
+							retA.Insert(sKey);
+						else
+							continue;
+						}
+					else
+						{
+						if (iDataType == EDesignDataTypes::eGlobalData)
+							retA.Insert(sKey);
+						else
+							continue;
+						}
 					}
 				return retA;
 				}
+
+			//	We are a type and cannot have our own instance data
+
 			case EDesignDataTypes::eInstanceData:
 			default:
 				return retA;
 			}
 		}
+
 	return retA;
 	}
 
@@ -2172,9 +2233,14 @@ ICCItemPtr CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sPropert
 	{
 	ICCItemPtr pResultPtr;
 
+	//	Check to see if we have a property override
+
+	if (FindPropertyOverride(sProperty, pResultPtr, retiType))
+		return pResultPtr;
+
 	//	Check to see if this is a custom property.
 
-	if (FindCustomProperty(sProperty, pResultPtr, retiType))
+	else if (FindCustomProperty(sProperty, pResultPtr, retiType))
 		return pResultPtr;
 
 	//	Else, engine property
@@ -3274,6 +3340,89 @@ bool CDesignType::SetTypeProperty (const CString &sProperty, const ICCItem &Valu
 		}
 	else
 		return false;
+	}
+
+//	ClearTypePropertyOverride
+//
+//	Clears a property override.
+//
+bool CDesignType::ClearTypePropertyOverride (const CString &sProperty)
+
+	{
+	//	We cannot override global data
+
+	if (strEquals(sProperty, PROPERTY_GLOBAL_DATA))
+		return false;
+
+	//	staticData must be overridden one at a time
+
+	else if (strEquals(sProperty, PROPERTY_STATIC_DATA))
+		return false;
+
+	//	(Object) data cannot be overridden from a type
+
+	else if (strEquals(sProperty, PROPERTY_OBJECT_DATA))
+		return false;
+
+	//	We check if any type has a specific handling for this override
+
+	else if (OnClearTypePropertyOverride(sProperty))
+		return true;
+
+	//	Otherwise we do it ourself
+
+	else
+		{
+		CString sOverrideKey = strCat(PFX_PROPERTY_OVERRIDE, sProperty);
+
+		ClearGlobalDataOverride(sOverrideKey);
+
+		return true;
+		}
+	}
+
+//	SetTypePropertyOverride
+//
+//	Sets a property override. Allows setting a Nil value to override
+//  a non-Nil property.
+//
+bool CDesignType::SetTypePropertyOverride (const CString &sProperty, const ICCItem &Value)
+
+	{
+	//	Certain keys for data cant be overridden normally
+	//	We just write globalData normally
+
+	if (strEquals(sProperty, PROPERTY_GLOBAL_DATA))
+		{
+		SetGlobalData(CONSTLIT("*"), &Value);
+		return true;
+		}
+
+	//	staticData must be overridden one at a time
+
+	else if (strEquals(sProperty, PROPERTY_STATIC_DATA))
+		return false;
+
+	//	(Object) data cannot be overridden from a type
+
+	else if (strEquals(sProperty, PROPERTY_OBJECT_DATA))
+		return false;
+
+	//	We check if any type has a specific handling for this override
+
+	else if (OnSetTypePropertyOverride(sProperty, Value))
+		return true;
+
+	//	Otherwise we do it ourself
+
+	else
+		{
+		CString sOverrideKey = strCat(PFX_PROPERTY_OVERRIDE, sProperty);
+
+		SetGlobalDataOverride(sOverrideKey, &Value);
+
+		return true;
+		}
 	}
 
 bool CDesignType::Translate (const CDesignType &Type, const CString &sID, const CLanguageDataBlock::SParams &Params, ICCItemPtr &retResult) const

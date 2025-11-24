@@ -574,6 +574,9 @@ ICCItem *fnTopologyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_DESIGN_GET_GLOBAL_DATA_KEYS	26
 #define FN_DESIGN_GET_STATIC_DATA_KEYS	27
 #define FN_DESIGN_GET_PROPERTY_KEYS		28
+#define FN_DESIGN_SET_PROPERTY_OVERRIDE	29
+#define FN_DESIGN_GET_PROPERTY_OVERRIDE_KEYS	30
+#define FN_DESIGN_CLEAR_PROPERTY_OVERRIDE	31
 
 ICCItem *fnDesignCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -3703,6 +3706,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(typCancelTimerEvent unid event) -> True/Nil",
 			"is",	0,	},
 
+		{	"typClearOverride@",					fnDesignGet,		FN_DESIGN_CLEAR_PROPERTY_OVERRIDE,
+			"(typClearOverride@ unid property) -> True/Nil\n\n",
+			"is",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"typCreate",					fnDesignCreate,		FN_DESIGN_CREATE,
 			"(typCreate unid XML) -> True/Nil",
 			"iv",	PPFLAG_SIDEEFFECTS,	},
@@ -3770,6 +3777,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"typ@Keys",					fnDesignGet,		FN_DESIGN_GET_PROPERTY_KEYS,
 			"(typ@Keys unid) -> list of property keys",
+			"i",	0,	},
+
+		{	"typOverride@Keys",					fnDesignGet,		FN_DESIGN_GET_PROPERTY_OVERRIDE_KEYS,
+			"(typOverride@Keys unid) -> list of property override keys",
 			"i",	0,	},
 
 		{	"typGetStaticDataKeys",			fnDesignGet,		FN_DESIGN_GET_STATIC_DATA_KEYS,
@@ -4054,6 +4065,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"typSet@",					fnDesignGet,		FN_DESIGN_SET_PROPERTY,
 			"(typSet@ unid property data) -> True/Nil",
+			"isv",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"typSetOverride@",					fnDesignGet,		FN_DESIGN_SET_PROPERTY_OVERRIDE,
+			"(typSetOverride@ unid property data) -> True/Nil\n\n"
+
+			"Caution: This function allows for a hard override of any property (even if undefined) without safeties.\n"
+			"Use typClearOverride@ to remove an override and restore the original property.",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"typSetProperty",			fnDesignGet,		FN_DESIGN_SET_PROPERTY,
@@ -5138,9 +5156,35 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_DESIGN_GET_PROPERTY_KEYS:
 		case FN_DESIGN_GET_STATIC_DATA_KEYS:
 		case FN_DESIGN_GET_GLOBAL_DATA_KEYS:
+		case FN_DESIGN_GET_PROPERTY_OVERRIDE_KEYS:
 			{
 			ICCItem *pRet = pCC->CreateLinkedList();
-			EDesignDataTypes iDataType = dwData == FN_DESIGN_GET_PROPERTY_KEYS ? EDesignDataTypes::ePropertyData : (dwData == FN_DESIGN_GET_GLOBAL_DATA_KEYS ? EDesignDataTypes::eGlobalData : EDesignDataTypes::eStaticData);
+			EDesignDataTypes iDataType;
+			switch (dwData)
+				{
+				case FN_DESIGN_GET_PROPERTY_KEYS:
+					{
+					iDataType = EDesignDataTypes::ePropertyData;
+					break;
+					}
+				case FN_DESIGN_GET_GLOBAL_DATA_KEYS:
+					{
+					iDataType = EDesignDataTypes::eGlobalData;
+					break;
+					}
+				case FN_DESIGN_GET_STATIC_DATA_KEYS:
+					{
+					iDataType = EDesignDataTypes::eStaticData;
+					break;
+					}
+				case FN_DESIGN_GET_PROPERTY_OVERRIDE_KEYS:
+					{
+					iDataType = EDesignDataTypes::ePropertyOverrideData;
+					break;
+					}
+				default:
+					iDataType = EDesignDataTypes::eNone;
+				}
 			TArray<CString> aKeys = pType->GetDataKeys(iDataType);
 			for (int i = 0; i < aKeys.GetCount(); i++)
 				pRet->AppendString(aKeys[i]);
@@ -5251,6 +5295,24 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 
 			return pCC->CreateBool(pType->SetTypeProperty(sProperty, *pArgs->GetElement(2)));
+			}
+
+		case FN_DESIGN_SET_PROPERTY_OVERRIDE:
+			{
+			CString sProperty = pArgs->GetElement(1)->GetStringValue();
+			if (sProperty.IsBlank())
+				return pCC->CreateNil();
+
+			return pCC->CreateBool(pType->SetTypePropertyOverride(sProperty, *pArgs->GetElement(2)));
+			}
+
+		case FN_DESIGN_CLEAR_PROPERTY_OVERRIDE:
+			{
+			CString sProperty = pArgs->GetElement(1)->GetStringValue();
+			if (sProperty.IsBlank())
+				return pCC->CreateNil();
+
+			return pCC->CreateBool(pType->ClearTypePropertyOverride(sProperty));
 			}
 
 		case FN_DESIGN_TRANSLATE:

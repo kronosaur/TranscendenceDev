@@ -660,11 +660,12 @@ void CAttributeDataBlock::ReadFromStream (IReadStream *pStream)
 		}
 	}
 
-void CAttributeDataBlock::SetData (const CString &sAttrib, const ICCItem *pItem)
-
 //	SetData
 //
 //	Sets string data associated with attribute
+//	Deletes data if value is Nil
+//
+void CAttributeDataBlock::SetData (const CString &sAttrib, const ICCItem *pItem)
 
 	{
 	if (strEquals(sAttrib, CONSTLIT("*")))
@@ -697,6 +698,34 @@ void CAttributeDataBlock::SetData (const CString &sAttrib, const ICCItem *pItem)
 		SDataEntry *pEntry = m_Data.SetAt(sAttrib);
 		pEntry->pData = ICCItemPtr(pItem->CloneContainer());
 		}
+	}
+
+//	ClearDataOverride
+//
+//	Deletes the entry at sAttrib. Normally this
+//	is done by setting Nil, but an override may
+//	need to explicitly be Nil, thus an explicit
+//	clear is needed.
+//
+void CAttributeDataBlock::ClearDataOverride (const CString &sAttrib)
+
+	{
+	m_Data.DeleteAt(sAttrib);
+	}
+
+//	SetDataOverride
+//
+//	Sets string data associated with attribute
+//	Sets data even if it is Nil
+//
+void CAttributeDataBlock::SetDataOverride (const CString &sAttrib, const ICCItem *pItem)
+
+	{
+	if (strEquals(sAttrib, CONSTLIT("*")))
+		return SetData(sAttrib, pItem);
+
+	SDataEntry *pEntry = m_Data.SetAt(sAttrib);
+	pEntry->pData = ICCItemPtr(pItem->CloneContainer());
 	}
 
 void CAttributeDataBlock::SetFromXML (CXMLElement *pData)
