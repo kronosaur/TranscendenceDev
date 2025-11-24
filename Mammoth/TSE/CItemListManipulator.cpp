@@ -882,11 +882,11 @@ void CItemListManipulator::SetPrepareUninstalledAtCursor (void)
 	MoveItemTo(NewItem, OldItem);
 	}
 
-bool CItemListManipulator::SetPropertyAtCursor (CSpaceObject *pSource, const CString &sName, ICCItem *pValue, int iCount, CString *retsError)
-
 //	SetPropertyAtCursor
 //
 //	Sets the property
+//
+bool CItemListManipulator::SetPropertyAtCursor (CSpaceObject *pSource, const CString &sName, ICCItem *pValue, int iCount, CString *retsError)
 
 	{
 	ASSERT(m_iCursor != -1);
@@ -897,6 +897,28 @@ bool CItemListManipulator::SetPropertyAtCursor (CSpaceObject *pSource, const CSt
 
 	CItemCtx ItemCtx(&NewItem, pSource);
 	if (NewItem.SetProperty(ItemCtx, sName, pValue, false, retsError) != ESetPropertyResult::set)
+		return false;
+
+	MoveItemTo(NewItem, OldItem);
+
+	return true;
+	}
+
+//	SetPropertyOverrideAtCursor
+//
+//	Sets the property override
+//
+bool CItemListManipulator::SetPropertyOverrideAtCursor (CSpaceObject *pSource, const CString &sName, ICCItem *pValue, int iCount, CString *retsError)
+
+	{
+	ASSERT(m_iCursor != -1);
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	if (iCount != -1)
+		NewItem.SetCount(Max(0, Min(iCount, OldItem.GetCount())));
+
+	CItemCtx ItemCtx(&NewItem, pSource);
+	if (NewItem.SetPropertyOverride(ItemCtx, sName, pValue, false, retsError) != ESetPropertyResult::set)
 		return false;
 
 	MoveItemTo(NewItem, OldItem);

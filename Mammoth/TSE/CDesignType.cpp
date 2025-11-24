@@ -1986,8 +1986,10 @@ TArray<CString> CDesignType::GetDataKeys (const EDesignDataTypes iDataType)
 
 					if (strStartsWith(sKey, PFX_PROPERTY_OVERRIDE))
 						{
+						//	If we are looking for property overrides, we need to convert the key back
+
 						if (iDataType == EDesignDataTypes::ePropertyOverrideData)
-							retA.Insert(sKey);
+							retA.Insert(strSlice(sKey, PFX_PROPERTY_OVERRIDE_LENGTH));
 						else
 							continue;
 						}

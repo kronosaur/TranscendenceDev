@@ -211,13 +211,13 @@ bool CSpaceObject::IncItemProperty (const CItem &Item, const CString &sProperty,
 	return true;
 	}
 
-bool CSpaceObject::SetItemProperty (const CItem &Item, const CString &sName, ICCItem *pValue, int iCount, CItem *retItem, CString *retsError)
-
 //	SetItemProperty
 //
 //	Sets the item property.
 //
 //	NOTE: pValue may be NULL.
+//
+bool CSpaceObject::SetItemProperty (const CItem &Item, const CString &sName, ICCItem *pValue, int iCount, CItem *retItem, CString *retsError)
 
 	{
 	//	Select the item to make sure it exists on this object.
@@ -313,6 +313,67 @@ bool CSpaceObject::SetItemProperty (const CItem &Item, const CString &sName, ICC
 		//	Set the data
 
 		if (!ItemList.SetPropertyAtCursor(this, sName, pValue, iCount, retsError))
+			return false;
+
+		//	Update the object
+
+		ItemEnhancementModified(ItemList);
+		}
+
+	//	Return the newly changed item. We do this before the notification 
+	//	because the notification might change the underlying item list (because
+	//	it sorts).
+
+	if (retItem)
+		*retItem = ItemList.GetItemAtCursor();
+
+	//	Update the object
+
+	OnModifyItemComplete(ModifyCtx, ItemList.GetItemAtCursor());
+
+	return true;
+	}
+	
+
+//	SetItemPropertyOverride
+//
+//	Sets the item property override
+//
+//	NOTE: pValue may be NULL.
+//
+bool CSpaceObject::SetItemPropertyOverride (const CItem &Item, const CString &sName, ICCItem *pValue, int iCount, CItem *retItem, CString *retsError)
+
+	{
+	//	Select the item to make sure it exists on this object.
+
+	CItemListManipulator ItemList(GetItemList());
+	if (!ItemList.SetCursorAtItem(Item))
+		{
+		if (retsError) *retsError = CONSTLIT("Item not found on object.");
+		return false;
+		}
+
+	//	Notify any dock screens that we might modify an item
+
+	IDockScreenUI::SModifyItemCtx ModifyCtx;
+	OnModifyItemBegin(ModifyCtx, Item);
+
+	//	We handle some engine properties differently because they
+	//	do not need override logic to operate
+
+	if (strEquals(sName, PROPERTY_DAMAGED) || strEquals(sName, PROPERTY_ENABLED))
+		{
+		return SetItemProperty(Item, sName, pValue, iCount, retItem, retsError);
+		}
+
+	//	Otherwise, just set the property, but pass enough context (this object)
+	//	so that it can find the appropriate device.
+
+	else
+		{
+		//	Set the data
+
+		if (!ItemList.SetPropertyOverrideAtCursor(this, sName, pValue, iCount, retsError))
 			return false;
 
 		//	Update the object

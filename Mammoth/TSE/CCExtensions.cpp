@@ -267,6 +267,9 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_REMOVE				151
 #define FN_OBJ_GET_OVERLAY_DATA_KEYS	152
 #define FN_OBJ_GET_ITEM_PROPERTY_KEYS	153
+#define FN_OBJ_GET_ITEM_PROPERTY_OVERRIDE_KEYS	154
+#define FN_OBJ_SET_ITEM_PROPERTY_OVERRIDE	155
+#define FN_OBJ_CLEAR_ITEM_PROPERTY_OVERRIDE	156
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -2312,6 +2315,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"obj@Keys",						fnObjGet,		FN_OBJ_GET_ITEM_PROPERTY_KEYS,
 			"(obj@Keys obj) -> list of custom property keys",
+			"i",	0,	},
+
+		{	"objOverride@Keys",						fnObjGet,		FN_OBJ_GET_ITEM_PROPERTY_OVERRIDE_KEYS,
+			"(objOverride@Keys obj) -> list of property override keys",
 			"i",	0,	},
 
 		{	"objGetRefuelItemAndPrice",		fnObjGet,		FN_OBJ_GET_REFUEL_ITEM,	
@@ -7580,6 +7587,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 			}
 
+		case FN_OBJ_GET_ITEM_PROPERTY_OVERRIDE_KEYS:
 		case FN_OBJ_GET_ITEM_PROPERTY_KEYS:
 			{
 			if (pArgs->GetCount() == 2)
@@ -7588,6 +7596,8 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				return pCC->CreateNil();
 				}
+			else if (dwData == FN_OBJ_GET_ITEM_PROPERTY_OVERRIDE_KEYS)
+				return pObj->GetPropertyKeys(*pCtx, EDesignDataTypes::ePropertyOverrideData)->Reference();
 			else
 				{
 				return pObj->GetPropertyKeys(*pCtx)->Reference();
@@ -9903,6 +9913,65 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					}
 
 				return pCC->CreateTrue();
+				}
+			else
+				{
+				return pCC->CreateError(CONSTLIT("Insufficient arguments."));
+				}
+			}
+
+		case FN_OBJ_CLEAR_ITEM_PROPERTY_OVERRIDE:
+			{
+			if (pArgs->GetCount() == 2)
+				{
+				if (pObj->ClearPropertyOverride(pArgs->GetElement(1)->GetStringValue()))
+					return pCC->CreateTrue();
+
+				return pCC->CreateError(CONSTLIT("Unable to clear property override"), pArgs->GetElement(1));
+				}
+			else
+				{
+				return pCC->CreateError(CONSTLIT("Invalid number of arguments."));
+				}
+			}
+
+		case FN_OBJ_SET_ITEM_PROPERTY_OVERRIDE:
+			{
+			if (pArgs->GetCount() > 3)
+				{
+				//	Get the item
+
+				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
+				if (Item.GetType() == NULL)
+					return pCC->CreateNil();
+
+				//	Get the property
+
+				CString sProperty = pArgs->GetElement(2)->GetStringValue();
+				ICCItem *pValue = (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL);
+				int iCount = (pArgs->GetCount() > 4 ? Max(0, pArgs->GetElement(4)->GetIntegerValue()) : 1);
+
+				//	Set it
+
+				CString sError;
+				if (!pObj->SetItemPropertyOverride(Item, sProperty, pValue, iCount, &Item, &sError))
+					{
+					if (sError.IsBlank())
+						return pCC->CreateNil();
+					else
+						return pCC->CreateError(sError);
+					}
+
+				//	Return the newly changed item
+
+				return CreateListFromItem(Item);
+				}
+			else if (pArgs->GetCount() == 3)
+				{
+				if (pObj->SetPropertyOverride(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2)))
+					return pCC->CreateTrue();
+
+				return pCC->CreateError(CONSTLIT("Unable to set property override"), pArgs->GetElement(1));
 				}
 			else
 				{

@@ -636,6 +636,7 @@ class CSpaceObject
 
 		//	Data
 
+		void ClearDataOverride (const CString &sAttrib) { m_Data.ClearDataOverride(sAttrib); }
 		void ClearObjReferences (void) { m_Data.OnSystemChanged(NULL); }
 		CAttributeDataBlock &GetData (void) { return m_Data; }
 		const CAttributeDataBlock &GetData (void) const { return m_Data; }
@@ -647,6 +648,7 @@ class CSpaceObject
 		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
 		void LoadObjReferences (CSystem *pSystem) { m_Data.LoadObjReferences(pSystem); }
 		void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
+		void SetDataOverride (const CString &sAttrib, ICCItem *pData) { m_Data.SetDataOverride(sAttrib, pData); }
 		void SetDataFromDataBlock (const CAttributeDataBlock &Block) { m_Data.MergeFrom(Block); }
 		void SetDataFromXML (CXMLElement *pData) { m_Data.SetFromXML(pData); }
 		void SetGlobalData (const CString &sAttribute, ICCItem *pData);
@@ -780,6 +782,7 @@ class CSpaceObject
 		void SetCursorAtRandomItem (CItemListManipulator &ItemList, const CItemCriteria &Crit);
 		bool SetItemData (const CItem &Item, const CString &sField, ICCItem *pValue, int iCount, CItem *retItem = NULL, CString *retsError = NULL);
 		bool SetItemProperty (const CItem &Item, const CString &sName, ICCItem *pValue, int iCount, CItem *retItem, CString *retsError);
+		bool SetItemPropertyOverride (const CItem &Item, const CString &sName, ICCItem *pValue, int iCount, CItem *retItem, CString *retsError);
 		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
 		bool TranslateText (const CString &sID, ICCItem *pData, CString *retsText) const;
 		bool UseItem (const CItem &Item, CString *retsError = NULL);
@@ -1139,12 +1142,14 @@ class CSpaceObject
 
 		//	Properties
 
+		virtual bool ClearPropertyOverride (const CString& sName);
 		ICCItemPtr GetProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
 		ICCItemPtr GetProperty (const CString &sProperty) const { CCodeChainCtx CCX(GetUniverse()); return GetProperty(CCX, sProperty); }
 		ICCItemPtr GetPropertyKeys (CCodeChainCtx& CCX, EDesignDataTypes iDataType = EDesignDataTypes::ePropertyData) const;
 		ICCItemPtr GetPropertyKeys (EDesignDataTypes iDataType = EDesignDataTypes::ePropertyData) const { CCodeChainCtx CCX(GetUniverse()); return GetPropertyKeys(CCX, iDataType); }
 		bool IncProperty (const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
+		virtual bool SetPropertyOverride (const CString &sName, ICCItem *pValue);
 
 		//	Ships
 
@@ -1518,6 +1523,7 @@ class CSpaceObject
 			};
 
 		bool FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult) const;
+		bool FindPropertyOverride (const CString &sProperty, ICCItemPtr &pResult) const;
 		void InitItemEvents (void) { m_ItemEvents.Init(this); m_fItemEventsValid = true; }
 		void UpdateEffects (void);
 

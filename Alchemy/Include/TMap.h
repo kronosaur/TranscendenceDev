@@ -66,6 +66,11 @@ template <class KEY, class VALUE> class TMap : public CMapBase
 			{
 			Copy(Src);
 			}
+		TMap (const TArray<KEY> &Src) : CMapBase(Src.GetCount())
+			{
+			for (int i = 0; i < Src.GetCount(); i++)
+				Insert(Src[i]);
+			}
 
 		~TMap (void)
 			{

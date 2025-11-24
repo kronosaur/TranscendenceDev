@@ -269,11 +269,42 @@ TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TP
 		
 		}};
 
-bool CSpaceObject::FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult) const
+//	FindCustomProperty
+//
+//	Finds and evaluates a custom property.
+//
+bool CSpaceObject::FindPropertyOverride (const CString &sProperty, ICCItemPtr &pResult) const
+	{
+
+	CDesignType *pType;
+
+	CString sOverrideKey = strCat(PFX_PROPERTY_OVERRIDE, sProperty);
+
+	//	First check our object data for a local override
+
+	if (m_Data.FindDataAsItem(sOverrideKey, pResult))
+		return true;
+
+	//	Next look for property override in override type
+
+	else if (m_pOverride
+			&& m_pOverride->FindPropertyOverride(sProperty, pResult))
+		return true;
+
+	//	Finally, check object type
+
+	else if ((pType = GetType())
+		&& pType->FindPropertyOverride(sProperty, pResult))
+		return true;
+
+	return false;
+	}
 
 //	FindCustomProperty
 //
 //	Finds and evaluates a custom property.
+//
+bool CSpaceObject::FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult) const
 
 	{
 	CDesignType *pType;
@@ -332,6 +363,7 @@ ICCItemPtr CSpaceObject::GetPropertyKeys (CCodeChainCtx& CCX, EDesignDataTypes i
 	{
 	switch (iDataType)
 		{
+		case EDesignDataTypes::ePropertyOverrideData:
 		case EDesignDataTypes::ePropertyData:
 		case EDesignDataTypes::ePropertyCustomData:
 		case EDesignDataTypes::ePropertyEngineData:
@@ -378,23 +410,46 @@ ICCItemPtr CSpaceObject::GetPropertyKeys (CCodeChainCtx& CCX, EDesignDataTypes i
 				}
 			
 			//	Next, we check our own keys
+			//	If we are looking for property overrides, we use special logic
 
-			//	If we dont exclude engine keys...
-			if (!(iDataType == EDesignDataTypes::ePropertyCustomData))
+			if (iDataType == EDesignDataTypes::ePropertyOverrideData)
 				{
-				for (int i = 0; i < m_BasePropertyTable.GetPropertyCount(); i++)
+				for (int i = 0; i < m_Data.GetDataCount(); i++)
 					{
-					CString sKey = m_BasePropertyTable.GetPropertyName(i);
-					if (sKey.IsBlank())
-						{
-						int a = 0;
-						}
-
-					if (mapSeen.Find(sKey))
+					CString sKey = m_Data.GetDataAttrib(i);
+					if (!strStartsWith(sKey, PFX_PROPERTY_OVERRIDE) || mapSeen.Find(sKey))
 						continue;
-					mapSeen.Insert(sKey);
-					aKeys.Insert(sKey);
+					
+					//	We need to remove the prefix from our key
+
+					aKeys.Insert(strSlice(sKey, PFX_PROPERTY_OVERRIDE_LENGTH));
 					}
+				}
+
+			//	otherwise we look for keys through the relevant data types
+
+			else
+				{
+				//	If we dont exclude engine keys...
+
+				if (!(iDataType == EDesignDataTypes::ePropertyCustomData))
+					{
+					for (int i = 0; i < m_BasePropertyTable.GetPropertyCount(); i++)
+						{
+						CString sKey = m_BasePropertyTable.GetPropertyName(i);
+						if (sKey.IsBlank())
+							{
+							int a = 0;
+							}
+
+						if (mapSeen.Find(sKey))
+							continue;
+						mapSeen.Insert(sKey);
+						aKeys.Insert(sKey);
+						}
+					}
+
+				//	engine keys are not supported on objects yet
 				}
 
 			ICCItemPtr pList(CCX.GetCC().CreateLinkedList());
@@ -419,11 +474,17 @@ ICCItemPtr CSpaceObject::GetProperty (CCodeChainCtx &CCX, const CString &sProper
 	{
 	ICCItemPtr pValue;
 
-	//	Always start with custom properties because they override built-in 
-	//	properties. [We need this in case we add a new engine property that
-	//	conflicts with a custom propertie. We don't want old code to break.]
+	//	Always start with property overrides because they override all
+	//	XML-defined properties.
 
-	if (FindCustomProperty(sProperty, pValue))
+	if (FindPropertyOverride(sProperty, pValue))
+		return pValue;
+
+	//	Always search custom properties next because they override built-in 
+	//	properties. [We need this in case we add a new engine property that
+	//	conflicts with a custom property. We don't want old code to break.]
+
+	else if (FindCustomProperty(sProperty, pValue))
 		return pValue;
 
 	else if (pValue = OnFindProperty(CCX, sProperty))
@@ -835,11 +896,37 @@ ICCItemPtr CSpaceObject::GetTypeProperty (CCodeChainCtx &CCX, const CString &sPr
 		return ICCItemPtr::Nil();
 	}
 
-bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *retsError)
+//	ClearPropertyOverride
+// 
+//	Sets an object property override
+//
+bool CSpaceObject::ClearPropertyOverride (const CString& sName)
+	{
+	CString sOverrideKey = strCat(PFX_PROPERTY_OVERRIDE, sName);
+
+	ClearDataOverride(sOverrideKey);
+
+	return true;
+	}
+
+//	SetPropertyOverride
+// 
+//	Sets an object property override
+//
+bool CSpaceObject::SetPropertyOverride (const CString& sName, ICCItem* pValue)
+	{
+	CString sOverrideKey = strCat(PFX_PROPERTY_OVERRIDE, sName);
+
+	SetDataOverride(sOverrideKey, pValue);
+
+	return true;
+	}
 
 //	SetProperty
 //
 //	Sets an object property
+//
+bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *retsError)
 
 	{
 	CString sError;
