@@ -370,19 +370,21 @@ bool DamageDesc::IsHostile () const
 	return m_iType != damageNull
 		//	otherwise if we can potentially do any amount of damage
 		//	then we are considered hostile
-		&& (m_Damage.GetMaxValue()
-		//	similarly any hostile status/special effects also count
-		//	however, movement alone does not count as hostile
-		|| m_sExtra.EMPDamage
-		|| m_sExtra.RadiationDamage
-		|| m_sExtra.DeviceDamage
-		|| m_sExtra.DeviceDisruptDamage
-		|| m_sExtra.BlindingDamage
-		|| m_sExtra.SensorDamage
-		|| m_sExtra.FuelDamage
-		|| m_sExtra.DisintegrationDamage
-		|| m_sExtra.ShatterDamage
-		|| m_sExtra.TimeStopDamage);
+		&& (
+			m_Damage.GetMaxValue()
+			//	similarly any hostile status/special effects also count
+			//	however, movement alone does not count as hostile
+			|| m_sExtra.EMPDamage
+			|| m_sExtra.RadiationDamage
+			|| m_sExtra.DeviceDamage
+			|| m_sExtra.DeviceDisruptDamage
+			|| m_sExtra.BlindingDamage
+			|| m_sExtra.SensorDamage
+			|| m_sExtra.FuelDamage
+			|| m_sExtra.DisintegrationDamage
+			|| m_sExtra.ShatterDamage
+			|| m_sExtra.TimeStopDamage
+			);
 	}
 
 int DamageDesc::GetDamageLevel (DamageTypes iType)
