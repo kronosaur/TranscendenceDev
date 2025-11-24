@@ -4333,12 +4333,29 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	GetUniverse().AdjustDamage(Ctx);
 
-	//	Short-circuit
+	//	If this is a momentum attack then we are pushed
+	//	Damage sources always get a chance to deal momentum, since it
+	//	is not considered a hostile effect
 
-	if (Ctx.iDamage == 0 || GetSystem() == NULL)
-		return damageNoDamage;
+	Metric rImpulse;
+	if (Ctx.Damage.HasImpulseDamage(&rImpulse) 
+		&& !IsAnchored())
+		{
+		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
+		AddForce(vAccel);
+		}
+
+	//	Short-circuit, only if there is absolutely nothing our
+	//	damage desc lets us do
+	// 
+	//	Null damage always is allowed through specifically for scripts
+	//	to fire
 
 	bool bIsHostile = Ctx.Damage.IsHostile();
+
+	if ((Ctx.iDamage == 0 && !bIsHostile && Ctx.Damage.GetDamageType() != damageNull) || GetSystem() == NULL)
+		return damageNoDamage;
+
 	bool bIsPlayer = IsPlayer();
 
 	//	We're hit
@@ -4358,34 +4375,36 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	Handle consequences of attack.
 
-	if (CSpaceObject *pAttacker = Ctx.Attacker.GetObj())
-		{
-		m_pController->OnAttacked(*pAttacker, Ctx);
-
-		//	Figure out whether to call <OnAttackedByPlayer>, etc.
-
-		switch (CalcAttackResponse(Ctx))
-			{
-			case EAttackResponse::WarnAttacker:
-				Communicate(pAttacker, msgWatchTargets);
-				break;
-
-			case EAttackResponse::OnAttacked:
-				FireOnAttacked(Ctx);
-				if (IsDestroyed())
-					return damageDestroyed;
-				break;
-
-			case EAttackResponse::OnAttackedByPlayer:
-				FireOnAttackedByPlayer();
-				if (IsDestroyed())
-					return damageDestroyed;
-				break;
-			}
-		}
-
 	if (bIsHostile)
+		{
+		if (CSpaceObject* pAttacker = Ctx.Attacker.GetObj())
+			{
+			m_pController->OnAttacked(*pAttacker, Ctx);
+
+			//	Figure out whether to call <OnAttackedByPlayer>, etc.
+
+			switch (CalcAttackResponse(Ctx))
+				{
+				case EAttackResponse::WarnAttacker:
+					Communicate(pAttacker, msgWatchTargets);
+					break;
+
+				case EAttackResponse::OnAttacked:
+					FireOnAttacked(Ctx);
+					if (IsDestroyed())
+						return damageDestroyed;
+					break;
+
+				case EAttackResponse::OnAttackedByPlayer:
+					FireOnAttackedByPlayer();
+					if (IsDestroyed())
+						return damageDestroyed;
+					break;
+				}
+			}
+
 		GetSystem()->FireOnSystemObjAttacked(Ctx);
+		}
 
 	//	See if the damage is blocked by some external defense
 
@@ -4398,16 +4417,6 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			return damageDestroyed;
 		else if (Ctx.iDamage == 0)
 			return damageNoDamage;
-		}
-
-	//	If this is a momentum attack then we are pushed
-
-	Metric rImpulse;
-	if (Ctx.Damage.HasImpulseDamage(&rImpulse) 
-			&& !IsAnchored())
-		{
-		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
-		AddForce(vAccel);
 		}
 
 	//	Let our shield generators take a crack at it
@@ -4610,10 +4619,17 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		return damageArmorHit;
 		}
 
-	//	Otherwise, if we have interior compartments (like a capital ship) then
-	//	we do damage as long as this is not null damage.
+	//	If this was only null damage we're ok
 
-	else if (!m_Interior.IsEmpty() && Ctx.Damage.GetDamageType() != damageNull)
+	else if (Ctx.Damage.GetDamageType() == damageNull)
+		return damageNoDamage;
+
+	//	Otherwise, if we have interior compartments (like a capital ship) then
+	//	we do damage
+	//
+	//	Null damage is already short-circuited at this point
+
+	else if (!m_Interior.IsEmpty())
 		{
 		EDamageResults iResult = m_Interior.Damage(this, m_pClass->GetInteriorDesc(), Ctx);
 
@@ -4636,12 +4652,9 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		return iResult;
 		}
 
-	//	If this was only null damage we're ok
-
-	else if (Ctx.Damage.GetDamageType() == damageNull)
-		return damageNoDamage;
-
 	//	Otherwise we're in big trouble
+	//
+	//	Null damage is already short-circuited at this point
 
 	else
 		{

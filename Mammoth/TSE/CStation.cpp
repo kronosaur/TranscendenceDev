@@ -2564,9 +2564,25 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	Ctx.iSectHit = -1;
 
-	//	Short-circuit
+	//	If this is a momentum attack then we are pushed
+	//	We run this first because momentum is not hostile
 
-	if (Ctx.iDamage == 0)
+	Metric rImpulse;
+	if (!IsAnchored() && Ctx.Damage.HasImpulseDamage(&rImpulse))
+		{
+		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
+		AddForce(vAccel);
+		}
+
+	//	Short-circuit, only if there is absolutely nothing our
+	//	damage desc lets us do
+	// 
+	//	Null damage always is allowed through specifically for scripts
+	//	to fire
+
+	bool bIsHostile = Ctx.Damage.IsHostile();
+
+	if (Ctx.iDamage == 0 && !bIsHostile && Ctx.Damage.GetDamageType() != damageNull)
 		{
 		if (IsImmutable())
 			return damageNoDamageNoPassthrough;
@@ -2574,13 +2590,12 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 			return damageNoDamage;
 		}
 
-	bool bIsHostile = Ctx.Damage.IsHostile();
-	m_dwLastHitTime = GetUniverse().GetTicks();
-
 	//	OnAttacked event
 
 	if (bIsHostile)
 		{
+		m_dwLastHitTime = GetUniverse().GetTicks();
+
 		if (HasOnAttackedEvent())
 			FireOnAttacked(Ctx);
 
@@ -2603,15 +2618,6 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 			else
 				return damageNoDamage;
 			}
-		}
-
-	//	If this is a momentum attack then we are pushed
-
-	Metric rImpulse;
-	if (!IsAnchored() && Ctx.Damage.HasImpulseDamage(&rImpulse))
-		{
-		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
-		AddForce(vAccel);
 		}
 
 	//	Let our shield generators take a crack at it

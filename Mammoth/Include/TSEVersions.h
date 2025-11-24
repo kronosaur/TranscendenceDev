@@ -679,11 +679,17 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //		<ItemType>
 //			<Weapon>
 //				damage: (str: damage desc)
+//					damage changes:
+//						0-damage is treated as non-hostile as long as no damaging
+//							effects are in the damage descriptor
+//						0-damage shots trigger hostile onAttached events if they
+//							are marked as hostile
+//						0-damage shots trigger onHit events if they are marked as
+//							hostile
 //					null: New special damage type
+//						Null damage is treated as non-hostile
 //						Null damage does not trigger hostile onAttacked events
 //						Null damage does trigger onHit type events
-//						Null damage is treated as non-hostile as long as no hostile
-//							status effects are applied
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
