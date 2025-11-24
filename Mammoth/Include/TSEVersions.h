@@ -676,6 +676,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //				Returns a list of static datakeys for the given obj type
 //			(scr@Keys type)
 //				Returns a list of all instance property and custom global property keys for the given obj
+//			(typClearOverride@ type property)
+//				Clears an override property on a type (explicit clear is required because an override may be set to Nil)
+//			(typOverride@Keys type)
+//				Returns a list of all property override keys on this type
+//			(typSetOverride@ type property value)
+//				Sets an override property on a type. May be set to Nil
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
