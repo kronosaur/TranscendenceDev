@@ -117,7 +117,7 @@ int CDamageAdjDesc::GetAbsorbAdj (DamageTypes iDamageType) const
 		return 0;
 	}
 
-int CDamageAdjDesc::GetAdj(DamageTypes iDamageType) const
+int CDamageAdjDesc::GetAdj (DamageTypes iDamageType) const
 	{
 	switch (iDamageType)
 		{
