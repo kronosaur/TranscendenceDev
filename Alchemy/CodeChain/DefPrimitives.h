@@ -297,7 +297,16 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"s*",	0,	},
 
 		{	"map",				fnMap,			0,
-			"(map list ['excludeNil|'original|'reduceMax|'reduceMin|'reduceAverage|'reduceSum] var exp) -> list",
+			"(map list [options] var expr) -> list, or expr result (see options)\n\n"
+			
+			"options is either one of the option strings below, or a quoted expr of options strings, e.g. '(original excludeNil):\n"
+			"   'excludeNil - if expr evaluates to nil, it is not added to the returned list\n"
+			"   'original - expr result is placed with var instead in the final output, but expr result is still used to calculate other options\n"
+			"   'reduceMax - returns the greatest of values returned by expr instead of a list\n"
+			"   'reduceMin - returns the minimum of values returned by expr instead of a list\n"
+			"   'reduceAverage - returns the average of values returned by expr instead of a list (ignores original)\n"
+			"   'reduceSum - returns the sum of values returned by expr instead of a list (ignores original)\n"
+			"   'reduceUnique - returns a list of unique values returned by expr",
 			"l*qu",	0,	},
 
 		{	"match",			fnMatch,			0,

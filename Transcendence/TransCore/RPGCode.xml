@@ -1742,6 +1742,25 @@
 					)
 				))
 
+			(setq rpgGetPlayerPrimaryCurrency (lambda ()
+				"Returns the type of currency that the player has the greatest monetary value of"
+				(block
+					(
+					(bestCurrency (map (typFind "$") '(reduceMax original) theCurrency
+						(ecoExchange (plyGetCredits gPlayer theCurrency) theCurrency &ecCreditEconomy;)
+						)
+					)
+					(if (= (plyGetCredits gPlayer bestCurrency) 0)
+
+						;;	If the player has no money, return the universe default
+						(unv@ 'defaultCurrency)
+
+						;;	otherwise return the best currency
+						bestCurrency
+						)
+					)
+				))
+
 			(setq rpgInitScreenSet (lambda (screenSet)
                 (block (
                     (curFrame (scrGetScreen gScreen))
