@@ -3561,8 +3561,13 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 	CString sFireRate = GetReferenceFireRate(iShotDelay);
 
 	//	Compute the damage string and special string
-
-	if (IsLauncherWithAmmo() && Ammo.IsEmpty())
+	
+	if (!Item.IsKnown())
+		{
+		sReference = CONSTLIT("Unknown ? hp/sec (? hp/shot) • ? ls range • ? shots/sec");
+		iDamageType = damageUnknown;
+		}
+	else if (IsLauncherWithAmmo() && Ammo.IsEmpty())
 		{
 		sReference = CONSTLIT("missile launcher");
 
