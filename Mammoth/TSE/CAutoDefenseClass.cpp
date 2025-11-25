@@ -75,6 +75,19 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 	iMinFireArc = (pSource->GetRotation() + iMinFireArc) % 360;
 	iMaxFireArc = (pSource->GetRotation() + iMaxFireArc) % 360;
 
+	//	Compute the range
+	Metric rOwnerScale = max(pSource->GetImage().GetImageWidth(), pSource->GetImage().GetImageWidth()) * KLICKS_PER_PIXEL;
+	Metric rOwnerRadius = rOwnerScale / 2;
+	Metric rInterceptRange = m_rInterceptRange;
+	if (rOwnerScale >= rInterceptRange) //if radius of owner is at least half of normal intercept range
+		rInterceptRange = rInterceptRange + rOwnerRadius;
+
+	CVector vInterceptMax = CVector(rInterceptRange, rInterceptRange);
+	CVector vUR = pSource->GetPos() + vInterceptMax;
+	CVector vLL = pSource->GetPos() - vInterceptMax;
+
+	Metric rBestDist2;
+
 	//	Use the appropriate targeting method
 
 	switch (m_iTargeting)
@@ -83,17 +96,21 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 
 		case trgMissiles:
 			{
-			Metric rOwnerScale = max(pSource->GetImage().GetImageWidth(), pSource->GetImage().GetImageWidth()) * KLICKS_PER_PIXEL;
-			Metric rOwnerRadius = rOwnerScale / 2;
-			Metric rInterceptRange = m_rInterceptRange;
-			if (rOwnerScale >= rInterceptRange) //if radius of owner is at least half of normal intercept range
-				rInterceptRange = rInterceptRange + rOwnerRadius;
 
-			Metric rBestDist2 = rInterceptRange * rInterceptRange;
+			rBestDist2 = rInterceptRange * rInterceptRange;
 
-			for (int i = 0; i < pSystem->GetObjectCount(); i++)
+			const CSpaceObjectGrid &Grid = pSystem->GetObjectGrid();
+			SSpaceObjectGridEnumerator i;
+			Grid.EnumStart(i, vUR, vLL, 0);
+
+			//	Loop over all objects in and near the grid rectangle
+
+			while (Grid.EnumHasMore(i))
 				{
-				CSpaceObject *pObj = pSystem->GetObject(i);
+
+				//	EnumGetNext checks if the object is within bound and not destroyed
+
+				CSpaceObject* pObj = Grid.EnumGetNext(i);
 
 				//	See if this is a valid target. If not, skip
 
@@ -148,14 +165,7 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 
 		case trgCriteria:
 			{
-			//	Compute the range
-			Metric rOwnerScale = max(pSource->GetImage().GetImageWidth(), pSource->GetImage().GetImageWidth()) * KLICKS_PER_PIXEL;
-			Metric rOwnerRadius = rOwnerScale / 2;
-			Metric rInterceptRange = m_rInterceptRange;
-			if (rOwnerScale >= rInterceptRange) //if radius of owner is at least half of normal intercept range
-				rInterceptRange = rInterceptRange + rOwnerRadius;
 
-			Metric rBestDist2;
 			if (m_TargetCriteria.MatchesMaxRadius() < g_InfiniteDistance)
 				rBestDist2 = (m_TargetCriteria.MatchesMaxRadius() * m_TargetCriteria.MatchesMaxRadius());
 			else
@@ -164,9 +174,19 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 			//	Now look for the nearest object
 
 			CSpaceObjectCriteria::SCtx Ctx(pSource, m_TargetCriteria);
-			for (int i = 0; i < pSystem->GetObjectCount(); i++)
+
+			const CSpaceObjectGrid &Grid = pSystem->GetObjectGrid();
+			SSpaceObjectGridEnumerator i;
+			Grid.EnumStart(i, vUR, vLL, 0);
+
+			//	Loop over all objects in and near the grid rectangle
+
+			while (Grid.EnumHasMore(i))
 				{
-				CSpaceObject *pObj = pSystem->GetObject(i);
+
+				//	EnumGetNext checks if the object is within bound and not destroyed
+
+				CSpaceObject* pObj = Grid.EnumGetNext(i);
 				Metric rDistance2;
 				if (pObj
 						&& pObj->MatchesCriteriaCategory(Ctx, m_TargetCriteria)

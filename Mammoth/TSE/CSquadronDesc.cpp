@@ -82,14 +82,11 @@ void CSquadronDesc::CleanUp ()
 //	Free all resources
 
 	{
-	if (m_pShipTable)
-		delete m_pShipTable;
+	delete m_pShipTable;
 
-	if (m_pReinforcements)
-		delete m_pReinforcements;
+	delete m_pReinforcements;
 
-	if (m_pConstruction)
-		delete m_pConstruction;
+	delete m_pConstruction;
 
 	m_pShipTable = NULL;
 	m_pReinforcements = NULL;

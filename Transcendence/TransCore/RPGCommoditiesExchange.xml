@@ -54,6 +54,14 @@
 			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
 		</Properties>
 
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(or (@ gData 'rankDetails)
+					(objTranslate gSource 'rpg.statusDetails)
+					)
+			</OnDisplayInit>
+		</Display>
+
 		<Panes>
 			<Default>
 				<OnPaneInit>
@@ -641,9 +649,27 @@
 	This screen allows the player to sell items to a station. We use the 
 	<Trade> directives on the station to determine inventory and price.
 
-	PROPERTIES
+	PROPERTIES - Variant
+
+		rpg.criteria: If non-nil, we restrict sales to items matching this
 
 		rpg.sourceObj: See dsRPGCommoditiesExchange.
+
+	PROPERTIES - Dynamic
+
+		baseCost: (itmGetPrice) used to calculate markup
+
+		offerPrice: This is the calculated price shown to user
+
+		tradeCtx: internal struct for selecting strings / behaviour
+
+		itemCtx: internal struct for string translations
+
+	PROPERTIES - Data
+
+		itemCost: per-item price passed to sell pane
+
+		maxCount: maximum number of items to sell
 
 	gData uses the following fields:
 	
@@ -670,7 +696,120 @@
 			>
 		<Properties>
 			<Variant id="rpg.criteria">(@ gData 'criteria)</Variant>
-			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
+			<Variant id="rpg.sourceObj">(or (@ gData 'sourceObj) gSource)</Variant>
+			<Variant id="title">(or (@ gData 'title) (objGetName gSource '(demonstrative capitalize)))</Variant>
+
+			<DynamicData id="baseCost">
+				(itmGetPrice (scrGetItem gScreen) (obj@ gSource 'currency))
+			</DynamicData>
+			<DynamicData id="offerPrice">
+				(block (
+					(theItem (scrGetItem gScreen))
+					(itemCost (objGetBuyPrice gSource theItem))
+					)
+					(switch
+						(not (scr@ gScreen 'selectionEnabled))
+							Nil
+
+						(@ gData 'priceCalc)
+							(apply (@ gData 'priceCalc) theItem Nil)
+
+						(not (itmIsKnown theItem))
+							(divide itemCost 10)
+
+						itemCost
+						)
+					)
+			</DynamicData>
+
+			<DynamicData id="tradeCtx">
+				(block (
+					(theItem (scrGetItem gScreen))
+					(offerPrice (scr@ gScreen 'offerPrice))
+
+					;	Get some counts
+
+					(availCount (itmGetCount theItem))
+
+					;	Using rpg.sourceObj for inventory
+					(existingCount (objHasItem (scr@ gScreen 'rpg.sourceObj) theItem 1))
+					(averageCount (itmGetAverageAppearing theItem))
+					(maxExistingCount
+						(switch
+							(itmMatches theItem "amdu")
+								(* averageCount 5)
+
+							;	For most commodities, the limit is from 15 to 30 times the
+							;	average count.
+
+							(* averageCount
+								(seededRandom
+									(* (itmGetType theItem) (obj@ gSource 'destiny))
+									15 30
+									)
+								)
+							)
+						)
+					(maxBuyCount (min availCount (max 0 (- maxExistingCount existingCount))))
+
+					;	Compute the number of items the station is willing to buy.
+
+					(affordCount
+						(switch
+							(= offerPrice 0)
+								0
+
+							(and (@ gData 'maxPrice) (gr offerPrice (@ gData 'maxPrice)))
+								0
+
+							(min availCount
+								(divide (objGetBalance gSource) offerPrice)
+								)
+							)
+						)
+					)
+					{
+						offerPrice: offerPrice
+						availCount: availCount
+						existingCount: existingCount
+						maxBuyCount: maxBuyCount
+						affordCount: affordCount
+						offerCount: (min affordCount maxBuyCount)
+					})
+			</DynamicData>
+
+
+			<DynamicData id="itemCtx">
+				(block (
+					(theItem (scrGetItem gScreen))
+					(currencyUsed (obj@ gSource 'currency))
+					(tradeCtx (scr@ gScreen 'tradeCtx))
+
+					(baseCost (scr@ gScreen 'baseCost))
+					(offerPrice (scr@ gScreen 'offerPrice))
+					(offerCount (@ tradeCtx 'offerCount))
+
+					(itemMarkup (if (gr offerPrice 0) (- offerPrice baseCost) 0))
+					(itemMarkupPercent (if (gr baseCost 0) (int (round (* (/ itemMarkup baseCost) 100)))))
+					)
+					(struct tradeCtx {
+						title: (scr@ gScreen 'title)
+						stationName: (scr@ gScreen 'title)
+						itemName:(itmGetName theItem 'escapeQuotes)
+						value: (if (gr offerPrice 0) (fmtCurrency currencyUsed offerPrice))
+						markup: (if (geq itemMarkup 0) (fmtCurrency currencyUsed itemMarkup))
+						discount: (if (ls itemMarkup 0) (fmtCurrency currencyUsed (abs itemMarkup)))
+						markupPercent: (abs itemMarkupPercent)
+						max: (if (gr offerCount 1) offerCount)
+						maxValue: (fmtCurrency currencyUsed (multiply offerPrice offerCount))
+						mass: (fmtNumber 'massKg (itmGetMass theItem))
+						maxMass: (fmtNumber 'massKg (multiply (itmGetMass theItem) offerCount))
+						})
+					)
+			</DynamicData>
+
+			<Data id="itemCost"></Data>
+			<Data id="maxCount"></Data>
 		</Properties>
 
 		<ListOptions
@@ -678,7 +817,7 @@
 				list=		"*U"
 				>
 			(block (
-				(itemCriteria (scrGetProperty gScreen 'rpg.criteria))
+				(itemCriteria (scr@ gScreen 'rpg.criteria))
 				)
 				(switch
 					;	If we specify an item criteria, then create a function
@@ -713,138 +852,46 @@
 			<Default>
 				<OnPaneInit>
 					(block (
-						(title (or (@ gData 'title) (objGetName gSource '(demonstrative capitalize))))
-						(thisItem (scrGetItem gScreen))
-						
-						;	Compute the cost of this item
-						
-						(currencyUsed (objGetDefaultCurrency gSource))
-						(itemCost
-							(switch
-								(not (scr@ gScreen 'selectionEnabled))
-									Nil
+						(theItem (scrGetItem gScreen))
 
-								(@ gData 'priceCalc)
-									(apply (@ gData 'priceCalc) thisItem Nil)
+						(offerPrice (scr@ gScreen 'offerPrice))
+						(currencyUsed (obj@ gSource 'currency))
 
-								(objGetBuyPrice gSource thisItem)
-								)
-							)
-						
-						;	Get some counts
-						
-						(availCount (itmGetCount thisItem))
-
-						(existingCount (objHasItem gSource thisItem 1))
-						(averageCount (itmGetAverageAppearing thisItem))
-						(maxExistingCount 
-							(switch
-								(itmMatches thisItem "amdu")
-									(* averageCount 5)
-
-								;	For most commodities, the limit is from 5 to 21 times the
-								;	average count.
-
-								(* averageCount
-									(seededRandom 
-										(* (itmGetType thisItem) (objGetProperty gSource 'destiny)) 
-										15 30
-										)
-									)
-								)
-							)
-						(maxBuyCount 
-							(min availCount
-								(max 0 (- maxExistingCount existingCount))
-								)
-							)
-
-						;	Calc the price offered by the station
-						
-						(offerPrice
-							(switch
-								(not itemCost)
-									0
-									
-								(not (itmIsKnown thisItem))
-									(divide itemCost 10)
-									
-								itemCost
-								)
-							)
-							
-						;	Mark up
-						
-						(baseCost (itmGetPrice thisItem currencyUsed))
-						(itemMarkup (if (gr offerPrice 0) (- offerPrice baseCost) 0))
-						(itemMarkupPercent (if (gr baseCost 0) (int (round (* (/ itemMarkup baseCost) 100)))))
-						
-						;	Compute the number of items the station is willing
-						;	to buy.
-						
-						(affordCount
-							(switch
-								(= offerPrice 0)
-									0
-
-								(and (@ gData 'maxPrice) (gr offerPrice (@ gData 'maxPrice)))
-									0
-									
-								(min availCount 
-									(divide (objGetBalance gSource) offerPrice)
-									)
-								)
-							)
-
-						(offerCount (min affordCount maxBuyCount))
-
-						(tradeData (rpgItemTradeComputer thisItem offerPrice currencyUsed))
+						;	Trade context
+						(itemCtx (scr@ gScreen 'itemCtx))
+						(tradeData (rpgItemTradeComputer theItem offerPrice currencyUsed))
 						)
 						
 						;	Set the description
 						
 						(switch
-							(not thisItem)
+							(not theItem)
 								(scrSetDescTranslate gScreen 'errorNoItemsToSell)
 								
 							(scrSetDesc gScreen
 								;	The first part describes the item
 								
 								(if (gr offerPrice 0)
-									(scrTranslate gScreen 'descItemStats {
-										value: (if (gr offerPrice 0) (fmtCurrency currencyUsed offerPrice))
-										markup: (if (geq itemMarkup 0) (fmtCurrency currencyUsed itemMarkup))
-										discount: (if (ls itemMarkup 0) (fmtCurrency currencyUsed (abs itemMarkup)))
-										markupPercent: (abs itemMarkupPercent)
-										max: (if (gr offerCount 1) offerCount)
-										maxValue: (fmtCurrency currencyUsed (multiply offerPrice offerCount))
-										mass: (fmtNumber 'massKg (itmGetMass thisItem))
-										maxMass: (fmtNumber 'massKg (multiply (itmGetMass thisItem) offerCount))
-										})
+									(scrTranslate gScreen 'descItemStats itemCtx)
 									)
 
 								(switch
-									(= offerPrice 0)
-										(or (scrTranslate gScreen 'rpg.stationWillNotBuy { title:title stationName:title itemName:(itmGetName thisItem '(plural escapeQuotes)) })
-												(scrTranslate gScreen 'descNotForSale { title:title itemName:(itmGetName thisItem '(plural escapeQuotes)) })
-												)
+									(or (not offerPrice) (= offerPrice 0))
+										(or (scrTranslate gScreen 'rpg.stationWillNotBuy (struct itemCtx {
+												itemName:(itmGetName theItem '(plural escapeQuotes)) }))
+											(scrTranslate gScreen 'descNotForSale (struct itemCtx {
+												itemName:(itmGetName theItem '(plural escapeQuotes)) }))
+											)
 										
-									(= affordCount 0)
-										(scrTranslate gScreen 'descNotEnoughMoney { title:title itemName:(itmGetName thisItem '(article escapeQuotes)) })
+									(= (@ itemCtx 'affordCount) 0)
+										(scrTranslate gScreen 'descNotEnoughMoney (struct itemCtx {
+												itemName:(itmGetName theItem '(article escapeQuotes)) }))
 
-									(= maxBuyCount 0)
-										(scrTranslate gScreen 'descNotInterested { title:title itemName:(itmGetName thisItem '(plural escapeQuotes)) })
+									(= (@ itemCtx 'maxBuyCount) 0)
+										(scrTranslate gScreen 'descNotInterested (struct itemCtx {
+												itemName:(itmGetName theItem '(plural escapeQuotes)) }))
 
-									(= availCount 1)
-										(scrTranslate gScreen 'descBuyOnlyItem { title:title itemName:(itmGetName thisItem 'escapeQuotes) currency:(fmtCurrency currencyUsed offerPrice) })
-										
-									(= offerCount 1)
-										(scrTranslate gScreen 'descBuySingleItem { title:title itemName:(itmGetName thisItem 'escapeQuotes) currency:(fmtCurrency currencyUsed offerPrice) })
-										
-									(ls offerCount availCount)
-										(scrTranslate gScreen 'descBuySomeItems { title:title itemName:(itmGetName thisItem 'escapeQuotes) currency:(fmtCurrency currencyUsed offerPrice) offerCount:offerCount availCount:availCount })
-										
-									(scrTranslate gScreen 'descBuyAllItems { title:title itemName:(itmGetName thisItem 'escapeQuotes) currency:(fmtCurrency currencyUsed offerPrice) })
+									(scrTranslate gScreen 'descBuyItems itemCtx)
 									)
 
 								(if tradeData
@@ -852,46 +899,82 @@
 									)
 								)
 							)
-							
+
+						;	Warnings
+
+						(switch
+							(and (itmMatches theItem 'm)
+									(obj@ gPlayerShip theItem 'canBeFired)
+									)
+								(scrSetControlValueTranslate gScreen 'descWarning 'warningSellAmmo {
+									itemName:(itmGetName theItem '(plural escapeQuotes))
+									})
+							)
+
 						;	Remember some computed values
 						
-						(scrSetData gScreen 'itemCost offerPrice)
-						(scrSetData gScreen 'maxCount offerCount)
+						(scrSet@ gScreen 'itemCost (@ itemCtx 'offerPrice))
+						(scrSet@ gScreen 'maxCount (@ itemCtx 'offerCount))
 						
 						;	Enable/disable actions
-						
-						(scrEnableAction gScreen 'actionSell (gr offerCount 0))
+
+						(if (scr@ gScreen 'rpg.negotiate)
+							;	Sub-class has implemented bartering
+							(scrEnableAction gScreen 'actionCounter (and
+									(gr offerPrice 0)
+									(gr (@ itemCtx 'maxBuyCount) 0)
+									(scr@ gScreen 'negotiateThis)
+									))
+
+							;	Default is to remove the counter action
+							(scrShowAction gScreen 'actionCounter Nil)
+							)
+
+						(scrEnableAction gScreen 'actionSell (gr (@ itemCtx 'offerCount) 0))
 						)
 				</OnPaneInit>
 
+				<Controls>
+					<Text id="desc"/>
+					<Text id="descWarning" style="warning"/>
+				</Controls>
+
 				<Actions>
+					<Action id="actionCounter" default="1">
+						(scrShowPane gScreen 'CounterOffer)
+					</Action>
+
 					<Action id="actionSell" default="1">
 						(block (
-							(thisItem (scrGetItem gScreen))
-							(maxCount (scrGetData gScreen 'maxCount))
-							(itemCost (scrGetData gScreen 'itemCost))
-							(sourceObj (or (scrGetProperty gScreen 'rpg.sourceObj) gSource))
+							(theItem (scrGetItem gScreen))
+							(maxCount (scr@ gScreen 'maxCount))
+							(itemCost (scr@ gScreen 'itemCost))
+							(sourceObj (scr@ gScreen 'rpg.sourceObj))
 							)
 							
 							(switch
 								;	Confirm
 
-								(and (itmMatches thisItem "m")
-										(objGetItemProperty gPlayerShip thisItem 'canBeFired)
+								(and (itmMatches theItem "m")
+										(obj@ gPlayerShip theItem 'canBeFired)
 										)
 									(scrShowPane gScreen 'ConfirmSell)
 
 								;	Ask for quantity, if necessary
 								
 								(gr maxCount 1)
-									(scrShowPane gScreen "SellQuantity")
+									(scrShowPane gScreen 'SellQuantity)
 									
 								;	Done
 								
 								(block Nil
 									(rpgSellItems 1 itemCost sourceObj)
 									(scrSetReturnData gScreen 'sold True)
-									(scrShowPane gScreen "Default")
+									(scrShowPane gScreen 'Default)
+
+									;	Allow any sub class to run custom code
+
+									(typFireEvent gType 'OnPlayerSoldItem {item: theItem cost: itemCost})
 									)
 								)
 							)
@@ -903,15 +986,17 @@
 				</Actions>
 			</Default>
 
-			<ConfirmSell>
+			<ConfirmSell
+					noListNavigation=	"true"
+					>
 				<OnPaneInit>
 					(block (
-						(thisItem (scrGetItem gScreen))
+						(theItem (scrGetItem gScreen))
 						)
 						(switch
-							(itmMatches thisItem "m")
+							(itmMatches theItem "m")
 								(scrSetDescTranslate gScreen 'warningSellAmmo {
-									itemName: (itmGetName thisItem '(plural escapeQuotes))
+									itemName: (itmGetName theItem '(plural escapeQuotes))
 									})
 							)
 						)
@@ -920,10 +1005,10 @@
 				<Actions>
 					<Action id="actionYes" default="1">
 						(block (
-							(thisItem (scrGetItem gScreen))
-							(maxCount (scrGetData gScreen 'maxCount))
-							(itemCost (scrGetData gScreen 'itemCost))
-							(sourceObj (or (scrGetProperty gScreen 'rpg.sourceObj) gSource))
+							(theItem (scrGetItem gScreen))
+							(maxCount (scr@ gScreen 'maxCount))
+							(itemCost (scr@ gScreen 'itemCost))
+							(sourceObj (scr@ gScreen 'rpg.sourceObj))
 							)
 							(switch
 								(gr maxCount 1)
@@ -933,6 +1018,10 @@
 									(rpgSellItems 1 itemCost sourceObj)
 									(scrSetReturnData gScreen 'sold True)
 									(scrShowPane gScreen 'Default)
+
+									;	Allow any sub class to run custom code
+
+									(typFireEvent gType 'OnPlayerSoldItem {item: theItem cost: itemCost})
 									)
 								)
 							)
@@ -945,15 +1034,15 @@
 			</ConfirmSell>
 
 			<SellQuantity
-					showCounter=	"true">
+					noListNavigation=	"true"
+					showCounter=		"true">
 
 				<OnPaneInit>
 					(block (
-						(maxCount (scrGetData gScreen 'maxCount))
-						(itemCost (scrGetData gScreen 'itemCost))
+						(maxCount (scr@ gScreen 'maxCount))
+						(itemCost (scr@ gScreen 'itemCost))
 						)
-						
-						(scrSetDescTranslate gScreen 'descSellQuantity { value: (fmtCurrency (objGetDefaultCurrency gSource) itemCost) })
+						(scrSetDescTranslate gScreen 'descSellQuantity { value: (fmtCurrency (obj@ gSource 'currency) itemCost) })
 						(scrSetCounter gScreen maxCount)
 						)
 				</OnPaneInit>
@@ -961,11 +1050,12 @@
 				<Actions>
 					<Action id="actionSell" default="1">
 						(block (
-							(thisItem (scrGetItem gScreen))
+							(theItem (scrGetItem gScreen))
+							(maxCount (scr@ gScreen 'maxCount))
+							(itemCost (scr@ gScreen 'itemCost))
+							(sourceObj (scr@ gScreen 'rpg.sourceObj))
+
 							(countToSell (scrGetCounter gScreen))
-							(maxCount (scrGetData gScreen 'maxCount))
-							(itemCost (scrGetData gScreen 'itemCost))
-							(sourceObj (or (scrGetProperty gScreen 'rpg.sourceObj) gSource))
 							)
 							
 							(switch
@@ -975,7 +1065,11 @@
 								(block Nil
 									(rpgSellItems countToSell itemCost sourceObj)
 									(scrSetReturnData gScreen 'sold True)
-									(scrShowPane gScreen "Default")
+									(scrShowPane gScreen 'Default)
+
+									;	Allow any sub class to run custom code
+
+									(typFireEvent gType 'OnPlayerSoldItem {item: theItem cost: itemCost})
 									)
 								)
 							)
@@ -990,6 +1084,9 @@
 
 		<Language>
 			<Text id="actionSell">[S]ell</Text>
+			<Text id="actionCounter">[C]ounter offer</Text>
+			<Text id="actionDecline">[D]ecline offer</Text>
+			<Text id="actionOffer">[M]ake offer</Text>
 			
 			<Text id="descItemStats">
 				(cat
@@ -1033,17 +1130,33 @@
 			<Text id="descNotInterested">
 				%title% is not interested in buying more %itemName%.
 			</Text>
+
+			<Text id="descBuyItems">
+				(switch
+					(= (@ gData 'availCount) 1)
+						(scrTranslate gScreen 'descBuyOnlyItem gData)
+						
+					(= (@ gData 'offerCount) 1)
+						(scrTranslate gScreen 'descBuySingleItem gData)
+						
+					(ls (@ gData 'offerCount) (@ gData 'availCount))
+						(scrTranslate gScreen 'descBuySomeItems gData)
+						
+					(scrTranslate gScreen 'descBuyAllItems gData)
+					)
+			</Text>
+
 			<Text id="descBuyOnlyItem">
-				%title% offers %currency% for your %itemName%.
+				%title% offers %value% for your %itemName%.
 			</Text>
 			<Text id="descBuySingleItem">
-				%title% offers %currency% for a single %itemName%.
+				%title% offers %value% for a single %itemName%.
 			</Text>
 			<Text id="descBuySomeItems">
-				%title% offers %currency% for each %itemName% (up to a maximum of %offerCount%).
+				%title% offers %value% for each %itemName% (up to a maximum of %offerCount%).
 			</Text>
 			<Text id="descBuyAllItems">
-				%title% offers %currency% for each %itemName%.
+				%title% offers %value% for each %itemName%.
 			</Text>
 			<Text id="descSellQuantity">
 				How many items do you wish to sell at %value% each?

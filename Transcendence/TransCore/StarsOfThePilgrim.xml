@@ -12,73 +12,10 @@
 	<!-- HUMAN SPACE LIBRARY 0x00200003 -->
 	<!ENTITY unidPartISystemMap			"0x00200004">
 	<!ENTITY msReachGalacticCore		"0x00200005">
-	<!ENTITY unidBenedictStoryArc		"0x00200006">
-	<!ENTITY dsBenedictIntro			"0x00200007">
-	<!ENTITY msBenedictsDrones			"0x00200008">
-	<!ENTITY msBenedictAndFiona			"0x00200009">
-	<!-- UNUSED 0x0020000A -->
-	<!ENTITY msBenedictToKorolov		"0x0020000B">
-	<!ENTITY msBenedictTraining			"0x0020000C">
+	<!-- 0006 - 000C in Stories of the Pilgrim Library-->
 	<!ENTITY rsGalacticCoreMissionTile	"0x0020000D">
 	<!ENTITY unidAchievements			"0x0020000E">
-	
-	<!-- 0010-005F BENEDICT MISSION ARC -->
-	
-	<!ENTITY msBenedictInNewBeyond		"0x00200010">
-	<!ENTITY tbBenedict04Encounters		"0x00200011">
-	<!ENTITY msFionaInStKats			"0x00200012">
-	<!ENTITY msFindHandOfSolace			"0x00200013">
-	<!ENTITY stHandOfSolaceWreck		"0x00200014">
-	<!ENTITY ovBenedict05ScanRange		"0x00200015">
-	<!ENTITY tbBenedict05Encounters		"0x00200016">
-	<!ENTITY msInfiltratePenitents		"0x00200017">
-	<!ENTITY svBenedict06Infiltrate		"0x00200018">
-	<!ENTITY evBenedict06PenitentBase	"0x00200019">
-	<!ENTITY ovBenedict06Disarm			"0x0020001A">
-	<!ENTITY msRescueBenedict			"0x0020001B">
-	<!ENTITY evBenedict07PenitentWreck	"0x0020001C">
-	<!ENTITY msRescueChildrenFromPenitents	"0x0020001D">
-	<!ENTITY evBenedict08PenitentBase	"0x0020001E">
-	<!ENTITY evBenedict07FionaWreck		"0x0020001F">
-	<!ENTITY evBenedict06PenitentShip	"0x00200020">
-	<!ENTITY evBenedict07Wingman		"0x00200021">
-	<!ENTITY evBenedict02FionaWreck		"0x00200022">
-	<!ENTITY baBenedictMission			"0x00200023">
-	<!ENTITY rsBenedictMission			"0x00200024">
-	<!ENTITY evBenedict05ASandoval		"0x00200025">
-
-	<!-- 0060-007F HERETIC MISSION ARC -->
-	
-	<!ENTITY msHereticIocrymAttack		"0x00200060">
-	<!ENTITY msHereticIocrymAttackMsg	"0x00200061">
-	<!ENTITY msHereticSvalbard			"0x00200062">
-	<!ENTITY dsHereticSvalbardDonate	"0x00200063">
-	<!ENTITY msHereticControlPoint		"0x00200064">
-	<!ENTITY msHereticFurtherResearch	"0x00200065">
-	<!ENTITY msHereticSettlement		"0x00200066">
-	<!ENTITY msHereticMaryamsArchive	"0x00200067">
-	<!ENTITY stMaryamsArchive			"0x00200068">
-	<!ENTITY msHereticHuygensExplorer	"0x00200069">
-	<!ENTITY evHereticHuygensExplorer	"0x0020006A">
-	<!ENTITY msHereticIocrymArtifact	"0x0020006B">
-	<!ENTITY msHereticIocrymOutpost		"0x0020006C">
-	<!ENTITY msHereticMRADExperiment	"0x0020006D">
-
-	<!-- 0080-00BF MISCELLANEOUS MISSIONS -->
-
-	<!ENTITY msPsychEval01				"0x00200080">
-	<!ENTITY msPsychEval00				"0x00200081">
-
-	<!-- 0021xxxx HUARI ==================================================== -->
-	
-	<!ENTITY smHuariSpace				"0x00210001">
-	<!ENTITY msHuaramarcaTuali			"0x00210002">
-	<!ENTITY msHuaramarcaDreamTest		"0x00210003">
-	<!ENTITY msHuaramarcaDefendTemple	"0x00210004">
-	<!ENTITY msHuaramarcaAttackBase		"0x00210005">
-	<!ENTITY msHuaramarcaDragonSlaver	"0x00210006">
-	<!ENTITY msHuaramarcaArchcannon		"0x00210007">
-	<!ENTITY msHuaramarcaRevelation		"0x00210008">
+	<!-- 0010-00BF in Stories of the Pilgrim Library-->
 	]>
 	
 <TranscendenceAdventure
@@ -91,6 +28,8 @@
 	<Library unid="&unidRPGLibrary;"/>
 	<Library unid="&unidGalaxyLibrary;"/>
 	<Library unid="&unidHumanSpaceLibrary;"/>
+	<Library unid="&unidHuaramarcaLibrary;"/>
+	<Library unid="&unidSOTPMissionLibrary;"/>
 	<Library unid="&unidSOTPSoundtrackUNIDLibrary;"/>
 
 	<AdventureDesc
@@ -324,43 +263,16 @@
 			<ShieldDamageAdj level="24"	damageAdj="  0,  0,  0,  0,   0,  0, 10, 10,  40, 40, 60, 60,  75, 75, 90, 90"/>
 			<ShieldDamageAdj level="25"	damageAdj="  0,  0,  0,  0,   0,  0,  0,  0,  30, 30, 55, 55,  70, 70, 85, 85"/>
 			
+			<!-- Mining Levels -->
+			
+			<MiningMaxOreLevels	miningMaxOreLevel="  5,  5,  8,  8,  11, 11, 14, 14,  17, 17, 20, 20,  23, 23, 25, 25"/>
+			
 		</Constants>
 	</AdventureDesc>
 		
 	<Module filename="Achievements.xml"/>
-	<Module filename="Benedict00.xml"/>
-	<Module filename="Benedict01.xml"/>
-	<Module filename="Benedict02.xml"/>
-	<!-- Benedict03 is obsolete. -->
-	<Module filename="Benedict04.xml"/>
-	<Module filename="Benedict05.xml"/>
-	<Module filename="Benedict05A.xml"/>
-	<Module filename="Benedict06.xml"/>
-	<Module filename="Benedict07.xml"/>
-	<Module filename="Benedict08.xml"/>
-	<Module filename="BenedictStoryArc.xml"/>
-	<Module filename="Elysium.xml"/>
-	<Module filename="Heretic00.xml"/>
-	<Module filename="Heretic01.xml"/>
-	<Module filename="Heretic02.xml"/>
-	<Module filename="Heretic03.xml"/>
-	<Module filename="Heretic04.xml"/>
-	<Module filename="Heretic05.xml"/>
-	<Module filename="Heretic06.xml"/>
-	<Module filename="Heretic07.xml"/>
-	<Module filename="Heretic08.xml"/>
-	<Module filename="Huaramarca.xml"/>
-	<Module filename="HuaramarcaMission01.xml"/>
-	<Module filename="HuaramarcaMission02.xml"/>
-	<Module filename="HuaramarcaMission03.xml"/>
-	<Module filename="HuaramarcaMission04.xml"/>
-	<Module filename="HuaramarcaMission05.xml"/>
-	<Module filename="HuaramarcaMission06.xml"/>
-	<Module filename="HuaramarcaMission07.xml"/>
 	<Module filename="Part1Compatibility.xml"/>
 	<Module filename="PlayerShips.xml"/>
-	<Module filename="Psych00.xml"/>
-	<Module filename="Psych01.xml"/>
 		
 <!-- ADVENTURE MAP -->
 

@@ -591,7 +591,7 @@ class CSystem
 		void TransferObjEventsOut (CSpaceObject *pObj, CSystemEventList &ObjEvents);
 		void UnnameObject (CSpaceObject &Obj);
 		void UnregisterEventHandler (CSpaceObject *pObj);
-		void Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations = NULL);
+		void UpdateExtended (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations = NULL);
 		void UpdateBehaviors(SSystemUpdateCtx& SystemCtx, SViewportAnnotations* pAnnotations = NULL);
 		void UpdatePhysics(SSystemUpdateCtx& SystemCtx, SViewportAnnotations* pAnnotations = NULL, Metric timestep=1.0);
 		void UpdateExtended (const CTimeSpan &ExtraTime);
@@ -734,6 +734,7 @@ class CSystem
 		//	Support structures
 
 		CThreadPool *m_pThreadPool = NULL;			//	Thread pool for painting
+		CThreadPool *m_pBkrndThreadPool = NULL;		//	Thread pool for painting
 		CRandomEncounterObjTable m_EncounterObjTable;
 		CRandomEncounterTypeTable m_EncounterTypeTable;
 

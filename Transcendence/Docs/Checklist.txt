@@ -45,6 +45,17 @@ STEAM RELEASE
 [ ] Click Preview Changes and accept
 [ ] Run Steam client to test.
 
+TRANSDATA RELEASE
+-------------------------------------------------------------------------------
+[ ] Set version number in TransData resource file
+[ ] Build TransData in release mode
+[ ] Sign executable (signall.bat)
+[ ] Generate .zip file.
+[ ] Upload .zip to hosting server (and publish)
+[ ] Connect to DigitalOcean with FileZilla
+[ ] Upload to download.kronosaur.com in home directory
+[ ] sudo cp download.kronosaur.com/TranData.zip /var/www/download.kronosaur.com/
+
 WINDOWS STORE PACKAGE
 -------------------------------------------------------------------------------
 NOTE: TO get a file to be packaged up in TransPackage, you must mark it as

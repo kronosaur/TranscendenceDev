@@ -2913,6 +2913,7 @@ void CSpaceObject::FireOnMining (const SDamageCtx &Ctx, EAsteroidType iType)
 	CCX.DefineInteger(CONSTLIT("aHP"), Ctx.iDamage);
 	CCX.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
 	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.GetDesc().GetWeaponType());
+	CCX.DefineBool(CONSTLIT("aMiningScan"), Ctx.Damage.GetMiningScan());
 
 	ICCItemPtr pResult = CCX.RunCode(Event);
 	if (pResult->IsError())
@@ -3919,6 +3920,14 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 	//	Otherwise, we return the default screen associated with the object
 
 	return GetDefaultDockScreen(retsScreen, retpData);
+	}
+
+TArray<CString> CSpaceObject::GetDataKeys (void)
+	{
+	TArray<CString> aRet = TArray<CString>();
+	for (int i = 0; i < m_Data.GetDataCount(); i++)
+		aRet.Insert(m_Data.GetDataAttrib(i));
+	return aRet;
 	}
 
 ICCItemPtr CSpaceObject::GetGlobalData (const CString &sAttribute) const
@@ -6548,10 +6557,7 @@ bool CSpaceObject::IsLineOfFireClear (const CInstalledDevice *pWeapon,
 
 				if (rDistFromTarget2 < BOUNDS_CHECK_DIST2)
 					{
-					CVector vUR, vLL;
-					pObj->GetBoundingRect(&vUR, &vLL);
-
-					if (rDistFromTarget2 < 2.0 * vUR.Length2()
+					if (pObj->PointInBounds(vTarget)
 							&& pObj->PointInObject(pObj->GetPos(), vTarget))
 						{
 						if (retpFriend) *retpFriend = pObj;

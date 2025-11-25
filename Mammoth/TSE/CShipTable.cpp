@@ -233,8 +233,7 @@ ALERROR IShipGenerator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 
 	if (error = pGenerator->LoadFromXML(Ctx, pDesc))
 		{
-		if (pGenerator)
-			delete pGenerator;
+		delete pGenerator;
 		return error;
 		}
 
@@ -255,8 +254,7 @@ ALERROR IShipGenerator::CreateFromXMLAsGroup (SDesignLoadCtx &Ctx, const CXMLEle
 	IShipGenerator *pGenerator = new CGroupOfShipGenerators;
 	if (error = pGenerator->LoadFromXML(Ctx, pDesc))
 		{
-		if (pGenerator)
-			delete pGenerator;
+		delete pGenerator;
 		return error;
 		}
 
@@ -330,8 +328,7 @@ CShipTable::~CShipTable (void)
 //	CShipTable destructor
 
 	{
-	if (m_pGenerator)
-		delete m_pGenerator;
+	delete m_pGenerator;
 	}
 
 void CShipTable::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const
@@ -395,8 +392,7 @@ CLevelTableOfShipGenerators::~CLevelTableOfShipGenerators (void)
 	int i;
 
 	for (i = 0; i < m_Table.GetCount(); i++)
-		if (m_Table[i].pEntry)
-			delete m_Table[i].pEntry;
+		delete m_Table[i].pEntry;
 	}
 
 void CLevelTableOfShipGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const
@@ -671,11 +667,9 @@ CSingleShip::~CSingleShip (void)
 //	CSingleShip destructor
 
 	{
-	if (m_pItems)
-		delete m_pItems;
+	delete m_pItems;
 
-	if (m_pEscorts)
-		delete m_pEscorts;
+	delete m_pEscorts;
 
 	if (m_pOnCreate)
 		m_pOnCreate->Discard();
@@ -1266,8 +1260,7 @@ CTableOfShipGenerators::~CTableOfShipGenerators (void)
 	int i;
 
 	for (i = 0; i < m_Table.GetCount(); i++)
-		if (m_Table[i].pEntry)
-			delete m_Table[i].pEntry;
+		delete m_Table[i].pEntry;
 	}
 
 void CTableOfShipGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const
@@ -1424,8 +1417,7 @@ CGroupOfShipGenerators::~CGroupOfShipGenerators (void)
 	if (m_Table)
 		{
 		for (i = 0; i < m_iTableCount; i++)
-			if (m_Table[i].pEntry)
-				delete m_Table[i].pEntry;
+			delete m_Table[i].pEntry;
 
 		delete [] m_Table;
 		}

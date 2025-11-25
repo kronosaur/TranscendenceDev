@@ -162,6 +162,8 @@
 	<!ENTITY baRetrieveFromStationMission		"0x00010184">
 	<!ENTITY baEscortMission			"0x00010185">
 	<!ENTITY baAssaultStationMission	"0x00010186">
+	<!ENTITY baComponentReminder		"0x00010187">
+	<!ENTITY unidComponentReminder		"0x00010188">
 
 	<!-- 01C0-01FF CRIME -->
 

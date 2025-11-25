@@ -125,7 +125,7 @@
 		<Weapon
 				type=				"shockwave"
 
-				damage=				"generic:1; mining:5;"
+				damage=				"generic:1; miningScan:5;"
 				fireRate=			"30"
 				expansionSpeed=		"80"
 				missileSpeed=		"0"
@@ -369,7 +369,7 @@
 		<Weapon
 				type=				"shockwave"
 
-				damage=				"generic:1; mining:7;"
+				damage=				"generic:1; miningScan:7;"
 				fireRate=			"30"
 				expansionSpeed=		"80"
 				missileSpeed=		"0"

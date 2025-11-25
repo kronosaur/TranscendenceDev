@@ -476,8 +476,7 @@ CEffectGroupCreator::~CEffectGroupCreator (void)
 //	CEffectGroupCreator destructor
 
 	{
-	if (m_pCreators)
-		delete [] m_pCreators;
+	delete [] m_pCreators;
 	}
 
 void CEffectGroupCreator::ApplyOffsets (SViewportPaintCtx *ioCtx, int *retx, int *rety)
@@ -684,7 +683,7 @@ ALERROR CEffectGroupCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-void CEffectGroupCreator::OnEffectPlaySound (CSpaceObject *pSource)
+void CEffectGroupCreator::OnEffectPlaySound (CSpaceObject *pSource, SSoundOptions *pOptions)
 
 //	OnEffectPlaySound
 //
@@ -693,12 +692,12 @@ void CEffectGroupCreator::OnEffectPlaySound (CSpaceObject *pSource)
 	{
 	//	Let subclass play sounds associated with the group
 
-	CEffectCreator::OnEffectPlaySound(pSource);
+	CEffectCreator::OnEffectPlaySound(pSource, pOptions);
 
 	//	Play additional sounds
 
 	for (int i = 0; i < m_iCount; i++)
-		m_pCreators[i]->PlaySound(pSource);
+		m_pCreators[i]->PlaySound(pSource, pOptions);
 	}
 
 void CEffectGroupCreator::OnEffectMarkResources (void)

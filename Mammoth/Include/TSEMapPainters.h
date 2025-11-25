@@ -35,17 +35,17 @@ class CGalacticMapPainter
         bool HitTest (int x, int y, SSelectResult &Result) const;
 		void Paint (CG32bitImage &Dest) const;
         void SetPos (int x, int y) { m_xCenter = x; m_yCenter = y; }
-        void SetScale (int iScale) { m_iScale = iScale; }
+		void SetScale (int iScale, int iIconScale = 0) { m_iScale = iScale; m_iIconScale = iIconScale ? iIconScale : iScale; }
         void SetSelection (const CTopologyNode *pNode) { m_pSelected = pNode; }
         void SetViewport (const RECT &rcRect) { m_rcView = rcRect; RectCenter(m_rcView, &m_xViewCenter, &m_yViewCenter); }
         void ViewToGalactic (int x, int y, int xCenter, int yCenter, int iScale, int *retx, int *rety) const;
 
 	private:
-		void DrawNode (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbLabelColor, CG32bitPixel rgbLabelBackColor) const;
+		void DrawNode (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, Metric rIconScale, CG32bitPixel rgbLabelColor, CG32bitPixel rgbLabelBackColor) const;
 		void DrawNodeLabel (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbLabelColor, CG32bitPixel rgbLabelBackColor) const;
 		void DrawNodeLabel (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale) const { DrawNodeLabel(Dest, pNode, x, y, rScale, RGB_NOT_SET, RGB_NOT_SET); };
 		void DrawNodeIcon (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale) const;
-		void DrawNodeConnections (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y) const;
+		void DrawNodeConnections (CG32bitImage& Dest, const CTopologyNode* pNode, int x, int y, Metric rScale , CG32bitPixel rgbDefaultConnectionColor) const;
         void DrawSelection (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbColor) const;
 		void DrawUnknownNode (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const;
 		int GetImageGalacticHeight (void) const { return (m_pImage ? (int)(m_pImage->GetHeight() / m_rImageScale) : 0); }
@@ -72,6 +72,7 @@ class CGalacticMapPainter
         mutable int m_iSelectAngle;         //  Animate selection
 
 		int m_iScale;                       //  Scale to paint at 100 = normal; 200 = 2x size
+		int m_iIconScale;					//	Scale to paint icons at 100 = normal; 200 = 2x size;
 		int m_xCenter;                      //  Center of viewport in galactic coordinates
 		int m_yCenter;
 
@@ -106,11 +107,8 @@ class CSystemMapThumbnails
 
             ~SThumbnailCacheEntry (void)
                 {
-                if (pFullSystem)
-                    delete pFullSystem;
-
-                if (pStarsOnly)
-                    delete pStarsOnly;
+                delete pFullSystem;
+                delete pStarsOnly;
                 }
 
             CG32bitImage *pFullSystem;

@@ -9,10 +9,48 @@
 
 	{	code: '(map Nil theEntry theEntry)							result: Nil	}
 	{	code: '(map (list 1 2 3) theEntry (+ 1 theEntry))			result: '(2 3 4)	}
+	{	code: '(map (list 1 2 3) theEntry (@ (list 1 2 3) theEntry))			result: '(2 3 ())	}
+	{	code: '(map (list 1 2 3) 'reduceAverage theEntry (@ (list 1 2 4) theEntry))		result: '2	}
+	{	code: '(map (list 1 2 3) 'reduceSum theEntry (@ (list 1 2 4) theEntry))		result: '6	}
+	{	code: '(map (list 1 2 3) 'reduceMin theEntry (@ (list 1 2 4) theEntry))		result: '()	}
+	{	code: '(map (list 1 2 3) 'reduceMax theEntry (@ (list 1 2 4) theEntry))		result: '4	}
 
 	;	Map of structs
 
 	{	code: '(map { a:1 b:2 c:3 } theEntry theEntry)			result: '((a 1) (b 2) (c 3))	}
+	{	code: '(map { a:1 b:2 c:3 } theEntry (@ (list 1 2 3) (@ theEntry 1) ))			result: '(2 3 ())	}
+
+	;	Exclude Nil
+	
+	{	code: '(map { a:1 b:2 c:() } 'excludeNil theEntry (@ theEntry 1))			result: '(1 2)	}
+	{	code: '(map { a:1 b:2 c:() } '(original excludeNil) theEntry (@ theEntry 1))			result: '((a 1) (b 2))	}
+	{	code: '(map (list 1 2 3) 'excludeNil theEntry (@ (list 1 2 3) theEntry))			result: '(2 3)	}
+	{	code: '(map (list 1 2 3) '(original excludeNil) theEntry (@ (list 1 2 3) theEntry))			result: '(1 2)	}
+	{	code: '(map (list 1 2 3) '(reduceAverage excludeNil) theEntry (@ (list 1 2 4) theEntry))			result: '3	}
+	{	code: '(map (list 1 2 3) '(reduceSum excludeNil) theEntry (@ (list 1 2 4) theEntry))		result: '6	}
+	{	code: '(map (list 1 2 3) '(reduceMin excludeNil) theEntry (@ (list 1 2 4) theEntry))		result: '2	}
+	{	code: '(map (list 1 2 3) '(reduceMax excludeNil) theEntry (@ (list 1 2 4) theEntry))		result: '4	}
+
+	;	Reduce *
+
+	{	code: '(map (list 1 2 3) 'reduceMax theEntry theEntry)			result: '3	}
+	{	code: '(map (list 1 2 3) 'reduceMin theEntry theEntry)			result: '1	}
+	{	code: '(map (list 1 2 3) 'reduceAverage theEntry theEntry)		result: '2	}
+	{	code: '(map (list 1 2 3) 'reduceSum theEntry theEntry)			result: '6	}
+
+	;	Reduce but return original
+
+	{	code: '(map (list 1 2 3) '(reduceMax original) theEntry (+ 1 theEntry))			result: '3	}
+	{	code: '(map (list 1 2 3) '(reduceMin original) theEntry (+ 1 theEntry))			result: '1	}
+	{	code: '(map (list 1 2 3) '(original reduceMax ) theEntry (+ 1 theEntry))			result: '3	}
+	{	code: '(map (list 1 2 3) '(original reduceMin ) theEntry (+ 1 theEntry))			result: '1	}
+
+	;	Some reduce functions ignore original
+
+	{	code: '(map (list 1 2 3) '(reduceAverage original) theEntry (+ 1 theEntry))		result: '3	}
+	{	code: '(map (list 1 2 3) '(reduceSum original) theEntry (+ 1 theEntry))			result: '9	}
+	{	code: '(map (list 1 2 3) '(original reduceAverage ) theEntry (+ 1 theEntry))		result: '3	}
+	{	code: '(map (list 1 2 3) '(original reduceSum ) theEntry (+ 1 theEntry))			result: '9	}
 
 	;	Reduce unique
 
@@ -43,6 +81,29 @@
 	{	code: '(make 'sequence 10 1 -1)							result: '(10 9 8 7 6 5 4 3 2 1)	}
 	{	code: '(make 'sequence 10 1 -2)							result: '(10 8 6 4 2)	}
 	{	code: '(make 'sequence 10 1 -20)						result: '(10)	}
+
+	;	Subset
+
+	{	code: '(subset (list 1 2 3 4) 2)						result: '(3 4)}
+	{	code: '(subset (list 1 2 3 4) 1 2)						result: '(2 3)}
+	{	code: '(subset (list 1 2 3 4) -3 2)						result: '(1 2)}
+	{	code: '(subset (list 1 2 3 4) -3 2 '-)					result: '(2 3)}
+	{	code: '(subset (list 1 2 3 4) 5)						result: Nil}
+	{	code: '(subset (list 1 2 3 4) 5 5)						result: Nil}
+	{	code: '(subset (list 1 2 3 4) 2 5)						result: '(3 4)}
+	{	code: '(subset (list 1 2 3 4) -2 5 '-)					result: '(3 4)}
+	{	code: '(subset (list 1 2 3 4) 5 'empty)					result: '()}
+	{	code: '(subset (list 1 2 3 4) 5 5 'empty)				result: '()}
+	{	code: '(subset (list 1 2 3 4) 5 5 'empty '-)			result: '()}
+
+	;	Slice
+	
+	{	code: '(slice (list 1 2 3 4) 2)							result: '(3 4)}
+	{	code: '(slice (list 1 2 3 4 5 6) 2 3)					result: '(3 4)}
+	{	code: '(slice (list 1 2 3 4 5 6) -4 -2)					result: '(3 4 5)}
+	{	code: '(slice (list 1 2 3 4) 10 12)						result: '()}
+	{	code: '(slice (list 1 2 3 4) 2 1)						result: '()}
+	{	code: '(slice (list 1 2 3 4) 2 5)						result: '(3 4)}
 
 	))
 

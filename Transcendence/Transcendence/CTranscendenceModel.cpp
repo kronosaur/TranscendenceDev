@@ -1144,6 +1144,16 @@ ALERROR CTranscendenceModel::InitBackground (const CGameSettings &Settings, cons
 	if (Settings.GetBoolean(CGameSettings::noSpaceBackground))
 		m_Universe.GetSFXOptions().SetSpaceBackground(false);
 
+	// Set graphics performance options
+
+	if (!Settings.GetBoolean(CGameSettings::useMTSpritePaint))
+		m_Universe.GetSFXOptions().SetUseMTSpritePaint(false);
+
+	m_Universe.GetSFXOptions().SetMinSpriteChunkSize(Settings.GetInteger(CGameSettings::minMTSpriteChunk));
+
+	if (!Settings.GetBoolean(CGameSettings::useMTBkrndPaint))
+		m_Universe.GetSFXOptions().SetUseMTBkrndPaint(false);
+
 	DWORD dwAdventure = Settings.GetInteger(CGameSettings::lastAdventure);
 	if (dwAdventure == 0)
 		dwAdventure = DEFAULT_ADVENTURE_EXTENSION_UNID;

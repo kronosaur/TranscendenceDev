@@ -31,8 +31,8 @@
 const int DIGEST_SIZE = 20;
 static BYTE g_BaseFileDigest[] =
 	{
-    206,  16,  80, 157, 102, 197,  89,  58, 130,  62,
-    215,  60, 132, 106, 144, 121, 185, 251,  10, 251,
+	217,  65,  50, 198,  65, 150,  12,  27, 251, 185,
+	236,   9, 220,  19, 247, 113, 206, 117,  46,  68,
 	};
 
 class CLibraryResolver : public IXMLParserController
@@ -1919,8 +1919,7 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 	CExtension *pExtension;
 	if (error = CExtension::CreateExtension(ExtCtx, pDesc, CExtension::folderBase, pExtEntities, &pExtension))
 		{
-		if (pRoot)
-			delete pRoot;
+		delete pRoot;
 		delete pExtEntities;
 		Ctx.sError = ExtCtx.sError;
 		Ctx.sErrorFilespec = ExtCtx.sErrorFilespec;

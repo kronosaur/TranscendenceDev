@@ -55,6 +55,7 @@ class CDebugOptions
 	{
 	public:
 		ICCItemPtr GetProperty (const CString &sProperty) const;
+		bool IsForceSTPaintEnabled (void) const { return m_bForceSTPaint; }
 		bool IsShowAIDebugEnbled (void) const { return m_bShowAIDebug; }
 		bool IsShowBoundsEnabled (void) const { return m_bShowBounds; }
 		bool IsShowFacingsAngleEnabled (void) const { return m_bShowFacingsAngle; }
@@ -62,6 +63,8 @@ class CDebugOptions
 		bool IsShowNavPathsEnabled (void) const { return m_bShowNavPaths; }
 		bool IsShowNodeAttributesEnabled (void) const { return m_bShowNodeAttributes; }
 		bool IsShowOrderInfoEnabled () const { return m_bShowOrderInfo; }
+		bool IsShowPaintLocationEnabled (void) const { return m_bShowPaintLocation; }
+		bool IsShowPaintTimeEnabled (void) const { return m_bShowPaintTime; }
 		bool IsVerboseCreate (void) const { return m_bVerboseCreate; }
 		bool SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
 		void SetVerboseCreate (bool bValue = true) { m_bVerboseCreate = bValue; }
@@ -69,14 +72,17 @@ class CDebugOptions
 	private:
 		ICCItemPtr GetMemoryUse (void) const;
 
+		bool m_bForceSTPaint = false;
 		bool m_bShowAIDebug = false;
 		bool m_bShowBounds = false;
 		bool m_bShowLineOfFire = false;
 		bool m_bShowNavPaths = false;
 		bool m_bShowFacingsAngle = false;
 		bool m_bShowNodeAttributes = false;
-		bool m_bVerboseCreate = false;
 		bool m_bShowOrderInfo = false;
+		bool m_bShowPaintLocation = false;
+		bool m_bShowPaintTime = false;
+		bool m_bVerboseCreate = false;
 	};
 
 class CPerformanceCounters
@@ -144,6 +150,9 @@ class CSFXOptions
 		CSFXOptions (void) { SetSFXQuality(sfxMaximum); }
 
 		BYTE GetHUDOpacity (void) const { return (m_bHUDTransparent ? 200 : 255); }
+		int GetMaxBkrndPaintWorkers (void) const { return m_iMaxBkrndPaintWorkers; }
+		int GetMaxSpritePaintWorkers (void) const { return m_iMaxSpritePaintWorkers; }
+		DWORD GetMinSpriteChunkSizePower (void) const { return m_dwMinSpriteChunkSizePow; }
 		bool Is3DExtrasEnabled (void) const { return m_b3DExtras; }
 		bool Is3DSystemMapEnabled (void) const { return m_b3DSystemMap; }
 		bool IsDockScreenTransparent (void) const { return m_bDockScreenTransparent; }
@@ -152,25 +161,40 @@ class CSFXOptions
 		bool IsStargateTravelEffectEnabled (void) const { return m_bStargateTravelEffect; }
 		bool IsStarGlowEnabled (void) const { return m_bStarGlow; }
 		bool IsStarshineEnabled (void) const { return m_bStarshine; }
+		bool IsMTBkrndPaintEnabled(void) const { return m_bUseMTBkrndPaint; }
+		bool IsMTSpritePaintEnabled(void) const { return m_bUseMTSpritePaint; }
 		void Set3DExtrasEnabled (bool bEnabled = true) { m_b3DExtras = bEnabled; }
 		void Set3DSystemMapEnabled (bool bEnabled = true) { m_b3DSystemMap = bEnabled; }
 		void SetManeuveringEffectEnabled (bool bEnabled = true) { m_bManeuveringEffect = bEnabled; }
 		void SetSFXQuality (ESFXQuality iQuality);
 		void SetSFXQualityAuto (void);
 		void SetSpaceBackground (bool bEnabled = true) { m_bSpaceBackground = bEnabled; }
+		void SetUseMTBkrndPaint(bool bEnabled = true) { m_bUseMTBkrndPaint = bEnabled; }
+		void SetUseMTSpritePaint (bool bEnabled = true) { m_bUseMTSpritePaint = bEnabled; }
+		void SetMinSpriteChunkSize (int iMinSize = 1 << 12);
 
 	private:
+		void CalcPaintThreads (void);
+
 		ESFXQuality m_iQuality;
 
-		bool m_b3DSystemMap;				//	3D effect on system map
-		bool m_b3DExtras;					//	Show extra 3D objects, like parallax asteroids
-		bool m_bHUDTransparent;				//	HUD has transparency effect
-		bool m_bManeuveringEffect;			//	Show maneuvering thruster effects
-		bool m_bSpaceBackground;			//	Show system image background
-		bool m_bStargateTravelEffect;		//	Show effect when changing systems
-		bool m_bStarGlow;					//	Show star glow in system map
-		bool m_bStarshine;					//	Show starshine effect
-		bool m_bDockScreenTransparent;		//	Show SRS behind dock screen
+		const SProcessorInfo m_sProcessorInfo = sysGetProcessorInfo();	//	Info about the processor for setting MT paint options
+
+		int m_iMaxBkrndPaintWorkers = 0;			//	Max number of additional threads to use for background painting. <2 means to run on main thread.
+		int m_iMaxSpritePaintWorkers = 0;			//	Max number of additional threads to use for sprite painting. <2 means to run on main thread.
+		DWORD m_dwMinSpriteChunkSizePow = 0;		//	Min size of a sprite chunk for sprite-based multithreading. Expressed as a power of 2.
+
+		bool m_b3DSystemMap = false;				//	3D effect on system map
+		bool m_b3DExtras = false;					//	Show extra 3D objects, like parallax asteroids
+		bool m_bHUDTransparent = false;				//	HUD has transparency effect
+		bool m_bManeuveringEffect = false;			//	Show maneuvering thruster effects
+		bool m_bSpaceBackground = false;			//	Show system image background
+		bool m_bStargateTravelEffect = false;		//	Show effect when changing systems
+		bool m_bStarGlow = false;					//	Show star glow in system map
+		bool m_bStarshine = false;					//	Show starshine effect
+		bool m_bDockScreenTransparent = false;		//	Show SRS behind dock screen
+		bool m_bUseMTBkrndPaint = false;			//	Use multithreaded bkrnd paint. This option has no effect on 1-core systems.
+		bool m_bUseMTSpritePaint = false;			//	Use multithreaded sprite paint. This option has no effect on 1-core systems or if (dbgSet 'ForceSTPaint ...) is enabled (API57+).
 	};
 
 //	Engine Strings -------------------------------------------------------------
@@ -460,7 +484,8 @@ class CUniverse
 		ALERROR LoadNewExtension (const CString &sFilespec, const CIntegerIP &FileDigest, CString *retsError) { return m_Extensions.LoadNewExtension(sFilespec, FileDigest, retsError); }
 		bool LogImageLoad (void) const { return (m_iLogImageLoad == 0); }
 		void LogOutput (const CString &sLine) const { m_pHost->LogOutput(sLine); }
-		void PlaySound (CSpaceObject *pSource, int iChannel);
+		void PlaySound (CSpaceObject *pSource, int iChannel) { PlaySound(pSource, iChannel, NULL); }
+		void PlaySound (CSpaceObject *pSource, int iChannel, SSoundOptions *pOptions);
 		void PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CSystemEventList &SavedEvents);
 		void RefreshCurrentMission (void);
 		void RegisterForNotifications (INotifications *pSubscriber) { m_Subscribers.Insert(pSubscriber); }
@@ -472,7 +497,7 @@ class CUniverse
 		void SetDebugMode (bool bDebug = true) { m_bDebugMode = bDebug; }
 		bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
 		void SetDifficultyLevel (CDifficultyOptions::ELevel iLevel) { m_Difficulty.SetLevel(iLevel); }
-		void SetEngineOptions (const CEngineOptions &Options) { m_EngineOptions.Merge(Options); }
+		void SetEngineOptions (const CEngineOptions &Options) { m_EngineOptions = Options; }
 		bool SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData);
 		void SetNewSystem (CSystem &NewSystem, CSpaceObject *pPOV = NULL);
 		bool SetPOV (CSpaceObject *pPOV);
@@ -684,6 +709,7 @@ class CUniverse
 		mutable const CEconomyType *m_pCreditCurrency = NULL;
 		CNamedEffects m_NamedEffects;
 		CEngineLanguage m_Language;
+		SSoundOptions m_DefaultSoundOptions;
 
 		//	Debugging structures
 

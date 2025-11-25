@@ -79,28 +79,22 @@ CShip::~CShip (void)
 //	CShip destructor
 
 	{
-	if (m_pController)
-		delete m_pController;
+	delete m_pController;
 
-	if (m_pIrradiatedBy)
-		delete m_pIrradiatedBy;
+	delete m_pIrradiatedBy;
 
-	if (m_pTrade)
-		delete m_pTrade;
+	delete m_pTrade;
 
-	if (m_pMoney)
-		delete m_pMoney;
+	delete m_pMoney;
 
-	if (m_pPowerUse)
-		delete m_pPowerUse;
+	delete m_pPowerUse;
 
 	//	We own any attached objects.
 
 	for (int i = 0; i < m_Interior.GetCount(); i++)
 		{
 		CSpaceObject *pAttached = m_Interior.GetAttached(i);
-		if (pAttached)
-			delete pAttached;
+		delete pAttached;
 		}
 	}
 
@@ -2492,7 +2486,7 @@ int CShip::GetAmmoForSelectedLinkedFireWeapons (CInstalledDevice *pDevice)
 							//  If it is an ammo weapon, but does not require items, then it is a charges weapon. Add its ammo to the count.
 							{
 							int iAmmoLeft = 0;
-							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, NULL, true);
+							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, NULL, NULL, true);
 							iAmmoCount += iAmmoLeft;
 							}
 
@@ -2503,7 +2497,7 @@ int CShip::GetAmmoForSelectedLinkedFireWeapons (CInstalledDevice *pDevice)
 							bool ammoIsAdded = false;
 							int iAmmoLeft = 0;
 							CItemType *pAmmoType;
-							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, &pAmmoType, true);
+							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, NULL, &pAmmoType, true);
 							AmmoItemTypes.Find(pAmmoType, &ammoIsAdded);
 							if (!ammoIsAdded)
 								{
@@ -5273,7 +5267,7 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 	else if (IsRadioactive())
 		Image.PaintImageWithGlow(Dest, x, y, Ctx.iTick, m_Rotation.GetFrameIndex(), CG32bitPixel(0, 255, 0));
 	else
-		Image.PaintImage(Dest, x, y, Ctx.iTick, m_Rotation.GetFrameIndex());
+		Image.PaintImage(Dest, x, y, Ctx.iTick, m_Rotation.GetFrameIndex(), false, &Ctx);
 
 	//	Paint effects in front of the ship.
 
@@ -6028,11 +6022,8 @@ EConditionResult CShip::OnRemoveCondition (ECondition iCondition, const SApplyCo
 			{
 			if (m_fRadioactive)
 				{
-				if (m_pIrradiatedBy)
-					{
-					delete m_pIrradiatedBy;
-					m_pIrradiatedBy = NULL;
-					}
+				delete m_pIrradiatedBy;
+				m_pIrradiatedBy = NULL;
 
 				m_iContaminationTimer = 0;
 				m_fRadioactive = false;
@@ -7172,7 +7163,7 @@ void CShip::SetController (IShipController *pController, bool bFreeOldController
 	{
 	ASSERT(pController);
 
-	if (bFreeOldController && m_pController)
+	if (bFreeOldController)
 		delete m_pController;
 
 	m_pController = pController;
@@ -7687,7 +7678,7 @@ void CShip::TrackFuel (bool bTrack)
 		m_pPowerUse = new CPowerConsumption;
 		m_pPowerUse->SetFuelLeft(GetMaxFuel());
 		}
-	else if (!bTrack && m_pPowerUse != NULL)
+	else if (!bTrack)
 		{
 		delete m_pPowerUse;
 		m_pPowerUse = NULL;

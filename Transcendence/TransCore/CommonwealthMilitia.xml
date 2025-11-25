@@ -511,6 +511,7 @@
 											;	If the player is a captain, they can meet Jenna
 											(and (= rank 2)
 												(not (typGetGlobalData &chJenna; 'status))
+												(leq (sysGetLevel) (typGetStaticData &chJenna; 'MaxSystemSpawnLevel))
 												(leq (random 1 100) 60)
 												)
 												(scrShowScreen gScreen &dsRPGWingmanEncounter; {wingman: &chJenna;})

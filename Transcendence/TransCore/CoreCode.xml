@@ -17,7 +17,11 @@
 
 	<Globals>
 		(block Nil
-			;	Diagnostics Helper Functions -----------------------------------
+			;	Diagnostics and Debugging Helper Functions -----------------------------------
+
+			;	Print UNIDs in hexadecimal
+
+			(setq fmtUNID (lambda (unid) (if (isInt unid) (cat "0x" (hex unid 8)))))
 
 			(setq diagAssert (lambda (expr errorMsg)
 				(if (not expr)
@@ -39,7 +43,7 @@
 						SuccessDebrief
 						FailureDebrief
 						))
-					(hexUNID (hex (msn@ missionObj 'unid)))
+					(hexUNID (fmtUNID (msn@ missionObj 'unid)))
 					)
 					(diagAssert missionName "No mission name")
 					(enum validateList textID
@@ -566,7 +570,19 @@
 				))
 
 			(setq mathScale (lambda (x fromMin fromMax toMin toMax gamma)
-
+			
+			;	DEPRECATED: use gammaScale directly instead.
+			;
+			;	gammaScale is around 12-20x faster than the original version
+			;	of mathScale, and is still around 4x faster than this
+			;	compatibility lambda.
+			;
+			;	gammaScale provides the same functionality as mathScale,
+			;	but note that it only returns an int if toMin and toMax are
+			;	both ints, otherwise it returns a double. Additionally, it
+			;	does not have the reversed fromRange math bug as pre API 55
+			;	mathScale did.
+			;
 			;	Scales x, which must be in the range fromMin to fromMax to the
 			;	destination scale, toMin to Max.
 			;
@@ -574,85 +590,13 @@
 			;	function. At 100, the mapping is linear. At 50 we use a square
 			;	root function; at 200 we square it.
 
-				(block (toRange result)
+				;	We round the output for legacy mod code that passes doubles
+				;	to the toRange, but expects an int to be returned.
 
-					(setq toRange (subtract toMax toMin))
-
-					;	Map to the result range
-
-					(setq result
-						(divide
-							(multiply
-								(subtract 
-									(min (max fromMin x) fromMax)
-									fromMin
-									)
-								toRange
-								)
-							(subtract fromMax fromMin)
-							)
-						)
-
-					;	If we have a gamma parameter, adjust it
-
-					(if gamma
-						(setq result
-							(@ (power (list result toRange) (list gamma 100)) 0)
-							)
-						)
-
-					;	Done
-
-					(if (ls toRange 0)
-						(subtract toMin result)
-						(add result toMin)
-						)
+				(round
+					(gammaScale x fromMin fromMax toMin toMax gamma)
 					)
-				))
 				
-			(setq mathScaleReal (lambda (x fromMin fromMax toMin toMax gamma)
-
-			;	Scales x, which must be in the range fromMin to fromMax to the
-			;	destination scale, toMin to Max. Returns a double.
-			;
-			;	gamma is an optional parameter that scales based on a power
-			;	function. At 1.0, the mapping is linear. At 0.5 we use a square
-			;	root function; at 2.0 we square it.
-
-				(block (toRange result)
-
-					(setq toRange (- toMax toMin))
-
-					;	Map to the result range
-
-					(setq result
-						(/
-							(*
-								(- 
-									(min (max fromMin x) fromMax)
-									fromMin
-									)
-								toRange
-								)
-							(- fromMax fromMin)
-							)
-						)
-
-					;	If we have a gamma parameter, adjust it
-
-					(if gamma
-						(setq result
-							(pow (/ result toRange) gamma)
-							)
-						)
-
-					;	Done
-
-					(if (ls toRange 0)
-						(- toMin result)
-						(+ result toMin)
-						)
-					)
 				))
 				
 			; Object functions -------------------------------------------------

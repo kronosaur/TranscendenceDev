@@ -179,8 +179,9 @@
 						(block (
 							(thisItem (scrGetItem gScreen))
 							(maxCount (itmGetCount thisItem))
-							(unitPrice (itmGetPrice thisItem))
 							(itemCurrency (itm@ thisItem 'currency))
+							(displayCurrency (or (@ gData 'currency) (rpgGetPlayerPrimaryCurrency) itemCurrency))
+							(unitPrice (itmGetPrice thisItem displayCurrency))
 
 							;	Compose text that describes the item
 
@@ -188,15 +189,15 @@
 
 								(scrTranslate gScreen 'descCargoItem {
 									unitMass: (fmtNumber 'massKg (itmGetMass thisItem))
-									unitPrice: (fmtCurrency  itemCurrency unitPrice)
+									unitPrice: (fmtCurrency  displayCurrency unitPrice)
 									})
 
 								(scrTranslate gScreen 'descCargoItems {
 									unitMass: (fmtNumber 'massKg (itmGetMass thisItem))
-									unitPrice: (fmtCurrency itemCurrency unitPrice)
+									unitPrice: (fmtCurrency displayCurrency unitPrice)
 									count: maxCount
 									totalMass: (fmtNumber 'massKg (* (itmGetMass thisItem) maxCount))
-									totalPrice: (fmtCurrency itemCurrency (* unitPrice maxCount))
+									totalPrice: (fmtCurrency displayCurrency (* unitPrice maxCount))
 									})
 								))
 
@@ -604,6 +605,7 @@
 		<Display type="customPicker"
 				iconWidth="192"
 				iconHeight="96"
+				initialItem="=(scrSetListCursor gScreen (scrGetData gScreen 'cursor))"
 				>
 			<OnDisplayInit>
 				(block (
@@ -659,7 +661,9 @@
 
 							(scrSetDesc gScreen (msn@ theMission 'summary))
 							)
-							
+
+						(scrSetControlValue gScreen 'itemList (msn@ theMission 'rpg.itemListDisplay))
+
 						(scrShowAction gScreen 'actionRemoveMission (msn@ theMission 'canBeDeleted))
 						(scrShowAction gScreen 'actionSetTarget 
 							(and
@@ -670,6 +674,12 @@
 						(scrEnableAction gScreen 'actionSetTarget (neq theMission (scrGetData gScreen 'targetMission)))
 						)
 				</OnPaneInit>
+
+				<Controls>
+					<Text id="desc"/>
+					<ItemListDisplay id="itemList"	showActualItem="true"/>
+					<Text id="descWarning" style="warning"/>
+				</Controls>
 
 				<Actions>
 					<Action id="actionSetTarget" default="1">
@@ -688,6 +698,9 @@
 							(theMission (@ theEntry 'missionObj))
 							)
 							(msnFailure theMission)
+
+							;	Save the cursor
+							(scrSetData gScreen 'cursor (scrGetListCursor gScreen))
 							(scrRefreshScreen gScreen)
 							)
 					</Action>

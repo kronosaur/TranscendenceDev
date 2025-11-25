@@ -228,6 +228,17 @@ class CAchievementDataBlock
 
 //	CDesignType
 
+enum class EDesignDataTypes
+	{
+	ePropertyData,			//	properties (ex, typ@)
+	eGlobalData,			//	type data (ex, typSetData)
+	eInstanceData,			//	instance data (ex, objSetData)
+	eStaticData,			//	static data (ex, typGetStaticData)
+
+	ePropertyEngineData,	//	Engine-defined properties (ex, typ@)
+	ePropertyCustomData,	//	Custom-defined properties (ex, typ@)
+	};
+
 class CDesignType
 	{
 	public:
@@ -343,6 +354,7 @@ class CDesignType
 		const CAchievementDataBlock &GetAchievementDefinitions () const { return (m_pExtra ? m_pExtra->Achievements : CAchievementDataBlock::Null()); }
 		const CArmorMassDefinitions &GetArmorMassDefinitions (void) const { return (m_pExtra ? m_pExtra->ArmorDefinitions : CArmorMassDefinitions::Null); }
 		const CString &GetAttributes (void) const { return m_sAttributes; }
+		TArray<CString> GetDataKeys (const EDesignDataTypes iDataType );
 		CString GetDataField (const CString &sField) const { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
 		const CEconomyType &GetDefaultCurrency (void) const { return OnGetDefaultCurrency(); }
@@ -1279,8 +1291,7 @@ class CDynamicDesignTable
 				if (pType)
 					pType->Delete();
 
-				if (pSource)
-					delete pSource;
+				delete pSource;
 				}
 
 			CExtension *pExtension;
@@ -1537,6 +1548,9 @@ ALERROR LoadDamageAdj (CXMLElement *pItem, const CString &sAttrib, int *retiAdj,
 DamageTypes LoadDamageTypeFromXML (const CString &sAttrib);
 DWORD LoadExtensionVersion (const CString &sVersion);
 CG32bitPixel LoadRGBColor (const CString &sString, CG32bitPixel rgbDefault = CG32bitPixel::Null());
+CG32bitPixel DWToRGBColor (const DWORD dwColor);
+CG32bitPixel LoadARGBColor (const CString &sString, CG32bitPixel rgbDefault = CG32bitPixel::Null());
+CG32bitPixel DWToARGBColor (const DWORD dwColor);
 ALERROR LoadUNID (SDesignLoadCtx &Ctx, const CString &sString, DWORD *retdwUNID, DWORD dwDefaultUNID = 0);
 bool SetFrequencyByLevel (CString &sLevelFrequency, int iLevel, int iFreq);
 
@@ -1548,6 +1562,6 @@ inline CSystemMap *CTopologyNode::GetDisplayPos (int *retxPos, int *retyPos) con
 inline bool DamageDesc::IsEnergyDamage (void) const { return ::IsEnergyDamage(m_iType); }
 inline bool DamageDesc::IsMatterDamage (void) const { return ::IsMatterDamage(m_iType); }
 
-inline void IEffectPainter::PlaySound (CSpaceObject *pSource) { if (!m_bNoSound) GetCreator()->PlaySound(pSource); }
+inline void IEffectPainter::PlaySound (CSpaceObject *pSource) { if (!m_bNoSound) GetCreator()->PlaySound(pSource, &m_sSoundOptions); }
 
 inline DWORD SDesignLoadCtx::GetAPIVersion (void) const { return (pExtension ? pExtension->GetAPIVersion() : API_VERSION); }

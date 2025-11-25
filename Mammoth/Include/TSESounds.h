@@ -7,6 +7,15 @@
 
 //	Sounds
 
+//	Sound FX Options -----------------------------------------------------------
+
+struct SSoundOptions
+	{
+	Metric rVolumeMultiplier	= 1.0;	//	Multiplier to sound effect
+	Metric rFalloffFactor		= 1.0;	//	Multiplier to sound effect falloff
+	Metric rFalloffStart		= 0.0;	//	Distance in ls that falloff starts
+	};
+
 class CSoundResource : public CDesignType
 	{
 	public:
@@ -43,6 +52,7 @@ class CSoundResource : public CDesignType
 
 class CSoundRef
 	{
+
 	public:
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		DWORD GetUNID (void) const { return m_dwUNID; }
@@ -52,6 +62,7 @@ class CSoundRef
 		ALERROR LoadUNID (SDesignLoadCtx &Ctx, const CString &sAttrib);
 		void Mark (void) const { if (m_pSound) m_pSound->Mark(); }
 		void PlaySound (CSpaceObject *pSource) const;
+		void PlaySound (CSpaceObject *pSource, SSoundOptions *pOptions) const;
 
 	private:
 		DWORD m_dwUNID = 0;

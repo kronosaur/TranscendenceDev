@@ -686,6 +686,7 @@ void COverlay::FireOnMining (CSpaceObject &Source, EAsteroidType iType, SDamageC
 	CCX.DefineInteger(CONSTLIT("aHP"), Ctx.iDamage);
 	CCX.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
 	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.GetDesc().GetWeaponType());
+	CCX.DefineBool(CONSTLIT("aMiningScan"), Ctx.Damage.GetMiningScan());
 
 	ICCItemPtr pResult = CCX.RunCode(Event);
 	if (pResult->IsError())

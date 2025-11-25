@@ -98,6 +98,7 @@ enum SpecialDamageTypes
 	specialTimeStop			= 16,
 	specialAttract			= 17,
 	specialRepel			= 18,
+	specialMiningScan		= 19,
 	};
 
 class CSpecialDamageSet
@@ -158,7 +159,8 @@ class DamageDesc
 				m_MassDestructionAdj(0),
 				m_MiningAdj(0),
 				m_ShatterDamage(0),
-				m_ShieldPenetratorAdj(0)
+				m_ShieldPenetratorAdj(0),
+				m_fMiningScan(0)
 			{ }
 
 		void AddEnhancements (const CItemEnhancementStack *pEnhancements);
@@ -170,6 +172,7 @@ class DamageDesc
 		DamageTypes GetDamageType (void) const { return m_iType; }
 		Metric GetDamageValue (DWORD dwFlags = 0) const;
 		CString GetDesc (DWORD dwFlags = 0);
+		CString GetDPSDesc (Metric rFireRate, Metric rMultiplier = 1.0, DWORD dwFlags = 0);
 		int GetMinDamage (void) const;
 		int GetMaxDamage (void) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
@@ -203,6 +206,7 @@ class DamageDesc
 		int GetMassDestructionLevel (void) const;
 		int GetMiningAdj (void) const { return (int)(m_MiningAdj ? (2 * (m_MiningAdj * m_MiningAdj) + 2) : 0); }
 		int GetMiningDamage (void) const { return m_MiningAdj; }
+		int GetMiningScan (void) const { return m_fMiningScan; }
 		int GetMiningWMDAdj (void);
 		int GetRadiationDamage (void) const { return (int)m_RadiationDamage; }
 		int GetShatterDamage (void) const { return (int)m_ShatterDamage; }
@@ -235,6 +239,7 @@ class DamageDesc
 		DestructionTypes m_iCause = killedByDamage;		//	Cause of damage
 
 		//	Extra damage
+		//	Extra damage 1 (DWORD)
 		DWORD m_EMPDamage:3;					//	Ion (paralysis) damage
 		DWORD m_RadiationDamage:3;				//	Radiation damage
 		DWORD m_DeviceDisruptDamage:3;			//	Disrupt devices damage
@@ -249,11 +254,14 @@ class DamageDesc
 		DWORD m_fNoSRSFlash:1;					//	If TRUE, damage should not cause SRS flash
 		DWORD m_fAutomatedWeapon:1;				//	TRUE if this damage is caused by automated weapon
 
+		//	Extra damage 2 (DWORD)
 		DWORD m_DeviceDamage:3;					//	Damage to devices
 		DWORD m_MiningAdj:3;					//	Adj for mining capability
 		DWORD m_ShatterDamage:3;				//	Shatter damage
-		DWORD m_dwSpare2:23;
+		DWORD m_fMiningScan:1;					//	Scans for ore instead of actually mining it
+		DWORD m_dwSpare2:22;
 
+		//	Extra damage 3 (DWORD)
 		BYTE m_ShieldDamage = 0;				//	Shield damage (level)	shield:level
 		BYTE m_ArmorDamage = 0;					//	Armor damage (level)
 		BYTE m_TimeStopDamage = 0;				//	Time stop (level)
@@ -572,6 +580,20 @@ class CConfigurationDesc
 
 #include "TSEConfigurationDescInlines.h"
 
+//	Mining ---------------------------------------------------------------------
+
+enum class EMiningMethod
+	{
+	unknown = -1,
+
+	ablation = 0,
+	drill = 1,
+	explosion = 2,
+	shockwave = 3,
+	};
+
+constexpr int EMiningMethodCount = 4;
+
 //	WeaponFireDesc -------------------------------------------------------------
 
 struct SExplosionType
@@ -783,6 +805,8 @@ class CWeaponFireDesc
 		int GetMinDamage (void) const { return m_MinDamage.Roll(); }
 		Metric GetMinRadius (void) const { return m_rMinRadius; }
 		Metric GetMaxRange (void) const;
+		int GetMiningLevel (void) const { return m_iMaxMiningLevel; }
+		EMiningMethod GetMiningMethod (void) const { return m_MiningMethod; }
 		CEffectCreator *GetParticleEffect (void) const;
 		const CParticleSystemDesc *GetParticleSystemDesc (void) const { return m_pParticleDesc; }
 		int GetPassthrough (void) const { return m_iPassthrough; }
@@ -823,8 +847,8 @@ class CWeaponFireDesc
 		bool IsTrackingTime (int iTick) const { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
 		void MarkImages (void);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
-		void PlayFireSound (CSpaceObject *pSource) const { m_FireSound.PlaySound(pSource); }
-		void PlayChargeSound (CSpaceObject *pSource) const { m_ChargeSound.PlaySound(pSource); }
+		void PlayFireSound (CSpaceObject *pSource) const { m_FireSound.PlaySound(pSource, m_pFireSoundOptions); }
+		void PlayChargeSound (CSpaceObject *pSource) const { m_ChargeSound.PlaySound(pSource, m_pChargeSoundOptions); }
 		bool ProximityBlast (void) const { return (m_fProximityBlast ? true : false); }
 		bool ShowsHint (EDamageHint iHint) const;
 
@@ -876,6 +900,8 @@ class CWeaponFireDesc
 		int m_iFireRate = -1;					//	Ticks between shots (-1 = default to weapon class)
 		int m_iPowerUse = -1;					//	Power use in 1/10th MWs (-1 = default to weapon class)
 		int m_iIdlePowerUse = -1;				//	Power use while idle (-1 = default to weapon class)
+		EMiningMethod m_MiningMethod = EMiningMethod::unknown;	//	Mining method
+		int m_iMaxMiningLevel = -1;				//	Max level of ore that can be mined (-1 = default damage table, 0 = sense ore only)
 
 		Metric m_rMissileSpeed = 0.0;			//	Speed of missile
 		DiceRange m_MissileSpeed;				//	Speed of missile (if random)
@@ -893,7 +919,9 @@ class CWeaponFireDesc
 		CEffectCreatorRef m_pFireEffect;		//	Effect when we fire (muzzle flash)
 		CEffectCreatorRef m_pChargeEffect;		//	Effect when we charge (muzzle flash)
 		CSoundRef m_FireSound;					//	Sound when weapon is fired
+		SSoundOptions *m_pFireSoundOptions;		//	Sound options for fire sound
 		CSoundRef m_ChargeSound;				//	Sound when weapon is charged
+		SSoundOptions *m_pChargeSoundOptions;		//	Sound options for charge sound
 		SOldEffects *m_pOldEffects = NULL;		//  Non-painter effects.
 		CWeaponFireDescRef m_pExplosionType;	//	Explosion to create when ship is destroyed
 		bool m_bPlaySoundOncePerBurst;			//	If TRUE, play the fire sound only once per burst

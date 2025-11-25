@@ -26,14 +26,11 @@ CMissile::~CMissile (void)
 	if (m_pPainter)
 		m_pPainter->Delete();
 
-	if (m_pExhaust)
-		delete m_pExhaust;
+	delete m_pExhaust;
 
-	if (m_pVaporTrailRegions)
-		delete [] m_pVaporTrailRegions;
+	delete [] m_pVaporTrailRegions;
 
-	if (m_pSavedRotations)
-		delete [] m_pSavedRotations;
+	delete [] m_pSavedRotations;
 	}
 
 void CMissile::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iPosZ, int iLifeLeft, DWORD *retdwID)
@@ -68,8 +65,7 @@ int CMissile::ComputeVaporTrail (void)
 
 		//	Allocate array of regions
 
-		if (m_pVaporTrailRegions)
-			delete [] m_pVaporTrailRegions;
+		delete [] m_pVaporTrailRegions;
 
 		m_pVaporTrailRegions = new CG16bitBinaryRegion [m_iSavedRotationsCount];
 
@@ -807,6 +803,7 @@ void CMissile::OnMove (SUpdateCtx &Ctx, const CVector &vOldPos, Metric rSeconds)
 		Ctx.pObj = this;
 		Ctx.vOldPos = vOldPos;
 		Ctx.rSeconds = rSeconds;
+		Ctx.iTick = m_iTick;
 
 		bool bBoundsChanged;
 		m_pPainter->OnMove(Ctx, &bBoundsChanged);
@@ -1377,7 +1374,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 				{
 				SExhaustParticle &Particle = m_pExhaust->GetAt(i);
 				Particle.vVel = m_pDesc->GetExhaust().rExhaustDrag * Particle.vVel;
-				Particle.vPos = Particle.vPos + Particle.vVel * g_SecondsPerUpdate;
+				Particle.vPos = Particle.vPos + Particle.vVel * rSecondsPerTick;
 				}
 			}
 

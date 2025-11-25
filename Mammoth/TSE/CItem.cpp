@@ -101,8 +101,7 @@ CItem::~CItem (void)
 //	CItem destructor
 
 	{
-	if (m_pExtra)
-		delete m_pExtra;
+	delete m_pExtra;
 	}
 
 CItem &CItem::operator= (const CItem &Copy)
@@ -110,8 +109,7 @@ CItem &CItem::operator= (const CItem &Copy)
 //	CItem equals operator
 
 	{
-	if (m_pExtra)
-		delete m_pExtra;
+	delete m_pExtra;
 
 	m_pItemType = Copy.m_pItemType;
 	m_dwCount = Copy.m_dwCount;
@@ -1106,6 +1104,26 @@ ICCItemPtr CItem::GetDataAsItem (const CString &sAttrib) const
 		return m_pExtra->m_Data.GetDataAsItem(sAttrib);
 
 	return ICCItemPtr(GetUniverse().GetCC().CreateNil());
+	}
+
+ICCItemPtr CItem::GetDataKeysAsItem (void) const
+
+//	GetDataAsItem
+//
+//	Returns data
+
+	{
+	if (m_pExtra)
+		{
+		ICCItemPtr pList(CCodeChain::CreateLinkedList());
+		
+		for (int i = 0; i < m_pExtra->m_Data.GetDataCount(); i++)
+			pList->AppendString(m_pExtra->m_Data.GetDataAttrib(i));
+
+		return pList;
+		}
+
+	return ICCItemPtr::Nil();
 	}
 
 CString CItem::GetDesc (bool bActual) const

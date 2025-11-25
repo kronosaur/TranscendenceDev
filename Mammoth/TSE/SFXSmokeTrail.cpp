@@ -59,8 +59,7 @@ CSmokeTrailEffectCreator::~CSmokeTrailEffectCreator (void)
 //	CSmokeTrailEffectCreator destructor
 
 	{
-	if (m_pParticleEffect)
-		delete m_pParticleEffect;
+	delete m_pParticleEffect;
 	}
 
 IEffectPainter *CSmokeTrailEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
@@ -278,7 +277,7 @@ void CSmokeTrailPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged)
 
 	//	Update particle motion
 
-	m_Particles.UpdateMotionLinear(Ctx.rSeconds);
+	m_Particles.UpdateMotionLinear(Ctx);
 
 	//	Bounds are always changing
 

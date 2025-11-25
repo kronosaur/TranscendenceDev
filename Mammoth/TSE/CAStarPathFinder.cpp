@@ -47,8 +47,7 @@ CAStarPathFinder::~CAStarPathFinder (void)
 	DeleteList(m_pOpenList);
 	DeleteList(m_pClosedList);
 
-	if (m_pClosedMap)
-		delete m_pClosedMap;
+	delete m_pClosedMap;
 	}
 
 void CAStarPathFinder::AddObstacle (const CVector &vUR, const CVector &vLL)
@@ -514,8 +513,7 @@ void CAStarPathFinder::Reset (void)
 	{
 	DeleteList(m_pOpenList);
 	DeleteList(m_pClosedList);
-	if (m_pClosedMap)
-		delete m_pClosedMap;
+	delete m_pClosedMap;
 
 	m_pClosedMap = new CTileMap(MAP_SIZE, MAP_SCALE);
 	}

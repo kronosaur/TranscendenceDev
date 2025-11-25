@@ -94,6 +94,8 @@ class CSystemMap : public CDesignType
 		CG32bitImage *CreateBackgroundImage (Metric *retrImageScale);
 		void GetBackgroundImageSize (int *retcx, int *retcy);
 		CSystemMap *GetDisplayMap (void) { return (m_pPrimaryMap != NULL ? m_pPrimaryMap : this); }
+		Metric GetIconScale (void) { return m_rIconScale; }
+		Metric GetIconScaleFactor (void) { return m_rIconScaleFactor; }
         Metric GetLightYearsPerPixel (void) const { return m_rLightYearsPerPixel; }
 		const CString &GetName (void) const { return m_sName; }
 		void GetScale (int *retiInitial, int *retiMin = NULL, int *retiMax = NULL) { if (retiInitial) *retiInitial = m_iInitialScale; if (retiMin) *retiMin = m_iMinScale; if (retiMax) *retiMax = m_iMaxScale; }
@@ -158,6 +160,8 @@ class CSystemMap : public CDesignType
 		int m_iMaxScale = 100;					//	Max zoom
 		int m_iMinScale = 100;					//	Min zoom
         Metric m_rLightYearsPerPixel = 1.0;		//  Number of light years per pixel
+		Metric m_rIconScaleFactor = 1.0;		//	Relative amount of additional scaling for icons when zooming the map. 0.0 = no change, 1.0 = equivalent zoom
+		Metric m_rIconScale = 1.0;				//	Scale of icons when map is at 100% scale
 
 		CSystemMapRef m_pPrimaryMap;			//	If not NULL, place nodes on given map
 		TArray<CSystemMapRef> m_Uses;			//	List of maps that we rely on.

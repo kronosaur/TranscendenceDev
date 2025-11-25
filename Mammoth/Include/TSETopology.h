@@ -20,8 +20,21 @@ class CTopologyNode
 			CString sDestNode;						//	Destination node
 			CString sDestName;						//	Destination entry point
 
+			//	From and To overrides
+			CString sFromAttributes;
+			CString sFromLocationCriteria;
+			DWORD dwFromGateType;
+			DWORD dwFromBeaconType;
+
+			CString sToAttributes;
+			CString sToLocationCriteria;
+			DWORD dwToGateType;
+			DWORD dwToBeaconType;
+
 			const TArray<SPoint> *pMidPoints = NULL;	//	Gate line mid-points (optional)
 			bool bUncharted = false;				//	Gate is uncharted
+
+			CG32bitPixel rgbColor;					//	Gate link map color, 0-alpha is default
 			};
 
 		struct SStargateRouteDesc
@@ -38,13 +51,23 @@ class CTopologyNode
 
 			const CTopologyNode *pFromNode = NULL;
 			CString sFromName;
+			CString sFromAttributes;
+			CString sFromLocationCriteria;
+			DWORD dwFromGateType;
+			DWORD dwFromBeaconType;
 
 			const CTopologyNode *pToNode = NULL;
 			CString sToName;
+			CString sToAttributes;
+			CString sToLocationCriteria;
+			DWORD dwToGateType;
+			DWORD dwToBeaconType;
 
 			TArray<SPoint> MidPoints;
 			bool bOneWay = false;
 			bool bUncharted = false;
+
+			CG32bitPixel rgbColor;
 
 			private:
 				mutable Metric m_rDistance = 0.0;
@@ -67,6 +90,7 @@ class CTopologyNode
 		int GetCalcDistance (void) const { return m_iCalcDistance; }
 		const CString &GetCreatorID (void) const { return (m_sCreatorID.IsBlank() ? m_sID : m_sCreatorID); }
 		ICCItemPtr GetData (const CString &sAttrib) const { return m_Data.GetDataAsItem(sAttrib); }
+		ICCItemPtr GetDataKeys (void) const { ICCItemPtr pList(CCodeChain::CreateLinkedList()); for (int i = 0; i < m_Data.GetDataCount(); i++) { pList->AppendString(m_Data.GetDataAttrib(i)); } return pList; };
 		inline CSystemMap *GetDisplayPos (int *retxPos = NULL, int *retyPos = NULL) const;
 		const CString &GetEndGameReason (void) { return m_sEndGameReason; }
 		const CString &GetEpitaph (void) { return m_sEpitaph; }
@@ -91,6 +115,7 @@ class CTopologyNode
 		const CTradingEconomy &GetTradingEconomy (void) const { return m_Trading; }
 		CUniverse &GetUniverse (void) const;
 		bool HasAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
+		bool HasStargateAttribute (const CString& sName, const CString& sAttrib) const { return ::HasModifier(m_NamedGates.GetAt(sName) ? m_NamedGates.GetAt(sName)->sAttributes : CONSTLIT(""), sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
 		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
 		ALERROR InitFromAdditionalXML (CTopology &Topology, CXMLElement *pDesc, CString *retsError);
@@ -137,6 +162,11 @@ class CTopologyNode
 					fUncharted(false)
 				{ }
 
+			CString sAttributes;
+			CString sLocationCriteria;
+			DWORD dwGateType;
+			DWORD dwBeaconType;
+
 			CString sDestNode;
 			CString sDestEntryPoint;
 
@@ -153,6 +183,8 @@ class CTopologyNode
 			DWORD fSpare7:1;
 			DWORD fSpare8:1;
 			DWORD dwSpare:24;
+
+			DWORD dwColor;
 
 			mutable CTopologyNode *pDestNode = NULL;	//	Cached for efficiency (may be NULL)
 			};

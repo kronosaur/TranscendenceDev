@@ -114,8 +114,7 @@ CUniverse::~CUniverse (void)
 
 	//	We own m_pPlayer;
 
-	if (m_pPlayer)
-		delete m_pPlayer;
+	delete m_pPlayer;
 
 	//	Done
 
@@ -2270,7 +2269,7 @@ void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMap
 	m_iPaintTick++;
 	}
 
-void CUniverse::PlaySound (CSpaceObject *pSource, int iChannel)
+void CUniverse::PlaySound (CSpaceObject *pSource, int iChannel, SSoundOptions *pOptions)
 
 //	PlaySound
 //
@@ -2295,9 +2294,11 @@ void CUniverse::PlaySound (CSpaceObject *pSource, int iChannel)
 
 	if (pSource && m_pPOV)
 		{
-		CVector vDist = pSource->GetPos() - m_pPOV->GetPos();
-		Metric rDist2 = vDist.Length2();
-		iVolume = -(int)(10000.0 * rDist2 / (MAX_SOUND_DISTANCE * MAX_SOUND_DISTANCE));
+		if (!pOptions)
+			pOptions = &m_DefaultSoundOptions;
+		CVector vDist = (pSource->GetPos() - m_pPOV->GetPos()) * pOptions->rFalloffFactor;
+		Metric rDist2 = max(vDist.Length2() - (pOptions->rFalloffStart * pOptions->rFalloffStart), 0.0);
+		iVolume = -(int)(10000.0 * rDist2 / (MAX_SOUND_DISTANCE * MAX_SOUND_DISTANCE * pOptions->rVolumeMultiplier));
 
 		//	If below a certain level, then it is silent anyway
 
@@ -2901,8 +2902,7 @@ void CUniverse::SetPlayer (IPlayerController *pPlayer)
 	{
 	CCodeChain &CC = GetCC();
 
-	if (m_pPlayer)
-		delete m_pPlayer;
+	delete m_pPlayer;
 
 	m_pPlayer = pPlayer;
 

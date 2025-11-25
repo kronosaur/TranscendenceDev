@@ -521,6 +521,12 @@
 			inherit=		"&dsDockScreenBase;"
 			nestedScreen=   "true"
 			>
+
+		<Properties>
+			<Data id="tabsCreated"></Data>
+			<Data id="explainReminder">True</Data>
+		</Properties>
+
 		<Display type="customItemPicker"
 				displayActual="true"
 				>
@@ -540,7 +546,34 @@
 					)
 				)
 		</Display>
-		
+
+		<InitialPane>
+			(switch
+				(scr@ gScreen 'tabsCreated)
+					"Default"
+
+				; We should be creating the list filters in Display. Unfortunately this
+				; does not work for customItemPicker. Probably becuase the item data is
+				; not available when adding the filters.
+
+				(block Nil
+					(scrAddListFilter gScreen 'filterAll "All" (lambda (theItem)
+						True))
+					(scrAddListFilter gScreen 'filterDevice "Devices" (lambda (theItem)
+						(itmMatches theItem "d")))
+					(scrAddListFilter gScreen 'filterArmor "Armor" (lambda (theItem)
+						(itmMatches theItem "a")))
+					(scrAddListFilter gScreen 'filterOther "Other" (lambda (theItem)
+						(not (itmMatches theItem "ad"))))
+					(scrAddListFilter gScreen 'filterSaved "Saved" (lambda (theItem)
+						(not (msnCanCreate &msTinkerReminder; gSource theItem))))
+
+					(scrSet@ gScreen 'tabsCreated True)
+					"Default"
+					)
+				)
+		</InitialPane>
+
 		<Panes>
 			<Default>
 				<OnPaneInit>
@@ -627,7 +660,25 @@
 						;	Disable Fabricate action if we can't do it
 						
 						(scrEnableAction gScreen 'actionFabricate (gr maxCount 0))
-						(scrEnableAction gScreen 'actionReminder theItem)
+
+						(switch
+							(not theItem)
+								(block Nil
+									(scrEnableAction gScreen 'actionReminder Nil)
+									(scrShowAction gScreen 'actionClear Nil)
+									)
+							
+							(msnCanCreate &msTinkerReminder; gSource theItem)
+								(block Nil
+									(scrEnableAction gScreen 'actionReminder True)
+									(scrShowAction gScreen 'actionClear Nil)
+									)
+
+							(block Nil
+								(scrShowAction gScreen 'actionReminder Nil)
+								(scrEnableAction gScreen 'actionClear True)
+								)
+							)
 						)
 				</OnPaneInit>
 
@@ -649,7 +700,7 @@
 								(block Nil
 									(scrSetData gScreen 'result
 										(rpgCreateFromComponents fabInfo gPlayerShip gSource 1 {
-											reminderCriteria: "aS +unid:&msTinkerReminder;;"
+											reminderCriteria: "a +unid:&msTinkerReminder;;"
 											})
 										)
 									(scrShowPane gScreen "FabricateResult")
@@ -664,16 +715,25 @@
 							theMission
 							)
 
-							(setq theMission (msnCreate &msTinkerReminder; gSource {
-								fabInfo: fabInfo
-								destID: (objGetID gSource)
-								}))
+							(setq theMission (msnCreate &msTinkerReminder; gSource fabInfo))
 								
 							(if theMission
 								(msnAccept theMission)
 								)
-								
-							(scrShowPane gScreen "MissionAdded")
+
+							(if (scr@ gScreen 'explainReminder)
+								(scrShowPane gScreen 'MissionAdded)
+								(scrShowPane gScreen 'Default)
+								)
+							)
+					</Action>
+
+					<Action id="actionClear">
+						(block (
+							(theItem (scrGetItem gScreen))
+							)
+							(rpgClearComponentReminder gSource theItem "a +unid:&msTinkerReminder;;")
+							(scrShowPane gScreen 'Default)
 							)
 					</Action>
 					
@@ -711,7 +771,7 @@
 								(block Nil
 									(scrSetData gScreen 'result
 										(rpgCreateFromComponents fabInfo gPlayerShip gSource count {
-											reminderCriteria: "aS +unid:&msTinkerReminder;;"
+											reminderCriteria: "a +unid:&msTinkerReminder;;"
 											})
 										)
 									(scrShowPane gScreen "FabricateResult")
@@ -726,9 +786,7 @@
 				</Actions>
 			</FabricateCount>
 				
-			<FabricateResult
-					noListNavigation="true"
-					>
+			<FabricateResult>
 				<OnPaneInit>
 					(block (
 						(theResult (scrGetData gScreen 'result))
@@ -743,18 +801,19 @@
 			
 				<Actions>
 					<Action id="actionDone" default="1" cancel="1">
-						(scrExitScreen gScreen)
+						(scrShowPane gScreen 'Default)
 					</Action>
 				</Actions>
 			</FabricateResult>
 			
-			<MissionAdded
-					noListNavigation="true"
-					>
+			<MissionAdded>
 				<OnPaneInit>
 					(block (
 						(fabInfo (scrGetData gScreen 'fabInfo))
 						)
+
+						;	Set flag so we don't show this screen again
+						(scrSet@ gScreen 'explainReminder Nil)
 
 						(scrSetDescTranslate gScreen 'descFabricateReminderAdded {
 							itemName: (itmGetName (@ fabInfo 'item) '(actual count))
@@ -764,7 +823,7 @@
 				
 				<Actions>
 					<Action id="actionDone" default="1" cancel="1">
-						(scrExitScreen gScreen)
+						(scrShowPane gScreen 'Default)
 					</Action>
 				</Actions>
 			</MissionAdded>
@@ -773,6 +832,7 @@
 		<Language>
 			<Text id="actionFabricate">[F]abricate</Text>
 			<Text id="actionReminder">[R]emember for Later</Text>
+			<Text id="actionClear">[C]lear Reminder</Text>
 
 			<Text id="descFabricateNoItems">
 				Unfortunately, you do not have any required components.
@@ -831,65 +891,18 @@
 	
 	<MissionType UNID="&msTinkerReminder;"
 			name=				"Tinkers 01: Reminder"
-			attributes=			"tinkers"
+			attributes=			"tinkers, componentReminder"
+			inherit=			"&baComponentReminder;"
 
 			level=				"1-10"
-
-			allowPlayerDelete=	"true"
-			noDebrief=			"true"
-			noInProgress=		"true"
-			noStats=			"true"
 			>
 
 		<Image	imageID="&rsTinkerStations;" imageX="0"   imageY="0"   imageWidth="130" imageHeight="130"/>
 
-		<Events>
-			<OnCreate>
-				(block Nil
-					;	Store the parameters of the mission
-					
-					(msnSetData gSource 'forgeInfo (@ gData 'fabInfo))
-					
-					;	Remember the current system and the station that offered
-					;	the mission.
-					
-					(msnSetData gSource 'destID (@ gData 'destID))
-					(msnSetData gSource 'destSystem (sysGetNode))
-					)
-			</OnCreate>
-
-			<OnSetPlayerTarget>
-			</OnSetPlayerTarget>
-		</Events>
-		
 		<Language>
-			<!-- Code Points -->
-
-			<Text id="Summary">
-				(block (
-					(forgeInfo (msnGetData gSource 'forgeInfo))
-					)
-					(cat
-						(msnTranslate gSource 'textSummary {
-							itemsNeeded: (@ forgeInfo 'componentsNeededDesc)
-							item: (itmGetName (@ forgeInfo 'item) 0x108)
-							})
-						"\n\n"
-
-						"System: " (sysGetName (msnGetData gSource 'destSystem))
-						)
-					)
+			<Text id="descName">
+				[Fabrication] %ItemName%
 			</Text>
-
-			<!-- Text -->
-
-			<Text id="Name">
-				Find components for Tinker fabrication
-			</Text>
-			<Text id="textSummary">
-				Acquire %itemsNeeded% to have the Tinkers fabricate %item%.
-			</Text>
-			<Text id="FailureMsg"></Text>
 		</Language>
 	</MissionType>
 
@@ -1040,7 +1053,7 @@
 							(map availableComponents 'excludeNil theEntry
 								{
 									item: (@ theEntry 'item)
-									enabled: (geq (@ theEntry 'available) (itmGetCount (@ theEntry 'item)))
+									disabled: (gr (itmGetCount (@ theEntry 'item)) (@ theEntry 'available))
 									}
 								)
 
