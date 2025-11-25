@@ -676,6 +676,25 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //				Returns a list of static datakeys for the given obj type
 //			(scr@Keys type)
 //				Returns a list of all instance property and custom global property keys for the given obj
+//		<ItemType>
+//			<Weapon>
+//				damage: (str: damage desc)
+//					damage changes:
+//						0-damage is treated as non-hostile as long as no damaging
+//							effects are in the damage descriptor
+//						0-damage shots trigger hostile onAttached events if they
+//							are marked as hostile
+//						0-damage shots trigger onHit events if they are marked as
+//							hostile
+//						0-damage shots will still impart momentum
+//					null: New special damage type
+//						Null damage is treated as non-hostile
+//						Null damage does not trigger hostile onAttacked events
+//						Null damage does trigger onHit type events
+//						Null damage can impart any status effect while remaining non-hostile
+//						All targets of null damage have a damageAdj of 0 (immunity)
+//							to null damage's HP value (this allows scripts that utilize
+//							damage output, like mining, to function correctly)
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
@@ -1448,4 +1467,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //
 //	215: 2.0 Alpha 7
 //		Add DamageDesc::m_fMiningScan
+// 
+//	216: 2.0 Alpha 8
+//		Fix DamageDesc::m_MassDestructionAdj
+//		makes extra DWORDs in DamageDesc a little bit more change-safe
 //
