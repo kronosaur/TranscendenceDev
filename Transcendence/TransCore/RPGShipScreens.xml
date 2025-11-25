@@ -179,8 +179,9 @@
 						(block (
 							(thisItem (scrGetItem gScreen))
 							(maxCount (itmGetCount thisItem))
-							(unitPrice (itmGetPrice thisItem))
 							(itemCurrency (itm@ thisItem 'currency))
+							(displayCurrency (or (@ gData 'currency) (rpgGetPlayerPrimaryCurrency) itemCurrency))
+							(unitPrice (itmGetPrice thisItem displayCurrency))
 
 							;	Compose text that describes the item
 
@@ -188,15 +189,15 @@
 
 								(scrTranslate gScreen 'descCargoItem {
 									unitMass: (fmtNumber 'massKg (itmGetMass thisItem))
-									unitPrice: (fmtCurrency  itemCurrency unitPrice)
+									unitPrice: (fmtCurrency  displayCurrency unitPrice)
 									})
 
 								(scrTranslate gScreen 'descCargoItems {
 									unitMass: (fmtNumber 'massKg (itmGetMass thisItem))
-									unitPrice: (fmtCurrency itemCurrency unitPrice)
+									unitPrice: (fmtCurrency displayCurrency unitPrice)
 									count: maxCount
 									totalMass: (fmtNumber 'massKg (* (itmGetMass thisItem) maxCount))
-									totalPrice: (fmtCurrency itemCurrency (* unitPrice maxCount))
+									totalPrice: (fmtCurrency displayCurrency (* unitPrice maxCount))
 									})
 								))
 
