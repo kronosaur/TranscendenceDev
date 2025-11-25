@@ -67,6 +67,47 @@
 	{	code: '(slice (list 1 2 3 4) 2 1)						result: '()}
 	{	code: '(slice (list 1 2 3 4) 2 5)						result: '(3 4)}
 
+	;	Get Element (basic) - caps negative indexes to 0
+
+	{	code: '(@@ {a:'abstract b:'base c:'class d:(list 9 8 7)})								result: '(a b c d)}
+	{	code: '(@@ (list 1 2 3 4))																result: '()}
+
+	{	code: '(@ (list 1 2 3 4) 0)								result: '1}
+	{	code: '(@ (list 1 2 3 4) -1)							result: '1}
+	{	code: '(@ (list 1 2 3 4) 4)								result: '()}
+
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 0)		result: '(1 2 3 4)}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) -1)		result: '(1 2 3 4)}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 2)		result: '()}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 0 1)		result: '2}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) -1 1)		result: '2}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 2 'a)		result: '()}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 1 -1)		result: '()}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 1 'x)		result: '()}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 1 'd 2)	result: '7}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:()}) 1 'd 2)				result: '()}
+	{	code: '(@ () 1 2 3)																		result: '()}
+
+	;	Get Element (recursive) - supports negative indexes
+
+	{	code: '(@@ {a:'abstract b:'base c:'class d:(list 9 8 7)})								result: '(a b c d)}
+	{	code: '(@@ (list 1 2 3 4))																result: '()}
+
+	{	code: '(@@ (list 1 2 3 4) 0)							result: '1}
+	{	code: '(@@ (list 1 2 3 4) -1)							result: '4}
+	{	code: '(@@ (list 1 2 3 4) 4)							result: '()}
+
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 0)		result: '(1 2 3 4)}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) -1)		result: '{a:"abstract" b:"base" c:"class" d:'(9 8 7)}}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 2)		result: '()}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 0 1)		result: '2}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) -1 'a)	result: 'abstract}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 2 'a)	result: '()}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) -1 -1)	result: '()}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) -1 'x)	result: '()}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) -1 'd 2)	result: '7}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:()}) -1 'd 2)			result: '()}
+	{	code: '(@@ () 1 2 3)																	result: '()}
 	))
 
 (debugUnitTest "List Unit Test" TEST_SUITE)
