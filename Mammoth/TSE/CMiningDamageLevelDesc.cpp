@@ -11,7 +11,7 @@ int CMiningDamageLevelDesc::GetMaxOreLevel (DamageTypes iDamageType, int iMining
 	{
 	ASSERT(iMiningItemLevel >= 0 && iMiningItemLevel <= MAX_ITEM_LEVEL);
 
-	if (iDamageType == damageGeneric)
+	if (iDamageType == damageGeneric || iDamageType == damageNull)
 		return MAX_MINING_LEVEL;
 	else
 		{

@@ -1571,6 +1571,7 @@ inline CSystemMap *CTopologyNode::GetDisplayPos (int *retxPos, int *retyPos) con
 	{ if (retxPos) *retxPos = m_xPos; if (retyPos) *retyPos = m_yPos; return (m_pMap ? m_pMap->GetDisplayMap() : NULL); }
 
 inline bool DamageDesc::IsEnergyDamage (void) const { return ::IsEnergyDamage(m_iType); }
+
 inline bool DamageDesc::IsMatterDamage (void) const { return ::IsMatterDamage(m_iType); }
 
 inline void IEffectPainter::PlaySound (CSpaceObject *pSource) { if (!m_bNoSound) GetCreator()->PlaySound(pSource, &m_sSoundOptions); }

@@ -1309,7 +1309,7 @@ class CSpaceObject
 		virtual int GetCounterValue (void) const { return 0; }
 		virtual int GetCyberDefenseLevel (void) const { return GetLevel(); }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
-		virtual DamageTypes GetDamageType (void) { return damageGeneric; }
+		virtual DamageTypes GetDamageType (void) { return damageNull; }
 		virtual CSpaceObject *GetDestination (void) const { return NULL; }
 		virtual CStationType *GetEncounterInfo (void) { return NULL; }
 		virtual CSpaceObject *GetEscortPrincipal (void) const { return NULL; }

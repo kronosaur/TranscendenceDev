@@ -852,8 +852,7 @@ void CItemPainter::PaintReferenceDamageType (const CVisualPalette &VI, CG32bitIm
 
 	//	Paint the icon first
 
-	if (iDamageType != damageError
-			&& iDamageType != damageGeneric)
+	if (iDamageType >= damageMinListed)
 		{
 		//x += DAMAGE_ADJ_SPACING_X;
 		VI.DrawDamageTypeIcon(Dest, x, y, (DamageTypes)iDamageType, bDisabled);

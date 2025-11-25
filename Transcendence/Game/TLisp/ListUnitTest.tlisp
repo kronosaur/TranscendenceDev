@@ -9,10 +9,48 @@
 
 	{	code: '(map Nil theEntry theEntry)							result: Nil	}
 	{	code: '(map (list 1 2 3) theEntry (+ 1 theEntry))			result: '(2 3 4)	}
+	{	code: '(map (list 1 2 3) theEntry (@ (list 1 2 3) theEntry))			result: '(2 3 ())	}
+	{	code: '(map (list 1 2 3) 'reduceAverage theEntry (@ (list 1 2 4) theEntry))		result: '2	}
+	{	code: '(map (list 1 2 3) 'reduceSum theEntry (@ (list 1 2 4) theEntry))		result: '6	}
+	{	code: '(map (list 1 2 3) 'reduceMin theEntry (@ (list 1 2 4) theEntry))		result: '()	}
+	{	code: '(map (list 1 2 3) 'reduceMax theEntry (@ (list 1 2 4) theEntry))		result: '4	}
 
 	;	Map of structs
 
 	{	code: '(map { a:1 b:2 c:3 } theEntry theEntry)			result: '((a 1) (b 2) (c 3))	}
+	{	code: '(map { a:1 b:2 c:3 } theEntry (@ (list 1 2 3) (@ theEntry 1) ))			result: '(2 3 ())	}
+
+	;	Exclude Nil
+	
+	{	code: '(map { a:1 b:2 c:() } 'excludeNil theEntry (@ theEntry 1))			result: '(1 2)	}
+	{	code: '(map { a:1 b:2 c:() } '(original excludeNil) theEntry (@ theEntry 1))			result: '((a 1) (b 2))	}
+	{	code: '(map (list 1 2 3) 'excludeNil theEntry (@ (list 1 2 3) theEntry))			result: '(2 3)	}
+	{	code: '(map (list 1 2 3) '(original excludeNil) theEntry (@ (list 1 2 3) theEntry))			result: '(1 2)	}
+	{	code: '(map (list 1 2 3) '(reduceAverage excludeNil) theEntry (@ (list 1 2 4) theEntry))			result: '3	}
+	{	code: '(map (list 1 2 3) '(reduceSum excludeNil) theEntry (@ (list 1 2 4) theEntry))		result: '6	}
+	{	code: '(map (list 1 2 3) '(reduceMin excludeNil) theEntry (@ (list 1 2 4) theEntry))		result: '2	}
+	{	code: '(map (list 1 2 3) '(reduceMax excludeNil) theEntry (@ (list 1 2 4) theEntry))		result: '4	}
+
+	;	Reduce *
+
+	{	code: '(map (list 1 2 3) 'reduceMax theEntry theEntry)			result: '3	}
+	{	code: '(map (list 1 2 3) 'reduceMin theEntry theEntry)			result: '1	}
+	{	code: '(map (list 1 2 3) 'reduceAverage theEntry theEntry)		result: '2	}
+	{	code: '(map (list 1 2 3) 'reduceSum theEntry theEntry)			result: '6	}
+
+	;	Reduce but return original
+
+	{	code: '(map (list 1 2 3) '(reduceMax original) theEntry (+ 1 theEntry))			result: '3	}
+	{	code: '(map (list 1 2 3) '(reduceMin original) theEntry (+ 1 theEntry))			result: '1	}
+	{	code: '(map (list 1 2 3) '(original reduceMax ) theEntry (+ 1 theEntry))			result: '3	}
+	{	code: '(map (list 1 2 3) '(original reduceMin ) theEntry (+ 1 theEntry))			result: '1	}
+
+	;	Some reduce functions ignore original
+
+	{	code: '(map (list 1 2 3) '(reduceAverage original) theEntry (+ 1 theEntry))		result: '3	}
+	{	code: '(map (list 1 2 3) '(reduceSum original) theEntry (+ 1 theEntry))			result: '9	}
+	{	code: '(map (list 1 2 3) '(original reduceAverage ) theEntry (+ 1 theEntry))		result: '3	}
+	{	code: '(map (list 1 2 3) '(original reduceSum ) theEntry (+ 1 theEntry))			result: '9	}
 
 	;	Reduce unique
 
@@ -67,6 +105,47 @@
 	{	code: '(slice (list 1 2 3 4) 2 1)						result: '()}
 	{	code: '(slice (list 1 2 3 4) 2 5)						result: '(3 4)}
 
+	;	Get Element (basic) - caps negative indexes to 0
+
+	{	code: '(@@ {a:'abstract b:'base c:'class d:(list 9 8 7)})								result: '(a b c d)}
+	{	code: '(@@ (list 1 2 3 4))																result: '()}
+
+	{	code: '(@ (list 1 2 3 4) 0)								result: '1}
+	{	code: '(@ (list 1 2 3 4) -1)							result: '1}
+	{	code: '(@ (list 1 2 3 4) 4)								result: '()}
+
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 0)		result: '(1 2 3 4)}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) -1)		result: '(1 2 3 4)}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 2)		result: '()}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 0 1)		result: '2}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) -1 1)		result: '2}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 2 'a)		result: '()}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 1 -1)		result: '()}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 1 'x)		result: '()}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 1 'd 2)	result: '7}
+	{	code: '(@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:()}) 1 'd 2)				result: '()}
+	{	code: '(@ () 1 2 3)																		result: '()}
+
+	;	Get Element (recursive) - supports negative indexes
+
+	{	code: '(@@ {a:'abstract b:'base c:'class d:(list 9 8 7)})								result: '(a b c d)}
+	{	code: '(@@ (list 1 2 3 4))																result: '()}
+
+	{	code: '(@@ (list 1 2 3 4) 0)							result: '1}
+	{	code: '(@@ (list 1 2 3 4) -1)							result: '4}
+	{	code: '(@@ (list 1 2 3 4) 4)							result: '()}
+
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 0)		result: '(1 2 3 4)}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) -1)		result: '{a:"abstract" b:"base" c:"class" d:'(9 8 7)}}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 2)		result: '()}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 0 1)		result: '2}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) -1 'a)	result: 'abstract}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) 2 'a)	result: '()}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) -1 -1)	result: '()}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) -1 'x)	result: '()}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:(list 9 8 7)}) -1 'd 2)	result: '7}
+	{	code: '(@@ (list (list 1 2 3 4) {a:'abstract b:'base c:'class d:()}) -1 'd 2)			result: '()}
+	{	code: '(@@ () 1 2 3)																	result: '()}
 	))
 
 (debugUnitTest "List Unit Test" TEST_SUITE)

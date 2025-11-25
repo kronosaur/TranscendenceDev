@@ -1112,7 +1112,8 @@ int CShieldClass::GetAbsorbAdj (const CDeviceItem &DeviceItem, const CItemEnhanc
 //	Get the absorb adjustment given the damage.
 
 	{
-	int iAbsorbAdj = (Damage.GetDamageType() == damageGeneric ? 100 : m_iAbsorbAdj[Damage.GetDamageType()]);
+	DamageTypes iType = Damage.GetDamageType();
+	int iAbsorbAdj = ((iType == damageGeneric || iType == damageNull) ? 100 : m_iAbsorbAdj[iType]);
 	if (!Enhancements.IsEmpty())
 		iAbsorbAdj = mathAdjustRound(iAbsorbAdj, Enhancements.GetAbsorbAdj(Damage));
 

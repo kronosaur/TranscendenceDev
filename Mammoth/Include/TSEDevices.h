@@ -348,7 +348,7 @@ class CDeviceClass
 		virtual const CCargoDesc *GetCargoDesc (CItemCtx &Ctx) const { return NULL; }
 		virtual const DamageDesc *GetDamageDesc (CItemCtx &Ctx) { return NULL; }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
-		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const { return damageGeneric; }
+		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const { return damageNull; }
 		virtual int GetDefaultFireAngle (const CDeviceItem &DeviceItem) const { return 0; }
 		virtual int GetHitPoints (CItemCtx &ItemCtx, int *retiMaxHP = NULL) const { return 0; }
 		virtual DWORD GetLinkedFireOptions (void) const { return 0; }

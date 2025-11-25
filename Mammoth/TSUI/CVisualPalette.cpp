@@ -188,7 +188,7 @@ void CVisualPalette::DrawDamageTypeIcon (CG32bitImage &Screen, int x, int y, Dam
 //	Draws the given damage type icon
 
 	{
-	if (iDamageType == damageGeneric)
+	if (iDamageType < damageMinListed || iDamageType > damageMaxListed)
 		return;
 
 	if (bGray)
