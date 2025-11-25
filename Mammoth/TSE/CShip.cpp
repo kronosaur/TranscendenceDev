@@ -434,7 +434,9 @@ void CShip::CalcDeviceBonus (void)
 
 	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
-		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice();
+		if (!pDevice) continue;
+		CInstalledDevice &Device = *pDevice;
 		CItemCtx ItemCtx(this, &Device);
 
 		//	Keep track of device types to see if we have duplicates
@@ -465,7 +467,9 @@ void CShip::CalcDeviceBonus (void)
 
 		for (CDeviceItem OtherDevItem : GetDeviceSystem())
 			{
-			CInstalledDevice &OtherDev = *OtherDevItem.GetInstalledDevice();
+			CInstalledDevice *pOtherDev = OtherDevItem.GetInstalledDevice();
+			if (!pOtherDev) continue;
+			CInstalledDevice &OtherDev = *pOtherDev;
 			if (OtherDev.GetDeviceSlot() != Device.GetDeviceSlot())
 				{
 				//	See if this device enhances us
@@ -515,7 +519,9 @@ void CShip::CalcDeviceBonus (void)
 
 	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
-		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice();
+		if (!pDevice) continue;
+		CInstalledDevice &Device = *pDevice;
 
 		int *pCount = DeviceTypes.GetAt(Device.GetClass()->GetUNID());
 		Device.SetDuplicate(*pCount > 1);
@@ -1034,7 +1040,7 @@ bool CShip::CanBeDestroyedBy (CSpaceObject &Attacker) const
 	return false;
 	}
 
-bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
+bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &Slot, bool bForceUseOfDeviceSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
 
 //	CanInstallItem
 //
@@ -1046,6 +1052,7 @@ bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &S
 	CString sResult;
 	CItem ItemToReplace;
 	const CHullDesc &Hull = m_pClass->GetHullDesc();
+	const IDeviceGenerator *pDevSlots = GetDeviceSystem().GetSlots();
 
 	int iSlot = Slot.iIndex;
 
@@ -1121,6 +1128,7 @@ bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &S
 	else if (Item.IsDevice())
 		{
 		CItemCtx ItemCtx(&Item);
+		int iSlotFromId = pDevSlots->GetDescIndexGivenId(Slot.sID);
 
 		//	Get the item type
 
@@ -1130,6 +1138,11 @@ bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &S
 		//	See if we're compatible
 
 		if (!Item.MatchesCriteria(Hull.GetDeviceCriteria()))
+			iResult = insNotCompatible;
+
+		//	If we force use of a device slot, and that device slot doesn't fit, then we cannot install
+
+		if (bForceUseOfDeviceSlot && !pDevSlots->ItemFitsSlot(this, Item, iSlotFromId != -1 ? iSlotFromId : iSlot))
 			iResult = insNotCompatible;
 
 		//	Ask the object if we can install this item

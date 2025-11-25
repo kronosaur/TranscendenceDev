@@ -149,7 +149,7 @@ void CWeaponHUDDefault::PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x
 	const CG16bitFont &LargeBoldFont = VI.GetFont(fontLargeBold);
 
 	CInstalledDevice *pDevice = pShip->GetNamedDevice(iDev);
-	if (pDevice)
+	if (pDevice && pDevice->GetClass())
 		{
 		CItemCtx ItemCtx(pShip, pDevice);
 		CDeviceClass *pClass = pDevice->GetClass();
