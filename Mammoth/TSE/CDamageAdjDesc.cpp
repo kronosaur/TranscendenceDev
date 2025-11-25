@@ -124,6 +124,7 @@ int CDamageAdjDesc::GetAdj (DamageTypes iDamageType) const
 		case damageGeneric:
 			return 100;
 		case damageNull:
+		case damageUnknown:
 		case damageError:
 			return 0;
 		default:
