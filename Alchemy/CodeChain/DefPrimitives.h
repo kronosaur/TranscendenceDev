@@ -226,7 +226,19 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"@",				fnItem,			FN_ITEM,
 			"(@ list index) -> item index from list (0-based)\n"
 			"(@ struct key) -> value corresponding to key from struct\n"
-			"(@ struct) -> list of keys of the struct",
+			"(@ nestedListsOrStructs [idxOrKey1 idxOrKey2 ...]) -> item index from innermost list or structs (lists are 0-based)\n"
+			"(@ struct) -> list of keys of the struct, Nil on non-structs\n\n"
+			
+			"list indexes below 0 are converted to 0",
+			"v*",	0,	},
+
+		{	"@@",				fnItem,			FN_ITEM_REVERSE,
+			"(@@ list index) -> item index from list (0-based)\n"
+			"(@@ struct key) -> value corresponding to key from struct\n"
+			"(@@ nestedListsOrStructs [idxOrKey1 idxOrKey2 ...]) -> item index from innermost list or structs (lists are 0-based)\n"
+			"(@@ struct) -> list of keys of the struct, Nil on non-structs\n\n"
+			
+			"list indexes below 0 address in reverse from the end",
 			"v*",	0,	},
 
 		{	"item",				fnItem,			FN_ITEM,
@@ -285,7 +297,16 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"s*",	0,	},
 
 		{	"map",				fnMap,			0,
-			"(map list ['excludeNil|'original|'reduceMax|'reduceMin|'reduceAverage|'reduceSum] var exp) -> list",
+			"(map list [options] var expr) -> list, or expr result (see options)\n\n"
+			
+			"options is either one of the option strings below, or a quoted expr of options strings, e.g. '(original excludeNil):\n"
+			"   'excludeNil - if expr evaluates to nil, it is not added to the returned list\n"
+			"   'original - expr result is placed with var instead in the final output, but expr result is still used to calculate other options\n"
+			"   'reduceMax - returns the greatest of values returned by expr instead of a list\n"
+			"   'reduceMin - returns the minimum of values returned by expr instead of a list\n"
+			"   'reduceAverage - returns the average of values returned by expr instead of a list (ignores original)\n"
+			"   'reduceSum - returns the sum of values returned by expr instead of a list (ignores original)\n"
+			"   'reduceUnique - returns a list of unique values returned by expr",
 			"l*qu",	0,	},
 
 		{	"match",			fnMatch,			0,
