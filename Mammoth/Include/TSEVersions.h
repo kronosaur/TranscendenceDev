@@ -676,6 +676,18 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //				Returns item index from innermost list or structs (lists are 0-based)
 //				Supports all functionality of @, but treats negative list indexes as
 //				indexing from the end in reverse (as in slice)
+//			(itmClearOverride@ type property)
+//				Clears an override property on an itm (explicit clear is required because an override may be set to Nil)
+//			(itmOverride@Keys type)
+//				Returns a list of all property override keys on this itm
+//			(itmSetOverride@ type property value)
+//				Sets an override property on an itm. May be set to Nil
+//			(objClearOverride@ type property)
+//				Clears an override property on an obj (explicit clear is required because an override may be set to Nil)
+//			(objOverride@Keys type)
+//				Returns a list of all property override keys on this obj
+//			(objSetOverride@ type property value)
+//				Sets an override property on an obj. May be set to Nil
 //			(scrGetDataKeys obj)
 //				Returns a list of typData keys for the given obj type
 //			(scrGetStaticDataKeys type)
