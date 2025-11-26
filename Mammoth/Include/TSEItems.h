@@ -307,6 +307,7 @@ class CItem
 		void ClearEnhanced (void) { m_dwFlags &= ~flagEnhanced; }
 		void ClearExtra (void) { delete m_pExtra; m_pExtra = NULL; }
 		void ClearInstalled (void);
+		ESetPropertyResult ClearPropertyOverride(CItemCtx &Ctx, const CString &sName, bool bOnType, CString *retsError = NULL);
 		static CItem CreateItemByName (CUniverse &Universe, const CString &sName, const CItemCriteria &Criteria, bool bActualName = false);
 		bool IsEqual (const CItem &Item, DWORD dwFlags = 0) const;
 		bool IsUsed (void) const;
@@ -350,7 +351,7 @@ class CItem
 		CInstalledArmor *GetInstalledArmor (void) { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Armor) return (CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
 		const CInstalledDevice *GetInstalledDevice (void) const { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Device) return (const CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
 		CInstalledDevice *GetInstalledDevice (void) { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Device) return (CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
-		ICCItemPtr GetItemPropertyKeys (CCodeChainCtx& CCCtx, CItemCtx& Ctx,  bool bOnType) const;
+		ICCItemPtr GetItemPropertyKeys (CCodeChainCtx& CCCtx, CItemCtx& Ctx,  bool bOnType, EDesignDataTypes iType = EDesignDataTypes::ePropertyData) const;
 		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty, bool bOnType) const;
 		Metric GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		int GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
@@ -419,6 +420,7 @@ class CItem
 		bool SetLevel (int iLevel, CString *retsError = NULL);
 		void SetPrepareUninstalled (void);
 		ESetPropertyResult SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError = NULL);
+		ESetPropertyResult SetPropertyOverride (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError = NULL);
 		void SetUnknownIndex (int iIndex);
 		void SetVariantNumber (int iVariantCounter);
 
@@ -509,13 +511,16 @@ class CItem
 			};
 
 		void AccumulateCustomAttributes (TArray<SDisplayAttribute> *retList, ICCItem *pData) const;
+		bool ClearCustomPropertyOverride (const CString &sProperty);
 		void Extra (void);
 		bool FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult) const;
+		bool FindCustomPropertyOverride (const CString &sProperty, ICCItemPtr &pResult) const;
 		int GetScalableLevel (void) const { return (m_pExtra ? (int)m_pExtra->m_dwLevel : 0); }
 		int GetValue (bool bActual = false) const;
 		bool IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const;
 		bool IsFlagsEqual (const CItem &Src, DWORD dwFlags) const;
 		bool SetCustomProperty (const CString &sProperty, const ICCItem &Value);
+		bool SetCustomPropertyOverride (const CString &sProperty, const ICCItem &Value);
 		void SetScalableLevel (int iValue) { Extra(); m_pExtra->m_dwLevel = iValue; }
 
 		static bool IsDisruptionEqual (DWORD dwNow, DWORD dwD1, DWORD dwD2);
@@ -599,6 +604,7 @@ class CItemListManipulator
 		DWORD AddItemEnhancementAtCursor (const CItemEnhancement &Mods, int iCount = 1);
 		void ClearDisruptedAtCursor (int iCount = 1);
 		void ClearInstalledAtCursor (void);
+		bool ClearPropertyOverrideAtCursor(CSpaceObject *pSource, const CString &sName, int iCount, CString *retsError);
 		void DeleteAtCursor (int iCount);
 		void DeleteMarkedItems (void);
 		const CItem &GetItemAtCursor (void) const;
@@ -617,6 +623,7 @@ class CItemListManipulator
 		void SetInstalledAtCursor (CInstalledDevice &Installed);
 		void SetPrepareUninstalledAtCursor (void);
 		bool SetPropertyAtCursor (CSpaceObject *pSource, const CString &sName, ICCItem *pValue, int iCount, CString *retsError);
+		bool SetPropertyOverrideAtCursor (CSpaceObject *pSource, const CString &sName, ICCItem *pValue, int iCount, CString *retsError);
 		void TransferAtCursor (int iCount, CItemList &DestList);
 
 	private:

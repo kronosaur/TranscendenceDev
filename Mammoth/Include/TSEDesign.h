@@ -230,13 +230,17 @@ class CAchievementDataBlock
 
 enum class EDesignDataTypes
 	{
-	ePropertyData,			//	properties (ex, typ@)
+	eNone,
+
+	ePropertyData,			//	properties (ex, typ@) - Note, excludes ePropertyOverrideData
 	eGlobalData,			//	type data (ex, typSetData)
 	eInstanceData,			//	instance data (ex, objSetData)
 	eStaticData,			//	static data (ex, typGetStaticData)
 
 	ePropertyEngineData,	//	Engine-defined properties (ex, typ@)
 	ePropertyCustomData,	//	Custom-defined properties (ex, typ@)
+
+	ePropertyOverrideData,	//	Tlisp-defined property overrides (ex, typSetOverride@)
 	};
 
 class CDesignType
@@ -298,6 +302,8 @@ class CDesignType
 		static CDesignType *AsType (CDesignType *pType) { return pType; }
 		int CalcAffinity (const CAffinityCriteria &Criteria) const;
 		void ClearMark (void) { OnClearMark(); }
+		void ClearGlobalDataOverride (const CString &sAttrib) { SetExtra()->GlobalData.ClearPropertyOverride(sAttrib); }
+		bool ClearTypePropertyOverride (const CString &sProperty);
 		bool FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult, EPropertyType *retiType = NULL) const;
 		CEffectCreator *FindEffectCreatorInType (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
 		bool FindEngineProperty (CCodeChainCtx &CCX, const CString &sProperty, ICCItemPtr &pResult) const;
@@ -311,6 +317,7 @@ class CDesignType
 			return true;
 			}
 
+		bool FindPropertyOverride (const CString &sProperty, ICCItemPtr &pResult, EPropertyType *retiType = NULL) const;
 		bool FindStaticData (const CString &sAttrib, ICCItemPtr &pData) const;
 		void FireCustomEvent (const CString &sEvent, ECodeChainEvents iEvent = eventNone, ICCItem *pData = NULL, ICCItem **retpResult = NULL);
 		bool FireGetCreatePos (CSpaceObject *pBase, CSpaceObject *pTarget, CSpaceObject **retpGate, CVector *retvPos);
@@ -405,11 +412,13 @@ class CDesignType
 		void MarkImages (void) { OnMarkImages(); }
 		void ReportEventError (const CString &sEvent, const ICCItem *pError) const;
 		void SetGlobalData (const CString &sAttrib, const ICCItem *pData) { SetExtra()->GlobalData.SetData(sAttrib, pData); }
+		void SetGlobalDataOverride (const CString &sAttrib, const ICCItem *pData) { SetExtra()->GlobalData.SetPropertyOverride(sAttrib, pData); }
 		void SetHierarchyResolved (bool bValue = true) { m_bHierarchyResolved = bValue; }
 		void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
 		void SetMerged (bool bValue = true) { m_bIsMerged = true; }
 		void SetModification (bool bValue = true) { m_bIsModification = true; }
 		bool SetTypeProperty (const CString &sProperty, const ICCItem &Value);
+		bool SetTypePropertyOverride (const CString &sProperty, const ICCItem &Value);
 		void SetUNID (DWORD dwUNID) { m_dwUNID = dwUNID; }
 		void SetXMLElement (CXMLElement *pDesc) { m_pXML = pDesc; }
 		void Sweep (void) { OnSweep(); }
@@ -452,6 +461,7 @@ class CDesignType
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual void OnClearMark (void) { }
+		virtual bool OnClearTypePropertyOverride (const CString &sProperty) { return false; }
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) { return NULL; }
 		virtual bool OnFindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const { return false; }
@@ -466,6 +476,7 @@ class CDesignType
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) { }
 		virtual void OnReinit (void) { }
 		virtual bool OnSetTypeProperty (const CString &sProperty, const ICCItem &Value) { return false; }
+		virtual bool OnSetTypePropertyOverride (const CString &sProperty, const ICCItem &Value) { return false; }
 		virtual void OnSweep (void) { }
 		virtual void OnTopologyInitialized (void) { }
 		virtual void OnUnbindDesign (void) { }
