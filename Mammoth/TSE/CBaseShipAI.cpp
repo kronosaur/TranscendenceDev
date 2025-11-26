@@ -1137,6 +1137,11 @@ void CBaseShipAI::OnAttacked (CSpaceObject &AttackerObj, const SDamageCtx &Damag
 	{
 	DEBUG_TRY
 
+	//	We do not react to non-hostile damage events
+
+	if (!Damage.Damage.IsHostile())
+		return;
+
 	if (!m_pShip)
 		throw CException(ERR_FAIL);
 

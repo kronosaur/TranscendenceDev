@@ -310,13 +310,18 @@ void CShip::CalcArmorBonus (void)
 	DEBUG_CATCH
 	}
 
-EAttackResponse CShip::CalcAttackResponse (SDamageCtx &Ctx)
-
 //	CalcAttackResponse
 //
 //	Figures out whether to call <OnAttackedByPlayer>, etc.
+//
+EAttackResponse CShip::CalcAttackResponse (SDamageCtx &Ctx)
 
 	{
+	//	Short circuit on non-hostile attacks
+	
+	if (!Ctx.Damage.IsHostile())
+		return EAttackResponse::Ignore;
+
 	//	Ignore automated weapons
 	
 	if (Ctx.Damage.IsAutomatedWeapon())
@@ -2747,6 +2752,7 @@ DamageTypes CShip::GetDamageType (void)
 		CItemCtx ItemCtx(this, pWeapon);
 		return (DamageTypes)pWeapon->GetDamageType(ItemCtx);
 		}
+	//	We return damageGeneric since this ship may have secondary weapons
 	else
 		return damageGeneric;
 	}
@@ -4316,20 +4322,38 @@ void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
 	DEBUG_CATCH
 	}
 
-EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
-
 //	Damage
 //
 //	Ship takes damage from the given source
+//
+EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	{
 	DEBUG_TRY
 
 	GetUniverse().AdjustDamage(Ctx);
 
-	//	Short-circuit
+	//	If this is a momentum attack then we are pushed
+	//	Damage sources always get a chance to deal momentum, since it
+	//	is not considered a hostile effect
 
-	if (Ctx.iDamage == 0 || GetSystem() == NULL)
+	Metric rImpulse;
+	if (Ctx.Damage.HasImpulseDamage(&rImpulse) 
+		&& !IsAnchored())
+		{
+		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
+		AddForce(vAccel);
+		}
+
+	//	Short-circuit, only if there is absolutely nothing our
+	//	damage desc lets us do
+	// 
+	//	Null damage always is allowed through specifically for scripts
+	//	to fire
+
+	bool bIsHostile = Ctx.Damage.IsHostile();
+
+	if ((Ctx.iDamage == 0 && !bIsHostile && Ctx.Damage.GetDamageType() != damageNull) || GetSystem() == NULL)
 		return damageNoDamage;
 
 	bool bIsPlayer = IsPlayer();
@@ -4351,33 +4375,36 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	Handle consequences of attack.
 
-	if (CSpaceObject *pAttacker = Ctx.Attacker.GetObj())
+	if (bIsHostile)
 		{
-		m_pController->OnAttacked(*pAttacker, Ctx);
-
-		//	Figure out whether to call <OnAttackedByPlayer>, etc.
-
-		switch (CalcAttackResponse(Ctx))
+		if (CSpaceObject* pAttacker = Ctx.Attacker.GetObj())
 			{
-			case EAttackResponse::WarnAttacker:
-				Communicate(pAttacker, msgWatchTargets);
-				break;
+			m_pController->OnAttacked(*pAttacker, Ctx);
 
-			case EAttackResponse::OnAttacked:
-				FireOnAttacked(Ctx);
-				if (IsDestroyed())
-					return damageDestroyed;
-				break;
+			//	Figure out whether to call <OnAttackedByPlayer>, etc.
 
-			case EAttackResponse::OnAttackedByPlayer:
-				FireOnAttackedByPlayer();
-				if (IsDestroyed())
-					return damageDestroyed;
-				break;
+			switch (CalcAttackResponse(Ctx))
+				{
+				case EAttackResponse::WarnAttacker:
+					Communicate(pAttacker, msgWatchTargets);
+					break;
+
+				case EAttackResponse::OnAttacked:
+					FireOnAttacked(Ctx);
+					if (IsDestroyed())
+						return damageDestroyed;
+					break;
+
+				case EAttackResponse::OnAttackedByPlayer:
+					FireOnAttackedByPlayer();
+					if (IsDestroyed())
+						return damageDestroyed;
+					break;
+				}
 			}
-		}
 
-	GetSystem()->FireOnSystemObjAttacked(Ctx);
+		GetSystem()->FireOnSystemObjAttacked(Ctx);
+		}
 
 	//	See if the damage is blocked by some external defense
 
@@ -4390,16 +4417,6 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			return damageDestroyed;
 		else if (Ctx.iDamage == 0)
 			return damageNoDamage;
-		}
-
-	//	If this is a momentum attack then we are pushed
-
-	Metric rImpulse;
-	if (Ctx.Damage.HasImpulseDamage(&rImpulse) 
-			&& !IsAnchored())
-		{
-		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
-		AddForce(vAccel);
 		}
 
 	//	Let our shield generators take a crack at it
@@ -4444,18 +4461,23 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Damage any devices that are outside the hull (e.g., Patch Spiders)
 	//	Ignore devices with overlays because they get damaged in the overlay
 	//	damage section.
+	// 
+	//	Skip for Null or 0 damage.
 
-	for (CDeviceItem DeviceItem : GetDeviceSystem())
+	if (Ctx.iDamage && Ctx.Damage.GetDamageType() != damageNull)
 		{
-		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
-		if (Device.IsExternal()
-				&& Device.GetOverlay() == NULL)
+		for (CDeviceItem DeviceItem : GetDeviceSystem())
 			{
-			//	The chance that the device got hit depends on the number of armor segments
-			//	A device takes up 1/9th of the surface area of a segment.
+			CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+			if (Device.IsExternal()
+				&& Device.GetOverlay() == NULL)
+				{
+				//	The chance that the device got hit depends on the number of armor segments
+				//	A device takes up 1/9th of the surface area of a segment.
 
-			if (mathRandom(1, GetArmorSectionCount() * 9) == 7)
-				DamageExternalDevice(Device.GetDeviceSlot(), Ctx);
+				if (mathRandom(1, GetArmorSectionCount() * 9) == 7)
+					DamageExternalDevice(Device.GetDeviceSlot(), Ctx);
+				}
 			}
 		}
 
@@ -4578,7 +4600,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		{
 		//	Tell our attacker that we got hit
 
-		CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
+		CSpaceObject* pOrderGiver = Ctx.GetOrderGiver();
 		if (pOrderGiver && pOrderGiver->CanAttack())
 			pOrderGiver->OnObjHit(Ctx);
 
@@ -4597,8 +4619,15 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		return damageArmorHit;
 		}
 
+	//	If this was only null damage we're ok
+
+	else if (Ctx.Damage.GetDamageType() == damageNull)
+		return damageNoDamage;
+
 	//	Otherwise, if we have interior compartments (like a capital ship) then
-	//	we do damage.
+	//	we do damage
+	//
+	//	Null damage is already short-circuited at this point
 
 	else if (!m_Interior.IsEmpty())
 		{
@@ -4606,7 +4635,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 		//	Tell our attacker that we got hit
 
-		CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
+		CSpaceObject* pOrderGiver = Ctx.GetOrderGiver();
 		if (pOrderGiver && pOrderGiver->CanAttack())
 			pOrderGiver->OnObjHit(Ctx);
 
@@ -4624,6 +4653,8 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		}
 
 	//	Otherwise we're in big trouble
+	//
+	//	Null damage is already short-circuited at this point
 
 	else
 		{

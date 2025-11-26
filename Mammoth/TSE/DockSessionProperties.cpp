@@ -84,6 +84,60 @@ ICCItemPtr CDockSession::GetProperty (const CString &sProperty) const
 		return ICCItemPtr(ICCItem::Nil);
 	}
 
+
+ICCItemPtr CDockSession::GetPropertyKeys () const
+
+//	GetProperty
+//
+//	Returns a property. We guarantee that the result is non-null.
+
+	{
+	//	Start by getting properties handled by the screen
+
+	ICCItemPtr pList = GetUI().GetPropertyKeys();
+
+	//	If this is an atomic nil, we need to remake it as a list
+
+	if (pList->IsAtom())
+		pList = ICCItemPtr(ICCItem::List);
+
+	//	We need to track what items are already in this list (if any)
+
+	TMap<CString, int> mSeen;
+
+	for (int i = 0; i < pList->GetCount(); i++)
+		mSeen.Insert(pList->GetElement(i)->GetStringValue());
+
+	//	Collect keys from the built-in properties
+
+	for (int i = 0; i < m_PropertyTable.GetPropertyCount(); i++)
+		{
+		CString sKey = m_PropertyTable.GetPropertyName(i);
+		if (mSeen.Find(sKey))
+			continue;
+		pList->AppendString(sKey);
+		mSeen.Insert(sKey);
+		}
+
+	//	Finally add in xml-defined property keys
+
+	if (CDesignType *pType = m_DockFrames.GetCurrent().pResolvedRoot)
+		{
+		TArray<CString> aTypeKeys = pType->GetDataKeys(EDesignDataTypes::ePropertyData);
+
+		for (int i = 0; i < aTypeKeys.GetCount(); i++)
+			{
+			CString sKey = aTypeKeys[i];
+			if (mSeen.Find(sKey))
+				continue;
+			pList->AppendString(sKey);
+			mSeen.Insert(sKey);
+			}
+		}
+
+	return pList;
+	}
+
 ICCItemPtr CDockSession::GetPropertyFrameStack (void) const
 
 //	GetPropertyFrameStack

@@ -117,6 +117,20 @@ int CDamageAdjDesc::GetAbsorbAdj (DamageTypes iDamageType) const
 		return 0;
 	}
 
+int CDamageAdjDesc::GetAdj (DamageTypes iDamageType) const
+	{
+	switch (iDamageType)
+		{
+		case damageGeneric:
+			return 100;
+		case damageNull:
+		case damageError:
+			return 0;
+		default:
+			return m_iDamageAdj[iDamageType];
+		}
+	}
+
 int CDamageAdjDesc::GetAdj (DamageTypes iDamageType, const CItemEnhancementStack *pEnhancements) const
 
 //	GetAdj

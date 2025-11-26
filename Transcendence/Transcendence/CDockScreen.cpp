@@ -750,6 +750,49 @@ ICCItemPtr CDockScreen::GetListAsCCItem (void) const
 	return m_pDisplay->GetListAsCCItem();
 	}
 
+//	GetProperty
+//
+//	Returns the given screen property, or NULL if not found.
+//
+ICCItemPtr CDockScreen::GetPropertyKeys () const
+
+	{
+	//	Get any properties from the display
+
+	ICCItemPtr pList = m_pDisplay->GetPropertyKeys();
+
+	//	Ensure that pList is never true (atomic) Nil
+
+	if (!pList || pList->IsAtom())
+		pList = ICCItemPtr(ICCItem::List);
+
+	//	Always include the generic properties
+
+	TArray<CString> aKeys =
+		{
+		PROPERTY_COUNTER,
+		PROPERTY_DESCRIPTION,
+		PROPERTY_IN_FIRST_ON_INIT,
+		PROPERTY_INPUT
+		};
+
+	for (int k = 0; k < aKeys.GetCount(); k++)
+		{
+		bool bNeed = true;
+
+		for (int i = 0; i < pList->GetCount(); i++)
+			{
+			if (strEquals(pList->GetElement(i)->GetStringValue(), aKeys[k]))
+				bNeed = false;
+			}
+
+		if (bNeed)
+			pList->AppendString(aKeys[k]);
+		}
+
+	return pList;
+	}
+
 ICCItemPtr CDockScreen::GetProperty (const CString &sProperty) const
 
 //	GetProperty
