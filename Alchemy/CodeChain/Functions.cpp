@@ -767,6 +767,18 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	return pResult;
 	}
 
+enum EComparisonResult
+	{
+	eError =		-100,		//	Comparison case that should not happen (Ex, unimplemented type)
+	eDeclined =		-99,		//	We decline to compare these values due our type coersion settings
+
+	eLessType =		-2,			//	First type is considered always less than second type
+	eLess =			-1,			//	First value is considered less than second value
+	eEqual =		0,			//	First and second value are considered equal
+	eGreater =		1,			//	First value is considered greater than second value
+	eGreaterType =	2,			//	First type is considered always greater than second type
+	};
+
 bool CompareSucceeds (int iCompare, DWORD dwData)
 	{
 	//	If we get an error, it means something wasn't implemented
@@ -5987,18 +5999,6 @@ ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 //	Helper Functions -----------------------------------------------------------
 
-enum EComparisonResult
-	{
-	eError =		-100,		//	Comparison case that should not happen (Ex, unimplemented type)
-	eDeclined =		-99,		//	We decline to compare these values due our type coersion settings
-
-	eLessType =		-2,			//	First type is considered always less than second type
-	eLess =			-1,			//	First value is considered less than second value
-	eEqual =		0,			//	First and second value are considered equal
-	eGreater =		1,			//	First value is considered greater than second value
-	eGreaterType =	2,			//	First type is considered always greater than second type
-	};
-
 //	HelperCompareItems
 //
 //	Compares two items and returns:
@@ -6035,7 +6035,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 					//	Atomic Nil is considered less than List Nil when coercing none
 
 					if (pFirst->IsAtom())
-						return pSecond->IsAtom() ? eLess : eLessType;
+						return pSecond->IsAtom() ? eEqual : eLessType;
 					else
 						return pSecond->IsAtom() ? eGreaterType : eEqual;
 					}
