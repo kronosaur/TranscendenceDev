@@ -896,6 +896,7 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 
 	//	Special cases
 
+	bool bNegative = (dwData == FN_EQUALITY_NEQ); //	!= functions check if ANY are not equal, as the inverse to equality which checks if ALL are equal
 	bool bOk = true;
 	if (pArgs->GetCount() == 0
 			&& (dwCoerceFlags & HELPER_COMPARE_COERCE_FULL))
@@ -923,9 +924,13 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 				int iResult = HelperCompareItems(pPrev, pExp, dwCoerceFlags);
 				bOk = CompareSucceeds(iResult, dwData);
 
-				//	If we don't have a match, return
+				//	If we are an inequality and have a match (a comparison that is not equal) we can return
+				if (bOk && bNegative)
+					break;
 
-				if (!bOk)
+				//	If we don't have a match and aren't an inequality, return
+
+				if (!bOk && !bNegative)
 					break;
 				}
 
