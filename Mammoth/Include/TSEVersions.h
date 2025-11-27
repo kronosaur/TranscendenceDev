@@ -676,6 +676,21 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //				Returns item index from innermost list or structs (lists are 0-based)
 //				Supports all functionality of @, but treats negative list indexes as
 //				indexing from the end in reverse (as in slice)
+//			(?= ...)
+//				Returns true if a valid full-coercion comparison (via =, !=, etc)
+//				can be made between the arguments (processes in pairs, left to right)
+//				If false, all comparators except != will always return false for the
+//				given sequence of types. != will always return true.
+//			(?== ...)
+//				Returns true if a valid basic-coercion comparison (via eq, neq, etc)
+//				can be made between the arguments (processes in pairs, left to right)
+//				If false, all comparators except neq will always return false for the
+//				given sequence of types. neq will always return true.
+//			(?=== ...)
+//				Returns true if a valid no-coercion comparison (via ===, !=== etc)
+//				can be made between the arguments (processes in pairs, left to right)
+//				If false, all comparators except !=== will always return false for the
+//				given sequence of types. !=== will always return true.
 //			(scrGetDataKeys obj)
 //				Returns a list of typData keys for the given obj type
 //			(scrGetStaticDataKeys type)
