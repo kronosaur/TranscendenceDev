@@ -48,6 +48,38 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"Nil is treated as 0",
 			NULL,	0,	},
 
+		{	"?=",				fnEqualityNumerals, FN_EQUALITY_COMPARABLE,
+			"(?= [x1 x2 ... xn]) -> True if all arguments can be compared with fully type-coercing comparators.\n\n"
+			"Fully type-coercing comparators include:\n"
+			"   (= ...)\n"
+			"   (!= ...)\n"
+			"   (> ...)\n"
+			"   (>= ...)\n"
+			"   (< ...)\n"
+			"   (<= ...)\n"
+			"If false, fully type-coercing comparators other than (!= ...) will always return false for these inputs.",
+			NULL, 0, },
+
+		{	"?==",				fnEquality,		FN_EQUALITY_COMPARABLE,
+			"(?== [x1 x2 ... xn]) -> True if all arguments can be compared with compatible type-coercing comparators.\n\n"
+			"Compatible type-coercing comparators include:\n"
+			"   (eq ...)\n"
+			"   (neq ...)\n"
+			"   (gr ...)\n"
+			"   (geq ...)\n"
+			"   (ls ...)\n"
+			"   (leq ...)\n"
+			"If false, compatible type-coercing comparators other than (neq ...) will always return false for these inputs.",
+			NULL,	0,	},
+
+		{	"?===",				fnEqualityExact, FN_EQUALITY_COMPARABLE,
+			"(?=== [x1 x2 ... xn]) -> True if all arguments can be compared with non type-coercing comparators.\n\n"
+			"Non type-coercing comparators include:\n"
+			"   (=== ...)\n"
+			"   (!=== ...)\n"
+			"If false, non type-coercing comparators other than (!=== ...) will always return false for these inputs.",
+			NULL, 0, },
+
 		{	"add",				fnMathListOld,		FN_MATH_ADD,
 			"(add x1 [x2 ... xn]) -> sum (after converting arguments to int32)",
 			"v*",	0,	},

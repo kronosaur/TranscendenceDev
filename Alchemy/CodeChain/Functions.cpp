@@ -769,29 +769,48 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 bool CompareSucceeds (int iCompare, DWORD dwData)
 	{
-	if (iCompare < -100)
+	//	If we get an error, it means something wasn't implemented
+
+	if (iCompare <= eError)
+		{
 		ASSERT(false);
 		return false;
+		}
+
+	//	Inequality operators are the only operators permitted to
+	//	return "true" on declined comparisons
+
+	if (dwData == FN_EQUALITY_NEQ)
+		return iCompare != eEqual;
+
+	//	All other operators return false on a declined comparison
+
+	if (iCompare == eDeclined)
+		return false;
+
+	//	At this point we know we have a valid comparison
 
 	switch (dwData)
 		{
 		case FN_EQUALITY_EQ:
-			return (iCompare == 0);
-
-		case FN_EQUALITY_NEQ:
-			return (iCompare != 0);
+			return iCompare == eEqual;
 
 		case FN_EQUALITY_LESSER:
-			return (iCompare < 0);
+			return iCompare < eEqual;
 
 		case FN_EQUALITY_LESSER_EQ:
-			return (iCompare <= 0);
+			return iCompare <= eEqual;
 
 		case FN_EQUALITY_GREATER:
-			return (iCompare > 0);
+			return iCompare > eEqual;
 
 		case FN_EQUALITY_GREATER_EQ:
-			return (iCompare >= 0);
+			return iCompare >= eEqual;
+
+		case FN_EQUALITY_COMPARABLE:
+			return true;
+
+		//	If we reach this point, a new comparator function was not handled
 
 		default:
 			ASSERT(false);
@@ -810,7 +829,7 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 //	Additionally, for fnEqualityExact, it does not coerce types and handles case
 //	sensitivity.
 //
-//	Legacy operators (fnEquality)
+//	Legacy operators (fnEquality) - COERCE COMPATIBLE
 //	(eq exp1 exp2 ... expn)
 //	(neq exp1 exp2 ... expn)
 //	(gr exp1 exp2 ... expn)
@@ -818,7 +837,7 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 //	(ls exp1 exp2 ... expn)
 //	(leq exp1 exp2 ... expn)
 //	
-//	New operators (fnEqualityNumerals)
+//	New operators (fnEqualityNumerals) - COERCE FULL
 //	(= exp1 exp2 ... expn)
 //	(!= exp1 exp2 ... expn)
 //	(> exp1 exp2 ... expn)
@@ -826,7 +845,7 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 //	(< exp1 exp2 ... expn)
 //	(<= exp1 exp2 ... expn)
 //
-//	Exact equality (fnEqualityExact)
+//	Exact equality (fnEqualityExact) - COERCE NONE
 //	(=== exp1 exp2 ... expn)
 //	(!=== exp1 exp2 ... expn)
 
