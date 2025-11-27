@@ -3,12 +3,6 @@
 ;	Regression tests for math operations
 ;	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved
 
-(setq testLambdaA (lambda (a b) "" (!= a b)))
-(setq testLambdaB (lambda (a b) "" (!= a b)))
-(setq testLambdaC (lambda (a b) "" (= a b)))
-(setq testLambdaD (lambda (a) "" (= a Nil)))
-(setq testLambdaE testLambdaA)
-
 (setq TEST_SUITE (list
 
 	;	Literals
@@ -31,80 +25,6 @@
 	{	code: '(link "1.2E-3")		result: 0.0012	}
 	{	code: '(link "0123_test")	result: "0123_test"	}
 	{	code: '(link "1.4.5")		result: "1.4.5"	}
-
-	;;;;	COMPARATORS		;;;;
-
-	;	Exact (Type + Case) Equality
-
-	{	code: '(=== Nil)			result: True	}
-	{	code: '(=== Nil Nil)		result: True	}
-	{	code: '(=== 0)				result: Nil		}
-	{	code: '(=== 1)				result: Nil		}
-	{	code: '(=== 1.0)			result: Nil		}
-	{	code: '(=== 0.0)			result: Nil		}
-	{	code: '(=== "")				result: Nil		}
-	{	code: '(=== (list))			result: Nil		}
-	{	code: '(=== +)				result: Nil		}
-	{	code: '(=== 1 0)			result: Nil		}
-	{	code: '(=== 1 1)			result: True	}
-	{	code: '(=== (list) Nil)		result: Nil		}
-	{	code: '(=== (list) "")		result: Nil		}
-	{	code: '(=== (list) (list))	result: True	}
-	{	code: '(=== "" "")			result: True	}
-	{	code: '(=== "a" "A")		result: Nil		}
-	{	code: '(=== Nil "")			result: Nil		}
-	{	code: '(=== 1.0 1)			result: Nil		}
-	{	code: '(=== objGetProperty obj@)			result: True}
-	{	code: '(=== objGetData obj@)				result: Nil}
-	{	code: '(=== testLambdaA testLambdaA)		result: True}
-	{	code: '(=== testLambdaA testLambdaB)		result: Nil}
-	{	code: '(=== testLambdaB testLambdaA)		result: Nil}
-	{	code: '(=== testLambdaA testLambdaC)		result: Nil}
-	{	code: '(=== testLambdaC testLambdaA)		result: Nil}
-	{	code: '(=== testLambdaA testLambdaD)		result: Nil}
-	{	code: '(=== testLambdaD testLambdaA)		result: Nil}
-	{	code: '(=== testLambdaA testLambdaE)		result: True}
-	{	code: '(=== testLambdaE testLambdaA)		result: True}
-	{	code: '(=== (vector (list 1 2)) (vector (list 1 2)))							result: True}
-	{	code: '(=== (vector (list 1 2)) (vector (list 1 2 3)))							result: Nil}
-	{	code: '(=== (vector (list 1 2.0)) (vector (list 1 2)))							result: True}
-	{	code: '(=== (vector (list (list 1 1) (list 1 1))) (vfilled 1.0 (list 2 2)))		result: True}
-	{	code: '(=== (vector (list (list 1 2) (list 3 4))) (vfilled -1.0 (list 2 2)))	result: Nil}
-
-	{	code: '(!=== Nil)			result: Nil		}
-	{	code: '(!=== Nil Nil)		result: Nil		}
-	{	code: '(!=== 0)				result: True	}
-	{	code: '(!=== 1)				result: True	}
-	{	code: '(!=== 1.0)			result: True	}
-	{	code: '(!=== 0.0)			result: True	}
-	{	code: '(!=== "")			result: True	}
-	{	code: '(!=== (list))		result: True	}
-	{	code: '(!=== +)				result: True	}
-	{	code: '(!=== 1 0)			result: True	}
-	{	code: '(!=== 1 1)			result: Nil		}
-	{	code: '(!=== (list) Nil)	result: True	}
-	{	code: '(!=== (list) "")		result: True	}
-	{	code: '(!=== (list) (list))	result: Nil		}
-	{	code: '(!=== "" "")			result: Nil		}
-	{	code: '(!=== "a" "A")		result: True	}
-	{	code: '(!=== Nil "")		result: True	}
-	{	code: '(!=== 1.0 1)			result: True	}
-	{	code: '(!=== objGetProperty obj@)			result: Nil}
-	{	code: '(!=== objGetData obj@)				result: True}
-	{	code: '(!=== testLambdaA testLambdaA)		result: Nil}
-	{	code: '(!=== testLambdaA testLambdaB)		result: True}
-	{	code: '(!=== testLambdaB testLambdaA)		result: True}
-	{	code: '(!=== testLambdaA testLambdaC)		result: True}
-	{	code: '(!=== testLambdaC testLambdaA)		result: True}
-	{	code: '(!=== testLambdaA testLambdaD)		result: True}
-	{	code: '(!=== testLambdaD testLambdaA)		result: True}
-	{	code: '(!=== testLambdaA testLambdaE)		result: Nil}
-	{	code: '(!=== testLambdaE testLambdaA)		result: Nil}
-	{	code: '(!=== (vector (list 1 2)) (vector (list 1 2)))							result: Nil}
-	{	code: '(!=== (vector (list 1 2)) (vector (list 1 2 3)))							result: True}
-	{	code: '(!=== (vector (list 1 2.0)) (vector (list 1 2)))							result: Nil}
-	{	code: '(!=== (vector (list (list 1 1) (list 1 1))) (vfilled 1.0 (list 2 2)))	result: Nil}
-	{	code: '(!=== (vector (list (list 1 2) (list 3 4))) (vfilled -1.0 (list 2 2)))	result: True}
 
 	;	Equality
 

@@ -171,6 +171,32 @@ CString Kernel::strPattern (const CString &sPattern, LPVOID *pArgs)
 					pPos++;
 					iLength--;
 					}
+				else if (*pPos == 'r')
+					{
+					double *pVar = (double *)pArgs;
+
+					DWORD dwFlags = (b1000Separator ? FORMAT_THOUSAND_SEPARATOR : 0)
+						| (bPadWithZeros ? FORMAT_LEADING_ZERO : 0);
+
+					//	TODO: make a proper formatter for doubles
+					
+					CString sNew = strFromDouble(*pVar);
+
+					sOutput.Append(sNew, CString::FLAG_ALLOC_EXTRA);
+
+					//	Remember the last integer (all we care about is whether it
+					//	is 1 or not, for pluralization).
+
+					iLastInteger = (*pVar == 1 ? 1 : 0);
+
+					//	Next
+
+					pArgs++;
+					pArgs++;
+
+					pPos++;
+					iLength--;
+					}
 				else if (*pPos == 'x' || *pPos == 'X')
 					{
 					int *pInt = (int *)pArgs;

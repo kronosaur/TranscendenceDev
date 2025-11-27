@@ -769,19 +769,27 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 enum EComparisonResult
 	{
-	eError =		-100,		//	Comparison case that should not happen (Ex, unimplemented type)
+	eGreaterType =	2,			//	First type is considered always greater than second type
+	eGreater =		1,			//	First value is considered greater than second value
+	eEqual =		0,			//	First and second value are considered equal
+	eLess =			-1,			//	First value is considered less than second value
+	eLessType =		-2,			//	First type is considered always less than second type
+
+	//	Special cases
+
+	eNotEqual =		-98,		//	When a valid comparison is non-equal but no possible deterministic order can be established (ex, comparing pointerType once that is implemented)
 	eDeclined =		-99,		//	We decline to compare these values due our type coersion settings
 
-	eLessType =		-2,			//	First type is considered always less than second type
-	eLess =			-1,			//	First value is considered less than second value
-	eEqual =		0,			//	First and second value are considered equal
-	eGreater =		1,			//	First value is considered greater than second value
-	eGreaterType =	2,			//	First type is considered always greater than second type
+	//	Error cases
+
+	eError =		-100,		//	Unreachable case was reached
+	eNotImplemented = -101,		//	Comparison type is not implemented
 	};
 
 bool CompareSucceeds (int iCompare, DWORD dwData)
 	{
-	//	If we get an error, it means something wasn't implemented
+	//	If we get an error, something went wrong or wasnt implemented
+	//	Errors are always false, and always throw a debug assert
 
 	if (iCompare <= eError)
 		{
@@ -790,14 +798,26 @@ bool CompareSucceeds (int iCompare, DWORD dwData)
 		}
 
 	//	Inequality operators are the only operators permitted to
-	//	return "true" on declined comparisons
+	//	return "true" on declined result
 
 	if (dwData == FN_EQUALITY_NEQ)
 		return iCompare != eEqual;
 
-	//	All other operators return false on a declined comparison
+	//	All other operators return false on a declined result
 
 	if (iCompare == eDeclined)
+		return false;
+
+	//	If we just wanted to check compatibility, we can return True now
+	//	These are the only non-inequality operators allowed to return "true"
+	//	on a notEqual result
+
+	if (dwData == FN_EQUALITY_COMPARABLE)
+		return true;
+
+	//	All other operators return false on a notEqual result
+
+	if (iCompare == eNotEqual)
 		return false;
 
 	//	At this point we know we have a valid comparison
@@ -6009,8 +6029,10 @@ ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 //		-1	if pFirst < pSecond
 //		-2	if full coerce and pFirst is a lesser type than pSecond
 // 
+//		-98 if the args are not equal, but have no ordering (ex, when comparing pointers as pointers)
 //		-99 if we declined the comparison due to not coercing these types
-//		-100 error in comparing types (usually a non-implemented combination)
+//		-100 error in comparing types
+//		-101 comparison for these types is not implemented
 //
 int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 
@@ -6093,7 +6115,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 				CCVector* pVecSecond = dynamic_cast <CCVector*>(pSecond);
 
 				TArray<int> aFirstShape = pVecFirst->GetShapeArray();
-				TArray<int> aSecondShape = pVecFirst->GetShapeArray();
+				TArray<int> aSecondShape = pVecSecond->GetShapeArray();
 				int iShapeCompare = -100;
 
 				//
@@ -6107,10 +6129,10 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 					if (dwCoerceFlags & HELPER_COMPARE_COERCE_COMPATIBLE)
 						return iShapeCompare;
 
-					//	Otherwise we are coercing none, so decline it if the shapes are not compatible
+					//	Otherwise we are coercing none, so we do not make a call beyond them being not equal
 
 					else if (iShapeCompare)
-						return eDeclined;
+						return eNotEqual;
 
 					//	Now we have to check each element
 
@@ -6127,8 +6149,31 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 
 						if (iCount != aSecondElements.GetCount())
 							{
+							int iCount2 = aSecondElements.GetCount();
+							CString sError = CONSTLIT("WARNING: encountered an invalid vector shapes matched but did not match the number of elements:\n");
+							CString sVector = CONSTLIT("Vector 1 shape: ( ");
+							for (int i = 0; i < aFirstShape.GetCount(); i++)
+								sVector = strCat(sVector, strPatternSubst(CONSTLIT("%d "), aFirstShape[i]));
+							sVector = strCat(sVector, CONSTLIT(")\n"));
+							sError = strCat(sError, sVector);
+							sVector = CONSTLIT("Vector 1 elements: ( ");
+							for (int i = 0; i < aFirstElements.GetCount(); i++)
+								sVector = strCat(sVector, strPatternSubst(CONSTLIT("%r "), aFirstElements[i]));
+							sVector = strCat(sVector, CONSTLIT(")\n"));
+							sError = strCat(sError, sVector);
+							kernelDebugLogString(sError);
+							sVector = CONSTLIT("Vector 2 shape: ( ");
+							for (int i = 0; i < aSecondShape.GetCount(); i++)
+								sVector = strCat(sVector, strPatternSubst(CONSTLIT("%d "), aSecondShape[i]));
+							sVector = strCat(sVector, CONSTLIT(")\n"));
+							sError = strCat(sError, sVector);
+							sVector = CONSTLIT("Vector 2 elements: ( ");
+							for (int i = 0; i < aSecondElements.GetCount(); i++)
+								sVector = strCat(sVector, strPatternSubst(CONSTLIT("%r "), aSecondElements[i]));
+							sVector = strCat(sVector, CONSTLIT(")\n"));
+							sError = strCat(sError, sVector);
+							kernelDebugLogString(sError);
 							ASSERT(false);
-							kernelDebugLogString("WARNING: encountered an invalid vector where the shape did not match the number of elements");
 							return eError;
 							}
 
@@ -6259,13 +6304,22 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 
 				//	If we bind to the same function ptr, we are aliases and always equal
 
-				if (pFirst->GetFunctionBinding() == pSecond->GetFunctionBinding())
+				if (pFirst->GetFunctionAddr() == pSecond->GetFunctionAddr())
 					return eEqual;
 
-				//	That is the only case None-coercion cares about, it declines to compare all others
+				//	That is the only case None-coercion returns true on
 
 				else if (dwCoerceFlags & HELPER_COMPARE_COERCE_NONE)
-					return eDeclined;
+					{
+					//	Figure out if we need to return eNotEqual or eDeclined
+					//	We need eNotEqual for non-coersion because as far as tlisp is concerned,
+					//	pointers being greater or less than eachother is a meaningless concept
+					
+					if (pFirst->IsPrimitive() != pSecond->IsPrimitive())
+						return eDeclined;
+					else
+						return eNotEqual;
+					}
 
 				//	Otherwise if we do at least partial coercion, we compare function signature to see if they are "like" functions
 				//	Full coersion matches between lambdas and primitives, partial coercion matches only between types
@@ -6296,7 +6350,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 
 			default:
 				ASSERT(false);
-				return eError;
+				return eNotImplemented;
 			}
 		}
 
@@ -6676,51 +6730,62 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 			switch (pSecond->GetValueType())
 				{
 				case ICCItem::Nil:
-					return 0;
+					return eEqual;
 
 				case ICCItem::True:
-					return -1;
+					return eLess;
 
 				case ICCItem::Integer:
 					{
 					if (0 == pSecond->GetIntegerValue())
-						return 0;
+						return eEqual;
 					else if (0 > pSecond->GetIntegerValue())
-						return 1;
+						return eGreater;
 					else
-						return -1;
+						return eLess;
 					}
 
 				case ICCItem::Double:
 					{
 					if (0.0 == pSecond->GetDoubleValue())
-						return 0;
+						return eEqual;
 					else if (0.0 > pSecond->GetDoubleValue())
-						return 1;
+						return eGreater;
 					else
-						return -1;
+						return eLess;
 					}
 
 				case ICCItem::String:
-					return -1;
+					return eLessType;
 
 				case ICCItem::List:
 				case ICCItem::SymbolTable:
-					return (pSecond->GetCount() == 0 ? 0 : -1);
+					return (pSecond->GetCount() == 0 ? eEqual : eLessType);
 
 				default:
-					return -2;
+					ASSERT(false);
+					return eNotImplemented;
 				}
 			}
 		else if (pSecond->IsNil())
 			{
 			int iResult = HelperCompareItems(pSecond, pFirst, dwCoerceFlags);
-			if (iResult == -1)
-				return 1;
-			else if (iResult == 1)
-				return -1;
-			else
-				return iResult;
+			//	Invert the results
+			switch (iResult)
+				{
+				case (eLessType):
+					return eGreaterType;
+				case (eLess):
+					return eGreater;
+				case (eEqual):
+					return eEqual;
+				case (eGreater):
+					return eLess;
+				case (eGreaterType):
+					return eLessType;
+				default:
+					return iResult;
+				}
 			}
 		else if (pFirst->GetValueType() == ICCItem::Double)
 			{
@@ -6730,32 +6795,45 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 					{
 					double rSecondValue = pSecond->GetDoubleValue();
 					if (pFirst->GetDoubleValue() == rSecondValue)
-						return 0;
+						return eEqual;
 					else if (pFirst->GetDoubleValue() > rSecondValue)
-						return 1;
+						return eGreater;
 					else
-						return -1;
+						return eLess;
 					}
 
 				default:
-					return -2;
+					return eDeclined;
 				}
 			}
 		else if (pSecond->GetValueType() == ICCItem::Double)
 			{
 			int iResult = HelperCompareItems(pSecond, pFirst, dwCoerceFlags);
-			if (iResult == -1)
-				return 1;
-			else if (iResult == 1)
-				return -1;
-			else
-				return iResult;
+			//	Invert the results
+			switch (iResult)
+				{
+				case (eLessType):
+					return eGreaterType;
+				case (eLess):
+					return eGreater;
+				case (eEqual):
+					return eEqual;
+				case (eGreater):
+					return eLess;
+				case (eGreaterType):
+					return eLessType;
+				default:
+					return iResult;
+				}
 			}
 		else
-			return -2;
+			return eDeclined;
 		}
+
+	//	This case should not be reachable, it means dwData was not correctly set
+
 	else
-		return -2;
+		return eError;
 	}
 
 int HelperCompareItemsLists (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce)
