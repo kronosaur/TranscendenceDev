@@ -609,7 +609,7 @@ class CDamageAdjDesc
 
 		ALERROR Bind (SDesignLoadCtx &Ctx, const CDamageAdjDesc *pDefault);
 		int GetAbsorbAdj (DamageTypes iDamageType) const;
-		int GetAdj (DamageTypes iDamageType) const { return (iDamageType == damageGeneric ? 100 : m_iDamageAdj[iDamageType]); }
+		int GetAdj (DamageTypes iDamageType) const;
 		int GetAdj (DamageTypes iDamageType, const CItemEnhancementStack *pEnhancements) const;
 		void GetAdjAndDefault (DamageTypes iDamageType, int *retiAdj, int *retiDefault) const;
 		int GetHPBonus (DamageTypes iDamageType) const;

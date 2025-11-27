@@ -128,7 +128,8 @@
 #define FN_BITWISE_SHR                  124
 #define FN_BITWISE_ROL                  125
 #define FN_BITWISE_ROR                  126
-#define FN_EQUALITY_COMPARABLE			127
+#define FN_ITEM_REVERSE					127
+#define FN_EQUALITY_COMPARABLE			128
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

@@ -1792,18 +1792,20 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_ITEM:
+		case FN_ITEM_REVERSE:
 			{
-			ICCItem *pList = pArgs->GetElement(0);
+			ICCItem* pCurData = pArgs->GetElement(0);
+			ICCItem* pArg = NULL;
 
 			//	If no second parameter, then we return keys
 
 			if (pArgs->GetCount() < 2)
 				{
-				if (pList->IsSymbolTable() && pList->GetCount() > 0)
+				if (pCurData->IsSymbolTable() && pCurData->GetCount() > 0)
 					{
 					ICCItem *pResult = pCC->CreateLinkedList();
-					for (i = 0; i < pList->GetCount(); i++)
-						pResult->AppendString(pList->GetKey(i));
+					for (i = 0; i < pCurData->GetCount(); i++)
+						pResult->AppendString(pCurData->GetKey(i));
 
 					return pResult;
 					}
@@ -1811,36 +1813,96 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateNil();
 				}
 
-			//	If index is nil then we always return nil
+			//	Otherwise we read all the keys and index through nested elements
+			//
+			//	Return Nil if we try to get an element from a non-list or non-struct
+			//	Or if it is ever out of range:
+			//		FN_ITEM index < 0 on a list = 0
+			//		FN_ITEM_REVERSE index < 0 on a list addresses from the last element
 
-			else if (pArgs->GetElement(1)->IsNil())
-				return pCC->CreateNil();
-
-			//	Handle symbol tables differently
-
-			else if (pList->IsSymbolTable())
+			for (int i = 1; i < pArgs->GetCount(); i++)
 				{
-				bool bFound;
-				ICCItem *pResult = pList->LookupEx(pCC, pArgs->GetElement(1), &bFound);
-				if (!bFound)
-					{
-					pResult->Discard();
+				//	we can only function if pCurData is a list or struct
+				//	we have to filter out atoms because Nil reports itself as a list but isnt.
+
+				if (!pCurData
+					|| pCurData->IsAtom()
+					|| !(pCurData->IsList() || pCurData->IsSymbolTable()))
 					return pCC->CreateNil();
+
+				//	get the next index arg
+
+				pArg = pArgs->GetElement(i);
+
+				//	if the index arg is ever NULL or is Nil (incl empty list nil), we return Nil
+
+				if (!pArg || pArg->IsNil())
+					return pCC->CreateNil();
+
+				//	process arg if it is appropriate for pCurData's type
+				//	we dont want to reference anything until we return so we only
+				//	do GetElement
+
+				if (pCurData->IsSymbolTable())
+					{
+					bool bFound = false;
+					pCurData = pCurData->LookupEx(pCC, pArg, &bFound);
+
+					//	We pre-emptively discard, because this is either Nil or something with
+					//	at least 1 reference anyways, and we reference what we use before we
+					//	return it
+					//	Should also never be null. If you get a nullptr here, it means LookupEx
+					//	is broken
+
+					if (pCurData)
+						pCurData->Discard();
+					else
+						return pCC->CreateError(CONSTLIT("Nullptr exception occurred in '@@'"));
+
+					//	Handle invalid key
+
+					if (!bFound)
+						return pCC->CreateNil();
+
 					}
 
-				return pResult;
-				}
+				else if (pCurData->IsList() && pArg->IsInteger())
+					{
+					int iListIdx = pArg->GetIntegerValue();
 
-			//	Normal lists
+					//	Handle the different logic for legacy FN_ITEM vs FN_ITEM_REVERSE
 
-			else
-				{
-				ICCItem *pResult = pList->GetElement(pArgs->GetElement(1)->GetIntegerValue());
-				if (pResult == NULL)
-					return pCC->CreateNil();
+					if (dwData == FN_ITEM)
+						iListIdx = iListIdx < 0 ? 0 : iListIdx;
+					else if (dwData == FN_ITEM_REVERSE)
+						{
+						//	We add iListIdx to count IF it is negative to index from the end
+
+						iListIdx = iListIdx < 0 ? pCurData->GetCount() + iListIdx : iListIdx;
+
+						//	Handle if FN_ITEM_REVERSE is too negative
+
+						if (iListIdx < 0)
+							return pCC->CreateNil();
+						}
+
+					//	Treat as 0-based
+
+					pCurData = pCurData->GetElement(iListIdx);
+
+					//	Handle out of range index
+
+					if (!pCurData)
+						return pCC->CreateNil();
+					}
+
+				//	Handle invalid configurations
+
 				else
-					return pResult->Reference();
+					return pCC->CreateNil();
 				}
+
+			return pCurData->Reference();
 			}
 
 		case FN_ITEM_CONVERT_TO:

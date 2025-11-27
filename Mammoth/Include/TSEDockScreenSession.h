@@ -37,6 +37,7 @@ class IDockScreenUI
 		virtual ICCItemPtr GetListAsCCItem (void) const { return ICCItemPtr::Nil(); }
 		virtual int GetListCursor (void) const { return -1; }
 		virtual ICCItemPtr GetProperty (const CString &sProperty) const { return NULL; }
+		virtual ICCItemPtr GetPropertyKeys () const { return ICCItemPtr::Nil(); }
 		virtual void OnModifyItemBegin (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const { }
 		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result) { }
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) { }
@@ -158,9 +159,11 @@ class CDockSession
 		const SScreenSetTab *FindTab (const CString &sID) const;
 		const SDockFrame &GetCurrentFrame (void) const { return m_DockFrames.GetCurrent(); }
 		ICCItemPtr GetData (const CString &sAttrib) const;
+		ICCItemPtr GetDataKeys () const;
 		CDockScreenStack &GetFrameStack (void) { return m_DockFrames; }
 		const CDockScreenStack &GetFrameStack (void) const { return m_DockFrames; }
 		ICCItemPtr GetProperty (const CString &sProperty) const;
+		ICCItemPtr GetPropertyKeys () const;
 		ICCItemPtr GetPropertyFrameStack (void) const;
 		ICCItemPtr GetReturnData (const CString &sAttrib) const;
 		ICCItemPtr GetSessionData (const CString &sAttrib) const;

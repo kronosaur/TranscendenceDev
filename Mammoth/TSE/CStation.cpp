@@ -2549,11 +2549,11 @@ EConditionResult CStation::OnCanRemoveCondition (ECondition iCondition, const SA
 		}
 	}
 
-EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
-
 //	Damage
 //
 //	Station takes damage
+//
+EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	{
 	DEBUG_TRY
@@ -2564,9 +2564,25 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	Ctx.iSectHit = -1;
 
-	//	Short-circuit
+	//	If this is a momentum attack then we are pushed
+	//	We run this first because momentum is not hostile
 
-	if (Ctx.iDamage == 0)
+	Metric rImpulse;
+	if (!IsAnchored() && Ctx.Damage.HasImpulseDamage(&rImpulse))
+		{
+		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
+		AddForce(vAccel);
+		}
+
+	//	Short-circuit, only if there is absolutely nothing our
+	//	damage desc lets us do
+	// 
+	//	Null damage always is allowed through specifically for scripts
+	//	to fire
+
+	bool bIsHostile = Ctx.Damage.IsHostile();
+
+	if (Ctx.iDamage == 0 && !bIsHostile && Ctx.Damage.GetDamageType() != damageNull)
 		{
 		if (IsImmutable())
 			return damageNoDamageNoPassthrough;
@@ -2574,14 +2590,17 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 			return damageNoDamage;
 		}
 
-	m_dwLastHitTime = GetUniverse().GetTicks();
-
 	//	OnAttacked event
 
-	if (HasOnAttackedEvent())
-		FireOnAttacked(Ctx);
+	if (bIsHostile)
+		{
+		m_dwLastHitTime = GetUniverse().GetTicks();
 
-	GetSystem()->FireOnSystemObjAttacked(Ctx);
+		if (HasOnAttackedEvent())
+			FireOnAttacked(Ctx);
+
+		GetSystem()->FireOnSystemObjAttacked(Ctx);
+		}
 
 	//	See if the damage is blocked by some external defense
 
@@ -2599,15 +2618,6 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 			else
 				return damageNoDamage;
 			}
-		}
-
-	//	If this is a momentum attack then we are pushed
-
-	Metric rImpulse;
-	if (!IsAnchored() && Ctx.Damage.HasImpulseDamage(&rImpulse))
-		{
-		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
-		AddForce(vAccel);
 		}
 
 	//	Let our shield generators take a crack at it
@@ -2646,11 +2656,11 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	DEBUG_CATCH_OBJ(this)
 	}
 
-EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
-
 //	OnDamageAbandoned
 //
 //	An abandoned station is damaged
+//
+EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 
 	{
 	EDamageResults iResult = damageNoDamageNoPassthrough;
@@ -2714,7 +2724,7 @@ EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 
 	//	Take damage
 
-	if (Ctx.iDamage > 0)
+	if (Ctx.iDamage > 0 && Ctx.Damage.GetDamageType() != damageNull)
 		{
 		//	See if this hit destroyed us
 
@@ -2749,11 +2759,11 @@ EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 	return iResult;
 	}
 
-EDamageResults CStation::OnDamageImmutable (SDamageCtx &Ctx)
-
 //	OnDamageImmutable
 //
 //	An immutable station is damaged
+//
+EDamageResults CStation::OnDamageImmutable (SDamageCtx &Ctx)
 
 	{
 	//	If we don't have ejecta, then decrease damage to 0.
@@ -2763,6 +2773,7 @@ EDamageResults CStation::OnDamageImmutable (SDamageCtx &Ctx)
 	//  about "real" WMD.
 
 	if (m_pType->GetEjectaAdj() == 0
+			|| Ctx.Damage.GetDamageType() == damageNull
 			|| Ctx.Damage.GetMassDestructionLevel() == 0)
 		Ctx.iDamage = 0;
 
@@ -2795,6 +2806,7 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 
 	if (pOrderGiver 
 			&& pOrderGiver->CanAttack()
+			&& Ctx.Damage.IsHostile()
 			&& !Ctx.Attacker.IsAutomatedWeapon())
 		{
 		//	Tell our base that we were attacked.
@@ -2874,9 +2886,9 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 	if (pOrderGiver && pOrderGiver->CanAttack())
 		pOrderGiver->OnObjHit(Ctx);
 
-	//	If no damage, we're done
+	//	If no damage or null damage, we're done
 
-	if (Ctx.iDamage == 0 && !bCustomDamage)
+	if ((Ctx.iDamage == 0 && !bCustomDamage) || Ctx.Damage.GetDamageType() == damageNull)
 		return damageNoDamage;
 
 	//	Handle special attacks
