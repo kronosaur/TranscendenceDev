@@ -1477,4 +1477,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //	216: 2.0 Alpha 8
 //		Fix DamageDesc::m_MassDestructionAdj
 //		makes extra DWORDs in DamageDesc a little bit more change-safe
+// 
+//  217: 2.0 Alpha 8
+//		Switch CInstalledDevice m_rActivateDelay from WORD to double
 //

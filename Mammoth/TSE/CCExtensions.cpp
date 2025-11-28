@@ -9352,7 +9352,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (pArgs->GetCount() >= 4 && !(pArgs->GetElement(3)->IsNil()))
 					iFireDelay = pArgs->GetElement(3)->GetIntegerValue();
 				else
-					iFireDelay = pDevice->GetClass()->GetActivateDelay(WeaponCtx);
+					iFireDelay = mathRound(pDevice->GetClass()->GetActivateDelay(WeaponCtx));
 
 				pDevice->SetTimeUntilReady(iFireDelay);
 				DEBUG_CATCH

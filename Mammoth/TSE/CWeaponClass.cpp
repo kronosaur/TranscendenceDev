@@ -23,7 +23,7 @@
 #define COUNTER_UPDATE_ATTRIB					CONSTLIT("counterUpdate")
 #define COUNTER_UPDATE_RATE_ATTRIB				CONSTLIT("counterUpdateRate")
 #define FAILURE_CHANCE_ATTRIB					CONSTLIT("failureChance")
-#define FIRE_RATE_ATTRIB						CONSTLIT("fireRate")
+#define FIRE_RATE_ATTRIB						CONSTLIT("fireRate")	//	delay in simulation seconds between shots
 #define HEATING_ATTRIB							CONSTLIT("heating")
 #define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")
 #define LAUNCHER_ATTRIB							CONSTLIT("launcher")
@@ -39,6 +39,7 @@
 #define RECOIL_ATTRIB							CONSTLIT("recoil")
 #define REPEATING_ATTRIB						CONSTLIT("repeating")
 #define REPEATING_DELAY_ATTRIB					CONSTLIT("repeatingDelay")
+#define REPEATING_DELAY_ADV_ATTRIB				CONSTLIT("repeatingDelayAdvanced")
 #define REPORT_AMMO_ATTRIB						CONSTLIT("reportAmmo")
 #define SHIP_COUNTER_PER_SHOT_ATTRIB			CONSTLIT("shipCounterPerShot")
 #define TARGET_STATIONS_ONLY_ATTRIB				CONSTLIT("targetStationsOnly")
@@ -66,6 +67,7 @@
 #define FIELD_MAX_DAMAGE						CONSTLIT("maxDamage")
 #define FIELD_MIN_DAMAGE						CONSTLIT("minDamage")
 #define FIELD_FIRE_DELAY						CONSTLIT("fireDelay")		//	Delay (ticks)
+#define FIELD_FIRE_DELAY_REAL					CONSTLIT("fireDelayReal")	//	True Delay (ticks) - returns API58 version
 #define FIELD_FIRE_RATE							CONSTLIT("fireRate")
 #define FIELD_POWER								CONSTLIT("power")
 #define FIELD_POWER_PER_SHOT					CONSTLIT("powerPerShot")	//	Power used per shot (1000x Megawatt minutes)
@@ -92,6 +94,7 @@
 #define PROPERTY_EFFECTIVE_RANGE				CONSTLIT("effectiveRange")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
 #define PROPERTY_FIRE_DELAY						CONSTLIT("fireDelay")
+#define PROPERTY_FIRE_DELAY_REAL				CONSTLIT("fireDelayReal")	//	accurate fire delay as double
 #define PROPERTY_FIRE_RATE						CONSTLIT("fireRate")
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
 #define PROPERTY_MAX_DAMAGE						CONSTLIT("maxDamage")
@@ -230,11 +233,15 @@ CWeaponClass::~CWeaponClass (void)
 			delete m_ShotData[i].pDesc;
 	}
 
-bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
-
 //	Activate
 //
 //	Activates the device (in this case, fires the weapon)
+//	The device will by default attempt to activate as many times as appropriate
+//	for a single tick based on rFireDelay
+// 
+//	Returns the number of activations
+//
+int CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
 
 	{
 	DEBUG_TRY
@@ -251,7 +258,7 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 	if (pShotDesc == NULL || !Device.IsEnabled())
 		{
 		Device.SetLastActivateSuccessful(false);
-		return false;
+		return 0;
 		}
 
 	//  Set the target to NULL if we're blind and we can't fire when blind
@@ -259,48 +266,102 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 	if (!m_bCanFireWhenBlind && SourceObj.IsBlind())
 		ActivateCtx.pTarget = NULL;
 
-	//	Fire the weapon if it isn't a charging weapon
+	//	Attempt to fire the weapon as many times as we can
+	//	in a single tick
 
-	ActivateCtx.bIsCharging = GetChargeTime(*pShotDesc) > 0;
-	bool bSuccess = FireWeapon(Device, *pShotDesc, ActivateCtx);
+	double rActivateDelay;
 
-	//	If firing the weapon destroyed the ship, then we bail out
+	//	If this is a launcher we have to find out the actual activation delay for the ammo type
 
-	if (SourceObj.IsDestroyed())
-		return false;
-
-	//	Keep track of whether we succeeded or not so that we know whether to consume power
-
-	Device.SetLastActivateSuccessful(bSuccess);
-
-	//	If we did not succeed, then we're done
-
-	if (!bSuccess)
-		return false;
-
-	//  If we have nonzero charge time then set continuous fire device data
-	//	We set to -1 because we skip the first Update after the call
-	//	to Activate (since it happens on the same tick)
-	//  Note that we can't combine this with the if block later on because
-	//  bSuccess is false here (we technically didn't fire any shots by charging)
-
-	if (GetChargeTime(*pShotDesc) > 0)
+	if (CItemType* pAmmoType = pShotDesc->GetAmmoType())
 		{
-		SetContinuousFire(&Device, CONTINUOUS_START);
-		//  Return true so we consume power
-		return true;
+		if (Device.GetEnhancementStack())
+			{
+			CItem AmmoRef = CItem(pAmmoType, 1);
+			CItemCtx AmmoCtx(&AmmoRef, &SourceObj, &Device);
+			rActivateDelay = Device.GetEnhancementStack()->CalcActivateDelay(AmmoCtx);
+			}
+		else
+			{
+			rActivateDelay = pShotDesc->GetFireDelay();
+			
+			//	If there is nothing on the shot desc, we use the device's activation delay
+
+			if (rActivateDelay < 0.0)
+				rActivateDelay = Device.GetActivateDelay(&SourceObj);
+			}
 		}
+	else
+		rActivateDelay = Device.GetActivateDelay(&SourceObj);
 
-	//	If this is a continuous fire weapon then set the device data
-	//	We set to -1 because we skip the first Update after the call
-	//	to Activate (since it happens on the same tick)
+	//	If we dont have a valid activation delay, we aren't intended to fire.
 
-	if (GetContinuous(*pShotDesc) > 0)
-		SetContinuousFire(&Device, CONTINUOUS_START);
+	if (rActivateDelay < g_Epsilon)
+		rActivateDelay = 1.0;
+
+	int iShotsFired = 0;
+	bool bSuccess = false;
+	
+	while (ActivateCtx.rInterpolateDelay < 1.0)
+		{
+		//	Fire the weapon if it isn't a charging weapon
+
+		ActivateCtx.bIsCharging = GetChargeTime(*pShotDesc) > 0;
+		bSuccess = FireWeapon(Device, *pShotDesc, ActivateCtx, iShotsFired);
+
+		//	If firing the weapon destroyed the ship, then we bail out
+		// 
+		//	No need to track power consumption if we died, but we still
+		//	need to record player stats
+
+		if (SourceObj.IsDestroyed())
+			{
+			iShotsFired++;
+			bSuccess = false;
+			break;
+			}
+
+		//	Keep track of whether we succeeded or not so that we know whether to consume power
+
+		Device.SetLastActivateSuccessful(bSuccess);
+
+		//	If we did not succeed, then we're done
+
+		if (!bSuccess)
+			break;
+
+		//	Otherwise we need to add to the interpolation delay
+
+		else
+			{
+			iShotsFired++;
+			ActivateCtx.rInterpolateDelay += rActivateDelay;
+			}
+
+		//  If we have nonzero charge time then set continuous fire device data
+		//	We set to -1 because we skip the first Update after the call
+		//	to Activate (since it happens on the same tick)
+		//  Note that we can't combine this with the if block later on because
+		//  bSuccess is false here (we technically didn't fire any shots by charging)
+
+		if (GetChargeTime(*pShotDesc) >= 1)
+			{
+			SetContinuousFire(&Device, CONTINUOUS_START);
+			//  Break out so we can record player stats
+			break;
+			}
+
+		//	If this is a continuous fire weapon then set the device data
+		//	We set to -1 because we skip the first Update after the call
+		//	to Activate (since it happens on the same tick)
+
+		if (GetContinuous(*pShotDesc) > 0)
+			SetContinuousFire(&Device, CONTINUOUS_START);
+		}
 
 	//	Player-specific code
 
-	if (SourceObj.IsPlayer())
+	if (SourceObj.IsPlayer() && iShotsFired)
 		{
 		//	Track statistics for the player
 
@@ -308,12 +369,15 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 		if (pShip)
 			{
 			CItem WeaponItem(GetItemType(), 1);
-			pShip->GetController()->OnItemFired(WeaponItem);
+
+			for (int i = 0; i < iShotsFired; i++)
+				pShip->GetController()->OnItemFired(WeaponItem);
 
 			if ((IsLauncher() || m_bReportAmmo) && pShotDesc->GetAmmoType())
 				{
 				CItem AmmoItem(pShotDesc->GetAmmoType(), 1);
-				pShip->GetController()->OnItemFired(AmmoItem);
+				for (int i = 0; i < iShotsFired; i++)
+					pShip->GetController()->OnItemFired(AmmoItem);
 				}
 			}
 
@@ -324,12 +388,12 @@ bool CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx
 
 	//	Consume power
 
-	return true;
+	return iShotsFired;
 
 	DEBUG_CATCH
 	}
 
-int CWeaponClass::CalcActivateDelay (CItemCtx &ItemCtx) const
+Metric CWeaponClass::CalcActivateDelay (CItemCtx &ItemCtx) const
 
 //	CalcActivateDelay
 //
@@ -380,8 +444,14 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 	retBalance.rDamageHP = CalcDamage(*pShotDesc);
 	retBalance.rDamageMult = CalcConfigurationMultiplier(pShotDesc, false);
 	Metric rDamagePerShot = retBalance.rDamageMult * retBalance.rDamageHP;
-	Metric rFireDelay = (Metric)Max(GetFireDelay(*pShotDesc), 1);
-	retBalance.rDamage180 = rDamagePerShot * 180.0 / rFireDelay;
+	Metric rFireDelay = GetFireDelay(*pShotDesc);
+	if (rFireDelay < g_Epsilon)	//	if we are 0 (or close enough due to FP error) we dont actually ever shoot.
+		retBalance.rDamage180 = 0.0;	
+	else
+		{
+		rFireDelay = (Metric)Max(rFireDelay, g_Epsilon);
+		retBalance.rDamage180 = rDamagePerShot * 180.0 / rFireDelay;
+		}
 
 	//  Compute the number of balance points (BP) of the damage. +100 = double
 	//  damage relative to standard. -100 = half-damage relative to standard.
@@ -1899,10 +1969,16 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	if (error = pWeapon->InitDeviceFromXML(Ctx, pDesc, pType))
 		return error;
 
+	//	Calc internal fire rate. Default is 8.0
+	//	This is really fire delay...
+
+	double rFireRateSecs = 8.0;
+	rFireRateSecs = pDesc->GetAttributeDoubleBounded(FIRE_RATE_ATTRIB, 0.0, -1.0, 8.0);
+
+	pWeapon->m_rFireRate = rFireRateSecs / STD_SECONDS_PER_UPDATE;
+
 	//	Basics
 
-	int iFireRateSecs = pDesc->GetAttributeIntegerBounded(FIRE_RATE_ATTRIB, 0, -1, 16);
-	pWeapon->m_iFireRate = mathRound(iFireRateSecs / STD_SECONDS_PER_UPDATE);
 	pWeapon->m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, 0);
 	pWeapon->m_iIdlePowerUse = pDesc->GetAttributeIntegerBounded(IDLE_POWER_USE_ATTRIB, 0, -1, pWeapon->m_iPowerUse / 10);
 	pWeapon->m_iRecoil = pDesc->GetAttributeInteger(RECOIL_ATTRIB);
@@ -1930,13 +2006,26 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	//	Repeat fire
 
 	pWeapon->m_iContinuous = pDesc->GetAttributeIntegerBounded(REPEATING_ATTRIB, 0, -1, 0);
-	pWeapon->m_iContinuousFireDelay = pDesc->GetAttributeIntegerBounded(REPEATING_DELAY_ATTRIB, 0, -1, 0);
+	pWeapon->m_rContinuousFireDelay = pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_ADV_ATTRIB, 0.0, -1.0, -1.0);
+
+	//	If someone is instead using the legacy version of repeating delay, we have to add 1.0 to it
+
+	if (pWeapon->m_rContinuousFireDelay < 0.0)
+		pWeapon->m_rContinuousFireDelay = 1.0 + pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_ATTRIB, 0.0, -1.0, 0.0);
+
+	//	Warn if someone tried using adv repeating delay in an old api version
+
+	else if (Ctx.GetAPIVersion() < 58)
+		{
+		Ctx.sError = strCat(REPEATING_DELAY_ADV_ATTRIB, CONSTLIT(" requires API 58 or higher"));
+		return ERR_FAIL;
+		}
 
 	//	NOTE: For now we don't support a combination of repeating fire and 
 	//	repeating delay that exceeds 254.
 
 	if (pWeapon->m_iContinuous > CONTINUOUS_DATA_LIMIT
-			|| pWeapon->m_iContinuous * pWeapon->m_iContinuousFireDelay > CONTINUOUS_DATA_LIMIT)
+			|| pWeapon->m_iContinuous * pWeapon->m_rContinuousFireDelay > CONTINUOUS_DATA_LIMIT)
 		{
 		Ctx.sError = CONSTLIT("Unfortunately, that combination of repeating= and repeatingDelay= is too high for the engine.");
 		return ERR_FAIL;
@@ -2101,10 +2190,12 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_DAMAGE_TYPE))
 		*retsValue = strFromInt(pShot->GetDamageType());
 	else if (strEquals(sField, FIELD_FIRE_DELAY))
-		*retsValue = strFromInt(GetFireDelay(*pShot));
+		*retsValue = strFromInt(mathRound(GetFireDelay(*pShot)));
+	else if (strEquals(sField, FIELD_FIRE_DELAY_REAL))
+		*retsValue = strFromDouble(GetFireDelay(*pShot));
 	else if (strEquals(sField, FIELD_FIRE_RATE))
 		{
-		int iFireRate = GetFireDelay(*pShot);
+		int iFireRate = mathRound(GetFireDelay(*pShot));
 		if (iFireRate)
 			*retsValue = strFromInt(1000 / iFireRate);
 		else
@@ -2115,8 +2206,8 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_DAMAGE_180))
 		{
 		Metric rDamagePerShot = CalcDamagePerShot(*pShot);
-		int iFireRate = GetFireDelay(*pShot);
-		*retsValue = (iFireRate > 0 ? strFromInt(mathRound(rDamagePerShot * 180.0 / iFireRate)) : strFromInt(mathRound(rDamagePerShot)));
+		Metric rFireRate = GetFireDelay(*pShot);
+		*retsValue = (rFireRate > 0.0 ? strFromInt(mathRound(rDamagePerShot * 180.0 / rFireRate)) : strFromInt(mathRound(rDamagePerShot)));
 		}
 	else if (strEquals(sField, FIELD_POWER))
 		*retsValue = strFromInt(m_iPowerUse * 100);
@@ -2211,7 +2302,14 @@ bool CWeaponClass::FindDataField (const CString &sField, CString *retsValue)
 	return FindAmmoDataField(Ammo, sRootField, retsValue);
 	}
 
-bool CWeaponClass::FireAllShots (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, CShotArray &Shots, int iRepeatingCount, SShotFireResult &retResult)
+bool CWeaponClass::FireAllShots (
+	CInstalledDevice &Device,
+	const CWeaponFireDesc &ShotDesc,
+	CShotArray &Shots,
+	int iRepeatingCount,
+	double rInterpolatedShotTime,
+	int iInterpolatedShotCount,
+	SShotFireResult &retResult)
 
 //	FireAllShots
 //
@@ -2221,6 +2319,7 @@ bool CWeaponClass::FireAllShots (CInstalledDevice &Device, const CWeaponFireDesc
 	CSpaceObject &Source = Device.GetSourceOrThrow();
 	CItemCtx ItemCtx(&Source, &Device);
 	Metric rSpeed = ShotDesc.GetInitialSpeed();
+	Metric rInterpolatedTime = rInterpolatedShotTime / g_TicksPerSecond;
 
 	retResult.vRecoil = CVector();
 	retResult.bRecoil = false;
@@ -2230,12 +2329,14 @@ bool CWeaponClass::FireAllShots (CInstalledDevice &Device, const CWeaponFireDesc
 	for (int i = 0; i < Shots.GetCount(); i++)
 		{
 		SShotFireResult Result;
+		CVector vInterpolatedPos = rInterpolatedShotTime ? Shots[i].vPos + PolarToVector(Shots[i].iDir, ShotDesc.GetAveInitialSpeed() * rInterpolatedTime) : Shots[i].vPos;
 
 		//	Fire out to event, if the weapon has one.
 		//	Otherwise, we create weapon fire
 
 		if (FireOnFireWeapon(ItemCtx, 
-				ShotDesc, 
+				ShotDesc,
+				vInterpolatedPos,
 				Shots[i].vPos, 
 				Shots[i].pTarget,
 				Shots[i].iDir, 
@@ -2251,16 +2352,16 @@ bool CWeaponClass::FireAllShots (CInstalledDevice &Device, const CWeaponFireDesc
 		//	Otherwise, fire default
 
 		else
-			FireWeaponShot(&Source, &Device, ShotDesc, Shots[i].vPos, Shots[i].iDir, rSpeed, Shots[i].pTarget, iRepeatingCount, i);
+			FireWeaponShot(&Source, &Device, ShotDesc, vInterpolatedPos, Shots[i].iDir, rSpeed, Shots[i].pTarget, iRepeatingCount, i);
 
-		//	Create the barrel flash effect, unless canceled
+		//	Create the barrel flash effect, unless canceled or we are not the first interpolated shot
 
-		if (Result.bFireEffect)
+		if (Result.bFireEffect && iInterpolatedShotCount == 0)
 			ShotDesc.CreateFireEffect(Source.GetSystem(), &Source, Shots[i].vPos, CVector(), Shots[i].iDir, iRepeatingCount);
 
 		//	Create the sound effect, if necessary
 
-		if (Result.bSoundEffect && !(ShotDesc.GetPlaySoundOncePerBurst() && iRepeatingCount > 0))
+		if (Result.bSoundEffect && !(ShotDesc.GetPlaySoundOncePerBurst() && iRepeatingCount > 0) && iInterpolatedShotCount == 0)
 			retResult.bSoundEffect = true;
 
 		//	Recoil
@@ -2427,6 +2528,7 @@ bool CWeaponClass::FireOnChargeWeapon (CItemCtx& ItemCtx,
 bool CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx, 
 									 const CWeaponFireDesc &ShotDesc,
 									 const CVector &vSource,
+									 const CVector &vSourceBase,
 									 CSpaceObject *pTarget,
 									 int iFireAngle,
 									 int iRepeatingCount,
@@ -2462,6 +2564,7 @@ bool CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx,
 	Ctx.DefineSpaceObject(CONSTLIT("aTargetObj"), pTarget);
 	Ctx.DefineInteger(CONSTLIT("aWeaponBonus"), (pEnhancements ? pEnhancements->GetBonus() : 0));
 	Ctx.DefineItemType(CONSTLIT("aWeaponType"), ShotDesc.GetWeaponType());
+	Ctx.DefineVector(CONSTLIT("aBaseFirePos"), vSourceBase);
 
 	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
@@ -2542,7 +2645,8 @@ bool CWeaponClass::ChargeWeapon (const bool bSetFireAngle, const int iFireAngle,
 
 bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 							   const CWeaponFireDesc &ShotDesc,
-							   SActivateCtx &ActivateCtx)
+							   SActivateCtx &ActivateCtx,
+							   int iInterpolatedShotNumber)
 
 //	FireWeapon
 //
@@ -2622,7 +2726,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 	//	Create all the shots
 
 	SShotFireResult Result;
-	if (!FireAllShots(Device, ShotDesc, Shots, ActivateCtx.iRepeatingCount, Result))
+	if (!FireAllShots(Device, ShotDesc, Shots, ActivateCtx.iRepeatingCount, ActivateCtx.rInterpolateDelay, iInterpolatedShotNumber, Result))
 		return false;
 
 	//	Sound effect
@@ -2717,7 +2821,7 @@ void CWeaponClass::FireWeaponShot (CSpaceObject *pSource,
 		}
 	}
 
-int CWeaponClass::GetActivateDelay (CItemCtx &ItemCtx) const
+Metric CWeaponClass::GetActivateDelay (CItemCtx &ItemCtx) const
 
 //	GetActivateDelay
 //
@@ -2731,7 +2835,7 @@ int CWeaponClass::GetActivateDelay (CItemCtx &ItemCtx) const
 		//	If no shot then it could be that we have a launcher with no 
 		//	missiles. In that case we just return the launcher fire rate.
 
-		return m_iFireRate;
+		return m_rFireRate;
 
 	return GetFireDelay(*pShot);
 	}
@@ -2822,7 +2926,7 @@ int CWeaponClass::GetContinuous (const CWeaponFireDesc &Shot) const
 	return m_iContinuous;
 	}
 
-int CWeaponClass::GetContinuousFireDelay (const CWeaponFireDesc &Shot) const
+Metric CWeaponClass::GetContinuousFireDelay (const CWeaponFireDesc &Shot) const
 
 //	GetContinuousFireDelay
 //
@@ -2832,16 +2936,16 @@ int CWeaponClass::GetContinuousFireDelay (const CWeaponFireDesc &Shot) const
 	{
 	//	Check the shot first, which can override the weapon
 
-	int iDelay = Shot.GetContinuousFireDelay();
+	Metric iDelay = Shot.GetContinuousFireDelay();
 	if (iDelay != -1)
 		return iDelay;
 
 	//	Check the weapon
 
-	return m_iContinuousFireDelay;
+	return m_rContinuousFireDelay;
 	}
 
-int CWeaponClass::GetFireDelay (const CWeaponFireDesc &ShotDesc) const
+Metric CWeaponClass::GetFireDelay (const CWeaponFireDesc &ShotDesc) const
 
 //	GetFireDelay
 //
@@ -2850,13 +2954,13 @@ int CWeaponClass::GetFireDelay (const CWeaponFireDesc &ShotDesc) const
 	{
 	//	See if the shot overrides fire rate
 
-	int iShotFireRate;
-	if ((iShotFireRate = ShotDesc.GetFireDelay()) != -1)
-		return iShotFireRate;
+	Metric rShotFireRate;
+	if ((rShotFireRate = ShotDesc.GetFireDelay()) != -1)
+		return rShotFireRate;
 
 	//	Otherwise, based on weapon
 
-	return m_iFireRate;
+	return m_rFireRate;
 	}
 
 DWORD CWeaponClass::GetTargetTypes (const CDeviceItem &DeviceItem) const
@@ -3065,8 +3169,8 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 	else if (strEquals(sProperty, PROPERTY_DAMAGE_180))
 		{
 		Metric rDamagePerShot = CalcDamagePerShot(*pShot, pEnhancements);
-		int iDelay = CalcActivateDelay(Ctx);
-		return CC.CreateInteger(iDelay > 0 ? mathRound(rDamagePerShot * 180.0 / iDelay) : mathRound(rDamagePerShot));
+		Metric rDelay = CalcActivateDelay(Ctx);
+		return CC.CreateInteger(rDelay > 0 ? mathRound(rDamagePerShot * 180.0 / rDelay) : mathRound(rDamagePerShot));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_DAMAGE_PER_PROJECTILE))
@@ -3078,8 +3182,8 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 	else if (strEquals(sProperty, PROPERTY_DAMAGE_WMD_180))
 		{
 		Metric rDamagePerShot = CalcDamagePerShot(*pShot, pEnhancements, DamageDesc::flagWMDAdj);
-		int iDelay = CalcActivateDelay(Ctx);
-		return CC.CreateInteger(iDelay > 0 ? mathRound(rDamagePerShot * 180.0 / iDelay) : mathRound(rDamagePerShot));
+		Metric rDelay = CalcActivateDelay(Ctx);
+		return CC.CreateInteger(rDelay > 0 ? mathRound(rDamagePerShot * 180.0 / rDelay) : mathRound(rDamagePerShot));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_DUAL_POINT_ORIGIN))
@@ -3124,7 +3228,10 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		}
 
 	else if (strEquals(sProperty, PROPERTY_FIRE_DELAY))
-		return CC.CreateInteger(CalcActivateDelay(Ctx));
+		return CC.CreateInteger(mathRound(CalcActivateDelay(Ctx)));
+
+	else if (strEquals(sProperty, PROPERTY_FIRE_DELAY_REAL))
+		return CC.CreateDouble(CalcActivateDelay(Ctx));
 
 	else if (strEquals(sProperty, PROPERTY_FIRE_RATE))
 		{
@@ -3556,9 +3663,9 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 	//	Fire rate
 
-	int iShotDelay = CalcActivateDelay(Ctx);
-	Metric rFireRate = iShotDelay > 0 ? g_TicksPerSecond / (Metric)iShotDelay : 0;
-	CString sFireRate = GetReferenceFireRate(iShotDelay);
+	Metric rShotDelay = CalcActivateDelay(Ctx);
+	Metric rFireRate = rShotDelay > 0 ? g_TicksPerSecond / (Metric)rShotDelay : 0;
+	CString sFireRate = GetReferenceFireRate(mathRound(rShotDelay));
 
 	//	Compute the damage string and special string
 
@@ -5312,13 +5419,13 @@ ALERROR CWeaponClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 			{
 			if (int iRepeating = GetContinuous(*m_ShotData[i].pDesc))
 				{
-				int iDelay = GetContinuousFireDelay(*m_ShotData[i].pDesc);
-				int iTotalTicks = (iRepeating * (iDelay + 1));
-				int iFireDelay = GetFireDelay(*m_ShotData[i].pDesc);
+				Metric rDelay = GetContinuousFireDelay(*m_ShotData[i].pDesc);
+				Metric rTotalTicks = (iRepeating * (rDelay + 1));
+				Metric rFireDelay = GetFireDelay(*m_ShotData[i].pDesc);
 
-				if (iTotalTicks > iFireDelay)
+				if (rTotalTicks > rFireDelay)
 					{
-					GetUniverse().LogOutput(strPatternSubst("WARNING: %s (%08x) takes %d ticks to fire all shots, but has only %d ticks fire delay.", GetName(), GetUNID(), iTotalTicks, iFireDelay));
+					GetUniverse().LogOutput(strPatternSubst("WARNING: %s (%08x) takes %d.%05d ticks to fire all shots, but has only %d.%05d ticks fire delay.", GetName(), GetUNID(), mathRound(rTotalTicks), mathRound(rTotalTicks * 10000), mathRound(rFireDelay), mathRound(rFireDelay * 10000)));
 					}
 				}
 			}
@@ -5650,16 +5757,16 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 	if (pDevice->GetWeaponTargetDefinition() && pSource->IsPlayer() && pDevice->IsSecondaryWeapon())
 		{
-		//  If the weapon is not ready, do not autofire.
+		//  If the weapon cannot fire this tick, do not autofire.
 		//	If the ship is disarmed or paralyzed, then we also do not autofire.
 
 		if (!(!pDevice->IsReady() || pSource->GetCondition(ECondition::paralyzed)
 			|| pSource->GetCondition(ECondition::disarmed)))
 			{
-			bool bActivateResult = pDevice->GetWeaponTargetDefinition()->AimAndFire(this, pDevice, pSource, Ctx);
-			if (bActivateResult)
+			int iNumActivations = pDevice->GetWeaponTargetDefinition()->AimAndFire(this, pDevice, pSource, Ctx);
+			if (iNumActivations)
 				{
-				pDevice->SetTimeUntilReady(CalcActivateDelay(ItemCtx));
+				pDevice->SetTimeUntilReady(mathRound(CalcActivateDelay(ItemCtx)));
 				}
 			}
 		}
@@ -5667,6 +5774,7 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 	//	See if we continue to fire
 	//  dwContinouous starts at maximum repeating count and counts backwards towards zero; it represents
 	//  how many frames we have left in this burst
+	//	TODO: Fix this for interpolated shots
 
 	DWORD dwContinuous = GetContinuousFire(pDevice);
 	if (dwContinuous == CONTINUOUS_START)
@@ -5675,7 +5783,7 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 		if (pShot)
 			{
 			int iContinuous = GetContinuous(*pShot);
-			int iContinuousDelay = Max(1, GetContinuousFireDelay(*pShot) + 1);
+			int iContinuousDelay = mathRound(Max(1.0, GetContinuousFireDelay(*pShot) + 1));
 			int iChargeTime = Max(0, GetChargeTime(*pShot));
 
 			//	-1 is used to skip the first update cycle
@@ -5702,7 +5810,7 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 		if (pShot)
 			{
 			int iContinuous = GetContinuous(*pShot);
-			int iContinuousDelay = Max(1, GetContinuousFireDelay(*pShot) + 1);
+			int iContinuousDelay = mathRound(Max(1.0, GetContinuousFireDelay(*pShot) + 1));
 			int iChargeTime = Max(0, GetChargeTime(*pShot));
 			int iBurstLengthInFrames = iContinuousDelay > 1 ? ((iContinuous + 1) * iContinuousDelay) - 1 : iContinuous;
 			int iFireFrame = max(0, iBurstLengthInFrames - int(dwContinuous));
@@ -5722,7 +5830,7 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 				ActivateCtx.iChargeFrame = 1 + iChargeTime - min(int(dwContinuous) - iBurstLengthInFrames, iChargeTime + 1);
 				ActivateCtx.bIsCharging = int(dwContinuous) > iBurstLengthInFrames + 1;
 
-				FireWeapon(*pDevice, *pShot, ActivateCtx);
+				FireWeapon(*pDevice, *pShot, ActivateCtx, 0);
 
 				if (pSource->IsDestroyed())
 					return;

@@ -132,12 +132,12 @@ class CWeaponClass : public CDeviceClass
 
 		//	CDeviceClass virtuals
 
-		virtual bool Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx) override;
+		virtual int Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx) override;
 		virtual CWeaponClass *AsWeaponClass (void) override { return this; }
 		virtual bool CalcFireSolution (const CInstalledDevice &Device, CSpaceObject &Target, int *retiAimAngle = NULL, Metric *retrDist = NULL) const override;
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ICCItem *FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) override;
-		virtual int GetActivateDelay (CItemCtx &ItemCtx) const override;
+		virtual Metric GetActivateDelay (CItemCtx &ItemCtx) const override;
 		virtual int GetAmmoVariant (const CItemType *pItem) const override;
 		virtual ItemCategories GetImplCategory (void) const override;
 		virtual int GetCounter (const CInstalledDevice *pDevice, const CSpaceObject *pSource, EDeviceCounterType *retiType = NULL, int *retiLevel = NULL) const override;
@@ -245,7 +245,7 @@ class CWeaponClass : public CDeviceClass
 
 		CWeaponClass (void);
 
-		int CalcActivateDelay (CItemCtx &ItemCtx) const;
+		Metric CalcActivateDelay (CItemCtx &ItemCtx) const;
 		CSpaceObject *CalcBestTarget (CInstalledDevice &Device, const CTargetList &TargetList, Metric *retrDist2 = NULL, int *retiFireAngle = NULL) const;
 		CShotArray CalcConfiguration (const CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc, int iFireAngle) const;
 		Metric CalcConfigurationMultiplier (const CWeaponFireDesc *pShot = NULL, bool bIncludeFragments = true) const;
@@ -265,7 +265,14 @@ class CWeaponClass : public CDeviceClass
 		bool ConsumeCapacitor (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc);
 		void ConsumeShipCounter (CDeviceItem &DeviceItem, const CWeaponFireDesc &ShotDesc);
 		void FailureExplosion (CItemCtx &ItemCtx, const CWeaponFireDesc &ShotDesc, bool *retbSourceDestroyed);
-		bool FireAllShots (CInstalledDevice &Device, const CWeaponFireDesc &ShotDesc, CShotArray &Shots, int iRepeatingCount, SShotFireResult &retResult);
+		bool FireAllShots (
+			CInstalledDevice &Device,
+			const CWeaponFireDesc &ShotDesc,
+			CShotArray &Shots,
+			int iRepeatingCount,
+			double rInterpolatedShotTime,
+			int iInterpolatedShotCount,
+			SShotFireResult &retResult);
 		bool FireGetAmmoCountToDisplay (const CDeviceItem &DeviceItem, const CWeaponFireDesc &Shot, int *retiAmmoCount = NULL) const;
 		int FireGetAmmoToConsume (CItemCtx &ItemCtx,
 								  const CWeaponFireDesc &ShotDesc,
@@ -273,6 +280,7 @@ class CWeaponClass : public CDeviceClass
 		bool FireOnFireWeapon (CItemCtx &ItemCtx, 
 							   const CWeaponFireDesc &ShotDesc,
 							   const CVector &vSource,
+							   const CVector &vSourceBase,
 							   CSpaceObject *pTarget,
 							   int iFireAngle,
 							   int iRepeatingCount,
@@ -286,7 +294,8 @@ class CWeaponClass : public CDeviceClass
 								 SShotFireResult& retResult);
 		bool FireWeapon (CInstalledDevice &Device,
 						 const CWeaponFireDesc &ShotDesc,
-						 SActivateCtx &ActivateCtx);
+						 SActivateCtx &ActivateCtx,
+						 int iInterpolatedShotNum);
 		void FireWeaponShot (CSpaceObject *pSource, 
 							 CInstalledDevice *pDevice, 
 							 const CWeaponFireDesc &ShotDesc, 
@@ -296,8 +305,8 @@ class CWeaponClass : public CDeviceClass
 							 CSpaceObject *pTarget,
 							 int iRepeatingCount,
 							 int iShotNumber);
-		int GetContinuousFireDelay (const CWeaponFireDesc &Shot) const;
-		int GetFireDelay (const CWeaponFireDesc &ShotDesc) const;
+		Metric GetContinuousFireDelay (const CWeaponFireDesc &Shot) const;
+		Metric GetFireDelay (const CWeaponFireDesc &ShotDesc) const;
 		const CWeaponFireDesc *GetReferenceShotData (const CWeaponFireDesc *pShot, int *retiFragments = NULL) const;
 		int GetSelectVariantCount (void) const;
 		bool HasAmmoLeft (CItemCtx &ItemCtx, const CWeaponFireDesc *pShot) const;
@@ -323,7 +332,7 @@ class CWeaponClass : public CDeviceClass
 		void SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinuous) const;
 		void SetCurrentVariant (CInstalledDevice *pDevice, int iVariant) const;
 
-		int m_iFireRate;						//	Ticks between shots
+		Metric m_rFireRate;						//	Internal simulation ticks between shots (translated from simulation seconds in the XML)
 		int m_iPowerUse;						//	Power use to recharge capacitors (1/10 megawatt)
 		int m_iIdlePowerUse;					//	Power use when capacitors fully charged
 		int m_iRecoil;							//	0-7 (as per momentum damage)
@@ -343,7 +352,7 @@ class CWeaponClass : public CDeviceClass
 		CConfigurationDesc m_Configuration;		//	Shot configuration
 
 		int m_iContinuous = 0;					//	Repeat fire
-		int m_iContinuousFireDelay = 0;			//	Delay between shots
+		Metric m_rContinuousFireDelay = 0;			//	Delay between shots
 		bool m_bContinuousConsumePerShot;		//	If a continuous weapon, consume ammunition for every shot in burst
 		bool m_bBurstTracksTargets;				//  If the weapon is continuous, whether or not to track the target during the entire burst
 

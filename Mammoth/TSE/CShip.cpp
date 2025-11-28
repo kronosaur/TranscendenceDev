@@ -7256,7 +7256,7 @@ void CShip::SetFireDelay (CInstalledDevice *pWeapon, int iDelay)
 	DEBUG_TRY
 
 	if (iDelay == -1)
-		pWeapon->SetTimeUntilReady(m_pController->GetFireRateAdj() * pWeapon->GetActivateDelay(this) / 10);
+		pWeapon->SetTimeUntilReady(mathRound(m_pController->GetFireRateAdj() * pWeapon->GetActivateDelay(this) / 10));
 	else
 		pWeapon->SetTimeUntilReady(iDelay);
 
@@ -7303,7 +7303,7 @@ void CShip::SetFireDelayForCycleWeapons (CInstalledDevice &Device)
 			}
 		}
 
-	iFireDelayToIncrement = (m_pController->GetFireRateAdj() * Device.GetActivateDelay(this) / 10);
+	iFireDelayToIncrement = mathRound(m_pController->GetFireRateAdj() * Device.GetActivateDelay(this) / 10);
 	iFireDelayToIncrement = (iFireDelayToIncrement + (iNumberOfGuns - 1)) / iNumberOfGuns;
 	while (WeaponsInFireGroup.GetCount() > 0)
 		{

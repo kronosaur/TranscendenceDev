@@ -108,14 +108,14 @@ void CInstalledDevice::FinishInstall (void)
 	DEBUG_CATCH
 	}
 
-int CInstalledDevice::GetActivateDelay (CSpaceObject *pSource) const
+Metric CInstalledDevice::GetActivateDelay (CSpaceObject *pSource) const
 
 //	GetActivateDelay
 //
 //	Returns the number of ticks to wait for activation
 	
 	{
-	return m_iActivateDelay;
+	return m_rActivateDelay;
 	}
 
 bool CInstalledDevice::GetCachedMaxHP (int &retiMaxHP) const
@@ -397,7 +397,7 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	//	Default to basic fire delay. Callers must set the appropriate delay
 	//	based on enhancements later.
 
-	m_iActivateDelay = m_pClass->GetActivateDelay(ItemCtx);
+	m_rActivateDelay = m_pClass->GetActivateDelay(ItemCtx);
 
 	DEBUG_CATCH
 	}
@@ -581,9 +581,11 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 //	DWORD		device: low = m_iTimeUntilReady; hi = m_iFireAngle
 //	DWORD		device: low = m_iSlotPosIndex; hi = m_iTemperature
 //	DWORD		device: low = m_iSlotBonus; hi = m_iDeviceSlot
-//	DWORD		device: low = m_iActivateDelay; hi = m_iPosZ
+//	DWORD		device: low = m_rActivateDelay (<217); hi = m_iPosZ
 //	DWORD		device: low = m_iShotSeparationScale; hi = m_iMaxFireRange
 //	DWORD		device: flags
+// 
+//	double		m_rActivateDelay (217+)
 //
 //	CItemEnhancementStack
 
@@ -675,15 +677,22 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	else
 		m_iDeviceSlot = -1;
 
-	if (Ctx.dwVersion >= 44)
+	if (Ctx.dwVersion >= 217)
 		{
 		Ctx.pStream->Read(dwLoad);
-		m_iActivateDelay = (int)LOWORD(dwLoad);
+		m_rActivateDelay = 8.0;	//	we overwrite this later, this is just here as a placeholder
+		m_iSpare = (int)LOWORD(dwLoad);
+		m_iPosZ = (int)HIWORD(dwLoad);
+		}
+	else if (Ctx.dwVersion >= 44)
+		{
+		Ctx.pStream->Read(dwLoad);
+		m_rActivateDelay = (double)LOWORD(dwLoad);
 		m_iPosZ = (int)HIWORD(dwLoad);
 		}
 	else
 		{
-		m_iActivateDelay = 8;
+		m_rActivateDelay = 8.0;
 		m_iPosZ = 0;
 		}
 
@@ -692,7 +701,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	if (Ctx.dwVersion < 93)
 		{
 		CItemCtx ItemCtx(&Source, this);
-		m_iActivateDelay = m_iActivateDelay * m_pClass->GetActivateDelay(ItemCtx) / 100;
+		m_rActivateDelay = m_rActivateDelay * m_pClass->GetActivateDelay(ItemCtx) / 100;
 		}
 
 	//	We no longer store mods in the device structure
@@ -751,6 +760,12 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion < 107)
 		m_fExternal = m_pClass->IsExternal();
+
+	//	In 217 we switched to activate delay as a double, because of weapons having
+	//	interpolated fireDelay
+
+	if (Ctx.dwVersion >= 217)
+		Ctx.pStream->Read(m_rActivateDelay);
 
 	//	Fix up the item pointer (but only if it is installed)
 
@@ -1333,9 +1348,11 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 //	DWORD		device: low = m_iTimeUntilReady; hi = m_iFireAngle
 //	DWORD		device: low = m_iSlotIndex; hi = m_iTemperature
 //	DWORD		device: low = m_iSlotBonus; hi = m_iDeviceSlot
-//	DWORD		device: low = m_iActivateDelay; hi = m_iPosZ
+//	DWORD		device: low = unused (m_iSpare); hi = m_iPosZ
 //	DWORD		device: low = m_iShotSeparationScale; hi = m_iMaxFireRange
 //	DWORD		device: flags
+// 
+//	double		device: m_rActivateDelay
 //
 //	CItemEnhancementStack
 //	CEnhancementDesc
@@ -1374,7 +1391,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave = MAKELONG(m_iExtraPowerUse, m_iDeviceSlot);
 	pStream->Write(dwSave);
 
-	dwSave = MAKELONG(m_iActivateDelay, m_iPosZ);
+	dwSave = MAKELONG(m_iSpare, m_iPosZ);
 	pStream->Write(dwSave);
 
 	dwSave = MAKELONG(m_iShotSeparationScale, m_iMaxFireRange);
@@ -1411,6 +1428,8 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fOnUsedLastAmmo ?		0x08000000 : 0);
 	dwSave |= ((m_pWeaponTargetDefinition != nullptr) ?		0x10000000 : 0);
 	pStream->Write(dwSave);
+
+	pStream->Write(m_rActivateDelay);
 
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
 

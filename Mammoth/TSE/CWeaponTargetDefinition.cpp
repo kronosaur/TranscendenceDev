@@ -65,7 +65,7 @@ CSpaceObject* CWeaponTargetDefinition::FindTarget (CWeaponClass* pWeapon, CInsta
 	return pSystem->FindNearestTangibleObjectInArc(pSource, vSourcePos, rBestDist, m_TargetCriteria, iMinFireArc, iMaxFireArc);
 	}
 
-bool CWeaponTargetDefinition::AimAndFire(CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CDeviceClass::SDeviceUpdateCtx& Ctx) const
+int CWeaponTargetDefinition::AimAndFire(CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CDeviceClass::SDeviceUpdateCtx& Ctx) const
 	{
 	//	If we're docked with a station, then we do not fire.
 	CItemCtx ItemCtx(pSource, pDevice);
@@ -96,15 +96,15 @@ bool CWeaponTargetDefinition::AimAndFire(CWeaponClass* pWeapon, CInstalledDevice
 
 	pTarget->SetDestructionNotify();
 
-	//	Fire
+	//	Fire (Activate will fire as many shots as possible this tick)
 
 	CDeviceClass::SActivateCtx ActivateCtx(Ctx, pTarget, iFireAngle);
 	CWeaponFireDesc* pShot = pWeapon->GetWeaponFireDesc(ItemCtx);
 
-	bool bActivateResult = pWeapon->Activate(*pDevice, ActivateCtx);
+	int iNumActivations = pWeapon->Activate(*pDevice, ActivateCtx);
 
 	Ctx.bConsumedItems = ActivateCtx.bConsumedItems;
-	return bActivateResult;
+	return iNumActivations;
 	}
 
 std::unique_ptr<CWeaponTargetDefinition> CWeaponTargetDefinition::ReadFromStream(SLoadCtx& Ctx)
