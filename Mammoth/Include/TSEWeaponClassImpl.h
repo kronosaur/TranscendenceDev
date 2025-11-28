@@ -272,7 +272,8 @@ class CWeaponClass : public CDeviceClass
 			int iRepeatingCount,
 			double rInterpolatedShotTime,
 			int iInterpolatedShotCount,
-			SShotFireResult &retResult);
+			SShotFireResult &retResult,
+			bool bInterplatedShotPos = true);
 		bool FireGetAmmoCountToDisplay (const CDeviceItem &DeviceItem, const CWeaponFireDesc &Shot, int *retiAmmoCount = NULL) const;
 		int FireGetAmmoToConsume (CItemCtx &ItemCtx,
 								  const CWeaponFireDesc &ShotDesc,
@@ -295,7 +296,8 @@ class CWeaponClass : public CDeviceClass
 		bool FireWeapon (CInstalledDevice &Device,
 						 const CWeaponFireDesc &ShotDesc,
 						 SActivateCtx &ActivateCtx,
-						 int iInterpolatedShotNum);
+						 int iInterpolatedShotNum,
+						 bool bInterplatedShotPos = true);
 		void FireWeaponShot (CSpaceObject *pSource, 
 							 CInstalledDevice *pDevice, 
 							 const CWeaponFireDesc &ShotDesc, 

@@ -294,6 +294,18 @@ int CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
 	else
 		rActivateDelay = Device.GetActivateDelay(&SourceObj);
 
+	//	For some types of weapons we do not offset interpolated shots
+
+	bool bOffsetInterpolation;
+
+	switch (pShotDesc->GetFireType())
+		{
+		case CWeaponFireDesc::ftContinuousBeam:
+			bOffsetInterpolation = false;
+		default:
+			bOffsetInterpolation = true;
+		}
+
 	//	If we dont have a valid activation delay, we aren't intended to fire.
 
 	if (rActivateDelay < g_Epsilon)
@@ -2309,7 +2321,8 @@ bool CWeaponClass::FireAllShots (
 	int iRepeatingCount,
 	double rInterpolatedShotTime,
 	int iInterpolatedShotCount,
-	SShotFireResult &retResult)
+	SShotFireResult &retResult,
+	bool bInterplatedShotPos)
 
 //	FireAllShots
 //
@@ -2328,11 +2341,14 @@ bool CWeaponClass::FireAllShots (
 
 	for (int i = 0; i < Shots.GetCount(); i++)
 		{
-		SShotFireResult Result;
-		CVector vInterpolatedPos = rInterpolatedShotTime ? Shots[i].vPos + PolarToVector(Shots[i].iDir, ShotDesc.GetAveInitialSpeed() * rInterpolatedTime) : Shots[i].vPos;
+		//	Set later shots behind the weapons firing point slightly, so that they come out in the right order.
+
+		CVector vInterpolatedPos = rInterpolatedShotTime && bInterplatedShotPos ? Shots[i].vPos - PolarToVector(Shots[i].iDir, ShotDesc.GetAveInitialSpeed() * rInterpolatedTime) : Shots[i].vPos;
 
 		//	Fire out to event, if the weapon has one.
 		//	Otherwise, we create weapon fire
+
+		SShotFireResult Result;
 
 		if (FireOnFireWeapon(ItemCtx, 
 				ShotDesc,
@@ -2646,7 +2662,8 @@ bool CWeaponClass::ChargeWeapon (const bool bSetFireAngle, const int iFireAngle,
 bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 							   const CWeaponFireDesc &ShotDesc,
 							   SActivateCtx &ActivateCtx,
-							   int iInterpolatedShotNumber)
+							   int iInterpolatedShotNumber,
+							   bool bInterplatedShotPos)
 
 //	FireWeapon
 //
