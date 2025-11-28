@@ -297,7 +297,7 @@ int CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
 	//	If we dont have a valid activation delay, we aren't intended to fire.
 
 	if (rActivateDelay < g_Epsilon)
-		rActivateDelay = 1.0;
+		ActivateCtx.rInterpolateDelay = 1.0;
 
 	int iShotsFired = 0;
 	bool bSuccess = false;
