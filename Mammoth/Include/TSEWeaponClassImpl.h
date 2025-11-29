@@ -296,7 +296,8 @@ class CWeaponClass : public CDeviceClass
 		bool FireWeapon (CInstalledDevice &Device,
 						 const CWeaponFireDesc &ShotDesc,
 						 SActivateCtx &ActivateCtx,
-						 int iInterpolatedShotNum,
+						 Metric rInterpolateDelay = 0.0,
+						 int iInterpolatedShotNum = 0,
 						 bool bInterplatedShotPos = true);
 		void FireWeaponShot (CSpaceObject *pSource, 
 							 CInstalledDevice *pDevice, 

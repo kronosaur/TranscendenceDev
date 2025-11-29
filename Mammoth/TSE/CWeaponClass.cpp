@@ -270,6 +270,7 @@ int CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
 	//	in a single tick
 
 	double rActivateDelay;
+	double rInterpolateDelay;
 
 	//	If this is a launcher we have to find out the actual activation delay for the ammo type
 
@@ -309,17 +310,17 @@ int CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
 	//	If we dont have a valid activation delay, we aren't intended to fire.
 
 	if (rActivateDelay < g_Epsilon)
-		ActivateCtx.rInterpolateDelay = 1.0;
+		rInterpolateDelay = 1.0;
 
 	int iShotsFired = 0;
 	bool bSuccess = false;
 	
-	while (ActivateCtx.rInterpolateDelay < 1.0)
+	while (rInterpolateDelay < 1.0)
 		{
 		//	Fire the weapon if it isn't a charging weapon
 
 		ActivateCtx.bIsCharging = GetChargeTime(*pShotDesc) > 0;
-		bSuccess = FireWeapon(Device, *pShotDesc, ActivateCtx, iShotsFired);
+		bSuccess = FireWeapon(Device, *pShotDesc, ActivateCtx, rInterpolateDelay, iShotsFired);
 
 		//	If firing the weapon destroyed the ship, then we bail out
 		// 
@@ -347,7 +348,7 @@ int CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
 		else
 			{
 			iShotsFired++;
-			ActivateCtx.rInterpolateDelay += rActivateDelay;
+			rInterpolateDelay += rActivateDelay;
 			}
 
 		//  If we have nonzero charge time then set continuous fire device data
@@ -2662,6 +2663,7 @@ bool CWeaponClass::ChargeWeapon (const bool bSetFireAngle, const int iFireAngle,
 bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 							   const CWeaponFireDesc &ShotDesc,
 							   SActivateCtx &ActivateCtx,
+							   Metric rInterpolateDelay,
 							   int iInterpolatedShotNumber,
 							   bool bInterplatedShotPos)
 
@@ -2743,7 +2745,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice &Device,
 	//	Create all the shots
 
 	SShotFireResult Result;
-	if (!FireAllShots(Device, ShotDesc, Shots, ActivateCtx.iRepeatingCount, ActivateCtx.rInterpolateDelay, iInterpolatedShotNumber, Result))
+	if (!FireAllShots(Device, ShotDesc, Shots, ActivateCtx.iRepeatingCount, rInterpolateDelay, iInterpolatedShotNumber, Result))
 		return false;
 
 	//	Sound effect
@@ -5772,6 +5774,9 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 	if (!pDevice->IsEnabled())
 		return;
 
+	//	If this is a player secondary weapon that is able to pick targets and shoot on its own
+	//	attempt to shoot
+
 	if (pDevice->GetWeaponTargetDefinition() && pSource->IsPlayer() && pDevice->IsSecondaryWeapon())
 		{
 		//  If the weapon cannot fire this tick, do not autofire.
@@ -5847,7 +5852,7 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 				ActivateCtx.iChargeFrame = 1 + iChargeTime - min(int(dwContinuous) - iBurstLengthInFrames, iChargeTime + 1);
 				ActivateCtx.bIsCharging = int(dwContinuous) > iBurstLengthInFrames + 1;
 
-				FireWeapon(*pDevice, *pShot, ActivateCtx, 0);
+				FireWeapon(*pDevice, *pShot, ActivateCtx);
 
 				if (pSource->IsDestroyed())
 					return;
