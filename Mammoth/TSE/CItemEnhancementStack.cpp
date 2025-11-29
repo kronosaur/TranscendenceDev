@@ -149,7 +149,7 @@ void CItemEnhancementStack::ApplySpecialDamage (DamageDesc *pDamage) const
 		}
 	}
 
-int CItemEnhancementStack::CalcActivateDelay (CItemCtx &DeviceCtx) const
+Metric CItemEnhancementStack::CalcActivateDelay (CItemCtx &DeviceCtx) const
 
 //	CalcActivateDelay
 //
@@ -163,7 +163,7 @@ int CItemEnhancementStack::CalcActivateDelay (CItemCtx &DeviceCtx) const
 	if (pClass == NULL)
 		pClass = DeviceCtx.GetVariantDevice();
 	if (pClass == NULL)
-		return 0;
+		return 0.0;
 
 	//	Get the raw activation delay. NOTE: This DOES NOT include
 	//	any enhancements on the item.
@@ -178,15 +178,21 @@ int CItemEnhancementStack::CalcActivateDelay (CItemCtx &DeviceCtx) const
 		int iAdj = m_Stack[i].GetActivateRateAdj(&iMin, &iMax);
 		if (iAdj != 100)
 			{
+			//	TODO: refactor enhancement system to be much more flexible and handle larger
+			//	non-int data fields. For now we ensure that only disadvantageous enhancements
+			//	can impose a hard lower limit on activation delay, since the previous value was
+			//	too high
+
+			Metric rMin = m_Stack[i].IsDisadvantage() ? (Metric)iMin : min(rDelay, (Metric)iMin);
 			rDelay = iAdj * rDelay / 100.0;
-			if (rDelay < (Metric)iMin)
-				rDelay = (Metric)iMin;
+			if (rDelay < rMin)
+				rDelay = rMin;
 			else if (iMax > 0 && rDelay > (Metric)iMax)
 				rDelay = (Metric)iMax;
 			}
 		}
 
-	return mathRound(rDelay);
+	return rDelay;
 	}
 
 Metric CItemEnhancementStack::CalcRegen180 (CItemCtx &ItemCtx, int iTicksPerUpdate) const

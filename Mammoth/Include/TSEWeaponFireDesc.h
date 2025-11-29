@@ -571,7 +571,7 @@ class CConfigurationDesc
 		template <class T>
 		inline T CalcShots (const CVector &vSource, int iFireAngle, int iPolarity, Metric rScale) const;
 
-		int GetAimTolerance (int iFireDelay = 8) const;
+		int GetAimTolerance (Metric iFireDelay = 8.0) const;
 		int GetCustomConfigCount (void) const { return m_Custom.GetCount(); }
 		int GetCustomConfigFireAngle (int iIndex, int iFireAngle = 0) const { return AngleMod(iFireAngle + m_Custom[iIndex].Angle.Roll()); }
 		CVector GetCustomConfigPos (int iIndex, int iFireAngle = 0) const { return PolarToVector(AngleMod(iFireAngle + m_Custom[iIndex].iPosAngle), m_Custom[iIndex].rPosRadius); }
@@ -792,7 +792,7 @@ class CWeaponFireDesc
 		Metric GetAveSpeed (void) const { return 0.5 * (GetRatedSpeed() + m_rMaxMissileSpeed); }
 		int GetChargeTime (void) const { return m_iChargeTime; }
 		int GetContinuous (void) const { return m_iContinuous; }
-		int GetContinuousFireDelay (void) const { return (m_iContinuous != -1 ? m_iContinuousFireDelay : -1); }
+		Metric GetContinuousFireDelay () const { return (m_iContinuous != -1 ? m_rContinuousFireDelay : -1.0); }
 		const DamageDesc &GetDamage (void) const { return m_Damage; }
 		DamageTypes GetDamageType (void) const;
 		CEffectCreator *GetEffect (void) const { return m_pEffect; }
@@ -802,7 +802,7 @@ class CWeaponFireDesc
 		Metric GetExpansionSpeed (void) const { return (m_ExpansionSpeed.Roll() * LIGHT_SPEED / 100.0); }
 		CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
 		CExtension *GetExtension (void) const { return m_pExtension; }
-		int GetFireDelay (void) const { return m_iFireRate; }
+		Metric GetFireDelay (void) const { return m_rFireRate; }
 		FireTypes GetFireType (void) const { return m_iFireType; }
 		SFragmentDesc *GetFirstFragment (void) const { return m_pFirstFragment; }
 		Metric GetFragmentationMaxThreshold (void) const { return m_rMaxFragThreshold; }
@@ -917,9 +917,9 @@ class CWeaponFireDesc
 		DamageDesc m_DamageAtMaxRange;			//	If specified, damage decays with range to this value.
 		CConfigurationDesc m_Configuration;		//	Configuration (empty = default)
 		int m_iContinuous = -1;					//	repeat for this number of frames (-1 = default)
-		int m_iContinuousFireDelay = -1;		//	Ticks between continuous fire shots (-1 = default)
+		Metric m_rContinuousFireDelay = -1.0;		//	Ticks between continuous fire shots (-1.0 = default)
 		int m_iChargeTime = -1;					//	Ticks before firing (-1 = default)
-		int m_iFireRate = -1;					//	Ticks between shots (-1 = default to weapon class)
+		Metric m_rFireRate = -1.0;					//	Ticks between shots (<0 default to weapon class)
 		int m_iPowerUse = -1;					//	Power use in 1/10th MWs (-1 = default to weapon class)
 		int m_iIdlePowerUse = -1;				//	Power use while idle (-1 = default to weapon class)
 		EMiningMethod m_MiningMethod = EMiningMethod::unknown;	//	Mining method

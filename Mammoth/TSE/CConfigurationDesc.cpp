@@ -21,7 +21,7 @@
 #define CONFIG_TYPE_SPREAD5						CONSTLIT("spread5")
 #define CONFIG_TYPE_DUAL_ALTERNATING			CONSTLIT("alternating")
 
-int CConfigurationDesc::GetAimTolerance (int iFireDelay) const
+int CConfigurationDesc::GetAimTolerance (Metric rFireDelay) const
 
 //	GetAimTolerance
 //
@@ -32,9 +32,9 @@ int CConfigurationDesc::GetAimTolerance (int iFireDelay) const
 		{
 		case ctSingle:
 			{
-			if (iFireDelay > 10)
+			if (rFireDelay > 10.0)
 				return 2;
-			else if (iFireDelay > 4)
+			else if (rFireDelay > 4.0)
 				return 4;
 			else
 				return 6;

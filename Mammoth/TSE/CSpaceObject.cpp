@@ -8647,7 +8647,7 @@ bool CSpaceObject::UseItem (const CItem &Item, CString *retsError)
 
 			//	Reset the activation delay, if necessary
 
-			int iActivationDelay = pDevice->GetActivateDelay(this);
+			int iActivationDelay = mathRound(pDevice->GetActivateDelay(this));
 			if (iActivationDelay)
 				{
 				pDevice->SetTimeUntilReady(iActivationDelay);
