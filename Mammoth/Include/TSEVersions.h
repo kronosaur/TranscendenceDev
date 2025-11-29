@@ -1480,4 +1480,5 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					217;
 // 
 //  217: 2.0 Alpha 8
 //		Switch CInstalledDevice m_rActivateDelay from WORD to double
+//		Switch CInstalledDevice m_i
 //

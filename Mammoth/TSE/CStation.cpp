@@ -6049,7 +6049,7 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 
 			//	Fire delay
 
-			Weapon.SetTimeUntilReady(mathRound(m_pType->GetFireRateAdj() * Weapon.GetActivateDelay(this) / 10));
+			Weapon.SetTimeUntilReady(m_pType->GetFireRateAdj() * Weapon.GetActivateDelay(this) / 10);
 			}
 		}
 

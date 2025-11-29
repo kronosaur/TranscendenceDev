@@ -270,7 +270,7 @@ int CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
 	//	in a single tick
 
 	double rActivateDelay;
-	double rInterpolateDelay;
+	double rInterpolateDelay = 0.0;
 
 	//	If this is a launcher we have to find out the actual activation delay for the ammo type
 
@@ -352,24 +352,29 @@ int CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
 			}
 
 		//  If we have nonzero charge time then set continuous fire device data
-		//	We set to -1 because we skip the first Update after the call
-		//	to Activate (since it happens on the same tick)
+		//	We set to -1 to indicate we are starting continuous fire
+		// 
 		//  Note that we can't combine this with the if block later on because
 		//  bSuccess is false here (we technically didn't fire any shots by charging)
 
 		if (GetChargeTime(*pShotDesc) >= 1)
 			{
-			SetContinuousFire(&Device, CONTINUOUS_START);
+			SetContinuousFire(&Device, CONTINUOUS_START, 0);
 			//  Break out so we can record player stats
 			break;
 			}
 
 		//	If this is a continuous fire weapon then set the device data
-		//	We set to -1 because we skip the first Update after the call
-		//	to Activate (since it happens on the same tick)
+		//	We set to -1 to indicate we are starting continuous fire
+		//
+		//	We also break out now so we can handle continuous shots before shooting more
+		int iContinuousShots = GetContinuous(*pShotDesc);
 
-		if (GetContinuous(*pShotDesc) > 0)
-			SetContinuousFire(&Device, CONTINUOUS_START);
+		if (iContinuousShots > 0)
+			{
+			SetContinuousFire(&Device, CONTINUOUS_START, iContinuousShots);
+			break;
+			}
 		}
 
 	//	Player-specific code
@@ -398,6 +403,10 @@ int CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
 
 		Device.GetItem()->SetKnown();
 		}
+
+	//	Record our current interpolation time for continuous fire weapons
+
+	ActivateCtx.rCurInterpolationDelay = rInterpolateDelay;
 
 	//	Consume power
 
@@ -2955,9 +2964,9 @@ Metric CWeaponClass::GetContinuousFireDelay (const CWeaponFireDesc &Shot) const
 	{
 	//	Check the shot first, which can override the weapon
 
-	Metric iDelay = Shot.GetContinuousFireDelay();
-	if (iDelay != -1)
-		return iDelay;
+	Metric rDelay = Shot.GetContinuousFireDelay();
+	if (rDelay != -1)
+		return rDelay;
 
 	//	Check the weapon
 
@@ -5682,31 +5691,34 @@ bool CWeaponClass::SelectNextVariant (CSpaceObject *pSource, CInstalledDevice *p
 		}
 	}
 
-void CWeaponClass::SetAlternatingPos (CInstalledDevice *pDevice, int iAlternatingPos) const
-
 //	SetAlternatingPos
 //
 //	Sets the alternating position
+//
+void CWeaponClass::SetAlternatingPos (CInstalledDevice *pDevice, int iAlternatingPos) const
 
 	{
 	pDevice->SetData((pDevice->GetData() & 0xFFFF00FF) | (((DWORD)iAlternatingPos & 0xFF) << 8));
 	}
 
-void CWeaponClass::SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinuous) const
-
 //	SetContinuousFire
 //
-//	Sets the continuous fire counter for the device
+//	Sets the continuous fire counters for the device
+//	dwNextContinuousTick can be up to 0xFE
+//  dwContinuousCount can be up to 0xFFFF
+//
+void CWeaponClass::SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinuousCount, DWORD dwNextContinuousTick) const
 
 	{
-	pDevice->SetData((pDevice->GetData() & 0xFFFFFF00) | (dwContinuous & 0xFF));
+	pDevice->SetContinuousShotsLeft((WORD)dwContinuousCount);
+	pDevice->SetTimeUntilContinuousShot((BYTE)dwNextContinuousTick);
 	}
-
-bool CWeaponClass::SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, EDeviceCounterType iCounter, int iLevel)
 
 //  SetCounter
 //
 //  Sets the counter to the given level. Returns FALSE if we cannot set it.
+//
+bool CWeaponClass::SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, EDeviceCounterType iCounter, int iLevel)
 
 	{
 	if (m_Counter != iCounter || pDevice == NULL || pSource == NULL)
@@ -5728,7 +5740,7 @@ void CWeaponClass::SetCurrentVariant (CInstalledDevice *pDevice, int iVariant) c
 	//	NOTE: We also clear the repeating counter; if we switch missiles, we
 	//	want to stop firing the previous missile.
 
-	SetContinuousFire(pDevice, 0);
+	SetContinuousFire(pDevice, 0, 0);
 	pDevice->SetOnUsedLastAmmoFlag(false);
 
 	//	Set the new variant
@@ -5776,8 +5788,14 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 	//	If this is a player secondary weapon that is able to pick targets and shoot on its own
 	//	attempt to shoot
+	//	If we have pending continuous fire, skip this and go to the continuous fire logic
 
-	if (pDevice->GetWeaponTargetDefinition() && pSource->IsPlayer() && pDevice->IsSecondaryWeapon())
+	DWORD dwContinuousTick = GetContinuousFire(pDevice);
+	DWORD dwContinuousShots = pDevice->GetContinuousShotsLeft();
+	Metric rCurrentActivationDelay = 0.0;
+	Metric rContinuousInterpolationTime = 0.0;	//	Should be bounded 0.0-1.0
+
+	if (pDevice->GetWeaponTargetDefinition() && pSource->IsPlayer() && pDevice->IsSecondaryWeapon() && !dwContinuousTick)
 		{
 		//  If the weapon cannot fire this tick, do not autofire.
 		//	If the ship is disarmed or paralyzed, then we also do not autofire.
@@ -5785,92 +5803,159 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 		if (!(!pDevice->IsReady() || pSource->GetCondition(ECondition::paralyzed)
 			|| pSource->GetCondition(ECondition::disarmed)))
 			{
-			int iNumActivations = pDevice->GetWeaponTargetDefinition()->AimAndFire(this, pDevice, pSource, Ctx);
+			rCurrentActivationDelay = pDevice->GetTimeUntilReady();
+			rContinuousInterpolationTime = rCurrentActivationDelay;
+			int iNumActivations = pDevice->GetWeaponTargetDefinition()->AimAndFire(this, pDevice, pSource, Ctx, rCurrentActivationDelay);
 			if (iNumActivations)
 				{
-				pDevice->SetTimeUntilReady(mathRound(CalcActivateDelay(ItemCtx)));
+				rCurrentActivationDelay += CalcActivateDelay(ItemCtx) * iNumActivations;
+				pDevice->SetTimeUntilReady(rCurrentActivationDelay);
 				}
 			}
 		}
 
 	//	See if we continue to fire
-	//  dwContinouous starts at maximum repeating count and counts backwards towards zero; it represents
-	//  how many frames we have left in this burst
-	//	TODO: Fix this for interpolated shots
+	// 
+	//  dwContinuousTick stores the number of ticks till the next repeating shot
+	//	dwContinuousShots stores the number of shots remaining
+	//
+	//	If dwContinuousTick is 0xFF, it means we need to initialize
 
-	DWORD dwContinuous = GetContinuousFire(pDevice);
-	if (dwContinuous == CONTINUOUS_START)
+	if (dwContinuousTick == CONTINUOUS_START)
 		{
 		CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
 		if (pShot)
 			{
-			int iContinuous = GetContinuous(*pShot);
-			int iContinuousDelay = mathRound(Max(1.0, GetContinuousFireDelay(*pShot) + 1));
-			int iChargeTime = Max(0, GetChargeTime(*pShot));
+			//	Initialize our shot count if it is not already initialized
 
-			//	-1 is used to skip the first update cycle
-			//	(which happens on the same tick as Activate)
+			if (!dwContinuousShots)
+				dwContinuousShots = GetContinuous(*pShot);	//	Number of additional shots
+			Metric rContinuousDelay = Max(g_Epsilon, GetContinuousFireDelay(*pShot));
+			DWORD dwShotsThisTick = Min((DWORD)((1.0 - rContinuousInterpolationTime) / rContinuousDelay), dwContinuousShots);
 
-			if (iContinuousDelay > 1)
+			//	If we fire fast enough and have enough time left, we may need to fire some more shots this tick
+			
+			if (dwShotsThisTick)
 				{
-				SetContinuousFire(pDevice, (iChargeTime + ((iContinuous + 1) * iContinuousDelay)) - 1);
+				SActivateCtx ActivateCtx(Ctx);
+
+				for (DWORD i = 0; i < dwShotsThisTick; i++)
+					{
+					FireWeapon(*pDevice, *pShot, ActivateCtx, rContinuousInterpolationTime, i+1);
+
+					if (pSource->IsDestroyed())
+						return;
+
+					rContinuousInterpolationTime += rContinuousDelay;
+					}
+				}
+
+			dwContinuousShots -= dwShotsThisTick;
+
+			//	If we have shots remaining, we need to store info on what is remaining
+
+			if (dwContinuousShots)
+				{
+				//	-1 is used to signal the first update cycle
+
+				int iChargeTime = Max(0, GetChargeTime(*pShot));
+
+				//	Store on what ticks we fire shots
+
+				DWORD dwContinuousDelay = (DWORD)rContinuousDelay;
+
+				SetContinuousFire(pDevice, dwContinuousDelay, dwContinuousShots);
 				}
 			else
 				{
-				SetContinuousFire(pDevice, iContinuous + iChargeTime);
+				SetContinuousFire(pDevice, 0, 0);
 				}
 			}
 		else
 			{
-			SetContinuousFire(pDevice, 0);
+			SetContinuousFire(pDevice, 0, 0);
 			pDevice->SetOnUsedLastAmmoFlag(false);
 			}
 		}
-	else if (dwContinuous > 0)
+
+	//	If we are charging or waiting till the next repeating shot, just update
+
+	else if (dwContinuousTick)
+		{
+
+		dwContinuousTick--;
+
+		//	If we were charging and we are at 0 ticks left after updating
+		//	we can shoot next tick
+
+		if (!dwContinuousTick && !dwContinuousShots)
+			SetContinuousFire(pDevice, 0, 1);
+
+		//	otherwise we update normally
+		else
+			SetContinuousFire(pDevice, dwContinuousTick, dwContinuousShots);
+		}
+
+	//	If we are ready to fire, do so
+	//	Entering this implies dwContinuousTick == 0 due to the prior else if
+
+	else if (dwContinuousShots)
 		{
 		CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
+		DWORD dwShotsThisTick = 0;
 		if (pShot)
 			{
-			int iContinuous = GetContinuous(*pShot);
-			int iContinuousDelay = mathRound(Max(1.0, GetContinuousFireDelay(*pShot) + 1));
+			//	We are already initialized, so we expect that the continuous shots left (dwContinuousShots) is initialized
+			//	If we are zero, we are charging instead
+
+			Metric rContinuousDelay = Max(g_Epsilon, GetContinuousFireDelay(*pShot));
 			int iChargeTime = Max(0, GetChargeTime(*pShot));
-			int iBurstLengthInFrames = iContinuousDelay > 1 ? ((iContinuous + 1) * iContinuousDelay) - 1 : iContinuous;
-			int iFireFrame = max(0, iBurstLengthInFrames - int(dwContinuous));
 
-			SActivateCtx ActivateCtx(Ctx);
+			if (rContinuousDelay >= 1.0 && dwContinuousShots)
+				dwShotsThisTick = 1;
+			else
+				dwShotsThisTick = Min((DWORD)((1.0 - rContinuousInterpolationTime) / rContinuousDelay), dwContinuousShots);
 
-			if ((dwContinuous % iContinuousDelay) == 0 || (int(dwContinuous) > iBurstLengthInFrames))
+			if (dwShotsThisTick)
 				{
-				CTargetList pSourceTargetList;
-				if (ActivateCtx.GetTargetList().IsEmpty())
+				SActivateCtx ActivateCtx(Ctx);
+
+				for (DWORD i = 0; i < dwShotsThisTick; i++)
 					{
-					pSourceTargetList = pSource->GetTargetList();
-					ActivateCtx.SetTargetList(pSourceTargetList);
+					FireWeapon(*pDevice, *pShot, ActivateCtx, rContinuousInterpolationTime, i+1);
+
+					if (pSource->IsDestroyed())
+						return;
+
+					rContinuousInterpolationTime += rContinuousDelay;
 					}
-
-				ActivateCtx.iRepeatingCount = 1 + iContinuous - min(int(dwContinuous) / iContinuousDelay, iContinuous + 1);
-				ActivateCtx.iChargeFrame = 1 + iChargeTime - min(int(dwContinuous) - iBurstLengthInFrames, iChargeTime + 1);
-				ActivateCtx.bIsCharging = int(dwContinuous) > iBurstLengthInFrames + 1;
-
-				FireWeapon(*pDevice, *pShot, ActivateCtx);
-
-				if (pSource->IsDestroyed())
-					return;
 				}
 			}
 
-		dwContinuous--;
-		SetContinuousFire(pDevice, dwContinuous);
+		dwContinuousShots -= dwShotsThisTick;
+
+		if (!dwContinuousShots)
+			SetContinuousFire(pDevice, 0, 0);
+
 
 		//	If we've fired the last round, then see if we need to notify the UI
 		//	that we're out of ammo.
 
-		if (dwContinuous == 0 && pDevice->IsOnUsedLastAmmoFlagSet())
+		if (dwContinuousShots == 0 && pDevice->IsOnUsedLastAmmoFlagSet())
 			{
 			pSource->OnDeviceStatus(pDevice, statusUsedLastAmmo);
 			pDevice->SetOnUsedLastAmmoFlag(false);
 			}
+
+		//	Otherwise we need to update the count
+
+		else if (dwContinuousShots)
+			{
+			Metric rContinuousDelay = Max(g_Epsilon, GetContinuousFireDelay(*pShot));
+			SetContinuousFire(pDevice, (DWORD)rContinuousDelay, dwContinuousShots);
+			}
 		}
+
 	else if (pDevice->HasLastShots()
 			&& (!pDevice->IsTriggered() || pDevice->GetTimeUntilReady() > 1))
 		pDevice->SetLastShotCount(0);

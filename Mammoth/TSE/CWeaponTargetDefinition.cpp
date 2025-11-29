@@ -65,7 +65,7 @@ CSpaceObject* CWeaponTargetDefinition::FindTarget (CWeaponClass* pWeapon, CInsta
 	return pSystem->FindNearestTangibleObjectInArc(pSource, vSourcePos, rBestDist, m_TargetCriteria, iMinFireArc, iMaxFireArc);
 	}
 
-int CWeaponTargetDefinition::AimAndFire(CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CDeviceClass::SDeviceUpdateCtx& Ctx) const
+int CWeaponTargetDefinition::AimAndFire(CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CDeviceClass::SDeviceUpdateCtx& Ctx, Metric rInterpolateDelay) const
 	{
 	//	If we're docked with a station, then we do not fire.
 	CItemCtx ItemCtx(pSource, pDevice);

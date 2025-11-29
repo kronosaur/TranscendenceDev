@@ -163,7 +163,7 @@ int CMiscellaneousClass::GetCounter (const CInstalledDevice *pDevice, const CSpa
 
 	CItemCtx ItemCtx(pSource, pDevice);
 	Metric rActivateDelay = GetActivateDelay(ItemCtx);
-	int iLevel = mathRound(rActivateDelay > 0.0 ? 100 - (pDevice->GetTimeUntilReady() * 100 / rActivateDelay) : 0);
+	int iLevel = mathRound(rActivateDelay > 0.0 ? 100 - (int)(pDevice->GetTimeUntilReady() * 100 / rActivateDelay) : 0);
 
 	if (retiLevel)
 		*retiLevel = iLevel;
@@ -210,9 +210,9 @@ bool CMiscellaneousClass::SetCounter (CInstalledDevice *pDevice, CSpaceObject *p
 
 	CItemCtx ItemCtx(pSource, pDevice);
 	Metric rActivateDelay = GetActivateDelay(ItemCtx);
-	int iTimeLeft = mathRound(Max(0.0, Min((100 - iLevel) * rActivateDelay / 100, rActivateDelay)));
+	Metric rTimeLeft = Max(0.0, Min((100 - iLevel) * rActivateDelay / 100, rActivateDelay));
 
-	pDevice->SetTimeUntilReady(iTimeLeft);
+	pDevice->SetTimeUntilReady(rTimeLeft);
 	pSource->OnComponentChanged(comDeviceCounter);
 
 	return true;

@@ -147,6 +147,7 @@ class CWeaponClass : public CDeviceClass
 		virtual bool FindAmmoDataField (const CItem &Ammo, const CString &sField, CString *retsValue) const override;
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName) override;
+		Metric GetContinuousFireDelay (const CWeaponFireDesc &Shot) const;
 		virtual const DamageDesc *GetDamageDesc (CItemCtx &Ctx) override;
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const override;
 		virtual DWORD GetLinkedFireOptions (void) const override { return m_dwLinkedFireOptions; }
@@ -308,7 +309,6 @@ class CWeaponClass : public CDeviceClass
 							 CSpaceObject *pTarget,
 							 int iRepeatingCount,
 							 int iShotNumber);
-		Metric GetContinuousFireDelay (const CWeaponFireDesc &Shot) const;
 		Metric GetFireDelay (const CWeaponFireDesc &ShotDesc) const;
 		const CWeaponFireDesc *GetReferenceShotData (const CWeaponFireDesc *pShot, int *retiFragments = NULL) const;
 		int GetSelectVariantCount (void) const;
@@ -332,7 +332,7 @@ class CWeaponClass : public CDeviceClass
 		DWORD GetContinuousFire (const CInstalledDevice *pDevice) const;
 		int GetCurrentVariant (const CInstalledDevice *pDevice) const;
 		void SetAlternatingPos (CInstalledDevice *pDevice, int iAlternatingPos) const;
-		void SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinuous) const;
+		void SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinuousCount, DWORD dwNextContinuousTick) const;
 		void SetCurrentVariant (CInstalledDevice *pDevice, int iVariant) const;
 
 		Metric m_rFireRate;						//	Internal simulation ticks between shots (translated from simulation seconds in the XML)

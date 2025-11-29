@@ -7256,7 +7256,7 @@ void CShip::SetFireDelay (CInstalledDevice *pWeapon, int iDelay)
 	DEBUG_TRY
 
 	if (iDelay == -1)
-		pWeapon->SetTimeUntilReady((int)(m_pController->GetFireRateAdj() * pWeapon->GetActivateDelay(this) / 10));
+		pWeapon->SetTimeUntilReady(m_pController->GetFireRateAdj() * pWeapon->GetActivateDelay(this) / 10);
 	else
 		pWeapon->SetTimeUntilReady(iDelay);
 

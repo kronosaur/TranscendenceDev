@@ -286,7 +286,7 @@ void CAutoDefenseClass::UpdateTarget (CInstalledDevice* pDevice, CSpaceObject* p
 
 	Ctx.bConsumedItems = ActivateCtx.bConsumedItems;
 
-	pDevice->SetTimeUntilReady(mathRound(m_rRechargeTicks));
+	pDevice->SetTimeUntilReady(m_rRechargeTicks);
 
 	//	Identify
 
