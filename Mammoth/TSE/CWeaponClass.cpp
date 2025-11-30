@@ -359,7 +359,7 @@ int CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
 
 		if (GetChargeTime(*pShotDesc) >= 1)
 			{
-			SetContinuousFire(&Device, CONTINUOUS_START, 0);
+			SetContinuousFire(&Device, 0, CONTINUOUS_START);
 			//  Break out so we can record player stats
 			break;
 			}
@@ -372,7 +372,7 @@ int CWeaponClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
 
 		if (iContinuousShots > 0)
 			{
-			SetContinuousFire(&Device, CONTINUOUS_START, iContinuousShots);
+			SetContinuousFire(&Device, iContinuousShots, CONTINUOUS_START);
 			break;
 			}
 		}
@@ -5864,7 +5864,7 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 				DWORD dwContinuousDelay = (DWORD)rContinuousDelay;
 
-				SetContinuousFire(pDevice, dwContinuousDelay, dwContinuousShots);
+				SetContinuousFire(pDevice, dwContinuousShots, dwContinuousDelay);
 				}
 			else
 				{
@@ -5889,11 +5889,11 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 		//	we can shoot next tick
 
 		if (!dwContinuousTick && !dwContinuousShots)
-			SetContinuousFire(pDevice, 0, 1);
+			SetContinuousFire(pDevice, 1, 0);
 
 		//	otherwise we update normally
 		else
-			SetContinuousFire(pDevice, dwContinuousTick, dwContinuousShots);
+			SetContinuousFire(pDevice, dwContinuousShots, dwContinuousTick);
 		}
 
 	//	If we are ready to fire, do so
@@ -5949,10 +5949,10 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 		//	Otherwise we need to update the count
 
-		else if (dwContinuousShots)
+		else if (dwContinuousShots && pShot)
 			{
 			Metric rContinuousDelay = Max(g_Epsilon, GetContinuousFireDelay(*pShot));
-			SetContinuousFire(pDevice, (DWORD)rContinuousDelay, dwContinuousShots);
+			SetContinuousFire(pDevice, dwContinuousShots, (DWORD)rContinuousDelay);
 			}
 		}
 
