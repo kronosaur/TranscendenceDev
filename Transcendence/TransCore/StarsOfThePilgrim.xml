@@ -272,7 +272,7 @@
 			<ExternalDeviceDamageMaxLevels
 				deviceDamageMaxDeviceLevel=		  "  6,  6,  9,  9,  12, 12, 15, 15,  18, 18, 21, 21,  24, 24, 25, 25"
 				deviceDamageTypeAdj=			  "100,100,100,100, 120,100,100,100, 100,100, 75,100, 100,100,100,100"
-				deviceHitChance=				  "50"
+				deviceHitChance=				  "11"
 				/>
 
 			<InternalDeviceDamageMaxLevels
