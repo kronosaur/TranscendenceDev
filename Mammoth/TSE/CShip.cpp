@@ -4468,9 +4468,9 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Ignore devices with overlays because they get damaged in the overlay
 	//	damage section.
 	// 
-	//	Skip for Null or 0 damage.
+	//	Skip for 0 damage, but allow null damage through to allow DamageExternalDevice to handle things.
 
-	if (bIsDamaging)
+	if (bIsDamaging || Ctx.Damage.GetDamageType() == damageNull)
 		{
 		for (CDeviceItem DeviceItem : GetDeviceSystem())
 			{
