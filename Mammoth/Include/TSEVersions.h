@@ -682,6 +682,34 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //				Returns a list of static datakeys for the given obj type
 //			(scr@Keys type)
 //				Returns a list of all instance property and custom global property keys for the given obj
+//		<AdventureDesc>
+//			<Constants>
+//				<ExternalDeviceDamageMaxLevels>
+//					deviceDamageMaxDeviceLevel: (damageAdj-style list of ints)
+//						The maximum level device that this weapon shot can damage
+//						Specifying a "+" before a level means this is a positive
+//							offset relative to the level of the item
+//						Specifying a "-" before a level means this is a negative
+//							offset relative to the level of the item
+//					deviceDamageTypeAdj:
+//						% damageAdj of this damage type to devices
+//						generic damage always has 100%
+//						null damage has 100% if it also has device:# in its desc
+//					deviceHitChance:
+//						% chance for a shot of any damage type to hit a device
+//				<InternalDeviceDamageMaxLevels>
+//					deviceDamageMaxDeviceLevel: (damageAdj-style list of ints)
+//						The maximum level device that this weapon shot can damage
+//						Specifying a "+" before a level means this is a positive
+//							offset relative to the level of the item
+//						Specifying a "-" before a level means this is a negative
+//							offset relative to the level of the item
+//					deviceDamageTypeAdj:
+//						% damageAdj of this damage type to devices
+//						generic damage always has 100%
+//						null damage has 100% if it also has device:# in its desc
+//					deviceHitChance:
+//						% chance for a shot of any damage type to hit a device
 //		<ItemType>
 //			<Weapon>
 //				damage: (str: damage desc)
