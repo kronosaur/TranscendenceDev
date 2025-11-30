@@ -267,6 +267,20 @@
 			
 			<MiningMaxOreLevels	miningMaxOreLevel="  5,  5,  8,  8,  11, 11, 14, 14,  17, 17, 20, 20,  23, 23, 25, 25"/>
 			
+			<!-- Device damage -->
+
+			<ExternalDeviceDamageMaxLevels
+				deviceDamageMaxDeviceLevel=		  "  6,  6,  9,  9,  12, 12, 15, 15,  18, 18, 21, 21,  24, 24, 25, 25"
+				deviceDamageTypeAdj=			  "100,100,100,100, 120,100,100,100, 100,100, 75,100, 100,100,100,100"
+				deviceHitChance=				  "50"
+				/>
+
+			<InternalDeviceDamageMaxLevels
+				deviceDamageMaxDeviceLevel=		  " 25, 25, 25, 25,  25, 25, 25, 25,  25, 25, 25, 25,  25, 25, 25, 25"
+				deviceDamageTypeAdj=			  "100,100,100,100, 100,100,100,100, 100,100,100,100, 100,100,100,100"
+				deviceHitChance=				  "50"
+				/>
+			
 		</Constants>
 	</AdventureDesc>
 		

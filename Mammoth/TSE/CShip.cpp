@@ -1746,6 +1746,32 @@ void CShip::DamageDevice (CInstalledDevice *pDevice, SDamageCtx &Ctx)
 	if (!pDevice)
 		throw CException(ERR_FAIL);
 
+	//	See if we hit the device
+
+	const CDeviceDamageLevelDesc* pInternalDamageDesc = GetUniverse().GetEngineOptions().GetInternalDeviceDamageMaxLevels();
+	if (pInternalDamageDesc->GetChanceToHit() < mathRandom(1, 100))
+		return;
+
+	//	If the device gets hit, see if it gets damaged
+
+	int iLevel = pDevice->GetLevel();
+	CItemType* pDamageItem = Ctx.GetDesc().GetAmmoType();
+	if (!pDamageItem)
+		pDamageItem = Ctx.GetDesc().GetWeaponType();
+
+	//	If this wasnt caused by an item, we assume its something environmental
+
+	int iDamageItemLevel = pDamageItem ? pDamageItem->GetLevel() : MAX_ITEM_LEVEL;
+	DamageTypes iDamageType = Ctx.Damage.GetDamageType();
+	int iMaxLevel = pInternalDamageDesc->GetMaxDeviceLevel(iDamageType,iDamageItemLevel);
+	int iDeviceDamageAdj = pInternalDamageDesc->GetDeviceAdj(iDamageType);
+
+	//	TODO: decide if we want to use the more nuanced damage chance model
+
+	int iChanceOfDamage = iDeviceDamageAdj; //Ctx.iDamage * ((26 - iLevel) * 4) * iDeviceDamageAdj / (100 * 100);
+	if (iChanceOfDamage < mathRandom(1, 100))
+		return;
+
 	//	Damage the device
 
 	DamageItem(pDevice);
@@ -1765,12 +1791,38 @@ void CShip::DamageDrive (SDamageCtx &Ctx)
 //	Damages the main drive.
 
 	{
+	//	See if we hit the device
+
+	const CDeviceDamageLevelDesc* pInternalDamageDesc = GetUniverse().GetEngineOptions().GetInternalDeviceDamageMaxLevels();
+	if (pInternalDamageDesc->GetChanceToHit() < mathRandom(1, 100))
+		return;
+
 	//	Look for a drive device. If we have it, and it is undamaged, then it is
 	//	damaged.
 
 	CInstalledDevice *pDrive = GetNamedDevice(devDrive);
 	if (pDrive && !pDrive->IsDamaged())
 		{
+		//	If the device gets hit, see if it gets damaged
+
+		int iLevel = pDrive->GetLevel();
+		CItemType* pDamageItem = Ctx.GetDesc().GetAmmoType();
+		if (!pDamageItem)
+			pDamageItem = Ctx.GetDesc().GetWeaponType();
+
+		//	If this wasnt caused by an item, we assume its something environmental
+
+		int iDamageItemLevel = pDamageItem ? pDamageItem->GetLevel() : MAX_ITEM_LEVEL;
+		DamageTypes iDamageType = Ctx.Damage.GetDamageType();
+		int iMaxLevel = pInternalDamageDesc->GetMaxDeviceLevel(iDamageType,iDamageItemLevel);
+		int iDeviceDamageAdj = pInternalDamageDesc->GetDeviceAdj(iDamageType);
+
+		//	TODO: decide if we want to use the more nuanced damage chance model
+
+		int iChanceOfDamage = iDeviceDamageAdj; //Ctx.iDamage * ((26 - iLevel) * 4) * iDeviceDamageAdj / (100 * 100);
+		if (iChanceOfDamage < mathRandom(1, 100))
+			return;
+
 		DamageDevice(pDrive, Ctx);
 		return;
 		}
@@ -1779,6 +1831,26 @@ void CShip::DamageDrive (SDamageCtx &Ctx)
 
 	if (m_iDriveDamagedTimer != -1)
 		{
+		//	If the device gets hit, see if it gets damaged. We use the ship's level as the drive's level
+
+		int iLevel = GetLevel();
+		CItemType* pDamageItem = Ctx.GetDesc().GetAmmoType();
+		if (!pDamageItem)
+			pDamageItem = Ctx.GetDesc().GetWeaponType();
+
+		//	If this wasnt caused by an item, we assume its something environmental
+
+		int iDamageItemLevel = pDamageItem ? pDamageItem->GetLevel() : MAX_ITEM_LEVEL;
+		DamageTypes iDamageType = Ctx.Damage.GetDamageType();
+		int iMaxLevel = pInternalDamageDesc->GetMaxDeviceLevel(iDamageType,iDamageItemLevel);
+		int iDeviceDamageAdj = pInternalDamageDesc->GetDeviceAdj(iDamageType);
+
+		//	TODO: decide if we want to use the more nuanced damage chance model
+
+		int iChanceOfDamage = iDeviceDamageAdj; //Ctx.iDamage * ((26 - iLevel) * 4) * iDeviceDamageAdj / (100 * 100);
+		if (iChanceOfDamage < mathRandom(1, 100))
+			return;
+
 		int iDamageTime = mathRandom(1800, 3600);
 
 		//	Increment timer
@@ -1839,60 +1911,26 @@ void CShip::DamageExternalDevice (int iDev, SDamageCtx &Ctx)
 	if (pDevice->IsEmpty() || pDevice->IsDamaged() || !pDevice->IsExternal())
 		return;
 
+	//	See if we hit the device
+
+	const CDeviceDamageLevelDesc* pExternalDamageDesc = GetUniverse().GetEngineOptions().GetExternalDeviceDamageMaxLevels();
+	if (pExternalDamageDesc->GetChanceToHit() < mathRandom(1, 100))
+		return;
+
 	//	If the device gets hit, see if it gets damaged
 
 	int iLevel = pDevice->GetLevel();
-	int iMaxLevel = 0;
-	int iChanceOfDamage = Ctx.iDamage * ((26 - iLevel) * 4) / 100;
+	CItemType* pDamageItem = Ctx.GetDesc().GetAmmoType();
+	if (!pDamageItem)
+		pDamageItem = Ctx.GetDesc().GetWeaponType();
 
-	switch (Ctx.Damage.GetDamageType())
-		{
-		case damageLaser:
-		case damageKinetic:
-			iMaxLevel = 6;
-			break;
+	//	If this wasnt caused by an item, we assume its something environmental
 
-		case damageParticle:
-		case damageBlast:
-			iMaxLevel = 9;
-			break;
-
-		case damageIonRadiation:
-			iMaxLevel = 12;
-			iChanceOfDamage = iChanceOfDamage * 120 / 100;
-			break;
-
-		case damageThermonuclear:
-			iMaxLevel = 12;
-			break;
-
-		case damagePositron:
-		case damagePlasma:
-			iMaxLevel = 15;
-			break;
-
-		case damageAntiMatter:
-		case damageNano:
-			iMaxLevel = 18;
-			break;
-
-		case damageGravitonBeam:
-			iMaxLevel = 21;
-			iChanceOfDamage = iChanceOfDamage * 75 / 100;
-			break;
-
-		case damageSingularity:
-			iMaxLevel = 21;
-			break;
-
-		case damageDarkAcid:
-		case damageDarkSteel:
-			iMaxLevel = 24;
-			break;
-
-		default:
-			iMaxLevel = 27;
-		}
+	int iDamageItemLevel = pDamageItem ? pDamageItem->GetLevel() : MAX_ITEM_LEVEL;
+	DamageTypes iDamageType = Ctx.Damage.GetDamageType();
+	int iMaxLevel = pExternalDamageDesc->GetMaxDeviceLevel(iDamageType,iDamageItemLevel);
+	int iDeviceDamageAdj = pExternalDamageDesc->GetDeviceAdj(iDamageType);
+	int iChanceOfDamage = Ctx.iDamage * ((26 - iLevel) * 4) * iDeviceDamageAdj / (100 * 100);
 
 	//	If the device is too high-level for the damage type, then nothing
 	//	happens
@@ -4472,10 +4510,13 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			if (Device.IsExternal()
 				&& Device.GetOverlay() == NULL)
 				{
-				//	The chance that the device got hit depends on the number of armor segments
-				//	A device takes up 1/9th of the surface area of a segment.
+				//	Check if we hit the segment that the device is on
+				//	If we roll a Nat 1, representing the segment with the device, we get hit.
+				// 
+				//	A second check if we actually hit the device
+				//  is done inside of DamageExternalDevice
 
-				if (mathRandom(1, GetArmorSectionCount() * 9) == 7)
+				if (mathRandom(1, GetArmorSectionCount()) == 1)
 					DamageExternalDevice(Device.GetDeviceSlot(), Ctx);
 				}
 			}

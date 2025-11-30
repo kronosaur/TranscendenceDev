@@ -13,13 +13,17 @@ class CEngineOptions
 
 		explicit CEngineOptions (int apiVersion = API_VERSION);
 
-		const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ArmorDamageAdj[iLevel - 1]; }
-		int GetDefaultInteraction (void) const { return m_iDefaultInteraction; }
-		int GetDefaultShotHP (void) const { return m_iDefaultShotHP; }
-		const CMiningDamageLevelDesc *GetMiningMaxOreLevels (void) const { return &m_MiningDamageMaxOreLevels; }
-		const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ShieldDamageAdj[iLevel - 1]; }
+		const CDamageAdjDesc* GetArmorDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ArmorDamageAdj[iLevel - 1]; }
+		int GetDefaultInteraction () const { return m_iDefaultInteraction; }
+		int GetDefaultShotHP () const { return m_iDefaultShotHP; }
+		const CDeviceDamageLevelDesc* GetExternalDeviceDamageMaxLevels () const { return &m_ExternalDeviceDamageMaxLevels; }
+		const CDeviceDamageLevelDesc* GetInternalDeviceDamageMaxLevels () const { return &m_InternalDeviceDamageMaxLevels; }
+		const CMiningDamageLevelDesc* GetMiningMaxOreLevels () const { return &m_MiningDamageMaxOreLevels; }
+		const CDamageAdjDesc* GetShieldDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ShieldDamageAdj[iLevel - 1]; }
 		bool HidesArmorImmunity (SpecialDamageTypes iSpecial) const;
 		bool InitArmorDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomArmorDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ArmorDamageAdj); }
+		bool InitExternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
+		bool InitInternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
 		bool InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType &Type);
 		bool InitMiningMaxOreLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
 		bool InitShieldDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomShieldDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ShieldDamageAdj); }
@@ -30,10 +34,12 @@ class CEngineOptions
 
 		bool InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable);
 
-		void InitDefaultGlobals (void);
-		void InitDefaultDescs (void);
-		static void InitDefaultDamageAdj (void);
+		void InitDefaultGlobals ();
+		void InitDefaultDescs ();
+		static void InitDefaultDamageAdj ();
 		static CMiningDamageLevelDesc GetDefaultMiningMaxOreLevels (int apiVersion);
+		static CDeviceDamageLevelDesc GetDefaultExternalDeviceDamageLevels (int apiVersion);
+		static CDeviceDamageLevelDesc GetDefaultInternalDeviceDamageLevels (int apiVersion);
 
 		int m_iDefaultForAPIVersion = -1;
 
@@ -44,6 +50,14 @@ class CEngineOptions
 
 		bool m_bCustomArmorDamageAdj = false;
 		bool m_bCustomShieldDamageAdj = false;
+
+		//	Default device damage max item level curve
+
+		CDeviceDamageLevelDesc m_ExternalDeviceDamageMaxLevels;
+		CDeviceDamageLevelDesc m_InternalDeviceDamageMaxLevels;
+
+		bool m_bCustomExternalDeviceDamageMaxLevels = false;
+		bool m_bCustomInternalDeviceDamageMaxLevels = false;
 
 		//	Default mining damage max ore curve
 
