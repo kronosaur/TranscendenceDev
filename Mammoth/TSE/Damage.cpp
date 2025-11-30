@@ -664,6 +664,32 @@ void DamageDesc::InterpolateTo (const DamageDesc &End, Metric rSlider)
 	m_sExtra.MomentumDamage = (INT8)InterpolateValue(m_sExtra.MomentumDamage, End.m_sExtra.MomentumDamage, rSlider);
 	}
 
+//	IsDamaging
+// 
+//	Returns true if the damage the potential to do HP Damage or has
+//	harmful secondary effects
+//	
+//	Optionally takes an arg iDamage. If this is supplied, it is used
+//  in place of the max value check.
+//
+bool DamageDesc::IsDamaging(int iDamage) const
+	{
+	return ((m_Damage.GetMaxValue() || iDamage >= 1) && m_iType != damageNull)
+		//	similarly any hostile status/special effects also count
+		//	however, movement alone does not count as hostile
+		|| m_sExtra.EMPDamage
+		|| m_sExtra.RadiationDamage
+		|| m_sExtra.DeviceDamage
+		|| m_sExtra.DeviceDisruptDamage
+		|| m_sExtra.BlindingDamage
+		|| m_sExtra.SensorDamage
+		|| m_sExtra.FuelDamage
+		|| m_sExtra.DisintegrationDamage
+		|| m_sExtra.ShatterDamage
+		|| m_sExtra.TimeStopDamage
+		;
+	}
+
 //	InterpolateValue
 //
 //	Interpolates from one value to another.
