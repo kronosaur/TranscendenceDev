@@ -14,6 +14,7 @@
 #define DAMAGE_ADJ_LEVEL_ATTRIB					CONSTLIT("damageAdjLevel")
 #define DEPLETION_DELAY_ATTRIB					CONSTLIT("depletionDelay")
 #define FLASH_EFFECT_ATTRIB						CONSTLIT("flashEffect")
+#define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
 #define HAS_NON_REGEN_HP_ATTRIB					CONSTLIT("hasNonRegenHP")
 #define HIT_EFFECT_ATTRIB						CONSTLIT("hitEffect")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
@@ -155,9 +156,18 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 		return false;
 		}
 
+	//	Calculate how much extra mitigation we get from any fortification we have
+
+	Metric rFortification;
+	if (m_rFortification < 0.0)
+		rFortification = g_pUniverse->GetEngineOptions().GetDefaultFortifiedArmor();
+	else
+		rFortification = m_rFortification;
+	Metric rFortificationAdj = Ctx.CalcWMDFortificationAdj(rFortification);
+
 	//	Calculate how much we will absorb
 
-	Ctx.iAbsorb = mathAdjust(Ctx.iDamage, GetAbsorbAdj(DeviceItem, Enhancements, Ctx.Damage));
+	Ctx.iAbsorb = mathRound(mathAdjust(Ctx.iDamage, GetAbsorbAdj(DeviceItem, Enhancements, Ctx.Damage)) * rFortificationAdj);
 
 	//	Compute how much damage we take (based on the type of damage)
 
@@ -762,6 +772,10 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 		for (i = 0; i < damageCount; i++)
 			pShield->m_iAbsorbAdj[i] = 100;
 		}
+
+	//	Load WMD Fortification
+
+	pShield->m_rFortification = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
 
 	//	Load the weapon suppress
 

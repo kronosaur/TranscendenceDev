@@ -10,6 +10,7 @@
 
 #define ATTACH_TO_ATTRIB						CONSTLIT("attachTo")
 #define CLASS_ATTRIB							CONSTLIT("class")
+#define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define ID_ATTRIB								CONSTLIT("id")
 #define NAME_ATTRIB								CONSTLIT("name")
@@ -289,6 +290,13 @@ void CShipInteriorDesc::DebugPaint (CG32bitImage &Dest, int x, int y, int iRotat
 		}
 	}
 
+Metric CShipInteriorDesc::GetFortificationAdj() const
+	{
+	if (g_pUniverse)
+		return m_rFortified < 0 ? g_pUniverse->GetEngineOptions().GetDefaultFortifiedShipCompartment() : m_rFortified;
+	return 0.1;
+	}
+
 int CShipInteriorDesc::GetHitPoints (void) const
 
 //	GetHitPoints
@@ -317,6 +325,7 @@ ALERROR CShipInteriorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_fHasAttached = false;
 	m_fIsMultiHull = false;
+	m_rFortified = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
 
 	//	Keep a temporary map of IDs to section
 

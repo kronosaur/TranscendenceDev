@@ -114,9 +114,12 @@ EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Des
 //	Ship interior takes damage.
 
 	{
-	//	Damage requires mass destruction power
+	//	Calculate our Fortification adjustment
 
-	int iDamageAdj = Ctx.Damage.GetMassDestructionAdj();
+	int iDamageAdj = mathRound(100 * Ctx.CalcWMDFortificationAdj(Desc.GetFortificationAdj()));
+
+	//	Effective damage requires mass destruction power
+
     Ctx.iDamage = mathAdjust(Ctx.iDamage, iDamageAdj);
 
 	//	If we don't have WMD and we're not making much progress, then show a hint.
