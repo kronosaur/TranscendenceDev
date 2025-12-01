@@ -708,7 +708,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //						Default 1.0
 //		<ItemType>
 //			<Armor>
-//				fortified: (float)
+//				fortificationAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
 //					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
@@ -716,7 +716,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //						from non-WMD weapons than high-WMD weapons)
 //					Default: reads adventure default (Default: 1.0)
 //			<Shield>
-//				fortified: (float)
+//				fortificationAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
 //					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
@@ -743,7 +743,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //							damage output, like mining, to function correctly)
 //		<ShipClass>
 //			<Armor>
-//				fortified: (float)
+//				fortificationAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
 //					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
@@ -751,7 +751,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //						from non-WMD weapons than high-WMD weapons)
 //					Default: reads adventure default (Default: 1.0)
 //			<Hull>
-//				fortified: (float)
+//				fortificationAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
 //					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
@@ -759,7 +759,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //						from non-WMD weapons than high-WMD weapons)
 //					Default: reads adventure default (Default: 1.0)
 //		<StationType>
-//			fortified: (float)
+//			fortificationAdj: (float)
 //				Accepts a floating point which adjusts the default WMD curve for that target type
 //				by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //				to the modified scale WMD0 (supplied number) to WMD7 (1.0).

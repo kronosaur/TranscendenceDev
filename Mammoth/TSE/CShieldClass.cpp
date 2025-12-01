@@ -14,7 +14,7 @@
 #define DAMAGE_ADJ_LEVEL_ATTRIB					CONSTLIT("damageAdjLevel")
 #define DEPLETION_DELAY_ATTRIB					CONSTLIT("depletionDelay")
 #define FLASH_EFFECT_ATTRIB						CONSTLIT("flashEffect")
-#define FORTIFICATION_ATTRIB					CONSTLIT("fortification")
+#define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
 #define HAS_NON_REGEN_HP_ATTRIB					CONSTLIT("hasNonRegenHP")
 #define HIT_EFFECT_ATTRIB						CONSTLIT("hitEffect")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")

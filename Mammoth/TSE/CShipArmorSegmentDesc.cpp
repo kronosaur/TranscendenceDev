@@ -6,7 +6,7 @@
 #include "PreComp.h"
 
 #define ARMOR_ID_ATTRIB							CONSTLIT("armorID")
-#define FORTIFICATION_ATTRIB					CONSTLIT("fortification")
+#define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
 #define LEVEL_ATTRIB               				CONSTLIT("level")
 #define NON_CRITICAL_ATTRIB						CONSTLIT("nonCritical")
 #define SPAN_ATTRIB               				CONSTLIT("span")

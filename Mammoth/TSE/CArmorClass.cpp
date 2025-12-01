@@ -22,7 +22,7 @@
 #define ENHANCEMENT_TYPE_ATTRIB					CONSTLIT("enhancementType")
 #define EMP_DAMAGE_ADJ_ATTRIB					CONSTLIT("EMPDamageAdj")
 #define EMP_IMMUNE_ATTRIB						CONSTLIT("EMPImmune")
-#define FORTIFICATION_ATTRIB					CONSTLIT("fortification")
+#define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define HP_BONUS_PER_CHARGE_ATTRIB				CONSTLIT("hpBonusPerCharge")
 #define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")

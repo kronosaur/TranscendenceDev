@@ -7,7 +7,7 @@
 
 #define ARMOR_ID_ATTRIB							CONSTLIT("armorID")
 #define COUNT_ATTRIB							CONSTLIT("count")
-#define FORTIFICATION_ATTRIB					CONSTLIT("fortification")
+#define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
 #define LEVEL_ATTRIB               				CONSTLIT("level")
 #define START_AT_ATTRIB            				CONSTLIT("startAt")
 

@@ -10,7 +10,7 @@
 
 #define ATTACH_TO_ATTRIB						CONSTLIT("attachTo")
 #define CLASS_ATTRIB							CONSTLIT("class")
-#define FORTIFICATION_ATTRIB					CONSTLIT("fortification")
+#define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define ID_ATTRIB								CONSTLIT("id")
 #define NAME_ATTRIB								CONSTLIT("name")
