@@ -179,6 +179,15 @@ void SDamageCtx::InitDamageEffects (const DamageDesc &DamageArg)
 	m_bTimeStop = (DamageArg.GetTimeStopDamageLevel() > 0);
 	}
 
+//	IsDamaging
+// 
+//	Check if this damage Ctx should be treated as a damaging effect
+//
+bool SDamageCtx::IsDamaging () const
+	{
+	return Damage.IsDamaging() || (iDamage && Damage.GetDamageType() != damageNull);
+	}
+
 void SDamageCtx::SetHint (EDamageHint iHint)
 
 //	SetHint

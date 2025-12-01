@@ -163,7 +163,7 @@ class DamageDesc
 		bool HasMiningDamage (void) const { return (m_sExtra.MiningAdj > 0); }
 		void InterpolateTo (const DamageDesc &End, Metric rSlider);
 		bool IsAutomatedWeapon (void) const { return (m_sExtra.fAutomatedWeapon ? true : false); }
-		bool IsDamaging (int iDamage = -1) const;
+		bool IsDamaging () const;
 		bool IsEmpty (void) const { return (m_Damage.IsEmpty() && m_iType == damageNull); }
 		bool IsEnergyDamage (void) const;
 		bool IsHostile (void) const;
@@ -326,7 +326,7 @@ struct SDamageCtx
 		static constexpr int DAMAGE_ADJ_HINT_THRESHOLD = 25;
 		static constexpr int WMD_HINT_THRESHOLD = 60;
 
-		SDamageCtx (void);
+		SDamageCtx ();
 		SDamageCtx (CSpaceObject *pObjHitArg, 
 				CWeaponFireDesc &DescArg, 
 				const CItemEnhancementStack *pEnhancementsArg, 
@@ -337,24 +337,25 @@ struct SDamageCtx
 				const CVector &vHitPosArg,
 				int iDamageArg = -1);
 		SDamageCtx (const DamageDesc &DamageArg);
-		~SDamageCtx (void);
+		~SDamageCtx ();
 
-		void ClearTimeStop (void) { m_bTimeStop = false; }
-		int GetBlindTime (void) const { return m_iBlindTime; }
-		CWeaponFireDesc &GetDesc (void) const { return *m_pDesc; }
-		int GetDeviceDisruptTime (void) const { return m_iDisruptTime; }
-		EDamageHint GetHint (void) const { return m_iHint; }
-		CSpaceObject *GetOrderGiver (void) const { return Attacker.GetOrderGiver(); }
-		int GetParalyzedTime (void) const { return m_iParalyzeTime; }
-		bool IsBlinded (void) const { return m_bBlind; }
-		bool IsDeviceDamaged (void) const { return m_bDeviceDamage; }
-		bool IsDeviceDisrupted (void) const { return m_bDeviceDisrupt; }
-		bool IsDisintegrated (void) const { return m_bDisintegrate; }
-		bool IsParalyzed (void) const { return m_bParalyze; }
-		bool IsRadioactive (void) const { return m_bRadioactive; }
-		bool IsShattered (void) const { return m_bShatter; }
-		bool IsShotReflected (void) const { return m_bReflect; }
-		bool IsTimeStopped (void) const { return m_bTimeStop; }
+		void ClearTimeStop () { m_bTimeStop = false; }
+		int GetBlindTime () const { return m_iBlindTime; }
+		CWeaponFireDesc &GetDesc () const { return *m_pDesc; }
+		int GetDeviceDisruptTime () const { return m_iDisruptTime; }
+		EDamageHint GetHint () const { return m_iHint; }
+		CSpaceObject *GetOrderGiver () const { return Attacker.GetOrderGiver(); }
+		int GetParalyzedTime () const { return m_iParalyzeTime; }
+		bool IsBlinded () const { return m_bBlind; }
+		bool IsDamaging () const;
+		bool IsDeviceDamaged () const { return m_bDeviceDamage; }
+		bool IsDeviceDisrupted () const { return m_bDeviceDisrupt; }
+		bool IsDisintegrated () const { return m_bDisintegrate; }
+		bool IsParalyzed () const { return m_bParalyze; }
+		bool IsRadioactive () const { return m_bRadioactive; }
+		bool IsShattered () const { return m_bShatter; }
+		bool IsShotReflected () const { return m_bReflect; }
+		bool IsTimeStopped () const { return m_bTimeStop; }
 		void SetBlinded (bool bValue = true) { m_bBlind = bValue; }
 		void SetBlindedTime (int iTime) { m_iBlindTime = iTime; }
 		void SetDeviceDamaged (bool bValue = true) { m_bDeviceDamage = bValue; }

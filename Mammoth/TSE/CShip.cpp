@@ -4357,7 +4357,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	to fire
 
 	bool bIsHostile = Ctx.Damage.IsHostile();
-	bool bIsDamaging = Ctx.Damage.IsDamaging(Ctx.iDamage);
+	bool bIsDamaging = Ctx.IsDamaging();
 
 	if (!(bIsDamaging || Ctx.Damage.GetDamageType() == damageNull) || GetSystem() == NULL)
 		return damageNoDamage;

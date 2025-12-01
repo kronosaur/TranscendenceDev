@@ -672,9 +672,9 @@ void DamageDesc::InterpolateTo (const DamageDesc &End, Metric rSlider)
 //	Optionally takes an arg iDamage. If this is supplied, it is used
 //  in place of the max value check.
 //
-bool DamageDesc::IsDamaging(int iDamage) const
+bool DamageDesc::IsDamaging() const
 	{
-	return ((m_Damage.GetMaxValue() || iDamage >= 1) && m_iType != damageNull)
+	return (m_Damage.GetMaxValue() && m_iType != damageNull)
 		//	similarly any hostile status/special effects also count
 		//	however, movement alone does not count as hostile
 		|| m_sExtra.EMPDamage
