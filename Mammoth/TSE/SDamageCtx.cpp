@@ -185,6 +185,10 @@ void SDamageCtx::InitDamageEffects (const DamageDesc &DamageArg)
 //
 bool SDamageCtx::IsDamaging () const
 	{
+	//	We check iDamage explicitly because we may be initialized with an invalid
+	//	DamageDesc, and some scripts are allowed to edit iDamage without changing
+	//	the DamageDesc.
+
 	return Damage.IsDamaging() || (iDamage && Damage.GetDamageType() != damageNull);
 	}
 
@@ -194,6 +198,10 @@ bool SDamageCtx::IsDamaging () const
 //
 bool SDamageCtx::IsDamageEventFiring () const
 	{
+	//	We check iDamage explicitly because we may be initialized with an invalid
+	//	DamageDesc, and some scripts are allowed to edit iDamage without changing
+	//	the DamageDesc.
+
 	return Damage.IsDamaging() || iDamage || Damage.GetDamageType() == damageNull;
 	}
 
