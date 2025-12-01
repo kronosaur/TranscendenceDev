@@ -6529,7 +6529,11 @@ void CShip::PointInObjectInit (SPointInObjectCtx &Ctx) const
 //	Initializes context for PointInObject (for improved performance in loops)
 
 	{
+	DEBUG_TRY
+
 	GetImage().PointInImageInit(Ctx, GetSystem()->GetTick(), m_Rotation.GetFrameIndex());
+
+	DEBUG_CATCH
 	}
 
 void CShip::ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program)
