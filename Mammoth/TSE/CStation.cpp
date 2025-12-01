@@ -2581,9 +2581,9 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	//	to fire
 
 	bool bIsHostile = Ctx.Damage.IsHostile();
-	bool bIsDamaging = Ctx.IsDamaging();
+	bool bFireDamageEvents = Ctx.IsDamageEventFiring();
 
-	if (!bIsDamaging && Ctx.Damage.GetDamageType() != damageNull)
+	if (!bFireDamageEvents)
 		{
 		if (IsImmutable())
 			return damageNoDamageNoPassthrough;

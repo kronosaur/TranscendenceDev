@@ -4353,13 +4353,13 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Short-circuit, only if there is absolutely nothing our
 	//	damage desc lets us do
 	// 
-	//	Null damage always is allowed through specifically for scripts
-	//	to fire
+	//	Null damage always is allowed through specifically for non-hostile
+	//	events to fire
 
 	bool bIsHostile = Ctx.Damage.IsHostile();
-	bool bIsDamaging = Ctx.IsDamaging();
+	bool bFireDamageEvents = Ctx.IsDamageEventFiring();
 
-	if (!(bIsDamaging || Ctx.Damage.GetDamageType() == damageNull) || GetSystem() == NULL)
+	if (!bFireDamageEvents || GetSystem() == NULL)
 		return damageNoDamage;
 
 	bool bIsPlayer = IsPlayer();
@@ -4470,7 +4470,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	// 
 	//	Skip for 0 damage, but allow null damage through to allow DamageExternalDevice to handle things.
 
-	if (bIsDamaging || Ctx.Damage.GetDamageType() == damageNull)
+	if (bFireDamageEvents)
 		{
 		for (CDeviceItem DeviceItem : GetDeviceSystem())
 			{

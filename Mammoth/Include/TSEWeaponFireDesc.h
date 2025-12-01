@@ -348,6 +348,7 @@ struct SDamageCtx
 		int GetParalyzedTime () const { return m_iParalyzeTime; }
 		bool IsBlinded () const { return m_bBlind; }
 		bool IsDamaging () const;
+		bool IsDamageEventFiring () const;
 		bool IsDeviceDamaged () const { return m_bDeviceDamage; }
 		bool IsDeviceDisrupted () const { return m_bDeviceDisrupt; }
 		bool IsDisintegrated () const { return m_bDisintegrate; }

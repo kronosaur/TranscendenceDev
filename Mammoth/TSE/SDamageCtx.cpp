@@ -188,6 +188,15 @@ bool SDamageCtx::IsDamaging () const
 	return Damage.IsDamaging() || (iDamage && Damage.GetDamageType() != damageNull);
 	}
 
+//	IsDamageEventFiring
+// 
+//	Check if this damage Ctx should run scripts for damaging effects
+//
+bool SDamageCtx::IsDamageEventFiring () const
+	{
+	return Damage.IsDamaging() || iDamage || Damage.GetDamageType() == damageNull;
+	}
+
 void SDamageCtx::SetHint (EDamageHint iHint)
 
 //	SetHint
