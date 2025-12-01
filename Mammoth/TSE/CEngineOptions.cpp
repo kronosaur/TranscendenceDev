@@ -347,31 +347,37 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_SHIP_COMPARTMENT);
 	double rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
-	if (!rValue)
+	if (rValue < 0.0)
 		rValue = 0.1;
 	m_rFortifiedShipCompartment = rValue;
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_MULTIHULL_STATION);
 	rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
-	if (!rValue)
+	if (rValue < 0.0)
 		rValue = 0.1;
 	m_rFortifiedStationMultihull = rValue;
 
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_STATION);
+	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
+	if (rValue < 0.0)
+		rValue = 1.0;
+	m_rFortifiedStation = rValue;
+
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_ARMOR_SEGMENT);
 	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (!rValue)
+	if (rValue < 0.0)
 		rValue = 1.0;
 	m_rFortifiedArmorSlot = rValue;
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_ARMOR);
 	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (!rValue)
+	if (rValue < 0.0)
 		rValue = 1.0;
 	m_rFortifiedArmor = rValue;
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_SHIELD);
 	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (!rValue)
+	if (rValue < 0.0)
 		rValue = 1.0;
 	m_rFortifiedShield = rValue;
 
