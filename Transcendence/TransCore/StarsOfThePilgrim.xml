@@ -52,8 +52,22 @@
 			-->
 			<Constant id="core.defaultCorewardNode">		'G2</Constant>
 
+			<!-- Defaults for WMD Fortification Adj (Adj at WMD0) -->
+
+			<Constant id="core.WMDFortified.ShipCompartment">	0.1</Constant>
+			<Constant id="core.WMDFortified.MultihullStation">	0.1</Constant>
+			<Constant id="core.WMDFortified.Station">			1.0</Constant>
+			<Constant id="core.WMDFortified.ArmorSegment">		1.0</Constant>
+			<Constant id="core.WMDFortified.Armor">				1.0</Constant>
+			<Constant id="core.WMDFortified.Shield">			1.0</Constant>
+
+			<!-- Defaults for shot interaction -->
+
 			<Constant id="core.defaultInteraction">			Nil</Constant>
 			<Constant id="core.defaultShotHP">				Nil</Constant>
+
+			<!-- Defaults for UI -->
+
 			<Constant id="core.hideDisintegrationImmune">	Nil</Constant>
 			<Constant id="core.hideIonizeImmune">			Nil</Constant>
 			<Constant id="core.hideRadiationImmune">		Nil</Constant>
