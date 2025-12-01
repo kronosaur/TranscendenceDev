@@ -649,6 +649,31 @@ class CDamageAdjDesc
 		const CDamageAdjDesc *m_pDefault;		//	Default table
 	};
 
+class CMassDestructionDesc
+	{
+	public:
+		static constexpr int MAX_WMD_LEVEL = 7;
+		static constexpr int MAX_WMD_LEVEL_COUNT = 8;
+
+		int GetWMDAdj (int iLevel) const;
+		int GetWMDLabel (int iLevel) const;
+		ALERROR InitFromArray (const TArray<int>& Levels);
+		ALERROR InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAttrib);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
+
+		static DamageTypes ParseDamageTypeFromProperty (const CString &sProperty);
+
+	private:
+
+		struct SWMDLevelDesc
+			{
+			int iAdj = 0;							//	base % adjustment of damage
+			int iLabel = 0;							//	number to display in UI
+			};
+
+		SWMDLevelDesc m_Desc[MAX_WMD_LEVEL_COUNT];	//	Descriptor for computing adjustment
+	};
+
 class CMiningDamageLevelDesc
 	{
 	public:
