@@ -14,6 +14,7 @@
 #define DAMAGE_ADJ_LEVEL_ATTRIB					CONSTLIT("damageAdjLevel")
 #define DEPLETION_DELAY_ATTRIB					CONSTLIT("depletionDelay")
 #define FLASH_EFFECT_ATTRIB						CONSTLIT("flashEffect")
+#define FORTIFICATION_ATTRIB					CONSTLIT("fortification")
 #define HAS_NON_REGEN_HP_ATTRIB					CONSTLIT("hasNonRegenHP")
 #define HIT_EFFECT_ATTRIB						CONSTLIT("hitEffect")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
@@ -762,6 +763,10 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 		for (i = 0; i < damageCount; i++)
 			pShield->m_iAbsorbAdj[i] = 100;
 		}
+
+	//	Load WMD Fortification
+
+	pShield->m_rFortification = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
 
 	//	Load the weapon suppress
 

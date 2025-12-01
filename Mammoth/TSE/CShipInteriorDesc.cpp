@@ -10,6 +10,7 @@
 
 #define ATTACH_TO_ATTRIB						CONSTLIT("attachTo")
 #define CLASS_ATTRIB							CONSTLIT("class")
+#define FORTIFICATION_ATTRIB					CONSTLIT("fortification")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define ID_ATTRIB								CONSTLIT("id")
 #define NAME_ATTRIB								CONSTLIT("name")
@@ -353,6 +354,7 @@ ALERROR CShipInteriorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			//	Hit points
 
 			Comp.iMaxHP = pComp->GetAttributeIntegerBounded(HIT_POINTS_ATTRIB, 0, -1, 0);
+			Comp.rFortifiedRatio = pComp->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
 
 			//	Position and size
 

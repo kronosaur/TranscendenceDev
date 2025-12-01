@@ -331,13 +331,14 @@ struct SCompartmentDesc
 	CShipClassRef Class;					//	For attached sections
 	ECompartmentTypes iType;				//	Type of compartment
 	int iMaxHP;								//	Initial HP (always 0 for attached)
+	Metric rFortifiedRatio;					//	Adjusts WMD adj curve from the WMD0 end
 	RECT rcPos;								//	Position and size relative to image
 
 	CString sAttachID;						//	ID of compartment we're attached to (NULL = root object)
 	C3DObjectPos AttachPos;					//	Attach position relative to sAttachID
 
-	DWORD fDefault:1;						//	Default compartment (any space not used by another compartment)
-	DWORD fIsAttached:1;					//	TRUE if this is an attached section (a separate CSpaceObject)
+	DWORD fDefault:1 = false;				//	Default compartment (any space not used by another compartment)
+	DWORD fIsAttached:1 = false;			//	TRUE if this is an attached section (a separate CSpaceObject)
 	};
 
 class CShipInteriorDesc

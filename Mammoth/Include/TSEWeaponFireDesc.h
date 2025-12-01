@@ -345,6 +345,7 @@ struct SDamageCtx
 		EDamageHint GetHint (void) const { return m_iHint; }
 		CSpaceObject *GetOrderGiver (void) const { return Attacker.GetOrderGiver(); }
 		int GetParalyzedTime (void) const { return m_iParalyzeTime; }
+		Metric CalcWMDFortificationAdj (Metric rWMD0FortificationAdj = 0.1);
 		bool IsBlinded (void) const { return m_bBlind; }
 		bool IsDeviceDamaged (void) const { return m_bDeviceDamage; }
 		bool IsDeviceDisrupted (void) const { return m_bDeviceDisrupt; }
@@ -392,6 +393,7 @@ struct SDamageCtx
 		int iShieldDamage = 0;						//	Damage taken by shields
 		int iOriginalAbsorb = 0;					//	Computed absorb value, if shot had not been reflected
 		int iOriginalShieldDamage = 0;				//	Computed shield damage value, if shot had not been reflected
+		Metric rArmorExternFortification = 1.0;		//	External armor fortification (Ex, from a segment slot)
 		int iArmorAbsorb = 0;						//	Damage absorbed by armor
 		int iArmorDamage = 0;						//	Damage taken by armor
 

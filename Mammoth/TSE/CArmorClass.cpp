@@ -22,6 +22,7 @@
 #define ENHANCEMENT_TYPE_ATTRIB					CONSTLIT("enhancementType")
 #define EMP_DAMAGE_ADJ_ATTRIB					CONSTLIT("EMPDamageAdj")
 #define EMP_IMMUNE_ATTRIB						CONSTLIT("EMPImmune")
+#define FORTIFICATION_ATTRIB					CONSTLIT("fortification")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define HP_BONUS_PER_CHARGE_ATTRIB				CONSTLIT("hpBonusPerCharge")
 #define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")
@@ -758,6 +759,18 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	const CItem &Item = ItemCtx.GetItem();
 	const CArmorItem ArmorItem = Item.AsArmorItemOrThrow();
 
+	//	Adjust for out item-level WMD Fortification:
+
+	Metric rFortification = Ctx.rArmorExternFortification;
+	if (m_rFortification == -1.0)
+		rFortification *= g_pUniverse->GetEngineOptions().GetDefaultFortifiedArmor();
+	else
+		rFortification *= m_rFortification;
+
+	Metric rFortificationAdj = Ctx.CalcWMDFortificationAdj(rFortification);
+
+	int iDamage = mathAdjust(Ctx.iDamage, mathRound(100 * rFortificationAdj));
+
 	//	Adjust for special armor damage:
 	//
 	//	<0	=	2.5x damage
@@ -768,14 +781,16 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	int iDamageLevel = Ctx.Damage.GetArmorDamageLevel();
 	if (iDamageLevel > 0)
-		Ctx.iArmorDamage = mathAdjust(Ctx.iDamage, CalcArmorDamageAdj(ArmorItem, Ctx.Damage));
-	else
-		Ctx.iArmorDamage = Ctx.iDamage;
+		iDamage = mathAdjust(iDamage, CalcArmorDamageAdj(ArmorItem, Ctx.Damage));
 
 	//	Adjust for damage type
 
 	int iDamageAdj = GetDamageAdj(ArmorItem, Ctx.Damage);
-	Ctx.iArmorDamage = mathAdjust(Ctx.iArmorDamage, iDamageAdj);
+	iDamage = mathAdjust(iDamage, iDamageAdj);
+
+	//	Store our damage
+
+	Ctx.iArmorDamage = iDamage;
 	}
 
 int CArmorClass::CalcArmorDamageAdj (const CArmorItem &ArmorItem, const DamageDesc &Damage) const
@@ -1489,6 +1504,7 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	pArmor->m_iArmorCompleteBonus = pDesc->GetAttributeIntegerBounded(COMPLETE_BONUS_ATTRIB, 0);
 	pArmor->m_iHPBonusPerCharge = pDesc->GetAttributeIntegerBounded(HP_BONUS_PER_CHARGE_ATTRIB, 0, -1, 0);
 	pArmor->m_iBalanceAdj = pDesc->GetAttributeIntegerBounded(BALANCE_ADJ_ATTRIB, -200, 200, 0);
+	pArmor->m_rFortification = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
 
 	//	Regen
 

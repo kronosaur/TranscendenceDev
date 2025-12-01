@@ -16,6 +16,12 @@ class CEngineOptions
 		const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ArmorDamageAdj[iLevel - 1]; }
 		int GetDefaultInteraction (void) const { return m_iDefaultInteraction; }
 		int GetDefaultShotHP (void) const { return m_iDefaultShotHP; }
+		Metric GetDefaultFortifiedShipCompartment () const { return m_rFortifiedShipCompartment; }
+		Metric GetDefaultFortifiedStationMultihull () const { return m_rFortifiedStationMultihull; }
+		Metric GetDefaultFortifiedStation () const { return m_rFortifiedStation; }
+		Metric GetDefaultFortifiedArmor () const { return m_rFortifiedArmor; }
+		Metric GetDefaultFortifiedShield () const { return m_rFortifiedShield; }
+		Metric GetDefaultFortifiedArmorSlot () const { return m_rFortifiedArmorSlot; }
 		const CMiningDamageLevelDesc *GetMiningMaxOreLevels (void) const { return &m_MiningDamageMaxOreLevels; }
 		const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ShieldDamageAdj[iLevel - 1]; }
 		bool HidesArmorImmunity (SpecialDamageTypes iSpecial) const;
@@ -55,6 +61,15 @@ class CEngineOptions
 
 		int m_iDefaultInteraction = -1;
 		int m_iDefaultShotHP = -1;
+
+		//	Default WMD/Fortified behavior
+
+		double m_rFortifiedShipCompartment = 1.0;
+		double m_rFortifiedStationMultihull = 1.0;
+		double m_rFortifiedStation = 1.0;
+		double m_rFortifiedArmor = 1.0;
+		double m_rFortifiedShield = 1.0;
+		double m_rFortifiedArmorSlot = 1.0;
 
 		//	Default Item Stat Card UI
 

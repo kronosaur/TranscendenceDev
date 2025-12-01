@@ -180,6 +180,7 @@ class CArmorClass
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
 		CString m_sMassClass;					//	Computed mass class (computed in Bind)
 		int m_iBalanceAdj;						//	Manual adjustment to balance calculation
+		Metric m_rFortification = 1.0;			//	Fortification Adj for WMD curve on this armor
 
 		DWORD m_fPhotoRecharge:1;				//	TRUE if refuels when near a star
 		DWORD m_fShieldInterference:1;			//	TRUE if armor interferes with shields
@@ -221,8 +222,22 @@ class CShipArmorSegmentDesc
 		int GetLevel (void) const;
 		int GetSpan (void) const { return m_iSpan; }
 		int GetStartAngle (void) const { return m_iStartAt; }
-		ALERROR Init (int iStartAt, int iSpan, DWORD dwArmorUNID, int iLevel, const CRandomEnhancementGenerator &Enhancement);
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc, DWORD dwDefaultUNID, int iDefaultLevel, int iDefaultAngle, const CRandomEnhancementGenerator &DefaultEnhancement, int *retiSpan = NULL);
+		ALERROR Init (
+			int iStartAt,
+			int iSpan,
+			DWORD dwArmorUNID,
+			int iLevel,
+			const CRandomEnhancementGenerator &Enhancement,
+			Metric rFortification);
+		ALERROR InitFromXML (
+			SDesignLoadCtx &Ctx,
+			const CXMLElement &Desc,
+			DWORD dwDefaultUNID,
+			int iDefaultLevel,
+			int iDefaultAngle,
+			const CRandomEnhancementGenerator &DefaultEnhancement,
+			Metric rDefaultFortification,
+			int *retiSpan = NULL);
 
 		static const CShipArmorSegmentDesc m_Null;
 
@@ -235,6 +250,7 @@ class CShipArmorSegmentDesc
 		int m_iLevel = 1;					//  For scalable armor
 		CRandomEnhancementGenerator m_Enhanced;//	Mods
 		DWORD m_dwAreaSet = 0;				//	Areas that this section protects
+		Metric m_rFortified = 1.0;		//	Adjusts WMD adj curve from the WMD0 end
 	};
 
 class CShipArmorDesc

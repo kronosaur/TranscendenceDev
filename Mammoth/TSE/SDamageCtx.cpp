@@ -78,6 +78,30 @@ SDamageCtx::~SDamageCtx (void)
 		delete m_pDesc;
 	}
 
+Metric SDamageCtx::CalcWMDFortificationAdj(Metric rWMD0FortificationAdj)
+	{
+	//	We only adjust curves for WMD lower than 7, max WMD is always pinned.
+
+	if (Damage.GetMassDestructionLevel() == 7)
+		return 1.0;
+
+	//	Adjust for level 0 is trivial, its just rWMD0FortificationAdj
+
+	if (Damage.GetMassDestructionLevel() == 0)
+		return rWMD0FortificationAdj;
+
+	//	Otherwise we need to do a linear transform
+	//	The math is exploded for debug builds, optimized builds collapse a bunch of this math;
+
+	Metric rBaseRange = 1.0 - ((Metric)Damage.GetMassDestructionAdjFromValue(0) / 100.0);
+	Metric rOutRange = 1.0 - rWMD0FortificationAdj;
+	Metric rBasePos = 1.0 - ((Metric)Damage.GetMassDestructionAdj() / 100.0);
+	Metric rTransform = rOutRange / rBaseRange;
+	Metric rAdj = 1.0 - (rBasePos * rTransform);
+
+	return rAdj;
+	}
+
 void SDamageCtx::InitDamageEffects (const DamageDesc &DamageArg)
 
 //	InitDamageEffects

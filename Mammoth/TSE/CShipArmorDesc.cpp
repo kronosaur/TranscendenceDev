@@ -7,6 +7,7 @@
 
 #define ARMOR_ID_ATTRIB							CONSTLIT("armorID")
 #define COUNT_ATTRIB							CONSTLIT("count")
+#define FORTIFICATION_ATTRIB					CONSTLIT("fortification")
 #define LEVEL_ATTRIB               				CONSTLIT("level")
 #define START_AT_ATTRIB            				CONSTLIT("startAt")
 
@@ -198,10 +199,12 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (error = SegEnhancement.InitFromXML(Ctx, pDesc))
 			return error;
 
+		Metric rFortifiedRatio = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
+
 		m_Segments.InsertEmpty(iSegCount);
 		for (int i = 0; i < iSegCount; i++)
 			{
-			if (error = m_Segments[i].Init(iSegPos, iSegSize, dwSegUNID, iSegLevel, SegEnhancement))
+			if (error = m_Segments[i].Init(iSegPos, iSegSize, dwSegUNID, iSegLevel, SegEnhancement, rFortifiedRatio))
 				return error;
 
 			iSegPos += iSegSize;
@@ -225,6 +228,8 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (error = DefaultEnhancement.InitFromXML(Ctx, pDesc))
 			return error;
 
+		Metric rDefaultFortifiedRatio = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
+
 		m_Segments.InsertEmpty(pDesc->GetContentElementCount());
 		for (int i = 0; i < pDesc->GetContentElementCount(); i++)
 			{
@@ -233,7 +238,7 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				throw CException(ERR_FAIL);
 
 			int iSpan;
-			if (error = m_Segments[i].InitFromXML(Ctx, *pSegment, dwDefaultSegUNID, iDefaultLevel, iAngle, DefaultEnhancement, &iSpan))
+			if (error = m_Segments[i].InitFromXML(Ctx, *pSegment, dwDefaultSegUNID, iDefaultLevel, iAngle, DefaultEnhancement, rDefaultFortifiedRatio, &iSpan))
 				return error;
 
 			iAngle += iSpan;
