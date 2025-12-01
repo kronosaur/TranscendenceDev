@@ -5243,10 +5243,14 @@ void CStation::PointInObjectInit (SPointInObjectCtx &Ctx) const
 //	Initializes context for PointInObject (for improved performance in loops)
 
 	{
+	DEBUG_TRY
+
 	int iTick, iVariant;
 	Ctx.pObjImage = &GetImage(false, &iTick, &iVariant);
 
 	Ctx.pObjImage->PointInImageInit(Ctx, iTick, iVariant);
+
+	DEBUG_CATCH
 	}
 
 void CStation::RaiseAlert (CSpaceObject *pTarget)

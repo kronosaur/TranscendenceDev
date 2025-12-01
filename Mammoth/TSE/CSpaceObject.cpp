@@ -5646,6 +5646,8 @@ bool CSpaceObject::IntersectionTestScan(const CSpaceObject* pTarget, const CVect
 //		retiTriangulationDir: -1
 
 	{
+	DEBUG_TRY
+
 	SPointInObjectCtx PiOCtx;
 	pTarget->PointInObjectInit(PiOCtx);
 
@@ -5876,6 +5878,8 @@ bool CSpaceObject::IntersectionTestScan(const CSpaceObject* pTarget, const CVect
 		}
 
 	return false;
+
+	DEBUG_CATCH
 	}
 
 bool CSpaceObject::ImagesIntersect (const CObjectImageArray &Image1, int iTick1, int iRotation1, const CVector &vPos1,
