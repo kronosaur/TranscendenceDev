@@ -331,7 +331,6 @@ struct SCompartmentDesc
 	CShipClassRef Class;					//	For attached sections
 	ECompartmentTypes iType;				//	Type of compartment
 	int iMaxHP;								//	Initial HP (always 0 for attached)
-	Metric rFortifiedRatio;					//	Adjusts WMD adj curve from the WMD0 end
 	RECT rcPos;								//	Position and size relative to image
 
 	CString sAttachID;						//	ID of compartment we're attached to (NULL = root object)
@@ -350,14 +349,15 @@ class CShipInteriorDesc
 		void CalcCompartmentPositions (int iScale, TArray<CVector> &Result) const;
 		int CalcImageSize (CShipClass *pClass, CVector *retvOrigin = NULL) const;
 		void DebugPaint (CG32bitImage &Dest, int x, int y, int iRotation, int iScale) const;
-		int GetCount (void) const { return m_Compartments.GetCount(); }
+		int GetCount () const { return m_Compartments.GetCount(); }
 		const SCompartmentDesc &GetCompartment (int iIndex) const { return m_Compartments[iIndex]; }
-		int GetHitPoints (void) const;
+		Metric GetFortificationAdj () const;
+		int GetHitPoints () const;
 		const TArray<int> &GetPaintOrder (void) const { return m_PaintOrder; }
-		bool HasAttached (void) const { return (m_fHasAttached ? true : false); }
+		bool HasAttached () const { return (m_fHasAttached ? true : false); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		bool IsEmpty (void) const { return m_Compartments.GetCount() == 0; }
-		bool IsMultiHull (void) const { return (m_fIsMultiHull ? true : false); }
+		bool IsEmpty () const { return m_Compartments.GetCount() == 0; }
+		bool IsMultiHull () const { return (m_fIsMultiHull ? true : false); }
 
 		static ECompartmentTypes ParseCompartmentType (const CString &sValue);
 
@@ -366,6 +366,7 @@ class CShipInteriorDesc
 
 		TArray<SCompartmentDesc> m_Compartments;
 		TArray<int> m_PaintOrder;
+		Metric m_rFortified = 0.1;					//	Adjusts WMD adj curve from the WMD0 end
 
 		DWORD m_fHasAttached:1;
 		DWORD m_fIsMultiHull:1;

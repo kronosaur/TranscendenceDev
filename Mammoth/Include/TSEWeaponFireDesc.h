@@ -346,6 +346,7 @@ struct SDamageCtx
 		CSpaceObject *GetOrderGiver (void) const { return Attacker.GetOrderGiver(); }
 		int GetParalyzedTime (void) const { return m_iParalyzeTime; }
 		Metric CalcWMDFortificationAdj (Metric rWMD0FortificationAdj = 0.1);
+		static Metric CalcWMDFortificationAdjFromLevel (int iLevel, Metric rWMD0FortificationAdj = 0.1);
 		bool IsBlinded (void) const { return m_bBlind; }
 		bool IsDeviceDamaged (void) const { return m_bDeviceDamage; }
 		bool IsDeviceDisrupted (void) const { return m_bDeviceDisrupt; }

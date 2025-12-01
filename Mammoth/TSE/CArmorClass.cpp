@@ -762,7 +762,7 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	//	Adjust for out item-level WMD Fortification:
 
 	Metric rFortification = Ctx.rArmorExternFortification;
-	if (m_rFortification == -1.0)
+	if (m_rFortification < 0.0)
 		rFortification *= g_pUniverse->GetEngineOptions().GetDefaultFortifiedArmor();
 	else
 		rFortification *= m_rFortification;

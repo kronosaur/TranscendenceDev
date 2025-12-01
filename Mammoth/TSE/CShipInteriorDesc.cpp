@@ -290,6 +290,13 @@ void CShipInteriorDesc::DebugPaint (CG32bitImage &Dest, int x, int y, int iRotat
 		}
 	}
 
+Metric CShipInteriorDesc::GetFortificationAdj() const
+	{
+	if (g_pUniverse)
+		return m_rFortified < 0 ? g_pUniverse->GetEngineOptions().GetDefaultFortifiedShipCompartment() : m_rFortified;
+	return 0.1;
+	}
+
 int CShipInteriorDesc::GetHitPoints (void) const
 
 //	GetHitPoints
@@ -318,6 +325,7 @@ ALERROR CShipInteriorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_fHasAttached = false;
 	m_fIsMultiHull = false;
+	m_rFortified = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
 
 	//	Keep a temporary map of IDs to section
 
@@ -354,7 +362,6 @@ ALERROR CShipInteriorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			//	Hit points
 
 			Comp.iMaxHP = pComp->GetAttributeIntegerBounded(HIT_POINTS_ATTRIB, 0, -1, 0);
-			Comp.rFortifiedRatio = pComp->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
 
 			//	Position and size
 

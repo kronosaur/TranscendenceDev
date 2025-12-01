@@ -24,21 +24,22 @@ class CStationHullDesc
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		int CalcDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) const;
 		Metric CalcHitsToDestroy (int iLevel) const;
-		bool CanBeHit (void) const { return !m_bCannotBeHit; }
-		bool CanBeWrecked (void) const { return (!IsImmutable() && GetMaxHitPoints() > 0); }
+		bool CanBeHit () const { return !m_bCannotBeHit; }
+		bool CanBeWrecked () const { return (!IsImmutable() && GetMaxHitPoints() > 0); }
 		bool FindDataField (const CString &sField, CString *retsValue) const;
-		CArmorClass *GetArmorClass (void) const { return (m_pArmor ? m_pArmor->GetArmorClass() : NULL); }
-		CItem GetArmorItem (void) const;
-		int GetArmorLevel (void) const;
-		int GetHitPoints (void) const { return m_iHitPoints; }
-		EHullTypes GetHullType (void) const { return m_iType; }
-		int GetMaxHitPoints (void) const { return m_iMaxHitPoints; }
-		int GetMaxStructuralHP (void) const { return m_iMaxStructuralHP; }
-		const CRegenDesc &GetRegenDesc (void) const { return m_Regen; }
-		int GetStructuralHP (void) const { return m_iStructuralHP; }
+		CArmorClass *GetArmorClass () const { return (m_pArmor ? m_pArmor->GetArmorClass() : NULL); }
+		CItem GetArmorItem () const;
+		int GetArmorLevel () const;
+		Metric GetFortificationAdj (bool bMultiHull = true) const;
+		int GetHitPoints () const { return m_iHitPoints; }
+		EHullTypes GetHullType () const { return m_iType; }
+		int GetMaxHitPoints () const { return m_iMaxHitPoints; }
+		int GetMaxStructuralHP () const { return m_iMaxStructuralHP; }
+		const CRegenDesc &GetRegenDesc () const { return m_Regen; }
+		int GetStructuralHP () const { return m_iStructuralHP; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bMultiHullDefault = true);
 		ALERROR InitFromStationXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		bool IsImmutable (void) const { return m_bImmutable; }
+		bool IsImmutable () const { return m_bImmutable; }
 		void SetImmutable (bool bValue = true) { m_bImmutable = bValue; }
 
 		static CString GetID (EHullTypes iType);

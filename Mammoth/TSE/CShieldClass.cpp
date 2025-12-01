@@ -156,9 +156,18 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 		return false;
 		}
 
+	//	Calculate how much extra mitigation we get from any fortification we have
+
+	Metric rFortification;
+	if (m_rFortification < 0.0)
+		rFortification = g_pUniverse->GetEngineOptions().GetDefaultFortifiedArmor();
+	else
+		rFortification = m_rFortification;
+	Metric rFortificationAdj = Ctx.CalcWMDFortificationAdj(rFortification);
+
 	//	Calculate how much we will absorb
 
-	Ctx.iAbsorb = mathAdjust(Ctx.iDamage, GetAbsorbAdj(DeviceItem, Enhancements, Ctx.Damage));
+	Ctx.iAbsorb = mathRound(mathAdjust(Ctx.iDamage, GetAbsorbAdj(DeviceItem, Enhancements, Ctx.Damage)) * rFortificationAdj);
 
 	//	Compute how much damage we take (based on the type of damage)
 

@@ -207,6 +207,13 @@ int CStationHullDesc::GetArmorLevel (void) const
 		return 1;
 	}
 
+Metric CStationHullDesc::GetFortificationAdj(bool bMultiHull) const
+	{
+	if (g_pUniverse)
+		return m_rFortified < 0 ? (bMultiHull ? g_pUniverse->GetEngineOptions().GetDefaultFortifiedStationMultihull() : g_pUniverse->GetEngineOptions().GetDefaultFortifiedStation()) : m_rFortified;
+	return bMultiHull ? 0.1 : 1.0;
+	}
+
 CString CStationHullDesc::GetID (EHullTypes iType)
 
 //	GetID

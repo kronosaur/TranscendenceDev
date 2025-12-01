@@ -409,7 +409,7 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 			iHint = EDamageHint::useMiningOrWMD;
 			break;
 
-		//	Underground stations must be attacked with  mining damage.
+		//	Underground stations must be attacked with mining damage.
 
 		case CStationHullDesc::hullUnderground:
 			iSpecialDamage = Ctx.Damage.GetMiningDamage();
@@ -433,7 +433,8 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 
 	else
 		{
-		int iDamageAdj = DamageDesc::GetMassDestructionAdjFromValue(iSpecialDamage);
+		Metric rFortificationAdj = Ctx.CalcWMDFortificationAdjFromLevel(iSpecialDamage, GetHullDesc().GetFortificationAdj(IsMultiHull()));
+		int iDamageAdj = (int)(100 * rFortificationAdj);
 		int iDamage = mathAdjust(Ctx.iDamage, iDamageAdj);
 
 		//	If we're not making progress, then return a hint about what to do.
@@ -504,7 +505,8 @@ int CStation::CalcAdjustedDamageAbandoned (SDamageCtx &Ctx) const
 
 	else
 		{
-		int iDamageAdj = DamageDesc::GetMassDestructionAdjFromValue(iSpecialDamage);
+		Metric rFortificationAdj = Ctx.CalcWMDFortificationAdjFromLevel(iSpecialDamage, GetHullDesc().GetFortificationAdj(IsMultiHull()));
+		int iDamageAdj = (int)(100 * rFortificationAdj);
 		return mathAdjust(Ctx.iDamage, iDamageAdj);
 		}
 	}

@@ -215,13 +215,14 @@ class CShipArmorSegmentDesc
 		void ApplyOverride (const CShipArmorSegmentDesc &Override);
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		bool CreateArmorItem (CItem *retItem, CString *retsError = NULL) const;
-		CArmorClass *GetArmorClass (void) const { return m_pArmor; }
-		CItem GetArmorItem (void) const;
-		int GetCenterAngle (void) const { return AngleMod(m_iStartAt + m_iSpan / 2); }
-		DWORD GetCriticalArea (void) const { return m_dwAreaSet; }
-		int GetLevel (void) const;
-		int GetSpan (void) const { return m_iSpan; }
-		int GetStartAngle (void) const { return m_iStartAt; }
+		CArmorClass *GetArmorClass () const { return m_pArmor; }
+		CItem GetArmorItem () const;
+		int GetCenterAngle () const { return AngleMod(m_iStartAt + m_iSpan / 2); }
+		DWORD GetCriticalArea () const { return m_dwAreaSet; }
+		Metric GetFortificationAdj () const { return m_rFortified; }
+		int GetLevel () const;
+		int GetSpan () const { return m_iSpan; }
+		int GetStartAngle () const { return m_iStartAt; }
 		ALERROR Init (
 			int iStartAt,
 			int iSpan,
