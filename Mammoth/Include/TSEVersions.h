@@ -5,7 +5,7 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							58;
+constexpr DWORD API_VERSION =							59;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
 constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 
@@ -805,6 +805,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //					from non-WMD weapons than high-WMD weapons)
 //				Default: reads adventure default (Default: 1.0 for single-null stations, 0.1 for multihull/asteroid*/cavern*)
 //					*asteroid and *cavern hull types use mining damage for the calculations instead of or alongside WMD
+//
+//	 59: 2.0 Alpha 9
+//
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
