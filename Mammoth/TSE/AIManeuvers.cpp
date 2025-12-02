@@ -697,7 +697,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	If we're attacking a static or non-moving target then find a good spot
 			//	and shoot from there.
 
-			else if (!(pTarget->CanThrust() || pTarget->GetVel().Length2()))
+			else if (!(pTarget->CanThrust() || pTarget->GetVel().Length2() > g_Epsilon))
 				{
 				int iClock = pShip->GetUniverse().GetTicks() / (170 + pShip->GetDestiny() / 3);
 				int iAngle = pShip->AlignToRotationAngle((pShip->GetDestiny() + (iClock * 141 * (1 + pShip->GetDestiny()))) % 360);
@@ -811,7 +811,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	NOTE: We need to check this before the code below because otherwise we
 			//	won't get here.
 
-			else if (!(pTarget->CanThrust() || pTarget->GetVel().Length2()))
+			else if (!(pTarget->CanThrust() || pTarget->GetVel().Length2() > g_Epsilon))
 				{
 				int iClock = pShip->GetUniverse().GetTicks() / (170 + pShip->GetDestiny() / 3);
 				int iAngle = pShip->AlignToRotationAngle((pShip->GetDestiny() + (iClock * 141 * (1 + pShip->GetDestiny()))) % 360);
@@ -869,7 +869,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 					//	Maneuver to that point - cheat a little if the target is stationary to dampen our movement.
 
-					vDirection = CalcManeuverFormation(pShip, vPos, vVel, 0, pTarget->GetVel().Length2() ? 0.0 : CHEAT_FORMATION_FACTOR);
+					vDirection = CalcManeuverFormation(pShip, vPos, vVel, 0, pTarget->GetVel().Length2() > g_Epsilon ? 0.0 : CHEAT_FORMATION_FACTOR);
 					}
 
 				//	Otherwise, we just try to close as best as possible
@@ -963,7 +963,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	it above).
 			//	Cheat a little if the target cant move or is stationary to dampen our movements
 
-			vDirection = CalcManeuverFormation(pShip, vPos, pTarget->GetVel(), iTargetAngle, pTarget->CanThrust() && pTarget->GetVel().Length2() ? 0.0 : CHEAT_FORMATION_FACTOR);
+			vDirection = CalcManeuverFormation(pShip, vPos, pTarget->GetVel(), iTargetAngle, pTarget->CanThrust() && pTarget->GetVel().Length2() > g_Epsilon ? 0.0 : CHEAT_FORMATION_FACTOR);
 
 			//	We don't want to thrust unless we're in position
 
