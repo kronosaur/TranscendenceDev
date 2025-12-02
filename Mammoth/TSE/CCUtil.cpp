@@ -624,7 +624,7 @@ DamageTypes GetDamageTypeFromArg (CCodeChain &CC, ICCItem *pArg)
 	if (pArg->IsInteger())
 		{
 		int iDamage = pArg->GetIntegerValue();
-		if (iDamage < damageGeneric || iDamage >= damageCount)
+		if (iDamage < damageMin || iDamage > damageMax)
 			return damageError;
 
 		return (DamageTypes)iDamage;

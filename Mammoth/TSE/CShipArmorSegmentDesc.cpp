@@ -6,6 +6,7 @@
 #include "PreComp.h"
 
 #define ARMOR_ID_ATTRIB							CONSTLIT("armorID")
+#define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
 #define LEVEL_ATTRIB               				CONSTLIT("level")
 #define NON_CRITICAL_ATTRIB						CONSTLIT("nonCritical")
 #define SPAN_ATTRIB               				CONSTLIT("span")
@@ -120,7 +121,7 @@ int CShipArmorSegmentDesc::GetLevel (void) const
     return (m_iLevel != -1 ? m_iLevel : m_pArmor->GetItemType()->GetLevel());
     }
 
-ALERROR CShipArmorSegmentDesc::Init (int iStartAt, int iSpan, DWORD dwArmorUNID, int iLevel, const CRandomEnhancementGenerator &Enhancement)
+ALERROR CShipArmorSegmentDesc::Init (int iStartAt, int iSpan, DWORD dwArmorUNID, int iLevel, const CRandomEnhancementGenerator &Enhancement, Metric rFortification)
 
 //  Init
 //
@@ -133,6 +134,7 @@ ALERROR CShipArmorSegmentDesc::Init (int iStartAt, int iSpan, DWORD dwArmorUNID,
     m_iLevel = iLevel;
     m_Enhanced = Enhancement;
     m_dwAreaSet = CShipClass::sectCritical;
+	m_rFortified = rFortification;
 
     return NOERROR;
     }
@@ -142,7 +144,8 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (SDesignLoadCtx &Ctx,
 											DWORD dwDefaultUNID, 
 											int iDefaultLevel, 
 											int iDefaultAngle, 
-											const CRandomEnhancementGenerator &DefaultEnhancement, 
+											const CRandomEnhancementGenerator &DefaultEnhancement,
+											Metric rDefaultFortification,
 											int *retiSpan)
 
 //  InitFromXML
@@ -177,6 +180,8 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (SDesignLoadCtx &Ctx,
 		m_Enhanced = DefaultEnhancement;
 
 	m_dwAreaSet = ParseNonCritical(Desc.GetAttribute(NON_CRITICAL_ATTRIB));
+
+	m_rFortified = Desc.GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
 
     return NOERROR;
     }

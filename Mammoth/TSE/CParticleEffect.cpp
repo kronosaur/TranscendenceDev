@@ -412,14 +412,19 @@ void CParticleEffect::CreateGroup (SParticleType *pType, int iCount, SParticleAr
 		*retpGroup = pGroup;
 	}
 
-EDamageResults CParticleEffect::OnDamage (SDamageCtx &Ctx)
-
 //	Damage
 //
 //	Damage the particle field
+//
+EDamageResults CParticleEffect::OnDamage (SDamageCtx &Ctx)
 
 	{
 	DEBUG_TRY
+
+	//	If we are null damage we never do damage
+
+	if (Ctx.Damage.GetDamageType() == damageNull)
+		return damageNoDamage;
 
 	//	Create hit effect
 

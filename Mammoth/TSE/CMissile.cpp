@@ -695,24 +695,20 @@ bool CMissile::IsTrackingTime (int iTick) const
 			|| (!m_fFragment && m_pEnhancements && m_pEnhancements->IsTracking()));
 	}
 
-EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
-
 //	Damage
 //
 //	Object takes damage from the given source
+//
+EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 
 	{
 	DEBUG_TRY
 
 	Ctx.iSectHit = -1;
 
-	//	Short-circuit
-
-	bool bDestroy = false;
-	if (Ctx.iDamage == 0)
-		return damageNoDamage;
-
 	//	If this is a momentum attack then we are pushed
+	//	
+	//	We always allow this to happen first before short-circuiting
 
 	Metric rImpulse;
 	if (Ctx.Damage.HasImpulseDamage(&rImpulse))
@@ -720,6 +716,12 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
 		AddForce(vAccel);
 		}
+
+	//	Short-circuit
+
+	bool bDestroy = false;
+	if (Ctx.iDamage == 0 || Ctx.Damage.GetDamageType() == damageNull)
+		return damageNoDamage;
 
 	//	Create a hit effect
 

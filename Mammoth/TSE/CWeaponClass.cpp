@@ -3391,9 +3391,16 @@ DamageTypes CWeaponClass::GetDamageType (CItemCtx &Ctx, const CItem &Ammo) const
 	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx, Ammo);
 
 	//	OK if we don't find shot--could be a launcher with no ammo
+	//	It might also be a script weapon that doesnt have a shot
+	//	(Ex, a script or AI aim assist weapon)
 
 	if (pShot == NULL)
-		return damageGeneric;
+		{
+		if (IsLauncher())
+			return damageGeneric;
+		else
+			return damageNull;
+		}
 
 	//	Get the damage type
 
@@ -3758,11 +3765,12 @@ const CWeaponFireDesc *CWeaponClass::GetReferenceShotData (const CWeaponFireDesc
 	const CWeaponFireDesc *pBestShot = pShot;
 
 	//	NOTE: We want fragment damage to take precendence. And we start with
-	//	best damage type as generic in case we have generic-damage fragments.
+	//	best damage type as generic in case we have null-damage or
+	//	generic-damage fragments. (Ex, scanners, script weapons, etc)
 
 	Metric rBestDamage = 0.0;
 	int iBestFragments = 1;
-	DamageTypes iBestDamageType = damageGeneric;
+	DamageTypes iBestDamageType = damageNull;
 
 	CWeaponFireDesc::SFragmentDesc *pFragDesc = pShot->GetFirstFragment();
 	while (pFragDesc)

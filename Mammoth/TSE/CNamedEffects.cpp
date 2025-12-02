@@ -58,7 +58,7 @@ CEffectCreator &CNamedEffects::GetFireEffect (CDesignCollection &Design, DamageT
 //	Returns a default fire effect creator
 
 	{
-	if (iDamage == damageGeneric)
+	if (iDamage == damageGeneric || iDamage == damageNull)
 		return GetNullEffect(Design);
 
 	else if (m_pDefaultFireEffect[iDamage] == NULL)
@@ -79,7 +79,7 @@ CEffectCreator &CNamedEffects::GetHitEffect (CDesignCollection &Design, DamageTy
 //	Returns a default hit effect creator
 
 	{
-	if (iDamage == damageGeneric)
+	if (iDamage == damageGeneric || iDamage == damageNull)
 		return GetNullEffect(Design);
 
 	else if (m_pDefaultHitEffect[iDamage] == NULL)

@@ -93,6 +93,7 @@ class IDockScreenDisplay
 		int GetListCursor (void) const { return OnGetListCursor(); }
 		IListData *GetListData (void) const { return OnGetListData(); }
 		ICCItemPtr GetProperty (const CString &sProperty) const;
+		ICCItemPtr GetPropertyKeys () const;
 		ICCItemPtr GetSelection () const { return OnGetSelection(); }
 		CSpaceObject *GetSource (void) const { return OnGetSource(); }
 
@@ -135,6 +136,7 @@ class IDockScreenDisplay
 		virtual int OnGetListCursor (void) const { return -1; }
 		virtual IListData *OnGetListData (void) const { return NULL; }
 		virtual ICCItemPtr OnGetProperty (const CString &sProperty) const;
+		virtual ICCItemPtr OnGetPropertyKeys () const;
 		virtual ICCItemPtr OnGetSelection () const { return ICCItemPtr::Nil(); }
 		virtual CSpaceObject *OnGetSource (void) const { return NULL; }
 		virtual DWORD OnGetUIFlags (void) const { return 0; }
@@ -516,6 +518,7 @@ class CDockScreen : public IScreenController,
 		virtual ICCItemPtr GetListAsCCItem (void) const override;
 		virtual int GetListCursor (void) const override { return (m_pDisplay ? m_pDisplay->GetListCursor() : -1); }
 		virtual ICCItemPtr GetProperty (const CString &sProperty) const override;
+		virtual ICCItemPtr GetPropertyKeys () const override;
 		virtual void OnModifyItemBegin (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const override;
 		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result) override;
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) override;

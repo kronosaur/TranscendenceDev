@@ -52,8 +52,22 @@
 			-->
 			<Constant id="core.defaultCorewardNode">		'G2</Constant>
 
+			<!-- Defaults for WMD Fortification Adj (Adj at WMD0) -->
+
+			<Constant id="core.WMDFortified.ShipCompartment">	0.1</Constant>
+			<Constant id="core.WMDFortified.MultihullStation">	0.1</Constant>
+			<Constant id="core.WMDFortified.Station">			1.0</Constant>
+			<Constant id="core.WMDFortified.ArmorSegment">		1.0</Constant>
+			<Constant id="core.WMDFortified.Armor">				1.0</Constant>
+			<Constant id="core.WMDFortified.Shield">			1.0</Constant>
+
+			<!-- Defaults for shot interaction -->
+
 			<Constant id="core.defaultInteraction">			Nil</Constant>
 			<Constant id="core.defaultShotHP">				Nil</Constant>
+
+			<!-- Defaults for UI -->
+
 			<Constant id="core.hideDisintegrationImmune">	Nil</Constant>
 			<Constant id="core.hideIonizeImmune">			Nil</Constant>
 			<Constant id="core.hideRadiationImmune">		Nil</Constant>
@@ -266,6 +280,20 @@
 			<!-- Mining Levels -->
 			
 			<MiningMaxOreLevels	miningMaxOreLevel="  5,  5,  8,  8,  11, 11, 14, 14,  17, 17, 20, 20,  23, 23, 25, 25"/>
+			
+			<!-- Device damage -->
+
+			<ExternalDeviceDamageMaxLevels
+				deviceDamageMaxDeviceLevel=		  "  6,  6,  9,  9,  12, 12, 15, 15,  18, 18, 21, 21,  24, 24, 25, 25"
+				deviceDamageTypeAdj=			  "100,100,100,100, 120,100,100,100, 100,100, 75,100, 100,100,100,100"
+				deviceHitChance=				  "11"
+				/>
+
+			<InternalDeviceDamageMaxLevels
+				deviceDamageMaxDeviceLevel=		  " 25, 25, 25, 25,  25, 25, 25, 25,  25, 25, 25, 25,  25, 25, 25, 25"
+				deviceDamageTypeAdj=			  "100,100,100,100, 100,100,100,100, 100,100,100,100, 100,100,100,100"
+				deviceHitChance=				  "50"
+				/>
 			
 		</Constants>
 	</AdventureDesc>

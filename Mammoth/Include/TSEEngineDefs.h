@@ -106,6 +106,18 @@
 
 #define PROPERTY_CORE_GAME_STATS				CONSTLIT("core.gameStats")
 
+//	core.WMDFortified.*
+//
+//	Adventure Property: Evaluated at bind time. These properties control defaults
+//	for WMD fortified behavior
+
+#define PROPERTY_CORE_WMD_FORTIFIED_SHIP_COMPARTMENT	CONSTLIT("core.WMDFortified.ShipCompartment")
+#define PROPERTY_CORE_WMD_FORTIFIED_MULTIHULL_STATION	CONSTLIT("core.WMDFortified.MultihullStation")
+#define PROPERTY_CORE_WMD_FORTIFIED_STATION				CONSTLIT("core.WMDFortified.Station")
+#define PROPERTY_CORE_WMD_FORTIFIED_ARMOR_SEGMENT		CONSTLIT("core.WMDFortified.ArmorSegment")
+#define PROPERTY_CORE_WMD_FORTIFIED_ARMOR				CONSTLIT("core.WMDFortified.Armor")
+#define PROPERTY_CORE_WMD_FORTIFIED_SHIELD				CONSTLIT("core.WMDFortified.Shield")
+
 //	core.hide???Immune
 //
 //	Adventure Property: Evaluated at bind time. These properties control whether

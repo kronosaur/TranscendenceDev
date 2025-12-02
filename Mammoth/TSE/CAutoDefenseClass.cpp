@@ -330,7 +330,7 @@ DamageTypes CAutoDefenseClass::GetDamageType (CItemCtx &Ctx, const CItem &Ammo) 
 	if (pWeapon)
 		return pWeapon->GetDamageType(Ctx, Ammo);
 	else
-		return damageGeneric;
+		return damageNull;
 	}
 
 DWORD CAutoDefenseClass::GetTargetTypes (const CDeviceItem &DeviceItem) const

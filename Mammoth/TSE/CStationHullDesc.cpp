@@ -10,6 +10,7 @@
 #define ARMOR_ID_ATTRIB							CONSTLIT("armorID")
 #define ARMOR_LEVEL_ATTRIB						CONSTLIT("armorLevel")
 #define CANNOT_BE_HIT_ATTRIB					CONSTLIT("cannotBeHit")
+#define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define HULL_TYPE_ATTRIB						CONSTLIT("hullType")
 #define IMMUTABLE_ATTRIB						CONSTLIT("immutable")
@@ -206,6 +207,13 @@ int CStationHullDesc::GetArmorLevel (void) const
 		return 1;
 	}
 
+Metric CStationHullDesc::GetFortificationAdj(bool bMultiHull) const
+	{
+	if (g_pUniverse)
+		return m_rFortified < 0 ? (bMultiHull ? g_pUniverse->GetEngineOptions().GetDefaultFortifiedStationMultihull() : g_pUniverse->GetEngineOptions().GetDefaultFortifiedStation()) : m_rFortified;
+	return bMultiHull ? 0.1 : 1.0;
+	}
+
 CString CStationHullDesc::GetID (EHullTypes iType)
 
 //	GetID
@@ -263,6 +271,11 @@ ALERROR CStationHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 		m_iType = (bMultiHull ? hullMultiple : hullSingle);
 	else
 		m_iType = (bMultiHullDefault ? hullMultiple : hullSingle);
+
+	if (m_iType == hullMultiple)
+		m_rFortified = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, g_Epsilon, -1.0, g_pUniverse->GetEngineOptions().GetDefaultFortifiedStationMultihull());
+	else
+		m_rFortified = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, g_Epsilon, -1.0, g_pUniverse->GetEngineOptions().GetDefaultFortifiedStation());
 
 	//	Get hit points and max hit points
 
