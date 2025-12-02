@@ -2583,8 +2583,9 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	//	to fire
 
 	bool bIsHostile = Ctx.Damage.IsHostile();
+	bool bFireDamageEvents = Ctx.IsDamageEventFiring();
 
-	if (Ctx.iDamage == 0 && !bIsHostile && Ctx.Damage.GetDamageType() != damageNull)
+	if (!bFireDamageEvents)
 		{
 		if (IsImmutable())
 			return damageNoDamageNoPassthrough;
@@ -2726,7 +2727,7 @@ EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 
 	//	Take damage
 
-	if (Ctx.iDamage > 0 && Ctx.Damage.GetDamageType() != damageNull)
+	if (Ctx.IsDamaging())
 		{
 		//	See if this hit destroyed us
 
@@ -2890,7 +2891,7 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 
 	//	If no damage or null damage, we're done
 
-	if ((Ctx.iDamage == 0 && !bCustomDamage) || Ctx.Damage.GetDamageType() == damageNull)
+	if (!Ctx.IsDamaging() && !bCustomDamage)
 		return damageNoDamage;
 
 	//	Handle special attacks

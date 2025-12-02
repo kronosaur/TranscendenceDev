@@ -148,7 +148,7 @@ class DamageDesc
 
 		void AddEnhancements (const CItemEnhancementStack *pEnhancements);
 		CString AsString (void) const;
-		bool CausesSRSFlash (void) const { return (m_sExtra.fNoSRSFlash ? false : true); }
+		bool CausesSRSFlash (void) const { return (m_Extra.fNoSRSFlash ? false : true); }
 		ICCItem *FindProperty (const CString &sName) const;
 		DestructionTypes GetCause (void) const { return m_iCause; }
 		const DiceRange &GetDamageRange (void) const { return m_Damage; }
@@ -160,9 +160,10 @@ class DamageDesc
 		int GetMaxDamage (void) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
 		bool HasImpulseDamage (Metric *retrImpulse = NULL) const;
-		bool HasMiningDamage (void) const { return (m_sExtra.MiningAdj > 0); }
+		bool HasMiningDamage (void) const { return (m_Extra.MiningAdj > 0); }
 		void InterpolateTo (const DamageDesc &End, Metric rSlider);
-		bool IsAutomatedWeapon (void) const { return (m_sExtra.fAutomatedWeapon ? true : false); }
+		bool IsDamaging () const;
+		bool IsAutomatedWeapon (void) const { return (m_Extra.fAutomatedWeapon ? true : false); }
 		bool IsEmpty (void) const { return (m_Damage.IsEmpty() && m_iType == damageNull); }
 		bool IsEnergyDamage (void) const;
 		bool IsHostile (void) const;
@@ -171,32 +172,32 @@ class DamageDesc
 		void ReadFromStream (SLoadCtx &Ctx);
 		int RollDamage (void) const;
 		void ScaleDamage (Metric rAdj) { m_Damage.Scale(rAdj); }
-		void SetAutomatedWeapon (void) { m_sExtra.fAutomatedWeapon = true; }
+		void SetAutomatedWeapon (void) { m_Extra.fAutomatedWeapon = true; }
 		void SetCause (DestructionTypes iCause) { m_iCause = iCause; }
 		void SetDamage (int iDamage);
 		void SetDamageType (DamageTypes iType) { m_iType = iType; }
-		void SetNoSRSFlash (void) { m_sExtra.fNoSRSFlash = true; }
+		void SetNoSRSFlash (void) { m_Extra.fNoSRSFlash = true; }
 		void SetSpecialDamage (SpecialDamageTypes iSpecial, int iLevel);
 		void WriteToStream (IWriteStream *pStream) const;
 
-		int GetArmorDamageLevel (void) const { return (int)m_sExtra.ArmorDamage; }
-		int GetBlindingDamage (void) const { return (int)m_sExtra.BlindingDamage; }
-		int GetDeviceDamage (void) const { return (int)m_sExtra.DeviceDamage; }
-		int GetDeviceDisruptDamage (void) const { return (int)m_sExtra.DeviceDisruptDamage; }
-		int GetDisintegrationDamage (void) const { return (int)m_sExtra.DisintegrationDamage; }
-		int GetEMPDamage (void) const { return (int)m_sExtra.EMPDamage; }
+		int GetArmorDamageLevel (void) const { return (int)m_Extra.ArmorDamage; }
+		int GetBlindingDamage (void) const { return (int)m_Extra.BlindingDamage; }
+		int GetDeviceDamage (void) const { return (int)m_Extra.DeviceDamage; }
+		int GetDeviceDisruptDamage (void) const { return (int)m_Extra.DeviceDisruptDamage; }
+		int GetDisintegrationDamage (void) const { return (int)m_Extra.DisintegrationDamage; }
+		int GetEMPDamage (void) const { return (int)m_Extra.EMPDamage; }
 		int GetMassDestructionAdj (void) const;
-		int GetMassDestructionDamage (void) const { return m_sExtra.MassDestructionAdj; }
+		int GetMassDestructionDamage (void) const { return m_Extra.MassDestructionAdj; }
 		int GetMassDestructionLevel (void) const;
-		int GetMiningAdj (void) const { return (int)(m_sExtra.MiningAdj ? (2 * (m_sExtra.MiningAdj * m_sExtra.MiningAdj) + 2) : 0); }
-		int GetMiningDamage (void) const { return m_sExtra.MiningAdj; }
-		int GetMiningScan (void) const { return m_sExtra.fMiningScan; }
+		int GetMiningAdj (void) const { return (int)(m_Extra.MiningAdj ? (2 * (m_Extra.MiningAdj * m_Extra.MiningAdj) + 2) : 0); }
+		int GetMiningDamage (void) const { return m_Extra.MiningAdj; }
+		int GetMiningScan (void) const { return m_Extra.fMiningScan; }
 		int GetMiningWMDAdj (void);
-		int GetRadiationDamage (void) const { return (int)m_sExtra.RadiationDamage; }
-		int GetShatterDamage (void) const { return (int)m_sExtra.ShatterDamage; }
-		int GetShieldDamageLevel (void) const { return (int)m_sExtra.ShieldDamage; }
-		int GetShieldPenetratorAdj (void) const { return (int)(m_sExtra.ShieldPenetratorAdj ? (2 * (m_sExtra.ShieldPenetratorAdj * m_sExtra.ShieldPenetratorAdj) + 2) : 0); }
-		int GetTimeStopDamageLevel (void) const { return (int)m_sExtra.TimeStopDamage; }
+		int GetRadiationDamage (void) const { return (int)m_Extra.RadiationDamage; }
+		int GetShatterDamage (void) const { return (int)m_Extra.ShatterDamage; }
+		int GetShieldDamageLevel (void) const { return (int)m_Extra.ShieldDamage; }
+		int GetShieldPenetratorAdj (void) const { return (int)(m_Extra.ShieldPenetratorAdj ? (2 * (m_Extra.ShieldPenetratorAdj * m_Extra.ShieldPenetratorAdj) + 2) : 0); }
+		int GetTimeStopDamageLevel (void) const { return (int)m_Extra.TimeStopDamage; }
 		int GetTimeStopResistChance (int iTargetLevel) const;
 
 		static SpecialDamageTypes ConvertPropertyToSpecialDamageTypes (const CString &sValue);
@@ -228,7 +229,7 @@ class DamageDesc
 		//		)
 		//	and then read that save version's data to an instance of SExtraDamage216
 		//  and then use compatibility logic to convert it to the current SExtraDamage
-		//  stored in m_sExtra.
+		//  stored in m_Extra.
 		//
 		struct SExtraDamage	//Save version 216
 			{
@@ -284,7 +285,7 @@ class DamageDesc
 		DestructionTypes m_iCause = killedByDamage;		//	Cause of damage
 
 		//	Extra damage
-		SExtraDamage m_sExtra;
+		SExtraDamage m_Extra;
 
 		//	SAVE COMPATIBILITY STRUCTS -----
 		
@@ -325,7 +326,7 @@ struct SDamageCtx
 		static constexpr int DAMAGE_ADJ_HINT_THRESHOLD = 25;
 		static constexpr int WMD_HINT_THRESHOLD = 60;
 
-		SDamageCtx (void);
+		SDamageCtx ();
 		SDamageCtx (CSpaceObject *pObjHitArg, 
 				CWeaponFireDesc &DescArg, 
 				const CItemEnhancementStack *pEnhancementsArg, 
@@ -336,26 +337,28 @@ struct SDamageCtx
 				const CVector &vHitPosArg,
 				int iDamageArg = -1);
 		SDamageCtx (const DamageDesc &DamageArg);
-		~SDamageCtx (void);
+		~SDamageCtx ();
 
-		void ClearTimeStop (void) { m_bTimeStop = false; }
-		int GetBlindTime (void) const { return m_iBlindTime; }
-		CWeaponFireDesc &GetDesc (void) const { return *m_pDesc; }
-		int GetDeviceDisruptTime (void) const { return m_iDisruptTime; }
-		EDamageHint GetHint (void) const { return m_iHint; }
-		CSpaceObject *GetOrderGiver (void) const { return Attacker.GetOrderGiver(); }
-		int GetParalyzedTime (void) const { return m_iParalyzeTime; }
 		Metric CalcWMDFortificationAdj (Metric rWMD0FortificationAdj = 0.1);
 		static Metric CalcWMDFortificationAdjFromLevel (int iLevel, Metric rWMD0FortificationAdj = 0.1);
-		bool IsBlinded (void) const { return m_bBlind; }
-		bool IsDeviceDamaged (void) const { return m_bDeviceDamage; }
-		bool IsDeviceDisrupted (void) const { return m_bDeviceDisrupt; }
-		bool IsDisintegrated (void) const { return m_bDisintegrate; }
-		bool IsParalyzed (void) const { return m_bParalyze; }
-		bool IsRadioactive (void) const { return m_bRadioactive; }
-		bool IsShattered (void) const { return m_bShatter; }
-		bool IsShotReflected (void) const { return m_bReflect; }
-		bool IsTimeStopped (void) const { return m_bTimeStop; }
+		void ClearTimeStop () { m_bTimeStop = false; }
+		int GetBlindTime () const { return m_iBlindTime; }
+		CWeaponFireDesc &GetDesc () const { return *m_pDesc; }
+		int GetDeviceDisruptTime () const { return m_iDisruptTime; }
+		EDamageHint GetHint () const { return m_iHint; }
+		CSpaceObject *GetOrderGiver () const { return Attacker.GetOrderGiver(); }
+		int GetParalyzedTime () const { return m_iParalyzeTime; }
+		bool IsBlinded () const { return m_bBlind; }
+		bool IsDamaging () const;
+		bool IsDamageEventFiring () const;
+		bool IsDeviceDamaged () const { return m_bDeviceDamage; }
+		bool IsDeviceDisrupted () const { return m_bDeviceDisrupt; }
+		bool IsDisintegrated () const { return m_bDisintegrate; }
+		bool IsParalyzed () const { return m_bParalyze; }
+		bool IsRadioactive () const { return m_bRadioactive; }
+		bool IsShattered () const { return m_bShatter; }
+		bool IsShotReflected () const { return m_bReflect; }
+		bool IsTimeStopped () const { return m_bTimeStop; }
 		void SetBlinded (bool bValue = true) { m_bBlind = bValue; }
 		void SetBlindedTime (int iTime) { m_iBlindTime = iTime; }
 		void SetDeviceDamaged (bool bValue = true) { m_bDeviceDamage = bValue; }
