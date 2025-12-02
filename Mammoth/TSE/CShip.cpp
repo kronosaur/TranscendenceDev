@@ -4552,6 +4552,12 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	Ctx.iArmorHitDamage = Ctx.iDamage;
 	if (pArmor)
 		{
+		//	Set any Fortification adjustment from the slot
+
+		Ctx.rArmorExternFortification = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect()).GetFortificationAdj();
+		if (Ctx.rArmorExternFortification < 0.0)
+			Ctx.rArmorExternFortification = g_pUniverse->GetEngineOptions().GetDefaultFortifiedArmorSlot();
+
 		EDamageResults iResult = pArmor->AbsorbDamage(this, Ctx);
 
 		//	Handle result
@@ -6601,7 +6607,11 @@ void CShip::PointInObjectInit (SPointInObjectCtx &Ctx) const
 //	Initializes context for PointInObject (for improved performance in loops)
 
 	{
+	DEBUG_TRY
+
 	GetImage().PointInImageInit(Ctx, GetSystem()->GetTick(), m_Rotation.GetFrameIndex());
+
+	DEBUG_CATCH
 	}
 
 void CShip::ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program)
