@@ -682,6 +682,17 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //				Returns a list of static datakeys for the given obj type
 //			(scr@Keys type)
 //				Returns a list of all instance property and custom global property keys for the given obj
+//			(sysGetNextNodeTo [srcNode] destNode [options])
+//				Accepts an options struct now
+//				options:
+//					blockNodes (list): do not path through these nodes
+//					respectOneWayGates (bool): if pathing must obey the directionality of one way gates (default: false)
+//					gateCriteria (string): criteria to match against stargate topology attributes (not the stations)
+//			(sysGetPathTo [srcNode] destNode [options])
+//				options:
+//					blockNodes (list): do not path through these nodes
+//					respectOneWayGates (bool): if pathing must obey the directionality of one way gates (default: false)
+//					gateCriteria (string): criteria to match against stargate topology attributes (not the stations)
 //		<AdventureDesc>
 //			<Properties>
 //				<Constant id = "core.WMDFortified.{target component}">
