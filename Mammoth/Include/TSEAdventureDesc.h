@@ -20,7 +20,6 @@ class CEngineOptions
 		const CDeviceDamageLevelDesc* GetInternalDeviceDamageMaxLevels () const { return &m_InternalDeviceDamageMaxLevels; }
 		const CMiningDamageLevelDesc* GetMiningMaxOreLevels () const { return &m_MiningDamageMaxOreLevels; }
 		const CDamageAdjDesc* GetShieldDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ShieldDamageAdj[iLevel - 1]; }
-		const CDamageAdjDesc* GetArmorDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ArmorDamageAdj[iLevel - 1]; }
 		Metric GetDefaultFortifiedShipCompartment () const { return m_rFortifiedShipCompartment; }
 		Metric GetDefaultFortifiedStationMultihull () const { return m_rFortifiedStationMultihull; }
 		Metric GetDefaultFortifiedStation () const { return m_rFortifiedStation; }
