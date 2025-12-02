@@ -818,7 +818,7 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 	SDeviceDesc Desc;
 	if (Slot.sID)
 		{
-		FindSlotDesc(Slot.sID, &Desc);
+		pObj->FindDeviceSlotDesc(Slot.sID, &Desc);
 		}
 	else
 		{
