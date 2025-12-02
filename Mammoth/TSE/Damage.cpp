@@ -677,16 +677,16 @@ bool DamageDesc::IsDamaging() const
 	return (m_Damage.GetMaxValue() && m_iType != damageNull)
 		//	similarly any hostile status/special effects also count
 		//	however, movement alone does not count as hostile
-		|| m_sExtra.EMPDamage
-		|| m_sExtra.RadiationDamage
-		|| m_sExtra.DeviceDamage
-		|| m_sExtra.DeviceDisruptDamage
-		|| m_sExtra.BlindingDamage
-		|| m_sExtra.SensorDamage
-		|| m_sExtra.FuelDamage
-		|| m_sExtra.DisintegrationDamage
-		|| m_sExtra.ShatterDamage
-		|| m_sExtra.TimeStopDamage
+		|| m_Extra.EMPDamage
+		|| m_Extra.RadiationDamage
+		|| m_Extra.DeviceDamage
+		|| m_Extra.DeviceDisruptDamage
+		|| m_Extra.BlindingDamage
+		|| m_Extra.SensorDamage
+		|| m_Extra.FuelDamage
+		|| m_Extra.DisintegrationDamage
+		|| m_Extra.ShatterDamage
+		|| m_Extra.TimeStopDamage
 		;
 	}
 
