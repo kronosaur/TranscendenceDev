@@ -9367,13 +9367,13 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				DEBUG_TRY
 					//enhancements
-					int iFireDelay;
+					Metric rFireDelay;
 				if (pArgs->GetCount() >= 4 && !(pArgs->GetElement(3)->IsNil()))
-					iFireDelay = pArgs->GetElement(3)->GetIntegerValue();
+					rFireDelay = pArgs->GetElement(3)->GetDoubleValue();
 				else
-					iFireDelay = pDevice->GetClass()->GetActivateDelay(WeaponCtx);
+					rFireDelay = pDevice->GetClass()->GetActivateDelay(WeaponCtx);
 
-				pDevice->SetTimeUntilReady(iFireDelay);
+				pDevice->SetTimeUntilReady(rFireDelay);
 				DEBUG_CATCH
 					return pCC->CreateTrue();
 				}

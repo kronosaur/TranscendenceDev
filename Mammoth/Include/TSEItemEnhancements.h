@@ -257,7 +257,7 @@ class CItemEnhancementStack
 		CItemEnhancementStack *AddRef (void) { m_dwRefCount++; return this; }
 		int ApplyDamageAdj (const DamageDesc &Damage, int iDamageAdj) const;
 		void ApplySpecialDamage (DamageDesc *pDamage) const;
-		int CalcActivateDelay (CItemCtx &DeviceCtx) const;
+		Metric CalcActivateDelay (CItemCtx &DeviceCtx) const;
 		Metric CalcRegen180 (CItemCtx &ItemCtx, int iTicksPerUpdate) const;
 		void Delete (void);
 		int GetAbsorbAdj (const DamageDesc &Damage) const;

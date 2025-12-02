@@ -828,7 +828,7 @@ int CAIBehaviorCtx::CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInsta
 	//	If this weapon will take a while to get ready, then 
 	//	lower the score.
 
-	if (pWeapon->GetTimeUntilReady() >= (avoidAnyNonReadyWeapons ? 1 : 15))
+	if (pWeapon->GetTimeUntilReady() >= (avoidAnyNonReadyWeapons ? 1.0 : 15.0))
 		return 1;
 
 	//	Get the item for the selected variant (either the weapon
