@@ -139,6 +139,8 @@ CString GetDamageName (DamageTypes iType)
 		return CONSTLIT("generic");
 	else if (iType == damageNull)
 		return CONSTLIT("null");
+	else if (iType == damageUnknown)
+		return CONSTLIT("unknown");
 	else
 		return CString(DAMAGE_TYPE_DATA[iType].pszName);
 	}
@@ -154,6 +156,8 @@ CString GetDamageShortName (DamageTypes iType)
 		return CONSTLIT("generic");
 	else if (iType == damageNull)
 		return CONSTLIT("null");
+	else if (iType == damageUnknown)
+		return CONSTLIT("unknown");
 	else
 		return CString(DAMAGE_TYPE_DATA[iType].pszShortName);
 	}
@@ -169,6 +173,11 @@ CString GetDamageType (DamageTypes iType)
 		return CONSTLIT("generic");
 	else if (iType == damageNull)
 		return CONSTLIT("null");
+	//	unknownDamage is a special case:
+	//		It cant normally be set, but exists on unknown virtual items for UI
+	//		If you try to query it, you get generic damage back as a placeholder
+	else if (iType == damageUnknown)
+		return CONSTLIT("generic");
 	else
 		return CString(DAMAGE_TYPE_DATA[iType].pszID);
 	}
@@ -204,6 +213,8 @@ DamageTypes LoadDamageTypeFromXML (const CString &sAttrib)
 		return damageDarkLightning;
 	else if (strEquals(sAttrib, CONSTLIT("dark fire")))
 		return damageDarkFire;
+
+	//	Invalid damage types
 
 	return damageError;
 	}
@@ -387,27 +398,29 @@ bool DamageDesc::IsHostile () const
 			);
 	}
 
-int DamageDesc::GetDamageLevel (DamageTypes iType)
-
 //  GetDamageTier
 //
 //  Returns the damage tier based on damage type.
+//	Intended to be used for default balance stats
+//
+int DamageDesc::GetDamageLevel (DamageTypes iType)
 
 	{
-	if (iType == damageGeneric || iType == damageNull)
+	if (iType < damageMinListed || iType > damageMaxListed)
 		return 1;
 	else
 		return DAMAGE_TYPE_DATA[iType].iLevel;
 	}
 
-int DamageDesc::GetDamageTier (DamageTypes iType)
-
 //  GetDamageTier
 //
 //  Returns the damage tier based on damage type.
+//	Intended to be used for default balance stats
+//
+int DamageDesc::GetDamageTier (DamageTypes iType)
 
 	{
-	if (iType == damageGeneric || iType == damageNull)
+	if (iType < damageMinListed || iType > damageMaxListed)
 		return 1;
 	else
 		return DAMAGE_TYPE_DATA[iType].iTier;
