@@ -652,7 +652,7 @@ class CDamageAdjDesc
 class CMiningDamageLevelDesc
 	{
 	public:
-		static constexpr int MAX_MINING_LEVEL = 25;
+		static constexpr int MAX_MINING_LEVEL = MAX_ITEM_LEVEL;
 		
 		int GetMaxOreLevel (DamageTypes iDamageType, int iMiningItemLevel) const;
 		ALERROR InitFromArray (const TArray<int>& Levels);
@@ -664,8 +664,8 @@ class CMiningDamageLevelDesc
 	private:
 		enum ELevelTypes
 			{
-			levelAbsolute,						//	dwLevelValue is an absolute adjustment
-			levelRelative,						//	dwLevelValue is an int offset of item level
+			levelAbsolute,						//	iLevelValue is an absolute adjustment
+			levelRelative,						//	iLevelValue is an int offset of item level
 			};
 
 		struct SMiningLevelDesc
@@ -674,7 +674,45 @@ class CMiningDamageLevelDesc
 			int iLevelValue = 0;					//	Adjustment value
 			};
 
-		SMiningLevelDesc m_Desc[damageCount];	//	Descriptor for computing adjustment
+		SMiningLevelDesc m_Desc[damageCount];	//	Descriptor for computing max mineable ore level
+	};
+
+class CDeviceDamageLevelDesc
+	{
+	public:
+		static constexpr int MAX_DEVICE_LEVEL = MAX_ITEM_LEVEL;
+
+		enum EDescType
+			{
+			descInternal,						//	Applies to internal devices
+			descExternal,						//	Applies to external devices
+			};
+
+		int GetMaxDeviceLevel (DamageTypes iDamageType, int iWeaponLevel) const;
+		int GetDeviceAdj (DamageTypes iDamageType) const { return (iDamageType >= damageMinListed && iDamageType <= damageMaxListed) ? m_Adj[iDamageType] : 100; }
+		int GetChanceToHit () const { return m_iChanceToHit; }
+		ALERROR InitFromArray (const TArray<int>& Levels, const TArray<int>& Adj, int iHitChance);
+		ALERROR InitFromDeviceDamageLevel (SDesignLoadCtx &Ctx, const CString &sLevelAttrib, const CString &sAdjAttrib, int iHitChance);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
+
+		static DamageTypes ParseDamageTypeFromProperty (const CString &sProperty);
+
+	private:
+		enum ELevelTypes
+			{
+			levelAbsolute,						//	iLevelValue is an absolute adjustment
+			levelRelative,						//	iLevelValue is an int offset of item level
+			};
+
+		struct SDamageLevelDesc
+			{
+			ELevelTypes iAdjType = levelRelative;	//	Type of adjustment
+			int iLevelValue = 0;					//	Adjustment value
+			};
+
+		SDamageLevelDesc m_Desc[damageCount];	//	Descriptor for computing max damageable device level
+		int m_Adj[damageCount];					//	Adj factor for device damage
+		int m_iChanceToHit = 100;				//	% Chance to hit device and begin damage calculations
 	};
 
 struct SVisibleDamage

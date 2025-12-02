@@ -682,7 +682,85 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					217;
 //				Returns a list of static datakeys for the given obj type
 //			(scr@Keys type)
 //				Returns a list of all instance property and custom global property keys for the given obj
+//			(sysGetNextNodeTo [srcNode] destNode [options])
+//				Accepts an options struct now
+//				options:
+//					blockNodes (list): do not path through these nodes
+//					respectOneWayGates (bool): if pathing must obey the directionality of one way gates (default: false)
+//					gateCriteria (string): criteria to match against stargate topology attributes (not the stations)
+//			(sysGetPathTo [srcNode] destNode [options])
+//				options:
+//					blockNodes (list): do not path through these nodes
+//					respectOneWayGates (bool): if pathing must obey the directionality of one way gates (default: false)
+//					gateCriteria (string): criteria to match against stargate topology attributes (not the stations)
+//		<AdventureDesc>
+//			<Constants>
+//				<ExternalDeviceDamageMaxLevels>
+//					deviceDamageMaxDeviceLevel: (damageAdj-style list of ints)
+//						The maximum level device that this weapon shot can damage
+//						Specifying a "+" before a level means this is a positive
+//							offset relative to the level of the item
+//						Specifying a "-" before a level means this is a negative
+//							offset relative to the level of the item
+//					deviceDamageTypeAdj:
+//						% damageAdj of this damage type to devices
+//						generic damage always has 100%
+//						null damage has 100% if it also has device:# in its desc
+//					deviceHitChance:
+//						% chance for a shot of any damage type to hit a device
+//				<InternalDeviceDamageMaxLevels>
+//					deviceDamageMaxDeviceLevel: (damageAdj-style list of ints)
+//						The maximum level device that this weapon shot can damage
+//						Specifying a "+" before a level means this is a positive
+//							offset relative to the level of the item
+//						Specifying a "-" before a level means this is a negative
+//							offset relative to the level of the item
+//					deviceDamageTypeAdj:
+//						% damageAdj of this damage type to devices
+//						generic damage always has 100%
+//						null damage has 100% if it also has device:# in its desc
+//					deviceHitChance:
+//						% chance for a shot of any damage type to hit a device
+//			<Properties>
+//				<Constant id = "core.WMDFortified.{target component}">
+//					(This is a template property, see below for valid property names.)
+//					Default WMD fortification adj properties for low/no WMD damage.
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
+//					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
+//					The value must be 0.0 (immune) or higher. May be greater than 1.0 (takes more damage
+//						from non-WMD weapons than high-WMD weapons)
+//					The below are the following valid target components:
+//					<Constant id = "core.WMDFortified.ShipCompartment">
+//						Default 0.1
+//					<Constant id = "core.WMDFortified.MultihullStation">
+//						Default 0.1
+//					<Constant id = "core.WMDFortified.Station">
+//						Default 1.0
+//					<Constant id = "core.WMDFortified.ArmorSegment">
+//						Note, refers to the armor segment on a ship's armor Desc.
+//						Default 1.0
+//					<Constant id = "core.WMDFortified.Armor">
+//						Default 1.0
+//					<Constant id = "core.WMDFortified.Shield">
+//						Default 1.0
 //		<ItemType>
+//			<Armor>
+//				fortificationAdj: (float)
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
+//					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
+//					The value must be 0.0 (immune) or higher. May be greater than 1.0 (takes more damage
+//						from non-WMD weapons than high-WMD weapons)
+//					Default: reads adventure default (Default: 1.0)
+//			<Shield>
+//				fortificationAdj: (float)
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
+//					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
+//					The value must be 0.0 (immune) or higher. May be greater than 1.0 (takes more damage
+//						from non-WMD weapons than high-WMD weapons)
+//					Default: reads adventure default (Default: 1.0)
 //			<Weapon>
 //				damage: (str: damage desc)
 //					damage changes:
@@ -701,6 +779,32 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					217;
 //						All targets of null damage have a damageAdj of 0 (immunity)
 //							to null damage's HP value (this allows scripts that utilize
 //							damage output, like mining, to function correctly)
+//		<ShipClass>
+//			<Armor>
+//				fortificationAdj: (float)
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
+//					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
+//					The value must be 0.0 (immune) or higher. May be greater than 1.0 (takes more damage
+//						from non-WMD weapons than high-WMD weapons)
+//					Default: reads adventure default (Default: 1.0)
+//			<Hull>
+//				fortificationAdj: (float)
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
+//					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
+//					The value must be 0.0 (immune) or higher. May be greater than 1.0 (takes more damage
+//						from non-WMD weapons than high-WMD weapons)
+//					Default: reads adventure default (Default: 1.0)
+//		<StationType>
+//			fortificationAdj: (float)
+//				Accepts a floating point which adjusts the default WMD curve for that target type
+//				by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
+//				to the modified scale WMD0 (supplied number) to WMD7 (1.0).
+//				The value must be 0.0 (immune) or higher. May be greater than 1.0 (takes more damage
+//					from non-WMD weapons than high-WMD weapons)
+//				Default: reads adventure default (Default: 1.0 for single-null stations, 0.1 for multihull/asteroid*/cavern*)
+//					*asteroid and *cavern hull types use mining damage for the calculations instead of or alongside WMD
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------

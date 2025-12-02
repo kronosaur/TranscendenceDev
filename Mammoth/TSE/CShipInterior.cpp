@@ -114,9 +114,12 @@ EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Des
 //	Ship interior takes damage.
 
 	{
-	//	Damage requires mass destruction power
+	//	Calculate our Fortification adjustment
 
-	int iDamageAdj = Ctx.Damage.GetMassDestructionAdj();
+	int iDamageAdj = mathRound(100 * Ctx.CalcWMDFortificationAdj(Desc.GetFortificationAdj()));
+
+	//	Effective damage requires mass destruction power
+
     Ctx.iDamage = mathAdjust(Ctx.iDamage, iDamageAdj);
 
 	//	If we don't have WMD and we're not making much progress, then show a hint.
@@ -148,11 +151,12 @@ EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Des
 	int yHitPos = -mathRound(vPos.GetY() / g_KlicksPerPixel);
 
 	//	See if we hit a device on the ship
+	// 
+	//	DamageDevice runs its own logic to check if the device should be damaged
 
 	CInstalledDevice *pDevice;
 	if (pShip->FindDeviceAtPos(Ctx.vHitPos, &pDevice)
-			&& !pDevice->IsDamaged()
-			&& mathRandom(1, 100) <= 50)
+			&& !pDevice->IsDamaged())
 		pShip->DamageDevice(pDevice, Ctx);
 
 	//	Loop until we've accounted for all damage.
@@ -183,7 +187,7 @@ EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Des
 			switch (CompDesc.iType)
 				{
 				//	If this compartment is the engine room, then there is a chance that
-				//	the ship will be dead in space.
+				//	the ship will be crippled
 
 				case deckMainDrive:
 					{
