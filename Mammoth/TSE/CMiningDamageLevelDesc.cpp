@@ -29,19 +29,19 @@ int CMiningDamageLevelDesc::GetMaxOreLevel (DamageTypes iDamageType, int iMining
 		}
 	}
 
-ALERROR CMiningDamageLevelDesc::InitFromArray (const TArray<int>& Levels)
-
 //	InitFromArray
 //
 //	Initializes from an array. The array must be at least damageCount entries
 //	long.
 //
 //	In this path there is no need for Bind.
+//
+ALERROR CMiningDamageLevelDesc::InitFromArray (const TArray<int>& Levels)
 
 	{
 	for (int i = 0; i < damageCount; i++)
 		{
-		if (i < Levels.GetCount())
+		if (Levels[i] >= 0)
 			{
 			m_Desc[i].iAdjType = levelAbsolute;
 			m_Desc[i].iLevelValue = Levels[i];
@@ -55,8 +55,6 @@ ALERROR CMiningDamageLevelDesc::InitFromArray (const TArray<int>& Levels)
 
 	return NOERROR;
 	}
-
-ALERROR CMiningDamageLevelDesc::InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, const CString &sAttrib)
 
 //	InitFromMiningDamageLevel
 //
@@ -74,6 +72,8 @@ ALERROR CMiningDamageLevelDesc::InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, 
 //  *,0,...
 //  laser:*; kinetic:0; ...
 //
+//
+ALERROR CMiningDamageLevelDesc::InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, const CString &sAttrib)
 
 	{
 	ALERROR error;
@@ -174,13 +174,13 @@ ALERROR CMiningDamageLevelDesc::InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, 
 	return NOERROR;
 	}
 
-ALERROR CMiningDamageLevelDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc)
-
 //	InitFromXML
 //
 //	Initialize from XML.
 //
 //	If bIsDefault is TRUE then we don't need to bind.
+//
+ALERROR CMiningDamageLevelDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc)
 
 	{
 	ALERROR error;
@@ -202,8 +202,6 @@ ALERROR CMiningDamageLevelDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElem
 	return NOERROR;
 	}
 
-DamageTypes CMiningDamageLevelDesc::ParseDamageTypeFromProperty (const CString &sProperty)
-
 //	ParseDamageTypeFromProperty
 //
 //	Returns the damageType from a property encoded as xyz.damageType.
@@ -214,6 +212,8 @@ DamageTypes CMiningDamageLevelDesc::ParseDamageTypeFromProperty (const CString &
 //
 //	If no damage type is encoded, we return damageGeneric. If there is a parsing
 //	error, we return damageError.
+//
+DamageTypes CMiningDamageLevelDesc::ParseDamageTypeFromProperty (const CString &sProperty)
 
 	{
 	const char *pPos = sProperty.GetASCIIZPointer();

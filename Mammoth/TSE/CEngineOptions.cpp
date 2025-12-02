@@ -81,7 +81,7 @@ static bool g_bDamageAdjInit = false;
 static CDamageAdjDesc g_ArmorDamageAdj[MAX_ITEM_LEVEL];
 static CDamageAdjDesc g_ShieldDamageAdj[MAX_ITEM_LEVEL];
 
-//	Mining
+//	Mining ----------------------------------------------------------------------
 
 //	This table is used for API0-47 adventures
 
@@ -126,10 +126,108 @@ static const TArray<int> g_StdMiningMaxOreLevelsAPI57 =
 		MAX_ITEM_LEVEL,	//	dark fire
 	};
 
-int GetAPIForMiningMaxOreLevel (int apiVersion)
+//	External Device Damage --------------------------------------------------
 
-	//	Translates actual API versions into the known versions
-	//	used for the MiningMaxOreLevel system
+//	This table is used for API0-57 adventures
+
+static const TArray<int> g_StdExternalDeviceDamageLevelsAPI0 =
+//		lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+	{	  6,  6,  9,  9,  12, 12, 15, 15,  18, 18, 21, 21,  24, 24, 27, 27 };
+
+//	This table is used for API58+ adventures
+
+static const TArray<int> g_StdExternalDeviceDamageLevelsAPI58 =
+	{
+	MAX_ITEM_LEVEL,	//	laser
+	MAX_ITEM_LEVEL,	//	kinetic
+	MAX_ITEM_LEVEL,	//	particle
+	MAX_ITEM_LEVEL,	//	blast
+
+	MAX_ITEM_LEVEL,	//	ion
+	MAX_ITEM_LEVEL,	//	thermo
+	MAX_ITEM_LEVEL,	//	positron
+	MAX_ITEM_LEVEL,	//	plasma
+
+	MAX_ITEM_LEVEL,	//	antimatter
+	MAX_ITEM_LEVEL,	//	nanite
+	MAX_ITEM_LEVEL,	//	graviton
+	MAX_ITEM_LEVEL,	//	singularity
+
+	MAX_ITEM_LEVEL,	//	dark acid
+	MAX_ITEM_LEVEL,	//	dark steel
+	MAX_ITEM_LEVEL,	//	dark lightning
+	MAX_ITEM_LEVEL,	//	dark fire
+	};
+
+//	This table is used for API0-57 adventures
+
+static const TArray<int> g_StdExternalDeviceDamageModifierAPI0 =
+//		lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+	{	100,100,100,100, 120,100,100,100, 100,100, 75,100, 100,100,100,100 };
+
+//	This table is used for API58+ adventures
+
+static const TArray<int> g_StdExternalDeviceDamageModifierAPI58 =
+//		lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+	{	100,100,100,100, 100,100,100,100, 100,100,100,100, 100,100,100,100 };
+
+static constexpr int g_iExternalChanceToHitAPI0 = 11;
+static constexpr int g_iExternalChanceToHitAPI58 = 100;
+
+//	Internal Device Damage --------------------------------------------------
+
+//	This table is used for API0-57 adventures
+
+static const TArray<int> g_StdInternalDeviceDamageLevelsAPI0 =
+//		lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+	{	 25,  25, 25, 25,  25, 25, 25, 25,  25, 25, 25, 25,  25, 25, 25, 25 };
+
+//	This table is used for API58+ adventures
+
+static const TArray<int> g_StdInternalDeviceDamageLevelsAPI58 =
+	{
+	MAX_ITEM_LEVEL,	//	laser
+	MAX_ITEM_LEVEL,	//	kinetic
+	MAX_ITEM_LEVEL,	//	particle
+	MAX_ITEM_LEVEL,	//	blast
+
+	MAX_ITEM_LEVEL,	//	ion
+	MAX_ITEM_LEVEL,	//	thermo
+	MAX_ITEM_LEVEL,	//	positron
+	MAX_ITEM_LEVEL,	//	plasma
+
+	MAX_ITEM_LEVEL,	//	antimatter
+	MAX_ITEM_LEVEL,	//	nanite
+	MAX_ITEM_LEVEL,	//	graviton
+	MAX_ITEM_LEVEL,	//	singularity
+
+	MAX_ITEM_LEVEL,	//	dark acid
+	MAX_ITEM_LEVEL,	//	dark steel
+	MAX_ITEM_LEVEL,	//	dark lightning
+	MAX_ITEM_LEVEL,	//	dark fire
+	};
+
+//	This table is used for API0-57 adventures
+
+static const TArray<int> g_StdInternalDeviceDamageModifierAPI0 =
+//		lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+	{	100,100,100,100, 100,100,100,100, 100,100,100,100, 100,100,100,100 };
+
+//	This table is used for API58+ adventures
+
+static const TArray<int> g_StdInternalDeviceDamageModifierAPI58 =
+//		lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+	{	100,100,100,100, 100,100,100,100, 100,100,100,100, 100,100,100,100 };
+
+static constexpr int g_iInternalChanceToHitAPI0 = 50;
+static constexpr int g_iInternalChanceToHitAPI58 = 100;
+
+//	Helpers -----------------------------------------------------------------
+
+//	Translates actual API versions into the known versions
+//	used for the MiningMaxOreLevel system
+//
+int GetAPIForMiningMaxOreLevel (int apiVersion)
 
 	{
 	if (apiVersion >= 57)
@@ -142,9 +240,35 @@ int GetAPIForMiningMaxOreLevel (int apiVersion)
 		return 0;
 	}
 
-CEngineOptions::CEngineOptions (int apiVersion)
+//	Translates actual API versions into the known versions
+//	used for the MiningMaxOreLevel system
+//
+int GetAPIForExternalDeviceDamageMaxLevel (int apiVersion)
+
+	{
+	if (apiVersion >= 58)
+		return 58;
+	else
+		return 0;
+	}
+
+//	Translates actual API versions into the known versions
+//	used for the MiningMaxOreLevel system
+//
+int GetAPIForInternalDeviceDamageMaxLevel (int apiVersion)
+
+	{
+	if (apiVersion >= 58)
+		return 58;
+	else
+		return 0;
+	}
+
+//	Class Methods -------------------------------------------------------------
 
 //	CEngineOptions constructor
+//
+CEngineOptions::CEngineOptions (int apiVersion)
 
 	{
 	//	Set api version we are loading defaults for
@@ -156,9 +280,9 @@ CEngineOptions::CEngineOptions (int apiVersion)
 	InitDefaultGlobals();
 	}
 
-void CEngineOptions::InitDefaultGlobals (void)
-
 //	Initialize default globals based on whatever API version we need
+//
+void CEngineOptions::InitDefaultGlobals ()
 
 	{
 	//	Initialize armor and shield damage adjustment tables
@@ -176,12 +300,19 @@ void CEngineOptions::InitDefaultGlobals (void)
 
 	m_MiningDamageMaxOreLevels = GetDefaultMiningMaxOreLevels(m_iDefaultForAPIVersion);
 	m_bCustomMiningMaxOreLevels = false;
-	}
 
-void CEngineOptions::InitDefaultDescs (void)
+	//	Initialize device damage tables
+
+	m_ExternalDeviceDamageMaxLevels = GetDefaultExternalDeviceDamageLevels(m_iDefaultForAPIVersion);
+	m_bCustomExternalDeviceDamageMaxLevels = false;
+	m_InternalDeviceDamageMaxLevels = GetDefaultInternalDeviceDamageLevels(m_iDefaultForAPIVersion);
+	m_bCustomInternalDeviceDamageMaxLevels = false;
+	}
 
 //	Initiate defaults where necessary based on whatever API version we need
 //	Assumes that InitDefaultGlobals was called during our constructor
+//
+void CEngineOptions::InitDefaultDescs ()
 
 	{
 	//	Initialize armor and shield damage adjustment tables
@@ -198,15 +329,24 @@ void CEngineOptions::InitDefaultDescs (void)
 
 	if (!m_bCustomMiningMaxOreLevels)
 		m_MiningDamageMaxOreLevels = GetDefaultMiningMaxOreLevels(m_iDefaultForAPIVersion);
-	}
 
-bool CEngineOptions::HidesArmorImmunity (SpecialDamageTypes iSpecial) const
+	//	Initialize device damage tables
+
+	if (!m_bCustomExternalDeviceDamageMaxLevels)
+		m_ExternalDeviceDamageMaxLevels = GetDefaultExternalDeviceDamageLevels(m_iDefaultForAPIVersion);
+
+	if (!m_bCustomInternalDeviceDamageMaxLevels)
+		m_InternalDeviceDamageMaxLevels = GetDefaultInternalDeviceDamageLevels(m_iDefaultForAPIVersion);
+
+	}
 
 //	HidesArmorImmunity
 //
 //	Returns TRUE if we should hide the given immunity from armor UI displays.
 //	We do this on high-level adventures (e.g., VotG) when all armors are immune
 //	to a particular special damage.
+//
+bool CEngineOptions::HidesArmorImmunity (SpecialDamageTypes iSpecial) const
 
 	{
 	switch (iSpecial)
@@ -231,11 +371,11 @@ bool CEngineOptions::HidesArmorImmunity (SpecialDamageTypes iSpecial) const
 		}
 	}
 
-bool CEngineOptions::InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable)
-
 //	InitDamageAdjFromXML
 //
 //	Initializes from XML.
+//
+bool CEngineOptions::InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable)
 
 	{
 	int iLevel = XMLDesc.GetAttributeInteger(LEVEL_ATTRIB);
@@ -253,11 +393,11 @@ bool CEngineOptions::InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElemen
 	return true;
 	}
 
-bool CEngineOptions::InitMiningMaxOreLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
-
 //	InitDamageAdjFromXML
 //
 //	Initializes from XML.
+//
+bool CEngineOptions::InitMiningMaxOreLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
 
 	{
 	m_bCustomMiningMaxOreLevels = true;
@@ -270,11 +410,45 @@ bool CEngineOptions::InitMiningMaxOreLevelsFromXML (SDesignLoadCtx& Ctx, const C
 	return true;
 	}
 
-CMiningDamageLevelDesc CEngineOptions::GetDefaultMiningMaxOreLevels (int apiVersion)
+//	InitExternalDeviceDamageMaxLevelsFromXML
+//
+//	Initializes from XML.
+//
+bool CEngineOptions::InitExternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
+
+	{
+	m_bCustomExternalDeviceDamageMaxLevels = true;
+
+	if (m_ExternalDeviceDamageMaxLevels.InitFromXML(Ctx, XMLDesc) != NOERROR)
+		return false;
+
+	//	Success!
+
+	return true;
+	}
+
+//	InitInternalDeviceDamageMaxLevelsFromXML
+//
+//	Initializes from XML.
+//
+bool CEngineOptions::InitInternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
+
+	{
+	m_bCustomInternalDeviceDamageMaxLevels = true;
+
+	if (m_InternalDeviceDamageMaxLevels.InitFromXML(Ctx, XMLDesc) != NOERROR)
+		return false;
+
+	//	Success!
+
+	return true;
+	}
 
 //	GetDefaultMiningMaxOreLevels
 //
 //	Returns the default table basedon API version
+//
+CMiningDamageLevelDesc CEngineOptions::GetDefaultMiningMaxOreLevels (int apiVersion)
 
 	{
 	CMiningDamageLevelDesc Desc;
@@ -298,11 +472,55 @@ CMiningDamageLevelDesc CEngineOptions::GetDefaultMiningMaxOreLevels (int apiVers
 	return Desc;
 	}
 
-void CEngineOptions::InitDefaultDamageAdj (void)
+//	GetDefaultMiningMaxOreLevels
+//
+//	Returns the default table based on API version
+//
+CDeviceDamageLevelDesc CEngineOptions::GetDefaultExternalDeviceDamageLevels (int apiVersion)
+
+	{
+	CDeviceDamageLevelDesc Desc;
+
+	switch (GetAPIForExternalDeviceDamageMaxLevel(apiVersion))
+		{
+		case 0:
+			Desc.InitFromArray(g_StdExternalDeviceDamageLevelsAPI0, g_StdExternalDeviceDamageModifierAPI0, g_iExternalChanceToHitAPI0);
+			break;
+		case 58:
+		default:
+			Desc.InitFromArray(g_StdExternalDeviceDamageLevelsAPI58, g_StdExternalDeviceDamageModifierAPI58, g_iExternalChanceToHitAPI58);
+		}
+
+	return Desc;
+	}
+
+//	GetDefaultMiningMaxOreLevels
+//
+//	Returns the default table based on API version
+//
+CDeviceDamageLevelDesc CEngineOptions::GetDefaultInternalDeviceDamageLevels (int apiVersion)
+
+	{
+	CDeviceDamageLevelDesc Desc;
+
+	switch (GetAPIForExternalDeviceDamageMaxLevel(apiVersion))
+		{
+		case 0:
+			Desc.InitFromArray(g_StdInternalDeviceDamageLevelsAPI0, g_StdInternalDeviceDamageModifierAPI0, g_iInternalChanceToHitAPI0);
+			break;
+		case 58:
+		default:
+			Desc.InitFromArray(g_StdInternalDeviceDamageLevelsAPI58, g_StdInternalDeviceDamageModifierAPI58, g_iInternalChanceToHitAPI58);
+		}
+
+	return Desc;
+	}
 
 //	InitDefaultDamageAdj
 //
 //	Initialize default tables
+//
+void CEngineOptions::InitDefaultDamageAdj ()
 
 	{
 	int i;
@@ -319,11 +537,11 @@ void CEngineOptions::InitDefaultDamageAdj (void)
 		}
 	}
 
-bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType &Type)
-
 //	InitFromProperties
 //
 //	Initializes from properties (usually from the adventure descriptor).
+//
+bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType &Type)
 
 	{
 	CCodeChainCtx CCX(Ctx.GetUniverse());
@@ -344,6 +562,42 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 	m_bHideIonizeImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_IONIZE_IMMUNE)->IsNil();
 	m_bHideRadiationImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_RADIATION_IMMUNE)->IsNil();
 	m_bHideShatterImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_SHATTER_IMMUNE)->IsNil();
+
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_SHIP_COMPARTMENT);
+	double rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
+	if (rValue < 0.0)
+		rValue = 0.1;
+	m_rFortifiedShipCompartment = rValue;
+
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_MULTIHULL_STATION);
+	rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
+	if (rValue < 0.0)
+		rValue = 0.1;
+	m_rFortifiedStationMultihull = rValue;
+
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_STATION);
+	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
+	if (rValue < 0.0)
+		rValue = 1.0;
+	m_rFortifiedStation = rValue;
+
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_ARMOR_SEGMENT);
+	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
+	if (rValue < 0.0)
+		rValue = 1.0;
+	m_rFortifiedArmorSlot = rValue;
+
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_ARMOR);
+	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
+	if (rValue < 0.0)
+		rValue = 1.0;
+	m_rFortifiedArmor = rValue;
+
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_SHIELD);
+	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
+	if (rValue < 0.0)
+		rValue = 1.0;
+	m_rFortifiedShield = rValue;
 
 	return true;
 	}

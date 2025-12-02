@@ -339,6 +339,8 @@ struct SDamageCtx
 		SDamageCtx (const DamageDesc &DamageArg);
 		~SDamageCtx ();
 
+		Metric CalcWMDFortificationAdj (Metric rWMD0FortificationAdj = 0.1);
+		static Metric CalcWMDFortificationAdjFromLevel (int iLevel, Metric rWMD0FortificationAdj = 0.1);
 		void ClearTimeStop () { m_bTimeStop = false; }
 		int GetBlindTime () const { return m_iBlindTime; }
 		CWeaponFireDesc &GetDesc () const { return *m_pDesc; }
@@ -395,6 +397,7 @@ struct SDamageCtx
 		int iShieldDamage = 0;						//	Damage taken by shields
 		int iOriginalAbsorb = 0;					//	Computed absorb value, if shot had not been reflected
 		int iOriginalShieldDamage = 0;				//	Computed shield damage value, if shot had not been reflected
+		Metric rArmorExternFortification = 1.0;		//	External armor fortification (Ex, from a segment slot)
 		int iArmorAbsorb = 0;						//	Damage absorbed by armor
 		int iArmorDamage = 0;						//	Damage taken by armor
 
