@@ -181,7 +181,7 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (SDesignLoadCtx &Ctx,
 
 	m_dwAreaSet = ParseNonCritical(Desc.GetAttribute(NON_CRITICAL_ATTRIB));
 
-	m_rFortified = Desc.GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
+	m_rFortified = Desc.GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, R_NAN);
 
     return NOERROR;
     }

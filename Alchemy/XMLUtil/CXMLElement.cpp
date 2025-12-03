@@ -296,11 +296,12 @@ CString CXMLElement::GetAttribute (const CString &sName) const
 	return *pValue;
 	}
 
-bool CXMLElement::GetAttributeBool (const CString &sName) const
-
 //	GetAttributeBool
 //
 //	Returns TRUE or FALSE for the attribute
+//	Default of false
+//
+bool CXMLElement::GetAttributeBool (const CString &sName) const
 
 	{
 	const CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
@@ -310,21 +311,35 @@ bool CXMLElement::GetAttributeBool (const CString &sName) const
 	return IsBoolTrueValue(*pValue);
 	}
 
-double CXMLElement::GetAttributeDouble (const CString &sName) const
-
 //	GetAttributeDouble
 //
 //	Returns a double attribute.
+//  Default of 0.0
+//
+double CXMLElement::GetAttributeDouble (const CString &sName) const
 
 	{
 	return strToDouble(GetAttribute(sName), 0.0);
 	}
 
-double CXMLElement::GetAttributeDoubleBounded (const CString &sName, double rMin, double rMax, double rNull) const
+//	GetAttributeDoubleDefault
+//
+//	Returns a double attribute.
+//  It returns rNull if not found
+//
+double CXMLElement::GetAttributeDoubleDefault (const CString &sName, double rNull) const
+
+	{
+	return strToDouble(GetAttribute(sName), rNull);
+	}
 
 //	GetAttributeDoubleBounded
 //
 //	Returns a double, insuring that it is in range
+//	If rMax < rMin, there is no maximum bound
+//  Returns rNull if not found
+//
+double CXMLElement::GetAttributeDoubleBounded (const CString &sName, double rMin, double rMax, double rNull) const
 
 	{
 	CString sValue;
@@ -354,31 +369,42 @@ double CXMLElement::GetAttributeDoubleBounded (const CString &sName, double rMin
 		return rNull;
 	}
 
-double CXMLElement::GetAttributeFloat (const CString &sName) const
-
 //	GetAttributeFloat
 //
-//	Returns a floating point attribute
+//	Returns a floating point attribute (this is actually a double)
+//
+double CXMLElement::GetAttributeFloat (const CString &sName) const
 
 	{
 	return strToDouble(GetAttribute(sName), 0.0);
 	}
 
-int CXMLElement::GetAttributeInteger (const CString &sName) const
-
 //	GetAttributeInteger
 //
 //	Returns an integer attribute
+//
+int CXMLElement::GetAttributeInteger (const CString &sName) const
 
 	{
 	return strToInt(GetAttribute(sName), 0, NULL);
 	}
 
-int CXMLElement::GetAttributeIntegerBounded (const CString &sName, int iMin, int iMax, int iNull) const
+//	GetAttributeIntegerDefault
+//
+//	Returns an integer attribute
+//  Return iNull if not found
+//
+int CXMLElement::GetAttributeIntegerDefault (const CString &sName, int iNull) const
+
+	{
+	return strToInt(GetAttribute(sName), 0, NULL);
+	}
 
 //	GetAttributeIntegerBounded
 //
 //	Returns an integer, insuring that it is in range
+//
+int CXMLElement::GetAttributeIntegerBounded (const CString &sName, int iMin, int iMax, int iNull) const
 
 	{
 	CString sValue;
