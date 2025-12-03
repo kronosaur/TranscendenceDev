@@ -83,9 +83,9 @@ SDamageCtx::~SDamageCtx (void)
 //	Computes a floating point adjusted form of WMD.
 //  1.0 is full damage
 //
-Metric SDamageCtx::CalcWMDFortificationAdj(Metric rWMD0FortificationAdj)
+Metric SDamageCtx::CalcWMDFortificationAdj(Metric rWMD0FortificationAdj, Metric rMinAdj, Metric rMaxAdj)
 	{
-	return SDamageCtx::CalcWMDFortificationAdjFromLevel(Damage.GetMassDestructionLevel(), rWMD0FortificationAdj);
+	return SDamageCtx::CalcWMDFortificationAdjFromLevel(Damage.GetMassDestructionLevel(), rWMD0FortificationAdj, rMinAdj, rMaxAdj);
 	}
 
 //	CalcWMDFortificationAdj
@@ -93,17 +93,17 @@ Metric SDamageCtx::CalcWMDFortificationAdj(Metric rWMD0FortificationAdj)
 //	Computes a floating point adjusted form of WMD.
 //  1.0 is full damage
 //
-Metric SDamageCtx::CalcWMDFortificationAdjFromLevel(int iLevel, Metric rWMD0FortificationAdj)
+Metric SDamageCtx::CalcWMDFortificationAdjFromLevel(int iLevel, Metric rWMD0FortificationAdj, Metric rMinAdj, Metric rMaxAdj)
 	{
 	//	We only adjust curves for WMD lower than 7, max WMD is always pinned.
 
 	if (iLevel == 7)
-		return 1.0;
+		return 1.0 > rMaxAdj ? rMaxAdj : 1.0;
 
 	//	Adjust for level 0 is trivial, its just rWMD0FortificationAdj
 
 	if (iLevel == 0)
-		return rWMD0FortificationAdj;
+		return rWMD0FortificationAdj < rMinAdj ? rMinAdj : rWMD0FortificationAdj;
 
 	//	Otherwise we need to do a linear transform
 	//	The math is exploded for debug builds, optimized builds collapse a bunch of this math;
@@ -114,7 +114,12 @@ Metric SDamageCtx::CalcWMDFortificationAdjFromLevel(int iLevel, Metric rWMD0Fort
 	Metric rTransform = rOutRange / rBaseRange;
 	Metric rAdj = 1.0 - (rBasePos * rTransform);
 
-	return rAdj;
+	if (rAdj < rMinAdj)
+		return rMinAdj;
+	else if (rAdj > rMaxAdj)
+		return rMaxAdj;
+	else
+		return rAdj;
 	}
 
 void SDamageCtx::InitDamageEffects (const DamageDesc &DamageArg)
