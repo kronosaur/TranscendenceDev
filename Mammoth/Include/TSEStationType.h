@@ -451,7 +451,7 @@ class CAsteroidDesc
 
 		static TStaticStringTable<TStaticStringEntry<EAsteroidType>, 5> COMPOSITION_INDEX;
 		static SCompositionDesc COMPOSITION_TABLE[EAsteroidTypeCount];
-		static TStaticStringTable<TStaticStringEntry<EMiningMethod>, 4> MINING_METHOD_INDEX;
+		static TStaticStringTable<TStaticStringEntry<EMiningMethod>, EMiningMethodCount> MINING_METHOD_INDEX;
 
 		static const CAsteroidDesc m_Null;
 	};
