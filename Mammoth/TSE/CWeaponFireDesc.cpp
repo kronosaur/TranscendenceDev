@@ -141,6 +141,7 @@
 #define FRAG_VELOCITY_TYPE_RELATIVISTIC			CONSTLIT("relativistic")
 #define FRAG_VELOCITY_TYPE_SUPERLUMINAL			CONSTLIT("superluminal")
 
+#define MINING_METHOD_UNIVERSAL					CONSTLIT("universal")
 #define MINING_METHOD_ABLATIVE					CONSTLIT("ablative")
 #define MINING_METHOD_DRILL						CONSTLIT("drill")
 #define MINING_METHOD_EXPLOSIVE					CONSTLIT("explosive")
@@ -2125,7 +2126,9 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			return ERR_FAIL;
 			}
 
-		if (sMiningMethod == MINING_METHOD_ABLATIVE)
+		if (sMiningMethod == MINING_METHOD_UNIVERSAL)
+			m_MiningMethod = EMiningMethod::universal;
+		else if (sMiningMethod == MINING_METHOD_ABLATIVE)
 			m_MiningMethod = EMiningMethod::ablation;
 		else if (sMiningMethod == MINING_METHOD_DRILL)
 			m_MiningMethod = EMiningMethod::drill;
