@@ -82,6 +82,8 @@ SDamageCtx::~SDamageCtx (void)
 // 
 //	Computes a floating point adjusted form of WMD.
 //  1.0 is full damage
+//  rMinAdj should not be lower than 0.0
+//  rMaxAdj should not be lower than rMinAdj
 //
 Metric SDamageCtx::CalcWMDFortificationAdj(Metric rWMD0FortificationAdj, Metric rMinAdj, Metric rMaxAdj)
 	{
@@ -92,6 +94,8 @@ Metric SDamageCtx::CalcWMDFortificationAdj(Metric rWMD0FortificationAdj, Metric 
 // 
 //	Computes a floating point adjusted form of WMD.
 //  1.0 is full damage
+//  rMinAdj should not be lower than 0.0
+//  rMaxAdj should not be lower than rMinAdj
 //
 Metric SDamageCtx::CalcWMDFortificationAdjFromLevel(int iLevel, Metric rWMD0FortificationAdj, Metric rMinAdj, Metric rMaxAdj)
 	{
