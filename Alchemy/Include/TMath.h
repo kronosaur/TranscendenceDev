@@ -9,14 +9,17 @@
 //	Modern std library definitions for certain values
 
 //	(double) std:: infinity
+//	Use IS_AN_INF(rValue) or IS_P_INF(rValue) to check for positive infinity values
 //
 #define R_INF std::numeric_limits<double>::infinity()
 
 //	(double) std:: negative infinity
+//  Use IS_AN_INF(rValue) or IS_N_INF(rValue) to check for negative infinity values
 //
 #define R_NINF -std::numeric_limits<double>::infinity()
 
 //	(double) std:: generic NaN
+//	Use IS_NAN(rValue) to check for NaN values
 //
 #define R_NAN std::nan("")
 
