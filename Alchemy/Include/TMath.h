@@ -20,6 +20,24 @@
 //
 #define R_NAN std::nan("")
 
+//	check if a value is a NaN
+//	(NaN is never equal to anything, including NaN)
+//
+#define IS_NAN(a) std::isnan(a)
+
+//	check if a value is an infinity (either pos or negative)
+//	direct infinity comparisons are indeterminate and return false
+//
+#define IS_AN_INF(a) std::isinf(a)
+
+//	check if a value is a positive infinity
+//
+#define IS_P_INF(a) (std::isinf(a) && a > 0)
+
+//	check if a value is a negative infinity
+//
+#define IS_N_INF(a) (std::isinf(a) && a < 0)
+
 //	Percentage conversion functions
 
 //  mathPercent

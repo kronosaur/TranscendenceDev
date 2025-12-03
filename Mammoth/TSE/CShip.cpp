@@ -4555,8 +4555,16 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		//	Set any Fortification adjustment from the slot
 
 		Ctx.rArmorExternFortification = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect()).GetFortificationAdj();
-		if (Ctx.rArmorExternFortification == R_NAN)
+		if (IS_NAN(Ctx.rArmorExternFortification))
 			Ctx.rArmorExternFortification = g_pUniverse->GetEngineOptions().GetDefaultFortifiedArmorSlot();
+
+		Ctx.rArmorExternMaxFortification = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect()).GetMaxFortificationAdj();
+		if (Ctx.rArmorExternMaxFortification < 0)
+			Ctx.rArmorExternMaxFortification = g_pUniverse->GetEngineOptions().GetDefaultMaxFortificationAdj();
+
+		Ctx.rArmorExternMinFortification = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect()).GetMinFortificationAdj();
+		if (Ctx.rArmorExternMinFortification < 0)
+			Ctx.rArmorExternMinFortification = g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj();
 
 		EDamageResults iResult = pArmor->AbsorbDamage(this, Ctx);
 

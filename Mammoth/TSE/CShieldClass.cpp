@@ -15,6 +15,8 @@
 #define DEPLETION_DELAY_ATTRIB					CONSTLIT("depletionDelay")
 #define FLASH_EFFECT_ATTRIB						CONSTLIT("flashEffect")
 #define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
+#define FORTIFICATION_MAX_ADJ_ATTRIB			CONSTLIT("maxFortificationAdj")
+#define FORTIFICATION_MIN_ADJ_ATTRIB			CONSTLIT("minFortificationAdj")
 #define HAS_NON_REGEN_HP_ATTRIB					CONSTLIT("hasNonRegenHP")
 #define HIT_EFFECT_ATTRIB						CONSTLIT("hitEffect")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
@@ -159,11 +161,25 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	//	Calculate how much extra mitigation we get from any fortification we have
 
 	Metric rFortification;
-	if (m_rFortification == R_NAN)
+	Metric rFortificationAdjMax;
+	Metric rFortificationAdjMin;
+
+	if (IS_NAN(m_rFortification))
 		rFortification = g_pUniverse->GetEngineOptions().GetDefaultFortifiedArmor();
 	else
 		rFortification = m_rFortification;
-	Metric rFortificationAdj = Ctx.CalcWMDFortificationAdj(rFortification);
+
+	if (m_rMaxFortificationAdj < 0)
+		rFortificationAdjMax = g_pUniverse->GetEngineOptions().GetDefaultMaxFortificationAdj();
+	else
+		rFortificationAdjMax = m_rMaxFortificationAdj;
+
+	if (m_rMinFortificationAdj < 0)
+		rFortificationAdjMin = g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj();
+	else
+		rFortificationAdjMin = m_rMinFortificationAdj;
+
+	Metric rFortificationAdj = Ctx.CalcWMDFortificationAdj(rFortification, rFortificationAdjMin, rFortificationAdjMax);
 
 	//	Calculate how much we will absorb
 
@@ -776,6 +792,14 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 	//	Load WMD Fortification
 
 	pShield->m_rFortification = pDesc->GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, R_NAN);
+	pShield->m_rMaxFortificationAdj = pDesc->GetAttributeDoubleBounded(FORTIFICATION_MAX_ADJ_ATTRIB, 0.0, R_INF, -1.0);
+	pShield->m_rMinFortificationAdj = pDesc->GetAttributeDoubleBounded(FORTIFICATION_MIN_ADJ_ATTRIB, 0.0, R_INF, -1.0);
+
+	if (pShield->m_rMaxFortificationAdj >= 0.0 && pShield->m_rMaxFortificationAdj < pShield->m_rMinFortificationAdj)
+		{
+		Ctx.sError = CONSTLIT("Min fortification adj must be less than max fortification adj");
+		return ERR_FAIL;
+		}
 
 	//	Load the weapon suppress
 

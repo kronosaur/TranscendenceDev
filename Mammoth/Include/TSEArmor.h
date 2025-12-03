@@ -181,6 +181,8 @@ class CArmorClass
 		CString m_sMassClass;					//	Computed mass class (computed in Bind)
 		int m_iBalanceAdj;						//	Manual adjustment to balance calculation
 		Metric m_rFortification = 1.0;			//	Fortification Adj for WMD curve on this armor
+		Metric m_rMinFortificationAdj = 0.0;	//	Lower cap on fortification adj for WMD curve on this armor
+		Metric m_rMaxFortificationAdj = R_INF;	//	Upper cap on fortification adj for WMD curve on this armor
 
 		DWORD m_fPhotoRecharge:1;				//	TRUE if refuels when near a star
 		DWORD m_fShieldInterference:1;			//	TRUE if armor interferes with shields
@@ -220,6 +222,8 @@ class CShipArmorSegmentDesc
 		int GetCenterAngle () const { return AngleMod(m_iStartAt + m_iSpan / 2); }
 		DWORD GetCriticalArea () const { return m_dwAreaSet; }
 		Metric GetFortificationAdj () const { return m_rFortified; }
+		Metric GetMaxFortificationAdj () const { return m_rMaxFortificationAdj; }
+		Metric GetMinFortificationAdj () const { return m_rMinFortificationAdj; }
 		int GetLevel () const;
 		int GetSpan () const { return m_iSpan; }
 		int GetStartAngle () const { return m_iStartAt; }
@@ -229,7 +233,9 @@ class CShipArmorSegmentDesc
 			DWORD dwArmorUNID,
 			int iLevel,
 			const CRandomEnhancementGenerator &Enhancement,
-			Metric rFortification);
+			Metric rFortification,
+			Metric rMaxFortificationAdj,
+			Metric rMinFortificationAdj);
 		ALERROR InitFromXML (
 			SDesignLoadCtx &Ctx,
 			const CXMLElement &Desc,
@@ -238,6 +244,8 @@ class CShipArmorSegmentDesc
 			int iDefaultAngle,
 			const CRandomEnhancementGenerator &DefaultEnhancement,
 			Metric rDefaultFortification,
+			Metric rMaxFortificationAdj,
+			Metric rMinFortificationAdj,
 			int *retiSpan = NULL);
 
 		static const CShipArmorSegmentDesc m_Null;
@@ -251,7 +259,9 @@ class CShipArmorSegmentDesc
 		int m_iLevel = 1;					//  For scalable armor
 		CRandomEnhancementGenerator m_Enhanced;//	Mods
 		DWORD m_dwAreaSet = 0;				//	Areas that this section protects
-		Metric m_rFortified = 1.0;		//	Adjusts WMD adj curve from the WMD0 end
+		Metric m_rFortified = 1.0;			//	Adjusts WMD adj curve from the WMD0 end
+		Metric m_rMinFortificationAdj = 0.0;//	Min WMD adj
+		Metric m_rMaxFortificationAdj = R_INF;	//	Max WMD adj
 	};
 
 class CShipArmorDesc

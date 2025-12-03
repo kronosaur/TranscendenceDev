@@ -7,6 +7,8 @@
 
 #define ARMOR_ID_ATTRIB							CONSTLIT("armorID")
 #define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
+#define FORTIFICATION_MAX_ADJ_ATTRIB			CONSTLIT("maxFortificationAdj")
+#define FORTIFICATION_MIN_ADJ_ATTRIB			CONSTLIT("minFortificationAdj")
 #define LEVEL_ATTRIB               				CONSTLIT("level")
 #define NON_CRITICAL_ATTRIB						CONSTLIT("nonCritical")
 #define SPAN_ATTRIB               				CONSTLIT("span")
@@ -121,7 +123,15 @@ int CShipArmorSegmentDesc::GetLevel (void) const
     return (m_iLevel != -1 ? m_iLevel : m_pArmor->GetItemType()->GetLevel());
     }
 
-ALERROR CShipArmorSegmentDesc::Init (int iStartAt, int iSpan, DWORD dwArmorUNID, int iLevel, const CRandomEnhancementGenerator &Enhancement, Metric rFortification)
+ALERROR CShipArmorSegmentDesc::Init (
+	int iStartAt,
+	int iSpan,
+	DWORD dwArmorUNID,
+	int iLevel,
+	const CRandomEnhancementGenerator &Enhancement,
+	Metric rFortification,
+	Metric rMaxFortificationAdj,
+	Metric rMinFortificationAdj)
 
 //  Init
 //
@@ -135,6 +145,8 @@ ALERROR CShipArmorSegmentDesc::Init (int iStartAt, int iSpan, DWORD dwArmorUNID,
     m_Enhanced = Enhancement;
     m_dwAreaSet = CShipClass::sectCritical;
 	m_rFortified = rFortification;
+	m_rMaxFortificationAdj = rMaxFortificationAdj;
+	m_rMinFortificationAdj = rMinFortificationAdj;
 
     return NOERROR;
     }
@@ -146,6 +158,8 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (SDesignLoadCtx &Ctx,
 											int iDefaultAngle, 
 											const CRandomEnhancementGenerator &DefaultEnhancement,
 											Metric rDefaultFortification,
+											Metric rMaxFortificationAdj,
+											Metric rMinFortificationAdj,
 											int *retiSpan)
 
 //  InitFromXML
@@ -181,7 +195,15 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (SDesignLoadCtx &Ctx,
 
 	m_dwAreaSet = ParseNonCritical(Desc.GetAttribute(NON_CRITICAL_ATTRIB));
 
-	m_rFortified = Desc.GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, R_NAN);
+	m_rFortified = Desc.GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, rDefaultFortification);
+	m_rMaxFortificationAdj = Desc.GetAttributeDoubleBounded(FORTIFICATION_MAX_ADJ_ATTRIB, 0.0, R_INF, rMaxFortificationAdj);
+	m_rMinFortificationAdj = Desc.GetAttributeDoubleBounded(FORTIFICATION_MIN_ADJ_ATTRIB, 0.0, R_INF, rMinFortificationAdj);
+
+	if (m_rMaxFortificationAdj >= 0.0 && m_rMaxFortificationAdj < m_rMinFortificationAdj)
+		{
+		Ctx.sError = CONSTLIT("Min fortification adj must be less than max fortification adj");
+		return ERR_FAIL;
+		}
 
     return NOERROR;
     }

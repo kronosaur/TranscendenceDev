@@ -23,6 +23,8 @@
 #define EMP_DAMAGE_ADJ_ATTRIB					CONSTLIT("EMPDamageAdj")
 #define EMP_IMMUNE_ATTRIB						CONSTLIT("EMPImmune")
 #define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
+#define FORTIFICATION_MAX_ADJ_ATTRIB			CONSTLIT("maxFortificationAdj")
+#define FORTIFICATION_MIN_ADJ_ATTRIB			CONSTLIT("minFortificationAdj")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define HP_BONUS_PER_CHARGE_ATTRIB				CONSTLIT("hpBonusPerCharge")
 #define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")
@@ -762,12 +764,27 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	//	Adjust for out item-level WMD Fortification:
 
 	Metric rFortification = Ctx.rArmorExternFortification;
-	if (m_rFortification == R_NAN)
+	Metric rFortificationAdjMax = Ctx.rArmorExternMaxFortification;
+	Metric rFortificationAdjMin = Ctx.rArmorExternMinFortification;
+
+	//	Stacked fortification modifiers are multiplied together
+
+	if (IS_NAN(m_rFortification))
 		rFortification *= g_pUniverse->GetEngineOptions().GetDefaultFortifiedArmor();
 	else
 		rFortification *= m_rFortification;
 
-	Metric rFortificationAdj = Ctx.CalcWMDFortificationAdj(rFortification);
+	if (m_rMaxFortificationAdj > 0)
+		rFortificationAdjMax *= m_rMaxFortificationAdj;
+	else
+		rFortificationAdjMax *= g_pUniverse->GetEngineOptions().GetDefaultMaxFortificationAdj();
+
+	if (m_rMinFortificationAdj > 0)
+		rFortificationAdjMin *= m_rMinFortificationAdj;
+	else
+		rFortificationAdjMin *= g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj();
+
+	Metric rFortificationAdj = Ctx.CalcWMDFortificationAdj(rFortification, rFortificationAdjMin, rFortificationAdjMax);
 
 	int iDamage = mathAdjust(Ctx.iDamage, mathRound(100 * rFortificationAdj));
 
@@ -1505,6 +1522,14 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	pArmor->m_iHPBonusPerCharge = pDesc->GetAttributeIntegerBounded(HP_BONUS_PER_CHARGE_ATTRIB, 0, -1, 0);
 	pArmor->m_iBalanceAdj = pDesc->GetAttributeIntegerBounded(BALANCE_ADJ_ATTRIB, -200, 200, 0);
 	pArmor->m_rFortification = pDesc->GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, R_NAN);
+	pArmor->m_rMaxFortificationAdj = pDesc->GetAttributeDoubleBounded(FORTIFICATION_MAX_ADJ_ATTRIB, 0.0, R_INF, -1.0);
+	pArmor->m_rMinFortificationAdj = pDesc->GetAttributeDoubleBounded(FORTIFICATION_MIN_ADJ_ATTRIB, 0.0, R_INF, -1.0);
+
+	if (pArmor->m_rMaxFortificationAdj >= 0.0 && pArmor->m_rMaxFortificationAdj < pArmor->m_rMinFortificationAdj)
+		{
+		Ctx.sError = CONSTLIT("Min fortification adj must be less than max fortification adj");
+		return ERR_FAIL;
+		}
 
 	//	Regen
 

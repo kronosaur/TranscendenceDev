@@ -116,7 +116,7 @@ EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Des
 	{
 	//	Calculate our Fortification adjustment
 
-	int iDamageAdj = mathRound(100 * Ctx.CalcWMDFortificationAdj(Desc.GetFortificationAdj()));
+	int iDamageAdj = mathRound(100 * Ctx.CalcWMDFortificationAdj(Desc.GetFortificationAdj(), Desc.GetFortificationMinAdj(), Desc.GetFortificationMaxAdj()));
 
 	//	Effective damage requires mass destruction power
 

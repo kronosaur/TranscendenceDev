@@ -330,7 +330,18 @@ double CXMLElement::GetAttributeDouble (const CString &sName) const
 double CXMLElement::GetAttributeDoubleDefault (const CString &sName, double rNull) const
 
 	{
-	return strToDouble(GetAttribute(sName), rNull);
+	CString sValue;
+	if (FindAttribute(sName, &sValue))
+		{
+		bool bFailed;
+		double rValue = strToDouble(sValue, rNull, &bFailed);
+		if (bFailed)
+			return rNull;
+		else
+			return rValue;
+		}
+	else
+		return rNull;
 	}
 
 //	GetAttributeDoubleBounded
@@ -397,7 +408,18 @@ int CXMLElement::GetAttributeInteger (const CString &sName) const
 int CXMLElement::GetAttributeIntegerDefault (const CString &sName, int iNull) const
 
 	{
-	return strToInt(GetAttribute(sName), 0, NULL);
+	CString sValue;
+	if (FindAttribute(sName, &sValue))
+		{
+		bool bFailed;
+		int iValue = strToInt(sValue, iNull, &bFailed);
+		if (bFailed)
+			return iNull;
+		else
+			return iValue;
+		}
+	else
+		return iNull;
 	}
 
 //	GetAttributeIntegerBounded

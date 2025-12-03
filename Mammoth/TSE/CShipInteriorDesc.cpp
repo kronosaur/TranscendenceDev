@@ -11,6 +11,8 @@
 #define ATTACH_TO_ATTRIB						CONSTLIT("attachTo")
 #define CLASS_ATTRIB							CONSTLIT("class")
 #define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
+#define FORTIFICATION_MAX_ADJ_ATTRIB			CONSTLIT("maxFortificationAdj")
+#define FORTIFICATION_MIN_ADJ_ATTRIB			CONSTLIT("minFortificationAdj")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define ID_ATTRIB								CONSTLIT("id")
 #define NAME_ATTRIB								CONSTLIT("name")
@@ -293,8 +295,22 @@ void CShipInteriorDesc::DebugPaint (CG32bitImage &Dest, int x, int y, int iRotat
 Metric CShipInteriorDesc::GetFortificationAdj() const
 	{
 	if (g_pUniverse)
-		return m_rFortified == R_NAN ? g_pUniverse->GetEngineOptions().GetDefaultFortifiedShipCompartment() : m_rFortified;
+		return IS_NAN(m_rFortified) ? g_pUniverse->GetEngineOptions().GetDefaultFortifiedShipCompartment() : m_rFortified;
 	return 0.1;
+	}
+
+Metric CShipInteriorDesc::GetFortificationMaxAdj() const
+	{
+	if (g_pUniverse)
+		return m_rMaxFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDefaultMaxFortificationAdj() : m_rMaxFortificationAdj;
+	return 1.0;
+	}
+
+Metric CShipInteriorDesc::GetFortificationMinAdj() const
+	{
+	if (g_pUniverse)
+		return m_rMinFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj() : m_rMinFortificationAdj;
+	return 0.0;
 	}
 
 int CShipInteriorDesc::GetHitPoints (void) const
@@ -326,6 +342,14 @@ ALERROR CShipInteriorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fHasAttached = false;
 	m_fIsMultiHull = false;
 	m_rFortified = pDesc->GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, R_NAN);
+	m_rMaxFortificationAdj = pDesc->GetAttributeDoubleBounded(FORTIFICATION_MAX_ADJ_ATTRIB, 0.0, R_INF, -1.0);
+	m_rMinFortificationAdj = pDesc->GetAttributeDoubleBounded(FORTIFICATION_MIN_ADJ_ATTRIB, 0.0, R_INF, -1.0);
+
+	if (m_rMaxFortificationAdj >= 0.0 && m_rMaxFortificationAdj < m_rMinFortificationAdj)
+		{
+		Ctx.sError = CONSTLIT("Min fortification adj must be less than max fortification adj");
+		return ERR_FAIL;
+		}
 
 	//	Keep a temporary map of IDs to section
 
