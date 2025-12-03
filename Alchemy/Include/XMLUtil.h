@@ -101,8 +101,10 @@ class CXMLElement
 		bool GetAttributeBool (const CString &sName) const;
 		int GetAttributeCount (void) const { return m_Attributes.GetCount(); }
 		double GetAttributeDouble (const CString &sName) const;
+		double GetAttributeDoubleDefault (const CString &sName, double rNull) const;
 		double GetAttributeDoubleBounded (const CString &sName, double rMin, double rMax = -1.0, double rNull = 0.0) const;
 		int GetAttributeInteger (const CString &sName) const;
+		int GetAttributeIntegerDefault (const CString &sName, int iNull) const;
 		int GetAttributeIntegerBounded (const CString &sName, int iMin, int iMax = -1, int iNull = 0) const;
 		bool GetAttributeIntegerRange (const CString &sName, int *retiLow, int *retiHigh, int iMin = 0, int iMax = -1, int iNullLow = 0, int iNullHigh = 0, bool bAllowInverted = false) const;
 		ALERROR GetAttributeIntegerList (const CString &sName, TArray<int> *pList) const;

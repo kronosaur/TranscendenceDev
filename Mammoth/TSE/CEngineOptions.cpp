@@ -563,41 +563,61 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 	m_bHideRadiationImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_RADIATION_IMMUNE)->IsNil();
 	m_bHideShatterImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_SHATTER_IMMUNE)->IsNil();
 
+	//	Initialize default fortificationAdj for this adventure
+	// 
+	//	Note: empty properties and properties with (double 'NaN) return Nil
+	//	Nil initializes the legacy defaults which were hardcoded up through API57 (2.0a7)
+	//
+	//	We check for a real NaN just in case Tlisp doubles ever get updated to support
+	//	explicit NaN. This code runs once per adventure init so the impact is negligible.
+
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_SHIP_COMPARTMENT);
 	double rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
-	if (rValue < 0.0)
+	if (IS_NAN(rValue))
 		rValue = 0.1;
 	m_rFortifiedShipCompartment = rValue;
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_MULTIHULL_STATION);
 	rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
-	if (rValue < 0.0)
+	if (IS_NAN(rValue))
 		rValue = 0.1;
 	m_rFortifiedStationMultihull = rValue;
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_STATION);
 	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (rValue < 0.0)
+	if (IS_NAN(rValue))
 		rValue = 1.0;
 	m_rFortifiedStation = rValue;
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_ARMOR_SEGMENT);
 	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (rValue < 0.0)
+	if (IS_NAN(rValue))
 		rValue = 1.0;
 	m_rFortifiedArmorSlot = rValue;
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_ARMOR);
 	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (rValue < 0.0)
+	if (IS_NAN(rValue))
 		rValue = 1.0;
 	m_rFortifiedArmor = rValue;
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_SHIELD);
 	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (rValue < 0.0)
+	if (IS_NAN(rValue))
 		rValue = 1.0;
 	m_rFortifiedShield = rValue;
+
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_MAX_ADJ);
+	rValue = pValue->IsNil() ? R_INF : pValue->GetDoubleValue();
+	if (rValue < 0)
+		rValue = R_INF;
+	m_rMaxFortificationAdj = rValue;
+
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_MIN_ADJ);
+	rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
+	if (rValue < 0)
+		rValue = 0.0;
+	m_rMinFortificationAdj = rValue;
 
 	return true;
 	}

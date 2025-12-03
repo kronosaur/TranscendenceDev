@@ -8,6 +8,8 @@
 #define ARMOR_ID_ATTRIB							CONSTLIT("armorID")
 #define COUNT_ATTRIB							CONSTLIT("count")
 #define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
+#define FORTIFICATION_MAX_ADJ_ATTRIB			CONSTLIT("maxFortificationAdj")
+#define FORTIFICATION_MIN_ADJ_ATTRIB			CONSTLIT("minFortificationAdj")
 #define LEVEL_ATTRIB               				CONSTLIT("level")
 #define START_AT_ATTRIB            				CONSTLIT("startAt")
 
@@ -199,12 +201,20 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (error = SegEnhancement.InitFromXML(Ctx, pDesc))
 			return error;
 
-		Metric rFortifiedRatio = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
+		Metric rFortifiedRatio = pDesc->GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, R_NAN);
+		Metric rMaxFortifiedAdj = pDesc->GetAttributeDoubleBounded(FORTIFICATION_MAX_ADJ_ATTRIB, 0.0, R_INF, -1.0);
+		Metric rMinFortifiedAdj = pDesc->GetAttributeDoubleBounded(FORTIFICATION_MIN_ADJ_ATTRIB, 0.0, R_INF, -1.0);
+
+		if (rMaxFortifiedAdj >= 0.0 && rMaxFortifiedAdj < rMinFortifiedAdj)
+			{
+			Ctx.sError = CONSTLIT("Min fortification adj must be less than max fortification adj");
+			return ERR_FAIL;
+			}
 
 		m_Segments.InsertEmpty(iSegCount);
 		for (int i = 0; i < iSegCount; i++)
 			{
-			if (error = m_Segments[i].Init(iSegPos, iSegSize, dwSegUNID, iSegLevel, SegEnhancement, rFortifiedRatio))
+			if (error = m_Segments[i].Init(iSegPos, iSegSize, dwSegUNID, iSegLevel, SegEnhancement, rFortifiedRatio, rMaxFortifiedAdj, rMinFortifiedAdj))
 				return error;
 
 			iSegPos += iSegSize;
@@ -228,7 +238,15 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (error = DefaultEnhancement.InitFromXML(Ctx, pDesc))
 			return error;
 
-		Metric rDefaultFortifiedRatio = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
+		Metric rDefaultFortifiedRatio = pDesc->GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, R_NAN);
+		Metric rDefaultMaxFortifiedAdj = pDesc->GetAttributeDoubleBounded(FORTIFICATION_MAX_ADJ_ATTRIB, 0.0, R_INF, -1.0);
+		Metric rDefaultMinFortifiedAdj = pDesc->GetAttributeDoubleBounded(FORTIFICATION_MIN_ADJ_ATTRIB, 0.0, R_INF, -1.0);
+
+		if (rDefaultMaxFortifiedAdj >= 0.0 && rDefaultMaxFortifiedAdj < rDefaultMinFortifiedAdj)
+			{
+			Ctx.sError = CONSTLIT("Min fortification adj must be less than max fortification adj");
+			return ERR_FAIL;
+			}
 
 		m_Segments.InsertEmpty(pDesc->GetContentElementCount());
 		for (int i = 0; i < pDesc->GetContentElementCount(); i++)
@@ -238,7 +256,7 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				throw CException(ERR_FAIL);
 
 			int iSpan;
-			if (error = m_Segments[i].InitFromXML(Ctx, *pSegment, dwDefaultSegUNID, iDefaultLevel, iAngle, DefaultEnhancement, rDefaultFortifiedRatio, &iSpan))
+			if (error = m_Segments[i].InitFromXML(Ctx, *pSegment, dwDefaultSegUNID, iDefaultLevel, iAngle, DefaultEnhancement, rDefaultFortifiedRatio, rDefaultMaxFortifiedAdj, rDefaultMinFortifiedAdj, &iSpan))
 				return error;
 
 			iAngle += iSpan;

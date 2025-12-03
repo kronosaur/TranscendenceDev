@@ -433,7 +433,11 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 
 	else
 		{
-		Metric rFortificationAdj = Ctx.CalcWMDFortificationAdjFromLevel(iSpecialDamage, GetHullDesc().GetFortificationAdj(IsMultiHull()));
+		Metric rFortificationAdj = Ctx.CalcWMDFortificationAdjFromLevel(
+			iSpecialDamage,
+			GetHullDesc().GetFortificationAdj(IsMultiHull()),
+			GetHullDesc().GetMinFortificationAdj(),
+			GetHullDesc().GetMaxFortificationAdj());
 		int iDamageAdj = (int)(100 * rFortificationAdj);
 		int iDamage = mathAdjust(Ctx.iDamage, iDamageAdj);
 
@@ -505,7 +509,11 @@ int CStation::CalcAdjustedDamageAbandoned (SDamageCtx &Ctx) const
 
 	else
 		{
-		Metric rFortificationAdj = Ctx.CalcWMDFortificationAdjFromLevel(iSpecialDamage, GetHullDesc().GetFortificationAdj(IsMultiHull()));
+		Metric rFortificationAdj = Ctx.CalcWMDFortificationAdjFromLevel(
+			iSpecialDamage,
+			GetHullDesc().GetFortificationAdj(IsMultiHull()),
+			GetHullDesc().GetMinFortificationAdj(),
+			GetHullDesc().GetMaxFortificationAdj());
 		int iDamageAdj = (int)(100 * rFortificationAdj);
 		return mathAdjust(Ctx.iDamage, iDamageAdj);
 		}
