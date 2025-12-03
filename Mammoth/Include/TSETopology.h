@@ -458,7 +458,7 @@ class CTopology
 			const TArray<CString> &aBlockNodes = TArray<CString>(),
 			bool bIgnoreOneWay = true,
 			bool bAllowUseNodeBacktrack = true) const;
-		const TArray<const CTopologyNode*> GetPathTo (
+		TArray<const CTopologyNode*> GetPathTo (
 			const CTopologyNode *pSrc,
 			const CTopologyNode *pTarget,
 			const CString &sGateCriteria = NULL_STR,
@@ -466,7 +466,7 @@ class CTopology
 			const TArray<CString> &aBlockNodes = TArray<CString>(),
 			bool bIgnoreOneWay = true,
 			bool bAllowUseNodeBacktrack = true) const;
-		const TArray<const CTopologyNode*> GetPathTo (
+		TArray<const CTopologyNode*> GetPathTo (
 			const CTopologyNode *pSrc,
 			const CTopologyNode *pTarget,
 			const CString &sGateCriteria = NULL_STR,
