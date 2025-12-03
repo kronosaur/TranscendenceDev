@@ -567,6 +567,9 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 	// 
 	//	Note: empty properties and properties with (double 'NaN) return Nil
 	//	Nil initializes the legacy defaults which were hardcoded up through API57 (2.0a7)
+	//
+	//	We check for a real NaN just in case Tlisp doubles ever get updated to support
+	//	explicit NaN. This code runs once per adventure init so the impact is negligible.
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_SHIP_COMPARTMENT);
 	double rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
