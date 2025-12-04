@@ -1,35 +1,57 @@
-//	CMiningDamageLevelDesc.cpp
+//	CMassDestructionDesc.cpp
 //
-//	CMiningDamageLevelDesc class
+//	CMassDestructionDesc class
 //	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
-#define MINING_DAMAGE_LEVEL_ATTRIB					CONSTLIT("miningMaxOreLevel")
+#define WMD_ADJ						CONSTLIT("wmdAdj")
+#define WMD_DISPLAY					CONSTLIT("wmdDisplay")
+#define WMD_DISPLAY_PREFIX			CONSTLIT("wmdDisplayPrefix")
+#define WMD_MIN_DAMAGE				CONSTLIT("wmdMinDamage")
 
-int CMiningDamageLevelDesc::GetMaxOreLevel (DamageTypes iDamageType, int iMiningItemLevel) const
+//	GetWMDAdj
+// 
+//	Get raw WMD adj as a floating point number
+//
+Metric CMassDestructionDesc::GetWMDAdj (int iLevel) const
 	{
-	ASSERT(iMiningItemLevel >= 0 && iMiningItemLevel <= MAX_ITEM_LEVEL);
-
-	if (iDamageType == damageGeneric || iDamageType == damageNull)
-		return MAX_MINING_LEVEL;
-	else
-		{
-		switch (m_Desc[iDamageType].iAdjType)
-			{
-			case levelRelative:
-				return Min(Max(1, iMiningItemLevel + m_Desc[iDamageType].iLevelValue), MAX_ITEM_LEVEL);
-
-			case levelAbsolute:
-				return m_Desc[iDamageType].iLevelValue;
-
-			default:
-				throw CException(ERR_FAIL);
-			}
-		}
+	iLevel = max(min(iLevel, MAX_WMD_LEVEL), 0);
+	return m_Desc[iLevel].rAdj;
 	}
 
-ALERROR CMiningDamageLevelDesc::InitFromArray (const TArray<int>& Levels)
+//	GetStochasticWMDAdj
+//
+//	Get Stochastically Rounded WMD as integer Adj
+//	Use GetWMDAdj for accurate Adj math.
+//	Use GetStochasticWMDAdj for accurate Adj balance on legacy algorithms.
+//
+int CMassDestructionDesc::GetRoundedWMDAdj (int iLevel) const
+	{
+	return mathRoundStochastic(GetWMDAdj(iLevel) * 100);
+	}
+
+//	GetRoundedWMDAdj
+//
+//	Get Rounded WMD as integer Adj
+//	Use GetWMDAdj for accurate Adj math.
+//	Use GetStochasticWMDAdj for accurate Adj balance on legacy algorithms.
+//	Recommended only if you need to use WMD Adj in legacy algorithms that expect consistent output.
+//
+int CMassDestructionDesc::GetRoundedWMDAdj (int iLevel) const
+	{
+	return mathRound(GetWMDAdj(iLevel) * 100);
+	}
+
+//	GetWMDLabel
+//	
+//	Get Integer Suffix to display for this WMD label
+//
+CString CMassDestructionDesc::GetWMDLabel (int iLevel) const
+	{
+	iLevel = max(min(iLevel, MAX_WMD_LEVEL), 0);
+	return m_Desc[iLevel].sLabel;
+	}
 
 //	InitFromArray
 //
@@ -37,64 +59,62 @@ ALERROR CMiningDamageLevelDesc::InitFromArray (const TArray<int>& Levels)
 //	long.
 //
 //	In this path there is no need for Bind.
+//
+ALERROR CMassDestructionDesc::InitFromArray (const TArray<double>& Adj, const TArray<const char*>& Labels, int iMinDamage, CString sAttribPrefix)
 
 	{
-	for (int i = 0; i < damageCount; i++)
+	//	Ensure our arrays are valid
+
+	if (Adj.GetCount() != MAX_WMD_LEVEL_COUNT || Labels.GetCount() != MAX_WMD_LEVEL_COUNT)
+		return ERR_FAIL;
+
+	//	Ensure that for all mathematical relevancy, WMD 7 == 1.0 Adj
+
+	if (!(Adj[MAX_WMD_LEVEL] + g_Epsilon > 1.0 && Adj[MAX_WMD_LEVEL] - g_Epsilon < 1.0))
+		return ERR_FAIL;
+
+	m_iMinDamage = iMinDamage;
+	m_sAttribPrefix = sAttribPrefix;
+
+	for (int i = 0; i < MAX_WMD_LEVEL_COUNT; i++)
 		{
-		if (i < Levels.GetCount())
-			{
-			m_Desc[i].iAdjType = levelAbsolute;
-			m_Desc[i].iLevelValue = Levels[i];
-			}
-		else
-			{
-			m_Desc[i].iAdjType = levelRelative;
-			m_Desc[i].iLevelValue = 0;
-			}
+		m_Desc[i].rAdj = Adj[i];
+		m_Desc[i].sLabel = CString(Labels[i]);
 		}
 
 	return NOERROR;
 	}
 
-ALERROR CMiningDamageLevelDesc::InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, const CString &sAttrib)
-
 //	InitFromMiningDamageLevel
 //
-//	Loads a damage adjustment descriptor as follows:
+//	Loads a WMD descriptor as follows:
 //
-//	Absolute levels:
-//	5,5,...
-//	laser:5; kinetic:5; ...
-// 
-//	Relative level to mining item:
-//	+5,-5,...
-//	laser:+5; kinetic:-5; ...
+//	WMD LEVEL:	0		1		2		3		4		5		6		7
+//	sAdj:		0.1		0.2		0.3		0.4		0.55	0.7		0.85	1.0
+//	or
+//	sAdj:		10		20		30		40		55		70		85		100
+//	and
+//	sLabel:		10		20		30		40		55		70		85		100
 //
-//	Absolute max/min:
-//  *,0,...
-//  laser:*; kinetic:0; ...
-//
+ALERROR CMassDestructionDesc::InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAdj, const CString &sLabel, int iMinDamage, CString sAttribPrefix)
 
 	{
 	ALERROR error;
 
 	//	Short-circuit
+	//	We just throw an error here because we are not designed to get the tables here.
 
-	if (sAttrib.IsBlank())
+	if (sAdj.IsBlank())
 		{
-		for (int i = 0; i < damageCount; i++)
-			{
-			m_Desc[i].iAdjType = levelRelative;
-			m_Desc[i].iLevelValue = 0;
-			}
-		return NOERROR;
+		Ctx.sError = CONSTLIT("Invalid defaultWMD definition: wmdAdj cannot be blank.");
+		return error;
 		}
 
 	//	We expect a list of per damage max ore level values, either with a damageType
 	//	label or ordered by damageType.
 
 	TArray<CString> DamageAdj;
-	if (error = ParseDamageTypeList(sAttrib, &DamageAdj))
+	if (error = ParseWMDList(sAttrib, &DamageAdj))
 		{
 		Ctx.sError = CONSTLIT("Invalid miningMaxOreLevel definition.");
 		return error;
@@ -174,56 +194,32 @@ ALERROR CMiningDamageLevelDesc::InitFromMiningDamageLevel (SDesignLoadCtx &Ctx, 
 	return NOERROR;
 	}
 
-ALERROR CMiningDamageLevelDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc)
-
 //	InitFromXML
 //
 //	Initialize from XML.
 //
 //	If bIsDefault is TRUE then we don't need to bind.
+//
+ALERROR CMassDestructionDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc)
 
 	{
 	ALERROR error;
-	CString sValue;
+	CString sAdj;
+	CString sLabels;
+	CString sPrefix;
 
-	if (XMLDesc.FindAttribute(MINING_DAMAGE_LEVEL_ATTRIB, &sValue))
+	if (XMLDesc.FindAttribute(MINING_DAMAGE_LEVEL_ATTRIB, &sAdj))
 		{
-		if (error = InitFromMiningDamageLevel(Ctx, sValue))
+		if (error = InitFromWMDLevel(Ctx, sValue))
 			return error;
 		}
 	else
 		{
-		Ctx.sError = CONSTLIT("Missing miningMaxOreLevel attribute.");
+		Ctx.sError = CONSTLIT("Invalid defaultWMD definition: wmdAdj missing.");
 		return ERR_FAIL;
 		}
 
 	//	Done
 
 	return NOERROR;
-	}
-
-DamageTypes CMiningDamageLevelDesc::ParseDamageTypeFromProperty (const CString &sProperty)
-
-//	ParseDamageTypeFromProperty
-//
-//	Returns the damageType from a property encoded as xyz.damageType.
-//
-//	EXAMPLE
-//
-//	miningMaxOreLevel.laser
-//
-//	If no damage type is encoded, we return damageGeneric. If there is a parsing
-//	error, we return damageError.
-
-	{
-	const char *pPos = sProperty.GetASCIIZPointer();
-	while (*pPos != '.' && *pPos != '\0')
-		pPos++;
-
-	if (*pPos == '\0')
-		return damageGeneric;
-
-	pPos++;
-	CString sDamage(pPos);
-	return ::LoadDamageTypeFromXML(sDamage);
 	}

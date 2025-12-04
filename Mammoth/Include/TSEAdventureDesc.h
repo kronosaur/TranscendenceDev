@@ -18,6 +18,7 @@ class CEngineOptions
 		int GetDefaultShotHP () const { return m_iDefaultShotHP; }
 		const CDeviceDamageLevelDesc* GetExternalDeviceDamageMaxLevels () const { return &m_ExternalDeviceDamageMaxLevels; }
 		const CDeviceDamageLevelDesc* GetInternalDeviceDamageMaxLevels () const { return &m_InternalDeviceDamageMaxLevels; }
+		const CMassDestructionDesc* GetMassDestructionAdj() const { return &m_MassDestruction; }
 		const CMiningDamageLevelDesc* GetMiningMaxOreLevels () const { return &m_MiningDamageMaxOreLevels; }
 		const CDamageAdjDesc* GetShieldDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ShieldDamageAdj[iLevel - 1]; }
 		Metric GetDefaultFortifiedShipCompartment () const { return m_rFortifiedShipCompartment; }
@@ -31,6 +32,7 @@ class CEngineOptions
 		bool InitExternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
 		bool InitInternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
 		bool InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType &Type);
+		bool InitMassDestructionDescFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
 		bool InitMiningMaxOreLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
 		bool InitShieldDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomShieldDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ShieldDamageAdj); }
 		bool IsDamageShown () const { return m_bShowDamageDone; }
@@ -46,6 +48,7 @@ class CEngineOptions
 		static CMiningDamageLevelDesc GetDefaultMiningMaxOreLevels (int apiVersion);
 		static CDeviceDamageLevelDesc GetDefaultExternalDeviceDamageLevels (int apiVersion);
 		static CDeviceDamageLevelDesc GetDefaultInternalDeviceDamageLevels (int apiVersion);
+		static CMassDestructionDesc GetDefaultWMDAdj (int apiVersion);
 
 		int m_iDefaultForAPIVersion = -1;
 
@@ -77,6 +80,9 @@ class CEngineOptions
 		int m_iDefaultShotHP = -1;
 
 		//	Default WMD/Fortified behavior
+
+		CMassDestructionDesc m_MassDestruction;
+		bool m_bCustomMassDestruction;
 
 		double m_rFortifiedShipCompartment = 1.0;
 		double m_rFortifiedStationMultihull = 1.0;

@@ -655,23 +655,25 @@ class CMassDestructionDesc
 		static constexpr int MAX_WMD_LEVEL = 7;
 		static constexpr int MAX_WMD_LEVEL_COUNT = 8;
 
-		int GetWMDAdj (int iLevel) const;
-		int GetWMDLabel (int iLevel) const;
-		ALERROR InitFromArray (const TArray<int>& Levels);
-		ALERROR InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAttrib);
+		Metric GetWMDAdj (int iLevel) const;
+		int GetRoundedWMDAdj (int iLevel) const;
+		int GetStochasticWMDAdj (int iLevel) const;
+		CString GetWMDLabel (int iLevel) const;
+		ALERROR InitFromArray (const TArray<double>& Adj, const TArray<const char*>& Labels, int iMinDamage = 0, CString sAttribPrefix = "WMD");
+		ALERROR InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAdj, const CString &sLabel, int iMinDamage = 0, CString sAttribPrefix = "WMD");
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
-
-		static DamageTypes ParseDamageTypeFromProperty (const CString &sProperty);
 
 	private:
 
 		struct SWMDLevelDesc
 			{
-			int iAdj = 0;							//	base % adjustment of damage
-			int iLabel = 0;							//	number to display in UI
+			Metric rAdj = 0.0;							//	base % adjustment of damage
+			CString sLabel = CONSTLIT("");				//	suffix to display in UI
 			};
 
 		SWMDLevelDesc m_Desc[MAX_WMD_LEVEL_COUNT];	//	Descriptor for computing adjustment
+		CString m_sAttribPrefix = CONSTLIT("WMD");
+		int m_iMinDamage = 0;
 	};
 
 class CMiningDamageLevelDesc
