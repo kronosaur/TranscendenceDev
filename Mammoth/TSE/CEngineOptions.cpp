@@ -483,6 +483,22 @@ bool CEngineOptions::InitInternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& C
 	return true;
 	}
 
+//	InitMassDestructionDescFromXML
+//
+//	Initializes from XML.
+//
+bool CEngineOptions::InitMassDestructionDescFromXML(SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
+	{
+	m_bCustomMassDestruction = true;
+
+	if (m_MassDestruction.InitFromXML(Ctx, XMLDesc) != NOERROR)
+		return false;
+
+	//	Success!
+
+	return true;
+	}
+
 //	GetDefaultMiningMaxOreLevels
 //
 //	Returns the default table basedon API version

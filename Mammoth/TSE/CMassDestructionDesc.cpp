@@ -5,10 +5,10 @@
 
 #include "PreComp.h"
 
-#define WMD_ADJ						CONSTLIT("wmdAdj")
-#define WMD_DISPLAY					CONSTLIT("wmdDisplay")
-#define WMD_DISPLAY_PREFIX			CONSTLIT("wmdDisplayPrefix")
-#define WMD_MIN_DAMAGE				CONSTLIT("wmdMinDamage")
+#define WMD_ADJ_ATTRIB						CONSTLIT("wmdAdj")
+#define WMD_DISPLAY_ATTRIB					CONSTLIT("wmdDisplay")
+#define WMD_DISPLAY_PREFIX_ATTRIB			CONSTLIT("wmdDisplayPrefix")
+#define WMD_MIN_DAMAGE_ATTRIB				CONSTLIT("wmdMinDamage")
 
 //	GetWMDAdj
 // 
@@ -106,7 +106,7 @@ ALERROR CMassDestructionDesc::InitFromWMDLevel (SDesignLoadCtx &Ctx, const CStri
 
 	if (sAdj.IsBlank())
 		{
-		Ctx.sError = CONSTLIT("Invalid defaultWMD definition: wmdAdj cannot be blank.");
+		Ctx.sError = CONSTLIT("Invalid WMDLevels definition: wmdAdj cannot be blank.");
 		return error;
 		}
 
@@ -116,7 +116,7 @@ ALERROR CMassDestructionDesc::InitFromWMDLevel (SDesignLoadCtx &Ctx, const CStri
 	TArray<CString> DamageAdj;
 	if (error = ParseWMDList(sAttrib, &DamageAdj))
 		{
-		Ctx.sError = CONSTLIT("Invalid miningMaxOreLevel definition.");
+		Ctx.sError = CONSTLIT("Invalid wmdAdj definition.");
 		return error;
 		}
 
@@ -215,7 +215,7 @@ ALERROR CMassDestructionDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElemen
 		}
 	else
 		{
-		Ctx.sError = CONSTLIT("Invalid defaultWMD definition: wmdAdj missing.");
+		Ctx.sError = CONSTLIT("Invalid WMDLevels definition: wmdAdj missing.");
 		return ERR_FAIL;
 		}
 
