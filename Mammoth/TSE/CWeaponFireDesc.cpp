@@ -1623,11 +1623,11 @@ bool CWeaponFireDesc::FireOnFragment (const CDamageSource &Source, CSpaceObject 
 		return false;
 	}
 
-Metric CWeaponFireDesc::GetAveInitialSpeed (void) const
-
 //	GetAveInitialSpeed
 //
-//	Returns the average initial speed
+//	Returns the average initial speed in km/simulation sec
+//
+Metric CWeaponFireDesc::GetAveInitialSpeed (void) const
 
 	{
 	if (m_fVariableInitialSpeed)

@@ -2342,7 +2342,6 @@ bool CWeaponClass::FireAllShots (
 	CSpaceObject &Source = Device.GetSourceOrThrow();
 	CItemCtx ItemCtx(&Source, &Device);
 	Metric rSpeed = ShotDesc.GetInitialSpeed();
-	Metric rInterpolatedTime = rInterpolatedShotTime / g_TicksPerSecond;
 
 	retResult.vRecoil = CVector();
 	retResult.bRecoil = false;
@@ -2353,7 +2352,7 @@ bool CWeaponClass::FireAllShots (
 		{
 		//	Set later shots behind the weapons firing point slightly, so that they come out in the right order.
 
-		CVector vInterpolatedPos = rInterpolatedShotTime && bInterplatedShotPos ? Shots[i].vPos - PolarToVector(Shots[i].iDir, ShotDesc.GetAveInitialSpeed() * rInterpolatedTime) : Shots[i].vPos;
+		CVector vInterpolatedPos = rInterpolatedShotTime && bInterplatedShotPos ? Shots[i].vPos - PolarToVector(Shots[i].iDir, ShotDesc.GetAveInitialSpeed() * rInterpolatedShotTime) : Shots[i].vPos;
 
 		//	Fire out to event, if the weapon has one.
 		//	Otherwise, we create weapon fire
@@ -2380,9 +2379,10 @@ bool CWeaponClass::FireAllShots (
 		else
 			FireWeaponShot(&Source, &Device, ShotDesc, vInterpolatedPos, Shots[i].iDir, rSpeed, Shots[i].pTarget, iRepeatingCount, i);
 
-		//	Create the barrel flash effect, unless canceled or we are not the first interpolated shot
+		//	Create the barrel flash effect, unless canceled
+		//	We use the original shot pos rather than the interpolated pos to create the illusion of the normal firing pattern
 
-		if (Result.bFireEffect && iInterpolatedShotCount == 0)
+		if (Result.bFireEffect)
 			ShotDesc.CreateFireEffect(Source.GetSystem(), &Source, Shots[i].vPos, CVector(), Shots[i].iDir, iRepeatingCount);
 
 		//	Create the sound effect, if necessary
