@@ -769,7 +769,7 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	Metric rFortificationAdj = Ctx.CalcWMDFortificationAdj(rFortification);
 
-	int iDamage = mathAdjust(Ctx.iDamage, mathRound(100 * rFortificationAdj));
+	int iDamage = mathRoundStochastic(Ctx.iDamage * rFortificationAdj);
 
 	//	Adjust for special armor damage:
 	//

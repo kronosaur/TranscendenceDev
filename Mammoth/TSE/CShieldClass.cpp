@@ -167,7 +167,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 
 	//	Calculate how much we will absorb
 
-	Ctx.iAbsorb = mathRound(mathAdjust(Ctx.iDamage, GetAbsorbAdj(DeviceItem, Enhancements, Ctx.Damage)) * rFortificationAdj);
+	Ctx.iAbsorb = mathRoundStochastic(mathAdjust(Ctx.iDamage, GetAbsorbAdj(DeviceItem, Enhancements, Ctx.Damage)) * rFortificationAdj);
 
 	//	Compute how much damage we take (based on the type of damage)
 

@@ -116,15 +116,15 @@ EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Des
 	{
 	//	Calculate our Fortification adjustment
 
-	int iDamageAdj = mathRound(100 * Ctx.CalcWMDFortificationAdj(Desc.GetFortificationAdj()));
+	Metric rFortificationAdj = Ctx.CalcWMDFortificationAdj(Desc.GetFortificationAdj());
 
 	//	Effective damage requires mass destruction power
 
-    Ctx.iDamage = mathAdjust(Ctx.iDamage, iDamageAdj);
+    Ctx.iDamage = mathRoundStochastic(Ctx.iDamage * rFortificationAdj);
 
 	//	If we don't have WMD and we're not making much progress, then show a hint.
 
-	if (iDamageAdj <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD)
+	if ((rFortificationAdj * 100) <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD)
 		{
 		if (Ctx.iDamage == 0)
 			Ctx.SetHint(EDamageHint::useWMDforShip);
