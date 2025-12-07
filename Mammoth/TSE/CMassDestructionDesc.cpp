@@ -26,7 +26,7 @@ Metric CMassDestructionDesc::GetWMDAdj (int iLevel) const
 //	Use GetWMDAdj for accurate Adj math.
 //	Use GetStochasticWMDAdj for accurate Adj balance on legacy algorithms.
 //
-int CMassDestructionDesc::GetRoundedWMDAdj (int iLevel) const
+int CMassDestructionDesc::GetStochasticWMDAdj (int iLevel) const
 	{
 	return mathRoundStochastic(GetWMDAdj(iLevel) * 100);
 	}
@@ -96,98 +96,89 @@ ALERROR CMassDestructionDesc::InitFromArray (const TArray<double>& Adj, const TA
 //	and
 //	sLabel:		10		20		30		40		55		70		85		100
 //
-ALERROR CMassDestructionDesc::InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAdj, const CString &sLabel, int iMinDamage, CString sAttribPrefix)
+ALERROR CMassDestructionDesc::InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAdj, const CString &sLabels, int iMinDamage, CString sAttribPrefix)
 
 	{
-	ALERROR error;
-
 	//	Short-circuit
 	//	We just throw an error here because we are not designed to get the tables here.
 
 	if (sAdj.IsBlank())
 		{
 		Ctx.sError = CONSTLIT("Invalid WMDLevels definition: wmdAdj cannot be blank.");
+		return ERR_FAIL;
+		}
+
+	//	We expect a list of per WMD level adjustments and labels
+
+	ALERROR error;
+	TArray<CString> aAdj;
+
+	if (error = ParseWMDAdjList(sAdj, aAdj))
+		{
+		Ctx.sError = CONSTLIT("Invalid wmdAdj definition: must have 8 elements.");
 		return error;
 		}
 
-	//	We expect a list of per damage max ore level values, either with a damageType
-	//	label or ordered by damageType.
+	TArray<CString> aLabels;
 
-	TArray<CString> DamageAdj;
-	if (error = ParseWMDList(sAttrib, &DamageAdj))
+	if (error = ParseWMDLabelList(sLabels, aLabels))
 		{
-		Ctx.sError = CONSTLIT("Invalid wmdAdj definition.");
+		Ctx.sError = CONSTLIT("Invalid wmdDisplay definition: must have 8 elements.");
 		return error;
 		}
 
-	//	Get level
+	//	Init the WMD levels
 
-	for (int i = 0; i < damageCount; i++)
+	for (int i = 0; i < MAX_WMD_LEVEL_COUNT; i++)
 		{
+		//	Insert label
+		//	
+		//	We only do this for WMD levels above 0, since WMD0 is an absense of WMD and should
+		//	not have a label
+		// 
+		//	We allow "!" as an override to prevent a given level from printing a label.
 
-		//	If we have nothing
-
-		if (DamageAdj[i].IsBlank())
+		if (i && !strEquals(aLabels[i - 1], CONSTLIT("!")))
 			{
-			m_Desc[i].iAdjType = levelRelative;
-			m_Desc[i].iLevelValue = 0;
+			CString sLabel = aLabels[i - 1];
+			m_Desc[i].sLabel = sLabel;
 			}
 		else
+			m_Desc[i].sLabel = CONSTLIT("");
+
+		//	Convert the adj value
+
+		bool bFail;
+
+		int iAdj = strParseInt(aAdj[i].GetPointer(), 100, NULL, &bFail);
+
+		if (bFail || strFind(aAdj[i], CONSTLIT(".")) >= 0)
 			{
-			int iValue = strToInt(DamageAdj[i], 0);
+			m_Desc[i].rAdj = strParseDouble(aAdj[i].GetPointer(), 1.0, NULL, &bFail);
 
-			//	If we have a positive item level offset
-
-			if (strStartsWith(DamageAdj[i], CONSTLIT("+")))
+			if (bFail)
 				{
-
-				//	Negative values should not be reachable in this code
-
-				if (iValue > MAX_ITEM_LEVEL)
-					{
-					Ctx.sError = strPatternSubst(CONSTLIT("miningMaxOreLevel value is out of range: %d."), iValue);
-					return ERR_FAIL;
-					}
-
-				m_Desc[i].iAdjType = levelRelative;
-				m_Desc[i].iLevelValue = iValue;
-				}
-
-			//	If we have a negative item level offset
-
-			else if (strStartsWith(DamageAdj[i], CONSTLIT("-")))
-				{
-
-				//	Positive values should not be reachable in this code
-
-				if (iValue < -1 * MAX_ITEM_LEVEL)
-					{
-					Ctx.sError = strPatternSubst(CONSTLIT("miningMaxOreLevel value is out of range: %d."), iValue);
-					return ERR_FAIL;
-					}
-
-				m_Desc[i].iAdjType = levelRelative;
-				m_Desc[i].iLevelValue = iValue;
-				}
-
-			//	If we have an absolute item level
-
-			else
-				{
-
-				//	Negative values should not be reachable in this code
-
-				if (iValue > MAX_ITEM_LEVEL)
-					{
-					Ctx.sError = strPatternSubst(CONSTLIT("miningMaxOreLevel value is out of range: %d."), iValue);
-					return ERR_FAIL;
-					}
-
-				m_Desc[i].iAdjType = levelAbsolute;
-				m_Desc[i].iLevelValue = iValue;
+				Ctx.sError = strCat(CONSTLIT("Could not parse value in wmdAdj: "), aAdj[i]);
+				return ERR_FAIL;
 				}
 			}
+		else
+			m_Desc[i].rAdj = ((double)iAdj) / 100.0;
+
+		//	the max WMD element must be 1.0
+		//	since everything is adjusted relative to WMD7
+
+		if (i == MAX_WMD_LEVEL && (m_Desc[i].rAdj > 1.0 + g_Epsilon || m_Desc[i].rAdj < 1.0 - g_Epsilon))
+			{
+			Ctx.sError = CONSTLIT("The adj value of WMD7 must be equal to 1.0 (100 %)");
+			return ERR_FAIL;
+			}
 		}
+
+	//	Insert values
+
+	m_iMinDamage = iMinDamage;
+	m_sAttribPrefix = sAttribPrefix;
 
 	//	Done
 
@@ -203,23 +194,74 @@ ALERROR CMassDestructionDesc::InitFromWMDLevel (SDesignLoadCtx &Ctx, const CStri
 ALERROR CMassDestructionDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc)
 
 	{
-	ALERROR error;
 	CString sAdj;
 	CString sLabels;
 	CString sPrefix;
+	int iMinDamage;
 
-	if (XMLDesc.FindAttribute(MINING_DAMAGE_LEVEL_ATTRIB, &sAdj))
-		{
-		if (error = InitFromWMDLevel(Ctx, sValue))
-			return error;
-		}
-	else
+	//	Collect all attributes
+
+	if (!XMLDesc.FindAttribute(WMD_ADJ_ATTRIB, &sAdj))
 		{
 		Ctx.sError = CONSTLIT("Invalid WMDLevels definition: wmdAdj missing.");
 		return ERR_FAIL;
 		}
 
-	//	Done
+	if (!XMLDesc.FindAttribute(WMD_DISPLAY_ATTRIB, &sLabels))
+		{
+		Ctx.sError = CONSTLIT("Invalid WMDLevels definition: wmdAdj missing.");
+		return ERR_FAIL;
+		}
+
+	if (!XMLDesc.FindAttribute(WMD_DISPLAY_PREFIX_ATTRIB, &sPrefix))
+		sPrefix = m_sAttribPrefix;
+
+	if (XMLDesc.FindAttributeInteger(WMD_MIN_DAMAGE_ATTRIB, &iMinDamage))
+		{
+		if (iMinDamage < 0)
+			{
+			Ctx.sError = CONSTLIT("wmdMinDamage must be greater or equal to 0.");
+			return ERR_FAIL;
+			}
+		}
+	else
+		iMinDamage = m_iMinDamage;
+
+	return InitFromWMDLevel(Ctx, sAdj, sLabels, iMinDamage, sPrefix);
+	}
+
+//	ParseWMDAdjList
+//
+//	Parses an eight element string list like the following
+//	WMD LEVEL:	"0		1		2		3		4		5		6		7"
+//	Whitespace , and ; are valid delimiters
+// 
+//	Returns ERR_FAIL if the count of elements is not 8.
+//
+ALERROR CMassDestructionDesc::ParseWMDAdjList(CString sAttrib, TArray<CString> &DamageAdj) const
+	{
+	ParseAttributes(sAttrib, &DamageAdj);
+
+	if (DamageAdj.GetCount() != MAX_WMD_LEVEL_COUNT)
+		return ERR_FAIL;
+
+	return NOERROR;
+	}
+
+//	ParseWMDLabelList
+//
+//	Parses an seven element string list like the following (WMD0 never displays a label, as its an absense of WMD)
+//	WMD LEVEL:	"1		2		3		4		5		6		7"
+//	Whitespace , and ; are valid delimiters
+// 
+//	Returns ERR_FAIL if the count of elements is not 8.
+//
+ALERROR CMassDestructionDesc::ParseWMDLabelList(CString sAttrib, TArray<CString> &DamageAdj) const
+	{
+	ParseAttributes(sAttrib, &DamageAdj);
+
+	if (DamageAdj.GetCount() != MAX_WMD_LEVEL_COUNT-1)
+		return ERR_FAIL;
 
 	return NOERROR;
 	}

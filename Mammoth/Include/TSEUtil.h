@@ -659,11 +659,15 @@ class CMassDestructionDesc
 		int GetRoundedWMDAdj (int iLevel) const;
 		int GetStochasticWMDAdj (int iLevel) const;
 		CString GetWMDLabel (int iLevel) const;
+		CString GetWMDPrefix () const { return m_sAttribPrefix; }
+		CString GetWMDDisplay (int iLevel) const { return GetWMDLabel(iLevel).GetLength() ? strCat(m_sAttribPrefix, GetWMDLabel(iLevel)) : CONSTLIT(""); }
 		ALERROR InitFromArray (const TArray<double>& Adj, const TArray<const char*>& Labels, int iMinDamage = 0, CString sAttribPrefix = "WMD");
-		ALERROR InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAdj, const CString &sLabel, int iMinDamage = 0, CString sAttribPrefix = "WMD");
+		ALERROR InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAdj, const CString &sLabels, int iMinDamage = 0, CString sAttribPrefix = "WMD");
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
 
 	private:
+		ALERROR ParseWMDAdjList(CString sAttrib, TArray<CString> &DamageAdj) const;
+		ALERROR ParseWMDLabelList(CString sAttrib, TArray<CString> &DamageAdj) const;
 
 		struct SWMDLevelDesc
 			{

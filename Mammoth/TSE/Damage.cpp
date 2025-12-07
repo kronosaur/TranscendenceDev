@@ -108,24 +108,6 @@ SSpecialDamageData SPECIAL_DAMAGE_DATA[] =
 		{	NULL,				NULL }
 	};
 
-struct SWMDData
-	{
-	int iAdj;                               //  Adjustments to damage at this WMD value (0-100)
-	int iLevel;                             //  Display level (0-10)
-	};
-	
-SWMDData WMD_DATA[] =
-	{
-		{   10,     0   },
-		{   25,     2   },
-		{   32,     3   },
-		{   40,     4   },
-		{   50,     5   },
-		{   63,     6   },
-		{   80,     8   },
-		{   100,    10   },
-	};
-
 //	Damage Types
 
 CString GetDamageName (DamageTypes iType)
@@ -451,7 +433,7 @@ int DamageDesc::GetMassDestructionAdj (void) const
 
 
 	{
-	return WMD_DATA[m_sExtra.MassDestructionAdj].iAdj;
+	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetRoundedWMDAdj(m_sExtra.MassDestructionAdj);
 	}
 
 //  GetMassDestructionAdjFromValue
@@ -461,17 +443,35 @@ int DamageDesc::GetMassDestructionAdj (void) const
 int DamageDesc::GetMassDestructionAdjFromValue (int iValue) 
 
 	{
-	return WMD_DATA[Max(0, Min(iValue, MAX_INTENSITY))].iAdj;
+	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetRoundedWMDAdj(Max(0, Min(iValue, MAX_INTENSITY)));
+	}
+
+//	GetMassDestructionDisplayLevel
+//
+//	Returns the string to use for WMD attributes
+//
+CString DamageDesc::GetMassDestructionDisplayLevel () const
+	{
+	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDLabel(m_sExtra.MassDestructionAdj);
+	}
+
+//	GetMassDestructionDisplayStr
+//
+//	Returns the string to use for WMD attributes
+//
+CString DamageDesc::GetMassDestructionDisplayStr() const
+	{
+	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDDisplay(m_sExtra.MassDestructionAdj);
 	}
 
 //  GetMassDestructionLevel
 //
-//  Returns the display level of WMD. This is what we show in weapon stats.
+//  Returns the raw WMD level (0-7)
 //
 int DamageDesc::GetMassDestructionLevel (void) const
 
 	{
-	return WMD_DATA[m_sExtra.MassDestructionAdj].iLevel;
+	return m_sExtra.MassDestructionAdj;
 	}
 
 //  GetMassDestructionLevel
@@ -481,7 +481,7 @@ int DamageDesc::GetMassDestructionLevel (void) const
 int DamageDesc::GetMassDestructionLevelFromValue (int iValue) 
 
 	{
-	return WMD_DATA[Max(0, Min(iValue, MAX_INTENSITY))].iLevel;
+	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetRoundedWMDAdj(Max(0, Min(iValue, MAX_INTENSITY)));
 	}
 
 //	GetMiningWMDAdj
@@ -491,7 +491,7 @@ int DamageDesc::GetMassDestructionLevelFromValue (int iValue)
 int DamageDesc::GetMiningWMDAdj (void)
 
 	{
-	return WMD_DATA[m_sExtra.MiningAdj].iAdj;
+	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetRoundedWMDAdj(m_sExtra.MiningAdj);
 	}
 
 //	GetSpecialDamage
@@ -557,8 +557,6 @@ int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags) co
 		case specialWMD:
 			if (dwFlags & flagSpecialAdj)
 				return GetMassDestructionAdj();
-			else if (dwFlags & flagSpecialLevel)
-				return GetMassDestructionLevel();
 			else
 				return m_sExtra.MassDestructionAdj;
 

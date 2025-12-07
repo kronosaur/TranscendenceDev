@@ -10,7 +10,7 @@
 #define MINING_DAMAGE_ORE_LEVEL_TAG				CONSTLIT("MiningMaxOreLevels")
 #define EXTERNAL_DEVICE_DAMAGE_LEVEL_TAG		CONSTLIT("ExternalDeviceDamageMaxLevels")
 #define INTERNAL_DEVICE_DAMAGE_LEVEL_TAG		CONSTLIT("InternalDeviceDamageMaxLevels")
-#define MASS_DESTRUCTION_ADJ_TAG				CONSTLIT("WMDLevels")
+#define MASS_DESTRUCTION_ADJ_TAG				CONSTLIT("WMDAdj")
 #define SHIELD_DAMAGE_ADJ_TAG					CONSTLIT("ShieldDamageAdj")
 
 #define ADVENTURE_UNID_ATTRIB					CONSTLIT("adventureUNID")

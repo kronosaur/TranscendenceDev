@@ -138,7 +138,6 @@ class DamageDesc
 
 			flagSpecialAdj =        0x00000080, //  Returns adjusted value (e.g., GetMassDestructionAdj
 												//      instead of raw value).
-			flagSpecialLevel =      0x00000100, //  Returns display level (e.g., GetMassDestructionLevel)
 			};
 
 		DamageDesc (void) { }
@@ -188,6 +187,8 @@ class DamageDesc
 		int GetMassDestructionAdj (void) const;
 		int GetMassDestructionDamage (void) const { return m_sExtra.MassDestructionAdj; }
 		int GetMassDestructionLevel (void) const;
+		CString GetMassDestructionDisplayLevel () const;
+		CString GetMassDestructionDisplayStr () const;
 		int GetMiningAdj (void) const { return (int)(m_sExtra.MiningAdj ? (2 * (m_sExtra.MiningAdj * m_sExtra.MiningAdj) + 2) : 0); }
 		int GetMiningDamage (void) const { return m_sExtra.MiningAdj; }
 		int GetMiningScan (void) const { return m_sExtra.fMiningScan; }

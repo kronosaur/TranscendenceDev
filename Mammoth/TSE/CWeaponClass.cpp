@@ -658,7 +658,7 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 	//  All weapons have some degree of WMD, but we only count the ones that 
 	//  have non-default WMD.
 
-	if (pShotDesc->GetSpecialDamage(specialWMD, DamageDesc::flagSpecialLevel))
+	if (pShotDesc->GetSpecialDamage(specialWMD))
 		{
 		retBalance.rWMD = BALANCE_WMD_FACTOR * pShotDesc->GetSpecialDamage(specialWMD, DamageDesc::flagSpecialAdj);
 		retBalance.rBalance += retBalance.rWMD;
@@ -5240,7 +5240,11 @@ void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 		//	WMD
 
 		if (Damage.GetMassDestructionLevel() > 0)
-			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("WMD %d"), Damage.GetMassDestructionLevel())));
+			{
+			CString sWMDText = Damage.GetMassDestructionDisplayStr();
+			if (sWMDText.GetLength())
+				retList->Insert(SDisplayAttribute(attribPositive, sWMDText));
+			}
 		}
 
 	//	A launcher with no ammo selected.
