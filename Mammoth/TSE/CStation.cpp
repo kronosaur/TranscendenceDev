@@ -434,13 +434,12 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 	else
 		{
 		Metric rFortificationAdj = Ctx.CalcWMDFortificationAdjFromLevel(iSpecialDamage, GetHullDesc().GetFortificationAdj(IsMultiHull()));
-		int iDamageAdj = (int)(100 * rFortificationAdj);
-		int iDamage = mathAdjust(Ctx.iDamage, iDamageAdj);
+		int iDamage = mathRoundStochastic(Ctx.iDamage * rFortificationAdj);
 
 		//	If we're not making progress, then return a hint about what to do.
 
 		if (iHint != EDamageHint::none 
-				&& iDamageAdj <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD
+				&& (rFortificationAdj * 100) <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD
 				&& Ctx.Attacker.IsPlayer()
 				&& Ctx.Attacker.IsAngryAt(*this))
 			{
@@ -454,7 +453,7 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 
 			//	Adjust for special damage resistance.
 
-			int iAveDamage = mathAdjust(mathRound(rAveDamage), iDamageAdj);
+			int iAveDamage = mathRoundStochastic(mathRound(rAveDamage) * rFortificationAdj);
 
 			//	If we're not doing much harm, then warn the player.
 
@@ -506,8 +505,7 @@ int CStation::CalcAdjustedDamageAbandoned (SDamageCtx &Ctx) const
 	else
 		{
 		Metric rFortificationAdj = Ctx.CalcWMDFortificationAdjFromLevel(iSpecialDamage, GetHullDesc().GetFortificationAdj(IsMultiHull()));
-		int iDamageAdj = (int)(100 * rFortificationAdj);
-		return mathAdjust(Ctx.iDamage, iDamageAdj);
+		return mathRoundStochastic(Ctx.iDamage * rFortificationAdj);
 		}
 	}
 
@@ -2782,7 +2780,7 @@ EDamageResults CStation::OnDamageImmutable (SDamageCtx &Ctx)
 	//	Otherwise, adjust for WMD
 
 	else
-		Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
+		Ctx.iDamage = Ctx.CalcWMDAdjustedDamage();
 
 	//	Hit effect
 

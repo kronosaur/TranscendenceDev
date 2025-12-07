@@ -251,6 +251,11 @@ CString DamageDesc::AsString (void) const
 	return CString(Output.GetPointer(), Output.GetLength());
 	}
 
+int DamageDesc::CalcWMDAdjustedDamage(int iDamage) const
+	{
+	return mathRoundStochastic((iDamage < 0 ? m_Damage.GetAveValue() : iDamage) * GetMassDestructionAdjReal());
+	}
+
 int DamageDesc::ConvertOldMomentum (int iValue)
 
 //	ConvertOldMomentum
@@ -420,7 +425,7 @@ Metric DamageDesc::GetDamageValue (DWORD dwFlags) const
 	//	Adjust for WMD
 
 	if (dwFlags & flagWMDAdj)
-		rDamage = rDamage * GetMassDestructionAdj() / 100.0;
+		rDamage = rDamage * GetMassDestructionAdjReal();
 
 	return rDamage;
 	}
@@ -429,11 +434,20 @@ Metric DamageDesc::GetDamageValue (DWORD dwFlags) const
 //
 //  Returns the adjustment to damage given our level of mass destruction.
 //
-int DamageDesc::GetMassDestructionAdj (void) const
-
+int DamageDesc::GetMassDestructionAdj () const
 
 	{
-	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetRoundedWMDAdj(m_sExtra.MassDestructionAdj);
+	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetStochasticWMDAdj(m_sExtra.MassDestructionAdj);
+	}
+
+//  GetMassDestructionAdjReal
+//
+//  Returns the adjustment to damage given our level of mass destruction.
+//
+Metric DamageDesc::GetMassDestructionAdjReal() const
+
+	{
+	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDAdj(m_sExtra.MassDestructionAdj);
 	}
 
 //  GetMassDestructionAdjFromValue
@@ -444,6 +458,16 @@ int DamageDesc::GetMassDestructionAdjFromValue (int iValue)
 
 	{
 	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetRoundedWMDAdj(Max(0, Min(iValue, MAX_INTENSITY)));
+	}
+
+//  GetMassDestructionAdjRealFromValue
+//
+//  Returns the damage adj of WMD.
+//
+Metric DamageDesc::GetMassDestructionAdjRealFromValue(int iValue)
+
+	{
+	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDAdj(Max(0, Min(iValue, MAX_INTENSITY)));
 	}
 
 //	GetMassDestructionDisplayLevel
@@ -468,7 +492,7 @@ CString DamageDesc::GetMassDestructionDisplayStr() const
 //
 //  Returns the raw WMD level (0-7)
 //
-int DamageDesc::GetMassDestructionLevel (void) const
+int DamageDesc::GetMassDestructionLevel () const
 
 	{
 	return m_sExtra.MassDestructionAdj;
@@ -488,7 +512,7 @@ int DamageDesc::GetMassDestructionLevelFromValue (int iValue)
 //
 //	Returns the adjustment to damage if we treat mining as WMD.
 //
-int DamageDesc::GetMiningWMDAdj (void)
+int DamageDesc::GetMiningWMDAdj ()
 
 	{
 	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetRoundedWMDAdj(m_sExtra.MiningAdj);
