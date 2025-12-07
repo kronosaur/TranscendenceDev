@@ -433,10 +433,12 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 
 	else
 		{
-		Metric rFortificationAdj = Ctx.CalcWMDFortificationAdjFromLevel(iSpecialDamage, GetHullDesc().GetFortificationAdj(IsMultiHull()));
-		int iDamage = mathRoundStochastic(Ctx.iDamage * rFortificationAdj);
+		Metric rFortification = GetHullDesc().GetFortificationAdj(IsMultiHull());
+		int iDamage = Ctx.CalcWMDAdjustedDamageFromLevel(iSpecialDamage, rFortification);
 
 		//	If we're not making progress, then return a hint about what to do.
+
+		Metric rFortificationAdj = Ctx.CalcWMDFortificationAdjFromLevel(iSpecialDamage, rFortification);
 
 		if (iHint != EDamageHint::none 
 				&& (rFortificationAdj * 100) <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD
@@ -503,10 +505,7 @@ int CStation::CalcAdjustedDamageAbandoned (SDamageCtx &Ctx) const
 	//	Otherwise, we adjust the damage.
 
 	else
-		{
-		Metric rFortificationAdj = Ctx.CalcWMDFortificationAdjFromLevel(iSpecialDamage, GetHullDesc().GetFortificationAdj(IsMultiHull()));
-		return mathRoundStochastic(Ctx.iDamage * rFortificationAdj);
-		}
+		return Ctx.CalcWMDAdjustedDamageFromLevel(iSpecialDamage, GetHullDesc().GetFortificationAdj(IsMultiHull()));
 	}
 
 void CStation::CalcBounds (void)
@@ -2769,7 +2768,7 @@ EDamageResults CStation::OnDamageImmutable (SDamageCtx &Ctx)
 	//	If we don't have ejecta, then decrease damage to 0.
 	//
 	//  NOTE: We check MassDestructionLevel (instead of MassDestructionAdj) 
-	//  because even level 0 has some WMD. But for this case we only case
+	//  because even level 0 may have some WMD. But for this case we only care
 	//  about "real" WMD.
 
 	if (m_pType->GetEjectaAdj() == 0
@@ -2780,7 +2779,7 @@ EDamageResults CStation::OnDamageImmutable (SDamageCtx &Ctx)
 	//	Otherwise, adjust for WMD
 
 	else
-		Ctx.iDamage = Ctx.CalcWMDAdjustedDamage();
+		Ctx.iDamage = Ctx.CalcWMDAdjustedDamageRaw();
 
 	//	Hit effect
 

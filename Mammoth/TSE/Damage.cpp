@@ -253,7 +253,7 @@ CString DamageDesc::AsString (void) const
 
 int DamageDesc::CalcWMDAdjustedDamage(int iDamage) const
 	{
-	return mathRoundStochastic((iDamage < 0 ? m_Damage.GetAveValue() : iDamage) * GetMassDestructionAdjReal());
+	return Max(mathRoundStochastic((iDamage < 0 ? m_Damage.GetAveValue() : iDamage) * GetMassDestructionAdjReal()), GetMassDestructionMinDamage());
 	}
 
 int DamageDesc::ConvertOldMomentum (int iValue)
@@ -486,6 +486,11 @@ CString DamageDesc::GetMassDestructionDisplayLevel () const
 CString DamageDesc::GetMassDestructionDisplayStr() const
 	{
 	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDDisplay(m_sExtra.MassDestructionAdj);
+	}
+
+int DamageDesc::GetMassDestructionMinDamage() const
+	{
+	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDMinDamage();
 	}
 
 //  GetMassDestructionLevel

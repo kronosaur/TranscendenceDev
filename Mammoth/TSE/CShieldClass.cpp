@@ -163,11 +163,13 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 		rFortification = g_pUniverse->GetEngineOptions().GetDefaultFortifiedArmor();
 	else
 		rFortification = m_rFortification;
-	Metric rFortificationAdj = Ctx.CalcWMDFortificationAdj(rFortification);
 
 	//	Calculate how much we will absorb
+	//	We need to do this in two steps to allow WMD to set its own min damage first
+	//	before additional adjusmtent
 
-	Ctx.iAbsorb = mathRoundStochastic(mathAdjust(Ctx.iDamage, GetAbsorbAdj(DeviceItem, Enhancements, Ctx.Damage)) * rFortificationAdj);
+	Ctx.iAbsorb = Ctx.CalcWMDAdjustedDamage(rFortification);
+	Ctx.iAbsorb = mathAdjust(Ctx.iAbsorb, GetAbsorbAdj(DeviceItem, Enhancements, Ctx.Damage));
 
 	//	Compute how much damage we take (based on the type of damage)
 

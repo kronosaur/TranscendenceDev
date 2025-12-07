@@ -4724,8 +4724,11 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			int iChanceOfDeath = 5;
 
 			//	We only care about mass destruction damage
+			//	To suppor legacy balance, we use the Raw
+			//	adventure adjustment, rather than normalizing
+			//	on 1.0
 
-			int iWMDDamage = Ctx.CalcWMDAdjustedDamage();
+			int iWMDDamage = Ctx.CalcWMDAdjustedDamageRaw();
 
 			//	Compare the amount of damage that we are taking with the
 			//	original strength (HP) of the armor. Increase the chance

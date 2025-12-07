@@ -78,7 +78,17 @@ SDamageCtx::~SDamageCtx (void)
 		delete m_pDesc;
 	}
 
-int SDamageCtx::CalcWMDAdjustedDamage() const
+int SDamageCtx::CalcWMDAdjustedDamageFromLevel(int iLevel, Metric rWMD0FortificationAdj) const
+	{
+	return Max(mathRoundStochastic(iDamage * CalcWMDFortificationAdjFromLevel(iLevel, rWMD0FortificationAdj)), g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDMinDamage());
+	}
+
+int SDamageCtx::CalcWMDAdjustedDamage(Metric rWMD0FortificationAdj) const
+	{
+	return Max(mathRoundStochastic(iDamage * CalcWMDFortificationAdj(rWMD0FortificationAdj)), g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDMinDamage());
+	}
+
+int SDamageCtx::CalcWMDAdjustedDamageRaw() const
 	{
 	return m_pDesc->GetDamage().CalcWMDAdjustedDamage(iDamage);
 	}
@@ -88,7 +98,7 @@ int SDamageCtx::CalcWMDAdjustedDamage() const
 //	Computes a floating point adjusted form of WMD.
 //  1.0 is full damage
 //
-Metric SDamageCtx::CalcWMDFortificationAdj(Metric rWMD0FortificationAdj)
+Metric SDamageCtx::CalcWMDFortificationAdj(Metric rWMD0FortificationAdj) const
 	{
 	return SDamageCtx::CalcWMDFortificationAdjFromLevel(Damage.GetMassDestructionLevel(), rWMD0FortificationAdj);
 	}

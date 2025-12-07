@@ -191,6 +191,7 @@ class DamageDesc
 		int GetMassDestructionLevel () const;
 		CString GetMassDestructionDisplayLevel () const;
 		CString GetMassDestructionDisplayStr () const;
+		int GetMassDestructionMinDamage () const;
 		int GetMiningAdj (void) const { return (int)(m_sExtra.MiningAdj ? (2 * (m_sExtra.MiningAdj * m_sExtra.MiningAdj) + 2) : 0); }
 		int GetMiningDamage (void) const { return m_sExtra.MiningAdj; }
 		int GetMiningScan (void) const { return m_sExtra.fMiningScan; }
@@ -342,7 +343,9 @@ struct SDamageCtx
 		SDamageCtx (const DamageDesc &DamageArg);
 		~SDamageCtx (void);
 
-		int CalcWMDAdjustedDamage() const;
+		int CalcWMDAdjustedDamage (Metric rWMD0FortificationAdj = 0.1) const;
+		int CalcWMDAdjustedDamageFromLevel (int iLevel, Metric rWMD0FortificationAdj = 0.1) const;
+		int CalcWMDAdjustedDamageRaw () const;
 		void ClearTimeStop (void) { m_bTimeStop = false; }
 		int GetBlindTime (void) const { return m_iBlindTime; }
 		CWeaponFireDesc &GetDesc (void) const { return *m_pDesc; }
@@ -350,7 +353,7 @@ struct SDamageCtx
 		EDamageHint GetHint (void) const { return m_iHint; }
 		CSpaceObject *GetOrderGiver (void) const { return Attacker.GetOrderGiver(); }
 		int GetParalyzedTime (void) const { return m_iParalyzeTime; }
-		Metric CalcWMDFortificationAdj (Metric rWMD0FortificationAdj = 0.1);
+		Metric CalcWMDFortificationAdj (Metric rWMD0FortificationAdj = 0.1) const;
 		static Metric CalcWMDFortificationAdjFromLevel (int iLevel, Metric rWMD0FortificationAdj = 0.1);
 		bool IsBlinded (void) const { return m_bBlind; }
 		bool IsDeviceDamaged (void) const { return m_bDeviceDamage; }
