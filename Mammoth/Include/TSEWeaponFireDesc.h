@@ -838,7 +838,7 @@ class CWeaponFireDesc
 		int GetPowerUse (void) const { return m_iPowerUse; }
 		bool GetPlaySoundOncePerBurst (void) const { return m_bPlaySoundOncePerBurst; }
 		int GetProximityFailsafe (void) const { return m_iProximityFailsafe; }
-		Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }
+		Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }			//	Speed of missile in kps (Simulation secs)
 		CWeaponFireDesc *GetScaledDesc (int iLevel) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
 		int GetStealth (void) const { return m_iStealthFromArmor; }
@@ -928,7 +928,7 @@ class CWeaponFireDesc
 		EMiningMethod m_MiningMethod = EMiningMethod::unknown;	//	Mining method
 		int m_iMaxMiningLevel = -1;				//	Max level of ore that can be mined (-1 = default damage table, 0 = sense ore only)
 
-		Metric m_rMissileSpeed = 0.0;			//	Speed of missile
+		Metric m_rMissileSpeed = 0.0;			//	Speed of missile in kps (Simulation secs)
 		DiceRange m_MissileSpeed;				//	Speed of missile (if random)
 		DiceRange m_Lifetime;					//	Lifetime of fire in seconds
 		DiceRange m_InitialDelay;				//	Delay for n ticks before starting
