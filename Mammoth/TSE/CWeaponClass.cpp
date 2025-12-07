@@ -5790,7 +5790,7 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 	//	attempt to shoot
 	//	If we have pending continuous fire, skip this and go to the continuous fire logic
 
-	DWORD dwContinuousTick = GetContinuousFire(pDevice);
+	DWORD dwContinuousTick = pDevice->GetTimeUntilContinuousShot();
 	DWORD dwContinuousShots = pDevice->GetContinuousShotsLeft();
 	Metric rCurrentActivationDelay = 0.0;
 	Metric rContinuousInterpolationTime = 0.0;	//	Should be bounded 0.0-1.0
@@ -5831,6 +5831,11 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 			if (!dwContinuousShots)
 				dwContinuousShots = GetContinuous(*pShot);	//	Number of additional shots
 			Metric rContinuousDelay = Max(g_Epsilon, GetContinuousFireDelay(*pShot));
+
+			//	If we shot outside of this update code (ex, manual fire, or shooting by an AI)
+			//	we need to account for rContinuousInterpolationTime not being updated yet
+
+			rContinuousInterpolationTime += rContinuousDelay;
 			DWORD dwShotsThisTick = Min((DWORD)((1.0 - rContinuousInterpolationTime) / rContinuousDelay), dwContinuousShots);
 
 			//	If we fire fast enough and have enough time left, we may need to fire some more shots this tick
