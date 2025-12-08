@@ -748,11 +748,11 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //					(This is a template property, see below for valid property names.)
 //					These properties define the minimum and maximum adjustment values that can
 //					result due to applying WMD fortification adjustment.
-//					<Constant id = "core.WMDFortified.MaxAdj">
+//					<Constant id = "core.WMDFortified.DefaultMaxAdj">
 //						Default Infinity
 //						Must be higher than MinAdj
 //						Cannot be lower than 0.0
-//					<Constant id = "core.WMDFortified.MinAdj">
+//					<Constant id = "core.WMDFortified.DefaultMinAdj">
 //						Default 0.0
 //						Must be lower than MaxAdj
 //						Cannot be lower than 0.0
@@ -777,7 +777,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //					Cannot be lower than 0.0
 //					Note: is multiplied with armor segment slot adjustment on ships.
 //					Default: reads adventure default (Default: 0.0)
-//				
 //			<Shield>
 //				fortificationAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type

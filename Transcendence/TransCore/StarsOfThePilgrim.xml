@@ -60,8 +60,8 @@
 			<Constant id="core.WMDFortified.ArmorSegment">		1.0</Constant>
 			<Constant id="core.WMDFortified.Armor">				1.0</Constant>
 			<Constant id="core.WMDFortified.Shield">			1.0</Constant>
-			<Constant id="core.WMDFortified.MaxAdj">			(double 'inf)</Constant>
-			<Constant id="core.WMDFortified.MinAdj">			0.0</Constant>
+			<Constant id="core.WMDFortified.DefaultMaxAdj">			(double 'inf)</Constant>
+			<Constant id="core.WMDFortified.DefaultMinAdj">			0.0</Constant>
 
 			<!-- Defaults for shot interaction -->
 
