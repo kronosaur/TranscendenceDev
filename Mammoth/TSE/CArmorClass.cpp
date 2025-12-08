@@ -774,15 +774,15 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	else
 		rFortification *= m_rFortification;
 
-	if (m_rMaxFortificationAdj > 0)
-		rFortificationAdjMax *= m_rMaxFortificationAdj;
-	else
+	if (m_rMaxFortificationAdj < 0)
 		rFortificationAdjMax *= g_pUniverse->GetEngineOptions().GetDefaultMaxFortificationAdj();
-
-	if (m_rMinFortificationAdj > 0)
-		rFortificationAdjMin *= m_rMinFortificationAdj;
 	else
+		rFortificationAdjMax *= m_rMaxFortificationAdj;
+
+	if (m_rMinFortificationAdj < 0)
 		rFortificationAdjMin *= g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj();
+	else
+		rFortificationAdjMin *= m_rMinFortificationAdj;
 
 	Metric rFortificationAdj = Ctx.CalcWMDFortificationAdj(rFortification, rFortificationAdjMin, rFortificationAdjMax);
 

@@ -123,6 +123,16 @@ int CShipArmorSegmentDesc::GetLevel (void) const
     return (m_iLevel != -1 ? m_iLevel : m_pArmor->GetItemType()->GetLevel());
     }
 
+Metric CShipArmorSegmentDesc::GetMaxFortificationAdj () const
+	{
+	return m_rMaxFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDefaultMaxFortificationAdj() : m_rMaxFortificationAdj;
+	}
+
+Metric CShipArmorSegmentDesc::GetMinFortificationAdj () const
+	{
+	return m_rMinFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj() : m_rMinFortificationAdj;
+	}
+
 ALERROR CShipArmorSegmentDesc::Init (
 	int iStartAt,
 	int iSpan,
