@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							58;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
-constexpr DWORD SYSTEM_SAVE_VERSION =					215;
+constexpr DWORD SYSTEM_SAVE_VERSION =					217;
 
 //	Uncomment out the following define when building a stable release
 
@@ -1594,4 +1594,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //	216: 2.0 Alpha 8
 //		Fix DamageDesc::m_MassDestructionAdj
 //		makes extra DWORDs in DamageDesc a little bit more change-safe
+// 
+//  217: 2.0 Alpha 8
+//		Switch CInstalledDevice m_rActivateDelay from WORD to double
+//		Switch CInstalledDevice m_i
 //
