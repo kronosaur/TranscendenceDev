@@ -222,6 +222,28 @@ static const TArray<int> g_StdInternalDeviceDamageModifierAPI58 =
 static constexpr int g_iInternalChanceToHitAPI0 = 50;
 static constexpr int g_iInternalChanceToHitAPI58 = 100;
 
+//	Mass Destruction (WMD) Adj ----------------------------------------------
+
+static const TArray<double> g_StdWMDAdjAPI0 =
+//		0		1		2		3		4		5		6		7
+	{	0.0,	0.04,	0.1,	0.2,	0.34,	0.52,	0.74,	1.0};
+
+static const TArray<const char*> g_StdWMDLabelsAPI0 =
+//		0		1		2		3		4		5		6		7
+	{	"",		"1",	"2",	"3",	"4",	"5",	"7",	"10"};
+
+static constexpr int g_iStdWMDMinDamageAPI0 = 1;
+
+static const TArray<double> g_StdWMDAdjAPI29 =
+//		0		1		2		3		4		5		6		7
+	{	0.10,	0.25,	0.32,	0.40,	0.50,	0.63,	0.80,	1.0};
+
+static const TArray<const char*> g_StdWMDLabelsAPI29 =
+//		0		1		2		3		4		5		6		7
+	{	"",		"2",	"3",	"4",	"5",	"6",	"8",	"10"};
+
+static constexpr int g_iStdWMDMinDamageAPI29 = 0;
+
 //	Helpers -----------------------------------------------------------------
 
 //	Translates actual API versions into the known versions
@@ -260,6 +282,18 @@ int GetAPIForInternalDeviceDamageMaxLevel (int apiVersion)
 	{
 	if (apiVersion >= 58)
 		return 58;
+	else
+		return 0;
+	}
+
+//	Translates actual API versions into the known versions
+//	used for the WMD Adj system
+//
+int GetAPIForWMDAdj (int apiVersion)
+
+	{
+	if (apiVersion >= 29)
+		return 29;
 	else
 		return 0;
 	}
@@ -307,6 +341,11 @@ void CEngineOptions::InitDefaultGlobals ()
 	m_bCustomExternalDeviceDamageMaxLevels = false;
 	m_InternalDeviceDamageMaxLevels = GetDefaultInternalDeviceDamageLevels(m_iDefaultForAPIVersion);
 	m_bCustomInternalDeviceDamageMaxLevels = false;
+
+	//	Initialize WMD adj tables
+
+	m_MassDestruction = GetDefaultWMDAdj(m_iDefaultForAPIVersion);
+	m_bCustomMassDestruction = false;
 	}
 
 //	Initiate defaults where necessary based on whatever API version we need
@@ -444,6 +483,22 @@ bool CEngineOptions::InitInternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& C
 	return true;
 	}
 
+//	InitMassDestructionDescFromXML
+//
+//	Initializes from XML.
+//
+bool CEngineOptions::InitMassDestructionDescFromXML(SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
+	{
+	m_bCustomMassDestruction = true;
+
+	if (m_MassDestruction.InitFromXML(Ctx, XMLDesc) != NOERROR)
+		return false;
+
+	//	Success!
+
+	return true;
+	}
+
 //	GetDefaultMiningMaxOreLevels
 //
 //	Returns the default table basedon API version
@@ -511,6 +566,28 @@ CDeviceDamageLevelDesc CEngineOptions::GetDefaultInternalDeviceDamageLevels (int
 		case 58:
 		default:
 			Desc.InitFromArray(g_StdInternalDeviceDamageLevelsAPI58, g_StdInternalDeviceDamageModifierAPI58, g_iInternalChanceToHitAPI58);
+		}
+
+	return Desc;
+	}
+
+//	GetDefaultWMDAdj
+//
+//	Returns the default table based on API version
+//
+CMassDestructionDesc CEngineOptions::GetDefaultWMDAdj (int apiVersion)
+
+	{
+	CMassDestructionDesc Desc;
+
+	switch (GetAPIForWMDAdj(apiVersion))
+		{
+		case 0:
+			Desc.InitFromArray(g_StdWMDAdjAPI0, g_StdWMDLabelsAPI0, g_iStdWMDMinDamageAPI0);
+			break;
+		case 29:
+		default:
+			Desc.InitFromArray(g_StdWMDAdjAPI29, g_StdWMDLabelsAPI29, g_iStdWMDMinDamageAPI29);
 		}
 
 	return Desc;
