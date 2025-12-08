@@ -11,8 +11,6 @@
 #define ARMOR_LEVEL_ATTRIB						CONSTLIT("armorLevel")
 #define CANNOT_BE_HIT_ATTRIB					CONSTLIT("cannotBeHit")
 #define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
-#define FORTIFICATION_MAX_ADJ_ATTRIB			CONSTLIT("maxFortificationAdj")
-#define FORTIFICATION_MIN_ADJ_ATTRIB			CONSTLIT("minFortificationAdj")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define HULL_TYPE_ATTRIB						CONSTLIT("hullType")
 #define IMMUTABLE_ATTRIB						CONSTLIT("immutable")
@@ -285,14 +283,6 @@ ALERROR CStationHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 		m_iType = (bMultiHullDefault ? hullMultiple : hullSingle);
 
 	m_rFortified = pDesc->GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, R_NAN);
-	m_rMaxFortificationAdj = pDesc->GetAttributeDoubleBounded(FORTIFICATION_MAX_ADJ_ATTRIB, 0.0, R_INF, -1.0);
-	m_rMinFortificationAdj = pDesc->GetAttributeDoubleBounded(FORTIFICATION_MIN_ADJ_ATTRIB, 0.0, R_INF, -1.0);
-
-	if (m_rMaxFortificationAdj >= 0.0 && m_rMaxFortificationAdj < m_rMinFortificationAdj)
-		{
-		Ctx.sError = CONSTLIT("Min fortification adj must be less than max fortification adj");
-		return ERR_FAIL;
-		}
 
 	//	Get hit points and max hit points
 

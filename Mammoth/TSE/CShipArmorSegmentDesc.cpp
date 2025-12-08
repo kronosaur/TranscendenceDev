@@ -7,8 +7,6 @@
 
 #define ARMOR_ID_ATTRIB							CONSTLIT("armorID")
 #define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
-#define FORTIFICATION_MAX_ADJ_ATTRIB			CONSTLIT("maxFortificationAdj")
-#define FORTIFICATION_MIN_ADJ_ATTRIB			CONSTLIT("minFortificationAdj")
 #define LEVEL_ATTRIB               				CONSTLIT("level")
 #define NON_CRITICAL_ATTRIB						CONSTLIT("nonCritical")
 #define SPAN_ATTRIB               				CONSTLIT("span")
@@ -206,8 +204,8 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (SDesignLoadCtx &Ctx,
 	m_dwAreaSet = ParseNonCritical(Desc.GetAttribute(NON_CRITICAL_ATTRIB));
 
 	m_rFortified = Desc.GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, rDefaultFortification);
-	m_rMaxFortificationAdj = Desc.GetAttributeDoubleBounded(FORTIFICATION_MAX_ADJ_ATTRIB, 0.0, R_INF, rMaxFortificationAdj);
-	m_rMinFortificationAdj = Desc.GetAttributeDoubleBounded(FORTIFICATION_MIN_ADJ_ATTRIB, 0.0, R_INF, rMinFortificationAdj);
+	m_rMaxFortificationAdj = rMaxFortificationAdj;
+	m_rMinFortificationAdj = rMinFortificationAdj;
 
 	if (m_rMaxFortificationAdj >= 0.0 && m_rMaxFortificationAdj < m_rMinFortificationAdj)
 		{
