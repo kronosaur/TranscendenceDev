@@ -4558,10 +4558,6 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		if (IS_NAN(Ctx.rArmorExternFortification))
 			Ctx.rArmorExternFortification = g_pUniverse->GetEngineOptions().GetDefaultFortifiedArmorSlot();
 
-		Ctx.rArmorExternMaxFortification = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect()).GetMaxFortificationAdj();
-		if (Ctx.rArmorExternMaxFortification < 0)
-			Ctx.rArmorExternMaxFortification = g_pUniverse->GetEngineOptions().GetDefaultMaxFortificationAdj();
-
 		Ctx.rArmorExternMinFortification = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect()).GetMinFortificationAdj();
 		if (Ctx.rArmorExternMinFortification < 0)
 			Ctx.rArmorExternMinFortification = g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj();
@@ -4732,8 +4728,11 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			int iChanceOfDeath = 5;
 
 			//	We only care about mass destruction damage
+			//	To suppor legacy balance, we use the Raw
+			//	adventure adjustment, rather than normalizing
+			//	on 1.0
 
-			int iWMDDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
+			int iWMDDamage = Ctx.CalcWMDAdjustedDamageRaw();
 
 			//	Compare the amount of damage that we are taking with the
 			//	original strength (HP) of the armor. Increase the chance
@@ -7362,7 +7361,7 @@ void CShip::SetFireDelayForCycleWeapons (CInstalledDevice &Device)
 			}
 		}
 
-	iFireDelayToIncrement = (m_pController->GetFireRateAdj() * Device.GetActivateDelay(this) / 10);
+	iFireDelayToIncrement = mathRound(m_pController->GetFireRateAdj() * Device.GetActivateDelay(this) / 10);
 	iFireDelayToIncrement = (iFireDelayToIncrement + (iNumberOfGuns - 1)) / iNumberOfGuns;
 	while (WeaponsInFireGroup.GetCount() > 0)
 		{

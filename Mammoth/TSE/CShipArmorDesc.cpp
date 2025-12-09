@@ -200,13 +200,12 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			return error;
 
 		Metric rFortifiedRatio = pDesc->GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, R_NAN);
-		Metric rDefaultMaxFortifiedAdj = g_pUniverse->GetEngineOptions().GetDefaultMaxFortificationAdj();
 		Metric rDefaultMinFortifiedAdj = g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj();
 
 		m_Segments.InsertEmpty(iSegCount);
 		for (int i = 0; i < iSegCount; i++)
 			{
-			if (error = m_Segments[i].Init(iSegPos, iSegSize, dwSegUNID, iSegLevel, SegEnhancement, rFortifiedRatio, rDefaultMaxFortifiedAdj, rDefaultMinFortifiedAdj))
+			if (error = m_Segments[i].Init(iSegPos, iSegSize, dwSegUNID, iSegLevel, SegEnhancement, rFortifiedRatio, rDefaultMinFortifiedAdj))
 				return error;
 
 			iSegPos += iSegSize;
@@ -231,7 +230,6 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			return error;
 
 		Metric rDefaultFortifiedRatio = pDesc->GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, R_NAN);
-		Metric rDefaultMaxFortifiedAdj = g_pUniverse->GetEngineOptions().GetDefaultMaxFortificationAdj();
 		Metric rDefaultMinFortifiedAdj = g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj();
 
 		m_Segments.InsertEmpty(pDesc->GetContentElementCount());
@@ -242,7 +240,7 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				throw CException(ERR_FAIL);
 
 			int iSpan;
-			if (error = m_Segments[i].InitFromXML(Ctx, *pSegment, dwDefaultSegUNID, iDefaultLevel, iAngle, DefaultEnhancement, rDefaultFortifiedRatio, rDefaultMaxFortifiedAdj, rDefaultMinFortifiedAdj, &iSpan))
+			if (error = m_Segments[i].InitFromXML(Ctx, *pSegment, dwDefaultSegUNID, iDefaultLevel, iAngle, DefaultEnhancement, rDefaultFortifiedRatio, rDefaultMinFortifiedAdj, &iSpan))
 				return error;
 
 			iAngle += iSpan;

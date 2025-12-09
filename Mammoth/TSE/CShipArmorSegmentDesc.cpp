@@ -121,11 +121,6 @@ int CShipArmorSegmentDesc::GetLevel (void) const
     return (m_iLevel != -1 ? m_iLevel : m_pArmor->GetItemType()->GetLevel());
     }
 
-Metric CShipArmorSegmentDesc::GetMaxFortificationAdj () const
-	{
-	return m_rMaxFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDefaultMaxFortificationAdj() : m_rMaxFortificationAdj;
-	}
-
 Metric CShipArmorSegmentDesc::GetMinFortificationAdj () const
 	{
 	return m_rMinFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj() : m_rMinFortificationAdj;
@@ -138,7 +133,6 @@ ALERROR CShipArmorSegmentDesc::Init (
 	int iLevel,
 	const CRandomEnhancementGenerator &Enhancement,
 	Metric rFortification,
-	Metric rMaxFortificationAdj,
 	Metric rMinFortificationAdj)
 
 //  Init
@@ -153,7 +147,6 @@ ALERROR CShipArmorSegmentDesc::Init (
     m_Enhanced = Enhancement;
     m_dwAreaSet = CShipClass::sectCritical;
 	m_rFortified = rFortification;
-	m_rMaxFortificationAdj = rMaxFortificationAdj;
 	m_rMinFortificationAdj = rMinFortificationAdj;
 
     return NOERROR;
@@ -166,7 +159,6 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (SDesignLoadCtx &Ctx,
 											int iDefaultAngle, 
 											const CRandomEnhancementGenerator &DefaultEnhancement,
 											Metric rDefaultFortification,
-											Metric rMaxFortificationAdj,
 											Metric rMinFortificationAdj,
 											int *retiSpan)
 
@@ -204,12 +196,11 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (SDesignLoadCtx &Ctx,
 	m_dwAreaSet = ParseNonCritical(Desc.GetAttribute(NON_CRITICAL_ATTRIB));
 
 	m_rFortified = Desc.GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, rDefaultFortification);
-	m_rMaxFortificationAdj = rMaxFortificationAdj;
 	m_rMinFortificationAdj = rMinFortificationAdj;
 
-	if (m_rMaxFortificationAdj >= 0.0 && m_rMaxFortificationAdj < m_rMinFortificationAdj)
+	if (1.0 < m_rMinFortificationAdj)
 		{
-		Ctx.sError = CONSTLIT("Min fortification adj must be less than max fortification adj");
+		Ctx.sError = CONSTLIT("Min fortification adj cannot be greater than 1.0");
 		return ERR_FAIL;
 		}
 

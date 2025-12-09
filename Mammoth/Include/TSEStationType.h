@@ -31,7 +31,6 @@ class CStationHullDesc
 		CItem GetArmorItem () const;
 		int GetArmorLevel () const;
 		Metric GetFortificationAdj (bool bMultiHull = true) const;
-		Metric GetMaxFortificationAdj () const;
 		Metric GetMinFortificationAdj () const;
 		int GetHitPoints () const { return m_iHitPoints; }
 		EHullTypes GetHullType () const { return m_iType; }
@@ -55,7 +54,6 @@ class CStationHullDesc
 		int m_iMaxHitPoints = 0;			//	Max hit points
 		CRegenDesc m_Regen;					//	Repair rate
 		Metric m_rFortified = 0.1;			//	WMD damage adj curve at WMD0
-		Metric m_rMaxFortificationAdj = -1.0;	//	Maximumn WMD adj from fortification
 		Metric m_rMinFortificationAdj = -1.0;	//	Minimum WMD adj from fortification
 
 		int m_iStructuralHP = 0;			//	Initial structural hit points

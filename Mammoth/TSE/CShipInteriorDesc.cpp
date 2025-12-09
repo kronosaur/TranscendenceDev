@@ -297,13 +297,6 @@ Metric CShipInteriorDesc::GetFortificationAdj() const
 	return 0.1;
 	}
 
-Metric CShipInteriorDesc::GetFortificationMaxAdj() const
-	{
-	if (g_pUniverse)
-		return m_rMaxFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDefaultMaxFortificationAdj() : m_rMaxFortificationAdj;
-	return 1.0;
-	}
-
 Metric CShipInteriorDesc::GetFortificationMinAdj() const
 	{
 	if (g_pUniverse)

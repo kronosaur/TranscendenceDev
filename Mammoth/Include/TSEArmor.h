@@ -182,7 +182,6 @@ class CArmorClass
 		int m_iBalanceAdj;						//	Manual adjustment to balance calculation
 		Metric m_rFortification = 1.0;			//	Fortification Adj for WMD curve on this armor
 		Metric m_rMinFortificationAdj = -1.0;	//	Lower cap on fortification adj for WMD curve on this armor
-		Metric m_rMaxFortificationAdj = -1.0;	//	Upper cap on fortification adj for WMD curve on this armor
 
 		DWORD m_fPhotoRecharge:1;				//	TRUE if refuels when near a star
 		DWORD m_fShieldInterference:1;			//	TRUE if armor interferes with shields
@@ -222,7 +221,6 @@ class CShipArmorSegmentDesc
 		int GetCenterAngle () const { return AngleMod(m_iStartAt + m_iSpan / 2); }
 		DWORD GetCriticalArea () const { return m_dwAreaSet; }
 		Metric GetFortificationAdj () const { return m_rFortified; }
-		Metric GetMaxFortificationAdj () const;
 		Metric GetMinFortificationAdj () const;
 		int GetLevel () const;
 		int GetSpan () const { return m_iSpan; }
@@ -234,7 +232,6 @@ class CShipArmorSegmentDesc
 			int iLevel,
 			const CRandomEnhancementGenerator &Enhancement,
 			Metric rFortification,
-			Metric rMaxFortificationAdj,
 			Metric rMinFortificationAdj);
 		ALERROR InitFromXML (
 			SDesignLoadCtx &Ctx,
@@ -244,7 +241,6 @@ class CShipArmorSegmentDesc
 			int iDefaultAngle,
 			const CRandomEnhancementGenerator &DefaultEnhancement,
 			Metric rDefaultFortification,
-			Metric rMaxFortificationAdj,
 			Metric rMinFortificationAdj,
 			int *retiSpan = NULL);
 
@@ -261,7 +257,6 @@ class CShipArmorSegmentDesc
 		DWORD m_dwAreaSet = 0;				//	Areas that this section protects
 		Metric m_rFortified = 1.0;			//	Adjusts WMD adj curve from the WMD0 end
 		Metric m_rMinFortificationAdj = -1.0;	//	Min WMD adj
-		Metric m_rMaxFortificationAdj = -1.0;	//	Max WMD adj
 	};
 
 class CShipArmorDesc

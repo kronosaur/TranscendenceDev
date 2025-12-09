@@ -1592,7 +1592,7 @@ const CTopologyNode *CTopology::GetNextNodeTo (
 //	Return an array of node pointers including nodes From to To. If 
 //	there is no path, we return an empty TArray.
 //
-const TArray<const CTopologyNode*> CTopology::GetPathTo(
+TArray<const CTopologyNode*> CTopology::GetPathTo(
 	const CTopologyNode* pSrc,
 	const CTopologyNode* pTarget,
 	const CString& sGateCriteria,
@@ -1633,7 +1633,7 @@ const TArray<const CTopologyNode*> CTopology::GetPathTo(
 //	Return an array of node pointers including nodes From to To. If 
 //	there is no path, we return an empty TArray.
 //
-const TArray<const CTopologyNode*> CTopology::GetPathTo(
+TArray<const CTopologyNode*> CTopology::GetPathTo(
 	const CTopologyNode *pSrc,
 	const CTopologyNode *pTarget,
 	const CString& sGateCriteria,

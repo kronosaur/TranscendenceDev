@@ -762,7 +762,6 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	//	Adjust for out item-level WMD Fortification:
 
 	Metric rFortification = Ctx.rArmorExternFortification;
-	Metric rFortificationAdjMax = Ctx.rArmorExternMaxFortification;
 	Metric rFortificationAdjMin = Ctx.rArmorExternMinFortification;
 
 	//	Stacked fortification modifiers are multiplied together
@@ -772,19 +771,12 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	else
 		rFortification *= m_rFortification;
 
-	if (m_rMaxFortificationAdj < 0)
-		rFortificationAdjMax *= g_pUniverse->GetEngineOptions().GetDefaultMaxFortificationAdj();
-	else
-		rFortificationAdjMax *= m_rMaxFortificationAdj;
-
 	if (m_rMinFortificationAdj < 0)
 		rFortificationAdjMin *= g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj();
 	else
 		rFortificationAdjMin *= m_rMinFortificationAdj;
 
-	Metric rFortificationAdj = Ctx.CalcWMDFortificationAdj(rFortification, rFortificationAdjMin, rFortificationAdjMax);
-
-	int iDamage = mathAdjust(Ctx.iDamage, mathRound(100 * rFortificationAdj));
+	int iDamage = Ctx.CalcWMDAdjustedDamage(rFortification, rFortificationAdjMin);
 
 	//	Adjust for special armor damage:
 	//

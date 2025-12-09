@@ -214,11 +214,6 @@ Metric CStationHullDesc::GetFortificationAdj(bool bMultiHull) const
 	return bMultiHull ? 0.1 : 1.0;
 	}
 
-Metric CStationHullDesc::GetMaxFortificationAdj() const
-	{
-	return m_rMaxFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDefaultMaxFortificationAdj() : m_rMaxFortificationAdj;
-	}
-
 Metric CStationHullDesc::GetMinFortificationAdj() const
 	{
 	return m_rMinFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj() : m_rMinFortificationAdj;

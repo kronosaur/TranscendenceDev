@@ -111,7 +111,6 @@
 //	Adventure Property: Evaluated at bind time. These properties control defaults
 //	for WMD fortified behavior
 
-#define PROPERTY_CORE_WMD_FORTIFIED_MAX_ADJ				CONSTLIT("core.WMDFortified.DefaultMaxAdj")
 #define PROPERTY_CORE_WMD_FORTIFIED_MIN_ADJ				CONSTLIT("core.WMDFortified.DefaultMinAdj")
 #define PROPERTY_CORE_WMD_FORTIFIED_SHIP_COMPARTMENT	CONSTLIT("core.WMDFortified.ShipCompartment")
 #define PROPERTY_CORE_WMD_FORTIFIED_MULTIHULL_STATION	CONSTLIT("core.WMDFortified.MultihullStation")

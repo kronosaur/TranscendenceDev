@@ -433,18 +433,15 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 
 	else
 		{
-		Metric rFortificationAdj = Ctx.CalcWMDFortificationAdjFromLevel(
-			iSpecialDamage,
-			GetHullDesc().GetFortificationAdj(IsMultiHull()),
-			GetHullDesc().GetMinFortificationAdj(),
-			GetHullDesc().GetMaxFortificationAdj());
-		int iDamageAdj = (int)(100 * rFortificationAdj);
-		int iDamage = mathAdjust(Ctx.iDamage, iDamageAdj);
+		Metric rFortification = GetHullDesc().GetFortificationAdj(IsMultiHull());
+		int iDamage = Ctx.CalcWMDAdjustedDamageFromLevel(iSpecialDamage, rFortification);
 
 		//	If we're not making progress, then return a hint about what to do.
 
+		Metric rFortificationAdj = Ctx.CalcWMDFortificationAdjFromLevel(iSpecialDamage, rFortification);
+
 		if (iHint != EDamageHint::none 
-				&& iDamageAdj <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD
+				&& (rFortificationAdj * 100) <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD
 				&& Ctx.Attacker.IsPlayer()
 				&& Ctx.Attacker.IsAngryAt(*this))
 			{
@@ -458,7 +455,7 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 
 			//	Adjust for special damage resistance.
 
-			int iAveDamage = mathAdjust(mathRound(rAveDamage), iDamageAdj);
+			int iAveDamage = mathRoundStochastic(mathRound(rAveDamage) * rFortificationAdj);
 
 			//	If we're not doing much harm, then warn the player.
 
@@ -508,15 +505,7 @@ int CStation::CalcAdjustedDamageAbandoned (SDamageCtx &Ctx) const
 	//	Otherwise, we adjust the damage.
 
 	else
-		{
-		Metric rFortificationAdj = Ctx.CalcWMDFortificationAdjFromLevel(
-			iSpecialDamage,
-			GetHullDesc().GetFortificationAdj(IsMultiHull()),
-			GetHullDesc().GetMinFortificationAdj(),
-			GetHullDesc().GetMaxFortificationAdj());
-		int iDamageAdj = (int)(100 * rFortificationAdj);
-		return mathAdjust(Ctx.iDamage, iDamageAdj);
-		}
+		return Ctx.CalcWMDAdjustedDamageFromLevel(iSpecialDamage, GetHullDesc().GetFortificationAdj(IsMultiHull()), GetHullDesc().GetMinFortificationAdj());
 	}
 
 void CStation::CalcBounds (void)
@@ -2779,7 +2768,7 @@ EDamageResults CStation::OnDamageImmutable (SDamageCtx &Ctx)
 	//	If we don't have ejecta, then decrease damage to 0.
 	//
 	//  NOTE: We check MassDestructionLevel (instead of MassDestructionAdj) 
-	//  because even level 0 has some WMD. But for this case we only case
+	//  because even level 0 may have some WMD. But for this case we only care
 	//  about "real" WMD.
 
 	if (m_pType->GetEjectaAdj() == 0
@@ -2790,7 +2779,7 @@ EDamageResults CStation::OnDamageImmutable (SDamageCtx &Ctx)
 	//	Otherwise, adjust for WMD
 
 	else
-		Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
+		Ctx.iDamage = Ctx.CalcWMDAdjustedDamageRaw();
 
 	//	Hit effect
 

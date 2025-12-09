@@ -78,6 +78,21 @@ SDamageCtx::~SDamageCtx (void)
 		delete m_pDesc;
 	}
 
+int SDamageCtx::CalcWMDAdjustedDamageFromLevel(int iLevel, Metric rWMD0FortificationAdj, Metric rMinAdj) const
+	{
+	return Max(mathRoundStochastic(iDamage * CalcWMDFortificationAdjFromLevel(iLevel, rWMD0FortificationAdj, rMinAdj)), g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDMinDamage());
+	}
+
+int SDamageCtx::CalcWMDAdjustedDamage(Metric rWMD0FortificationAdj, Metric rMinAdj) const
+	{
+	return Max(mathRoundStochastic(iDamage * CalcWMDFortificationAdj(rWMD0FortificationAdj, rMinAdj)), g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDMinDamage());
+	}
+
+int SDamageCtx::CalcWMDAdjustedDamageRaw() const
+	{
+	return m_pDesc->GetDamage().CalcWMDAdjustedDamage(iDamage);
+	}
+
 //	CalcWMDFortificationAdj
 // 
 //	Computes a floating point adjusted form of WMD.
@@ -85,7 +100,7 @@ SDamageCtx::~SDamageCtx (void)
 //  rMinAdj should not be lower than 0.0
 //  rMaxAdj should not be lower than rMinAdj
 //
-Metric SDamageCtx::CalcWMDFortificationAdj(Metric rWMD0FortificationAdj, Metric rMinAdj, Metric rMaxAdj)
+Metric SDamageCtx::CalcWMDFortificationAdj(Metric rWMD0FortificationAdj, Metric rMinAdj, Metric rMaxAdj) const
 	{
 	return SDamageCtx::CalcWMDFortificationAdjFromLevel(Damage.GetMassDestructionLevel(), rWMD0FortificationAdj, rMinAdj, rMaxAdj);
 	}
@@ -112,9 +127,9 @@ Metric SDamageCtx::CalcWMDFortificationAdjFromLevel(int iLevel, Metric rWMD0Fort
 	//	Otherwise we need to do a linear transform
 	//	The math is exploded for debug builds, optimized builds collapse a bunch of this math;
 
-	Metric rBaseRange = 1.0 - ((Metric)DamageDesc::GetMassDestructionAdjFromValue(0) / 100.0);
+	Metric rBaseRange = 1.0 - DamageDesc::GetMassDestructionAdjRealFromValue(0);
 	Metric rOutRange = 1.0 - rWMD0FortificationAdj;
-	Metric rBasePos = 1.0 - ((Metric)DamageDesc::GetMassDestructionAdjFromValue(iLevel) / 100.0);
+	Metric rBasePos = 1.0 - DamageDesc::GetMassDestructionAdjRealFromValue(iLevel);
 	Metric rTransform = rOutRange / rBaseRange;
 	Metric rAdj = 1.0 - (rBasePos * rTransform);
 
