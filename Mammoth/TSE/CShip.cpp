@@ -4724,8 +4724,11 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			int iChanceOfDeath = 5;
 
 			//	We only care about mass destruction damage
+			//	To suppor legacy balance, we use the Raw
+			//	adventure adjustment, rather than normalizing
+			//	on 1.0
 
-			int iWMDDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
+			int iWMDDamage = Ctx.CalcWMDAdjustedDamageRaw();
 
 			//	Compare the amount of damage that we are taking with the
 			//	original strength (HP) of the armor. Increase the chance
@@ -7354,7 +7357,7 @@ void CShip::SetFireDelayForCycleWeapons (CInstalledDevice &Device)
 			}
 		}
 
-	iFireDelayToIncrement = (m_pController->GetFireRateAdj() * Device.GetActivateDelay(this) / 10);
+	iFireDelayToIncrement = mathRound(m_pController->GetFireRateAdj() * Device.GetActivateDelay(this) / 10);
 	iFireDelayToIncrement = (iFireDelayToIncrement + (iNumberOfGuns - 1)) / iNumberOfGuns;
 	while (WeaponsInFireGroup.GetCount() > 0)
 		{

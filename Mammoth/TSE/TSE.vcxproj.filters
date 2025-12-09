@@ -1657,5 +1657,8 @@
     <ClCompile Include="CDeviceDamageLevelDesc.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="CMassDestructionDesc.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

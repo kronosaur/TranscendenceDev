@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							59;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
-constexpr DWORD SYSTEM_SAVE_VERSION =					215;
+constexpr DWORD SYSTEM_SAVE_VERSION =					217;
 
 //	Uncomment out the following define when building a stable release
 
@@ -721,6 +721,19 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //						null damage has 100% if it also has device:# in its desc
 //					deviceHitChance:
 //						% chance for a shot of any damage type to hit a device
+//				<WMDAdj>
+//					wmdAdj: (damageAdj-style list of exactly 8 ints or doubles)
+//						The baseline adjustment curve (note that fortification
+//						can adjust this further)
+//					wmdDisplay: (attribute-style list of exactly 7 alphanumeric strings)
+//						Strings to display alongside wmdDisplayPrefix for WMD1-WMD7
+//						If you provide a "!", a given level will not show the attribute.
+//					wmdDisplayPrefix: (string)
+//						A string prefix (ex, "WMD ") which the given wmdDisplay
+//						is appended to at that given WMD level. Default: "WMD "
+//					wmdMinDamage: (int)
+//						A minimum amount of damage that will be dealt to a target
+//						Default: 0
 //			<Properties>
 //				<Constant id = "core.WMDFortified.{target component}">
 //					(This is a template property, see below for valid property names.)
@@ -1584,4 +1597,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //	216: 2.0 Alpha 8
 //		Fix DamageDesc::m_MassDestructionAdj
 //		makes extra DWORDs in DamageDesc a little bit more change-safe
+// 
+//  217: 2.0 Alpha 8
+//		Switch CInstalledDevice m_rActivateDelay from WORD to double
+//		Switch CInstalledDevice m_i
 //
