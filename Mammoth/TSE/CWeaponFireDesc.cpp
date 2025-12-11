@@ -42,6 +42,7 @@
 #define EXPLOSION_TYPE_ATTRIB					CONSTLIT("explosionType")
 #define FAILSAFE_ATTRIB							CONSTLIT("failsafe")
 #define FIRE_EFFECT_ATTRIB						CONSTLIT("fireEffect")
+#define FIRE_DELAY_ATTRIB						CONSTLIT("fireDelay")		//API58 version of fireRate that takes a double instead
 #define FIRE_RATE_ATTRIB						CONSTLIT("fireRate")
 #define FRAGMENT_ANGLE_DIRECTION_ATTRIB			CONSTLIT("fragmentAngleDirection")
 #define FRAGMENT_ANGLE_OFFSET_ATTRIB			CONSTLIT("fragmentAngleOffset")
@@ -1622,11 +1623,11 @@ bool CWeaponFireDesc::FireOnFragment (const CDamageSource &Source, CSpaceObject 
 		return false;
 	}
 
-Metric CWeaponFireDesc::GetAveInitialSpeed (void) const
-
 //	GetAveInitialSpeed
 //
-//	Returns the average initial speed
+//	Returns the average initial speed in km/simulation sec
+//
+Metric CWeaponFireDesc::GetAveInitialSpeed (void) const
 
 	{
 	if (m_fVariableInitialSpeed)
@@ -1996,9 +1997,9 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	m_pAmmoType = NULL;
 
 	m_iContinuous = -1;
-	m_iContinuousFireDelay = -1;
+	m_rContinuousFireDelay = -1.0;
 	m_iPassthrough = 0;
-	m_iFireRate = -1;
+	m_rFireRate = -1.0;
 
 	//	Load damage
 
@@ -2103,11 +2104,18 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Fire rate
 
-	int iFireRateSecs = pDesc->GetAttributeIntegerBounded(FIRE_RATE_ATTRIB, 0, -1, -1);
-	if (iFireRateSecs == -1)
-		m_iFireRate = -1;
+	double rFireRateSecs = pDesc->GetAttributeDoubleBounded(FIRE_DELAY_ATTRIB, 0.0, -1.0, -2.0);
+	if (rFireRateSecs < 0.0)
+		{
+		int iFireRateSecs = pDesc->GetAttributeIntegerBounded(FIRE_RATE_ATTRIB, 0, -1, -2);
+		if (iFireRateSecs >= 0.0)
+			rFireRateSecs = (double)iFireRateSecs;
+		}
+
+	if (rFireRateSecs >= 0.0)
+		m_rFireRate = rFireRateSecs / STD_SECONDS_PER_UPDATE;
 	else
-		m_iFireRate = mathRound(iFireRateSecs / STD_SECONDS_PER_UPDATE);
+		m_rFireRate = -1.0;
 
 	//	Power use
 
@@ -2381,7 +2389,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	//	Load continuous and passthrough
 
 	m_iContinuous = pDesc->GetAttributeIntegerBounded(BEAM_CONTINUOUS_ATTRIB, 0, -1, -1);
-	m_iContinuousFireDelay = pDesc->GetAttributeIntegerBounded(CONTINUOUS_FIRE_DELAY_ATTRIB, 0, -1, -1);
+	m_rContinuousFireDelay = pDesc->GetAttributeDoubleBounded(CONTINUOUS_FIRE_DELAY_ATTRIB, 0.0, -1.0, -1.0);
 	m_iChargeTime = pDesc->GetAttributeIntegerBounded(CHARGE_TIME_ATTRIB, 0, -1, -1);
 
 	if (pDesc->FindAttributeInteger(PASSTHROUGH_ATTRIB, &m_iPassthrough))
@@ -2971,8 +2979,8 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	m_pAmmoType = Src.m_pAmmoType;
 	m_iFireType = Src.m_iFireType;
 	m_iContinuous = Src.m_iContinuous;
-	m_iContinuousFireDelay = Src.m_iContinuousFireDelay;
-	m_iFireRate = Src.m_iFireRate;
+	m_rContinuousFireDelay = Src.m_rContinuousFireDelay;
+	m_rFireRate = Src.m_rFireRate;
 
 	m_fRelativisticSpeed = Src.m_fRelativisticSpeed;
 	m_rMissileSpeed = Src.m_rMissileSpeed;

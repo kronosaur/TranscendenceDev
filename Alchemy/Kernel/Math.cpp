@@ -8,8 +8,6 @@
 
 thread_local DWORD g_Seed = 0;
 
-int Kernel::mathAdjust (int iValue, int iPercent)
-
 //	mathAdjust
 //
 //	Alters iValue such that:
@@ -19,6 +17,8 @@ int Kernel::mathAdjust (int iValue, int iPercent)
 //	But since this is an integer result, we can't express the actual real value.
 //	Instead, we stochastically add 1 to average out to the real value over
 //	multiple tries.
+//
+int Kernel::mathAdjust (int iValue, int iPercent)
 
 	{
 	if (iPercent == 100)
@@ -33,13 +33,13 @@ int Kernel::mathAdjust (int iValue, int iPercent)
 		}
 	}
 
-int Kernel::mathAdjustRound (int iValue, int iPercent)
-
 //	mathAdjustRound
 //
 //	Alters iValue such that:
 //
 //	result = (iValue * iPercent) / 100, rounded
+//
+int Kernel::mathAdjustRound (int iValue, int iPercent)
 
 	{
 	if (iPercent == 100)

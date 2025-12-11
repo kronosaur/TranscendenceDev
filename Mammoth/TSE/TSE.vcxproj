@@ -977,6 +977,7 @@
     <ClCompile Include="CDesignPropertyDefinitions.cpp" />
     <ClCompile Include="CDesignTypeCriteria.cpp" />
     <ClCompile Include="CDeterChaseOrder.cpp" />
+    <ClCompile Include="CDeviceDamageLevelDesc.cpp" />
     <ClCompile Include="CDeviceItem.cpp" />
     <ClCompile Include="CDeviceSystem.cpp" />
     <ClCompile Include="CDifferentiatedItem.cpp" />
@@ -1062,6 +1063,7 @@
     <ClCompile Include="CItemEncounterDefinitions.cpp" />
     <ClCompile Include="CItemLevelCriteria.cpp" />
     <ClCompile Include="CItemTypeProbabilityTable.cpp" />
+    <ClCompile Include="CMassDestructionDesc.cpp" />
     <ClCompile Include="CMiningDamageLevelDesc.cpp" />
     <ClCompile Include="COrbitExactOrder.cpp" />
     <ClCompile Include="CLabelPainter.cpp" />
