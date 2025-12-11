@@ -505,7 +505,7 @@ int CStation::CalcAdjustedDamageAbandoned (SDamageCtx &Ctx) const
 	//	Otherwise, we adjust the damage.
 
 	else
-		return Ctx.CalcWMDAdjustedDamageFromLevel(iSpecialDamage, GetHullDesc().GetFortificationAdj(IsMultiHull()));
+		return Ctx.CalcWMDAdjustedDamageFromLevel(iSpecialDamage, GetHullDesc().GetFortificationAdj(IsMultiHull()), GetHullDesc().GetMinFortificationAdj());
 	}
 
 void CStation::CalcBounds (void)

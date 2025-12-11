@@ -27,6 +27,7 @@ class CEngineOptions
 		Metric GetDefaultFortifiedArmor () const { return m_rFortifiedArmor; }
 		Metric GetDefaultFortifiedShield () const { return m_rFortifiedShield; }
 		Metric GetDefaultFortifiedArmorSlot () const { return m_rFortifiedArmorSlot; }
+		Metric GetDefaultMinFortificationAdj () const { return m_rMinFortificationAdj; }
 		bool HidesArmorImmunity (SpecialDamageTypes iSpecial) const;
 		bool InitArmorDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomArmorDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ArmorDamageAdj); }
 		bool InitExternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
@@ -90,6 +91,7 @@ class CEngineOptions
 		double m_rFortifiedArmor = 1.0;
 		double m_rFortifiedShield = 1.0;
 		double m_rFortifiedArmorSlot = 1.0;
+		double m_rMinFortificationAdj = 0.0;
 
 		//	Default Item Stat Card UI
 

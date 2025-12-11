@@ -78,14 +78,14 @@ SDamageCtx::~SDamageCtx (void)
 		delete m_pDesc;
 	}
 
-int SDamageCtx::CalcWMDAdjustedDamageFromLevel(int iLevel, Metric rWMD0FortificationAdj) const
+int SDamageCtx::CalcWMDAdjustedDamageFromLevel(int iLevel, Metric rWMD0FortificationAdj, Metric rMinAdj) const
 	{
-	return Max(mathRoundStochastic(iDamage * CalcWMDFortificationAdjFromLevel(iLevel, rWMD0FortificationAdj)), g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDMinDamage());
+	return Max(mathRoundStochastic(iDamage * CalcWMDFortificationAdjFromLevel(iLevel, rWMD0FortificationAdj, rMinAdj)), g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDMinDamage());
 	}
 
-int SDamageCtx::CalcWMDAdjustedDamage(Metric rWMD0FortificationAdj) const
+int SDamageCtx::CalcWMDAdjustedDamage(Metric rWMD0FortificationAdj, Metric rMinAdj) const
 	{
-	return Max(mathRoundStochastic(iDamage * CalcWMDFortificationAdj(rWMD0FortificationAdj)), g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDMinDamage());
+	return Max(mathRoundStochastic(iDamage * CalcWMDFortificationAdj(rWMD0FortificationAdj, rMinAdj)), g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDMinDamage());
 	}
 
 int SDamageCtx::CalcWMDAdjustedDamageRaw() const
@@ -97,28 +97,32 @@ int SDamageCtx::CalcWMDAdjustedDamageRaw() const
 // 
 //	Computes a floating point adjusted form of WMD.
 //  1.0 is full damage
+//  rMinAdj should not be lower than 0.0
+//  rMaxAdj should not be lower than rMinAdj
 //
-Metric SDamageCtx::CalcWMDFortificationAdj(Metric rWMD0FortificationAdj) const
+Metric SDamageCtx::CalcWMDFortificationAdj(Metric rWMD0FortificationAdj, Metric rMinAdj, Metric rMaxAdj) const
 	{
-	return SDamageCtx::CalcWMDFortificationAdjFromLevel(Damage.GetMassDestructionLevel(), rWMD0FortificationAdj);
+	return SDamageCtx::CalcWMDFortificationAdjFromLevel(Damage.GetMassDestructionLevel(), rWMD0FortificationAdj, rMinAdj, rMaxAdj);
 	}
 
 //	CalcWMDFortificationAdj
 // 
 //	Computes a floating point adjusted form of WMD.
 //  1.0 is full damage
+//  rMinAdj should not be lower than 0.0
+//  rMaxAdj should not be lower than rMinAdj
 //
-Metric SDamageCtx::CalcWMDFortificationAdjFromLevel(int iLevel, Metric rWMD0FortificationAdj)
+Metric SDamageCtx::CalcWMDFortificationAdjFromLevel(int iLevel, Metric rWMD0FortificationAdj, Metric rMinAdj, Metric rMaxAdj)
 	{
 	//	We only adjust curves for WMD lower than 7, max WMD is always pinned.
 
 	if (iLevel == 7)
-		return 1.0;
+		return 1.0 > rMaxAdj ? rMaxAdj : 1.0;
 
 	//	Adjust for level 0 is trivial, its just rWMD0FortificationAdj
 
 	if (iLevel == 0)
-		return rWMD0FortificationAdj;
+		return rWMD0FortificationAdj < rMinAdj ? rMinAdj : rWMD0FortificationAdj;
 
 	//	Otherwise we need to do a linear transform
 	//	The math is exploded for debug builds, optimized builds collapse a bunch of this math;
@@ -129,7 +133,12 @@ Metric SDamageCtx::CalcWMDFortificationAdjFromLevel(int iLevel, Metric rWMD0Fort
 	Metric rTransform = rOutRange / rBaseRange;
 	Metric rAdj = 1.0 - (rBasePos * rTransform);
 
-	return rAdj;
+	if (rAdj < rMinAdj)
+		return rMinAdj;
+	else if (rAdj > rMaxAdj)
+		return rMaxAdj;
+	else
+		return rAdj;
 	}
 
 void SDamageCtx::InitDamageEffects (const DamageDesc &DamageArg)

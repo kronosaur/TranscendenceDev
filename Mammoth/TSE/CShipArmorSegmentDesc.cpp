@@ -121,7 +121,19 @@ int CShipArmorSegmentDesc::GetLevel (void) const
     return (m_iLevel != -1 ? m_iLevel : m_pArmor->GetItemType()->GetLevel());
     }
 
-ALERROR CShipArmorSegmentDesc::Init (int iStartAt, int iSpan, DWORD dwArmorUNID, int iLevel, const CRandomEnhancementGenerator &Enhancement, Metric rFortification)
+Metric CShipArmorSegmentDesc::GetMinFortificationAdj () const
+	{
+	return m_rMinFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj() : m_rMinFortificationAdj;
+	}
+
+ALERROR CShipArmorSegmentDesc::Init (
+	int iStartAt,
+	int iSpan,
+	DWORD dwArmorUNID,
+	int iLevel,
+	const CRandomEnhancementGenerator &Enhancement,
+	Metric rFortification,
+	Metric rMinFortificationAdj)
 
 //  Init
 //
@@ -135,6 +147,7 @@ ALERROR CShipArmorSegmentDesc::Init (int iStartAt, int iSpan, DWORD dwArmorUNID,
     m_Enhanced = Enhancement;
     m_dwAreaSet = CShipClass::sectCritical;
 	m_rFortified = rFortification;
+	m_rMinFortificationAdj = rMinFortificationAdj;
 
     return NOERROR;
     }
@@ -146,6 +159,7 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (SDesignLoadCtx &Ctx,
 											int iDefaultAngle, 
 											const CRandomEnhancementGenerator &DefaultEnhancement,
 											Metric rDefaultFortification,
+											Metric rMinFortificationAdj,
 											int *retiSpan)
 
 //  InitFromXML
@@ -181,7 +195,14 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (SDesignLoadCtx &Ctx,
 
 	m_dwAreaSet = ParseNonCritical(Desc.GetAttribute(NON_CRITICAL_ATTRIB));
 
-	m_rFortified = Desc.GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
+	m_rFortified = Desc.GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, rDefaultFortification);
+	m_rMinFortificationAdj = rMinFortificationAdj;
+
+	if (1.0 < m_rMinFortificationAdj)
+		{
+		Ctx.sError = CONSTLIT("Min fortification adj cannot be greater than 1.0");
+		return ERR_FAIL;
+		}
 
     return NOERROR;
     }

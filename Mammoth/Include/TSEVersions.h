@@ -741,8 +741,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					217;
 //					Accepts a floating point which adjusts the default WMD curve for that target type
 //					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
-//					The value must be 0.0 (immune) or higher. May be greater than 1.0 (takes more damage
-//						from non-WMD weapons than high-WMD weapons)
+//					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
+//						(takes more damage from non-WMD weapons than high-WMD weapons)
 //					The below are the following valid target components:
 //					<Constant id = "core.WMDFortified.ShipCompartment">
 //						Default 0.1
@@ -757,22 +757,34 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					217;
 //						Default 1.0
 //					<Constant id = "core.WMDFortified.Shield">
 //						Default 1.0
+//				<Constant id = "core.WMDFortified.[Max|Min]Adj}">
+//					(This is a template property, see below for valid property names.)
+//					These properties define the minimum and maximum adjustment values that can
+//					result due to applying WMD fortification adjustment.
+//					<Constant id = "core.WMDFortified.DefaultMaxAdj">
+//						Default Infinity
+//						Must be higher than MinAdj
+//						Cannot be lower than 0.0
+//					<Constant id = "core.WMDFortified.DefaultMinAdj">
+//						Default 0.0
+//						Must be lower than MaxAdj
+//						Cannot be lower than 0.0
 //		<ItemType>
 //			<Armor>
 //				fortificationAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
 //					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
-//					The value must be 0.0 (immune) or higher. May be greater than 1.0 (takes more damage
-//						from non-WMD weapons than high-WMD weapons)
+//					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
+//						(takes more damage from non-WMD weapons than high-WMD weapons)
 //					Default: reads adventure default (Default: 1.0)
 //			<Shield>
 //				fortificationAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
 //					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
-//					The value must be 0.0 (immune) or higher. May be greater than 1.0 (takes more damage
-//						from non-WMD weapons than high-WMD weapons)
+//					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
+//						(takes more damage from non-WMD weapons than high-WMD weapons)
 //					Default: reads adventure default (Default: 1.0)
 //			<Weapon>
 //				damage: (str: damage desc)
@@ -798,24 +810,24 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					217;
 //					Accepts a floating point which adjusts the default WMD curve for that target type
 //					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
-//					The value must be 0.0 (immune) or higher. May be greater than 1.0 (takes more damage
-//						from non-WMD weapons than high-WMD weapons)
+//					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
+//						(takes more damage from non-WMD weapons than high-WMD weapons)
 //					Default: reads adventure default (Default: 1.0)
 //			<Hull>
 //				fortificationAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
 //					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
-//					The value must be 0.0 (immune) or higher. May be greater than 1.0 (takes more damage
-//						from non-WMD weapons than high-WMD weapons)
+//					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
+//						(takes more damage from non-WMD weapons than high-WMD weapons)
 //					Default: reads adventure default (Default: 1.0)
 //		<StationType>
 //			fortificationAdj: (float)
 //				Accepts a floating point which adjusts the default WMD curve for that target type
 //				by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //				to the modified scale WMD0 (supplied number) to WMD7 (1.0).
-//				The value must be 0.0 (immune) or higher. May be greater than 1.0 (takes more damage
-//					from non-WMD weapons than high-WMD weapons)
+//					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
+//						(takes more damage from non-WMD weapons than high-WMD weapons)
 //				Default: reads adventure default (Default: 1.0 for single-null stations, 0.1 for multihull/asteroid*/cavern*)
 //					*asteroid and *cavern hull types use mining damage for the calculations instead of or alongside WMD
 //
