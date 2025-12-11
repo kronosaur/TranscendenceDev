@@ -106,10 +106,26 @@
 
 #define PROPERTY_CORE_GAME_STATS				CONSTLIT("core.gameStats")
 
-//	core.WMDFortified.*
+//	core.damageMethod.system
+//
+//	Adventure Property: Evaluated at bind time. This property selects what damage
+//	method system is to be used by this adventure.
+//
+//	TODO: as WMD is the only supported damage method in API58, this property will
+//	be implemented in API59 instead.
+
+//	core.damageMethod.fortify.[Target]
 //
 //	Adventure Property: Evaluated at bind time. These properties control defaults
-//	for WMD fortified behavior
+//	for damage method (WMD, or future systems) fortification adjustment
+// 
+//	[Target] may be one of the following types:
+//
+//	Item:			Default adj for armor and shield item types
+//	Ship:			Default adj for ships of various types
+//	Station:		Default adj for stations of various types
+//
+//	These properties should evvaluate to a 
 
 #define PROPERTY_CORE_WMD_FORTIFIED_MIN_ADJ				CONSTLIT("core.WMDFortified.DefaultMinAdj")
 #define PROPERTY_CORE_WMD_FORTIFIED_SHIP_COMPARTMENT	CONSTLIT("core.WMDFortified.ShipCompartment")

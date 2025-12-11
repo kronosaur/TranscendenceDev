@@ -649,11 +649,25 @@ class CDamageAdjDesc
 		const CDamageAdjDesc *m_pDefault;		//	Default table
 	};
 
+enum class EDamageMethodSystem
+	{
+	dmgMethodSysError =						-100,	//	Uninitialized or error state
+	
+	dmgMethodSysWMD =						0,		//	single damage method, WMD
+	};
+
+enum class EDamageMethod
+	{
+	methodError =							-100,	//	Uninitialized or error state
+
+	methodWMD =								0,		//	original WMD
+	};
+
 class CMassDestructionDesc
 	{
 	public:
-		static constexpr int MAX_WMD_LEVEL = 7;
-		static constexpr int MAX_WMD_LEVEL_COUNT = 8;
+		static constexpr int MAX_DAMAGE_METHOD_LEVEL = 7;
+		static constexpr int MAX_DAMAGE_METHOD_LEVEL_COUNT = 8;
 
 		Metric GetWMDAdj (int iLevel) const;
 		int GetRoundedWMDAdj (int iLevel) const;
@@ -676,7 +690,7 @@ class CMassDestructionDesc
 			CString sLabel = CONSTLIT("");				//	suffix to display in UI
 			};
 
-		SWMDLevelDesc m_Desc[MAX_WMD_LEVEL_COUNT];	//	Descriptor for computing adjustment
+		SWMDLevelDesc m_Desc[MAX_DAMAGE_METHOD_LEVEL_COUNT];	//	Descriptor for computing adjustment
 		CString m_sAttribPrefix = CONSTLIT("WMD");
 		int m_iMinDamage = 0;
 	};
