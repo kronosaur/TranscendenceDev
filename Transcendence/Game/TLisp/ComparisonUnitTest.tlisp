@@ -150,6 +150,8 @@
 	{	code: '(= "b" "A")			result: Nil }
 	{	code: '(= "a" "A" "a")			result: True }
 	{	code: '(= "1" 1)			result: True }
+	{	code: '(= "1.0" 1)			result: True }
+	{	code: '(= "1" 1.0)			result: True }
 	{	code: '(= "0.1" 0.1)			result: True }
 	{	code: '(= "0.100" 0.1)			result: True }
 	{	code: '(= "1e-1" 0.1)			result: True }
@@ -173,6 +175,8 @@
 	{	code: '(< 1 1 2 3 4 5 6 7)			result: Nil }
 	{	code: '(< 1 2 3.0 4 5 6 7 0)		result: Nil }
 	{	code: '(< 8 1 2 3 4 5 6 7)			result: Nil }
+	{	code: '(< Nil 1)					result: True }
+	{	code: '(< 1 Nil)					result: Nil }
 	{	code: '(< "")			result: True }
 	{	code: '(< "a")			result: True }
 	{	code: '(< "a" "a")			result: Nil }
@@ -191,6 +195,8 @@
 	{	code: '(> 7 6 5 5 4 3 2 1)			result: Nil }
 	{	code: '(> 0 7.5 6 5 4 3 2 1)		result: Nil }
 	{	code: '(> 7 6 5 4 3 2 1 8)			result: Nil }
+	{	code: '(> Nil 1)					result: Nil }
+	{	code: '(> 1 Nil)					result: True }
 	{	code: '(> "")			result: Nil }
 	{	code: '(> "a")			result: Nil }
 	{	code: '(> "a" "a")			result: Nil }
