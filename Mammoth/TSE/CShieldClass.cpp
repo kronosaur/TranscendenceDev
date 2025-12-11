@@ -159,16 +159,23 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	//	Calculate how much extra mitigation we get from any fortification we have
 
 	Metric rFortification;
-	if (m_rFortification < 0.0)
+	Metric rFortificationAdjMin;
+
+	if (IS_NAN(m_rFortification))
 		rFortification = g_pUniverse->GetEngineOptions().GetDefaultFortifiedArmor();
 	else
 		rFortification = m_rFortification;
+
+	if (m_rMinFortificationAdj < 0)
+		rFortificationAdjMin = g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj();
+	else
+		rFortificationAdjMin = m_rMinFortificationAdj;
 
 	//	Calculate how much we will absorb
 	//	We need to do this in two steps to allow WMD to set its own min damage first
 	//	before additional adjusmtent
 
-	Ctx.iAbsorb = Ctx.CalcWMDAdjustedDamage(rFortification);
+	Ctx.iAbsorb = Ctx.CalcWMDAdjustedDamage(rFortification, rFortificationAdjMin);
 	Ctx.iAbsorb = mathAdjust(Ctx.iAbsorb, GetAbsorbAdj(DeviceItem, Enhancements, Ctx.Damage));
 
 	//	Compute how much damage we take (based on the type of damage)
@@ -777,7 +784,7 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 
 	//	Load WMD Fortification
 
-	pShield->m_rFortification = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
+	pShield->m_rFortification = pDesc->GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, R_NAN);
 
 	//	Load the weapon suppress
 

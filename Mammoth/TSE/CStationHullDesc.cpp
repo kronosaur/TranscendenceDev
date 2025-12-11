@@ -210,8 +210,13 @@ int CStationHullDesc::GetArmorLevel (void) const
 Metric CStationHullDesc::GetFortificationAdj(bool bMultiHull) const
 	{
 	if (g_pUniverse)
-		return m_rFortified < 0 ? (bMultiHull ? g_pUniverse->GetEngineOptions().GetDefaultFortifiedStationMultihull() : g_pUniverse->GetEngineOptions().GetDefaultFortifiedStation()) : m_rFortified;
+		return IS_NAN(m_rFortified) ? (bMultiHull ? g_pUniverse->GetEngineOptions().GetDefaultFortifiedStationMultihull() : g_pUniverse->GetEngineOptions().GetDefaultFortifiedStation()) : m_rFortified;
 	return bMultiHull ? 0.1 : 1.0;
+	}
+
+Metric CStationHullDesc::GetMinFortificationAdj() const
+	{
+	return m_rMinFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj() : m_rMinFortificationAdj;
 	}
 
 CString CStationHullDesc::GetID (EHullTypes iType)
@@ -272,10 +277,7 @@ ALERROR CStationHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 	else
 		m_iType = (bMultiHullDefault ? hullMultiple : hullSingle);
 
-	if (m_iType == hullMultiple)
-		m_rFortified = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, g_Epsilon, -1.0, g_pUniverse->GetEngineOptions().GetDefaultFortifiedStationMultihull());
-	else
-		m_rFortified = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, g_Epsilon, -1.0, g_pUniverse->GetEngineOptions().GetDefaultFortifiedStation());
+	m_rFortified = pDesc->GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, R_NAN);
 
 	//	Get hit points and max hit points
 

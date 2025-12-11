@@ -117,10 +117,11 @@ EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Des
 	//	Calculate our Fortification adjustment
 
 	Metric rFortification = Desc.GetFortificationAdj();
+	Metric rMinFortificationAdj = Desc.GetFortificationMinAdj();
 
 	//	Effective damage requires mass destruction power
 
-    Ctx.iDamage = Ctx.CalcWMDAdjustedDamage(rFortification);
+    Ctx.iDamage = Ctx.CalcWMDAdjustedDamage(rFortification, rMinFortificationAdj);
 
 	//	If we don't have WMD and we're not making much progress, then show a hint.
 

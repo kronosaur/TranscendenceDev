@@ -352,6 +352,7 @@ class CShipInteriorDesc
 		int GetCount () const { return m_Compartments.GetCount(); }
 		const SCompartmentDesc &GetCompartment (int iIndex) const { return m_Compartments[iIndex]; }
 		Metric GetFortificationAdj () const;
+		Metric GetFortificationMinAdj() const;
 		int GetHitPoints () const;
 		const TArray<int> &GetPaintOrder (void) const { return m_PaintOrder; }
 		bool HasAttached () const { return (m_fHasAttached ? true : false); }
@@ -367,6 +368,7 @@ class CShipInteriorDesc
 		TArray<SCompartmentDesc> m_Compartments;
 		TArray<int> m_PaintOrder;
 		Metric m_rFortified = 0.1;					//	Adjusts WMD adj curve from the WMD0 end
+		Metric m_rMinFortificationAdj = -1.0;		//	Lower cap on fortification adj for WMD curve on this armor
 
 		DWORD m_fHasAttached:1;
 		DWORD m_fIsMultiHull:1;
