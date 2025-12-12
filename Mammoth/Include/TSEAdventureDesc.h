@@ -41,6 +41,24 @@ class CEngineOptions
 
 	private:
 
+		struct SDamageMethodWMDAdj
+			{
+			Metric rWMD = 1.0;
+			};
+
+		struct SDamageMethodAdj
+			{
+			Metric rCrush = 1.0;
+			Metric rPierce = 1.0;
+			Metric rShred = 1.0;
+			};
+
+		union UDamageMethodAdj
+			{
+			SDamageMethodAdj sDamageMethodAdj;
+			SDamageMethodWMDAdj sWMDAdj;
+			};
+
 		bool InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable);
 
 		void InitDefaultGlobals ();
@@ -80,7 +98,9 @@ class CEngineOptions
 		int m_iDefaultInteraction = -1;
 		int m_iDefaultShotHP = -1;
 
-		//	Default WMD/Fortified behavior
+		//	Default Damage Method behavior
+
+		EDamageMethodSystem m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysError;
 
 		CMassDestructionDesc m_MassDestruction;
 		bool m_bCustomMassDestruction;
