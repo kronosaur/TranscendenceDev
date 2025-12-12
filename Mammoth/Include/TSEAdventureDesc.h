@@ -130,7 +130,9 @@ class CEngineOptions
 			};
 
 
+		Metric GetDamageMethodAdj (const UDamageMethodAdj &adj, EDamageMethod iMethod) const;
 		bool InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable);
+		bool InitDamageMethodAdjFromCC (SDesignLoadCtx& Ctx, UDamageMethodAdj& adj, ICCItem* pStruct);
 
 		void InitDefaultGlobals ();
 		void InitDefaultDescs ();
@@ -139,8 +141,6 @@ class CEngineOptions
 		static CDeviceDamageLevelDesc GetDefaultExternalDeviceDamageLevels (int apiVersion);
 		static CDeviceDamageLevelDesc GetDefaultInternalDeviceDamageLevels (int apiVersion);
 		static CDamageMethodDesc GetDefaultWMDAdj (int apiVersion);
-
-		Metric GetDamageMethodAdj (const UDamageMethodAdj &adj, EDamageMethod iMethod) const;
 
 		int m_iDefaultForAPIVersion = -1;
 

@@ -468,6 +468,38 @@ bool CEngineOptions::InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElemen
 	return true;
 	}
 
+//	InitDamageMethodAdjFromCC
+//
+//	Use an ICCItem loaded from an adventure property to initialize
+//	Damage Method Adj
+// 
+//	Note: Requires adj to be pre-configured to the appropriate defaults
+//
+bool CEngineOptions::InitDamageMethodAdjFromCC(SDesignLoadCtx& Ctx, UDamageMethodAdj& adj, ICCItem* pStruct)
+	{
+	switch (m_iDamageMethodSystem)
+		{
+		case EDamageMethodSystem::dmgMethodSysPhysicalized:
+			{
+			adj.PhysicalizedAdj.rCrush = min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_CRUSH, adj.PhysicalizedAdj.rCrush), 1.0);
+			adj.PhysicalizedAdj.rPierce = min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_PIERCE, adj.PhysicalizedAdj.rPierce), 1.0);
+			adj.PhysicalizedAdj.rShred = min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_SHRED, adj.PhysicalizedAdj.rShred), 1.0);
+			return true;
+			}
+		case EDamageMethodSystem::dmgMethodSysWMD:
+			{
+			adj.WMDAdj.rWMD = min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_WMD, adj.WMDAdj.rWMD), 1.0);
+			return true;
+			}
+		default:
+			{
+			ASSERT(false);
+			Ctx.sError = CONSTLIT("Engine error occurred in initialing damage method adj: m_iDamageMethodSystem was not set to a valid value");
+			return false;
+			}
+		}
+	}
+
 //	InitDamageAdjFromXML
 //
 //	Initializes from XML.
@@ -716,6 +748,7 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 		{
 
 		//	Initialize the Damage Method System for this adventure
+		//	This must be done before any initialization or access of the DamageMethod system
 
 		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_SYSTEM);
 		if (pValue->IsNil())
@@ -747,53 +780,141 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 
 		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_ITEM);
 
-		//	Items default to 1.0 so we just ignore them if they are Nil
+		//	Items default to 1.0 so their defaults are already correctly initialized
 
 		ICCItem* pItmArmorStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_ITEM_ARMOR);
 		if (pItmArmorStruct)
 			{
-			switch (m_iDamageMethodSystem)
-				{
-				case EDamageMethodSystem::dmgMethodSysPhysicalized:
-					{
-					m_DamageMethodItemAdj.Armor.PhysicalizedAdj.rCrush = pItmArmorStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_CRUSH, 1.0);
-					m_DamageMethodItemAdj.Armor.PhysicalizedAdj.rPierce = pItmArmorStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_PIERCE, 1.0);
-					m_DamageMethodItemAdj.Armor.PhysicalizedAdj.rShred = pItmArmorStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_SHRED, 1.0);
-					break;
-					}
-				case EDamageMethodSystem::dmgMethodSysWMD:
-					m_DamageMethodItemAdj.Armor.WMDAdj.rWMD = pItmArmorStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_WMD, 1.0);
-				}
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodItemAdj.Armor, pItmArmorStruct))
+				return false;
 			}
 
 		ICCItem* pItmShieldStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_ITEM_SHIELD);
-		if (pItmArmorStruct)
+		if (pItmShieldStruct)
 			{
-			switch (m_iDamageMethodSystem)
-				{
-				case EDamageMethodSystem::dmgMethodSysPhysicalized:
-					{
-					m_DamageMethodItemAdj.Shield.PhysicalizedAdj.rCrush = pItmShieldStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_CRUSH, 1.0);
-					m_DamageMethodItemAdj.Shield.PhysicalizedAdj.rPierce = pItmShieldStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_PIERCE, 1.0);
-					m_DamageMethodItemAdj.Shield.PhysicalizedAdj.rShred = pItmShieldStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_SHRED, 1.0);
-					break;
-					}
-				case EDamageMethodSystem::dmgMethodSysWMD:
-					m_DamageMethodItemAdj.Shield.WMDAdj.rWMD = pItmShieldStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_WMD, 1.0);
-				}
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodItemAdj.Shield, pItmShieldStruct))
+				return false;
 			}
 
 		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_SHIP);
 		ICCItem* pShipArmorStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR);
+		//	We use a nil here so that we can just use the same defaults handler later
+		if (!pShipArmorStruct)
+			pShipArmorStruct = CCX.CreateNil();
+
+		ICCItem* pShipArmorCriticalStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_CRITICAL);
+		if (pShipArmorCriticalStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.Critical, pShipArmorCriticalStruct))
+				return false;
+			}
+
+		ICCItem* pShipArmorCriticalUncrewedStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_CRITICAL_UNCREWED);
+		if (pShipArmorCriticalUncrewedStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.CriticalUncrewed, pShipArmorCriticalUncrewedStruct))
+				return false;
+			}
+
+		ICCItem* pShipArmorNonCriticalStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_NONCRITICAL);
+		if (pShipArmorNonCriticalStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.NonCritical, pShipArmorNonCriticalStruct))
+				return false;
+			}
+
+		ICCItem* pShipArmorNonCriticalDestructionStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_NONCRITICAL_DESTRUCTION);
+		if (pShipArmorNonCriticalDestructionStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.NonCriticalDestruction, pShipArmorNonCriticalDestructionStruct))
+				return false;
+			}
+
 		ICCItem* pShipCompartmentStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT);
+		//	We use a nil here so that we can just use the same defaults handler later
+		if (!pShipCompartmentStruct)
+			pShipCompartmentStruct = CCX.CreateNil();
+
+		ICCItem* pShipCompartmentGeneralStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_GENERAL);
+		if (pShipCompartmentGeneralStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Compartment.General, pShipCompartmentGeneralStruct))
+				return false;
+			}
+
+		ICCItem* pShipCompartmentCargoStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_CARGO);
+		if (pShipCompartmentCargoStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Compartment.Cargo, pShipCompartmentCargoStruct))
+				return false;
+			}
+
+		ICCItem* pShipCompartmentMainDriveStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_MAIN_DRIVE);
+		if (pShipCompartmentMainDriveStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Compartment.MainDrive, pShipCompartmentMainDriveStruct))
+				return false;
+			}
+
+		ICCItem* pShipCompartmentUncrewedStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_UNCREWED);
+		if (pShipCompartmentUncrewedStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Compartment.Uncrewed, pShipCompartmentUncrewedStruct))
+				return false;
+			}
 
 		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_STATION);
 		ICCItem* pStationHullStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL);
+		//	We use a nil here so that we can just use the same defaults handler later
+		if (!pStationHullStruct)
+			pStationHullStruct = CCX.CreateNil();
+
+		ICCItem* pStationHullSingleStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_SINGLE);
+		if (pStationHullSingleStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Single, pStationHullSingleStruct))
+				return false;
+			}
+
+		ICCItem* pStationHullMultiStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_MULTI);
+		if (pStationHullMultiStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Multi, pStationHullMultiStruct))
+				return false;
+			}
+
+		ICCItem* pStationHullAsteroidStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_ASTEROID);
+		if (pStationHullAsteroidStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Asteroid, pStationHullAsteroidStruct))
+				return false;
+			}
+
+		ICCItem* pStationHullUndergroundStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_UNDERGROUND);
+		if (pStationHullUndergroundStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Underground, pStationHullUndergroundStruct))
+				return false;
+			}
+
+		ICCItem* pStationHullUncrewedStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_UNCREWED);
+		if (pStationHullUncrewedStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Uncrewed, pStationHullUncrewedStruct))
+				return false;
+			}
+
+		ICCItem* pStationHullArmorStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_ARMOR);
+		if (pStationHullArmorStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Armor, pStationHullArmorStruct))
+				return false;
+			}
 
 		//	Set minimum fortification
 
 		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_MIN_ADJ);
-		rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
+		Metric rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
 		if (rValue < 0)
 			rValue = 0.0;
 		if (rValue > 1.0 + g_Epsilon)
