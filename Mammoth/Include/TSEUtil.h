@@ -662,9 +662,27 @@ enum class EDamageMethod
 	methodError =							-100,	//	Uninitialized or error state
 
 	methodWMD =								0,		//	original WMD
-	methodCrush =							0,		//	Physicalized: crush
-	methodPierce =							1,		//	Physicalized: pierce
-	methodShred =							2,		//	Physicalized: shred
+	methodCrush =							1,		//	Physicalized: crush
+	methodPierce =							2,		//	Physicalized: pierce
+	methodShred =							3,		//	Physicalized: shred
+	};
+
+enum class EDamageMethodTarget
+	{
+	targetNone =							-100,	//	Uninitialized or error type
+
+	targetItem =							0,		//	When checking for a specific item's adjustment
+	targetShip =							1,
+	targetStation =							2,
+	};
+
+enum class EDamageMethodTargetPart
+	{
+	partNone =								-100,	//	Uninitialized or error type
+
+	partArmor =								0,
+	partShield =							1,
+	partHull =								2,		//	Includes compartments
 	};
 
 class CDamageMethodDesc

@@ -379,6 +379,42 @@ void CEngineOptions::InitDefaultDescs ()
 
 	}
 
+const CDamageMethodDesc* CEngineOptions::GetDamageMethodDesc(EDamageMethod iMethod) const
+	{
+	switch (m_iDamageMethodSystem)
+		{
+		case EDamageMethodSystem::dmgMethodSysWMD:
+			{
+			if (iMethod == EDamageMethod::methodWMD)
+				return  &(m_DamageMethodDescs.WMD.WMD);
+			ASSERT(false);
+			return NULL;
+			}
+		case EDamageMethodSystem::dmgMethodSysPhysicalized:
+			{
+			switch (iMethod)
+				{
+				case EDamageMethod::methodCrush:
+					return &(m_DamageMethodDescs.Physicalized.Crush);
+				case EDamageMethod::methodPierce:
+					return &(m_DamageMethodDescs.Physicalized.Pierce);
+				case EDamageMethod::methodShred:
+					return &(m_DamageMethodDescs.Physicalized.Shred);
+				default:
+					{
+					ASSERT(false);
+					return NULL;
+					}
+				}
+			}
+		default:
+			{
+			ASSERT(false);
+			return NULL;
+			}
+		}
+	}
+
 //	HidesArmorImmunity
 //
 //	Returns TRUE if we should hide the given immunity from armor UI displays.
@@ -593,6 +629,42 @@ CDamageMethodDesc CEngineOptions::GetDefaultWMDAdj (int apiVersion)
 	return Desc;
 	}
 
+Metric CEngineOptions::GetDamageMethodAdj(const UDamageMethodAdj &adj, EDamageMethod iMethod) const
+	{
+	switch (m_iDamageMethodSystem)
+		{
+		case EDamageMethodSystem::dmgMethodSysPhysicalized:
+			{
+			switch (iMethod)
+				{
+				case EDamageMethod::methodCrush:
+					return adj.sDamageMethodAdj.rCrush;
+				case EDamageMethod::methodPierce:
+					return adj.sDamageMethodAdj.rPierce;
+				case EDamageMethod::methodShred:
+					return adj.sDamageMethodAdj.rShred;
+				default:
+					{
+					ASSERT(false);
+					return 1.0;
+					}
+				}
+			}
+		case EDamageMethodSystem::dmgMethodSysWMD:
+			{
+			if (iMethod == EDamageMethod::methodWMD)
+				return adj.sWMDAdj.rWMD;
+			ASSERT(false);
+			return 1.0;
+			}
+		default:
+			{
+			ASSERT(false);
+			return 1.0;
+			}
+		}
+	}
+
 //	InitDefaultDamageAdj
 //
 //	Initialize default tables
@@ -717,13 +789,13 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 		}
 	m_rFortifiedShield = rValue;
 
-	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_MIN_ADJ);
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_MIN_ADJ);
 	rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
 	if (rValue < 0)
 		rValue = 0.0;
 	if (rValue > 1.0 + g_Epsilon)
 		{
-		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_MIN_ADJ, CONSTLIT(" cannot be greater than 1.0"));
+		Ctx.sError = strCat(PROPERTY_CORE_DMG_METHOD_MIN_ADJ, CONSTLIT(" cannot be greater than 1.0"));
 		return false;
 		}
 	m_rMinFortificationAdj = rValue;
