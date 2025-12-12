@@ -379,6 +379,90 @@ void CEngineOptions::InitDefaultDescs ()
 
 	}
 
+//	InitDefaultDamageMethods
+//
+//	m_iDamageMethodSystem must be initialized to a valid value already
+//
+void CEngineOptions::InitDefaultDamageMethods()
+	{
+
+	switch (m_iDamageMethodSystem)
+		{
+		case EDamageMethodSystem::dmgMethodSysPhysicalized:
+			{
+			//	Items
+
+			m_DamageMethodItemAdj.Armor.PhysicalizedAdj.Reset();
+			m_DamageMethodItemAdj.Shield.PhysicalizedAdj.Reset();
+
+			//	Ships
+
+			m_DamageMethodShipAdj.Armor.Critical.PhysicalizedAdj.Reset();
+			m_DamageMethodShipAdj.Armor.Critical.PhysicalizedAdj.rShred = 0.1;
+			m_DamageMethodShipAdj.Armor.CriticalUncrewed.PhysicalizedAdj.Reset();
+			m_DamageMethodShipAdj.Armor.CriticalUncrewed.PhysicalizedAdj.rShred = 0.1;
+			m_DamageMethodShipAdj.Armor.NonCritical.PhysicalizedAdj.Reset();
+			m_DamageMethodShipAdj.Armor.NonCritical.PhysicalizedAdj.rPierce = 0.1;
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.PhysicalizedAdj.Reset();
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.PhysicalizedAdj.rShred = 0.1;
+
+			m_DamageMethodShipAdj.Compartment.General.PhysicalizedAdj.Reset();
+			m_DamageMethodShipAdj.Compartment.General.PhysicalizedAdj.rShred = 0.1;
+			m_DamageMethodShipAdj.Compartment.Cargo.PhysicalizedAdj.Reset();
+			m_DamageMethodShipAdj.Compartment.Cargo.PhysicalizedAdj.rCrush = 0.1;
+			m_DamageMethodShipAdj.Compartment.MainDrive.PhysicalizedAdj.Reset();
+			m_DamageMethodShipAdj.Compartment.MainDrive.PhysicalizedAdj.rShred = 0.1;
+			m_DamageMethodShipAdj.Compartment.Uncrewed.PhysicalizedAdj.Reset();
+			m_DamageMethodShipAdj.Compartment.Uncrewed.PhysicalizedAdj.rCrush = 0.1;
+
+			//	Stations
+
+			m_DamageMethodStationAdj.Hull.Armor.PhysicalizedAdj.Reset();
+			m_DamageMethodStationAdj.Hull.Armor.PhysicalizedAdj.rPierce = 0.1;
+			m_DamageMethodStationAdj.Hull.Asteroid.PhysicalizedAdj.Reset();
+			m_DamageMethodStationAdj.Hull.Asteroid.PhysicalizedAdj.rCrush = 0.1;
+			m_DamageMethodStationAdj.Hull.Multi.PhysicalizedAdj.Reset();
+			m_DamageMethodStationAdj.Hull.Multi.PhysicalizedAdj.rShred = 0.1;
+			m_DamageMethodStationAdj.Hull.Single.PhysicalizedAdj.Reset();
+			m_DamageMethodStationAdj.Hull.Uncrewed.PhysicalizedAdj.Reset();
+			m_DamageMethodStationAdj.Hull.Uncrewed.PhysicalizedAdj.rCrush = 0.1;
+			m_DamageMethodStationAdj.Hull.Underground.PhysicalizedAdj.Reset();
+			m_DamageMethodStationAdj.Hull.Underground.PhysicalizedAdj.rCrush = 0.3;
+			m_DamageMethodStationAdj.Hull.Underground.PhysicalizedAdj.rPierce = 0.3;
+			}
+		case EDamageMethodSystem::dmgMethodSysWMD:
+			{
+			//	Items
+
+			m_DamageMethodItemAdj.Armor.WMDAdj.rWMD = 1.0;
+			m_DamageMethodItemAdj.Shield.WMDAdj.rWMD = 1.0;
+
+			//	Ships
+
+			m_DamageMethodShipAdj.Armor.Critical.WMDAdj.rWMD = 0.1;
+			m_DamageMethodShipAdj.Armor.CriticalUncrewed.WMDAdj.rWMD = 0.1;
+			m_DamageMethodShipAdj.Armor.NonCritical.WMDAdj.rWMD = 0.1;
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.WMDAdj.rWMD = 0.1;
+
+			m_DamageMethodShipAdj.Compartment.General.WMDAdj.rWMD = 0.1;
+			m_DamageMethodShipAdj.Compartment.Cargo.WMDAdj.rWMD = 0.1;
+			m_DamageMethodShipAdj.Compartment.MainDrive.WMDAdj.rWMD = 0.1;
+			m_DamageMethodShipAdj.Compartment.Uncrewed.WMDAdj.rWMD = 0.1;
+
+			//	Stations
+
+			m_DamageMethodStationAdj.Hull.Armor.WMDAdj.rWMD = 0.1;
+			m_DamageMethodStationAdj.Hull.Asteroid.WMDAdj.rWMD = 0.1;
+			m_DamageMethodStationAdj.Hull.Multi.WMDAdj.rWMD = 0.1;
+			m_DamageMethodStationAdj.Hull.Single.WMDAdj.rWMD = 1.0;
+			m_DamageMethodStationAdj.Hull.Uncrewed.WMDAdj.rWMD = 0.1;
+			m_DamageMethodStationAdj.Hull.Underground.WMDAdj.rWMD = 0.1;
+			}
+		default:
+			ASSERT(false);
+		}
+	}
+
 const CDamageMethodDesc* CEngineOptions::GetDamageMethodDesc(EDamageMethod iMethod) const
 	{
 	switch (m_iDamageMethodSystem)
@@ -767,6 +851,12 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 				}
 			}
 
+		//	We need to initialize the engine defaults for this damage method before loading up any custom
+		//	adventure-level defaults, since InitDamageMethodAdjFromCC requires that the engine default
+		//	is already loaded up
+
+		InitDefaultDamageMethods();
+
 		//	Initialize default Damage Method Fortification Adj for this adventure
 		// 
 		//	Note: empty properties and properties with (double 'NaN) return Nil
@@ -933,18 +1023,7 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 		m_rMinFortificationAdj = 0.0;
 		m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;
 
-		//	All the adj structs are pre-initialized to 1.0, so we only need to set the legacy defaults that use 0.1 instead
-
-		m_DamageMethodShipAdj.Compartment.General.WMDAdj.rWMD = 0.1;
-		m_DamageMethodShipAdj.Compartment.Cargo.WMDAdj.rWMD = 0.1;
-		m_DamageMethodShipAdj.Compartment.MainDrive.WMDAdj.rWMD = 0.1;
-		m_DamageMethodShipAdj.Compartment.Uncrewed.WMDAdj.rWMD = 0.1;
-
-		m_DamageMethodStationAdj.Hull.Armor.WMDAdj.rWMD = 0.1;
-		m_DamageMethodStationAdj.Hull.Asteroid.WMDAdj.rWMD = 0.1;
-		m_DamageMethodStationAdj.Hull.Multi.WMDAdj.rWMD = 0.1;
-		m_DamageMethodStationAdj.Hull.Uncrewed.WMDAdj.rWMD = 0.1;
-		m_DamageMethodStationAdj.Hull.Underground.WMDAdj.rWMD = 0.1;
+		InitDefaultDamageMethods();
 		}
 
 	return true;

@@ -56,6 +56,8 @@ class CEngineOptions
 		struct SDamageMethodWMDAdj
 			{
 			Metric rWMD = 1.0;
+
+			void Reset () { rWMD = 1.0; }
 			};
 
 		struct SDamageMethodPhysicalizedAdj
@@ -63,6 +65,13 @@ class CEngineOptions
 			Metric rCrush = 1.0;
 			Metric rPierce = 1.0;
 			Metric rShred = 1.0;
+
+			void Reset()
+				{
+				rCrush = 1.0;
+				rPierce = 1.0;
+				rShred = 1.0;
+				}
 			};
 
 		union UDamageMethodAdj
@@ -136,6 +145,7 @@ class CEngineOptions
 
 		void InitDefaultGlobals ();
 		void InitDefaultDescs ();
+		void InitDefaultDamageMethods ();
 		static void InitDefaultDamageAdj ();
 		static CMiningDamageLevelDesc GetDefaultMiningMaxOreLevels (int apiVersion);
 		static CDeviceDamageLevelDesc GetDefaultExternalDeviceDamageLevels (int apiVersion);
