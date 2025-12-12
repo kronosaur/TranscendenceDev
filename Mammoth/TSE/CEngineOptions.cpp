@@ -712,93 +712,130 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 	m_bHideRadiationImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_RADIATION_IMMUNE)->IsNil();
 	m_bHideShatterImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_SHATTER_IMMUNE)->IsNil();
 
-	//	Initialize default fortificationAdj for this adventure
-	// 
-	//	Note: empty properties and properties with (double 'NaN) return Nil
-	//	Nil initializes the legacy defaults which were hardcoded up through API57 (2.0a7)
-	//
-	//	We check for a real NaN just in case Tlisp doubles ever get updated to support
-	//	explicit NaN. This code runs once per adventure init so the impact is negligible.
-	//
-	//	We do not support fortification above 1.0, since these cases will be handled by
-	//	other mechanics
-
-	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_SHIP_COMPARTMENT);
-	double rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
-	if (IS_NAN(rValue))
-		rValue = 0.1;
-	if (rValue > 1.0 + g_Epsilon)
+	if (Ctx.GetAPIVersion() >= 58)
 		{
-		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_SHIP_COMPARTMENT, CONSTLIT(" cannot be greater than 1.0"));
-		return false;
-		}
-	m_rFortifiedShipCompartment = rValue;
 
-	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_MULTIHULL_STATION);
-	rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
-	if (IS_NAN(rValue))
-		rValue = 0.1;
-	if (rValue > 1.0 + g_Epsilon)
-		{
-		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_MULTIHULL_STATION, CONSTLIT(" cannot be greater than 1.0"));
-		return false;
-		}
-	m_rFortifiedStationMultihull = rValue;
+		//	Initialize the Damage Method System for this adventure
 
-	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_STATION);
-	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (IS_NAN(rValue))
-		rValue = 1.0;
-	if (rValue > 1.0 + g_Epsilon)
-		{
-		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_STATION, CONSTLIT(" cannot be greater than 1.0"));
-		return false;
-		}
-	m_rFortifiedStation = rValue;
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_SYSTEM);
+		if (pValue->IsNil())
 
-	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_ARMOR_SEGMENT);
-	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (IS_NAN(rValue))
-		rValue = 1.0;
-	if (rValue > 1.0 + g_Epsilon)
-		{
-		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_ARMOR_SEGMENT, CONSTLIT(" cannot be greater than 1.0"));
-		return false;
-		}
-	m_rFortifiedArmorSlot = rValue;
+			CString sDmgSys = pValue->GetStringValue();
+		m_rMinFortificationAdj = rValue;
 
-	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_ARMOR);
-	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (IS_NAN(rValue))
-		rValue = 1.0;
-	if (rValue > 1.0 + g_Epsilon)
-		{
-		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_ARMOR, CONSTLIT(" cannot be greater than 1.0"));
-		return false;
-		}
-	m_rFortifiedArmor = rValue;
+		//	Initialize default Damage Method Fortification Adj for this adventure
+		// 
+		//	Note: empty properties and properties with (double 'NaN) return Nil
+		//	Nil initializes the legacy defaults which were hardcoded up through API57 (2.0a7)
+		//
+		//	We check for a real NaN just in case Tlisp doubles ever get updated to support
+		//	explicit NaN. This code runs once per adventure init so the impact is negligible.
+		//
+		//	We do not support fortification above 1.0, since these cases will be handled by
+		//	other mechanics
 
-	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_SHIELD);
-	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (IS_NAN(rValue))
-		rValue = 1.0;
-	if (rValue > 1.0 + g_Epsilon)
-		{
-		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_SHIELD, CONSTLIT(" cannot be greater than 1.0"));
-		return false;
-		}
-	m_rFortifiedShield = rValue;
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_ITEM);
+		ICCItem* pArmorStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_ITEM_ARMOR);
+		ICCItem* pArmorStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_ITEM_ARMOR);
 
-	pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_MIN_ADJ);
-	rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
-	if (rValue < 0)
-		rValue = 0.0;
-	if (rValue > 1.0 + g_Epsilon)
-		{
-		Ctx.sError = strCat(PROPERTY_CORE_DMG_METHOD_MIN_ADJ, CONSTLIT(" cannot be greater than 1.0"));
-		return false;
+		double rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
+		if (IS_NAN(rValue))
+			rValue = 0.1;
+		if (rValue > 1.0 + g_Epsilon)
+			{
+			Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_SHIP_COMPARTMENT, CONSTLIT(" cannot be greater than 1.0"));
+			return false;
+			}
+		m_rFortifiedShipCompartment = rValue;
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_MULTIHULL_STATION);
+		rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
+		if (IS_NAN(rValue))
+			rValue = 0.1;
+		if (rValue > 1.0 + g_Epsilon)
+			{
+			Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_MULTIHULL_STATION, CONSTLIT(" cannot be greater than 1.0"));
+			return false;
+			}
+		m_rFortifiedStationMultihull = rValue;
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_STATION);
+		rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
+		if (IS_NAN(rValue))
+			rValue = 1.0;
+		if (rValue > 1.0 + g_Epsilon)
+			{
+			Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_STATION, CONSTLIT(" cannot be greater than 1.0"));
+			return false;
+			}
+		m_rFortifiedStation = rValue;
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_ARMOR_SEGMENT);
+		rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
+		if (IS_NAN(rValue))
+			rValue = 1.0;
+		if (rValue > 1.0 + g_Epsilon)
+			{
+			Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_ARMOR_SEGMENT, CONSTLIT(" cannot be greater than 1.0"));
+			return false;
+			}
+		m_rFortifiedArmorSlot = rValue;
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_ARMOR);
+		rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
+		if (IS_NAN(rValue))
+			rValue = 1.0;
+		if (rValue > 1.0 + g_Epsilon)
+			{
+			Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_ARMOR, CONSTLIT(" cannot be greater than 1.0"));
+			return false;
+			}
+		m_rFortifiedArmor = rValue;
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_SHIELD);
+		rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
+		if (IS_NAN(rValue))
+			rValue = 1.0;
+		if (rValue > 1.0 + g_Epsilon)
+			{
+			Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_SHIELD, CONSTLIT(" cannot be greater than 1.0"));
+			return false;
+			}
+		m_rFortifiedShield = rValue;
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_MIN_ADJ);
+		rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
+		if (rValue < 0)
+			rValue = 0.0;
+		if (rValue > 1.0 + g_Epsilon)
+			{
+			Ctx.sError = strCat(PROPERTY_CORE_DMG_METHOD_MIN_ADJ, CONSTLIT(" cannot be greater than 1.0"));
+			return false;
+			}
+		m_rMinFortificationAdj = rValue;
+
 		}
-	m_rMinFortificationAdj = rValue;
+
+	//	Legacy adventures can only use defaults because the older APIs dont support anything else
+
+	else
+		{
+		m_rMinFortificationAdj = 0.0;
+		m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;
+
+		//	All the adj structs are pre-initialized to 1.0, so we only need to set the legacy defaults that use 0.1 instead
+
+		m_DamageMethodShipAdj.Compartment.General.sWMDAdj.rWMD = 0.1;
+		m_DamageMethodShipAdj.Compartment.Cargo.sWMDAdj.rWMD = 0.1;
+		m_DamageMethodShipAdj.Compartment.MainDrive.sWMDAdj.rWMD = 0.1;
+		m_DamageMethodShipAdj.Compartment.Uncrewed.sWMDAdj.rWMD = 0.1;
+
+		m_DamageMethodStationAdj.Hull.Armor.sWMDAdj.rWMD = 0.1;
+		m_DamageMethodStationAdj.Hull.Asteroid.sWMDAdj.rWMD = 0.1;
+		m_DamageMethodStationAdj.Hull.Multi.sWMDAdj.rWMD = 0.1;
+		m_DamageMethodStationAdj.Hull.Uncrewed.sWMDAdj.rWMD = 0.1;
+		m_DamageMethodStationAdj.Hull.Underground.sWMDAdj.rWMD = 0.1;
+		}
 
 	return true;
 	}
