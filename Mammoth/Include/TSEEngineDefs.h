@@ -113,19 +113,31 @@
 //
 //	Valid options:
 //		WMD:	Use the legacy WMD system
+// 
+//	Options currently pending implementation:
+//		physicalizedDamageMethods
 //
 #define PROPERTY_CORE_DMG_METHOD_SYSTEM					CONSTLIT("core.damageMethod.system")
+#define VALUE_CORE_DMG_METHOD_SYSTEM_WMD				CONSTLIT("WMD")
+#define VALUE_CORE_DMG_METHOD_SYSTEM_DAMAGE_METHODS		CONSTLIT("physicalizedDamageMethods")
 
 //	core.damageMethod.minAdj
 //
 //	Adventure Property <Constant>: Evaluated at bind time. This property defines the default
-//	minimum adjustment that can result from fortification. Returns a damageMethod struct.
+//	minimum adjustment that can result from fortification.
+// 
+//	Returns a damageMethod struct 0.0 - 1.0.
 //
 //	The damageMethod struct depends on the damage method system selected using
 //		core.damageMethod.system
 // 
 //	damageMethod: (WMD)
 //		WMD:	the adj to use for WMD
+// 
+//	damageMethod: (physicalizedDamageMethods)
+//		crush:	the adj to use for crush
+//		pierce:	the adj to use for pierce
+//		shred:	the adj to use for shred
 //
 #define PROPERTY_CORE_DMG_METHOD_MIN_ADJ				CONSTLIT("core.damageMethod.minAdj")
 
@@ -133,6 +145,10 @@
 //
 //	Adventure Property <Constant>: Evaluated at bind time. These properties control defaults
 //	for damage method (WMD, or future systems) fortification adjustment
+//	
+//	Lower values of fortification mean that damage without that damage method is penalized more.
+//	Values may be less than 0 to sharply adjust the damage method curve, but the computed
+//	damageMethodDdj will be clamped to core.damageMethod.minAdj so that negative adj never happens.
 // 
 //	[Target] may be one of the following types:
 //
@@ -147,46 +163,126 @@
 // 
 //  itemDamageMethod struct:
 //		armor:		Sets default adj for armor types
+//			(WMD)
 //			WMD:	1.0
+//			(physicalizedDamageMethods)
+//			crush:	1.0
+//			pierce:	1.0
+//			shred:	1.0
 //		shield:		Sets default adj for shield types
+//			(WMD)
 //			WMD:	1.0
+//			(physicalizedDamageMethods)
+//			crush:	1.0
+//			pierce:	1.0
+//			shred:	1.0
 // 
 //	shipDamageMethod struct:
 //		armor:
 //			critical:
+//				(WMD)
 //				WMD:	1.0
+//				(physicalizedDamageMethods)
+//				crush:	1.0
+//				pierce:	1.0
+//				shred:	0.2
 //			uncrewedCritical:
+//				(WMD)
 //				WMD:	1.0
+//				(physicalizedDamageMethods)
+//				crush:	0.2
+//				pierce:	1.0
+//				shred:	1.0
 //			nonCritical:
+//				(WMD)
 //				WMD:	1.0
+//				(physicalizedDamageMethods)
+//				crush:	1.0
+//				pierce:	0.1
+//				shred:	1.0
 //			nonCriticalDestruction:
+//				(WMD)
 //				WMD:	0.05
+//				(physicalizedDamageMethods)
+//				crush:	1.0
+//				pierce:	1.0
+//				shred:	0.05
 //		compartments:
 //			(see ECompartmentTypes)
 //			general:
+//				(WMD)
 //				WMD:	0.1
+//				(physicalizedDamageMethods)
+//				crush:	1.0
+//				pierce:	1.0
+//				shred:	0.1
 //			mainDrive:
+//				(WMD)
 //				WMD:	0.1
+//				(physicalizedDamageMethods)
+//				crush:	1.0
+//				pierce:	1.0
+//				shred:	0.1
 //			cargo:
+//				(WMD)
 //				WMD:	0.1
+//				(physicalizedDamageMethods)
+//				crush:	0.1
+//				pierce:	1.0
+//				shred:	1.0
 //			uncrewed:
+//				(WMD)
 //				WMD:	0.1
+//				(physicalizedDamageMethods)
+//				crush:	0.1
+//				pierce:	1.0
+//				shred:	1.0
 // 
 //	stationDamageMethod struct:
 //		hull:
 //			(see CStationHullDesc::EHullTypes)
 //			single:
+//				(WMD)
 //				WMD:	1.0
+//				(physicalizedDamageMethods)
+//				crush:	1.0
+//				pierce:	1.0
+//				shred:	1.0
 //			multi:
+//				(WMD)
 //				WMD:	0.1
+//				(physicalizedDamageMethods)
+//				crush:	1.0
+//				pierce:	1.0
+//				shred:	0.1
 //			asteroid:
+//				(WMD)
 //				WMD:	0.1		Note: Hardcoded to use mining
+//				(physicalizedDamageMethods)
+//				crush:	0.1
+//				pierce:	1.0
+//				shred:	1.0
 //			underground:
+//				(WMD)
 //				WMD:	0.1		Note: Hardcoded to use mining + WMD
+//				(physicalizedDamageMethods)
+//				crush:	0.2
+//				pierce:	0.25
+//				shred:	1.0
 //			uncrewed:
+//				(WMD)
 //				WMD:	0.1
+//				(physicalizedDamageMethods)
+//				crush:	0.1
+//				pierce:	1.0
+//				shred:	1.0
 //			armor:
+//				(WMD)
 //				WMD:	0.1
+//				(physicalizedDamageMethods)
+//				crush:	1.0
+//				pierce:	0.1
+//				shred:	1.0
 //
 #define PROPERTY_CORE_DMG_METHOD_ITEM					CONSTLIT("core.damageMethod.item")
 #define KEY_CORE_DMG_METHOD_ITEM_ARMOR						CONSTLIT("armor")

@@ -575,10 +575,10 @@ CDeviceDamageLevelDesc CEngineOptions::GetDefaultInternalDeviceDamageLevels (int
 //
 //	Returns the default table based on API version
 //
-CMassDestructionDesc CEngineOptions::GetDefaultWMDAdj (int apiVersion)
+CDamageMethodDesc CEngineOptions::GetDefaultWMDAdj (int apiVersion)
 
 	{
-	CMassDestructionDesc Desc;
+	CDamageMethodDesc Desc;
 
 	switch (GetAPIForWMDAdj(apiVersion))
 		{

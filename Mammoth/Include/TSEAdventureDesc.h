@@ -18,7 +18,7 @@ class CEngineOptions
 		int GetDefaultShotHP () const { return m_iDefaultShotHP; }
 		const CDeviceDamageLevelDesc* GetExternalDeviceDamageMaxLevels () const { return &m_ExternalDeviceDamageMaxLevels; }
 		const CDeviceDamageLevelDesc* GetInternalDeviceDamageMaxLevels () const { return &m_InternalDeviceDamageMaxLevels; }
-		const CMassDestructionDesc* GetMassDestructionAdj() const { return &m_MassDestruction; }
+		const CDamageMethodDesc* GetMassDestructionAdj() const { return &m_MassDestruction; }
 		const CMiningDamageLevelDesc* GetMiningMaxOreLevels () const { return &m_MiningDamageMaxOreLevels; }
 		const CDamageAdjDesc* GetShieldDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ShieldDamageAdj[iLevel - 1]; }
 		Metric GetDefaultFortifiedShipCompartment () const { return m_rFortifiedShipCompartment; }
@@ -67,7 +67,7 @@ class CEngineOptions
 		static CMiningDamageLevelDesc GetDefaultMiningMaxOreLevels (int apiVersion);
 		static CDeviceDamageLevelDesc GetDefaultExternalDeviceDamageLevels (int apiVersion);
 		static CDeviceDamageLevelDesc GetDefaultInternalDeviceDamageLevels (int apiVersion);
-		static CMassDestructionDesc GetDefaultWMDAdj (int apiVersion);
+		static CDamageMethodDesc GetDefaultWMDAdj (int apiVersion);
 
 		int m_iDefaultForAPIVersion = -1;
 
@@ -102,7 +102,7 @@ class CEngineOptions
 
 		EDamageMethodSystem m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysError;
 
-		CMassDestructionDesc m_MassDestruction;
+		CDamageMethodDesc m_MassDestruction;
 		bool m_bCustomMassDestruction;
 
 		double m_rFortifiedShipCompartment = 1.0;

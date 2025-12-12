@@ -653,7 +653,8 @@ enum class EDamageMethodSystem
 	{
 	dmgMethodSysError =						-100,	//	Uninitialized or error state
 	
-	dmgMethodSysWMD =						0,		//	single damage method, WMD
+	dmgMethodSysPhysicalized =				0,		//	multi physical damage methods
+	dmgMethodSysWMD =						1,		//	single damage method, WMD
 	};
 
 enum class EDamageMethod
@@ -661,9 +662,12 @@ enum class EDamageMethod
 	methodError =							-100,	//	Uninitialized or error state
 
 	methodWMD =								0,		//	original WMD
+	methodCrush =							0,		//	Physicalized: crush
+	methodPierce =							1,		//	Physicalized: pierce
+	methodShred =							2,		//	Physicalized: shred
 	};
 
-class CMassDestructionDesc
+class CDamageMethodDesc
 	{
 	public:
 		static constexpr int MAX_DAMAGE_METHOD_LEVEL = 7;
