@@ -638,11 +638,11 @@ Metric CEngineOptions::GetDamageMethodAdj(const UDamageMethodAdj &adj, EDamageMe
 			switch (iMethod)
 				{
 				case EDamageMethod::methodCrush:
-					return adj.sDamageMethodAdj.rCrush;
+					return adj.PhysicalizedAdj.rCrush;
 				case EDamageMethod::methodPierce:
-					return adj.sDamageMethodAdj.rPierce;
+					return adj.PhysicalizedAdj.rPierce;
 				case EDamageMethod::methodShred:
-					return adj.sDamageMethodAdj.rShred;
+					return adj.PhysicalizedAdj.rShred;
 				default:
 					{
 					ASSERT(false);
@@ -653,7 +653,7 @@ Metric CEngineOptions::GetDamageMethodAdj(const UDamageMethodAdj &adj, EDamageMe
 		case EDamageMethodSystem::dmgMethodSysWMD:
 			{
 			if (iMethod == EDamageMethod::methodWMD)
-				return adj.sWMDAdj.rWMD;
+				return adj.WMDAdj.rWMD;
 			ASSERT(false);
 			return 1.0;
 			}
@@ -719,9 +719,20 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 
 		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_SYSTEM);
 		if (pValue->IsNil())
-
+			m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;
+		else
+			{
 			CString sDmgSys = pValue->GetStringValue();
-		m_rMinFortificationAdj = rValue;
+			if (strEquals(sDmgSys, VALUE_CORE_DMG_METHOD_SYSTEM_DAMAGE_METHODS))
+				m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysPhysicalized;
+			else if (strEquals(sDmgSys, VALUE_CORE_DMG_METHOD_SYSTEM_WMD))
+				m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;
+			else
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("%s is not a valid value for adventure property %s"), sDmgSys, PROPERTY_CORE_DMG_METHOD_SYSTEM);
+				return false;
+				}
+			}
 
 		//	Initialize default Damage Method Fortification Adj for this adventure
 		// 
@@ -735,73 +746,51 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 		//	other mechanics
 
 		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_ITEM);
-		ICCItem* pArmorStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_ITEM_ARMOR);
-		ICCItem* pArmorStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_ITEM_ARMOR);
 
-		double rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
-		if (IS_NAN(rValue))
-			rValue = 0.1;
-		if (rValue > 1.0 + g_Epsilon)
-			{
-			Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_SHIP_COMPARTMENT, CONSTLIT(" cannot be greater than 1.0"));
-			return false;
-			}
-		m_rFortifiedShipCompartment = rValue;
+		//	Items default to 1.0 so we just ignore them if they are Nil
 
-		pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_MULTIHULL_STATION);
-		rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
-		if (IS_NAN(rValue))
-			rValue = 0.1;
-		if (rValue > 1.0 + g_Epsilon)
+		ICCItem* pItmArmorStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_ITEM_ARMOR);
+		if (pItmArmorStruct)
 			{
-			Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_MULTIHULL_STATION, CONSTLIT(" cannot be greater than 1.0"));
-			return false;
+			switch (m_iDamageMethodSystem)
+				{
+				case EDamageMethodSystem::dmgMethodSysPhysicalized:
+					{
+					m_DamageMethodItemAdj.Armor.PhysicalizedAdj.rCrush = pItmArmorStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_CRUSH, 1.0);
+					m_DamageMethodItemAdj.Armor.PhysicalizedAdj.rPierce = pItmArmorStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_PIERCE, 1.0);
+					m_DamageMethodItemAdj.Armor.PhysicalizedAdj.rShred = pItmArmorStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_SHRED, 1.0);
+					break;
+					}
+				case EDamageMethodSystem::dmgMethodSysWMD:
+					m_DamageMethodItemAdj.Armor.WMDAdj.rWMD = pItmArmorStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_WMD, 1.0);
+				}
 			}
-		m_rFortifiedStationMultihull = rValue;
 
-		pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_STATION);
-		rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-		if (IS_NAN(rValue))
-			rValue = 1.0;
-		if (rValue > 1.0 + g_Epsilon)
+		ICCItem* pItmShieldStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_ITEM_SHIELD);
+		if (pItmArmorStruct)
 			{
-			Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_STATION, CONSTLIT(" cannot be greater than 1.0"));
-			return false;
+			switch (m_iDamageMethodSystem)
+				{
+				case EDamageMethodSystem::dmgMethodSysPhysicalized:
+					{
+					m_DamageMethodItemAdj.Shield.PhysicalizedAdj.rCrush = pItmShieldStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_CRUSH, 1.0);
+					m_DamageMethodItemAdj.Shield.PhysicalizedAdj.rPierce = pItmShieldStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_PIERCE, 1.0);
+					m_DamageMethodItemAdj.Shield.PhysicalizedAdj.rShred = pItmShieldStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_SHRED, 1.0);
+					break;
+					}
+				case EDamageMethodSystem::dmgMethodSysWMD:
+					m_DamageMethodItemAdj.Shield.WMDAdj.rWMD = pItmShieldStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_WMD, 1.0);
+				}
 			}
-		m_rFortifiedStation = rValue;
 
-		pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_ARMOR_SEGMENT);
-		rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-		if (IS_NAN(rValue))
-			rValue = 1.0;
-		if (rValue > 1.0 + g_Epsilon)
-			{
-			Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_ARMOR_SEGMENT, CONSTLIT(" cannot be greater than 1.0"));
-			return false;
-			}
-		m_rFortifiedArmorSlot = rValue;
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_SHIP);
+		ICCItem* pShipArmorStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR);
+		ICCItem* pShipCompartmentStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT);
 
-		pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_ARMOR);
-		rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-		if (IS_NAN(rValue))
-			rValue = 1.0;
-		if (rValue > 1.0 + g_Epsilon)
-			{
-			Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_ARMOR, CONSTLIT(" cannot be greater than 1.0"));
-			return false;
-			}
-		m_rFortifiedArmor = rValue;
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_STATION);
+		ICCItem* pStationHullStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL);
 
-		pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_SHIELD);
-		rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-		if (IS_NAN(rValue))
-			rValue = 1.0;
-		if (rValue > 1.0 + g_Epsilon)
-			{
-			Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_SHIELD, CONSTLIT(" cannot be greater than 1.0"));
-			return false;
-			}
-		m_rFortifiedShield = rValue;
+		//	Set minimum fortification
 
 		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_MIN_ADJ);
 		rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
@@ -825,16 +814,16 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 
 		//	All the adj structs are pre-initialized to 1.0, so we only need to set the legacy defaults that use 0.1 instead
 
-		m_DamageMethodShipAdj.Compartment.General.sWMDAdj.rWMD = 0.1;
-		m_DamageMethodShipAdj.Compartment.Cargo.sWMDAdj.rWMD = 0.1;
-		m_DamageMethodShipAdj.Compartment.MainDrive.sWMDAdj.rWMD = 0.1;
-		m_DamageMethodShipAdj.Compartment.Uncrewed.sWMDAdj.rWMD = 0.1;
+		m_DamageMethodShipAdj.Compartment.General.WMDAdj.rWMD = 0.1;
+		m_DamageMethodShipAdj.Compartment.Cargo.WMDAdj.rWMD = 0.1;
+		m_DamageMethodShipAdj.Compartment.MainDrive.WMDAdj.rWMD = 0.1;
+		m_DamageMethodShipAdj.Compartment.Uncrewed.WMDAdj.rWMD = 0.1;
 
-		m_DamageMethodStationAdj.Hull.Armor.sWMDAdj.rWMD = 0.1;
-		m_DamageMethodStationAdj.Hull.Asteroid.sWMDAdj.rWMD = 0.1;
-		m_DamageMethodStationAdj.Hull.Multi.sWMDAdj.rWMD = 0.1;
-		m_DamageMethodStationAdj.Hull.Uncrewed.sWMDAdj.rWMD = 0.1;
-		m_DamageMethodStationAdj.Hull.Underground.sWMDAdj.rWMD = 0.1;
+		m_DamageMethodStationAdj.Hull.Armor.WMDAdj.rWMD = 0.1;
+		m_DamageMethodStationAdj.Hull.Asteroid.WMDAdj.rWMD = 0.1;
+		m_DamageMethodStationAdj.Hull.Multi.WMDAdj.rWMD = 0.1;
+		m_DamageMethodStationAdj.Hull.Uncrewed.WMDAdj.rWMD = 0.1;
+		m_DamageMethodStationAdj.Hull.Underground.WMDAdj.rWMD = 0.1;
 		}
 
 	return true;

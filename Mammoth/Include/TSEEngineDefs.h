@@ -309,6 +309,11 @@
 #define KEY_CORE_DMG_METHOD_STATION_HULL_UNCREWED					CONSTLIT("uncrewed")
 #define KEY_CORE_DMG_METHOD_STATION_HULL_ARMOR						CONSTLIT("armor")
 
+#define KEY_CORE_DMG_METHOD_WMD							CONSTLIT("wmd")
+#define KEY_CORE_DMG_METHOD_CRUSH						CONSTLIT("crush")
+#define KEY_CORE_DMG_METHOD_PIERCE						CONSTLIT("pierce")
+#define KEY_CORE_DMG_METHOD_SHRED						CONSTLIT("shred")
+
 //	core.hide???Immune
 //
 //	Adventure Property: Evaluated at bind time. These properties control whether

@@ -67,8 +67,8 @@ class CEngineOptions
 
 		union UDamageMethodAdj
 			{
-			SDamageMethodPhysicalizedAdj sDamageMethodAdj;
-			SDamageMethodWMDAdj sWMDAdj;
+			SDamageMethodPhysicalizedAdj PhysicalizedAdj;
+			SDamageMethodWMDAdj WMDAdj;
 			};
 
 		struct SDamageMethodItemAdj
