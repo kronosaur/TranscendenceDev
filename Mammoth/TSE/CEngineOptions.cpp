@@ -7,6 +7,11 @@
 
 #define LEVEL_ATTRIB							CONSTLIT("level")
 
+#define TAG_DAMAGE_METHOD_CURVE_CRUSH			CONSTLIT("crush")
+#define TAG_DAMAGE_METHOD_CURVE_PIERCE			CONSTLIT("pierce")
+#define TAG_DAMAGE_METHOD_CURVE_SHRED			CONSTLIT("shred")
+#define TAG_DAMAGE_METHOD_CURVE_WMD				CONSTLIT("wmd")
+
 //	Damage Adjustment
 
 static int g_StdArmorDamageAdj[MAX_ITEM_LEVEL][damageCount] =
@@ -635,16 +640,71 @@ bool CEngineOptions::InitInternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& C
 	return true;
 	}
 
-//	InitMassDestructionDescFromXML
+//	InitDamageMethodDescsFromXML
 //
 //	Initializes from XML.
+//  Init from properties must have already run.
 //
-bool CEngineOptions::InitMassDestructionDescFromXML(SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
+bool CEngineOptions::InitDamageMethodDescsFromXML(SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
 	{
-	m_bCustomMassDestruction = true;
+	m_bCustomDamageMethodDescs = true;
+	bool bSetPhysicalized = false;
+	bool bSetWMD = false;
 
-	if (m_MassDestruction.InitFromXML(Ctx, XMLDesc) != NOERROR)
-		return false;
+	for (int i = 0; i < XMLDesc.GetContentElementCount(); i++)
+		{
+		CXMLElement* pItem = XMLDesc.GetContentElement(i);
+
+		if (strEquals(pItem->GetTag(), TAG_DAMAGE_METHOD_CURVE_CRUSH))
+			{
+			if (bSetWMD)
+				{
+				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
+				return false;
+				}
+			if (m_DamageMethodDescs.Physicalized.Crush.InitFromXML(Ctx, *pItem) != NOERROR)
+				return false;
+			bSetPhysicalized = true;
+			}
+		else if (strEquals(pItem->GetTag(), TAG_DAMAGE_METHOD_CURVE_PIERCE))
+			{
+			if (bSetWMD)
+				{
+				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
+				return false;
+				}
+			if (m_DamageMethodDescs.Physicalized.Pierce.InitFromXML(Ctx, *pItem) != NOERROR)
+				return false;
+			bSetPhysicalized = true;
+			}
+		else if (strEquals(pItem->GetTag(), TAG_DAMAGE_METHOD_CURVE_SHRED))
+			{
+			if (bSetWMD)
+				{
+				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
+				return false;
+				}
+			if (m_DamageMethodDescs.Physicalized.Shred.InitFromXML(Ctx, *pItem) != NOERROR)
+				return false;
+			bSetPhysicalized = true;
+			}
+		else if (strEquals(pItem->GetTag(), TAG_DAMAGE_METHOD_CURVE_WMD))
+			{
+			if (bSetPhysicalized)
+				{
+				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
+				return false;
+				}
+			if (m_DamageMethodDescs.WMD.WMD.InitFromXML(Ctx, *pItem) != NOERROR)
+				return false;
+			bSetWMD = true;
+			}
+		else
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Invalid DamageMethodAdj curve definition element: %s."), pItem->GetTag());
+			return false;
+			}
+		}
 
 	//	Success!
 

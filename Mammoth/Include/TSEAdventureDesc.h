@@ -43,7 +43,7 @@ class CEngineOptions
 		bool InitExternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
 		bool InitInternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
 		bool InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType &Type);
-		bool InitMassDestructionDescFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
+		bool InitDamageMethodDescsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
 		bool InitMiningMaxOreLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
 		bool InitShieldDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomShieldDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ShieldDamageAdj); }
 		bool IsDamageShown () const { return m_bShowDamageDone; }
