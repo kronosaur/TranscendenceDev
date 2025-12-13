@@ -398,71 +398,84 @@ void CEngineOptions::InitDefaultDamageMethods()
 			{
 			//	Items
 
-			m_DamageMethodItemAdj.Armor.PhysicalizedAdj.Reset();
-			m_DamageMethodItemAdj.Shield.PhysicalizedAdj.Reset();
+			m_DamageMethodItemAdj.Armor.Reset();
+			m_DamageMethodItemAdj.Shield.Reset();
 
 			//	Ships
 
-			m_DamageMethodShipAdj.Armor.Critical.PhysicalizedAdj.Reset();
-			m_DamageMethodShipAdj.Armor.Critical.PhysicalizedAdj.rShred = 0.1;
-			m_DamageMethodShipAdj.Armor.CriticalUncrewed.PhysicalizedAdj.Reset();
-			m_DamageMethodShipAdj.Armor.CriticalUncrewed.PhysicalizedAdj.rShred = 0.1;
-			m_DamageMethodShipAdj.Armor.NonCritical.PhysicalizedAdj.Reset();
-			m_DamageMethodShipAdj.Armor.NonCritical.PhysicalizedAdj.rPierce = 0.1;
-			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.PhysicalizedAdj.Reset();
-			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.PhysicalizedAdj.rShred = 0.1;
+			m_DamageMethodShipAdj.Armor.Critical.Reset();
+			m_DamageMethodShipAdj.Armor.Critical.SetShred(0.1);
+			m_DamageMethodShipAdj.Armor.CriticalUncrewed.Reset();
+			m_DamageMethodShipAdj.Armor.CriticalUncrewed.SetShred(0.1);
+			m_DamageMethodShipAdj.Armor.NonCritical.Reset();
+			m_DamageMethodShipAdj.Armor.NonCritical.SetPierce(0.1);
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.Reset();
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.SetShred(0.1);
 
-			m_DamageMethodShipAdj.Compartment.General.PhysicalizedAdj.Reset();
-			m_DamageMethodShipAdj.Compartment.General.PhysicalizedAdj.rShred = 0.1;
-			m_DamageMethodShipAdj.Compartment.Cargo.PhysicalizedAdj.Reset();
-			m_DamageMethodShipAdj.Compartment.Cargo.PhysicalizedAdj.rCrush = 0.1;
-			m_DamageMethodShipAdj.Compartment.MainDrive.PhysicalizedAdj.Reset();
-			m_DamageMethodShipAdj.Compartment.MainDrive.PhysicalizedAdj.rShred = 0.1;
-			m_DamageMethodShipAdj.Compartment.Uncrewed.PhysicalizedAdj.Reset();
-			m_DamageMethodShipAdj.Compartment.Uncrewed.PhysicalizedAdj.rCrush = 0.1;
+			m_DamageMethodShipAdj.Compartment.General.Reset();
+			m_DamageMethodShipAdj.Compartment.General.SetShred(0.1);
+			m_DamageMethodShipAdj.Compartment.Cargo.Reset();
+			m_DamageMethodShipAdj.Compartment.Cargo.SetCrush(0.1);
+			m_DamageMethodShipAdj.Compartment.MainDrive.Reset();
+			m_DamageMethodShipAdj.Compartment.MainDrive.SetShred(0.1);
+			m_DamageMethodShipAdj.Compartment.Uncrewed.Reset();
+			m_DamageMethodShipAdj.Compartment.Uncrewed.SetCrush(0.1);
 
 			//	Stations
 
-			m_DamageMethodStationAdj.Hull.Armor.PhysicalizedAdj.Reset();
-			m_DamageMethodStationAdj.Hull.Armor.PhysicalizedAdj.rPierce = 0.1;
-			m_DamageMethodStationAdj.Hull.Asteroid.PhysicalizedAdj.Reset();
-			m_DamageMethodStationAdj.Hull.Asteroid.PhysicalizedAdj.rCrush = 0.1;
-			m_DamageMethodStationAdj.Hull.Multi.PhysicalizedAdj.Reset();
-			m_DamageMethodStationAdj.Hull.Multi.PhysicalizedAdj.rShred = 0.1;
-			m_DamageMethodStationAdj.Hull.Single.PhysicalizedAdj.Reset();
-			m_DamageMethodStationAdj.Hull.Uncrewed.PhysicalizedAdj.Reset();
-			m_DamageMethodStationAdj.Hull.Uncrewed.PhysicalizedAdj.rCrush = 0.1;
-			m_DamageMethodStationAdj.Hull.Underground.PhysicalizedAdj.Reset();
-			m_DamageMethodStationAdj.Hull.Underground.PhysicalizedAdj.rCrush = 0.3;
-			m_DamageMethodStationAdj.Hull.Underground.PhysicalizedAdj.rPierce = 0.3;
+			m_DamageMethodStationAdj.Hull.Armor.Reset();
+			m_DamageMethodStationAdj.Hull.Armor.SetPierce(0.1);
+			m_DamageMethodStationAdj.Hull.Asteroid.Reset();
+			m_DamageMethodStationAdj.Hull.Asteroid.SetCrush(0.1);
+			m_DamageMethodStationAdj.Hull.Multi.Reset();
+			m_DamageMethodStationAdj.Hull.Multi.SetShred(0.1);
+			m_DamageMethodStationAdj.Hull.Single.Reset();
+			m_DamageMethodStationAdj.Hull.Uncrewed.Reset();
+			m_DamageMethodStationAdj.Hull.Uncrewed.SetCrush(0.1);
+			m_DamageMethodStationAdj.Hull.Underground.Reset();
+			m_DamageMethodStationAdj.Hull.Underground.SetCrush(0.31);
+			m_DamageMethodStationAdj.Hull.Underground.SetPierce(0.31);
 			}
 		case EDamageMethodSystem::dmgMethodSysWMD:
 			{
 			//	Items
 
-			m_DamageMethodItemAdj.Armor.WMDAdj.rWMD = 1.0;
-			m_DamageMethodItemAdj.Shield.WMDAdj.rWMD = 1.0;
+			m_DamageMethodItemAdj.Armor.Reset();
+			m_DamageMethodItemAdj.Shield.Reset();
 
 			//	Ships
 
-			m_DamageMethodShipAdj.Armor.Critical.WMDAdj.rWMD = 0.1;
-			m_DamageMethodShipAdj.Armor.CriticalUncrewed.WMDAdj.rWMD = 0.1;
-			m_DamageMethodShipAdj.Armor.NonCritical.WMDAdj.rWMD = 0.1;
-			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.WMDAdj.rWMD = 0.1;
+			m_DamageMethodShipAdj.Armor.Critical.Reset();
+			m_DamageMethodShipAdj.Armor.Critical.SetWMD(0.1);
+			m_DamageMethodShipAdj.Armor.CriticalUncrewed.Reset();
+			m_DamageMethodShipAdj.Armor.CriticalUncrewed.SetWMD(0.1);
+			m_DamageMethodShipAdj.Armor.NonCritical.Reset();
+			m_DamageMethodShipAdj.Armor.NonCritical.SetWMD(0.1);
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.Reset();
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.SetWMD(0.1);
 
-			m_DamageMethodShipAdj.Compartment.General.WMDAdj.rWMD = 0.1;
-			m_DamageMethodShipAdj.Compartment.Cargo.WMDAdj.rWMD = 0.1;
-			m_DamageMethodShipAdj.Compartment.MainDrive.WMDAdj.rWMD = 0.1;
-			m_DamageMethodShipAdj.Compartment.Uncrewed.WMDAdj.rWMD = 0.1;
+			m_DamageMethodShipAdj.Compartment.General.Reset();
+			m_DamageMethodShipAdj.Compartment.General.SetWMD(0.1);
+			m_DamageMethodShipAdj.Compartment.Cargo.Reset();
+			m_DamageMethodShipAdj.Compartment.Cargo.SetWMD(0.1);
+			m_DamageMethodShipAdj.Compartment.MainDrive.Reset();
+			m_DamageMethodShipAdj.Compartment.MainDrive.SetWMD(0.1);
+			m_DamageMethodShipAdj.Compartment.Uncrewed.Reset();
+			m_DamageMethodShipAdj.Compartment.Uncrewed.SetWMD(0.1);
 
 			//	Stations
 
-			m_DamageMethodStationAdj.Hull.Armor.WMDAdj.rWMD = 0.1;
-			m_DamageMethodStationAdj.Hull.Asteroid.WMDAdj.rWMD = 0.1;
-			m_DamageMethodStationAdj.Hull.Multi.WMDAdj.rWMD = 0.1;
-			m_DamageMethodStationAdj.Hull.Single.WMDAdj.rWMD = 1.0;
-			m_DamageMethodStationAdj.Hull.Uncrewed.WMDAdj.rWMD = 0.1;
-			m_DamageMethodStationAdj.Hull.Underground.WMDAdj.rWMD = 0.1;
+			m_DamageMethodStationAdj.Hull.Armor.Reset();
+			m_DamageMethodStationAdj.Hull.Armor.SetWMD(0.1);
+			m_DamageMethodStationAdj.Hull.Asteroid.Reset();
+			m_DamageMethodStationAdj.Hull.Asteroid.SetWMD(0.1);
+			m_DamageMethodStationAdj.Hull.Multi.Reset();
+			m_DamageMethodStationAdj.Hull.Multi.SetWMD(0.1);
+			m_DamageMethodStationAdj.Hull.Single.Reset();
+			m_DamageMethodStationAdj.Hull.Uncrewed.Reset();
+			m_DamageMethodStationAdj.Hull.Uncrewed.SetWMD(0.1);
+			m_DamageMethodStationAdj.Hull.Underground.Reset();
+			m_DamageMethodStationAdj.Hull.Underground.SetWMD(0.1);
 			}
 		default:
 			ASSERT(false);
@@ -476,7 +489,7 @@ const CDamageMethodDesc* CEngineOptions::GetDamageMethodDesc(EDamageMethod iMeth
 		case EDamageMethodSystem::dmgMethodSysWMD:
 			{
 			if (iMethod == EDamageMethod::methodWMD)
-				return  &(m_DamageMethodDescs.WMD.WMD);
+				return  &(m_DamageMethodDescs.GetWMD());
 			ASSERT(false);
 			return NULL;
 			}
@@ -485,11 +498,11 @@ const CDamageMethodDesc* CEngineOptions::GetDamageMethodDesc(EDamageMethod iMeth
 			switch (iMethod)
 				{
 				case EDamageMethod::methodCrush:
-					return &(m_DamageMethodDescs.Physicalized.Crush);
+					return &(m_DamageMethodDescs.GetCrush());
 				case EDamageMethod::methodPierce:
-					return &(m_DamageMethodDescs.Physicalized.Pierce);
+					return &(m_DamageMethodDescs.GetPierce());
 				case EDamageMethod::methodShred:
-					return &(m_DamageMethodDescs.Physicalized.Shred);
+					return &(m_DamageMethodDescs.GetShred());
 				default:
 					{
 					ASSERT(false);
@@ -565,20 +578,20 @@ bool CEngineOptions::InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElemen
 // 
 //	Note: Requires adj to be pre-configured to the appropriate defaults
 //
-bool CEngineOptions::InitDamageMethodAdjFromCC(SDesignLoadCtx& Ctx, UDamageMethodAdj& adj, ICCItem* pStruct)
+bool CEngineOptions::InitDamageMethodAdjFromCC(SDesignLoadCtx& Ctx, SDamageMethodAdj& adj, ICCItem* pStruct)
 	{
 	switch (m_iDamageMethodSystem)
 		{
 		case EDamageMethodSystem::dmgMethodSysPhysicalized:
 			{
-			adj.PhysicalizedAdj.rCrush = min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_CRUSH, adj.PhysicalizedAdj.rCrush), 1.0);
-			adj.PhysicalizedAdj.rPierce = min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_PIERCE, adj.PhysicalizedAdj.rPierce), 1.0);
-			adj.PhysicalizedAdj.rShred = min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_SHRED, adj.PhysicalizedAdj.rShred), 1.0);
+			adj.SetCrush(min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_CRUSH, adj.GetCrush()), 1.0));
+			adj.SetPierce(min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_PIERCE, adj.GetPierce()), 1.0));
+			adj.SetShred(min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_SHRED, adj.GetShred()), 1.0));
 			return true;
 			}
 		case EDamageMethodSystem::dmgMethodSysWMD:
 			{
-			adj.WMDAdj.rWMD = min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_WMD, adj.WMDAdj.rWMD), 1.0);
+			adj.SetWMD(min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_WMD, adj.GetWMD()), 1.0));
 			return true;
 			}
 		default:
@@ -663,7 +676,7 @@ bool CEngineOptions::InitDamageMethodDescsFromXML(SDesignLoadCtx& Ctx, const CXM
 				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
 				return false;
 				}
-			if (m_DamageMethodDescs.Physicalized.Crush.InitFromXML(Ctx, *pItem) != NOERROR)
+			if (m_DamageMethodDescs.Crush().InitFromXML(Ctx, *pItem) != NOERROR)
 				return false;
 			bSetPhysicalized = true;
 			}
@@ -674,7 +687,7 @@ bool CEngineOptions::InitDamageMethodDescsFromXML(SDesignLoadCtx& Ctx, const CXM
 				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
 				return false;
 				}
-			if (m_DamageMethodDescs.Physicalized.Pierce.InitFromXML(Ctx, *pItem) != NOERROR)
+			if (m_DamageMethodDescs.Pierce().InitFromXML(Ctx, *pItem) != NOERROR)
 				return false;
 			bSetPhysicalized = true;
 			}
@@ -685,7 +698,7 @@ bool CEngineOptions::InitDamageMethodDescsFromXML(SDesignLoadCtx& Ctx, const CXM
 				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
 				return false;
 				}
-			if (m_DamageMethodDescs.Physicalized.Shred.InitFromXML(Ctx, *pItem) != NOERROR)
+			if (m_DamageMethodDescs.Shred().InitFromXML(Ctx, *pItem) != NOERROR)
 				return false;
 			bSetPhysicalized = true;
 			}
@@ -696,7 +709,7 @@ bool CEngineOptions::InitDamageMethodDescsFromXML(SDesignLoadCtx& Ctx, const CXM
 				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
 				return false;
 				}
-			if (m_DamageMethodDescs.WMD.WMD.InitFromXML(Ctx, *pItem) != NOERROR)
+			if (m_DamageMethodDescs.WMD().InitFromXML(Ctx, *pItem) != NOERROR)
 				return false;
 			bSetWMD = true;
 			}
@@ -806,7 +819,7 @@ CDamageMethodDesc CEngineOptions::GetDefaultWMDAdj (int apiVersion)
 	return Desc;
 	}
 
-Metric CEngineOptions::GetDamageMethodAdj(const UDamageMethodAdj &adj, EDamageMethod iMethod) const
+Metric CEngineOptions::GetDamageMethodAdj(const SDamageMethodAdj &adj, EDamageMethod iMethod) const
 	{
 	switch (m_iDamageMethodSystem)
 		{
@@ -815,11 +828,11 @@ Metric CEngineOptions::GetDamageMethodAdj(const UDamageMethodAdj &adj, EDamageMe
 			switch (iMethod)
 				{
 				case EDamageMethod::methodCrush:
-					return adj.PhysicalizedAdj.rCrush;
+					return adj.GetCrush();
 				case EDamageMethod::methodPierce:
-					return adj.PhysicalizedAdj.rPierce;
+					return adj.GetPierce();
 				case EDamageMethod::methodShred:
-					return adj.PhysicalizedAdj.rShred;
+					return adj.GetShred();
 				default:
 					{
 					ASSERT(false);
@@ -830,7 +843,7 @@ Metric CEngineOptions::GetDamageMethodAdj(const UDamageMethodAdj &adj, EDamageMe
 		case EDamageMethodSystem::dmgMethodSysWMD:
 			{
 			if (iMethod == EDamageMethod::methodWMD)
-				return adj.WMDAdj.rWMD;
+				return adj.GetWMD();
 			ASSERT(false);
 			return 1.0;
 			}

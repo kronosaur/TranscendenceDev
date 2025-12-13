@@ -53,59 +53,51 @@ class CEngineOptions
 
 		//	Damage Method Internal Structs
 
-		struct SDamageMethodWMDAdj
+		struct SDamageMethodAdj
 			{
-			Metric rWMD = 1.0;
+			public:
+				Metric GetCrush () const { return rAdj[0]; }
+				Metric GetPierce () const { return rAdj[1]; }
+				Metric GetShred () const { return rAdj[2]; }
+				Metric GetWMD () const { return rAdj[0]; }
 
-			void Reset () { rWMD = 1.0; }
-			};
+				void SetCrush (Metric rNew) { rAdj[0] = rNew; }
+				void SetPierce (Metric rNew) { rAdj[1] = rNew; }
+				void SetShred (Metric rNew) { rAdj[2] = rNew; }
+				void SetWMD (Metric rNew) { rAdj[0] = rNew; }
 
-		struct SDamageMethodPhysicalizedAdj
-			{
-			Metric rCrush = 1.0;
-			Metric rPierce = 1.0;
-			Metric rShred = 1.0;
+				void Reset ()
+					{
+					rAdj[0] = 1.0;
+					rAdj[1] = 1.0;
+					rAdj[2] = 1.0;
+					}
 
-			void Reset()
-				{
-				rCrush = 1.0;
-				rPierce = 1.0;
-				rShred = 1.0;
-				}
-			};
-
-		union UDamageMethodAdj
-			{
-			SDamageMethodPhysicalizedAdj PhysicalizedAdj;
-			SDamageMethodWMDAdj WMDAdj;
-
-			//	We set SDamageMethodPhysicalizedAdj to set the entire struct to 1.0
-			//	because it has the largest memory footprint and defines the size of the union
-
-			UDamageMethodAdj () { PhysicalizedAdj = SDamageMethodPhysicalizedAdj(); }
+			private:
+				Metric rAdj[3] = { 1.0, 1.0, 1.0 };
 			};
 
 		struct SDamageMethodItemAdj
 			{
-			UDamageMethodAdj Armor;
-			UDamageMethodAdj Shield;
+			SDamageMethodAdj Armor;
+			SDamageMethodAdj Shield;
 			};
 
 		struct SDamageMethodShipAdj
 			{
 			struct SDamageMethodShipArmorAdj
 				{
-				UDamageMethodAdj Critical;
-				UDamageMethodAdj CriticalUncrewed;
-				UDamageMethodAdj NonCritical;
-				UDamageMethodAdj NonCriticalDestruction;
+				SDamageMethodAdj Critical;
+				SDamageMethodAdj CriticalUncrewed;
+				SDamageMethodAdj NonCritical;
+				SDamageMethodAdj NonCriticalDestruction;
 				};
 			struct SDamageMethodShipCompartmentAdj
 				{
-				UDamageMethodAdj General;
-				UDamageMethodAdj MainDrive;
-				UDamageMethodAdj Cargo;
-				UDamageMethodAdj Uncrewed;
+				SDamageMethodAdj General;
+				SDamageMethodAdj MainDrive;
+				SDamageMethodAdj Cargo;
+				SDamageMethodAdj Uncrewed;
 				};
 			SDamageMethodShipArmorAdj Armor;
 			SDamageMethodShipCompartmentAdj Compartment;
@@ -115,53 +107,44 @@ class CEngineOptions
 			{
 			struct SDamageMethodStationHullAdj
 				{
-				UDamageMethodAdj Single;
-				UDamageMethodAdj Multi;
-				UDamageMethodAdj Asteroid;
-				UDamageMethodAdj Underground;
-				UDamageMethodAdj Uncrewed;
-				UDamageMethodAdj Armor;
+				SDamageMethodAdj Single;
+				SDamageMethodAdj Multi;
+				SDamageMethodAdj Asteroid;
+				SDamageMethodAdj Underground;
+				SDamageMethodAdj Uncrewed;
+				SDamageMethodAdj Armor;
 				};
 			SDamageMethodStationHullAdj Hull;
 			};
 
-		struct SDamageMethodWMDDesc
+		//	Damage Method Internal Structs
+
+		struct SDamageMethodDescs
 			{
-			CDamageMethodDesc WMD;
+			public:
+				const CDamageMethodDesc GetCrush () const { return desc[0]; }
+				const CDamageMethodDesc GetPierce () const { return desc[1]; }
+				const CDamageMethodDesc GetShred () const { return desc[2]; }
+				const CDamageMethodDesc GetWMD () const { return desc[0]; }
+
+			protected:
+				//	Our protected accessors are non-const
+				//	This is so we can call non-const methods on CDamageMethodDesc
+				//	We need to do this on initialization
+				//
+				CDamageMethodDesc Crush () { return desc[0]; }
+				CDamageMethodDesc Pierce () { return desc[1]; }
+				CDamageMethodDesc Shred () { return desc[2]; }
+				CDamageMethodDesc WMD () { return desc[0]; }
+
+				friend CEngineOptions;
+			private:
+				CDamageMethodDesc desc[3] = { CDamageMethodDesc(), CDamageMethodDesc(), CDamageMethodDesc()};
 			};
 
-		struct SDamageMethodPhysicalizedDescs
-			{
-			CDamageMethodDesc Crush;
-			CDamageMethodDesc Pierce;
-			CDamageMethodDesc Shred;
-			};
-
-		union UDamageMethodDescs
-			{
-			SDamageMethodPhysicalizedDescs Physicalized;
-			SDamageMethodWMDDesc WMD;
-
-			//	We initialize the whole memory space using the physicalized desc constructor
-			//	because it has the largest memory footprint and defines the size of the union
-
-			UDamageMethodDescs () { Physicalized = SDamageMethodPhysicalizedDescs(); }
-
-			//	All Descs can be safely deleted from the memory space
-			//	We must directly call the destructors because they are non-trivial
-
-			~UDamageMethodDescs()
-				{
-				Physicalized.Crush.~CDamageMethodDesc();
-				Physicalized.Pierce.~CDamageMethodDesc();
-				Physicalized.Shred.~CDamageMethodDesc();
-				};
-			};
-
-
-		Metric GetDamageMethodAdj (const UDamageMethodAdj &adj, EDamageMethod iMethod) const;
+		Metric GetDamageMethodAdj (const SDamageMethodAdj &adj, EDamageMethod iMethod) const;
 		bool InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable);
-		bool InitDamageMethodAdjFromCC (SDesignLoadCtx& Ctx, UDamageMethodAdj& adj, ICCItem* pStruct);
+		bool InitDamageMethodAdjFromCC (SDesignLoadCtx& Ctx, SDamageMethodAdj& adj, ICCItem* pStruct);
 
 		void InitDefaultGlobals ();
 		void InitDefaultDescs ();
@@ -205,7 +188,7 @@ class CEngineOptions
 
 		EDamageMethodSystem m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysError;
 
-		UDamageMethodDescs m_DamageMethodDescs;
+		SDamageMethodDescs m_DamageMethodDescs;
 		bool m_bCustomDamageMethodDescs;
 
 		double m_rMinFortificationAdj = 0.0;
