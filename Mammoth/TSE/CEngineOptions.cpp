@@ -350,7 +350,7 @@ void CEngineOptions::InitDefaultGlobals ()
 	//	Initialize WMD adj tables
 
 	m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;
-	m_DamageMethodDescs.WMD.WMD = GetDefaultWMDAdj(m_iDefaultForAPIVersion);
+	m_DamageMethodDescs.SetWMD(GetDefaultWMDAdj(m_iDefaultForAPIVersion));
 	m_bCustomDamageMethodDescs = false;
 	}
 

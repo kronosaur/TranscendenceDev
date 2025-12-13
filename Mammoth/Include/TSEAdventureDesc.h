@@ -130,12 +130,17 @@ class CEngineOptions
 			protected:
 				//	Our protected accessors are non-const
 				//	This is so we can call non-const methods on CDamageMethodDesc
-				//	We need to do this on initialization
+				//	We need to do this on custom initialization
 				//
 				CDamageMethodDesc Crush () { return desc[0]; }
 				CDamageMethodDesc Pierce () { return desc[1]; }
 				CDamageMethodDesc Shred () { return desc[2]; }
 				CDamageMethodDesc WMD () { return desc[0]; }
+
+				void SetCrush (CDamageMethodDesc newDesc) { desc[0] = newDesc; }
+				void SetPierce (CDamageMethodDesc newDesc) { desc[1] = newDesc; }
+				void SetShred (CDamageMethodDesc newDesc) { desc[2] = newDesc; }
+				void SetWMD (CDamageMethodDesc newDesc) { desc[0] = newDesc; }
 
 				friend CEngineOptions;
 			private:
