@@ -78,6 +78,11 @@ class CEngineOptions
 			{
 			SDamageMethodPhysicalizedAdj PhysicalizedAdj;
 			SDamageMethodWMDAdj WMDAdj;
+
+			//	We set SDamageMethodPhysicalizedAdj to set the entire struct to 1.0
+			//	because it has the largest memory footprint and defines the size of the union
+
+			UDamageMethodAdj () { PhysicalizedAdj = SDamageMethodPhysicalizedAdj(); }
 			};
 
 		struct SDamageMethodItemAdj
@@ -136,6 +141,21 @@ class CEngineOptions
 			{
 			SDamageMethodPhysicalizedDescs Physicalized;
 			SDamageMethodWMDDesc WMD;
+
+			//	We initialize the whole memory space using the physicalized desc constructor
+			//	because it has the largest memory footprint and defines the size of the union
+
+			UDamageMethodDescs () { Physicalized = SDamageMethodPhysicalizedDescs(); }
+
+			//	All Descs can be safely deleted from the memory space
+			//	We must directly call the destructors because they are non-trivial
+
+			~UDamageMethodDescs()
+				{
+				Physicalized.Crush.~CDamageMethodDesc();
+				Physicalized.Pierce.~CDamageMethodDesc();
+				Physicalized.Shred.~CDamageMethodDesc();
+				};
 			};
 
 

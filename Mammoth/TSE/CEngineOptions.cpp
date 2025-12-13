@@ -349,8 +349,9 @@ void CEngineOptions::InitDefaultGlobals ()
 
 	//	Initialize WMD adj tables
 
-	m_MassDestruction = GetDefaultWMDAdj(m_iDefaultForAPIVersion);
-	m_bCustomMassDestruction = false;
+	m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;
+	m_DamageMethodDescs.WMD.WMD = GetDefaultWMDAdj(m_iDefaultForAPIVersion);
+	m_bCustomDamageMethodDescs = false;
 	}
 
 //	Initiate defaults where necessary based on whatever API version we need

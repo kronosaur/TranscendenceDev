@@ -437,7 +437,7 @@ Metric DamageDesc::GetDamageValue (DWORD dwFlags) const
 int DamageDesc::GetMassDestructionAdj () const
 
 	{
-	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetStochasticWMDAdj(m_sExtra.MassDestructionAdj);
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetStochasticWMDAdj(m_sExtra.MassDestructionAdj);
 	}
 
 //  GetMassDestructionAdjReal
@@ -447,7 +447,7 @@ int DamageDesc::GetMassDestructionAdj () const
 Metric DamageDesc::GetMassDestructionAdjReal() const
 
 	{
-	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDAdj(m_sExtra.MassDestructionAdj);
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetWMDAdj(m_sExtra.MassDestructionAdj);
 	}
 
 //  GetMassDestructionAdjFromValue
@@ -457,7 +457,7 @@ Metric DamageDesc::GetMassDestructionAdjReal() const
 int DamageDesc::GetMassDestructionAdjFromValue (int iValue) 
 
 	{
-	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetRoundedWMDAdj(Max(0, Min(iValue, MAX_INTENSITY)));
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetRoundedWMDAdj(Max(0, Min(iValue, MAX_INTENSITY)));
 	}
 
 //  GetMassDestructionAdjRealFromValue
@@ -467,7 +467,7 @@ int DamageDesc::GetMassDestructionAdjFromValue (int iValue)
 Metric DamageDesc::GetMassDestructionAdjRealFromValue(int iValue)
 
 	{
-	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDAdj(Max(0, Min(iValue, MAX_INTENSITY)));
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetWMDAdj(Max(0, Min(iValue, MAX_INTENSITY)));
 	}
 
 //	GetMassDestructionDisplayLevel
@@ -476,7 +476,7 @@ Metric DamageDesc::GetMassDestructionAdjRealFromValue(int iValue)
 //
 CString DamageDesc::GetMassDestructionDisplayLevel () const
 	{
-	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDLabel(m_sExtra.MassDestructionAdj);
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetWMDLabel(m_sExtra.MassDestructionAdj);
 	}
 
 //	GetMassDestructionDisplayStr
@@ -485,12 +485,12 @@ CString DamageDesc::GetMassDestructionDisplayLevel () const
 //
 CString DamageDesc::GetMassDestructionDisplayStr() const
 	{
-	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDDisplay(m_sExtra.MassDestructionAdj);
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetWMDDisplay(m_sExtra.MassDestructionAdj);
 	}
 
 int DamageDesc::GetMassDestructionMinDamage() const
 	{
-	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDMinDamage();
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetWMDMinDamage();
 	}
 
 //  GetMassDestructionLevel
@@ -510,7 +510,7 @@ int DamageDesc::GetMassDestructionLevel () const
 int DamageDesc::GetMassDestructionLevelFromValue (int iValue) 
 
 	{
-	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetRoundedWMDAdj(Max(0, Min(iValue, MAX_INTENSITY)));
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetRoundedWMDAdj(Max(0, Min(iValue, MAX_INTENSITY)));
 	}
 
 //	GetMiningWMDAdj
@@ -520,7 +520,7 @@ int DamageDesc::GetMassDestructionLevelFromValue (int iValue)
 int DamageDesc::GetMiningWMDAdj ()
 
 	{
-	return g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetRoundedWMDAdj(m_sExtra.MiningAdj);
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetRoundedWMDAdj(m_sExtra.MiningAdj);
 	}
 
 //	GetSpecialDamage

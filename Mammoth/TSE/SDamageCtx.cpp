@@ -80,12 +80,12 @@ SDamageCtx::~SDamageCtx (void)
 
 int SDamageCtx::CalcWMDAdjustedDamageFromLevel(int iLevel, Metric rWMD0FortificationAdj, Metric rMinAdj) const
 	{
-	return Max(mathRoundStochastic(iDamage * CalcWMDFortificationAdjFromLevel(iLevel, rWMD0FortificationAdj, rMinAdj)), g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDMinDamage());
+	return Max(mathRoundStochastic(iDamage * CalcWMDFortificationAdjFromLevel(iLevel, rWMD0FortificationAdj, rMinAdj)), g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetWMDMinDamage());
 	}
 
 int SDamageCtx::CalcWMDAdjustedDamage(Metric rWMD0FortificationAdj, Metric rMinAdj) const
 	{
-	return Max(mathRoundStochastic(iDamage * CalcWMDFortificationAdj(rWMD0FortificationAdj, rMinAdj)), g_pUniverse->GetEngineOptions().GetMassDestructionAdj()->GetWMDMinDamage());
+	return Max(mathRoundStochastic(iDamage * CalcWMDFortificationAdj(rWMD0FortificationAdj, rMinAdj)), g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetWMDMinDamage());
 	}
 
 int SDamageCtx::CalcWMDAdjustedDamageRaw() const
