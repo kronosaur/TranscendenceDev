@@ -1013,7 +1013,7 @@ bool CShip::CanBeDestroyedBy (CSpaceObject &Attacker) const
 
 			if (IsMultiHull())
 				{
-				if (DeviceItem.GetWeaponFireDescForVariant(iVariant).GetDamage().GetMassDestructionDamage() > 0)
+				if (DeviceItem.GetWeaponFireDescForVariant(iVariant).GetDamage().GetDamageMethodDamage() > 0)
 					return true;
 				}
 
@@ -4560,7 +4560,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 		Ctx.rArmorExternMinFortification = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect()).GetMinFortificationAdj();
 		if (Ctx.rArmorExternMinFortification < 0)
-			Ctx.rArmorExternMinFortification = g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj();
+			Ctx.rArmorExternMinFortification = g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj();
 
 		EDamageResults iResult = pArmor->AbsorbDamage(this, Ctx);
 
@@ -4732,7 +4732,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			//	adventure adjustment, rather than normalizing
 			//	on 1.0
 
-			int iWMDDamage = Ctx.CalcWMDAdjustedDamageRaw();
+			int iWMDDamage = Ctx.CalcDamageMethodAdjDamageRaw();
 
 			//	Compare the amount of damage that we are taking with the
 			//	original strength (HP) of the armor. Increase the chance

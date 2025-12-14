@@ -8,7 +8,6 @@
 #define WMD_ADJ_ATTRIB						CONSTLIT("wmdAdj")
 #define WMD_DISPLAY_ATTRIB					CONSTLIT("wmdDisplay")
 #define WMD_DISPLAY_PREFIX_ATTRIB			CONSTLIT("wmdDisplayPrefix")
-#define WMD_MIN_DAMAGE_ATTRIB				CONSTLIT("wmdMinDamage")
 
 //	GetWMDAdj
 // 
@@ -60,7 +59,7 @@ CString CDamageMethodDesc::GetWMDLabel (int iLevel) const
 //
 //	In this path there is no need for Bind.
 //
-ALERROR CDamageMethodDesc::InitFromArray (const TArray<double>& Adj, const TArray<const char*>& Labels, int iMinDamage, CString sAttribPrefix)
+ALERROR CDamageMethodDesc::InitFromArray (const TArray<double>& Adj, const TArray<const char*>& Labels, CString sAttribPrefix)
 
 	{
 	//	Ensure our arrays are valid
@@ -73,7 +72,6 @@ ALERROR CDamageMethodDesc::InitFromArray (const TArray<double>& Adj, const TArra
 	if (!(Adj[MAX_DAMAGE_METHOD_LEVEL] + g_Epsilon > 1.0 && Adj[MAX_DAMAGE_METHOD_LEVEL] - g_Epsilon < 1.0))
 		return ERR_FAIL;
 
-	m_iMinDamage = iMinDamage;
 	m_sAttribPrefix = sAttribPrefix;
 
 	for (int i = 0; i < MAX_DAMAGE_METHOD_LEVEL_COUNT; i++)
@@ -96,7 +94,7 @@ ALERROR CDamageMethodDesc::InitFromArray (const TArray<double>& Adj, const TArra
 //	and
 //	sLabel:		10		20		30		40		55		70		85		100
 //
-ALERROR CDamageMethodDesc::InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAdj, const CString &sLabels, int iMinDamage, CString sAttribPrefix)
+ALERROR CDamageMethodDesc::InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAdj, const CString &sLabels, CString sAttribPrefix)
 
 	{
 	//	Short-circuit
@@ -177,7 +175,6 @@ ALERROR CDamageMethodDesc::InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString 
 
 	//	Insert values
 
-	m_iMinDamage = iMinDamage;
 	m_sAttribPrefix = sAttribPrefix;
 
 	//	Done
@@ -197,7 +194,6 @@ ALERROR CDamageMethodDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &
 	CString sAdj;
 	CString sLabels;
 	CString sPrefix;
-	int iMinDamage;
 
 	//	Collect all attributes
 
@@ -216,18 +212,7 @@ ALERROR CDamageMethodDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &
 	if (!XMLDesc.FindAttribute(WMD_DISPLAY_PREFIX_ATTRIB, &sPrefix))
 		sPrefix = m_sAttribPrefix;
 
-	if (XMLDesc.FindAttributeInteger(WMD_MIN_DAMAGE_ATTRIB, &iMinDamage))
-		{
-		if (iMinDamage < 0)
-			{
-			Ctx.sError = CONSTLIT("wmdMinDamage must be greater or equal to 0.");
-			return ERR_FAIL;
-			}
-		}
-	else
-		iMinDamage = m_iMinDamage;
-
-	return InitFromWMDLevel(Ctx, sAdj, sLabels, iMinDamage, sPrefix);
+	return InitFromWMDLevel(Ctx, sAdj, sLabels, sPrefix);
 	}
 
 //	ParseWMDAdjList

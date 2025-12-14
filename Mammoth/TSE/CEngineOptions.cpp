@@ -489,7 +489,7 @@ const CDamageMethodDesc* CEngineOptions::GetDamageMethodDesc(EDamageMethod iMeth
 		case EDamageMethodSystem::dmgMethodSysWMD:
 			{
 			if (iMethod == EDamageMethod::methodWMD)
-				return  &(m_DamageMethodDescs.GetWMD());
+				return m_DamageMethodDescs.GetWMD();
 			ASSERT(false);
 			return NULL;
 			}
@@ -498,11 +498,11 @@ const CDamageMethodDesc* CEngineOptions::GetDamageMethodDesc(EDamageMethod iMeth
 			switch (iMethod)
 				{
 				case EDamageMethod::methodCrush:
-					return &(m_DamageMethodDescs.GetCrush());
+					return m_DamageMethodDescs.GetCrush();
 				case EDamageMethod::methodPierce:
-					return &(m_DamageMethodDescs.GetPierce());
+					return m_DamageMethodDescs.GetPierce();
 				case EDamageMethod::methodShred:
-					return &(m_DamageMethodDescs.GetShred());
+					return m_DamageMethodDescs.GetShred();
 				default:
 					{
 					ASSERT(false);
@@ -676,7 +676,7 @@ bool CEngineOptions::InitDamageMethodDescsFromXML(SDesignLoadCtx& Ctx, const CXM
 				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
 				return false;
 				}
-			if (m_DamageMethodDescs.Crush().InitFromXML(Ctx, *pItem) != NOERROR)
+			if (m_DamageMethodDescs.Crush()->InitFromXML(Ctx, *pItem) != NOERROR)
 				return false;
 			bSetPhysicalized = true;
 			}
@@ -687,7 +687,7 @@ bool CEngineOptions::InitDamageMethodDescsFromXML(SDesignLoadCtx& Ctx, const CXM
 				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
 				return false;
 				}
-			if (m_DamageMethodDescs.Pierce().InitFromXML(Ctx, *pItem) != NOERROR)
+			if (m_DamageMethodDescs.Pierce()->InitFromXML(Ctx, *pItem) != NOERROR)
 				return false;
 			bSetPhysicalized = true;
 			}
@@ -698,7 +698,7 @@ bool CEngineOptions::InitDamageMethodDescsFromXML(SDesignLoadCtx& Ctx, const CXM
 				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
 				return false;
 				}
-			if (m_DamageMethodDescs.Shred().InitFromXML(Ctx, *pItem) != NOERROR)
+			if (m_DamageMethodDescs.Shred()->InitFromXML(Ctx, *pItem) != NOERROR)
 				return false;
 			bSetPhysicalized = true;
 			}
@@ -709,7 +709,7 @@ bool CEngineOptions::InitDamageMethodDescsFromXML(SDesignLoadCtx& Ctx, const CXM
 				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
 				return false;
 				}
-			if (m_DamageMethodDescs.WMD().InitFromXML(Ctx, *pItem) != NOERROR)
+			if (m_DamageMethodDescs.WMD()->InitFromXML(Ctx, *pItem) != NOERROR)
 				return false;
 			bSetWMD = true;
 			}
@@ -809,11 +809,13 @@ CDamageMethodDesc CEngineOptions::GetDefaultWMDAdj (int apiVersion)
 	switch (GetAPIForWMDAdj(apiVersion))
 		{
 		case 0:
-			Desc.InitFromArray(g_StdWMDAdjAPI0, g_StdWMDLabelsAPI0, g_iStdWMDMinDamageAPI0);
+			{
+			Desc.InitFromArray(g_StdWMDAdjAPI0, g_StdWMDLabelsAPI0);
 			break;
+			}
 		case 29:
 		default:
-			Desc.InitFromArray(g_StdWMDAdjAPI29, g_StdWMDLabelsAPI29, g_iStdWMDMinDamageAPI29);
+			Desc.InitFromArray(g_StdWMDAdjAPI29, g_StdWMDLabelsAPI29);
 		}
 
 	return Desc;
@@ -1088,6 +1090,14 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 			}
 		m_rMinFortificationAdj = rValue;
 
+		//	Set minimum damage
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_MIN_DAMAGE);
+		Metric rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
+		if (rValue < 0)
+			rValue = 0.0;
+		m_rDamageMethodAdjMinDamage = rValue;
+
 		}
 
 	//	Legacy adventures can only use defaults because the older APIs dont support anything else
@@ -1096,6 +1106,11 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 		{
 		m_rMinFortificationAdj = 0.0;
 		m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;
+
+		if (Ctx.GetAPIVersion() >= 29)
+			m_rDamageMethodAdjMinDamage = g_iStdWMDMinDamageAPI29;
+		else
+			m_rDamageMethodAdjMinDamage = g_iStdWMDMinDamageAPI0;
 
 		InitDefaultDamageMethods();
 		}

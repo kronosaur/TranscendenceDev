@@ -251,9 +251,9 @@ CString DamageDesc::AsString (void) const
 	return CString(Output.GetPointer(), Output.GetLength());
 	}
 
-int DamageDesc::CalcWMDAdjustedDamage(int iDamage) const
+int DamageDesc::CalcDamageMethodAdjDamage(EDamageMethod iMethod, int iDamage) const
 	{
-	return Max(mathRoundStochastic((iDamage < 0 ? m_Damage.GetAveValue() : iDamage) * GetMassDestructionAdjReal()), GetMassDestructionMinDamage());
+	return Max(mathRoundStochastic((iDamage < 0 ? m_Damage.GetAveValue() : iDamage) * GetDamageMethodAdjReal(iMethod)), GetDamageMethodMinDamage(iMethod));
 	}
 
 int DamageDesc::ConvertOldMomentum (int iValue)
@@ -422,95 +422,104 @@ Metric DamageDesc::GetDamageValue (DWORD dwFlags) const
 	if (dwFlags & flagIncludeBonus)
 		rDamage += rDamage * m_iBonus / 100.0;
 
-	//	Adjust for WMD
+	//	Adjust for Damage Methods
 
 	if (dwFlags & flagWMDAdj)
-		rDamage = rDamage * GetMassDestructionAdjReal();
+		rDamage = rDamage * GetDamageMethodAdjReal(EDamageMethod::methodWMD);
+
+	if (dwFlags & flagMethodCrushAdj)
+		rDamage = rDamage * GetDamageMethodAdjReal(EDamageMethod::methodCrush);
+
+	if (dwFlags & flagMethodPierceAdj)
+		rDamage = rDamage * GetDamageMethodAdjReal(EDamageMethod::methodPierce);
+
+	if (dwFlags & flagMethodShredAdj)
+		rDamage = rDamage * GetDamageMethodAdjReal(EDamageMethod::methodShred);
 
 	return rDamage;
 	}
 
-//  GetMassDestructionAdj
+//  GetDamageMethodAdj
 //
 //  Returns the adjustment to damage given our level of mass destruction.
 //
-int DamageDesc::GetMassDestructionAdj () const
+int DamageDesc::GetDamageMethodAdj (EDamageMethod iMethod) const
 
 	{
-	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetStochasticWMDAdj(m_sExtra.MassDestructionAdj);
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetStochasticDamageMethodAdj(m_sExtra.MassDestructionAdj);
 	}
 
-//  GetMassDestructionAdjReal
+//  GetDamageMethodAdjReal
 //
 //  Returns the adjustment to damage given our level of mass destruction.
 //
-Metric DamageDesc::GetMassDestructionAdjReal() const
+Metric DamageDesc::GetDamageMethodAdjReal(EDamageMethod iMethod) const
 
 	{
-	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetWMDAdj(m_sExtra.MassDestructionAdj);
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetDamageMethodAdj(m_sExtra.MassDestructionAdj);
 	}
 
 //  GetMassDestructionAdjFromValue
 //
 //  Returns the damage adj of WMD.
 //
-int DamageDesc::GetMassDestructionAdjFromValue (int iValue) 
+int DamageDesc::GetMassDestructionAdjFromValue (EDamageMethod iMethod, int iValue) 
 
 	{
-	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetRoundedWMDAdj(Max(0, Min(iValue, MAX_INTENSITY)));
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetRoundedDamageMethodAdj(Max(0, Min(iValue, MAX_INTENSITY)));
 	}
 
 //  GetMassDestructionAdjRealFromValue
 //
 //  Returns the damage adj of WMD.
 //
-Metric DamageDesc::GetMassDestructionAdjRealFromValue(int iValue)
+Metric DamageDesc::GetMassDestructionAdjRealFromValue(EDamageMethod iMethod, int iValue)
 
 	{
-	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetWMDAdj(Max(0, Min(iValue, MAX_INTENSITY)));
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetDamageMethodAdj(Max(0, Min(iValue, MAX_INTENSITY)));
 	}
 
-//	GetMassDestructionDisplayLevel
+//	GetDamageMethodDisplayLevel
 //
 //	Returns the string to use for WMD attributes
 //
-CString DamageDesc::GetMassDestructionDisplayLevel () const
+CString DamageDesc::GetDamageMethodDisplayLevel (EDamageMethod iMethod) const
 	{
-	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetWMDLabel(m_sExtra.MassDestructionAdj);
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetDamageMethodLabel(m_sExtra.MassDestructionAdj);
 	}
 
-//	GetMassDestructionDisplayStr
+//	GetDamageMethodDisplayStr
 //
 //	Returns the string to use for WMD attributes
 //
-CString DamageDesc::GetMassDestructionDisplayStr() const
+CString DamageDesc::GetDamageMethodDisplayStr(EDamageMethod iMethod) const
 	{
-	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetWMDDisplay(m_sExtra.MassDestructionAdj);
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetDamageMethodDisplay(m_sExtra.MassDestructionAdj);
 	}
 
-int DamageDesc::GetMassDestructionMinDamage() const
+int DamageDesc::GetDamageMethodMinDamage(EDamageMethod iMethod) const
 	{
-	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetWMDMinDamage();
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetWMDMinDamage();
 	}
 
-//  GetMassDestructionLevel
+//  GetDamageMethodLevel
 //
 //  Returns the raw WMD level (0-7)
 //
-int DamageDesc::GetMassDestructionLevel () const
+int DamageDesc::GetDamageMethodLevel (EDamageMethod iMethod) const
 
 	{
 	return m_sExtra.MassDestructionAdj;
 	}
 
-//  GetMassDestructionLevel
+//  GetDamageMethodLevel
 //
 //  Returns the display level of WMD. This is what we show in weapon stats.
 //
-int DamageDesc::GetMassDestructionLevelFromValue (int iValue) 
+int DamageDesc::GetMassDestructionLevelFromValue (EDamageMethod iMethod, int iValue) 
 
 	{
-	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetRoundedWMDAdj(Max(0, Min(iValue, MAX_INTENSITY)));
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetRoundedDamageMethodAdj(Max(0, Min(iValue, MAX_INTENSITY)));
 	}
 
 //	GetMiningWMDAdj
@@ -520,7 +529,7 @@ int DamageDesc::GetMassDestructionLevelFromValue (int iValue)
 int DamageDesc::GetMiningWMDAdj ()
 
 	{
-	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc()->GetRoundedWMDAdj(m_sExtra.MiningAdj);
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(EDamageMethod::methodWMD)->GetRoundedDamageMethodAdj(m_sExtra.MiningAdj);
 	}
 
 //	GetSpecialDamage
@@ -585,7 +594,7 @@ int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags) co
 
 		case specialWMD:
 			if (dwFlags & flagSpecialAdj)
-				return GetMassDestructionAdj();
+				return GetDamageMethodAdj(EDamageMethod::methodWMD);
 			else
 				return m_sExtra.MassDestructionAdj;
 

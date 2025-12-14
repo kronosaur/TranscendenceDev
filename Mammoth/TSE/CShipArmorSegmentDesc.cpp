@@ -123,7 +123,7 @@ int CShipArmorSegmentDesc::GetLevel (void) const
 
 Metric CShipArmorSegmentDesc::GetMinFortificationAdj () const
 	{
-	return m_rMinFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj() : m_rMinFortificationAdj;
+	return m_rMinFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj() : m_rMinFortificationAdj;
 	}
 
 ALERROR CShipArmorSegmentDesc::Init (

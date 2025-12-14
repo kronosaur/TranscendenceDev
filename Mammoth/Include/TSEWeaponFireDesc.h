@@ -99,6 +99,9 @@ enum SpecialDamageTypes
 	specialAttract			= 17,
 	specialRepel			= 18,
 	specialMiningScan		= 19,
+	specialCrush			= 20,
+	specialPierce			= 21,
+	specialShred			= 22,
 	};
 
 class CSpecialDamageSet
@@ -133,10 +136,13 @@ class DamageDesc
 			flagWMDAdj =			0x00000010,
 			flagMinDamage =			0x00000020,
 			flagMaxDamage =			0x00000040,
+			flagMethodCrushAdj =	0x00000080,
+			flagMethodPierceAdj =	0x00000100,
+			flagMethodShredAdj =	0x00000200,
 
 			//  GetSpecialDamage
 
-			flagSpecialAdj =        0x00000080, //  Returns adjusted value (e.g., GetMassDestructionAdj
+			flagSpecialAdj =        0x00000080, //  Returns adjusted value (e.g., GetDamageMethodAdj
 												//      instead of raw value).
 			};
 
@@ -147,7 +153,7 @@ class DamageDesc
 
 		void AddEnhancements (const CItemEnhancementStack *pEnhancements);
 		CString AsString (void) const;
-		int CalcWMDAdjustedDamage (int iDamage = -1) const;
+		int CalcDamageMethodAdjDamage (EDamageMethod iMethod, int iDamage = -1) const;
 		bool CausesSRSFlash (void) const { return (m_sExtra.fNoSRSFlash ? false : true); }
 		ICCItem *FindProperty (const CString &sName) const;
 		DestructionTypes GetCause (void) const { return m_iCause; }
@@ -185,13 +191,13 @@ class DamageDesc
 		int GetDeviceDisruptDamage (void) const { return (int)m_sExtra.DeviceDisruptDamage; }
 		int GetDisintegrationDamage (void) const { return (int)m_sExtra.DisintegrationDamage; }
 		int GetEMPDamage (void) const { return (int)m_sExtra.EMPDamage; }
-		int GetMassDestructionAdj () const;
-		Metric GetMassDestructionAdjReal () const;
-		int GetMassDestructionDamage () const { return m_sExtra.MassDestructionAdj; }
-		int GetMassDestructionLevel () const;
-		CString GetMassDestructionDisplayLevel () const;
-		CString GetMassDestructionDisplayStr () const;
-		int GetMassDestructionMinDamage () const;
+		int GetDamageMethodAdj (EDamageMethod iMethod) const;
+		Metric GetDamageMethodAdjReal (EDamageMethod iMethod) const;
+		int GetDamageMethodDamage (EDamageMethod iMethod) const { return m_sExtra.MassDestructionAdj; }
+		int GetDamageMethodLevel (EDamageMethod iMethod) const;
+		CString GetDamageMethodDisplayLevel (EDamageMethod iMethod) const;
+		CString GetDamageMethodDisplayStr (EDamageMethod iMethod) const;
+		int GetDamageMethodMinDamage (EDamageMethod iMethod) const;
 		int GetMiningAdj (void) const { return (int)(m_sExtra.MiningAdj ? (2 * (m_sExtra.MiningAdj * m_sExtra.MiningAdj) + 2) : 0); }
 		int GetMiningDamage (void) const { return m_sExtra.MiningAdj; }
 		int GetMiningScan (void) const { return m_sExtra.fMiningScan; }
@@ -209,9 +215,9 @@ class DamageDesc
 		static int GetDamageTier (DamageTypes iType);
 		static SpecialDamageTypes GetSpecialDamageFromCondition (ECondition iCondition);
 		static CString GetSpecialDamageName (SpecialDamageTypes iSpecial);
-		static int GetMassDestructionAdjFromValue (int iValue);
-		static Metric GetMassDestructionAdjRealFromValue(int iValue);
-		static int GetMassDestructionLevelFromValue (int iValue);
+		static int GetMassDestructionAdjFromValue (EDamageMethod iMethod, int iValue);
+		static Metric GetMassDestructionAdjRealFromValue(EDamageMethod iMethod, int iValue);
+		static int GetMassDestructionLevelFromValue (EDamageMethod iMethod, int iValue);
 
 	private:
 
@@ -343,9 +349,10 @@ struct SDamageCtx
 		SDamageCtx (const DamageDesc &DamageArg);
 		~SDamageCtx (void);
 
-		int CalcWMDAdjustedDamage (Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0) const;
-		int CalcWMDAdjustedDamageFromLevel (int iLevel, Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0) const;
-		int CalcWMDAdjustedDamageRaw () const;
+		int CalcDamageMethodAdjDamage (EDamageMethod iMethod, Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0) const;
+		int CalcDamageMethodAdjDamageFromLevel (EDamageMethod iMethod, int iLevel, Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0) const;
+		int CalcDamageMethodAdjDamageRaw (EDamageMethod iMethod) const;
+		int CalcDamageMethodAdjDamagePrecalc (Metric rPrecalcFortification) const;
 		void ClearTimeStop (void) { m_bTimeStop = false; }
 		int GetBlindTime (void) const { return m_iBlindTime; }
 		CWeaponFireDesc &GetDesc (void) const { return *m_pDesc; }
@@ -353,8 +360,8 @@ struct SDamageCtx
 		EDamageHint GetHint (void) const { return m_iHint; }
 		CSpaceObject *GetOrderGiver (void) const { return Attacker.GetOrderGiver(); }
 		int GetParalyzedTime (void) const { return m_iParalyzeTime; }
-		Metric CalcWMDFortificationAdj (Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0, Metric rMaxAdj = R_INF) const;
-		static Metric CalcWMDFortificationAdjFromLevel (int iLevel, Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0, Metric rMaxAdj = R_INF);
+		Metric CalcDamageMethodFortifiedAdj (EDamageMethod iMethod, Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0, Metric rMaxAdj = R_INF) const;
+		static Metric CalcDamageMethodFortifiedAdjFromLevel (EDamageMethod iMethod, int iLevel, Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0, Metric rMaxAdj = R_INF);
 		bool IsBlinded (void) const { return m_bBlind; }
 		bool IsDeviceDamaged (void) const { return m_bDeviceDamage; }
 		bool IsDeviceDisrupted (void) const { return m_bDeviceDisrupt; }

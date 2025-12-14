@@ -300,7 +300,7 @@ Metric CShipInteriorDesc::GetFortificationAdj() const
 Metric CShipInteriorDesc::GetFortificationMinAdj() const
 	{
 	if (g_pUniverse)
-		return m_rMinFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj() : m_rMinFortificationAdj;
+		return m_rMinFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj() : m_rMinFortificationAdj;
 	return 0.0;
 	}
 

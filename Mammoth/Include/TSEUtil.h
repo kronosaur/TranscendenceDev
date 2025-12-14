@@ -691,15 +691,14 @@ class CDamageMethodDesc
 		static constexpr int MAX_DAMAGE_METHOD_LEVEL = 7;
 		static constexpr int MAX_DAMAGE_METHOD_LEVEL_COUNT = 8;
 
-		Metric GetWMDAdj (int iLevel) const;
-		int GetRoundedWMDAdj (int iLevel) const;
-		int GetStochasticWMDAdj (int iLevel) const;
-		CString GetWMDLabel (int iLevel) const;
-		int GetWMDMinDamage () const { return m_iMinDamage; }
-		CString GetWMDPrefix () const { return m_sAttribPrefix; }
-		CString GetWMDDisplay (int iLevel) const { return GetWMDLabel(iLevel).GetLength() ? strCat(m_sAttribPrefix, GetWMDLabel(iLevel)) : CONSTLIT(""); }
-		ALERROR InitFromArray (const TArray<double>& Adj, const TArray<const char*>& Labels, int iMinDamage = 0, CString sAttribPrefix = "WMD");
-		ALERROR InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAdj, const CString &sLabels, int iMinDamage = 0, CString sAttribPrefix = "WMD");
+		Metric GetDamageMethodAdj (int iLevel) const;
+		int GetRoundedDamageMethodAdj (int iLevel) const;
+		int GetStochasticDamageMethodAdj (int iLevel) const;
+		CString GetDamageMethodLabel (int iLevel) const;
+		CString GetDamageMethodPrefix () const { return m_sAttribPrefix; }
+		CString GetDamageMethodDisplay (int iLevel) const { return GetDamageMethodLabel(iLevel).GetLength() ? strCat(m_sAttribPrefix, GetDamageMethodLabel(iLevel)) : CONSTLIT(""); }
+		ALERROR InitFromArray (const TArray<double>& Adj, const TArray<const char*>& Labels, CString sAttribPrefix = "WMD");
+		ALERROR InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAdj, const CString &sLabels, CString sAttribPrefix = "WMD");
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
 
 	private:

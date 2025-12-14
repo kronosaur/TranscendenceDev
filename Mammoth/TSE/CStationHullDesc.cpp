@@ -216,7 +216,7 @@ Metric CStationHullDesc::GetFortificationAdj(bool bMultiHull) const
 
 Metric CStationHullDesc::GetMinFortificationAdj() const
 	{
-	return m_rMinFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj() : m_rMinFortificationAdj;
+	return m_rMinFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj() : m_rMinFortificationAdj;
 	}
 
 CString CStationHullDesc::GetID (EHullTypes iType)

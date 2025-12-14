@@ -772,11 +772,11 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		rFortification *= m_rFortification;
 
 	if (m_rMinFortificationAdj < 0)
-		rFortificationAdjMin *= g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj();
+		rFortificationAdjMin *= g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj();
 	else
 		rFortificationAdjMin *= m_rMinFortificationAdj;
 
-	int iDamage = Ctx.CalcWMDAdjustedDamage(rFortification, rFortificationAdjMin);
+	int iDamage = Ctx.CalcDamageMethodAdjDamage(rFortification, rFortificationAdjMin);
 
 	//	Adjust for special armor damage:
 	//

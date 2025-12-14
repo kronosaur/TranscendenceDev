@@ -426,6 +426,7 @@ class CShipInterior
 			};
 
 		void CalcAttachPos (CShip *pShip, const CShipInteriorDesc &Desc, int iIndex, CSpaceObject **retpAttachedTo, CVector *retvPos) const;
+		Metric CalcDamageFortificationAdj (EDamageMethod iMethod, CShip *pShip, const CShipInteriorDesc &Desc, SDamageCtx &Ctx);
 		void DetachChain (CShip *pShip, CSpaceObject *pBreak);
 		bool FindAttachedObject (CSpaceObject *pAttached, int *retiIndex = NULL) const;
 		int FindNextCompartmentHit (SHitTestCtx &HitCtx, int xHitPos, int yHitPos);

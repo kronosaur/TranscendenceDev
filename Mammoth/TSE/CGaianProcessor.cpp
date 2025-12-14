@@ -227,7 +227,7 @@ void CGaianProcessorAI::CalcDevices (void)
 				const DamageDesc *pDamage = Weapon.GetDamageDesc(Ctx);
 				if (pDamage)
 					{
-					if (pDamage->GetMassDestructionLevel())
+					if (pDamage->GetDamageMethodLevel())
 						m_iDestructorDev = Weapon.GetDeviceSlot();
 					else if (pDamage->GetEMPDamage())
 						m_iDisablerDev = Weapon.GetDeviceSlot();

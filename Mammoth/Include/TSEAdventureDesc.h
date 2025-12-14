@@ -35,6 +35,8 @@ class CEngineOptions
 		Metric GetDamageMethodAdjStationHullUnderground (EDamageMethod iMethod) const { return GetDamageMethodAdj(m_DamageMethodStationAdj.Hull.Underground, iMethod); };
 		Metric GetDamageMethodAdjStationHullUncrewed (EDamageMethod iMethod) const { return GetDamageMethodAdj(m_DamageMethodStationAdj.Hull.Uncrewed, iMethod); };
 		Metric GetDamageMethodAdjStationHullArmor (EDamageMethod iMethod) const { return GetDamageMethodAdj(m_DamageMethodStationAdj.Hull.Armor, iMethod); };
+		Metric GetDamageMethodMinFortificationAdj () const { return m_rMinFortificationAdj; }
+		Metric GetDamageMethodMinDamage ()	const { return m_rDamageMethodAdjMinDamage; }
 		EDamageMethodSystem GetDamageMethodSystem () const { return m_iDamageMethodSystem; }
 		const CMiningDamageLevelDesc* GetMiningMaxOreLevels () const { return &m_MiningDamageMaxOreLevels; }
 		const CDamageAdjDesc* GetShieldDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ShieldDamageAdj[iLevel - 1]; }
@@ -122,20 +124,20 @@ class CEngineOptions
 		struct SDamageMethodDescs
 			{
 			public:
-				const CDamageMethodDesc GetCrush () const { return desc[0]; }
-				const CDamageMethodDesc GetPierce () const { return desc[1]; }
-				const CDamageMethodDesc GetShred () const { return desc[2]; }
-				const CDamageMethodDesc GetWMD () const { return desc[0]; }
+				const CDamageMethodDesc* GetCrush () const { return &desc[0]; }
+				const CDamageMethodDesc* GetPierce () const { return &desc[1]; }
+				const CDamageMethodDesc* GetShred () const { return &desc[2]; }
+				const CDamageMethodDesc* GetWMD () const { return &desc[0]; }
 
 			protected:
 				//	Our protected accessors are non-const
 				//	This is so we can call non-const methods on CDamageMethodDesc
 				//	We need to do this on custom initialization
 				//
-				CDamageMethodDesc Crush () { return desc[0]; }
-				CDamageMethodDesc Pierce () { return desc[1]; }
-				CDamageMethodDesc Shred () { return desc[2]; }
-				CDamageMethodDesc WMD () { return desc[0]; }
+				CDamageMethodDesc* Crush () { return &desc[0]; }
+				CDamageMethodDesc* Pierce () { return &desc[1]; }
+				CDamageMethodDesc* Shred () { return &desc[2]; }
+				CDamageMethodDesc* WMD () { return &desc[0]; }
 
 				void SetCrush (CDamageMethodDesc newDesc) { desc[0] = newDesc; }
 				void SetPierce (CDamageMethodDesc newDesc) { desc[1] = newDesc; }
@@ -197,6 +199,7 @@ class CEngineOptions
 		bool m_bCustomDamageMethodDescs;
 
 		double m_rMinFortificationAdj = 0.0;
+		double m_rDamageMethodAdjMinDamage = 0.0;
 
 		SDamageMethodItemAdj m_DamageMethodItemAdj;
 		SDamageMethodShipAdj m_DamageMethodShipAdj;

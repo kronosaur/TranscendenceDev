@@ -141,6 +141,15 @@
 //
 #define PROPERTY_CORE_DMG_METHOD_MIN_ADJ				CONSTLIT("core.damageMethod.minAdj")
 
+//	code.damageMethod.minDamage
+//
+//	Adventure Property <Constant>: Evaluated at bind time. This property defines the default
+//	minimum damage that can result from damage method adjustment.
+// 
+//	Returns a floating point 0.0 or greater (values less than 1 are treated stochastically)
+//
+#define PROPERTY_CORE_DMG_METHOD_MIN_DAMAGE				CONSTLIT("core.damageMethod.minDamage")
+
 //	core.damageMethod.fortify.[Target]
 //
 //	Adventure Property <Constant>: Evaluated at bind time. These properties control defaults
