@@ -9,44 +9,45 @@
 #define WMD_DISPLAY_ATTRIB					CONSTLIT("wmdDisplay")
 #define WMD_DISPLAY_PREFIX_ATTRIB			CONSTLIT("wmdDisplayPrefix")
 
-//	GetWMDAdj
+//	GetDamageMethodAdj
 // 
-//	Get raw WMD adj as a floating point number
+//	Get raw DamageMethod adj as a floating point number
 //
-Metric CDamageMethodDesc::GetWMDAdj (int iLevel) const
+Metric CDamageMethodDesc::GetDamageMethodAdj (int iLevel) const
 	{
 	iLevel = max(min(iLevel, MAX_DAMAGE_METHOD_LEVEL), 0);
 	return m_Desc[iLevel].rAdj;
 	}
 
-//	GetStochasticWMDAdj
+//	GetStochasticDamageMethodAdj
 //
-//	Get Stochastically Rounded WMD as integer Adj
-//	Use GetWMDAdj for accurate Adj math.
-//	Use GetStochasticWMDAdj for accurate Adj balance on legacy algorithms.
+//	Get Stochastically Rounded DamageMethod as integer Adj
+//	Use GetDamageMethodAdj for accurate Adj math.
+//	Use GetStochasticDamageMethodAdj for accurate Adj balance on legacy algorithms.
 //
-int CDamageMethodDesc::GetStochasticWMDAdj (int iLevel) const
+int CDamageMethodDesc::GetStochasticDamageMethodAdj (int iLevel) const
 	{
-	return mathRoundStochastic(GetWMDAdj(iLevel) * 100);
+	return mathRoundStochastic(GetDamageMethodAdj(iLevel) * 100);
 	}
 
-//	GetRoundedWMDAdj
+//	GetRoundedDamageMethodAdj
 //
-//	Get Rounded WMD as integer Adj
-//	Use GetWMDAdj for accurate Adj math.
-//	Use GetStochasticWMDAdj for accurate Adj balance on legacy algorithms.
-//	Recommended only if you need to use WMD Adj in legacy algorithms that expect consistent output.
+//	Get Rounded DamageMethod as integer Adj
+//	Use GetDamageMethodAdj for accurate Adj math.
+//	Use GetStochasticDamageMethodAdj for accurate Adj balance on legacy algorithms.
+//	Recommended only if you need to use DamageMethod Adj in legacy algorithms that expect consistent output.
+//	(ex, for UI purposes)
 //
-int CDamageMethodDesc::GetRoundedWMDAdj (int iLevel) const
+int CDamageMethodDesc::GetRoundedDamageMethodAdj (int iLevel) const
 	{
-	return mathRound(GetWMDAdj(iLevel) * 100);
+	return mathRound(GetDamageMethodAdj(iLevel) * 100);
 	}
 
-//	GetWMDLabel
+//	GetDamageMethodLabel
 //	
-//	Get Integer Suffix to display for this WMD label
+//	Get Suffix to display for this DamageMethod label
 //
-CString CDamageMethodDesc::GetWMDLabel (int iLevel) const
+CString CDamageMethodDesc::GetDamageMethodLabel (int iLevel) const
 	{
 	iLevel = max(min(iLevel, MAX_DAMAGE_METHOD_LEVEL), 0);
 	return m_Desc[iLevel].sLabel;

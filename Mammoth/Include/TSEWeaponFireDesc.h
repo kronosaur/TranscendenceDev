@@ -197,7 +197,6 @@ class DamageDesc
 		int GetDamageMethodLevel (EDamageMethod iMethod) const;
 		CString GetDamageMethodDisplayLevel (EDamageMethod iMethod) const;
 		CString GetDamageMethodDisplayStr (EDamageMethod iMethod) const;
-		int GetDamageMethodMinDamage (EDamageMethod iMethod) const;
 		int GetMiningAdj (void) const { return (int)(m_sExtra.MiningAdj ? (2 * (m_sExtra.MiningAdj * m_sExtra.MiningAdj) + 2) : 0); }
 		int GetMiningDamage (void) const { return m_sExtra.MiningAdj; }
 		int GetMiningScan (void) const { return m_sExtra.fMiningScan; }

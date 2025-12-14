@@ -1093,7 +1093,7 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 		//	Set minimum damage
 
 		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_MIN_DAMAGE);
-		Metric rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
+		rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
 		if (rValue < 0)
 			rValue = 0.0;
 		m_rDamageMethodAdjMinDamage = rValue;

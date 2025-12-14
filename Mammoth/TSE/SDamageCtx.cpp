@@ -80,12 +80,12 @@ SDamageCtx::~SDamageCtx (void)
 
 int SDamageCtx::CalcDamageMethodAdjDamageFromLevel(EDamageMethod iMethod, int iLevel, Metric rWMD0FortificationAdj, Metric rMinAdj) const
 	{
-	return Max(mathRoundStochastic(iDamage * CalcDamageMethodFortifiedAdjFromLevel(iMethod, iLevel, rWMD0FortificationAdj, rMinAdj)), g_pUniverse->GetEngineOptions().GetDamageMethodMinDamage());
+	return mathRoundStochastic(Max(iDamage * CalcDamageMethodFortifiedAdjFromLevel(iMethod, iLevel, rWMD0FortificationAdj, rMinAdj), g_pUniverse->GetEngineOptions().GetDamageMethodMinDamage()));
 	}
 
 int SDamageCtx::CalcDamageMethodAdjDamage(EDamageMethod iMethod, Metric rWMD0FortificationAdj, Metric rMinAdj) const
 	{
-	return Max(mathRoundStochastic(iDamage * CalcDamageMethodFortifiedAdj(iMethod, rWMD0FortificationAdj, rMinAdj)), g_pUniverse->GetEngineOptions().GetDamageMethodMinDamage());
+	return mathRoundStochastic(Max(iDamage * CalcDamageMethodFortifiedAdj(iMethod, rWMD0FortificationAdj, rMinAdj), g_pUniverse->GetEngineOptions().GetDamageMethodMinDamage()));
 	}
 
 int SDamageCtx::CalcDamageMethodAdjDamageRaw(EDamageMethod iMethod) const
@@ -95,7 +95,7 @@ int SDamageCtx::CalcDamageMethodAdjDamageRaw(EDamageMethod iMethod) const
 
 int SDamageCtx::CalcDamageMethodAdjDamagePrecalc(Metric rPrecalcFortification) const
 	{
-	return Max(mathRoundStochastic(iDamage * rPrecalcFortification), g_pUniverse->GetEngineOptions().GetDamageMethodMinDamage());
+	return mathRoundStochastic(Max(iDamage * rPrecalcFortification, g_pUniverse->GetEngineOptions().GetDamageMethodMinDamage()));
 	}
 
 //	CalcDamageMethodFortifiedAdj
