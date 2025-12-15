@@ -685,10 +685,13 @@ struct SDamageMethodAdj
 				case EDamageMethod::methodCrush:
 				case EDamageMethod::methodWMD:
 					return rAdj[0];
+					break;
 				case EDamageMethod::methodPierce:
 					return rAdj[1];
+					break;
 				case EDamageMethod::methodShred:
 					return rAdj[2];
+					break;
 				default:
 					ASSERT(false);
 					return R_NAN;
@@ -706,13 +709,23 @@ struct SDamageMethodAdj
 				case EDamageMethod::methodCrush:
 				case EDamageMethod::methodWMD:
 					rAdj[0] = rNew;
+					break;
 				case EDamageMethod::methodPierce:
 					rAdj[1] = rNew;
+					break;
 				case EDamageMethod::methodShred:
 					rAdj[2] = rNew;
+					break;
 				default:
 					ASSERT(false);
 				}
+			}
+
+		void Reset ()
+			{
+			rAdj[0] = 1.0;
+			rAdj[1] = 1.0;
+			rAdj[2] = 1.0;
 			}
 
 	private:

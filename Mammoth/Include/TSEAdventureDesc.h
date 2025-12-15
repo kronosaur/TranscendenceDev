@@ -55,30 +55,6 @@ class CEngineOptions
 
 		//	Damage Method Internal Structs
 
-		struct SDamageMethodAdj
-			{
-			public:
-				Metric GetCrush () const { return rAdj[0]; }
-				Metric GetPierce () const { return rAdj[1]; }
-				Metric GetShred () const { return rAdj[2]; }
-				Metric GetWMD () const { return rAdj[0]; }
-
-				void SetCrush (Metric rNew) { rAdj[0] = rNew; }
-				void SetPierce (Metric rNew) { rAdj[1] = rNew; }
-				void SetShred (Metric rNew) { rAdj[2] = rNew; }
-				void SetWMD (Metric rNew) { rAdj[0] = rNew; }
-
-				void Reset ()
-					{
-					rAdj[0] = 1.0;
-					rAdj[1] = 1.0;
-					rAdj[2] = 1.0;
-					}
-
-			private:
-				Metric rAdj[3] = { 1.0, 1.0, 1.0 };
-			};
-
 		struct SDamageMethodItemAdj
 			{
 			SDamageMethodAdj Armor;
