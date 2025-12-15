@@ -15,9 +15,11 @@ class CStationHullDesc
 			hullUnknown				= -1,
 
 			hullSingle				= 0,	//	Single hull, normal damage
-			hullAsteroid			= 1,	//	Must have either WMD or mining to damage
-			hullMultiple			= 2,	//	Must have WMD to damage
-			hullUnderground			= 3,	//	Must have mining to damage
+			hullAsteroid			= 1,	//	Must have either Shred or Crush (WMD: WMD or mining) to damage
+			hullMultiple			= 2,	//	Must have Shred (WMD: WMD) to damage
+			hullUnderground			= 3,	//	Must have Crush (WMD: mining) to damage
+			hullArmor				= 4,	//	Must have Pierce (WMD: WMD) to damage
+			hullUncrewed			= 5,	//	Must have Crush (WMD: WMD) to damage
 			};
 
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
@@ -30,8 +32,8 @@ class CStationHullDesc
 		CArmorClass *GetArmorClass () const { return (m_pArmor ? m_pArmor->GetArmorClass() : NULL); }
 		CItem GetArmorItem () const;
 		int GetArmorLevel () const;
-		Metric GetFortificationAdj (bool bMultiHull = true) const;
-		Metric GetMinFortificationAdj () const;
+		Metric GetFortificationAdj (EDamageMethod iMethod) const;
+		Metric GetMinFortificationAdj (EDamageMethod iMethod) const;
 		int GetHitPoints () const { return m_iHitPoints; }
 		EHullTypes GetHullType () const { return m_iType; }
 		int GetMaxHitPoints () const { return m_iMaxHitPoints; }
@@ -53,8 +55,8 @@ class CStationHullDesc
 		int m_iHitPoints = 0;				//	Hit points at creation time
 		int m_iMaxHitPoints = 0;			//	Max hit points
 		CRegenDesc m_Regen;					//	Repair rate
-		Metric m_rFortified = 0.1;			//	WMD damage adj curve at WMD0
-		Metric m_rMinFortificationAdj = -1.0;	//	Minimum WMD adj from fortification
+		SDamageMethodAdj m_Fortification;			//	WMD damage adj curve at WMD0
+		SDamageMethodAdj m_MinFortificationAdj;	//	Minimum WMD adj from fortification
 
 		int m_iStructuralHP = 0;			//	Initial structural hit points
 		int m_iMaxStructuralHP = 0;			//	Max structural hp (0 = station is permanent)

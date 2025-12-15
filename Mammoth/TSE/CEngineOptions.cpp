@@ -7,6 +7,11 @@
 
 #define LEVEL_ATTRIB							CONSTLIT("level")
 
+#define TAG_DAMAGE_METHOD_CURVE_CRUSH			CONSTLIT("crush")
+#define TAG_DAMAGE_METHOD_CURVE_PIERCE			CONSTLIT("pierce")
+#define TAG_DAMAGE_METHOD_CURVE_SHRED			CONSTLIT("shred")
+#define TAG_DAMAGE_METHOD_CURVE_WMD				CONSTLIT("wmd")
+
 //	Damage Adjustment
 
 static int g_StdArmorDamageAdj[MAX_ITEM_LEVEL][damageCount] =
@@ -344,8 +349,9 @@ void CEngineOptions::InitDefaultGlobals ()
 
 	//	Initialize WMD adj tables
 
-	m_MassDestruction = GetDefaultWMDAdj(m_iDefaultForAPIVersion);
-	m_bCustomMassDestruction = false;
+	m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;
+	m_DamageMethodDescs.SetWMD(GetDefaultWMDAdj(m_iDefaultForAPIVersion));
+	m_bCustomDamageMethodDescs = false;
 	}
 
 //	Initiate defaults where necessary based on whatever API version we need
@@ -377,6 +383,141 @@ void CEngineOptions::InitDefaultDescs ()
 	if (!m_bCustomInternalDeviceDamageMaxLevels)
 		m_InternalDeviceDamageMaxLevels = GetDefaultInternalDeviceDamageLevels(m_iDefaultForAPIVersion);
 
+	}
+
+//	InitDefaultDamageMethods
+//
+//	m_iDamageMethodSystem must be initialized to a valid value already
+//
+void CEngineOptions::InitDefaultDamageMethods()
+	{
+
+	switch (m_iDamageMethodSystem)
+		{
+		case EDamageMethodSystem::dmgMethodSysPhysicalized:
+			{
+			//	Items
+
+			m_DamageMethodItemAdj.Armor.Reset();
+			m_DamageMethodItemAdj.Shield.Reset();
+
+			//	Ships
+
+			m_DamageMethodShipAdj.Armor.Critical.Reset();
+			m_DamageMethodShipAdj.Armor.Critical.SetShred(0.1);
+			m_DamageMethodShipAdj.Armor.CriticalUncrewed.Reset();
+			m_DamageMethodShipAdj.Armor.CriticalUncrewed.SetShred(0.1);
+			m_DamageMethodShipAdj.Armor.NonCritical.Reset();
+			m_DamageMethodShipAdj.Armor.NonCritical.SetPierce(0.1);
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.Reset();
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.SetShred(0.1);
+
+			m_DamageMethodShipAdj.Compartment.General.Reset();
+			m_DamageMethodShipAdj.Compartment.General.SetShred(0.1);
+			m_DamageMethodShipAdj.Compartment.Cargo.Reset();
+			m_DamageMethodShipAdj.Compartment.Cargo.SetCrush(0.1);
+			m_DamageMethodShipAdj.Compartment.MainDrive.Reset();
+			m_DamageMethodShipAdj.Compartment.MainDrive.SetShred(0.1);
+			m_DamageMethodShipAdj.Compartment.Uncrewed.Reset();
+			m_DamageMethodShipAdj.Compartment.Uncrewed.SetCrush(0.1);
+
+			//	Stations
+
+			m_DamageMethodStationAdj.Hull.Armor.Reset();
+			m_DamageMethodStationAdj.Hull.Armor.SetPierce(0.1);
+			m_DamageMethodStationAdj.Hull.Asteroid.Reset();
+			m_DamageMethodStationAdj.Hull.Asteroid.SetCrush(0.1);
+			m_DamageMethodStationAdj.Hull.Multi.Reset();
+			m_DamageMethodStationAdj.Hull.Multi.SetShred(0.1);
+			m_DamageMethodStationAdj.Hull.Single.Reset();
+			m_DamageMethodStationAdj.Hull.Uncrewed.Reset();
+			m_DamageMethodStationAdj.Hull.Uncrewed.SetCrush(0.1);
+			m_DamageMethodStationAdj.Hull.Underground.Reset();
+			m_DamageMethodStationAdj.Hull.Underground.SetCrush(0.31);
+			m_DamageMethodStationAdj.Hull.Underground.SetPierce(0.31);
+			break;
+			}
+		case EDamageMethodSystem::dmgMethodSysWMD:
+			{
+			//	Items
+
+			m_DamageMethodItemAdj.Armor.Reset();
+			m_DamageMethodItemAdj.Shield.Reset();
+
+			//	Ships
+
+			m_DamageMethodShipAdj.Armor.Critical.Reset();
+			m_DamageMethodShipAdj.Armor.Critical.SetWMD(0.1);
+			m_DamageMethodShipAdj.Armor.CriticalUncrewed.Reset();
+			m_DamageMethodShipAdj.Armor.CriticalUncrewed.SetWMD(0.1);
+			m_DamageMethodShipAdj.Armor.NonCritical.Reset();
+			m_DamageMethodShipAdj.Armor.NonCritical.SetWMD(0.1);
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.Reset();
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.SetWMD(0.1);
+
+			m_DamageMethodShipAdj.Compartment.General.Reset();
+			m_DamageMethodShipAdj.Compartment.General.SetWMD(0.1);
+			m_DamageMethodShipAdj.Compartment.Cargo.Reset();
+			m_DamageMethodShipAdj.Compartment.Cargo.SetWMD(0.1);
+			m_DamageMethodShipAdj.Compartment.MainDrive.Reset();
+			m_DamageMethodShipAdj.Compartment.MainDrive.SetWMD(0.1);
+			m_DamageMethodShipAdj.Compartment.Uncrewed.Reset();
+			m_DamageMethodShipAdj.Compartment.Uncrewed.SetWMD(0.1);
+
+			//	Stations
+
+			m_DamageMethodStationAdj.Hull.Armor.Reset();
+			m_DamageMethodStationAdj.Hull.Armor.SetWMD(0.1);
+			m_DamageMethodStationAdj.Hull.Asteroid.Reset();
+			m_DamageMethodStationAdj.Hull.Asteroid.SetWMD(0.1);
+			m_DamageMethodStationAdj.Hull.Multi.Reset();
+			m_DamageMethodStationAdj.Hull.Multi.SetWMD(0.1);
+			m_DamageMethodStationAdj.Hull.Single.Reset();
+			m_DamageMethodStationAdj.Hull.Uncrewed.Reset();
+			m_DamageMethodStationAdj.Hull.Uncrewed.SetWMD(0.1);
+			m_DamageMethodStationAdj.Hull.Underground.Reset();
+			m_DamageMethodStationAdj.Hull.Underground.SetWMD(0.1);
+			break;
+			}
+		default:
+			ASSERT(false);
+		}
+	}
+
+const CDamageMethodDesc* CEngineOptions::GetDamageMethodDesc(EDamageMethod iMethod) const
+	{
+	switch (m_iDamageMethodSystem)
+		{
+		case EDamageMethodSystem::dmgMethodSysWMD:
+			{
+			if (iMethod == EDamageMethod::methodWMD)
+				return m_DamageMethodDescs.GetWMD();
+			ASSERT(false);
+			return NULL;
+			}
+		case EDamageMethodSystem::dmgMethodSysPhysicalized:
+			{
+			switch (iMethod)
+				{
+				case EDamageMethod::methodCrush:
+					return m_DamageMethodDescs.GetCrush();
+				case EDamageMethod::methodPierce:
+					return m_DamageMethodDescs.GetPierce();
+				case EDamageMethod::methodShred:
+					return m_DamageMethodDescs.GetShred();
+				default:
+					{
+					ASSERT(false);
+					return NULL;
+					}
+				}
+			}
+		default:
+			{
+			ASSERT(false);
+			return NULL;
+			}
+		}
 	}
 
 //	HidesArmorImmunity
@@ -432,6 +573,38 @@ bool CEngineOptions::InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElemen
 	return true;
 	}
 
+//	InitDamageMethodAdjFromCC
+//
+//	Use an ICCItem loaded from an adventure property to initialize
+//	Damage Method Adj
+// 
+//	Note: Requires adj to be pre-configured to the appropriate defaults
+//
+bool CEngineOptions::InitDamageMethodAdjFromCC(SDesignLoadCtx& Ctx, SDamageMethodAdj& adj, ICCItem* pStruct)
+	{
+	switch (m_iDamageMethodSystem)
+		{
+		case EDamageMethodSystem::dmgMethodSysPhysicalized:
+			{
+			adj.SetCrush(min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_CRUSH, adj.GetCrush()), 1.0));
+			adj.SetPierce(min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_PIERCE, adj.GetPierce()), 1.0));
+			adj.SetShred(min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_SHRED, adj.GetShred()), 1.0));
+			return true;
+			}
+		case EDamageMethodSystem::dmgMethodSysWMD:
+			{
+			adj.SetWMD(min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_WMD, adj.GetWMD()), 1.0));
+			return true;
+			}
+		default:
+			{
+			ASSERT(false);
+			Ctx.sError = CONSTLIT("Engine error occurred in initialing damage method adj: m_iDamageMethodSystem was not set to a valid value");
+			return false;
+			}
+		}
+	}
+
 //	InitDamageAdjFromXML
 //
 //	Initializes from XML.
@@ -483,16 +656,71 @@ bool CEngineOptions::InitInternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& C
 	return true;
 	}
 
-//	InitMassDestructionDescFromXML
+//	InitDamageMethodDescsFromXML
 //
 //	Initializes from XML.
+//  Init from properties must have already run.
 //
-bool CEngineOptions::InitMassDestructionDescFromXML(SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
+bool CEngineOptions::InitDamageMethodDescsFromXML(SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
 	{
-	m_bCustomMassDestruction = true;
+	m_bCustomDamageMethodDescs = true;
+	bool bSetPhysicalized = false;
+	bool bSetWMD = false;
 
-	if (m_MassDestruction.InitFromXML(Ctx, XMLDesc) != NOERROR)
-		return false;
+	for (int i = 0; i < XMLDesc.GetContentElementCount(); i++)
+		{
+		CXMLElement* pItem = XMLDesc.GetContentElement(i);
+
+		if (strEquals(pItem->GetTag(), TAG_DAMAGE_METHOD_CURVE_CRUSH))
+			{
+			if (bSetWMD)
+				{
+				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
+				return false;
+				}
+			if (m_DamageMethodDescs.Crush()->InitFromXML(Ctx, *pItem) != NOERROR)
+				return false;
+			bSetPhysicalized = true;
+			}
+		else if (strEquals(pItem->GetTag(), TAG_DAMAGE_METHOD_CURVE_PIERCE))
+			{
+			if (bSetWMD)
+				{
+				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
+				return false;
+				}
+			if (m_DamageMethodDescs.Pierce()->InitFromXML(Ctx, *pItem) != NOERROR)
+				return false;
+			bSetPhysicalized = true;
+			}
+		else if (strEquals(pItem->GetTag(), TAG_DAMAGE_METHOD_CURVE_SHRED))
+			{
+			if (bSetWMD)
+				{
+				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
+				return false;
+				}
+			if (m_DamageMethodDescs.Shred()->InitFromXML(Ctx, *pItem) != NOERROR)
+				return false;
+			bSetPhysicalized = true;
+			}
+		else if (strEquals(pItem->GetTag(), TAG_DAMAGE_METHOD_CURVE_WMD))
+			{
+			if (bSetPhysicalized)
+				{
+				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
+				return false;
+				}
+			if (m_DamageMethodDescs.WMD()->InitFromXML(Ctx, *pItem) != NOERROR)
+				return false;
+			bSetWMD = true;
+			}
+		else
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Invalid DamageMethodAdj curve definition element: %s."), pItem->GetTag());
+			return false;
+			}
+		}
 
 	//	Success!
 
@@ -575,22 +803,60 @@ CDeviceDamageLevelDesc CEngineOptions::GetDefaultInternalDeviceDamageLevels (int
 //
 //	Returns the default table based on API version
 //
-CMassDestructionDesc CEngineOptions::GetDefaultWMDAdj (int apiVersion)
+CDamageMethodDesc CEngineOptions::GetDefaultWMDAdj (int apiVersion)
 
 	{
-	CMassDestructionDesc Desc;
+	CDamageMethodDesc Desc;
 
 	switch (GetAPIForWMDAdj(apiVersion))
 		{
 		case 0:
-			Desc.InitFromArray(g_StdWMDAdjAPI0, g_StdWMDLabelsAPI0, g_iStdWMDMinDamageAPI0);
+			{
+			Desc.InitFromArray(g_StdWMDAdjAPI0, g_StdWMDLabelsAPI0);
 			break;
+			}
 		case 29:
 		default:
-			Desc.InitFromArray(g_StdWMDAdjAPI29, g_StdWMDLabelsAPI29, g_iStdWMDMinDamageAPI29);
+			Desc.InitFromArray(g_StdWMDAdjAPI29, g_StdWMDLabelsAPI29);
 		}
 
 	return Desc;
+	}
+
+Metric CEngineOptions::GetDamageMethodAdj(const SDamageMethodAdj &adj, EDamageMethod iMethod) const
+	{
+	switch (m_iDamageMethodSystem)
+		{
+		case EDamageMethodSystem::dmgMethodSysPhysicalized:
+			{
+			switch (iMethod)
+				{
+				case EDamageMethod::methodCrush:
+					return adj.GetCrush();
+				case EDamageMethod::methodPierce:
+					return adj.GetPierce();
+				case EDamageMethod::methodShred:
+					return adj.GetShred();
+				default:
+					{
+					ASSERT(false);
+					return 1.0;
+					}
+				}
+			}
+		case EDamageMethodSystem::dmgMethodSysWMD:
+			{
+			if (iMethod == EDamageMethod::methodWMD)
+				return adj.GetWMD();
+			ASSERT(false);
+			return 1.0;
+			}
+		default:
+			{
+			ASSERT(false);
+			return 1.0;
+			}
+		}
 	}
 
 //	InitDefaultDamageAdj
@@ -640,93 +906,216 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 	m_bHideRadiationImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_RADIATION_IMMUNE)->IsNil();
 	m_bHideShatterImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_SHATTER_IMMUNE)->IsNil();
 
-	//	Initialize default fortificationAdj for this adventure
-	// 
-	//	Note: empty properties and properties with (double 'NaN) return Nil
-	//	Nil initializes the legacy defaults which were hardcoded up through API57 (2.0a7)
-	//
-	//	We check for a real NaN just in case Tlisp doubles ever get updated to support
-	//	explicit NaN. This code runs once per adventure init so the impact is negligible.
-	//
-	//	We do not support fortification above 1.0, since these cases will be handled by
-	//	other mechanics
-
-	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_SHIP_COMPARTMENT);
-	double rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
-	if (IS_NAN(rValue))
-		rValue = 0.1;
-	if (rValue > 1.0 + g_Epsilon)
+	if (Ctx.GetAPIVersion() >= 58)
 		{
-		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_SHIP_COMPARTMENT, CONSTLIT(" cannot be greater than 1.0"));
-		return false;
-		}
-	m_rFortifiedShipCompartment = rValue;
 
-	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_MULTIHULL_STATION);
-	rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
-	if (IS_NAN(rValue))
-		rValue = 0.1;
-	if (rValue > 1.0 + g_Epsilon)
-		{
-		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_MULTIHULL_STATION, CONSTLIT(" cannot be greater than 1.0"));
-		return false;
-		}
-	m_rFortifiedStationMultihull = rValue;
+		//	Initialize the Damage Method System for this adventure
+		//	This must be done before any initialization or access of the DamageMethod system
 
-	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_STATION);
-	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (IS_NAN(rValue))
-		rValue = 1.0;
-	if (rValue > 1.0 + g_Epsilon)
-		{
-		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_STATION, CONSTLIT(" cannot be greater than 1.0"));
-		return false;
-		}
-	m_rFortifiedStation = rValue;
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_SYSTEM);
+		if (pValue->IsNil())
+			m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;
+		else
+			{
+			CString sDmgSys = pValue->GetStringValue();
+			if (strEquals(sDmgSys, VALUE_CORE_DMG_METHOD_SYSTEM_DAMAGE_METHODS) && false)	//Physicalized damage is not available yet
+				m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysPhysicalized;
+			else if (strEquals(sDmgSys, VALUE_CORE_DMG_METHOD_SYSTEM_WMD))
+				m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;
+			else
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("%s is not a valid value for adventure property %s"), sDmgSys, PROPERTY_CORE_DMG_METHOD_SYSTEM);
+				return false;
+				}
+			}
 
-	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_ARMOR_SEGMENT);
-	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (IS_NAN(rValue))
-		rValue = 1.0;
-	if (rValue > 1.0 + g_Epsilon)
-		{
-		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_ARMOR_SEGMENT, CONSTLIT(" cannot be greater than 1.0"));
-		return false;
-		}
-	m_rFortifiedArmorSlot = rValue;
+		//	We need to initialize the engine defaults for this damage method before loading up any custom
+		//	adventure-level defaults, since InitDamageMethodAdjFromCC requires that the engine default
+		//	is already loaded up
 
-	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_ARMOR);
-	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (IS_NAN(rValue))
-		rValue = 1.0;
-	if (rValue > 1.0 + g_Epsilon)
-		{
-		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_ARMOR, CONSTLIT(" cannot be greater than 1.0"));
-		return false;
-		}
-	m_rFortifiedArmor = rValue;
+		InitDefaultDamageMethods();
 
-	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_SHIELD);
-	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (IS_NAN(rValue))
-		rValue = 1.0;
-	if (rValue > 1.0 + g_Epsilon)
-		{
-		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_SHIELD, CONSTLIT(" cannot be greater than 1.0"));
-		return false;
-		}
-	m_rFortifiedShield = rValue;
+		//	Initialize default Damage Method Fortification Adj for this adventure
+		// 
+		//	Note: empty properties and properties with (double 'NaN) return Nil
+		//	Nil initializes the legacy defaults which were hardcoded up through API57 (2.0a7)
+		//
+		//	We check for a real NaN just in case Tlisp doubles ever get updated to support
+		//	explicit NaN. This code runs once per adventure init so the impact is negligible.
+		//
+		//	We do not support fortification above 1.0, since these cases will be handled by
+		//	other mechanics
 
-	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_MIN_ADJ);
-	rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
-	if (rValue < 0)
-		rValue = 0.0;
-	if (rValue > 1.0 + g_Epsilon)
-		{
-		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_MIN_ADJ, CONSTLIT(" cannot be greater than 1.0"));
-		return false;
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_ITEM);
+
+		//	Items default to 1.0 so their defaults are already correctly initialized
+
+		ICCItem* pItmArmorStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_ITEM_ARMOR);
+		if (pItmArmorStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodItemAdj.Armor, pItmArmorStruct))
+				return false;
+			}
+
+		ICCItem* pItmShieldStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_ITEM_SHIELD);
+		if (pItmShieldStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodItemAdj.Shield, pItmShieldStruct))
+				return false;
+			}
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_SHIP);
+		ICCItem* pShipArmorStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR);
+		//	We use a nil here so that we can just use the same defaults handler later
+		if (!pShipArmorStruct)
+			pShipArmorStruct = CCX.CreateNil();
+
+		ICCItem* pShipArmorCriticalStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_CRITICAL);
+		if (pShipArmorCriticalStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.Critical, pShipArmorCriticalStruct))
+				return false;
+			}
+
+		ICCItem* pShipArmorCriticalUncrewedStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_CRITICAL_UNCREWED);
+		if (pShipArmorCriticalUncrewedStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.CriticalUncrewed, pShipArmorCriticalUncrewedStruct))
+				return false;
+			}
+
+		ICCItem* pShipArmorNonCriticalStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_NONCRITICAL);
+		if (pShipArmorNonCriticalStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.NonCritical, pShipArmorNonCriticalStruct))
+				return false;
+			}
+
+		ICCItem* pShipArmorNonCriticalDestructionStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_NONCRITICAL_DESTRUCTION);
+		if (pShipArmorNonCriticalDestructionStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.NonCriticalDestruction, pShipArmorNonCriticalDestructionStruct))
+				return false;
+			}
+
+		ICCItem* pShipCompartmentStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT);
+		//	We use a nil here so that we can just use the same defaults handler later
+		if (!pShipCompartmentStruct)
+			pShipCompartmentStruct = CCX.CreateNil();
+
+		ICCItem* pShipCompartmentGeneralStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_GENERAL);
+		if (pShipCompartmentGeneralStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Compartment.General, pShipCompartmentGeneralStruct))
+				return false;
+			}
+
+		ICCItem* pShipCompartmentCargoStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_CARGO);
+		if (pShipCompartmentCargoStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Compartment.Cargo, pShipCompartmentCargoStruct))
+				return false;
+			}
+
+		ICCItem* pShipCompartmentMainDriveStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_MAIN_DRIVE);
+		if (pShipCompartmentMainDriveStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Compartment.MainDrive, pShipCompartmentMainDriveStruct))
+				return false;
+			}
+
+		ICCItem* pShipCompartmentUncrewedStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_UNCREWED);
+		if (pShipCompartmentUncrewedStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Compartment.Uncrewed, pShipCompartmentUncrewedStruct))
+				return false;
+			}
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_STATION);
+		ICCItem* pStationHullStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL);
+		//	We use a nil here so that we can just use the same defaults handler later
+		if (!pStationHullStruct)
+			pStationHullStruct = CCX.CreateNil();
+
+		ICCItem* pStationHullSingleStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_SINGLE);
+		if (pStationHullSingleStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Single, pStationHullSingleStruct))
+				return false;
+			}
+
+		ICCItem* pStationHullMultiStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_MULTI);
+		if (pStationHullMultiStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Multi, pStationHullMultiStruct))
+				return false;
+			}
+
+		ICCItem* pStationHullAsteroidStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_ASTEROID);
+		if (pStationHullAsteroidStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Asteroid, pStationHullAsteroidStruct))
+				return false;
+			}
+
+		ICCItem* pStationHullUndergroundStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_UNDERGROUND);
+		if (pStationHullUndergroundStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Underground, pStationHullUndergroundStruct))
+				return false;
+			}
+
+		ICCItem* pStationHullUncrewedStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_UNCREWED);
+		if (pStationHullUncrewedStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Uncrewed, pStationHullUncrewedStruct))
+				return false;
+			}
+
+		ICCItem* pStationHullArmorStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_ARMOR);
+		if (pStationHullArmorStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Armor, pStationHullArmorStruct))
+				return false;
+			}
+
+		//	Set minimum fortification
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_MIN_ADJ);
+		Metric rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
+		if (rValue < 0)
+			rValue = 0.0;
+		if (rValue > 1.0 + g_Epsilon)
+			{
+			Ctx.sError = strCat(PROPERTY_CORE_DMG_METHOD_MIN_ADJ, CONSTLIT(" cannot be greater than 1.0"));
+			return false;
+			}
+		m_rMinFortificationAdj = rValue;
+
+		//	Set minimum damage
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_MIN_DAMAGE);
+		rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
+		if (rValue < 0)
+			rValue = 0.0;
+		m_rDamageMethodAdjMinDamage = rValue;
+
 		}
-	m_rMinFortificationAdj = rValue;
+
+	//	Legacy adventures can only use defaults because the older APIs dont support anything else
+
+	else
+		{
+		m_rMinFortificationAdj = 0.0;
+		m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;
+
+		if (Ctx.GetAPIVersion() >= 29)
+			m_rDamageMethodAdjMinDamage = g_iStdWMDMinDamageAPI29;
+		else
+			m_rDamageMethodAdjMinDamage = g_iStdWMDMinDamageAPI0;
+
+		InitDefaultDamageMethods();
+		}
 
 	return true;
 	}

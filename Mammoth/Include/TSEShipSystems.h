@@ -310,6 +310,7 @@ enum ECompartmentTypes
 	deckGeneral =						0,	//	General interior compartment or deck
 	deckMainDrive =						1,	//	Main drive
 	deckCargo =							2,	//	Cargo hold
+	deckUncrewed =						3,	//	Dense compartment with no crewable spaces
 	};
 
 struct SCompartmentDesc
@@ -340,6 +341,8 @@ struct SCompartmentDesc
 	DWORD fIsAttached:1 = false;			//	TRUE if this is an attached section (a separate CSpaceObject)
 	};
 
+const SCompartmentDesc NULL_COMPARTMENT = SCompartmentDesc();
+
 class CShipInteriorDesc
 	{
 	public:
@@ -351,8 +354,9 @@ class CShipInteriorDesc
 		void DebugPaint (CG32bitImage &Dest, int x, int y, int iRotation, int iScale) const;
 		int GetCount () const { return m_Compartments.GetCount(); }
 		const SCompartmentDesc &GetCompartment (int iIndex) const { return m_Compartments[iIndex]; }
-		Metric GetFortificationAdj () const;
-		Metric GetFortificationMinAdj() const;
+		const SCompartmentDesc &GetDefaultCompartment () const;
+		Metric GetFortificationAdj (EDamageMethod iMethod, ECompartmentTypes iCompartmentType) const;
+		Metric GetFortificationMinAdj (EDamageMethod iMethod) const;
 		int GetHitPoints () const;
 		const TArray<int> &GetPaintOrder (void) const { return m_PaintOrder; }
 		bool HasAttached () const { return (m_fHasAttached ? true : false); }
@@ -367,8 +371,8 @@ class CShipInteriorDesc
 
 		TArray<SCompartmentDesc> m_Compartments;
 		TArray<int> m_PaintOrder;
-		Metric m_rFortified = 0.1;					//	Adjusts WMD adj curve from the WMD0 end
-		Metric m_rMinFortificationAdj = -1.0;		//	Lower cap on fortification adj for WMD curve on this armor
+		SDamageMethodAdj m_Fortification;					//	Adjusts WMD adj curve from the WMD0 end
+		SDamageMethodAdj m_MinFortificationAdj;			//	Lower cap on fortification adj for WMD curve on this armor
 
 		DWORD m_fHasAttached:1;
 		DWORD m_fIsMultiHull:1;
@@ -426,6 +430,7 @@ class CShipInterior
 			};
 
 		void CalcAttachPos (CShip *pShip, const CShipInteriorDesc &Desc, int iIndex, CSpaceObject **retpAttachedTo, CVector *retvPos) const;
+		Metric CalcDamageFortificationAdj (EDamageMethod iMethod, CShip *pShip, const CShipInteriorDesc &Desc, SDamageCtx &Ctx);
 		void DetachChain (CShip *pShip, CSpaceObject *pBreak);
 		bool FindAttachedObject (CSpaceObject *pAttached, int *retiIndex = NULL) const;
 		int FindNextCompartmentHit (SHitTestCtx &HitCtx, int xHitPos, int yHitPos);
