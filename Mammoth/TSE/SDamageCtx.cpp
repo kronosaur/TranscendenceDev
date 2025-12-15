@@ -265,7 +265,7 @@ bool SDamageCtx::IsDamageEventFiring () const
 	//	DamageDesc, and some scripts are allowed to edit iDamage without changing
 	//	the DamageDesc.
 
-	return Damage.IsDamaging() || iDamage || Damage.GetDamageType() == damageNull;
+	return IsDamaging() || iDamage || Damage.GetDamageType() == damageNull;
 	}
 
 void SDamageCtx::SetHint (EDamageHint iHint)
