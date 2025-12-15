@@ -735,28 +735,83 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //						A minimum amount of damage that will be dealt to a target
 //						Default: 0
 //			<Properties>
-//				<Constant id = "core.WMDFortified.{target component}">
-//					(This is a template property, see below for valid property names.)
+//				<Constant id="core.damageMethod.item">
+//					Returns a nested struct specifying for different item types:
+//						armor
+//						shield
+//					The allowed fortification adj for the following damage methods:
+//						WMD (in the WMD system)
 //					Default WMD fortification adj properties for low/no WMD damage.
 //					Accepts a floating point which adjusts the default WMD curve for that target type
 //					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
-//					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
-//						(takes more damage from non-WMD weapons than high-WMD weapons)
-//					The below are the following valid target components:
-//					<Constant id = "core.WMDFortified.ShipCompartment">
-//						Default 0.1
-//					<Constant id = "core.WMDFortified.MultihullStation">
-//						Default 0.1
-//					<Constant id = "core.WMDFortified.Station">
-//						Default 1.0
-//					<Constant id = "core.WMDFortified.ArmorSegment">
-//						Note, refers to the armor segment on a ship's armor Desc.
-//						Default 1.0
-//					<Constant id = "core.WMDFortified.Armor">
-//						Default 1.0
-//					<Constant id = "core.WMDFortified.Shield">
-//						Default 1.0
+//					The value may be 0.0 or lower to confer immunity. May not be greater than 1.0
+//					Default:
+//						armor:
+//							WMD: 1.0
+//						shield:
+//							WMD: 1.0
+//				<Constant id="core.damageMethod.ship">
+//					Returns a nested struct specifying for different target types:
+//						armor
+//							critical
+//							nonCritical
+//							nonCriticalDestruction
+//								Note: this is the base destruction chance at 0hp when
+//								no compartment is present
+//						compartment
+//								Note: uses the default compartment of the ship
+//							general
+//							cargo
+//							mainDrive
+//					The allowed fortification adj for the following damage methods:
+//						WMD (in the WMD system)
+//					Default WMD fortification adj properties for low/no WMD damage.
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
+//					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
+//					The value may be 0.0 or lower to confer immunity. May not be greater than 1.0
+//					Default:
+//						armor:
+//							critical:
+//								WMD: 1.0
+//							nonCritical:
+//								WMD: 1.0
+//							nonCriticalDestruction:
+//								WMD: 0.05
+//						compartment:
+//							general:
+//								WMD: 0.1
+//							cargo:
+//								WMD: 0.1
+//							mainDrive:
+//								WMD: 0.1
+//				<Constant id="core.damageMethod.station">
+//					Returns a nested struct specifying for different target types:
+//						hull
+//							single
+//							multi
+//							asteroid
+//								Note: In the WMD system, this uses the greater of mining or WMD
+//							underground
+//								Note: in the WMD system, this use mining instead of WMD
+//					The allowed fortification adj for the following damage methods:
+//						WMD (in the WMD system)
+//					Default WMD fortification adj properties for low/no WMD damage.
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
+//					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
+//					The value may be 0.0 or lower to confer immunity. May not be greater than 1.0
+//					Default:
+//						hull:
+//							single:
+//								WMD: 1.0
+//							multi:
+//								WMD: 0.1
+//							asteroid:
+//								WMD: 0.1
+//							underground:
+//								WMD: 0.1
 //				<Constant id="core.damageMethod.minAdj">
 //					(This is a template property, see below for valid property names.)
 //					These properties define the minimum adjustment values that can
