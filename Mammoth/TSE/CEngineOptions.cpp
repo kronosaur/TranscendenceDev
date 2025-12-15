@@ -435,6 +435,7 @@ void CEngineOptions::InitDefaultDamageMethods()
 			m_DamageMethodStationAdj.Hull.Underground.Reset();
 			m_DamageMethodStationAdj.Hull.Underground.SetCrush(0.31);
 			m_DamageMethodStationAdj.Hull.Underground.SetPierce(0.31);
+			break;
 			}
 		case EDamageMethodSystem::dmgMethodSysWMD:
 			{
@@ -476,6 +477,7 @@ void CEngineOptions::InitDefaultDamageMethods()
 			m_DamageMethodStationAdj.Hull.Uncrewed.SetWMD(0.1);
 			m_DamageMethodStationAdj.Hull.Underground.Reset();
 			m_DamageMethodStationAdj.Hull.Underground.SetWMD(0.1);
+			break;
 			}
 		default:
 			ASSERT(false);
