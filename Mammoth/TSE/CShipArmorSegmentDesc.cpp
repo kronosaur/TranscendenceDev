@@ -10,6 +10,10 @@
 #define FORTIFICATION_CRUSH_ATTRIB				CONSTLIT("fortificationCrush")
 #define FORTIFICATION_PIERCE_ATTRIB				CONSTLIT("fortificationPierce")
 #define FORTIFICATION_SHRED_ATTRIB				CONSTLIT("fortificationShred")
+#define FORTIFICATION_CRUSH_MIN_ATTRIB			CONSTLIT("fortificationCrushMinAdj")
+#define FORTIFICATION_PIERCE_MIN_ATTRIB			CONSTLIT("fortificationPierceMinAdj")
+#define FORTIFICATION_SHRED_MIN_ATTRIB			CONSTLIT("fortificationShredMinAdj")
+#define FORTIFICATION_WMD_MIN_ATTRIB			CONSTLIT("fortificationWMDMinAdj")
 #define LEVEL_ATTRIB               				CONSTLIT("level")
 #define NON_CRITICAL_ATTRIB						CONSTLIT("nonCritical")
 #define SPAN_ATTRIB               				CONSTLIT("span")
@@ -209,6 +213,8 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (
 
 	bool bHasWMDFortification = Desc.FindAttribute(FORTIFICATION_WMD_ATTRIB);
 	bool bHasPhysicalizedFortification = Desc.FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || Desc.FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || Desc.FindAttribute(FORTIFICATION_SHRED_ATTRIB);
+	bool bHasWMDMinFortify = Desc.FindAttribute(FORTIFICATION_WMD_MIN_ATTRIB);
+	bool bHasPhysicalizedMinFortify = Desc.FindAttribute(FORTIFICATION_CRUSH_MIN_ATTRIB) || Desc.FindAttribute(FORTIFICATION_PIERCE_MIN_ATTRIB) || Desc.FindAttribute(FORTIFICATION_SHRED_MIN_ATTRIB);
 
 	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 		{
@@ -243,16 +249,23 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (
 			m_Fortified.SetShred(DefaultFortification.GetShred());
 			}
 
-		m_MinFortificationAdj = MinFortificationAdj;
-
-		//	Validate
-
-		if (1.0 < m_MinFortificationAdj.GetCrush()
-			|| 1.0 < m_MinFortificationAdj.GetPierce()
-			|| 1.0 < m_MinFortificationAdj.GetShred())
+		if (bHasPhysicalizedMinFortify)
 			{
-			Ctx.sError = CONSTLIT("Min fortification adj cannot be greater than 1.0");
-			return ERR_FAIL;
+			m_MinFortificationAdj.SetCrush(Desc.GetAttributeDoubleDefault(FORTIFICATION_CRUSH_MIN_ATTRIB, MinFortificationAdj.GetCrush()));
+			m_MinFortificationAdj.SetPierce(Desc.GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, MinFortificationAdj.GetPierce()));
+			m_MinFortificationAdj.SetShred(Desc.GetAttributeDoubleDefault(FORTIFICATION_SHRED_MIN_ATTRIB, MinFortificationAdj.GetShred()));
+			}
+		else if (bHasWMDMinFortify)
+			{
+			m_MinFortificationAdj.SetCrush(MinFortificationAdj.GetCrush());
+			m_MinFortificationAdj.SetPierce(Desc.GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, MinFortificationAdj.GetPierce()));
+			m_MinFortificationAdj.SetShred(MinFortificationAdj.GetShred());
+			}
+		else
+			{
+			m_MinFortificationAdj.SetCrush(MinFortificationAdj.GetCrush());
+			m_MinFortificationAdj.SetPierce(MinFortificationAdj.GetPierce());
+			m_MinFortificationAdj.SetShred(MinFortificationAdj.GetShred());
 			}
 		}
 	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
@@ -274,15 +287,12 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (
 		else
 			m_Fortified.SetWMD(DefaultFortification.GetWMD());
 
-		m_MinFortificationAdj = MinFortificationAdj;
-
-		//	Validate
-
-		if (1.0 < m_MinFortificationAdj.GetWMD())
-			{
-			Ctx.sError = CONSTLIT("Min fortification adj cannot be greater than 1.0");
-			return ERR_FAIL;
-			}
+		if (bHasWMDMinFortify)
+			m_MinFortificationAdj.SetWMD(Desc.GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, MinFortificationAdj.GetWMD()));
+		else if (bHasPhysicalizedMinFortify)
+			m_MinFortificationAdj.SetWMD(Desc.GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, MinFortificationAdj.GetWMD()));
+		else
+			m_MinFortificationAdj.SetWMD(MinFortificationAdj.GetWMD());
 		}
 	else
 		{

@@ -11,6 +11,10 @@
 #define FORTIFICATION_CRUSH_ATTRIB				CONSTLIT("fortificationCrushAdj")
 #define FORTIFICATION_PIERCE_ATTRIB				CONSTLIT("fortificationPierceAdj")
 #define FORTIFICATION_SHRED_ATTRIB				CONSTLIT("fortificationShredAdj")
+#define FORTIFICATION_CRUSH_MIN_ATTRIB			CONSTLIT("fortificationCrushMinAdj")
+#define FORTIFICATION_PIERCE_MIN_ATTRIB			CONSTLIT("fortificationPierceMinAdj")
+#define FORTIFICATION_SHRED_MIN_ATTRIB			CONSTLIT("fortificationShredMinAdj")
+#define FORTIFICATION_WMD_MIN_ATTRIB			CONSTLIT("fortificationWMDMinAdj")
 #define LEVEL_ATTRIB               				CONSTLIT("level")
 #define START_AT_ATTRIB            				CONSTLIT("startAt")
 
@@ -208,6 +212,8 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
 		bool bHasWMDFortify = pDesc->FindAttribute(FORTIFICATION_WMD_ATTRIB);
 		bool bHasPhysicalizedFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_ATTRIB);
+		bool bHasWMDMinFortify = pDesc->FindAttribute(FORTIFICATION_WMD_MIN_ATTRIB);
+		bool bHasPhysicalizedMinFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_MIN_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_MIN_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_MIN_ATTRIB);
 
 		if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 			{
@@ -297,6 +303,8 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
 		bool bHasWMDFortify = pDesc->FindAttribute(FORTIFICATION_WMD_ATTRIB);
 		bool bHasPhysicalizedFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_ATTRIB);
+		bool bHasWMDMinFortify = pDesc->FindAttribute(FORTIFICATION_WMD_MIN_ATTRIB);
+		bool bHasPhysicalizedMinFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_MIN_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_MIN_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_MIN_ATTRIB);
 
 		if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 			{
