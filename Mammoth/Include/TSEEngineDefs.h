@@ -126,18 +126,7 @@
 //	Adventure Property <Constant>: Evaluated at bind time. This property defines the default
 //	minimum adjustment that can result from fortification.
 // 
-//	Returns a damageMethod struct 0.0 - 1.0.
-//
-//	The damageMethod struct depends on the damage method system selected using
-//		core.damageMethod.system
-// 
-//	damageMethod: (WMD)
-//		WMD:	the adj to use for WMD
-// 
-//	damageMethod: (physicalizedDamageMethods)
-//		crush:	the adj to use for crush
-//		pierce:	the adj to use for pierce
-//		shred:	the adj to use for shred
+//	Returns a floating point specifying the minimum adjustment allowed in this adventure.
 //
 #define PROPERTY_CORE_DMG_METHOD_MIN_ADJ				CONSTLIT("core.damageMethod.minAdj")
 
