@@ -243,9 +243,24 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				DefaultFortifiedRatios.SetShred(rDefaultShred);
 				}
 
-			DefaultMinFortifiedAdj.SetCrush(rDefaultMinFortifiedAdj);
-			DefaultMinFortifiedAdj.SetPierce(rDefaultMinFortifiedAdj);
-			DefaultMinFortifiedAdj.SetShred(rDefaultMinFortifiedAdj);
+			if (bHasPhysicalizedMinFortify)
+				{
+				DefaultMinFortifiedAdj.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_MIN_ATTRIB, rDefaultMinFortifiedAdj));
+				DefaultMinFortifiedAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, rDefaultMinFortifiedAdj));
+				DefaultMinFortifiedAdj.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_MIN_ATTRIB, rDefaultMinFortifiedAdj));
+				}
+			else if (bHasWMDMinFortify)
+				{
+				DefaultMinFortifiedAdj.SetCrush(rDefaultMinFortifiedAdj);
+				DefaultMinFortifiedAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, rDefaultMinFortifiedAdj));
+				DefaultMinFortifiedAdj.SetShred(rDefaultMinFortifiedAdj);
+				}
+			else
+				{
+				DefaultMinFortifiedAdj.SetCrush(rDefaultMinFortifiedAdj);
+				DefaultMinFortifiedAdj.SetPierce(rDefaultMinFortifiedAdj);
+				DefaultMinFortifiedAdj.SetShred(rDefaultMinFortifiedAdj);
+				}
 			}
 		else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
 			{
@@ -261,7 +276,12 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			else
 				DefaultFortifiedRatios.SetWMD(rDefaultWMD);
 
-			DefaultMinFortifiedAdj.SetWMD(rDefaultMinFortifiedAdj);
+			if (bHasWMDMinFortify)
+				DefaultMinFortifiedAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, rDefaultMinFortifiedAdj));
+			else if (bHasPhysicalizedMinFortify)
+				DefaultMinFortifiedAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, rDefaultMinFortifiedAdj));
+			else
+				DefaultMinFortifiedAdj.SetWMD(rDefaultMinFortifiedAdj);
 			}
 		else
 			{
@@ -334,9 +354,24 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				DefaultFortifiedRatios.SetShred(rDefaultShred);
 				}
 
-			DefaultMinFortifiedAdj.SetCrush(rDefaultMinFortifiedAdj);
-			DefaultMinFortifiedAdj.SetPierce(rDefaultMinFortifiedAdj);
-			DefaultMinFortifiedAdj.SetShred(rDefaultMinFortifiedAdj);
+			if (bHasPhysicalizedMinFortify)
+				{
+				DefaultMinFortifiedAdj.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_MIN_ATTRIB, rDefaultMinFortifiedAdj));
+				DefaultMinFortifiedAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, rDefaultMinFortifiedAdj));
+				DefaultMinFortifiedAdj.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_MIN_ATTRIB, rDefaultMinFortifiedAdj));
+				}
+			else if (bHasWMDMinFortify)
+				{
+				DefaultMinFortifiedAdj.SetCrush(rDefaultMinFortifiedAdj);
+				DefaultMinFortifiedAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, rDefaultMinFortifiedAdj));
+				DefaultMinFortifiedAdj.SetShred(rDefaultMinFortifiedAdj);
+				}
+			else
+				{
+				DefaultMinFortifiedAdj.SetCrush(rDefaultMinFortifiedAdj);
+				DefaultMinFortifiedAdj.SetPierce(rDefaultMinFortifiedAdj);
+				DefaultMinFortifiedAdj.SetShred(rDefaultMinFortifiedAdj);
+				}
 			}
 		else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
 			{
@@ -352,7 +387,12 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			else
 				DefaultFortifiedRatios.SetWMD(rDefaultWMD);
 
-			DefaultMinFortifiedAdj.SetWMD(rDefaultMinFortifiedAdj);
+			if (bHasWMDMinFortify)
+				DefaultMinFortifiedAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, rDefaultMinFortifiedAdj));
+			else if (bHasPhysicalizedMinFortify)
+				DefaultMinFortifiedAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, rDefaultMinFortifiedAdj));
+			else
+				DefaultMinFortifiedAdj.SetWMD(rDefaultMinFortifiedAdj);
 			}
 		else
 			{
