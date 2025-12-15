@@ -213,8 +213,8 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (
 
 	bool bHasWMDFortification = Desc.FindAttribute(FORTIFICATION_WMD_ATTRIB);
 	bool bHasPhysicalizedFortification = Desc.FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || Desc.FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || Desc.FindAttribute(FORTIFICATION_SHRED_ATTRIB);
-	bool bHasWMDMinFortify = Desc.FindAttribute(FORTIFICATION_WMD_MIN_ATTRIB);
-	bool bHasPhysicalizedMinFortify = Desc.FindAttribute(FORTIFICATION_CRUSH_MIN_ATTRIB) || Desc.FindAttribute(FORTIFICATION_PIERCE_MIN_ATTRIB) || Desc.FindAttribute(FORTIFICATION_SHRED_MIN_ATTRIB);
+	bool bHasWMDMinFortify = false && Desc.FindAttribute(FORTIFICATION_WMD_MIN_ATTRIB);
+	bool bHasPhysicalizedMinFortify = false && Desc.FindAttribute(FORTIFICATION_CRUSH_MIN_ATTRIB) || Desc.FindAttribute(FORTIFICATION_PIERCE_MIN_ATTRIB) || Desc.FindAttribute(FORTIFICATION_SHRED_MIN_ATTRIB);
 
 	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 		{
