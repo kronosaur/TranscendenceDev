@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							58;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
-constexpr DWORD SYSTEM_SAVE_VERSION =					217;
+constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 
 //	Uncomment out the following define when building a stable release
 
@@ -1610,4 +1610,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					217;
 //  217: 2.0 Alpha 8
 //		Switch CInstalledDevice m_rActivateDelay from WORD to double
 //		Switch CInstalledDevice m_i
+//
+//	218: 2.0 Alpha 8
+//		Add DamageMethodCrushAdj to SExtraDamage in DamageDesc
+//		Add DamageMethodPierceAdj to SExtraDamage in DamageDesc
+//		Add DamageMethodShredAdj to SExtraDamage in DamageDesc
 //

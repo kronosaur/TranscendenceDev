@@ -266,7 +266,11 @@ class DamageDesc
 			DWORD ShatterDamage:3 = 0;				//	Shatter damage
 			DWORD fMiningScan:1 = 0;				//	Scans for ore instead of actually mining it
 				//10 bits
-			DWORD dwSpare2:22 = 0;
+			DWORD DamageMethodCrushAdj : 3 = 0;		//	Adj level for damage method crush
+			DWORD DamageMethodPierceAdj : 3 = 0;	//	Adj level for damage method pierce
+			DWORD DamageMethodShredAdj : 3 = 0;		//	Adj level for damage method shred
+				//19 bits
+			DWORD dwSpare2:13 = 0;
 				//32 bits
 
 			//	Extra damage 3 (DWORD)
@@ -280,6 +284,7 @@ class DamageDesc
 		void AddBonus (int iBonus) { m_iBonus += iBonus; }
 		static int ConvertOldMomentum (int iValue);
 		static int ConvertToOldMomentum (int iValue);
+		int GetDamageMethodHelper (EDamageMethod iMethod) const;
 		static int InterpolateValue (int iFrom, int iTo, Metric rSlider);
 		ALERROR LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, const CString &sArg);
 		ALERROR ParseTerm (SDesignLoadCtx &Ctx, char *pPos, CString *retsKeyword, CString *retsValue, char **retpPos);

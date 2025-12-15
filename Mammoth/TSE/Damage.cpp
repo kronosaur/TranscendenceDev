@@ -281,6 +281,29 @@ int DamageDesc::ConvertToOldMomentum (int iValue)
 	return mathRound(sqrt(rImpulse / 250.0));
 	}
 
+//	GetDamageMethodHelper
+// 
+//	Internal helper to retrieve the correct damage method level from
+//	m_Extra
+//
+int DamageDesc::GetDamageMethodHelper(EDamageMethod iMethod) const
+	{
+	switch (iMethod)
+		{
+		case EDamageMethod::methodCrush:
+			return (int)m_sExtra.DamageMethodCrushAdj;
+		case EDamageMethod::methodPierce:
+			return (int)m_sExtra.DamageMethodPierceAdj;
+		case EDamageMethod::methodShred:
+			return (int)m_sExtra.DamageMethodShredAdj;
+		case EDamageMethod::methodWMD:
+			return (int)m_sExtra.MassDestructionAdj;
+		default:
+			ASSERT(false);	//	Error/not implemented
+		}
+	return 0;
+	}
+
 SpecialDamageTypes DamageDesc::ConvertToSpecialDamageTypes (const CString &sValue)
 
 //	ConvertToSpecialDamageTypes
@@ -446,7 +469,7 @@ Metric DamageDesc::GetDamageValue (DWORD dwFlags) const
 int DamageDesc::GetDamageMethodAdj (EDamageMethod iMethod) const
 
 	{
-	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetStochasticDamageMethodAdj(m_sExtra.MassDestructionAdj);
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetStochasticDamageMethodAdj(GetDamageMethodHelper(iMethod));
 	}
 
 //  GetDamageMethodAdjReal
@@ -456,7 +479,7 @@ int DamageDesc::GetDamageMethodAdj (EDamageMethod iMethod) const
 Metric DamageDesc::GetDamageMethodAdjReal(EDamageMethod iMethod) const
 
 	{
-	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetDamageMethodAdj(m_sExtra.MassDestructionAdj);
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetDamageMethodAdj(GetDamageMethodHelper(iMethod));
 	}
 
 //  GetMassDestructionAdjFromValue
@@ -485,7 +508,7 @@ Metric DamageDesc::GetMassDestructionAdjRealFromValue(EDamageMethod iMethod, int
 //
 CString DamageDesc::GetDamageMethodDisplayLevel (EDamageMethod iMethod) const
 	{
-	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetDamageMethodLabel(m_sExtra.MassDestructionAdj);
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetDamageMethodLabel(GetDamageMethodHelper(iMethod));
 	}
 
 //	GetDamageMethodDisplayStr
@@ -494,7 +517,7 @@ CString DamageDesc::GetDamageMethodDisplayLevel (EDamageMethod iMethod) const
 //
 CString DamageDesc::GetDamageMethodDisplayStr(EDamageMethod iMethod) const
 	{
-	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetDamageMethodDisplay(m_sExtra.MassDestructionAdj);
+	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetDamageMethodDisplay(GetDamageMethodHelper(iMethod));
 	}
 
 //  GetDamageMethodLevel
@@ -504,7 +527,7 @@ CString DamageDesc::GetDamageMethodDisplayStr(EDamageMethod iMethod) const
 int DamageDesc::GetDamageMethodLevel (EDamageMethod iMethod) const
 
 	{
-	return m_sExtra.MassDestructionAdj;
+	return GetDamageMethodHelper(iMethod);
 	}
 
 //  GetDamageMethodLevel
@@ -587,11 +610,36 @@ int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags) co
 		case specialTimeStop:
 			return m_sExtra.TimeStopDamage;
 
+		case specialCrush:
+		case specialPierce:
+		case specialShred:
 		case specialWMD:
+			{
+			EDamageMethod iMethod;
+
+			switch (iSpecial)
+				{
+				case specialCrush:
+					iMethod = EDamageMethod::methodCrush;
+					break;
+				case specialPierce:
+					iMethod = EDamageMethod::methodPierce;
+					break;
+				case specialShred:
+					iMethod = EDamageMethod::methodShred;
+					break;
+				case specialWMD:
+					iMethod = EDamageMethod::methodWMD;
+					break;
+				default:
+					iMethod = EDamageMethod::methodError;
+				}
+
 			if (dwFlags & flagSpecialAdj)
-				return GetDamageMethodAdj(EDamageMethod::methodWMD);
+				return GetDamageMethodAdj(iMethod);
 			else
-				return m_sExtra.MassDestructionAdj;
+				return GetDamageMethodHelper(iMethod);
+			}
 
 		default:
 			return 0;
@@ -689,6 +737,9 @@ void DamageDesc::InterpolateTo (const DamageDesc &End, Metric rSlider)
 	m_sExtra.DeviceDamage = InterpolateValue(m_sExtra.DeviceDamage, End.m_sExtra.DeviceDamage, rSlider);
 	m_sExtra.MiningAdj = InterpolateValue(m_sExtra.MiningAdj, End.m_sExtra.MiningAdj, rSlider);
 	m_sExtra.ShatterDamage = InterpolateValue(m_sExtra.ShatterDamage, End.m_sExtra.ShatterDamage, rSlider);
+	m_sExtra.DamageMethodCrushAdj = InterpolateValue(m_sExtra.DamageMethodCrushAdj, End.m_sExtra.DamageMethodCrushAdj, rSlider);
+	m_sExtra.DamageMethodPierceAdj = InterpolateValue(m_sExtra.DamageMethodPierceAdj, End.m_sExtra.DamageMethodPierceAdj, rSlider);
+	m_sExtra.DamageMethodShredAdj = InterpolateValue(m_sExtra.DamageMethodShredAdj, End.m_sExtra.DamageMethodShredAdj, rSlider);
 	m_sExtra.ShieldDamage = (BYTE)InterpolateValue(m_sExtra.ShieldDamage, End.m_sExtra.ShieldDamage, rSlider);
 	m_sExtra.ArmorDamage = (BYTE)InterpolateValue(m_sExtra.ArmorDamage, End.m_sExtra.ArmorDamage, rSlider);
 	m_sExtra.TimeStopDamage = (BYTE)InterpolateValue(m_sExtra.TimeStopDamage, End.m_sExtra.TimeStopDamage, rSlider);
@@ -786,6 +837,18 @@ void DamageDesc::SetSpecialDamage (SpecialDamageTypes iSpecial, int iLevel)
 
 		case specialWMD:
 			m_sExtra.MassDestructionAdj = Max(0, Min(iLevel, MAX_INTENSITY));
+			break;
+
+		case specialCrush:
+			m_sExtra.DamageMethodCrushAdj = Max(0, Min(iLevel, MAX_INTENSITY));
+			break;
+
+		case specialPierce:
+			m_sExtra.DamageMethodPierceAdj = Max(0, Min(iLevel, MAX_INTENSITY));
+			break;
+
+		case specialShred:
+			m_sExtra.DamageMethodShredAdj = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 		}
 	}

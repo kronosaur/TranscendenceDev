@@ -5374,7 +5374,7 @@ void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 
 		//	WMD
 
-		if (Damage.GetMassDestructionLevel() > 0)
+		if (Damage.GetDamageMethodAdjReal() > 0)
 			{
 			CString sWMDText = Damage.GetMassDestructionDisplayStr();
 			if (sWMDText.GetLength())
