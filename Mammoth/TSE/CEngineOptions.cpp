@@ -918,7 +918,7 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 		else
 			{
 			CString sDmgSys = pValue->GetStringValue();
-			if (strEquals(sDmgSys, VALUE_CORE_DMG_METHOD_SYSTEM_DAMAGE_METHODS))
+			if (strEquals(sDmgSys, VALUE_CORE_DMG_METHOD_SYSTEM_DAMAGE_METHODS) && false)	//Physicalized damage is not available yet
 				m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysPhysicalized;
 			else if (strEquals(sDmgSys, VALUE_CORE_DMG_METHOD_SYSTEM_WMD))
 				m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;

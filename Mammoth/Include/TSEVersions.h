@@ -757,35 +757,49 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //						Default 1.0
 //					<Constant id = "core.WMDFortified.Shield">
 //						Default 1.0
-//				<Constant id = "core.WMDFortified.[Max|Min]Adj}">
+//				<Constant id="core.damageMethod.minAdj">
 //					(This is a template property, see below for valid property names.)
-//					These properties define the minimum and maximum adjustment values that can
+//					These properties define the minimum adjustment values that can
 //					result due to applying WMD fortification adjustment.
-//					<Constant id = "core.WMDFortified.DefaultMaxAdj">
-//						Default Infinity
-//						Must be higher than MinAdj
-//						Cannot be lower than 0.0
 //					<Constant id = "core.WMDFortified.DefaultMinAdj">
 //						Default 0.0
-//						Must be lower than MaxAdj
+//						Cannot be greater than 1.0
 //						Cannot be lower than 0.0
+//				<Constant id="core.damageMethod.minDamage">
+//					The min damage dealt after WMD adjustment
+//					Accepts a floating point value for stochastic damage
+//					Default 0.0
+//				<Constant id="core.damageMethod.system">
+//					The damage method system to use.
+//					Currently only WMD is available.
+//					Default 'WMD
 //		<ItemType>
 //			<Armor>
-//				fortificationAdj: (float)
+//				fortificationWMDAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
 //					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
 //					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
 //						(takes more damage from non-WMD weapons than high-WMD weapons)
 //					Default: reads adventure default (Default: 1.0)
+//				fortificationWMDMinAdj: (float)
+//					Accepts a floating point which caps the minimum WMD adjustment from fortificationWMDAdj
+//					This allows a guaranteed amount of chip damage if the WMD adjustment is too low.
+//					This value must be between 0.0 and 1.0 (inclusive)
+//					Default: reads adventure default (Default: 0.0)
 //			<Shield>
-//				fortificationAdj: (float)
+//				fortificationWMDAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
 //					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
 //					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
 //						(takes more damage from non-WMD weapons than high-WMD weapons)
 //					Default: reads adventure default (Default: 1.0)
+//				fortificationWMDMinAdj: (float)
+//					Accepts a floating point which caps the minimum WMD adjustment from fortificationWMDAdj
+//					This allows a guaranteed amount of chip damage if the WMD adjustment is too low.
+//					This value must be between 0.0 and 1.0 (inclusive)
+//					Default: reads adventure default (Default: 0.0)
 //			<Weapon>
 //				damage: (str: damage desc)
 //					damage changes:
@@ -806,23 +820,33 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //							damage output, like mining, to function correctly)
 //		<ShipClass>
 //			<Armor>
-//				fortificationAdj: (float)
+//				fortificationWMDAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
 //					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
 //					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
 //						(takes more damage from non-WMD weapons than high-WMD weapons)
 //					Default: reads adventure default (Default: 1.0)
+//				fortificationWMDMinAdj: (float)
+//					Accepts a floating point which caps the minimum WMD adjustment from fortificationWMDAdj
+//					This allows a guaranteed amount of chip damage if the WMD adjustment is too low.
+//					This value must be between 0.0 and 1.0 (inclusive)
+//					Default: reads adventure default (Default: 0.0)
 //			<Hull>
-//				fortificationAdj: (float)
+//				fortificationWMDAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
 //					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
 //					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
 //						(takes more damage from non-WMD weapons than high-WMD weapons)
 //					Default: reads adventure default (Default: 1.0)
+//				fortificationWMDMinAdj: (float)
+//					Accepts a floating point which caps the minimum WMD adjustment from fortificationWMDAdj
+//					This allows a guaranteed amount of chip damage if the WMD adjustment is too low.
+//					This value must be between 0.0 and 1.0 (inclusive)
+//					Default: reads adventure default (Default: 0.0)
 //		<StationType>
-//			fortificationAdj: (float)
+//			fortificationWMDAdj: (float)
 //				Accepts a floating point which adjusts the default WMD curve for that target type
 //				by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
 //				to the modified scale WMD0 (supplied number) to WMD7 (1.0).
@@ -830,6 +854,11 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //						(takes more damage from non-WMD weapons than high-WMD weapons)
 //				Default: reads adventure default (Default: 1.0 for single-null stations, 0.1 for multihull/asteroid*/cavern*)
 //					*asteroid and *cavern hull types use mining damage for the calculations instead of or alongside WMD
+//			fortificationWMDMinAdj: (float)
+//				Accepts a floating point which caps the minimum WMD adjustment from fortificationWMDAdj
+//				This allows a guaranteed amount of chip damage if the WMD adjustment is too low.
+//				This value must be between 0.0 and 1.0 (inclusive)
+//				Default: reads adventure default (Default: 0.0)
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
