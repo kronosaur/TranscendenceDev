@@ -304,12 +304,13 @@
 													#	WMD0	WMD1	WMD2	WMD3	WMD4	WMD5	WMD6	WMD7
 			-->
 
-			<WMDAdj
-				wmdAdj=								"	0.10,	0.25,	0.32,	0.40,	0.50,	0.63,	0.80,	1.0"
-				wmdDisplay=							"			2,		3,		4,		5,		6,		8,		10"
-				wmdDisplayPrefix=					"WMD "
-				wmdMinDamage=						"0"
-				/>
+			<DamageMethodAdj>
+				<WMD
+					damageMethodAdj=				"	0.10,	0.25,	0.32,	0.40,	0.50,	0.63,	0.80,	1.0"
+					damageMethodDisplay=			"			2,		3,		4,		5,		6,		8,		10"
+					damageMethodDisplayPrefix=		"WMD "
+					/>
+			</DamageMethodAdj>
 			
 		</Constants>
 	</AdventureDesc>

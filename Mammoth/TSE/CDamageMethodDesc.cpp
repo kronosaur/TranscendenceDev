@@ -5,9 +5,9 @@
 
 #include "PreComp.h"
 
-#define WMD_ADJ_ATTRIB						CONSTLIT("wmdAdj")
-#define WMD_DISPLAY_ATTRIB					CONSTLIT("wmdDisplay")
-#define WMD_DISPLAY_PREFIX_ATTRIB			CONSTLIT("wmdDisplayPrefix")
+#define DAMAGE_METHOD_ADJ_ATTRIB						CONSTLIT("damageMethodAdj")
+#define DAMAGE_METHOD_DISPLAY_ATTRIB					CONSTLIT("damageMethodDisplay")
+#define DAMAGE_METHOD_DISPLAY_PREFIX_ATTRIB				CONSTLIT("damageMethodDisplayPrefix")
 
 //	GetDamageMethodAdj
 // 
@@ -198,19 +198,19 @@ ALERROR CDamageMethodDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &
 
 	//	Collect all attributes
 
-	if (!XMLDesc.FindAttribute(WMD_ADJ_ATTRIB, &sAdj))
+	if (!XMLDesc.FindAttribute(DAMAGE_METHOD_ADJ_ATTRIB, &sAdj))
 		{
 		Ctx.sError = CONSTLIT("Invalid WMDLevels definition: wmdAdj missing.");
 		return ERR_FAIL;
 		}
 
-	if (!XMLDesc.FindAttribute(WMD_DISPLAY_ATTRIB, &sLabels))
+	if (!XMLDesc.FindAttribute(DAMAGE_METHOD_DISPLAY_ATTRIB, &sLabels))
 		{
 		Ctx.sError = CONSTLIT("Invalid WMDLevels definition: wmdAdj missing.");
 		return ERR_FAIL;
 		}
 
-	if (!XMLDesc.FindAttribute(WMD_DISPLAY_PREFIX_ATTRIB, &sPrefix))
+	if (!XMLDesc.FindAttribute(DAMAGE_METHOD_DISPLAY_PREFIX_ATTRIB, &sPrefix))
 		sPrefix = m_sAttribPrefix;
 
 	return InitFromWMDLevel(Ctx, sAdj, sLabels, sPrefix);
