@@ -902,7 +902,6 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 		return ERR_FAIL;
 		}
 
-
 	//	Load the weapon suppress
 
 	if (error = pShield->m_WeaponSuppress.InitFromXML(pDesc->GetAttribute(WEAPON_SUPPRESS_ATTRIB)))
