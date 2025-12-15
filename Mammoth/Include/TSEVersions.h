@@ -782,11 +782,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
 //						(takes more damage from non-WMD weapons than high-WMD weapons)
 //					Default: reads adventure default (Default: 1.0)
-//				fortificationWMDMinAdj: (float)
-//					Accepts a floating point which caps the minimum WMD adjustment from fortificationWMDAdj
-//					This allows a guaranteed amount of chip damage if the WMD adjustment is too low.
-//					This value must be between 0.0 and 1.0 (inclusive)
-//					Default: reads adventure default (Default: 0.0)
 //			<Shield>
 //				fortificationWMDAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
@@ -795,11 +790,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
 //						(takes more damage from non-WMD weapons than high-WMD weapons)
 //					Default: reads adventure default (Default: 1.0)
-//				fortificationWMDMinAdj: (float)
-//					Accepts a floating point which caps the minimum WMD adjustment from fortificationWMDAdj
-//					This allows a guaranteed amount of chip damage if the WMD adjustment is too low.
-//					This value must be between 0.0 and 1.0 (inclusive)
-//					Default: reads adventure default (Default: 0.0)
 //			<Weapon>
 //				damage: (str: damage desc)
 //					damage changes:
@@ -827,11 +817,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
 //						(takes more damage from non-WMD weapons than high-WMD weapons)
 //					Default: reads adventure default (Default: 1.0)
-//				fortificationWMDMinAdj: (float)
-//					Accepts a floating point which caps the minimum WMD adjustment from fortificationWMDAdj
-//					This allows a guaranteed amount of chip damage if the WMD adjustment is too low.
-//					This value must be between 0.0 and 1.0 (inclusive)
-//					Default: reads adventure default (Default: 0.0)
 //			<Hull>
 //				fortificationWMDAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
@@ -840,11 +825,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
 //						(takes more damage from non-WMD weapons than high-WMD weapons)
 //					Default: reads adventure default (Default: 1.0)
-//				fortificationWMDMinAdj: (float)
-//					Accepts a floating point which caps the minimum WMD adjustment from fortificationWMDAdj
-//					This allows a guaranteed amount of chip damage if the WMD adjustment is too low.
-//					This value must be between 0.0 and 1.0 (inclusive)
-//					Default: reads adventure default (Default: 0.0)
 //		<StationType>
 //			fortificationWMDAdj: (float)
 //				Accepts a floating point which adjusts the default WMD curve for that target type
@@ -854,11 +834,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //						(takes more damage from non-WMD weapons than high-WMD weapons)
 //				Default: reads adventure default (Default: 1.0 for single-null stations, 0.1 for multihull/asteroid*/cavern*)
 //					*asteroid and *cavern hull types use mining damage for the calculations instead of or alongside WMD
-//			fortificationWMDMinAdj: (float)
-//				Accepts a floating point which caps the minimum WMD adjustment from fortificationWMDAdj
-//				This allows a guaranteed amount of chip damage if the WMD adjustment is too low.
-//				This value must be between 0.0 and 1.0 (inclusive)
-//				Default: reads adventure default (Default: 0.0)
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
