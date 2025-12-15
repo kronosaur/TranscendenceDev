@@ -1935,8 +1935,13 @@ void CShip::DamageExternalDevice (int iDev, SDamageCtx &Ctx)
 	//	If we're already damaged, then nothing more can happen
 	//	NOTE: This can only happen to external devices. We need this check 
 	//	because the overlay code relies on us to check.
+	//	
+	//	Additionally, null damage explicitly requires deviceDamage to proc this logic
 
-	if (pDevice->IsEmpty() || pDevice->IsDamaged() || !pDevice->IsExternal())
+	if (pDevice->IsEmpty()
+		|| pDevice->IsDamaged()
+		|| !pDevice->IsExternal()
+		|| (!Ctx.IsDeviceDamaged() && Ctx.Damage.GetDamageType() == damageNull))
 		return;
 
 	//	See if we hit the device
@@ -4414,12 +4419,13 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Short-circuit, only if there is absolutely nothing our
 	//	damage desc lets us do
 	// 
-	//	Null damage always is allowed through specifically for scripts
-	//	to fire
+	//	Null damage always is allowed through specifically for non-hostile
+	//	events to fire
 
 	bool bIsHostile = Ctx.Damage.IsHostile();
+	bool bFireDamageEvents = Ctx.IsDamageEventFiring();
 
-	if ((Ctx.iDamage == 0 && !bIsHostile && Ctx.Damage.GetDamageType() != damageNull) || GetSystem() == NULL)
+	if (!bFireDamageEvents || GetSystem() == NULL)
 		return damageNoDamage;
 
 	bool bIsPlayer = IsPlayer();
@@ -4528,9 +4534,9 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Ignore devices with overlays because they get damaged in the overlay
 	//	damage section.
 	// 
-	//	Skip for Null or 0 damage.
+	//	Skip for 0 damage, but allow null damage through to allow DamageExternalDevice to handle things.
 
-	if (Ctx.iDamage && Ctx.Damage.GetDamageType() != damageNull)
+	if (bFireDamageEvents)
 		{
 		for (CDeviceItem DeviceItem : GetDeviceSystem())
 			{

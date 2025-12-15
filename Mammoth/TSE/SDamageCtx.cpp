@@ -247,6 +247,32 @@ void SDamageCtx::InitDamageEffects (const DamageDesc &DamageArg)
 	m_bTimeStop = (DamageArg.GetTimeStopDamageLevel() > 0);
 	}
 
+//	IsDamaging
+// 
+//	Check if this damage Ctx should be treated as a damaging effect
+//
+bool SDamageCtx::IsDamaging () const
+	{
+	//	We check iDamage explicitly because we may be initialized with an invalid
+	//	DamageDesc, and some scripts are allowed to edit iDamage without changing
+	//	the DamageDesc.
+
+	return Damage.IsDamaging() || (iDamage && Damage.GetDamageType() != damageNull);
+	}
+
+//	IsDamageEventFiring
+// 
+//	Check if this damage Ctx should run scripts for damaging effects
+//
+bool SDamageCtx::IsDamageEventFiring () const
+	{
+	//	We check iDamage explicitly because we may be initialized with an invalid
+	//	DamageDesc, and some scripts are allowed to edit iDamage without changing
+	//	the DamageDesc.
+
+	return IsDamaging() || iDamage || Damage.GetDamageType() == damageNull;
+	}
+
 void SDamageCtx::SetHint (EDamageHint iHint)
 
 //	SetHint

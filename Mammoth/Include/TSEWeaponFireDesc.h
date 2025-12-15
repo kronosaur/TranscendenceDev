@@ -168,6 +168,7 @@ class DamageDesc
 		bool HasImpulseDamage (Metric *retrImpulse = NULL) const;
 		bool HasMiningDamage (void) const { return (m_Extra.MiningAdj > 0); }
 		void InterpolateTo (const DamageDesc &End, Metric rSlider);
+		bool IsDamaging () const;
 		bool IsAutomatedWeapon (void) const { return (m_Extra.fAutomatedWeapon ? true : false); }
 		bool IsEmpty (void) const { return (m_Damage.IsEmpty() && m_iType == damageNull); }
 		bool IsEnergyDamage (void) const;
@@ -340,7 +341,7 @@ struct SDamageCtx
 		static constexpr int DAMAGE_ADJ_HINT_THRESHOLD = 25;
 		static constexpr int WMD_HINT_THRESHOLD = 60;
 
-		SDamageCtx (void);
+		SDamageCtx ();
 		SDamageCtx (CSpaceObject *pObjHitArg, 
 				CWeaponFireDesc &DescArg, 
 				const CItemEnhancementStack *pEnhancementsArg, 
@@ -351,7 +352,7 @@ struct SDamageCtx
 				const CVector &vHitPosArg,
 				int iDamageArg = -1);
 		SDamageCtx (const DamageDesc &DamageArg);
-		~SDamageCtx (void);
+		~SDamageCtx ();
 
 		int CalcDamageMethodAdjDamage (EDamageMethod iMethod, Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0) const;
 		int CalcDamageMethodAdjDamageFromLevel (EDamageMethod iMethod, int iLevel, Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0) const;
@@ -367,6 +368,8 @@ struct SDamageCtx
 		Metric CalcDamageMethodFortifiedAdj (EDamageMethod iMethod, Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0, Metric rMaxAdj = R_INF) const;
 		static Metric CalcDamageMethodFortifiedAdjFromLevel (EDamageMethod iMethod, int iLevel, Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0, Metric rMaxAdj = R_INF);
 		bool IsBlinded (void) const { return m_bBlind; }
+		bool IsDamaging () const;
+		bool IsDamageEventFiring () const;
 		bool IsDeviceDamaged (void) const { return m_bDeviceDamage; }
 		bool IsDeviceDisrupted (void) const { return m_bDeviceDisrupt; }
 		bool IsDisintegrated (void) const { return m_bDisintegrate; }
