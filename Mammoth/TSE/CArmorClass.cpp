@@ -762,14 +762,21 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	//	Adjust for out item-level WMD Fortification:
 
 	Metric rFortification = Ctx.rArmorExternFortification;
-	if (m_rFortification < 0.0)
+	Metric rFortificationAdjMin = Ctx.rArmorExternMinFortification;
+
+	//	Stacked fortification modifiers are multiplied together
+
+	if (IS_NAN(m_rFortification))
 		rFortification *= g_pUniverse->GetEngineOptions().GetDefaultFortifiedArmor();
 	else
 		rFortification *= m_rFortification;
 
-	Metric rFortificationAdj = Ctx.CalcWMDFortificationAdj(rFortification);
+	if (m_rMinFortificationAdj < 0)
+		rFortificationAdjMin *= g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj();
+	else
+		rFortificationAdjMin *= m_rMinFortificationAdj;
 
-	int iDamage = mathAdjust(Ctx.iDamage, mathRound(100 * rFortificationAdj));
+	int iDamage = Ctx.CalcWMDAdjustedDamage(rFortification, rFortificationAdjMin);
 
 	//	Adjust for special armor damage:
 	//
@@ -1504,7 +1511,7 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	pArmor->m_iArmorCompleteBonus = pDesc->GetAttributeIntegerBounded(COMPLETE_BONUS_ATTRIB, 0);
 	pArmor->m_iHPBonusPerCharge = pDesc->GetAttributeIntegerBounded(HP_BONUS_PER_CHARGE_ATTRIB, 0, -1, 0);
 	pArmor->m_iBalanceAdj = pDesc->GetAttributeIntegerBounded(BALANCE_ADJ_ATTRIB, -200, 200, 0);
-	pArmor->m_rFortification = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
+	pArmor->m_rFortification = pDesc->GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, R_NAN);
 
 	//	Regen
 

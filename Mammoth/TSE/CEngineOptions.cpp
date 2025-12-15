@@ -222,6 +222,28 @@ static const TArray<int> g_StdInternalDeviceDamageModifierAPI58 =
 static constexpr int g_iInternalChanceToHitAPI0 = 50;
 static constexpr int g_iInternalChanceToHitAPI58 = 100;
 
+//	Mass Destruction (WMD) Adj ----------------------------------------------
+
+static const TArray<double> g_StdWMDAdjAPI0 =
+//		0		1		2		3		4		5		6		7
+	{	0.0,	0.04,	0.1,	0.2,	0.34,	0.52,	0.74,	1.0};
+
+static const TArray<const char*> g_StdWMDLabelsAPI0 =
+//		0		1		2		3		4		5		6		7
+	{	"",		"1",	"2",	"3",	"4",	"5",	"7",	"10"};
+
+static constexpr int g_iStdWMDMinDamageAPI0 = 1;
+
+static const TArray<double> g_StdWMDAdjAPI29 =
+//		0		1		2		3		4		5		6		7
+	{	0.10,	0.25,	0.32,	0.40,	0.50,	0.63,	0.80,	1.0};
+
+static const TArray<const char*> g_StdWMDLabelsAPI29 =
+//		0		1		2		3		4		5		6		7
+	{	"",		"2",	"3",	"4",	"5",	"6",	"8",	"10"};
+
+static constexpr int g_iStdWMDMinDamageAPI29 = 0;
+
 //	Helpers -----------------------------------------------------------------
 
 //	Translates actual API versions into the known versions
@@ -260,6 +282,18 @@ int GetAPIForInternalDeviceDamageMaxLevel (int apiVersion)
 	{
 	if (apiVersion >= 58)
 		return 58;
+	else
+		return 0;
+	}
+
+//	Translates actual API versions into the known versions
+//	used for the WMD Adj system
+//
+int GetAPIForWMDAdj (int apiVersion)
+
+	{
+	if (apiVersion >= 29)
+		return 29;
 	else
 		return 0;
 	}
@@ -307,6 +341,11 @@ void CEngineOptions::InitDefaultGlobals ()
 	m_bCustomExternalDeviceDamageMaxLevels = false;
 	m_InternalDeviceDamageMaxLevels = GetDefaultInternalDeviceDamageLevels(m_iDefaultForAPIVersion);
 	m_bCustomInternalDeviceDamageMaxLevels = false;
+
+	//	Initialize WMD adj tables
+
+	m_MassDestruction = GetDefaultWMDAdj(m_iDefaultForAPIVersion);
+	m_bCustomMassDestruction = false;
 	}
 
 //	Initiate defaults where necessary based on whatever API version we need
@@ -444,6 +483,22 @@ bool CEngineOptions::InitInternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& C
 	return true;
 	}
 
+//	InitMassDestructionDescFromXML
+//
+//	Initializes from XML.
+//
+bool CEngineOptions::InitMassDestructionDescFromXML(SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
+	{
+	m_bCustomMassDestruction = true;
+
+	if (m_MassDestruction.InitFromXML(Ctx, XMLDesc) != NOERROR)
+		return false;
+
+	//	Success!
+
+	return true;
+	}
+
 //	GetDefaultMiningMaxOreLevels
 //
 //	Returns the default table basedon API version
@@ -516,6 +571,28 @@ CDeviceDamageLevelDesc CEngineOptions::GetDefaultInternalDeviceDamageLevels (int
 	return Desc;
 	}
 
+//	GetDefaultWMDAdj
+//
+//	Returns the default table based on API version
+//
+CMassDestructionDesc CEngineOptions::GetDefaultWMDAdj (int apiVersion)
+
+	{
+	CMassDestructionDesc Desc;
+
+	switch (GetAPIForWMDAdj(apiVersion))
+		{
+		case 0:
+			Desc.InitFromArray(g_StdWMDAdjAPI0, g_StdWMDLabelsAPI0, g_iStdWMDMinDamageAPI0);
+			break;
+		case 29:
+		default:
+			Desc.InitFromArray(g_StdWMDAdjAPI29, g_StdWMDLabelsAPI29, g_iStdWMDMinDamageAPI29);
+		}
+
+	return Desc;
+	}
+
 //	InitDefaultDamageAdj
 //
 //	Initialize default tables
@@ -563,41 +640,93 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 	m_bHideRadiationImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_RADIATION_IMMUNE)->IsNil();
 	m_bHideShatterImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_SHATTER_IMMUNE)->IsNil();
 
+	//	Initialize default fortificationAdj for this adventure
+	// 
+	//	Note: empty properties and properties with (double 'NaN) return Nil
+	//	Nil initializes the legacy defaults which were hardcoded up through API57 (2.0a7)
+	//
+	//	We check for a real NaN just in case Tlisp doubles ever get updated to support
+	//	explicit NaN. This code runs once per adventure init so the impact is negligible.
+	//
+	//	We do not support fortification above 1.0, since these cases will be handled by
+	//	other mechanics
+
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_SHIP_COMPARTMENT);
 	double rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
-	if (rValue < 0.0)
+	if (IS_NAN(rValue))
 		rValue = 0.1;
+	if (rValue > 1.0 + g_Epsilon)
+		{
+		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_SHIP_COMPARTMENT, CONSTLIT(" cannot be greater than 1.0"));
+		return false;
+		}
 	m_rFortifiedShipCompartment = rValue;
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_MULTIHULL_STATION);
 	rValue = pValue->IsNil() ? 0.1 : pValue->GetDoubleValue();
-	if (rValue < 0.0)
+	if (IS_NAN(rValue))
 		rValue = 0.1;
+	if (rValue > 1.0 + g_Epsilon)
+		{
+		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_MULTIHULL_STATION, CONSTLIT(" cannot be greater than 1.0"));
+		return false;
+		}
 	m_rFortifiedStationMultihull = rValue;
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_STATION);
 	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (rValue < 0.0)
+	if (IS_NAN(rValue))
 		rValue = 1.0;
+	if (rValue > 1.0 + g_Epsilon)
+		{
+		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_STATION, CONSTLIT(" cannot be greater than 1.0"));
+		return false;
+		}
 	m_rFortifiedStation = rValue;
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_ARMOR_SEGMENT);
 	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (rValue < 0.0)
+	if (IS_NAN(rValue))
 		rValue = 1.0;
+	if (rValue > 1.0 + g_Epsilon)
+		{
+		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_ARMOR_SEGMENT, CONSTLIT(" cannot be greater than 1.0"));
+		return false;
+		}
 	m_rFortifiedArmorSlot = rValue;
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_ARMOR);
 	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (rValue < 0.0)
+	if (IS_NAN(rValue))
 		rValue = 1.0;
+	if (rValue > 1.0 + g_Epsilon)
+		{
+		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_ARMOR, CONSTLIT(" cannot be greater than 1.0"));
+		return false;
+		}
 	m_rFortifiedArmor = rValue;
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_SHIELD);
 	rValue = pValue->IsNil() ? 1.0 : pValue->GetDoubleValue();
-	if (rValue < 0.0)
+	if (IS_NAN(rValue))
 		rValue = 1.0;
+	if (rValue > 1.0 + g_Epsilon)
+		{
+		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_SHIELD, CONSTLIT(" cannot be greater than 1.0"));
+		return false;
+		}
 	m_rFortifiedShield = rValue;
+
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_WMD_FORTIFIED_MIN_ADJ);
+	rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
+	if (rValue < 0)
+		rValue = 0.0;
+	if (rValue > 1.0 + g_Epsilon)
+		{
+		Ctx.sError = strCat(PROPERTY_CORE_WMD_FORTIFIED_MIN_ADJ, CONSTLIT(" cannot be greater than 1.0"));
+		return false;
+		}
+	m_rMinFortificationAdj = rValue;
 
 	return true;
 	}

@@ -22,11 +22,14 @@ CCyberDeckClass::CCyberDeckClass (void)
 	{
 	}
 
-bool CCyberDeckClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
-
 //	Activate
 //
 //	Activate device
+//	TODO: allow non-hardcoded activation delay & interpolated activation?
+//	Currently interpolated activation never fires on a cyberdeck as they
+//	can only fire once per 30 ticks, so we only return 0 or 1 right now.
+//
+int CCyberDeckClass::Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx)
 
 	{
 	DEBUG_TRY
@@ -38,12 +41,12 @@ bool CCyberDeckClass::Activate (CInstalledDevice &Device, SActivateCtx &Activate
 	//	Won't work if not enabled
 
 	if (!Device.IsWorking())
-		return false;
+		return 0;
 
 	//	We better have a target
 
 	if (ActivateCtx.pTarget == NULL)
-		return false;
+		return 0;
 
 	//	The attack has a random chance of succeeding. If it did not
 	//	succeed, we're done.
@@ -55,7 +58,7 @@ bool CCyberDeckClass::Activate (CInstalledDevice &Device, SActivateCtx &Activate
 
 		//	Counts as an attempt (meaning we consume power)
 
-		return true;
+		return 1;
 		}
 
 	//	See if the attack is blocked by defenses
@@ -66,7 +69,7 @@ bool CCyberDeckClass::Activate (CInstalledDevice &Device, SActivateCtx &Activate
 
 		//	Counts as an attempt
 
-		return true;
+		return 1;
 		}
 
 	//	Run the program
@@ -79,7 +82,7 @@ bool CCyberDeckClass::Activate (CInstalledDevice &Device, SActivateCtx &Activate
 	if (SourceObj.IsPlayer())
 		Device.GetItem()->SetKnown();
 
-	return true;
+	return 1;
 
 	DEBUG_CATCH
 	}

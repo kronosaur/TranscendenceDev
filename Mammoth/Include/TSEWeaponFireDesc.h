@@ -138,7 +138,6 @@ class DamageDesc
 
 			flagSpecialAdj =        0x00000080, //  Returns adjusted value (e.g., GetMassDestructionAdj
 												//      instead of raw value).
-			flagSpecialLevel =      0x00000100, //  Returns display level (e.g., GetMassDestructionLevel)
 			};
 
 		DamageDesc (void) { }
@@ -148,6 +147,7 @@ class DamageDesc
 
 		void AddEnhancements (const CItemEnhancementStack *pEnhancements);
 		CString AsString (void) const;
+		int CalcWMDAdjustedDamage (int iDamage = -1) const;
 		bool CausesSRSFlash (void) const { return (m_Extra.fNoSRSFlash ? false : true); }
 		ICCItem *FindProperty (const CString &sName) const;
 		DestructionTypes GetCause (void) const { return m_iCause; }
@@ -186,9 +186,13 @@ class DamageDesc
 		int GetDeviceDisruptDamage (void) const { return (int)m_Extra.DeviceDisruptDamage; }
 		int GetDisintegrationDamage (void) const { return (int)m_Extra.DisintegrationDamage; }
 		int GetEMPDamage (void) const { return (int)m_Extra.EMPDamage; }
-		int GetMassDestructionAdj (void) const;
-		int GetMassDestructionDamage (void) const { return m_Extra.MassDestructionAdj; }
-		int GetMassDestructionLevel (void) const;
+		int GetMassDestructionAdj () const;
+		Metric GetMassDestructionAdjReal () const;
+		int GetMassDestructionDamage () const { return m_Extra.MassDestructionAdj; }
+		int GetMassDestructionLevel () const;
+		CString GetMassDestructionDisplayLevel () const;
+		CString GetMassDestructionDisplayStr () const;
+		int GetMassDestructionMinDamage () const;
 		int GetMiningAdj (void) const { return (int)(m_Extra.MiningAdj ? (2 * (m_Extra.MiningAdj * m_Extra.MiningAdj) + 2) : 0); }
 		int GetMiningDamage (void) const { return m_Extra.MiningAdj; }
 		int GetMiningScan (void) const { return m_Extra.fMiningScan; }
@@ -207,6 +211,7 @@ class DamageDesc
 		static SpecialDamageTypes GetSpecialDamageFromCondition (ECondition iCondition);
 		static CString GetSpecialDamageName (SpecialDamageTypes iSpecial);
 		static int GetMassDestructionAdjFromValue (int iValue);
+		static Metric GetMassDestructionAdjRealFromValue(int iValue);
 		static int GetMassDestructionLevelFromValue (int iValue);
 
 	private:
@@ -339,26 +344,29 @@ struct SDamageCtx
 		SDamageCtx (const DamageDesc &DamageArg);
 		~SDamageCtx ();
 
-		Metric CalcWMDFortificationAdj (Metric rWMD0FortificationAdj = 0.1);
-		static Metric CalcWMDFortificationAdjFromLevel (int iLevel, Metric rWMD0FortificationAdj = 0.1);
-		void ClearTimeStop () { m_bTimeStop = false; }
-		int GetBlindTime () const { return m_iBlindTime; }
-		CWeaponFireDesc &GetDesc () const { return *m_pDesc; }
-		int GetDeviceDisruptTime () const { return m_iDisruptTime; }
-		EDamageHint GetHint () const { return m_iHint; }
-		CSpaceObject *GetOrderGiver () const { return Attacker.GetOrderGiver(); }
-		int GetParalyzedTime () const { return m_iParalyzeTime; }
-		bool IsBlinded () const { return m_bBlind; }
+		int CalcWMDAdjustedDamage (Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0) const;
+		int CalcWMDAdjustedDamageFromLevel (int iLevel, Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0) const;
+		int CalcWMDAdjustedDamageRaw () const;
+		void ClearTimeStop (void) { m_bTimeStop = false; }
+		int GetBlindTime (void) const { return m_iBlindTime; }
+		CWeaponFireDesc &GetDesc (void) const { return *m_pDesc; }
+		int GetDeviceDisruptTime (void) const { return m_iDisruptTime; }
+		EDamageHint GetHint (void) const { return m_iHint; }
+		CSpaceObject *GetOrderGiver (void) const { return Attacker.GetOrderGiver(); }
+		int GetParalyzedTime (void) const { return m_iParalyzeTime; }
+		Metric CalcWMDFortificationAdj (Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0, Metric rMaxAdj = R_INF) const;
+		static Metric CalcWMDFortificationAdjFromLevel (int iLevel, Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0, Metric rMaxAdj = R_INF);
+		bool IsBlinded (void) const { return m_bBlind; }
 		bool IsDamaging () const;
 		bool IsDamageEventFiring () const;
-		bool IsDeviceDamaged () const { return m_bDeviceDamage; }
-		bool IsDeviceDisrupted () const { return m_bDeviceDisrupt; }
-		bool IsDisintegrated () const { return m_bDisintegrate; }
-		bool IsParalyzed () const { return m_bParalyze; }
-		bool IsRadioactive () const { return m_bRadioactive; }
-		bool IsShattered () const { return m_bShatter; }
-		bool IsShotReflected () const { return m_bReflect; }
-		bool IsTimeStopped () const { return m_bTimeStop; }
+		bool IsDeviceDamaged (void) const { return m_bDeviceDamage; }
+		bool IsDeviceDisrupted (void) const { return m_bDeviceDisrupt; }
+		bool IsDisintegrated (void) const { return m_bDisintegrate; }
+		bool IsParalyzed (void) const { return m_bParalyze; }
+		bool IsRadioactive (void) const { return m_bRadioactive; }
+		bool IsShattered (void) const { return m_bShatter; }
+		bool IsShotReflected (void) const { return m_bReflect; }
+		bool IsTimeStopped (void) const { return m_bTimeStop; }
 		void SetBlinded (bool bValue = true) { m_bBlind = bValue; }
 		void SetBlindedTime (int iTime) { m_iBlindTime = iTime; }
 		void SetDeviceDamaged (bool bValue = true) { m_bDeviceDamage = bValue; }
@@ -398,6 +406,7 @@ struct SDamageCtx
 		int iOriginalAbsorb = 0;					//	Computed absorb value, if shot had not been reflected
 		int iOriginalShieldDamage = 0;				//	Computed shield damage value, if shot had not been reflected
 		Metric rArmorExternFortification = 1.0;		//	External armor fortification (Ex, from a segment slot)
+		Metric rArmorExternMinFortification = 0.0;	//	External min armor fortification (Ex, from a segment slot)
 		int iArmorAbsorb = 0;						//	Damage absorbed by armor
 		int iArmorDamage = 0;						//	Damage taken by armor
 
@@ -577,7 +586,7 @@ class CConfigurationDesc
 		template <class T>
 		inline T CalcShots (const CVector &vSource, int iFireAngle, int iPolarity, Metric rScale) const;
 
-		int GetAimTolerance (int iFireDelay = 8) const;
+		int GetAimTolerance (Metric iFireDelay = 8.0) const;
 		int GetCustomConfigCount (void) const { return m_Custom.GetCount(); }
 		int GetCustomConfigFireAngle (int iIndex, int iFireAngle = 0) const { return AngleMod(iFireAngle + m_Custom[iIndex].Angle.Roll()); }
 		CVector GetCustomConfigPos (int iIndex, int iFireAngle = 0) const { return PolarToVector(AngleMod(iFireAngle + m_Custom[iIndex].iPosAngle), m_Custom[iIndex].rPosRadius); }
@@ -614,13 +623,14 @@ enum class EMiningMethod
 	{
 	unknown = -1,
 
-	ablation = 0,
-	drill = 1,
-	explosion = 2,
-	shockwave = 3,
+	universal = 0,
+	ablation = 1,
+	drill = 2,
+	explosion = 3,
+	shockwave = 4,
 	};
 
-constexpr int EMiningMethodCount = 4;
+constexpr int EMiningMethodCount = 5;
 
 //	WeaponFireDesc -------------------------------------------------------------
 
@@ -798,7 +808,7 @@ class CWeaponFireDesc
 		Metric GetAveSpeed (void) const { return 0.5 * (GetRatedSpeed() + m_rMaxMissileSpeed); }
 		int GetChargeTime (void) const { return m_iChargeTime; }
 		int GetContinuous (void) const { return m_iContinuous; }
-		int GetContinuousFireDelay (void) const { return (m_iContinuous != -1 ? m_iContinuousFireDelay : -1); }
+		Metric GetContinuousFireDelay () const { return (m_iContinuous != -1 ? m_rContinuousFireDelay : -1.0); }
 		const DamageDesc &GetDamage (void) const { return m_Damage; }
 		DamageTypes GetDamageType (void) const;
 		CEffectCreator *GetEffect (void) const { return m_pEffect; }
@@ -808,7 +818,7 @@ class CWeaponFireDesc
 		Metric GetExpansionSpeed (void) const { return (m_ExpansionSpeed.Roll() * LIGHT_SPEED / 100.0); }
 		CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
 		CExtension *GetExtension (void) const { return m_pExtension; }
-		int GetFireDelay (void) const { return m_iFireRate; }
+		Metric GetFireDelay (void) const { return m_rFireRate; }
 		FireTypes GetFireType (void) const { return m_iFireType; }
 		SFragmentDesc *GetFirstFragment (void) const { return m_pFirstFragment; }
 		Metric GetFragmentationMaxThreshold (void) const { return m_rMaxFragThreshold; }
@@ -841,7 +851,7 @@ class CWeaponFireDesc
 		int GetPowerUse (void) const { return m_iPowerUse; }
 		bool GetPlaySoundOncePerBurst (void) const { return m_bPlaySoundOncePerBurst; }
 		int GetProximityFailsafe (void) const { return m_iProximityFailsafe; }
-		Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }
+		Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }			//	Speed of missile in kps (Simulation secs)
 		CWeaponFireDesc *GetScaledDesc (int iLevel) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
 		int GetStealth (void) const { return m_iStealthFromArmor; }
@@ -923,15 +933,15 @@ class CWeaponFireDesc
 		DamageDesc m_DamageAtMaxRange;			//	If specified, damage decays with range to this value.
 		CConfigurationDesc m_Configuration;		//	Configuration (empty = default)
 		int m_iContinuous = -1;					//	repeat for this number of frames (-1 = default)
-		int m_iContinuousFireDelay = -1;		//	Ticks between continuous fire shots (-1 = default)
+		Metric m_rContinuousFireDelay = -1.0;		//	Ticks between continuous fire shots (-1.0 = default)
 		int m_iChargeTime = -1;					//	Ticks before firing (-1 = default)
-		int m_iFireRate = -1;					//	Ticks between shots (-1 = default to weapon class)
+		Metric m_rFireRate = -1.0;					//	Ticks between shots (<0 default to weapon class)
 		int m_iPowerUse = -1;					//	Power use in 1/10th MWs (-1 = default to weapon class)
 		int m_iIdlePowerUse = -1;				//	Power use while idle (-1 = default to weapon class)
 		EMiningMethod m_MiningMethod = EMiningMethod::unknown;	//	Mining method
 		int m_iMaxMiningLevel = -1;				//	Max level of ore that can be mined (-1 = default damage table, 0 = sense ore only)
 
-		Metric m_rMissileSpeed = 0.0;			//	Speed of missile
+		Metric m_rMissileSpeed = 0.0;			//	Speed of missile in kps (Simulation secs)
 		DiceRange m_MissileSpeed;				//	Speed of missile (if random)
 		DiceRange m_Lifetime;					//	Lifetime of fire in seconds
 		DiceRange m_InitialDelay;				//	Delay for n ticks before starting

@@ -293,8 +293,15 @@ void CShipInteriorDesc::DebugPaint (CG32bitImage &Dest, int x, int y, int iRotat
 Metric CShipInteriorDesc::GetFortificationAdj() const
 	{
 	if (g_pUniverse)
-		return m_rFortified < 0 ? g_pUniverse->GetEngineOptions().GetDefaultFortifiedShipCompartment() : m_rFortified;
+		return IS_NAN(m_rFortified) ? g_pUniverse->GetEngineOptions().GetDefaultFortifiedShipCompartment() : m_rFortified;
 	return 0.1;
+	}
+
+Metric CShipInteriorDesc::GetFortificationMinAdj() const
+	{
+	if (g_pUniverse)
+		return m_rMinFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDefaultMinFortificationAdj() : m_rMinFortificationAdj;
+	return 0.0;
 	}
 
 int CShipInteriorDesc::GetHitPoints (void) const
@@ -325,7 +332,7 @@ ALERROR CShipInteriorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_fHasAttached = false;
 	m_fIsMultiHull = false;
-	m_rFortified = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
+	m_rFortified = pDesc->GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, R_NAN);
 
 	//	Keep a temporary map of IDs to section
 

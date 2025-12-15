@@ -108,14 +108,14 @@ void CInstalledDevice::FinishInstall (void)
 	DEBUG_CATCH
 	}
 
-int CInstalledDevice::GetActivateDelay (CSpaceObject *pSource) const
+Metric CInstalledDevice::GetActivateDelay (CSpaceObject *pSource) const
 
 //	GetActivateDelay
 //
 //	Returns the number of ticks to wait for activation
 	
 	{
-	return m_iActivateDelay;
+	return m_rActivateDelay;
 	}
 
 bool CInstalledDevice::GetCachedMaxHP (int &retiMaxHP) const
@@ -129,7 +129,7 @@ bool CInstalledDevice::GetCachedMaxHP (int &retiMaxHP) const
 		return false;
 
 	DWORD dwNow = m_pSource->GetUniverse().GetTicks();
-	DWORD dwCachedTime = (DWORD)MAKELONG((WORD)m_iTimeUntilReady, (WORD)m_iFireAngle);
+	DWORD dwCachedTime = (DWORD)MAKELONG((WORD)m_iNowLow, (WORD)m_iFireAngle);
 	if (dwCachedTime != dwNow)
 		return false;
 
@@ -397,7 +397,7 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	//	Default to basic fire delay. Callers must set the appropriate delay
 	//	based on enhancements later.
 
-	m_iActivateDelay = m_pClass->GetActivateDelay(ItemCtx);
+	m_rActivateDelay = m_pClass->GetActivateDelay(ItemCtx);
 
 	DEBUG_CATCH
 	}
@@ -581,15 +581,18 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 //	DWORD		device: low = m_iTimeUntilReady; hi = m_iFireAngle
 //	DWORD		device: low = m_iSlotPosIndex; hi = m_iTemperature
 //	DWORD		device: low = m_iSlotBonus; hi = m_iDeviceSlot
-//	DWORD		device: low = m_iActivateDelay; hi = m_iPosZ
+//	DWORD		device: low = m_iContinuousShotsRemaining (<217 was activation delay cache); hi = m_iPosZ
 //	DWORD		device: low = m_iShotSeparationScale; hi = m_iMaxFireRange
 //	DWORD		device: flags
+// 
+//	double		m_rActivateDelay (217+)
+//	double		m_rRemainingActivationDelay (217+)
 //
 //	CItemEnhancementStack
 
 	{
 	DWORD dwLoad;
-
+	
 	//	ID
 
 	if (Ctx.dwVersion >= 157)
@@ -635,9 +638,22 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	m_iMinFireArc = (int)LOWORD(dwLoad);
 	m_iMaxFireArc = (int)HIWORD(dwLoad);
 
+	//	Prior to version 217, m_iNowLow could either store remaining time till ready, or the 16 low bits of the current tick
+	//	if HP was cached in another field
+
 	Ctx.pStream->Read(dwLoad);
-	m_iTimeUntilReady = (int)LOWORD(dwLoad);
+	m_iNowLow = (int)LOWORD(dwLoad);
 	m_iFireAngle = (int)HIWORD(dwLoad);
+
+	//	If we were caching hp, there was not remaining time till activation
+
+	if (Ctx.dwVersion < 217 && dwLoad == Ctx.GetUniverse().GetTicks())
+		m_rRemainingActivationDelay = 0.0;
+
+	//	Otherwise it is the remaining time till activation
+
+	else if (Ctx.dwVersion < 217)
+		m_rRemainingActivationDelay = m_iNowLow;
 
 	Ctx.pStream->Read(dwLoad);
 	m_iTemperature = (int)HIWORD(dwLoad);
@@ -675,15 +691,28 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	else
 		m_iDeviceSlot = -1;
 
-	if (Ctx.dwVersion >= 44)
+	if (Ctx.dwVersion >= 217)
 		{
 		Ctx.pStream->Read(dwLoad);
-		m_iActivateDelay = (int)LOWORD(dwLoad);
+		m_rActivateDelay = 8.0;	//	we overwrite this later, this is just here as a placeholder
+		m_iContinuousShotsRemaining = (int)LOWORD(dwLoad);
+		m_iPosZ = (int)HIWORD(dwLoad);
+		}
+	else if (Ctx.dwVersion >= 44)
+		{
+		Ctx.pStream->Read(dwLoad);
+		m_rActivateDelay = (double)LOWORD(dwLoad);
+		const CWeaponClass* pWeaponClass = m_pClass->AsWeaponClass();
+		const CWeaponFireDesc* pShot = (pWeaponClass ? &pWeaponClass->GetWeaponFireDescForVariant(GetDeviceItem(), 0) : NULL);
+		m_iContinuousShotsRemaining = (pWeaponClass ? (int)((m_dwData & 0x000000ff) / pWeaponClass->GetContinuousFireDelay(*pShot)) - pWeaponClass->GetChargeTime(*pShot) : 0);
 		m_iPosZ = (int)HIWORD(dwLoad);
 		}
 	else
 		{
-		m_iActivateDelay = 8;
+		m_rActivateDelay = 8.0;
+		const CWeaponClass* pWeaponClass = m_pClass->AsWeaponClass();
+		const CWeaponFireDesc* pShot = (pWeaponClass ? &pWeaponClass->GetWeaponFireDescForVariant(GetDeviceItem(), 0) : NULL);
+		m_iContinuousShotsRemaining = (pWeaponClass ? (int)((m_dwData & 0x000000ff) / pWeaponClass->GetContinuousFireDelay(*pShot)) - pWeaponClass->GetChargeTime(*pShot) : 0);
 		m_iPosZ = 0;
 		}
 
@@ -692,7 +721,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	if (Ctx.dwVersion < 93)
 		{
 		CItemCtx ItemCtx(&Source, this);
-		m_iActivateDelay = m_iActivateDelay * m_pClass->GetActivateDelay(ItemCtx) / 100;
+		m_rActivateDelay = m_rActivateDelay * m_pClass->GetActivateDelay(ItemCtx) / 100;
 		}
 
 	//	We no longer store mods in the device structure
@@ -751,6 +780,15 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion < 107)
 		m_fExternal = m_pClass->IsExternal();
+
+	//	In 217 we switched to activate delay as a double, because of weapons having
+	//	interpolated fireDelay
+
+	if (Ctx.dwVersion >= 217)
+		{
+		Ctx.pStream->Read(m_rActivateDelay);
+		Ctx.pStream->Read(m_rRemainingActivationDelay);
+		}
 
 	//	Fix up the item pointer (but only if it is installed)
 
@@ -845,7 +883,7 @@ void CInstalledDevice::SetCachedMaxHP (int iMaxHP)
 	//	Store the tick on which we cache it in these two 16-bit fields.
 
 	DWORD dwNow = m_pSource->GetUniverse().GetTicks();
-	m_iTimeUntilReady = (short)LOWORD(dwNow);
+	m_iNowLow = (short)LOWORD(dwNow);
 	m_iFireAngle = (short)HIWORD(dwNow);
 
 	//	Store the hit points in these two 16-bit fields
@@ -1285,9 +1323,11 @@ void CInstalledDevice::Update (CSpaceObject *pSource, CDeviceClass::SDeviceUpdat
 
 		//	Counters
 
-		if (m_iTimeUntilReady > 0 && IsEnabled())
+		if (m_rRemainingActivationDelay > 0.0 && IsEnabled())
 			{
-			m_iTimeUntilReady--;
+			m_rRemainingActivationDelay--;
+			if (m_rRemainingActivationDelay < 0.0)
+				m_rRemainingActivationDelay = 0.0;
 
 			if (m_pClass->ShowActivationDelayCounter(pSource, this))
 				pSource->OnComponentChanged(comDeviceCounter);
@@ -1333,9 +1373,12 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 //	DWORD		device: low = m_iTimeUntilReady; hi = m_iFireAngle
 //	DWORD		device: low = m_iSlotIndex; hi = m_iTemperature
 //	DWORD		device: low = m_iSlotBonus; hi = m_iDeviceSlot
-//	DWORD		device: low = m_iActivateDelay; hi = m_iPosZ
+//	DWORD		device: low = m_iContinuousShotsRemaining; hi = m_iPosZ
 //	DWORD		device: low = m_iShotSeparationScale; hi = m_iMaxFireRange
 //	DWORD		device: flags
+// 
+//	double		device: m_rActivateDelay
+//	double		device: m_rRemainingActivationDelay
 //
 //	CItemEnhancementStack
 //	CEnhancementDesc
@@ -1365,7 +1408,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave = MAKELONG(m_iMinFireArc, m_iMaxFireArc);
 	pStream->Write(dwSave);
 	
-	dwSave = MAKELONG(m_iTimeUntilReady, m_iFireAngle);
+	dwSave = MAKELONG(m_iNowLow, m_iFireAngle);
 	pStream->Write(dwSave);
 	
 	dwSave = MAKELONG(m_iSlotPosIndex, m_iTemperature);
@@ -1374,7 +1417,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave = MAKELONG(m_iExtraPowerUse, m_iDeviceSlot);
 	pStream->Write(dwSave);
 
-	dwSave = MAKELONG(m_iActivateDelay, m_iPosZ);
+	dwSave = MAKELONG(m_iContinuousShotsRemaining, m_iPosZ);
 	pStream->Write(dwSave);
 
 	dwSave = MAKELONG(m_iShotSeparationScale, m_iMaxFireRange);
@@ -1411,6 +1454,9 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fOnUsedLastAmmo ?		0x08000000 : 0);
 	dwSave |= ((m_pWeaponTargetDefinition != nullptr) ?		0x10000000 : 0);
 	pStream->Write(dwSave);
+
+	pStream->Write(m_rActivateDelay);
+	pStream->Write(m_rRemainingActivationDelay);
 
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
 
