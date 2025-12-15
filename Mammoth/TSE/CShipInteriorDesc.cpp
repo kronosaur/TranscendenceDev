@@ -10,7 +10,10 @@
 
 #define ATTACH_TO_ATTRIB						CONSTLIT("attachTo")
 #define CLASS_ATTRIB							CONSTLIT("class")
-#define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
+#define FORTIFICATION_CRUSH_ATTRIB				CONSTLIT("fortificationCrushAdj")
+#define FORTIFICATION_PIERCE_ATTRIB				CONSTLIT("fortificationPierceAdj")
+#define FORTIFICATION_SHRED_ATTRIB				CONSTLIT("fortificationShredAdj")
+#define FORTIFICATION_WMD_ATTRIB				CONSTLIT("fortificationWMDAdj")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define ID_ATTRIB								CONSTLIT("id")
 #define NAME_ATTRIB								CONSTLIT("name")
@@ -24,10 +27,11 @@
 #define TYPE_GENERAL							CONSTLIT("general")
 #define TYPE_MAIN_DRIVE							CONSTLIT("mainDrive")
 
-static TStaticStringTable<TStaticStringEntry<ECompartmentTypes>, 3> COMPARTMENT_TYPE_TABLE = {
+static TStaticStringTable<TStaticStringEntry<ECompartmentTypes>, 4> COMPARTMENT_TYPE_TABLE = {
 	"cargo",				deckCargo,
 	"general",				deckGeneral,
 	"mainDrive",			deckMainDrive,
+	"uncrewed",				deckUncrewed,
 	};
 
 CShipInteriorDesc::CShipInteriorDesc (void) :
@@ -290,18 +294,16 @@ void CShipInteriorDesc::DebugPaint (CG32bitImage &Dest, int x, int y, int iRotat
 		}
 	}
 
-Metric CShipInteriorDesc::GetFortificationAdj() const
+Metric CShipInteriorDesc::GetFortificationAdj(EDamageMethod iMethod, ECompartmentTypes iCompartmentType) const
 	{
-	if (g_pUniverse)
-		return IS_NAN(m_rFortified) ? g_pUniverse->GetEngineOptions().GetDefaultFortifiedShipCompartment() : m_rFortified;
-	return 0.1;
+	Metric rAdj = m_Fortified.Get(iMethod);
+	return IS_NAN(rAdj) ? g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipCompartmentGeneral(iMethod) : rAdj;
 	}
 
-Metric CShipInteriorDesc::GetFortificationMinAdj() const
+Metric CShipInteriorDesc::GetFortificationMinAdj(EDamageMethod iMethod) const
 	{
-	if (g_pUniverse)
-		return m_rMinFortificationAdj < 0 ? g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj() : m_rMinFortificationAdj;
-	return 0.0;
+	Metric rMinAdj = m_MinFortificationAdj.Get(iMethod);
+	return rMinAdj < 0 ? g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj() : rMinAdj;
 	}
 
 int CShipInteriorDesc::GetHitPoints (void) const
@@ -332,7 +334,47 @@ ALERROR CShipInteriorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_fHasAttached = false;
 	m_fIsMultiHull = false;
-	m_rFortified = pDesc->GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, R_NAN);
+
+	bool bHasWMDFortify = pDesc->FindAttribute(FORTIFICATION_WMD_ATTRIB);
+	bool bHasPhysicalizedFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_ATTRIB);
+
+	EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+
+	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+		{
+		if (bHasPhysicalizedFortify)
+			{
+			m_Fortified.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_ATTRIB, R_NAN));
+			m_Fortified.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, R_NAN));
+			m_Fortified.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_ATTRIB, R_NAN));
+			}
+		else if (bHasWMDFortify)
+			{
+			m_Fortified.SetCrush(R_NAN);
+			m_Fortified.SetPierce(R_NAN);
+			m_Fortified.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, R_NAN));
+			}
+		else
+			{
+			m_Fortified.SetCrush(R_NAN);
+			m_Fortified.SetPierce(R_NAN);
+			m_Fortified.SetShred(R_NAN);
+			}
+		}
+	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+		{
+		if (bHasWMDFortify)
+			m_Fortified.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, R_NAN));
+		else if (bHasPhysicalizedFortify)
+			m_Fortified.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_ATTRIB, R_NAN));
+		else
+			m_Fortified.SetWMD(R_NAN);
+		}
+	else
+		{
+		Ctx.sError = CONSTLIT("Cannot initialize ship interior with an unknown damage method system");
+		return ERR_FAIL;
+		}
 
 	//	Keep a temporary map of IDs to section
 

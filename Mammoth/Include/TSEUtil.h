@@ -667,6 +667,41 @@ enum class EDamageMethod
 	methodShred =							3,		//	Physicalized: shred
 	};
 
+struct SDamageMethodAdj
+	{
+	public:
+
+		Metric GetCrush () const { return rAdj[0]; }
+		Metric GetPierce () const { return rAdj[1]; }
+		Metric GetShred () const { return rAdj[2]; }
+		Metric GetWMD () const { return rAdj[0]; }
+		Metric Get (EDamageMethod iMethod) const
+			{
+			switch (iMethod)
+				{
+				case EDamageMethod::methodCrush:
+				case EDamageMethod::methodWMD:
+					return rAdj[0];
+				case EDamageMethod::methodPierce:
+					return rAdj[1];
+				case EDamageMethod::methodShred:
+					return rAdj[2];
+				default:
+					ASSERT(false);
+					return R_NAN;
+				}
+			}
+
+		void SetCrush (Metric rNew) { rAdj[0] = rNew; }
+		void SetPierce (Metric rNew) { rAdj[1] = rNew; }
+		void SetShred (Metric rNew) { rAdj[2] = rNew; }
+		void SetWMD (Metric rNew) { rAdj[0] = rNew; }
+
+	private:
+
+		Metric rAdj[3] = { 1.0, 1.0, 1.0 };
+	};
+
 enum class EDamageMethodTarget
 	{
 	targetNone =							-100,	//	Uninitialized or error type

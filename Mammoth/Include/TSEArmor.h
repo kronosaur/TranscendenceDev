@@ -220,8 +220,8 @@ class CShipArmorSegmentDesc
 		CItem GetArmorItem () const;
 		int GetCenterAngle () const { return AngleMod(m_iStartAt + m_iSpan / 2); }
 		DWORD GetCriticalArea () const { return m_dwAreaSet; }
-		Metric GetFortificationAdj () const { return m_rFortified; }
-		Metric GetMinFortificationAdj () const;
+		Metric GetFortificationAdj (EDamageMethod iMethod) const;
+		Metric GetMinFortificationAdj (EDamageMethod iMethod) const;
 		int GetLevel () const;
 		int GetSpan () const { return m_iSpan; }
 		int GetStartAngle () const { return m_iStartAt; }
@@ -231,8 +231,8 @@ class CShipArmorSegmentDesc
 			DWORD dwArmorUNID,
 			int iLevel,
 			const CRandomEnhancementGenerator &Enhancement,
-			Metric rFortification,
-			Metric rMinFortificationAdj);
+			SDamageMethodAdj rFortification,
+			SDamageMethodAdj rMinFortificationAdj);
 		ALERROR InitFromXML (
 			SDesignLoadCtx &Ctx,
 			const CXMLElement &Desc,
@@ -240,8 +240,8 @@ class CShipArmorSegmentDesc
 			int iDefaultLevel,
 			int iDefaultAngle,
 			const CRandomEnhancementGenerator &DefaultEnhancement,
-			Metric rDefaultFortification,
-			Metric rMinFortificationAdj,
+			SDamageMethodAdj rDefaultFortification,
+			SDamageMethodAdj rMinFortificationAdj,
 			int *retiSpan = NULL);
 
 		static const CShipArmorSegmentDesc m_Null;
@@ -255,8 +255,8 @@ class CShipArmorSegmentDesc
 		int m_iLevel = 1;					//  For scalable armor
 		CRandomEnhancementGenerator m_Enhanced;//	Mods
 		DWORD m_dwAreaSet = 0;				//	Areas that this section protects
-		Metric m_rFortified = 1.0;			//	Adjusts WMD adj curve from the WMD0 end
-		Metric m_rMinFortificationAdj = -1.0;	//	Min WMD adj
+		SDamageMethodAdj m_Fortified;			//	Adjusts WMD adj curve from the WMD0 end
+		SDamageMethodAdj m_MinFortificationAdj;	//	Min WMD adj
 	};
 
 class CShipArmorDesc
