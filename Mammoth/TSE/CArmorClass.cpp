@@ -26,6 +26,10 @@
 #define FORTIFICATION_PIERCE_ATTRIB				CONSTLIT("fortificationPierceAdj")
 #define FORTIFICATION_SHRED_ATTRIB				CONSTLIT("fortificationShredAdj")
 #define FORTIFICATION_WMD_ATTRIB				CONSTLIT("fortificationWMDAdj")
+#define FORTIFICATION_CRUSH_MIN_ATTRIB			CONSTLIT("fortificationCrushMinAdj")
+#define FORTIFICATION_PIERCE_MIN_ATTRIB			CONSTLIT("fortificationPierceMinAdj")
+#define FORTIFICATION_SHRED_MIN_ATTRIB			CONSTLIT("fortificationShredMinAdj")
+#define FORTIFICATION_WMD_MIN_ATTRIB			CONSTLIT("fortificationWMDMinAdj")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define HP_BONUS_PER_CHARGE_ATTRIB				CONSTLIT("hpBonusPerCharge")
 #define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")
@@ -1559,6 +1563,8 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 
 	bool bHasWMDFortify = pDesc->FindAttribute(FORTIFICATION_WMD_ATTRIB);
 	bool bHasPhysicalizedFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_ATTRIB);
+	bool bHasWMDMinFortify = pDesc->FindAttribute(FORTIFICATION_WMD_MIN_ATTRIB);
+	bool bHasPhysicalizedMinFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_MIN_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_MIN_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_MIN_ATTRIB);
 
 	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 		{
@@ -1580,6 +1586,25 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 			pArmor->m_Fortification.SetPierce(R_NAN);
 			pArmor->m_Fortification.SetShred(R_NAN);
 			}
+
+		if (bHasPhysicalizedMinFortify)
+			{
+			pArmor->m_MinFortificationAdj.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_MIN_ATTRIB, R_NAN));
+			pArmor->m_MinFortificationAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, R_NAN));
+			pArmor->m_MinFortificationAdj.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_MIN_ATTRIB, R_NAN));
+			}
+		else if (bHasWMDMinFortify)
+			{
+			pArmor->m_MinFortificationAdj.SetCrush(R_NAN);
+			pArmor->m_MinFortificationAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, R_NAN));
+			pArmor->m_MinFortificationAdj.SetShred(R_NAN);
+			}
+		else
+			{
+			pArmor->m_MinFortificationAdj.SetCrush(R_NAN);
+			pArmor->m_MinFortificationAdj.SetPierce(R_NAN);
+			pArmor->m_MinFortificationAdj.SetShred(R_NAN);
+			}
 		}
 	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
 		{
@@ -1589,6 +1614,13 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 			pArmor->m_Fortification.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, R_NAN));
 		else
 			pArmor->m_Fortification.SetWMD(R_NAN);
+
+		if (bHasWMDMinFortify)
+			pArmor->m_MinFortificationAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, R_NAN));
+		else if (bHasPhysicalizedMinFortify)
+			pArmor->m_MinFortificationAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, R_NAN));
+		else
+			pArmor->m_MinFortificationAdj.SetWMD(R_NAN);
 		}
 	else
 		{
