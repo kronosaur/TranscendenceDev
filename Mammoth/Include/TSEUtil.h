@@ -667,6 +667,9 @@ enum class EDamageMethod
 	methodShred =							3,		//	Physicalized: shred
 	};
 
+constexpr BYTE PHYSICALIZED_DAMAGE_METHOD_COUNT = 3;
+constexpr EDamageMethod PHYSICALIZED_DAMAGE_METHODS[3] = {EDamageMethod::methodCrush, EDamageMethod::methodPierce, EDamageMethod::methodShred};
+
 struct SDamageMethodAdj
 	{
 	public:
@@ -696,6 +699,21 @@ struct SDamageMethodAdj
 		void SetPierce (Metric rNew) { rAdj[1] = rNew; }
 		void SetShred (Metric rNew) { rAdj[2] = rNew; }
 		void SetWMD (Metric rNew) { rAdj[0] = rNew; }
+		void Set (EDamageMethod iMethod, Metric rNew)
+			{
+			switch (iMethod)
+				{
+				case EDamageMethod::methodCrush:
+				case EDamageMethod::methodWMD:
+					rAdj[0] = rNew;
+				case EDamageMethod::methodPierce:
+					rAdj[1] = rNew;
+				case EDamageMethod::methodShred:
+					rAdj[2] = rNew;
+				default:
+					ASSERT(false);
+				}
+			}
 
 	private:
 

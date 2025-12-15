@@ -341,6 +341,8 @@ struct SCompartmentDesc
 	DWORD fIsAttached:1 = false;			//	TRUE if this is an attached section (a separate CSpaceObject)
 	};
 
+const SCompartmentDesc NULL_COMPARTMENT = SCompartmentDesc();
+
 class CShipInteriorDesc
 	{
 	public:
@@ -352,8 +354,9 @@ class CShipInteriorDesc
 		void DebugPaint (CG32bitImage &Dest, int x, int y, int iRotation, int iScale) const;
 		int GetCount () const { return m_Compartments.GetCount(); }
 		const SCompartmentDesc &GetCompartment (int iIndex) const { return m_Compartments[iIndex]; }
+		const SCompartmentDesc &GetDefaultCompartment () const;
 		Metric GetFortificationAdj (EDamageMethod iMethod, ECompartmentTypes iCompartmentType) const;
-		Metric GetFortificationMinAdj(EDamageMethod iMethod) const;
+		Metric GetFortificationMinAdj (EDamageMethod iMethod) const;
 		int GetHitPoints () const;
 		const TArray<int> &GetPaintOrder (void) const { return m_PaintOrder; }
 		bool HasAttached () const { return (m_fHasAttached ? true : false); }

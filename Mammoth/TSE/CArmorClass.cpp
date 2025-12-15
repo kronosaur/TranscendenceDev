@@ -22,7 +22,10 @@
 #define ENHANCEMENT_TYPE_ATTRIB					CONSTLIT("enhancementType")
 #define EMP_DAMAGE_ADJ_ATTRIB					CONSTLIT("EMPDamageAdj")
 #define EMP_IMMUNE_ATTRIB						CONSTLIT("EMPImmune")
-#define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
+#define FORTIFICATION_CRUSH_ATTRIB				CONSTLIT("fortificationCrushAdj")
+#define FORTIFICATION_PIERCE_ATTRIB				CONSTLIT("fortificationPierceAdj")
+#define FORTIFICATION_SHRED_ATTRIB				CONSTLIT("fortificationShredAdj")
+#define FORTIFICATION_WMD_ATTRIB				CONSTLIT("fortificationWMDAdj")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define HP_BONUS_PER_CHARGE_ATTRIB				CONSTLIT("hpBonusPerCharge")
 #define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")
@@ -759,24 +762,63 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	const CItem &Item = ItemCtx.GetItem();
 	const CArmorItem ArmorItem = Item.AsArmorItemOrThrow();
 
-	//	Adjust for out item-level WMD Fortification:
+	//	Adjust for our item-level damage method Fortification:
 
-	Metric rFortification = Ctx.rArmorExternFortification;
-	Metric rFortificationAdjMin = Ctx.rArmorExternMinFortification;
+	EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+	int iDamage;
 
-	//	Stacked fortification modifiers are multiplied together
+	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+		{
+		EDamageMethod iMethods[3] = { EDamageMethod::methodCrush, EDamageMethod::methodPierce, EDamageMethod::methodShred };
 
-	if (IS_NAN(m_rFortification))
-		rFortification *= g_pUniverse->GetEngineOptions().GetDefaultFortifiedArmor();
-	else
-		rFortification *= m_rFortification;
+		Metric rFortificationAdj = 1.0;
+		Metric rFortificationAdjMin = 0.0;
 
-	if (m_rMinFortificationAdj < 0)
-		rFortificationAdjMin *= g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj();
-	else
-		rFortificationAdjMin *= m_rMinFortificationAdj;
+		for (int i = 0; i < 3; i++)
+			{
+			EDamageMethod iMethod = iMethods[i];
 
-	int iDamage = Ctx.CalcDamageMethodAdjDamage(rFortification, rFortificationAdjMin);
+			Metric rMethodFortificationAdj = Ctx.ArmorExternFortification.GetWMD();
+			Metric rMethodFortificationAdjMin = Ctx.ArmorExternMinFortification.GetWMD();
+
+			//	Stacked fortification modifiers are multiplied together
+
+			if (IS_NAN(m_Fortification.GetWMD()))
+				rMethodFortificationAdj *= g_pUniverse->GetEngineOptions().GetDamageMethodAdjItemArmor(iMethod);
+			else
+				rMethodFortificationAdj *= m_Fortification.GetWMD();
+
+			if (m_MinFortificationAdj.GetWMD() < 0)
+				rMethodFortificationAdjMin *= g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj();
+			else
+				rMethodFortificationAdjMin *= m_MinFortificationAdj.GetWMD();
+
+			rFortificationAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortificationAdj, rMethodFortificationAdjMin);
+			}
+
+		iDamage = Ctx.CalcDamageMethodAdjDamagePrecalc(rFortificationAdj);
+		}
+	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+		{
+		EDamageMethod iMethod = EDamageMethod::methodWMD;
+
+		Metric rFortificationAdj = Ctx.ArmorExternFortification.GetWMD();
+		Metric rFortificationAdjMin = Ctx.ArmorExternMinFortification.GetWMD();
+
+		//	Stacked fortification modifiers are multiplied together
+
+		if (IS_NAN(m_Fortification.GetWMD()))
+			rFortificationAdj *= g_pUniverse->GetEngineOptions().GetDamageMethodAdjItemArmor(iMethod);
+		else
+			rFortificationAdj *= m_Fortification.GetWMD();
+
+		if (m_MinFortificationAdj.GetWMD() < 0)
+			rFortificationAdjMin *= g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj();
+		else
+			rFortificationAdjMin *= m_MinFortificationAdj.GetWMD();
+
+		iDamage = Ctx.CalcDamageMethodAdjDamage(iMethod, rFortificationAdj, rFortificationAdjMin);
+		}
 
 	//	Adjust for special armor damage:
 	//
@@ -1511,7 +1553,50 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	pArmor->m_iArmorCompleteBonus = pDesc->GetAttributeIntegerBounded(COMPLETE_BONUS_ATTRIB, 0);
 	pArmor->m_iHPBonusPerCharge = pDesc->GetAttributeIntegerBounded(HP_BONUS_PER_CHARGE_ATTRIB, 0, -1, 0);
 	pArmor->m_iBalanceAdj = pDesc->GetAttributeIntegerBounded(BALANCE_ADJ_ATTRIB, -200, 200, 0);
-	pArmor->m_rFortification = pDesc->GetAttributeDoubleDefault(FORTIFICATION_ATTRIB, R_NAN);
+
+	//	Damage Method fortification
+
+	EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+
+	bool bHasWMDFortify = pDesc->FindAttribute(FORTIFICATION_WMD_ATTRIB);
+	bool bHasPhysicalizedFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_ATTRIB);
+
+	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+		{
+		if (bHasPhysicalizedFortify)
+			{
+			pArmor->m_Fortification.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_ATTRIB, R_NAN));
+			pArmor->m_Fortification.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, R_NAN));
+			pArmor->m_Fortification.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_ATTRIB, R_NAN));
+			}
+		else if (bHasWMDFortify)
+			{
+			pArmor->m_Fortification.SetCrush(R_NAN);
+			pArmor->m_Fortification.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, R_NAN));
+			pArmor->m_Fortification.SetShred(R_NAN);
+			}
+		else
+			{
+			pArmor->m_Fortification.SetCrush(R_NAN);
+			pArmor->m_Fortification.SetPierce(R_NAN);
+			pArmor->m_Fortification.SetShred(R_NAN);
+			}
+		}
+	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+		{
+		if (bHasWMDFortify)
+			pArmor->m_Fortification.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, R_NAN));
+		else if (bHasPhysicalizedFortify)
+			pArmor->m_Fortification.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, R_NAN));
+		else
+			pArmor->m_Fortification.SetWMD(R_NAN);
+		}
+	else
+		{
+		ASSERT(false);
+		Ctx.sError = CONSTLIT("Cannot initialize with an unknown damage method system.");
+		return ERR_FAIL;
+		}
 
 	//	Regen
 

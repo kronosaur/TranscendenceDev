@@ -194,8 +194,32 @@ void CItemEnhancement::AccumulateAttributes (const CItem &Item, TArray<SDisplayA
 					break;
 
 				case specialWMD:
-					retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("+WMD %d"), DamageDesc::GetMassDestructionLevelFromValue(iLevel))));
+					{
+					if (g_pUniverse->GetEngineOptions().GetDamageMethodSystem() == EDamageMethodSystem::dmgMethodSysWMD)
+						retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("+WMD %d"), DamageDesc::GetMassDestructionLevelFromValue(EDamageMethod::methodWMD, iLevel))));
 					break;
+					}
+
+				case specialCrush:
+					{
+					if (g_pUniverse->GetEngineOptions().GetDamageMethodSystem() == EDamageMethodSystem::dmgMethodSysPhysicalized)
+						retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("+Crush %d"), DamageDesc::GetMassDestructionLevelFromValue(EDamageMethod::methodCrush, iLevel))));
+					break;
+					}
+
+				case specialPierce:
+					{
+					if (g_pUniverse->GetEngineOptions().GetDamageMethodSystem() == EDamageMethodSystem::dmgMethodSysPhysicalized)
+						retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("+Pierce %d"), DamageDesc::GetMassDestructionLevelFromValue(EDamageMethod::methodPierce, iLevel))));
+					break;
+					}
+
+				case specialShred:
+					{
+					if (g_pUniverse->GetEngineOptions().GetDamageMethodSystem() == EDamageMethodSystem::dmgMethodSysPhysicalized)
+						retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("+Shred %d"), DamageDesc::GetMassDestructionLevelFromValue(EDamageMethod::methodShred, iLevel))));
+					break;
+					}
 				}
 
 			break;

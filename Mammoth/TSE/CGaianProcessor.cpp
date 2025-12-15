@@ -206,6 +206,7 @@ void CGaianProcessorAI::CalcDevices (void)
 	if (m_iDestructorDev == -1)
 		{
 		//	Loop over all devices to find the weapons
+		int iBestDestructorLevel = 0;
 
 		for (CDeviceItem DeviceItem : m_pShip->GetDeviceSystem())
 			{
@@ -227,8 +228,28 @@ void CGaianProcessorAI::CalcDevices (void)
 				const DamageDesc *pDamage = Weapon.GetDamageDesc(Ctx);
 				if (pDamage)
 					{
-					if (pDamage->GetDamageMethodLevel())
+					int iDestructorLevel = 0;
+
+					EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+
+					if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+						{
+						iDestructorLevel += pDamage->GetDamageMethodLevel(EDamageMethod::methodCrush);
+						iDestructorLevel += pDamage->GetDamageMethodLevel(EDamageMethod::methodPierce);
+						iDestructorLevel += pDamage->GetDamageMethodLevel(EDamageMethod::methodShred);
+						}
+					else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+						{
+						iDestructorLevel = pDamage->GetDamageMethodLevel(EDamageMethod::methodWMD);
+						}
+					else
+						ASSERT(false);
+
+					if (iDestructorLevel > iBestDestructorLevel)
+						{
 						m_iDestructorDev = Weapon.GetDeviceSlot();
+						iBestDestructorLevel = iDestructorLevel;
+						}
 					else if (pDamage->GetEMPDamage())
 						m_iDisablerDev = Weapon.GetDeviceSlot();
 					}

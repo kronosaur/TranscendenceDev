@@ -294,6 +294,19 @@ void CShipInteriorDesc::DebugPaint (CG32bitImage &Dest, int x, int y, int iRotat
 		}
 	}
 
+const SCompartmentDesc& CShipInteriorDesc::GetDefaultCompartment() const
+	{
+	for (int i = 0; i < GetCount(); i++)
+		{
+		if (m_Compartments[i].fDefault)
+			return m_Compartments[i];
+		}
+
+	//	Return the null compartment if we dont have a default compartment
+
+	return NULL_COMPARTMENT;
+	}
+
 Metric CShipInteriorDesc::GetFortificationAdj(EDamageMethod iMethod, ECompartmentTypes iCompartmentType) const
 	{
 	Metric rAdj = m_Fortified.Get(iMethod);

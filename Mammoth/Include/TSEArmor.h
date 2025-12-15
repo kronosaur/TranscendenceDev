@@ -180,8 +180,8 @@ class CArmorClass
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
 		CString m_sMassClass;					//	Computed mass class (computed in Bind)
 		int m_iBalanceAdj;						//	Manual adjustment to balance calculation
-		Metric m_rFortification = 1.0;			//	Fortification Adj for WMD curve on this armor
-		Metric m_rMinFortificationAdj = -1.0;	//	Lower cap on fortification adj for WMD curve on this armor
+		SDamageMethodAdj m_Fortification;		//	Fortification Adj for Damage Method curves on this armor
+		SDamageMethodAdj m_MinFortificationAdj;	//	Lower cap on fortification adj for Damage Method curves on this armor
 
 		DWORD m_fPhotoRecharge:1;				//	TRUE if refuels when near a star
 		DWORD m_fShieldInterference:1;			//	TRUE if armor interferes with shields
@@ -207,7 +207,7 @@ class CArmorClass
 //  Ship Armor Segments --------------------------------------------------------
 //
 //  CShipArmorDesc is a descriptor, generally held in CShipClass, that defines
-//  the number and distribution of armor segmens for a ship.
+//  the number and distribution of armor segments for a ship.
 
 class CShipArmorSegmentDesc
 	{

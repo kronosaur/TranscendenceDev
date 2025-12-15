@@ -110,9 +110,9 @@ void CShipInterior::CreateAttached (CShip *pShip, const CShipInteriorDesc &Desc)
 Metric CShipInterior::CalcDamageFortificationAdj (EDamageMethod iMethod, CShip* pShip, const CShipInteriorDesc& Desc, SDamageCtx& Ctx)
 	{
 
-	Metric rFortification = Desc.GetFortificationAdj();
+	Metric rFortification = Desc.GetFortificationAdj(iMethod, pShip->GetDefaultCompartmentType());
 
-	Metric rMinFortificationAdj = Desc.GetFortificationMinAdj();
+	Metric rMinFortificationAdj = Desc.GetFortificationMinAdj(iMethod);
 
 	//	If we don't have WMD and we're not making much progress, then show a hint.
 
@@ -132,6 +132,7 @@ Metric CShipInterior::CalcDamageFortificationAdj (EDamageMethod iMethod, CShip* 
 			}
 		}
 
+	return rFortificationAdj;
 	}
 
 //	Damage
