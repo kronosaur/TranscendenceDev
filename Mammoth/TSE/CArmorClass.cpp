@@ -769,29 +769,28 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 		{
-		EDamageMethod iMethods[3] = { EDamageMethod::methodCrush, EDamageMethod::methodPierce, EDamageMethod::methodShred };
 
 		Metric rFortificationAdj = 1.0;
 		Metric rFortificationAdjMin = 0.0;
 
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
 			{
-			EDamageMethod iMethod = iMethods[i];
+			EDamageMethod iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
 
-			Metric rMethodFortificationAdj = Ctx.ArmorExternFortification.GetWMD();
-			Metric rMethodFortificationAdjMin = Ctx.ArmorExternMinFortification.GetWMD();
+			Metric rMethodFortificationAdj = Ctx.ArmorExternFortification.Get(iMethod);
+			Metric rMethodFortificationAdjMin = Ctx.ArmorExternMinFortification.Get(iMethod);
 
 			//	Stacked fortification modifiers are multiplied together
 
-			if (IS_NAN(m_Fortification.GetWMD()))
+			if (IS_NAN(m_Fortification.Get(iMethod)))
 				rMethodFortificationAdj *= g_pUniverse->GetEngineOptions().GetDamageMethodAdjItemArmor(iMethod);
 			else
-				rMethodFortificationAdj *= m_Fortification.GetWMD();
+				rMethodFortificationAdj *= m_Fortification.Get(iMethod);
 
-			if (m_MinFortificationAdj.GetWMD() < 0)
+			if (m_MinFortificationAdj.Get(iMethod) < 0)
 				rMethodFortificationAdjMin *= g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj();
 			else
-				rMethodFortificationAdjMin *= m_MinFortificationAdj.GetWMD();
+				rMethodFortificationAdjMin *= m_MinFortificationAdj.Get(iMethod);
 
 			rFortificationAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortificationAdj, rMethodFortificationAdjMin);
 			}
