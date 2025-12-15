@@ -313,7 +313,7 @@ const SCompartmentDesc& CShipInteriorDesc::GetDefaultCompartment() const
 
 Metric CShipInteriorDesc::GetFortificationAdj(EDamageMethod iMethod, ECompartmentTypes iCompartmentType) const
 	{
-	Metric rAdj = m_Fortified.Get(iMethod);
+	Metric rAdj = m_Fortification.Get(iMethod);
 	return IS_NAN(rAdj) ? g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipCompartmentGeneral(iMethod) : rAdj;
 	}
 
@@ -363,57 +363,61 @@ ALERROR CShipInteriorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		{
 		if (bHasPhysicalizedFortify)
 			{
-			m_Fortified.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_ATTRIB, R_NAN));
-			m_Fortified.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, R_NAN));
-			m_Fortified.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_ATTRIB, R_NAN));
+			m_Fortification.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_ATTRIB, R_NAN));
+			m_Fortification.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, R_NAN));
+			m_Fortification.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_ATTRIB, R_NAN));
 			}
 		else if (bHasWMDFortify)
 			{
-			m_Fortified.SetCrush(R_NAN);
-			m_Fortified.SetPierce(R_NAN);
-			m_Fortified.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, R_NAN));
+			m_Fortification.SetCrush(R_NAN);
+			m_Fortification.SetPierce(R_NAN);
+			m_Fortification.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, R_NAN));
 			}
 		else
 			{
-			m_Fortified.SetCrush(R_NAN);
-			m_Fortified.SetPierce(R_NAN);
-			m_Fortified.SetShred(R_NAN);
+			m_Fortification.SetCrush(R_NAN);
+			m_Fortification.SetPierce(R_NAN);
+			m_Fortification.SetShred(R_NAN);
 			}
+
+		Metric rDefaultMinAdj = -1.0;
 
 		if (bHasPhysicalizedMinFortify)
 			{
-			m_MinFortificationAdj.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_MIN_ATTRIB, R_NAN));
-			m_MinFortificationAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, R_NAN));
-			m_MinFortificationAdj.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_MIN_ATTRIB, R_NAN));
+			m_MinFortificationAdj.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_MIN_ATTRIB, rDefaultMinAdj));
+			m_MinFortificationAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, rDefaultMinAdj));
+			m_MinFortificationAdj.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_MIN_ATTRIB, rDefaultMinAdj));
 			}
 		else if (bHasWMDMinFortify)
 			{
-			m_MinFortificationAdj.SetCrush(R_NAN);
-			m_MinFortificationAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, R_NAN));
-			m_MinFortificationAdj.SetShred(R_NAN);
+			m_MinFortificationAdj.SetCrush(rDefaultMinAdj);
+			m_MinFortificationAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, rDefaultMinAdj));
+			m_MinFortificationAdj.SetShred(rDefaultMinAdj);
 			}
 		else
 			{
-			m_MinFortificationAdj.SetCrush(R_NAN);
-			m_MinFortificationAdj.SetPierce(R_NAN);
-			m_MinFortificationAdj.SetShred(R_NAN);
+			m_MinFortificationAdj.SetCrush(rDefaultMinAdj);
+			m_MinFortificationAdj.SetPierce(rDefaultMinAdj);
+			m_MinFortificationAdj.SetShred(rDefaultMinAdj);
 			}
 		}
 	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
 		{
 		if (bHasWMDFortify)
-			m_Fortified.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, R_NAN));
+			m_Fortification.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, R_NAN));
 		else if (bHasPhysicalizedFortify)
-			m_Fortified.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_ATTRIB, R_NAN));
+			m_Fortification.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_ATTRIB, R_NAN));
 		else
-			m_Fortified.SetWMD(R_NAN);
+			m_Fortification.SetWMD(R_NAN);
+
+		Metric rDefaultMinAdj = -1.0;
 
 		if (bHasWMDMinFortify)
-			m_MinFortificationAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, R_NAN));
+			m_MinFortificationAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, rDefaultMinAdj));
 		else if (bHasPhysicalizedMinFortify)
-			m_MinFortificationAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, R_NAN));
+			m_MinFortificationAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, rDefaultMinAdj));
 		else
-			m_MinFortificationAdj.SetWMD(R_NAN);
+			m_MinFortificationAdj.SetWMD(rDefaultMinAdj);
 		}
 	else
 		{

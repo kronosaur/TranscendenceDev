@@ -255,7 +255,7 @@ class CShipArmorSegmentDesc
 		int m_iLevel = 1;					//  For scalable armor
 		CRandomEnhancementGenerator m_Enhanced;//	Mods
 		DWORD m_dwAreaSet = 0;				//	Areas that this section protects
-		SDamageMethodAdj m_Fortified;			//	Adjusts WMD adj curve from the WMD0 end
+		SDamageMethodAdj m_Fortification;			//	Adjusts WMD adj curve from the WMD0 end
 		SDamageMethodAdj m_MinFortificationAdj;	//	Min WMD adj
 	};
 

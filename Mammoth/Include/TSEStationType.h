@@ -55,7 +55,7 @@ class CStationHullDesc
 		int m_iHitPoints = 0;				//	Hit points at creation time
 		int m_iMaxHitPoints = 0;			//	Max hit points
 		CRegenDesc m_Regen;					//	Repair rate
-		SDamageMethodAdj m_Fortified;			//	WMD damage adj curve at WMD0
+		SDamageMethodAdj m_Fortification;			//	WMD damage adj curve at WMD0
 		SDamageMethodAdj m_MinFortificationAdj;	//	Minimum WMD adj from fortification
 
 		int m_iStructuralHP = 0;			//	Initial structural hit points

@@ -1587,23 +1587,25 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 			pArmor->m_Fortification.SetShred(R_NAN);
 			}
 
+		Metric rDefaultMinAdj = -1.0;
+
 		if (bHasPhysicalizedMinFortify)
 			{
-			pArmor->m_MinFortificationAdj.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_MIN_ATTRIB, R_NAN));
-			pArmor->m_MinFortificationAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, R_NAN));
-			pArmor->m_MinFortificationAdj.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_MIN_ATTRIB, R_NAN));
+			pArmor->m_MinFortificationAdj.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_MIN_ATTRIB, rDefaultMinAdj));
+			pArmor->m_MinFortificationAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, rDefaultMinAdj));
+			pArmor->m_MinFortificationAdj.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_MIN_ATTRIB, rDefaultMinAdj));
 			}
 		else if (bHasWMDMinFortify)
 			{
-			pArmor->m_MinFortificationAdj.SetCrush(R_NAN);
-			pArmor->m_MinFortificationAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, R_NAN));
-			pArmor->m_MinFortificationAdj.SetShred(R_NAN);
+			pArmor->m_MinFortificationAdj.SetCrush(rDefaultMinAdj);
+			pArmor->m_MinFortificationAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, rDefaultMinAdj));
+			pArmor->m_MinFortificationAdj.SetShred(rDefaultMinAdj);
 			}
 		else
 			{
-			pArmor->m_MinFortificationAdj.SetCrush(R_NAN);
-			pArmor->m_MinFortificationAdj.SetPierce(R_NAN);
-			pArmor->m_MinFortificationAdj.SetShred(R_NAN);
+			pArmor->m_MinFortificationAdj.SetCrush(rDefaultMinAdj);
+			pArmor->m_MinFortificationAdj.SetPierce(rDefaultMinAdj);
+			pArmor->m_MinFortificationAdj.SetShred(rDefaultMinAdj);
 			}
 		}
 	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
@@ -1615,12 +1617,14 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 		else
 			pArmor->m_Fortification.SetWMD(R_NAN);
 
+		Metric rDefaultMinAdj = -1.0;
+
 		if (bHasWMDMinFortify)
-			pArmor->m_MinFortificationAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, R_NAN));
+			pArmor->m_MinFortificationAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, rDefaultMinAdj));
 		else if (bHasPhysicalizedMinFortify)
-			pArmor->m_MinFortificationAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, R_NAN));
+			pArmor->m_MinFortificationAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, rDefaultMinAdj));
 		else
-			pArmor->m_MinFortificationAdj.SetWMD(R_NAN);
+			pArmor->m_MinFortificationAdj.SetWMD(rDefaultMinAdj);
 		}
 	else
 		{

@@ -130,7 +130,16 @@ int CShipArmorSegmentDesc::GetLevel (void) const
 
 Metric CShipArmorSegmentDesc::GetFortificationAdj(EDamageMethod iMethod) const
 	{
-	return Metric();
+	Metric rAdj = m_Fortification.Get(iMethod);
+	if (!IS_NAN(rAdj))
+		return rAdj;
+	switch (m_dwAreaSet)
+		{
+		case CShipClass::VitalSections::sectCritical:
+			return g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCritical(iMethod);
+		default:
+			return g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCritical(iMethod);
+		}
 	}
 
 Metric CShipArmorSegmentDesc::GetMinFortificationAdj (EDamageMethod iMethod) const
@@ -159,7 +168,7 @@ ALERROR CShipArmorSegmentDesc::Init (
     m_iLevel = iLevel;
     m_Enhanced = Enhancement;
     m_dwAreaSet = CShipClass::sectCritical;
-	m_Fortified = Fortification;
+	m_Fortification = Fortification;
 	m_MinFortificationAdj = MinFortificationAdj;
 
     return NOERROR;
@@ -222,9 +231,9 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (
 
 		if (bHasPhysicalizedFortification)
 			{
-			m_Fortified.SetCrush(Desc.GetAttributeDoubleDefault(FORTIFICATION_CRUSH_ATTRIB, DefaultFortification.GetCrush()));
-			m_Fortified.SetPierce(Desc.GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, DefaultFortification.GetPierce()));
-			m_Fortified.SetShred(Desc.GetAttributeDoubleDefault(FORTIFICATION_SHRED_ATTRIB, DefaultFortification.GetShred()));
+			m_Fortification.SetCrush(Desc.GetAttributeDoubleDefault(FORTIFICATION_CRUSH_ATTRIB, DefaultFortification.GetCrush()));
+			m_Fortification.SetPierce(Desc.GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, DefaultFortification.GetPierce()));
+			m_Fortification.SetShred(Desc.GetAttributeDoubleDefault(FORTIFICATION_SHRED_ATTRIB, DefaultFortification.GetShred()));
 			}
 
 		//	Otherwise we have to translate WMD to physical
@@ -232,21 +241,21 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (
 
 		else if (bHasWMDFortification)
 			{
-			m_Fortified.SetPierce(Desc.GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, DefaultFortification.GetPierce()));
+			m_Fortification.SetPierce(Desc.GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, DefaultFortification.GetPierce()));
 
 			//	Crush and Shred read in the ship defaults
 
-			m_Fortified.SetCrush(DefaultFortification.GetCrush());
-			m_Fortified.SetShred(DefaultFortification.GetShred());
+			m_Fortification.SetCrush(DefaultFortification.GetCrush());
+			m_Fortification.SetShred(DefaultFortification.GetShred());
 			}
 
 		//	Otherwise we use the default
 
 		else
 			{
-			m_Fortified.SetCrush(DefaultFortification.GetCrush());
-			m_Fortified.SetPierce(DefaultFortification.GetPierce());
-			m_Fortified.SetShred(DefaultFortification.GetShred());
+			m_Fortification.SetCrush(DefaultFortification.GetCrush());
+			m_Fortification.SetPierce(DefaultFortification.GetPierce());
+			m_Fortification.SetShred(DefaultFortification.GetShred());
 			}
 
 		if (bHasPhysicalizedMinFortify)
@@ -274,18 +283,18 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (
 		//	If we specify WMD fortification use that
 		
 		if (bHasWMDFortification)
-			m_Fortified.SetWMD(Desc.GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, DefaultFortification.GetWMD()));
+			m_Fortification.SetWMD(Desc.GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, DefaultFortification.GetWMD()));
 
 		//	Otherwise we need to translate physical fortification to the WMD system
 		//	For armor, this is just pierce -> WMD
 
 		else if (bHasPhysicalizedFortification)
-			m_Fortified.SetWMD(Desc.GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, DefaultFortification.GetWMD()));
+			m_Fortification.SetWMD(Desc.GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, DefaultFortification.GetWMD()));
 
 		//	Otherwise we use the default
 
 		else
-			m_Fortified.SetWMD(DefaultFortification.GetWMD());
+			m_Fortification.SetWMD(DefaultFortification.GetWMD());
 
 		if (bHasWMDMinFortify)
 			m_MinFortificationAdj.SetWMD(Desc.GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, MinFortificationAdj.GetWMD()));
