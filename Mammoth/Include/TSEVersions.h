@@ -808,6 +808,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //						All targets of null damage have a damageAdj of 0 (immunity)
 //							to null damage's HP value (this allows scripts that utilize
 //							damage output, like mining, to function correctly)
+//				miningMethod: "ablative"|"drill"|"explosive"|"shockwave"|"universal"
+//					universal: new mining method (no bonuses, no penalties)
+//						As of API58, this mining method must be manually assigned.
 //		<ShipClass>
 //			<Armor>
 //				fortificationWMDAdj: (float)

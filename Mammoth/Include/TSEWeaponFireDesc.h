@@ -631,13 +631,14 @@ enum class EMiningMethod
 	{
 	unknown = -1,
 
-	ablation = 0,
-	drill = 1,
-	explosion = 2,
-	shockwave = 3,
+	universal = 0,
+	ablation = 1,
+	drill = 2,
+	explosion = 3,
+	shockwave = 4,
 	};
 
-constexpr int EMiningMethodCount = 4;
+constexpr int EMiningMethodCount = 5;
 
 //	WeaponFireDesc -------------------------------------------------------------
 
