@@ -1,55 +1,55 @@
-//	CMassDestructionDesc.cpp
+//	CDamageMethodDesc.cpp
 //
-//	CMassDestructionDesc class
+//	CDamageMethodDesc class
 //	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
-#define WMD_ADJ_ATTRIB						CONSTLIT("wmdAdj")
-#define WMD_DISPLAY_ATTRIB					CONSTLIT("wmdDisplay")
-#define WMD_DISPLAY_PREFIX_ATTRIB			CONSTLIT("wmdDisplayPrefix")
-#define WMD_MIN_DAMAGE_ATTRIB				CONSTLIT("wmdMinDamage")
+#define DAMAGE_METHOD_ADJ_ATTRIB						CONSTLIT("damageMethodAdj")
+#define DAMAGE_METHOD_DISPLAY_ATTRIB					CONSTLIT("damageMethodDisplay")
+#define DAMAGE_METHOD_DISPLAY_PREFIX_ATTRIB				CONSTLIT("damageMethodDisplayPrefix")
 
-//	GetWMDAdj
+//	GetDamageMethodAdj
 // 
-//	Get raw WMD adj as a floating point number
+//	Get raw DamageMethod adj as a floating point number
 //
-Metric CMassDestructionDesc::GetWMDAdj (int iLevel) const
+Metric CDamageMethodDesc::GetDamageMethodAdj (int iLevel) const
 	{
-	iLevel = max(min(iLevel, MAX_WMD_LEVEL), 0);
+	iLevel = max(min(iLevel, MAX_DAMAGE_METHOD_LEVEL), 0);
 	return m_Desc[iLevel].rAdj;
 	}
 
-//	GetStochasticWMDAdj
+//	GetStochasticDamageMethodAdj
 //
-//	Get Stochastically Rounded WMD as integer Adj
-//	Use GetWMDAdj for accurate Adj math.
-//	Use GetStochasticWMDAdj for accurate Adj balance on legacy algorithms.
+//	Get Stochastically Rounded DamageMethod as integer Adj
+//	Use GetDamageMethodAdj for accurate Adj math.
+//	Use GetStochasticDamageMethodAdj for accurate Adj balance on legacy algorithms.
 //
-int CMassDestructionDesc::GetStochasticWMDAdj (int iLevel) const
+int CDamageMethodDesc::GetStochasticDamageMethodAdj (int iLevel) const
 	{
-	return mathRoundStochastic(GetWMDAdj(iLevel) * 100);
+	return mathRoundStochastic(GetDamageMethodAdj(iLevel) * 100);
 	}
 
-//	GetRoundedWMDAdj
+//	GetRoundedDamageMethodAdj
 //
-//	Get Rounded WMD as integer Adj
-//	Use GetWMDAdj for accurate Adj math.
-//	Use GetStochasticWMDAdj for accurate Adj balance on legacy algorithms.
-//	Recommended only if you need to use WMD Adj in legacy algorithms that expect consistent output.
+//	Get Rounded DamageMethod as integer Adj
+//	Use GetDamageMethodAdj for accurate Adj math.
+//	Use GetStochasticDamageMethodAdj for accurate Adj balance on legacy algorithms.
+//	Recommended only if you need to use DamageMethod Adj in legacy algorithms that expect consistent output.
+//	(ex, for UI purposes)
 //
-int CMassDestructionDesc::GetRoundedWMDAdj (int iLevel) const
+int CDamageMethodDesc::GetRoundedDamageMethodAdj (int iLevel) const
 	{
-	return mathRound(GetWMDAdj(iLevel) * 100);
+	return mathRound(GetDamageMethodAdj(iLevel) * 100);
 	}
 
-//	GetWMDLabel
+//	GetDamageMethodLabel
 //	
-//	Get Integer Suffix to display for this WMD label
+//	Get Suffix to display for this DamageMethod label
 //
-CString CMassDestructionDesc::GetWMDLabel (int iLevel) const
+CString CDamageMethodDesc::GetDamageMethodLabel (int iLevel) const
 	{
-	iLevel = max(min(iLevel, MAX_WMD_LEVEL), 0);
+	iLevel = max(min(iLevel, MAX_DAMAGE_METHOD_LEVEL), 0);
 	return m_Desc[iLevel].sLabel;
 	}
 
@@ -60,23 +60,22 @@ CString CMassDestructionDesc::GetWMDLabel (int iLevel) const
 //
 //	In this path there is no need for Bind.
 //
-ALERROR CMassDestructionDesc::InitFromArray (const TArray<double>& Adj, const TArray<const char*>& Labels, int iMinDamage, CString sAttribPrefix)
+ALERROR CDamageMethodDesc::InitFromArray (const TArray<double>& Adj, const TArray<const char*>& Labels, CString sAttribPrefix)
 
 	{
 	//	Ensure our arrays are valid
 
-	if (Adj.GetCount() != MAX_WMD_LEVEL_COUNT || Labels.GetCount() != MAX_WMD_LEVEL_COUNT)
+	if (Adj.GetCount() != MAX_DAMAGE_METHOD_LEVEL_COUNT || Labels.GetCount() != MAX_DAMAGE_METHOD_LEVEL_COUNT)
 		return ERR_FAIL;
 
 	//	Ensure that for all mathematical relevancy, WMD 7 == 1.0 Adj
 
-	if (!(Adj[MAX_WMD_LEVEL] + g_Epsilon > 1.0 && Adj[MAX_WMD_LEVEL] - g_Epsilon < 1.0))
+	if (!(Adj[MAX_DAMAGE_METHOD_LEVEL] + g_Epsilon > 1.0 && Adj[MAX_DAMAGE_METHOD_LEVEL] - g_Epsilon < 1.0))
 		return ERR_FAIL;
 
-	m_iMinDamage = iMinDamage;
 	m_sAttribPrefix = sAttribPrefix;
 
-	for (int i = 0; i < MAX_WMD_LEVEL_COUNT; i++)
+	for (int i = 0; i < MAX_DAMAGE_METHOD_LEVEL_COUNT; i++)
 		{
 		m_Desc[i].rAdj = Adj[i];
 		m_Desc[i].sLabel = CString(Labels[i]);
@@ -96,7 +95,7 @@ ALERROR CMassDestructionDesc::InitFromArray (const TArray<double>& Adj, const TA
 //	and
 //	sLabel:		10		20		30		40		55		70		85		100
 //
-ALERROR CMassDestructionDesc::InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAdj, const CString &sLabels, int iMinDamage, CString sAttribPrefix)
+ALERROR CDamageMethodDesc::InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAdj, const CString &sLabels, CString sAttribPrefix)
 
 	{
 	//	Short-circuit
@@ -129,7 +128,7 @@ ALERROR CMassDestructionDesc::InitFromWMDLevel (SDesignLoadCtx &Ctx, const CStri
 
 	//	Init the WMD levels
 
-	for (int i = 0; i < MAX_WMD_LEVEL_COUNT; i++)
+	for (int i = 0; i < MAX_DAMAGE_METHOD_LEVEL_COUNT; i++)
 		{
 		//	Insert label
 		//	
@@ -168,7 +167,7 @@ ALERROR CMassDestructionDesc::InitFromWMDLevel (SDesignLoadCtx &Ctx, const CStri
 		//	the max WMD element must be 1.0
 		//	since everything is adjusted relative to WMD7
 
-		if (i == MAX_WMD_LEVEL && (m_Desc[i].rAdj > 1.0 + g_Epsilon || m_Desc[i].rAdj < 1.0 - g_Epsilon))
+		if (i == MAX_DAMAGE_METHOD_LEVEL && (m_Desc[i].rAdj > 1.0 + g_Epsilon || m_Desc[i].rAdj < 1.0 - g_Epsilon))
 			{
 			Ctx.sError = CONSTLIT("The adj value of WMD7 must be equal to 1.0 (100 %)");
 			return ERR_FAIL;
@@ -177,7 +176,6 @@ ALERROR CMassDestructionDesc::InitFromWMDLevel (SDesignLoadCtx &Ctx, const CStri
 
 	//	Insert values
 
-	m_iMinDamage = iMinDamage;
 	m_sAttribPrefix = sAttribPrefix;
 
 	//	Done
@@ -191,43 +189,31 @@ ALERROR CMassDestructionDesc::InitFromWMDLevel (SDesignLoadCtx &Ctx, const CStri
 //
 //	If bIsDefault is TRUE then we don't need to bind.
 //
-ALERROR CMassDestructionDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc)
+ALERROR CDamageMethodDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc)
 
 	{
 	CString sAdj;
 	CString sLabels;
 	CString sPrefix;
-	int iMinDamage;
 
 	//	Collect all attributes
 
-	if (!XMLDesc.FindAttribute(WMD_ADJ_ATTRIB, &sAdj))
+	if (!XMLDesc.FindAttribute(DAMAGE_METHOD_ADJ_ATTRIB, &sAdj))
 		{
 		Ctx.sError = CONSTLIT("Invalid WMDLevels definition: wmdAdj missing.");
 		return ERR_FAIL;
 		}
 
-	if (!XMLDesc.FindAttribute(WMD_DISPLAY_ATTRIB, &sLabels))
+	if (!XMLDesc.FindAttribute(DAMAGE_METHOD_DISPLAY_ATTRIB, &sLabels))
 		{
 		Ctx.sError = CONSTLIT("Invalid WMDLevels definition: wmdAdj missing.");
 		return ERR_FAIL;
 		}
 
-	if (!XMLDesc.FindAttribute(WMD_DISPLAY_PREFIX_ATTRIB, &sPrefix))
+	if (!XMLDesc.FindAttribute(DAMAGE_METHOD_DISPLAY_PREFIX_ATTRIB, &sPrefix))
 		sPrefix = m_sAttribPrefix;
 
-	if (XMLDesc.FindAttributeInteger(WMD_MIN_DAMAGE_ATTRIB, &iMinDamage))
-		{
-		if (iMinDamage < 0)
-			{
-			Ctx.sError = CONSTLIT("wmdMinDamage must be greater or equal to 0.");
-			return ERR_FAIL;
-			}
-		}
-	else
-		iMinDamage = m_iMinDamage;
-
-	return InitFromWMDLevel(Ctx, sAdj, sLabels, iMinDamage, sPrefix);
+	return InitFromWMDLevel(Ctx, sAdj, sLabels, sPrefix);
 	}
 
 //	ParseWMDAdjList
@@ -238,11 +224,11 @@ ALERROR CMassDestructionDesc::InitFromXML (SDesignLoadCtx &Ctx, const CXMLElemen
 // 
 //	Returns ERR_FAIL if the count of elements is not 8.
 //
-ALERROR CMassDestructionDesc::ParseWMDAdjList(CString sAttrib, TArray<CString> &DamageAdj) const
+ALERROR CDamageMethodDesc::ParseWMDAdjList(CString sAttrib, TArray<CString> &DamageAdj) const
 	{
 	ParseAttributes(sAttrib, &DamageAdj);
 
-	if (DamageAdj.GetCount() != MAX_WMD_LEVEL_COUNT)
+	if (DamageAdj.GetCount() != MAX_DAMAGE_METHOD_LEVEL_COUNT)
 		return ERR_FAIL;
 
 	return NOERROR;
@@ -256,11 +242,11 @@ ALERROR CMassDestructionDesc::ParseWMDAdjList(CString sAttrib, TArray<CString> &
 // 
 //	Returns ERR_FAIL if the count of elements is not 8.
 //
-ALERROR CMassDestructionDesc::ParseWMDLabelList(CString sAttrib, TArray<CString> &DamageAdj) const
+ALERROR CDamageMethodDesc::ParseWMDLabelList(CString sAttrib, TArray<CString> &DamageAdj) const
 	{
 	ParseAttributes(sAttrib, &DamageAdj);
 
-	if (DamageAdj.GetCount() != MAX_WMD_LEVEL_COUNT-1)
+	if (DamageAdj.GetCount() != MAX_DAMAGE_METHOD_LEVEL_COUNT-1)
 		return ERR_FAIL;
 
 	return NOERROR;

@@ -52,15 +52,103 @@
 			-->
 			<Constant id="core.defaultCorewardNode">		'G2</Constant>
 
-			<!-- Defaults for WMD Fortification Adj (Adj at WMD0) -->
+			<!-- Defaults for Damage Method system (WMD) -->
 
-			<Constant id="core.WMDFortified.ShipCompartment">	0.1</Constant>
-			<Constant id="core.WMDFortified.MultihullStation">	0.1</Constant>
-			<Constant id="core.WMDFortified.Station">			1.0</Constant>
-			<Constant id="core.WMDFortified.ArmorSegment">		1.0</Constant>
-			<Constant id="core.WMDFortified.Armor">				1.0</Constant>
-			<Constant id="core.WMDFortified.Shield">			1.0</Constant>
-			<Constant id="core.WMDFortified.DefaultMinAdj">		0.0</Constant>
+			<Constant id="core.damageMethod.system">			'WMD</Constant>
+			<Constant id="core.damageMethod.minAdj">			0.0</Constant>
+			<Constant id="core.damageMethod.minDamage">			0</Constant>
+
+			<!-- Defaults for Damage Method (WMD) Fortification Adj (Adj at WMD0) -->
+
+			<Constant id="core.damageMethod.item">
+				{
+				armor:
+					{
+					WMD: 1.0
+					}
+				shield:
+					{
+					WMD: 1.0
+					}
+				}
+			</Constant>
+
+			<Constant id="core.damageMethod.ship">
+				{
+				armor:
+					{
+					critical:
+						{
+						WMD: 1.0
+						}
+
+					;;	nonCritical applies to segments marked as noncritical or unmarked segments
+					;;	on a ship with compartments
+
+					nonCritical:
+						{
+						WMD: 1.0
+						}
+					
+					;;	Base chance to be destroyed on a shot to a depleted noncritical segment
+
+					nonCriticalDestruction:
+						{
+						WMD: 0.05
+						}
+					}
+
+				;;	Applies based on the default compartment type of this ship
+
+				compartments:
+					{
+					general:
+						{
+						WMD: 0.1
+						}
+					cargo:
+						{
+						WMD: 0.1
+						}
+					mainDrive:
+						{
+						WMD: 0.1
+						}
+					}
+				}
+			</Constant>
+
+			<Constant id="core.damageMethod.station">
+				{
+				hull:
+					{
+					single:
+						{
+						WMD: 1.0
+						}
+					multi:
+						{
+						WMD: 0.1 
+						}
+
+					;;	Note that in the WMD damage method system
+					;;	asteroid hulls require either WMD mining damage instead of normal WMD
+
+					asteroid:
+						{
+						WMD: 0.1
+						}
+
+					;;	Note that in the WMD damage method system
+					;;	underground hulls require mining damage instead of normal WMD
+
+					underground:
+						{
+						WMD: 0.1
+						}
+					}
+				}
+			</Constant>
 
 			<!-- Defaults for shot interaction -->
 
@@ -304,12 +392,13 @@
 													#	WMD0	WMD1	WMD2	WMD3	WMD4	WMD5	WMD6	WMD7
 			-->
 
-			<WMDAdj
-				wmdAdj=								"	0.10,	0.25,	0.32,	0.40,	0.50,	0.63,	0.80,	1.0"
-				wmdDisplay=							"			2,		3,		4,		5,		6,		8,		10"
-				wmdDisplayPrefix=					"WMD "
-				wmdMinDamage=						"0"
-				/>
+			<DamageMethodAdj>
+				<WMD
+					damageMethodAdj=				"	0.10,	0.25,	0.32,	0.40,	0.50,	0.63,	0.80,	1.0"
+					damageMethodDisplay=			"			2,		3,		4,		5,		6,		8,		10"
+					damageMethodDisplayPrefix=		"WMD "
+					/>
+			</DamageMethodAdj>
 			
 		</Constants>
 	</AdventureDesc>
