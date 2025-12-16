@@ -40,6 +40,9 @@ enum class EPropertyType
 	propEngine,					//	Property handled by the engine
 
 	propDefinitionEvalNeeded,	//	Same as propDefinition, but needs eval.
+
+	propGlobalOverride,			//	Type-based, eval at override-time
+	propDataOverride,			//	Object-based, eval at override-time
 	};
 
 class CDesignPropertyDefinitions
