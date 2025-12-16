@@ -740,7 +740,8 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 	pShield->m_iHitPoints = pDesc->GetAttributeInteger(HIT_POINTS_ATTRIB);
 	pShield->m_iArmorShield = pDesc->GetAttributeInteger(ARMOR_SHIELD_ATTRIB);
 	pShield->m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, 0);
-	pShield->m_iIdlePowerUse = pDesc->GetAttributeIntegerBounded(IDLE_POWER_USE_ATTRIB, 0, -1, pShield->m_iPowerUse / 2);
+	int iDefaultIdlePowerUse = mathRound((Metric)pShield->m_iPowerUse * g_pUniverse->GetEngineOptions().GetShieldIdlePowerRatio());
+	pShield->m_iIdlePowerUse = pDesc->GetAttributeIntegerBounded(IDLE_POWER_USE_ATTRIB, 0, -1, iDefaultIdlePowerUse);
 
 	//	Charges
 

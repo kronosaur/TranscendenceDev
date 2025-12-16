@@ -150,6 +150,10 @@
 				}
 			</Constant>
 
+			<!-- Defaults for item balance -->
+
+			<Constant id="core.item.shield.idlePowerAdj">	0.125</Constant>
+
 			<!-- Defaults for shot interaction -->
 
 			<Constant id="core.defaultInteraction">			Nil</Constant>

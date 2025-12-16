@@ -828,6 +828,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //					The damage method system to use.
 //					Currently only WMD is available.
 //					Default 'WMD
+//				<Constant id="core.item.shield.idlePowerAdj">
+//					Returns a floating point value to adjust idle power consumption of shields.
+//					Default: 0.125
 //		<ItemType>
 //			<Armor>
 //				fortificationWMDAdj: (float)

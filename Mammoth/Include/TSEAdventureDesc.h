@@ -40,6 +40,7 @@ class CEngineOptions
 		EDamageMethodSystem GetDamageMethodSystem () const { return m_iDamageMethodSystem; }
 		const CMiningDamageLevelDesc* GetMiningMaxOreLevels () const { return &m_MiningDamageMaxOreLevels; }
 		const CDamageAdjDesc* GetShieldDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ShieldDamageAdj[iLevel - 1]; }
+		Metric GetShieldIdlePowerRatio () const { return m_rDefaultShieldIdlePowerRatio; }
 		bool HidesArmorImmunity (SpecialDamageTypes iSpecial) const;
 		bool InitArmorDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomArmorDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ArmorDamageAdj); }
 		bool InitExternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
@@ -166,6 +167,10 @@ class CEngineOptions
 
 		int m_iDefaultInteraction = -1;
 		int m_iDefaultShotHP = -1;
+
+		//	Default power consumption
+
+		Metric m_rDefaultShieldIdlePowerRatio = 0.125;
 
 		//	Default Damage Method behavior
 
