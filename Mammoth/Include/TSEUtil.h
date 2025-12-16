@@ -649,10 +649,143 @@ class CDamageAdjDesc
 		const CDamageAdjDesc *m_pDefault;		//	Default table
 	};
 
+enum class EDamageMethodSystem
+	{
+	dmgMethodSysError =						-100,	//	Uninitialized or error state
+	
+	dmgMethodSysPhysicalized =				0,		//	multi physical damage methods
+	dmgMethodSysWMD =						1,		//	single damage method, WMD
+	};
+
+enum class EDamageMethod
+	{
+	methodError =							-100,	//	Uninitialized or error state
+
+	methodWMD =								0,		//	original WMD
+	methodCrush =							1,		//	Physicalized: crush
+	methodPierce =							2,		//	Physicalized: pierce
+	methodShred =							3,		//	Physicalized: shred
+	};
+
+constexpr BYTE PHYSICALIZED_DAMAGE_METHOD_COUNT = 3;
+constexpr EDamageMethod PHYSICALIZED_DAMAGE_METHODS[3] = {EDamageMethod::methodCrush, EDamageMethod::methodPierce, EDamageMethod::methodShred};
+
+struct SDamageMethodAdj
+	{
+	public:
+
+		Metric GetCrush () const { return rAdj[0]; }
+		Metric GetPierce () const { return rAdj[1]; }
+		Metric GetShred () const { return rAdj[2]; }
+		Metric GetWMD () const { return rAdj[0]; }
+		Metric Get (EDamageMethod iMethod) const
+			{
+			switch (iMethod)
+				{
+				case EDamageMethod::methodCrush:
+				case EDamageMethod::methodWMD:
+					return rAdj[0];
+					break;
+				case EDamageMethod::methodPierce:
+					return rAdj[1];
+					break;
+				case EDamageMethod::methodShred:
+					return rAdj[2];
+					break;
+				default:
+					ASSERT(false);
+					return R_NAN;
+				}
+			}
+
+		void SetCrush (Metric rNew) { rAdj[0] = rNew; }
+		void SetPierce (Metric rNew) { rAdj[1] = rNew; }
+		void SetShred (Metric rNew) { rAdj[2] = rNew; }
+		void SetWMD (Metric rNew) { rAdj[0] = rNew; }
+		void Set (EDamageMethod iMethod, Metric rNew)
+			{
+			switch (iMethod)
+				{
+				case EDamageMethod::methodCrush:
+				case EDamageMethod::methodWMD:
+					rAdj[0] = rNew;
+					break;
+				case EDamageMethod::methodPierce:
+					rAdj[1] = rNew;
+					break;
+				case EDamageMethod::methodShred:
+					rAdj[2] = rNew;
+					break;
+				default:
+					ASSERT(false);
+				}
+			}
+
+		void Reset ()
+			{
+			rAdj[0] = 1.0;
+			rAdj[1] = 1.0;
+			rAdj[2] = 1.0;
+			}
+
+	private:
+
+		Metric rAdj[3] = { 1.0, 1.0, 1.0 };
+	};
+
+enum class EDamageMethodTarget
+	{
+	targetNone =							-100,	//	Uninitialized or error type
+
+	targetItem =							0,		//	When checking for a specific item's adjustment
+	targetShip =							1,
+	targetStation =							2,
+	};
+
+enum class EDamageMethodTargetPart
+	{
+	partNone =								-100,	//	Uninitialized or error type
+
+	partArmor =								0,
+	partShield =							1,
+	partHull =								2,		//	Includes compartments
+	};
+
+class CDamageMethodDesc
+	{
+	public:
+		static constexpr int MAX_DAMAGE_METHOD_LEVEL = 7;
+		static constexpr int MAX_DAMAGE_METHOD_LEVEL_COUNT = 8;
+
+		Metric GetDamageMethodAdj (int iLevel) const;
+		int GetRoundedDamageMethodAdj (int iLevel) const;
+		int GetStochasticDamageMethodAdj (int iLevel) const;
+		CString GetDamageMethodLabel (int iLevel) const;
+		CString GetDamageMethodPrefix () const { return m_sAttribPrefix; }
+		CString GetDamageMethodDisplay (int iLevel) const { return GetDamageMethodLabel(iLevel).GetLength() ? strCat(m_sAttribPrefix, GetDamageMethodLabel(iLevel)) : CONSTLIT(""); }
+		ALERROR InitFromArray (const TArray<double>& Adj, const TArray<const char*>& Labels, CString sAttribPrefix = "WMD");
+		ALERROR InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAdj, const CString &sLabels, CString sAttribPrefix = "WMD");
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
+
+	private:
+		ALERROR ParseWMDAdjList(CString sAttrib, TArray<CString> &DamageAdj) const;
+		ALERROR ParseWMDLabelList(CString sAttrib, TArray<CString> &DamageAdj) const;
+
+		struct SWMDLevelDesc
+			{
+			Metric rAdj = 0.0;							//	base % adjustment of damage
+			CString sLabel = CONSTLIT("");				//	suffix to display in UI
+			};
+
+		SWMDLevelDesc m_Desc[MAX_DAMAGE_METHOD_LEVEL_COUNT];	//	Descriptor for computing adjustment
+		CString m_sAttribPrefix = CONSTLIT("WMD");
+		int m_iMinDamage = 0;
+	};
+
 class CMiningDamageLevelDesc
 	{
 	public:
-		static constexpr int MAX_MINING_LEVEL = 25;
+		static constexpr int MAX_MINING_LEVEL = MAX_ITEM_LEVEL;
 		
 		int GetMaxOreLevel (DamageTypes iDamageType, int iMiningItemLevel) const;
 		ALERROR InitFromArray (const TArray<int>& Levels);
@@ -664,8 +797,8 @@ class CMiningDamageLevelDesc
 	private:
 		enum ELevelTypes
 			{
-			levelAbsolute,						//	dwLevelValue is an absolute adjustment
-			levelRelative,						//	dwLevelValue is an int offset of item level
+			levelAbsolute,						//	iLevelValue is an absolute adjustment
+			levelRelative,						//	iLevelValue is an int offset of item level
 			};
 
 		struct SMiningLevelDesc
@@ -674,7 +807,45 @@ class CMiningDamageLevelDesc
 			int iLevelValue = 0;					//	Adjustment value
 			};
 
-		SMiningLevelDesc m_Desc[damageCount];	//	Descriptor for computing adjustment
+		SMiningLevelDesc m_Desc[damageCount];	//	Descriptor for computing max mineable ore level
+	};
+
+class CDeviceDamageLevelDesc
+	{
+	public:
+		static constexpr int MAX_DEVICE_LEVEL = MAX_ITEM_LEVEL;
+
+		enum EDescType
+			{
+			descInternal,						//	Applies to internal devices
+			descExternal,						//	Applies to external devices
+			};
+
+		int GetMaxDeviceLevel (DamageTypes iDamageType, int iWeaponLevel) const;
+		int GetDeviceAdj (DamageTypes iDamageType) const { return (iDamageType >= damageMinListed && iDamageType <= damageMaxListed) ? m_Adj[iDamageType] : 100; }
+		int GetChanceToHit () const { return m_iChanceToHit; }
+		ALERROR InitFromArray (const TArray<int>& Levels, const TArray<int>& Adj, int iHitChance);
+		ALERROR InitFromDeviceDamageLevel (SDesignLoadCtx &Ctx, const CString &sLevelAttrib, const CString &sAdjAttrib, int iHitChance);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
+
+		static DamageTypes ParseDamageTypeFromProperty (const CString &sProperty);
+
+	private:
+		enum ELevelTypes
+			{
+			levelAbsolute,						//	iLevelValue is an absolute adjustment
+			levelRelative,						//	iLevelValue is an int offset of item level
+			};
+
+		struct SDamageLevelDesc
+			{
+			ELevelTypes iAdjType = levelRelative;	//	Type of adjustment
+			int iLevelValue = 0;					//	Adjustment value
+			};
+
+		SDamageLevelDesc m_Desc[damageCount];	//	Descriptor for computing max damageable device level
+		int m_Adj[damageCount];					//	Adj factor for device damage
+		int m_iChanceToHit = 100;				//	% Chance to hit device and begin damage calculations
 	};
 
 struct SVisibleDamage

@@ -78,6 +78,74 @@ SDamageCtx::~SDamageCtx (void)
 		delete m_pDesc;
 	}
 
+int SDamageCtx::CalcDamageMethodAdjDamageFromLevel(EDamageMethod iMethod, int iLevel, Metric rWMD0FortificationAdj, Metric rMinAdj) const
+	{
+	return mathRoundStochastic(Max(iDamage * CalcDamageMethodFortifiedAdjFromLevel(iMethod, iLevel, rWMD0FortificationAdj, rMinAdj), g_pUniverse->GetEngineOptions().GetDamageMethodMinDamage()));
+	}
+
+int SDamageCtx::CalcDamageMethodAdjDamage(EDamageMethod iMethod, Metric rWMD0FortificationAdj, Metric rMinAdj) const
+	{
+	return mathRoundStochastic(Max(iDamage * CalcDamageMethodFortifiedAdj(iMethod, rWMD0FortificationAdj, rMinAdj), g_pUniverse->GetEngineOptions().GetDamageMethodMinDamage()));
+	}
+
+int SDamageCtx::CalcDamageMethodAdjDamageRaw(EDamageMethod iMethod) const
+	{
+	return m_pDesc->GetDamage().CalcDamageMethodAdjDamage(iMethod, iDamage);
+	}
+
+int SDamageCtx::CalcDamageMethodAdjDamagePrecalc(Metric rPrecalcFortification) const
+	{
+	return mathRoundStochastic(Max(iDamage * rPrecalcFortification, g_pUniverse->GetEngineOptions().GetDamageMethodMinDamage()));
+	}
+
+//	CalcDamageMethodFortifiedAdj
+// 
+//	Computes a floating point adjusted form of WMD.
+//  1.0 is full damage
+//  rMinAdj should not be lower than 0.0
+//  rMaxAdj should not be lower than rMinAdj
+//
+Metric SDamageCtx::CalcDamageMethodFortifiedAdj(EDamageMethod iMethod, Metric rWMD0FortificationAdj, Metric rMinAdj, Metric rMaxAdj) const
+	{
+	return SDamageCtx::CalcDamageMethodFortifiedAdjFromLevel(iMethod, Damage.GetDamageMethodLevel(iMethod), rWMD0FortificationAdj, rMinAdj, rMaxAdj);
+	}
+
+//	CalcDamageMethodFortifiedAdjFromLevel
+// 
+//	Computes a floating point adjusted form of WMD.
+//  1.0 is full damage
+//  rMinAdj should not be lower than 0.0
+//  rMaxAdj should not be lower than rMinAdj
+//
+Metric SDamageCtx::CalcDamageMethodFortifiedAdjFromLevel(EDamageMethod iMethod, int iLevel, Metric rWMD0FortificationAdj, Metric rMinAdj, Metric rMaxAdj)
+	{
+	//	We only adjust curves for WMD lower than 7, max WMD is always pinned.
+
+	if (iLevel == 7)
+		return 1.0 > rMaxAdj ? rMaxAdj : 1.0;
+
+	//	Adjust for level 0 is trivial, its just rWMD0FortificationAdj
+
+	if (iLevel == 0)
+		return rWMD0FortificationAdj < rMinAdj ? rMinAdj : rWMD0FortificationAdj;
+
+	//	Otherwise we need to do a linear transform
+	//	The math is exploded for debug builds, optimized builds collapse a bunch of this math;
+
+	Metric rBaseRange = 1.0 - DamageDesc::GetMassDestructionAdjRealFromValue(iMethod, 0);
+	Metric rOutRange = 1.0 - rWMD0FortificationAdj;
+	Metric rBasePos = 1.0 - DamageDesc::GetMassDestructionAdjRealFromValue(iMethod, iLevel);
+	Metric rTransform = rOutRange / rBaseRange;
+	Metric rAdj = 1.0 - (rBasePos * rTransform);
+
+	if (rAdj < rMinAdj)
+		return rMinAdj;
+	else if (rAdj > rMaxAdj)
+		return rMaxAdj;
+	else
+		return rAdj;
+	}
+
 void SDamageCtx::InitDamageEffects (const DamageDesc &DamageArg)
 
 //	InitDamageEffects
@@ -177,6 +245,32 @@ void SDamageCtx::InitDamageEffects (const DamageDesc &DamageArg)
 	//	Time Stop
 
 	m_bTimeStop = (DamageArg.GetTimeStopDamageLevel() > 0);
+	}
+
+//	IsDamaging
+// 
+//	Check if this damage Ctx should be treated as a damaging effect
+//
+bool SDamageCtx::IsDamaging () const
+	{
+	//	We check iDamage explicitly because we may be initialized with an invalid
+	//	DamageDesc, and some scripts are allowed to edit iDamage without changing
+	//	the DamageDesc.
+
+	return Damage.IsDamaging() || (iDamage && Damage.GetDamageType() != damageNull);
+	}
+
+//	IsDamageEventFiring
+// 
+//	Check if this damage Ctx should run scripts for damaging effects
+//
+bool SDamageCtx::IsDamageEventFiring () const
+	{
+	//	We check iDamage explicitly because we may be initialized with an invalid
+	//	DamageDesc, and some scripts are allowed to edit iDamage without changing
+	//	the DamageDesc.
+
+	return IsDamaging() || iDamage || Damage.GetDamageType() == damageNull;
 	}
 
 void SDamageCtx::SetHint (EDamageHint iHint)

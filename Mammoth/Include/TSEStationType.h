@@ -15,30 +15,34 @@ class CStationHullDesc
 			hullUnknown				= -1,
 
 			hullSingle				= 0,	//	Single hull, normal damage
-			hullAsteroid			= 1,	//	Must have either WMD or mining to damage
-			hullMultiple			= 2,	//	Must have WMD to damage
-			hullUnderground			= 3,	//	Must have mining to damage
+			hullAsteroid			= 1,	//	Must have either Shred or Crush (WMD: WMD or mining) to damage
+			hullMultiple			= 2,	//	Must have Shred (WMD: WMD) to damage
+			hullUnderground			= 3,	//	Must have Crush (WMD: mining) to damage
+			hullArmor				= 4,	//	Must have Pierce (WMD: WMD) to damage
+			hullUncrewed			= 5,	//	Must have Crush (WMD: WMD) to damage
 			};
 
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		int CalcDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) const;
 		Metric CalcHitsToDestroy (int iLevel) const;
-		bool CanBeHit (void) const { return !m_bCannotBeHit; }
-		bool CanBeWrecked (void) const { return (!IsImmutable() && GetMaxHitPoints() > 0); }
+		bool CanBeHit () const { return !m_bCannotBeHit; }
+		bool CanBeWrecked () const { return (!IsImmutable() && GetMaxHitPoints() > 0); }
 		bool FindDataField (const CString &sField, CString *retsValue) const;
-		CArmorClass *GetArmorClass (void) const { return (m_pArmor ? m_pArmor->GetArmorClass() : NULL); }
-		CItem GetArmorItem (void) const;
-		int GetArmorLevel (void) const;
-		int GetHitPoints (void) const { return m_iHitPoints; }
-		EHullTypes GetHullType (void) const { return m_iType; }
-		int GetMaxHitPoints (void) const { return m_iMaxHitPoints; }
-		int GetMaxStructuralHP (void) const { return m_iMaxStructuralHP; }
-		const CRegenDesc &GetRegenDesc (void) const { return m_Regen; }
-		int GetStructuralHP (void) const { return m_iStructuralHP; }
+		CArmorClass *GetArmorClass () const { return (m_pArmor ? m_pArmor->GetArmorClass() : NULL); }
+		CItem GetArmorItem () const;
+		int GetArmorLevel () const;
+		Metric GetFortificationAdj (EDamageMethod iMethod) const;
+		Metric GetMinFortificationAdj (EDamageMethod iMethod) const;
+		int GetHitPoints () const { return m_iHitPoints; }
+		EHullTypes GetHullType () const { return m_iType; }
+		int GetMaxHitPoints () const { return m_iMaxHitPoints; }
+		int GetMaxStructuralHP () const { return m_iMaxStructuralHP; }
+		const CRegenDesc &GetRegenDesc () const { return m_Regen; }
+		int GetStructuralHP () const { return m_iStructuralHP; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bMultiHullDefault = true);
 		ALERROR InitFromStationXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		bool IsImmutable (void) const { return m_bImmutable; }
+		bool IsImmutable () const { return m_bImmutable; }
 		void SetImmutable (bool bValue = true) { m_bImmutable = bValue; }
 
 		static CString GetID (EHullTypes iType);
@@ -51,6 +55,8 @@ class CStationHullDesc
 		int m_iHitPoints = 0;				//	Hit points at creation time
 		int m_iMaxHitPoints = 0;			//	Max hit points
 		CRegenDesc m_Regen;					//	Repair rate
+		SDamageMethodAdj m_Fortification;			//	WMD damage adj curve at WMD0
+		SDamageMethodAdj m_MinFortificationAdj;	//	Minimum WMD adj from fortification
 
 		int m_iStructuralHP = 0;			//	Initial structural hit points
 		int m_iMaxStructuralHP = 0;			//	Max structural hp (0 = station is permanent)
@@ -449,7 +455,7 @@ class CAsteroidDesc
 
 		static TStaticStringTable<TStaticStringEntry<EAsteroidType>, 5> COMPOSITION_INDEX;
 		static SCompositionDesc COMPOSITION_TABLE[EAsteroidTypeCount];
-		static TStaticStringTable<TStaticStringEntry<EMiningMethod>, 4> MINING_METHOD_INDEX;
+		static TStaticStringTable<TStaticStringEntry<EMiningMethod>, EMiningMethodCount> MINING_METHOD_INDEX;
 
 		static const CAsteroidDesc m_Null;
 	};

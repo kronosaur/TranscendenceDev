@@ -5646,6 +5646,8 @@ bool CSpaceObject::IntersectionTestScan(const CSpaceObject* pTarget, const CVect
 //		retiTriangulationDir: -1
 
 	{
+	DEBUG_TRY
+
 	SPointInObjectCtx PiOCtx;
 	pTarget->PointInObjectInit(PiOCtx);
 
@@ -5876,6 +5878,8 @@ bool CSpaceObject::IntersectionTestScan(const CSpaceObject* pTarget, const CVect
 		}
 
 	return false;
+
+	DEBUG_CATCH
 	}
 
 bool CSpaceObject::ImagesIntersect (const CObjectImageArray &Image1, int iTick1, int iRotation1, const CVector &vPos1,
@@ -8647,10 +8651,10 @@ bool CSpaceObject::UseItem (const CItem &Item, CString *retsError)
 
 			//	Reset the activation delay, if necessary
 
-			int iActivationDelay = pDevice->GetActivateDelay(this);
-			if (iActivationDelay)
+			Metric rActivationDelay = pDevice->GetActivateDelay(this);
+			if (rActivationDelay)
 				{
-				pDevice->SetTimeUntilReady(iActivationDelay);
+				pDevice->SetTimeUntilReady(rActivationDelay);
 
 				if (pDevice->ShowActivationDelayCounter(this))
 					OnComponentChanged(comDeviceCounter);
