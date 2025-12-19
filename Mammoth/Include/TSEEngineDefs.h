@@ -197,7 +197,14 @@
 //				crush:	0.0
 //				pierce:	0.0
 //				shred:	0.0
-//			nonCriticalDestruction: ;;	This one is different and expresses the chance of dying
+//			nonCriticalDestruction:
+//				(WMD)
+//				WMD:	1.0
+//				(physicalizedDamageMethods)
+//				crush:	0.0
+//				pierce:	0.0
+//				shred:	1.0
+//			nonCriticalDestructionChance: ;;	This one is different and expresses the base chance of dying
 //				(WMD)
 //				WMD:	0.05
 //				(physicalizedDamageMethods)
@@ -208,30 +215,30 @@
 //			(see ECompartmentTypes)
 //			general:
 //				(WMD)
-//				WMD:	10.0
+//				WMD:	1.0
 //				(physicalizedDamageMethods)
 //				crush:	0.0
 //				pierce:	0.0
-//				shred:	10.0
+//				shred:	1.0
 //			mainDrive:
 //				(WMD)
-//				WMD:	10.0
+//				WMD:	1.0
 //				(physicalizedDamageMethods)
 //				crush:	0.0
 //				pierce:	0.0
-//				shred:	10.
+//				shred:	1.0
 //			cargo:
 //				(WMD)
-//				WMD:	10.0
+//				WMD:	1.0
 //				(physicalizedDamageMethods)
-//				crush:	10.0
+//				crush:	1.0
 //				pierce:	0.0
 //				shred:	0.0
 //			uncrewed:
 //				(WMD)
-//				WMD:	10.0
+//				WMD:	1.0
 //				(physicalizedDamageMethods)
-//				crush:	10.0
+//				crush:	1.0
 //				pierce:	0.0
 //				shred:	0.0
 // 
@@ -247,38 +254,38 @@
 //				shred:	0.0
 //			multi:
 //				(WMD)
-//				WMD:	10.0
+//				WMD:	1.0
 //				(physicalizedDamageMethods)
 //				crush:	0.0
 //				pierce:	0.0
-//				shred:	10.0
+//				shred:	1.0
 //			asteroid:
 //				(WMD)
-//				WMD:	10.0		Note: Hardcoded to use mining or WMD
+//				WMD:	1.0		Note: Hardcoded to use mining or WMD
 //				(physicalizedDamageMethods)
-//				crush:	3.1
-//				pierce:	3.1
+//				crush:	.31
+//				pierce:	.31
 //				shred:	0.0
 //			underground:
 //				(WMD)
-//				WMD:	10.0		Note: Hardcoded to use mining
+//				WMD:	1.0		Note: Hardcoded to use mining
 //				(physicalizedDamageMethods)
-//				crush:	10.0
+//				crush:	1.0
 //				pierce:	0.0
 //				shred:	0.0
 //			uncrewed:
 //				(WMD)
-//				WMD:	10.0
+//				WMD:	1.0
 //				(physicalizedDamageMethods)
-//				crush:	10.0
+//				crush:	1.0
 //				pierce:	0.0
 //				shred:	0.0
 //			armor:
 //				(WMD)
-//				WMD:	10.0
+//				WMD:	1.0
 //				(physicalizedDamageMethods)
 //				crush:	0.0
-//				pierce:	10.0
+//				pierce:	1.0
 //				shred:	0.0
 //
 #define PROPERTY_CORE_DMG_METHOD_ITEM					CONSTLIT("core.damageMethod.item")

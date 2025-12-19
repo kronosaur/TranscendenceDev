@@ -412,6 +412,8 @@ void CEngineOptions::InitDefaultDamageMethods()
 			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.Reset();
 			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.SetShred(1.0);
 			m_DamageMethodShipAdj.Armor.NonCriticalDestructionChance.Reset();
+			m_DamageMethodShipAdj.Armor.NonCriticalDestructionChance.SetCrush(1.0);
+			m_DamageMethodShipAdj.Armor.NonCriticalDestructionChance.SetPierce(1.0);
 			m_DamageMethodShipAdj.Armor.NonCriticalDestructionChance.SetShred(0.05);
 
 			m_DamageMethodShipAdj.Compartment.General.Reset();
