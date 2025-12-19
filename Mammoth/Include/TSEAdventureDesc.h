@@ -25,7 +25,7 @@ class CEngineOptions
 		Metric GetDamageMethodAdjShipArmorCriticalUncrewed (EDamageMethod iMethod) const { return GetDamageMethodAdj(m_DamageMethodShipAdj.Armor.CriticalUncrewed, iMethod); };
 		Metric GetDamageMethodAdjShipArmorNonCritical (EDamageMethod iMethod) const { return GetDamageMethodAdj(m_DamageMethodShipAdj.Armor.NonCritical, iMethod); };
 		Metric GetDamageMethodAdjShipArmorNonCriticalDestruction (EDamageMethod iMethod) const { return GetDamageMethodAdj(m_DamageMethodShipAdj.Armor.NonCriticalDestruction, iMethod); };
-		Metric GetDamageMethodAdjShipArmorNonCriticalDestructionChance (EDamageMethod iMethod) const { return GetDamageMethodAdj(m_DamageMethodShipAdj.Armor.NonCriticalDestructionChance, iMethod); };
+		Metric GetDamageMethodAdjShipArmorNonCriticalDestructionChance () const { return m_DamageMethodShipAdj.Armor.rNonCriticalDestructionChance; };
 		Metric GetDamageMethodAdjShipCompartmentGeneral (EDamageMethod iMethod) const { return GetDamageMethodAdj(m_DamageMethodShipAdj.Compartment.General, iMethod); };
 		Metric GetDamageMethodAdjShipCompartmentMainDrive (EDamageMethod iMethod) const { return GetDamageMethodAdj(m_DamageMethodShipAdj.Compartment.MainDrive, iMethod); };
 		Metric GetDamageMethodAdjShipCompartmentCargo (EDamageMethod iMethod) const { return GetDamageMethodAdj(m_DamageMethodShipAdj.Compartment.Cargo, iMethod); };
@@ -69,7 +69,7 @@ class CEngineOptions
 				SDamageMethodAdj CriticalUncrewed;
 				SDamageMethodAdj NonCritical;
 				SDamageMethodAdj NonCriticalDestruction;
-				SDamageMethodAdj NonCriticalDestructionChance;
+				Metric rNonCriticalDestructionChance = 0.05;
 				};
 			struct SDamageMethodShipCompartmentAdj
 				{

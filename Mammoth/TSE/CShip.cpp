@@ -4814,24 +4814,21 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			{
 			EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
 			EDamageMethod iMethod;
+			Metric rChanceToDie = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestructionChance();
+			int iChanceOfDeath = mathRoundStochastic(rChanceToDie * 100);
 
 			if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 				{
-				Metric rChanceToDie = 1.0;
 				Metric rDamageMethodAdj = 1.0;
 
 				for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
 					{
 					iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
 
-					rChanceToDie *= g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestructionChance(iMethod);
-
 					Metric rNonCriticalAdjust = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestruction(iMethod);
 
 					rDamageMethodAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rNonCriticalAdjust);
 					}
-
-				int iChanceOfDeath = mathRoundStochastic(rChanceToDie);
 
 				//	Compare the amount of damage that we are taking with the
 				//	original strength (HP) of the armor. Increase the chance
@@ -4851,8 +4848,6 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
 				{
 				iMethod = EDamageMethod::methodWMD;
-
-				int iChanceOfDeath = mathRound(g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestructionChance(iMethod) * 100);
 
 				//	We increase the chance to die based on the amount of damage
 				//	experienced by the target relative to the max HP of the segment

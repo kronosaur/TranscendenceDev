@@ -114,10 +114,7 @@
 					
 					;;	Base chance to be destroyed on a shot to a depleted noncritical segment
 
-					nonCriticalDestructionChance:
-						{
-						WMD: 0.05
-						}
+					nonCriticalDestructionChance: 0.05
 					}
 
 				;;	Applies based on the default compartment type of this ship

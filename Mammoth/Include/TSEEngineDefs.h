@@ -197,20 +197,14 @@
 //				crush:	0.0
 //				pierce:	0.0
 //				shred:	0.0
-//			nonCriticalDestruction:
+//			nonCriticalDestructionChance: 0.05	;;	This expresses the base chance of dying
+//			nonCriticalDestruction:	;;	This expresses the additional chance of dying based on relative damage of the hit
 //				(WMD)
 //				WMD:	1.0
 //				(physicalizedDamageMethods)
 //				crush:	0.0
 //				pierce:	0.0
 //				shred:	1.0
-//			nonCriticalDestructionChance: ;;	This one is different and expresses the base chance of dying
-//				(WMD)
-//				WMD:	0.05
-//				(physicalizedDamageMethods)
-//				crush:	1.0
-//				pierce:	1.0
-//				shred:	0.05
 //		compartments:
 //			(see ECompartmentTypes)
 //			general:
