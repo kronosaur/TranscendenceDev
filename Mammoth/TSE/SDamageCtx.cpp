@@ -147,7 +147,7 @@ Metric SDamageCtx::CalcDamageMethodFortifiedAdjFromLevel(EDamageMethod iMethod, 
 	Metric rBaseAdj = DamageDesc::GetDamageMethodAdjRealFromValue(iMethod, 0);
 	Metric rRawAdj = DamageDesc::GetDamageMethodAdjRealFromValue(iMethod, iLevel);
 	Metric rBaseTarget = rBaseAdj / ((1 - rBaseAdj) * rFortification + rBaseAdj);
-	Metric rNormalizedExponent = log(rBaseTarget/log(rBaseAdj));
+	Metric rNormalizedExponent = log(rBaseTarget)/log(rBaseAdj);
 	return pow(rRawAdj, rNormalizedExponent);
 	}
 
