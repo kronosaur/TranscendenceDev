@@ -404,34 +404,34 @@ void CEngineOptions::InitDefaultDamageMethods()
 			//	Ships
 
 			m_DamageMethodShipAdj.Armor.Critical.Reset();
-			m_DamageMethodShipAdj.Armor.Critical.SetShred(0.1);
+			m_DamageMethodShipAdj.Armor.Critical.SetShred(1.0);
 			m_DamageMethodShipAdj.Armor.CriticalUncrewed.Reset();
-			m_DamageMethodShipAdj.Armor.CriticalUncrewed.SetShred(0.1);
+			m_DamageMethodShipAdj.Armor.CriticalUncrewed.SetShred(1.0);
 			m_DamageMethodShipAdj.Armor.NonCritical.Reset();
-			m_DamageMethodShipAdj.Armor.NonCritical.SetPierce(0.1);
+			m_DamageMethodShipAdj.Armor.NonCritical.SetPierce(1.0);
 			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.Reset();
-			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.SetShred(0.1);
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.SetShred(0.05);
 
 			m_DamageMethodShipAdj.Compartment.General.Reset();
-			m_DamageMethodShipAdj.Compartment.General.SetShred(0.1);
+			m_DamageMethodShipAdj.Compartment.General.SetShred(1.0);
 			m_DamageMethodShipAdj.Compartment.Cargo.Reset();
-			m_DamageMethodShipAdj.Compartment.Cargo.SetCrush(0.1);
+			m_DamageMethodShipAdj.Compartment.Cargo.SetCrush(1.0);
 			m_DamageMethodShipAdj.Compartment.MainDrive.Reset();
-			m_DamageMethodShipAdj.Compartment.MainDrive.SetShred(0.1);
+			m_DamageMethodShipAdj.Compartment.MainDrive.SetShred(1.0);
 			m_DamageMethodShipAdj.Compartment.Uncrewed.Reset();
-			m_DamageMethodShipAdj.Compartment.Uncrewed.SetCrush(0.1);
+			m_DamageMethodShipAdj.Compartment.Uncrewed.SetCrush(1.0);
 
 			//	Stations
 
 			m_DamageMethodStationAdj.Hull.Armor.Reset();
-			m_DamageMethodStationAdj.Hull.Armor.SetPierce(0.1);
+			m_DamageMethodStationAdj.Hull.Armor.SetPierce(1.0);
 			m_DamageMethodStationAdj.Hull.Asteroid.Reset();
-			m_DamageMethodStationAdj.Hull.Asteroid.SetCrush(0.1);
+			m_DamageMethodStationAdj.Hull.Asteroid.SetCrush(1.0);
 			m_DamageMethodStationAdj.Hull.Multi.Reset();
-			m_DamageMethodStationAdj.Hull.Multi.SetShred(0.1);
+			m_DamageMethodStationAdj.Hull.Multi.SetShred(1.0);
 			m_DamageMethodStationAdj.Hull.Single.Reset();
 			m_DamageMethodStationAdj.Hull.Uncrewed.Reset();
-			m_DamageMethodStationAdj.Hull.Uncrewed.SetCrush(0.1);
+			m_DamageMethodStationAdj.Hull.Uncrewed.SetCrush(1.0);
 			m_DamageMethodStationAdj.Hull.Underground.Reset();
 			m_DamageMethodStationAdj.Hull.Underground.SetCrush(0.31);
 			m_DamageMethodStationAdj.Hull.Underground.SetPierce(0.31);
@@ -447,36 +447,33 @@ void CEngineOptions::InitDefaultDamageMethods()
 			//	Ships
 
 			m_DamageMethodShipAdj.Armor.Critical.Reset();
-			m_DamageMethodShipAdj.Armor.Critical.SetWMD(0.1);
 			m_DamageMethodShipAdj.Armor.CriticalUncrewed.Reset();
-			m_DamageMethodShipAdj.Armor.CriticalUncrewed.SetWMD(0.1);
 			m_DamageMethodShipAdj.Armor.NonCritical.Reset();
-			m_DamageMethodShipAdj.Armor.NonCritical.SetWMD(0.1);
 			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.Reset();
-			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.SetWMD(0.1);
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.SetWMD(1.0);
 
 			m_DamageMethodShipAdj.Compartment.General.Reset();
-			m_DamageMethodShipAdj.Compartment.General.SetWMD(0.1);
+			m_DamageMethodShipAdj.Compartment.General.SetWMD(1.0);
 			m_DamageMethodShipAdj.Compartment.Cargo.Reset();
-			m_DamageMethodShipAdj.Compartment.Cargo.SetWMD(0.1);
+			m_DamageMethodShipAdj.Compartment.Cargo.SetWMD(1.0);
 			m_DamageMethodShipAdj.Compartment.MainDrive.Reset();
-			m_DamageMethodShipAdj.Compartment.MainDrive.SetWMD(0.1);
+			m_DamageMethodShipAdj.Compartment.MainDrive.SetWMD(1.0);
 			m_DamageMethodShipAdj.Compartment.Uncrewed.Reset();
-			m_DamageMethodShipAdj.Compartment.Uncrewed.SetWMD(0.1);
+			m_DamageMethodShipAdj.Compartment.Uncrewed.SetWMD(1.0);
 
 			//	Stations
 
 			m_DamageMethodStationAdj.Hull.Armor.Reset();
-			m_DamageMethodStationAdj.Hull.Armor.SetWMD(0.1);
+			m_DamageMethodStationAdj.Hull.Armor.SetWMD(1.0);
 			m_DamageMethodStationAdj.Hull.Asteroid.Reset();
-			m_DamageMethodStationAdj.Hull.Asteroid.SetWMD(0.1);
+			m_DamageMethodStationAdj.Hull.Asteroid.SetWMD(1.0);
 			m_DamageMethodStationAdj.Hull.Multi.Reset();
-			m_DamageMethodStationAdj.Hull.Multi.SetWMD(0.1);
+			m_DamageMethodStationAdj.Hull.Multi.SetWMD(1.0);
 			m_DamageMethodStationAdj.Hull.Single.Reset();
 			m_DamageMethodStationAdj.Hull.Uncrewed.Reset();
-			m_DamageMethodStationAdj.Hull.Uncrewed.SetWMD(0.1);
+			m_DamageMethodStationAdj.Hull.Uncrewed.SetWMD(1.0);
 			m_DamageMethodStationAdj.Hull.Underground.Reset();
-			m_DamageMethodStationAdj.Hull.Underground.SetWMD(0.1);
+			m_DamageMethodStationAdj.Hull.Underground.SetWMD(1.0);
 			break;
 			}
 		default:
@@ -586,14 +583,14 @@ bool CEngineOptions::InitDamageMethodAdjFromCC(SDesignLoadCtx& Ctx, SDamageMetho
 		{
 		case EDamageMethodSystem::dmgMethodSysPhysicalized:
 			{
-			adj.SetCrush(min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_CRUSH, adj.GetCrush()), 1.0));
-			adj.SetPierce(min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_PIERCE, adj.GetPierce()), 1.0));
-			adj.SetShred(min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_SHRED, adj.GetShred()), 1.0));
+			adj.SetCrush(max(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_CRUSH, adj.GetCrush()), 0.0));
+			adj.SetPierce(max(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_PIERCE, adj.GetPierce()), 0.0));
+			adj.SetShred(max(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_SHRED, adj.GetShred()), 0.0));
 			return true;
 			}
 		case EDamageMethodSystem::dmgMethodSysWMD:
 			{
-			adj.SetWMD(min(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_WMD, adj.GetWMD()), 1.0));
+			adj.SetWMD(max(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_WMD, adj.GetWMD()), 0.0));
 			return true;
 			}
 		default:

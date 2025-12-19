@@ -723,14 +723,14 @@ struct SDamageMethodAdj
 
 		void Reset ()
 			{
-			rAdj[0] = 1.0;
-			rAdj[1] = 1.0;
-			rAdj[2] = 1.0;
+			rAdj[0] = 0.0;
+			rAdj[1] = 0.0;
+			rAdj[2] = 0.0;
 			}
 
 	private:
 
-		Metric rAdj[3] = { 1.0, 1.0, 1.0 };
+		Metric rAdj[3] = { 0.0, 0.0, 0.0 };
 	};
 
 enum class EDamageMethodTarget
