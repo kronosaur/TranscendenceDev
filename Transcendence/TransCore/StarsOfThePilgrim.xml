@@ -105,11 +105,11 @@
 						}
 					
 					;;	Used to calculate incremental chance of destruction based on relative damage
-					;;	a depleted noncritical segment
+					;;	to a depleted noncritical segment
 
 					nonCriticalDestruction:
 						{
-						WMD: 0.05
+						WMD: 1.0
 						}
 					
 					;;	Base chance to be destroyed on a shot to a depleted noncritical segment
