@@ -18,10 +18,6 @@
 #define FORTIFICATION_PIERCE_ATTRIB				CONSTLIT("fortificationPierceAdj")
 #define FORTIFICATION_SHRED_ATTRIB				CONSTLIT("fortificationShredAdj")
 #define FORTIFICATION_WMD_ATTRIB				CONSTLIT("fortificationWMDAdj")
-#define FORTIFICATION_CRUSH_MIN_ATTRIB			CONSTLIT("fortificationCrushMinAdj")
-#define FORTIFICATION_PIERCE_MIN_ATTRIB			CONSTLIT("fortificationPierceMinAdj")
-#define FORTIFICATION_SHRED_MIN_ATTRIB			CONSTLIT("fortificationShredMinAdj")
-#define FORTIFICATION_WMD_MIN_ATTRIB			CONSTLIT("fortificationWMDMinAdj")
 #define HAS_NON_REGEN_HP_ATTRIB					CONSTLIT("hasNonRegenHP")
 #define HIT_EFFECT_ATTRIB						CONSTLIT("hitEffect")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
@@ -178,7 +174,6 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 			EDamageMethod iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
 
 			Metric rMethodFortificationAdj;
-			Metric rMethodFortificationAdjMin;
 
 			//	Stacked fortification modifiers are multiplied together
 
@@ -187,12 +182,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 			else
 				rMethodFortificationAdj = m_Fortification.Get(iMethod);
 
-			if (m_MinFortificationAdj.GetWMD() < 0)
-				rMethodFortificationAdjMin = g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj();
-			else
-				rMethodFortificationAdjMin = m_MinFortificationAdj.Get(iMethod);
-
-			rFortificationAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortificationAdj, rMethodFortificationAdjMin);
+			rFortificationAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortificationAdj);
 			}
 
 		Ctx.iAbsorb = Ctx.CalcDamageMethodAdjDamagePrecalc(rFortificationAdj);
@@ -202,7 +192,6 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 		EDamageMethod iMethod = EDamageMethod::methodWMD;
 
 		Metric rFortificationAdj;
-		Metric rFortificationAdjMin;
 
 		//	Stacked fortification modifiers are multiplied together
 
@@ -211,12 +200,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 		else
 			rFortificationAdj = m_Fortification.GetWMD();
 
-		if (m_MinFortificationAdj.GetWMD() < 0)
-			rFortificationAdjMin = g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj();
-		else
-			rFortificationAdjMin = m_MinFortificationAdj.GetWMD();
-
-		Ctx.iAbsorb = Ctx.CalcDamageMethodAdjDamage(iMethod, rFortificationAdj, rFortificationAdjMin);
+		Ctx.iAbsorb = Ctx.CalcDamageMethodAdjDamage(iMethod, rFortificationAdj);
 		}
 
 
@@ -836,8 +820,6 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 
 	bool bHasWMDFortify = pDesc->FindAttribute(FORTIFICATION_WMD_ATTRIB);
 	bool bHasPhysicalizedFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_ATTRIB);
-	bool bHasWMDMinFortify = false && pDesc->FindAttribute(FORTIFICATION_WMD_MIN_ATTRIB);
-	bool bHasPhysicalizedMinFortify = false && pDesc->FindAttribute(FORTIFICATION_CRUSH_MIN_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_MIN_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_MIN_ATTRIB);
 
 	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 		{
@@ -860,26 +842,6 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 			pShield->m_Fortification.SetShred(R_NAN);
 			}
 
-		Metric rDefaultMinAdj = -1.0;
-
-		if (bHasPhysicalizedMinFortify)
-			{
-			pShield->m_MinFortificationAdj.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_MIN_ATTRIB, rDefaultMinAdj));
-			pShield->m_MinFortificationAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, rDefaultMinAdj));
-			pShield->m_MinFortificationAdj.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_MIN_ATTRIB, rDefaultMinAdj));
-			}
-		else if (bHasWMDMinFortify)
-			{
-			pShield->m_MinFortificationAdj.SetCrush(rDefaultMinAdj);
-			pShield->m_MinFortificationAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, rDefaultMinAdj));
-			pShield->m_MinFortificationAdj.SetShred(rDefaultMinAdj);
-			}
-		else
-			{
-			pShield->m_MinFortificationAdj.SetCrush(rDefaultMinAdj);
-			pShield->m_MinFortificationAdj.SetPierce(rDefaultMinAdj);
-			pShield->m_MinFortificationAdj.SetShred(rDefaultMinAdj);
-			}
 		}
 	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
 		{
@@ -890,14 +852,6 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 		else
 			pShield->m_Fortification.SetWMD(R_NAN);
 
-		Metric rDefaultMinAdj = -1.0;
-
-		if (bHasWMDMinFortify)
-			pShield->m_MinFortificationAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, rDefaultMinAdj));
-		else if (bHasPhysicalizedMinFortify)
-			pShield->m_MinFortificationAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, rDefaultMinAdj));
-		else
-			pShield->m_MinFortificationAdj.SetWMD(rDefaultMinAdj);
 		}
 	else
 		{

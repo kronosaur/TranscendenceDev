@@ -55,7 +55,6 @@
 			<!-- Defaults for Damage Method system (WMD) -->
 
 			<Constant id="core.damageMethod.system">			'WMD</Constant>
-			<Constant id="core.damageMethod.minAdj">			0.0</Constant>
 			<Constant id="core.damageMethod.minDamage">			0</Constant>
 
 			<!-- Defaults for Damage Method (WMD) Fortification Adj (Adj at WMD0) -->
@@ -64,11 +63,11 @@
 				{
 				armor:
 					{
-					WMD: 1.0
+					WMD: 0.0
 					}
 				shield:
 					{
-					WMD: 1.0
+					WMD: 0.0
 					}
 				}
 			</Constant>
@@ -79,7 +78,7 @@
 					{
 					critical:
 						{
-						WMD: 1.0
+						WMD: 0.0
 						}
 
 					;;	nonCritical applies to segments marked as noncritical or unmarked segments
@@ -87,7 +86,7 @@
 
 					nonCritical:
 						{
-						WMD: 1.0
+						WMD: 0.0
 						}
 					
 					;;	Base chance to be destroyed on a shot to a depleted noncritical segment
@@ -104,15 +103,15 @@
 					{
 					general:
 						{
-						WMD: 0.1
+						WMD: 1.0
 						}
 					cargo:
 						{
-						WMD: 0.1
+						WMD: 1.0
 						}
 					mainDrive:
 						{
-						WMD: 0.1
+						WMD: 1.0
 						}
 					}
 				}
@@ -124,11 +123,11 @@
 					{
 					single:
 						{
-						WMD: 1.0
+						WMD: 0.0
 						}
 					multi:
 						{
-						WMD: 0.1 
+						WMD: 1.0 
 						}
 
 					;;	Note that in the WMD damage method system
@@ -136,7 +135,7 @@
 
 					asteroid:
 						{
-						WMD: 0.1
+						WMD: 1.0
 						}
 
 					;;	Note that in the WMD damage method system
@@ -144,7 +143,7 @@
 
 					underground:
 						{
-						WMD: 0.1
+						WMD: 1.0
 						}
 					}
 				}

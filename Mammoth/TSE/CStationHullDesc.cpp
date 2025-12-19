@@ -14,10 +14,6 @@
 #define FORTIFICATION_PIERCE_ATTRIB				CONSTLIT("fortificationPierceAdj")
 #define FORTIFICATION_SHRED_ATTRIB				CONSTLIT("fortificationShredAdj")
 #define FORTIFICATION_WMD_ATTRIB				CONSTLIT("fortificationWMDAdj")
-#define FORTIFICATION_CRUSH_MIN_ATTRIB			CONSTLIT("fortificationCrushMinAdj")
-#define FORTIFICATION_PIERCE_MIN_ATTRIB			CONSTLIT("fortificationPierceMinAdj")
-#define FORTIFICATION_SHRED_MIN_ATTRIB			CONSTLIT("fortificationShredMinAdj")
-#define FORTIFICATION_WMD_MIN_ATTRIB			CONSTLIT("fortificationWMDMinAdj")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define HULL_TYPE_ATTRIB						CONSTLIT("hullType")
 #define IMMUTABLE_ATTRIB						CONSTLIT("immutable")
@@ -240,11 +236,6 @@ Metric CStationHullDesc::GetFortificationAdj(EDamageMethod iMethod) const
 		return m_Fortification.Get(iMethod);
 	}
 
-Metric CStationHullDesc::GetMinFortificationAdj(EDamageMethod iMethod) const
-	{
-	return m_MinFortificationAdj.Get(iMethod) < 0 ? g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj() : m_MinFortificationAdj.Get(iMethod);
-	}
-
 CString CStationHullDesc::GetID (EHullTypes iType)
 
 //	GetID
@@ -309,8 +300,6 @@ ALERROR CStationHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 
 	bool bHasWMDFortify = pDesc->FindAttribute(FORTIFICATION_WMD_ATTRIB);
 	bool bHasPhysicalizedFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_ATTRIB);
-	bool bHasWMDMinFortify = false && pDesc->FindAttribute(FORTIFICATION_WMD_MIN_ATTRIB);
-	bool bHasPhysicalizedMinFortify = false && pDesc->FindAttribute(FORTIFICATION_CRUSH_MIN_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_MIN_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_MIN_ATTRIB);
 
 	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 		{
@@ -332,27 +321,6 @@ ALERROR CStationHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 			m_Fortification.SetPierce(R_NAN);
 			m_Fortification.SetShred(R_NAN);
 			}
-
-		Metric rDefaultMinAdj = -1.0;
-
-		if (bHasPhysicalizedMinFortify)
-			{
-			m_MinFortificationAdj.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_MIN_ATTRIB, rDefaultMinAdj));
-			m_MinFortificationAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, rDefaultMinAdj));
-			m_MinFortificationAdj.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_MIN_ATTRIB, rDefaultMinAdj));
-			}
-		else if (bHasWMDMinFortify)
-			{
-			m_MinFortificationAdj.SetCrush(rDefaultMinAdj);
-			m_MinFortificationAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, rDefaultMinAdj));
-			m_MinFortificationAdj.SetShred(rDefaultMinAdj);
-			}
-		else
-			{
-			m_MinFortificationAdj.SetCrush(rDefaultMinAdj);
-			m_MinFortificationAdj.SetPierce(rDefaultMinAdj);
-			m_MinFortificationAdj.SetShred(rDefaultMinAdj);
-			}
 		}
 	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
 		{
@@ -362,15 +330,6 @@ ALERROR CStationHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 			m_Fortification.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, R_NAN));
 		else
 			m_Fortification.SetWMD(R_NAN);
-
-		Metric rDefaultMinAdj = -1.0;
-
-		if (bHasWMDMinFortify)
-			m_MinFortificationAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, rDefaultMinAdj));
-		else if (bHasPhysicalizedMinFortify)
-			m_MinFortificationAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, rDefaultMinAdj));
-		else
-			m_MinFortificationAdj.SetWMD(rDefaultMinAdj);
 		}
 	else
 		{

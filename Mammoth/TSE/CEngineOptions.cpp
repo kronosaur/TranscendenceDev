@@ -1079,23 +1079,10 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 				return false;
 			}
 
-		//	Set minimum fortification
-
-		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_MIN_ADJ);
-		Metric rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
-		if (rValue < 0)
-			rValue = 0.0;
-		if (rValue > 1.0 + g_Epsilon)
-			{
-			Ctx.sError = strCat(PROPERTY_CORE_DMG_METHOD_MIN_ADJ, CONSTLIT(" cannot be greater than 1.0"));
-			return false;
-			}
-		m_rMinFortificationAdj = rValue;
-
 		//	Set minimum damage
 
 		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_MIN_DAMAGE);
-		rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
+		Metric rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
 		if (rValue < 0)
 			rValue = 0.0;
 		m_rDamageMethodAdjMinDamage = rValue;
@@ -1106,7 +1093,6 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 
 	else
 		{
-		m_rMinFortificationAdj = 0.0;
 		m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;
 
 		if (Ctx.GetAPIVersion() >= 29)

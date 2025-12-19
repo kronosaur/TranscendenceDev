@@ -615,7 +615,7 @@ int CStation::CalcAdjustedDamageAbandoned (SDamageCtx &Ctx) const
 		//	Otherwise, we adjust the damage.
 
 		else
-			return Ctx.CalcDamageMethodAdjDamageFromLevel(iMethod, iSpecialDamage, GetHullDesc().GetFortificationAdj(iMethod), GetHullDesc().GetMinFortificationAdj(iMethod));
+			return Ctx.CalcDamageMethodAdjDamageFromLevel(iMethod, iSpecialDamage, GetHullDesc().GetFortificationAdj(iMethod));
 
 		}
 	else

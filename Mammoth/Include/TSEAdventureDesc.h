@@ -35,7 +35,6 @@ class CEngineOptions
 		Metric GetDamageMethodAdjStationHullUnderground (EDamageMethod iMethod) const { return GetDamageMethodAdj(m_DamageMethodStationAdj.Hull.Underground, iMethod); };
 		Metric GetDamageMethodAdjStationHullUncrewed (EDamageMethod iMethod) const { return GetDamageMethodAdj(m_DamageMethodStationAdj.Hull.Uncrewed, iMethod); };
 		Metric GetDamageMethodAdjStationHullArmor (EDamageMethod iMethod) const { return GetDamageMethodAdj(m_DamageMethodStationAdj.Hull.Armor, iMethod); };
-		Metric GetDamageMethodMinFortificationAdj () const { return m_rMinFortificationAdj; }
 		Metric GetDamageMethodMinDamage ()	const { return m_rDamageMethodAdjMinDamage; }
 		EDamageMethodSystem GetDamageMethodSystem () const { return m_iDamageMethodSystem; }
 		const CMiningDamageLevelDesc* GetMiningMaxOreLevels () const { return &m_MiningDamageMaxOreLevels; }
@@ -174,7 +173,6 @@ class CEngineOptions
 		SDamageMethodDescs m_DamageMethodDescs;
 		bool m_bCustomDamageMethodDescs;
 
-		double m_rMinFortificationAdj = 0.0;
 		double m_rDamageMethodAdjMinDamage = 0.0;
 
 		SDamageMethodItemAdj m_DamageMethodItemAdj;

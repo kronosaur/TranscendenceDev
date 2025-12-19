@@ -4619,11 +4619,6 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 						}
 					}
 				Ctx.ArmorExternFortification.Set(iMethod, rExternFortify);
-
-				Metric rMinFortify = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect()).GetMinFortificationAdj(iMethod);
-				if (rMinFortify < 0)
-					rMinFortify = g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj();
-				Ctx.ArmorExternMinFortification.Set(iMethod, rExternFortify);
 				}
 			}
 		else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
@@ -4652,11 +4647,6 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 					}
 				}
 			Ctx.ArmorExternFortification.SetWMD(rExternFortify);
-
-			Metric rMinFortify = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect()).GetMinFortificationAdj(iMethod);
-			if (rMinFortify < 0)
-				rMinFortify = g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj();
-			Ctx.ArmorExternMinFortification.SetWMD(rExternFortify);
 			}
 
 		EDamageResults iResult = pArmor->AbsorbDamage(this, Ctx);
