@@ -771,7 +771,6 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		{
 
 		Metric rFortificationAdj = 1.0;
-		Metric rFortificationAdjMin = 0.0;
 
 		for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
 			{
