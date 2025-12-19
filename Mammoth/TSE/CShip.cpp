@@ -4813,7 +4813,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		if (!(dwDamage & CShipClass::sectCritical))
 			{
 			EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
-			EDamageMethod iMethod = EDamageMethod::methodWMD;
+			EDamageMethod iMethod;
 
 			if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 				{
@@ -4824,9 +4824,9 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 					{
 					iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
 
-					Metric rNonCriticalAdjust = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestruction(iMethod);
+					rChanceToDie *= g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestructionChance(iMethod);
 
-					rChanceToDie *= rNonCriticalAdjust;
+					Metric rNonCriticalAdjust = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestruction(iMethod);
 
 					rDamageMethodAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rNonCriticalAdjust);
 					}
@@ -4850,14 +4850,18 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 				}
 			else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
 				{
-				int iChanceOfDeath = mathRound(g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestruction(iMethod) * 100);
+				iMethod = EDamageMethod::methodWMD;
 
-				//	We only care about mass destruction damage
-				//	To support legacy balance, we use the Raw
-				//	adventure adjustment, rather than normalizing
-				//	on 1.0
+				int iChanceOfDeath = mathRound(g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestructionChance(iMethod) * 100);
 
-				int iWMDDamage = Ctx.CalcDamageMethodAdjDamageRaw(iMethod);
+				//	We increase the chance to die based on the amount of damage
+				//	experienced by the target relative to the max HP of the segment
+				//	This is to preserve legacy balance until this system gets a
+				//  proper replacement
+
+				Metric rNonCriticalAdjust = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestruction(iMethod);
+
+				int iWMDDamage = Ctx.CalcDamageMethodAdjDamage(iMethod, rNonCriticalAdjust);
 
 				//	Compare the amount of damage that we are taking with the
 				//	original strength (HP) of the armor. Increase the chance

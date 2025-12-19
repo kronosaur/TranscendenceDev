@@ -410,7 +410,9 @@ void CEngineOptions::InitDefaultDamageMethods()
 			m_DamageMethodShipAdj.Armor.NonCritical.Reset();
 			m_DamageMethodShipAdj.Armor.NonCritical.SetPierce(1.0);
 			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.Reset();
-			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.SetShred(0.05);
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.SetShred(1.0);
+			m_DamageMethodShipAdj.Armor.NonCriticalDestructionChance.Reset();
+			m_DamageMethodShipAdj.Armor.NonCriticalDestructionChance.SetShred(0.05);
 
 			m_DamageMethodShipAdj.Compartment.General.Reset();
 			m_DamageMethodShipAdj.Compartment.General.SetShred(1.0);
@@ -451,6 +453,8 @@ void CEngineOptions::InitDefaultDamageMethods()
 			m_DamageMethodShipAdj.Armor.NonCritical.Reset();
 			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.Reset();
 			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.SetWMD(1.0);
+			m_DamageMethodShipAdj.Armor.NonCriticalDestructionChance.Reset();
+			m_DamageMethodShipAdj.Armor.NonCriticalDestructionChance.SetWMD(0.05);
 
 			m_DamageMethodShipAdj.Compartment.General.Reset();
 			m_DamageMethodShipAdj.Compartment.General.SetWMD(1.0);
@@ -992,6 +996,13 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 		if (pShipArmorNonCriticalDestructionStruct)
 			{
 			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.NonCriticalDestruction, pShipArmorNonCriticalDestructionStruct))
+				return false;
+			}
+
+		ICCItem* pShipArmorNonCriticalDestructionChanceStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_NONCRITICAL_DESTRUCTION_CHANCE);
+		if (pShipArmorNonCriticalDestructionChanceStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.NonCriticalDestructionChance, pShipArmorNonCriticalDestructionChanceStruct))
 				return false;
 			}
 
