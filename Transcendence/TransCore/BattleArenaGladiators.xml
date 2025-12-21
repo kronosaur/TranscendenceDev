@@ -1678,6 +1678,7 @@
 			fireRateAdj=		"10"
 			fireAccuracy=		"95"
 			perception=			"4"
+			ignoreShieldsDown=	"true"
 			/>
 
 		<StaticData>
