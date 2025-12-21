@@ -55,7 +55,7 @@ Use tabs to indent. Set the indent at 4 spaces.
 
 #### Inline documentation
 
-Inline documentation of funcions should be before the declaration so that it
+Inline documentation of functions should be before the declaration so that it
 is detected as a standard docstring and displayed in mouse-over tooltips etc.
 
 ```cpp
