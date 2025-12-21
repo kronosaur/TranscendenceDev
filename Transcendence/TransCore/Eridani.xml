@@ -530,7 +530,7 @@
 								(for i 1 (random 2 3)
 									(block Nil
 										(sysCreateStation &stCentauriCamp;
-											(sysVectorRandom voerms (random 30 50) 10 "t +populated;")
+											(sysVectorRandom voerms (random 45 65) 10 "t +populated;")
 											)
 										)
 									)
