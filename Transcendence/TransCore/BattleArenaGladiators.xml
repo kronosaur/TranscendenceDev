@@ -1644,7 +1644,7 @@
 				</Group>
 
 				<Group chance="25">
-					<Device item="&itOmniPartisanCannon;" enhanced="100" secondaryWeapon="true"/>
+					<Device item="&itOmniPartisanCannon;" enhanced="33" secondaryWeapon="true"/>
 					<Device item="&itCyclotronDeflectorIV;"/>
 				</Group>
 
@@ -1659,8 +1659,7 @@
 						<Items>
 							<Table>
 								<Item chance="60" count="250" item="&itStrelkaWhite;"/>
-								<Item chance="30" count="150" item="&itStrelkaGreen;"/>
-								<Item chance="10" count="50" item="&itStrelkaRed;"/>
+								<Item chance="40" count="150" item="&itStrelkaGreen;"/>
 							</Table>
 						</Items>
 					</Device>
