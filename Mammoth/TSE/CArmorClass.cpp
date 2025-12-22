@@ -778,14 +778,14 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 			Metric rMethodFortificationAdj = Ctx.ArmorExternFortification.Get(iMethod);
 
-			//	Stacked fortification modifiers are multiplied together
+			//	Stacked fortification modifiers are added together
 
 			if (IS_NAN(m_Fortification.Get(iMethod)))
-				rMethodFortificationAdj *= g_pUniverse->GetEngineOptions().GetDamageMethodAdjItemArmor(iMethod);
+				rMethodFortificationAdj += g_pUniverse->GetEngineOptions().GetDamageMethodAdjItemArmor(iMethod);
 			else
-				rMethodFortificationAdj *= m_Fortification.Get(iMethod);
+				rMethodFortificationAdj += m_Fortification.Get(iMethod);
 
-			rFortificationAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortificationAdj);
+			rFortificationAdj += Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortificationAdj);
 			}
 
 		iDamage = Ctx.CalcDamageMethodAdjDamagePrecalc(rFortificationAdj);
@@ -796,12 +796,12 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 		Metric rFortificationAdj = Ctx.ArmorExternFortification.GetWMD();
 
-		//	Stacked fortification modifiers are multiplied together
+		//	Stacked fortification modifiers are added together
 
 		if (IS_NAN(m_Fortification.GetWMD()))
-			rFortificationAdj *= g_pUniverse->GetEngineOptions().GetDamageMethodAdjItemArmor(iMethod);
+			rFortificationAdj += g_pUniverse->GetEngineOptions().GetDamageMethodAdjItemArmor(iMethod);
 		else
-			rFortificationAdj *= m_Fortification.GetWMD();
+			rFortificationAdj += m_Fortification.GetWMD();
 
 		iDamage = Ctx.CalcDamageMethodAdjDamage(iMethod, rFortificationAdj);
 		}
