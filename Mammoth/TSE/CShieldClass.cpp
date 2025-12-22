@@ -166,8 +166,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 		{
 
-		Metric rFortificationAdj = 1.0;
-		Metric rFortificationAdjMin = 0.0;
+		Metric rDamageMethodAdj = 1.0;
 
 		for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
 			{
@@ -182,10 +181,10 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 			else
 				rMethodFortificationAdj = m_Fortification.Get(iMethod);
 
-			rFortificationAdj += Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortificationAdj);
+			rDamageMethodAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortificationAdj);
 			}
 
-		Ctx.iAbsorb = Ctx.CalcDamageMethodAdjDamagePrecalc(rFortificationAdj);
+		Ctx.iAbsorb = Ctx.CalcDamageMethodAdjDamagePrecalc(rDamageMethodAdj);
 		}
 	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
 		{

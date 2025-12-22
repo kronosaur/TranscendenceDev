@@ -770,7 +770,7 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 		{
 
-		Metric rFortificationAdj = 1.0;
+		Metric rDamageMethodAdj = 1.0;
 
 		for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
 			{
@@ -785,10 +785,10 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 			else
 				rMethodFortificationAdj += m_Fortification.Get(iMethod);
 
-			rFortificationAdj += Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortificationAdj);
+			rDamageMethodAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortificationAdj);
 			}
 
-		iDamage = Ctx.CalcDamageMethodAdjDamagePrecalc(rFortificationAdj);
+		iDamage = Ctx.CalcDamageMethodAdjDamagePrecalc(rDamageMethodAdj);
 		}
 	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
 		{
