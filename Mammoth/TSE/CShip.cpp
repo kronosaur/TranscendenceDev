@@ -310,13 +310,18 @@ void CShip::CalcArmorBonus (void)
 	DEBUG_CATCH
 	}
 
-EAttackResponse CShip::CalcAttackResponse (SDamageCtx &Ctx)
-
 //	CalcAttackResponse
 //
 //	Figures out whether to call <OnAttackedByPlayer>, etc.
+//
+EAttackResponse CShip::CalcAttackResponse (SDamageCtx &Ctx)
 
 	{
+	//	Short circuit on non-hostile attacks
+	
+	if (!Ctx.Damage.IsHostile())
+		return EAttackResponse::Ignore;
+
 	//	Ignore automated weapons
 	
 	if (Ctx.Damage.IsAutomatedWeapon())
@@ -1004,12 +1009,40 @@ bool CShip::CanBeDestroyedBy (CSpaceObject &Attacker) const
 				continue;
 
 			//	If the ship has interior compartments, then the weapon must have
-			//	WMD.
+			//	an appropriate damage method
 
 			if (IsMultiHull())
 				{
-				if (DeviceItem.GetWeaponFireDescForVariant(iVariant).GetDamage().GetMassDestructionDamage() > 0)
+				EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+
+				if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+					{
+					ECompartmentTypes iDefaultCompartment = GetDefaultCompartmentType();
+
+					switch (iDefaultCompartment)
+						{
+						case ECompartmentTypes::deckCargo:
+						case ECompartmentTypes::deckUncrewed:
+							return DeviceItem.GetWeaponFireDescForVariant(iVariant).GetDamage().GetDamageMethodDamage(EDamageMethod::methodCrush) > 0;
+						default:
+							return DeviceItem.GetWeaponFireDescForVariant(iVariant).GetDamage().GetDamageMethodDamage(EDamageMethod::methodShred) > 0;
+						}
+					}
+				else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+					{
+
+					if (DeviceItem.GetWeaponFireDescForVariant(iVariant).GetDamage().GetDamageMethodDamage(EDamageMethod::methodWMD) > 0)
+						return true;
+
+					}
+				else
+					{
+					ASSERT(false);
+
+					//	something went wrong
+
 					return true;
+					}
 				}
 
 			//	Otherwise, any weapon can destroy us.
@@ -1741,6 +1774,32 @@ void CShip::DamageDevice (CInstalledDevice *pDevice, SDamageCtx &Ctx)
 	if (!pDevice)
 		throw CException(ERR_FAIL);
 
+	//	See if we hit the device
+
+	const CDeviceDamageLevelDesc* pInternalDamageDesc = GetUniverse().GetEngineOptions().GetInternalDeviceDamageMaxLevels();
+	if (pInternalDamageDesc->GetChanceToHit() < mathRandom(1, 100))
+		return;
+
+	//	If the device gets hit, see if it gets damaged
+
+	int iLevel = pDevice->GetLevel();
+	CItemType* pDamageItem = Ctx.GetDesc().GetAmmoType();
+	if (!pDamageItem)
+		pDamageItem = Ctx.GetDesc().GetWeaponType();
+
+	//	If this wasnt caused by an item, we assume its something environmental
+
+	int iDamageItemLevel = pDamageItem ? pDamageItem->GetLevel() : MAX_ITEM_LEVEL;
+	DamageTypes iDamageType = Ctx.Damage.GetDamageType();
+	int iMaxLevel = pInternalDamageDesc->GetMaxDeviceLevel(iDamageType,iDamageItemLevel);
+	int iDeviceDamageAdj = pInternalDamageDesc->GetDeviceAdj(iDamageType);
+
+	//	TODO: decide if we want to use the more nuanced damage chance model
+
+	int iChanceOfDamage = iDeviceDamageAdj; //Ctx.iDamage * ((26 - iLevel) * 4) * iDeviceDamageAdj / (100 * 100);
+	if (iChanceOfDamage < mathRandom(1, 100))
+		return;
+
 	//	Damage the device
 
 	DamageItem(pDevice);
@@ -1760,12 +1819,38 @@ void CShip::DamageDrive (SDamageCtx &Ctx)
 //	Damages the main drive.
 
 	{
+	//	See if we hit the device
+
+	const CDeviceDamageLevelDesc* pInternalDamageDesc = GetUniverse().GetEngineOptions().GetInternalDeviceDamageMaxLevels();
+	if (pInternalDamageDesc->GetChanceToHit() < mathRandom(1, 100))
+		return;
+
 	//	Look for a drive device. If we have it, and it is undamaged, then it is
 	//	damaged.
 
 	CInstalledDevice *pDrive = GetNamedDevice(devDrive);
 	if (pDrive && !pDrive->IsDamaged())
 		{
+		//	If the device gets hit, see if it gets damaged
+
+		int iLevel = pDrive->GetLevel();
+		CItemType* pDamageItem = Ctx.GetDesc().GetAmmoType();
+		if (!pDamageItem)
+			pDamageItem = Ctx.GetDesc().GetWeaponType();
+
+		//	If this wasnt caused by an item, we assume its something environmental
+
+		int iDamageItemLevel = pDamageItem ? pDamageItem->GetLevel() : MAX_ITEM_LEVEL;
+		DamageTypes iDamageType = Ctx.Damage.GetDamageType();
+		int iMaxLevel = pInternalDamageDesc->GetMaxDeviceLevel(iDamageType,iDamageItemLevel);
+		int iDeviceDamageAdj = pInternalDamageDesc->GetDeviceAdj(iDamageType);
+
+		//	TODO: decide if we want to use the more nuanced damage chance model
+
+		int iChanceOfDamage = iDeviceDamageAdj; //Ctx.iDamage * ((26 - iLevel) * 4) * iDeviceDamageAdj / (100 * 100);
+		if (iChanceOfDamage < mathRandom(1, 100))
+			return;
+
 		DamageDevice(pDrive, Ctx);
 		return;
 		}
@@ -1774,6 +1859,26 @@ void CShip::DamageDrive (SDamageCtx &Ctx)
 
 	if (m_iDriveDamagedTimer != -1)
 		{
+		//	If the device gets hit, see if it gets damaged. We use the ship's level as the drive's level
+
+		int iLevel = GetLevel();
+		CItemType* pDamageItem = Ctx.GetDesc().GetAmmoType();
+		if (!pDamageItem)
+			pDamageItem = Ctx.GetDesc().GetWeaponType();
+
+		//	If this wasnt caused by an item, we assume its something environmental
+
+		int iDamageItemLevel = pDamageItem ? pDamageItem->GetLevel() : MAX_ITEM_LEVEL;
+		DamageTypes iDamageType = Ctx.Damage.GetDamageType();
+		int iMaxLevel = pInternalDamageDesc->GetMaxDeviceLevel(iDamageType,iDamageItemLevel);
+		int iDeviceDamageAdj = pInternalDamageDesc->GetDeviceAdj(iDamageType);
+
+		//	TODO: decide if we want to use the more nuanced damage chance model
+
+		int iChanceOfDamage = iDeviceDamageAdj; //Ctx.iDamage * ((26 - iLevel) * 4) * iDeviceDamageAdj / (100 * 100);
+		if (iChanceOfDamage < mathRandom(1, 100))
+			return;
+
 		int iDamageTime = mathRandom(1800, 3600);
 
 		//	Increment timer
@@ -1830,64 +1935,35 @@ void CShip::DamageExternalDevice (int iDev, SDamageCtx &Ctx)
 	//	If we're already damaged, then nothing more can happen
 	//	NOTE: This can only happen to external devices. We need this check 
 	//	because the overlay code relies on us to check.
+	//	
+	//	Additionally, null damage explicitly requires deviceDamage to proc this logic
 
-	if (pDevice->IsEmpty() || pDevice->IsDamaged() || !pDevice->IsExternal())
+	if (pDevice->IsEmpty()
+		|| pDevice->IsDamaged()
+		|| !pDevice->IsExternal()
+		|| (!Ctx.IsDeviceDamaged() && Ctx.Damage.GetDamageType() == damageNull))
+		return;
+
+	//	See if we hit the device
+
+	const CDeviceDamageLevelDesc* pExternalDamageDesc = GetUniverse().GetEngineOptions().GetExternalDeviceDamageMaxLevels();
+	if (pExternalDamageDesc->GetChanceToHit() < mathRandom(1, 100))
 		return;
 
 	//	If the device gets hit, see if it gets damaged
 
 	int iLevel = pDevice->GetLevel();
-	int iMaxLevel = 0;
-	int iChanceOfDamage = Ctx.iDamage * ((26 - iLevel) * 4) / 100;
+	CItemType* pDamageItem = Ctx.GetDesc().GetAmmoType();
+	if (!pDamageItem)
+		pDamageItem = Ctx.GetDesc().GetWeaponType();
 
-	switch (Ctx.Damage.GetDamageType())
-		{
-		case damageLaser:
-		case damageKinetic:
-			iMaxLevel = 6;
-			break;
+	//	If this wasnt caused by an item, we assume its something environmental
 
-		case damageParticle:
-		case damageBlast:
-			iMaxLevel = 9;
-			break;
-
-		case damageIonRadiation:
-			iMaxLevel = 12;
-			iChanceOfDamage = iChanceOfDamage * 120 / 100;
-			break;
-
-		case damageThermonuclear:
-			iMaxLevel = 12;
-			break;
-
-		case damagePositron:
-		case damagePlasma:
-			iMaxLevel = 15;
-			break;
-
-		case damageAntiMatter:
-		case damageNano:
-			iMaxLevel = 18;
-			break;
-
-		case damageGravitonBeam:
-			iMaxLevel = 21;
-			iChanceOfDamage = iChanceOfDamage * 75 / 100;
-			break;
-
-		case damageSingularity:
-			iMaxLevel = 21;
-			break;
-
-		case damageDarkAcid:
-		case damageDarkSteel:
-			iMaxLevel = 24;
-			break;
-
-		default:
-			iMaxLevel = 27;
-		}
+	int iDamageItemLevel = pDamageItem ? pDamageItem->GetLevel() : MAX_ITEM_LEVEL;
+	DamageTypes iDamageType = Ctx.Damage.GetDamageType();
+	int iMaxLevel = pExternalDamageDesc->GetMaxDeviceLevel(iDamageType,iDamageItemLevel);
+	int iDeviceDamageAdj = pExternalDamageDesc->GetDeviceAdj(iDamageType);
+	int iChanceOfDamage = Ctx.iDamage * ((26 - iLevel) * 4) * iDeviceDamageAdj / (100 * 100);
 
 	//	If the device is too high-level for the damage type, then nothing
 	//	happens
@@ -2747,6 +2823,7 @@ DamageTypes CShip::GetDamageType (void)
 		CItemCtx ItemCtx(this, pWeapon);
 		return (DamageTypes)pWeapon->GetDamageType(ItemCtx);
 		}
+	//	We return damageGeneric since this ship may have secondary weapons
 	else
 		return damageGeneric;
 	}
@@ -4316,20 +4393,39 @@ void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
 	DEBUG_CATCH
 	}
 
-EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
-
 //	Damage
 //
 //	Ship takes damage from the given source
+//
+EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	{
 	DEBUG_TRY
 
 	GetUniverse().AdjustDamage(Ctx);
 
-	//	Short-circuit
+	//	If this is a momentum attack then we are pushed
+	//	Damage sources always get a chance to deal momentum, since it
+	//	is not considered a hostile effect
 
-	if (Ctx.iDamage == 0 || GetSystem() == NULL)
+	Metric rImpulse;
+	if (Ctx.Damage.HasImpulseDamage(&rImpulse) 
+		&& !IsAnchored())
+		{
+		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
+		AddForce(vAccel);
+		}
+
+	//	Short-circuit, only if there is absolutely nothing our
+	//	damage desc lets us do
+	// 
+	//	Null damage always is allowed through specifically for non-hostile
+	//	events to fire
+
+	bool bIsHostile = Ctx.Damage.IsHostile();
+	bool bFireDamageEvents = Ctx.IsDamageEventFiring();
+
+	if (!bFireDamageEvents || GetSystem() == NULL)
 		return damageNoDamage;
 
 	bool bIsPlayer = IsPlayer();
@@ -4351,33 +4447,36 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	Handle consequences of attack.
 
-	if (CSpaceObject *pAttacker = Ctx.Attacker.GetObj())
+	if (bIsHostile)
 		{
-		m_pController->OnAttacked(*pAttacker, Ctx);
-
-		//	Figure out whether to call <OnAttackedByPlayer>, etc.
-
-		switch (CalcAttackResponse(Ctx))
+		if (CSpaceObject* pAttacker = Ctx.Attacker.GetObj())
 			{
-			case EAttackResponse::WarnAttacker:
-				Communicate(pAttacker, msgWatchTargets);
-				break;
+			m_pController->OnAttacked(*pAttacker, Ctx);
 
-			case EAttackResponse::OnAttacked:
-				FireOnAttacked(Ctx);
-				if (IsDestroyed())
-					return damageDestroyed;
-				break;
+			//	Figure out whether to call <OnAttackedByPlayer>, etc.
 
-			case EAttackResponse::OnAttackedByPlayer:
-				FireOnAttackedByPlayer();
-				if (IsDestroyed())
-					return damageDestroyed;
-				break;
+			switch (CalcAttackResponse(Ctx))
+				{
+				case EAttackResponse::WarnAttacker:
+					Communicate(pAttacker, msgWatchTargets);
+					break;
+
+				case EAttackResponse::OnAttacked:
+					FireOnAttacked(Ctx);
+					if (IsDestroyed())
+						return damageDestroyed;
+					break;
+
+				case EAttackResponse::OnAttackedByPlayer:
+					FireOnAttackedByPlayer();
+					if (IsDestroyed())
+						return damageDestroyed;
+					break;
+				}
 			}
-		}
 
-	GetSystem()->FireOnSystemObjAttacked(Ctx);
+		GetSystem()->FireOnSystemObjAttacked(Ctx);
+		}
 
 	//	See if the damage is blocked by some external defense
 
@@ -4390,16 +4489,6 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			return damageDestroyed;
 		else if (Ctx.iDamage == 0)
 			return damageNoDamage;
-		}
-
-	//	If this is a momentum attack then we are pushed
-
-	Metric rImpulse;
-	if (Ctx.Damage.HasImpulseDamage(&rImpulse) 
-			&& !IsAnchored())
-		{
-		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
-		AddForce(vAccel);
 		}
 
 	//	Let our shield generators take a crack at it
@@ -4444,18 +4533,26 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Damage any devices that are outside the hull (e.g., Patch Spiders)
 	//	Ignore devices with overlays because they get damaged in the overlay
 	//	damage section.
+	// 
+	//	Skip for 0 damage, but allow null damage through to allow DamageExternalDevice to handle things.
 
-	for (CDeviceItem DeviceItem : GetDeviceSystem())
+	if (bFireDamageEvents)
 		{
-		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
-		if (Device.IsExternal()
-				&& Device.GetOverlay() == NULL)
+		for (CDeviceItem DeviceItem : GetDeviceSystem())
 			{
-			//	The chance that the device got hit depends on the number of armor segments
-			//	A device takes up 1/9th of the surface area of a segment.
+			CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+			if (Device.IsExternal()
+				&& Device.GetOverlay() == NULL)
+				{
+				//	Check if we hit the segment that the device is on
+				//	If we roll a Nat 1, representing the segment with the device, we get hit.
+				// 
+				//	A second check if we actually hit the device
+				//  is done inside of DamageExternalDevice
 
-			if (mathRandom(1, GetArmorSectionCount() * 9) == 7)
-				DamageExternalDevice(Device.GetDeviceSlot(), Ctx);
+				if (mathRandom(1, GetArmorSectionCount()) == 1)
+					DamageExternalDevice(Device.GetDeviceSlot(), Ctx);
+				}
 			}
 		}
 
@@ -4487,8 +4584,95 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Let the armor handle it
 
 	Ctx.iArmorHitDamage = Ctx.iDamage;
+	CShipArmorSegmentDesc SectionDesc = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect());
+
 	if (pArmor)
 		{
+		//	Set any Fortification adjustment from the slot
+
+		EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+		ECompartmentTypes iDefaultCompartmentType;
+
+		if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+			{
+			for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
+				{
+				EDamageMethod iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
+
+				Metric rExternFortify = SectionDesc.GetFortificationAdj(iMethod);
+
+				if (IS_NAN(rExternFortify))
+					{
+					iDefaultCompartmentType = GetEffectiveProtectedCompartmentType(pArmor->GetSect());
+
+					bool bTrueCriticalSegments = GetDefaultCompartment().iMaxHP == 0;
+					bool bSectMarkedCritical = SectionDesc.GetCriticalArea() == CShipClass::VitalSections::sectCritical;
+					bool bUncrewedCompartment;
+
+					switch (iDefaultCompartmentType)
+						{
+						case ECompartmentTypes::deckUncrewed:
+						case ECompartmentTypes::deckCargo:
+							bUncrewedCompartment = true;
+						case ECompartmentTypes::deckGeneral:
+						case ECompartmentTypes::deckMainDrive:
+						case ECompartmentTypes::deckUnknown:
+						default:
+							bUncrewedCompartment = false;
+						}
+
+					if (bTrueCriticalSegments && bSectMarkedCritical)
+						{
+						if (bUncrewedCompartment)
+							rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCriticalUncrewed(iMethod);
+						else
+							rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCritical(iMethod);
+						}
+					else
+						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCritical(iMethod);
+					}
+				Ctx.ArmorExternFortification.Set(iMethod, rExternFortify);
+				}
+			}
+		else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+			{
+			EDamageMethod iMethod = EDamageMethod::methodWMD;
+
+			Metric rExternFortify = SectionDesc.GetFortificationAdj(iMethod);
+
+			if (IS_NAN(rExternFortify))
+				{
+				iDefaultCompartmentType = GetEffectiveProtectedCompartmentType(pArmor->GetSect());
+
+				bool bTrueCriticalSegments = GetDefaultCompartment().iMaxHP == 0;
+				bool bSectMarkedCritical = SectionDesc.GetCriticalArea() == CShipClass::VitalSections::sectCritical;
+				bool bUncrewedCompartment;
+
+				switch (iDefaultCompartmentType)
+					{
+					case ECompartmentTypes::deckUncrewed:
+					case ECompartmentTypes::deckCargo:
+						bUncrewedCompartment = true;
+					case ECompartmentTypes::deckGeneral:
+					case ECompartmentTypes::deckMainDrive:
+					case ECompartmentTypes::deckUnknown:
+					default:
+						bUncrewedCompartment = false;
+					}
+
+				if (bTrueCriticalSegments && bSectMarkedCritical)
+					{
+					if (bUncrewedCompartment)
+						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCriticalUncrewed(iMethod);
+					else
+						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCritical(iMethod);
+					}
+				else
+					rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCritical(iMethod);
+				}
+			Ctx.ArmorExternFortification.SetWMD(rExternFortify);
+			}
+
 		EDamageResults iResult = pArmor->AbsorbDamage(this, Ctx);
 
 		//	Handle result
@@ -4578,7 +4762,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		{
 		//	Tell our attacker that we got hit
 
-		CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
+		CSpaceObject* pOrderGiver = Ctx.GetOrderGiver();
 		if (pOrderGiver && pOrderGiver->CanAttack())
 			pOrderGiver->OnObjHit(Ctx);
 
@@ -4597,8 +4781,15 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		return damageArmorHit;
 		}
 
+	//	If this was only null damage we're ok
+
+	else if (Ctx.Damage.GetDamageType() == damageNull)
+		return damageNoDamage;
+
 	//	Otherwise, if we have interior compartments (like a capital ship) then
-	//	we do damage.
+	//	we do damage
+	//
+	//	Null damage is already short-circuited at this point
 
 	else if (!m_Interior.IsEmpty())
 		{
@@ -4606,7 +4797,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 		//	Tell our attacker that we got hit
 
-		CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
+		CSpaceObject* pOrderGiver = Ctx.GetOrderGiver();
 		if (pOrderGiver && pOrderGiver->CanAttack())
 			pOrderGiver->OnObjHit(Ctx);
 
@@ -4624,6 +4815,8 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		}
 
 	//	Otherwise we're in big trouble
+	//
+	//	Null damage is already short-circuited at this point
 
 	else
 		{
@@ -4643,24 +4836,74 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 		if (!(dwDamage & CShipClass::sectCritical))
 			{
-			int iChanceOfDeath = 5;
+			EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+			EDamageMethod iMethod;
+			Metric rChanceToDie = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestructionChance();
+			int iChanceOfDeath = mathRoundStochastic(rChanceToDie * 100);
 
-			//	We only care about mass destruction damage
+			if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+				{
+				Metric rDamageMethodAdj = 1.0;
 
-			int iWMDDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
+				for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
+					{
+					iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
 
-			//	Compare the amount of damage that we are taking with the
-			//	original strength (HP) of the armor. Increase the chance
-			//	of death appropriately.
+					Metric rNonCriticalAdjust = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestruction(iMethod);
 
-			int iMaxHP = pArmor->GetMaxHP(this);
-			if (iMaxHP > 0)
-				iChanceOfDeath += 20 * iWMDDamage / iMaxHP;
+					rDamageMethodAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rNonCriticalAdjust);
+					}
 
-			//	Roll the dice
+				//	Compare the amount of damage that we are taking with the
+				//	original strength (HP) of the armor. Increase the chance
+				//	of death appropriately.
 
-			if (mathRandom(1, 100) <= iChanceOfDeath)
-				dwDamage |= CShipClass::sectCritical;
+				int iWMDDamage = Ctx.CalcDamageMethodAdjDamagePrecalc(rDamageMethodAdj);
+
+				int iMaxHP = pArmor->GetMaxHP(this);
+				if (iMaxHP > 0)
+					iChanceOfDeath += 20 * iWMDDamage / iMaxHP;
+
+				//	Roll the dice
+
+				if (mathRandom(1, 100) <= iChanceOfDeath)
+					dwDamage |= CShipClass::sectCritical;
+				}
+			else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+				{
+				iMethod = EDamageMethod::methodWMD;
+
+				//	We increase the chance to die based on the amount of damage
+				//	experienced by the target relative to the max HP of the segment
+				//	This is to preserve legacy balance until this system gets a
+				//  proper replacement
+
+				Metric rNonCriticalAdjust = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestruction(iMethod);
+
+				int iWMDDamage = Ctx.CalcDamageMethodAdjDamage(iMethod, rNonCriticalAdjust);
+
+				//	Compare the amount of damage that we are taking with the
+				//	original strength (HP) of the armor. Increase the chance
+				//	of death appropriately.
+
+				int iMaxHP = pArmor->GetMaxHP(this);
+				if (iMaxHP > 0)
+					iChanceOfDeath += 20 * iWMDDamage / iMaxHP;
+
+				//	Roll the dice
+
+				if (mathRandom(1, 100) <= iChanceOfDeath)
+					dwDamage |= CShipClass::sectCritical;
+				}
+			else
+				{
+				ASSERT(false);
+
+				//	Something went wrong, pretend we were a critical segment
+				//	and just die
+
+				return damageDestroyed;
+				}
 			}
 
 		//	Ship is destroyed!
@@ -7276,7 +7519,7 @@ void CShip::SetFireDelayForCycleWeapons (CInstalledDevice &Device)
 			}
 		}
 
-	iFireDelayToIncrement = (m_pController->GetFireRateAdj() * Device.GetActivateDelay(this) / 10);
+	iFireDelayToIncrement = mathRound(m_pController->GetFireRateAdj() * Device.GetActivateDelay(this) / 10);
 	iFireDelayToIncrement = (iFireDelayToIncrement + (iNumberOfGuns - 1)) / iNumberOfGuns;
 	while (WeaponsInFireGroup.GetCount() > 0)
 		{
@@ -7726,6 +7969,43 @@ void CShip::UninstallArmor (CItemListManipulator &ItemList)
 //	Uninstalls the armor at the cursor
 
 	{
+	}
+
+//	Returns what sort of deck an armor segment protects
+// 
+//	Converts non-critical areas to corresponding deck types
+//	If generic non-critical, returns the deck type of the
+//	default compartment.
+//	If critical, returns deckUnknown
+//
+ECompartmentTypes CShip::GetEffectiveProtectedCompartmentType(int iSect)
+	{
+	//	This is set to deckUnknown if we dont have compartments
+	ECompartmentTypes iDefaultCompartmentType = GetDefaultCompartmentType();
+	int iSegmentCoverage = m_pClass->GetArmorDesc().GetSegment(iSect).GetCriticalArea();
+
+	switch (iSegmentCoverage)
+		{
+		case CShipClass::VitalSections::sectCritical:
+			return ECompartmentTypes::deckUnknown;
+		case CShipClass::VitalSections::sectCargo:
+			return ECompartmentTypes::deckCargo;
+		case CShipClass::VitalSections::sectDrive:
+		case CShipClass::VitalSections::sectManeuver:
+			return ECompartmentTypes::deckMainDrive;
+		case CShipClass::VitalSections::sectTactical:
+		case CShipClass::VitalSections::sectScanners:
+			return ECompartmentTypes::deckUncrewed;
+		default:
+			{
+			if (iSegmentCoverage & CShipClass::VitalSections::sectDeviceMask)
+				return ECompartmentTypes::deckUncrewed;
+			else if (iDefaultCompartmentType == ECompartmentTypes::deckUnknown)
+				return ECompartmentTypes::deckGeneral;
+			else
+				return iDefaultCompartmentType;
+			}
+		}
 	}
 
 void CShip::UpdateArmorItems (void)

@@ -132,6 +132,13 @@ inline ICCItemPtr CDifferentiatedItem::GetProperty (const CString &sProperty) co
 		return ICCItemPtr::Nil();
 	}
 
+inline ICCItemPtr CDifferentiatedItem::GetPropertyKeys () const
+	{
+	CCodeChainCtx CCX(m_Item.GetUniverse());
+	CItemCtx ItemCtx(m_Item);
+	return m_Item.GetItemPropertyKeys(CCX, ItemCtx, false);
+	}
+
 inline int CDifferentiatedItem::GetVariantNumber (void) const
 	{
 	return m_Item.GetVariantNumber();

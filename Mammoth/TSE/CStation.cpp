@@ -375,11 +375,11 @@ bool CStation::Blacklist (CSpaceObject *pObj)
 		return false;
 	}
 
-int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
-
 //	CalcAdjustedDamage
 //
 //	Adjusts damage because some hulls require WMD.
+//
+int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 
 	{
 	EDamageHint iHint = EDamageHint::none;
@@ -392,56 +392,36 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 	//	Depending on hull type we need special damage to penetrate.
 
 	int iSpecialDamage;
-	switch (m_Hull.GetHullType())
+	EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+	EDamageMethod iMethod;
+
+	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 		{
-		//	Multi-hull stations require WMD.
+		Metric rBestAdj = 1.0;
+		Metric rFortificationAdj = 1.0;
 
-		case CStationHullDesc::hullMultiple:
-			iSpecialDamage = Ctx.Damage.GetMassDestructionDamage();
-			iHint = EDamageHint::useWMD;
-			break;
+		for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
+			{
+			iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
 
-		//	Stations built on asteroids must be attacked with either WMD or
-		//	mining damage.
+			Metric rMethodFortifyAdj = m_pType->GetHullDesc().GetFortificationAdj(iMethod);
+			Metric rMethodAdj = Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortifyAdj);
 
-		case CStationHullDesc::hullAsteroid:
-			iSpecialDamage = Max(Ctx.Damage.GetMassDestructionDamage(), Ctx.Damage.GetMiningDamage());
-			iHint = EDamageHint::useMiningOrWMD;
-			break;
+			if (rMethodAdj < rBestAdj)
+				{
+				rBestAdj = rMethodAdj;
+				iHint = EDamageHint::useWMD; //	placeholder
+				}
 
-		//	Underground stations must be attacked with  mining damage.
+			rFortificationAdj += rMethodAdj;
+			}
 
-		case CStationHullDesc::hullUnderground:
-			iSpecialDamage = Ctx.Damage.GetMiningDamage();
-			iHint = EDamageHint::useMining;
-			break;
-
-		//	For single-hull stations we don't need special damage.
-
-		case CStationHullDesc::hullSingle:
-		default:
-			iSpecialDamage = -1;
-			break;
-		}
-
-	//	If we don't need special damage, then we do full damage.
-
-	if (iSpecialDamage == -1)
-		return Ctx.iDamage;
-
-	//	Otherwise, we adjust the damage.
-
-	else
-		{
-		int iDamageAdj = DamageDesc::GetMassDestructionAdjFromValue(iSpecialDamage);
-		int iDamage = mathAdjust(Ctx.iDamage, iDamageAdj);
-
-		//	If we're not making progress, then return a hint about what to do.
+		int iDamage = Ctx.CalcDamageMethodAdjDamagePrecalc(rFortificationAdj);
 
 		if (iHint != EDamageHint::none 
-				&& iDamageAdj <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD
-				&& Ctx.Attacker.IsPlayer()
-				&& Ctx.Attacker.IsAngryAt(*this))
+			&& (rFortificationAdj * 100) <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD
+			&& Ctx.Attacker.IsPlayer()
+			&& Ctx.Attacker.IsAngryAt(*this))
 			{
 			//	Figure out the average damage for this weapon.
 
@@ -453,7 +433,7 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 
 			//	Adjust for special damage resistance.
 
-			int iAveDamage = mathAdjust(mathRound(rAveDamage), iDamageAdj);
+			int iAveDamage = mathRoundStochastic(mathRound(rAveDamage) * rFortificationAdj);
 
 			//	If we're not doing much harm, then warn the player.
 
@@ -461,17 +441,103 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 				Ctx.SetHint(iHint);
 			}
 
-		//	Return adjusted damage
-
 		return iDamage;
 		}
-	}
+	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+		{
+		iMethod = EDamageMethod::methodWMD;
 
-int CStation::CalcAdjustedDamageAbandoned (SDamageCtx &Ctx) const
+		switch (m_Hull.GetHullType())
+			{
+			//	Multi-hull stations require WMD.
+
+			case CStationHullDesc::hullArmor:
+			case CStationHullDesc::hullUncrewed:
+			case CStationHullDesc::hullMultiple:
+				iSpecialDamage = Ctx.Damage.GetDamageMethodDamage(iMethod);
+				iHint = EDamageHint::useWMD;
+				break;
+
+				//	Stations built on asteroids must be attacked with either WMD or
+				//	mining damage.
+
+			case CStationHullDesc::hullAsteroid:
+				iSpecialDamage = Max(Ctx.Damage.GetDamageMethodDamage(iMethod), Ctx.Damage.GetMiningDamage());
+				iHint = EDamageHint::useMiningOrWMD;
+				break;
+
+				//	Underground stations must be attacked with mining damage.
+
+			case CStationHullDesc::hullUnderground:
+				iSpecialDamage = Ctx.Damage.GetMiningDamage();
+				iHint = EDamageHint::useMining;
+				break;
+
+				//	For single-hull stations we don't need special damage.
+
+			case CStationHullDesc::hullSingle:
+			default:
+				iSpecialDamage = -1;
+				break;
+			}
+
+		//	If we don't need special damage, then we do full damage.
+
+		if (iSpecialDamage == -1)
+			return Ctx.iDamage;
+
+		//	Otherwise, we adjust the damage.
+
+		else
+			{
+			Metric rFortification = GetHullDesc().GetFortificationAdj(iMethod);
+			int iDamage = Ctx.CalcDamageMethodAdjDamageFromLevel(iMethod, iSpecialDamage, rFortification);
+
+			//	If we're not making progress, then return a hint about what to do.
+
+			Metric rFortificationAdj = Ctx.CalcDamageMethodFortifiedAdjFromLevel(iMethod, iSpecialDamage, rFortification);
+
+			if (iHint != EDamageHint::none 
+				&& (rFortificationAdj * 100) <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD
+				&& Ctx.Attacker.IsPlayer()
+				&& Ctx.Attacker.IsAngryAt(*this))
+				{
+				//	Figure out the average damage for this weapon.
+
+				Metric rAveDamage = Ctx.Damage.GetDamageValue(DamageDesc::flagAverageDamage | DamageDesc::flagIncludeBonus);
+
+				//	Adjust damage for difficulty level.
+
+				rAveDamage = GetUniverse().AdjustDamage(Ctx, rAveDamage);
+
+				//	Adjust for special damage resistance.
+
+				int iAveDamage = mathRoundStochastic(mathRound(rAveDamage) * rFortificationAdj);
+
+				//	If we're not doing much harm, then warn the player.
+
+				if (iAveDamage == 0 || (m_Hull.GetHitPoints() / iAveDamage) > SDamageCtx::WMD_HINT_THRESHOLD)
+					Ctx.SetHint(iHint);
+				}
+
+			//	Return adjusted damage
+
+			return iDamage;
+			}
+		}
+	else
+		{
+		//	Error, we do full damage since we have no valid adj system
+		ASSERT(false);
+		return Ctx.iDamage;
+		}
+	}
 
 //	CalcAdjustedDamageAbandoned
 //
 //	Adjusts damage because some hulls require WMD.
+//
+int CStation::CalcAdjustedDamageAbandoned (SDamageCtx &Ctx) const
 
 	{
 	EDamageHint iHint = EDamageHint::none;
@@ -481,31 +547,80 @@ int CStation::CalcAdjustedDamageAbandoned (SDamageCtx &Ctx) const
 	if (Ctx.iDamage == 0)
 		return 0;
 
-	//	Asteroid-class objects are affected either by WMD or by mining.
+	//	Depending on hull type we need special damage to penetrate.
 
-	int iSpecialDamage;
-	if (CanBeMined() 
+	EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+	EDamageMethod iMethod;
+
+	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+		{
+		//	Handle mineable objects separately
+		//	Mineable objects use the Crush curve via the Mining level instead of the Crush level
+
+		if (CanBeMined())
+			return Ctx.CalcDamageMethodAdjDamageFromLevel(EDamageMethod::methodCrush, Ctx.Damage.GetMiningDamage(), 0.1);
+
+		//	Otherwise we need to process this as physicalized damage
+
+		Metric rDamageMethodAdj = 1.0;
+
+		for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
+			{
+			iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
+
+			//	Wrecks have fixed damage adj (weaker to crush and much weaker to shred)
+			//	This should eventually be moved to the adventure settings
+
+			Metric rMethodFortifyAdj = 0.0;
+			switch (iMethod)
+				{
+				case EDamageMethod::methodCrush:
+					rMethodFortifyAdj += 0.5;
+					break;
+				case EDamageMethod::methodShred:
+					rMethodFortifyAdj += 0.5;
+					break;
+				}
+
+			rDamageMethodAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortifyAdj);
+			}
+
+		return Ctx.CalcDamageMethodAdjDamagePrecalc(rDamageMethodAdj);
+		}
+	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+		{
+		iMethod = EDamageMethod::methodWMD;
+
+		//	Asteroid-class objects are affected either by WMD or by mining.
+
+		int iSpecialDamage;
+		if (CanBeMined() 
 			|| m_Hull.GetHullType() == CStationHullDesc::hullAsteroid
 			|| m_Hull.GetHullType() == CStationHullDesc::hullUnderground)
 
-		iSpecialDamage = Max(Ctx.Damage.GetMassDestructionDamage(), Ctx.Damage.GetMiningDamage());
+			iSpecialDamage = Max(Ctx.Damage.GetDamageMethodLevel(iMethod), Ctx.Damage.GetMiningDamage());
 
-	//	Other stations require WMD.
+		//	Other stations require WMD.
 
-	else
-		iSpecialDamage = Ctx.Damage.GetMassDestructionDamage();
+		else
+			iSpecialDamage = Ctx.Damage.GetDamageMethodLevel(iMethod);
 
-	//	No damage unless we have the required special damage.
+		//	No damage unless we have the required special damage.
 
-	if (iSpecialDamage <= 0)
-		return 0;
+		if (iSpecialDamage <= 0)
+			return 0;
 
-	//	Otherwise, we adjust the damage.
+		//	Otherwise, we adjust the damage.
 
+		else
+			return Ctx.CalcDamageMethodAdjDamageFromLevel(iMethod, iSpecialDamage, GetHullDesc().GetFortificationAdj(iMethod));
+
+		}
 	else
 		{
-		int iDamageAdj = DamageDesc::GetMassDestructionAdjFromValue(iSpecialDamage);
-		return mathAdjust(Ctx.iDamage, iDamageAdj);
+		//	Error, we do full damage since we have no valid adj system
+		ASSERT(false);
+		return Ctx.iDamage;
 		}
 	}
 
@@ -2549,11 +2664,11 @@ EConditionResult CStation::OnCanRemoveCondition (ECondition iCondition, const SA
 		}
 	}
 
-EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
-
 //	Damage
 //
 //	Station takes damage
+//
+EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	{
 	DEBUG_TRY
@@ -2564,9 +2679,26 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	Ctx.iSectHit = -1;
 
-	//	Short-circuit
+	//	If this is a momentum attack then we are pushed
+	//	We run this first because momentum is not hostile
 
-	if (Ctx.iDamage == 0)
+	Metric rImpulse;
+	if (!IsAnchored() && Ctx.Damage.HasImpulseDamage(&rImpulse))
+		{
+		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
+		AddForce(vAccel);
+		}
+
+	//	Short-circuit, only if there is absolutely nothing our
+	//	damage desc lets us do
+	// 
+	//	Null damage always is allowed through specifically for scripts
+	//	to fire
+
+	bool bIsHostile = Ctx.Damage.IsHostile();
+	bool bFireDamageEvents = Ctx.IsDamageEventFiring();
+
+	if (!bFireDamageEvents)
 		{
 		if (IsImmutable())
 			return damageNoDamageNoPassthrough;
@@ -2574,14 +2706,17 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 			return damageNoDamage;
 		}
 
-	m_dwLastHitTime = GetUniverse().GetTicks();
-
 	//	OnAttacked event
 
-	if (HasOnAttackedEvent())
-		FireOnAttacked(Ctx);
+	if (bIsHostile)
+		{
+		m_dwLastHitTime = GetUniverse().GetTicks();
 
-	GetSystem()->FireOnSystemObjAttacked(Ctx);
+		if (HasOnAttackedEvent())
+			FireOnAttacked(Ctx);
+
+		GetSystem()->FireOnSystemObjAttacked(Ctx);
+		}
 
 	//	See if the damage is blocked by some external defense
 
@@ -2599,15 +2734,6 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 			else
 				return damageNoDamage;
 			}
-		}
-
-	//	If this is a momentum attack then we are pushed
-
-	Metric rImpulse;
-	if (!IsAnchored() && Ctx.Damage.HasImpulseDamage(&rImpulse))
-		{
-		CVector vAccel = PolarToVector(Ctx.iDirection, -0.5 * rImpulse);
-		AddForce(vAccel);
 		}
 
 	//	Let our shield generators take a crack at it
@@ -2646,11 +2772,11 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	DEBUG_CATCH_OBJ(this)
 	}
 
-EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
-
 //	OnDamageAbandoned
 //
 //	An abandoned station is damaged
+//
+EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 
 	{
 	EDamageResults iResult = damageNoDamageNoPassthrough;
@@ -2714,7 +2840,7 @@ EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 
 	//	Take damage
 
-	if (Ctx.iDamage > 0)
+	if (Ctx.IsDamaging())
 		{
 		//	See if this hit destroyed us
 
@@ -2749,27 +2875,68 @@ EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 	return iResult;
 	}
 
-EDamageResults CStation::OnDamageImmutable (SDamageCtx &Ctx)
-
 //	OnDamageImmutable
 //
 //	An immutable station is damaged
+//
+EDamageResults CStation::OnDamageImmutable (SDamageCtx &Ctx)
 
 	{
 	//	If we don't have ejecta, then decrease damage to 0.
-	//
-	//  NOTE: We check MassDestructionLevel (instead of MassDestructionAdj) 
-	//  because even level 0 has some WMD. But for this case we only case
-	//  about "real" WMD.
 
 	if (m_pType->GetEjectaAdj() == 0
-			|| Ctx.Damage.GetMassDestructionLevel() == 0)
+			|| Ctx.Damage.GetDamageType() == damageNull)
+		Ctx.iDamage = 0;
+
+	//	If we cant make ejecta, reduce damage to 0 too.
+	//
+	//  NOTE: We check MassDestructionLevel (instead of MassDestructionAdj) 
+	//  because even level 0 may have some WMD. But for this case we only care
+	//  about "real" WMD.
+
+	int iBestDamageMethodLevel = 0;
+
+	EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+	EDamageMethod iBestMethod;
+
+	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+		{
+		for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
+			{
+			EDamageMethod iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
+
+			//	pierce doesnt produce ejecta
+			//	need to adjust once wreck adj is encoded in the engine
+			if (iMethod == EDamageMethod::methodPierce)
+				continue;
+
+			int iLevel = Ctx.Damage.GetDamageMethodLevel(iMethod);
+			if (iLevel > iBestDamageMethodLevel)
+				{
+				iBestDamageMethodLevel = iLevel;
+				iBestMethod = iMethod;
+				}
+			}
+		}
+	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+		{
+		iBestDamageMethodLevel = Ctx.Damage.GetDamageMethodLevel(EDamageMethod::methodWMD);
+		iBestMethod = EDamageMethod::methodWMD;
+		}
+	else
+		{
+		ASSERT(false);
+		Ctx.iDamage = 0;
+		return damageNoDamageNoPassthrough;
+		}
+
+	if (!iBestDamageMethodLevel)
 		Ctx.iDamage = 0;
 
 	//	Otherwise, adjust for WMD
 
 	else
-		Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
+		Ctx.iDamage = Ctx.CalcDamageMethodAdjDamageRaw(iBestMethod);
 
 	//	Hit effect
 
@@ -2795,6 +2962,7 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 
 	if (pOrderGiver 
 			&& pOrderGiver->CanAttack()
+			&& Ctx.Damage.IsHostile()
 			&& !Ctx.Attacker.IsAutomatedWeapon())
 		{
 		//	Tell our base that we were attacked.
@@ -2874,9 +3042,9 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 	if (pOrderGiver && pOrderGiver->CanAttack())
 		pOrderGiver->OnObjHit(Ctx);
 
-	//	If no damage, we're done
+	//	If no damage or null damage, we're done
 
-	if (Ctx.iDamage == 0 && !bCustomDamage)
+	if (!Ctx.IsDamaging() && !bCustomDamage)
 		return damageNoDamage;
 
 	//	Handle special attacks

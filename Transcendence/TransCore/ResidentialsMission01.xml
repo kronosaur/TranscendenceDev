@@ -16,6 +16,12 @@
 			<Data id="hasCasualties"></Data>
 			<Data id="reward"></Data>
 
+			<!-- This is the number of ticks after accepting that the player has
+				until the station suffers casualties, or until fails respectively -->
+
+			<Data id="casualtiesIn"></Data>
+			<Data id="failureIn"></Data>
+
 			<!-- If the player does not return the scrubbers before this tick, 
 				the station will suffer casualties, and the reward will be 
 				decreased. After failureOn, then mission fails. -->
@@ -61,14 +67,29 @@
 					;	Calculate how much time before casualties
 
 					(extraTime (typ@ gType 'extraTime))
-					(casualtiesOn (+ (unvGetTick) travelTime extraTime travelTime))
-					(failureOn (+ casualtiesOn extraTime))
+					(casualtiesIn (+ travelTime extraTime travelTime))
+					(failureIn (+ casualtiesIn extraTime))
 					)
 					(msnSet@ gSource 'reward reward)
-					(msnSet@ gSource 'casualtiesOn casualtiesOn)
-					(msnSet@ gSource 'failureOn failureOn)
+					(msnSet@ gSource 'casualtiesIn casualtiesIn)
+					(msnSet@ gSource 'failureIn failureIn)
 					)
 			</OnTargetChosen>
+
+			<onAccepted>
+				(block
+					(
+						(now (unvGetTick))
+					)
+					
+					(msnRegisterForEvents gSource gPlayerShip)
+
+					;	Set our casualty and failure times when mission is accepted
+
+					(msnSet@ gSource 'casualtiesOn (+ now (msn@ gSource 'casualtiesIn)))
+					(msnSet@ gSource 'failureOn (+ now (msn@ gSource 'failureIn)))
+				)
+			</onAccepted>
 
 			<OnCompleted>
 

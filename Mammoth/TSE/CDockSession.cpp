@@ -183,12 +183,12 @@ const SScreenSetTab *CDockSession::FindTab (const CString &sID) const
 	return NULL;
 	}
 
-ICCItemPtr CDockSession::GetData (const CString &sAttrib) const
-
 //	GetData
 //
 //	Returns data for the given attribute. The caller is responsible for 
 //	discarding this data.
+//
+ICCItemPtr CDockSession::GetData (const CString &sAttrib) const
 
 	{
 	if (!InSession())
@@ -208,6 +208,47 @@ ICCItemPtr CDockSession::GetData (const CString &sAttrib) const
 		}
 
 	return ICCItemPtr(ICCItem::Nil);
+	}
+
+//	GetData
+//
+//	Returns data for the given attribute. The caller is responsible for 
+//	discarding this data.
+//
+ICCItemPtr CDockSession::GetDataKeys () const
+
+	{
+	ICCItemPtr pList(ICCItem::List);
+
+	if (!InSession())
+		return pList;
+
+	TMap<CString, int> mSeen;
+	const SDockFrame &Frame = m_DockFrames.GetCurrent();
+
+	if (Frame.pStoredData)
+		{
+		for (int i = 0; i < Frame.pStoredData->GetCount(); i ++)
+			{
+			CString sKey = Frame.pStoredData->GetKey(i);
+			pList->AppendString(sKey);
+			mSeen.Insert(sKey);
+			}
+		}
+
+	if (Frame.pInitialData)
+		{
+		for (int i = 0; i < Frame.pInitialData->GetCount(); i ++)
+			{
+			CString sKey = Frame.pInitialData->GetKey(i);
+			if (mSeen.Find(sKey))
+				continue;
+			pList->AppendString(sKey);
+			mSeen.Insert(sKey);
+			}
+		}
+
+	return pList;
 	}
 
 ICCItemPtr CDockSession::GetReturnData (const CString &sAttrib) const
