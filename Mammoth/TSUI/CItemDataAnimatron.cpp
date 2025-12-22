@@ -282,7 +282,7 @@ void CItemDataAnimatron::Paint (SAniPaintCtx &Ctx)
 
 		//	Paint the icon
 
-		if (pCell->iDamage != damageGeneric)
+		if (pCell->iDamage >= damageMinListed)
 			{
 			m_VI.DrawDamageTypeIcon(Ctx.Dest, x, y, pCell->iDamage);
 			x += DAMAGE_TYPE_ICON_WIDTH + DAMAGE_ADJ_ICON_SPACING_X;
@@ -316,7 +316,7 @@ int CItemDataAnimatron::MeasureDamageAdj (const CG16bitFont &Font, const TArray<
 
 		//	Add the icon
 
-		if (pCell->iDamage != damageGeneric)
+		if (pCell->iDamage >= damageMinListed)
 			cx += DAMAGE_TYPE_ICON_WIDTH + DAMAGE_ADJ_ICON_SPACING_X;
 
 		//	Add the text

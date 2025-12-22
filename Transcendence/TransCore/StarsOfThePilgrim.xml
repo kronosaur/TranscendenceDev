@@ -52,8 +52,134 @@
 			-->
 			<Constant id="core.defaultCorewardNode">		'G2</Constant>
 
+			<!-- Defaults for Damage Method system (WMD) -->
+
+			<Constant id="core.damageMethod.system">			'WMD</Constant>
+			<Constant id="core.damageMethod.minDamage">			0</Constant>
+
+			<!--
+				Default fortification values for Damage Method (WMD)
+
+				0.0 = takes full damage regardless of WMD
+				1.0 = uses the adventure-defined WMD curve
+				'inf = immune unless WMD level is 7
+
+				Fortification values between 0.0 and 1.0 raise the curve up,
+				reducing the penalty for not having this damage method, however
+				it also proportionally rewards having the damage method more
+
+				Fortification values greater than 1.0 lower the curve, increasing
+				the penalty for not having this damage method (or not having
+				high levels of it), but it also proportionally rewards having
+				higher amounts of the damage method.
+			-->
+
+			<Constant id="core.damageMethod.item">
+				{
+				armor:
+					{
+					WMD: 0.0
+					}
+				shield:
+					{
+					WMD: 0.0
+					}
+				}
+			</Constant>
+
+			<Constant id="core.damageMethod.ship">
+				{
+				armor:
+					{
+					critical:
+						{
+						WMD: 0.0
+						}
+
+					;;	nonCritical applies to segments marked as noncritical or unmarked segments
+					;;	on a ship with compartments
+
+					nonCritical:
+						{
+						WMD: 0.0
+						}
+					
+					;;	Used to calculate incremental chance of destruction based on relative damage
+					;;	to a depleted noncritical segment
+
+					nonCriticalDestruction:
+						{
+						WMD: 1.0
+						}
+					
+					;;	Base chance to be destroyed on a shot to a depleted noncritical segment
+
+					nonCriticalDestructionChance: 0.05
+					}
+
+				;;	Applies based on the default compartment type of this ship
+
+				compartments:
+					{
+					general:
+						{
+						WMD: 1.0
+						}
+					cargo:
+						{
+						WMD: 1.0
+						}
+					mainDrive:
+						{
+						WMD: 1.0
+						}
+					}
+				}
+			</Constant>
+
+			<Constant id="core.damageMethod.station">
+				{
+				hull:
+					{
+					single:
+						{
+						WMD: 0.0
+						}
+					multi:
+						{
+						WMD: 1.0 
+						}
+
+					;;	Note that in the WMD damage method system
+					;;	asteroid hulls require either WMD mining damage instead of normal WMD
+
+					asteroid:
+						{
+						WMD: 1.0
+						}
+
+					;;	Note that in the WMD damage method system
+					;;	underground hulls require mining damage instead of normal WMD
+
+					underground:
+						{
+						WMD: 1.0
+						}
+					}
+				}
+			</Constant>
+
+			<!-- Defaults for item balance -->
+
+			<Constant id="core.item.shield.idlePowerAdj">	0.125</Constant>
+
+			<!-- Defaults for shot interaction -->
+
 			<Constant id="core.defaultInteraction">			Nil</Constant>
 			<Constant id="core.defaultShotHP">				Nil</Constant>
+
+			<!-- Defaults for UI -->
+
 			<Constant id="core.hideDisintegrationImmune">	Nil</Constant>
 			<Constant id="core.hideIonizeImmune">			Nil</Constant>
 			<Constant id="core.hideRadiationImmune">		Nil</Constant>
@@ -266,6 +392,36 @@
 			<!-- Mining Levels -->
 			
 			<MiningMaxOreLevels	miningMaxOreLevel="  5,  5,  8,  8,  11, 11, 14, 14,  17, 17, 20, 20,  23, 23, 25, 25"/>
+			
+			<!-- Device damage -->
+
+			<ExternalDeviceDamageMaxLevels
+				deviceDamageMaxDeviceLevel=		  "  6,  6,  9,  9,  12, 12, 15, 15,  18, 18, 21, 21,  24, 24, 25, 25"
+				deviceDamageTypeAdj=			  "100,100,100,100, 120,100,100,100, 100,100, 75,100, 100,100,100,100"
+				deviceHitChance=				  "11"
+				/>
+
+			<InternalDeviceDamageMaxLevels
+				deviceDamageMaxDeviceLevel=		  " 25, 25, 25, 25,  25, 25, 25, 25,  25, 25, 25, 25,  25, 25, 25, 25"
+				deviceDamageTypeAdj=			  "100,100,100,100, 100,100,100,100, 100,100,100,100, 100,100,100,100"
+				deviceHitChance=				  "50"
+				/>
+
+			<!-- WMD Adj Curve
+				Note: WMD0 is an absense of WMD and never displays an attribute, so wmdDisplay only has 7 elements.
+					Additionally, a single '!' (no quotes) can be used to prevent a given label from displaying
+					the WMD attribute
+
+													#	WMD0	WMD1	WMD2	WMD3	WMD4	WMD5	WMD6	WMD7
+			-->
+
+			<DamageMethodAdj>
+				<WMD
+					damageMethodAdj=				"	0.10,	0.25,	0.32,	0.40,	0.50,	0.63,	0.80,	1.0"
+					damageMethodDisplay=			"			2,		3,		4,		5,		6,		8,		10"
+					damageMethodDisplayPrefix=		"WMD "
+					/>
+			</DamageMethodAdj>
 			
 		</Constants>
 	</AdventureDesc>

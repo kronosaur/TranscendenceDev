@@ -518,6 +518,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_ADD_STARGATE_TOPOLOGY_COLORED	44
 #define FN_SYS_STARGATE_HAS_ATTRIBUTE	45
 #define FN_SYS_GET_DATA_KEYS			46
+#define FN_SYS_PATH_TO					47
 
 #define OPT_SYS_ADD_STARGATE_TOPOLOGY_COLOR		CONSTLIT("color")
 #define OPT_SYS_ADD_STARGATE_ATTRIBUTES			CONSTLIT("attributes")
@@ -3377,8 +3378,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iiii",	0,	},
 
 		{	"sysGetNextNodeTo",			fnSystemGet,		FN_SYS_NEXT_NODE_TO,
-			"(sysGetNextNodeTo [fromNodeID] toNodeID) -> nodeID",
-			"*s",	0,	},
+			"(sysGetNextNodeTo [fromNodeID] toNodeID [options]) -> nodeID\n\n"
+
+			"options (struct):\n\n"
+
+			"	respectOneWayGates: Respects directionality of one-way gates when pathing through them. Does not respect one-way gates by default.\n"
+			"   gateCriteria:   Only gates that match criteria can be used for the path calculations\n"
+			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n",
+
+			"*",	0,	},
 
 		{	"sysGetNode",					fnSystemGet,	FN_SYS_NODE,
 			"(sysGetNode) -> nodeID",
@@ -3399,6 +3407,17 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysGetObjectByName",			fnSystemGetObjectByName,	0,
 			"(sysGetObjectByName [source] name) -> obj",
 			"*s",	0,	},
+
+		{	"sysGetPathTo",			fnSystemGet,		FN_SYS_PATH_TO,
+			"(sysGetPathTo [fromNodeID] toNodeID [options]) -> nodeID\n\n"
+
+			"options (struct):\n\n"
+			
+			"	respectOneWayGates: Respects directionality of one-way gates when pathing through them. Does not respect one-way gates by default.\n"
+			"   gateCriteria:   Only gates that match criteria can be used for the path calculations\n"
+			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n",
+
+			"*",	0,	},
 
 		{	"sys@",							fnSystemGet,	FN_SYS_GET_PROPERTY,
 			"(sys@ [nodeID] property) -> value\n\n"
@@ -9348,13 +9367,13 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				DEBUG_TRY
 					//enhancements
-					int iFireDelay;
+					Metric rFireDelay;
 				if (pArgs->GetCount() >= 4 && !(pArgs->GetElement(3)->IsNil()))
-					iFireDelay = pArgs->GetElement(3)->GetIntegerValue();
+					rFireDelay = pArgs->GetElement(3)->GetDoubleValue();
 				else
-					iFireDelay = pDevice->GetClass()->GetActivateDelay(WeaponCtx);
+					rFireDelay = pDevice->GetClass()->GetActivateDelay(WeaponCtx);
 
-				pDevice->SetTimeUntilReady(iFireDelay);
+				pDevice->SetTimeUntilReady(rFireDelay);
 				DEBUG_CATCH
 					return pCC->CreateTrue();
 				}
@@ -14559,19 +14578,25 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger(iFreq);
 			}
 
+		case FN_SYS_PATH_TO:
 		case FN_SYS_NEXT_NODE_TO:
 			{
 			int iArg = 0;
 
-			//	If we have more than 1 args, then the first arg is the fromID
+			//	If we have 2 args and the last is not the option structs,
+			//  or we have 3 args, then the first arg is the fromID
 
 			const CTopologyNode *pFromNode;
-			if (pArgs->GetCount() > 1 && pArgs->GetElement(0)->IsIdentifier())
+			if ((pArgs->GetCount() == 2 && pArgs->GetElement(0)->IsIdentifier() && !pArgs->GetElement(1)->IsSymbolTable())
+				|| pArgs->GetCount() == 3)
 				{
 				pFromNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
 				if (pFromNode == NULL)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 				}
+
+			else if (pArgs->GetCount() > 3)
+				return pCC->CreateError(CONSTLIT("Too many args"), pArgs);
 
 			//	Otherwise, we assume the current system.
 
@@ -14592,13 +14617,96 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pToNode == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(iArg - 1));
 
+			//	Check if there is an options arg
+
+			ICCItem *pOptions = pArgs->GetElement(iArg++);
+
+			TArray<CString> aUseNodes;
+			TArray<CString> aBlockNodes;
+			CString sGateCriteria;
+			bool bRespectOneWayGates;
+
+			if (pOptions)
+				{
+				//	We only accept a struct for options
+
+				if (pOptions->IsSymbolTable())
+					{
+					//	By default we do not respect one way gates (this is legacy behavior)
+
+					bRespectOneWayGates = pOptions->GetBooleanAt(CONSTLIT("respectOneWayGates"));
+
+					//	Empty gate criteria is ignored
+
+					sGateCriteria = pOptions->GetStringAt(CONSTLIT("gateCriteria"));
+
+					//	list of node IDs to use
+
+					ICCItem* pUseNodes = pOptions->GetElement(CONSTLIT("useNodes"));
+					if (pUseNodes)
+						{
+						if (pUseNodes->IsList())
+							{
+							aUseNodes.InsertEmpty(pUseNodes->GetCount());
+
+							for (int i = 0; i < pUseNodes->GetCount(); i++)
+								aUseNodes[i] = pUseNodes->GetElement(i)->GetStringValue();
+							}
+
+						//	otherwise we assume its just one node name
+
+						else
+							aUseNodes.Insert(pUseNodes->GetStringValue());
+						}
+
+					//	list of node IDs to avoid
+
+					ICCItem* pBlockNodes = pOptions->GetElement(CONSTLIT("blockNodes"));
+					if (pBlockNodes)
+						{
+						if (pBlockNodes->IsList())
+							{
+							aBlockNodes.InsertEmpty(pBlockNodes->GetCount());
+
+							for (int i = 0; i < pBlockNodes->GetCount(); i++)
+								aBlockNodes[i] = pBlockNodes->GetElement(i)->GetStringValue();
+							}
+
+						//	otherwise we assume its just one node name
+
+						else
+							aBlockNodes.Insert(pBlockNodes->GetStringValue());
+						}
+					}
+
+				//	Otherwise this is invalid
+
+				else
+					return pCC->CreateError(CONSTLIT("Invalid options, must be a struct"), pOptions);
+				}
+
 			//	Compute
 
-			const CTopologyNode *pNextNode = pCtx->GetUniverse().GetTopology().GetNextNodeTo(*pFromNode, *pToNode);
-			if (!pNextNode)
-				return pCC->CreateNil();
+			if (dwData == FN_SYS_NEXT_NODE_TO)
+				{
+				const CTopologyNode *pNextNode = pCtx->GetUniverse().GetTopology().GetNextNodeTo(*pFromNode, *pToNode, sGateCriteria, aUseNodes, aBlockNodes, !bRespectOneWayGates);
+				if (!pNextNode)
+					return pCC->CreateNil();
 
-			return pCC->CreateString(pNextNode->GetID());
+				return pCC->CreateString(pNextNode->GetID());
+				}
+			else
+				{
+				ICCItem *pList = pCC->CreateLinkedList();
+
+				TArray<const CTopologyNode *> aPath;
+				aPath = pCtx->GetUniverse().GetTopology().GetPathTo(pFromNode, pToNode, sGateCriteria, aUseNodes, aBlockNodes, !bRespectOneWayGates);
+
+				for (int i = 0; i < aPath.GetCount(); i++)
+					pList->AppendString(aPath[i]->GetID());
+
+				return pList;
+				}
 			}
 
 		case FN_SYS_LOCATIONS:

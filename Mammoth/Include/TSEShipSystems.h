@@ -310,6 +310,7 @@ enum ECompartmentTypes
 	deckGeneral =						0,	//	General interior compartment or deck
 	deckMainDrive =						1,	//	Main drive
 	deckCargo =							2,	//	Cargo hold
+	deckUncrewed =						3,	//	Dense compartment with no crewable spaces
 	};
 
 struct SCompartmentDesc
@@ -336,9 +337,11 @@ struct SCompartmentDesc
 	CString sAttachID;						//	ID of compartment we're attached to (NULL = root object)
 	C3DObjectPos AttachPos;					//	Attach position relative to sAttachID
 
-	DWORD fDefault:1;						//	Default compartment (any space not used by another compartment)
-	DWORD fIsAttached:1;					//	TRUE if this is an attached section (a separate CSpaceObject)
+	DWORD fDefault:1 = false;				//	Default compartment (any space not used by another compartment)
+	DWORD fIsAttached:1 = false;			//	TRUE if this is an attached section (a separate CSpaceObject)
 	};
+
+const SCompartmentDesc NULL_COMPARTMENT = SCompartmentDesc();
 
 class CShipInteriorDesc
 	{
@@ -349,14 +352,16 @@ class CShipInteriorDesc
 		void CalcCompartmentPositions (int iScale, TArray<CVector> &Result) const;
 		int CalcImageSize (CShipClass *pClass, CVector *retvOrigin = NULL) const;
 		void DebugPaint (CG32bitImage &Dest, int x, int y, int iRotation, int iScale) const;
-		int GetCount (void) const { return m_Compartments.GetCount(); }
+		int GetCount () const { return m_Compartments.GetCount(); }
 		const SCompartmentDesc &GetCompartment (int iIndex) const { return m_Compartments[iIndex]; }
-		int GetHitPoints (void) const;
+		const SCompartmentDesc &GetDefaultCompartment () const;
+		Metric GetFortificationAdj (EDamageMethod iMethod, ECompartmentTypes iCompartmentType) const;
+		int GetHitPoints () const;
 		const TArray<int> &GetPaintOrder (void) const { return m_PaintOrder; }
-		bool HasAttached (void) const { return (m_fHasAttached ? true : false); }
+		bool HasAttached () const { return (m_fHasAttached ? true : false); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		bool IsEmpty (void) const { return m_Compartments.GetCount() == 0; }
-		bool IsMultiHull (void) const { return (m_fIsMultiHull ? true : false); }
+		bool IsEmpty () const { return m_Compartments.GetCount() == 0; }
+		bool IsMultiHull () const { return (m_fIsMultiHull ? true : false); }
 
 		static ECompartmentTypes ParseCompartmentType (const CString &sValue);
 
@@ -365,6 +370,7 @@ class CShipInteriorDesc
 
 		TArray<SCompartmentDesc> m_Compartments;
 		TArray<int> m_PaintOrder;
+		SDamageMethodAdj m_Fortification;					//	Adjusts WMD adj curve from the WMD0 end
 
 		DWORD m_fHasAttached:1;
 		DWORD m_fIsMultiHull:1;
@@ -422,6 +428,7 @@ class CShipInterior
 			};
 
 		void CalcAttachPos (CShip *pShip, const CShipInteriorDesc &Desc, int iIndex, CSpaceObject **retpAttachedTo, CVector *retvPos) const;
+		Metric CalcDamageFortificationAdj (EDamageMethod iMethod, CShip *pShip, const CShipInteriorDesc &Desc, SDamageCtx &Ctx);
 		void DetachChain (CShip *pShip, CSpaceObject *pBreak);
 		bool FindAttachedObject (CSpaceObject *pAttached, int *retiIndex = NULL) const;
 		int FindNextCompartmentHit (SHitTestCtx &HitCtx, int xHitPos, int yHitPos);

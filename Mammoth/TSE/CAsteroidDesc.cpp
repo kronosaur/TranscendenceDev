@@ -23,45 +23,46 @@ CAsteroidDesc::SCompositionDesc CAsteroidDesc::COMPOSITION_TABLE[EAsteroidTypeCo
 		//	ID			Mining Difficulty
 		{	"none",			0,
 
-			//	ablation	drill		explosion	shockwave
-			{	1.0,		1.0,		1.0,		1.0		},	//	Success Adj
-			{	1.0,		1.0,		1.0,		1.0		},	//	Yield Adj
+			//	universal	ablation	drill		explosion	shockwave
+			{	1.0,		1.0,		1.0,		1.0,		1.0		},	//	Success Adj
+			{	1.0,		1.0,		1.0,		1.0,		1.0		},	//	Yield Adj
 		},
 
 		{	"icy",			25,
-
-			//	ablation	drill		explosion	shockwave
-			{	2.0,		1.0,		1.0,		0.5		},	//	Success Adj
-			{	1.25,		1.5,		1.0,		0.5		},	//	Yield Adj
+		
+			//	universal	ablation	drill		explosion	shockwave
+			{	1.0,		2.0,		1.0,		1.0,		0.5		},	//	Success Adj
+			{	1.0,		1.25,		1.5,		1.0,		0.5		},	//	Yield Adj
 		},
 
 		{	"metallic",		100,
-
-			//	ablation	drill		explosion	shockwave
-			{	1.0,		1.0,		0.5,		2.0		},	//	Success Adj
-			{	1.5,		1.0,		0.5,		1.25	},	//	Yield Adj
+		
+			//	universal	ablation	drill		explosion	shockwave
+			{	1.0,		1.0,		1.0,		0.5,		2.0		},	//	Success Adj
+			{	1.0,		1.5,		1.0,		0.5,		1.25	},	//	Yield Adj
 		},
 		{	"primordial",	50,
-
-			//	ablation	drill		explosion	shockwave
-			{	0.5,		2.0,		1.0,		1.0		},	//	Success Adj
-			{	0.5,		1.25,		1.5,		1.0		},	//	Yield Adj
+		
+			//	universal	ablation	drill		explosion	shockwave
+			{	1.0,		0.5,		2.0,		1.0,		1.0		},	//	Success Adj
+			{	1.0,		0.5,		1.25,		1.5,		1.0		},	//	Yield Adj
 		},
 		{	"rocky",		50,
-
-			//	ablation	drill		explosion	shockwave
-			{	1.0,		1.0,		1.0,		1.0		},	//	Success Adj
-			{	1.0,		1.0,		1.0,		1.0		},	//	Yield Adj
+		
+			//	universal	ablation	drill		explosion	shockwave
+			{	1.0,		1.0,		1.0,		1.0,		1.0		},	//	Success Adj
+			{	1.0,		1.0,		1.0,		1.0,		1.0		},	//	Yield Adj
 		},
 		{	"volcanic",		75,
-
-			//	ablation	drill		explosion	shockwave
-			{	1.0,		0.5,		2.0,		1.0		},	//	Success Adj
-			{	1.0,		0.5,		1.25,		1.5		},	//	Yield Adj
+		
+			//	universal	ablation	drill		explosion	shockwave
+			{	1.0,		1.0,		0.5,		2.0,		1.0		},	//	Success Adj
+			{	1.0,		1.0,		0.5,		1.25,		1.5		},	//	Yield Adj
 		},
 	};
 
-TStaticStringTable<TStaticStringEntry<EMiningMethod>, 4> CAsteroidDesc::MINING_METHOD_INDEX = {
+TStaticStringTable<TStaticStringEntry<EMiningMethod>, EMiningMethodCount> CAsteroidDesc::MINING_METHOD_INDEX = {
+	"universal",			EMiningMethod::universal,
 	"ablation",				EMiningMethod::ablation,
 	"drill",				EMiningMethod::drill,
 	"explosion",			EMiningMethod::explosion,

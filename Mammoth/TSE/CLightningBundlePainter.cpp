@@ -52,9 +52,16 @@ void CLightningBundlePainter::Draw (CG32bitImage &Dest, int x1, int y1, int x2, 
 		Metric rMid = mathRandom(20, 80) / 100.0;
 
 		//	Get the width of the shape at this point along the ray
+		// 
+		//	We set a default adj of 1.0 for shapes that have no width adj
 
-		int iWidthMid = (int)(m_WidthAdjTop.GetCount() * rMid);
-		Metric rWidthAdj = (mathRandom(1, 2) == 1 ? m_WidthAdjTop[iWidthMid] : -m_WidthAdjBottom[iWidthMid]) * iWidth * 0.5;
+		Metric rWidthAdj = 1.0;
+
+		if (m_WidthAdjTop.GetCount() && m_WidthAdjBottom.GetCount())
+			{
+			int iWidthMid = (int)(m_WidthAdjTop.GetCount() * rMid);
+			rWidthAdj = (mathRandom(1, 2) == 1 ? m_WidthAdjTop[iWidthMid] : -m_WidthAdjBottom[iWidthMid]) * iWidth * 0.5;
+			}
 
 		//	Compute opacity at midpoint and then compute the midpoint color
 
