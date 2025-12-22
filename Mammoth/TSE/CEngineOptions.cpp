@@ -905,6 +905,14 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 	m_bHideRadiationImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_RADIATION_IMMUNE)->IsNil();
 	m_bHideShatterImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_SHATTER_IMMUNE)->IsNil();
 
+	//	Handle shield power idle consumption
+
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_ITEM_SHIELD_IDLE_POWER_ADJ);
+	Metric rAPIDefaultShieldIdlePowerRatio = Ctx.GetAPIVersion() >= 54 ? 0.125 : 0.5;
+	m_rDefaultShieldIdlePowerRatio = (pValue->IsNil() ? rAPIDefaultShieldIdlePowerRatio : pValue->GetDoubleValue());
+
+	//	Handle damage method initialization
+
 	if (Ctx.GetAPIVersion() >= 58)
 		{
 

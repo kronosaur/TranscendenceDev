@@ -323,6 +323,15 @@
 #define PROPERTY_CORE_HIDE_RADIATION_IMMUNE		CONSTLIT("core.hideRadiationImmune")
 #define PROPERTY_CORE_HIDE_SHATTER_IMMUNE		CONSTLIT("core.hideShatterImmune")
 
+//	core.item.shield.idlePowerAdj
+//
+//	Adventure Property: Evaluated at bind time. This property controls the
+//	power consumption of shields when they are idle (not regenerating) as
+//	a fraction of active power consumption.
+//	0.0 = no power consumption, 1.0 = full power consumption
+//
+#define PROPERTY_CORE_ITEM_SHIELD_IDLE_POWER_ADJ	CONSTLIT("core.item.shield.idlePowerAdj")
+
 //	core.miningDifficulty
 //
 //	Object Property: Evaluated when mining to determine how hard it is to mine
