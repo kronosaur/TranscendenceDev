@@ -17,7 +17,7 @@ class CWeaponTargetDefinition
 		class CWeaponTargetDefinition (Kernel::CString sCriteria, bool bCheckLineOfFire = false) : m_bCheckLineOfFire(bCheckLineOfFire), m_CriteriaString(sCriteria) { m_TargetCriteria.Init(sCriteria); };
 		bool MatchesTarget (CSpaceObject* pSource, CSpaceObject* pTarget) const;
 		CSpaceObject* FindTarget (CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CItemCtx& ItemCtx) const;
-		bool AimAndFire (CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CDeviceClass::SDeviceUpdateCtx& Ctx) const;
+		int AimAndFire (CWeaponClass* pWeapon, CInstalledDevice* pDevice, CSpaceObject* pSource, CDeviceClass::SDeviceUpdateCtx& Ctx, Metric rInterpolateDelay = 0.0) const;
 		bool GetCheckLineOfFire () { return m_bCheckLineOfFire; };
 		CSpaceObjectCriteria GetTargetCriteria () { return m_TargetCriteria; };
 		Kernel::CString GetTargetCriteriaString () { return m_CriteriaString; };
@@ -43,7 +43,7 @@ class CAutoDefenseClass : public CDeviceClass
 		virtual CAutoDefenseClass *AsAutoDefenseClass (void) override { return this; }
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sProperty) override;
-		virtual int GetActivateDelay (CItemCtx &ItemCtx) const override;
+		virtual Metric GetActivateDelay (CItemCtx &ItemCtx) const override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const override;
 		virtual Metric GetShotSpeed (CItemCtx &Ctx) const override;
@@ -89,7 +89,7 @@ class CAutoDefenseClass : public CDeviceClass
 		bool m_bOmnidirectional = false;		//	Omnidirectional
 		int m_iMinFireArc = 0;					//	Min angle of fire arc (degrees)
 		int m_iMaxFireArc = 0;					//	Max angle of fire arc (degrees)
-		int m_iRechargeTicks = 0;
+		Metric m_rRechargeTicks = 0;
 
 		CDeviceClassRef m_pWeapon;
 		CSpaceObject *m_pTarget;
@@ -128,11 +128,11 @@ class CCyberDeckClass : public CDeviceClass
 
 		//	CDeviceClass virtuals
 
-		virtual bool Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx) override;
+		virtual int Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx) override;
 		virtual bool CanHitFriends (void) const override { return false; }
-		virtual int GetActivateDelay (CItemCtx &ItemCtx) const override { return 30; }
+		virtual Metric GetActivateDelay (CItemCtx &ItemCtx) const override { return 30.0; }
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatWeapon; }
-		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const override { return damageGeneric; }
+		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const override { return damageNull; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, const CInstalledDevice *pDevice, CSpaceObject *pTarget) const override;
 		virtual Metric GetMaxRange (CItemCtx &ItemCtx) override;
 		virtual void GetSelectedVariantInfo (const CSpaceObject *pSource, 
@@ -289,7 +289,7 @@ class CMiscellaneousClass : public CDeviceClass
 		//	CDeviceClass virtuals
 
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
-		virtual int GetActivateDelay (CItemCtx &ItemCtx) const override;
+		virtual Metric GetActivateDelay (CItemCtx &ItemCtx) const override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
 		virtual int GetCounter (const CInstalledDevice *pDevice, const CSpaceObject *pSource, EDeviceCounterType *retiType = NULL, int *retiLevel = NULL) const override;
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
@@ -571,6 +571,7 @@ class CShieldClass : public CDeviceClass
 		DamageTypeSet m_WeaponSuppress;			//	Types of weapons suppressed
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
 		int m_iTimeBetweenFlashEffects;			//  Minimum time between flash effects in ticks
+		SDamageMethodAdj m_Fortification;		//	Fortification damage method curve adj
 
 		int m_iExtraHPPerCharge;				//	Extra HP for each point of charge
 		int m_iExtraPowerPerCharge;				//	Extra power use for each point of charge (1/10 megawatt)

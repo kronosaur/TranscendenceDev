@@ -2264,7 +2264,8 @@ ALERROR ParseDamageTypeList (const CString &sList, TArray<CString> *retList)
 		if (!sDamageType.IsBlank())
 			{
 			DamageTypes iType = LoadDamageTypeFromXML(sDamageType);
-			if (iType == damageError || iType == damageGeneric)
+			//	We do not support non-listed damage types (ex, generic, null, error)
+			if (iType < damageMinListed || iType > damageMaxListed)
 				return ERR_FAIL;
 
 			retList->GetAt(iType) = sAdj;
