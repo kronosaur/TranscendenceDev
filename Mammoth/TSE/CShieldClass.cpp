@@ -182,7 +182,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 			else
 				rMethodFortificationAdj = m_Fortification.Get(iMethod);
 
-			rFortificationAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortificationAdj);
+			rFortificationAdj += Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortificationAdj);
 			}
 
 		Ctx.iAbsorb = Ctx.CalcDamageMethodAdjDamagePrecalc(rFortificationAdj);
