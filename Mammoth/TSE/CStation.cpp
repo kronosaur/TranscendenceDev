@@ -413,7 +413,7 @@ int CStation::CalcAdjustedDamage (SDamageCtx &Ctx) const
 				iHint = EDamageHint::useWMD; //	placeholder
 				}
 
-			rFortificationAdj *= rMethodAdj;
+			rFortificationAdj += rMethodAdj;
 			}
 
 		int iDamage = Ctx.CalcDamageMethodAdjDamagePrecalc(rFortificationAdj);
@@ -562,7 +562,7 @@ int CStation::CalcAdjustedDamageAbandoned (SDamageCtx &Ctx) const
 
 		//	Otherwise we need to process this as physicalized damage
 
-		Metric rFortificationAdj = 1.0;
+		Metric rDamageMethodAdj = 1.0;
 
 		for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
 			{
@@ -571,23 +571,21 @@ int CStation::CalcAdjustedDamageAbandoned (SDamageCtx &Ctx) const
 			//	Wrecks have fixed damage adj (weaker to crush and much weaker to shred)
 			//	This should eventually be moved to the adventure settings
 
-			Metric rMethodFortifyAdj = 1.0;
+			Metric rMethodFortifyAdj = 0.0;
 			switch (iMethod)
 				{
 				case EDamageMethod::methodCrush:
-					rMethodFortifyAdj *= 0.5;
+					rMethodFortifyAdj += 0.5;
 					break;
 				case EDamageMethod::methodShred:
-					rMethodFortifyAdj *= 0.2;
+					rMethodFortifyAdj += 0.5;
 					break;
 				}
 
-			Metric rMethodAdj = Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortifyAdj);
-
-			rFortificationAdj *= rMethodAdj;
+			rDamageMethodAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortifyAdj);
 			}
 
-		return Ctx.CalcDamageMethodAdjDamagePrecalc(rFortificationAdj);
+		return Ctx.CalcDamageMethodAdjDamagePrecalc(rDamageMethodAdj);
 		}
 	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
 		{
