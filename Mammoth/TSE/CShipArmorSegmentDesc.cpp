@@ -126,16 +126,7 @@ int CShipArmorSegmentDesc::GetLevel (void) const
 
 Metric CShipArmorSegmentDesc::GetFortificationAdj(EDamageMethod iMethod) const
 	{
-	Metric rAdj = m_Fortification.Get(iMethod);
-	if (!IS_NAN(rAdj))
-		return rAdj;
-	switch (m_dwAreaSet)
-		{
-		case CShipClass::VitalSections::sectCritical:
-			return g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCritical(iMethod);
-		default:
-			return g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCritical(iMethod);
-		}
+	return m_Fortification.Get(iMethod);
 	}
 
 //  Init

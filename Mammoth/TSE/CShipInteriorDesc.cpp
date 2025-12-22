@@ -294,6 +294,12 @@ void CShipInteriorDesc::DebugPaint (CG32bitImage &Dest, int x, int y, int iRotat
 		}
 	}
 
+//	GetDefaultCompartment
+// 
+//	Returns the default compartment for this ship
+//	If none exists, it returns the NULL_COMPARTMENT which has
+//	type deckUnknown and 0 HP
+//
 const SCompartmentDesc& CShipInteriorDesc::GetDefaultCompartment() const
 	{
 	for (int i = 0; i < GetCount(); i++)

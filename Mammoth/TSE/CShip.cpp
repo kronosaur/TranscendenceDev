@@ -4584,6 +4584,8 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Let the armor handle it
 
 	Ctx.iArmorHitDamage = Ctx.iDamage;
+	CShipArmorSegmentDesc SectionDesc = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect());
+
 	if (pArmor)
 		{
 		//	Set any Fortification adjustment from the slot
@@ -4597,26 +4599,37 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 				{
 				EDamageMethod iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
 
-				Metric rExternFortify = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect()).GetFortificationAdj(iMethod);
+				Metric rExternFortify = SectionDesc.GetFortificationAdj(iMethod);
 
 				if (IS_NAN(rExternFortify))
 					{
 					iDefaultCompartmentType = GetEffectiveProtectedCompartmentType(pArmor->GetSect());
 
+					bool bTrueCriticalSegments = GetDefaultCompartment().iMaxHP == 0;
+					bool bSectMarkedCritical = SectionDesc.GetCriticalArea() == CShipClass::VitalSections::sectCritical;
+					bool bUncrewedCompartment;
+
 					switch (iDefaultCompartmentType)
 						{
-						case ECompartmentTypes::deckGeneral:
-						case ECompartmentTypes::deckMainDrive:
-							rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCritical(iMethod);
-							break;
 						case ECompartmentTypes::deckUncrewed:
 						case ECompartmentTypes::deckCargo:
-							rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCriticalUncrewed(iMethod);
-							break;
+							bUncrewedCompartment = true;
+						case ECompartmentTypes::deckGeneral:
+						case ECompartmentTypes::deckMainDrive:
 						case ECompartmentTypes::deckUnknown:
 						default:
+							bUncrewedCompartment = false;
+						}
+
+					if (bTrueCriticalSegments && bSectMarkedCritical)
+						{
+						if (bUncrewedCompartment)
+							rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCriticalUncrewed(iMethod);
+						else
 							rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCritical(iMethod);
 						}
+					else
+						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCritical(iMethod);
 					}
 				Ctx.ArmorExternFortification.Set(iMethod, rExternFortify);
 				}
@@ -4625,26 +4638,37 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			{
 			EDamageMethod iMethod = EDamageMethod::methodWMD;
 
-			Metric rExternFortify = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect()).GetFortificationAdj(iMethod);
+			Metric rExternFortify = SectionDesc.GetFortificationAdj(iMethod);
 
 			if (IS_NAN(rExternFortify))
 				{
 				iDefaultCompartmentType = GetEffectiveProtectedCompartmentType(pArmor->GetSect());
 
+				bool bTrueCriticalSegments = GetDefaultCompartment().iMaxHP == 0;
+				bool bSectMarkedCritical = SectionDesc.GetCriticalArea() == CShipClass::VitalSections::sectCritical;
+				bool bUncrewedCompartment;
+
 				switch (iDefaultCompartmentType)
 					{
-					case ECompartmentTypes::deckGeneral:
-					case ECompartmentTypes::deckMainDrive:
-						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCritical(iMethod);
-						break;
 					case ECompartmentTypes::deckUncrewed:
 					case ECompartmentTypes::deckCargo:
-						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCriticalUncrewed(iMethod);
-						break;
+						bUncrewedCompartment = true;
+					case ECompartmentTypes::deckGeneral:
+					case ECompartmentTypes::deckMainDrive:
 					case ECompartmentTypes::deckUnknown:
 					default:
+						bUncrewedCompartment = false;
+					}
+
+				if (bTrueCriticalSegments && bSectMarkedCritical)
+					{
+					if (bUncrewedCompartment)
+						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCriticalUncrewed(iMethod);
+					else
 						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCritical(iMethod);
 					}
+				else
+					rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCritical(iMethod);
 				}
 			Ctx.ArmorExternFortification.SetWMD(rExternFortify);
 			}
