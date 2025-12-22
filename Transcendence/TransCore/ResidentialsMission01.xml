@@ -81,6 +81,8 @@
 					(
 						(now (unvGetTick))
 					)
+					
+					(msnRegisterForEvents gSource gPlayerShip)
 
 					;	Set our casualty and failure times when mission is accepted
 
