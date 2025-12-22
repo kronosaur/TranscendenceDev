@@ -482,21 +482,21 @@ Metric DamageDesc::GetDamageMethodAdjReal(EDamageMethod iMethod) const
 	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetDamageMethodAdj(GetDamageMethodHelper(iMethod));
 	}
 
-//  GetMassDestructionAdjFromValue
+//  GetDamageMethodAdjFromValue
 //
 //  Returns the damage adj of WMD.
 //
-int DamageDesc::GetMassDestructionAdjFromValue (EDamageMethod iMethod, int iValue) 
+int DamageDesc::GetDamageMethodAdjFromValue (EDamageMethod iMethod, int iValue) 
 
 	{
 	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetRoundedDamageMethodAdj(Max(0, Min(iValue, MAX_INTENSITY)));
 	}
 
-//  GetMassDestructionAdjRealFromValue
+//  GetDamageMethodAdjRealFromValue
 //
 //  Returns the damage adj of WMD.
 //
-Metric DamageDesc::GetMassDestructionAdjRealFromValue(EDamageMethod iMethod, int iValue)
+Metric DamageDesc::GetDamageMethodAdjRealFromValue(EDamageMethod iMethod, int iValue)
 
 	{
 	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetDamageMethodAdj(Max(0, Min(iValue, MAX_INTENSITY)));
@@ -534,7 +534,7 @@ int DamageDesc::GetDamageMethodLevel (EDamageMethod iMethod) const
 //
 //  Returns the display level of WMD. This is what we show in weapon stats.
 //
-int DamageDesc::GetMassDestructionLevelFromValue (EDamageMethod iMethod, int iValue) 
+int DamageDesc::GetDamageMethodLevelFromValue (EDamageMethod iMethod, int iValue) 
 
 	{
 	return g_pUniverse->GetEngineOptions().GetDamageMethodDesc(iMethod)->GetRoundedDamageMethodAdj(Max(0, Min(iValue, MAX_INTENSITY)));

@@ -112,11 +112,9 @@ Metric CShipInterior::CalcDamageFortificationAdj (EDamageMethod iMethod, CShip* 
 
 	Metric rFortification = Desc.GetFortificationAdj(iMethod, pShip->GetDefaultCompartmentType());
 
-	Metric rMinFortificationAdj = Desc.GetFortificationMinAdj(iMethod);
-
 	//	If we don't have WMD and we're not making much progress, then show a hint.
 
-	Metric rFortificationAdj = Ctx.CalcDamageMethodFortifiedAdj(iMethod, rFortification, rMinFortificationAdj);
+	Metric rFortificationAdj = Ctx.CalcDamageMethodFortifiedAdj(iMethod, rFortification);
 
 	if ((rFortificationAdj * 100) <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD)
 		{

@@ -6,7 +6,7 @@
 
 Wikipedia: Whitesmith Style
 
-```
+```cpp
 int function (int x)
    {
    while (x < 0)
@@ -27,7 +27,7 @@ Use tabs to indent. Set the indent at 4 spaces.
 
 ### Use Whitespace to Separate Blocks
 
-```
+```cpp
    {
    ...
 
@@ -53,12 +53,32 @@ Use tabs to indent. Set the indent at 4 spaces.
 
 ### Function Declaration and Calls
 
+#### Inline documentation
+
+Inline documentation of functions should be before the declaration so that it
+is detected as a standard docstring and displayed in mouse-over tooltips etc.
+
+```cpp
+// UpdateExtended
+//
+// This is called when the player re-enters a system after having been
+// away. We update the system to reflect the amount of time that has passed.
+//
+void CUniverse::UpdateExtended (void)
+	{
+	}
+```
+
+NOTE - most of the codebase uses an older style with the comment description
+after the declaration. These are not detected as docstrings so should be updated
+to follow the new style. See: https://ministry.kronosaur.com/record.hexm?id=104374
+
 #### Distinguish Between Declarations and Calls
 
 Add a space between the function name and the opening parenthesis when
 declaring or defining a function. Do not add space when calling the function:
 
-```
+```cpp
 int function (int a)
 //          ^
 //     Space here.
@@ -74,7 +94,7 @@ function(10);
 
 #### Omit void if no parameters
 
-```
+```cpp
 int function ()
 //            ^
 //          Empty

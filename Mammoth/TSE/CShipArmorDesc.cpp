@@ -11,10 +11,6 @@
 #define FORTIFICATION_CRUSH_ATTRIB				CONSTLIT("fortificationCrushAdj")
 #define FORTIFICATION_PIERCE_ATTRIB				CONSTLIT("fortificationPierceAdj")
 #define FORTIFICATION_SHRED_ATTRIB				CONSTLIT("fortificationShredAdj")
-#define FORTIFICATION_CRUSH_MIN_ATTRIB			CONSTLIT("fortificationCrushMinAdj")
-#define FORTIFICATION_PIERCE_MIN_ATTRIB			CONSTLIT("fortificationPierceMinAdj")
-#define FORTIFICATION_SHRED_MIN_ATTRIB			CONSTLIT("fortificationShredMinAdj")
-#define FORTIFICATION_WMD_MIN_ATTRIB			CONSTLIT("fortificationWMDMinAdj")
 #define LEVEL_ATTRIB               				CONSTLIT("level")
 #define START_AT_ATTRIB            				CONSTLIT("startAt")
 
@@ -206,14 +202,10 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (error = SegEnhancement.InitFromXML(Ctx, pDesc))
 			return error;
 
-		Metric rDefaultMinFortifiedAdj = g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj();
-		SDamageMethodAdj DefaultMinFortifiedAdj;
 		SDamageMethodAdj DefaultFortifiedRatios;
 		EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
 		bool bHasWMDFortify = pDesc->FindAttribute(FORTIFICATION_WMD_ATTRIB);
 		bool bHasPhysicalizedFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_ATTRIB);
-		bool bHasWMDMinFortify = false && pDesc->FindAttribute(FORTIFICATION_WMD_MIN_ATTRIB);
-		bool bHasPhysicalizedMinFortify = false && pDesc->FindAttribute(FORTIFICATION_CRUSH_MIN_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_MIN_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_MIN_ATTRIB);
 
 		if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 			{
@@ -242,25 +234,6 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				DefaultFortifiedRatios.SetPierce(rDefaultPierce);
 				DefaultFortifiedRatios.SetShred(rDefaultShred);
 				}
-
-			if (bHasPhysicalizedMinFortify)
-				{
-				DefaultMinFortifiedAdj.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_MIN_ATTRIB, rDefaultMinFortifiedAdj));
-				DefaultMinFortifiedAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, rDefaultMinFortifiedAdj));
-				DefaultMinFortifiedAdj.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_MIN_ATTRIB, rDefaultMinFortifiedAdj));
-				}
-			else if (bHasWMDMinFortify)
-				{
-				DefaultMinFortifiedAdj.SetCrush(rDefaultMinFortifiedAdj);
-				DefaultMinFortifiedAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, rDefaultMinFortifiedAdj));
-				DefaultMinFortifiedAdj.SetShred(rDefaultMinFortifiedAdj);
-				}
-			else
-				{
-				DefaultMinFortifiedAdj.SetCrush(rDefaultMinFortifiedAdj);
-				DefaultMinFortifiedAdj.SetPierce(rDefaultMinFortifiedAdj);
-				DefaultMinFortifiedAdj.SetShred(rDefaultMinFortifiedAdj);
-				}
 			}
 		else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
 			{
@@ -275,13 +248,6 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				DefaultFortifiedRatios.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, rDefaultWMD));
 			else
 				DefaultFortifiedRatios.SetWMD(rDefaultWMD);
-
-			if (bHasWMDMinFortify)
-				DefaultMinFortifiedAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, rDefaultMinFortifiedAdj));
-			else if (bHasPhysicalizedMinFortify)
-				DefaultMinFortifiedAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, rDefaultMinFortifiedAdj));
-			else
-				DefaultMinFortifiedAdj.SetWMD(rDefaultMinFortifiedAdj);
 			}
 		else
 			{
@@ -293,7 +259,7 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_Segments.InsertEmpty(iSegCount);
 		for (int i = 0; i < iSegCount; i++)
 			{
-			if (error = m_Segments[i].Init(iSegPos, iSegSize, dwSegUNID, iSegLevel, SegEnhancement, DefaultFortifiedRatios, DefaultMinFortifiedAdj))
+			if (error = m_Segments[i].Init(iSegPos, iSegSize, dwSegUNID, iSegLevel, SegEnhancement, DefaultFortifiedRatios))
 				return error;
 
 			iSegPos += iSegSize;
@@ -317,14 +283,10 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (error = DefaultEnhancement.InitFromXML(Ctx, pDesc))
 			return error;
 
-		Metric rDefaultMinFortifiedAdj = g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj();
-		SDamageMethodAdj DefaultMinFortifiedAdj;
 		SDamageMethodAdj DefaultFortifiedRatios;
 		EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
 		bool bHasWMDFortify = pDesc->FindAttribute(FORTIFICATION_WMD_ATTRIB);
 		bool bHasPhysicalizedFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_ATTRIB);
-		bool bHasWMDMinFortify = false && pDesc->FindAttribute(FORTIFICATION_WMD_MIN_ATTRIB);
-		bool bHasPhysicalizedMinFortify = false && pDesc->FindAttribute(FORTIFICATION_CRUSH_MIN_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_MIN_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_MIN_ATTRIB);
 
 		if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 			{
@@ -353,25 +315,6 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				DefaultFortifiedRatios.SetPierce(rDefaultPierce);
 				DefaultFortifiedRatios.SetShred(rDefaultShred);
 				}
-
-			if (bHasPhysicalizedMinFortify)
-				{
-				DefaultMinFortifiedAdj.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_MIN_ATTRIB, rDefaultMinFortifiedAdj));
-				DefaultMinFortifiedAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, rDefaultMinFortifiedAdj));
-				DefaultMinFortifiedAdj.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_MIN_ATTRIB, rDefaultMinFortifiedAdj));
-				}
-			else if (bHasWMDMinFortify)
-				{
-				DefaultMinFortifiedAdj.SetCrush(rDefaultMinFortifiedAdj);
-				DefaultMinFortifiedAdj.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, rDefaultMinFortifiedAdj));
-				DefaultMinFortifiedAdj.SetShred(rDefaultMinFortifiedAdj);
-				}
-			else
-				{
-				DefaultMinFortifiedAdj.SetCrush(rDefaultMinFortifiedAdj);
-				DefaultMinFortifiedAdj.SetPierce(rDefaultMinFortifiedAdj);
-				DefaultMinFortifiedAdj.SetShred(rDefaultMinFortifiedAdj);
-				}
 			}
 		else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
 			{
@@ -386,13 +329,6 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				DefaultFortifiedRatios.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, rDefaultWMD));
 			else
 				DefaultFortifiedRatios.SetWMD(rDefaultWMD);
-
-			if (bHasWMDMinFortify)
-				DefaultMinFortifiedAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_MIN_ATTRIB, rDefaultMinFortifiedAdj));
-			else if (bHasPhysicalizedMinFortify)
-				DefaultMinFortifiedAdj.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_MIN_ATTRIB, rDefaultMinFortifiedAdj));
-			else
-				DefaultMinFortifiedAdj.SetWMD(rDefaultMinFortifiedAdj);
 			}
 		else
 			{
@@ -409,7 +345,7 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				throw CException(ERR_FAIL);
 
 			int iSpan;
-			if (error = m_Segments[i].InitFromXML(Ctx, *pSegment, dwDefaultSegUNID, iDefaultLevel, iAngle, DefaultEnhancement, DefaultFortifiedRatios, DefaultMinFortifiedAdj, &iSpan))
+			if (error = m_Segments[i].InitFromXML(Ctx, *pSegment, dwDefaultSegUNID, iDefaultLevel, iAngle, DefaultEnhancement, DefaultFortifiedRatios, &iSpan))
 				return error;
 
 			iAngle += iSpan;
