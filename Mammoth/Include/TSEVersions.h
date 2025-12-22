@@ -721,42 +721,52 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //						null damage has 100% if it also has device:# in its desc
 //					deviceHitChance:
 //						% chance for a shot of any damage type to hit a device
-//				<WMDAdj>
-//					wmdAdj: (damageAdj-style list of exactly 8 ints or doubles)
-//						The baseline adjustment curve (note that fortification
-//						can adjust this further)
-//					wmdDisplay: (attribute-style list of exactly 7 alphanumeric strings)
-//						Strings to display alongside wmdDisplayPrefix for WMD1-WMD7
-//						If you provide a "!", a given level will not show the attribute.
-//					wmdDisplayPrefix: (string)
-//						A string prefix (ex, "WMD ") which the given wmdDisplay
-//						is appended to at that given WMD level. Default: "WMD "
-//					wmdMinDamage: (int)
-//						A minimum amount of damage that will be dealt to a target
-//						Default: 0
+//				<DamageMethodAdj>
+//					<WMD>
+//						damageMethodAdj: (damageAdj-style list of exactly 8 ints or doubles)
+//							The baseline adjustment curve (note that fortification
+//							can adjust this further)
+//						damageMethodDisplay: (attribute-style list of exactly 7 alphanumeric strings)
+//							Strings to display alongside wmdDisplayPrefix for WMD1-WMD7
+//							If you provide a "!", a given level will not show the attribute.
+//						damageMethodDisplayPrefix: (string)
+//							A string prefix (ex, "WMD ") which the given wmdDisplay
+//							is appended to at that given WMD level. Default: "WMD "
 //			<Properties>
 //				<Constant id="core.damageMethod.item">
 //					Returns a nested struct specifying for different item types:
 //						armor
 //						shield
-//					The allowed fortification adj for the following damage methods:
+//					The allowed fortification for the following damage methods:
 //						WMD (in the WMD system)
 //					Default WMD fortification adj properties for low/no WMD damage.
 //					Accepts a floating point which adjusts the default WMD curve for that target type
-//					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
-//					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
-//					The value may be 0.0 or lower to confer immunity. May not be greater than 1.0
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
 //					Default:
 //						armor:
-//							WMD: 1.0
+//							WMD: 0.0
 //						shield:
-//							WMD: 1.0
+//							WMD: 0.0
 //				<Constant id="core.damageMethod.ship">
 //					Returns a nested struct specifying for different target types:
 //						armor
 //							critical
 //							nonCritical
 //							nonCriticalDestruction
+//							nonCriticalDestructionChance
 //								Note: this is the base destruction chance at 0hp when
 //								no compartment is present
 //						compartment
@@ -764,28 +774,42 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //							general
 //							cargo
 //							mainDrive
-//					The allowed fortification adj for the following damage methods:
+//					The allowed fortification for the following damage methods:
 //						WMD (in the WMD system)
 //					Default WMD fortification adj properties for low/no WMD damage.
 //					Accepts a floating point which adjusts the default WMD curve for that target type
-//					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
-//					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
-//					The value may be 0.0 or lower to confer immunity. May not be greater than 1.0
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
 //					Default:
 //						armor:
 //							critical:
-//								WMD: 1.0
+//								WMD: 0.0
 //							nonCritical:
-//								WMD: 1.0
+//								WMD: 0.0
 //							nonCriticalDestruction:
+//								WMD: 1.0
+//							nonCriticalDestructionChance:
+//								(this is not a fortification value, but a base chance of destruction)
 //								WMD: 0.05
 //						compartment:
 //							general:
-//								WMD: 0.1
+//								WMD: 1.0
 //							cargo:
-//								WMD: 0.1
+//								WMD: 1.0
 //							mainDrive:
-//								WMD: 0.1
+//								WMD: 1.0
 //				<Constant id="core.damageMethod.station">
 //					Returns a nested struct specifying for different target types:
 //						hull
@@ -797,21 +821,32 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //								Note: in the WMD system, this use mining instead of WMD
 //					The allowed fortification adj for the following damage methods:
 //						WMD (in the WMD system)
-//					Default WMD fortification adj properties for low/no WMD damage.
+//					Default WMD fortification properties for low/no WMD damage.
 //					Accepts a floating point which adjusts the default WMD curve for that target type
-//					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
-//					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
-//					The value may be 0.0 or lower to confer immunity. May not be greater than 1.0
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
 //					Default:
 //						hull:
 //							single:
-//								WMD: 1.0
+//								WMD: 0.0
 //							multi:
-//								WMD: 0.1
+//								WMD: 1.0
 //							asteroid:
-//								WMD: 0.1
+//								WMD: 1.0
 //							underground:
-//								WMD: 0.1
+//								WMD: 1.0
 //				<Constant id="core.damageMethod.minAdj">
 //					(This is a template property, see below for valid property names.)
 //					These properties define the minimum adjustment values that can
@@ -832,19 +867,39 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //			<Armor>
 //				fortificationWMDAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
-//					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
-//					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
-//					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
-//						(takes more damage from non-WMD weapons than high-WMD weapons)
-//					Default: reads adventure default (Default: 1.0)
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default: (reads adventure default: 0.0)
 //			<Shield>
 //				fortificationWMDAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
-//					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
-//					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
-//					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
-//						(takes more damage from non-WMD weapons than high-WMD weapons)
-//					Default: reads adventure default (Default: 1.0)
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default: (reads adventure default: 0.0)
 //			<Weapon>
 //				damage: (str: damage desc)
 //					damage changes:
@@ -870,28 +925,58 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //			<Armor>
 //				fortificationWMDAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
-//					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
-//					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
-//					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
-//						(takes more damage from non-WMD weapons than high-WMD weapons)
-//					Default: reads adventure default (Default: 1.0)
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default: (reads adventure default: 0.0)
 //			<Hull>
 //				fortificationWMDAdj: (float)
 //					Accepts a floating point which adjusts the default WMD curve for that target type
-//					by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
-//					to the modified scale WMD0 (supplied number) to WMD7 (1.0).
-//					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
-//						(takes more damage from non-WMD weapons than high-WMD weapons)
-//					Default: reads adventure default (Default: 1.0)
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default: (reads adventure default: 1.0)
 //		<StationType>
 //			fortificationWMDAdj: (float)
 //				Accepts a floating point which adjusts the default WMD curve for that target type
-//				by performing a linear transform from standard WMD0 (0.1) to WMD7 (1.0) adj
-//				to the modified scale WMD0 (supplied number) to WMD7 (1.0).
-//					The value may be 0.0 or lower to confer immunity. May be greater than 1.0
-//						(takes more damage from non-WMD weapons than high-WMD weapons)
-//				Default: reads adventure default (Default: 1.0 for single-null stations, 0.1 for multihull/asteroid*/cavern*)
-//					*asteroid and *cavern hull types use mining damage for the calculations instead of or alongside WMD
+//				by performing a transform on the adventure-standard damage method scale.
+//				Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//				Values must be 0.0 or greater.
+//				0.0: the adjustment is always full damage regardless of damage method level
+//				0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//					method less, but also rewards having any of the damage method proportionally
+//					more
+//				1.0: the adjustment is the adventure standard curve
+//				1.0 < fortification: The adjustment penalizes not having the damage method
+//					more, but also proportionally favors high amounts of that damage method
+//				The exact curve adjustments will vary depending on the adventure curve.
+//				The value may be 'inf to confer immunity unless WMD7 is present.
+//				The fortification algorithm employed is as follows:
+//					adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//				Default: (reads adventure default:
+//					0.0 for single hull stations, 1.0 for multi/asteroid/underground)
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------

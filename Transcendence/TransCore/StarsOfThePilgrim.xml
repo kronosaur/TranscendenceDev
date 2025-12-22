@@ -55,20 +55,34 @@
 			<!-- Defaults for Damage Method system (WMD) -->
 
 			<Constant id="core.damageMethod.system">			'WMD</Constant>
-			<Constant id="core.damageMethod.minAdj">			0.0</Constant>
 			<Constant id="core.damageMethod.minDamage">			0</Constant>
 
-			<!-- Defaults for Damage Method (WMD) Fortification Adj (Adj at WMD0) -->
+			<!--
+				Default fortification values for Damage Method (WMD)
+
+				0.0 = takes full damage regardless of WMD
+				1.0 = uses the adventure-defined WMD curve
+				'inf = immune unless WMD level is 7
+
+				Fortification values between 0.0 and 1.0 raise the curve up,
+				reducing the penalty for not having this damage method, however
+				it also proportionally rewards having the damage method more
+
+				Fortification values greater than 1.0 lower the curve, increasing
+				the penalty for not having this damage method (or not having
+				high levels of it), but it also proportionally rewards having
+				higher amounts of the damage method.
+			-->
 
 			<Constant id="core.damageMethod.item">
 				{
 				armor:
 					{
-					WMD: 1.0
+					WMD: 0.0
 					}
 				shield:
 					{
-					WMD: 1.0
+					WMD: 0.0
 					}
 				}
 			</Constant>
@@ -79,7 +93,7 @@
 					{
 					critical:
 						{
-						WMD: 1.0
+						WMD: 0.0
 						}
 
 					;;	nonCritical applies to segments marked as noncritical or unmarked segments
@@ -87,15 +101,20 @@
 
 					nonCritical:
 						{
+						WMD: 0.0
+						}
+					
+					;;	Used to calculate incremental chance of destruction based on relative damage
+					;;	to a depleted noncritical segment
+
+					nonCriticalDestruction:
+						{
 						WMD: 1.0
 						}
 					
 					;;	Base chance to be destroyed on a shot to a depleted noncritical segment
 
-					nonCriticalDestruction:
-						{
-						WMD: 0.05
-						}
+					nonCriticalDestructionChance: 0.05
 					}
 
 				;;	Applies based on the default compartment type of this ship
@@ -104,15 +123,15 @@
 					{
 					general:
 						{
-						WMD: 0.1
+						WMD: 1.0
 						}
 					cargo:
 						{
-						WMD: 0.1
+						WMD: 1.0
 						}
 					mainDrive:
 						{
-						WMD: 0.1
+						WMD: 1.0
 						}
 					}
 				}
@@ -124,11 +143,11 @@
 					{
 					single:
 						{
-						WMD: 1.0
+						WMD: 0.0
 						}
 					multi:
 						{
-						WMD: 0.1 
+						WMD: 1.0 
 						}
 
 					;;	Note that in the WMD damage method system
@@ -136,7 +155,7 @@
 
 					asteroid:
 						{
-						WMD: 0.1
+						WMD: 1.0
 						}
 
 					;;	Note that in the WMD damage method system
@@ -144,7 +163,7 @@
 
 					underground:
 						{
-						WMD: 0.1
+						WMD: 1.0
 						}
 					}
 				}

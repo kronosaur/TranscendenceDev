@@ -181,7 +181,6 @@ class CArmorClass
 		CString m_sMassClass;					//	Computed mass class (computed in Bind)
 		int m_iBalanceAdj;						//	Manual adjustment to balance calculation
 		SDamageMethodAdj m_Fortification;		//	Fortification Adj for Damage Method curves on this armor
-		SDamageMethodAdj m_MinFortificationAdj;	//	Lower cap on fortification adj for Damage Method curves on this armor
 
 		DWORD m_fPhotoRecharge:1;				//	TRUE if refuels when near a star
 		DWORD m_fShieldInterference:1;			//	TRUE if armor interferes with shields
@@ -221,7 +220,6 @@ class CShipArmorSegmentDesc
 		int GetCenterAngle () const { return AngleMod(m_iStartAt + m_iSpan / 2); }
 		DWORD GetCriticalArea () const { return m_dwAreaSet; }
 		Metric GetFortificationAdj (EDamageMethod iMethod) const;
-		Metric GetMinFortificationAdj (EDamageMethod iMethod) const;
 		int GetLevel () const;
 		int GetSpan () const { return m_iSpan; }
 		int GetStartAngle () const { return m_iStartAt; }
@@ -231,8 +229,7 @@ class CShipArmorSegmentDesc
 			DWORD dwArmorUNID,
 			int iLevel,
 			const CRandomEnhancementGenerator &Enhancement,
-			SDamageMethodAdj rFortification,
-			SDamageMethodAdj rMinFortificationAdj);
+			SDamageMethodAdj rFortification);
 		ALERROR InitFromXML (
 			SDesignLoadCtx &Ctx,
 			const CXMLElement &Desc,
@@ -241,7 +238,6 @@ class CShipArmorSegmentDesc
 			int iDefaultAngle,
 			const CRandomEnhancementGenerator &DefaultEnhancement,
 			SDamageMethodAdj rDefaultFortification,
-			SDamageMethodAdj rMinFortificationAdj,
 			int *retiSpan = NULL);
 
 		static const CShipArmorSegmentDesc m_Null;
@@ -256,7 +252,6 @@ class CShipArmorSegmentDesc
 		CRandomEnhancementGenerator m_Enhanced;//	Mods
 		DWORD m_dwAreaSet = 0;				//	Areas that this section protects
 		SDamageMethodAdj m_Fortification;			//	Adjusts WMD adj curve from the WMD0 end
-		SDamageMethodAdj m_MinFortificationAdj;	//	Min WMD adj
 	};
 
 class CShipArmorDesc

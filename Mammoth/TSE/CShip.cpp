@@ -4584,6 +4584,8 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Let the armor handle it
 
 	Ctx.iArmorHitDamage = Ctx.iDamage;
+	CShipArmorSegmentDesc SectionDesc = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect());
+
 	if (pArmor)
 		{
 		//	Set any Fortification adjustment from the slot
@@ -4597,66 +4599,78 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 				{
 				EDamageMethod iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
 
-				Metric rExternFortify = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect()).GetFortificationAdj(iMethod);
+				Metric rExternFortify = SectionDesc.GetFortificationAdj(iMethod);
 
 				if (IS_NAN(rExternFortify))
 					{
 					iDefaultCompartmentType = GetEffectiveProtectedCompartmentType(pArmor->GetSect());
 
+					bool bTrueCriticalSegments = GetDefaultCompartment().iMaxHP == 0;
+					bool bSectMarkedCritical = SectionDesc.GetCriticalArea() == CShipClass::VitalSections::sectCritical;
+					bool bUncrewedCompartment;
+
 					switch (iDefaultCompartmentType)
 						{
-						case ECompartmentTypes::deckGeneral:
-						case ECompartmentTypes::deckMainDrive:
-							rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCritical(iMethod);
-							break;
 						case ECompartmentTypes::deckUncrewed:
 						case ECompartmentTypes::deckCargo:
-							rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCriticalUncrewed(iMethod);
-							break;
+							bUncrewedCompartment = true;
+						case ECompartmentTypes::deckGeneral:
+						case ECompartmentTypes::deckMainDrive:
 						case ECompartmentTypes::deckUnknown:
 						default:
+							bUncrewedCompartment = false;
+						}
+
+					if (bTrueCriticalSegments && bSectMarkedCritical)
+						{
+						if (bUncrewedCompartment)
+							rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCriticalUncrewed(iMethod);
+						else
 							rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCritical(iMethod);
 						}
+					else
+						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCritical(iMethod);
 					}
 				Ctx.ArmorExternFortification.Set(iMethod, rExternFortify);
-
-				Metric rMinFortify = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect()).GetMinFortificationAdj(iMethod);
-				if (rMinFortify < 0)
-					rMinFortify = g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj();
-				Ctx.ArmorExternMinFortification.Set(iMethod, rExternFortify);
 				}
 			}
 		else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
 			{
 			EDamageMethod iMethod = EDamageMethod::methodWMD;
 
-			Metric rExternFortify = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect()).GetFortificationAdj(iMethod);
+			Metric rExternFortify = SectionDesc.GetFortificationAdj(iMethod);
 
 			if (IS_NAN(rExternFortify))
 				{
 				iDefaultCompartmentType = GetEffectiveProtectedCompartmentType(pArmor->GetSect());
 
+				bool bTrueCriticalSegments = GetDefaultCompartment().iMaxHP == 0;
+				bool bSectMarkedCritical = SectionDesc.GetCriticalArea() == CShipClass::VitalSections::sectCritical;
+				bool bUncrewedCompartment;
+
 				switch (iDefaultCompartmentType)
 					{
-					case ECompartmentTypes::deckGeneral:
-					case ECompartmentTypes::deckMainDrive:
-						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCritical(iMethod);
-						break;
 					case ECompartmentTypes::deckUncrewed:
 					case ECompartmentTypes::deckCargo:
-						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCriticalUncrewed(iMethod);
-						break;
+						bUncrewedCompartment = true;
+					case ECompartmentTypes::deckGeneral:
+					case ECompartmentTypes::deckMainDrive:
 					case ECompartmentTypes::deckUnknown:
 					default:
+						bUncrewedCompartment = false;
+					}
+
+				if (bTrueCriticalSegments && bSectMarkedCritical)
+					{
+					if (bUncrewedCompartment)
+						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCriticalUncrewed(iMethod);
+					else
 						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCritical(iMethod);
 					}
+				else
+					rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCritical(iMethod);
 				}
 			Ctx.ArmorExternFortification.SetWMD(rExternFortify);
-
-			Metric rMinFortify = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect()).GetMinFortificationAdj(iMethod);
-			if (rMinFortify < 0)
-				rMinFortify = g_pUniverse->GetEngineOptions().GetDamageMethodMinFortificationAdj();
-			Ctx.ArmorExternMinFortification.SetWMD(rExternFortify);
 			}
 
 		EDamageResults iResult = pArmor->AbsorbDamage(this, Ctx);
@@ -4823,11 +4837,12 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		if (!(dwDamage & CShipClass::sectCritical))
 			{
 			EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
-			EDamageMethod iMethod = EDamageMethod::methodWMD;
+			EDamageMethod iMethod;
+			Metric rChanceToDie = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestructionChance();
+			int iChanceOfDeath = mathRoundStochastic(rChanceToDie * 100);
 
 			if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 				{
-				Metric rChanceToDie = 1.0;
 				Metric rDamageMethodAdj = 1.0;
 
 				for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
@@ -4836,12 +4851,8 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 					Metric rNonCriticalAdjust = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestruction(iMethod);
 
-					rChanceToDie *= rNonCriticalAdjust;
-
 					rDamageMethodAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rNonCriticalAdjust);
 					}
-
-				int iChanceOfDeath = mathRoundStochastic(rChanceToDie);
 
 				//	Compare the amount of damage that we are taking with the
 				//	original strength (HP) of the armor. Increase the chance
@@ -4860,14 +4871,16 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 				}
 			else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
 				{
-				int iChanceOfDeath = mathRound(g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestruction(iMethod) * 100);
+				iMethod = EDamageMethod::methodWMD;
 
-				//	We only care about mass destruction damage
-				//	To support legacy balance, we use the Raw
-				//	adventure adjustment, rather than normalizing
-				//	on 1.0
+				//	We increase the chance to die based on the amount of damage
+				//	experienced by the target relative to the max HP of the segment
+				//	This is to preserve legacy balance until this system gets a
+				//  proper replacement
 
-				int iWMDDamage = Ctx.CalcDamageMethodAdjDamageRaw(iMethod);
+				Metric rNonCriticalAdjust = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestruction(iMethod);
+
+				int iWMDDamage = Ctx.CalcDamageMethodAdjDamage(iMethod, rNonCriticalAdjust);
 
 				//	Compare the amount of damage that we are taking with the
 				//	original strength (HP) of the armor. Increase the chance

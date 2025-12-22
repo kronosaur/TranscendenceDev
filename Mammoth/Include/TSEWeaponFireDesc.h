@@ -215,9 +215,9 @@ class DamageDesc
 		static int GetDamageTier (DamageTypes iType);
 		static SpecialDamageTypes GetSpecialDamageFromCondition (ECondition iCondition);
 		static CString GetSpecialDamageName (SpecialDamageTypes iSpecial);
-		static int GetMassDestructionAdjFromValue (EDamageMethod iMethod, int iValue);
-		static Metric GetMassDestructionAdjRealFromValue(EDamageMethod iMethod, int iValue);
-		static int GetMassDestructionLevelFromValue (EDamageMethod iMethod, int iValue);
+		static int GetDamageMethodAdjFromValue (EDamageMethod iMethod, int iValue);
+		static Metric GetDamageMethodAdjRealFromValue(EDamageMethod iMethod, int iValue);
+		static int GetDamageMethodLevelFromValue (EDamageMethod iMethod, int iValue);
 
 	private:
 
@@ -354,8 +354,8 @@ struct SDamageCtx
 		SDamageCtx (const DamageDesc &DamageArg);
 		~SDamageCtx ();
 
-		int CalcDamageMethodAdjDamage (EDamageMethod iMethod, Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0) const;
-		int CalcDamageMethodAdjDamageFromLevel (EDamageMethod iMethod, int iLevel, Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0) const;
+		int CalcDamageMethodAdjDamage (EDamageMethod iMethod, Metric rFortificationAdj = 1.0) const;
+		int CalcDamageMethodAdjDamageFromLevel (EDamageMethod iMethod, int iLevel, Metric rFortificationAdj = 1.0) const;
 		int CalcDamageMethodAdjDamageRaw (EDamageMethod iMethod) const;
 		int CalcDamageMethodAdjDamagePrecalc (Metric rPrecalcFortification) const;
 		void ClearTimeStop (void) { m_bTimeStop = false; }
@@ -365,8 +365,8 @@ struct SDamageCtx
 		EDamageHint GetHint (void) const { return m_iHint; }
 		CSpaceObject *GetOrderGiver (void) const { return Attacker.GetOrderGiver(); }
 		int GetParalyzedTime (void) const { return m_iParalyzeTime; }
-		Metric CalcDamageMethodFortifiedAdj (EDamageMethod iMethod, Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0, Metric rMaxAdj = R_INF) const;
-		static Metric CalcDamageMethodFortifiedAdjFromLevel (EDamageMethod iMethod, int iLevel, Metric rWMD0FortificationAdj = 0.1, Metric rMinAdj = 0.0, Metric rMaxAdj = R_INF);
+		Metric CalcDamageMethodFortifiedAdj (EDamageMethod iMethod, Metric rFortification = 1.0) const;
+		static Metric CalcDamageMethodFortifiedAdjFromLevel (EDamageMethod iMethod, int iLevel, Metric rFortification = 1.0);
 		bool IsBlinded (void) const { return m_bBlind; }
 		bool IsDamaging () const;
 		bool IsDamageEventFiring () const;
@@ -417,7 +417,6 @@ struct SDamageCtx
 		int iOriginalAbsorb = 0;					//	Computed absorb value, if shot had not been reflected
 		int iOriginalShieldDamage = 0;				//	Computed shield damage value, if shot had not been reflected
 		SDamageMethodAdj ArmorExternFortification;		//	External armor fortification (Ex, from a segment slot)
-		SDamageMethodAdj ArmorExternMinFortification;	//	External min armor fortification (Ex, from a segment slot)
 		int iArmorAbsorb = 0;						//	Damage absorbed by armor
 		int iArmorDamage = 0;						//	Damage taken by armor
 
