@@ -59,6 +59,20 @@
 			</DynamicGlobal>
 			<Global id="escortSuccessCount">0</Global>
 			<Global id="escortFailureCount">0</Global>
+
+			<!--
+				Sandbox mode is intended for sandbox-style
+				adventures where the player is not required to
+				keep moving.
+
+				Sandbox mode enables:
+					* escorting at legend rank
+					* no hard limit on maximum escort missions
+
+				Set it to a non-nil value to enable it.
+			-->
+
+			<Global id="sandboxMode"></Global>
 		</Properties>
 
 		<Events>
@@ -335,6 +349,14 @@
 			<Variant id="rpgCharacter.assistantDirector">
 				(rpgCharacterRandom gSource "x +assistantDirector; +korolov;" 'assistantDirector)
 			</Variant>
+			<DynamicData id="missionReplenishDelay">
+				(random
+					;	min delay of 2 minutes
+					(* 30 120)
+					;	max delay of 5 minutes
+					(* 30 300))
+			</DynamicData>
+			<Data id="maxRemainingMissions"></Data>
 		</Properties>
 
 		<!-- Trade and Items -->
@@ -555,7 +577,7 @@
 						(shipList (sort (map (korFreighterTypes) theType {
 								class:theType
 								name:(shpGetClassName theType 0x080)
-								level:(max (typGetStaticData theType 'korolovMinLevel) 1)
+								level:(max (korTypGetMinLevel theType) 1)
 								})
 							'ascending 'name))
 						(levelList (map (make 'sequence 3) level (filter shipList theShip (= (@ theShip 'level) level))))
@@ -672,12 +694,21 @@
 		
 		<Events>
 			<OnCreate>
-				(block (charonStronghold)
+				(block (
+						charonStronghold
+						(remainingMissions (+ 3 (modulo (objGetDestiny gSource) 7)))
+						)
 					; Register a recurring event
 					(sysAddObjRecurringTimerEvent 240 gSource "OnTrafficControl")
 
 					; Allow a finite number of escort missions from each station
-					(objSetData gSource 'remainingMissions (+ 3 (modulo (objGetDestiny gSource) 7)))
+					(objSetData gSource 'remainingMissions remainingMissions)
+
+					; If we are in sandbox mode setup an event to gradually replenish missions
+					(if (korIsSandboxMode) (block ()
+						(objSet@ gSource 'maxRemainingMissions remainingMissions)
+						(sysAddObjTimerEvent (@ gSource 'missionReplenishDelay) gSource 'SandboxModeRefreshMissions)
+						))
 
 					; Find the primary Charon stronghold in the system
 					(setq charonStronghold (chrGetPrimaryStronghold gSource))
@@ -734,6 +765,17 @@
 						}
 					)
 			</GetRumors>
+
+			<SandboxModeRefreshMissions>
+				(block ()
+					;	Add a new mission if we dont have enough
+					(if (ls (objGetData gSource 'remainingMissions) (obj@ gSource 'maxRemainingMissions))
+						(objIncData gSource 'remainingMissions 1)
+						)
+					;	Set the next event
+					(sysAddObjTimerEvent (@ gSource 'missionReplenishDelay) gSource 'SandboxModeRefreshMissions)
+					)
+			</SandboxModeRefreshMissions>
 		</Events>
 
 		<Language>
@@ -1570,6 +1612,33 @@
 
 	<Globals>
 		(block Nil
+			(setq korTypGetMinLevel (lambda (typ)
+				"Get the minimum rank required for escorting this type"
+				(or
+					;	New method
+					(typ@ typ 'korolov.minLevel)
+
+					;	Legacy method
+					(typGetStaticData typ 'korolovMinLevel)
+					)
+				))
+
+			(setq korObjGetMinLevel (lambda (obj)
+				"Get the minimum rank required for escorting this object"
+				(or
+					;	New method
+					(obj@ obj 'korolov.minLevel)
+
+					;	Legacy method
+					(objGetStaticData obj 'korolovMinLevel)
+					)
+				))
+
+			(setq korIsSandboxMode (lambda ()
+				"Returns a non-nil value if sandbox mode is enabled"
+				(typ@ &unidKorolovShipping; 'sandboxMode)
+				))
+
 			;	korInitMissions
 			;
 			;	Initializes missions for every freighter docked at the station and missions
@@ -1854,6 +1923,7 @@
 					(successes (@ transRecord 0))
 					(failures (@ transRecord 1))
 					(totalMissions (+ successes failures))
+					(minLevel (korTypGetMinLevel shipClass))
 					)
 					(switch
 						(and transRecord (= failures 0))
@@ -1865,7 +1935,7 @@
 						(and transRecord (!= totalMissions 0))
 							(cat successes " out of " totalMissions " successful missions (" (divide (multiply 100 successes) totalMissions) "%)")
 
-						(gr (typGetStaticData shipClass "korolovMinLevel") (korGetPlayerLevel))
+						(gr minLevel (korGetPlayerLevel))
 							"Not rated to escort this class"
 
 						"No missions completed"
@@ -1873,17 +1943,17 @@
 					)
 				))
 
-			; Return a list of ShipClasses to use as Korolov freighters
 			(setq korFreighterTypes (lambda (maxLev)
+				"Return a list of ShipClasses to use as Korolov freighters"
 				(block (
 					(lev (if maxLev maxLev 999))
 					)
 					(filter
-						(typFind "s +freighter +commonwealth")
+						(typFind "s +freighter")
 						typ
 						(and
-							(typGetStaticData typ 'korolovMinLevel)
-							(geq lev (typGetStaticData typ 'korolovMinLevel))
+							(korTypGetMinLevel typ)
+							(geq lev (korTypGetMinLevel typ))
 							)
 						)
 					)
@@ -1912,7 +1982,12 @@
 			;	Calculate the cargo value and escort fees for a Korolov freighter
 			(setq korCalculateCargo (lambda (escortType escortLevel oneWay)
 				(block (
-					(escortRate (typGetStaticData escortType 'korolovEscortRate))
+					(escortRate (or
+						;	New method
+						(typ@ escortType 'korolov.escortRate)
+
+						(typGetStaticData escortType 'korolovEscortRate)
+						))
 					(fitCount (/ (typGetProperty escortType 'cargoSpace) 25))
 					pricePerContainer cargoValue escortFee
 					)
@@ -1920,6 +1995,9 @@
 					;	Figure out the price per container of the cargo
 					(setq pricePerContainer (or
 						;	New method
+						(@ (typ@ escortType 'korolov.containerPrice) escortLevel)
+
+						;	1.8-1.9 method
 						(eval (@ (typGetStaticData escortType 'korolov.containerPrice) escortLevel))
 
 						;	Legacy method (1.7 and before)
@@ -1996,7 +2074,7 @@
 
 	<ShipTable unid="&tbKorolovEscorts;">
 		<LevelTable>
-			<Ship levelFrequency="ucr-- -----"	class="&scRoninB;"	/>
+			<Ship levelFrequency="cur-- -----"	class="&scRoninB;"	/>
 			<Ship levelFrequency="uccr- -----"	class="&scRoninC;"	/>
 			<Ship levelFrequency="-rucr -----"	class="&scWolfenC;"	/>
 			<Ship levelFrequency="--ruc r----"	class="&scCenturionBlock1;"	/>

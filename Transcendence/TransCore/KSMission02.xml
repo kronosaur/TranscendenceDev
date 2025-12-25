@@ -48,7 +48,7 @@
 							dockedFreighters
 							theFreighter
 							(and
-								(geq playerLevel (objGetStaticData theFreighter "korolovMinLevel"))
+								(geq playerLevel (korObjGetMinLevel theFreighter))
 								(geq (shpGetMaxSpeed gPlayerShip) (+ (shpGetMaxSpeed theFreighter) 2))
 								)
 							)
@@ -62,15 +62,24 @@
 
 					(switch
 						; Finite number of missions per station
+						;	in sandbox mode, a timer replenishes this counter, so we still respect it
 						(ls (objGetData aOwnerObj 'remainingMissions) 1)
 							(msnDestroy gSource)
 
-						; Only offer to new pilots and levels 1-3
-						(not (find '(0 1 2 3) playerLevel))
+						(not (if (korIsSandboxMode)
+								; In sandbox mode Legends (level 4) can still do missions
+								(find '(0 1 2 3 4) playerLevel)
+								; In roguelike mode only offer to new pilots and levels 1-3
+								(find '(0 1 2 3) playerLevel)
+								))
 							(msnDestroy gSource)
 
-						; No missions once the stronghold is destroyed
-						(objIsAbandoned (objGetObjRefData aOwnerObj 'charonStronghold))
+						; No missions once the stronghold is destroyed in roguelike mode
+						(and (not (korIsSandboxMode)) (objIsAbandoned (objGetObjRefData aOwnerObj 'charonStronghold)))
+							(msnDestroy gSource)
+
+						; Lower chance for missions if the stronghold is destroyed and hasnt been rebuilt yet in sandbox mode
+						(and (korIsSandboxMode) (objIsAbandoned (objGetObjRefData aOwnerObj 'charonStronghold)) (gr (random 1 10) 3))
 							(msnDestroy gSource)
 
 						; If we're too close to the gates then no mission
@@ -101,7 +110,7 @@
 								
 								; Remember the minimum player level to escort and the minimum
 								; player speed.
-								(msnSetData gSource 'minPlayerLevel (typGetStaticData escortType "korolovMinLevel"))
+								(msnSetData gSource 'minPlayerLevel (korTypGetMinLevel escortType))
 								(msnSetData gSource 'minPlayerSpeed (+ (typGetProperty escortType 'maxSpeed) 2))
 								)
 

@@ -90,9 +90,9 @@
 			combatStyle=		"standOff"
 			/>
 
-		<StaticData>
-			<Data id="korolov.containerPrice">
-				(
+		<Properties>
+			<DynamicGlobal id="korolov.containerPrice">
+				(list
 					0 ; new pilots cannot escort
 					0 ; apprentices cannot escort
 					0 ; journeymen cannot escort
@@ -101,14 +101,18 @@
 					; 54,000 - 180,000 cargo value
 					(multiply 5 (add (random 3 10) (random 3 10) (random 3 10)))
 
-					150 ; legends don't escort, but add anyway
+					150 ; Legends: requires sandbox mode to be activated
 					)
-			</Data>
+			</DynamicGlobal>
 
-			<korolovEscortRate>350</korolovEscortRate>
+			<Global id="korolov.escortRate">
+				350
+			</Global>
 
-			<korolovMinLevel>3</korolovMinLevel>
-		</StaticData>
+			<Global id="korolov.minLevel">
+				3
+			</Global>
+		</Properties>
 		
 		<Events>
 			<OnDestroy>
@@ -214,9 +218,9 @@
 			combatStyle=		"standOff"
 			/>
 
-		<StaticData>
-			<Data id="korolov.containerPrice">
-				(
+		<Properties>
+			<DynamicGlobal id="korolov.containerPrice">
+				(list
 					0 ; new pilots cannot escort
 					0 ; apprentices cannot escort
 
@@ -228,14 +232,18 @@
 					; 240,000 - 480,000
 					(multiply 2 (add (random 30 60) (random 30 60) (random 40 80)))
 
-					400 ; legends don't escort, but add anyway
+					400 ; Legends: requires sandbox mode to be activated
 					)
-			</Data>
+			</DynamicGlobal>
 
-			<korolovEscortRate>100</korolovEscortRate>
+			<Global id="korolov.escortRate">
+				100
+			</Global>
 
-			<korolovMinLevel>2</korolovMinLevel>
-		</StaticData>
+			<Global id="korolov.minLevel">
+				2
+			</Global>
+		</Properties>
 
 		<Events>
 			<OnDestroy>
@@ -341,9 +349,9 @@
 			combatStyle=		"standOff"
 			/>
 
-		<StaticData>
-			<Data id="korolov.containerPrice">
-				(
+		<Properties>
+			<DynamicGlobal id="korolov.containerPrice">
+				(list
 					0 ; new pilots cannot escort
 					0 ; apprentices cannot escort
 
@@ -355,14 +363,18 @@
 					; 320,000 - 800,000 cargo value
 					(add (multiply 10 (add (random 4 10) (random 4 10))) (multiply 10 (add (random 4 10) (random 4 10))))
 
-					400 ; legends don't escort, but add anyway
+					400 ; Legends: requires sandbox mode to be activated
 					)
-			</Data>
+			</DynamicGlobal>
 
-			<korolovEscortRate>50</korolovEscortRate>
+			<Global id="korolov.escortRate">
+				50
+			</Global>
 
-			<korolovMinLevel>2</korolovMinLevel>
-		</StaticData>
+			<Global id="korolov.minLevel">
+				2
+			</Global>
+		</Properties>
 
 		<Events>
 			<OnDestroy>
@@ -425,9 +437,9 @@
 			perception=			"4"
 			/>
 
-		<StaticData>
-			<Data id="korolov.containerPrice">
-				(
+		<Properties>
+			<DynamicGlobal id="korolov.containerPrice">
+				(list
 					; New pilot: 1500 - 4000 credits
 					; 15,000 - 20,000 cargo value
 					(multiply 100 (random 15 20))
@@ -444,14 +456,18 @@
 					; 30,000 - 50,000 cargo value
 					(multiply 100 (random 30 50))
 
-					5000 ; legends don't escort, but add anyway
+					5000 ; Legends: requires sandbox mode to be activated
 					)
-			</Data>
+			</DynamicGlobal>
 
-			<korolovEscortRate>200</korolovEscortRate>
+			<Global id="korolov.escortRate">
+				200
+			</Global>
 
-			<korolovMinLevel>0</korolovMinLevel>
-		</StaticData>
+			<Global id="korolov.minLevel">
+				0
+			</Global>
+		</Properties>
 
 		<Events>
 			<OnDestroy>
@@ -516,9 +532,9 @@
 			perception=			"4"
 			/>
 
-		<StaticData>
-			<Data id="korolov.containerPrice">
-				(
+		<Properties>
+			<DynamicGlobal id="korolov.containerPrice">
+				(list
 					; New pilot: 800 - 2000 credits
 					; 20,000 - 40,000 cargo value
 					(multiply 100 (random 10 20))
@@ -535,14 +551,18 @@
 					; 60,000 - 100,000 cargo value
 					(multiply 100 (random 30 50))
 
-					5000 ; legends don't escort, but add anyway
+					5000 ; Legends: requires sandbox mode to be activated
 					)
-			</Data>
+			</DynamicGlobal>
 
-			<korolovEscortRate>150</korolovEscortRate>
+			<Global id="korolov.escortRate">
+				150
+			</Global>
 
-			<korolovMinLevel>0</korolovMinLevel>
-		</StaticData>
+			<Global id="korolov.minLevel">
+				0
+			</Global>
+		</Properties>
 
 		<Events>
 			<OnDestroy>
@@ -555,7 +575,7 @@
 				The EI200 class freighter is a larger and faster version of the 100 series.
 				It has double the cargo capacity and upgraded armor and weapons. It is
 				designed to transport small quantities of high-value cargo. The EI200 is
-				so well defended that even Apprentices are allowed to escort them.
+				so well defended that even Apprentices and new pilots are allowed to escort them.
 			</Text>
 		</Language>
 	</ShipClass>
@@ -603,9 +623,9 @@
 			perception=			"4"
 			/>
 
-		<StaticData>
-			<Data id="korolov.containerPrice">
-				(
+		<Properties>
+			<DynamicGlobal id="korolov.containerPrice">
+				(list
 					0 ; new pilots cannot escort
 					0 ; apprentices cannot escort
 
@@ -617,14 +637,18 @@
 					; 320,000 - 800,000 cargo value
 					(multiply 100 (add (random 20 50) (random 20 50)))
 
-					5000 ; legends don't escort, but add anyway
+					10000 ; Legends: requires sandbox mode to be activated
 					)
-			</Data>
+			</DynamicGlobal>
 
-			<korolovEscortRate>50</korolovEscortRate>
+			<Global id="korolov.escortRate">
+				50
+			</Global>
 
-			<korolovMinLevel>2</korolovMinLevel>
-		</StaticData>
+			<Global id="korolov.minLevel">
+				2
+			</Global>
+		</Properties>
 
 		<Events>
 			<OnDestroy>
