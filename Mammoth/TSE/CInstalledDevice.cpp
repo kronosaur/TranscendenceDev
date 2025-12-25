@@ -374,6 +374,8 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	//	definitions from the previous device).
 
 	InitFromDesc(Desc);
+	if (!m_sID.IsBlank() && iDeviceSlot != -1)
+		m_pSource->SetDeviceSlotAtID(m_sID, iDeviceSlot);
 
 	//	Call the class
 
@@ -819,6 +821,10 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 				m_pItem = ItemList.GetItemPointerAtCursor();
 				}
 			}
+
+		if (m_pSource != NULL && !m_sID.IsBlank()) {
+			m_pSource->SetDeviceSlotAtID(m_sID, m_iDeviceSlot);
+		}
 
 		//	In previous versions we automatically offset weapon positions.
 		//	In later versions we explicitly set the position, so we have
@@ -1281,6 +1287,7 @@ void CInstalledDevice::Uninstall (CSpaceObject *pObj, CItemListManipulator &Item
 	CShip *pShip = pObj->AsShip();
 	if (pShip)
 		pShip->GetController()->OnItemUninstalled(theItem);
+	pObj->ClearDeviceSlotAtID(m_sID);
 
 	//	We need to refresh the cursor because OnUninstall might
 	//	have done something

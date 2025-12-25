@@ -299,7 +299,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 #define FN_SHIP_DEVICE_SLOT_AVAIL	1
 #define FN_SHIP_INSTALL_AUTOPILOT	2
 #define FN_SHIP_HAS_AUTOPILOT		3
-//	spare
+#define FN_SHIP_DEV_SLOT_PROPERTY	4
 #define FN_SHIP_INSTALL_TARGETING	5
 #define FN_SHIP_HAS_TARGETING		6
 #define FN_SHIP_CLASS				7
@@ -664,6 +664,8 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FIELD_RADIUS_OFFSET				CONSTLIT("radiusOffset")
 #define FIELD_REMOVE					CONSTLIT("remove")
 #define FIELD_ROTATION					CONSTLIT("rotation")
+#define FIELD_SLOT_ID					CONSTLIT("slotID") // TODO(heliogenesis): Remove
+#define FIELD_SLOT_POS_INDEX			CONSTLIT("slotPosIndex") // TODO(heliogenesis): Remove
 #define FIELD_SOURCE_ONLY				CONSTLIT("sourceOnly")
 #define FIELD_TYPE						CONSTLIT("type")
 #define FIELD_WIDTH						CONSTLIT("width")
@@ -1285,6 +1287,33 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(shpGetClassName class flags) -> class name",
 			"ii",	0,	},
 
+		{	"shpGetDeviceSlotProperty",		fnShipGet,		FN_SHIP_DEV_SLOT_PROPERTY,
+			"(shpGetDeviceSlotProperty ship [deviceSlot] property) -> angle\n\n"
+
+			"deviceSlot can be an int or struct with these parameters:\n\n"
+			"    deviceSlot: device slot number\n"
+			"    slotID: device slot ID\n"
+			"    slotPosIndex: device slot pos index\n"
+
+			"property:\n\n"
+			"    'attributes\n"
+			"    'criteria\n"
+			"    'description\n"
+			"    'deviceAtSlot\n"
+			"    'fireArc\n"
+			"    'hasAttribute [attribute]\n"
+			"    'maxMass\n"
+			"    'maxPower\n"
+			"    'maxPowerPercent\n"
+			"    'omnidirectional\n"
+			"    'pos\n"
+			"    'posAngle\n"
+			"    'posCartesian\n"
+			"    'posRadius\n"
+			"    'secondaryWeapon\n",
+
+			"i*s",	0,	},
+
 		{	"shpGetDirection",				fnShipGetOld,		FN_SHIP_DIRECTION,
 			"(shpGetDirection ship) -> angle",
 			NULL,	0,	},
@@ -1363,7 +1392,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ivi",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpInstallDevice",				fnShipSet,			FN_SHIP_INSTALL_DEVICE,
-			"(shpInstallDevice ship item [deviceSlot]) -> itemStruct (or Nil)",
+			"(shpInstallDevice ship item [deviceSlot]) -> itemStruct (or Nil)\n\n"
+
+			"deviceSlot can be an int or struct with these parameters:\n\n"
+			"    deviceSlot: device slot number\n"
+			"    slotID: device slot ID\n"
+			"    slotPosIndex: device slot pos index\n",
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpIsBlind",					fnShipGetOld,		FN_SHIP_BLINDNESS,
@@ -2287,6 +2321,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (device)\n\n"
 
 			"   'capacitor\n"
+			"   'slotID\n"
 			"   'enabled\n"
 			"   'linkedFireOptions\n"
 			"   'pos\n"
@@ -7163,11 +7198,12 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_CAN_INSTALL_ITEM:
 			{
-			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
+			CItem Item = (pCtx->AsItem(pArgs->GetElement(1)));
 			if (Item.GetType() == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid item"), pArgs->GetElement(1));
 
 			CDeviceSystem::SSlotDesc Slot;
+			bool bForceUseOfDeviceSlot = false;
 			if (pArgs->GetCount() > 2)
 				{
 				if (!CTLispConvert::AsSlotDesc(*pArgs->GetElement(2), Slot))
@@ -7186,14 +7222,18 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 						return pCC->CreateError(CONSTLIT("Invalid armor segment"), pArgs->GetElement(2));
 					if (Item.IsDevice()
 							&& pShip
-							&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetDeviceCount() || pShip->GetDevice(Slot.iIndex)->IsEmpty()))
+							&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetDeviceCount()))
 						return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+					bForceUseOfDeviceSlot = pCtx->GetAPIVersion() >= 54;
 					}
 
 				if (!Slot.sID.IsBlank())
 					{
-					if (!pObj->GetDeviceSystem().FindSlotDesc(Slot.sID))
-						return pCC->CreateError(CONSTLIT("Unkown slot ID"), pArgs->GetElement(2));
+					CShip* pShip = pObj->AsShip();
+					const bool bDeviceSlotExists = pShip->GetDeviceSystem().FindSlotDesc(Slot.sID);
+					if (!bDeviceSlotExists)
+						return pCC->CreateError(CONSTLIT("Unknown slot ID"), pArgs->GetElement(2));
+					bForceUseOfDeviceSlot = pCtx->GetAPIVersion() >= 54;
 					}
 				}
 
@@ -7202,7 +7242,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CSpaceObject::InstallItemResults iResult;
 			CString sResult;
 			CItem ItemToReplace;
-			bool bCanInstall = pObj->CanInstallItem(Item, Slot, &iResult, &sResult, &ItemToReplace);
+			bool bCanInstall = pObj->CanInstallItem(Item, Slot, bForceUseOfDeviceSlot, &iResult, &sResult, &ItemToReplace);
 
 			//	Generate the result
 
@@ -10947,6 +10987,11 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 			}
 
+		case FN_SHIP_DEV_SLOT_PROPERTY:
+			{
+			return pShip->GetDeviceSlotProperty(pCC, *pCtx, pArgs);
+			}
+
 		case FN_SHIP_DOCK_OBJ:
 			{
 			CSpaceObject *pObj = pShip->GetDockedObj();
@@ -11262,7 +11307,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			CSpaceObject::InstallItemResults iResult;
 			CString sResult;
-			pShip->CanInstallItem(Item, Slot, &iResult, &sResult);
+			pShip->CanInstallItem(Item, Slot, false, &iResult, &sResult);
 
 			if (!sResult.IsBlank())
 				return pCC->CreateString(sResult);
@@ -11475,7 +11520,6 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 
 			//	See if we passed in a device slot
-
 			CDeviceSystem::SSlotDesc Slot;
 			if (pArgs->GetCount() > 2)
 				{
@@ -11487,14 +11531,15 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (Slot.iIndex != -1)
 					{
 					if (Item.IsDevice()
-							&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetDeviceCount() || pShip->GetDevice(Slot.iIndex)->IsEmpty()))
+							&& (Slot.iIndex < 0 || Slot.iIndex >= pShip->GetDeviceCount()))
 						return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
 					}
 
 				if (!Slot.sID.IsBlank())
 					{
-					if (!pShip->GetDeviceSystem().FindSlotDesc(Slot.sID))
-						return pCC->CreateError(CONSTLIT("Unkown slot ID"), pArgs->GetElement(2));
+					const bool bDeviceSlotExists = pShip->GetDeviceSystem().FindSlotDesc(Slot.sID);
+					if (!bDeviceSlotExists)
+						return pCC->CreateError(CONSTLIT("Unknown slot ID"), pArgs->GetElement(2));
 					}
 				}
 

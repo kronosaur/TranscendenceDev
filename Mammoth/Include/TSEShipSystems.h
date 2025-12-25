@@ -201,10 +201,11 @@ class CDeviceSystem
 		int GetCountByID (const CString &sID) const;
 		CInstalledDevice &GetDevice (int iIndex) { if (iIndex < 0 || iIndex >= GetCount()) throw CException(ERR_FAIL); return *m_Devices[iIndex]; }
 		CDeviceItem GetDeviceItem (int iIndex) const { if (iIndex < 0 || iIndex >= GetCount()) throw CException(ERR_FAIL); if (!m_Devices[iIndex]->IsEmpty()) return m_Devices[iIndex]->GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }
+		const IDeviceGenerator *GetSlots() const { return m_pSlots; }
 		const CInstalledDevice &GetDevice (int iIndex) const { if (iIndex < 0 || iIndex >= GetCount()) throw CException(ERR_FAIL); return *m_Devices[iIndex]; }
 		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return GetNamedDeviceHelper(iDev); }
 		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return const_cast<CInstalledDevice *>(GetNamedDeviceHelper(iDev)); }
-		CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return GetDevice(m_NamedDevices[iDev]).GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }
+		CDeviceItem GetNamedDeviceItem (DeviceNames iDev) const { if (HasNamedDevices() && m_NamedDevices[iDev] != -1 && GetDevice(m_NamedDevices[iDev]).GetItem()) return GetDevice(m_NamedDevices[iDev]).GetItem()->AsDeviceItem(); else return CItem().AsDeviceItem(); }
 		int GetNamedIndex (DeviceNames iDev) const { return (HasNamedDevices() ? m_NamedDevices[iDev] : -1); }
 		DWORD GetTargetTypes (void) const;
 		bool HasShieldsUp (void) const;
