@@ -678,7 +678,12 @@
 									(scrSetData gScreen 'maxCount 0)
 									(scrSetDescTranslate gScreen 'descNoItemsHere)
 									(scrEnableAction gScreen 'actionLootThis Nil)
-									(scrSetActionLabel gScreen 'actionDone Nil Nil '(default cancel))
+									(scrSetActionLabel gScreen
+										'actionDone
+										(typTranslate gType 'actionDone)
+										Nil
+										'(default cancel)
+										)
 									)
 
 							(block (
