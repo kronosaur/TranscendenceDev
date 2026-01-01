@@ -5965,6 +5965,8 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 				for (DWORD i = 0; i < dwShotsThisTick; i++)
 					{
+					ActivateCtx.iRepeatingCount = dwContinuousShots - i;
+
 					FireWeapon(*pDevice, *pShot, ActivateCtx, rContinuousInterpolationTime, i+1);
 
 					if (pSource->IsDestroyed())
