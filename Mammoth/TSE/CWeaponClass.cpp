@@ -5372,13 +5372,47 @@ void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 				}
 			}
 
-		//	WMD
+		//	Damage Methods
 
-		if (Damage.GetMassDestructionLevel() > 0)
+		EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+
+		if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
 			{
-			CString sWMDText = Damage.GetMassDestructionDisplayStr();
-			if (sWMDText.GetLength())
-				retList->Insert(SDisplayAttribute(attribPositive, sWMDText));
+			EDamageMethod iMethod = EDamageMethod::methodCrush;
+
+			if (Damage.GetDamageMethodAdjReal(iMethod) > 0)
+				{
+				CString sWMDText = Damage.GetDamageMethodDisplayStr(iMethod);
+				if (sWMDText.GetLength())
+					retList->Insert(SDisplayAttribute(attribPositive, sWMDText));
+				}
+			iMethod = EDamageMethod::methodPierce;
+
+			if (Damage.GetDamageMethodAdjReal(iMethod) > 0)
+				{
+				CString sWMDText = Damage.GetDamageMethodDisplayStr(iMethod);
+				if (sWMDText.GetLength())
+					retList->Insert(SDisplayAttribute(attribPositive, sWMDText));
+				}
+			iMethod = EDamageMethod::methodShred;
+
+			if (Damage.GetDamageMethodAdjReal(iMethod) > 0)
+				{
+				CString sWMDText = Damage.GetDamageMethodDisplayStr(iMethod);
+				if (sWMDText.GetLength())
+					retList->Insert(SDisplayAttribute(attribPositive, sWMDText));
+				}
+			}
+		else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+			{
+			EDamageMethod iMethod = EDamageMethod::methodWMD;
+
+			if (Damage.GetDamageMethodAdjReal(iMethod) > 0)
+				{
+				CString sWMDText = Damage.GetDamageMethodDisplayStr(iMethod);
+				if (sWMDText.GetLength())
+					retList->Insert(SDisplayAttribute(attribPositive, sWMDText));
+				}
 			}
 		}
 

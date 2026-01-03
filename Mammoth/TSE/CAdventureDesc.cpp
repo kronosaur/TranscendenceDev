@@ -10,7 +10,7 @@
 #define MINING_DAMAGE_ORE_LEVEL_TAG				CONSTLIT("MiningMaxOreLevels")
 #define EXTERNAL_DEVICE_DAMAGE_LEVEL_TAG		CONSTLIT("ExternalDeviceDamageMaxLevels")
 #define INTERNAL_DEVICE_DAMAGE_LEVEL_TAG		CONSTLIT("InternalDeviceDamageMaxLevels")
-#define MASS_DESTRUCTION_ADJ_TAG				CONSTLIT("WMDAdj")
+#define DAMAGE_METHOD_ADJ_CURVES_TAG				CONSTLIT("DamageMethodAdj")
 #define SHIELD_DAMAGE_ADJ_TAG					CONSTLIT("ShieldDamageAdj")
 
 #define ADVENTURE_UNID_ATTRIB					CONSTLIT("adventureUNID")
@@ -337,9 +337,9 @@ ALERROR CAdventureDesc::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 				if (!m_EngineOptions.InitInternalDeviceDamageMaxLevelsFromXML(Ctx, *pItem))
 					return ComposeLoadError(Ctx, Ctx.sError);
 				}
-			else if (strEquals(pItem->GetTag(), MASS_DESTRUCTION_ADJ_TAG))
+			else if (strEquals(pItem->GetTag(), DAMAGE_METHOD_ADJ_CURVES_TAG))
 				{
-				if (!m_EngineOptions.InitMassDestructionDescFromXML(Ctx, *pItem))
+				if (!m_EngineOptions.InitDamageMethodDescsFromXML(Ctx, *pItem))
 					return ComposeLoadError(Ctx, Ctx.sError);
 				}
 			else

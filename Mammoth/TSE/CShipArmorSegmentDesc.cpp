@@ -6,7 +6,10 @@
 #include "PreComp.h"
 
 #define ARMOR_ID_ATTRIB							CONSTLIT("armorID")
-#define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
+#define FORTIFICATION_WMD_ATTRIB				CONSTLIT("fortificationWMD")
+#define FORTIFICATION_CRUSH_ATTRIB				CONSTLIT("fortificationCrush")
+#define FORTIFICATION_PIERCE_ATTRIB				CONSTLIT("fortificationPierce")
+#define FORTIFICATION_SHRED_ATTRIB				CONSTLIT("fortificationShred")
 #define LEVEL_ATTRIB               				CONSTLIT("level")
 #define NON_CRITICAL_ATTRIB						CONSTLIT("nonCritical")
 #define SPAN_ATTRIB               				CONSTLIT("span")
@@ -121,11 +124,22 @@ int CShipArmorSegmentDesc::GetLevel (void) const
     return (m_iLevel != -1 ? m_iLevel : m_pArmor->GetItemType()->GetLevel());
     }
 
-ALERROR CShipArmorSegmentDesc::Init (int iStartAt, int iSpan, DWORD dwArmorUNID, int iLevel, const CRandomEnhancementGenerator &Enhancement, Metric rFortification)
+Metric CShipArmorSegmentDesc::GetFortificationAdj(EDamageMethod iMethod) const
+	{
+	return m_Fortification.Get(iMethod);
+	}
 
 //  Init
 //
 //  Initialize from parameters
+//
+ALERROR CShipArmorSegmentDesc::Init (
+	int iStartAt,
+	int iSpan,
+	DWORD dwArmorUNID,
+	int iLevel,
+	const CRandomEnhancementGenerator &Enhancement,
+	SDamageMethodAdj Fortification)
 
     {
     m_iStartAt = AngleMod(iStartAt);
@@ -134,23 +148,24 @@ ALERROR CShipArmorSegmentDesc::Init (int iStartAt, int iSpan, DWORD dwArmorUNID,
     m_iLevel = iLevel;
     m_Enhanced = Enhancement;
     m_dwAreaSet = CShipClass::sectCritical;
-	m_rFortified = rFortification;
+	m_Fortification = Fortification;
 
     return NOERROR;
     }
 
-ALERROR CShipArmorSegmentDesc::InitFromXML (SDesignLoadCtx &Ctx, 
-											const CXMLElement &Desc, 
-											DWORD dwDefaultUNID, 
-											int iDefaultLevel, 
-											int iDefaultAngle, 
-											const CRandomEnhancementGenerator &DefaultEnhancement,
-											Metric rDefaultFortification,
-											int *retiSpan)
-
 //  InitFromXML
 //
 //  Initialize from an XML element
+//
+ALERROR CShipArmorSegmentDesc::InitFromXML (
+	SDesignLoadCtx &Ctx, 
+	const CXMLElement &Desc, 
+	DWORD dwDefaultUNID, 
+	int iDefaultLevel, 
+	int iDefaultAngle, 
+	const CRandomEnhancementGenerator &DefaultEnhancement,
+	SDamageMethodAdj DefaultFortification,
+	int *retiSpan)
 
     {
     ALERROR error;
@@ -181,7 +196,68 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (SDesignLoadCtx &Ctx,
 
 	m_dwAreaSet = ParseNonCritical(Desc.GetAttribute(NON_CRITICAL_ATTRIB));
 
-	m_rFortified = Desc.GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
+	EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+
+	bool bHasWMDFortification = Desc.FindAttribute(FORTIFICATION_WMD_ATTRIB);
+	bool bHasPhysicalizedFortification = Desc.FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || Desc.FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || Desc.FindAttribute(FORTIFICATION_SHRED_ATTRIB);
+
+	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+		{
+		//	If we specify physicalized fortiification, use that
+
+		if (bHasPhysicalizedFortification)
+			{
+			m_Fortification.SetCrush(Desc.GetAttributeDoubleDefault(FORTIFICATION_CRUSH_ATTRIB, DefaultFortification.GetCrush()));
+			m_Fortification.SetPierce(Desc.GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, DefaultFortification.GetPierce()));
+			m_Fortification.SetShred(Desc.GetAttributeDoubleDefault(FORTIFICATION_SHRED_ATTRIB, DefaultFortification.GetShred()));
+			}
+
+		//	Otherwise we have to translate WMD to physical
+		//	For armor this is just WMD -> pierce
+
+		else if (bHasWMDFortification)
+			{
+			m_Fortification.SetPierce(Desc.GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, DefaultFortification.GetPierce()));
+
+			//	Crush and Shred read in the ship defaults
+
+			m_Fortification.SetCrush(DefaultFortification.GetCrush());
+			m_Fortification.SetShred(DefaultFortification.GetShred());
+			}
+
+		//	Otherwise we use the default
+
+		else
+			{
+			m_Fortification.SetCrush(DefaultFortification.GetCrush());
+			m_Fortification.SetPierce(DefaultFortification.GetPierce());
+			m_Fortification.SetShred(DefaultFortification.GetShred());
+			}
+		}
+	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+		{
+		
+		//	If we specify WMD fortification use that
+		
+		if (bHasWMDFortification)
+			m_Fortification.SetWMD(Desc.GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, DefaultFortification.GetWMD()));
+
+		//	Otherwise we need to translate physical fortification to the WMD system
+		//	For armor, this is just pierce -> WMD
+
+		else if (bHasPhysicalizedFortification)
+			m_Fortification.SetWMD(Desc.GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, DefaultFortification.GetWMD()));
+
+		//	Otherwise we use the default
+
+		else
+			m_Fortification.SetWMD(DefaultFortification.GetWMD());
+		}
+	else
+		{
+		Ctx.sError = CONSTLIT("Cannot initialize fortification with an unknown damage method system");
+		return ERR_FAIL;
+		}
 
     return NOERROR;
     }

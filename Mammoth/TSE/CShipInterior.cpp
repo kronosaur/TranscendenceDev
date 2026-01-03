@@ -107,24 +107,14 @@ void CShipInterior::CreateAttached (CShip *pShip, const CShipInteriorDesc &Desc)
 		}
 	}
 
-EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Desc, SDamageCtx &Ctx)
-
-//	Damage
-//
-//	Ship interior takes damage.
-
+Metric CShipInterior::CalcDamageFortificationAdj (EDamageMethod iMethod, CShip* pShip, const CShipInteriorDesc& Desc, SDamageCtx& Ctx)
 	{
-	//	Calculate our Fortification adjustment
 
-	Metric rFortification = Desc.GetFortificationAdj();
-
-	//	Effective damage requires mass destruction power
-
-    Ctx.iDamage = Ctx.CalcWMDAdjustedDamage(rFortification);
+	Metric rFortification = Desc.GetFortificationAdj(iMethod, pShip->GetDefaultCompartmentType());
 
 	//	If we don't have WMD and we're not making much progress, then show a hint.
 
-	Metric rFortificationAdj = Ctx.CalcWMDFortificationAdj(rFortification);
+	Metric rFortificationAdj = Ctx.CalcDamageMethodFortifiedAdj(iMethod, rFortification);
 
 	if ((rFortificationAdj * 100) <= SDamageCtx::DAMAGE_ADJ_HINT_THRESHOLD)
 		{
@@ -139,6 +129,39 @@ EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Des
 				Ctx.SetHint(EDamageHint::useWMDforShip);
 			}
 		}
+
+	return rFortificationAdj;
+	}
+
+//	Damage
+//
+//	Ship interior takes damage.
+//
+EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Desc, SDamageCtx &Ctx)
+
+	{
+	//	Check what damage method system we are using
+
+	EDamageMethodSystem iMethodSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+
+	//	Calculate our Fortification adjustment
+
+	Metric rDamageMethodAdj;
+
+	if (iMethodSystem == EDamageMethodSystem::dmgMethodSysWMD)
+		{
+		rDamageMethodAdj = CalcDamageFortificationAdj(EDamageMethod::methodWMD, pShip, Desc, Ctx);
+		}
+	else
+		{
+		rDamageMethodAdj = CalcDamageFortificationAdj(EDamageMethod::methodCrush, pShip, Desc, Ctx);
+		rDamageMethodAdj *= CalcDamageFortificationAdj(EDamageMethod::methodPierce, pShip, Desc, Ctx);
+		rDamageMethodAdj *= CalcDamageFortificationAdj(EDamageMethod::methodShred, pShip, Desc, Ctx);
+		}
+
+	//	Effective damage requires mass destruction power
+
+	Ctx.iDamage = Ctx.CalcDamageMethodAdjDamagePrecalc(rDamageMethodAdj);
 
 	//	If no damage, then we're done.
 

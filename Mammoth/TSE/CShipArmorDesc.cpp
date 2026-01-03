@@ -7,7 +7,10 @@
 
 #define ARMOR_ID_ATTRIB							CONSTLIT("armorID")
 #define COUNT_ATTRIB							CONSTLIT("count")
-#define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
+#define FORTIFICATION_WMD_ATTRIB				CONSTLIT("fortificationWMDAdj")
+#define FORTIFICATION_CRUSH_ATTRIB				CONSTLIT("fortificationCrushAdj")
+#define FORTIFICATION_PIERCE_ATTRIB				CONSTLIT("fortificationPierceAdj")
+#define FORTIFICATION_SHRED_ATTRIB				CONSTLIT("fortificationShredAdj")
 #define LEVEL_ATTRIB               				CONSTLIT("level")
 #define START_AT_ATTRIB            				CONSTLIT("startAt")
 
@@ -199,12 +202,64 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (error = SegEnhancement.InitFromXML(Ctx, pDesc))
 			return error;
 
-		Metric rFortifiedRatio = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
+		SDamageMethodAdj DefaultFortifiedRatios;
+		EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+		bool bHasWMDFortify = pDesc->FindAttribute(FORTIFICATION_WMD_ATTRIB);
+		bool bHasPhysicalizedFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_ATTRIB);
+
+		if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+			{
+			//	Correct defaults cannot be determined at load time, so we set R_NAN as a marker that we are unset,
+			//	and need to get the correct default later.
+
+			Metric rDefaultCrush = R_NAN;
+			Metric rDefaultPierce = R_NAN;
+			Metric rDefaultShred = R_NAN;
+
+			if (bHasPhysicalizedFortify)
+				{
+				DefaultFortifiedRatios.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_ATTRIB, rDefaultCrush));
+				DefaultFortifiedRatios.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, rDefaultPierce));
+				DefaultFortifiedRatios.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_ATTRIB, rDefaultShred));
+				}
+			else if (bHasWMDFortify)
+				{
+				DefaultFortifiedRatios.SetCrush(rDefaultCrush);
+				DefaultFortifiedRatios.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, rDefaultPierce));
+				DefaultFortifiedRatios.SetShred(rDefaultShred);
+				}
+			else
+				{
+				DefaultFortifiedRatios.SetCrush(rDefaultCrush);
+				DefaultFortifiedRatios.SetPierce(rDefaultPierce);
+				DefaultFortifiedRatios.SetShred(rDefaultShred);
+				}
+			}
+		else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+			{
+			//	Correct defaults cannot be determined at load time, so we set R_NAN as a marker that we are unset,
+			//	and need to get the correct default later.
+
+			Metric rDefaultWMD = R_NAN;
+
+			if (bHasWMDFortify)
+				DefaultFortifiedRatios.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, rDefaultWMD));
+			else if (bHasPhysicalizedFortify)
+				DefaultFortifiedRatios.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, rDefaultWMD));
+			else
+				DefaultFortifiedRatios.SetWMD(rDefaultWMD);
+			}
+		else
+			{
+			ASSERT(false);
+			Ctx.sError = CONSTLIT("Cannot initialize with an unknown damage method system.");
+			return ERR_FAIL;
+			}
 
 		m_Segments.InsertEmpty(iSegCount);
 		for (int i = 0; i < iSegCount; i++)
 			{
-			if (error = m_Segments[i].Init(iSegPos, iSegSize, dwSegUNID, iSegLevel, SegEnhancement, rFortifiedRatio))
+			if (error = m_Segments[i].Init(iSegPos, iSegSize, dwSegUNID, iSegLevel, SegEnhancement, DefaultFortifiedRatios))
 				return error;
 
 			iSegPos += iSegSize;
@@ -228,7 +283,59 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (error = DefaultEnhancement.InitFromXML(Ctx, pDesc))
 			return error;
 
-		Metric rDefaultFortifiedRatio = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, 0.0, -1.0, -1.0);
+		SDamageMethodAdj DefaultFortifiedRatios;
+		EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+		bool bHasWMDFortify = pDesc->FindAttribute(FORTIFICATION_WMD_ATTRIB);
+		bool bHasPhysicalizedFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_ATTRIB);
+
+		if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+			{
+			//	Correct defaults cannot be determined at load time, so we set R_NAN as a marker that we are unset,
+			//	and need to get the correct default later.
+
+			Metric rDefaultCrush = R_NAN;
+			Metric rDefaultPierce = R_NAN;
+			Metric rDefaultShred = R_NAN;
+
+			if (bHasPhysicalizedFortify)
+				{
+				DefaultFortifiedRatios.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_ATTRIB, rDefaultCrush));
+				DefaultFortifiedRatios.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, rDefaultPierce));
+				DefaultFortifiedRatios.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_ATTRIB, rDefaultShred));
+				}
+			else if (bHasWMDFortify)
+				{
+				DefaultFortifiedRatios.SetCrush(rDefaultCrush);
+				DefaultFortifiedRatios.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, rDefaultPierce));
+				DefaultFortifiedRatios.SetShred(rDefaultShred);
+				}
+			else
+				{
+				DefaultFortifiedRatios.SetCrush(rDefaultCrush);
+				DefaultFortifiedRatios.SetPierce(rDefaultPierce);
+				DefaultFortifiedRatios.SetShred(rDefaultShred);
+				}
+			}
+		else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+			{
+			//	Correct defaults cannot be determined at load time, so we set R_NAN as a marker that we are unset,
+			//	and need to get the correct default later.
+
+			Metric rDefaultWMD = R_NAN;
+
+			if (bHasWMDFortify)
+				DefaultFortifiedRatios.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, rDefaultWMD));
+			else if (bHasPhysicalizedFortify)
+				DefaultFortifiedRatios.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, rDefaultWMD));
+			else
+				DefaultFortifiedRatios.SetWMD(rDefaultWMD);
+			}
+		else
+			{
+			ASSERT(false);
+			Ctx.sError = CONSTLIT("Cannot initialize with an unknown damage method system.");
+			return ERR_FAIL;
+			}
 
 		m_Segments.InsertEmpty(pDesc->GetContentElementCount());
 		for (int i = 0; i < pDesc->GetContentElementCount(); i++)
@@ -238,7 +345,7 @@ ALERROR CShipArmorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				throw CException(ERR_FAIL);
 
 			int iSpan;
-			if (error = m_Segments[i].InitFromXML(Ctx, *pSegment, dwDefaultSegUNID, iDefaultLevel, iAngle, DefaultEnhancement, rDefaultFortifiedRatio, &iSpan))
+			if (error = m_Segments[i].InitFromXML(Ctx, *pSegment, dwDefaultSegUNID, iDefaultLevel, iAngle, DefaultEnhancement, DefaultFortifiedRatios, &iSpan))
 				return error;
 
 			iAngle += iSpan;

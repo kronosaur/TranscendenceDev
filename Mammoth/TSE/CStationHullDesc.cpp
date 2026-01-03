@@ -10,7 +10,10 @@
 #define ARMOR_ID_ATTRIB							CONSTLIT("armorID")
 #define ARMOR_LEVEL_ATTRIB						CONSTLIT("armorLevel")
 #define CANNOT_BE_HIT_ATTRIB					CONSTLIT("cannotBeHit")
-#define FORTIFICATION_ATTRIB					CONSTLIT("fortificationAdj")
+#define FORTIFICATION_CRUSH_ATTRIB				CONSTLIT("fortificationCrushAdj")
+#define FORTIFICATION_PIERCE_ATTRIB				CONSTLIT("fortificationPierceAdj")
+#define FORTIFICATION_SHRED_ATTRIB				CONSTLIT("fortificationShredAdj")
+#define FORTIFICATION_WMD_ATTRIB				CONSTLIT("fortificationWMDAdj")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define HULL_TYPE_ATTRIB						CONSTLIT("hullType")
 #define IMMUTABLE_ATTRIB						CONSTLIT("immutable")
@@ -207,11 +210,30 @@ int CStationHullDesc::GetArmorLevel (void) const
 		return 1;
 	}
 
-Metric CStationHullDesc::GetFortificationAdj(bool bMultiHull) const
+Metric CStationHullDesc::GetFortificationAdj(EDamageMethod iMethod) const
 	{
-	if (g_pUniverse)
-		return m_rFortified < 0 ? (bMultiHull ? g_pUniverse->GetEngineOptions().GetDefaultFortifiedStationMultihull() : g_pUniverse->GetEngineOptions().GetDefaultFortifiedStation()) : m_rFortified;
-	return bMultiHull ? 0.1 : 1.0;
+	if (IS_NAN(m_Fortification.Get(iMethod)))
+		{
+		CEngineOptions Options = g_pUniverse->GetEngineOptions();
+		switch (m_iType)
+			{
+			case EHullTypes::hullMultiple:
+				return Options.GetDamageMethodAdjStationHullMulti(iMethod);
+			case EHullTypes::hullAsteroid:
+				return Options.GetDamageMethodAdjStationHullAsteroid(iMethod);
+			case EHullTypes::hullUnderground:
+				return Options.GetDamageMethodAdjStationHullUnderground(iMethod);
+			case EHullTypes::hullArmor:
+				return Options.GetDamageMethodAdjStationHullArmor(iMethod);
+			case EHullTypes::hullUncrewed:
+				return Options.GetDamageMethodAdjStationHullUncrewed(iMethod);
+			case EHullTypes::hullSingle:
+			default:
+				return Options.GetDamageMethodAdjStationHullSingle(iMethod);
+			}
+		}
+	else
+		return m_Fortification.Get(iMethod);
 	}
 
 CString CStationHullDesc::GetID (EHullTypes iType)
@@ -272,10 +294,49 @@ ALERROR CStationHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 	else
 		m_iType = (bMultiHullDefault ? hullMultiple : hullSingle);
 
-	if (m_iType == hullMultiple)
-		m_rFortified = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, g_Epsilon, -1.0, g_pUniverse->GetEngineOptions().GetDefaultFortifiedStationMultihull());
+	//	Damage Method fortification
+
+	EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+
+	bool bHasWMDFortify = pDesc->FindAttribute(FORTIFICATION_WMD_ATTRIB);
+	bool bHasPhysicalizedFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_ATTRIB);
+
+	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+		{
+		if (bHasPhysicalizedFortify)
+			{
+			m_Fortification.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_ATTRIB, R_NAN));
+			m_Fortification.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, R_NAN));
+			m_Fortification.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_ATTRIB, R_NAN));
+			}
+		else if (bHasWMDFortify)
+			{
+			m_Fortification.SetCrush(R_NAN);
+			m_Fortification.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, R_NAN));
+			m_Fortification.SetShred(R_NAN);
+			}
+		else
+			{
+			m_Fortification.SetCrush(R_NAN);
+			m_Fortification.SetPierce(R_NAN);
+			m_Fortification.SetShred(R_NAN);
+			}
+		}
+	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+		{
+		if (bHasWMDFortify)
+			m_Fortification.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, R_NAN));
+		else if (bHasPhysicalizedFortify)
+			m_Fortification.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, R_NAN));
+		else
+			m_Fortification.SetWMD(R_NAN);
+		}
 	else
-		m_rFortified = pDesc->GetAttributeDoubleBounded(FORTIFICATION_ATTRIB, g_Epsilon, -1.0, g_pUniverse->GetEngineOptions().GetDefaultFortifiedStation());
+		{
+		ASSERT(false);
+		Ctx.sError = CONSTLIT("Cannot initialize with an unknown damage method system.");
+		return ERR_FAIL;
+		}
 
 	//	Get hit points and max hit points
 

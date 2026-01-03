@@ -52,14 +52,126 @@
 			-->
 			<Constant id="core.defaultCorewardNode">		'G2</Constant>
 
-			<!-- Defaults for WMD Fortification Adj (Adj at WMD0) -->
+			<!-- Defaults for Damage Method system (WMD) -->
 
-			<Constant id="core.WMDFortified.ShipCompartment">	0.1</Constant>
-			<Constant id="core.WMDFortified.MultihullStation">	0.1</Constant>
-			<Constant id="core.WMDFortified.Station">			1.0</Constant>
-			<Constant id="core.WMDFortified.ArmorSegment">		1.0</Constant>
-			<Constant id="core.WMDFortified.Armor">				1.0</Constant>
-			<Constant id="core.WMDFortified.Shield">			1.0</Constant>
+			<Constant id="core.damageMethod.system">			'WMD</Constant>
+			<Constant id="core.damageMethod.minDamage">			0</Constant>
+
+			<!--
+				Default fortification values for Damage Method (WMD)
+
+				0.0 = takes full damage regardless of WMD
+				1.0 = uses the adventure-defined WMD curve
+				'inf = immune unless WMD level is 7
+
+				Fortification values between 0.0 and 1.0 raise the curve up,
+				reducing the penalty for not having this damage method, however
+				it also proportionally rewards having the damage method more
+
+				Fortification values greater than 1.0 lower the curve, increasing
+				the penalty for not having this damage method (or not having
+				high levels of it), but it also proportionally rewards having
+				higher amounts of the damage method.
+			-->
+
+			<Constant id="core.damageMethod.item">
+				{
+				armor:
+					{
+					WMD: 0.0
+					}
+				shield:
+					{
+					WMD: 0.0
+					}
+				}
+			</Constant>
+
+			<Constant id="core.damageMethod.ship">
+				{
+				armor:
+					{
+					critical:
+						{
+						WMD: 0.0
+						}
+
+					;;	nonCritical applies to segments marked as noncritical or unmarked segments
+					;;	on a ship with compartments
+
+					nonCritical:
+						{
+						WMD: 0.0
+						}
+					
+					;;	Used to calculate incremental chance of destruction based on relative damage
+					;;	to a depleted noncritical segment
+
+					nonCriticalDestruction:
+						{
+						WMD: 1.0
+						}
+					
+					;;	Base chance to be destroyed on a shot to a depleted noncritical segment
+
+					nonCriticalDestructionChance: 0.05
+					}
+
+				;;	Applies based on the default compartment type of this ship
+
+				compartments:
+					{
+					general:
+						{
+						WMD: 1.0
+						}
+					cargo:
+						{
+						WMD: 1.0
+						}
+					mainDrive:
+						{
+						WMD: 1.0
+						}
+					}
+				}
+			</Constant>
+
+			<Constant id="core.damageMethod.station">
+				{
+				hull:
+					{
+					single:
+						{
+						WMD: 0.0
+						}
+					multi:
+						{
+						WMD: 1.0 
+						}
+
+					;;	Note that in the WMD damage method system
+					;;	asteroid hulls require either WMD mining damage instead of normal WMD
+
+					asteroid:
+						{
+						WMD: 1.0
+						}
+
+					;;	Note that in the WMD damage method system
+					;;	underground hulls require mining damage instead of normal WMD
+
+					underground:
+						{
+						WMD: 1.0
+						}
+					}
+				}
+			</Constant>
+
+			<!-- Defaults for item balance -->
+
+			<Constant id="core.item.shield.idlePowerAdj">	0.125</Constant>
 
 			<!-- Defaults for shot interaction -->
 
@@ -303,12 +415,13 @@
 													#	WMD0	WMD1	WMD2	WMD3	WMD4	WMD5	WMD6	WMD7
 			-->
 
-			<WMDAdj
-				wmdAdj=								"	0.10,	0.25,	0.32,	0.40,	0.50,	0.63,	0.80,	1.0"
-				wmdDisplay=							"			2,		3,		4,		5,		6,		8,		10"
-				wmdDisplayPrefix=					"WMD "
-				wmdMinDamage=						"0"
-				/>
+			<DamageMethodAdj>
+				<WMD
+					damageMethodAdj=				"	0.10,	0.25,	0.32,	0.40,	0.50,	0.63,	0.80,	1.0"
+					damageMethodDisplay=			"			2,		3,		4,		5,		6,		8,		10"
+					damageMethodDisplayPrefix=		"WMD "
+					/>
+			</DamageMethodAdj>
 			
 		</Constants>
 	</AdventureDesc>

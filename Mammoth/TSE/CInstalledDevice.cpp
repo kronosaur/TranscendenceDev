@@ -702,15 +702,17 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 		{
 		Ctx.pStream->Read(dwLoad);
 		m_rActivateDelay = (double)LOWORD(dwLoad);
-		const CWeaponFireDesc* pShot = &m_pClass->AsWeaponClass()->GetWeaponFireDescForVariant(GetDeviceItem(), 0);
-		m_iContinuousShotsRemaining = (int)((m_dwData & 0x000000ff) / m_pClass->AsWeaponClass()->GetContinuousFireDelay(*pShot)) - m_pClass->AsWeaponClass()->GetChargeTime(*pShot);
+		const CWeaponClass* pWeaponClass = m_pClass->AsWeaponClass();
+		const CWeaponFireDesc* pShot = (pWeaponClass ? &pWeaponClass->GetWeaponFireDescForVariant(GetDeviceItem(), 0) : NULL);
+		m_iContinuousShotsRemaining = (pWeaponClass ? (int)((m_dwData & 0x000000ff) / pWeaponClass->GetContinuousFireDelay(*pShot)) - pWeaponClass->GetChargeTime(*pShot) : 0);
 		m_iPosZ = (int)HIWORD(dwLoad);
 		}
 	else
 		{
 		m_rActivateDelay = 8.0;
-		const CWeaponFireDesc* pShot = &m_pClass->AsWeaponClass()->GetWeaponFireDescForVariant(GetDeviceItem(), 0);
-		m_iContinuousShotsRemaining = (int)((m_dwData & 0x000000ff) / m_pClass->AsWeaponClass()->GetContinuousFireDelay(*pShot)) - m_pClass->AsWeaponClass()->GetChargeTime(*pShot);
+		const CWeaponClass* pWeaponClass = m_pClass->AsWeaponClass();
+		const CWeaponFireDesc* pShot = (pWeaponClass ? &pWeaponClass->GetWeaponFireDescForVariant(GetDeviceItem(), 0) : NULL);
+		m_iContinuousShotsRemaining = (pWeaponClass ? (int)((m_dwData & 0x000000ff) / pWeaponClass->GetContinuousFireDelay(*pShot)) - pWeaponClass->GetChargeTime(*pShot) : 0);
 		m_iPosZ = 0;
 		}
 

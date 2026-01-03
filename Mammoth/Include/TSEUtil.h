@@ -649,21 +649,122 @@ class CDamageAdjDesc
 		const CDamageAdjDesc *m_pDefault;		//	Default table
 	};
 
-class CMassDestructionDesc
+enum class EDamageMethodSystem
+	{
+	dmgMethodSysError =						-100,	//	Uninitialized or error state
+	
+	dmgMethodSysPhysicalized =				0,		//	multi physical damage methods
+	dmgMethodSysWMD =						1,		//	single damage method, WMD
+	};
+
+enum class EDamageMethod
+	{
+	methodError =							-100,	//	Uninitialized or error state
+
+	methodWMD =								0,		//	original WMD
+	methodCrush =							1,		//	Physicalized: crush
+	methodPierce =							2,		//	Physicalized: pierce
+	methodShred =							3,		//	Physicalized: shred
+	};
+
+constexpr BYTE PHYSICALIZED_DAMAGE_METHOD_COUNT = 3;
+constexpr EDamageMethod PHYSICALIZED_DAMAGE_METHODS[3] = {EDamageMethod::methodCrush, EDamageMethod::methodPierce, EDamageMethod::methodShred};
+
+struct SDamageMethodAdj
 	{
 	public:
-		static constexpr int MAX_WMD_LEVEL = 7;
-		static constexpr int MAX_WMD_LEVEL_COUNT = 8;
 
-		Metric GetWMDAdj (int iLevel) const;
-		int GetRoundedWMDAdj (int iLevel) const;
-		int GetStochasticWMDAdj (int iLevel) const;
-		CString GetWMDLabel (int iLevel) const;
-		int GetWMDMinDamage () const { return m_iMinDamage; }
-		CString GetWMDPrefix () const { return m_sAttribPrefix; }
-		CString GetWMDDisplay (int iLevel) const { return GetWMDLabel(iLevel).GetLength() ? strCat(m_sAttribPrefix, GetWMDLabel(iLevel)) : CONSTLIT(""); }
-		ALERROR InitFromArray (const TArray<double>& Adj, const TArray<const char*>& Labels, int iMinDamage = 0, CString sAttribPrefix = "WMD");
-		ALERROR InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAdj, const CString &sLabels, int iMinDamage = 0, CString sAttribPrefix = "WMD");
+		Metric GetCrush () const { return rAdj[0]; }
+		Metric GetPierce () const { return rAdj[1]; }
+		Metric GetShred () const { return rAdj[2]; }
+		Metric GetWMD () const { return rAdj[0]; }
+		Metric Get (EDamageMethod iMethod) const
+			{
+			switch (iMethod)
+				{
+				case EDamageMethod::methodCrush:
+				case EDamageMethod::methodWMD:
+					return rAdj[0];
+					break;
+				case EDamageMethod::methodPierce:
+					return rAdj[1];
+					break;
+				case EDamageMethod::methodShred:
+					return rAdj[2];
+					break;
+				default:
+					ASSERT(false);
+					return R_NAN;
+				}
+			}
+
+		void SetCrush (Metric rNew) { rAdj[0] = rNew; }
+		void SetPierce (Metric rNew) { rAdj[1] = rNew; }
+		void SetShred (Metric rNew) { rAdj[2] = rNew; }
+		void SetWMD (Metric rNew) { rAdj[0] = rNew; }
+		void Set (EDamageMethod iMethod, Metric rNew)
+			{
+			switch (iMethod)
+				{
+				case EDamageMethod::methodCrush:
+				case EDamageMethod::methodWMD:
+					rAdj[0] = rNew;
+					break;
+				case EDamageMethod::methodPierce:
+					rAdj[1] = rNew;
+					break;
+				case EDamageMethod::methodShred:
+					rAdj[2] = rNew;
+					break;
+				default:
+					ASSERT(false);
+				}
+			}
+
+		void Reset ()
+			{
+			rAdj[0] = 0.0;
+			rAdj[1] = 0.0;
+			rAdj[2] = 0.0;
+			}
+
+	private:
+
+		Metric rAdj[3] = { 0.0, 0.0, 0.0 };
+	};
+
+enum class EDamageMethodTarget
+	{
+	targetNone =							-100,	//	Uninitialized or error type
+
+	targetItem =							0,		//	When checking for a specific item's adjustment
+	targetShip =							1,
+	targetStation =							2,
+	};
+
+enum class EDamageMethodTargetPart
+	{
+	partNone =								-100,	//	Uninitialized or error type
+
+	partArmor =								0,
+	partShield =							1,
+	partHull =								2,		//	Includes compartments
+	};
+
+class CDamageMethodDesc
+	{
+	public:
+		static constexpr int MAX_DAMAGE_METHOD_LEVEL = 7;
+		static constexpr int MAX_DAMAGE_METHOD_LEVEL_COUNT = 8;
+
+		Metric GetDamageMethodAdj (int iLevel) const;
+		int GetRoundedDamageMethodAdj (int iLevel) const;
+		int GetStochasticDamageMethodAdj (int iLevel) const;
+		CString GetDamageMethodLabel (int iLevel) const;
+		CString GetDamageMethodPrefix () const { return m_sAttribPrefix; }
+		CString GetDamageMethodDisplay (int iLevel) const { return GetDamageMethodLabel(iLevel).GetLength() ? strCat(m_sAttribPrefix, GetDamageMethodLabel(iLevel)) : CONSTLIT(""); }
+		ALERROR InitFromArray (const TArray<double>& Adj, const TArray<const char*>& Labels, CString sAttribPrefix = "WMD");
+		ALERROR InitFromWMDLevel (SDesignLoadCtx &Ctx, const CString &sAdj, const CString &sLabels, CString sAttribPrefix = "WMD");
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
 
 	private:
@@ -676,7 +777,7 @@ class CMassDestructionDesc
 			CString sLabel = CONSTLIT("");				//	suffix to display in UI
 			};
 
-		SWMDLevelDesc m_Desc[MAX_WMD_LEVEL_COUNT];	//	Descriptor for computing adjustment
+		SWMDLevelDesc m_Desc[MAX_DAMAGE_METHOD_LEVEL_COUNT];	//	Descriptor for computing adjustment
 		CString m_sAttribPrefix = CONSTLIT("WMD");
 		int m_iMinDamage = 0;
 	};
