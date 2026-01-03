@@ -63,7 +63,7 @@ thread on the Kronosaur Productions forums.
 
 You may build your own copies of the game from source. These versions will not
 have the code to access the Kronosaur Multiverse however, but you can still
-use one of the Kronosaur-provided binaries in order to
+use one of the Kronosaur-provided binaries to access the multiverse.
 
 If you are downloading the repos in order to submit future pull requests, it is 
 worthwhile to keep repositories synced with kronosaur:
@@ -135,16 +135,16 @@ build the game with CHexarcServiceStub.cpp.
 Please see the contribution guidelines for information about best practices and
 style guides.
 
-[General Contribution Guidelines](Docs/Contributor_Guidelines.md)
+[General Contribution Guidelines](docs/CONTRIBUTING.md)
 
 Style & Contribution Guidelines:
 
-* [C++ Style Guide](Docs/Style_Guides/C++.md)
-* [TLisp Style Guide](Docs/Style_Guides/TLisp.md)
-* [XML Style Guide](Docs/Style_Guides/XML.md)
-* [Markdown (Documentation) Style Guide](Docs/Style_Guides/Markdown.md)
-* [In-game Text Style Guide](Docs/Style_Guides/Ingame_Text.md)
-* [Asset Style Guide](Docs/Style_Guides/Assets.md)
+* [C++ Style Guide](docs/Style_Guides/C++.md)
+* [TLisp Style Guide](docs/Style_Guides/TLisp.md)
+* [XML Style Guide](docs/Style_Guides/XML.md)
+* [Markdown (Documentation) Style Guide](docs/Style_Guides/Markdown.md)
+* [In-game Text Style Guide](docs/Style_Guides/Ingame_Text.md)
+* [Asset Style Guide](docs/Style_Guides/Assets.md)
 
 ### PULL REQUESTS
 
