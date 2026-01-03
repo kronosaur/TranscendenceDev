@@ -1,6 +1,6 @@
 # TRANSCENDENCE SOURCE CODE
 
-Copyright (c) 2003-2025 by Kronosaur Productions, LLC.
+Copyright (c) 2003-2026 by Kronosaur Productions, LLC.
 
 https://transcendence.kronosaur.com
 
