@@ -2,7 +2,7 @@
 
 <TranscendenceModule>
 
-	<!-- Slicer Cannon -->
+	<!-- Slicer Custom Equipment -->
 
 	<ItemType UNID="&itSlicerCannon;"
 			name=				"PM6 Slicer cannon"
@@ -10,7 +10,7 @@
 			value=				"30000"
 			mass=				"4000"
 			frequency=			"notrandom"
-			attributes=			"cannotOrder, EI; EnergyWeapon; MajorItem"
+			attributes=			"cannotOrder; custom; EI; EnergyWeapon; MajorItem"
 
 			description=		"A modified particle cannon firing crisscrossing beams."
 
