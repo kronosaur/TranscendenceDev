@@ -1484,9 +1484,24 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					{
 					CString sHelp = pItem->GetHelp();
 
-					//	If deprecated, skip
+					//	If deprecated or private, skip
 
-					if (!strStartsWith(sHelp, CONSTLIT("DEPRECATED")))
+					bool bSkip = false;
+
+					//	For primitives we just check the help text directly
+
+					if (pItem->IsPrimitive() && (strStartsWith(sHelp, CONSTLIT("DEPRECATED")) || strStartsWith(sHelp, CONSTLIT("PRIVATE"))))
+						bSkip = true;
+
+					//	Lambdas have to contain their signature as the first line of their help text, so we have to strip that off and then check
+
+					else if (pItem->IsLambdaFunction())
+						{
+						CString sHelpInner = strTrimWhitespace(strSubString(sHelp, strFind(sHelp, CONSTLIT("\n"))));
+						bSkip = strStartsWith(sHelpInner, CONSTLIT("DEPRECATED")) || strStartsWith(sHelpInner, CONSTLIT("PRIVATE"));
+						}
+
+					if (!bSkip)
 						{
 
 						CString sKey = pGlobals->GetKey(i);
@@ -1582,9 +1597,24 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					else if (sHelp.IsBlank())
 						sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
 
-					//	If the help text starts with DEPRECATED, then we skip it.
+					//	If deprecated or private, skip
 
-					if (strStartsWith(sHelp, CONSTLIT("DEPRECATED")))
+					bool bSkip = false;
+
+					//	For primitives we just check the help text directly
+
+					if (pItem->IsPrimitive() && (strStartsWith(sHelp, CONSTLIT("DEPRECATED")) || strStartsWith(sHelp, CONSTLIT("PRIVATE"))))
+						bSkip = true;
+
+					//	Lambdas have to contain their signature as the first line of their help text, so we have to strip that off and then check
+
+					else if (pItem->IsLambdaFunction())
+						{
+						CString sHelpInner = strTrimWhitespace(strSubString(sHelp, strFind(sHelp, CONSTLIT("\n"))));
+						bSkip = strStartsWith(sHelpInner, CONSTLIT("DEPRECATED")) || strStartsWith(sHelpInner, CONSTLIT("PRIVATE"));
+						}
+
+					if (bSkip)
 						{
 						}
 
