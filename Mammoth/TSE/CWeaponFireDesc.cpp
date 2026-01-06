@@ -1669,6 +1669,15 @@ DamageTypes CWeaponFireDesc::GetDamageType (void) const
 	return iType;
 	}
 
+//	GetFireDelay
+//
+//	Returns number of ticks to wait before we can shoot again.
+//
+Metric CWeaponFireDesc::GetFireDelay(void) const
+	{
+	return m_rFireRate / g_SecondsPerUpdate;
+	}
+
 CEffectCreator* CWeaponFireDesc::GetChargeEffect(void) const
 
 //	GetChargeEffect
@@ -2113,8 +2122,10 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			rFireRateSecs = (double)iFireRateSecs;
 		}
 
+	//	We store raw simulation seconds here to support variable tickrate
+
 	if (rFireRateSecs >= 0.0)
-		m_rFireRate = rFireRateSecs / STD_SECONDS_PER_UPDATE;
+		m_rFireRate = rFireRateSecs;
 	else
 		m_rFireRate = -1.0;
 

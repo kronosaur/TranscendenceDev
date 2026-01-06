@@ -2,36 +2,51 @@
 //
 //	String pattern package
 //	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
-//
-//	Pattern format:
-//
-//	%type
-//
-//	where type is one of the following:
-//
-//	%	Evaluates to a single percent sign
-//
-//	d	Argument is a signed 32-bit integer. The number is substituted
-//
-//	p	If the last integer argument not 1, then 's' is substituted.
-//		This is used to pluralize words in the English language.
-//
-//	s	Argument is a CString. The string is substituted
-//
-//	x	Argument is an unsigned 32-bit integer. The hex value is substituted
-//
-//	&	Followed by an XML entity and semicolon
 
 #include "PreComp.h"
 #include "Internets.h"
 
 void WritePadding (CString &sOutput, char chChar, int iLen);
 
-CString Kernel::strPattern (const CString &sPattern, LPVOID *pArgs)
-
 //	strPattern
 //
-//	Returns a string with a pattern substitution
+//	Returns a string with a pattern substitution:
+//
+//	%Type
+//	%ModifiersType
+//
+//	where type is one of the following:
+//
+//	d	Argument is a signed 32-bit integer. The number is substituted
+//		Supports the following modifiers:
+// 
+//		,	A leading comma means use a thousands separator 
+// 
+//		l	An l means to treat this as a 64-bit int instead
+// 
+//		0	Pad width with 0s (requires a width value)
+// 
+//		1-9	Enforce this width
+// 
+//	r	Argument is a double (64-bit float). The number is substituted.
+//
+//	p	If the last numeral argument not 1, then 's' is substituted.
+//		This is used to pluralize words in the English language.
+//
+//	s	Argument is a CString. The string is substituted
+//
+//	x	Argument is an unsigned 32-bit integer. The hex value is substituted
+//		Supports the following modifiers:
+// 
+//		0	Pad width with 0s (requires a width value)
+// 
+//		1-9	Enforce this width
+//
+//	%	Evaluates to a single percent sign
+//
+//	&	Followed by an XML entity and semicolon
+//
+CString Kernel::strPattern (const CString &sPattern, LPVOID *pArgs)
 
 	{
 	CString sOutput;
@@ -171,6 +186,32 @@ CString Kernel::strPattern (const CString &sPattern, LPVOID *pArgs)
 					pPos++;
 					iLength--;
 					}
+				else if (*pPos == 'r')
+					{
+					double *pVar = (double *)pArgs;
+
+					DWORD dwFlags = (b1000Separator ? FORMAT_THOUSAND_SEPARATOR : 0)
+						| (bPadWithZeros ? FORMAT_LEADING_ZERO : 0);
+
+					//	TODO: make a proper encoder for doubles
+
+					CString sNew = strFromDouble(*pVar);
+
+					sOutput.Append(sNew, CString::FLAG_ALLOC_EXTRA);
+
+					//	Remember the last integer (all we care about is whether it
+					//	is 1 or not, for pluralization).
+
+					iLastInteger = (*pVar == 1 ? 1 : 0);
+
+					//	Next
+
+					pArgs++;
+					pArgs++;
+
+					pPos++;
+					iLength--;
+					}
 				else if (*pPos == 'x' || *pPos == 'X')
 					{
 					int *pInt = (int *)pArgs;
@@ -258,11 +299,42 @@ CString Kernel::strPattern (const CString &sPattern, LPVOID *pArgs)
 	return CString(sOutput.GetPointer(), sOutput.GetLength());
 	}
 
-CString Kernel::strPatternSubst (CString sLine, ...)
-
 //	strPatternSubst
 //
-//	Substitutes patterns
+//	Substitutes patterns within a string: %Type or %ModifiersType
+//
+//	where type is one of the following:
+//
+//	d	Argument is a signed 32-bit integer. The number is substituted
+//		Supports the following modifiers:
+// 
+//		,	A leading comma means use a thousands separator 
+// 
+//		l	An l means to treat this as a 64-bit int instead
+// 
+//		0	Pad width with 0s (requires a width value)
+// 
+//		1-9	Enforce this width
+// 
+//	r	Argument is a double (64-bit float). The number is substituted.
+//
+//	p	If the last numeral argument was not 1, then 's' is substituted.
+//		This is used to pluralize words in the English language.
+//
+//	s	Argument is a CString. The string is substituted
+//
+//	x	Argument is an unsigned 32-bit integer. The hex value is substituted
+//		Supports the following modifiers:
+// 
+//		0	Pad width with 0s (requires a width value)
+// 
+//		1-9	Enforce this width
+//
+//	%	Evaluates to a single percent sign
+//
+//	&	Followed by an XML entity and semicolon
+//
+CString Kernel::strPatternSubst (CString sLine, ...)
 
 	{
 	char *pArgs;
