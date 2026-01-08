@@ -500,14 +500,14 @@
 										(= playerLevel -1)
 											(scrShowScreen gScreen &dsRPGDialog; { desc:(scrTranslate gScreen 'descTooManyFailures) })
 
-										;	Already a legend
+										;	Already a legend and not in sandbox mode
 										
-										(= playerLevel 4)
+										(and (= playerLevel 4) (not (korIsSandboxMode)))
 											(scrShowScreen gScreen &dsRPGDialog; { desc:(scrTranslate gScreen 'descAlreadyALegend) })
 											
-										;	If the main stronghold is destroyed, no need for escorts
+										;	If the main stronghold is destroyed and not in sandbox mode, no need for escorts
 										
-										(objIsAbandoned (objGetObjRefData gSource 'charonStronghold))
+										(and (objIsAbandoned (objGetObjRefData gSource 'charonStronghold)) (not (korIsSandboxMode)))
 											(scrShowScreen gScreen &dsRPGDialog; { desc:(scrTranslate gScreen 'descNoEscortsNeeded) })
 											
 										;	If we failed to destroy stronghold, we stop missions
@@ -515,9 +515,9 @@
 										(objGetData gSource 'charonDominates)
 											(scrShowScreen gScreen &dsRPGDialog; { desc:(scrTranslate gScreen 'descFreightersGrounded) })
 											
-										;	If the Charon Fortress is destroyed, no missions
+										;	If the Charon Fortress is destroyed and not in sandbox mode, no missions
 										
-										(= (typGetGlobalData &stCharonPirateFortress; 'status) 'destroyed)
+										(and (= (typGetGlobalData &stCharonPirateFortress; 'status) 'destroyed) (not (korIsSandboxMode)))
 											(scrShowScreen gScreen &dsRPGDialog; { desc:(scrTranslate gScreen 'descFortressDestroyed) })
 											
 										;	If we're giving out escort missions, then show the list of
@@ -1615,22 +1615,44 @@
 			(setq korTypGetMinLevel (lambda (typ)
 				"Get the minimum rank required for escorting this type"
 				(or
-					;	New method
-					(typ@ typ 'korolov.minLevel)
+					(switch
+						;	New method via properties
+						(typ@ typ 'korolov.containerPrice.0)
+							0
+						(typ@ typ 'korolov.containerPrice.1)
+							1
+						(typ@ typ 'korolov.containerPrice.2)
+							2
+						(typ@ typ 'korolov.containerPrice.3)
+							3
+						(typ@ typ 'korolov.containerPrice.4)
+							4
 
-					;	Legacy method
-					(typGetStaticData typ 'korolovMinLevel)
+						;	Legacy method
+						(typGetStaticData typ 'korolovMinLevel)
+						)
 					)
 				))
 
 			(setq korObjGetMinLevel (lambda (obj)
 				"Get the minimum rank required for escorting this object"
 				(or
-					;	New method
-					(obj@ obj 'korolov.minLevel)
+					(switch
+						;	New method via properties
+						(obj@ obj 'korolov.containerPrice.0)
+							0
+						(obj@ obj 'korolov.containerPrice.1)
+							1
+						(obj@ obj 'korolov.containerPrice.2)
+							2
+						(obj@ obj 'korolov.containerPrice.3)
+							3
+						(obj@ obj 'korolov.containerPrice.4)
+							4
 
-					;	Legacy method
-					(objGetStaticData obj 'korolovMinLevel)
+						;	Legacy method
+						(objGetStaticData obj 'korolovMinLevel)
+						)
 					)
 				))
 
@@ -1979,8 +2001,8 @@
 					)
 				))
 
-			;	Calculate the cargo value and escort fees for a Korolov freighter
 			(setq korCalculateCargo (lambda (escortType escortLevel oneWay)
+				"Calculate the cargo value and escort fees for a Korolov freighter"
 				(block (
 					(escortRate (or
 						;	New method
@@ -1995,7 +2017,7 @@
 					;	Figure out the price per container of the cargo
 					(setq pricePerContainer (or
 						;	New method
-						(@ (typ@ escortType 'korolov.containerPrice) escortLevel)
+						(typ@ escortType (cat 'korolov.containerPrice. escortLevel))
 
 						;	1.8-1.9 method
 						(eval (@ (typGetStaticData escortType 'korolov.containerPrice) escortLevel))
