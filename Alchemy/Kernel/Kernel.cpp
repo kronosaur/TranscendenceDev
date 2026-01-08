@@ -408,5 +408,5 @@ DWORD WINAPI kernelThreadProc (LPVOID pData)
 
 void kernelHandleWin32Exception (unsigned code, EXCEPTION_POINTERS* info)
 	{
-	throw CException(ERR_WIN32_EXCEPTION);
+	throw CException(ERR_WIN32_EXCEPTION, code, info);
 	}
