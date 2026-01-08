@@ -51,7 +51,7 @@ static constexpr const char *FEEDBACK[] =
 	"Amariithynar",
 	"Anakey",
 	"Androgeos",
-	"Barj�k Andr�s",
+	"Barj\xE1k Andr\xE1s",
 	"Aniki",
 	"Apemant",
 	"Aquilai",
