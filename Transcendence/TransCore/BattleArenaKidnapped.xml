@@ -81,6 +81,8 @@
 					(arenaObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
 					(destObj (objGetObjByID (msnGetData gSource 'stationID)))
 					kateMorgentalObj anchorObj
+					navExitObj navLLObj navULObj navLRObj navURObj
+					navFirst navSecond
 					targetObj
 					)
 
@@ -98,7 +100,7 @@
 					(shpOrder targetObj 'guard destObj)
 					(msnSetData gSource 'targetID (objGetID targetObj))
 
-					;	Create a marker for the cruiser
+					;	Create a spawn marker for the cruiser
 
 					(setq anchorObj (sysCreateMarker "Morgental cruiser anchor" (sysVectorPolarOffset arenaObj 270 20) &svCorporate;))
 					(msnSetData gSource 'anchorID (objGetID anchorObj))
@@ -113,9 +115,45 @@
 							)
 						)
 
-					;	Orbit the black market station waiting for the player
+					;	Create nav markers for the cruiser
+
+					(setq navExitObj (sysCreateMarker "Arena Nav Lower Left" (sysVectorPolarOffset arenaObj 270 100) &svCorporate;))
+					(setq navLLObj (sysCreateMarker "Arena Nav Lower Left" (sysVectorPolarOffset arenaObj 225 100) &svCorporate;))
+					(setq navULObj (sysCreateMarker "Arena Nav Upper Left" (sysVectorPolarOffset arenaObj 135 100) &svCorporate;))
+					(setq navLRObj (sysCreateMarker "Arena Nav Lower Right" (sysVectorPolarOffset arenaObj 315 100) &svCorporate;))
+					(setq navURObj (sysCreateMarker "Arena Nav Upper Right" (sysVectorPolarOffset arenaObj 45 100) &svCorporate;))
+
+					;	Figure if Kate needs to move to the left or right of the arena to safely reach her target
+
+					(if (ls (objGetDistance navLLObj destObj) (objGetDistance navLRObj destObj))
+						(setq navFirst navLLObj)
+						(setq navFirst navLRObj)
+						)
+
+					;	Figure out if Kate then needs to move up and around the Arena
+
+					(if (= navFirst navLLObj)
+						(if (ls (objGetDistance navLLObj destObj) (objGetDistance navULObj destObj))
+							(setq navSecond Nil)
+							(setq navSecond navULObj)
+							)
+						(if (ls (objGetDistance navLRObj destObj) (objGetDistance navURObj destObj))
+							(setq navSecond Nil)
+							(setq navSecond navURObj)
+							)
+						)
+
+					;	Tell Kate how to leave the arena without getting stuck
 
 					(shpCancelOrders kateMorgentalObj)
+					(shpOrder kateMorgentalObj 'approach navExitObj 10)
+					(shpOrder kateMorgentalObj 'approach navFirst 10)
+					(if navSecond
+						(shpOrder kateMorgentalObj 'approach navSecond 10)
+						)
+
+					;	Queue up Kate's orders to orbit the black market station waiting for the player
+
 					(shpOrder kateMorgentalObj 'approach destObj 180)
 					(shpOrder kateMorgentalObj 'fireEvent gSource 'OnKateInPosition)
 					(shpOrder kateMorgentalObj 'orbit destObj 180)
