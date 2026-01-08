@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <memory>
 #include "Kernel.h"
 #include "KernelObjID.h"
 
