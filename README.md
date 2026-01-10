@@ -87,7 +87,7 @@ when installing DirectX SDKs:
 
 [MSVC++ Redistributable Requirements](http://support.microsoft.com/kb/2728613)
 
-Use Microsoft Visual Studio 2019 or later. Open `File > Open > Project/Solution` 
+Use Microsoft Visual Studio 2026 or later. Open `File > Open > Project/Solution` 
 `<Repo Root>/Transcendence/Transcendence.sln`, which is the Transcendence 
 solution file. The following warnings, if shown under `Output` from Solution, 
 may be safely ignored:
