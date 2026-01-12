@@ -16,6 +16,9 @@ struct SSystemCreateCtx;
 
 //	CodeChain context
 
+#define PFX_PROPERTY_OVERRIDE CONSTLIT("@.core.override.")
+#define PFX_PROPERTY_OVERRIDE_LENGTH 16	//	this is used for strSlice to remove the prefix when reporting keys
+
 enum ECodeChainEvents
 	{
 	eventNone =							0,
@@ -241,25 +244,27 @@ class CAttributeDataBlock
 			ETransferOptions iOption;
 			};
 
-		CAttributeDataBlock (void);
+		CAttributeDataBlock ();
 		CAttributeDataBlock (const CAttributeDataBlock &Src);
 		CAttributeDataBlock (CAttributeDataBlock &&Src) noexcept;
 		CAttributeDataBlock &operator= (const CAttributeDataBlock &Src);
 		CAttributeDataBlock &operator= (CAttributeDataBlock &&Src) noexcept;
-		~CAttributeDataBlock (void);
+		~CAttributeDataBlock ();
 
+		void ClearPropertyOverride (const CString &sAttrib);
 		void Copy (const CAttributeDataBlock &Src, const TSortMap<CString, STransferDesc> &Options);
-		void DeleteAll (void) { CleanUp(); }
+		void DeleteAll () { CleanUp(); }
+		void DeleteEntry (const CString &sAttrib);
 		bool FindDataAsItem (const CString &sAttrib, ICCItemPtr &pResult) const;
 		bool FindObjRefData (CSpaceObject *pObj, CString *retsAttrib = NULL) const;
 		ICCItemPtr GetData (int iIndex) const;
-		ICCItemPtr GetDataAsItem (const CString &sAttrib) const;
+		ICCItemPtr GetDataAsItem (const CString &sAttrib, bool *retbFound = NULL) const;
 		const CString &GetDataAttrib (int iIndex) const { return m_Data.GetKey(iIndex); }
-		int GetDataCount (void) const { return m_Data.GetCount(); }
+		int GetDataCount () const { return m_Data.GetCount(); }
 		CSpaceObject *GetObjRefData (const CString &sAttrib) const;
 		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL);
 		bool IsDataNil (const CString &sAttrib) const;
-		bool IsEmpty (void) const { return (m_Data.GetCount() == 0 && m_pObjRefData == NULL); }
+		bool IsEmpty () const { return (m_Data.GetCount() == 0 && m_pObjRefData == NULL); }
 		bool IsEqual (const CAttributeDataBlock &Src);
 		void LoadObjReferences (CSystem *pSystem);
 		void MergeFrom (const CAttributeDataBlock &Src);
@@ -268,6 +273,7 @@ class CAttributeDataBlock
 		void ReadFromStream (SLoadCtx &Ctx);
 		void ReadFromStream (IReadStream *pStream);
 		void SetData (const CString &sAttrib, const ICCItem *pItem);
+		void SetPropertyOverride (const CString &sAttrib, const ICCItem *pItem);
 		void SetFromXML (CXMLElement *pData);
 		void SetObjRefData (const CString &sAttrib, CSpaceObject *pObj);
 		void WriteToStream (IWriteStream *pStream, CSystem *pSystem = NULL);
@@ -291,6 +297,9 @@ class CAttributeDataBlock
 
 		void CleanUp (void);
 		void CleanUpObjRefs (void);
+		CString ConvertToOverrideKey (const CString &sAttrib) const { return strCat(PFX_PROPERTY_OVERRIDE, sAttrib); }
+		CString ConvertFromOverrideKey (const CString &sAttrib) const { return strSlice(sAttrib, PFX_PROPERTY_OVERRIDE_LENGTH); }
+		bool IsOverrideKey (CString &sAttrib) { return strStartsWith(sAttrib, PFX_PROPERTY_OVERRIDE); }
 		void Copy (const CAttributeDataBlock &Copy);
 		void CopyObjRefs (SObjRefEntry *pSrc);
 		bool IsXMLText (const CString &sData) const;

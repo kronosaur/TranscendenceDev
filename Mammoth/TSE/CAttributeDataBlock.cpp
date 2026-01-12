@@ -169,12 +169,28 @@ void CAttributeDataBlock::CopyObjRefs (SObjRefEntry *pSrc)
 		}
 	}
 
-bool CAttributeDataBlock::FindDataAsItem (const CString &sAttrib, ICCItemPtr &pResult) const
+void CAttributeDataBlock::DeleteEntry(const CString & sAttrib)
+	{
+	SDataEntry *pEntry = m_Data.GetAt(sAttrib);
+	
+	if (pEntry)
+		{
+		//	remove our reference to this data
+		pEntry->pData->Discard();
+
+		//	delete it from our data
+		m_Data.DeleteAt(sAttrib);
+		}
+	}
 
 //	FindDataAsItem
 //
 //	Returns a CodeChain item (which must be freed by the caller). Returns NULL
 //	if the data is not found.
+//  The distinction between returning NULL & false vs Nil & true is important for
+//  property overrides, which may exist and be Nil.
+//
+bool CAttributeDataBlock::FindDataAsItem (const CString &sAttrib, ICCItemPtr &pResult) const
 
 	{
 	const SDataEntry *pEntry = m_Data.GetAt(sAttrib);
@@ -220,7 +236,7 @@ ICCItemPtr CAttributeDataBlock::GetData (int iIndex) const
 	return Entry.pData;
 	}
 
-ICCItemPtr CAttributeDataBlock::GetDataAsItem (const CString &sAttrib) const
+ICCItemPtr CAttributeDataBlock::GetDataAsItem (const CString &sAttrib, bool *retbFound) const
 
 //	GetDataAsItem
 //
@@ -237,6 +253,11 @@ ICCItemPtr CAttributeDataBlock::GetDataAsItem (const CString &sAttrib) const
 			pResult->SetAt(m_Data.GetKey(i), pValue);
 			}
 
+		//	getting the table always counts as found (our caller handles if m_pExtra is NULL)
+
+		if (retbFound)
+			*retbFound = true;
+
 		if (pResult->GetCount() == 0)
 			return ICCItemPtr::Nil();
 		else
@@ -246,7 +267,15 @@ ICCItemPtr CAttributeDataBlock::GetDataAsItem (const CString &sAttrib) const
 		{
 		const SDataEntry *pEntry = m_Data.GetAt(sAttrib);
 		if (pEntry == NULL)
+			{
+			if (retbFound)
+				*retbFound = false;
+
 			return ICCItemPtr(ICCItem::Nil);
+			}
+
+		if (retbFound)
+			*retbFound = true;
 
 		return ICCItemPtr(pEntry->pData->CloneContainer());
 		}
@@ -633,13 +662,19 @@ void CAttributeDataBlock::ReadFromStream (IReadStream *pStream)
 		}
 	}
 
-void CAttributeDataBlock::SetData (const CString &sAttrib, const ICCItem *pItem)
-
 //	SetData
 //
 //	Sets string data associated with attribute
+//	Deletes data if value is Nil
+//
+void CAttributeDataBlock::SetData (const CString &sAttrib, const ICCItem *pItem)
 
 	{
+	//	You must use SetDataOverride to set these
+
+	if (strStartsWith(sAttrib, PFX_PROPERTY_OVERRIDE))
+		return;
+
 	if (strEquals(sAttrib, CONSTLIT("*")))
 		{
 		m_Data.DeleteAll();
@@ -670,6 +705,36 @@ void CAttributeDataBlock::SetData (const CString &sAttrib, const ICCItem *pItem)
 		SDataEntry *pEntry = m_Data.SetAt(sAttrib);
 		pEntry->pData = ICCItemPtr(pItem->CloneContainer());
 		}
+	}
+
+//	ClearPropertyOverride
+//
+//	Deletes the entry at sAttrib. Normally this
+//	is done by setting Nil, but an override may
+//	need to explicitly be Nil, thus an explicit
+//	clear is needed.
+//
+void CAttributeDataBlock::ClearPropertyOverride (const CString &sAttrib)
+
+	{
+	CString sKey = ConvertFromOverrideKey(sAttrib);
+	m_Data.DeleteAt(sKey);
+	}
+
+//	SetPropertyOverride
+//
+//	Sets string data associated with attribute
+//	Sets data even if it is Nil
+//
+void CAttributeDataBlock::SetPropertyOverride (const CString &sAttrib, const ICCItem *pItem)
+
+	{
+	if (strEquals(sAttrib, CONSTLIT("*")))
+		return SetData(sAttrib, pItem);
+
+	CString sKey = ConvertToOverrideKey(sAttrib);
+	SDataEntry *pEntry = m_Data.SetAt(sKey);
+	pEntry->pData = ICCItemPtr(pItem->CloneContainer());
 	}
 
 void CAttributeDataBlock::SetFromXML (CXMLElement *pData)

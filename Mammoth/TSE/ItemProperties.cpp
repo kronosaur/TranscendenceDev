@@ -10,28 +10,74 @@
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
 #define PROPERTY_DEFECTIVE_ENHANCEMENT			CONSTLIT("defectiveEnhancement")
 #define PROPERTY_DESCRIPTION					CONSTLIT("description")
+
 #define PROPERTY_DISRUPTED						CONSTLIT("disrupted")
 #define PROPERTY_ENHANCEMENT					CONSTLIT("enhancement")
 #define PROPERTY_HAS_USE_SCREEN					CONSTLIT("hasUseScreen")
 #define PROPERTY_INC_CHARGES					CONSTLIT("incCharges")
 #define PROPERTY_INSTALLED						CONSTLIT("installed")
+
 #define PROPERTY_KNOWN							CONSTLIT("known")
 #define PROPERTY_LEVEL  						CONSTLIT("level")
 #define PROPERTY_MAX_CHARGES  					CONSTLIT("maxCharges")
 #define PROPERTY_MAX_LEVEL  					CONSTLIT("maxLevel")
 #define PROPERTY_MIN_LEVEL  					CONSTLIT("minLevel")
+
 #define PROPERTY_MASS_BONUS_PER_CHARGE			CONSTLIT("massBonusPerCharge")
 #define PROPERTY_PRICE							CONSTLIT("price")
 #define PROPERTY_REFERENCE						CONSTLIT("reference")
 #define PROPERTY_ROOT_NAME						CONSTLIT("rootName")
 #define PROPERTY_SLOT_INDEX						CONSTLIT("slotIndex")
+
 #define PROPERTY_TRADE_ID						CONSTLIT("tradeID")
 #define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
 #define PROPERTY_VARIANT						CONSTLIT("variant")
 #define PROPERTY_UNKNOWN_TYPE					CONSTLIT("unknownType")
 #define PROPERTY_UNKNOWN_TYPE_INDEX				CONSTLIT("unknownTypeIndex")
+
 #define PROPERTY_USED							CONSTLIT("used")
 #define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
+
+//	Eventually this should be replaced with entries in m_PropertyTable
+
+const std::initializer_list<CString> aCITEM_ENGINE_PROPERTIES = {
+	PROPERTY_CAN_BE_USED,
+	PROPERTY_COMPONENTS,
+	PROPERTY_DAMAGED,
+	PROPERTY_DEFECTIVE_ENHANCEMENT,
+	PROPERTY_DESCRIPTION,
+
+	PROPERTY_DISRUPTED,
+	PROPERTY_ENHANCEMENT,
+	PROPERTY_HAS_USE_SCREEN,
+	PROPERTY_INC_CHARGES,
+	PROPERTY_INSTALLED,
+
+	PROPERTY_KNOWN,
+	PROPERTY_LEVEL,
+	PROPERTY_MAX_CHARGES,
+	PROPERTY_MAX_LEVEL,
+	PROPERTY_MIN_LEVEL,
+
+	PROPERTY_MASS_BONUS_PER_CHARGE,
+	PROPERTY_PRICE,
+	PROPERTY_REFERENCE,
+	PROPERTY_ROOT_NAME,
+	PROPERTY_SLOT_INDEX,
+
+	PROPERTY_TRADE_ID,
+	PROPERTY_VALUE_BONUS_PER_CHARGE,
+	PROPERTY_VARIANT,
+	PROPERTY_UNKNOWN_TYPE,
+	PROPERTY_UNKNOWN_TYPE_INDEX,
+
+	PROPERTY_USED,
+	PROPERTY_WEAPON_TYPES,
+	};
+
+static const TArray<CString> CITEM_ENGINE_PROPERTIES_LIST(aCITEM_ENGINE_PROPERTIES);
+
+static const TMap<CString, int> CITEM_ENGINE_PROPERTIES(CITEM_ENGINE_PROPERTIES_LIST);
 
 TPropertyHandler<CItem> CItem::m_PropertyTable = std::array<TPropertyHandler<CItem>::SPropertyDef, 1> {{
 		{
@@ -91,27 +137,51 @@ bool CItem::FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult) c
 		}
 	}
 
-ICCItemPtr CItem::GetItemPropertyKeys (CCodeChainCtx& CCCtx, CItemCtx& Ctx, bool bOnType) const
+//	FindCustomPropertyOverride
+//
+//	Attempt to retrieve a custom property override.
+//  Returns a bool if it found a custom property override.
+//
+bool CItem::FindCustomPropertyOverride (const CString& sProperty, ICCItemPtr& pResult) const
+	{
+	CString sKey = strCat(PFX_PROPERTY_OVERRIDE, sProperty);
+	if (m_pExtra)
+		{
+		return m_pExtra->m_Data.FindDataAsItem(sKey, pResult);
+		}
+	return false;
+	}
+
+//	GetItemPropertyKeys
+// 
+//	Returns an ICCItemPtr to a CCLinkedList of all property
+//  keys on this object.
+//
+ICCItemPtr CItem::GetItemPropertyKeys (CCodeChainCtx& CCCtx, CItemCtx& Ctx, bool bOnType, EDesignDataTypes iType) const
 	{	
 	if (!m_pItemType)
 		return ICCItemPtr::Nil();
 
 	ICCItemPtr pList(CCCtx.GetCC().CreateLinkedList());
-	TMap<CString, int> mapSeen;
-
-	//	Check type & custom properties
-
-	TArray<CString> aTypeKeys = m_pItemType->GetDataKeys(EDesignDataTypes::ePropertyData);
-
-	for (int i = 0; i < aTypeKeys.GetCount(); i++)
+	bool bGetEngineKeys = false;
+	bool bGetOverrideKeys = false;
+	switch (iType)
 		{
-		pList->AppendString(aTypeKeys[i]);
-		mapSeen.Insert(aTypeKeys[i]);
+		case EDesignDataTypes::ePropertyData:
+		case EDesignDataTypes::ePropertyEngineData:
+			bGetEngineKeys = true;
+			break;
+		case EDesignDataTypes::ePropertyOverrideData:
+			bGetOverrideKeys = true;
 		}
+	TMap<CString, int> mapSeen = bGetEngineKeys ? TMap<CString, int>(CITEM_ENGINE_PROPERTIES) : TMap<CString, int>();
+
+	for (int i = 0; i < CITEM_ENGINE_PROPERTIES_LIST.GetCount() && bGetEngineKeys; i++)
+		pList->AppendString(CITEM_ENGINE_PROPERTIES_LIST[i]);
 
 	//	Check new engine instance properties
 
-	for (int i = 0; i < m_PropertyTable.GetPropertyCount(); i++)
+	for (int i = 0; i < m_PropertyTable.GetPropertyCount() && bGetEngineKeys; i++)
 		{
 		CString sKey = m_PropertyTable.GetPropertyName(i);
 		if (mapSeen.Find(sKey))
@@ -120,12 +190,45 @@ ICCItemPtr CItem::GetItemPropertyKeys (CCodeChainCtx& CCCtx, CItemCtx& Ctx, bool
 		mapSeen.Insert(sKey);
 		}
 
-	//	Todo: switch old engine instance properties over to the new system
+	//	If we are just getting override keys, we already skipped
+	//  the engine keys and can just process and return
+
+	if (bGetOverrideKeys)
+		{
+		if (m_pExtra)
+			{
+			for (int i = 0; i < m_pExtra->m_Data.GetDataCount(); i++)
+				{
+				CString sKey = m_pExtra->m_Data.GetDataAttrib(i);
+				if (strStartsWith(sKey, PFX_PROPERTY_OVERRIDE))
+					{
+					sKey = strSlice(sKey, PFX_PROPERTY_OVERRIDE_LENGTH);
+					if (mapSeen.Find(sKey))
+						continue;
+					pList->AppendString(sKey);
+					mapSeen.Insert(sKey);
+					}
+				}
+			}
+
+		return pList;
+		}
+
+	//	Check type & custom properties
+
+	TArray<CString> aTypeKeys = m_pItemType->GetDataKeys(iType);
+
+	for (int i = 0; i < aTypeKeys.GetCount(); i++)
+		{
+		CString sKey = aTypeKeys[i];
+		if (mapSeen.Find(sKey))
+			continue;
+		pList->AppendString(sKey);
+		mapSeen.Insert(sKey);
+		}
 
 	return pList;
 	}
-
-ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty, bool bOnType) const
 
 //	GetItemProperty
 //
@@ -175,6 +278,8 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 //	CItemType::OnGetProperty: We call GetItemProperty with an empty CItemCtx.
 //		Since GetItemProperty ends up calling CDesignType::FindBaseProperty, we
 //		never return NULL (we always handle it).
+//
+ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty, bool bOnType) const
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
@@ -183,6 +288,11 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 
 	if (m_pItemType == NULL)
 		return CC.CreateNil();
+
+	//	Handle property overrides first.
+
+	else if (FindCustomPropertyOverride(sProperty, pResult))
+		return pResult->Reference();
 
 	//	Handle custom properties first.
 
@@ -429,11 +539,11 @@ CString CItem::GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const
 	return sValue;
 	}
 
-bool CItem::SetCustomProperty (const CString &sProperty, const ICCItem &Value)
-
 //	SetCustomProperty
 //
 //	Sets a custom property. Returns TRUE if the property was found.
+//
+bool CItem::SetCustomProperty (const CString &sProperty, const ICCItem &Value)
 
 	{
 	if (IsEmpty())
@@ -461,19 +571,45 @@ bool CItem::SetCustomProperty (const CString &sProperty, const ICCItem &Value)
 		}
 	}
 
-ESetPropertyResult CItem::SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError)
+//	ClearCustomPropertyOverride
+//
+//	Clears a custom property override. Returns TRUE if the operation was successful.
+//
+bool CItem::ClearCustomPropertyOverride (const CString &sProperty)
+
+	{
+	CString sKey = strCat(PFX_PROPERTY_OVERRIDE, sProperty);
+	Extra();
+	m_pExtra->m_Data.DeleteEntry(sProperty);
+	return true;
+	}
+
+//	SetCustomPropertyOverride
+//
+//	Sets a custom property override. Returns TRUE if the operation was successful.
+//
+bool CItem::SetCustomPropertyOverride (const CString &sProperty, const ICCItem &Value)
+
+	{
+	CString sKey = strCat(PFX_PROPERTY_OVERRIDE, sProperty);
+	Extra();
+	m_pExtra->m_Data.SetData(sProperty, &Value);
+	return true;
+	}
 
 //	SetProperty
 //
 //	Sets item property. If we cannot set the property we return an error. If
 //	retsError is blank then we cannot set the property because the value is Nil.
+//
+ESetPropertyResult CItem::SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError)
 
 	{
 	CString sError;
 
 	if (IsEmpty())
 		{
-		if (retsError) *retsError = CONSTLIT("Unable to set propery on a null item.");
+		if (retsError) *retsError = CONSTLIT("Unable to set property on a null item.");
 		return ESetPropertyResult::error;
 		}
 
@@ -619,4 +755,77 @@ ESetPropertyResult CItem::SetProperty (CItemCtx &Ctx, const CString &sName, cons
 
 	return ESetPropertyResult::set;
 	}
+
+//	SetPropertyOverride
+//
+//	Sets item property override. If we cannot set the property we return an error. If
+//	retsError is blank then we cannot set the property because the value is Nil.
+//
+ESetPropertyResult CItem::SetPropertyOverride (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError)
+
+	{
+	CString sError;
+	ICCItemPtr pUnused;
+
+	if (IsEmpty())
+		{
+		if (retsError) *retsError = CONSTLIT("Unable to set property override on a null item.");
+		return ESetPropertyResult::error;
+		}
+
+	//	Cannot override engine properties
+
+	else if (CITEM_ENGINE_PROPERTIES.Find(sName) || m_PropertyTable.FindProperty(Ctx.GetItem(), sName, pUnused))
+		{
+		pUnused->Discard();
+		return SetProperty(Ctx, sName, pValue, bOnType, retsError);
+		}
+
+	//	If this is armor, let it handle engine properties
+
+	else if (CArmorClass *pArmor = GetType()->GetArmorClass())
+		return pArmor->SetItemProperty(Ctx, *this, sName, (pValue ? *pValue : *ICCItemPtr::Nil()), retsError);
+
+	//	If this is an installed device, then let it handle engine properties
+
+	else if (CInstalledDevice *pDevice = Ctx.GetDevice())
+		return pDevice->SetProperty(Ctx, sName, pValue, retsError);
+
+	//	Otherwise set a custom property override
+
+	else if (SetCustomPropertyOverride(sName, (pValue ? *pValue : *ICCItemPtr::Nil())))
+		return ESetPropertyResult::set;
+	//	Otherwise, nothing
+
+	if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to set item property override %s"), sName);
+	return ESetPropertyResult::notFound;
+	}
+
+//	ClearPropertyOverride
+//
+//	Sets item property override. If we cannot set the property we return an error. If
+//	retsError is blank then we cannot set the property because the value is Nil.
+//
+ESetPropertyResult CItem::ClearPropertyOverride(CItemCtx &Ctx, const CString &sName, bool bOnType, CString *retsError)
+
+	{
+	CString sError;
+	ICCItemPtr pUnused;
+
+	if (IsEmpty())
+		{
+		if (retsError) *retsError = CONSTLIT("Unable to clear property override on a null item.");
+		return ESetPropertyResult::error;
+		}
+
+	//	Otherwise clear a custom property override if it is present
+
+	else if (ClearCustomPropertyOverride(sName))
+		return ESetPropertyResult::set;
+	//	Otherwise, nothing
+
+	if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to clear item property override %s"), sName);
+	return ESetPropertyResult::notFound;
+	}
+
 
