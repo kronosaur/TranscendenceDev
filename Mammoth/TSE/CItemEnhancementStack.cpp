@@ -72,15 +72,24 @@ void CItemEnhancementStack::AccumulateAttributes (const CItem &Item, TArray<SDis
 		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+fast"), true));
 
 	//	Power adjustment
-	//	This is relative to the inverse activate delay adjustment
-	//	This way we can represent the power consumed per activation accurately
 
-	int iInverseDelayAdj = mathRound(100 * 100.0 / iFireAdj);
 	int iPowerAdj = GetPowerAdj();
-	if (iPowerAdj > iInverseDelayAdj)
+	if (iPowerAdj > 100)
 		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("-power drain"), true));
-	else if (iPowerAdj < iInverseDelayAdj)
+	else if (iPowerAdj < 100)
 		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+power save"), true));
+	else
+		{
+		//	We need to check if our activation power is different
+		//	This is relative to the inverse activate delay adjustment
+		//	This way we can represent the power consumed per activation accurately
+		int iInverseDelayAdj = mathRound(100 * 100.0 / iFireAdj);
+		int iActivePowerAdj = GetActivePowerAdj();
+		if (iActivePowerAdj > iInverseDelayAdj)
+			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("-power drain"), true));
+		else if (iActivePowerAdj < iInverseDelayAdj)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+power save"), true));
+		}
 
 	//	Add bonus
 
@@ -443,11 +452,11 @@ int CItemEnhancementStack::GetPerceptionAdj () const
 	return iAdj;
 	}
 
-int CItemEnhancementStack::GetPowerAdj (void) const
-
 //	GetPowerAdj
 //
 //	Returns the power consumption adjustment
+//
+int CItemEnhancementStack::GetPowerAdj (void) const
 
 	{
 	int i;
@@ -456,6 +465,26 @@ int CItemEnhancementStack::GetPowerAdj (void) const
 	for (i = 0; i < m_Stack.GetCount(); i++)
 		{
 		int iAdj = m_Stack[i].GetPowerAdj();
+		if (iAdj != 100)
+			rValue = iAdj * rValue / 100.0;
+		}
+
+	return mathRound(rValue);
+	}
+
+//	GetPowerAdj
+//
+//	Returns the power consumption adjustment
+//
+int CItemEnhancementStack::GetActivePowerAdj (void) const
+
+	{
+	int i;
+
+	Metric rValue = 100.0;
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		{
+		int iAdj = m_Stack[i].GetActivePowerAdj();
 		if (iAdj != 100)
 			rValue = iAdj * rValue / 100.0;
 		}
