@@ -63,21 +63,24 @@ void CItemEnhancementStack::AccumulateAttributes (const CItem &Item, TArray<SDis
 			}
 		}
 
-	//	Power adjustment
-
-	int iPowerAdj = GetPowerAdj();
-	if (iPowerAdj > 100)
-		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("-power drain"), true));
-	else if (iPowerAdj < 100)
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+power save"), true));
-
-	//	Enhancements to fire rate
+	//	Enhancements to activate delay
 
 	int iFireAdj = GetActivateDelayAdj();
 	if (iFireAdj > 100)
 		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("-slow"), true));
 	else if (iFireAdj < 100)
 		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+fast"), true));
+
+	//	Power adjustment
+	//	This is relative to the inverse activate delay adjustment
+	//	This way we can represent the power consumed per activation accurately
+
+	int iInverseDelayAdj = mathRound(100 * 100.0 / iFireAdj);
+	int iPowerAdj = GetPowerAdj();
+	if (iPowerAdj > iInverseDelayAdj)
+		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("-power drain"), true));
+	else if (iPowerAdj < iInverseDelayAdj)
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+power save"), true));
 
 	//	Add bonus
 

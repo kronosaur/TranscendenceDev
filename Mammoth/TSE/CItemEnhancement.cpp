@@ -1602,6 +1602,14 @@ int CItemEnhancement::GetPowerAdj (void) const
 				}
 			}
 
+		case etSpeed:
+		case etSpeedOld:
+			{
+			int iDelayAdj = max(1, GetActivateRateAdj());
+			//	This still needs to be returned as a percent
+			return mathRound(100 * 100.0 / iDelayAdj);
+			}
+
 		default:
 			return 100;
 		}
