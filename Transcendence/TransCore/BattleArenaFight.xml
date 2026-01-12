@@ -143,7 +143,7 @@
 
 					;	Initialize data
 					(msnSetData gSource 'opponentArmor 100)
-					(msnSetData gSource 'lowestShields (if (objGetItems gPlayerShip "sI") 100 0))
+					(msnSetData gSource 'lowestShields (if (objGetItems gPlayerShip "sI") (objGetShieldLevel gPlayerShip) 0))
 					(msnSetData gSource 'lowestArmor (- 100 (objGetVisibleDamage gPlayerShip)))
 					(msnSetData gSource 'timeTo50 1000)
 					(msnSetData gSource 'timeTo25 1000)
@@ -222,6 +222,11 @@
 						)
 
 					;	Keep track of the lowest shield level reached (for the player's shields)
+					;
+					;	We skip this if the player never had shields with hp to begin with
+					;	Disabled, depleted, or things like a novaya armor system
+					;
+					;	This is because we initialized lowestShields to the starting HP which was 0
 					(if (ls shieldLevel (msnGetData gSource 'lowestShields))
 						(block Nil
 							(msnSetData gSource 'lowestShields shieldLevel)
