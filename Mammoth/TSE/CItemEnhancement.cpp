@@ -1578,11 +1578,13 @@ int CItemEnhancement::GetPerceptionAdj () const
 		}
 	}
 
-int CItemEnhancement::GetPowerAdj (void) const
-
 //	GetPowerAdj
 //
-//	Get the increase/decrease in power usage
+//	Get the increase/decrease in all power usage
+//	Only includes power use modifiers that affect both
+//  active and standby/idle power use
+//
+int CItemEnhancement::GetPowerAdj (void) const
 
 	{
 	switch (GetType())
@@ -1601,6 +1603,44 @@ int CItemEnhancement::GetPowerAdj (void) const
 					return 10;
 				}
 			}
+
+		default:
+			return 100;
+		}
+	}
+
+//	GetPowerAdj
+//
+//	Get the increases/decreases in power usage
+//	that apply when the device is activated
+//
+int CItemEnhancement::GetActivePowerAdj (void) const
+
+	{
+	switch (GetType())
+		{
+		case etPowerEfficiency:
+		{
+		int iLevel = GetLevel();
+
+		if (IsDisadvantage())
+			return 100 + (10 * iLevel);
+		else
+			{
+			if (iLevel >= 0 && iLevel <= 9)
+				return 100 - (10 * iLevel);
+			else
+				return 10;
+			}
+		}
+
+		case etSpeed:
+		case etSpeedOld:
+		{
+		int iDelayAdj = max(1, GetActivateRateAdj());
+		//	We multiply by 100 since it has to be returned as a %
+		return mathRound(100 * 100.0 / iDelayAdj);
+		}
 
 		default:
 			return 100;
