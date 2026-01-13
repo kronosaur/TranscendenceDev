@@ -2,12 +2,12 @@
 
 <TranscendenceModule>
 	
-	<!-- Level 2: Borer-class Gunship -->
+	<!-- Level 2: Borer-class Prospector -->
 
 	<ShipClass UNID="&scBorerStock;"
 			manufacturer=		"United African States"
 			class=				"Borer"
-			type=				"gunship"
+			type=				"prospector"
 
 			attributes=			""
 			inherit=			"&baHumanTechShip;"
@@ -72,6 +72,24 @@
 			fireAccuracy=		"70"
 			perception=			"4"
 			/>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				Borer series of prospectors are a common sight in
+				much of human space. Although they are slow and
+				limited in flight and combat capabilities, Borers
+				have established a reputation on being rugged and
+				relatively affordable designs, easily able to make
+				returns far greater than their purchase price.
+				
+				The original UAS Borer predates the Syrtis war, and
+				was instrumental in prospecting for the resources
+				used to build the Earth Command fleet.
+			</Text>
+		</Language>
+
 	</ShipClass>
 
 	<!-- Level 2: EI100 Freighter -->
@@ -147,6 +165,20 @@
 			perception=			"4"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				When the EI100 was first introduced in the late
+				2100s, it was a fast and affordable transport
+				able to quickly make interplanetary trips between
+				stations, ferrying passengers and cargo alike.
+
+				Today it still sees regular use as a budget freighter
+				completing low-volume last-leg deliveries.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 2: Sapphire Yacht -->
@@ -270,6 +302,20 @@
 			combatStyle=		"advanced"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				Zubrin's Sapphire-class is a small and sporty ship,
+				often being compared to planet-bound vintage sports
+				cars. The compact interior comes with a selection
+				of luxury finishes and options, though the small cabin
+				means that most customers use the Sapphire for short
+				in-system trips, rather than as a true yacht as Zubrin
+				likes to imply with their marketing.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 3: EI200 Freighter -->
@@ -346,6 +392,23 @@
 			perception=			"4"
 		/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				When the EI200 was introduced in 2205, coming out of
+				Earth Industries' then-new Theia Shipyards in Othrys,
+				it was heralded as a revolutionary new freighter that
+				improved on the EI100-class in just about every way.
+				As designed, it became the defacto standard for shipping
+				valuable goods and transporting VIPs.
+
+				These days, the EI200 is still a frequent sight in the
+				Commonwealth, transporting cargo that needs protection
+				from opportunistic pirates and raiders.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 3: Light IAV -->
@@ -423,6 +486,14 @@
 			perception=			"4"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				Insert Lore Here
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 4: Asterion-class Heavy Gunship -->
@@ -499,6 +570,20 @@
 			combatStyle=		"advanced"
 			ignoreShieldsDown=	"true"
 			/>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				The Asterion is well receieved among militias and
+				mercenaries alike for its durable design and reasonable
+				speed. NAMI offers the ship in a variety of configurations
+				ranging from designs meant for local security near Saint
+				Katherine's Star to variants equipped for the militia to
+				fight off Sung raiders.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 	
 	<!-- Level 4: Borer II-class Gunship -->
@@ -572,6 +657,22 @@
 			fireAccuracy=		"90"
 			perception=			"4"
 			/>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				After the Syrtis war, the UAS developed this upgraded version
+				of their venerable Borer class ships to enable prospecting for
+				valuable materials in more dangerous regions of space as part
+				of their effort to rebuild.
+
+				The ship became broadly popular among Commonwealth mining
+				operations in the Ungoverned Territories for its continued
+				focus on being a rugged no-frills design that can withstand
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 4: EI500 Freighter -->
@@ -686,6 +787,14 @@
 			fireAccuracy=		"85"
 			perception=			"4"
 			/>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				Insert Lore Here
+			</Text>
+		</Language>
 
 	</ShipClass>
 	
@@ -859,6 +968,14 @@
 			combatStyle=		"advanced"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				Insert Lore Here
+			</Text>
+		</Language>
+		
 	</ShipClass>
 	
 	<!-- Wolfen/C Variant 2: This is just a re-skinned Wolfen/C -->
@@ -1074,6 +1191,14 @@
 			perception=			"4"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				Insert Lore Here
+			</Text>
+		</Language>
+		
 	</ShipClass>
 	
 	<!-- Level 5: Armstrong-class Transport -->
@@ -1160,6 +1285,14 @@
 			combatStyle=		"standOff"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				Insert Lore Here
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 4: Borer III-class Gunship -->
@@ -1233,6 +1366,15 @@
 			fireAccuracy=		"90"
 			perception=			"4"
 			/>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				Insert Lore Here
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 6: Elixir-class Megayacht -->
@@ -1345,6 +1487,14 @@
 			combatStyle=		"standOff"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				Insert Lore Here
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 6: Scarab Freighter -->
@@ -1530,6 +1680,14 @@
 			perception=			"4"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				Insert Lore Here
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 7: Manticore-class Heavy Gunship -->
@@ -1716,6 +1874,15 @@
 			
 			combatStyle=		"advanced"
 			/>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				Insert Lore Here
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<ItemType UNID="&vtManticoreShieldPenalty;"
