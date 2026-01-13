@@ -3323,9 +3323,14 @@ int CWeaponClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 	TSharedPtr<CItemEnhancementStack> pEnhancements = Ctx.GetEnhancementStack();
 	if (pEnhancements)
 		{
-		int iAdj = pEnhancements->GetPowerAdj();
-		iPower = iPower * iAdj / 100;
-		iIdlePower = iIdlePower * iAdj / 100;
+		int iActiveAdj = pEnhancements->GetActivePowerAdj();
+		iPower = iPower * iActiveAdj / 100;
+
+		if (retiIdlePowerUse)
+			{
+			int iAdj = pEnhancements->GetPowerAdj();
+			iIdlePower = iIdlePower * iAdj / 100;
+			}
 		}
 
 	if (retiIdlePowerUse)
