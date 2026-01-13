@@ -217,6 +217,11 @@
 	<!-- 01D0-01FF SOUND EFFECTS -->
 
 	<!ENTITY snDefaultShipScreenAmbient	"0x000301D0">
+
+	<!-- 0200-021F CORE SLOT ENHANCEMENTS I -->
+
+	<!ENTITY vtTurretSlotWithNonOmni	"0x00030200">
+	<!ENTITY rsItemsCore1				"0x00030201">
 	]>
 	
 <CoreLibrary
@@ -236,5 +241,6 @@
 	<Module filename="CoreItems.xml"/>
 	<Module filename="CorePlaceholders.xml"/>
 	<Module filename="CoreProjectileEffects.xml"/>
+	<Module filename="CoreSlotEnhancements.xml"/>
 
 </CoreLibrary>
