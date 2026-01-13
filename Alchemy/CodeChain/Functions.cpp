@@ -767,27 +767,82 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	return pResult;
 	}
 
+enum EComparisonResult
+	{
+	eGreaterType =	2,			//	First type is considered always greater than second type
+	eGreater =		1,			//	First value is considered greater than second value
+	eEqual =		0,			//	First and second value are considered equal
+	eLess =			-1,			//	First value is considered less than second value
+	eLessType =		-2,			//	First type is considered always less than second type
+
+	//	Special cases
+
+	eNotEqual =		-98,		//	When a valid comparison is non-equal but no possible deterministic order can be established (ex, comparing pointerType once that is implemented)
+	eDeclined =		-99,		//	We decline to compare these values due our type coersion settings
+
+	//	Error cases
+
+	eError =		-100,		//	Unreachable case was reached
+	eNotImplemented = -101,		//	Comparison type is not implemented
+	};
+
 bool CompareSucceeds (int iCompare, DWORD dwData)
 	{
+	//	If we get an error, something went wrong or wasnt implemented
+	//	Errors are always false, and always throw a debug assert
+
+	if (iCompare <= eError)
+		{
+		ASSERT(false);
+		return false;
+		}
+
+	//	Inequality operators are the only operators permitted to
+	//	return "true" on declined result
+
+	if (dwData == FN_EQUALITY_NEQ)
+		return iCompare != eEqual;
+
+	//	All other operators return false on a declined result
+
+	if (iCompare == eDeclined)
+		return false;
+
+	//	If we just wanted to check compatibility, we can return True now
+	//	These are the only non-inequality operators allowed to return "true"
+	//	on a notEqual result
+
+	if (dwData == FN_EQUALITY_COMPARABLE)
+		return true;
+
+	//	All other operators return false on a notEqual result
+
+	if (iCompare == eNotEqual)
+		return false;
+
+	//	At this point we know we have a valid comparison
+
 	switch (dwData)
 		{
 		case FN_EQUALITY_EQ:
-			return (iCompare == 0);
-
-		case FN_EQUALITY_NEQ:
-			return (iCompare != 0);
+			return iCompare == eEqual;
 
 		case FN_EQUALITY_LESSER:
-			return (iCompare < 0);
+			return iCompare < eEqual;
 
 		case FN_EQUALITY_LESSER_EQ:
-			return (iCompare <= 0);
+			return iCompare <= eEqual;
 
 		case FN_EQUALITY_GREATER:
-			return (iCompare > 0);
+			return iCompare > eEqual;
 
 		case FN_EQUALITY_GREATER_EQ:
-			return (iCompare >= 0);
+			return iCompare >= eEqual;
+
+		case FN_EQUALITY_COMPARABLE:
+			return true;
+
+		//	If we reach this point, a new comparator function was not handled
 
 		default:
 			ASSERT(false);
@@ -806,7 +861,7 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 //	Additionally, for fnEqualityExact, it does not coerce types and handles case
 //	sensitivity.
 //
-//	Legacy operators (fnEquality)
+//	Legacy operators (fnEquality) - COERCE COMPATIBLE
 //	(eq exp1 exp2 ... expn)
 //	(neq exp1 exp2 ... expn)
 //	(gr exp1 exp2 ... expn)
@@ -814,7 +869,7 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 //	(ls exp1 exp2 ... expn)
 //	(leq exp1 exp2 ... expn)
 //	
-//	New operators (fnEqualityNumerals)
+//	New operators (fnEqualityNumerals) - COERCE FULL
 //	(= exp1 exp2 ... expn)
 //	(!= exp1 exp2 ... expn)
 //	(> exp1 exp2 ... expn)
@@ -822,7 +877,7 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 //	(< exp1 exp2 ... expn)
 //	(<= exp1 exp2 ... expn)
 //
-//	Exact equality (fnEqualityExact)
+//	Exact equality (fnEqualityExact) - COERCE NONE
 //	(=== exp1 exp2 ... expn)
 //	(!=== exp1 exp2 ... expn)
 
@@ -841,6 +896,7 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 
 	//	Special cases
 
+	bool bNegative = (dwData == FN_EQUALITY_NEQ); //	!= functions check if ANY are not equal, as the inverse to equality which checks if ALL are equal
 	bool bOk = true;
 	if (pArgs->GetCount() == 0
 			&& (dwCoerceFlags & HELPER_COMPARE_COERCE_FULL))
@@ -868,9 +924,13 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 				int iResult = HelperCompareItems(pPrev, pExp, dwCoerceFlags);
 				bOk = CompareSucceeds(iResult, dwData);
 
-				//	If we don't have a match, return
+				//	If we are an inequality and have a match (a comparison that is not equal) we can return
+				if (bOk && bNegative)
+					break;
 
-				if (!bOk)
+				//	If we don't have a match and aren't an inequality, return
+
+				if (!bOk && !bNegative)
 					break;
 				}
 
@@ -5476,29 +5536,61 @@ ICCItem *fnVector(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 		}
 	}
 
+//	CompareShapeArrays
+// 
+//	Helper function that does a basic comparison of shape arrays
+//	If they match, it returns true, otherwise, false.
+//
 bool CompareShapeArrays(TArray <int> arr0, TArray <int> arr1)
 	{
-	int i;
 	int numElements0 = arr0.GetCount();
 	int numElements1 = arr1.GetCount();
 
 	if (numElements0 != numElements1)
-		{
 		return false;
-		};
 
-	for (i = 0; i < numElements0; i++)
+	for (int i = 0; i < numElements0; i++)
 		{
 		if (arr0[i] != arr1[i])
-			{
 			return false;
-			};
 		};
 
 	return true;
 	};
 
-ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
+//	CompareShapeArraysAdv
+// 
+//	Helper function that does an advanced comparison of shape arrays
+//  -2 = array1 has more dimensions
+//  -1 = array1 has a large higher-order dimension first
+//	0 = same shape
+//  1 = array0 has a large higher-order dimension first
+//  2 = array0 has more dimensions
+//
+int CompareShapeArraysAdv(TArray <int> arr0, TArray <int> arr1)
+	{
+	int numElements0 = arr0.GetCount();
+	int numElements1 = arr1.GetCount();
+
+	//	Compare dimensionality
+
+	if (numElements0 > numElements1)
+		return eGreaterType;
+	else if (numElements0 < numElements1)
+		return eLessType;
+
+	//	Compare sizes of dimensions
+
+	for (int i = 0; i < numElements0; i++)
+		{
+		if (arr0[i] > arr1[i])
+			return eGreater;
+		else if (arr0[i] < arr1[i])
+			return eLess;
+		};
+
+	return eEqual;
+	};
 
 //	fnVecMath
 //
@@ -5508,7 +5600,9 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 //  (v^ vector1 vector2)
 //	(vdot vector1 vector2)
 //  (v+ vector1 vector2)
-//  (v= vector 1 vector2)
+//  (v= vector1 vector2)
+//
+ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	{
 	int i;
@@ -6022,16 +6116,22 @@ ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 //	Helper Functions -----------------------------------------------------------
 
-int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
-
 //	HelperCompareItems
 //
 //	Compares two items and returns:
 //
+//		2	if full coerce and pFirst is a greaater type than pSecond
 //		1	if pFirst > pSecond
 //		0	if pFirst = pSecond
 //		-1	if pFirst < pSecond
-//		-2	if pFirst is not the same type as pSecond
+//		-2	if full coerce and pFirst is a lesser type than pSecond
+// 
+//		-98 if the args are not equal, but have no ordering (ex, when comparing pointers as pointers)
+//		-99 if we declined the comparison due to not coercing these types
+//		-100 error in comparing types
+//		-101 comparison for these types is not implemented
+//
+int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 
 	{
 	//	Compare this with the first expression
@@ -6041,7 +6141,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 		switch (pFirst->GetValueType())
 			{
 			case ICCItem::True:
-				return 0;
+				return eEqual;
 
 			case ICCItem::Nil:
 				{
@@ -6050,34 +6150,168 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 
 					//	empty lists report themselves as Nil, so we need to check if this is
 					//	truly CCNil which is a CCAtom, or a CCList which is not
+					// 
+					//	Atomic Nil is considered less than List Nil when coercing none
 
 					if (pFirst->IsAtom())
-						return pSecond->IsAtom() ? 0 : -2;
+						return pSecond->IsAtom() ? eEqual : eLessType;
 					else
-						return pSecond->IsAtom() ? -2 : 0;
+						return pSecond->IsAtom() ? eGreaterType : eEqual;
 					}
 				else
-					return 0;
+					return eEqual;
 				}
 
 			case ICCItem::Integer:
 				{
 				if (pFirst->GetIntegerValue() == pSecond->GetIntegerValue())
-					return 0;
+					return eEqual;
 				else if (pFirst->GetIntegerValue() > pSecond->GetIntegerValue())
-					return 1;
+					return eGreater;
 				else
-					return -1;
+					return eLess;
 				}
 
 			case ICCItem::Double:
 				{
 				if (pFirst->GetDoubleValue() == pSecond->GetDoubleValue())
-					return 0;
+					return eEqual;
 				else if (pFirst->GetDoubleValue() > pSecond->GetDoubleValue())
-					return 1;
+					return eGreater;
 				else
-					return -1;
+					return eLess;
+				}
+
+			case ICCItem::Vector:
+				{
+				//	If we are comparing CCVectors, which are actually matrices, things get a little more complex since there are different levels of comparisons
+				//	that we need to make.
+				// 
+				//	If we are coercing none (===), we expect them to be actually equal (same shape, same elements) - the intent of this operation is test true equality
+				//		If they are not, we decline the conversion since we have no none-coercion versions of < or >.
+				//		This is functionally an alias of v=, but we have this here so that === works correctly nomatter what values you put in.
+				//	If we are coercing compatible (eq), we expect them to have the same shape - the intent of this operation is for in-tlisp quickly testing compatibility for further ops
+				//		This is because the vector functions throw errors and its a bit tidier to have this overload rather than needing to have to do error handling
+				//		Note that Tlisp auto-inverts matrices for the relevant operation depending on their arg position, so testing for the same shape is fine
+				//		This logic does need to be updated if the multiplication check is ever updated. Additionally, tlisp is very strict on matrix mult and excludes some valid combinations right now.
+				//		We may eventually want to adopt something like numpy style compatibility (allowing inversions, and treating nD matrixes as stacks of 2D matrixes for dot & mult ops. This logic would
+				//		need to update in sync with that functionality so that in any given API version, (eq V1 V2) always returns if they are valid to multiply
+				//  If we are coercing fully (=), we expect them to have the same norm - the intent of this operation is testing norm equality
+				//		If the norm is less than, we return less
+				//		If the norm is greater than, we return greater
+				// 
+				//	the 2-norm (euclidian norm) gets annoyingly computationally heavy to compute but is the most intuitive
+				//	the f-norm (frobenius norm) if squared is quite trivial to compute and but is still reasonably intuitive however it does scale up for bigger matrices in ways that doesnt align with 2-norm
+				//	the 1-norm and inf-norm are completely trivial to compute, but are the most easily thrown off
+				// 
+				//	TODO: as a placeholder in this commit I will add in the f-norm but we should discuss what is desired.
+				//  TODO: a bunch of operations should be baked into CCVector using operator methods - this will let us eliminate extra helpers and duplicated code
+				//
+
+				CCVector* pVecFirst = dynamic_cast <CCVector*>(pFirst);
+				CCVector* pVecSecond = dynamic_cast <CCVector*>(pSecond);
+
+				TArray<int> aFirstShape = pVecFirst->GetShapeArray();
+				TArray<int> aSecondShape = pVecSecond->GetShapeArray();
+				int iShapeCompare = -100;
+
+				//
+
+				if (dwCoerceFlags & HELPER_COMPARE_COERCE_NONE || dwCoerceFlags & HELPER_COMPARE_COERCE_COMPATIBLE)
+					{
+					iShapeCompare = CompareShapeArraysAdv(aFirstShape, aSecondShape);
+
+					//	If we are doing compatible coercion, just return the result
+
+					if (dwCoerceFlags & HELPER_COMPARE_COERCE_COMPATIBLE)
+						return iShapeCompare;
+
+					//	Otherwise we are coercing none, so we do not make a call beyond them being not equal
+
+					else if (iShapeCompare)
+						return eNotEqual;
+
+					//	Now we have to check each element
+
+					else
+						{
+						TArray<double> aFirstElements = pVecFirst->GetDataArray();
+						TArray<double> aSecondElements = pVecSecond->GetDataArray();
+						int iCount = aFirstElements.GetCount();
+						
+						//	Just make sure these are even valid so we dont hard-crash if something went wrong elsewhere
+						// 
+						//	There is a decent chance of a tlisp crash somewhere else but at least we get a potentially helpful
+						//	error message in the debug log, and a debug assert.
+
+						if (iCount != aSecondElements.GetCount())
+							{
+							int iCount2 = aSecondElements.GetCount();
+							CString sError = CONSTLIT("WARNING: encountered an invalid vector shapes matched but did not match the number of elements:\n");
+							CString sVector = CONSTLIT("Vector 1 shape: ( ");
+							for (int i = 0; i < aFirstShape.GetCount(); i++)
+								sVector = strCat(sVector, strPatternSubst(CONSTLIT("%d "), aFirstShape[i]));
+							sVector = strCat(sVector, CONSTLIT(")\n"));
+							sError = strCat(sError, sVector);
+							sVector = CONSTLIT("Vector 1 elements: ( ");
+							for (int i = 0; i < aFirstElements.GetCount(); i++)
+								sVector = strCat(sVector, strPatternSubst(CONSTLIT("%r "), aFirstElements[i]));
+							sVector = strCat(sVector, CONSTLIT(")\n"));
+							sError = strCat(sError, sVector);
+							kernelDebugLogString(sError);
+							sVector = CONSTLIT("Vector 2 shape: ( ");
+							for (int i = 0; i < aSecondShape.GetCount(); i++)
+								sVector = strCat(sVector, strPatternSubst(CONSTLIT("%d "), aSecondShape[i]));
+							sVector = strCat(sVector, CONSTLIT(")\n"));
+							sError = strCat(sError, sVector);
+							sVector = CONSTLIT("Vector 2 elements: ( ");
+							for (int i = 0; i < aSecondElements.GetCount(); i++)
+								sVector = strCat(sVector, strPatternSubst(CONSTLIT("%r "), aSecondElements[i]));
+							sVector = strCat(sVector, CONSTLIT(")\n"));
+							sError = strCat(sError, sVector);
+							kernelDebugLogString(sError);
+							ASSERT(false);
+							return eError;
+							}
+
+						for (int i = 0; i < iCount; i++)
+							{
+							if (aFirstElements[i] < aSecondElements[i])
+								return eLess;
+							else if (aFirstElements[i] > aSecondElements[i])
+								return eGreater;
+							}
+
+						return eEqual;
+						}
+					}
+
+				//	Otherwise we are doing partial coercion and testing the norms
+
+				else
+					{
+					TArray<double> aFirstElements = pVecFirst->GetDataArray();
+					TArray<double> aSecondElements = pVecSecond->GetDataArray();
+					double rFirstNorm2 = 0.0;
+					double rSecondNorm2 = 0.0;
+
+					for (int i = 0; i < aFirstElements.GetCount(); i++)
+						rFirstNorm2 += aFirstElements[i] * aFirstElements[i];
+
+					for (int i = 0; i < aSecondElements.GetCount(); i++)
+						rSecondNorm2 += aSecondElements[i] * aSecondElements[i];
+
+					if (rFirstNorm2 < rSecondNorm2)
+						return eLess;
+					else if (rFirstNorm2 > rSecondNorm2)
+						return eGreater;
+					else
+						return eEqual;
+					}
+
+				//	This code shouldn't be reachable, if it is, something went wrong
+				ASSERT(false);
+				return eError;
 				}
 
 			case ICCItem::String:
@@ -6087,9 +6321,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 				{
 				if (pFirst->GetCount() == pSecond->GetCount())
 					{
-					int i;
-
-					for (i = 0; i < pFirst->GetCount(); i++)
+					for (int i = 0; i < pFirst->GetCount(); i++)
 						{
 						ICCItem *pItem1 = pFirst->GetElement(i);
 						ICCItem *pItem2 = pSecond->GetElement(i);
@@ -6099,12 +6331,12 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 						if (iCompare != 0)
 							return iCompare;
 						}
-					return 0;
+					return eEqual;
 					}
 				else if (pFirst->GetCount() > pSecond->GetCount())
-					return 1;
+					return eGreater;
 				else
-					return -1;
+					return eLess;
 				break;
 				}
 
@@ -6112,9 +6344,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 				{
 				if (pFirst->GetCount() == pSecond->GetCount())
 					{
-					int i;
-
-					for (i = 0; i < pFirst->GetCount(); i++)
+					for (int i = 0; i < pFirst->GetCount(); i++)
 						{
 						int iCompare = strCompareAbsolute(pFirst->GetKey(i), pSecond->GetKey(i));
 						if (iCompare != 0)
@@ -6125,57 +6355,247 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 							return iCompare;
 						}
 
-					return 0;
+					return eEqual;
 					}
 				else if (pFirst->GetCount() > pSecond->GetCount())
-					return 1;
+					return eGreater;
 				else
-					return -1;
+					return eLess;
 				break;
 				}
+			
+			//	This is an atom table, not a complex number
+
+			case ICCItem::Complex:	
+				{
+				//	Bigger table wins
+
+				if (pFirst->GetCount() > pSecond->GetCount())
+					return eGreater;
+				else if (pFirst->GetCount() < pSecond->GetCount())
+					return eLess;
+
+				//	if they are the same size compare each element
+				else
+					{
+					for (int i = 0; i < pFirst->GetCount(); i++)
+						{
+						int iCompare = strCompareAbsolute(pFirst->GetKey(i), pSecond->GetKey(i));
+						if (iCompare != 0)
+							return iCompare;
+
+						iCompare = HelperCompareItems(pFirst->GetElement(i), pSecond->GetElement(i));
+						if (iCompare != 0)
+							return iCompare;
+						}
+					}
+
+				return eEqual;
+				}
+
+			case ICCItem::Function:
+				{
+				//	Comparing functions for equality is obviously useful (for testing if a function is the same function)
+				//	but relative comparison is... less obvious, beyond being able to quickly differentiate
+				//	coerced types.
+
+				//	If we bind to the same function ptr, we are aliases and always equal
+
+				if (pFirst->GetFunctionAddr() == pSecond->GetFunctionAddr())
+					return eEqual;
+
+				//	That is the only case None-coercion returns true on
+
+				else if (dwCoerceFlags & HELPER_COMPARE_COERCE_NONE)
+					{
+					//	Figure out if we need to return eNotEqual or eDeclined
+					//	We need eNotEqual for non-coersion because as far as tlisp is concerned,
+					//	pointers being greater or less than eachother is a meaningless concept
+					
+					if (pFirst->IsPrimitive() != pSecond->IsPrimitive())
+						return eDeclined;
+					else
+						return eNotEqual;
+					}
+
+				//	Otherwise if we do at least partial coercion, we compare function signature to see if they are "like" functions
+				//	Full coersion matches between lambdas and primitives, partial coercion matches only between types
+				//	Partial coercsion uses the 'types as representation strings' principal
+				//		This thus ranks lambdas < primitives, because "(lambda" < "(primitive"
+
+				if (dwCoerceFlags & HELPER_COMPARE_COERCE_COMPATIBLE && pFirst->IsPrimitive() != pSecond->IsPrimitive())
+					{
+					if (pFirst->IsPrimitive())
+						return eGreaterType;
+					else
+						return eLessType;
+					}
+
+				CString sHelpFirst = pFirst->GetHelp();
+				CString sHelpSecond = pSecond->GetHelp();
+
+				//	Cut them down to their function signatures
+				//	TODO: getting the function signature as a string should be doable from ICCItem if IsFunction is true
+
+				sHelpFirst = strSlice(sHelpFirst, 0, strFind(sHelpFirst, CONSTLIT(")")));
+				sHelpSecond = strSlice(sHelpSecond, 0, strFind(sHelpSecond, CONSTLIT(")")));
+
+				return strCompareAbsolute(sHelpFirst, sHelpSecond);
+				}
+
+			//	If we reach the default, we have a type that isnt implemented yet
 
 			default:
-				return -2;
+				ASSERT(false);
+				return eNotImplemented;
 			}
 		}
+
+	//	If the types are mismatched...
+	// 
+	//	...and we have coerce none set, we decline to do any further comparison
+
 	else if (dwCoerceFlags & HELPER_COMPARE_COERCE_NONE)
-		return -2;
+		return eDeclined;
+
+	//	...and we have coerce full set, we do a more advanced comparison
+	// 
+	//	We need to account for all of these different types
+	// 
+	//	Nil,
+	//	True,
+	//	Integer,
+	//	String,
+	//	List,
+	//	Function,
+	//	Complex,
+	//	Double,
+	//	Vector,
+	//	SymbolTable,
+	//
+	//	The general type heirarchy should attempt conversions
+	//	however there are some cases where normal coercion fails and we have to
+	//	fall back to gridwhale/python.__repr__ style comparison of string representations
+	// 
+	//	In some cases we can cheat because we know the valid representations must fall within certain
+	//	character sets
+	// 
+	//	Keep in mind the ordering of Windows Western ASCII:
+	//  0x00-0x1F are control characters
+	//  0x20-0x2F are space + symbols (includes parenthesis: lists & functions)
+	//  0x30-0x39 are numerals (0-9)
+	//  0x3A-0x40 are more symbols
+	//  0x41-0x5A are uppercase letters
+	//  0x5B-0x60 are more symbols
+	//  0x61-0x7A are lowercase letters
+	//  0x7B-0x7E are more symbols (includes curlybrace: structs)
+	//  0x7F is delete
+	//  0x80-0xFF are windows western accents, formatting, and symbols
+	// 
+	//  Strings are a bit weird, because they can use any valid character, however,
+	//	we can choose lowercase symbols as their repr range (as if they were prefixed with "string:"
+	//  for example)
+	// 
+	//	Nil and True are special however:
+	//		Nil (and anything that coerces to it) are always less than all other types
+	//		True is always greater than all other types
+	//	
+	//	Thus we get the following fallback type heirarchy for full coercion from least to greatest:
+	// 
+	//	Nil(Atomic) == Nil(list) == Nil(struct) (these all coerce to atomic Nil)
+	//	
+	//	
+
 	else if (dwCoerceFlags & HELPER_COMPARE_COERCE_FULL)
 		{
+
+		//	Handle Nils
+
 		if (pFirst->IsNil())
 			{
 			switch (pSecond->GetValueType())
 				{
 				case ICCItem::Nil:
-					return 0;
+					return eEqual;
 
 				case ICCItem::True:
-					return -1;
+					return eLess;
+
+				//	Nil is always less than everything
 
 				case ICCItem::Integer:
 				case ICCItem::Double:
 				case ICCItem::String:
-					//	Nil is always less than everything
-					return -1;
+				case ICCItem::Complex:
+				case ICCItem::Vector:
+				case ICCItem::Function:
+					return eLessType;
+
+				//	Despite atomic nil not being a list, lisp treats it as a synonym
+				//	thus we dont treat them as an incompatible type here
 
 				case ICCItem::List:
 				case ICCItem::SymbolTable:
-					return (pSecond->GetCount() == 0 ? 0 : -1);
+					return (pSecond->GetCount() == 0 ? eEqual : eLess);
+
+				//	Not implemented case, but technically its not an error
+				//	The assert is here to alert developers
 
 				default:
-					return -2;
+					ASSERT(false);
+					return eLessType;
 				}
 			}
 		else if (pSecond->IsNil())
 			{
 			int iResult = HelperCompareItems(pSecond, pFirst, dwCoerceFlags);
-			if (iResult == -1)
-				return 1;
-			else if (iResult == 1)
-				return -1;
-			else
-				return iResult;
+			//	Invert the results
+			switch (iResult)
+				{
+				case (eLessType):
+					return eGreaterType;
+				case (eLess):
+					return eGreater;
+				case (eEqual):
+					return eEqual;
+				case (eGreater):
+					return eLess;
+				case (eGreaterType):
+					return eLessType;
+				default:
+					return iResult;
+				}
 			}
+
+		//	Handle True
+
+		else if (pFirst->GetValueType() == ICCItem::True)
+			{
+			switch (pSecond->GetValueType())
+				{
+				case ICCItem::Nil:
+					return eGreater;
+				case ICCItem::True:
+					return eEqual;
+				default:
+					return eGreaterType;
+				}
+			}
+		else if (pSecond->GetValueType() == ICCItem::True)
+			{
+			switch (pFirst->GetValueType())
+				{
+				case ICCItem::Nil:
+					return eLess;
+				case ICCItem::True:
+					return eEqual;
+				default:
+					return eLessType;
+				}
+			}
+
+		//	Handle doubles
+
 		else if (pFirst->GetValueType() == ICCItem::Double)
 			{
 			switch (pSecond->GetValueType())
@@ -6184,11 +6604,11 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 					{
 					double rSecondValue = pSecond->GetDoubleValue();
 					if (pFirst->GetDoubleValue() == rSecondValue)
-						return 0;
+						return eEqual;
 					else if (pFirst->GetDoubleValue() > rSecondValue)
-						return 1;
+						return eGreater;
 					else
-						return -1;
+						return eLess;
 					}
 
 				case ICCItem::String:
@@ -6198,29 +6618,89 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 					CString sSecond = pSecond->GetStringValue();
 					double rSecondValue = strParseDouble(sSecond.GetASCIIZPointer(), 0.0, &pEnd, &bFailed);
 					if (bFailed || *pEnd != '\0')
-						return -2;
+						{
+						//	try again with an int parse
+
+						int iSecondValue = strParseInt(sSecond.GetASCIIZPointer(), 0, &pEnd, &bFailed);
+
+						//	If we can't parse it...
+						//	As defined above "string" is greater than any 0-9 numeral in ASCII, so the string wins out
+
+						if (bFailed || *pEnd != '\0')	
+							return eLessType;
+
+						//	int fits in double so we can do a basic comparison
+
+						rSecondValue = iSecondValue;
+						if (pFirst->GetDoubleValue() == rSecondValue)
+							return eEqual;
+						else if (pFirst->GetDoubleValue() > rSecondValue)
+							return eGreater;
+						else
+							return eLess;
+						}
 					else if (pFirst->GetDoubleValue() == rSecondValue)
-						return 0;
+						return eEqual;
 					else if (pFirst->GetDoubleValue() > rSecondValue)
-						return 1;
+						return eGreater;
 					else
-						return -1;
+						return eLess;
 					}
 
+				//	The remaining are type repr coercions
+				//	True is always greater
+
+				case ICCItem::True:
+					return eLessType;
+
+				//	Nil should already be handled, but just in case that is changed
+				//	Nil is always less
+
+				case ICCItem::Nil:
+					return eGreaterType;
+
+				//	Lists start with "(" which is less than any numeral
+				//	This also handles the Nil case
+
+				case ICCItem::List:
+					return eGreaterType;
+
+				//	Structs start with "{" which is greater than any numeral
+				//	Except if its an empty struct because that is actually Nil
+
+				case ICCItem::SymbolTable:
+					return pSecond->GetCount() ? eLessType : eGreaterType;
+
+				//	If we get here, something was not implemented correctly
+
 				default:
-					return -2;
+					ASSERT(false);
+					return eError;
 				}
 			}
 		else if (pSecond->GetValueType() == ICCItem::Double)
 			{
 			int iResult = HelperCompareItems(pSecond, pFirst, dwCoerceFlags);
-			if (iResult == -1)
-				return 1;
-			else if (iResult == 1)
-				return -1;
-			else
-				return iResult;
+			//	Invert the results
+			switch (iResult)
+				{
+				case (eLessType):
+					return eGreaterType;
+				case (eLess):
+					return eGreater;
+				case (eEqual):
+					return eEqual;
+				case (eGreater):
+					return eLess;
+				case (eGreaterType):
+					return eLessType;
+				default:
+					return iResult;
+				}
 			}
+
+		//	Handle Ints
+
 		else if (pFirst->GetValueType() == ICCItem::Integer)
 			{
 			switch (pSecond->GetValueType())
@@ -6233,7 +6713,34 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 					int iSecondValue = strParseInt(sSecond.GetASCIIZPointer(), 0, &pEnd, &bFailed);
 
 					if (bFailed || *pEnd != '\0')
-						return -2;
+						{
+						//	Try again with a double parse (we immediately round because we're comparing it to ints anyways)
+
+						double rSecondValue = round(strParseDouble(sSecond.GetASCIIZPointer(), 0.0, &pEnd, &bFailed));
+
+						//	If we can't parse it...
+						//	As defined above "string" is greater than any 0-9 numeral in ASCII, so the string wins out
+
+						if (bFailed || *pEnd != '\0')	
+							return eLessType;
+
+						//	double does not fit in int however, so we have to do some more checks
+						
+						if (rSecondValue > INT_MAX)
+							return eLess;
+						else if (rSecondValue < INT_MIN)
+							return eGreater;
+
+						//	we already rounded so we can convert it to an int now
+						iSecondValue = (int)rSecondValue;
+
+						if (pFirst->GetIntegerValue() == iSecondValue)
+							return eEqual;
+						else if (pFirst->GetIntegerValue() > iSecondValue)
+							return eGreater;
+						else
+							return eLess;
+						}
 					else if (pFirst->GetIntegerValue() == iSecondValue)
 						return 0;
 					else if (pFirst->GetIntegerValue() > iSecondValue)
@@ -6242,22 +6749,76 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 						return -1;
 					}
 
+				case ICCItem::Double:
+					{
+					double rFirstValue = pFirst->GetDoubleValue();
+					if (rFirstValue == pSecond->GetDoubleValue())
+						return eEqual;
+					else if (rFirstValue > pSecond->GetDoubleValue())
+						return eGreater;
+					else
+						return eLess;
+					}
+
+				//	The remaining are type repr coercions
+				//	True is always greater
+
+				case ICCItem::True:
+					return eLessType;
+
+				//	Nil should already be handled, but just in case that is changed
+				//	Nil is always less
+
+				case ICCItem::Nil:
+					return eGreaterType;
+
+				//	Lists start with "(" which is less than any numeral
+				//	This also handles the Nil case
+
+				case ICCItem::List:
+					return eGreaterType;
+
+				//	Structs start with "{" which is greater than any numeral
+				//	Except if its an empty struct because that is actually Nil
+
+				case ICCItem::SymbolTable:
+					return pSecond->GetCount() ? eLessType : eGreaterType;
+
+				//	If we get here, something was not implemented correctly
+
 				default:
-					return -2;
+					ASSERT(false);
+					return eError;
 				}
 			}
 		else if (pSecond->GetValueType() == ICCItem::Integer)
 			{
 			int iResult = HelperCompareItems(pSecond, pFirst, dwCoerceFlags);
-			if (iResult == -1)
-				return 1;
-			else if (iResult == 1)
-				return -1;
-			else
-				return iResult;
+			//	Invert the results
+			switch (iResult)
+				{
+				case (eLessType):
+					return eGreaterType;
+				case (eLess):
+					return eGreater;
+				case (eEqual):
+					return eEqual;
+				case (eGreater):
+					return eLess;
+				case (eGreaterType):
+					return eLessType;
+				default:
+					return iResult;
+				}
 			}
+
+		//	Handle
+
 		else
-			return -2;
+			{
+			ASSERT(false)
+			return eError;
+			}
 		}
 	else if (dwCoerceFlags & HELPER_COMPARE_COERCE_COMPATIBLE)
 		{
@@ -6266,51 +6827,62 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 			switch (pSecond->GetValueType())
 				{
 				case ICCItem::Nil:
-					return 0;
+					return eEqual;
 
 				case ICCItem::True:
-					return -1;
+					return eLess;
 
 				case ICCItem::Integer:
 					{
 					if (0 == pSecond->GetIntegerValue())
-						return 0;
+						return eEqual;
 					else if (0 > pSecond->GetIntegerValue())
-						return 1;
+						return eGreater;
 					else
-						return -1;
+						return eLess;
 					}
 
 				case ICCItem::Double:
 					{
 					if (0.0 == pSecond->GetDoubleValue())
-						return 0;
+						return eEqual;
 					else if (0.0 > pSecond->GetDoubleValue())
-						return 1;
+						return eGreater;
 					else
-						return -1;
+						return eLess;
 					}
 
 				case ICCItem::String:
-					return -1;
+					return eLessType;
 
 				case ICCItem::List:
 				case ICCItem::SymbolTable:
-					return (pSecond->GetCount() == 0 ? 0 : -1);
+					return (pSecond->GetCount() == 0 ? eEqual : eLessType);
 
 				default:
-					return -2;
+					ASSERT(false);
+					return eNotImplemented;
 				}
 			}
 		else if (pSecond->IsNil())
 			{
 			int iResult = HelperCompareItems(pSecond, pFirst, dwCoerceFlags);
-			if (iResult == -1)
-				return 1;
-			else if (iResult == 1)
-				return -1;
-			else
-				return iResult;
+			//	Invert the results
+			switch (iResult)
+				{
+				case (eLessType):
+					return eGreaterType;
+				case (eLess):
+					return eGreater;
+				case (eEqual):
+					return eEqual;
+				case (eGreater):
+					return eLess;
+				case (eGreaterType):
+					return eLessType;
+				default:
+					return iResult;
+				}
 			}
 		else if (pFirst->GetValueType() == ICCItem::Double)
 			{
@@ -6320,32 +6892,45 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 					{
 					double rSecondValue = pSecond->GetDoubleValue();
 					if (pFirst->GetDoubleValue() == rSecondValue)
-						return 0;
+						return eEqual;
 					else if (pFirst->GetDoubleValue() > rSecondValue)
-						return 1;
+						return eGreater;
 					else
-						return -1;
+						return eLess;
 					}
 
 				default:
-					return -2;
+					return eDeclined;
 				}
 			}
 		else if (pSecond->GetValueType() == ICCItem::Double)
 			{
 			int iResult = HelperCompareItems(pSecond, pFirst, dwCoerceFlags);
-			if (iResult == -1)
-				return 1;
-			else if (iResult == 1)
-				return -1;
-			else
-				return iResult;
+			//	Invert the results
+			switch (iResult)
+				{
+				case (eLessType):
+					return eGreaterType;
+				case (eLess):
+					return eGreater;
+				case (eEqual):
+					return eEqual;
+				case (eGreater):
+					return eLess;
+				case (eGreaterType):
+					return eLessType;
+				default:
+					return iResult;
+				}
 			}
 		else
-			return -2;
+			return eDeclined;
 		}
+
+	//	This case should not be reachable, it means dwData was not correctly set
+
 	else
-		return -2;
+		return eError;
 	}
 
 int HelperCompareItemsLists (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce)

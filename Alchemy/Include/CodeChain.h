@@ -151,6 +151,7 @@ class ICCItem : public CObject
 
 		virtual ICCItem *Execute (CEvalContext *pCtx, ICCItem *pArgs);
 		virtual bool GetBinding (int *retiFrame, int *retiOffset) { return false; }
+		virtual SIZE_T GetFunctionAddr () { return NULL; }
 		virtual ICCItem *GetFunctionBinding (void) { return NULL; }
 		virtual CString GetHelp (void) { return NULL_STR; }
 		virtual int GetIntegerValue (void) const { return 0; }
@@ -497,6 +498,7 @@ class CCPrimitive : public ICCAtom
 
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual ICCItem *Execute (CEvalContext *pCtx, ICCItem *pArgs) override;
+		virtual SIZE_T GetFunctionAddr () { return (SIZE_T)m_pfFunction; }
 		virtual CString GetHelp (void) override { return m_sDesc; }
 		virtual CString GetStringValue (void) const override { return m_sName; }
 		virtual ValueTypes GetValueType (void) const override { return Function; }
@@ -534,6 +536,7 @@ class CCLambda : public ICCAtom
 
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual ICCItem *Execute (CEvalContext *pCtx, ICCItem *pArgs) override;
+		virtual SIZE_T GetFunctionAddr () { return (SIZE_T)m_pCode; }
 		virtual CString GetHelp (void) override { return m_sDesc; }
 		virtual CString GetStringValue (void) const override { return LITERAL("[lambda expression]"); }
 		virtual ValueTypes GetValueType (void) const override { return Function; }
