@@ -828,7 +828,7 @@ class CWeaponFireDesc
 		Metric GetExpansionSpeed (void) const { return (m_ExpansionSpeed.Roll() * LIGHT_SPEED / 100.0); }
 		CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
 		CExtension *GetExtension (void) const { return m_pExtension; }
-		Metric GetFireDelay (void) const { return m_rFireRate; }
+		Metric GetFireDelay (void) const;
 		FireTypes GetFireType (void) const { return m_iFireType; }
 		SFragmentDesc *GetFirstFragment (void) const { return m_pFirstFragment; }
 		Metric GetFragmentationMaxThreshold (void) const { return m_rMaxFragThreshold; }
@@ -945,7 +945,7 @@ class CWeaponFireDesc
 		int m_iContinuous = -1;					//	repeat for this number of frames (-1 = default)
 		Metric m_rContinuousFireDelay = -1.0;		//	Ticks between continuous fire shots (-1.0 = default)
 		int m_iChargeTime = -1;					//	Ticks before firing (-1 = default)
-		Metric m_rFireRate = -1.0;					//	Ticks between shots (<0 default to weapon class)
+		Metric m_rFireRate = -1.0;				//	Simulation Seconds between shots (<0 default to weapon class) - needs to be converted to ticks on use
 		int m_iPowerUse = -1;					//	Power use in 1/10th MWs (-1 = default to weapon class)
 		int m_iIdlePowerUse = -1;				//	Power use while idle (-1 = default to weapon class)
 		EMiningMethod m_MiningMethod = EMiningMethod::unknown;	//	Mining method

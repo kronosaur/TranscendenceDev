@@ -1997,7 +1997,8 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	double rFireRateSecs = 8.0;
 	rFireRateSecs = pDesc->GetAttributeDoubleBounded(FIRE_RATE_ATTRIB, 0.0, -1.0, 8.0);
 
-	pWeapon->m_rFireRate = rFireRateSecs / STD_SECONDS_PER_UPDATE;
+	//	We are storing raw simulation seconds here to support variable tick rate
+	pWeapon->m_rFireRate = rFireRateSecs;
 
 	//	Basics
 
@@ -2863,7 +2864,7 @@ Metric CWeaponClass::GetActivateDelay (CItemCtx &ItemCtx) const
 		//	If no shot then it could be that we have a launcher with no 
 		//	missiles. In that case we just return the launcher fire rate.
 
-		return m_rFireRate;
+		return m_rFireRate / g_SecondsPerUpdate;
 
 	return GetFireDelay(*pShot);
 	}
@@ -2973,22 +2974,22 @@ Metric CWeaponClass::GetContinuousFireDelay (const CWeaponFireDesc &Shot) const
 	return m_rContinuousFireDelay;
 	}
 
-Metric CWeaponClass::GetFireDelay (const CWeaponFireDesc &ShotDesc) const
-
 //	GetFireDelay
 //
 //	Returns number of ticks to wait before we can shoot again.
+//
+Metric CWeaponClass::GetFireDelay (const CWeaponFireDesc &ShotDesc) const
 
 	{
 	//	See if the shot overrides fire rate
 
 	Metric rShotFireRate;
-	if ((rShotFireRate = ShotDesc.GetFireDelay()) != -1)
+	if ((rShotFireRate = ShotDesc.GetFireDelay()) >= 0)
 		return rShotFireRate;
 
 	//	Otherwise, based on weapon
 
-	return m_rFireRate;
+	return m_rFireRate / g_SecondsPerUpdate;
 	}
 
 DWORD CWeaponClass::GetTargetTypes (const CDeviceItem &DeviceItem) const
@@ -3655,9 +3656,14 @@ int CWeaponClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 	TSharedPtr<CItemEnhancementStack> pEnhancements = Ctx.GetEnhancementStack();
 	if (pEnhancements)
 		{
-		int iAdj = pEnhancements->GetPowerAdj();
-		iPower = iPower * iAdj / 100;
-		iIdlePower = iIdlePower * iAdj / 100;
+		int iActiveAdj = pEnhancements->GetActivePowerAdj();
+		iPower = iPower * iActiveAdj / 100;
+
+		if (retiIdlePowerUse)
+			{
+			int iAdj = pEnhancements->GetPowerAdj();
+			iIdlePower = iIdlePower * iAdj / 100;
+			}
 		}
 
 	if (retiIdlePowerUse)
@@ -5491,7 +5497,7 @@ ALERROR CWeaponClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 				if (rTotalTicks > rFireDelay)
 					{
-					GetUniverse().LogOutput(strPatternSubst("WARNING: %s (%08x) takes %d.%05d ticks to fire all shots, but has only %d.%05d ticks fire delay.", GetName(), GetUNID(), mathRound(rTotalTicks), mathRound(rTotalTicks * 10000), mathRound(rFireDelay), mathRound(rFireDelay * 10000)));
+					GetUniverse().LogOutput(strPatternSubst("WARNING: %s (%08x) takes %r tick%p to fire all shots, but has only %r tick%p fire delay.", GetName(), GetUNID(), rTotalTicks, rFireDelay));
 					}
 				}
 			}
@@ -5965,6 +5971,8 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 				for (DWORD i = 0; i < dwShotsThisTick; i++)
 					{
+					ActivateCtx.iRepeatingCount = dwContinuousShots - i;
+
 					FireWeapon(*pDevice, *pShot, ActivateCtx, rContinuousInterpolationTime, i+1);
 
 					if (pSource->IsDestroyed())
