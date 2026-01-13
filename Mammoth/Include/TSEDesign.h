@@ -256,8 +256,10 @@ class CDesignType
 			evtOnSystemStopped			= 9,
 			evtOnSystemWeaponFire		= 10,
 			evtOnUpdate					= 11,
+			evtOnGlobalTypesBound		= 12,
+			evtOnGlobalTypesBoundNewGame	= 13,
 
-			evtCount					= 12,
+			evtCount					= 14,
 			};
 
 		struct SMapDescriptionCtx
@@ -341,6 +343,8 @@ class CDesignType
 		void FireOnGlobalSystemStarted (const SEventHandlerDesc &Event, DWORD dwElapsedTime);
 		void FireOnGlobalSystemStopped (const SEventHandlerDesc &Event);
 		ALERROR FireOnGlobalTopologyCreated (CString *retsError = NULL);
+		ALERROR FireOnGlobalTypesBound (SDesignLoadCtx& Ctx);
+		ALERROR FireOnGlobalTypesBoundNewGame (SDesignLoadCtx& Ctx);
 		ALERROR FireOnGlobalTypesInit (SDesignLoadCtx &Ctx);
 		ALERROR FireOnGlobalUniverseCreated (const SEventHandlerDesc &Event);
 		ALERROR FireOnGlobalUniverseLoad (const SEventHandlerDesc &Event);
@@ -1435,6 +1439,8 @@ class CDesignCollection
 		void FireOnGlobalSystemDiagnostics (SDiagnosticsCtx &Ctx);
 		void FireOnGlobalSystemStarted (DWORD dwElapsedTime);
 		void FireOnGlobalSystemStopped (void);
+		ALERROR FireOnGlobalTypesBound (SDesignLoadCtx &Ctx);
+		ALERROR FireOnGlobalTypesBoundNewGame (SDesignLoadCtx &Ctx);
 		ALERROR FireOnGlobalTypesInit (SDesignLoadCtx &Ctx);
 		void FireOnGlobalUniverseCreated (void);
 		void FireOnGlobalUniverseLoad (void);
