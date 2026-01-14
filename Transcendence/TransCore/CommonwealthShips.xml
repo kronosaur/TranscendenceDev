@@ -419,7 +419,7 @@
 			type=				"armed shuttle"
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"commonwealth, freeworld, genericClass, iav"
+			attributes=			"commonwealth, freeworlds, genericClass, iav"
 			inherit=			"&baHumanTechShip;"
 			>
 
@@ -1176,7 +1176,7 @@
 			type=				"gunship"
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"commonwealth, genericClass, iav"
+			attributes=			"commonwealth, genericClass, freeworlds, iav"
 			>
 
 		<!-- Hull -->
@@ -1716,7 +1716,7 @@
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"commonwealth, freeworld, genericClass, iav"
+			attributes=			"commonwealth, freeworlds, genericClass, iav"
 			inherit=			"&baHumanTechShip;"
 			>
 
