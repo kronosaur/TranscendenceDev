@@ -415,11 +415,11 @@
 
 	<ShipClass UNID="&scIAVLight;"
 			manufacturer=		"(Various)"
-			class=				"light IAV"
-			type=				""
+			class=				"Meteor"
+			type=				"armed shuttle"
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"commonwealth, genericClass, iav"
+			attributes=			"commonwealth, freeworld, genericClass, iav"
 			inherit=			"&baHumanTechShip;"
 			>
 
@@ -490,7 +490,14 @@
 		
 		<Language>
 			<Text id="core.desc">
-				Insert Lore Here
+				For budding DIY shipbuilding enthusiasts, the Meteor is usually
+				one of the first stops along their journey. The components of
+				the Meteor have been specifically optimized over the years by
+				the opensource shipbuilding community to be printable in readily
+				available household autofacs, rather than needing something a
+				bit bigger, like a machine shop's autofac, which is a common
+				problem for those who try to start with a Revolution Designs
+				ship like an Earthzone.
 			</Text>
 		</Language>
 		
@@ -586,12 +593,12 @@
 		
 	</ShipClass>
 	
-	<!-- Level 4: Borer II-class Gunship -->
+	<!-- Level 4: Borer II-class Miner -->
 
 	<ShipClass UNID="&scBorerIIStock;"
 			manufacturer=		"United African States"
 			class=				"Borer II"
-			type=				"gunship"
+			type=				"miner"
 
 			attributes=			""
 			inherit=			"&baHumanTechShip;"
@@ -1165,8 +1172,8 @@
 
 	<ShipClass UNID="&scIAVMedium;"
 			manufacturer=		"(Various)"
-			class=				"medium IAV"
-			type=				""
+			class=				"Archer"
+			type=				"gunship"
 			defaultSovereign=	"&svCommonwealth;"
 
 			attributes=			"commonwealth, genericClass, iav"
@@ -1235,7 +1242,17 @@
 		
 		<Language>
 			<Text id="core.desc">
-				Insert Lore Here
+				The Archer-class came about as a result of commonwealth citizens
+				combining opensource component designs from Revolution Designs
+				and Frontier Industrial. With the design being completely open,
+				various small businesses have taken to selling Archer kits with
+				components varying from new parts made in a home autofac, to cheap
+				sets of intact salvage from other ships that share those common
+				components.
+
+				Since neither Revolution Designs nor Frontier Industrial produce
+				weapons, the devices for the ship kits are usually absent or just
+				any off-the-shelf selection that is locally available.
 			</Text>
 		</Language>
 		
@@ -1346,7 +1363,7 @@
 		
 	</ShipClass>
 
-	<!-- Level 4: Borer III-class Gunship -->
+	<!-- Level 6: Borer III-class Gunship -->
 
 	<ShipClass UNID="&scBorerIIIStock;"
 			manufacturer=		"United African States"
@@ -1422,7 +1439,14 @@
 		
 		<Language>
 			<Text id="core.desc">
-				Insert Lore Here
+				To meet growing demand for mining equipment that can tackle
+				hard to mine materials in and around the Outer Realm, the
+				UAS introduced the Borer III-class miner in 2332.
+
+				Even despite the conflicts that flared up in the region just
+				one decade later, sales of the Borer III remained strong as
+				individual Commonwealth and UAS citizens rushed out to try
+				and get some of the valuable ores in the area.
 			</Text>
 		</Language>
 		
@@ -1542,7 +1566,15 @@
 		
 		<Language>
 			<Text id="core.desc">
-				Insert Lore Here
+				The Elixer is Zubrin's top of the line offering in both luxury
+				and spacious onboard accomodations. Unlike the Sapphire, the
+				Elixer is designed with extended onboard living as its top
+				priority. The Elixer is not without its detractors however, for
+				as much as the internal opulence has received praise, the
+				view from within the ship has also been criticized due to the
+				large decorative shades obstructing many of the viewports. This
+				even impacts the bridge, which relies on holographic displays
+				to allow the crew to see around the shades.
 			</Text>
 		</Language>
 		
@@ -1680,11 +1712,11 @@
 
 	<ShipClass UNID="&scIAVHeavy;"
 			manufacturer=		"(Various)"
-			class=				"heavy IAV"
-			type=				""
+			class=				"Buffalo"
+			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"commonwealth, genericClass, iav"
+			attributes=			"commonwealth, freeworld, genericClass, iav"
 			inherit=			"&baHumanTechShip;"
 			>
 
@@ -1753,7 +1785,20 @@
 		
 		<Language>
 			<Text id="core.desc">
-				Insert Lore Here
+				Unlike most improvised ship designs, the Buffalo pattern has
+				its roots in an official NAMI design. During the early 2100s era
+				colonization wave, NAMI introduced humanity's first fusion-powered
+				ship, the colony ship CS Savannah.
+
+				The Savannah-class was designed to carry colonists and their
+				supplies out to remote areas, where they could then disassemble
+				the colony ship into a full colony station, as well as several
+				smaller utility ships. By the 2170s to keep the Savannah-class
+				dominant in the market, NAMI released the designs of many of the
+				components to the public so that outlying colonies could
+				manufacture replacement parts. Over time the opensource component
+				community has evolved the original Buffalo design into a capable
+				heavy gunship.
 			</Text>
 		</Language>
 		
