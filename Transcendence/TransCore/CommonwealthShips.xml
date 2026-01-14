@@ -2,12 +2,12 @@
 
 <TranscendenceModule>
 	
-	<!-- Level 2: Borer-class Prospector -->
+	<!-- Level 2: Borer-class Miner -->
 
 	<ShipClass UNID="&scBorerStock;"
 			manufacturer=		"United African States"
 			class=				"Borer"
-			type=				"prospector"
+			type=				"miner"
 
 			attributes=			""
 			inherit=			"&baHumanTechShip;"
@@ -77,7 +77,7 @@
 		
 		<Language>
 			<Text id="core.desc">
-				Borer series of prospectors are a common sight in
+				Borer series of miners are a common sight in
 				much of human space. Although they are slow and
 				limited in flight and combat capabilities, Borers
 				have established a reputation on being rugged and
@@ -669,7 +669,7 @@
 
 				The ship became broadly popular among Commonwealth mining
 				operations in the Ungoverned Territories for its continued
-				focus on being a rugged no-frills design that can withstand
+				focus on being a rugged no-frills design.
 			</Text>
 		</Language>
 		
@@ -792,7 +792,20 @@
 		
 		<Language>
 			<Text id="core.desc">
-				Insert Lore Here
+				EI developed the EI500 as the new entry level freighter in the
+				EI-series, releasing it in 2376 to replace the EI300 as the
+				flagship light freighter of the series. Unlike the EI300 which
+				was mostly an incremental evolution of the EI100, the EI500
+				offers significant improvements to speed and device power,
+				borrowing the dual engine and engineering layout of its larger
+				predecessors, the EI400 and EI200.
+
+				While not as revolutionary as the EI100 was for in-system shipping,
+				the EI500 was still such a big leap forwards in capabilities that
+				it resonated strongly with intermediate range couriers than it did
+				with the owners of the ships it was meant to replace. As a result
+				Earth Industries still sells new-production EI300s alongside the
+				EI500.
 			</Text>
 		</Language>
 
@@ -972,7 +985,16 @@
 		
 		<Language>
 			<Text id="core.desc">
-				Insert Lore Here
+				The Wolfen series was originally designed by Pacific Defense
+				to act as carrier-based fighters. However, with the Fleet's shift
+				towards mobile fortress style carriers rather than mobile fleet
+				carriers, they began to prefer heavier designs like the Centurion
+				for the role.
+
+				The Wolfen/C is a civilian variant that was designed for local
+				commonwealth militia and corporate security defense, where its
+				limited range is no hinderance, and its ability to mount powerful
+				weapons is a powerful deterrant.
 			</Text>
 		</Language>
 		
@@ -1119,6 +1141,24 @@
 			fireAccuracy=		"95"
 			perception=			"4"
 			/>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				EI introduced the EI7000 in 2389 to compliment the EI500's generation
+				of EI-series freighters with a powerful and well-defended heavy freighter
+				for transporting high value cargo. Since then, the EI7000 has become a
+				favorite for Corporate Hierarchy factories, picking up shipments of
+				finished goods like ship components and delivering them to drydocks
+				and retailers.
+
+				An EI7000 is tough enough that it dissuades most pirates and raiders in
+				the New Beyond on-sight unless they have access to capital ships, such as
+				Drakes.
+			</Text>
+		</Language>
+
 	</ShipClass>
 
 	<!-- Level 5: Medium IAV -->
@@ -1289,7 +1329,18 @@
 		
 		<Language>
 			<Text id="core.desc">
-				Insert Lore Here
+				The Armstrong-class transport is NAMI's dedicated freighter
+				entry within their "Spage-age" ship series. NAMI opted to
+				diversify their offerings by mixing in a variety of ship
+				classes and roles under the same branding group to avoid a
+				repeat of the marketing fiasco that the "Metropolis" series
+				encountered, where a single unfavorable comparison of a
+				gunship-only series to a competitor's gunship ruined the
+				mindshare for all of the ships.
+
+				The Armstrong-class has made a name for itself as a resiliant
+				and fast multipurpose transport good for carrying both cargo
+				and passengers.
 			</Text>
 		</Language>
 		
@@ -1605,6 +1656,15 @@
 				(korOnShipDestroyed)
 			</OnDestroy>
 		</Events>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.desc">
+				Insert Lore Here
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 7: Heavy IAV -->
