@@ -1661,7 +1661,16 @@
 		
 		<Language>
 			<Text id="core.desc">
-				Insert Lore Here
+				The Scarab-class of multipurpose superfreighters were designed
+				by NAMI in 2332 as no-frills haulers with swappable modules for
+				carrying either fluid cargo or bulk ore.
+
+				Althought initially they were almost exclusively seen in use by
+				companies in the fuel mining industries, since 2372 the fleet
+				has started using them in addition to their fleet of Antares V
+				freighters for logistics purposes - in this case for delivering
+				large quantities of fuel for the massive Commonwealth Star
+				Carriers and all of the gunships they support.
 			</Text>
 		</Language>
 		
@@ -1939,7 +1948,24 @@
 		
 		<Language>
 			<Text id="core.desc">
-				Insert Lore Here
+				The Manticore class was originally in development for the
+				Commonwealth Fleet in the 2360s as a new heavy gunship, but
+				when the Ares began fielding Commetfalls in 2372 and brought
+				the Commonwealth offensive to a halt, the Commonwealth was
+				suddenly much more hesitant about adopting a ship meant for
+				brute-force combat without as much concern for survivability.
+
+				Trials eventually confirmed their fears that the design of
+				the Manticore which eschewed a traditional shield in favor
+				of specialized armor repair systems in its as-designed
+				configuration suddenly become very vulnerable the moment that
+				it was faced with enough damage to overwhelm the armor repair
+				device. After accepting a few dozen for testing purposes, the
+				Fleet terminated the contact.
+				
+				Makayev kept the name given to class ship by the Fleet and
+				turned to the Commonwealth Militias and Corporate security
+				forces for sales instead.
 			</Text>
 		</Language>
 		
