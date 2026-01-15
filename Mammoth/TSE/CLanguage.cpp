@@ -30,29 +30,29 @@ constexpr int METRIC_PREFIXES_MIDPOINT = 11;
 
 static SMetricPrefix METRIC_PREFIXES[METRIC_PREFIXES_COUNT] = {
 	//	Min log10		Max	log10	Prefix		Name
-		{INT_MIN,	-31,		'?',		CONSTLIT("")},		//use exponent
-		{-30,		-28,		'q',		CONSTLIT("q")},		//quecto
-		{-27,		-25,		'r',		CONSTLIT("r")},		//ronto
-		{-24,		-22,		'y',		CONSTLIT("y")},		//yocto
-		{-21,		-19,		'z',		CONSTLIT("z")},		//zepto
-		{-18,		-16,		'a',		CONSTLIT("a")},		//atto
-		{-15,		-13,		'f',		CONSTLIT("f")},		//femto
-		{-12,		-10,		'p',		CONSTLIT("p")},		//pico
-		{-9,		-7,			'n',		CONSTLIT("n")},		//nano
-		{-6,		-4,			'u',		CONSTLIT("u")},		//micro
-		{-3,		-1,			'm',		CONSTLIT("m")},		//milli
-		{0,			2,			'\0',		CONSTLIT("")},		//none
-		{3,			5,			'k',		CONSTLIT("k")},		//kilo
-		{6,			8,			'M',		CONSTLIT("M")},		//mega
-		{9,			11,			'G',		CONSTLIT("G")},		//giga
-		{12,		14,			'T',		CONSTLIT("T")},		//tera
-		{15,		17,			'P',		CONSTLIT("P")},		//peta
-		{18,		20,			'E',		CONSTLIT("E")},		//exa
-		{21,		23,			'Z',		CONSTLIT("Z")},		//zeta
-		{24,		26,			'Y',		CONSTLIT("Y")},		//yotta
-		{27,		29,			'R',		CONSTLIT("R")},		//ronna
-		{30,		32,			'Q',		CONSTLIT("Q")},		//quetta
-		{33,		INT_MAX,	'?',		CONSTLIT("")},		//exponent
+		{INT_MIN,	-31,		'?',		CONSTLIT("")},			//use exponent
+		{-30,		-28,		'q',		CONSTLIT("Quecto")},	//quecto
+		{-27,		-25,		'r',		CONSTLIT("Ronto")},		//ronto
+		{-24,		-22,		'y',		CONSTLIT("Yocto")},		//yocto
+		{-21,		-19,		'z',		CONSTLIT("Zepto")},		//zepto
+		{-18,		-16,		'a',		CONSTLIT("Atto")},		//atto
+		{-15,		-13,		'f',		CONSTLIT("Femto")},		//femto
+		{-12,		-10,		'p',		CONSTLIT("Pico")},		//pico
+		{-9,		-7,			'n',		CONSTLIT("Nano")},		//nano
+		{-6,		-4,			'u',		CONSTLIT("Micro")},		//micro
+		{-3,		-1,			'm',		CONSTLIT("Milli")},		//milli
+		{0,			2,			'\0',		CONSTLIT("")},			//none
+		{3,			5,			'k',		CONSTLIT("Kilo")},		//kilo
+		{6,			8,			'M',		CONSTLIT("Mega")},		//mega
+		{9,			11,			'G',		CONSTLIT("Giga")},		//giga
+		{12,		14,			'T',		CONSTLIT("Tera")},		//tera
+		{15,		17,			'P',		CONSTLIT("Peta")},		//peta
+		{18,		20,			'E',		CONSTLIT("Exa")},		//exa
+		{21,		23,			'Z',		CONSTLIT("Zeta")},		//zeta
+		{24,		26,			'Y',		CONSTLIT("Yotta")},		//yotta
+		{27,		29,			'R',		CONSTLIT("Ronna")},		//ronna
+		{30,		32,			'Q',		CONSTLIT("Quetta")},	//quetta
+		{33,		INT_MAX,	'?',		CONSTLIT("")},			//use exponent
 	};
 
 //	CalcMetricNumber
