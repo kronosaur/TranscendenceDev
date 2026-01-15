@@ -144,6 +144,7 @@
 static char g_NameAttrib[] = "name";
 static char g_ObjectAttrib[] = "object";
 static char g_MassAttrib[] = "mass";
+static char g_VolumeAttrib[] = "volume";
 static char g_DescriptionAttrib[] = "description";
 static char g_RandomDamagedAttrib[] = "randomDamaged";
 
@@ -917,11 +918,11 @@ CString CItemType::GetItemCategory (ItemCategories iCategory)
 		}
 	}
 
-int CItemType::GetMassKg (CItemCtx &Ctx) const
-
 //	GetMassKg
 //
 //	Returns the mass of the item in kilograms
+//
+int CItemType::GetMassKg(CItemCtx &Ctx) const
 
 	{
 	if (m_iExtraMassPerCharge)
@@ -933,6 +934,24 @@ int CItemType::GetMassKg (CItemCtx &Ctx) const
 		}
 	else
 		return m_iMass;
+	}
+
+//	GetMassKg
+//
+//	Returns the mass of the item in kilograms
+//
+Metric CItemType::GetVolume (CItemCtx &Ctx) const
+
+	{
+	if (m_rExtraVolumePerCharge)
+		{
+		if (Ctx.IsItemNull())
+			return m_rVolume + (m_InitDataValue.GetAveValue() * m_rExtraVolumePerCharge);
+		else
+			return m_rVolume + (Ctx.GetItem().GetCharges() * m_rExtraVolumePerCharge);
+		}
+	else
+		return m_rVolume;
 	}
 
 int CItemType::GetMaxHPBonus (void) const
@@ -1539,6 +1558,13 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_sRole = pDesc->GetAttribute(ROLE_ATTRIB);
 
 	m_iMass = pDesc->GetAttributeInteger(CONSTLIT(g_MassAttrib));
+	m_rVolume = pDesc->GetAttributeDouble(CONSTLIT(g_VolumeAttrib));
+
+	//	For backwards compatibility, if something has no volume but has mass, we scale volume to mass in metric tons
+	//	We are simply assuming the legacy item has the density of water
+
+	if (!m_rVolume)
+		m_rVolume = m_iMass / 1000.0;
 
 	if (error = m_iValue.InitFromXML(Ctx, pDesc->GetAttribute(VALUE_ATTRIB)))
 		return ComposeLoadError(Ctx, Ctx.sError);

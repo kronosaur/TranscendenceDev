@@ -1,3 +1,4 @@
+#include "TSEItems.h"
 //	TSEItemInlines.h
 //
 //	Inline functions for various item classes.
@@ -25,6 +26,16 @@ inline CDeviceClass *CItem::GetDeviceClass (void) const
 inline const CObjectImageArray &CItem::GetImage (void) const
 	{
 	return (m_pItemType ? m_pItemType->GetImage() : CObjectImageArray::Null());
+	}
+
+//	GetVolume
+//
+//	Get the volume in cubic meters for a single instance of this item
+//
+inline Metric CItem::GetVolume() const
+	{
+	CItemCtx ItemCtx(*this);
+	return m_pItemType->GetVolume(ItemCtx);
 	}
 
 inline bool CItem::HasAttribute (const CString &sAttrib) const

@@ -1251,7 +1251,7 @@ bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &S
 							&& pNewCargo->GetCargoSpace() < pOldCargo->GetCargoSpace())
 						{
 						OnComponentChanged(comCargo);
-						Metric rRequiredCargoSpace = GetCargoMass() + ItemToReplace.GetMass() - Item.GetMass();
+						Metric rRequiredCargoSpace = GetCargoVolume() + ItemToReplace.GetVolume() - Item.GetVolume();
 						Metric rNewCargoSpace = (Metric)Hull.GetCargoSpace() + pNewCargo->GetCargoSpace();
 
 						if (rRequiredCargoSpace > rNewCargoSpace)
@@ -1371,7 +1371,7 @@ CShip::RemoveDeviceStatus CShip::CanRemoveDevice (const CItem &Item, CString *re
 			//	Compute how much cargo space we need to be able to hold
 
 			OnComponentChanged(comCargo);
-			Metric rCargoSpace = GetCargoMass() + Item.GetMass();
+			Metric rCargoSpace = GetCargoVolume() + Item.GetVolume();
 
 			//	If this is larger than the ship class max, then we cannot remove
 
@@ -2683,11 +2683,11 @@ CSpaceObject *CShip::GetBase (void) const
 		return m_pController->GetBase();
 	}
 
-Metric CShip::GetCargoMass (void) const
-
 //	GetCargoMass
 //
 //	Returns the total mass of all items in cargo (in metric tons).
+//
+Metric CShip::GetCargoMass (void) const
 
 	{
 	if (m_fRecalcItemMass)
@@ -2697,6 +2697,21 @@ Metric CShip::GetCargoMass (void) const
 		}
 
 	return m_rCargoMass;
+	}
+
+//	GetCargoVolume
+//
+//	Returns the total volume of all items in cargo (in cubic meters).
+//
+Metric CShip::GetCargoVolume(void) const
+	{
+	if (m_fRecalcItemVolume)
+		{
+		m_rItemVolume = CalculateItemVolume(&m_rCargoVolume);
+		m_fRecalcItemVolume = false;
+		}
+
+	return m_rCargoVolume;
 	}
 
 Metric CShip::GetCargoSpaceLeft (void) const
@@ -2713,11 +2728,11 @@ Metric CShip::GetCargoSpaceLeft (void) const
 	
 	//	Recompute cargo mass
 
-	InvalidateItemMass();
+	InvalidateItemVolume();
 
 	//	Compute space left
 
-	return Max(0.0, rCargoSpace - GetCargoMass());
+	return Max(0.0, rCargoSpace - GetCargoVolume());
 	}
 
 int CShip::GetCombatPower (void)
@@ -3003,11 +3018,11 @@ int CShip::GetItemDeviceName (const CItem &Item) const
 	return m_Devices.FindNamedIndex(Item);
 	}
 
-Metric CShip::GetItemMass (void) const
-
 //	GetItemMass
 //
 //	Returns the total mass of all items (in metric tons).
+//
+Metric CShip::GetItemMass (void) const
 
 	{
 	if (m_fRecalcItemMass)
@@ -3017,6 +3032,22 @@ Metric CShip::GetItemMass (void) const
 		}
 
 	return m_rItemMass;
+	}
+
+//	GetItemVolume
+//
+//	Returns the total volume of all items (in cubic meters).
+//
+Metric CShip::GetItemVolume(void) const
+
+	{
+	if (m_fRecalcItemVolume)
+		{
+		m_rItemVolume = CalculateItemVolume(&m_rCargoVolume);
+		m_fRecalcItemVolume = false;
+		}
+
+	return m_rItemVolume;
 	}
 
 Metric CShip::GetInvMass (void) const
@@ -4353,11 +4384,12 @@ void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
 
 		case comCargo:
 			{
-			//	Calculate new mass
+			//	Calculate new mass and volume
 			//
 			//  NOTE: In this case we defer recalculating performance until update.
 
 			m_fRecalcItemMass = true;
+			m_fRecalcItemVolume = true;
 			if (m_fTrackMass)
 				m_fRecalcRotationAccel = true;
 
@@ -5350,9 +5382,10 @@ void CShip::OnItemEnhanced (CItemListManipulator &ItemList)
 
 	if (ItemList.GetItemAtCursor().IsInstalled())
 		{
-		//	Update item mass in case the mass of this item changed
+		//	Update item mass and volume in case the mass or volume of this item changed
 
 		m_fRecalcItemMass = true;
+		m_fRecalcItemVolume = true;
 
 		//  Recalc performance
 
@@ -5900,6 +5933,11 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion >= 2)
 		Ctx.pStream->Read(m_rItemMass);
 	Ctx.pStream->Read(m_rCargoMass);
+	if (Ctx.dwVersion >= 219)
+		{
+		Ctx.pStream->Read(m_rItemVolume);
+		Ctx.pStream->Read(m_rCargoVolume);
+		}
 	CSystem::ReadObjRefFromStream(Ctx, &m_pDocked);
 	CSystem::ReadObjRefFromStream(Ctx, &m_pExitGate);
 	if (Ctx.dwVersion >= 42)
@@ -5918,12 +5956,17 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	bool bBit01 =				((dwLoad & 0x00000001) ? true : false);
 	m_fRadioactive =			((dwLoad & 0x00000002) ? true : false);
-	if (Ctx.dwVersion >= 155 && Ctx.dwVersion < 185)
+	if (Ctx.dwVersion >= 219)
+		{
+		if (dwLoad & 0x00000004)
+			InvalidateItemVolume();
+		}
+	//	0x00000004 Unused as of version 185, used again in 219 for a different flag
+	else if (Ctx.dwVersion >= 155 && Ctx.dwVersion < 185)
 		{
 		if (dwLoad & 0x00000004)
 			SetAutoCreatedPorts(true);
 		}
-	//	0x00000004 Unused as of version 185
 	m_fDestroyInGate =			((dwLoad & 0x00000008) ? true : false);
 	m_fHalfSpeed =				((dwLoad & 0x00000010) ? true : false);
 	m_fNameBlanked =			((dwLoad & 0x00000020) ? true : false) && (Ctx.dwVersion >= 155);
@@ -6129,11 +6172,13 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 			m_pEncounterInfo = Ctx.GetUniverse().FindStationType(dwLoad);
 		}
 
-	//	Calculate item mass, if appropriate. We do this for previous versions
-	//	that did not store item mass.
+	//	Calculate item mass and volume, if appropriate. We do this for previous versions
+	//	that did not store item mass or volume.
 	
 	if (Ctx.dwVersion < 2)
 		m_rItemMass = CalculateItemMass(&m_rCargoMass);
+	if (Ctx.dwVersion < 219)
+		m_rItemVolume = CalculateItemVolume(&m_rCargoVolume);
 
 	//	Irradiation source
 
@@ -6369,6 +6414,8 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		low = m_iLRSBlindnessTimer; hi = m_iDriveDamagedTimer
 //	Metric		m_rItemMass
 //	Metric		m_rCargoMass
+//	Metric		m_rItemVolume
+//	Metric		m_rCargoVolume
 //	DWORD		m_pDocked (CSpaceObject ref)
 //	DWORD		m_pExitGate (CSpaceObject ref)
 //	DWORD		m_iLastFireTime
@@ -6435,6 +6482,8 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 
 	pStream->Write(m_rItemMass);
 	pStream->Write(m_rCargoMass);
+	pStream->Write(m_rItemVolume);
+	pStream->Write(m_rCargoVolume);
 	WriteObjRefToStream(m_pDocked, pStream);
 	WriteObjRefToStream(m_pExitGate, pStream);
 	pStream->Write(m_iLastFireTime);
@@ -6443,7 +6492,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave = 0;
 	dwSave |= (m_fLRSDisabledByNebula ? 0x00000001 : 0);
 	dwSave |= (m_fRadioactive ?			0x00000002 : 0);
-	//	0x00000004 Unused as of 185
+	dwSave |= (m_fRecalcItemVolume ?	0x00000004 : 0);
 	dwSave |= (m_fDestroyInGate ?		0x00000008 : 0);
 	dwSave |= (m_fHalfSpeed ?			0x00000010 : 0);
 	dwSave |= (m_fNameBlanked ?			0x00000020 : 0);

@@ -1517,11 +1517,11 @@ int CItem::GetLevel (void) const
 		return GetType()->GetMinLevel();
 	}
 
-int CItem::GetMassKg (void) const
-
 //	GetMass
 //
 //	Returns the mass of a single unit of the item type.
+//
+int CItem::GetMassKg (void) const
 
 	{
 	CItemCtx ItemCtx(*this);

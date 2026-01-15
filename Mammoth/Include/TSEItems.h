@@ -356,8 +356,8 @@ class CItem
 		int GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		CString GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		int GetLevel (void) const;
-		Metric GetMass (void) const { return GetMassKg() / 1000.0; }
-		int GetMassKg (void) const;
+		Metric GetMass () const { return GetMassKg() / 1000.0; }
+		int GetMassKg () const;
 		int GetMaxCharges (void) const;
 		const CItemEnhancement &GetMods (void) const { return (m_pExtra ? m_pExtra->m_Mods : m_NullMod); }
 		static const CItem &GetNullItem (void) { return m_NullItem; }
@@ -378,6 +378,7 @@ class CItem
 		CItemType *GetUnknownType (void) const;
 		CItemType *GetUnknownTypeIfUnknown (bool bActual = false) const;
 		int GetVariantNumber (void) const { return (m_pExtra ? (int)m_pExtra->m_dwVariantCounter : 0); }
+		Metric GetVolume () const;
 		inline bool HasAttribute (const CString &sAttrib) const;
 		bool HasComponents (void) const;
 		bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }

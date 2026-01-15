@@ -118,6 +118,7 @@ class CItemType : public CDesignType
 		bool GetUseDesc (SUseDesc *retDesc = NULL) const;
 		int GetValue (CItemCtx &Ctx, bool bActual = false) const { return (int)GetCurrencyAndValue(Ctx, bActual).GetValue(); }
 		int GetValueBonusPerCharge (void) const { return m_iExtraValuePerCharge; }
+		Metric GetVolume (CItemCtx &Ctx) const;
 		CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &Ctx, CString *retsError = NULL) const;
 		bool HasOnRefuelCode (void) const { return FindEventHandlerItemType(evtOnRefuel); }
 		bool HasOnInstallCode (void) const { return FindEventHandlerItemType(evtOnInstall); }
@@ -195,6 +196,7 @@ class CItemType : public CDesignType
 		int m_iMaxLevel;                        //  Max level, for scalable items
 		CCurrencyAndValue m_iValue;				//	Value in some currency
 		int m_iMass;							//	Mass in kilograms
+		Metric m_rVolume;						//	Volume in Cubic meters
 		FrequencyTypes m_Frequency;				//	Frequency
 		DiceRange m_NumberAppearing;			//	Number appearing
 
@@ -207,6 +209,7 @@ class CItemType : public CDesignType
 
 		int m_iExtraMassPerCharge;				//	Extra mass per charge (in kilos)
 		int m_iExtraValuePerCharge;				//	Extra value per charge (may be negative)
+		Metric m_rExtraVolumePerCharge;			//	Extra volume per charge (in cubic meters)
 
 		//	Components
 		IItemGenerator *m_pComponents;			//	Table to generate item components (may be NULL)

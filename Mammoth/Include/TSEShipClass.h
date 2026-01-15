@@ -188,7 +188,7 @@ class CHullDesc
 		int m_iSize = 0;					//	Length of ship in meters
 		int m_iMass = 0;					//	Empty hull mass (tons)
 		CCurrencyAndValue m_Value;			//	Value of hull alone (excluding any devices/armor)
-		int m_iCargoSpace = 0;				//	Default cargo space (tons)
+		int m_iCargoSpace = 0;				//	Default cargo space (cubic meters)
 		int m_iCounterIncrementRate = 0;	//  Value by which temperature/capacitor counter is updated every tick
 		int m_iStealthAdj = 0;				//  Stealth value of the ship at zero heat to add to armor/nebula stealth value
 		int m_iStealthAdjAtMaxHeat = 0;		//  Stealth value of the ship at max heat to add to armor/nebula stealth value
@@ -197,7 +197,7 @@ class CHullDesc
 		CItemCriteria m_DeviceCriteria;		//	Allowable devices
 		CArmorLimits m_ArmorLimits;			//	Adjustments based on armor
 
-		int m_iMaxCargoSpace = 0;			//	Max amount of cargo space with expansion (tons)
+		int m_iMaxCargoSpace = 0;			//	Max amount of cargo space with expansion (cubic meters)
 		int m_iMaxCounter = 0;				//  Max value of counter (used for temperature or capacitor)
 		int m_iMaxReactorPower = 0;			//	Max compatible reactor power
 		int m_iMaxDevices = 0;				//	Max number of devices
