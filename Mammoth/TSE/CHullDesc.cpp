@@ -76,6 +76,16 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 	m_iMass = pHull->GetAttributeInteger(MASS_ATTRIB);
 	m_iSize = pHull->GetAttributeIntegerBounded(SIZE_ATTRIB, 1, -1, 0);
     m_iCargoSpace = pHull->GetAttributeIntegerBounded(CARGO_SPACE_ATTRIB, 0, -1, 0);
+
+	//	If we are from before cargo was switched to volume, we need to convert
+	//	to that system instead based on the conversion ratio in engine options
+
+	if (Ctx.GetAPIVersion() < 59)
+		{
+		Metric rXMLMassToVolume = g_pUniverse->GetEngineOptions().GetItemXMLMassToVolumeRatio();
+		m_iCargoSpace = mathRound(rXMLMassToVolume * m_iCargoSpace);
+		}
+
 	m_iLifeSupportPowerUse = pHull->GetAttributeIntegerBounded(LIFE_SUPPORT_POWER_USER_ATTRIB, 0, -1, CPowerConsumption::DEFAULT_LIFESUPPORT_POWER_USE);
 
 	//	Hull value
@@ -99,6 +109,16 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 	//	Maximums
 
 	m_iMaxCargoSpace = pHull->GetAttributeIntegerBounded(MAX_CARGO_SPACE_ATTRIB, m_iCargoSpace, -1, m_iCargoSpace);
+
+	//	If we are from before cargo was switched to volume, we need to convert
+	//	to that system instead based on the conversion ratio in engine options
+
+	if (Ctx.GetAPIVersion() < 59)
+		{
+		Metric rXMLMassToVolume = g_pUniverse->GetEngineOptions().GetItemXMLMassToVolumeRatio();
+		m_iMaxCargoSpace = mathRound(rXMLMassToVolume * m_iMaxCargoSpace);
+		}
+
 	m_iMaxReactorPower = pHull->GetAttributeInteger(MAX_REACTOR_POWER_ATTRIB);
 
 	//	Device limits
