@@ -65,19 +65,16 @@ You may build your own copies of the game from source. These versions will not
 have the code to access the Kronosaur Multiverse however, but you can still
 use one of the Kronosaur-provided binaries to access the multiverse.
 
-[Development Environment Setup & Build Instructions](docs/Programmer_Guides/Getting_Started.md)
-
 ## CONTRIBUTING
 
 ### DEVELOPMENT ENVIRONMENT
 
 You can setup a development environment in two ways:
 
-1. A full engine development environment with Visual Studios:
+1. A full engine development environment with Visual Studios
+2. A game data only development environment using prebuilt binaries
 
-[Development Environment Setup & Build Instructions](docs/Programmer_Guides/Getting_Started.md)
-
-2. A game data only development environment using prebuilt binaries:
+See this article for more information:
 
 [Development Environment Setup & Build Instructions](docs/Programmer_Guides/Getting_Started.md)
 

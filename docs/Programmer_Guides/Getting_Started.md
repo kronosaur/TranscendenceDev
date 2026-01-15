@@ -1,10 +1,9 @@
-# BUILDING FROM SOURCE
+## CONTRIBUTING WITH GIT
 
-You may build your own copies of the game from source. These versions will not
-have the code to access the Kronosaur Multiverse however, but you can still
-use one of the Kronosaur-provided binaries to access the multiverse.
+If you wish to contribute patches to the game you will need to use git.
 
-## DEVELOPMENT ENVIRONMENT SETUP
+1. Create a fork of the TranscendenceDev repo
+2. Clone your fork to your harddrive
 
 If you are downloading the repos in order to submit future pull requests, it is 
 worthwhile to keep repositories synced with kronosaur:
@@ -14,6 +13,17 @@ worthwhile to keep repositories synced with kronosaur:
 General help on using git is available through official sources:
 
 [Github](https://help.github.com)
+
+Once you have made a patch you can make a pull request against the official
+repo.
+
+# BUILDING FROM SOURCE
+
+You may build your own copies of the game from source. These versions will not
+have the code to access the Kronosaur Multiverse however, but you can still
+use one of the Kronosaur-provided binaries to access the multiverse.
+
+## DEVELOPMENT ENVIRONMENT SETUP
 
 You will need to install the February 2010 DirectX SDK release, as later versions 
 do not include necessary libraries. The correct DirectX SDK can be downloaded 
@@ -33,14 +43,12 @@ Use Microsoft Visual Studio 2022 or later. Open `File > Open > Project/Solution`
 solution file. The following warnings, if shown under `Output` from Solution, 
 may be safely ignored:
 
-```
     <Repo Root>\Alchemy\zlib-1.2.7\contrib\vstudio\vc10\zlibstat.vcxproj : 
     warning  : Platform 'Itanium' referenced in the project file 'zlibstat' 
     cannot be found.
 
     <Repo Root>\TransCore\TransCore.vcxproj : error  : Project 
     "...\TransCore\TransCore.vcxproj" could not be found.
-```
 
 Then go to `View>Solution Explorer` and check the pane opened to the right side.
 Right click `Transcendence` and select `Set as Startup Project`. `Transcendence`
@@ -107,10 +115,12 @@ your computer is unable to run Visual Studio but you still want to contribute
 patches to the game's XML.
 
 Be aware that:
-    * This is a more limited solution but allows people to contribute patches to
+* This is a more limited solution but allows people to contribute patches to
     the gamedata without needing a setup able to compile the game from source
-    * It only works if the branch you are patching is on the same API version as
+* It only works if the branch you are patching is on the same API version as
     the current public builds of Transcendence
+
+## GAME DATA DEV ENVIRONMENT SETUP
 
 1. Download https://downloads.kronosaur.com/TranscendenceNext.zip
 (this link has the latest alpha or beta version)
