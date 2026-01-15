@@ -1561,10 +1561,16 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_rVolume = pDesc->GetAttributeDouble(CONSTLIT(g_VolumeAttrib));
 
 	//	For backwards compatibility, if something has no volume but has mass, we scale volume to mass in metric tons
-	//	We are simply assuming the legacy item has the density of water
+	//	We then use engine options to determine the actual mass that the item should have
 
 	if (!m_rVolume)
-		m_rVolume = m_iMass / 1000.0;
+		{
+		Metric rXMLMassToVolume = g_pUniverse->GetEngineOptions().GetItemXMLMassToVolumeRatio();
+		Metric rDefaultDensity = g_pUniverse->GetEngineOptions().GetItemDefaultDensity();
+
+		m_rVolume = rXMLMassToVolume * m_iMass / 1000.0;
+		m_iMass = mathRound(rDefaultDensity * 1000 * m_rVolume);
+		}
 
 	if (error = m_iValue.InitFromXML(Ctx, pDesc->GetAttribute(VALUE_ATTRIB)))
 		return ComposeLoadError(Ctx, Ctx.sError);
