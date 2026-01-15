@@ -654,7 +654,7 @@ class CCargoDesc
 		void ValidateCargoSpace (int iMaxCargoSpace);
 
 	private:
-		int m_iCargoSpace;                  //  Cargo space in tons
+		int m_iCargoSpace;                  //  Cargo space in cubic meters
 
 		bool m_bUninitialized;
 	};

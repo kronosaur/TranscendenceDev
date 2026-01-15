@@ -65,14 +65,14 @@ class CArmorLimits
 		enum EResults
 			{
 			resultOK,
-			resultTooHeavy,
+			resultTooLarge,
 			resultIncompatible,
 			};
 
 		struct SSummary
 			{
-			int iMaxArmorMass = 0;				//	Max armor mass that can be installed
-			int iStdArmorMass = 0;				//	Max armor mass that has no penalty
+			Metric rMaxArmorSize = 0;				//	Max armor size that can be installed
+			Metric rStdArmorSize = 0;				//	Max armor size that has no penalty
 			int iMaxSpeedBonus = 0;				//	Largest speed bonus (i.e., at min armor)
 			int iMaxSpeedPenalty = 0;			//	Largest speed penalty (negative value, at max armor)
 
@@ -84,15 +84,15 @@ class CArmorLimits
 		int CalcArmorSpeedBonus (const TArray<CItemCtx> &Armor) const;
 		bool CalcArmorSpeedBonus (CItemCtx &ArmorItem, int iSegmentCount, int *retiBonus = NULL) const;
 		bool CalcArmorSpeedBonus (const CString &sArmorClassID, int iSegmentCount, int *retiBonus = NULL) const;
-		ICCItemPtr CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
-		void CalcSummary (const CArmorMassDefinitions &Defs, SSummary &Summary) const;
+		ICCItemPtr CalcMaxSpeedByArmorSize (CCodeChainCtx &Ctx, int iStdSpeed) const;
+		void CalcSummary (const CArmorClassDefinitions &Defs, SSummary &Summary) const;
 		EResults CanInstallArmor (const CItem &Item) const;
 		const CString &GetMaxArmorClass (void) const { return m_sMaxArmorClass; }
-		int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
+		Metric GetMaxArmorSize (void) const { return m_rMaxArmorSize; }
 		int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
 		int GetMinArmorSpeedBonus (void) const { return m_iMinArmorSpeedBonus; }
 		const CString &GetStdArmorClass (void) const { return m_sStdArmorClass; }
-		int GetStdArmorMass (void) const { return m_iStdArmorMass; }
+		Metric GetStdArmorSize (void) const { return m_rStdArmorSize; }
 		bool HasArmorLimits (void) const { return (m_iType != typeNone); }
 		void InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThrustRatio);
 		ALERROR InitArmorLimitsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pLimits);
@@ -112,15 +112,15 @@ class CArmorLimits
 		struct SArmorLimits
 			{
 			CString sClass;
-			int iMass = 0;						//	Limit mass, kg (if sClass is blank)
+			Metric rSize = 0.0;						//	Limit size, m^3 (if sClass is blank)
 			TUniquePtr<CItemCriteria> pCriteria;
 
 			int iSpeedAdj = 0;					//	Change to speed for this armor class
 			};
 
-		int CalcArmorMass (const CItemCtx &ArmorItem) const;
-		int CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) const;
-		int CalcMinArmorMassForSpeed (int iSpeed, int iStdSpeed) const;
+		Metric CalcArmorSize (const CItemCtx &ArmorItem) const;
+		int CalcArmorSpeedBonus (int iSegmentCount, Metric iTotalArmorSize) const;
+		Metric CalcMinArmorSizeForSpeed (int iSpeed, int iStdSpeed) const;
 		bool FindArmorLimits (const CItemCtx &ItemCtx, const SArmorLimits **retpLimits = NULL, bool *retbClassFound = NULL) const;
 
 		ETypes m_iType = typeNone;
@@ -128,8 +128,8 @@ class CArmorLimits
 
 		CString m_sStdArmorClass;
 		CString m_sMaxArmorClass;
-		int m_iStdArmorMass = 0;				//	No penalty at this armor mass
-		int m_iMaxArmorMass = 0;				//	Max mass of single armor segment
+		Metric m_rStdArmorSize = 0;				//	No penalty at this armor size
+		Metric m_rMaxArmorSize = 0;				//	Max size of single armor segment
 		int m_iMaxArmorSpeedPenalty = 0;		//	Change to speed at max armor mass (1/100th light-speed)
 		int m_iMinArmorSpeedBonus = 0;			//	Change to speed at 1/2 std armor mass
 
@@ -175,7 +175,7 @@ class CHullDesc
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);
 		bool IsTimeStopImmune (void) const { return m_bTimeStopImmune; }
 #ifdef APPLY_DEFAULT_ARMOR_LIMITS
-		bool NeedsDefaultArmorLimits (void) const { return (m_ArmorLimits.GetMaxArmorMass() == 0 && GetMass() > 0 && GetMass() < 1000); }
+		bool NeedsDefaultArmorLimits (void) const { return (m_ArmorLimits.GetMaxArmorSize() == 0 && GetMass() > 0 && GetMass() < 1000); }
 #else
 		bool NeedsDefaultArmorLimits (void) const { return false; }
 #endif

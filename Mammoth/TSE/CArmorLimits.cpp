@@ -14,6 +14,8 @@
 #define MAX_ARMOR_SPEED_PENALTY_ATTRIB			CONSTLIT("maxArmorSpeedAdj")
 #define MIN_ARMOR_SPEED_ATTRIB					CONSTLIT("minArmorSpeed")
 #define MIN_ARMOR_SPEED_BONUS_ATTRIB			CONSTLIT("minArmorSpeedAdj")
+#define ARMOR_CLASS_ATTRIB						CONSTLIT("armorClass")
+#define SIZE_ATTRIB								CONSTLIT("size")
 #define SPEED_ADJ_ATTRIB						CONSTLIT("speedAdj")
 #define STD_ARMOR_ATTRIB						CONSTLIT("stdArmor")
 
@@ -46,37 +48,37 @@ ALERROR CArmorLimits::Bind (SDesignLoadCtx &Ctx)
 
 			if (!m_sMaxArmorClass.IsBlank())
 				{
-				m_iMaxArmorMass = Ctx.pDesign->GetArmorMassDefinitions().GetMassClassMass(m_sMaxArmorClass);
-				if (m_iMaxArmorMass == 0)
+				m_rMaxArmorSize = Ctx.pDesign->GetArmorMassDefinitions().GetArmorClassSize(m_sMaxArmorClass);
+				if (m_rMaxArmorSize == 0)
 					{
-					Ctx.sError = strPatternSubst(CONSTLIT("Invalid armor mass class: %s."), m_sMaxArmorClass);
+					Ctx.sError = strPatternSubst(CONSTLIT("Invalid armor class: %s."), m_sMaxArmorClass);
 					return ERR_FAIL;
 					}
 				}
 
 			if (!m_sStdArmorClass.IsBlank())
 				{
-				m_iStdArmorMass = Ctx.pDesign->GetArmorMassDefinitions().GetMassClassMass(m_sStdArmorClass);
-				if (m_iStdArmorMass == 0)
+				m_rStdArmorSize = Ctx.pDesign->GetArmorMassDefinitions().GetArmorClassSize(m_sStdArmorClass);
+				if (m_rStdArmorSize == 0)
 					{
-					Ctx.sError = strPatternSubst(CONSTLIT("Invalid armor mass class: %s."), m_sStdArmorClass);
+					Ctx.sError = strPatternSubst(CONSTLIT("Invalid armor class: %s."), m_sStdArmorClass);
 					return ERR_FAIL;
 					}
 				}
 
 			//	Make sure values are in range
 
-			if (m_iMaxArmorMass <= 0)
+			if (m_rMaxArmorSize <= 0)
 				{
 				m_iType = typeNone;
-				m_iStdArmorMass = 0;
+				m_rStdArmorSize = 0;
 				}
 
-			else if (m_iStdArmorMass <= 0)
-				m_iStdArmorMass = m_iMaxArmorMass / 2;
+			else if (m_rStdArmorSize <= 0)
+				m_rStdArmorSize = m_rMaxArmorSize / 2;
 
-			else if (m_iStdArmorMass > m_iMaxArmorMass)
-				m_iStdArmorMass = m_iMaxArmorMass;
+			else if (m_rStdArmorSize > m_rMaxArmorSize)
+				m_rStdArmorSize = m_rMaxArmorSize;
 
 			break;
 			}
@@ -85,21 +87,21 @@ ALERROR CArmorLimits::Bind (SDesignLoadCtx &Ctx)
 			{
 			//	Calculate and cache armor mass limits
 
-			m_iMaxArmorMass = 0;
-			m_iStdArmorMass = 0;
+			m_rMaxArmorSize = 0;
+			m_rStdArmorSize = 0;
 			m_iMaxArmorSpeedPenalty = 0;
 			m_iMinArmorSpeedBonus = 0;
 			for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
 				{
-				int iMass = m_ArmorLimits[i].iMass;
-				if (iMass == 0)
-					iMass = Ctx.pDesign->GetArmorMassDefinitions().GetMassClassMass(m_ArmorLimits[i].sClass);
+				Metric rSize = m_ArmorLimits[i].rSize;
+				if (rSize == 0)
+					rSize = Ctx.pDesign->GetArmorMassDefinitions().GetArmorClassSize(m_ArmorLimits[i].sClass);
 
 				//	Max armor mass that we can support.
 
-				if (iMass > m_iMaxArmorMass)
+				if (rSize > m_rMaxArmorSize)
 					{
-					m_iMaxArmorMass = iMass;
+					m_rMaxArmorSize = rSize;
 					m_sMaxArmorClass = m_ArmorLimits[i].sClass;
 					m_pMaxArmorLimits = &m_ArmorLimits[i];
 					}
@@ -109,9 +111,9 @@ ALERROR CArmorLimits::Bind (SDesignLoadCtx &Ctx)
 
 				if (m_ArmorLimits[i].iSpeedAdj == 0)
 					{
-					if (iMass > m_iStdArmorMass)
+					if (rSize > m_rStdArmorSize)
 						{
-						m_iStdArmorMass = iMass;
+						m_rStdArmorSize = rSize;
 						m_sStdArmorClass = m_ArmorLimits[i].sClass;
 						m_pStdArmorLimits = &m_ArmorLimits[i];
 						}
@@ -143,9 +145,9 @@ ALERROR CArmorLimits::Bind (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-int CArmorLimits::CalcArmorMass (const CItemCtx &ArmorItem) const
+Metric CArmorLimits::CalcArmorSize (const CItemCtx &ArmorItem) const
 
-//	CalcArmorMass
+//	CalcArmorSize
 //
 //	Returns mass of the given armor item for purposes of calculating speed 
 //	adjustment.
@@ -164,15 +166,15 @@ int CArmorLimits::CalcArmorMass (const CItemCtx &ArmorItem) const
 				return 0;
 
 			CString sID = pClass->GetMassClass(ArmorItem);
-			int iArmorMass = g_pUniverse->GetDesignCollection().GetArmorMassDefinitions().GetMassClassMass(sID);
-			if (iArmorMass == 0)
-				return ArmorItem.GetItem().GetMassKg();
+			Metric rArmorSize = g_pUniverse->GetDesignCollection().GetArmorMassDefinitions().GetArmorClassSize(sID);
+			if (rArmorSize < g_Epsilon)
+				return ArmorItem.GetItem().GetVolume();
 
-			return iArmorMass;
+			return rArmorSize;
 			}
 
 		default:
-			return ArmorItem.GetItem().GetMassKg();
+			return ArmorItem.GetItem().GetVolume();
 		}
 	}
 
@@ -196,21 +198,21 @@ bool CArmorLimits::CalcArmorSpeedBonus (CItemCtx &ArmorItem, int iSegmentCount, 
 		case typeAutoSpeedAdj:
 		case typeCompatible:
 			{
-			int iArmorMass = CalcArmorMass(ArmorItem);
+			Metric rArmorSize = CalcArmorSize(ArmorItem);
 
 			//	Too heavy?
 
-			if (iArmorMass > GetMaxArmorMass())
+			if (rArmorSize > GetMaxArmorSize())
 				return false;
 
 			//	Add up the total armor mass
 
-			int iTotalArmorMass = iSegmentCount * iArmorMass;
+			Metric rTotalArmorSize = iSegmentCount * rArmorSize;
 
 			//	Calculate speed bonus
 
 			if (retiBonus)
-				*retiBonus = CalcArmorSpeedBonus(iSegmentCount, iTotalArmorMass);
+				*retiBonus = CalcArmorSpeedBonus(iSegmentCount, rTotalArmorSize);
 
 			return true;
 			}
@@ -259,32 +261,32 @@ bool CArmorLimits::CalcArmorSpeedBonus (const CString &sArmorClassID, int iSegme
 		case typeAutoSpeedAdj:
 		case typeCompatible:
 			{
-			const CArmorMassDefinitions &Def = g_pUniverse->GetDesignCollection().GetArmorMassDefinitions();
-			int iArmorMass = Def.GetMassClassMass(sArmorClassID);
-			if (iArmorMass == 0)
+			const CArmorClassDefinitions &Def = g_pUniverse->GetDesignCollection().GetArmorMassDefinitions();
+			Metric rArmorSize = Def.GetArmorClassSize(sArmorClassID);
+			if (rArmorSize == 0)
 				return false;
 
 			//	Too heavy?
 
-			if (iArmorMass > GetMaxArmorMass())
+			if (rArmorSize > GetMaxArmorSize())
 				return false;
 
 			//	Add up the total armor mass
 
-			int iTotalArmorMass = iSegmentCount * iArmorMass;
+			Metric rTotalArmorSize = iSegmentCount * rArmorSize;
 
 			//	Calculate speed bonus
 
 			if (retiBonus)
-				*retiBonus = CalcArmorSpeedBonus(iSegmentCount, iTotalArmorMass);
+				*retiBonus = CalcArmorSpeedBonus(iSegmentCount, rTotalArmorSize);
 
 			return true;
 			}
 
 		case typeTable:
 			{
-			const CArmorMassDefinitions &Def = g_pUniverse->GetDesignCollection().GetArmorMassDefinitions();
-			int iArmorMass = Def.GetMassClassMass(sArmorClassID);
+			const CArmorClassDefinitions &Def = g_pUniverse->GetDesignCollection().GetArmorMassDefinitions();
+			Metric rArmorSize = Def.GetArmorClassSize(sArmorClassID);
 
 			//	Search
 
@@ -294,9 +296,9 @@ bool CArmorLimits::CalcArmorSpeedBonus (const CString &sArmorClassID, int iSegme
 
 				//	Skip if the wrong mass class
 
-				if (pLimits->iMass)
+				if (pLimits->rSize)
 					{
-					if (iArmorMass > pLimits->iMass)
+					if (rArmorSize > pLimits->rSize)
 						continue;
 					}
 				else
@@ -349,13 +351,13 @@ int CArmorLimits::CalcArmorSpeedBonus (const TArray<CItemCtx> &Armor) const
 			{
 			//	Add up the armor mass
 
-			int iTotalArmorMass = 0;
+			Metric rTotalArmorSize = 0;
 			for (int i = 0; i < Armor.GetCount(); i++)
-				iTotalArmorMass += CalcArmorMass(Armor[i]);
+				rTotalArmorSize += CalcArmorSize(Armor[i]);
 
 			//	Calculate speed bonus
 
-			return CalcArmorSpeedBonus(Armor.GetCount(), iTotalArmorMass);
+			return CalcArmorSpeedBonus(Armor.GetCount(), rTotalArmorSize);
 			}
 
 		case typeTable:
@@ -391,7 +393,7 @@ int CArmorLimits::CalcArmorSpeedBonus (const TArray<CItemCtx> &Armor) const
 		}
 	}
 
-int CArmorLimits::CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) const
+int CArmorLimits::CalcArmorSpeedBonus (int iSegmentCount, Metric rTotalArmorSize) const
 
 //	CalcArmorSpeedBonus
 //
@@ -411,42 +413,42 @@ int CArmorLimits::CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) c
 
 			ASSERT(m_iHullMass > 0);
 
-			//	Compute the armor mass delta from the standard mass value as a
-			//	fraction of the hull mass. The delta is positive if the total 
-			//	armor mass is lighter than standard and negative if heavier than
-			//	standard.
+			//	Compute the armor size delta from the standard size value as a
+			//	fraction of the hull mass * massToSizeRatio.
+			//	The delta is positive if the total armor mass is lighter than
+			//	standard and negative if heavier than standard.
 
-			int iMassDelta = (m_iStdArmorMass * iSegmentCount) - iTotalArmorMass;
-			Metric rMassFrac = Absolute(iMassDelta) / (1000.0 * m_iHullMass);
+			Metric rSizeDelta = (m_rStdArmorSize * iSegmentCount) - rTotalArmorSize;
+			Metric rSizeFrac = Absolute(rSizeDelta) / (m_iHullMass * g_pUniverse->GetEngineOptions().GetItemXMLMassToVolumeRatio());
 
 			//	Scale the mass fraction to a speed adjustment value.
 
-			int iSpeedAdj = mathRound(MASS_TO_SPEED_ADJ_KX * pow(rMassFrac, MASS_TO_SPEED_ADJ_KE));
+			int iSpeedAdj = mathRound(MASS_TO_SPEED_ADJ_KX * pow(rSizeFrac, MASS_TO_SPEED_ADJ_KE));
 
 			//	Penalty or bonus
 
-			return (iMassDelta < 0 ? -iSpeedAdj : iSpeedAdj);
+			return (rSizeDelta < 0 ? -iSpeedAdj : iSpeedAdj);
 			}
 
 		case typeCompatible:
 			{
-			int iStdTotalArmorMass = m_iStdArmorMass * iSegmentCount;
+			Metric rStdTotalArmorSize = m_rStdArmorSize * iSegmentCount;
 
 			//	Speed pentalty
 
-			if (iTotalArmorMass >= iStdTotalArmorMass)
+			if (rTotalArmorSize >= rStdTotalArmorSize)
 				{
 				if (m_iMaxArmorSpeedPenalty < 0 
-						&& m_iMaxArmorMass > m_iStdArmorMass)
+						&& m_rMaxArmorSize > m_rStdArmorSize)
 					{
-					int iMaxTotalArmorMass = m_iMaxArmorMass * iSegmentCount;
-					int iRange = iMaxTotalArmorMass - iStdTotalArmorMass;
-					int iMassPerTick = iRange / (1 - m_iMaxArmorSpeedPenalty);
-					if (iMassPerTick <= 0)
+					Metric rMaxTotalArmorSize = m_rMaxArmorSize * iSegmentCount;
+					Metric rRange = rMaxTotalArmorSize - rStdTotalArmorSize;
+					Metric rSizePerInc = rRange / (1 - m_iMaxArmorSpeedPenalty);
+					if (rSizePerInc <= 0)
 						return 0;
 
-					int iTicks = (iTotalArmorMass - iStdTotalArmorMass) / iMassPerTick;
-					return Max(-iTicks, m_iMaxArmorSpeedPenalty);
+					int iIncrements = (int)((rTotalArmorSize - rStdTotalArmorSize) / rSizePerInc);
+					return Max(-iIncrements, m_iMaxArmorSpeedPenalty);
 					}
 				else
 					return 0;
@@ -458,14 +460,14 @@ int CArmorLimits::CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) c
 				{
 				if (m_iMinArmorSpeedBonus > 0)
 					{
-					int iMinTotalArmorMass = m_iStdArmorMass * iSegmentCount / 2;
-					int iRange = iStdTotalArmorMass - iMinTotalArmorMass;
-					int iMassPerTick = iRange / m_iMinArmorSpeedBonus;
-					if (iMassPerTick <= 0)
+					Metric rMinTotalArmorSize = m_rStdArmorSize * iSegmentCount / 2;
+					Metric rRange = rStdTotalArmorSize - rMinTotalArmorSize;
+					Metric rSizePerInc = rRange / m_iMinArmorSpeedBonus;
+					if (rSizePerInc <= 0)
 						return 0;
 
-					int iTicks = (iStdTotalArmorMass - iTotalArmorMass) / iMassPerTick;
-					return Min(iTicks, m_iMinArmorSpeedBonus);
+					int iIncrements = (int)((rStdTotalArmorSize - rTotalArmorSize) / rSizePerInc);
+					return Min(iIncrements, m_iMinArmorSpeedBonus);
 					}
 				else
 					return 0;
@@ -485,14 +487,14 @@ int CArmorLimits::CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) c
 		}
 	}
 
-ICCItemPtr CArmorLimits::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const
-
-//	CalcMaxSpeedByArmorMass
+//	CalcMaxSpeedByArmorSize
 //
 //	Returns a struct with entries for each value of max speed. Each entry has the
 //	smallest armor mass which results in the given speed.
 //
 //	If there is no variation in speed, we return a single speed value.
+//
+ICCItemPtr CArmorLimits::CalcMaxSpeedByArmorSize (CCodeChainCtx &Ctx, int iStdSpeed) const
 
 	{
 	ICCItemPtr pResult(ICCItem::SymbolTable);
@@ -515,18 +517,18 @@ ICCItemPtr CArmorLimits::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSp
 				CString sLine;
 
 				if (i == iMinSpeed)
-					sLine = strPatternSubst(CONSTLIT("%d-%d"), CalcMinArmorMassForSpeed(i, iStdSpeed), m_iMaxArmorMass);
+					sLine = strPatternSubst(CONSTLIT("%r-%r"), CalcMinArmorSizeForSpeed(i, iStdSpeed), m_rMaxArmorSize);
 				else if (i == iMaxSpeed)
 					{
 					if (i == iStdSpeed && i > iMinSpeed)
-						sLine = strPatternSubst(CONSTLIT("0-%d"), CalcMinArmorMassForSpeed(i - 1, iStdSpeed) - 1);
+						sLine = strPatternSubst(CONSTLIT("0-%r"), CalcMinArmorSizeForSpeed(i - 1, iStdSpeed) - 1);
 					else
-						sLine = strPatternSubst(CONSTLIT("0-%d"), CalcMinArmorMassForSpeed(i, iStdSpeed));
+						sLine = strPatternSubst(CONSTLIT("0-%r"), CalcMinArmorSizeForSpeed(i, iStdSpeed));
 					}
 				else if (i > iStdSpeed)
-					sLine = strPatternSubst(CONSTLIT("%d-%d"), CalcMinArmorMassForSpeed(i + 1, iStdSpeed) + 1, CalcMinArmorMassForSpeed(i, iStdSpeed));
+					sLine = strPatternSubst(CONSTLIT("%r-%r"), CalcMinArmorSizeForSpeed(i + 1, iStdSpeed) + 1, CalcMinArmorSizeForSpeed(i, iStdSpeed));
 				else
-					sLine = strPatternSubst(CONSTLIT("%d-%d"), CalcMinArmorMassForSpeed(i, iStdSpeed), CalcMinArmorMassForSpeed(i - 1, iStdSpeed) - 1);
+					sLine = strPatternSubst(CONSTLIT("%r-%r"), CalcMinArmorSizeForSpeed(i, iStdSpeed), CalcMinArmorSizeForSpeed(i - 1, iStdSpeed) - 1);
 
 				pResult->SetStringAt(strFromInt(i), sLine);
 				}
@@ -541,7 +543,7 @@ ICCItemPtr CArmorLimits::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSp
 				if (!m_ArmorLimits[i].sClass.IsBlank())
 					pResult->SetStringAt(strFromInt(iSpeed), m_ArmorLimits[i].sClass);
 				else
-					pResult->SetStringAt(strFromInt(iSpeed), strFromInt(m_ArmorLimits[i].iMass));
+					pResult->SetStringAt(strFromInt(iSpeed), strFromDouble(m_ArmorLimits[i].rSize));
 				}
 			break;
 			}
@@ -554,54 +556,54 @@ ICCItemPtr CArmorLimits::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSp
 	return pResult;
 	}
 
-int CArmorLimits::CalcMinArmorMassForSpeed (int iSpeed, int iStdSpeed) const
-
-//	CalcMinArmorMassForSpeed
+//	CalcMinArmorSizeForSpeed
 //
-//	Returns the smallest armor mass that is compatible with the given speed.
+//	Returns the smallest armor size that is compatible with the given speed.
+//
+Metric CArmorLimits::CalcMinArmorSizeForSpeed (int iSpeed, int iStdSpeed) const
 
 	{
 	int iMinSpeed = iStdSpeed + m_iMaxArmorSpeedPenalty;
 	int iMaxSpeed = iStdSpeed + m_iMinArmorSpeedBonus;
 
-	int iPenaltyRange = m_iMaxArmorMass - m_iStdArmorMass;
-	int iPenaltyMassPerPoint = iPenaltyRange / (1 - m_iMaxArmorSpeedPenalty);
+	Metric rPenaltyRange = m_rMaxArmorSize - m_rStdArmorSize;
+	Metric rPenaltySizePerPoint = rPenaltyRange / (1 - m_iMaxArmorSpeedPenalty);
 
-	int iMinArmorMass = m_iStdArmorMass / 2;
-	int iBonusRange = m_iStdArmorMass - iMinArmorMass;
-	int iBonusMassPerPoint = (m_iMinArmorSpeedBonus > 0 ? iBonusRange / m_iMinArmorSpeedBonus : 0);
+	Metric rMinArmorSize = m_rStdArmorSize / 2;
+	Metric rBonusRange = m_rStdArmorSize - rMinArmorSize;
+	Metric rBonusSizePerPoint = (m_iMinArmorSpeedBonus > 0 ? rBonusRange / m_iMinArmorSpeedBonus : 0);
 
 	if (iSpeed < iStdSpeed)
 		{
 		int iDiff = iStdSpeed - iSpeed;
-		return m_iStdArmorMass + (iPenaltyMassPerPoint * iDiff);
+		return m_rStdArmorSize + (rPenaltySizePerPoint * iDiff);
 		}
 	else if (iSpeed == iStdSpeed)
 		{
 		if (iMinSpeed == iMaxSpeed)
-			return m_iStdArmorMass;
+			return m_rStdArmorSize;
 		else
-			return (m_iStdArmorMass - iBonusMassPerPoint) + 1;
+			return (m_rStdArmorSize - rBonusSizePerPoint) + 1;
 		}
 	else
 		{
 		int iDiff = iSpeed - iStdSpeed;
-		return m_iStdArmorMass - (iBonusMassPerPoint * iDiff);
+		return m_rStdArmorSize - (rBonusSizePerPoint * iDiff);
 		}
 	}
-
-void CArmorLimits::CalcSummary (const CArmorMassDefinitions &Defs, SSummary &Summary) const
 
 //	CalcSummary
 //
 //	Calculate some summary values about the limits.
+//
+void CArmorLimits::CalcSummary (const CArmorClassDefinitions &Defs, SSummary &Summary) const
 
 	{
 	switch (m_iType)
 		{
 		case typeNone:
-			Summary.iMaxArmorMass = 100000;
-			Summary.iStdArmorMass = 100000;
+			Summary.rMaxArmorSize = 100000;
+			Summary.rStdArmorSize = 100000;
 			Summary.iMaxSpeedBonus = 0;
 			Summary.iMaxSpeedPenalty = 0;
 			Summary.rMaxArmorFrequency = 1.0;
@@ -612,8 +614,8 @@ void CArmorLimits::CalcSummary (const CArmorMassDefinitions &Defs, SSummary &Sum
 		case typeAutoSpeedAdj:
 		case typeTable:
 			{
-			Summary.iMaxArmorMass = GetMaxArmorMass();
-			Summary.iStdArmorMass = GetStdArmorMass();
+			Summary.rMaxArmorSize = GetMaxArmorSize();
+			Summary.rStdArmorSize = GetStdArmorSize();
 			Summary.iMaxSpeedBonus = GetMinArmorSpeedBonus();
 			Summary.iMaxSpeedPenalty = GetMaxArmorSpeedPenalty();
 			Summary.rMaxArmorFrequency = Defs.GetFrequencyMax(m_sMaxArmorClass);
@@ -623,8 +625,8 @@ void CArmorLimits::CalcSummary (const CArmorMassDefinitions &Defs, SSummary &Sum
 
 		case typeCompatible:
 			{
-			Summary.iMaxArmorMass = GetMaxArmorMass();
-			Summary.iStdArmorMass = GetStdArmorMass();
+			Summary.rMaxArmorSize = GetMaxArmorSize();
+			Summary.rStdArmorSize = GetStdArmorSize();
 			Summary.iMaxSpeedBonus = GetMinArmorSpeedBonus();
 			Summary.iMaxSpeedPenalty = GetMaxArmorSpeedPenalty();
 
@@ -641,10 +643,10 @@ void CArmorLimits::CalcSummary (const CArmorMassDefinitions &Defs, SSummary &Sum
 				int iMass = Item.GetMassKg();
 				iTotalArmor++;
 
-				if (iMass <= Summary.iStdArmorMass)
+				if (iMass <= Summary.rStdArmorSize)
 					iTotalStdArmor++;
 
-				if (iMass <= Summary.iMaxArmorMass)
+				if (iMass <= Summary.rMaxArmorSize)
 					iTotalMaxArmor++;
 				}
 
@@ -690,9 +692,9 @@ CArmorLimits::EResults CArmorLimits::CanInstallArmor (const CItem &Item) const
 		case typeAutoSpeedAdj:
 		case typeCompatible:
 			{
-			int iArmorMass = CalcArmorMass(Item);
-			if (iArmorMass > GetMaxArmorMass())
-				return resultTooHeavy;
+			Metric rArmorSize = CalcArmorSize(Item);
+			if (rArmorSize > GetMaxArmorSize())
+				return resultTooLarge;
 
 			return resultOK;
 			}
@@ -715,7 +717,7 @@ CArmorLimits::EResults CArmorLimits::CanInstallArmor (const CItem &Item) const
 				//	Otherwise, it means that we're too heavy.
 
 				else
-					return resultTooHeavy;
+					return resultTooLarge;
 				}
 
 			return resultOK;
@@ -727,11 +729,11 @@ CArmorLimits::EResults CArmorLimits::CanInstallArmor (const CItem &Item) const
 		}
 	}
 
-bool CArmorLimits::FindArmorLimits (const CItemCtx &ItemCtx, const SArmorLimits **retpLimits, bool *retbClassFound) const
-
 //	FindArmorLimits
 //
 //	Finds the armor limit descriptor for this armor item.
+//
+bool CArmorLimits::FindArmorLimits (const CItemCtx &ItemCtx, const SArmorLimits **retpLimits, bool *retbClassFound) const
 
 	{
 	if (retbClassFound) *retbClassFound = false;
@@ -742,17 +744,17 @@ bool CArmorLimits::FindArmorLimits (const CItemCtx &ItemCtx, const SArmorLimits 
 		return false;
 
 	const CString &sMassClass = pArmor->GetMassClass(ItemCtx);
-	int iMassKg = ArmorItem.GetMassKg();
+	Metric rSize = ArmorItem.GetVolume();
 
 	for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
 		{
 		const SArmorLimits *pLimits = &m_ArmorLimits[i];
 
-		//	Skip if the wrong mass class
+		//	Skip if the wrong class
 
-		if (pLimits->iMass)
+		if (pLimits->rSize)
 			{
-			if (iMassKg > pLimits->iMass)
+			if (rSize > pLimits->rSize)
 				continue;
 			}
 		else
@@ -785,12 +787,12 @@ bool CArmorLimits::FindArmorLimits (const CItemCtx &ItemCtx, const SArmorLimits 
 	return false;
 	}
 
-void CArmorLimits::InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThrustRatio)
-
 //	InitDefaultArmorLimits
 //
 //	If no armor limits are specified, we initialize them here based on mass, 
 //	speed, and thrust
+//
+void CArmorLimits::InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThrustRatio)
 
 	{
 	//	If we're 1000 tons or more, then no limits
@@ -803,18 +805,17 @@ void CArmorLimits::InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThr
 	const Metric MAX_ARMOR_POWER = 0.7;
 	const Metric MAX_ARMOR_FACTOR = 0.6;
 	const Metric STD_THRUST_RATIO = 7.0;
-	const int MAX_ARMOR_MAX = 50;
+	const Metric MAX_ARMOR_MAX = 50;
+	Metric rHullSize = iMass * g_pUniverse->GetEngineOptions().GetItemXMLMassToVolumeRatio();
 
-	int iMaxArmorTons = Min(MAX_ARMOR_MAX, mathRound(MAX_ARMOR_FACTOR * pow((Metric)iMass, MAX_ARMOR_POWER) * Max(1.0, rThrustRatio / STD_THRUST_RATIO)));
-	m_iMaxArmorMass = 1000 * iMaxArmorTons;
+	m_rMaxArmorSize = Min(MAX_ARMOR_MAX, MAX_ARMOR_FACTOR * pow(rHullSize, MAX_ARMOR_POWER) * Max(1.0, rThrustRatio / STD_THRUST_RATIO));
 
 	//	Compute the mass of standard armor
 
 	const Metric STD_ARMOR_POWER = 0.8;
 	const Metric STD_ARMOR_FACTOR = 0.8;
 
-	int iStdArmorTons = mathRound(STD_ARMOR_FACTOR * pow((Metric)iMaxArmorTons, STD_ARMOR_POWER));
-	m_iStdArmorMass = 1000 * iStdArmorTons;
+	m_rStdArmorSize = STD_ARMOR_FACTOR * pow(m_rMaxArmorSize, STD_ARMOR_POWER);
 
 	//	Compute the max speed at maximum armor
 
@@ -843,14 +844,22 @@ ALERROR CArmorLimits::InitArmorLimitsFromXML (SDesignLoadCtx &Ctx, CXMLElement *
 //	element might have other sub-elements that we don't understand.
 
 	{
-	CString sMassClass = pLimits->GetAttribute(MASS_CLASS_ATTRIB);
-	int iMass = pLimits->GetAttributeIntegerBounded(MASS_ATTRIB, 1, -1, 0);
+	CString sArmorClass = pLimits->GetAttribute(MASS_CLASS_ATTRIB);
+	Metric rSize = pLimits->GetAttributeDoubleBounded(SIZE_ATTRIB, 1, -1, 0);
+
+	//	If the new size value isnt loaded or we are on an old API, try using mass
+
+	if (rSize < g_Epsilon || Ctx.GetAPIVersion() < 59)
+		{
+		int iMass = pLimits->GetAttributeIntegerBounded(MASS_ATTRIB, 1, -1, 0);
+		rSize = iMass * g_pUniverse->GetEngineOptions().GetItemXMLMassToVolumeRatio();
+		}
 
 	//	Either massClass or mass must be defined.
 
-	if (sMassClass.IsBlank() && iMass == 0)
+	if (sArmorClass.IsBlank() && rSize < g_Epsilon)
 		{
-		Ctx.sError = strPatternSubst(CONSTLIT("Invalid mass class: %s"), sMassClass);
+		Ctx.sError = strPatternSubst(CONSTLIT("Invalid armor class: %s"), sArmorClass);
 		return ERR_FAIL;
 		}
 
@@ -865,8 +874,8 @@ ALERROR CArmorLimits::InitArmorLimitsFromXML (SDesignLoadCtx &Ctx, CXMLElement *
 	//	Now that we have all elements, create the entry.
 
 	SArmorLimits &NewLimits = *m_ArmorLimits.Insert();
-	NewLimits.sClass = sMassClass;
-	NewLimits.iMass = (sMassClass.IsBlank() ? iMass : 0);
+	NewLimits.sClass = sArmorClass;
+	NewLimits.rSize = (sArmorClass.IsBlank() ? rSize : 0);
 
 	if (!sCriteria.IsBlank())
 		{
@@ -919,21 +928,21 @@ ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int 
 		CString sValue;
 		if (pDesc->FindAttribute(MAX_ARMOR_ATTRIB, &sValue))
 			{
-			m_iMaxArmorMass = strToInt(sValue, -1);
-			if (m_iMaxArmorMass < 0)
+			m_rMaxArmorSize = strToDouble(sValue, -1);
+			if (m_rMaxArmorSize < 0)
 				m_sMaxArmorClass = sValue;
 			}
 		else
-			m_iMaxArmorMass = 0;
+			m_rMaxArmorSize = 0;
 
 		if (pDesc->FindAttribute(STD_ARMOR_ATTRIB, &sValue))
 			{
-			m_iStdArmorMass = strToInt(sValue, -1);
-			if (m_iStdArmorMass < 0)
+			m_rStdArmorSize = strToInt(sValue, -1);
+			if (m_rStdArmorSize < 0)
 				m_sStdArmorClass = sValue;
 			}
 		else
-			m_iStdArmorMass = 0;
+			m_rStdArmorSize = 0;
 
 		//	Speed bonus/penalty
 
@@ -953,7 +962,7 @@ ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int 
 
 		if (m_iMaxArmorSpeedPenalty || m_iMinArmorSpeedBonus)
 			m_iType = typeCompatible;
-		else if (m_iMaxArmorMass || !m_sMaxArmorClass.IsBlank())
+		else if (m_rMaxArmorSize || !m_sMaxArmorClass.IsBlank())
 			{
 			if (m_iHullMass == 0)
 				{

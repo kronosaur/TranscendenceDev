@@ -324,7 +324,7 @@ ALERROR CDesignCollection::BindDesign (CUniverse &Universe, const TArray<CExtens
 		//	We take this opportunity to build a list of display attributes
 		//	defined by each type.
 
-		const CArmorMassDefinitions &ArmorDefinitions = pEntry->GetArmorMassDefinitions();
+		const CArmorClassDefinitions &ArmorDefinitions = pEntry->GetArmorMassDefinitions();
 		if (!ArmorDefinitions.IsEmpty())
 			m_ArmorDefinitions.Append(ArmorDefinitions);
 

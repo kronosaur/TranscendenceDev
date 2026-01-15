@@ -1095,7 +1095,7 @@ bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &S
 
 		//	See if the armor is too heavy
 
-		else if (iCanInstall == CArmorLimits::resultTooHeavy)
+		else if (iCanInstall == CArmorLimits::resultTooLarge)
 			iResult = insArmorTooHeavy;
 
 		//	Fire CanBeInstalled to check for custom conditions
