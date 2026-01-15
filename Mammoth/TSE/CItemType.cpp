@@ -33,6 +33,7 @@
 #define INSTANCE_DATA_ATTRIB					CONSTLIT("charges")
 #define COMPLETE_ARMOR_ONLY_ATTRIB				CONSTLIT("completeArmorOnly")
 #define DATA_ATTRIB								CONSTLIT("data")
+#define DENSITY_ATTRIB							CONSTLIT("density")
 #define ENHANCEMENT_ATTRIB						CONSTLIT("enhancement")
 #define FREQUENCY_ATTRIB						CONSTLIT("frequency")
 #define ENABLED_ONLY_ATTRIB						CONSTLIT("enabledOnly")
@@ -1559,6 +1560,12 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_iMass = pDesc->GetAttributeInteger(CONSTLIT(g_MassAttrib));
 	m_rVolume = pDesc->GetAttributeDouble(CONSTLIT(g_VolumeAttrib));
+	Metric rDensity = pDesc->GetAttributeDouble(DENSITY_ATTRIB);
+
+	//	Volume and density are not available in old versions
+
+	if (Ctx.GetAPIVersion() < 59 && (m_rVolume or rDensity))
+		return ComposeLoadError(Ctx, CONSTLIT("Item volume and density are not available in APIs below 59"));
 
 	//	For backwards compatibility, if something has no volume but has mass, we scale volume to mass in metric tons
 	//	We then use engine options to determine the actual mass that the item should have
@@ -1568,8 +1575,32 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		Metric rXMLMassToVolume = g_pUniverse->GetEngineOptions().GetItemXMLMassToVolumeRatio();
 		Metric rDefaultDensity = g_pUniverse->GetEngineOptions().GetItemDefaultDensity();
 
+		//	If an item has been improperly converted and only specifies density, we emit a warning
+		//	This is because volume is now the hard-balance factor, not mass
+		//	We use the adventure default density to encourage the author to fix the XML
+
+		if (rDensity)
+			kernelDebugLogPattern(CONSTLIT("Warning: Item %s (%x) specified density without specifying a volume. Using adventure default density instead."), m_sName, GetUNID());
+
 		m_rVolume = rXMLMassToVolume * m_iMass / 1000.0;
 		m_iMass = mathRound(rDefaultDensity * 1000 * m_rVolume);
+		}
+
+	//	If we are missing mass we need to compute it, or we have explicit density
+
+	else if (!m_iMass || rDensity)
+		{
+		//	Emit a warning if mass is still populated
+
+		if (m_iMass)
+			kernelDebugLogPattern(CONSTLIT("Warning: Item %s (%x) specified mass as well as volume and density. Mass is being ignored."), m_sName, GetUNID());
+
+		//	if we dont have density we grab the adventure default
+
+		if (!rDensity)
+			rDensity = g_pUniverse->GetEngineOptions().GetItemDefaultDensity();
+
+		m_iMass = mathRound(rDensity * 1000 * m_rVolume);
 		}
 
 	if (error = m_iValue.InitFromXML(Ctx, pDesc->GetAttribute(VALUE_ATTRIB)))
