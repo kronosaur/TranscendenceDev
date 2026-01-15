@@ -141,3 +141,6 @@ the `Extensions` folder of the existing Transcendence installation
 Notes:
 * For windows even a basic `.lnk` shortcut will work. It is not mandatory to symlink or hardlink the directory
 * This has not been tested on Linux but it should still work
+* If the game says that the API version of the Transcendence Universe is too high you need
+    to download a new copy of TranscendenceNext.zip and follow the setup instructions again
+    to update it.
