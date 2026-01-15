@@ -805,6 +805,11 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 		iDamage = Ctx.CalcDamageMethodAdjDamage(iMethod, rFortificationAdj);
 		}
+	else
+		{
+		ASSERT(false);
+		iDamage = 0;
+		}
 
 	//	Adjust for special armor damage:
 	//
@@ -1972,11 +1977,11 @@ void CArmorClass::GenerateScaledStats (void)
 		//  Immunities based on level
 
 		Stats.iBlindingDamageAdj = Min(m_Stats.iBlindingDamageAdj, (Stats.iLevel >= BLIND_IMMUNE_LEVEL ? 0 : 100));
-		Stats.fRadiationImmune = m_Stats.fRadiationImmune || (Stats.iLevel >= RADIATION_IMMUNE_LEVEL ? true : false);
+		Stats.fRadiationImmune |= Stats.iLevel >= RADIATION_IMMUNE_LEVEL ? true : false;
 		Stats.iEMPDamageAdj = Min(m_Stats.iEMPDamageAdj, (Stats.iLevel >= EMP_IMMUNE_LEVEL ? 0 : 100));
 		Stats.iDeviceDamageAdj = Min(m_Stats.iDeviceDamageAdj, (Stats.iLevel >= DEVICE_DAMAGE_IMMUNE_LEVEL ? 0 : 100));
-		Stats.fDisintegrationImmune = m_Stats.fDisintegrationImmune || (Stats.iLevel >= DISINTEGRATION_IMMUNE_LEVEL ? true : false);
-		Stats.fShatterImmune = m_Stats.fShatterImmune || (Stats.iLevel >= SHATTER_IMMUNE_LEVEL ? true : false);
+		Stats.fDisintegrationImmune |= Stats.iLevel >= DISINTEGRATION_IMMUNE_LEVEL ? true : false;
+		Stats.fShatterImmune |= Stats.iLevel >= SHATTER_IMMUNE_LEVEL ? true : false;
 
 		//  Regen and decay
 
