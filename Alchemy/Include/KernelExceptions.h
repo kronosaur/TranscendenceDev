@@ -219,30 +219,30 @@ class CException
 								{
 								case (0b00):
 									{
-									CONSTLIT("SUCCESS");
+									sSeverity = CONSTLIT("SUCCESS");
 									break;
 									}
 								case (0b01):
 									{
-									CONSTLIT("INFO");
+									sSeverity = CONSTLIT("INFO");
 									break;
 									}
 								case (0b10):
 									{
-									CONSTLIT("WARNING");
+									sSeverity = CONSTLIT("WARNING");
 									break;
 									}
 								case (0b11):
 									{
-									CONSTLIT("ERROR");
+									sSeverity = CONSTLIT("ERROR");
 									break;
 									}
 								default:
-									CONSTLIT("INVALID");
+									sSeverity = CONSTLIT("INVALID");
 								}
 							CString sCustomer = byCustomer ? CONSTLIT("Customer") : CONSTLIT("Microsoft");
 							CString sBad = byReserved ? CONSTLIT("Invalid") : CONSTLIT("");
-							m_sMsg = strCat(m_sMsg, strPatternSubst(CONSTLIT(" - NTSTATUS: %x %s (Code by: %s Severity: %s Facility: %x Code: %x)"), dwInfo));
+							m_sMsg = strCat(m_sMsg, strPatternSubst(CONSTLIT(" - NTSTATUS: %x (Code by: %s Severity: %s Facility: %x Code: %x)"), dwInfo, sCustomer, sSeverity, wFacility, wCode));
 							}
 
 						//	everything after this if in the array is junk
