@@ -101,16 +101,18 @@ class CLanguage
 
 		struct SMetricDesc
 			{
-			int iWhole;
-			int iDecimal;
-			int iDecimalPadding;
+			int iWhole = 0;
+			int iDecimal = 0;
+			int iDecimalPadding = 0;
 			CString sPrefix;
 			CString sPrefixName;
 			};
 
 		struct SMetricOptions
 			{
-			BYTE iMaxSigFigs = 4;
+			static constexpr BYTE MAX_SIG_FIGS = 9;
+
+			BYTE iMaxSigFigs = 3;
 
 			//	Flags
 
@@ -139,7 +141,7 @@ class CLanguage
 			int iReference = 0;
 			};
 
-		static int CalcMetricNumber (Metric rNumber, int *retiWhole, int *retiDecimal, int *retiDecimalPadding, CString *retsMetricPrefix, CString *retsMetricPrefixName);
+		static int CalcMetricNumber (Metric rNumber, SMetricOptions options, SMetricDesc *retpDesc);
 		static CString Compose (const CString &sString, const ICCItem *pArgs);
 		static CString ComposeGenderedWord (const CString &sWord, GenomeTypes iGender);
 		static CString ComposeHitPointValue (int iHP, const SHPDisplayOptions &Options);
