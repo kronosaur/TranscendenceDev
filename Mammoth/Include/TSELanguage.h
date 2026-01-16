@@ -119,7 +119,7 @@ class CLanguage
 			int iReference = 0;
 			};
 
-		static int CalcMetricNumber (Metric rNumber, int *retiWhole, int *retiDecimal, CString *retsMetricPrefix, CString *retsMetricPrefixName);
+		static int CalcMetricNumber (Metric rNumber, int *retiWhole, int *retiDecimal, int *retiDecimalPadding, CString *retsMetricPrefix, CString *retsMetricPrefixName);
 		static CString Compose (const CString &sString, const ICCItem *pArgs);
 		static CString ComposeGenderedWord (const CString &sWord, GenomeTypes iGender);
 		static CString ComposeHitPointValue (int iHP, const SHPDisplayOptions &Options);
