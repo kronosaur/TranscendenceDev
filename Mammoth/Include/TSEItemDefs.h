@@ -74,6 +74,7 @@ class CItemCriteria
 		bool MatchesItemCategory (const CItemType &ItemType) const;
 		bool MatchesLauncherMissilesOnly (void) const { return m_bLauncherMissileOnly; }
 		bool MatchesLevel (int iLevel) const { return m_LevelRange.Matches(iLevel); }
+		bool MatchesSize (Metric rSize) const { return m_SizeRange.Matches(rSize); }
 		bool MatchesMass (int iMassKg) const { return m_MassRange.Matches(iMassKg); }
 		bool MatchesNotInstalledOnly (void) const { return m_bNotInstalledOnly; }
 		bool MatchesPrice (CurrencyValue iValue) const { return m_PriceRange.Matches((int)iValue); }
@@ -110,8 +111,10 @@ class CItemCriteria
 
 		CIntegerRangeCriteria m_LevelRange;			//	Only items of this level
 		CIntegerRangeCriteria m_PriceRange;			//	Only items of this price
+		CDoubleRangeCriteria m_SizeRange;			//	Only items of this volume (in m^3)
 		CIntegerRangeCriteria m_MassRange;			//	Only items of this mass (in kg)
 		CIntegerRangeCriteria m_RepairLevelRange;	//	Only items of this repair level
+		
 
 		CString m_sLookup;							//	Look up a shared criteria
 		ICCItemPtr m_pFilter;						//	Filter returns Nil for excluded items

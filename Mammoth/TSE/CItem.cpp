@@ -2449,6 +2449,11 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 		if (!Criteria.MatchesMass(GetMassKg()))
 			return false;
 
+		//	Check for volume modifiers
+
+		if (!Criteria.MatchesSize(GetVolume()))
+			return false;
+
 		//	Check for repair level
 
 		if (!Criteria.MatchesRepairLevel(GetRepairLevel()))
