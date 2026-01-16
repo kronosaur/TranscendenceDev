@@ -99,6 +99,26 @@ class CLanguage
 			bool bHasQuotes;				//	Noun has embedded quotes
 			};
 
+		struct SMetricDesc
+			{
+			int iWhole;
+			int iDecimal;
+			int iDecimalPadding;
+			CString sPrefix;
+			CString sPrefixName;
+			};
+
+		struct SMetricOptions
+			{
+			BYTE iMaxSigFigs = 4;
+
+			//	Flags
+
+			BYTE fCapitalizeName:1 =	0;
+			BYTE fForceSigFigs:1 =		0;
+			BYTE bSpare:6 =				0;
+			};
+
 		enum class EHPDisplay
 			{
 			None,
