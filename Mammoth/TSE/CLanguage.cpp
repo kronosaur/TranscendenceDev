@@ -160,18 +160,16 @@ int CLanguage::CalcMetricNumber(Metric rNumber, SMetricOptions options, SMetricD
 		{
 
 		int iDecimalMultiplier = (int)pow(10, iDecimalSigFigs);
-		int iRawDecimal = (int)floor((rScaled * iDecimalMultiplier)) % iDecimalMultiplier;
-
-		int iDecimal = iRawDecimal / (int)pow(10, iDecimalSigFigs - 1);
+		int iDecimal = (int)floor((rScaled * iDecimalMultiplier)) % iDecimalMultiplier;
 		int iDecimalLen = (int)floor(log10(iDecimal)) + 1;
 
 		//	Remove trailing 0s from the decimal if we have them
 		//	We dont adjust the length here because thats versus the expected length
 		//	TODO: change this to be dynamic based on sig figs
 
-		if (iDecimal && !options.fForceSigFigs)
+		if (!options.fForceSigFigs)
 			{
-			while (iDecimal % 10 == 0)
+			while (iDecimal && iDecimal % 10 == 0)
 				{
 				iDecimal /= 10;
 				}
