@@ -195,6 +195,7 @@ class CAIBehaviorCtx
 
 	private:
 		void DebugAIOutput (CShip *pShip, LPCSTR pText);
+		void DebugAIOutput (CShip *pShip, CString sText);
 		void CalcEscortFormation (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing);
 		bool CalcFlockingFormationCloud (CShip *pShip, CSpaceObject *pLeader, Metric rFOVRange, Metric rSeparationRange, CVector *retvPos, CVector *retvVel, int *retiFacing);
 		bool CalcFlockingFormationRandom (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing);
@@ -250,7 +251,7 @@ class CAIBehaviorCtx
 		DWORD m_fHasAvoidPotential:1 = false;		//	TRUE if there is something to avoid
 		DWORD m_fShootTargetableMissiles:1 = false;	//	TRUE if we try to hit targetable missiles with secondaries
 		DWORD m_fShootAllMissiles:1 = false;		//	TRUE if we try to hit all missiles with secondaries
-		DWORD m_fLowManeuverability:1 = false;		//	TRUE if we maneuver at less than or equal to 12 degrees per second
+		DWORD m_fLowManeuverability:1 = false;		//	TRUE if we maneuver <=12 degrees per second or rotation accel*2 < maneuver
 		DWORD m_fSpare7:1 = false;
 		DWORD m_fSpare8:1 = false;
 

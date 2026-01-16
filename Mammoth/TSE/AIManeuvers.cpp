@@ -494,15 +494,26 @@ CVector CAIBehaviorCtx::CalcManeuverSpiralOut (CShip *pShip, const CVector &vTar
 	return PolarToVector(iAngle + iTrajectory, rRadius);
 	}
 
-void CAIBehaviorCtx::DebugAIOutput (CShip *pShip, LPCSTR pText)
-
 //	DebugAIOutput
 //
 //	Output AI state
+//
+void CAIBehaviorCtx::DebugAIOutput (CShip *pShip, LPCSTR pText)
 
 	{
 	if (pShip->GetUniverse().GetDebugOptions().IsShowAIDebugEnbled())
 		pShip->HighlightAppend(strPatternSubst(CONSTLIT("%d: %s"), pShip->GetID(), CString(pText)));
+	}
+
+//	DebugAIOutput
+//
+//	Output AI state (accepts CString)
+//
+void CAIBehaviorCtx::DebugAIOutput (CShip *pShip, CString sText)
+
+	{
+	if (pShip->GetUniverse().GetDebugOptions().IsShowAIDebugEnbled())
+		pShip->HighlightAppend(strPatternSubst(CONSTLIT("%d: %s"), pShip->GetID(), sText));
 	}
 
 void CAIBehaviorCtx::ImplementAttackNearestTarget (CShip *pShip, Metric rMaxRange, CSpaceObject **iopTarget, CSpaceObject *pExcludeObj, bool bTurn)
@@ -590,7 +601,7 @@ void CAIBehaviorCtx::ImplementAttackTarget (CShip *pShip, CSpaceObject *pTarget,
 	if (bMaintainCourse || IsImmobile())
 		NULL;
 
-	//	If we're flocking, then implement flocking maneuverses
+	//	If we're flocking, then implement flocking maneuvers
 
 	else if (m_AISettings.IsFlocker() 
 				&& rTargetDist2 > FLOCK_COMBAT_RANGE2
@@ -651,14 +662,14 @@ void CAIBehaviorCtx::ImplementAttackTarget (CShip *pShip, CSpaceObject *pTarget,
 	DEBUG_CATCH
 	}
 
-bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2)
-
 //	ImplementAttackTargetManeuver
 //
 //	Implements maneuvers to attack the target based on the ship's combat style
 //	and taking into account the hazard potential vector.
 //
 //	Returns TRUE if a maneuver was made (if FALSE, then ship is free to maneuver to align weapon)
+//
+bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2)
 
 	{
 	CVector vDirection;
@@ -678,7 +689,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			if (IsWaitingForShieldsToRegen() && bFaster)
 				{
-				DebugAIOutput(pShip, "Wait for shields");
+				DebugAIOutput(pShip, "Std: Wait for shields");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget, 75));
 				}
 
@@ -687,7 +698,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			else if (rTargetDist2 > GetPrimaryAimRange2())
 				{
-				DebugAIOutput(pShip, "Close on target");
+				DebugAIOutput(pShip, "Std: Close on target");
 
 				//	Try to flank our target, if we are faster
 
@@ -716,7 +727,15 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				//	it above).
 				//	We cheat a little to dampen our movements against stationary targets.
 
-				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle, CHEAT_FORMATION_FACTOR);
+				//	Compute a reasonable cheat factor for our mass (if we are too light,
+				//	we can get thrown across space by this system and it looks really bad)
+
+				Metric rOurMass = pShip->GetMass();	//	Mass in tons
+				Metric rCheatFactor = rOurMass > 200 ? CHEAT_FORMATION_FACTOR : CHEAT_FORMATION_FACTOR * rOurMass / 200;
+
+				DebugAIOutput(pShip, strPatternSubst(CONSTLIT("Std: Close on static fire point: Assist %r"), rCheatFactor));
+
+				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle, rCheatFactor);
 				}
 
 			//	If we're attacking a station, then keep our distance so that
@@ -726,7 +745,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 					&& rTargetDist2 < MIN_STATION_TARGET_DIST2 
 					&& pTarget->GetMass() > 5000.0)
 				{
-				DebugAIOutput(pShip, "Spiral away to avoid explosion");
+				DebugAIOutput(pShip, "Std: Spiral away: avoid explosion");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
 				}
 
@@ -734,7 +753,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			else if (rTargetDist2 < MIN_TARGET_DIST2)
 				{
-				DebugAIOutput(pShip, "Spiral away");
+				DebugAIOutput(pShip, "Std: Spiral away: too close");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
 				}
 
@@ -801,8 +820,25 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 					&& bWeAreFaster
 					&& pShip->GetCurrentOrderDesc().GetOrder() != IShipController::orderEscort)
 				{
-				DebugAIOutput(pShip, "Wait for shields");
+				DebugAIOutput(pShip, "Adv: Wait for shields");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget, 75));
+				}
+
+			//	If we're attacking a station, then keep our distance so that
+			//	we don't get caught in the explosion
+
+			else if (bAvoidExplodingTarget)
+				{
+				DebugAIOutput(pShip, "Adv: Spiral away: avoid explosion");
+				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
+				}
+
+			//	If we're too close to our target, spiral away
+
+			else if (rTargetDist2 < rMinDist2)
+				{
+				DebugAIOutput(pShip, "Adv: Spiral away: too close to target");
+				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
 				}
 
 			//	If we're attacking a static target then find a good spot
@@ -830,7 +866,24 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				//	it above).
 				//	We cheat a little to dampen our movements against stationary targets.
 
-				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle, CHEAT_FORMATION_FACTOR);
+				//	Compute a reasonable cheat factor for our mass (if we are too light,
+				//	we can get thrown across space by this system and it looks really bad)
+
+				Metric rOurMass = pShip->GetMass();	//	Mass in tons
+				Metric rCheatFactor = rOurMass > 200 ? CHEAT_FORMATION_FACTOR : CHEAT_FORMATION_FACTOR * rOurMass / 200;
+
+				DebugAIOutput(pShip, strPatternSubst(CONSTLIT("Adv: Close on static fire point: Assist %r"), rCheatFactor));
+
+				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle, rCheatFactor);
+				}
+
+			//	If we are way too far away (over ~50% of our aim distance off)
+			//	just close on the target
+
+			else if (rTargetDist2 > rMaxAimDist2 * 2)
+				{
+				DebugAIOutput(pShip, "Adv: Close on target");
+				vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2));
 				}
 
 			//	If we're not well in range of our primary weapon then
@@ -849,13 +902,13 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 					CVector vPos;
 					if (m_fHasAvoidPotential)
 						{
-						DebugAIOutput(pShip, "Avoid hazards");
+						DebugAIOutput(pShip, "Adv: Avoid hazards");
 
 						vPos = pShip->GetPos() + (POTENTIAL_TO_POS_ADJ * GetPotential());
 						}
 					else
 						{
-						DebugAIOutput(pShip, "Close to aim point");
+						DebugAIOutput(pShip, "Adv: Close to aim point");
 
 						//	Pick a position at the flank distance between us and the target
 
@@ -867,35 +920,65 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 					CVector vVel = pTarget->GetVel() + (vToTargetN * (1.0 - Min(0.7, rBravery)) * pShip->GetMaxSpeed());
 
-					//	Maneuver to that point - cheat a little if the target is stationary to dampen our movement.
+					//	We already handled stationary targets in the previous check
+					//	so we can assume that our target is moving
+					//
+					//	If we have bad maneuverability we need to cheat a little to avoid severe oversteer oscillation
+					// 
+					//	If we are close enough, we dont care and start shooting
 
-					vDirection = CalcManeuverFormation(pShip, vPos, vVel, 0, pTarget->GetVel().Length2() > g_Epsilon ? 0.0 : CHEAT_FORMATION_FACTOR);
+					Metric rPosRadius = LIGHT_SECOND * 3;
+					Metric rPosRadius2 = rPosRadius * rPosRadius;
+					Metric rPosOffset2 = pShip->GetPos().Distance2(vPos);
+
+					if (rPosRadius2 > rPosOffset2)
+						{
+						DebugAIOutput(pShip, "Adv: Close enough to fire point, Aiming...");
+						//	good enough, just drift while the aim code shoots
+						vDirection = GetPotential();
+						}
+					else if (m_fLowManeuverability)
+						{
+						//	Compute a reasonable cheat factor for our mass (if we are too light,
+						//	we can get thrown across space by this system and it looks really bad)
+
+						Metric rOurMass = pShip->GetMass();	//	Mass in tons
+						Metric rCheatFactor = rOurMass > 200 ? CHEAT_FORMATION_FACTOR : CHEAT_FORMATION_FACTOR * rOurMass / 200;
+
+						//	We need to be facing the correct direction for this. Formations can
+						//	cheat backwards because they look ok moving as a unit, however
+						//	individual attackers getting cheated backwards/sideways is ugly and obvious
+						//	We might still need a little backwards dampening but we need to minimize it
+
+						CVector vToPos = vPos - pShip->GetPos();
+
+						//	How far off we are in radians from the force being applied
+						Metric rAngleDiff = abs(vToPos.Polar() - mathDegreesToRadians(pShip->GetRotationAngle()));
+						Metric rCos = max(cos(rAngleDiff), 0.0);
+
+						//	We get the square to bias towards not moving at wrong angles
+						Metric rCos2 = rCos * rCos;
+
+						rCheatFactor *= rCos2;
+
+						DebugAIOutput(pShip, strPatternSubst(CONSTLIT("Adv: Close on fire point: Assist %r"), rCheatFactor));
+
+						vDirection = CalcManeuverFormation(pShip, vPos, vVel, 0, rCheatFactor);
+						}
+					else
+						{
+						DebugAIOutput(pShip, "Adv: Close on fire point");
+						vDirection = CalcManeuverFormation(pShip, vPos, vVel, 0, 0.0);
+						}
 					}
 
 				//	Otherwise, we just try to close as best as possible
 
 				else
 					{
-					DebugAIOutput(pShip, "Close on target");
+					DebugAIOutput(pShip, "Adv: Close on target");
 					vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2));
 					}
-				}
-
-			//	If we're attacking a station, then keep our distance so that
-			//	we don't get caught in the explosion
-
-			else if (bAvoidExplodingTarget)
-				{
-				DebugAIOutput(pShip, "Spiral away to avoid explosion");
-				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
-				}
-
-			//	If we're too close to our target, spiral away
-
-			else if (rTargetDist2 < rMinDist2)
-				{
-				DebugAIOutput(pShip, "Spiral away");
-				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
 				}
 
 			//	Otherwise, hazard avoidance only.
@@ -915,6 +998,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			if (rTargetDist2 > rMaxRange2)
 				{
+				DebugAIOutput(pShip, "StandOff: Close on target");
 				vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2));
 				}
 
@@ -922,6 +1006,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			else if (rTargetDist2 < rIdealRange2)
 				{
+				DebugAIOutput(pShip, "StandOff: Spiral away: Too close");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget, 45));
 				}
 
@@ -937,37 +1022,108 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			{
 			Metric rMaxRange2 = m_rBestWeaponRange * m_rBestWeaponRange;
 
-			//	Compute the angle line along the target's motion (and make sure
-			//	it is aligned on a rotation angle, so we can get a shot in)
+			//	Pick an aggressively close range
+			//	Avoid being unnecessarily close if our range is so overwhelming though
+			//	Because it makes maneuvering harder
 
-			int iTargetMotion = (pTarget->CanThrust() ?
+			Metric rRange = Max(0.125 * m_rBestWeaponRange, Min(0.5 * m_rBestWeaponRange, 10.0 * LIGHT_SECOND));
+
+			//	If we are way too far away (over ~100% of our desired distance off)
+			//	just close on the target. This saves on compute and reduces oversteer.
+
+			if (rTargetDist2 > rRange * rRange * 4)
+				{
+				DebugAIOutput(pShip, "Chase: Close on target");
+				vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2));
+				}
+			else
+				{
+
+				//	Compute the angle line along the target's motion (and make sure
+				//	it is aligned on a rotation angle, so we can get a shot in)
+
+				int iTargetMotion = (pTarget->CanThrust() ?
 					pShip->AlignToRotationAngle(VectorToPolar(pTarget->GetVel()))
 					: pShip->AlignToRotationAngle(pShip->GetDestiny()));
 
-			//	Compute the target's angle with respect to us. We want to end up facing
-			//	directly towards the target
+				//	Compute the target's angle with respect to us. We want to end up facing
+				//	directly towards the target
 
-			int iTargetAngle = VectorToPolar(vTarget);
+				int iTargetAngle = VectorToPolar(vTarget);
 
-			//	Pick a point behind the target (and add hazard potential)
+				//	Pick a point behind the target (and add hazard potential)
 
-			Metric rRange = Min(0.5 * m_rBestWeaponRange, 10.0 * LIGHT_SECOND);
-			CVector vPos;
-			if (m_fHasAvoidPotential)
-				vPos = pShip->GetPos() + (POTENTIAL_TO_POS_ADJ * GetPotential());
-			else
-				vPos = pTarget->GetPos() + PolarToVector(iTargetMotion + 180, rRange);
+				CVector vPos;
+				if (m_fHasAvoidPotential)
+					vPos = pShip->GetPos() + (POTENTIAL_TO_POS_ADJ * GetPotential());
+				else
+					vPos = pTarget->GetPos() + PolarToVector(iTargetMotion + 180, rRange);
 
-			//	Figure out which way we need to move to end up where we want
-			//	(Note that we don't combine the potential because we've already accounted for
-			//	it above).
-			//	Cheat a little if the target cant move or is stationary to dampen our movements
+				//	Figure out which way we need to move to end up where we want
+				//	(Note that we don't combine the potential because we've already accounted for
+				//	it above).
+				//	Cheat a little if the target cant move or is stationary to dampen our movements
+				//	We also need to cheat if our handling is really poor to avoid oscillations
+				// 
+				//	If we are close enough, we dont care and start shooting
 
-			vDirection = CalcManeuverFormation(pShip, vPos, pTarget->GetVel(), iTargetAngle, pTarget->CanThrust() && pTarget->GetVel().Length2() > g_Epsilon ? 0.0 : CHEAT_FORMATION_FACTOR);
+				Metric rPosRadius = LIGHT_SECOND * 3;
+				Metric rPosRadius2 = rPosRadius * rPosRadius;
+				Metric rPosOffset2 = pShip->GetPos().Distance2(vPos);
 
-			//	We don't want to thrust unless we're in position
+				bool bTargetMobile = (pTarget->CanThrust() && pTarget->GetVel().Length2() > g_Epsilon);
+				bool bCheat = !bTargetMobile || m_fLowManeuverability;
 
-			bNoThrustThroughTurn = true;
+				if (rPosOffset2 > rPosRadius2)
+					{
+					//	need to get closer to our desired pos
+
+					bool bTargetMobile = (pTarget->CanThrust() && pTarget->GetVel().Length2() > g_Epsilon);
+					bool bCheat = !bTargetMobile || m_fLowManeuverability;
+
+					if (bCheat)
+						{
+						//	Compute a reasonable cheat factor for our mass (if we are too light,
+						//	we can get thrown across space by this system and it looks really bad)
+
+						Metric rOurMass = pShip->GetMass();	//	Mass in tons
+						Metric rCheatFactor = rOurMass > 200 ? CHEAT_FORMATION_FACTOR : CHEAT_FORMATION_FACTOR * rOurMass / 200;
+
+						//	We need to be facing the correct direction for this. Formations can
+						//	cheat backwards because they look ok moving as a unit, however
+						//	individual attackers getting cheated backwards/sideways is ugly and obvious
+						//	We might still need a little backwards dampening but we need to minimize it
+
+						CVector vToPos = vPos - pShip->GetPos();
+
+						//	How far off we are in radians from the force being applied
+						Metric rAngleDiff = abs(vToPos.Polar() - mathDegreesToRadians(pShip->GetRotationAngle()));
+						Metric rCos = max(cos(rAngleDiff), 0.0);
+
+						//	We get the square to bias towards not moving at wrong angles
+						Metric rCos2 = rCos * rCos;
+
+						rCheatFactor *= rCos2;
+
+						DebugAIOutput(pShip, strPatternSubst(CONSTLIT("Chase: Close on static fire point: Assist %r"), rCheatFactor));
+						vDirection = CalcManeuverFormation(pShip, vPos, pTarget->GetVel(), iTargetAngle, rCheatFactor);
+						}
+					else
+						{
+						DebugAIOutput(pShip, "Chase: Close on fire point");
+						vDirection = CalcManeuverFormation(pShip, vPos, pTarget->GetVel(), iTargetAngle, 0.0);
+						}
+					}
+				else
+					{
+					DebugAIOutput(pShip, "Chase: Close enough to fire point, aiming...");
+					vDirection = GetPotential();
+					}
+
+				//	We don't want to thrust unless we're in position
+
+				bNoThrustThroughTurn = true;
+				}
 
 			//	Debug
 
@@ -1038,7 +1194,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			if (rTargetDist2 > GetPrimaryAimRange2())
 				{
-				DebugAIOutput(pShip, "Close on target");
+				DebugAIOutput(pShip, "No Retreat: Close on target");
 
 				//	Try to flank our target, if we are faster
 
@@ -1051,7 +1207,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			else if (pTarget->CanThrust()
 					&& (pShip->GetVel().Length2() < (0.01 * 0.01 * LIGHT_SPEED * LIGHT_SPEED)))
 				{
-				DebugAIOutput(pShip, "Speed away");
+				DebugAIOutput(pShip, "No Retreat: Speed away");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
 				}
 
@@ -1061,6 +1217,12 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				vDirection = GetPotential();
 			
 			break;
+			}
+
+		default:
+			{
+			DebugAIOutput(pShip, "Combat style not found");
+			vDirection = GetPotential();
 			}
 		}
 
@@ -1654,10 +1816,21 @@ void CAIBehaviorCtx::ImplementFireSingleWeaponOnTarget (CShip* pShip,
 			ClearBestWeapon();
 
 		CalcBestWeapon(pShip, pTarget, rTargetDist2);
-		if (m_iBestWeapon == devNone)
+
+		bool bBestWeaponDamaged = false;
+
+		if (m_iBestWeapon != devNone)
+			bBestWeaponDamaged = pShip->GetDevice(m_iBestWeapon)->IsDamaged();
+
+		if (m_iBestWeapon == devNone || (m_fHasSecondaryWeapons && bBestWeaponDamaged))
 			{
+			//	Turn to face the enemy so we dont just turn off and sit uselessly
+			//	and get shot.
+			//	Eventually we should intelligently figure the angle out based
+			//	on secondary distribution around the ship
+
 			if (retiFireDir)
-				*retiFireDir = -1;
+				*retiFireDir = mathRound(mathRadiansToDegrees((pTarget->GetPos() - pShip->GetPos()).Polar()));
 
 			DebugAIOutput(pShip, "Fire: No appropriate weapon found");
 			return;

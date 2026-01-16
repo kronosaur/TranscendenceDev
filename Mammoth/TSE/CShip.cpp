@@ -3041,11 +3041,11 @@ Metric CShip::GetInvMass (void) const
 	return (1.0 / rMass);
 	}
 
-Metric CShip::GetMass (void) const
-
 //	GetMass
 //
 //	Returns the mass of the object in metric tons
+//
+Metric CShip::GetMass (void) const
 
 	{
 	return m_pClass->GetHullDesc().GetMass() + GetItemMass();
