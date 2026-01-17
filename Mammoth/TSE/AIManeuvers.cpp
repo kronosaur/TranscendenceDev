@@ -732,7 +732,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			bool bAvoidExplodingTarget = m_fAvoidExplodingStations
 				&& rTargetDist2 < MIN_STATION_TARGET_DIST2
-				&& iTargetRelHP < 5
+				&& iTargetRelHP < 15
 				&& iTargetRelHP >= 0
 				&& pTarget->GetMass() > 5000.0;
 
@@ -850,7 +850,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			bool bAvoidExplodingTarget = m_fAvoidExplodingStations
 					&& rTargetDist2 < MIN_STATION_TARGET_DIST2
-					&& iTargetRelHP < 5
+					&& iTargetRelHP < 15
 					&& iTargetRelHP >= 0
 					&& pTarget->GetMass() > 5000.0;
 
