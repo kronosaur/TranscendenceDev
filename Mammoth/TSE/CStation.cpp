@@ -2311,6 +2311,27 @@ IShipGenerator *CStation::GetRandomEncounterTable (int *retiFrequency) const
 	return m_pType->GetEncountersTable();
 	}
 
+//	GetRelativeHealth
+// 
+//	Returns an int 0-100 representing
+//	the relative health of this station
+// 
+//	Values > 100 represent an indestructible or intangible object (suspended, gated, virtual, etc)
+//	Values < 0 represent a destroyed object
+//
+int CStation::GetRelativeHealth() const
+	{
+	if (IsDestroyed())
+		return -1;
+	
+	if (IsImmutable() || IsIntangible() || !m_Hull.CanBeHit() || !m_Hull.GetMaxHitPoints())
+		return INT_MAX;
+
+	Metric rHPRatio = m_Hull.GetHitPoints() / m_Hull.GetMaxHitPoints();
+
+	return min(100, mathRound(rHPRatio * 100 + 0.5));
+	}
+
 int CStation::GetRotation (void) const
 
 //	GetRotation
