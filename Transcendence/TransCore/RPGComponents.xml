@@ -123,7 +123,7 @@
 
 	<Type UNID="&unidComponentReminder;">
 		<AttributeDesc>
-			<ItemAttribute	label="Component"	labelType="advantage"	criteria="*">
+			<ItemAttribute	label="component"	labelType="quest"	criteria="*">
 				<OnShow>
 					(block (
 						(theType (itmGetType gItem))
