@@ -209,9 +209,23 @@
 					)
 				))
 
-			(setq intLootAllItems (lambda (theSource theDest criteria)
-				(block (lootedItems)
-					(setq lootedItems (objGetItems theSource criteria))
+			(setq intLootAllItems (lambda (theSource theDest criteria byValue)
+				"Loot items from source to dest. If byValue is non-Nil we first sort by value"
+				(block (
+					(lootedItems (objGetItems theSource criteria))
+					)
+					(if byValue (setq lootedItems
+						(map
+							(sort
+								(map lootedItems theItem (list theItem (/ (itmGetActualPrice theItem) (itmGetMass theItem))))
+								'descending
+								1
+								)
+							var
+							(@ var 0)
+							)
+						))
+
 					(enum lootedItems theItem
 						(block (fitCount)
 							(setq fitCount (objGetFitCount theDest theItem))
