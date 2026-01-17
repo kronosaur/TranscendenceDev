@@ -139,7 +139,7 @@ const Metric ARMOR_CLASS_BALANCE_K0 =					1.284;
 const Metric ARMOR_CLASS_BALANCE_K1 =					-0.47;
 const Metric ARMOR_CLASS_BALANCE_K2 =					0.014;
 const Metric ARMOR_CLASS_BALANCE_ADJ =					60.0;	//	Linear relationship between curve and mass balance
-const Metric ARMOR_CLASS_BALANCE_LIMIT =				16.0;	//	Above this size (in m^3) we don't get any additional bonus
+const Metric ARMOR_CLASS_BALANCE_LIMIT =				16.0;	//	Above this size (in CBM) we don't get any additional bonus
 const Metric ARMOR_CLASS_STD_SIZE =					(-ARMOR_CLASS_BALANCE_K1 - sqrt(ARMOR_CLASS_BALANCE_K1 * ARMOR_CLASS_BALANCE_K1 - 4.0 * ARMOR_CLASS_BALANCE_K2 * ARMOR_CLASS_BALANCE_K0)) / (2.0 * ARMOR_CLASS_BALANCE_K2);
 const Metric ARMOR_CLASS_COST_POWER =					0.5;
 

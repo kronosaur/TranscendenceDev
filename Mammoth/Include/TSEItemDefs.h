@@ -343,7 +343,7 @@ class CArmorClassDefinitions
 			CString sDefinition;			//	Index to m_Definitions
 
 			CString sID;					//	Required ID
-			Metric rMaxSize = 0;			//	Maximum size (m^3)
+			Metric rMaxSize = 0;			//	Maximum size (cubic meters)
 			CString sText;					//	Text to display on item
 
 			int iCount = 0;					//	Number of armor types for this class

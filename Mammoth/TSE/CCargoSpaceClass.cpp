@@ -245,13 +245,13 @@ CString CCargoSpaceClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWOR
 
 		int iCargoInc = Min(pDesc->GetCargoSpace(), Hull.GetMaxCargoSpace() - Hull.GetCargoSpace());
 		if (iCargoInc > 0)
-			sReference = strPatternSubst(CONSTLIT("+%d m^3 capacity"), iCargoInc);
+			sReference = strPatternSubst(CONSTLIT("+%d CBM capacity"), iCargoInc);
 		}
 
 	//	Otherwise, describe the full amount
 
 	else
-		sReference = strPatternSubst(CONSTLIT("%d m^3 capacity"), pDesc->GetCargoSpace());
+		sReference = strPatternSubst(CONSTLIT("%d CBM capacity"), pDesc->GetCargoSpace());
 
 	//	Done
 

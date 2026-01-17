@@ -2261,14 +2261,14 @@ void CDockScreen::UpdateCredits (void)
 	//	Cargo space
 	Metric rCargoSpace = m_pPlayer->GetShip()->GetCargoSpaceLeft();
 	if(rCargoSpace == 1.0)
-		m_pCargoSpace->SetText(CONSTLIT("1 m^3"));
+		m_pCargoSpace->SetText(CONSTLIT("1 CBM"));
 	else
 		{
-		int iCargoTons = (int) rCargoSpace;
-		int iCargoKg = (int) ((rCargoSpace - iCargoTons) * 1000);		//The liters left after taking the cubic meters
-		if(iCargoTons > 0)
-			m_pCargoSpace->SetText(strPatternSubst("%d.%d m^3", iCargoTons, iCargoKg / 100));			//Truncate kg to one decimal
+		int iCargoCBM = (int) rCargoSpace;
+		int iCargoMilliCBM = (int) ((rCargoSpace - iCargoCBM) * 1000);		//The liters (mCBM) left after taking the cubic meters (CBM)
+		if(iCargoCBM > 0)
+			m_pCargoSpace->SetText(strPatternSubst("%d.%d CBM", iCargoCBM, iCargoMilliCBM / 100));			//Truncate mCBM to one decimal
 		else
-			m_pCargoSpace->SetText(strPatternSubst("%d liters", iCargoKg));
+			m_pCargoSpace->SetText(strPatternSubst("%d mCBM", iCargoMilliCBM));
 		}
 	}

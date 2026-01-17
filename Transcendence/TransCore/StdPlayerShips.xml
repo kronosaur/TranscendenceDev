@@ -16,10 +16,15 @@
 	capitalShip - this is a very large ship (destroyer or larger)
 	freighter - this ship is a freighter
 	courier - this ship is a fast freighter (0.2c+)
-	lightFreighter - this freighter can carry <=999 m^3 of cargo
-	heavyFreighter - this freighter can carry 10000-99999 m^3 of cargo
-	superFreighter - this freighter can carry 100000-999999 m^3 off cargo
-	hyperFreighter - this freighter can carry over 1000000 m^3 of cargo
+	
+	Special attributes for freighters:
+		Note: CBM = real world shipping industry name for cubic meters.
+			It formats with SI prefixes better than 1 k m^3 which looks like 1km^3
+			But 1km^3 is 1000000x more than 1k m^3
+	lightFreighter - this freighter can fit <1 kCBM
+	heavyFreighter - this freighter can fit 10-99 kCBM of cargo
+	superFreighter - this freighter can fit 100-999 kCBM of cargo
+	hyperFreighter - this freighter can fit >=1 MCBM of cargo
 -->
 
 <!-- BRITANNIA-CLASS HEAVY GUNSHIP -->
