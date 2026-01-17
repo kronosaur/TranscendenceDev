@@ -2175,7 +2175,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'availableNonWeaponSlots\n"
 			"   'availableWeaponSlots\n"
 			"   'blindingImmune\n"
-			"   'cargoSpace -> in tons\n"
+			"   'cargoSpace -> in CBM\n"
 			"   'counterIncrementRate\n"
 			"   'counterValue\n"
 			"   'character\n"

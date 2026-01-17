@@ -2714,11 +2714,11 @@ Metric CShip::GetCargoVolume(void) const
 	return m_rCargoVolume;
 	}
 
-Metric CShip::GetCargoSpaceLeft (void) const
-
 //	GetCargoSpaceLeft
 //
-//	Returns the amount of cargo space left in tons
+//	Returns the amount of cargo space left in CBM (cubic meters)
+//
+Metric CShip::GetCargoSpaceLeft () const
 
 	{
 	//	Compute total cargo space. Start with the space specified
@@ -3072,11 +3072,11 @@ Metric CShip::GetInvMass (void) const
 	return (1.0 / rMass);
 	}
 
-Metric CShip::GetMass (void) const
-
 //	GetMass
 //
 //	Returns the mass of the object in metric tons
+//
+Metric CShip::GetMass (void) const
 
 	{
 	return m_pClass->GetHullDesc().GetMass() + GetItemMass();

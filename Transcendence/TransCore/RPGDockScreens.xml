@@ -770,6 +770,9 @@
 								(setq itemsToLoot (scrRemoveItem gScreen 1))
 								(objAddItem gPlayerShip itemsToLoot)
 
+								;	TODO: properly compute mass of ore for adventures and
+								;	extensions like VotG and Chronicles which have ore in non-ton
+								;	amounts e.g. krels or ore chunks respectively
 								(if (objHasAttribute gSource 'minedOre)
 									(plyIncItemStat gPlayer 'itemsMinedCount itemsToLoot 1)
 									)
@@ -830,6 +833,9 @@
 									(setq itemsToLoot (scrRemoveItem gScreen count))
 									(objAddItem gPlayerShip itemsToLoot)
 
+									;	TODO: properly compute mass of ore for adventures and
+									;	extensions like VotG and Chronicles which have ore in non-ton
+									;	amounts e.g. krels or ore chunks respectively
 									(if (objHasAttribute gSource 'minedOre)
 										(plyIncItemStat gPlayer 'itemsMinedCount itemsToLoot count)
 										)

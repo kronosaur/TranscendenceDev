@@ -123,9 +123,9 @@ void CUIHelper::CreateClassInfoCargo (const CShipClass &Class, const CDeviceDesc
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
 			strFromInt(CargoDesc.GetCargoSpace()),
 			(COLORREF)VI.GetColor(colorTextDialogInput),
-			(pCargoExpansion ? strPatternSubst(CONSTLIT("ton %s"), CTextBlock::Escape(pCargoExpansion->GetType()->GetNounPhrase(nounActual))) : CONSTLIT("ton cargo hold")),
+			(pCargoExpansion ? strPatternSubst(CONSTLIT("CBM %s"), CTextBlock::Escape(pCargoExpansion->GetType()->GetNounPhrase(nounActual))) : CONSTLIT("CBM cargo hold")),
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
-			(CargoDesc.GetCargoSpace() < Class.GetHullDesc().GetMaxCargoSpace() ? strPatternSubst(CONSTLIT("optional expansion up to %d tons"), Class.GetHullDesc().GetMaxCargoSpace()) : CONSTLIT("cargo space cannot be expanded")));
+			(CargoDesc.GetCargoSpace() < Class.GetHullDesc().GetMaxCargoSpace() ? strPatternSubst(CONSTLIT("optional expansion up to %d CBM"), Class.GetHullDesc().GetMaxCargoSpace()) : CONSTLIT("cargo space cannot be expanded")));
 
 	CreateClassInfoSpecialItem(pItemIcon, sText, x, y, cxWidth, dwOptions, retcyHeight, retpInfo);
 	}

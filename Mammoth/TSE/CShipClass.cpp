@@ -951,12 +951,12 @@ Metric CShipClass::CalcManeuverValue (bool bDodge) const
 	return rDodge;
 	}
 
-Metric CShipClass::CalcMass (const CDeviceDescList &Devices) const
-
 //	CalcMass
 //
 //	Returns the total mass of the ship class, including devices and armor
 //	(in tons).
+//
+Metric CShipClass::CalcMass (const CDeviceDescList &Devices) const
 
 	{
 	int i;
@@ -973,14 +973,14 @@ Metric CShipClass::CalcMass (const CDeviceDescList &Devices) const
 	return rMass;
 	}
 
-ICCItemPtr CShipClass::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const
-
 //	CalcMaxSpeedByArmorSize
 //
 //	Returns a struct with entries for each value of max speed. Each entry has the
 //	smallest armor mass which results in the given speed.
 //
 //	If there is no variation in speed, we return a single speed value.
+//
+ICCItemPtr CShipClass::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const
 
 	{
 	int iStdSpeed = mathRound(100.0 * m_Perf.GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED);
