@@ -3244,11 +3244,66 @@ void CShip::GetReactorStats (SReactorStats &Stats) const
 		}
 	}
 
-int CShip::GetStealth (void) const
+//	GetRelativeHealth
+// 
+//	Returns an int 0-100 representing
+//	the relative health of this ship
+// 
+//	Values > 100 represent an indestructible or intangible object (suspended, gated, virtual, etc)
+//	Values < 0 represent a destroyed object
+//
+int CShip::GetRelativeHealth () const
+	{
+	if (IsDestroyed())
+		return -1;
+
+	if (IsImmutable() || IsIntangible())
+		return INT_MAX;
+
+	Metric rArmorHPRatio = 1.0;
+
+	//	Pick the most damaged segment
+
+	for (int i = 0; i < m_Armor.GetSegmentCount(); i++)
+		{
+		CInstalledArmor Segment = m_Armor.GetSegment(i);
+		int iTotalArmorHP = Segment.GetHitPoints();
+		int iTotalArmorMaxHP = Segment.GetMaxHP(this);
+		Metric rSegmentArmorHPRatio = iTotalArmorMaxHP ? (Metric)iTotalArmorHP / iTotalArmorMaxHP : 0.0;
+		
+		if (rSegmentArmorHPRatio < rArmorHPRatio)
+			rArmorHPRatio = rSegmentArmorHPRatio;
+		}
+
+	//	Handle ships with compartments
+
+	if (m_fHasShipCompartments || m_Interior.GetCount())
+		{
+		int iCompartmentHP;
+		int iCompartmentMaxHP;
+
+		m_Interior.GetHitPoints(*this, m_pClass->GetInteriorDesc(), &iCompartmentHP, &iCompartmentMaxHP);
+
+		Metric rCompartmentHPRatio = iCompartmentMaxHP ? (Metric)iCompartmentHP / iCompartmentMaxHP : 0;
+
+		//	Each counts for half of the total HP pool. This is designed to mirror the actual
+		//	HP bar in the UI
+
+		Metric rCombinedRatio = rArmorHPRatio * 0.5 + rCompartmentHPRatio * 0.5;
+		return min(100, mathRound(100 * rCombinedRatio + 0.5 - g_Epsilon));	//only return 0 if we are actually at 0
+		}
+
+	//	Ships without compartments are just the most damaged armor ratio
+
+	else
+		return min(100, mathRound(100 * rArmorHPRatio + 0.5 - g_Epsilon));
+	}
 
 //	GetStealth
 //
 //	Returns the stealth of the ship
+//
+int CShip::GetStealth () const
 
 	{
 	int iStealth = m_Perf.GetStealth();

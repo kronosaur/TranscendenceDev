@@ -472,11 +472,11 @@ CVector CAIBehaviorCtx::CalcManeuverSpiralIn (CShip *pShip, const CVector &vTarg
 	return PolarToVector(iAngle + 360 - iTrajectory, rRadius);
 	}
 
-CVector CAIBehaviorCtx::CalcManeuverSpiralOut (CShip *pShip, const CVector &vTarget, int iTrajectory)
-
 //	CalcManeuverSpiralOut
 //
 //	Returns the vector that the ship should move in for a spiral-out maneuver
+//
+CVector CAIBehaviorCtx::CalcManeuverSpiralOut (CShip *pShip, const CVector &vTarget, int iTrajectory)
 
 	{
 	CVector vTangent = (vTarget.Perpendicular()).Normal() * pShip->GetMaxSpeed() * g_SecondsPerUpdate * 8;
@@ -492,6 +492,43 @@ CVector CAIBehaviorCtx::CalcManeuverSpiralOut (CShip *pShip, const CVector &vTar
 	//	Curve out
 
 	return PolarToVector(iAngle + iTrajectory, rRadius);
+	}
+
+//	CalcManeuverSpiralOutEvasive
+//
+//	Returns the vector that the ship should move in for a spiral-out maneuver
+//	May flip the sign on iTrajectory at a frequency specific to that ship
+//	Randomize iTrajectory by an amount specific to that ship
+//	
+//	This makes it harder for an enemy to repeatedly attack and damage the same segments of armor
+//	While trying to flee a faster enemy
+//
+CVector CAIBehaviorCtx::CalcManeuverSpiralOutEvasive (CShip *pShip, const CVector &vTarget, int iTrajectory)
+
+	{
+	int iTrajectoryPreference = pShip->GetDestiny() % 31 - 15;
+	int iTurnTime = pShip->GetDestiny() - 180 + 300;
+	int iTurnTimeEven = (iTurnTime + 1) % 2;
+	iTurnTime = iTurnTime + iTurnTimeEven;
+	bool bFlip = pShip->GetSystem()->GetTick() % (iTurnTime) < iTurnTime / 2;
+	int iAdjustedTrajectory = iTrajectoryPreference + iTrajectory;
+
+	if (bFlip)
+		iAdjustedTrajectory = 180 - iAdjustedTrajectory;
+
+	CVector vTangent = (vTarget.Perpendicular()).Normal() * pShip->GetMaxSpeed() * g_SecondsPerUpdate * 8;
+
+	Metric rRadius;
+	int iAngle = VectorToPolar(vTangent, &rRadius);
+
+	//	Handle the case where we vTangent is 0 (i.e., we are on top of the enemy)
+
+	if (rRadius == 0.0)
+		rRadius = g_KlicksPerPixel;
+
+	//	Curve out
+
+	return PolarToVector(iAngle + iAdjustedTrajectory, rRadius);
 	}
 
 //	DebugAIOutput
@@ -684,13 +721,28 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			{
 			bool bFaster = (pShip->GetMaxSpeed() > pTarget->GetMaxSpeed());
 
+			//	Do we need to avoid getting too close?
+			//
+			//	Check its health. We dont start avoiding until an explosion is imminent
+			// 
+			//	If we do so much damage that it dies instantly we probably are big or high
+			//	level enough to entirely tank the explosion
+
+			int iTargetRelHP = pTarget->GetRelativeHealth();
+
+			bool bAvoidExplodingTarget = m_fAvoidExplodingStations
+				&& rTargetDist2 < MIN_STATION_TARGET_DIST2
+				&& iTargetRelHP < 5
+				&& iTargetRelHP >= 0
+				&& pTarget->GetMass() > 5000.0;
+
 			//	If we're waiting for shields to regenerate, then
 			//	spiral away
 
 			if (IsWaitingForShieldsToRegen() && bFaster)
 				{
 				DebugAIOutput(pShip, "Std: Wait for shields");
-				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget, 75));
+				vDirection = CombinePotential(CalcManeuverSpiralOutEvasive(pShip, vTarget, 75));
 				}
 
 			//	If we're not well in range of our primary weapon then
@@ -738,12 +790,10 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle, rCheatFactor);
 				}
 
-			//	If we're attacking a station, then keep our distance so that
+			//	If we're attacking a station/capship, then keep our distance so that
 			//	we don't get caught in the explosion
 
-			else if (m_fAvoidExplodingStations
-					&& rTargetDist2 < MIN_STATION_TARGET_DIST2 
-					&& pTarget->GetMass() > 5000.0)
+			else if (bAvoidExplodingTarget)
 				{
 				DebugAIOutput(pShip, "Std: Spiral away: avoid explosion");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
@@ -763,7 +813,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 					&& (pShip->GetVel().Length2() < (0.01 * 0.01 * LIGHT_SPEED * LIGHT_SPEED)))
 				{
 				DebugAIOutput(pShip, "Speed away");
-				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
+				vDirection = CombinePotential(CalcManeuverSpiralOutEvasive(pShip, vTarget));
 				}
 
 			//	Otherwise, hazard avoidance only
@@ -790,9 +840,18 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			const Metric rBravery = pow((Metric)iLastHit / (Metric)MAX_BRAVERY_TICKS, BRAVERY_DECAY_POWER);
 
 			//	Do we need to avoid getting too close?
+			//
+			//	Check its health. We dont start avoiding until an explosion is imminent
+			// 
+			//	If we do so much damage that it dies instantly we probably are big or high
+			//	level enough to entirely tank the explosion
+
+			int iTargetRelHP = pTarget->GetRelativeHealth();
 
 			bool bAvoidExplodingTarget = m_fAvoidExplodingStations
-					&& rTargetDist2 < MIN_STATION_TARGET_DIST2 
+					&& rTargetDist2 < MIN_STATION_TARGET_DIST2
+					&& iTargetRelHP < 5
+					&& iTargetRelHP >= 0
 					&& pTarget->GetMass() > 5000.0;
 
 			//	Compute the maximum distance at which we'll start firing. If we're feeling brave,
@@ -821,10 +880,10 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 					&& pShip->GetCurrentOrderDesc().GetOrder() != IShipController::orderEscort)
 				{
 				DebugAIOutput(pShip, "Adv: Wait for shields");
-				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget, 75));
+				vDirection = CombinePotential(CalcManeuverSpiralOutEvasive(pShip, vTarget, 75));
 				}
 
-			//	If we're attacking a station, then keep our distance so that
+			//	If we're attacking a station/capship, then keep our distance so that
 			//	we don't get caught in the explosion
 
 			else if (bAvoidExplodingTarget)
@@ -1007,7 +1066,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			else if (rTargetDist2 < rIdealRange2)
 				{
 				DebugAIOutput(pShip, "StandOff: Spiral away: Too close");
-				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget, 45));
+				vDirection = CombinePotential(CalcManeuverSpiralOutEvasive(pShip, vTarget, 45));
 				}
 
 			//	Otherwise, hazard avoidance only
@@ -1157,6 +1216,9 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 					if (rTargetDist2 < rCloseRange2)
 						{
+						//	TODO: this needs investigation, the implemented behavior seems
+						//	contrary to the code comments
+
 						if (AreAnglesAligned(VectorToPolar(-vTarget), pTarget->GetRotation(), 90))
 							{
 							vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2));
@@ -1164,7 +1226,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 							}
 						else
 							{
-							vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
+							vDirection = CombinePotential(CalcManeuverSpiralOutEvasive(pShip, vTarget));
 							DebugAIOutput(pShip, "Flyby: Target not facing us, spiral away");
 							}
 						}
@@ -1208,7 +1270,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 					&& (pShip->GetVel().Length2() < (0.01 * 0.01 * LIGHT_SPEED * LIGHT_SPEED)))
 				{
 				DebugAIOutput(pShip, "No Retreat: Speed away");
-				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
+				vDirection = CombinePotential(CalcManeuverSpiralOutEvasive(pShip, vTarget));
 				}
 
 			//	No maneuver
@@ -1221,8 +1283,9 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 		default:
 			{
-			DebugAIOutput(pShip, "Combat style not found");
+			DebugAIOutput(pShip, "Error: Combat style not found");
 			vDirection = GetPotential();
+			ASSERT(false);
 			}
 		}
 
