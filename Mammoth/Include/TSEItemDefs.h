@@ -111,7 +111,7 @@ class CItemCriteria
 
 		CIntegerRangeCriteria m_LevelRange;			//	Only items of this level
 		CIntegerRangeCriteria m_PriceRange;			//	Only items of this price
-		CDoubleRangeCriteria m_SizeRange;			//	Only items of this volume (in m^3)
+		CDoubleRangeCriteria m_SizeRange;			//	Only items of this volume (in cubic meters (CBM))
 		CIntegerRangeCriteria m_MassRange;			//	Only items of this mass (in kg)
 		CIntegerRangeCriteria m_RepairLevelRange;	//	Only items of this repair level
 		
@@ -343,7 +343,7 @@ class CArmorClassDefinitions
 			CString sDefinition;			//	Index to m_Definitions
 
 			CString sID;					//	Required ID
-			Metric rMaxSize = 0;			//	Maximum size (cubic meters)
+			Metric rMaxSize = 0;			//	Maximum size (cubic meters (CBM))
 			CString sText;					//	Text to display on item
 
 			int iCount = 0;					//	Number of armor types for this class

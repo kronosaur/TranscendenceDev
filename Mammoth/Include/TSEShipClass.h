@@ -112,7 +112,7 @@ class CArmorLimits
 		struct SArmorLimits
 			{
 			CString sClass;
-			Metric rSize = 0.0;						//	Limit size, m^3 (if sClass is blank)
+			Metric rSize = 0.0;						//	Limit size, in cubic meters (CBM) (if sClass is blank)
 			TUniquePtr<CItemCriteria> pCriteria;
 
 			int iSpeedAdj = 0;					//	Change to speed for this armor class
