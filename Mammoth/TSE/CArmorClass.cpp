@@ -996,7 +996,7 @@ int CArmorClass::CalcBalance (const CArmorItem &ArmorItem, CArmorItem::SBalance 
 
 	//	Standard cost depends on mass
 
-	retBalance.rStdCost = Max(1.0, StdStats.iCost * mathRound(10.0 * pow(ArmorItem.GetMassKg() / (1000.0 * retBalance.rStdMass), ARMOR_CLASS_COST_POWER)) / 10.0);
+	retBalance.rStdCost = Max(1.0, StdStats.iCost * mathRound(10.0 * pow(ArmorItem.GetVolume() / (retBalance.rStdMass), ARMOR_CLASS_COST_POWER)) / 10.0);
 
 	//	Cost
 
@@ -2328,10 +2328,10 @@ CString CArmorClass::GetReference (CItemCtx &Ctx)
 	if (iPower)
 		AppendReferenceString(&sReference, CLanguage::ComposeNumber(CLanguage::numberPower, iPower * 100.0));
 
-	//	Mass
+	//	Size
 
-	int iMassKg = m_pItemType->GetMassKg(Ctx);
-	AppendReferenceString(&sReference, CLanguage::ComposeNumber(CLanguage::numberMass, iMassKg));
+	Metric rSize = m_pItemType->GetVolume(Ctx);
+	AppendReferenceString(&sReference, strCat(CLanguage::ComposeNumber(CLanguage::numberReal, rSize), CONSTLIT(" m^3")));
 
 	//	Mass classification
 

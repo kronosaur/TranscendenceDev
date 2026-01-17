@@ -640,13 +640,13 @@ void CArmorLimits::CalcSummary (const CArmorClassDefinitions &Defs, SSummary &Su
 					continue;
 
 				CItem Item(pItemType, 1);
-				int iMass = Item.GetMassKg();
+				Metric rSize = Item.GetVolume();
 				iTotalArmor++;
 
-				if (iMass <= Summary.rStdArmorSize)
+				if (rSize <= Summary.rStdArmorSize)
 					iTotalStdArmor++;
 
-				if (iMass <= Summary.rMaxArmorSize)
+				if (rSize <= Summary.rMaxArmorSize)
 					iTotalMaxArmor++;
 				}
 

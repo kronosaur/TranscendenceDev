@@ -506,7 +506,7 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 		//  Adjust the standard ammo cost and standard ammo mass for fire rate.
 
 		retBalance.rStdAmmoCost = Stats.rAmmoCost * rFireDelay / STD_FIRE_DELAY_TICKS;
-		retBalance.rStdAmmoMass = STD_AMMO_MASS * rFireDelay / STD_FIRE_DELAY_TICKS;
+		retBalance.rStdAmmoSize = STD_AMMO_VOLUME * rFireDelay / STD_FIRE_DELAY_TICKS;
 
 		//  Compute the standard ammo cost at this level and figure out the 
 		//  percent cost difference. +1 = ammo is 1% more expensive than 
@@ -521,11 +521,11 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 
 		//  Compute the ammo mass bonus
 
-		Metric rAmmoMass = pAmmoType->GetMassKg(AmmoItemCtx);
+		Metric rAmmoVolume = pAmmoType->GetVolume(AmmoItemCtx);
 		if (pAmmoType->AreChargesAmmo() && pAmmoType->GetMaxCharges() > 0)
-			rAmmoMass /= (Metric)pAmmoType->GetMaxCharges();
+			rAmmoVolume /= (Metric)pAmmoType->GetMaxCharges();
 
-		Metric rAmmoMassDelta = 100.0 * (rAmmoMass - retBalance.rStdAmmoMass) / retBalance.rStdAmmoMass;
+		Metric rAmmoMassDelta = 100.0 * (rAmmoVolume - retBalance.rStdAmmoSize) / retBalance.rStdAmmoSize;
 		retBalance.rAmmo += rAmmoMassDelta * BALANCE_AMMO_MASS_RATIO;
 
 		//  Add up to total balance
@@ -3376,7 +3376,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 			if (Balance.iLevel == 0)
 				return CC.CreateNil();
 
-			return CC.CreateInteger(mathRound(Balance.rStdAmmoMass));
+			return CC.CreateInteger(mathRound(Balance.rStdAmmoSize));
 			}
 		else
 			return CC.CreateNil();

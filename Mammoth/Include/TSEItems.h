@@ -53,25 +53,26 @@ class CDifferentiatedItem
 	{
 	public:
 		inline bool AccumulateEnhancementDisplayAttributes (TArray<SDisplayAttribute> &retList) const;
-		inline ItemCategories GetCategory (void) const;
-		inline int GetCharges (void) const;
+		inline ItemCategories GetCategory () const;
+		inline int GetCharges () const;
 		inline CCurrencyAndValue GetCurrencyAndValue (bool bActual = false) const;
-		inline const CEconomyType &GetCurrencyType (void) const;
-		inline const CObjectImageArray &GetImage (void) const;
-		inline int GetLevel (void) const;
-		inline int GetMassKg (void) const;
-		inline int GetMinLevel (void) const;
+		inline const CEconomyType &GetCurrencyType () const;
+		inline const CObjectImageArray &GetImage () const;
+		inline int GetLevel () const;
+		inline int GetMassKg () const;
+		inline Metric GetVolume () const;
+		inline int GetMinLevel () const;
 		inline CString GetNounPhrase (DWORD dwFlags = 0) const;
 		inline ICCItemPtr GetProperty (const CString &sProperty) const;
 		inline ICCItemPtr GetPropertyKeys () const;
-		inline const CItemType &GetType (void) const;
-		inline CItemType &GetType (void);
-		inline int GetVariantNumber (void) const;
+		inline const CItemType &GetType () const;
+		inline CItemType &GetType ();
+		inline int GetVariantNumber () const;
 		inline bool IsDamaged (int *retiDamagedHP = NULL) const;
-		inline bool IsDisrupted (void) const;
-		inline bool IsEnhanced (void) const;
-		inline bool IsLauncher (void) const;
-		inline bool IsWeapon (void) const;
+		inline bool IsDisrupted () const;
+		inline bool IsEnhanced () const;
+		inline bool IsLauncher () const;
+		inline bool IsWeapon () const;
 		void ReportEventError (const CSpaceObject *pSource, const CString &sEvent, const ICCItem &ErrorItem) const;
 
 	protected:
