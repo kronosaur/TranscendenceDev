@@ -2331,7 +2331,7 @@ CString CArmorClass::GetReference (CItemCtx &Ctx)
 	//	Size
 
 	Metric rSize = m_pItemType->GetVolume(Ctx);
-	AppendReferenceString(&sReference, strCat(CLanguage::ComposeNumber(CLanguage::numberReal, rSize), CONSTLIT(" m^3")));
+	AppendReferenceString(&sReference, strCat(CLanguage::ComposeNumber(CLanguage::numberReal, rSize), CONSTLIT(" CBM")));
 
 	//	Mass classification
 

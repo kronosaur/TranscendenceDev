@@ -1324,8 +1324,8 @@
 							desc:
 								(cat
 									"{/rtf "
-										"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'real (typ@ autonClass 'cargoSpace)) " m^3\n"
-										"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'real (typ@ autonClass 'maxCargoSpace)) " m^3\n"
+										"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'real (typ@ autonClass 'cargoSpace)) " CBM\n"
+										"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'real (typ@ autonClass 'maxCargoSpace)) " CBM\n"
 									"}"
 									)
 							}
