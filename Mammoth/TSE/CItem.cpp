@@ -1241,6 +1241,10 @@ bool CItem::GetDisplayAttributes (TArray<SDisplayAttribute> *retList, ICCItem *p
 		retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("level %d?"), GetApparentLevel())));
 		}
 
+	// Quest item attribute will always show
+	if (m_pItemType->HasLiteralAttribute(CONSTLIT("QuestItem")))
+		retList->Insert(SDisplayAttribute(attribQuest, CONSTLIT("mission")));
+
 	//	Add various engine-based attributes (these are shown even if the item 
 	//	type is unknown).
 

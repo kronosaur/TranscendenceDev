@@ -59,17 +59,21 @@ static SColorInitTable COLOR_TABLE[] =
 		{	CONSTDEF("TextDockText"),			CG32bitPixel(0xAF, 0xB7, 0xBF) },	//	H:210 S:8   B:75
 		{	CONSTDEF("TextDockTitle"),			CG32bitPixel(0xE7, 0xF3, 0xFF) },	//	H:210 S:9   B:100
 		{	CONSTDEF("TextDockTextWarning"),	CG32bitPixel(0xFF, 0x33, 0x33) },	//	H:0   S:80  B:100
-		{	CONSTDEF("AreaAdvantage"),			CG32bitPixel(0x00, 0x53, 0xA6) },
-		{	CONSTDEF("AreaDisadvantage"),		CG32bitPixel(0xA6, 0x21, 0x21) },
+		{	CONSTDEF("AreaAdvantage"),			CG32bitPixel(0x00, 0x53, 0xA6) },   //  H:210 S:100 B:65
+		{	CONSTDEF("AreaDisadvantage"),		CG32bitPixel(0xA6, 0x21, 0x21) },   //  H:0   S:80  B:65
 
 		{	CONSTDEF("AreaShields"),			CG32bitPixel(0x45, 0x73, 0x17) },
 		{	CONSTDEF("TextAdvantage"),			CG32bitPixel(0xCC, 0xE5, 0xFF) },	//	H:210 S:20  B:100
-		{	CONSTDEF("TextDisadvantage"),		CG32bitPixel(0xFF, 0xCC, 0xCC) },
+		{	CONSTDEF("TextDisadvantage"),		CG32bitPixel(0xFF, 0xCC, 0xCC) },	//	H:0   S:20  B:100
 		{	CONSTDEF("TextShields"),			CG32bitPixel(0xE5, 0xFF, 0xCC) },	//	H:90  S:20  B:100
 		{	CONSTDEF("TextAccelerator"),		CG32bitPixel(0xFF, 0xFF, 0x00) },	//	H:60  S:100 B:100
 
 		{	CONSTDEF("AreaAccelerator"),		CG32bitPixel(0xE5, 0xE5, 0x17) },	//	H:60  S:90 B:90
 		{	CONSTDEF("TextQuoteColor"),			CG32bitPixel(0xB2, 0xD9, 0xFF) },	//	H:210 S:30  B:100
+		{	CONSTDEF("AreaWarning"),			CG32bitPixel(0xE5, 0xE5, 0x5C) },	// Copy of WarningMsg for now
+		{	CONSTDEF("TextWarning"),			CG32bitPixel(0x26, 0x2D, 0x33) },	// Copy of WarningMsg for now
+		{	CONSTDEF("AreaQuest"),				CG32bitPixel(0xA6, 0x21, 0xA6) },	//	H:300 S:80  B:65
+		{	CONSTDEF("TextQuest"),				CG32bitPixel(0xFF, 0xCC, 0xFF) },	//	H:300 S:20  B:100
 	};
 
 struct SFontInitTable

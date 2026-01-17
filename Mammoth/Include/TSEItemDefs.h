@@ -130,6 +130,9 @@ enum EDisplayAttributeTypes
 
 	attribEnhancement,
 	attribWeakness,
+
+	attribWarning,
+	attribQuest,
 	};
 
 enum EAttributeTypes
