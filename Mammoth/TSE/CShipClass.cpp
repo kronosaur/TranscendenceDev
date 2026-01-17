@@ -133,7 +133,8 @@
 #define FIELD_MANEUVER							CONSTLIT("maneuver")
 #define FIELD_MANUFACTURER						CONSTLIT("manufacturer")
 #define FIELD_MASS								CONSTLIT("mass")
-#define FIELD_MAX_ARMOR_MASS					CONSTLIT("maxArmorMass")
+#define FIELD_MAX_ARMOR_MASS					CONSTLIT("maxArmorMass")			//	deprecated, use maxArmorSize instead
+#define FIELD_MAX_ARMOR_SIZE					CONSTLIT("maxArmorSize")
 #define FIELD_MAX_CARGO_SPACE					CONSTLIT("maxCargoSpace")
 #define FIELD_MAX_ROTATION						CONSTLIT("maxRotation")
 #define FIELD_MAX_SPEED							CONSTLIT("maxSpeed")
@@ -974,7 +975,7 @@ Metric CShipClass::CalcMass (const CDeviceDescList &Devices) const
 
 ICCItemPtr CShipClass::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const
 
-//	CalcMaxSpeedByArmorMass
+//	CalcMaxSpeedByArmorSize
 //
 //	Returns a struct with entries for each value of max speed. Each entry has the
 //	smallest armor mass which results in the given speed.
@@ -983,7 +984,7 @@ ICCItemPtr CShipClass::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const
 
 	{
 	int iStdSpeed = mathRound(100.0 * m_Perf.GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED);
-	return m_Hull.GetArmorLimits().CalcMaxSpeedByArmorMass(Ctx, iStdSpeed);
+	return m_Hull.GetArmorLimits().CalcMaxSpeedByArmorSize(Ctx, iStdSpeed);
 	}
 
 void CShipClass::CalcPerformance (void)
@@ -1966,8 +1967,8 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	else if (strEquals(sField, FIELD_GENERIC_NAME))
 		*retsValue = GetGenericName();
 
-	else if (strEquals(sField, FIELD_MAX_ARMOR_MASS))
-		*retsValue = strFromInt(m_Hull.GetArmorLimits().GetMaxArmorMass());
+	else if (strEquals(sField, FIELD_MAX_ARMOR_SIZE) || strEquals(sField, FIELD_MAX_ARMOR_MASS))
+		*retsValue = strFromDouble(m_Hull.GetArmorLimits().GetMaxArmorSize());
 
 	else if (strEquals(sField, FIELD_HULL_MASS))
 		*retsValue = strFromInt(m_Hull.GetMass());

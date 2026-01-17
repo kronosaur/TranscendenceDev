@@ -15,11 +15,11 @@
 	subcapitalShip - this is a large ship (corvette or frigate)
 	capitalShip - this is a very large ship (destroyer or larger)
 	freighter - this ship is a freighter
-	courier - this ship is not a gunship but is restricted to less than 100 tons of cargo
-	lightFreighter - this ship can carry 100-999 tons of cargo
-	heavyFreighter - this ship can carry 10000-99999 tons of cargo
-	superFreighter - this ship can carry 100000-999999 tons off cargo
-	hyperFreighter - this ship can carry over 1000000 tons of cargo
+	courier - this ship is a fast freighter (0.2c+)
+	lightFreighter - this freighter can carry <=999 m^3 of cargo
+	heavyFreighter - this freighter can carry 10000-99999 m^3 of cargo
+	superFreighter - this freighter can carry 100000-999999 m^3 off cargo
+	hyperFreighter - this freighter can carry over 1000000 m^3 of cargo
 -->
 
 <!-- BRITANNIA-CLASS HEAVY GUNSHIP -->

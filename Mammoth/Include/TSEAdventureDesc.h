@@ -38,6 +38,8 @@ class CEngineOptions
 		Metric GetDamageMethodAdjStationHullArmor (EDamageMethod iMethod) const { return GetDamageMethodAdj(m_DamageMethodStationAdj.Hull.Armor, iMethod); };
 		Metric GetDamageMethodMinDamage ()	const { return m_rDamageMethodAdjMinDamage; }
 		EDamageMethodSystem GetDamageMethodSystem () const { return m_iDamageMethodSystem; }
+		Metric GetItemDefaultDensity () const { return m_rDefaultItemDensity; }
+		Metric GetItemXMLMassToVolumeRatio () const { return m_rDefaultItemMassToVolume; }
 		const CMiningDamageLevelDesc* GetMiningMaxOreLevels () const { return &m_MiningDamageMaxOreLevels; }
 		const CDamageAdjDesc* GetShieldDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ShieldDamageAdj[iLevel - 1]; }
 		Metric GetShieldIdlePowerRatio () const { return m_rDefaultShieldIdlePowerRatio; }
@@ -168,6 +170,11 @@ class CEngineOptions
 
 		int m_iDefaultInteraction = -1;
 		int m_iDefaultShotHP = -1;
+
+		//	Default item legacy mass-volume conversions
+
+		Metric m_rDefaultItemDensity = 1.0;
+		Metric m_rDefaultItemMassToVolume = 1.0;
 
 		//	Default power consumption
 

@@ -4698,13 +4698,13 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			{
 			//	See if all items fit.
 
-			int iTotalMassKg = 0;
+			Metric rTotalItemVolume = 0;
 			const auto &ItemList = GetItemList();
 			for (int i = 0; i < ItemList.GetCount(); i++)
-				iTotalMassKg += ItemList.GetItem(i).GetMassKg() * ItemList.GetItem(i).GetCount();
+				rTotalItemVolume += ItemList.GetItem(i).GetVolume() * ItemList.GetItem(i).GetCount();
 
-			Metric rSpaceLeftInTons = Ctx.GetPlayerShip()->GetCargoSpaceLeft();
-			if (iTotalMassKg <= 1000.0 * rSpaceLeftInTons)
+			Metric rSpaceLeft = Ctx.GetPlayerShip()->GetCargoSpaceLeft();
+			if (rTotalItemVolume <= rSpaceLeft)
 				{
 				//	Take all items
 

@@ -905,6 +905,14 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 	m_bHideRadiationImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_RADIATION_IMMUNE)->IsNil();
 	m_bHideShatterImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_SHATTER_IMMUNE)->IsNil();
 
+	//	Handle item mass-volume conversion
+
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_ITEM_DEFAULT_DENSITY);
+	m_rDefaultItemDensity = (pValue->IsNil() ? 1.0 : pValue->GetDoubleValue());
+
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_ITEM_LEGACY_MASS_TO_VOLUME);
+	m_rDefaultItemMassToVolume = (pValue->IsNil() ? 1.0 : pValue->GetDoubleValue());
+
 	//	Handle shield power idle consumption
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_ITEM_SHIELD_IDLE_POWER_ADJ);

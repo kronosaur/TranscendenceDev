@@ -352,7 +352,7 @@ class CDesignType
 		size_t GetAllocMemoryUsage (void) const;
 		DWORD GetAPIVersion (void) const { return m_dwVersion; }
 		const CAchievementDataBlock &GetAchievementDefinitions () const { return (m_pExtra ? m_pExtra->Achievements : CAchievementDataBlock::Null()); }
-		const CArmorMassDefinitions &GetArmorMassDefinitions (void) const { return (m_pExtra ? m_pExtra->ArmorDefinitions : CArmorMassDefinitions::Null); }
+		const CArmorClassDefinitions &GetArmorMassDefinitions (void) const { return (m_pExtra ? m_pExtra->ArmorDefinitions : CArmorClassDefinitions::Null); }
 		const CString &GetAttributes (void) const { return m_sAttributes; }
 		TArray<CString> GetDataKeys (const EDesignDataTypes iDataType );
 		CString GetDataField (const CString &sField) const { CString sValue; FindDataField(sField, &sValue); return sValue; }
@@ -485,7 +485,7 @@ class CDesignType
 			CAttributeDataBlock InitGlobalData;			//	Initial global data
 			CLanguageDataBlock Language;				//	Language data
 			CXMLElement *pLocalScreens = NULL;			//	Local dock screen
-			CArmorMassDefinitions ArmorDefinitions;		//	Armor mass definitions
+			CArmorClassDefinitions ArmorDefinitions;		//	Armor mass definitions
 			CDisplayAttributeDefinitions DisplayAttribs;	//	Display attribute definitions
 			CItemEncounterDefinitions ItemEncounterDefinitions;	//	Item encounter definitions
 			CAchievementDataBlock Achievements;			//	Achievements defined by this type
@@ -1445,8 +1445,8 @@ class CDesignCollection
 		CAdventureDesc &GetAdventureDesc (void) { return (m_pAdventureDesc ? *m_pAdventureDesc : m_EmptyAdventure); }
 		DWORD GetAdventureUNID (void) const { return (m_pAdventureExtension ? m_pAdventureExtension->GetUNID() : 0); }
 		DWORD GetAPIVersion (void) const { return m_dwMinAPIVersion; }
-		CArmorMassDefinitions &GetArmorMassDefinitions (void) { return m_ArmorDefinitions; }
-		const CArmorMassDefinitions &GetArmorMassDefinitions (void) const { return m_ArmorDefinitions; }
+		CArmorClassDefinitions &GetArmorMassDefinitions (void) { return m_ArmorDefinitions; }
+		const CArmorClassDefinitions &GetArmorMassDefinitions (void) const { return m_ArmorDefinitions; }
 		int GetCount (void) const { return m_AllTypes.GetCount(); }
 		int GetCount (DesignTypes iType) const { return m_ByType[iType].GetCount(); }
 		const CDisplayAttributeDefinitions &GetDisplayAttributes (void) const { return m_DisplayAttribs; }
@@ -1511,7 +1511,7 @@ class CDesignCollection
 		CAdventureDesc *m_pAdventureDesc = NULL;
 		TSortMap<CString, const CEconomyType *> m_EconomyIndex;
 		CAchievementDefinitions m_AchievementDefinitions;
-		CArmorMassDefinitions m_ArmorDefinitions;
+		CArmorClassDefinitions m_ArmorDefinitions;
 		CDisplayAttributeDefinitions m_DisplayAttribs;
 		CItemEncounterDefinitions m_ItemEncounterDefinitions;
 		CGlobalEventCache *m_EventsCache[evtCount];

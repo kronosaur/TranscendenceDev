@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							59;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
-constexpr DWORD SYSTEM_SAVE_VERSION =					218;
+constexpr DWORD SYSTEM_SAVE_VERSION =					219;
 
 //	Uncomment out the following define when building a stable release
 
@@ -1768,4 +1768,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //		Add DamageMethodCrushAdj to SExtraDamage in DamageDesc
 //		Add DamageMethodPierceAdj to SExtraDamage in DamageDesc
 //		Add DamageMethodShredAdj to SExtraDamage in DamageDesc
+//
+//	219: 2.0 Alpha 9
+//		Add m_fRecalcItemMass to CShip
+//		Add m_rItemVolume to CShip
+//		Add m_rCargoVolume to CShip
 //

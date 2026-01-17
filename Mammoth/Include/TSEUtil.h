@@ -373,11 +373,11 @@ class CIntegerRangeCriteria
 	{
 	public:
 		CString AsString (char chModifier = '\0') const;
-		int GetEqualToValue (void) const { return m_iEqualToValue; }
-		int GetGreaterThanValue (void) const { return m_iGreaterThanValue; }
-		int GetLessThanValue (void) const { return m_iLessThanValue; }
+		int GetEqualToValue () const { return m_iEqualToValue; }
+		int GetGreaterThanValue () const { return m_iGreaterThanValue; }
+		int GetLessThanValue () const { return m_iLessThanValue; }
 		bool GetRange (int *retiMin = NULL, int *retiMax = NULL) const;
-		bool IsEmpty (void) const { return (m_iEqualToValue == -1 && m_iGreaterThanValue == -1 && m_iLessThanValue == -1); }
+		bool IsEmpty () const { return (m_iEqualToValue == -1 && m_iGreaterThanValue == -1 && m_iLessThanValue == -1); }
 		bool Matches (int iValue) const;
 		bool Parse (const char *pPos, const char **retpPos = NULL, char *retchModifier = NULL);
 
@@ -385,6 +385,24 @@ class CIntegerRangeCriteria
 		int m_iEqualToValue = -1;				//	If not -1, match only this value
 		int m_iGreaterThanValue = -1;			//	If not -1, match only greater than this value
 		int m_iLessThanValue = -1;				//	If not -1, match only less than this value
+	};
+
+class CDoubleRangeCriteria
+	{
+	public:
+		CString AsString (char chModifier = '\0') const;
+		Metric GetEqualToValue () const { return m_rEqualToValue; }
+		Metric GetGreaterThanValue () const { return m_rGreaterThanValue; }
+		Metric GetLessThanValue () const { return m_rLessThanValue; }
+		bool GetRange (Metric *retrMin = NULL, Metric *retrMax = NULL) const;
+		bool IsEmpty () const { return (IS_NAN(m_rEqualToValue) && IS_NAN(m_rGreaterThanValue) && IS_NAN(m_rLessThanValue)); }
+		bool Matches (Metric rValue) const;
+		bool Parse (const char *pPos, const char **retpPos = NULL, char *retchModifier = NULL);
+
+	private:
+		Metric m_rEqualToValue = R_NAN;				//	If not -inf, match only this value
+		Metric m_rGreaterThanValue = R_NAN;			//	If not -inf, match only greater than this value
+		Metric m_rLessThanValue = R_NAN;				//	If not -inf, match only less than this value
 	};
 
 class DiceRange

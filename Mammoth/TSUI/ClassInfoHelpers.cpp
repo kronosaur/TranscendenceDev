@@ -61,28 +61,28 @@ void CUIHelper::CreateClassInfoArmor (const CShipClass &Class, int x, int y, int
 
 	CString sMaxArmor;
 
-	CString sMaxArmorLimit = CLanguage::ComposeNumber(CLanguage::numberMass, Hull.GetArmorLimits().GetMaxArmorMass());
+	CString sMaxArmorLimit = CLanguage::ComposeNumber(CLanguage::numberMass, Hull.GetArmorLimits().GetMaxArmorSize());
 	const CString &sMaxMassClass = Hull.GetArmorLimits().GetMaxArmorClass();
 	if (!sMaxMassClass.IsBlank())
 		{
-		const CArmorMassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorMassDefinitions();
-		sMaxArmor = strPatternSubst(CONSTLIT("%s (%s)"), MassDef.GetMassClassLabel(sMaxMassClass), sMaxArmorLimit);
+		const CArmorClassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorMassDefinitions();
+		sMaxArmor = strPatternSubst(CONSTLIT("%s (%s)"), MassDef.GetArmorClassLabel(sMaxMassClass), sMaxArmorLimit);
 		}
-	else if (Hull.GetArmorLimits().GetMaxArmorMass() > 0) 
+	else if (Hull.GetArmorLimits().GetMaxArmorSize() > 0) 
 		sMaxArmor = sMaxArmorLimit;
 	else
 		sMaxArmor = "unlimited";
 
 	CString sStdArmor;
 
-	CString sStdArmorLimit = CLanguage::ComposeNumber(CLanguage::numberMass, Hull.GetArmorLimits().GetStdArmorMass());
+	CString sStdArmorLimit = CLanguage::ComposeNumber(CLanguage::numberMass, Hull.GetArmorLimits().GetStdArmorSize());
 	const CString &sStdMassClass = Hull.GetArmorLimits().GetStdArmorClass();
 	if (!sStdMassClass.IsBlank())
 		{
-		const CArmorMassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorMassDefinitions();
-		sStdArmor = strPatternSubst(CONSTLIT("%s (%s)"), MassDef.GetMassClassLabel(sStdMassClass), sStdArmorLimit);
+		const CArmorClassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorMassDefinitions();
+		sStdArmor = strPatternSubst(CONSTLIT("%s (%s)"), MassDef.GetArmorClassLabel(sStdMassClass), sStdArmorLimit);
 		}
-	else if (Hull.GetArmorLimits().GetStdArmorMass() > 0) 
+	else if (Hull.GetArmorLimits().GetStdArmorSize() > 0) 
 		sStdArmor = sStdArmorLimit;
 	else
 		sStdArmor = "unlimited";

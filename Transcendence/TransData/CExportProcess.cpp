@@ -161,8 +161,8 @@ void CExportProcess::WriteShipClasses (IWriteStream& Output)
 				Class.GetHullValue(),
 				Class.GetHullDesc().GetCargoSpace(),
 				Class.GetHullDesc().GetMaxCargoSpace(),
-				Class.GetHullDesc().GetArmorLimits().GetStdArmorMass(),
-				Class.GetHullDesc().GetArmorLimits().GetMaxArmorMass(),
+				Class.GetHullDesc().GetArmorLimits().GetStdArmorSize(),
+				Class.GetHullDesc().GetArmorLimits().GetMaxArmorSize(),
 				Class.GetHullDesc().GetArmorLimits().GetMaxArmorSpeedPenalty(),
 				Class.GetHullDesc().GetArmorLimits().GetMinArmorSpeedBonus(),
 
