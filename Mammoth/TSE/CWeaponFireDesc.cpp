@@ -367,23 +367,24 @@ int CWeaponFireDesc::CalcDefaultHitPoints (void) const
 	else if (m_iFireType == ftBeam)
 		return 0;
 
-	//	Ammo items get hit points proportional to level and mass.
+	//	Ammo items get hit points proportional to level and volume.
+	//	TODO: consider density when rebalancing for 2.0
 
 	else if (m_pAmmoType)
 		{
 		CItem AmmoItem(m_pAmmoType, 1);
 		Metric rStdHP = CWeaponClass::HP_ARMOR_RATIO * CArmorClass::GetStdHP(AmmoItem.GetLevel());
-		Metric rMassAdj = AmmoItem.GetMassKg() / CWeaponClass::STD_AMMO_MASS;
+		Metric rSizeAdj = AmmoItem.GetVolume() / CWeaponClass::STD_AMMO_VOLUME;
 
 		//	Compute how many of these shots are created by one ammo item.
 
 		Metric rShotsPerAmmoItem = CalcShotsPerAmmoItem();
 		if (rShotsPerAmmoItem > 0.0)
-			rMassAdj /= rShotsPerAmmoItem;
+			rSizeAdj /= rShotsPerAmmoItem;
 
 		//	Return hit points
 
-		return mathRound(rMassAdj * rStdHP);
+		return mathRound(rSizeAdj * rStdHP);
 		}
 
 	//	Otherwise, compute based on damage ratio.

@@ -106,6 +106,7 @@
 #define FIELD_TREASURE_VALUE					CONSTLIT("treasureValue")
 #define FIELD_UNKNOWN_TYPE						CONSTLIT("unknownType")
 #define FIELD_USE_KEY							CONSTLIT("useKey")
+#define FIELD_VOLUME							CONSTLIT("volume")
 
 #define PROPERTY_CATEGORY						CONSTLIT("category")
 #define PROPERTY_COMPONENT_PRICE				CONSTLIT("componentPrice")
@@ -393,6 +394,9 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue) const
 
 	else if (strEquals(sField, FIELD_MASS))
 		*retsValue = strFromInt(CItem(const_cast<CItemType *>(this), 1).GetMassKg());
+
+	else if (strEquals(sField, FIELD_VOLUME))
+		*retsValue = strFromDouble(CItem(const_cast<CItemType *>(this), 1).GetVolume());
 	
 	else if (strEquals(sField, FIELD_SHORT_NAME))
 		{
@@ -937,7 +941,7 @@ int CItemType::GetMassKg(CItemCtx &Ctx) const
 		return m_iMass;
 	}
 
-//	GetMassKg
+//	GetVolume
 //
 //	Returns the mass of the item in kilograms
 //

@@ -1390,8 +1390,8 @@
 							desc:
 								(cat
 									"{/rtf "
-										"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'massTons (obj@ shipObj 'cargoSpace)) "\n"
-										"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'massTons (obj@ shipObj 'maxCargoSpace)) "\n"
+										"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'real (obj@ shipObj 'cargoSpace)) " m^3\n"
+										"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'real (obj@ shipObj 'maxCargoSpace)) " m^3\n"
 									"}"
 									)
 							}
@@ -1598,8 +1598,8 @@
 						(cat
 							"{/rtf "
 								(if cargoItem (cat "{/f:MediumBold;/c:#79828c; cargo:} " (itmGetName cargoItem 'titleCapitalize) "\n"))
-								"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'massTons (obj@ shipObj 'cargoSpace)) "\n"
-								"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'massTons (obj@ shipObj 'maxCargoSpace)) "\n"
+								"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'real (obj@ shipObj 'cargoSpace)) " m^3\n"
+								"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'real (obj@ shipObj 'maxCargoSpace)) " m^3\n"
 								"\n"
 								"{/f:MediumBold;/c:#79828c; device slots:} " deviceSlots " (" availDeviceSlots " free)\n"
 							
