@@ -61,12 +61,12 @@ void CUIHelper::CreateClassInfoArmor (const CShipClass &Class, int x, int y, int
 
 	CString sMaxArmor;
 
-	CString sMaxArmorLimit = CLanguage::ComposeNumber(CLanguage::numberMass, Hull.GetArmorLimits().GetMaxArmorSize());
-	const CString &sMaxMassClass = Hull.GetArmorLimits().GetMaxArmorClass();
-	if (!sMaxMassClass.IsBlank())
+	CString sMaxArmorLimit = CLanguage::ComposeNumber(CLanguage::numberCBMBasic, Hull.GetArmorLimits().GetMaxArmorSize());
+	const CString &sMaxArmorClass = Hull.GetArmorLimits().GetMaxArmorClass();
+	if (!sMaxArmorClass.IsBlank())
 		{
 		const CArmorClassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorMassDefinitions();
-		sMaxArmor = strPatternSubst(CONSTLIT("%s (%s)"), MassDef.GetArmorClassLabel(sMaxMassClass), sMaxArmorLimit);
+		sMaxArmor = strPatternSubst(CONSTLIT("%s"), MassDef.GetArmorClassLabel(sMaxArmorClass));
 		}
 	else if (Hull.GetArmorLimits().GetMaxArmorSize() > 0) 
 		sMaxArmor = sMaxArmorLimit;
@@ -75,12 +75,12 @@ void CUIHelper::CreateClassInfoArmor (const CShipClass &Class, int x, int y, int
 
 	CString sStdArmor;
 
-	CString sStdArmorLimit = CLanguage::ComposeNumber(CLanguage::numberMass, Hull.GetArmorLimits().GetStdArmorSize());
-	const CString &sStdMassClass = Hull.GetArmorLimits().GetStdArmorClass();
-	if (!sStdMassClass.IsBlank())
+	CString sStdArmorLimit = CLanguage::ComposeNumber(CLanguage::numberCBMBasic, Hull.GetArmorLimits().GetStdArmorSize());
+	const CString &sStdArmorClass = Hull.GetArmorLimits().GetStdArmorClass();
+	if (!sStdArmorClass.IsBlank())
 		{
 		const CArmorClassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorMassDefinitions();
-		sStdArmor = strPatternSubst(CONSTLIT("%s (%s)"), MassDef.GetArmorClassLabel(sStdMassClass), sStdArmorLimit);
+		sStdArmor = strPatternSubst(CONSTLIT("%s"), MassDef.GetArmorClassLabel(sStdArmorClass));
 		}
 	else if (Hull.GetArmorLimits().GetStdArmorSize() > 0) 
 		sStdArmor = sStdArmorLimit;

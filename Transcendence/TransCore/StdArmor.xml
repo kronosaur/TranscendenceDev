@@ -2,25 +2,28 @@
 
 <TranscendenceModule>
 
-	<Type unid="&unidArmorMass;">
-		<ArmorMassDesc>
+	<Type unid="&unidArmorClass;">
+		<ArmorClassDesc>
 			<!--
 				The tags "medium" and "maximum" are engine-defined and dictate how automatic balance
 				calculations take place.
-				Items above the "maximum" mass limit are considered npc-bespoke and will not return
+				Items above the "maximum" volume limit are considered npc-bespoke and will not return
 				valid balance numbers.
-				If "medium" is not specified, a standard armor mass of 3500kg is assumed.
-				If "maximum" is not specified, a maximum armor mass of 16000kg is assumed.
+				If "medium" is not specified, a standard armor size of 3.5 CBM is assumed.
+				If "maximum" is not specified, a maximum armor size of 16 CBM is assumed.
 			-->
-			<ArmorMass id="ultraLight"	label="ultra-light"		mass="1000"/>
-			<ArmorMass id="light"		label="light"			mass="2500"/>
-			<ArmorMass id="medium"		label="medium"			mass="3500"/>
-			<ArmorMass id="heavy"		label="heavy"			mass="6000"/>
-			<ArmorMass id="superHeavy"	label="super-heavy"		mass="9000"/>
-			<ArmorMass id="massive"		label="massive"			mass="12000"/>
-			<ArmorMass id="dreadnought"	label="dreadnought"		mass="100000"/>
-			<ArmorMass id="maximum"		label="maximum"			mass="1000000"/>
-		</ArmorMassDesc>
+			<ArmorClass id="ultraLight"		label="ultra-light"		shortLabel="U-L"	volume="1"/>
+			<ArmorClass id="light"			label="light"			shortLabel="L"		volume="2.5"/>
+			<ArmorClass id="medium"			label="medium"			shortLabel="M"		volume="3.5"/>
+			<ArmorClass id="heavy"			label="heavy"			shortLabel="H"		volume="6"/>
+			<ArmorClass id="superHeavy"		label="super-heavy"		shortLabel="S-H"	volume="9"/>
+			<ArmorClass id="massive"		label="massive"			shortLabel="Ma"		volume="12"/>
+			<ArmorClass id="superMassive"	label="super-massive"	shortLabel="S-Ma"	volume="100"/>
+			<ArmorClass id="maximum"		label="maximum"			shortLabel="MX"		volume="1000000"/>
+
+			<!-- Deprecated armor class names -->
+			<ArmorClassAlias id="superMassive"	idAlias="dreadnought"/>
+		</ArmorClassDesc>
 	</Type>
 
 <!-- LEVEL I -->

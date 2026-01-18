@@ -9,6 +9,7 @@
 #define ID_ATTRIB								CONSTLIT("id")
 #define ID_ALIAS_ATTRIB							CONSTLIT("idAlias")
 #define LABEL_ATTRIB							CONSTLIT("label")
+#define LABEL_SHORT_ATTRIB						CONSTLIT("shortLabel")
 #define MASS_ATTRIB								CONSTLIT("mass")
 #define VOLUME_ATTRIB							CONSTLIT("volume")
 
@@ -240,6 +241,8 @@ ALERROR CArmorClassDefinitions::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *p
 
 		CString sTag = pEntry->GetTag();
 
+		//	Prior to API59 subelements of ArmorClassDesc (ArmorMassDesc at the time) could be named anything
+
 		if (strEquals(sTag, ARMOR_CLASS_ELEMENT) || strEquals(sTag, ARMOR_CLASS_ELEMENT_LEGACY) || Ctx.GetAPIVersion() < 59)
 			{
 
@@ -265,6 +268,9 @@ ALERROR CArmorClassDefinitions::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *p
 			pClass->sDefinition = sCriteria;
 			pClass->sID = pEntry->GetAttribute(ID_ATTRIB);
 			pClass->sText = pEntry->GetAttribute(LABEL_ATTRIB);
+			pClass->sTextShort = pEntry->GetAttribute(LABEL_SHORT_ATTRIB);
+			if (pClass->sTextShort.IsBlank())
+				pClass->sTextShort = pClass->sText;
 			pClass->rMaxSize = rVolume;
 
 			pDef->Ids.Insert(pClass->sID, iArmorClass);
@@ -371,9 +377,12 @@ void CArmorClassDefinitions::OnInitDone (void)
 	for (int i = 0; i < m_Definitions.GetCount(); i++)
 		{
 		SArmorClassDefinition &Def = m_Definitions[i];
-		for (int j = 0; j < Def.Classes.GetCount(); j++)
+		for (int j = 0; j < Def.Ids.GetCount(); j++)
 			{
-			SArmorClassEntry &Entry = Def.Classes[j];
+			CString sName = Def.Ids.GetKey(j);
+			int iIdx = Def.Ids.GetValue(j);
+
+			SArmorClassEntry &Entry = Def.Classes[iIdx];
 
 			//	While we're here, we initialize the counts, since we will soon
 			//	get called at OnBindArmor.
@@ -382,7 +391,7 @@ void CArmorClassDefinitions::OnInitDone (void)
 
 			//	Add to the index.
 
-			m_ByID.SetAt(Entry.sID, &Entry);
+			m_ByID.SetAt(sName, &Entry);
 			}
 		}
 	}
