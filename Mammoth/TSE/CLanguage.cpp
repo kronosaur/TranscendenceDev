@@ -823,6 +823,24 @@ CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber, SN
 			break;
 			}
 
+		case numberCBM:
+			return strCat(ComposeNumber(numberMetric, rNumber, pOptions), CONSTLIT("CBM"));
+
+		case numberCBMBasic:
+			{
+			if (rNumber >= 1000.0)
+				return ComposeNumber(numberCBMInt, rNumber, pOptions);
+			else if (rNumber < 0.001)
+				return CONSTLIT("0 mCBM");
+			else if (rNumber < 1.0)
+				return strCat(strFromInt((int)mathRound(rNumber * 1000)), CONSTLIT(" mCBM"));
+			else
+				return ComposeNumber(numberCBM, rNumber, pOptions);
+			}
+
+		case numberCBMInt:
+			return strCat(strFromInt((int)mathRound(rNumber)), CONSTLIT(" CBM"));
+
 		//	For massTons, we need to convert the number to kgs
 
 		case numberMassTons:

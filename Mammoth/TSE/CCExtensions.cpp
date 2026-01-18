@@ -1186,7 +1186,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(fmtNumber [type] value) -> string\n\n"
 			
 			"type:\n\n"
-			
+
+			"   'CBM\n"
+			"   'CBMBasic\n"
+			"   'CBMInt\n"
 			"   'integer\n"
 			"   'massKg\n"
 			"   'massTons\n"
