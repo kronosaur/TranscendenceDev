@@ -2328,16 +2328,11 @@ CString CArmorClass::GetReference (CItemCtx &Ctx)
 	if (iPower)
 		AppendReferenceString(&sReference, CLanguage::ComposeNumber(CLanguage::numberPower, iPower * 100.0));
 
-	//	Size
-
-	Metric rSize = m_pItemType->GetVolume(Ctx);
-	AppendReferenceString(&sReference, strCat(CLanguage::ComposeNumber(CLanguage::numberReal, rSize), CONSTLIT(" CBM")));
-
 	//	Mass classification
 
-	CString sMassClass = GetUniverse().GetDesignCollection().GetArmorMassDefinitions().GetArmorClassLabel(m_sMassClass);
-	if (!sMassClass.IsBlank())
-		AppendReferenceString(&sReference, sMassClass);
+	CString sArmorClass = GetUniverse().GetDesignCollection().GetArmorMassDefinitions().GetArmorClassLabel(m_sMassClass);
+	if (!sArmorClass.IsBlank())
+		AppendReferenceString(&sReference, sArmorClass);
 
 	//	Regeneration
 
