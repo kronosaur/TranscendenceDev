@@ -571,6 +571,7 @@
 				(if (@ gData 'max)
 					(cat
 						"Unit price: " (@ gData 'value) " (" (@ gData 'max) " for " (@ gData 'maxValue) ")\n"
+						"Unit size: " (@ gData 'size) " (" (@ gData 'max) " for " (@ gData 'maxSize) ")\n"
 						"Unit mass: " (@ gData 'mass) " (" (@ gData 'max) " for " (@ gData 'maxMass) ")\n"
 						(if (@ gData 'markup) 
 							(cat "Unit markup: " (@ gData 'markup) " (" (@ gData 'markupPercent) "%)")
@@ -579,6 +580,7 @@
 						)
 					(cat
 						"Unit price: " (@ gData 'value) "\n"
+						"Unit size: " (@ gData 'size) "\n"
 						"Unit mass: " (@ gData 'mass) "\n"
 						(if (@ gData 'markup) 
 							(cat "Unit markup: " (@ gData 'markup) " (" (@ gData 'markupPercent) "%)")
@@ -1105,10 +1107,12 @@
 
 			<Text id="descItemStatsMultiple">
 				Unit price: %value% (%max% for %maxValue%)\n
+				Unit size: %size% (%max% for %maxSize%)\n
 				Unit mass: %mass% (%max% for %maxMass%)
 			</Text>
 			<Text id="descItemStatsSingle">
 				Unit price: %value%\n
+				Unit size: %size%
 				Unit mass: %mass%
 			</Text>
 			<Text id="descMarkup">

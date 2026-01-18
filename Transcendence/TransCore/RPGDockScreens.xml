@@ -617,6 +617,7 @@
 			<Text id="actionJettison">[J]ettison</Text>
 
 			<Text id="descJettisonDefault">
+				Unit size: %unitSize% %totalSizeString%
 				Unit mass: %unitMass% %totalMassString%
 			</Text>
 			<String id="totalMassString">(%quantity% at %mass%)</String>
@@ -855,6 +856,7 @@
 		
 		<Language>
 			<Text id="descLootDefault">
+				Unit size: %unitSize% %totalSizeString%\n
 				Unit mass: %unitMass% %totalMassString%\n
 				Unit price: %unitPrice% %totalPriceString%
 			</Text>

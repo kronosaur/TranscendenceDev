@@ -66,6 +66,7 @@
 									(setq desc (cat desc " (" gMaxCount " for " (multiply gCost gMaxCount) ")"))
 									)
 
+								(setq desc (cat desc "\nUnit size: " (fmtNumber 'CBM (itmGetVolume thisItem))))
 								(setq desc (cat desc "\nUnit mass: " (intMassString (itmGetMass thisItem))))
 								(if (gr gMaxCount 1)
 									(setq desc (cat desc " (" gMaxCount " at " (intMassString (multiply (itmGetMass thisItem) gMaxCount)) ")"))
@@ -749,6 +750,7 @@
 											(setq priceText (cat priceText " (" availCount " for " (multiply gCost availCount) ")"))
 											)
 
+										(setq priceText (cat priceText "\nUnit size: " (fmtNumber 'CBM (itmGetVolume thisItem))))
 										(setq priceText (cat priceText "\nUnit mass: " (intMassString (itmGetMass thisItem))))
 										(if (gr availCount 1)
 											(setq priceText (cat priceText " (" availCount " at " (intMassString (multiply (itmGetMass thisItem) availCount)) ")"))

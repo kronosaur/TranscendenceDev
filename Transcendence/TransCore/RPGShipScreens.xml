@@ -116,6 +116,7 @@
 
 						(if thisItem
 							(block (theCategory)
+								(setq desc (cat "Unit size: " (fmtNumber 'CBM (itmGetVolume thisItem)) "\n"))
 								(setq desc (cat "Unit mass: " (fmtNumber 'massKg (itmGetMass thisItem)) "\n\n"))
 
 								; Describe the item installation
@@ -360,10 +361,12 @@
 
 			<Text id="descCargoEmpty">You are in your ship's cargo hold.</Text>
 			<Text id="descCargoItem">
+				Unit size: %unitSize%\n
 				Unit mass: %unitMass%\n
 				Unit price: %unitPrice%
 			</Text>
 			<Text id="descCargoItems">
+				Unid size: %unitSize% (%count% at %totalSize%)\n
 				Unit mass: %unitMass% (%count% at %totalMass%)\n
 				Unit price: %unitPrice% (%count% for %totalPrice%)
 			</Text>
