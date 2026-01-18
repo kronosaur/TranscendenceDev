@@ -982,6 +982,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					219;
 //					0.0 for single hull stations, 1.0 for multi/asteroid/underground)
 //
 //	 59: 2.0 Alpha 9
+//		tlisp:
+//			(fmtNumber [format] number)
+//				Updated to now accept the following additional formats:
+//					'metric					10.5 G
+//					'metricFull				10.5 Giga
+//					'metricUnitless			10.5G
 //
 //
 
