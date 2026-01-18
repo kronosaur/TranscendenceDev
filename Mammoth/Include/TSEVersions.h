@@ -985,10 +985,91 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					219;
 //		tlisp:
 //			(fmtNumber [format] number)
 //				Updated to now accept the following additional formats:
+//					'CBM					32.5 kCBM	- cubic meters with SI prefixes
+//					'CBMBasic				32500 CBM	- cubic meters, or mCBM if 0.001<=val<1.0, or 0 - mirrors massKg except input in CBM
+//					'CBMInt					32500 CBM	- cubic meters, or 0 if <1.0 - mirrors massTons
 //					'metric					10.5 G
 //					'metricFull				10.5 Giga
 //					'metricUnitless			10.5G
-//
+//			(itm@ itm [object] property)
+//			(itmFind ...)
+//				See criteria update in (itmMatches)
+//			(itmGetVolume item)
+//				Returns volume in CBM
+//			(itmMatches criteria item)
+//				Supports volume matching "@" with <,=,> and range operators
+//			(obj@ obj property)
+//				New and updated properties:
+//					'cargoSpace				Available cargo space in cubic meters (previously tons)
+//					'cargoSpaceFreeCBM		Available cargo space in cubic meters, int
+//						this is purely for supporting legacy math operations that expected tons as an int
+//					'cargoSpaceFreeCBMReal	Available cargo space in cubic meters, double
+//					'cargoSpaceFreeLiters	Available cargo space in liters, int
+//						this is purely for supporting legacy math operations that expected kg
+//					'cargoSpaceFreeKg		DEPRECATED: Available cargo space in liters, int (NOT kg)
+//						this is purely for supporting legacy cargo math that needs it in liters to check if items will fit
+//					'cargoSpaceUsedCBM		Used cargo space in cubic meters, int
+//						this is purely for supporting legacy math operations that expected tons as an int
+//					'cargoSpaceUsedCBMReal	Used cargo space in cubic meters, double
+//					'cargoSpaceUsedLiters	Used cargo space in liters, int
+//						this is purely for supporting legacy math operations that expected kg
+//					'cargoSpaceUsedKg		DEPRECATED: Used cargo space in liters, int (NOT kg)
+//						this is purely for supporting legacy cargo math that needs it in liters to check if items will fit
+//					'maxCargoSpace			Total cargo space in cubic meters (previously tons)
+//			(typGetDataField type field)
+//				New and updated fields
+//					;;ItemType
+//						'volume					returns the volume in CBM as a string
+//					;;ShipClass
+//						'maxArmorSize			returns max armor size in CBM as a string
+//						'maxArmorMass			DEPRECATED: use maxArmorSize instead (returns same value multiplied by 1000)
+//		<AdventureDesc>
+//			<Properties>
+//				<Constant id="core.item.xmlMassToRealVolume">	1.0</Constant>
+//					Conversion ratio of tons->cubic meters for legacy items that specify only mass
+//					accepts a double
+//					Default: 1.0
+//				<Constant id="core.item.defaultDensity">		1.0</Constant>
+//					Default density in tons per cubic meter to apply to legacy items that specify only mass
+//					accepts a double
+//					Default: 1.0
+//		<Type>
+//			<ArmorClassDesc>
+//				<ArmorClass>
+//					New name for ArmorMass tag
+//					volume: armor item volume in CBM (cubic meters)
+//					mass: Autoconverts legacy mass= values (mass in kg) to CBM based on adventure properties
+//					size: max size armor for this armor class (in CBM)
+//					label: display name of armor class (unchanged from MassClass)
+//					shortLabel:	new string field for displaying mass classes when the mass class names are too long
+//				<ArmorClassAlias>
+//					New feature to allow compatibility support for old armor class names (ex, aliasing Dreadnought -> SuperMassive)
+//					id: name of the ArmorClass to alias
+//					idAlias: name of the alias
+//				<MassClass>
+//					Deprecated tag name, use ArmorClass instead (Functions identically)
+//				<[Any Other Name]>
+//					Deprecated tag name. APIs <59 allowed any named tags instead of just MassClass and they were interpreted as MassClass.
+//					Unsupported in API59+ (will cause a load error). This is to allow for additional tag types in the future.
+//			<ArmorMassDesc>
+//				Deprecated tag name, use ArmorClassDesc instead (Functions identically)
+//		<ItemType>
+//			density: (double) Species a specific density ratio in metric tons per cubic meter (aka, grams per cubic centimeter)
+//			mass: (int) If present without volume, this value is auto-converted using adventure properties to a volume, and the
+//				actual mass is computed from that volume back into mass using another adventure property. This is still an int
+//				for legacy support reasons. A future API may support doubles.
+//			volume: (double) volume of the item in cubic meters. Values <1 liter (0.001CBM) are allowed
+//		<ShipType>
+//			cargoSpace: now specifies CBM instead of tons
+//				If <API59, always uses the adventure compatibility mappings
+//			maxCargoSpace: now specifies CBM instead of tons
+//				If <API59, always uses the adventure compatibility mappings
+//			<Hull>
+//				cargoSpace: now specifies CBM instead of tons
+//					If <API59, always uses the adventure compatibility mappings
+//				maxCargoSpace: now specifies CBM instead of tons
+//					If <API59, always uses the adventure compatibility mappings
+//				stdArmorMass:
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
