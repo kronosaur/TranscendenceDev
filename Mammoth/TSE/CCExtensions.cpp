@@ -87,6 +87,7 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_ITEM_GET_STATIC_DATA_KEYS	40
 #define FN_ITEM_GET_TYPE_DATA_KEYS	41
 #define FN_ITEM_PROPERTY_KEYS		42
+#define FN_ITEM_VOLUME				43
 
 ICCItem *fnItemGetTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -915,6 +916,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"itmGetPrice",					fnItemGet,		FN_ITEM_PRICE,
 			"(itmGetPrice item|type [currency]) -> price of a single item",
 			"v*",	0,	},
+
+		{	"itmGetVolume",					fnItemGet,		FN_ITEM_VOLUME,
+			"(itmGetVolume item|type) -> size of single item in CBM (real)",
+			"v",	0,	},
 
 		{	"itm@Keys",						fnItemGet,		FN_ITEM_PROPERTY_KEYS,
 			"(itm@Keys item|type) -> list of property keys",
@@ -5899,6 +5904,10 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_MASS:
 			pResult = pCC->CreateInteger(Item.GetMassKg());
+			break;
+
+		case FN_ITEM_VOLUME:
+			pResult = pCC->CreateDouble(Item.GetVolume());
 			break;
 
 		case FN_ITEM_MAX_APPEARING:
