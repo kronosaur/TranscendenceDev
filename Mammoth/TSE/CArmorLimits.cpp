@@ -928,8 +928,8 @@ ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int 
 		CString sValue;
 		if (pDesc->FindAttribute(MAX_ARMOR_ATTRIB, &sValue))
 			{
-			m_rMaxArmorSize = strToDouble(sValue, -1);
-			if (m_rMaxArmorSize < 0)
+			m_rMaxArmorSize = strToDouble(sValue, -1.0);
+			if (m_rMaxArmorSize < 0 || IS_NAN(m_rMaxArmorSize))
 				m_sMaxArmorClass = sValue;
 			}
 		else
@@ -937,8 +937,8 @@ ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int 
 
 		if (pDesc->FindAttribute(STD_ARMOR_ATTRIB, &sValue))
 			{
-			m_rStdArmorSize = strToInt(sValue, -1);
-			if (m_rStdArmorSize < 0)
+			m_rStdArmorSize = strToDouble(sValue, -1.0);
+			if (m_rStdArmorSize < 0 || IS_NAN(m_rMaxArmorSize))
 				m_sStdArmorClass = sValue;
 			}
 		else
