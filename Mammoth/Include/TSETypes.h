@@ -126,6 +126,13 @@ static constexpr DWORD INVALID_UNID =					0xFFFFFFFF;
 //
 static constexpr DWORD DEFAULT_SYSTEM_TABLE_UNID =		0x0000000B;	//	tbBasicFragments	- only used for backwards compatibility
 
+//	This section defines engine-applied damage effects
+//	This should be moved to the TranscendenceUniverse or Adventure (overrides universe)
+//
+static constexpr DWORD UNID_DAMAGED_SITE_SMALL =		0x00000050;	//	ovDamagedSiteSmall
+static constexpr DWORD UNID_DAMAGED_SITE_MEDIUM =		0x00000051;	//	ovDamagedSiteMedium
+static constexpr DWORD UNID_DEPREZ_SITE_SMALL =			0x00000053;	//	ovDeprezSiteSmall
+
 //	This section defines fallback thruster effects
 //	This should be moved to the TranscendenceUniverse or Adventure (overrides universe)
 //
@@ -169,15 +176,27 @@ static constexpr DWORD TRITIUM_PROPULSION_UPGRADE_UNID = 0x0000404B;	//	Tritium 
 static constexpr DWORD CARGO_HOLD_EXPANSION_UNID =		0x00004079;	//	Cargo hold expansion
 static constexpr DWORD NOVA25_REACTOR_UNID =			0x00004107;	//	Nova-25 reactor
 
+//	This section defines default shield hit effects
+//	This should be moved to the TranscendenceUniverse or Adventure (overrides universe)
+//
+static constexpr DWORD g_ShieldEffectUNID =				0x00009004;	//	efShieldHit1
+
 //	This section defines default explosions and uses hardcoded explosion levels to offset by UNID
 //	This should be moved to the TranscendenceUniverse or Adventure (overrides universe)
 //
+static constexpr DWORD g_ExplosionUNID =				0x00009001;	//	efMediumExplosion1 - no explosion levels assocated with it
 static constexpr DWORD UNID_KINETIC_EXPLOSION_1 =		0x00005007;
 static constexpr DWORD UNID_BLAST_EXPLOSION_1 =			0x0000500B;
 static constexpr DWORD UNID_THERMO_EXPLOSION_1 =		0x0000500F;
 static constexpr DWORD UNID_PLASMA_EXPLOSION_1 =		0x00005013;
 static constexpr DWORD UNID_ANTIMATTER_EXPLOSION_1 =	0x00030030;
 static constexpr DWORD UNID_GRAVITON_EXPLOSION_1 =		0x00030034;
+
+//	This section defines default exploion sounds
+//	This should be moved to the TranscendenceUniverse or Adventure (overrides universe)
+//
+static constexpr DWORD g_ShipExplosionSoundUNID =		0x0000F204;	//	snShipExplosion1
+static constexpr DWORD g_StationExplosionSoundUNID =	0x0000F205;	//	snStationExplosion1
 
 //	This section defines stargate in-out effects
 //	This should be moved to the stargate as standard
@@ -228,7 +247,7 @@ static constexpr DWORD UNID_DEFAULT_SYSTEM_BACKGROUND =	0x00030001;
 //
 static constexpr DWORD UNID_GENERIC_ENHANCEMENT =		0x00030140;
 
-//	This sectiond defines a default character class for compatibility reasons
+//	This section defines a default character class for compatibility reasons
 //	This should be moved to the TranscendenceUniverse or Adventure (overrides universe)
 //
 static constexpr DWORD UNID_PILGRIM_CHARACTER_CLASS =			0x00201002;
