@@ -88,6 +88,7 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_ITEM_GET_TYPE_DATA_KEYS	41
 #define FN_ITEM_PROPERTY_KEYS		42
 #define FN_ITEM_VOLUME				43
+#define FN_ITEM_VOLUME_COMPAT		44
 
 ICCItem *fnItemGetTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -881,11 +882,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(itmGetLevel item|type) -> level",
 			"v",	0,	},
 
-		{ "itmGetMassKg",					fnItemGet,		FN_ITEM_MASS,
+		{   "itmGetMassKg",					fnItemGet,		FN_ITEM_MASS,
 			"(itmGetMass item|type) -> mass of single item in kg",
 			"v",	0, },
 
-		{	"itmGetMass",					fnItemGet,		FN_ITEM_VOLUME,
+		{	"itmGetMass",					fnItemGet,		FN_ITEM_VOLUME_COMPAT,
 			"DEPRECATED: use (itmGetVolume item|type) instead. For Mass use (itmGetMassKg item|type)",
 			"v",	0,	},
 
@@ -5943,6 +5944,10 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			pResult = pCC->CreateDouble(Item.GetVolume());
 			break;
 
+		case FN_ITEM_VOLUME_COMPAT:
+			pResult = pCC->CreateDouble(Item.GetVolume() * 1000);
+			break;
+
 		case FN_ITEM_MAX_APPEARING:
 			pResult = pCC->CreateInteger(pType->GetNumberAppearing().GetMaxValue());
 			break;
@@ -8420,7 +8425,7 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			pResult = pCC->CreateBool(pObj->CanAttack());
 			break;
 
-		case FN_OBJ_CARGO_SPACE_LEFT:
+		case FN_OBJ_CARGO_SPACE_LEFT:	//	This is for compatibility
 			pResult = pCC->CreateInteger((int)(pObj->GetCargoSpaceLeft() * 1000.0));
 			break;
 
