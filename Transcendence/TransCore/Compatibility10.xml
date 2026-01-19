@@ -67,6 +67,9 @@
 									)
 
 								(setq desc (cat desc "\nUnit size: " (fmtNumber 'CBM (itmGetVolume thisItem))))
+								(if (gr gMaxCount 1)
+									(setq desc (cat desc " (" gMaxCount " at " (fmtNumber 'CBM (multiply (itmGetVolume thisItem) gMaxCount)) ")\n"))
+									)
 								(setq desc (cat desc "\nUnit mass: " (intMassString (itmGetMass thisItem))))
 								(if (gr gMaxCount 1)
 									(setq desc (cat desc " (" gMaxCount " at " (intMassString (multiply (itmGetMass thisItem) gMaxCount)) ")"))
