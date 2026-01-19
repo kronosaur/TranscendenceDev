@@ -170,7 +170,7 @@
 
 								;	If we have too much cargo, then say so
 
-								(gr (obj@ gPlayerShip 'cargoSpaceUsedKg) (obj@ selObj 'cargoSpaceFreeKg))
+								(gr (obj@ gPlayerShip 'cargoSpaceUsedCBM) (obj@ selObj 'cargoSpaceFreeCBM))
 									(block ()
 										(scrEnableAction gScreen 'actionBuyShip Nil)
 										(scrSetActionDesc gScreen 'actionBuyShip (scrTranslate gScreen 'descTooMuchCargo))
@@ -451,7 +451,7 @@
 
 							;	Wingman has too much cargo
 
-							(gr (obj@ oldShipObj 'cargoSpaceUsedKg) (obj@ newShipObj 'cargoSpaceFreeKg))
+							(gr (obj@ oldShipObj 'cargoSpaceUsedCBM) (obj@ newShipObj 'cargoSpaceFreeCBM))
 								(setq confirmDesc (scrTranslate gScreen 'descTooMuchCargo {
 									wingmanName:(objGetName oldShipObj 0)
 									newShipName:(objGetName newShipObj 'article)
@@ -771,7 +771,7 @@
 
 							;	Wingman has too much cargo
 
-							(gr (obj@ oldShipObj 'cargoSpaceUsedKg) (obj@ newShipObj 'cargoSpaceFreeKg))
+							(gr (obj@ oldShipObj 'cargoSpaceUsedCBM) (obj@ newShipObj 'cargoSpaceFreeCBM))
 								(block ()
 									(scrEnableAction gScreen 'actionBuyFor Nil)
 									(scrSetDesc gScreen introDesc

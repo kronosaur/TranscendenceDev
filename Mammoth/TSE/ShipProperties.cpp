@@ -15,8 +15,8 @@
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
 #define PROPERTY_CARGO_KG						CONSTLIT("cargoKg")						//	Returns the actual cargo mass in kg
 #define PROPERTY_CARGO_SPACE					CONSTLIT("cargoSpace")
-#define PROPERTY_CARGO_SPACE_FREE_KG			CONSTLIT("cargoSpaceFreeKg")			//	Deprecated, returns cargo space in liters, use cargoSpaceFreeM3 (int) or cargoSpaceFreeM3Real (double)
-#define PROPERTY_CARGO_SPACE_USED_KG			CONSTLIT("cargoSpaceUsedKg")			//	Deprecated, returns cargo space in liters, use cargoSpaceUsedM3 (int) or cargoSpaceUsedM3Real (double) - For actual cargo mass use cargoKg instead.
+#define PROPERTY_CARGO_SPACE_FREE_KG			CONSTLIT("cargoSpaceFreeKg")			//	Deprecated, returns cargo space in liters, use cargoSpaceFreeCBM
+#define PROPERTY_CARGO_SPACE_USED_KG			CONSTLIT("cargoSpaceUsedKg")			//	Deprecated, returns cargo space in liters, use cargoSpaceUsedCBM - For actual cargo mass use cargoKg instead.
 #define PROPERTY_CARGO_SPACE_FREE_VOL			CONSTLIT("cargoSpaceFreeCBM")
 #define PROPERTY_CARGO_SPACE_USED_VOL			CONSTLIT("cargoSpaceUsedCBM")
 #define PROPERTY_CONTAMINATION_TIMER			CONSTLIT("contaminationTimer")
