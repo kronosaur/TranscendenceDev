@@ -4653,7 +4653,10 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 					{
 					case ECompartmentTypes::deckUncrewed:
 					case ECompartmentTypes::deckCargo:
+						{
 						bUncrewedCompartment = true;
+						break;
+						}
 					case ECompartmentTypes::deckGeneral:
 					case ECompartmentTypes::deckMainDrive:
 					case ECompartmentTypes::deckUnknown:
