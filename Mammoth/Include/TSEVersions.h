@@ -989,6 +989,22 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //					'metricFull				10.5 Giga
 //					'metricUnitless			10.5G
 //
+//		<Type>
+//			<Events>
+//				<onGlobalTypesBound>
+//					New event for state initialization code
+//					Fires after all types are bound, inheritance is resolved, and properties
+//						are available
+//					It is guaranteed that <onGlobalTypesBoundNewGame> always fires before
+//						this event fires, meaning that one-time pre-initialization can be
+//						handled in that event, and this event can handle any repeat initialization
+//						that has to happen after
+//				<onGlobalTypesBoundNewGame>
+//					New event for state initialization code
+//					Fires after all types are bound, inheritance is resolved, and properties
+//						are available
+//					Fires only on new games, or when loading into the  main menu
+//					Fires BEFORE <onGlobalTypesBound>
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------

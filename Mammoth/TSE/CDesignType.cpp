@@ -205,6 +205,8 @@ static const char *CACHED_EVENTS[CDesignType::evtCount] =
 		"OnSystemStopped",
 		"OnSystemWeaponFire",
 		"OnUpdate",
+		"OnGlobalTypesBound",
+		"OnGlobalTypesBoundNewGame",
 	};
 
 CDesignType::~CDesignType (void)
@@ -1689,16 +1691,71 @@ ALERROR CDesignType::FireOnGlobalTopologyCreated (CString *retsError)
 	return NOERROR;
 	}
 
-ALERROR CDesignType::FireOnGlobalTypesInit (SDesignLoadCtx &Ctx)
+//	FireOnGlobalTypesBound
+//
+//	Give this type a chance to initialize state after properties are bound
+//
+ALERROR CDesignType::FireOnGlobalTypesBound (SDesignLoadCtx &Ctx)
+
+	{
+	SEventHandlerDesc Event;
+	ECachedHandlers iEventType = evtOnGlobalTypesBound;
+
+	if (FindEventHandler(iEventType, &Event))
+		{
+		CCodeChainCtx CCCtx(GetUniverse());
+		CCCtx.DefineContainingType(this);
+		CCCtx.SetEvent(eventOnGlobalTypesBound);
+
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
+		if (pResult->IsError())
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("%s (%x): %s"), CONSTLIT(CACHED_EVENTS[iEventType]), GetUNID(), pResult->GetStringValue());
+			return ERR_FAIL;
+			}
+		}
+
+	return NOERROR;
+	}
+
+//	FireOnGlobalTypesBoundNewGame
+//
+//	Give this type a chance to initialize state after properties are bound
+//
+ALERROR CDesignType::FireOnGlobalTypesBoundNewGame (SDesignLoadCtx &Ctx)
+
+	{
+	SEventHandlerDesc Event;
+	ECachedHandlers iEventType = evtOnGlobalTypesBoundNewGame;
+
+	if (FindEventHandler(iEventType, &Event))
+		{
+		CCodeChainCtx CCCtx(GetUniverse());
+		CCCtx.DefineContainingType(this);
+		CCCtx.SetEvent(eventOnGlobalTypesBoundNewGame);
+
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
+		if (pResult->IsError())
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("%s (%x): %s"), CONSTLIT(CACHED_EVENTS[iEventType]), GetUNID(), pResult->GetStringValue());
+			return ERR_FAIL;
+			}
+		}
+
+	return NOERROR;
+	}
 
 //	FireOnGlobalTypesInit
 //
 //	Give this type a chance to create dynamic types.
+//
+ALERROR CDesignType::FireOnGlobalTypesInit (SDesignLoadCtx &Ctx)
 
 	{
 	SEventHandlerDesc Event;
+	ECachedHandlers iEventType = evtOnGlobalTypesInit;
 
-	if (FindEventHandler(evtOnGlobalTypesInit, &Event))
+	if (FindEventHandler(iEventType, &Event))
 		{
 		CCodeChainCtx CCCtx(GetUniverse());
 		CCCtx.DefineContainingType(this);
@@ -1707,7 +1764,7 @@ ALERROR CDesignType::FireOnGlobalTypesInit (SDesignLoadCtx &Ctx)
 		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			{
-			Ctx.sError = strPatternSubst(CONSTLIT("OnGlobalTypesInit (%x): %s"), GetUNID(), pResult->GetStringValue());
+			Ctx.sError = strPatternSubst(CONSTLIT("%s (%x): %s"), CONSTLIT(CACHED_EVENTS[iEventType]), GetUNID(), pResult->GetStringValue());
 			return ERR_FAIL;
 			}
 		}
