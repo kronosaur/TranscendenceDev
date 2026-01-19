@@ -174,7 +174,8 @@
 			barrel(s) marked "Salmonite&#xae;"; barrel(s) marked "Do Not Puncture";
 			barrel(s) marked with Arabic script; barrel(s) marked with microdots;
 			barrel(s) marked with Chinese ideograms; barrel(s) with no markings;
-			barrel(s) marked "Gefahr!"; barrel(s) marked "Peligro!"
+			barrel(s) marked "Gefahr!"; barrel(s) marked "Peligro!";
+			barrel(s) marked "Do not drink!"
 		</Names>
 	</ItemType>
 	
