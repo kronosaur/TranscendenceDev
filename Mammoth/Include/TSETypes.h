@@ -184,13 +184,15 @@ static constexpr DWORD g_ShieldEffectUNID =				0x00009004;	//	efShieldHit1
 //	This section defines default explosions and uses hardcoded explosion levels to offset by UNID
 //	This should be moved to the TranscendenceUniverse or Adventure (overrides universe)
 //
-static constexpr DWORD g_ExplosionUNID =				0x00009001;	//	efMediumExplosion1 - no explosion levels assocated with it
+static constexpr DWORD g_ExplosionUNID =				0x00009001;	//	efMediumExplosion1 - no explosion levels associated with it
+static constexpr DWORD g_StationDestroyedUNID =			0x00009009;	//	efStationExplosion - no explosion levels associated with it
 static constexpr DWORD UNID_KINETIC_EXPLOSION_1 =		0x00005007;
 static constexpr DWORD UNID_BLAST_EXPLOSION_1 =			0x0000500B;
 static constexpr DWORD UNID_THERMO_EXPLOSION_1 =		0x0000500F;
 static constexpr DWORD UNID_PLASMA_EXPLOSION_1 =		0x00005013;
 static constexpr DWORD UNID_ANTIMATTER_EXPLOSION_1 =	0x00030030;
 static constexpr DWORD UNID_GRAVITON_EXPLOSION_1 =		0x00030034;
+static constexpr DWORD UNID_DISINTEGRATION_EXPLOSION =	0x00030044; //	no explosion levels associated with it
 
 //	This section defines default exploion sounds
 //	This should be moved to the TranscendenceUniverse or Adventure (overrides universe)
@@ -236,6 +238,12 @@ static constexpr DWORD DEFAULT_REACTOR_DISPLAY_IMAGE =	0x0000F00C;	//	rsZubrinRe
 static constexpr DWORD DEFAULT_DOCK_SCREEN_IMAGE_UNID = 0x0000F013;	//	Default dock screen background
 static constexpr DWORD DEFAULT_DOCK_SCREEN_MASK_UNID =	0x0000F014;	//	Default dock screen mask
 static constexpr DWORD UNID_CORE_ICON_BAR			 =	0x00030005;
+
+//	This section defines status effect overlays
+//	This should be moved to the TranscendenceUniverse or Adventure (overrides universe)
+//	However we may want to consider to allow weapons to specify this, possibly via event?
+//
+static constexpr DWORD UNID_TIME_STOP_OVERLAY =			0x00030080;
 
 //	This section defines the default system background effect for compatibility reasons
 //	This should be moved to the TranscendenceUniverse or Adventure (overrides universe)
