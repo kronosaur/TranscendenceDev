@@ -226,9 +226,26 @@ extern Metric g_TimeScale;
 extern Metric g_SecondsPerUpdate;
 
 //	Damage Types ---------------------------------------------------------------
-
+// 
+//	There are several classes of damage types:
+// 
+//		Listed damage: the standard damage types in the game
+//			These are subjected to ingame resistances and bonuses like
+//			damageAdj
+// 
+//		Unlisted damage: special purpose damage types
+//			Generic: deals true damage that ignores normal damageAdj
+//			Null: does not deal damage and is not treated as hostile, but
+//				activates on hit events and applies status effects
+// 
+//		Invalid damage:	these are not real damage types
+//			Error: this is applied when an invalid damage type is selected, or
+//				a parsing error was encountered
+//			Unknown: this is applied to unknown virtual items for UI purposes
+//
 enum DamageTypes
 	{
+	damageUnknown		= -101,					//	unknown damage
 	damageError			= -100,					//	invalid damage
 	damageNull			= -2,					//	null damage
 	damageGeneric		= -1,					//	generic damage
@@ -238,7 +255,7 @@ enum DamageTypes
 	damageParticle		= 2,					//	charged particle beam
 	damageBlast			= 3,					//	chemical explosives
 	damageIonRadiation	= 4,					//	ionizing radiation
-	damageThermonuclear	= 5,					//	hydrogen bomb
+	damageThermonuclear	= 5,					//	fission bomb
 	damagePositron		= 6,					//	anti-matter charged particles
 	damagePlasma		= 7,					//	fusion weapons
 	damageAntiMatter	= 8,					//	anti-matter torpedo
