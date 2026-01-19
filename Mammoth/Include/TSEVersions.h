@@ -1001,16 +1001,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					219;
 //			(obj@ obj property)
 //				New and updated properties:
 //					'cargoSpace				Available cargo space in cubic meters (previously tons)
-//					'cargoSpaceFreeCBM		Available cargo space in cubic meters, int
-//						this is purely for supporting legacy math operations that expected tons as an int
-//					'cargoSpaceFreeCBMReal	Available cargo space in cubic meters, double
+//					'cargoSpaceFreeCBM		Available cargo space in cubic meters, double
 //					'cargoSpaceFreeLiters	Available cargo space in liters, int
 //						this is purely for supporting legacy math operations that expected kg
 //					'cargoSpaceFreeKg		DEPRECATED: Available cargo space in liters, int (NOT kg)
 //						this is purely for supporting legacy cargo math that needs it in liters to check if items will fit
-//					'cargoSpaceUsedCBM		Used cargo space in cubic meters, int
-//						this is purely for supporting legacy math operations that expected tons as an int
-//					'cargoSpaceUsedCBMReal	Used cargo space in cubic meters, double
+//					'cargoSpaceUsedCBM		Used cargo space in cubic meters, double
 //					'cargoSpaceUsedLiters	Used cargo space in liters, int
 //						this is purely for supporting legacy math operations that expected kg
 //					'cargoSpaceUsedKg		DEPRECATED: Used cargo space in liters, int (NOT kg)

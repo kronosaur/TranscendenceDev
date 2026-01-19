@@ -19,8 +19,6 @@
 #define PROPERTY_CARGO_SPACE_USED_KG			CONSTLIT("cargoSpaceUsedKg")			//	Deprecated, returns cargo space in liters, use cargoSpaceUsedM3 (int) or cargoSpaceUsedM3Real (double) - For actual cargo mass use cargoKg instead.
 #define PROPERTY_CARGO_SPACE_FREE_VOL			CONSTLIT("cargoSpaceFreeCBM")
 #define PROPERTY_CARGO_SPACE_USED_VOL			CONSTLIT("cargoSpaceUsedCBM")
-#define PROPERTY_CARGO_SPACE_FREE_VOL_R			CONSTLIT("cargoSpaceFreeCBMReal")
-#define PROPERTY_CARGO_SPACE_USED_VOL_R			CONSTLIT("cargoSpaceUsedCBMReal")
 #define PROPERTY_CONTAMINATION_TIMER			CONSTLIT("contaminationTimer")
 #define PROPERTY_COUNTER_INCREMENT_RATE			CONSTLIT("counterIncrementRate")
 #define PROPERTY_COUNTER_VALUE					CONSTLIT("counterValue")
@@ -321,7 +319,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(CalcMaxCargoSpace());
 
 	else if (strEquals(sName, PROPERTY_CARGO_SPACE_FREE_VOL))
-		return CC.CreateInteger(mathRound(GetCargoSpaceLeft()));
+		return CC.CreateDouble(mathRound(GetCargoSpaceLeft()));
 
 	else if (strEquals(sName, PROPERTY_CARGO_SPACE_FREE_KG))
 		return CC.CreateInteger(mathRound(GetCargoSpaceLeft() * 1000));
@@ -329,7 +327,7 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_CARGO_SPACE_USED_VOL))
 		{
 		InvalidateItemVolume();
-		return CC.CreateInteger(mathRound(GetCargoVolume()));
+		return CC.CreateDouble(mathRound(GetCargoVolume()));
 		}
 
 	else if (strEquals(sName, PROPERTY_CARGO_SPACE_USED_KG))
@@ -337,15 +335,6 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		InvalidateItemVolume();
 		return CC.CreateInteger(mathRound(GetCargoVolume() * 1000));
 	}
-
-	else if (strEquals(sName, PROPERTY_CARGO_SPACE_FREE_VOL_R))
-		return CC.CreateDouble(GetCargoSpaceLeft());
-
-	else if (strEquals(sName, PROPERTY_CARGO_SPACE_USED_VOL_R))
-		{
-		InvalidateItemVolume();
-		return CC.CreateDouble(GetCargoVolume());
-		}
 
 	else if (strEquals(sName, PROPERTY_CARGO_KG))
 		{
