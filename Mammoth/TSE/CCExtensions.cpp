@@ -881,8 +881,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(itmGetLevel item|type) -> level",
 			"v",	0,	},
 
-		{	"itmGetMass",					fnItemGet,		FN_ITEM_MASS,
+		{ "itmGetMassKg",					fnItemGet,		FN_ITEM_MASS,
 			"(itmGetMass item|type) -> mass of single item in kg",
+			"v",	0, },
+
+		{	"itmGetMass",					fnItemGet,		FN_ITEM_VOLUME,
+			"DEPRECATED: use (itmGetVolume item|type) instead. For Mass use (itmGetMassKg item|type)",
 			"v",	0,	},
 
 		{	"itmGetMaxAppearing",			fnItemGet,		FN_ITEM_MAX_APPEARING,
@@ -1918,7 +1922,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"il*",	0,	},
 
 		{	"objGetCargoSpaceLeft",			fnObjGetOld,		FN_OBJ_CARGO_SPACE_LEFT,
-			"(objGetCargoSpaceLeft obj) -> space left in kg",
+			"DEPRECATED: use (obj@ obj 'cargoSpaceFree) -> space left in cubic meters instead\n"
+
+			"   (objGetCargoSpaceLeft obj) -> space left in liters\n",
+
 			NULL,	0,	},
 
 		{	"objGetCharacterData",			fnObjGet,		FN_OBJ_GET_CHARACTER_DATA,
@@ -2188,8 +2195,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'blindingImmune\n"
 			"   'cargoMassKg -> in kg\n"
 			"   'cargoSpace -> in CBM\n"
-			"   'cargoSpaceFreeCBM -> in CBM\n"
-			"   'cargoSpaceUsedCBM -> in CBM\n"
+			"   'cargoSpaceFree -> in CBM\n"
+			"   'cargoSpaceUsed -> in CBM\n"
 			"   'counterIncrementRate\n"
 			"   'counterValue\n"
 			"   'character\n"

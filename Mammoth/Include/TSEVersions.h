@@ -994,24 +994,30 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					219;
 //			(itm@ itm [object] property)
 //			(itmFind ...)
 //				See criteria update in (itmMatches)
+//			(itmGetMassKg item)
+//				Returns item mass in kg
+//			(itmGetMass item)
+//				DEPRECATED: (synonym for itemGetVolume, for actually getting the mass use itmGetMassKg instead)
 //			(itmGetVolume item)
-//				Returns volume in CBM
+//				Returns volume in CBM (real)
 //			(itmMatches criteria item)
 //				Supports volume matching "@" with <,=,> and range operators
 //			(obj@ obj property)
 //				New and updated properties:
 //					'cargoSpace				Available cargo space in cubic meters (previously tons)
-//					'cargoSpaceFreeCBM		Available cargo space in cubic meters, double
+//					'cargoSpaceFree			Available cargo space in cubic meters, double
 //					'cargoSpaceFreeLiters	Available cargo space in liters, int
 //						this is purely for supporting legacy math operations that expected kg
 //					'cargoSpaceFreeKg		DEPRECATED: Available cargo space in liters, int (NOT kg)
 //						this is purely for supporting legacy cargo math that needs it in liters to check if items will fit
-//					'cargoSpaceUsedCBM		Used cargo space in cubic meters, double
+//					'cargoSpaceUsed			Used cargo space in cubic meters, double
 //					'cargoSpaceUsedLiters	Used cargo space in liters, int
 //						this is purely for supporting legacy math operations that expected kg
 //					'cargoSpaceUsedKg		DEPRECATED: Used cargo space in liters, int (NOT kg)
 //						this is purely for supporting legacy cargo math that needs it in liters to check if items will fit
 //					'maxCargoSpace			Total cargo space in cubic meters (previously tons)
+//			(objGetCargoSpaceLeft obj)
+//				DEPRECATED: returns cargo space in liters, for compatibility math. Name implies returning in cubic meters though.
 //			(typGetDataField type field)
 //				New and updated fields
 //					;;ItemType
