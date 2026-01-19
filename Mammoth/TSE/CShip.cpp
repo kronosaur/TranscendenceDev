@@ -4584,10 +4584,11 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Let the armor handle it
 
 	Ctx.iArmorHitDamage = Ctx.iDamage;
-	CShipArmorSegmentDesc SectionDesc = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect());
 
 	if (pArmor)
 		{
+		CShipArmorSegmentDesc SectionDesc = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect());
+
 		//	Set any Fortification adjustment from the slot
 
 		EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
