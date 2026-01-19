@@ -315,7 +315,7 @@
 									(eq affordCount 0)
 										(scrTranslate gScreen 'descNotEnoughMoney { currency: (fmtCurrency currencyUsed True) })
 										
-									(eq fitCount 0)
+									(leq fitCount 0)
 										(scrTranslate gScreen 'descNotEnoughRoom)
 										
 									(and (gr availCount affordCount) (gr fitCount affordCount))
