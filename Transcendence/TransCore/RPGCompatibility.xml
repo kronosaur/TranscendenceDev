@@ -132,9 +132,12 @@
 								(setq gMaxCount (min availCount fitCount))
 
 								(setq desc (cat "Unit size: " (fmtNumber 'CBM (itmGetVolume thisItem))))
-								(setq desc (cat "Unit mass: " (fmtNumber 'massKg (itmGetMass thisItem))))
 								(if (gr gMaxCount 1)
-									(setq desc (cat desc " (" gMaxCount " at " (fmtNumber 'massKg (multiply (itmGetMass thisItem) gMaxCount)) ")"))
+									(setq desc (cat desc " (" gMaxCount " at " (fmtNumber 'CBM (multiply (itmGetVolume thisItem) gMaxCount)) ")"))
+									)
+								(setq desc (cat "\nUnit mass: " (fmtNumber 'massKg (itmGetMassKg thisItem))))
+								(if (gr gMaxCount 1)
+									(setq desc (cat desc " (" gMaxCount " at " (fmtNumber 'massKg (multiply (itmGetMassKg thisItem) gMaxCount)) ")"))
 									)
 
 								(if (ls (objGetCargoSpaceLeft gSource) 200000)
@@ -257,7 +260,10 @@
 								(setq gMaxCount (min availCount fitCount))
 
 								(setq desc (cat "Unit size: " (fmtNumber 'CBM (itmGetVolume thisItem))))
-								(setq desc (cat "Unit mass: " (fmtNumber 'massKg (itmGetMass thisItem))))
+								(if (gr gMaxCount 1)
+									(setq desc (cat desc " (" gMaxCount " at " (fmtNumber 'CBM (multiply (itmGetVolume thisItem) gMaxCount)) ")"))
+									)
+								(setq desc (cat "\nUnit mass: " (fmtNumber 'massKg (itmGetMass thisItem))))
 								(if (gr gMaxCount 1)
 									(setq desc (cat desc " (" gMaxCount " at " (fmtNumber 'massKg (multiply (itmGetMass thisItem) gMaxCount)) ")"))
 									)

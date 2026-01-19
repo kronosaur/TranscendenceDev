@@ -985,15 +985,16 @@
 					;	Figure out how much cargo space we need for each item
 					(spaceNeeded
 						(-
-							(* (itmGetMass theItem) (itmGetCount theItem))
+							(* (itmGetVolume theItem) (itmGetCount theItem))
 							(map theComponents 'reduceSum theComponent
-								(* (itmGetMass (@ theComponent 'item)) (@ theComponent 'count))
+								(* (itmGetVolume (@ theComponent 'item)) (@ theComponent 'count))
 								)
 							)
 						)
 					(maxCountSpace
 						(if (gr spaceNeeded 0)
-							(int (/ (objGetCargoSpaceLeft (or theSource gPlayerShip)) spaceNeeded))
+							;	Need to multiply by 1000 to get liters from cubic meters
+							(int (/ (objGetCargoSpaceLeft (or theSource gPlayerShip)) (* 1000 spaceNeeded)))
 							1000
 							)
 						)

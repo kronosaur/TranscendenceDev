@@ -288,8 +288,10 @@
 									markupPercent: (abs itemMarkupPercent)
 									max: (if (gr maxCount 1) maxCount)
 									maxValue: (fmtCurrency currencyUsed (multiply itemCost maxCount))
-									mass: (fmtNumber 'massKg (itmGetMass thisItem))
-									maxMass: (fmtNumber 'massKg (multiply (itmGetMass thisItem) maxCount))
+									size: (fmtNumber 'CBM (itmGetVolume thisItem))
+									maxSize: (fmtNumber 'CBM (multiply (itmGetVolume thisItem) maxCount))
+									mass: (fmtNumber 'massKg (itmGetMassKg thisItem))
+									maxMass: (fmtNumber 'massKg (multiply (itmGetMassKg thisItem) maxCount))
 									})
 
 								;	If the player has some in their cargo hold, then say so here.
@@ -804,8 +806,10 @@
 						markupPercent: (abs itemMarkupPercent)
 						max: (if (gr offerCount 1) offerCount)
 						maxValue: (fmtCurrency currencyUsed (multiply offerPrice offerCount))
-						mass: (fmtNumber 'massKg (itmGetMass theItem))
-						maxMass: (fmtNumber 'massKg (multiply (itmGetMass theItem) offerCount))
+						size: (fmtNumber 'CBM (itmGetVolume theItem))
+						maxSize: (fmtNumber 'CBM (multiply (itmGetVolume theItem) offerCount))
+						mass: (fmtNumber 'massKg (itmGetMassKg theItem))
+						maxMass: (fmtNumber 'massKg (multiply (itmGetMassKg theItem) offerCount))
 						})
 					)
 			</DynamicData>
