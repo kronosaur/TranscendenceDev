@@ -4616,10 +4616,11 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Let the armor handle it
 
 	Ctx.iArmorHitDamage = Ctx.iDamage;
-	CShipArmorSegmentDesc SectionDesc = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect());
 
 	if (pArmor)
 		{
+		CShipArmorSegmentDesc SectionDesc = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect());
+
 		//	Set any Fortification adjustment from the slot
 
 		EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
@@ -4684,7 +4685,10 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 					{
 					case ECompartmentTypes::deckUncrewed:
 					case ECompartmentTypes::deckCargo:
+						{
 						bUncrewedCompartment = true;
+						break;
+						}
 					case ECompartmentTypes::deckGeneral:
 					case ECompartmentTypes::deckMainDrive:
 					case ECompartmentTypes::deckUnknown:
