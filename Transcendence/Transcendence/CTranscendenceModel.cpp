@@ -2835,8 +2835,7 @@ ALERROR CTranscendenceModel::StartNewGameBackground (const SNewGameSettings &New
 		for (int i = 0; i < 14; i++)
 			{
 			CFleetShipAI *pController = new CFleetShipAI;
-			int iDebugHenchmenShipUNID = 0x00103001;	//scCenturion
-			if (error = pStartingSystem->CreateShip(iDebugHenchmenShipUNID,
+			if (error = pStartingSystem->CreateShip(g_DebugHenchmenShipUNID,
 						pController,
 						NULL,
 						m_Universe.FindSovereign(g_PlayerSovereignUNID),
