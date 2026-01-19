@@ -41,6 +41,7 @@
 #define KEY_ATTRIB								CONSTLIT("key")
 #define LEVEL_ATTRIB							CONSTLIT("level")
 #define MASS_BONUS_PER_CHARGE_ATTRIB			CONSTLIT("massBonusPerCharge")
+#define VOLUME_BONUS_PER_CHARGE_ATTRIB			CONSTLIT("volumeBonusPerCharge")
 #define MAX_CHARGES_ATTRIB						CONSTLIT("maxCharges")
 #define NO_SALE_IF_USED_ATTRIB					CONSTLIT("noSaleIfUsed")
 #define NUMBER_APPEARING_ATTRIB					CONSTLIT("numberAppearing")
@@ -1565,6 +1566,7 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_iMass = pDesc->GetAttributeInteger(CONSTLIT(g_MassAttrib));
 	m_rVolume = pDesc->GetAttributeDouble(CONSTLIT(g_VolumeAttrib));
 	Metric rDensity = pDesc->GetAttributeDouble(DENSITY_ATTRIB);
+	bool bUsesMassCompatibility = false;
 
 	//	Volume and density are not available in old versions
 
@@ -1586,8 +1588,12 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (rDensity)
 			kernelDebugLogPattern(CONSTLIT("Warning: Item %s (%x) specified density without specifying a volume. Using adventure default density instead."), m_sName, GetUNID());
 
-		m_rVolume = rXMLMassToVolume * m_iMass / 1000.0;
+		m_rVolume = rXMLMassToVolume * m_iMass * 0.001;
 		m_iMass = mathRound(rDefaultDensity * 1000 * m_rVolume);
+
+		//	We need to remember that we are in compatibility mode
+
+		bUsesMassCompatibility = true;
 		}
 
 	//	If we are missing mass we need to compute it, or we have explicit density
@@ -1665,8 +1671,18 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_iExtraMassPerCharge = pDesc->GetAttributeIntegerBounded(MASS_BONUS_PER_CHARGE_ATTRIB, 0, -1, 0);
 	m_iExtraValuePerCharge = pDesc->GetAttributeInteger(VALUE_BONUS_PER_CHARGE_ATTRIB);	//	May be negative
+	m_rExtraVolumePerCharge = pDesc->GetAttributeDoubleBounded(VOLUME_BONUS_PER_CHARGE_ATTRIB, 0, -1.0, 0);
 	m_fAmmoCharges = pDesc->GetAttributeBool(AMMO_CHARGES_ATTRIB);
 	m_fValueCharges = pDesc->GetAttributeBool(VALUE_CHARGES_ATTRIB);
+
+	if (bUsesMassCompatibility && m_rExtraVolumePerCharge < 0)
+		{
+		Metric rXMLMassToVolume = g_pUniverse->GetEngineOptions().GetItemXMLMassToVolumeRatio();
+		Metric rDefaultDensity = g_pUniverse->GetEngineOptions().GetItemDefaultDensity();
+
+		m_rExtraVolumePerCharge = rXMLMassToVolume * m_iExtraMassPerCharge * 0.001;
+		m_iExtraMassPerCharge = mathRound(m_rExtraVolumePerCharge * rDefaultDensity * 1000);
+		}
 
 	//	Flags
 
