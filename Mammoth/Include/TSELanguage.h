@@ -69,6 +69,9 @@ class CLanguage
 			numberMetric,					//	105 M or 10.5 k or 105 u (for adding a unit abbreviation after)
 			numberMetricFull,				//	105 Mega or 10.5 kilo or 105 micro (for adding a unit after)
 			numberMetricUnitless,			//	105M or 10.5k or 105u (for unitless numbers)
+			numberCBM,						//	Formats CBM (cubic meters) with SI prefixes
+			numberCBMBasic,					//	Formats CBM like mass (CBM if >= 1.0, mCBM if 0.001-.999)
+			numberCBMInt,					//	Formats whole CBM only, no SI prefixes
 			};
 
 		enum EVerbFlags

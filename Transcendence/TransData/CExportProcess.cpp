@@ -85,13 +85,13 @@ void CExportProcess::WriteShipClasses (IWriteStream& Output)
 //		MaxFuel				Float				Max fuel units
 // 
 //		FuelConsumption		Float				Fuel units consumed per tick per 1/10th MW.
-//		CargoSpaceT			Integer				Cargo space in tons
+//		CargoSpaceT			Integer				Cargo space in CBM (cubic meters)
 //		HullMassT			Integer				Hull mass in metric tons
 //		HullValue			String				Price in some currency (e.g., "1000 credit")
-//		HullCargoSpaceT		Integer				Cargo space in tons
-//		MaxCargoSpaceT		Integer				Max cargo space in tons
-//		StdArmorMassT		Integer				Standard armor mass in tons (no penalty)
-//		MaxArmorMassT		Integer				Max armor mass in tons
+//		HullCargoSpaceT		Integer				Cargo space in CBM
+//		MaxCargoSpaceT		Integer				Max cargo space in CBM
+//		StdArmorMassT		Integer				Standard armor size in CBM (no penalty)
+//		MaxArmorMassT		Integer				Max armor size in CBM
 //		MaxArmorSpeedAdj	Integer				Speed penalty (1/100th of c) at max armor
 //		MinArmorSpeedAdj	Integer				Speed bonus (1/100th of c) at 1/2 std armor
 // 
@@ -161,8 +161,8 @@ void CExportProcess::WriteShipClasses (IWriteStream& Output)
 				Class.GetHullValue(),
 				Class.GetHullDesc().GetCargoSpace(),
 				Class.GetHullDesc().GetMaxCargoSpace(),
-				Class.GetHullDesc().GetArmorLimits().GetStdArmorMass(),
-				Class.GetHullDesc().GetArmorLimits().GetMaxArmorMass(),
+				Class.GetHullDesc().GetArmorLimits().GetStdArmorSize(),
+				Class.GetHullDesc().GetArmorLimits().GetMaxArmorSize(),
 				Class.GetHullDesc().GetArmorLimits().GetMaxArmorSpeedPenalty(),
 				Class.GetHullDesc().GetArmorLimits().GetMinArmorSpeedBonus(),
 

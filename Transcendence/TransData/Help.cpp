@@ -304,7 +304,7 @@ void ShowHelp (CXMLElement *pCmdLine)
 		printf("      [/armorItems]         installed armor items.\n");
 		printf("	  [/balance]            stats about combat and defense.\n");
 		printf("      [/balanceType]        designation based on combat strength.\n");
-		printf("      [/cargoSpace]         cargo space available (in tons).\n");
+		printf("      [/cargoSpace]         cargo space available (in CBM (cubic meters)).\n");
 		printf("      [/combatStrength]     combat power (absolute).\n");
 		printf("      [/damage]             damage done per 180 ticks.\n");
 		printf("      [/defenseStrength]    defense strength (absolute).\n");
@@ -324,7 +324,7 @@ void ShowHelp (CXMLElement *pCmdLine)
 		printf("      [/maneuver]           time for a complete rotation.\n");
 		printf("      [/manufacturer]       ship manufacturer.\n");
 		printf("      [/maxArmorMass]       max mass for armor (in kilograms).\n");
-		printf("      [/maxCargoSpace]      max cargo space (in tons).\n");
+		printf("      [/maxCargoSpace]      max cargo space (in CBM (cubic meters)).\n");
 		printf("      [/maxSpeed]           maximum speed (in %% of lightspeed).\n");
 		printf("      [/primaryArmor]       primary armor.\n");
 		printf("      [/primaryWeapon]      primary weapon.\n");

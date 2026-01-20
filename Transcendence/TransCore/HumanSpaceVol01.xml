@@ -1575,7 +1575,8 @@
 	<!ENTITY rsItems10					"0x0010002B">
 	<!ENTITY trStdTreasure				"0x0010002C">
 	<!ENTITY baHumanTechShip			"0x0010002D">
-	<!ENTITY unidArmorMass				"0x0010002E">
+	<!ENTITY unidArmorClass				"0x0010002E">
+	<!ENTITY unidArmorMass				"0x0010002E">	<!-- Deprecated: use unidArmorClass instead -->
 	
 	<!-- 0030-003F SISTERS OF DOMINA -->
 	

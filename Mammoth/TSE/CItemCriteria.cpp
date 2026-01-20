@@ -436,14 +436,14 @@ bool CItemCriteria::MatchesItemCategory (const CItemType &ItemType) const
 	return true;
 	}
 
-void CItemCriteria::ParseSubExpression (const char *pPos, DWORD dwFlags)
-
 //	ParseSubExpression
 //
 //	Parses a sub-expression and returns the first character after the end of the
 //	sub-expression.
 //
 //	NOTE: We assume that we are currently in the default state.
+//
+void CItemCriteria::ParseSubExpression (const char *pPos, DWORD dwFlags)
 
 	{
 	//	Skip leading whitespace
@@ -678,6 +678,9 @@ void CItemCriteria::ParseSubExpression (const char *pPos, DWORD dwFlags)
 					m_bExcludeVirtual = false;
 					break;
 
+				case '@':
+					m_SizeRange.Parse(pPos, &pPos);
+
 				case '+':
 				case '-':
 					{
@@ -742,34 +745,44 @@ void CItemCriteria::ParseSubExpression (const char *pPos, DWORD dwFlags)
 				case '>':
 				case '<':
 					{
-					CIntegerRangeCriteria Range;
+					CDoubleRangeCriteria RRange;
 					char chModifier;
+					const char* pcEndPos;
 
-					if (Range.Parse(pPos, &pPos, &chModifier))
+					if (RRange.Parse(pPos, &pcEndPos, &chModifier))
 						{
-						switch (chModifier)
+						if (chModifier == '@')
+							m_SizeRange = RRange;
+						else
 							{
-							case '\0':
-								if (dwFlags & FLAG_REPAIR_LEVEL)
-									m_RepairLevelRange = Range;
-								else
-									m_LevelRange = Range;
-								break;
+							CIntegerRangeCriteria Range;
+							if (Range.Parse(pPos, &pcEndPos, &chModifier))
+								{
+								switch (chModifier)
+									{
+									case '\0':
+										if (dwFlags & FLAG_REPAIR_LEVEL)
+											m_RepairLevelRange = Range;
+										else
+											m_LevelRange = Range;
+										break;
 
-							case '$':
-								m_PriceRange = Range;
-								break;
+									case '$':
+										m_PriceRange = Range;
+										break;
 
-							case '#':
-								m_MassRange = Range;
-								break;
+									case '#':
+										m_MassRange = Range;
+										break;
 
-							case 'R':
-								m_RepairLevelRange = Range;
-								break;
+									case 'R':
+										m_RepairLevelRange = Range;
+										break;
+									}
+								}
 							}
 						}
-
+					pPos = pcEndPos;
 					break;
 					}
 				}
@@ -908,7 +921,7 @@ void CItemCriteria::WriteSubExpression (CMemoryWriteStream &Output) const
 		if (!sTerm.IsBlank())
 			Output.Write(sTerm.GetPointer(), sTerm.GetLength());
 
-		sTerm = m_MassRange.AsString('#');
+		sTerm = m_SizeRange.AsString('#');
 		if (!sTerm.IsBlank())
 			Output.Write(sTerm.GetPointer(), sTerm.GetLength());
 

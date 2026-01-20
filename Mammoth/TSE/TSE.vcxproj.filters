@@ -1660,5 +1660,8 @@
     <ClCompile Include="CDamageMethodDesc.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="CDoubleRangeCriteria.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
