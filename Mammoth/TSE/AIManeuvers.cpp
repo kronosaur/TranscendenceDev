@@ -771,11 +771,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				//	it above).
 				//	We cheat a little to dampen our movements against stationary targets.
 
-				//	Compute a reasonable cheat factor for our mass (if we are too light,
-				//	we can get thrown across space by this system and it looks really bad)
-
-				Metric rOurMass = pShip->GetMass();	//	Mass in tons
-				Metric rCheatFactor = rOurMass > 200 ? CHEAT_FORMATION_FACTOR : CHEAT_FORMATION_FACTOR * rOurMass / 200;
+				Metric rCheatFactor = CHEAT_FORMATION_FACTOR;
 
 				DebugAIOutput(pShip, strPatternSubst(CONSTLIT("Std: Close on static fire point: Assist %r"), rCheatFactor));
 
@@ -917,11 +913,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				//	it above).
 				//	We cheat a little to dampen our movements against stationary targets.
 
-				//	Compute a reasonable cheat factor for our mass (if we are too light,
-				//	we can get thrown across space by this system and it looks really bad)
-
-				Metric rOurMass = pShip->GetMass();	//	Mass in tons
-				Metric rCheatFactor = rOurMass > 200 ? CHEAT_FORMATION_FACTOR : CHEAT_FORMATION_FACTOR * rOurMass / 200;
+				Metric rCheatFactor = CHEAT_FORMATION_FACTOR;
 
 				DebugAIOutput(pShip, strPatternSubst(CONSTLIT("Adv: Close on static fire point: Assist %r"), rCheatFactor));
 
@@ -990,11 +982,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 						}
 					else if (m_fLowManeuverability)
 						{
-						//	Compute a reasonable cheat factor for our mass (if we are too light,
-						//	we can get thrown across space by this system and it looks really bad)
-
-						Metric rOurMass = pShip->GetMass();	//	Mass in tons
-						Metric rCheatFactor = rOurMass > 200 ? CHEAT_FORMATION_FACTOR : CHEAT_FORMATION_FACTOR * rOurMass / 200;
+						Metric rCheatFactor = CHEAT_FORMATION_FACTOR;
 
 						//	We need to be facing the correct direction for this. Formations can
 						//	cheat backwards because they look ok moving as a unit, however
@@ -1007,7 +995,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 						Metric rAngleDiff = abs(vToPos.Polar() - mathDegreesToRadians(pShip->GetRotationAngle()));
 						Metric rCos = max(cos(rAngleDiff), 0.0);
 
-						//	We get the square to bias towards not moving at wrong angles
+						//	We get the square to bias against moving at wrong angles
 						Metric rCos2 = rCos * rCos;
 
 						rCheatFactor *= rCos2;
@@ -1134,11 +1122,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 					if (bCheat)
 						{
-						//	Compute a reasonable cheat factor for our mass (if we are too light,
-						//	we can get thrown across space by this system and it looks really bad)
-
-						Metric rOurMass = pShip->GetMass();	//	Mass in tons
-						Metric rCheatFactor = rOurMass > 200 ? CHEAT_FORMATION_FACTOR : CHEAT_FORMATION_FACTOR * rOurMass / 200;
+						Metric rCheatFactor = CHEAT_FORMATION_FACTOR;
 
 						//	We need to be facing the correct direction for this. Formations can
 						//	cheat backwards because they look ok moving as a unit, however
@@ -1151,7 +1135,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 						Metric rAngleDiff = abs(vToPos.Polar() - mathDegreesToRadians(pShip->GetRotationAngle()));
 						Metric rCos = max(cos(rAngleDiff), 0.0);
 
-						//	We get the square to bias towards not moving at wrong angles
+						//	We get the square to bias against moving at wrong angles
 						Metric rCos2 = rCos * rCos;
 
 						rCheatFactor *= rCos2;
