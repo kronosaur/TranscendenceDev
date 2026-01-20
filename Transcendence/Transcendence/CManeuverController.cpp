@@ -187,8 +187,7 @@ void CManeuverController::UpdateMoveTo (SUpdateCtx &Ctx, CShip *pShip)
 
 	if (bCloseEnough)
 		{
-		if (!pShip->IsParalyzed())
-			pShip->AddForce(vDeltaV * pShip->GetMass() / 2000.0);
+		CShipAIHelper::ApplyFormationAccel(*pShip, vDeltaV);
 
 		m_iManeuver = EManeuver::None;
 		m_bThrust = false;
