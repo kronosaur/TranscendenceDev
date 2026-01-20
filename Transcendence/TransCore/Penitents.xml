@@ -641,6 +641,8 @@
 				missileSpeed=	"30"
 						
 				hitPoints=		"60"
+
+				proximityDistanceAutoTrigger="0.0"
 						 
 				effect=			"&efMissileMAG;"
 				sound=			"&snMissileLauncher;"
