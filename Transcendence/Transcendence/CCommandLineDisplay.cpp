@@ -210,12 +210,13 @@ void CCommandLineDisplay::AutoCompleteSearch (void)
 			iMatches++;
 			}
 
+		//	Exact match - get help text
 		if (strEquals(sGlobal, sCurCmd))
 			{
-			//	Exact match - get help text
 			ICCItem *pItem = pGlobals->GetElement(i);
-			if (pItem->IsPrimitive())
-				sHelp = pItem->GetHelp();
+			sHelp = pItem->GetHelp();
+			if (pItem->IsLambdaFunction())
+				sHelp = strPatternSubst(sHelp, sCurCmd);
 			}
 		}
 
