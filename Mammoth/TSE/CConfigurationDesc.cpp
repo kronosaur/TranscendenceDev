@@ -28,15 +28,13 @@
 int CConfigurationDesc::GetAimTolerance (Metric rFireDelay) const
 
 	{
-	Metric rFireDelayUpdates = rFireDelay / g_SecondsPerUpdate;
-
 	switch (m_iType)
 		{
 		case ctSingle:
 			{
-			if (rFireDelay > 10.0)
+			if (rFireDelay > 10.0 * g_SecondsPerUpdate)
 				return 2;
-			else if (rFireDelay > 4.0)
+			else if (rFireDelay > 4.0 * g_SecondsPerUpdate)
 				return 4;
 			else
 				return 6;
