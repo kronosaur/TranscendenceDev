@@ -38,8 +38,8 @@
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
 #define RECOIL_ATTRIB							CONSTLIT("recoil")
 #define REPEATING_ATTRIB						CONSTLIT("repeating")
-#define REPEATING_DELAY_ATTRIB					CONSTLIT("repeatingDelay")
-#define REPEATING_DELAY_ADV_ATTRIB				CONSTLIT("repeatingDelayAdvanced")
+#define REPEATING_DELAY_LEGACY_ATTRIB					CONSTLIT("repeatingDelay")
+#define REPEATING_SHOT_DELAY_ATTRIB				CONSTLIT("repeatingShotDelay")
 #define REPORT_AMMO_ATTRIB						CONSTLIT("reportAmmo")
 #define SHIP_COUNTER_PER_SHOT_ATTRIB			CONSTLIT("shipCounterPerShot")
 #define TARGET_STATIONS_ONLY_ATTRIB				CONSTLIT("targetStationsOnly")
@@ -2029,18 +2029,23 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	//	Repeat fire
 
 	pWeapon->m_iContinuous = pDesc->GetAttributeIntegerBounded(REPEATING_ATTRIB, 0, -1, 0);
-	pWeapon->m_rContinuousFireDelay = pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_ADV_ATTRIB, 0.0, -1.0, -1.0);
+	pWeapon->m_rContinuousFireDelay = pDesc->GetAttributeDoubleBounded(REPEATING_SHOT_DELAY_ATTRIB, 0.0, -1.0, -1.0);
 
 	//	If someone is instead using the legacy version of repeating delay, we have to add 1.0 to it
 
 	if (pWeapon->m_rContinuousFireDelay < 0.0)
-		pWeapon->m_rContinuousFireDelay = 1.0 + pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_ATTRIB, 0.0, -1.0, 0.0);
+		{
+		Metric rLegacyContinuousFireDelay = pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_LEGACY_ATTRIB, 0.0, -1.0, -1.0);
+		if (Ctx.GetAPIVersion() > 58)
+			kernelDebugLogString(CONSTLIT("WARNING: repeatingDelay is deprecated in API versions above 58, because it is delay = repeatingDelay + 2. Use repeatingShotDelay (specify exact delay in simulation seconds) instead."));
+		pWeapon->m_rContinuousFireDelay = 1.0 + rLegacyContinuousFireDelay;
+		}
 
 	//	Warn if someone tried using adv repeating delay in an old api version
 
 	else if (Ctx.GetAPIVersion() < 58)
 		{
-		Ctx.sError = strCat(REPEATING_DELAY_ADV_ATTRIB, CONSTLIT(" requires API 58 or higher"));
+		Ctx.sError = strCat(REPEATING_SHOT_DELAY_ATTRIB, CONSTLIT(" requires API 58 or higher"));
 		return ERR_FAIL;
 		}
 
