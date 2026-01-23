@@ -2049,9 +2049,11 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	if (pWeapon->m_rContinuousFireDelay < 0.0)
 		{
 		Metric rLegacyContinuousFireDelay = pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_LEGACY_ATTRIB, 0.0, -1.0, -1.0);
-		if (Ctx.GetAPIVersion() > 58)
+		if (Ctx.GetAPIVersion() > 58 && rLegacyContinuousFireDelay >= 0)
 			kernelDebugLogString(CONSTLIT("WARNING: repeatingDelay is deprecated in API versions above 58, because it is delay = repeatingDelay + 2. Use repeatingShotDelay (specify exact delay in simulation seconds) instead."));
-		pWeapon->m_rContinuousFireDelay = 2.0 + rLegacyContinuousFireDelay;
+		else if (rLegacyContinuousFireDelay < 0)
+			rLegacyContinuousFireDelay = 0;
+		pWeapon->m_rContinuousFireDelay = STD_SECONDS_PER_UPDATE + rLegacyContinuousFireDelay;
 		}
 
 	//	Warn if someone tried using adv repeating delay in an old api version
