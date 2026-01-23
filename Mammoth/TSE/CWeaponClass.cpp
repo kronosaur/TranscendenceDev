@@ -2042,10 +2042,12 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	pWeapon->m_iContinuous = pDesc->GetAttributeIntegerBounded(REPEATING_ATTRIB, 0, -1, 0);
 	pWeapon->m_rContinuousFireDelay = pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_ADV_ATTRIB, 0.0, -1.0, -1.0);
 
-	//	If someone is instead using the legacy version of repeating delay, it cannot be less than 1 simulation second
+	//	If someone is instead using the legacy version of repeating delay:
+	//	It cannot be less than 2 simulation seconds, and it adds the specified number as additional simulation seconds
+	//	Note to future maintainers: This is not a bug or an incorrect default, this is actually how the legacy version worked
 
 	if (pWeapon->m_rContinuousFireDelay < 0.0)
-		pWeapon->m_rContinuousFireDelay = pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_ATTRIB, 1.0, -1.0, 1.0);
+		pWeapon->m_rContinuousFireDelay = 2.0 + pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_ATTRIB, 1.0, -1.0, 1.0);
 
 	//	Warn if someone tried using adv repeating delay in an old api version
 
