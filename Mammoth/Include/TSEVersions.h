@@ -1005,6 +1005,13 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //						are available
 //					Fires only on new games, or when loading into the  main menu
 //					Fires BEFORE <onGlobalTypesBound>
+//		<ItemType>
+//			<Weapon>
+//				repeatingDelay:
+//					Deprecated due to using non-intuitive legacy math
+//				repeatingShotDelay:
+//					Sets an exact repeating shot delay in simulation seconds
+//					Default: 2.0
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
