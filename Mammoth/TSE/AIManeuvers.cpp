@@ -434,15 +434,7 @@ CVector CAIBehaviorCtx::CalcManeuverFormation (CShip *pShip, const CVector vDest
 
 	if (rCheatThrustFactor && bCloseEnough)
 		{
-		if (!pShip->IsParalyzed())
-			{
-			pShip->AddForce(vDeltaV * rCheatThrustFactor * max(1.0, pShip->GetMass() / 2000.0));
-
-#ifdef DEBUG_ATTACK_TARGET_MANEUVERS
-			pShip->SetDebugVector(vDeltaV.Normal() * 100. * g_KlicksPerPixel);
-#endif
-			}
-
+		CShipAIHelper::ApplyFormationAccel(*pShip, vDeltaV, rCheatThrustFactor);
 		return CVector();
 		}
 
@@ -1886,9 +1878,7 @@ void CAIBehaviorCtx::ImplementFormationManeuver (CShip *pShip, const CVector vDe
 
 	if (bCloseEnough)
 		{
-		if (!pShip->IsParalyzed())
-			pShip->AddForce(vDeltaV * pShip->GetMass() / 2000.0);
-
+		CShipAIHelper::ApplyFormationAccel(*pShip, vDeltaV);
 		ImplementTurnTo(pShip, iDestFacing);
 		}
 
@@ -2265,8 +2255,7 @@ void CAIBehaviorCtx::ImplementStop (CShip *pShip)
 		}
 	else
 		{
-		if (!pShip->IsParalyzed())
-			pShip->AddForce(-pShip->GetVel() * pShip->GetMass() / 2000.0);
+		CShipAIHelper::ApplyFormationAccel(*pShip, -pShip->GetVel());
 		}
 	}
 

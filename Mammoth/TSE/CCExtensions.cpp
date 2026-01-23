@@ -1185,6 +1185,9 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'integer\n"
 			"   'massKg\n"
 			"   'massTons\n"
+			"   'metric\n"
+			"   'metricFull\n"
+			"   'metricUnitless\n"
 			"   'power\n"
 			"   'real\n"
 			"   'regenRate\n"
@@ -3173,13 +3176,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"vvv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateEncounter",			fnSystemCreate,		FN_SYS_CREATE_ENCOUNTER,
-			"(sysCreateEncounter unid [options]) -> True/Nil\n\n"
-				
-				"options:\n\n"
-				
-				"   'distance      Encounter distance (light-seconds), if gate is Nil\n"
-				"   'gate          Gate to appear at (if Nil, use distance)\n"
-				"   'target        Target of encounter\n",
+			"(sysCreateEncounter unid [options]) -> list or Nil\n\n"
+
+			"unid: ShipTable or Station unid\n\n"
+
+			"options:\n\n"
+			
+			"   'distance      Encounter distance (light-seconds), if gate is Nil\n"
+			"   'gate          Gate to appear at (if Nil, use distance)\n"
+			"   'target        Target of encounter\n",
 
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -5444,11 +5449,27 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateString(CLanguage::ComposeNumber(CLanguage::numberInteger, pArgs->GetElement(0)->GetIntegerValue()));
 			else
 				{
-				CLanguage::ENumberFormatTypes iFormat = CLanguage::ParseNumberFormat(pArgs->GetElement(0)->GetStringValue());
+				CLanguage::ENumberFormatTypes iFormat;
+				ICCItem* pOptions = pArgs->GetElement(0);
+
+				//	Configure options
+
+				CLanguage::SNumberOptions Options;
+
+				if (pOptions->IsSymbolTable())
+					{
+					iFormat = CLanguage::ParseNumberFormat(pOptions->GetElement(CONSTLIT("format"))->GetStringValue());
+					Options.OptMetric.iMaxSigFigs = pOptions->GetElement(CONSTLIT("sigFigs"))->GetIntegerValue();
+					}
+				else
+					{
+					iFormat = CLanguage::ParseNumberFormat(pOptions->GetStringValue());
+					Options.OptMetric.iMaxSigFigs = 3;
+					}
 				if (iFormat == CLanguage::numberError)
 					return pCC->CreateError(CONSTLIT("Unknown number format"), pArgs->GetElement(0));
 
-				return pCC->CreateString(CLanguage::ComposeNumber(iFormat, pArgs->GetElement(1)));
+				return pCC->CreateString(CLanguage::ComposeNumber(iFormat, pArgs->GetElement(1), &Options));
 				}
 			}
 
