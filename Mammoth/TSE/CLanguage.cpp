@@ -635,7 +635,7 @@ CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CS
 		return sNounPhrase;
 	}
 
-CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, int iNumber)
+CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, int iNumber, SNumberOptions* pOptions)
 
 //	ComposeNumber
 //
@@ -653,11 +653,11 @@ CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, int iNumber)
 		//	Defaults to double
 
 		default:
-			return ComposeNumber(iFormat, (Metric)iNumber);
+			return ComposeNumber(iFormat, (Metric)iNumber, pOptions);
 		}
 	}
 
-CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber)
+CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber, SNumberOptions* pOptions)
 
 //	ComposeNumber
 //
@@ -685,6 +685,10 @@ CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber)
 			{
 			SMetricDesc Desc;
 			SMetricOptions Opts;
+
+			if (pOptions)
+				Opts = pOptions->OptMetric;
+
 			int iSteps = CalcMetricNumber(rNumber, Opts, &Desc);
 
 			//	Handle 0 NaNs and infinities
@@ -822,12 +826,12 @@ CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber)
 		//	For massTons, we need to convert the number to kgs
 
 		case numberMassTons:
-			return ComposeNumber(numberMass, rNumber * 1000.0);
+			return ComposeNumber(numberMass, rNumber * 1000.0, pOptions);
 
 		//	For power, we assume the value in kWs and convert to Ws.
 
 		case numberPower:
-			return strCat(ComposeNumber(numberMetric, rNumber * 1000.0), CONSTLIT("W"));
+			return strCat(ComposeNumber(numberMetric, rNumber * 1000.0, pOptions), CONSTLIT("W"));
 
 		case numberRealTimeTicks:
 			{
@@ -875,7 +879,7 @@ CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber)
 		}
 	}
 
-CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, ICCItem *pNumber)
+CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, ICCItem *pNumber, SNumberOptions* pOptions)
 
 //	ComposeNumber
 //
@@ -883,9 +887,9 @@ CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, ICCItem *pNumber)
 
 	{
 	if (pNumber->IsDouble())
-		return ComposeNumber(iFormat, pNumber->GetDoubleValue());
+		return ComposeNumber(iFormat, pNumber->GetDoubleValue(), pOptions);
 	else
-		return ComposeNumber(iFormat, pNumber->GetIntegerValue());
+		return ComposeNumber(iFormat, pNumber->GetIntegerValue(), pOptions);
 	}
 
 CString CLanguage::ComposeVerb (const CString &sVerb, DWORD dwVerbFlags)
