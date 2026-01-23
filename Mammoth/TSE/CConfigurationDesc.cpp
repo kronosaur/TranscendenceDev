@@ -21,13 +21,15 @@
 #define CONFIG_TYPE_SPREAD5						CONSTLIT("spread5")
 #define CONFIG_TYPE_DUAL_ALTERNATING			CONSTLIT("alternating")
 
-int CConfigurationDesc::GetAimTolerance (Metric rFireDelay) const
-
 //	GetAimTolerance
 //
 //	Returns the aim tolerance.
+//
+int CConfigurationDesc::GetAimTolerance (Metric rFireDelay) const
 
 	{
+	Metric rFireDelayUpdates = rFireDelay / g_SecondsPerUpdate;
+
 	switch (m_iType)
 		{
 		case ctSingle:
