@@ -212,7 +212,7 @@ int CLanguage::CalcMetricNumber(Metric rNumber, SMetricOptions options, SMetricD
 		return iRetThousandsLog;
 		}
 
-	char aPfx[1] = { MetricPfx.cPrefix };
+	char aPfx[2] = { MetricPfx.cPrefix, '\0' };
 	retpDesc->sPrefix = CString(aPfx);
 
 	return iRetThousandsLog;
