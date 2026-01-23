@@ -5902,7 +5902,16 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 			//	we need to account for rContinuousInterpolationTime not being updated yet
 
 			rContinuousInterpolationTime += rContinuousDelay;
-			DWORD dwShotsThisTick = Min((DWORD)((g_SecondsPerUpdate - rContinuousInterpolationTime) / rContinuousDelay), dwContinuousShots);
+
+			//	We dont fire shots that lie on the update boundary
+			//	we fire them in the next update instead
+
+			DWORD dwShotsThisTick;
+
+			if (rContinuousDelay + g_Epsilon >= g_SecondsPerUpdate && dwContinuousShots)
+				dwShotsThisTick = 0;
+			else
+				dwShotsThisTick = Min((DWORD)((g_SecondsPerUpdate - rContinuousInterpolationTime - g_Epsilon) / rContinuousDelay), dwContinuousShots);
 
 			//	If we fire fast enough and have enough time left, we may need to fire some more shots this tick
 			
@@ -5982,10 +5991,13 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 			Metric rContinuousDelay = Max(g_Epsilon, GetContinuousFireDelay(*pShot));
 			int iChargeTime = Max(0, GetChargeTime(*pShot));
 
-			if (rContinuousDelay >= 1.0 && dwContinuousShots)
+			//	We dont fire shots that lie on the update boundary
+			//	we fire them in the next update instead
+
+			if (rContinuousDelay + g_Epsilon >= g_SecondsPerUpdate && dwContinuousShots)
 				dwShotsThisTick = 1;
 			else
-				dwShotsThisTick = Min((DWORD)((1.0 - rContinuousInterpolationTime) / rContinuousDelay), dwContinuousShots);
+				dwShotsThisTick = Min((DWORD)((g_SecondsPerUpdate - rContinuousInterpolationTime - g_Epsilon) / rContinuousDelay), dwContinuousShots);
 
 			if (dwShotsThisTick)
 				{
@@ -6025,7 +6037,8 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 		else if (dwContinuousShots && pShot)
 			{
 			Metric rContinuousDelay = Max(g_Epsilon, GetContinuousFireDelay(*pShot));
-			SetContinuousFire(pDevice, dwContinuousShots, (DWORD)rContinuousDelay);
+			DWORD dwContinuousDelay = (DWORD)(rContinuousDelay / g_SecondsPerUpdate);
+			SetContinuousFire(pDevice, dwContinuousShots, dwContinuousDelay);
 			}
 		}
 
