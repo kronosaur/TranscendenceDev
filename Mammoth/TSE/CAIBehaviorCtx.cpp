@@ -286,8 +286,17 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 
 				case itemcatLauncher:
 					{
+					int iContinuousShotsLeft = Weapon.GetContinuousShotsLeft();
 					int iCount = pShip->GetMissileCount();
-					if (iCount > 0)
+					
+					//	Skip & continue firing shots if we are currently repeating
+
+					if (iContinuousShotsLeft)
+						{ }
+
+					//	Otherwise find our best missile if we have missiles to shoot
+
+					else if (iCount > 0)
 						{
 						pShip->ReadyFirstMissile();
 
