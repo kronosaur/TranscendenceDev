@@ -208,12 +208,12 @@
 	<ShipClass UNID="&scAntaresV;"
 			manufacturer=		"Makayev-Energia"
 			class=				"Antares V"
-			type=				"freighter"
+			type=				"superfreighter"
 			inherit=			"&scAntaresVStock;"
 			level=				"4"
 			defaultSovereign=	"&svCorporate;"
 
-			attributes=			"commonwealth, freighter, genericClass, makayev"
+			attributes=			"commonwealth, freighter, superfreighter, genericClass, makayev"
 			>
 
 		<Names noArticle="true">Antares Heavy 5%0%0</Names>

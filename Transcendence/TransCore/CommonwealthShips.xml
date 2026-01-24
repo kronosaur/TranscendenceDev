@@ -1162,14 +1162,23 @@
 	</ShipClass>
 	
 	<!-- Level 5: Antares V Freighter -->
+	<!-- TODO: The Antares V is actually a superfreighter
+		As we are changing cargo from using mass limits to
+		volume limits (which can be objectively measured)
+		the korolov crates that that the korolov version of
+		this ship can carry will need to be adjusted to ensure
+		correct mission progression and total cargo value
+
+		For now the cargo limits are being left untouched
+	-->
 
 	<ShipClass UNID="&scAntaresVStock;"
 			manufacturer=		"Makayev-Energia"
 			class=				"Antares V"
-			type=				"freighter"
+			type=				"superfreighter"
 			inherit=			"&baHumanTechShip;"
 
-			attributes=			"freighter, genericClass, makayev"
+			attributes=			"freighter, superfreighter, genericClass, makayev"
 			>
 
 		<!-- Hull -->
@@ -1313,6 +1322,42 @@
 			>
 		<Image imageID="&rsAntaresVHD;" imageX="0" imageY="0" imageWidth="180" imageHeight="180"/>
 	</ItemType>
+
+	<!-- Level 5: Antares V Commonwealth -->
+	<!--
+		This variant is used for escort missions as an alternative to the Scarab
+		The Antares V has less compartment HP, slightly better effective firepower,
+		and superior armor but fewer segments. Its also a little bit faster, making
+		the mission more bearable.
+	-->
+
+	<ShipClass UNID="&scAntaresVLogistics;"
+			manufacturer=		"Makayev-Energia"
+			class=				"Antares V"
+			type=				"superfreighter"
+			defaultSovereign=	"&svCommonwealth;"
+			inherit=			"&scAntaresVStock;"
+
+			attributes=			"commonwealth, freighter, superfreighter, genericClass, makayev"
+
+			explosionType=		"&vtBlastExplosion4;"
+			>
+		<Names noArticle="true">Antares Heavy 5%0%0</Names>
+
+		<Devices>
+			<Device slotID="fore_turret"	deviceID="&itSlamCannon;"/>
+			<Device slotID="aft_turret"		deviceID="&itSlamCannon;"/>
+
+			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+			<Device deviceID="&itMissileDefense;"/>
+		</Devices>
+
+		<Events>
+			<OnDestroy>
+				(korOnShipDestroyed)
+			</OnDestroy>
+		</Events>
+	</ShipClass>
 	
 	<!-- Level 5: Wolfen/C-class Gunship -->
 
@@ -2043,53 +2088,58 @@
 
 	<!-- Level 6: Scarab Freighter -->
 
-	<ShipClass UNID="&scScarabFreighter;"
+	<ShipClass UNID="&scScarabFreighterStock;"
 			manufacturer=		"NAMI"
 			class=				"Scarab"
 			type=				"superfreighter"
-			level=				"6"
-			defaultSovereign=	"&svCommonwealth;"
 			   
-			attributes=			"commonwealth, freighter, genericClass, NAMI"
-
-			size=				"200"
-			mass=				"15000"
-			thrustRatio=		"0.2"
-			maxSpeed=			"6"
-			cargoSpace=			"120000"
-
-			explosionType=		"&vtBlastExplosion4;"
+			attributes=			"freighter, genericClass, NAMI"
 			>
 
-		<Names definiteArticle="true">
-			superfreighter St. Aoki; superfreighter St. Beatrice; superfreighter St. Celendin;
-			superfreighter St. Dominarus; superfreighter St. Elaine; superfreighter St. Florentine;
-			superfreighter St. Goramesh; superfreighter St. Haldane; superfreighter St. Inez;
-			superfreighter St. Jotur; superfreighter St. Kim; superfreighter St. Lin Chemei;
-			superfreighter St. Miranda; superfreighter St. Navreen; superfreighter St. Orinaga;
-			superfreighter St. Pelerine; superfreighter St. Queleborn; superfreighter St. Rebecca;
-			superfreighter St. Salvador; superfreighter St. Tomashi; superfreighter St. Unami;
-			superfreighter St. Voxanna; superfreighter St. Ha-neul; superfreighter St. Joo-eun;
-			superfreighter St. Emiko; superfreighter St. Aiko; superfreighter St. Rumiko;
-			superfreighter St. Bharati; superfreighter St. Madhavi; superfreighter St. Astrel
-		</Names>
+		<!-- Hull -->
 
-		<!-- Configuration -->
-		
-		<Armor
-			armorID=			"&itAdvancedReactiveArmor;"
-			count=				"20"
+		<Hull
+			size=				"200"
+			mass=				"15000"
+			cargoSpace=			"1200000"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"1200000"
+			maxDevices=			"8"
+			maxWeapons=			"3"
+			>
+			<ArmorLimits massClass="ultraLight"		speedAdj="1" />
+			<ArmorLimits massClass="light"			speedAdj="0" />
+			<ArmorLimits massClass="medium"			speedAdj="0"  />
+			<ArmorLimits massClass="heavy"			speedAdj="-1"  />
+		</Hull>
+
+		<Drive
+			maxSpeed=			"6"
+			thrust=				"3000"
 			/>
-		
-		<Devices>
-			<Device deviceID="&itSlamCannon;" omnidirectional="true"/>
-			<Device deviceID="&itMissileDefense;" omnidirectional="true" />
-		</Devices>
 
 		<Maneuver
 			maxRotationRate=	"2.0"
 			rotationAccel=		"0.2"
 			/>
+
+		<DeviceSlots>
+			<DeviceSlot id="main"				criteria="w~l" posAngle="10" posRadius="90" posZ="2"/>
+			<DeviceSlot id="main_launcher"		criteria="l" posAngle="10" posRadius="90" posZ="2"/>
+			<DeviceSlot id="turret"				criteria="w~l" posAngle="0" posRadius="0" posZ="15"	omnidirectional="true" secondaryWeapon="true">
+				<EnhancementAbilities>
+					<Enhance type=			"&vtTurretSlotWithNonOmni;"
+							 enhancement=	"-speed:200;"
+							 criteria=		"w -property:omnidirectional;"
+							 />
+					<Enhance type=			"&vtScarabTurretSlot;"
+							 enhancement=	"+linkedFire:whenInFireArc;"
+							 />
+				</EnhancementAbilities>
+			</DeviceSlot>
+			<DeviceSlot id="cargo"				criteria="c" cannotBeEmpty="true"/>
+		</DeviceSlots>
 
 		<Interior>
 			<Compartment name="interior"
@@ -2116,6 +2166,20 @@
 					sizeY=		"50"
 					/>
 		</Interior>
+		
+		<Armor
+			armorID=			"&itAdvancedReactiveArmor;"
+			count=				"20"
+			/>
+
+		<!-- Configuration -->
+		
+		<Devices>
+			<Device slotID="turret"			deviceID="&itSlamCannon;"/>
+
+			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+			<Device deviceID="&itMissileDefense;"/>
+		</Devices>
 
 		<Items>
 		</Items>
@@ -2144,12 +2208,6 @@
 			combatStyle=		"standOff"
 			/>
 
-		<Events>
-			<OnDestroy>
-				(korOnShipDestroyed)
-			</OnDestroy>
-		</Events>
-
 		<!-- Text -->
 		
 		<Language>
@@ -2166,6 +2224,58 @@
 				gunships they support.
 			</Text>
 		</Language>
+		
+	</ShipClass>
+
+	<ItemType UNID="&vtScarabTurretSlot;"
+			name=				"Scarab auto-turret"
+			virtual=			"true"
+			level=				"1"
+			>
+		<Image imageID="&rsScarabHD;" imageWidth="192" imageHeight="192"/>
+	</ItemType>
+
+	<!-- Level 6: Scarab Freighter - Commonwealth Logistics -->
+
+	<ShipClass UNID="&scScarabFreighter;"
+			manufacturer=		"NAMI"
+			class=				"Scarab"
+			type=				"superfreighter"
+			level=				"6"
+			defaultSovereign=	"&svCommonwealth;"
+			   
+			attributes=			"commonwealth, freighter, genericClass, NAMI"
+
+			explosionType=		"&vtBlastExplosion4;"
+			>
+
+		<Names definiteArticle="true">
+			superfreighter St. Aoki; superfreighter St. Beatrice; superfreighter St. Celendin;
+			superfreighter St. Dominarus; superfreighter St. Elaine; superfreighter St. Florentine;
+			superfreighter St. Goramesh; superfreighter St. Haldane; superfreighter St. Inez;
+			superfreighter St. Jotur; superfreighter St. Kim; superfreighter St. Lin Chemei;
+			superfreighter St. Miranda; superfreighter St. Navreen; superfreighter St. Orinaga;
+			superfreighter St. Pelerine; superfreighter St. Queleborn; superfreighter St. Rebecca;
+			superfreighter St. Salvador; superfreighter St. Tomashi; superfreighter St. Unami;
+			superfreighter St. Voxanna; superfreighter St. Ha-neul; superfreighter St. Joo-eun;
+			superfreighter St. Emiko; superfreighter St. Aiko; superfreighter St. Rumiko;
+			superfreighter St. Bharati; superfreighter St. Madhavi; superfreighter St. Astrel
+		</Names>
+
+		<!-- Configuration -->
+		
+		<Devices>
+			<Device deviceID="&itSlamCannon;" omnidirectional="true"/>
+			<Device deviceID="&itMissileDefense;" omnidirectional="true" />
+		</Devices>
+
+		<!-- AI and Behavior -->
+
+		<Events>
+			<OnDestroy>
+				(korOnShipDestroyed)
+			</OnDestroy>
+		</Events>
 		
 	</ShipClass>
 

@@ -2464,6 +2464,9 @@
 	<!ENTITY vtAntaresITurretSlot		"0x00100717">
 	<!ENTITY vtAntaresIITurretSlot		"0x00100718">
 	<!ENTITY vtAntaresVTurretSlot		"0x00100719">
+	<!ENTITY scAntaresVLogistics		"0x0010071A">
+	<!ENTITY scScarabFreighterStock		"0x0010071B">
+	<!ENTITY vtScarabTurretSlot			"0x0010071C">
 
 	<!-- 0740-075F RASIERMESSER -->
 
