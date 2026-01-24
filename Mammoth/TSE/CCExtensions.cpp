@@ -3173,13 +3173,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"vvv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateEncounter",			fnSystemCreate,		FN_SYS_CREATE_ENCOUNTER,
-			"(sysCreateEncounter unid [options]) -> True/Nil\n\n"
-				
-				"options:\n\n"
-				
-				"   'distance      Encounter distance (light-seconds), if gate is Nil\n"
-				"   'gate          Gate to appear at (if Nil, use distance)\n"
-				"   'target        Target of encounter\n",
+			"(sysCreateEncounter unid [options]) -> list or Nil\n\n"
+
+			"unid: ShipTable or Station unid\n\n"
+
+			"options:\n\n"
+			
+			"   'distance      Encounter distance (light-seconds), if gate is Nil\n"
+			"   'gate          Gate to appear at (if Nil, use distance)\n"
+			"   'target        Target of encounter\n",
 
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
