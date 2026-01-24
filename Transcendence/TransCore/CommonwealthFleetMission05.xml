@@ -83,10 +83,10 @@
 					(gateObj (objGetObjByID (msnGetData gSource 'gateID)))
 					(variant (msnGetData gSource 'variant))
 					;	shipclass to escort - eventually this should be a more extensible table
-					(shipClass (random
+					(shipClass (random (list
 						&scScarabFreighter;
-						&scAntaresVStock;
-						))
+						&scAntaresVLogistics;
+						)))
 					shipObj travelTime
 					)
 					(plyMessage gPlayer "Freighter arrived!")
