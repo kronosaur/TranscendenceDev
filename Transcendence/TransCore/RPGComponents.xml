@@ -137,6 +137,19 @@
 						)
 				</OnShow>
 			</ItemAttribute>
+
+			<!-- Quest Items for active missions -->
+
+			<ItemAttribute	label="mission"	labelType="quest"	criteria="*">
+				<OnShow>
+					(if
+						(map (msnFind "a +questItem;") 'excludeNil theMission
+							(msnFireEvent theMission 'CheckQuestItem gItem)
+							)
+						True
+						)
+				</OnShow>
+			</ItemAttribute>
 		</AttributeDesc>
 	</Type>
 
