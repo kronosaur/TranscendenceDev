@@ -2094,6 +2094,7 @@
 			type=				"superfreighter"
 			   
 			attributes=			"freighter, genericClass, NAMI"
+			inherit=			"&baHumanTechShip;"
 			>
 
 		<!-- Hull -->
@@ -2125,8 +2126,8 @@
 			/>
 
 		<DeviceSlots>
-			<DeviceSlot id="main"				criteria="w~l" posAngle="10" posRadius="90" posZ="2"/>
-			<DeviceSlot id="main_launcher"		criteria="l" posAngle="10" posRadius="90" posZ="2"/>
+			<DeviceSlot id="main"				criteria="w~l" posAngle="12" posRadius="90" posZ="2"/>
+			<DeviceSlot id="main_launcher"		criteria="l" posAngle="-12" posRadius="90" posZ="2"/>
 			<DeviceSlot id="turret"				criteria="w~l" posAngle="0" posRadius="0" posZ="15"	omnidirectional="true" secondaryWeapon="true">
 				<EnhancementAbilities>
 					<Enhance type=			"&vtTurretSlotWithNonOmni;"
@@ -2245,6 +2246,7 @@
 			defaultSovereign=	"&svCommonwealth;"
 			   
 			attributes=			"commonwealth, freighter, genericClass, NAMI"
+			inherit=			"&scScarabFreighterStock;"
 
 			explosionType=		"&vtBlastExplosion4;"
 			>
@@ -2265,8 +2267,10 @@
 		<!-- Configuration -->
 		
 		<Devices>
-			<Device deviceID="&itSlamCannon;" omnidirectional="true"/>
-			<Device deviceID="&itMissileDefense;" omnidirectional="true" />
+			<Device slotID="turret"			deviceID="&itSlamCannon;"/>
+
+			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+			<Device deviceID="&itMissileDefense;"/>
 		</Devices>
 
 		<!-- AI and Behavior -->

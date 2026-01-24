@@ -48,7 +48,7 @@
 						)))
 					shipObj
 					)
-					(plyMessage gPlayer (cat "DBG: Freighter selected: " (unvEntity shipClass)))
+					; (plyMessage gPlayer (cat "DBG: Freighter selected: " (unvEntity shipClass)))
 
 					; Create the freighter with orders to dock at fortress
 					(setq shipObj (sysCreateShip shipClass shipPos &svCommonwealth;))

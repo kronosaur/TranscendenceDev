@@ -89,6 +89,7 @@
 						)))
 					shipObj travelTime
 					)
+					; (plyMessage gPlayer (cat "DBG: Freighter selected: " (unvEntity shipClass)))
 					(plyMessage gPlayer "Freighter arrived!")
 
 					;	Create the superfreighter
