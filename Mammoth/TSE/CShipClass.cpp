@@ -109,6 +109,7 @@
 #define FIELD_CARGO_SPACE						CONSTLIT("cargoSpace")
 #define FIELD_COMBAT_STD						CONSTLIT("combatStd")				//	Standard combat value for the ship level
 #define FIELD_COMBAT_STRENGTH					CONSTLIT("combatStrength")			//	value reflecting combat power (attack and defense)
+#define FIELD_CORE_DESC							CONSTLIT("coreDesc")
 #define FIELD_DAMAGE_RATE						CONSTLIT("damage")					//	damage per 180 ticks
 #define FIELD_DEFENSE_RATE						CONSTLIT("defenseStrength")			//	value reflecting difficulty killing
 #define FIELD_DEVICE_SLOTS						CONSTLIT("deviceSlots")
@@ -1759,9 +1760,15 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	else if (strEquals(sField, FIELD_NAME))
 		*retsValue = GetNounPhrase(nounGeneric);
 
-	else if (strEquals(sField, FIELD_PLAYER_DESC))
+	else if (strEquals(sField, FIELD_CORE_DESC))
 		{
 		*retsValue = GetDesc();
+		if (retsValue->IsBlank())
+			*retsValue = CONSTLIT("none");
+		}
+	else if (strEquals(sField, FIELD_PLAYER_DESC))
+		{
+		*retsValue = GetDescPlayer();
 		if (retsValue->IsBlank())
 			*retsValue = CONSTLIT("none");
 		}
@@ -2218,17 +2225,50 @@ CCommunicationsHandler *CShipClass::GetCommsHandler (void)
 		return (m_OriginalCommsHandler.GetCount() ? &m_OriginalCommsHandler : NULL);
 	}
 
-CString CShipClass::GetDesc (void) const
-
 //	GetDesc
 //
-//	Returns the standard description of this ship class.
+//	Returns the lore description of this ship class.
+//
+CString CShipClass::GetDesc () const
 
 	{
 	//	First, see if we have a translation
+	//	We prioritize the lore description over
+	//	the gameplay description
 
 	CString sText;
 	if (TranslateText(LANGID_CORE_DESC, NULL, &sText))
+		return sText;
+	if (TranslateText(LANGID_CORE_DESC_PLAYER, NULL, &sText))
+		return sText;
+
+	//	If the player settings has a gameplay desc, get it from there.
+
+	const CPlayerSettings *pPlayer = GetPlayerSettings();
+	if (pPlayer)
+		{
+		const CString &sDesc = pPlayer->GetDesc();
+		if (!sDesc.IsBlank())
+			return sDesc;
+		}
+
+	//	Otherwise, no description
+
+	return NULL_STR;
+	}
+
+//	GetDescPlayer
+//
+//	Returns the gameplay description of this ship class.
+//
+CString CShipClass::GetDescPlayer () const
+
+	{
+	//	First, see if we have a translation
+	//	We prioritize the gameplay description
+
+	CString sText;
+	if (TranslateText(LANGID_CORE_DESC_PLAYER, NULL, &sText))
 		return sText;
 
 	//	If the player settings has this, get it from there.
@@ -2240,6 +2280,11 @@ CString CShipClass::GetDesc (void) const
 		if (!sDesc.IsBlank())
 			return sDesc;
 		}
+
+	//	If we have a lore description, fall back to that
+
+	if (TranslateText(LANGID_CORE_DESC, NULL, &sText))
+		return sText;
 
 	//	Otherwise, no description
 
