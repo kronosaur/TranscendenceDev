@@ -1382,6 +1382,7 @@
 							'raid.waitForTransport	= waiting for transport to come in range
 							'raid.waitForRaiders	= waiting for raiders to destroy transport
 							'raid.attacking			= attacking transport directly
+							'raid.defending			= defending against player attacks
 							'dockWithWreck			= docking with transport
 							'dockWithBase			= dock with pirate base and dump loot
 							'leaveSystem			= leave the system
@@ -1461,17 +1462,19 @@
 			<Definition id="charon.raider">True</Definition>
 			<Global id="rpg.debug">True</Global>
 
-
 			<Data id="status"></Data>
 			<Data id="baseID"></Data>
 			<Data id="targetID"></Data>
 			<Data id="cargoValue"></Data>
 			<Data id="wreckID"></Data>
-			<Data id="raiderIDs"></Data>
 
-			<DynamicData id="raiderCount">(count (obj@ gSource 'raiderIDs))</DynamicData>
+			<Data id="raiderIDs"></Data>
 			<Data id="raiderMinCount"></Data>
 			<Data id="raiderMaxCount"></Data>
+			<DynamicData id="raiderCount">(count (obj@ gSource 'raiderIDs))</DynamicData>
+
+			<Data id="wanderMaxDamage">50</Data>
+			<Data id="raidMaxDamage">80</Data>
 		</Properties>
 
 		<Events>
@@ -1646,6 +1649,7 @@
 					(aTargetObj (@ gData 'aTargetObj))		; transport to raid
 					(aOriginObj (@ gData 'aOriginObj))		; transport origin
 					(aDestObj (@ gData 'aDestObj))			; transport destination
+					(aCargoValue (@ gData 'aCargoValue))	; value of cargo
 
 					(inPath (and (leq (random 1 100) 30) (geq aCargoValue 100000)))
 					ambushPos
@@ -1674,7 +1678,7 @@
 					(objSetObjRefData gSource "start" aOriginObj)
 					(objSetObjRefData gSource "end" aDestObj)
 
-					(objSet@ gSource 'cargoValue (@ gData 'aCargoValue))
+					(objSet@ gSource 'cargoValue aCargoValue)
 
 					(objSet@ gSource 'status 'raid.traveling)
 					)
@@ -1685,7 +1689,6 @@
 					(debug (obj@ gSource 'rpg.debug))
 					(pirateBase (sysFindObject gSource "ANTJ +majorStation;"))
 					(nearestEnemy (sysFindObject gSource "ANEX"))
-					(prevTarget )
 					)
 					(if debug (dbgOutput "OrderFlee " (objGetName gSource)))
 					; If there is a Charon stronghold in system, dock with it. Otherwise, we gate out
@@ -1718,7 +1721,7 @@
 					(targetObj (objGetObjByID (obj@ gSource 'targetID)))
 					)
 					(if targetObj
-						(objUnregisterForEvents gSource prevTarget)
+						(objUnregisterForEvents gSource targetObj)
 						)
 					(objSet@ gSource 'targetID Nil)
 					)
@@ -1760,7 +1763,7 @@
 						(strBeginsWith status 'wander)
 							(switch
 								; If we're damaged then retreat
-								(gr (objGetVisibleDamage gSource) 50)
+								(gr (obj@ gSource 'visibleDamage) (obj@ gSource 'wanderMaxDamage))
 									(objFireEvent gSource 'OrderFlee)
 
 								; If we're busy then continue
@@ -1837,6 +1840,7 @@
 				(block (
 					(debug (obj@ gSource 'rpg.debug))
 					(status (obj@ gSource 'status))
+					targetObj
 					)
 					(switch
 						;	If no one is reponsible, then nothing to do
@@ -1849,14 +1853,41 @@
 						(= (objGetDisposition gSource aOrderGiver) 'friend)
 							Nil
 
+						;	If we're badly damaged then flee. There are different limits for wander and raid states.
+
+						(and (strBeginsWith status 'wander)
+								(gr (obj@ gSource 'visibleDamage) (obj@ gSource 'wanderMaxDamage)))
+							(objFireEvent gSource 'OrderFlee)
+
+						(and (strBeginsWith status 'raid)
+								(gr (obj@ gSource 'visibleDamage) (obj@ gSource 'raidMaxDamage)))
+							(objFireEvent gSource 'OrderFlee)
+
+						;	If the player attacks during a raid and we're moderately damaged (between wanderMax and raidMax)
+						;	then the player is a serious threat so we need to retaliate.
+
+						(and (= aOrderGiver gPlayerShip)
+								(strBeginsWith status 'raid)
+								(!= status 'raid.defending)
+								(gr (obj@ gSource 'visibleDamage) (obj@ gSource 'wanderMaxDamage))
+								)
+							(block Nil
+								(if debug (dbgOutput "Charon raider: retaliating against player"))
+								(objSet@ gSource 'status 'raid.defending)
+								(shpCancelOrders gSource)
+								(shpOrder gSource 'attack gPlayerShip)
+								)
+
+
 						;	If player attacks us while raiders are engaging, then engage directly.
 
-						(and (= status 'raid.waitForRaiders) (= aOrderGiver gPlayerShip))
-							(block (
-								(targetObj (objGetObjByID (obj@ gSource 'targetID)))
+						(and (= aOrderGiver gPlayerShip)
+								(= status 'raid.waitForRaiders)
+								(setq targetObj (objGetObjByID (obj@ gSource 'targetID)))
+								(geq (obj@ gSource 'maxSpeed) (* (obj@ targetObj 'maxSpeed) 1.25 ))
 								)
-								; LATER - check our speed v. target etc
-
+							(block Nil
+								(if debug (dbgOutput "Charon raider: attacking transport"))
 								(objSet@ gSource 'status 'raid.attacking)
 								(shpCancelOrders gSource)
 								(shpOrder gSource 'attack targetObj)
@@ -1905,8 +1936,8 @@
 
 								(if (and (= status 'raid.waitForRaiders)
 										(leq (obj@ gSource 'raiderCount) 1)
-										(leq (objGetVisibleDamage gSource) 50)
-										(geq (obj@ gSource 'maxSpeed) (* (obj@ targetObj 'maxSpeed) 1.5 ))
+										(leq (obj@ gSource 'visibleDamage) (obj@ gSource 'wanderMaxDamage))
+										(geq (obj@ gSource 'maxSpeed) (* (obj@ targetObj 'maxSpeed) 1.25 ))
 										(geq (obj@ gSource 'cargoValue) 100000)
 										(leq (random 1 100) (divide (obj@ gSource 'cargoValue) 20000))
 										)
@@ -1946,6 +1977,10 @@
 								(objSet@ gSource 'status 'raid.waitForTransport)
 								)
 
+						; If we finish defending, then the player is probably dead. Just go back to wandering
+						(= status 'raid.defending)
+							(objFireEvent gSource 'OrderWander)
+
 						(= status 'wander.traveling)
 							(block Nil
 								(if debug (dbgOutput "Charon raider at ambush position"))
@@ -1961,7 +1996,7 @@
 
 								; If we are damaged dock at a major station, otherwise use nearest
 								(pirateBase
-									(if (gr (objGetVisibleDamage gSource) 50)
+									(if (gr (obj@ gSource 'visibleDamage) (obj@ gSource 'wanderMaxDamage))
 										(sysFindObject gSource "ANTJ +majorStation;")
 										(sysFindObject gSource "ANTJ")
 										)
@@ -1970,7 +2005,7 @@
 								(if debug (block Nil
 									(dbgOutput "Charon raider looting " (objGetName wreck))
 									(dbgOutput "Remaing cargo space " (/ (objGetCargoSpaceLeft gSource) 1000))
-									(dbgOutput "damage: " (objGetVisibleDamage gSource))
+									(dbgOutput "damage: " (obj@ gSource 'visibleDamage gSource))
 									))
 								; Loot all items from the transport
 								(if wreck
@@ -1981,7 +2016,7 @@
 
 								(switch
 									; Low damage and over 100 tons cargo space left, continue wandering
-									(and (leq (objGetVisibleDamage gSource) 20)
+									(and (leq (obj@ gSource 'visibleDamage) 20)
 										(gr (objGetCargoSpaceLeft gSource) 100000)
 										)
 										(objFireEvent gSource 'OrderWander)
@@ -2141,6 +2176,7 @@
 					;	Compute the half-way point of the transport route
 					(raidPos (sysGetNavPathPoint &svCorporate; homeBaseObj travelObj 50))
 
+					;	Time for freighter to reach the ambush position
 					(travelTime (sysCalcTravelTime (sysVectorDistanceExact homeBaseObj raidPos) (obj@ transportObj 'maxSpeed)))
 
 					;	Look for any free raiders that can reach the raid position in time
