@@ -269,7 +269,7 @@ All other types can use the attributes and inner tags available to generic types
 * extends: (optional) this type is only loaded if at least one extension UNID in this list of extension UNIDs is present
 * inherit: (optional) the UNID of a type to inherit all inner tags from
 * modifiers: (optional) ?
-* obsolete: (optional) ?
+* obsolete: (optional) this type is not loaded if the adventure is above this API version
 * obsoleteVersion: (optional) this type is only loaded if the adventure API version is below this API
 * requiredVersion: (optional) this type is only loaded if the adventure API version is at this this API
 * virtual: (optional) if this type is virtual
