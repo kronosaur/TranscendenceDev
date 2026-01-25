@@ -157,14 +157,37 @@ None
 
     always included if valid to include
 
-- **autoIncludeForCompatibility**: (optional) an API version at or below which this library is auto-included
-- **coverImageID**: (recommended) UNID of a cover image to display for this library in the collections menu
-- **credits**: (recommended) a string specifying the credits text to display on the credits scroll in the main menu. Use `;` to separate lines.
-- **debugOnly**: (optional) "true" if this library is only able to be enabled when the game is run with /debug
-- **name**: (recommended) the name to display for this library. If not provided, it displays the UNID number.
-- **obsoleteVersion**: (optional) this library cannot be enabled if the loaded adventure is above this API version
-- **release**: (optional) the release number of this library (must be an int)
-- **version**: (recommended) a custom version string for this library
+- **autoIncludeForCompatibility**: (optional)
+
+    an API version at or below which this library is auto-included
+
+- **coverImageID**: (recommended)
+
+    UNID of a cover image to display for this library in the collections menu
+
+- **credits**: (recommended)
+
+    a string specifying the credits text to display on the credits scroll in the main menu. Use `;` to separate lines.
+
+- **debugOnly**: (optional)
+
+    "true" if this library is only able to be enabled when the game is run with /debug
+    
+- **name**: (recommended)
+
+    the name to display for this library. If not provided, it displays the UNID number.
+
+- **obsoleteVersion**: (optional)
+
+    this library cannot be enabled if the loaded adventure is above this API version
+
+- **release**: (optional)
+
+    the release number of this library (must be an int)
+
+- **version**: (recommended)
+
+    a custom version string for this library
     > [!Note]
     >
     > prior to API version 12 when apiVersion was introduced, version was instead used to indicate the game version which was translated (roughly) to API version
@@ -172,16 +195,45 @@ None
 ## `<TranscendenceAdventure>`
 
 ### Attributes
-- **UNID**: the UNID of this adventure
-- **apiVersion**: the API version that this adventure requires and should be parsed with. Must be 12 or greater (see `version` for legacy support)
-- **coverImageID**: (recommended) UNID of a cover image to display for this adventure in the collections menu
-- **credits**: (recommended) a string specifying the credits text to display on the credits scroll in the main menu. Use `;` to separate lines.
-- **debugOnly**: (optional) "true" if this adventure is only able to be enabled when the game is run with /debug
-- **extensionAPIVersion**: (optional) prevents loading extensions below this version
-- **name**: (recommended) the name to display for this adventure. If not provided, it displays the UNID number.
-- **obsoleteVersion**: (optional) this adventure cannot be enabled if the loaded adventure is above this API version
-- **release**: (optional) the release number of this adventure (must be an int)
-- **version**: (recommended) a custom version string for this adventure
+- **UNID**:
+
+    the UNID of this adventure
+
+- **apiVersion**:
+
+    the API version that this adventure requires and should be parsed with. Must be 12 or greater (see `version` for legacy support)
+
+- **coverImageID**: (recommended)
+
+    UNID of a cover image to display for this adventure in the collections menu
+
+- **credits**: (recommended)
+
+    a string specifying the credits text to display on the credits scroll in the main menu. Use `;` to separate lines.
+
+- **debugOnly**: (optional)
+
+    "true" if this adventure is only able to be enabled when the game is run with /debug
+
+- **extensionAPIVersion**: (optional)
+
+    prevents loading extensions below this version
+
+- **name**: (recommended)
+
+    the name to display for this adventure. If not provided, it displays the UNID number.
+
+- **obsoleteVersion**: (optional)
+
+    this adventure cannot be enabled if the loaded adventure is above this API version
+
+- **release**: (optional)
+
+    the release number of this adventure (must be an int)
+
+- **version**: (recommended)
+
+    a custom version string for this adventure
     > **Note**
     >
     > prior to API version 12 when apiVersion was introduced, version was instead used to indicate the game version which was translated (roughly) to API version
@@ -189,21 +241,65 @@ None
 ## `<TranscendenceExtension>`
 
 ### Attributes
-- **UNID**: the UNID of this extension
-- **apiVersion**: the API version that this extension requires and should be parsed with. Must be 12 or greater (see `version` for legacy support)
-- **autoInclude**: (optional) always included if valid to include
-- **autoIncludeForCompatibility**: (optional) an API version at or below which this extension is auto-included
-- **coverImageID**: (recommended) UNID of a cover image to display for this extension in the collections menu
-- **credits**: (recommended) a string specifying the credits text to display on the credits scroll in the main menu. Use `;` to separate lines.
-- **debugOnly**: (optional) "true" if this extension is only able to be enabled when the game is run with /debug
-- **extends**: (optional) a list of UNIDs separated by spaces that this extension is allowed to be used with
-- **hidden**: (optional) if this is only available for compatibility purposes
-- **name**: (recommended) the name to display for this extension. If not provided, it displays the UNID number.
-- **obsoleteVersion**: (optional) this extension cannot be enabled if the loaded adventure is above this API version
-- **private**: (optional) does not show up in stats (libaries are always private)
-- **release**: (optional) the release number of this extension (must be an int)
-- **version**: (recommended) a custom version string for this extension
-    * Note: prior to API version 12 when apiVersion was introduced, version was instead used to indicate the game version which was translated (roughly) to API version
+- **UNID**:
+
+    the UNID of this extension
+
+- **apiVersion**:
+
+    the API version that this extension requires and should be parsed with. Must be 12 or greater (see `version` for legacy support)
+
+- **autoInclude**: (optional)
+
+    always included if valid to include
+
+- **autoIncludeForCompatibility**: (optional)
+
+    an API version at or below which this extension is auto-included
+
+- **coverImageID**: (recommended)
+
+    UNID of a cover image to display for this extension in the collections menu
+
+- **credits**: (recommended)
+
+    a string specifying the credits text to display on the credits scroll in the main menu. Use `;` to separate lines.
+
+- **debugOnly**: (optional)
+
+    "true" if this extension is only able to be enabled when the game is run with /debug
+
+- **extends**: (optional)
+
+    a list of UNIDs separated by spaces that this extension is allowed to be used with
+
+- **hidden**: (optional)
+
+    if this is only available for compatibility purposes
+
+- **name**: (recommended)
+
+    the name to display for this extension. If not provided, it displays the UNID number.
+
+- **obsoleteVersion**: (optional)
+
+    this extension cannot be enabled if the loaded adventure is above this API version
+
+- **private**: (optional)
+
+    does not show up in stats (libaries are always private)
+
+- **release**: (optional)
+
+    the release number of this extension (must be an int)
+
+- **version**: (recommended)
+
+    a custom version string for this extension
+
+    > **Note**
+    >
+    > prior to API version 12 when apiVersion was introduced, version was instead used to indicate the game version which was translated (roughly) to API version
 
 ## `<TranscendenceModule>`
 
@@ -221,8 +317,14 @@ Transcendence document
 This tag is only available in a TranscendenceUniverse.
 
 ### Attributes
-- **Filename**: the relative path to the Library
-    * NOTE - it is not recommended to nest Libraries due to bugs with handling subdirectories
+- **Filename**:
+
+    the relative path to the Library
+
+    > **NOTE**
+    >
+    > it is not recommended to nest Libraries due to bugs with handling subdirectories
+
 ### Inner Text
 None
 
@@ -233,7 +335,11 @@ This tag is only available in a TranscendenceUniverse.
 
 ### Attributes
 - **Filename**: the relative path to the Adventure
-    * NOTE - it is not recommended to nest Adventures due to bugs with handling subdirectories
+
+    > **NOTE**
+    >
+    > it is not recommended to nest Adventures due to bugs with handling subdirectories
+
 ### Inner Text
 None
 
@@ -242,11 +348,26 @@ None
 `<Library>` tags define the libraries that this Library/Adventure/Extension depends on
 
 ### Attributes
-- **UNID**: the UNID of a library dependency for this Library/Adventure/Extension
-- **type**: (optional) the type of dependency
-    - **required**: (default) a load error will occur if this dependency cannot be loaded
-    - **dependency**: this library will be disabled if this dependency cannot be loaded
-    - **optional**: this library will attempt to load the target library, but will ignore it if it does not exist
+- **UNID**:
+    
+    the UNID of a library dependency for this Library/Adventure/Extension
+
+- **type**: (optional)
+
+    the type of dependency
+
+    - **required**: (default)
+
+        a load error will occur if this dependency cannot be loaded
+
+    - **dependency**:
+    
+        this library will be disabled if this dependency cannot be loaded
+
+    - **optional**:
+    
+        this library will attempt to load the target library, but will ignore it if it does not exist
+
 ### Inner Text
 None
 
@@ -284,15 +405,41 @@ They cannot be instanced, but they can be inherited by types that can be instanc
 All other types can use the attributes and inner tags available to generic types.
 
 ### Attributes
-- **UNID**: the UNID of this type. ALL types (including non-generic types) must specify this field.
-- **attributes**: (optional) a list of attribute strings that can be used to filter for this type using `(typFind ...)` or `(typMatches ...)`
-- **excludes**: (optional) this type is not loaded if any extension UNID in this list of extension UNIDs is present
-- **extends**: (optional) this type is only loaded if at least one extension UNID in this list of extension UNIDs is present
-- **inherit**: (optional) the UNID of a type to inherit all inner tags from
-- **obsoleteVersion**: (optional) this type is only loaded if the adventure API version is below this API
-- **requiredVersion**: (optional) this type is only loaded if the adventure API version is at this this API
-- **modifiers**: (deprecated) use attributes instead.
-- **obsolete**: (deprecated) use obsoleteVersion instead.
+- **UNID**:
+    
+    the UNID of this type. ALL types (including non-generic types) must specify this field.
+
+- **attributes**: (optional)
+
+    a list of attribute strings that can be used to filter for this type using `(typFind ...)` or `(typMatches ...)`
+
+- **excludes**: (optional)
+
+    this type is not loaded if any extension UNID in this list of extension UNIDs is present
+
+- **extends**: (optional)
+
+    this type is only loaded if at least one extension UNID in this list of extension UNIDs is present
+
+- **inherit**: (optional)
+
+    the UNID of a type to inherit all inner tags from
+
+- **obsoleteVersion**: (optional)
+
+    this type is only loaded if the adventure API version is below this API
+
+- **requiredVersion**: (optional)
+
+    this type is only loaded if the adventure API version is at this this API
+
+- **modifiers**: (deprecated)
+
+    use attributes instead.
+
+- **obsolete**: (deprecated)
+
+    use obsoleteVersion instead.
 
 ### Inner Text
 None
@@ -363,33 +510,93 @@ Deprecated (as of API59). Use `<ArmorClassDesc>` instead.
 ## IMAGE RESOURCES: `<ImageType>`
 
 ### Attributes
-- **bitmap**: file path for a .bmp .jpg or .png file to use as a bitmap (color data). .png files will also load their alpha channel unless overridden by an explicit bitmask.
-- **bitmask**: (optional) file path for a .bmp or .png file to use as a bitmask. .png files use the alpha channel for bitmask by default.
-- **noPM**: (optional) false by default. Specifies that the bitmap has not been premultiplied.
+- **bitmap**:
+
+    file path for a .bmp .jpg or .png file to use as a bitmap (color data). .png files will also load their alpha channel unless overridden by an explicit bitmask.
+
+    > **NOTE**
+    >
+    > it is not recommended to nest Libraries due to bugs with handling subdirectories
+
+- **bitmask**: (optional)
+
+    file path for a .bmp or .png file to use as a bitmask. .png files use the alpha channel for bitmask by default.
+
+    > **NOTE**
+    >
+    > it is not recommended to nest Libraries due to bugs with handling subdirectories
+
+- **noPM**: (optional)
+
+    false by default. Specifies that the bitmap has not been premultiplied.
 
 ### Inner Text
 None
 
 ## ITEMS: `<ItemType>`
-- **name**: name of the item
-- **level**: level of the item
+- **name**:
+
+    name of the item
+
+- **level**:
+
+    level of the item
 
 ## SHIPS: `<ShipClass>`
 
 ### Attributes
-- **class**: (recommended) name of the ship class
-- **type**: (recommended) type of the ship class
-- **manufacturer**: (recommended) name of the ship manufacturer
-- **achievement**: (optional) if this ship class' destruction qualifies for an achievement
-- **level**: (optional) level of the ship (will be automatically computed)
-- **virtual**: (optional) if this type is virtual.
-- **shipCompartment**: (optional) if this ship class defines an attached compartment of another ship (as seen on the Balin Dragon in Vault of the Galaxy) as opposed to being a standalone ship
-- **score**: (optional) overrides the autocomputed score for this ship class
-- **eventHandler**: (optional) UNID of event handler type to inherit additional events and data from. Typically used for custom AI.
-- **character**: (optional) UNID of character
-- **characterClass**: (optional, to be deprecated) UNID of player's character class when the player starts in this ship
-- **dockSCreen**: (optional) dockscreen to initialize when player docks at a ship of this ship class
-- **defaultBackgroundID**: (optional) UNID of background image for this ship's dockscreen
+- **class**: (recommended)
+
+    name of the ship class
+
+- **type**: (recommended)
+
+    type of the ship class
+
+- **manufacturer**: (recommended)
+
+    name of the ship manufacturer
+
+- **achievement**: (optional)
+
+    if this ship class' destruction qualifies for an achievement
+
+- **level**: (optional)
+
+    level of the ship (will be automatically computed)
+
+- **virtual**: (optional)
+
+    if this type is virtual.
+
+- **shipCompartment**: (optional)
+
+    if this ship class defines an attached compartment of another ship (as seen on the Balin Dragon in Vault of the Galaxy)
+    as opposed to being a standalone ship
+
+- **score**: (optional)
+
+    overrides the autocomputed score for this ship class
+
+- **eventHandler**: (optional)
+
+    UNID of event handler type to inherit additional events and data from. Typically used for custom AI.
+
+- **character**: (optional)
+
+    UNID of character
+
+- **characterClass**: (optional, to be deprecated)
+
+    UNID of player's character class when the player starts in this ship
+
+- **dockSCreen**: (optional)
+
+    dockscreen to initialize when player docks at a ship of this ship class
+
+- **defaultBackgroundID**: (optional)
+
+    UNID of background image for this ship's dockscreen
 
 ### `<Hull>`
 Defines basic stats about this ship.
