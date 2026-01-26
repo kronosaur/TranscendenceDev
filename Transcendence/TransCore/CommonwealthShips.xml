@@ -89,6 +89,9 @@
 				designs like the Borer II and Borer III, fit for more dangerous
 				regions such as the Ungoverned Territories.
 			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
+			</Text>
 		</Language>
 
 	</ShipClass>
@@ -177,6 +180,9 @@
 
 				Today it still sees regular use as a budget freighter
 				completing low-volume last-leg deliveries.
+			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
 			</Text>
 		</Language>
 		
@@ -315,6 +321,9 @@
 				in-system trips, rather than as a true yacht as Zubrin
 				likes to imply with their marketing.
 			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
+			</Text>
 		</Language>
 		
 	</ShipClass>
@@ -408,6 +417,9 @@
 				Commonwealth, transporting cargo that needs protection
 				from opportunistic pirates and raiders.
 			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
+			</Text>
 		</Language>
 		
 	</ShipClass>
@@ -500,6 +512,9 @@
 				problem for those who try to start with a Revolution Designs
 				ship like an Earthzone.
 			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
+			</Text>
 		</Language>
 		
 	</ShipClass>
@@ -590,6 +605,9 @@
 				Katherine's Star to variants equipped for the militia to
 				fight off Sung raiders.
 			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
+			</Text>
 		</Language>
 		
 	</ShipClass>
@@ -678,6 +696,9 @@
 				The ship became broadly popular among Commonwealth mining
 				operations in the Ungoverned Territories for its continued
 				focus on being a rugged no-frills design.
+			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
 			</Text>
 		</Language>
 		
@@ -813,6 +834,9 @@
 				it did with the owners of the ships it was meant to replace. As a
 				result Earth Industries still sells new-production EI300s alongside
 				the EI500.
+			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
 			</Text>
 		</Language>
 
@@ -1006,6 +1030,9 @@
 				upgraded by private owners for much greater range than they were
 				designed for, often at a significant price.
 			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
+			</Text>
 		</Language>
 		
 	</ShipClass>
@@ -1167,6 +1194,9 @@
 				the New Beyond on-sight unless they have access to capital ships, such as
 				Drakes.
 			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
+			</Text>
 		</Language>
 
 	</ShipClass>
@@ -1256,6 +1286,9 @@
 				Since neither Revolution Designs nor Frontier Industrial produce
 				weapons, the devices for the ship kits are usually absent or just
 				any off-the-shelf selection that is locally available.
+			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
 			</Text>
 		</Language>
 		
@@ -1362,6 +1395,9 @@
 				and fast multipurpose transport good for carrying both cargo
 				and passengers.
 			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
+			</Text>
 		</Language>
 		
 	</ShipClass>
@@ -1450,6 +1486,9 @@
 				one decade later, sales of the Borer III remained strong as
 				individual Commonwealth and UAS citizens rushed out to try
 				and get some of the valuable ores in the area.
+			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
 			</Text>
 		</Language>
 		
@@ -1579,6 +1618,9 @@
 				even impacts the bridge, which relies on holographic displays
 				to allow the crew to see around the shades.
 			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
+			</Text>
 		</Language>
 		
 	</ShipClass>
@@ -1707,6 +1749,9 @@
 				of fuel for the massive Commonwealth Star Carriers and all of the
 				gunships they support.
 			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
+			</Text>
 		</Language>
 		
 	</ShipClass>
@@ -1802,6 +1847,9 @@
 				manufacture replacement parts. Over time the opensource component
 				community has evolved the original Buffalo design into a capable
 				heavy gunship.
+			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
 			</Text>
 		</Language>
 		
@@ -2014,6 +2062,9 @@
 				Makayev kept the name given to class ship by the Fleet and
 				turned to the Commonwealth Militias and Corporate security
 				forces for sales instead.
+			</Text>
+			<Text id="core.descPlayer">
+				Short gameplay description here
 			</Text>
 		</Language>
 		
