@@ -4745,10 +4745,14 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 				}
 
 			//	If they don't fit, we just beep
+			// 
+			//	Dont play the audio que faster than once per several seconds
+			//	Ticks are DWORDs (unsigned) so we dont care if the universe ticks roll over to 0
 
-			else
+			else if (GetUniverse().GetTicks() - GetUniverse().GetPlayer().GetLastWarningTick() > g_TicksPerSecond * 3)
 				{
 				GetUniverse().PlaySound(this, GetUniverse().FindSound(UNID_DEFAULT_CANT_DO_IT));
+				GetUniverse().GetPlayer().SetLastWarningTick(GetUniverse().GetTicks());
 				}
 			}
 
