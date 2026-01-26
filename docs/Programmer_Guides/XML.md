@@ -817,17 +817,83 @@ Defines the sprite information for this ship class.
 Will be invisible, unhittable, and non-moving if not defined.
 Virtual shipclasses do not directly use this, as their instances are not spawned into the world.
 Inheriting a virtual shipclass that defines `<Image>` will allow that image definition to be used.
+Image coordinates start at `(0,0)` from the top left of the image.
 
 #### Attributes
+
+- **imageWidth** (required)
+
+    Number of pixels wide an individual facing of this sprite should be
+
+- **imageHeight** (required)
+
+    Number of pixels tall an individual facing of this sprite should be
+
+- **rotationCount** (required)
+
+    Total number of facings that are available for this sprite
+
+- **rotationColums** (required)
+
+    Total number of columns that the rotation facings are split up across
+
+- **viewportRatio** (required)
+
+    Viewport ratio that this sprite was rendered with to ensure that the weapon
+    and engine effects can be lined up appropriately with the sprite as the ship
+    turns.
+
+    This assumes a specific camera angle that transcendence is designed to work with.
+
+    If the scene is setup with:
+    * the camera `N` units behind the origin
+    * the camera `N*2` units above the origin
+    * the model rotates around the origin
+
+    The viewport ratio is `W/(N*2)` where `W` is the width of the viewport in the
+    scene file's units.
+    
+    If using Arisaya's default blender scene, this value is always `0.2`, because the
+    scene is setup to have a camera with fixed lens properties moved closer or farther
+    from the origin to fit the ship.
+
+    A value of `0` means that the ship was rendered with isometric projection.
+
+- **imageX** (optional)
+
+    Number of pixels to the right of the leftmost pixel of the image the upper left corner of the sprite's 0 facing should be
+    Defaults to 0
+
+- **imageY** (optional)
+
+    Number of pixels below the topmost pixel of the image the upper left corner of the sprite's 0 facing should be
+    Defaults to 0
 
 ### `<HeroImage>`
 Recommended (Stock hull only)
 
 Defines the menu picture for this ship class.
+Image coordinates start at `(0,0)` from the top left of the image.
 
 #### Attributes
 
+- **imageWidth** (required)
+
+    Number of pixels wide this sprite should be
+
+- **imageHeight** (required)
+
+    Number of pixels tall this sprite should be
+
 - **imageX** (optional)
+
+    Number of pixels to the right of the leftmost pixel of the image the upper left corner of the sprite should be
+    Defaults to 0
+
+- **imageY** (optional)
+
+    Number of pixels below the topmost pixel of the image the upper left corner of the sprite should be
+    Defaults to 0
 
 ### `<DeviceSlots>`
 Required (Stock hull only)
@@ -1134,6 +1200,39 @@ Defines the device slots installed on this ship.
 Required
 
 Defines the armor type and configuration on this ship
+
+> **NOTE**
+>
+> this system will split out the armorID from
+> the rest of the attributes in the near feature
+
+#### Attributes
+
+- **count** (required)
+
+    The number of armor segments that this ship should have
+
+- **armorID** (required)
+
+    The UNID of the armor to install on this ship
+
+- **startAt** (optional)
+
+    The number of degrees offset from the front of the ship (0 degrees) the first armor segment should be
+
+- **fortificationWMDAdj** (optional)
+
+    The amount of WMD fortification that this armor should have.
+    Accepts floating point numbers.
+    Default: 0
+
+    > **NOTE**
+    >
+    > This is not a standard feature in the core game, and is being used for
+    > balance prototyping in the Chronicles adventure.
+    > 
+    > Also, A new system called "physicalized damage methods" is in development,
+    > and will replace the existing WMD system.
 
 ### `<Effects>`
 
