@@ -5,7 +5,20 @@ Transcendence stores much of its game data in a customized XML format.
 ## ABOUT THIS DOCUMENT
 
 Be aware that this document is meant to reflect the current API, but is at this time manually updated.
-Additionally, deprecated features/attributes/tags/etc are not documented here.
+
+> **NOTE**
+>
+> Deprecated features/attributes/tags/etc are not documented here unless otherwise relevant
+
+> **NOTE**
+>
+> Some fields may not technically be "required" (they can still be parsed without these fields
+> present or correctly populated), however the default behavior is usually intended for
+> compatibility with very old mods and is not normally desireable or intended in modern
+> transcendence game data.
+>
+> As such, they are listed as required from the perspective of implementing modern transcendence
+> xml.
 
 # TRANSCENDENCE XML FILE STRUCTURE
 
@@ -598,34 +611,264 @@ None
 
     UNID of background image for this ship's dockscreen
 
+Due to practical implementation constraints around reusing a single hull for
+different purposes, we have a notion of a 'stock' ship hull vs ship hulls that
+may be named, given alterantive equipment loadouts, etc.
+
+The stock hull is meant to represent a factory fresh ship with the sort of
+loadout that the manufacturer would market it as having.
+
+With few exceptions, only the stock hull should define the following tags:
+* Hull
+* Interior
+* DeviceSlots
+* Effects
+* Image
+* HeroImage
+
+Additionally the stock hull should define the following tags:
+* Armor (Required)
+* Devices (for default devices)
+* Equipment (for default ship software)
+
+Optionally the stock hull can define the following tags
+* Items (default items in cargohold)
+
+Variant hulls should inherit the stock hull (or another variant hull) to get
+the data for those tags.
+
+Variant hulls may define the following tags:
+* Armor (if they change the armor type installed. Do not change the armor count. Armor count in this XML element is being deprecated.)
+* Devices (if they change the devices)
+* Items (items in the cargohold)
+* Names
+* PlayerSettings (if this variant is a starting playership)
+
 ### `<Hull>`
+Required (Stock hull only)
+
 Defines basic stats about this ship.
 
+#### Attributes
+    
+- **mass**: (required)
+
+    mass of the ship in metric tons
+    
+- **cargoSpace**: (recommended)
+
+    the cargo capacity of this ship in CBM (cubic meters)
+
+    > **NOTE**
+    >
+    > Before API 59, this specified metric tons.
+    > This is converted at a 1:1 ratio by default unless an adventure specifies otherwise
+
+- **size**: (recommended)
+
+    longest axis of the ship in meters
+
+- **maxCargoSpace**: (recommended)
+
+    the cargo capacity of this ship in CBM (cubic meters)
+
+    > **NOTE**
+    >
+    > Before API 59, this specified metric tons.
+    > This is converted at a 1:1 ratio by default unless an adventure specifies otherwise
+
+- **maxDevices**: (required)
+
+    maximum devices that can be installed
+
+    > **NOTE**
+    >
+    > Until the device slot rework is in, this is unfortunately a required field.
+    > It will be optional at that point, as the game will be able to auto-compute
+    > max devices based on the named slots.
+    > It will persist as a non-deprecated field to allow for niche ships that
+    > cannot use all of their named slots simultaneously.
+
+- **maxWeapons**: (optional)
+
+    maximum weapon-class devices that can be installed
+
+- **maxNonWeapons**: (optional)
+
+    maximum devices that can be installed which are not of the weapon-class
+
+- **maxArmor**: (optional, not recommended)
+
+    maximum armor class that can be installed
+    
+    It is recommended to use `<ArmorLimits>` instead for explicit control
+    over the speed bonus/penalty that is applied. The game will otherwise
+    attempt to auto-compute bonuses/penalties.
+
+- **stdArmor**: (optional, not recommended)
+
+    standard armor class that can be installed (where there is no bonus
+    or penalty)
+    
+    It is recommended to use `<ArmorLimits>` instead for explicit control
+    over the speed bonus/penalty that is applied. The game will otherwise
+    attempt to auto-compute bonuses/penalties.
+
+#### Inner Tags
+
+- `<ArmorLimits>`
+
+    This tag defines an explicit armor limit and speed bonus/penalty
+
+    **Attributes**
+
+    - **massClass**: (required)
+
+        The armor class that this speed bonus/penalty is applied to
+
+        > **NOTE**
+        >
+        > in API59 this attribute name will be deprecated, and switched to `armorClass`
+
+    - **speedAdj**: (required)
+
+        The speed bonus or penalty applied to this ship in increments of 0.01c (1% of lightspeed)
+
+    **Example**    
+    
+    The following series of `<ArmorLimits>` defines a ship that gets:
+    * +.02c from ultralight armor
+    * +.01c from light armor
+    * no bonus from medium armor
+    * treats heavy armor as standard (highest armor class without a penalty)
+    * -.01c from super-heavy armor, which is also its maximum armor as the highest class listed
+
+    ```
+    <ArmorLimits massClass="ultraLight"     speedAdj="2"/>
+    <ArmorLimits massClass="light"          speedAdj="1"/>
+    <ArmorLimits massClass="medium"         speedAdj="0"/>
+    <ArmorLimits massClass="heavy"          speedAdj="0"/>
+    <ArmorLimits massClass="superHeavy"     speedAdj="-1"/>
+    ```
+
 ### `<Interior>`
-Recommended:
+Recommended (Stock hull only)
 Use on large ships that should not die from a single hull breach.
+
 Defines internal compartments of this ship.
+
+### `<Maneuver>`
+Required (Stock hull only)
+
+#### Attributes
+
+- **maxRotationRate** (required)
+
+    Accepts floating point numbers.
+    The number of degrees per 2 simulation seconds that the ship is able to rotate
+
+- **rotationAccel** (optional)
+
+    The maximum increase in rotation rate per 2 simulation seconds
+    Accepts floating point numbers.
+
+    > **WARNING**
+    >
+    > If this value is less than half of maxRotationRate, it can cause issues with the AI steering
+
+- **rotationStopAccel** (optional)
+
+    The maximum decrease in rotation rate per 2 simulation seconds
+    Accepts floating point numbers.
+
+    > **WARNING**
+    >
+    > If this value is less than half of maxRotationRate, it can cause issues with the AI steering
+    > In particular this can cause major issues with oversteering
+
+### `<Drive>`
+Required (Stock hull only)
+
+#### Attributes
+
+- **maxSpeed** (required)
+
+    Maximum velocity in increments of .01c (1% of lightspeed)
+
+- **thrust** (required)
+
+    Thrust
+    (a thrust ratio of around 1 can be achieved by setting thrust to the same value as mass. Note that equipment mass also factors into this.)
+
+- **powerUseRatio** (recommended)
+
+    Autocalculates a power use based on the value in thrust.
+    The formula is: `13 * powerUseRatio * (thrust / 100) ^ 1.2 = powerUse (as a multiple of 100kW)`
+    Accepts floating point numbers.
+
+- **powerUse** (optional)
+
+    Forces a specific power use. (Specified in whole multiples of 100kW)
+
+### `<Image>`
+Required (Stock hull only)
+
+Defines the sprite information for this ship class.
+Will be invisible, unhittable, and non-moving if not defined.
+Virtual shipclasses do not directly use this, as their instances are not spawned into the world.
+Inheriting a virtual shipclass that defines `<Image>` will allow that image definition to be used.
+
+#### Attributes
+
+### `<HeroImage>`
+Recommended (Stock hull only)
+
+Defines the menu picture for this ship class.
+
+#### Attributes
+
+- **imageX** (optional)
+
+### `<DeviceSlots>`
+Required (Stock hull only)
+This should be defined on any stock ship.
+
+Defines the device slots installed on this ship.
+
+> **Note**
+>
+> The legacy slot systems of nameless slots and generic slots (present on legacy ships)
+> are being deprecated as part of 2.0
+>
+> 2.0 will automatically generate and place named slots on legacy ships to support modern
+> gameplay elements, but this may result in undesirable slot placement.
+>
+> Thus it is officially recommended to define all new stock ships hulls with named device
+> slots, and is required for newly contributed stock hulls in this repo.
+
+### `<AISettings>`
+
+#### Attributes
+
+- **imageX** (optional)
+
+### `<Armor>`
+Required
+
+Defines the armor type and configuration on this ship
+
+### `<Effects>`
+
+### `<Devices>`
+Recommended
+
+Defines the devices installed on this ship
 
 ### `<Names>`
 Optional
-A list of names that can be randomly assigned to this ship class.
 Typically this should not be used for stock hulls.
 
-### `<Image>`
-Recommended
-Defines the sprite information for this ship class.
-
-### `<HeroImage>`
-Recommended
-Defines the menu picture for this ship class.
-
-### `<Devices>`
-
-### `<DeviceSlots>`
-
-### `<Armor>`
-
-### `<Effects>`
+A list of names that can be randomly assigned to this ship class.
 
 ### `<Items>`
 
