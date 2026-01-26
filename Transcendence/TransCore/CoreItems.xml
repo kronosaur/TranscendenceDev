@@ -67,8 +67,28 @@
 		</MiscellaneousDevice>
 	</ItemType>
 
-	<ItemType UNID="&vtShipSystems150;"
+	<ItemType UNID="&vtShipSystems125;"
 			name=				"Ship Systems (Fair)"
+			virtual=			"true"
+			level=				"1"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		<MiscellaneousDevice
+				powerUse=		"0"
+				deviceSlots=	"0"
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"&vtShipSystems125;"
+						 criteria=		"w"
+						 enhancement=	"+speed:125;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+	</ItemType>
+
+	<ItemType UNID="&vtShipSystems150;"
+			name=				"Ship Systems (Poor)"
 			virtual=			"true"
 			level=				"1"
 			>
@@ -88,7 +108,7 @@
 	</ItemType>
 
 	<ItemType UNID="&vtShipSystems200;"
-			name=				"Ship Systems (Poor)"
+			name=				"Ship Systems (Degraded)"
 			virtual=			"true"
 			level=				"1"
 			>
@@ -108,7 +128,7 @@
 	</ItemType>
 
 	<ItemType UNID="&vtShipSystems250;"
-			name=				"Ship Systems (Degraded)"
+			name=				"Ship Systems (Damaged)"
 			virtual=			"true"
 			level=				"1"
 			>
@@ -127,8 +147,28 @@
 		</MiscellaneousDevice>
 	</ItemType>
 
+	<ItemType UNID="&vtShipSystems300;"
+			name=				"Ship Systems (Broken)"
+			virtual=			"true"
+			level=				"1"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		<MiscellaneousDevice
+				powerUse=		"0"
+				deviceSlots=	"0"
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"&vtShipSystems300;"
+						 criteria=		"w"
+						 enhancement=	"+speed:300;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+	</ItemType>
+
 	<ItemType UNID="&vtShipSystems500;"
-			name=				"Ship Systems (Damaged)"
+			name=				"Ship Systems (Failing)"
 			virtual=			"true"
 			level=				"1"
 			>
@@ -142,46 +182,6 @@
 				<Enhance type=			"&vtShipSystems500;"
 						 criteria=		"w"
 						 enhancement=	"+speed:500;"
-						 />
-			</EnhancementAbilities>
-		</MiscellaneousDevice>
-	</ItemType>
-
-	<ItemType UNID="&vtShipSystems750;"
-			name=				"Ship Systems (Broken)"
-			virtual=			"true"
-			level=				"1"
-			>
-
-		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
-		<MiscellaneousDevice
-				powerUse=		"0"
-				deviceSlots=	"0"
-				>
-			<EnhancementAbilities>
-				<Enhance type=			"&vtShipSystems750;"
-						 criteria=		"w"
-						 enhancement=	"+speed:750;"
-						 />
-			</EnhancementAbilities>
-		</MiscellaneousDevice>
-	</ItemType>
-
-	<ItemType UNID="&vtShipSystems1000;"
-			name=				"Ship Systems (Failing)"
-			virtual=			"true"
-			level=				"1"
-			>
-
-		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
-		<MiscellaneousDevice
-				powerUse=		"0"
-				deviceSlots=	"0"
-				>
-			<EnhancementAbilities>
-				<Enhance type=			"&vtShipSystems1000;"
-						 criteria=		"w"
-						 enhancement=	"+speed:1000;"
 						 />
 			</EnhancementAbilities>
 		</MiscellaneousDevice>
