@@ -850,7 +850,285 @@ Defines the device slots installed on this ship.
 
 #### Attributes
 
-- **imageX** (optional)
+- **combatStyle** (recommended)
+
+    Accepts the following combat styles (default is standard)
+    * standard
+    * advanced (attempts flanking if faster, has a few extra behaviors)
+    * flyby (simple non-flanking style style)
+    * standoff (simple style that tries to keep range)
+    * chase (simple style that tries to stay behind the target)
+    * noRetreat (simple aggressive style that attempts flanking if faster)
+
+- **perception** (optional)
+
+    Determines how well a ship type (including the player) can see other ships. 4 = standard
+
+    > **NOTE**
+    >
+    > This feature will be moved from AI settings to a different tag in 2.0
+
+- **flockingStyle** (optional)
+
+    Accepts the following flocking formations (default is none)
+    * cloud
+    * compact
+    * random
+    * none
+
+- **reactToAttack** (optional, avoid on stock)
+
+    How an NPC ship of this type should react to attacks.
+
+    > **NOTE**
+    >
+    > This overrides the standard reactions provided by orders
+    >
+    > Do not use this on stock ships, it will interfere with expected
+    > behavior
+
+    Accepts the following reactions:
+    * chase
+    * chaseFromBase
+    * default (defers to orders)
+    * destroy
+    * destroyAndRetaliate
+    * deter
+    * deterNoManeuvers (only uses secondary weapons to deter)
+    * gate (leaves the system)
+    * none (does nothing)
+
+- **reactToThreat** (optional, avoid on stock)
+
+    If an NPC ship of this type should react to hostiles (default is)
+
+    > **NOTE**
+    >
+    > This overrides the standard reactions provided by orders
+    >
+    > Do not use this on stock ships, it will interfere with expected
+    > behavior
+
+    Accepts the following reactions:
+    * chase
+    * chaseFromBase
+    * default (defers to orders)
+    * destroy
+    * destroyAndRetaliate
+    * deter
+    * deterNoManeuvers (only uses secondary weapons to deter)
+    * gate (leaves the system)
+    * none (does nothing)
+
+- **ascendOnGate** (do not use on stock ships, use only on persistent ships)
+
+    If a ship should be ascended instead of deleted when it enters a gate
+    
+    This is necessary for persistent ships (Ex, named characters, or known fleets
+    that can show up elsewhere)
+
+    This should never be used on stock ships, as you can end up accidentally
+    ascending (persisting) a large quantity of data over the course of a game.
+
+- **noShieldRetreat** (optional)
+
+    If a ship should not retreat when its shields go down
+
+    Ignored in certain cases (combat styles, non-regenerating shields)
+
+    > **NOTE**
+    >
+    > This overrides the standard reactions provided by some combatStyles
+    >
+    > This is overridden by other combat styles which never retreat
+
+- **noDogfights** (optional, avoid on stock)
+
+    Ship does not engage in dogfighting type maneuvers. (Needs to be verified)
+
+    > **NOTE**
+    >
+    > This overrides the standard reactions provided by orders
+    >
+    > Do not use this on stock ships, it will interfere with expected
+    > behavior
+
+- **nonCombatant** (optional, avoid on stock)
+
+    Ship does not engage in combat.
+
+    > **NOTE**
+    >
+    > This overrides the standard reactions provided by orders
+    >
+    > Do not use this on stock ships, it will interfere with expected
+    > behavior
+
+- **noFriendlyFire** (optional, avoid on stock)
+
+    Ship cannot hit non-enemy targets unless deliberately targeting them.
+    This causes shots to pass through without collision detection.
+
+    > **NOTE**
+    >
+    > This overrides the standard reactions provided by orders
+    >
+    > Do not use this on stock ships, it will interfere with expected
+    > behavior
+    >
+    > If set on a station, guards also get this automatically, so generally
+    > this is needed only for specific variants that are encountered on their
+    > own
+
+- **aggressor** (optional, avoid on stock)
+
+    Ship will aggro on enemy ships nearby
+
+    > **NOTE**
+    >
+    > This overrides the standard reactions provided by orders
+    >
+    > Do not use this on stock ships, it will interfere with expected
+    > behavior
+
+- **noAttackOnThreat** (optional, avoid on stock)
+
+    Does not attack when threatened
+
+    > **NOTE**
+    >
+    > This overrides the standard reactions provided by orders
+    >
+    > Do not use this on stock ships, it will interfere with expected
+    > behavior
+
+- **noTargetsOfOpportunity** (optional, avoid on stock)
+
+    Ship will not aggro on targets of opportunity
+
+    > **NOTE**
+    >
+    > This overrides the standard reactions provided by orders
+    >
+    > Do not use this on stock ships, it will interfere with expected
+    > behavior
+
+- **noFriendlyFireCheckAttrib** (optional, avoid on stock)
+
+    Ship does not check for friendly targets in the way before shooting
+
+    > **NOTE**
+    >
+    > This overrides the standard reactions provided by orders
+    >
+    > Do not use this on stock ships, it will interfere with expected
+    > behavior
+
+- **noNavPaths** (optional, avoid on stock)
+
+    Ship does not use nav paths and will not avoid enemy stations enroute to
+    its destination
+
+    > **NOTE**
+    >
+    > This overrides the standard reactions provided by orders
+    >
+    > Do not use this on stock ships, it will interfere with expected
+    > behavior
+
+- **noOrderGiver** (optional, avoid on stock)
+
+    This ship is treated as responsible for its own actions, rather than
+    an order giver (ex, the player, a station, or a carrier)
+
+    > **NOTE**
+    >
+    > This overrides the standard ai reactions of other ai
+    >
+    > Do not use this on stock ships, it will interfere with expected
+    > behavior
+
+- **useAllPrimaryWeapons** (optional, avoid on stock, mostly deprecated)
+
+    NPCs of this ship class can link-fire all primary weapons
+    This is primarily a legacy hack before linked-fire slots were added
+
+    However it remains a non-deprecated option for some niche applications,
+    for example when a named character's ship that doesnt have linked-fire
+    slots needs to act like it does.
+
+    > **NOTE**
+    >
+    > This overrides the standard ship balance of slots
+    >
+    > Do not use this on stock ships, it will interfere with expected
+    > behavior, and its not something the player is allowed to do
+
+- **targetsStations** (optional, avoid on stock)
+
+    Determines if NPCs of this ship class will determine stations owned by
+    a hostile sovereign to be threats, even if the station is not attacking them.
+
+    > **NOTE**
+    >
+    > This overrides the standard reactions provided by orders
+    >
+    > Do not use this on stock ships, it will interfere with expected
+    > behavior
+
+- **fireRangeAdj** (optional, avoid on stock)
+
+    Adjusts what a ship computes is its optimal firing range by this factor
+    expressed as a %.
+
+    > **NOTE**
+    >
+    > This overrides the standard aiming from combat styles
+    >
+    > Do not use this on stock ships, it will interfere with expected
+    > behavior
+
+- **fireRangeAccuracy** (optional, avoid on stock)
+
+    If less than 100, has a chance to just not shoot even if the ship has
+    a firing solution.
+
+    This should generally not be used and may be deprecated by upcoming
+    crew mechanics.
+
+    > **NOTE**
+    >
+    > This overrides the standard aiming from combat styles
+    >
+    > Do not use this on stock ships, it will interfere with expected
+    > behavior
+
+- **fireRateAdj** (Do not use: deprecated & buggy)
+
+    Adjusts the fire delay of the weapons on a ship in 10% increments.
+    Ex, 9 = 90% of the stock fire delay, meaning that it shoots faster.
+
+    > **NOTE**
+    >
+    > Do not use this attribute. It is included only to enable people to
+    > understand the math conversion needed to migrate off of it.
+    >
+    > It has bugs that are not easily fixed due to the extremely brute-forced
+    > mechanics of its implementation, and introduces many balance problems
+    > for adventures and mods that allow the player to acquire NPC ships,
+    > as this system only applies to the AI. Additionally, for NPC fuel
+    > consumption mechanics, this introduces other problems by drastically
+    > altering their efficiency in ways that are not easily fixed/accounted for.
+    >
+    > Instead, the enhancement system is the intended means for balancing
+    > ships with many weapons, and for (de)tuning enemy ships.
+    >
+    > 1. Slots can be individually given speed buffs or debuffs via enhancements
+    >       * This enables powerful auto-turret slots on capital ships to be
+    >       selectively detuned based on the benefits given from being an auto-turret
+    > 2. A ship-wide 0-slot virtual enhancer that cannot be removed via normal means
+    > can bbe used to detune a ship that is supposed to have poorer-than-stock
+    > performance.
 
 ### `<Armor>`
 Required
