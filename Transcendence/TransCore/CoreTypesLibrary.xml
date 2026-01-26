@@ -217,6 +217,16 @@
 	<!-- 01D0-01FF SOUND EFFECTS -->
 
 	<!ENTITY snDefaultShipScreenAmbient	"0x000301D0">
+
+	<!-- 0200-021F VIRTUAL SHIP DEVICES -->
+
+	<!ENTITY vtShipSystems100			"0x00030200">
+	<!ENTITY vtShipSystems150			"0x00030201">
+	<!ENTITY vtShipSystems200			"0x00030202">
+	<!ENTITY vtShipSystems250			"0x00030203">
+	<!ENTITY vtShipSystems500			"0x00030204">
+	<!ENTITY vtShipSystems750			"0x00030205">
+	<!ENTITY vtShipSystems1000			"0x00030206">
 	]>
 	
 <CoreLibrary

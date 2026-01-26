@@ -45,5 +45,171 @@
 		</Language>
 	</ItemType>
 
+	<!-- Generic Enhancement -->
+
+	<ItemType UNID="&vtShipSystems100;"
+			name=				"Ship Systems (Nominal)"
+			virtual=			"true"
+			level=				"1"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		<MiscellaneousDevice
+				powerUse=		"0"
+				deviceSlots=	"0"
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"&vtShipSystems100;"
+						 criteria=		"w"
+						 enhancement=	"+speed:100;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+	</ItemType>
+
+	<ItemType UNID="&vtShipSystems150;"
+			name=				"Ship Systems (Fair)"
+			virtual=			"true"
+			level=				"1"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		<MiscellaneousDevice
+				powerUse=		"0"
+				deviceSlots=	"0"
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"&vtShipSystems150;"
+						 criteria=		"w"
+						 enhancement=	"+speed:150;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+	</ItemType>
+
+	<ItemType UNID="&vtShipSystems200;"
+			name=				"Ship Systems (Poor)"
+			virtual=			"true"
+			level=				"1"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		<MiscellaneousDevice
+				powerUse=		"0"
+				deviceSlots=	"0"
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"&vtShipSystems200;"
+						 criteria=		"w"
+						 enhancement=	"+speed:200;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+	</ItemType>
+
+	<ItemType UNID="&vtShipSystems250;"
+			name=				"Ship Systems (Degraded)"
+			virtual=			"true"
+			level=				"1"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		<MiscellaneousDevice
+				powerUse=		"0"
+				deviceSlots=	"0"
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"&vtShipSystems250;"
+						 criteria=		"w"
+						 enhancement=	"+speed:250;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+	</ItemType>
+
+	<ItemType UNID="&vtShipSystems500;"
+			name=				"Ship Systems (Damaged)"
+			virtual=			"true"
+			level=				"1"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		<MiscellaneousDevice
+				powerUse=		"0"
+				deviceSlots=	"0"
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"&vtShipSystems250;"
+						 criteria=		"w"
+						 enhancement=	"+speed:250;"
+						 />
+				<Enhance type=			"&vtShipSystems500;"
+						 criteria=		"w"
+						 enhancement=	"+speed:250;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+	</ItemType>
+
+	<ItemType UNID="&vtShipSystems750;"
+			name=				"Ship Systems (Broken)"
+			virtual=			"true"
+			level=				"1"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		<MiscellaneousDevice
+				powerUse=		"0"
+				deviceSlots=	"0"
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"&vtShipSystems250;"
+						 criteria=		"w"
+						 enhancement=	"+speed:250;"
+						 />
+				<Enhance type=			"&vtShipSystems500;"
+						 criteria=		"w"
+						 enhancement=	"+speed:250;"
+						 />
+				<Enhance type=			"&vtShipSystems750;"
+						 criteria=		"w"
+						 enhancement=	"+speed:250;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+	</ItemType>
+
+	<ItemType UNID="&vtShipSystems1000;"
+			name=				"Ship Systems (Failing)"
+			virtual=			"true"
+			level=				"1"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		<MiscellaneousDevice
+				powerUse=		"0"
+				deviceSlots=	"0"
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"&vtShipSystems250;"
+						 criteria=		"w"
+						 enhancement=	"+speed:250;"
+						 />
+				<Enhance type=			"&vtShipSystems500;"
+						 criteria=		"w"
+						 enhancement=	"+speed:250;"
+						 />
+				<Enhance type=			"&vtShipSystems750;"
+						 criteria=		"w"
+						 enhancement=	"+speed:250;"
+						 />
+				<Enhance type=			"&vtShipSystems1000;"
+						 criteria=		"w"
+						 enhancement=	"+speed:250;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+	</ItemType>
+
 </TranscendenceModule>
 	
