@@ -139,13 +139,9 @@
 				deviceSlots=	"0"
 				>
 			<EnhancementAbilities>
-				<Enhance type=			"&vtShipSystems250;"
-						 criteria=		"w"
-						 enhancement=	"+speed:250;"
-						 />
 				<Enhance type=			"&vtShipSystems500;"
 						 criteria=		"w"
-						 enhancement=	"+speed:250;"
+						 enhancement=	"+speed:500;"
 						 />
 			</EnhancementAbilities>
 		</MiscellaneousDevice>
@@ -163,17 +159,9 @@
 				deviceSlots=	"0"
 				>
 			<EnhancementAbilities>
-				<Enhance type=			"&vtShipSystems250;"
-						 criteria=		"w"
-						 enhancement=	"+speed:250;"
-						 />
-				<Enhance type=			"&vtShipSystems500;"
-						 criteria=		"w"
-						 enhancement=	"+speed:250;"
-						 />
 				<Enhance type=			"&vtShipSystems750;"
 						 criteria=		"w"
-						 enhancement=	"+speed:250;"
+						 enhancement=	"+speed:750;"
 						 />
 			</EnhancementAbilities>
 		</MiscellaneousDevice>
@@ -191,21 +179,9 @@
 				deviceSlots=	"0"
 				>
 			<EnhancementAbilities>
-				<Enhance type=			"&vtShipSystems250;"
-						 criteria=		"w"
-						 enhancement=	"+speed:250;"
-						 />
-				<Enhance type=			"&vtShipSystems500;"
-						 criteria=		"w"
-						 enhancement=	"+speed:250;"
-						 />
-				<Enhance type=			"&vtShipSystems750;"
-						 criteria=		"w"
-						 enhancement=	"+speed:250;"
-						 />
 				<Enhance type=			"&vtShipSystems1000;"
 						 criteria=		"w"
-						 enhancement=	"+speed:250;"
+						 enhancement=	"+speed:1000;"
 						 />
 			</EnhancementAbilities>
 		</MiscellaneousDevice>
