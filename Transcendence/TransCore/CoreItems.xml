@@ -49,6 +49,7 @@
 
 	<ItemType UNID="&vtShipSystems100;"
 			name=				"Ship Systems (Nominal)"
+			attributes=			"shipSystems"
 			virtual=			"true"
 			level=				"1"
 			>
@@ -69,6 +70,7 @@
 
 	<ItemType UNID="&vtShipSystems125;"
 			name=				"Ship Systems (Fair)"
+			attributes=			"shipSystems"
 			virtual=			"true"
 			level=				"1"
 			>
@@ -89,6 +91,7 @@
 
 	<ItemType UNID="&vtShipSystems150;"
 			name=				"Ship Systems (Poor)"
+			attributes=			"shipSystems"
 			virtual=			"true"
 			level=				"1"
 			>
@@ -109,6 +112,7 @@
 
 	<ItemType UNID="&vtShipSystems200;"
 			name=				"Ship Systems (Degraded)"
+			attributes=			"shipSystems"
 			virtual=			"true"
 			level=				"1"
 			>
@@ -129,6 +133,7 @@
 
 	<ItemType UNID="&vtShipSystems250;"
 			name=				"Ship Systems (Damaged)"
+			attributes=			"shipSystems"
 			virtual=			"true"
 			level=				"1"
 			>
@@ -149,6 +154,7 @@
 
 	<ItemType UNID="&vtShipSystems300;"
 			name=				"Ship Systems (Broken)"
+			attributes=			"shipSystems"
 			virtual=			"true"
 			level=				"1"
 			>
@@ -169,6 +175,7 @@
 
 	<ItemType UNID="&vtShipSystems500;"
 			name=				"Ship Systems (Failing)"
+			attributes=			"shipSystems"
 			virtual=			"true"
 			level=				"1"
 			>
