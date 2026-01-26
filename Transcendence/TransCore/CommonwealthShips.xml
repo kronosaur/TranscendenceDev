@@ -90,7 +90,8 @@
 				regions such as the Ungoverned Territories.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				The Borer is a dedicated miner for the budget market. It is not
+				particularly capable in other roles, but it can mine for cheap.
 			</Text>
 		</Language>
 
@@ -182,7 +183,9 @@
 				completing low-volume last-leg deliveries.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				The EI100 might have been a fast and innovative freighter when
+				it was introduced, but today it is seen as a slow entry-level
+				budget freighter.
 			</Text>
 		</Language>
 		
@@ -322,7 +325,8 @@
 				likes to imply with their marketing.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				The saphire has modest capabilities in its stock configuration,
+				but it offers a flexible hull for after-market customization.
 			</Text>
 		</Language>
 		
@@ -418,7 +422,9 @@
 				from opportunistic pirates and raiders.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				The EI200 is a capable, if aging, freighter design. It
+				has respectable defensive options and cargo capacity
+				for its price point.
 			</Text>
 		</Language>
 		
@@ -513,7 +519,9 @@
 				ship like an Earthzone.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				The Meteor is a kit-built armed shuttle that meets the bare minimum
+				capabilities for being able to traverse dangerous un-patrolled
+				interplanetary space.
 			</Text>
 		</Language>
 		
@@ -606,7 +614,8 @@
 				fight off Sung raiders.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				The Asterion is a particularly durable heavy gunship with the
+				option for significant armor and can mount flexible equipment.
 			</Text>
 		</Language>
 		
@@ -698,7 +707,9 @@
 				focus on being a rugged no-frills design.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				This upgraded Borer might be more capable, but it is still a
+				cost-effective dedicated miner with limited speed and
+				maneuverability.
 			</Text>
 		</Language>
 		
@@ -836,7 +847,8 @@
 				the EI500.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				EI500 freighters are modern and relatively fast freighters, though they
+				have a fairly limited number options for weapons.
 			</Text>
 		</Language>
 
@@ -1031,7 +1043,8 @@
 				designed for, often at a significant price.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				Fast, nimble, and dangerous, the Wolfen/C focuses on extreme speed
+				and significant options for firepower.
 			</Text>
 		</Language>
 		
@@ -1195,7 +1208,8 @@
 				Drakes.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				The EI7000 is a modern, heavy and well defended freighter that can often
+				fend off all but the most dedicated of pirate attacks.
 			</Text>
 		</Language>
 
@@ -1288,7 +1302,7 @@
 				any off-the-shelf selection that is locally available.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				The Archer-class is a cheap entry-level gunship.
 			</Text>
 		</Language>
 		
@@ -1383,7 +1397,7 @@
 		<Language>
 			<Text id="core.desc">
 				The Armstrong-class transport is NAMI's dedicated freighter
-				entry within their "Spage-age" ship series. NAMI opted to
+				entry within their "Space-age" ship series. NAMI opted to
 				diversify their offerings by mixing in a variety of ship
 				classes and roles under the same branding group to avoid a
 				repeat of the marketing fiasco that the "Metropolis" series
@@ -1396,7 +1410,9 @@
 				and passengers.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				The Armstrong-class is NAMI's competitor to the EI500. It is
+				a freighter with similar capacity, but it improves on its
+				flexibility, offering more space for equipment and weapons.
 			</Text>
 		</Language>
 		
@@ -1488,7 +1504,8 @@
 				and get some of the valuable ores in the area.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				The Borer III improves upon the capabilities of its predecessors
+				but it is still a slow, dedicated miner.
 			</Text>
 		</Language>
 		
@@ -1619,7 +1636,8 @@
 				to allow the crew to see around the shades.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				The Elixer is a large and versatile ship with significant options
+				for expansion.
 			</Text>
 		</Language>
 		
@@ -1750,7 +1768,9 @@
 				gunships they support.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				Scarab-class superfreighters are capable if slow haulers. Despite their
+				heavy construction, Scarabs tend to be slow enough that they need
+				significant protection.
 			</Text>
 		</Language>
 		
@@ -1849,7 +1869,8 @@
 				heavy gunship.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				Despite its origins the modern Buffalo is a competent well-rounded
+				heavy gunship.
 			</Text>
 		</Language>
 		
@@ -2064,7 +2085,7 @@
 				forces for sales instead.
 			</Text>
 			<Text id="core.descPlayer">
-				Short gameplay description here
+				The Manticore is a hard-hitting gunship that prioritizes offense
 			</Text>
 		</Language>
 		
