@@ -133,13 +133,17 @@ Collection and Extension folders. To do this:
 
 1. Create a folder `Collection` in `TranscendenceDev/Transcendence/Game`
 2. Create a folder `Extensions` in `TranscendenceDev/Transcendence/Game`
-3. Create a shortcut inside `TranscendenceDev/Transcendence/Game/Collection` to
+3. Create a symlink inside `TranscendenceDev/Transcendence/Game/Collection` to
 the `Collection` folder of the existing Transcendence installation
-4. Create a shortcut inside `TranscendenceDev/Transcendence/Game/Extensions` to
+    * `mklink /D "{location of repo}/TranscendenceDev/Transcendence/Game/Collection/ExternalCollection" "{location of external transcendence}/Transcendence/Collection"`
+        * Replace the text in `{}` with appropriate file paths.
+        * An admin cmd prompt should not be necessary unless the folder permissions require it.
+4. Create a symlink inside `TranscendenceDev/Transcendence/Game/Extensions` to
 the `Extensions` folder of the existing Transcendence installation
+    * `mklink /D "{location of repo}/TranscendenceDev/Transcendence/Game/Extensions/ExternalExtensions" "{location of external transcendence}/Transcendence/Extensions"`
 
 Notes:
-* For windows even a basic `.lnk` shortcut will work. It is not mandatory to symlink or hardlink the directory
+* For windows a basic `.lnk` shortcut is not yet supported.
 * This has not been tested on Linux but it should still work
 * If the game says that the API version of the Transcendence Universe is too high you need
     to download a new copy of TranscendenceNext.zip and follow the setup instructions again
