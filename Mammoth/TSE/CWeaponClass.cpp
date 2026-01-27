@@ -3708,7 +3708,7 @@ CString GetReferenceFireRate (int iFireRate)
 	if (iFireRate <= 0)
 		return NULL_STR;
 
-	return strPatternSubst(CONSTLIT(" %s"), CLanguage::ComposeNumber(CLanguage::numberFireRate, iFireRate));
+	return strPatternSubst(CONSTLIT("  %s"), CLanguage::ComposeNumber(CLanguage::numberFireRate, iFireRate));
 	}
 
 bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const
@@ -3762,7 +3762,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 			|| (pRootShot != pShot && bDisplayFragmentRadius));
 		CString sRange;
 		if (!bRemoveRadius)
-			sRange = iRange ? strPatternSubst(CONSTLIT(" %d ls range"), iRange) : CONSTLIT("");
+			sRange = iRange ? strPatternSubst(CONSTLIT("  %d ls range"), iRange) : CONSTLIT("");
 
 		//	Modify the damage based on any enhancements that the ship may have
 
@@ -3787,7 +3787,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 			if (bRemoveRadius)
 				{
 				iRange = max(iRange - iRadius, 0);
-				sRange = iRange ? strPatternSubst(CONSTLIT(" %d ls range"), iRange) : CONSTLIT("");
+				sRange = iRange ? strPatternSubst(CONSTLIT("  %d ls range"), iRange) : CONSTLIT("");
 				}
 
 			//	Compute result
@@ -3802,7 +3802,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 			int iDPSTenth = iDPS10 % 10;
 			CString sDPS = iDPSTenth ? strPatternSubst(CONSTLIT("%d.%d"), iDPS, iDPSTenth) : strPatternSubst(CONSTLIT("%d"), iDPS);
 
-			sReference = strPatternSubst(CONSTLIT("%s shockwave %s hp/sec (%s hp/shot) %d ls radius%s%s"), GetDamageShortName(Damage.GetDamageType()), sDPS, sDamage, iRadius, sRange, sFireRate);
+			sReference = strPatternSubst(CONSTLIT("%s shockwave %s hp/sec (%s hp/shot)  %d ls radius%s%s"), GetDamageShortName(Damage.GetDamageType()), sDPS, sDamage, iRadius, sRange, sFireRate);
 			}
 
 		//	For area weapons...
@@ -3819,10 +3819,10 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 			if (bRemoveRadius)
 				{
 				iRange = max(iRange - iRadius, 0);
-				sRange = iRange ? strPatternSubst(CONSTLIT(" %d ls range"), iRange) : CONSTLIT("");
+				sRange = iRange ? strPatternSubst(CONSTLIT("  %d ls range"), iRange) : CONSTLIT("");
 				}
 
-			sReference = strPatternSubst(CONSTLIT("%s (%s/shot) %d ls radius%s%s"), sDPS, sDamage, iRadius, sRange, sFireRate);
+			sReference = strPatternSubst(CONSTLIT("%s (%s/shot)  %d ls radius%s%s"), sDPS, sDamage, iRadius, sRange, sFireRate);
 			}
 
 		//	For particles...
@@ -3872,7 +3872,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 			if (bRemoveRadius)
 				{
 				iRange = max(iRange - iRadius, 0);
-				sRange = iRange ? strPatternSubst(CONSTLIT(" %d ls range"), iRange) : CONSTLIT("");
+				sRange = iRange ? strPatternSubst(CONSTLIT("  %d ls range"), iRange) : CONSTLIT("");
 				}
 
 			//	Compute result
@@ -3887,7 +3887,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 			int iDPSTenth = iDPS10 % 10;
 			CString sDPS = iDPSTenth ? strPatternSubst(CONSTLIT("%d.%d"), iDPS, iDPSTenth) : strPatternSubst(CONSTLIT("%d"), iDPS);
 
-			sReference = strPatternSubst(CONSTLIT("%s fragmentation %s hp/sec (%s hp/shot) %d ls radius%s%s"), GetDamageShortName(Damage.GetDamageType()), sDPS, sDamage, iRadius, sRange, sFireRate);
+			sReference = strPatternSubst(CONSTLIT("%s fragmentation %s hp/sec (%s hp/shot)  %d ls radius%s%s"), GetDamageShortName(Damage.GetDamageType()), sDPS, sDamage, iRadius, sRange, sFireRate);
 			}
 
 		//	Otherwise, a normal description
