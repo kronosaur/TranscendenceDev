@@ -74,7 +74,7 @@ AICombatStyle CAISettings::ConvertToAICombatStyle (const CString &sValue)
 	else if (strEquals(sValue, COMBAT_STYLE_NO_RETREAT))
 		return AICombatStyle::NoRetreat;
 	else if (strEquals(sValue, COMBAT_STYLE_STANDARD))
-		return AICombatStyle::StandOff;
+		return AICombatStyle::Standard;
 	else if (strEquals(sValue, COMBAT_STYLE_STAND_OFF))
 		return AICombatStyle::StandOff;
 	else

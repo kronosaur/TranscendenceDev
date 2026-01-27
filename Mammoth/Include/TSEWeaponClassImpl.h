@@ -355,7 +355,7 @@ class CWeaponClass : public CDeviceClass
 		CConfigurationDesc m_Configuration;		//	Shot configuration
 
 		int m_iContinuous = 0;					//	Repeat fire
-		Metric m_rContinuousFireDelay = 0;			//	Delay between shots
+		Metric m_rContinuousFireDelay = 0;		//	Delay between shots in simulation seconds
 		bool m_bContinuousConsumePerShot;		//	If a continuous weapon, consume ammunition for every shot in burst
 		bool m_bBurstTracksTargets;				//  If the weapon is continuous, whether or not to track the target during the entire burst
 

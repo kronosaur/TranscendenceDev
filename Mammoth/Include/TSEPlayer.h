@@ -213,6 +213,7 @@ class IPlayerController
 		virtual ICCItem *CreateGlobalRef (CCodeChain &CC) { return CC.CreateInteger((int)this); }
         virtual CPlayerGameStats *GetGameStats (void) const { return NULL; }
 		virtual GenomeTypes GetGenome (void) const { return genomeUnknown; }
+		virtual DWORD GetLastWarningTick () const { return 0; }
 		virtual CString GetName (void) const { return NULL_STR; }
 		virtual bool GetPropertyInteger (const CString &sProperty, int *retiValue) { return false; }
 		virtual bool GetPropertyItemList (const CString &sProperty, CItemList *retItemList) { return false; }
@@ -220,6 +221,7 @@ class IPlayerController
 		virtual CSovereign *GetSovereign (void) const;
 		virtual EUIMode GetUIMode (void) const { return uimodeUnknown; }
 		virtual void OnMessageFromObj (const CSpaceObject *pSender, const CString &sMessage) { }
+		virtual void SetLastWarningTick (DWORD dwTick) { }
 		virtual bool SetPropertyInteger (const CString &sProperty, int iValue) { return false; }
 		virtual bool SetPropertyItemList (const CString &sProperty, const CItemList &ItemList) { return false; }
 		virtual bool SetPropertyString (const CString &sProperty, const CString &sValue) { return false; }

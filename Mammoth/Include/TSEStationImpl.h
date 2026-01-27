@@ -176,6 +176,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual int GetPlanetarySize (void) const override { return (GetScale() == scaleWorld ? m_pType->GetSize() : 0); }
 		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const override;
 		virtual IShipGenerator *GetRandomEncounterTable (int *retiFrequency = NULL) const override;
+		virtual int GetRelativeHealth () const override;
 		virtual int GetRotation (void) const override;
 		virtual ScaleTypes GetScale (void) const override { return m_Scale; }
 		virtual CXMLElement *GetScreen (const CString &sName) override { return m_pType->GetScreen(sName); }

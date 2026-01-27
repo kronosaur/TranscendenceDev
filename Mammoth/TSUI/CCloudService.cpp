@@ -242,11 +242,9 @@ ALERROR CCloudService::InitFromXML (CHumanInterface &HI, CXMLElement *pDesc, boo
 	//	Get the list of default services
 
 	CHexarcServiceFactory HexarcService;
-	CXelerusServiceFactory XelerusService;
 
 	TArray<ICIServiceFactory *> AllServices;
 	AllServices.Insert(&HexarcService);
-	AllServices.Insert(&XelerusService);
 
 	//	If we don't have any settings, then we use defaults and save out
 

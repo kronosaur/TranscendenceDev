@@ -88,7 +88,7 @@ class CPhysicsForceResolver
 		struct SForceDesc
 			{
 			CSpaceObject *pObj = NULL;
-			CVector vForce;						//	Absolute acceleration
+			CVector vForce;						//	Force to apply
 			CVector vLimitedForce;				//	Accelerate only if below max speed.
 			Metric rDragFactor = 1.0;			//	Final velocity gets multiplied by this.
 			};
