@@ -1005,6 +1005,16 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //						are available
 //					Fires only on new games, or when loading into the  main menu
 //					Fires BEFORE <onGlobalTypesBound>
+//		<ShipClass>
+//			<Language>
+//				<... id="core.descLore">
+//					This field is the default field for lore/encyclopedia entries
+//					Ex, when viewing an in-game encyclopedia/codex
+//					core.desc or playerDesc="" are used as fallbacks (in that order)
+//				<... id="core.desc">
+//					This field is the default field for gameplay entries
+//					Ex, during ship selection
+//					playerDesc="" or core.descLore are used as fallbacks (in that order)
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
