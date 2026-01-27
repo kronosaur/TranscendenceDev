@@ -522,9 +522,6 @@ ALERROR CTranscendenceController::OnBoot (char *pszCommandLine, SHIOptions *retO
 #else
 	CHexarcServiceFactory HexarcService;
 	m_Service.AddService(HexarcService.Create(m_HI));
-
-	CXelerusServiceFactory XelerusService;
-	m_Service.AddService(XelerusService.Create(m_HI));
 #endif
 
 	//	Load the settings from a file

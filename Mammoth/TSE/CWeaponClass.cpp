@@ -2255,7 +2255,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_POWER))
 		*retsValue = strFromInt(m_iPowerUse * 100);
 	else if (strEquals(sField, FIELD_POWER_PER_SHOT))
-		*retsValue = strFromInt(mathRound(((Metric)GetFireDelay(*pShot) * (Metric)m_iPowerUse * g_SecondsPerUpdate * 1000.0) / 600.0));
+		*retsValue = strFromInt(mathRound(((Metric)GetFireDelay(*pShot) * (Metric)m_iPowerUse * 1000.0) / 600.0));
 	else if (strEquals(sField, FIELD_BALANCE))
 		{
 		SBalance Balance;

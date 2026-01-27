@@ -789,12 +789,21 @@ class CTranscendencePlayer : public IPlayerController
 		virtual ICCItem *CreateGlobalRef (CCodeChain &CC) override { return CC.CreateInteger((int)m_pPlayer); }
 		virtual CPlayerGameStats *GetGameStats (void) const override { return &m_pPlayer->GetGameStats(); }
 		virtual GenomeTypes GetGenome (void) const override;
+		virtual DWORD GetLastWarningTick () const override { return m_EphemeralState.dwLastWarningTick; };
 		virtual CString GetName (void) const override;
 		virtual EUIMode GetUIMode (void) const override;
 		virtual void OnMessageFromObj (const CSpaceObject *pSender, const CString &sMessage) override;
+		virtual void SetLastWarningTick (DWORD dwTick) override { m_EphemeralState.dwLastWarningTick = dwTick; };
 
 	private:
+
+		struct SEphemeralPlayerState
+			{
+			DWORD dwLastWarningTick = 0;	//	Last tick on which an audio warning has played
+			};
+
 		CPlayerShipController *m_pPlayer;
+		SEphemeralPlayerState m_EphemeralState;
 	};
 
 class CTranscendenceModel
