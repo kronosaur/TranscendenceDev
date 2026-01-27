@@ -637,7 +637,7 @@ class CInstalledDevice
 		bool IsOnUsedLastAmmoFlagSet (void) const { return (m_fOnUsedLastAmmo ? true : false); }
 		bool IsOptimized (void) const { return m_fOptimized; }
 		bool IsOverdrive (void) const { return m_fOverdrive; }
-		bool IsReady (void) const { return (m_rRemainingActivationDelay < 1.0 && !m_iContinuousShotsRemaining); }
+		bool IsReady (void) const { return (m_rRemainingActivationDelay < g_SecondsPerUpdate && !m_iContinuousShotsRemaining); }
 		bool IsRegenerating (void) const { return (m_fRegenerating ? true : false); }
 		bool IsTriggered (void) const { return (m_fTriggered ? true : false); }
 		bool IsWorking (void) const { return (IsEnabled() && !IsDamaged() && !IsDisrupted()); }
@@ -827,5 +827,5 @@ class CInstalledDevice
 		DWORD m_dwSpare2:3;
 
 		Metric m_rActivateDelay = 0.0;				// Cached activation delay
-		Metric m_rRemainingActivationDelay = 0.0;	// True remaining time until next activation (used for mid-tick interpolation start).
+		Metric m_rRemainingActivationDelay = 0.0;	// True remaining time (in simulation seconds) until next activation (used for mid-tick interpolation start).
 	};
