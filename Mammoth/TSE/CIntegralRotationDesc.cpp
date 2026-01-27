@@ -41,22 +41,22 @@ int CIntegralRotationDesc::CalcFinalRotationFrame (int iRotationFrame, int iRota
 	return iRotationFrame;
 	}
 
-int CIntegralRotationDesc::GetManeuverDelay (void) const
-
 //	GetManeuverDelay
 //
 //	For compatibility we convert from our internal units to old style 
 //	maneuverability (ticks per rotation angle)
+//
+int CIntegralRotationDesc::GetManeuverDelay () const
 
 	{
 	return (m_iMaxRotationRate > 0 ? (int)(ROTATION_FRACTION / m_iMaxRotationRate) : 0);
 	}
 
-Metric CIntegralRotationDesc::GetMaxRotationSpeedDegrees (void) const
-
 //	GetMaxRotationSpeedDegrees
 //
 //	Returns the max speed in degrees per tick.
+//
+Metric CIntegralRotationDesc::GetMaxRotationSpeedDegrees () const
 
 	{
 	if (m_iCount == 0)
@@ -65,11 +65,47 @@ Metric CIntegralRotationDesc::GetMaxRotationSpeedDegrees (void) const
 	return 360.0 * m_iMaxRotationRate / (ROTATION_FRACTION * m_iCount); 
 	}
 
-void CIntegralRotationDesc::Init (int iFrameCount, Metric rMaxRotation, Metric rAccel, Metric rAccelStop)
+//	GetRotationAccelDegrees
+//
+//	Returns the max rotation accel in degrees per tick^2.
+//
+Metric CIntegralRotationDesc::GetRotationAccelDegrees () const
+	{
+	if (m_iCount == 0)
+		return 0.0;
+
+	return 360.0 * m_iRotationAccel / (ROTATION_FRACTION * m_iCount); 
+	}
+
+//	GetRotationAccelStopDegrees
+//
+//	Returns the max rotation deccel in degrees per tick^2.
+//
+Metric CIntegralRotationDesc::GetRotationAccelStopDegrees () const
+	{
+	if (m_iCount == 0)
+		return 0.0;
+
+	return 360.0 * m_iRotationAccelStop / (ROTATION_FRACTION * m_iCount); 
+	}
+
+//	GetRotationResponsivenessDegrees
+//
+//	Returns the max possible change in rotation over a tick in degrees
+//
+Metric CIntegralRotationDesc::GetRotationResponsivenessDegrees () const
+	{
+	if (m_iCount == 0)
+		return 0.0;
+
+	return min(GetMaxRotationSpeedDegrees(), min(GetRotationAccelDegrees(), GetRotationAccelStopDegrees()));
+	}
 
 //	Init
 //
 //	Initialize from constants
+//
+void CIntegralRotationDesc::Init (int iFrameCount, Metric rMaxRotation, Metric rAccel, Metric rAccelStop)
 
 	{
 	m_iCount = iFrameCount;
