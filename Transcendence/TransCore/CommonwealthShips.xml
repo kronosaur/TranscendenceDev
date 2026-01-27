@@ -76,7 +76,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				Borer-class miners are a common sight across the New Beyond and
 				Near Stars. Although they are slow and limited in flight
 				capabilities, the Borer-class has established a reputation as a 
@@ -169,7 +169,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				When the EI100 was first introduced in the late
 				2100s, it was a fast and affordable transport
 				able to quickly make interplanetary trips between
@@ -306,7 +306,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				Zubrin's Sapphire-class is a small and sporty ship,
 				often being compared to planet-bound vintage sports
 				cars. The compact interior comes with a selection
@@ -396,7 +396,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				When the EI200 was introduced in 2205, coming out of
 				Earth Industries' then-new Theia Shipyards in Othrys,
 				it was heralded as a revolutionary new freighter that
@@ -490,7 +490,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				For budding DIY shipbuilding enthusiasts, the Meteor is usually
 				one of the first stops along their journey. The components of
 				the Meteor have been specifically optimized over the years by
@@ -582,7 +582,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				The Asterion is well receieved among militias and
 				mercenaries alike for its durable design and reasonable
 				speed. NAMI offers the ship in a variety of configurations
@@ -669,7 +669,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				After the Syrtis war, the UAS developed this upgraded version
 				of their venerable Borer class ships to enable prospecting for
 				valuable materials in more dangerous regions of space as part
@@ -799,7 +799,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				EI developed the EI500 as the new entry level freighter in the
 				EI-series, releasing it in 2376 to replace the EI300 as their
 				flagship light freighter. Unlike their previous light freighter,
@@ -991,7 +991,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				The Wolfen series was originally designed by Pacific Defense
 				to act as fighters for the Commonwealth's aging but still nimble
 				fleet carriers. However, with the Fleet's 2350s shift towards bulk
@@ -1155,7 +1155,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				EI introduced the EI7000 in 2389 to compliment the EI500's generation
 				of EI-series freighters with a powerful and well-defended heavy freighter
 				for transporting high value cargo. Since then, the EI7000 has become a
@@ -1244,7 +1244,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				The Archer-class came about as a result of commonwealth citizens
 				combining opensource component designs from Revolution Designs
 				and Frontier Industrial. With the design being completely open,
@@ -1348,7 +1348,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				The Armstrong-class transport is NAMI's dedicated freighter
 				entry within their "Spage-age" ship series. NAMI opted to
 				diversify their offerings by mixing in a variety of ship
@@ -1441,7 +1441,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				To meet growing demand for mining equipment that can tackle
 				hard to mine materials in and around the Outer Realm, the
 				UAS introduced the Borer III-class miner in 2332.
@@ -1568,7 +1568,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				The Elixer is Zubrin's top of the line offering in both luxury
 				and spacious onboard accomodations. Unlike the Sapphire, the
 				Elixer is designed with extended onboard living as its top
@@ -1695,7 +1695,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				The Scarab-class of multipurpose superfreighters were designed
 				by NAMI in 2332 as no-frills haulers with swappable modules for
 				carrying either fluid cargo or bulk ore.
@@ -1787,7 +1787,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				Unlike most improvised ship designs, the Buffalo pattern has
 				its roots in an official NAMI design. During the early 2100s era
 				colonization wave, NAMI introduced humanity's first fusion-powered
@@ -1995,7 +1995,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				The Manticore class was originally in development for the
 				Commonwealth Fleet in the 2360s as a new heavy gunship, but
 				when the Ares began fielding Commetfalls in 2372 and brought
