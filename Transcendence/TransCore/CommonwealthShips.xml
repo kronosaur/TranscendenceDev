@@ -129,7 +129,7 @@
 		<!-- Text -->
 		
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				The Antares I was one of the first ships built at Makayev-Energia's
 				Polyarny Shipyards in 2269 following the end of the Syrtis War.
 
@@ -138,7 +138,7 @@
 				day as a cheap and simple to operate heavy freighter in low threat
 				regions of space.
 			</Text>
-			<Text id="core.descPlayer">
+			<Text id="core.desc">
 				The Antares I is an entry-level heavy freighter with few
 				capabilities beyond carrying a lot of bulk cargo on a
 				budget.
@@ -605,7 +605,7 @@
 		<!-- Text -->
 
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				In the decades following the Syrtis war, various threats such as pirates
 				and commerce raiders of various factions were threatening the commerce
 				and logistics of the commonwealth's vast network of colonies.
@@ -618,7 +618,7 @@
 				of the Antares II, sporting improved armor and an additional turreted weapon
 				slot.
 			</Text>
-			<Text id="core.descPlayer">
+			<Text id="core.desc">
 				Antares II-class heavy freighters are much better defended from
 				attackers than the Antares I with their additional weapons and
 				support for heavier armor.
@@ -1312,7 +1312,7 @@
 			/>
 
 		<Language>
-			<Text id="core.desc">
+			<Text id="core.descLore">
 				The Antares V was originally introduced in 2343 as a logistics transport for
 				the Commonwealth Fleet. When released to the wider market, it saw much greater
 				success than Makayev-Energia's previous attempts at stretching the Antares
@@ -1322,7 +1322,7 @@
 				than a stretched Antares I - but incorporated the improved armor and weapon mounts
 				of the Antares II at the behest of the Commonwealth Fleet.
 			</Text>
-			<Text id="core.descPlayer">
+			<Text id="core.desc">
 				The Antares V superfreighter strikes a balance between supporting
 				tough armor and enough weaponry to deter attackers.
 			</Text>
