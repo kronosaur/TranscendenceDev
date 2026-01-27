@@ -60,10 +60,10 @@
 				deviceSlots=	"0"
 				>
 			<EnhancementAbilities>
-				<Enhance type=			"&vtShipSystems100;"
-						 criteria=		"w"
-						 enhancement=	"+speed:100;"
-						 />
+				<!--
+					we dont actually buff/debuff anything
+					this is just here so criteria works correctly
+				-->
 			</EnhancementAbilities>
 		</MiscellaneousDevice>
 	</ItemType>
@@ -83,7 +83,7 @@
 			<EnhancementAbilities>
 				<Enhance type=			"&vtShipSystems125;"
 						 criteria=		"w"
-						 enhancement=	"+speed:125;"
+						 enhancement=	"-speed:125;"
 						 />
 			</EnhancementAbilities>
 		</MiscellaneousDevice>
@@ -104,7 +104,7 @@
 			<EnhancementAbilities>
 				<Enhance type=			"&vtShipSystems150;"
 						 criteria=		"w"
-						 enhancement=	"+speed:150;"
+						 enhancement=	"-speed:150;"
 						 />
 			</EnhancementAbilities>
 		</MiscellaneousDevice>
@@ -125,7 +125,7 @@
 			<EnhancementAbilities>
 				<Enhance type=			"&vtShipSystems200;"
 						 criteria=		"w"
-						 enhancement=	"+speed:200;"
+						 enhancement=	"-speed:200;"
 						 />
 			</EnhancementAbilities>
 		</MiscellaneousDevice>
@@ -146,7 +146,7 @@
 			<EnhancementAbilities>
 				<Enhance type=			"&vtShipSystems250;"
 						 criteria=		"w"
-						 enhancement=	"+speed:250;"
+						 enhancement=	"-speed:250;"
 						 />
 			</EnhancementAbilities>
 		</MiscellaneousDevice>
@@ -167,7 +167,7 @@
 			<EnhancementAbilities>
 				<Enhance type=			"&vtShipSystems300;"
 						 criteria=		"w"
-						 enhancement=	"+speed:300;"
+						 enhancement=	"-speed:300;"
 						 />
 			</EnhancementAbilities>
 		</MiscellaneousDevice>
@@ -188,7 +188,7 @@
 			<EnhancementAbilities>
 				<Enhance type=			"&vtShipSystems500;"
 						 criteria=		"w"
-						 enhancement=	"+speed:500;"
+						 enhancement=	"-speed:500;"
 						 />
 			</EnhancementAbilities>
 		</MiscellaneousDevice>
