@@ -18,14 +18,14 @@
 //	Ship Class: A lore description of the ship class, for codex/encyclopedia
 //	screens
 //
-#define LANGID_CORE_DESC						CONSTLIT("core.desc")
+#define LANGID_CORE_DESC_LORE					CONSTLIT("core.descLore")
 
 //	core.descPlayer
 //
 //	Ship Class: A gameplay description of the ship class, usually displayed
 //	when picking a new ship.
 //
-#define LANGID_CORE_DESC_PLAYER					CONSTLIT("core.descPlayer")
+#define LANGID_CORE_DESC_PLAYER					CONSTLIT("core.desc")
 
 //	core.dockingRequestDenied
 //

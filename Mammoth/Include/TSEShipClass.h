@@ -415,7 +415,7 @@ class CShipClass : public CDesignType
 		DWORD GetDefaultBkgnd (void) const { return m_dwDefaultBkgnd; }
 		CDesignType *GetDefaultEventHandler (void) const { return m_EventHandler; }
 		CSovereign *GetDefaultSovereign (void) const { return m_pDefaultSovereign; }
-		CString GetDesc () const;
+		CString GetDescLore () const;
 		CString GetDescPlayer () const;
 		const IDeviceGenerator &GetDeviceSlots (void) const;
 		const CDockingPorts &GetDockingPorts (void) { return m_DockingPorts; }
