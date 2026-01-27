@@ -13,14 +13,14 @@
 //
 #define LANGID_CORE_CHARGES						CONSTLIT("core.charges")
 
-//	core.desc
+//	core.descLore
 //
 //	Ship Class: A lore description of the ship class, for codex/encyclopedia
 //	screens
 //
 #define LANGID_CORE_DESC_LORE					CONSTLIT("core.descLore")
 
-//	core.descPlayer
+//	core.desc
 //
 //	Ship Class: A gameplay description of the ship class, usually displayed
 //	when picking a new ship.
