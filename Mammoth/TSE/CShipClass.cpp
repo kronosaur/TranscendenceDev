@@ -110,7 +110,7 @@
 #define FIELD_COMBAT_STD						CONSTLIT("combatStd")				//	Standard combat value for the ship level
 #define FIELD_COMBAT_STRENGTH					CONSTLIT("combatStrength")			//	value reflecting combat power (attack and defense)
 #define FIELD_DAMAGE_RATE						CONSTLIT("damage")					//	damage per 180 ticks
-#define FIELD_DESC_LORE							CONSTLIT("loreDesc")
+#define FIELD_DESC_LORE							CONSTLIT("coreDescLore")
 #define FIELD_DESC_PLAYER						CONSTLIT("coreDesc")
 #define FIELD_DEFENSE_RATE						CONSTLIT("defenseStrength")			//	value reflecting difficulty killing
 #define FIELD_DEVICE_SLOTS						CONSTLIT("deviceSlots")
