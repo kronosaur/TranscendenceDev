@@ -2047,7 +2047,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	//	Note to future maintainers: This is not a bug or an incorrect default, this is actually how the legacy version worked
 
 	if (pWeapon->m_rContinuousFireDelay < 0.0)
-		pWeapon->m_rContinuousFireDelay = 2.0 + pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_ATTRIB, 1.0, -1.0, 1.0);
+		pWeapon->m_rContinuousFireDelay = STD_SECONDS_PER_UPDATE + pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_ATTRIB, 0.0, -1.0, 0.0);
 
 	//	Warn if someone tried using adv repeating delay in an old api version
 
@@ -2248,7 +2248,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_POWER))
 		*retsValue = strFromInt(m_iPowerUse * 100);
 	else if (strEquals(sField, FIELD_POWER_PER_SHOT))
-		*retsValue = strFromInt(mathRound(((Metric)GetFireDelay(*pShot) * (Metric)m_iPowerUse * g_SecondsPerUpdate * 1000.0) / 600.0));
+		*retsValue = strFromInt(mathRound(((Metric)GetFireDelay(*pShot) * (Metric)m_iPowerUse * 1000.0) / 600.0));
 	else if (strEquals(sField, FIELD_BALANCE))
 		{
 		SBalance Balance;
