@@ -138,6 +138,11 @@
 				day as a cheap and simple to operate heavy freighter in low threat
 				regions of space.
 			</Text>
+			<Text id="core.descPlayer">
+				The Antares I is an entry-level heavy freighter with few
+				capabilities beyond carrying a lot of bulk cargo on a
+				budget.
+			</Text>
 		</Language>
 	</ShipClass>
 
@@ -612,6 +617,11 @@
 				Using improved technologies, Makayev-Energia provided an answer in the form
 				of the Antares II, sporting improved armor and an additional turreted weapon
 				slot.
+			</Text>
+			<Text id="core.descPlayer">
+				Antares II-class heavy freighters are much better defended from
+				attackers than the Antares I with their additional weapons and
+				support for heavier armor.
 			</Text>
 		</Language>
 	</ShipClass>
@@ -1303,14 +1313,18 @@
 
 		<Language>
 			<Text id="core.desc">
-			The Antares V was originally introduced in 2343 as a logistics transport for
-			the Commonwealth Fleet. When released to the wider market, it saw much greater
-			success than Makayev-Energia's previous attempts at stretching the Antares
-			series, as it was much more capable of independent operation.
+				The Antares V was originally introduced in 2343 as a logistics transport for
+				the Commonwealth Fleet. When released to the wider market, it saw much greater
+				success than Makayev-Energia's previous attempts at stretching the Antares
+				series, as it was much more capable of independent operation.
 
-			To save on development time, its hull was based on the Antares III - itself little more
-			than a stretched Antares I - but incorporated the improved armor and weapon mounts
-			of the Antares II at the behest of the Commonwealth Fleet.
+				To save on development time, its hull was based on the Antares III - itself little more
+				than a stretched Antares I - but incorporated the improved armor and weapon mounts
+				of the Antares II at the behest of the Commonwealth Fleet.
+			</Text>
+			<Text id="core.descPlayer">
+				The Antares V superfreighter strikes a balance between supporting
+				tough armor and enough weaponry to deter attackers.
 			</Text>
 		</Language>
 	</ShipClass>
