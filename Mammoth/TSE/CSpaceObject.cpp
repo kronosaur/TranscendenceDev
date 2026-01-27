@@ -5172,10 +5172,10 @@ CSpaceObject* CSpaceObject::HitTestProximity(
 
 				//	Check if we are already collided (ex, someone dropped a mine on top of a station)
 
-				if (pTarget->PointInBounds(GetPos()))
+				if (pObj->PointInBounds(GetPos()))
 					{
 					SPointInObjectCtx PiOCtx;
-					pTarget->PointInObjectInit(PiOCtx);
+					pObj->PointInObjectInit(PiOCtx);
 
 					if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vStart))
 						{
