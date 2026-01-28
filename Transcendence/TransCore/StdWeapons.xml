@@ -174,7 +174,7 @@
 
 				damage=				"laser:1d6"
 				fireRate=			"10"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"20"
 
 				effect=				"&efLaserBeamDefault;"
@@ -257,7 +257,7 @@
 				configuration=		"dual"
 				damage=				"laser:1d4"
 				fireRate=			"10"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"30"
 
 				effect=				"&efLaserBeamDefault;"
@@ -288,7 +288,7 @@
 
 				damage=				"laser:1d4"
 				fireRate=			"6"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"30"
 
 				effect=				"&efLaserBeamDefault;"
@@ -426,7 +426,7 @@
 
 				damage=				"laser:1d4"
 				fireRate=			"10"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"60"
 
 				effect=				"&efLaserBeamDefault;"
@@ -496,7 +496,7 @@
 				omnidirectional=	"true"
 				damage=				"laser:1d4"
 				fireRate=			"10"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"30"
 
 				effect=				"&efLaserBeamDefault;"
@@ -710,7 +710,7 @@
 
 				damage=				"laser:3d4"
 				fireRate=			"12"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"60"
 
 				effect=				"&efLaserBeamDefault;"
@@ -845,7 +845,7 @@
 
 				damage=				"particle:1d8+1"
 				fireRate=			"10"
-				lifetime=			"40"
+				range=				"80"
 				powerUse=			"100"
 
 				effect=				"&efParticleBeamDefault;"
@@ -1029,7 +1029,7 @@
 				configuration=		"dual"
 				damage=				"laser:3d4"
 				fireRate=			"12"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"120"
 
 				effect=				"&efLaserBeamDefault;"
@@ -1061,7 +1061,7 @@
 				omnidirectional=	"true"
 				damage=				"laser:3d4"
 				fireRate=			"16"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"70"
 
 				effect=				"&efLaserBeamDefault;"
@@ -1165,7 +1165,7 @@
 
 				damage=				"ion:4d6; EMP:3"
 				fireRate=			"20"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"200"
 
 				effect=				"&efIonizingBeam;"
@@ -1198,7 +1198,7 @@
 				repeating=			"4"
 				damage=				"particle:1d4+1"
 				fireRate=			"18"
-				lifetime=			"60"
+				range=				"120"
 				powerUse=			"300"
 
 				effect=				"&efParticleBeamDefault;"
@@ -1263,7 +1263,7 @@
 				damage=				"blast:5d12; momentum:3; WMD:4"
 				fireRate=			"40"
 				missileSpeed=		"50"
-				lifetime=			"120"
+				range=				"120"
 				powerUse=			"240"
 				recoil=				"2"
 
@@ -1297,7 +1297,7 @@
 				configuration=		"dual"
 				damage=				"particle:1d8+1"
 				fireRate=			"10"
-				lifetime=			"40"
+				range=				"80"
 				powerUse=			"300"
 
 				effect=				"&efParticleBeamDefault;"
@@ -1329,7 +1329,7 @@
 				omnidirectional=	"true"
 				damage=				"particle:1d8+1"
 				fireRate=			"12"
-				lifetime=			"40"
+				range=				"80"
 				powerUse=			"200"
 
 				effect=				"&efParticleBeamDefault;"
@@ -1361,7 +1361,7 @@
 				configuration=		"alternating"
 				damage=				"particle:2d4"
 				fireRate=			"5"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"200"
 
 				effect=				"&efParticleBeamDefault;"
@@ -1431,7 +1431,7 @@
 				damage=				"blast:4d6; momentum:2; WMD:5"
 				fireRate=			"20"
 				missileSpeed=		"50"
-				lifetime=			"60"
+				range=				"60"
 				powerUse=			"240"
 
 				effect=				"&efSlamCannonShell;"
@@ -1463,7 +1463,7 @@
 				configuration=		"dual"
 				damage=				"laser:8d4"
 				fireRate=			"16"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"200"
 
 				effect=				"&efLaserBeamDefault;"
@@ -1542,7 +1542,7 @@
 			<Missiles>
 				<Missile ammoID="&itDragonflyCartridge;"
 						type=			"missile"
-						lifetime=		"120"
+						range=			"120"
 						damage=			"blast:5d6; momentum:2; WMD:6"
 						missileSpeed=	"50"
 						maneuverRate=	"18"
@@ -1620,7 +1620,7 @@
 				damage=				"blast:8d12; momentum3; WMD4"
 				fireRate=			"40"
 				missileSpeed=		"50"
-				lifetime=			"120"
+				range=				"120"
 				powerUse=			"360"
 				recoil=				"2"
 
@@ -1684,7 +1684,7 @@
 
 				damage=				"particle:5d8"
 				fireRate=			"15"
-				lifetime=			"40"
+				range=				"80"
 				powerUse=			"300"
 
 				effect=				"&efParticleBeamDefault;"
@@ -1718,7 +1718,7 @@
 				configuration=		"alternating"
 				damage=				"particle:3d8+3"
 				fireRate=			"6"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"600"
 
 				effect=				"&efParticleBeamDefault;"
@@ -1749,7 +1749,7 @@
 
 				damage=				"ion:4d6"
 				fireRate=			"10"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"500"
 
 				effect=				"&efEIBlasterBeam;"
@@ -1782,7 +1782,7 @@
 
 				damage=				"ion:4d6-1"
 				fireRate=			"14"
-				lifetime=			"40"
+				range=				"80"
 				passthrough=		"50"
 				powerUse=			"750"
 
@@ -1817,7 +1817,7 @@
 				damage=				"thermo:8d12; momentum:3; WMD:4"
 				fireRate=			"40"
 				missileSpeed=		"50"
-				lifetime=			"120"
+				range=				"120"
 				powerUse=			"600"
 				recoil=				"2"
 
@@ -1881,7 +1881,7 @@
 				configuration=		"dual"
 				damage=				"particle:5d8"
 				fireRate=			"15"
-				lifetime=			"40"
+				range=				"80"
 				powerUse=			"600"
 
 				effect=				"&efParticleBeamDefault;"
@@ -1913,7 +1913,7 @@
 				omnidirectional=	"true"
 				damage=				"particle:5d8"
 				fireRate=			"15"
-				lifetime=			"40"
+				range=				"80"
 				powerUse=			"400"
 
 				effect=				"&efParticleBeamDefault;"
@@ -2086,7 +2086,7 @@
 				damage=				"thermo:11d12; momentum:3; WMD:4"
 				fireRate=			"40"
 				missileSpeed=		"50"
-				lifetime=			"120"
+				range=				"120"
 				powerUse=			"1200"
 				recoil=				"2"
 
@@ -2118,7 +2118,7 @@
 
 				damage=				"ion:11d6"
 				fireRate=			"20"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"1000"
 
 				effect=				"&efEIBlasterBeam;"
@@ -2151,7 +2151,7 @@
 
 				damage=				"ion:1d6+2"
 				fireRate=			"16"
-				lifetime=			"20"
+				range=				"40"
 				powerUse=			"1000"
 
 				effect=				"&efIonBeamDefault;"
@@ -2372,7 +2372,7 @@
 
 				damage=				"ion:24d6"
 				fireRate=			"30"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"1500"
 
 				effect=				"&efEIBlasterBeam;"
@@ -2437,7 +2437,7 @@
 				omnidirectional=	"true"
 				damage=				"ion:11d6"
 				fireRate=			"24"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"2000"
 
 				effect=				"&efEIBlasterBeam;"
@@ -2546,7 +2546,7 @@
 				type=				"beam"
 				damage=				"ion:6d6"
 				fireRate=			"20"
-				lifetime=			"30"
+				range=				"60"
 
 				effect=				"&efIonBeamDefault;"
 				sound=				"&snLaserCannon;"
