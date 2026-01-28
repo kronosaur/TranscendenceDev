@@ -988,7 +988,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //					'metric					10.5 G
 //					'metricFull				10.5 Giga
 //					'metricUnitless			10.5G
-//
+//		<ItemType>
+//			installedItemUsesObjectImage: (bool)
+//				If True:
+//					Display the obj image if installed on an object
+//					Display the item image if not installed
+//				(default: false)
 //		<Type>
 //			<Events>
 //				<onGlobalTypesBound>
