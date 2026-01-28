@@ -1012,6 +1012,16 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //				repeatingShotDelay:
 //					Sets an exact repeating shot delay in simulation seconds
 //					Default: 2.0
+//		<ShipClass>
+//			<Language>
+//				<... id="core.descLore">
+//					This field is the default field for lore/encyclopedia entries
+//					Ex, when viewing an in-game encyclopedia/codex
+//					core.desc or playerDesc="" are used as fallbacks (in that order)
+//				<... id="core.desc">
+//					This field is the default field for gameplay entries
+//					Ex, during ship selection
+//					playerDesc="" or core.descLore are used as fallbacks (in that order)
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------

@@ -136,6 +136,16 @@ void CItemPainter::FormatDisplayAttributes (const CVisualPalette &VI, TArray<SDi
 					rgbTextColor = bNeedTextColor ? VI.GetColor(colorTextDisadvantage) : rgbTextColor;
 					break;
 
+				case attribWarning:
+					rgbBackColor = bNeedBackColor ? VI.GetColor(colorAreaWarning) : rgbBackColor;
+					rgbTextColor = bNeedTextColor ? VI.GetColor(colorTextWarning) : rgbTextColor;
+					break;
+
+				case attribQuest:
+					rgbBackColor = bNeedBackColor ? VI.GetColor(colorAreaQuest) : rgbBackColor;
+					rgbTextColor = bNeedTextColor ? VI.GetColor(colorTextQuest) : rgbTextColor;
+					break;
+
 				default:
 					rgbBackColor = bNeedBackColor ? RGB_MODIFIER_NORMAL_BACKGROUND : rgbBackColor;
 					rgbTextColor = bNeedTextColor ? RGB_MODIFIER_NORMAL_TEXT : rgbTextColor;
