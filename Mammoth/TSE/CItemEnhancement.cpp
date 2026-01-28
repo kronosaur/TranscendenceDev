@@ -2207,8 +2207,17 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 			return ERR_FAIL;
 			}
 		else
+			{
+			if (iValue < 100 && bDisadvantage)
+				kernelDebugLogPattern(CONSTLIT("Warning: -speed:%d enhancement specified, but %d < 100, which is an advantage, not a disadvantage. Did you mean +speed:%d?"), iValue, iValue, iValue);
+			else if (iValue > 100 && !bDisadvantage)
+				kernelDebugLogPattern(CONSTLIT("Warning: +speed:%d enhancement specified, but %d > 100, which is a disadvantage, not an advantage. Did you mean -speed:%d?"), iValue, iValue, iValue);
+			else if (iValue == 100)
+				kernelDebugLogString(CONSTLIT("Warning: +speed:100 enhancement does nothing. Did you intend a different value?"));
+
 			//	LATER: Support min and max delay limits
 			SetModSpeed(iValue);
+			}
 		}
 
 	//	Efficiency
