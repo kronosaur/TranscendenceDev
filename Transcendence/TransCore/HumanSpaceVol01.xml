@@ -928,6 +928,7 @@
 	<!ENTITY scKateMorgentalCruiserArena	"0x0015300B">
 	<!ENTITY baCharonBusterObsolete		"0x0015300C">
 	<!ENTITY scEI200CharonBuster		"0x0015300D">
+	<!ENTITY scHornetStock				"0x0015300E">
 
 	<!ENTITY itDvalinIon9Cannon			"0x00154001">
 	<!ENTITY itDvalinArmor				"0x00154002">
