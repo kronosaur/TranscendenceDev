@@ -1496,6 +1496,14 @@ int CItem::GetApparentLevel (void) const
 	return GetLevel();
 	}
 
+//	GetImage
+// 
+//	Gets the image for this item
+//	If unknown, always get the unknown type
+//	If uses obj image when installed, get object image
+//	Otherwise, get item type image
+//	Returns an empty image array if this item does not have a type
+//
 const CObjectImageArray& CItem::GetImage () const
 	{
 	if (m_pItemType)
@@ -1509,7 +1517,7 @@ const CObjectImageArray& CItem::GetImage () const
 		//	We attempt to get the object image if this item type wants an object image when installed
 		//	If we do not return in this if block, we continue on...
 
-		if (m_pItemType->ShowObjectImageIfInstalled() && IsInstalled())
+		if (m_pItemType->UsesObjectImageIfInstalled() && IsInstalled())
 			{
 			void* pInstalledItem = m_pExtra->m_pInstalled;
 

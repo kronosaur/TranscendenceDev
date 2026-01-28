@@ -134,7 +134,7 @@ class CItemType : public CDesignType
 		void SetShowReference (void) { m_fReference = true; }
 		bool ShowChargesInUseMenu (void) const { return (m_fShowChargesInUseMenu ? true : false); }
 		bool ShowReference (void) const { return (m_fReference ? true : false); }
-		bool ShowObjectImageIfInstalled () const { return m_fUseObjImage ? true : false; }
+		bool UsesObjectImageIfInstalled () const { return m_fUseObjImage ? true : false; }
 
 		//	CDesignType overrides
 		static const CItemType *AsType (const CDesignType *pType) { return ((pType && pType->GetType() == designItemType) ? (CItemType *)pType : NULL); }
