@@ -134,6 +134,7 @@ class CItemType : public CDesignType
 		void SetShowReference (void) { m_fReference = true; }
 		bool ShowChargesInUseMenu (void) const { return (m_fShowChargesInUseMenu ? true : false); }
 		bool ShowReference (void) const { return (m_fReference ? true : false); }
+		bool ShowObjectImageIfInstalled () const { return m_fUseObjImage ? true : false; }
 
 		//	CDesignType overrides
 		static const CItemType *AsType (const CDesignType *pType) { return ((pType && pType->GetType() == designItemType) ? (CItemType *)pType : NULL); }
@@ -252,8 +253,9 @@ class CItemType : public CDesignType
 		DWORD m_fNoSaleIfUsed:1 = false;		//	If TRUE, cannot be sold once it's been used
 		DWORD m_fShowChargesInUseMenu:1 = false;//	If TRUE, the use menu shows charges instead of a count.
 		DWORD m_fUseUndamaged:1 = false;		//	If TRUE, item can only be used if undamaged
+		DWORD m_fUseObjImage:1 = false;			//	If TRUE, item replaces own image with object image if installed on an object
 
-		DWORD m_dwSpare:16;
+		DWORD m_dwSpare:15;
 
 		CString m_sData;						//	Category-specific data
 
