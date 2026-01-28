@@ -845,11 +845,16 @@ int CItemType::GetFrequencyByLevel (int iLevel)
 		}
 	}
 
-const CObjectImageArray &CItemType::GetImage (bool bActual) const
-
 //	GetImage
 //
 //	Gets the item icon
+//	bActual: if true, returns the identified image, otherwise the unidentified image (if applicable)
+// 
+//  Does not get the object icon if this is an item intended to use the
+//  object as its icon if installed, because the ItemType does not have
+//  installation data.
+//
+const CObjectImageArray &CItemType::GetImage (bool bActual) const
 
 	{
 	CItem Item(const_cast<CItemType *>(this), 1);
