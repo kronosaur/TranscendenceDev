@@ -325,8 +325,9 @@
 				likes to imply with their marketing.
 			</Text>
 			<Text id="core.desc">
-				The saphire has modest capabilities in its stock configuration,
-				but it offers a flexible hull for after-market customization.
+				The saphire has modest capabilities in its stock configuration
+				between a light gunship and a courier, but it offers a flexible
+				hull for after-market customization.
 			</Text>
 		</Language>
 		
@@ -847,8 +848,9 @@
 				the EI500.
 			</Text>
 			<Text id="core.desc">
-				EI500 freighters are modern and relatively fast freighters, though they
-				have a fairly limited number options for weapons.
+				EI500s are relatively fast for freighters, and have plenty of
+				capacity for after-market devices. However, they have have little
+				space for weapons.
 			</Text>
 		</Language>
 
@@ -1043,8 +1045,8 @@
 				designed for, often at a significant price.
 			</Text>
 			<Text id="core.desc">
-				Fast, nimble, and dangerous, the Wolfen/C focuses on extreme speed
-				and significant options for firepower.
+				Fast and deadly, the Wolfen is designed for combat.
+				Though limited in cargo capacity, it has lots of room for more weapons.
 			</Text>
 		</Language>
 		
