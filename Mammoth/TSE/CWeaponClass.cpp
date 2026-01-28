@@ -38,8 +38,8 @@
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
 #define RECOIL_ATTRIB							CONSTLIT("recoil")
 #define REPEATING_ATTRIB						CONSTLIT("repeating")
-#define REPEATING_DELAY_ATTRIB					CONSTLIT("repeatingDelay")
-#define REPEATING_DELAY_ADV_ATTRIB				CONSTLIT("repeatingDelayAdvanced")
+#define REPEATING_DELAY_LEGACY_ATTRIB					CONSTLIT("repeatingDelay")
+#define REPEATING_SHOT_DELAY_ATTRIB				CONSTLIT("repeatingShotDelay")
 #define REPORT_AMMO_ATTRIB						CONSTLIT("reportAmmo")
 #define SHIP_COUNTER_PER_SHOT_ATTRIB			CONSTLIT("shipCounterPerShot")
 #define TARGET_STATIONS_ONLY_ATTRIB				CONSTLIT("targetStationsOnly")
@@ -2040,20 +2040,27 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	//	Repeat fire
 
 	pWeapon->m_iContinuous = pDesc->GetAttributeIntegerBounded(REPEATING_ATTRIB, 0, -1, 0);
-	pWeapon->m_rContinuousFireDelay = pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_ADV_ATTRIB, 0.0, -1.0, -1.0);
+	pWeapon->m_rContinuousFireDelay = pDesc->GetAttributeDoubleBounded(REPEATING_SHOT_DELAY_ATTRIB, 0.0, -1.0, -1.0);
 
 	//	If someone is instead using the legacy version of repeating delay:
 	//	It cannot be less than 2 simulation seconds, and it adds the specified number as additional simulation seconds
 	//	Note to future maintainers: This is not a bug or an incorrect default, this is actually how the legacy version worked
 
 	if (pWeapon->m_rContinuousFireDelay < 0.0)
-		pWeapon->m_rContinuousFireDelay = STD_SECONDS_PER_UPDATE + pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_ATTRIB, 0.0, -1.0, 0.0);
+		{
+		Metric rLegacyContinuousFireDelay = pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_LEGACY_ATTRIB, 0.0, -1.0, -1.0);
+		if (Ctx.GetAPIVersion() > 58 && rLegacyContinuousFireDelay >= 0)
+			kernelDebugLogString(CONSTLIT("WARNING: repeatingDelay is deprecated in API versions above 58, because it is delay = repeatingDelay + 2. Use repeatingShotDelay (specify exact delay in simulation seconds) instead."));
+		else if (rLegacyContinuousFireDelay < 0)
+			rLegacyContinuousFireDelay = 0;
+		pWeapon->m_rContinuousFireDelay = STD_SECONDS_PER_UPDATE + rLegacyContinuousFireDelay;
+		}
 
 	//	Warn if someone tried using adv repeating delay in an old api version
 
 	else if (Ctx.GetAPIVersion() < 58)
 		{
-		Ctx.sError = strCat(REPEATING_DELAY_ADV_ATTRIB, CONSTLIT(" requires API 58 or higher"));
+		Ctx.sError = strCat(REPEATING_SHOT_DELAY_ATTRIB, CONSTLIT(" requires API 58 or higher"));
 		return ERR_FAIL;
 		}
 
