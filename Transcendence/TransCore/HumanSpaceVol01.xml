@@ -2458,6 +2458,15 @@
 	<!ENTITY scBorerIIIStock			"0x00100711">
 	<!ENTITY rsIAVLight120				"0x00100712">
 	<!ENTITY rsIAVLightHero				"0x00100713">
+	<!ENTITY scAntaresIStock			"0x00100714">
+	<!ENTITY scAntaresIIStock			"0x00100715">
+	<!ENTITY scAntaresVStock			"0x00100716">
+	<!ENTITY vtAntaresITurretSlot		"0x00100717">
+	<!ENTITY vtAntaresIITurretSlot		"0x00100718">
+	<!ENTITY vtAntaresVTurretSlot		"0x00100719">
+	<!ENTITY scAntaresVLogistics		"0x0010071A">
+	<!ENTITY scScarabFreighterStock		"0x0010071B">
+	<!ENTITY vtScarabTurretSlot			"0x0010071C">
 
 	<!-- 0740-075F RASIERMESSER -->
 

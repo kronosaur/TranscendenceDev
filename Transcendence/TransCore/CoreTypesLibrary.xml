@@ -227,6 +227,11 @@
 	<!ENTITY vtShipSystems250			"0x00030204">
 	<!ENTITY vtShipSystems300			"0x00030205">
 	<!ENTITY vtShipSystems500			"0x00030206">
+
+	<!-- 0220-023F CORE SLOT ENHANCEMENTS I -->
+
+	<!ENTITY vtTurretSlotWithNonOmni	"0x00030220">
+	<!ENTITY rsItemsCore1				"0x00030221">
 	]>
 	
 <CoreLibrary
@@ -246,5 +251,6 @@
 	<Module filename="CoreItems.xml"/>
 	<Module filename="CorePlaceholders.xml"/>
 	<Module filename="CoreProjectileEffects.xml"/>
+	<Module filename="CoreSlotEnhancements.xml"/>
 
 </CoreLibrary>
