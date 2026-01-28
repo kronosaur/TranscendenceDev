@@ -591,7 +591,6 @@
     <ClCompile Include="Run.cpp" />
     <ClCompile Include="TSUICodeChain.cpp" />
     <ClCompile Include="CCloudService.cpp" />
-    <ClCompile Include="CXelerus.cpp" />
     <ClCompile Include="CItemDataAnimatron.cpp" />
     <ClCompile Include="ClassInfoHelpers.cpp" />
     <ClCompile Include="CListSaveFilesTask.cpp" />

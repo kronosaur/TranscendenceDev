@@ -379,14 +379,14 @@ ICCItem *CAutoDefenseClass::FindItemProperty (CItemCtx &Ctx, const CString &sPro
 	//	Get the property
 
 	if (strEquals(sProperty, PROPERTY_FIRE_DELAY))
-		return CC.CreateInteger(mathRound(m_rRechargeTicks));
+		return CC.CreateInteger(mathRound(m_rRechargeTicks / g_SecondsPerUpdate));
 
 	else if (strEquals(sProperty, PROPERTY_FIRE_DELAY_REAL))
-		return CC.CreateDouble(m_rRechargeTicks);
+		return CC.CreateDouble(m_rRechargeTicks / g_SecondsPerUpdate);
 
 	else if (strEquals(sProperty, PROPERTY_FIRE_RATE))
 		{
-		Metric rDelay = m_rRechargeTicks;
+		Metric rDelay = m_rRechargeTicks / g_SecondsPerUpdate;
 		if (rDelay <= 0.0)
 			return CC.CreateNil();
 
@@ -675,7 +675,7 @@ ALERROR CAutoDefenseClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	if (rFireRate == 0.0)
 		rFireRate = 15.0;
 
-	pDevice->m_rRechargeTicks = (Metric)rFireRate / STD_SECONDS_PER_UPDATE;
+	pDevice->m_rRechargeTicks = (Metric)rFireRate;
 	if (error = pDevice->m_pWeapon.LoadUNID(Ctx, pDesc->GetAttribute(WEAPON_ATTRIB)))
 		return error;
 

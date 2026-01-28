@@ -1325,7 +1325,7 @@ void CInstalledDevice::Update (CSpaceObject *pSource, CDeviceClass::SDeviceUpdat
 
 		if (m_rRemainingActivationDelay > 0.0 && IsEnabled())
 			{
-			m_rRemainingActivationDelay--;
+			m_rRemainingActivationDelay -= g_SecondsPerUpdate;
 			if (m_rRemainingActivationDelay < 0.0)
 				m_rRemainingActivationDelay = 0.0;
 
