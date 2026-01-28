@@ -17,8 +17,6 @@ constexpr Metric TIDAL_KILL_THRESHOLD =			7250.0;	//	Acceleration at which we ge
 
 constexpr BYTE MAX_SPACE_OPACITY =				128;
 
-constexpr int MAX_THREAD_COUNT =				16;
-
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
 #define ON_OBJ_JUMP_POS_ADJ						CONSTLIT("OnObjJumpPosAdj")
 
@@ -42,7 +40,6 @@ constexpr Metric MAP_GRID_SIZE =				3000.0 * LIGHT_SECOND;
 CSystem::CSystem (CUniverse &Universe, CTopologyNode *pTopology) : 
 		m_Universe(Universe),
 		m_pTopology(pTopology),
-		m_pThreadPool(NULL),
 		m_ObjGrid(GRID_SIZE, CELL_SIZE, CELL_BORDER)
 
 //	CSystem constructor
@@ -65,11 +62,10 @@ CSystem::~CSystem (void)
 	if (m_pTopology)
 		m_pTopology->SetSystem(NULL);
 
-	if (m_pEnvironment)
-		delete m_pEnvironment;
+	delete m_pEnvironment;
 
-	if (m_pThreadPool)
-		delete m_pThreadPool;
+	delete m_pThreadPool;
+	delete m_pBkrndThreadPool;
 
 	//	Clear out any attached object because those are freed by their owners.
 
@@ -80,8 +76,7 @@ CSystem::~CSystem (void)
 	//	Free objects
 
 	for (i = 0; i < m_AllObjects.GetCount(); i++)
-		if (m_AllObjects[i])
-			delete m_AllObjects[i];
+		delete m_AllObjects[i];
 
 	//	Deleted objects
 
@@ -524,12 +519,15 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 	Ctx.fNoStarshine = !m_Universe.GetSFXOptions().IsStarshineEnabled();
 	Ctx.fNoSpaceBackground = !m_Universe.GetSFXOptions().IsSpaceBackgroundEnabled();
 	Ctx.bNo3DExtras = !m_Universe.GetSFXOptions().Is3DExtrasEnabled();
+	Ctx.bForceSTPaint = m_Universe.GetDebugOptions().IsForceSTPaintEnabled(); //TODO: add an or condition with GetSFXOptions
 
 	//	Debug options
 
 	Ctx.bShowBounds = m_Universe.GetDebugOptions().IsShowBoundsEnabled();
 	Ctx.bShowFacingsAngle = m_Universe.GetDebugOptions().IsShowFacingsAngleEnabled();
 	Ctx.bShowOrderInfo = m_Universe.GetDebugOptions().IsShowOrderInfoEnabled();
+	Ctx.bDbgShowPaintLocations = m_Universe.GetDebugOptions().IsShowPaintLocationEnabled();
+	Ctx.bDbgShowPaintTime = m_Universe.GetDebugOptions().IsShowPaintTimeEnabled();
 
 	//	Figure out what color space should be. Space gets lighter as we get
 	//	near the central star
@@ -541,15 +539,37 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 
 	Ctx.rIndicatorRadius = Min(RectWidth(rcView), RectHeight(rcView)) / 2.0;
 
-	//	If we don't have a thread pool yet, create it
+	//	Initialize MT paint if we are configured to do so
 
-	if (m_pThreadPool == NULL)
+	Ctx.dwMinChunkSizePow = GetUniverse().GetSFXOptions().GetMinSpriteChunkSizePower();
+	bool bUseMTSpritePaint = GetUniverse().GetSFXOptions().IsMTSpritePaintEnabled();
+
+	//	MT Sprite paint thread pool can be safely left NULL, as this is
+	//	explicitly checked in its logic.
+
+	if (bUseMTSpritePaint)
 		{
-		m_pThreadPool = new CThreadPool;
-		m_pThreadPool->Boot(Min(MAX_THREAD_COUNT, sysGetProcessorCount()));
+		//	If we don't have a thread pool yet, create it
+
+		if (m_pThreadPool == NULL)
+			{
+			m_pThreadPool = new CThreadPool;
+			m_pThreadPool->Boot(GetUniverse().GetSFXOptions().GetMaxSpritePaintWorkers());
+			}
+
+		Ctx.pThreadPool = m_pThreadPool;
 		}
 
-	Ctx.pThreadPool = m_pThreadPool;
+	//	If we don't have a background thread pool yet, create it
+	//	It is not currently safe to leave this NULL
+
+	if (m_pBkrndThreadPool == NULL)
+		{
+		m_pBkrndThreadPool = new CThreadPool;
+		m_pBkrndThreadPool->Boot(GetUniverse().GetSFXOptions().GetMaxBkrndPaintWorkers());
+		}
+
+	Ctx.pBkrndThreadPool = m_pBkrndThreadPool;
 
 	DEBUG_CATCH
 	}
@@ -1094,8 +1114,7 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 
 		//	On this path, we don't need the controller.
 
-		if (pController)
-			delete pController;
+		delete pController;
 
 		return NOERROR;
 		}

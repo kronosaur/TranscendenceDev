@@ -203,9 +203,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"help",				fnHelp,			0,
 			"(help) -> this help\n"
-			"(help '*) -> all functions\n"
-			"(help 'partial-string) -> all functions starting with partial-string\n"
-			"(help 'function-name) -> help on function-name\n",
+			"(help '* ['*|'lambdas|'primitives]) -> all functions\n"
+			"(help 'partial-string ['*|'lambdas|'primitives]) -> all functions starting with partial-string\n"
+			"(help 'function-name ['*|'lambdas|'primitives]) -> help on function-name\n"
+			"(help function|lambda) -> help on the function or lambda\n",
 			"*",	0,	},
 
 		{	"hex",				fnItem,			FN_HEX,
@@ -224,7 +225,20 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"@",				fnItem,			FN_ITEM,
 			"(@ list index) -> item index from list (0-based)\n"
-			"(@ struct key) -> value corresponding to key from struct",
+			"(@ struct key) -> value corresponding to key from struct\n"
+			"(@ nestedListsOrStructs [idxOrKey1 idxOrKey2 ...]) -> item index from innermost list or structs (lists are 0-based)\n"
+			"(@ struct) -> list of keys of the struct, Nil on non-structs\n\n"
+			
+			"list indexes below 0 are converted to 0",
+			"v*",	0,	},
+
+		{	"@@",				fnItem,			FN_ITEM_REVERSE,
+			"(@@ list index) -> item index from list (0-based)\n"
+			"(@@ struct key) -> value corresponding to key from struct\n"
+			"(@@ nestedListsOrStructs [idxOrKey1 idxOrKey2 ...]) -> item index from innermost list or structs (lists are 0-based)\n"
+			"(@@ struct) -> list of keys of the struct, Nil on non-structs\n\n"
+			
+			"list indexes below 0 address in reverse from the end",
 			"v*",	0,	},
 
 		{	"item",				fnItem,			FN_ITEM,
@@ -237,7 +251,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"v*",	0,	},
 
 		{	"lambda",			fnLambda,		0,
-			"(lambda args-list exp) -> lambda function",
+			"(lambda args-list [docstring] exp) -> lambda function",
 			NULL,	0,	},
 
 		{	"log",				fnMathNumerals,	FN_MATH_LOG,
@@ -283,7 +297,16 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"s*",	0,	},
 
 		{	"map",				fnMap,			0,
-			"(map list ['excludeNil|'original|'reduceMax|'reduceMin|'reduceAverage|'reduceSum] var exp) -> list",
+			"(map list [options] var expr) -> list, or expr result (see options)\n\n"
+			
+			"options is either one of the option strings below, or a quoted expr of options strings, e.g. '(original excludeNil):\n"
+			"   'excludeNil - if expr evaluates to nil, it is not added to the returned list\n"
+			"   'original - expr result is placed with var instead in the final output, but expr result is still used to calculate other options\n"
+			"   'reduceMax - returns the greatest of values returned by expr instead of a list\n"
+			"   'reduceMin - returns the minimum of values returned by expr instead of a list\n"
+			"   'reduceAverage - returns the average of values returned by expr instead of a list (ignores original)\n"
+			"   'reduceSum - returns the sum of values returned by expr instead of a list (ignores original)\n"
+			"   'reduceUnique - returns a list of unique values returned by expr",
 			"l*qu",	0,	},
 
 		{	"match",			fnMatch,			0,
@@ -572,6 +595,39 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		"Arguments are the same as (eval expr). Resolution may vary by system.",
 		"v",	PPFLAG_SIDEEFFECTS, },
+
+		{   "bAnd", fnBitwise, FN_BITWISE_AND,
+			"(bAnd x1 [x2 ... xn]) -> bitwise AND (int32)",
+			"v*", 0, },
+
+		{   "bOr",  fnBitwise, FN_BITWISE_OR,
+			"(bOr x1 [x2 ... xn]) -> bitwise OR (int32)",
+			"v*", 0, },
+
+		{   "bXor", fnBitwise, FN_BITWISE_XOR,
+			"(bXor x1 [x2 ... xn]) -> bitwise XOR (int32)",
+			"v*", 0, },
+
+		{   "bNot", fnBitwise, FN_BITWISE_NOT,
+			"(bNot x) -> bitwise NOT (int32)",
+			"v", 0, },
+
+		{   "bShL",  fnBitwise, FN_BITWISE_SHL,
+			"(bShL x count) -> logical left shift (int32)",
+			"vv", 0, },
+
+		{   "bShR",  fnBitwise, FN_BITWISE_SHR,
+			"(bShR x count) -> logical right shift (int32)",
+			"vv", 0, },
+
+		{   "bRoL",  fnBitwise, FN_BITWISE_ROL,
+			"(bRoL x count) -> rotate left 32-bit (int32)",
+			"vv", 0, },
+
+		{   "bRoR",  fnBitwise, FN_BITWISE_ROR,
+			"(bRoR x count) -> rotate right 32-bit (int32)",
+			"vv", 0, },
+
 	};
 
 #define DEFPRIMITIVES_COUNT		(sizeof(g_DefPrimitives) / sizeof(g_DefPrimitives[0]))

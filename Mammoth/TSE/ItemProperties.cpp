@@ -91,6 +91,40 @@ bool CItem::FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult) c
 		}
 	}
 
+ICCItemPtr CItem::GetItemPropertyKeys (CCodeChainCtx& CCCtx, CItemCtx& Ctx, bool bOnType) const
+	{	
+	if (!m_pItemType)
+		return ICCItemPtr::Nil();
+
+	ICCItemPtr pList(CCCtx.GetCC().CreateLinkedList());
+	TMap<CString, int> mapSeen;
+
+	//	Check type & custom properties
+
+	TArray<CString> aTypeKeys = m_pItemType->GetDataKeys(EDesignDataTypes::ePropertyData);
+
+	for (int i = 0; i < aTypeKeys.GetCount(); i++)
+		{
+		pList->AppendString(aTypeKeys[i]);
+		mapSeen.Insert(aTypeKeys[i]);
+		}
+
+	//	Check new engine instance properties
+
+	for (int i = 0; i < m_PropertyTable.GetPropertyCount(); i++)
+		{
+		CString sKey = m_PropertyTable.GetPropertyName(i);
+		if (mapSeen.Find(sKey))
+			continue;
+		pList->AppendString(sKey);
+		mapSeen.Insert(sKey);
+		}
+
+	//	Todo: switch old engine instance properties over to the new system
+
+	return pList;
+	}
+
 ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty, bool bOnType) const
 
 //	GetItemProperty

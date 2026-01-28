@@ -8,6 +8,20 @@
 const Metric MAX_DISTANCE =				(400 * KLICKS_PER_PIXEL);
 const Metric CLOSE_DELTA_V_RATIO =		4.0;
 
+void CShipAIHelper::ApplyFormationAccel (CShip& Ship, const CVector& vVel, Metric rCheatThrustFactor)
+	{
+	if (!Ship.IsParalyzed())
+		{
+		//	Converts from a velocity to a force, taking mass into account.
+
+		Ship.AddForceFromDeltaV(rCheatThrustFactor * vVel);
+
+#ifdef DEBUG_ATTACK_TARGET_MANEUVERS
+		Ship.SetDebugVector(vVel * g_KlicksPerPixel * rCheatThrustFactor * Ship.GetMass() / 1000.0);
+#endif
+		}
+	}
+
 bool CShipAIHelper::CalcFormationParams (CShip *pShip, 
 										 const CVector &vDestPos, 
 										 const CVector &vDestVel, 

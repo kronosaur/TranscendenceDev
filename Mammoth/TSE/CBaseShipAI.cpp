@@ -23,8 +23,7 @@ CBaseShipAI::~CBaseShipAI (void)
 	if (m_pCommandCode)
 		m_pCommandCode->Discard();
 
-	if (m_pOrderModule)
-		delete m_pOrderModule;
+	delete m_pOrderModule;
 	}
 
 void CBaseShipAI::AddOrder (const COrderDesc &OrderDesc, bool bAddBefore)
@@ -585,7 +584,7 @@ void CBaseShipAI::DebugPaintAnnotations (CG32bitImage &Dest, int x, int y, SView
 					constexpr Metric MIN_STATION_TARGET_DIST =	(10.0 * LIGHT_SECOND);
 					Metric rRadius = pTarget->GetHitSize() + MIN_STATION_TARGET_DIST + (LIGHT_SECOND * (m_pShip->GetDestiny() % 100) / 10.0);
 					CVector vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius);
-					CVector vDirection = m_AICtx.CalcManeuverFormation(m_pShip, vPos, CVector(), iAngle);
+					CVector vDirection = m_AICtx.CalcManeuverFormation(m_pShip, vPos, CVector(), iAngle, 0.0);	//no cheat maneuvering to prevent side effects just from debug paint
 
 					if (vDirection.Length2() < MIN_POTENTIAL2)
 						m_pShip->PaintAnnotationText(Dest, x, y, CONSTLIT("Aim"), Ctx);
@@ -1137,6 +1136,11 @@ void CBaseShipAI::OnAttacked (CSpaceObject &AttackerObj, const SDamageCtx &Damag
 
 	{
 	DEBUG_TRY
+
+	//	We do not react to non-hostile damage events
+
+	if (!Damage.Damage.IsHostile())
+		return;
 
 	if (!m_pShip)
 		throw CException(ERR_FAIL);

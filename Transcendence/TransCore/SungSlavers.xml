@@ -719,10 +719,10 @@
 
 		<Events>
 			<OnAIUpdate>
-				(if (and (leq (itmGetCharges gItem) 256)
+				(if (and (= (itmGetCharges gItem) 0)
 						(objGetItems gSource "u +LongzhuSphere;"))
 					(block Nil
-						(objFireItemEvent gSource gItem 'Recharge { charges:256 })
+						(objFireItemEvent gSource gItem 'Recharge { charges: (typ@ &itLongzhuSphere; 'charges) })
 						(objRemoveItem gSource (itmCreate &itLongzhuSphere; 1))
 						)
 					)
@@ -868,6 +868,9 @@
 					{	criteria:"v L:1-10; -Alien;"				enhancement:"+enhance"	}
 					)
 			</Constant>
+			<Global id="charges">
+				256
+			</Global>
 		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
@@ -882,7 +885,7 @@
 
 						(= (itmGetType dstItem) &itQianlongArchcannon;)
 							(block (recharged)
-								(setq recharged (objFireItemEvent gSource dstItem 'Recharge { charges:256 }))
+								(setq recharged (objFireItemEvent gSource dstItem 'Recharge { charges: (typ@ gType 'charges) }))
 
 								(if (= recharged 0)
 									{

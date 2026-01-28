@@ -476,8 +476,7 @@ CEffectGroupCreator::~CEffectGroupCreator (void)
 //	CEffectGroupCreator destructor
 
 	{
-	if (m_pCreators)
-		delete [] m_pCreators;
+	delete [] m_pCreators;
 	}
 
 void CEffectGroupCreator::ApplyOffsets (SViewportPaintCtx *ioCtx, int *retx, int *rety)

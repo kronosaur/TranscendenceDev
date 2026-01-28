@@ -366,7 +366,7 @@ bool CItemCriteria::MatchesItemCategory (const CItemType &ItemType) const
 		{ }
 
 	//	If we're looking for usable items and this item is
-	//	isable, then we continue
+	//	usable, then we continue
 
 	else if ((m_dwItemCategories & itemcatUseful)
 			&& ItemType.IsUsable())
@@ -690,7 +690,7 @@ void CItemCriteria::ParseSubExpression (const char *pPos, DWORD dwFlags)
 					//	Get the modifier
 
 					const char *pStart = pPos;
-					while (*pPos != '\0' && *pPos != ';' && *pPos != ' ' && *pPos != '\t')
+					while (*pPos != '\0' && *pPos != ';' && *pPos != ' ' && *pPos != '\t' && *pPos != '|')
 						{
 						if (*pPos == ':')
 							bSpecialAttrib = true;
@@ -719,6 +719,12 @@ void CItemCriteria::ParseSubExpression (const char *pPos, DWORD dwFlags)
 					//	No trailing semi
 
 					if (*pPos == '\0')
+						pPos--;
+
+					//	Decrement pPos so that we are at the right spot
+					//	to handle the OR criteria
+
+					if (*pPos == '|')
 						pPos--;
 
 					break;

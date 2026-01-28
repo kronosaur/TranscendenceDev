@@ -20,8 +20,21 @@ class CTopologyNode
 			CString sDestNode;						//	Destination node
 			CString sDestName;						//	Destination entry point
 
+			//	From and To overrides
+			CString sFromAttributes;
+			CString sFromLocationCriteria;
+			DWORD dwFromGateType;
+			DWORD dwFromBeaconType;
+
+			CString sToAttributes;
+			CString sToLocationCriteria;
+			DWORD dwToGateType;
+			DWORD dwToBeaconType;
+
 			const TArray<SPoint> *pMidPoints = NULL;	//	Gate line mid-points (optional)
 			bool bUncharted = false;				//	Gate is uncharted
+
+			CG32bitPixel rgbColor;					//	Gate link map color, 0-alpha is default
 			};
 
 		struct SStargateRouteDesc
@@ -38,13 +51,23 @@ class CTopologyNode
 
 			const CTopologyNode *pFromNode = NULL;
 			CString sFromName;
+			CString sFromAttributes;
+			CString sFromLocationCriteria;
+			DWORD dwFromGateType;
+			DWORD dwFromBeaconType;
 
 			const CTopologyNode *pToNode = NULL;
 			CString sToName;
+			CString sToAttributes;
+			CString sToLocationCriteria;
+			DWORD dwToGateType;
+			DWORD dwToBeaconType;
 
 			TArray<SPoint> MidPoints;
 			bool bOneWay = false;
 			bool bUncharted = false;
+
+			CG32bitPixel rgbColor;
 
 			private:
 				mutable Metric m_rDistance = 0.0;
@@ -67,6 +90,7 @@ class CTopologyNode
 		int GetCalcDistance (void) const { return m_iCalcDistance; }
 		const CString &GetCreatorID (void) const { return (m_sCreatorID.IsBlank() ? m_sID : m_sCreatorID); }
 		ICCItemPtr GetData (const CString &sAttrib) const { return m_Data.GetDataAsItem(sAttrib); }
+		ICCItemPtr GetDataKeys (void) const { ICCItemPtr pList(CCodeChain::CreateLinkedList()); for (int i = 0; i < m_Data.GetDataCount(); i++) { pList->AppendString(m_Data.GetDataAttrib(i)); } return pList; };
 		inline CSystemMap *GetDisplayPos (int *retxPos = NULL, int *retyPos = NULL) const;
 		const CString &GetEndGameReason (void) { return m_sEndGameReason; }
 		const CString &GetEpitaph (void) { return m_sEpitaph; }
@@ -82,6 +106,7 @@ class CTopologyNode
 		CTopologyNode *GetStargateDest (int iIndex, CString *retsEntryPoint = NULL) const;
 		ICCItemPtr GetStargateProperty (const CString &sName, const CString &sProperty) const;
 		void GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc) const;
+		CString GetStargateName (int iIndex) const { return m_NamedGates.GetKey(iIndex); }
 		CSystem *GetSystem (void) { return m_pSystem; }
 		DWORD GetSystemID (void) { return m_dwID; }
 		const CString &GetSystemName (void) const { return m_sName; }
@@ -91,6 +116,7 @@ class CTopologyNode
 		const CTradingEconomy &GetTradingEconomy (void) const { return m_Trading; }
 		CUniverse &GetUniverse (void) const;
 		bool HasAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
+		bool HasStargateAttribute (const CString& sName, const CString& sAttrib) const { return ::HasModifier(m_NamedGates.GetAt(sName) ? m_NamedGates.GetAt(sName)->sAttributes : CONSTLIT(""), sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
 		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
 		ALERROR InitFromAdditionalXML (CTopology &Topology, CXMLElement *pDesc, CString *retsError);
@@ -102,6 +128,7 @@ class CTopologyNode
 		bool IsMarked (void) const { return m_bMarked; }
 		bool IsNull (void) const { return (m_SystemUNID == 0 || IsEndGame()); }
 		bool IsPositionKnown (void) const { return (m_bKnown || m_bPosKnown); }
+		bool MatchesStargateAttribs (const CString &sName, const CString &sMatch) const;
 		void SetCalcDistance (int iDist) const { m_iCalcDistance = iDist; }
 		void SetCreatorID (const CString &sID) { m_sCreatorID = sID; }
 		void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
@@ -137,6 +164,11 @@ class CTopologyNode
 					fUncharted(false)
 				{ }
 
+			CString sAttributes;
+			CString sLocationCriteria;
+			DWORD dwGateType;
+			DWORD dwBeaconType;
+
 			CString sDestNode;
 			CString sDestEntryPoint;
 
@@ -154,8 +186,12 @@ class CTopologyNode
 			DWORD fSpare8:1;
 			DWORD dwSpare:24;
 
+			DWORD dwColor;
+
 			mutable CTopologyNode *pDestNode = NULL;	//	Cached for efficiency (may be NULL)
 			};
+
+		bool MatchesStargateAttribs (const CTopologyNode::SStargateEntry* pGate, const CString &sMatch) const;
 
 		CTopology &m_Topology;					//	Topology that we're a part of
 		CString m_sID;							//	ID of node
@@ -353,6 +389,7 @@ class CTopology
 	{
 	public:
 		static const int UNKNOWN_DISTANCE =	-1;
+		static const int BLOCKED_DISTANCE =	-2;
 
 		struct SNodeCreateCtx
 			{
@@ -395,11 +432,46 @@ class CTopology
 		const CTopologyNode *FindTopologyNode (const CString &sID) const;
 		CTopologyNode *FindTopologyNode (const CString &sID);
 		CString GenerateUniquePrefix (const CString &sPrefix, const CString &sTestNodeID);
-		int GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pTarget) const;
-		int GetDistance (const CString &sSourceID, const CString &sDestID) const;
+		int GetDistance (
+			const CTopologyNode *pSrc,
+			const CTopologyNode *pTarget,
+			const CString &sGateCriteria = NULL_STR,
+			const TArray<CString> &aUseNodes = TArray<CString>(),
+			const TArray<CString> &aBlockNodes = TArray<CString>(),
+			bool bIgnoreOneWay = true,
+			bool bAllowUseNodeBacktrack = true) const;
+		int GetDistance (
+			const CString &sSourceID,
+			const CString &sDestID,
+			const CString &sGateCriteria = NULL_STR,
+			const TArray<CString> &aUseNodes = TArray<CString>(),
+			const TArray<CString> &aBlockNodes = TArray<CString>(),
+			bool bIgnoreOneWay = true,
+			bool bAllowUseNodeBacktrack = true) const;
 		int GetDistanceToCriteria (const CTopologyNode *pSrc, const CTopologyAttributeCriteria &Criteria) const;
 		int GetDistanceToCriteriaNoMatch (const CTopologyNode *pSrc, const CTopologyAttributeCriteria &Criteria) const;
-		const CTopologyNode *GetNextNodeTo (const CTopologyNode &From, const CTopologyNode &To) const;
+		const CTopologyNode *GetNextNodeTo (
+			const CTopologyNode &From,
+			const CTopologyNode &To,
+			const CString &sGateCriteria = NULL_STR,
+			const TArray<CString> &aUseNodes = TArray<CString>(),
+			const TArray<CString> &aBlockNodes = TArray<CString>(),
+			bool bIgnoreOneWay = true,
+			bool bAllowUseNodeBacktrack = true) const;
+		TArray<const CTopologyNode*> GetPathTo (
+			const CTopologyNode *pSrc,
+			const CTopologyNode *pTarget,
+			const CString &sGateCriteria = NULL_STR,
+			const TArray<CString> &aUseNodes = TArray<CString>(),
+			const TArray<CString> &aBlockNodes = TArray<CString>(),
+			bool bIgnoreOneWay = true,
+			bool bAllowUseNodeBacktrack = true) const;
+		TArray<const CTopologyNode*> GetPathTo (
+			const CTopologyNode *pSrc,
+			const CTopologyNode *pTarget,
+			const CString &sGateCriteria = NULL_STR,
+			const TArray<CString> &aBlockNodes = TArray<CString>(),
+			bool bIgnoreOneWay = true) const;
 		CTopologyNodeList &GetTopologyNodeList (void) { return m_Topology; }
 		CTopologyNode *GetTopologyNode (int iIndex) { return &m_Topology[iIndex]; }
 		const CTopologyNode *GetTopologyNode (int iIndex) const { return &m_Topology[iIndex]; }

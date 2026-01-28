@@ -66,6 +66,9 @@ class CLanguage
 			numberRealTimeTicks,			//	59 seconds (input in ticks)
 			numberRegenRate,				//	1.0 hp/sec
 			numberSpeed,					//	.05c
+			numberMetric,					//	105 M or 10.5 k or 105 u (for adding a unit abbreviation after)
+			numberMetricFull,				//	105 Mega or 10.5 kilo or 105 micro (for adding a unit after)
+			numberMetricUnitless,			//	105M or 10.5k or 105u (for unitless numbers)
 			};
 
 		enum EVerbFlags
@@ -96,6 +99,28 @@ class CLanguage
 			bool bHasQuotes;				//	Noun has embedded quotes
 			};
 
+		struct SMetricDesc
+			{
+			int iWhole = 0;
+			int iDecimal = 0;
+			int iDecimalPadding = 0;
+			CString sPrefix;
+			CString sPrefixName;
+			};
+
+		struct SMetricOptions
+			{
+			static constexpr BYTE MAX_SIG_FIGS = 9;
+
+			BYTE iMaxSigFigs = 3;
+
+			//	Flags
+
+			BYTE fCapitalizeName:1 =	0;
+			BYTE fForceSigFigs:1 =		0;
+			BYTE bSpare:6 =				0;
+			};
+
 		enum class EHPDisplay
 			{
 			None,
@@ -116,7 +141,7 @@ class CLanguage
 			int iReference = 0;
 			};
 
-		static int CalcMetricNumber (Metric rNumber, int *retiWhole, int *retiDecimal);
+		static int CalcMetricNumber (Metric rNumber, SMetricOptions options, SMetricDesc *retpDesc);
 		static CString Compose (const CString &sString, const ICCItem *pArgs);
 		static CString ComposeGenderedWord (const CString &sWord, GenomeTypes iGender);
 		static CString ComposeHitPointValue (int iHP, const SHPDisplayOptions &Options);

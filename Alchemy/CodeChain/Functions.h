@@ -120,6 +120,15 @@
 #define FN_STR_FINDALL					116
 #define FN_SUBSET_SUBSET				117
 #define FN_SUBSET_SLICE					118
+#define FN_BITWISE_AND                  119
+#define FN_BITWISE_OR                   120
+#define FN_BITWISE_XOR                  121
+#define FN_BITWISE_NOT                  122
+#define FN_BITWISE_SHL                  123
+#define FN_BITWISE_SHR                  124
+#define FN_BITWISE_ROL                  125
+#define FN_BITWISE_ROR                  126
+#define FN_ITEM_REVERSE					127
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
@@ -180,3 +189,4 @@ ICCItem *fnVecCreateOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnVector (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnVecMath (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnVecIndex (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

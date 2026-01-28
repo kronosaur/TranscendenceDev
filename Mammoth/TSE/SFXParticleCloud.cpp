@@ -86,8 +86,7 @@ CParticleCloudEffectCreator::~CParticleCloudEffectCreator (void)
 //	CParticleCloudEffectCreator destructor
 
 	{
-	if (m_pParticleEffect)
-		delete m_pParticleEffect;
+	delete m_pParticleEffect;
 	}
 
 IEffectPainter *CParticleCloudEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
@@ -504,7 +503,7 @@ void CParticleCloudPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged
 
 	//	Update particle motion
 
-	m_Particles.UpdateMotionLinear(Ctx.rSeconds);
+	m_Particles.UpdateMotionLinear(Ctx);
 
 	//	Bounds are always changing
 

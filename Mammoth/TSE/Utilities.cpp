@@ -2152,7 +2152,7 @@ CString ParseCriteriaParam (const char **ioPos, bool bExpectColon, bool *retbBin
 	bool bBinaryParam = false;
 	bool bAllowSpaces = false;
 	const char *pStart = pPos;
-	while (*pPos != ';' && (bAllowSpaces || *pPos != ' ') && *pPos != '\t' && *pPos != '\0')
+	while (*pPos != ';' && (bAllowSpaces || *pPos != ' ') && *pPos != '\t' && *pPos != '\0' && *pPos != '|')
 		{
 		if (*pPos == ':')
 			{
@@ -2165,7 +2165,7 @@ CString ParseCriteriaParam (const char **ioPos, bool bExpectColon, bool *retbBin
 	//	If we hit the end, we backup one character because our caller
 	//	will advance the position by one
 
-	*ioPos = (*pPos == '\0' ? (pPos - 1) : pPos);
+	*ioPos = (*pPos == '\0' || *pPos == '|' ? (pPos - 1) : pPos);
 
 	//	Done
 
@@ -2264,7 +2264,8 @@ ALERROR ParseDamageTypeList (const CString &sList, TArray<CString> *retList)
 		if (!sDamageType.IsBlank())
 			{
 			DamageTypes iType = LoadDamageTypeFromXML(sDamageType);
-			if (iType == damageError || iType == damageGeneric)
+			//	We do not support non-listed damage types (ex, generic, null, error)
+			if (iType < damageMinListed || iType > damageMaxListed)
 				return ERR_FAIL;
 
 			retList->GetAt(iType) = sAdj;

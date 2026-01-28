@@ -66,8 +66,7 @@ CSingleParticleEffectCreator::~CSingleParticleEffectCreator (void)
 //	CShockwaveEffectCreator destructor
 
 	{
-	if (m_pSingleton)
-		delete m_pSingleton;
+	delete m_pSingleton;
 	}
 
 IEffectPainter *CSingleParticleEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)

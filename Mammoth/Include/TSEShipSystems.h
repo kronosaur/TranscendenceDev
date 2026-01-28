@@ -310,6 +310,7 @@ enum ECompartmentTypes
 	deckGeneral =						0,	//	General interior compartment or deck
 	deckMainDrive =						1,	//	Main drive
 	deckCargo =							2,	//	Cargo hold
+	deckUncrewed =						3,	//	Dense compartment with no crewable spaces
 	};
 
 struct SCompartmentDesc
@@ -336,9 +337,11 @@ struct SCompartmentDesc
 	CString sAttachID;						//	ID of compartment we're attached to (NULL = root object)
 	C3DObjectPos AttachPos;					//	Attach position relative to sAttachID
 
-	DWORD fDefault:1;						//	Default compartment (any space not used by another compartment)
-	DWORD fIsAttached:1;					//	TRUE if this is an attached section (a separate CSpaceObject)
+	DWORD fDefault:1 = false;				//	Default compartment (any space not used by another compartment)
+	DWORD fIsAttached:1 = false;			//	TRUE if this is an attached section (a separate CSpaceObject)
 	};
+
+const SCompartmentDesc NULL_COMPARTMENT = SCompartmentDesc();
 
 class CShipInteriorDesc
 	{
@@ -349,14 +352,16 @@ class CShipInteriorDesc
 		void CalcCompartmentPositions (int iScale, TArray<CVector> &Result) const;
 		int CalcImageSize (CShipClass *pClass, CVector *retvOrigin = NULL) const;
 		void DebugPaint (CG32bitImage &Dest, int x, int y, int iRotation, int iScale) const;
-		int GetCount (void) const { return m_Compartments.GetCount(); }
+		int GetCount () const { return m_Compartments.GetCount(); }
 		const SCompartmentDesc &GetCompartment (int iIndex) const { return m_Compartments[iIndex]; }
-		int GetHitPoints (void) const;
+		const SCompartmentDesc &GetDefaultCompartment () const;
+		Metric GetFortificationAdj (EDamageMethod iMethod, ECompartmentTypes iCompartmentType) const;
+		int GetHitPoints () const;
 		const TArray<int> &GetPaintOrder (void) const { return m_PaintOrder; }
-		bool HasAttached (void) const { return (m_fHasAttached ? true : false); }
+		bool HasAttached () const { return (m_fHasAttached ? true : false); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		bool IsEmpty (void) const { return m_Compartments.GetCount() == 0; }
-		bool IsMultiHull (void) const { return (m_fIsMultiHull ? true : false); }
+		bool IsEmpty () const { return m_Compartments.GetCount() == 0; }
+		bool IsMultiHull () const { return (m_fIsMultiHull ? true : false); }
 
 		static ECompartmentTypes ParseCompartmentType (const CString &sValue);
 
@@ -365,6 +370,7 @@ class CShipInteriorDesc
 
 		TArray<SCompartmentDesc> m_Compartments;
 		TArray<int> m_PaintOrder;
+		SDamageMethodAdj m_Fortification;					//	Adjusts WMD adj curve from the WMD0 end
 
 		DWORD m_fHasAttached:1;
 		DWORD m_fIsMultiHull:1;
@@ -422,6 +428,7 @@ class CShipInterior
 			};
 
 		void CalcAttachPos (CShip *pShip, const CShipInteriorDesc &Desc, int iIndex, CSpaceObject **retpAttachedTo, CVector *retvPos) const;
+		Metric CalcDamageFortificationAdj (EDamageMethod iMethod, CShip *pShip, const CShipInteriorDesc &Desc, SDamageCtx &Ctx);
 		void DetachChain (CShip *pShip, CSpaceObject *pBreak);
 		bool FindAttachedObject (CSpaceObject *pAttached, int *retiIndex = NULL) const;
 		int FindNextCompartmentHit (SHitTestCtx &HitCtx, int xHitPos, int yHitPos);
@@ -514,21 +521,25 @@ class CIntegralRotationDesc
 
 		static constexpr int ROTATION_FRACTION =		1080;
 
-		CIntegralRotationDesc (void) { }
+		CIntegralRotationDesc () { }
 		explicit CIntegralRotationDesc (const CRotationDesc &Desc) { InitFromDesc(Desc); }
 
 		int AlignToRotationAngle (int iAngle) const { return GetRotationAngle(GetFrameIndex(iAngle)); }
 		int CalcFinalRotationFrame (int iRotationFrame, int iRotationSpeed) const;
-		int GetFrameAngle (void) const { return (m_iCount > 0 ? mathRound(360.0 / m_iCount) : 0); }
-		int GetFrameCount (void) const { return m_iCount; }
+		int GetFrameAngle () const { return (m_iCount > 0 ? mathRound(360.0 / m_iCount) : 0); }
+		int GetFrameCount () const { return m_iCount; }
 		int GetFrameIndex (int iAngle) const { return (m_iCount > 0 ? (m_FacingsData[m_iCount].AngleToFrameIndex[AngleMod(iAngle)]) : 0); }
-		int GetManeuverDelay (void) const;
-		Metric GetManeuverRatio (void) const { return (Metric)m_iMaxRotationRate / ROTATION_FRACTION; }
-		int GetMaxRotationSpeed (void) const { return m_iMaxRotationRate; }
-		Metric GetMaxRotationSpeedDegrees (void) const;
-		int GetMaxRotationTimeTicks (void) const { Metric rSpeed = GetMaxRotationSpeedDegrees(); return (rSpeed > 0.0 ? (int)(360.0 / rSpeed) : 0); }
-		int GetRotationAccel (void) const { return m_iRotationAccel; }
-		int GetRotationAccelStop (void) const { return m_iRotationAccelStop; }
+		int GetManeuverDelay () const;
+		Metric GetManeuverRatio () const { return (Metric)m_iMaxRotationRate / ROTATION_FRACTION; }
+		int GetMaxRotationSpeed () const { return m_iMaxRotationRate; }
+		Metric GetMaxRotationSpeedDegrees () const;
+		int GetMaxRotationTimeTicks () const { Metric rSpeed = GetMaxRotationSpeedDegrees(); return (rSpeed > 0.0 ? (int)(360.0 / rSpeed) : 0); }
+		int GetRotationAccel () const { return m_iRotationAccel; }
+		Metric GetRotationAccelDegrees () const;
+		int GetRotationAccelStop () const { return m_iRotationAccelStop; }
+		Metric GetRotationAccelStopDegrees () const;
+		int GetRotationResponsiveness () const { return min(m_iMaxRotationRate, min(m_iRotationAccel, m_iRotationAccelStop)); }
+		Metric GetRotationResponsivenessDegrees () const;
 		int GetRotationAngle (int iIndex) const { return (m_iCount > 0 ? m_FacingsData[m_iCount].FrameIndexToAngle[iIndex % m_iCount] : 0); }
 		int GetRotationAngleExact (int iRotationFrameExact) const { return (m_iCount > 0 ? GetRotationAngleExact(m_iCount, iRotationFrameExact) : 0); }
 		int GetRotationFrameExact (int iAngle) const { return (m_iCount > 0 ? GetRotationFrameExact(m_iCount, iAngle) : 0); }
@@ -669,6 +680,7 @@ class CDriveDesc
 		int GetMaxSpeedInc (void) const { return m_iMaxSpeedInc; }
 		int GetMaxSpeedLimit (void) const { return m_iMaxSpeedLimit; }
 		int GetPowerUse (void) const { return m_iPowerUse; }
+		Metric GetPowerUseRatio (void) const { return m_rPowerUseRatio; }
 		int GetThrust (void) const { return m_iThrust; }
 		int GetThrustProperty (void) const { return 2 * m_iThrust; }
 		DWORD GetUNID (void) const { return m_dwUNID; }
@@ -694,6 +706,7 @@ class CDriveDesc
 		int m_iPowerUse;					//	Power used while thrusting (1/10 megawatt)
 
 		Metric m_rMaxSpeed;					//	Computed max speed (Km/sec)
+		Metric m_rPowerUseRatio;			//	Ratio to apply to auto-computed power usage for built-in drives
 
 		DWORD m_fInertialess:1;				//	Inertialess drive
 		DWORD m_dwSpare:31;

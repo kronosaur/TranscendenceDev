@@ -23,45 +23,46 @@ CAsteroidDesc::SCompositionDesc CAsteroidDesc::COMPOSITION_TABLE[EAsteroidTypeCo
 		//	ID			Mining Difficulty
 		{	"none",			0,
 
-			//	ablation	drill		explosion	shockwave
-			{	1.0,		1.0,		1.0,		1.0		},	//	Success Adj
-			{	1.0,		1.0,		1.0,		1.0		},	//	Yield Adj
+			//	universal	ablation	drill		explosion	shockwave
+			{	1.0,		1.0,		1.0,		1.0,		1.0		},	//	Success Adj
+			{	1.0,		1.0,		1.0,		1.0,		1.0		},	//	Yield Adj
 		},
 
 		{	"icy",			25,
-
-			//	ablation	drill		explosion	shockwave
-			{	2.0,		1.0,		1.0,		0.5		},	//	Success Adj
-			{	1.25,		1.5,		1.0,		0.5		},	//	Yield Adj
+		
+			//	universal	ablation	drill		explosion	shockwave
+			{	1.0,		2.0,		1.0,		1.0,		0.5		},	//	Success Adj
+			{	1.0,		1.25,		1.5,		1.0,		0.5		},	//	Yield Adj
 		},
 
 		{	"metallic",		100,
-
-			//	ablation	drill		explosion	shockwave
-			{	1.0,		1.0,		0.5,		2.0		},	//	Success Adj
-			{	1.5,		1.0,		0.5,		1.25	},	//	Yield Adj
+		
+			//	universal	ablation	drill		explosion	shockwave
+			{	1.0,		1.0,		1.0,		0.5,		2.0		},	//	Success Adj
+			{	1.0,		1.5,		1.0,		0.5,		1.25	},	//	Yield Adj
 		},
 		{	"primordial",	50,
-
-			//	ablation	drill		explosion	shockwave
-			{	0.5,		2.0,		1.0,		1.0		},	//	Success Adj
-			{	0.5,		1.25,		1.5,		1.0		},	//	Yield Adj
+		
+			//	universal	ablation	drill		explosion	shockwave
+			{	1.0,		0.5,		2.0,		1.0,		1.0		},	//	Success Adj
+			{	1.0,		0.5,		1.25,		1.5,		1.0		},	//	Yield Adj
 		},
 		{	"rocky",		50,
-
-			//	ablation	drill		explosion	shockwave
-			{	1.0,		1.0,		1.0,		1.0		},	//	Success Adj
-			{	1.0,		1.0,		1.0,		1.0		},	//	Yield Adj
+		
+			//	universal	ablation	drill		explosion	shockwave
+			{	1.0,		1.0,		1.0,		1.0,		1.0		},	//	Success Adj
+			{	1.0,		1.0,		1.0,		1.0,		1.0		},	//	Yield Adj
 		},
 		{	"volcanic",		75,
-
-			//	ablation	drill		explosion	shockwave
-			{	1.0,		0.5,		2.0,		1.0		},	//	Success Adj
-			{	1.0,		0.5,		1.25,		1.5		},	//	Yield Adj
+		
+			//	universal	ablation	drill		explosion	shockwave
+			{	1.0,		1.0,		0.5,		2.0,		1.0		},	//	Success Adj
+			{	1.0,		1.0,		0.5,		1.25,		1.5		},	//	Yield Adj
 		},
 	};
 
-TStaticStringTable<TStaticStringEntry<EMiningMethod>, 4> CAsteroidDesc::MINING_METHOD_INDEX = {
+TStaticStringTable<TStaticStringEntry<EMiningMethod>, EMiningMethodCount> CAsteroidDesc::MINING_METHOD_INDEX = {
+	"universal",			EMiningMethod::universal,
 	"ablation",				EMiningMethod::ablation,
 	"drill",				EMiningMethod::drill,
 	"explosion",			EMiningMethod::explosion,
@@ -156,7 +157,29 @@ void CAsteroidDesc::CalcMining (int iMiningLevel, int iMiningDifficulty, EAstero
 	//	Max ore level is the maximum level of ore that we can extract with the 
 	//	given shot.
 
-	retMining.iMaxOreLevel = CalcMaxOreLevel(DamageCtx.Damage.GetDamageType());
+	int iMaxOreLevel = DamageCtx.GetDesc().GetMiningLevel();
+
+	//	valid iMaxOreLevel is between 0-MAX_ITEM_LEVEL
+	//	0 means probing for ore
+	//	-1 means use the adventure defaults
+
+	if (iMaxOreLevel >= 0)
+		retMining.iMaxOreLevel = iMaxOreLevel;
+
+	//	Otherwise we load this from the engine settings
+
+	//	If a device is from a mod or expansion that predates API 48
+	//	it assumes all damages can mine all levels of ore
+
+	else if (DamageCtx.GetDesc().GetWeaponType()->GetAPIVersion() < 48 && g_pUniverse->GetCurrentAdventureDesc().GetAPIVersion() >= 48)
+		retMining.iMaxOreLevel = MAX_ITEM_LEVEL;
+
+	//	otherwise we assume that this device knows about ore levels
+	//	and is appropriately statted, using an override, or for an
+	//	adventure with its own custom mining levels
+
+	else
+		retMining.iMaxOreLevel = g_pUniverse->GetEngineOptions().GetMiningMaxOreLevels()->GetMaxOreLevel(DamageCtx.Damage.GetDamageType(), DamageCtx.GetDesc().GetWeaponType()->GetLevel());
 	}
 
 EMiningMethod CAsteroidDesc::CalcMiningMethod (const CWeaponFireDesc &Desc)

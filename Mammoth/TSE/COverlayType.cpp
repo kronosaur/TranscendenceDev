@@ -49,11 +49,9 @@ COverlayType::~COverlayType (void)
 //	COverlayType destructor
 
 	{
-	if (m_pEffect)
-		delete m_pEffect;
+	delete m_pEffect;
 
-	if (m_pHitEffect)
-		delete m_pHitEffect;
+	delete m_pHitEffect;
 	}
 
 bool COverlayType::AbsorbsWeaponFire (CInstalledDevice *pWeapon)
@@ -115,7 +113,9 @@ int COverlayType::GetDamageAbsorbed (CSpaceObject *pSource, SDamageCtx &Ctx)
 //	Returns the amount of damage absorbed
 
 	{
-	if (Ctx.Damage.GetDamageType() == damageGeneric)
+	DamageTypes iType = Ctx.Damage.GetDamageType();
+
+	if (iType == damageGeneric)
 		{
 		//	For generic damage, we absorb the min of all other damage types
 
@@ -127,7 +127,14 @@ int COverlayType::GetDamageAbsorbed (CSpaceObject *pSource, SDamageCtx &Ctx)
 		return (Ctx.iDamage * iMin) / 100;
 		}
 
-	return (Ctx.iDamage * m_AbsorbAdj.GetAbsorbAdj(Ctx.Damage.GetDamageType())) / 100;
+	if (iType == damageNull)
+		{
+		//	For null damage, we do not absorb damage
+
+		return 0;
+		}
+
+	return (Ctx.iDamage * m_AbsorbAdj.GetAbsorbAdj(iType)) / 100;
 	}
 
 int COverlayType::GetMaxHitPoints (const CSpaceObject &Source) const
@@ -156,7 +163,7 @@ int COverlayType::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSour
 	{
 	CItemCtx ItemCtx(pSource, pDevice);
 	DamageTypes iType = (DamageTypes)pDevice->GetDamageType(ItemCtx);
-	if (iType == damageGeneric)
+	if (iType == damageGeneric || iType == damageNull)
 		return 0;
 
 	return m_BonusAdj.GetHPBonus(iType);

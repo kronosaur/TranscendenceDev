@@ -80,9 +80,13 @@ namespace Kernel {
 
 #define DEBUG_TRY					try {
 #define DEBUG_CATCH					} catch (...) { kernelDebugLogPattern("Crash in %s", CString(__FUNCTION__)); throw; }
+#define DEBUG_CATCH_MT				} catch (...) { m_cs.Lock(); kernelDebugLogPattern("Crash in %s", CString(__FUNCTION__)); m_cs.Unlock(); throw; }
 #define DEBUG_CATCH_CONTINUE		} catch (...) { kernelDebugLogPattern("Crash in %s", CString(__FUNCTION__)); }
+#define DEBUG_CATCH_CONTINUE_MT		} catch (...) { m_cs.Lock(); kernelDebugLogPattern("Crash in %s", CString(__FUNCTION__)); m_cs.Unlock(); }
 #define DEBUG_CATCH_MSG(msg)		} catch (...) { kernelDebugLogPattern((msg)); throw; }
+#define DEBUG_CATCH_MSG_MT(msg)		} catch (...) { m_cs.Lock(); kernelDebugLogPattern((msg)); m_cs.Unlock(); throw; }
 #define DEBUG_CATCH_MSG1(msg,p1)	} catch (...) { kernelDebugLogPattern((msg),(p1)); throw; }
+#define DEBUG_CATCH_MSG1_MT(msg,p1)	} catch (...) { m_cs.Lock(); kernelDebugLogPattern((msg),(p1)); m_cs.Unlock(); throw; }
 
 #define INLINE_DECREF				TRUE
 
@@ -1251,11 +1255,21 @@ class IThreadPoolTask
 class CThreadPool
 	{
 	public:
+		enum EThreadPoolState
+			{
+			eNotBooted,
+			eBooting,
+			eBooted,
+			eDeleting,
+			eDeleted
+			};
+
 		~CThreadPool (void) { CleanUp(); }
 
 		void AddTask (IThreadPoolTask *pTask);
 		bool Boot (int iThreadCount);
 		void CleanUp (void);
+		EThreadPoolState GetState (void) { return m_iState; }
 		int GetThreadCount (void) const { return m_Threads.GetCount() + 1; }
 		void Run (void);
 
@@ -1265,16 +1279,23 @@ class CThreadPool
 			HANDLE hThread;
 			};
 
+		void AssertInOwnerThread (void) const { ASSERT(m_dwOwner == GetCurrentThreadId()); }
+		void AssertNotInOurThreads () const;
 		IThreadPoolTask *GetTaskToRun (void);
 		void RunTask (IThreadPoolTask *pTask);
 		void WorkerThread (void);
 
 		static DWORD WINAPI WorkerThreadStub (LPVOID pData) { ((CThreadPool *)pData)->WorkerThread(); return 0; }
 
-		CCriticalSection m_cs;
+		EThreadPoolState m_iState = eNotBooted;			//	We can only boot once
+		DWORD m_dwOwner = GetCurrentThreadId();			//	We only permit the owner thread to call our interfaces
+		CCriticalSection m_cs = CCriticalSection();		//	Ensure our critical sections are initialized
+		int m_iTasksRemaining = 0;
+
+		//	This section is initialized in Boot
+
 		TArray<SThreadDesc> m_Threads;
 		TQueue<IThreadPoolTask *> m_Tasks;
-		int m_iTasksRemaining;
 		TArray<IThreadPoolTask *> m_Completed;
 		CManualEvent m_WorkAvail;
 		CManualEvent m_WorkCompleted;
@@ -1415,10 +1436,38 @@ void UncompressRunLengthByte (IWriteStream *pOutput, IReadBlock *pInput);
 
 DWORD sysGetAPIFlags (void);
 DWORD sysGetTicksElapsed (DWORD dwTick, DWORD *retdwNow = NULL);
-int sysGetProcessorCount (void);
 CString sysGetUserName (void);
 bool sysIsBigEndian (void);
 bool sysOpenURL (const CString &sURL);
+
+//	Processor info functions
+
+struct SProcessorInfo
+	{
+	DWORD dwNumLogical = 0;
+	DWORD dwNumPhysical = 0;
+	DWORD dwNumProcessorGroups = 0;
+
+	//	flags
+
+	DWORD fReliablePhysicalProcessorCount : 1 = 0;
+	DWORD fReliableLogicalProcessorCount : 1 = 0;
+	DWORD fReliableProcessorGroups : 1 = 0;
+	DWORD fSuccess : 1 = 0;
+	DWORD fCanAddProcessorGroups : 1 = 0;
+	DWORD dwSpare : 27 = 0;
+	};
+
+#ifdef WIN32
+#define RELIABLE_AFFINITY_MASK false
+#else
+#define RELIABLE_AFFINITY_MASK true
+#endif
+
+DWORD sysGetProcessorsInMask(KAFFINITY& AffinityMask);
+SProcessorInfo sysGetProcessorInfo(void);
+int sysGetProcessorCountLegacy(void);
+int sysGetProcessorCount(void);
 
 //	Utility functions (Utilities.cpp)
 

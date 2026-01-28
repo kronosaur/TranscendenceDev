@@ -7,6 +7,10 @@
 #define ARMOR_DAMAGE_ADJ_TAG					CONSTLIT("ArmorDamageAdj")
 #define CONSTANTS_TAG							CONSTLIT("Constants")
 #define ENCOUNTER_OVERRIDES_TAG					CONSTLIT("EncounterOverrides")
+#define MINING_DAMAGE_ORE_LEVEL_TAG				CONSTLIT("MiningMaxOreLevels")
+#define EXTERNAL_DEVICE_DAMAGE_LEVEL_TAG		CONSTLIT("ExternalDeviceDamageMaxLevels")
+#define INTERNAL_DEVICE_DAMAGE_LEVEL_TAG		CONSTLIT("InternalDeviceDamageMaxLevels")
+#define DAMAGE_METHOD_ADJ_CURVES_TAG				CONSTLIT("DamageMethodAdj")
 #define SHIELD_DAMAGE_ADJ_TAG					CONSTLIT("ShieldDamageAdj")
 
 #define ADVENTURE_UNID_ATTRIB					CONSTLIT("adventureUNID")
@@ -316,6 +320,26 @@ ALERROR CAdventureDesc::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 			else if (strEquals(pItem->GetTag(), SHIELD_DAMAGE_ADJ_TAG))
 				{
 				if (!m_EngineOptions.InitShieldDamageAdjFromXML(Ctx, *pItem))
+					return ComposeLoadError(Ctx, Ctx.sError);
+				}
+			else if (strEquals(pItem->GetTag(), MINING_DAMAGE_ORE_LEVEL_TAG))
+				{
+				if (!m_EngineOptions.InitMiningMaxOreLevelsFromXML(Ctx, *pItem))
+					return ComposeLoadError(Ctx, Ctx.sError);
+				}
+			else if (strEquals(pItem->GetTag(), EXTERNAL_DEVICE_DAMAGE_LEVEL_TAG))
+				{
+				if (!m_EngineOptions.InitExternalDeviceDamageMaxLevelsFromXML(Ctx, *pItem))
+					return ComposeLoadError(Ctx, Ctx.sError);
+				}
+			else if (strEquals(pItem->GetTag(), INTERNAL_DEVICE_DAMAGE_LEVEL_TAG))
+				{
+				if (!m_EngineOptions.InitInternalDeviceDamageMaxLevelsFromXML(Ctx, *pItem))
+					return ComposeLoadError(Ctx, Ctx.sError);
+				}
+			else if (strEquals(pItem->GetTag(), DAMAGE_METHOD_ADJ_CURVES_TAG))
+				{
+				if (!m_EngineOptions.InitDamageMethodDescsFromXML(Ctx, *pItem))
 					return ComposeLoadError(Ctx, Ctx.sError);
 				}
 			else

@@ -641,6 +641,7 @@ class CSpaceObject
 		const CAttributeDataBlock &GetData (void) const { return m_Data; }
 		ICCItemPtr GetData (const CString &sAttrib) const { return m_Data.GetDataAsItem(sAttrib); }
 		CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
+		TArray<CString> GetDataKeys (void);
 		ICCItemPtr GetGlobalData (const CString &sAttribute) const;
 		CSpaceObject *GetObjRefData (const CString &sAttrib) { return m_Data.GetObjRefData(sAttrib); }
 		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
@@ -1140,6 +1141,8 @@ class CSpaceObject
 
 		ICCItemPtr GetProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
 		ICCItemPtr GetProperty (const CString &sProperty) const { CCodeChainCtx CCX(GetUniverse()); return GetProperty(CCX, sProperty); }
+		ICCItemPtr GetPropertyKeys (CCodeChainCtx& CCX, EDesignDataTypes iDataType = EDesignDataTypes::ePropertyData) const;
+		ICCItemPtr GetPropertyKeys (EDesignDataTypes iDataType = EDesignDataTypes::ePropertyData) const { CCodeChainCtx CCX(GetUniverse()); return GetPropertyKeys(CCX, iDataType); }
 		bool IncProperty (const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 
@@ -1251,7 +1254,7 @@ class CSpaceObject
 		virtual CString GetObjClassName (void) const { return CONSTLIT("unknown"); }
 		virtual Metric GetParallaxDist (void) { return 0.0; }
 		virtual EDamageResults GetPassthroughDefault (void) { return damageNoDamage; }
-		virtual int GetPlanetarySize (void) const { return 0; }
+		virtual int GetPlanetarySize (void) const { return 0; } 
 		virtual ScaleTypes GetScale (void) const { return scaleFlotsam; }
 		virtual CSovereign *GetSovereign (void) const { return NULL; }
 		virtual Metric GetStellarMass (void) const { return 0.0; }
@@ -1300,7 +1303,7 @@ class CSpaceObject
 		virtual int GetCounterValue (void) const { return 0; }
 		virtual int GetCyberDefenseLevel (void) const { return GetLevel(); }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
-		virtual DamageTypes GetDamageType (void) { return damageGeneric; }
+		virtual DamageTypes GetDamageType (void) { return damageNull; }
 		virtual CSpaceObject *GetDestination (void) const { return NULL; }
 		virtual CStationType *GetEncounterInfo (void) { return NULL; }
 		virtual CSpaceObject *GetEscortPrincipal (void) const { return NULL; }
@@ -1312,6 +1315,7 @@ class CSpaceObject
 		virtual int GetMaxLightDistance (void) const { return 0; }
 		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
 		virtual int GetPerception (void) const { return perceptNormal; }
+		virtual int GetRelativeHealth () const { return INT_MAX; }
 		virtual int GetScore (void) { return 0; }
 		virtual CG32bitPixel GetSpaceColor (void) { return 0; }
 		virtual int GetStealth (void) const { return stealthNormal; }

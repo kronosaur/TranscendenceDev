@@ -22,6 +22,10 @@
 #define ENHANCEMENT_TYPE_ATTRIB					CONSTLIT("enhancementType")
 #define EMP_DAMAGE_ADJ_ATTRIB					CONSTLIT("EMPDamageAdj")
 #define EMP_IMMUNE_ATTRIB						CONSTLIT("EMPImmune")
+#define FORTIFICATION_CRUSH_ATTRIB				CONSTLIT("fortificationCrushAdj")
+#define FORTIFICATION_PIERCE_ATTRIB				CONSTLIT("fortificationPierceAdj")
+#define FORTIFICATION_SHRED_ATTRIB				CONSTLIT("fortificationShredAdj")
+#define FORTIFICATION_WMD_ATTRIB				CONSTLIT("fortificationWMDAdj")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define HP_BONUS_PER_CHARGE_ATTRIB				CONSTLIT("hpBonusPerCharge")
 #define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")
@@ -149,10 +153,10 @@ static CArmorClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 	{
 		//						Repair	Install
 		//	HP		Cost		cost	cost		Mass
-		{	35,		50,			1,		10,			2500, },	
-		{	45,		100,		1,		20,			2600, },
-		{	60,		200,		1,		40,			2800, },
-		{	80,		400,		2,		80,			2900, },
+		{	35,		50,			1,		10,			3000, },	
+		{	45,		100,		1,		20,			3000, },
+		{	60,		200,		1,		40,			3000, },
+		{	80,		400,		2,		80,			3000, },
 		{	100,	800,		3,		160,		3000, },
 
 		{	135,	1600,		4,		320,		3000, },
@@ -164,8 +168,8 @@ static CArmorClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 		{	500,	50000,		34,		10000,		3000, },
 		{	650,	100000,		52,		20000,		3000, },
 		{	850,	200000,		80,		40000,		3000, },
-		{	1100,	410000,		125,	82000,		3000, },
-		{	1400,	820000,		195,	164000,		3000, },
+		{	1100,	400000,		125,	80000,		3000, },
+		{	1400,	800000,		195,	160000,		3000, },
 
 		{	1850,	1600000,	285,	320000,		3000, },
 		{	2400,	3250000,	455,	650000,		3000, },
@@ -173,7 +177,7 @@ static CArmorClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 		{	4000,	13000000,	1080,	2600000,	3000, },
 		{	5250,	26000000,	1650,	5200000,	3000, },
 
-		{	6850,	52000000,	2520,	10400000,	3000, },
+		{	6850,	52000000,	2520,	10000000,	3000, },
 		{	9000,	100000000,	3850,	20000000,	3000, },
 		{	12000,	200000000,	5780,	40000000,	3000, },
 		{	15000,	400000000,	9220,	80000000,	3000, },
@@ -210,8 +214,7 @@ CArmorClass::~CArmorClass (void)
 //  CArmorClass destructor
 
 	{
-	if (m_pScalable)
-		delete[] m_pScalable;
+	delete[] m_pScalable;
 	}
 
 EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
@@ -759,6 +762,55 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	const CItem &Item = ItemCtx.GetItem();
 	const CArmorItem ArmorItem = Item.AsArmorItemOrThrow();
 
+	//	Adjust for our item-level damage method Fortification:
+
+	EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+	int iDamage;
+
+	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+		{
+
+		Metric rDamageMethodAdj = 1.0;
+
+		for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
+			{
+			EDamageMethod iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
+
+			Metric rMethodFortificationAdj = Ctx.ArmorExternFortification.Get(iMethod);
+
+			//	Stacked fortification modifiers are added together
+
+			if (IS_NAN(m_Fortification.Get(iMethod)))
+				rMethodFortificationAdj += g_pUniverse->GetEngineOptions().GetDamageMethodAdjItemArmor(iMethod);
+			else
+				rMethodFortificationAdj += m_Fortification.Get(iMethod);
+
+			rDamageMethodAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortificationAdj);
+			}
+
+		iDamage = Ctx.CalcDamageMethodAdjDamagePrecalc(rDamageMethodAdj);
+		}
+	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+		{
+		EDamageMethod iMethod = EDamageMethod::methodWMD;
+
+		Metric rFortificationAdj = Ctx.ArmorExternFortification.GetWMD();
+
+		//	Stacked fortification modifiers are added together
+
+		if (IS_NAN(m_Fortification.GetWMD()))
+			rFortificationAdj += g_pUniverse->GetEngineOptions().GetDamageMethodAdjItemArmor(iMethod);
+		else
+			rFortificationAdj += m_Fortification.GetWMD();
+
+		iDamage = Ctx.CalcDamageMethodAdjDamage(iMethod, rFortificationAdj);
+		}
+	else
+		{
+		ASSERT(false);
+		iDamage = 0;
+		}
+
 	//	Adjust for special armor damage:
 	//
 	//	<0	=	2.5x damage
@@ -769,14 +821,16 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	int iDamageLevel = Ctx.Damage.GetArmorDamageLevel();
 	if (iDamageLevel > 0)
-		Ctx.iArmorDamage = mathAdjust(Ctx.iDamage, CalcArmorDamageAdj(ArmorItem, Ctx.Damage));
-	else
-		Ctx.iArmorDamage = Ctx.iDamage;
+		iDamage = mathAdjust(iDamage, CalcArmorDamageAdj(ArmorItem, Ctx.Damage));
 
 	//	Adjust for damage type
 
 	int iDamageAdj = GetDamageAdj(ArmorItem, Ctx.Damage);
-	Ctx.iArmorDamage = mathAdjust(Ctx.iArmorDamage, iDamageAdj);
+	iDamage = mathAdjust(iDamage, iDamageAdj);
+
+	//	Store our damage
+
+	Ctx.iArmorDamage = iDamage;
 	}
 
 int CArmorClass::CalcArmorDamageAdj (const CArmorItem &ArmorItem, const DamageDesc &Damage) const
@@ -1491,6 +1545,50 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	pArmor->m_iHPBonusPerCharge = pDesc->GetAttributeIntegerBounded(HP_BONUS_PER_CHARGE_ATTRIB, 0, -1, 0);
 	pArmor->m_iBalanceAdj = pDesc->GetAttributeIntegerBounded(BALANCE_ADJ_ATTRIB, -200, 200, 0);
 
+	//	Damage Method fortification
+
+	EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+
+	bool bHasWMDFortify = pDesc->FindAttribute(FORTIFICATION_WMD_ATTRIB);
+	bool bHasPhysicalizedFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_ATTRIB);
+
+	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+		{
+		if (bHasPhysicalizedFortify)
+			{
+			pArmor->m_Fortification.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_ATTRIB, R_NAN));
+			pArmor->m_Fortification.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, R_NAN));
+			pArmor->m_Fortification.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_ATTRIB, R_NAN));
+			}
+		else if (bHasWMDFortify)
+			{
+			pArmor->m_Fortification.SetCrush(R_NAN);
+			pArmor->m_Fortification.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, R_NAN));
+			pArmor->m_Fortification.SetShred(R_NAN);
+			}
+		else
+			{
+			pArmor->m_Fortification.SetCrush(R_NAN);
+			pArmor->m_Fortification.SetPierce(R_NAN);
+			pArmor->m_Fortification.SetShred(R_NAN);
+			}
+		}
+	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+		{
+		if (bHasWMDFortify)
+			pArmor->m_Fortification.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, R_NAN));
+		else if (bHasPhysicalizedFortify)
+			pArmor->m_Fortification.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, R_NAN));
+		else
+			pArmor->m_Fortification.SetWMD(R_NAN);
+		}
+	else
+		{
+		ASSERT(false);
+		Ctx.sError = CONSTLIT("Cannot initialize with an unknown damage method system.");
+		return ERR_FAIL;
+		}
+
 	//	Regen
 
 	if (error = pArmor->m_Stats.Regen.InitFromXML(Ctx, pDesc, REGEN_ATTRIB, REPAIR_RATE_ATTRIB, NULL_STR, TICKS_PER_UPDATE))
@@ -1879,11 +1977,11 @@ void CArmorClass::GenerateScaledStats (void)
 		//  Immunities based on level
 
 		Stats.iBlindingDamageAdj = Min(m_Stats.iBlindingDamageAdj, (Stats.iLevel >= BLIND_IMMUNE_LEVEL ? 0 : 100));
-		Stats.fRadiationImmune = m_Stats.fRadiationImmune || (Stats.iLevel >= RADIATION_IMMUNE_LEVEL ? true : false);
+		Stats.fRadiationImmune |= Stats.iLevel >= RADIATION_IMMUNE_LEVEL;
 		Stats.iEMPDamageAdj = Min(m_Stats.iEMPDamageAdj, (Stats.iLevel >= EMP_IMMUNE_LEVEL ? 0 : 100));
 		Stats.iDeviceDamageAdj = Min(m_Stats.iDeviceDamageAdj, (Stats.iLevel >= DEVICE_DAMAGE_IMMUNE_LEVEL ? 0 : 100));
-		Stats.fDisintegrationImmune = m_Stats.fDisintegrationImmune || (Stats.iLevel >= DISINTEGRATION_IMMUNE_LEVEL ? true : false);
-		Stats.fShatterImmune = m_Stats.fShatterImmune || (Stats.iLevel >= SHATTER_IMMUNE_LEVEL ? true : false);
+		Stats.fDisintegrationImmune |= Stats.iLevel >= DISINTEGRATION_IMMUNE_LEVEL;
+		Stats.fShatterImmune |= Stats.iLevel >= SHATTER_IMMUNE_LEVEL;
 
 		//  Regen and decay
 

@@ -109,6 +109,8 @@ struct SViewportPaintCtx
 		const CG8bitSparseImage *pVolumetricMask = NULL;	//	Volumetric mask for starshine
 
 		CThreadPool *pThreadPool = NULL;		//	Thread pool for painting.
+		DWORD dwMinChunkSizePow = 1 << 12;		//	Minimum chunk size
+		CThreadPool *pBkrndThreadPool = NULL;	//	Thread pool for background painting.
 
 		//	Options
 
@@ -122,11 +124,17 @@ struct SViewportPaintCtx
 		bool fNoSpaceBackground = false;
 		bool fShowSatellites = false;
 		bool bShowUnexploredAnnotation = false;
-		bool bShowBounds = false;
-		bool bShowFacingsAngle = false;
 		bool bNo3DExtras = false;
 		bool bInPaintSubordinate = false;
+		bool bForceSTPaint = false;
+
+		//	Debug Options
+
+		bool bShowBounds = false;
+		bool bShowFacingsAngle = false;
 		bool bShowOrderInfo = false;
+		bool bDbgShowPaintLocations = false;
+		bool bDbgShowPaintTime = false;
 
 		CSpaceObject *pObj = NULL;				//	Current object being painted
 		RECT rcObjBounds;						//	Object bounds in screen coordinates.

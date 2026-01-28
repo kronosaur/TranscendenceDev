@@ -22,6 +22,8 @@
 #define	GLOW_SIZE						4
 #define FILTER_SIZE						5
 #define FIXED_POINT						65536
+#define MT_REQUIRED_PIXEL_COUNT_SHIFT	12
+#define MT_REQUIRED_PIXELS				1 << MT_REQUIRED_PIXEL_COUNT_SHIFT
 
 static int g_FilterOffset[FILTER_SIZE] =
 	{
@@ -46,6 +48,118 @@ static char g_ImageXAttrib[] = "imageX";
 static char g_ImageYAttrib[] = "imageY";
 static char g_ImageFrameCountAttrib[] = "imageFrameCount";
 static char g_ImageTicksPerFrameAttrib[] = "imageTicksPerFrame";
+
+// CSpritePaintWorker ----------------------------------------------------------------------------------
+
+class CSpritePaintWorker : public IThreadPoolTask
+	{
+	public:
+		enum ePaintMode
+			{
+			eDebugTask,					//	This task does not actually paint anything, it just runs the collatz conjecture
+			ePaintImage,
+			
+			ePaintModeCount
+			};
+		struct SCtx
+			{
+			//	Call Ctx
+			int iMode = ePaintMode::ePaintImage;
+
+			//	Dest Ctx
+			CG32bitImage *pDest = NULL;
+			int xDest = 0;
+			int yDest = 0;
+
+			//	Src Ctx
+			const CObjectImageArray *pSrc = NULL;
+			int xSrc = 0;
+			int ySrc = 0;
+			int iTick = 0;
+			int iRotation = 0;
+
+			//	Flags
+			DWORD fComposite : 1 = 0;
+			DWORD fDbgShowPaintLocation : 1 = 0;
+			DWORD dwSpare : 30 = 0;
+
+			};
+
+		CSpritePaintWorker (int yOffset, int cyHeight, const SCtx &Ctx):
+			m_y(yOffset),
+			m_cyHeight(cyHeight),
+			m_Ctx(Ctx)
+			{ }
+
+		virtual void Run (void) override
+			{
+			switch (m_Ctx.iMode)
+				{
+				case (ePaintImage):
+					{
+					RunPaintImage();
+					break;
+					}
+				case (eDebugTask):
+					{
+					RunDebugTask();
+					break;
+					}
+				default:
+					ASSERT(false);
+				}
+			}
+
+	private:
+
+		//	Task code
+
+		void RunPaintImage (void)
+			{
+			if (m_Ctx.pSrc)
+				m_Ctx.pSrc->WorkerPaintImage(
+					*m_Ctx.pDest,
+					m_Ctx.xDest,
+					m_Ctx.yDest,
+					m_Ctx.iTick,
+					m_Ctx.iRotation,
+					m_Ctx.fComposite,
+					m_y,
+					m_cyHeight,
+					m_Ctx.fDbgShowPaintLocation
+				);
+			}
+
+		//	Debug task code
+
+		int DebugTask (int i)
+			{
+			//	Give the threads some busy work (Collatz conjecture)
+			int count = 0;
+			while (i > 1)
+				{
+				if (i > 3000)
+					i = 3000;
+				if (i & 0x00000001)
+					i = i * 3 + 1;
+				else
+					i = i / 2;
+				count++;
+				}
+			return count;
+			}
+
+		void RunDebugTask (void)
+			{
+			DebugTask(m_Ctx.xDest + m_Ctx.yDest + m_Ctx.iTick + m_Ctx.iRotation + m_Ctx.fComposite + m_y + m_cyHeight);
+			}
+
+		const SCtx m_Ctx;
+		const int m_y;
+		const int m_cyHeight;
+	};
+
+// CObjectImageArray ---------------------------------------------------------------------------------
 
 CG32bitImage CObjectImageArray::m_NullImage;
 CObjectImageArray CObjectImageArray::m_Null;
@@ -232,17 +346,11 @@ void CObjectImageArray::CleanUp (void)
 //	Cleans up the image to free resources
 
 	{
-	if (m_pRotationOffset)
-		{
-		delete [] m_pRotationOffset;
-		m_pRotationOffset = NULL;
-		}
+	delete [] m_pRotationOffset;
+	m_pRotationOffset = NULL;
 
-	if (m_pGlowImages)
-		{
-		delete [] m_pGlowImages;
-		m_pGlowImages = NULL;
-		}
+	delete [] m_pGlowImages;
+	m_pGlowImages = NULL;
 
 	if (m_pScaledImages)
 		{
@@ -410,8 +518,7 @@ void CObjectImageArray::ComputeRotationOffsets (void)
 	{
 	if (m_iRotationOffset != 0 && m_iRotationCount > 0)
 		{
-		if (m_pRotationOffset)
-			delete [] m_pRotationOffset;
+		delete [] m_pRotationOffset;
 
 		m_pRotationOffset = new OffsetStruct[m_iRotationCount];
 		for (int i = 0; i < m_iRotationCount; i++)
@@ -426,8 +533,7 @@ void CObjectImageArray::ComputeRotationOffsets (void)
 		}
 	else
 		{
-		if (m_pRotationOffset)
-			delete [] m_pRotationOffset;
+		delete [] m_pRotationOffset;
 
 		m_pRotationOffset = NULL;
 		}
@@ -442,8 +548,7 @@ void CObjectImageArray::ComputeRotationOffsets (int xOffset, int yOffset)
 	{
 	if (m_iRotationCount != 0)
 		{
-		if (m_pRotationOffset)
-			delete [] m_pRotationOffset;
+		delete [] m_pRotationOffset;
 
 		m_pRotationOffset = new OffsetStruct[m_iRotationCount];
 		for (int i = 0; i < m_iRotationCount; i++)
@@ -488,6 +593,8 @@ void CObjectImageArray::CopyFrom (const CObjectImageArray &Source)
 	m_pGlowImages = NULL;
 	m_pScaledImages = NULL;
 	m_cxScaledImage = -1;
+
+	m_cs = CCriticalSection();
 	}
 
 void CObjectImageArray::CopyImage (CG32bitImage &Dest, int x, int y, int iFrame, int iRotation) const
@@ -636,8 +743,7 @@ void CObjectImageArray::GenerateScaledImages (int iRotation, int cxWidth, int cy
 
 	if (m_pScaledImages == NULL || cxWidth != m_cxScaledImage)
 		{
-		if (m_pScaledImages)
-			delete [] m_pScaledImages;
+		delete [] m_pScaledImages;
 
 		m_pScaledImages = new CG32bitImage [m_iRotationCount];
 		m_cxScaledImage = cxWidth;
@@ -1308,7 +1414,7 @@ void CObjectImageArray::MarkImage (void) const
 		ValidateImageSize(m_pImage->GetWidth(), m_pImage->GetHeight());
 	}
 
-ALERROR CObjectImageArray::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
+ALERROR CObjectImageArray::OnDesignLoadComplete (SDesignLoadCtx& Ctx)
 
 //	OnDesignLoadComplete
 //
@@ -1318,8 +1424,8 @@ ALERROR CObjectImageArray::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	DEBUG_TRY
 
 #ifdef NO_RESOURCES
-	if (Ctx.bNoResources)
-		return NOERROR;
+		if (Ctx.bNoResources)
+			return NOERROR;
 #endif
 
 	if (m_dwBitmapUNID)
@@ -1339,19 +1445,19 @@ ALERROR CObjectImageArray::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 			return ERR_FAIL;
 			}
 
-        //  If we don't have a RECT, initialize it now that we have the image
+		//  If we don't have a RECT, initialize it now that we have the image
 
-        if (m_bDefaultSize)
-            {
-            CG32bitImage *pImage = m_pImage->GetRawImage(CONSTLIT("Resolve image size"));
-            if (pImage)
-                {
-                m_rcImage.right = pImage->GetWidth();
-                m_rcImage.bottom = pImage->GetHeight();
+		if (m_bDefaultSize)
+			{
+			CG32bitImage* pImage = m_pImage->GetRawImage(CONSTLIT("Resolve image size"));
+			if (pImage)
+				{
+				m_rcImage.right = pImage->GetWidth();
+				m_rcImage.bottom = pImage->GetHeight();
 
-            	m_iViewportSize = RectWidth(m_rcImage);
-                }
-            }
+				m_iViewportSize = RectWidth(m_rcImage);
+				}
+			}
 		}
 
 	return NOERROR;
@@ -1359,24 +1465,138 @@ ALERROR CObjectImageArray::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, bool bComposite) const
-
 //	PaintImage
-//
-//	Paints the image on the destination
-
+//	
+//	Paints the image with MT if Ctx is not NULL and defines m_pThreadPool
+//	Otherwise uses standard painting
+//	
+void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick, int iRotation, bool bComposite, SViewportPaintCtx* Ctx, int iOffsetY, int iOffsetCY) const
 	{
 	DEBUG_TRY
 
+	m_cs.Lock();
+	CG32bitImage* pSource = (m_pImage ? m_pImage->GetRawImage(NULL_STR) : NULL);
+	m_cs.Unlock();
+
+	if (pSource == NULL)
+		return;
+
 	if (m_pImage)
 		{
-		CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
-		if (pSource == NULL)
-			return;
+		
+		//	capture draw performance if that debug setting is configured
 
+		LARGE_INTEGER iPerfStart;
+		LARGE_INTEGER iPerfEnd;
+		if (Ctx && Ctx->bDbgShowPaintTime)
+			QueryPerformanceCounter(&iPerfStart);
+
+		//	If we are on the main thread and we have a thread pool in the paint context, use multithreading
+		//	Due to the performance impact of starting individual threads though, we want to make sure that
+		//	we do not use excessive threads on a small ship
+		int iScanLines = RectHeight(m_rcImage);
+		int iScanLineLength = RectWidth(m_rcImage);
+		int iProjectedExtraWorkers = (Ctx && Ctx->pThreadPool && !Ctx->bForceSTPaint) ? (iScanLineLength >> Ctx->dwMinChunkSizePow ? iScanLineLength - 1 : (iScanLines * iScanLineLength) >> Ctx->dwMinChunkSizePow) : 0;
+
+		if (iProjectedExtraWorkers)
+			{
+
+			//	Group scanlines per worker
+			int iNumWorkers = min(Ctx->pThreadPool->GetThreadCount(), 1 + iProjectedExtraWorkers);
+			int iScanLinesPerWorker = iScanLines / iNumWorkers;
+			int iScanLinesRemainder = iScanLines % iNumWorkers;
+			int iYOffset = 0;
+			CSpritePaintWorker::ePaintMode iPaintMode = CSpritePaintWorker::ePaintImage;
+
+			//	Create context
+			CSpritePaintWorker::SCtx WorkerCtx = CSpritePaintWorker::SCtx();
+			WorkerCtx.pSrc = this;
+			WorkerCtx.pDest = &Dest;
+			WorkerCtx.xDest = x;
+			WorkerCtx.xSrc = m_rcImage.left;
+			WorkerCtx.yDest = y;
+			WorkerCtx.ySrc = m_rcImage.top;
+			WorkerCtx.iTick = iTick;
+			WorkerCtx.iRotation = iRotation;
+			WorkerCtx.iMode = iPaintMode;
+			WorkerCtx.fComposite = bComposite ? 1 : 0;
+			WorkerCtx.fDbgShowPaintLocation = Ctx->bDbgShowPaintLocations ? 1 : 0;
+
+			//	Create tasks
+
+			for (int i = 0; i < iNumWorkers; i++)
+				{
+				int iCY = iScanLinesPerWorker + (i < iScanLinesRemainder ? 1 : 0);
+				CSpritePaintWorker *pTask = new CSpritePaintWorker(iYOffset, iCY, WorkerCtx);	//	Gets cleaned up by CThreadPool.Run()
+				iYOffset += iCY;
+				Ctx->pThreadPool->AddTask(pTask);
+				}
+
+			//	Run tasks
+
+			Ctx->pThreadPool->Run();
+
+			//	This is debug code that will normally be optimized out as unreachable by the compiler
+			//	It is left in here for easy debugging of changes to blt or CThreadPool in case someone
+			//	accidentally adds thread-unsafe code to them and needs to debug it in isolation from
+			//	isolate it from the rest of the multithreading code, using the safe eDebugTask function
+			//	to simulate a load
+			if (iPaintMode == CSpritePaintWorker::eDebugTask)
+				{
+				//	if debugging, we need to paint normally since the debug task is just math
+				WorkerPaintImage(Dest, x, y, iTick, iRotation, bComposite, -1, -1, Ctx->bDbgShowPaintLocations);
+				}
+			}
+
+		//	Otherwise we are painting on one thread
+
+		else
+			{
+			WorkerPaintImage(Dest, x, y, iTick, iRotation, bComposite, -1, -1, Ctx ? Ctx->bDbgShowPaintLocations : false);
+			}
+
+		//	Show total execution time if this debug option is enabled
+
+		if (Ctx && Ctx->bDbgShowPaintTime)
+			{
+			QueryPerformanceCounter(&iPerfEnd);
+			LARGE_INTEGER iFrequency;
+			QueryPerformanceFrequency(&iFrequency);
+			UINT64 iPerfElapsed = (iPerfEnd.QuadPart - iPerfStart.QuadPart) * 1000000 / iFrequency.QuadPart;
+			const CG16bitFont *pMediumFont = &g_pUniverse->GetFont(CONSTLIT("Medium"));
+			int iDestX = x - RectWidth(m_rcImage) / 2;
+			int iDestY = y - RectHeight(m_rcImage) / 2;
+			CString sPerf = strPatternSubst(CONSTLIT("%l05d"), iPerfElapsed);
+			pMediumFont->DrawText(Dest, iDestX, iDestY, CG32bitPixel(255, 0, 0), sPerf);
+			}
+		
+		}
+	DEBUG_CATCH_MT
+	}
+
+//	PaintImage
+//	
+//	Paints the image with MT if Ctx is not NULL and defines m_pThreadPool
+//	Otherwise uses standard painting
+//	
+void CObjectImageArray::WorkerPaintImage (CG32bitImage& Dest, int x, int y, int iTick, int iRotation, bool bComposite, int iOffsetY, int iOffsetCY, bool bDbgShowPaintLocation) const
+	{
+	DEBUG_TRY
+
+	m_cs.Lock();
+	CG32bitImage* pSource = m_pImage->GetRawImage(NULL_STR);
+	m_cs.Unlock();
+
+	if (pSource == NULL)
+		return;
+
+	if (m_pImage)
+		{
 		int xSrc;
 		int ySrc;
 		ComputeSourceXY(iTick, iRotation, &xSrc, &ySrc);
+
+		ySrc += (iOffsetY > 0) ? iOffsetY : 0;
 
 		if (m_pRotationOffset)
 			{
@@ -1384,41 +1604,56 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 			y -= m_pRotationOffset[iRotation % m_iRotationCount].y;
 			}
 
+		int ySprite = RectHeight(m_rcImage);
+		int cy = (iOffsetCY > 0) ? min(iOffsetCY, ySprite) : ySprite;
+		int cx = RectWidth(m_rcImage);
+		int yDest = y - (ySprite / 2) + iOffsetY;
+		int xDest = x - (cx / 2);
+
 		if (bComposite)
 			{
 			Dest.Composite(xSrc,
-					ySrc,
-					RectWidth(m_rcImage),
-					RectHeight(m_rcImage),
-					255,
-					*pSource,
-					x - (RectWidth(m_rcImage) / 2),
-					y - (RectHeight(m_rcImage) / 2));
+				ySrc,
+				cx,
+				cy,
+				255,
+				*pSource,
+				xDest,
+				yDest);
 			}
 		else if (m_iBlending == blendLighten)
 			{
 			CGDraw::BltLighten(Dest,
-					x - (RectWidth(m_rcImage) / 2),
-					y - (RectHeight(m_rcImage) / 2),
-					*pSource,
-					xSrc,
-					ySrc,
-					RectWidth(m_rcImage),
-					RectHeight(m_rcImage));
+				xDest,
+				yDest,
+				*pSource,
+				xSrc,
+				ySrc,
+				cx,
+				cy);
 			}
 		else
 			{
 			Dest.Blt(xSrc,
-					ySrc,
-					RectWidth(m_rcImage),
-					RectHeight(m_rcImage),
-					255,
-					*pSource,
-					x - (RectWidth(m_rcImage) / 2),
-					y - (RectHeight(m_rcImage) / 2));
+				ySrc,
+				cx,
+				cy,
+				255,
+				*pSource,
+				xDest,
+				yDest);
 			}
-		}
 
+		if (g_pUniverse->GetDebugOptions().IsShowPaintLocationEnabled())
+			{
+			//	Put a magenta marker on the first pixel
+			Dest.SetPixel(xDest, yDest, CG32bitPixel(255, 0, 255));
+
+			//	Put a green marker on the last pixel
+			Dest.SetPixel(xDest + cx, yDest + cy -1, CG32bitPixel(0, 255, 0));
+			}
+			
+		}
 	DEBUG_CATCH
 	}
 
@@ -1976,11 +2211,8 @@ void CObjectImageArray::SetRotationCount (int iRotationCount)
 
 		ComputeRotationOffsets();
 
-		if (m_pGlowImages)
-			{
-			delete [] m_pGlowImages;
-			m_pGlowImages = NULL;
-			}
+		delete [] m_pGlowImages;
+		m_pGlowImages = NULL;
 
 		if (m_pScaledImages)
 			{

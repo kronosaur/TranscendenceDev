@@ -63,6 +63,7 @@ class CDifferentiatedItem
 		inline int GetMinLevel (void) const;
 		inline CString GetNounPhrase (DWORD dwFlags = 0) const;
 		inline ICCItemPtr GetProperty (const CString &sProperty) const;
+		inline ICCItemPtr GetPropertyKeys () const;
 		inline const CItemType &GetType (void) const;
 		inline CItemType &GetType (void);
 		inline int GetVariantNumber (void) const;
@@ -333,6 +334,7 @@ class CItem
 		inline const CEconomyType *GetCurrencyType (void) const;
 		int GetDamagedHP (void) const;
 		ICCItemPtr GetDataAsItem (const CString &sAttrib) const;
+		ICCItemPtr GetDataKeysAsItem (void) const;
 		CString GetDesc (bool bActual = false) const;
 		inline CDeviceClass *GetDeviceClass (void) const;
 		bool GetDisplayAttributes (TArray<SDisplayAttribute> *retList, ICCItem *pData = NULL, bool bActual = false) const;
@@ -348,6 +350,7 @@ class CItem
 		CInstalledArmor *GetInstalledArmor (void) { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Armor) return (CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
 		const CInstalledDevice *GetInstalledDevice (void) const { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Device) return (const CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
 		CInstalledDevice *GetInstalledDevice (void) { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Device) return (CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
+		ICCItemPtr GetItemPropertyKeys (CCodeChainCtx& CCCtx, CItemCtx& Ctx,  bool bOnType) const;
 		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty, bool bOnType) const;
 		Metric GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		int GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;

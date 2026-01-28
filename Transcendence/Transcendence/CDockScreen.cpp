@@ -750,6 +750,49 @@ ICCItemPtr CDockScreen::GetListAsCCItem (void) const
 	return m_pDisplay->GetListAsCCItem();
 	}
 
+//	GetProperty
+//
+//	Returns the given screen property, or NULL if not found.
+//
+ICCItemPtr CDockScreen::GetPropertyKeys () const
+
+	{
+	//	Get any properties from the display
+
+	ICCItemPtr pList = m_pDisplay->GetPropertyKeys();
+
+	//	Ensure that pList is never true (atomic) Nil
+
+	if (!pList || pList->IsAtom())
+		pList = ICCItemPtr(ICCItem::List);
+
+	//	Always include the generic properties
+
+	TArray<CString> aKeys =
+		{
+		PROPERTY_COUNTER,
+		PROPERTY_DESCRIPTION,
+		PROPERTY_IN_FIRST_ON_INIT,
+		PROPERTY_INPUT
+		};
+
+	for (int k = 0; k < aKeys.GetCount(); k++)
+		{
+		bool bNeed = true;
+
+		for (int i = 0; i < pList->GetCount(); i++)
+			{
+			if (strEquals(pList->GetElement(i)->GetStringValue(), aKeys[k]))
+				bNeed = false;
+			}
+
+		if (bNeed)
+			pList->AppendString(aKeys[k]);
+		}
+
+	return pList;
+	}
+
 ICCItemPtr CDockScreen::GetProperty (const CString &sProperty) const
 
 //	GetProperty
@@ -1341,11 +1384,20 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 
 	ALERROR error;
 
+	CXMLElement* pPanes = pDesc->GetContentElementByTag(PANES_TAG);
+	if (!pPanes)
+		{
+		if (retsError) *retsError = CONSTLIT("ERROR: No <Panes> tag defined.");
+		return ERR_FAIL;
+		}
+
 	//	Make sure we clean up first
 
 	CleanUpScreen();
 	m_pFonts = &g_pTrans->GetFonts();
 
+	//	NOTE: Past this point, we need to succeed, since we have already cleaned up.
+	// 
 	//	Init some variables
 
 	m_pDockSession = &DockSession;
@@ -1361,10 +1413,8 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	//	Initialize CodeChain processor
 
 	if (error = InitCodeChain(g_pTrans, m_pLocation))
-		{
-		if (retsError) *retsError = CONSTLIT("Unable to initialize CodeChain.");
-		return error;
-		}
+		//	This should never fail. If it does, it's a fatal error.
+		throw CException(ERR_FAIL);
 
 	//	Call OnScreenInit
 
@@ -1394,10 +1444,8 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	//	Compute metrics
 
 	if (!m_Layout.Init(rcRect, GetDockScreenVisuals()))
-		{
-		if (retsError) *retsError = CONSTLIT("Unable to initialize layout.");
-		return ERR_FAIL;
-		}
+		//	Should never fail.
+		throw CException(ERR_FAIL);
 
 	//	Prepare a display context
 
@@ -1423,7 +1471,8 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 
 	IDockScreenDisplay::SDisplayOptions DisplayOptions;
 	if (!IDockScreenDisplay::GetDisplayOptions(DisplayCtx, &DisplayOptions, retsError))
-		return ERR_FAIL;
+		//	Should never fail.
+		throw CException(ERR_FAIL);
 
 	//	If we have a deferred background setting, then use that (and reset it
 	//	so that we don't use it again).
@@ -1437,10 +1486,8 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	//	Creates the title area
 
 	if (error = CreateTitleArea(DockSession, m_pDesc, m_pScreen))
-		{
-		if (retsError) *retsError = CONSTLIT("Unable to create title area.");
-		return error;
-		}
+		//	Should never fail.
+		throw CException(ERR_FAIL);
 
 	//	If a screenset is defined, then create the tabs now. Note that we get
 	//	the latest frame because we could have added a screenset in 
@@ -1455,13 +1502,9 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 		}
 
 	//	Get the list of panes for this screen
+	//	NOTE: m_pPanes is always valid because we checked above.
 
 	m_pPanes = m_pDesc->GetContentElementByTag(PANES_TAG);
-	if (m_pPanes == NULL)
-		{
-		if (retsError) *retsError = CONSTLIT("ERROR: No <Panes> tag defined.");
-		return ERR_FAIL;
-		}
 
 	//	Create the main display object based on the type parameter.
 
@@ -1490,10 +1533,8 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 			&& (DisplayOptions.sType.IsBlank() || strEquals(DisplayOptions.sType, SCREEN_TYPE_CANVAS)))
 		{
 		if (error = InitDisplay(DisplayCtx.pDisplayDesc, m_pScreen))
-			{
-			if (retsError) *retsError = CONSTLIT("Unable to initialize display.");
-			return error;
-			}
+			//	Should never fail.
+			throw CException(ERR_FAIL);
 
 		//	Set any deferred text
 

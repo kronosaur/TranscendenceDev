@@ -5,9 +5,9 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							55;
-constexpr DWORD UNIVERSE_SAVE_VERSION =					40;
-constexpr DWORD SYSTEM_SAVE_VERSION =					213;
+constexpr DWORD API_VERSION =							58;
+constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
+constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 
 //	Uncomment out the following define when building a stable release
 
@@ -452,7 +452,535 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //							distance (in ls) at which sound falloff starts
 //							default: 0.0
 //
-
+//	 56: 2.0 Alpha 6
+//		tlisp:
+//			(sysAddStargateTopology [nodeID] gateID destNodeID destGateID [optionsStruct])
+//				optionsStruct: (struct)
+//					color: (string: html argb color)
+//						Specifies an argb color to use for the topology gate link on the galaxy map
+//						If Alpha is not specified, argbLinkColor is assumed to have full alpha (0xFF)
+//					attributes: (string)
+//						An attributes string. See trnCreateAllStargates for special known-fields.
+//					beaconType: (unid)
+//						The type of beacon to spawn
+//					gateType: (unid)
+//						The type of gate to spawn
+//					locationCriteria: (string)
+//						the in-system location criteria to use for placing the gate
+//					fromAttributes: (string)
+//						An attributes string for the from-side link.
+//						See trnCreateAllStargates for special known-fields.
+//					fromBeaconType: (unid)
+//						The type of beacon to spawn on the from side
+//					fromGateType: (unid)
+//						The type of gate to spawn on the from side
+//					fromLocationCriteria: (string)
+//						the in-system location criteria to use for placing the gate on the from side
+//					toAttributes: (string)
+//						An attributes string for the to-side link.
+//						See trnCreateAllStargates for special known-fields.
+//					toBeaconType: (unid)
+//						The type of beacon to spawn on the to side
+//					toGateType: (unid)
+//						The type of gate to spawn on the to side
+//					toLocationCriteria: (string)
+//						the in-system location criteria to use for placing the gate on the to side
+//			(sysGetStargateProperty [nodeID] gateID property)
+//				'attributes: new property to retrieve <Stargate> attributes
+//				'linkColor: new property to retrieve linkColor as HTML color string if present
+//				'locationCriteria: new property for location criteria to use for placing the gate
+//				'gateType: the unid of the stargate
+//				'beaconType: the unid of the stargate beacons
+//		<ShipClass>
+//			<Drive>
+//				powerUseRatio: (Double)
+//					ratio to apply to auto-computed power use, ex: 2.0 doubles power consumption.
+//					Ignored if explicit powerUse is set.
+//					default: 1.0
+//		<StationType>
+//			<Encounter>
+//				distanceFrequency: (str)
+//					Now supports distances beyond 5 at a single frequency
+//					Ex: "ccccc|curvv v"
+//					Default (if not specified) is NotRandom
+//		<SystemMap>
+//			<...><Random>
+//				(NOTE:) modded systemTypes that do not use trnCreateAllStargates may not respect the
+//					following fields except for linkColor.
+//				gateLocationCriteria: (string)
+//					the in-system location criteria to use for placing the gate
+//				beaconType: (unid)
+//					The type of beacons to spawn
+//				gateType: (unid)
+//					The type of gates to spawn
+//				linkAttributes: (string)
+//					An attributes string. See trnCreateAllStargates for special known-fields.
+//				linkColor: (string: html argb color)
+//					The color to display this stargate link in on the galaxy map.
+//					If Alpha is not specified, linkColor is assumed to have full alpha (0xFF)
+//			<...><Stargate>
+//				(NOTE:) modded systemTypes that do not use trnCreateAllStargates may not respect the
+//					following fields except for linkColor.
+//				attributes: (string)
+//					An attributes string. See trnCreateAllStargates for special known-fields.
+//				beaconType: (unid)
+//					The type of beacon to spawn
+//				gateType: (unid)
+//					The type of gate to spawn
+//				linkColor: (string: html argb color)
+//					The color to display this stargate link in on the galaxy map.
+//					If Alpha is not specified, linkColor is assumed to have full alpha (0xFF)
+//				locationCriteria: (string)
+//					the in-system location criteria to use for placing the gate
+//				<FromGate>/<ToGate>
+//					attributes: (string)
+//						An attributes string. See trnCreateAllStargates for special known-fields.
+//						Overrides the <Stargate> attribute string.
+//					beaconType: (unid)
+//						The type of beacon to spawn for this side of the gate
+//						Overrides the <Stargate> beaconType.
+//					gateType: (unid)
+//						The type of gate to spawn for this side of the gate
+//						Overrides the <Stargate> gateType.
+//					locationCriteria: (string)
+//						the in-system location criteria to use for placing the gate
+//						Overrides the <Stargate> locationCriteria string.
+//
+//	 57: 2.0 Alpha 7
+//		tlisp:
+//			(bAnd x1 [x2 ... xn])
+//				Returns the bitwise AND of all arguments.
+//				All arguments are coerced to 32-bit integers.
+//			(bOr x1 [x2 ... xn])
+//				Returns the bitwise OR of all arguments.
+//				All arguments are coerced to 32-bit integers.
+//			(bXor x1 [x2 ... xn])
+//				Returns the bitwise XOR of all arguments.
+//				All arguments are coerced to 32-bit integers.
+//			(bNot x)
+//				Returns the bitwise NOT of x.
+//				Argument is coerced to a 32-bit integer; result is also 32-bit signed.
+//			(bShL x count)
+//				Returns x shifted left by count bits (logical).
+//				Low bits are filled with zeros; high bits are discarded.
+//			(bShR x count)
+//				Returns x shifted right by count bits (logical).
+//				High bits are filled with zeros; low bits are discarded.
+//			(bRoL x count)
+//				Returns x rotated left by count bits in 32-bit space.
+//				Bits shifted out of the high end wrap around to the low end.
+//			(bRoR x count)
+//				Returns x rotated right by count bits in 32-bit space.
+//				Bits shifted out of the low end wrap around to the high end.
+//			(dbgGet [option] value)
+//				New option parameters:
+//					'forceSTPaint: forces single threaded painting
+//					'showPaintLocation: shows the upper left and lower right corners of
+//						each thread's painted area
+//					'showPaintTime: shows the time to paint the sprite in
+//						microseconds
+//			(dbgSet [option] value)
+//				New option parameters:
+//					'forceSTPaint: forces single threaded painting
+//					'showPaintLocation: shows the upper left and lower right corners of
+//						each thread's painted area
+//					'showPaintTime: shows the time to paint the sprite in
+//						microseconds
+//			(help function)
+//				Returns the docstring for the function (accepts both primitives
+//				and lambdas)
+//			(help strFilter [typefilter])
+//				Upgraded to accept a typeFilter argument
+//					typFilter: (str: '*|'l|'lambda|'lambdas|'p|'primitive|'primitives)
+//						This argument allows including:
+//							*: all functions
+//							lambdas: only lambdas
+//							primitives: only primitives
+//						Default: 'primitives
+//			(itmGetDataKeys item)
+//				Returns a list of data keys for the given item
+//			(itm@Keys item)
+//				Returns a list of property keys for the given item
+//			(lambda args [docstring] expr)
+//				Lambda now accepts an optional docstring that can be printed out with (help lambda)
+//			(msnGetDataKeys obj)
+//				Returns a list of typData keys for the given msn
+//			(msnGetDataKeys obj)
+//				Returns a list of typData keys for the given msn type
+//			(msnGetStaticDataKeys type)
+//				Returns a list of static data keys for the given msn type
+//			(msn@Keys type)
+//				Returns a list of all instance property and custom global property keys for the given msn
+//			(objGetDataKeys obj)
+//				Returns a list of typData keys for the given obj
+//			(objGetDataKeys obj)
+//				Returns a list of typData keys for the given obj type
+//			(objGetStaticDataKeys type)
+//				Returns a list of static datakeys for the given obj type
+//			(obj@Keys type)
+//				Returns a list of all instance property and custom global property keys for the given obj
+//			(objGetOverlayDataKeys obj overlayID)
+//				Returns a list of all data keys for the given overlay on the given obj
+//			(sysGetDataKeys [node])
+//				Returns a list of all data keys for the given system.
+//				If [node] is Nil/not provided, it gets the current system.
+//			(typGetDataKeys type)
+//				Returns a list of typData keys for the given type
+//			(typGetStaticDataKeys type)
+//				Returns a list of static datakeys for the given type
+//			(typ@Keys type)
+//				Returns a list of custom global property keys for the given type
+//		<AdventureDesc>
+//			<Constants>
+//				<MiningMaxOreLevels>
+//					miningMaxOreLevel: (damageAdj-style list of ints)
+//						The maximum level ore that this weapon shot can extract
+//						Specifying a "+" before a level means this is a positive
+//							offset relative to the level of the item
+//						Specifying a "-" before a level means this is a negative
+//							offset relative to the level of the item
+//		<Image> (Type)
+//			pngBitmaskAlphaSource: (str: "alpha"|"red"|"green"|"blue")
+//				Specify a specific channel to use from a png as a bitmask alpha source
+//				Default: "alpha"
+//		<ItemType>
+//			<Weapon>
+//				miningMaxOreLevel: (int: 0-25)
+//					The maximum level ore that this weapon shot can extract
+//					0 allows the damage to probe for ore but does not mine
+//					-1 uses the adventure default settings
+//				damage:
+//					Now accepts special damage type miningScan[:0-1]
+//						miningScan: sets aMiningScan to True in obj <onMining>
+//							In SotP this is used to scan without actually mining
+//							the ore.
+//							You can optionally specify miningScan:N and it will
+//							treat it as miningScan:1 mining:N. If mining:# is also
+//							specified, it will always override the value in
+//							miningScan:#.
+//							NOTE: API 48-56 weapons with generic:# and mining:#
+//							are treated as having miningScan:1
+//		<SystemMap>
+//			iconScale: (int)
+//				the % size to draw icons on the map when the map is zoomed at 100% scale.
+//				Default: 100
+//			iconScaleFactor: (double)
+//				the relative amount to scale the icons as the map is zoomed in or out.
+//				1.0 = normal scale, 0.0 = no change in scale. Default: 1.0
+//
+//	 58: 2.0 Alpha 8
+//		tlisp:
+//			(@ nestedListsOrStructs idxOrKey1 [idxOrKey2 ...])
+//				Returns item index from innermost list or structs (lists are 0-based)
+//			(@@ nestedListsOrStructs idxOrKey1 [idxOrKey2 ...])
+//				Returns item index from innermost list or structs (lists are 0-based)
+//				Supports all functionality of @, but treats negative list indexes as
+//				indexing from the end in reverse (as in slice)
+//			(scrGetDataKeys obj)
+//				Returns a list of typData keys for the given obj type
+//			(scrGetStaticDataKeys type)
+//				Returns a list of static datakeys for the given obj type
+//			(scr@Keys type)
+//				Returns a list of all instance property and custom global property keys for the given obj
+//			(sysGetNextNodeTo [srcNode] destNode [options])
+//				Accepts an options struct now
+//				options:
+//					blockNodes (list): do not path through these nodes
+//					respectOneWayGates (bool): if pathing must obey the directionality of one way gates (default: false)
+//					gateCriteria (string): criteria to match against stargate topology attributes (not the stations)
+//			(sysGetPathTo [srcNode] destNode [options])
+//				options:
+//					blockNodes (list): do not path through these nodes
+//					respectOneWayGates (bool): if pathing must obey the directionality of one way gates (default: false)
+//					gateCriteria (string): criteria to match against stargate topology attributes (not the stations)
+//		<AdventureDesc>
+//			<Constants>
+//				<ExternalDeviceDamageMaxLevels>
+//					deviceDamageMaxDeviceLevel: (damageAdj-style list of ints)
+//						The maximum level device that this weapon shot can damage
+//						Specifying a "+" before a level means this is a positive
+//							offset relative to the level of the item
+//						Specifying a "-" before a level means this is a negative
+//							offset relative to the level of the item
+//					deviceDamageTypeAdj:
+//						% damageAdj of this damage type to devices
+//						generic damage always has 100%
+//						null damage has 100% if it also has device:# in its desc
+//					deviceHitChance:
+//						% chance for a shot of any damage type to hit a device
+//				<InternalDeviceDamageMaxLevels>
+//					deviceDamageMaxDeviceLevel: (damageAdj-style list of ints)
+//						The maximum level device that this weapon shot can damage
+//						Specifying a "+" before a level means this is a positive
+//							offset relative to the level of the item
+//						Specifying a "-" before a level means this is a negative
+//							offset relative to the level of the item
+//					deviceDamageTypeAdj:
+//						% damageAdj of this damage type to devices
+//						generic damage always has 100%
+//						null damage has 100% if it also has device:# in its desc
+//					deviceHitChance:
+//						% chance for a shot of any damage type to hit a device
+//				<DamageMethodAdj>
+//					<WMD>
+//						damageMethodAdj: (damageAdj-style list of exactly 8 ints or doubles)
+//							The baseline adjustment curve (note that fortification
+//							can adjust this further)
+//						damageMethodDisplay: (attribute-style list of exactly 7 alphanumeric strings)
+//							Strings to display alongside wmdDisplayPrefix for WMD1-WMD7
+//							If you provide a "!", a given level will not show the attribute.
+//						damageMethodDisplayPrefix: (string)
+//							A string prefix (ex, "WMD ") which the given wmdDisplay
+//							is appended to at that given WMD level. Default: "WMD "
+//			<Properties>
+//				<Constant id="core.damageMethod.item">
+//					Returns a nested struct specifying for different item types:
+//						armor
+//						shield
+//					The allowed fortification for the following damage methods:
+//						WMD (in the WMD system)
+//					Default WMD fortification adj properties for low/no WMD damage.
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default:
+//						armor:
+//							WMD: 0.0
+//						shield:
+//							WMD: 0.0
+//				<Constant id="core.damageMethod.ship">
+//					Returns a nested struct specifying for different target types:
+//						armor
+//							critical
+//							nonCritical
+//							nonCriticalDestruction
+//							nonCriticalDestructionChance
+//								Note: this is the base destruction chance at 0hp when
+//								no compartment is present
+//						compartment
+//								Note: uses the default compartment of the ship
+//							general
+//							cargo
+//							mainDrive
+//					The allowed fortification for the following damage methods:
+//						WMD (in the WMD system)
+//					Default WMD fortification adj properties for low/no WMD damage.
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default:
+//						armor:
+//							critical:
+//								WMD: 0.0
+//							nonCritical:
+//								WMD: 0.0
+//							nonCriticalDestruction:
+//								WMD: 1.0
+//							nonCriticalDestructionChance:
+//								(this is not a fortification value, but a base chance of destruction)
+//								WMD: 0.05
+//						compartment:
+//							general:
+//								WMD: 1.0
+//							cargo:
+//								WMD: 1.0
+//							mainDrive:
+//								WMD: 1.0
+//				<Constant id="core.damageMethod.station">
+//					Returns a nested struct specifying for different target types:
+//						hull
+//							single
+//							multi
+//							asteroid
+//								Note: In the WMD system, this uses the greater of mining or WMD
+//							underground
+//								Note: in the WMD system, this use mining instead of WMD
+//					The allowed fortification adj for the following damage methods:
+//						WMD (in the WMD system)
+//					Default WMD fortification properties for low/no WMD damage.
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default:
+//						hull:
+//							single:
+//								WMD: 0.0
+//							multi:
+//								WMD: 1.0
+//							asteroid:
+//								WMD: 1.0
+//							underground:
+//								WMD: 1.0
+//				<Constant id="core.damageMethod.minAdj">
+//					(This is a template property, see below for valid property names.)
+//					These properties define the minimum adjustment values that can
+//					result due to applying WMD fortification adjustment.
+//					<Constant id = "core.WMDFortified.DefaultMinAdj">
+//						Default 0.0
+//						Cannot be greater than 1.0
+//						Cannot be lower than 0.0
+//				<Constant id="core.damageMethod.minDamage">
+//					The min damage dealt after WMD adjustment
+//					Accepts a floating point value for stochastic damage
+//					Default 0.0
+//				<Constant id="core.damageMethod.system">
+//					The damage method system to use.
+//					Currently only WMD is available.
+//					Default 'WMD
+//				<Constant id="core.item.shield.idlePowerAdj">
+//					Returns a floating point value to adjust idle power consumption of shields.
+//					Default: 0.125
+//		<ItemType>
+//			<Armor>
+//				fortificationWMDAdj: (float)
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default: (reads adventure default: 0.0)
+//			<Shield>
+//				fortificationWMDAdj: (float)
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default: (reads adventure default: 0.0)
+//			<Weapon>
+//				damage: (str: damage desc)
+//					damage changes:
+//						0-damage is treated as non-hostile as long as no damaging
+//							effects are in the damage descriptor
+//						0-damage shots trigger hostile onAttached events if they
+//							are marked as hostile
+//						0-damage shots trigger onHit events if they are marked as
+//							hostile
+//						0-damage shots will still impart momentum
+//					null: New special damage type
+//						Null damage is treated as non-hostile
+//						Null damage does not trigger hostile onAttacked events
+//						Null damage does trigger onHit type events
+//						Null damage can impart any status effect while remaining non-hostile
+//						All targets of null damage have a damageAdj of 0 (immunity)
+//							to null damage's HP value (this allows scripts that utilize
+//							damage output, like mining, to function correctly)
+//				miningMethod: "ablative"|"drill"|"explosive"|"shockwave"|"universal"
+//					universal: new mining method (no bonuses, no penalties)
+//						As of API58, this mining method must be manually assigned.
+//		<ShipClass>
+//			<Armor>
+//				fortificationWMDAdj: (float)
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default: (reads adventure default: 0.0)
+//			<Hull>
+//				fortificationWMDAdj: (float)
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default: (reads adventure default: 1.0)
+//		<StationType>
+//			fortificationWMDAdj: (float)
+//				Accepts a floating point which adjusts the default WMD curve for that target type
+//				by performing a transform on the adventure-standard damage method scale.
+//				Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//				Values must be 0.0 or greater.
+//				0.0: the adjustment is always full damage regardless of damage method level
+//				0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//					method less, but also rewards having any of the damage method proportionally
+//					more
+//				1.0: the adjustment is the adventure standard curve
+//				1.0 < fortification: The adjustment penalizes not having the damage method
+//					more, but also proportionally favors high amounts of that damage method
+//				The exact curve adjustments will vary depending on the adventure curve.
+//				The value may be 'inf to confer immunity unless WMD7 is present.
+//				The fortification algorithm employed is as follows:
+//					adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//				Default: (reads adventure default:
+//					0.0 for single hull stations, 1.0 for multi/asteroid/underground)
+//
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
 //
@@ -560,6 +1088,14 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //
 //	40: 1.9 Beta 4
 //		Added design type in dwFlags or CDesignType.
+//
+//	41: 2.0 Alpha 6
+//		Add gate link RGB color
+//		Add gate type
+//		Add gate beacon type
+//		Add gate link attributes
+//		Add gate location criteria
+//
 
 
 //	SYSTEM VERSION HISTORY -----------------------------------------------------
@@ -1204,8 +1740,29 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					213;
 //	211: 1.9
 //		Change CShockwaveHitTest
 //
-//	212: 1.9 ??
-//		????
+//	212: 1.9
+//		R/W entire SParticle struct directly
 //
 //	213: 2.0 Alpha 2
 //		Change DiceRange to use -1 for not set
+//
+//	214: 2.0 Alpha 7
+//		Change CParticleArray::m_iLifeLeft to milliseconds game time
+//		(instead of ticks)
+//
+//	215: 2.0 Alpha 7
+//		Add DamageDesc::m_fMiningScan
+// 
+//	216: 2.0 Alpha 8
+//		Fix DamageDesc::m_MassDestructionAdj
+//		makes extra DWORDs in DamageDesc a little bit more change-safe
+// 
+//  217: 2.0 Alpha 8
+//		Switch CInstalledDevice m_rActivateDelay from WORD to double
+//		Switch CInstalledDevice m_i
+//
+//	218: 2.0 Alpha 8
+//		Add DamageMethodCrushAdj to SExtraDamage in DamageDesc
+//		Add DamageMethodPierceAdj to SExtraDamage in DamageDesc
+//		Add DamageMethodShredAdj to SExtraDamage in DamageDesc
+//

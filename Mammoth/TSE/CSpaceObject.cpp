@@ -2913,6 +2913,7 @@ void CSpaceObject::FireOnMining (const SDamageCtx &Ctx, EAsteroidType iType)
 	CCX.DefineInteger(CONSTLIT("aHP"), Ctx.iDamage);
 	CCX.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
 	CCX.DefineItemType(CONSTLIT("aWeaponType"), Ctx.GetDesc().GetWeaponType());
+	CCX.DefineBool(CONSTLIT("aMiningScan"), Ctx.Damage.GetMiningScan());
 
 	ICCItemPtr pResult = CCX.RunCode(Event);
 	if (pResult->IsError())
@@ -3919,6 +3920,14 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 	//	Otherwise, we return the default screen associated with the object
 
 	return GetDefaultDockScreen(retsScreen, retpData);
+	}
+
+TArray<CString> CSpaceObject::GetDataKeys (void)
+	{
+	TArray<CString> aRet = TArray<CString>();
+	for (int i = 0; i < m_Data.GetDataCount(); i++)
+		aRet.Insert(m_Data.GetDataAttrib(i));
+	return aRet;
 	}
 
 ICCItemPtr CSpaceObject::GetGlobalData (const CString &sAttribute) const
@@ -5163,10 +5172,10 @@ CSpaceObject* CSpaceObject::HitTestProximity(
 
 				//	Check if we are already collided (ex, someone dropped a mine on top of a station)
 
-				if (pTarget->PointInBounds(GetPos()))
+				if (pObj->PointInBounds(GetPos()))
 					{
 					SPointInObjectCtx PiOCtx;
-					pTarget->PointInObjectInit(PiOCtx);
+					pObj->PointInObjectInit(PiOCtx);
 
 					if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vStart))
 						{
@@ -5637,6 +5646,8 @@ bool CSpaceObject::IntersectionTestScan(const CSpaceObject* pTarget, const CVect
 //		retiTriangulationDir: -1
 
 	{
+	DEBUG_TRY
+
 	SPointInObjectCtx PiOCtx;
 	pTarget->PointInObjectInit(PiOCtx);
 
@@ -5867,6 +5878,8 @@ bool CSpaceObject::IntersectionTestScan(const CSpaceObject* pTarget, const CVect
 		}
 
 	return false;
+
+	DEBUG_CATCH
 	}
 
 bool CSpaceObject::ImagesIntersect (const CObjectImageArray &Image1, int iTick1, int iRotation1, const CVector &vPos1,
@@ -6548,10 +6561,7 @@ bool CSpaceObject::IsLineOfFireClear (const CInstalledDevice *pWeapon,
 
 				if (rDistFromTarget2 < BOUNDS_CHECK_DIST2)
 					{
-					CVector vUR, vLL;
-					pObj->GetBoundingRect(&vUR, &vLL);
-
-					if (rDistFromTarget2 < 2.0 * vUR.Length2()
+					if (pObj->PointInBounds(vTarget)
 							&& pObj->PointInObject(pObj->GetPos(), vTarget))
 						{
 						if (retpFriend) *retpFriend = pObj;
@@ -8641,10 +8651,10 @@ bool CSpaceObject::UseItem (const CItem &Item, CString *retsError)
 
 			//	Reset the activation delay, if necessary
 
-			int iActivationDelay = pDevice->GetActivateDelay(this);
-			if (iActivationDelay)
+			Metric rActivationDelay = pDevice->GetActivateDelay(this);
+			if (rActivationDelay)
 				{
-				pDevice->SetTimeUntilReady(iActivationDelay);
+				pDevice->SetTimeUntilReady(rActivationDelay);
 
 				if (pDevice->ShowActivationDelayCounter(this))
 					OnComponentChanged(comDeviceCounter);

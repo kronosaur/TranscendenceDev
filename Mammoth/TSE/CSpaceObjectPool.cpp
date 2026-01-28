@@ -30,11 +30,8 @@ void CSpaceObjectPool::DeleteAll (void)
 //	Delete the pool. Callers must call Init again before allocating.
 
 	{
-	if (m_Pool)
-		{
-		delete [] m_Pool;
-		m_Pool = NULL;
-		}
+	delete [] m_Pool;
+	m_Pool = NULL;
 
 	m_iSize = 0;
 	m_iNextNode = 0;

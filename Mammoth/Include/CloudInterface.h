@@ -146,9 +146,3 @@ class CHexarcServiceFactory : public ICIServiceFactory
 		virtual ICIService *Create (CHumanInterface &HI) override;
 	};
 
-class CXelerusServiceFactory : public ICIServiceFactory
-	{
-	public:
-		virtual ICIService *Create (CHumanInterface &HI) override;
-	};
-

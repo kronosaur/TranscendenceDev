@@ -366,20 +366,21 @@ ALERROR CExtensionListMap::WriteList (IWriteStream &Output, DWORD dwAdventure, b
 
 	CString sData;
 	if (bDebugMode)
-		sData = strPatternSubst(CONSTLIT("\t\t<Default unid=\"0x%x\" debugMode=\"true\">"), dwAdventure);
+		sData = strPatternSubst(CONSTLIT("\t\t<Default unid=\"0x%x\" debugMode=\"true\">\r\n"), dwAdventure);
 	else
-		sData = strPatternSubst(CONSTLIT("\t\t<Default unid=\"0x%x\">"), dwAdventure);
+		sData = strPatternSubst(CONSTLIT("\t\t<Default unid=\"0x%x\">\r\n"), dwAdventure);
 
 	if (error = Output.Write(sData))
 		return error;
 
 	//	First we write out the list of enabled extensions
 
-	sData = CONSTLIT("<Enabled>");
+	sData = CONSTLIT("\t\t\t<Enabled>\r\n");
 	if (error = Output.Write(sData))
 		return error;
 
 	bool bFirstEntry = true;
+	bool bFoundEnabled = false;
 	for (i = 0; i < List.GetCount(); i++)
 		{
 		if (List.GetValue(i))
@@ -387,30 +388,36 @@ ALERROR CExtensionListMap::WriteList (IWriteStream &Output, DWORD dwAdventure, b
 			CString sEntry;
 			if (bFirstEntry)
 				{
-				sEntry = strPatternSubst(CONSTLIT("0x%x"), List.GetKey(i));
+				sEntry = strPatternSubst(CONSTLIT("\t\t\t\t0x%x"), List.GetKey(i));
 				bFirstEntry = false;
 				}
 			else
-				sEntry = strPatternSubst(CONSTLIT(", 0x%x"), List.GetKey(i));
+				sEntry = strPatternSubst(CONSTLIT(",\r\n\t\t\t\t0x%x"), List.GetKey(i));
+
+			bFoundEnabled = true;
 
 			if (error = Output.Write(sEntry))
 				return error;
 			}
 		}
 
-	sData = CONSTLIT("</Enabled>");
+	if (bFoundEnabled)
+		Output.Write(CONSTLIT("\r\n"));
+
+	sData = CONSTLIT("\t\t\t</Enabled>\r\n");
 	if (error = Output.Write(sData))
 		return error;
 
 	//	Now we write the disabled extensions
 
-	sData = CONSTLIT("<Disabled>");
+	sData = CONSTLIT("\t\t\t<Disabled>\r\n");
 	if (error = Output.Write(sData))
 		return error;
 
+	bool bFoundDisabled = false;
 	if (bDisabledIfNotInList)
 		{
-		sData = CONSTLIT("*");
+		sData = CONSTLIT("\t\t\t\t*\r\n");
 		if (error = Output.Write(sData))
 			return error;
 		}
@@ -424,11 +431,13 @@ ALERROR CExtensionListMap::WriteList (IWriteStream &Output, DWORD dwAdventure, b
 				CString sEntry;
 				if (bFirstEntry)
 					{
-					sEntry = strPatternSubst(CONSTLIT("0x%x"), List.GetKey(i));
+					sEntry = strPatternSubst(CONSTLIT("\t\t\t\t0x%x"), List.GetKey(i));
 					bFirstEntry = false;
 					}
 				else
-					sEntry = strPatternSubst(CONSTLIT(", 0x%x"), List.GetKey(i));
+					sEntry = strPatternSubst(CONSTLIT(",\r\n\t\t\t\t0x%x"), List.GetKey(i));
+
+				bFoundDisabled = true;
 
 				if (error = Output.Write(sEntry))
 					return error;
@@ -436,13 +445,16 @@ ALERROR CExtensionListMap::WriteList (IWriteStream &Output, DWORD dwAdventure, b
 			}
 		}
 
-	sData = CONSTLIT("</Disabled>");
+	if (bFoundDisabled)
+		Output.Write(CONSTLIT("\r\n"));
+
+	sData = CONSTLIT("\t\t\t</Disabled>\r\n");
 	if (error = Output.Write(sData))
 		return error;
 
 	//	Done
 
-	sData = CONSTLIT("</Default>\r\n");
+	sData = CONSTLIT("\t\t</Default>\r\n");
 	if (error = Output.Write(sData))
 		return error;
 

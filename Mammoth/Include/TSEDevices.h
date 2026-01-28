@@ -265,6 +265,8 @@ class CDeviceClass
 			int iRepeatingCount = 0;
 			int iChargeFrame = 0;
 			bool bIsCharging = false;
+			double rCurInterpolationDelay = 0.0;	//Needs to be reset between device activations
+			double rCachedActivationDelay = 0.0;	//Needs to be reset between device activations
 
 			//	Status results
 
@@ -329,7 +331,7 @@ class CDeviceClass
 
 		virtual bool AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip, SDamageCtx &Ctx) { Ctx.iAbsorb = 0; return false; }
 		virtual bool AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon) { return false; }
-		virtual bool Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx) { return false; }
+		virtual int Activate (CInstalledDevice &Device, SActivateCtx &ActivateCtx) { return 0; }
 		virtual const CRepairerClass *AsRepairerClass (void) const { return NULL; }
 		virtual CShieldClass *AsShieldClass (void) { return NULL; }
 		virtual CWeaponClass *AsWeaponClass (void) { return NULL; }
@@ -342,13 +344,13 @@ class CDeviceClass
 		virtual ICCItem *FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) { return CDeviceClass::FindItemProperty(Ctx, sProperty); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) { return false; }
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName);
-		virtual int GetActivateDelay (CItemCtx &ItemCtx) const { return 0; }
+		virtual Metric GetActivateDelay (CItemCtx &ItemCtx) const { return 0.0; }
 		virtual int GetAmmoVariant (const CItemType *pItem) const { return -1; }
 		virtual int GetCounter (const CInstalledDevice *pDevice, const CSpaceObject *pSource, EDeviceCounterType *retiType = NULL, int *retiLevel = NULL) const { return 0; }
 		virtual const CCargoDesc *GetCargoDesc (CItemCtx &Ctx) const { return NULL; }
 		virtual const DamageDesc *GetDamageDesc (CItemCtx &Ctx) { return NULL; }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
-		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const { return damageGeneric; }
+		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const { return damageNull; }
 		virtual int GetDefaultFireAngle (const CDeviceItem &DeviceItem) const { return 0; }
 		virtual int GetHitPoints (CItemCtx &ItemCtx, int *retiMaxHP = NULL) const { return 0; }
 		virtual DWORD GetLinkedFireOptions (void) const { return 0; }
@@ -366,8 +368,9 @@ class CDeviceClass
 											 const CInstalledDevice *pDevice,
 											 CString *retsLabel,
 											 int *retiAmmoLeft,
+											 CItemType **retpAmmoType = NULL,
 											 CItemType **retpType = NULL,
-											 bool bUseCustomAmmoCountHandler = false) { if (retsLabel) *retsLabel = NULL_STR; if (retiAmmoLeft) *retiAmmoLeft = -1; if (retpType) *retpType = NULL; }
+											 bool bUseCustomAmmoCountHandler = false) { if (retsLabel) *retsLabel = NULL_STR; if (retiAmmoLeft) *retiAmmoLeft = -1; if (retpType) *retpType = NULL; if (retpAmmoType) *retpAmmoType = NULL; }
 		virtual Metric GetShotSpeed (CItemCtx &Ctx) const { return 0.0; }
 		virtual void GetStatus (const CInstalledDevice *pDevice, const CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) { *retiStatus = 0; *retiMaxStatus = 0; }
 		virtual DWORD GetTargetTypes (const CDeviceItem &DeviceItem) const { return 0; }
@@ -618,7 +621,9 @@ class CInstalledDevice
 		double GetShotSeparationScale(void) const { return (double)m_iShotSeparationScale / 32767.0; }
 		int GetSlotPosIndex (void) const { return m_iSlotPosIndex; }
 		int GetTemperature (void) const { return m_iTemperature; }
-		int GetTimeUntilReady (void) const { return m_iTimeUntilReady; }
+		Metric GetTimeUntilReady (void) const { return m_rRemainingActivationDelay; }
+		BYTE GetTimeUntilContinuousShot (void) const { return (BYTE)(m_dwData & 0xFF); }
+		WORD GetContinuousShotsLeft (void) const { return (WORD)m_iContinuousShotsRemaining; }
 		bool Has3DPos (void) const { return m_f3DPosition; }
 		void IncTemperature (int iChange) { m_iTemperature += iChange; }
 		bool IsDirectional (void) const { return (m_iMinFireArc != m_iMaxFireArc); }
@@ -632,12 +637,12 @@ class CInstalledDevice
 		bool IsOnUsedLastAmmoFlagSet (void) const { return (m_fOnUsedLastAmmo ? true : false); }
 		bool IsOptimized (void) const { return m_fOptimized; }
 		bool IsOverdrive (void) const { return m_fOverdrive; }
-		bool IsReady (void) const { return (m_iTimeUntilReady == 0); }
+		bool IsReady (void) const { return (m_rRemainingActivationDelay < g_SecondsPerUpdate && !m_iContinuousShotsRemaining); }
 		bool IsRegenerating (void) const { return (m_fRegenerating ? true : false); }
 		bool IsTriggered (void) const { return (m_fTriggered ? true : false); }
 		bool IsWorking (void) const { return (IsEnabled() && !IsDamaged() && !IsDisrupted()); }
 		bool IsWaiting (void) const { return (m_fWaiting ? true : false); }
-		void SetActivateDelay (int iDelay) { m_iActivateDelay = iDelay; }
+		void SetActivateDelay (Metric rDelay) { m_rActivateDelay = rDelay; }
 		void SetCachedMaxHP (int iMaxHP);
 		void SetCanTargetMissiles (bool bCanTargetMissiles) { m_fCanTargetMissiles = bCanTargetMissiles; }
 		void SetCycleFireSettings (bool bCycleFire) { m_fCycleFire = bCycleFire; }
@@ -667,7 +672,9 @@ class CInstalledDevice
 		void SetSecondary (bool bSecondary = true) { m_fSecondaryWeapon = bSecondary; }
 		void SetSlotPosIndex (int iIndex) { m_iSlotPosIndex = iIndex; }
 		void SetTemperature (int iTemperature) { m_iTemperature = iTemperature; }
-		void SetTimeUntilReady (int iDelay) { m_iTimeUntilReady = iDelay; }
+		void SetTimeUntilReady (Metric rDelay) { m_rRemainingActivationDelay = max(0.0, rDelay); }
+		void SetTimeUntilContinuousShot (BYTE byTicks) { m_dwData = (m_dwData & 0xFFFFFF00) | byTicks; }
+		void SetContinuousShotsLeft (WORD wShots) const { m_iContinuousShotsRemaining = wShots; }
 		void SetTriggered (bool bTriggered) { m_fTriggered = bTriggered; }
 		void SetWaiting (bool bWaiting) const { m_fWaiting = bWaiting; }
 		void SetWeaponTargetDefinition (Kernel::CString sCriteria) { m_pWeaponTargetDefinition = std::make_unique<CWeaponTargetDefinition>(sCriteria, true); }
@@ -690,7 +697,7 @@ class CInstalledDevice
 		bool CanBeDisrupted (void) { return m_pClass->CanBeDisrupted(); }
 		bool CanHitFriends (void) const { return m_pClass->CanHitFriends(); }
 		void Deplete (CSpaceObject *pSource) { m_pClass->Deplete(this, pSource); }
-		int GetActivateDelay (CSpaceObject *pSource) const;
+		Metric GetActivateDelay (CSpaceObject *pSource) const;
 		ItemCategories GetCategory (void) const { return m_pClass->GetCategory(); }
 		int GetCounter (const CSpaceObject &SourceObj, EDeviceCounterType *retiCounter = NULL, int *retiLevel = NULL) const { return m_pClass->GetCounter(this, &SourceObj, retiCounter, retiLevel); }
 		const DamageDesc *GetDamageDesc (CItemCtx &Ctx) { return m_pClass->GetDamageDesc(Ctx); }
@@ -708,8 +715,9 @@ class CInstalledDevice
 		void GetSelectedVariantInfo (const CSpaceObject *pSource, 
 											CString *retsLabel,
 											int *retiAmmoLeft,
+											CItemType **retpAmmoType = NULL,
 											CItemType **retpType = NULL) const
-			{ m_pClass->GetSelectedVariantInfo(pSource, this, retsLabel, retiAmmoLeft, retpType); }
+			{ m_pClass->GetSelectedVariantInfo(pSource, this, retsLabel, retiAmmoLeft, retpAmmoType, retpType); }
 		Metric GetShotSpeed (CItemCtx &Ctx) const { return m_pClass->GetShotSpeed(Ctx); }
 		CSpaceObject *GetSource (void) const { return m_pSource; }
 		CSpaceObject &GetSourceOrThrow (void) const { if (m_pSource) return *m_pSource; else throw CException(ERR_FAIL); }
@@ -777,11 +785,11 @@ class CInstalledDevice
 		int m_iShotSeparationScale:16 = 32767;		//	Scaled by 32767. Governs scaling of shot separation for dual etc weapons
 		int m_iMaxFireRange:16 = 0;					//	Max effective fire range (in light-seconds); 0 = no limit
 
-		int m_iTimeUntilReady:16 = 0;				//	Timer counting down until ready to activate
+		int m_iNowLow:16 = 0;						//	First 16 bits of the current tick, if caching HP
 		int m_iFireAngle:16 = 0;					//	Last fire angle
 
 		int m_iTemperature:16 = 0;					//	Temperature for weapons
-		int m_iActivateDelay:16 = 0;				//	Cached activation delay
+		mutable int m_iContinuousShotsRemaining:16 = 0;		//	Repeating shots remaining. Formerly: Cached activation delay
 		int m_iExtraPowerUse:16 = 0;				//	Additional power use per tick
 		int m_iSlotPosIndex:16 = -1;				//	Slot placement
 
@@ -817,4 +825,7 @@ class CInstalledDevice
 		DWORD m_fOnUsedLastAmmo:1 = false;			//	If TRUE, remember the send statusUsedLastAmmo when done firing
 
 		DWORD m_dwSpare2:3;
+
+		Metric m_rActivateDelay = 0.0;				// Cached activation delay
+		Metric m_rRemainingActivationDelay = 0.0;	// True remaining time (in simulation seconds) until next activation (used for mid-tick interpolation start).
 	};

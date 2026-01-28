@@ -120,11 +120,9 @@ CParticlePatternEffectCreator::~CParticlePatternEffectCreator (void)
 //	CParticlePatternEffectCreator destructor
 
 	{
-	if (m_pSingleton)
-		delete m_pSingleton;
+	delete m_pSingleton;
 
-	if (m_pParticleEffect)
-		delete m_pParticleEffect;
+	delete m_pParticleEffect;
 	}
 
 const TArray<CVector> &CParticlePatternEffectCreator::GetSplinePoints (void)
@@ -194,11 +192,8 @@ ALERROR CParticlePatternEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 
 	//	Clean up, because we might want to recompute for next time.
 
-	if (m_pSingleton)
-		{
-		delete m_pSingleton;
-		m_pSingleton = NULL;
-		}
+	delete m_pSingleton;
+	m_pSingleton = NULL;
 
 	if (m_pParticleEffect)
 		{

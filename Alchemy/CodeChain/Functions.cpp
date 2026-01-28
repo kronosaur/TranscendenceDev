@@ -1334,6 +1334,8 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pCtx->pCC;
+	ICCItem *pFirst = pArgs->GetElement(0);
+	ICCItem *pSecond = pArgs->GetElement(1);
 	int i;
 
 	//	Prepare some output
@@ -1344,114 +1346,316 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	If no parameters, then we show some help on help
 
-	if (pArgs->GetCount() == 0)
+	if (!pFirst)
 		{
-		CString sHelp = CONSTLIT("(help) -> this help\n(help '*) -> all functions\n(help 'partial-string) -> all functions starting with partial-string\n(help 'function-name) -> help on function-name\n");
+		CString sHelp = CONSTLIT(
+			"(help) -> this help\n"
+			"(help '* ['*|'lambdas|'primitives]) -> all functions\n"
+			"(help 'partial-string ['*|'lambdas|'primitives]) -> all functions starting with partial-string\n"
+			"(help 'function-name ['*|'lambdas|'primitives]) -> help on function-name\n"
+			"(help function|lambda) -> help on the function or lambda\n");
 		Output.Write(sHelp.GetASCIIZPointer(), sHelp.GetLength());
 		}
 
-	//	If parameter is * then show all functions
+	//	If first parameter is a function, we show the docstring of the function
 
-	else if (strEquals(pArgs->GetElement(0)->GetStringValue(), CONSTLIT("*")))
+	else if (pFirst->IsFunction())
 		{
-		ICCItem *pGlobals = pCC->GetGlobals();
-		for (i = 0; i < pGlobals->GetCount(); i++)
+		CString sHelp = pFirst->GetHelp();
+
+		//	Handle formatting lambdas as well as primitives that are missing
+		//	docstrings
+
+		if (pFirst->IsLambdaFunction() || sHelp.IsBlank())
 			{
-			ICCItem *pItem = pGlobals->GetElement(i);
-			if (pItem->IsFunction())
+
+			//	Attempt to get the key from globals since we cant see
+			//	what symbol we were directly called with.
+			// 
+			//	If we cant find it, we just assume it is a local lambda
+			//	because primitive functions are always in globals
+
+			CCSymbolTable *pGlobals = (CCSymbolTable *)pCC->GetGlobals();
+			CCSymbolTable *pLocals = (CCSymbolTable *)pCtx->pLocalSymbols;
+			CString sKey = CONSTLIT("localLambda");
+			bool bFoundKey = false;
+
+			for (int i = 0; i < pGlobals->GetCount(); i++)
 				{
-				CString sHelp = pItem->GetHelp();
-
-				//	If blank or deprecated, skip
-
-				if (!sHelp.IsBlank() && !strStartsWith(sHelp, CONSTLIT("DEPRECATED")))
+				if (pGlobals->GetElement(i) == pFirst)
 					{
-					OutputFunctionName(Output, sHelp);
+					sKey = pGlobals->GetKey(i);
+					bFoundKey = true;
+					break;
+					}
+				}
+
+			//	If we didnt find it in the global table, attempt to check
+			//	in the local symbol table if one exists
+
+			if (!bFoundKey && pLocals)
+				{
+				for (int i = 0; i < pLocals->GetCount(); i++)
+					{
+					if (pLocals->GetElement(i) == pFirst)
+						{
+						sKey = pLocals->GetKey(i);
+						break;
+						}
+					}
+				}
+
+			//	If this is a lambda, we need to format it with sKey because it
+			//	does not keep track of what its own symbol is, because it can
+			//	be aliased
+
+			if (pFirst->IsLambdaFunction())
+				{
+
+				//	sHelp from a lambda should never be empty
+				//	if it is empty this is a bug and we need to log it
+				if (sHelp.IsBlank())
+					{
+					kernelDebugLogPattern(CONSTLIT("Error in (help '* 'lambdas): GetHelp() returned a blank string for lambda %s"), sKey);
+					sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
+					}
+				else
+					sHelp = strPatternSubst(sHelp, sKey);
+
+				}
+
+			//	If the help text is blank, then we generate our own
+			//	Lambdas should never be blank, this only happens with primitives
+
+			else if (sHelp.IsBlank())
+				sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
+			}
+
+		Output.Write(sHelp.GetASCIIZPointer(), sHelp.GetLength());
+		}
+
+	//	Otherwise we have a string to search for or filter results by
+
+	else
+		{
+		CCSymbolTable *pGlobals = (CCSymbolTable *)pCC->GetGlobals();
+		
+		//	Determine what to show.
+
+		bool bShowLambdas = false;
+		bool bShowPrimitives = false;
+
+		if (pSecond)
+			{
+			CString sSecond = pSecond->GetStringValue();
+
+			//	Check if we are supposed to include lambdas
+
+			if (strEquals(sSecond, CONSTLIT("lambdas"))
+				|| strEquals(sSecond, CONSTLIT("lambda"))
+				|| strEquals(sSecond, CONSTLIT("l"))
+				|| strEquals(sSecond, CONSTLIT("*")))
+				bShowLambdas = true;
+
+			//	Check if we are supposed to include primitives
+
+			if (strEquals(sSecond, CONSTLIT("primitives"))
+				|| strEquals(sSecond, CONSTLIT("primitive"))
+				|| strEquals(sSecond, CONSTLIT("p"))
+				|| strEquals(sSecond, CONSTLIT("*")))
+				bShowPrimitives = true;
+			}
+
+		//	By default (no second argument) we show only primitives
+
+		else
+			bShowPrimitives = true;
+
+		//	If first parameter is * then show all functions
+
+		if (pFirst->GetStringValue() == CONSTLIT("*"))
+			{
+			for (i = 0; i < pGlobals->GetCount(); i++)
+				{
+				ICCItem *pItem = pGlobals->GetElement(i);
+				if (pItem->IsFunction()
+					&& ((pItem->IsPrimitive() && bShowPrimitives)
+						|| (bShowLambdas && pItem->IsLambdaFunction())))
+					{
+					CString sHelp = pItem->GetHelp();
+
+					//	If deprecated or private, skip
+
+					bool bSkip = false;
+
+					//	For primitives we just check the help text directly
+
+					if (pItem->IsPrimitive() && (strStartsWith(sHelp, CONSTLIT("DEPRECATED")) || strStartsWith(sHelp, CONSTLIT("PRIVATE"))))
+						bSkip = true;
+
+					//	Lambdas have to contain their signature as the first line of their help text, so we have to strip that off and then check
+
+					else if (pItem->IsLambdaFunction())
+						{
+						CString sHelpInner = strTrimWhitespace(strSubString(sHelp, strFind(sHelp, CONSTLIT("\n"))));
+						bSkip = strStartsWith(sHelpInner, CONSTLIT("DEPRECATED")) || strStartsWith(sHelpInner, CONSTLIT("PRIVATE"));
+						}
+
+					if (!bSkip)
+						{
+
+						CString sKey = pGlobals->GetKey(i);
+
+						//	If the help text is from a lambda, we need to convert the first
+						//	strPattern into the actual key we are referencing the lambda by
+						//	because the lambda itself cannot know what that is
+
+						if (pItem->IsLambdaFunction())
+							{
+
+							//	sHelp from a lambda should never be empty
+							//	if it is empty this is a bug and we need to log it
+							if (sHelp.IsBlank())
+								{
+								kernelDebugLogPattern(CONSTLIT("Error in (help '* 'lambdas): GetHelp() returned a blank string for lambda %s"), sKey);
+								sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
+								}
+							else
+								sHelp = strPatternSubst(sHelp, sKey);
+
+							}
+
+						//	If the help text is blank, then we generate our own
+						//	Lambdas should never be blank, this only happens with primitives
+
+						else if (sHelp.IsBlank())
+							sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
+
+						OutputFunctionName(Output, sHelp);
+						Output.Write("\n", 1);
+						}
+					}
+				}
+			}
+
+		//	Otherwise, look for the function using the first parameter as a filter
+
+		else
+			{
+			CString sPartial = pFirst->GetStringValue();
+			TArray<CString> Help;
+
+			//	If we have a trailing '*' then we force a list, even on an exact
+			//	match. This helps us when there is a function whose name is a
+			//	subset of other function names.
+
+			bool bForcePartial = false;
+			if (strEndsWith(sPartial, CONSTLIT("*")))
+				{
+				bForcePartial = true;
+				sPartial = strSubString(sPartial, 0, sPartial.GetLength() - 1);
+				}
+
+			//	Compile a list of all functions that match
+
+			int iExactMatch = -1;
+			for (i = 0; i < pGlobals->GetCount(); i++)
+				{
+				ICCItem *pItem = pGlobals->GetElement(i);
+
+				if (pItem->IsFunction()
+					&& ((pItem->IsPrimitive() && bShowPrimitives)
+						|| (bShowLambdas && pItem->IsLambdaFunction()))
+					&& strStartsWith(pGlobals->GetKey(i), sPartial))
+					{
+					CString sHelp = pItem->GetHelp();
+
+					CString sKey = pGlobals->GetKey(i);
+
+					//	If the help text is from a lambda, we need to convert the first
+					//	strPattern into the actual key we are referencing the lambda by
+					//	because the lambda itself cannot know what that is
+
+					if (pItem->IsLambdaFunction())
+						{
+
+						//	sHelp from a lambda should never be empty
+						//	if it is empty this is a bug and we need to log it
+						if (sHelp.IsBlank())
+							{
+							kernelDebugLogPattern(CONSTLIT("Error in (help '* 'lambdas): GetHelp() returned a blank string for lambda %s"), sKey);
+							sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
+							}
+						else
+							sHelp = strPatternSubst(sHelp, sKey);
+
+						}
+
+					//	If the help text is blank, then we generate our own
+					//	Lambdas should never be blank, this only happens with primitives
+
+					else if (sHelp.IsBlank())
+						sHelp = strPatternSubst(CONSTLIT("(%s ...)"), sKey);
+
+					//	If deprecated or private, skip
+
+					bool bSkip = false;
+
+					//	For primitives we just check the help text directly
+
+					if (pItem->IsPrimitive() && (strStartsWith(sHelp, CONSTLIT("DEPRECATED")) || strStartsWith(sHelp, CONSTLIT("PRIVATE"))))
+						bSkip = true;
+
+					//	Lambdas have to contain their signature as the first line of their help text, so we have to strip that off and then check
+
+					else if (pItem->IsLambdaFunction())
+						{
+						CString sHelpInner = strTrimWhitespace(strSubString(sHelp, strFind(sHelp, CONSTLIT("\n"))));
+						bSkip = strStartsWith(sHelpInner, CONSTLIT("DEPRECATED")) || strStartsWith(sHelpInner, CONSTLIT("PRIVATE"));
+						}
+
+					if (bSkip)
+						{
+						}
+
+					//	If the help text does not match the function, then it means 
+					//	that this is an alias, so we skip it.
+					//	We skip this check for lambdas since their help strings
+					//	always pass this check anyways due to the runtime strPatternSubst
+					//	construction of their help strings with their global key
+
+					else if (pItem->IsPrimitive() && !strStartsWith(strSubString(sHelp, 1), pGlobals->GetKey(i)))
+						{
+						}
+
+					//	Otherwise, we add to the list
+
+					else
+						{
+						if (iExactMatch == -1 && strEquals(pGlobals->GetKey(i), sPartial))
+							iExactMatch = Help.GetCount();
+
+						Help.Insert(sHelp);
+						}
+					}
+				}
+
+			//	Output
+
+			if (iExactMatch != -1 && !bForcePartial)
+				Output.Write(Help[iExactMatch].GetASCIIZPointer(), Help[iExactMatch].GetLength());
+			else if (Help.GetCount() == 1)
+				Output.Write(Help[0].GetASCIIZPointer(), Help[0].GetLength());
+			else
+				{
+				for (i = 0; i < Help.GetCount(); i++)
+					{
+					OutputFunctionName(Output, Help[i]);
 					Output.Write("\n", 1);
 					}
 				}
 			}
-		}
 
-	//	Otherwise, look for the function
-
-	else
-		{
-		CString sPartial = pArgs->GetElement(0)->GetStringValue();
-		TArray<CString> Help;
-
-		//	If we have a trailing '*' then we force a list, even on an exact
-		//	match. This helps us when there is a function whose name is a
-		//	subset of other function names.
-
-		bool bForcePartial = false;
-		if (strEndsWith(sPartial, CONSTLIT("*")))
-			{
-			bForcePartial = true;
-			sPartial = strSubString(sPartial, 0, sPartial.GetLength() - 1);
-			}
-
-		//	Compile a list of all functions that match
-
-		int iExactMatch = -1;
-		CCSymbolTable *pGlobals = (CCSymbolTable *)pCC->GetGlobals();
-		for (i = 0; i < pGlobals->GetCount(); i++)
-			{
-			ICCItem *pItem = pGlobals->GetElement(i);
-
-			if (pItem->IsPrimitive() && strStartsWith(pGlobals->GetKey(i), sPartial))
-				{
-				CString sHelp = pItem->GetHelp();
-
-				//	If the help text is blank, then we generate our own
-
-				if (sHelp.IsBlank())
-					{
-					if (iExactMatch == -1 && strEquals(pGlobals->GetKey(i), sPartial))
-						iExactMatch = Help.GetCount();
-
-					Help.Insert(strPatternSubst(CONSTLIT("(%s ...)"), pGlobals->GetKey(i)));
-					}
-
-				//	If the help text starts with DEPRECATED, then we skip it.
-
-				else if (strStartsWith(sHelp, CONSTLIT("DEPRECATED")))
-					{
-					}
-
-				//	If the help text does not match the function, then it means 
-				//	that this is an alias, so we skip it.
-
-				else if (!strStartsWith(strSubString(sHelp, 1), pGlobals->GetKey(i)))
-					{
-					}
-
-				//	Otherwise, we add to the list
-
-				else
-					{
-					if (iExactMatch == -1 && strEquals(pGlobals->GetKey(i), sPartial))
-						iExactMatch = Help.GetCount();
-
-					Help.Insert(sHelp);
-					}
-				}
-			}
-
-		//	Output
-
-		if (iExactMatch != -1 && !bForcePartial)
-			Output.Write(Help[iExactMatch].GetASCIIZPointer(), Help[iExactMatch].GetLength());
-		else if (Help.GetCount() == 1)
-			Output.Write(Help[0].GetASCIIZPointer(), Help[0].GetLength());
-		else
-			{
-			for (i = 0; i < Help.GetCount(); i++)
-				{
-				OutputFunctionName(Output, Help[i]);
-				Output.Write("\n", 1);
-				}
-			}
 		}
 
 	//	Done
@@ -1558,18 +1762,20 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_ITEM:
+		case FN_ITEM_REVERSE:
 			{
-			ICCItem *pList = pArgs->GetElement(0);
+			ICCItem* pCurData = pArgs->GetElement(0);
+			ICCItem* pArg = NULL;
 
 			//	If no second parameter, then we return keys
 
 			if (pArgs->GetCount() < 2)
 				{
-				if (pList->IsSymbolTable() && pList->GetCount() > 0)
+				if (pCurData->IsSymbolTable() && pCurData->GetCount() > 0)
 					{
 					ICCItem *pResult = pCC->CreateLinkedList();
-					for (i = 0; i < pList->GetCount(); i++)
-						pResult->AppendString(pList->GetKey(i));
+					for (i = 0; i < pCurData->GetCount(); i++)
+						pResult->AppendString(pCurData->GetKey(i));
 
 					return pResult;
 					}
@@ -1577,36 +1783,96 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateNil();
 				}
 
-			//	If index is nil then we always return nil
+			//	Otherwise we read all the keys and index through nested elements
+			//
+			//	Return Nil if we try to get an element from a non-list or non-struct
+			//	Or if it is ever out of range:
+			//		FN_ITEM index < 0 on a list = 0
+			//		FN_ITEM_REVERSE index < 0 on a list addresses from the last element
 
-			else if (pArgs->GetElement(1)->IsNil())
-				return pCC->CreateNil();
-
-			//	Handle symbol tables differently
-
-			else if (pList->IsSymbolTable())
+			for (int i = 1; i < pArgs->GetCount(); i++)
 				{
-				bool bFound;
-				ICCItem *pResult = pList->LookupEx(pCC, pArgs->GetElement(1), &bFound);
-				if (!bFound)
-					{
-					pResult->Discard();
+				//	we can only function if pCurData is a list or struct
+				//	we have to filter out atoms because Nil reports itself as a list but isnt.
+
+				if (!pCurData
+					|| pCurData->IsAtom()
+					|| !(pCurData->IsList() || pCurData->IsSymbolTable()))
 					return pCC->CreateNil();
+
+				//	get the next index arg
+
+				pArg = pArgs->GetElement(i);
+
+				//	if the index arg is ever NULL or is Nil (incl empty list nil), we return Nil
+
+				if (!pArg || pArg->IsNil())
+					return pCC->CreateNil();
+
+				//	process arg if it is appropriate for pCurData's type
+				//	we dont want to reference anything until we return so we only
+				//	do GetElement
+
+				if (pCurData->IsSymbolTable())
+					{
+					bool bFound = false;
+					pCurData = pCurData->LookupEx(pCC, pArg, &bFound);
+
+					//	We pre-emptively discard, because this is either Nil or something with
+					//	at least 1 reference anyways, and we reference what we use before we
+					//	return it
+					//	Should also never be null. If you get a nullptr here, it means LookupEx
+					//	is broken
+
+					if (pCurData)
+						pCurData->Discard();
+					else
+						return pCC->CreateError(CONSTLIT("Nullptr exception occurred in '@@'"));
+
+					//	Handle invalid key
+
+					if (!bFound)
+						return pCC->CreateNil();
+
 					}
 
-				return pResult;
-				}
+				else if (pCurData->IsList() && pArg->IsInteger())
+					{
+					int iListIdx = pArg->GetIntegerValue();
 
-			//	Normal lists
+					//	Handle the different logic for legacy FN_ITEM vs FN_ITEM_REVERSE
 
-			else
-				{
-				ICCItem *pResult = pList->GetElement(pArgs->GetElement(1)->GetIntegerValue());
-				if (pResult == NULL)
-					return pCC->CreateNil();
+					if (dwData == FN_ITEM)
+						iListIdx = iListIdx < 0 ? 0 : iListIdx;
+					else if (dwData == FN_ITEM_REVERSE)
+						{
+						//	We add iListIdx to count IF it is negative to index from the end
+
+						iListIdx = iListIdx < 0 ? pCurData->GetCount() + iListIdx : iListIdx;
+
+						//	Handle if FN_ITEM_REVERSE is too negative
+
+						if (iListIdx < 0)
+							return pCC->CreateNil();
+						}
+
+					//	Treat as 0-based
+
+					pCurData = pCurData->GetElement(iListIdx);
+
+					//	Handle out of range index
+
+					if (!pCurData)
+						return pCC->CreateNil();
+					}
+
+				//	Handle invalid configurations
+
 				else
-					return pResult->Reference();
+					return pCC->CreateNil();
 				}
+
+			return pCurData->Reference();
 			}
 
 		case FN_ITEM_CONVERT_TO:
@@ -4334,9 +4600,10 @@ ICCItem* fnStr (CEvalContext* pCtx, ICCItem* pArgs, DWORD dwData)
 			int iSourceEnd = sSource.GetLength();
 
 			//	If we cant do anything with it then we pass the first arg via a list
+			//	We need to re-reference it to keep the reference count consistent
 
 			if (!iTargetEnd || iSourceEnd < iTargetEnd)
-				return pArgs->GetElement(0);
+				return pArgs->GetElement(0)->Reference();
 
 			//	Otherwise we try to do replacement.
 
@@ -4634,7 +4901,7 @@ ICCItem *fnSubset (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	This is the default not set value for subset iCount. slice iCount is always positive at this point in the code.
 	
-	if (iCount == -1)
+	if (iCount == -1 || (iStart + iCount) > iSourceCount)
 		iCount = iSourceCount - iStart;
 
 	//	Return nil or empty if asked to get a count of 0 or below
@@ -5575,6 +5842,183 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			}
 		}
 	}
+
+// helpers for left shift and right rotate
+static inline DWORD cc_rotl32 (DWORD x, DWORD r) { r &= 31u; return (x << r) | (x >> (32u - r)); }
+static inline DWORD cc_rotr32 (DWORD x, DWORD r) { r &= 31u; return (x >> r) | (x << (32u - r)); }
+
+// Coerce ICCItem to int32 (accept ints or doubles; same coercion style used elsewhere)
+static inline bool cc_to_int32 (ICCItem *pVal, int &out)
+{
+	if (pVal == NULL) return false;
+	if (pVal->IsInteger()) { out = (int)pVal->GetIntegerValue(); return true; }
+	if (pVal->IsDouble())  { out = (int)pVal->GetDoubleValue();  return true; }
+	return false;
+}
+
+ICCItem *fnBitwise (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
+// FnBitwise
+//
+// Bitwise ops
+//
+// (bAnd x1 [x2 ... xn])
+// (bOr  x1 [x2 ... xn])
+// (bXor x1 [x2 ... xn])
+// (bNot x)
+// (bShL  x count)
+// (bShR  x count)          ; logical
+// (bRoL  x count)          ; 32-bit rotate
+// (bRoR  x count)
+{
+	CCodeChain *pCC = pCtx->pCC;
+
+	auto err = [&](LPCTSTR msg) -> ICCItem *
+		{
+		return pCC->CreateError(CONSTLIT(msg), pArguments);
+		};
+
+	// Helper to eval one argument expression at index i
+	auto evalArg = [&](int i) -> ICCItem *
+		{
+		ICCItem *pExpr = pArguments->GetElement(i);
+		return pCC->Eval(pCtx, pExpr);
+		};
+
+	const int argc = (pArguments ? pArguments->GetCount() : 0);
+
+	switch (dwData)
+		{
+		case FN_BITWISE_AND:
+		case FN_BITWISE_OR:
+		case FN_BITWISE_XOR:
+			{
+			if (argc < 1)
+				return err("Expected at least 1 integer");
+
+			ICCItem *pV0 = evalArg(0);
+			if (pV0->IsError())
+				return pV0;
+
+			int v0;
+			if (!cc_to_int32(pV0, v0))
+				{
+				pV0->Discard();
+				return err("Expected integer");
+				}
+			DWORD acc = (DWORD)v0;
+			pV0->Discard();
+
+			for (int i = 1; i < argc; ++i)
+				{
+				ICCItem *pVi = evalArg(i);
+				if (pVi->IsError())
+					return pVi;
+
+				int vi;
+				if (!cc_to_int32(pVi, vi))
+					{
+					pVi->Discard();
+					return err("Expected integer");
+					}
+
+				DWORD u = (DWORD)vi;
+				if (dwData == FN_BITWISE_AND)      acc &= u;
+				else if (dwData == FN_BITWISE_OR)  acc |= u;
+				else /* XOR */                     acc ^= u;
+
+				pVi->Discard();
+				}
+
+			return pCC->CreateInteger((int)acc);
+			}
+
+		case FN_BITWISE_NOT:
+			{
+			if (argc != 1)
+				return err("Expected 1 integer");
+
+			ICCItem *pX = evalArg(0);
+			if (pX->IsError())
+				return pX;
+
+			int x;
+			if (!cc_to_int32(pX, x))
+				{
+				pX->Discard();
+				return err("Expected integer");
+				}
+			pX->Discard();
+
+			return pCC->CreateInteger((int)(~(DWORD)x));
+			}
+
+		case FN_BITWISE_SHL:
+		case FN_BITWISE_SHR:
+			{
+			if (argc != 2)
+				return err("Expected 2 integers");
+
+			ICCItem *pX = evalArg(0);
+			if (pX->IsError())
+				return pX;
+			ICCItem *pC = evalArg(1);
+			if (pC->IsError())
+				{ pX->Discard(); return pC; }
+
+			int x, c;
+			if (!cc_to_int32(pX, x) || !cc_to_int32(pC, c))
+				{
+				pX->Discard();
+				pC->Discard();
+				return err("Expected 2 integers");
+				}
+
+			pX->Discard();
+			pC->Discard();
+
+			DWORD ux = (DWORD)x;
+			DWORD k  = ((DWORD)c) & 31u;
+			DWORD r  = (dwData == FN_BITWISE_SHL ? (ux << k) : (ux >> k)); // logical SR
+			return pCC->CreateInteger((int)r);
+			}
+
+		case FN_BITWISE_ROL:
+		case FN_BITWISE_ROR:
+			{
+			if (argc != 2)
+				return err("Expected 2 integers");
+
+			ICCItem *pX = evalArg(0);
+			if (pX->IsError())
+				return pX;
+			ICCItem *pC = evalArg(1);
+			if (pC->IsError())
+				{ pX->Discard(); return pC; }
+
+			int x, c;
+			if (!cc_to_int32(pX, x) || !cc_to_int32(pC, c))
+				{
+				pX->Discard();
+				pC->Discard();
+				return err("Expected 2 integers");
+				}
+
+			pX->Discard();
+			pC->Discard();
+
+			DWORD ux = (DWORD)x;
+			DWORD r  = (dwData == FN_BITWISE_ROL ? cc_rotl32(ux, (DWORD)c)
+			                                        : cc_rotr32(ux, (DWORD)c));
+			return pCC->CreateInteger((int)r);
+			}
+
+		default:
+			{
+			ASSERT(false);
+			return NULL;
+			}
+		}
+}
 
 //	Helper Functions -----------------------------------------------------------
 

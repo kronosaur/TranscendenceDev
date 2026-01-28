@@ -135,6 +135,8 @@ class CGalacticMapSession : public IHISession
 		RECT m_rcView;
 
 		CMapScaleCounter m_Scale;           //  Map scale (100 = normal)
+		Metric m_rIconScaleFactor;			//	Relative amount to zoom icons by
+		Metric m_rIconScale;				//	Base scale for icons at 100 zoom (1.0 = normal)
 		int m_xCenter;                      //  Current center (in galactic coordinates)
 		int m_yCenter;
 
@@ -366,9 +368,10 @@ class CKeyboardMapSession : public IHISession
 class CLoadingSession : public IHISession
 	{
 	public:
-		CLoadingSession (CHumanInterface &HI, const CString &sCopyright) : IHISession(HI),
+		CLoadingSession (CHumanInterface &HI, const CString &sCopyright, CGameSettings &Settings) : IHISession(HI),
+				m_Settings(Settings),
 				m_sCopyright(sCopyright),
-				m_iTick(0) 
+				m_b60fps(Settings.GetBoolean(CGameSettings::use60fps))
 			{ }
 
 		//	IHISession virtuals
@@ -378,12 +381,15 @@ class CLoadingSession : public IHISession
 		virtual void OnUpdate (bool bTopMost) override;
 
 	private:
+		CGameSettings& m_Settings;
 		CG32bitImage m_TitleImage;
 		CG32bitImage m_StargateImage;
 		CString m_sCopyright;
-		int m_iTick;
-		RECT m_rcStargate;
-		int m_cyCopyright;
+		int m_iFrame = 0;
+		int m_iTick = 0;
+		RECT m_rcStargate = { 0 };
+		int m_cyCopyright = 0;
+		bool m_b60fps = false;
 	};
 
 class CLoginSession : public IHISession

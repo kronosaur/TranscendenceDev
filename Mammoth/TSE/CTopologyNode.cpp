@@ -49,11 +49,15 @@
 #define PROPERTY_LAST_VISITED_GAME_SECONDS		CONSTLIT("lastVisitSeconds")
 #define PROPERTY_LAST_VISITED_ON				CONSTLIT("lastVisitOn")
 #define PROPERTY_LEVEL							CONSTLIT("level")
+#define PROPERTY_LINK_COLOR						CONSTLIT("linkColor")
+#define PROPERTY_LOCATION_CRITERIA				CONSTLIT("locationCriteria")
 #define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_NODE_ID						CONSTLIT("nodeID")
 #define PROPERTY_POS							CONSTLIT("pos")
 #define PROPERTY_STD_CHALLENGE_RATING			CONSTLIT("stdChallengeRating")
 #define PROPERTY_STD_TREASURE_VALUE				CONSTLIT("stdTreasureValue")
+#define PROPERTY_TYPE_GATE						CONSTLIT("gateType")
+#define PROPERTY_TYPE_BEACON					CONSTLIT("beaconType")
 #define PROPERTY_UNCHARTED						CONSTLIT("uncharted")
 
 #define SPECIAL_LEVEL							CONSTLIT("level:")
@@ -123,6 +127,11 @@ ALERROR CTopologyNode::AddStargate (const SStargateDesc &GateDesc)
 
 	//	Initialize
 
+	pDesc->sAttributes = GateDesc.sFromAttributes;
+	pDesc->sLocationCriteria = GateDesc.sFromLocationCriteria;
+	pDesc->dwGateType = GateDesc.dwFromGateType;
+	pDesc->dwBeaconType = GateDesc.dwFromBeaconType;
+
 	pDesc->sDestNode = GateDesc.sDestNode;
 	pDesc->sDestEntryPoint = GateDesc.sDestName;
 
@@ -130,6 +139,8 @@ ALERROR CTopologyNode::AddStargate (const SStargateDesc &GateDesc)
 		pDesc->MidPoints = *GateDesc.pMidPoints;
 
 	pDesc->fUncharted = GateDesc.bUncharted;
+
+	pDesc->dwColor = GateDesc.rgbColor.AsDWORD();
 
 	return NOERROR;
 	}
@@ -161,8 +172,20 @@ ALERROR CTopologyNode::AddStargateAndReturn (const SStargateDesc &GateDesc)
 
 		SStargateDesc ReturnGateDesc;
 		ReturnGateDesc.sName = GateDesc.sDestName;
+
+		ReturnGateDesc.sFromAttributes = GateDesc.sToAttributes;
+		ReturnGateDesc.sFromLocationCriteria = GateDesc.sToLocationCriteria;
+		ReturnGateDesc.dwFromGateType = GateDesc.dwToGateType;
+		ReturnGateDesc.dwFromBeaconType = GateDesc.dwToBeaconType;
+
 		ReturnGateDesc.sDestNode = GetID();
 		ReturnGateDesc.sDestName = GateDesc.sName;
+		ReturnGateDesc.sToAttributes = GateDesc.sFromAttributes;
+		ReturnGateDesc.sToLocationCriteria = GateDesc.sFromLocationCriteria;
+		ReturnGateDesc.dwToGateType = GateDesc.dwFromGateType;
+		ReturnGateDesc.dwToBeaconType = GateDesc.dwFromBeaconType;
+
+		ReturnGateDesc.rgbColor = GateDesc.rgbColor;
 
 		if (pDestNode->AddStargate(ReturnGateDesc) != NOERROR)
 			{
@@ -220,6 +243,11 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 //	CString		gate: sName
 //	CString		gate: sDestNode
 //	CString		gate: sDestEntryPoint
+//	CString		gate: sAttributes
+//	CString		gate: sLocationCriteria
+//	DWORD		gate: dwGateType
+//  DWORD		gate: dwBeaconType
+//  DWORD		gate: dwColor
 //	DWORD		gate: flags
 //	DWORD		gate: xMid
 //	DWORD		gate: yMid
@@ -283,9 +311,33 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 		CString sName;
 		sName.ReadFromStream(Ctx.pStream);
 		SStargateEntry *pDesc = pNode->m_NamedGates.SetAt(sName);
-
 		pDesc->sDestNode.ReadFromStream(Ctx.pStream);
+
 		pDesc->sDestEntryPoint.ReadFromStream(Ctx.pStream);
+
+		if (Ctx.dwVersion >= 41)
+			{
+			pDesc->sAttributes.ReadFromStream(Ctx.pStream);
+
+			pDesc->sLocationCriteria.ReadFromStream(Ctx.pStream);
+
+			DWORD* pGateType = &(pDesc->dwGateType);
+			Ctx.pStream->Read((char *)pGateType, sizeof(DWORD));
+			
+			DWORD* pBeaconType = &(pDesc->dwBeaconType);
+			Ctx.pStream->Read((char *)pBeaconType, sizeof(DWORD));
+
+			DWORD* pColor = &(pDesc->dwColor);
+			Ctx.pStream->Read((char*)pColor, sizeof(DWORD));
+			}
+		else
+			{
+			pDesc->sAttributes = CONSTLIT("");
+			pDesc->sLocationCriteria = CONSTLIT("");
+			pDesc->dwGateType = 0;
+			pDesc->dwBeaconType = 0;
+			pDesc->dwColor = 0;
+			}
 
 		if (Ctx.dwVersion >= 27)
 			{
@@ -642,28 +694,66 @@ ICCItemPtr CTopologyNode::GetStargateProperty (const CString &sName, const CStri
 	else if (strEquals(sProperty, PROPERTY_UNCHARTED))
 		return ICCItemPtr((bool)pDesc->fUncharted);
 
+	else if (strEquals(sProperty, PROPERTY_ATTRIBUTES))
+		return ICCItemPtr(pDesc->sAttributes);
+
+	else if (strEquals(sProperty, PROPERTY_LOCATION_CRITERIA))
+		return ICCItemPtr(pDesc->sLocationCriteria);
+
+	else if (strEquals(sProperty, PROPERTY_TYPE_GATE))
+		return ICCItemPtr(pDesc->dwGateType);
+
+	else if (strEquals(sProperty, PROPERTY_TYPE_BEACON))
+		return ICCItemPtr(pDesc->dwBeaconType);
+
+	else if (strEquals(sProperty, PROPERTY_LINK_COLOR))
+		{
+		DWORD dwColor = pDesc->dwColor;
+		CString sColor;
+		if (dwColor & 0xFF000000)
+			{
+			sColor = DWToARGBColor(dwColor).AsHTMLColor();
+			return ICCItemPtr(sColor);
+			}
+		else
+			{
+			sColor = m_pMap->GetStargateLineColor().AsHTMLColor();
+			return ICCItemPtr(sColor);
+			}
+		}
+
 	else
 		return ICCItemPtr(ICCItem::Nil);
 	}
 
-void CTopologyNode::GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc) const
-
 //	GetStargateRouteDesc
 //
 //	Returns route description
+//
+void CTopologyNode::GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc) const
 
 	{
 	const SStargateEntry *pDesc = &m_NamedGates[iIndex];
 
 	retRouteDesc->pFromNode = this;
 	retRouteDesc->sFromName = m_NamedGates.GetKey(iIndex);
+	retRouteDesc->sFromAttributes = pDesc->sAttributes;
+	retRouteDesc->sFromLocationCriteria = pDesc->sLocationCriteria;
+	retRouteDesc->dwFromBeaconType = pDesc->dwBeaconType;
+	retRouteDesc->dwFromGateType = pDesc->dwGateType;
 
 	if (pDesc->pDestNode == NULL)
 		pDesc->pDestNode = m_Topology.FindTopologyNode(pDesc->sDestNode);
 
 	retRouteDesc->pToNode = pDesc->pDestNode;
 	retRouteDesc->sToName = pDesc->sDestEntryPoint;
+	retRouteDesc->sToAttributes = pDesc->pDestNode->GetStargateProperty(pDesc->sDestEntryPoint, PROPERTY_ATTRIBUTES)->GetStringValue();
+	retRouteDesc->sToLocationCriteria = pDesc->pDestNode->GetStargateProperty(pDesc->sDestEntryPoint, PROPERTY_LOCATION_CRITERIA)->GetStringValue();
+	retRouteDesc->dwToGateType = pDesc->pDestNode->GetStargateProperty(pDesc->sDestEntryPoint, PROPERTY_TYPE_GATE)->GetIntegerValue();
+	retRouteDesc->dwToBeaconType = pDesc->pDestNode->GetStargateProperty(pDesc->sDestEntryPoint, PROPERTY_TYPE_BEACON)->GetIntegerValue();
 	retRouteDesc->MidPoints = pDesc->MidPoints;
+
+	retRouteDesc->rgbColor = DWToARGBColor(pDesc->dwColor);
 
 	retRouteDesc->bUncharted = pDesc->fUncharted;
 	}
@@ -777,6 +867,100 @@ ALERROR CTopologyNode::InitFromSystemXML (CTopology &Topology, CXMLElement *pSys
 	SystemDesc.Apply(Topology, this);
 
 	return NOERROR;
+	}
+
+//	MatchesStargateAttribs
+// 
+//	Checks if a stargate's link attributes match the pattern in the match string
+//	This is done criteria-style, but only checks against attributes
+//
+bool CTopologyNode::MatchesStargateAttribs(const CString& sName, const CString& sMatch) const
+	{
+	CTopologyNode::SStargateEntry Gate;
+
+	//	An invalid gate never matches
+	if (!m_NamedGates.Find(sName, &Gate))
+		return false;
+
+	//	Empty match string always matches a valid gate
+	if (sMatch.IsBlank())
+		return true;
+
+	return MatchesStargateAttribs(&Gate, sMatch);
+	}
+
+//	MatchesStargateAttribs
+// 
+//	Checks if a stargate's link attributes match the pattern in the match string
+//	This is done criteria-style, but only checks against attributes
+//
+bool CTopologyNode::MatchesStargateAttribs(const CTopologyNode::SStargateEntry *pGate, const CString& sMatch) const
+	{
+	//	If a single non-or criteria fails, we do not match unless
+	//	we succeed on any or-criteria
+
+	bool bMatches = true;
+
+	//	iterate through the string looking for + or - attributes
+
+	char* pPos = sMatch.GetPointer();
+	char* pInitialPos = pPos;
+
+	//	cease if we hit a null terminator or OR criteria
+
+	while (*pPos && *pPos != '|')
+		{
+		//	if we are in whitespace, skip ahead
+
+		while (strIsWhitespace(pPos))
+			pPos++;
+
+		//	we have reached something now
+		//	if it is a null terminator or OR criteria, just leave
+
+		if (!*pPos || *pPos == '|')
+			break;
+
+		//	otherwise we check if this is a '-' for a negative criteria
+
+		bool bIsNegative = *pPos == '-';
+
+		//	skip ahead by one if this is a '+' or '-' to the actual attribute
+
+		if (*pPos == '-' || *pPos == '+')
+			pPos++;
+
+		char *pAttribStart = pPos;
+
+		//	scan ahead until we hit a delimiter
+		while (*pPos && *pPos != '|' && *pPos != ',' && *pPos != ';' && !strIsWhitespace(pPos))
+			pPos++;
+
+		CString sSelectedAttrib = strSubString(sMatch, pAttribStart - pInitialPos, pPos - pAttribStart);
+
+		//	determine if we satisfy the criteria
+
+		bool bMatchedAttrib = HasModifier(pGate->sAttributes, sSelectedAttrib);
+
+		bMatches = bMatchedAttrib != bIsNegative;
+
+		//	if we failed, stop evaluating
+
+		if (!bMatches)
+			break;
+		}
+
+	//	If we failed to match, we try the next or condition if one exists
+
+	if (!bMatches && *pPos == '|')
+		{
+		//	Always start 1 char after the '|' criteria
+		CString sOrMatch = strSubString(sMatch, strFind(sMatch, CONSTLIT("|")) + 1);
+		if (!sOrMatch.IsBlank())
+			bMatches = MatchesStargateAttribs(pGate, sOrMatch);
+		}
+
+	return bMatches;
 	}
 
 ALERROR CTopologyNode::ParsePointList (const CString &sValue, TArray<SPoint> *retPoints)
@@ -999,6 +1183,14 @@ void CTopologyNode::WriteToStream (IWriteStream *pStream)
 //	CString		gate: sName
 //	CString		gate: sDestNode
 //	CString		gate: sDestEntryPoint
+//  CString		gate: sAttributes
+//	CString		gate: sLocationCriteria
+//  DWORD		gate: dwGateType
+//  DWORD		gate: dwBeaconType
+//  DWORD		gate: dwColor
+//	DWORD		gate: flags
+//	DWORD		gate: xMid
+//	DWORD		gate: yMid
 //
 //	DWORD		No of variant labels
 //	CString		variant label
@@ -1038,6 +1230,11 @@ void CTopologyNode::WriteToStream (IWriteStream *pStream)
 		sName.WriteToStream(pStream);
 		pDesc->sDestNode.WriteToStream(pStream);
 		pDesc->sDestEntryPoint.WriteToStream(pStream);
+		pDesc->sAttributes.WriteToStream(pStream);
+		pDesc->sLocationCriteria.WriteToStream(pStream);
+		pStream->Write((char *)&(pDesc->dwGateType), sizeof(DWORD));
+		pStream->Write((char *)&(pDesc->dwBeaconType), sizeof(DWORD));
+		pStream->Write((char *)&(pDesc->dwColor), sizeof(DWORD));
 
 		DWORD dwFlags = 0;
 		dwFlags |= (pDesc->MidPoints.GetCount() > 0 ?	0x00000001 : 0);

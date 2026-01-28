@@ -171,12 +171,13 @@ class CObjectImage : public CDesignType
 
 		CString m_sResourceDb;					//	Resource db
 		CString m_sBitmap;						//	Bitmap resource within db
-		CString m_sBitmask;						//	Bitmask resource within db
+		CString m_sBitmask;						//	Optional mask to use for alpha
 		CString m_sHitMask;						//	Optional mask to use for hit testing
 		CString m_sShadowMask;					//	Optional mask to use to generate volumetric shadow
 		bool m_bPreMult = false;				//	If TRUE, image needs to be premultiplied with mask on load.
 		bool m_bLoadOnUse = false;				//	If TRUE, image is only loaded when needed
 		mutable bool m_bFreeBitmap = false;		//	If TRUE, we free the bitmap when done
+		ChannelTypes m_iPNGMaskAlphaChannel = channelAlpha;	//	This is the channel that should be loaded from a png bitmask (m_sBitmask) to use for alpha
 
 		//	Runtime
 
@@ -249,7 +250,7 @@ class CObjectImageArray
 		bool IsLoaded (void) const { return (m_pImage != NULL); }
         bool IsMarked (void) const { return (m_pImage && m_pImage->IsMarked()); }
 		void MarkImage (void) const;
-		void PaintImage (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, bool bComposite = false) const;
+		void PaintImage (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, bool bComposite = false, SViewportPaintCtx *Ctx = NULL, int iOffsetY = -1, int iOffsetCY = -1) const;
 		void PaintImageGrayed (CG32bitImage &Dest, int x, int y, int iTick, int iRotation) const;
 		void PaintImageShimmering (CG32bitImage &Dest,
 								   int x,
@@ -284,6 +285,7 @@ class CObjectImageArray
 		void SetImage (TSharedPtr<CObjectImage> pImage);
 		void SetRotationCount (int iRotationCount);
 		void TakeHandoff (CObjectImageArray &Source);
+		void WorkerPaintImage (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, bool bComposite = false, int iOffsetY = -1, int iOffsetCY = -1, bool bDbgShowPaintLocation = false) const;
 		void WriteToStream (IWriteStream *pStream) const;
 
 		static const CObjectImageArray &Null (void) { return m_Null; }
@@ -333,8 +335,15 @@ class CObjectImageArray
 		mutable CG32bitImage *m_pScaledImages = NULL;
 		mutable int m_cxScaledImage = -1;
 
+		//	Multithreading lock
+
+		mutable CCriticalSection m_cs = CCriticalSection();
+
+		//	Static members
+
 		static CObjectImageArray m_Null;
 		static CG32bitImage m_NullImage;
+
 	};
 
 const DWORD DEFAULT_SELECTOR_ID = 0;
