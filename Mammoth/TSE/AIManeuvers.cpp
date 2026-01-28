@@ -1708,53 +1708,9 @@ void CAIBehaviorCtx::FireWeaponIfOnTarget(CShip *pShip, CSpaceObject *pTarget, C
 		&iAimAngle,
 		&iFireAngle,
 		retiFacingAngle);
-	bool bAimError = false;
 	*retiAngleToTarget = iAimAngle;
 	if (retbIsAligned)
 		*retbIsAligned = bAligned;
-
-	//	iAimAngle is the direction that we should fire in order to hit
-	//	the target.
-	//
-	//	iFireAngle is the direction in which the weapon will fire.
-	//
-	//	iFacingAngle is the direction in which the ship should face
-	//	in order for the weapon to hit the target.
-
-	//	There is a chance of missing
-
-	if (pWeaponToFire->IsReady())
-		{
-		if (bAligned)
-			{
-			if (mathRandom(1, 100) > GetFireAccuracy())
-				{
-				bAligned = false;
-
-				//	In this case, we happen to be aligned, but because of inaccuracy
-				//	reason we think we're not. We clear the aim angle because for
-				//	omnidirectional weapons, we don't want to try to turn towards
-				//	the new aim point.
-
-				iAimAngle = -1;
-				bAimError = true;
-				DebugAIOutput(pShip, "Aim error: hold fire when aligned");
-				}
-			}
-		else if (iAimAngle != -1)
-			{
-			if (mathRandom(1, 100) <= m_iPrematureFireChance)
-				{
-				int iAimOffset = AngleOffset(iFireAngle, iAimAngle);
-				if (iAimOffset < 20)
-					{
-					bAligned = true;
-					bAimError = true;
-					DebugAIOutput(pShip, "Aim error: fire when not aligned");
-					}
-				}
-			}
-		}
 
 	//	Fire
 
@@ -1763,9 +1719,7 @@ void CAIBehaviorCtx::FireWeaponIfOnTarget(CShip *pShip, CSpaceObject *pTarget, C
 #ifdef DEBUG
 			{
 			char szDebug[1024];
-			if (bAimError)
-				wsprintf(szDebug, "%s: false positive  iAim=%d  iFireAngle=%d", pWeaponToFire->GetName().GetASCIIZPointer(), iAimAngle, iFireAngle);
-			else if (!pWeaponToFire->IsReady())
+			if (!pWeaponToFire->IsReady())
 				wsprintf(szDebug, "%s: aligned; NOT READY", pWeaponToFire->GetName().GetASCIIZPointer());
 			else if (rTargetDist2 > (rWeaponRange * rWeaponRange))
 				wsprintf(szDebug, "%s: aligned; TARGET OUT OF RANGE", pWeaponToFire->GetName().GetASCIIZPointer());

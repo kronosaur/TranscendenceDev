@@ -5089,6 +5089,32 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 		{
 		int iAimTolerance = GetConfiguration(*pShotDesc).GetAimTolerance(GetFireDelay(*pShotDesc));
 
+		//	If we are an NPC, we compute an aim tolerance adjustment based on fire accuracy
+		//
+		//	This is so that we can more convincingly simulate sloppy aim around the target
+		//	rather than relying on dicerolls to see if the AI thinks its aligned or not
+		//	which can lead to unconvincing behavior such as not thinking its aligned with a
+		//	massive wall of capship or station in front of it, or thinking its aligned when
+		//	facing in the wrong direction.
+
+		if (!pSource->IsPlayer() && iAimTolerance < 180)
+			{
+			const CShip* pSourceShip = pSource->AsShip();
+			if (pSourceShip)
+				{
+				int iAccuracy = pSourceShip->GetClass().GetAISettings().GetFireAccuracy();
+				if (iAccuracy < 100)
+					{
+					Metric rAccuracy = 0.01 * iAccuracy;
+					Metric rInaccuracy = 1.0 - rAccuracy;
+					Metric rAccurateTolerance = rInaccuracy * iAimTolerance * rAccuracy;
+					Metric rInaccurateTolerance = (180 - iAimTolerance) * rInaccuracy * rInaccuracy;
+
+					iAimTolerance = mathRound(iAimTolerance + rAccurateTolerance + rInaccurateTolerance);
+					}
+				}
+			}
+
 		//	Area weapons have 60 degree aim tolerance
 
 		if (pShotDesc->GetType() == CWeaponFireDesc::ftArea)
