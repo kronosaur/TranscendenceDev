@@ -59,6 +59,7 @@
 #define USE_ENABLED_ONLY_ATTRIB					CONSTLIT("useEnabledOnly")
 #define USE_INSTALLED_ONLY_ATTRIB				CONSTLIT("useInstalledOnly")
 #define USE_KEY_ATTRIB							CONSTLIT("useKey")
+#define USE_OBJECT_IMAGE_ATTRIB					CONSTLIT("installedItemUsesObjectImage")
 #define USE_SCREEN_ATTRIB						CONSTLIT("useScreen")
 #define USE_UNDAMAGED_ONLY_ATTRIB				CONSTLIT("useUndamagedOnly")
 #define USE_UNINSTALLED_ONLY_ATTRIB				CONSTLIT("useUninstalledOnly")
@@ -844,11 +845,16 @@ int CItemType::GetFrequencyByLevel (int iLevel)
 		}
 	}
 
-const CObjectImageArray &CItemType::GetImage (bool bActual) const
-
 //	GetImage
 //
 //	Gets the item icon
+//	bActual: if true, returns the identified image, otherwise the unidentified image (if applicable)
+// 
+//  Does not get the object icon if this is an item intended to use the
+//  object as its icon if installed, because the ItemType does not have
+//  installation data.
+//
+const CObjectImageArray &CItemType::GetImage (bool bActual) const
 
 	{
 	CItem Item(const_cast<CItemType *>(this), 1);
@@ -1603,6 +1609,7 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Flags
 
+	m_fUseObjImage = pDesc->GetAttributeBool(USE_OBJECT_IMAGE_ATTRIB);
 	m_fNoSaleIfUsed = pDesc->GetAttributeBool(NO_SALE_IF_USED_ATTRIB);
 	m_fRandomDamaged = pDesc->GetAttributeBool(CONSTLIT(g_RandomDamagedAttrib));
 	m_fVirtual = pDesc->GetAttributeBool(VIRTUAL_ATTRIB) || m_sName.IsBlank();

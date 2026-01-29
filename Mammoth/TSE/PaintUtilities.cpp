@@ -127,11 +127,77 @@ void ComputeLightningPoints (int iCount, CVector *pPoints, Metric rChaos)
 		ComputeLightningPoints(iCount - iMiddle, pPoints + iMiddle, rChaos);
 	}
 
-void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, const CItemType *pType, int cxSize, int cySize, bool bGray, bool bDisplayAsKnown)
+//	DrawItemIcon
+//
+//	Draws the item icon at the given position
+//
+void DrawItemIcon (CG32bitImage &Dest, int x, int y, const CItem *pItem, int cxSize, int cySize, bool bGray, bool bDisplayAsKnown)
+
+	{
+	const CObjectImageArray &Image = pItem->GetImage(bDisplayAsKnown);
+	if (Image.IsLoaded())
+		{
+		RECT rcImage = Image.GetImageRect();
+
+		if (cxSize <= 0 || cySize <= 0 || (cxSize == DEFAULT_ICON_WIDTH && cySize == DEFAULT_ICON_HEIGHT))
+			{
+			if (bGray)
+				CGDraw::BltGray(Dest,
+					x,
+					y,
+					Image.GetImage(NULL_STR),
+					rcImage.left,
+					rcImage.top,
+					RectWidth(rcImage),
+					RectHeight(rcImage),
+					128);
+			else
+				Dest.Blt(rcImage.left,
+					rcImage.top,
+					RectWidth(rcImage),
+					RectHeight(rcImage),
+					255,
+					Image.GetImage(NULL_STR),
+					x,
+					y);
+			}
+		else
+			{
+			if (bGray)
+				CGDraw::BltTransformedGray(Dest,
+					x + (cxSize / 2),
+					y + (cySize / 2),
+					(Metric)cxSize / (Metric)RectWidth(rcImage),
+					(Metric)cySize / (Metric)RectHeight(rcImage),
+					0.0,
+					Image.GetImage(NULL_STR),
+					rcImage.left,
+					rcImage.top,
+					RectWidth(rcImage),
+					RectHeight(rcImage),
+					128);
+			else
+				CGDraw::BltTransformed(Dest,
+					x + (cxSize / 2),
+					y + (cySize / 2),
+					(Metric)cxSize / (Metric)RectWidth(rcImage),
+					(Metric)cySize / (Metric)RectHeight(rcImage),
+					0.0,
+					Image.GetImage(NULL_STR),
+					rcImage.left,
+					rcImage.top,
+					RectWidth(rcImage),
+					RectHeight(rcImage));
+			}
+		}
+	}
 
 //	DrawItemTypeIcon
 //
 //	Draws the item type icon at the given position
+//	Warning: do not use this for installed items, as they can change their icon
+//
+void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, const CItemType *pType, int cxSize, int cySize, bool bGray, bool bDisplayAsKnown)
 
 	{
 	const CObjectImageArray &Image = pType->GetImage(bDisplayAsKnown);

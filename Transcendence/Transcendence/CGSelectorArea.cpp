@@ -838,7 +838,7 @@ void CGSelectorArea::PaintInstalledItem (CG32bitImage &Dest, const RECT &rcRect,
 	bool bGrayed = (pDevice && !pDevice->IsEnabled());
 	int xIcon = rcRect.left + (RectWidth(rcRect) - ITEM_ICON_WIDTH) / 2;
 	int yIcon = rcRect.top + ITEM_ENTRY_PADDING_TOP;
-	DrawItemTypeIcon(Dest, xIcon, yIcon, Item.GetType(), ITEM_ICON_WIDTH, ITEM_ICON_HEIGHT, bGrayed);
+	DrawItemIcon(Dest, xIcon, yIcon, &Item, ITEM_ICON_WIDTH, ITEM_ICON_HEIGHT, bGrayed);
 
 	//	Paint the name of the item below.
 

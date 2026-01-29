@@ -22,11 +22,6 @@ inline CDeviceClass *CItem::GetDeviceClass (void) const
 	return (IsDevice() ? m_pItemType->GetDeviceClass() : NULL);
 	}
 
-inline const CObjectImageArray &CItem::GetImage (void) const
-	{
-	return (m_pItemType ? m_pItemType->GetImage() : CObjectImageArray::Null());
-	}
-
 inline bool CItem::HasAttribute (const CString &sAttrib) const
 	{
 	return (m_pItemType ? m_pItemType->HasLiteralAttribute(sAttrib): false);
