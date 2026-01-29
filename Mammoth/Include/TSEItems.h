@@ -67,6 +67,7 @@ class CDifferentiatedItem
 		inline const CItemType &GetType (void) const;
 		inline CItemType &GetType (void);
 		inline int GetVariantNumber (void) const;
+		CItem& GetUndifferentiatedItem () const { return m_Item; }
 		inline bool IsDamaged (int *retiDamagedHP = NULL) const;
 		inline bool IsDisrupted (void) const;
 		inline bool IsEnhanced (void) const;
@@ -343,7 +344,7 @@ class CItem
 		CString GetEnhancedDesc (void) const;
 		bool GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem &TargetItem, const CString &sMode, SEnhanceItemResult &retResult, CString *retsError = NULL) const;
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
-		const CObjectImageArray& GetImage () const;
+		const CObjectImageArray& GetImage (bool bActual = false) const;
 		int GetInstallCost (void) const;
 		int GetInstalled (void) const { return (m_pExtra ? m_pExtra->m_iInstalledIndex : -1); }
 		const CInstalledArmor *GetInstalledArmor (void) const { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Armor) return (const CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
