@@ -66,9 +66,6 @@
     <ClCompile Include="CCloudService.cpp">
       <Filter>Source Files\CloudInterface Files</Filter>
     </ClCompile>
-    <ClCompile Include="CXelerus.cpp">
-      <Filter>Source Files\CloudInterface Files</Filter>
-    </ClCompile>
     <ClCompile Include="CItemDataAnimatron.cpp">
       <Filter>Source Files\UIHelpers</Filter>
     </ClCompile>

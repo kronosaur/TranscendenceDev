@@ -48,9 +48,9 @@
 			>
 		<Properties>
 			<Variant id="rpg.buyCriteria">(@ gData 'buyCriteria)</Variant>
-			<Variant id="rpg.checkMilitaryID">(or (objGetProperty gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
+			<Variant id="rpg.checkMilitaryID">(or (obj@ gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
 			<Variant id="rpg.sellCriteria">(@ gData 'sellCriteria)</Variant>
-			<Variant id="rpg.showActualItem">(or (objGetProperty gSource 'rpg.showActualItem) (@ gData 'showActualItem))</Variant>
+			<Variant id="rpg.showActualItem">(or (obj@ gSource 'rpg.showActualItem) (@ gData 'showActualItem))</Variant>
 			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
 		</Properties>
 
@@ -136,9 +136,9 @@
 			>
 		
 		<Properties>
-			<Variant id="rpg.checkMilitaryID">(or (objGetProperty gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
+			<Variant id="rpg.checkMilitaryID">(or (obj@ gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
 			<Variant id="rpg.criteria">(@ gData 'criteria)</Variant>
-			<Variant id="rpg.showActualItem">(or (objGetProperty gSource 'rpg.showActualItem) (@ gData 'showActualItem))</Variant>
+			<Variant id="rpg.showActualItem">(or (obj@ gSource 'rpg.showActualItem) (@ gData 'showActualItem))</Variant>
 			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
 		</Properties>
 

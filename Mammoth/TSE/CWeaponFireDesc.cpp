@@ -1638,6 +1638,16 @@ Metric CWeaponFireDesc::GetAveInitialSpeed (void) const
 		return GetRatedSpeed();
 	}
 
+//	GetContinuousFireDelay
+// 
+//	Returns the continuous fire delay in ticks
+//	Returns -1 if it should defer to the weapon's default continuous delay
+//
+Metric CWeaponFireDesc::GetContinuousFireDelay() const
+	{
+	return (m_rContinuousFireDelay >= 0 ? m_rContinuousFireDelay : -1.0);
+	}
+
 DamageTypes CWeaponFireDesc::GetDamageType (void) const
 
 //	GetDamageType
@@ -1672,11 +1682,11 @@ DamageTypes CWeaponFireDesc::GetDamageType (void) const
 
 //	GetFireDelay
 //
-//	Returns number of ticks to wait before we can shoot again.
+//	Returns number of simulation seconds to wait before we can shoot again.
 //
 Metric CWeaponFireDesc::GetFireDelay(void) const
 	{
-	return m_rFireRate / g_SecondsPerUpdate;
+	return m_rFireRate;
 	}
 
 CEffectCreator* CWeaponFireDesc::GetChargeEffect(void) const

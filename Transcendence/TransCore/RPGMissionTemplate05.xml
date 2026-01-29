@@ -241,6 +241,10 @@
 						)
 					)
 			</OnUpdate>
+
+			<CheckQuestItem>
+				(itmIsEqual gData (@ (msn@ gSource 'itemDesc) 'item))
+			</CheckQuestItem>
 		</Events>
 	</MissionType>
 
