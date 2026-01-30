@@ -15,19 +15,20 @@
 
 		<Hull
 			size=				"10"
-			mass=				"5"
+			mass=				"10"
 
-			cargoSpace=			"0"
+			cargoSpace=			"10"
 			maxCargoSpace=		"10"
 			maxReactorPower=	"10000"
 			maxDevices=			"3"
 			>
 			<ArmorLimits massClass="ultraLight"		speedAdj="0" />
+			<ArmorLimits massClass="light"			speedAdj="-3" />
 		</Hull>
 
 		<Drive
-			thrust=				"80"
-			maxSpeed=			"35"
+			thrust=				"50"
+			maxSpeed=			"30"
 			/>
 
 		<DeviceSlots>
@@ -46,12 +47,14 @@
 		<!-- Configuration -->
 
 		<Armor
-			armorID=			"&itUltraLightTitaniumCasing;"
+			armorID=			"&itUltraLightTitaniumArmor;"
 			count=				"1"
 			/>
 
 		<Devices>
 			<Device slotID="main"				deviceID="&itLaserCannon;"/>
+            <Device slotID="reactor"			deviceID="&it10MWReactor;"/>
+
 			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
 		</Devices>
 		
