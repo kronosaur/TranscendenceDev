@@ -315,89 +315,23 @@
 	
 <!-- SHIP CLASSES -->
 
-	<!-- Level 1: Hornet Battlepod -->
-
-	<ShipClass UNID="&scHornetStock;"
-			manufacturer=		"Earth Industries"
-			class=				"Hornet"
-			type=				"battlepod"
-			defaultSovereign=	"&svIndependent;"
-
-			attributes=			"EI, genericClass"
-			>
-
-		<Hull
-			size=				"10"
-			mass=				"5"
-
-			cargoSpace=			"0"
-			maxCargoSpace=		"10"
-			maxReactorPower=	"10000"
-			maxDevices=			"3"
-			stdArmor=			"ultralight"
-			maxArmor=			"ultralight"
-			/>
-
-		<Drive
-			thrustRatio=		"16"
-			maxSpeed=			"35"
-			/>
-
-		<Armor
-			armorID=			"&itUltraLightTitaniumCasing;"
-			count=				"1"
-			/>
-
-		<DeviceSlots>
-			<DeviceSlot id="main"		criteria="w"/>
-		</DeviceSlots>
-
-		<Devices>
-			<Device slotID="main"		deviceID="&itLaserCannon;"/>
-		</Devices>
-
-		<Maneuver
-			maxRotationRate=	"18.0"
-			rotationAccel=		"6.0"
-			/>
-
-		<Image imageID="&rsHornetHD;" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12" viewportRatio="0.0029375"/>
-		<HeroImage imageID="&rsHornetHero;" imageWidth="320" imageHeight="320"/>
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="8"	posZ="0"	rotation="180"/>
-		</Effects>
-
-		<AISettings
-			fireRateAdj=		"10"
-			fireAccuracy=		"100"
-			perception=			"4"
-			/>
-
-	</ShipClass>
-
 	<ShipClass UNID="&scHornet;"
 			inherit="&scHornetStock;"
 			defaultSovereign=	"&svAnarchists;"
 			attributes=			"anarchists, EI, genericClass, poorQualityHull"
 			>
 
-		<DeviceSlots>
-			<DeviceSlot id="main"		criteria="w">
-				<EnhancementAbilities>
-					<Enhance type=			"Poor Quality Hull"
-							 enhancement=	"-speed:33;"
-							 />
-				</EnhancementAbilities>
-			</DeviceSlot>
-		</DeviceSlots>
-
 		<Devices>
-			<Device slotID="main"		deviceID="&itLaserCannon;"/>
+			<Device slotID="main"				deviceID="&itLaserCannon;"/>
+			<Table>
+				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems300;"/>
+				<Device slotID="shipSystems"	chance="15" deviceID="&vtShipSystems250;"/>
+				<Device slotID="shipSystems"	chance="10" deviceID="&vtShipSystems200;"/>
+				<Device slotID="shipSystems"	chance="25" deviceID="&vtShipSystems500;"/>
+			</Table>
 		</Devices>
 
 		<AISettings
-			fireRateAdj=		"10"
 			fireAccuracy=		"70"
 			perception=			"4"
 			/>
