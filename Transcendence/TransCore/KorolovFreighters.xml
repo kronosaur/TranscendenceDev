@@ -10,85 +10,50 @@
 			manufacturer=		"Makayev-Energia"
 			class=				"Antares I"
 			type=				"freighter"
+			inherit=			"&scAntaresIStock;"
+			level=				"2"
 			defaultSovereign=	"&svCorporate;"
 
 			attributes=			"commonwealth, freighter, genericClass, makayev"
-			   
-			size=				"135"
-			mass=				"5000"
-			thrustRatio=		"1"
-			maxSpeed=			"8"
-			cargoSpace=			"30000"
 			>
-
-		<Names noArticle="true">Antares Heavy 1%0%0</Names>
-
-		<!-- Configuration -->
-		
-		<Armor
-			armorID=			"&itTitaniumArmor;"
-			count=				"12"
-			/>
 		
 		<Devices>
-			<Device deviceID="&itRecoillessCannon;" omnidirectional="true"/>
+			<Table>
+				<Group chance="35">
+					<Device slotID="fore_turret"	deviceID="&itRecoillessCannon;"/>
+				</Group>
+				<Group chance="30">
+					<Device slotID="fore_turret"	deviceID="&itLightRecoillessCannon;"/>
+					<Device item="&itArmorRepairDevice;"/>
+				</Group>
+				<Group chance="15">
+					<Device slotID="fore_turret"	deviceID="&itLaserCannon;"/>
+				</Group>
+				<Group chance="10">
+					<Device slotID="fore_turret"	deviceID="&itTridentCannon;"/>
+				</Group>
+				<Group chance="10">
+					<Device slotID="fore_turret"	deviceID="&itHeavyRecoillessCannon;"/>
+				</Group>
+			</Table>
+
+			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
 		</Devices>
-
-		<Maneuver
-			maxRotationRate=	"2.0"
-			rotationAccel=		"0.2"
-			/>
-
-		<Interior>
-			<Compartment name="interior"
-					hitPoints=	"20"
-					/>
-			
-			<Compartment name="main drive"
-					type=		"mainDrive"
-					hitPoints=	"30"
-
-					posX=		"-54"
-					posY=		"0"
-					sizeX=		"32"
-					sizeY=		"28"
-					/>
-			
-			<Compartment name="cargo containers"
-					type=		"cargo"
-					hitPoints=	"20"
-
-					posX=		"2"
-					posY=		"0"
-					sizeX=		"76"
-					sizeY=		"68"
-					/>
-		</Interior>
 
 		<Items>
 		</Items>
-
-		<!-- Image and Effects -->
-		
-		<Image imageID="&rsAntaresIHD;" imageWidth="144" imageHeight="144"	rotationCount="120" rotationColumns="12" viewportRatio="0.0175"/>
-		<HeroImage imageID="&rsAntaresIHero;" imageWidth="320" imageHeight="320"/>
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="176"	posRadius="69"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-176"	posRadius="69"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="173"	posRadius="69"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-173"	posRadius="69"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="69"	posZ="10"	rotation="180"	effect="&efMainThrusterLarge;"/>
-		</Effects>
 		
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"120"
+			fireRateAdj=		"20"
 			fireAccuracy=		"90"
 			perception=			"4"
 			combatStyle=		"standOff"
 			/>
+		<!-- Korolov -->
+
+		<Names noArticle="true">Antares Heavy 1%0%0</Names>
 
 		<Properties>
 			; new pilots cannot escort
@@ -133,86 +98,70 @@
 			manufacturer=		"Makayev-Energia"
 			class=				"Antares II"
 			type=				"freighter"
+			inherit=			"&scAntaresIIStock;"
+			level=				"3"
 			defaultSovereign=	"&svCorporate;"
 
 			attributes=			"commonwealth, freighter, genericClass, makayev"
-			   
-			size=				"135"
-			mass=				"6000"
-			thrustRatio=		"1.5"
-			maxSpeed=			"12"
-			cargoSpace=			"30000"
 			>
-
-		<Names noArticle="true">Antares Heavy 2%0%0</Names>
 
 		<!-- Configuration -->
 		
 		<Armor
-			armorID=			"&itLightPlasteelPlate;"
+			armorID=			"&itPlasteelPlate;"
 			count=				"12"
 			/>
 		
 		<Devices>
-			<Device deviceID="&itHeavyRecoillessCannon;" secondaryWeapon="true" posAngle="0" posRadius="25" omnidirectional="true"/>
-			<Device deviceID="&itHeavyRecoillessCannon;" secondaryWeapon="true" posAngle="180" posRadius="25" omnidirectional="true"/>
+			<Table>
+				<Group chance="25">
+					<Device slotID="fore_turret"	deviceID="&itHeavyRecoillessCannon;"/>
+					<Device slotID="aft_turret"		deviceID="&itHeavyRecoillessCannon;"/>
+				</Group>
+				<Group chance="20">
+					<Device slotID="fore_turret"	deviceID="&itTridentCannon;"/>
+					<Device slotID="aft_turret"		deviceID="&itTridentCannon;"/>
+				</Group>
+				<Group chance="20">
+					<Device slotID="fore_turret"	deviceID="&itRecoillessCannon;"/>
+					<Device slotID="aft_turret"		deviceID="&itRecoillessCannon;"/>
+					<Device item="&itArmorRepairDevice;"/>
+				</Group>
+				<Group chance="15">
+					<Device slotID="fore_turret"	deviceID="&itFastFireLaserCannon;"/>
+					<Device slotID="aft_turret"		deviceID="&itFastFireLaserCannon;"/>
+				</Group>
+				<Group chance="10">
+					<Device slotID="fore_turret"	deviceID="&itArbalestCannon;"/>
+					<Device slotID="aft_turret"		deviceID="&itArbalestCannon;"/>
+				</Group>
+				<Group chance="5">
+					<Device slotID="fore_turret"	deviceID="&itTridentCannon;"/>
+					<Device slotID="aft_turret"		deviceID="&itTridentCannon;"/>
+				</Group>
+				<Group chance="5">
+					<Device slotID="fore_turret"	deviceID="&itPartisanCannon;"/>
+					<Device slotID="aft_turret"		deviceID="&itPartisanCannon;"/>
+				</Group>
+			</Table>
+
+			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
 		</Devices>
-
-		<Maneuver
-			maxRotationRate=	"2.0"
-			rotationAccel=		"0.2"
-			/>
-
-		<Interior>
-			<Compartment name="interior"
-					hitPoints=	"15"
-					/>
-			
-			<Compartment name="main drive"
-					type=		"mainDrive"
-					hitPoints=	"30"
-
-					posX=		"-54"
-					posY=		"0"
-					sizeX=		"32"
-					sizeY=		"28"
-					/>
-			
-			<Compartment name="cargo containers"
-					type=		"cargo"
-					hitPoints=	"30"
-
-					posX=		"2"
-					posY=		"0"
-					sizeX=		"76"
-					sizeY=		"68"
-					/>
-		</Interior>
 
 		<Items>
 		</Items>
-
-		<!-- Image and Effects -->
-
-		<Image imageID="&rsAntaresIIHD;" imageWidth="144" imageHeight="144"	rotationCount="120" rotationColumns="12" viewportRatio="0.0175"/>
-		<HeroImage imageID="&rsAntaresIIHero;" imageWidth="320" imageHeight="320"/>
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="176"	posRadius="69"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-176"	posRadius="69"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="173"	posRadius="69"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-173"	posRadius="69"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="69"	posZ="10"	rotation="180"	effect="&efMainThrusterLarge;"/>
-		</Effects>
 		
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"120"
+			fireRateAdj=		"20"
 			fireAccuracy=		"90"
 			perception=			"4"
 			combatStyle=		"standOff"
 			/>
+		<!-- Korolov -->
+
+		<Names noArticle="true">Antares Heavy 2%0%0</Names>
 
 		<Properties>
 			; new pilots cannot escort
@@ -259,17 +208,12 @@
 	<ShipClass UNID="&scAntaresV;"
 			manufacturer=		"Makayev-Energia"
 			class=				"Antares V"
-			type=				"freighter"
+			type=				"superfreighter"
+			inherit=			"&scAntaresVStock;"
 			level=				"4"
 			defaultSovereign=	"&svCorporate;"
 
-			attributes=			"commonwealth, freighter, genericClass, makayev"
-
-			size=				"185"
-			mass=				"10000"
-			thrustRatio=		"1"
-			maxSpeed=			"8"
-			cargoSpace=			"50000"
+			attributes=			"commonwealth, freighter, superfreighter, genericClass, makayev"
 			>
 
 		<Names noArticle="true">Antares Heavy 5%0%0</Names>
@@ -277,71 +221,65 @@
 		<!-- Configuration -->
 		
 		<Armor
-			armorID=			"&itLightPlasteelPlate;"
-			count=				"12"
+			armorID=			"&itPlasteelPlate;"
+			count=				"16"
 			/>
 		
 		<Devices>
-			<Device deviceID="&itPartisanCannon;" secondaryWeapon="true" posAngle="0" posRadius="50" omnidirectional="true"/>
-			<Device deviceID="&itPartisanCannon;" secondaryWeapon="true" posAngle="0" posRadius="0" omnidirectional="true"/>
-			<Device deviceID="&itPartisanCannon;" secondaryWeapon="true" posAngle="180" posRadius="50" omnidirectional="true"/>
+			<Table>
+				<Group chance="25">
+					<Device slotID="fore_turret"	deviceID="&itPartisanCannon;"/>
+					<Device slotID="aft_turret"		deviceID="&itPartisanCannon;"/>
+				</Group>
+				<Group chance="20">
+					<Device slotID="fore_turret"	deviceID="&itArbalestCannon;"/>
+					<Device slotID="aft_turret"		deviceID="&itArbalestCannon;"/>
+				</Group>
+				<Group chance="15">
+					<Device slotID="fore_turret"	deviceID="&itTridentCannon;"/>
+					<Device slotID="aft_turret"		deviceID="&itTridentCannon;"/>
+					<Device item="&itArmorRepairDevice;"/>
+				</Group>
+				<Group chance="10">
+					<Device slotID="fore_turret"	deviceID="&itLaserArray;"/>
+					<Device slotID="aft_turret"		deviceID="&itLaserArray;"/>
+				</Group>
+				<Group chance="10">
+					<Device slotID="fore_turret"	deviceID="&itMoskvaLightTurret;"/>
+					<Device slotID="aft_turret"		deviceID="&itMoskvaLightTurret;"/>
+				</Group>
+				<Group chance="10">
+					<Device slotID="fore_turret"	deviceID="&itOmniPartisanCannon;"/>
+					<Device slotID="aft_turret"		deviceID="&itOmniPartisanCannon;"/>
+				</Group>
+				<Group chance="5">
+					<Device slotID="fore_turret"	deviceID="&itBallistaCannon;"/>
+					<Device slotID="aft_turret"		deviceID="&itBallistaCannon;"/>
+				</Group>
+				<Group chance="5">
+					<Device slotID="fore_turret"	deviceID="&itSlamCannon;"/>
+					<Device slotID="aft_turret"		deviceID="&itSlamCannon;"/>
+				</Group>
+			</Table>
+
+			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
 		</Devices>
-
-		<Maneuver
-			maxRotationRate=	"2.0"
-			rotationAccel=		"0.2"
-			/>
-
-		<Interior>
-			<Compartment name="interior"
-					hitPoints=	"20"
-					/>
-			
-			<Compartment name="main drive"
-					type=		"mainDrive"
-					hitPoints=	"40"
-
-					posX=		"-74"
-					posY=		"0"
-					sizeX=		"28"
-					sizeY=		"28"
-					/>
-			
-			<Compartment name="cargo containers"
-					type=		"cargo"
-					hitPoints=	"30"
-
-					posX=		"2"
-					posY=		"0"
-					sizeX=		"120"
-					sizeY=		"60"
-					/>
-		</Interior>
 
 		<Items>
 		</Items>
-
-		<!-- Image and Effects -->
-
-		<Image imageID="&rsAntaresVHD;" imageWidth="180" imageHeight="180"	rotationCount="120" rotationColumns="12" viewportRatio="0.02375"/>
-		<HeroImage imageID="&rsAntaresVHero;" imageWidth="320" imageHeight="320"/>
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="177"	posRadius="88"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-177"	posRadius="88"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="175"	posRadius="88"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-175"	posRadius="88"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="88"	posZ="10"	rotation="180"	effect="&efMainThrusterLarge;"/>
-		</Effects>
 		
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"120"
+			fireRateAdj=		"20"
 			fireAccuracy=		"90"
 			perception=			"4"
 			combatStyle=		"standOff"
 			/>
+			
+		<!-- Korolov -->
+
+		<Names noArticle="true">Antares Heavy 5%0%0</Names>
 
 		<Properties>
 			; new pilots cannot escort

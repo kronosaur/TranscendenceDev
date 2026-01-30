@@ -152,7 +152,7 @@
 
 					(enum (@ targetDesc 'escorts) theEntry
 						(block (escortObj)
-							(setq escortObj (sysCreateShip (@ theEntry 'type) freighterPos (@ targetDesc 'sovereign)))
+							(setq escortObj (sysCreateShip (@ theEntry 'type) targetPos (@ targetDesc 'sovereign)))
 							(shpOrder escortObj 'escort targetObj)
 							)
 						)
@@ -161,8 +161,26 @@
 
 					(msnSet@ gSource 'targetID (objGetID targetObj))
 					(msnRegisterForEvents gSource targetObj)
+
+					;	Let our subclass do stuff like add cargo to the target.
+
+					(msnFireEvent gSource 'OnTargetCreated { targetObj: targetObj })
 					)
 			</OnAccepted>
+
+			<!-- OnTargetCreated
+
+				Subclasses may implement this event to react once a target has
+				been created. For example, they can add cargo to the ship.
+
+				gData:
+
+					targetObj: The target chosen.
+
+			-->
+
+			<OnTargetCreated>
+			</OnTargetCreated>
 
 			<OnSetPlayerTarget>
 				(rpgSetTarget gSource aReason (objGetObjByID (msn@ gSource 'targetID)))

@@ -83,8 +83,17 @@
 					)
 			</CanCreate>
 
-			<OnCompleted>
-			</OnCompleted>
+			<OnTargetCreated>
+				(block (
+					(targetObj (@ gData 'targetObj))
+					)
+
+					; LATER - add more variety in the cargo smuggled and consequences if
+					; player takes the cargo.
+
+					(objAddItem targetObj (itmCreate &itTempusSyrette; (random 1 10)))
+					)
+			</OnTargetCreated>
 			
 			<OnReward>
 				;	Pay the player and record the award
