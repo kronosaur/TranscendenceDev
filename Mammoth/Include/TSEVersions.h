@@ -1066,6 +1066,10 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					219;
 //				actual mass is computed from that volume back into mass using another adventure property. This is still an int
 //				for legacy support reasons. A future API may support doubles.
 //			volume: (double) volume of the item in cubic meters. Values <1 liter (0.001CBM) are allowed
+//			<Armor>
+//				armorClass: explicitly define an armor class ID to assign this armor to (ex, "medium")
+//					See the <ArmorClassDesc> loaded with the adventure for valid names other than
+//						"medium" and "maximum", which are mandated by the engine.
 //		<ShipType>
 //			cargoSpace: now specifies CBM instead of tons
 //				If <API59, always uses the adventure compatibility mappings
