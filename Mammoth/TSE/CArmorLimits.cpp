@@ -744,7 +744,7 @@ bool CArmorLimits::FindArmorLimits (const CItemCtx &ItemCtx, const SArmorLimits 
 		return false;
 
 	const CString &sMassClass = pArmor->GetMassClass(ItemCtx);
-	Metric rSize = ArmorItem.GetVolume();
+	Metric rSize = ArmorItem.GetMass();
 
 	for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
 		{
