@@ -1039,8 +1039,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					219;
 //			<ArmorClassDesc>
 //				<ArmorClass>
 //					New name for ArmorMass tag
-//                  compatibilitySize: Autoconverts legacy mass= values (mass in kg) to CBM based on adventure properties
-//					mass: (Deprecated name to avoid confusion) Autoconverts legacy mass= values (mass in kg) to CBM based on adventure properties
+//                  compatibilitySize: A unitless size that is analogous to either mass in tons or volume in CBM, depending on what the item specifies
+//					mass: (Deprecated name to avoid confusion) Autoconverts legacy mass= values (mass in kg) to compatibility size
 //					size: max size armor for this armor class (in CBM)
 //					label: display name of armor class (unchanged from MassClass)
 //					shortLabel:	new string field for displaying mass classes when the mass class names are too long

@@ -11,7 +11,7 @@
 #define LABEL_ATTRIB							CONSTLIT("label")
 #define LABEL_SHORT_ATTRIB						CONSTLIT("shortLabel")
 #define MASS_ATTRIB								CONSTLIT("mass")
-#define VOLUME_ATTRIB							CONSTLIT("volume")
+#define COMPATIBILITY_SIZE_ATTRIB				CONSTLIT("compatibilitySize")
 
 #define ARMOR_CLASS_ELEMENT						CONSTLIT("ArmorClass")
 #define ARMOR_CLASS_ELEMENT_LEGACY				CONSTLIT("ArmorMass")
@@ -19,11 +19,11 @@
 
 const CArmorClassDefinitions CArmorClassDefinitions::Null;
 
-void CArmorClassDefinitions::Append (const CArmorClassDefinitions &Src)
-
 //	Append
 //
 //	Appends the source definitions.
+//
+void CArmorClassDefinitions::Append (const CArmorClassDefinitions &Src)
 
 	{
 	//	Copy all definitions from source to us.
@@ -32,14 +32,17 @@ void CArmorClassDefinitions::Append (const CArmorClassDefinitions &Src)
 	InvalidateIDIndex();
 	}
 
-CArmorClassDefinitions::SArmorClassEntry *CArmorClassDefinitions::FindClassEntryActual (const CItem &Item)
-
 //	FindClassEntryActual
 //
 //	Returns the entry for the given item.
+//
+CArmorClassDefinitions::SArmorClassEntry *CArmorClassDefinitions::FindClassEntryActual (const CItem &Item)
 
 	{
-	Metric rSize = Item.GetVolume();
+	//	TODO: if an item explicitly defines a size class, we try to use that first
+
+	//	Handle compatibility size
+	Metric rSize = Item.GetMass();
 
 	//	First look for any definitions with an explicit criteria.
 
@@ -247,17 +250,25 @@ ALERROR CArmorClassDefinitions::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *p
 			{
 
 			int iMass = pEntry->GetAttributeIntegerBounded(MASS_ATTRIB, 1, -1, 0);
-			Metric rVolume = pEntry->GetAttributeDoubleBounded(VOLUME_ATTRIB, g_Epsilon, -1.0, 0.0);
+			Metric rCompatibilitySize = pEntry->GetAttributeDoubleBounded(COMPATIBILITY_SIZE_ATTRIB, g_Epsilon, -1.0, 0.0);
 
-			if (iMass && !rVolume)
+			if (iMass && !rCompatibilitySize)
 				{
+				//	We use the adventure compatibility conversions for mass/volume/density to ensure consistent math
+				//	if an adventure sets this and density to something other than 1.0, to avoid scenarios where
+				//	compatibility for legacy ships and legacy armor gets completely broken by adventure settings
+				//	which expect the math to be consistently applied to all legacy fields.
 				Metric rDefaultMassToVolume = g_pUniverse->GetEngineOptions().GetItemXMLMassToVolumeRatio();
-				rVolume = rDefaultMassToVolume * iMass / 1000.0;
+				Metric rDefaultDensity = g_pUniverse->GetEngineOptions().GetItemDefaultDensity();
+				//	CompatibilitySize is technically unitless, but is analogous to tons
+				//	We do this for consistency with all the new CItem functions which use floating point mass in tons,
+				//	instead of integer mass in kg
+				rCompatibilitySize = rDefaultMassToVolume * rDefaultDensity * iMass / 1000.0;
 				}
 
-			if (rVolume < g_Epsilon)
+			if (rCompatibilitySize < g_Epsilon)
 				{
-				Ctx.sError = CONSTLIT("Expected volume or mass attributes.");
+				Ctx.sError = CONSTLIT("Expected non-zero compatibilitySize or mass attributes.");
 				CleanupDefinitions();
 				return ERR_FAIL;
 				}
@@ -271,7 +282,7 @@ ALERROR CArmorClassDefinitions::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *p
 			pClass->sTextShort = pEntry->GetAttribute(LABEL_SHORT_ATTRIB);
 			if (pClass->sTextShort.IsBlank())
 				pClass->sTextShort = pClass->sText;
-			pClass->rMaxSize = rVolume;
+			pClass->rMaxSize = rCompatibilitySize;
 
 			pDef->Ids.Insert(pClass->sID, iArmorClass);
 

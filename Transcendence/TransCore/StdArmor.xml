@@ -9,17 +9,21 @@
 				calculations take place.
 				Items above the "maximum" volume limit are considered npc-bespoke and will not return
 				valid balance numbers.
-				If "medium" is not specified, a standard armor size of 3.5 CBM is assumed.
-				If "maximum" is not specified, a maximum armor size of 16 CBM is assumed.
+
+				If "medium" is not specified, a standard armor compatibility size of 3.5 tons is assumed.
+				If "maximum" is not specified, a maximum armor compatibility size of 16 tons is assumed.
+
+				Compatibility size enables armors that do not specify an explicit armor class to be
+				auto-assigned a class based on mass (in tons)
 			-->
-			<ArmorClass id="ultraLight"		label="ultra-light"		shortLabel="U-L"	volume="1"/>
-			<ArmorClass id="light"			label="light"			shortLabel="L"		volume="2.5"/>
-			<ArmorClass id="medium"			label="medium"			shortLabel="M"		volume="3.5"/>
-			<ArmorClass id="heavy"			label="heavy"			shortLabel="H"		volume="6"/>
-			<ArmorClass id="superHeavy"		label="super-heavy"		shortLabel="S-H"	volume="9"/>
-			<ArmorClass id="massive"		label="massive"			shortLabel="Ma"		volume="12"/>
-			<ArmorClass id="superMassive"	label="super-massive"	shortLabel="S-Ma"	volume="100"/>
-			<ArmorClass id="maximum"		label="maximum"			shortLabel="MX"		volume="1000000"/>
+			<ArmorClass id="ultraLight"		label="ultra-light"		shortLabel="U-L"	compatibilitySize="1"/>
+			<ArmorClass id="light"			label="light"			shortLabel="L"		compatibilitySize="2.5"/>
+			<ArmorClass id="medium"			label="medium"			shortLabel="M"		compatibilitySize="3.5"/>
+			<ArmorClass id="heavy"			label="heavy"			shortLabel="H"		compatibilitySize="6"/>
+			<ArmorClass id="superHeavy"		label="super-heavy"		shortLabel="S-H"	compatibilitySize="9"/>
+			<ArmorClass id="massive"		label="massive"			shortLabel="Ma"		compatibilitySize="12"/>
+			<ArmorClass id="superMassive"	label="super-massive"	shortLabel="S-Ma"	compatibilitySize="100"/>
+			<ArmorClass id="maximum"		label="maximum"			shortLabel="MX"		compatibilitySize="1000000"/>
 
 			<!-- Deprecated armor class names -->
 			<ArmorClassAlias id="superMassive"	idAlias="dreadnought"/>

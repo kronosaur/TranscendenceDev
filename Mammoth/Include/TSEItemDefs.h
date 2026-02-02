@@ -346,7 +346,7 @@ class CArmorClassDefinitions
 			CString sDefinition;			//	Index to m_Definitions
 
 			CString sID;					//	Required ID
-			Metric rMaxSize = 0;			//	Maximum size (cubic meters (CBM))
+			Metric rMaxSize = 0;			//	Maximum size (as a compatibility metric)
 			CString sText;					//	Text to display on item
 			CString sTextShort;				//	Text to display in size-constrained UIs
 
