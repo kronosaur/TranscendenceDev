@@ -286,7 +286,7 @@ void CAutoDefenseClass::UpdateTarget (CInstalledDevice* pDevice, CSpaceObject* p
 
 	Ctx.bConsumedItems = ActivateCtx.bConsumedItems;
 
-	pDevice->SetTimeUntilReady(m_rRechargeTicks);
+	pDevice->SetTimeUntilReady(m_rRechargeDelay);
 
 	//	Identify
 
@@ -301,7 +301,7 @@ Metric CAutoDefenseClass::GetActivateDelay (CItemCtx &ItemCtx) const
 //	Returns the activation delay
 
 	{
-	return m_rRechargeTicks;
+	return m_rRechargeDelay;
 	}
 
 int CAutoDefenseClass::CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource)
@@ -379,14 +379,14 @@ ICCItem *CAutoDefenseClass::FindItemProperty (CItemCtx &Ctx, const CString &sPro
 	//	Get the property
 
 	if (strEquals(sProperty, PROPERTY_FIRE_DELAY))
-		return CC.CreateInteger(mathRound(m_rRechargeTicks / g_SecondsPerUpdate));
+		return CC.CreateInteger(mathRound(m_rRechargeDelay / g_SecondsPerUpdate));
 
 	else if (strEquals(sProperty, PROPERTY_FIRE_DELAY_REAL))
-		return CC.CreateDouble(m_rRechargeTicks / g_SecondsPerUpdate);
+		return CC.CreateDouble(m_rRechargeDelay / g_SecondsPerUpdate);
 
 	else if (strEquals(sProperty, PROPERTY_FIRE_RATE))
 		{
-		Metric rDelay = m_rRechargeTicks / g_SecondsPerUpdate;
+		Metric rDelay = m_rRechargeDelay / g_SecondsPerUpdate;
 		if (rDelay <= 0.0)
 			return CC.CreateNil();
 
@@ -675,7 +675,7 @@ ALERROR CAutoDefenseClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	if (rFireRate == 0.0)
 		rFireRate = 15.0;
 
-	pDevice->m_rRechargeTicks = (Metric)rFireRate;
+	pDevice->m_rRechargeDelay = (Metric)rFireRate;
 	if (error = pDevice->m_pWeapon.LoadUNID(Ctx, pDesc->GetAttribute(WEAPON_ATTRIB)))
 		return error;
 
