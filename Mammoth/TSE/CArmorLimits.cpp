@@ -419,7 +419,7 @@ int CArmorLimits::CalcArmorSpeedBonus (int iSegmentCount, Metric rTotalArmorSize
 			//	standard and negative if heavier than standard.
 
 			Metric rSizeDelta = (m_rStdArmorSize * iSegmentCount) - rTotalArmorSize;
-			Metric rSizeFrac = Absolute(rSizeDelta) / (m_iHullMass * g_pUniverse->GetEngineOptions().GetItemXMLMassToVolumeRatio());
+			Metric rSizeFrac = Absolute(rSizeDelta) / (m_iHullMass);
 
 			//	Scale the mass fraction to a speed adjustment value.
 
