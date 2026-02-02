@@ -1500,6 +1500,85 @@ int CItem::GetApparentLevel (void) const
 	return GetLevel();
 	}
 
+//	GetImage
+// 
+//	Gets the image for this item
+//	If unknown and not bActual, always get the unknown type
+//	If uses obj image when installed, get object image
+//	Otherwise, get item type image
+//	Returns an empty image array if this item does not have a type
+//
+const CObjectImageArray& CItem::GetImage (bool bActual) const
+	{
+	if (m_pItemType)
+		{
+		//	If we dont know what this is, always let the type handle it
+		//	we dont want to give away what it might be yet
+
+		if (!IsKnown() && !bActual)
+			return m_pItemType->GetImage();
+
+		//	We attempt to get the object image if this item type wants an object image when installed
+		//	If we do not return in this if block, we continue on...
+
+		if (m_pItemType->UsesObjectImageIfInstalled() && IsInstalled())
+			{
+			void* pInstalledItem = m_pExtra->m_pInstalled;
+
+			//	Installed item can be null, CInstalledArmor, or CInstalledDevice
+
+			if (pInstalledItem)
+				{
+				CSpaceObject* pObj = NULL;
+
+				//	Attempt to get the object
+
+				if (m_pItemType->IsArmor())
+					{
+					CInstalledArmor* pInstalledArmor = static_cast<CInstalledArmor*>(pInstalledItem);
+					pObj = pInstalledArmor->GetSource();
+					}
+				else
+					{
+					CInstalledDevice* pInstalledDevice = static_cast<CInstalledDevice*>(pInstalledItem);
+					pObj = pInstalledDevice->GetSource();
+					}
+
+				//	If we found the object, try to get the image
+
+				if (pObj)
+					{
+					//	pObj should only be a ship or a station
+
+					CShip* pShip = pObj->AsShip();
+
+					if (pShip)
+						return pShip->GetClass()->GetImage();
+
+					CStation* pStation = pObj->AsStation();
+
+					if (pStation)
+						return pStation->GetType()->GetTypeSimpleImage();
+
+					//	If we reach this point, theres a bug or someone enabled installing items on a new object type
+					//	and additional implementation is now needed.
+
+					ASSERT(false);
+					}
+				}
+			}
+
+		//	If we reach this point, we were either not installed or unable to get the object image
+
+		return m_pItemType->GetImage(bActual);
+		}
+
+	//	If we dont have a type, then no image
+
+	else
+		return CObjectImageArray::Null();
+	}
+
 int CItem::GetLevel (void) const
 
 //	GetLevel

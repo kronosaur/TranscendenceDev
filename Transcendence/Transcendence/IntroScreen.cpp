@@ -1307,7 +1307,7 @@ void CTranscendenceWnd::SetAccountControls (const CMultiverseModel &Multiverse)
 		pSep->SetPropertyVector(PROP_SCALE, CVector(SMALL_LINK_SPACING, RectHeight(rcRect)));
 		pSep->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogLabel));
 		pSep->SetPropertyFont(PROP_FONT, &MediumFont);
-		pSep->SetPropertyString(PROP_TEXT, CONSTLIT("•"));
+		pSep->SetPropertyString(PROP_TEXT, CONSTLIT("\x95"));
 		pSep->SetPropertyString(PROP_TEXT_ALIGN_HORZ, ALIGN_CENTER);
 
 		pRoot->AddTrack(pSep, 0);

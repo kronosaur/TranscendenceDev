@@ -23,11 +23,6 @@ inline CDeviceClass *CItem::GetDeviceClass (void) const
 	return (IsDevice() ? m_pItemType->GetDeviceClass() : NULL);
 	}
 
-inline const CObjectImageArray &CItem::GetImage (void) const
-	{
-	return (m_pItemType ? m_pItemType->GetImage() : CObjectImageArray::Null());
-	}
-
 //	GetVolume
 //
 //	Get the volume in cubic meters for a single instance of this item

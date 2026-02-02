@@ -1039,8 +1039,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					219;
 //			<ArmorClassDesc>
 //				<ArmorClass>
 //					New name for ArmorMass tag
-//					volume: armor item volume in CBM (cubic meters)
-//					mass: Autoconverts legacy mass= values (mass in kg) to CBM based on adventure properties
+//                  compatibilitySize: Autoconverts legacy mass= values (mass in kg) to CBM based on adventure properties
+//					mass: (Deprecated name to avoid confusion) Autoconverts legacy mass= values (mass in kg) to CBM based on adventure properties
 //					size: max size armor for this armor class (in CBM)
 //					label: display name of armor class (unchanged from MassClass)
 //					shortLabel:	new string field for displaying mass classes when the mass class names are too long
@@ -1056,6 +1056,11 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					219;
 //			<ArmorMassDesc>
 //				Deprecated tag name, use ArmorClassDesc instead (Functions identically)
 //		<ItemType>
+//			installedItemUsesObjectImage: (bool)
+//				If True:
+//					Display the obj image if installed on an object
+//					Display the item image if not installed
+//				(default: false)
 //			density: (double) Species a specific density ratio in metric tons per cubic meter (aka, grams per cubic centimeter)
 //			mass: (int) If present without volume, this value is auto-converted using adventure properties to a volume, and the
 //				actual mass is computed from that volume back into mass using another adventure property. This is still an int
@@ -1071,8 +1076,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					219;
 //					If <API59, always uses the adventure compatibility mappings
 //				maxCargoSpace: now specifies CBM instead of tons
 //					If <API59, always uses the adventure compatibility mappings
-//				stdArmorMass:
-//
+//				stdArmorMass: deprecated
 //		<Type>
 //			<Events>
 //				<onGlobalTypesBound>
@@ -1089,6 +1093,13 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					219;
 //						are available
 //					Fires only on new games, or when loading into the  main menu
 //					Fires BEFORE <onGlobalTypesBound>
+//		<ItemType>
+//			<Weapon>
+//				repeatingDelay:
+//					Deprecated due to using non-intuitive legacy math
+//				repeatingShotDelay:
+//					Sets an exact repeating shot delay in simulation seconds
+//					Default: 2.0
 //		<ShipClass>
 //			<Language>
 //				<... id="core.descLore">
