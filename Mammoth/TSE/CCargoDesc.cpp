@@ -18,6 +18,16 @@ ALERROR CCargoDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	up more cargo space than we provide.
 
 	m_iCargoSpace = pDesc->GetAttributeInteger(CARGO_SPACE_ATTRIB);
+
+	//	If we are from before cargo was switched to volume, we need to convert
+	//	to that system instead based on the conversion ratio in engine options
+
+	if (Ctx.GetAPIVersion() < 59)
+		{
+		Metric rXMLMassToVolume = g_pUniverse->GetEngineOptions().GetItemXMLMassToVolumeRatio();
+		m_iCargoSpace = mathRound(rXMLMassToVolume * m_iCargoSpace);
+		}
+
 	m_bUninitialized = false;
 
 	return NOERROR;

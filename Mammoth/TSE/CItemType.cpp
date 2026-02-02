@@ -33,6 +33,7 @@
 #define INSTANCE_DATA_ATTRIB					CONSTLIT("charges")
 #define COMPLETE_ARMOR_ONLY_ATTRIB				CONSTLIT("completeArmorOnly")
 #define DATA_ATTRIB								CONSTLIT("data")
+#define DENSITY_ATTRIB							CONSTLIT("density")
 #define ENHANCEMENT_ATTRIB						CONSTLIT("enhancement")
 #define FREQUENCY_ATTRIB						CONSTLIT("frequency")
 #define ENABLED_ONLY_ATTRIB						CONSTLIT("enabledOnly")
@@ -40,6 +41,7 @@
 #define KEY_ATTRIB								CONSTLIT("key")
 #define LEVEL_ATTRIB							CONSTLIT("level")
 #define MASS_BONUS_PER_CHARGE_ATTRIB			CONSTLIT("massBonusPerCharge")
+#define VOLUME_BONUS_PER_CHARGE_ATTRIB			CONSTLIT("volumeBonusPerCharge")
 #define MAX_CHARGES_ATTRIB						CONSTLIT("maxCharges")
 #define NO_SALE_IF_USED_ATTRIB					CONSTLIT("noSaleIfUsed")
 #define NUMBER_APPEARING_ATTRIB					CONSTLIT("numberAppearing")
@@ -106,6 +108,7 @@
 #define FIELD_TREASURE_VALUE					CONSTLIT("treasureValue")
 #define FIELD_UNKNOWN_TYPE						CONSTLIT("unknownType")
 #define FIELD_USE_KEY							CONSTLIT("useKey")
+#define FIELD_VOLUME							CONSTLIT("volume")
 
 #define PROPERTY_CATEGORY						CONSTLIT("category")
 #define PROPERTY_COMPONENT_PRICE				CONSTLIT("componentPrice")
@@ -145,6 +148,7 @@
 static char g_NameAttrib[] = "name";
 static char g_ObjectAttrib[] = "object";
 static char g_MassAttrib[] = "mass";
+static char g_VolumeAttrib[] = "volume";
 static char g_DescriptionAttrib[] = "description";
 static char g_RandomDamagedAttrib[] = "randomDamaged";
 
@@ -392,6 +396,9 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue) const
 
 	else if (strEquals(sField, FIELD_MASS))
 		*retsValue = strFromInt(CItem(const_cast<CItemType *>(this), 1).GetMassKg());
+
+	else if (strEquals(sField, FIELD_VOLUME))
+		*retsValue = strFromDouble(CItem(const_cast<CItemType *>(this), 1).GetVolume());
 	
 	else if (strEquals(sField, FIELD_SHORT_NAME))
 		{
@@ -923,11 +930,11 @@ CString CItemType::GetItemCategory (ItemCategories iCategory)
 		}
 	}
 
-int CItemType::GetMassKg (CItemCtx &Ctx) const
-
 //	GetMassKg
 //
 //	Returns the mass of the item in kilograms
+//
+int CItemType::GetMassKg(CItemCtx &Ctx) const
 
 	{
 	if (m_iExtraMassPerCharge)
@@ -939,6 +946,24 @@ int CItemType::GetMassKg (CItemCtx &Ctx) const
 		}
 	else
 		return m_iMass;
+	}
+
+//	GetVolume
+//
+//	Returns the mass of the item in kilograms
+//
+Metric CItemType::GetVolume (CItemCtx &Ctx) const
+
+	{
+	if (m_rExtraVolumePerCharge)
+		{
+		if (Ctx.IsItemNull())
+			return m_rVolume + (m_InitDataValue.GetAveValue() * m_rExtraVolumePerCharge);
+		else
+			return m_rVolume + (Ctx.GetItem().GetCharges() * m_rExtraVolumePerCharge);
+		}
+	else
+		return m_rVolume;
 	}
 
 int CItemType::GetMaxHPBonus (void) const
@@ -1545,6 +1570,54 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_sRole = pDesc->GetAttribute(ROLE_ATTRIB);
 
 	m_iMass = pDesc->GetAttributeInteger(CONSTLIT(g_MassAttrib));
+	m_rVolume = pDesc->GetAttributeDouble(CONSTLIT(g_VolumeAttrib));
+	Metric rDensity = pDesc->GetAttributeDouble(DENSITY_ATTRIB);
+	bool bUsesMassCompatibility = false;
+
+	//	Volume and density are not available in old versions
+
+	if (Ctx.GetAPIVersion() < 59 && (m_rVolume or rDensity))
+		return ComposeLoadError(Ctx, CONSTLIT("Item volume and density are not available in APIs below 59"));
+
+	//	For backwards compatibility, if something has no volume but has mass, we scale volume to mass in metric tons
+	//	We then use engine options to determine the actual mass that the item should have
+
+	if (!m_rVolume)
+		{
+		Metric rXMLMassToVolume = g_pUniverse->GetEngineOptions().GetItemXMLMassToVolumeRatio();
+		Metric rDefaultDensity = g_pUniverse->GetEngineOptions().GetItemDefaultDensity();
+
+		//	If an item has been improperly converted and only specifies density, we emit a warning
+		//	This is because volume is now the hard-balance factor, not mass
+		//	We use the adventure default density to encourage the author to fix the XML
+
+		if (rDensity)
+			kernelDebugLogPattern(CONSTLIT("Warning: Item %s (%x) specified density without specifying a volume. Using adventure default density instead."), m_sName, GetUNID());
+
+		m_rVolume = rXMLMassToVolume * m_iMass * 0.001;
+		m_iMass = mathRound(rDefaultDensity * 1000 * m_rVolume);
+
+		//	We need to remember that we are in compatibility mode
+
+		bUsesMassCompatibility = true;
+		}
+
+	//	If we are missing mass we need to compute it, or we have explicit density
+
+	else if (!m_iMass || rDensity)
+		{
+		//	Emit a warning if mass is still populated
+
+		if (m_iMass)
+			kernelDebugLogPattern(CONSTLIT("Warning: Item %s (%x) specified mass as well as volume and density. Mass is being ignored."), m_sName, GetUNID());
+
+		//	if we dont have density we grab the adventure default
+
+		if (!rDensity)
+			rDensity = g_pUniverse->GetEngineOptions().GetItemDefaultDensity();
+
+		m_iMass = mathRound(rDensity * 1000 * m_rVolume);
+		}
 
 	if (error = m_iValue.InitFromXML(Ctx, pDesc->GetAttribute(VALUE_ATTRIB)))
 		return ComposeLoadError(Ctx, Ctx.sError);
@@ -1604,8 +1677,18 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_iExtraMassPerCharge = pDesc->GetAttributeIntegerBounded(MASS_BONUS_PER_CHARGE_ATTRIB, 0, -1, 0);
 	m_iExtraValuePerCharge = pDesc->GetAttributeInteger(VALUE_BONUS_PER_CHARGE_ATTRIB);	//	May be negative
+	m_rExtraVolumePerCharge = pDesc->GetAttributeDoubleBounded(VOLUME_BONUS_PER_CHARGE_ATTRIB, 0, -1.0, 0);
 	m_fAmmoCharges = pDesc->GetAttributeBool(AMMO_CHARGES_ATTRIB);
 	m_fValueCharges = pDesc->GetAttributeBool(VALUE_CHARGES_ATTRIB);
+
+	if (bUsesMassCompatibility && m_rExtraVolumePerCharge < 0)
+		{
+		Metric rXMLMassToVolume = g_pUniverse->GetEngineOptions().GetItemXMLMassToVolumeRatio();
+		Metric rDefaultDensity = g_pUniverse->GetEngineOptions().GetItemDefaultDensity();
+
+		m_rExtraVolumePerCharge = rXMLMassToVolume * m_iExtraMassPerCharge * 0.001;
+		m_iExtraMassPerCharge = mathRound(m_rExtraVolumePerCharge * rDefaultDensity * 1000);
+		}
 
 	//	Flags
 

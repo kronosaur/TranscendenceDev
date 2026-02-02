@@ -8,7 +8,8 @@
 
 #define ACHIEVEMENTS_TAG						CONSTLIT("Achievements")
 #define ADVENTURE_DESC_TAG						CONSTLIT("AdventureDesc")
-#define ARMOR_MASS_DESC_TAG						CONSTLIT("ArmorMassDesc")
+#define ARMOR_CLASS_LEGACY_DESC_TAG				CONSTLIT("ArmorMassDesc")
+#define ARMOR_CLASS_DESC_TAG					CONSTLIT("ArmorClassDesc")
 #define ATTRIBUTE_DESC_TAG						CONSTLIT("AttributeDesc")
 #define DATA_TAG						    	CONSTLIT("Data")
 #define DISPLAY_ATTRIBUTES_TAG					CONSTLIT("DisplayAttributes")
@@ -3034,7 +3035,7 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 				return ComposeLoadError(Ctx, Ctx.sError);
 				}
 			}
-		else if (strEquals(pItem->GetTag(), ARMOR_MASS_DESC_TAG))
+		else if (strEquals(pItem->GetTag(), ARMOR_CLASS_DESC_TAG) || strEquals(pItem->GetTag(), ARMOR_CLASS_LEGACY_DESC_TAG))
 			{
 			if (error = SetExtra()->ArmorDefinitions.InitFromXML(Ctx, pItem))
 				{
