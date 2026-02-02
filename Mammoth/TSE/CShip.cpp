@@ -3199,7 +3199,7 @@ void CShip::GetReactorStats (SReactorStats &Stats) const
 	if (pReactor)
 		{
 		Stats.sReactorName = pReactor->GetClass()->GetItemType()->GetNounPhrase();
-		Stats.pReactorImage = &pReactor->GetItem()->GetType()->GetImage();
+		Stats.pReactorImage = &pReactor->GetItem()->GetImage();
 		Stats.bReactorDamaged = pReactor->IsDamaged();
 
 		pReactor->GetItem()->AccumulateEnhancementDisplayAttributes(Stats.Enhancements);
