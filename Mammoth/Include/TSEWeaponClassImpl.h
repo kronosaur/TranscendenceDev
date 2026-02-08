@@ -124,6 +124,7 @@ class CWeaponClass : public CDeviceClass
 		bool GetContinuousConsumePerShot (const CWeaponFireDesc &Shot) const { return m_bContinuousConsumePerShot; }
 		int GetIdlePowerUse (void) const { return m_iIdlePowerUse; }
 		CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem &Ammo = CItem()) const;
+		bool IsIgnoredByAI () const { return m_bAIIgnores; }
 
 		static TArray<CTargetList::STargetResult> CalcMIRVFragmentationTargets (CSpaceObject &Source, const CWeaponFireDesc &ShotDesc, int iMaxCount);
 		static const SStdStats &GetStdStats (int iLevel);
@@ -371,6 +372,7 @@ class CWeaponClass : public CDeviceClass
 		int m_iChargeTime;						//  Charge time before firing
 
 		bool m_bTargetStationsOnly;				//	Do not target ships
+		bool m_bAIIgnores;						//	AI ignores the existence of this weapon on a ship
 
 		CFailureDesc m_DamageFailure;			//	Failure mode when damaged/disrupted
 		CFailureDesc m_OverheatFailure;
