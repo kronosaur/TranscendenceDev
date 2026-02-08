@@ -2,12 +2,164 @@
 
 <TranscendenceModule>
 	
-	<!-- Level 2: Borer-class Gunship -->
+	<!-- Level 2: Antares I Freighter -->
+
+	<ShipClass UNID="&scAntaresIStock;"
+			manufacturer=		"Makayev-Energia"
+			class=				"Antares I"
+			type=				"freighter"
+			inherit=			"&baHumanTechShip;"
+
+			attributes=			"freighter, genericClass, makayev"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"135"
+			mass=				"5000"
+			cargoSpace=			"30000"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"30000"
+			maxDevices=			"5"
+			maxWeapons=			"2"
+			>
+			<ArmorLimits massClass="ultraLight"		speedAdj="1" />
+			<ArmorLimits massClass="light"			speedAdj="0" />
+			<ArmorLimits massClass="medium"			speedAdj="-1"  />
+		</Hull>
+
+		<Drive
+			maxSpeed=			"8"
+			thrust=				"5000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"2.0"
+			rotationAccel=		"0.2"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot id="main"			criteria="w" posAngle="0" posRadius="52" posZ="4"/>
+			<DeviceSlot id="fore_turret"	criteria="w~l" posAngle="0" posRadius="47" posZ="5"	fireAngle="0" fireArc="240" secondaryWeapon="true">
+				<EnhancementAbilities>
+					<!-- To determine the balance for slots that make
+					non-omni weapons omni/swivel, use the following formula:
+
+					100 + 100 * (Arc/360)^0.5
+
+					speed is a % multiplier to fire rate delay, so values > 100 are debuffs
+					-->
+					<Enhance type=			"&vtTurretSlotWithNonOmni;"
+							 enhancement=	"-speed:182;"
+							 criteria=		"w -property:omnidirectional;"
+							 />
+					<Enhance type=			"&vtAntaresITurretSlot;"
+							 enhancement=	"+linkedFire:whenInFireArc;"
+							 />
+				</EnhancementAbilities>
+			</DeviceSlot>
+			<DeviceSlot id="cargo"			criteria="c" cannotBeEmpty="true"/>
+		</DeviceSlots>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"20"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"30"
+
+					posX=		"-54"
+					posY=		"0"
+					sizeX=		"32"
+					sizeY=		"28"
+					/>
+			
+			<Compartment name="cargo containers"
+					type=		"cargo"
+					hitPoints=	"20"
+
+					posX=		"2"
+					posY=		"0"
+					sizeX=		"76"
+					sizeY=		"68"
+					/>
+		</Interior>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itLightTitaniumArmor;"
+			count=				"12"
+			/>
+		
+		<Devices>
+			<Device	slotID="fore_turret"	deviceID="&itLightRecoillessCannon;"/>
+			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+		</Devices>
+
+		<Items>
+		</Items>
+
+		<!-- Image and Effects -->
+		
+		<Image imageID="&rsAntaresIHD;" imageWidth="144" imageHeight="144"	rotationCount="120" rotationColumns="12" viewportRatio="0.0175"/>
+		<HeroImage imageID="&rsAntaresIHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="176"	posRadius="69"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-176"	posRadius="69"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="173"	posRadius="69"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-173"	posRadius="69"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="69"	posZ="10"	rotation="180"	effect="&efMainThrusterLarge;"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"10"
+			fireAccuracy=		"100"
+			perception=			"4"
+			combatStyle=		"standOff"
+			/>
+		
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				The Antares I was one of the first ships built at Makayev-Energia's
+				Polyarny Shipyards in 2269 following the end of the Syrtis War.
+
+				Although the Antares I has since been surpassed in raw capabilities by
+				both its own successors and competitors, the Antares I endures to this
+				day as a cheap and simple to operate heavy freighter in low threat
+				regions of space.
+			</Text>
+			<Text id="core.desc">
+				The Antares I is an entry-level heavy freighter with few
+				capabilities beyond carrying a lot of bulk cargo on a
+				budget.
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<ItemType UNID="&vtAntaresITurretSlot;"
+			name=				"Antares I auto-turret"
+			virtual=			"true"
+			level=				"1"
+			>
+		<Image imageID="&rsAntaresIHD;" imageX="0" imageY="0" imageWidth="144" imageHeight="144"/>
+	</ItemType>
+	
+	<!-- Level 2: Borer-class Miner -->
 
 	<ShipClass UNID="&scBorerStock;"
 			manufacturer=		"United African States"
 			class=				"Borer"
-			type=				"gunship"
+			type=				"miner"
 
 			attributes=			""
 			inherit=			"&baHumanTechShip;"
@@ -72,6 +224,25 @@
 			fireAccuracy=		"70"
 			perception=			"4"
 			/>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				Borer-class miners are a common sight across the New Beyond and
+				Near Stars. Although they are slow and limited in flight
+				capabilities, the Borer-class has established a reputation as a 
+				rugged and affordable design, easily able to make returns far
+				greater than their purchase price.
+				
+				The original UAS Borer-class predates the Syrtis war, and was
+				instrumental in prospecting for the resources used to build the
+				Earth Command fleet. Since then the UAS has also released improved
+				designs like the Borer II and Borer III, fit for more dangerous
+				regions such as the Ungoverned Territories.
+			</Text>
+		</Language>
+
 	</ShipClass>
 
 	<!-- Level 2: EI100 Freighter -->
@@ -147,6 +318,20 @@
 			perception=			"4"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				When the EI100 was first introduced in the late
+				2100s, it was a fast and affordable transport
+				able to quickly make interplanetary trips between
+				stations, ferrying passengers and cargo alike.
+
+				Today it still sees regular use as a budget freighter
+				completing low-volume last-leg deliveries.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 2: Sapphire Yacht -->
@@ -270,7 +455,184 @@
 			combatStyle=		"advanced"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				Zubrin's Sapphire-class is a small and sporty ship,
+				often being compared to planet-bound vintage sports
+				cars. The compact interior comes with a selection
+				of luxury finishes and options, though the small cabin
+				means that most customers use the Sapphire for short
+				in-system trips, rather than as a true yacht as Zubrin
+				likes to imply with their marketing.
+			</Text>
+		</Language>
+		
 	</ShipClass>
+
+	<!-- Level 3: Antares II Freighter -->
+
+	<ShipClass UNID="&scAntaresIIStock;"
+			manufacturer=		"Makayev-Energia"
+			class=				"Antares II"
+			type=				"freighter"
+			inherit=			"&baHumanTechShip;"
+
+			attributes=			"freighter, genericClass, makayev"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"135"
+			mass=				"6000"
+			cargoSpace=			"30000"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"30000"
+			maxDevices=			"6"
+			maxWeapons=			"2"
+			>
+			<ArmorLimits massClass="ultraLight"		speedAdj="1" />
+			<ArmorLimits massClass="light"			speedAdj="0" />
+			<ArmorLimits massClass="medium"			speedAdj="0"  />
+			<ArmorLimits massClass="heavy"			speedAdj="-1"  />
+		</Hull>
+
+		<Drive
+			maxSpeed=			"8"
+			thrust=				"5000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"2.0"
+			rotationAccel=		"0.2"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot id="main"			criteria="w" posAngle="0" posRadius="52" posZ="4"/>
+			<DeviceSlot id="fore_turret"	criteria="w~l" posAngle="0" posRadius="47" posZ="5"	fireAngle="0" fireArc="240" secondaryWeapon="true">
+				<EnhancementAbilities>
+					<Enhance type=			"&vtTurretSlotWithNonOmni;"
+							 enhancement=	"-speed:182;"
+							 criteria=		"w -property:omnidirectional;"
+							 />
+					<Enhance type=			"&vtAntaresIITurretSlot;"
+							 enhancement=	"+linkedFire:whenInFireArc;"
+							 />
+				</EnhancementAbilities>
+			</DeviceSlot>
+			<DeviceSlot id="aft_turret"		criteria="w~l" posAngle="180" posRadius="47" posZ="7"	fireAngle="180" fireArc="240" secondaryWeapon="true">
+				<EnhancementAbilities>
+					<Enhance type=			"&vtTurretSlotWithNonOmni;"
+							 enhancement=	"-speed:182;"
+							 criteria=		"w -property:omnidirectional;"
+							 />
+					<Enhance type=			"&vtAntaresIITurretSlot;"
+							 enhancement=	"+linkedFire:whenInFireArc;"
+							 />
+				</EnhancementAbilities>
+			</DeviceSlot>
+			<DeviceSlot id="cargo"			criteria="c" cannotBeEmpty="true"/>
+		</DeviceSlots>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"15"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"30"
+
+					posX=		"-54"
+					posY=		"0"
+					sizeX=		"32"
+					sizeY=		"28"
+					/>
+			
+			<Compartment name="cargo containers"
+					type=		"cargo"
+					hitPoints=	"30"
+
+					posX=		"2"
+					posY=		"0"
+					sizeX=		"76"
+					sizeY=		"68"
+					/>
+		</Interior>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itPlasteelPlate;"
+			count=				"12"
+			/>
+		
+		<Devices>
+			<Device slotID="fore_turret"	deviceID="&itTridentCannon;"/>
+			<Device slotID="aft_turret"		deviceID="&itTridentCannon;"/>
+
+			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+		</Devices>
+
+		<Items>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsAntaresIIHD;" imageWidth="144" imageHeight="144"	rotationCount="120" rotationColumns="12" viewportRatio="0.0175"/>
+		<HeroImage imageID="&rsAntaresIIHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="176"	posRadius="69"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-176"	posRadius="69"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="173"	posRadius="69"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-173"	posRadius="69"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="69"	posZ="10"	rotation="180"	effect="&efMainThrusterLarge;"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"10"
+			fireAccuracy=		"100"
+			perception=			"4"
+			combatStyle=		"standOff"
+			/>
+		
+		<!-- Text -->
+
+		<Language>
+			<Text id="core.descLore">
+				In the decades following the Syrtis war, various threats such as pirates
+				and commerce raiders of various factions were threatening the commerce
+				and logistics of the commonwealth's vast network of colonies.
+				
+				Ships such as the Antares I were proven too vulnerable in many star systems,
+				and the commonwealth had expanded too fast and too far to protect every
+				freighter and trade lane.
+
+				Using improved technologies, Makayev-Energia provided an answer in the form
+				of the Antares II, sporting improved armor and an additional turreted weapon
+				slot.
+			</Text>
+			<Text id="core.desc">
+				Antares II-class heavy freighters are much better defended from
+				attackers than the Antares I with their additional weapons and
+				support for heavier armor.
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<ItemType UNID="&vtAntaresIITurretSlot;"
+			name=				"Antares II auto-turret"
+			virtual=			"true"
+			level=				"1"
+			>
+		<Image imageID="&rsAntaresIIHD;" imageX="0" imageY="0" imageWidth="144" imageHeight="144"/>
+	</ItemType>
 
 	<!-- Level 3: EI200 Freighter -->
 
@@ -346,17 +708,34 @@
 			perception=			"4"
 		/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				When the EI200 was introduced in 2205, coming out of
+				Earth Industries' then-new Theia Shipyards in Othrys,
+				it was heralded as a revolutionary new freighter that
+				improved on the EI100-class in just about every way.
+				As designed, it became the de facto standard for shipping
+				valuable goods and transporting VIPs.
+
+				These days, the EI200 is still a frequent sight in the
+				Commonwealth, transporting cargo that needs protection
+				from opportunistic pirates and raiders.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 3: Light IAV -->
 
 	<ShipClass UNID="&scIAVLight;"
 			manufacturer=		"(Various)"
-			class=				"light IAV"
-			type=				""
+			class=				"Meteor"
+			type=				"armed shuttle"
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"commonwealth, genericClass, iav"
+			attributes=			"commonwealth, freeworlds, genericClass, iav"
 			inherit=			"&baHumanTechShip;"
 			>
 
@@ -423,6 +802,21 @@
 			perception=			"4"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				For budding DIY shipbuilding enthusiasts, the Meteor is usually
+				one of the first stops along their journey. The components of
+				the Meteor have been specifically optimized over the years by
+				the opensource shipbuilding community to be printable in readily
+				available household autofacs, rather than needing something a
+				bit bigger, like a machine shop's autofac, which is a common
+				problem for those who try to start with a Revolution Designs
+				ship like an Earthzone.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 4: Asterion-class Heavy Gunship -->
@@ -499,14 +893,28 @@
 			combatStyle=		"advanced"
 			ignoreShieldsDown=	"true"
 			/>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				The Asterion is well receieved among militias and
+				mercenaries alike for its durable design and reasonable
+				speed. NAMI offers the ship in a variety of configurations
+				ranging from designs meant for local security near Saint
+				Katherine's Star to variants equipped for the militia to
+				fight off Sung raiders.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 	
-	<!-- Level 4: Borer II-class Gunship -->
+	<!-- Level 4: Borer II-class Miner -->
 
 	<ShipClass UNID="&scBorerIIStock;"
 			manufacturer=		"United African States"
 			class=				"Borer II"
-			type=				"gunship"
+			type=				"miner"
 
 			attributes=			""
 			inherit=			"&baHumanTechShip;"
@@ -572,6 +980,22 @@
 			fireAccuracy=		"90"
 			perception=			"4"
 			/>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				After the Syrtis war, the UAS developed this upgraded version
+				of their venerable Borer class ships to enable prospecting for
+				valuable materials in more dangerous regions of space as part
+				of their effort to rebuild.
+
+				The ship became broadly popular among Commonwealth mining
+				operations in the Ungoverned Territories for its continued
+				focus on being a rugged no-frills design.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 4: EI500 Freighter -->
@@ -687,6 +1111,26 @@
 			perception=			"4"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				EI developed the EI500 as the new entry level freighter in the
+				EI-series, releasing it in 2376 to replace the EI300 as their
+				flagship light freighter. Unlike their previous light freighter,
+				the EI500 offers significant improvements to speed and device power,
+				borrowing the dual engine and engineering layout of its larger
+				predecessors.
+
+				While not as revolutionary as the EI100 was for in-system shipping,
+				the EI500 was still such a big leap forwards in capabilities that
+				it resonated more strongly with intermediate range couriers than
+				it did with the owners of the ships it was meant to replace. As a
+				result Earth Industries still sells new-production EI300s alongside
+				the EI500.
+			</Text>
+		</Language>
+
 	</ShipClass>
 	
 	<ShipClass UNID="&scEI500;"
@@ -725,6 +1169,208 @@
 			</OnDestroy>
 		</Events>
 
+	</ShipClass>
+	
+	<!-- Level 5: Antares V Freighter -->
+	<!-- TODO: The Antares V is actually a superfreighter
+		As we are changing cargo from using mass limits to
+		volume limits (which can be objectively measured)
+		the korolov crates that that the korolov version of
+		this ship can carry will need to be adjusted to ensure
+		correct mission progression and total cargo value
+
+		For now the cargo limits are being left untouched
+	-->
+
+	<ShipClass UNID="&scAntaresVStock;"
+			manufacturer=		"Makayev-Energia"
+			class=				"Antares V"
+			type=				"superfreighter"
+			inherit=			"&baHumanTechShip;"
+
+			attributes=			"freighter, superfreighter, genericClass, makayev"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"185"
+			mass=				"10000"
+			cargoSpace=			"50000"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"50000"
+			maxDevices=			"6"
+			maxWeapons=			"2"
+			>
+			<ArmorLimits massClass="ultraLight"		speedAdj="1" />
+			<ArmorLimits massClass="light"			speedAdj="0" />
+			<ArmorLimits massClass="medium"			speedAdj="0"  />
+			<ArmorLimits massClass="heavy"			speedAdj="-1"  />
+		</Hull>
+
+		<Drive
+			maxSpeed=			"8"
+			thrust=				"5000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"2.0"
+			rotationAccel=		"0.2"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot id="main"			criteria="w" posAngle="0" posRadius="70" posZ="4"/>
+			<DeviceSlot id="fore_turret"	criteria="w~l" posAngle="0" posRadius="65" posZ="5"	fireAngle="0" fireArc="240" secondaryWeapon="true">
+				<EnhancementAbilities>
+					<Enhance type=			"&vtTurretSlotWithNonOmni;"
+							 enhancement=	"-speed:182;"
+							 criteria=		"w -property:omnidirectional;"
+							 />
+					<Enhance type=			"&vtAntaresVTurretSlot;"
+							 enhancement=	"+linkedFire:whenInFireArc;"
+							 />
+				</EnhancementAbilities>
+			</DeviceSlot>
+			<DeviceSlot id="aft_turret"		criteria="w~l" posAngle="180" posRadius="65" posZ="7"	fireAngle="180" fireArc="240" secondaryWeapon="true">
+				<EnhancementAbilities>
+					<Enhance type=			"&vtTurretSlotWithNonOmni;"
+							 enhancement=	"-speed:182;"
+							 criteria=		"w -property:omnidirectional;"
+							 />
+					<Enhance type=			"&vtAntaresVTurretSlot;"
+							 enhancement=	"+linkedFire:whenInFireArc;"
+							 />
+				</EnhancementAbilities>
+			</DeviceSlot>
+			<DeviceSlot id="cargo"			criteria="c" cannotBeEmpty="true"/>
+		</DeviceSlots>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"20"
+					/>
+			
+			<Compartment name="main drive"
+					type=		"mainDrive"
+					hitPoints=	"40"
+
+					posX=		"-74"
+					posY=		"0"
+					sizeX=		"28"
+					sizeY=		"28"
+					/>
+			
+			<Compartment name="cargo containers"
+					type=		"cargo"
+					hitPoints=	"50"
+
+					posX=		"2"
+					posY=		"0"
+					sizeX=		"120"
+					sizeY=		"60"
+					/>
+		</Interior>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itBlastPlate;"
+			count=				"16"
+			/>
+		
+		<Devices>
+			<Device slotID="fore_turret"	deviceID="&itSlamCannon;"/>
+			<Device slotID="aft_turret"		deviceID="&itSlamCannon;"/>
+
+			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+		</Devices>
+
+		<Items>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsAntaresVHD;" imageWidth="180" imageHeight="180"	rotationCount="120" rotationColumns="12" viewportRatio="0.02375"/>
+		<HeroImage imageID="&rsAntaresVHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="177"	posRadius="88"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-177"	posRadius="88"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="175"	posRadius="88"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-175"	posRadius="88"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="88"	posZ="10"	rotation="180"	effect="&efMainThrusterLarge;"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			fireRateAdj=		"10"
+			fireAccuracy=		"100"
+			perception=			"4"
+			combatStyle=		"standOff"
+			/>
+
+		<Language>
+			<Text id="core.descLore">
+				The Antares V was originally introduced in 2343 as a logistics transport for
+				the Commonwealth Fleet. When released to the wider market, it saw much greater
+				success than Makayev-Energia's previous attempts at stretching the Antares
+				series, as it was much more capable of independent operation.
+
+				To save on development time, its hull was based on the Antares III - itself little more
+				than a stretched Antares I - but incorporated the improved armor and weapon mounts
+				of the Antares II at the behest of the Commonwealth Fleet.
+			</Text>
+			<Text id="core.desc">
+				The Antares V superfreighter strikes a balance between supporting
+				tough armor and enough weaponry to deter attackers.
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<ItemType UNID="&vtAntaresVTurretSlot;"
+			name=				"Antares V auto-turret"
+			virtual=			"true"
+			level=				"1"
+			>
+		<Image imageID="&rsAntaresVHD;" imageX="0" imageY="0" imageWidth="180" imageHeight="180"/>
+	</ItemType>
+
+	<!-- Level 5: Antares V Commonwealth -->
+	<!--
+		This variant is used for escort missions as an alternative to the Scarab
+		The Antares V has less compartment HP, slightly better effective firepower,
+		and superior armor but fewer segments. Its also a little bit faster, making
+		the mission more bearable.
+	-->
+
+	<ShipClass UNID="&scAntaresVLogistics;"
+			manufacturer=		"Makayev-Energia"
+			class=				"Antares V"
+			type=				"superfreighter"
+			defaultSovereign=	"&svCommonwealth;"
+			inherit=			"&scAntaresVStock;"
+
+			attributes=			"commonwealth, freighter, superfreighter, genericClass, makayev"
+
+			explosionType=		"&vtBlastExplosion4;"
+			>
+		<Names noArticle="true">Antares Heavy 5%0%0</Names>
+
+		<Devices>
+			<Device slotID="fore_turret"	deviceID="&itSlamCannon;"/>
+			<Device slotID="aft_turret"		deviceID="&itSlamCannon;"/>
+
+			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+			<Device deviceID="&itMissileDefense;"/>
+		</Devices>
+
+		<Events>
+			<OnDestroy>
+				(korOnShipDestroyed)
+			</OnDestroy>
+		</Events>
 	</ShipClass>
 	
 	<!-- Level 5: Wolfen/C-class Gunship -->
@@ -859,6 +1505,26 @@
 			combatStyle=		"advanced"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				The Wolfen series was originally designed by Pacific Defense
+				to act as fighters for the Commonwealth's aging but still nimble
+				fleet carriers. However, with the Fleet's 2350s shift towards bulk
+				and slow fortress-style carriers rather than agile fleet carriers,
+				they began to prefer heavier designs like the Centurion as their
+				gunships of choice.
+
+				The Wolfen/C is a civilian variant that was designed for local
+				commonwealth militia and corporate security defense, where its
+				limited range is no hinderance, and its ability to mount powerful
+				weapons is a powerful deterrant. Occasionally these ships get
+				upgraded by private owners for much greater range than they were
+				designed for, often at a significant price.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 	
 	<!-- Wolfen/C Variant 2: This is just a re-skinned Wolfen/C -->
@@ -1002,17 +1668,35 @@
 			fireAccuracy=		"95"
 			perception=			"4"
 			/>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				EI introduced the EI7000 in 2389 to compliment the EI500's generation
+				of EI-series freighters with a powerful and well-defended heavy freighter
+				for transporting high value cargo. Since then, the EI7000 has become a
+				favorite for Corporate Hierarchy factories, picking up shipments of
+				finished goods like ship components and delivering them to drydocks
+				and retailers.
+
+				An EI7000 is tough enough that it dissuades most pirates and raiders in
+				the New Beyond on-sight unless they have access to capital ships, such as
+				Drakes.
+			</Text>
+		</Language>
+
 	</ShipClass>
 
 	<!-- Level 5: Medium IAV -->
 
 	<ShipClass UNID="&scIAVMedium;"
 			manufacturer=		"(Various)"
-			class=				"medium IAV"
-			type=				""
+			class=				"Archer"
+			type=				"gunship"
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"commonwealth, genericClass, iav"
+			attributes=			"commonwealth, genericClass, freeworlds, iav"
 			>
 
 		<!-- Hull -->
@@ -1074,6 +1758,24 @@
 			perception=			"4"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				The Archer-class came about as a result of commonwealth citizens
+				combining opensource component designs from Revolution Designs
+				and Frontier Industrial. With the design being completely open,
+				various small businesses have taken to selling Archer kits with
+				components varying from new parts made in a home autofac, to cheap
+				sets of intact salvage from other ships that share those common
+				components.
+
+				Since neither Revolution Designs nor Frontier Industrial produce
+				weapons, the devices for the ship kits are usually absent or just
+				any off-the-shelf selection that is locally available.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 	
 	<!-- Level 5: Armstrong-class Transport -->
@@ -1160,9 +1862,28 @@
 			combatStyle=		"standOff"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				The Armstrong-class transport is NAMI's dedicated freighter
+				entry within their "Spage-age" ship series. NAMI opted to
+				diversify their offerings by mixing in a variety of ship
+				classes and roles under the same branding group to avoid a
+				repeat of the marketing fiasco that the "Metropolis" series
+				encountered, where a single unfavorable comparison of a
+				gunship-only series to a competitor's gunship ruined the
+				mindshare for all of the ships.
+
+				The Armstrong-class has made a name for itself as a resiliant
+				and fast multipurpose transport good for carrying both cargo
+				and passengers.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
-	<!-- Level 4: Borer III-class Gunship -->
+	<!-- Level 6: Borer III-class Gunship -->
 
 	<ShipClass UNID="&scBorerIIIStock;"
 			manufacturer=		"United African States"
@@ -1233,6 +1954,22 @@
 			fireAccuracy=		"90"
 			perception=			"4"
 			/>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				To meet growing demand for mining equipment that can tackle
+				hard to mine materials in and around the Outer Realm, the
+				UAS introduced the Borer III-class miner in 2332.
+
+				Even despite the conflicts that flared up in the region just
+				one decade later, sales of the Borer III remained strong as
+				individual Commonwealth and UAS citizens rushed out to try
+				and get some of the valuable ores in the area.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 6: Elixir-class Megayacht -->
@@ -1345,57 +2082,79 @@
 			combatStyle=		"standOff"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				The Elixer is Zubrin's top of the line offering in both luxury
+				and spacious onboard accomodations. Unlike the Sapphire, the
+				Elixer is designed with extended onboard living as its top
+				priority. The Elixer is not without its detractors however, for
+				as much as the internal opulence has received praise, the
+				view from within the ship has also been criticized due to the
+				large decorative shades obstructing many of the viewports. This
+				even impacts the bridge, which relies on holographic displays
+				to allow the crew to see around the shades.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 6: Scarab Freighter -->
 
-	<ShipClass UNID="&scScarabFreighter;"
+	<ShipClass UNID="&scScarabFreighterStock;"
 			manufacturer=		"NAMI"
 			class=				"Scarab"
 			type=				"superfreighter"
-			level=				"6"
-			defaultSovereign=	"&svCommonwealth;"
 			   
-			attributes=			"commonwealth, freighter, genericClass, NAMI"
-
-			size=				"200"
-			mass=				"15000"
-			thrustRatio=		"0.2"
-			maxSpeed=			"6"
-			cargoSpace=			"120000"
-
-			explosionType=		"&vtBlastExplosion4;"
+			attributes=			"freighter, genericClass, NAMI"
+			inherit=			"&baHumanTechShip;"
 			>
 
-		<Names definiteArticle="true">
-			superfreighter St. Aoki; superfreighter St. Beatrice; superfreighter St. Celendin;
-			superfreighter St. Dominarus; superfreighter St. Elaine; superfreighter St. Florentine;
-			superfreighter St. Goramesh; superfreighter St. Haldane; superfreighter St. Inez;
-			superfreighter St. Jotur; superfreighter St. Kim; superfreighter St. Lin Chemei;
-			superfreighter St. Miranda; superfreighter St. Navreen; superfreighter St. Orinaga;
-			superfreighter St. Pelerine; superfreighter St. Queleborn; superfreighter St. Rebecca;
-			superfreighter St. Salvador; superfreighter St. Tomashi; superfreighter St. Unami;
-			superfreighter St. Voxanna; superfreighter St. Ha-neul; superfreighter St. Joo-eun;
-			superfreighter St. Emiko; superfreighter St. Aiko; superfreighter St. Rumiko;
-			superfreighter St. Bharati; superfreighter St. Madhavi; superfreighter St. Astrel
-		</Names>
+		<!-- Hull -->
 
-		<!-- Configuration -->
-		
-		<Armor
-			armorID=			"&itAdvancedReactiveArmor;"
-			count=				"20"
+		<Hull
+			size=				"200"
+			mass=				"15000"
+			cargoSpace=			"1200000"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"1200000"
+			maxDevices=			"8"
+			maxWeapons=			"3"
+			>
+			<ArmorLimits massClass="ultraLight"		speedAdj="1" />
+			<ArmorLimits massClass="light"			speedAdj="0" />
+			<ArmorLimits massClass="medium"			speedAdj="0"  />
+			<ArmorLimits massClass="heavy"			speedAdj="-1"  />
+		</Hull>
+
+		<Drive
+			maxSpeed=			"6"
+			thrust=				"3000"
 			/>
-		
-		<Devices>
-			<Device deviceID="&itSlamCannon;" omnidirectional="true"/>
-			<Device deviceID="&itMissileDefense;" omnidirectional="true" />
-		</Devices>
 
 		<Maneuver
 			maxRotationRate=	"2.0"
 			rotationAccel=		"0.2"
 			/>
+
+		<DeviceSlots>
+			<DeviceSlot id="main"				criteria="w~l" posAngle="12" posRadius="90" posZ="2"/>
+			<DeviceSlot id="main_launcher"		criteria="l" posAngle="-12" posRadius="90" posZ="2"/>
+			<DeviceSlot id="turret"				criteria="w~l" posAngle="0" posRadius="0" posZ="15"	omnidirectional="true" secondaryWeapon="true">
+				<EnhancementAbilities>
+					<Enhance type=			"&vtTurretSlotWithNonOmni;"
+							 enhancement=	"-speed:200;"
+							 criteria=		"w -property:omnidirectional;"
+							 />
+					<Enhance type=			"&vtScarabTurretSlot;"
+							 enhancement=	"+linkedFire:whenInFireArc;"
+							 />
+				</EnhancementAbilities>
+			</DeviceSlot>
+			<DeviceSlot id="cargo"				criteria="c" cannotBeEmpty="true"/>
+		</DeviceSlots>
 
 		<Interior>
 			<Compartment name="interior"
@@ -1422,6 +2181,20 @@
 					sizeY=		"50"
 					/>
 		</Interior>
+		
+		<Armor
+			armorID=			"&itAdvancedReactiveArmor;"
+			count=				"20"
+			/>
+
+		<!-- Configuration -->
+		
+		<Devices>
+			<Device slotID="turret"			deviceID="&itSlamCannon;"/>
+
+			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+			<Device deviceID="&itMissileDefense;"/>
+		</Devices>
 
 		<Items>
 		</Items>
@@ -1450,22 +2223,89 @@
 			combatStyle=		"standOff"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				The Scarab-class of multipurpose superfreighters were designed
+				by NAMI in 2332 as no-frills haulers with swappable modules for
+				carrying either fluid cargo or bulk ore.
+
+				Initially the Scarab was almost exclusively used by companies
+				in the fuel mining industry. However, in 2372 the Commonwealth Fleet
+				has started using them in addition to their Antares V superfreighters
+				for logistics purposes - in this case for delivering large quantities
+				of fuel for the massive Commonwealth Star Carriers and all of the
+				gunships they support.
+			</Text>
+		</Language>
+		
+	</ShipClass>
+
+	<ItemType UNID="&vtScarabTurretSlot;"
+			name=				"Scarab auto-turret"
+			virtual=			"true"
+			level=				"1"
+			>
+		<Image imageID="&rsScarabHD;" imageWidth="192" imageHeight="192"/>
+	</ItemType>
+
+	<!-- Level 6: Scarab Freighter - Commonwealth Logistics -->
+
+	<ShipClass UNID="&scScarabFreighter;"
+			manufacturer=		"NAMI"
+			class=				"Scarab"
+			type=				"superfreighter"
+			level=				"6"
+			defaultSovereign=	"&svCommonwealth;"
+			   
+			attributes=			"commonwealth, freighter, genericClass, NAMI"
+			inherit=			"&scScarabFreighterStock;"
+
+			explosionType=		"&vtBlastExplosion4;"
+			>
+
+		<Names definiteArticle="true">
+			superfreighter St. Aoki; superfreighter St. Beatrice; superfreighter St. Celendin;
+			superfreighter St. Dominarus; superfreighter St. Elaine; superfreighter St. Florentine;
+			superfreighter St. Goramesh; superfreighter St. Haldane; superfreighter St. Inez;
+			superfreighter St. Jotur; superfreighter St. Kim; superfreighter St. Lin Chemei;
+			superfreighter St. Miranda; superfreighter St. Navreen; superfreighter St. Orinaga;
+			superfreighter St. Pelerine; superfreighter St. Queleborn; superfreighter St. Rebecca;
+			superfreighter St. Salvador; superfreighter St. Tomashi; superfreighter St. Unami;
+			superfreighter St. Voxanna; superfreighter St. Ha-neul; superfreighter St. Joo-eun;
+			superfreighter St. Emiko; superfreighter St. Aiko; superfreighter St. Rumiko;
+			superfreighter St. Bharati; superfreighter St. Madhavi; superfreighter St. Astrel
+		</Names>
+
+		<!-- Configuration -->
+		
+		<Devices>
+			<Device slotID="turret"			deviceID="&itSlamCannon;"/>
+
+			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+			<Device deviceID="&itMissileDefense;"/>
+		</Devices>
+
+		<!-- AI and Behavior -->
+
 		<Events>
 			<OnDestroy>
 				(korOnShipDestroyed)
 			</OnDestroy>
 		</Events>
+		
 	</ShipClass>
 
 	<!-- Level 7: Heavy IAV -->
 
 	<ShipClass UNID="&scIAVHeavy;"
 			manufacturer=		"(Various)"
-			class=				"heavy IAV"
-			type=				""
+			class=				"Buffalo"
+			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"commonwealth, genericClass, iav"
+			attributes=			"commonwealth, freeworlds, genericClass, iav"
 			inherit=			"&baHumanTechShip;"
 			>
 
@@ -1530,6 +2370,27 @@
 			perception=			"4"
 			/>
 
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				Unlike most improvised ship designs, the Buffalo pattern has
+				its roots in an official NAMI design. During the early 2100s era
+				colonization wave, NAMI introduced humanity's first fusion-powered
+				ship, the colony ship CS Savannah.
+
+				The Savannah-class was designed to carry colonists and their
+				supplies out to remote areas, where they could then disassemble
+				the colony ship into a full colony station, as well as several
+				smaller utility ships. By the 2170s to keep the Savannah-class
+				dominant in the market, NAMI released the designs of many of the
+				components to the public so that outlying colonies could
+				manufacture replacement parts. Over time the opensource component
+				community has evolved the original Buffalo design into a capable
+				heavy gunship.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<!-- Level 7: Manticore-class Heavy Gunship -->
@@ -1716,6 +2577,32 @@
 			
 			combatStyle=		"advanced"
 			/>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				The Manticore class was originally in development for the
+				Commonwealth Fleet in the 2360s as a new heavy gunship, but
+				when the Ares began fielding Commetfalls in 2372 and brought
+				the Commonwealth offensive to a halt, the Commonwealth was
+				suddenly much more hesitant about adopting a ship meant for
+				brute-force combat without as much concern for survivability.
+
+				Trials eventually confirmed their fears that the design of
+				the Manticore which eschewed a traditional shield in favor
+				of specialized armor repair systems in its as-designed
+				configuration suddenly become very vulnerable the moment that
+				it was faced with enough damage to overwhelm the armor repair
+				device. After accepting a few dozen for testing purposes, the
+				Fleet terminated the contact.
+				
+				Makayev kept the name given to class ship by the Fleet and
+				turned to the Commonwealth Militias and Corporate security
+				forces for sales instead.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 	<ItemType UNID="&vtManticoreShieldPenalty;"
@@ -1764,15 +2651,18 @@
 	<ShipTable unid="&tbCommPrivateCrafts;">
 		<LevelTable>
 			<Ship levelFrequency="cuv-- -----" count="1" class="&scBorer;" orders="gateOnThreat"/>
+			<Ship levelFrequency="rrv-- -----" count="1" class="&scAntaresI;" orders="gateOnThreat"/>
 
 			<Ship levelFrequency="ccuv- -----" count="1" class="&scEI100;" orders="gateOnThreat"/>
 			<Ship levelFrequency="ccuv- -----" count="1" class="&scRoninA;" orders="gateOnThreat"/>
 			<Ship levelFrequency="ccuv- -----" count="1" class="&scSapphireYacht;" orders="gateOnThreat"/>
 
+			<Ship levelFrequency="vrrv- -----" count="1" class="&scAntaresII;" orders="gateOnThreat"/>
 			<Ship levelFrequency="rccuv -----" count="1" class="&scEI200;" orders="gateOnThreat"/>
 			<Ship levelFrequency="rccuv -----" count="1" class="&scIAVLight;" orders="gateOnThreat"/>
 			<Ship levelFrequency="rccuv -----" count="1" class="&scRoninB;" orders="gateOnThreat"/>
 
+			<Ship levelFrequency="-vrrr -----" count="1" class="&scAntaresV;" orders="gateOnThreat"/>
 			<Ship levelFrequency="-rccu v----" count="1" class="&scAsterionHeavyGunship;" orders="guard"/>
 			<Ship levelFrequency="-rccu v----" count="1" class="&scEI500;" orders="gateOnThreat"/>
 			<Ship levelFrequency="-rccu v----" count="1" class="&scRoninC;" orders="gateOnThreat"/>
@@ -1817,8 +2707,9 @@
 			<Ship levelFrequency="--rcc uv---" count="1" class="&scIAVMedium;"/>
 			<Ship levelFrequency="--rcc uv---" count="1" class="&scWolfenC;"/>
 
+			<Ship levelFrequency="---ru cuv--" count="1" class="&scAntaresVStock;"/>
 			<Ship levelFrequency="---rc cuv--" count="1" class="&scElixirMegayacht;"/>
-			<Ship levelFrequency="---vu ur---" count="1" class="&scScarabFreighter;"/>
+			<Ship levelFrequency="---vu urv--" count="1" class="&scScarabFreighter;"/>
 
 			<Ship levelFrequency="----r ccuvv" count="1" class="&scIAVHeavy;"/>
 			<Ship levelFrequency="----r ccuvv" count="1" class="&scManticore;"/>

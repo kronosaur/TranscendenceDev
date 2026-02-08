@@ -12,6 +12,7 @@ class CWeaponClass : public CDeviceClass
 
 		static constexpr Metric HP_ARMOR_RATIO = 0.1;						//	Ammo HP per standard armor HP of same level
 		static constexpr Metric STD_AMMO_MASS =	10.0;						//	Standard ammo mass (in kg)
+		static constexpr Metric STD_AMMO_VOLUME = 0.01;						//	Standard ammo volume (TODO: come up with better standard value and mass for ammo in 2.0)
 		static constexpr Metric DEFAULT_HP_DAMAGE_RATIO = 0.5;				//	Used to compute default HP.
 																			//		See: CWeaponFireDesc::CalcDefaultHitPoints
 
@@ -63,7 +64,7 @@ class CWeaponClass : public CDeviceClass
 			Metric rDamageType = 0.0;		//  Damage type balance contribution
 
 			Metric rStdAmmoCost = 0.0;		//  Standard ammo cost (for level and fire rate)
-			Metric rStdAmmoMass = 0.0;		//  Standard ammo mass (for level and fire rate)
+			Metric rStdAmmoSize = 0.0;		//  Standard ammo mass (for level and fire rate)
 			Metric rAmmo = 0.0;				//  Ammo contribution
 			Metric rOmni = 0.0;				//  Omni and swivel component
 			Metric rTracking = 0.0;			//  Tracking component
@@ -355,7 +356,7 @@ class CWeaponClass : public CDeviceClass
 		CConfigurationDesc m_Configuration;		//	Shot configuration
 
 		int m_iContinuous = 0;					//	Repeat fire
-		Metric m_rContinuousFireDelay = 0;			//	Delay between shots
+		Metric m_rContinuousFireDelay = 0;		//	Delay between shots in simulation seconds
 		bool m_bContinuousConsumePerShot;		//	If a continuous weapon, consume ammunition for every shot in burst
 		bool m_bBurstTracksTargets;				//  If the weapon is continuous, whether or not to track the target during the entire burst
 

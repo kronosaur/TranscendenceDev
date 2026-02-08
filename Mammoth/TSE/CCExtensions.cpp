@@ -87,6 +87,8 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_ITEM_GET_STATIC_DATA_KEYS	40
 #define FN_ITEM_GET_TYPE_DATA_KEYS	41
 #define FN_ITEM_PROPERTY_KEYS		42
+#define FN_ITEM_VOLUME				43
+#define FN_ITEM_VOLUME_COMPAT		44
 
 ICCItem *fnItemGetTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -880,8 +882,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(itmGetLevel item|type) -> level",
 			"v",	0,	},
 
-		{	"itmGetMass",					fnItemGet,		FN_ITEM_MASS,
+		{   "itmGetMassKg",					fnItemGet,		FN_ITEM_MASS,
 			"(itmGetMass item|type) -> mass of single item in kg",
+			"v",	0, },
+
+		{	"itmGetMass",					fnItemGet,		FN_ITEM_VOLUME_COMPAT,
+			"DEPRECATED: use (itmGetVolume item|type) instead. For Mass use (itmGetMassKg item|type)",
 			"v",	0,	},
 
 		{	"itmGetMaxAppearing",			fnItemGet,		FN_ITEM_MAX_APPEARING,
@@ -915,6 +921,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"itmGetPrice",					fnItemGet,		FN_ITEM_PRICE,
 			"(itmGetPrice item|type [currency]) -> price of a single item",
 			"v*",	0,	},
+
+		{	"itmGetVolume",					fnItemGet,		FN_ITEM_VOLUME,
+			"(itmGetVolume item|type) -> size of single item in CBM (real)",
+			"v",	0,	},
 
 		{	"itm@Keys",						fnItemGet,		FN_ITEM_PROPERTY_KEYS,
 			"(itm@Keys item|type) -> list of property keys",
@@ -1181,10 +1191,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(fmtNumber [type] value) -> string\n\n"
 			
 			"type:\n\n"
-			
+
+			"   'CBM\n"
+			"   'CBMBasic\n"
+			"   'CBMInt\n"
 			"   'integer\n"
 			"   'massKg\n"
 			"   'massTons\n"
+			"   'metric\n"
+			"   'metricFull\n"
+			"   'metricUnitless\n"
 			"   'power\n"
 			"   'real\n"
 			"   'regenRate\n"
@@ -1907,7 +1923,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"il*",	0,	},
 
 		{	"objGetCargoSpaceLeft",			fnObjGetOld,		FN_OBJ_CARGO_SPACE_LEFT,
-			"(objGetCargoSpaceLeft obj) -> space left in kg",
+			"DEPRECATED: use (obj@ obj 'cargoSpaceFree) -> space left in cubic meters instead\n"
+
+			"   (objGetCargoSpaceLeft obj) -> space left in liters\n",
+
 			NULL,	0,	},
 
 		{	"objGetCharacterData",			fnObjGet,		FN_OBJ_GET_CHARACTER_DATA,
@@ -2175,7 +2194,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'availableNonWeaponSlots\n"
 			"   'availableWeaponSlots\n"
 			"   'blindingImmune\n"
-			"   'cargoSpace -> in tons\n"
+			"   'cargoMassKg -> in kg\n"
+			"   'cargoSpace -> in CBM\n"
+			"   'cargoSpaceFree -> in CBM\n"
+			"   'cargoSpaceUsed -> in CBM\n"
 			"   'counterIncrementRate\n"
 			"   'counterValue\n"
 			"   'character\n"
@@ -3173,13 +3195,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"vvv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateEncounter",			fnSystemCreate,		FN_SYS_CREATE_ENCOUNTER,
-			"(sysCreateEncounter unid [options]) -> True/Nil\n\n"
-				
-				"options:\n\n"
-				
-				"   'distance      Encounter distance (light-seconds), if gate is Nil\n"
-				"   'gate          Gate to appear at (if Nil, use distance)\n"
-				"   'target        Target of encounter\n",
+			"(sysCreateEncounter unid [options]) -> list or Nil\n\n"
+
+			"unid: ShipTable or Station unid\n\n"
+
+			"options:\n\n"
+			
+			"   'distance      Encounter distance (light-seconds), if gate is Nil\n"
+			"   'gate          Gate to appear at (if Nil, use distance)\n"
+			"   'target        Target of encounter\n",
 
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -3855,7 +3879,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'slotCategory\n"
 			"   'treasureValue\n"
 			"   'unknownType\n"
-			"   'useKey\n\n"
+			"   'useKey\n"
+			"	'volume\n\n"
 
 			"field (player ships):\n\n"
 			"   'dockServicesScreen  UNID of dock services screen\n"
@@ -5444,11 +5469,27 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateString(CLanguage::ComposeNumber(CLanguage::numberInteger, pArgs->GetElement(0)->GetIntegerValue()));
 			else
 				{
-				CLanguage::ENumberFormatTypes iFormat = CLanguage::ParseNumberFormat(pArgs->GetElement(0)->GetStringValue());
+				CLanguage::ENumberFormatTypes iFormat;
+				ICCItem* pOptions = pArgs->GetElement(0);
+
+				//	Configure options
+
+				CLanguage::SNumberOptions Options;
+
+				if (pOptions->IsSymbolTable())
+					{
+					iFormat = CLanguage::ParseNumberFormat(pOptions->GetElement(CONSTLIT("format"))->GetStringValue());
+					Options.OptMetric.iMaxSigFigs = pOptions->GetElement(CONSTLIT("sigFigs"))->GetIntegerValue();
+					}
+				else
+					{
+					iFormat = CLanguage::ParseNumberFormat(pOptions->GetStringValue());
+					Options.OptMetric.iMaxSigFigs = 3;
+					}
 				if (iFormat == CLanguage::numberError)
 					return pCC->CreateError(CONSTLIT("Unknown number format"), pArgs->GetElement(0));
 
-				return pCC->CreateString(CLanguage::ComposeNumber(iFormat, pArgs->GetElement(1)));
+				return pCC->CreateString(CLanguage::ComposeNumber(iFormat, pArgs->GetElement(1), &Options));
 				}
 			}
 
@@ -5899,6 +5940,14 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_MASS:
 			pResult = pCC->CreateInteger(Item.GetMassKg());
+			break;
+
+		case FN_ITEM_VOLUME:
+			pResult = pCC->CreateDouble(Item.GetVolume());
+			break;
+
+		case FN_ITEM_VOLUME_COMPAT:
+			pResult = pCC->CreateDouble(Item.GetVolume() * 1000);
 			break;
 
 		case FN_ITEM_MAX_APPEARING:
@@ -8378,7 +8427,7 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			pResult = pCC->CreateBool(pObj->CanAttack());
 			break;
 
-		case FN_OBJ_CARGO_SPACE_LEFT:
+		case FN_OBJ_CARGO_SPACE_LEFT:	//	This is for compatibility
 			pResult = pCC->CreateInteger((int)(pObj->GetCargoSpaceLeft() * 1000.0));
 			break;
 

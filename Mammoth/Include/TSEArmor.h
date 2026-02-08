@@ -132,7 +132,7 @@ class CArmorClass
 		int CalcBalance (const CArmorItem &ArmorItem) const { CArmorItem::SBalance Balance; return CalcBalance(ArmorItem, Balance); }
 		Metric CalcBalanceDamageAdj (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceDamageEffectAdj (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
-		Metric CalcBalanceMass (const CArmorItem &ArmorItem, const SScalableStats &Stats, Metric *retrStdMass) const;
+		Metric CalcBalanceSize (const CArmorItem &ArmorItem, const SScalableStats &Stats, Metric *retrStdSize) const;
 		Metric CalcBalancePower (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceRegen (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceRepair (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;

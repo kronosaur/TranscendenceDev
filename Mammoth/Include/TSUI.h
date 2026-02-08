@@ -414,7 +414,12 @@ enum EColorPalette
 	colorAreaAccelerator =			36,		//	H:60  S:100 B:80
 	colorTextQuote =				37,		//	H:210 S:30  B:100
 
-	colorCount =					38,
+	colorAreaWarning =				38,
+	colorTextWarning =				39,
+	colorAreaQuest =				40,
+	colorTextQuest =				41,
+
+	colorCount =					42,
 	};
 
 enum EFontScale

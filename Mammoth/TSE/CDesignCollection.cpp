@@ -324,7 +324,7 @@ ALERROR CDesignCollection::BindDesign (CUniverse &Universe, const TArray<CExtens
 		//	We take this opportunity to build a list of display attributes
 		//	defined by each type.
 
-		const CArmorMassDefinitions &ArmorDefinitions = pEntry->GetArmorMassDefinitions();
+		const CArmorClassDefinitions &ArmorDefinitions = pEntry->GetArmorMassDefinitions();
 		if (!ArmorDefinitions.IsEmpty())
 			m_ArmorDefinitions.Append(ArmorDefinitions);
 
@@ -389,6 +389,25 @@ ALERROR CDesignCollection::BindDesign (CUniverse &Universe, const TArray<CExtens
 
 	m_BoundExtensions = BindOrder;
 	m_bInBindDesign = false;
+
+	//	Now that all types are bound, fire OnGlobalTypesBound/NewGame events
+	//	This enables types a chance to initialize state and access
+	//	all globals and properties
+	//
+	//	If we are in a new game, we need to fire that event first for any
+	//	pre-initialization that is handled on initial game creation
+
+	if (Options.bNewGame)
+		{
+		if (error = FireOnGlobalTypesBoundNewGame(Ctx))
+			return BindDesignError(Ctx, retsError);
+		}
+
+	//	Then we fire the standard version of the event regardless of load
+	//	or new game to handle any further initialization
+
+	if (error = FireOnGlobalTypesBound(Ctx))
+		return BindDesignError(Ctx, retsError);
 
 	return NOERROR;
 
@@ -1216,11 +1235,58 @@ void CDesignCollection::FireOnGlobalSystemStopped (void)
 		}
 	}
 
-ALERROR CDesignCollection::FireOnGlobalTypesInit (SDesignLoadCtx &Ctx)
+//	FireOnGlobalTypesBound
+//
+//	Give each type a chance to initialize state after all properties are bound
+//
+ALERROR CDesignCollection::FireOnGlobalTypesBound (SDesignLoadCtx &Ctx)
+
+	{
+	ALERROR error;
+	int i;
+
+	for (i = 0; i < m_AllTypes.GetCount(); i++)
+		{
+		CDesignType *pType = m_AllTypes.GetEntry(i);
+		if (error = pType->FireOnGlobalTypesBound(Ctx))
+			return error;
+		}
+
+	return NOERROR;
+	}
+
+//	FireOnGlobalTypesBoundNewGame
+//
+//	Give each type a chance to initialize state after all properties are bound
+//	This version only runs when creating a new game after all types are bound,
+//	not after binding types on loading a save file.
+// 
+//	OnGlobalTypesBound executes after OnGlobalTypesBoundNewGame, ensuring that
+//	any pre-initialization that is expected can be done in OnGlobalTypesBoundNewGame
+//	and any standard initialization that must be done every load or new game
+//	can be handled in OnGlobalTypesBound
+//
+ALERROR CDesignCollection::FireOnGlobalTypesBoundNewGame (SDesignLoadCtx &Ctx)
+
+	{
+	ALERROR error;
+	int i;
+
+	for (i = 0; i < m_AllTypes.GetCount(); i++)
+		{
+		CDesignType *pType = m_AllTypes.GetEntry(i);
+		if (error = pType->FireOnGlobalTypesBoundNewGame(Ctx))
+			return error;
+		}
+
+	return NOERROR;
+	}
 
 //	FireOnGlobalTypesInit
 //
 //	Give each type a chance to create dynamic types before we bind.
+//
+ALERROR CDesignCollection::FireOnGlobalTypesInit (SDesignLoadCtx &Ctx)
 
 	{
 	ALERROR error;
