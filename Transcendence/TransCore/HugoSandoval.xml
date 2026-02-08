@@ -4,26 +4,15 @@
 	
 	<!-- Hugo Sandoval -->
 	
-	<Type UNID="&unidHugoSandoval;">
+	<Type UNID="&unidHugoSandoval;"
+			inherit="&baStdNPCBase;"
+			>
 		<Properties>
 			<Definition id="core.namePattern">": Hugo Sandoval"</Definition>
+
+			<Definition id="char.missionAttribute">"hugoSandovalMission"</Definition>
+			<Definition id="char.sovereign">&svCommonwealth;</Definition>
 		</Properties>
-
-		<StaticData>
-			<Data id="MissionAttribute">"hugoSandovalMission"</Data>
-			<Data id="Name">"Hugo Sandoval"</Data>
-			<Data id="Sovereign">&svCommonwealth;</Data>
-		</StaticData>
-
-		<Events>
-			<OnCharacterCanBeMet>
-				True
-			</OnCharacterCanBeMet>
-
-			<OnGlobalSystemStopped>
-				(rpgCharacterAscend &unidHugoSandoval;)
-			</OnGlobalSystemStopped>
-		</Events>
 	</Type>
 	
 	<!-- Sandoval's Ship -->

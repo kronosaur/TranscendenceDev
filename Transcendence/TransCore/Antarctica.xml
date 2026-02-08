@@ -47,22 +47,15 @@
 
 	-->
 
-	<Type UNID="&unidCaptainHelios;">
-		<StaticData>
-			<MissionAttribute>"captainHeliosMission"</MissionAttribute>
-			<Name>"Captain Helios"</Name>
-			<Sovereign>&svCSCAntarctica;</Sovereign>
-		</StaticData>
+	<Type UNID="&unidCaptainHelios;"
+			inherit="&baStdNPCBase;"
+			>
+		<Properties>
+			<Definition id="core.namePattern">": Captain Helios"</Definition>
 
-		<Events>
-			<OnCharacterCanBeMet>
-				True
-			</OnCharacterCanBeMet>
-
-			<OnGlobalSystemStopped>
-				(rpgCharacterAscend &unidCaptainHelios;)
-			</OnGlobalSystemStopped>
-		</Events>
+			<Definition id="char.missionAttribute">"captainHeliosMission"</Definition>
+			<Definition id="char.sovereign">&svCSCAntarctica;</Definition>
+		</Properties>
 
 		<Language>
 		</Language>
