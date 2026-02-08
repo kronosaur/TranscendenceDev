@@ -165,7 +165,7 @@ Metric CItemEnhancementStack::CalcActivateDelay (CItemCtx &DeviceCtx) const
 
 //	CalcActivateDelay
 //
-//	Calculates the activation delay (in ticks) for the given device if we apply
+//	Calculates the activation delay (in simulation seconds) for the given device if we apply
 //	this enhancement stack.
 
 	{
