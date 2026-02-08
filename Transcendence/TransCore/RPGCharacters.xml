@@ -72,10 +72,57 @@
 			<Definition id="char.missionAttribute">"undefined"</Definition>
 			<Definition id="char.sovereign">&svNeutral;</Definition>
 
+			<!-- char.firstMeetingOn
+
+				Tick of player's first meeting with character.
+				Nil if the player has never met face to face.
+
+				-->
+
 			<Global id="char.firstMeetingOn"></Global>
+
+			<!-- char.latestMeetingOn: Tick of most recent meeting with character -->
+
 			<Global id="char.latestMeetingOn"></Global>
+
+			<!-- char.status: used by alive and well checks -->
+
 			<Global id="char.status"></Global>
+
+			<!-- char.screenData
+
+				This is a structure specifying the screen to show when the player
+				interacts with the character. The struct has the following fields:
+
+				screen: The screen to show
+				pane: If non-Nil, the pane to navigate to
+				data: If non-Nil, data to pass to the screen
+				translateType: Used with translate ID. If both are non-Nil we call
+				translateID: typTranslate on ehse arguments rather than passing pane/data
+
+				If this value is Nil, then we look for missions tagged with
+				character mission attribute (e.g., kateMorgentalMission).
+
+				-->
+
 			<Global id="char.screenData"></Global>
+
+			<!-- char.scope
+
+				Determines how long the NPC will remain in system
+
+				Nil: Until player leaves the system
+				mission: Until current mission is complete
+				ongoing: Until explicitly removed, or created elsewhere
+
+				-->
+
+			<Global id="char.scope"></Global>
+
+			<Global id="char.missionID"></Global>
+			<DynamicGlobal id="char.mission">
+				(and (typ@ gType 'char.missionID) (objGetObjByID (typ@ gType 'char.missionID)))
+			</DynamicGlobal>
 
 			<!-- char.ship*: stores data for NPC's current ship -->
 
@@ -85,7 +132,12 @@
 			<Global id="char.shipOrders"></Global>
 			<Global id="char.shipPos"></Global>
 
-			<!-- char.objectIDs struct of UNID: objID for all ships used by NPC -->
+			<!-- char.objectIDs
+
+				Struct of {UNID: objID} for all ships used by NPC.
+				If Nil, then no ship has been created yet.
+
+				-->
 
 			<Global id="char.objectIDs"></Global>
 
@@ -97,6 +149,8 @@
 
 				-->
 			<Global id="char.version">1</Global>
+
+			<!-- char.objID: The objID of character's current ship -->
 
 			<DynamicGlobal id="char.objID">
 				(@ (typ@ gType 'char.objectIDs) (typ@ gType 'char.shipClass))
@@ -111,6 +165,40 @@
 			<OnGlobalSystemStopped>
 				(rpgCharacterAscend gType)
 			</OnGlobalSystemStopped>
+
+			<OnGlobalSystemStarted>
+				; We automatically descend if
+				;    needed for mission
+				;	we are remaining here (e.g. as a mission giver)
+				(switch
+					(not (typ@ gType 'char.scope))
+						Nil
+
+					;	If not in the right node, then nothing to do
+					(!= (sysGetNode) (typ@ gType 'char.shipNodeID))
+						Nil
+
+					;	If scope is ongoing try to restore ship
+					(= (typ@ gType 'char.scope) 'ongoing)
+						(rpgCharacterDescend gType)
+
+					;	Anything else we assume is mission scope
+					(block (
+						(missionObj (typ@ gType 'char.mission))
+						)
+						(switch
+							(not missionObj)
+								Nil
+
+							;	Assume we need to remain until player has been debriefed
+							(msn@ missionObj 'isDebriefed)
+								Nil
+
+							(rpgCharacterDescend gType)
+							)
+						)
+					)
+			</OnGlobalSystemStarted>
 
 			<OnGlobalUniverseLoad>
 				(rpgCharacterUpdateVersion gType)
@@ -241,33 +329,16 @@
 
 	USAGE
 
-	These functions use the following global variables on character types:
-
-	char.firstMeetingOn: Tick of player's first meeting with character.
-			Nil if the player has never met face to face.
-
-	char.latestMeetingOn: Tick of most recent meeting with character.
+	These functions use the properties defined in the NPC base class. See
+	baStdNPCBase above for further details.
 
 	lastNodeID: Character's last known position. Nil means unknown.
 
 	lastSystemPos: Character's last known position in the lastNodeID system.
 
-	objID: The objID of character's current ship. If Nil, then no ship has
-			been created yet.
-
 	playerRel: If Nil, character has never met the player. Positive numbers mean that
 			character likes/trusts/respects the player. Negative numbers mean the
 			opposite.
-
-	screenData: This is a structure specifying the screen to show when the player
-			interacts with the character. The struct has the following fields:
-
-			screen: The screen to show
-			pane: If non-Nil, the pane to navigate to
-			data: If non-Nil, data to pass to the screen
-
-			If this value is Nil, then we look for missions tagged with 
-			character mission attribute (e.g., kateMorgentalMission).
 
 -->
 
@@ -344,13 +415,17 @@
 								)))
 							Nil	;(dbgOutput (sysGetNode) ": Can't find object ID for " charType)
 							
-						;	If no ship or the ship is already ascended, then nothing to do
+						;	If no ship, then nothing to do
 						
 						(not (setq shipObj (objGetObjByID objID)))
+							;	NOTE - this probably means the ship was destroyed
 							Nil	;(dbgOutput (sysGetNode) ": Can't find ship object")
-							
+
+						;	If ship has already ascended it likely left via a gate, or mission
+						;	manually removed it from system. Eitherway we clear the last node
+
 						(obj@ shipObj 'ascended)
-							Nil	;(dbgOutput (sysGetNode) ": Ship already ascended")
+							(typSet@ charType 'char.shipNodeID Nil)
 
 						;	If the ship is currently a player wingman, then do not ascend;
 						;	the ship will follow the player.
@@ -391,7 +466,39 @@
 						)
 					)
 				))
-				
+
+			(setq rpgCharacterDescend (lambda (charType)
+
+				; This function descends the character's current ship. It is intended to be used
+				; by the OnGlobalSystemStarted event so we can resume NPCs if the player leaves
+				; and returns to a given system.
+
+				(block (
+					(objID (typ@ charType 'char.objID))
+					(shipObj (objGetObjByID objID))
+					)
+					(switch
+						(not shipObj)
+							Nil
+
+						(not (obj@ shipObj 'ascended))
+							Nil
+
+						(block Nil
+							(setq shipObj (sysDescendObject objID (typ@ charType 'char.shipPos)))
+							(enum (typ@ charType 'char.shipOrders) order
+								(block (cmd)
+									(setq cmd (append shipObj (@ order 'desc)))
+									(if (@ order 'objID) (set@ cmd 2 (objGetObjByID (@ order 'objID))))
+									(apply shpOrder cmd)
+									)
+								)
+							)
+						)
+					)
+				))
+
+
 			(setq rpgCharacterChangeRel (lambda (charType event)
 			
 				; This function changes the character's relationship with the
@@ -508,7 +615,9 @@
 				; shipClassUNID and pos are optional when descending an existing ship.
 				; options:
 				;	setKnown: set known property on ship object
-				;	restoreOrders: restore the previous order stack
+				;	repairAll: repair all damage
+				;	mission: missionObj that created the ship. Sets scope to mission
+				;	remain: if non-Nil we set scope to ongoing
 
 				(block (
 					;	We store a ship ID for every unique ship class. Some characters
@@ -610,16 +719,6 @@
 										)
 									)
 
-								;	If requested we restore the previous order stack
-
-								(if (@ options 'restoreOrders) (enum lastOrders order
-									(block (cmd)
-										(setq cmd (append shipObj (@ order 'desc)))
-										(if (@ order 'objID) (set@ cmd 2 (objGetObjByID (@ order 'objID))))
-										(apply shpOrder cmd)
-										)
-									))
-
 								;	Remember where we are
 								
 								(if useData
@@ -649,7 +748,7 @@
 					(if shipObj
 						(objSet@ shipObj 'dockingEnabled True)
 						)
-						
+
 					;	If requested, we repair all damage
 					
 					(if (@ options 'repairAll)
@@ -657,6 +756,18 @@
 							(intArmorRepairAll shipObj)
 							(objSet@ shipObj 'interiorHP (obj@ shipObj 'maxInteriorHP))
 							)
+						)
+
+					;	If we were created by a mission, then store ID and set scope
+
+					(if (@ options 'mission)
+						(block Nil
+							(typSet@ charType 'char.missionID (msn@ (@ options 'mission) 'id))
+							(typSet@ charType 'char.scope 'mission)
+						))
+
+					(if (@ options 'remain)
+						(typSet@ charType 'char.scope 'ongoing)
 						)
 
 					;	Return character's ship
@@ -766,7 +877,17 @@
 					(typSetData charType 'screenData screenData)
 					)
 				))
-				
+
+			(setq rpgCharacterSetMission (lambda (charType missionObj)
+				"Sets current mission for given character. Maybe needed if ship was created before mission"
+				(block (
+					(missionID (msn@ missionObj 'id))
+					)
+					(typSet@ charType 'char.missionID missionID)
+					(if missionID (typSet@ charType 'char.scope 'mission))
+					)
+				))
+
 			(setq rpgCharacterSetStatus (lambda (charType newStatus)
 			
 				;	This function sets the status of the character. We support the following
