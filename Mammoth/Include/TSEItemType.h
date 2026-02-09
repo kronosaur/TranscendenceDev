@@ -136,6 +136,7 @@ class CItemType : public CDesignType
 		bool ShowChargesInUseMenu (void) const { return (m_fShowChargesInUseMenu ? true : false); }
 		bool ShowReference (void) const { return (m_fReference ? true : false); }
 		bool UsesObjectImageIfInstalled () const { return m_fUseObjImage ? true : false; }
+		bool UsesObjectImageIfEnhancement () const { return m_fUseObjImageEnhancement ? true : false; }
 
 		//	CDesignType overrides
 		static const CItemType *AsType (const CDesignType *pType) { return ((pType && pType->GetType() == designItemType) ? (CItemType *)pType : NULL); }
@@ -257,8 +258,9 @@ class CItemType : public CDesignType
 		DWORD m_fShowChargesInUseMenu:1 = false;//	If TRUE, the use menu shows charges instead of a count.
 		DWORD m_fUseUndamaged:1 = false;		//	If TRUE, item can only be used if undamaged
 		DWORD m_fUseObjImage:1 = false;			//	If TRUE, item replaces own image with object image if installed on an object
+		DWORD m_fUseObjImageEnhancement:1 = false;	//	If TRUE, item replaces own image with object image when used as an enhancement type (Does not need to be installed)
 
-		DWORD m_dwSpare:15;
+		DWORD m_dwSpare:14;
 
 		CString m_sData;						//	Category-specific data
 

@@ -232,6 +232,8 @@
 
 	<!ENTITY vtTurretSlotWithNonOmni	"0x00030220">
 	<!ENTITY rsItemsCore1				"0x00030221">
+	<!ENTITY vtAutoTurretSlot			"0x00030222">
+	<!ENTITY vtShieldSlotModifier		"0x00030223">
 	]>
 	
 <CoreLibrary

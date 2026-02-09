@@ -1056,6 +1056,11 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 //			<ArmorMassDesc>
 //				Deprecated tag name, use ArmorClassDesc instead (Functions identically)
 //		<ItemType>
+//			enhancementUsesObjectImage: (bool)
+//				If True:
+//					Display the obj image if seen as an enhancement type
+//					Display the item image if just an item
+//				(default: false)
 //			installedItemUsesObjectImage: (bool)
 //				If True:
 //					Display the obj image if installed on an object
@@ -1066,6 +1071,10 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 //				actual mass is computed from that volume back into mass using another adventure property. This is still an int
 //				for legacy support reasons. A future API may support doubles.
 //			volume: (double) volume of the item in cubic meters. Values <1 liter (0.001CBM) are allowed
+//			<Armor>
+//				armorClass: explicitly define an armor class ID to assign this armor to (ex, "medium")
+//					See the <ArmorClassDesc> loaded with the adventure for valid names other than
+//						"medium" and "maximum", which are mandated by the engine.
 //		<ShipType>
 //			cargoSpace: now specifies CBM instead of tons
 //				If <API59, always uses the adventure compatibility mappings
@@ -1100,6 +1109,13 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 //					Fires BEFORE <onGlobalTypesBound>
 //		<ItemType>
 //			<Weapon>
+//				ignoredByAI:
+//					True if the AI should ignore the existence of this weapon for the purposes
+//					of aiming, targeting, and best weapon selection.
+//					Some configurations (ex, configuring it as a linked fire weapon) may force
+//					an AI ship to activate it anyways, as this is a property of the ship's device
+//					setup, not a property of the AI deciding to use the weapon as a weapon.
+//					Default: false
 //				repeatingDelay:
 //					Deprecated due to using non-intuitive legacy math
 //				repeatingShotDelay:

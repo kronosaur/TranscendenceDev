@@ -65,7 +65,7 @@ void CUIHelper::CreateClassInfoArmor (const CShipClass &Class, int x, int y, int
 	const CString &sMaxArmorClass = Hull.GetArmorLimits().GetMaxArmorClass();
 	if (!sMaxArmorClass.IsBlank())
 		{
-		const CArmorClassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorMassDefinitions();
+		const CArmorClassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorClassDefinitions();
 		sMaxArmor = strPatternSubst(CONSTLIT("%s"), MassDef.GetArmorClassLabel(sMaxArmorClass));
 		}
 	else if (Hull.GetArmorLimits().GetMaxArmorSize() > 0) 
@@ -79,7 +79,7 @@ void CUIHelper::CreateClassInfoArmor (const CShipClass &Class, int x, int y, int
 	const CString &sStdArmorClass = Hull.GetArmorLimits().GetStdArmorClass();
 	if (!sStdArmorClass.IsBlank())
 		{
-		const CArmorClassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorMassDefinitions();
+		const CArmorClassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorClassDefinitions();
 		sStdArmor = strPatternSubst(CONSTLIT("%s"), MassDef.GetArmorClassLabel(sStdArmorClass));
 		}
 	else if (Hull.GetArmorLimits().GetStdArmorSize() > 0) 

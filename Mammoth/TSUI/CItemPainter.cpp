@@ -587,10 +587,34 @@ void CItemPainter::PaintItemEnhancement (const CVisualPalette &VI, CG32bitImage 
 			return;
 		}
 
+	//	Check if this type always uses the object image when
+	//	used as an enhancement type
+	//
+	//	This option does not care if the enhancement type is
+	//	actually installed as an enhancer
+	//	Usecase: slot enhancements
+
+	else if (pEnhancer && pEnhancer->UsesObjectImageIfEnhancement())
+		{
+		//	Anything virtual has no image, and anything with no image is virtual
+		//	Just render the item icon for these instead
+
+		if (pSource->IsVirtual())
+			DrawItemTypeIcon(Dest, rcRect.left, rcRect.top, pEnhancer, ENHANCEMENT_ICON_WIDTH, ENHANCEMENT_ICON_HEIGHT, bDisabled);
+		
+		//	Otherwise we can draw the icon
+		
+		else
+			DrawObjAsItemIcon(Dest, rcRect.left, rcRect.top, pSource, ENHANCEMENT_ICON_WIDTH, ENHANCEMENT_ICON_HEIGHT, bDisabled);
+		}
+
 	//	Check if this type is installed on the ship and uses
 	//	the image of the object its installed on
+	//
+	//	This option requires that the enhancer be installed
+	//	Usecase: ship system, avionics, or sensor components
 
-	if (pEnhancer && pEnhancer->UsesObjectImageIfInstalled())
+	else if (pEnhancer && pEnhancer->UsesObjectImageIfInstalled())
 		{
 		CItem* pInstalledItem = NULL;
 
