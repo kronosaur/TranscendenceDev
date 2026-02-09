@@ -983,6 +983,21 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 //
 //	 59: 2.0 Alpha 9
 //		tlisp:
+//			(?= ...)
+//				Returns true if a valid full-coercion comparison (via =, !=, etc)
+//				can be made between the arguments (processes in pairs, left to right)
+//				If false, all comparators except != will always return false for the
+//				given sequence of types. != will always return true.
+//			(?== ...)
+//				Returns true if a valid basic-coercion comparison (via eq, neq, etc)
+//				can be made between the arguments (processes in pairs, left to right)
+//				If false, all comparators except neq will always return false for the
+//				given sequence of types. neq will always return true.
+//			(?=== ...)
+//				Returns true if a valid no-coercion comparison (via ===, !=== etc)
+//				can be made between the arguments (processes in pairs, left to right)
+//				If false, all comparators except !=== will always return false for the
+//				given sequence of types. !=== will always return true.
 //			(fmtNumber [format] number)
 //				Updated to now accept the following additional formats:
 //					'CBM					32.5 kCBM	- cubic meters with SI prefixes

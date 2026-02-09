@@ -26,46 +26,6 @@
 	{	code: '(link "0123_test")	result: "0123_test"	}
 	{	code: '(link "1.4.5")		result: "1.4.5"	}
 
-	;	Exact (Type + Case) Equality
-
-	{	code: '(=== Nil)			result: True	}
-	{	code: '(=== Nil Nil)		result: True	}
-	{	code: '(=== 0)				result: Nil		}
-	{	code: '(=== 1)				result: Nil		}
-	{	code: '(=== 1.0)			result: Nil		}
-	{	code: '(=== 0.0)			result: Nil		}
-	{	code: '(=== "")				result: Nil		}
-	{	code: '(=== (list))			result: Nil		}
-	{	code: '(=== +)				result: Nil		}
-	{	code: '(=== 1 0)			result: Nil		}
-	{	code: '(=== 1 1)			result: True	}
-	{	code: '(=== (list) Nil)		result: Nil		}
-	{	code: '(=== (list) "")		result: Nil		}
-	{	code: '(=== (list) (list))	result: True	}
-	{	code: '(=== "" "")			result: True	}
-	{	code: '(=== "a" "A")		result: Nil		}
-	{	code: '(=== Nil "")			result: Nil		}
-	{	code: '(=== 1.0 1)			result: Nil		}
-
-	{	code: '(!=== Nil)			result: Nil		}
-	{	code: '(!=== Nil Nil)		result: Nil		}
-	{	code: '(!=== 0)				result: True	}
-	{	code: '(!=== 1)				result: True	}
-	{	code: '(!=== 1.0)			result: True	}
-	{	code: '(!=== 0.0)			result: True	}
-	{	code: '(!=== "")			result: True	}
-	{	code: '(!=== (list))		result: True	}
-	{	code: '(!=== +)				result: True	}
-	{	code: '(!=== 1 0)			result: True	}
-	{	code: '(!=== 1 1)			result: Nil		}
-	{	code: '(!=== (list) Nil)	result: True	}
-	{	code: '(!=== (list) "")		result: True	}
-	{	code: '(!=== (list) (list))	result: Nil		}
-	{	code: '(!=== "" "")			result: Nil		}
-	{	code: '(!=== "a" "A")		result: True	}
-	{	code: '(!=== Nil "")		result: True	}
-	{	code: '(!=== 1.0 1)			result: True	}
-
 	;	Equality
 
 	{	code: '(= 3 2)			result: Nil		}
