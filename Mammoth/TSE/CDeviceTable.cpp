@@ -97,6 +97,7 @@ class CSingleDevice : public IDeviceGenerator
 		bool m_bOmnidirectional = false;		//	This slot has a turret
 		int m_iMinFireArc = 0;					//	This slot swivels
 		int m_iMaxFireArc = 0;
+		int m_iFireAngle = -1;					//	Default fire angle
 		int m_iMaxFireRange = 0;				//	Max effective fire range (light-seconds)
 		bool m_bDefaultFireArc = false;			//	This slot does not define swivel
 
@@ -301,7 +302,7 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 		int iHalfArc = Max(iArcAngle / 2, 0);
 		retDesc->iMinFireArc = AngleMod(iCenterAngle - iHalfArc);
 		retDesc->iMaxFireArc = AngleMod(iCenterAngle + iHalfArc);
-		retDesc->iFireAngle = iCenterAngle;	//	We just cache this since we have the bits and it saves a little math
+		retDesc->iFireAngle = AngleMod(iCenterAngle);	//	We just cache this since we have the bits and it saves a little math
 		}
 
 	//	Otherwise, we support min/max fire arc
@@ -313,14 +314,17 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 
 		//	Handle the default angle
 
-		if (!pDesc->FindAttributeInteger(FIRE_ANGLE_ATTRIB, &retDesc->iFireAngle))
+		int iFireAngle;
+		if (!pDesc->FindAttributeInteger(FIRE_ANGLE_ATTRIB, &iFireAngle))
 			{
 			//	We just cache this since we have the bits and it saves a little math
 			if (retDesc->iMinFireArc == retDesc->iMaxFireArc)
 				retDesc->iFireAngle = retDesc->iMinFireArc;
 			else
-				retDesc->iFireAngle = AngleMiddle(retDesc->iMinFireArc, retDesc->iMaxFireArc);
+				retDesc->iFireAngle = AngleMod(AngleMiddle(retDesc->iMinFireArc, retDesc->iMaxFireArc));
 			}
+		else
+			retDesc->iFireAngle = AngleMod(iFireAngle);
 		}
 
 	if (error = CDeviceClass::ParseLinkedFireOptions(Ctx, pDesc->GetAttribute(LINKED_FIRE_ATTRIB), &retDesc->dwLinkedFireOptions))
@@ -469,12 +473,14 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 			Desc.bOmnidirectional = m_bOmnidirectional;
 			Desc.iMinFireArc = m_iMinFireArc;
 			Desc.iMaxFireArc = m_iMaxFireArc;
+			Desc.iFireAngle = m_iFireAngle;
 			}
 		else if (bUseSlotDesc)
 			{
 			Desc.bOmnidirectional = SlotDesc.bOmnidirectional;
 			Desc.iMinFireArc = SlotDesc.iMinFireArc;
 			Desc.iMaxFireArc = SlotDesc.iMaxFireArc;
+			Desc.iFireAngle = SlotDesc.iFireAngle;
 			}
 
 		//	Set linked fire
@@ -687,6 +693,7 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		int iHalfArc = Max(0, iFireArc / 2);
 		m_iMinFireArc = AngleMod(iFireAngle - iHalfArc);
 		m_iMaxFireArc = AngleMod(iFireAngle + iHalfArc);
+		m_iFireAngle = AngleMod(iFireAngle);
 
 		m_bDefaultFireArc = false;
 		}
@@ -695,12 +702,30 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_bOmnidirectional = false;
 		m_iMinFireArc = AngleMod(m_iMinFireArc);
 		m_iMaxFireArc = AngleMod(pDesc->GetAttributeInteger(MAX_FIRE_ARC_ATTRIB));
+
+		//	Store custom default fire angle
+		int iFireAngle;
+		if (pDesc->FindAttributeInteger(FIRE_ANGLE_ATTRIB, &iFireAngle))
+			m_iFireAngle = AngleMod(iFireAngle);
+		//	Otherwise we might as well cache this
+		else
+			m_iFireAngle = AngleMod(AngleMiddle(m_iMinFireArc, m_iMaxFireArc));
+
 		m_bDefaultFireArc = false;
 		}
 	else if (pDesc->FindAttributeBool(OMNIDIRECTIONAL_ATTRIB, &m_bOmnidirectional))
 		{
 		m_iMinFireArc = 0;
 		m_iMaxFireArc = 0;
+
+		//	Store custom default fire angle
+		int iFireAngle;
+		if (pDesc->FindAttributeInteger(FIRE_ANGLE_ATTRIB, &iFireAngle))
+			m_iFireAngle = AngleMod(iFireAngle);
+		//	Otherwise we might as well cache this
+		else
+			m_iFireAngle = 0;
+
 		m_bDefaultFireArc = false;
 		}
 	else
@@ -708,6 +733,7 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_bOmnidirectional = false;
 		m_iMinFireArc = 0;
 		m_iMaxFireArc = 0;
+		m_iFireAngle = -1;
 		m_bDefaultFireArc = true;
 		}
 
