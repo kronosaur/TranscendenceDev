@@ -462,6 +462,12 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 		{
 		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
 
+		//	Skip weapons that the AI needs to ignore
+
+		CWeaponClass* pWeaponType = Device.GetClass()->AsWeaponClass();
+		if (pWeaponType && pWeaponType->IsIgnoredByAI())
+			continue;
+
 		if (!Device.IsWorking())
 			continue;
 
