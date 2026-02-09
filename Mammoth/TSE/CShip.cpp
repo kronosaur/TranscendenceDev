@@ -3627,6 +3627,10 @@ Metric CShip::GetWeaponRange (DeviceNames iDev)
 	if (pWeapon == NULL)
 		return 0.0;
 
+	CWeaponClass* pWeaponType = pWeapon->GetClass()->AsWeaponClass();
+	if (pWeaponType && pWeaponType->IsIgnoredByAI())
+		return 0.0;
+
 	return pWeapon->GetMaxEffectiveRange(this);
 	}
 

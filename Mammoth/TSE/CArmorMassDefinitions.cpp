@@ -39,7 +39,33 @@ void CArmorClassDefinitions::Append (const CArmorClassDefinitions &Src)
 CArmorClassDefinitions::SArmorClassEntry *CArmorClassDefinitions::FindClassEntryActual (const CItem &Item)
 
 	{
-	//	TODO: if an item explicitly defines a size class, we try to use that first
+	//	If an item explicitly defines a size class, we try to use that first
+	if (Item.IsArmor())
+		{
+		CArmorItem Armor = Item.AsArmorItem();
+		CItemCtx ctx(Item);
+		CString sID = Armor.GetArmorClass().GetArmorClass(ctx);
+		SArmorClassEntry** pEntryPtr = m_ByID.GetAt(sID);
+		if (pEntryPtr)
+			return *pEntryPtr;
+
+		//	If an armor class was specified but we could not find it, emit a warning
+		if (!sID.IsBlank())
+			{
+			CString sItemName = Item.GetNamePattern(nounActual, NULL);
+			int iUNID = Item.GetType()->GetUNID();
+			kernelDebugLogPattern(CONSTLIT("WARNING: %s (%08x) specified %s as an armorClass ID, but that armorClass ID is not defined."), sItemName, iUNID, sID);
+			}
+		}
+	else
+		{
+		//	We should never be given non-armor
+		ASSERT(false);
+		return NULL;
+		}
+
+	//	If we didnt find a class already defined, or the class was invalid, we need to
+	//	find a class based on compatibility logic
 
 	//	Handle compatibility size
 	Metric rSize = Item.GetMass();

@@ -48,7 +48,7 @@ ALERROR CArmorLimits::Bind (SDesignLoadCtx &Ctx)
 
 			if (!m_sMaxArmorClass.IsBlank())
 				{
-				m_rMaxArmorSize = Ctx.pDesign->GetArmorMassDefinitions().GetArmorClassSize(m_sMaxArmorClass);
+				m_rMaxArmorSize = Ctx.pDesign->GetArmorClassDefinitions().GetArmorClassSize(m_sMaxArmorClass);
 				if (m_rMaxArmorSize == 0)
 					{
 					Ctx.sError = strPatternSubst(CONSTLIT("Invalid armor class: %s."), m_sMaxArmorClass);
@@ -58,7 +58,7 @@ ALERROR CArmorLimits::Bind (SDesignLoadCtx &Ctx)
 
 			if (!m_sStdArmorClass.IsBlank())
 				{
-				m_rStdArmorSize = Ctx.pDesign->GetArmorMassDefinitions().GetArmorClassSize(m_sStdArmorClass);
+				m_rStdArmorSize = Ctx.pDesign->GetArmorClassDefinitions().GetArmorClassSize(m_sStdArmorClass);
 				if (m_rStdArmorSize == 0)
 					{
 					Ctx.sError = strPatternSubst(CONSTLIT("Invalid armor class: %s."), m_sStdArmorClass);
@@ -95,7 +95,7 @@ ALERROR CArmorLimits::Bind (SDesignLoadCtx &Ctx)
 				{
 				Metric rSize = m_ArmorLimits[i].rSize;
 				if (rSize == 0)
-					rSize = Ctx.pDesign->GetArmorMassDefinitions().GetArmorClassSize(m_ArmorLimits[i].sClass);
+					rSize = Ctx.pDesign->GetArmorClassDefinitions().GetArmorClassSize(m_ArmorLimits[i].sClass);
 
 				//	Max armor mass that we can support.
 
@@ -165,8 +165,8 @@ Metric CArmorLimits::CalcArmorSize (const CItemCtx &ArmorItem) const
 			if (pClass == NULL)
 				return 0;
 
-			CString sID = pClass->GetMassClass(ArmorItem);
-			Metric rArmorSize = g_pUniverse->GetDesignCollection().GetArmorMassDefinitions().GetArmorClassSize(sID);
+			CString sID = pClass->GetArmorClass(ArmorItem);
+			Metric rArmorSize = g_pUniverse->GetDesignCollection().GetArmorClassDefinitions().GetArmorClassSize(sID);
 			if (rArmorSize < g_Epsilon)
 				return ArmorItem.GetItem().GetVolume();
 
@@ -261,7 +261,7 @@ bool CArmorLimits::CalcArmorSpeedBonus (const CString &sArmorClassID, int iSegme
 		case typeAutoSpeedAdj:
 		case typeCompatible:
 			{
-			const CArmorClassDefinitions &Def = g_pUniverse->GetDesignCollection().GetArmorMassDefinitions();
+			const CArmorClassDefinitions &Def = g_pUniverse->GetDesignCollection().GetArmorClassDefinitions();
 			Metric rArmorSize = Def.GetArmorClassSize(sArmorClassID);
 			if (rArmorSize == 0)
 				return false;
@@ -285,7 +285,7 @@ bool CArmorLimits::CalcArmorSpeedBonus (const CString &sArmorClassID, int iSegme
 
 		case typeTable:
 			{
-			const CArmorClassDefinitions &Def = g_pUniverse->GetDesignCollection().GetArmorMassDefinitions();
+			const CArmorClassDefinitions &Def = g_pUniverse->GetDesignCollection().GetArmorClassDefinitions();
 			Metric rArmorSize = Def.GetArmorClassSize(sArmorClassID);
 
 			//	Search
@@ -743,7 +743,7 @@ bool CArmorLimits::FindArmorLimits (const CItemCtx &ItemCtx, const SArmorLimits 
 	if (pArmor == NULL)
 		return false;
 
-	const CString &sMassClass = pArmor->GetMassClass(ItemCtx);
+	const CString &sMassClass = pArmor->GetArmorClass(ItemCtx);
 	Metric rSize = ArmorItem.GetMass();
 
 	for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
