@@ -1095,6 +1095,13 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					219;
 //					Fires BEFORE <onGlobalTypesBound>
 //		<ItemType>
 //			<Weapon>
+//				ignoredByAI:
+//					True if the AI should ignore the existence of this weapon for the purposes
+//					of aiming, targeting, and best weapon selection.
+//					Some configurations (ex, configuring it as a linked fire weapon) may force
+//					an AI ship to activate it anyways, as this is a property of the ship's device
+//					setup, not a property of the AI deciding to use the weapon as a weapon.
+//					Default: false
 //				repeatingDelay:
 //					Deprecated due to using non-intuitive legacy math
 //				repeatingShotDelay:
