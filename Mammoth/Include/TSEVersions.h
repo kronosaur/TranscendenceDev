@@ -1056,6 +1056,11 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					219;
 //			<ArmorMassDesc>
 //				Deprecated tag name, use ArmorClassDesc instead (Functions identically)
 //		<ItemType>
+//			enhancementUsesObjectImage: (bool)
+//				If True:
+//					Display the obj image if seen as an enhancement type
+//					Display the item image if just an item
+//				(default: false)
 //			installedItemUsesObjectImage: (bool)
 //				If True:
 //					Display the obj image if installed on an object

@@ -62,6 +62,7 @@
 #define USE_INSTALLED_ONLY_ATTRIB				CONSTLIT("useInstalledOnly")
 #define USE_KEY_ATTRIB							CONSTLIT("useKey")
 #define USE_OBJECT_IMAGE_ATTRIB					CONSTLIT("installedItemUsesObjectImage")
+#define USE_OBJECT_IMAGE_ENHANCEMENT_ATTRIB		CONSTLIT("enhancementUsesObjectImage")
 #define USE_SCREEN_ATTRIB						CONSTLIT("useScreen")
 #define USE_UNDAMAGED_ONLY_ATTRIB				CONSTLIT("useUndamagedOnly")
 #define USE_UNINSTALLED_ONLY_ATTRIB				CONSTLIT("useUninstalledOnly")
@@ -1692,6 +1693,7 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Flags
 
+	m_fUseObjImageEnhancement = pDesc->GetAttributeBool(USE_OBJECT_IMAGE_ENHANCEMENT_ATTRIB);
 	m_fUseObjImage = pDesc->GetAttributeBool(USE_OBJECT_IMAGE_ATTRIB);
 	m_fNoSaleIfUsed = pDesc->GetAttributeBool(NO_SALE_IF_USED_ATTRIB);
 	m_fRandomDamaged = pDesc->GetAttributeBool(CONSTLIT(g_RandomDamagedAttrib));
