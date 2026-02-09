@@ -441,6 +441,13 @@
 
 			(setq rpgCharacterInSystem (lambda (charType)
 				"Check if the given character should be in the current system"
+
+				; This function is intended to be used with in the character's
+				; OnGlobalSystemStarted event to determine if we should automatically
+				; descend the character on system start. It could also be used from
+				; Mission OnGlobalSystemStarted events to check if the NPC is already
+				; present or we need to call rpgCharacterCreateShip
+
 				(switch
 					(not (typ@ charType 'char.scope))
 						Nil
