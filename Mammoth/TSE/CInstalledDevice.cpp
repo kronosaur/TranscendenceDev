@@ -579,7 +579,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 //
 //	DWORD		device: low = m_iPosAngle; hi = m_iPosRadius
 //	DWORD		device: low = m_iMinFireArc; hi = m_iMaxFireArc
-//  DWORD		device: low = m_iDefaultFireArc (220+); hi = spare (220+)
+//  DWORD		device: low = m_iDefaultFireAngle (220+); hi = spare (220+)
 //	DWORD		device: low = m_iTimeUntilReady; hi = m_iFireAngle
 //	DWORD		device: low = m_iSlotPosIndex; hi = m_iTemperature
 //	DWORD		device: low = m_iSlotBonus; hi = m_iDeviceSlot
@@ -1387,7 +1387,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 //
 //	DWORD		device: low = m_iPosAngle; hi = m_iPosRadius
 //	DWORD		device: low = m_iMinFireArc; hi = m_iMaxFireArc
-//  DWORD		device: low = m_iDefaultFireArc; hi = spare
+//  DWORD		device: low = m_iDefaultFireAngle; hi = spare
 //	DWORD		device: low = m_iTimeUntilReady; hi = m_iFireAngle
 //	DWORD		device: low = m_iSlotIndex; hi = m_iTemperature
 //	DWORD		device: low = m_iSlotBonus; hi = m_iDeviceSlot
