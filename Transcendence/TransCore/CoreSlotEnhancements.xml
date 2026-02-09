@@ -17,6 +17,24 @@ individual slot on the ship.
 			>
 		<Image imageID="&rsItemsCore1;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
 	</ItemType>
+
+	<ItemType UNID="&vtAutoTurretSlot;"
+			name=				"Auto-turret slot"
+			virtual=			"true"
+			level=				"1"
+			enhancementUsesObjectImage="true"
+			>
+		<Image imageID="&rsItemsCore1;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+	<ItemType UNID="&vtShieldSlotModifier;"
+			name=				"Ship-class shield modifier"
+			virtual=			"true"
+			level=				"1"
+			enhancementUsesObjectImage="true"
+			>
+		<Image imageID="&rsItemsCore1;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+	</ItemType>
 	
 <!-- Resources -->
 
