@@ -359,7 +359,6 @@
     <ClInclude Include="TargetListImpl.h" />
     <ClInclude Include="TopologyDescImpl.h" />
     <ClInclude Include="TopologyProcessorsImpl.h" />
-    <ClInclude Include="WeaponClassImpl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BaseShipAIProperties.cpp" />

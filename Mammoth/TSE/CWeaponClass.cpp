@@ -4,7 +4,6 @@
 //	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
-#include "WeaponClassImpl.h"
 
 #define DAMAGE_FAILURE_TAG						CONSTLIT("DamageFailure")
 #define MISSILES_TAG							CONSTLIT("Missiles")
