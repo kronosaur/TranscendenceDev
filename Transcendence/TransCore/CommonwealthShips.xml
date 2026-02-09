@@ -99,6 +99,7 @@
 		<Devices>
 			<Device	slotID="fore_turret"	deviceID="&itLightRecoillessCannon;"/>
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+			<Device deviceID="&vtFireLinkedWeapons;"/>
 		</Devices>
 
 		<Items>
@@ -535,6 +536,7 @@
 				</EnhancementAbilities>
 			</DeviceSlot>
 			<DeviceSlot id="cargo"			criteria="c" cannotBeEmpty="true"/>
+			<Device deviceID="&vtFireLinkedWeapons;"/>
 		</DeviceSlots>
 
 		<Interior>
@@ -1284,6 +1286,7 @@
 			<Device slotID="aft_turret"		deviceID="&itSlamCannon;"/>
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+			<Device deviceID="&vtFireLinkedWeapons;"/>
 		</Devices>
 
 		<Items>
@@ -1364,6 +1367,7 @@
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
 			<Device deviceID="&itMissileDefense;"/>
+			<Device deviceID="&vtFireLinkedWeapons;"/>
 		</Devices>
 
 		<Events>
@@ -2194,6 +2198,7 @@
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
 			<Device deviceID="&itMissileDefense;"/>
+			<Device deviceID="&vtFireLinkedWeapons;"/>
 		</Devices>
 
 		<Items>
@@ -2285,6 +2290,7 @@
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
 			<Device deviceID="&itMissileDefense;"/>
+			<Device deviceID="&vtFireLinkedWeapons;"/>
 		</Devices>
 
 		<!-- AI and Behavior -->

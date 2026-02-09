@@ -761,6 +761,7 @@ PLAYER DATA
 				</Items>
 			</Device>
 			<Device deviceID="&itR5Deflector;"/>
+			<Device deviceID="&vtFireLinkedWeapons;"/>
 		</Devices>
 
 		<!-- Treasure -->
@@ -840,6 +841,7 @@ PLAYER DATA
 				</Items>
 			</Device>
 			<Device deviceID="&itR9Deflector;"/>
+			<Device deviceID="&vtFireLinkedWeapons;"/>
 		</Devices>
 
 		<!-- Image and Effects -->
