@@ -4,26 +4,15 @@
 	
 	<!-- Fiona -->
 	
-	<Type UNID="&unidFiona;">
+	<Type UNID="&unidFiona;"
+			inherit="&baStdNPCBase;"
+			>
 		<Properties>
 			<Definition id="core.namePattern">": Fiona"</Definition>
+
+			<Definition id="char.missionAttribute">"fionaMission"</Definition>
+			<Definition id="char.sovereign">&svCommonwealth;</Definition>
 		</Properties>
-
-		<StaticData>
-			<Data id="MissionAttribute">"fionaMission"</Data>
-			<Data id="Name">"Fiona"</Data>
-			<Data id="Sovereign">&svCommonwealth;</Data>
-		</StaticData>
-
-		<Events>
-			<OnCharacterCanBeMet>
-				True
-			</OnCharacterCanBeMet>
-
-			<OnGlobalSystemStopped>
-				(rpgCharacterAscend &unidFiona;)
-			</OnGlobalSystemStopped>
-		</Events>
 	</Type>
 	
 	<!-- Fiona's Ship -->

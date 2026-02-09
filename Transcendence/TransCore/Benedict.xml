@@ -22,26 +22,15 @@
 					
 	-->
 
-	<Type UNID="&unidBenedict;">
+	<Type UNID="&unidBenedict;"
+			inherit="&baStdNPCBase;"
+			>
 		<Properties>
 			<Definition id="core.namePattern">": Benedict"</Definition>
+
+			<Definition id="char.missionAttribute">"benedictMission"</Definition>
+			<Definition id="char.sovereign">&svCommonwealth;</Definition>
 		</Properties>
-
-		<StaticData>
-			<MissionAttribute>"benedictMission"</MissionAttribute>
-			<Name>"Benedict"</Name>
-			<Sovereign>&svCommonwealth;</Sovereign>
-		</StaticData>
-
-		<Events>
-			<OnCharacterCanBeMet>
-				True
-			</OnCharacterCanBeMet>
-
-			<OnGlobalSystemStopped>
-				(rpgCharacterAscend &unidBenedict;)
-			</OnGlobalSystemStopped>
-		</Events>
 
 		<Language>
 		</Language>

@@ -75,7 +75,7 @@
 							&unidStormhound;
 							&scStormhoundYacht;
 							(sysVectorRandom gPlayerShip 600 100)
-							{ repairAll:True }
+							{ repairAll:True mission:gSource }
 							)
 						)
 					(shpCancelOrders stormhoundObj)
@@ -108,7 +108,10 @@
 			</OnAccepted>
 
 			<OnSetPlayerTarget>
-				(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'stormhoundID)) 'dock)
+				(if (= (sysGetNode) (msn@ gSource 'nodeID))
+					(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'stormhoundID)) 'dock)
+					(rpgSetTarget gSource aReason)
+					)
 			</OnSetPlayerTarget>
 			
 			<OnObjDestroyed>

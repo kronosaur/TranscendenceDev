@@ -34,16 +34,15 @@
 
 	-->
 
-	<Type UNID="&unidKateMorgental;">
+	<Type UNID="&unidKateMorgental;"
+			inherit="&baStdNPCBase;"
+			>
 		<Properties>
 			<Definition id="core.namePattern">": Kate Morgental"</Definition>
-		</Properties>
 
-		<StaticData>
-			<MissionAttribute>"kateMorgentalMission"</MissionAttribute>
-			<Name>"Kate Morgental"</Name>
-			<Sovereign>&svCorporate;</Sovereign>
-		</StaticData>
+			<Definition id="char.missionAttribute">"kateMorgentalMission"</Definition>
+			<Definition id="char.sovereign">&svCorporate;</Definition>
+		</Properties>
 
 		<Events>
 			<OnDestroy>
@@ -88,12 +87,6 @@
 						)
 					)
 			</OnAttackedByPlayer>
-
-			<OnGlobalSystemStopped>
-				;	If Kate is in this system, then ascend her (so that
-				;	she can appear in other systems).
-				(rpgCharacterAscend &unidKateMorgental;)
-			</OnGlobalSystemStopped>
 		</Events>
 
 		<Language>
