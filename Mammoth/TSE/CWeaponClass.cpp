@@ -3575,11 +3575,12 @@ DamageTypes CWeaponClass::GetDamageType (CItemCtx &Ctx, const CItem &Ammo) const
 	return pShot->GetDamageType();
 	}
 
-int CWeaponClass::GetDefaultFireAngle (const CDeviceItem &DeviceItem) const
-
 //	GetDefaultFireAngle
 //
-//	Gets the natural fire direction (not counting omni or swivel mounts)
+//	Gets the natural fire direction
+//	(not counting omni or swivel mounts with a target)
+//
+int CWeaponClass::GetDefaultFireAngle (const CDeviceItem &DeviceItem) const
 
 	{
 	if (const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice())
