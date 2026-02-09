@@ -167,36 +167,8 @@
 			</OnGlobalSystemStopped>
 
 			<OnGlobalSystemStarted>
-				; We automatically descend if
-				;    needed for mission
-				;	we are remaining here (e.g. as a mission giver)
-				(switch
-					(not (typ@ gType 'char.scope))
-						Nil
-
-					;	If not in the right node, then nothing to do
-					(!= (sysGetNode) (typ@ gType 'char.shipNodeID))
-						Nil
-
-					;	If scope is ongoing try to restore ship
-					(= (typ@ gType 'char.scope) 'ongoing)
-						(rpgCharacterDescend gType)
-
-					;	Anything else we assume is mission scope
-					(block (
-						(missionObj (typ@ gType 'char.mission))
-						)
-						(switch
-							(not missionObj)
-								Nil
-
-							;	Assume we need to remain until player has been debriefed
-							(msn@ missionObj 'isDebriefed)
-								Nil
-
-							(rpgCharacterDescend gType)
-							)
-						)
+				(if (rpgCharacterInSystem gType)
+					(rpgCharacterDescend gType)
 					)
 			</OnGlobalSystemStarted>
 
@@ -467,6 +439,42 @@
 					)
 				))
 
+			(setq rpgCharacterInSystem (lambda (charType)
+				"Check if the given character should be in the current system"
+				(switch
+					(not (typ@ charType 'char.scope))
+						Nil
+
+					;	If not in the right node, then nothing to do
+					(!= (sysGetNode) (typ@ charType 'char.shipNodeID))
+						Nil
+
+					;	Check if we have a valid ship object available
+					(not (objGetObjByID (typ@ charType 'char.objID)))
+						Nil
+
+					;	If scope is ongoing try to restore ship
+					(= (typ@ charType 'char.scope) 'ongoing)
+						True
+
+					;	Anything else we need to check mission scope
+					(block (
+						(missionObj (typ@ charType 'char.mission))
+						)
+						(switch
+							(not missionObj)
+								Nil
+
+							;	Assume we need to remain until player has been debriefed
+							(msn@ missionObj 'isDebriefed)
+								Nil
+
+							True
+							)
+						)
+					)
+				))
+
 			(setq rpgCharacterDescend (lambda (charType)
 
 				; This function descends the character's current ship. It is intended to be used
@@ -497,7 +505,6 @@
 						)
 					)
 				))
-
 
 			(setq rpgCharacterChangeRel (lambda (charType event)
 			
