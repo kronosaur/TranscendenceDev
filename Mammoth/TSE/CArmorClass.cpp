@@ -4,6 +4,7 @@
 
 #include "PreComp.h"
 
+#define ARMOR_CLASS_ATTRIB						CONSTLIT("armorClass")
 #define BALANCE_ADJ_ATTRIB						CONSTLIT("balanceAdj")
 #define BLINDING_DAMAGE_ADJ_ATTRIB				CONSTLIT("blindingDamageAdj")
 #define BLINDING_IMMUNE_ATTRIB					CONSTLIT("blindingImmune")
@@ -1152,13 +1153,13 @@ Metric CArmorClass::CalcBalanceSize (const CArmorItem &ArmorItem, const SScalabl
 
 	//	Adjust based on the standard armor class
 
-	Metric rStdClass = GetUniverse().GetDesignCollection().GetArmorMassDefinitions().GetArmorClassSize(MASS_CLASS_STANDARD_ID) / 1000.0;
+	Metric rStdClass = GetUniverse().GetDesignCollection().GetArmorClassDefinitions().GetArmorClassSize(MASS_CLASS_STANDARD_ID) / 1000.0;
 	Metric rAdj = (rStdClass > 0.0 ? ARMOR_CLASS_BALANCE_STD_SIZE / rStdClass : 1.0);
 
 	//	Need to account for everything up to the maximum defined mass class.
 	//  Anything beyond that is considered bespoke.
 
-	Metric rMaxSize = GetUniverse().GetDesignCollection().GetArmorMassDefinitions().GetArmorClassSize(MASS_CLASS_MAX_ID);
+	Metric rMaxSize = GetUniverse().GetDesignCollection().GetArmorClassDefinitions().GetArmorClassSize(MASS_CLASS_MAX_ID);
 	rSize = Min(rAdj * rSize, rMaxSize > 0.0 ? rMaxSize : ARMOR_CLASS_BALANCE_LIMIT);
 
 	//	Compute the standard mass that results in 0 balance.
@@ -1543,6 +1544,10 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	pArmor->m_Stats.iHitPoints = pDesc->GetAttributeIntegerBounded(HIT_POINTS_ATTRIB, 0);
 	pArmor->m_iArmorCompleteBonus = pDesc->GetAttributeIntegerBounded(COMPLETE_BONUS_ATTRIB, 0);
 	pArmor->m_iHPBonusPerCharge = pDesc->GetAttributeIntegerBounded(HP_BONUS_PER_CHARGE_ATTRIB, 0, -1, 0);
+
+	//	If we dont have an armor class specified here, we auto-compute it at bind time
+	pArmor->m_sArmorClass = pDesc->GetAttribute(ARMOR_CLASS_ATTRIB);
+	
 	pArmor->m_iBalanceAdj = pDesc->GetAttributeIntegerBounded(BALANCE_ADJ_ATTRIB, -200, 200, 0);
 
 	//	Damage Method fortification
@@ -2156,7 +2161,7 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 	//	Get the property
 
 	if (strEquals(sName, PROPERTY_ARMOR_CLASS))
-		return ICCItemPtr(m_sMassClass);
+		return ICCItemPtr(m_sArmorClass);
 
 	else if (strEquals(sName, PROPERTY_BALANCE_ADJ))
 		{
@@ -2264,14 +2269,14 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 		return NULL;
 	}
 
-const CString &CArmorClass::GetMassClass (const CItemCtx &ItemCtx) const
-
-//	GetMassClass
+//	GetArmorClass
 //
-//	Computes and returns the armor's mass classification.
+//	Computes and returns the armor's armor class ID.
+//
+const CString &CArmorClass::GetArmorClass (const CItemCtx &ItemCtx) const
 
 	{
-	return m_sMassClass;
+	return m_sArmorClass;
 	}
 
 int CArmorClass::GetMaxHP (const CArmorItem &ArmorItem, bool bForceComplete) const
@@ -2335,7 +2340,7 @@ CString CArmorClass::GetReference (CItemCtx &Ctx)
 
 	//	Mass classification
 
-	CString sArmorClass = GetUniverse().GetDesignCollection().GetArmorMassDefinitions().GetArmorClassLabel(m_sMassClass);
+	CString sArmorClass = GetUniverse().GetDesignCollection().GetArmorClassDefinitions().GetArmorClassLabel(m_sArmorClass);
 	if (!sArmorClass.IsBlank())
 		AppendReferenceString(&sReference, sArmorClass);
 
@@ -2762,7 +2767,7 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	//	Compute (and cache) the mass class
 
-	Ctx.pDesign->GetArmorMassDefinitions().OnBindArmor(Ctx, CItem(m_pItemType, 1), &m_sMassClass);
+	Ctx.pDesign->GetArmorClassDefinitions().OnBindArmor(Ctx, CItem(m_pItemType, 1), &m_sArmorClass);
 
 	return NOERROR;
 	}
