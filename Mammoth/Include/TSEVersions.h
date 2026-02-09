@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							59;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
-constexpr DWORD SYSTEM_SAVE_VERSION =					219;
+constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 
 //	Uncomment out the following define when building a stable release
 
@@ -1077,6 +1077,11 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					219;
 //				maxCargoSpace: now specifies CBM instead of tons
 //					If <API59, always uses the adventure compatibility mappings
 //				stdArmorMass: deprecated
+//			<DeviceSlots>
+//				<DeviceSlot>
+//					fireAngle: if used with minFireArc and maxFireArc or omnidirectional, can now specify a default angle of fire
+//						(including in and out of the normal min and max fire arc) to use when there is no valid
+//						target in the fire arc and the weapon is allowed to fire (eg, +linkedfire:always)
 //		<Type>
 //			<Events>
 //				<onGlobalTypesBound>
@@ -1900,4 +1905,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					219;
 //		Add m_fRecalcItemMass to CShip
 //		Add m_rItemVolume to CShip
 //		Add m_rCargoVolume to CShip
+// 
+//  220: 2.0 Alpha 9
+//		Add m_iDefaultFireAngle to CInstalledDevice
 //

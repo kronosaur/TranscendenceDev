@@ -301,6 +301,7 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 		int iHalfArc = Max(iArcAngle / 2, 0);
 		retDesc->iMinFireArc = AngleMod(iCenterAngle - iHalfArc);
 		retDesc->iMaxFireArc = AngleMod(iCenterAngle + iHalfArc);
+		retDesc->iFireAngle = iCenterAngle;	//	We just cache this since we have the bits and it saves a little math
 		}
 
 	//	Otherwise, we support min/max fire arc
@@ -309,6 +310,17 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 		{
 		retDesc->iMinFireArc = AngleMod(pDesc->GetAttributeInteger(MIN_FIRE_ARC_ATTRIB));
 		retDesc->iMaxFireArc = AngleMod(pDesc->GetAttributeInteger(MAX_FIRE_ARC_ATTRIB));
+
+		//	Handle the default angle
+
+		if (!pDesc->FindAttributeInteger(FIRE_ANGLE_ATTRIB, &retDesc->iFireAngle))
+			{
+			//	We just cache this since we have the bits and it saves a little math
+			if (retDesc->iMinFireArc == retDesc->iMaxFireArc)
+				retDesc->iFireAngle = retDesc->iMinFireArc;
+			else
+				retDesc->iFireAngle = AngleMiddle(retDesc->iMinFireArc, retDesc->iMaxFireArc);
+			}
 		}
 
 	if (error = CDeviceClass::ParseLinkedFireOptions(Ctx, pDesc->GetAttribute(LINKED_FIRE_ATTRIB), &retDesc->dwLinkedFireOptions))

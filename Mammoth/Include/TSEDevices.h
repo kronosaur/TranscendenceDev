@@ -477,6 +477,7 @@ struct SDeviceDesc
 	bool bOmnidirectional = false;				//	Slot turret
 	int iMinFireArc = 0;						//	Slot swivel
 	int iMaxFireArc = 0;
+	int iFireAngle = -1;						//	Slot default fire angle (-1 if using the middle of min and max fire arc)
 	int iMaxFireRange = 0;						//	Slot range restriction (light-seconds)
 
 	DWORD dwLinkedFireOptions = 0;				//	Slot linked-fire options
@@ -615,7 +616,7 @@ class CInstalledDevice
 		int GetPosAngle (void) const { return m_iPosAngle; }
 		int GetPosRadius (void) const { return m_iPosRadius; }
 		int GetPosZ (void) const { return m_iPosZ; }
-		int GetRotation (void) const { return AngleMiddle(m_iMinFireArc, m_iMaxFireArc); }
+		int GetRotation (void) const { return m_iDefaultFireAngle == -1 ? AngleMiddle(m_iMinFireArc, m_iMaxFireArc) : m_iDefaultFireAngle; }
 		const CString &GetSegmentID (void) const { return (m_fOnSegment ? m_sID : NULL_STR); }
 		const CEnhancementDesc &GetSlotEnhancements (void) const { return m_SlotEnhancements; }
 		double GetShotSeparationScale(void) const { return (double)m_iShotSeparationScale / 32767.0; }
@@ -762,10 +763,10 @@ class CInstalledDevice
 		const CItemEnhancement &GetMods (void) const { return (m_pItem ? m_pItem->GetMods() : CItem::GetNullMod()); }
 
 		CString m_sID;								//	ID for this slot (may match ID in class slot desc)
-		CSpaceObject *m_pSource = NULL;				//	Installed on this object
-		CItem *m_pItem = NULL;						//	Item installed in this slot
+		CSpaceObject* m_pSource = NULL;				//	Installed on this object
+		CItem* m_pItem = NULL;						//	Item installed in this slot
 		CDeviceClassRef m_pClass;					//	The device class that is installed here
-		COverlay *m_pOverlay = NULL;				//	Overlay (if associated)
+		COverlay* m_pOverlay = NULL;				//	Overlay (if associated)
 		DWORD m_dwTargetID = 0;						//	ObjID of target (for tracking secondary weapons)
 		CEnhancementDesc m_SlotEnhancements;		//	Enhancements conferred by the slot
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	List of enhancements (may be NULL)
@@ -781,6 +782,8 @@ class CInstalledDevice
 		int m_iPosZ:16 = 0;							//	Position of installation (height)
 		int m_iMinFireArc:16 = 0;					//	Min angle of fire arc (degrees)
 		int m_iMaxFireArc:16 = 0;					//	Max angle of fire arc (degrees)
+		int m_iDefaultFireAngle:16 = -1;			//	Default fire angle (-1 if using the middle of min and max fire arc)
+		int m_iSpare:16;							//
 
 		int m_iShotSeparationScale:16 = 32767;		//	Scaled by 32767. Governs scaling of shot separation for dual etc weapons
 		int m_iMaxFireRange:16 = 0;					//	Max effective fire range (in light-seconds); 0 = no limit
