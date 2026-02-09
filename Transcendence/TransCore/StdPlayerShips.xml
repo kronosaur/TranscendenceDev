@@ -401,7 +401,6 @@
 			</Device>
 			<Device deviceID="&itR5Deflector;"/>
 			<Device deviceID="&it250MWReactor;"/>
-			<Device deviceID="&vtFireLinkedWeapons;"/>
 		</Devices>
 		
 		<!-- Player Settings -->
@@ -439,7 +438,6 @@
 			</Device>
 			<Device deviceID="&itR9Deflector;"/>
 			<Device deviceID="&it500MWReactor;"/>
-			<Device deviceID="&vtFireLinkedWeapons;"/>
 		</Devices>
 		
 		<!-- Player Settings -->
