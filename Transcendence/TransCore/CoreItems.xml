@@ -201,5 +201,44 @@
 		</MiscellaneousDevice>
 	</ItemType>
 
+	<ItemType UNID="&vtFireLinkedWeapons;"
+			name=				"(Fire Linked Weapons)"
+			level=				"1"
+
+			attributes=			"fireLinkedWeapons; NotForSale;"
+
+			virtual=			"true"
+			>
+
+		<Image imageID="&rsItemsCore1;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				damage=				"null:0;"
+				fireRate=			"20"
+				missileSpeed=		"100"
+				lifeTime=			"60"
+				hitPoints=			"1"
+				powerUse=			"0"
+				deviceSlots=		"0"
+
+				ignoredByAI=		"true"
+				>
+			<FireEffect>
+				<Null/>
+			</FireEffect>
+			<Effect>
+				<Null/>
+			</Effect>
+			<HitEffect>
+				<Null/>
+			</HitEffect>
+		</Weapon>
+		<Events>
+			<onFireWeapon>True</onFireWeapon>
+		</Events>
+	</ItemType>
+
 </TranscendenceModule>
 	
