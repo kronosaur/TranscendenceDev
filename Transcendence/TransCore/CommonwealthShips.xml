@@ -930,8 +930,9 @@
 				fight off Sung raiders.
 			</Text>
 			<Text id="core.desc">
-				The Asterion is a particularly durable heavy gunship with the
-				option for significant armor and can mount flexible equipment.
+				The Asterion is a particularly durable heavy gunship able
+				to fit significant armor. It has flexible expansion options
+				for equipment.
 			</Text>
 		</Language>
 		
@@ -1023,8 +1024,8 @@
 				focus on being a rugged no-frills design.
 			</Text>
 			<Text id="core.desc">
-				This upgraded Borer might be more capable, but it is still a
-				cost-effective dedicated miner with limited speed and
+				This upgraded Borer might be more capable than the original,
+				but it is still a dedicated miner with limited speed and
 				maneuverability.
 			</Text>
 		</Language>
