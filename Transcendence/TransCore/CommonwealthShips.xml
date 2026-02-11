@@ -338,6 +338,10 @@
 				designs like the Borer II and Borer III, fit for more dangerous
 				regions such as the Ungoverned Territories.
 			</Text>
+			<Text id="core.desc">
+				The Borer is a dedicated miner for the budget market. It is not
+				particularly capable in other roles, but it can mine for cheap.
+			</Text>
 		</Language>
 
 	</ShipClass>
@@ -426,6 +430,11 @@
 
 				Today it still sees regular use as a budget freighter
 				completing low-volume last-leg deliveries.
+			</Text>
+			<Text id="core.desc">
+				The EI100 might have been a fast and innovative freighter when
+				it was introduced, but today it is seen as a slow entry-level
+				budget freighter.
 			</Text>
 		</Language>
 		
@@ -563,6 +572,11 @@
 				means that most customers use the Sapphire for short
 				in-system trips, rather than as a true yacht as Zubrin
 				likes to imply with their marketing.
+			</Text>
+			<Text id="core.desc">
+				The saphire has modest capabilities in its stock configuration
+				between a light gunship and a courier, but it offers a flexible
+				hull for after-market customization.
 			</Text>
 		</Language>
 		
@@ -820,6 +834,11 @@
 				Commonwealth, transporting cargo that needs protection
 				from opportunistic pirates and raiders.
 			</Text>
+			<Text id="core.desc">
+				The EI200 is a capable, if aging, freighter design. It
+				has respectable defensive options and cargo capacity
+				for its price point.
+			</Text>
 		</Language>
 		
 	</ShipClass>
@@ -912,6 +931,11 @@
 				problem for those who try to start with a Revolution Designs
 				ship like an Earthzone.
 			</Text>
+			<Text id="core.desc">
+				The Meteor is a kit-built armed shuttle that meets the bare minimum
+				capabilities for being able to traverse dangerous un-patrolled
+				interplanetary space.
+			</Text>
 		</Language>
 		
 	</ShipClass>
@@ -1002,6 +1026,11 @@
 				Katherine's Star to variants equipped for the militia to
 				fight off Sung raiders.
 			</Text>
+			<Text id="core.desc">
+				The Asterion is a particularly durable heavy gunship able
+				to fit significant armor. It has flexible expansion options
+				for equipment.
+			</Text>
 		</Language>
 		
 	</ShipClass>
@@ -1090,6 +1119,11 @@
 				The ship became broadly popular among Commonwealth mining
 				operations in the Ungoverned Territories for its continued
 				focus on being a rugged no-frills design.
+			</Text>
+			<Text id="core.desc">
+				This upgraded Borer might be more capable than the original,
+				but it is still a dedicated miner with limited speed and
+				maneuverability.
 			</Text>
 		</Language>
 		
@@ -1225,6 +1259,11 @@
 				it did with the owners of the ships it was meant to replace. As a
 				result Earth Industries still sells new-production EI300s alongside
 				the EI500.
+			</Text>
+			<Text id="core.desc">
+				EI500s have plenty of capacity for after-market devices. However,
+				they have have little space for weapons, and while fast for a freighter,
+				they are slow and ungainly in comparison to a gunship.
 			</Text>
 		</Language>
 
@@ -1620,6 +1659,10 @@
 				upgraded by private owners for much greater range than they were
 				designed for, often at a significant price.
 			</Text>
+			<Text id="core.desc">
+				Fast and deadly, the Wolfen is designed for combat.
+				Though limited in cargo capacity, it has lots of room for more weapons.
+			</Text>
 		</Language>
 		
 	</ShipClass>
@@ -1781,6 +1824,10 @@
 				the New Beyond on-sight unless they have access to capital ships, such as
 				Drakes.
 			</Text>
+			<Text id="core.desc">
+				The EI7000 is a modern, heavy and well defended freighter that can often
+				fend off all but the most dedicated of pirate attacks.
+			</Text>
 		</Language>
 
 	</ShipClass>
@@ -1870,6 +1917,9 @@
 				Since neither Revolution Designs nor Frontier Industrial produce
 				weapons, the devices for the ship kits are usually absent or just
 				any off-the-shelf selection that is locally available.
+			</Text>
+			<Text id="core.desc">
+				The Archer-class is a cheap, entry-level gunship.
 			</Text>
 		</Language>
 		
@@ -1964,7 +2014,7 @@
 		<Language>
 			<Text id="core.descLore">
 				The Armstrong-class transport is NAMI's dedicated freighter
-				entry within their "Spage-age" ship series. NAMI opted to
+				entry within their "Space-age" ship series. NAMI opted to
 				diversify their offerings by mixing in a variety of ship
 				classes and roles under the same branding group to avoid a
 				repeat of the marketing fiasco that the "Metropolis" series
@@ -1975,6 +2025,11 @@
 				The Armstrong-class has made a name for itself as a resiliant
 				and fast multipurpose transport good for carrying both cargo
 				and passengers.
+			</Text>
+			<Text id="core.desc">
+				The Armstrong-class is NAMI's competitor to the EI500. It is
+				a freighter with similar capacity, but it improves on its
+				flexibility, offering more space for equipment and weapons.
 			</Text>
 		</Language>
 		
@@ -2064,6 +2119,10 @@
 				one decade later, sales of the Borer III remained strong as
 				individual Commonwealth and UAS citizens rushed out to try
 				and get some of the valuable ores in the area.
+			</Text>
+			<Text id="core.desc">
+				The Borer III improves upon the capabilities of its predecessors
+				but it is still a slow, dedicated miner.
 			</Text>
 		</Language>
 		
@@ -2192,6 +2251,10 @@
 				large decorative shades obstructing many of the viewports. This
 				even impacts the bridge, which relies on holographic displays
 				to allow the crew to see around the shades.
+			</Text>
+			<Text id="core.desc">
+				The Elixer is a large and versatile ship with significant options
+				for expansion.
 			</Text>
 		</Language>
 		
@@ -2334,6 +2397,11 @@
 				for logistics purposes - in this case for delivering large quantities
 				of fuel for the massive Commonwealth Star Carriers and all of the
 				gunships they support.
+			</Text>
+			<Text id="core.desc">
+				Scarab-class superfreighters are capable if slow haulers. Despite their
+				heavy construction, Scarabs tend to be slow enough that they need
+				significant protection.
 			</Text>
 		</Language>
 		
@@ -2484,6 +2552,10 @@
 				components to the public so that outlying colonies could
 				manufacture replacement parts. Over time the opensource component
 				community has evolved the original Buffalo design into a capable
+				heavy gunship.
+			</Text>
+			<Text id="core.desc">
+				Despite its origins the modern Buffalo is a competent well-rounded
 				heavy gunship.
 			</Text>
 		</Language>
@@ -2697,6 +2769,9 @@
 				Makayev kept the name given to class ship by the Fleet and
 				turned to the Commonwealth Militias and Corporate security
 				forces for sales instead.
+			</Text>
+			<Text id="core.desc">
+				The Manticore is a hard-hitting gunship that prioritizes offense
 			</Text>
 		</Language>
 		
