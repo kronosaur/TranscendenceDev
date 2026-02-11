@@ -1770,7 +1770,7 @@
 					<Device slotID="turret" deviceID="&itFlenserCannon;"/>
 					<Device slotID="shield" deviceID="&itSolonShieldGenerator;"/>
 				</Group>
-			<Table>
+			</Table>
 			<Device slotID="cargo" deviceID="&itCargoHoldExpansion;"/>
 			<Table>
 				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>

@@ -87,9 +87,10 @@
 				The Antares I design is more than a hundred years old, built originally
 				by the massive Polyarny Shipyards orbiting Ceres. Slow and unencumbered
 				by armor, the Antares I can haul 30 kilotons of cargo, but most clients
-				only ship low value bulk cargo on these ships. As the cargo generally
-				doesnt attract much attention from pirates, apprentices are allowed to
-				escort this class.
+				only ship low value bulk cargo on these ships.
+				
+				As the cargo generally doesnt attract much attention from pirates,
+				apprentices are allowed to escort this class.
 			</Text>
 		</Language>
 	</ShipClass>
@@ -198,9 +199,13 @@
 		
 		<Language>
 			<Text id="korolov.shipDesc">
-				While sacrificing none of its cargo capacity, the Antares II has a top
-				speed 50% higher than its predecessor. Escort pilots must have the rank
-				of Journeyman or Master to defend the Antares II class.
+
+				While sacrificing none of its cargo capacity, the Antares II has
+				a top speed 50% higher than its predecessor.
+				
+				Escort pilots must have the rank of journeyman or master to 
+				defend the Antares II class.
+
 			</Text>
 		</Language>
 	</ShipClass>
@@ -310,9 +315,13 @@
 		
 		<Language>
 			<Text id="korolov.shipDesc">
-				The Antares V is basically a stretched version of the earlier II series.
-				It has larger cargo capacity and upgraded weapons. Escort pilots must
-				have the rank of Master to escort the Antares V class.
+
+				The Antares V is a stretched version of the earlier II series.
+				It has larger cargo capacity and upgraded weapons.
+				
+				Escort pilots must have the rank of journeyman or master to 
+				escort the Antares V class.
+
 			</Text>
 		</Language>
 	</ShipClass>
@@ -406,10 +415,14 @@
 		
 		<Language>
 			<Text id="korolov.shipDesc">
-				The EI100 class freighter was designed for fast interplanetary transportation.
-				Early in its history, it even carried passengers, but today it carries light
-				commodities. Because of the relatively low value of its cargo, the EI100 is
-				often escorted by Apprentice pilots.
+
+				The EI100 class freighter was designed for fast interplanetary 
+				transportation. Early in its history, it even carried 
+				passengers, but today it carries light commodities.
+				
+				Because of the relatively low value of its cargo, the EI100 is
+				often escorted by apprentice pilots.
+
 			</Text>
 		</Language>
 
@@ -504,10 +517,15 @@
 		
 		<Language>
 			<Text id="korolov.shipDesc">
-				The EI200 class freighter is a larger and faster version of the 100 series.
-				It has double the cargo capacity and upgraded armor and weapons. It is
-				designed to transport small quantities of high-value cargo. The EI200 is
-				so well defended that even Apprentices and new pilots are allowed to escort them.
+
+				The EI200 class freighter is a larger and faster version of the 
+				100 series. It has double the cargo capacity and upgraded armor 
+				and weapons. It is designed to transport small quantities of 
+				high-value cargo.
+				
+				The EI200 is so well defended that even apprentices are allowed 
+				to escort them.
+
 			</Text>
 		</Language>
 	</ShipClass>
@@ -589,17 +607,21 @@
 		
 		<Language>
 			<Text id="korolov.shipDesc">
-				The 7000 is the most powerful member of the EI freighter series. With a
-				cargo capacity of 2 kilotons and heavy armor and weapons, the EI7000 is
-				ideal for high-value cargos. Only Journeymen and Masters are rated to
-				escort the EI7000 class.
+
+				The 7000 is the most powerful member of the EI freighter series.
+				With a cargo capacity of 2 kilotons and heavy armor and weapons,
+				the EI7000 is ideal for high-value cargos.
+				
+				Only journeymen and masters are rated to escort the EI7000 
+				class.
+
 			</Text>
 		</Language>
 	</ShipClass>
 
 	<!-- T31 Armed Transport -->
 
-	<ShipClass UNID="&scT31ArmedTransportTraffic;"
+	<ShipClass UNID="&scT31ArmedTransportKorolov;"
 			manufacturer=		"United African States"
 			class=				"T31"
 			type=				"armed transport"
@@ -688,7 +710,9 @@
 			<Text id="korolov.shipDesc">
 				The T31 class are light freighters with decent speed and modest
 				capacities, making them a relatively forgiving freighter to
-				escort. Even apprentices are permitted to escort these ships.
+				escort.
+				
+				Even apprentices are permitted to escort these ships.
 			</Text>
 		</Language>
 
@@ -760,7 +784,7 @@
 				<Device chance="25" slotID="turret" deviceID="&itFlenserCannon;"/>
 				<Device chance="25" slotID="turret" deviceID="&itSlamCannon;"/>
 				<Device chance="25" slotID="turret" deviceID="&itPartisanCannon;"/>
-			<Table>
+			</Table>
 			<Device slotID="cargo" deviceID="&itCargoHoldExpansion;"/>
 			<Table>
 				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>
@@ -782,6 +806,7 @@
 			<Text id="korolov.shipDesc">
 				The T55 class freighter is a competent freighter usually seen
 				with decent weapons, allowing it to carry more valuable cargo.
+
 				Only Journeymen and Masters are rated to escort the T55 class.
 			</Text>
 		</Language>

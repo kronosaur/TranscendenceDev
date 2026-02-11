@@ -397,15 +397,8 @@
 		<!-- Ships and Defenses -->
 		
 		<Ships>
-			<Ship					count="1d2" class="&scRoninC;" orders="guard"/>
-			<Table count="1d4+1">
-				<Ship chance="20" 	count="1" class="&scEI100;" eventHandler="&evKorolovFreighterBehavior;"/>
-				<Ship chance="20" 	count="1" class="&scEI200;" eventHandler="&evKorolovFreighterBehavior;"/>
-				<Ship chance="15" 	count="1" class="&scEI7000;" eventHandler="&evKorolovFreighterBehavior;"/>
-				<Ship chance="15" 	count="1" class="&scAntaresI;" eventHandler="&evKorolovFreighterBehavior;"/>
-				<Ship chance="15" 	count="1" class="&scAntaresII;" eventHandler="&evKorolovFreighterBehavior;"/>
-				<Ship chance="15" 	count="1" class="&scAntaresV;" eventHandler="&evKorolovFreighterBehavior;"/>
-			</Table>
+			<Lookup count="1d2" table="&tbKorolovGuards;"/>
+			<Lookup count="1d4+1" table="&tbKorolovFreighters;"/>
 		</Ships>
 
 		<!-- Image and Effects -->
@@ -890,18 +883,7 @@
 							{	labelID: 'actionFreighterData		nextPage:'code
 								code: (lambda ()
 									(scrShowScreen gScreen &dsRPGShipClassViewer; {
-										list: (list
-
-											;	NOTE: If you add items to the list, make sure
-											;	you add a description in the Language section.
-
-											{	shipClass:&scEI100;	}
-											{	shipClass:&scEI200;	}
-											{	shipClass:&scEI7000;	}
-											{	shipClass:&scAntaresI;	}
-											{	shipClass:&scAntaresII;	}
-											{	shipClass:&scAntaresV;	}
-											)
+										list: (map (korFreighterTypes) theShip { shipClass:theShip })
 										})
 									)
 								}
@@ -989,67 +971,7 @@
 				of freighters, from the tiny EI100s to the massive Antares Vs.
 			
 			</Text>
-			<Text id="rpg.shipClassDesc.&scEI100;">
-
-				The EI100 class freighter was designed for fast interplanetary 
-				transportation. Early in its history, it even carried 
-				passengers, but today it carries light commodities.
-				
-				Because of the relatively low value of its cargo, the EI100 is
-				often escorted by apprentice pilots.
-
-			</Text>
-			<Text id="rpg.shipClassDesc.&scEI200;">
-
-				The EI200 class freighter is a larger and faster version of the 
-				100 series. It has double the cargo capacity and upgraded armor 
-				and weapons. It is designed to transport small quantities of 
-				high-value cargo.
-				
-				The EI200 is so well defended that even apprentices are allowed 
-				to escort them.
-
-			</Text>
-			<Text id="rpg.shipClassDesc.&scEI7000;">
-
-				The 7000 is the most powerful member of the EI freighter series.
-				With a cargo capacity of 2 kilotons and heavy armor and weapons,
-				the EI7000 is ideal for high-value cargos.
-				
-				Only journeymen and masters are rated to escort the EI7000 
-				class.
-
-			</Text>
-			<Text id="rpg.shipClassDesc.&scAntaresI;">
-
-				The Antares I design is more than a hundred years old, built 
-				originally by the massive Polyarny Shipyards orbiting Ceres. 
-				Slow and unencumbered by armor, the Antares I can haul 30 
-				kilotons of cargo, but only the most skilled pilots can protect
-				it from pirate attack.
-				
-				Only masters in the Korolov Shipping Corporation are rated to 
-				escort the Antares I class.
-
-			</Text>
-			<Text id="rpg.shipClassDesc.&scAntaresII;">
-
-				While sacrificing none of its cargo capacity, the Antares II has
-				a top speed 50% higher than its predecessor.
-				
-				Escort pilots must have the rank of journeyman or master to 
-				defend the Antares II class.
-
-			</Text>
-			<Text id="rpg.shipClassDesc.&scAntaresV;">
-
-				The Antares V is a stretched version of the earlier II series.
-				It has larger cargo capacity and upgraded weapons.
-				
-				Escort pilots must have the rank of journeyman or master to 
-				escort the Antares V class.
-
-			</Text>
+			<Text id="rpg.shipClassDescID">korolov.shipDesc</Text>
 			<Text id="rpg.shipClassDesc.&scCorsair;">
 
 				The backbone of the Charon Pirate fleet consists of these fast and
@@ -1665,7 +1587,7 @@
 				"Returns standard distribution of cargo values from min to max"
 				(randomGaussian
 					min
-					(+ min (round (\ (- max min) 2)))
+					(+ min (int (/ (- max min) 2)))
 					max
 					)
 				))
@@ -2110,6 +2032,29 @@
 			<Ship levelFrequency="-rucr -----"	class="&scWolfenC;"	/>
 			<Ship levelFrequency="--ruc r----"	class="&scCenturionBlock1;"	/>
 			<Ship levelFrequency="---ru crvvv"	class="&scCenturionBlock2;"	/>
+		</LevelTable>
+	</ShipTable>
+
+	<ShipTable unid="&tbKorolovGuards;">
+		<LevelTable>
+			<Ship levelFrequency="cur-- -----"	class="&scRoninB;"	/>
+			<Ship levelFrequency="uccr- -----"	class="&scRoninC;"	/>
+			<Ship levelFrequency="-rucr -----"	class="&scWolfenC;"	/>
+			<Ship levelFrequency="--ruc r----"	class="&scCenturionBlock1;"	/>
+			<Ship levelFrequency="---ru crvvv"	class="&scCenturionBlock2;"	/>
+		</LevelTable>
+	</ShipTable>
+
+	<ShipTable unid="&tbKorolovFreighters;">
+		<LevelTable>
+			<Ship levelFrequency="cur-- -----"	class="&scAntaresI;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="uccrv vvvvv"	class="&scAntaresII;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="ruccr vvvvv"	class="&scAntaresV;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="curv- -----"	class="&scEI100;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="uccur v----"	class="&scEI200;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="ruccu rrrrr"	class="&scEI7000;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="uccur v----"	class="&scT31ArmedTransportKorolov;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="vrccu rrvvv"	class="&scT55ArmedTransportKorolov;"	eventHandler="&evKorolovFreighterBehavior;"/>
 		</LevelTable>
 	</ShipTable>
 	
