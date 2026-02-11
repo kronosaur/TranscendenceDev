@@ -3091,20 +3091,30 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	----------------
 
 		{	"sysAddEncounterEvent",			fnSystemAddEncounterEvent,	FN_ADD_ENCOUNTER_FROM_GATE,
-			"(sysAddEncounterEvent delay target encounterID gateObj|pos)\n\n"
+			"(sysAddEncounterEvent delay target encounterID gateObj|pos|options)\n\n"
 
-			"target: obj or list of objs\n"
-			"delay: in ticks\n",
+			"delay: in ticks\n"
+			"target: obj or list of objs\n\n"
+
+			"options:\n\n"
+
+			"   'distance      Encounter distance (light-seconds)\n"
+			"   'gate          Gate to appear at (if distance Nil or 0)\n",
 
 			"iviv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddEncounterEventAtDist",	fnSystemAddEncounterEvent,	FN_ADD_ENCOUNTER_FROM_DIST,
-			"(sysAddEncounterEventAtDist delay target encounterID distance)\n\n"
+			"(sysAddEncounterEventAtDist delay target encounterID distance|options)\n\n"
 
-			"target: obj or list of objs\n"
-			"delay: in ticks\n",
+			"delay: in ticks\n"
+			"target: obj or list of objs\n\n"
 
-			"ivii",	PPFLAG_SIDEEFFECTS,	},
+			"options:\n\n"
+
+			"   'distance      Encounter distance (light-seconds)\n"
+			"   'gate          Gate to appear at (if distance Nil or 0)\n",
+
+			"iviv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddObjTimerEvent",			fnSystemAddStationTimerEvent,	FN_ADD_TIMER_NORMAL,	
 			"(sysAddObjTimerEvent delay obj event)\n\n"
@@ -12661,6 +12671,12 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWOR
 
 	DWORD dwEncounterID = (DWORD)pArgs->GetElement(2)->GetIntegerValue();
 
+	//	Check if we have a valid unid (currently only allow shiptable, but could add station
+
+	CDesignType *pType = pCtx->GetUniverse().FindDesignType(dwEncounterID);
+	if (pType == NULL || pType->GetType() != designShipTable)
+		return pCC->CreateError(CONSTLIT("Type must be <ShipTable>"), pArgs->GetElement(2));
+
 	//	Either from a gate or from a distance from the target
 
 	ICCItem *pOptions = pArgs->GetElement(3);
@@ -12671,7 +12687,12 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWOR
 			Options.rDistance = Max(0.0, pValue->GetIntegerValue() * LIGHT_SECOND);
 			}
 
-		if (ICCItem *pValue = pOptions->GetElement(CONSTLIT("pos")))
+		if (ICCItem* pValue = pOptions->GetElement(CONSTLIT("gate")))
+			{
+			if (::GetPosOrObject(pEvalCtx, pValue, &Options.vPos, &Options.pGate) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pValue);
+			}
+		else if (ICCItem *pValue = pOptions->GetElement(CONSTLIT("pos")))
 			{
 			if (::GetPosOrObject(pEvalCtx, pValue, &Options.vPos, &Options.pGate) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Invalid pos"), pValue);
