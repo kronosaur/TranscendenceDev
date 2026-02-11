@@ -12910,6 +12910,10 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			CSpaceObject *pGate = CreateObjFromItem(pOptions->GetElement(CONSTLIT("gate")));
 
+			//	If we have a gate then ignore the distance argument
+			if (pGate)
+				rDist = 0.0;
+
 			//	If we have a station type, then create its random encounter
 
 			if (pType->GetType() == designStationType)
