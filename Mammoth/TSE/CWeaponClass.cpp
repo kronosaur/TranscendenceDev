@@ -4,7 +4,6 @@
 //	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
-#include "WeaponClassImpl.h"
 
 #define DAMAGE_FAILURE_TAG						CONSTLIT("DamageFailure")
 #define MISSILES_TAG							CONSTLIT("Missiles")
@@ -5088,6 +5087,24 @@ bool CWeaponClass::IsTargetReachable (const CInstalledDevice &Device, CSpaceObje
 	else
 		{
 		int iAimTolerance = GetConfiguration(*pShotDesc).GetAimTolerance(GetFireDelay(*pShotDesc));
+
+		//	Adjust fire angle based on accuracy. At 100% accuracy, no adjustment.
+		//	We increase the adjustment at 1 std deviation up to 45 degrees for
+		//	0% accuracy.
+
+		const CShip* pSourceShip = pSource->AsShip();
+		if (pSourceShip)
+			{
+			int iAccuracy = pSourceShip->GetClass().GetAISettings().GetFireAccuracy();
+			if (iAccuracy < 100)
+				{
+				//	At 0% accuracy, +/- 45 degrees at 1 std deviation
+
+				int iMaxAdjustment = (45 * (100 - iAccuracy)) / 100;
+				int iAdjustment = (int)(mathRandomGaussian() * iMaxAdjustment);
+				iFireAngle = AngleMod(iFireAngle + iAdjustment);
+				}
+			}
 
 		//	Area weapons have 60 degree aim tolerance
 

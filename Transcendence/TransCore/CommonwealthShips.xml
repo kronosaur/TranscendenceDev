@@ -1,6 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <TranscendenceModule>
+
+	<!-- Level 1: Hornet Battlepod -->
+
+	<ShipClass UNID="&scHornetStock;"
+			manufacturer=		"Earth Industries"
+			class=				"Hornet"
+			type=				"battlepod"
+			defaultSovereign=	"&svIndependent;"
+
+			attributes=			"EI, genericClass"
+			>
+
+		<Hull
+			size=				"10"
+			mass=				"10"
+
+			cargoSpace=			"10"
+			maxCargoSpace=		"10"
+			maxReactorPower=	"10000"
+			maxDevices=			"3"
+			>
+			<ArmorLimits massClass="ultraLight"		speedAdj="0" />
+			<ArmorLimits massClass="light"			speedAdj="-3" />
+		</Hull>
+
+		<Drive
+			thrust=				"50"
+			maxSpeed=			"30"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot id="main"				criteria="w"/>
+			<DeviceSlot id="reactor"			criteria="r"/>
+			<DeviceSlot id="universal"			criteria="d"/>
+
+			<DeviceSlot id="shipSystems"		criteria="dV +shipSystems"	cannotBeEmpty="true"/>
+		</DeviceSlots>
+
+		<Maneuver
+			maxRotationRate=	"18.0"
+			rotationAccel=		"6.0"
+			/>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itUltraLightTitaniumArmor;"
+			count=				"1"
+			/>
+
+		<Devices>
+			<Device slotID="main"				deviceID="&itLaserCannon;"/>
+            <Device slotID="reactor"			deviceID="&it10MWReactor;"/>
+
+			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
+		</Devices>
+		
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsHornetHD;" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12" viewportRatio="0.0029375"/>
+		<HeroImage imageID="&rsHornetHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="8"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			perception=			"4"
+			/>
+		
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				Hornet-class battlepods were designed by Earth Industries during
+				the Syrtis war, in preparation for the Commonwealth's attack on
+				Mars.
+
+				However, the Hornet was deemed insufficiently surviveable by the
+				Commonwealth Fleet and a different plan was adopted involving
+				nuclear bombardment.
+
+				EI had since sold the ship to the public, which attracted a cult
+				following in hobbyist circles for its extreme speed. The design
+				is so simple that many modern Hornets are DIY replicas, and the
+				anarchists even have a version that can operate uncrewed, like
+				a primitive auton.
+			</Text>
+			<Text id="core.desc">
+				The Hornet-class battlepod prioritizes speed above all else. It
+				is not a ship for the faint of heart, but it does have its fans.
+			</Text>
+		</Language>
+
+	</ShipClass>
 	
 	<!-- Level 2: Antares I Freighter -->
 

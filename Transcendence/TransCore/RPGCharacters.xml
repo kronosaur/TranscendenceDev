@@ -39,29 +39,145 @@
 		Typically used by characters which have an associated ship and can assign
 		missions across different systems. Example: Benedict, Kate Morgental
 
-		The character type defines following data
+		Character class should inherit from baStdNPCBase and override the definition
+		properties as appropriate.
+
+		Note legacy character types defined with static data used the following fields:
 
 		Static Data:
 			MissionAttribute
 			Name
 			Sovereign
 
-		Dynamic [legacy type Data]:
-			char.firstMeetingOn [firstPlayerMeetingTime]
-			char.latestMeetingOn [latestPlayerMeetingTime]
-				[lastNodeID]
-				[lastShipClass]
-				[objID_<unid>]
-				[lastOrders]
-				[lastSystemPos]
-				[lastKnown]
-				[playerRel]
-				[status]
-				[screenData]
+		Dynamic:
+			firstPlayerMeetingTime
+			latestPlayerMeetingTime
+			lastNodeID
+			lastShipClass
+			objID_<unid>
+			lastOrders
+			lastSystemPos
+			lastKnown
+			playerRel
+			status
+			screenData
 
 		Events:
 			OnCharacterCanBeMet
 -->
+
+	<Type UNID="&baStdNPCBase;">
+		<Properties>
+			<Definition id="core.namePattern">": Generic NPC"</Definition>
+			<Definition id="char.missionAttribute">"undefined"</Definition>
+			<Definition id="char.sovereign">&svNeutral;</Definition>
+
+			<!-- char.firstMeetingOn
+
+				Tick of player's first meeting with character.
+				Nil if the player has never met face to face.
+
+				-->
+
+			<Global id="char.firstMeetingOn"></Global>
+
+			<!-- char.latestMeetingOn: Tick of most recent meeting with character -->
+
+			<Global id="char.latestMeetingOn"></Global>
+
+			<!-- char.status: used by alive and well checks -->
+
+			<Global id="char.status"></Global>
+
+			<!-- char.screenData
+
+				This is a structure specifying the screen to show when the player
+				interacts with the character. The struct has the following fields:
+
+				screen: The screen to show
+				pane: If non-Nil, the pane to navigate to
+				data: If non-Nil, data to pass to the screen
+				translateType: Used with translate ID. If both are non-Nil we call
+				translateID: typTranslate on ehse arguments rather than passing pane/data
+
+				If this value is Nil, then we look for missions tagged with
+				character mission attribute (e.g., kateMorgentalMission).
+
+				-->
+
+			<Global id="char.screenData"></Global>
+
+			<!-- char.scope
+
+				Determines how long the NPC will remain in system
+
+				Nil: Until player leaves the system
+				mission: Until current mission is complete
+				ongoing: Until explicitly removed, or created elsewhere
+
+				-->
+
+			<Global id="char.scope"></Global>
+
+			<Global id="char.missionID"></Global>
+			<DynamicGlobal id="char.mission">
+				(and (typ@ gType 'char.missionID) (objGetObjByID (typ@ gType 'char.missionID)))
+			</DynamicGlobal>
+
+			<!-- char.ship*: stores data for NPC's current ship -->
+
+			<Global id="char.shipClass"></Global>
+			<Global id="char.shipNodeID"></Global>
+			<Global id="char.shipKnown"></Global>
+			<Global id="char.shipOrders"></Global>
+			<Global id="char.shipPos"></Global>
+
+			<!-- char.objectIDs
+
+				Struct of {UNID: objID} for all ships used by NPC.
+				If Nil, then no ship has been created yet.
+
+				-->
+
+			<Global id="char.objectIDs"></Global>
+
+			<!-- char.version
+
+				Internal variable to track which version of the character type we have
+				Nil:	legacy type using type data
+				1:		Initial property implementation
+
+				-->
+			<Global id="char.version">1</Global>
+
+			<!-- char.objID: The objID of character's current ship -->
+
+			<DynamicGlobal id="char.objID">
+				(@ (typ@ gType 'char.objectIDs) (typ@ gType 'char.shipClass))
+			</DynamicGlobal>
+		</Properties>
+
+		<Events>
+			<OnCharacterCanBeMet>
+				True
+			</OnCharacterCanBeMet>
+
+			<OnGlobalSystemStopped>
+				(rpgCharacterAscend gType)
+			</OnGlobalSystemStopped>
+
+			<OnGlobalSystemStarted>
+				(if (rpgCharacterInSystem gType)
+					(rpgCharacterDescend gType)
+					)
+			</OnGlobalSystemStarted>
+
+			<OnGlobalUniverseLoad>
+				(rpgCharacterUpdateVersion gType)
+			</OnGlobalUniverseLoad>
+		</Events>
+	</Type>
+
 
 <!-- CHARACTER SCREEN ==========================================================
 
@@ -121,7 +237,7 @@
 			<Default>
 				<OnPaneInit>
 					(block (
-						(charType (objGetProperty gSource 'character))
+						(charType (obj@ gSource 'character))
 						(firstMeeting (not (or (typ@ charType 'char.firstMeetingOn) (typGetData charType 'firstPlayerMeetingTime))))
 						)
 
@@ -135,42 +251,36 @@
 							actionDoneID: 'actionContinue
 
 							onExitPane: (lambda (theScreen pageDesc options)
-								(block (charType screenData)
-									(setq charType (objGetProperty gSource 'character))
+								(block (
+									(charType (obj@ gSource 'character))
+									(screenData (or (typ@ charType 'char.screenData) (typGetData charType 'screenData)))
+									)
 
 									;	We've met character
 
 									(rpgCharacterSetMeeting charType)
 							
 									;	Next screen
-
-									(setq screenData (typGetData charType 'screenData))
-									(if screenData
-							
-										;	If a screen has been set, show it.
-								
-										(switch
-								
-											;	If we have a translateType and translateID, then translate
-											;	[We need to do this sometimes if the data that we're passing has 
-											;	non-serializable objects.]
 									
-											(@ screenData 'translateID)
-												(scrShowScreen 
-													gScreen 
-													(@ screenData 'screen) 
-													(typTranslate (@ screenData 'translateType) (@ screenData 'translateID))
-													)
+									(switch
+										;	If we have a translateType and translateID, then translate
+										;	[We need to do this sometimes if the data that we're passing has
+										;	non-serializable objects.]
+										(@ screenData 'translateID)
+											(scrShowScreen
+												gScreen
+												(@ screenData 'screen)
+												(typTranslate (@ screenData 'translateType) (@ screenData 'translateID))
+												)
 									
-											;	Otherwise, we expect a screen.
-									
+										;	Otherwise, we expect a screen.
+										screenData
 											(scrShowScreen 
 												gScreen 
 												(@ screenData 'screen) 
 												(@ screenData 'pane) 
 												(@ screenData 'data)
 												)
-											)
 
 										;	If no set screen, look for missions.
 
@@ -191,47 +301,72 @@
 
 	USAGE
 
-	These functions use the following global variables on character types:
-
-	char.firstMeetingOn: Tick of player's first meeting with character.
-			Nil if the player has never met face to face.
-
-	char.latestMeetingOn: Tick of most recent meeting with character.
+	These functions use the properties defined in the NPC base class. See
+	baStdNPCBase above for further details.
 
 	lastNodeID: Character's last known position. Nil means unknown.
 
 	lastSystemPos: Character's last known position in the lastNodeID system.
 
-	objID: The objID of character's current ship. If Nil, then no ship has
-			been created yet.
-
 	playerRel: If Nil, character has never met the player. Positive numbers mean that
 			character likes/trusts/respects the player. Negative numbers mean the
 			opposite.
-
-	screenData: This is a structure specifying the screen to show when the player
-			interacts with the character. The struct has the following fields:
-
-			screen: The screen to show
-			pane: If non-Nil, the pane to navigate to
-			data: If non-Nil, data to pass to the screen
-
-			If this value is Nil, then we look for missions tagged with 
-			character mission attribute (e.g., kateMorgentalMission).
 
 -->
 
 	<Globals>
 		(block Nil
+			(setq rpgCharacterUpdateVersion (lambda (charType)
+				"PRIVATE: Used to migrate from legacy data to properties"
+				(switch
+					;	Already using properties
+					(typ@ charType 'char.version)
+						Nil
+
+					;	Need to transition from type data
+					(block (
+						(transition (lambda (oldVar newVar)
+							(block ()
+								(typSet@ charType newVar (typGetData charType oldVar))
+								(typSetData charType oldVar Nil)
+								)
+							))
+
+						(shipClassValue (typGetData charType 'lastShipClass))
+						(shipIDVar (cat 'objID_ (int shipClassValue)))
+						(objID (typGetData charType shipIDVar))
+						)
+						(dbgOutput "Updating " (typGetName charType) " from typData")
+
+						(transition 'firstPlayerMeetingTime 'char.firstMeetingOn)
+						(transition 'latestPlayerMeetingTime 'char.latestMeetingOn)
+						(transition 'lastNodeID 'char.shipNodeID)
+						(transition 'lastShipClass 'char.shipClass)
+						(transition 'lastOrders 'char.shipOrders)
+						(transition 'lastSystemPos 'char.shipPos)
+						(transition 'lastKnown 'char.shipKnown)
+						(transition 'status 'char.status)
+						(transition 'screenData 'char.screenData)
+
+						;	Can only transition current ship objID
+						(typSet@ charType 'char.objectIDs (struct shipClassValue objID))
+						(typSetData charType shipIDVar Nil)
+
+
+						(typSet@ charType 'char.version 1)
+						)
+					)
+				))
+
 			(setq rpgCharacterAscend (lambda (charType)
 				(block (
-					(lastNodeID (typGetData charType 'lastNodeID))
-					
+					(lastNodeID (or (typ@ charType 'char.shipNodeID) (typGetData charType 'lastNodeID)))
+
 					shipClassValue
 					objID
 					shipObj
 					)
-					
+
 					(switch
 						;	If lastNodeID doesn't equal this system, then nothing to do.
 						
@@ -241,25 +376,28 @@
 						;	If no last ship class then we can't do anything because we don't know
 						;	how to find the object ID.
 						
-						(not (setq shipClassValue (typGetData charType 'lastShipClass)))
+						(not (setq shipClassValue (or (typ@ charType 'char.shipClass) (typGetData charType 'lastShipClass))))
 							Nil
 							
 						;	Get the object ID from the character type and ship class
 						
-						(not (setq objID 
-								(typGetData charType 
-									(cat 'objID_ (int shipClassValue))
-									)
-								))
+						(not (setq objID (or
+								(typ@ charType 'char.objID)
+								(typGetData charType (cat 'objID_ (int shipClassValue)))
+								)))
 							Nil	;(dbgOutput (sysGetNode) ": Can't find object ID for " charType)
 							
-						;	If no ship or the ship is already ascended, then nothing to do
+						;	If no ship, then nothing to do
 						
 						(not (setq shipObj (objGetObjByID objID)))
+							;	NOTE - this probably means the ship was destroyed
 							Nil	;(dbgOutput (sysGetNode) ": Can't find ship object")
-							
+
+						;	If ship has already ascended it likely left via a gate, or mission
+						;	manually removed it from system. Eitherway we clear the last node
+
 						(obj@ shipObj 'ascended)
-							Nil	;(dbgOutput (sysGetNode) ": Ship already ascended")
+							(typSet@ charType 'char.shipNodeID Nil)
 
 						;	If the ship is currently a player wingman, then do not ascend;
 						;	the ship will follow the player.
@@ -282,16 +420,99 @@
 									(shpCancelOrder shipObj)
 									)
 								)
-							(typSetData charType 'lastOrders orders)
-							(typSetData charType 'lastSystemPos (objGetPos shipObj))
-							(typSetData charType 'lastKnown (objGetProperty shipObj 'known))
+							(if (typHasProperty charType 'char.shipClass)
+								(block Nil
+									(typSet@ charType 'char.shipOrders orders)
+									(typSet@ charType 'char.shipPos (objGetPos shipObj))
+									(typSet@ charType 'char.shipKnown (obj@ shipObj 'known))
+									)
+								(block Nil
+									(typSetData charType 'lastOrders orders)
+									(typSetData charType 'lastSystemPos (objGetPos shipObj))
+									(typSetData charType 'lastKnown (obj@ shipObj 'known))
+									)
+								)
 							(sysAscendObject shipObj)
 							; (dbgOutput (sysGetNode) ": Ship ascended: " (objGetID shipObj))
 							)
 						)
 					)
 				))
-				
+
+			(setq rpgCharacterInSystem (lambda (charType)
+				"Check if the given character should be in the current system"
+
+				; This function is intended to be used with in the character's
+				; OnGlobalSystemStarted event to determine if we should automatically
+				; descend the character on system start. It could also be used from
+				; Mission OnGlobalSystemStarted events to check if the NPC is already
+				; present or we need to call rpgCharacterCreateShip
+
+				(switch
+					(not (typ@ charType 'char.scope))
+						Nil
+
+					;	If not in the right node, then nothing to do
+					(!= (sysGetNode) (typ@ charType 'char.shipNodeID))
+						Nil
+
+					;	Check if we have a valid ship object available
+					(not (objGetObjByID (typ@ charType 'char.objID)))
+						Nil
+
+					;	If scope is ongoing try to restore ship
+					(= (typ@ charType 'char.scope) 'ongoing)
+						True
+
+					;	Anything else we need to check mission scope
+					(block (
+						(missionObj (typ@ charType 'char.mission))
+						)
+						(switch
+							(not missionObj)
+								Nil
+
+							;	Assume we need to remain until player has been debriefed
+							(msn@ missionObj 'isDebriefed)
+								Nil
+
+							True
+							)
+						)
+					)
+				))
+
+			(setq rpgCharacterDescend (lambda (charType)
+
+				; This function descends the character's current ship. It is intended to be used
+				; by the OnGlobalSystemStarted event so we can resume NPCs if the player leaves
+				; and returns to a given system.
+
+				(block (
+					(objID (typ@ charType 'char.objID))
+					(shipObj (objGetObjByID objID))
+					)
+					(switch
+						(not shipObj)
+							Nil
+
+						(not (obj@ shipObj 'ascended))
+							Nil
+
+						(block Nil
+							(setq shipObj (sysDescendObject objID (typ@ charType 'char.shipPos)))
+							(enum (typ@ charType 'char.shipOrders) order
+								(block (cmd)
+									(setq cmd (append shipObj (@ order 'desc)))
+									(if (@ order 'objID) (set@ cmd 2 (objGetObjByID (@ order 'objID))))
+									(apply shpOrder cmd)
+									)
+								)
+							)
+						)
+					)
+				))
+
 			(setq rpgCharacterChangeRel (lambda (charType event)
 			
 				; This function changes the character's relationship with the
@@ -403,22 +624,39 @@
 				))
 
 			(setq rpgCharacterCreateShip (lambda (charType shipClassUNID pos options)
+
+				; This function creates a ship for the given character.
+				; shipClassUNID and pos are optional when descending an existing ship.
+				; options:
+				;	setKnown: set known property on ship object
+				;	repairAll: repair all damage
+				;	mission: missionObj that created the ship. Sets scope to mission
+				;	remain: if non-Nil we set scope to ongoing
+
 				(block (
 					;	We store a ship ID for every unique ship class. Some characters
 					;	use multiple ships.
 					
-					(shipClassValue (if shipClassUNID shipClassUNID (typGetData charType 'lastShipClass)))
+					(shipClassValue (or shipClassUNID (typ@ charType 'char.shipClass) (typGetData charType 'lastShipClass)))
 					(shipIDVar (cat 'objID_ (int shipClassValue)))
-					(objID (typGetData charType shipIDVar))
+					(objID (or (typ@ charType 'char.objID) (typGetData charType shipIDVar)))
 					
-					shipObj
+					(shipObj (objGetObjByID objID))
+
+					;	Do we need to use legacy typData
+					(useData (not (typHasProperty charType 'char.version)))
 					)
+
+					;	If we have an objID but can't find the object, then report error
+					(if (and objID (not shipObj))
+						(printTo 'log "ERROR: Unable to find object ID: " objID ".")
+						)
 
 					(switch
 						;	If ship for character does not exist, then we need to 
 						;	create him.
 
-						(not objID)
+						(and useData (not shipObj))
  							(block Nil
 								(setq shipObj (sysCreateShip shipClassValue pos (typGetStaticData charType 'Sovereign)))
 								(objSetProperty shipObj 'known (@ options 'setKnown))
@@ -430,37 +668,35 @@
 								
 								; (dbgOutput (sysGetNode) ": No obj ID; creating ship: " (objGetID shipObj))
 								)
-								
-						;	If we can't find the object, then this is an error, but we
-						;	create the ship anyway
-						
-						(not (setq shipObj (objGetObjByID objID)))
+
+						(not shipObj)
 							(block Nil
-								(printTo 'log "ERROR: Unable to find object ID: " objID ".")
-								
-								(setq shipObj (sysCreateShip shipClassValue pos (typGetStaticData charType 'Sovereign)))
-								(objSetProperty shipObj 'known (@ options 'setKnown))
-								(typSetData charType 'lastNodeID (sysGetNode))
-								(typSetData charType 'lastShipClass shipClassValue)
-								(typSetData charType 'lastOrders Nil)
-								(typSetData charType shipIDVar (objGetId shipObj))
-								(typSetData charType 'screenData Nil)
-								
-								; (dbgOutput (sysGetNode) ": Obj ID not found; creating ship: " (objGetID shipObj))
+								(setq shipObj (sysCreateShip shipClassValue pos (typ@ charType 'char.sovereign)))
+								(objSet@ shipObj 'known (@ options 'setKnown))
+								(typSet@ charType 'char.shipNodeID (sysGetNode))
+								(typSet@ charType 'char.shipClass shipClassValue)
+								(typSet@ charType 'char.shipOrders Nil)
+								(typSet@ charType 'char.objectIDs (struct
+										(typ@ charType 'char.objectIDs)
+										shipClassValue
+										(objGetId shipObj)
+									))
+								(typSet@ charType 'screenData Nil)
 								)
 
 						;	If the object is ascended, we descend it.
 
-						(objGetProperty shipObj 'ascended)
-							(block (isKnown)
+						(obj@ shipObj 'ascended)
+							(block (isKnown lastOrders)
 
 								;	If ship has been here all along, then just place him in the
 								;	original position.
 
-								(if (eq (sysGetNode) (typGetData charType 'lastNodeID))
+								(if (= (sysGetNode) (or (typ@ charType 'char.shipNodeID) (typGetData charType 'lastNodeID)))
 									(block Nil
-										(setq pos (typGetData charType 'lastSystemPos))
-										(setq isKnown (typGetData charType 'lastKnown))
+										(setq pos (or (typ@ charType 'char.shipPos) (typGetData charType 'lastSystemPos)))
+										(setq isKnown (or (typ@ charType 'char.shipKnown) (typGetData charType 'lastKnown)))
+										(setq lastOrders (or (typ@ charType 'char.shipOrders) (typSetData charType 'lastOrders)))
 										)
 									
 									;	If he was not here last, then we honor options
@@ -481,23 +717,40 @@
 
 								(if (not shipObj)
 									(block Nil
-										(setq shipObj (sysCreateShip shipClassValue pos (typGetStaticData charType 'Sovereign)))
-										(typSetData charType shipIDVar (objGetID shipObj))
+										(printTo 'log "ERROR: Unable to descend object ID: " objID ".")
+										(setq shipObj (sysCreateShip shipClassValue pos (or
+												(typ@ charType 'char.sovereign)
+												(typGetStaticData charType 'Sovereign)
+											)))
+										(if useData
+											(typSetData charType shipIDVar (objGetID shipObj))
+											(typSet@ charType 'char.objectIDs (set@
+													(typ@ charType 'char.objectIDs)
+													shipClassValue
+													(objGetId shipObj)
+												))
+											)
 										)
 									)
-									
+
 								;	Remember where we are
-									
-								(typSetData charType 'lastNodeID (sysGetNode))
-								(typSetData charType 'lastShipClass shipClassValue)
+								
+								(if useData
+									(block Nil
+										(typSetData charType 'lastNodeID (sysGetNode))
+										(typSetData charType 'lastShipClass shipClassValue)
+										(typSetData charType 'screenData Nil)
+										)
+									(block Nil
+										(typSet@ charType 'char.shipNodeID (sysGetNode))
+										(typSet@ charType 'char.shipClass shipClassValue)
+										(typSet@ charType 'char.screenData Nil)
+										)
+									)
 								
 								;	Set known
 								
-								(objSetProperty shipObj 'known isKnown)
-									
-								;	Done
-								
-								(typSetData charType 'screenData Nil)
+								(objSet@ shipObj 'known isKnown)
 								)
 							
 						;	Otherwise, we assume shipObj is valid
@@ -507,16 +760,28 @@
 					;	We always reenable docking, in case some previous code disabled it.
 
 					(if shipObj
-						(objSetProperty shipObj 'dockingEnabled True)
+						(objSet@ shipObj 'dockingEnabled True)
 						)
-						
+
 					;	If requested, we repair all damage
 					
 					(if (@ options 'repairAll)
 						(block Nil
 							(intArmorRepairAll shipObj)
-							(objSetProperty shipObj 'interiorHP (objGetProperty shipObj 'maxInteriorHP))
+							(objSet@ shipObj 'interiorHP (obj@ shipObj 'maxInteriorHP))
 							)
+						)
+
+					;	If we were created by a mission, then store ID and set scope
+
+					(if (@ options 'mission)
+						(block Nil
+							(typSet@ charType 'char.missionID (msn@ (@ options 'mission) 'id))
+							(typSet@ charType 'char.scope 'mission)
+						))
+
+					(if (@ options 'remain)
+						(typSet@ charType 'char.scope 'ongoing)
 						)
 
 					;	Return character's ship
@@ -580,12 +845,12 @@
 				))
 
 			(setq rpgCharacterGetStatus (lambda (charType)
-				(typGetData charType 'status)
+				(or (typ@ charType 'char.status) (typGetData charType 'status))
 				))
 
 			(setq rpgCharacterIsAliveAndWell (lambda (charType)
 				(block (
-					(status (typGetData charType 'status))
+					(status (rpgCharacterGetStatus charType))
 					)
 					(switch
 						;	Dead means dead
@@ -621,9 +886,22 @@
 				))
 
 			(setq rpgCharacterSetScreen (lambda (charType screenData)
-				(typSetData charType 'screenData screenData)
+				(if (typHasProperty charType 'char.screenData)
+					(typSet@ charType 'char.screenData screenData)
+					(typSetData charType 'screenData screenData)
+					)
 				))
-				
+
+			(setq rpgCharacterSetMission (lambda (charType missionObj)
+				"Sets current mission for given character. Maybe needed if ship was created before mission"
+				(block (
+					(missionID (msn@ missionObj 'id))
+					)
+					(typSet@ charType 'char.missionID missionID)
+					(if missionID (typSet@ charType 'char.scope 'mission))
+					)
+				))
+
 			(setq rpgCharacterSetStatus (lambda (charType newStatus)
 			
 				;	This function sets the status of the character. We support the following
@@ -634,7 +912,7 @@
 				;	'dead: Character is permanently dead.
 
 				(block (
-					(oldStatus (typGetData charType 'status))
+					(oldStatus (rpgCharacterGetStatus charType))
 					)
 					(switch				
 						;	If the character is permanently dead, then we can't 
@@ -644,7 +922,10 @@
 							Nil
 
 						;	Set the status
+						(typSet@ charType 'char.status newStatus)
+							True
 
+						;	Legacy method
 						(typSetData charType 'status newStatus)
 						)
 					)
@@ -667,10 +948,15 @@
 				; options:
 				;		nextScreen: Screen to show when we're done.
 
-				(block (nextMissionTime theMission rank newMissions)
-
-					(setq charType (objGetProperty missionSource 'character))
-					(setq missionAttrib (cat " +" (typGetStaticData charType 'MissionAttribute) ";"))
+				(block (
+					(charType (obj@ missionSource 'character))
+					(missionAttrib (cat " +" (or
+								(typ@ charType 'char.missionAttribute)
+								(typGetStaticData charType 'MissionAttribute)
+								)
+							";"))
+					theMission newMissions
+					)
 
 					(switch
 
@@ -768,9 +1054,8 @@
 			;	4.	Use rpgCharacterGetInfo to get the full block of data for 
 			;		the randomly chosen character.
 
-			;	DEPRECATED. Assign sourceType charID in property
-
 			(setq rpgCharacterAssign (lambda (sourceObj role sourceType charID)
+				"DEPRECATED: Assign sourceType charID in property instead"
 				(block (
 					(characterRole (or role "npc"))
 					(characterVar (cat "rpgCharacter." characterRole))
@@ -782,10 +1067,9 @@
 					)
 				))
 
-			;	DEPRECATED. Use rpgCharacterRandom in a variant property
-
 			(setq rpgCharacterAssignRandom (lambda (sourceObj criteria role)
-				
+				"DEPRECATED. Use rpgCharacterRandom in a variant property instead"
+
 				;	This function assigns a random character to the given source object.
 				;	It should be called once when the object is created.
 				;

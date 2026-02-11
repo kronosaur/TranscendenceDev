@@ -4,26 +4,15 @@
 	
 	<!-- Stormhound -->
 	
-	<Type UNID="&unidStormhound;">
+	<Type UNID="&unidStormhound;"
+			inherit="&baStdNPCBase;"
+			>
 		<Properties>
 			<Definition id="core.namePattern">": Stormhound"</Definition>
+
+			<Definition id="char.missionAttribute">"stormhoundMission"</Definition>
+			<Definition id="char.sovereign">&svCommonwealth;</Definition>
 		</Properties>
-
-		<StaticData>
-			<Data id="MissionAttribute">"stormhoundMission"</Data>
-			<Data id="Name">"Stormhound"</Data>
-			<Data id="Sovereign">&svCommonwealth;</Data>
-		</StaticData>
-
-		<Events>
-			<OnCharacterCanBeMet>
-				True
-			</OnCharacterCanBeMet>
-
-			<OnGlobalSystemStopped>
-				(rpgCharacterAscend &unidStormhound;)
-			</OnGlobalSystemStopped>
-		</Events>
 	</Type>
 	
 	<!-- Stormhound's Ship -->
