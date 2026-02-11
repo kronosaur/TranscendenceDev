@@ -1164,9 +1164,9 @@
 				the EI500.
 			</Text>
 			<Text id="core.desc">
-				EI500s are relatively fast for freighters, and have plenty of
-				capacity for after-market devices. However, they have have little
-				space for weapons.
+				EI500s have plenty of capacity for after-market devices. However,
+				they have have little space for weapons, and while fast for a freighter,
+				they are slow and ungainly in comparison to a gunship.
 			</Text>
 		</Language>
 
@@ -1822,7 +1822,7 @@
 				any off-the-shelf selection that is locally available.
 			</Text>
 			<Text id="core.desc">
-				The Archer-class is a cheap entry-level gunship.
+				The Archer-class is a cheap, entry-level gunship.
 			</Text>
 		</Language>
 		
