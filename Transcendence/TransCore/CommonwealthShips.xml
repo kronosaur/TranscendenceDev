@@ -2569,6 +2569,8 @@
 				</EnhancementAbilities>
 			</DeviceSlot>
 			<DeviceSlot id="cargo"				criteria="c" cannotBeEmpty="true"/>
+
+			<DeviceSlot id="shipSystems"		criteria="dV +shipSystems"	cannotBeEmpty="true"/>
 		</DeviceSlots>
 
 		<Interior>
@@ -2609,6 +2611,8 @@
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
 			<Device deviceID="&itMissileDefense;"/>
+
+			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
 		</Devices>
 
 		<Items>
@@ -2700,6 +2704,8 @@
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
 			<Device deviceID="&itMissileDefense;"/>
+
+			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
 		</Devices>
 
 		<!-- AI and Behavior -->

@@ -813,6 +813,90 @@
 
 	</ShipClass>
 
+	<!-- Scarab Freighter -->
+
+	<ShipClass UNID="&scScarabFreighterKorolov;"
+			manufacturer=		"NAMI"
+			class=				"Scarab"
+			type=				"superfreighter"
+			defaultSovereign=	"&svCommonwealth;"
+			   
+			attributes=			"commonwealth, freighter, genericClass, NAMI"
+			inherit=			"&scScarabFreighterStock;"
+
+			explosionType=		"&vtBlastExplosion4;"
+			>
+
+		<Names definiteArticle="true">
+			superfreighter St. Aoki; superfreighter St. Beatrice; superfreighter St. Celendin;
+			superfreighter St. Dominarus; superfreighter St. Elaine; superfreighter St. Florentine;
+			superfreighter St. Goramesh; superfreighter St. Haldane; superfreighter St. Inez;
+			superfreighter St. Jotur; superfreighter St. Kim; superfreighter St. Lin Chemei;
+			superfreighter St. Miranda; superfreighter St. Navreen; superfreighter St. Orinaga;
+			superfreighter St. Pelerine; superfreighter St. Queleborn; superfreighter St. Rebecca;
+			superfreighter St. Salvador; superfreighter St. Tomashi; superfreighter St. Unami;
+			superfreighter St. Voxanna; superfreighter St. Ha-neul; superfreighter St. Joo-eun;
+			superfreighter St. Emiko; superfreighter St. Aiko; superfreighter St. Rumiko;
+			superfreighter St. Bharati; superfreighter St. Madhavi; superfreighter St. Astrel
+		</Names>
+
+		<!-- AI and Behavior -->
+
+		<Properties>
+			; new pilots cannot escort
+			; apprentices cannot escort
+			; journeymen cannot escort
+
+			<DynamicGlobal id="korolov.cargoValue.3">
+				; Masters: 4000 - 10000 credits
+				; 320,000 - 800,000 cargo value
+				(korRandomCargoValue 320000 800000)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="korolov.cargoValue.4">
+				10000 ; Legends: requires sandbox mode to be activated
+				(korRandomCargoValue 640000 1200000)
+			</DynamicGlobal>
+
+			<Global id="korolov.escortRate">
+				150
+			</Global>
+		</Properties>
+
+		<Events>
+			<OnDestroy>
+				(korOnShipDestroyed)
+			</OnDestroy>
+		</Events>
+
+		<!-- Configuration -->
+		
+		<Devices>
+			<Device slotID="turret"			deviceID="&itSlamCannon;"/>
+
+			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+			<Device deviceID="&itMissileDefense;"/>
+			<Table>
+				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>
+				<Device slotID="shipSystems"	chance="15" deviceID="&vtShipSystems250;"/>
+				<Device slotID="shipSystems"	chance="10" deviceID="&vtShipSystems125;"/>
+				<Device slotID="shipSystems"	chance="25" deviceID="&vtShipSystems150;"/>
+			</Table>
+		</Devices>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="korolov.shipDesc">
+				The T55 class freighter is a competent freighter usually seen
+				with decent weapons, allowing it to carry more valuable cargo.
+
+				Only Journeymen and Masters are rated to escort the T55 class.
+			</Text>
+		</Language>
+		
+	</ShipClass>
+
 <!-- ITEM TYPES -->
 	
 	<!-- Shipping Container -->
