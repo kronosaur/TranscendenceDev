@@ -1215,7 +1215,7 @@
 							(and theCriteria (not (itmMatches theItem theCriteria)))
 								Nil
 
-							(itmMatches theItem "adm")
+							(itmMatches theItem "adm -rpgExchangeTabGeneral")
 								Nil
 											
 							(rpgCalcSellPrice theItem)
@@ -1227,7 +1227,7 @@
 							(and theCriteria (not (itmMatches theItem theCriteria)))
 								Nil
 
-							(itmMatches theItem "ad")
+							(itmMatches theItem "ad|* +rpgExchangeTabDevicesArmor")
 								(rpgCalcSellPrice theItem)
 							)
 						))
@@ -1237,7 +1237,7 @@
 							(and theCriteria (not (itmMatches theItem theCriteria)))
 								Nil
 
-							(itmMatches theItem "m")
+							(itmMatches theItem "m|* +rpgExchangeTabAmmo")
 								(rpgCalcSellPrice theItem)
 							)
 						))
