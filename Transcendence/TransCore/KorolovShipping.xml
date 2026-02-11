@@ -1617,15 +1617,15 @@
 				(or
 					(switch
 						;	New method via properties
-						(typ@ typ 'korolov.containerPrice.0)
+						(typ@ typ 'korolov.cargoValue.0)
 							0
-						(typ@ typ 'korolov.containerPrice.1)
+						(typ@ typ 'korolov.cargoValue.1)
 							1
-						(typ@ typ 'korolov.containerPrice.2)
+						(typ@ typ 'korolov.cargoValue.2)
 							2
-						(typ@ typ 'korolov.containerPrice.3)
+						(typ@ typ 'korolov.cargoValue.3)
 							3
-						(typ@ typ 'korolov.containerPrice.4)
+						(typ@ typ 'korolov.cargoValue.4)
 							4
 
 						;	Legacy method
@@ -1639,15 +1639,15 @@
 				(or
 					(switch
 						;	New method via properties
-						(obj@ obj 'korolov.containerPrice.0)
+						(obj@ obj 'korolov.cargoValue.0)
 							0
-						(obj@ obj 'korolov.containerPrice.1)
+						(obj@ obj 'korolov.cargoValue.1)
 							1
-						(obj@ obj 'korolov.containerPrice.2)
+						(obj@ obj 'korolov.cargoValue.2)
 							2
-						(obj@ obj 'korolov.containerPrice.3)
+						(obj@ obj 'korolov.cargoValue.3)
 							3
-						(obj@ obj 'korolov.containerPrice.4)
+						(obj@ obj 'korolov.cargoValue.4)
 							4
 
 						;	Legacy method
@@ -1659,6 +1659,15 @@
 			(setq korIsSandboxMode (lambda ()
 				"Returns a non-nil value if sandbox mode is enabled"
 				(typ@ &unidKorolovShipping; 'sandboxMode)
+				))
+
+			(setq korRandomCargoValue (lambda (min max)
+				"Returns standard distribution of cargo values from min to max"
+				(randomGaussian
+					min
+					(+ min (round (\ (- max min) 2)))
+					max
+					)
 				))
 
 			;	korInitMissions
@@ -2017,7 +2026,7 @@
 					;	Figure out the price per container of the cargo
 					(setq pricePerContainer (or
 						;	New method
-						(typ@ escortType (cat 'korolov.containerPrice. escortLevel))
+						(/ (typ@ escortType (cat 'korolov.cargoValue. escortLevel)) fitCount)
 
 						;	1.8-1.9 method
 						(eval (@ (typGetStaticData escortType 'korolov.containerPrice) escortLevel))

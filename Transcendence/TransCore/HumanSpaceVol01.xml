@@ -2468,6 +2468,13 @@
 	<!ENTITY scAntaresVLogistics		"0x0010071A">
 	<!ENTITY scScarabFreighterStock		"0x0010071B">
 	<!ENTITY vtScarabTurretSlot			"0x0010071C">
+	<!ENTITY scT31ArmedTransportStock	"0x0010071D">
+	<!ENTITY scT55ArmedTransportStock	"0x0010071E">
+	<!ENTITY scScarabFreighterKorolov	"0x0010071F">
+	<!ENTITY scT31ArmedTransportTraffic	"0x00100720">
+	<!ENTITY scT55ArmedTransportTraffic	"0x00100721">
+	<!ENTITY scT31ArmedTransportKorolov	"0x00100722">
+	<!ENTITY scT55ArmedTransportKorolov	"0x00100723">
 
 	<!-- 0740-075F RASIERMESSER -->
 
