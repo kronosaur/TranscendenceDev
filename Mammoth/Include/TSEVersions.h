@@ -1041,7 +1041,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 //						'maxArmorSize			returns max armor size in CBM as a string
 //						'maxArmorMass			DEPRECATED: use maxArmorSize instead (returns same value multiplied by 1000)
 //		XML Entities:
-//			Added built-in entities for all printable windows wester x80-xFF characters
+//			Added built-in entities for all printable windows western x80-xFF characters
 //				See Alchemy/Kernel/CHTML.cpp for exact entities that are available
 //				References:
 //					Windows western encoding: https://en.wikipedia.org/wiki/Windows-1252
