@@ -136,9 +136,9 @@ ALERROR CExtensionCollection::AddCompatibilityLibrary (CExtension *pAdventure, c
 	//	Add the library
 
 	CExtension *pLibrary;
-	if (!FindBestExtension(DEFAULT_COMPATIBILITY_LIBRARY_UNID, 1, dwFlags, &pLibrary))
+	if (!FindBestExtension(UNID_COMPATIBILITY_LIBRARY_API26, 1, dwFlags, &pLibrary))
 		{
-		if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to find compatibility library: %08x"), DEFAULT_COMPATIBILITY_LIBRARY_UNID);
+		if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to find compatibility library: %08x"), UNID_COMPATIBILITY_LIBRARY_API26);
 		return ERR_FAIL;
 		}
 
@@ -206,9 +206,9 @@ ALERROR CExtensionCollection::AddCompatibilityUNIDLibrary (CExtension *pAdventur
 	//	Add the library
 
 	CExtension *pLibrary;
-	if (!FindBestExtension(DEFAULT_COMPATIBILITY_UNID_LIBRARY_UNID, 1, dwFlags, &pLibrary))
+	if (!FindBestExtension(UNID_COMPATIBILITY_LIBRARY_API54, 1, dwFlags, &pLibrary))
 		{
-		if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to find compatibility UNID library: %08x"), DEFAULT_COMPATIBILITY_UNID_LIBRARY_UNID);
+		if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to find compatibility UNID library: %08x"), UNID_COMPATIBILITY_LIBRARY_API54);
 		return ERR_FAIL;
 		}
 
@@ -933,7 +933,7 @@ void CExtensionCollection::ComputeCoreLibraries (CExtension *pExtension, TArray<
 
 			if (pExtension->GetAPIVersion() < 12)
 				{
-				if (FindBestExtension(DEFAULT_COMPATIBILITY_LIBRARY_UNID, 1, 0, &pLibrary))
+				if (FindBestExtension(UNID_COMPATIBILITY_LIBRARY_API26, 1, 0, &pLibrary))
 					retList->Insert(pLibrary);
 				}
 
@@ -942,7 +942,7 @@ void CExtensionCollection::ComputeCoreLibraries (CExtension *pExtension, TArray<
 
 			if (pExtension->GetAPIVersion() < 54)
 				{
-				if (FindBestExtension(DEFAULT_COMPATIBILITY_UNID_LIBRARY_UNID, 1, 0, &pLibrary))
+				if (FindBestExtension(UNID_COMPATIBILITY_LIBRARY_API54, 1, 0, &pLibrary))
 					retList->Insert(pLibrary);
 				}
 

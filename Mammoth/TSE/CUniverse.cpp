@@ -2509,7 +2509,7 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 
 	dwSave = 0;
 	dwSave |= (m_bRegistered ? 0x00000001 : 0);
-	dwSave |= (m_Design.FindExtension(DEFAULT_COMPATIBILITY_LIBRARY_UNID) ? 0x00000002 : 0);
+	dwSave |= (m_Design.FindExtension(UNID_COMPATIBILITY_LIBRARY_API26) ? 0x00000002 : 0);
 	pStream->Write(dwSave);
 
 	pStream->Write(m_dwNextID);
