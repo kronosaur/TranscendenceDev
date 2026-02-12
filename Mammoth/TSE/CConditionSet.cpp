@@ -6,6 +6,7 @@
 #include "PreComp.h"
 
 static TStaticStringTable<TStaticStringEntry<ECondition>, (int)ECondition::count> CONDITION_TABLE = {
+	//NOTE: keys must be alphabetical
 	"blind",				ECondition::blind,
 	"disarmed",				ECondition::disarmed,
 	"dragged",				ECondition::dragged,
@@ -20,6 +21,7 @@ static TStaticStringTable<TStaticStringEntry<ECondition>, (int)ECondition::count
 	};
 
 static TStaticStringTable<TStaticStringEntry<EConditionResult>, 6> CONDITION_RESULT_TABLE = {
+	//NOTE: keys must be alphabetical
 	"alreadyApplied",		EConditionResult::alreadyApplied,
 	"alreadyRemoved",		EConditionResult::alreadyRemoved,
 	"noEffect",				EConditionResult::noEffect,

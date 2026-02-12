@@ -11,6 +11,7 @@
 #define TYPE_ATTRIB								CONSTLIT("type")
 
 TStaticStringTable<TStaticStringEntry<EAsteroidType>, 5> CAsteroidDesc::COMPOSITION_INDEX = {
+	//NOTE: keys must be alphabetical
 	"icy",					EAsteroidType::icy,
 	"metallic",				EAsteroidType::metallic,
 	"primordial",			EAsteroidType::primordial,
@@ -62,11 +63,12 @@ CAsteroidDesc::SCompositionDesc CAsteroidDesc::COMPOSITION_TABLE[EAsteroidTypeCo
 	};
 
 TStaticStringTable<TStaticStringEntry<EMiningMethod>, EMiningMethodCount> CAsteroidDesc::MINING_METHOD_INDEX = {
-	"universal",			EMiningMethod::universal,
+	//NOTE: keys must be alphabetical
 	"ablation",				EMiningMethod::ablation,
 	"drill",				EMiningMethod::drill,
 	"explosion",			EMiningMethod::explosion,
 	"shockwave",			EMiningMethod::shockwave,
+	"universal",			EMiningMethod::universal,
 	};
 
 const CAsteroidDesc CAsteroidDesc::m_Null;

@@ -31,6 +31,7 @@
 #define Y_ATTRIB								CONSTLIT("y")
 
 static TStaticStringTable<TStaticStringEntry<CTopologyDesc::EInitialStates>, 4> INITIAL_STATE_TABLE = {
+	//NOTE: keys must be alphabetical
 	"explored",				CTopologyDesc::stateExplored,
 	"known",				CTopologyDesc::stateKnown,
 	"positionKnown",		CTopologyDesc::statePositionKnown,

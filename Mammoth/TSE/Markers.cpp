@@ -13,6 +13,7 @@ const CG32bitPixel RGB_ORBIT_LINE =		        CG32bitPixel(115, 149, 229);
 //	CMarker -------------------------------------------------------------------
 
 static TStaticStringTable<TStaticStringEntry<CMarker::EStyle>, 2> STYLE_TABLE = {
+	//NOTE: keys must be alphabetical
 	"message",				CMarker::EStyle::Message,
 	"smallCross",			CMarker::EStyle::SmallCross,
 	};

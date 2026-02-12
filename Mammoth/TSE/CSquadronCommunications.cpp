@@ -7,6 +7,7 @@
 
 TStaticStringTable<TStaticStringEntry<CSquadronCommunications::SSquadronMsgDesc>, 8> CSquadronCommunications::m_SquadronMsgTable = 
 	{
+	//NOTE: keys must be alphabetical
 		"msgAttackInFormation",	{	ESquadronMsg::AttackInFormation,	"msgAttackInFormation",	"Attack in formation",	msgAttackInFormation,	resCanAttackInFormation	},
 		"msgAttackTarget",		{	ESquadronMsg::Attack,				"msgAttackTarget",		"Attack target",		msgAttack,				resCanAttack		},
 		"msgBreakAndAttack",	{	ESquadronMsg::BreakAndAttack,		"msgBreakAndAttack",	"Break & attack",		msgBreakAndAttack,		resCanBreakAndAttack	},

@@ -18,6 +18,7 @@ constexpr int DEFAULT_BLOOM_POINT =		220;
 constexpr Metric BLOOM_BLUR_RADIUS =	14.0;
 
 static TStaticStringTable<TStaticStringEntry<CImageFilterDesc::ETypes>, 4> TYPE_TABLE = {
+	//NOTE: keys must be alphabetical
 	"Bloom",				CImageFilterDesc::filterBloom,
 	"Colorize",				CImageFilterDesc::filterColorize,
 	"HueSaturation",		CImageFilterDesc::filterHueSaturation,
