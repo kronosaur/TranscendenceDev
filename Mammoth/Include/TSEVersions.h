@@ -1033,6 +1033,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 //					'maxCargoSpace			Total cargo space in cubic meters (previously tons)
 //			(objGetCargoSpaceLeft obj)
 //				DEPRECATED: returns cargo space in liters, for compatibility math. Name implies returning in cubic meters though.
+//			(randomGaussian low [mid] high)
+//				Returns double if any argument is a double
+//				Now has a 2-arg form which uses the midpoint of low and high
 //			(typGetDataField type field)
 //				New and updated fields
 //					;;ItemType
