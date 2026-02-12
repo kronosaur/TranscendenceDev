@@ -823,8 +823,6 @@
 			   
 			attributes=			"commonwealth, freighter, genericClass, NAMI"
 			inherit=			"&scScarabFreighterStock;"
-
-			explosionType=		"&vtBlastExplosion4;"
 			>
 
 		<Names definiteArticle="true">
@@ -871,27 +869,66 @@
 
 		<!-- Configuration -->
 		
+		<Armor
+			armorID=			"&itHardenedReactiveArmor;"
+			count=				"20"
+			/>
+		
 		<Devices>
-			<Device slotID="turret"			deviceID="&itSlamCannon;"/>
+			<Table>
+				<Group chance="25">
+					<Device slotID="turret"			deviceID="&itPartisanCannon;"/>
+					<Device deviceID="&itMissileDefense;"/>
+				</Group>
+				<Group chance="20">
+					<Device slotID="turret"			deviceID="&itArbalestCannon;"/>
+					<Device deviceID="&itMissileDefense;"/>
+				</Group>
+				<Group chance="15">
+					<Device slotID="fore_turret"	deviceID="&itOmniLaserCannon;"/>
+					<Device slotID="turret"			deviceID="&itTridentCannon;"/>
+					<Device item="&itArmorRepairDevice;"/>
+				</Group>
+				<Group chance="10">
+					<Device slotID="main"			deviceID="&itOmniLaserCannon;"/>
+					<Device slotID="turret"			deviceID="&itLaserArray;"/>
+				</Group>
+				<Group chance="10">
+					<Device slotID="main"			deviceID="&itMoskvaLightTurret;"/>
+					<Device slotID="turret"			deviceID="&itMoskvaLightTurret;"/>
+				</Group>
+				<Group chance="10">
+					<Device slotID="main"			deviceID="&itOmniPartisanCannon;"/>
+					<Device slotID="turret"			deviceID="&itOmniPartisanCannon;"/>
+				</Group>
+				<Group chance="5">
+					<Device slotID="turret"			deviceID="&itBallistaCannon;"/>
+				</Group>
+				<Group chance="5">
+					<Device slotID="turret"			deviceID="&itSlamCannon;"/>
+				</Group>
+			</Table>
 
-			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
-			<Device deviceID="&itMissileDefense;"/>
 			<Table>
 				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>
 				<Device slotID="shipSystems"	chance="15" deviceID="&vtShipSystems250;"/>
 				<Device slotID="shipSystems"	chance="10" deviceID="&vtShipSystems125;"/>
 				<Device slotID="shipSystems"	chance="25" deviceID="&vtShipSystems150;"/>
 			</Table>
+
+			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
 		</Devices>
 
 		<!-- Text -->
 		
 		<Language>
 			<Text id="korolov.shipDesc">
-				The T55 class freighter is a competent freighter usually seen
-				with decent weapons, allowing it to carry more valuable cargo.
+				Scarab class superfreighters can carry a massive quantitiy of cargo,
+				even more than the Antares V. The sheer volume of cargo that they
+				move makes them a tempting target for pirates despite their tougher
+				hull.
 
-				Only Journeymen and Masters are rated to escort the T55 class.
+				Only Masters are rated to escort the Scarab class.
 			</Text>
 		</Language>
 		

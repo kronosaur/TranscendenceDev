@@ -2531,10 +2531,10 @@
 		<Hull
 			size=				"200"
 			mass=				"15000"
-			cargoSpace=			"1200000"
+			cargoSpace=			"120000"
 
 			maxReactorPower=	"10000"
-			maxCargoSpace=		"1200000"
+			maxCargoSpace=		"120000"
 			maxDevices=			"8"
 			maxWeapons=			"3"
 			>
