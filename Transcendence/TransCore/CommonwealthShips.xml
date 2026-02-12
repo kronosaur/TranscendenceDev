@@ -2674,6 +2674,7 @@
 			name=				"Manticore shield penalty"
 			virtual=			"true"
 			level=				"1"
+			obsoleteVersion=	"59"
 			>
 			<!-- OBSOLETE: use vtShieldSlotModifier instead-->
 		<Image imageID="&rsManticore120;" imageX="0" imageY="0" imageWidth="80" imageHeight="80"/>

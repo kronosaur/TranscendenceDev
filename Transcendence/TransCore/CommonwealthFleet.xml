@@ -809,6 +809,7 @@ PLAYER DATA
 			name=				"Minotaur auto-turret"
 			virtual=			"true"
 			level=				"1"
+			obsoleteVersion=	"59"
 			>
 		<!-- OBSOLETE: use vtAutoTurretSlot instead -->
 		<Image imageID="&rsMinotaur;" imageX="0" imageY="0" imageWidth="110" imageHeight="110"/>
