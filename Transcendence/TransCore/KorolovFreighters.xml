@@ -746,18 +746,18 @@
 			<DynamicGlobal id="korolov.cargoValue.2">
 				; Journeymen: 2000 - 4000 credits
 				; 160,000 - 320,000 cargo value
-				(korRandomCargoValue 40000 90000)
+				(korRandomCargoValue 60000 100000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.3">
 				; Masters: 4000 - 10000 credits
 				; 320,000 - 800,000 cargo value
-				(korRandomCargoValue 60000 120000)
+				(korRandomCargoValue 80000 130000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
 				10000 ; Legends: requires sandbox mode to be activated
-				(korRandomCargoValue 90000 160000)
+				(korRandomCargoValue 110000 160000)
 			</DynamicGlobal>
 
 			<Global id="korolov.escortRate">
