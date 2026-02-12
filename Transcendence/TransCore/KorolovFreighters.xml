@@ -171,14 +171,10 @@
 			; apprentices cannot escort
 
 			<DynamicGlobal id="korolov.cargoValue.2">
-				; Journeymen: 100 - 240 credits per container
-				; 120,000 - 288,000
 				(korRandomCargoValue 120000 288000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				; Masters: 200 - 400 credits per container
-				; 240,000 - 480,000
 				(korRandomCargoValue 240000 480000)
 			</DynamicGlobal>
 
@@ -293,8 +289,6 @@
 			; apprentices cannot escort
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				; Masters: 160 - 400 credits
-				; 320,000 - 800,000 cargo value
 				(korRandomCargoValue 320000 800000)
 			</DynamicGlobal>
 
@@ -374,31 +368,22 @@
 
 		<Properties>
 			<DynamicGlobal id="korolov.cargoValue.0">
-				; New pilot: 1500 - 4000 credits
-				; 15,000 - 20,000 cargo value
 				(korRandomCargoValue 15000 20000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.1">
-				; Apprentices: 1500 - 4000 credits
-				; 15,000 - 30,000 cargo value
 				(korRandomCargoValue 15000 30000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.2">
-				; Journeymen: 2500 - 5000 credits
-				; 25,000 - 50,000 cargo value
 				(korRandomCargoValue 25000 50000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				; Masters: 3000 - 5000 credits
-				; 30,000 - 50,000 cargo value
 				(korRandomCargoValue 30000 50000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				5000 ; Legends: requires sandbox mode to be activated
 				(korRandomCargoValue 45000 55000)
 			</DynamicGlobal>
 
@@ -476,27 +461,18 @@
 
 		<Properties>
 			<DynamicGlobal id="korolov.cargoValue.0">
-				; New pilot: 800 - 2000 credits
-				; 20,000 - 40,000 cargo value
-				(multiply 100 (random 10 20))
 				(korRandomCargoValue 20000 40000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.1">
-				; Apprentices: 1200 - 2500 credits
-				; 24,000 - 50,000 cargo value
 				(korRandomCargoValue 24000 50000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.2">
-				; Journeymen: 1500 - 4000 credits
-				; 30,000 - 80,000 cargo value
 				(korRandomCargoValue 30000 80000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				; Masters: 3000 - 5000 credits
-				; 60,000 - 100,000 cargo value
 				(korRandomCargoValue 60000 100000)
 			</DynamicGlobal>
 
@@ -578,19 +554,14 @@
 			; apprentices cannot escort
 
 			<DynamicGlobal id="korolov.cargoValue.2">
-				; Journeymen: 2000 - 4000 credits
-				; 160,000 - 320,000 cargo value
 				(korRandomCargoValue 160000 320000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				; Masters: 4000 - 10000 credits
-				; 320,000 - 800,000 cargo value
 				(korRandomCargoValue 320000 800000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				10000 ; Legends: requires sandbox mode to be activated
 				(korRandomCargoValue 600000 1000000)
 			</DynamicGlobal>
 
@@ -644,25 +615,18 @@
 			; new pilots cannot escort
 
 			<DynamicGlobal id="korolov.cargoValue.1">
-				; Journeymen: 2000 - 4000 credits
-				; 160,000 - 320,000 cargo value
 				(korRandomCargoValue 20000 35000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.2">
-				; Journeymen: 2000 - 4000 credits
-				; 160,000 - 320,000 cargo value
 				(korRandomCargoValue 30000 45000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				; Masters: 4000 - 10000 credits
-				; 320,000 - 800,000 cargo value
 				(korRandomCargoValue 40000 60000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				10000 ; Legends: requires sandbox mode to be activated
 				(korRandomCargoValue 50000 70000)
 			</DynamicGlobal>
 
@@ -744,19 +708,14 @@
 			; apprentices cannot escort
 
 			<DynamicGlobal id="korolov.cargoValue.2">
-				; Journeymen: 2000 - 4000 credits
-				; 160,000 - 320,000 cargo value
 				(korRandomCargoValue 60000 100000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				; Masters: 4000 - 10000 credits
-				; 320,000 - 800,000 cargo value
 				(korRandomCargoValue 80000 130000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				10000 ; Legends: requires sandbox mode to be activated
 				(korRandomCargoValue 110000 160000)
 			</DynamicGlobal>
 
@@ -846,13 +805,10 @@
 			; journeymen cannot escort
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				; Masters: 4000 - 10000 credits
-				; 320,000 - 800,000 cargo value
 				(korRandomCargoValue 320000 800000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				10000 ; Legends: requires sandbox mode to be activated
 				(korRandomCargoValue 640000 1200000)
 			</DynamicGlobal>
 
