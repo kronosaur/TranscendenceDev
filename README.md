@@ -1,6 +1,6 @@
 # TRANSCENDENCE SOURCE CODE
 
-Copyright (c) 2003-2025 by Kronosaur Productions, LLC.
+Copyright (c) 2003-2026 by Kronosaur Productions, LLC.
 
 https://transcendence.kronosaur.com
 
@@ -63,90 +63,38 @@ thread on the Kronosaur Productions forums.
 
 You may build your own copies of the game from source. These versions will not
 have the code to access the Kronosaur Multiverse however, but you can still
-use one of the Kronosaur-provided binaries in order to
+use one of the Kronosaur-provided binaries to access the multiverse.
 
-If you are downloading the repos in order to submit future pull requests, it is 
-worthwhile to keep repositories synced with kronosaur:
+## CONTRIBUTING
 
-[How to sync a fork on github](https://help.github.com/articles/syncing-a-fork/)
+### DEVELOPMENT ENVIRONMENT
 
-General help on using git is available through official sources:
+You can setup a development environment in two ways:
 
-[Github](https://help.github.com)
+1. A full engine development environment with Visual Studios
+2. A game data only development environment using prebuilt binaries
 
-You will need to install the February 2010 DirectX SDK release, as later versions 
-do not include necessary libraries. The correct DirectX SDK can be downloaded 
-here: 
+See this article for more information:
 
-[Archive.org - 2010 DirectX SDK](https://archive.org/details/dxsdk_feb10)
+[Development Environment Setup & Build Instructions](docs/Programmer_Guides/Getting_Started.md)
 
-Note the DirectX SDK's install location on your computer.
-
-It may be necessary to uninstall certain Microsoft Visual C++ Redistributables 
-when installing DirectX SDKs:
-
-[MSVC++ Redistributable Requirements](http://support.microsoft.com/kb/2728613)
-
-Use Microsoft Visual Studio 2019 or later. Open `File > Open > Project/Solution` 
-`<Repo Root>/Transcendence/Transcendence.sln`, which is the Transcendence 
-solution file. The following warnings, if shown under `Output` from Solution, 
-may be safely ignored:
-
-```
-    <Repo Root>\Alchemy\zlib-1.2.7\contrib\vstudio\vc10\zlibstat.vcxproj : 
-    warning  : Platform 'Itanium' referenced in the project file 'zlibstat' 
-    cannot be found.
-
-    <Repo Root>\TransCore\TransCore.vcxproj : error  : Project 
-    "...\TransCore\TransCore.vcxproj" could not be found.
-```
-
-Then go to `View>Solution Explorer` and check the pane opened to the right side.
-Right click `Transcendence` and select `Set as Startup Project`. `Transcendence`
-should now be bolded in the Solution Explorer. 
-
-Ensure that the correct locations of the DirectX SDK Include and Lib folders 
-are specified for the Transcendence project (under the Transcendence solution) 
-by right clicking `Transcendence` and selecting `Properties` to open the 
-project's Properties page, and checking the following property sets:
-
-    Configuration Properties > VC++ Directories > General > Include Directories
-    Configuration Properties > VC++ Directories > General > Library Directories
-    
-Always point the Library Directories variable to the \Lib\x86 folder of the SDK.
-
-In the second from the top ribbon, there is a `Debug` dropdown. Select `Debug for
-Contributors` and change the dropdown next to it from `Any CPU` to `Win32`.
-Build the solution. Executables will be placed in the Transcendence/Game 
-directory. These can be viewed from the file system.
-
-Now the game can optionally be launched from Visual Studio with the `Local Windows
-Debugger` in the second from the top ribbon.
-
-For security reasons the source code does not include certain files to 
-communicate with the Hexarc arcology (the cloud service). The code will compile
-without it, however, as long as you add CHexarcServiceStub.cpp to the build.
-
-In Visual Studio, selecting the "Debug For Contributors" configuration will
-build the game with CHexarcServiceStub.cpp.
-
-## CONTRIBUTION GUIDELINES
+### CONTRIBUTION GUIDELINES
 
 Please see the contribution guidelines for information about best practices and
 style guides.
 
-[General Contribution Guidelines](Docs/Contributor_Guidelines.md)
+[General Contribution Guidelines](docs/CONTRIBUTING.md)
 
 Style & Contribution Guidelines:
 
-* [C++ Style Guide](Docs/Style_Guides/C++.md)
-* [TLisp Style Guide](Docs/Style_Guides/TLisp.md)
-* [XML Style Guide](Docs/Style_Guides/XML.md)
-* [Markdown (Documentation) Style Guide](Docs/Style_Guides/Markdown.md)
-* [In-game Text Style Guide](Docs/Style_Guides/Ingame_Text.md)
-* [Asset Style Guide](Docs/Style_Guides/Assets.md)
+* [C++ Style Guide](docs/Style_Guides/C++.md)
+* [TLisp Style Guide](docs/Style_Guides/TLisp.md)
+* [XML Style Guide](docs/Style_Guides/XML.md)
+* [Markdown (Documentation) Style Guide](docs/Style_Guides/Markdown.md)
+* [In-game Text Style Guide](docs/Style_Guides/Ingame_Text.md)
+* [Asset Style Guide](docs/Style_Guides/Assets.md)
 
-### PULL REQUESTS
+#### PULL REQUESTS
 
 Please submit pull requests against the appropriate branch - if you have made an
 API change, ensure that your pull request is against the appropriate API branch.
@@ -162,34 +110,6 @@ It is recommended to split up multiple unrelated (or extremely large)
 changes into multiple PRs to make it easier to review. We have a limited amount
 of time each week to review PRs, so oversized PRs may take multiple weeks to
 review or outright rejected as too big to review.
-
-### RECOMMENDED EDITOR CONFIGURATION
-
-To enable whitesmith indentation style in Visual Studio, open `Tools > Options`:
-
-Then select `Text Editor > C/C++ > Tabs` and ensure that:
-
-    Tab size = 4
-    Indent size = 4
-    Keep Tabs = True
-
-Then select `Text Editor > C/C++ > Code Style > Formatting > Indentation` and
-ensure that:
-
-    Indent braces = True
-    Indent each line relatively to = `Innermost paranthesis`
-    Within parenthesis, align new lines when I type them = `Indent new lines`
-    Indent case contents = True
-    Indent braces following a case statement = True
-    Indent braces of lambdas = True
-    
-Then select `Text Editor > C/C++ > Code Style > Formatting > Spacing` and ensure
-that:
-
-    `Spacing for operators > Pointer/reference Alignment > Leave unchanged` = True
-
-If you find additional settings that should be changed to provide for an easier
-editing experience, please update this readme with them.
 
 ## LINKS
 

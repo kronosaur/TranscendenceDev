@@ -21,6 +21,7 @@
 #define MISSILES_TARGET							CONSTLIT("missiles")
 
 #define PROPERTY_FIRE_DELAY						CONSTLIT("fireDelay")
+#define PROPERTY_FIRE_DELAY_REAL				CONSTLIT("fireDelayReal")
 #define PROPERTY_FIRE_RATE						CONSTLIT("fireRate")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_EXTERNAL						CONSTLIT("external")
@@ -285,7 +286,7 @@ void CAutoDefenseClass::UpdateTarget (CInstalledDevice* pDevice, CSpaceObject* p
 
 	Ctx.bConsumedItems = ActivateCtx.bConsumedItems;
 
-	pDevice->SetTimeUntilReady(m_iRechargeTicks);
+	pDevice->SetTimeUntilReady(m_rRechargeDelay);
 
 	//	Identify
 
@@ -293,14 +294,14 @@ void CAutoDefenseClass::UpdateTarget (CInstalledDevice* pDevice, CSpaceObject* p
 		pDevice->GetItem()->SetKnown();
 	}
 
-int CAutoDefenseClass::GetActivateDelay (CItemCtx &ItemCtx) const
+Metric CAutoDefenseClass::GetActivateDelay (CItemCtx &ItemCtx) const
 
 //	GetActivateDelay
 //
 //	Returns the activation delay
 
 	{
-	return m_iRechargeTicks;
+	return m_rRechargeDelay;
 	}
 
 int CAutoDefenseClass::CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource)
@@ -378,11 +379,14 @@ ICCItem *CAutoDefenseClass::FindItemProperty (CItemCtx &Ctx, const CString &sPro
 	//	Get the property
 
 	if (strEquals(sProperty, PROPERTY_FIRE_DELAY))
-		return CC.CreateInteger(m_iRechargeTicks);
+		return CC.CreateInteger(mathRound(m_rRechargeDelay / g_SecondsPerUpdate));
+
+	else if (strEquals(sProperty, PROPERTY_FIRE_DELAY_REAL))
+		return CC.CreateDouble(m_rRechargeDelay / g_SecondsPerUpdate);
 
 	else if (strEquals(sProperty, PROPERTY_FIRE_RATE))
 		{
-		Metric rDelay = m_iRechargeTicks;
+		Metric rDelay = m_rRechargeDelay / g_SecondsPerUpdate;
 		if (rDelay <= 0.0)
 			return CC.CreateNil();
 
@@ -665,11 +669,15 @@ ALERROR CAutoDefenseClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	if (error = pDevice->InitDeviceFromXML(Ctx, pDesc, pType))
 		return error;
 
-	int iFireRate = pDesc->GetAttributeInteger(FIRE_RATE_ATTRIB);
-	if (iFireRate == 0)
-		iFireRate = pDesc->GetAttributeInteger(RECHARGE_TIME_ATTRIB);
-	if (iFireRate == 0)
-		iFireRate = 15;
+	Metric rFireRate = pDesc->GetAttributeDoubleBounded(FIRE_RATE_ATTRIB, 0.0, -1.0, 0.0);
+	if (rFireRate == 0.0)
+		rFireRate = pDesc->GetAttributeDoubleBounded(RECHARGE_TIME_ATTRIB, 0.0, -1.0, 0.0);
+	if (rFireRate == 0.0)
+		rFireRate = 15.0;
+
+	pDevice->m_rRechargeDelay = (Metric)rFireRate;
+	if (error = pDevice->m_pWeapon.LoadUNID(Ctx, pDesc->GetAttribute(WEAPON_ATTRIB)))
+		return error;
 
 	pDevice->m_iMinFireArc = AngleMod(pDesc->GetAttributeInteger(MIN_FIRE_ARC_ATTRIB));
 	pDevice->m_iMaxFireArc = AngleMod(pDesc->GetAttributeInteger(MAX_FIRE_ARC_ATTRIB));
@@ -678,10 +686,6 @@ ALERROR CAutoDefenseClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	//  if minfirearc = maxfirearc = 0.
 	pDevice->m_bOmnidirectional = (pDesc->GetAttributeBool(OMNIDIRECTIONAL_ATTRIB) ||
 		((pDevice->m_iMaxFireArc == pDevice->m_iMinFireArc) && pDevice->m_iMaxFireArc == 0));
-
-	pDevice->m_iRechargeTicks = mathRound(iFireRate / STD_SECONDS_PER_UPDATE);
-	if (error = pDevice->m_pWeapon.LoadUNID(Ctx, pDesc->GetAttribute(WEAPON_ATTRIB)))
-		return error;
 
 	//	Targeting. If we have a targetCriteria attribute then we use
 	//	this to pick a target

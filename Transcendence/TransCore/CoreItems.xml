@@ -45,5 +45,200 @@
 		</Language>
 	</ItemType>
 
+	<!-- Generic Enhancement -->
+
+	<ItemType UNID="&vtShipSystems100;"
+			name=				"Ship Systems (Nominal)"
+			attributes=			"shipSystems"
+			virtual=			"true"
+			level=				"1"
+			installedItemUsesObjectImage="true"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		<MiscellaneousDevice
+				powerUse=		"0"
+				deviceSlots=	"0"
+				>
+			<EnhancementAbilities>
+				<!--
+					we dont actually buff/debuff anything
+					this is just here so criteria works correctly
+				-->
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+	</ItemType>
+
+	<ItemType UNID="&vtShipSystems125;"
+			name=				"Ship Systems (Fair)"
+			attributes=			"shipSystems"
+			virtual=			"true"
+			level=				"1"
+			installedItemUsesObjectImage="true"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		<MiscellaneousDevice
+				powerUse=		"0"
+				deviceSlots=	"0"
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"&vtShipSystems125;"
+						 criteria=		"w"
+						 enhancement=	"-speed:125;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+	</ItemType>
+
+	<ItemType UNID="&vtShipSystems150;"
+			name=				"Ship Systems (Poor)"
+			attributes=			"shipSystems"
+			virtual=			"true"
+			level=				"1"
+			installedItemUsesObjectImage="true"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		<MiscellaneousDevice
+				powerUse=		"0"
+				deviceSlots=	"0"
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"&vtShipSystems150;"
+						 criteria=		"w"
+						 enhancement=	"-speed:150;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+	</ItemType>
+
+	<ItemType UNID="&vtShipSystems200;"
+			name=				"Ship Systems (Degraded)"
+			attributes=			"shipSystems"
+			virtual=			"true"
+			level=				"1"
+			installedItemUsesObjectImage="true"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		<MiscellaneousDevice
+				powerUse=		"0"
+				deviceSlots=	"0"
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"&vtShipSystems200;"
+						 criteria=		"w"
+						 enhancement=	"-speed:200;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+	</ItemType>
+
+	<ItemType UNID="&vtShipSystems250;"
+			name=				"Ship Systems (Damaged)"
+			attributes=			"shipSystems"
+			virtual=			"true"
+			level=				"1"
+			installedItemUsesObjectImage="true"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		<MiscellaneousDevice
+				powerUse=		"0"
+				deviceSlots=	"0"
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"&vtShipSystems250;"
+						 criteria=		"w"
+						 enhancement=	"-speed:250;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+	</ItemType>
+
+	<ItemType UNID="&vtShipSystems300;"
+			name=				"Ship Systems (Broken)"
+			attributes=			"shipSystems"
+			virtual=			"true"
+			level=				"1"
+			installedItemUsesObjectImage="true"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		<MiscellaneousDevice
+				powerUse=		"0"
+				deviceSlots=	"0"
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"&vtShipSystems300;"
+						 criteria=		"w"
+						 enhancement=	"-speed:300;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+	</ItemType>
+
+	<ItemType UNID="&vtShipSystems500;"
+			name=				"Ship Systems (Failing)"
+			attributes=			"shipSystems"
+			virtual=			"true"
+			level=				"1"
+			installedItemUsesObjectImage="true"
+			>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+		<MiscellaneousDevice
+				powerUse=		"0"
+				deviceSlots=	"0"
+				>
+			<EnhancementAbilities>
+				<Enhance type=			"&vtShipSystems500;"
+						 criteria=		"w"
+						 enhancement=	"-speed:500;"
+						 />
+			</EnhancementAbilities>
+		</MiscellaneousDevice>
+	</ItemType>
+
+	<ItemType UNID="&vtFireLinkedWeapons;"
+			name=				"(Fire Linked Weapons)"
+			level=				"1"
+
+			attributes=			"fireLinkedWeapons; NotForSale;"
+
+			virtual=			"true"
+			>
+
+		<Image imageID="&rsItemsCore1;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				damage=				"null:0;"
+				fireRate=			"20"
+				missileSpeed=		"100"
+				lifeTime=			"60"
+				hitPoints=			"1"
+				powerUse=			"0"
+				deviceSlots=		"0"
+
+				ignoredByAI=		"true"
+				>
+			<FireEffect>
+				<Null/>
+			</FireEffect>
+			<Effect>
+				<Null/>
+			</Effect>
+			<HitEffect>
+				<Null/>
+			</HitEffect>
+		</Weapon>
+		<Events>
+			<onFireWeapon>True</onFireWeapon>
+		</Events>
+	</ItemType>
+
 </TranscendenceModule>
 	

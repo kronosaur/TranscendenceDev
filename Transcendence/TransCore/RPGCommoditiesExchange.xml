@@ -48,9 +48,9 @@
 			>
 		<Properties>
 			<Variant id="rpg.buyCriteria">(@ gData 'buyCriteria)</Variant>
-			<Variant id="rpg.checkMilitaryID">(or (objGetProperty gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
+			<Variant id="rpg.checkMilitaryID">(or (obj@ gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
 			<Variant id="rpg.sellCriteria">(@ gData 'sellCriteria)</Variant>
-			<Variant id="rpg.showActualItem">(or (objGetProperty gSource 'rpg.showActualItem) (@ gData 'showActualItem))</Variant>
+			<Variant id="rpg.showActualItem">(or (obj@ gSource 'rpg.showActualItem) (@ gData 'showActualItem))</Variant>
 			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
 		</Properties>
 
@@ -136,9 +136,9 @@
 			>
 		
 		<Properties>
-			<Variant id="rpg.checkMilitaryID">(or (objGetProperty gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
+			<Variant id="rpg.checkMilitaryID">(or (obj@ gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
 			<Variant id="rpg.criteria">(@ gData 'criteria)</Variant>
-			<Variant id="rpg.showActualItem">(or (objGetProperty gSource 'rpg.showActualItem) (@ gData 'showActualItem))</Variant>
+			<Variant id="rpg.showActualItem">(or (obj@ gSource 'rpg.showActualItem) (@ gData 'showActualItem))</Variant>
 			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
 		</Properties>
 
@@ -288,8 +288,10 @@
 									markupPercent: (abs itemMarkupPercent)
 									max: (if (gr maxCount 1) maxCount)
 									maxValue: (fmtCurrency currencyUsed (multiply itemCost maxCount))
-									mass: (fmtNumber 'massKg (itmGetMass thisItem))
-									maxMass: (fmtNumber 'massKg (multiply (itmGetMass thisItem) maxCount))
+									size: (fmtNumber 'CBM (itmGetVolume thisItem))
+									maxSize: (fmtNumber 'CBM (* (itmGetVolume thisItem) maxCount))
+									mass: (fmtNumber 'massKg (itmGetMassKg thisItem))
+									maxMass: (fmtNumber 'massKg (multiply (itmGetMassKg thisItem) maxCount))
 									})
 
 								;	If the player has some in their cargo hold, then say so here.
@@ -315,7 +317,7 @@
 									(eq affordCount 0)
 										(scrTranslate gScreen 'descNotEnoughMoney { currency: (fmtCurrency currencyUsed True) })
 										
-									(eq fitCount 0)
+									(leq fitCount 0)
 										(scrTranslate gScreen 'descNotEnoughRoom)
 										
 									(and (gr availCount affordCount) (gr fitCount affordCount))
@@ -571,6 +573,7 @@
 				(if (@ gData 'max)
 					(cat
 						"Unit price: " (@ gData 'value) " (" (@ gData 'max) " for " (@ gData 'maxValue) ")\n"
+						"Unit size: " (@ gData 'size) " (" (@ gData 'max) " for " (@ gData 'maxSize) ")\n"
 						"Unit mass: " (@ gData 'mass) " (" (@ gData 'max) " for " (@ gData 'maxMass) ")\n"
 						(if (@ gData 'markup) 
 							(cat "Unit markup: " (@ gData 'markup) " (" (@ gData 'markupPercent) "%)")
@@ -579,6 +582,7 @@
 						)
 					(cat
 						"Unit price: " (@ gData 'value) "\n"
+						"Unit size: " (@ gData 'size) "\n"
 						"Unit mass: " (@ gData 'mass) "\n"
 						(if (@ gData 'markup) 
 							(cat "Unit markup: " (@ gData 'markup) " (" (@ gData 'markupPercent) "%)")
@@ -802,8 +806,10 @@
 						markupPercent: (abs itemMarkupPercent)
 						max: (if (gr offerCount 1) offerCount)
 						maxValue: (fmtCurrency currencyUsed (multiply offerPrice offerCount))
-						mass: (fmtNumber 'massKg (itmGetMass theItem))
-						maxMass: (fmtNumber 'massKg (multiply (itmGetMass theItem) offerCount))
+						size: (fmtNumber 'CBM (itmGetVolume theItem))
+						maxSize: (fmtNumber 'CBM (* (itmGetVolume theItem) offerCount))
+						mass: (fmtNumber 'massKg (itmGetMassKg theItem))
+						maxMass: (fmtNumber 'massKg (multiply (itmGetMassKg theItem) offerCount))
 						})
 					)
 			</DynamicData>
@@ -1105,10 +1111,12 @@
 
 			<Text id="descItemStatsMultiple">
 				Unit price: %value% (%max% for %maxValue%)\n
+				Unit size: %size% (%max% for %maxSize%)\n
 				Unit mass: %mass% (%max% for %maxMass%)
 			</Text>
 			<Text id="descItemStatsSingle">
 				Unit price: %value%\n
+				Unit size: %size%
 				Unit mass: %mass%
 			</Text>
 			<Text id="descMarkup">

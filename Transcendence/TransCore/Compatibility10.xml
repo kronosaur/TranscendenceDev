@@ -66,6 +66,10 @@
 									(setq desc (cat desc " (" gMaxCount " for " (multiply gCost gMaxCount) ")"))
 									)
 
+								(setq desc (cat desc "\nUnit size: " (fmtNumber 'CBM (itmGetVolume thisItem))))
+								(if (gr gMaxCount 1)
+									(setq desc (cat desc " (" gMaxCount " at " (fmtNumber 'CBM (multiply (itmGetVolume thisItem) gMaxCount)) ")\n"))
+									)
 								(setq desc (cat desc "\nUnit mass: " (intMassString (itmGetMass thisItem))))
 								(if (gr gMaxCount 1)
 									(setq desc (cat desc " (" gMaxCount " at " (intMassString (multiply (itmGetMass thisItem) gMaxCount)) ")"))
@@ -78,7 +82,7 @@
 										(setq desc (cat desc "This item is not for sale."))
 									(eq affordCount 0)
 										(setq desc (cat desc "You do not have enough rin to purchase any."))
-									(eq fitCount 0)
+									(leq fitCount 0)
 										(setq desc (cat desc "Unfortunately, you cannot fit any in your cargo hold."))
 									(and (gr availCount affordCount) (gr fitCount affordCount))
 										(setq desc (cat desc "You have enough rin to buy " affordCount "."))
@@ -749,6 +753,7 @@
 											(setq priceText (cat priceText " (" availCount " for " (multiply gCost availCount) ")"))
 											)
 
+										(setq priceText (cat priceText "\nUnit size: " (fmtNumber 'CBM (itmGetVolume thisItem))))
 										(setq priceText (cat priceText "\nUnit mass: " (intMassString (itmGetMass thisItem))))
 										(if (gr availCount 1)
 											(setq priceText (cat priceText " (" availCount " at " (intMassString (multiply (itmGetMass thisItem) availCount)) ")"))

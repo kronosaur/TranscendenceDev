@@ -151,6 +151,7 @@ class CItemEnhancement
 		DWORD GetModCode (void) const { return m_dwMods; }
 		int GetPerceptionAdj () const;
 		int GetPowerAdj (void) const;
+		int GetActivePowerAdj (void) const;
 		int GetReflectChance (DamageTypes iDamage) const;
 		Metric GetRegen180 (CItemCtx &Ctx, int iTicksPerUpdate) const;
 		int GetResistEnergyAdj (void) const { return (GetType() == etResistEnergy ? Level2DamageAdj(GetLevel(), IsDisadvantage()) : 100); }
@@ -257,7 +258,7 @@ class CItemEnhancementStack
 		CItemEnhancementStack *AddRef (void) { m_dwRefCount++; return this; }
 		int ApplyDamageAdj (const DamageDesc &Damage, int iDamageAdj) const;
 		void ApplySpecialDamage (DamageDesc *pDamage) const;
-		int CalcActivateDelay (CItemCtx &DeviceCtx) const;
+		Metric CalcActivateDelay (CItemCtx &DeviceCtx) const;
 		Metric CalcRegen180 (CItemCtx &ItemCtx, int iTicksPerUpdate) const;
 		void Delete (void);
 		int GetAbsorbAdj (const DamageDesc &Damage) const;
@@ -273,6 +274,7 @@ class CItemEnhancementStack
 		int GetManeuverRate (void) const;
 		int GetPerceptionAdj () const;
 		int GetPowerAdj (void) const;
+		int GetActivePowerAdj (void) const;
 		int GetResistDamageAdj (DamageTypes iDamage) const;
 		int GetResistEnergyAdj (void) const;
 		int GetResistMatterAdj (void) const;

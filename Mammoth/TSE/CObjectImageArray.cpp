@@ -1475,7 +1475,7 @@ void CObjectImageArray::PaintImage (CG32bitImage& Dest, int x, int y, int iTick,
 	DEBUG_TRY
 
 	m_cs.Lock();
-	CG32bitImage* pSource = m_pImage->GetRawImage(NULL_STR);
+	CG32bitImage* pSource = (m_pImage ? m_pImage->GetRawImage(NULL_STR) : NULL);
 	m_cs.Unlock();
 
 	if (pSource == NULL)

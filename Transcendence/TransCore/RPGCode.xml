@@ -7,7 +7,7 @@
 			(setq rpgAddRouteEncounters (lambda (fromVec toVec targets encounterTable encounterCount)
 				(block (
 					(targetObj (@ targets 0))
-					(speed (objGetProperty targetObj 'maxSpeed))
+					(speed (obj@ targetObj 'maxSpeed))
 					(totalTime (sysCalcTravelTime (sysVectorDistance fromVec toVec) speed))
 					(frac (if (gr encounterCount 0) (/ 1 (+ encounterCount 1)) 0))
 					i
@@ -104,7 +104,7 @@
 					;	class.
 					
 					(scrShowScreen gScreen
-						(objGetProperty targetObj 'dockServicesScreen)
+						(obj@ targetObj 'dockServicesScreen)
 						options
 						)
 					)
@@ -161,7 +161,7 @@
 						
 					(maxArmorLevel (map armorForSale 'reduceMax theItemToBuy (itmGetLevel theItemToBuy)))
 					(maxShieldsLevel (map shieldsForSale 'reduceMax theItemToBuy (itmGetLevel theItemToBuy)))
-					(maxRepairArmorLevel (objGetProperty dockObj 'repairArmorMaxLevel))
+					(maxRepairArmorLevel (obj@ dockObj 'repairArmorMaxLevel))
 					
 					(minPlayerArmorLevel (map (objGetItems shipObj "aI") 'reduceMin theItemToUpgrade (itmGetLevel theItemToUpgrade)))
 					(minPlayerShieldsLevel (map (objGetItems shipObj "sI") 'reduceMin theItemToUpgrade (itmGetLevel theItemToUpgrade)))
@@ -209,8 +209,8 @@
 							{
 								visible: True
 								enabled: True
-								desc: (or (scrTranslate gScreen "actionArmor:defaultArmorInstall" { items:armorToInstall maxLevel:(objGetProperty dockObj 'installArmorMaxLevel) })
-										(typTranslate &dsRPGDockServicesBase; "actionArmor:defaultArmorInstall" { items:armorToInstall maxLevel:(objGetProperty dockObj 'installArmorMaxLevel) })
+								desc: (or (scrTranslate gScreen "actionArmor:defaultArmorInstall" { items:armorToInstall maxLevel:(obj@ dockObj 'installArmorMaxLevel) })
+										(typTranslate &dsRPGDockServicesBase; "actionArmor:defaultArmorInstall" { items:armorToInstall maxLevel:(obj@ dockObj 'installArmorMaxLevel) })
 										)
 								}
 								
@@ -218,8 +218,8 @@
 							{
 								visible: True
 								enabled: True
-								desc: (or (scrTranslate gScreen "actionArmor:defaultShieldsInstall" { items:shieldsToInstall maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
-										(typTranslate &dsRPGDockServicesBase; "actionArmor:defaultShieldsInstall" { items:shieldsToInstall maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
+								desc: (or (scrTranslate gScreen "actionArmor:defaultShieldsInstall" { items:shieldsToInstall maxLevel:(obj@ dockObj 'installDeviceMaxLevel) })
+										(typTranslate &dsRPGDockServicesBase; "actionArmor:defaultShieldsInstall" { items:shieldsToInstall maxLevel:(obj@ dockObj 'installDeviceMaxLevel) })
 										)
 								}
 								
@@ -253,8 +253,8 @@
 							{
 								visible: True
 								enabled: True
-								desc: (or (scrTranslate gScreen "actionArmor:defaultShieldsInstall" { items:shieldsToInstall maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
-										(typTranslate &dsRPGDockServicesBase; "actionArmor:defaultShieldsInstall" { items:shieldsToInstall maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
+								desc: (or (scrTranslate gScreen "actionArmor:defaultShieldsInstall" { items:shieldsToInstall maxLevel:(obj@ dockObj 'installDeviceMaxLevel) })
+										(typTranslate &dsRPGDockServicesBase; "actionArmor:defaultShieldsInstall" { items:shieldsToInstall maxLevel:(obj@ dockObj 'installDeviceMaxLevel) })
 										)
 								}
 
@@ -344,14 +344,14 @@
 						;	If we cannot install items, then we omit this option. We will show the
 						;	proper error in Upgrade
 						
-						(not (objGetProperty dockObj 'installDeviceMaxLevel))
+						(not (obj@ dockObj 'installDeviceMaxLevel))
 							{
 								visible: Nil
 								}
 				
 						;	If the station only installs as part of upgrade, then say so.
 
-						(objGetProperty dockObj 'installDeviceUpgradeOnly)
+						(obj@ dockObj 'installDeviceUpgradeOnly)
 							{
 								visible: True
 								enabled: Nil
@@ -387,8 +387,8 @@
 						{
 							visible: True
 							enabled: True
-							desc: (or (objTranslate dockObj "dockServices:installAbility" { category:(@ options 'category) maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
-									(scrTranslate gScreen "actionInstall:defaultAbility" { category:(@ options 'category) maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
+							desc: (or (objTranslate dockObj "dockServices:installAbility" { category:(@ options 'category) maxLevel:(obj@ dockObj 'installDeviceMaxLevel) })
+									(scrTranslate gScreen "actionInstall:defaultAbility" { category:(@ options 'category) maxLevel:(obj@ dockObj 'installDeviceMaxLevel) })
 									)
 							}
 						)
@@ -456,7 +456,7 @@
 							{
 								visible: True
 								enabled: True
-								desc: (scrTranslate gScreen "actionMiscDevices:defaultInstall" { maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
+								desc: (scrTranslate gScreen "actionMiscDevices:defaultInstall" { maxLevel:(obj@ dockObj 'installDeviceMaxLevel) })
 								}
 								
 						;	If we can remove something for the player
@@ -465,7 +465,7 @@
 							{
 								visible: True
 								enabled: True
-								desc: (scrTranslate gScreen "actionMiscDevices:defaultRemove" { items:itemsToRemove maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
+								desc: (scrTranslate gScreen "actionMiscDevices:defaultRemove" { items:itemsToRemove maxLevel:(obj@ dockObj 'installDeviceMaxLevel) })
 								}
 
 						;	If we can install something without an upgrade, then say so
@@ -478,7 +478,7 @@
 							{
 								visible: True
 								enabled: True
-								desc: (scrTranslate gScreen "actionMiscDevices:defaultInstall" { maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
+								desc: (scrTranslate gScreen "actionMiscDevices:defaultInstall" { maxLevel:(obj@ dockObj 'installDeviceMaxLevel) })
 								}
 								
 						;	Otherwise, nothing
@@ -516,7 +516,7 @@
 								visible: Nil
 								}
 								
-						(not (objGetProperty dockObj 'refuelMaxLevel))
+						(not (obj@ dockObj 'refuelMaxLevel))
 							{
 								visible: True
 								enabled: Nil
@@ -652,7 +652,7 @@
 							(switch
 								;	If we cannot remove devices, then say so.
 						
-								(not (objGetProperty dockObj 'removeDeviceMaxLevel))
+								(not (obj@ dockObj 'removeDeviceMaxLevel))
 									{
 										visible: True
 										enabled: Nil
@@ -775,7 +775,7 @@
 										desc: (@ options 'repairArmorDesc)
 										}
 
-								(gr (itmGetProperty theItem 'repairLevel) (objGetProperty dockObj 'repairArmorMaxLevel))
+								(gr (itmGetProperty theItem 'repairLevel) (obj@ dockObj 'repairArmorMaxLevel))
 									{
 										visible: True
 										enabled: Nil
@@ -848,7 +848,7 @@
 									)
 								)
 							(maxLevel (map itemsAvail 'reduceMax theItemInCargo (itmGetLevel theItemInCargo)))
-							(maxTech (objGetProperty dockObj 'installArmorMaxLevel))
+							(maxTech (obj@ dockObj 'installArmorMaxLevel))
 							)
 							
 							(switch
@@ -901,7 +901,7 @@
 									)
 								)
 							(maxLevel (map itemsAvail 'reduceMax theItemInCargo (itmGetLevel theItemInCargo)))
-							(maxTech (objGetProperty dockObj 'installDeviceMaxLevel))
+							(maxTech (obj@ dockObj 'installDeviceMaxLevel))
 
 							(currencyUsed (objGetDefaultCurrency dockObj))
 							(itemStatus (shpCanRemoveDevice shipObj theItem))
@@ -912,7 +912,7 @@
 								;	If we cannot install items, then we omit this option. We will show the
 								;	proper error in Upgrade
 						
-								(not (objGetProperty dockObj 'installDeviceMaxLevel))
+								(not (obj@ dockObj 'installDeviceMaxLevel))
 									{
 										visible: Nil
 										}
@@ -1026,7 +1026,7 @@
 							(switch
 								;	If we cannot install items, then say so.
 						
-								(not (objGetProperty dockObj 'installDeviceMaxLevel))
+								(not (obj@ dockObj 'installDeviceMaxLevel))
 									{
 										visible: True
 										enabled: Nil
@@ -1162,7 +1162,7 @@
 							(switch
 								;	If we cannot install items, then say so.
 						
-								(not (objGetProperty dockObj 'installDeviceMaxLevel))
+								(not (obj@ dockObj 'installDeviceMaxLevel))
 									{
 										visible: True
 										enabled: Nil
@@ -1336,8 +1336,8 @@
 							{
 								visible: True
 								enabled: True
-								desc: (or (objTranslate dockObj "dockServices:installAbility" { items:itemsToInstall maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
-										(scrTranslate gScreen "actionWeapons:defaultInstall" { items:itemsToInstall maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
+								desc: (or (objTranslate dockObj "dockServices:installAbility" { items:itemsToInstall maxLevel:(obj@ dockObj 'installDeviceMaxLevel) })
+										(scrTranslate gScreen "actionWeapons:defaultInstall" { items:itemsToInstall maxLevel:(obj@ dockObj 'installDeviceMaxLevel) })
 										)
 								}
 								
@@ -1356,8 +1356,8 @@
 							{
 								visible: True
 								enabled: True
-								desc: (or (objTranslate dockObj "dockServices:installAbility" { items:itemsToRemove maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
-										(scrTranslate gScreen "actionWeapons:defaultRemove" { items:itemsToRemove maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
+								desc: (or (objTranslate dockObj "dockServices:installAbility" { items:itemsToRemove maxLevel:(obj@ dockObj 'installDeviceMaxLevel) })
+										(scrTranslate gScreen "actionWeapons:defaultRemove" { items:itemsToRemove maxLevel:(obj@ dockObj 'installDeviceMaxLevel) })
 										)
 								}
 
@@ -1371,8 +1371,8 @@
 							{
 								visible: True
 								enabled: True
-								desc: (or (objTranslate dockObj "dockServices:installAbility" { maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
-										(scrTranslate gScreen "actionWeapons:defaultInstall" { maxLevel:(objGetProperty dockObj 'installDeviceMaxLevel) })
+								desc: (or (objTranslate dockObj "dockServices:installAbility" { maxLevel:(obj@ dockObj 'installDeviceMaxLevel) })
+										(scrTranslate gScreen "actionWeapons:defaultInstall" { maxLevel:(obj@ dockObj 'installDeviceMaxLevel) })
 										)
 								}
 
@@ -1561,7 +1561,7 @@
 			;	values as rpgCheckMilitaryID
 
 			(setq rpgCheckMilitaryIDPolicy (lambda (sourceObj policyArg)
-				(rpgCheckMilitaryID (or (objGetProperty sourceObj 'rpg.checkMilitaryID) policyArg))
+				(rpgCheckMilitaryID (or (obj@ sourceObj 'rpg.checkMilitaryID) policyArg))
 				))
 				
 			;	rpgDestroyItems
@@ -1665,7 +1665,7 @@
 						(not (objIsRadioactive theObj))
 						(not (objGetData theObj (or lootedVar 'core.salvaged)))
 						(not (objGetData theObj 'core.noSalvage))
-						(not (objGetProperty theObj 'core.noSalvage))
+						(not (obj@ theObj 'core.noSalvage))
 						)
 					)
 				))
@@ -1744,12 +1744,11 @@
 
 			(setq rpgGetPlayerPrimaryCurrency (lambda ()
 				"Returns the type of currency that the player has the greatest monetary value of"
-				(block
-					(
-					(bestCurrency (map (typFind "$") '(reduceMax original) theCurrency
-						(ecoExchange (plyGetCredits gPlayer theCurrency) theCurrency &ecCreditEconomy;)
+				(block (
+						(bestCurrency (map (typFind "$") '(reduceMax original) theCurrency
+							(ecoExchange (plyGetCredits gPlayer theCurrency) theCurrency &ecCreditEconomy;)
+							))
 						)
-					)
 					(if (= (plyGetCredits gPlayer bestCurrency) 0)
 
 						;;	If the player has no money, return the universe default
@@ -2021,7 +2020,7 @@
 								;	that callers are responsible for setting limits. E.g., the Auton
 								;	Bay handles this.)
 								
-								(and (= installerObj gPlayerShip) (not (objGetProperty installerObj 'installDeviceMaxLevel)))
+								(and (= installerObj gPlayerShip) (not (obj@ installerObj 'installDeviceMaxLevel)))
 									(setq stationCannotInstall Nil)
 									
 								;	If we have totalPrice or installPriceAdj AND we're a previous version, then
@@ -2094,7 +2093,7 @@
 								;   If we exceed the station's tech
 
 								(and (not totalCost)
-									(gr (itmGetLevel thisItem) (objGetProperty installerObj 'installDeviceMaxLevel))
+									(gr (itmGetLevel thisItem) (obj@ installerObj 'installDeviceMaxLevel))
 									)
 									(setq desc (translate installerObj 'rpg.noTechToInstallDevice trData))
 
@@ -2240,7 +2239,7 @@
 										;	any removal limits, then just allow everything. (This means
 										;	that callers are responsible for setting limits.)
 										
-										(and (= installerObj gPlayerShip) (not (objGetProperty installerObj 'removeDeviceMaxLevel)))
+										(and (= installerObj gPlayerShip) (not (obj@ installerObj 'removeDeviceMaxLevel)))
 											(setq stationCannotRemove Nil)
 											
 										;	If we have totalPrice or installPriceAdj AND we're a previous version, then
@@ -2463,7 +2462,7 @@
 					(objFixParalysis gPlayerShip)
 					(shpDecontaminate gPlayerShip)
 					
-					(objSetProperty gPlayerShip 'interiorHP (objGetProperty gPlayerShip 'maxInteriorHP))
+					(objSet@ gPlayerShip 'interiorHP (obj@ gPlayerShip 'maxInteriorHP))
 					
 					; Remove any overlays that shouldn't be there (e.g., pteravores)
 					(enum (objGetOverlays gPlayerShip) theOverlay
@@ -2549,7 +2548,7 @@
 
 			(setq rpgGetStorage (lambda (sourceObj)
 				(block (
-					(storageID (objGetProperty sourceObj 'rpg.storageID))
+					(storageID (obj@ sourceObj 'rpg.storageID))
 					(storageObj (objGetObjByID storageID))
 					)
 					(switch
@@ -2566,15 +2565,15 @@
 
 			(setq rpgStoreItem (lambda (sourceObj theItem)
 				(block (
-					(storageID (objGetProperty sourceObj 'rpg.storageID))
+					(storageID (obj@ sourceObj 'rpg.storageID))
 					(storageObj (objGetObjByID storageID))
 					)
 					;	Create storage if necessary
 
 					(if (not storageObj)
 						(block ()
-							(setq storageObj (sysCreateMarker "RPG Storage" (objGetPos sourceObj) (objGetProperty sourceObj 'sovereign)))
-							(objSetProperty sourceObj 'rpg.storageID (objGetID storageObj))
+							(setq storageObj (sysCreateMarker "RPG Storage" (objGetPos sourceObj) (obj@ sourceObj 'sovereign)))
+							(objSet@ sourceObj 'rpg.storageID (objGetID storageObj))
 							)
 						)
 
@@ -2593,7 +2592,7 @@
 			;
 
 			(setq rpgGetPlayerClass (lambda ()
-				(objGetProperty gPlayerShip 'characterClass)
+				(obj@ gPlayerShip 'characterClass)
 				))
 
 			(setq rpgEqPlayerClass (lambda (unidCharacterClass)

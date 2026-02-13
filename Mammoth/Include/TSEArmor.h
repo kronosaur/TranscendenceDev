@@ -28,13 +28,6 @@ class CArmorClass
 			evtCount					= 3,
 			};
 
-		struct SMassClassDesc
-			{
-			char *pszID;
-			char *pszName;
-			int iMaxMassKg;
-			};
-
 		struct SStdStats
 			{
 			int iHP;								//	HP for std armor at this level
@@ -76,7 +69,7 @@ class CArmorClass
 		void CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		int CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx);
 		void CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx) const;
-		const CString &GetMassClass (const CItemCtx &ItemCtx) const;
+		const CString &GetArmorClass (const CItemCtx &ItemCtx) const;
 		int GetPowerOutput (CItemCtx &ItemCtx) const;
 		int GetPowerRating (CItemCtx &ItemCtx, int *retiIdlePower = NULL) const;
 		CString GetReference (CItemCtx &Ctx);
@@ -132,7 +125,7 @@ class CArmorClass
 		int CalcBalance (const CArmorItem &ArmorItem) const { CArmorItem::SBalance Balance; return CalcBalance(ArmorItem, Balance); }
 		Metric CalcBalanceDamageAdj (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceDamageEffectAdj (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
-		Metric CalcBalanceMass (const CArmorItem &ArmorItem, const SScalableStats &Stats, Metric *retrStdMass) const;
+		Metric CalcBalanceSize (const CArmorItem &ArmorItem, const SScalableStats &Stats, Metric *retrStdSize) const;
 		Metric CalcBalancePower (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceRegen (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceRepair (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
@@ -178,8 +171,9 @@ class CArmorClass
 		CItemCriteria m_DeviceCriteria;			//	Only enhances devices that match criteria
 		int m_iDamageAdjLevel;					//	Level to use for intrinsic damage adj
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
-		CString m_sMassClass;					//	Computed mass class (computed in Bind)
+		CString m_sArmorClass;					//	Armor class (provided in xml or computed in bind)
 		int m_iBalanceAdj;						//	Manual adjustment to balance calculation
+		SDamageMethodAdj m_Fortification;		//	Fortification Adj for Damage Method curves on this armor
 
 		DWORD m_fPhotoRecharge:1;				//	TRUE if refuels when near a star
 		DWORD m_fShieldInterference:1;			//	TRUE if armor interferes with shields
@@ -205,7 +199,7 @@ class CArmorClass
 //  Ship Armor Segments --------------------------------------------------------
 //
 //  CShipArmorDesc is a descriptor, generally held in CShipClass, that defines
-//  the number and distribution of armor segmens for a ship.
+//  the number and distribution of armor segments for a ship.
 
 class CShipArmorSegmentDesc
 	{
@@ -214,15 +208,30 @@ class CShipArmorSegmentDesc
 		void ApplyOverride (const CShipArmorSegmentDesc &Override);
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		bool CreateArmorItem (CItem *retItem, CString *retsError = NULL) const;
-		CArmorClass *GetArmorClass (void) const { return m_pArmor; }
-		CItem GetArmorItem (void) const;
-		int GetCenterAngle (void) const { return AngleMod(m_iStartAt + m_iSpan / 2); }
-		DWORD GetCriticalArea (void) const { return m_dwAreaSet; }
-		int GetLevel (void) const;
-		int GetSpan (void) const { return m_iSpan; }
-		int GetStartAngle (void) const { return m_iStartAt; }
-		ALERROR Init (int iStartAt, int iSpan, DWORD dwArmorUNID, int iLevel, const CRandomEnhancementGenerator &Enhancement);
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc, DWORD dwDefaultUNID, int iDefaultLevel, int iDefaultAngle, const CRandomEnhancementGenerator &DefaultEnhancement, int *retiSpan = NULL);
+		CArmorClass *GetArmorClass () const { return m_pArmor; }
+		CItem GetArmorItem () const;
+		int GetCenterAngle () const { return AngleMod(m_iStartAt + m_iSpan / 2); }
+		DWORD GetCriticalArea () const { return m_dwAreaSet; }
+		Metric GetFortificationAdj (EDamageMethod iMethod) const;
+		int GetLevel () const;
+		int GetSpan () const { return m_iSpan; }
+		int GetStartAngle () const { return m_iStartAt; }
+		ALERROR Init (
+			int iStartAt,
+			int iSpan,
+			DWORD dwArmorUNID,
+			int iLevel,
+			const CRandomEnhancementGenerator &Enhancement,
+			SDamageMethodAdj rFortification);
+		ALERROR InitFromXML (
+			SDesignLoadCtx &Ctx,
+			const CXMLElement &Desc,
+			DWORD dwDefaultUNID,
+			int iDefaultLevel,
+			int iDefaultAngle,
+			const CRandomEnhancementGenerator &DefaultEnhancement,
+			SDamageMethodAdj rDefaultFortification,
+			int *retiSpan = NULL);
 
 		static const CShipArmorSegmentDesc m_Null;
 
@@ -235,6 +244,7 @@ class CShipArmorSegmentDesc
 		int m_iLevel = 1;					//  For scalable armor
 		CRandomEnhancementGenerator m_Enhanced;//	Mods
 		DWORD m_dwAreaSet = 0;				//	Areas that this section protects
+		SDamageMethodAdj m_Fortification;			//	Adjusts WMD adj curve from the WMD0 end
 	};
 
 class CShipArmorDesc

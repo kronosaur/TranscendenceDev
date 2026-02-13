@@ -4,6 +4,7 @@
 
 #include "PreComp.h"
 
+#define ARMOR_CLASS_ATTRIB						CONSTLIT("armorClass")
 #define BALANCE_ADJ_ATTRIB						CONSTLIT("balanceAdj")
 #define BLINDING_DAMAGE_ADJ_ATTRIB				CONSTLIT("blindingDamageAdj")
 #define BLINDING_IMMUNE_ATTRIB					CONSTLIT("blindingImmune")
@@ -22,6 +23,10 @@
 #define ENHANCEMENT_TYPE_ATTRIB					CONSTLIT("enhancementType")
 #define EMP_DAMAGE_ADJ_ATTRIB					CONSTLIT("EMPDamageAdj")
 #define EMP_IMMUNE_ATTRIB						CONSTLIT("EMPImmune")
+#define FORTIFICATION_CRUSH_ATTRIB				CONSTLIT("fortificationCrushAdj")
+#define FORTIFICATION_PIERCE_ATTRIB				CONSTLIT("fortificationPierceAdj")
+#define FORTIFICATION_SHRED_ATTRIB				CONSTLIT("fortificationShredAdj")
+#define FORTIFICATION_WMD_ATTRIB				CONSTLIT("fortificationWMDAdj")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define HP_BONUS_PER_CHARGE_ATTRIB				CONSTLIT("hpBonusPerCharge")
 #define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")
@@ -130,14 +135,14 @@ const Metric DECAY_BALANCE_ADJ =				-3.0;
 const Metric DIST_BALANCE_ADJ =					2.0;
 const Metric MAX_REGEN_BALANCE_BONUS = 500.0;
 
-const Metric MASS_BALANCE_STD_MASS =			3.5;
-const Metric MASS_BALANCE_K0 =					1.284;
-const Metric MASS_BALANCE_K1 =					-0.47;
-const Metric MASS_BALANCE_K2 =					0.014;
-const Metric MASS_BALANCE_ADJ =					60.0;	//	Linear relationship between curve and mass balance
-const Metric MASS_BALANCE_LIMIT =				16.0;	//	Above this mass (in tons) we don't get any additional bonus
-const Metric MASS_STD_MASS =					(-MASS_BALANCE_K1 - sqrt(MASS_BALANCE_K1 * MASS_BALANCE_K1 - 4.0 * MASS_BALANCE_K2 * MASS_BALANCE_K0)) / (2.0 * MASS_BALANCE_K2);
-const Metric MASS_COST_POWER =					0.5;
+const Metric ARMOR_CLASS_BALANCE_STD_SIZE =				3.5;
+const Metric ARMOR_CLASS_BALANCE_K0 =					1.284;
+const Metric ARMOR_CLASS_BALANCE_K1 =					-0.47;
+const Metric ARMOR_CLASS_BALANCE_K2 =					0.014;
+const Metric ARMOR_CLASS_BALANCE_ADJ =					60.0;	//	Linear relationship between curve and mass balance
+const Metric ARMOR_CLASS_BALANCE_LIMIT =				16.0;	//	Above this size (in CBM) we don't get any additional bonus
+const Metric ARMOR_CLASS_STD_SIZE =					(-ARMOR_CLASS_BALANCE_K1 - sqrt(ARMOR_CLASS_BALANCE_K1 * ARMOR_CLASS_BALANCE_K1 - 4.0 * ARMOR_CLASS_BALANCE_K2 * ARMOR_CLASS_BALANCE_K0)) / (2.0 * ARMOR_CLASS_BALANCE_K2);
+const Metric ARMOR_CLASS_COST_POWER =					0.5;
 
 const Metric BALANCE_COST_RATIO =				-0.5;	//  Each percent of cost above standard is a 0.5%
 const Metric BALANCE_MAX_DAMAGE_ADJ =			400.0;	//	Max change in balance due to a single damage type
@@ -149,10 +154,10 @@ static CArmorClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 	{
 		//						Repair	Install
 		//	HP		Cost		cost	cost		Mass
-		{	35,		50,			1,		10,			2500, },	
-		{	45,		100,		1,		20,			2600, },
-		{	60,		200,		1,		40,			2800, },
-		{	80,		400,		2,		80,			2900, },
+		{	35,		50,			1,		10,			3000, },	
+		{	45,		100,		1,		20,			3000, },
+		{	60,		200,		1,		40,			3000, },
+		{	80,		400,		2,		80,			3000, },
 		{	100,	800,		3,		160,		3000, },
 
 		{	135,	1600,		4,		320,		3000, },
@@ -164,8 +169,8 @@ static CArmorClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 		{	500,	50000,		34,		10000,		3000, },
 		{	650,	100000,		52,		20000,		3000, },
 		{	850,	200000,		80,		40000,		3000, },
-		{	1100,	410000,		125,	82000,		3000, },
-		{	1400,	820000,		195,	164000,		3000, },
+		{	1100,	400000,		125,	80000,		3000, },
+		{	1400,	800000,		195,	160000,		3000, },
 
 		{	1850,	1600000,	285,	320000,		3000, },
 		{	2400,	3250000,	455,	650000,		3000, },
@@ -173,7 +178,7 @@ static CArmorClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 		{	4000,	13000000,	1080,	2600000,	3000, },
 		{	5250,	26000000,	1650,	5200000,	3000, },
 
-		{	6850,	52000000,	2520,	10400000,	3000, },
+		{	6850,	52000000,	2520,	10000000,	3000, },
 		{	9000,	100000000,	3850,	20000000,	3000, },
 		{	12000,	200000000,	5780,	40000000,	3000, },
 		{	15000,	400000000,	9220,	80000000,	3000, },
@@ -758,6 +763,55 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	const CItem &Item = ItemCtx.GetItem();
 	const CArmorItem ArmorItem = Item.AsArmorItemOrThrow();
 
+	//	Adjust for our item-level damage method Fortification:
+
+	EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+	int iDamage;
+
+	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+		{
+
+		Metric rDamageMethodAdj = 1.0;
+
+		for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
+			{
+			EDamageMethod iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
+
+			Metric rMethodFortificationAdj = Ctx.ArmorExternFortification.Get(iMethod);
+
+			//	Stacked fortification modifiers are added together
+
+			if (IS_NAN(m_Fortification.Get(iMethod)))
+				rMethodFortificationAdj += g_pUniverse->GetEngineOptions().GetDamageMethodAdjItemArmor(iMethod);
+			else
+				rMethodFortificationAdj += m_Fortification.Get(iMethod);
+
+			rDamageMethodAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortificationAdj);
+			}
+
+		iDamage = Ctx.CalcDamageMethodAdjDamagePrecalc(rDamageMethodAdj);
+		}
+	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+		{
+		EDamageMethod iMethod = EDamageMethod::methodWMD;
+
+		Metric rFortificationAdj = Ctx.ArmorExternFortification.GetWMD();
+
+		//	Stacked fortification modifiers are added together
+
+		if (IS_NAN(m_Fortification.GetWMD()))
+			rFortificationAdj += g_pUniverse->GetEngineOptions().GetDamageMethodAdjItemArmor(iMethod);
+		else
+			rFortificationAdj += m_Fortification.GetWMD();
+
+		iDamage = Ctx.CalcDamageMethodAdjDamage(iMethod, rFortificationAdj);
+		}
+	else
+		{
+		ASSERT(false);
+		iDamage = 0;
+		}
+
 	//	Adjust for special armor damage:
 	//
 	//	<0	=	2.5x damage
@@ -768,14 +822,16 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	int iDamageLevel = Ctx.Damage.GetArmorDamageLevel();
 	if (iDamageLevel > 0)
-		Ctx.iArmorDamage = mathAdjust(Ctx.iDamage, CalcArmorDamageAdj(ArmorItem, Ctx.Damage));
-	else
-		Ctx.iArmorDamage = Ctx.iDamage;
+		iDamage = mathAdjust(iDamage, CalcArmorDamageAdj(ArmorItem, Ctx.Damage));
 
 	//	Adjust for damage type
 
 	int iDamageAdj = GetDamageAdj(ArmorItem, Ctx.Damage);
-	Ctx.iArmorDamage = mathAdjust(Ctx.iArmorDamage, iDamageAdj);
+	iDamage = mathAdjust(iDamage, iDamageAdj);
+
+	//	Store our damage
+
+	Ctx.iArmorDamage = iDamage;
 	}
 
 int CArmorClass::CalcArmorDamageAdj (const CArmorItem &ArmorItem, const DamageDesc &Damage) const
@@ -937,7 +993,7 @@ int CArmorClass::CalcBalance (const CArmorItem &ArmorItem, CArmorItem::SBalance 
 	
 	//	Mass
 
-	retBalance.rMass = CalcBalanceMass(ArmorItem, Stats, &retBalance.rStdMass);
+	retBalance.rMass = CalcBalanceSize(ArmorItem, Stats, &retBalance.rStdMass);
 	retBalance.rBalance += retBalance.rMass;
 
 	//	Compute standard hit point for the given mass
@@ -946,7 +1002,7 @@ int CArmorClass::CalcBalance (const CArmorItem &ArmorItem, CArmorItem::SBalance 
 
 	//	Standard cost depends on mass
 
-	retBalance.rStdCost = Max(1.0, StdStats.iCost * mathRound(10.0 * pow(ArmorItem.GetMassKg() / (1000.0 * retBalance.rStdMass), MASS_COST_POWER)) / 10.0);
+	retBalance.rStdCost = Max(1.0, StdStats.iCost * mathRound(10.0 * pow(ArmorItem.GetVolume() / (retBalance.rStdMass), ARMOR_CLASS_COST_POWER)) / 10.0);
 
 	//	Cost
 
@@ -1082,38 +1138,38 @@ Metric CArmorClass::CalcBalanceDamageEffectAdj (const CArmorItem &ArmorItem, con
 	return rBalance;
 	}
 
-Metric CArmorClass::CalcBalanceMass (const CArmorItem &ArmorItem, const SScalableStats &Stats, Metric *retrStdMass) const
-
-//	CalcBalanceMass
+//	CalcBalanceSize
 //
-//	Calculate balance from armor mass
+//	Calculate balance from armor size
+//
+Metric CArmorClass::CalcBalanceSize (const CArmorItem &ArmorItem, const SScalableStats &Stats, Metric *retrStdSize) const
 
 	{
 	//	Mass in metric tons.
 
-	Metric rMass = CItem(m_pItemType, 1).GetMass();
-	if (rMass == 0.0)
+	Metric rSize = CItem(m_pItemType, 1).GetMass();
+	if (rSize == 0.0)
 		return 0.0;
 
-	//	Adjust based on the standard armor mass
+	//	Adjust based on the standard armor class
 
-	Metric rStdMass = GetUniverse().GetDesignCollection().GetArmorMassDefinitions().GetMassClassMass(MASS_CLASS_STANDARD_ID) / 1000.0;
-	Metric rAdj = (rStdMass > 0.0 ? MASS_BALANCE_STD_MASS / rStdMass : 1.0);
+	Metric rStdClass = GetUniverse().GetDesignCollection().GetArmorClassDefinitions().GetArmorClassSize(MASS_CLASS_STANDARD_ID) / 1000.0;
+	Metric rAdj = (rStdClass > 0.0 ? ARMOR_CLASS_BALANCE_STD_SIZE / rStdClass : 1.0);
 
 	//	Need to account for everything up to the maximum defined mass class.
 	//  Anything beyond that is considered bespoke.
 
-	Metric rMaxMass = GetUniverse().GetDesignCollection().GetArmorMassDefinitions().GetMassClassMass(MASS_CLASS_MAX_ID);
-	rMass = Min(rAdj * rMass, rMaxMass > 0.0 ? rMaxMass : MASS_BALANCE_LIMIT);
+	Metric rMaxSize = GetUniverse().GetDesignCollection().GetArmorClassDefinitions().GetArmorClassSize(MASS_CLASS_MAX_ID);
+	rSize = Min(rAdj * rSize, rMaxSize > 0.0 ? rMaxSize : ARMOR_CLASS_BALANCE_LIMIT);
 
 	//	Compute the standard mass that results in 0 balance.
 
-	if (retrStdMass)
-		*retrStdMass = MASS_STD_MASS / (rAdj > 0.0 ? rAdj : 1.0);
+	if (retrStdSize)
+		*retrStdSize = ARMOR_CLASS_STD_SIZE / (rAdj > 0.0 ? rAdj : 1.0);
 
 	//	This polynomial generates a balance based on mass.
 
-	return MASS_BALANCE_ADJ * ((MASS_BALANCE_K2 * rMass * rMass) + MASS_BALANCE_K1 * rMass + MASS_BALANCE_K0);
+	return ARMOR_CLASS_BALANCE_ADJ * ((ARMOR_CLASS_BALANCE_K2 * rSize * rSize) + ARMOR_CLASS_BALANCE_K1 * rSize + ARMOR_CLASS_BALANCE_K0);
 	}
 
 Metric CArmorClass::CalcBalancePower (const CArmorItem &ArmorItem, const SScalableStats &Stats) const
@@ -1488,7 +1544,55 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	pArmor->m_Stats.iHitPoints = pDesc->GetAttributeIntegerBounded(HIT_POINTS_ATTRIB, 0);
 	pArmor->m_iArmorCompleteBonus = pDesc->GetAttributeIntegerBounded(COMPLETE_BONUS_ATTRIB, 0);
 	pArmor->m_iHPBonusPerCharge = pDesc->GetAttributeIntegerBounded(HP_BONUS_PER_CHARGE_ATTRIB, 0, -1, 0);
+
+	//	If we dont have an armor class specified here, we auto-compute it at bind time
+	pArmor->m_sArmorClass = pDesc->GetAttribute(ARMOR_CLASS_ATTRIB);
+	
 	pArmor->m_iBalanceAdj = pDesc->GetAttributeIntegerBounded(BALANCE_ADJ_ATTRIB, -200, 200, 0);
+
+	//	Damage Method fortification
+
+	EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+
+	bool bHasWMDFortify = pDesc->FindAttribute(FORTIFICATION_WMD_ATTRIB);
+	bool bHasPhysicalizedFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_ATTRIB);
+
+	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+		{
+		if (bHasPhysicalizedFortify)
+			{
+			pArmor->m_Fortification.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_ATTRIB, R_NAN));
+			pArmor->m_Fortification.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, R_NAN));
+			pArmor->m_Fortification.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_ATTRIB, R_NAN));
+			}
+		else if (bHasWMDFortify)
+			{
+			pArmor->m_Fortification.SetCrush(R_NAN);
+			pArmor->m_Fortification.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, R_NAN));
+			pArmor->m_Fortification.SetShred(R_NAN);
+			}
+		else
+			{
+			pArmor->m_Fortification.SetCrush(R_NAN);
+			pArmor->m_Fortification.SetPierce(R_NAN);
+			pArmor->m_Fortification.SetShred(R_NAN);
+			}
+		}
+	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+		{
+		if (bHasWMDFortify)
+			pArmor->m_Fortification.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, R_NAN));
+		else if (bHasPhysicalizedFortify)
+			pArmor->m_Fortification.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, R_NAN));
+		else
+			pArmor->m_Fortification.SetWMD(R_NAN);
+		}
+	else
+		{
+		ASSERT(false);
+		Ctx.sError = CONSTLIT("Cannot initialize with an unknown damage method system.");
+		return ERR_FAIL;
+		}
 
 	//	Regen
 
@@ -1878,11 +1982,11 @@ void CArmorClass::GenerateScaledStats (void)
 		//  Immunities based on level
 
 		Stats.iBlindingDamageAdj = Min(m_Stats.iBlindingDamageAdj, (Stats.iLevel >= BLIND_IMMUNE_LEVEL ? 0 : 100));
-		Stats.fRadiationImmune = m_Stats.fRadiationImmune || (Stats.iLevel >= RADIATION_IMMUNE_LEVEL ? true : false);
+		Stats.fRadiationImmune |= Stats.iLevel >= RADIATION_IMMUNE_LEVEL;
 		Stats.iEMPDamageAdj = Min(m_Stats.iEMPDamageAdj, (Stats.iLevel >= EMP_IMMUNE_LEVEL ? 0 : 100));
 		Stats.iDeviceDamageAdj = Min(m_Stats.iDeviceDamageAdj, (Stats.iLevel >= DEVICE_DAMAGE_IMMUNE_LEVEL ? 0 : 100));
-		Stats.fDisintegrationImmune = m_Stats.fDisintegrationImmune || (Stats.iLevel >= DISINTEGRATION_IMMUNE_LEVEL ? true : false);
-		Stats.fShatterImmune = m_Stats.fShatterImmune || (Stats.iLevel >= SHATTER_IMMUNE_LEVEL ? true : false);
+		Stats.fDisintegrationImmune |= Stats.iLevel >= DISINTEGRATION_IMMUNE_LEVEL;
+		Stats.fShatterImmune |= Stats.iLevel >= SHATTER_IMMUNE_LEVEL;
 
 		//  Regen and decay
 
@@ -2057,7 +2161,7 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 	//	Get the property
 
 	if (strEquals(sName, PROPERTY_ARMOR_CLASS))
-		return ICCItemPtr(m_sMassClass);
+		return ICCItemPtr(m_sArmorClass);
 
 	else if (strEquals(sName, PROPERTY_BALANCE_ADJ))
 		{
@@ -2165,14 +2269,14 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 		return NULL;
 	}
 
-const CString &CArmorClass::GetMassClass (const CItemCtx &ItemCtx) const
-
-//	GetMassClass
+//	GetArmorClass
 //
-//	Computes and returns the armor's mass classification.
+//	Computes and returns the armor's armor class ID.
+//
+const CString &CArmorClass::GetArmorClass (const CItemCtx &ItemCtx) const
 
 	{
-	return m_sMassClass;
+	return m_sArmorClass;
 	}
 
 int CArmorClass::GetMaxHP (const CArmorItem &ArmorItem, bool bForceComplete) const
@@ -2234,16 +2338,11 @@ CString CArmorClass::GetReference (CItemCtx &Ctx)
 	if (iPower)
 		AppendReferenceString(&sReference, CLanguage::ComposeNumber(CLanguage::numberPower, iPower * 100.0));
 
-	//	Mass
-
-	int iMassKg = m_pItemType->GetMassKg(Ctx);
-	AppendReferenceString(&sReference, CLanguage::ComposeNumber(CLanguage::numberMass, iMassKg));
-
 	//	Mass classification
 
-	CString sMassClass = GetUniverse().GetDesignCollection().GetArmorMassDefinitions().GetMassClassLabel(m_sMassClass);
-	if (!sMassClass.IsBlank())
-		AppendReferenceString(&sReference, sMassClass);
+	CString sArmorClass = GetUniverse().GetDesignCollection().GetArmorClassDefinitions().GetArmorClassLabel(m_sArmorClass);
+	if (!sArmorClass.IsBlank())
+		AppendReferenceString(&sReference, sArmorClass);
 
 	//	Regeneration
 
@@ -2668,7 +2767,7 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	//	Compute (and cache) the mass class
 
-	Ctx.pDesign->GetArmorMassDefinitions().OnBindArmor(Ctx, CItem(m_pItemType, 1), &m_sMassClass);
+	Ctx.pDesign->GetArmorClassDefinitions().OnBindArmor(Ctx, CItem(m_pItemType, 1), &m_sArmorClass);
 
 	return NOERROR;
 	}

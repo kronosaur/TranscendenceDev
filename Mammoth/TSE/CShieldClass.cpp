@@ -14,6 +14,10 @@
 #define DAMAGE_ADJ_LEVEL_ATTRIB					CONSTLIT("damageAdjLevel")
 #define DEPLETION_DELAY_ATTRIB					CONSTLIT("depletionDelay")
 #define FLASH_EFFECT_ATTRIB						CONSTLIT("flashEffect")
+#define FORTIFICATION_CRUSH_ATTRIB				CONSTLIT("fortificationCrushAdj")
+#define FORTIFICATION_PIERCE_ATTRIB				CONSTLIT("fortificationPierceAdj")
+#define FORTIFICATION_SHRED_ATTRIB				CONSTLIT("fortificationShredAdj")
+#define FORTIFICATION_WMD_ATTRIB				CONSTLIT("fortificationWMDAdj")
 #define HAS_NON_REGEN_HP_ATTRIB					CONSTLIT("hasNonRegenHP")
 #define HIT_EFFECT_ATTRIB						CONSTLIT("hitEffect")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
@@ -129,12 +133,12 @@ CShieldClass::CShieldClass (void)
 	{
 	}
 
-bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip, SDamageCtx &Ctx)
-
 //	AbsorbDamage
 //
 //	Absorbs damage.
 //	NOTE: We always set Ctx.iAbsorb properly, regardless of the return value.
+//
+bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip, SDamageCtx &Ctx)
 
 	{
 	DEBUG_TRY
@@ -155,9 +159,55 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 		return false;
 		}
 
-	//	Calculate how much we will absorb
+	//	Calculate how much extra mitigation we get from any fortification we have
 
-	Ctx.iAbsorb = mathAdjust(Ctx.iDamage, GetAbsorbAdj(DeviceItem, Enhancements, Ctx.Damage));
+	EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+
+	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+		{
+
+		Metric rDamageMethodAdj = 1.0;
+
+		for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
+			{
+			EDamageMethod iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
+
+			Metric rMethodFortificationAdj;
+
+			//	Stacked fortification modifiers are multiplied together
+
+			if (IS_NAN(m_Fortification.Get(iMethod)))
+				rMethodFortificationAdj = g_pUniverse->GetEngineOptions().GetDamageMethodAdjItemArmor(iMethod);
+			else
+				rMethodFortificationAdj = m_Fortification.Get(iMethod);
+
+			rDamageMethodAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rMethodFortificationAdj);
+			}
+
+		Ctx.iAbsorb = Ctx.CalcDamageMethodAdjDamagePrecalc(rDamageMethodAdj);
+		}
+	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+		{
+		EDamageMethod iMethod = EDamageMethod::methodWMD;
+
+		Metric rFortificationAdj;
+
+		//	Stacked fortification modifiers are multiplied together
+
+		if (IS_NAN(m_Fortification.GetWMD()))
+			rFortificationAdj = g_pUniverse->GetEngineOptions().GetDamageMethodAdjItemArmor(iMethod);
+		else
+			rFortificationAdj = m_Fortification.GetWMD();
+
+		Ctx.iAbsorb = Ctx.CalcDamageMethodAdjDamage(iMethod, rFortificationAdj);
+		}
+
+
+	//	Calculate how much we will absorb
+	//	We need to do this in two steps to allow WMD to set its own min damage first
+	//	before additional adjusmtent
+
+	Ctx.iAbsorb = mathAdjust(Ctx.iAbsorb, GetAbsorbAdj(DeviceItem, Enhancements, Ctx.Damage));
 
 	//	Compute how much damage we take (based on the type of damage)
 
@@ -673,7 +723,8 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 	pShield->m_iHitPoints = pDesc->GetAttributeInteger(HIT_POINTS_ATTRIB);
 	pShield->m_iArmorShield = pDesc->GetAttributeInteger(ARMOR_SHIELD_ATTRIB);
 	pShield->m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, 0);
-	pShield->m_iIdlePowerUse = pDesc->GetAttributeIntegerBounded(IDLE_POWER_USE_ATTRIB, 0, -1, pShield->m_iPowerUse / 2);
+	int iDefaultIdlePowerUse = mathRound((Metric)pShield->m_iPowerUse * g_pUniverse->GetEngineOptions().GetShieldIdlePowerRatio());
+	pShield->m_iIdlePowerUse = pDesc->GetAttributeIntegerBounded(IDLE_POWER_USE_ATTRIB, 0, -1, iDefaultIdlePowerUse);
 
 	//	Charges
 
@@ -761,6 +812,52 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 		{
 		for (i = 0; i < damageCount; i++)
 			pShield->m_iAbsorbAdj[i] = 100;
+		}
+
+	//	Damage Method fortification
+
+	EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+
+	bool bHasWMDFortify = pDesc->FindAttribute(FORTIFICATION_WMD_ATTRIB);
+	bool bHasPhysicalizedFortify = pDesc->FindAttribute(FORTIFICATION_CRUSH_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_PIERCE_ATTRIB) || pDesc->FindAttribute(FORTIFICATION_SHRED_ATTRIB);
+
+	if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+		{
+		if (bHasPhysicalizedFortify)
+			{
+			pShield->m_Fortification.SetCrush(pDesc->GetAttributeDoubleDefault(FORTIFICATION_CRUSH_ATTRIB, R_NAN));
+			pShield->m_Fortification.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, R_NAN));
+			pShield->m_Fortification.SetShred(pDesc->GetAttributeDoubleDefault(FORTIFICATION_SHRED_ATTRIB, R_NAN));
+			}
+		else if (bHasWMDFortify)
+			{
+			pShield->m_Fortification.SetCrush(R_NAN);
+			pShield->m_Fortification.SetPierce(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, R_NAN));
+			pShield->m_Fortification.SetShred(R_NAN);
+			}
+		else
+			{
+			pShield->m_Fortification.SetCrush(R_NAN);
+			pShield->m_Fortification.SetPierce(R_NAN);
+			pShield->m_Fortification.SetShred(R_NAN);
+			}
+
+		}
+	else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+		{
+		if (bHasWMDFortify)
+			pShield->m_Fortification.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_WMD_ATTRIB, R_NAN));
+		else if (bHasPhysicalizedFortify)
+			pShield->m_Fortification.SetWMD(pDesc->GetAttributeDoubleDefault(FORTIFICATION_PIERCE_ATTRIB, R_NAN));
+		else
+			pShield->m_Fortification.SetWMD(R_NAN);
+
+		}
+	else
+		{
+		ASSERT(false);
+		Ctx.sError = CONSTLIT("Cannot initialize with an unknown damage method system.");
+		return ERR_FAIL;
 		}
 
 	//	Load the weapon suppress
@@ -1430,9 +1527,14 @@ int CShieldClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
 	if (pEnhancements)
 		{
-		int iAdj = pEnhancements->GetPowerAdj();
-		iPower = iPower * iAdj / 100;
-		iIdlePower = iIdlePower * iAdj / 100;
+		int iActiveAdj = pEnhancements->GetActivePowerAdj();
+		iPower = iPower * iActiveAdj / 100;
+
+		if (retiIdlePowerUse)
+			{
+			int iAdj = pEnhancements->GetPowerAdj();
+			iIdlePower = iIdlePower * iAdj / 100;
+			}
 		}
 
 	if (retiIdlePowerUse)

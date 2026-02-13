@@ -1009,12 +1009,40 @@ bool CShip::CanBeDestroyedBy (CSpaceObject &Attacker) const
 				continue;
 
 			//	If the ship has interior compartments, then the weapon must have
-			//	WMD.
+			//	an appropriate damage method
 
 			if (IsMultiHull())
 				{
-				if (DeviceItem.GetWeaponFireDescForVariant(iVariant).GetDamage().GetMassDestructionDamage() > 0)
+				EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+
+				if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+					{
+					ECompartmentTypes iDefaultCompartment = GetDefaultCompartmentType();
+
+					switch (iDefaultCompartment)
+						{
+						case ECompartmentTypes::deckCargo:
+						case ECompartmentTypes::deckUncrewed:
+							return DeviceItem.GetWeaponFireDescForVariant(iVariant).GetDamage().GetDamageMethodDamage(EDamageMethod::methodCrush) > 0;
+						default:
+							return DeviceItem.GetWeaponFireDescForVariant(iVariant).GetDamage().GetDamageMethodDamage(EDamageMethod::methodShred) > 0;
+						}
+					}
+				else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+					{
+
+					if (DeviceItem.GetWeaponFireDescForVariant(iVariant).GetDamage().GetDamageMethodDamage(EDamageMethod::methodWMD) > 0)
+						return true;
+
+					}
+				else
+					{
+					ASSERT(false);
+
+					//	something went wrong
+
 					return true;
+					}
 				}
 
 			//	Otherwise, any weapon can destroy us.
@@ -1067,7 +1095,7 @@ bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &S
 
 		//	See if the armor is too heavy
 
-		else if (iCanInstall == CArmorLimits::resultTooHeavy)
+		else if (iCanInstall == CArmorLimits::resultTooLarge)
 			iResult = insArmorTooHeavy;
 
 		//	Fire CanBeInstalled to check for custom conditions
@@ -1223,7 +1251,7 @@ bool CShip::CanInstallItem (const CItem &Item, const CDeviceSystem::SSlotDesc &S
 							&& pNewCargo->GetCargoSpace() < pOldCargo->GetCargoSpace())
 						{
 						OnComponentChanged(comCargo);
-						Metric rRequiredCargoSpace = GetCargoMass() + ItemToReplace.GetMass() - Item.GetMass();
+						Metric rRequiredCargoSpace = GetCargoVolume() + ItemToReplace.GetVolume() - Item.GetVolume();
 						Metric rNewCargoSpace = (Metric)Hull.GetCargoSpace() + pNewCargo->GetCargoSpace();
 
 						if (rRequiredCargoSpace > rNewCargoSpace)
@@ -1343,7 +1371,7 @@ CShip::RemoveDeviceStatus CShip::CanRemoveDevice (const CItem &Item, CString *re
 			//	Compute how much cargo space we need to be able to hold
 
 			OnComponentChanged(comCargo);
-			Metric rCargoSpace = GetCargoMass() + Item.GetMass();
+			Metric rCargoSpace = GetCargoVolume() + Item.GetVolume();
 
 			//	If this is larger than the ship class max, then we cannot remove
 
@@ -1746,6 +1774,32 @@ void CShip::DamageDevice (CInstalledDevice *pDevice, SDamageCtx &Ctx)
 	if (!pDevice)
 		throw CException(ERR_FAIL);
 
+	//	See if we hit the device
+
+	const CDeviceDamageLevelDesc* pInternalDamageDesc = GetUniverse().GetEngineOptions().GetInternalDeviceDamageMaxLevels();
+	if (pInternalDamageDesc->GetChanceToHit() < mathRandom(1, 100))
+		return;
+
+	//	If the device gets hit, see if it gets damaged
+
+	int iLevel = pDevice->GetLevel();
+	CItemType* pDamageItem = Ctx.GetDesc().GetAmmoType();
+	if (!pDamageItem)
+		pDamageItem = Ctx.GetDesc().GetWeaponType();
+
+	//	If this wasnt caused by an item, we assume its something environmental
+
+	int iDamageItemLevel = pDamageItem ? pDamageItem->GetLevel() : MAX_ITEM_LEVEL;
+	DamageTypes iDamageType = Ctx.Damage.GetDamageType();
+	int iMaxLevel = pInternalDamageDesc->GetMaxDeviceLevel(iDamageType,iDamageItemLevel);
+	int iDeviceDamageAdj = pInternalDamageDesc->GetDeviceAdj(iDamageType);
+
+	//	TODO: decide if we want to use the more nuanced damage chance model
+
+	int iChanceOfDamage = iDeviceDamageAdj; //Ctx.iDamage * ((26 - iLevel) * 4) * iDeviceDamageAdj / (100 * 100);
+	if (iChanceOfDamage < mathRandom(1, 100))
+		return;
+
 	//	Damage the device
 
 	DamageItem(pDevice);
@@ -1765,12 +1819,38 @@ void CShip::DamageDrive (SDamageCtx &Ctx)
 //	Damages the main drive.
 
 	{
+	//	See if we hit the device
+
+	const CDeviceDamageLevelDesc* pInternalDamageDesc = GetUniverse().GetEngineOptions().GetInternalDeviceDamageMaxLevels();
+	if (pInternalDamageDesc->GetChanceToHit() < mathRandom(1, 100))
+		return;
+
 	//	Look for a drive device. If we have it, and it is undamaged, then it is
 	//	damaged.
 
 	CInstalledDevice *pDrive = GetNamedDevice(devDrive);
 	if (pDrive && !pDrive->IsDamaged())
 		{
+		//	If the device gets hit, see if it gets damaged
+
+		int iLevel = pDrive->GetLevel();
+		CItemType* pDamageItem = Ctx.GetDesc().GetAmmoType();
+		if (!pDamageItem)
+			pDamageItem = Ctx.GetDesc().GetWeaponType();
+
+		//	If this wasnt caused by an item, we assume its something environmental
+
+		int iDamageItemLevel = pDamageItem ? pDamageItem->GetLevel() : MAX_ITEM_LEVEL;
+		DamageTypes iDamageType = Ctx.Damage.GetDamageType();
+		int iMaxLevel = pInternalDamageDesc->GetMaxDeviceLevel(iDamageType,iDamageItemLevel);
+		int iDeviceDamageAdj = pInternalDamageDesc->GetDeviceAdj(iDamageType);
+
+		//	TODO: decide if we want to use the more nuanced damage chance model
+
+		int iChanceOfDamage = iDeviceDamageAdj; //Ctx.iDamage * ((26 - iLevel) * 4) * iDeviceDamageAdj / (100 * 100);
+		if (iChanceOfDamage < mathRandom(1, 100))
+			return;
+
 		DamageDevice(pDrive, Ctx);
 		return;
 		}
@@ -1779,6 +1859,26 @@ void CShip::DamageDrive (SDamageCtx &Ctx)
 
 	if (m_iDriveDamagedTimer != -1)
 		{
+		//	If the device gets hit, see if it gets damaged. We use the ship's level as the drive's level
+
+		int iLevel = GetLevel();
+		CItemType* pDamageItem = Ctx.GetDesc().GetAmmoType();
+		if (!pDamageItem)
+			pDamageItem = Ctx.GetDesc().GetWeaponType();
+
+		//	If this wasnt caused by an item, we assume its something environmental
+
+		int iDamageItemLevel = pDamageItem ? pDamageItem->GetLevel() : MAX_ITEM_LEVEL;
+		DamageTypes iDamageType = Ctx.Damage.GetDamageType();
+		int iMaxLevel = pInternalDamageDesc->GetMaxDeviceLevel(iDamageType,iDamageItemLevel);
+		int iDeviceDamageAdj = pInternalDamageDesc->GetDeviceAdj(iDamageType);
+
+		//	TODO: decide if we want to use the more nuanced damage chance model
+
+		int iChanceOfDamage = iDeviceDamageAdj; //Ctx.iDamage * ((26 - iLevel) * 4) * iDeviceDamageAdj / (100 * 100);
+		if (iChanceOfDamage < mathRandom(1, 100))
+			return;
+
 		int iDamageTime = mathRandom(1800, 3600);
 
 		//	Increment timer
@@ -1835,64 +1935,35 @@ void CShip::DamageExternalDevice (int iDev, SDamageCtx &Ctx)
 	//	If we're already damaged, then nothing more can happen
 	//	NOTE: This can only happen to external devices. We need this check 
 	//	because the overlay code relies on us to check.
+	//	
+	//	Additionally, null damage explicitly requires deviceDamage to proc this logic
 
-	if (pDevice->IsEmpty() || pDevice->IsDamaged() || !pDevice->IsExternal())
+	if (pDevice->IsEmpty()
+		|| pDevice->IsDamaged()
+		|| !pDevice->IsExternal()
+		|| (!Ctx.IsDeviceDamaged() && Ctx.Damage.GetDamageType() == damageNull))
+		return;
+
+	//	See if we hit the device
+
+	const CDeviceDamageLevelDesc* pExternalDamageDesc = GetUniverse().GetEngineOptions().GetExternalDeviceDamageMaxLevels();
+	if (pExternalDamageDesc->GetChanceToHit() < mathRandom(1, 100))
 		return;
 
 	//	If the device gets hit, see if it gets damaged
 
 	int iLevel = pDevice->GetLevel();
-	int iMaxLevel = 0;
-	int iChanceOfDamage = Ctx.iDamage * ((26 - iLevel) * 4) / 100;
+	CItemType* pDamageItem = Ctx.GetDesc().GetAmmoType();
+	if (!pDamageItem)
+		pDamageItem = Ctx.GetDesc().GetWeaponType();
 
-	switch (Ctx.Damage.GetDamageType())
-		{
-		case damageLaser:
-		case damageKinetic:
-			iMaxLevel = 6;
-			break;
+	//	If this wasnt caused by an item, we assume its something environmental
 
-		case damageParticle:
-		case damageBlast:
-			iMaxLevel = 9;
-			break;
-
-		case damageIonRadiation:
-			iMaxLevel = 12;
-			iChanceOfDamage = iChanceOfDamage * 120 / 100;
-			break;
-
-		case damageThermonuclear:
-			iMaxLevel = 12;
-			break;
-
-		case damagePositron:
-		case damagePlasma:
-			iMaxLevel = 15;
-			break;
-
-		case damageAntiMatter:
-		case damageNano:
-			iMaxLevel = 18;
-			break;
-
-		case damageGravitonBeam:
-			iMaxLevel = 21;
-			iChanceOfDamage = iChanceOfDamage * 75 / 100;
-			break;
-
-		case damageSingularity:
-			iMaxLevel = 21;
-			break;
-
-		case damageDarkAcid:
-		case damageDarkSteel:
-			iMaxLevel = 24;
-			break;
-
-		default:
-			iMaxLevel = 27;
-		}
+	int iDamageItemLevel = pDamageItem ? pDamageItem->GetLevel() : MAX_ITEM_LEVEL;
+	DamageTypes iDamageType = Ctx.Damage.GetDamageType();
+	int iMaxLevel = pExternalDamageDesc->GetMaxDeviceLevel(iDamageType,iDamageItemLevel);
+	int iDeviceDamageAdj = pExternalDamageDesc->GetDeviceAdj(iDamageType);
+	int iChanceOfDamage = Ctx.iDamage * ((26 - iLevel) * 4) * iDeviceDamageAdj / (100 * 100);
 
 	//	If the device is too high-level for the damage type, then nothing
 	//	happens
@@ -2612,11 +2683,11 @@ CSpaceObject *CShip::GetBase (void) const
 		return m_pController->GetBase();
 	}
 
-Metric CShip::GetCargoMass (void) const
-
 //	GetCargoMass
 //
 //	Returns the total mass of all items in cargo (in metric tons).
+//
+Metric CShip::GetCargoMass (void) const
 
 	{
 	if (m_fRecalcItemMass)
@@ -2628,11 +2699,26 @@ Metric CShip::GetCargoMass (void) const
 	return m_rCargoMass;
 	}
 
-Metric CShip::GetCargoSpaceLeft (void) const
+//	GetCargoVolume
+//
+//	Returns the total volume of all items in cargo (in cubic meters).
+//
+Metric CShip::GetCargoVolume(void) const
+	{
+	if (m_fRecalcItemVolume)
+		{
+		m_rItemVolume = CalculateItemVolume(&m_rCargoVolume);
+		m_fRecalcItemVolume = false;
+		}
+
+	return m_rCargoVolume;
+	}
 
 //	GetCargoSpaceLeft
 //
-//	Returns the amount of cargo space left in tons
+//	Returns the amount of cargo space left in CBM (cubic meters)
+//
+Metric CShip::GetCargoSpaceLeft () const
 
 	{
 	//	Compute total cargo space. Start with the space specified
@@ -2642,11 +2728,11 @@ Metric CShip::GetCargoSpaceLeft (void) const
 	
 	//	Recompute cargo mass
 
-	InvalidateItemMass();
+	InvalidateItemVolume();
 
 	//	Compute space left
 
-	return Max(0.0, rCargoSpace - GetCargoMass());
+	return Max(0.0, rCargoSpace - GetCargoVolume());
 	}
 
 int CShip::GetCombatPower (void)
@@ -2932,11 +3018,11 @@ int CShip::GetItemDeviceName (const CItem &Item) const
 	return m_Devices.FindNamedIndex(Item);
 	}
 
-Metric CShip::GetItemMass (void) const
-
 //	GetItemMass
 //
 //	Returns the total mass of all items (in metric tons).
+//
+Metric CShip::GetItemMass (void) const
 
 	{
 	if (m_fRecalcItemMass)
@@ -2946,6 +3032,22 @@ Metric CShip::GetItemMass (void) const
 		}
 
 	return m_rItemMass;
+	}
+
+//	GetItemVolume
+//
+//	Returns the total volume of all items (in cubic meters).
+//
+Metric CShip::GetItemVolume(void) const
+
+	{
+	if (m_fRecalcItemVolume)
+		{
+		m_rItemVolume = CalculateItemVolume(&m_rCargoVolume);
+		m_fRecalcItemVolume = false;
+		}
+
+	return m_rItemVolume;
 	}
 
 Metric CShip::GetInvMass (void) const
@@ -2970,11 +3072,11 @@ Metric CShip::GetInvMass (void) const
 	return (1.0 / rMass);
 	}
 
-Metric CShip::GetMass (void) const
-
 //	GetMass
 //
 //	Returns the mass of the object in metric tons
+//
+Metric CShip::GetMass (void) const
 
 	{
 	return m_pClass->GetHullDesc().GetMass() + GetItemMass();
@@ -3128,7 +3230,7 @@ void CShip::GetReactorStats (SReactorStats &Stats) const
 	if (pReactor)
 		{
 		Stats.sReactorName = pReactor->GetClass()->GetItemType()->GetNounPhrase();
-		Stats.pReactorImage = &pReactor->GetItem()->GetType()->GetImage();
+		Stats.pReactorImage = &pReactor->GetItem()->GetImage();
 		Stats.bReactorDamaged = pReactor->IsDamaged();
 
 		pReactor->GetItem()->AccumulateEnhancementDisplayAttributes(Stats.Enhancements);
@@ -3173,11 +3275,66 @@ void CShip::GetReactorStats (SReactorStats &Stats) const
 		}
 	}
 
-int CShip::GetStealth (void) const
+//	GetRelativeHealth
+// 
+//	Returns an int 0-100 representing
+//	the relative health of this ship
+// 
+//	Values > 100 represent an indestructible or intangible object (suspended, gated, virtual, etc)
+//	Values < 0 represent a destroyed object
+//
+int CShip::GetRelativeHealth () const
+	{
+	if (IsDestroyed())
+		return -1;
+
+	if (IsImmutable() || IsIntangible())
+		return INT_MAX;
+
+	Metric rArmorHPRatio = 1.0;
+
+	//	Pick the most damaged segment
+
+	for (int i = 0; i < m_Armor.GetSegmentCount(); i++)
+		{
+		CInstalledArmor Segment = m_Armor.GetSegment(i);
+		int iTotalArmorHP = Segment.GetHitPoints();
+		int iTotalArmorMaxHP = Segment.GetMaxHP(this);
+		Metric rSegmentArmorHPRatio = iTotalArmorMaxHP ? (Metric)iTotalArmorHP / iTotalArmorMaxHP : 0.0;
+		
+		if (rSegmentArmorHPRatio < rArmorHPRatio)
+			rArmorHPRatio = rSegmentArmorHPRatio;
+		}
+
+	//	Handle ships with compartments
+
+	if (m_fHasShipCompartments || m_Interior.GetCount())
+		{
+		int iCompartmentHP;
+		int iCompartmentMaxHP;
+
+		m_Interior.GetHitPoints(*this, m_pClass->GetInteriorDesc(), &iCompartmentHP, &iCompartmentMaxHP);
+
+		Metric rCompartmentHPRatio = iCompartmentMaxHP ? (Metric)iCompartmentHP / iCompartmentMaxHP : 0;
+
+		//	Each counts for half of the total HP pool. This is designed to mirror the actual
+		//	HP bar in the UI
+
+		Metric rCombinedRatio = rArmorHPRatio * 0.5 + rCompartmentHPRatio * 0.5;
+		return min(100, mathRound(100 * rCombinedRatio + 0.5 - g_Epsilon));	//only return 0 if we are actually at 0
+		}
+
+	//	Ships without compartments are just the most damaged armor ratio
+
+	else
+		return min(100, mathRound(100 * rArmorHPRatio + 0.5 - g_Epsilon));
+	}
 
 //	GetStealth
 //
 //	Returns the stealth of the ship
+//
+int CShip::GetStealth () const
 
 	{
 	int iStealth = m_Perf.GetStealth();
@@ -3468,6 +3625,10 @@ Metric CShip::GetWeaponRange (DeviceNames iDev)
 	{
 	CInstalledDevice *pWeapon = GetNamedDevice(iDev);
 	if (pWeapon == NULL)
+		return 0.0;
+
+	CWeaponClass* pWeaponType = pWeapon->GetClass()->AsWeaponClass();
+	if (pWeaponType && pWeaponType->IsIgnoredByAI())
 		return 0.0;
 
 	return pWeapon->GetMaxEffectiveRange(this);
@@ -4282,11 +4443,12 @@ void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
 
 		case comCargo:
 			{
-			//	Calculate new mass
+			//	Calculate new mass and volume
 			//
 			//  NOTE: In this case we defer recalculating performance until update.
 
 			m_fRecalcItemMass = true;
+			m_fRecalcItemVolume = true;
 			if (m_fTrackMass)
 				m_fRecalcRotationAccel = true;
 
@@ -4348,12 +4510,13 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Short-circuit, only if there is absolutely nothing our
 	//	damage desc lets us do
 	// 
-	//	Null damage always is allowed through specifically for scripts
-	//	to fire
+	//	Null damage always is allowed through specifically for non-hostile
+	//	events to fire
 
 	bool bIsHostile = Ctx.Damage.IsHostile();
+	bool bFireDamageEvents = Ctx.IsDamageEventFiring();
 
-	if ((Ctx.iDamage == 0 && !bIsHostile && Ctx.Damage.GetDamageType() != damageNull) || GetSystem() == NULL)
+	if (!bFireDamageEvents || GetSystem() == NULL)
 		return damageNoDamage;
 
 	bool bIsPlayer = IsPlayer();
@@ -4462,9 +4625,9 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Ignore devices with overlays because they get damaged in the overlay
 	//	damage section.
 	// 
-	//	Skip for Null or 0 damage.
+	//	Skip for 0 damage, but allow null damage through to allow DamageExternalDevice to handle things.
 
-	if (Ctx.iDamage && Ctx.Damage.GetDamageType() != damageNull)
+	if (bFireDamageEvents)
 		{
 		for (CDeviceItem DeviceItem : GetDeviceSystem())
 			{
@@ -4472,10 +4635,13 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			if (Device.IsExternal()
 				&& Device.GetOverlay() == NULL)
 				{
-				//	The chance that the device got hit depends on the number of armor segments
-				//	A device takes up 1/9th of the surface area of a segment.
+				//	Check if we hit the segment that the device is on
+				//	If we roll a Nat 1, representing the segment with the device, we get hit.
+				// 
+				//	A second check if we actually hit the device
+				//  is done inside of DamageExternalDevice
 
-				if (mathRandom(1, GetArmorSectionCount() * 9) == 7)
+				if (mathRandom(1, GetArmorSectionCount()) == 1)
 					DamageExternalDevice(Device.GetDeviceSlot(), Ctx);
 				}
 			}
@@ -4509,8 +4675,99 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Let the armor handle it
 
 	Ctx.iArmorHitDamage = Ctx.iDamage;
+
 	if (pArmor)
 		{
+		CShipArmorSegmentDesc SectionDesc = m_pClass->GetArmorDesc().GetSegment(pArmor->GetSect());
+
+		//	Set any Fortification adjustment from the slot
+
+		EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+		ECompartmentTypes iDefaultCompartmentType;
+
+		if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+			{
+			for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
+				{
+				EDamageMethod iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
+
+				Metric rExternFortify = SectionDesc.GetFortificationAdj(iMethod);
+
+				if (IS_NAN(rExternFortify))
+					{
+					iDefaultCompartmentType = GetEffectiveProtectedCompartmentType(pArmor->GetSect());
+
+					bool bTrueCriticalSegments = GetDefaultCompartment().iMaxHP == 0;
+					bool bSectMarkedCritical = SectionDesc.GetCriticalArea() == CShipClass::VitalSections::sectCritical;
+					bool bUncrewedCompartment;
+
+					switch (iDefaultCompartmentType)
+						{
+						case ECompartmentTypes::deckUncrewed:
+						case ECompartmentTypes::deckCargo:
+							bUncrewedCompartment = true;
+						case ECompartmentTypes::deckGeneral:
+						case ECompartmentTypes::deckMainDrive:
+						case ECompartmentTypes::deckUnknown:
+						default:
+							bUncrewedCompartment = false;
+						}
+
+					if (bTrueCriticalSegments && bSectMarkedCritical)
+						{
+						if (bUncrewedCompartment)
+							rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCriticalUncrewed(iMethod);
+						else
+							rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCritical(iMethod);
+						}
+					else
+						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCritical(iMethod);
+					}
+				Ctx.ArmorExternFortification.Set(iMethod, rExternFortify);
+				}
+			}
+		else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+			{
+			EDamageMethod iMethod = EDamageMethod::methodWMD;
+
+			Metric rExternFortify = SectionDesc.GetFortificationAdj(iMethod);
+
+			if (IS_NAN(rExternFortify))
+				{
+				iDefaultCompartmentType = GetEffectiveProtectedCompartmentType(pArmor->GetSect());
+
+				bool bTrueCriticalSegments = GetDefaultCompartment().iMaxHP == 0;
+				bool bSectMarkedCritical = SectionDesc.GetCriticalArea() == CShipClass::VitalSections::sectCritical;
+				bool bUncrewedCompartment;
+
+				switch (iDefaultCompartmentType)
+					{
+					case ECompartmentTypes::deckUncrewed:
+					case ECompartmentTypes::deckCargo:
+						{
+						bUncrewedCompartment = true;
+						break;
+						}
+					case ECompartmentTypes::deckGeneral:
+					case ECompartmentTypes::deckMainDrive:
+					case ECompartmentTypes::deckUnknown:
+					default:
+						bUncrewedCompartment = false;
+					}
+
+				if (bTrueCriticalSegments && bSectMarkedCritical)
+					{
+					if (bUncrewedCompartment)
+						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCriticalUncrewed(iMethod);
+					else
+						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCritical(iMethod);
+					}
+				else
+					rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCritical(iMethod);
+				}
+			Ctx.ArmorExternFortification.SetWMD(rExternFortify);
+			}
+
 		EDamageResults iResult = pArmor->AbsorbDamage(this, Ctx);
 
 		//	Handle result
@@ -4674,24 +4931,74 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 		if (!(dwDamage & CShipClass::sectCritical))
 			{
-			int iChanceOfDeath = 5;
+			EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+			EDamageMethod iMethod;
+			Metric rChanceToDie = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestructionChance();
+			int iChanceOfDeath = mathRoundStochastic(rChanceToDie * 100);
 
-			//	We only care about mass destruction damage
+			if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+				{
+				Metric rDamageMethodAdj = 1.0;
 
-			int iWMDDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
+				for (int i = 0; i < PHYSICALIZED_DAMAGE_METHOD_COUNT; i++)
+					{
+					iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
 
-			//	Compare the amount of damage that we are taking with the
-			//	original strength (HP) of the armor. Increase the chance
-			//	of death appropriately.
+					Metric rNonCriticalAdjust = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestruction(iMethod);
 
-			int iMaxHP = pArmor->GetMaxHP(this);
-			if (iMaxHP > 0)
-				iChanceOfDeath += 20 * iWMDDamage / iMaxHP;
+					rDamageMethodAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rNonCriticalAdjust);
+					}
 
-			//	Roll the dice
+				//	Compare the amount of damage that we are taking with the
+				//	original strength (HP) of the armor. Increase the chance
+				//	of death appropriately.
 
-			if (mathRandom(1, 100) <= iChanceOfDeath)
-				dwDamage |= CShipClass::sectCritical;
+				int iWMDDamage = Ctx.CalcDamageMethodAdjDamagePrecalc(rDamageMethodAdj);
+
+				int iMaxHP = pArmor->GetMaxHP(this);
+				if (iMaxHP > 0)
+					iChanceOfDeath += 20 * iWMDDamage / iMaxHP;
+
+				//	Roll the dice
+
+				if (mathRandom(1, 100) <= iChanceOfDeath)
+					dwDamage |= CShipClass::sectCritical;
+				}
+			else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+				{
+				iMethod = EDamageMethod::methodWMD;
+
+				//	We increase the chance to die based on the amount of damage
+				//	experienced by the target relative to the max HP of the segment
+				//	This is to preserve legacy balance until this system gets a
+				//  proper replacement
+
+				Metric rNonCriticalAdjust = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestruction(iMethod);
+
+				int iWMDDamage = Ctx.CalcDamageMethodAdjDamage(iMethod, rNonCriticalAdjust);
+
+				//	Compare the amount of damage that we are taking with the
+				//	original strength (HP) of the armor. Increase the chance
+				//	of death appropriately.
+
+				int iMaxHP = pArmor->GetMaxHP(this);
+				if (iMaxHP > 0)
+					iChanceOfDeath += 20 * iWMDDamage / iMaxHP;
+
+				//	Roll the dice
+
+				if (mathRandom(1, 100) <= iChanceOfDeath)
+					dwDamage |= CShipClass::sectCritical;
+				}
+			else
+				{
+				ASSERT(false);
+
+				//	Something went wrong, pretend we were a critical segment
+				//	and just die
+
+				return damageDestroyed;
+				}
 			}
 
 		//	Ship is destroyed!
@@ -5138,9 +5445,10 @@ void CShip::OnItemEnhanced (CItemListManipulator &ItemList)
 
 	if (ItemList.GetItemAtCursor().IsInstalled())
 		{
-		//	Update item mass in case the mass of this item changed
+		//	Update item mass and volume in case the mass or volume of this item changed
 
 		m_fRecalcItemMass = true;
+		m_fRecalcItemVolume = true;
 
 		//  Recalc performance
 
@@ -5688,6 +5996,11 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion >= 2)
 		Ctx.pStream->Read(m_rItemMass);
 	Ctx.pStream->Read(m_rCargoMass);
+	if (Ctx.dwVersion >= 219)
+		{
+		Ctx.pStream->Read(m_rItemVolume);
+		Ctx.pStream->Read(m_rCargoVolume);
+		}
 	CSystem::ReadObjRefFromStream(Ctx, &m_pDocked);
 	CSystem::ReadObjRefFromStream(Ctx, &m_pExitGate);
 	if (Ctx.dwVersion >= 42)
@@ -5706,12 +6019,17 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	bool bBit01 =				((dwLoad & 0x00000001) ? true : false);
 	m_fRadioactive =			((dwLoad & 0x00000002) ? true : false);
-	if (Ctx.dwVersion >= 155 && Ctx.dwVersion < 185)
+	if (Ctx.dwVersion >= 219)
+		{
+		if (dwLoad & 0x00000004)
+			InvalidateItemVolume();
+		}
+	//	0x00000004 Unused as of version 185, used again in 219 for a different flag
+	else if (Ctx.dwVersion >= 155 && Ctx.dwVersion < 185)
 		{
 		if (dwLoad & 0x00000004)
 			SetAutoCreatedPorts(true);
 		}
-	//	0x00000004 Unused as of version 185
 	m_fDestroyInGate =			((dwLoad & 0x00000008) ? true : false);
 	m_fHalfSpeed =				((dwLoad & 0x00000010) ? true : false);
 	m_fNameBlanked =			((dwLoad & 0x00000020) ? true : false) && (Ctx.dwVersion >= 155);
@@ -5917,11 +6235,13 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 			m_pEncounterInfo = Ctx.GetUniverse().FindStationType(dwLoad);
 		}
 
-	//	Calculate item mass, if appropriate. We do this for previous versions
-	//	that did not store item mass.
+	//	Calculate item mass and volume, if appropriate. We do this for previous versions
+	//	that did not store item mass or volume.
 	
 	if (Ctx.dwVersion < 2)
 		m_rItemMass = CalculateItemMass(&m_rCargoMass);
+	if (Ctx.dwVersion < 219)
+		m_rItemVolume = CalculateItemVolume(&m_rCargoVolume);
 
 	//	Irradiation source
 
@@ -6157,6 +6477,8 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		low = m_iLRSBlindnessTimer; hi = m_iDriveDamagedTimer
 //	Metric		m_rItemMass
 //	Metric		m_rCargoMass
+//	Metric		m_rItemVolume
+//	Metric		m_rCargoVolume
 //	DWORD		m_pDocked (CSpaceObject ref)
 //	DWORD		m_pExitGate (CSpaceObject ref)
 //	DWORD		m_iLastFireTime
@@ -6223,6 +6545,8 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 
 	pStream->Write(m_rItemMass);
 	pStream->Write(m_rCargoMass);
+	pStream->Write(m_rItemVolume);
+	pStream->Write(m_rCargoVolume);
 	WriteObjRefToStream(m_pDocked, pStream);
 	WriteObjRefToStream(m_pExitGate, pStream);
 	pStream->Write(m_iLastFireTime);
@@ -6231,7 +6555,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave = 0;
 	dwSave |= (m_fLRSDisabledByNebula ? 0x00000001 : 0);
 	dwSave |= (m_fRadioactive ?			0x00000002 : 0);
-	//	0x00000004 Unused as of 185
+	dwSave |= (m_fRecalcItemVolume ?	0x00000004 : 0);
 	dwSave |= (m_fDestroyInGate ?		0x00000008 : 0);
 	dwSave |= (m_fHalfSpeed ?			0x00000010 : 0);
 	dwSave |= (m_fNameBlanked ?			0x00000020 : 0);
@@ -6560,7 +6884,11 @@ void CShip::PointInObjectInit (SPointInObjectCtx &Ctx) const
 //	Initializes context for PointInObject (for improved performance in loops)
 
 	{
+	DEBUG_TRY
+
 	GetImage().PointInImageInit(Ctx, GetSystem()->GetTick(), m_Rotation.GetFrameIndex());
+
+	DEBUG_CATCH
 	}
 
 void CShip::ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program)
@@ -7303,7 +7631,7 @@ void CShip::SetFireDelayForCycleWeapons (CInstalledDevice &Device)
 			}
 		}
 
-	iFireDelayToIncrement = (m_pController->GetFireRateAdj() * Device.GetActivateDelay(this) / 10);
+	iFireDelayToIncrement = mathRound(m_pController->GetFireRateAdj() * Device.GetActivateDelay(this) / 10);
 	iFireDelayToIncrement = (iFireDelayToIncrement + (iNumberOfGuns - 1)) / iNumberOfGuns;
 	while (WeaponsInFireGroup.GetCount() > 0)
 		{
@@ -7753,6 +8081,43 @@ void CShip::UninstallArmor (CItemListManipulator &ItemList)
 //	Uninstalls the armor at the cursor
 
 	{
+	}
+
+//	Returns what sort of deck an armor segment protects
+// 
+//	Converts non-critical areas to corresponding deck types
+//	If generic non-critical, returns the deck type of the
+//	default compartment.
+//	If critical, returns deckUnknown
+//
+ECompartmentTypes CShip::GetEffectiveProtectedCompartmentType(int iSect)
+	{
+	//	This is set to deckUnknown if we dont have compartments
+	ECompartmentTypes iDefaultCompartmentType = GetDefaultCompartmentType();
+	int iSegmentCoverage = m_pClass->GetArmorDesc().GetSegment(iSect).GetCriticalArea();
+
+	switch (iSegmentCoverage)
+		{
+		case CShipClass::VitalSections::sectCritical:
+			return ECompartmentTypes::deckUnknown;
+		case CShipClass::VitalSections::sectCargo:
+			return ECompartmentTypes::deckCargo;
+		case CShipClass::VitalSections::sectDrive:
+		case CShipClass::VitalSections::sectManeuver:
+			return ECompartmentTypes::deckMainDrive;
+		case CShipClass::VitalSections::sectTactical:
+		case CShipClass::VitalSections::sectScanners:
+			return ECompartmentTypes::deckUncrewed;
+		default:
+			{
+			if (iSegmentCoverage & CShipClass::VitalSections::sectDeviceMask)
+				return ECompartmentTypes::deckUncrewed;
+			else if (iDefaultCompartmentType == ECompartmentTypes::deckUnknown)
+				return ECompartmentTypes::deckGeneral;
+			else
+				return iDefaultCompartmentType;
+			}
+		}
 	}
 
 void CShip::UpdateArmorItems (void)

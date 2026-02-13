@@ -185,9 +185,9 @@ bool CTDBCompiler::Init (const CString &sInputFilespec, const CString &sOutputFi
 	for (i = 0; i < EntityFilespecs.GetCount(); i++)
 		{
 		CExternalEntityTable *pNewEntities;
-		if (!ReadEntities(EntityFilespecs[i], &pNewEntities))
+		if (!ReadEntities(EntityFilespecs[i], &pNewEntities, retsError))
 			{
-			*retsError = strPatternSubst(CONSTLIT("Unable to read entities file '%s'."), EntityFilespecs[i]);
+			*retsError = strPatternSubst(CONSTLIT("Unable to read entities file '%s': %s"), EntityFilespecs[i], *retsError);
 			return false;
 			}
 
@@ -229,7 +229,7 @@ CExternalEntityTable *CTDBCompiler::PushEntityTable (CExternalEntityTable *pNewT
 	return pOldTable;
 	}
 
-bool CTDBCompiler::ReadEntities (const CString &sFilespec, CExternalEntityTable **retpEntityTable) const
+bool CTDBCompiler::ReadEntities (const CString &sFilespec, CExternalEntityTable **retpEntityTable, CString *retsError) const
 	{
 	ALERROR error;
 
@@ -237,30 +237,50 @@ bool CTDBCompiler::ReadEntities (const CString &sFilespec, CExternalEntityTable 
 
 	CDataFile EntitiesTDB(sFilespec);
 	if (error = EntitiesTDB.Open(DFOPEN_FLAG_READ_ONLY))
+		{
+		*retsError = strPatternSubst(CONSTLIT("Could not open file '%s'."), sFilespec);
 		return false;
+		}
 
 	//	Open
 
 	CString sData;
 	if (error = EntitiesTDB.ReadEntry(EntitiesTDB.GetDefaultEntry(), &sData))
+		{
+		if (error == ERR_FAIL)
+			*retsError = CONSTLIT("TDB Entry table could not be loaded.");
+		else if (error == ERR_MEMORY)
+			*retsError = CONSTLIT("Insufficient memory to read the TDB entry table.");
+		else
+			*retsError = CONSTLIT("Unknown error while reading the TDB entry table.");
 		return false;
+		}
 
 	CMemoryReadStream Stream(sData.GetASCIIZPointer(), sData.GetLength());
 	if (error = Stream.Open())
+		{
+		*retsError = CONSTLIT("Unable to open stream to file.");
 		return false;
+		}
 
 	//	Check the signature
 
 	DWORD dwLoad;
 	Stream.Read((char *)&dwLoad, sizeof(DWORD));
 	if (dwLoad != TDB_SIGNATURE)
+		{
+		*retsError = strPatternSubst(CONSTLIT("'%s' does not have the expected TDB signature."), sFilespec);
 		return false;
+		}
 
 	//	Check the version
 
 	Stream.Read((char *)&dwLoad, sizeof(DWORD));
 	if (dwLoad > TDB_VERSION)
+		{
+		*retsError = strPatternSubst(CONSTLIT("Version of TDB (%x) is too high for this version of transcompiler."), dwLoad);
 		return false;
+		}
 
 	//	Read the game file
 
@@ -271,7 +291,15 @@ bool CTDBCompiler::ReadEntities (const CString &sFilespec, CExternalEntityTable 
 
 	CString sGameFile;
 	if (error = EntitiesTDB.ReadEntry(iGameFile, &sGameFile))
+		{
+		if (error == ERR_FAIL)
+			*retsError = CONSTLIT("TDB Main file Entry table could not be loaded.");
+		else if (error == ERR_MEMORY)
+			*retsError = CONSTLIT("Insufficient memory to read the TDB main file entry table.");
+		else
+			*retsError = CONSTLIT("Unknown error while reading the TDB main file entry table.");
 		return false;
+		}
 
 	//	Allocate entities
 
@@ -283,7 +311,10 @@ bool CTDBCompiler::ReadEntities (const CString &sFilespec, CExternalEntityTable 
 
 	CString sError;
 	if (error = CXMLElement::ParseEntityTable(&GameFile, pEntities, &sError))
+		{
+		*retsError = strPatternSubst(CONSTLIT("Error while parsing the XML entity table: %s"), sError);
 		return false;
+		}
 
 	//	Done
 

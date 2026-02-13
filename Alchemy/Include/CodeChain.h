@@ -151,6 +151,7 @@ class ICCItem : public CObject
 
 		virtual ICCItem *Execute (CEvalContext *pCtx, ICCItem *pArgs);
 		virtual bool GetBinding (int *retiFrame, int *retiOffset) { return false; }
+		virtual SIZE_T GetFunctionAddr () { return NULL; }
 		virtual ICCItem *GetFunctionBinding (void) { return NULL; }
 		virtual CString GetHelp (void) { return NULL_STR; }
 		virtual int GetIntegerValue (void) const { return 0; }
@@ -322,11 +323,11 @@ class CCNumeral : public ICCAtom
 		CCNumeral(void);
 
 		// ICCItem virtuals
-		virtual bool IsConstant (void) const override { return true; }
-		virtual bool IsIdentifier(void) const override { return false; }
-		virtual bool IsFunction(void) const override { return false; }
-		virtual bool IsInteger(void) const override { return false;  }
-		virtual bool IsDouble(void) const override { return false;  }
+		virtual bool IsConstant () const override { return true; }
+		virtual bool IsIdentifier () const override { return false; }
+		virtual bool IsFunction () const override { return false; }
+		virtual bool IsInteger () const override { return false;  }
+		virtual bool IsDouble () const override { return false;  }
 	};
 
 class CCInteger : public CCNumeral
@@ -339,17 +340,17 @@ class CCInteger : public CCNumeral
 
 		//	ICCItem virtuals
 		virtual ICCItem *Clone(CCodeChain *pCC) override;
-		virtual bool IsInteger(void) const override { return true; }
-		virtual bool IsDouble(void) const override { return false; }
-		virtual int GetIntegerValue (void) const override { return m_iValue; }
-		virtual double GetDoubleValue(void) const override { return double(m_iValue); }
-		virtual CString GetStringValue (void) const override { return strFromInt(m_iValue); }
-		virtual ValueTypes GetValueType(void) const override { return Integer;  }
+		virtual bool IsInteger () const override { return true; }
+		virtual bool IsDouble () const override { return false; }
+		virtual int GetIntegerValue () const override { return m_iValue; }
+		virtual double GetDoubleValue () const override { return double(m_iValue); }
+		virtual CString GetStringValue () const override { return strFromInt(m_iValue); }
+		virtual ValueTypes GetValueType () const override { return Integer;  }
 		virtual CString Print (DWORD dwFlags = 0) const override;
-		virtual void Reset(void) override;
+		virtual void Reset () override;
 
 	protected:
-		virtual void DestroyItem (void) override;
+		virtual void DestroyItem () override;
 
 	private:
 		int m_iValue;							//	Value of 32-bit integer
@@ -362,22 +363,22 @@ class CCDouble : public CCNumeral
 	public:
 		CCDouble(void);
 
-		double GetValue(void) { return m_dValue; }
-		void SetValue(double dValue) { m_dValue = dValue; }
+		double GetValue (void) { return m_dValue; }
+		void SetValue (double dValue) { m_dValue = dValue; }
 
 		//	ICCItem virtuals
-		virtual ICCItem *Clone(CCodeChain *pCC) override;
-		virtual bool IsInteger(void) const override { return false; }
-		virtual bool IsDouble(void) const override { return true; }
-		virtual int GetIntegerValue(void) const override { return int(m_dValue); }
-		virtual double GetDoubleValue(void) const override { return m_dValue; }
-		virtual CString GetStringValue(void) const override { return strFromDouble(m_dValue); }
-		virtual ValueTypes GetValueType(void) const override { return Double;  }
+		virtual ICCItem *Clone (CCodeChain *pCC) override;
+		virtual bool IsInteger () const override { return false; }
+		virtual bool IsDouble () const override { return true; }
+		virtual int GetIntegerValue () const override { return int(m_dValue); }
+		virtual double GetDoubleValue () const override { return m_dValue; }
+		virtual CString GetStringValue () const override { return strFromDouble(m_dValue); }
+		virtual ValueTypes GetValueType () const override { return Double;  }
 		virtual CString Print (DWORD dwFlags = 0) const override;
-		virtual void Reset (void) override;
+		virtual void Reset () override;
 
 	protected:
-		virtual void DestroyItem (void) override;
+		virtual void DestroyItem () override;
 
 	private:
 		double m_dValue;							//	Value of double
@@ -497,6 +498,7 @@ class CCPrimitive : public ICCAtom
 
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual ICCItem *Execute (CEvalContext *pCtx, ICCItem *pArgs) override;
+		virtual SIZE_T GetFunctionAddr () { return (SIZE_T)m_pfFunction; }
 		virtual CString GetHelp (void) override { return m_sDesc; }
 		virtual CString GetStringValue (void) const override { return m_sName; }
 		virtual ValueTypes GetValueType (void) const override { return Function; }
@@ -534,6 +536,7 @@ class CCLambda : public ICCAtom
 
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual ICCItem *Execute (CEvalContext *pCtx, ICCItem *pArgs) override;
+		virtual SIZE_T GetFunctionAddr () { return (SIZE_T)m_pCode; }
 		virtual CString GetHelp (void) override { return m_sDesc; }
 		virtual CString GetStringValue (void) const override { return LITERAL("[lambda expression]"); }
 		virtual ValueTypes GetValueType (void) const override { return Function; }

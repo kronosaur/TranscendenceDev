@@ -880,7 +880,6 @@
     <ClInclude Include="TargetListImpl.h" />
     <ClInclude Include="TopologyDescImpl.h" />
     <ClInclude Include="TopologyProcessorsImpl.h" />
-    <ClInclude Include="WeaponClassImpl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BaseShipAIProperties.cpp" />
@@ -977,6 +976,7 @@
     <ClCompile Include="CDesignPropertyDefinitions.cpp" />
     <ClCompile Include="CDesignTypeCriteria.cpp" />
     <ClCompile Include="CDeterChaseOrder.cpp" />
+    <ClCompile Include="CDeviceDamageLevelDesc.cpp" />
     <ClCompile Include="CDeviceItem.cpp" />
     <ClCompile Include="CDeviceSystem.cpp" />
     <ClCompile Include="CDifferentiatedItem.cpp" />
@@ -1036,6 +1036,7 @@
     <ClCompile Include="CDockScreenStack.cpp" />
     <ClCompile Include="CDockScreenVisuals.cpp" />
     <ClCompile Include="CDockSession.cpp" />
+    <ClCompile Include="CDoubleRangeCriteria.cpp" />
     <ClCompile Include="CDriveDesc.cpp" />
     <ClCompile Include="CEffectParamDesc.cpp" />
     <ClCompile Include="CEngineLanguage.cpp" />
@@ -1062,6 +1063,7 @@
     <ClCompile Include="CItemEncounterDefinitions.cpp" />
     <ClCompile Include="CItemLevelCriteria.cpp" />
     <ClCompile Include="CItemTypeProbabilityTable.cpp" />
+    <ClCompile Include="CDamageMethodDesc.cpp" />
     <ClCompile Include="CMiningDamageLevelDesc.cpp" />
     <ClCompile Include="COrbitExactOrder.cpp" />
     <ClCompile Include="CLabelPainter.cpp" />

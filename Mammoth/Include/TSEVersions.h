@@ -5,9 +5,9 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							58;
+constexpr DWORD API_VERSION =							59;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
-constexpr DWORD SYSTEM_SAVE_VERSION =					215;
+constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 
 //	Uncomment out the following define when building a stable release
 
@@ -682,7 +682,227 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //				Returns a list of static datakeys for the given obj type
 //			(scr@Keys type)
 //				Returns a list of all instance property and custom global property keys for the given obj
+//			(sysGetNextNodeTo [srcNode] destNode [options])
+//				Accepts an options struct now
+//				options:
+//					blockNodes (list): do not path through these nodes
+//					respectOneWayGates (bool): if pathing must obey the directionality of one way gates (default: false)
+//					gateCriteria (string): criteria to match against stargate topology attributes (not the stations)
+//			(sysGetPathTo [srcNode] destNode [options])
+//				options:
+//					blockNodes (list): do not path through these nodes
+//					respectOneWayGates (bool): if pathing must obey the directionality of one way gates (default: false)
+//					gateCriteria (string): criteria to match against stargate topology attributes (not the stations)
+//		<AdventureDesc>
+//			<Constants>
+//				<ExternalDeviceDamageMaxLevels>
+//					deviceDamageMaxDeviceLevel: (damageAdj-style list of ints)
+//						The maximum level device that this weapon shot can damage
+//						Specifying a "+" before a level means this is a positive
+//							offset relative to the level of the item
+//						Specifying a "-" before a level means this is a negative
+//							offset relative to the level of the item
+//					deviceDamageTypeAdj:
+//						% damageAdj of this damage type to devices
+//						generic damage always has 100%
+//						null damage has 100% if it also has device:# in its desc
+//					deviceHitChance:
+//						% chance for a shot of any damage type to hit a device
+//				<InternalDeviceDamageMaxLevels>
+//					deviceDamageMaxDeviceLevel: (damageAdj-style list of ints)
+//						The maximum level device that this weapon shot can damage
+//						Specifying a "+" before a level means this is a positive
+//							offset relative to the level of the item
+//						Specifying a "-" before a level means this is a negative
+//							offset relative to the level of the item
+//					deviceDamageTypeAdj:
+//						% damageAdj of this damage type to devices
+//						generic damage always has 100%
+//						null damage has 100% if it also has device:# in its desc
+//					deviceHitChance:
+//						% chance for a shot of any damage type to hit a device
+//				<DamageMethodAdj>
+//					<WMD>
+//						damageMethodAdj: (damageAdj-style list of exactly 8 ints or doubles)
+//							The baseline adjustment curve (note that fortification
+//							can adjust this further)
+//						damageMethodDisplay: (attribute-style list of exactly 7 alphanumeric strings)
+//							Strings to display alongside wmdDisplayPrefix for WMD1-WMD7
+//							If you provide a "!", a given level will not show the attribute.
+//						damageMethodDisplayPrefix: (string)
+//							A string prefix (ex, "WMD ") which the given wmdDisplay
+//							is appended to at that given WMD level. Default: "WMD "
+//			<Properties>
+//				<Constant id="core.damageMethod.item">
+//					Returns a nested struct specifying for different item types:
+//						armor
+//						shield
+//					The allowed fortification for the following damage methods:
+//						WMD (in the WMD system)
+//					Default WMD fortification adj properties for low/no WMD damage.
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default:
+//						armor:
+//							WMD: 0.0
+//						shield:
+//							WMD: 0.0
+//				<Constant id="core.damageMethod.ship">
+//					Returns a nested struct specifying for different target types:
+//						armor
+//							critical
+//							nonCritical
+//							nonCriticalDestruction
+//							nonCriticalDestructionChance
+//								Note: this is the base destruction chance at 0hp when
+//								no compartment is present
+//						compartment
+//								Note: uses the default compartment of the ship
+//							general
+//							cargo
+//							mainDrive
+//					The allowed fortification for the following damage methods:
+//						WMD (in the WMD system)
+//					Default WMD fortification adj properties for low/no WMD damage.
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default:
+//						armor:
+//							critical:
+//								WMD: 0.0
+//							nonCritical:
+//								WMD: 0.0
+//							nonCriticalDestruction:
+//								WMD: 1.0
+//							nonCriticalDestructionChance:
+//								(this is not a fortification value, but a base chance of destruction)
+//								WMD: 0.05
+//						compartment:
+//							general:
+//								WMD: 1.0
+//							cargo:
+//								WMD: 1.0
+//							mainDrive:
+//								WMD: 1.0
+//				<Constant id="core.damageMethod.station">
+//					Returns a nested struct specifying for different target types:
+//						hull
+//							single
+//							multi
+//							asteroid
+//								Note: In the WMD system, this uses the greater of mining or WMD
+//							underground
+//								Note: in the WMD system, this use mining instead of WMD
+//					The allowed fortification adj for the following damage methods:
+//						WMD (in the WMD system)
+//					Default WMD fortification properties for low/no WMD damage.
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default:
+//						hull:
+//							single:
+//								WMD: 0.0
+//							multi:
+//								WMD: 1.0
+//							asteroid:
+//								WMD: 1.0
+//							underground:
+//								WMD: 1.0
+//				<Constant id="core.damageMethod.minAdj">
+//					(This is a template property, see below for valid property names.)
+//					These properties define the minimum adjustment values that can
+//					result due to applying WMD fortification adjustment.
+//					<Constant id = "core.WMDFortified.DefaultMinAdj">
+//						Default 0.0
+//						Cannot be greater than 1.0
+//						Cannot be lower than 0.0
+//				<Constant id="core.damageMethod.minDamage">
+//					The min damage dealt after WMD adjustment
+//					Accepts a floating point value for stochastic damage
+//					Default 0.0
+//				<Constant id="core.damageMethod.system">
+//					The damage method system to use.
+//					Currently only WMD is available.
+//					Default 'WMD
+//				<Constant id="core.item.shield.idlePowerAdj">
+//					Returns a floating point value to adjust idle power consumption of shields.
+//					Default: 0.125
 //		<ItemType>
+//			<Armor>
+//				fortificationWMDAdj: (float)
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default: (reads adventure default: 0.0)
+//			<Shield>
+//				fortificationWMDAdj: (float)
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default: (reads adventure default: 0.0)
 //			<Weapon>
 //				damage: (str: damage desc)
 //					damage changes:
@@ -701,6 +921,231 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //						All targets of null damage have a damageAdj of 0 (immunity)
 //							to null damage's HP value (this allows scripts that utilize
 //							damage output, like mining, to function correctly)
+//				miningMethod: "ablative"|"drill"|"explosive"|"shockwave"|"universal"
+//					universal: new mining method (no bonuses, no penalties)
+//						As of API58, this mining method must be manually assigned.
+//		<ShipClass>
+//			<Armor>
+//				fortificationWMDAdj: (float)
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default: (reads adventure default: 0.0)
+//			<Hull>
+//				fortificationWMDAdj: (float)
+//					Accepts a floating point which adjusts the default WMD curve for that target type
+//					by performing a transform on the adventure-standard damage method scale.
+//					Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//					Values must be 0.0 or greater.
+//					0.0: the adjustment is always full damage regardless of damage method level
+//					0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//						method less, but also rewards having any of the damage method proportionally
+//						more
+//					1.0: the adjustment is the adventure standard curve
+//					1.0 < fortification: The adjustment penalizes not having the damage method
+//						more, but also proportionally favors high amounts of that damage method
+//					The exact curve adjustments will vary depending on the adventure curve.
+//					The value may be 'inf to confer immunity unless WMD7 is present.
+//					The fortification algorithm employed is as follows:
+//						adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//					Default: (reads adventure default: 1.0)
+//		<StationType>
+//			fortificationWMDAdj: (float)
+//				Accepts a floating point which adjusts the default WMD curve for that target type
+//				by performing a transform on the adventure-standard damage method scale.
+//				Note: WMD7 is always 1.0 (full damage), the rest of the curve is adjusted.
+//				Values must be 0.0 or greater.
+//				0.0: the adjustment is always full damage regardless of damage method level
+//				0.0 < fortification < 1.0: The adjustment penalizes not having the damage
+//					method less, but also rewards having any of the damage method proportionally
+//					more
+//				1.0: the adjustment is the adventure standard curve
+//				1.0 < fortification: The adjustment penalizes not having the damage method
+//					more, but also proportionally favors high amounts of that damage method
+//				The exact curve adjustments will vary depending on the adventure curve.
+//				The value may be 'inf to confer immunity unless WMD7 is present.
+//				The fortification algorithm employed is as follows:
+//					adj = WMD[level] ^ (log(WMD0 / (fortification * (1 - WMD0) + WMD0)) / log(WMD0))
+//				Default: (reads adventure default:
+//					0.0 for single hull stations, 1.0 for multi/asteroid/underground)
+//
+//	 59: 2.0 Alpha 9
+//		tlisp:
+//			(?= ...)
+//				Returns true if a valid full-coercion comparison (via =, !=, etc)
+//				can be made between the arguments (processes in pairs, left to right)
+//				If false, all comparators except != will always return false for the
+//				given sequence of types. != will always return true.
+//			(?== ...)
+//				Returns true if a valid basic-coercion comparison (via eq, neq, etc)
+//				can be made between the arguments (processes in pairs, left to right)
+//				If false, all comparators except neq will always return false for the
+//				given sequence of types. neq will always return true.
+//			(?=== ...)
+//				Returns true if a valid no-coercion comparison (via ===, !=== etc)
+//				can be made between the arguments (processes in pairs, left to right)
+//				If false, all comparators except !=== will always return false for the
+//				given sequence of types. !=== will always return true.
+//			(fmtNumber [format] number)
+//				Updated to now accept the following additional formats:
+//					'CBM					32.5 kCBM	- cubic meters with SI prefixes
+//					'CBMBasic				32500 CBM	- cubic meters, or mCBM if 0.001<=val<1.0, or 0 - mirrors massKg except input in CBM
+//					'CBMInt					32500 CBM	- cubic meters, or 0 if <1.0 - mirrors massTons
+//					'metric					10.5 G
+//					'metricFull				10.5 Giga
+//					'metricUnitless			10.5G
+//			(itm@ itm [object] property)
+//			(itmFind ...)
+//				See criteria update in (itmMatches)
+//			(itmGetMassKg item)
+//				Returns item mass in kg
+//			(itmGetMass item)
+//				DEPRECATED: (synonym for itemGetVolume, for actually getting the mass use itmGetMassKg instead)
+//			(itmGetVolume item)
+//				Returns volume in CBM (real)
+//			(itmMatches criteria item)
+//				Supports volume matching "@" with <,=,> and range operators
+//			(obj@ obj property)
+//				New and updated properties:
+//					'cargoSpace				Available cargo space in cubic meters (previously tons)
+//					'cargoSpaceFree			Available cargo space in cubic meters, double
+//					'cargoSpaceFreeLiters	Available cargo space in liters, int
+//						this is purely for supporting legacy math operations that expected kg
+//					'cargoSpaceFreeKg		DEPRECATED: Available cargo space in liters, int (NOT kg)
+//						this is purely for supporting legacy cargo math that needs it in liters to check if items will fit
+//					'cargoSpaceUsed			Used cargo space in cubic meters, double
+//					'cargoSpaceUsedLiters	Used cargo space in liters, int
+//						this is purely for supporting legacy math operations that expected kg
+//					'cargoSpaceUsedKg		DEPRECATED: Used cargo space in liters, int (NOT kg)
+//						this is purely for supporting legacy cargo math that needs it in liters to check if items will fit
+//					'maxCargoSpace			Total cargo space in cubic meters (previously tons)
+//			(objGetCargoSpaceLeft obj)
+//				DEPRECATED: returns cargo space in liters, for compatibility math. Name implies returning in cubic meters though.
+//			(typGetDataField type field)
+//				New and updated fields
+//					;;ItemType
+//						'volume					returns the volume in CBM as a string
+//					;;ShipClass
+//						'maxArmorSize			returns max armor size in CBM as a string
+//						'maxArmorMass			DEPRECATED: use maxArmorSize instead (returns same value multiplied by 1000)
+//		<AdventureDesc>
+//			<Properties>
+//				<Constant id="core.item.xmlMassToRealVolume">	1.0</Constant>
+//					Conversion ratio of tons->cubic meters for legacy items that specify only mass
+//					accepts a double
+//					Default: 1.0
+//				<Constant id="core.item.defaultDensity">		1.0</Constant>
+//					Default density in tons per cubic meter to apply to legacy items that specify only mass
+//					accepts a double
+//					Default: 1.0
+//		<Type>
+//			<ArmorClassDesc>
+//				<ArmorClass>
+//					New name for ArmorMass tag
+//                  compatibilitySize: A unitless size that is analogous to either mass in tons or volume in CBM, depending on what the item specifies
+//					mass: (Deprecated name to avoid confusion) Autoconverts legacy mass= values (mass in kg) to compatibility size
+//					size: max size armor for this armor class (in CBM)
+//					label: display name of armor class (unchanged from MassClass)
+//					shortLabel:	new string field for displaying mass classes when the mass class names are too long
+//				<ArmorClassAlias>
+//					New feature to allow compatibility support for old armor class names (ex, aliasing Dreadnought -> SuperMassive)
+//					id: name of the ArmorClass to alias
+//					idAlias: name of the alias
+//				<MassClass>
+//					Deprecated tag name, use ArmorClass instead (Functions identically)
+//				<[Any Other Name]>
+//					Deprecated tag name. APIs <59 allowed any named tags instead of just MassClass and they were interpreted as MassClass.
+//					Unsupported in API59+ (will cause a load error). This is to allow for additional tag types in the future.
+//			<ArmorMassDesc>
+//				Deprecated tag name, use ArmorClassDesc instead (Functions identically)
+//		<ItemType>
+//			enhancementUsesObjectImage: (bool)
+//				If True:
+//					Display the obj image if seen as an enhancement type
+//					Display the item image if just an item
+//				(default: false)
+//			installedItemUsesObjectImage: (bool)
+//				If True:
+//					Display the obj image if installed on an object
+//					Display the item image if not installed
+//				(default: false)
+//			density: (double) Species a specific density ratio in metric tons per cubic meter (aka, grams per cubic centimeter)
+//			mass: (int) If present without volume, this value is auto-converted using adventure properties to a volume, and the
+//				actual mass is computed from that volume back into mass using another adventure property. This is still an int
+//				for legacy support reasons. A future API may support doubles.
+//			volume: (double) volume of the item in cubic meters. Values <1 liter (0.001CBM) are allowed
+//			<Armor>
+//				armorClass: explicitly define an armor class ID to assign this armor to (ex, "medium")
+//					See the <ArmorClassDesc> loaded with the adventure for valid names other than
+//						"medium" and "maximum", which are mandated by the engine.
+//		<ShipType>
+//			cargoSpace: now specifies CBM instead of tons
+//				If <API59, always uses the adventure compatibility mappings
+//			maxCargoSpace: now specifies CBM instead of tons
+//				If <API59, always uses the adventure compatibility mappings
+//			<Hull>
+//				cargoSpace: now specifies CBM instead of tons
+//					If <API59, always uses the adventure compatibility mappings
+//				maxCargoSpace: now specifies CBM instead of tons
+//					If <API59, always uses the adventure compatibility mappings
+//				stdArmorMass: deprecated
+//			<DeviceSlots>
+//				<DeviceSlot>
+//					fireAngle: if used with minFireArc and maxFireArc or omnidirectional, can now specify a default angle of fire
+//						(including in and out of the normal min and max fire arc) to use when there is no valid
+//						target in the fire arc and the weapon is allowed to fire (eg, +linkedfire:always)
+//		<Type>
+//			<Events>
+//				<onGlobalTypesBound>
+//					New event for state initialization code
+//					Fires after all types are bound, inheritance is resolved, and properties
+//						are available
+//					It is guaranteed that <onGlobalTypesBoundNewGame> always fires before
+//						this event fires, meaning that one-time pre-initialization can be
+//						handled in that event, and this event can handle any repeat initialization
+//						that has to happen after
+//				<onGlobalTypesBoundNewGame>
+//					New event for state initialization code
+//					Fires after all types are bound, inheritance is resolved, and properties
+//						are available
+//					Fires only on new games, or when loading into the  main menu
+//					Fires BEFORE <onGlobalTypesBound>
+//		<ItemType>
+//			<Weapon>
+//				ignoredByAI:
+//					True if the AI should ignore the existence of this weapon for the purposes
+//					of aiming, targeting, and best weapon selection.
+//					Some configurations (ex, configuring it as a linked fire weapon) may force
+//					an AI ship to activate it anyways, as this is a property of the ship's device
+//					setup, not a property of the AI deciding to use the weapon as a weapon.
+//					Default: false
+//				repeatingDelay:
+//					Deprecated due to using non-intuitive legacy math
+//				repeatingShotDelay:
+//					Sets an exact repeating shot delay in simulation seconds
+//					Default: 2.0
+//		<ShipClass>
+//			<Language>
+//				<... id="core.descLore">
+//					This field is the default field for lore/encyclopedia entries
+//					Ex, when viewing an in-game encyclopedia/codex
+//					core.desc or playerDesc="" are used as fallbacks (in that order)
+//				<... id="core.desc">
+//					This field is the default field for gameplay entries
+//					Ex, during ship selection
+//					playerDesc="" or core.descLore are used as fallbacks (in that order)
 //
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
@@ -1477,4 +1922,21 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					215;
 //	216: 2.0 Alpha 8
 //		Fix DamageDesc::m_MassDestructionAdj
 //		makes extra DWORDs in DamageDesc a little bit more change-safe
+// 
+//  217: 2.0 Alpha 8
+//		Switch CInstalledDevice m_rActivateDelay from WORD to double
+//		Switch CInstalledDevice m_i
+//
+//	218: 2.0 Alpha 8
+//		Add DamageMethodCrushAdj to SExtraDamage in DamageDesc
+//		Add DamageMethodPierceAdj to SExtraDamage in DamageDesc
+//		Add DamageMethodShredAdj to SExtraDamage in DamageDesc
+//
+//	219: 2.0 Alpha 9
+//		Add m_fRecalcItemMass to CShip
+//		Add m_rItemVolume to CShip
+//		Add m_rCargoVolume to CShip
+// 
+//  220: 2.0 Alpha 9
+//		Add m_iDefaultFireAngle to CInstalledDevice
 //

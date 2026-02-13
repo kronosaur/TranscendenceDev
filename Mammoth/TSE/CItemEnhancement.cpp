@@ -194,8 +194,32 @@ void CItemEnhancement::AccumulateAttributes (const CItem &Item, TArray<SDisplayA
 					break;
 
 				case specialWMD:
-					retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("+WMD %d"), DamageDesc::GetMassDestructionLevelFromValue(iLevel))));
+					{
+					if (g_pUniverse->GetEngineOptions().GetDamageMethodSystem() == EDamageMethodSystem::dmgMethodSysWMD)
+						retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("+WMD %d"), DamageDesc::GetDamageMethodLevelFromValue(EDamageMethod::methodWMD, iLevel))));
 					break;
+					}
+
+				case specialCrush:
+					{
+					if (g_pUniverse->GetEngineOptions().GetDamageMethodSystem() == EDamageMethodSystem::dmgMethodSysPhysicalized)
+						retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("+Crush %d"), DamageDesc::GetDamageMethodLevelFromValue(EDamageMethod::methodCrush, iLevel))));
+					break;
+					}
+
+				case specialPierce:
+					{
+					if (g_pUniverse->GetEngineOptions().GetDamageMethodSystem() == EDamageMethodSystem::dmgMethodSysPhysicalized)
+						retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("+Pierce %d"), DamageDesc::GetDamageMethodLevelFromValue(EDamageMethod::methodPierce, iLevel))));
+					break;
+					}
+
+				case specialShred:
+					{
+					if (g_pUniverse->GetEngineOptions().GetDamageMethodSystem() == EDamageMethodSystem::dmgMethodSysPhysicalized)
+						retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("+Shred %d"), DamageDesc::GetDamageMethodLevelFromValue(EDamageMethod::methodShred, iLevel))));
+					break;
+					}
 				}
 
 			break;
@@ -1554,11 +1578,13 @@ int CItemEnhancement::GetPerceptionAdj () const
 		}
 	}
 
-int CItemEnhancement::GetPowerAdj (void) const
-
 //	GetPowerAdj
 //
-//	Get the increase/decrease in power usage
+//	Get the increase/decrease in all power usage
+//	Only includes power use modifiers that affect both
+//  active and standby/idle power use
+//
+int CItemEnhancement::GetPowerAdj (void) const
 
 	{
 	switch (GetType())
@@ -1577,6 +1603,44 @@ int CItemEnhancement::GetPowerAdj (void) const
 					return 10;
 				}
 			}
+
+		default:
+			return 100;
+		}
+	}
+
+//	GetPowerAdj
+//
+//	Get the increases/decreases in power usage
+//	that apply when the device is activated
+//
+int CItemEnhancement::GetActivePowerAdj (void) const
+
+	{
+	switch (GetType())
+		{
+		case etPowerEfficiency:
+		{
+		int iLevel = GetLevel();
+
+		if (IsDisadvantage())
+			return 100 + (10 * iLevel);
+		else
+			{
+			if (iLevel >= 0 && iLevel <= 9)
+				return 100 - (10 * iLevel);
+			else
+				return 10;
+			}
+		}
+
+		case etSpeed:
+		case etSpeedOld:
+		{
+		int iDelayAdj = max(1, GetActivateRateAdj());
+		//	We multiply by 100 since it has to be returned as a %
+		return mathRound(100 * 100.0 / iDelayAdj);
+		}
 
 		default:
 			return 100;
@@ -2143,8 +2207,17 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 			return ERR_FAIL;
 			}
 		else
+			{
+			if (iValue < 100 && bDisadvantage)
+				kernelDebugLogPattern(CONSTLIT("Warning: -speed:%d enhancement specified, but %d < 100, which is an advantage, not a disadvantage. Did you mean +speed:%d?"), iValue, iValue, iValue);
+			else if (iValue > 100 && !bDisadvantage)
+				kernelDebugLogPattern(CONSTLIT("Warning: +speed:%d enhancement specified, but %d > 100, which is a disadvantage, not an advantage. Did you mean -speed:%d?"), iValue, iValue, iValue);
+			else if (iValue == 100)
+				kernelDebugLogString(CONSTLIT("Warning: +speed:100 enhancement does nothing. Did you intend a different value?"));
+
 			//	LATER: Support min and max delay limits
 			SetModSpeed(iValue);
+			}
 		}
 
 	//	Efficiency

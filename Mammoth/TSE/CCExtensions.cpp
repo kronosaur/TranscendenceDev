@@ -87,6 +87,8 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_ITEM_GET_STATIC_DATA_KEYS	40
 #define FN_ITEM_GET_TYPE_DATA_KEYS	41
 #define FN_ITEM_PROPERTY_KEYS		42
+#define FN_ITEM_VOLUME				43
+#define FN_ITEM_VOLUME_COMPAT		44
 
 ICCItem *fnItemGetTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -518,6 +520,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_ADD_STARGATE_TOPOLOGY_COLORED	44
 #define FN_SYS_STARGATE_HAS_ATTRIBUTE	45
 #define FN_SYS_GET_DATA_KEYS			46
+#define FN_SYS_PATH_TO					47
 
 #define OPT_SYS_ADD_STARGATE_TOPOLOGY_COLOR		CONSTLIT("color")
 #define OPT_SYS_ADD_STARGATE_ATTRIBUTES			CONSTLIT("attributes")
@@ -879,8 +882,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(itmGetLevel item|type) -> level",
 			"v",	0,	},
 
-		{	"itmGetMass",					fnItemGet,		FN_ITEM_MASS,
+		{   "itmGetMassKg",					fnItemGet,		FN_ITEM_MASS,
 			"(itmGetMass item|type) -> mass of single item in kg",
+			"v",	0, },
+
+		{	"itmGetMass",					fnItemGet,		FN_ITEM_VOLUME_COMPAT,
+			"DEPRECATED: use (itmGetVolume item|type) instead. For Mass use (itmGetMassKg item|type)",
 			"v",	0,	},
 
 		{	"itmGetMaxAppearing",			fnItemGet,		FN_ITEM_MAX_APPEARING,
@@ -914,6 +921,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"itmGetPrice",					fnItemGet,		FN_ITEM_PRICE,
 			"(itmGetPrice item|type [currency]) -> price of a single item",
 			"v*",	0,	},
+
+		{	"itmGetVolume",					fnItemGet,		FN_ITEM_VOLUME,
+			"(itmGetVolume item|type) -> size of single item in CBM (real)",
+			"v",	0,	},
 
 		{	"itm@Keys",						fnItemGet,		FN_ITEM_PROPERTY_KEYS,
 			"(itm@Keys item|type) -> list of property keys",
@@ -1180,10 +1191,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(fmtNumber [type] value) -> string\n\n"
 			
 			"type:\n\n"
-			
+
+			"   'CBM\n"
+			"   'CBMBasic\n"
+			"   'CBMInt\n"
 			"   'integer\n"
 			"   'massKg\n"
 			"   'massTons\n"
+			"   'metric\n"
+			"   'metricFull\n"
+			"   'metricUnitless\n"
 			"   'power\n"
 			"   'real\n"
 			"   'regenRate\n"
@@ -1906,7 +1923,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"il*",	0,	},
 
 		{	"objGetCargoSpaceLeft",			fnObjGetOld,		FN_OBJ_CARGO_SPACE_LEFT,
-			"(objGetCargoSpaceLeft obj) -> space left in kg",
+			"DEPRECATED: use (obj@ obj 'cargoSpaceFree) -> space left in cubic meters instead\n"
+
+			"   (objGetCargoSpaceLeft obj) -> space left in liters\n",
+
 			NULL,	0,	},
 
 		{	"objGetCharacterData",			fnObjGet,		FN_OBJ_GET_CHARACTER_DATA,
@@ -2174,7 +2194,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'availableNonWeaponSlots\n"
 			"   'availableWeaponSlots\n"
 			"   'blindingImmune\n"
-			"   'cargoSpace -> in tons\n"
+			"   'cargoMassKg -> in kg\n"
+			"   'cargoSpace -> in CBM\n"
+			"   'cargoSpaceFree -> in CBM\n"
+			"   'cargoSpaceUsed -> in CBM\n"
 			"   'counterIncrementRate\n"
 			"   'counterValue\n"
 			"   'character\n"
@@ -3172,13 +3195,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"vvv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateEncounter",			fnSystemCreate,		FN_SYS_CREATE_ENCOUNTER,
-			"(sysCreateEncounter unid [options]) -> True/Nil\n\n"
-				
-				"options:\n\n"
-				
-				"   'distance      Encounter distance (light-seconds), if gate is Nil\n"
-				"   'gate          Gate to appear at (if Nil, use distance)\n"
-				"   'target        Target of encounter\n",
+			"(sysCreateEncounter unid [options]) -> list or Nil\n\n"
+
+			"unid: ShipTable or Station unid\n\n"
+
+			"options:\n\n"
+			
+			"   'distance      Encounter distance (light-seconds), if gate is Nil\n"
+			"   'gate          Gate to appear at (if Nil, use distance)\n"
+			"   'target        Target of encounter\n",
 
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -3377,8 +3402,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iiii",	0,	},
 
 		{	"sysGetNextNodeTo",			fnSystemGet,		FN_SYS_NEXT_NODE_TO,
-			"(sysGetNextNodeTo [fromNodeID] toNodeID) -> nodeID",
-			"*s",	0,	},
+			"(sysGetNextNodeTo [fromNodeID] toNodeID [options]) -> nodeID\n\n"
+
+			"options (struct):\n\n"
+
+			"	respectOneWayGates: Respects directionality of one-way gates when pathing through them. Does not respect one-way gates by default.\n"
+			"   gateCriteria:   Only gates that match criteria can be used for the path calculations\n"
+			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n",
+
+			"*",	0,	},
 
 		{	"sysGetNode",					fnSystemGet,	FN_SYS_NODE,
 			"(sysGetNode) -> nodeID",
@@ -3399,6 +3431,17 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysGetObjectByName",			fnSystemGetObjectByName,	0,
 			"(sysGetObjectByName [source] name) -> obj",
 			"*s",	0,	},
+
+		{	"sysGetPathTo",			fnSystemGet,		FN_SYS_PATH_TO,
+			"(sysGetPathTo [fromNodeID] toNodeID [options]) -> nodeID\n\n"
+
+			"options (struct):\n\n"
+			
+			"	respectOneWayGates: Respects directionality of one-way gates when pathing through them. Does not respect one-way gates by default.\n"
+			"   gateCriteria:   Only gates that match criteria can be used for the path calculations\n"
+			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n",
+
+			"*",	0,	},
 
 		{	"sys@",							fnSystemGet,	FN_SYS_GET_PROPERTY,
 			"(sys@ [nodeID] property) -> value\n\n"
@@ -3836,7 +3879,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'slotCategory\n"
 			"   'treasureValue\n"
 			"   'unknownType\n"
-			"   'useKey\n\n"
+			"   'useKey\n"
+			"	'volume\n\n"
 
 			"field (player ships):\n\n"
 			"   'dockServicesScreen  UNID of dock services screen\n"
@@ -5425,11 +5469,27 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateString(CLanguage::ComposeNumber(CLanguage::numberInteger, pArgs->GetElement(0)->GetIntegerValue()));
 			else
 				{
-				CLanguage::ENumberFormatTypes iFormat = CLanguage::ParseNumberFormat(pArgs->GetElement(0)->GetStringValue());
+				CLanguage::ENumberFormatTypes iFormat;
+				ICCItem* pOptions = pArgs->GetElement(0);
+
+				//	Configure options
+
+				CLanguage::SNumberOptions Options;
+
+				if (pOptions->IsSymbolTable())
+					{
+					iFormat = CLanguage::ParseNumberFormat(pOptions->GetElement(CONSTLIT("format"))->GetStringValue());
+					Options.OptMetric.iMaxSigFigs = pOptions->GetElement(CONSTLIT("sigFigs"))->GetIntegerValue();
+					}
+				else
+					{
+					iFormat = CLanguage::ParseNumberFormat(pOptions->GetStringValue());
+					Options.OptMetric.iMaxSigFigs = 3;
+					}
 				if (iFormat == CLanguage::numberError)
 					return pCC->CreateError(CONSTLIT("Unknown number format"), pArgs->GetElement(0));
 
-				return pCC->CreateString(CLanguage::ComposeNumber(iFormat, pArgs->GetElement(1)));
+				return pCC->CreateString(CLanguage::ComposeNumber(iFormat, pArgs->GetElement(1), &Options));
 				}
 			}
 
@@ -5880,6 +5940,14 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_MASS:
 			pResult = pCC->CreateInteger(Item.GetMassKg());
+			break;
+
+		case FN_ITEM_VOLUME:
+			pResult = pCC->CreateDouble(Item.GetVolume());
+			break;
+
+		case FN_ITEM_VOLUME_COMPAT:
+			pResult = pCC->CreateDouble(Item.GetVolume() * 1000);
 			break;
 
 		case FN_ITEM_MAX_APPEARING:
@@ -8359,7 +8427,7 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			pResult = pCC->CreateBool(pObj->CanAttack());
 			break;
 
-		case FN_OBJ_CARGO_SPACE_LEFT:
+		case FN_OBJ_CARGO_SPACE_LEFT:	//	This is for compatibility
 			pResult = pCC->CreateInteger((int)(pObj->GetCargoSpaceLeft() * 1000.0));
 			break;
 
@@ -9348,13 +9416,13 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				DEBUG_TRY
 					//enhancements
-					int iFireDelay;
+					Metric rFireDelay;
 				if (pArgs->GetCount() >= 4 && !(pArgs->GetElement(3)->IsNil()))
-					iFireDelay = pArgs->GetElement(3)->GetIntegerValue();
+					rFireDelay = pArgs->GetElement(3)->GetDoubleValue();
 				else
-					iFireDelay = pDevice->GetClass()->GetActivateDelay(WeaponCtx);
+					rFireDelay = pDevice->GetClass()->GetActivateDelay(WeaponCtx);
 
-				pDevice->SetTimeUntilReady(iFireDelay);
+				pDevice->SetTimeUntilReady(rFireDelay);
 				DEBUG_CATCH
 					return pCC->CreateTrue();
 				}
@@ -14559,19 +14627,25 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger(iFreq);
 			}
 
+		case FN_SYS_PATH_TO:
 		case FN_SYS_NEXT_NODE_TO:
 			{
 			int iArg = 0;
 
-			//	If we have more than 1 args, then the first arg is the fromID
+			//	If we have 2 args and the last is not the option structs,
+			//  or we have 3 args, then the first arg is the fromID
 
 			const CTopologyNode *pFromNode;
-			if (pArgs->GetCount() > 1 && pArgs->GetElement(0)->IsIdentifier())
+			if ((pArgs->GetCount() == 2 && pArgs->GetElement(0)->IsIdentifier() && !pArgs->GetElement(1)->IsSymbolTable())
+				|| pArgs->GetCount() == 3)
 				{
 				pFromNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
 				if (pFromNode == NULL)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 				}
+
+			else if (pArgs->GetCount() > 3)
+				return pCC->CreateError(CONSTLIT("Too many args"), pArgs);
 
 			//	Otherwise, we assume the current system.
 
@@ -14592,13 +14666,96 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pToNode == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(iArg - 1));
 
+			//	Check if there is an options arg
+
+			ICCItem *pOptions = pArgs->GetElement(iArg++);
+
+			TArray<CString> aUseNodes;
+			TArray<CString> aBlockNodes;
+			CString sGateCriteria;
+			bool bRespectOneWayGates;
+
+			if (pOptions)
+				{
+				//	We only accept a struct for options
+
+				if (pOptions->IsSymbolTable())
+					{
+					//	By default we do not respect one way gates (this is legacy behavior)
+
+					bRespectOneWayGates = pOptions->GetBooleanAt(CONSTLIT("respectOneWayGates"));
+
+					//	Empty gate criteria is ignored
+
+					sGateCriteria = pOptions->GetStringAt(CONSTLIT("gateCriteria"));
+
+					//	list of node IDs to use
+
+					ICCItem* pUseNodes = pOptions->GetElement(CONSTLIT("useNodes"));
+					if (pUseNodes)
+						{
+						if (pUseNodes->IsList())
+							{
+							aUseNodes.InsertEmpty(pUseNodes->GetCount());
+
+							for (int i = 0; i < pUseNodes->GetCount(); i++)
+								aUseNodes[i] = pUseNodes->GetElement(i)->GetStringValue();
+							}
+
+						//	otherwise we assume its just one node name
+
+						else
+							aUseNodes.Insert(pUseNodes->GetStringValue());
+						}
+
+					//	list of node IDs to avoid
+
+					ICCItem* pBlockNodes = pOptions->GetElement(CONSTLIT("blockNodes"));
+					if (pBlockNodes)
+						{
+						if (pBlockNodes->IsList())
+							{
+							aBlockNodes.InsertEmpty(pBlockNodes->GetCount());
+
+							for (int i = 0; i < pBlockNodes->GetCount(); i++)
+								aBlockNodes[i] = pBlockNodes->GetElement(i)->GetStringValue();
+							}
+
+						//	otherwise we assume its just one node name
+
+						else
+							aBlockNodes.Insert(pBlockNodes->GetStringValue());
+						}
+					}
+
+				//	Otherwise this is invalid
+
+				else
+					return pCC->CreateError(CONSTLIT("Invalid options, must be a struct"), pOptions);
+				}
+
 			//	Compute
 
-			const CTopologyNode *pNextNode = pCtx->GetUniverse().GetTopology().GetNextNodeTo(*pFromNode, *pToNode);
-			if (!pNextNode)
-				return pCC->CreateNil();
+			if (dwData == FN_SYS_NEXT_NODE_TO)
+				{
+				const CTopologyNode *pNextNode = pCtx->GetUniverse().GetTopology().GetNextNodeTo(*pFromNode, *pToNode, sGateCriteria, aUseNodes, aBlockNodes, !bRespectOneWayGates);
+				if (!pNextNode)
+					return pCC->CreateNil();
 
-			return pCC->CreateString(pNextNode->GetID());
+				return pCC->CreateString(pNextNode->GetID());
+				}
+			else
+				{
+				ICCItem *pList = pCC->CreateLinkedList();
+
+				TArray<const CTopologyNode *> aPath;
+				aPath = pCtx->GetUniverse().GetTopology().GetPathTo(pFromNode, pToNode, sGateCriteria, aUseNodes, aBlockNodes, !bRespectOneWayGates);
+
+				for (int i = 0; i < aPath.GetCount(); i++)
+					pList->AppendString(aPath[i]->GetID());
+
+				return pList;
+				}
 			}
 
 		case FN_SYS_LOCATIONS:

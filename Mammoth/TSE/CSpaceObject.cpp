@@ -756,11 +756,11 @@ CSpaceObject *CSpaceObject::CalcTargetToAttack (CSpaceObject *pAttacker, CSpaceO
 		return pAttacker;
 	}
 
-Metric CSpaceObject::CalculateItemMass (Metric *retrCargoMass) const
-
 //	CalculateCargoMass
 //
 //	Returns the total mass of the items
+//
+Metric CSpaceObject::CalculateItemMass (Metric *retrCargoMass) const
 
 	{
 	int i;
@@ -785,6 +785,41 @@ Metric CSpaceObject::CalculateItemMass (Metric *retrCargoMass) const
 
 	if (retrCargoMass)
 		*retrCargoMass = rTotalCargo;
+
+	return rTotal;
+	}
+
+//	CalculateCargoVolume
+//
+//	Returns the total volume of the items in cargo
+//		This number is needed if unequipping all items on a ship
+//		and transfering them to another inventory
+//  retrCargoVolume excludes installed items
+//
+Metric CSpaceObject::CalculateItemVolume(Metric *retrCargoVolume) const
+	{
+	int i;
+	Metric rTotal = 0.0;
+	Metric rTotalCargo = 0.0;
+
+	for (i = 0; i < m_ItemList.GetCount(); i++)
+		{
+		const CItem &Item = m_ItemList.GetItem(i);
+
+		Metric rVolume = Item.GetVolume() * Item.GetCount();
+
+		//	All items count towards item mass
+
+		rTotal += rVolume;
+
+		//	Only uninstalled items count in cargo space
+
+		if (!Item.IsInstalled())
+			rTotalCargo += rVolume;
+		}
+
+	if (retrCargoVolume)
+		*retrCargoVolume = rTotalCargo;
 
 	return rTotal;
 	}
@@ -5172,10 +5207,10 @@ CSpaceObject* CSpaceObject::HitTestProximity(
 
 				//	Check if we are already collided (ex, someone dropped a mine on top of a station)
 
-				if (pTarget->PointInBounds(GetPos()))
+				if (pObj->PointInBounds(GetPos()))
 					{
 					SPointInObjectCtx PiOCtx;
-					pTarget->PointInObjectInit(PiOCtx);
+					pObj->PointInObjectInit(PiOCtx);
 
 					if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vStart))
 						{
@@ -5646,6 +5681,8 @@ bool CSpaceObject::IntersectionTestScan(const CSpaceObject* pTarget, const CVect
 //		retiTriangulationDir: -1
 
 	{
+	DEBUG_TRY
+
 	SPointInObjectCtx PiOCtx;
 	pTarget->PointInObjectInit(PiOCtx);
 
@@ -5876,6 +5913,8 @@ bool CSpaceObject::IntersectionTestScan(const CSpaceObject* pTarget, const CVect
 		}
 
 	return false;
+
+	DEBUG_CATCH
 	}
 
 bool CSpaceObject::ImagesIntersect (const CObjectImageArray &Image1, int iTick1, int iRotation1, const CVector &vPos1,
@@ -8647,10 +8686,10 @@ bool CSpaceObject::UseItem (const CItem &Item, CString *retsError)
 
 			//	Reset the activation delay, if necessary
 
-			int iActivationDelay = pDevice->GetActivateDelay(this);
-			if (iActivationDelay)
+			Metric rActivationDelay = pDevice->GetActivateDelay(this);
+			if (rActivationDelay)
 				{
-				pDevice->SetTimeUntilReady(iActivationDelay);
+				pDevice->SetTimeUntilReady(rActivationDelay);
 
 				if (pDevice->ShowActivationDelayCounter(this))
 					OnComponentChanged(comDeviceCounter);

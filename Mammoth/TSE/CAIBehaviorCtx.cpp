@@ -203,14 +203,26 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 	int iBestScore = 0;
 	int iPrimaryCount = 0;
 	int iBestNonLauncherLevel = 0;
+	bool bBestIsBroken = false;
 
 	for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
 		{
 		CInstalledDevice &Weapon = *DeviceItem.GetInstalledDevice();
+		
+		//	Skip weapons that the AI needs to ignore
+		
+		CWeaponClass* pWeaponType = Weapon.GetClass()->AsWeaponClass();
+		if (pWeaponType && pWeaponType->IsIgnoredByAI())
+			continue;
 
-		//	If this weapon is not working, then skip it
+		//	We still consider broken weapons, but only as a
+		//	last resort
 
-		if (!Weapon.IsWorking())
+		bool bIsBroken = !Weapon.IsWorking();
+
+		//	Only skip if we havent found a better non-broken weapon already
+
+		if (iBestWeapon != -1 && bIsBroken)
 			continue;
 
 		//	See if this weapon shoots missiles.
@@ -264,11 +276,13 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 				case itemcatWeapon:
 					{
 					int iScore = CalcWeaponScore(pShip, pTarget, &Weapon, rTargetDist2);
-					if (iScore > iBestScore)
+
+					if ((iScore > iBestScore && !bIsBroken) || (bBestIsBroken && !bIsBroken) || (bIsBroken && iBestWeapon == -1))
 						{
 						iBestWeapon = Weapon.GetDeviceSlot();
 						iBestWeaponVariant = 0;
 						iBestScore = iScore;
+						bBestIsBroken = bIsBroken;
 						}
 
 					Metric rMaxRange = DeviceItem.GetMaxEffectiveRange();
@@ -286,8 +300,17 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 
 				case itemcatLauncher:
 					{
+					int iContinuousShotsLeft = Weapon.GetContinuousShotsLeft();
 					int iCount = pShip->GetMissileCount();
-					if (iCount > 0)
+					
+					//	Skip & continue firing shots if we are currently repeating
+
+					if (iContinuousShotsLeft)
+						{ }
+
+					//	Otherwise find our best missile if we have missiles to shoot
+
+					else if (iCount > 0)
 						{
 						pShip->ReadyFirstMissile();
 
@@ -386,21 +409,25 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 	//	Primary aim range
 
 	Metric rPrimaryRange = pShip->GetWeaponRange(devPrimaryWeapon);
-	Metric rAimRange = (GetFireRangeAdj() * rPrimaryRange) / (100.0 + ((pShip->GetDestiny() % 8) + 4));
+	Metric rAimRange = (GetFireRangeAdj() * rPrimaryRange) / (100.0 + ((pShip->GetDestiny() % 11) + 1));
 	if (rAimRange < 1.5 * MIN_TARGET_DIST)
 		rAimRange = 1.5 * MIN_TARGET_DIST;
 	m_rPrimaryAimRange2 = rAimRange * rAimRange;
 
 	//	Maneuverability
 
-	Metric rMaxRotationSpeed = pShip->GetRotationDesc().GetMaxRotationSpeedDegrees();
-	m_fLowManeuverability = (rMaxRotationSpeed <= 6.0);
+	CIntegralRotationDesc Rotation = pShip->GetRotationDesc();
+	Metric rMaxRotationSpeed = Rotation.GetMaxRotationSpeedDegrees();
+	Metric rMaxRotationAccel = min(Rotation.GetRotationAccelDegrees(), Rotation.GetRotationAccelStopDegrees());
+	m_fLowManeuverability = (rMaxRotationSpeed <= 6.0) || (rMaxRotationSpeed > (rMaxRotationAccel + g_Epsilon) * 2);
+	Metric rRotationResponse = Rotation.GetRotationResponsivenessDegrees();
 
 	//	Compute the minimum flanking distance. If we're very maneuverable,
 	//	can get in closer because we can turn faster to adjust for the target's
-	//	motion.
+	//	motion, but we need to account for our ability to alter rotation to
+	//	avoid oversteering
 	
-	Metric rDegreesPerTick = Max(1.0, Min(rMaxRotationSpeed, 60.0));
+	Metric rDegreesPerTick = Max(1.0, Min(Min(rMaxRotationSpeed, rRotationResponse * 2), 60.0));
 	Metric rTanRot = tan(PI * rDegreesPerTick / 180.0);
 	Metric rMinFlankDist = Max(MIN_TARGET_DIST, MAX_TARGET_SPEED / rTanRot);
 
@@ -434,6 +461,12 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 	for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
 		{
 		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+
+		//	Skip weapons that the AI needs to ignore
+
+		CWeaponClass* pWeaponType = Device.GetClass()->AsWeaponClass();
+		if (pWeaponType && pWeaponType->IsIgnoredByAI())
+			continue;
 
 		if (!Device.IsWorking())
 			continue;
@@ -828,7 +861,7 @@ int CAIBehaviorCtx::CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInsta
 	//	If this weapon will take a while to get ready, then 
 	//	lower the score.
 
-	if (pWeapon->GetTimeUntilReady() >= (avoidAnyNonReadyWeapons ? 1 : 15))
+	if (pWeapon->GetTimeUntilReady() >= (avoidAnyNonReadyWeapons ? 1.0 : 15.0))
 		return 1;
 
 	//	Get the item for the selected variant (either the weapon

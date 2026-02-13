@@ -34,6 +34,7 @@ class CAreaDamage : public TSpaceObjectImpl<OBJID_CAREADAMAGE>
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) const override { return CONSTLIT("CAreaDamage"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
+		virtual int GetRelativeHealth () const override { return IsDestroyed() ? -1 : INT_MAX; }
 		virtual CSpaceObject *GetSecondarySource (void) const override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
@@ -80,6 +81,7 @@ class CBeam : public TSpaceObjectImpl<OBJID_CBEAM>
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) const override { return CONSTLIT("CBeam"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerStations; }
+		virtual int GetRelativeHealth () const override { return IsDestroyed() ? -1 : 100; }
 		virtual CSpaceObject *GetSecondarySource (void) const override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual const CWeaponFireDesc *GetWeaponFireDesc (void) const override { return m_pDesc; }
@@ -169,6 +171,7 @@ class CContinuousBeam : public TSpaceObjectImpl<OBJID_CCONTINUOUSBEAM>
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) const override { return CONSTLIT("CContinuousBeam"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
+		virtual int GetRelativeHealth () const override { return IsDestroyed() ? -1 : INT_MAX; }
 		virtual int GetRotation (void) const override { return m_iLastDirection; }
 		virtual CSpaceObject *GetSecondarySource (void) const override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
@@ -551,6 +554,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
 		virtual const COverlayList *GetOverlays (void) const override { return &m_Overlays; }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return (m_pDesc->GetPassthrough() > 0 ? CSystem::layerEffects : CSystem::layerStations); }
+		virtual int GetRelativeHealth () const override { return IsDestroyed() ? -1 : (m_pDesc->GetHitPoints() ? min(100, mathRound((Metric)m_iHitPoints / m_pDesc->GetHitPoints())) : 100); }
 		virtual int GetRotation (void) const override { return m_iRotation; }
 		virtual CSpaceObject *GetSecondarySource (void) const override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
@@ -654,6 +658,7 @@ class CParticleDamage : public TSpaceObjectImpl<OBJID_CPARTICLEDAMAGE>
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) const override { return CONSTLIT("CParticleDamage"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
+		virtual int GetRelativeHealth () const override { return IsDestroyed() ? -1 : INT_MAX; }
 		virtual CSpaceObject *GetSecondarySource (void) const override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
@@ -935,6 +940,7 @@ class CRadiusDamage : public TSpaceObjectImpl<OBJID_CRADIUSDAMAGE>
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) const override { return CONSTLIT("CRadiusDamage"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
+		virtual int GetRelativeHealth () const override { return IsDestroyed() ? -1 : INT_MAX; }
 		virtual CSpaceObject *GetSecondarySource (void) const override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
@@ -1025,11 +1031,14 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void SetArmorHP (int iSect, int iHP);
 		bool SetCursorAtArmor (CItemListManipulator &ItemList, int iSect) const;
 		void UninstallArmor (CItemListManipulator &ItemList);
+		ECompartmentTypes GetEffectiveProtectedCompartmentType (int iSect);
 
 		//	Compartments
 		virtual bool IsMultiHull (void) const override { return m_pClass->GetInteriorDesc().IsMultiHull(); }
 
 		void GetAttachedSectionInfo (TArray<SAttachedSectionInfo> &Result) const;
+		const SCompartmentDesc GetDefaultCompartment () const { return m_pClass->GetInteriorDesc().GetDefaultCompartment(); }
+		const ECompartmentTypes GetDefaultCompartmentType () const { return m_pClass->GetInteriorDesc().GetDefaultCompartment().iType; }
 		const CShipInterior& GetInteriorDesc (void) const { return m_Interior; }
 		bool HasAttachedSections (void) const { return m_fHasShipCompartments; }
 		bool IsShipSection (void) const { return m_fShipCompartment; }
@@ -1208,6 +1217,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return (m_fShipCompartment ? CSystem::layerOverhang : CSystem::layerShips); }
 		virtual int GetPerception (void) const override;
 		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const override;
+		virtual int GetRelativeHealth () const override;
 		virtual int GetRotation (void) const override { return m_Rotation.GetRotationAngle(m_Perf.GetIntegralRotationDesc()); }
 		virtual int GetRotationFrameIndex (void) const override { return m_Rotation.GetFrameIndex(); }
 		virtual ScaleTypes GetScale (void) const override { return scaleShip; }
@@ -1364,11 +1374,14 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		int FindNextDevice (int iStart, ItemCategories Category, int iDir = 1);
 		int FindRandomDevice (bool bEnabledOnly = false);
 		void FinishCreation (SShipGeneratorCtx *pCtx = NULL, SSystemCreateCtx *pSysCreateCtx = NULL);
-		Metric GetCargoMass (void) const;
+		Metric GetCargoMass () const;
+		Metric GetCargoVolume () const;
 		CCurrencyAndValue GetHullValue (void) const;
-		Metric GetItemMass (void) const;
+		Metric GetItemMass () const;
+		Metric GetItemVolume () const;
 		int GetTotalArmorHP (int *retiMaxHP = NULL) const;
-		void InvalidateItemMass (void) const { m_fRecalcItemMass = true; }
+		void InvalidateItemMass () const { m_fRecalcItemMass = true; }
+		void InvalidateItemVolume () const { m_fRecalcItemVolume = true; }
 		bool IsSingletonDevice (ItemCategories iItemCat);
 		void PaintMapShipCompartments (CG32bitImage &Dest, int x, int y, CMapViewportCtx &Ctx);
 		void PaintShipCompartments (CG32bitImage &Dest, SViewportPaintCtx &Ctx);
@@ -1428,6 +1441,8 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 
 		mutable Metric m_rItemMass = 0.0;			//	Total mass of all items (including installed)
 		mutable Metric m_rCargoMass = 0.0;			//	Mass of cargo items (not including installed)
+		mutable Metric m_rItemVolume = 0.0;			//	Total volume of all items (including installed)
+		mutable Metric m_rCargoVolume = 0.0;		//	Volume of cargo items (not including installed)
 		int m_iCounterValue = 0;					//	Heat/capacitor counter value
 
 		CSpaceObject *m_pDocked = NULL;				//	If not NULL, object we are docked to.
@@ -1447,7 +1462,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		DWORD m_fIdentified:1 = false;				//	TRUE if player can see ship class, etc.
 
 		DWORD m_fManualSuspended:1 = false;			//	TRUE if ship is suspended
-		mutable DWORD m_fRecalcItemMass:1 = true;	//	TRUE if we need to recalculate m_rImageMass
+		mutable DWORD m_fRecalcItemMass:1 = true;	//	TRUE if we need to recalculate m_rItemMass
 		DWORD m_fDockingDisabled:1 = false;			//	TRUE if docking is disabled
 		DWORD m_fControllerDisabled:1 = false;		//	TRUE if we want to disable controller
 		DWORD m_fRecalcRotationAccel:1 = false;		//	TRUE if we need to recalc rotation acceleration
@@ -1460,7 +1475,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		DWORD m_fHasShipCompartments:1 = false;		//	TRUE if we have ship compartment objects attached
 		DWORD m_fNameBlanked:1 = false;				//	TRUE if name has been blanked; show generic name
 		DWORD m_fShowMapLabel:1 = false;			//	TRUE if we should show a map label
-		DWORD m_fSpare6:1;
+		mutable DWORD m_fRecalcItemVolume:1 = false;//	TRUE if we need to recalculate m_rItemVolume		
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 

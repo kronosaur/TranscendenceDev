@@ -928,6 +928,7 @@
 	<!ENTITY scKateMorgentalCruiserArena	"0x0015300B">
 	<!ENTITY baCharonBusterObsolete		"0x0015300C">
 	<!ENTITY scEI200CharonBuster		"0x0015300D">
+	<!ENTITY scHornetStock				"0x0015300E">
 
 	<!ENTITY itDvalinIon9Cannon			"0x00154001">
 	<!ENTITY itDvalinArmor				"0x00154002">
@@ -1575,7 +1576,8 @@
 	<!ENTITY rsItems10					"0x0010002B">
 	<!ENTITY trStdTreasure				"0x0010002C">
 	<!ENTITY baHumanTechShip			"0x0010002D">
-	<!ENTITY unidArmorMass				"0x0010002E">
+	<!ENTITY unidArmorClass				"0x0010002E">
+	<!ENTITY unidArmorMass				"0x0010002E">	<!-- Deprecated: use unidArmorClass instead -->
 	
 	<!-- 0030-003F SISTERS OF DOMINA -->
 	
@@ -2458,6 +2460,11 @@
 	<!ENTITY scBorerIIIStock			"0x00100711">
 	<!ENTITY rsIAVLight120				"0x00100712">
 	<!ENTITY rsIAVLightHero				"0x00100713">
+	<!ENTITY scAntaresIStock			"0x00100714">
+	<!ENTITY scAntaresIIStock			"0x00100715">
+	<!ENTITY scAntaresVStock			"0x00100716">
+	<!ENTITY scAntaresVLogistics		"0x00100717">
+	<!ENTITY scScarabFreighterStock		"0x00100718">
 
 	<!-- 0740-075F RASIERMESSER -->
 

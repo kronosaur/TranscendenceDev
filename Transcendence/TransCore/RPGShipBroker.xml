@@ -170,7 +170,7 @@
 
 								;	If we have too much cargo, then say so
 
-								(gr (obj@ gPlayerShip 'cargoSpaceUsedKg) (obj@ selObj 'cargoSpaceFreeKg))
+								(gr (obj@ gPlayerShip 'cargoSpaceUsed) (obj@ selObj 'cargoSpaceFree))
 									(block ()
 										(scrEnableAction gScreen 'actionBuyShip Nil)
 										(scrSetActionDesc gScreen 'actionBuyShip (scrTranslate gScreen 'descTooMuchCargo))
@@ -451,7 +451,7 @@
 
 							;	Wingman has too much cargo
 
-							(gr (obj@ oldShipObj 'cargoSpaceUsedKg) (obj@ newShipObj 'cargoSpaceFreeKg))
+							(gr (obj@ oldShipObj 'cargoSpaceUsed) (obj@ newShipObj 'cargoSpaceFree))
 								(setq confirmDesc (scrTranslate gScreen 'descTooMuchCargo {
 									wingmanName:(objGetName oldShipObj 0)
 									newShipName:(objGetName newShipObj 'article)
@@ -771,7 +771,7 @@
 
 							;	Wingman has too much cargo
 
-							(gr (obj@ oldShipObj 'cargoSpaceUsedKg) (obj@ newShipObj 'cargoSpaceFreeKg))
+							(gr (obj@ oldShipObj 'cargoSpaceUsed) (obj@ newShipObj 'cargoSpaceFree))
 								(block ()
 									(scrEnableAction gScreen 'actionBuyFor Nil)
 									(scrSetDesc gScreen introDesc
@@ -1224,7 +1224,7 @@
 							(setq shipList (filter shipList theShip (not (find shipsToRemove theShip))))
 
 							;delete the ships
-							(enum shipsToRemove shipObj (objDestroy shipObj))
+							(enum shipsToRemove shipObj (objRemove shipObj))
 							)
 						)
 
@@ -1390,8 +1390,8 @@
 							desc:
 								(cat
 									"{/rtf "
-										"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'massTons (obj@ shipObj 'cargoSpace)) "\n"
-										"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'massTons (obj@ shipObj 'maxCargoSpace)) "\n"
+										"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'CBMInt (obj@ shipObj 'cargoSpace)) "\n"
+										"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'CBMInt (obj@ shipObj 'maxCargoSpace)) "\n"
 									"}"
 									)
 							}
@@ -1598,8 +1598,8 @@
 						(cat
 							"{/rtf "
 								(if cargoItem (cat "{/f:MediumBold;/c:#79828c; cargo:} " (itmGetName cargoItem 'titleCapitalize) "\n"))
-								"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'massTons (obj@ shipObj 'cargoSpace)) "\n"
-								"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'massTons (obj@ shipObj 'maxCargoSpace)) "\n"
+								"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber 'CBMInt (obj@ shipObj 'cargoSpace)) "\n"
+								"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber 'CBMInt (obj@ shipObj 'maxCargoSpace)) "\n"
 								"\n"
 								"{/f:MediumBold;/c:#79828c; device slots:} " deviceSlots " (" availDeviceSlots " free)\n"
 							

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- Core Slot Enhancements
+
+These are virtual items used for displaying an icon and label in the UI.
+They do not actually confer an enhancement themselves, this is set by the
+individual slot on the ship.
+
+-->
+
+	<ItemType UNID="&vtTurretSlotWithNonOmni;"
+			name=				"Non-omni weapon in auto-turret slot"
+			virtual=			"true"
+			level=				"1"
+			>
+		<Image imageID="&rsItemsCore1;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+	<ItemType UNID="&vtAutoTurretSlot;"
+			name=				"Auto-turret slot"
+			virtual=			"true"
+			level=				"1"
+			enhancementUsesObjectImage="true"
+			>
+		<Image imageID="&rsItemsCore1;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+	<ItemType UNID="&vtShieldSlotModifier;"
+			name=				"Ship-class shield modifier"
+			virtual=			"true"
+			level=				"1"
+			enhancementUsesObjectImage="true"
+			>
+		<Image imageID="&rsItemsCore1;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+	
+<!-- Resources -->
+
+	<Image UNID="&rsItemsCore1;"				bitmap="Resources\ItemsCore1.jpg"	bitmask="Resources\ItemsCore1Mask.bmp"	loadOnUse="true"/>
+
+</TranscendenceModule>

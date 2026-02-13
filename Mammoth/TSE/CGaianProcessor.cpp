@@ -206,10 +206,18 @@ void CGaianProcessorAI::CalcDevices (void)
 	if (m_iDestructorDev == -1)
 		{
 		//	Loop over all devices to find the weapons
+		int iBestDestructorLevel = 0;
 
 		for (CDeviceItem DeviceItem : m_pShip->GetDeviceSystem())
 			{
 			CInstalledDevice &Weapon = *DeviceItem.GetInstalledDevice();
+
+			//	Skip weapons that the AI needs to ignore
+
+			CWeaponClass* pWeaponType = Weapon.GetClass()->AsWeaponClass();
+			if (pWeaponType && pWeaponType->IsIgnoredByAI())
+				continue;
+
 			CItemCtx Ctx(m_pShip, &Weapon);
 
 			if (Weapon.IsSecondaryWeapon())
@@ -227,8 +235,28 @@ void CGaianProcessorAI::CalcDevices (void)
 				const DamageDesc *pDamage = Weapon.GetDamageDesc(Ctx);
 				if (pDamage)
 					{
-					if (pDamage->GetMassDestructionLevel())
+					int iDestructorLevel = 0;
+
+					EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+
+					if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+						{
+						iDestructorLevel += pDamage->GetDamageMethodLevel(EDamageMethod::methodCrush);
+						iDestructorLevel += pDamage->GetDamageMethodLevel(EDamageMethod::methodPierce);
+						iDestructorLevel += pDamage->GetDamageMethodLevel(EDamageMethod::methodShred);
+						}
+					else if (iDmgSystem == EDamageMethodSystem::dmgMethodSysWMD)
+						{
+						iDestructorLevel = pDamage->GetDamageMethodLevel(EDamageMethod::methodWMD);
+						}
+					else
+						ASSERT(false);
+
+					if (iDestructorLevel > iBestDestructorLevel)
+						{
 						m_iDestructorDev = Weapon.GetDeviceSlot();
+						iBestDestructorLevel = iDestructorLevel;
+						}
 					else if (pDamage->GetEMPDamage())
 						m_iDisablerDev = Weapon.GetDeviceSlot();
 					}

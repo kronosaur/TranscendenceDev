@@ -56,6 +56,9 @@
 					(!= aLootedBy gPlayerShip)
 						Nil
 
+					;	TODO: properly compute mass of ore for adventures and
+					;	extensions like VotG and Chronicles which have ore in non-ton
+					;	amounts e.g. krels or ore chunks respectively
 					(enum aLoot itemLooted
 						(plyIncItemStat gPlayer 'itemsMinedCount itemLooted (itmGetCount itemLooted))
 						)

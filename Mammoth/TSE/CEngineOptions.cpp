@@ -7,6 +7,11 @@
 
 #define LEVEL_ATTRIB							CONSTLIT("level")
 
+#define TAG_DAMAGE_METHOD_CURVE_CRUSH			CONSTLIT("crush")
+#define TAG_DAMAGE_METHOD_CURVE_PIERCE			CONSTLIT("pierce")
+#define TAG_DAMAGE_METHOD_CURVE_SHRED			CONSTLIT("shred")
+#define TAG_DAMAGE_METHOD_CURVE_WMD				CONSTLIT("wmd")
+
 //	Damage Adjustment
 
 static int g_StdArmorDamageAdj[MAX_ITEM_LEVEL][damageCount] =
@@ -81,7 +86,7 @@ static bool g_bDamageAdjInit = false;
 static CDamageAdjDesc g_ArmorDamageAdj[MAX_ITEM_LEVEL];
 static CDamageAdjDesc g_ShieldDamageAdj[MAX_ITEM_LEVEL];
 
-//	Mining
+//	Mining ----------------------------------------------------------------------
 
 //	This table is used for API0-47 adventures
 
@@ -126,10 +131,130 @@ static const TArray<int> g_StdMiningMaxOreLevelsAPI57 =
 		MAX_ITEM_LEVEL,	//	dark fire
 	};
 
-int GetAPIForMiningMaxOreLevel (int apiVersion)
+//	External Device Damage --------------------------------------------------
 
-	//	Translates actual API versions into the known versions
-	//	used for the MiningMaxOreLevel system
+//	This table is used for API0-57 adventures
+
+static const TArray<int> g_StdExternalDeviceDamageLevelsAPI0 =
+//		lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+	{	  6,  6,  9,  9,  12, 12, 15, 15,  18, 18, 21, 21,  24, 24, 27, 27 };
+
+//	This table is used for API58+ adventures
+
+static const TArray<int> g_StdExternalDeviceDamageLevelsAPI58 =
+	{
+	MAX_ITEM_LEVEL,	//	laser
+	MAX_ITEM_LEVEL,	//	kinetic
+	MAX_ITEM_LEVEL,	//	particle
+	MAX_ITEM_LEVEL,	//	blast
+
+	MAX_ITEM_LEVEL,	//	ion
+	MAX_ITEM_LEVEL,	//	thermo
+	MAX_ITEM_LEVEL,	//	positron
+	MAX_ITEM_LEVEL,	//	plasma
+
+	MAX_ITEM_LEVEL,	//	antimatter
+	MAX_ITEM_LEVEL,	//	nanite
+	MAX_ITEM_LEVEL,	//	graviton
+	MAX_ITEM_LEVEL,	//	singularity
+
+	MAX_ITEM_LEVEL,	//	dark acid
+	MAX_ITEM_LEVEL,	//	dark steel
+	MAX_ITEM_LEVEL,	//	dark lightning
+	MAX_ITEM_LEVEL,	//	dark fire
+	};
+
+//	This table is used for API0-57 adventures
+
+static const TArray<int> g_StdExternalDeviceDamageModifierAPI0 =
+//		lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+	{	100,100,100,100, 120,100,100,100, 100,100, 75,100, 100,100,100,100 };
+
+//	This table is used for API58+ adventures
+
+static const TArray<int> g_StdExternalDeviceDamageModifierAPI58 =
+//		lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+	{	100,100,100,100, 100,100,100,100, 100,100,100,100, 100,100,100,100 };
+
+static constexpr int g_iExternalChanceToHitAPI0 = 11;
+static constexpr int g_iExternalChanceToHitAPI58 = 100;
+
+//	Internal Device Damage --------------------------------------------------
+
+//	This table is used for API0-57 adventures
+
+static const TArray<int> g_StdInternalDeviceDamageLevelsAPI0 =
+//		lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+	{	 25,  25, 25, 25,  25, 25, 25, 25,  25, 25, 25, 25,  25, 25, 25, 25 };
+
+//	This table is used for API58+ adventures
+
+static const TArray<int> g_StdInternalDeviceDamageLevelsAPI58 =
+	{
+	MAX_ITEM_LEVEL,	//	laser
+	MAX_ITEM_LEVEL,	//	kinetic
+	MAX_ITEM_LEVEL,	//	particle
+	MAX_ITEM_LEVEL,	//	blast
+
+	MAX_ITEM_LEVEL,	//	ion
+	MAX_ITEM_LEVEL,	//	thermo
+	MAX_ITEM_LEVEL,	//	positron
+	MAX_ITEM_LEVEL,	//	plasma
+
+	MAX_ITEM_LEVEL,	//	antimatter
+	MAX_ITEM_LEVEL,	//	nanite
+	MAX_ITEM_LEVEL,	//	graviton
+	MAX_ITEM_LEVEL,	//	singularity
+
+	MAX_ITEM_LEVEL,	//	dark acid
+	MAX_ITEM_LEVEL,	//	dark steel
+	MAX_ITEM_LEVEL,	//	dark lightning
+	MAX_ITEM_LEVEL,	//	dark fire
+	};
+
+//	This table is used for API0-57 adventures
+
+static const TArray<int> g_StdInternalDeviceDamageModifierAPI0 =
+//		lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+	{	100,100,100,100, 100,100,100,100, 100,100,100,100, 100,100,100,100 };
+
+//	This table is used for API58+ adventures
+
+static const TArray<int> g_StdInternalDeviceDamageModifierAPI58 =
+//		lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
+	{	100,100,100,100, 100,100,100,100, 100,100,100,100, 100,100,100,100 };
+
+static constexpr int g_iInternalChanceToHitAPI0 = 50;
+static constexpr int g_iInternalChanceToHitAPI58 = 100;
+
+//	Mass Destruction (WMD) Adj ----------------------------------------------
+
+static const TArray<double> g_StdWMDAdjAPI0 =
+//		0		1		2		3		4		5		6		7
+	{	0.0,	0.04,	0.1,	0.2,	0.34,	0.52,	0.74,	1.0};
+
+static const TArray<const char*> g_StdWMDLabelsAPI0 =
+//		0		1		2		3		4		5		6		7
+	{	"",		"1",	"2",	"3",	"4",	"5",	"7",	"10"};
+
+static constexpr int g_iStdWMDMinDamageAPI0 = 1;
+
+static const TArray<double> g_StdWMDAdjAPI29 =
+//		0		1		2		3		4		5		6		7
+	{	0.10,	0.25,	0.32,	0.40,	0.50,	0.63,	0.80,	1.0};
+
+static const TArray<const char*> g_StdWMDLabelsAPI29 =
+//		0		1		2		3		4		5		6		7
+	{	"",		"2",	"3",	"4",	"5",	"6",	"8",	"10"};
+
+static constexpr int g_iStdWMDMinDamageAPI29 = 0;
+
+//	Helpers -----------------------------------------------------------------
+
+//	Translates actual API versions into the known versions
+//	used for the MiningMaxOreLevel system
+//
+int GetAPIForMiningMaxOreLevel (int apiVersion)
 
 	{
 	if (apiVersion >= 57)
@@ -142,9 +267,47 @@ int GetAPIForMiningMaxOreLevel (int apiVersion)
 		return 0;
 	}
 
-CEngineOptions::CEngineOptions (int apiVersion)
+//	Translates actual API versions into the known versions
+//	used for the MiningMaxOreLevel system
+//
+int GetAPIForExternalDeviceDamageMaxLevel (int apiVersion)
+
+	{
+	if (apiVersion >= 58)
+		return 58;
+	else
+		return 0;
+	}
+
+//	Translates actual API versions into the known versions
+//	used for the MiningMaxOreLevel system
+//
+int GetAPIForInternalDeviceDamageMaxLevel (int apiVersion)
+
+	{
+	if (apiVersion >= 58)
+		return 58;
+	else
+		return 0;
+	}
+
+//	Translates actual API versions into the known versions
+//	used for the WMD Adj system
+//
+int GetAPIForWMDAdj (int apiVersion)
+
+	{
+	if (apiVersion >= 29)
+		return 29;
+	else
+		return 0;
+	}
+
+//	Class Methods -------------------------------------------------------------
 
 //	CEngineOptions constructor
+//
+CEngineOptions::CEngineOptions (int apiVersion)
 
 	{
 	//	Set api version we are loading defaults for
@@ -156,9 +319,9 @@ CEngineOptions::CEngineOptions (int apiVersion)
 	InitDefaultGlobals();
 	}
 
-void CEngineOptions::InitDefaultGlobals (void)
-
 //	Initialize default globals based on whatever API version we need
+//
+void CEngineOptions::InitDefaultGlobals ()
 
 	{
 	//	Initialize armor and shield damage adjustment tables
@@ -176,12 +339,25 @@ void CEngineOptions::InitDefaultGlobals (void)
 
 	m_MiningDamageMaxOreLevels = GetDefaultMiningMaxOreLevels(m_iDefaultForAPIVersion);
 	m_bCustomMiningMaxOreLevels = false;
-	}
 
-void CEngineOptions::InitDefaultDescs (void)
+	//	Initialize device damage tables
+
+	m_ExternalDeviceDamageMaxLevels = GetDefaultExternalDeviceDamageLevels(m_iDefaultForAPIVersion);
+	m_bCustomExternalDeviceDamageMaxLevels = false;
+	m_InternalDeviceDamageMaxLevels = GetDefaultInternalDeviceDamageLevels(m_iDefaultForAPIVersion);
+	m_bCustomInternalDeviceDamageMaxLevels = false;
+
+	//	Initialize WMD adj tables
+
+	m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;
+	m_DamageMethodDescs.SetWMD(GetDefaultWMDAdj(m_iDefaultForAPIVersion));
+	m_bCustomDamageMethodDescs = false;
+	}
 
 //	Initiate defaults where necessary based on whatever API version we need
 //	Assumes that InitDefaultGlobals was called during our constructor
+//
+void CEngineOptions::InitDefaultDescs ()
 
 	{
 	//	Initialize armor and shield damage adjustment tables
@@ -198,15 +374,158 @@ void CEngineOptions::InitDefaultDescs (void)
 
 	if (!m_bCustomMiningMaxOreLevels)
 		m_MiningDamageMaxOreLevels = GetDefaultMiningMaxOreLevels(m_iDefaultForAPIVersion);
+
+	//	Initialize device damage tables
+
+	if (!m_bCustomExternalDeviceDamageMaxLevels)
+		m_ExternalDeviceDamageMaxLevels = GetDefaultExternalDeviceDamageLevels(m_iDefaultForAPIVersion);
+
+	if (!m_bCustomInternalDeviceDamageMaxLevels)
+		m_InternalDeviceDamageMaxLevels = GetDefaultInternalDeviceDamageLevels(m_iDefaultForAPIVersion);
+
 	}
 
-bool CEngineOptions::HidesArmorImmunity (SpecialDamageTypes iSpecial) const
+//	InitDefaultDamageMethods
+//
+//	m_iDamageMethodSystem must be initialized to a valid value already
+//
+void CEngineOptions::InitDefaultDamageMethods()
+	{
+
+	switch (m_iDamageMethodSystem)
+		{
+		case EDamageMethodSystem::dmgMethodSysPhysicalized:
+			{
+			//	Items
+
+			m_DamageMethodItemAdj.Armor.Reset();
+			m_DamageMethodItemAdj.Shield.Reset();
+
+			//	Ships
+
+			m_DamageMethodShipAdj.Armor.Critical.Reset();
+			m_DamageMethodShipAdj.Armor.Critical.SetShred(1.0);
+			m_DamageMethodShipAdj.Armor.CriticalUncrewed.Reset();
+			m_DamageMethodShipAdj.Armor.CriticalUncrewed.SetShred(1.0);
+			m_DamageMethodShipAdj.Armor.NonCritical.Reset();
+			m_DamageMethodShipAdj.Armor.NonCritical.SetPierce(1.0);
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.Reset();
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.SetShred(1.0);
+			m_DamageMethodShipAdj.Armor.rNonCriticalDestructionChance = 0.05;
+
+			m_DamageMethodShipAdj.Compartment.General.Reset();
+			m_DamageMethodShipAdj.Compartment.General.SetShred(1.0);
+			m_DamageMethodShipAdj.Compartment.Cargo.Reset();
+			m_DamageMethodShipAdj.Compartment.Cargo.SetCrush(1.0);
+			m_DamageMethodShipAdj.Compartment.MainDrive.Reset();
+			m_DamageMethodShipAdj.Compartment.MainDrive.SetShred(1.0);
+			m_DamageMethodShipAdj.Compartment.Uncrewed.Reset();
+			m_DamageMethodShipAdj.Compartment.Uncrewed.SetCrush(1.0);
+
+			//	Stations
+
+			m_DamageMethodStationAdj.Hull.Armor.Reset();
+			m_DamageMethodStationAdj.Hull.Armor.SetPierce(1.0);
+			m_DamageMethodStationAdj.Hull.Asteroid.Reset();
+			m_DamageMethodStationAdj.Hull.Asteroid.SetCrush(1.0);
+			m_DamageMethodStationAdj.Hull.Multi.Reset();
+			m_DamageMethodStationAdj.Hull.Multi.SetShred(1.0);
+			m_DamageMethodStationAdj.Hull.Single.Reset();
+			m_DamageMethodStationAdj.Hull.Uncrewed.Reset();
+			m_DamageMethodStationAdj.Hull.Uncrewed.SetCrush(1.0);
+			m_DamageMethodStationAdj.Hull.Underground.Reset();
+			m_DamageMethodStationAdj.Hull.Underground.SetCrush(0.31);
+			m_DamageMethodStationAdj.Hull.Underground.SetPierce(0.31);
+			break;
+			}
+		case EDamageMethodSystem::dmgMethodSysWMD:
+			{
+			//	Items
+
+			m_DamageMethodItemAdj.Armor.Reset();
+			m_DamageMethodItemAdj.Shield.Reset();
+
+			//	Ships
+
+			m_DamageMethodShipAdj.Armor.Critical.Reset();
+			m_DamageMethodShipAdj.Armor.CriticalUncrewed.Reset();
+			m_DamageMethodShipAdj.Armor.NonCritical.Reset();
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.Reset();
+			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.SetWMD(1.0);
+			m_DamageMethodShipAdj.Armor.rNonCriticalDestructionChance = 0.05;
+
+			m_DamageMethodShipAdj.Compartment.General.Reset();
+			m_DamageMethodShipAdj.Compartment.General.SetWMD(1.0);
+			m_DamageMethodShipAdj.Compartment.Cargo.Reset();
+			m_DamageMethodShipAdj.Compartment.Cargo.SetWMD(1.0);
+			m_DamageMethodShipAdj.Compartment.MainDrive.Reset();
+			m_DamageMethodShipAdj.Compartment.MainDrive.SetWMD(1.0);
+			m_DamageMethodShipAdj.Compartment.Uncrewed.Reset();
+			m_DamageMethodShipAdj.Compartment.Uncrewed.SetWMD(1.0);
+
+			//	Stations
+
+			m_DamageMethodStationAdj.Hull.Armor.Reset();
+			m_DamageMethodStationAdj.Hull.Armor.SetWMD(1.0);
+			m_DamageMethodStationAdj.Hull.Asteroid.Reset();
+			m_DamageMethodStationAdj.Hull.Asteroid.SetWMD(1.0);
+			m_DamageMethodStationAdj.Hull.Multi.Reset();
+			m_DamageMethodStationAdj.Hull.Multi.SetWMD(1.0);
+			m_DamageMethodStationAdj.Hull.Single.Reset();
+			m_DamageMethodStationAdj.Hull.Uncrewed.Reset();
+			m_DamageMethodStationAdj.Hull.Uncrewed.SetWMD(1.0);
+			m_DamageMethodStationAdj.Hull.Underground.Reset();
+			m_DamageMethodStationAdj.Hull.Underground.SetWMD(1.0);
+			break;
+			}
+		default:
+			ASSERT(false);
+		}
+	}
+
+const CDamageMethodDesc* CEngineOptions::GetDamageMethodDesc(EDamageMethod iMethod) const
+	{
+	switch (m_iDamageMethodSystem)
+		{
+		case EDamageMethodSystem::dmgMethodSysWMD:
+			{
+			if (iMethod == EDamageMethod::methodWMD)
+				return m_DamageMethodDescs.GetWMD();
+			ASSERT(false);
+			return NULL;
+			}
+		case EDamageMethodSystem::dmgMethodSysPhysicalized:
+			{
+			switch (iMethod)
+				{
+				case EDamageMethod::methodCrush:
+					return m_DamageMethodDescs.GetCrush();
+				case EDamageMethod::methodPierce:
+					return m_DamageMethodDescs.GetPierce();
+				case EDamageMethod::methodShred:
+					return m_DamageMethodDescs.GetShred();
+				default:
+					{
+					ASSERT(false);
+					return NULL;
+					}
+				}
+			}
+		default:
+			{
+			ASSERT(false);
+			return NULL;
+			}
+		}
+	}
 
 //	HidesArmorImmunity
 //
 //	Returns TRUE if we should hide the given immunity from armor UI displays.
 //	We do this on high-level adventures (e.g., VotG) when all armors are immune
 //	to a particular special damage.
+//
+bool CEngineOptions::HidesArmorImmunity (SpecialDamageTypes iSpecial) const
 
 	{
 	switch (iSpecial)
@@ -231,11 +550,11 @@ bool CEngineOptions::HidesArmorImmunity (SpecialDamageTypes iSpecial) const
 		}
 	}
 
-bool CEngineOptions::InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable)
-
 //	InitDamageAdjFromXML
 //
 //	Initializes from XML.
+//
+bool CEngineOptions::InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable)
 
 	{
 	int iLevel = XMLDesc.GetAttributeInteger(LEVEL_ATTRIB);
@@ -253,11 +572,43 @@ bool CEngineOptions::InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElemen
 	return true;
 	}
 
-bool CEngineOptions::InitMiningMaxOreLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
+//	InitDamageMethodAdjFromCC
+//
+//	Use an ICCItem loaded from an adventure property to initialize
+//	Damage Method Adj
+// 
+//	Note: Requires adj to be pre-configured to the appropriate defaults
+//
+bool CEngineOptions::InitDamageMethodAdjFromCC(SDesignLoadCtx& Ctx, SDamageMethodAdj& adj, ICCItem* pStruct)
+	{
+	switch (m_iDamageMethodSystem)
+		{
+		case EDamageMethodSystem::dmgMethodSysPhysicalized:
+			{
+			adj.SetCrush(max(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_CRUSH, adj.GetCrush()), 0.0));
+			adj.SetPierce(max(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_PIERCE, adj.GetPierce()), 0.0));
+			adj.SetShred(max(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_SHRED, adj.GetShred()), 0.0));
+			return true;
+			}
+		case EDamageMethodSystem::dmgMethodSysWMD:
+			{
+			adj.SetWMD(max(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_WMD, adj.GetWMD()), 0.0));
+			return true;
+			}
+		default:
+			{
+			ASSERT(false);
+			Ctx.sError = CONSTLIT("Engine error occurred in initialing damage method adj: m_iDamageMethodSystem was not set to a valid value");
+			return false;
+			}
+		}
+	}
 
 //	InitDamageAdjFromXML
 //
 //	Initializes from XML.
+//
+bool CEngineOptions::InitMiningMaxOreLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
 
 	{
 	m_bCustomMiningMaxOreLevels = true;
@@ -270,11 +621,116 @@ bool CEngineOptions::InitMiningMaxOreLevelsFromXML (SDesignLoadCtx& Ctx, const C
 	return true;
 	}
 
-CMiningDamageLevelDesc CEngineOptions::GetDefaultMiningMaxOreLevels (int apiVersion)
+//	InitExternalDeviceDamageMaxLevelsFromXML
+//
+//	Initializes from XML.
+//
+bool CEngineOptions::InitExternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
+
+	{
+	m_bCustomExternalDeviceDamageMaxLevels = true;
+
+	if (m_ExternalDeviceDamageMaxLevels.InitFromXML(Ctx, XMLDesc) != NOERROR)
+		return false;
+
+	//	Success!
+
+	return true;
+	}
+
+//	InitInternalDeviceDamageMaxLevelsFromXML
+//
+//	Initializes from XML.
+//
+bool CEngineOptions::InitInternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
+
+	{
+	m_bCustomInternalDeviceDamageMaxLevels = true;
+
+	if (m_InternalDeviceDamageMaxLevels.InitFromXML(Ctx, XMLDesc) != NOERROR)
+		return false;
+
+	//	Success!
+
+	return true;
+	}
+
+//	InitDamageMethodDescsFromXML
+//
+//	Initializes from XML.
+//  Init from properties must have already run.
+//
+bool CEngineOptions::InitDamageMethodDescsFromXML(SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc)
+	{
+	m_bCustomDamageMethodDescs = true;
+	bool bSetPhysicalized = false;
+	bool bSetWMD = false;
+
+	for (int i = 0; i < XMLDesc.GetContentElementCount(); i++)
+		{
+		CXMLElement* pItem = XMLDesc.GetContentElement(i);
+
+		if (strEquals(pItem->GetTag(), TAG_DAMAGE_METHOD_CURVE_CRUSH))
+			{
+			if (bSetWMD)
+				{
+				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
+				return false;
+				}
+			if (m_DamageMethodDescs.Crush()->InitFromXML(Ctx, *pItem) != NOERROR)
+				return false;
+			bSetPhysicalized = true;
+			}
+		else if (strEquals(pItem->GetTag(), TAG_DAMAGE_METHOD_CURVE_PIERCE))
+			{
+			if (bSetWMD)
+				{
+				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
+				return false;
+				}
+			if (m_DamageMethodDescs.Pierce()->InitFromXML(Ctx, *pItem) != NOERROR)
+				return false;
+			bSetPhysicalized = true;
+			}
+		else if (strEquals(pItem->GetTag(), TAG_DAMAGE_METHOD_CURVE_SHRED))
+			{
+			if (bSetWMD)
+				{
+				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
+				return false;
+				}
+			if (m_DamageMethodDescs.Shred()->InitFromXML(Ctx, *pItem) != NOERROR)
+				return false;
+			bSetPhysicalized = true;
+			}
+		else if (strEquals(pItem->GetTag(), TAG_DAMAGE_METHOD_CURVE_WMD))
+			{
+			if (bSetPhysicalized)
+				{
+				Ctx.sError = CONSTLIT("Cannot specify damage method curves from different damage method systems");
+				return false;
+				}
+			if (m_DamageMethodDescs.WMD()->InitFromXML(Ctx, *pItem) != NOERROR)
+				return false;
+			bSetWMD = true;
+			}
+		else
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Invalid DamageMethodAdj curve definition element: %s."), pItem->GetTag());
+			return false;
+			}
+		}
+
+	//	Success!
+
+	return true;
+	}
 
 //	GetDefaultMiningMaxOreLevels
 //
 //	Returns the default table basedon API version
+//
+CMiningDamageLevelDesc CEngineOptions::GetDefaultMiningMaxOreLevels (int apiVersion)
 
 	{
 	CMiningDamageLevelDesc Desc;
@@ -298,11 +754,115 @@ CMiningDamageLevelDesc CEngineOptions::GetDefaultMiningMaxOreLevels (int apiVers
 	return Desc;
 	}
 
-void CEngineOptions::InitDefaultDamageAdj (void)
+//	GetDefaultMiningMaxOreLevels
+//
+//	Returns the default table based on API version
+//
+CDeviceDamageLevelDesc CEngineOptions::GetDefaultExternalDeviceDamageLevels (int apiVersion)
+
+	{
+	CDeviceDamageLevelDesc Desc;
+
+	switch (GetAPIForExternalDeviceDamageMaxLevel(apiVersion))
+		{
+		case 0:
+			Desc.InitFromArray(g_StdExternalDeviceDamageLevelsAPI0, g_StdExternalDeviceDamageModifierAPI0, g_iExternalChanceToHitAPI0);
+			break;
+		case 58:
+		default:
+			Desc.InitFromArray(g_StdExternalDeviceDamageLevelsAPI58, g_StdExternalDeviceDamageModifierAPI58, g_iExternalChanceToHitAPI58);
+		}
+
+	return Desc;
+	}
+
+//	GetDefaultMiningMaxOreLevels
+//
+//	Returns the default table based on API version
+//
+CDeviceDamageLevelDesc CEngineOptions::GetDefaultInternalDeviceDamageLevels (int apiVersion)
+
+	{
+	CDeviceDamageLevelDesc Desc;
+
+	switch (GetAPIForExternalDeviceDamageMaxLevel(apiVersion))
+		{
+		case 0:
+			Desc.InitFromArray(g_StdInternalDeviceDamageLevelsAPI0, g_StdInternalDeviceDamageModifierAPI0, g_iInternalChanceToHitAPI0);
+			break;
+		case 58:
+		default:
+			Desc.InitFromArray(g_StdInternalDeviceDamageLevelsAPI58, g_StdInternalDeviceDamageModifierAPI58, g_iInternalChanceToHitAPI58);
+		}
+
+	return Desc;
+	}
+
+//	GetDefaultWMDAdj
+//
+//	Returns the default table based on API version
+//
+CDamageMethodDesc CEngineOptions::GetDefaultWMDAdj (int apiVersion)
+
+	{
+	CDamageMethodDesc Desc;
+
+	switch (GetAPIForWMDAdj(apiVersion))
+		{
+		case 0:
+			{
+			Desc.InitFromArray(g_StdWMDAdjAPI0, g_StdWMDLabelsAPI0);
+			break;
+			}
+		case 29:
+		default:
+			Desc.InitFromArray(g_StdWMDAdjAPI29, g_StdWMDLabelsAPI29);
+		}
+
+	return Desc;
+	}
+
+Metric CEngineOptions::GetDamageMethodAdj(const SDamageMethodAdj &adj, EDamageMethod iMethod) const
+	{
+	switch (m_iDamageMethodSystem)
+		{
+		case EDamageMethodSystem::dmgMethodSysPhysicalized:
+			{
+			switch (iMethod)
+				{
+				case EDamageMethod::methodCrush:
+					return adj.GetCrush();
+				case EDamageMethod::methodPierce:
+					return adj.GetPierce();
+				case EDamageMethod::methodShred:
+					return adj.GetShred();
+				default:
+					{
+					ASSERT(false);
+					return 1.0;
+					}
+				}
+			}
+		case EDamageMethodSystem::dmgMethodSysWMD:
+			{
+			if (iMethod == EDamageMethod::methodWMD)
+				return adj.GetWMD();
+			ASSERT(false);
+			return 1.0;
+			}
+		default:
+			{
+			ASSERT(false);
+			return 1.0;
+			}
+		}
+	}
 
 //	InitDefaultDamageAdj
 //
 //	Initialize default tables
+//
+void CEngineOptions::InitDefaultDamageAdj ()
 
 	{
 	int i;
@@ -319,11 +879,11 @@ void CEngineOptions::InitDefaultDamageAdj (void)
 		}
 	}
 
-bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType &Type)
-
 //	InitFromProperties
 //
 //	Initializes from properties (usually from the adventure descriptor).
+//
+bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType &Type)
 
 	{
 	CCodeChainCtx CCX(Ctx.GetUniverse());
@@ -344,6 +904,225 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 	m_bHideIonizeImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_IONIZE_IMMUNE)->IsNil();
 	m_bHideRadiationImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_RADIATION_IMMUNE)->IsNil();
 	m_bHideShatterImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_SHATTER_IMMUNE)->IsNil();
+
+	//	Handle item mass-volume conversion
+
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_ITEM_DEFAULT_DENSITY);
+	m_rDefaultItemDensity = (pValue->IsNil() ? 1.0 : pValue->GetDoubleValue());
+
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_ITEM_LEGACY_MASS_TO_VOLUME);
+	m_rDefaultItemMassToVolume = (pValue->IsNil() ? 1.0 : pValue->GetDoubleValue());
+
+	//	Handle shield power idle consumption
+
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_ITEM_SHIELD_IDLE_POWER_ADJ);
+	Metric rAPIDefaultShieldIdlePowerRatio = Ctx.GetAPIVersion() >= 54 ? 0.125 : 0.5;
+	m_rDefaultShieldIdlePowerRatio = (pValue->IsNil() ? rAPIDefaultShieldIdlePowerRatio : pValue->GetDoubleValue());
+
+	//	Handle damage method initialization
+
+	if (Ctx.GetAPIVersion() >= 58)
+		{
+
+		//	Initialize the Damage Method System for this adventure
+		//	This must be done before any initialization or access of the DamageMethod system
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_SYSTEM);
+		if (pValue->IsNil())
+			m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;
+		else
+			{
+			CString sDmgSys = pValue->GetStringValue();
+			if (strEquals(sDmgSys, VALUE_CORE_DMG_METHOD_SYSTEM_DAMAGE_METHODS) && false)	//Physicalized damage is not available yet
+				m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysPhysicalized;
+			else if (strEquals(sDmgSys, VALUE_CORE_DMG_METHOD_SYSTEM_WMD))
+				m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;
+			else
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("%s is not a valid value for adventure property %s"), sDmgSys, PROPERTY_CORE_DMG_METHOD_SYSTEM);
+				return false;
+				}
+			}
+
+		//	We need to initialize the engine defaults for this damage method before loading up any custom
+		//	adventure-level defaults, since InitDamageMethodAdjFromCC requires that the engine default
+		//	is already loaded up
+
+		InitDefaultDamageMethods();
+
+		//	Initialize default Damage Method Fortification Adj for this adventure
+		// 
+		//	Note: empty properties and properties with (double 'NaN) return Nil
+		//	Nil initializes the legacy defaults which were hardcoded up through API57 (2.0a7)
+		//
+		//	We check for a real NaN just in case Tlisp doubles ever get updated to support
+		//	explicit NaN. This code runs once per adventure init so the impact is negligible.
+		//
+		//	We do not support fortification above 1.0, since these cases will be handled by
+		//	other mechanics
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_ITEM);
+
+		//	Items default to 1.0 so their defaults are already correctly initialized
+
+		ICCItem* pItmArmorStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_ITEM_ARMOR);
+		if (pItmArmorStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodItemAdj.Armor, pItmArmorStruct))
+				return false;
+			}
+
+		ICCItem* pItmShieldStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_ITEM_SHIELD);
+		if (pItmShieldStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodItemAdj.Shield, pItmShieldStruct))
+				return false;
+			}
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_SHIP);
+		ICCItem* pShipArmorStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR);
+		//	We use a nil here so that we can just use the same defaults handler later
+		if (!pShipArmorStruct)
+			pShipArmorStruct = CCX.CreateNil();
+
+		ICCItem* pShipArmorCriticalStruct = pShipArmorStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_CRITICAL);
+		if (pShipArmorCriticalStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.Critical, pShipArmorCriticalStruct))
+				return false;
+			}
+
+		ICCItem* pShipArmorCriticalUncrewedStruct = pShipArmorStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_CRITICAL_UNCREWED);
+		if (pShipArmorCriticalUncrewedStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.CriticalUncrewed, pShipArmorCriticalUncrewedStruct))
+				return false;
+			}
+
+		ICCItem* pShipArmorNonCriticalStruct = pShipArmorStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_NONCRITICAL);
+		if (pShipArmorNonCriticalStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.NonCritical, pShipArmorNonCriticalStruct))
+				return false;
+			}
+
+		ICCItem* pShipArmorNonCriticalDestructionStruct = pShipArmorStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_NONCRITICAL_DESTRUCTION);
+		if (pShipArmorNonCriticalDestructionStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.NonCriticalDestruction, pShipArmorNonCriticalDestructionStruct))
+				return false;
+			}
+
+		ICCItem* pShipArmorNonCriticalDestructionChanceStruct = pShipArmorStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_NONCRITICAL_DESTRUCTION_CHANCE);
+		if (pShipArmorNonCriticalDestructionChanceStruct)
+			{
+			m_DamageMethodShipAdj.Armor.rNonCriticalDestructionChance = pShipArmorNonCriticalDestructionChanceStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_SHIP_ARMOR_NONCRITICAL_DESTRUCTION_CHANCE, 0.05);
+			}
+
+		ICCItem* pShipCompartmentStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT);
+		//	We use a nil here so that we can just use the same defaults handler later
+		if (!pShipCompartmentStruct)
+			pShipCompartmentStruct = CCX.CreateNil();
+
+		ICCItem* pShipCompartmentGeneralStruct = pShipCompartmentStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_GENERAL);
+		if (pShipCompartmentGeneralStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Compartment.General, pShipCompartmentGeneralStruct))
+				return false;
+			}
+
+		ICCItem* pShipCompartmentCargoStruct = pShipCompartmentStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_CARGO);
+		if (pShipCompartmentCargoStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Compartment.Cargo, pShipCompartmentCargoStruct))
+				return false;
+			}
+
+		ICCItem* pShipCompartmentMainDriveStruct = pShipCompartmentStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_MAIN_DRIVE);
+		if (pShipCompartmentMainDriveStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Compartment.MainDrive, pShipCompartmentMainDriveStruct))
+				return false;
+			}
+
+		ICCItem* pShipCompartmentUncrewedStruct = pShipCompartmentStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_UNCREWED);
+		if (pShipCompartmentUncrewedStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Compartment.Uncrewed, pShipCompartmentUncrewedStruct))
+				return false;
+			}
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_STATION);
+		ICCItem* pStationHullStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL);
+		//	We use a nil here so that we can just use the same defaults handler later
+		if (!pStationHullStruct)
+			pStationHullStruct = CCX.CreateNil();
+
+		ICCItem* pStationHullSingleStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_SINGLE);
+		if (pStationHullSingleStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Single, pStationHullSingleStruct))
+				return false;
+			}
+
+		ICCItem* pStationHullMultiStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_MULTI);
+		if (pStationHullMultiStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Multi, pStationHullMultiStruct))
+				return false;
+			}
+
+		ICCItem* pStationHullAsteroidStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_ASTEROID);
+		if (pStationHullAsteroidStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Asteroid, pStationHullAsteroidStruct))
+				return false;
+			}
+
+		ICCItem* pStationHullUndergroundStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_UNDERGROUND);
+		if (pStationHullUndergroundStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Underground, pStationHullUndergroundStruct))
+				return false;
+			}
+
+		ICCItem* pStationHullUncrewedStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_UNCREWED);
+		if (pStationHullUncrewedStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Uncrewed, pStationHullUncrewedStruct))
+				return false;
+			}
+
+		ICCItem* pStationHullArmorStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_ARMOR);
+		if (pStationHullArmorStruct)
+			{
+			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Armor, pStationHullArmorStruct))
+				return false;
+			}
+
+		//	Set minimum damage
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_DMG_METHOD_MIN_DAMAGE);
+		Metric rValue = pValue->IsNil() ? 0.0 : pValue->GetDoubleValue();
+		if (rValue < 0)
+			rValue = 0.0;
+		m_rDamageMethodAdjMinDamage = rValue;
+
+		}
+
+	//	Legacy adventures can only use defaults because the older APIs dont support anything else
+
+	else
+		{
+		m_iDamageMethodSystem = EDamageMethodSystem::dmgMethodSysWMD;
+
+		if (Ctx.GetAPIVersion() >= 29)
+			m_rDamageMethodAdjMinDamage = g_iStdWMDMinDamageAPI29;
+		else
+			m_rDamageMethodAdjMinDamage = g_iStdWMDMinDamageAPI0;
+
+		InitDefaultDamageMethods();
+		}
 
 	return true;
 	}
