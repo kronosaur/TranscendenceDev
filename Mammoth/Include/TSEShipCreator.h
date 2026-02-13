@@ -94,6 +94,7 @@ struct SShipCreateCtx
 	CSpaceObject *pTarget = NULL;				//	Target for ship orders (may be NULL)
 	CStationType *pEncounterInfo = NULL;		//	Encounter info (may be NULL)
 	CDesignType *pOverride = NULL;				//	Override to apply to ships (may be NULL)
+	int iLevel = 0;								//	Override to apply to level tables (only if > 0)
 
 	DWORD dwFlags = 0;							//	Flags
 

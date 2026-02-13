@@ -422,13 +422,24 @@ void CLevelTableOfShipGenerators::CreateShips (SShipCreateCtx &Ctx) const
 
 	//	Compute probabilities
 
-	int iLevel = Ctx.pSystem->GetLevel();
+	int iLevel = (Ctx.iLevel > 0 ? Ctx.iLevel : Ctx.pSystem->GetLevel());
 	if (iLevel != m_iComputedLevel)
 		{
 		m_iTotalChance = 0;
 		for (i = 0; i < m_Table.GetCount(); i++)
 			{
-			m_Table[i].iChance = GetFrequencyByLevel(m_Table[i].sLevelFrequency, iLevel);
+			if (Ctx.iLevel > 0)
+				{
+
+				//	If we are looking up with a level override then the lookup should be limited to
+				//	the length of the table (i.e. return the last entry rather than not random)
+
+				int iTableLength = m_Table[i].sLevelFrequency.GetLength();
+				int iMaxLevel = 5 * (iTableLength / 6) + (iTableLength % 6);
+				m_Table[i].iChance = GetFrequencyByLevel(m_Table[i].sLevelFrequency, min(iLevel, iMaxLevel));
+				}
+			else
+				m_Table[i].iChance = GetFrequencyByLevel(m_Table[i].sLevelFrequency, iLevel);
 			m_iTotalChance += m_Table[i].iChance;
 			}
 

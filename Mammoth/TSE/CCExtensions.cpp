@@ -3212,7 +3212,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"options:\n\n"
 			
 			"   'distance      Encounter distance (light-seconds), if gate is Nil\n"
+			"   'eventHandler\n"
 			"   'gate          Gate to appear at (if Nil, use distance)\n"
+			"   'level         level (for ship tables)\n"
+			"   'returnEscorts\n"
 			"   'target        Target of encounter\n",
 
 			"i*",	PPFLAG_SIDEEFFECTS,	},
@@ -12900,6 +12903,9 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return StdErrorNoSystem(*pCC);
 
 			CDesignType *pType = pCtx->GetUniverse().FindDesignType(pArgs->GetElement(0)->GetIntegerValue());
+			if (pType == NULL)
+				return pCC->CreateError(CONSTLIT("Unknown UNID"), pArgs->GetElement(0));
+
 			ICCItem *pOptions = (pArgs->GetCount() > 1 ? pArgs->GetElement(1) : pCC->GetNil());
 
 			CSpaceObject *pTarget = CreateObjFromItem(pOptions->GetElement(CONSTLIT("target")));
@@ -12914,7 +12920,51 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pGate)
 				rDist = 0.0;
 
+			ICCItem *pArg;
+			CDesignType *pOverride = NULL;
+			if ((pArg = pOptions->GetElement(CONSTLIT("eventHandler")))
+				&& !pArg->IsNil())
+				{
+				pOverride = pCtx->GetUniverse().FindDesignType(pArg->GetIntegerValue());
+				if (pOverride == NULL)
+					return pCC->CreateError(CONSTLIT("Unknown event handler"), pArg);
+				}
+
+			DWORD dwTableFlags = SShipCreateCtx::ATTACK_NEAREST_ENEMY | SShipCreateCtx::RETURN_RESULT;
+			if (pOptions->GetBooleanAt(CONSTLIT("returnEscorts")))
+				dwTableFlags |= SShipCreateCtx::RETURN_ESCORTS;
+
+			SShipCreateCtx Ctx;
+			Ctx.pSystem = pSystem;
+			Ctx.pGate = pGate;
+			Ctx.pTarget = pTarget;
+			Ctx.pOverride = pOverride;
+			Ctx.iDefaultOrder = (pTarget ? IShipController::orderDestroyTarget : IShipController::orderNone);
+			Ctx.iLevel = pOptions->GetIntegerAt(CONSTLIT("level"));
+			Ctx.dwFlags = dwTableFlags;
+
+			//	Figure out where the encounter will come from
+
+			if (rDist > 0.0)
+				{
+				if (pTarget)
+					Ctx.vPos = pSystem->CalcRandomEncounterPos(*pTarget, rDist);
+				Ctx.PosSpread = DiceRange(3, 1, 2);
+				}
+			else if (pGate && pGate->IsActiveStargate())
+				Ctx.pGate = pGate;
+			else if (pGate)
+				{
+				Ctx.vPos = pGate->GetPos();
+				Ctx.PosSpread = DiceRange(2, 1, 2);
+				}
+			else if (pTarget)
+				Ctx.pGate = pTarget->GetNearestStargate(true);
+
 			//	If we have a station type, then create its random encounter
+
+			// NOTE - station encounters will ignore pos/gate/eH settings as the tables usually
+			// set their own eventhandler which takes priority over the ship create context
 
 			if (pType->GetType() == designStationType)
 				{
@@ -12926,9 +12976,18 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (pTable == NULL)
 					return pCC->CreateNil();
 
-				CRandomEncounterDesc Encounter(*pTable, *pEncounter, pEncounter->GetSovereign());
-				Encounter.Create(*pSystem, pTarget, pGate);
-				return pCC->CreateTrue();
+				//	Need to set the sovereign so we can directly call the table
+
+				Ctx.pBaseSovereign = pEncounter->GetSovereign();
+
+				//	Create ships
+
+				pTable->CreateShips(Ctx);
+
+				//	Return the list of ships created
+
+				ICCItemPtr pResult = CTLispConvert::CreateObjectList(Ctx.Result);
+				return pResult->Reference();
 				}
 
 			//	If this is a ship table, create an encounter
@@ -12936,30 +12995,6 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else if (pType->GetType() == designShipTable)
 				{
 				CShipTable *pEncounter = CShipTable::AsType(pType);
-
-				SShipCreateCtx Ctx;
-				Ctx.pSystem = pSystem;
-				Ctx.pTarget = pTarget;
-				Ctx.iDefaultOrder = (pTarget ? IShipController::orderDestroyTarget : IShipController::orderNone);
-				Ctx.dwFlags = SShipCreateCtx::ATTACK_NEAREST_ENEMY | SShipCreateCtx::RETURN_RESULT;
-
-				//	Figure out where the encounter will come from
-
-				if (rDist > 0.0)
-					{
-					if (pTarget)
-						Ctx.vPos = pSystem->CalcRandomEncounterPos(*pTarget, rDist);
-					Ctx.PosSpread = DiceRange(3, 1, 2);
-					}
-				else if (pGate && pGate->IsActiveStargate())
-					Ctx.pGate = pGate;
-				else if (pGate)
-					{
-					Ctx.vPos = pGate->GetPos();
-					Ctx.PosSpread = DiceRange(2, 1, 2);
-					}
-				else if (pTarget)
-					Ctx.pGate = pTarget->GetNearestStargate(true);
 
 				//	Create ships
 
@@ -13612,6 +13647,7 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 	CDesignType *pOverride = NULL;
 	CSpaceObject *pTarget = NULL;
 	CSpaceObject *pBase = NULL;
+	int iTableLevel = 0;
 	DWORD dwTableFlags = SShipCreateCtx::RETURN_RESULT;
 	if (pArgs->GetCount() > 3)
 		{
@@ -13644,6 +13680,8 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 			if (pOptions->GetBooleanAt(CONSTLIT("returnEscorts")))
 				dwTableFlags |= SShipCreateCtx::RETURN_ESCORTS;
+
+			iTableLevel = pOptions->GetIntegerAt(CONSTLIT("level"));
 			}
 		else if (pArgs->GetElement(3)->IsIdentifier())
 			pController = pCtx->GetUniverse().CreateShipController(pArgs->GetElement(3)->GetStringValue());
@@ -13667,6 +13705,7 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 		CreateCtx.pEncounterInfo = NULL;
 		CreateCtx.pOverride = pOverride;
 		CreateCtx.pTarget = pTarget;
+		CreateCtx.iLevel = iTableLevel;
 		CreateCtx.dwFlags = dwTableFlags;
 
 		//	Create
