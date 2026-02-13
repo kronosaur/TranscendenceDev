@@ -1050,6 +1050,16 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 //					Default density in tons per cubic meter to apply to legacy items that specify only mass
 //					accepts a double
 //					Default: 1.0
+//				<Constant id="core.ship.drive.powerExp">		1.2</Constant>
+//					Exponent that is applied to ThrustRatio to determine a relative efficiency bonus or
+//					penalty to a ship for thrust ratio.
+//					accepts a double
+//					Default: 1.2
+//				<Constant id="core.ship.drive.powerFactor">		13.0</Constant>
+//					Adjustment factor multiplied to 1/100th of the ship's thrust * thrust ratio modifier
+//					to determine the power use of a ship's built-in thrusters
+//					accepts a double
+//					Default: 1.2
 //		<Type>
 //			<ArmorClassDesc>
 //				<ArmorClass>
