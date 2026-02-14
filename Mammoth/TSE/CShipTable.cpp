@@ -961,12 +961,12 @@ void CSingleShip::CreateShips (SShipCreateCtx &Ctx) const
 	//	Figure out the sovereign
 
 	CSovereign *pSovereign;
-	if (m_pSovereign)
+	if (Ctx.pSovereign)
+		pSovereign = Ctx.pSovereign;
+	else if (m_pSovereign)
 		pSovereign = m_pSovereign;
 	else if (Ctx.pBase)
 		pSovereign = Ctx.pBase->GetSovereign();
-	else if (Ctx.pBaseSovereign)
-		pSovereign = Ctx.pBaseSovereign;
 	else
 		{
 		ASSERT(false);

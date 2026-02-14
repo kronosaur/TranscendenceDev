@@ -4541,7 +4541,7 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 		SShipCreateCtx ShipCreateCtx;
 		ShipCreateCtx.pSystem = this;
 		ShipCreateCtx.vPos = CreateCtx.vPos;
-		ShipCreateCtx.pBaseSovereign = pType->GetSovereign();
+		ShipCreateCtx.pSovereign = pType->GetSovereign();
 		ShipCreateCtx.pEncounterInfo = pType;
 		ShipCreateCtx.dwFlags = SShipCreateCtx::RETURN_RESULT;
 

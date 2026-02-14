@@ -12978,7 +12978,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				//	Need to set the sovereign so we can directly call the table
 
-				Ctx.pBaseSovereign = pEncounter->GetSovereign();
+				Ctx.pSovereign = pEncounter->GetSovereign();
 
 				//	Create ships
 
@@ -13701,7 +13701,7 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 		CreateCtx.pSystem = pSystem;
 		CreateCtx.pGate = pGate;
 		CreateCtx.vPos = vPos;
-		CreateCtx.pBaseSovereign = pSovereign;
+		CreateCtx.pSovereign = pSovereign;
 		CreateCtx.pEncounterInfo = NULL;
 		CreateCtx.pOverride = pOverride;
 		CreateCtx.pTarget = pTarget;
