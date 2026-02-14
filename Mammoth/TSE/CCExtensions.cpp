@@ -3216,6 +3216,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'gate          Gate to appear at (if Nil, use distance)\n"
 			"   'level         level (for ship tables)\n"
 			"   'returnEscorts\n"
+			"   'sovereign"
 			"   'target        Target of encounter\n",
 
 			"i*",	PPFLAG_SIDEEFFECTS,	},
@@ -12930,6 +12931,15 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateError(CONSTLIT("Unknown event handler"), pArg);
 				}
 
+			CSovereign* pSovereign = NULL;
+			if ((pArg = pOptions->GetElement(CONSTLIT("sovereign")))
+				&& !pArg->IsNil())
+				{
+				pSovereign = pCtx->GetUniverse().FindSovereign(pArg->GetIntegerValue());
+				if (pSovereign == NULL)
+					return pCC->CreateError(CONSTLIT("Unknown sovereign ID"), pArg);
+				}
+
 			DWORD dwTableFlags = SShipCreateCtx::ATTACK_NEAREST_ENEMY | SShipCreateCtx::RETURN_RESULT;
 			if (pOptions->GetBooleanAt(CONSTLIT("returnEscorts")))
 				dwTableFlags |= SShipCreateCtx::RETURN_ESCORTS;
@@ -12937,6 +12947,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			SShipCreateCtx Ctx;
 			Ctx.pSystem = pSystem;
 			Ctx.pGate = pGate;
+			Ctx.pSovereign = pSovereign;
 			Ctx.pTarget = pTarget;
 			Ctx.pOverride = pOverride;
 			Ctx.iDefaultOrder = (pTarget ? IShipController::orderDestroyTarget : IShipController::orderNone);
@@ -12963,9 +12974,6 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	If we have a station type, then create its random encounter
 
-			// NOTE - station encounters will ignore pos/gate/eH settings as the tables usually
-			// set their own eventhandler which takes priority over the ship create context
-
 			if (pType->GetType() == designStationType)
 				{
 				CStationType *pEncounter = CStationType::AsType(pType);
@@ -12976,9 +12984,10 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (pTable == NULL)
 					return pCC->CreateNil();
 
-				//	Need to set the sovereign so we can directly call the table
+				//	If we don't have a sovereign then use the station sovereign
 
-				Ctx.pSovereign = pEncounter->GetSovereign();
+				if (Ctx.pSovereign == NULL)
+					Ctx.pSovereign = pEncounter->GetSovereign();
 
 				//	Create ships
 
