@@ -177,6 +177,12 @@
 						(block Nil
 							(objSetData aObjDocked "korolovPlayerEscort" Nil)
 							(msnSuccess gSource)
+							;	Repair the freighter so its ready for whatever happens next
+							(shpRepairArmor aObjDocked)
+							(shpRestoreHull aObjDocked)
+							(shpRestoreShield aObjDocked)
+							(shpClearStatusEffects aObjDocked)
+							(shpRepairDevices aObjDocked)
 							)
 					)
 			</OnObjDocked>

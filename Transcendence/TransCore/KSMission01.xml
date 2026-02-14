@@ -144,6 +144,14 @@
 					(objSetObjRefData freighterObj "korolovDest" Nil)
 					(objSetData freighterObj "korolovPlayerEscort" True)
 
+					; Restore the freighter so that the player doesnt have
+					; to wait for minutes for it to repair
+					(shpRepairArmor freighterObj)
+					(shpRestoreHull freighterObj)
+					(shpRestoreShield freighterObj)
+					(shpClearStatusEffects freighterObj)
+					(shpRepairDevices freighterObj)
+
 					; Order the freighter
 					(shpCancelOrders freighterObj)
 					(if (objMatches destObj Nil "G")
@@ -228,6 +236,12 @@
 						(block Nil
 							(objSetData aObjDocked "korolovPlayerEscort" Nil)
 							(msnSuccess gSource)
+							;	Repair the freighter so its ready for whatever happens next
+							(shpRepairArmor aObjDocked)
+							(shpRestoreHull aObjDocked)
+							(shpRestoreShield aObjDocked)
+							(shpClearStatusEffects aObjDocked)
+							(shpRepairDevices aObjDocked)
 							)
 					)
 			</OnObjDocked>

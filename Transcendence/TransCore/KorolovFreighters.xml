@@ -56,8 +56,14 @@
 		<Names noArticle="true">Antares Heavy 1%0%0</Names>
 
 		<Properties>
-			; new pilots cannot escort
-			; apprentices cannot escort
+
+			<DynamicGlobal id="korolov.cargoValue.0">
+				(korRandomCargoValue 15000 20000)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="korolov.cargoValue.1">
+				(korRandomCargoValue 15000 30000)
+			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.2">
 				(korRandomCargoValue 20000 50000)
@@ -68,7 +74,7 @@
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				(korRandomCargoValue 35000 90000)
+				(korRandomCargoValue 65000 90000)
 			</DynamicGlobal>
 
 			<Global id="korolov.escortRate">
@@ -612,7 +618,9 @@
 		</Names>
 
 		<Properties>
-			; new pilots cannot escort
+			<DynamicGlobal id="korolov.cargoValue.0">
+				(korRandomCargoValue 20000 35000)
+			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.1">
 				(korRandomCargoValue 20000 35000)

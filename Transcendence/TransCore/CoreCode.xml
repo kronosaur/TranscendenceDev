@@ -645,6 +645,69 @@
 					)
 				))
 				
+			; Ship functions -------------------------------------------------
+
+			(setq shpRestoreHull (lambda (theShip HP)
+				;	Credit - adapted from Arisay Debug Toolkit
+				(cat "Restores ship hull HP by HP amount, up to max hull HP.\n"
+					"If HP is Nil, restores all.\n"
+					"Does not remove overhealing, or reduce HP if HP is negative."
+					)
+				(block
+					(
+						(maxHullHP (objGetProperty theShip 'maxInteriorHP))
+						(curHullHP (objGetProperty theShip 'interiorHP))
+						(newHullHP (if HP (+ curHullHP (max 0 HP)) maxHullHP))
+						)
+						(if (leq newHullHP maxHullHP)
+							(objSetProperty theShip 'interiorHP maxHullHP)
+							)
+					)))
+
+			(setq shpRestoreShield (lambda (theShip HP)
+				;	Credit - adapted from Arisay Debug Toolkit
+				(cat "Recharges ship shield HP by HP.\n"
+					"If HP is Nil, restores all HP.\n"
+					"Does not recharge disabled shields.\n"
+					"Safe to use on ships without shields.")
+				(block
+					(
+						(theShield (@ (objGetItems theShip "sI") 0))
+						)
+					(if theShield
+						(if (objIsDeviceEnabled theShip theShield)
+							(shpRechargeShield theShip)
+							)
+						)
+					)))
+
+			(setq shpClearStatusEffects (lambda (theShip)
+				;	Credit - adapted from Arisay Debug Toolkit
+				"Clears all status effects on ship."
+				(block ()
+					;;	Note later in 2.0 this section will need to be revised for status effects 2.0
+					;;	fix HUD
+					(objChangeEquipmentStatus theShip 'SRS 'repair)
+					;;	remove radiation
+					(shpDecontaminate theShip)
+					;;	remove ionization
+					(objFixParalysis theShip)
+					;;	remove disrupted from items
+					(objEnumItems theShip "*IV" thisItem (objSetItemProperty theShip thisItem 'disrupted ()))
+					;;	remove any overlays that get removed by respawning
+					(enum (objGetOverlays theShip) theOverlay (objFireOverlayEvent theShip theOverlay "OnInsuranceClaim"))
+					)))
+
+			(setq shpRepairDevices (lambda (theShip)
+				;	Credit - adapted from Arisay Debug Toolkit
+				"Restores all devices on the ship"
+				(objEnumItems theShip "*~a DIV" theItem (shpRepairItem theShip theItem))))
+
+			(setq shpRepairArmor (lambda (theShip)
+				;	Credit - adapted from Arisay Debug Toolkit
+				"Repairs all armor on the ship."
+				(intArmorRepairAll theShip 25 'alwaysRepair)))
+				
 			; String functions -------------------------------------------------
 
 			(setq strG (lambda (genome humanMaleWord humanFemaleWord)
