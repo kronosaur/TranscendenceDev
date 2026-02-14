@@ -6,10 +6,19 @@
 
 	PREFIXES
 	
-	int			Internal functions (may change from version to version)
+	int			Internal functions
+					These may be altered in upcoming releases and thus may break
+					compatibility with extensions in future versions
+	
+	dbg/debug	Functions for debugging & tests
+	diag		Functions used by transdata diagnostics & tests
+	fmt			Functions for non-user-facing string formatting
+
+	itm			General functions relating to items
 	math		General math functions
 	obj			General object functions
 	scr			General functions relating to dock screens
+	shp			General functions relating to ship objects
 	str			General string functions
 	sys			General functions relating to star systems
 	
@@ -21,7 +30,44 @@
 
 			;	Print UNIDs in hexadecimal
 
-			(setq fmtUNID (lambda (unid) (if (isInt unid) (cat "0x" (hex unid 8)))))
+			(setq fmtUNID (lambda (unid)
+				"Formats a type UNID as hexadecimal"
+				(if (isInt unid)
+					(cat "0x" (hex unid 8))
+					(block
+						(
+							(unidInt (or (unvEntity unid) ))
+							)
+						(if unidInt
+							(fmtUNID unidInt)
+							; Otherwise nil, this isnt a real UNID
+							)
+						)
+					)
+				))
+
+			(setq fmtUNIDEntity (lambda (unid)
+				(if (isInt unid)
+					(block
+						(
+							(entity (unvEntity unid))
+							)
+						(if entity
+							(cat entity " (" (fmtUNID unid) ")")
+							; Otherwise nil, this isnt a real UNID
+							)
+						)
+					(block
+						(
+							(unidInt (unvEntity unid))
+							)
+						(if unidInt
+							(cat unid " (" (fmtUNID unidInt) ")")
+							; Otherwise nil, this isnt a real UNID
+							)
+						)
+					)
+				))
 
 			(setq diagAssert (lambda (expr errorMsg)
 				(if (not expr)
@@ -389,6 +435,43 @@
 					)
 				))
 
+			(setq intClearStatusEffects (lambda (theShip)
+				;	Credit - adapted from Arisay Debug Toolkit
+				"Clears all status effects on ship."
+				(block ()
+					;;	Note later in 2.0 this section will need to be revised for status effects 2.0
+					;;	fix HUD
+					(objChangeEquipmentStatus theShip 'SRS 'repair)
+					;;	remove radiation
+					(objRemoveCondition theShip 'radioactive)
+					;;	remove ionization
+					(objRemoveCondition theShip 'paralyzed)
+					;;	remove disrupted from items
+					(objEnumItems theShip "*IV" thisItem (objSetItemProperty theShip thisItem 'disrupted ()))
+					;;	remove any overlays that get removed by respawning
+					(enum (objGetOverlays theShip) theOverlay (objFireOverlayEvent theShip theOverlay "OnInsuranceClaim"))
+					)))
+
+			(setq intRestoreShield (lambda (theShip HP)
+				;	Credit - adapted from Arisay Debug Toolkit
+				;	TODO: replace this before release of 2.0a9 with a revamped version of
+				;	shpRechargeShield which safely works on disabled and shieldless ships.
+				;	(just returns nil)
+				(cat "Recharges ship shield HP by HP.\n"
+					"If HP is Nil, restores all HP.\n"
+					"Does not recharge disabled shields.\n"
+					"Safe to use on ships without shields.")
+				(block
+					(
+						(theShield (@ (objGetItems theShip "sI") 0))
+						)
+					(if theShield
+						(if (objIsDeviceEnabled theShip theShield)
+							(shpRechargeShield theShip)
+							)
+						)
+					)))
+
 			(setq intDeviceRepairAll (lambda (theObj)
 
 			; intDeviceRepairAll repairs all installed devices. Repairs normal
@@ -664,38 +747,6 @@
 							)
 					)))
 
-			(setq shpRestoreShield (lambda (theShip HP)
-				;	Credit - adapted from Arisay Debug Toolkit
-				(cat "Recharges ship shield HP by HP.\n"
-					"If HP is Nil, restores all HP.\n"
-					"Does not recharge disabled shields.\n"
-					"Safe to use on ships without shields.")
-				(block
-					(
-						(theShield (@ (objGetItems theShip "sI") 0))
-						)
-					(if theShield
-						(if (objIsDeviceEnabled theShip theShield)
-							(shpRechargeShield theShip)
-							)
-						)
-					)))
-
-			(setq shpClearStatusEffects (lambda (theShip)
-				;	Credit - adapted from Arisay Debug Toolkit
-				"Clears all status effects on ship."
-				(block ()
-					;;	Note later in 2.0 this section will need to be revised for status effects 2.0
-					;;	fix HUD
-					(objChangeEquipmentStatus theShip 'SRS 'repair)
-					;;	remove status effects
-					(objRemoveCondition theShip '*)
-					;;	remove disrupted from items
-					(objEnumItems theShip "*IV" thisItem (objSetItemProperty theShip thisItem 'disrupted ()))
-					;;	remove any overlays that get removed by respawning
-					(enum (objGetOverlays theShip) theOverlay (objFireOverlayEvent theShip theOverlay "OnInsuranceClaim"))
-					)))
-
 			(setq shpRepairDevices (lambda (theShip)
 				;	Credit - adapted from Arisay Debug Toolkit
 				"Restores all devices on the ship"
@@ -703,8 +754,8 @@
 
 			(setq shpFullRestore (lambda (theFreighter) (block ()
 				(shpRestoreHull theFreighter)
-				(shpRestoreShield theFreighter)
-				(shpClearStatusEffects theFreighter)
+				(intRestoreShield theFreighter)
+				(intClearStatusEffects theFreighter)
 				(intArmorRepairAll theFreighter)
 				(intDeviceRepairAll theFreighter)
 				)))
