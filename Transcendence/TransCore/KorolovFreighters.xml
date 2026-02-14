@@ -58,27 +58,27 @@
 		<Properties>
 
 			<DynamicGlobal id="korolov.cargoValue.0">
-				(korRandomCargoValue 15000 20000)
+				(korRandomCargoValue 25000 40000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.1">
-				(korRandomCargoValue 15000 30000)
+				(korRandomCargoValue 30000 50000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.2">
-				(korRandomCargoValue 20000 50000)
+				(korRandomCargoValue 40000 65000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				(korRandomCargoValue 45000 70000)
+				(korRandomCargoValue 50000 80000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				(korRandomCargoValue 65000 90000)
+				(korRandomCargoValue 65000 100000)
 			</DynamicGlobal>
 
 			<Global id="korolov.escortRate">
-				350
+				200
 			</Global>
 		</Properties>
 		
@@ -813,11 +813,11 @@
 			; journeymen cannot escort
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				(korRandomCargoValue 320000 800000)
+				(korRandomCargoValue 320000 1000000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				(korRandomCargoValue 640000 1200000)
+				(korRandomCargoValue 640000 1400000)
 			</DynamicGlobal>
 
 			<Global id="korolov.escortRate">
