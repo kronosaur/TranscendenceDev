@@ -2030,6 +2030,7 @@
 	<!ENTITY scScarabFreighterKorolov	"0x001002A1">
 	<!ENTITY tbKorolovFreighters		"0x001002A2">
 	<!ENTITY tbKorolovGuards			"0x001002A3">
+	<!ENTITY dsKorolovMiscRewards		"0x001002A4">
 
 	<!-- 02B0-02CF COMMONWEALTH MILITIA -->
 

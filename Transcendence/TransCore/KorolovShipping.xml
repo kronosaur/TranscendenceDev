@@ -61,6 +61,18 @@
 			<Global id="escortFailureCount">0</Global>
 
 			<!--
+				These properties check if the player
+				has achieved certain non-rank
+				milestones and been rewarded for them
+				Nil = not achieved
+				0 = achieved but reward not distributed yet
+				1 = achieved and reward distributed
+			-->
+
+			<Global id="allSuccessInARow.3"></Global>
+			<Global id="allSuccessInARow.10"></Global>
+
+			<!--
 				Sandbox mode is intended for sandbox-style
 				adventures where the player is not required to
 				keep moving.
@@ -1265,10 +1277,17 @@
 		<Panes>
 			<Default>
 				<OnPaneInit>
-					(scrSetDescTranslate gScreen (cat "Promotion:" (korGetPlayerLevel)) {
-						AD: (rpgCharacterGetInfo gSource 'assistantDirector &chKorolovAssistantDirectors;)
-						escortCount: (strNumber (count (msnFind "r +korolov; +escort; +property:isSuccess;")))
-						})
+					(block ()
+						;	If we need to show the miscellaneous rewards screen we do that now and then
+						;	come back to this screen since its nested
+						(if (korGetPendingMiscAward)
+							(scrShowScreen gScreen &dsKorolovMiscRewards;)
+							)
+						(scrSetDescTranslate gScreen (cat "Promotion:" (korGetPlayerLevel)) {
+							AD: (rpgCharacterGetInfo gSource 'assistantDirector &chKorolovAssistantDirectors;)
+							escortCount: (strNumber (count (msnFind "r +korolov; +escort; +property:isSuccess;")))
+							})
+						)
 				</OnPaneInit>
 
 				<Actions>
@@ -1355,6 +1374,96 @@
 				"Congratulations! You've broken the record! You've escorted 
 				%escortCount% freighters without losing a single one! 
 				No one has accomplished that feat before!"
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Misc Rewards -->
+
+	<DockScreen UNID="&dsKorolovMiscRewards;"
+			nestedScreen=		"true"
+			inherit=			"&dsDockScreenBase;"
+			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidKorolovShipping; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block
+						(
+							(rewardName (korGetPendingMiscAward))
+							)
+						(if rewardName
+							(scrSetDescTranslate gScreen rewardName {
+								AD: (rpgCharacterGetInfo gSource 'assistantDirector &chKorolovAssistantDirectors;)
+								})
+							; if no reward we got here by mistake
+							; just immediately go back to the previous screen
+							; but leave a debug log for developers
+							(block ()
+								(dbgOutput (cat "Expected a korolov Miscellaneous reward called: " rewardName))
+								(scrExitScreen gScreen)
+								)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(block 
+							(
+								(rewardName (korGetPendingMiscAward))
+								reward
+								)
+							(switch
+								(= rewardName 'allSuccessInARow.3)
+									(block ()
+										(setq reward (itmCreate &itCashCardGold; 1))
+										(typSet@ &unidKorolovShipping; 'allSuccessInARow.3 1)
+										)
+								(= rewardName 'allSuccessInARow.10)
+									(block ()
+										(setq reward (itmCreate &itCashCardPlatinum; 1))
+										(typSet@ &unidKorolovShipping; 'allSuccessInARow.10 1)
+										)
+								; if no reward we got here by mistake
+								; just immediately go back to the previous screen
+								; but leave a debug log for developers
+								(dbgOutput (cat "Expected a korolov Miscellaneous reward called: " rewardName))
+								)
+							(if reward (block ()
+								(objAddItem gPlayership reward)
+								))
+							(scrExitScreen gScreen)
+							)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="allSuccessInARow.3">
+
+				"You're doing a good job out there! In recognition for successfully
+				escorting three freighters without fail, we'd like for you to have
+				this cash card."
+
+			</Text>
+			<Text id="allSuccessInARow.10">
+
+				A small crowd of freighter and escord pilots gathers around as
+				%titledName@AD% congratulates you:
+
+				"You have escorted ten freighters without losing any of them!
+				I am proud to reward you with this platinum cash card for a job
+				well done!"
+
+				%titledName@AD% hands you the cash card as the crowd applauds.
 
 			</Text>
 		</Language>
@@ -1804,10 +1913,13 @@
 					(setq oldRank (korGetPlayerLevel))
 					(setq newRank (korComputePlayerLevel))
 					(if (gr newRank oldRank)
+						;	If we need to rank up, show that screen
 						(block Nil
 
 							;	dsRPGMission checks for a well-known data member in the mission
 							;	object to see if it should navigate to an additional screen.
+							;	dsKorolovPromotion handles checking if we need to hand out other
+							;	minor rewards first
 							(if missionObj
 								(msnSetData missionObj 'rewardNextScreen &dsKorolovPromotion;)
 								)
@@ -1816,13 +1928,29 @@
 							(typSetData &unidKorolovShipping; 'level newRank)
 							)
 						)
+						;	otherwise check if we need to give a miscellaneous reward
+						(if (korGetPendingMiscAward)
+								(msnSetData missionObj 'rewardNextScreen &dsKorolovMiscRewards;)
+							)
 					)
 				))
+
+			(setq korGetPendingMiscAward (lambda () (switch
+				; We check if any reward is at state 0, which means that the
+				; reward is pending but not awarded yet
+				(= (typ@ &unidKorolovShipping; 'allSuccessInARow.3) 0)
+					'allSuccessInARow.3
+				(= (typ@ &unidKorolovShipping; 'allSuccessInARow.10) 0)
+					'allSuccessInARow.10
+				; No reward needs to be awarded
+				()
+				)))
 
 			(setq korEscortMissionCompleted (lambda (missionObj reason data)
 				(block (
 					(recordID (cat "record" (msnGetData missionObj 'escortType)))
 					(transRecord (typGetData &unidKorolovShipping; recordID))
+					;	Note that the current mission is not counted in this yet
 					(totalMissionsSuccess (count (msnFind "r +korolov; +escort; +property:isSuccess;")))
 					(totalMissionsFailed (count (msnFind "r +korolov; +escort; +property:isFailure;")))
 					(xpBonus Nil)
@@ -1837,8 +1965,11 @@
 								(typInc@ &unidKorolovShipping; 'escortSuccessCount 1) 
 								(lnkReplace transRecord 0 (+ (@ transRecord 0) 1))
 								(unvSetAchievement 'humanSpace.korolovEscort)
-								(if (and (= totalMissionsSuccess 10) (= totalMissionsFailed 0))
-									(setq xpBonus 1500)
+								(if (and (not (typ@ &unidKorolovShipping; 'allSuccessInARow.3)) (+ (geq totalMissionsSuccess 3) 1) (= totalMissionsFailed 0))
+									(typSet@ &unidKorolovShipping; 'allSuccessInARow.3 0) 
+									)
+								(if (and (not (typ@ &unidKorolovShipping; 'allSuccessInARow.10)) (+ (geq totalMissionsSuccess 10) 1) (= totalMissionsFailed 0))
+									(typSet@ &unidKorolovShipping; 'allSuccessInARow.10 0) 
 									)
 								)
 
