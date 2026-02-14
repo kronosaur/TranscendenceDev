@@ -688,10 +688,8 @@
 					;;	Note later in 2.0 this section will need to be revised for status effects 2.0
 					;;	fix HUD
 					(objChangeEquipmentStatus theShip 'SRS 'repair)
-					;;	remove radiation
-					(shpDecontaminate theShip)
-					;;	remove ionization
-					(objFixParalysis theShip)
+					;;	remove status effects
+					(objRemoveCondition theShip '*)
 					;;	remove disrupted from items
 					(objEnumItems theShip "*IV" thisItem (objSetItemProperty theShip thisItem 'disrupted ()))
 					;;	remove any overlays that get removed by respawning
@@ -703,10 +701,13 @@
 				"Restores all devices on the ship"
 				(objEnumItems theShip "*~a DIV" theItem (shpRepairItem theShip theItem))))
 
-			(setq shpRepairArmor (lambda (theShip)
-				;	Credit - adapted from Arisay Debug Toolkit
-				"Repairs all armor on the ship."
-				(intArmorRepairAll theShip 25 'alwaysRepair)))
+			(setq shpFullRestore (lambda (theFreighter) (block ()
+				(shpRestoreHull theFreighter)
+				(shpRestoreShield theFreighter)
+				(shpClearStatusEffects theFreighter)
+				(intArmorRepairAll theFreighter)
+				(intDeviceRepairAll theFreighter)
+				)))
 				
 			; String functions -------------------------------------------------
 
