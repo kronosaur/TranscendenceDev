@@ -865,7 +865,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 	CShip *pShip;
 	if (Ctx.pSystem->CreateShip(dwClass,
 			pController,
-			(m_pOverride ? m_pOverride : Ctx.pOverride),
+			(Ctx.pOverride ? Ctx.pOverride : m_pOverride),
 			pSovereign,
 			vPos,
 			NullVector,
@@ -976,9 +976,7 @@ void CSingleShip::CreateShips (SShipCreateCtx &Ctx) const
 
 	//	Figure out override
 
-	CDesignType *pOverride = Ctx.pOverride;
-	if (m_pOverride)
-		pOverride = m_pOverride;
+	CDesignType *pOverride = (Ctx.pOverride ? Ctx.pOverride : m_pOverride);
 
 	//	Figure out the creation position of the ship
 
