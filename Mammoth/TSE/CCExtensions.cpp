@@ -3214,6 +3214,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'distance      Encounter distance (light-seconds), if gate is Nil\n"
 			"   'eventHandler\n"
 			"   'gate          Gate to appear at (if Nil, use distance)\n"
+			"   'ignoreLimits  Ignore limits in ship tables\n"
 			"   'level         level (for ship tables)\n"
 			"   'returnEscorts\n"
 			"   'sovereign"
@@ -3254,6 +3255,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'controller\n"
 			"   'eventHandler\n"
+			"   'ignoreLimits     Ignore limits in ship tables\n"
 			"   'returnEscorts\n"
 			"   'target (for ship tables)\n"
 			"\n"
@@ -12953,6 +12955,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			Ctx.iDefaultOrder = (pTarget ? IShipController::orderDestroyTarget : IShipController::orderNone);
 			Ctx.iLevel = pOptions->GetIntegerAt(CONSTLIT("level"));
 			Ctx.dwFlags = dwTableFlags;
+			Ctx.bIgnoreLimits = pOptions->GetBooleanAt(CONSTLIT("ignoreLimits"));
 
 			//	Figure out where the encounter will come from
 
@@ -13657,6 +13660,7 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 	CSpaceObject *pTarget = NULL;
 	CSpaceObject *pBase = NULL;
 	int iTableLevel = 0;
+	bool bIgnoreLimits = false;
 	DWORD dwTableFlags = SShipCreateCtx::RETURN_RESULT;
 	if (pArgs->GetCount() > 3)
 		{
@@ -13691,6 +13695,7 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 				dwTableFlags |= SShipCreateCtx::RETURN_ESCORTS;
 
 			iTableLevel = pOptions->GetIntegerAt(CONSTLIT("level"));
+			bIgnoreLimits = pOptions->GetBooleanAt(CONSTLIT("ignoreLimits"));
 			}
 		else if (pArgs->GetElement(3)->IsIdentifier())
 			pController = pCtx->GetUniverse().CreateShipController(pArgs->GetElement(3)->GetStringValue());
@@ -13715,6 +13720,7 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 		CreateCtx.pOverride = pOverride;
 		CreateCtx.pTarget = pTarget;
 		CreateCtx.iLevel = iTableLevel;
+		CreateCtx.bIgnoreLimits = bIgnoreLimits;
 		CreateCtx.dwFlags = dwTableFlags;
 
 		//	Create

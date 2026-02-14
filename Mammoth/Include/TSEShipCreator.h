@@ -95,6 +95,7 @@ struct SShipCreateCtx
 	CStationType *pEncounterInfo = NULL;		//	Encounter info (may be NULL)
 	CDesignType *pOverride = NULL;				//	Override to apply to ships (may be NULL)
 	int iLevel = 0;								//	Override to apply to level tables (only if > 0)
+	bool bIgnoreLimits = false;					//	If TRUE, create even if we exceed limits
 
 	DWORD dwFlags = 0;							//	Flags
 

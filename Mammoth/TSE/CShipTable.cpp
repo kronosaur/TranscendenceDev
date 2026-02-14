@@ -748,7 +748,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 
 	//	See if we've exceeded maximum counts
 
-	if (m_iMaxCountForBase > 0)
+	if (!Ctx.bIgnoreLimits && m_iMaxCountForBase > 0)
 		{
 		int iShipsLeft = m_iMaxCountForBase;
 		for (i = 0; i < Ctx.pSystem->GetObjectCount(); i++)
@@ -771,7 +771,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 	//	If we've got a maximum, then see if we've already got too many ships of this
 	//	ship class.
 
-	if (m_iMaxCountInSystem > 0)
+	if (!Ctx.bIgnoreLimits && m_iMaxCountInSystem > 0)
 		{
 		int iMaxShips = m_iMaxCountInSystem;
 		for (i = 0; i < Ctx.pSystem->GetObjectCount(); i++)
