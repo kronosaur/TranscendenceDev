@@ -3216,6 +3216,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'gate          Gate to appear at (if Nil, use distance)\n"
 			"   'ignoreLimits  Ignore limits in ship tables\n"
 			"   'level         level (for ship tables)\n"
+			"   'levelAdj      level adjustment (if level is Nil)\n"
 			"   'returnEscorts\n"
 			"   'sovereign"
 			"   'target        Target of encounter\n",
@@ -3256,6 +3257,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'controller\n"
 			"   'eventHandler\n"
 			"   'ignoreLimits     Ignore limits in ship tables\n"
+			"   'level            level (for ship tables)\n"
+			"   'levelAdj         level adjustment (if level is Nil)\n"
 			"   'returnEscorts\n"
 			"   'target (for ship tables)\n"
 			"\n"
@@ -12942,6 +12945,13 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateError(CONSTLIT("Unknown sovereign ID"), pArg);
 				}
 
+			int iLevel = pOptions->GetIntegerAt(CONSTLIT("level"));
+			int iLevelAdj = pOptions->GetIntegerAt(CONSTLIT("levelAdj"));
+			if (iLevel == 0 && iLevelAdj != 0)
+				{
+				iLevel = max(1, pSystem->GetLevel() + iLevelAdj);
+				}
+
 			DWORD dwTableFlags = SShipCreateCtx::ATTACK_NEAREST_ENEMY | SShipCreateCtx::RETURN_RESULT;
 			if (pOptions->GetBooleanAt(CONSTLIT("returnEscorts")))
 				dwTableFlags |= SShipCreateCtx::RETURN_ESCORTS;
@@ -12953,7 +12963,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			Ctx.pTarget = pTarget;
 			Ctx.pOverride = pOverride;
 			Ctx.iDefaultOrder = (pTarget ? IShipController::orderDestroyTarget : IShipController::orderNone);
-			Ctx.iLevel = pOptions->GetIntegerAt(CONSTLIT("level"));
+			Ctx.iLevel = iLevel;
 			Ctx.dwFlags = dwTableFlags;
 			Ctx.bIgnoreLimits = pOptions->GetBooleanAt(CONSTLIT("ignoreLimits"));
 
@@ -13695,6 +13705,11 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 				dwTableFlags |= SShipCreateCtx::RETURN_ESCORTS;
 
 			iTableLevel = pOptions->GetIntegerAt(CONSTLIT("level"));
+			int iLevelAdj = pOptions->GetIntegerAt(CONSTLIT("levelAdj"));
+			if (iTableLevel == 0 && iLevelAdj != 0)
+				{
+				iTableLevel = max(1, pSystem->GetLevel() + iLevelAdj);
+				}
 			bIgnoreLimits = pOptions->GetBooleanAt(CONSTLIT("ignoreLimits"));
 			}
 		else if (pArgs->GetElement(3)->IsIdentifier())
