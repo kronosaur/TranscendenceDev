@@ -12671,7 +12671,11 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWOR
 
 	CTimedEncounterEvent::SOptions Options;
 
-	if (pArgs->GetElement(1)->IsList())
+	if (pArgs->GetElement(1)->IsNil())
+		{
+		Options.TargetList.FastAdd(pSystem->GetPlayerShip());
+		}
+	else if (pArgs->GetElement(1)->IsList())
 		{
 		for (int i = 0; i < pArgs->GetElement(1)->GetCount(); i++)
 			{
@@ -12749,6 +12753,8 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWOR
 		}
 	else if (dwData == FN_ADD_ENCOUNTER_FROM_DIST)
 		{
+		if (!pOptions->IsNumber())
+			return pCC->CreateError(CONSTLIT("Invalid distance"), pOptions);
 		int iDistance =	pOptions->GetIntegerValue();
 		Options.rDistance = iDistance * LIGHT_SECOND;
 		}
