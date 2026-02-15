@@ -3099,7 +3099,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"options:\n\n"
 
 			"   'distance      Encounter distance (light-seconds)\n"
-			"   'gate          Gate to appear at (if distance Nil or 0)\n",
+			"   'eventHandler\n"
+			"   'gate          Gate to appear at (if distance Nil or 0)\n"
+			"   'ignoreLimits  Ignore limits in ship tables\n"
+			"   'level         level (for ship tables)\n"
+			"   'levelAdj      level adjustment (if level is Nil)\n"
+			"   'sovereign",
 
 			"iviv",	PPFLAG_SIDEEFFECTS,	},
 
@@ -3112,7 +3117,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"options:\n\n"
 
 			"   'distance      Encounter distance (light-seconds)\n"
-			"   'gate          Gate to appear at (if distance Nil or 0)\n",
+			"   'eventHandler\n"
+			"   'gate          Gate to appear at (if distance Nil or 0)\n"
+			"   'ignoreLimits  Ignore limits in ship tables\n"
+			"   'level         level (for ship tables)\n"
+			"   'levelAdj      level adjustment (if level is Nil)\n"
+			"   'sovereign",
 
 			"iviv",	PPFLAG_SIDEEFFECTS,	},
 
@@ -12651,6 +12661,10 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWOR
 	CCodeChain *pCC = pEvalCtx->pCC;
 	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 
+	CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
+	if (pSystem == NULL)
+		return StdErrorNoSystem(*pCC);
+
 	//	Arguments
 
 	int iTime = pArgs->GetElement(0)->GetIntegerValue();
@@ -12691,21 +12705,47 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWOR
 	ICCItem *pOptions = pArgs->GetElement(3);
 	if (pOptions->IsSymbolTable())
 		{
-		if (ICCItem *pValue = pOptions->GetElement(CONSTLIT("distance")))
+		ICCItem *pValue;
+		if (pValue = pOptions->GetElement(CONSTLIT("distance")))
 			{
 			Options.rDistance = Max(0.0, pValue->GetIntegerValue() * LIGHT_SECOND);
 			}
 
-		if (ICCItem* pValue = pOptions->GetElement(CONSTLIT("gate")))
+		if (pValue = pOptions->GetElement(CONSTLIT("gate")))
 			{
 			if (::GetPosOrObject(pEvalCtx, pValue, &Options.vPos, &Options.pGate) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Invalid pos"), pValue);
 			}
-		else if (ICCItem *pValue = pOptions->GetElement(CONSTLIT("pos")))
+		else if (pValue = pOptions->GetElement(CONSTLIT("pos")))
 			{
 			if (::GetPosOrObject(pEvalCtx, pValue, &Options.vPos, &Options.pGate) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Invalid pos"), pValue);
 			}
+
+		if (pValue = pOptions->GetElement(CONSTLIT("eventHandler")))
+			{
+			Options.pOverride = pCtx->GetUniverse().FindDesignType(pValue->GetIntegerValue());
+			if (Options.pOverride == NULL)
+				return pCC->CreateError(CONSTLIT("Unknown event handler"), pValue);
+			}
+
+		if (pValue = pOptions->GetElement(CONSTLIT("sovereign")))
+			{
+			Options.pSovereign = pCtx->GetUniverse().FindSovereign(pValue->GetIntegerValue());
+			if (Options.pSovereign == NULL)
+				return pCC->CreateError(CONSTLIT("Unknown sovereign ID"), pValue);
+			}
+
+		int iLevel = pOptions->GetIntegerAt(CONSTLIT("level"));
+		int iLevelAdj = pOptions->GetIntegerAt(CONSTLIT("levelAdj"));
+		if (iLevel == 0 && iLevelAdj != 0)
+			{
+			iLevel = max(1, pSystem->GetLevel() + iLevelAdj);
+			}
+		Options.iLevel = iLevel;
+
+		Options.bIgnoreLimits = pOptions->GetBooleanAt(CONSTLIT("ignoreLimits"));
+
 		}
 	else if (dwData == FN_ADD_ENCOUNTER_FROM_DIST)
 		{
@@ -12719,10 +12759,6 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWOR
 		}
 	
 	//	Create the event
-
-	CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
-	if (pSystem == NULL)
-		return StdErrorNoSystem(*pCC);
 
 	CTimedEncounterEvent *pEvent = new CTimedEncounterEvent(pSystem->GetTick() + iTime,
 			dwEncounterID,

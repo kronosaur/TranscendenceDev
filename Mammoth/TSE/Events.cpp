@@ -133,7 +133,11 @@ CTimedEncounterEvent::CTimedEncounterEvent (int iTick, DWORD dwEncounterTableUNI
 		m_dwEncounterTableUNID(dwEncounterTableUNID),
 		m_pGate(Options.pGate),
 		m_vPos(Options.vPos),
-		m_rDistance(Options.rDistance)
+		m_rDistance(Options.rDistance),
+		m_pSovereign(Options.pSovereign),
+		m_pOverride(Options.pOverride),
+		m_iLevel(Options.iLevel),
+		m_bIgnoreLimits(Options.bIgnoreLimits)
 
 //	CTimedEncounterEvent constructor
 
@@ -149,6 +153,7 @@ CTimedEncounterEvent::CTimedEncounterEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)
 //	CTimedEvencounterEvent constructor
 
 	{
+	DWORD dwLoad;
 	Ctx.pStream->Read(m_dwEncounterTableUNID);
 
 	if (Ctx.dwVersion >= 166)
@@ -161,6 +166,21 @@ CTimedEncounterEvent::CTimedEncounterEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)
 
 	if (Ctx.dwVersion >= 161)
 		m_vPos.ReadFromStream(*Ctx.pStream);
+
+	if (Ctx.dwVersion >= 220)
+		{
+		CSystem::ReadSovereignRefFromStream(Ctx, &m_pSovereign);
+
+		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		if (dwLoad != 0)
+			m_pOverride = Ctx.GetUniverse().FindDesignType(dwLoad);
+
+		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		m_iLevel = dwLoad;
+
+		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		m_bIgnoreLimits = dwLoad & 0x00000001;
+		}
 	}
 
 CVector CTimedEncounterEvent::CalcEncounterPos (CSpaceObject *pTarget, Metric rDistance) const
@@ -213,7 +233,11 @@ void CTimedEncounterEvent::DoEvent (DWORD dwTick, CSystem &System)
 
 	SShipCreateCtx Ctx;
 	Ctx.pSystem = &System;
+	Ctx.pSovereign = m_pSovereign;
 	Ctx.pTarget = pTarget;
+	Ctx.pOverride = m_pOverride;
+	Ctx.iLevel = m_iLevel;
+	Ctx.bIgnoreLimits = m_bIgnoreLimits;
 	Ctx.dwFlags = SShipCreateCtx::ATTACK_NEAREST_ENEMY;
 
 	//	Figure out where the encounter will come from
@@ -299,11 +323,20 @@ void CTimedEncounterEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStr
 //	CVector				m_vPos
 
 	{
+	DWORD dwSave;
 	pStream->Write(m_dwEncounterTableUNID);
 	m_Targets.WriteToStream(pStream);
 	CSystem::WriteObjRefToStream(*pStream, m_pGate);
 	pStream->Write(m_rDistance);
 	m_vPos.WriteToStream(*pStream);
+	CSystem::WriteSovereignRefToStream(m_pSovereign, pStream);
+	dwSave = (m_pOverride ? m_pOverride->GetUNID() : 0);
+	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	dwSave = m_iLevel;
+	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	dwSave = 0;
+	dwSave |= (m_bIgnoreLimits ? 0x00000001 : 0);
+	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	}
 
 //	CTimedCustomEvent class --------------------------------------------------

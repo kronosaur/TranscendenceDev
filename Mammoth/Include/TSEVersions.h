@@ -1939,4 +1939,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 // 
 //  220: 2.0 Alpha 9
 //		Add m_iDefaultFireAngle to CInstalledDevice
+//		Add m_pSovereign to CTimedEncounterEvent
+//		Add m_pOverride to CTimedEncounterEvent
+//		Add m_iLevel to CTimedEncounterEvent
+//		Add m_bIgnoreLimits to CTimedEncounterEvent
 //
