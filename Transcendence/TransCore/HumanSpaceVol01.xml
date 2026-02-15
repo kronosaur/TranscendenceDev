@@ -2304,6 +2304,7 @@
 	<!ENTITY itMediumIthaliumArmor		"0x001004D1">
 	<!ENTITY itMassiveIthaliumArmor		"0x001004D2">
 	<!ENTITY itKM170Missile				"0x001004D3">
+	<!ENTITY itDartTurret				"0x001004D4">
 
 	<!-- 04F0-050F TAIKON CORPORATION -->
 
@@ -2562,6 +2563,10 @@
 	<!-- 0860-087F HERETIC SYSTEM -->
 
 	<!ENTITY rsHereticMissionTile			"0x00100860">
+
+	<!-- 0880-089F EI: EARTH INDUSTRIES CONGLOMERATE -->
+
+	<!ENTITY itAlpha1LaserTurret			"0x00100880">
 
 	<!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>

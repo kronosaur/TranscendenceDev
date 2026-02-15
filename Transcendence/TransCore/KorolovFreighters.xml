@@ -19,10 +19,10 @@
 		
 		<Devices>
 			<Table>
-				<Group chance="35">
+				<Group chance="25">
 					<Device slotID="fore_turret"	deviceID="&itRecoillessCannon;"/>
 				</Group>
-				<Group chance="30">
+				<Group chance="20">
 					<Device slotID="fore_turret"	deviceID="&itLightRecoillessCannon;"/>
 					<Device item="&itArmorRepairDevice;"/>
 				</Group>
@@ -34,6 +34,14 @@
 				</Group>
 				<Group chance="10">
 					<Device slotID="fore_turret"	deviceID="&itHeavyRecoillessCannon;"/>
+				</Group>
+				<Group chance="10">
+					<Device slotID="fore_turret"	deviceID="&itDartTurret;"/>
+					<Device item="&itArmorRepairDevice;"/>
+				</Group>
+				<Group chance="10">
+					<Device slotID="fore_turret"	deviceID="&itAlpha1LaserTurret;"/>
+					<Device item="&itArmorRepairDevice;"/>
 				</Group>
 			</Table>
 
@@ -658,8 +666,10 @@
 
 		<Devices>
 			<Table>
-				<Device chance="50" slotID="main1" deviceID="&itMoskvaLightTurret;"/>
+				<Device chance="20" slotID="main1" deviceID="&itMoskvaLightTurret;"/>
 				<Device chance="50" slotID="main1" deviceID="&itOmniLaserCannon;"/>
+				<Device chance="15" slotID="main1" deviceID="&itAlpha1LaserTurret;"/>
+				<Device chance="15" slotID="main1" deviceID="&itDartTurret;"/>
 			</Table>
 			<Device slotID="cargo" deviceID="&itCargoHoldExpansion;"/>
 			<Table>
