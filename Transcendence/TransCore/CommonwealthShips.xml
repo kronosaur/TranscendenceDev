@@ -158,6 +158,10 @@
 				</EnhancementAbilities>
 			</DeviceSlot>
 			<DeviceSlot id="cargo"			criteria="c" cannotBeEmpty="true"/>
+
+			<DeviceSlot id="shipSystems"		criteria="dV +shipSystems"	cannotBeEmpty="true"/>
+
+			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
 		</DeviceSlots>
 
 		<Interior>
@@ -632,6 +636,10 @@
 				</EnhancementAbilities>
 			</DeviceSlot>
 			<DeviceSlot id="cargo"			criteria="c" cannotBeEmpty="true"/>
+
+			<DeviceSlot id="shipSystems"		criteria="dV +shipSystems"	cannotBeEmpty="true"/>
+
+			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
 		</DeviceSlots>
 
 		<Interior>
@@ -1505,6 +1513,8 @@
 				</EnhancementAbilities>
 			</DeviceSlot>
 			<DeviceSlot id="cargo"			criteria="c" cannotBeEmpty="true"/>
+
+			<DeviceSlot id="shipSystems"		criteria="dV +shipSystems"	cannotBeEmpty="true"/>
 		</DeviceSlots>
 
 		<Interior>
@@ -1545,6 +1555,8 @@
 			<Device slotID="aft_turret"		deviceID="&itSlamCannon;"/>
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+
+			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
 		</Devices>
 
 		<Items>
@@ -2705,7 +2717,12 @@
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
 			<Device deviceID="&itMissileDefense;"/>
 
-			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
+			<Table>
+				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>
+				<Device slotID="shipSystems"	chance="15" deviceID="&vtShipSystems250;"/>
+				<Device slotID="shipSystems"	chance="10" deviceID="&vtShipSystems125;"/>
+				<Device slotID="shipSystems"	chance="25" deviceID="&vtShipSystems150;"/>
+			</Table>
 		</Devices>
 
 		<!-- AI and Behavior -->

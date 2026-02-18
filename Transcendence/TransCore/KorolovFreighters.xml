@@ -46,6 +46,13 @@
 			</Table>
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+
+			<Table>
+				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>
+				<Device slotID="shipSystems"	chance="15" deviceID="&vtShipSystems250;"/>
+				<Device slotID="shipSystems"	chance="10" deviceID="&vtShipSystems125;"/>
+				<Device slotID="shipSystems"	chance="25" deviceID="&vtShipSystems150;"/>
+			</Table>
 		</Devices>
 
 		<Items>
@@ -54,7 +61,6 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"20"
 			fireAccuracy=		"90"
 			perception=			"4"
 			combatStyle=		"standOff"
@@ -163,6 +169,13 @@
 			</Table>
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+
+			<Table>
+				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>
+				<Device slotID="shipSystems"	chance="15" deviceID="&vtShipSystems250;"/>
+				<Device slotID="shipSystems"	chance="10" deviceID="&vtShipSystems125;"/>
+				<Device slotID="shipSystems"	chance="25" deviceID="&vtShipSystems150;"/>
+			</Table>
 		</Devices>
 
 		<Items>
@@ -171,7 +184,6 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"20"
 			fireAccuracy=		"90"
 			perception=			"4"
 			combatStyle=		"standOff"
@@ -280,6 +292,13 @@
 			</Table>
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+
+			<Table>
+				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>
+				<Device slotID="shipSystems"	chance="15" deviceID="&vtShipSystems250;"/>
+				<Device slotID="shipSystems"	chance="10" deviceID="&vtShipSystems125;"/>
+				<Device slotID="shipSystems"	chance="25" deviceID="&vtShipSystems150;"/>
+			</Table>
 		</Devices>
 
 		<Items>
@@ -288,7 +307,6 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"20"
 			fireAccuracy=		"90"
 			perception=			"4"
 			combatStyle=		"standOff"
