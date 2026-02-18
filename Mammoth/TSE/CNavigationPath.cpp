@@ -48,6 +48,7 @@ int CNavigationPath::ComputePath (CSystem *pSystem, CSovereign *pSovereign, cons
 		{
 		CSpaceObject *pObj = pSystem->GetObject(i);
 		CSovereign *pObjSovereign;
+		const CStationType *pEncounterType;
 
 		if (pObj == NULL)
 			NULL;
@@ -55,10 +56,12 @@ int CNavigationPath::ComputePath (CSystem *pSystem, CSovereign *pSovereign, cons
 					|| ((pObj->GetScale() == scaleShip) && (pObj->GetVel().Length2() < MIN_SPEED2)))
 				&& (pObjSovereign = pObj->GetSovereign())
 				&& (pObjSovereign->IsEnemy(pSovereign))
-				&& pObj->CanAttack())
+				&& pObj->CanAttack()
+				&& (pEncounterType = pObj->GetEncounterInfo()))
 			{
-			CVector vUR = pObj->GetPos() + CVector(MAX_SAFE_DIST, MAX_SAFE_DIST);
-			CVector vLL = pObj->GetPos() - CVector(MAX_SAFE_DIST, MAX_SAFE_DIST);
+			Metric dist = pEncounterType->GetEncounterDesc().GetEnemyExclusionRadius();
+			CVector vUR = pObj->GetPos() + CVector(dist, dist);
+			CVector vLL = pObj->GetPos() - CVector(dist, dist);
 
 			//	Only add obstacles if start and end are outside the obstacle
 
@@ -68,8 +71,8 @@ int CNavigationPath::ComputePath (CSystem *pSystem, CSovereign *pSovereign, cons
 			}
 		else if (pObj->HasGravity())
 			{
-			CVector vUR = pObj->GetPos() + CVector(MAX_SAFE_DIST, MAX_SAFE_DIST);
-			CVector vLL = pObj->GetPos() - CVector(MAX_SAFE_DIST, MAX_SAFE_DIST);
+			CVector vUR = pObj->GetPos() + CVector(2*MAX_SAFE_DIST, 2*MAX_SAFE_DIST);
+			CVector vLL = pObj->GetPos() - CVector(2*MAX_SAFE_DIST, 2*MAX_SAFE_DIST);
 
 			//	Only add obstacles if start and end are outside the obstacle
 
