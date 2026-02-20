@@ -153,12 +153,10 @@ int CAStarPathFinder::CalcHeuristic (const CVector &vPos, const CVector &vDest)
 	return (int)(vDist.Length() / LIGHT_SECOND);
 	}
 
-void CAStarPathFinder::CollapsePath (TArray<SNode *> &Path, int iStart, int iEnd)
-
 //	CollapsePath
 //
 //	Removes superflous nodes in Path
-
+void CAStarPathFinder::CollapsePath (TArray<SNode *> &Path, int iStart, int iEnd)
 	{
 	if (iEnd <= iStart + 1)
 		return;
@@ -171,7 +169,7 @@ void CAStarPathFinder::CollapsePath (TArray<SNode *> &Path, int iStart, int iEnd
 		{
 		int iMidPoint = iStart + (iEnd - iStart) / 2;
 		CollapsePath(Path, iStart, iMidPoint);
-		CollapsePath(Path, iMidPoint + 1, iEnd);
+		CollapsePath(Path, iMidPoint, iEnd);
 		}
 	}
 
