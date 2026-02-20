@@ -11,7 +11,8 @@ class CAStarPathFinder
 		CAStarPathFinder (void);
 		~CAStarPathFinder (void);
 
-		void AddObstacle (const CVector &vUR, const CVector &vLL);
+		void AddObstacle (const CVector &vPos, const Metric &rSize);
+		void AddBarrier (const CVector &vUR, const CVector &vLL);
 		int FindPath (const CVector &vStart, const CVector &vEnd, CVector **retPathList, bool bTryReverse = true);
 #ifdef DEBUG_ASTAR_PATH
 		const TArray<CVector> &GetDebugPointsChecked (void) const { return m_PointsChecked; }
@@ -21,6 +22,11 @@ class CAStarPathFinder
 
 	private:
 		struct SObstacle
+			{
+			CVector vPos;
+			Metric rSize;
+			};
+		struct SBarrier
 			{
 			CVector vUR;
 			CVector vLL;
@@ -59,6 +65,7 @@ class CAStarPathFinder
 		void DeleteList (SNodeRoot &pRoot);
 
 		TArray<SObstacle> m_Obstacles;
+		TArray<SBarrier> m_Barriers;
 		SNodeRoot m_pOpenList;
 		SNodeRoot m_pClosedList;
 		CTileMap *m_pClosedMap;

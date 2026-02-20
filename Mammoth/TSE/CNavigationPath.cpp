@@ -67,7 +67,7 @@ int CNavigationPath::ComputePath (CSystem *pSystem, CSovereign *pSovereign, cons
 
 			if (!IntersectRect(vUR, vLL, vFrom)
 					&& !IntersectRect(vUR, vLL, vTo))
-				AStar.AddObstacle(vUR, vLL);
+				AStar.AddObstacle(pObj->GetPos(), dist);
 			}
 		else if (pObj->HasGravity())
 			{
@@ -78,7 +78,7 @@ int CNavigationPath::ComputePath (CSystem *pSystem, CSovereign *pSovereign, cons
 
 			if (!IntersectRect(vUR, vLL, vFrom)
 					&& !IntersectRect(vUR, vLL, vTo))
-				AStar.AddObstacle(vUR, vLL);
+				AStar.AddObstacle(pObj->GetPos(), 2*MAX_SAFE_DIST);
 			}
 		else if (pObj->BlocksShips())
 			{
@@ -97,7 +97,7 @@ int CNavigationPath::ComputePath (CSystem *pSystem, CSovereign *pSovereign, cons
 
 			if (!IntersectRect(vUR, vLL, vFrom)
 					&& !IntersectRect(vUR, vLL, vTo))
-				AStar.AddObstacle(vUR, vLL);
+				AStar.AddBarrier(vUR, vLL);
 			}
 		}
 
