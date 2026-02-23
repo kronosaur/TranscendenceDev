@@ -1056,6 +1056,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					221;
 //					;;ShipClass
 //						'maxArmorSize			returns max armor size in CBM as a string
 //						'maxArmorMass			DEPRECATED: use maxArmorSize instead (returns same value multiplied by 1000)
+//		XML Entities:
+//			Added built-in entities for all printable windows western x80-xFF characters
+//				See Alchemy/Kernel/CHTML.cpp for exact entities that are available
+//				References:
+//					Windows western encoding: https://en.wikipedia.org/wiki/Windows-1252
+//					XML built-in entities: https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references
 //		<AdventureDesc>
 //			<Properties>
 //				<Constant id="core.item.xmlMassToRealVolume">	1.0</Constant>
