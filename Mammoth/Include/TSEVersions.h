@@ -1051,7 +1051,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					221;
 //					level			Perform ShipTable lookups using the speficied level (instead of system level)
 //					levelAdj		Perform ShipTable lookups using system level + levelAdj
 //					ignoreLimits	Ignore any ship limits in ShipTable lookups
->>>>>>> integration/API59
 //			(typGetDataField type field)
 //				New and updated fields
 //					;;ItemType
