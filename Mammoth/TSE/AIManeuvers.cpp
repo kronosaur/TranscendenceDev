@@ -2001,8 +2001,7 @@ void CAIBehaviorCtx::ImplementFollowNavPath (CShip *pShip, bool *retbAtDestinati
 		Metric rTurnRate = Rotation.GetMaxRotationPerTick();
 		Metric rTurnAccel = min(Rotation.GetRotationAccelPerTick(), Rotation.GetRotationAccelPerTick());
 		Metric rMinDistAdj = max(1.0, 0.2 / rTWR);
-		rMinDistAdj *= max(1.0, 1 / rTurnRate);
-		rMinDistAdj *= max(1.0, 0.5 * rTurnRate / rTurnAccel);
+		rMinDistAdj *= max(1.0, 0.5 / rTurnAccel);
 		rMinDistAdj = min(rMinDistAdj, 20.0);
 
 		Metric rMinDistAdj2 = rMinDistAdj * rMinDistAdj;
