@@ -2981,9 +2981,12 @@ CString Kernel::strRomanNumeral (int i)
 double Kernel::strToDouble (const CString &sString, double rFailResult, bool *retbFailed)
 
 	{
-	//	strtod handles hexadecimal natively as well
-
-	char *pPos = sString.GetASCIIZPointer();
+	//	strtod handles hexadecimal natively, so we dont need to do that separately
+	//	strtod needs whitespace to be removed first though, since atod handled that
+	//	this avoids breaking old mods that have values such as thrustRatio="1.0 "
+	
+	CString sCleanStr = strTrimWhitespace(sString);
+	char *pPos = sCleanStr.GetASCIIZPointer();
 
 	char *pStop = NULL;
 	errno = 0;
