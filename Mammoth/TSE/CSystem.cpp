@@ -1092,7 +1092,7 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 		CreateCtx.pSystem = this;
 		CreateCtx.pGate = pExitGate;
 		CreateCtx.vPos = vPos;
-		CreateCtx.pBaseSovereign = pSovereign;
+		CreateCtx.pSovereign = pSovereign;
 		CreateCtx.pEncounterInfo = NULL;
 		CreateCtx.pOverride = pOverride;
 		CreateCtx.dwFlags = SShipCreateCtx::RETURN_RESULT;
