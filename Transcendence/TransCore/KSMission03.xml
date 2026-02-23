@@ -19,7 +19,7 @@
 
 	leaderLost:		True if the squadron leader is destroyed
 	betrayal:		True if the player kills the squadron leader
-	noHelp:			True if the player didnot help (more than 300 ls away when station destroyed)
+	noHelp:			True if the player did not help (more than 300 ls away when station destroyed)
 	commend:		True if the player destroyed the stronghold
 
 	alreadyDeclined:	True if the player has seen the initial DeclineReply

@@ -34,7 +34,7 @@
 				damage=				"blast:4d6; momentum4; WMD5"
 				fireRate=			"30"
 				hitPoints=			"20"
-				lifetime=			"90"
+				range=				"108"
 				powerUse=			"1"
 				charges=			"true"
 
@@ -57,7 +57,7 @@
 	<!-- Laser Cannon -->
 
 	<ItemType UNID="&itLaserCannon;"
-			name=				"laser cannon"
+			name=				"Alpha-3 laser cannon"
 			attributes=			"commonwealth, EI, energyWeapon, majorItem"
 			  
 			level=				"1"
@@ -74,7 +74,7 @@
 		<Weapon
 				type=				"beam"
 
-				damage=				"laser:1d4"
+				damage=				"laser:1-4"
 				fireRate=			"10"
 				range=				"60"
 				powerUse=			"10"
@@ -85,10 +85,42 @@
 		</Weapon>
 	</ItemType>
 
+	<!-- Alpha I Laser Blaster -->
+
+	<ItemType UNID="&itAlpha1LaserTurret;"
+			name=				"Alpha-1 blaster turret"
+			attributes=			"commonwealth, EI, energyWeapon, majorItem"
+			  
+			level=				"1"
+			frequency=			"veryRare"
+
+			value=				"250"
+			mass=				"500"
+			  
+			description=		"Earth Industries' original Alpha-1 blaster turret predates the Syrtis War. The design is so simple that enthusiasts of kit-built spacecraft still fabricate new ones today."
+			>
+
+		<Image imageID="&rsItemsEI1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"beam"
+
+				omnidirectional=	"true"
+				damage=				"laser:1"
+				fireRate=			"10"
+				range=				"60"
+				powerUse=			"5"
+
+				effect=				"&efLaserBeamDefault;"
+				sound=				"&snLaserCannon;"
+				>
+		</Weapon>
+	</ItemType>
+
 	<!-- Recoilless Cannon -->
 
 	<ItemType UNID="&itRecoillessCannon;"
-			name=				"recoilless cannon"
+			name=				"AK4 Spear cannon"
 			attributes=			"commonwealth, majorItem, NAMI"
 			  
 			level=				"1"
@@ -97,7 +129,7 @@
 			value=				"340"
 			mass=				"2500"
 			  
-			description=		"Recoilless cannons are slower than the ubiquitous laser cannon but pack a bigger punch."
+			description=		"NAMI's line of recoilless cannons shoot rounds that pack a bigger punch than competing Earth Industries laser cannons, but are considerably slower."
 			>
 
 		<Image imageID="&rsItemsNAMI1;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
@@ -105,10 +137,10 @@
 		<Weapon
 				type=				"missile"
 
-				damage=				"kinetic:1d6+1; momentum1"
+				damage=				"kinetic:4-5; momentum1"
 				fireRate=			"15"
 				missileSpeed=		"40"
-				lifetime=			"60"
+				range=				"48"
 				powerUse=			"10"
 				
 				effect=				"&efKineticBoltDefault;"
@@ -120,16 +152,16 @@
 	<!-- Light Recoilless Cannon -->
 
 	<ItemType UNID="&itLightRecoillessCannon;"
-			name=				"light recoilless cannon"
-			attributes=			"commonwealth, majorItem, NAMI, notForSale"
+			name=				"AK3 Crossbow cannon"
+			attributes=			"commonwealth, majorItem, NAMI"
 			  
 			level=				"1"
-			frequency=			"rare"
+			frequency=			"veryRare"
 
 			value=				"270"
 			mass=				"2000"
 			  
-			description=		"This specialized version of the recoilless cannon shoots lighter projectiles but has a higher fire rate."
+			description=		"The AK3 Crossbow uses the same projectiles as the AK2 Dart, but the weapon was improved to fire faster."
 			>
 
 		<Image imageID="&rsItemsNAMI1;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
@@ -137,11 +169,44 @@
 		<Weapon
 				type=				"missile"
 
-				damage=				"kinetic:1d3+1; momentum1"
+				damage=				"kinetic:2-4; momentum1"
 				fireRate=			"10"
 				missileSpeed=		"40"
-				lifetime=			"40"
+				range=				"32"
 				powerUse=			"11"
+
+				effect=				"&efKineticBoltDefault;"
+				sound=				"&snRecoillessCannon;"
+				>
+		</Weapon>
+	</ItemType>
+
+	<!-- AK2 Dart Turret -->
+
+	<ItemType UNID="&itDartTurret;"
+			name=				"AK2 Dart turret"
+			attributes=			"commonwealth, majorItem, NAMI"
+			  
+			level=				"1"
+			frequency=			"veryRare"
+
+			value=				"270"
+			mass=				"4000"
+			  
+			description=		"This venerable old turret was an updated design of the weapon used to protect Savannah-class colony ships in the 2100s."
+			>
+
+		<Image imageID="&rsItemsNAMI3;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				omnidirectional=	"true"
+				damage=				"kinetic:2-4; momentum1"
+				fireRate=			"20"
+				missileSpeed=		"40"
+				range=				"32"
+				powerUse=			"15"
 
 				effect=				"&efKineticBoltDefault;"
 				sound=				"&snRecoillessCannon;"
