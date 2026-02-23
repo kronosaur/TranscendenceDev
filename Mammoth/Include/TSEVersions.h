@@ -1030,7 +1030,13 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 //						this is purely for supporting legacy math operations that expected kg
 //					'cargoSpaceUsedKg		DEPRECATED: Used cargo space in liters, int (NOT kg)
 //						this is purely for supporting legacy cargo math that needs it in liters to check if items will fit
+//					'maxArmorClass			LEGACY SUPPORT: Maximum armor class in "compatibility tons" (double)
+//					'maxArmorClassName		Name of the maximum armor class
+//					'maxArmorMass			DEPRECATED: use maxArmorClassName instead (or maxArmorClass if you need to support legacy ships)
 //					'maxCargoSpace			Total cargo space in cubic meters (previously tons)
+//					'stdArmorClass			LEGACY SUPPORT: Standard armor class in "compatibility tons" (double)
+//					'stdArmorClassName		Name of the standard armor class
+//					'stdArmorMass			DEPRECATED: use stdArmorClassName instead (or stdArmorClass if you need to support legacy ships)
 //			(objGetCargoSpaceLeft obj)
 //				DEPRECATED: returns cargo space in liters, for compatibility math. Name implies returning in cubic meters though.
 //			(typGetDataField type field)
@@ -1098,9 +1104,20 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 //			<Hull>
 //				cargoSpace: now specifies CBM instead of tons
 //					If <API59, always uses the adventure compatibility mappings
+//				maxArmor: deprecated
+//				maxArmorClass:
+//					Not recommended (use <ArmorLimit .../> instead)
+//					Provides same functionality as maxArmor, but allows specifying
+//					non-classed armor sizes in floating point "compatibility tons",
+//					rather than in integer kg.
 //				maxCargoSpace: now specifies CBM instead of tons
 //					If <API59, always uses the adventure compatibility mappings
-//				stdArmorMass: deprecated
+//				stdArmor: deprecated
+//				stdArmorClass:
+//					Not recommended (use <ArmorLimit .../> instead)
+//					Provides same functionality as stdArmor, but allows specifying
+//					non-classed armor sizes in floating point "compatibility tons",
+//					rather than in integer kg.
 //			<DeviceSlots>
 //				<DeviceSlot>
 //					fireAngle: if used with minFireArc and maxFireArc or omnidirectional, can now specify a default angle of fire
