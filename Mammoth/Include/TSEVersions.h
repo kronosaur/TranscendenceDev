@@ -1042,7 +1042,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					221;
 //			(randomGaussian low [mid] high)
 //				Returns double if any argument is a double
 //				Now has a 2-arg form which uses the midpoint of low and high
-=======
 //			(sysAddEncounterEvent / sysAddEncounterEventAtDist / sysCreateEncounter / sysCreateShip)
 //				All Encounter functions updated to accept options struct consistent with sysCreateShip
 //				Corrections to Encounter functions to match behavior to documentation and sysCreateShip
