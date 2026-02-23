@@ -50,17 +50,26 @@ CAStarPathFinder::~CAStarPathFinder (void)
 	delete m_pClosedMap;
 	}
 
-void CAStarPathFinder::AddObstacle (const CVector &vUR, const CVector &vLL)
-
 //	AddObstacle
 //
-//	Adds an obstacle
-
+//	Adds a circular obstacle
+void CAStarPathFinder::AddObstacle (const CVector &vPos, const Metric &rSize)
 	{
 	SObstacle *pObstacle = m_Obstacles.Insert();
-	pObstacle->vLL = vLL;
-	pObstacle->vUR = vUR;
+	pObstacle->vPos = vPos;
+	pObstacle->rSize = rSize;
 	}
+
+//	AddBarrier
+//
+//	Adds a rectangular barrier (wall) obstacle
+void CAStarPathFinder::AddBarrier (const CVector &vUR, const CVector &vLL)
+	{
+	SBarrier *pBarrier = m_Barriers.Insert();
+	pBarrier->vLL = vLL;
+	pBarrier->vUR = vUR;
+	}
+
 
 void CAStarPathFinder::AddToClosedList (SNode *pNew)
 
@@ -144,12 +153,10 @@ int CAStarPathFinder::CalcHeuristic (const CVector &vPos, const CVector &vDest)
 	return (int)(vDist.Length() / LIGHT_SECOND);
 	}
 
-void CAStarPathFinder::CollapsePath (TArray<SNode *> &Path, int iStart, int iEnd)
-
 //	CollapsePath
 //
 //	Removes superflous nodes in Path
-
+void CAStarPathFinder::CollapsePath (TArray<SNode *> &Path, int iStart, int iEnd)
 	{
 	if (iEnd <= iStart + 1)
 		return;
@@ -162,7 +169,7 @@ void CAStarPathFinder::CollapsePath (TArray<SNode *> &Path, int iStart, int iEnd
 		{
 		int iMidPoint = iStart + (iEnd - iStart) / 2;
 		CollapsePath(Path, iStart, iMidPoint);
-		CollapsePath(Path, iMidPoint + 1, iEnd);
+		CollapsePath(Path, iMidPoint, iEnd);
 		}
 	}
 
@@ -382,12 +389,10 @@ bool CAStarPathFinder::IsInClosedList (int x, int y)
 	return (dwFlags & MAP_NODE_CLOSED_FLAG ? true : false);
 	}
 
-bool CAStarPathFinder::IsPathClear (const CVector &vStart, const CVector &vEnd)
-
 //	IsPathClear
 //
 //	Returns TRUE if the straight path from vStart to vEnd is unobstructed
-
+bool CAStarPathFinder::IsPathClear (const CVector &vStart, const CVector &vEnd)
 	{
 	int i;
 
@@ -397,29 +402,63 @@ bool CAStarPathFinder::IsPathClear (const CVector &vStart, const CVector &vEnd)
 
 	//	Check to see if the line intersects any of the obstacles
 
+	//	We are comparing many obstacles against a single path, so precalcualte the transformation
+	Metric rLength;
+	CVector vPath = (vEnd - vStart).Normal(&rLength);
+	CVector vPerp = vPath.Perpendicular();
+
 	for (i = 0; i < m_Obstacles.GetCount(); i++)
 		{
-		if (LineIntersectsRect(vStart, vEnd, m_Obstacles[i].vUR, m_Obstacles[i].vLL))
+		CVector vRelPos = m_Obstacles[i].vPos - vStart;
+		Metric rX = vPath.Dot(vRelPos);		// Distance along the path
+		Metric rY = vPerp.Dot(vRelPos);		// Distance from the path
+
+		if (abs(rY) > m_Obstacles[i].rSize || rX < -m_Obstacles[i].rSize || rX > rLength + m_Obstacles[i].rSize)
+			continue;
+
+		if (rX < 0.0)
+			{
+			if (rX * rX + rY * rY < m_Obstacles[i].rSize * m_Obstacles[i].rSize)
+				return false;
+			}
+		else if (rX > rLength)
+			{
+			rX = rX - rLength;
+			if (rX * rX + rY * rY < m_Obstacles[i].rSize * m_Obstacles[i].rSize)
+				return false;
+			}
+		else
+			return false;
+		}
+
+	for (i = 0; i < m_Barriers.GetCount(); i++)
+		{
+		if (LineIntersectsRect(vStart, vEnd, m_Barriers[i].vUR, m_Barriers[i].vLL))
 			return false;
 		}
 
 	return true;
 	}
 
-bool CAStarPathFinder::IsPointClear (const CVector &vPos)
-
 //	IsPointClear
 //
 //	Returns TRUE if the point is clear (not in an obstacle)
-
+bool CAStarPathFinder::IsPointClear (const CVector &vPos)
 	{
 	int i;
 
-	//	Check to see if the line intersects any of the obstacles
-
 	for (i = 0; i < m_Obstacles.GetCount(); i++)
 		{
-		if (IntersectRect(m_Obstacles[i].vUR, m_Obstacles[i].vLL, vPos))
+		Metric rDist = (vPos - m_Obstacles[i].vPos).Length2();
+		if (rDist < m_Obstacles[i].rSize * m_Obstacles[i].rSize)
+			return false;
+		}
+
+	//	Check to see if the line intersects any of the obstacles
+
+	for (i = 0; i < m_Barriers.GetCount(); i++)
+		{
+		if (IntersectRect(m_Barriers[i].vUR, m_Barriers[i].vLL, vPos))
 			return false;
 		}
 

@@ -48,6 +48,7 @@ int CNavigationPath::ComputePath (CSystem *pSystem, CSovereign *pSovereign, cons
 		{
 		CSpaceObject *pObj = pSystem->GetObject(i);
 		CSovereign *pObjSovereign;
+		const CStationType *pEncounterType;
 
 		if (pObj == NULL)
 			NULL;
@@ -55,27 +56,27 @@ int CNavigationPath::ComputePath (CSystem *pSystem, CSovereign *pSovereign, cons
 					|| ((pObj->GetScale() == scaleShip) && (pObj->GetVel().Length2() < MIN_SPEED2)))
 				&& (pObjSovereign = pObj->GetSovereign())
 				&& (pObjSovereign->IsEnemy(pSovereign))
-				&& pObj->CanAttack())
+				&& pObj->CanAttack()
+				&& (pEncounterType = pObj->GetEncounterInfo()))
 			{
-			CVector vUR = pObj->GetPos() + CVector(MAX_SAFE_DIST, MAX_SAFE_DIST);
-			CVector vLL = pObj->GetPos() - CVector(MAX_SAFE_DIST, MAX_SAFE_DIST);
+			Metric rDist = pEncounterType->GetEncounterDesc().GetEnemyExclusionRadius();
 
 			//	Only add obstacles if start and end are outside the obstacle
 
-			if (!IntersectRect(vUR, vLL, vFrom)
-					&& !IntersectRect(vUR, vLL, vTo))
-				AStar.AddObstacle(vUR, vLL);
+			if ((vFrom - pObj->GetPos()).Length2() > rDist * rDist
+				&& (vTo - pObj->GetPos()).Length2() > rDist * rDist)
+				AStar.AddObstacle(pObj->GetPos(), rDist);
 			}
 		else if (pObj->HasGravity())
 			{
-			CVector vUR = pObj->GetPos() + CVector(MAX_SAFE_DIST, MAX_SAFE_DIST);
-			CVector vLL = pObj->GetPos() - CVector(MAX_SAFE_DIST, MAX_SAFE_DIST);
 
-			//	Only add obstacles if start and end are outside the obstacle
+			//	We always add gravity obstacles. If start or end are inside the obstacle, then
+			//	reduce the radius so we do not go any closer
 
-			if (!IntersectRect(vUR, vLL, vFrom)
-					&& !IntersectRect(vUR, vLL, vTo))
-				AStar.AddObstacle(vUR, vLL);
+			Metric rDist = min((vFrom - pObj->GetPos()).Length(), (vTo - pObj->GetPos()).Length());
+			rDist = 0.95 * min(rDist, 2 * MAX_SAFE_DIST);
+
+			AStar.AddObstacle(pObj->GetPos(), rDist);
 			}
 		else if (pObj->BlocksShips())
 			{
@@ -94,7 +95,7 @@ int CNavigationPath::ComputePath (CSystem *pSystem, CSovereign *pSovereign, cons
 
 			if (!IntersectRect(vUR, vLL, vFrom)
 					&& !IntersectRect(vUR, vLL, vTo))
-				AStar.AddObstacle(vUR, vLL);
+				AStar.AddBarrier(vUR, vLL);
 			}
 		}
 
