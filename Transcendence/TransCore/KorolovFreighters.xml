@@ -325,11 +325,11 @@
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				(korRandomCargoValue 600000 800000)
+				(korRandomCargoValue 600000 1000000)
 			</DynamicGlobal>
 
 			<Global id="korolov.escortRate">
-				50
+				60
 			</Global>
 		</Properties>
 
@@ -849,7 +849,7 @@
 			</DynamicGlobal>
 
 			<Global id="korolov.escortRate">
-				150
+				75
 			</Global>
 		</Properties>
 
