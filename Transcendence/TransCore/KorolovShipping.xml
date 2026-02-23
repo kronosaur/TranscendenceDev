@@ -2180,10 +2180,11 @@
 		<LevelTable>
 			<Ship levelFrequency="cur-- -----"	class="&scAntaresI;"	eventHandler="&evKorolovFreighterBehavior;"/>
 			<Ship levelFrequency="uccrv vvvvv"	class="&scAntaresII;"	eventHandler="&evKorolovFreighterBehavior;"/>
-			<Ship levelFrequency="ruccr vvvvv"	class="&scAntaresV;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="ruccu urrrr"	class="&scAntaresV;"	eventHandler="&evKorolovFreighterBehavior;"/>
 			<Ship levelFrequency="curv- -----"	class="&scEI100;"	eventHandler="&evKorolovFreighterBehavior;"/>
 			<Ship levelFrequency="uccur v----"	class="&scEI200;"	eventHandler="&evKorolovFreighterBehavior;"/>
-			<Ship levelFrequency="ruccu rrrrr"	class="&scEI7000;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="ruccu urrrr"	class="&scEI7000;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="ruccu uurrr"	class="&scScarabFreighterKorolov;"	eventHandler="&evKorolovFreighterBehavior;"/>
 			<Ship levelFrequency="uccur v----"	class="&scT31ArmedTransportKorolov;"	eventHandler="&evKorolovFreighterBehavior;"/>
 			<Ship levelFrequency="vrccu rrvvv"	class="&scT55ArmedTransportKorolov;"	eventHandler="&evKorolovFreighterBehavior;"/>
 		</LevelTable>
