@@ -3911,9 +3911,30 @@ ICCItem *fnRandom (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			//	Get the parameters
 
-			double rLow = pArgs->GetElement(0)->GetIntegerValue();
-			double rMid = pArgs->GetElement(1)->GetIntegerValue();
-			double rHigh = pArgs->GetElement(2)->GetIntegerValue();
+			//	Do stuff based on parameters
+			double rLow, rMid, rHigh;
+			bool bRetDouble = false;
+
+			if (pArgs->GetCount() == 2)
+				{
+				rLow = pArgs->GetElement(0)->GetDoubleValue();
+				bRetDouble = pArgs->GetElement(0)->IsDouble();
+				rHigh = pArgs->GetElement(1)->GetDoubleValue();
+				bRetDouble |= pArgs->GetElement(1)->IsDouble();
+				rMid = rLow + (rHigh - rLow) / 2;
+				}
+			else if (pArgs->GetCount() == 3)
+				{
+				rLow = pArgs->GetElement(0)->GetDoubleValue();
+				bRetDouble = pArgs->GetElement(0)->IsDouble();
+				rMid = pArgs->GetElement(1)->GetDoubleValue();
+				bRetDouble |= pArgs->GetElement(1)->IsDouble();
+				rHigh = pArgs->GetElement(2)->GetDoubleValue();
+				bRetDouble |= pArgs->GetElement(2)->IsDouble();
+				}
+			else
+				return pCC->CreateError(CONSTLIT("randomGuassian only takes 2 or 3 arguments (randomGuassian low [mid] high)"));
+
 			if (rLow >= rMid || rLow >= rHigh || rMid >= rHigh)
 				return pCC->CreateNil();
 
@@ -3936,10 +3957,17 @@ ICCItem *fnRandom (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Scale to proper value
 
+			double rResult;
+
 			if (rValue >= 0.0)
-				return pCC->CreateInteger(mathRound(rMid + rValue * rHighRange));
+				rResult = rMid + rValue * rHighRange;
 			else
-				return pCC->CreateInteger(mathRound(rMid + rValue * rLowRange));
+				rResult = rMid + rValue * rLowRange;
+
+			if (bRetDouble)
+				return pCC->CreateDouble(rResult);
+			else
+				return pCC->CreateInteger((int)round(rResult));
 			}
 
 		default:

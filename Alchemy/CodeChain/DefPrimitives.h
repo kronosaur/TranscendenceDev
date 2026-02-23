@@ -439,8 +439,9 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"*",	0,	},
 
 		{	"randomGaussian",		fnRandom,		FN_RANDOM_GAUSSIAN,
-			"(randomGaussian low mid high) -> random number between low and high",
-			"iii",	0,	},
+			"(randomGaussian low [mid] high) -> random number between low and high.\n"
+			"Returns a double if any argument is a double.",
+			"nn*",	0,	},
 
 		{	"randomTable",		fnRandomTable,		0,
 			"(randomTable chance1 exp1 chance2 exp2 ... chancen expn) -> exp",
