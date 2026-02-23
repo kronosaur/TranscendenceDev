@@ -3428,7 +3428,42 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (m_DriveDesc.GetPowerUse() < 0)
 		{
 		if (GetAPIVersion() >= 29)
-			m_DriveDesc.SetPowerUse((int)Max(1.0, DRIVE_POWER_FACTOR * m_DriveDesc.GetPowerUseRatio() * pow(m_DriveDesc.GetThrust() / 100.0, DRIVE_POWER_EXP)));
+			{
+			int iThrust = m_DriveDesc.GetThrust();
+			int iMass = m_Hull.GetMass();
+
+			if (iThrust)
+				{
+				CEngineOptions Opts = g_pUniverse->GetEngineOptions();
+				Metric rPowerFactor = Opts.GetShipDrivePowerFactor() * m_DriveDesc.GetPowerUseRatio();
+				Metric rThrustToPower = iThrust / 100.0;
+				Metric rPowerUse;
+
+				//	Normally we have both thrust and mass
+
+				if (iMass)
+					{
+					Metric rThrustRatio = (Metric)iThrust / iMass;
+					Metric rTMRPenalty = pow(rThrustRatio, Opts.GetShipDrivePowerExp()) / rThrustRatio;
+					rPowerUse = rPowerFactor * rTMRPenalty * rThrustToPower;
+					}
+
+				//	Some base types might only define thrust
+				//	In this case we ignore the Thrust ratio penalty
+
+				else
+					rPowerUse = rPowerFactor * rThrustToPower;
+
+				m_DriveDesc.SetPowerUse((int)Max(1.0, rPowerUse));
+				}
+
+			//	Some base types might not have thrust
+			//	The legacy logic for this is to set a power use of 1 (100kW)
+
+			else
+				m_DriveDesc.SetPowerUse(1);
+
+			}
 
 		//	Otherwise, use the default
 

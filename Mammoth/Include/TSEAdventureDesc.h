@@ -43,6 +43,8 @@ class CEngineOptions
 		const CMiningDamageLevelDesc* GetMiningMaxOreLevels () const { return &m_MiningDamageMaxOreLevels; }
 		const CDamageAdjDesc* GetShieldDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ShieldDamageAdj[iLevel - 1]; }
 		Metric GetShieldIdlePowerRatio () const { return m_rDefaultShieldIdlePowerRatio; }
+		Metric GetShipDrivePowerFactor () const { return m_rShipDrivePowerFactor; }
+		Metric GetShipDrivePowerExp () const { return m_rShipDrivePowerExp; }
 		bool HidesArmorImmunity (SpecialDamageTypes iSpecial) const;
 		bool InitArmorDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomArmorDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ArmorDamageAdj); }
 		bool InitExternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
@@ -176,9 +178,14 @@ class CEngineOptions
 		Metric m_rDefaultItemDensity = 1.0;
 		Metric m_rDefaultItemMassToVolume = 1.0;
 
-		//	Default power consumption
+		//	Default item power consumption
 
 		Metric m_rDefaultShieldIdlePowerRatio = 0.125;
+
+		//	Default ship power consumption
+
+		Metric m_rShipDrivePowerFactor = 13.0;
+		Metric m_rShipDrivePowerExp = 1.2;
 
 		//	Default Damage Method behavior
 

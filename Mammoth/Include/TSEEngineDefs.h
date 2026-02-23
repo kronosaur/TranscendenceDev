@@ -419,3 +419,24 @@
 //	If the property is non-Nil then we do not try to salvage it.
 //
 #define PROPERTY_CORE_NO_SALVAGE				CONSTLIT("core.noSalvage")
+
+//	core.ship.drive.powerExp
+//
+//	Adventure Property: Evaluated at bind time. This property controls an
+//  exponential penalty or handicap for ships relative to their thrust ratio
+//	1.0 = no adjustment
+//  < 1.0 penalizes low thrust ratio efficiency
+//  > 1.0 penalizes high thrust ratio efficiency
+//  Default: 1.2
+//
+#define PROPERTY_CORE_SHIP_DRIVE_POWER_EXP	CONSTLIT("core.ship.drive.powerExp")
+
+//	core.ship.drive.powerFactor
+//
+//	Adventure Property: Evaluated at bind time. This property controls the
+//	power consumption of default ship drives per 100 thrust (adjusted by
+//	other factors)
+//	0.0 = no power consumption
+//  Default: 13.0
+//
+#define PROPERTY_CORE_SHIP_DRIVE_POWER_FACTOR	CONSTLIT("core.ship.drive.powerFactor")
