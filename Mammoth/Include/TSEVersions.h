@@ -1039,7 +1039,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					221;
 //					'stdArmorMass			DEPRECATED: use stdArmorClassName instead (or stdArmorClass if you need to support legacy ships)
 //			(objGetCargoSpaceLeft obj)
 //				DEPRECATED: returns cargo space in liters, for compatibility math. Name implies returning in cubic meters though.
-<<<<<<< feature/106285-2arg_gaussianRandom
 //			(randomGaussian low [mid] high)
 //				Returns double if any argument is a double
 //				Now has a 2-arg form which uses the midpoint of low and high
