@@ -11677,7 +11677,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_SHIP_RECHARGE_SHIELD:
 			{
 			CInstalledDevice *pShield = pShip->GetNamedDevice(devShields);
-			if (pShield == NULL)
+			if (pShield == NULL || !pShield->IsEnabled())
 				return pCC->CreateNil();
 
 			CItemCtx ItemCtx(pShip, pShield);
