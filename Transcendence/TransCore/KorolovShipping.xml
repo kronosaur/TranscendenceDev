@@ -2184,8 +2184,8 @@
 			<Ship levelFrequency="curv- -----"	class="&scEI100;"	eventHandler="&evKorolovFreighterBehavior;"/>
 			<Ship levelFrequency="uccur v----"	class="&scEI200;"	eventHandler="&evKorolovFreighterBehavior;"/>
 			<Ship levelFrequency="ruccu rrrrr"	class="&scEI7000;"	eventHandler="&evKorolovFreighterBehavior;"/>
-			<Ship levelFrequency="uccur v----"	class="&scT31ArmedTransportKorolov;"	eventHandler="&evKorolovFreighterBehavior;"/>
-			<Ship levelFrequency="vrccu rrvvv"	class="&scT55ArmedTransportKorolov;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="vrrvv -----"	class="&scT31ArmedTransportKorolov;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="vvrrr vv---"	class="&scT55ArmedTransportKorolov;"	eventHandler="&evKorolovFreighterBehavior;"/>
 		</LevelTable>
 	</ShipTable>
 	
