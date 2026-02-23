@@ -47,6 +47,7 @@
 #define STR_TRUE								CONSTLIT("True")
 
 static TStaticStringTable<TStaticStringEntry<AIReaction>, 9> REACTION_TABLE = {
+	//NOTE: keys must be alphabetical
 	"chase",				AIReaction::Chase,
 	"chaseFromBase",		AIReaction::ChaseFromBase,
 	"default",				AIReaction::Default,

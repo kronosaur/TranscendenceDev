@@ -145,6 +145,7 @@ const DWORD ALIGN_FLAG_EVOLUTION =			0x00000040;
 const DWORD ALIGN_FLAG_TRADITION =			0x00000080;
 
 static TStaticStringTable<TStaticStringEntry<DWORD>, 8> ALIGN_FLAG_TABLE = {
+	//NOTE: keys must be alphabetical
 	"community",			ALIGN_FLAG_COMMUNITY,
 	"constructive",			ALIGN_FLAG_CONSTRUCTIVE,
 	"destructive",			ALIGN_FLAG_DESTRUCTIVE,

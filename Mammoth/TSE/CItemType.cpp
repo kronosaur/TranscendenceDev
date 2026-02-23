@@ -199,6 +199,7 @@ static const char *CACHED_EVENTS[CItemType::evtCount] =
 	};
 
 static TStaticStringTable<TStaticStringEntry<ItemFates>, 5> FATE_TABLE = {
+	//NOTE: keys must be alphabetical
 	"alwaysComponetized",	fateComponetized,
 	"alwaysDamaged",		fateDamaged,
 	"alwaysDestroyed",		fateDestroyed,

@@ -24,6 +24,7 @@
 const int DEFAULT_MIN_SEPARATION =				40;
 
 static TStaticStringTable<TStaticStringEntry<CRandomTopologyCreator::ENetworkTypes>, 3> NETWORK_TYPE_TABLE = {
+	//NOTE: keys must be alphabetical
 	"path",					CRandomTopologyCreator::netLine,
 	"tree",					CRandomTopologyCreator::netTree,
 	"web",					CRandomTopologyCreator::netWeb,

@@ -7,6 +7,7 @@
 CItemEnhancement CItemEnhancement::m_Null;
 
 static TStaticStringTable<TStaticStringEntry<EnhanceItemStatus>, 16> ENHANCE_ITEM_STATUS_TABLE = {
+	//NOTE: keys must be alphabetical
 	"alreadyEnhanced",			eisAlreadyEnhanced,
 	"cantReplaceDefect",		eisCantReplaceDefect,
 	"cantReplaceEnhancement",	eisCantReplaceEnhancement,

@@ -192,6 +192,7 @@ static const char *CACHED_EVENTS[CArmorClass::evtCount] =
 	};
 
 static TStaticStringTable<TStaticStringEntry<ERegenTypes>, 5> REGEN_TYPE_TABLE = {
+	//NOTE: keys must be alphabetical
 	"charges",				regenFromCharges,
 	"healer",				regenFromHealer,
 	"photorepair",			regenSolar,

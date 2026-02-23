@@ -20,6 +20,7 @@
 #define PRIORITY_ATTRIB						CONSTLIT("priority")
 
 static TStaticStringTable<TStaticStringEntry<ITopologyProcessor::EPhase>, ITopologyProcessor::phaseCount> PHASE_TABLE = {
+	//NOTE: keys must be alphabetical
 	"formation",			ITopologyProcessor::phaseFormation,
 	"lifeforms",			ITopologyProcessor::phaseLifeforms,
 	"primaryColony",		ITopologyProcessor::phasePrimaryColony,

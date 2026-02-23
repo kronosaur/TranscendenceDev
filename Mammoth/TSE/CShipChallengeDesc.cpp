@@ -11,6 +11,7 @@
 #define TYPE_PROPERTY							CONSTLIT("property")
 
 static TStaticStringTable<TStaticStringEntry<CShipChallengeDesc::ECountTypes>, 4> CHALLENGE_TYPE_TABLE = {
+	//NOTE: keys must be alphabetical
 	"deadly",				CShipChallengeDesc::countChallengeDeadly,
 	"easy",					CShipChallengeDesc::countChallengeEasy,
 	"hard",					CShipChallengeDesc::countChallengeHard,
