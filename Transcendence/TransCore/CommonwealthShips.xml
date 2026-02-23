@@ -160,8 +160,6 @@
 			<DeviceSlot id="cargo"			criteria="c" cannotBeEmpty="true"/>
 
 			<DeviceSlot id="shipSystems"		criteria="dV +shipSystems"	cannotBeEmpty="true"/>
-
-			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
 		</DeviceSlots>
 
 		<Interior>
@@ -200,6 +198,8 @@
 		<Devices>
 			<Device	slotID="fore_turret"	deviceID="&itLightRecoillessCannon;"/>
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+
+			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
 		</Devices>
 
 		<Items>
@@ -638,8 +638,6 @@
 			<DeviceSlot id="cargo"			criteria="c" cannotBeEmpty="true"/>
 
 			<DeviceSlot id="shipSystems"		criteria="dV +shipSystems"	cannotBeEmpty="true"/>
-
-			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
 		</DeviceSlots>
 
 		<Interior>
@@ -680,6 +678,8 @@
 			<Device slotID="aft_turret"		deviceID="&itTridentCannon;"/>
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+
+			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
 		</Devices>
 
 		<Items>
