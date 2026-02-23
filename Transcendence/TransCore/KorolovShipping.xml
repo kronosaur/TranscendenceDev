@@ -59,6 +59,32 @@
 			</DynamicGlobal>
 			<Global id="escortSuccessCount">0</Global>
 			<Global id="escortFailureCount">0</Global>
+
+			<!--
+				These properties check if the player
+				has achieved certain non-rank
+				milestones and been rewarded for them
+				Nil = not achieved
+				0 = achieved but reward not distributed yet
+				1 = achieved and reward distributed
+			-->
+
+			<Global id="allSuccessInARow.3"></Global>
+			<Global id="allSuccessInARow.10"></Global>
+
+			<!--
+				Sandbox mode is intended for sandbox-style
+				adventures where the player is not required to
+				keep moving.
+
+				Sandbox mode enables:
+					* escorting at legend rank
+					* no hard limit on maximum escort missions
+
+				Set it to a non-nil value to enable it.
+			-->
+
+			<Global id="sandboxMode"></Global>
 		</Properties>
 
 		<Events>
@@ -335,6 +361,14 @@
 			<Variant id="rpgCharacter.assistantDirector">
 				(rpgCharacterRandom gSource "x +assistantDirector; +korolov;" 'assistantDirector)
 			</Variant>
+			<DynamicData id="missionReplenishDelay">
+				(random
+					;	min delay of 2 minutes
+					(* 30 120)
+					;	max delay of 5 minutes
+					(* 30 300))
+			</DynamicData>
+			<Data id="maxRemainingMissions"></Data>
 		</Properties>
 
 		<!-- Trade and Items -->
@@ -375,15 +409,8 @@
 		<!-- Ships and Defenses -->
 		
 		<Ships>
-			<Ship					count="1d2" class="&scRoninC;" orders="guard"/>
-			<Table count="1d4+1">
-				<Ship chance="20" 	count="1" class="&scEI100;" eventHandler="&evKorolovFreighterBehavior;"/>
-				<Ship chance="20" 	count="1" class="&scEI200;" eventHandler="&evKorolovFreighterBehavior;"/>
-				<Ship chance="15" 	count="1" class="&scEI7000;" eventHandler="&evKorolovFreighterBehavior;"/>
-				<Ship chance="15" 	count="1" class="&scAntaresI;" eventHandler="&evKorolovFreighterBehavior;"/>
-				<Ship chance="15" 	count="1" class="&scAntaresII;" eventHandler="&evKorolovFreighterBehavior;"/>
-				<Ship chance="15" 	count="1" class="&scAntaresV;" eventHandler="&evKorolovFreighterBehavior;"/>
-			</Table>
+			<Lookup count="1d2" table="&tbKorolovGuards;"/>
+			<Lookup count="1d4+1" table="&tbKorolovFreighters;"/>
 		</Ships>
 
 		<!-- Image and Effects -->
@@ -478,14 +505,14 @@
 										(= playerLevel -1)
 											(scrShowScreen gScreen &dsRPGDialog; { desc:(scrTranslate gScreen 'descTooManyFailures) })
 
-										;	Already a legend
+										;	Already a legend and not in sandbox mode
 										
-										(= playerLevel 4)
+										(and (= playerLevel 4) (not (korIsSandboxMode)))
 											(scrShowScreen gScreen &dsRPGDialog; { desc:(scrTranslate gScreen 'descAlreadyALegend) })
 											
-										;	If the main stronghold is destroyed, no need for escorts
+										;	If the main stronghold is destroyed and not in sandbox mode, no need for escorts
 										
-										(objIsAbandoned (objGetObjRefData gSource 'charonStronghold))
+										(and (objIsAbandoned (objGetObjRefData gSource 'charonStronghold)) (not (korIsSandboxMode)))
 											(scrShowScreen gScreen &dsRPGDialog; { desc:(scrTranslate gScreen 'descNoEscortsNeeded) })
 											
 										;	If we failed to destroy stronghold, we stop missions
@@ -493,18 +520,15 @@
 										(objGetData gSource 'charonDominates)
 											(scrShowScreen gScreen &dsRPGDialog; { desc:(scrTranslate gScreen 'descFreightersGrounded) })
 											
-										;	If the Charon Fortress is destroyed, no missions
+										;	If the Charon Fortress is destroyed and not in sandbox mode, no missions
 										
-										(= (typGetGlobalData &stCharonPirateFortress; 'status) 'destroyed)
+										(and (= (typGetGlobalData &stCharonPirateFortress; 'status) 'destroyed) (not (korIsSandboxMode)))
 											(scrShowScreen gScreen &dsRPGDialog; { desc:(scrTranslate gScreen 'descFortressDestroyed) })
 											
 										;	If we're giving out escort missions, then show the list of
 										;	freighters.
 									
-										(and (gr (objGetData gSource 'remainingMissions) 0)
-												(find '(0 1 2 3) playerLevel)
-												(not (objIsAbandoned (objGetObjRefData gSource 'charonStronghold)))
-												)
+										(and (gr (objGetData gSource 'remainingMissions) 0))
 											(scrShowScreen gScreen &dsKorolovEscortList;)
 												
 										;	Otherwise, nothing
@@ -555,7 +579,7 @@
 						(shipList (sort (map (korFreighterTypes) theType {
 								class:theType
 								name:(shpGetClassName theType 0x080)
-								level:(max (typGetStaticData theType 'korolovMinLevel) 1)
+								level:(max (korTypGetMinLevel theType) 1)
 								})
 							'ascending 'name))
 						(levelList (map (make 'sequence 3) level (filter shipList theShip (= (@ theShip 'level) level))))
@@ -672,12 +696,22 @@
 		
 		<Events>
 			<OnCreate>
-				(block (charonStronghold)
+				(block (
+						charonStronghold
+						(remainingMissions (+ 3 (modulo (objGetDestiny gSource) 7)))
+						)
 					; Register a recurring event
 					(sysAddObjRecurringTimerEvent 240 gSource "OnTrafficControl")
 
 					; Allow a finite number of escort missions from each station
-					(objSetData gSource 'remainingMissions (+ 3 (modulo (objGetDestiny gSource) 7)))
+					(objSetData gSource 'remainingMissions remainingMissions)
+
+					; Setup an event to check if we need to keep offering missions
+					; in case sandbox mode gets turned on. Some gameplay code in
+					; mods may only activate once the player loads in, or if the
+					; player is using debug mods to toggle sandbox mode.
+					(objSet@ gSource 'maxRemainingMissions remainingMissions)
+					(sysAddObjTimerEvent (@ gSource 'missionReplenishDelay) gSource 'SandboxModeRefreshMissions)
 
 					; Find the primary Charon stronghold in the system
 					(setq charonStronghold (chrGetPrimaryStronghold gSource))
@@ -734,6 +768,19 @@
 						}
 					)
 			</GetRumors>
+
+			<SandboxModeRefreshMissions>
+				(if (korIsSandboxMode)
+					(block ()
+						;	Add a new mission if we dont have enough
+						(if (ls (objGetData gSource 'remainingMissions) (obj@ gSource 'maxRemainingMissions))
+							(objIncData gSource 'remainingMissions 1)
+							)
+						;	Set the next event
+						(sysAddObjTimerEvent (@ gSource 'missionReplenishDelay) gSource 'SandboxModeRefreshMissions)
+						)
+					)
+			</SandboxModeRefreshMissions>
 		</Events>
 
 		<Language>
@@ -848,18 +895,7 @@
 							{	labelID: 'actionFreighterData		nextPage:'code
 								code: (lambda ()
 									(scrShowScreen gScreen &dsRPGShipClassViewer; {
-										list: (list
-
-											;	NOTE: If you add items to the list, make sure
-											;	you add a description in the Language section.
-
-											{	shipClass:&scEI100;	}
-											{	shipClass:&scEI200;	}
-											{	shipClass:&scEI7000;	}
-											{	shipClass:&scAntaresI;	}
-											{	shipClass:&scAntaresII;	}
-											{	shipClass:&scAntaresV;	}
-											)
+										list: (map (korFreighterTypes) theShip { shipClass:theShip })
 										})
 									)
 								}
@@ -947,67 +983,7 @@
 				of freighters, from the tiny EI100s to the massive Antares Vs.
 			
 			</Text>
-			<Text id="rpg.shipClassDesc.&scEI100;">
-
-				The EI100 class freighter was designed for fast interplanetary 
-				transportation. Early in its history, it even carried 
-				passengers, but today it carries light commodities.
-				
-				Because of the relatively low value of its cargo, the EI100 is
-				often escorted by apprentice pilots.
-
-			</Text>
-			<Text id="rpg.shipClassDesc.&scEI200;">
-
-				The EI200 class freighter is a larger and faster version of the 
-				100 series. It has double the cargo capacity and upgraded armor 
-				and weapons. It is designed to transport small quantities of 
-				high-value cargo.
-				
-				The EI200 is so well defended that even apprentices are allowed 
-				to escort them.
-
-			</Text>
-			<Text id="rpg.shipClassDesc.&scEI7000;">
-
-				The 7000 is the most powerful member of the EI freighter series.
-				With a cargo capacity of 2 kilotons and heavy armor and weapons,
-				the EI7000 is ideal for high-value cargos.
-				
-				Only journeymen and masters are rated to escort the EI7000 
-				class.
-
-			</Text>
-			<Text id="rpg.shipClassDesc.&scAntaresI;">
-
-				The Antares I design is more than a hundred years old, built 
-				originally by the massive Polyarny Shipyards orbiting Ceres. 
-				Slow and unencumbered by armor, the Antares I can haul 30 
-				kilotons of cargo, but only the most skilled pilots can protect
-				it from pirate attack.
-				
-				Only masters in the Korolov Shipping Corporation are rated to 
-				escort the Antares I class.
-
-			</Text>
-			<Text id="rpg.shipClassDesc.&scAntaresII;">
-
-				While sacrificing none of its cargo capacity, the Antares II has
-				a top speed 50% higher than its predecessor.
-				
-				Escort pilots must have the rank of journeyman or master to 
-				defend the Antares II class.
-
-			</Text>
-			<Text id="rpg.shipClassDesc.&scAntaresV;">
-
-				The Antares V is a stretched version of the earlier II series.
-				It has larger cargo capacity and upgraded weapons.
-				
-				Escort pilots must have the rank of journeyman or master to 
-				escort the Antares V class.
-
-			</Text>
+			<Text id="rpg.shipClassDescID">korolov.shipDesc</Text>
 			<Text id="rpg.shipClassDesc.&scCorsair;">
 
 				The backbone of the Charon Pirate fleet consists of these fast and
@@ -1301,10 +1277,17 @@
 		<Panes>
 			<Default>
 				<OnPaneInit>
-					(scrSetDescTranslate gScreen (cat "Promotion:" (korGetPlayerLevel)) {
-						AD: (rpgCharacterGetInfo gSource 'assistantDirector &chKorolovAssistantDirectors;)
-						escortCount: (strNumber (count (msnFind "r +korolov; +escort; +property:isSuccess;")))
-						})
+					(block ()
+						;	If we need to show the miscellaneous rewards screen we do that now and then
+						;	come back to this screen since its nested
+						(if (korGetPendingMiscAward)
+							(scrShowScreen gScreen &dsKorolovMiscRewards;)
+							)
+						(scrSetDescTranslate gScreen (cat "Promotion:" (korGetPlayerLevel)) {
+							AD: (rpgCharacterGetInfo gSource 'assistantDirector &chKorolovAssistantDirectors;)
+							escortCount: (strNumber (count (msnFind "r +korolov; +escort; +property:isSuccess;")))
+							})
+						)
 				</OnPaneInit>
 
 				<Actions>
@@ -1391,6 +1374,96 @@
 				"Congratulations! You've broken the record! You've escorted 
 				%escortCount% freighters without losing a single one! 
 				No one has accomplished that feat before!"
+
+			</Text>
+		</Language>
+	</DockScreen>
+
+	<!-- Misc Rewards -->
+
+	<DockScreen UNID="&dsKorolovMiscRewards;"
+			nestedScreen=		"true"
+			inherit=			"&dsDockScreenBase;"
+			>
+		<Display type="detailsPane">
+			<OnDisplayInit>
+				(typTranslate &unidKorolovShipping; 'rankDetails)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block
+						(
+							(rewardName (korGetPendingMiscAward))
+							)
+						(if rewardName
+							(scrSetDescTranslate gScreen rewardName {
+								AD: (rpgCharacterGetInfo gSource 'assistantDirector &chKorolovAssistantDirectors;)
+								})
+							; if no reward we got here by mistake
+							; just immediately go back to the previous screen
+							; but leave a debug log for developers
+							(block ()
+								(dbgOutput (cat "Expected a korolov Miscellaneous reward called: " rewardName))
+								(scrExitScreen gScreen)
+								)
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(block 
+							(
+								(rewardName (korGetPendingMiscAward))
+								reward
+								)
+							(switch
+								(= rewardName 'allSuccessInARow.3)
+									(block ()
+										(setq reward (itmCreate &itCashCardGold; 1))
+										(typSet@ &unidKorolovShipping; 'allSuccessInARow.3 1)
+										)
+								(= rewardName 'allSuccessInARow.10)
+									(block ()
+										(setq reward (itmCreate &itCashCardPlatinum; 1))
+										(typSet@ &unidKorolovShipping; 'allSuccessInARow.10 1)
+										)
+								; if no reward we got here by mistake
+								; just immediately go back to the previous screen
+								; but leave a debug log for developers
+								(dbgOutput (cat "Expected a korolov Miscellaneous reward called: " rewardName))
+								)
+							(if reward (block ()
+								(objAddItem gPlayership reward)
+								))
+							(scrExitScreen gScreen)
+							)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+
+		<Language>
+			<Text id="allSuccessInARow.3">
+
+				"You're doing a good job out there! In recognition for successfully
+				escorting three freighters without fail, we'd like for you to have
+				this cash card."
+
+			</Text>
+			<Text id="allSuccessInARow.10">
+
+				A small crowd of freighter and escord pilots gathers around as
+				%titledName@AD% congratulates you:
+
+				"You have escorted ten freighters without losing any of them!
+				I am proud to reward you with this platinum cash card for a job
+				well done!"
+
+				%titledName@AD% hands you the cash card as the crowd applauds.
 
 			</Text>
 		</Language>
@@ -1570,6 +1643,64 @@
 
 	<Globals>
 		(block Nil
+			(setq korTypGetMinLevel (lambda (typ)
+				"Get the minimum rank required for escorting this type"
+				(or
+					(switch
+						;	New method via properties
+						(typ@ typ 'korolov.cargoValue.0)
+							0
+						(typ@ typ 'korolov.cargoValue.1)
+							1
+						(typ@ typ 'korolov.cargoValue.2)
+							2
+						(typ@ typ 'korolov.cargoValue.3)
+							3
+						(typ@ typ 'korolov.cargoValue.4)
+							4
+
+						;	Legacy method
+						(typ@ typ 'korolovMinLevel)
+						)
+					)
+				))
+
+			(setq korObjGetMinLevel (lambda (obj)
+				"Get the minimum rank required for escorting this object"
+				(or
+					(switch
+						;	New method via properties
+						(obj@ obj 'korolov.cargoValue.0)
+							0
+						(obj@ obj 'korolov.cargoValue.1)
+							1
+						(obj@ obj 'korolov.cargoValue.2)
+							2
+						(obj@ obj 'korolov.cargoValue.3)
+							3
+						(obj@ obj 'korolov.cargoValue.4)
+							4
+
+						;	Legacy method
+						(obj@ obj 'korolovMinLevel)
+						)
+					)
+				))
+
+			(setq korIsSandboxMode (lambda ()
+				"Returns a non-nil value if sandbox mode is enabled"
+				(typ@ &unidKorolovShipping; 'sandboxMode)
+				))
+
+			(setq korRandomCargoValue (lambda (min max)
+				"Returns standard distribution of cargo values from min to max"
+				(randomGaussian
+					min
+					(+ min (int (/ (- max min) 2)))
+					max
+					)
+				))
+
 			;	korInitMissions
 			;
 			;	Initializes missions for every freighter docked at the station and missions
@@ -1782,10 +1913,13 @@
 					(setq oldRank (korGetPlayerLevel))
 					(setq newRank (korComputePlayerLevel))
 					(if (gr newRank oldRank)
+						;	If we need to rank up, show that screen
 						(block Nil
 
 							;	dsRPGMission checks for a well-known data member in the mission
 							;	object to see if it should navigate to an additional screen.
+							;	dsKorolovPromotion handles checking if we need to hand out other
+							;	minor rewards first
 							(if missionObj
 								(msnSetData missionObj 'rewardNextScreen &dsKorolovPromotion;)
 								)
@@ -1794,13 +1928,29 @@
 							(typSetData &unidKorolovShipping; 'level newRank)
 							)
 						)
+						;	otherwise check if we need to give a miscellaneous reward
+						(if (korGetPendingMiscAward)
+								(msnSetData missionObj 'rewardNextScreen &dsKorolovMiscRewards;)
+							)
 					)
 				))
+
+			(setq korGetPendingMiscAward (lambda () (switch
+				; We check if any reward is at state 0, which means that the
+				; reward is pending but not awarded yet
+				(= (typ@ &unidKorolovShipping; 'allSuccessInARow.3) 0)
+					'allSuccessInARow.3
+				(= (typ@ &unidKorolovShipping; 'allSuccessInARow.10) 0)
+					'allSuccessInARow.10
+				; No reward needs to be awarded
+				()
+				)))
 
 			(setq korEscortMissionCompleted (lambda (missionObj reason data)
 				(block (
 					(recordID (cat "record" (msnGetData missionObj 'escortType)))
 					(transRecord (typGetData &unidKorolovShipping; recordID))
+					;	Note that the current mission is not counted in this yet
 					(totalMissionsSuccess (count (msnFind "r +korolov; +escort; +property:isSuccess;")))
 					(totalMissionsFailed (count (msnFind "r +korolov; +escort; +property:isFailure;")))
 					(xpBonus Nil)
@@ -1815,8 +1965,11 @@
 								(typInc@ &unidKorolovShipping; 'escortSuccessCount 1) 
 								(lnkReplace transRecord 0 (+ (@ transRecord 0) 1))
 								(unvSetAchievement 'humanSpace.korolovEscort)
-								(if (and (= totalMissionsSuccess 10) (= totalMissionsFailed 0))
-									(setq xpBonus 1500)
+								(if (and (not (typ@ &unidKorolovShipping; 'allSuccessInARow.3)) (geq (+ totalMissionsSuccess 1) 3) (= totalMissionsFailed 0))
+									(typSet@ &unidKorolovShipping; 'allSuccessInARow.3 0) 
+									)
+								(if (and (not (typ@ &unidKorolovShipping; 'allSuccessInARow.10)) (geq (+ totalMissionsSuccess 1) 10) (= totalMissionsFailed 0))
+									(typSet@ &unidKorolovShipping; 'allSuccessInARow.10 0) 
 									)
 								)
 
@@ -1854,6 +2007,7 @@
 					(successes (@ transRecord 0))
 					(failures (@ transRecord 1))
 					(totalMissions (+ successes failures))
+					(minLevel (korTypGetMinLevel shipClass))
 					)
 					(switch
 						(and transRecord (= failures 0))
@@ -1865,7 +2019,7 @@
 						(and transRecord (!= totalMissions 0))
 							(cat successes " out of " totalMissions " successful missions (" (divide (multiply 100 successes) totalMissions) "%)")
 
-						(gr (typGetStaticData shipClass "korolovMinLevel") (korGetPlayerLevel))
+						(gr minLevel (korGetPlayerLevel))
 							"Not rated to escort this class"
 
 						"No missions completed"
@@ -1873,17 +2027,17 @@
 					)
 				))
 
-			; Return a list of ShipClasses to use as Korolov freighters
 			(setq korFreighterTypes (lambda (maxLev)
+				"Return a list of ShipClasses to use as Korolov freighters"
 				(block (
 					(lev (if maxLev maxLev 999))
 					)
 					(filter
-						(typFind "s +freighter +commonwealth")
+						(typFind "s +freighter")
 						typ
 						(and
-							(typGetStaticData typ 'korolovMinLevel)
-							(geq lev (typGetStaticData typ 'korolovMinLevel))
+							(korTypGetMinLevel typ)
+							(geq lev (korTypGetMinLevel typ))
 							)
 						)
 					)
@@ -1909,10 +2063,15 @@
 					)
 				))
 
-			;	Calculate the cargo value and escort fees for a Korolov freighter
 			(setq korCalculateCargo (lambda (escortType escortLevel oneWay)
+				"Calculate the cargo value and escort fees for a Korolov freighter"
 				(block (
-					(escortRate (typGetStaticData escortType 'korolovEscortRate))
+					(escortRate (or
+						;	New method
+						(typ@ escortType 'korolov.escortRate)
+
+						(typGetStaticData escortType 'korolovEscortRate)
+						))
 					(fitCount (/ (typGetProperty escortType 'cargoSpace) 25))
 					pricePerContainer cargoValue escortFee
 					)
@@ -1920,6 +2079,9 @@
 					;	Figure out the price per container of the cargo
 					(setq pricePerContainer (or
 						;	New method
+						(/ (typ@ escortType (cat 'korolov.cargoValue. escortLevel)) fitCount)
+
+						;	1.8-1.9 method
 						(eval (@ (typGetStaticData escortType 'korolov.containerPrice) escortLevel))
 
 						;	Legacy method (1.7 and before)
@@ -1996,11 +2158,34 @@
 
 	<ShipTable unid="&tbKorolovEscorts;">
 		<LevelTable>
-			<Ship levelFrequency="ucr-- -----"	class="&scRoninB;"	/>
+			<Ship levelFrequency="cur-- -----"	class="&scRoninB;"	/>
 			<Ship levelFrequency="uccr- -----"	class="&scRoninC;"	/>
 			<Ship levelFrequency="-rucr -----"	class="&scWolfenC;"	/>
 			<Ship levelFrequency="--ruc r----"	class="&scCenturionBlock1;"	/>
 			<Ship levelFrequency="---ru crvvv"	class="&scCenturionBlock2;"	/>
+		</LevelTable>
+	</ShipTable>
+
+	<ShipTable unid="&tbKorolovGuards;">
+		<LevelTable>
+			<Ship levelFrequency="cur-- -----"	class="&scRoninB;"	/>
+			<Ship levelFrequency="uccr- -----"	class="&scRoninC;"	/>
+			<Ship levelFrequency="-rucr -----"	class="&scWolfenC;"	/>
+			<Ship levelFrequency="--ruc r----"	class="&scCenturionBlock1;"	/>
+			<Ship levelFrequency="---ru crvvv"	class="&scCenturionBlock2;"	/>
+		</LevelTable>
+	</ShipTable>
+
+	<ShipTable unid="&tbKorolovFreighters;">
+		<LevelTable>
+			<Ship levelFrequency="cur-- -----"	class="&scAntaresI;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="uccrv vvvvv"	class="&scAntaresII;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="ruccr vvvvv"	class="&scAntaresV;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="curv- -----"	class="&scEI100;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="uccur v----"	class="&scEI200;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="ruccu rrrrr"	class="&scEI7000;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="uccur v----"	class="&scT31ArmedTransportKorolov;"	eventHandler="&evKorolovFreighterBehavior;"/>
+			<Ship levelFrequency="vrccu rrvvv"	class="&scT55ArmedTransportKorolov;"	eventHandler="&evKorolovFreighterBehavior;"/>
 		</LevelTable>
 	</ShipTable>
 	

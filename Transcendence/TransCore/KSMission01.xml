@@ -47,7 +47,7 @@
 							(and
 								(not (objGetObjRefData theFreighter "korolovDest"))
 								(not (objGetData theFreighter "korolovPlayerEscort"))
-								(geq playerLevel (objGetStaticData theFreighter "korolovMinLevel"))
+								(geq playerLevel (korObjGetMinLevel theFreighter))
 								(geq (shpGetMaxSpeed gPlayerShip) (+ (shpGetMaxSpeed theFreighter) 2))
 								)
 							)
@@ -75,18 +75,6 @@
 					destObj
 					)
 					(switch
-						; Finite number of missions per station
-						(ls (objGetData aOwnerObj 'remainingMissions) 1)
-							(msnDestroy gSource)
-
-						; Only offer to new pilots and levels 1-3
-						(not (find '(0 1 2 3) playerLevel))
-							(msnDestroy gSource)
-
-						; No missions once the stronghold is destroyed
-						(objIsAbandoned (objGetObjRefData aOwnerObj 'charonStronghold))
-							(msnDestroy gSource)
-
 						; Pick a random freighter. If we can't find one there is no mission
 						(and (not freighterObj) 
 								(not (setq freighterObj (random dockedFreighters)))
@@ -120,7 +108,7 @@
 
 							; Remember the minimum player level to escort and the minimum
 							; player speed.
-							(msnSetData gSource 'minPlayerLevel (objGetStaticData freighterObj "korolovMinLevel"))
+							(msnSetData gSource 'minPlayerLevel (korObjGetMinLevel freighterObj))
 							(msnSetData gSource 'minPlayerSpeed (+ (shpGetMaxSpeed freighterObj) 2))
 							
 							; Remember the mission for this transport, so we don't
@@ -155,6 +143,10 @@
 					)
 					(objSetObjRefData freighterObj "korolovDest" Nil)
 					(objSetData freighterObj "korolovPlayerEscort" True)
+
+					; Restore the freighter so that the player doesnt have
+					; to wait for minutes for it to repair
+					(shpFullRestore freighterObj)
 
 					; Order the freighter
 					(shpCancelOrders freighterObj)
@@ -240,6 +232,8 @@
 						(block Nil
 							(objSetData aObjDocked "korolovPlayerEscort" Nil)
 							(msnSuccess gSource)
+							;	Repair the freighter so its ready for whatever happens next
+							(shpFullRestore aObjDocked)
 							)
 					)
 			</OnObjDocked>

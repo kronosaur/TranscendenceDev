@@ -158,6 +158,8 @@
 				</EnhancementAbilities>
 			</DeviceSlot>
 			<DeviceSlot id="cargo"			criteria="c" cannotBeEmpty="true"/>
+
+			<DeviceSlot id="shipSystems"		criteria="dV +shipSystems"	cannotBeEmpty="true"/>
 		</DeviceSlots>
 
 		<Interior>
@@ -196,6 +198,8 @@
 		<Devices>
 			<Device	slotID="fore_turret"	deviceID="&itLightRecoillessCannon;"/>
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+
+			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
 		</Devices>
 
 		<Items>
@@ -624,6 +628,8 @@
 				</EnhancementAbilities>
 			</DeviceSlot>
 			<DeviceSlot id="cargo"			criteria="c" cannotBeEmpty="true"/>
+
+			<DeviceSlot id="shipSystems"		criteria="dV +shipSystems"	cannotBeEmpty="true"/>
 		</DeviceSlots>
 
 		<Interior>
@@ -664,6 +670,8 @@
 			<Device slotID="aft_turret"		deviceID="&itTridentCannon;"/>
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+
+			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
 		</Devices>
 
 		<Items>
@@ -898,6 +906,170 @@
 			</Text>
 		</Language>
 		
+	</ShipClass>
+
+	<!-- T31 Armed Transport -->
+
+	<ShipClass UNID="&scT31ArmedTransportStock;"
+			manufacturer=		"United African States"
+			class=				"T31"
+			type=				"armed transport"
+
+			attributes=			"freighter, genericClass, uas"
+			inherit=			"&baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"60"
+			mass=				"600"
+			cargoSpace=			"600"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"600"
+			maxDevices=			"6"
+			maxWeapons=			"3"
+			>
+			<ArmorLimits massClass="ultraLight"		speedAdj="1" />
+			<ArmorLimits massClass="light"			speedAdj="0" />
+			<ArmorLimits massClass="medium"			speedAdj="-1"  />
+		</Hull>
+
+		<Drive
+			maxSpeed=			"16"
+			thrust=				"1000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"6.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot id="main1"	criteria="w~l" posAngle="0" posRadius="40" posZ="0"/>
+			<DeviceSlot id="main2"	criteria="w~l" posAngle="0" posRadius="40" posZ="0"/>
+			<DeviceSlot id="launcher"	criteria="l" posAngle="0" posRadius="40" posZ="0"/>
+			<DeviceSlot id="cargo"			criteria="c" cannotBeEmpty="true"/>
+			<DeviceSlot id="shipSystems"		criteria="dV +shipSystems"	cannotBeEmpty="true"/>
+		</DeviceSlots>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itLightPlasteelPlate;"
+			count=				"6"
+			/>
+
+		<Devices>
+			<Device slotID="main1" deviceID="&itSmartCannon;">
+				<Items>
+					<Item count="10d20" item="&itSmartCannonShell;"/>
+				</Items>
+			</Device>
+			<Device slotID="main2" deviceID="&itRecoillessCannon;"/>
+			<Device slotID="cargo" deviceID="&itCargoHoldExpansion;"/>
+			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="1d6" item="&itHelium3FuelRod;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsT31Transport;" imageWidth="90" imageHeight="90" rotationCount="120" rotationColumns="12" viewportRatio="0.008125"/>
+		<HeroImage imageID="&rsT31TransportHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="164"	posRadius="41"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-164"	posRadius="41"	posZ="0"	rotation="180"/>
+		</Effects>
+		
+		<!-- AI and Behavior -->
+
+		<AISettings
+			perception=			"4"
+			/>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				The T31 Transport was released by the UAS as an affordable domestic
+				alternative to the EI-series freighters, though it has also been
+				a reasonably popular export to the Commonwealth as well.
+
+				As part of their proxy conflict with the Corporate Hierarchy, the
+				UAS also provides these ships at a discount to Syndikat, who
+				resells them on to smugglers and outlaws.
+			</Text>
+			<Text id="core.desc">
+				The T31 Transport is a light freighter with decent speed for a
+				ship with its cargo capacity, though it has limited room for
+				expansion.
+			</Text>
+		</Language>
+
+	</ShipClass>
+
+	<!-- T31 Armed Transport -->
+
+	<ShipClass UNID="&scT31ArmedTransportTraffic;"
+			manufacturer=		"United African States"
+			class=				"T31"
+			type=				"armed transport"
+
+			attributes=			"freighter, genericClass, uas, commonwealth"
+			inherit=			"&scT31ArmedTransportStock;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itLightPlasteelPlate;"
+			count=				"6"
+			/>
+
+		<Devices>
+			<Table>
+				<Group chance="25">
+					<Device slotID="main1" deviceID="&itSmartCannon;">
+						<Items>
+							<Item count="10d20" item="&itSmartCannonShell;"/>
+						</Items>
+					</Device>
+					<Device slotID="main2" deviceID="&itRecoillessCannon;"/>
+				</Group>
+				<Group chance="25">
+					<Device slotID="main1" deviceID="&itMoskvaLightTurret;"/>
+				</Group>
+				<Group chance="25">
+					<Device slotID="main1" deviceID="&itHeavyRecoillessCannon;"/>
+					<Device deviceID="&itHullPlateIonizer;"/>
+				</Group>
+				<Group chance="25">
+					<Device slotID="main1" deviceID="&itArbalestCannon;"/>
+					<Device deviceID="&itLaserDeflector;"/>
+				</Group>
+			</Table>
+			<Device slotID="cargo" deviceID="&itCargoHoldExpansion;"/>
+			<Table>
+				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>
+				<Device slotID="shipSystems"	chance="15" deviceID="&vtShipSystems250;"/>
+				<Device slotID="shipSystems"	chance="10" deviceID="&vtShipSystems125;"/>
+				<Device slotID="shipSystems"	chance="25" deviceID="&vtShipSystems150;"/>
+			</Table>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="1d6" item="&itHelium3FuelRod;"/>
+		</Items>
+
 	</ShipClass>
 
 	<!-- Level 4: Asterion-class Heavy Gunship -->
@@ -1325,6 +1497,8 @@
 				</EnhancementAbilities>
 			</DeviceSlot>
 			<DeviceSlot id="cargo"			criteria="c" cannotBeEmpty="true"/>
+
+			<DeviceSlot id="shipSystems"		criteria="dV +shipSystems"	cannotBeEmpty="true"/>
 		</DeviceSlots>
 
 		<Interior>
@@ -1365,6 +1539,8 @@
 			<Device slotID="aft_turret"		deviceID="&itSlamCannon;"/>
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+
+			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
 		</Devices>
 
 		<Items>
@@ -1444,6 +1620,160 @@
 				(korOnShipDestroyed)
 			</OnDestroy>
 		</Events>
+	</ShipClass>
+
+	<!-- T55 Armed Transport -->
+
+	<ShipClass UNID="&scT55ArmedTransportStock;"
+			manufacturer=		"United African States"
+			class=				"T55"
+			type=				"armed transport"
+
+			attributes=			"freighter, genericClass, uas"
+			inherit=			"&baHumanTechShip;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"93"
+			mass=				"900"
+			cargoSpace=			"2000"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"2000"
+			maxDevices=			"8"
+			maxWeapons=			"3"
+			>
+			<ArmorLimits massClass="ultraLight"		speedAdj="2" />
+			<ArmorLimits massClass="light"			speedAdj="1" />
+			<ArmorLimits massClass="medium"			speedAdj="0"  />
+			<ArmorLimits massClass="heavy"			speedAdj="-1"  />
+		</Hull>
+
+		<Drive
+			maxSpeed=			"14"
+			thrust=				"1000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"6.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot id="main"	criteria="w" posAngle="0" posRadius="53" posZ="0"/>
+			<DeviceSlot id="launcher"	criteria="l" posAngle="0" posRadius="53" posZ="0"/>
+			<DeviceSlot id="turret"	criteria="w~l" omnidirectional="true">
+				<EnhancementAbilities>
+					<Enhance type=			"&vtTurretSlotWithNonOmni;"
+							 enhancement=	"-speed:200;"
+							 criteria=		"w -property:omnidirectional;"
+							 />
+				</EnhancementAbilities>
+			</DeviceSlot>
+			<DeviceSlot id="cargo"			criteria="c" cannotBeEmpty="true"/>
+			<DeviceSlot id="shipSystems"		criteria="dV +shipSystems"	cannotBeEmpty="true"/>
+		</DeviceSlots>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itPlasteelPlate;"
+			count=				"8"
+			/>
+
+		<Devices>
+			<Device slotID="turret" deviceID="&itBallistaCannon;"/>
+			<Device slotID="cargo" deviceID="&itCargoHoldExpansion;"/>
+			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="1d6" item="&itHeliumAssembly;"/>
+		</Items>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsT55Transport;" imageWidth="114" imageHeight="114" rotationCount="120" rotationColumns="12" viewportRatio="0.01225"/>
+		<HeroImage imageID="&rsT55TransportHero;" imageWidth="320" imageHeight="320"/>
+
+		<Effects>
+			<Effect type="thrustMain"		posAngle="170"	posRadius="54"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-170"	posRadius="54"	posZ="0"	rotation="180"/>
+		</Effects>
+
+		<!-- AI and Behavior -->
+
+		<AISettings
+			perception=			"4"
+			
+			combatStyle=		"standoff"
+			/>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="core.descLore">
+				The T55 Transport is a UAS competitor to ships like the EI200.
+
+				As part of their proxy conflict with the Corporate Hierarchy, the
+				UAS also provides these ships at a discount to Syndikat, who
+				resells them on to smugglers and outlaws.
+			</Text>
+			<Text id="core.desc">
+				The T55 Transport is a larger and more capable sibling to the T31,
+				with significantly better options for expansion
+			</Text>
+		</Language>
+
+	</ShipClass>
+
+	<!-- T55 Armed Transport -->
+
+	<ShipClass UNID="&scT55ArmedTransportTraffic;"
+			manufacturer=		"United African States"
+			class=				"T55"
+			type=				"armed transport"
+
+			attributes=			"freighter, genericClass, uas, commonwealth"
+			inherit=			"&scT55ArmedTransportStock;"
+			>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itPlasteelPlate;"
+			count=				"8"
+			/>
+
+		<Devices>
+			<Table>
+				<Device chance="25" slotID="turret" deviceID="&itBallistaCannon;"/>
+				<Device chance="25" slotID="turret" deviceID="&itMarkIHowitzer;"/>
+				<Device chance="25" slotID="turret" deviceID="&itHeavySlamCannon;"/>
+				<Group chance="25">
+					<Device slotID="turret" deviceID="&itFlenserCannon;"/>
+					<Device slotID="shield" deviceID="&itSolonShieldGenerator;"/>
+				</Group>
+			</Table>
+			<Device slotID="cargo" deviceID="&itCargoHoldExpansion;"/>
+			<Table>
+				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>
+				<Device slotID="shipSystems"	chance="15" deviceID="&vtShipSystems250;"/>
+				<Device slotID="shipSystems"	chance="10" deviceID="&vtShipSystems125;"/>
+				<Device slotID="shipSystems"	chance="25" deviceID="&vtShipSystems150;"/>
+			</Table>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="1d6" item="&itHeliumAssembly;"/>
+		</Items>
+
 	</ShipClass>
 	
 	<!-- Level 5: Wolfen/C-class Gunship -->
@@ -2189,10 +2519,10 @@
 		<Hull
 			size=				"200"
 			mass=				"15000"
-			cargoSpace=			"1200000"
+			cargoSpace=			"120000"
 
 			maxReactorPower=	"10000"
-			maxCargoSpace=		"1200000"
+			maxCargoSpace=		"120000"
 			maxDevices=			"8"
 			maxWeapons=			"3"
 			>
@@ -2227,6 +2557,8 @@
 				</EnhancementAbilities>
 			</DeviceSlot>
 			<DeviceSlot id="cargo"				criteria="c" cannotBeEmpty="true"/>
+
+			<DeviceSlot id="shipSystems"		criteria="dV +shipSystems"	cannotBeEmpty="true"/>
 		</DeviceSlots>
 
 		<Interior>
@@ -2267,6 +2599,8 @@
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
 			<Device deviceID="&itMissileDefense;"/>
+
+			<Device slotID="shipSystems"		deviceID="&vtShipSystems100;"/>
 		</Devices>
 
 		<Items>
@@ -2350,6 +2684,13 @@
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
 			<Device deviceID="&itMissileDefense;"/>
+
+			<Table>
+				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>
+				<Device slotID="shipSystems"	chance="15" deviceID="&vtShipSystems250;"/>
+				<Device slotID="shipSystems"	chance="10" deviceID="&vtShipSystems125;"/>
+				<Device slotID="shipSystems"	chance="25" deviceID="&vtShipSystems150;"/>
+			</Table>
 		</Devices>
 
 		<!-- AI and Behavior -->
@@ -2727,6 +3068,7 @@
 			<Ship levelFrequency="rccuv -----" count="1" class="&scEI200;" orders="gateOnThreat"/>
 			<Ship levelFrequency="rccuv -----" count="1" class="&scIAVLight;" orders="gateOnThreat"/>
 			<Ship levelFrequency="rccuv -----" count="1" class="&scRoninB;" orders="gateOnThreat"/>
+			<Ship levelFrequency="rccuv -----" count="1" class="&scT31ArmedTransportTraffic;" orders="gateOnThreat"/>
 
 			<Ship levelFrequency="-vrrr -----" count="1" class="&scAntaresV;" orders="gateOnThreat"/>
 			<Ship levelFrequency="-rccu v----" count="1" class="&scAsterionHeavyGunship;" orders="guard"/>
@@ -2739,6 +3081,7 @@
 			<Ship levelFrequency="--rcc uv---" count="1" class="&scWolfenC;" orders="gateOnThreat"/>
 
 			<Ship levelFrequency="---rc cuv--" count="1" class="&scElixirMegayacht;" orders="gateOnThreat"/>
+			<Ship levelFrequency="---rc cuv--" count="1" class="&scT55ArmedTransportTraffic;" orders="gateOnThreat"/>
 
 			<Ship levelFrequency="----r ccuvv" count="1" class="&scIAVHeavy;" orders="gateOnThreat"/>
 			<Ship levelFrequency="----r ccuvv" count="1" class="&scManticore;" orders="gateOnThreat"/>
@@ -2760,6 +3103,7 @@
 			<Ship levelFrequency="rccuv -----" count="1" class="&scEI200;"/>
 			<Ship levelFrequency="rccuv -----" count="1" class="&scIAVLight;"/>
 			<Ship levelFrequency="rccuv -----" count="1" class="&scRoninB;"/>
+			<Ship levelFrequency="rccuv -----" count="1" class="&scT31ArmedTransportTraffic;"/>
 
 			<Ship levelFrequency="-vuur -----" count="1" class="&scAntaresV;"/>
 			<Ship levelFrequency="-rccu v----" count="1" class="&scAsterionHeavyGunship;"/>
@@ -2774,6 +3118,7 @@
 			<Ship levelFrequency="--rcc uv---" count="1" class="&scWolfenC;"/>
 
 			<Ship levelFrequency="---ru cuv--" count="1" class="&scAntaresVStock;"/>
+			<Ship levelFrequency="---ru cuv--" count="1" class="&scT55ArmedTransportTraffic;"/>
 			<Ship levelFrequency="---rc cuv--" count="1" class="&scElixirMegayacht;"/>
 			<Ship levelFrequency="---vu urv--" count="1" class="&scScarabFreighter;"/>
 

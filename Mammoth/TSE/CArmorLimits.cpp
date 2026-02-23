@@ -9,7 +9,8 @@
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define MASS_ATTRIB								CONSTLIT("mass")
 #define MASS_CLASS_ATTRIB						CONSTLIT("massClass")
-#define MAX_ARMOR_ATTRIB						CONSTLIT("maxArmor")
+#define MAX_ARMOR_LEGACY_ATTRIB					CONSTLIT("maxArmor")
+#define MAX_ARMOR_ATTRIB						CONSTLIT("maxArmorClass")
 #define MAX_ARMOR_SPEED_ATTRIB					CONSTLIT("maxArmorSpeed")
 #define MAX_ARMOR_SPEED_PENALTY_ATTRIB			CONSTLIT("maxArmorSpeedAdj")
 #define MIN_ARMOR_SPEED_ATTRIB					CONSTLIT("minArmorSpeed")
@@ -17,7 +18,8 @@
 #define ARMOR_CLASS_ATTRIB						CONSTLIT("armorClass")
 #define SIZE_ATTRIB								CONSTLIT("size")
 #define SPEED_ADJ_ATTRIB						CONSTLIT("speedAdj")
-#define STD_ARMOR_ATTRIB						CONSTLIT("stdArmor")
+#define STD_ARMOR_LEGACY_ATTRIB					CONSTLIT("stdArmor")
+#define STD_ARMOR_ATTRIB						CONSTLIT("stdArmorClass")
 
 static constexpr Metric MASS_TO_SPEED_ADJ_KX =	4.0;
 static constexpr Metric MASS_TO_SPEED_ADJ_KE =	0.5;
@@ -919,8 +921,14 @@ ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int 
 
 	else
 		{
-		//	Standard and maximum armor mass can be specified either by mass 
-		//	class ID or by kilograms.
+		//	Standard and maximum armor mass can be specified by:
+		//  legacy attributes:
+		//  maxArmor/stdArmor
+		//		mass class ID
+		//		kilograms (1000* compatibility units)
+		//  maxArmorClass/stdArmorClass
+		//		mass class ID
+		//		compatibility units
 		//
 		//	NOTE: If we specify an ID then we have to wait until Bind to resolve
 		//	it, because all types are not loaded yet.
@@ -932,12 +940,24 @@ ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int 
 			if (m_rMaxArmorSize < 0 || IS_NAN(m_rMaxArmorSize))
 				m_sMaxArmorClass = sValue;
 			}
+		else if (pDesc->FindAttribute(MAX_ARMOR_LEGACY_ATTRIB, &sValue))
+			{
+			m_rMaxArmorSize = strToDouble(sValue, -1.0) / 1000.0;
+			if (m_rMaxArmorSize < 0 || IS_NAN(m_rMaxArmorSize))
+				m_sMaxArmorClass = sValue;
+			}
 		else
 			m_rMaxArmorSize = 0;
 
 		if (pDesc->FindAttribute(STD_ARMOR_ATTRIB, &sValue))
 			{
 			m_rStdArmorSize = strToDouble(sValue, -1.0);
+			if (m_rStdArmorSize < 0 || IS_NAN(m_rMaxArmorSize))
+				m_sStdArmorClass = sValue;
+			}
+		else if (pDesc->FindAttribute(STD_ARMOR_LEGACY_ATTRIB, &sValue))
+			{
+			m_rStdArmorSize = strToDouble(sValue, -1.0) / 1000.0;
 			if (m_rStdArmorSize < 0 || IS_NAN(m_rMaxArmorSize))
 				m_sStdArmorClass = sValue;
 			}

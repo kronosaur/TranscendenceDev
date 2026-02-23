@@ -1153,7 +1153,7 @@ Metric CArmorClass::CalcBalanceSize (const CArmorItem &ArmorItem, const SScalabl
 
 	//	Adjust based on the standard armor class
 
-	Metric rStdClass = GetUniverse().GetDesignCollection().GetArmorClassDefinitions().GetArmorClassSize(MASS_CLASS_STANDARD_ID) / 1000.0;
+	Metric rStdClass = GetUniverse().GetDesignCollection().GetArmorClassDefinitions().GetArmorClassSize(MASS_CLASS_STANDARD_ID);
 	Metric rAdj = (rStdClass > 0.0 ? ARMOR_CLASS_BALANCE_STD_SIZE / rStdClass : 1.0);
 
 	//	Need to account for everything up to the maximum defined mass class.

@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							59;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
-constexpr DWORD SYSTEM_SAVE_VERSION =					220;
+constexpr DWORD SYSTEM_SAVE_VERSION =					221;
 
 //	Uncomment out the following define when building a stable release
 
@@ -1030,12 +1030,28 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 //						this is purely for supporting legacy math operations that expected kg
 //					'cargoSpaceUsedKg		DEPRECATED: Used cargo space in liters, int (NOT kg)
 //						this is purely for supporting legacy cargo math that needs it in liters to check if items will fit
+//					'maxArmorClass			LEGACY SUPPORT: Maximum armor class in "compatibility tons" (double)
+//					'maxArmorClassName		Name of the maximum armor class
+//					'maxArmorMass			DEPRECATED: use maxArmorClassName instead (or maxArmorClass if you need to support legacy ships)
 //					'maxCargoSpace			Total cargo space in cubic meters (previously tons)
+//					'stdArmorClass			LEGACY SUPPORT: Standard armor class in "compatibility tons" (double)
+//					'stdArmorClassName		Name of the standard armor class
+//					'stdArmorMass			DEPRECATED: use stdArmorClassName instead (or stdArmorClass if you need to support legacy ships)
 //			(objGetCargoSpaceLeft obj)
 //				DEPRECATED: returns cargo space in liters, for compatibility math. Name implies returning in cubic meters though.
+<<<<<<< feature/106285-2arg_gaussianRandom
 //			(randomGaussian low [mid] high)
 //				Returns double if any argument is a double
 //				Now has a 2-arg form which uses the midpoint of low and high
+=======
+//			(sysAddEncounterEvent / sysAddEncounterEventAtDist / sysCreateEncounter / sysCreateShip)
+//				All Encounter functions updated to accept options struct consistent with sysCreateShip
+//				Corrections to Encounter functions to match behavior to documentation and sysCreateShip
+//				New options:
+//					level			Perform ShipTable lookups using the speficied level (instead of system level)
+//					levelAdj		Perform ShipTable lookups using system level + levelAdj
+//					ignoreLimits	Ignore any ship limits in ShipTable lookups
+>>>>>>> integration/API59
 //			(typGetDataField type field)
 //				New and updated fields
 //					;;ItemType
@@ -1101,9 +1117,20 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 //			<Hull>
 //				cargoSpace: now specifies CBM instead of tons
 //					If <API59, always uses the adventure compatibility mappings
+//				maxArmor: deprecated
+//				maxArmorClass:
+//					Not recommended (use <ArmorLimit .../> instead)
+//					Provides same functionality as maxArmor, but allows specifying
+//					non-classed armor sizes in floating point "compatibility tons",
+//					rather than in integer kg.
 //				maxCargoSpace: now specifies CBM instead of tons
 //					If <API59, always uses the adventure compatibility mappings
-//				stdArmorMass: deprecated
+//				stdArmor: deprecated
+//				stdArmorClass:
+//					Not recommended (use <ArmorLimit .../> instead)
+//					Provides same functionality as stdArmor, but allows specifying
+//					non-classed armor sizes in floating point "compatibility tons",
+//					rather than in integer kg.
 //			<DeviceSlots>
 //				<DeviceSlot>
 //					fireAngle: if used with minFireArc and maxFireArc or omnidirectional, can now specify a default angle of fire
@@ -1942,4 +1969,10 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 // 
 //  220: 2.0 Alpha 9
 //		Add m_iDefaultFireAngle to CInstalledDevice
+//
+//  221: 2.0 Alpha 9
+//		Add m_pSovereign to CTimedEncounterEvent
+//		Add m_pOverride to CTimedEncounterEvent
+//		Add m_iLevel to CTimedEncounterEvent
+//		Add m_bIgnoreLimits to CTimedEncounterEvent
 //
