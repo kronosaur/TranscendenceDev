@@ -19,10 +19,10 @@
 		
 		<Devices>
 			<Table>
-				<Group chance="35">
+				<Group chance="25">
 					<Device slotID="fore_turret"	deviceID="&itRecoillessCannon;"/>
 				</Group>
-				<Group chance="30">
+				<Group chance="20">
 					<Device slotID="fore_turret"	deviceID="&itLightRecoillessCannon;"/>
 					<Device item="&itArmorRepairDevice;"/>
 				</Group>
@@ -35,9 +35,24 @@
 				<Group chance="10">
 					<Device slotID="fore_turret"	deviceID="&itHeavyRecoillessCannon;"/>
 				</Group>
+				<Group chance="10">
+					<Device slotID="fore_turret"	deviceID="&itDartTurret;"/>
+					<Device item="&itArmorRepairDevice;"/>
+				</Group>
+				<Group chance="10">
+					<Device slotID="fore_turret"	deviceID="&itAlpha1LaserTurret;"/>
+					<Device item="&itArmorRepairDevice;"/>
+				</Group>
 			</Table>
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+
+			<Table>
+				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>
+				<Device slotID="shipSystems"	chance="15" deviceID="&vtShipSystems250;"/>
+				<Device slotID="shipSystems"	chance="10" deviceID="&vtShipSystems125;"/>
+				<Device slotID="shipSystems"	chance="25" deviceID="&vtShipSystems150;"/>
+			</Table>
 		</Devices>
 
 		<Items>
@@ -46,35 +61,40 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"20"
 			fireAccuracy=		"90"
 			perception=			"4"
 			combatStyle=		"standOff"
 			/>
-
 		<!-- Korolov -->
 
 		<Names noArticle="true">Antares Heavy 1%0%0</Names>
 
-		<StaticData>
-			<Data id="korolov.containerPrice">
-				(
-					0 ; new pilots cannot escort
-					0 ; apprentices cannot escort
-					0 ; journeymen cannot escort
+		<Properties>
 
-					; Masters: 45 - 150 credits per container
-					; 54,000 - 180,000 cargo value
-					(multiply 5 (add (random 3 10) (random 3 10) (random 3 10)))
+			<DynamicGlobal id="korolov.cargoValue.0">
+				(korRandomCargoValue 25000 40000)
+			</DynamicGlobal>
 
-					150 ; legends don't escort, but add anyway
-					)
-			</Data>
+			<DynamicGlobal id="korolov.cargoValue.1">
+				(korRandomCargoValue 30000 50000)
+			</DynamicGlobal>
 
-			<korolovEscortRate>350</korolovEscortRate>
+			<DynamicGlobal id="korolov.cargoValue.2">
+				(korRandomCargoValue 40000 65000)
+			</DynamicGlobal>
 
-			<korolovMinLevel>3</korolovMinLevel>
-		</StaticData>
+			<DynamicGlobal id="korolov.cargoValue.3">
+				(korRandomCargoValue 50000 80000)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="korolov.cargoValue.4">
+				(korRandomCargoValue 65000 100000)
+			</DynamicGlobal>
+
+			<Global id="korolov.escortRate">
+				200
+			</Global>
+		</Properties>
 		
 		<Events>
 			<OnDestroy>
@@ -86,9 +106,11 @@
 			<Text id="korolov.shipDesc">
 				The Antares I design is more than a hundred years old, built originally
 				by the massive Polyarny Shipyards orbiting Ceres. Slow and unencumbered
-				by armor, the Antares I can haul 30 kilotons of cargo, but only the most
-				skilled pilots can protect it from pirate attack. Only Masters in the
-				Korolov Shipping Corporation are rated to escort the Antares I class.
+				by armor, the Antares I can haul 30 kilotons of cargo, but most clients
+				only ship low value bulk cargo on these ships.
+				
+				As the cargo generally doesnt attract much attention from pirates,
+				apprentices are allowed to escort this class.
 			</Text>
 		</Language>
 	</ShipClass>
@@ -147,6 +169,13 @@
 			</Table>
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+
+			<Table>
+				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>
+				<Device slotID="shipSystems"	chance="15" deviceID="&vtShipSystems250;"/>
+				<Device slotID="shipSystems"	chance="10" deviceID="&vtShipSystems125;"/>
+				<Device slotID="shipSystems"	chance="25" deviceID="&vtShipSystems150;"/>
+			</Table>
 		</Devices>
 
 		<Items>
@@ -155,38 +184,34 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"20"
 			fireAccuracy=		"90"
 			perception=			"4"
 			combatStyle=		"standOff"
 			/>
-
 		<!-- Korolov -->
 
 		<Names noArticle="true">Antares Heavy 2%0%0</Names>
 
-		<StaticData>
-			<Data id="korolov.containerPrice">
-				(
-					0 ; new pilots cannot escort
-					0 ; apprentices cannot escort
+		<Properties>
+			; new pilots cannot escort
+			; apprentices cannot escort
 
-					; Journeymen: 100 - 240 credits per container
-					; 120,000 - 288,000
-					(multiply 2 (add (random 20 40) (random 20 40) (random 10 40)))
+			<DynamicGlobal id="korolov.cargoValue.2">
+				(korRandomCargoValue 120000 288000)
+			</DynamicGlobal>
 
-					; Masters: 200 - 400 credits per container
-					; 240,000 - 480,000
-					(multiply 2 (add (random 30 60) (random 30 60) (random 40 80)))
+			<DynamicGlobal id="korolov.cargoValue.3">
+				(korRandomCargoValue 240000 480000)
+			</DynamicGlobal>
 
-					400 ; legends don't escort, but add anyway
-					)
-			</Data>
+			<DynamicGlobal id="korolov.cargoValue.4">
+				(korRandomCargoValue 400000 480000)
+			</DynamicGlobal>
 
-			<korolovEscortRate>100</korolovEscortRate>
-
-			<korolovMinLevel>2</korolovMinLevel>
-		</StaticData>
+			<Global id="korolov.escortRate">
+				100
+			</Global>
+		</Properties>
 
 		<Events>
 			<OnDestroy>
@@ -196,9 +221,13 @@
 		
 		<Language>
 			<Text id="korolov.shipDesc">
-				While sacrificing none of its cargo capacity, the Antares II has a top
-				speed 50% higher than its predecessor. Escort pilots must have the rank
-				of Journeyman or Master to defend the Antares II class.
+
+				While sacrificing none of its cargo capacity, the Antares II has
+				a top speed 50% higher than its predecessor.
+				
+				Escort pilots must have the rank of journeyman or master to 
+				defend the Antares II class.
+
 			</Text>
 		</Language>
 	</ShipClass>
@@ -263,6 +292,13 @@
 			</Table>
 
 			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+
+			<Table>
+				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>
+				<Device slotID="shipSystems"	chance="15" deviceID="&vtShipSystems250;"/>
+				<Device slotID="shipSystems"	chance="10" deviceID="&vtShipSystems125;"/>
+				<Device slotID="shipSystems"	chance="25" deviceID="&vtShipSystems150;"/>
+			</Table>
 		</Devices>
 
 		<Items>
@@ -271,38 +307,31 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"20"
 			fireAccuracy=		"90"
 			perception=			"4"
 			combatStyle=		"standOff"
 			/>
-
+			
 		<!-- Korolov -->
 
 		<Names noArticle="true">Antares Heavy 5%0%0</Names>
 
-		<StaticData>
-			<Data id="korolov.containerPrice">
-				(
-					0 ; new pilots cannot escort
-					0 ; apprentices cannot escort
+		<Properties>
+			; new pilots cannot escort
+			; apprentices cannot escort
 
-					; Journeymen: 80 - 160 credits
-					; 160,000 - 320,000 cargo value
-					(multiply 10 (add (random 2 4) (random 2 4) (random 2 4) (random 2 4)))
+			<DynamicGlobal id="korolov.cargoValue.3">
+				(korRandomCargoValue 320000 800000)
+			</DynamicGlobal>
 
-					; Masters: 160 - 400 credits
-					; 320,000 - 800,000 cargo value
-					(add (multiply 10 (add (random 4 10) (random 4 10))) (multiply 10 (add (random 4 10) (random 4 10))))
+			<DynamicGlobal id="korolov.cargoValue.4">
+				(korRandomCargoValue 600000 1000000)
+			</DynamicGlobal>
 
-					400 ; legends don't escort, but add anyway
-					)
-			</Data>
-
-			<korolovEscortRate>50</korolovEscortRate>
-
-			<korolovMinLevel>2</korolovMinLevel>
-		</StaticData>
+			<Global id="korolov.escortRate">
+				60
+			</Global>
+		</Properties>
 
 		<Events>
 			<OnDestroy>
@@ -312,9 +341,13 @@
 		
 		<Language>
 			<Text id="korolov.shipDesc">
-				The Antares V is basically a stretched version of the earlier II series.
-				It has larger cargo capacity and upgraded weapons. Escort pilots must
-				have the rank of Journeyman or Master to escort the Antares V class.
+
+				The Antares V is a stretched version of the earlier II series.
+				It has larger cargo capacity and upgraded weapons.
+				
+				Escort pilots must have the rank of journeyman or master to 
+				escort the Antares V class.
+
 			</Text>
 		</Language>
 	</ShipClass>
@@ -365,33 +398,31 @@
 			perception=			"4"
 			/>
 
-		<StaticData>
-			<Data id="korolov.containerPrice">
-				(
-					; New pilot: 1500 - 4000 credits
-					; 15,000 - 20,000 cargo value
-					(multiply 100 (random 15 20))
+		<Properties>
+			<DynamicGlobal id="korolov.cargoValue.0">
+				(korRandomCargoValue 15000 20000)
+			</DynamicGlobal>
 
-					; Apprentices: 1500 - 4000 credits
-					; 15,000 - 30,000 cargo value
-					(multiply 100 (random 15 30))
+			<DynamicGlobal id="korolov.cargoValue.1">
+				(korRandomCargoValue 15000 30000)
+			</DynamicGlobal>
 
-					; Journeymen: 2500 - 5000 credits
-					; 25,000 - 50,000 cargo value
-					(multiply 100 (random 25 50))
+			<DynamicGlobal id="korolov.cargoValue.2">
+				(korRandomCargoValue 25000 50000)
+			</DynamicGlobal>
 
-					; Masters: 3000 - 5000 credits
-					; 30,000 - 50,000 cargo value
-					(multiply 100 (random 30 50))
+			<DynamicGlobal id="korolov.cargoValue.3">
+				(korRandomCargoValue 30000 50000)
+			</DynamicGlobal>
 
-					5000 ; legends don't escort, but add anyway
-					)
-			</Data>
+			<DynamicGlobal id="korolov.cargoValue.4">
+				(korRandomCargoValue 45000 55000)
+			</DynamicGlobal>
 
-			<korolovEscortRate>200</korolovEscortRate>
-
-			<korolovMinLevel>0</korolovMinLevel>
-		</StaticData>
+			<Global id="korolov.escortRate">
+				200
+			</Global>
+		</Properties>
 
 		<Events>
 			<OnDestroy>
@@ -401,10 +432,14 @@
 		
 		<Language>
 			<Text id="korolov.shipDesc">
-				The EI100 class freighter was designed for fast interplanetary transportation.
-				Early in its history, it even carried passengers, but today it carries light
-				commodities. Because of the relatively low value of its cargo, the EI100 is
-				often escorted by Apprentice pilots.
+
+				The EI100 class freighter was designed for fast interplanetary 
+				transportation. Early in its history, it even carried 
+				passengers, but today it carries light commodities.
+				
+				Because of the relatively low value of its cargo, the EI100 is
+				often escorted by apprentice pilots.
+
 			</Text>
 		</Language>
 
@@ -456,33 +491,31 @@
 			perception=			"4"
 			/>
 
-		<StaticData>
-			<Data id="korolov.containerPrice">
-				(
-					; New pilot: 800 - 2000 credits
-					; 20,000 - 40,000 cargo value
-					(multiply 100 (random 10 20))
+		<Properties>
+			<DynamicGlobal id="korolov.cargoValue.0">
+				(korRandomCargoValue 20000 40000)
+			</DynamicGlobal>
 
-					; Apprentices: 1200 - 2500 credits
-					; 24,000 - 50,000 cargo value
-					(multiply 100 (random 12 25))
+			<DynamicGlobal id="korolov.cargoValue.1">
+				(korRandomCargoValue 24000 50000)
+			</DynamicGlobal>
 
-					; Journeymen: 1500 - 4000 credits
-					; 30,000 - 80,000 cargo value
-					(multiply 100 (random 15 40))
+			<DynamicGlobal id="korolov.cargoValue.2">
+				(korRandomCargoValue 30000 80000)
+			</DynamicGlobal>
 
-					; Masters: 3000 - 5000 credits
-					; 60,000 - 100,000 cargo value
-					(multiply 100 (random 30 50))
+			<DynamicGlobal id="korolov.cargoValue.3">
+				(korRandomCargoValue 60000 100000)
+			</DynamicGlobal>
 
-					5000 ; legends don't escort, but add anyway
-					)
-			</Data>
+			<DynamicGlobal id="korolov.cargoValue.4">
+				(korRandomCargoValue 80000 120000)
+			</DynamicGlobal>
 
-			<korolovEscortRate>150</korolovEscortRate>
-
-			<korolovMinLevel>0</korolovMinLevel>
-		</StaticData>
+			<Global id="korolov.escortRate">
+				150
+			</Global>
+		</Properties>
 
 		<Events>
 			<OnDestroy>
@@ -492,10 +525,15 @@
 		
 		<Language>
 			<Text id="korolov.shipDesc">
-				The EI200 class freighter is a larger and faster version of the 100 series.
-				It has double the cargo capacity and upgraded armor and weapons. It is
-				designed to transport small quantities of high-value cargo. The EI200 is
-				so well defended that even Apprentices are allowed to escort them.
+
+				The EI200 class freighter is a larger and faster version of the 
+				100 series. It has double the cargo capacity and upgraded armor 
+				and weapons. It is designed to transport small quantities of 
+				high-value cargo.
+				
+				The EI200 is so well defended that even apprentices are allowed 
+				to escort them.
+
 			</Text>
 		</Language>
 	</ShipClass>
@@ -543,28 +581,26 @@
 			perception=			"4"
 			/>
 
-		<StaticData>
-			<Data id="korolov.containerPrice">
-				(
-					0 ; new pilots cannot escort
-					0 ; apprentices cannot escort
+		<Properties>
+			; new pilots cannot escort
+			; apprentices cannot escort
 
-					; Journeymen: 2000 - 4000 credits
-					; 160,000 - 320,000 cargo value
-					(multiply 100 (add (random 10 20) (random 10 20)))
+			<DynamicGlobal id="korolov.cargoValue.2">
+				(korRandomCargoValue 160000 320000)
+			</DynamicGlobal>
 
-					; Masters: 4000 - 10000 credits
-					; 320,000 - 800,000 cargo value
-					(multiply 100 (add (random 20 50) (random 20 50)))
+			<DynamicGlobal id="korolov.cargoValue.3">
+				(korRandomCargoValue 320000 800000)
+			</DynamicGlobal>
 
-					5000 ; legends don't escort, but add anyway
-					)
-			</Data>
+			<DynamicGlobal id="korolov.cargoValue.4">
+				(korRandomCargoValue 600000 1000000)
+			</DynamicGlobal>
 
-			<korolovEscortRate>50</korolovEscortRate>
-
-			<korolovMinLevel>2</korolovMinLevel>
-		</StaticData>
+			<Global id="korolov.escortRate">
+				50
+			</Global>
+		</Properties>
 
 		<Events>
 			<OnDestroy>
@@ -574,12 +610,320 @@
 		
 		<Language>
 			<Text id="korolov.shipDesc">
-				The 7000 is the most powerful member of the EI freighter series. With a
-				cargo capacity of 2 kilotons and heavy armor and weapons, the EI7000 is
-				ideal for high-value cargos. Only Journeymen and Masters are rated to
-				escort the EI7000 class.
+
+				The 7000 is the most powerful member of the EI freighter series.
+				With a cargo capacity of 2 kilotons and heavy armor and weapons,
+				the EI7000 is ideal for high-value cargos.
+				
+				Only journeymen and masters are rated to escort the EI7000 
+				class.
+
 			</Text>
 		</Language>
+	</ShipClass>
+
+	<!-- T31 Armed Transport -->
+
+	<ShipClass UNID="&scT31ArmedTransportKorolov;"
+			manufacturer=		"United African States"
+			class=				"T31"
+			type=				"armed transport"
+
+			attributes=			"freighter, genericClass, uas, commonwealth"
+			inherit=			"&scT31ArmedTransportStock;"
+			>
+
+		<Names definiteArticle="true">
+			freighter Ammon; freighter Caelestis; freighter Fulgurator;
+			freighter Laterius; freighter Lucetius; freighter Pluvius;
+			freighter Stator; freighter Terminus; freighter Tonans;
+			freighter Victor; freighter Summanus; freighter Feretrius;
+			freighter Optimus Maximus; freighter Brixianus; freighter Ladicus;
+			freighter Parthinus; freighter Poeninus; freighter Solutorius;
+			freighter Taranis; freighter Uxellinus
+		</Names>
+
+		<Properties>
+			<DynamicGlobal id="korolov.cargoValue.0">
+				(korRandomCargoValue 20000 35000)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="korolov.cargoValue.1">
+				(korRandomCargoValue 20000 35000)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="korolov.cargoValue.2">
+				(korRandomCargoValue 30000 45000)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="korolov.cargoValue.3">
+				(korRandomCargoValue 40000 60000)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="korolov.cargoValue.4">
+				(korRandomCargoValue 50000 70000)
+			</DynamicGlobal>
+
+			<Global id="korolov.escortRate">
+				150
+			</Global>
+		</Properties>
+
+		<Events>
+			<OnDestroy>
+				(korOnShipDestroyed)
+			</OnDestroy>
+		</Events>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itLightPlasteelPlate;"
+			count=				"6"
+			/>
+
+		<Devices>
+			<Table>
+				<Device chance="20" slotID="main1" deviceID="&itMoskvaLightTurret;"/>
+				<Device chance="50" slotID="main1" deviceID="&itOmniLaserCannon;"/>
+				<Device chance="15" slotID="main1" deviceID="&itAlpha1LaserTurret;"/>
+				<Device chance="15" slotID="main1" deviceID="&itDartTurret;"/>
+			</Table>
+			<Device slotID="cargo" deviceID="&itCargoHoldExpansion;"/>
+			<Table>
+				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>
+				<Device slotID="shipSystems"	chance="15" deviceID="&vtShipSystems250;"/>
+				<Device slotID="shipSystems"	chance="10" deviceID="&vtShipSystems125;"/>
+				<Device slotID="shipSystems"	chance="25" deviceID="&vtShipSystems150;"/>
+			</Table>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="1d6" item="&itHelium3FuelRod;"/>
+		</Items>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="korolov.shipDesc">
+				The T31 class are light freighters with decent speed and modest
+				capacities, making them a relatively forgiving freighter to
+				escort.
+				
+				Even apprentices are permitted to escort these ships.
+			</Text>
+		</Language>
+
+	</ShipClass>
+
+	<!-- T55 Armed Transport -->
+
+	<ShipClass UNID="&scT55ArmedTransportKorolov;"
+			manufacturer=		"United African States"
+			class=				"T55"
+			type=				"armed transport"
+
+			attributes=			"freighter, genericClass, uas, commonwealth"
+			inherit=			"&scT55ArmedTransportStock;"
+			>
+
+		<Names definiteArticle="true">
+			freighter Ammon; freighter Caelestis; freighter Fulgurator;
+			freighter Laterius; freighter Lucetius; freighter Pluvius;
+			freighter Stator; freighter Terminus; freighter Tonans;
+			freighter Victor; freighter Summanus; freighter Feretrius;
+			freighter Optimus Maximus; freighter Brixianus; freighter Ladicus;
+			freighter Parthinus; freighter Poeninus; freighter Solutorius;
+			freighter Taranis; freighter Uxellinus
+		</Names>
+
+		<Properties>
+			; new pilots cannot escort
+			; apprentices cannot escort
+
+			<DynamicGlobal id="korolov.cargoValue.2">
+				(korRandomCargoValue 60000 100000)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="korolov.cargoValue.3">
+				(korRandomCargoValue 80000 130000)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="korolov.cargoValue.4">
+				(korRandomCargoValue 110000 160000)
+			</DynamicGlobal>
+
+			<Global id="korolov.escortRate">
+				150
+			</Global>
+		</Properties>
+
+		<Events>
+			<OnDestroy>
+				(korOnShipDestroyed)
+			</OnDestroy>
+		</Events>
+
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itPlasteelPlate;"
+			count=				"8"
+			/>
+
+		<Devices>
+			<Table>
+				<Device chance="25" slotID="turret" deviceID="&itTurbolaserCannon;"/>
+				<Device chance="25" slotID="turret" deviceID="&itFlenserCannon;"/>
+				<Device chance="25" slotID="turret" deviceID="&itSlamCannon;"/>
+				<Device chance="25" slotID="turret" deviceID="&itPartisanCannon;"/>
+			</Table>
+			<Device slotID="cargo" deviceID="&itCargoHoldExpansion;"/>
+			<Table>
+				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>
+				<Device slotID="shipSystems"	chance="15" deviceID="&vtShipSystems250;"/>
+				<Device slotID="shipSystems"	chance="10" deviceID="&vtShipSystems125;"/>
+				<Device slotID="shipSystems"	chance="25" deviceID="&vtShipSystems150;"/>
+			</Table>
+		</Devices>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="1d6" item="&itHeliumAssembly;"/>
+		</Items>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="korolov.shipDesc">
+				The T55 class freighter is a competent freighter usually seen
+				with decent weapons, allowing it to carry more valuable cargo.
+
+				Only Journeymen and Masters are rated to escort the T55 class.
+			</Text>
+		</Language>
+
+	</ShipClass>
+
+	<!-- Scarab Freighter -->
+
+	<ShipClass UNID="&scScarabFreighterKorolov;"
+			manufacturer=		"NAMI"
+			class=				"Scarab"
+			type=				"superfreighter"
+			defaultSovereign=	"&svCommonwealth;"
+			   
+			attributes=			"commonwealth, freighter, genericClass, NAMI"
+			inherit=			"&scScarabFreighterStock;"
+			>
+
+		<Names definiteArticle="true">
+			superfreighter St. Aoki; superfreighter St. Beatrice; superfreighter St. Celendin;
+			superfreighter St. Dominarus; superfreighter St. Elaine; superfreighter St. Florentine;
+			superfreighter St. Goramesh; superfreighter St. Haldane; superfreighter St. Inez;
+			superfreighter St. Jotur; superfreighter St. Kim; superfreighter St. Lin Chemei;
+			superfreighter St. Miranda; superfreighter St. Navreen; superfreighter St. Orinaga;
+			superfreighter St. Pelerine; superfreighter St. Queleborn; superfreighter St. Rebecca;
+			superfreighter St. Salvador; superfreighter St. Tomashi; superfreighter St. Unami;
+			superfreighter St. Voxanna; superfreighter St. Ha-neul; superfreighter St. Joo-eun;
+			superfreighter St. Emiko; superfreighter St. Aiko; superfreighter St. Rumiko;
+			superfreighter St. Bharati; superfreighter St. Madhavi; superfreighter St. Astrel
+		</Names>
+
+		<!-- AI and Behavior -->
+
+		<Properties>
+			; new pilots cannot escort
+			; apprentices cannot escort
+			; journeymen cannot escort
+
+			<DynamicGlobal id="korolov.cargoValue.3">
+				(korRandomCargoValue 320000 1000000)
+			</DynamicGlobal>
+
+			<DynamicGlobal id="korolov.cargoValue.4">
+				(korRandomCargoValue 640000 1400000)
+			</DynamicGlobal>
+
+			<Global id="korolov.escortRate">
+				75
+			</Global>
+		</Properties>
+
+		<Events>
+			<OnDestroy>
+				(korOnShipDestroyed)
+			</OnDestroy>
+		</Events>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itHardenedReactiveArmor;"
+			count=				"20"
+			/>
+		
+		<Devices>
+			<Table>
+				<Group chance="25">
+					<Device slotID="turret"			deviceID="&itPartisanCannon;"/>
+					<Device deviceID="&itMissileDefense;"/>
+				</Group>
+				<Group chance="20">
+					<Device slotID="turret"			deviceID="&itArbalestCannon;"/>
+					<Device deviceID="&itMissileDefense;"/>
+				</Group>
+				<Group chance="15">
+					<Device slotID="fore_turret"	deviceID="&itOmniLaserCannon;"/>
+					<Device slotID="turret"			deviceID="&itTridentCannon;"/>
+					<Device item="&itArmorRepairDevice;"/>
+				</Group>
+				<Group chance="10">
+					<Device slotID="main"			deviceID="&itOmniLaserCannon;"/>
+					<Device slotID="turret"			deviceID="&itLaserArray;"/>
+				</Group>
+				<Group chance="10">
+					<Device slotID="main"			deviceID="&itMoskvaLightTurret;"/>
+					<Device slotID="turret"			deviceID="&itMoskvaLightTurret;"/>
+				</Group>
+				<Group chance="10">
+					<Device slotID="main"			deviceID="&itOmniPartisanCannon;"/>
+					<Device slotID="turret"			deviceID="&itOmniPartisanCannon;"/>
+				</Group>
+				<Group chance="5">
+					<Device slotID="turret"			deviceID="&itBallistaCannon;"/>
+				</Group>
+				<Group chance="5">
+					<Device slotID="turret"			deviceID="&itSlamCannon;"/>
+				</Group>
+			</Table>
+
+			<Table>
+				<Device slotID="shipSystems"	chance="50" deviceID="&vtShipSystems200;"/>
+				<Device slotID="shipSystems"	chance="15" deviceID="&vtShipSystems250;"/>
+				<Device slotID="shipSystems"	chance="10" deviceID="&vtShipSystems125;"/>
+				<Device slotID="shipSystems"	chance="25" deviceID="&vtShipSystems150;"/>
+			</Table>
+
+			<Device slotID="cargo"			deviceID="&itCargoHoldExpansion;"/>
+		</Devices>
+
+		<!-- Text -->
+		
+		<Language>
+			<Text id="korolov.shipDesc">
+				Scarab class superfreighters can carry a massive quantitiy of cargo,
+				even more than the Antares V. The sheer volume of cargo that they
+				move makes them a tempting target for pirates despite their tougher
+				hull.
+
+				Only Masters are rated to escort the Scarab class.
+			</Text>
+		</Language>
+		
 	</ShipClass>
 
 <!-- ITEM TYPES -->
