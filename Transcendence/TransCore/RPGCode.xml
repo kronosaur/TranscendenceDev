@@ -1015,12 +1015,15 @@
 								)
 							(itemsForUpgrade 
 								(filter itemsForSale theItemToBuy
-									(and (objGetItemProperty dockObj theItemToBuy 'installDevicePrice)
-											(!= (@ (objCanInstallItem shipObj theItemToBuy) 1) 'notCompatible)
-											)
+									(obj@ dockObj theItemToBuy 'installDevicePrice)
 									)
 								)
-							(maxLevel (map itemsForUpgrade 'reduceMax theItem (itmGetLevel theItem)))
+							(itemsCompatible
+								(filter itemsForUpgrade theItemToBuy
+									(!= (@ (objCanInstallItem shipObj theItemToBuy) 1) 'notCompatible)
+									)
+								)
+							(maxLevel (map itemsCompatible 'reduceMax theItem (itmGetLevel theItem)))
 							)
 							
 							(switch
@@ -1048,7 +1051,17 @@
 										enabled: Nil
 										desc: (scrTranslate gScreen 'actionUpgrade.noUpgradeInstall { category:(@ options 'category) })
 										}
-					
+
+								(not itemsCompatible)
+									{
+										visible: True
+										enabled: Nil
+										desc: (or
+												(objTranslate shipObj 'rpg.noCompatibleUpgrade { category:(@ options 'category) })
+												(scrTranslate gScreen "actionUpgrade.noCompatibleUpgrade" { category:(@ options 'category) })
+												)
+										}
+
 								{
 									visible: True
 									enabled: True
@@ -1072,14 +1085,17 @@
 								)
 							(itemsForUpgrade 
 								(filter itemsForSale theItemToBuy
-									(and (objGetArmorReplacePrice dockObj theItemToBuy)
-											(!= (@ (objCanInstallItem shipObj theItemToBuy) 1) 'notCompatible)
-											)
+									(objGetArmorReplacePrice dockObj theItemToBuy)
 									)
 								)
-							(maxLevel (map itemsForUpgrade 'reduceMax theItemToBuy (itmGetLevel theItemToBuy)))
+							(itemsCompatible
+								(filter itemsForUpgrade theItemToBuy
+									(!= (@ (objCanInstallItem shipObj theItemToBuy) 1) 'notCompatible)
+									)
+								)
+							(maxLevel (map itemsCompatible 'reduceMax theItemToBuy (itmGetLevel theItemToBuy)))
 							(maxLevelUpgrade
-								(map itemsForUpgrade 'reduceMax theItemToBuy 
+								(map itemsCompatible 'reduceMax theItemToBuy
 									(if (not (itmIsEqual theItemToBuy theItem 'ignoreInstalled))
 										(itmGetLevel theItemToBuy)
 										0
@@ -1104,7 +1120,17 @@
 										enabled: Nil
 										desc: (scrTranslate gScreen 'actionUpgrade.noUpgradeInstall { category:(@ options 'category) })
 										}
-					
+
+								(not itemsCompatible)
+									{
+										visible: True
+										enabled: Nil
+										desc: (or
+												(objTranslate shipObj 'rpg.noCompatibleUpgrade { category:(@ options 'category) })
+												(scrTranslate gScreen "actionUpgrade.noCompatibleUpgrade" { category:(@ options 'category) })
+												)
+										}
+
 								(ls maxLevelUpgrade (itmGetLevel theItem))
 									{
 										visible: True
@@ -1139,14 +1165,17 @@
 								)
 							(itemsForUpgrade 
 								(filter itemsForSale theItemToBuy
-									(and (objGetItemProperty dockObj theItemToBuy 'installDevicePrice)
-											(!= (@ (objCanInstallItem shipObj theItemToBuy) 1) 'notCompatible)
-											)
+									(obj@ dockObj theItemToBuy 'installDevicePrice)
 									)
 								)
-							(maxLevel (map itemsForUpgrade 'reduceMax theItemToBuy (itmGetLevel theItemToBuy)))
+							(itemsCompatible
+								(filter itemsForUpgrade theItemToBuy
+									(!= (@ (objCanInstallItem shipObj theItemToBuy) 1) 'notCompatible)
+									)
+								)
+							(maxLevel (map itemsCompatible 'reduceMax theItemToBuy (itmGetLevel theItemToBuy)))
 							(maxLevelUpgrade
-								(map itemsForUpgrade 'reduceMax theItemToBuy 
+								(map itemsCompatible 'reduceMax theItemToBuy
 									(if (not (itmIsEqual theItemToBuy theItem 'ignoreInstalled))
 										(itmGetLevel theItemToBuy)
 										0
@@ -1204,7 +1233,17 @@
 										enabled: Nil
 										desc: (scrTranslate gScreen 'actionUpgrade.noUpgradeInstall { category:(@ options 'category) })
 										}
-					
+
+								(not itemsCompatible)
+									{
+										visible: True
+										enabled: Nil
+										desc: (or
+												(objTranslate shipObj 'rpg.noCompatibleUpgrade { category:(@ options 'category) })
+												(scrTranslate gScreen "actionUpgrade.noCompatibleUpgrade" { category:(@ options 'category) })
+												)
+										}
+
 								(and (ls maxLevelUpgrade (itmGetLevel theItem))
 										(!= (@ options 'category) 'cargoHold)
 										)

@@ -1819,6 +1819,19 @@
 			<Text id="actionUpgrade.noUpgradeInstall.weapon">We do not install weapons.</Text>
 			<Text id="actionUpgrade.noUpgradeInstall.device">We do not install devices.</Text>
 
+			<Text id="actionUpgrade.noCompatibleUpgrade">
+				(typTranslate gType (cat "actionUpgrade.noCompatibleUpgrade." (@ gData 'category)) gData)
+			</Text>
+			<Text id="actionUpgrade.noCompatibleUpgrade.armor">We do not have any armor segments compatible with your ship.</Text>
+			<Text id="actionUpgrade.noCompatibleUpgrade.cargoHold">We do not have any cargo expansions compatible with your ship.</Text>
+			<Text id="actionUpgrade.noCompatibleUpgrade.drive">We do not have any drive upgrades compatible with your ship.</Text>
+			<Text id="actionUpgrade.noCompatibleUpgrade.launcher">We do not have any launchers compatible with your ship.</Text>
+			<Text id="actionUpgrade.noCompatibleUpgrade.reactor">We do not have any reactors compatible with your ship.</Text>
+			<Text id="actionUpgrade.noCompatibleUpgrade.shields">We do not have any shield generators compatible with your ship.</Text>
+			<Text id="actionUpgrade.noCompatibleUpgrade.weapon">We do not have any weapons compatible with your ship.</Text>
+			<Text id="actionUpgrade.noCompatibleUpgrade.device">We do not have any devices compatible with your ship.</Text>
+
+
 			<Text id="descRefuelConfirm:onlyAffordOne">
 				Each %itemSingle% costs %cost%. You can only afford a single one.
 			</Text>
