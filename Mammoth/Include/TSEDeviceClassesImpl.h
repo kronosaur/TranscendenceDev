@@ -89,7 +89,7 @@ class CAutoDefenseClass : public CDeviceClass
 		bool m_bOmnidirectional = false;		//	Omnidirectional
 		int m_iMinFireArc = 0;					//	Min angle of fire arc (degrees)
 		int m_iMaxFireArc = 0;					//	Max angle of fire arc (degrees)
-		Metric m_rRechargeTicks = 0;
+		Metric m_rRechargeDelay = 0;			//	Recharge delay (simulation seconds)
 
 		CDeviceClassRef m_pWeapon;
 		CSpaceObject *m_pTarget;

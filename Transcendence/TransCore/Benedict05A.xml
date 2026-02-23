@@ -47,6 +47,7 @@
 			</CanCreate>
 
 			<OnCreate>
+				(rpgCharacterSetMission &unidHugoSandoval; gSource)
 			</OnCreate>
 
 			<OnAccepted>
@@ -96,7 +97,7 @@
 							&unidBenedict;
 							&scBenedictAsterion;
 							wreckObj
-							{ repairAll:True }
+							{ repairAll:True mission:gSource}
 							)
 						)
 						
@@ -811,12 +812,12 @@
 								))
 								
 							;	Sandoval tells the player about the wave
-							
-							(if (geq (count enemies) 1)
+
+							(if enemies
 								(block ()
 									(objSendMessage gPlayerShip gSource (typTranslate &ovBenedict05ScanRange; 'msgIncomingWave))
 									(shpCancelOrders gPlayerShip)
-									(shpOrder gPlayerShip 'attack (@ enemies 0))
+									(shpOrder gPlayerShip 'attack enemies)
 									)
 								)
 								

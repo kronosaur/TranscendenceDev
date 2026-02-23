@@ -92,7 +92,7 @@ Nil
 (= Nil (list) {}) -> True
 ```
 
-Everything other than these two values is treated as being true:
+Everything other than these two values is treated as being non-Nil:
 
 ```lisp
 ; The following are some examples of values that are not Nil and therefor are treated as True

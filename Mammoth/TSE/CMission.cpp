@@ -681,7 +681,7 @@ void CMission::OnNewSystem (CSystem *pSystem)
 
 			if (m_dwLeftSystemOn != 0 || !m_fInMissionSystem)
 				{
-				const DWORD dwTimeAway = sysGetTicksElapsed(m_dwLeftSystemOn);
+				const DWORD dwTimeAway = GetUniverse().GetTicks() - m_dwLeftSystemOn;
 
 				//	Back in our system
 
