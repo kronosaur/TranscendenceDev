@@ -528,10 +528,7 @@
 										;	If we're giving out escort missions, then show the list of
 										;	freighters.
 									
-										(and (gr (objGetData gSource 'remainingMissions) 0)
-												(find '(0 1 2 3) playerLevel)
-												(not (objIsAbandoned (objGetObjRefData gSource 'charonStronghold)))
-												)
+										(and (gr (objGetData gSource 'remainingMissions) 0))
 											(scrShowScreen gScreen &dsKorolovEscortList;)
 												
 										;	Otherwise, nothing
@@ -709,11 +706,12 @@
 					; Allow a finite number of escort missions from each station
 					(objSetData gSource 'remainingMissions remainingMissions)
 
-					; If we are in sandbox mode setup an event to gradually replenish missions
-					(if (korIsSandboxMode) (block ()
-						(objSet@ gSource 'maxRemainingMissions remainingMissions)
-						(sysAddObjTimerEvent (@ gSource 'missionReplenishDelay) gSource 'SandboxModeRefreshMissions)
-						))
+					; Setup an event to check if we need to keep offering missions
+					; in case sandbox mode gets turned on. Some gameplay code in
+					; mods may only activate once the player loads in, or if the
+					; player is using debug mods to toggle sandbox mode.
+					(objSet@ gSource 'maxRemainingMissions remainingMissions)
+					(sysAddObjTimerEvent (@ gSource 'missionReplenishDelay) gSource 'SandboxModeRefreshMissions)
 
 					; Find the primary Charon stronghold in the system
 					(setq charonStronghold (chrGetPrimaryStronghold gSource))
@@ -772,13 +770,15 @@
 			</GetRumors>
 
 			<SandboxModeRefreshMissions>
-				(block ()
-					;	Add a new mission if we dont have enough
-					(if (ls (objGetData gSource 'remainingMissions) (obj@ gSource 'maxRemainingMissions))
-						(objIncData gSource 'remainingMissions 1)
+				(if (korIsSandboxMode)
+					(block ()
+						;	Add a new mission if we dont have enough
+						(if (ls (objGetData gSource 'remainingMissions) (obj@ gSource 'maxRemainingMissions))
+							(objIncData gSource 'remainingMissions 1)
+							)
+						;	Set the next event
+						(sysAddObjTimerEvent (@ gSource 'missionReplenishDelay) gSource 'SandboxModeRefreshMissions)
 						)
-					;	Set the next event
-					(sysAddObjTimerEvent (@ gSource 'missionReplenishDelay) gSource 'SandboxModeRefreshMissions)
 					)
 			</SandboxModeRefreshMissions>
 		</Events>
