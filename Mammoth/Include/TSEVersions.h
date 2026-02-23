@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							59;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
-constexpr DWORD SYSTEM_SAVE_VERSION =					220;
+constexpr DWORD SYSTEM_SAVE_VERSION =					221;
 
 //	Uncomment out the following define when building a stable release
 
@@ -1033,6 +1033,13 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 //					'maxCargoSpace			Total cargo space in cubic meters (previously tons)
 //			(objGetCargoSpaceLeft obj)
 //				DEPRECATED: returns cargo space in liters, for compatibility math. Name implies returning in cubic meters though.
+//			(sysAddEncounterEvent / sysAddEncounterEventAtDist / sysCreateEncounter / sysCreateShip)
+//				All Encounter functions updated to accept options struct consistent with sysCreateShip
+//				Corrections to Encounter functions to match behavior to documentation and sysCreateShip
+//				New options:
+//					level			Perform ShipTable lookups using the speficied level (instead of system level)
+//					levelAdj		Perform ShipTable lookups using system level + levelAdj
+//					ignoreLimits	Ignore any ship limits in ShipTable lookups
 //			(typGetDataField type field)
 //				New and updated fields
 //					;;ItemType
@@ -1939,6 +1946,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					220;
 // 
 //  220: 2.0 Alpha 9
 //		Add m_iDefaultFireAngle to CInstalledDevice
+//
+//  221: 2.0 Alpha 9
 //		Add m_pSovereign to CTimedEncounterEvent
 //		Add m_pOverride to CTimedEncounterEvent
 //		Add m_iLevel to CTimedEncounterEvent

@@ -167,7 +167,7 @@ CTimedEncounterEvent::CTimedEncounterEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)
 	if (Ctx.dwVersion >= 161)
 		m_vPos.ReadFromStream(*Ctx.pStream);
 
-	if (Ctx.dwVersion >= 220)
+	if (Ctx.dwVersion >= 221)
 		{
 		CSystem::ReadSovereignRefFromStream(Ctx, &m_pSovereign);
 
