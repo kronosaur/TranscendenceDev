@@ -72,23 +72,23 @@
 		<Properties>
 
 			<DynamicGlobal id="korolov.cargoValue.0">
-				(korRandomCargoValue 25000 40000)
+				(randomGaussian 25000 40000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.1">
-				(korRandomCargoValue 30000 50000)
+				(randomGaussian 30000 50000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.2">
-				(korRandomCargoValue 40000 65000)
+				(randomGaussian 40000 65000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				(korRandomCargoValue 50000 80000)
+				(randomGaussian 50000 80000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				(korRandomCargoValue 65000 100000)
+				(randomGaussian 65000 100000)
 			</DynamicGlobal>
 
 			<Global id="korolov.escortRate">
@@ -197,15 +197,15 @@
 			; apprentices cannot escort
 
 			<DynamicGlobal id="korolov.cargoValue.2">
-				(korRandomCargoValue 120000 288000)
+				(randomGaussian 120000 288000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				(korRandomCargoValue 240000 480000)
+				(randomGaussian 240000 480000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				(korRandomCargoValue 400000 480000)
+				(randomGaussian 400000 480000)
 			</DynamicGlobal>
 
 			<Global id="korolov.escortRate">
@@ -321,11 +321,11 @@
 			; apprentices cannot escort
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				(korRandomCargoValue 320000 800000)
+				(randomGaussian 320000 800000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				(korRandomCargoValue 600000 1000000)
+				(randomGaussian 600000 1000000)
 			</DynamicGlobal>
 
 			<Global id="korolov.escortRate">
@@ -400,23 +400,23 @@
 
 		<Properties>
 			<DynamicGlobal id="korolov.cargoValue.0">
-				(korRandomCargoValue 15000 20000)
+				(randomGaussian 15000 20000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.1">
-				(korRandomCargoValue 15000 30000)
+				(randomGaussian 15000 30000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.2">
-				(korRandomCargoValue 25000 50000)
+				(randomGaussian 25000 50000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				(korRandomCargoValue 30000 50000)
+				(randomGaussian 30000 50000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				(korRandomCargoValue 45000 55000)
+				(randomGaussian 45000 55000)
 			</DynamicGlobal>
 
 			<Global id="korolov.escortRate">
@@ -493,23 +493,23 @@
 
 		<Properties>
 			<DynamicGlobal id="korolov.cargoValue.0">
-				(korRandomCargoValue 20000 40000)
+				(randomGaussian 20000 40000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.1">
-				(korRandomCargoValue 24000 50000)
+				(randomGaussian 24000 50000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.2">
-				(korRandomCargoValue 30000 80000)
+				(randomGaussian 30000 80000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				(korRandomCargoValue 60000 100000)
+				(randomGaussian 60000 100000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				(korRandomCargoValue 80000 120000)
+				(randomGaussian 80000 120000)
 			</DynamicGlobal>
 
 			<Global id="korolov.escortRate">
@@ -586,15 +586,15 @@
 			; apprentices cannot escort
 
 			<DynamicGlobal id="korolov.cargoValue.2">
-				(korRandomCargoValue 160000 320000)
+				(randomGaussian 160000 320000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				(korRandomCargoValue 320000 800000)
+				(randomGaussian 320000 800000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				(korRandomCargoValue 600000 1000000)
+				(randomGaussian 600000 1000000)
 			</DynamicGlobal>
 
 			<Global id="korolov.escortRate">
@@ -645,23 +645,23 @@
 
 		<Properties>
 			<DynamicGlobal id="korolov.cargoValue.0">
-				(korRandomCargoValue 20000 35000)
+				(randomGaussian 20000 35000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.1">
-				(korRandomCargoValue 20000 35000)
+				(randomGaussian 20000 35000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.2">
-				(korRandomCargoValue 30000 45000)
+				(randomGaussian 30000 45000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				(korRandomCargoValue 40000 60000)
+				(randomGaussian 40000 60000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				(korRandomCargoValue 50000 70000)
+				(randomGaussian 50000 70000)
 			</DynamicGlobal>
 
 			<Global id="korolov.escortRate">
@@ -744,15 +744,15 @@
 			; apprentices cannot escort
 
 			<DynamicGlobal id="korolov.cargoValue.2">
-				(korRandomCargoValue 60000 100000)
+				(randomGaussian 60000 100000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				(korRandomCargoValue 80000 130000)
+				(randomGaussian 80000 130000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				(korRandomCargoValue 110000 160000)
+				(randomGaussian 110000 160000)
 			</DynamicGlobal>
 
 			<Global id="korolov.escortRate">
@@ -841,11 +841,11 @@
 			; journeymen cannot escort
 
 			<DynamicGlobal id="korolov.cargoValue.3">
-				(korRandomCargoValue 320000 1000000)
+				(randomGaussian 320000 1000000)
 			</DynamicGlobal>
 
 			<DynamicGlobal id="korolov.cargoValue.4">
-				(korRandomCargoValue 640000 1400000)
+				(randomGaussian 640000 1400000)
 			</DynamicGlobal>
 
 			<Global id="korolov.escortRate">
