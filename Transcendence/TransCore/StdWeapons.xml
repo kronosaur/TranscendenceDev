@@ -456,7 +456,7 @@
 				type=				"missile"
 
 				repeating=			"3"
-				repeatingDelay=		"1"
+				repeatingShotDelay=	"4"
 				damage=				"kinetic:1d6+1; momentum1"
 				fireRate=			"24"
 				missileSpeed=		"40"
@@ -1456,7 +1456,7 @@
 				type=				"missile"
 
 				repeating=			"3"
-				repeatingDelay=		"1"
+				repeatingShotDelay=	"4"
 				damage=				"blast:1d6+1; momentum1; WMD3"
 				fireRate=			"15"
 				missileSpeed=		"40"

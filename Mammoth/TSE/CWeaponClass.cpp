@@ -38,7 +38,7 @@
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
 #define RECOIL_ATTRIB							CONSTLIT("recoil")
 #define REPEATING_ATTRIB						CONSTLIT("repeating")
-#define REPEATING_DELAY_LEGACY_ATTRIB					CONSTLIT("repeatingDelay")
+#define REPEATING_DELAY_LEGACY_ATTRIB			CONSTLIT("repeatingDelay")
 #define REPEATING_SHOT_DELAY_ATTRIB				CONSTLIT("repeatingShotDelay")
 #define REPORT_AMMO_ATTRIB						CONSTLIT("reportAmmo")
 #define SHIP_COUNTER_PER_SHOT_ATTRIB			CONSTLIT("shipCounterPerShot")
