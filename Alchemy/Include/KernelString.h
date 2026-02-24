@@ -276,6 +276,10 @@ Kernel::CString strSubString (const Kernel::CString &sString, int iOffset, int i
 Kernel::CString strSubStringWrapAround (const Kernel::CString& sString, int iOffset, int iLength = -1);
 Kernel::CString strTitleCapitalize (const Kernel::CString &sString, const char **pExceptions = NULL, int iExceptionsCount = 0);
 double strToDouble (const Kernel::CString &sString, double rFailResult, bool *retbFailed = NULL);
+
+#define UNIT_STR_MASS_KG							CONSTLIT("kg")
+#define UNIT_STR_MASS_TONS							CONSTLIT("t")
+double strMassToDoubleTons (const Kernel::CString &sString, double rFailResult, bool *retbFailed = NULL);
 Kernel::CString strToFilename (const Kernel::CString &sString);
 int strToInt (const Kernel::CString &sString, int iFailResult, bool *retbFailed = NULL);
 Kernel::CString strToLower (const Kernel::CString &sString);

@@ -3022,6 +3022,32 @@ double Kernel::strToDouble (const CString &sString, double rFailResult, bool *re
 		}
 	}
 
+//	strMassToDouble
+//
+//	Converts a mass string to a double as per strToDouble,
+//  but expects units to be provided, otherwise retbFailed
+//  returns as true.
+//
+double Kernel::strMassToDoubleTons (const Kernel::CString &sString, double rFailResult, bool *retbFailed)
+	{
+	if (strEndsWith(sString, UNIT_STR_MASS_TONS))
+		{
+		CString sClean = strSlice(sString, 0, -2);
+		return strToDouble(sClean, rFailResult, retbFailed);
+		}
+	else if (strEndsWith(sString, UNIT_STR_MASS_KG))
+		{
+		CString sClean = strSlice(sString, 0, -3);
+		return strToDouble(sClean, rFailResult, retbFailed) * 0.001;
+		}
+	else
+		{
+		if (retbFailed)
+			*retbFailed = true;
+		return rFailResult;
+		}
+	}
+
 CString Kernel::strToFilename (const CString &sString)
 
 //	strToFilename
