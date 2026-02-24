@@ -1120,20 +1120,18 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					221;
 //			<Hull>
 //				cargoSpace: now specifies CBM instead of tons
 //					If <API59, always uses the adventure compatibility mappings
-//				maxArmor: deprecated
-//				maxArmorClass:
+//				maxArmor:
 //					Not recommended (use <ArmorLimit .../> instead)
-//					Provides same functionality as maxArmor, but allows specifying
-//					non-classed armor sizes in floating point "compatibility tons",
-//					rather than in integer kg.
+//					If >=API59, emits a warning if unitless mass is provided
+//					If in an dventure with armor classes, use armor classes instead
+//					If in an adventure without armor classes, use units (e.g. 10.5t or 10500kg) instead
 //				maxCargoSpace: now specifies CBM instead of tons
 //					If <API59, always uses the adventure compatibility mappings
-//				stdArmor: deprecated
-//				stdArmorClass:
+//				stdArmor:
 //					Not recommended (use <ArmorLimit .../> instead)
-//					Provides same functionality as stdArmor, but allows specifying
-//					non-classed armor sizes in floating point "compatibility tons",
-//					rather than in integer kg.
+//					If >=API59, emits a warning if unitless mass is provided
+//					If in an dventure with armor classes, use armor classes instead
+//					If in an adventure without armor classes, use units (e.g. 10.5t or 10500kg) instead
 //			<DeviceSlots>
 //				<DeviceSlot>
 //					fireAngle: if used with minFireArc and maxFireArc or omnidirectional, can now specify a default angle of fire
