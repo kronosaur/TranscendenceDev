@@ -1423,12 +1423,14 @@
 							(switch
 								(= rewardName 'allSuccessInARow.3)
 									(block ()
-										(setq reward (itmCreate &itCashCardGold; 1))
+										(setq reward (itmCreate &itCashCardGoldReward; 1))
+										(itmSetKnown reward True)
 										(typSet@ &unidKorolovShipping; 'allSuccessInARow.3 1)
 										)
 								(= rewardName 'allSuccessInARow.10)
 									(block ()
-										(setq reward (itmCreate &itCashCardPlatinum; 1))
+										(setq reward (itmCreate &itCashCardPlatinumReward; 1))
+										(itmSetKnown reward True)
 										(typSet@ &unidKorolovShipping; 'allSuccessInARow.10 1)
 										)
 								; if no reward we got here by mistake

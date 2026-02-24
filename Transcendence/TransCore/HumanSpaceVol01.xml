@@ -1613,7 +1613,7 @@
 	<!ENTITY rsCorporateArmorDealer		"0x0010004B">
 	<!ENTITY rsCorporateFuelDepot		"0x0010004C">
 	<!ENTITY smCorporateSpace			"0x0010004D">
-	<!ENTITY tbCorporateDeliveryTransport		"0x0010004E">
+	<!ENTITY tbCorporateDeliveryTransport	"0x0010004E">
 	<!ENTITY rsCorporateCruiserHero		"0x0010004F">
 	<!ENTITY rsCorporateManufacturing	"0x00100050">
 	<!ENTITY scCorporateExplorer		"0x00100051">
@@ -1624,6 +1624,9 @@
 	<!ENTITY tbCorpAutonDefenders		"0x00100056">
 	<!ENTITY tbCorpMakayevDefenders		"0x00100057">
 	<!ENTITY tbCorpRasiermesserDefenders	"0x00100058">
+	<!ENTITY itCashCardBlueReward		"0x00100059">
+	<!ENTITY itCashCardGoldReward		"0x0010005A">
+	<!ENTITY itCashCardPlatinumReward	"0x0010005B">
 	
 	<!-- 0060-007F COMMONWEALTH FLEET -->
 	
