@@ -319,6 +319,9 @@
 #define KEY_CORE_DMG_METHOD_CRUSH						CONSTLIT("crush")
 #define KEY_CORE_DMG_METHOD_PIERCE						CONSTLIT("pierce")
 #define KEY_CORE_DMG_METHOD_SHRED						CONSTLIT("shred")
+#define KEY_CORE_DMG_METHOD_SCOUR						CONSTLIT("scour")
+#define KEY_CORE_DMG_METHOD_OVERWHELM					CONSTLIT("overwhelm")
+#define KEY_CORE_DMG_METHOD_DIRECT						CONSTLIT("direct")
 
 //	core.hide???Immune
 //

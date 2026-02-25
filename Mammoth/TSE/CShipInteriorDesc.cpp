@@ -316,7 +316,7 @@ const SCompartmentDesc& CShipInteriorDesc::GetDefaultCompartment() const
 Metric CShipInteriorDesc::GetFortificationAdj(EDamageMethod iMethod, ECompartmentTypes iCompartmentType) const
 	{
 	Metric rAdj = m_Fortification.Get(iMethod);
-	return IS_NAN(rAdj) ? g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipCompartmentGeneral(iMethod) : rAdj;
+	return IS_NAN(rAdj) ? g_pUniverse->GetEngineOptions().GetDmgMethodFortificationShipCompartmentGeneral(iMethod) : rAdj;
 	}
 
 int CShipInteriorDesc::GetHitPoints (void) const

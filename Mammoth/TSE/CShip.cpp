@@ -4716,12 +4716,12 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 					if (bTrueCriticalSegments && bSectMarkedCritical)
 						{
 						if (bUncrewedCompartment)
-							rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCriticalUncrewed(iMethod);
+							rExternFortify = g_pUniverse->GetEngineOptions().GetDmgMethodFortificationShipArmorCriticalUncrewed(iMethod);
 						else
-							rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCritical(iMethod);
+							rExternFortify = g_pUniverse->GetEngineOptions().GetDmgMethodFortificationShipArmorCritical(iMethod);
 						}
 					else
-						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCritical(iMethod);
+						rExternFortify = g_pUniverse->GetEngineOptions().GetDmgMethodFortificationShipArmorNonCritical(iMethod);
 					}
 				Ctx.ArmorExternFortification.Set(iMethod, rExternFortify);
 				}
@@ -4758,12 +4758,12 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 				if (bTrueCriticalSegments && bSectMarkedCritical)
 					{
 					if (bUncrewedCompartment)
-						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCriticalUncrewed(iMethod);
+						rExternFortify = g_pUniverse->GetEngineOptions().GetDmgMethodFortificationShipArmorCriticalUncrewed(iMethod);
 					else
-						rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorCritical(iMethod);
+						rExternFortify = g_pUniverse->GetEngineOptions().GetDmgMethodFortificationShipArmorCritical(iMethod);
 					}
 				else
-					rExternFortify = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCritical(iMethod);
+					rExternFortify = g_pUniverse->GetEngineOptions().GetDmgMethodFortificationShipArmorNonCritical(iMethod);
 				}
 			Ctx.ArmorExternFortification.SetWMD(rExternFortify);
 			}
@@ -4933,7 +4933,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			{
 			EDamageMethodSystem iDmgSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
 			EDamageMethod iMethod;
-			Metric rChanceToDie = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestructionChance();
+			Metric rChanceToDie = g_pUniverse->GetEngineOptions().GetDmgMethodFortificationShipArmorNonCriticalDestructionChance();
 			int iChanceOfDeath = mathRoundStochastic(rChanceToDie * 100);
 
 			if (iDmgSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
@@ -4944,7 +4944,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 					{
 					iMethod = PHYSICALIZED_DAMAGE_METHODS[i];
 
-					Metric rNonCriticalAdjust = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestruction(iMethod);
+					Metric rNonCriticalAdjust = g_pUniverse->GetEngineOptions().GetDmgMethodFortificationShipArmorNonCriticalDestruction(iMethod);
 
 					rDamageMethodAdj *= Ctx.CalcDamageMethodFortifiedAdj(iMethod, rNonCriticalAdjust);
 					}
@@ -4973,7 +4973,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 				//	This is to preserve legacy balance until this system gets a
 				//  proper replacement
 
-				Metric rNonCriticalAdjust = g_pUniverse->GetEngineOptions().GetDamageMethodAdjShipArmorNonCriticalDestruction(iMethod);
+				Metric rNonCriticalAdjust = g_pUniverse->GetEngineOptions().GetDmgMethodFortificationShipArmorNonCriticalDestruction(iMethod);
 
 				int iWMDDamage = Ctx.CalcDamageMethodAdjDamage(iMethod, rNonCriticalAdjust);
 

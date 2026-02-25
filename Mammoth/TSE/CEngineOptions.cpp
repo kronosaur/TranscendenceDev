@@ -572,14 +572,14 @@ bool CEngineOptions::InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElemen
 	return true;
 	}
 
-//	InitDamageMethodAdjFromCC
+//	InitDamageMethodFortificationFromCC
 //
 //	Use an ICCItem loaded from an adventure property to initialize
 //	Damage Method Adj
 // 
 //	Note: Requires adj to be pre-configured to the appropriate defaults
 //
-bool CEngineOptions::InitDamageMethodAdjFromCC(SDesignLoadCtx& Ctx, SDamageMethodAdj& adj, ICCItem* pStruct)
+bool CEngineOptions::InitDamageMethodFortificationFromCC(SDesignLoadCtx& Ctx, SDamageMethodFortification& adj, ICCItem* pStruct)
 	{
 	switch (m_iDamageMethodSystem)
 		{
@@ -588,6 +588,8 @@ bool CEngineOptions::InitDamageMethodAdjFromCC(SDesignLoadCtx& Ctx, SDamageMetho
 			adj.SetCrush(max(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_CRUSH, adj.GetCrush()), 0.0));
 			adj.SetPierce(max(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_PIERCE, adj.GetPierce()), 0.0));
 			adj.SetShred(max(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_SHRED, adj.GetShred()), 0.0));
+			adj.SetScour(max(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_SCOUR, adj.GetScour()), 0.0));
+			adj.SetOverwhelm(max(pStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_OVERWHELM, adj.GetOverwhelm()), 0.0));
 			return true;
 			}
 		case EDamageMethodSystem::dmgMethodSysWMD:
@@ -822,7 +824,7 @@ CDamageMethodDesc CEngineOptions::GetDefaultWMDAdj (int apiVersion)
 	return Desc;
 	}
 
-Metric CEngineOptions::GetDamageMethodAdj(const SDamageMethodAdj &adj, EDamageMethod iMethod) const
+Metric CEngineOptions::GetDamageMethodFortification(const SDamageMethodFortification &adj, EDamageMethod iMethod) const
 	{
 	switch (m_iDamageMethodSystem)
 		{
@@ -836,10 +838,16 @@ Metric CEngineOptions::GetDamageMethodAdj(const SDamageMethodAdj &adj, EDamageMe
 					return adj.GetPierce();
 				case EDamageMethod::methodShred:
 					return adj.GetShred();
+				case EDamageMethod::methodScour:
+					return adj.GetScour();
+				case EDamageMethod::methodOverwhelm:
+					return adj.GetOverwhelm();
+				case EDamageMethod::methodDirect:
+					return 0.0;
 				default:
 					{
 					ASSERT(false);
-					return 1.0;
+					return 0.0;
 					}
 				}
 			}
@@ -945,7 +953,7 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 			}
 
 		//	We need to initialize the engine defaults for this damage method before loading up any custom
-		//	adventure-level defaults, since InitDamageMethodAdjFromCC requires that the engine default
+		//	adventure-level defaults, since InitDamageMethodFortificationFromCC requires that the engine default
 		//	is already loaded up
 
 		InitDefaultDamageMethods();
@@ -968,14 +976,14 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 		ICCItem* pItmArmorStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_ITEM_ARMOR);
 		if (pItmArmorStruct)
 			{
-			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodItemAdj.Armor, pItmArmorStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodItemAdj.Armor, pItmArmorStruct))
 				return false;
 			}
 
 		ICCItem* pItmShieldStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_ITEM_SHIELD);
 		if (pItmShieldStruct)
 			{
-			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodItemAdj.Shield, pItmShieldStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodItemAdj.Shield, pItmShieldStruct))
 				return false;
 			}
 
@@ -988,28 +996,28 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 		ICCItem* pShipArmorCriticalStruct = pShipArmorStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_CRITICAL);
 		if (pShipArmorCriticalStruct)
 			{
-			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.Critical, pShipArmorCriticalStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodShipAdj.Armor.Critical, pShipArmorCriticalStruct))
 				return false;
 			}
 
 		ICCItem* pShipArmorCriticalUncrewedStruct = pShipArmorStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_CRITICAL_UNCREWED);
 		if (pShipArmorCriticalUncrewedStruct)
 			{
-			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.CriticalUncrewed, pShipArmorCriticalUncrewedStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodShipAdj.Armor.CriticalUncrewed, pShipArmorCriticalUncrewedStruct))
 				return false;
 			}
 
 		ICCItem* pShipArmorNonCriticalStruct = pShipArmorStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_NONCRITICAL);
 		if (pShipArmorNonCriticalStruct)
 			{
-			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.NonCritical, pShipArmorNonCriticalStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodShipAdj.Armor.NonCritical, pShipArmorNonCriticalStruct))
 				return false;
 			}
 
 		ICCItem* pShipArmorNonCriticalDestructionStruct = pShipArmorStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_NONCRITICAL_DESTRUCTION);
 		if (pShipArmorNonCriticalDestructionStruct)
 			{
-			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Armor.NonCriticalDestruction, pShipArmorNonCriticalDestructionStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodShipAdj.Armor.NonCriticalDestruction, pShipArmorNonCriticalDestructionStruct))
 				return false;
 			}
 
@@ -1027,28 +1035,28 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 		ICCItem* pShipCompartmentGeneralStruct = pShipCompartmentStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_GENERAL);
 		if (pShipCompartmentGeneralStruct)
 			{
-			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Compartment.General, pShipCompartmentGeneralStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodShipAdj.Compartment.General, pShipCompartmentGeneralStruct))
 				return false;
 			}
 
 		ICCItem* pShipCompartmentCargoStruct = pShipCompartmentStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_CARGO);
 		if (pShipCompartmentCargoStruct)
 			{
-			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Compartment.Cargo, pShipCompartmentCargoStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodShipAdj.Compartment.Cargo, pShipCompartmentCargoStruct))
 				return false;
 			}
 
 		ICCItem* pShipCompartmentMainDriveStruct = pShipCompartmentStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_MAIN_DRIVE);
 		if (pShipCompartmentMainDriveStruct)
 			{
-			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Compartment.MainDrive, pShipCompartmentMainDriveStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodShipAdj.Compartment.MainDrive, pShipCompartmentMainDriveStruct))
 				return false;
 			}
 
 		ICCItem* pShipCompartmentUncrewedStruct = pShipCompartmentStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_UNCREWED);
 		if (pShipCompartmentUncrewedStruct)
 			{
-			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodShipAdj.Compartment.Uncrewed, pShipCompartmentUncrewedStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodShipAdj.Compartment.Uncrewed, pShipCompartmentUncrewedStruct))
 				return false;
 			}
 
@@ -1061,42 +1069,42 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 		ICCItem* pStationHullSingleStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_SINGLE);
 		if (pStationHullSingleStruct)
 			{
-			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Single, pStationHullSingleStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodStationAdj.Hull.Single, pStationHullSingleStruct))
 				return false;
 			}
 
 		ICCItem* pStationHullMultiStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_MULTI);
 		if (pStationHullMultiStruct)
 			{
-			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Multi, pStationHullMultiStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodStationAdj.Hull.Multi, pStationHullMultiStruct))
 				return false;
 			}
 
 		ICCItem* pStationHullAsteroidStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_ASTEROID);
 		if (pStationHullAsteroidStruct)
 			{
-			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Asteroid, pStationHullAsteroidStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodStationAdj.Hull.Asteroid, pStationHullAsteroidStruct))
 				return false;
 			}
 
 		ICCItem* pStationHullUndergroundStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_UNDERGROUND);
 		if (pStationHullUndergroundStruct)
 			{
-			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Underground, pStationHullUndergroundStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodStationAdj.Hull.Underground, pStationHullUndergroundStruct))
 				return false;
 			}
 
 		ICCItem* pStationHullUncrewedStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_UNCREWED);
 		if (pStationHullUncrewedStruct)
 			{
-			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Uncrewed, pStationHullUncrewedStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodStationAdj.Hull.Uncrewed, pStationHullUncrewedStruct))
 				return false;
 			}
 
 		ICCItem* pStationHullArmorStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_ARMOR);
 		if (pStationHullArmorStruct)
 			{
-			if (!InitDamageMethodAdjFromCC(Ctx, m_DamageMethodStationAdj.Hull.Armor, pStationHullArmorStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodStationAdj.Hull.Armor, pStationHullArmorStruct))
 				return false;
 			}
 
