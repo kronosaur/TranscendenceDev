@@ -49,6 +49,7 @@
 				levelFrequency=			"ruurv ----- ----- ----- -----"
 
 				locationCriteria=		"--planetary"
+				maxInSystem=			"1"
 				/>
 
 		<ImageVariants>
