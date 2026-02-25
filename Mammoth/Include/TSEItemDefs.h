@@ -350,6 +350,10 @@ class CArmorClassDefinitions
 			CString sText;					//	Text to display on item
 			CString sTextShort;				//	Text to display in size-constrained UIs
 
+			//	Sizeclass stats
+			SDamageMethodFortification Fortification;	//	Size bonus from fortification
+
+			//	Cached values
 			int iCount = 0;					//	Number of armor types for this class
 			};
 

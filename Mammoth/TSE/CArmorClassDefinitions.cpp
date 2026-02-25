@@ -12,6 +12,7 @@
 #define LABEL_SHORT_ATTRIB						CONSTLIT("shortLabel")
 #define MASS_ATTRIB								CONSTLIT("mass")
 #define COMPATIBILITY_SIZE_ATTRIB				CONSTLIT("compatibilitySize")
+#define SIZE_FORTIFICATION						CONSTLIT("fortification")
 
 #define ARMOR_CLASS_ELEMENT						CONSTLIT("ArmorClass")
 #define ARMOR_CLASS_ELEMENT_LEGACY				CONSTLIT("ArmorMass")
