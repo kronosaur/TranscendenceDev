@@ -398,84 +398,84 @@ void CEngineOptions::InitDefaultDamageMethods()
 			{
 			//	Items
 
-			m_DamageMethodItemAdj.Armor.Reset();
-			m_DamageMethodItemAdj.Shield.Reset();
+			m_DmgMethodItemFortification.Armor.Reset();
+			m_DmgMethodItemFortification.Shield.Reset();
 
 			//	Ships
 
-			m_DamageMethodShipAdj.Armor.Critical.Reset();
-			m_DamageMethodShipAdj.Armor.Critical.SetShred(1.0);
-			m_DamageMethodShipAdj.Armor.CriticalUncrewed.Reset();
-			m_DamageMethodShipAdj.Armor.CriticalUncrewed.SetShred(1.0);
-			m_DamageMethodShipAdj.Armor.NonCritical.Reset();
-			m_DamageMethodShipAdj.Armor.NonCritical.SetPierce(1.0);
-			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.Reset();
-			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.SetShred(1.0);
-			m_DamageMethodShipAdj.Armor.rNonCriticalDestructionChance = 0.05;
+			m_DmgMethodShipFortification.Armor.Critical.Reset();
+			m_DmgMethodShipFortification.Armor.Critical.SetShred(1.0);
+			m_DmgMethodShipFortification.Armor.CriticalUncrewed.Reset();
+			m_DmgMethodShipFortification.Armor.CriticalUncrewed.SetShred(1.0);
+			m_DmgMethodShipFortification.Armor.NonCritical.Reset();
+			m_DmgMethodShipFortification.Armor.NonCritical.SetPierce(1.0);
+			m_DmgMethodShipFortification.Armor.NonCriticalDestruction.Reset();
+			m_DmgMethodShipFortification.Armor.NonCriticalDestruction.SetShred(1.0);
+			m_DmgMethodShipFortification.Armor.rNonCriticalDestructionChance = 0.05;
 
-			m_DamageMethodShipAdj.Compartment.General.Reset();
-			m_DamageMethodShipAdj.Compartment.General.SetShred(1.0);
-			m_DamageMethodShipAdj.Compartment.Cargo.Reset();
-			m_DamageMethodShipAdj.Compartment.Cargo.SetCrush(1.0);
-			m_DamageMethodShipAdj.Compartment.MainDrive.Reset();
-			m_DamageMethodShipAdj.Compartment.MainDrive.SetShred(1.0);
-			m_DamageMethodShipAdj.Compartment.Uncrewed.Reset();
-			m_DamageMethodShipAdj.Compartment.Uncrewed.SetCrush(1.0);
+			m_DmgMethodShipFortification.Compartment.General.Reset();
+			m_DmgMethodShipFortification.Compartment.General.SetShred(1.0);
+			m_DmgMethodShipFortification.Compartment.Cargo.Reset();
+			m_DmgMethodShipFortification.Compartment.Cargo.SetCrush(1.0);
+			m_DmgMethodShipFortification.Compartment.MainDrive.Reset();
+			m_DmgMethodShipFortification.Compartment.MainDrive.SetShred(1.0);
+			m_DmgMethodShipFortification.Compartment.Uncrewed.Reset();
+			m_DmgMethodShipFortification.Compartment.Uncrewed.SetCrush(1.0);
 
 			//	Stations
 
-			m_DamageMethodStationAdj.Hull.Armor.Reset();
-			m_DamageMethodStationAdj.Hull.Armor.SetPierce(1.0);
-			m_DamageMethodStationAdj.Hull.Asteroid.Reset();
-			m_DamageMethodStationAdj.Hull.Asteroid.SetCrush(1.0);
-			m_DamageMethodStationAdj.Hull.Multi.Reset();
-			m_DamageMethodStationAdj.Hull.Multi.SetShred(1.0);
-			m_DamageMethodStationAdj.Hull.Single.Reset();
-			m_DamageMethodStationAdj.Hull.Uncrewed.Reset();
-			m_DamageMethodStationAdj.Hull.Uncrewed.SetCrush(1.0);
-			m_DamageMethodStationAdj.Hull.Underground.Reset();
-			m_DamageMethodStationAdj.Hull.Underground.SetCrush(0.31);
-			m_DamageMethodStationAdj.Hull.Underground.SetPierce(0.31);
+			m_DmgMethodStationFortification.Hull.Armor.Reset();
+			m_DmgMethodStationFortification.Hull.Armor.SetPierce(1.0);
+			m_DmgMethodStationFortification.Hull.Asteroid.Reset();
+			m_DmgMethodStationFortification.Hull.Asteroid.SetCrush(1.0);
+			m_DmgMethodStationFortification.Hull.Multi.Reset();
+			m_DmgMethodStationFortification.Hull.Multi.SetShred(1.0);
+			m_DmgMethodStationFortification.Hull.Single.Reset();
+			m_DmgMethodStationFortification.Hull.Uncrewed.Reset();
+			m_DmgMethodStationFortification.Hull.Uncrewed.SetCrush(1.0);
+			m_DmgMethodStationFortification.Hull.Underground.Reset();
+			m_DmgMethodStationFortification.Hull.Underground.SetCrush(0.31);
+			m_DmgMethodStationFortification.Hull.Underground.SetPierce(0.31);
 			break;
 			}
 		case EDamageMethodSystem::dmgMethodSysWMD:
 			{
 			//	Items
 
-			m_DamageMethodItemAdj.Armor.Reset();
-			m_DamageMethodItemAdj.Shield.Reset();
+			m_DmgMethodItemFortification.Armor.Reset();
+			m_DmgMethodItemFortification.Shield.Reset();
 
 			//	Ships
 
-			m_DamageMethodShipAdj.Armor.Critical.Reset();
-			m_DamageMethodShipAdj.Armor.CriticalUncrewed.Reset();
-			m_DamageMethodShipAdj.Armor.NonCritical.Reset();
-			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.Reset();
-			m_DamageMethodShipAdj.Armor.NonCriticalDestruction.SetWMD(1.0);
-			m_DamageMethodShipAdj.Armor.rNonCriticalDestructionChance = 0.05;
+			m_DmgMethodShipFortification.Armor.Critical.Reset();
+			m_DmgMethodShipFortification.Armor.CriticalUncrewed.Reset();
+			m_DmgMethodShipFortification.Armor.NonCritical.Reset();
+			m_DmgMethodShipFortification.Armor.NonCriticalDestruction.Reset();
+			m_DmgMethodShipFortification.Armor.NonCriticalDestruction.SetWMD(1.0);
+			m_DmgMethodShipFortification.Armor.rNonCriticalDestructionChance = 0.05;
 
-			m_DamageMethodShipAdj.Compartment.General.Reset();
-			m_DamageMethodShipAdj.Compartment.General.SetWMD(1.0);
-			m_DamageMethodShipAdj.Compartment.Cargo.Reset();
-			m_DamageMethodShipAdj.Compartment.Cargo.SetWMD(1.0);
-			m_DamageMethodShipAdj.Compartment.MainDrive.Reset();
-			m_DamageMethodShipAdj.Compartment.MainDrive.SetWMD(1.0);
-			m_DamageMethodShipAdj.Compartment.Uncrewed.Reset();
-			m_DamageMethodShipAdj.Compartment.Uncrewed.SetWMD(1.0);
+			m_DmgMethodShipFortification.Compartment.General.Reset();
+			m_DmgMethodShipFortification.Compartment.General.SetWMD(1.0);
+			m_DmgMethodShipFortification.Compartment.Cargo.Reset();
+			m_DmgMethodShipFortification.Compartment.Cargo.SetWMD(1.0);
+			m_DmgMethodShipFortification.Compartment.MainDrive.Reset();
+			m_DmgMethodShipFortification.Compartment.MainDrive.SetWMD(1.0);
+			m_DmgMethodShipFortification.Compartment.Uncrewed.Reset();
+			m_DmgMethodShipFortification.Compartment.Uncrewed.SetWMD(1.0);
 
 			//	Stations
 
-			m_DamageMethodStationAdj.Hull.Armor.Reset();
-			m_DamageMethodStationAdj.Hull.Armor.SetWMD(1.0);
-			m_DamageMethodStationAdj.Hull.Asteroid.Reset();
-			m_DamageMethodStationAdj.Hull.Asteroid.SetWMD(1.0);
-			m_DamageMethodStationAdj.Hull.Multi.Reset();
-			m_DamageMethodStationAdj.Hull.Multi.SetWMD(1.0);
-			m_DamageMethodStationAdj.Hull.Single.Reset();
-			m_DamageMethodStationAdj.Hull.Uncrewed.Reset();
-			m_DamageMethodStationAdj.Hull.Uncrewed.SetWMD(1.0);
-			m_DamageMethodStationAdj.Hull.Underground.Reset();
-			m_DamageMethodStationAdj.Hull.Underground.SetWMD(1.0);
+			m_DmgMethodStationFortification.Hull.Armor.Reset();
+			m_DmgMethodStationFortification.Hull.Armor.SetWMD(1.0);
+			m_DmgMethodStationFortification.Hull.Asteroid.Reset();
+			m_DmgMethodStationFortification.Hull.Asteroid.SetWMD(1.0);
+			m_DmgMethodStationFortification.Hull.Multi.Reset();
+			m_DmgMethodStationFortification.Hull.Multi.SetWMD(1.0);
+			m_DmgMethodStationFortification.Hull.Single.Reset();
+			m_DmgMethodStationFortification.Hull.Uncrewed.Reset();
+			m_DmgMethodStationFortification.Hull.Uncrewed.SetWMD(1.0);
+			m_DmgMethodStationFortification.Hull.Underground.Reset();
+			m_DmgMethodStationFortification.Hull.Underground.SetWMD(1.0);
 			break;
 			}
 		default:
@@ -976,14 +976,14 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 		ICCItem* pItmArmorStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_ITEM_ARMOR);
 		if (pItmArmorStruct)
 			{
-			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodItemAdj.Armor, pItmArmorStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DmgMethodItemFortification.Armor, pItmArmorStruct))
 				return false;
 			}
 
 		ICCItem* pItmShieldStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_ITEM_SHIELD);
 		if (pItmShieldStruct)
 			{
-			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodItemAdj.Shield, pItmShieldStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DmgMethodItemFortification.Shield, pItmShieldStruct))
 				return false;
 			}
 
@@ -996,35 +996,35 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 		ICCItem* pShipArmorCriticalStruct = pShipArmorStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_CRITICAL);
 		if (pShipArmorCriticalStruct)
 			{
-			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodShipAdj.Armor.Critical, pShipArmorCriticalStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DmgMethodShipFortification.Armor.Critical, pShipArmorCriticalStruct))
 				return false;
 			}
 
 		ICCItem* pShipArmorCriticalUncrewedStruct = pShipArmorStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_CRITICAL_UNCREWED);
 		if (pShipArmorCriticalUncrewedStruct)
 			{
-			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodShipAdj.Armor.CriticalUncrewed, pShipArmorCriticalUncrewedStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DmgMethodShipFortification.Armor.CriticalUncrewed, pShipArmorCriticalUncrewedStruct))
 				return false;
 			}
 
 		ICCItem* pShipArmorNonCriticalStruct = pShipArmorStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_NONCRITICAL);
 		if (pShipArmorNonCriticalStruct)
 			{
-			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodShipAdj.Armor.NonCritical, pShipArmorNonCriticalStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DmgMethodShipFortification.Armor.NonCritical, pShipArmorNonCriticalStruct))
 				return false;
 			}
 
 		ICCItem* pShipArmorNonCriticalDestructionStruct = pShipArmorStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_NONCRITICAL_DESTRUCTION);
 		if (pShipArmorNonCriticalDestructionStruct)
 			{
-			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodShipAdj.Armor.NonCriticalDestruction, pShipArmorNonCriticalDestructionStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DmgMethodShipFortification.Armor.NonCriticalDestruction, pShipArmorNonCriticalDestructionStruct))
 				return false;
 			}
 
 		ICCItem* pShipArmorNonCriticalDestructionChanceStruct = pShipArmorStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_ARMOR_NONCRITICAL_DESTRUCTION_CHANCE);
 		if (pShipArmorNonCriticalDestructionChanceStruct)
 			{
-			m_DamageMethodShipAdj.Armor.rNonCriticalDestructionChance = pShipArmorNonCriticalDestructionChanceStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_SHIP_ARMOR_NONCRITICAL_DESTRUCTION_CHANCE, 0.05);
+			m_DmgMethodShipFortification.Armor.rNonCriticalDestructionChance = pShipArmorNonCriticalDestructionChanceStruct->GetDoubleAt(KEY_CORE_DMG_METHOD_SHIP_ARMOR_NONCRITICAL_DESTRUCTION_CHANCE, 0.05);
 			}
 
 		ICCItem* pShipCompartmentStruct = pValue->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT);
@@ -1035,28 +1035,28 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 		ICCItem* pShipCompartmentGeneralStruct = pShipCompartmentStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_GENERAL);
 		if (pShipCompartmentGeneralStruct)
 			{
-			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodShipAdj.Compartment.General, pShipCompartmentGeneralStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DmgMethodShipFortification.Compartment.General, pShipCompartmentGeneralStruct))
 				return false;
 			}
 
 		ICCItem* pShipCompartmentCargoStruct = pShipCompartmentStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_CARGO);
 		if (pShipCompartmentCargoStruct)
 			{
-			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodShipAdj.Compartment.Cargo, pShipCompartmentCargoStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DmgMethodShipFortification.Compartment.Cargo, pShipCompartmentCargoStruct))
 				return false;
 			}
 
 		ICCItem* pShipCompartmentMainDriveStruct = pShipCompartmentStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_MAIN_DRIVE);
 		if (pShipCompartmentMainDriveStruct)
 			{
-			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodShipAdj.Compartment.MainDrive, pShipCompartmentMainDriveStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DmgMethodShipFortification.Compartment.MainDrive, pShipCompartmentMainDriveStruct))
 				return false;
 			}
 
 		ICCItem* pShipCompartmentUncrewedStruct = pShipCompartmentStruct->GetElement(KEY_CORE_DMG_METHOD_SHIP_COMPARTMENT_UNCREWED);
 		if (pShipCompartmentUncrewedStruct)
 			{
-			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodShipAdj.Compartment.Uncrewed, pShipCompartmentUncrewedStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DmgMethodShipFortification.Compartment.Uncrewed, pShipCompartmentUncrewedStruct))
 				return false;
 			}
 
@@ -1069,42 +1069,42 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 		ICCItem* pStationHullSingleStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_SINGLE);
 		if (pStationHullSingleStruct)
 			{
-			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodStationAdj.Hull.Single, pStationHullSingleStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DmgMethodStationFortification.Hull.Single, pStationHullSingleStruct))
 				return false;
 			}
 
 		ICCItem* pStationHullMultiStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_MULTI);
 		if (pStationHullMultiStruct)
 			{
-			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodStationAdj.Hull.Multi, pStationHullMultiStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DmgMethodStationFortification.Hull.Multi, pStationHullMultiStruct))
 				return false;
 			}
 
 		ICCItem* pStationHullAsteroidStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_ASTEROID);
 		if (pStationHullAsteroidStruct)
 			{
-			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodStationAdj.Hull.Asteroid, pStationHullAsteroidStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DmgMethodStationFortification.Hull.Asteroid, pStationHullAsteroidStruct))
 				return false;
 			}
 
 		ICCItem* pStationHullUndergroundStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_UNDERGROUND);
 		if (pStationHullUndergroundStruct)
 			{
-			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodStationAdj.Hull.Underground, pStationHullUndergroundStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DmgMethodStationFortification.Hull.Underground, pStationHullUndergroundStruct))
 				return false;
 			}
 
 		ICCItem* pStationHullUncrewedStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_UNCREWED);
 		if (pStationHullUncrewedStruct)
 			{
-			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodStationAdj.Hull.Uncrewed, pStationHullUncrewedStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DmgMethodStationFortification.Hull.Uncrewed, pStationHullUncrewedStruct))
 				return false;
 			}
 
 		ICCItem* pStationHullArmorStruct = pStationHullStruct->GetElement(KEY_CORE_DMG_METHOD_STATION_HULL_ARMOR);
 		if (pStationHullArmorStruct)
 			{
-			if (!InitDamageMethodFortificationFromCC(Ctx, m_DamageMethodStationAdj.Hull.Armor, pStationHullArmorStruct))
+			if (!InitDamageMethodFortificationFromCC(Ctx, m_DmgMethodStationFortification.Hull.Armor, pStationHullArmorStruct))
 				return false;
 			}
 

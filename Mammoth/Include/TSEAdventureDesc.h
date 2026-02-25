@@ -19,23 +19,23 @@ class CEngineOptions
 		const CDeviceDamageLevelDesc* GetExternalDeviceDamageMaxLevels () const { return &m_ExternalDeviceDamageMaxLevels; }
 		const CDeviceDamageLevelDesc* GetInternalDeviceDamageMaxLevels () const { return &m_InternalDeviceDamageMaxLevels; }
 		const CDamageMethodDesc* GetDamageMethodDesc (EDamageMethod iMethod) const;
-		Metric GetDmgMethodFortificationItemArmor (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DamageMethodItemAdj.Armor, iMethod); };
-		Metric GetDmgMethodFortificationItemShield (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DamageMethodItemAdj.Shield, iMethod); };
-		Metric GetDmgMethodFortificationShipArmorCritical (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DamageMethodShipAdj.Armor.Critical, iMethod); };
-		Metric GetDmgMethodFortificationShipArmorCriticalUncrewed (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DamageMethodShipAdj.Armor.CriticalUncrewed, iMethod); };
-		Metric GetDmgMethodFortificationShipArmorNonCritical (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DamageMethodShipAdj.Armor.NonCritical, iMethod); };
-		Metric GetDmgMethodFortificationShipArmorNonCriticalDestruction (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DamageMethodShipAdj.Armor.NonCriticalDestruction, iMethod); };
-		Metric GetDmgMethodFortificationShipArmorNonCriticalDestructionChance () const { return m_DamageMethodShipAdj.Armor.rNonCriticalDestructionChance; };
-		Metric GetDmgMethodFortificationShipCompartmentGeneral (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DamageMethodShipAdj.Compartment.General, iMethod); };
-		Metric GetDmgMethodFortificationShipCompartmentMainDrive (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DamageMethodShipAdj.Compartment.MainDrive, iMethod); };
-		Metric GetDmgMethodFortificationShipCompartmentCargo (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DamageMethodShipAdj.Compartment.Cargo, iMethod); };
-		Metric GetDmgMethodFortificationShipCompartmentUncrewed (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DamageMethodShipAdj.Compartment.Uncrewed, iMethod); };
-		Metric GetDmgMethodFortificationStationHullSingle (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DamageMethodStationAdj.Hull.Single, iMethod); };
-		Metric GetDmgMethodFortificationStationHullMulti (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DamageMethodStationAdj.Hull.Multi, iMethod); };
-		Metric GetDmgMethodFortificationStationHullAsteroid (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DamageMethodStationAdj.Hull.Asteroid, iMethod); };
-		Metric GetDmgMethodFortificationStationHullUnderground (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DamageMethodStationAdj.Hull.Underground, iMethod); };
-		Metric GetDmgMethodFortificationStationHullUncrewed (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DamageMethodStationAdj.Hull.Uncrewed, iMethod); };
-		Metric GetDmgMethodFortificationStationHullArmor (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DamageMethodStationAdj.Hull.Armor, iMethod); };
+		Metric GetDmgMethodFortificationItemArmor (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DmgMethodItemFortification.Armor, iMethod); };
+		Metric GetDmgMethodFortificationItemShield (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DmgMethodItemFortification.Shield, iMethod); };
+		Metric GetDmgMethodFortificationShipArmorCritical (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DmgMethodShipFortification.Armor.Critical, iMethod); };
+		Metric GetDmgMethodFortificationShipArmorCriticalUncrewed (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DmgMethodShipFortification.Armor.CriticalUncrewed, iMethod); };
+		Metric GetDmgMethodFortificationShipArmorNonCritical (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DmgMethodShipFortification.Armor.NonCritical, iMethod); };
+		Metric GetDmgMethodFortificationShipArmorNonCriticalDestruction (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DmgMethodShipFortification.Armor.NonCriticalDestruction, iMethod); };
+		Metric GetDmgMethodFortificationShipArmorNonCriticalDestructionChance () const { return m_DmgMethodShipFortification.Armor.rNonCriticalDestructionChance; };
+		Metric GetDmgMethodFortificationShipCompartmentGeneral (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DmgMethodShipFortification.Compartment.General, iMethod); };
+		Metric GetDmgMethodFortificationShipCompartmentMainDrive (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DmgMethodShipFortification.Compartment.MainDrive, iMethod); };
+		Metric GetDmgMethodFortificationShipCompartmentCargo (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DmgMethodShipFortification.Compartment.Cargo, iMethod); };
+		Metric GetDmgMethodFortificationShipCompartmentUncrewed (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DmgMethodShipFortification.Compartment.Uncrewed, iMethod); };
+		Metric GetDmgMethodFortificationStationHullSingle (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DmgMethodStationFortification.Hull.Single, iMethod); };
+		Metric GetDmgMethodFortificationStationHullMulti (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DmgMethodStationFortification.Hull.Multi, iMethod); };
+		Metric GetDmgMethodFortificationStationHullAsteroid (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DmgMethodStationFortification.Hull.Asteroid, iMethod); };
+		Metric GetDmgMethodFortificationStationHullUnderground (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DmgMethodStationFortification.Hull.Underground, iMethod); };
+		Metric GetDmgMethodFortificationStationHullUncrewed (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DmgMethodStationFortification.Hull.Uncrewed, iMethod); };
+		Metric GetDmgMethodFortificationStationHullArmor (EDamageMethod iMethod) const { return GetDamageMethodFortification(m_DmgMethodStationFortification.Hull.Armor, iMethod); };
 		Metric GetDamageMethodMinDamage ()	const { return m_rDamageMethodAdjMinDamage; }
 		EDamageMethodSystem GetDamageMethodSystem () const { return m_iDamageMethodSystem; }
 		Metric GetItemDefaultDensity () const { return m_rDefaultItemDensity; }
@@ -189,9 +189,9 @@ class CEngineOptions
 
 		double m_rDamageMethodAdjMinDamage = 0.0;
 
-		SDamageMethodItemAdj m_DamageMethodItemAdj;
-		SDamageMethodShipAdj m_DamageMethodShipAdj;
-		SDamageMethodStationAdj m_DamageMethodStationAdj;
+		SDamageMethodItemAdj m_DmgMethodItemFortification;
+		SDamageMethodShipAdj m_DmgMethodShipFortification;
+		SDamageMethodStationAdj m_DmgMethodStationFortification;
 
 		//	Default Item Stat Card UI
 
