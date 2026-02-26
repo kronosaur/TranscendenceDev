@@ -8,7 +8,8 @@
 
 #define ACHIEVEMENTS_TAG						CONSTLIT("Achievements")
 #define ADVENTURE_DESC_TAG						CONSTLIT("AdventureDesc")
-#define ARMOR_MASS_DESC_TAG						CONSTLIT("ArmorMassDesc")
+#define ARMOR_CLASS_LEGACY_DESC_TAG				CONSTLIT("ArmorMassDesc")
+#define ARMOR_CLASS_DESC_TAG					CONSTLIT("ArmorClassDesc")
 #define ATTRIBUTE_DESC_TAG						CONSTLIT("AttributeDesc")
 #define DATA_TAG						    	CONSTLIT("Data")
 #define DISPLAY_ATTRIBUTES_TAG					CONSTLIT("DisplayAttributes")
@@ -205,6 +206,8 @@ static const char *CACHED_EVENTS[CDesignType::evtCount] =
 		"OnSystemStopped",
 		"OnSystemWeaponFire",
 		"OnUpdate",
+		"OnGlobalTypesBound",
+		"OnGlobalTypesBoundNewGame",
 	};
 
 CDesignType::~CDesignType (void)
@@ -1689,16 +1692,71 @@ ALERROR CDesignType::FireOnGlobalTopologyCreated (CString *retsError)
 	return NOERROR;
 	}
 
-ALERROR CDesignType::FireOnGlobalTypesInit (SDesignLoadCtx &Ctx)
+//	FireOnGlobalTypesBound
+//
+//	Give this type a chance to initialize state after properties are bound
+//
+ALERROR CDesignType::FireOnGlobalTypesBound (SDesignLoadCtx &Ctx)
+
+	{
+	SEventHandlerDesc Event;
+	ECachedHandlers iEventType = evtOnGlobalTypesBound;
+
+	if (FindEventHandler(iEventType, &Event))
+		{
+		CCodeChainCtx CCCtx(GetUniverse());
+		CCCtx.DefineContainingType(this);
+		CCCtx.SetEvent(eventOnGlobalTypesBound);
+
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
+		if (pResult->IsError())
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("%s (%x): %s"), CONSTLIT(CACHED_EVENTS[iEventType]), GetUNID(), pResult->GetStringValue());
+			return ERR_FAIL;
+			}
+		}
+
+	return NOERROR;
+	}
+
+//	FireOnGlobalTypesBoundNewGame
+//
+//	Give this type a chance to initialize state after properties are bound
+//
+ALERROR CDesignType::FireOnGlobalTypesBoundNewGame (SDesignLoadCtx &Ctx)
+
+	{
+	SEventHandlerDesc Event;
+	ECachedHandlers iEventType = evtOnGlobalTypesBoundNewGame;
+
+	if (FindEventHandler(iEventType, &Event))
+		{
+		CCodeChainCtx CCCtx(GetUniverse());
+		CCCtx.DefineContainingType(this);
+		CCCtx.SetEvent(eventOnGlobalTypesBoundNewGame);
+
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
+		if (pResult->IsError())
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("%s (%x): %s"), CONSTLIT(CACHED_EVENTS[iEventType]), GetUNID(), pResult->GetStringValue());
+			return ERR_FAIL;
+			}
+		}
+
+	return NOERROR;
+	}
 
 //	FireOnGlobalTypesInit
 //
 //	Give this type a chance to create dynamic types.
+//
+ALERROR CDesignType::FireOnGlobalTypesInit (SDesignLoadCtx &Ctx)
 
 	{
 	SEventHandlerDesc Event;
+	ECachedHandlers iEventType = evtOnGlobalTypesInit;
 
-	if (FindEventHandler(evtOnGlobalTypesInit, &Event))
+	if (FindEventHandler(iEventType, &Event))
 		{
 		CCodeChainCtx CCCtx(GetUniverse());
 		CCCtx.DefineContainingType(this);
@@ -1707,7 +1765,7 @@ ALERROR CDesignType::FireOnGlobalTypesInit (SDesignLoadCtx &Ctx)
 		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			{
-			Ctx.sError = strPatternSubst(CONSTLIT("OnGlobalTypesInit (%x): %s"), GetUNID(), pResult->GetStringValue());
+			Ctx.sError = strPatternSubst(CONSTLIT("%s (%x): %s"), CONSTLIT(CACHED_EVENTS[iEventType]), GetUNID(), pResult->GetStringValue());
 			return ERR_FAIL;
 			}
 		}
@@ -2977,7 +3035,7 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 				return ComposeLoadError(Ctx, Ctx.sError);
 				}
 			}
-		else if (strEquals(pItem->GetTag(), ARMOR_MASS_DESC_TAG))
+		else if (strEquals(pItem->GetTag(), ARMOR_CLASS_DESC_TAG) || strEquals(pItem->GetTag(), ARMOR_CLASS_LEGACY_DESC_TAG))
 			{
 			if (error = SetExtra()->ArmorDefinitions.InitFromXML(Ctx, pItem))
 				{

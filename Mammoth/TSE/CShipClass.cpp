@@ -65,7 +65,6 @@
 #define HULL_VALUE_ATTRIB						CONSTLIT("hullValue")
 #define INERTIALESS_DRIVE_ATTRIB				CONSTLIT("inertialessDrive")
 #define LEVEL_ATTRIB							CONSTLIT("level")
-#define MAX_ARMOR_ATTRIB						CONSTLIT("maxArmor")
 #define MAX_ARMOR_SPEED_ATTRIB					CONSTLIT("maxArmorSpeed")
 #define MAX_CARGO_SPACE_ATTRIB					CONSTLIT("maxCargoSpace")
 #define MAX_DEVICES_ATTRIB						CONSTLIT("maxDevices")
@@ -92,7 +91,6 @@
 #define STARTING_CREDITS_ATTRIB					CONSTLIT("startingCredits")
 #define STARTING_POS_ATTRIB						CONSTLIT("startingPos")
 #define STARTING_SYSTEM_ATTRIB					CONSTLIT("startingSystem")
-#define STD_ARMOR_ATTRIB						CONSTLIT("stdArmor")
 #define THRUST_ATTRIB							CONSTLIT("thrust")
 #define THRUST_RATIO_ATTRIB						CONSTLIT("thrustRatio")
 #define TIME_STOP_IMMUNE_ATTRIB					CONSTLIT("timeStopImmune")
@@ -110,6 +108,8 @@
 #define FIELD_COMBAT_STD						CONSTLIT("combatStd")				//	Standard combat value for the ship level
 #define FIELD_COMBAT_STRENGTH					CONSTLIT("combatStrength")			//	value reflecting combat power (attack and defense)
 #define FIELD_DAMAGE_RATE						CONSTLIT("damage")					//	damage per 180 ticks
+#define FIELD_DESC_LORE							CONSTLIT("coreDescLore")
+#define FIELD_DESC_PLAYER						CONSTLIT("coreDesc")
 #define FIELD_DEFENSE_RATE						CONSTLIT("defenseStrength")			//	value reflecting difficulty killing
 #define FIELD_DEVICE_SLOTS						CONSTLIT("deviceSlots")
 #define FIELD_DEVICE_SLOTS_NON_WEAPONS			CONSTLIT("deviceSlotsNonWeapons")
@@ -133,13 +133,13 @@
 #define FIELD_MANEUVER							CONSTLIT("maneuver")
 #define FIELD_MANUFACTURER						CONSTLIT("manufacturer")
 #define FIELD_MASS								CONSTLIT("mass")
-#define FIELD_MAX_ARMOR_MASS					CONSTLIT("maxArmorMass")
+#define FIELD_MAX_ARMOR_MASS					CONSTLIT("maxArmorMass")			//	deprecated, use maxArmorSize instead
+#define FIELD_MAX_ARMOR_SIZE					CONSTLIT("maxArmorSize")
 #define FIELD_MAX_CARGO_SPACE					CONSTLIT("maxCargoSpace")
 #define FIELD_MAX_ROTATION						CONSTLIT("maxRotation")
 #define FIELD_MAX_SPEED							CONSTLIT("maxSpeed")
 #define FIELD_MAX_STRUCTURAL_HP					CONSTLIT("maxStructuralHP")
 #define FIELD_NAME								CONSTLIT("name")
-#define FIELD_PLAYER_DESC						CONSTLIT("playerDesc")
 #define FIELD_PRIMARY_ARMOR						CONSTLIT("primaryArmor")
 #define FIELD_PRIMARY_ARMOR_UNID				CONSTLIT("primaryArmorUNID")
 #define FIELD_PRIMARY_WEAPON					CONSTLIT("primaryWeapon")
@@ -950,12 +950,12 @@ Metric CShipClass::CalcManeuverValue (bool bDodge) const
 	return rDodge;
 	}
 
-Metric CShipClass::CalcMass (const CDeviceDescList &Devices) const
-
 //	CalcMass
 //
 //	Returns the total mass of the ship class, including devices and armor
 //	(in tons).
+//
+Metric CShipClass::CalcMass (const CDeviceDescList &Devices) const
 
 	{
 	int i;
@@ -972,18 +972,18 @@ Metric CShipClass::CalcMass (const CDeviceDescList &Devices) const
 	return rMass;
 	}
 
-ICCItemPtr CShipClass::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const
-
-//	CalcMaxSpeedByArmorMass
+//	CalcMaxSpeedByArmorSize
 //
 //	Returns a struct with entries for each value of max speed. Each entry has the
 //	smallest armor mass which results in the given speed.
 //
 //	If there is no variation in speed, we return a single speed value.
+//
+ICCItemPtr CShipClass::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const
 
 	{
 	int iStdSpeed = mathRound(100.0 * m_Perf.GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED);
-	return m_Hull.GetArmorLimits().CalcMaxSpeedByArmorMass(Ctx, iStdSpeed);
+	return m_Hull.GetArmorLimits().CalcMaxSpeedByArmorSize(Ctx, iStdSpeed);
 	}
 
 void CShipClass::CalcPerformance (void)
@@ -1759,9 +1759,15 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	else if (strEquals(sField, FIELD_NAME))
 		*retsValue = GetNounPhrase(nounGeneric);
 
-	else if (strEquals(sField, FIELD_PLAYER_DESC))
+	else if (strEquals(sField, FIELD_DESC_LORE))
 		{
-		*retsValue = GetDesc();
+		*retsValue = GetDescLore();
+		if (retsValue->IsBlank())
+			*retsValue = CONSTLIT("none");
+		}
+	else if (strEquals(sField, FIELD_DESC_PLAYER))
+		{
+		*retsValue = GetDescPlayer();
 		if (retsValue->IsBlank())
 			*retsValue = CONSTLIT("none");
 		}
@@ -1966,8 +1972,8 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	else if (strEquals(sField, FIELD_GENERIC_NAME))
 		*retsValue = GetGenericName();
 
-	else if (strEquals(sField, FIELD_MAX_ARMOR_MASS))
-		*retsValue = strFromInt(m_Hull.GetArmorLimits().GetMaxArmorMass());
+	else if (strEquals(sField, FIELD_MAX_ARMOR_SIZE) || strEquals(sField, FIELD_MAX_ARMOR_MASS))
+		*retsValue = strFromDouble(m_Hull.GetArmorLimits().GetMaxArmorSize());
 
 	else if (strEquals(sField, FIELD_HULL_MASS))
 		*retsValue = strFromInt(m_Hull.GetMass());
@@ -2218,17 +2224,50 @@ CCommunicationsHandler *CShipClass::GetCommsHandler (void)
 		return (m_OriginalCommsHandler.GetCount() ? &m_OriginalCommsHandler : NULL);
 	}
 
-CString CShipClass::GetDesc (void) const
-
-//	GetDesc
+//	GetDescLore
 //
-//	Returns the standard description of this ship class.
+//	Returns the lore description of this ship class.
+//
+CString CShipClass::GetDescLore () const
 
 	{
 	//	First, see if we have a translation
+	//	We prioritize the lore description over
+	//	the gameplay description
 
 	CString sText;
-	if (TranslateText(LANGID_CORE_DESC, NULL, &sText))
+	if (TranslateText(LANGID_CORE_DESC_LORE, NULL, &sText))
+		return sText;
+	if (TranslateText(LANGID_CORE_DESC_PLAYER, NULL, &sText))
+		return sText;
+
+	//	If the player settings has a gameplay desc, get it from there.
+
+	const CPlayerSettings *pPlayer = GetPlayerSettings();
+	if (pPlayer)
+		{
+		const CString &sDesc = pPlayer->GetDesc();
+		if (!sDesc.IsBlank())
+			return sDesc;
+		}
+
+	//	Otherwise, no description
+
+	return NULL_STR;
+	}
+
+//	GetDescPlayer
+//
+//	Returns the gameplay description of this ship class.
+//
+CString CShipClass::GetDescPlayer () const
+
+	{
+	//	First, see if we have a translation
+	//	We prioritize the gameplay description
+
+	CString sText;
+	if (TranslateText(LANGID_CORE_DESC_PLAYER, NULL, &sText))
 		return sText;
 
 	//	If the player settings has this, get it from there.
@@ -2240,6 +2279,11 @@ CString CShipClass::GetDesc (void) const
 		if (!sDesc.IsBlank())
 			return sDesc;
 		}
+
+	//	If we have a lore description, fall back to that
+
+	if (TranslateText(LANGID_CORE_DESC_LORE, NULL, &sText))
+		return sText;
 
 	//	Otherwise, no description
 

@@ -13,12 +13,19 @@
 //
 #define LANGID_CORE_CHARGES						CONSTLIT("core.charges")
 
+//	core.descLore
+//
+//	Ship Class: A lore description of the ship class, for codex/encyclopedia
+//	screens
+//
+#define LANGID_CORE_DESC_LORE					CONSTLIT("core.descLore")
+
 //	core.desc
 //
-//	Ship Class: A description of the ship class, usually displayed when picking
-//	a new ship.
+//	Ship Class: A gameplay description of the ship class, usually displayed
+//	when picking a new ship.
 //
-#define LANGID_CORE_DESC						CONSTLIT("core.desc")
+#define LANGID_CORE_DESC_PLAYER					CONSTLIT("core.desc")
 
 //	core.dockingRequestDenied
 //
@@ -322,6 +329,49 @@
 #define PROPERTY_CORE_HIDE_IONIZE_IMMUNE		CONSTLIT("core.hideIonizeImmune")
 #define PROPERTY_CORE_HIDE_RADIATION_IMMUNE		CONSTLIT("core.hideRadiationImmune")
 #define PROPERTY_CORE_HIDE_SHATTER_IMMUNE		CONSTLIT("core.hideShatterImmune")
+
+//	core.item.xmlMassToRealVolume
+//
+//	Adventure Property: Evaluated at bind time. This property exists for adventures
+//	that balance cargo/mass divergently from pre-2.0 Stars of the Pilgrim, but still
+//	wish to convert items from old mods/extensions.
+//	This is relevant because in legacy Stars of the Pilgrim, cargo holds assumed items
+//	have a density much less than water, so the max mass of the cargo holds was divided
+//	by approximately 4. This computation converts the xml mass
+//	from kg to tons BEFORE applying this ratio.
+// 
+//	Notice: if this is not the inverse of core.item.defaultDensity, you will need to
+//	update your armor mass classes accordingly or switch to using armor size classes
+//	Notice: it is strongly recommended to switch to armor size classes instead of
+//	using the legacy armor mass classes
+//	
+//	Example values:
+//	1.0 = volume is set to the mass provided in the XML
+//	1.5 = volume is set to 1.5x the mass provided in the XML
+//	
+//	Default: 1.0
+//
+#define PROPERTY_CORE_ITEM_LEGACY_MASS_TO_VOLUME	CONSTLIT("core.item.xmlMassToRealVolume")
+
+//	core.item.defaultDensity
+//
+//	Adventure Property: Evaluated at bind time. This property allows adventures to
+//	assume a specific density for items that do not provide a volume. This calculation
+//	Is applied after core.item.legacyMassToValue to compute the actual mass the item
+//	should be converted to in this adventure.
+// 
+//	Notice: if this is not the inverse of core.item.defaultDensity, you will need to
+//	update your armor mass classes accordingly or switch to using armor size classes
+//	Notice: it is strongly recommended to switch to armor size classes instead of
+//	using the legacy armor mass classes
+//
+//	Example values:
+//	1.0 = mass is set to the computed volume (equal density to water)
+//	0.125 = mass is set to one quarter the computed volume
+// 
+//	Default: 1.0
+//
+#define PROPERTY_CORE_ITEM_DEFAULT_DENSITY			CONSTLIT("core.item.defaultDensity")
 
 //	core.item.shield.idlePowerAdj
 //

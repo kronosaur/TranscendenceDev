@@ -118,6 +118,7 @@ class CItemType : public CDesignType
 		bool GetUseDesc (SUseDesc *retDesc = NULL) const;
 		int GetValue (CItemCtx &Ctx, bool bActual = false) const { return (int)GetCurrencyAndValue(Ctx, bActual).GetValue(); }
 		int GetValueBonusPerCharge (void) const { return m_iExtraValuePerCharge; }
+		Metric GetVolume (CItemCtx &Ctx) const;
 		CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &Ctx, CString *retsError = NULL) const;
 		bool HasOnRefuelCode (void) const { return FindEventHandlerItemType(evtOnRefuel); }
 		bool HasOnInstallCode (void) const { return FindEventHandlerItemType(evtOnInstall); }
@@ -134,6 +135,8 @@ class CItemType : public CDesignType
 		void SetShowReference (void) { m_fReference = true; }
 		bool ShowChargesInUseMenu (void) const { return (m_fShowChargesInUseMenu ? true : false); }
 		bool ShowReference (void) const { return (m_fReference ? true : false); }
+		bool UsesObjectImageIfInstalled () const { return m_fUseObjImage ? true : false; }
+		bool UsesObjectImageIfEnhancement () const { return m_fUseObjImageEnhancement ? true : false; }
 
 		//	CDesignType overrides
 		static const CItemType *AsType (const CDesignType *pType) { return ((pType && pType->GetType() == designItemType) ? (CItemType *)pType : NULL); }
@@ -195,6 +198,7 @@ class CItemType : public CDesignType
 		int m_iMaxLevel;                        //  Max level, for scalable items
 		CCurrencyAndValue m_iValue;				//	Value in some currency
 		int m_iMass;							//	Mass in kilograms
+		Metric m_rVolume;						//	Volume in Cubic meters
 		FrequencyTypes m_Frequency;				//	Frequency
 		DiceRange m_NumberAppearing;			//	Number appearing
 
@@ -207,6 +211,7 @@ class CItemType : public CDesignType
 
 		int m_iExtraMassPerCharge;				//	Extra mass per charge (in kilos)
 		int m_iExtraValuePerCharge;				//	Extra value per charge (may be negative)
+		Metric m_rExtraVolumePerCharge;			//	Extra volume per charge (in cubic meters)
 
 		//	Components
 		IItemGenerator *m_pComponents;			//	Table to generate item components (may be NULL)
@@ -252,8 +257,10 @@ class CItemType : public CDesignType
 		DWORD m_fNoSaleIfUsed:1 = false;		//	If TRUE, cannot be sold once it's been used
 		DWORD m_fShowChargesInUseMenu:1 = false;//	If TRUE, the use menu shows charges instead of a count.
 		DWORD m_fUseUndamaged:1 = false;		//	If TRUE, item can only be used if undamaged
+		DWORD m_fUseObjImage:1 = false;			//	If TRUE, item replaces own image with object image if installed on an object
+		DWORD m_fUseObjImageEnhancement:1 = false;	//	If TRUE, item replaces own image with object image when used as an enhancement type (Does not need to be installed)
 
-		DWORD m_dwSpare:16;
+		DWORD m_dwSpare:14;
 
 		CString m_sData;						//	Category-specific data
 

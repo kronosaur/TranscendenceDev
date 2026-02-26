@@ -152,7 +152,7 @@
 							 enhancement=	"-speed:182;"
 							 criteria=		"w -property:omnidirectional;"
 							 />
-					<Enhance type=			"&vtAntaresITurretSlot;"
+					<Enhance type=			"&vtAutoTurretSlot;"
 							 enhancement=	"+linkedFire:whenInFireArc;"
 							 />
 				</EnhancementAbilities>
@@ -246,14 +246,6 @@
 			</Text>
 		</Language>
 	</ShipClass>
-
-	<ItemType UNID="&vtAntaresITurretSlot;"
-			name=				"Antares I auto-turret"
-			virtual=			"true"
-			level=				"1"
-			>
-		<Image imageID="&rsAntaresIHD;" imageX="0" imageY="0" imageWidth="144" imageHeight="144"/>
-	</ItemType>
 	
 	<!-- Level 2: Borer-class Miner -->
 
@@ -619,7 +611,7 @@
 							 enhancement=	"-speed:182;"
 							 criteria=		"w -property:omnidirectional;"
 							 />
-					<Enhance type=			"&vtAntaresIITurretSlot;"
+					<Enhance type=			"&vtAutoTurretSlot;"
 							 enhancement=	"+linkedFire:whenInFireArc;"
 							 />
 				</EnhancementAbilities>
@@ -630,7 +622,7 @@
 							 enhancement=	"-speed:182;"
 							 criteria=		"w -property:omnidirectional;"
 							 />
-					<Enhance type=			"&vtAntaresIITurretSlot;"
+					<Enhance type=			"&vtAutoTurretSlot;"
 							 enhancement=	"+linkedFire:whenInFireArc;"
 							 />
 				</EnhancementAbilities>
@@ -730,14 +722,6 @@
 			</Text>
 		</Language>
 	</ShipClass>
-
-	<ItemType UNID="&vtAntaresIITurretSlot;"
-			name=				"Antares II auto-turret"
-			virtual=			"true"
-			level=				"1"
-			>
-		<Image imageID="&rsAntaresIIHD;" imageX="0" imageY="0" imageWidth="144" imageHeight="144"/>
-	</ItemType>
 
 	<!-- Level 3: EI200 Freighter -->
 
@@ -1496,7 +1480,7 @@
 							 enhancement=	"-speed:182;"
 							 criteria=		"w -property:omnidirectional;"
 							 />
-					<Enhance type=			"&vtAntaresVTurretSlot;"
+					<Enhance type=			"&vtAutoTurretSlot;"
 							 enhancement=	"+linkedFire:whenInFireArc;"
 							 />
 				</EnhancementAbilities>
@@ -1507,7 +1491,7 @@
 							 enhancement=	"-speed:182;"
 							 criteria=		"w -property:omnidirectional;"
 							 />
-					<Enhance type=			"&vtAntaresVTurretSlot;"
+					<Enhance type=			"&vtAutoTurretSlot;"
 							 enhancement=	"+linkedFire:whenInFireArc;"
 							 />
 				</EnhancementAbilities>
@@ -1601,14 +1585,6 @@
 			</Text>
 		</Language>
 	</ShipClass>
-
-	<ItemType UNID="&vtAntaresVTurretSlot;"
-			name=				"Antares V auto-turret"
-			virtual=			"true"
-			level=				"1"
-			>
-		<Image imageID="&rsAntaresVHD;" imageX="0" imageY="0" imageWidth="180" imageHeight="180"/>
-	</ItemType>
 
 	<!-- Level 5: Antares V Commonwealth -->
 	<!--
@@ -2575,7 +2551,7 @@
 							 enhancement=	"-speed:200;"
 							 criteria=		"w -property:omnidirectional;"
 							 />
-					<Enhance type=			"&vtScarabTurretSlot;"
+					<Enhance type=			"&vtAutoTurretSlot;"
 							 enhancement=	"+linkedFire:whenInFireArc;"
 							 />
 				</EnhancementAbilities>
@@ -2672,14 +2648,6 @@
 		</Language>
 		
 	</ShipClass>
-
-	<ItemType UNID="&vtScarabTurretSlot;"
-			name=				"Scarab auto-turret"
-			virtual=			"true"
-			level=				"1"
-			>
-		<Image imageID="&rsScarabHD;" imageWidth="192" imageHeight="192"/>
-	</ItemType>
 
 	<!-- Level 6: Scarab Freighter - Commonwealth Logistics -->
 
@@ -2879,7 +2847,7 @@
 			<DeviceSlot criteria="w" posAngle="0" posRadius="20" posZ="0"/>
 			<DeviceSlot criteria="s">
 				<EnhancementAbilities>
-					<Enhance type=			"&vtManticoreShieldPenalty;"
+					<Enhance type=			"&vtShieldSlotModifier;"
 							 criteria=		"s -nonEnergyShields;"
 							 enhancement=	"-hpBonus:-20"
 							 />
@@ -3048,6 +3016,7 @@
 			virtual=			"true"
 			level=				"1"
 			>
+			<!-- OBSOLETE: use vtShieldSlotModifier instead-->
 		<Image imageID="&rsManticore120;" imageX="0" imageY="0" imageWidth="80" imageHeight="80"/>
 	</ItemType>
 

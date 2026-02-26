@@ -294,6 +294,7 @@ void CInstalledDevice::InitFromDesc (const SDeviceDesc &Desc)
 	m_fOmniDirectional = Desc.bOmnidirectional;
 	m_iMinFireArc = Desc.iMinFireArc;
 	m_iMaxFireArc = Desc.iMaxFireArc;
+	m_iDefaultFireAngle = Desc.iFireAngle;
 
 	m_iPosAngle = Desc.iPosAngle;
 	m_iPosRadius = Desc.iPosRadius;
@@ -578,6 +579,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 //
 //	DWORD		device: low = m_iPosAngle; hi = m_iPosRadius
 //	DWORD		device: low = m_iMinFireArc; hi = m_iMaxFireArc
+//  DWORD		device: low = m_iDefaultFireAngle (220+); hi = spare (220+)
 //	DWORD		device: low = m_iTimeUntilReady; hi = m_iFireAngle
 //	DWORD		device: low = m_iSlotPosIndex; hi = m_iTemperature
 //	DWORD		device: low = m_iSlotBonus; hi = m_iDeviceSlot
@@ -637,6 +639,21 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	Ctx.pStream->Read(dwLoad);
 	m_iMinFireArc = (int)LOWORD(dwLoad);
 	m_iMaxFireArc = (int)HIWORD(dwLoad);
+
+	//	Default fire arc (& spare)
+	Ctx.pStream->Read(dwLoad);
+
+	if (Ctx.dwVersion >= 220)
+		m_iDefaultFireAngle = (int)LOWORD(dwLoad);
+
+	//	Prior to version 220, m_iDefaultFireAngle didnt exist, so we just load it as a default -1.
+	//	Because an installed device may not have been created from a device slot desc, we can't
+	//	retroactively update them unfortunately.
+
+	else
+		m_iDefaultFireAngle = -1;
+
+	m_iSpare = 0;
 
 	//	Prior to version 217, m_iNowLow could either store remaining time till ready, or the 16 low bits of the current tick
 	//	if HP was cached in another field
@@ -1370,6 +1387,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 //
 //	DWORD		device: low = m_iPosAngle; hi = m_iPosRadius
 //	DWORD		device: low = m_iMinFireArc; hi = m_iMaxFireArc
+//  DWORD		device: low = m_iDefaultFireAngle; hi = spare
 //	DWORD		device: low = m_iTimeUntilReady; hi = m_iFireAngle
 //	DWORD		device: low = m_iSlotIndex; hi = m_iTemperature
 //	DWORD		device: low = m_iSlotBonus; hi = m_iDeviceSlot
@@ -1406,6 +1424,9 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	pStream->Write(dwSave);
 	
 	dwSave = MAKELONG(m_iMinFireArc, m_iMaxFireArc);
+	pStream->Write(dwSave);
+
+	dwSave = MAKELONG(m_iDefaultFireAngle, m_iSpare);
 	pStream->Write(dwSave);
 	
 	dwSave = MAKELONG(m_iNowLow, m_iFireAngle);

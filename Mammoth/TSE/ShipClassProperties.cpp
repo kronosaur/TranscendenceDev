@@ -296,17 +296,17 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		const CString &sMassClass = m_Hull.GetArmorLimits().GetMaxArmorClass();
 		if (!sMassClass.IsBlank())
 			{
-			const CArmorMassDefinitions &MassDef = GetUniverse().GetDesignCollection().GetArmorMassDefinitions();
-			return ICCItemPtr(MassDef.GetMassClassLabel(sMassClass));
+			const CArmorClassDefinitions &MassDef = GetUniverse().GetDesignCollection().GetArmorClassDefinitions();
+			return ICCItemPtr(MassDef.GetArmorClassLabel(sMassClass));
 			}
-		else if (m_Hull.GetArmorLimits().GetMaxArmorMass() > 0) 
-			return ICCItemPtr(CLanguage::ComposeNumber(CLanguage::numberMass, m_Hull.GetArmorLimits().GetMaxArmorMass()));
+		else if (m_Hull.GetArmorLimits().GetMaxArmorSize() > 0) 
+			return ICCItemPtr(CLanguage::ComposeNumber(CLanguage::numberMass, m_Hull.GetArmorLimits().GetMaxArmorSize()));
 		else
 			return ICCItemPtr();
 		}
 
 	else if (strEquals(sProperty, PROPERTY_MAX_ARMOR_MASS))
-		return (m_Hull.GetArmorLimits().GetMaxArmorMass() > 0 ? ICCItemPtr(m_Hull.GetArmorLimits().GetMaxArmorMass()) : ICCItemPtr(ICCItem::Nil));
+		return (m_Hull.GetArmorLimits().GetMaxArmorSize() > 0 ? ICCItemPtr(m_Hull.GetArmorLimits().GetMaxArmorSize()) : ICCItemPtr(ICCItem::Nil));
 
 	else if (strEquals(sProperty, PROPERTY_MAX_DEVICES))
 		return ICCItemPtr(m_Hull.GetMaxDevices());
@@ -364,17 +364,17 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		const CString &sMassClass = m_Hull.GetArmorLimits().GetStdArmorClass();
 		if (!sMassClass.IsBlank())
 			{
-			const CArmorMassDefinitions &MassDef = GetUniverse().GetDesignCollection().GetArmorMassDefinitions();
-			return ICCItemPtr(MassDef.GetMassClassLabel(sMassClass));
+			const CArmorClassDefinitions &MassDef = GetUniverse().GetDesignCollection().GetArmorClassDefinitions();
+			return ICCItemPtr(MassDef.GetArmorClassLabel(sMassClass));
 			}
-		else if (m_Hull.GetArmorLimits().GetStdArmorMass() > 0) 
-			return ICCItemPtr(CLanguage::ComposeNumber(CLanguage::numberMass, m_Hull.GetArmorLimits().GetStdArmorMass()));
+		else if (m_Hull.GetArmorLimits().GetStdArmorSize() > 0) 
+			return ICCItemPtr(CLanguage::ComposeNumber(CLanguage::numberMass, m_Hull.GetArmorLimits().GetStdArmorSize()));
 		else
 			return ICCItemPtr();
 		}
 
 	else if (strEquals(sProperty, PROPERTY_STD_ARMOR_MASS))
-		return (m_Hull.GetArmorLimits().GetStdArmorMass() > 0 ? ICCItemPtr(m_Hull.GetArmorLimits().GetStdArmorMass()) : ICCItemPtr(ICCItem::Nil));
+		return (m_Hull.GetArmorLimits().GetStdArmorSize() > 0 ? ICCItemPtr(m_Hull.GetArmorLimits().GetStdArmorSize()) : ICCItemPtr(ICCItem::Nil));
 
 	else if (strEquals(sProperty, PROPERTY_STEALTH))
 		return ICCItemPtr(m_Perf.GetStealth());

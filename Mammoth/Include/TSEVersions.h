@@ -5,9 +5,9 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							58;
+constexpr DWORD API_VERSION =							59;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					41;
-constexpr DWORD SYSTEM_SAVE_VERSION =					218;
+constexpr DWORD SYSTEM_SAVE_VERSION =					221;
 
 //	Uncomment out the following define when building a stable release
 
@@ -981,6 +981,205 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //				Default: (reads adventure default:
 //					0.0 for single hull stations, 1.0 for multi/asteroid/underground)
 //
+//	 59: 2.0 Alpha 9
+//		tlisp:
+//			(?= ...)
+//				Returns true if a valid full-coercion comparison (via =, !=, etc)
+//				can be made between the arguments (processes in pairs, left to right)
+//				If false, all comparators except != will always return false for the
+//				given sequence of types. != will always return true.
+//			(?== ...)
+//				Returns true if a valid basic-coercion comparison (via eq, neq, etc)
+//				can be made between the arguments (processes in pairs, left to right)
+//				If false, all comparators except neq will always return false for the
+//				given sequence of types. neq will always return true.
+//			(?=== ...)
+//				Returns true if a valid no-coercion comparison (via ===, !=== etc)
+//				can be made between the arguments (processes in pairs, left to right)
+//				If false, all comparators except !=== will always return false for the
+//				given sequence of types. !=== will always return true.
+//			(fmtNumber [format] number)
+//				Updated to now accept the following additional formats:
+//					'CBM					32.5 kCBM	- cubic meters with SI prefixes
+//					'CBMBasic				32500 CBM	- cubic meters, or mCBM if 0.001<=val<1.0, or 0 - mirrors massKg except input in CBM
+//					'CBMInt					32500 CBM	- cubic meters, or 0 if <1.0 - mirrors massTons
+//					'metric					10.5 G
+//					'metricFull				10.5 Giga
+//					'metricUnitless			10.5G
+//			(itm@ itm [object] property)
+//			(itmFind ...)
+//				See criteria update in (itmMatches)
+//			(itmGetMassKg item)
+//				Returns item mass in kg
+//			(itmGetMass item)
+//				DEPRECATED: (synonym for itemGetVolume, for actually getting the mass use itmGetMassKg instead)
+//			(itmGetVolume item)
+//				Returns volume in CBM (real)
+//			(itmMatches criteria item)
+//				Supports volume matching "@" with <,=,> and range operators
+//			(obj@ obj property)
+//				New and updated properties:
+//					'cargoSpace				Available cargo space in cubic meters (previously tons)
+//					'cargoSpaceFree			Available cargo space in cubic meters, double
+//					'cargoSpaceFreeLiters	Available cargo space in liters, int
+//						this is purely for supporting legacy math operations that expected kg
+//					'cargoSpaceFreeKg		DEPRECATED: Available cargo space in liters, int (NOT kg)
+//						this is purely for supporting legacy cargo math that needs it in liters to check if items will fit
+//					'cargoSpaceUsed			Used cargo space in cubic meters, double
+//					'cargoSpaceUsedLiters	Used cargo space in liters, int
+//						this is purely for supporting legacy math operations that expected kg
+//					'cargoSpaceUsedKg		DEPRECATED: Used cargo space in liters, int (NOT kg)
+//						this is purely for supporting legacy cargo math that needs it in liters to check if items will fit
+//					'maxArmorClass			LEGACY SUPPORT: Maximum armor class in "compatibility tons" (double)
+//					'maxArmorClassName		Name of the maximum armor class
+//					'maxArmorMass			DEPRECATED: use maxArmorClassName instead (or maxArmorClass if you need to support legacy ships)
+//					'maxCargoSpace			Total cargo space in cubic meters (previously tons)
+//					'stdArmorClass			LEGACY SUPPORT: Standard armor class in "compatibility tons" (double)
+//					'stdArmorClassName		Name of the standard armor class
+//					'stdArmorMass			DEPRECATED: use stdArmorClassName instead (or stdArmorClass if you need to support legacy ships)
+//			(objGetCargoSpaceLeft obj)
+//				DEPRECATED: returns cargo space in liters, for compatibility math. Name implies returning in cubic meters though.
+//			(randomGaussian low [mid] high)
+//				Returns double if any argument is a double
+//				Now has a 2-arg form which uses the midpoint of low and high
+//			(sysAddEncounterEvent / sysAddEncounterEventAtDist / sysCreateEncounter / sysCreateShip)
+//				All Encounter functions updated to accept options struct consistent with sysCreateShip
+//				Corrections to Encounter functions to match behavior to documentation and sysCreateShip
+//				New options:
+//					level			Perform ShipTable lookups using the speficied level (instead of system level)
+//					levelAdj		Perform ShipTable lookups using system level + levelAdj
+//					ignoreLimits	Ignore any ship limits in ShipTable lookups
+//			(typGetDataField type field)
+//				New and updated fields
+//					;;ItemType
+//						'volume					returns the volume in CBM as a string
+//					;;ShipClass
+//						'maxArmorSize			returns max armor size in CBM as a string
+//						'maxArmorMass			DEPRECATED: use maxArmorSize instead (returns same value multiplied by 1000)
+//		XML Entities:
+//			Added built-in entities for all printable windows western x80-xFF characters
+//				See Alchemy/Kernel/CHTML.cpp for exact entities that are available
+//				References:
+//					Windows western encoding: https://en.wikipedia.org/wiki/Windows-1252
+//					XML built-in entities: https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references
+//		<AdventureDesc>
+//			<Properties>
+//				<Constant id="core.item.xmlMassToRealVolume">	1.0</Constant>
+//					Conversion ratio of tons->cubic meters for legacy items that specify only mass
+//					accepts a double
+//					Default: 1.0
+//				<Constant id="core.item.defaultDensity">		1.0</Constant>
+//					Default density in tons per cubic meter to apply to legacy items that specify only mass
+//					accepts a double
+//					Default: 1.0
+//		<Type>
+//			<ArmorClassDesc>
+//				<ArmorClass>
+//					New name for ArmorMass tag
+//                  compatibilitySize: A unitless size that is analogous to either mass in tons or volume in CBM, depending on what the item specifies
+//					mass: (Deprecated name to avoid confusion) Autoconverts legacy mass= values (mass in kg) to compatibility size
+//					size: max size armor for this armor class (in CBM)
+//					label: display name of armor class (unchanged from MassClass)
+//					shortLabel:	new string field for displaying mass classes when the mass class names are too long
+//				<ArmorClassAlias>
+//					New feature to allow compatibility support for old armor class names (ex, aliasing Dreadnought -> SuperMassive)
+//					id: name of the ArmorClass to alias
+//					idAlias: name of the alias
+//				<MassClass>
+//					Deprecated tag name, use ArmorClass instead (Functions identically)
+//				<[Any Other Name]>
+//					Deprecated tag name. APIs <59 allowed any named tags instead of just MassClass and they were interpreted as MassClass.
+//					Unsupported in API59+ (will cause a load error). This is to allow for additional tag types in the future.
+//			<ArmorMassDesc>
+//				Deprecated tag name, use ArmorClassDesc instead (Functions identically)
+//		<ItemType>
+//			enhancementUsesObjectImage: (bool)
+//				If True:
+//					Display the obj image if seen as an enhancement type
+//					Display the item image if just an item
+//				(default: false)
+//			installedItemUsesObjectImage: (bool)
+//				If True:
+//					Display the obj image if installed on an object
+//					Display the item image if not installed
+//				(default: false)
+//			density: (double) Species a specific density ratio in metric tons per cubic meter (aka, grams per cubic centimeter)
+//			mass: (int) If present without volume, this value is auto-converted using adventure properties to a volume, and the
+//				actual mass is computed from that volume back into mass using another adventure property. This is still an int
+//				for legacy support reasons. A future API may support doubles.
+//			volume: (double) volume of the item in cubic meters. Values <1 liter (0.001CBM) are allowed
+//			<Armor>
+//				armorClass: explicitly define an armor class ID to assign this armor to (ex, "medium")
+//					See the <ArmorClassDesc> loaded with the adventure for valid names other than
+//						"medium" and "maximum", which are mandated by the engine.
+//		<ShipType>
+//			cargoSpace: now specifies CBM instead of tons
+//				If <API59, always uses the adventure compatibility mappings
+//			maxCargoSpace: now specifies CBM instead of tons
+//				If <API59, always uses the adventure compatibility mappings
+//			<Hull>
+//				cargoSpace: now specifies CBM instead of tons
+//					If <API59, always uses the adventure compatibility mappings
+//				maxArmor: deprecated
+//				maxArmorClass:
+//					Not recommended (use <ArmorLimit .../> instead)
+//					Provides same functionality as maxArmor, but allows specifying
+//					non-classed armor sizes in floating point "compatibility tons",
+//					rather than in integer kg.
+//				maxCargoSpace: now specifies CBM instead of tons
+//					If <API59, always uses the adventure compatibility mappings
+//				stdArmor: deprecated
+//				stdArmorClass:
+//					Not recommended (use <ArmorLimit .../> instead)
+//					Provides same functionality as stdArmor, but allows specifying
+//					non-classed armor sizes in floating point "compatibility tons",
+//					rather than in integer kg.
+//			<DeviceSlots>
+//				<DeviceSlot>
+//					fireAngle: if used with minFireArc and maxFireArc or omnidirectional, can now specify a default angle of fire
+//						(including in and out of the normal min and max fire arc) to use when there is no valid
+//						target in the fire arc and the weapon is allowed to fire (eg, +linkedfire:always)
+//		<Type>
+//			<Events>
+//				<onGlobalTypesBound>
+//					New event for state initialization code
+//					Fires after all types are bound, inheritance is resolved, and properties
+//						are available
+//					It is guaranteed that <onGlobalTypesBoundNewGame> always fires before
+//						this event fires, meaning that one-time pre-initialization can be
+//						handled in that event, and this event can handle any repeat initialization
+//						that has to happen after
+//				<onGlobalTypesBoundNewGame>
+//					New event for state initialization code
+//					Fires after all types are bound, inheritance is resolved, and properties
+//						are available
+//					Fires only on new games, or when loading into the  main menu
+//					Fires BEFORE <onGlobalTypesBound>
+//		<ItemType>
+//			<Weapon>
+//				ignoredByAI:
+//					True if the AI should ignore the existence of this weapon for the purposes
+//					of aiming, targeting, and best weapon selection.
+//					Some configurations (ex, configuring it as a linked fire weapon) may force
+//					an AI ship to activate it anyways, as this is a property of the ship's device
+//					setup, not a property of the AI deciding to use the weapon as a weapon.
+//					Default: false
+//				repeatingDelay:
+//					Deprecated due to using non-intuitive legacy math
+//				repeatingShotDelay:
+//					Sets an exact repeating shot delay in simulation seconds
+//					Default: 2.0
+//		<ShipClass>
+//			<Language>
+//				<... id="core.descLore">
+//					This field is the default field for lore/encyclopedia entries
+//					Ex, when viewing an in-game encyclopedia/codex
+//					core.desc or playerDesc="" are used as fallbacks (in that order)
+//				<... id="core.desc">
+//					This field is the default field for gameplay entries
+//					Ex, during ship selection
+//					playerDesc="" or core.descLore are used as fallbacks (in that order)
+//
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
 //
@@ -1765,4 +1964,18 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					218;
 //		Add DamageMethodCrushAdj to SExtraDamage in DamageDesc
 //		Add DamageMethodPierceAdj to SExtraDamage in DamageDesc
 //		Add DamageMethodShredAdj to SExtraDamage in DamageDesc
+//
+//	219: 2.0 Alpha 9
+//		Add m_fRecalcItemMass to CShip
+//		Add m_rItemVolume to CShip
+//		Add m_rCargoVolume to CShip
+// 
+//  220: 2.0 Alpha 9
+//		Add m_iDefaultFireAngle to CInstalledDevice
+//
+//  221: 2.0 Alpha 9
+//		Add m_pSovereign to CTimedEncounterEvent
+//		Add m_pOverride to CTimedEncounterEvent
+//		Add m_iLevel to CTimedEncounterEvent
+//		Add m_bIgnoreLimits to CTimedEncounterEvent
 //

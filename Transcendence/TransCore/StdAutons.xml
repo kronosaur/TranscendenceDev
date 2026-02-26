@@ -988,7 +988,7 @@
 			charges=			"0"
 			massBonusPerCharge=	"1000"
 
-			description=		"Dock with this auton to store supplies on its cargo platform. This auton has space for 75 tons of cargo. "
+			description=		"Dock with this auton to store supplies on its cargo platform. This auton has space for 75 CBM of cargo. "
 			>
 
 		<Image imageID="&rsItems4;" imageX="288" imageY="192" imageWidth="96" imageHeight="96"/>

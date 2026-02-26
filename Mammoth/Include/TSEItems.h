@@ -53,25 +53,27 @@ class CDifferentiatedItem
 	{
 	public:
 		inline bool AccumulateEnhancementDisplayAttributes (TArray<SDisplayAttribute> &retList) const;
-		inline ItemCategories GetCategory (void) const;
-		inline int GetCharges (void) const;
+		inline ItemCategories GetCategory () const;
+		inline int GetCharges () const;
 		inline CCurrencyAndValue GetCurrencyAndValue (bool bActual = false) const;
-		inline const CEconomyType &GetCurrencyType (void) const;
-		inline const CObjectImageArray &GetImage (void) const;
-		inline int GetLevel (void) const;
-		inline int GetMassKg (void) const;
-		inline int GetMinLevel (void) const;
+		inline const CEconomyType &GetCurrencyType () const;
+		inline const CObjectImageArray &GetImage () const;
+		inline int GetLevel () const;
+		inline int GetMassKg () const;
+		inline Metric GetVolume () const;
+		inline int GetMinLevel () const;
 		inline CString GetNounPhrase (DWORD dwFlags = 0) const;
 		inline ICCItemPtr GetProperty (const CString &sProperty) const;
 		inline ICCItemPtr GetPropertyKeys () const;
-		inline const CItemType &GetType (void) const;
-		inline CItemType &GetType (void);
-		inline int GetVariantNumber (void) const;
+		inline const CItemType &GetType () const;
+		inline CItemType &GetType ();
+		inline int GetVariantNumber () const;
+		CItem& GetUndifferentiatedItem () const { return m_Item; }
 		inline bool IsDamaged (int *retiDamagedHP = NULL) const;
-		inline bool IsDisrupted (void) const;
-		inline bool IsEnhanced (void) const;
-		inline bool IsLauncher (void) const;
-		inline bool IsWeapon (void) const;
+		inline bool IsDisrupted () const;
+		inline bool IsEnhanced () const;
+		inline bool IsLauncher () const;
+		inline bool IsWeapon () const;
 		void ReportEventError (const CSpaceObject *pSource, const CString &sEvent, const ICCItem &ErrorItem) const;
 
 	protected:
@@ -343,7 +345,7 @@ class CItem
 		CString GetEnhancedDesc (void) const;
 		bool GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem &TargetItem, const CString &sMode, SEnhanceItemResult &retResult, CString *retsError = NULL) const;
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
-		inline const CObjectImageArray &GetImage (void) const;
+		const CObjectImageArray& GetImage (bool bActual = false) const;
 		int GetInstallCost (void) const;
 		int GetInstalled (void) const { return (m_pExtra ? m_pExtra->m_iInstalledIndex : -1); }
 		const CInstalledArmor *GetInstalledArmor (void) const { if (m_pExtra && m_pExtra->m_iInstalled == EInstalled::Armor) return (const CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
@@ -356,8 +358,8 @@ class CItem
 		int GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		CString GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		int GetLevel (void) const;
-		Metric GetMass (void) const { return GetMassKg() / 1000.0; }
-		int GetMassKg (void) const;
+		Metric GetMass () const { return GetMassKg() / 1000.0; }
+		int GetMassKg () const;
 		int GetMaxCharges (void) const;
 		const CItemEnhancement &GetMods (void) const { return (m_pExtra ? m_pExtra->m_Mods : m_NullMod); }
 		static const CItem &GetNullItem (void) { return m_NullItem; }
@@ -378,6 +380,7 @@ class CItem
 		CItemType *GetUnknownType (void) const;
 		CItemType *GetUnknownTypeIfUnknown (bool bActual = false) const;
 		int GetVariantNumber (void) const { return (m_pExtra ? (int)m_pExtra->m_dwVariantCounter : 0); }
+		Metric GetVolume () const;
 		inline bool HasAttribute (const CString &sAttrib) const;
 		bool HasComponents (void) const;
 		bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }

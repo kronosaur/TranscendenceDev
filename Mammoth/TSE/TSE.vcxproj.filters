@@ -1348,7 +1348,7 @@
     <ClCompile Include="CArmorLimits.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
-    <ClCompile Include="CArmorMassDefinitions.cpp">
+    <ClCompile Include="CArmorClassDefinitions.cpp">
       <Filter>Source Files\DesignTypes</Filter>
     </ClCompile>
     <ClCompile Include="CShipStandard.cpp">
@@ -1655,6 +1655,9 @@
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="CDamageMethodDesc.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CDoubleRangeCriteria.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
