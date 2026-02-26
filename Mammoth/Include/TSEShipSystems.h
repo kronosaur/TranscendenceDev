@@ -370,7 +370,7 @@ class CShipInteriorDesc
 
 		TArray<SCompartmentDesc> m_Compartments;
 		TArray<int> m_PaintOrder;
-		SDamageMethodAdj m_Fortification;					//	Adjusts WMD adj curve from the WMD0 end
+		SDamageMethodFortification m_Fortification;					//	Adjusts WMD adj curve from the WMD0 end
 
 		DWORD m_fHasAttached:1;
 		DWORD m_fIsMultiHull:1;

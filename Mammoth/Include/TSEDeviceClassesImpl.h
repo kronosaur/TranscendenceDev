@@ -571,7 +571,7 @@ class CShieldClass : public CDeviceClass
 		DamageTypeSet m_WeaponSuppress;			//	Types of weapons suppressed
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
 		int m_iTimeBetweenFlashEffects;			//  Minimum time between flash effects in ticks
-		SDamageMethodAdj m_Fortification;		//	Fortification damage method curve adj
+		SDamageMethodFortification m_Fortification;		//	Fortification damage method curve adj
 
 		int m_iExtraHPPerCharge;				//	Extra HP for each point of charge
 		int m_iExtraPowerPerCharge;				//	Extra power use for each point of charge (1/10 megawatt)
