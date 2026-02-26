@@ -1246,7 +1246,7 @@ class CSpaceObject
 		virtual CString GetObjClassName (void) const { return CONSTLIT("unknown"); }
 		virtual Metric GetParallaxDist (void) { return 0.0; }
 		virtual EDamageResults GetPassthroughDefault (void) { return damageNoDamage; }
-		virtual int GetPlanetarySize (void) const { return 0; }
+		virtual int GetPlanetarySize (void) const { return 0; } 
 		virtual ScaleTypes GetScale (void) const { return scaleFlotsam; }
 		virtual CSovereign *GetSovereign (void) const { return NULL; }
 		virtual Metric GetStellarMass (void) const { return 0.0; }
@@ -1307,6 +1307,7 @@ class CSpaceObject
 		virtual int GetMaxLightDistance (void) const { return 0; }
 		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
 		virtual int GetPerception (void) const { return perceptNormal; }
+		virtual int GetRelativeHealth () const { return INT_MAX; }
 		virtual int GetScore (void) { return 0; }
 		virtual CG32bitPixel GetSpaceColor (void) { return 0; }
 		virtual int GetStealth (void) const { return stealthNormal; }

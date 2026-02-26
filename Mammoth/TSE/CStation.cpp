@@ -2197,6 +2197,27 @@ IShipGenerator *CStation::GetRandomEncounterTable (int *retiFrequency) const
 	return m_pType->GetEncountersTable();
 	}
 
+//	GetRelativeHealth
+// 
+//	Returns an int 0-100 representing
+//	the relative health of this station
+// 
+//	Values > 100 represent an indestructible or intangible object (suspended, gated, virtual, etc)
+//	Values < 0 represent a destroyed object
+//
+int CStation::GetRelativeHealth() const
+	{
+	if (IsDestroyed())
+		return -1;
+	
+	if (IsImmutable() || IsIntangible() || !m_Hull.CanBeHit() || !m_Hull.GetMaxHitPoints())
+		return INT_MAX;
+
+	Metric rHPRatio = m_Hull.GetHitPoints() / m_Hull.GetMaxHitPoints();
+
+	return min(100, mathRound(rHPRatio * 100 + 0.5));
+	}
+
 int CStation::GetRotation (void) const
 
 //	GetRotation
@@ -4573,10 +4594,14 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 				}
 
 			//	If they don't fit, we just beep
+			// 
+			//	Dont play the audio que faster than once per several seconds
+			//	Ticks are DWORDs (unsigned) so we dont care if the universe ticks roll over to 0
 
-			else
+			else if (GetUniverse().GetTicks() - GetUniverse().GetPlayer().GetLastWarningTick() > g_TicksPerSecond * 3)
 				{
 				GetUniverse().PlaySound(this, GetUniverse().FindSound(UNID_DEFAULT_CANT_DO_IT));
+				GetUniverse().GetPlayer().SetLastWarningTick(GetUniverse().GetTicks());
 				}
 			}
 
