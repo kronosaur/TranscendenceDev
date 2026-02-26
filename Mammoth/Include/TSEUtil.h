@@ -709,6 +709,8 @@ struct SDamageMethod
 		static const DWORD FLAG_ADJ =					0x00000002;
 		static const DWORD FLAG_METHOD_RATIO =			0x00000004;
 
+		bool InitFromString (const CString sDmgMethods, CString* retsError = NULL, EDamageMethod eWMDMapping = EDamageMethod::methodShred);
+
 		Metric GetCrush () const { return rAdj[0]; }
 		Metric GetPierce () const { return rAdj[1]; }
 		Metric GetShred () const { return rAdj[2]; }

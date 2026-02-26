@@ -496,7 +496,218 @@ void DiceRange::WriteToStream (IWriteStream *pStream) const
 	pStream->Write(m_iBonus);
 	}
 
-//	Miscellaneous functions
+//	SDamageMethod -------------------------------------------------------------
+
+//	InitFromString
+// 
+//	Initializes SDamageMethod values from a damage method string.
+//	Returns if successful or false if a parse error occurred.
+//
+bool SDamageMethod::InitFromString (const CString sDmgMethods, CString* retsError, EDamageMethod eWMDMapping)
+	{
+	//	Clear existing values
+	Reset();
+
+	EDamageMethodSystem eSystem = g_pUniverse->GetEngineOptions().GetDamageMethodSystem();
+
+	//	bMappedNative is used to track if we have mapped a native mapping before a compatibility
+	//	mapping, in which case we ignore the compatibility mapping
+	bool bMappedNative = false;
+
+	//	Use a padded version of sDmgMethods to simplify logic
+	CString sPaddedDmgMethods = strCat(sDmgMethods, CONSTLIT(" "));
+
+	bool bInTerm = false;
+	char* pStart = sPaddedDmgMethods.GetPointer();
+	char* pStrStart = pStart;
+	char* pNameEnd = NULL;
+	char* pValueStart = NULL;
+	char* pStrEnd = sPaddedDmgMethods.GetPointer() + sPaddedDmgMethods.GetLength();
+	for (char* pC = pStrStart; pC < pStrEnd; pC++)
+		{
+		//	Keep reading if alphabetic
+		if (IsCharAlpha(*pC))
+			{
+			if (!bInTerm)
+				bInTerm = true;
+			pStart = pC;
+			continue;
+			}
+
+		//	If its a numeral though (alpha is already filtered out) we switch modes to read
+		//	the number.
+		//	We also include periods in case of "pierce.5" and colons for "pierce:5"
+		else if (IsCharAlphaNumeric(*pC) || *pC == '.' || *pC == ':')
+			{
+			if (pNameEnd < pStart)
+				pNameEnd = pC - 1;
+
+			//	Check for parse errors
+			if (pNameEnd < pStart)
+				{
+				Reset();
+				if (retsError)
+					*retsError = CONSTLIT("Numeral without name found");
+				return false;
+				}
+
+			//	Set val start
+			if (pValueStart <= pNameEnd)
+				{
+				if (*pC == ':')
+					{
+					pValueStart = pC + 1;
+					if (pValueStart >= pStrEnd)
+						{
+						if (retsError)
+							*retsError = CONSTLIT("Expected value but reached end of string instead.");
+						return false;
+						}
+					}
+				else
+					pValueStart = pC;
+				}
+			}
+
+		//	If its a delimiter read in the value, or skip if we aren't in a name
+		else if (*pC == ' ' || *pC == ';' || *pC == ',')
+			{
+			if (!bInTerm)
+				continue;
+			bInTerm = false;
+
+			//	Ensure that we have a valid value
+			if (pValueStart <= pNameEnd)
+				{
+				if (retsError)
+					*retsError = CONSTLIT("Expected a damage method value.");
+				return false;
+				}
+			
+			//	Attempt to parse the name we have
+			CString sName = strSlice(sPaddedDmgMethods, (int)(pStart - pStrStart), (int)(pNameEnd - pStrStart));
+
+			//	Attempt to parse the value
+			CString sValue = strSlice(sPaddedDmgMethods, (int)(pValueStart - pStrStart), (int)(pC - pStrStart));
+			bool bFailed = false;
+			Metric rValue = strToDouble(sValue, 0.0, &bFailed);
+			
+			if (bFailed)
+				{
+				if (retsError)
+					*retsError = strPatternSubst(CONSTLIT("Could not parse value %s to double"), sValue);
+				return false;
+				}
+
+			if (rValue < 0.0)
+				{
+				if (retsError)
+					*retsError = CONSTLIT("DamageMethod values cannot be less than 0 for adjustment, fortification, or ratios");
+				return false;
+				}
+
+			EDamageMethod eMethod = EDamageMethod::methodError;
+
+			if (strEquals(sName, KEY_CORE_DMG_METHOD_CRUSH))
+				eMethod = EDamageMethod::methodCrush;
+			else if (strEquals(sName, KEY_CORE_DMG_METHOD_OVERWHELM))
+				eMethod = EDamageMethod::methodOverwhelm;
+			else if (strEquals(sName, KEY_CORE_DMG_METHOD_PIERCE))
+				eMethod = EDamageMethod::methodPierce;
+			else if (strEquals(sName, KEY_CORE_DMG_METHOD_SHRED))
+				eMethod = EDamageMethod::methodShred;
+			else if (strEquals(sName, KEY_CORE_DMG_METHOD_SCOUR))
+				eMethod = EDamageMethod::methodScour;
+			else if (strEquals(sName, KEY_CORE_DMG_METHOD_DIRECT))
+				eMethod = EDamageMethod::methodDirect;
+			else if (strEquals(sName, KEY_CORE_DMG_METHOD_WMD))
+				eMethod = EDamageMethod::methodWMD;
+			else
+				{
+				if (retsError)
+					*retsError = strPatternSubst(CONSTLIT("\"%s\" is not a valid damage method name"), sName);
+				return false;
+				}
+
+			if (eMethod == EDamageMethod::methodDirect && (dwFlags & FLAG_FORTIFICATION) || (dwFlags & FLAG_ADJ))
+				{
+				if (retsError)
+					*retsError = CONSTLIT("Damage method \"direct\" cannot be adjusted or fortified against.");
+				return false;
+				}
+
+			//	Handle physicalized damage method compatibility
+			if (eSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+				{
+				if (eMethod == EDamageMethod::methodWMD)
+					{
+					if (bMappedNative)
+						continue;
+
+					Set(eWMDMapping, rValue);
+					}
+				else
+					{
+					if (eMethod == eWMDMapping)
+						bMappedNative = true;
+
+					Set(eMethod, rValue);
+					}
+				continue;
+				}
+
+			//	Handle WMD damage method compatibility
+			else
+				{
+				if (eMethod == EDamageMethod::methodWMD)
+					{
+					bMappedNative = true;
+					Set(eMethod, rValue);
+					}
+				else
+					{
+					if (eMethod == eWMDMapping && !bMappedNative)
+						Set(eMethod, rValue);
+					}
+				continue;
+				}
+			}
+
+		//	If its any other character, this is an error
+		else
+			{
+			if (retsError)
+				*retsError = strPatternSubst(CONSTLIT("Invalid character \"%s\""), *pC);
+			return false;
+			}
+		}
+
+	//	Now we do any extra math required for our type
+
+	if (dwFlags & FLAG_METHOD_RATIO && eSystem == EDamageMethodSystem::dmgMethodSysPhysicalized)
+		{
+		Metric rSum = 0.0;
+		for (int i = 0; i < NUM_METHODS; i++)
+			{
+			rSum += rAdj[i];
+			}
+
+		if (rSum == 0.0)
+			SetScour(1.0);
+		else
+			{
+			for (int i = 0; i < NUM_METHODS; i++)
+				{
+				rAdj[i] = rAdj[i] / rSum;
+				}
+			}
+		}
+	//	WMD "ratio" is left as a level, we so dont need to process it
+
+	return true;
+	}
+
+//	Miscellaneous functions ---------------------------------------------------
 
 CString AppendModifiers (const CString &sModifierList1, const CString &sModifierList2)
 
