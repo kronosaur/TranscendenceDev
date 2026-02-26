@@ -644,14 +644,14 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	Ctx.pStream->Read(dwLoad);
 
 	if (Ctx.dwVersion >= 220)
-		m_iMinFireArc = (int)LOWORD(dwLoad);
+		m_iDefaultFireAngle = (int)LOWORD(dwLoad);
 
 	//	Prior to version 220, m_iDefaultFireAngle didnt exist, so we just load it as a default -1.
 	//	Because an installed device may not have been created from a device slot desc, we can't
 	//	retroactively update them unfortunately.
 
 	else
-		m_iMinFireArc = -1;
+		m_iDefaultFireAngle = -1;
 
 	m_iSpare = 0;
 
