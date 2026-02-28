@@ -22,6 +22,7 @@
 					default to current rank + 1
 		xpNeeded:	Experience points required to reach this rank. Optional if membership
 					provides a CheckPromotion event
+		condition:	Optional lambda that should return True if the player can be promoted
 		icon:		Icon for rank details display
 
 	rpg.descPromotion: This series of language elements should define the
@@ -111,6 +112,7 @@
 				(rankTable (typ@ membership 'rankTable))
 				(nextRank (or (@ (@ rankTable rank) 'nextRank) (+ rank 1)))
 				(nextRankDesc (@ rankTable nextRank))
+				conditionCode
 				)
 
 				(switch
@@ -134,6 +136,13 @@
 
 					(ls xp (@ nextRankDesc 'xpNeeded))
 						Nil
+
+					;	If we have an additional condition lambda, promote if it returns True
+
+					(setq conditionCode (@ nextRankDesc 'condition))
+						(if (conditionCode)
+							nextRank
+							)
 
 					;	Promotion to the next rank.
 

@@ -41,6 +41,7 @@
 					rank: 'legend
 					icon: (resCreateImageDesc &rsKorolovInsignia; 360 0 120 120)
 					xpNeeded: 3000
+					condition: (lambda () (not (msnFind "r +korolov; +escort; +property:isFailure;")))
 					}
 				-1: {
 					rank: 'blacklisted
