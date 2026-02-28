@@ -1236,6 +1236,7 @@ ALERROR CSystem::CreateStargate (CStationType *pType,
 								 const CString &sStargateID,
 								 const CString &sDestNodeID,
 								 const CString &sDestStargateID,
+								 bool bIgnoreLimits,
 								 CSpaceObject **retpStation)
 
 //	CreateStargate
@@ -1253,7 +1254,7 @@ ALERROR CSystem::CreateStargate (CStationType *pType,
 	//	Create the station
 
 	CSpaceObject *pObj;
-	if (error = CreateStation(pType, NULL, vPos, &pObj))
+	if (error = CreateStation(pType, NULL, vPos, bIgnoreLimits, &pObj))
 		return error;
 
 	pStation = pObj->AsStation();
@@ -1287,6 +1288,7 @@ ALERROR CSystem::CreateStargate (CStationType *pType,
 ALERROR CSystem::CreateStation (CStationType *pType,
 								CDesignType *pEventHandler,
 								const CVector &vPos,
+								bool bIgnoreLimits,
 								CSpaceObject **retpStation)
 
 //	CreateStation
@@ -1333,6 +1335,7 @@ ALERROR CSystem::CreateStation (CStationType *pType,
 	CreateCtx.pOrbit = &NewOrbit;
 	CreateCtx.bCreateSatellites = true;
 	CreateCtx.pEventHandler = pEventHandler;
+	CreateCtx.bIgnoreLimits = bIgnoreLimits;
 
 	CSpaceObject *pStation;
 	if (error = CreateStation(Ctx,
