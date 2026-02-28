@@ -25,6 +25,12 @@
 			level=			"1-5"
 			>
 
+		<Properties>
+			<Constant id="membership">&unidKorolovShipping;</Constant>
+			<Data id="reward"></Data>
+			<Data id="rewardXP"></Data>
+		</Properties>
+
 		<Events>
 			<OnCreate>
 				(block (
@@ -102,9 +108,9 @@
 							(msnSetData gSource 'destID (objGetID destObj))
 
 							(msnSetData gSource 'escortType escortType)
-							(msnSetData gSource 'missionXP (if gateMission 75 100))
+							(msnSet@ gSource 'rewardXP (if gateMission 75 100))
 							(msnSetData gSource 'cargoValue (@ escortData 'cargoValue))
-							(msnSetData gSource 'reward (@ escortData 'escortFee))
+							(msnSet@ gSource 'reward (@ escortData 'escortFee))
 
 							; Remember the minimum player level to escort and the minimum
 							; player speed.
@@ -177,23 +183,16 @@
 			</OnSetPlayerTarget>
 
 			<OnCompleted>
-				(block (
-					(freighterObj (objGetObjByID (msnGetData gSource 'freighterID)))
-					)
-					(korEscortMissionCompleted gSource aReason gData)
-					
-					;	Clear out the mission object from this freighter so that the freighter can
-					;	get a new mission.
-					
-					(if freighterObj
-						(objSetData freighterObj 'missionID Nil)
-						)
-					)
+				(korEscortMissionCompleted gSource aReason gData)
 			</OnCompleted>
 
 			<OnReward>
-				(korGiveReward gSource)
+				(rpgMissionReward gSource)
 			</OnReward>
+
+			<OnGetNextScreen>
+				(korGetPendingMiscAward)
+			</OnGetNextScreen>
 
 			<OnObjDestroyed>
 				(switch
@@ -231,6 +230,7 @@
 						)
 						(block Nil
 							(objSetData aObjDocked "korolovPlayerEscort" Nil)
+							(objSetData aObjDocked 'missionID Nil)
 							(msnSuccess gSource)
 							;	Repair the freighter so its ready for whatever happens next
 							(shpFullRestore aObjDocked)
@@ -263,7 +263,7 @@
 						shipName: (objGetName ship 'article)
 						destName: (objGetName dest 'article)
 						systemName: (sysGetName)
-						payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+						payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 						})
 					)
 			</Text>
@@ -278,7 +278,7 @@
 					(ship (objGetObjByID (msnGetData gSource 'freighterID)))
 					(dest (objGetObjByID (msnGetData gSource 'destID)))
 					(destName (objGetName dest 'article))
-					(paymentValue (msnGetData gSource 'reward))
+					(paymentValue (msn@ gSource 'reward))
 					(payment 
 						(if (= paymentValue 0)
 							(msnTranslate gSource 'listSummary.noPayment)
@@ -320,7 +320,7 @@
 							shipClass: (shpGetClassName ship 4)
 							cargoValue: (fmtCurrency 'credit cargoValue)
 							destName: (objGetName dest 'article)
-							payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+							payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 							}
 						)
 					)

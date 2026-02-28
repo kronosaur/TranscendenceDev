@@ -8,53 +8,58 @@
 
 	GLOBAL DATA
 	
-	level:				Player's level:
-							Nil	= Not yet initialized
-							-1	= Blacklisted
-							1	= Apprentice
-							2	= Journeyman
-							3	= Master
-							4	= Legend
-
-	opsIntroDone:		If True, no need for ops intro.
-
 	record{shipUNID}:	Escort record for given freighter
 							({successful} {unsuccessful})
 
 	recordStrongholds:	Number of Charon primary strongholds destroyed
 
-	xp:					Number of experience points.
-
 	-->
 
 	<Type UNID="&unidKorolovShipping;">
 		<Properties>
-			<DynamicGlobal id="rank">(or (typGetData gType 'level) 0)</DynamicGlobal>
-			<DynamicGlobal id="rankID">
-				(block (
-					(rank (typ@ gType 'rank))
-					)
-					(switch
-						(= rank -1)
-							'blacklisted
+			<Definition id="rankTable">
+				{
+				0: {
+					rank: 'none
+					}
+				1: {
+					rank: 'apprentice
+					icon: (resCreateImageDesc &rsKorolovInsignia; 0 0 120 120)
+					xpNeeded: 0
+					}
+				2: {
+					rank: 'journeyman
+					icon: (resCreateImageDesc &rsKorolovInsignia; 120 0 120 120)
+					xpNeeded: 300
+					}
+				3: {
+					rank: 'master
+					icon: (resCreateImageDesc &rsKorolovInsignia; 240 0 120 120)
+					xpNeeded: 1500
+					}
+				4: {
+					rank: 'legend
+					icon: (resCreateImageDesc &rsKorolovInsignia; 360 0 120 120)
+					xpNeeded: 3000
+					condition: (lambda () (not (msnFind "r +korolov; +escort; +property:isFailure;")))
+					}
+				-1: {
+					rank: 'blacklisted
+					nextRank: -1
+					}
+				}
+			</Definition>
 
-						(@ '(none apprentice journeyman master legend) rank)
-						)
-					)
-			</DynamicGlobal>
+			<Global id="rpg.rank"></Global>
+			<Global id="rpg.xp">0</Global>
+
+			<DynamicGlobal id="rankNoun">(rpgRankNoun gType)</DynamicGlobal>
 			<DynamicGlobal id="rankIcon">
 				(block (
-					(rank (typ@ gType 'rank))
+					(rank (typ@ gType 'rpg.rank))
+					(rankTable (typ@ gType 'rankTable))
 					)
-					(if (gr rank 0)
-						(resCreateImageDesc
-							&rsKorolovInsignia;
-							(multiply 120 (subtract rank 1))
-							0
-							120
-							120
-							)
-						)
+					(@ (@ rankTable rank) 'icon)
 					)
 			</DynamicGlobal>
 			<Global id="escortSuccessCount">0</Global>
@@ -91,38 +96,75 @@
 			<GetGlobalAchievements>
 				(append
 					;	Rank
-					(if (typGetData &unidKorolovShipping; 'level)
-						(list
-							(list
-								"Korolov rank"
-								(typTranslate &unidKorolovShipping; 'PlayerRank)
-								)
-							)
-						)
+					(rpgRankAchievements &unidKorolovShipping;)
 
 					;	Missions
 					(rpgMissionAchievements &unidKorolovShipping; "* +korolov; +escort;")
 					)
 			</GetGlobalAchievements>
+
+			<OnGlobalUniverseLoad>
+				(block (
+					(transition (lambda (oldVar newVar)
+						(if (typGetData gType oldVar)
+							(block ()
+								(typSet@ gType newVar (typGetData gType oldVar))
+								(typSetData gType oldVar Nil)
+								)
+							)
+						))
+					)
+					;	Transition data to properties
+					(transition 'level 'rpg.rank)
+					(transition 'xp 'rpg.xp)
+					)
+			</OnGlobalUniverseLoad>
+
+			<OnPromotion>
+				(block (
+					(rank (typ@ gType 'rpg.rank))
+					(roll (random 1 100))
+					reward
+					)
+					;	Destroy all open freighter missions because now that we're a new
+					;	level, the mission parameters will change
+
+					(enum (msnFind gSource "oS +korolov; +escort;") theMission
+						(msnDestroy theMission)
+						)
+
+					;	Handle reward
+
+					(switch
+						(= rank 2)
+							(switch
+								(and (leq roll 60)
+										(= (objGetEquipmentStatus gPlayerShip 'SRSEnhancer) 'notInstalled)
+										)
+									(setq reward (itmCreate &itEnhanceSRSROM; 1))
+								(and (leq roll 90)
+										(= (objGetEquipmentStatus gPlayerShip 'TargetingComputer) 'notInstalled)
+										)
+									(setq reward (itmCreate &itTargetingComputerROM; 1))
+
+								(setq reward (itmCreate &itEnhanceShieldsROM; 1))
+								)
+
+						(= rank 3)
+							(setq reward (itmCreate &itClass5Deflector; 1))
+						)
+					(if reward (objAddItem gPlayerShip reward))
+
+					(if (and (= rank 4) (not (typGetGlobalData &chVolkov; 'status)))
+						{
+							nextScreen: &dsRPGWingmanEncounter;
+							nextScreenData: {wingman: &chVolkov;}
+							})
+					)
+			</OnPromotion>
 		</Events>
 
 		<Language>
-			<Text id="PlayerRank">
-				(block (
-					(level (korGetPlayerLevel))
-					)
-					(switch
-						(not level) "No rank"
-						(= level -1) "Blacklisted"
-						(= level 0) "None"
-						(= level 1) "Apprentice"
-						(= level 2) "Journeyman"
-						(= level 3) "Master"
-						(= level 4) "Legend"
-						(cat "ERROR: Korolov level: " (or level "Nil"))
-						)
-					)
-			</Text>
 			<Text id="SuccessDebrief:FirstMission">
 				
 				"Excellent work, captain! You seem to have the aptitude to 
@@ -229,17 +271,18 @@
 			</Text>
 
 			<Text id="rpg.missionTypeDesc">Korolov shipping missions</Text>
+			<Text id="rpg.rankTypeDesc">Korolov rank</Text>
 
 			<Code id="rankDetails">
 				(block (
-					(rankID (typ@ gType 'rankID))
+					(rank (typ@ gType 'rpg.rank))
 						
 					(frigatesDestroyed (typGetGlobalData &scCharonFrigateRaider; 'totalDestroyed))
 					(strongholdsDestroyed (typGetGlobalData gType 'recordStrongholds))
 					)
-					(if (and (!= rankID 'none) (!= rankID 'blacklisted))
+					(if (gr rank 0)
 						{
-							title: (fmtNoun (typTranslate gType (cat "rank." rankID)) 1 'titleCapitalize)
+							title: (fmtNoun (typ@ gType 'rankNoun) 1 'titleCapitalize)
 							largeIcon: (typ@ gType 'rankIcon)
 
 							details: (append
@@ -296,11 +339,60 @@
 						)
 					)
 			</Code>
-			<Text id="rank.none">apprentice(s)</Text>
-			<Text id="rank.apprentice">apprentice(s)</Text>
-			<Text id="rank.journeyman">journeyman|journeymen</Text>
-			<Text id="rank.master">master(s)</Text>
-			<Text id="rank.legend">legend(s)</Text>
+
+			<Text id="rank.-1">blacklisted</Text>
+			<Text id="rank.0">:a new pilot(s)</Text>
+			<Text id="rank.1">:an apprentice(s)</Text>
+			<Text id="rank.2">:a journeyman|journeymen</Text>
+			<Text id="rank.3">:a master(s)</Text>
+			<Text id="rank.4">:a legend(s)</Text>
+
+			<Code id="rpg.descPromotion">
+				(typTranslate gType (cat "descPromotion." (typ@ gType 'rpg.rank)) {
+					AD: (rpgCharacterGetInfo gSource 'assistantDirector &chKorolovAssistantDirectors;)
+					escortCount: (strNumber (count (msnFind "r +korolov; +escort; +property:isSuccess;")))
+					})
+			</Code>
+
+			<Text id="descPromotion.1">
+
+				"Korolov Shipping needs more pilots with your skills and
+				determination. Please come back to us, or any other Korolov
+				station, if you want to earn a bit of money."
+
+			</Text>
+			<Text id="descPromotion.2">
+
+				"After reviewing your record, I have recommended to
+				%titledName@AD%	that you be granted the rights and
+				responsibilities of a Journeyman of the Korolov Shipping
+				Corporation. Congratulations!
+
+				"To aid you in your missions, please accept this ROM biosoft."
+
+			</Text>
+			<Text id="descPromotion.3">
+
+				%titledName@AD%	talks to you after the mission:
+
+				"You are one of our best pilots, and I'm happy to tell you that
+				the executive board has promoted you to the rank of Master.
+				Congratulations!
+
+				"To commemorate this occasion, I want to give you this vintage
+				deflector shield generator. May it help you in times of need."
+
+			</Text>
+			<Text id="descPromotion.4">
+
+				A crowd gathers around you as you leave the debriefing;
+				everyone reaches towards you in congratulations.
+
+				"Congratulations! You've broken the record! You've escorted
+				%escortCount% freighters without losing a single one!
+				No one has accomplished that feat before!"
+
+			</Text>
 
 			<Text id="labelTotal">Total Escorts:</Text>
 			<Text id="labelSuccessRate">Success Rate:</Text>
@@ -447,22 +539,24 @@
 					<Default descID="descWelcome">
 						<OnPaneInit>
 							(block (
-								(playerLevel (typGetData &unidKorolovShipping; 'level))
+								(playerLevel (typ@ &unidKorolovShipping; 'rpg.rank))
 								)
 								(switch
-									(not playerLevel)
-										(block ()
-											(scrSetActionDesc gScreen 'actionDockServices (scrTranslate gScreen 'descNoDockServices.noRank))
-											(scrEnableAction gScreen 'actionDockServices Nil)
-
-											(scrShowAction gScreen 'actionServiceRecord Nil)
-											)
+									(gr playerLevel 0)
+										Nil
 
 									(= playerLevel -1)
 										(block ()
 											(scrSetActionDesc gScreen 'actionDockServices (scrTranslate gScreen 'descNoDockServices.blacklisted))
 											(scrEnableAction gScreen 'actionDockServices Nil)
 											)
+
+									(block ()
+										(scrSetActionDesc gScreen 'actionDockServices (scrTranslate gScreen 'descNoDockServices.noRank))
+										(scrEnableAction gScreen 'actionDockServices Nil)
+
+										(scrShowAction gScreen 'actionServiceRecord Nil)
+										)
 									)
 								)
 						</OnPaneInit>
@@ -474,7 +568,7 @@
 
 							<Action id="actionOperations" default="1">
 								(block (
-									(playerLevel (korGetPlayerLevel))
+									(playerLevel (typ@ &unidKorolovShipping; 'rpg.rank))
 									theMission
 									)
 									;	If we've done enough escort missions we need to destroy any
@@ -544,20 +638,15 @@
 
 							<Action id="actionDockServices">
 								(block (
-									(playerLevel (typGetData &unidKorolovShipping; 'level))
+									(playerLevel (typ@ &unidKorolovShipping; 'rpg.rank))
 									)
 									(switch
-										(not playerLevel)
-											(scrShowScreen gScreen &dsRPGMessage; {
-												desc: (scrTranslate gScreen 'descNoDockServicesAccess)
-												})
+										(gr playerLevel 0)
+											(rpgDockServices gPlayerShip)
 
-										(= playerLevel -1)
-											(scrShowScreen gScreen &dsRPGMessage; {
-												desc: (scrTranslate gScreen 'descNoDockServicesAccess)
-												})
-
-										(rpgDockServices gPlayerShip)
+										(scrShowScreen gScreen &dsRPGMessage; {
+											desc: (scrTranslate gScreen 'descNoDockServicesAccess)
+											})
 										)
 									)
 							</Action>
@@ -597,34 +686,13 @@
 					</Text>
 
 					<Image left="12" top="24" width="120" height="120" transparent="true">
-						(block (
-							(level (korGetPlayerLevel))
-							)
-
-							(if (gr level 0)
-								(resCreateImageDesc
-									&rsKorolovInsignia;
-									(multiply 120 (subtract level 1))
-									0
-									120
-									120
-									)
-								Nil
-								)
-							)
+						(typ@ &unidKorolovShipping; 'rankIcon)
 					</Image>
 
 					<Text left="140" top="52" right="-24" height="32" font="Large" color="200,206,199">
-						(@
-							'(
-								"Dishonorably discharged"	; -1 blacklisted
-								"New pilot in the Korolov Shipping Corporation"				; 0
-								"Apprentice in the Korolov Shipping Corporation"				; 1
-								"Journeyman in the Korolov Shipping Corporation"				; 2
-								"Master in the Korolov Shipping Corporation"					; 3
-								"Legend in the Korolov Shipping Corporation"					; 4
-								)
-							(+ (typGetData &unidKorolovShipping; 'level) 1)
+						(if (= (typ@ &unidKorolovShipping; 'rpg.rank) -1)
+							"Dishonorably discharged"
+							(cat (fmtNoun (typ@ &unidKorolovShipping; 'rankNoun) 1 'titleCapitalize) " in the Korolov Shipping Corporation")
 							)
 					</Text>
 
@@ -753,7 +821,7 @@
 
 			<GetRumors>
 				(block (
-					(rank (korGetPlayerLevel))
+					(rank (typ@ &unidKorolovShipping; 'rpg.rank))
 					)
 					{
 						attributes: "commonwealthPub"
@@ -800,7 +868,7 @@
 			
 			<Text id="descWelcome">
 				(block (
-					(level (korGetPlayerLevel))
+					(level (typ@ &unidKorolovShipping; 'rpg.rank))
 					)
 					(cat
 						(typTranslate gType 'descWelcomeStart) "\n\n"
@@ -1128,7 +1196,7 @@
 		
 		<InitialPane>
 			(switch
-				(typGetData &unidKorolovShipping; 'opsIntroDone)
+				(typ@ &unidKorolovShipping; 'rpg.rank)
 					"Default"
 				
 				"EscortIntro"
@@ -1141,7 +1209,7 @@
 					(block (
 						(theEntry (scrGetListEntry gScreen))
 						(theMission (@ theEntry 'missionObj))
-						(playerLevel (korGetPlayerLevel))
+						(playerLevel (typ@ &unidKorolovShipping; 'rpg.rank))
 						(canAccept Nil)
 						)
 						(switch
@@ -1200,10 +1268,10 @@
 								)
 							)
 
-						;	Set the intro flag. We do this in case the player clicks on some
+						;	Initialize our RPG Membership. We do this in case the player clicks on some
 						;	freighter during EscortIntro.
 
-						(typSetData &unidKorolovShipping; 'opsIntroDone True)
+						(rpgRankInit &unidKorolovShipping;)
 						)
 				</OnPaneInit>
 				
@@ -1262,184 +1330,65 @@
 		</Language>
 	</DockScreen>
 
-	<!-- Promotion -->
-
-	<DockScreen UNID="&dsKorolovPromotion;"
-			nestedScreen=		"true"
-			inherit=			"&dsDockScreenBase;"
-			>
-		<Display type="detailsPane">
-			<OnDisplayInit>
-				(typTranslate &unidKorolovShipping; 'rankDetails)
-			</OnDisplayInit>
-		</Display>
-
-		<Panes>
-			<Default>
-				<OnPaneInit>
-					(block ()
-						;	If we need to show the miscellaneous rewards screen we do that now and then
-						;	come back to this screen since its nested
-						(if (korGetPendingMiscAward)
-							(scrShowScreen gScreen &dsKorolovMiscRewards;)
-							)
-						(scrSetDescTranslate gScreen (cat "Promotion:" (korGetPlayerLevel)) {
-							AD: (rpgCharacterGetInfo gSource 'assistantDirector &chKorolovAssistantDirectors;)
-							escortCount: (strNumber (count (msnFind "r +korolov; +escort; +property:isSuccess;")))
-							})
-						)
-				</OnPaneInit>
-
-				<Actions>
-					<Action id="actionContinue" default="1" cancel="1">
-						(block (
-							(level (korGetPlayerLevel))
-							(roll (random 1 100))
-							reward
-							)
-							;	Destroy all open freighter missions because now that we're a new
-							;	level, the mission parameters will change
-							
-							(enum (msnFind gSource "oS +korolov; +escort;") theMission
-								(msnDestroy theMission)
-								)
-							
-							;	Handle promotion
-							
-							(switch
-								(= 2 level)
-									(switch
-										(and (leq roll 60)
-												(= (objGetEquipmentStatus gPlayerShip 'SRSEnhancer) 'notInstalled)
-												)
-											(setq reward (itmCreate &itEnhanceSRSROM; 1))
-										(and (leq roll 90)
-												(= (objGetEquipmentStatus gPlayerShip 'TargetingComputer) 'notInstalled)
-												)
-											(setq reward (itmCreate &itTargetingComputerROM; 1))
-
-										(setq reward (itmCreate &itEnhanceShieldsROM; 1))
-										)
-
-								(= 3 level)
-									(setq reward (itmCreate &itClass5Deflector; 1))
-								)
-							(if reward (objAddItem gPlayerShip reward))
-							(scrExitScreen gScreen)
-
-							(if (and (= 4 level) (not (typGetGlobalData &chVolkov; 'status)))
-								(scrShowScreen gScreen &dsRPGWingmanEncounter; {wingman: &chVolkov;})
-								)
-							)
-					</Action>
-				</Actions>
-			</Default>
-		</Panes>
-
-		<Language>
-			<Text id="Promotion:1">
-
-				"Korolov Shipping needs more pilots with your skills and 
-				determination. Please come back to us, or any other Korolov 
-				station, if you want to earn a bit of money."
-
-			</Text>
-			<Text id="Promotion:2">
-
-				"After reviewing your record, I have recommended to 
-				%titledName@AD%	that you be granted the rights and 
-				responsibilities of a Journeyman of the Korolov Shipping 
-				Corporation. Congratulations!
-
-				"To aid you in your missions, please accept this ROM biosoft."
-
-			</Text>
-			<Text id="Promotion:3">
-
-				%titledName@AD%	talks to you after the mission:
-
-				"You are one of our best pilots, and I'm happy to tell you that
-				the executive board has promoted you to the rank of Master. 
-				Congratulations!
-
-				"To commemorate this occasion, I want to give you this vintage 
-				deflector shield generator. May it help you in times of need."
-
-			</Text>
-			<Text id="Promotion:4">
-
-				A crowd gathers around you as you leave the debriefing; 
-				everyone reaches towards you in congratulations.
-
-				"Congratulations! You've broken the record! You've escorted 
-				%escortCount% freighters without losing a single one! 
-				No one has accomplished that feat before!"
-
-			</Text>
-		</Language>
-	</DockScreen>
-
 	<!-- Misc Rewards -->
 
 	<DockScreen UNID="&dsKorolovMiscRewards;"
 			nestedScreen=		"true"
 			inherit=			"&dsDockScreenBase;"
 			>
+		<Properties>
+			<Variant id="mission">(@ gData 'missionObj)</Variant>
+			<Variant id="reward">(@ gData 'reward)</Variant>
+		</Properties>
+
 		<Display type="detailsPane">
 			<OnDisplayInit>
-				(typTranslate &unidKorolovShipping; 'rankDetails)
+				(or (@ gData 'rankDetails) (objTranslate gSource 'rpg.statusDetails))
 			</OnDisplayInit>
 		</Display>
 
 		<Panes>
 			<Default>
 				<OnPaneInit>
-					(block
-						(
-							(rewardName (korGetPendingMiscAward))
-							)
-						(if rewardName
-							(scrSetDescTranslate gScreen rewardName {
-								AD: (rpgCharacterGetInfo gSource 'assistantDirector &chKorolovAssistantDirectors;)
-								})
-							; if no reward we got here by mistake
-							; just immediately go back to the previous screen
-							; but leave a debug log for developers
-							(block ()
-								(dbgOutput (cat "Expected a korolov Miscellaneous reward called: " rewardName))
-								(scrExitScreen gScreen)
-								)
+					(switch
+						(scrSetDescTranslate gScreen (scr@ gScreen 'reward) {
+							AD: (rpgCharacterGetInfo gSource 'assistantDirector &chKorolovAssistantDirectors;)
+							})
+							Nil
+
+						; if no reward we got here by mistake, or we were passed an unknown rewardName
+						; just immediately go back to the previous screen
+						; but leave a debug log for developers
+						(block ()
+							(dbgOutput (cat "Expected a korolov Miscellaneous reward called: " (scr@ gScreen 'reward)))
+							(scrExitScreen gScreen)
 							)
 						)
 				</OnPaneInit>
 
 				<Actions>
 					<Action id="actionContinue" default="1" cancel="1">
-						(block 
-							(
-								(rewardName (korGetPendingMiscAward))
-								reward
-								)
+						(block (
+							(missionObj (scr@ gScreen 'mission))
+							(rewardName (scr@ gScreen 'reward))
+							)
 							(switch
 								(= rewardName 'allSuccessInARow.3)
-									(block ()
-										(setq reward (itmCreate &itCashCardGold; 1))
-										(typSet@ &unidKorolovShipping; 'allSuccessInARow.3 1)
-										)
+									(objAddItem gPlayership (itmCreate &itCashCardGold; 1))
+
 								(= rewardName 'allSuccessInARow.10)
-									(block ()
-										(setq reward (itmCreate &itCashCardPlatinum; 1))
-										(typSet@ &unidKorolovShipping; 'allSuccessInARow.10 1)
-										)
-								; if no reward we got here by mistake
-								; just immediately go back to the previous screen
-								; but leave a debug log for developers
-								(dbgOutput (cat "Expected a korolov Miscellaneous reward called: " rewardName))
+									(objAddItem gPlayership (itmCreate &itCashCardPlatinum; 1))
 								)
-							(if reward (block ()
-								(objAddItem gPlayership reward)
-								))
+
+							(typSet@ &unidKorolovShipping; rewardName 1)
+
 							(scrExitScreen gScreen)
+
+							;	Check if RPGMembership has set a next screen as we have
+							;	bypassed the dsRPGMission check if we are here.
+							(if (msnGetData missionObj 'rewardNextScreen)
+								(scrShowScreen gScreen (msnGetData missionObj 'rewardNextScreen) (msnGetData missionObj 'rewardNextScreenData))
+								)
 							)
 					</Action>
 				</Actions>
@@ -1645,45 +1594,41 @@
 		(block Nil
 			(setq korTypGetMinLevel (lambda (typ)
 				"Get the minimum rank required for escorting this type"
-				(or
-					(switch
-						;	New method via properties
-						(typ@ typ 'korolov.cargoValue.0)
-							0
-						(typ@ typ 'korolov.cargoValue.1)
-							1
-						(typ@ typ 'korolov.cargoValue.2)
-							2
-						(typ@ typ 'korolov.cargoValue.3)
-							3
-						(typ@ typ 'korolov.cargoValue.4)
-							4
+				(switch
+					;	New method via properties
+					(typ@ typ 'korolov.cargoValue.0)
+						0
+					(typ@ typ 'korolov.cargoValue.1)
+						1
+					(typ@ typ 'korolov.cargoValue.2)
+						2
+					(typ@ typ 'korolov.cargoValue.3)
+						3
+					(typ@ typ 'korolov.cargoValue.4)
+						4
 
-						;	Legacy method
-						(typ@ typ 'korolovMinLevel)
-						)
+					;	Legacy method
+					(typ@ typ 'korolovMinLevel)
 					)
 				))
 
 			(setq korObjGetMinLevel (lambda (obj)
 				"Get the minimum rank required for escorting this object"
-				(or
-					(switch
-						;	New method via properties
-						(obj@ obj 'korolov.cargoValue.0)
-							0
-						(obj@ obj 'korolov.cargoValue.1)
-							1
-						(obj@ obj 'korolov.cargoValue.2)
-							2
-						(obj@ obj 'korolov.cargoValue.3)
-							3
-						(obj@ obj 'korolov.cargoValue.4)
-							4
+				(switch
+					;	New method via properties
+					(obj@ obj 'korolov.cargoValue.0)
+						0
+					(obj@ obj 'korolov.cargoValue.1)
+						1
+					(obj@ obj 'korolov.cargoValue.2)
+						2
+					(obj@ obj 'korolov.cargoValue.3)
+						3
+					(obj@ obj 'korolov.cargoValue.4)
+						4
 
-						;	Legacy method
-						(obj@ obj 'korolovMinLevel)
-						)
+					;	Legacy method
+					(obj@ obj 'korolovMinLevel)
 					)
 				))
 
@@ -1831,6 +1776,7 @@
 				))
 
 			(setq korComputePlayerLevel (lambda ()
+				;	DEPRECATED
 				(block (
 					(xp (typGetData &unidKorolovShipping; 'xp))
 					(totalMissionsFailed (count (msnFind "r +korolov; +escort; +property:isFailure;")))
@@ -1847,20 +1793,15 @@
 				))
 
 			(setq korGetPlayerLevel (lambda ()
-				(block (playerLevel)
-					(if (setq playerLevel (typGetData &unidKorolovShipping; 'level))
-						playerLevel
-						0
-						)
-					)
+				(or (typ@ &unidKorolovShipping; 'rpg.rank) 0)
 				))
 
 			(setq korSuccessDebrief (lambda (missionObj)
 				(block (
-					(level (korGetPlayerLevel))
-					(xp (typGetData &unidKorolovShipping; 'xp))
+					(level (typ@ &unidKorolovShipping; 'rpg.rank))
+					(xp (typ@ &unidKorolovShipping; 'rpg.xp))
 					(data {
-						reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
+						reward: (fmtCurrency 'credit (msn@ gSource 'reward))
 						})
 					)
 					(switch
@@ -1891,6 +1832,7 @@
 				))
 
 			(setq korGiveReward (lambda (missionObj)
+				;	DEPRECATED
 				(block (oldRank newRank)
 					(rpgMissionRewardPayment (msnGetData missionObj 'reward))
 					(typIncData &unidKorolovShipping; 'xp (msnGetData missionObj 'missionXP))
@@ -1935,16 +1877,34 @@
 					)
 				))
 
-			(setq korGetPendingMiscAward (lambda () (switch
-				; We check if any reward is at state 0, which means that the
-				; reward is pending but not awarded yet
-				(= (typ@ &unidKorolovShipping; 'allSuccessInARow.3) 0)
-					'allSuccessInARow.3
-				(= (typ@ &unidKorolovShipping; 'allSuccessInARow.10) 0)
-					'allSuccessInARow.10
-				; No reward needs to be awarded
-				()
-				)))
+			(setq korGetPendingMiscAward (lambda ()
+				(switch
+					;	We can be called directly from OnGetNextScreen, so make sure this
+					;	is actually during Mission Success.
+					(!= aScreenType 'SuccessFollowUp)
+						Nil
+
+					; We check if any reward is at state 0, which means that the
+					; reward is pending but not awarded yet
+					(= (typ@ &unidKorolovShipping; 'allSuccessInARow.3) 0)
+						{
+							nextScreen: &dsKorolovMiscRewards;
+							nextScreenData: {
+								missionObj: gSource
+								reward: 'allSuccessInARow.3
+								}
+						}
+
+					(= (typ@ &unidKorolovShipping; 'allSuccessInARow.10) 0)
+						{
+							nextScreen: &dsKorolovMiscRewards;
+							nextScreenData: {
+								missionObj:gSource
+								reward: 'allSuccessInARow.10
+								}
+						}
+					)
+				))
 
 			(setq korEscortMissionCompleted (lambda (missionObj reason data)
 				(block (
@@ -1996,7 +1956,7 @@
 								)
 						)
 
-					(if xpBonus (typIncData &unidKorolovShipping; 'xp xpBonus))
+					(if xpBonus (typIncData &unidKorolovShipping; 'rpg.xp xpBonus))
 					(typSetData &unidKorolovShipping; recordID transRecord)
 					)
 				))
