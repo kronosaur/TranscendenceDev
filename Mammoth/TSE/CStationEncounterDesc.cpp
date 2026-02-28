@@ -11,6 +11,7 @@
 
 #define DISTANCE_CRITERIA_ATTRIB				CONSTLIT("distanceCriteria")
 #define DISTANCE_FREQUENCY_ATTRIB				CONSTLIT("distanceFrequency")
+#define ENCOUNTER_DISTRIBUTIION_ATTRIB			CONSTLIT("encounterDistribution")
 #define ENEMY_EXCLUSION_RADIUS_ATTRIB			CONSTLIT("enemyExclusionRadius")
 #define EXCLUSION_RADIUS_ATTRIB					CONSTLIT("exclusionRadius")
 #define LEVEL_FREQUENCY_ATTRIB					CONSTLIT("levelFrequency")
@@ -25,6 +26,10 @@
 
 #define UNIQUE_IN_SYSTEM						CONSTLIT("inSystem")
 #define UNIQUE_IN_UNIVERSE						CONSTLIT("inUniverse")
+
+#define ENCOUNTER_DISTRIBUTION_EVEN				CONSTLIT("even")
+#define ENCOUNTER_DISTRIBUTION_MIN1				CONSTLIT("min1")
+#define ENCOUNTER_DISTRIBUTION_RANDOM			CONSTLIT("random")
 
 #define VALUE_FALSE								CONSTLIT("false")
 #define VALUE_TRUE								CONSTLIT("true")
@@ -226,7 +231,7 @@ int CStationEncounterDesc::GetFrequencyByLevel (int iLevel) const
 		return ::GetFrequencyByLevel(m_sLevelFrequency, iLevel);
 	}
 
-bool CStationEncounterDesc::InitAsOverride (const CStationEncounterDesc &Original, const CXMLElement &Override, CString *retsError)
+bool CStationEncounterDesc::InitAsOverride (SDesignLoadCtx& Ctx, const CStationEncounterDesc &Original, const CXMLElement &Override, CString *retsError)
 
 //	InitAsOverride
 //
@@ -238,60 +243,10 @@ bool CStationEncounterDesc::InitAsOverride (const CStationEncounterDesc &Origina
 
 	*this = Original;
 
-	//	Number appearing (at least this number, unique in system)
+	if (InitMinMaxAppearingFromXML(Ctx, &Override) != NOERROR)
+		return false;
 
 	CString sAttrib;
-	if (Override.FindAttribute(MIN_APPEARING_ATTRIB, &sAttrib)
-			|| Override.FindAttribute(NUMBER_APPEARING_ATTRIB, &sAttrib))
-		{
-		m_bNumberAppearing = true;
-		if (m_NumberAppearing.LoadFromXML(sAttrib) != NOERROR)
-			{
-			if (retsError) *retsError = strPatternSubst(CONSTLIT("Invalid numberAppearing parameter."));
-			return false;
-			}
-
-		m_iMaxCountInSystem = 1;
-		}
-
-	//	Get maximum limit (at most this number, unique in system)
-
-	if (Override.FindAttribute(MAX_APPEARING_ATTRIB, &sAttrib))
-		{
-		m_bMaxCountLimit = true;
-		if (m_MaxAppearing.LoadFromXML(sAttrib) != NOERROR)
-			{
-			if (retsError) *retsError = strPatternSubst(CONSTLIT("Invalid maxAppearing parameter."));
-			return false;
-			}
-
-		m_iMaxCountInSystem = 1;
-		}
-
-	//	Otherwise, we check uniqueness values
-
-	if (Override.FindAttribute(UNIQUE_ATTRIB, &sAttrib))
-		{
-		if (strEquals(sAttrib, UNIQUE_IN_SYSTEM))
-			{
-			m_bMaxCountLimit = false;
-			m_iMaxCountInSystem = 1;
-			}
-		else if (strEquals(sAttrib, UNIQUE_IN_UNIVERSE) || strEquals(sAttrib, VALUE_TRUE))
-			{
-			m_bMaxCountLimit = true;
-			m_MaxAppearing.SetConstant(1);
-			m_iMaxCountInSystem = 1;
-			}
-		}
-
-	//	Max count in system. Supports a limit > 1.
-
-	if (Override.FindAttribute(MAX_IN_SYSTEM_ATTRIB, &sAttrib))
-		{
-		m_bMaxCountLimit = false;
-		m_iMaxCountInSystem = Max(1, strToInt(sAttrib, 0));
-		}
 
 	//	System criteria
 
@@ -374,75 +329,167 @@ ALERROR CStationEncounterDesc::InitFromStationTypeXML (SDesignLoadCtx &Ctx, CXML
 	return InitFromXML(Ctx, pDesc);
 	}
 
-ALERROR CStationEncounterDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
-
-//	InitFromXML
+//	InitMinMaxAppearingFromXML
 //
 //	Initialize from an <Encounter> element (or a root <StationType> element).
-
+//	Handles common logic for override and base types regarding min/max appearing and
+//	uniqueness.
+//
+ALERROR CStationEncounterDesc::InitMinMaxAppearingFromXML (SDesignLoadCtx& Ctx, const CXMLElement* pDesc, bool bAsOverride)
 	{
 	ALERROR error;
-	bool bNumberSet = false;
-
-	//	Number appearing (at least this number, unique in system)
-
 	CString sAttrib;
+
+	//	As of API58, numberAppearing, minAppearing, maxAppearing implied uniqueness per system
+	// 
+	//	However, this is unexpected behavior that was not documented outside of the engine
+	//	and it could be overridden in inconsistent, order-variant ways using type overrides
+	//
+	//	As such, for minAppearing/numberAppearing (synonyms in the API), it is being treated
+	//	as a bug, and is replaced with a Node encounter strategy of even. This mimics the
+	//	existing behavior when minAppearing < qualifyingNodes, but allows minAppearing to
+	//	also be greater than qualifying nodes, which is the expected behavior of the API.
+	//
+	//	For maxAppearing, this is actually a 'useful' feature to prevent a single system
+	//	from eating up all of the encounters of a given type, so we need to support this
+	//	as a compatibility option.
+	// 
+	//	It is still unexpected behavior, and in many cases people were defining maxAppearing
+	//	alongside unique="system" or maxInSystem="...", which was either being ignored if
+	//  on the base type, or inconsistently overriding maxAppearing if present in a type
+	//  override. Therefore, we should warn against relying on implicit uniqueness so that
+	//	modders know that this behavior exists, and provide a way to bypass or alter it if
+	//  so desired.
+	//
+	bool bWarnImplicitUniqueness = false;
+
+	//	Number appearing (at least this number)
+
 	if (pDesc->FindAttribute(MIN_APPEARING_ATTRIB, &sAttrib)
-			|| pDesc->FindAttribute(NUMBER_APPEARING_ATTRIB, &sAttrib))
+		|| pDesc->FindAttribute(NUMBER_APPEARING_ATTRIB, &sAttrib))
 		{
-		m_bNumberAppearing = true;
-		if (error = m_NumberAppearing.LoadFromXML(sAttrib))
+		m_bMinCountLimit = true;
+		if (error = m_MinAppearing.LoadFromXML(sAttrib))
 			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Invalid numberAppearing parameter."));
+			Ctx.sError = CONSTLIT("Invalid numberAppearing parameter.");
 			return error;
 			}
-
-		m_iMaxCountInSystem = 1;
-		bNumberSet = true;
 		}
 
-	//	Get maximum limit (at most this number, unique in system)
+	//	Get encounter distribution strategy
+
+	if (pDesc->FindAttribute(ENCOUNTER_DISTRIBUTIION_ATTRIB, &sAttrib))
+		{
+		if (Ctx.GetAPIVersion() < 59)
+			{
+			Ctx.sError = CONSTLIT("encounterDistribution requires API59 or greater");
+			return ERR_FAIL;
+			}
+		else if (!m_bMinCountLimit)
+			{
+			kernelDebugLogString(CONSTLIT("WARNING: encounterDistribution requires minAppearing to be specified. This field is ignored otherwise."));
+			//	We load the default, unless we are an override. This prevents overrides encountering unexpected behavior.
+			if (!bAsOverride)
+				m_eNodeDistribution = EEncounterDistribution::nodeEven;
+			}
+		else if (strEquals(sAttrib, ENCOUNTER_DISTRIBUTION_EVEN))
+			m_eNodeDistribution = EEncounterDistribution::nodeEven;
+		else if (strEquals(sAttrib, ENCOUNTER_DISTRIBUTION_MIN1))
+			m_eNodeDistribution = EEncounterDistribution::nodeMin1;
+		else if (strEquals(sAttrib, ENCOUNTER_DISTRIBUTION_RANDOM))
+			m_eNodeDistribution = EEncounterDistribution::nodeRandom;
+		else
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Invalid encounterDistribution parameter: %s"), sAttrib);
+			return ERR_FAIL;
+			}
+		}
+
+	//	Get maximum limit (at most this number)
 
 	if (pDesc->FindAttribute(MAX_APPEARING_ATTRIB, &sAttrib))
 		{
 		m_bMaxCountLimit = true;
 		if (error = m_MaxAppearing.LoadFromXML(sAttrib))
 			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Invalid maxAppearing parameter."));
+			Ctx.sError = CONSTLIT("Invalid maxAppearing parameter.");
 			return error;
 			}
 
+		if (Ctx.GetAPIVersion() > 58)
+			bWarnImplicitUniqueness = true;
 		m_iMaxCountInSystem = 1;
-		bNumberSet = true;
 		}
 
-	//	Otherwise, we check uniqueness values
+	//	Check for uniqueness
 
-	if (!bNumberSet)
+	if (pDesc->FindAttribute(UNIQUE_ATTRIB, &sAttrib))
 		{
-		CString sUnique = pDesc->GetAttribute(UNIQUE_ATTRIB);
-		if (strEquals(sUnique, UNIQUE_IN_SYSTEM))
+		bWarnImplicitUniqueness = false;
+		if (strEquals(sAttrib, UNIQUE_IN_SYSTEM))
 			{
-			m_bMaxCountLimit = false;
 			m_iMaxCountInSystem = 1;
 			}
-		else if (strEquals(sUnique, UNIQUE_IN_UNIVERSE) || strEquals(sUnique, VALUE_TRUE))
+		else if (strEquals(sAttrib, UNIQUE_IN_UNIVERSE) || strEquals(sAttrib, VALUE_TRUE))
 			{
+			if (m_bMaxCountLimit)
+				kernelDebugLogPattern(CONSTLIT("WARNING: [%08x] defined maxAppearing and unique=\"inUniverse\". maxAppearing will be ignored."), Ctx.pType->GetUNID());
 			m_bMaxCountLimit = true;
 			m_MaxAppearing.SetConstant(1);
 			m_iMaxCountInSystem = 1;
 			}
-		else if (pDesc->FindAttributeInteger(MAX_IN_SYSTEM_ATTRIB, &m_iMaxCountInSystem))
+		else if (sAttrib.IsBlank() || strEquals(sAttrib, VALUE_FALSE))
 			{
-			m_bMaxCountLimit = false;
-			m_iMaxCountInSystem = Max(1, m_iMaxCountInSystem);
-			}
-		else
-			{
-			m_bMaxCountLimit = false;
 			m_iMaxCountInSystem = -1;
 			}
+		else
+			kernelDebugLogPattern(CONSTLIT("WARNING: [%08x] unique=\"%s\" is not a valid value for uniqueness. This value will be ignored."), Ctx.pType->GetUNID(), sAttrib);
 		}
+
+	int iMaxInSystem = -1;
+
+	if (pDesc->FindAttributeInteger(MAX_IN_SYSTEM_ATTRIB, &iMaxInSystem))
+		{
+		bWarnImplicitUniqueness = false;
+		if (m_iMaxCountInSystem < 0 && Ctx.GetAPIVersion() <= 58)
+			kernelDebugLogPattern(CONSTLIT("WARNING: [%08x] maxInSystem cannot be less than 1 in API58 or below. Defaulting to 1."), Ctx.pType->GetUNID());
+		if (Ctx.GetAPIVersion() <= 58)
+			m_iMaxCountInSystem = Max(1, iMaxInSystem);
+		else
+			m_iMaxCountInSystem = m_iMaxCountInSystem < -1 ? -1 : iMaxInSystem;
+		}
+	else if (!bAsOverride)
+		{
+		m_iMaxCountInSystem = -1;
+		}
+
+	if (bWarnImplicitUniqueness)
+		{
+		if (bAsOverride)
+			kernelDebugLogPattern(CONSTLIT("WARNING: an override for [%08x] defines maxAppearing which implies maxInSystem=\"1\". To silence this warning in API59+ with no maxInSystem limit, set maxInSystem=\"-1\", otherwise set maxInSystem=\"1\"."), Ctx.pType->GetUNID());
+		else
+			kernelDebugLogPattern(CONSTLIT("WARNING: [%08x] defines maxAppearing which implies maxInSystem=\"1\". To silence this warning in API59+ with no maxInSystem limit, set maxInSystem=\"-1\", otherwise set maxInSystem=\"1\"."), Ctx.pType->GetUNID());
+		}
+
+	return NOERROR;
+	}
+
+//	InitFromXML
+//
+//	Initialize from an <Encounter> element (or a root <StationType> element).
+//
+ALERROR CStationEncounterDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+
+	{
+	ALERROR error;
+
+	if (error = InitMinMaxAppearingFromXML(Ctx, pDesc))
+		{
+		//	InitMinMaxAppearingFromXML sets Ctx.sError already.
+		return error;
+		}
+
+	CString sAttrib;
 
 	//	System criteria
 
