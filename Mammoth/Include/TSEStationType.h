@@ -129,6 +129,14 @@ class CStationHull
 class CStationEncounterDesc
 	{
 	public:
+		enum EEncounterDistribution
+			{
+			//	Per-node distribution
+			nodeEven,					//	evenly distributes across nodes (default)
+			nodeMin1,					//	distributes 1 encounter per node until all nodes have an encounter, then random
+			nodeRandom,					//	distributes each encounter to a random node (may repeat)
+			};
+
 		struct SExclusionDesc
 			{
 			bool bHasAllExclusion;
@@ -140,24 +148,25 @@ class CStationEncounterDesc
 
 		int CalcAffinity (const CTopologyNode &Node) const;
 		int CalcFrequencyForNode (const CTopologyNode &Node) const;
-		int CalcLevelFromFrequency (void) const;
-		bool InitAsOverride (const CStationEncounterDesc &Original, const CXMLElement &Override, CString *retsError);
-		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		int CalcLevelFromFrequency () const;
+		bool InitAsOverride (SDesignLoadCtx& Ctx, const CStationEncounterDesc& Original, const CXMLElement& Override, CString* retsError);
+		ALERROR InitFromStationTypeXML (SDesignLoadCtx& Ctx, CXMLElement* pDesc);
+		ALERROR InitFromXML (SDesignLoadCtx& Ctx, CXMLElement* pDesc);
 		void InitLevelFrequency (CTopology &Topology);
-		bool CanBeRandomlyEncountered (void) const { return (!m_sLevelFrequency.IsBlank() || m_bNumberAppearing); }
-		int GetCountOfRandomEncounterLevels (void) const;
-		const CTopologyAttributeCriteria &GetDistanceCriteria (void) const { return m_DistanceCriteria; }
+		bool CanBeRandomlyEncountered () const { return (!m_sLevelFrequency.IsBlank() || m_bMinCountLimit); }
+		int GetCountOfRandomEncounterLevels () const;
+		const CTopologyAttributeCriteria &GetDistanceCriteria () const { return m_DistanceCriteria; }
 		void GetExclusionDesc (SExclusionDesc &Exclusion) const;
-		Metric GetExclusionRadius (void) const { return m_rExclusionRadius; }
-		Metric GetEnemyExclusionRadius (void) const { return m_rEnemyExclusionRadius; }
+		Metric GetExclusionRadius () const { return m_rExclusionRadius; }
+		Metric GetEnemyExclusionRadius () const { return m_rEnemyExclusionRadius; }
 		int GetFrequencyByDistance (int iDistance) const;
 		int GetFrequencyByLevel (int iLevel) const;
-		const CString &GetLevelFrequency (void) const { return m_sLevelFrequency; }
+		const CString &GetLevelFrequency () const { return m_sLevelFrequency; }
 		const CAffinityCriteria &GetLocationCriteria (void) const { return m_LocationCriteria; }
-		int GetMaxAppearing (void) const { return (m_bMaxCountLimit ? m_MaxAppearing.Roll() : -1); }
-		int GetNumberAppearing (void) const { return (m_bNumberAppearing ? m_NumberAppearing.Roll() : -1); }
-		bool HasAutoLevelFrequency (void) const { return m_bAutoLevelFrequency; }
+		int GetMaxAppearing () const { return (m_bMaxCountLimit ? m_MaxAppearing.Roll() : -1); }
+		int GetMinAppearing () const { return (m_bMinCountLimit ? m_MinAppearing.Roll() : -1); }
+		EEncounterDistribution GetNodeDistribution () const { return m_eNodeDistribution; }
+		bool HasAutoLevelFrequency () const { return m_bAutoLevelFrequency; }
 		bool HasSystemCriteria (const CTopologyNodeCriteria **retpCriteria = NULL) const 
 			{
 			if (m_bSystemCriteria) 
@@ -170,11 +179,13 @@ class CStationEncounterDesc
 				return false;
 			}
 		bool HasSystemLimit (int *retiLimit = NULL) const { if (retiLimit) *retiLimit = m_iMaxCountInSystem; return (m_iMaxCountInSystem != -1); }
-		bool IsUniqueInSystem (void) const { return (m_iMaxCountInSystem == 1); }
+		bool IsUniqueInSystem () const { return (m_iMaxCountInSystem == 1); }
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
+		ALERROR InitMinMaxAppearingFromXML (SDesignLoadCtx& Ctx, const CXMLElement* pDesc, bool bAsOverride = false);
+
 		bool m_bSystemCriteria = false;				//	If TRUE we have system criteria
 		CTopologyNodeCriteria m_SystemCriteria;		//	System criteria
 
@@ -188,11 +199,13 @@ class CStationEncounterDesc
 		Metric m_rEnemyExclusionRadius = 0.0;		//	No enemy stations within this radius
 		bool m_bAutoLevelFrequency = false;			//	We generated m_sLevelFrequency and need to save it.
 
-		bool m_bNumberAppearing = false;			//	If TRUE, must create this exact number in game
-		DiceRange m_NumberAppearing;				//	Create this number in the game
+		bool m_bMinCountLimit = false;				//	If TRUE, must create this exact number in game
+		DiceRange m_MinAppearing;					//	Create at least this number in the game
 
 		bool m_bMaxCountLimit = false;				//	If FALSE, no limit
-		DiceRange m_MaxAppearing;
+		DiceRange m_MaxAppearing;					//	Create no more than this number in the game
+
+		EEncounterDistribution m_eNodeDistribution = EEncounterDistribution::nodeEven;	//	node distribution strategy to use if minAppearing or maxAppearing is used
 
 		int m_iMaxCountInSystem = -1;				//	-1 means no limit
 	};
@@ -573,7 +586,7 @@ class CStationType : public CDesignType
 		Metric GetMass (void) { return m_rMass; }
 		int GetMaxLightDistance (void) const { return m_Star.GetMaxLightDistance(); }
 		const CNameDesc &GetNameDesc (void) const { return m_Name; }
-		int GetNumberAppearing (void) const { return m_EncounterRecord.GetTotalMinimum(); }
+		int GetMinAppearing (void) const { return m_EncounterRecord.GetTotalMinimum(); }
 		CPaintOrder::Types GetPaintOrder (void) const { return m_iPaintOrder; }
 		Metric GetParallaxDist (void) const { return m_rParallaxDist; }
 		CItem GetPrimaryWeapon (void) const;
@@ -612,7 +625,7 @@ class CStationType : public CDesignType
 		bool IsWall (void) { return (m_fWall ? true : false); }
 		void MarkImages (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers);
 		void OnShipEncounterCreated (SSystemCreateCtx &CreateCtx, CSpaceObject *pObj, const COrbit &Orbit);
-		bool OverrideEncounterDesc (const CXMLElement &Override, CString *retsError = NULL);
+		bool OverrideEncounterDesc (SDesignLoadCtx &Ctx, const CXMLElement &Override, CString *retsError = NULL);
 		void PaintAnimations (CG32bitImage &Dest, int x, int y, int iTick);
 		void PaintDevicePositions (CG32bitImage &Dest, int x, int y);
 		void PaintDockPortPositions (CG32bitImage &Dest, int x, int y);
