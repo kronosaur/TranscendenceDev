@@ -695,7 +695,7 @@ void CNewGameSession::SetShipClass (const CShipClass &Class, int x, int y, int c
 
 	//	Description
 
-	SetShipClassDesc(Class.GetDesc(), x, yLine, cxWidth);
+	SetShipClassDesc(Class.GetDescPlayer(), x, yLine, cxWidth);
 	yLine += 3 * MediumFont.GetHeight();
 
 	//	Image and Details

@@ -10,6 +10,7 @@
 #define OVERHEAT_FAILURE_TAG					CONSTLIT("OverheatFailure")
 #define VARIANTS_TAG							CONSTLIT("Variants")
 
+#define AI_IGNORES_ATTRIB						CONSTLIT("ignoredByAI")
 #define AMMO_ID_ATTRIB							CONSTLIT("ammoID")
 #define ANGLE_ATTRIB							CONSTLIT("angle")
 #define BURST_TRACKS_TARGETS_ATTRIB				CONSTLIT("burstTracksTargets")
@@ -37,8 +38,8 @@
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
 #define RECOIL_ATTRIB							CONSTLIT("recoil")
 #define REPEATING_ATTRIB						CONSTLIT("repeating")
-#define REPEATING_DELAY_ATTRIB					CONSTLIT("repeatingDelay")
-#define REPEATING_DELAY_ADV_ATTRIB				CONSTLIT("repeatingDelayAdvanced")
+#define REPEATING_DELAY_LEGACY_ATTRIB					CONSTLIT("repeatingDelay")
+#define REPEATING_SHOT_DELAY_ATTRIB				CONSTLIT("repeatingShotDelay")
 #define REPORT_AMMO_ATTRIB						CONSTLIT("reportAmmo")
 #define SHIP_COUNTER_PER_SHOT_ATTRIB			CONSTLIT("shipCounterPerShot")
 #define TARGET_STATIONS_ONLY_ATTRIB				CONSTLIT("targetStationsOnly")
@@ -516,7 +517,7 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 		//  Adjust the standard ammo cost and standard ammo mass for fire rate.
 
 		retBalance.rStdAmmoCost = Stats.rAmmoCost * rFireDelay / STD_FIRE_DELAY_TICKS;
-		retBalance.rStdAmmoMass = STD_AMMO_MASS * rFireDelay / STD_FIRE_DELAY_TICKS;
+		retBalance.rStdAmmoSize = STD_AMMO_VOLUME * rFireDelay / STD_FIRE_DELAY_TICKS;
 
 		//  Compute the standard ammo cost at this level and figure out the 
 		//  percent cost difference. +1 = ammo is 1% more expensive than 
@@ -531,11 +532,11 @@ int CWeaponClass::CalcBalance (const CItem &Ammo, SBalance &retBalance) const
 
 		//  Compute the ammo mass bonus
 
-		Metric rAmmoMass = pAmmoType->GetMassKg(AmmoItemCtx);
+		Metric rAmmoVolume = pAmmoType->GetVolume(AmmoItemCtx);
 		if (pAmmoType->AreChargesAmmo() && pAmmoType->GetMaxCharges() > 0)
-			rAmmoMass /= (Metric)pAmmoType->GetMaxCharges();
+			rAmmoVolume /= (Metric)pAmmoType->GetMaxCharges();
 
-		Metric rAmmoMassDelta = 100.0 * (rAmmoMass - retBalance.rStdAmmoMass) / retBalance.rStdAmmoMass;
+		Metric rAmmoMassDelta = 100.0 * (rAmmoVolume - retBalance.rStdAmmoSize) / retBalance.rStdAmmoSize;
 		retBalance.rAmmo += rAmmoMassDelta * BALANCE_AMMO_MASS_RATIO;
 
 		//  Add up to total balance
@@ -2030,6 +2031,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	pWeapon->m_bBurstTracksTargets = pDesc->GetAttributeBool(BURST_TRACKS_TARGETS_ATTRIB);
 	pWeapon->m_bCanFireWhenBlind = pDesc->GetAttributeBool(CAN_FIRE_WHEN_BLIND_ATTRIB);
 	pWeapon->m_bUsesLauncherControls = pDesc->GetAttributeBool(USES_LAUNCHER_CONTROLS_ATTRIB);
+	pWeapon->m_bAIIgnores = pDesc->GetAttributeBool(AI_IGNORES_ATTRIB);
 
 	//	Configuration
 
@@ -2039,20 +2041,27 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	//	Repeat fire
 
 	pWeapon->m_iContinuous = pDesc->GetAttributeIntegerBounded(REPEATING_ATTRIB, 0, -1, 0);
-	pWeapon->m_rContinuousFireDelay = pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_ADV_ATTRIB, 0.0, -1.0, -1.0);
+	pWeapon->m_rContinuousFireDelay = pDesc->GetAttributeDoubleBounded(REPEATING_SHOT_DELAY_ATTRIB, 0.0, -1.0, -1.0);
 
 	//	If someone is instead using the legacy version of repeating delay:
 	//	It cannot be less than 2 simulation seconds, and it adds the specified number as additional simulation seconds
 	//	Note to future maintainers: This is not a bug or an incorrect default, this is actually how the legacy version worked
 
 	if (pWeapon->m_rContinuousFireDelay < 0.0)
-		pWeapon->m_rContinuousFireDelay = STD_SECONDS_PER_UPDATE + pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_ATTRIB, 0.0, -1.0, 0.0);
+		{
+		Metric rLegacyContinuousFireDelay = pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_LEGACY_ATTRIB, 0.0, -1.0, -1.0);
+		if (Ctx.GetAPIVersion() > 58 && rLegacyContinuousFireDelay >= 0)
+			kernelDebugLogString(CONSTLIT("WARNING: repeatingDelay is deprecated in API versions above 58, because it is delay = repeatingDelay + 2. Use repeatingShotDelay (specify exact delay in simulation seconds) instead."));
+		else if (rLegacyContinuousFireDelay < 0)
+			rLegacyContinuousFireDelay = 0;
+		pWeapon->m_rContinuousFireDelay = STD_SECONDS_PER_UPDATE + rLegacyContinuousFireDelay;
+		}
 
 	//	Warn if someone tried using adv repeating delay in an old api version
 
 	else if (Ctx.GetAPIVersion() < 58)
 		{
-		Ctx.sError = strCat(REPEATING_DELAY_ADV_ATTRIB, CONSTLIT(" requires API 58 or higher"));
+		Ctx.sError = strCat(REPEATING_SHOT_DELAY_ATTRIB, CONSTLIT(" requires API 58 or higher"));
 		return ERR_FAIL;
 		}
 
@@ -3399,7 +3408,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 			if (Balance.iLevel == 0)
 				return CC.CreateNil();
 
-			return CC.CreateInteger(mathRound(Balance.rStdAmmoMass));
+			return CC.CreateInteger(mathRound(Balance.rStdAmmoSize));
 			}
 		else
 			return CC.CreateNil();
@@ -3566,11 +3575,12 @@ DamageTypes CWeaponClass::GetDamageType (CItemCtx &Ctx, const CItem &Ammo) const
 	return pShot->GetDamageType();
 	}
 
-int CWeaponClass::GetDefaultFireAngle (const CDeviceItem &DeviceItem) const
-
 //	GetDefaultFireAngle
 //
-//	Gets the natural fire direction (not counting omni or swivel mounts)
+//	Gets the natural fire direction
+//	(not counting omni or swivel mounts with a target)
+//
+int CWeaponClass::GetDefaultFireAngle (const CDeviceItem &DeviceItem) const
 
 	{
 	if (const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice())
@@ -4322,8 +4332,6 @@ int CWeaponClass::GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice 
 		}
 	}
 
-int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const
-
 //	GetWeaponEffectiveness
 //
 //	Returns:
@@ -4334,11 +4342,17 @@ int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceO
 //
 //	This call is used to figure out whether we should use an EMP or blinder
 //	cannon against the target.
+//
+int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const
 
 	{
 	int iScore = 0;
 
 	CSpaceObject *pSource = DeviceItem.GetSource();
+
+	if (m_bAIIgnores)
+		return -100;
+
 	const CWeaponFireDesc *pShot = GetWeaponFireDesc(DeviceItem);
 	if (pShot == NULL)
 		return -100;

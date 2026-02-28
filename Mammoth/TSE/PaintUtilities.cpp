@@ -127,14 +127,14 @@ void ComputeLightningPoints (int iCount, CVector *pPoints, Metric rChaos)
 		ComputeLightningPoints(iCount - iMiddle, pPoints + iMiddle, rChaos);
 	}
 
-void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, const CItemType *pType, int cxSize, int cySize, bool bGray, bool bDisplayAsKnown)
-
-//	DrawItemTypeIcon
+//	DrawImgAsItemIcon
 //
-//	Draws the item type icon at the given position
+//	Draws the image at the given position
+//	Provides the underlying draw logic for item icon variations
+//
+void DrawImgAsItemIcon (CG32bitImage &Dest, int x, int y, const CObjectImageArray& Image, int cxSize, int cySize, bool bGray)
 
 	{
-	const CObjectImageArray &Image = pType->GetImage(bDisplayAsKnown);
 	if (Image.IsLoaded())
 		{
 		RECT rcImage = Image.GetImageRect();
@@ -143,53 +143,87 @@ void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, const CItemType *pType,
 			{
 			if (bGray)
 				CGDraw::BltGray(Dest,
-						x,
-						y,
-						Image.GetImage(NULL_STR),
-						rcImage.left,
-						rcImage.top,
-						RectWidth(rcImage),
-						RectHeight(rcImage),
-						128);
+					x,
+					y,
+					Image.GetImage(NULL_STR),
+					rcImage.left,
+					rcImage.top,
+					RectWidth(rcImage),
+					RectHeight(rcImage),
+					128);
 			else
 				Dest.Blt(rcImage.left,
-						rcImage.top,
-						RectWidth(rcImage),
-						RectHeight(rcImage),
-						255,
-						Image.GetImage(NULL_STR),
-						x,
-						y);
+					rcImage.top,
+					RectWidth(rcImage),
+					RectHeight(rcImage),
+					255,
+					Image.GetImage(NULL_STR),
+					x,
+					y);
 			}
 		else
 			{
 			if (bGray)
 				CGDraw::BltTransformedGray(Dest,
-						x + (cxSize / 2),
-						y + (cySize / 2),
-						(Metric)cxSize / (Metric)RectWidth(rcImage),
-						(Metric)cySize / (Metric)RectHeight(rcImage),
-						0.0,
-						Image.GetImage(NULL_STR),
-						rcImage.left,
-						rcImage.top,
-						RectWidth(rcImage),
-						RectHeight(rcImage),
-						128);
+					x + (cxSize / 2),
+					y + (cySize / 2),
+					(Metric)cxSize / (Metric)RectWidth(rcImage),
+					(Metric)cySize / (Metric)RectHeight(rcImage),
+					0.0,
+					Image.GetImage(NULL_STR),
+					rcImage.left,
+					rcImage.top,
+					RectWidth(rcImage),
+					RectHeight(rcImage),
+					128);
 			else
 				CGDraw::BltTransformed(Dest,
-						x + (cxSize / 2),
-						y + (cySize / 2),
-						(Metric)cxSize / (Metric)RectWidth(rcImage),
-						(Metric)cySize / (Metric)RectHeight(rcImage),
-						0.0,
-						Image.GetImage(NULL_STR),
-						rcImage.left,
-						rcImage.top,
-						RectWidth(rcImage),
-						RectHeight(rcImage));
+					x + (cxSize / 2),
+					y + (cySize / 2),
+					(Metric)cxSize / (Metric)RectWidth(rcImage),
+					(Metric)cySize / (Metric)RectHeight(rcImage),
+					0.0,
+					Image.GetImage(NULL_STR),
+					rcImage.left,
+					rcImage.top,
+					RectWidth(rcImage),
+					RectHeight(rcImage));
 			}
 		}
+	}
+
+//	DrawItemIcon
+//
+//	Draws the item icon at the given position
+//
+void DrawItemIcon (CG32bitImage &Dest, int x, int y, const CItem *pItem, int cxSize, int cySize, bool bGray, bool bDisplayAsKnown)
+
+	{
+	const CObjectImageArray &Image = pItem->GetImage(bDisplayAsKnown);
+	DrawImgAsItemIcon(Dest, x, y, Image, cxSize, cySize, bGray);
+	}
+
+//	DrawItemTypeIcon
+//
+//	Draws the item type icon at the given position
+//	Warning: do not use this for installed items, as they can change their icon
+//
+void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, const CItemType *pType, int cxSize, int cySize, bool bGray, bool bDisplayAsKnown)
+
+	{
+	const CObjectImageArray &Image = pType->GetImage(bDisplayAsKnown);
+	DrawImgAsItemIcon(Dest, x, y, Image, cxSize, cySize, bGray);
+	}
+
+//	DrawObjAsItemIcon
+//
+//	Draws the object at the given position, as if it were an item
+//
+void DrawObjAsItemIcon (CG32bitImage &Dest, int x, int y, const CSpaceObject *pObject, int cxSize, int cySize, bool bGray)
+
+	{
+	const CObjectImageArray &Image = pObject->GetImage();
+	DrawImgAsItemIcon(Dest, x, y, Image, cxSize, cySize, bGray);
 	}
 
 void DrawLightning (CG32bitImage &Dest,

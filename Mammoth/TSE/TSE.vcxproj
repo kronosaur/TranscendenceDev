@@ -898,7 +898,7 @@
     <ClCompile Include="CApproachOrder.cpp" />
     <ClCompile Include="CArmorItem.cpp" />
     <ClCompile Include="CArmorLimits.cpp" />
-    <ClCompile Include="CArmorMassDefinitions.cpp" />
+    <ClCompile Include="CArmorClassDefinitions.cpp" />
     <ClCompile Include="CArmorSystem.cpp" />
     <ClCompile Include="CArtifactAwakening.cpp" />
     <ClCompile Include="CArtifactProgram.cpp" />
@@ -1036,6 +1036,7 @@
     <ClCompile Include="CDockScreenStack.cpp" />
     <ClCompile Include="CDockScreenVisuals.cpp" />
     <ClCompile Include="CDockSession.cpp" />
+    <ClCompile Include="CDoubleRangeCriteria.cpp" />
     <ClCompile Include="CDriveDesc.cpp" />
     <ClCompile Include="CEffectParamDesc.cpp" />
     <ClCompile Include="CEngineLanguage.cpp" />

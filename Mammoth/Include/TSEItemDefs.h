@@ -74,6 +74,7 @@ class CItemCriteria
 		bool MatchesItemCategory (const CItemType &ItemType) const;
 		bool MatchesLauncherMissilesOnly (void) const { return m_bLauncherMissileOnly; }
 		bool MatchesLevel (int iLevel) const { return m_LevelRange.Matches(iLevel); }
+		bool MatchesSize (Metric rSize) const { return m_SizeRange.Matches(rSize); }
 		bool MatchesMass (int iMassKg) const { return m_MassRange.Matches(iMassKg); }
 		bool MatchesNotInstalledOnly (void) const { return m_bNotInstalledOnly; }
 		bool MatchesPrice (CurrencyValue iValue) const { return m_PriceRange.Matches((int)iValue); }
@@ -110,8 +111,10 @@ class CItemCriteria
 
 		CIntegerRangeCriteria m_LevelRange;			//	Only items of this level
 		CIntegerRangeCriteria m_PriceRange;			//	Only items of this price
+		CDoubleRangeCriteria m_SizeRange;			//	Only items of this volume (in cubic meters (CBM))
 		CIntegerRangeCriteria m_MassRange;			//	Only items of this mass (in kg)
 		CIntegerRangeCriteria m_RepairLevelRange;	//	Only items of this repair level
+		
 
 		CString m_sLookup;							//	Look up a shared criteria
 		ICCItemPtr m_pFilter;						//	Filter returns Nil for excluded items
@@ -130,6 +133,9 @@ enum EDisplayAttributeTypes
 
 	attribEnhancement,
 	attribWeakness,
+
+	attribWarning,
+	attribQuest,
 	};
 
 enum EAttributeTypes
@@ -316,48 +322,51 @@ class CDisplayAttributeDefinitions
 		TArray<SItemEntry> m_ItemAttribs;
 	};
 
-class CArmorMassDefinitions
+class CArmorClassDefinitions
 	{
 	public:
-		void Append (const CArmorMassDefinitions &Src);
+		void Append (const CArmorClassDefinitions &Src);
 		void DeleteAll (void) { m_Definitions.DeleteAll(); InvalidateIDIndex(); }
-		bool FindPreviousMassClass (const CString &sID, CString *retsPrevID = NULL, int *retiPrevMass = NULL) const;
+		bool FindPreviousArmorClass (const CString &sID, CString *retsPrevID = NULL, Metric *retrPrevSize = NULL) const;
 		Metric GetFrequencyMax (const CString &sID) const;
-		const CString &GetMassClassID (const CItem &Item) const;
-		const CString &GetMassClassLabel (const CString &sID) const;
-		int GetMassClassMass (const CString &sID) const;
+		const CString &GetArmorClassID (const CItem &Item) const;
+		const CString &GetArmorClassLabel (const CString &sID) const;
+		Metric GetArmorClassSize (const CString &sID) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		bool IsEmpty (void) const { return (m_Definitions.GetCount() == 0); }
-		void OnBindArmor (SDesignLoadCtx &Ctx, const CItem &Item, CString *retsMassClass = NULL);
+		void OnBindArmor (SDesignLoadCtx &Ctx, const CItem &Item, CString *retsArmorClass = NULL);
 		void OnInitDone (void);
 
-		static const CArmorMassDefinitions Null;
+		static const CArmorClassDefinitions Null;
 
 	private:
 
-		struct SArmorMassEntry
+		struct SArmorClassEntry
 			{
 			CString sDefinition;			//	Index to m_Definitions
 
 			CString sID;					//	Required ID
-			int iMaxMass = 0;				//	Maximum mass (kg)
+			Metric rMaxSize = 0;			//	Maximum size (as a compatibility metric)
 			CString sText;					//	Text to display on item
+			CString sTextShort;				//	Text to display in size-constrained UIs
 
-			int iCount = 0;					//	Number of armor types for this mass
+			int iCount = 0;					//	Number of armor types for this class
 			};
 
-		struct SArmorMassDefinition
+		struct SArmorClassDefinition
 			{
 			CItemCriteria Criteria;			//	Criteria for armor
-			TSortMap<int, SArmorMassEntry> Classes;
+			TSortMap<int, SArmorClassEntry> Classes;
+			TSortMap<CString, int> Ids;
 			};
 
-		const SArmorMassEntry *FindMassEntry (const CItem &Item) const { return const_cast<CArmorMassDefinitions *>(this)->FindMassEntryActual(Item); }
-		SArmorMassEntry *FindMassEntryActual (const CItem &Item);
-		void InvalidateIDIndex (void) { m_ByID.DeleteAll(); }
+		const SArmorClassEntry *FindClassEntry (const CItem &Item) const { return const_cast<CArmorClassDefinitions *>(this)->FindClassEntryActual(Item); }
+		SArmorClassEntry *FindClassEntryActual (const CItem &Item);
+		void InvalidateIDIndex () { m_ByID.DeleteAll(); }
+		void CleanupDefinitions () { m_Definitions.DeleteAll(); }
 
-		TSortMap<CString, SArmorMassDefinition> m_Definitions;
-		TSortMap<CString, SArmorMassEntry *> m_ByID;
+		TSortMap<CString, SArmorClassDefinition> m_Definitions;
+		TSortMap<CString, SArmorClassEntry *> m_ByID;
 	};
 
 //	CItemEncounterDefinitions --------------------------------------------------

@@ -12,6 +12,7 @@ class CWeaponClass : public CDeviceClass
 
 		static constexpr Metric HP_ARMOR_RATIO = 0.1;						//	Ammo HP per standard armor HP of same level
 		static constexpr Metric STD_AMMO_MASS =	10.0;						//	Standard ammo mass (in kg)
+		static constexpr Metric STD_AMMO_VOLUME = 0.01;						//	Standard ammo volume (TODO: come up with better standard value and mass for ammo in 2.0)
 		static constexpr Metric DEFAULT_HP_DAMAGE_RATIO = 0.5;				//	Used to compute default HP.
 																			//		See: CWeaponFireDesc::CalcDefaultHitPoints
 
@@ -63,7 +64,7 @@ class CWeaponClass : public CDeviceClass
 			Metric rDamageType = 0.0;		//  Damage type balance contribution
 
 			Metric rStdAmmoCost = 0.0;		//  Standard ammo cost (for level and fire rate)
-			Metric rStdAmmoMass = 0.0;		//  Standard ammo mass (for level and fire rate)
+			Metric rStdAmmoSize = 0.0;		//  Standard ammo mass (for level and fire rate)
 			Metric rAmmo = 0.0;				//  Ammo contribution
 			Metric rOmni = 0.0;				//  Omni and swivel component
 			Metric rTracking = 0.0;			//  Tracking component
@@ -123,6 +124,7 @@ class CWeaponClass : public CDeviceClass
 		bool GetContinuousConsumePerShot (const CWeaponFireDesc &Shot) const { return m_bContinuousConsumePerShot; }
 		int GetIdlePowerUse (void) const { return m_iIdlePowerUse; }
 		CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem &Ammo = CItem()) const;
+		bool IsIgnoredByAI () const { return m_bAIIgnores; }
 
 		static TArray<CTargetList::STargetResult> CalcMIRVFragmentationTargets (CSpaceObject &Source, const CWeaponFireDesc &ShotDesc, int iMaxCount);
 		static const SStdStats &GetStdStats (int iLevel);
@@ -370,6 +372,7 @@ class CWeaponClass : public CDeviceClass
 		int m_iChargeTime;						//  Charge time before firing
 
 		bool m_bTargetStationsOnly;				//	Do not target ships
+		bool m_bAIIgnores;						//	AI ignores the existence of this weapon on a ship
 
 		CFailureDesc m_DamageFailure;			//	Failure mode when damaged/disrupted
 		CFailureDesc m_OverheatFailure;

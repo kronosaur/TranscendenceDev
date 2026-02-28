@@ -33,6 +33,8 @@ enum ECodeChainEvents
 	eventGetReferenceText =				12,		//	Item reference text
 	eventOnDestroyCheck =				13,
 	eventGetHullPrice =					14,
+	eventOnGlobalTypesBound =			15,
+	eventOnGlobalTypesBoundNewGame =	16,
 	};
 
 class CCodeChainCtx

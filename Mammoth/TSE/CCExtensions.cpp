@@ -87,6 +87,8 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_ITEM_GET_STATIC_DATA_KEYS	40
 #define FN_ITEM_GET_TYPE_DATA_KEYS	41
 #define FN_ITEM_PROPERTY_KEYS		42
+#define FN_ITEM_VOLUME				43
+#define FN_ITEM_VOLUME_COMPAT		44
 
 ICCItem *fnItemGetTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -880,8 +882,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(itmGetLevel item|type) -> level",
 			"v",	0,	},
 
-		{	"itmGetMass",					fnItemGet,		FN_ITEM_MASS,
+		{   "itmGetMassKg",					fnItemGet,		FN_ITEM_MASS,
 			"(itmGetMass item|type) -> mass of single item in kg",
+			"v",	0, },
+
+		{	"itmGetMass",					fnItemGet,		FN_ITEM_VOLUME_COMPAT,
+			"DEPRECATED: use (itmGetVolume item|type) instead. For Mass use (itmGetMassKg item|type)",
 			"v",	0,	},
 
 		{	"itmGetMaxAppearing",			fnItemGet,		FN_ITEM_MAX_APPEARING,
@@ -915,6 +921,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"itmGetPrice",					fnItemGet,		FN_ITEM_PRICE,
 			"(itmGetPrice item|type [currency]) -> price of a single item",
 			"v*",	0,	},
+
+		{	"itmGetVolume",					fnItemGet,		FN_ITEM_VOLUME,
+			"(itmGetVolume item|type) -> size of single item in CBM (real)",
+			"v",	0,	},
 
 		{	"itm@Keys",						fnItemGet,		FN_ITEM_PROPERTY_KEYS,
 			"(itm@Keys item|type) -> list of property keys",
@@ -1181,10 +1191,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(fmtNumber [type] value) -> string\n\n"
 			
 			"type:\n\n"
-			
+
+			"   'CBM\n"
+			"   'CBMBasic\n"
+			"   'CBMInt\n"
 			"   'integer\n"
 			"   'massKg\n"
 			"   'massTons\n"
+			"   'metric\n"
+			"   'metricFull\n"
+			"   'metricUnitless\n"
 			"   'power\n"
 			"   'real\n"
 			"   'regenRate\n"
@@ -1907,7 +1923,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"il*",	0,	},
 
 		{	"objGetCargoSpaceLeft",			fnObjGetOld,		FN_OBJ_CARGO_SPACE_LEFT,
-			"(objGetCargoSpaceLeft obj) -> space left in kg",
+			"DEPRECATED: use (obj@ obj 'cargoSpaceFree) -> space left in cubic meters instead\n"
+
+			"   (objGetCargoSpaceLeft obj) -> space left in liters\n",
+
 			NULL,	0,	},
 
 		{	"objGetCharacterData",			fnObjGet,		FN_OBJ_GET_CHARACTER_DATA,
@@ -2175,7 +2194,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'availableNonWeaponSlots\n"
 			"   'availableWeaponSlots\n"
 			"   'blindingImmune\n"
-			"   'cargoSpace -> in tons\n"
+			"   'cargoMassKg -> in kg\n"
+			"   'cargoSpace -> in CBM\n"
+			"   'cargoSpaceFree -> in CBM\n"
+			"   'cargoSpaceUsed -> in CBM\n"
 			"   'counterIncrementRate\n"
 			"   'counterValue\n"
 			"   'character\n"
@@ -3069,20 +3091,40 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	----------------
 
 		{	"sysAddEncounterEvent",			fnSystemAddEncounterEvent,	FN_ADD_ENCOUNTER_FROM_GATE,
-			"(sysAddEncounterEvent delay target encounterID gateObj|pos)\n\n"
+			"(sysAddEncounterEvent delay target encounterID gateObj|pos|options)\n\n"
 
-			"target: obj or list of objs\n"
-			"delay: in ticks\n",
+			"delay: in ticks\n"
+			"target: obj or list of objs\n\n"
+
+			"options:\n\n"
+
+			"   'distance      Encounter distance (light-seconds)\n"
+			"   'eventHandler\n"
+			"   'gate          Gate to appear at (if distance Nil or 0)\n"
+			"   'ignoreLimits  Ignore limits in ship tables\n"
+			"   'level         level (for ship tables)\n"
+			"   'levelAdj      level adjustment (if level is Nil)\n"
+			"   'sovereign",
 
 			"iviv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddEncounterEventAtDist",	fnSystemAddEncounterEvent,	FN_ADD_ENCOUNTER_FROM_DIST,
-			"(sysAddEncounterEventAtDist delay target encounterID distance)\n\n"
+			"(sysAddEncounterEventAtDist delay target encounterID distance|options)\n\n"
 
-			"target: obj or list of objs\n"
-			"delay: in ticks\n",
+			"delay: in ticks\n"
+			"target: obj or list of objs\n\n"
 
-			"ivii",	PPFLAG_SIDEEFFECTS,	},
+			"options:\n\n"
+
+			"   'distance      Encounter distance (light-seconds)\n"
+			"   'eventHandler\n"
+			"   'gate          Gate to appear at (if distance Nil or 0)\n"
+			"   'ignoreLimits  Ignore limits in ship tables\n"
+			"   'level         level (for ship tables)\n"
+			"   'levelAdj      level adjustment (if level is Nil)\n"
+			"   'sovereign",
+
+			"iviv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddObjTimerEvent",			fnSystemAddStationTimerEvent,	FN_ADD_TIMER_NORMAL,	
 			"(sysAddObjTimerEvent delay obj event)\n\n"
@@ -3180,7 +3222,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"options:\n\n"
 			
 			"   'distance      Encounter distance (light-seconds), if gate is Nil\n"
+			"   'eventHandler\n"
 			"   'gate          Gate to appear at (if Nil, use distance)\n"
+			"   'ignoreLimits  Ignore limits in ship tables\n"
+			"   'level         level (for ship tables)\n"
+			"   'levelAdj      level adjustment (if level is Nil)\n"
+			"   'returnEscorts\n"
+			"   'sovereign"
 			"   'target        Target of encounter\n",
 
 			"i*",	PPFLAG_SIDEEFFECTS,	},
@@ -3218,6 +3266,9 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'controller\n"
 			"   'eventHandler\n"
+			"   'ignoreLimits     Ignore limits in ship tables\n"
+			"   'level            level (for ship tables)\n"
+			"   'levelAdj         level adjustment (if level is Nil)\n"
 			"   'returnEscorts\n"
 			"   'target (for ship tables)\n"
 			"\n"
@@ -3857,7 +3908,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'slotCategory\n"
 			"   'treasureValue\n"
 			"   'unknownType\n"
-			"   'useKey\n\n"
+			"   'useKey\n"
+			"	'volume\n\n"
 
 			"field (player ships):\n\n"
 			"   'dockServicesScreen  UNID of dock services screen\n"
@@ -5446,11 +5498,27 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateString(CLanguage::ComposeNumber(CLanguage::numberInteger, pArgs->GetElement(0)->GetIntegerValue()));
 			else
 				{
-				CLanguage::ENumberFormatTypes iFormat = CLanguage::ParseNumberFormat(pArgs->GetElement(0)->GetStringValue());
+				CLanguage::ENumberFormatTypes iFormat;
+				ICCItem* pOptions = pArgs->GetElement(0);
+
+				//	Configure options
+
+				CLanguage::SNumberOptions Options;
+
+				if (pOptions->IsSymbolTable())
+					{
+					iFormat = CLanguage::ParseNumberFormat(pOptions->GetElement(CONSTLIT("format"))->GetStringValue());
+					Options.OptMetric.iMaxSigFigs = pOptions->GetElement(CONSTLIT("sigFigs"))->GetIntegerValue();
+					}
+				else
+					{
+					iFormat = CLanguage::ParseNumberFormat(pOptions->GetStringValue());
+					Options.OptMetric.iMaxSigFigs = 3;
+					}
 				if (iFormat == CLanguage::numberError)
 					return pCC->CreateError(CONSTLIT("Unknown number format"), pArgs->GetElement(0));
 
-				return pCC->CreateString(CLanguage::ComposeNumber(iFormat, pArgs->GetElement(1)));
+				return pCC->CreateString(CLanguage::ComposeNumber(iFormat, pArgs->GetElement(1), &Options));
 				}
 			}
 
@@ -5901,6 +5969,14 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_MASS:
 			pResult = pCC->CreateInteger(Item.GetMassKg());
+			break;
+
+		case FN_ITEM_VOLUME:
+			pResult = pCC->CreateDouble(Item.GetVolume());
+			break;
+
+		case FN_ITEM_VOLUME_COMPAT:
+			pResult = pCC->CreateDouble(Item.GetVolume() * 1000);
 			break;
 
 		case FN_ITEM_MAX_APPEARING:
@@ -8380,7 +8456,7 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			pResult = pCC->CreateBool(pObj->CanAttack());
 			break;
 
-		case FN_OBJ_CARGO_SPACE_LEFT:
+		case FN_OBJ_CARGO_SPACE_LEFT:	//	This is for compatibility
 			pResult = pCC->CreateInteger((int)(pObj->GetCargoSpaceLeft() * 1000.0));
 			break;
 
@@ -12585,13 +12661,21 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWOR
 	CCodeChain *pCC = pEvalCtx->pCC;
 	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 
+	CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
+	if (pSystem == NULL)
+		return StdErrorNoSystem(*pCC);
+
 	//	Arguments
 
 	int iTime = pArgs->GetElement(0)->GetIntegerValue();
 
 	CTimedEncounterEvent::SOptions Options;
 
-	if (pArgs->GetElement(1)->IsList())
+	if (pArgs->GetElement(1)->IsNil())
+		{
+		Options.TargetList.FastAdd(pSystem->GetPlayerShip());
+		}
+	else if (pArgs->GetElement(1)->IsList())
 		{
 		for (int i = 0; i < pArgs->GetElement(1)->GetCount(); i++)
 			{
@@ -12614,24 +12698,63 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWOR
 
 	DWORD dwEncounterID = (DWORD)pArgs->GetElement(2)->GetIntegerValue();
 
+	//	Check if we have a valid unid (currently only allow shiptable, but could add station
+
+	CDesignType *pType = pCtx->GetUniverse().FindDesignType(dwEncounterID);
+	if (pType == NULL || pType->GetType() != designShipTable)
+		return pCC->CreateError(CONSTLIT("Type must be <ShipTable>"), pArgs->GetElement(2));
+
 	//	Either from a gate or from a distance from the target
 
 	ICCItem *pOptions = pArgs->GetElement(3);
 	if (pOptions->IsSymbolTable())
 		{
-		if (ICCItem *pValue = pOptions->GetElement(CONSTLIT("distance")))
+		ICCItem *pValue;
+		if (pValue = pOptions->GetElement(CONSTLIT("distance")))
 			{
 			Options.rDistance = Max(0.0, pValue->GetIntegerValue() * LIGHT_SECOND);
 			}
 
-		if (ICCItem *pValue = pOptions->GetElement(CONSTLIT("pos")))
+		if (pValue = pOptions->GetElement(CONSTLIT("gate")))
 			{
 			if (::GetPosOrObject(pEvalCtx, pValue, &Options.vPos, &Options.pGate) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Invalid pos"), pValue);
 			}
+		else if (pValue = pOptions->GetElement(CONSTLIT("pos")))
+			{
+			if (::GetPosOrObject(pEvalCtx, pValue, &Options.vPos, &Options.pGate) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pValue);
+			}
+
+		if (pValue = pOptions->GetElement(CONSTLIT("eventHandler")))
+			{
+			Options.pOverride = pCtx->GetUniverse().FindDesignType(pValue->GetIntegerValue());
+			if (Options.pOverride == NULL)
+				return pCC->CreateError(CONSTLIT("Unknown event handler"), pValue);
+			}
+
+		if (pValue = pOptions->GetElement(CONSTLIT("sovereign")))
+			{
+			Options.pSovereign = pCtx->GetUniverse().FindSovereign(pValue->GetIntegerValue());
+			if (Options.pSovereign == NULL)
+				return pCC->CreateError(CONSTLIT("Unknown sovereign ID"), pValue);
+			}
+
+		int iLevel = pOptions->GetIntegerAt(CONSTLIT("level"));
+		int iLevelAdj = pOptions->GetIntegerAt(CONSTLIT("levelAdj"));
+		if (iLevel == 0 && iLevelAdj != 0)
+			{
+			iLevel = max(1, pSystem->GetLevel() + iLevelAdj);
+			}
+		Options.iLevel = iLevel;
+
+		Options.bIgnoreLimits = pOptions->GetBooleanAt(CONSTLIT("ignoreLimits"));
+
 		}
 	else if (dwData == FN_ADD_ENCOUNTER_FROM_DIST)
 		{
+		if (!pOptions->IsNumber())
+			return pCC->CreateError(CONSTLIT("Invalid distance"), pOptions);
 		int iDistance =	pOptions->GetIntegerValue();
 		Options.rDistance = iDistance * LIGHT_SECOND;
 		}
@@ -12642,10 +12765,6 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWOR
 		}
 	
 	//	Create the event
-
-	CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
-	if (pSystem == NULL)
-		return StdErrorNoSystem(*pCC);
 
 	CTimedEncounterEvent *pEvent = new CTimedEncounterEvent(pSystem->GetTick() + iTime,
 			dwEncounterID,
@@ -12832,6 +12951,9 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return StdErrorNoSystem(*pCC);
 
 			CDesignType *pType = pCtx->GetUniverse().FindDesignType(pArgs->GetElement(0)->GetIntegerValue());
+			if (pType == NULL)
+				return pCC->CreateError(CONSTLIT("Unknown UNID"), pArgs->GetElement(0));
+
 			ICCItem *pOptions = (pArgs->GetCount() > 1 ? pArgs->GetElement(1) : pCC->GetNil());
 
 			CSpaceObject *pTarget = CreateObjFromItem(pOptions->GetElement(CONSTLIT("target")));
@@ -12841,6 +12963,69 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			Metric rDist = pOptions->GetDoubleAt(CONSTLIT("distance"), 100.0) * LIGHT_SECOND;
 
 			CSpaceObject *pGate = CreateObjFromItem(pOptions->GetElement(CONSTLIT("gate")));
+
+			//	If we have a gate then ignore the distance argument
+			if (pGate)
+				rDist = 0.0;
+
+			ICCItem *pArg;
+			CDesignType *pOverride = NULL;
+			if ((pArg = pOptions->GetElement(CONSTLIT("eventHandler")))
+				&& !pArg->IsNil())
+				{
+				pOverride = pCtx->GetUniverse().FindDesignType(pArg->GetIntegerValue());
+				if (pOverride == NULL)
+					return pCC->CreateError(CONSTLIT("Unknown event handler"), pArg);
+				}
+
+			CSovereign* pSovereign = NULL;
+			if ((pArg = pOptions->GetElement(CONSTLIT("sovereign")))
+				&& !pArg->IsNil())
+				{
+				pSovereign = pCtx->GetUniverse().FindSovereign(pArg->GetIntegerValue());
+				if (pSovereign == NULL)
+					return pCC->CreateError(CONSTLIT("Unknown sovereign ID"), pArg);
+				}
+
+			int iLevel = pOptions->GetIntegerAt(CONSTLIT("level"));
+			int iLevelAdj = pOptions->GetIntegerAt(CONSTLIT("levelAdj"));
+			if (iLevel == 0 && iLevelAdj != 0)
+				{
+				iLevel = max(1, pSystem->GetLevel() + iLevelAdj);
+				}
+
+			DWORD dwTableFlags = SShipCreateCtx::ATTACK_NEAREST_ENEMY | SShipCreateCtx::RETURN_RESULT;
+			if (pOptions->GetBooleanAt(CONSTLIT("returnEscorts")))
+				dwTableFlags |= SShipCreateCtx::RETURN_ESCORTS;
+
+			SShipCreateCtx Ctx;
+			Ctx.pSystem = pSystem;
+			Ctx.pGate = pGate;
+			Ctx.pSovereign = pSovereign;
+			Ctx.pTarget = pTarget;
+			Ctx.pOverride = pOverride;
+			Ctx.iDefaultOrder = (pTarget ? IShipController::orderDestroyTarget : IShipController::orderNone);
+			Ctx.iLevel = iLevel;
+			Ctx.dwFlags = dwTableFlags;
+			Ctx.bIgnoreLimits = pOptions->GetBooleanAt(CONSTLIT("ignoreLimits"));
+
+			//	Figure out where the encounter will come from
+
+			if (rDist > 0.0)
+				{
+				if (pTarget)
+					Ctx.vPos = pSystem->CalcRandomEncounterPos(*pTarget, rDist);
+				Ctx.PosSpread = DiceRange(3, 1, 2);
+				}
+			else if (pGate && pGate->IsActiveStargate())
+				Ctx.pGate = pGate;
+			else if (pGate)
+				{
+				Ctx.vPos = pGate->GetPos();
+				Ctx.PosSpread = DiceRange(2, 1, 2);
+				}
+			else if (pTarget)
+				Ctx.pGate = pTarget->GetNearestStargate(true);
 
 			//	If we have a station type, then create its random encounter
 
@@ -12854,9 +13039,19 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (pTable == NULL)
 					return pCC->CreateNil();
 
-				CRandomEncounterDesc Encounter(*pTable, *pEncounter, pEncounter->GetSovereign());
-				Encounter.Create(*pSystem, pTarget, pGate);
-				return pCC->CreateTrue();
+				//	If we don't have a sovereign then use the station sovereign
+
+				if (Ctx.pSovereign == NULL)
+					Ctx.pSovereign = pEncounter->GetSovereign();
+
+				//	Create ships
+
+				pTable->CreateShips(Ctx);
+
+				//	Return the list of ships created
+
+				ICCItemPtr pResult = CTLispConvert::CreateObjectList(Ctx.Result);
+				return pResult->Reference();
 				}
 
 			//	If this is a ship table, create an encounter
@@ -12864,30 +13059,6 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else if (pType->GetType() == designShipTable)
 				{
 				CShipTable *pEncounter = CShipTable::AsType(pType);
-
-				SShipCreateCtx Ctx;
-				Ctx.pSystem = pSystem;
-				Ctx.pTarget = pTarget;
-				Ctx.iDefaultOrder = (pTarget ? IShipController::orderDestroyTarget : IShipController::orderNone);
-				Ctx.dwFlags = SShipCreateCtx::ATTACK_NEAREST_ENEMY | SShipCreateCtx::RETURN_RESULT;
-
-				//	Figure out where the encounter will come from
-
-				if (rDist > 0.0)
-					{
-					if (pTarget)
-						Ctx.vPos = pSystem->CalcRandomEncounterPos(*pTarget, rDist);
-					Ctx.PosSpread = DiceRange(3, 1, 2);
-					}
-				else if (pGate && pGate->IsActiveStargate())
-					Ctx.pGate = pGate;
-				else if (pGate)
-					{
-					Ctx.vPos = pGate->GetPos();
-					Ctx.PosSpread = DiceRange(2, 1, 2);
-					}
-				else if (pTarget)
-					Ctx.pGate = pTarget->GetNearestStargate(true);
 
 				//	Create ships
 
@@ -13540,6 +13711,8 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 	CDesignType *pOverride = NULL;
 	CSpaceObject *pTarget = NULL;
 	CSpaceObject *pBase = NULL;
+	int iTableLevel = 0;
+	bool bIgnoreLimits = false;
 	DWORD dwTableFlags = SShipCreateCtx::RETURN_RESULT;
 	if (pArgs->GetCount() > 3)
 		{
@@ -13572,6 +13745,14 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 			if (pOptions->GetBooleanAt(CONSTLIT("returnEscorts")))
 				dwTableFlags |= SShipCreateCtx::RETURN_ESCORTS;
+
+			iTableLevel = pOptions->GetIntegerAt(CONSTLIT("level"));
+			int iLevelAdj = pOptions->GetIntegerAt(CONSTLIT("levelAdj"));
+			if (iTableLevel == 0 && iLevelAdj != 0)
+				{
+				iTableLevel = max(1, pSystem->GetLevel() + iLevelAdj);
+				}
+			bIgnoreLimits = pOptions->GetBooleanAt(CONSTLIT("ignoreLimits"));
 			}
 		else if (pArgs->GetElement(3)->IsIdentifier())
 			pController = pCtx->GetUniverse().CreateShipController(pArgs->GetElement(3)->GetStringValue());
@@ -13591,10 +13772,12 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 		CreateCtx.pSystem = pSystem;
 		CreateCtx.pGate = pGate;
 		CreateCtx.vPos = vPos;
-		CreateCtx.pBaseSovereign = pSovereign;
+		CreateCtx.pSovereign = pSovereign;
 		CreateCtx.pEncounterInfo = NULL;
 		CreateCtx.pOverride = pOverride;
 		CreateCtx.pTarget = pTarget;
+		CreateCtx.iLevel = iTableLevel;
+		CreateCtx.bIgnoreLimits = bIgnoreLimits;
 		CreateCtx.dwFlags = dwTableFlags;
 
 		//	Create

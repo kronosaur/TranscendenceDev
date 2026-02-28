@@ -69,6 +69,9 @@ class CLanguage
 			numberMetric,					//	105 M or 10.5 k or 105 u (for adding a unit abbreviation after)
 			numberMetricFull,				//	105 Mega or 10.5 kilo or 105 micro (for adding a unit after)
 			numberMetricUnitless,			//	105M or 10.5k or 105u (for unitless numbers)
+			numberCBM,						//	Formats CBM (cubic meters) with SI prefixes
+			numberCBMBasic,					//	Formats CBM like mass (CBM if >= 1.0, mCBM if 0.001-.999)
+			numberCBMInt,					//	Formats whole CBM only, no SI prefixes
 			};
 
 		enum EVerbFlags
@@ -121,6 +124,11 @@ class CLanguage
 			BYTE bSpare:6 =				0;
 			};
 
+		struct SNumberOptions
+			{
+			SMetricOptions OptMetric;
+			};
+
 		enum class EHPDisplay
 			{
 			None,
@@ -146,10 +154,10 @@ class CLanguage
 		static CString ComposeGenderedWord (const CString &sWord, GenomeTypes iGender);
 		static CString ComposeHitPointValue (int iHP, const SHPDisplayOptions &Options);
 		static CString ComposeNounPhrase (const CString &sNoun, int iCount, const CString &sModifier, DWORD dwNounFlags, DWORD dwComposeFlags);
-		static CString ComposeNumber (ENumberFormatTypes iFormat, int iNumber);
-		static CString ComposeNumber (ENumberFormatTypes iFormat, DWORD dwNumber) { return ComposeNumber(iFormat, (int)dwNumber); }
-		static CString ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber);
-		static CString ComposeNumber (ENumberFormatTypes iFormat, ICCItem *pNumber);
+		static CString ComposeNumber (ENumberFormatTypes iFormat, int iNumber, SNumberOptions* pOptions = NULL);
+		static CString ComposeNumber (ENumberFormatTypes iFormat, DWORD dwNumber, SNumberOptions* pOptions = NULL) { return ComposeNumber(iFormat, (int)dwNumber, pOptions); }
+		static CString ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber, SNumberOptions* pOptions = NULL);
+		static CString ComposeNumber (ENumberFormatTypes iFormat, ICCItem *pNumber, SNumberOptions* pOptions = NULL);
 		static CString ComposeVerb (const CString &sVerb, DWORD dwVerbFlags);
 		static bool FindGenderedWord (const CString &sWord, GenomeTypes iGender, CString *retsResult = NULL);
 		static ICCItemPtr GetNounFlags (DWORD dwFlags);

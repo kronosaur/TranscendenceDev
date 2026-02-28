@@ -169,6 +169,15 @@
 				}
 			</Constant>
 
+			<!--
+				Defaults for legacy item XML mass conversion
+
+				Note: these conversions are in terms of metric tons to cubic meters
+			-->
+
+			<Constant id="core.item.xmlMassToRealVolume">	1.0</Constant>
+			<Constant id="core.item.defaultDensity">		1.0</Constant>
+
 			<!-- Defaults for item balance -->
 
 			<Constant id="core.item.shield.idlePowerAdj">	0.125</Constant>

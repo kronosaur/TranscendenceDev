@@ -1576,7 +1576,8 @@
 	<!ENTITY rsItems10					"0x0010002B">
 	<!ENTITY trStdTreasure				"0x0010002C">
 	<!ENTITY baHumanTechShip			"0x0010002D">
-	<!ENTITY unidArmorMass				"0x0010002E">
+	<!ENTITY unidArmorClass				"0x0010002E">
+	<!ENTITY unidArmorMass				"0x0010002E">	<!-- Deprecated: use unidArmorClass instead -->
 	
 	<!-- 0030-003F SISTERS OF DOMINA -->
 	
@@ -2469,16 +2470,12 @@
 	<!ENTITY scAntaresIStock			"0x00100714">
 	<!ENTITY scAntaresIIStock			"0x00100715">
 	<!ENTITY scAntaresVStock			"0x00100716">
-	<!ENTITY vtAntaresITurretSlot		"0x00100717">
-	<!ENTITY vtAntaresIITurretSlot		"0x00100718">
-	<!ENTITY vtAntaresVTurretSlot		"0x00100719">
-	<!ENTITY scAntaresVLogistics		"0x0010071A">
-	<!ENTITY scScarabFreighterStock		"0x0010071B">
-	<!ENTITY vtScarabTurretSlot			"0x0010071C">
-	<!ENTITY scT31ArmedTransportStock	"0x0010071D">
-	<!ENTITY scT55ArmedTransportStock	"0x0010071E">
-	<!ENTITY scT31ArmedTransportTraffic	"0x0010071F">
-	<!ENTITY scT55ArmedTransportTraffic	"0x00100720">
+	<!ENTITY scAntaresVLogistics		"0x00100717">
+	<!ENTITY scScarabFreighterStock		"0x00100718">
+	<!ENTITY scT31ArmedTransportStock	"0x00100719">
+	<!ENTITY scT55ArmedTransportStock	"0x0010071A">
+	<!ENTITY scT31ArmedTransportTraffic	"0x0010071B">
+	<!ENTITY scT55ArmedTransportTraffic	"0x0010071C">
 
 	<!-- 0740-075F RASIERMESSER -->
 

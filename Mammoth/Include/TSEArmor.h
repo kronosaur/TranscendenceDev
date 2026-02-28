@@ -28,13 +28,6 @@ class CArmorClass
 			evtCount					= 3,
 			};
 
-		struct SMassClassDesc
-			{
-			char *pszID;
-			char *pszName;
-			int iMaxMassKg;
-			};
-
 		struct SStdStats
 			{
 			int iHP;								//	HP for std armor at this level
@@ -76,7 +69,7 @@ class CArmorClass
 		void CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		int CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx);
 		void CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx) const;
-		const CString &GetMassClass (const CItemCtx &ItemCtx) const;
+		const CString &GetArmorClass (const CItemCtx &ItemCtx) const;
 		int GetPowerOutput (CItemCtx &ItemCtx) const;
 		int GetPowerRating (CItemCtx &ItemCtx, int *retiIdlePower = NULL) const;
 		CString GetReference (CItemCtx &Ctx);
@@ -132,7 +125,7 @@ class CArmorClass
 		int CalcBalance (const CArmorItem &ArmorItem) const { CArmorItem::SBalance Balance; return CalcBalance(ArmorItem, Balance); }
 		Metric CalcBalanceDamageAdj (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceDamageEffectAdj (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
-		Metric CalcBalanceMass (const CArmorItem &ArmorItem, const SScalableStats &Stats, Metric *retrStdMass) const;
+		Metric CalcBalanceSize (const CArmorItem &ArmorItem, const SScalableStats &Stats, Metric *retrStdSize) const;
 		Metric CalcBalancePower (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceRegen (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
 		Metric CalcBalanceRepair (const CArmorItem &ArmorItem, const SScalableStats &Stats) const;
@@ -178,7 +171,7 @@ class CArmorClass
 		CItemCriteria m_DeviceCriteria;			//	Only enhances devices that match criteria
 		int m_iDamageAdjLevel;					//	Level to use for intrinsic damage adj
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
-		CString m_sMassClass;					//	Computed mass class (computed in Bind)
+		CString m_sArmorClass;					//	Armor class (provided in xml or computed in bind)
 		int m_iBalanceAdj;						//	Manual adjustment to balance calculation
 		SDamageMethodAdj m_Fortification;		//	Fortification Adj for Damage Method curves on this armor
 
