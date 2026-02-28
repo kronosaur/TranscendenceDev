@@ -89,7 +89,7 @@ void GenerateWeaponEffectChart (CUniverse &Universe, CXMLElement *pCmdLine)
 	CSpaceObject *pStation;
 	CStationType *pTargetType = Universe.FindStationType(TARGET_UNID);
 	if (pTargetType == NULL 
-			|| pSystem->CreateStation(pTargetType, NULL, CVector(), &pStation) != NOERROR)
+			|| pSystem->CreateStation(pTargetType, NULL, CVector(), true, &pStation) != NOERROR)
 		{
 		printf("ERROR: Unable to create station.\n");
 		return;
