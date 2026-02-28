@@ -346,7 +346,7 @@ ALERROR CStationEncounterDesc::InitMinMaxAppearingFromXML (SDesignLoadCtx& Ctx, 
 	//	and it could be overridden in inconsistent, order-variant ways using type overrides
 	//
 	//	As such, for minAppearing/numberAppearing (synonyms in the API), it is being treated
-	//	as a bug, and is replaced with a Node encounter strategy of even. This mimicks the
+	//	as a bug, and is replaced with a Node encounter strategy of even. This mimics the
 	//	existing behavior when minAppearing < qualifyingNodes, but allows minAppearing to
 	//	also be greater than qualifying nodes, which is the expected behavior of the API.
 	//
@@ -371,7 +371,7 @@ ALERROR CStationEncounterDesc::InitMinMaxAppearingFromXML (SDesignLoadCtx& Ctx, 
 		m_bMinCountLimit = true;
 		if (error = m_MinAppearing.LoadFromXML(sAttrib))
 			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Invalid numberAppearing parameter."));
+			Ctx.sError = CONSTLIT("Invalid numberAppearing parameter.");
 			return error;
 			}
 		}
@@ -412,7 +412,7 @@ ALERROR CStationEncounterDesc::InitMinMaxAppearingFromXML (SDesignLoadCtx& Ctx, 
 		m_bMaxCountLimit = true;
 		if (error = m_MaxAppearing.LoadFromXML(sAttrib))
 			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Invalid maxAppearing parameter."));
+			Ctx.sError = CONSTLIT("Invalid maxAppearing parameter.");
 			return error;
 			}
 
@@ -433,7 +433,7 @@ ALERROR CStationEncounterDesc::InitMinMaxAppearingFromXML (SDesignLoadCtx& Ctx, 
 		else if (strEquals(sAttrib, UNIQUE_IN_UNIVERSE) || strEquals(sAttrib, VALUE_TRUE))
 			{
 			if (m_bMaxCountLimit)
-				kernelDebugLogPattern(CONSTLIT("WARNING: [%08x] defined maxAppearing and unique=\"universe\". maxAppearing will be ignored."), Ctx.pType->GetUNID());
+				kernelDebugLogPattern(CONSTLIT("WARNING: [%08x] defined maxAppearing and unique=\"inUniverse\". maxAppearing will be ignored."), Ctx.pType->GetUNID());
 			m_bMaxCountLimit = true;
 			m_MaxAppearing.SetConstant(1);
 			m_iMaxCountInSystem = 1;
