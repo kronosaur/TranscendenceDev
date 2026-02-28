@@ -1139,6 +1139,13 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					221;
 //					fireAngle: if used with minFireArc and maxFireArc or omnidirectional, can now specify a default angle of fire
 //						(including in and out of the normal min and max fire arc) to use when there is no valid
 //						target in the fire arc and the weapon is allowed to fire (eg, +linkedfire:always)
+//		<StationType>
+//			<Encounters>
+//				encounterDistribution: new field to specify how minAppearing encounters are distributed across nodes
+//					even: distributes evenly across available nodes, remainder is randomly assigned among nodes
+//					min1: if minAppearing > available nodes, each node is guaranteed at least one encounter. Remainder
+//						is randomly assigned among nodes
+//					random: randomly assigned across nodes
 //		<Type>
 //			<Events>
 //				<onGlobalTypesBound>

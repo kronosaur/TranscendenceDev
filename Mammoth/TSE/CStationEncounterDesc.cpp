@@ -11,6 +11,7 @@
 
 #define DISTANCE_CRITERIA_ATTRIB				CONSTLIT("distanceCriteria")
 #define DISTANCE_FREQUENCY_ATTRIB				CONSTLIT("distanceFrequency")
+#define ENCOUNTER_DISTRIBUTIION_ATTRIB			CONSTLIT("encounterDistribution")
 #define ENEMY_EXCLUSION_RADIUS_ATTRIB			CONSTLIT("enemyExclusionRadius")
 #define EXCLUSION_RADIUS_ATTRIB					CONSTLIT("exclusionRadius")
 #define LEVEL_FREQUENCY_ATTRIB					CONSTLIT("levelFrequency")
@@ -25,6 +26,10 @@
 
 #define UNIQUE_IN_SYSTEM						CONSTLIT("inSystem")
 #define UNIQUE_IN_UNIVERSE						CONSTLIT("inUniverse")
+
+#define ENCOUNTER_DISTRIBUTION_EVEN				CONSTLIT("even")
+#define ENCOUNTER_DISTRIBUTION_MIN1				CONSTLIT("min1")
+#define ENCOUNTER_DISTRIBUTION_RANDOM			CONSTLIT("random")
 
 #define VALUE_FALSE								CONSTLIT("false")
 #define VALUE_TRUE								CONSTLIT("true")
@@ -368,6 +373,35 @@ ALERROR CStationEncounterDesc::InitMinMaxAppearingFromXML (SDesignLoadCtx& Ctx, 
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("Invalid numberAppearing parameter."));
 			return error;
+			}
+		}
+
+	//	Get encounter distribution strategy
+
+	if (pDesc->FindAttribute(ENCOUNTER_DISTRIBUTIION_ATTRIB, &sAttrib))
+		{
+		if (Ctx.GetAPIVersion() < 59)
+			{
+			Ctx.sError = CONSTLIT("encounterDistribution requires API59 or greater");
+			return ERR_FAIL;
+			}
+		else if (!m_bMinCountLimit)
+			{
+			kernelDebugLogString(CONSTLIT("WARNING: encounterDistribution requires minAppearing to be specified. This field is ignored otherwise."));
+			//	We load the default, unless we are an override. This prevents overrides encountering unexpected behavior.
+			if (!bAsOverride)
+				m_eNodeDistribution = EEncounterDistribution::nodeEven;
+			}
+		else if (strEquals(sAttrib, ENCOUNTER_DISTRIBUTION_EVEN))
+			m_eNodeDistribution = EEncounterDistribution::nodeEven;
+		else if (strEquals(sAttrib, ENCOUNTER_DISTRIBUTION_MIN1))
+			m_eNodeDistribution = EEncounterDistribution::nodeMin1;
+		else if (strEquals(sAttrib, ENCOUNTER_DISTRIBUTION_RANDOM))
+			m_eNodeDistribution = EEncounterDistribution::nodeRandom;
+		else
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Invalid encounterDistribution parameter: %s"), sAttrib);
+			return ERR_FAIL;
 			}
 		}
 
