@@ -28,6 +28,7 @@
 #define TYPE_MAIN_DRIVE							CONSTLIT("mainDrive")
 
 static TStaticStringTable<TStaticStringEntry<ECompartmentTypes>, 4> COMPARTMENT_TYPE_TABLE = {
+	//NOTE: keys must be alphabetical
 	"cargo",				deckCargo,
 	"general",				deckGeneral,
 	"mainDrive",			deckMainDrive,

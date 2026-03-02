@@ -1692,15 +1692,6 @@
 				(typ@ &unidKorolovShipping; 'sandboxMode)
 				))
 
-			(setq korRandomCargoValue (lambda (min max)
-				"Returns standard distribution of cargo values from min to max"
-				(randomGaussian
-					min
-					(+ min (int (/ (- max min) 2)))
-					max
-					)
-				))
-
 			;	korInitMissions
 			;
 			;	Initializes missions for every freighter docked at the station and missions
