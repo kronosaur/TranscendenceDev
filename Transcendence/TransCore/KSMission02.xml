@@ -36,6 +36,12 @@
 			expireTime=		"3600"
 			>
 
+		<Properties>
+			<Constant id="membership">&unidKorolovShipping;</Constant>
+			<Data id="reward"></Data>
+			<Data id="rewardXP"></Data>
+		</Properties>
+
 		<Events>
 			<OnCreate>
 				(block (
@@ -82,10 +88,10 @@
 								; Mission settings
 								(msnSetData gSource 'gateID (objGetID gateObj))
 								(msnSetData gSource 'escortType escortType)
-								(msnSetData gSource 'missionXP 75)
+								(msnSet@ gSource 'rewardXP 75)
 								(msnSetData gSource 'pricePerContainer (@ escortData 'pricePerContainer))
 								(msnSetData gSource 'cargoValue (@ escortData 'cargoValue))
-								(msnSetData gSource 'reward (@ escortData 'escortFee))
+								(msnSet@ gSource 'reward (@ escortData 'escortFee))
 								
 								; Remember the minimum player level to escort and the minimum
 								; player speed.
@@ -147,8 +153,12 @@
 			</OnCompleted>
 
 			<OnReward>
-				(korGiveReward gSource)
+				(rpgMissionReward gSource)
 			</OnReward>
+
+			<OnGetNextScreen>
+				(korGetPendingMiscAward)
+			</OnGetNextScreen>
 
 			<OnObjDestroyed>
 				(switch
@@ -313,7 +323,7 @@
 				(msnTranslate gSource 'textSummary {
 					gateName: (objGetName (objGetObjByID (msnGetData gSource 'gateID)) 'article)
 					systemName: (sysGetName)
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
 			<Text id="textSummary">
@@ -327,7 +337,7 @@
 				(block (
 					(gate (objGetObjByID (msnGetData gSource 'gateID)))
 					(destName (objGetName gate 'article))
-					(paymentValue (msnGetData gSource 'reward))
+					(paymentValue (msn@ gSource 'reward))
 					(payment 
 						(if (= paymentValue 0)
 							(msnTranslate gSource 'listSummary.noPayment)
@@ -347,7 +357,7 @@
 				(msnTranslate gSource 'textBriefing {
 					shipClass: (typGetName (msnGetData gSource 'escortType) '(article generic))
 					gateName: (objGetName (objGetObjByID (msnGetData gSource 'gateID)) 'article)
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
 			<Text id="textBriefing">

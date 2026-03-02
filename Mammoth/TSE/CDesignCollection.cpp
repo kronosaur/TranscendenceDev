@@ -1639,7 +1639,7 @@ bool CDesignCollection::OverrideEncounterDesc (SDesignLoadCtx &Ctx, const CXMLEl
 
 		//	Override
 
-		if (!pType->OverrideEncounterDesc(*pOverride, &Ctx.sError))
+		if (!pType->OverrideEncounterDesc(Ctx, *pOverride, &Ctx.sError))
 			return false;
 		}
 
