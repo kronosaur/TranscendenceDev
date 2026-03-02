@@ -16,6 +16,7 @@
 #define STR_NO_SHIPS						CONSTLIT("There are no ships here")
 
 static TStaticStringTable<TStaticStringEntry<CGCarouselArea::EStyles>, 2> STYLE_TABLE = {
+	//NOTE: keys must be alphabetical
 	"shipCompare",			CGCarouselArea::styleShipCompare,
 	"shipList",				CGCarouselArea::styleShipList,
 	};
