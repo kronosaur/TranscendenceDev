@@ -3290,11 +3290,20 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ivi",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateStargate",			fnSystemCreateStargate,	FN_SYS_CREATE_STARGATE,
-			"(sysCreateStargate unid pos gateID [destNodeID destGateID]) -> obj",
+			"(sysCreateStargate unid pos gateID [destNodeID destGateID] [optionsStruct]) -> obj\n\n"
+			
+			"options:\n\n"
+			
+			"   'ignoreLimits     Ignores uniqueness/maxAppearing limits\n",
 			"ivs*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateStation",				fnSystemCreateStation,	FN_SYS_CREATE_STATION,
-			"(sysCreateStation unid pos [eventHandler]) -> obj",
+			"(sysCreateStation unid pos [eventHandler]|[optionsStruct]) -> obj\n\n"
+			
+			"options:\n\n"
+			
+			"   'eventHandler\n"
+			"   'ignoreLimits     Ignores uniqueness/maxAppearing limits\n",
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateTerritory",			fnSystemCreate,			FN_SYS_CREATE_TERRITORY,
@@ -13826,12 +13835,14 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 
 //	fnSystemCreateStargate
 //
-//	(sysCreateStargate unid pos gateID [destNodeID destGateID]) -> obj
+//	(sysCreateStargate unid pos gateID [destNodeID destGateID] [options]) -> obj
 
 	{
 	ALERROR error;
 	CCodeChain *pCC = pEvalCtx->pCC;
 	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	bool bIgnoreLimits = false;
+
 	if (pCtx == NULL)
 		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
 
@@ -13879,6 +13890,22 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 
 	CString sDestName;
 	CTopologyNode *pDestNode = pSystem->GetStargateDestination(sStargateName, &sDestName);
+
+	//	Load extra options if provided
+
+	ICCItem* pOpts = pArgs->GetElement(pArgs->GetCount() - 1);
+	bool bLastIsOpts = pOpts->IsSymbolTable();
+	if (bLastIsOpts)
+		{
+		for (int i = 0; i < pOpts->GetCount(); i++)
+			{
+			CString sKey = pOpts->GetKey(i);
+			if (strEquals(sKey, CONSTLIT("ignoreLimits")))
+				bIgnoreLimits = pOpts->GetBooleanAt(sKey);
+			else
+				return pCC->CreateError(strPatternSubst(CONSTLIT("Invalid option key: %s"), sKey));
+			}
+		}
 		
 	//	If the stargate doesn't exist yet, then see if we have enough parameters
 	//	to create it.
@@ -13886,7 +13913,7 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 	CString sDestNode;
 	if (pDestNode == NULL)
 		{
-		if (pArgs->GetCount() < 5)
+		if (bLastIsOpts ? pArgs->GetCount() < 6 : pArgs->GetCount() < 5)
 			return pCC->CreateError(CONSTLIT("Topology does not have stargate of that name"), pArgs->GetElement(2));
 
 		sDestNode = pArgs->GetElement(3)->GetStringValue();
@@ -13902,7 +13929,7 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 
 	//	Make sure we can encounter the station
 
-	if (!pType->CanBeEncountered(*pSystem, pType->GetEncounterDescConst()))
+	if (!bIgnoreLimits && !pType->CanBeEncountered(*pSystem, pType->GetEncounterDescConst()))
 		return pCC->CreateNil();
 
 	//	Create the station (or ship encounter). If we are in the middle of system
@@ -13918,6 +13945,7 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 		CreateCtx.pLoc = &Loc;
 		CreateCtx.pOrbit = &Loc.GetOrbit();
 		CreateCtx.bCreateSatellites = true;
+		CreateCtx.bIgnoreLimits = bIgnoreLimits;
 
 		if (pSystem->CreateStation(*pSysCreateCtx,
 				*pType,
@@ -13930,7 +13958,7 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 
 	else
 		{
-		if (pSystem->CreateStation(pType, NULL, vPos, &pStation) != NOERROR)
+		if (pSystem->CreateStation(pType, NULL, vPos, bIgnoreLimits, &pStation) != NOERROR)
 			return pCC->CreateError(CONSTLIT("Unable to create station"), NULL);
 		}
 
@@ -14004,7 +14032,7 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 
 //	fnSystemCreateStation
 //
-//	(sysCreateStation unid pos) -> station
+//	(sysCreateStation unid pos options) -> station
 
 	{
 	ALERROR error;
@@ -14049,17 +14077,47 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 
 	//	Get options
 
+	bool bIgnoreLimits = false;
 	CDesignType *pEventHandler = NULL;
 	if (pArgs->GetCount() >= 3)
 		{
-		pEventHandler = pCtx->GetUniverse().FindDesignType(pArgs->GetElement(2)->GetIntegerValue());
-		if (pEventHandler == NULL)
-			return pCC->CreateError(CONSTLIT("Invalid event handler"), pArgs->GetElement(2));
+		//	Read the options struct
+		ICCItem* pOpts = pArgs->GetElement(2);
+		
+		if (pOpts->IsSymbolTable())
+			{
+			for (int i = 0; i < pOpts->GetCount(); i++)
+				{
+				CString sKey = pOpts->GetKey(i);
+				ICCItem* pParam = pOpts->GetElement(i);
+				if (strEquals(sKey, CONSTLIT("eventHandler")))
+					{
+					pEventHandler = pCtx->GetUniverse().FindDesignType(pParam->GetIntegerValue());
+					if (pEventHandler == NULL)
+						return pCC->CreateError(CONSTLIT("Invalid event handler"), pParam);
+					}
+				else if (strEquals(sKey, CONSTLIT("ignoreLimits")))
+					{
+					bIgnoreLimits = pOpts->GetBooleanAt("ignoreLimits");
+					}
+				else
+					return pCC->CreateError(strPatternSubst(CONSTLIT("Invalid option key: %s"), sKey));
+				}
+			}
+
+		//	Otherwise this is an event handler UNID for backwards compatibility
+
+		else
+			{
+			pEventHandler = pCtx->GetUniverse().FindDesignType(pOpts->GetIntegerValue());
+			if (pEventHandler == NULL)
+				return pCC->CreateError(CONSTLIT("Invalid event handler"), pOpts);
+			}
 		}
 
 	//	Make sure we can encounter the station
 
-	if (!pType->CanBeEncountered(*pSystem, pType->GetEncounterDescConst()))
+	if (!bIgnoreLimits && !pType->CanBeEncountered(*pSystem, pType->GetEncounterDescConst()))
 		return pCC->CreateNil();
 
 	//	Create the station (or ship encounter). If we are in the middle of system
@@ -14076,6 +14134,7 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 		CreateCtx.pOrbit = &Loc.GetOrbit();
 		CreateCtx.bCreateSatellites = true;
 		CreateCtx.pEventHandler = pEventHandler;
+		CreateCtx.bIgnoreLimits = bIgnoreLimits;
 
 		if (pSystem->CreateStation(*pSysCreateCtx,
 				*pType,
@@ -14088,7 +14147,7 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 
 	else
 		{
-		if (pSystem->CreateStation(pType, pEventHandler, vPos, &pStation) != NOERROR)
+		if (pSystem->CreateStation(pType, pEventHandler, vPos, bIgnoreLimits, &pStation) != NOERROR)
 			return pCC->CreateError(CONSTLIT("Unable to create station"), NULL);
 		}
 

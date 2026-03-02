@@ -451,10 +451,12 @@ class CSystem
 								const CString &sStargateID,
 								const CString &sDestNodeID,
 								const CString &sDestStargateID,
+								bool ignoreLimits,
 								CSpaceObject **retpStation = NULL);
 		ALERROR CreateStation (CStationType *pType,
 							   CDesignType *pEventHandler,
 							   const CVector &vPos,
+							   bool bIgnoreLimits,
 							   CSpaceObject **retpStation = NULL);
 		ALERROR CreateStation (SSystemCreateCtx &Ctx, 
 							   CStationType &Type, 

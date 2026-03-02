@@ -1049,6 +1049,13 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					221;
 //					level			Perform ShipTable lookups using the speficied level (instead of system level)
 //					levelAdj		Perform ShipTable lookups using system level + levelAdj
 //					ignoreLimits	Ignore any ship limits in ShipTable lookups
+//			(sysCreateStation type pos [eventHandler|options])
+//				Updated to take an options struct with the following options:
+//					eventHandler
+//					ignoreLimits	Ignore any station uniqueness or limits in Encounter block
+//			(sysCreateStargate type pos [src dest options])
+//				Updated to take an options struct with the following options:
+//					ignoreLimits	Ignore any station uniqueness or limits in Encounter block
 //			(typGetDataField type field)
 //				New and updated fields
 //					;;ItemType
