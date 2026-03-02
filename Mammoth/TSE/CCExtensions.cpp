@@ -13890,6 +13890,22 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 
 	CString sDestName;
 	CTopologyNode *pDestNode = pSystem->GetStargateDestination(sStargateName, &sDestName);
+
+	//	Load extra options if provided
+
+	ICCItem* pOpts = pArgs->GetElement(pArgs->GetCount() - 1);
+	bool bLastIsOpts = pOpts->IsSymbolTable();
+	if (bLastIsOpts)
+		{
+		for (int i = 0; i < pOpts->GetCount(); i++)
+			{
+			CString sKey = pOpts->GetKey(i);
+			if (strEquals(sKey, CONSTLIT("ignoreLimits")))
+				bIgnoreLimits = pOpts->GetBooleanAt(sKey);
+			else
+				return pCC->CreateError(strPatternSubst(CONSTLIT("Invalid option key: %s"), sKey));
+			}
+		}
 		
 	//	If the stargate doesn't exist yet, then see if we have enough parameters
 	//	to create it.
@@ -13897,7 +13913,7 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 	CString sDestNode;
 	if (pDestNode == NULL)
 		{
-		if (pArgs->GetCount() < 5)
+		if (bLastIsOpts ? pArgs->GetCount() < 6 : pArgs->GetCount() < 5)
 			return pCC->CreateError(CONSTLIT("Topology does not have stargate of that name"), pArgs->GetElement(2));
 
 		sDestNode = pArgs->GetElement(3)->GetStringValue();
@@ -13910,21 +13926,6 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 		}
 	else
 		sDestNode = pDestNode->GetID();
-
-	//	Load extra options if provided
-
-	ICCItem* pOpts = pArgs->GetElement(pArgs->GetCount() - 1);
-	if (pOpts->IsSymbolTable())
-		{
-		for (int i = 0; i < pOpts->GetCount(); i++)
-			{
-			CString sKey = pOpts->GetKey(i);
-			if (strEquals(sKey, CONSTLIT("ignoreLimits")))
-				bIgnoreLimits = pOpts->GetBooleanAt(sKey);
-			else
-				return pCC->CreateError(strPatternSubst(CONSTLIT("Invalid option key: %s"), sKey));
-			}
-		}
 
 	//	Make sure we can encounter the station
 
