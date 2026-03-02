@@ -40,6 +40,12 @@
 			failureOnReturnToSystem="5400"
 			>
 
+		<Properties>
+			<Constant id="membership">&unidKorolovShipping;</Constant>
+			<Data id="reward"></Data>
+			<Data id="rewardXP"></Data>
+		</Properties>
+
 		<Events>
 			<OnCreate>
 				(block (targetObj)
@@ -64,12 +70,12 @@
 							(msnSetData gSource 'targetID (objGetID targetObj))
 							(msnRegisterForEvents gSource targetObj)
 							(msnRegisterForEvents gSource gPlayerShip)
-							(msnSetData gSource 'missionXP 100)
+							(msnSet@ gSource 'rewardXP 100)
 
 							;	There are three types of strongholds, one for levels 1, 2, and 3.
 							;	Korolov doesn't show up after level 3, but we add it anyway.
 
-							(msnSetData gSource 'reward (@ '(0 1000 2000 4000 4000 4000) (sysGetLevel)))
+							(msnSet@ gSource 'reward (@ '(0 1000 2000 4000 4000 4000) (sysGetLevel)))
 
 							;	Data for briefing
 
@@ -89,8 +95,8 @@
 						; Update the leader so we recieve messages
 						(objSetData leaderObj 'wingmanPlayer True)
 						; Reduce XP and reward
-						(msnIncData gSource 'missionXP -50)
-						(msnSetData gSource 'reward (divide (msnGetData gSource 'reward) 2))
+						(msnInc@ gSource 'rewardXP -50)
+						(msnSet@ gSource 'reward (divide (msn@ gSource 'reward) 2))
 						(msnSetData gSource 'state 'catchup)
 						)
 
@@ -179,7 +185,7 @@
 			</OnCompleted>
 
 			<OnReward>
-				(korGiveReward gSource)
+				(rpgMissionReward gSource)
 			</OnReward>
 
 			<OnObjDestroyed>
@@ -190,7 +196,7 @@
 					(= (objGetID aObjDestroyed) (msnGetData gSource 'leaderID))
 						(block Nil
 							; If the squadron leader is destroyed we award less experience
-							(msnIncData gSource 'missionXP -50)
+							(msnInc@ gSource 'rewardXP -50)
 							(msnSetData gSource 'leaderLost True)
 							(msnSetPlayerTarget gSource)
 							(switch
@@ -199,7 +205,7 @@
 									(block ()
 										(msnSetData gSource 'betrayal True)
 										;	No reward
-										(msnSetData gSource 'reward 0)
+										(msnSet@ gSource 'reward 0)
 										)
 
 								; Otherwise, if player was not participating then the mission is now over
@@ -223,7 +229,7 @@
 							(gr (objGetDistance aObjDestroyed gPlayerShip) 300)
 								(block Nil
 									(msnIncData gSource 'missionXP -50)
-									(msnSetData gSource 'reward (divide (msnGetData gSource 'reward) 2))
+									(msnSet@ gSource 'reward (divide (msn@ gSource 'reward) 2))
 									(msnSetData gSource 'noHelp True)
 									(msnSuccess gSource)
 									)
@@ -262,7 +268,7 @@
 			<Text id="Summary">
 				(msnTranslate gSource 'textSummary {
 					systemName: (sysGetName)
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
 			<Text id="textSummary">
@@ -379,7 +385,7 @@
 			<Text id="SuccessDebrief">
 				(block (
 					(data {
-						payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+						payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 						leaderPronoun: (random (list (msnTranslate gSource 'pronounHis) (msnTranslate gSource 'pronounHer)))
 						})
 					)
