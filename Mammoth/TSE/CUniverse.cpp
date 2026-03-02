@@ -1523,14 +1523,14 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 	for (i = 0; i < GetStationTypeCount(); i++)
 		{
 		CStationType *pType = GetStationType(i);
-		int iCount = pType->GetNumberAppearing();
-		if (iCount <= 0)
+		int iMinCount = pType->GetMinAppearing();
+		if (iMinCount <= 0)
 			continue;
 
 		//	Debug
 
 		if (bVerbose)
-			LogOutput(strPatternSubst("[%08x] %s: Minimum count: %d", pType->GetUNID(), pType->GetNounPhrase(), iCount));
+			LogOutput(strPatternSubst("[%08x] %s: Minimum count: %d", pType->GetUNID(), pType->GetNounPhrase(), iMinCount));
 
 		const CStationEncounterDesc &EncounterDesc = pType->GetEncounterDescConst();
 
@@ -1556,45 +1556,132 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 			for (int i = 0; i < Table.GetCount(); i++)
 				Nodes.Insert(Table[i]->GetID());
 
-			LogOutput(strPatternSubst("[%08x] %s: Nodes: %s", pType->GetUNID(), pType->GetNounPhrase(), strJoin(Nodes, CONSTLIT("oxfordComma"))));
+			kernelDebugLogPattern("[%08x] %s: Nodes: %s", pType->GetUNID(), pType->GetNounPhrase(), strJoin(Nodes, CONSTLIT("oxfordComma")));
 			}
 
 		//	If no nodes, then report a warning
 
 		if (Table.GetCount() == 0)
 			{
-			LogOutput(strPatternSubst("WARNING: Not enough appropriate systems to create %d %s [%08x].", iCount, pType->GetNounPhrase(iCount > 1 ? nounPlural : 0), pType->GetUNID()));
+			kernelDebugLogPattern("WARNING: Not enough appropriate systems to create %d %s [%08x].", iMinCount, pType->GetNounPhrase(iMinCount > 1 ? nounPlural : 0), pType->GetUNID());
 			continue;
 			}
 
 		//	If this station is unique per system then we need at least the 
 		//	required number of systems. If not, we adjust the count.
 
-		if (EncounterDesc.IsUniqueInSystem() && iCount > Table.GetCount())
+		int iMaxPerNode;
+		bool bHasMaxPerNode = EncounterDesc.HasSystemLimit(&iMaxPerNode);
+
+		if (bHasMaxPerNode && iMinCount > Table.GetCount() * iMaxPerNode)
 			{
-			iCount = Table.GetCount();
-			LogOutput(strPatternSubst("WARNING: Decreasing number appearing of %s [%08x] to %d due to lack of appropriate systems.", pType->GetNounPhrase(nounPlural), pType->GetUNID(), iCount));
+			iMinCount = Table.GetCount() * iMaxPerNode;
+			kernelDebugLogPattern("WARNING: Decreasing number appearing of %s [%08x] to %d due to lack of appropriate systems.", pType->GetNounPhrase(nounPlural), pType->GetUNID(), iMinCount);
 			}
 
+		//	If this reduced us to 0 because someone limited us to 0 per system, we skip
+		if (iMinCount == 0)
+			continue;
+
 		//	Loop over the required number and place them in appropriate nodes.
+		//	For compatibility reasons, we need to distribute the stations
+		//	as evenly as possible.
+		// 
+		//	We support the following options
+		// 
+		//	Default:
+		//	1) maximize even distribution (compatibility behavior)
+		// 
+		//  in API 59:
+		//	2) min-1 distribution (up to max per node)
+		//	3) fully random distribution (up to max per node)
 
-		for (j = 0; j < iCount; j++)
+		switch (EncounterDesc.GetNodeDistribution())
 			{
-			CTopologyNode *pNode = Table.GetAt(Table.RollPos());
-
-			//	If the station is unique in the system and we've already got a 
-			//	station in this system, then try again.
-
-			if (EncounterDesc.IsUniqueInSystem() 
-					&& pType->GetEncounterMinimum(*pNode, EncounterDesc) > 0)
+			case CStationEncounterDesc::EEncounterDistribution::nodeEven:
 				{
-				j--;
+				int iNodes = Table.GetCount();
+				int iMinPerNode = iMinCount / iNodes;
+				int iRemaining = iMinCount - iMinPerNode * iNodes;
+
+				if (iMinPerNode)
+					{
+					for (j = 0; j < Table.GetCount(); j++)
+						{
+						CTopologyNode *pNode = Table.GetAt(Table.RollPos());
+						pType->IncEncounterMinimum(*pNode, iMinPerNode);
+						}
+					}
+
+				for (j = 0; j < iRemaining; j++)
+					{
+					int iPos = Table.RollPos();
+					CTopologyNode *pNode = Table.GetAt(iPos);
+
+					//	Add it to this node
+
+					pType->IncEncounterMinimum(*pNode, 1);
+
+					//	We dont need this node anymore
+					Table.Delete(iPos);
+					}
+				break;
+				}
+			case CStationEncounterDesc::EEncounterDistribution::nodeMin1:
+				{
+				int iNodes = Table.GetCount();
+				int iMinPerNode = iMinCount >= iNodes ? 1 : 0;
+				int iRemaining = iMinCount - iMinPerNode * iNodes;
+				iMaxPerNode = bHasMaxPerNode ? iMaxPerNode : iMinCount;
+
+				if (iMinPerNode)
+					{
+					for (j = 0; j < Table.GetCount(); j++)
+						{
+						CTopologyNode *pNode = Table.GetAt(Table.RollPos());
+						pType->IncEncounterMinimum(*pNode, 1);
+						}
+					}
+
+				for (j = 0; j < iRemaining; j++)
+					{
+					int iPos = Table.RollPos();
+					CTopologyNode *pNode = Table.GetAt(iPos);
+
+					//	Add it to this node
+
+					pType->IncEncounterMinimum(*pNode, 1);
+
+					//	Check if we dont need this node anymore
+					if (pType->GetEncounterMinimum(*pNode, EncounterDesc) >= iMaxPerNode)
+						Table.Delete(iPos);
+					}
+				break;
+				}
+			case CStationEncounterDesc::EEncounterDistribution::nodeRandom:
+				{
+				iMaxPerNode = bHasMaxPerNode ? iMaxPerNode : iMinCount;
+				for (j = 0; j < iMinCount; j++)
+					{
+					int iPos = Table.RollPos();
+					CTopologyNode *pNode = Table.GetAt(iPos);
+
+					//	Add it to this node
+
+					pType->IncEncounterMinimum(*pNode, 1);
+
+					//	Check if we dont need this node anymore
+					if (pType->GetEncounterMinimum(*pNode, EncounterDesc) >= iMaxPerNode)
+						Table.Delete(iPos);
+					}
+				break;
+				}
+			default:
+				{
+				kernelDebugLogString("ERROR: Unhandled node distribution strategy encountered in engine. This needs to be implemented.");
+				ASSERT(false);
 				continue;
 				}
-
-			//	Add it to this node
-
-			pType->IncEncounterMinimum(*pNode, 1);
 			}
 		}
 
