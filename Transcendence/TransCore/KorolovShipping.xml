@@ -1383,7 +1383,7 @@
 
 								(= rewardName 'allSuccessInARow.10)
 									(block (
-											(reward (itmCreate &itCashCardPlatinum; 1))
+											(reward (itmCreate &itCashCardPlatinumReward; 1))
 											)
 										(itmSetKnown reward True)
 										(objAddItem gPlayership reward)
