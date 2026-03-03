@@ -9,8 +9,7 @@
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define MASS_ATTRIB								CONSTLIT("mass")
 #define MASS_CLASS_ATTRIB						CONSTLIT("massClass")
-#define MAX_ARMOR_LEGACY_ATTRIB					CONSTLIT("maxArmor")
-#define MAX_ARMOR_ATTRIB						CONSTLIT("maxArmorClass")
+#define MAX_ARMOR_ATTRIB						CONSTLIT("maxArmor")
 #define MAX_ARMOR_SPEED_ATTRIB					CONSTLIT("maxArmorSpeed")
 #define MAX_ARMOR_SPEED_PENALTY_ATTRIB			CONSTLIT("maxArmorSpeedAdj")
 #define MIN_ARMOR_SPEED_ATTRIB					CONSTLIT("minArmorSpeed")
@@ -18,8 +17,7 @@
 #define ARMOR_CLASS_ATTRIB						CONSTLIT("armorClass")
 #define SIZE_ATTRIB								CONSTLIT("size")
 #define SPEED_ADJ_ATTRIB						CONSTLIT("speedAdj")
-#define STD_ARMOR_LEGACY_ATTRIB					CONSTLIT("stdArmor")
-#define STD_ARMOR_ATTRIB						CONSTLIT("stdArmorClass")
+#define STD_ARMOR_ATTRIB						CONSTLIT("stdArmor")
 
 static constexpr Metric MASS_TO_SPEED_ADJ_KX =	4.0;
 static constexpr Metric MASS_TO_SPEED_ADJ_KE =	0.5;
@@ -925,41 +923,55 @@ ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int 
 		//  legacy attributes:
 		//  maxArmor/stdArmor
 		//		mass class ID
-		//		kilograms (1000* compatibility units)
-		//  maxArmorClass/stdArmorClass
-		//		mass class ID
-		//		compatibility units
+		//		kilograms (1000 * compatibility tons)
+		//      mass (with kg or t units)
 		//
 		//	NOTE: If we specify an ID then we have to wait until Bind to resolve
 		//	it, because all types are not loaded yet.
 
+		bool bParsed = false;
+		bool bMassStrAPI = Ctx.GetAPIVersion() >= 59;
+		bool bGameDoesntUseMassClasses = Ctx.GetUniverse().GetDesignCollection().GetArmorClassDefinitions().IsEmpty();
 		CString sValue;
 		if (pDesc->FindAttribute(MAX_ARMOR_ATTRIB, &sValue))
 			{
-			m_rMaxArmorSize = strToDouble(sValue, -1.0);
+			if (bMassStrAPI)
+				m_rMaxArmorSize = strMassToDoubleTons(sValue, -1.0, &bParsed);
+			if (!bParsed)
+				m_rMaxArmorSize = strToDouble(sValue, -1.0) / 1000.0;
 			if (m_rMaxArmorSize < 0 || IS_NAN(m_rMaxArmorSize))
 				m_sMaxArmorClass = sValue;
-			}
-		else if (pDesc->FindAttribute(MAX_ARMOR_LEGACY_ATTRIB, &sValue))
-			{
-			m_rMaxArmorSize = strToDouble(sValue, -1.0) / 1000.0;
-			if (m_rMaxArmorSize < 0 || IS_NAN(m_rMaxArmorSize))
-				m_sMaxArmorClass = sValue;
+			else if (bMassStrAPI && !bParsed)
+				{
+				DWORD dwErrType = Ctx.pType->GetUNID();
+				CString sBaseError = strPatternSubst(CONSTLIT("WARNING: Type %08x (&%s;) specified maxArmor with a unitless number, which is deprecated in API59+."), dwErrType, Ctx.GetUniverse().GetExtensionCollection().GetEntityName(dwErrType));
+				if (bGameDoesntUseMassClasses)
+					kernelDebugLogPattern(CONSTLIT("%s Use a mass with units (e.g 3500kg or 3.5t)"), sBaseError);
+				else
+					kernelDebugLogPattern(CONSTLIT("%s Use a named Armor Class id."), sBaseError);
+				}
 			}
 		else
 			m_rMaxArmorSize = 0;
 
+		bParsed = false;
 		if (pDesc->FindAttribute(STD_ARMOR_ATTRIB, &sValue))
 			{
-			m_rStdArmorSize = strToDouble(sValue, -1.0);
+			if (bMassStrAPI)
+				m_rStdArmorSize = strMassToDoubleTons(sValue, -1.0, &bParsed);
+			if (!bParsed)
+				m_rStdArmorSize = strToDouble(sValue, -1.0) / 1000.0;
 			if (m_rStdArmorSize < 0 || IS_NAN(m_rMaxArmorSize))
 				m_sStdArmorClass = sValue;
-			}
-		else if (pDesc->FindAttribute(STD_ARMOR_LEGACY_ATTRIB, &sValue))
-			{
-			m_rStdArmorSize = strToDouble(sValue, -1.0) / 1000.0;
-			if (m_rStdArmorSize < 0 || IS_NAN(m_rMaxArmorSize))
-				m_sStdArmorClass = sValue;
+			else if (bMassStrAPI && !bParsed)
+				{
+				DWORD dwErrType = Ctx.pType->GetUNID();
+				CString sBaseError = strPatternSubst(CONSTLIT("WARNING: Type %08x (&%s;) specified stdArmor with a unitless number, which is deprecated in API59+."), dwErrType, Ctx.GetUniverse().GetExtensionCollection().GetEntityName(dwErrType));
+				if (bGameDoesntUseMassClasses)
+					kernelDebugLogPattern(CONSTLIT("%s Use a mass with units (e.g 3500kg or 3.5t)"), sBaseError);
+				else
+					kernelDebugLogPattern(CONSTLIT("%s Use a named Armor Class id."), sBaseError);
+				}
 			}
 		else
 			m_rStdArmorSize = 0;
