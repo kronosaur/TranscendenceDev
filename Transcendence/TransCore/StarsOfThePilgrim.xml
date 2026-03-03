@@ -178,6 +178,11 @@
 			<Constant id="core.item.xmlMassToRealVolume">	1.0</Constant>
 			<Constant id="core.item.defaultDensity">		1.0</Constant>
 
+			<!-- Defaults for ship power consumption -->
+
+			<Constant id="core.ship.drive.powerExp">		1.2</Constant>
+			<Constant id="core.ship.drive.powerFactor">		13.0</Constant>
+
 			<!-- Defaults for item balance -->
 
 			<Constant id="core.item.shield.idlePowerAdj">	0.125</Constant>

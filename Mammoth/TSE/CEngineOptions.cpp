@@ -913,6 +913,23 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_ITEM_LEGACY_MASS_TO_VOLUME);
 	m_rDefaultItemMassToVolume = (pValue->IsNil() ? 1.0 : pValue->GetDoubleValue());
 
+	//	Handle built-in drive power consumption
+
+	if (Ctx.GetAPIVersion() >= 59)
+		{
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_SHIP_DRIVE_POWER_EXP);
+		m_rShipDrivePowerExp = pValue->IsNil() ? 1.2 : pValue->GetDoubleValue();
+
+		pValue = Type.GetProperty(CCX, PROPERTY_CORE_SHIP_DRIVE_POWER_FACTOR);
+		m_rShipDrivePowerFactor = pValue->IsNil() ? 13 : pValue->GetDoubleValue();
+		}
+	else
+		{
+		m_rShipDrivePowerExp = 1.2;
+		m_rShipDrivePowerFactor = 13;
+		}
+	
+
 	//	Handle shield power idle consumption
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_ITEM_SHIELD_IDLE_POWER_ADJ);
