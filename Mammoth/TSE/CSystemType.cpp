@@ -42,6 +42,7 @@ static const char *CACHED_EVENTS[(int)CSystemType::EEvent::Count] =
 	};
 
 static TStaticStringTable<TStaticStringEntry<Metric>, 7> SCALE_TABLE = {
+	//NOTE: keys must be alphabetical
 	"au",					g_AU,
 	"light-minute",			LIGHT_MINUTE,
 	"light-second",			LIGHT_SECOND,

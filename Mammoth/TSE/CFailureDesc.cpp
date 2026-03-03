@@ -11,6 +11,7 @@
 #define FIELD_TYPE								CONSTLIT("type")
 
 static TStaticStringTable<TStaticStringEntry<CFailureDesc::EFailureTypes>, 8> FAILURE_TYPE_TABLE = {
+	//NOTE: keys must be alphabetical
 	"custom",				CFailureDesc::failCustom,
 	"explosion",			CFailureDesc::failExplosion,
 	"heatDamage",			CFailureDesc::failHeatDamage,

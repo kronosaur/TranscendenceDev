@@ -2380,7 +2380,7 @@ void CStationType::OnWriteToStream (IWriteStream *pStream)
 	m_EncounterRecord.WriteToStream(pStream);
 	}
 
-bool CStationType::OverrideEncounterDesc (const CXMLElement &Override, CString *retsError)
+bool CStationType::OverrideEncounterDesc (SDesignLoadCtx &Ctx, const CXMLElement &Override, CString *retsError)
 
 //	OverrideEncounterDesc
 //
@@ -2391,7 +2391,7 @@ bool CStationType::OverrideEncounterDesc (const CXMLElement &Override, CString *
 	if (!m_pEncounterDescOverride)
 		m_pEncounterDescOverride.Set(new CStationEncounterDesc);
 
-	if (!m_pEncounterDescOverride->InitAsOverride(m_EncounterDesc, Override, retsError))
+	if (!m_pEncounterDescOverride->InitAsOverride(Ctx, m_EncounterDesc, Override, retsError))
 		return false;
 
 	return true;

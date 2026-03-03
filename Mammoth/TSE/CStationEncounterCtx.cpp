@@ -374,7 +374,7 @@ void CStationEncounterCtx::Reinit (const CStationEncounterDesc &Desc)
 	{
 	m_Total.iCount = 0;
 	m_Total.iLimit = Desc.GetMaxAppearing();
-	m_Total.iMinimum = Desc.GetNumberAppearing();
+	m_Total.iMinimum = Desc.GetMinAppearing();
 
 	//	No level limits for now
 
