@@ -261,7 +261,11 @@
 	
 <!-- Miscellaneous ROMS -->
 
-	<!-- Cash Card, Blue -->
+	<!-- Cash Card, Blue
+
+	This version of the cash card is intended for random loot.
+	It has high variability in the contained credits.
+	-->
 
 	<ItemType UNID="&itCashCardBlue;"
 			name=				"blue cash card"
@@ -280,12 +284,16 @@
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="card.balance">(rollDice 8 24)</Data>
-		</StaticData>
+		<Properties>
+			<Variant id="card.balance">(rollDice 8 24)</Variant>
+		</Properties>
 	</ItemType>
 
-	<!-- Cash Card, Gold -->
+	<!-- Cash Card, Gold
+
+	This version of the cash card is intended for random loot.
+	It has high variability in the contained credits.
+	-->
 
 	<ItemType UNID="&itCashCardGold;"
 			name=				"gold cash card"
@@ -304,12 +312,16 @@
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="card.balance">(rollDice 8 249)</Data>
-		</StaticData>
+		<Properties>
+			<Variant id="card.balance">(rollDice 8 249)</Variant>
+		</Properties>
 	</ItemType>
 
-	<!-- Cash Card, Platinum -->
+	<!-- Cash Card, Platinum
+
+	This version of the cash card is intended for random loot.
+	It has high variability in the contained credits.
+	-->
 
 	<ItemType UNID="&itCashCardPlatinum;"
 			name=				"platinum cash card"
@@ -328,9 +340,99 @@
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="card.balance">(rollDice 8 2499)</Data>
-		</StaticData>
+		<Properties>
+			<Variant id="card.balance">(rollDice 8 2499)</Variant>
+		</Properties>
+	</ItemType>
+
+	<!-- Cash Card, Blue (Reward)
+
+	This version of the cash card is intended for rewarding the player.
+	It has low variability in the contained credits (slightly above average
+	of the lootable version of the card, to encourage the player to use it
+	rather than just sell it for a safe return)
+	-->
+
+	<ItemType UNID="&itCashCardBlueReward;"
+			name=				"blue cash card"
+			attributes=			"cashCard, consumable, cannotOrder, humanTech"
+			inherit=			"&baCashCard;"
+
+			level=				"2"
+			frequency=			"notRandom"
+
+			value=				"100"
+			mass=				"1"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
+
+			description=		"This ROM stores digital cash and may be redeemed automatically with your ship's computer."
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Properties>
+			<Variant id="card.balance">(+ 75 (rollDice 6 12))</Variant>
+		</Properties>
+	</ItemType>
+
+	<!-- Cash Card, Gold
+
+	This version of the cash card is intended for rewarding the player.
+	It has low variability in the contained credits (slightly above average
+	of the lootable version of the card, to encourage the player to use it
+	rather than just sell it for a safe return)
+	-->
+
+	<ItemType UNID="&itCashCardGoldReward;"
+			name=				"gold cash card"
+			attributes=			"cashCard, consumable, cannotOrder, humanTech"
+			inherit=			"&baCashCard;"
+
+			level=				"4"
+			frequency=			"notRandom"
+
+			value=				"1000"
+			mass=				"1"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
+
+			description=		"This ROM stores digital cash and may be redeemed automatically with your ship's computer."
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Properties>
+			<Variant id="card.balance">(+ 750 (rollDice 6 124))</Variant>
+		</Properties>
+	</ItemType>
+
+	<!-- Cash Card, Platinum
+
+	This version of the cash card is intended for rewarding the player.
+	It has low variability in the contained credits (slightly above average
+	of the lootable version of the card, to encourage the player to use it
+	rather than just sell it for a safe return)
+	-->
+
+	<ItemType UNID="&itCashCardPlatinumReward;"
+			name=				"platinum cash card"
+			attributes=			"cashCard, consumable, cannotOrder, humanTech"
+			inherit=			"&baCashCard;"
+
+			level=				"6"
+			frequency=			"notRandom"
+
+			value=				"10000"
+			mass=				"1"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
+
+			description=		"This ROM stores digital cash and may be redeemed automatically with your ship's computer."
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Properties>
+			<Variant id="card.balance">(+ 7500 (rollDice 6 1249))</Variant>
+		</Properties>
 	</ItemType>
 
 	<!-- Data ROM 

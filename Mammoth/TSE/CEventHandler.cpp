@@ -5,6 +5,7 @@
 #include "PreComp.h"
 
 static TStaticStringTable<SSimpleStringEntry, 4> DIAGNOSTIC_EVENTS = {
+	//NOTE: keys must be alphabetical
 	"OnGlobalEndDiagnostics",
 	"OnGlobalRunDiagnostics",
 	"OnGlobalStartDiagnostics",

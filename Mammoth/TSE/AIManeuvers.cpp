@@ -1994,6 +1994,28 @@ void CAIBehaviorCtx::ImplementFollowNavPath (CShip *pShip, bool *retbAtDestinati
 
 	else
 		{
+		//	Adjust rMinDist2 to account for slower, less maneuverable ships
+		
+		Metric rTWR = pShip->GetThrust() / pShip->GetMass();
+		CRotationDesc Rotation = pShip->GetClass()->GetRotationDesc();
+		Metric rTurnRate = Rotation.GetMaxRotationPerTick();
+		Metric rTurnAccel = min(Rotation.GetRotationAccelPerTick(), Rotation.GetRotationAccelPerTick());
+		Metric rMinDistAdj = max(1.0, 0.2 / rTWR);
+		rMinDistAdj *= max(1.0, 0.5 / rTurnAccel);
+		rMinDistAdj = min(rMinDistAdj, 20.0);
+
+		Metric rMinDistAdj2 = rMinDistAdj * rMinDistAdj;
+
+		//	We also want to skip ahead if we are closer to the next point and too far away from the current point
+		//	this can happen with ships that have terrible maneuverability and end up 'orbiting' the nav point
+
+		Metric rMaxDistAdj2 = 400.0;
+		Metric rMaxDist2 = rMinDist2 * rMaxDistAdj2;
+
+		//	Apply the min dist adjustment after we have used min dist to calculate max dist
+
+		rMinDist2 *= rMinDistAdj2;
+
 		//	Are we at our target? If so, then we move on to
 		//	the next nav point
 
@@ -2014,6 +2036,22 @@ void CAIBehaviorCtx::ImplementFollowNavPath (CShip *pShip, bool *retbAtDestinati
 			m_iNavPathPos++;
 			vTarget = m_pNavPath->GetNavPoint(m_iNavPathPos) - pShip->GetPos();
 			rTargetDist2 = vTarget.Length2();
+			}
+
+		//	Otherwise check if we are closer to the next nav point instead of this one to prevent orbiting
+		//	unless this is the last nav point
+
+		else if (rTargetDist2 > rMaxDist2 && m_iNavPathPos < m_pNavPath->GetCount() - 1)
+			{
+			CVector vTargetNext = m_pNavPath->GetNavPoint(m_iNavPathPos + 1) - pShip->GetPos();
+			Metric rNextDist2 = vTargetNext.Length2();
+			if (rNextDist2 < rTargetDist2)
+				{
+				//	We switch over to the next point if we are closer
+				vTarget = vTargetNext;
+				rTargetDist2 = rNextDist2;
+				m_iNavPathPos++;
+				}
 			}
 
 		//	Navigate towards the next nav point

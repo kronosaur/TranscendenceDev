@@ -122,11 +122,12 @@
 	<!ENTITY baStdDeviceEnhancement		"0x000100B3">
 	<!ENTITY baStdEquipmentItem			"0x000100B4">
 
-	<!-- 00D0-00EF WINGMEN -->
+	<!-- 00D0-00EF WINGMEN AND NPCS-->
 
 	<!ENTITY baStdWingmanBase			"0x000100D0">
 	<!ENTITY evStdFollowerBehavior		"0x000100D1">
 	<!ENTITY dsStdFollowerScreen		"0x000100D2">
+	<!ENTITY baStdNPCBase				"0x000100D3">
 
 	<!-- 00F0-010F MEMBERSHIP -->
 
