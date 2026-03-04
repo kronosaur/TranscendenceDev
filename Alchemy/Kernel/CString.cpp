@@ -2342,21 +2342,21 @@ double Kernel::strParseDouble (const char *pStart, double rNullResult, const cha
 //
 //  Parses a double precision value.
 
-    {
-    const char *pPos = pStart;
+	{
+	const char *pPos = pStart;
 
-    //  Skip any leading whitespace
+	//  Skip any leading whitespace
 
-    while (strIsWhitespace(pPos))
-        pPos++;
+	while (strIsWhitespace(pPos))
+		pPos++;
 
-    //  We copy what we've got to a buffer, because we're going to use atof.
+	//  We copy what we've got to a buffer, because we're going to use atof.
 
-    static const int MAX_SIZE = 64;
-    const char *pSrc = pPos;
-    char szBuffer[MAX_SIZE];
-    char *pDest = szBuffer;
-    char *pDestEnd = szBuffer + MAX_SIZE;
+	static const int MAX_SIZE = 64;
+	const char *pSrc = pPos;
+	char szBuffer[MAX_SIZE];
+	char *pDest = szBuffer;
+	char *pDestEnd = szBuffer + MAX_SIZE;
 
 	//	Parse the integer part
 
@@ -2376,8 +2376,8 @@ double Kernel::strParseDouble (const char *pStart, double rNullResult, const cha
 	const char *pIntEnd = pSrc;
 	if (pInt == pIntEnd)
 		{
-        if (retbNullValue) *retbNullValue = true;
-        return rNullResult;
+		if (retbNullValue) *retbNullValue = true;
+		return rNullResult;
 		}
 
 	//	Do we have a fractional part?
@@ -2433,27 +2433,27 @@ double Kernel::strParseDouble (const char *pStart, double rNullResult, const cha
 
 	//	Done
 
-    if (retpEnd) *retpEnd = pSrc;
+	if (retpEnd) *retpEnd = pSrc;
 
-    //  If we hit the end of the buffer, or we didn't find any valid characters,
-    //  then we fail.
+	//  If we hit the end of the buffer, or we didn't find any valid characters,
+	//  then we fail.
 
-    if (pDest == pDestEnd
-            || pDest == szBuffer)
-        {
-        if (retbNullValue) *retbNullValue = true;
-        return rNullResult;
-        }
+	if (pDest == pDestEnd
+			|| pDest == szBuffer)
+		{
+		if (retbNullValue) *retbNullValue = true;
+		return rNullResult;
+		}
 
-    //  Null-terminate our buffer
+	//  Null-terminate our buffer
 
-    *pDest++ = '\0';
+	*pDest++ = '\0';
 
-    //  Success 
+	//  Success 
 
-    if (retbNullValue) *retbNullValue = false;
-    return atof(szBuffer);
-    }
+	if (retbNullValue) *retbNullValue = false;
+	return atof(szBuffer);
+	}
 
 int Kernel::strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, const char **retpEnd, bool *retbNullValue)
 
@@ -2958,6 +2958,8 @@ CString Kernel::strRomanNumeral (int i)
 //
 //	Converts a string to a double
 //	Handles Hexadecimal ints as well
+//	NOTE: We allow leading/trailing whitespace, but we fail if there are any 
+//	other characters before or after the number.
 // 
 //	Special cases:
 //		Invalid conversion:
@@ -2981,19 +2983,21 @@ CString Kernel::strRomanNumeral (int i)
 double Kernel::strToDouble (const CString &sString, double rFailResult, bool *retbFailed)
 
 	{
-	//	strtod handles hexadecimal natively, so we dont need to do that separately
-	//	strtod needs whitespace to be removed first though, since atod handled that
-	//	this avoids breaking old mods that have values such as thrustRatio="1.0 "
-	
-	CString sCleanStr = strTrimWhitespace(sString);
-	char *pPos = sCleanStr.GetASCIIZPointer();
+	//	strtod handles hexadecimal natively as well
+	//	non-valid characters before a valid double conversion cause strtod
+	//	to stop parsing, so we dont need special handling here
 
+	char *pPos = sString.GetASCIIZPointer();
 	char *pStop = NULL;
 	errno = 0;
 
 	double rResult = ::strtod(pPos, &pStop);
 
 	//	Handle fail case: invalid conversion
+	//	NOTE: We allow trailing whitespace, but nothing else after the number.
+
+	while (strIsWhitespace(pStop))
+		pStop++;
 
 	if (pPos == pStop || *pStop != '\0')
 		{

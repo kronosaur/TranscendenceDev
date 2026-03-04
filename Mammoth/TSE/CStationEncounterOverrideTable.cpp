@@ -71,7 +71,7 @@ bool CStationEncounterOverrideTable::InitFromXML (CDesignCollection &Design, con
 		//	Add to table
 
 		CStationEncounterDesc *pDesc = m_Table.SetAt(pType->GetUNID());
-		if (!pDesc->InitAsOverride(pType->GetEncounterDesc(), *pOverride, retsError))
+		if (!pDesc->InitAsOverride(LoadCtx, pType->GetEncounterDesc(), *pOverride, retsError))
 			return false;
 		}
 

@@ -227,6 +227,7 @@
 	<!ENTITY vtShipSystems250			"0x00030204">
 	<!ENTITY vtShipSystems300			"0x00030205">
 	<!ENTITY vtShipSystems500			"0x00030206">
+	<!ENTITY vtFireLinkedWeapons		"0x00030207">
 
 	<!-- 0220-023F CORE SLOT ENHANCEMENTS I -->
 

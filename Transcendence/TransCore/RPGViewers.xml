@@ -38,24 +38,43 @@
 					(block (
 						(translateType (@ gData 'translateType))
 						(entry (scrGetListEntry gScreen))
+						(shipClass (@ entry 'shipClass))
+						(descID (@ entry 'descID))
+						(description (@ entry 'description))
 						)
 						(switch
-							(@ entry 'descID)
-								(scrSetDesc gScreen 
-									(or (scrTranslate gScreen (@ entry 'descID) entry)
-										(typTranslate translateType (@ entry 'descID) entry)
-										)
-									)
+							;	If we have a specific desc ID to look up, search for it
+							;	in the ship, then screen, then the translate type
+							descID
+								(scrSetDesc gScreen (or
+									(typTranslate shipClass descID entry)
+									(typTranslate translateType descID entry)
+									(scrTranslate gScreen descID entry)
+									))
 
-							(@ entry 'description)
-								(scrSetDesc gScreen (@ entry 'description))
+							;	If we have a specific premade description we just display that
+							description
+								(scrSetDesc gScreen description)
 
+							;	Otherwise we dynamically attempt to figure out what the descID
+							;	is. Translate types may have an external ship desc ID to check for
+							;	such as "korolov.shipDesc", so we check that on the ship class first.
+							;	If nothing has a rpg viewer description, then we fall back to the
+							;	core.descLore and core.desc (player-oriented gameplay) text for the ship.
 							(block (
-								(shipDescID (cat 'rpg.shipClassDesc.0x (hex (@ entry 'shipClass) 8)))
+								(externalShipDescID (or
+									(typTranslate translateType 'rpg.shipClassDescID) 
+									(scrTranslate gScreen 'rpg.shipClassDescID) 
+									))
+								(shipDescID (cat 'rpg.shipClassDesc.0x (hex shipClass 8)))
 								)
 								(scrSetDesc gScreen 
-									(or (scrTranslate gScreen shipDescID)
+									(or
+										(typTranslate shipClass externalShipDescID)
 										(typTranslate translateType shipDescID)
+										(scrTranslate gScreen shipDescID)
+										(typTranslate shipClass 'core.descLore)
+										(typTranslate shipClass 'core.desc)
 										)
 									)
 								)

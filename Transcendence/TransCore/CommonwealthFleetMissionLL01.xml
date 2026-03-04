@@ -293,12 +293,15 @@
 
 <!-- SHIP CLASSES -->
 	
-	<Type UNID="&unidJuanCarlos;">
-		<StaticData>
-			<Data id="MissionAttribute">"juanCarlosMission"</Data>
-			<Data id="Name">"Juan Carlos"</Data>
-			<Data id="Sovereign">&svCommonwealth;</Data>
-		</StaticData>
+	<Type UNID="&unidJuanCarlos;"
+			inherit="&baStdNPCBase;"
+			>
+		<Properties>
+			<Definition id="core.namePattern">": Juan Carlos"</Definition>
+
+			<Definition id="char.missionAttribute">"juanCarlosMission"</Definition>
+			<Definition id="char.sovereign">&svCommonwealth;</Definition>
+		</Properties>
 
 		<Events>
 			<OnCharacterCanBeMet>
@@ -315,10 +318,6 @@
 					True
 					)
 			</OnCharacterCanBeMet>
-
-			<OnGlobalSystemStopped>
-				(rpgCharacterAscend &unidJuanCarlos;)
-			</OnGlobalSystemStopped>
 		</Events>
 
 		<Language>

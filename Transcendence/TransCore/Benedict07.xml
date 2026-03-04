@@ -75,7 +75,7 @@
 							&unidHugoSandoval;
 							&scHugoSandovalArmstrong;
 							ownerObj
-							{ repairAll:True }
+							{ repairAll:True mission:gSource }
 							)
 						)
 					(objSetEventHandler sandovalObj &evBenedict07Wingman;)
@@ -90,7 +90,7 @@
 							&unidFiona;
 							&scFionaScorpion;
 							ownerObj
-							{ repairAll:True }
+							{ repairAll:True mission:gSource }
 							)
 						)
 					(objSetEventHandler fionaObj &evBenedict07Wingman;)
