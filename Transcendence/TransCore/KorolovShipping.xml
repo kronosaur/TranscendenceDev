@@ -1374,10 +1374,20 @@
 							)
 							(switch
 								(= rewardName 'allSuccessInARow.3)
-									(objAddItem gPlayership (itmCreate &itCashCardGold; 1))
+									(block (
+											(reward (itmCreate &itCashCardGoldReward; 1))
+											)
+										(itmSetKnown reward True)
+										(objAddItem gPlayership reward)
+										)
 
 								(= rewardName 'allSuccessInARow.10)
-									(objAddItem gPlayership (itmCreate &itCashCardPlatinum; 1))
+									(block (
+											(reward (itmCreate &itCashCardPlatinumReward; 1))
+											)
+										(itmSetKnown reward True)
+										(objAddItem gPlayership reward)
+										)
 								)
 
 							(typSet@ &unidKorolovShipping; rewardName 1)
