@@ -70,9 +70,16 @@ Nil                     ; Returns Nil
 (quote ())              ; Returns Nil
 ```
 
-## True and False
+## Boolean values and Conditionals
 
-Tlisp only treats specific values are `False` when evaluating conditional or boolean
+Although Tlisp has a specific atom (non-mutable) for `True` it does not have the same
+concept of `True` and `False` as in other programming languages. Instead this is
+done with the concepts of `Nil` and `Non-Nil`.
+
+* If something is `Nil` it is treated as false
+* If something is not `Nil` it is treated as true
+
+Tlisp only treats specific values as `Nil` when evaluating conditional or boolean
 statements like `(if ...)` or `(and ...)`
 
 ```lisp
@@ -85,7 +92,7 @@ Nil
 (= Nil (list) {}) -> True
 ```
 
-Everything other than these two values is treated as `True`:
+Everything other than these two values is treated as being non-Nil:
 
 ```lisp
 ; The following are some examples of values that are not Nil and therefor are treated as True
@@ -95,8 +102,22 @@ Everything other than these two values is treated as `True`:
 (double 'Nan)
 { a:1 }
 
-; Unlike Nil however they are not considered equal to True
+; Unlike Nil however they are not considered equal to True (the atom)
 (= 1 True) -> Nil
+```
+
+As a result the conditional statements are not actually checking if the conditional expression
+returns `True` but instead if it is `Non-Nil`
+
+```
+; Empty strings are considered Non-Nil
+(if "" "was true" "was false") -> "was true"
+
+; or returns the first Non-Nil value
+(or Nil {} 0) -> 0
+
+; and returns the first Nil value
+(and 0 1 2 3 4 {} 5 Nil) -> {}
 ```
 
 ## Data types

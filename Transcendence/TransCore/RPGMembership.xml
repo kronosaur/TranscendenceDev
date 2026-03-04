@@ -12,11 +12,22 @@
 	The membership type (usually the sovereign) must have the following elements:
 
 	rankTable (Definition): We expect this to be a struct (or list) of ranks, indexed
-		by rank, and containing an xpNeeded field.
+		by rank, and containing an xpNeeded field. The rank indexing may be by either
+		integer or string. If indexing by string, then nextRank field is required and
+		and intial rank must be set (either in the property or with rpgRankInit)
+
+		rank:		(Currently ignored) Commonly used to provide short text name for
+					integer based ranks
+		nextRank:	Index of the next rank. Required if rank is a string, otherwise will
+					default to current rank + 1
+		xpNeeded:	Experience points required to reach this rank. Optional if membership
+					provides a CheckPromotion event
+		condition:	Optional lambda that should return True if the player can be promoted
+		icon:		Icon for rank details display
 
 	rpg.descPromotion: This series of language elements should define the
-		text shown to the player when they are promoted to a given rank (starting
-		at 2). The rank is passed in gData in the rank field.
+		text shown to the player when they are promoted to a given rank. The rank is
+		passed in gData in the rank field.
 
 	DATA
 
@@ -30,7 +41,18 @@
 		be used instead of XP.
 
 	OnPromotion: This event will be called from the promotion screen. Allowing additional
-		rewards (e.g. military ID) to be given to the player.
+		rewards (e.g. military ID) to be given to the player. The event may also return a
+		nextScreen struct if a follow on dockscreen should be displayed after the promotion
+
+	NOTES
+
+		If the player has no rank in a given membership (i.e. rpg.rank is Nil) and does not
+		provide custom promotion code via CheckPromotion. Then the first successful mission
+		will trigger a promotion to rank 0. This may be used to display a "welcome new pilot"
+		screen AFTER the first successful mission.
+		However, in most cases we will want to display the welcome message before the first
+		mission. In this case the player rank should be initialised by calling rpgRankInit
+		during the introduction screen.
 
 -->
 
@@ -65,9 +87,12 @@
 
 				<Actions>
 					<Action id="actionContinue">
-						(block Nil
-							(typFireEvent (@ gData 'membership) 'OnPromotion)
+						(block (screenOptions)
+							(setq screenOptions (typFireEvent (@ gData 'membership) 'OnPromotion))
 							(scrExitScreen gScreen)
+							(if (@ screenOptions 'nextScreen)
+								(scrShowScreen gScreen (@ screenOptions 'nextScreen) (@ screenOptions 'nextScreenData))
+								)
 							)
 					</Action>
 				</Actions>
@@ -80,13 +105,14 @@
 	<Globals>
 	(block ()
 		(setq rpgIsPromoted (lambda (membership)
-			;	Check if the player should be promoted, returning their new rank (or Nil)
+			"Check if the player should be promoted, returning their new rank (or Nil)"
 			(block (
 				(rank (or (typ@ membership 'rpg.rank) 0))
 				(xp (or (typ@ membership 'rpg.xp) 0))
 				(rankTable (typ@ membership 'rankTable))
 				(nextRank (or (@ (@ rankTable rank) 'nextRank) (+ rank 1)))
 				(nextRankDesc (@ rankTable nextRank))
+				conditionCode
 				)
 
 				(switch
@@ -111,9 +137,16 @@
 					(ls xp (@ nextRankDesc 'xpNeeded))
 						Nil
 
+					;	If we have an additional condition lambda, promote if it returns True
+
+					(setq conditionCode (@ nextRankDesc 'condition))
+						(if (conditionCode)
+							nextRank
+							)
+
 					;	Promotion to the next rank.
 
-					(+ rank 1)
+					nextRank
 					)
 				)
 			))
@@ -147,10 +180,7 @@
 			))
 		
 		(setq rpgRankInit (lambda (theType defaultRank)
-
-			;	Initialize the given membership by setting rpg.rank if it
-			;	has not already been set.
-			
+			"Initialize the given membership by setting rpg.rank if it has not already been set."
 			(if (not (typ@ theType 'rpg.rank))
 				(typSet@ theType 'rpg.rank (or defaultRank 0))
 				)
