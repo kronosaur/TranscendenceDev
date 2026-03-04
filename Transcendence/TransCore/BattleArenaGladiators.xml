@@ -2,7 +2,7 @@
 
 <TranscendenceModule>
 
-	<!-- Slicer Cannon -->
+	<!-- Slicer Custom Equipment -->
 
 	<ItemType UNID="&itSlicerCannon;"
 			name=				"PM6 Slicer cannon"
@@ -10,7 +10,7 @@
 			value=				"30000"
 			mass=				"4000"
 			frequency=			"notrandom"
-			attributes=			"cannotOrder, EI; EnergyWeapon; MajorItem"
+			attributes=			"cannotOrder; custom; EI; EnergyWeapon; MajorItem"
 
 			description=		"A modified particle cannon firing crisscrossing beams."
 
@@ -1635,36 +1635,26 @@
 			/>
 		
 		<Devices>
-			<Device item="&itSlicerCannon;"/>
-
 			<Table>
 				<Group chance="25">
-					<Device item="&itOmniPartisanCannon;" secondaryWeapon="true"/>
+					<Device item="&itSlicerCannon;"/>
 					<Device item="&itR1Deflector;"/>
 				</Group>
 
 				<Group chance="25">
-					<Device item="&itOmniPartisanCannon;" enhanced="100" secondaryWeapon="true"/>
+					<Device item="&itSlicerCannon;"/>
+					<Device item="&itMissileDefense;"/>
 					<Device item="&itCyclotronDeflectorIV;"/>
 				</Group>
 
 				<Group chance="25">
-					<Device item="&itOmniPartisanCannon;" secondaryWeapon="true"/>
+					<Device item="&itSlicerCannon;"/>
 					<Device item="&itArmorRepairDevice;"/>
 					<Device item="&itCyclotronDeflectorIV;"/>
 				</Group>
 
 				<Group chance="25">
-					<Device item="&itMakayevLauncher;" secondaryWeapon="true">
-						<Items>
-							<Table>
-								<Item chance="60" count="250" item="&itStrelkaWhite;"/>
-								<Item chance="30" count="150" item="&itStrelkaGreen;"/>
-								<Item chance="10" count="50" item="&itStrelkaRed;"/>
-							</Table>
-						</Items>
-					</Device>
-
+					<Device item="&itSlicerCannon;"/>
 					<Device item="&itCeratopsQuasiArmor1;"/>
 				</Group>
 			</Table>
@@ -1679,6 +1669,7 @@
 			fireRateAdj=		"10"
 			fireAccuracy=		"95"
 			perception=			"4"
+			ignoreShieldsDown=	"true"
 			/>
 
 		<StaticData>
