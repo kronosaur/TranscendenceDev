@@ -439,6 +439,7 @@ class CTopology
 			const TArray<CString> &aUseNodes = TArray<CString>(),
 			const TArray<CString> &aBlockNodes = TArray<CString>(),
 			bool bIgnoreOneWay = true,
+			bool bKnownOnly = false,
 			bool bAllowUseNodeBacktrack = true) const;
 		int GetDistance (
 			const CString &sSourceID,
@@ -447,6 +448,7 @@ class CTopology
 			const TArray<CString> &aUseNodes = TArray<CString>(),
 			const TArray<CString> &aBlockNodes = TArray<CString>(),
 			bool bIgnoreOneWay = true,
+			bool bKnownOnly = false,
 			bool bAllowUseNodeBacktrack = true) const;
 		int GetDistanceToCriteria (const CTopologyNode *pSrc, const CTopologyAttributeCriteria &Criteria) const;
 		int GetDistanceToCriteriaNoMatch (const CTopologyNode *pSrc, const CTopologyAttributeCriteria &Criteria) const;
@@ -457,6 +459,7 @@ class CTopology
 			const TArray<CString> &aUseNodes = TArray<CString>(),
 			const TArray<CString> &aBlockNodes = TArray<CString>(),
 			bool bIgnoreOneWay = true,
+			bool bKnownOnly = false,
 			bool bAllowUseNodeBacktrack = true) const;
 		TArray<const CTopologyNode*> GetPathTo (
 			const CTopologyNode *pSrc,
@@ -465,13 +468,15 @@ class CTopology
 			const TArray<CString> &aUseNodes = TArray<CString>(),
 			const TArray<CString> &aBlockNodes = TArray<CString>(),
 			bool bIgnoreOneWay = true,
+			bool bKnownOnly = false,
 			bool bAllowUseNodeBacktrack = true) const;
 		TArray<const CTopologyNode*> GetPathTo (
 			const CTopologyNode *pSrc,
 			const CTopologyNode *pTarget,
 			const CString &sGateCriteria = NULL_STR,
 			const TArray<CString> &aBlockNodes = TArray<CString>(),
-			bool bIgnoreOneWay = true) const;
+			bool bIgnoreOneWay = true,
+			bool bKnownOnly = false) const;
 		CTopologyNodeList &GetTopologyNodeList (void) { return m_Topology; }
 		CTopologyNode *GetTopologyNode (int iIndex) { return &m_Topology[iIndex]; }
 		const CTopologyNode *GetTopologyNode (int iIndex) const { return &m_Topology[iIndex]; }

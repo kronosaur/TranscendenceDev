@@ -3444,11 +3444,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"options (struct):\n\n"
 
-			"	respectOneWayGates: Respects directionality of one-way gates when pathing through them. Does not respect one-way gates by default.\n"
-			"   gateCriteria:   Only gates that match criteria can be used for the path calculations\n"
-			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n",
+			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n"
+			"   gateCriteria:   Only gates that match topology criteria can be used for the path calculations\n"
+			"   knownOnly:True  Only nodes known to player\n"
+			"   respectOneWayGates: Respects directionality of one-way gates when pathing through them. Does not respect one-way gates by default.\n",
 
-			"*",	0,	},
+			"s*",	0,	},
 
 		{	"sysGetNode",					fnSystemGet,	FN_SYS_NODE,
 			"(sysGetNode) -> nodeID",
@@ -3475,11 +3476,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"options (struct):\n\n"
 			
-			"	respectOneWayGates: Respects directionality of one-way gates when pathing through them. Does not respect one-way gates by default.\n"
-			"   gateCriteria:   Only gates that match criteria can be used for the path calculations\n"
-			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n",
+			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n"
+			"   gateCriteria:   Only gates that match topology criteria can be used for the path calculations\n"
+			"   knownOnly:True  Only nodes known to player\n"
+			"   respectOneWayGates: Respects directionality of one-way gates when pathing through them. Does not respect one-way gates by default.\n",
 
-			"*",	0,	},
+			"s*",	0,	},
 
 		{	"sys@",							fnSystemGet,	FN_SYS_GET_PROPERTY,
 			"(sys@ [nodeID] property) -> value\n\n"
@@ -14868,7 +14870,8 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			TArray<CString> aUseNodes;
 			TArray<CString> aBlockNodes;
 			CString sGateCriteria;
-			bool bRespectOneWayGates;
+			bool bRespectOneWayGates = false;
+			bool bKnownOnly = false;
 
 			if (pOptions)
 				{
@@ -14876,9 +14879,10 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				if (pOptions->IsSymbolTable())
 					{
-					//	By default we do not respect one way gates (this is legacy behavior)
+					//	By default we do not respect one way gates and allow all nodes (this is legacy behavior)
 
 					bRespectOneWayGates = pOptions->GetBooleanAt(CONSTLIT("respectOneWayGates"));
+					bKnownOnly = pOptions->GetBooleanAt(CONSTLIT("knownOnly"));
 
 					//	Empty gate criteria is ignored
 
@@ -14923,9 +14927,9 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 						}
 					}
 
-				//	Otherwise this is invalid
+				//	Otherwise any non-Nil is invalid
 
-				else
+				else if (!pOptions->IsNil())
 					return pCC->CreateError(CONSTLIT("Invalid options, must be a struct"), pOptions);
 				}
 
@@ -14933,7 +14937,10 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (dwData == FN_SYS_NEXT_NODE_TO)
 				{
-				const CTopologyNode *pNextNode = pCtx->GetUniverse().GetTopology().GetNextNodeTo(*pFromNode, *pToNode, sGateCriteria, aUseNodes, aBlockNodes, !bRespectOneWayGates);
+				if (pFromNode == pToNode)
+					return pCC->CreateNil();
+
+				const CTopologyNode *pNextNode = pCtx->GetUniverse().GetTopology().GetNextNodeTo(*pFromNode, *pToNode, sGateCriteria, aUseNodes, aBlockNodes, !bRespectOneWayGates, bKnownOnly);
 				if (!pNextNode)
 					return pCC->CreateNil();
 
@@ -14944,7 +14951,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *pList = pCC->CreateLinkedList();
 
 				TArray<const CTopologyNode *> aPath;
-				aPath = pCtx->GetUniverse().GetTopology().GetPathTo(pFromNode, pToNode, sGateCriteria, aUseNodes, aBlockNodes, !bRespectOneWayGates);
+				aPath = pCtx->GetUniverse().GetTopology().GetPathTo(pFromNode, pToNode, sGateCriteria, aUseNodes, aBlockNodes, !bRespectOneWayGates, bKnownOnly);
 
 				for (int i = 0; i < aPath.GetCount(); i++)
 					pList->AppendString(aPath[i]->GetID());
