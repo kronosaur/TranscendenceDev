@@ -693,7 +693,7 @@ void CMission::OnNewSystem (CSystem *pSystem)
 				if (m_pType->FailureOnReturnToSystem()
 						&& IsAccepted()
 						&& dwTimeAway >= (DWORD)m_pType->GetReturnToSystemTimeOut())
-					SetFailure(NULL);
+					SetFailure(ICCItemPtr(CONSTLIT("playerLeftSystem")));
 				}
 			}
 		else
@@ -702,7 +702,7 @@ void CMission::OnNewSystem (CSystem *pSystem)
 
 			if (m_pType->GetOutOfSystemTimeOut() == 0
 					&& IsAccepted())
-				SetFailure(NULL);
+				SetFailure(ICCItemPtr(CONSTLIT("playerLeftSystem")));
 
 			//	If required, close the mission
 
@@ -753,7 +753,7 @@ void CMission::OnObjDestroyedNotify (SDestroyCtx &Ctx)
 
 		if (m_pType->FailureWhenOwnerDestroyed())
 			{
-			SetFailure(NULL);
+			SetFailure(ICCItemPtr(CONSTLIT("ownerDestroyed")));
 
 			//	Since the owner is dead, we do not require a debrief
 
@@ -934,7 +934,7 @@ void CMission::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		{
 		if (m_dwLeftSystemOn + iTimeout < (DWORD)GetUniverse().GetTicks())
 			{
-			SetFailure(NULL);
+			SetFailure(ICCItemPtr(CONSTLIT("playerLeftSystem")));
 
 			//	If required, close the mission
 

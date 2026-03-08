@@ -20,6 +20,7 @@
 	status: Current mission status
 		Nil: Defend freighter
 		'pickupFiona: Dock with freighter wreck and pick up Fiona
+		'transport: Transport Fiona back to Sisters
 
 	wreckID: If the freighter is destroyed, this is the wreck ID.
 
@@ -27,7 +28,7 @@
 	
 	<MissionType UNID="&msBenedictAndFiona;"
 			name=				"Benedict 02: Benedict and Fiona"
-			attributes=			"benedictStoryArc, eridaniScript, sistersMission"
+			attributes=			"benedictStoryArc, eridaniScript, sistersMission, questItem"
 			inherit=			"&baBenedictMission;"
 
 			level=				"1"
@@ -67,11 +68,7 @@
 
 					;	Set a timer for when the freighter comes in
 
-					(sysAddObjTimerEvent
-						(add timeToGate 300)
-						gSource
-						"OnFreighterArrives"
-						)
+					(msnAddTimerEvent gSource (add timeToGate 300) 'OnFreighterArrives)
 
 					;	Remember the stargate
 
@@ -92,6 +89,9 @@
 			
 			<OnSetPlayerTarget>
 				(switch
+					(= (msnGetData gSource 'status) 'transport)
+						(rpgSetTarget gSource aReason (objGetObjByID (msn@ gSource 'ownerID)) 'dock)
+
 					;	If we need to pick up Fiona, then point to the wreck
 
 					(= (msnGetData gSource 'status) 'pickUpFiona)
@@ -109,6 +109,16 @@
 			</OnSetPlayerTarget>
 			
 			<OnFreighterArrives>
+				(switch
+					;	If mission failed (timedout) while player was out of system, do nothing
+					(msn@ gSource 'isFailure)
+						Nil
+
+					(msnFireEvent gSource 'CreateFreighter)
+					)
+			</OnFreighterArrives>
+
+			<CreateFreighter>
 				(block (
 					(stargateObj (objGetObjByID (msnGetData gSource 'stargateID)))
 					(destObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
@@ -180,10 +190,49 @@
 
 					(msnSetPlayerTarget gSource)
 					)
-			</OnFreighterArrives>
+			</CreateFreighter>
+
+			<OnAddRejuvTank>
+				(block (
+					(rejuvTank (itmCreate &itRejuvTankPatient; 1))
+					)
+					;	Put rejuv tank on player's ship
+
+					(objAddItem gPlayerShip rejuvTank)
+					(objSet@ gPlayerShip rejuvTank 'missionID (msn@ gSource 'id))
+					(msnRegisterForEvents gSource gPlayerShip)
+
+					(msnSetData gSource 'status 'transport)
+					(msnSetPlayerTarget gSource)
+					)
+			</OnAddRejuvTank>
+
+			<OnRejuvPatientStatusChanged>
+				(block (
+					(rejuvTank (@ gData 'item))
+					(newStatus (@ gData 'status))
+					)
+					(switch
+						(= newStatus 'dead)
+							(msnFailure gSource)
+						)
+					)
+			</OnRejuvPatientStatusChanged>
+
+			<CheckQuestItem>
+				(and
+					(itmMatches gData "* +unid:&itRejuvTankPatient;;")
+					(= (itm@ gData 'missionID) (msn@ gSource 'id))
+					)
+			</CheckQuestItem>
 
 			<OnObjDestroyed>
 				(switch
+					;	Ignore if object was destroyed by mission cleanup code
+
+					(= aOrderGiver gSource)
+						Nil
+
 					(eq (objGetID aObjDestroyed) (msnGetData gSource 'freighterID))
 						(switch
 							;	Player destroyed the freighter
@@ -231,19 +280,41 @@
 			</OnObjDestroyed>
 
 			<OnObjDocked>
-				(switch
-					(eq (objGetID aObjDocked) (msnGetData gSource 'freighterID))
-						(block Nil
-							;	Mission success
-
-							(msnSuccess gSource)
-
-							;	Attacking ships retreat
-
-							(enum (sysFindObject aObjDocked "sO:attack") enemyObj
-								(shpCancelOrders enemyObj)
+				(block (
+					(missionID (msn@ gSource 'id))
+					rejuvTank
+					)
+					(switch
+						;	Check if player has returned the rejuv tank to the Sisters
+						(and	(= aObjDocked gPlayerShip)
+								(= (objGetID aDockTarget) (msn@ gSource 'ownerID))
+								(setq rejuvTank (match (objGetItems gPlayerShip "* +unid:&itRejuvTankPatient;;") theItem
+									(= (itm@ theItem 'missionID) missionID)
+									))
 								)
-							)
+							(block Nil
+								;	Remove the tank from the ship no matter what
+								(objRemoveItem gPlayerShip rejuvTank)
+
+								(if (= (itm@ rejuvTank 'status) 'dead)
+									(msnSetData gSource 'result 'dead)
+									(msnSuccess gSource { result:'gotFiona })
+									)
+								)
+
+						(eq (objGetID aObjDocked) (msnGetData gSource 'freighterID))
+							(block Nil
+								;	Mission success
+
+								(msnSuccess gSource)
+
+								;	Attacking ships retreat
+
+								(enum (sysFindObject aObjDocked "sO:attack") enemyObj
+									(shpCancelOrders enemyObj)
+									)
+								)
+						)
 					)
 			</OnObjDocked>
 
@@ -252,6 +323,18 @@
 					(result (@ gData 'result))
 					achievementText
 					)
+
+					;	Need some extra cleanup if player failed due to leaving the system
+					(if (and (= gData 'playerLeftSystem) (msnGetData gSource 'freighterID))
+						(block (
+							(frighterObj (objGetObjByID (msnGetData gSource 'freighterID)))
+							(enemies (filter (sysFindObject gSource "sAD:mission;") theShip (= (obj@ theShip 'mission) (msn@ gSource 'id))))
+							)
+							(objDestroy frighterObj gSource)
+							(enum enemies enemyObj (objRemnove enemyObj))
+							)
+						)
+
 					(msnSetData gSource 'result result)
 				
 					;	Handle result and set Benedict's relationship to the
@@ -651,8 +734,7 @@
 							(block (
 								(missionObj (@ (msnFind "a +unid:&msBenedictAndFiona;;") 0))
 								)
-								(msnSetData missionObj 'status Nil)
-								(msnSuccess missionObj { result:'gotFiona })
+								(msnFireEvent missionObj 'OnAddRejuvTank)
 								)
 							)
 						}
