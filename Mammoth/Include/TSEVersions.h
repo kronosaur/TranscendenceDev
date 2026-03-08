@@ -1056,6 +1056,12 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					221;
 //			(sysCreateStargate type pos [src dest options])
 //				Updated to take an options struct with the following options:
 //					ignoreLimits	Ignore any station uniqueness or limits in Encounter block
+//			(sysGetNextNodeTo ...)
+//				options struct now supports the following option:
+//					knownOnly:		Only include known nodes when computing path
+//			(sysGetPathTo ...)
+//				options struct now supports the following option:
+//					knownOnly:		Only include known nodes when computing path
 //			(typGetDataField type field)
 //				New and updated fields
 //					;;ItemType

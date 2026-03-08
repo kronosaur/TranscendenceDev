@@ -3446,7 +3446,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"	respectOneWayGates: Respects directionality of one-way gates when pathing through them. Does not respect one-way gates by default.\n"
 			"   gateCriteria:   Only gates that match criteria can be used for the path calculations\n"
-			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n",
+			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n"
+			"	knownOnly:		Exclude all unknown systems from path consideration\n",
 
 			"*",	0,	},
 
@@ -3477,7 +3478,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"	respectOneWayGates: Respects directionality of one-way gates when pathing through them. Does not respect one-way gates by default.\n"
 			"   gateCriteria:   Only gates that match criteria can be used for the path calculations\n"
-			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n",
+			"   blockNodes:     A list of nodes that cannot be included in the path calculations\n"
+			"	knownOnly:		Exclude all unknown systems from path consideration\n",
 
 			"*",	0,	},
 
@@ -14920,6 +14922,19 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 						else
 							aBlockNodes.Insert(pBlockNodes->GetStringValue());
+						}
+
+					//	By default we use all systems. This option blocks all unknown systems.
+
+					if (pOptions->GetBooleanAt(CONSTLIT("knownOnly")))
+						{
+						CTopologyNodeList nodes = g_pUniverse->GetTopology().GetTopologyNodeList();
+						for (int i = 0; i < nodes.GetCount(); i++)
+							{
+							CTopologyNode node = nodes[i];
+							if (!node.IsKnown())
+								aBlockNodes.Insert(node.GetID());
+							}
 						}
 					}
 
