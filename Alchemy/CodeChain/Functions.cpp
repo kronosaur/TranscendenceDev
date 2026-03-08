@@ -6840,12 +6840,54 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 				}
 			}
 
-		//	Handle
+		//	Handle Functions
+
+		else if (pFirst->IsFunction())
+			{
+			//	all functions are less than all other types except Nil
+			if (pSecond->IsNil())
+				return eGreaterType;
+			else if (!pSecond->IsFunction())
+				return eLessType;
+			//	lambdas are less than primitives
+			else if (pFirst->IsLambdaFunction() && !pSecond->IsLambdaFunction())
+				return eLessType;
+			else if (!pFirst->IsLambdaFunction() && pSecond->IsLambdaFunction())
+				return eGreaterType;
+			else
+				{
+				// We should not reach this, this should be handled in same-type code
+				ASSERT(false);
+				return eError;
+				}
+			}
+		else if (pSecond->IsFunction())
+			{
+			int iResult = HelperCompareItems(pSecond, pFirst, dwCoerceFlags);
+			//	Invert the results
+			switch (iResult)
+				{
+				case (eLessType):
+					return eGreaterType;
+				case (eLess):
+					return eGreater;
+				case (eEqual):
+					return eEqual;
+				case (eGreater):
+					return eLess;
+				case (eGreaterType):
+					return eLessType;
+				default:
+					return iResult;
+				}
+			}
+
+		//	Handle non-implemented cases
 
 		else
 			{
 			ASSERT(false)
-			return eError;
+			return eNotImplemented;
 			}
 		}
 	else if (dwCoerceFlags & HELPER_COMPARE_COERCE_COMPATIBLE)
