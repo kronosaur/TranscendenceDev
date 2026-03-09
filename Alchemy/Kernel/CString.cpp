@@ -2959,7 +2959,7 @@ CString Kernel::strRomanNumeral (int i)
 //	Converts a string to a double
 //	Handles Hexadecimal ints as well
 //	NOTE: We allow leading/trailing whitespace, but we fail if there are any 
-//	other characters after the number.
+//	other characters before or after the number.
 // 
 //	Special cases:
 //		Invalid conversion:
@@ -2984,6 +2984,8 @@ double Kernel::strToDouble (const CString &sString, double rFailResult, bool *re
 
 	{
 	//	strtod handles hexadecimal natively as well
+	//	non-valid characters before a valid double conversion cause strtod
+	//	to stop parsing, so we dont need special handling here
 
 	char *pPos = sString.GetASCIIZPointer();
 	char *pStop = NULL;
