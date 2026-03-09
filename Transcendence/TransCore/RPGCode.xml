@@ -1702,7 +1702,7 @@
 				(and
 					(or allowContaminated
 						;	Need to make sure that its not contaminated
-						(and (not (objIsRadioactive theObj))
+						(and (not (objIsRadioactive wreckObj))
 							
 							;	Since we dont have forward knowledge of the overlay types
 							;	we just skip any overlays
@@ -1713,12 +1713,12 @@
 							;	TODO: add a system where contamination overlays can be
 							;	cached or registered in advance, preferably dynamically
 
-							(not (objGetOverlays theObj))
+							(not (objGetOverlays wreckObj))
 							)
 						)
-					(not (objGetData theObj (or lootedVar 'core.salvaged)))
-					(not (objGetData theObj 'core.noSalvage))
-					(not (obj@ theObj 'core.noSalvage))
+					(not (objGetData wreckObj (or lootedVar 'core.salvaged)))
+					(not (objGetData wreckObj 'core.noSalvage))
+					(not (obj@ wreckObj 'core.noSalvage))
 					)
 				))
 
@@ -1750,13 +1750,13 @@
 
 					;	Only relatively small non-freighter ships should bother looting
 
-					(ls (obj@ gSource 'mass) 2000)
-					(not (objHasAttribute gSource "freighter"))
+					(ls (obj@ salvagerObj 'mass) 2000)
+					(not (objHasAttribute salvagerObj "freighter"))
 
 					;	Make sure no enemies are within standard LRS distance of us
 					;	otherwise it is too risky to run off and try to salvage stuff
 
-					(not (sysFindObject gSource "sTEA NN:100"))
+					(not (sysFindObject salvagerObj "sTEA NN:100"))
 					)
 				))
 
@@ -1765,7 +1765,9 @@
 			;	Configures a ship and wreck for salvaging and scuttling
 
 			(setq rpgInitSalvageAndScuttleOperation (lambda (salvagerObj wreckObjs lootedVar)
-				"Configures a ship and wreck for salvaging and scuttling"
+				(cat "Configures a ship and wreck for salvaging and scuttling\n"
+					"Returns specific wreck selected for salvage"
+					)
 				(block
 					(
 						(wreckObj (random wreckObjs))
@@ -1775,12 +1777,16 @@
 					;	its a fresh wreck, so that the player has enough time to go and attempt
 					;	salvaging it themselves when its a fresh kill
 
-					(shpOrder gSource 'wait (random 300 600))
+					(shpOrder salvagerObj 'wait (random 10 20))
 					(shpOrder salvagerObj 'loot wreckObj)
 
 					;	We set lootedVar now so that we dont dispatch multiple ships to loot the same ship
 
-					(objSetData wreckObjs lootedVar True)
+					(objSetData wreckObj lootedVar True)
+
+					;	Return wreck
+
+					wreckObj
 					)
 				))
 
