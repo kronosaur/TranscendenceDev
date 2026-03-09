@@ -1436,6 +1436,7 @@ int CTopology::GetDistance (
 	const TArray<CString> &aUseNodes,
 	const TArray<CString> &aBlockNodes,
 	bool bIgnoreOneWay,
+	bool bKnownOnly,
 	bool bAllowUseNodeBacktrack) const
 
 	{
@@ -1451,7 +1452,7 @@ int CTopology::GetDistance (
 	if (pDest == NULL)
 		return UNKNOWN_DISTANCE;
 
-	return GetDistance(pSource, pDest, sGateCriteria, aUseNodes, aBlockNodes, bIgnoreOneWay);
+	return GetDistance(pSource, pDest, sGateCriteria, aUseNodes, aBlockNodes, bIgnoreOneWay, bKnownOnly);
 	}
 
 //	GetDistance
@@ -1466,6 +1467,7 @@ int CTopology::GetDistance (
 	const TArray<CString> &aUseNodes,
 	const TArray<CString> &aBlockNodes,
 	bool bIgnoreOneWay,
+	bool bKnownOnly,
 	bool bAllowUseNodeBacktrack) const
 
 	{
@@ -1475,7 +1477,7 @@ int CTopology::GetDistance (
 	//	Although currently UNKNOWN_DISTANCE is -1, we do an explicit check for an empty array
 	//	so that we can return UNKNOWN_DISTANCE explicitly in case that value is ever changed.
 
-	int iPathLength = GetPathTo(pSrc, pTarget, sGateCriteria, aUseNodes, aBlockNodes, bIgnoreOneWay).GetCount();
+	int iPathLength = GetPathTo(pSrc, pTarget, sGateCriteria, aUseNodes, aBlockNodes, bIgnoreOneWay, bKnownOnly).GetCount();
 
 	return iPathLength ? iPathLength - 1 : UNKNOWN_DISTANCE;
 	}
@@ -1550,6 +1552,10 @@ int CTopology::GetDistanceToCriteriaNoMatch (const CTopologyNode *pSrc, const CT
 	return iBestDist;
 	}
 
+//	GetNextNodeTo
+//
+//	Return the node that is adjacent to From and on the nearest path to To. If 
+//	there is no path, we return NULL.
 const CTopologyNode *CTopology::GetNextNodeTo (
 	const CTopologyNode &From,
 	const CTopologyNode &To,
@@ -1557,18 +1563,14 @@ const CTopologyNode *CTopology::GetNextNodeTo (
 	const TArray<CString> &aUseNodes,
 	const TArray<CString> &aBlockNodes,
 	bool bIgnoreOneWay,
+	bool bKnownOnly,
 	bool bAllowUseNodeBacktrack) const
-
-//	GetNextNodeTo
-//
-//	Return the node that is adjacent to From and on the nearest path to To. If 
-//	there is no path, we return NULL.
 
 	{
 	//	Compute distance in reverse direction (To -> From). This will initialize
 	//	the m_iCalcDistance on each node with a distance.
 
-	if (GetDistance(&To, &From, sGateCriteria, aUseNodes, aBlockNodes, bIgnoreOneWay) == UNKNOWN_DISTANCE)
+	if (GetDistance(&To, &From, sGateCriteria, aUseNodes, aBlockNodes, bIgnoreOneWay, bKnownOnly) == UNKNOWN_DISTANCE)
 		return NULL;
 
 	//	Now loop over all nodes adjacent to From and pick the shortest path.
@@ -1599,6 +1601,7 @@ TArray<const CTopologyNode*> CTopology::GetPathTo(
 	const TArray<CString>& aUseNodes,
 	const TArray<CString>& aBlockNodes,
 	bool bIgnoreOneWay,
+	bool bKnownOnly,
 	bool bAllowUseNodeBacktrack) const
 	{
 	//	We handle aUseNodes separately to dramatically simplify the rest of the GetPathTo logic
@@ -1606,7 +1609,7 @@ TArray<const CTopologyNode*> CTopology::GetPathTo(
 	//	If we dont even have aUseNodes, just passthrough and skip the rest of this function
 
 	if (!aUseNodes.GetCount())
-		return GetPathTo(pSrc, pTarget, sGateCriteria, aBlockNodes, bIgnoreOneWay);
+		return GetPathTo(pSrc, pTarget, sGateCriteria, aBlockNodes, bIgnoreOneWay, bKnownOnly);
 
 	//	Otherwise we need to do special handling for all of the useNodes to ensure we hit them
 	//
@@ -1616,7 +1619,7 @@ TArray<const CTopologyNode*> CTopology::GetPathTo(
 
 	//	Check if its even possible to reach pTarget from pSrc to save some time
 
-	TArray<const CTopologyNode*> aRet = GetPathTo(pSrc, pTarget, sGateCriteria, aBlockNodes, bIgnoreOneWay);
+	TArray<const CTopologyNode*> aRet = GetPathTo(pSrc, pTarget, sGateCriteria, aBlockNodes, bIgnoreOneWay, bKnownOnly);
 	
 	if (!aRet.GetCount())
 		return aRet;
@@ -1638,7 +1641,8 @@ TArray<const CTopologyNode*> CTopology::GetPathTo(
 	const CTopologyNode *pTarget,
 	const CString& sGateCriteria,
 	const TArray<CString>& aBlockNodes,
-	bool bIgnoreOneWay) const
+	bool bIgnoreOneWay,
+	bool bKnownOnly) const
 	{
 	TArray<const CTopologyNode*> aRet;
 
@@ -1705,6 +1709,12 @@ TArray<const CTopologyNode*> CTopology::GetPathTo(
 					continue;
 
 				//	We mark systems we cannot traverse as blocked
+
+				if (bKnownOnly && !pDest->IsKnown())
+					{
+					pDest->SetCalcDistance(BLOCKED_DISTANCE);
+					continue;
+					}
 
 				if (mBlock.Find(pDest))
 					{
