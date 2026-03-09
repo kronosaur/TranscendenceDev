@@ -3099,7 +3099,7 @@
 			<Ship levelFrequency="rccuv -----" count="1" class="&scEI200;" orders="gateOnThreat"/>
 			<Ship levelFrequency="rccuv -----" count="1" class="&scIAVLight;" orders="gateOnThreat"/>
 			<Ship levelFrequency="rccuv -----" count="1" class="&scRoninB;" orders="gateOnThreat"/>
-			<Ship levelFrequency="rccuv -----" count="1" class="&scT31ArmedTransportTraffic;" orders="gateOnThreat"/>
+			<Ship levelFrequency="ruurv -----" count="1" class="&scT31ArmedTransportTraffic;" orders="gateOnThreat"/>
 
 			<Ship levelFrequency="-vrrr -----" count="1" class="&scAntaresV;" orders="gateOnThreat"/>
 			<Ship levelFrequency="-rccu v----" count="1" class="&scAsterionHeavyGunship;" orders="guard"/>
@@ -3112,7 +3112,7 @@
 			<Ship levelFrequency="--rcc uv---" count="1" class="&scWolfenC;" orders="gateOnThreat"/>
 
 			<Ship levelFrequency="---rc cuv--" count="1" class="&scElixirMegayacht;" orders="gateOnThreat"/>
-			<Ship levelFrequency="---rc cuv--" count="1" class="&scT55ArmedTransportTraffic;" orders="gateOnThreat"/>
+			<Ship levelFrequency="---vr urv--" count="1" class="&scT55ArmedTransportTraffic;" orders="gateOnThreat"/>
 
 			<Ship levelFrequency="----r ccuvv" count="1" class="&scIAVHeavy;" orders="gateOnThreat"/>
 			<Ship levelFrequency="----r ccuvv" count="1" class="&scManticore;" orders="gateOnThreat"/>
@@ -3134,7 +3134,7 @@
 			<Ship levelFrequency="rccuv -----" count="1" class="&scEI200;"/>
 			<Ship levelFrequency="rccuv -----" count="1" class="&scIAVLight;"/>
 			<Ship levelFrequency="rccuv -----" count="1" class="&scRoninB;"/>
-			<Ship levelFrequency="rccuv -----" count="1" class="&scT31ArmedTransportTraffic;"/>
+			<Ship levelFrequency="ruurv -----" count="1" class="&scT31ArmedTransportTraffic;"/>
 
 			<Ship levelFrequency="-vuur -----" count="1" class="&scAntaresV;"/>
 			<Ship levelFrequency="-rccu v----" count="1" class="&scAsterionHeavyGunship;"/>
@@ -3149,7 +3149,7 @@
 			<Ship levelFrequency="--rcc uv---" count="1" class="&scWolfenC;"/>
 
 			<Ship levelFrequency="---ru cuv--" count="1" class="&scAntaresVStock;"/>
-			<Ship levelFrequency="---ru cuv--" count="1" class="&scT55ArmedTransportTraffic;"/>
+			<Ship levelFrequency="---vr urv--" count="1" class="&scT55ArmedTransportTraffic;"/>
 			<Ship levelFrequency="---rc cuv--" count="1" class="&scElixirMegayacht;"/>
 			<Ship levelFrequency="---vu urv--" count="1" class="&scScarabFreighter;"/>
 
