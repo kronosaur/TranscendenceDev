@@ -15,59 +15,207 @@
 #define SECOND_PLURAL_ATTRIB				CONSTLIT("secondPlural")
 #define VOWEL_ARTICLE_ATTRIB				CONSTLIT("reverseArticle")
 
-int CLanguage::CalcMetricNumber (Metric rNumber, int *retiWhole, int *retiDecimal)
+// ------------------------------------------ Metric Prefix Helpers
+
+struct SMetricPrefix
+	{
+	int iLog10Min;
+	int iLog10Max;
+	char cPrefix;		// '?' means to just use float-style exponent notation, ex e100. '\0' means no prefix.
+	CString sName;
+	};
+
+constexpr int METRIC_PREFIXES_COUNT = 23;
+constexpr int METRIC_PREFIXES_MIDPOINT = 11;
+
+static SMetricPrefix METRIC_PREFIXES[METRIC_PREFIXES_COUNT] = {
+	//	Min log10		Max	log10	Prefix		Name
+		{INT_MIN,	-31,		'?',		CONSTLIT("")},			//use exponent
+		{-30,		-28,		'q',		CONSTLIT("Quecto")},	//quecto
+		{-27,		-25,		'r',		CONSTLIT("Ronto")},		//ronto
+		{-24,		-22,		'y',		CONSTLIT("Yocto")},		//yocto
+		{-21,		-19,		'z',		CONSTLIT("Zepto")},		//zepto
+		{-18,		-16,		'a',		CONSTLIT("Atto")},		//atto
+		{-15,		-13,		'f',		CONSTLIT("Femto")},		//femto
+		{-12,		-10,		'p',		CONSTLIT("Pico")},		//pico
+		{-9,		-7,			'n',		CONSTLIT("Nano")},		//nano
+		{-6,		-4,			'u',		CONSTLIT("Micro")},		//micro
+		{-3,		-1,			'm',		CONSTLIT("Milli")},		//milli
+		{0,			2,			'\0',		CONSTLIT("")},			//none
+		{3,			5,			'k',		CONSTLIT("Kilo")},		//kilo
+		{6,			8,			'M',		CONSTLIT("Mega")},		//mega
+		{9,			11,			'G',		CONSTLIT("Giga")},		//giga
+		{12,		14,			'T',		CONSTLIT("Tera")},		//tera
+		{15,		17,			'P',		CONSTLIT("Peta")},		//peta
+		{18,		20,			'E',		CONSTLIT("Exa")},		//exa
+		{21,		23,			'Z',		CONSTLIT("Zeta")},		//zeta
+		{24,		26,			'Y',		CONSTLIT("Yotta")},		//yotta
+		{27,		29,			'R',		CONSTLIT("Ronna")},		//ronna
+		{30,		32,			'Q',		CONSTLIT("Quetta")},	//quetta
+		{33,		INT_MAX,	'?',		CONSTLIT("")},			//use exponent
+	};
 
 //	CalcMetricNumber
 //
 //	This is a helper function for formatting decimal numbers. We start with a
-//	float and convert into a whole number between 0 and 990 and a decimal number
-//	between 0 and 9. We return the number of times that we had to divide
-//	the original number by 1,000.
-
+//	float and convert into a whole number between -999 and 999 and a decimal number
+//	between 0 and 999, with the total number of significant figures up to 4.
+// 
+//	Due to UI constraints, and since this is a videogame not a scientific application
+//	we truncate the trailing 0s of the decimal to improve readability and
+//	more easily fit text in limited UI space.
+// 
+//  retiDecimalPadding indicates the number of 0s following the decimal
+//	retiDecimal must be non-null to use retiDecimalPadding
+//	retiDecimalPadding should be non-null if retiDecimal is non-null
+// 
+//	We return the number of times that we had to divide
+//	the original number by 1,000. (ie, log(N,1000))
+// 
+//	retiWhole is only 0 when rNumber was 0, NaN, or Infinity
+// 
+//  If rNumber is an infinity, this returns either INT_MAX or INT_MIN
+//  If rNumber is a NaN this returns -1
+//
+int CLanguage::CalcMetricNumber(Metric rNumber, SMetricOptions options, SMetricDesc *retpDesc)
 	{
-	//	Short-circuit
 
-	if (rNumber <= 0.0)
+	//	Short circuit 0
+
+	if (rNumber == 0.0)
 		{
-		if (retiWhole) *retiWhole = 0;
-		if (retiDecimal) *retiDecimal = 0;
+		if (retpDesc)
+			{
+			retpDesc->iWhole = 0;
+			retpDesc->iDecimal = 0;
+			retpDesc->iDecimalPadding = 0;
+			retpDesc->sPrefix = NULL_STR;
+			retpDesc->sPrefixName = NULL_STR;
+			}
 		return 0;
 		}
 
-	//	Handle values less than 10
+	//	Short circuit infinities
 
-	else if (rNumber < 10.0)
+	if (IS_AN_INF(rNumber))
 		{
-		int iNumber = mathRound(rNumber * 10);
-		if (retiWhole) *retiWhole = iNumber / 10;
-		if (retiDecimal) *retiDecimal = iNumber % 10;
-		return 0;
+		if (retpDesc)
+			{
+			retpDesc->iWhole = 0;
+			retpDesc->iDecimal = 0;
+			retpDesc->iDecimalPadding = 0;
+			retpDesc->sPrefix = NULL_STR;
+			retpDesc->sPrefixName = NULL_STR;
+			}
+		return IS_P_INF(rNumber) ? INT_MAX : INT_MIN;
 		}
 
-	//	Values less than 100
+	//	Short circuit NaN
 
-	else if (rNumber < 100.0)
+	if (IS_NAN(rNumber))
 		{
-		int iNumber = mathRound(rNumber);
-		if (retiWhole) *retiWhole = iNumber;
-		if (retiDecimal) *retiDecimal = 0;
-		return 0;
+		if (retpDesc)
+			{
+			retpDesc->iWhole = 0;
+			retpDesc->iDecimal = 0;
+			retpDesc->iDecimalPadding = 0;
+			retpDesc->sPrefix = NULL_STR;
+			retpDesc->sPrefixName = NULL_STR;
+			}
+		return -1;
 		}
 
-	//	Values less than 1000
+	Metric rAbsNumber = abs(rNumber);
+	bool bNegative = rNumber < 0;
+	Metric rPower = floor(log10(rAbsNumber));
 
-	else if (rNumber < 1000.0)
+	//	Convert to the nearest 3
+
+	int iRetThousandsLog = (int)floor(rPower / 3);
+
+	//	If this is the only thing we need, we short circuit
+
+	if (!retpDesc)
+		return iRetThousandsLog;
+
+	//	After this point, we are guaranteed to have retpDesc
+
+	int iThousandsPower = iRetThousandsLog * 3;
+	Metric rDenominator = pow(10, iThousandsPower);
+
+	//	Collect the whole and decimal portions up to 4 sig figs
+
+	Metric rScaled = rAbsNumber / rDenominator;
+	int iWhole = (int)floor(rScaled);
+
+	retpDesc->iWhole = bNegative ? -1 * iWhole : iWhole;
+
+	int iWholeExponent = (int)floor(log10(iWhole));
+	int iWholeSigFigs = iWholeExponent + 1;
+	int iDecimalSigFigs = max(0, min(options.MAX_SIG_FIGS, options.iMaxSigFigs) - iWholeSigFigs);
+	
+	//	if we have decimal significant figures to get
+
+	if (iDecimalSigFigs)
 		{
-		int iNumber = mathRound(rNumber / 10.0);
-		if (retiWhole) *retiWhole = iNumber * 10;
-		if (retiDecimal) *retiDecimal = 0;
-		return 0;
+
+		int iDecimalMultiplier = (int)pow(10, iDecimalSigFigs);
+		int iDecimal = (int)floor((rScaled * iDecimalMultiplier)) % iDecimalMultiplier;
+		int iDecimalLen = (int)floor(log10(iDecimal)) + 1;
+
+		//	Remove trailing 0s from the decimal if we have them
+		//	We dont adjust the length here because thats versus the expected length
+		//	TODO: change this to be dynamic based on sig figs
+
+		if (!options.fForceSigFigs)
+			{
+			while (iDecimal && iDecimal % 10 == 0)
+				{
+				iDecimal /= 10;
+				}
+			}
+
+		retpDesc->iDecimal = iDecimal;
+		retpDesc->iDecimalPadding = iDecimalSigFigs - iDecimalLen;
 		}
-
-	//	Otherwise, we go up to the next scale
-
 	else
-		return CalcMetricNumber(rNumber / 1000.0, retiWhole, retiDecimal) + 1;
+		{
+		retpDesc->iDecimal = 0;
+		retpDesc->iDecimalPadding = 0;
+		}
+
+	//	Short circuit for no prefix
+
+	if (!iRetThousandsLog)
+		{
+		retpDesc->sPrefix = NULL_STR;
+		retpDesc->sPrefixName = NULL_STR;
+		return 0;
+		}
+
+	//	Collect our prefixes
+
+	int iMetricIdx = METRIC_PREFIXES_MIDPOINT + iRetThousandsLog;
+
+	iMetricIdx = iMetricIdx < 0 ? 0 : (iMetricIdx >= METRIC_PREFIXES_COUNT ? METRIC_PREFIXES_COUNT - 1 : iMetricIdx);
+
+	SMetricPrefix MetricPfx = METRIC_PREFIXES[iMetricIdx];
+
+	retpDesc->sPrefixName = MetricPfx.sName;
+
+	//	check if we just send an exponent back
+
+	if (MetricPfx.cPrefix == '?')
+		{
+		retpDesc->sPrefix = strCat(CONSTLIT("e"), strFromInt(iThousandsPower));
+
+		return iRetThousandsLog;
+		}
+
+	char aPfx[2] = { MetricPfx.cPrefix, '\0' };
+	retpDesc->sPrefix = CString(aPfx);
+
+	return iRetThousandsLog;
 	}
 
 CString CLanguage::Compose (const CString &sString, const ICCItem *pArgs)
@@ -518,7 +666,7 @@ CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber)
 	{
 	switch (iFormat)
 		{
-		//	Automagically come up with precission
+		//	Automagically come up with precision
 
 		case numberReal:
 			if (rNumber >= 100.0)
@@ -528,6 +676,106 @@ CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber)
 			else
 				return strFromDouble(rNumber, 2);
 			break;
+
+		//	We format to up to 4 sig figs for metric
+
+		case numberMetricUnitless:
+		case numberMetricFull:
+		case numberMetric:
+			{
+			SMetricDesc Desc;
+			SMetricOptions Opts;
+			int iSteps = CalcMetricNumber(rNumber, Opts, &Desc);
+
+			//	Handle 0 NaNs and infinities
+			//	These dont need special formatting beyond adding a space at the end
+			//  If our caller wants to use units
+			// 
+			//	iWhole is never 0 except when rNumber is 0, Nan, or infinite
+
+			if (!Desc.iWhole)
+				{
+				if (iFormat == numberMetricUnitless)
+					{
+					switch (iSteps)
+						{
+						case 0:
+							return CONSTLIT("0");
+						case INT_MAX:
+							return CONSTLIT("infinity");
+						case INT_MIN:
+							return CONSTLIT("-infinity");
+						default:
+							return CONSTLIT("NaN");
+						}
+					}
+
+				//	Include a space if our caller wants to add units
+
+				else
+					{
+					switch (iSteps)
+						{
+						case 0:
+							return CONSTLIT("0 ");
+						case INT_MAX:
+							return CONSTLIT("infinity ");
+						case INT_MIN:
+							return CONSTLIT("-infinity ");
+						default:
+							return CONSTLIT("NaN ");
+						}
+					}
+				}
+
+			//	Handle all other cases which need sting formatting
+
+			CString sFStr;
+
+			//	Create our decimal string if necessary
+
+			CString sDecimal = Desc.iDecimal ? strFromInt(Desc.iDecimal) : NULL_STR;
+
+			for (int i = 0; i < Desc.iDecimalPadding; i++)
+				{
+				sDecimal = strCat(CONSTLIT("0"), sDecimal);
+				}
+
+			//	If we have no prefix to display (due to being 1-999 or using exponents)
+			//	we just return the number.
+			//	In this case sPrefix is just the exponent or blank
+			// 
+			//  Note:
+			//	If we intend to have a unit then we still need to include a trailing space
+
+			if (Desc.sPrefixName.IsBlank())
+				{
+				if (Desc.iDecimal)
+					{
+					sFStr = iFormat == numberMetricUnitless ? "%d.%s%s" : "%d.%s%s ";
+					return strPatternSubst(sFStr, Desc.iWhole, sDecimal, Desc.sPrefix);
+					}
+				else
+					{
+					sFStr =  iFormat == numberMetricUnitless ? "%d%s" : "%d%s ";
+					return strPatternSubst(sFStr, Desc.iWhole, Desc.sPrefix);
+					}
+				}
+
+			//	If our caller wants to put a unit after this, we need to have a space
+			//	between the number and the prefix
+
+			if (Desc.iDecimal)
+				{
+				sFStr = iFormat == numberMetricUnitless ? CONSTLIT("%d.%s%s") : CONSTLIT("%d.%s %s");
+				return strPatternSubst(sFStr, Desc.iWhole, sDecimal, iFormat == numberMetricFull ? Desc.sPrefixName : Desc.sPrefix);
+				}
+			else
+				{
+				sFStr = iFormat == numberMetricUnitless ? CONSTLIT("%d%s") : CONSTLIT("%d %s");
+				return strPatternSubst(sFStr, Desc.iWhole, iFormat == numberMetricFull ? Desc.sPrefixName : Desc.sPrefix);
+				}
+			}
 
 		case numberFireRate:
 			{
@@ -571,52 +819,15 @@ CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber)
 			break;
 			}
 
+		//	For massTons, we need to convert the number to kgs
+
 		case numberMassTons:
 			return ComposeNumber(numberMass, rNumber * 1000.0);
 
-		//	For power, we assume the value in in KWs.
+		//	For power, we assume the value in kWs and convert to Ws.
 
 		case numberPower:
-			{
-			int iWhole, iDecimal;
-			int iScale = CalcMetricNumber(rNumber / 1000.0, &iWhole, &iDecimal);
-
-			if (iDecimal == 0)
-				{
-				switch (iScale)
-					{
-					case 0:
-						return strPatternSubst(CONSTLIT("%d MW"), iWhole);
-
-					case 1:
-						return strPatternSubst(CONSTLIT("%d GW"), iWhole);
-
-					case 2:
-						return strPatternSubst(CONSTLIT("%d TW"), iWhole);
-
-					default:
-						return CONSTLIT("infinite");
-					}
-				}
-			else
-				{
-				switch (iScale)
-					{
-					case 0:
-						return strPatternSubst(CONSTLIT("%d.%d MW"), iWhole, iDecimal);
-
-					case 1:
-						return strPatternSubst(CONSTLIT("%d.%d GW"), iWhole, iDecimal);
-
-					case 2:
-						return strPatternSubst(CONSTLIT("%d.%d TW"), iWhole, iDecimal);
-
-					default:
-						return CONSTLIT("infinite");
-					}
-				}
-			break;
-			}
+			return strCat(ComposeNumber(numberMetric, rNumber * 1000.0), CONSTLIT("W"));
 
 		case numberRealTimeTicks:
 			{

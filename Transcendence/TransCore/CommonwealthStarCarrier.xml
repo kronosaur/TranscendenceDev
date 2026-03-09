@@ -1439,6 +1439,7 @@
 											{	shipClass:&scMinotaurM;		}
 											{	shipClass:&scAurochs;		}
 											{	shipClass:&scScarabFreighter;		}
+											{	shipClass:&scAntaresVStock;		}
 											{	shipClass:&scAquilaCruiser;	}
 											{	shipClass:&scCSCTaskForceStock;		largeIconScale: 0.625 }
 											)
@@ -1584,16 +1585,26 @@
 			</Text>
 			<Text id="rpg.shipClassDesc.&scAurochs;">
 
-				Aurochs transports are a common sight in the Outer Realm. They
-				are armored enough to survive in a combat zone, and flexible
-				enough to serve as either bulk freighter or troop carrier.
+				Our Aurochs transports are a common sight in the Outer Realm.
+				They are armored enough to survive in a combat zone, and
+				flexible enough to serve as troop carriers or freighters for
+				our most valuable supplies like weapons and ammo.
 
 			</Text>
 			<Text id="rpg.shipClassDesc.&scScarabFreighter;">
 
-				These giant freighters supply the bulk of the Fleets needs. They
-				carry immense quantities of fuel and ammunition, but they cannot
-				survive without a significant escort.
+				These giant freighters supply the bulk of the Fleet's needs. They
+				carry immense quantities of fuel, but they cannot survive without
+				a significant escort.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scAntaresVLogistics;">
+
+				The Antares V was originally introduced in 2343 to act as the
+				backbone of Commonwealth Fleet logistics. Although the Scarab has
+				taken the leading role in supplying the fleet with fuel, our
+				Antares V fleet is still in active service transporting vital
+				bulk goods like food and replacement armor.
 
 			</Text>
 			<Text id="rpg.shipClassDesc.&scAquilaCruiser;">

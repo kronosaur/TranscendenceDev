@@ -1224,7 +1224,7 @@
 							(setq shipList (filter shipList theShip (not (find shipsToRemove theShip))))
 
 							;delete the ships
-							(enum shipsToRemove shipObj (objDestroy shipObj))
+							(enum shipsToRemove shipObj (objRemove shipObj))
 							)
 						)
 

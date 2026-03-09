@@ -522,9 +522,6 @@ ALERROR CTranscendenceController::OnBoot (char *pszCommandLine, SHIOptions *retO
 #else
 	CHexarcServiceFactory HexarcService;
 	m_Service.AddService(HexarcService.Create(m_HI));
-
-	CXelerusServiceFactory XelerusService;
-	m_Service.AddService(XelerusService.Create(m_HI));
 #endif
 
 	//	Load the settings from a file
@@ -2149,7 +2146,7 @@ ALERROR CTranscendenceController::OnInit (CString *retsError)
 
 	//	Show the loading screen
 
-	m_HI.ShowSession(new CLoadingSession(m_HI, m_Model.GetCopyright()));
+	m_HI.ShowSession(new CLoadingSession(m_HI, m_Model.GetCopyright(), m_Settings));
 	m_iState = stateLoading;
 
 	//	Play Intro Music

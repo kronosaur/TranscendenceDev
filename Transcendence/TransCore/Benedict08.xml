@@ -72,6 +72,9 @@
 				(block (
 					(targetObj (@ (sysFindObject Nil "TA +unid:&stPenitentMonastery;;") 0))
 					)
+
+					(rpgCharacterSetMission &unidStormhound; gSource)
+
 					;	Remember the target
 
 					(msnSetData gSource 'targetID (objGetID targetObj))

@@ -527,5 +527,11 @@ class COrderDesc
 class CShipAIHelper
 	{
 	public:
+		//	When adjusting formation positions, we cheat by this factor if we're
+		//	really close.
+
+		static constexpr Metric CHEAT_FORMATION_FACTOR = 0.2;
+
+		static void ApplyFormationAccel (CShip& Ship, const CVector& vVel, Metric rCheatThrustFactor = CHEAT_FORMATION_FACTOR);
 		static bool CalcFormationParams (CShip *pShip, const CVector &vDestPos, const CVector &vDestVel, CVector *retvRecommendedVel, Metric *retrDeltaPos2 = NULL, Metric *retrDeltaVel2 = NULL);
 	};

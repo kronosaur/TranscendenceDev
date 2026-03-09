@@ -928,6 +928,7 @@
 	<!ENTITY scKateMorgentalCruiserArena	"0x0015300B">
 	<!ENTITY baCharonBusterObsolete		"0x0015300C">
 	<!ENTITY scEI200CharonBuster		"0x0015300D">
+	<!ENTITY scHornetStock				"0x0015300E">
 
 	<!ENTITY itDvalinIon9Cannon			"0x00154001">
 	<!ENTITY itDvalinArmor				"0x00154002">
@@ -1612,7 +1613,7 @@
 	<!ENTITY rsCorporateArmorDealer		"0x0010004B">
 	<!ENTITY rsCorporateFuelDepot		"0x0010004C">
 	<!ENTITY smCorporateSpace			"0x0010004D">
-	<!ENTITY tbCorporateDeliveryTransport		"0x0010004E">
+	<!ENTITY tbCorporateDeliveryTransport	"0x0010004E">
 	<!ENTITY rsCorporateCruiserHero		"0x0010004F">
 	<!ENTITY rsCorporateManufacturing	"0x00100050">
 	<!ENTITY scCorporateExplorer		"0x00100051">
@@ -1623,6 +1624,9 @@
 	<!ENTITY tbCorpAutonDefenders		"0x00100056">
 	<!ENTITY tbCorpMakayevDefenders		"0x00100057">
 	<!ENTITY tbCorpRasiermesserDefenders	"0x00100058">
+	<!ENTITY itCashCardBlueReward		"0x00100059">
+	<!ENTITY itCashCardGoldReward		"0x0010005A">
+	<!ENTITY itCashCardPlatinumReward	"0x0010005B">
 	
 	<!-- 0060-007F COMMONWEALTH FLEET -->
 	
@@ -2024,6 +2028,12 @@
 	<!ENTITY rsEI100HD					"0x0010029C">
 	<!ENTITY chKorolovAssistantDirectors	"0x0010029D">
 	<!ENTITY tbKorolovEscorts			"0x0010029E">
+	<!ENTITY scT31ArmedTransportKorolov	"0x0010029F">
+	<!ENTITY scT55ArmedTransportKorolov	"0x001002A0">
+	<!ENTITY scScarabFreighterKorolov	"0x001002A1">
+	<!ENTITY tbKorolovFreighters		"0x001002A2">
+	<!ENTITY tbKorolovGuards			"0x001002A3">
+	<!ENTITY dsKorolovMiscRewards		"0x001002A4">
 
 	<!-- 02B0-02CF COMMONWEALTH MILITIA -->
 
@@ -2297,6 +2307,7 @@
 	<!ENTITY itMediumIthaliumArmor		"0x001004D1">
 	<!ENTITY itMassiveIthaliumArmor		"0x001004D2">
 	<!ENTITY itKM170Missile				"0x001004D3">
+	<!ENTITY itDartTurret				"0x001004D4">
 
 	<!-- 04F0-050F TAIKON CORPORATION -->
 
@@ -2458,6 +2469,19 @@
 	<!ENTITY scBorerIIIStock			"0x00100711">
 	<!ENTITY rsIAVLight120				"0x00100712">
 	<!ENTITY rsIAVLightHero				"0x00100713">
+	<!ENTITY scAntaresIStock			"0x00100714">
+	<!ENTITY scAntaresIIStock			"0x00100715">
+	<!ENTITY scAntaresVStock			"0x00100716">
+	<!ENTITY vtAntaresITurretSlot		"0x00100717">
+	<!ENTITY vtAntaresIITurretSlot		"0x00100718">
+	<!ENTITY vtAntaresVTurretSlot		"0x00100719">
+	<!ENTITY scAntaresVLogistics		"0x0010071A">
+	<!ENTITY scScarabFreighterStock		"0x0010071B">
+	<!ENTITY vtScarabTurretSlot			"0x0010071C">
+	<!ENTITY scT31ArmedTransportStock	"0x0010071D">
+	<!ENTITY scT55ArmedTransportStock	"0x0010071E">
+	<!ENTITY scT31ArmedTransportTraffic	"0x0010071F">
+	<!ENTITY scT55ArmedTransportTraffic	"0x00100720">
 
 	<!-- 0740-075F RASIERMESSER -->
 
@@ -2542,6 +2566,10 @@
 	<!-- 0860-087F HERETIC SYSTEM -->
 
 	<!ENTITY rsHereticMissionTile			"0x00100860">
+
+	<!-- 0880-089F EI: EARTH INDUSTRIES CONGLOMERATE -->
+
+	<!ENTITY itAlpha1LaserTurret			"0x00100880">
 
 	<!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>

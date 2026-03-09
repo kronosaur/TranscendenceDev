@@ -14,6 +14,7 @@ struct SStaticGenderWord
 	};
 
 static TStaticStringTable<SStaticGenderWord, 9> GENDER_WORD_TABLE = {
+	//NOTE: keys must be alphabetical
 	"boy",			{ "child",		"boy",		"girl",		"child", },
 	"brother",		{ "partner",	"brother",	"sister",	"partner", },
 	"he",			{ "they",		"he",		"she",		"it", },
@@ -28,6 +29,7 @@ static TStaticStringTable<SStaticGenderWord, 9> GENDER_WORD_TABLE = {
 //	Convert from a string to NounPhraseFlags
 
 static TStaticStringTable<TStaticStringEntry<DWORD>, 23> NOUN_FLAG_TABLE = {
+	//NOTE: keys must be alphabetical
 	"actual",				nounActual,
 	"adjective",			nounAdjective,
 	"article",				nounArticle,
@@ -58,6 +60,7 @@ static TStaticStringTable<TStaticStringEntry<DWORD>, 23> NOUN_FLAG_TABLE = {
 	};
 
 static TStaticStringTable<TStaticStringEntry<CLanguage::ENumberFormatTypes>, 8> NUMBER_FORMAT_TABLE = {
+	//NOTE: keys must be alphabetical
 	"integer",				CLanguage::numberInteger,
 	"massKg",				CLanguage::numberMass,
 	"massTons",				CLanguage::numberMassTons,
@@ -102,6 +105,7 @@ struct SVerbData
 	};
 
 static TStaticStringTable<SVerbData, 3> VERB_FORM_TABLE = {
+	//NOTE: keys must be alphabetical
 
 //	VERB			PLURAL FORM
 
@@ -113,6 +117,7 @@ static TStaticStringTable<SVerbData, 3> VERB_FORM_TABLE = {
 //	Item Name Parsing
 
 static TStaticStringTable<SSimpleStringEntry, 10> ITEM_MODIFIER_TABLE = {
+	//NOTE: keys must be alphabetical
 	"advanced",
 	"ancient",
 	"double",

@@ -4,22 +4,15 @@
 
 	<!-- Kronosaurus -->
 
-	<Type UNID="&unidKronosaurus;">
-		<StaticData>
-			<Data id="MissionAttribute">"kronosaurusMission"</Data>
-			<Data id="Name">"Kronosaurus"</Data>
-			<Data id="Sovereign">&svPirates;</Data>
-		</StaticData>
+	<Type UNID="&unidKronosaurus;"
+			inherit="&baStdNPCBase;"
+			>
+		<Properties>
+			<Definition id="core.namePattern">": Kronosaurus"</Definition>
 
-		<Events>
-			<OnCharacterCanBeMet>
-				True
-			</OnCharacterCanBeMet>
-
-			<OnGlobalSystemStopped>
-				(rpgCharacterAscend &unidKronosaurus;)
-			</OnGlobalSystemStopped>
-		</Events>
+			<Definition id="char.missionAttribute">"kronosaurusMission"</Definition>
+			<Definition id="char.sovereign">&svPirates;</Definition>
+		</Properties>
 	</Type>
 
 	<!-- The Kronosaurus -->

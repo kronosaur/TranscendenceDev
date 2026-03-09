@@ -1475,7 +1475,7 @@ int CTopology::GetDistance (
 	//	Although currently UNKNOWN_DISTANCE is -1, we do an explicit check for an empty array
 	//	so that we can return UNKNOWN_DISTANCE explicitly in case that value is ever changed.
 
-	int iPathLength = GetPathTo(pSrc, pTarget, sGateCriteria, aUseNodes, aBlockNodes, bIgnoreOneWay).GetCount() - 1;
+	int iPathLength = GetPathTo(pSrc, pTarget, sGateCriteria, aUseNodes, aBlockNodes, bIgnoreOneWay).GetCount();
 
 	return iPathLength ? iPathLength - 1 : UNKNOWN_DISTANCE;
 	}

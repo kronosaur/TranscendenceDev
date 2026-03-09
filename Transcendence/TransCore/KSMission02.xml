@@ -36,6 +36,12 @@
 			expireTime=		"3600"
 			>
 
+		<Properties>
+			<Constant id="membership">&unidKorolovShipping;</Constant>
+			<Data id="reward"></Data>
+			<Data id="rewardXP"></Data>
+		</Properties>
+
 		<Events>
 			<OnCreate>
 				(block (
@@ -48,7 +54,7 @@
 							dockedFreighters
 							theFreighter
 							(and
-								(geq playerLevel (objGetStaticData theFreighter "korolovMinLevel"))
+								(geq playerLevel (korObjGetMinLevel theFreighter))
 								(geq (shpGetMaxSpeed gPlayerShip) (+ (shpGetMaxSpeed theFreighter) 2))
 								)
 							)
@@ -61,18 +67,6 @@
 
 
 					(switch
-						; Finite number of missions per station
-						(ls (objGetData aOwnerObj 'remainingMissions) 1)
-							(msnDestroy gSource)
-
-						; Only offer to new pilots and levels 1-3
-						(not (find '(0 1 2 3) playerLevel))
-							(msnDestroy gSource)
-
-						; No missions once the stronghold is destroyed
-						(objIsAbandoned (objGetObjRefData aOwnerObj 'charonStronghold))
-							(msnDestroy gSource)
-
 						; If we're too close to the gates then no mission
 						(not (setq gateObj (random (sysFindObject aOwnerObj "GR:300; -uncharted;"))))
 							(msnDestroy gSource)
@@ -94,14 +88,14 @@
 								; Mission settings
 								(msnSetData gSource 'gateID (objGetID gateObj))
 								(msnSetData gSource 'escortType escortType)
-								(msnSetData gSource 'missionXP 75)
+								(msnSet@ gSource 'rewardXP 75)
 								(msnSetData gSource 'pricePerContainer (@ escortData 'pricePerContainer))
 								(msnSetData gSource 'cargoValue (@ escortData 'cargoValue))
-								(msnSetData gSource 'reward (@ escortData 'escortFee))
+								(msnSet@ gSource 'reward (@ escortData 'escortFee))
 								
 								; Remember the minimum player level to escort and the minimum
 								; player speed.
-								(msnSetData gSource 'minPlayerLevel (typGetStaticData escortType "korolovMinLevel"))
+								(msnSetData gSource 'minPlayerLevel (korTypGetMinLevel escortType))
 								(msnSetData gSource 'minPlayerSpeed (+ (typGetProperty escortType 'maxSpeed) 2))
 								)
 
@@ -159,8 +153,12 @@
 			</OnCompleted>
 
 			<OnReward>
-				(korGiveReward gSource)
+				(rpgMissionReward gSource)
 			</OnReward>
+
+			<OnGetNextScreen>
+				(korGetPendingMiscAward)
+			</OnGetNextScreen>
 
 			<OnObjDestroyed>
 				(switch
@@ -189,6 +187,8 @@
 						(block Nil
 							(objSetData aObjDocked "korolovPlayerEscort" Nil)
 							(msnSuccess gSource)
+							;	Repair the freighter so its ready for whatever happens next
+							(shpFullRestore aObjDocked)
 							)
 					)
 			</OnObjDocked>
@@ -323,7 +323,7 @@
 				(msnTranslate gSource 'textSummary {
 					gateName: (objGetName (objGetObjByID (msnGetData gSource 'gateID)) 'article)
 					systemName: (sysGetName)
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
 			<Text id="textSummary">
@@ -337,7 +337,7 @@
 				(block (
 					(gate (objGetObjByID (msnGetData gSource 'gateID)))
 					(destName (objGetName gate 'article))
-					(paymentValue (msnGetData gSource 'reward))
+					(paymentValue (msn@ gSource 'reward))
 					(payment 
 						(if (= paymentValue 0)
 							(msnTranslate gSource 'listSummary.noPayment)
@@ -357,7 +357,7 @@
 				(msnTranslate gSource 'textBriefing {
 					shipClass: (typGetName (msnGetData gSource 'escortType) '(article generic))
 					gateName: (objGetName (objGetObjByID (msnGetData gSource 'gateID)) 'article)
-					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					payment: (fmtCurrency 'credit (msn@ gSource 'reward))
 					})
 			</Text>
 			<Text id="textBriefing">

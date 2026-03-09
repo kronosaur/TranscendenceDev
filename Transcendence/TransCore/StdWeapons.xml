@@ -34,7 +34,7 @@
 				damage=				"blast:4d6; momentum4; WMD5"
 				fireRate=			"30"
 				hitPoints=			"20"
-				lifetime=			"90"
+				range=				"108"
 				powerUse=			"1"
 				charges=			"true"
 
@@ -57,7 +57,7 @@
 	<!-- Laser Cannon -->
 
 	<ItemType UNID="&itLaserCannon;"
-			name=				"laser cannon"
+			name=				"Alpha-3 laser cannon"
 			attributes=			"commonwealth, EI, energyWeapon, majorItem"
 			  
 			level=				"1"
@@ -74,7 +74,7 @@
 		<Weapon
 				type=				"beam"
 
-				damage=				"laser:1d4"
+				damage=				"laser:1-4"
 				fireRate=			"10"
 				range=				"60"
 				powerUse=			"10"
@@ -85,10 +85,42 @@
 		</Weapon>
 	</ItemType>
 
+	<!-- Alpha I Laser Blaster -->
+
+	<ItemType UNID="&itAlpha1LaserTurret;"
+			name=				"Alpha-1 blaster turret"
+			attributes=			"commonwealth, EI, energyWeapon, majorItem"
+			  
+			level=				"1"
+			frequency=			"veryRare"
+
+			value=				"250"
+			mass=				"500"
+			  
+			description=		"Earth Industries' original Alpha-1 blaster turret predates the Syrtis War. The design is so simple that enthusiasts of kit-built spacecraft still fabricate new ones today."
+			>
+
+		<Image imageID="&rsItemsEI1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"beam"
+
+				omnidirectional=	"true"
+				damage=				"laser:1"
+				fireRate=			"10"
+				range=				"60"
+				powerUse=			"5"
+
+				effect=				"&efLaserBeamDefault;"
+				sound=				"&snLaserCannon;"
+				>
+		</Weapon>
+	</ItemType>
+
 	<!-- Recoilless Cannon -->
 
 	<ItemType UNID="&itRecoillessCannon;"
-			name=				"recoilless cannon"
+			name=				"AK4 Spear cannon"
 			attributes=			"commonwealth, majorItem, NAMI"
 			  
 			level=				"1"
@@ -97,7 +129,7 @@
 			value=				"340"
 			mass=				"2500"
 			  
-			description=		"Recoilless cannons are slower than the ubiquitous laser cannon but pack a bigger punch."
+			description=		"NAMI's line of recoilless cannons shoot rounds that pack a bigger punch than competing Earth Industries laser cannons, but are considerably slower."
 			>
 
 		<Image imageID="&rsItemsNAMI1;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
@@ -105,10 +137,10 @@
 		<Weapon
 				type=				"missile"
 
-				damage=				"kinetic:1d6+1; momentum1"
+				damage=				"kinetic:4-5; momentum1"
 				fireRate=			"15"
 				missileSpeed=		"40"
-				lifetime=			"60"
+				range=				"48"
 				powerUse=			"10"
 				
 				effect=				"&efKineticBoltDefault;"
@@ -120,16 +152,16 @@
 	<!-- Light Recoilless Cannon -->
 
 	<ItemType UNID="&itLightRecoillessCannon;"
-			name=				"light recoilless cannon"
-			attributes=			"commonwealth, majorItem, NAMI, notForSale"
+			name=				"AK3 Crossbow cannon"
+			attributes=			"commonwealth, majorItem, NAMI"
 			  
 			level=				"1"
-			frequency=			"rare"
+			frequency=			"veryRare"
 
 			value=				"270"
 			mass=				"2000"
 			  
-			description=		"This specialized version of the recoilless cannon shoots lighter projectiles but has a higher fire rate."
+			description=		"The AK3 Crossbow uses the same projectiles as the AK2 Dart, but the weapon was improved to fire faster."
 			>
 
 		<Image imageID="&rsItemsNAMI1;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
@@ -137,11 +169,44 @@
 		<Weapon
 				type=				"missile"
 
-				damage=				"kinetic:1d3+1; momentum1"
+				damage=				"kinetic:2-4; momentum1"
 				fireRate=			"10"
 				missileSpeed=		"40"
-				lifetime=			"40"
+				range=				"32"
 				powerUse=			"11"
+
+				effect=				"&efKineticBoltDefault;"
+				sound=				"&snRecoillessCannon;"
+				>
+		</Weapon>
+	</ItemType>
+
+	<!-- AK2 Dart Turret -->
+
+	<ItemType UNID="&itDartTurret;"
+			name=				"AK2 Dart turret"
+			attributes=			"commonwealth, majorItem, NAMI"
+			  
+			level=				"1"
+			frequency=			"veryRare"
+
+			value=				"270"
+			mass=				"4000"
+			  
+			description=		"This venerable old turret was an updated design of the weapon used to protect Savannah-class colony ships in the 2100s."
+			>
+
+		<Image imageID="&rsItemsNAMI3;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				omnidirectional=	"true"
+				damage=				"kinetic:2-4; momentum1"
+				fireRate=			"20"
+				missileSpeed=		"40"
+				range=				"32"
+				powerUse=			"15"
 
 				effect=				"&efKineticBoltDefault;"
 				sound=				"&snRecoillessCannon;"
@@ -174,7 +239,7 @@
 
 				damage=				"laser:1d6"
 				fireRate=			"10"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"20"
 
 				effect=				"&efLaserBeamDefault;"
@@ -257,7 +322,7 @@
 				configuration=		"dual"
 				damage=				"laser:1d4"
 				fireRate=			"10"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"30"
 
 				effect=				"&efLaserBeamDefault;"
@@ -288,7 +353,7 @@
 
 				damage=				"laser:1d4"
 				fireRate=			"6"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"30"
 
 				effect=				"&efLaserBeamDefault;"
@@ -426,7 +491,7 @@
 
 				damage=				"laser:1d4"
 				fireRate=			"10"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"60"
 
 				effect=				"&efLaserBeamDefault;"
@@ -496,7 +561,7 @@
 				omnidirectional=	"true"
 				damage=				"laser:1d4"
 				fireRate=			"10"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"30"
 
 				effect=				"&efLaserBeamDefault;"
@@ -710,7 +775,7 @@
 
 				damage=				"laser:3d4"
 				fireRate=			"12"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"60"
 
 				effect=				"&efLaserBeamDefault;"
@@ -845,7 +910,7 @@
 
 				damage=				"particle:1d8+1"
 				fireRate=			"10"
-				lifetime=			"40"
+				range=				"80"
 				powerUse=			"100"
 
 				effect=				"&efParticleBeamDefault;"
@@ -1029,7 +1094,7 @@
 				configuration=		"dual"
 				damage=				"laser:3d4"
 				fireRate=			"12"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"120"
 
 				effect=				"&efLaserBeamDefault;"
@@ -1061,7 +1126,7 @@
 				omnidirectional=	"true"
 				damage=				"laser:3d4"
 				fireRate=			"16"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"70"
 
 				effect=				"&efLaserBeamDefault;"
@@ -1165,7 +1230,7 @@
 
 				damage=				"ion:4d6; EMP:3"
 				fireRate=			"20"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"200"
 
 				effect=				"&efIonizingBeam;"
@@ -1198,7 +1263,7 @@
 				repeating=			"4"
 				damage=				"particle:1d4+1"
 				fireRate=			"18"
-				lifetime=			"60"
+				range=				"120"
 				powerUse=			"300"
 
 				effect=				"&efParticleBeamDefault;"
@@ -1263,7 +1328,7 @@
 				damage=				"blast:5d12; momentum:3; WMD:4"
 				fireRate=			"40"
 				missileSpeed=		"50"
-				lifetime=			"120"
+				range=				"120"
 				powerUse=			"240"
 				recoil=				"2"
 
@@ -1297,7 +1362,7 @@
 				configuration=		"dual"
 				damage=				"particle:1d8+1"
 				fireRate=			"10"
-				lifetime=			"40"
+				range=				"80"
 				powerUse=			"300"
 
 				effect=				"&efParticleBeamDefault;"
@@ -1329,7 +1394,7 @@
 				omnidirectional=	"true"
 				damage=				"particle:1d8+1"
 				fireRate=			"12"
-				lifetime=			"40"
+				range=				"80"
 				powerUse=			"200"
 
 				effect=				"&efParticleBeamDefault;"
@@ -1361,7 +1426,7 @@
 				configuration=		"alternating"
 				damage=				"particle:2d4"
 				fireRate=			"5"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"200"
 
 				effect=				"&efParticleBeamDefault;"
@@ -1431,7 +1496,7 @@
 				damage=				"blast:4d6; momentum:2; WMD:5"
 				fireRate=			"20"
 				missileSpeed=		"50"
-				lifetime=			"60"
+				range=				"60"
 				powerUse=			"240"
 
 				effect=				"&efSlamCannonShell;"
@@ -1463,7 +1528,7 @@
 				configuration=		"dual"
 				damage=				"laser:8d4"
 				fireRate=			"16"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"200"
 
 				effect=				"&efLaserBeamDefault;"
@@ -1542,7 +1607,7 @@
 			<Missiles>
 				<Missile ammoID="&itDragonflyCartridge;"
 						type=			"missile"
-						lifetime=		"120"
+						range=			"120"
 						damage=			"blast:5d6; momentum:2; WMD:6"
 						missileSpeed=	"50"
 						maneuverRate=	"18"
@@ -1620,7 +1685,7 @@
 				damage=				"blast:8d12; momentum3; WMD4"
 				fireRate=			"40"
 				missileSpeed=		"50"
-				lifetime=			"120"
+				range=				"120"
 				powerUse=			"360"
 				recoil=				"2"
 
@@ -1684,7 +1749,7 @@
 
 				damage=				"particle:5d8"
 				fireRate=			"15"
-				lifetime=			"40"
+				range=				"80"
 				powerUse=			"300"
 
 				effect=				"&efParticleBeamDefault;"
@@ -1718,7 +1783,7 @@
 				configuration=		"alternating"
 				damage=				"particle:3d8+3"
 				fireRate=			"6"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"600"
 
 				effect=				"&efParticleBeamDefault;"
@@ -1749,7 +1814,7 @@
 
 				damage=				"ion:4d6"
 				fireRate=			"10"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"500"
 
 				effect=				"&efEIBlasterBeam;"
@@ -1782,7 +1847,7 @@
 
 				damage=				"ion:4d6-1"
 				fireRate=			"14"
-				lifetime=			"40"
+				range=				"80"
 				passthrough=		"50"
 				powerUse=			"750"
 
@@ -1817,7 +1882,7 @@
 				damage=				"thermo:8d12; momentum:3; WMD:4"
 				fireRate=			"40"
 				missileSpeed=		"50"
-				lifetime=			"120"
+				range=				"120"
 				powerUse=			"600"
 				recoil=				"2"
 
@@ -1881,7 +1946,7 @@
 				configuration=		"dual"
 				damage=				"particle:5d8"
 				fireRate=			"15"
-				lifetime=			"40"
+				range=				"80"
 				powerUse=			"600"
 
 				effect=				"&efParticleBeamDefault;"
@@ -1913,7 +1978,7 @@
 				omnidirectional=	"true"
 				damage=				"particle:5d8"
 				fireRate=			"15"
-				lifetime=			"40"
+				range=				"80"
 				powerUse=			"400"
 
 				effect=				"&efParticleBeamDefault;"
@@ -2086,7 +2151,7 @@
 				damage=				"thermo:11d12; momentum:3; WMD:4"
 				fireRate=			"40"
 				missileSpeed=		"50"
-				lifetime=			"120"
+				range=				"120"
 				powerUse=			"1200"
 				recoil=				"2"
 
@@ -2118,7 +2183,7 @@
 
 				damage=				"ion:11d6"
 				fireRate=			"20"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"1000"
 
 				effect=				"&efEIBlasterBeam;"
@@ -2151,7 +2216,7 @@
 
 				damage=				"ion:1d6+2"
 				fireRate=			"16"
-				lifetime=			"20"
+				range=				"40"
 				powerUse=			"1000"
 
 				effect=				"&efIonBeamDefault;"
@@ -2372,7 +2437,7 @@
 
 				damage=				"ion:24d6"
 				fireRate=			"30"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"1500"
 
 				effect=				"&efEIBlasterBeam;"
@@ -2437,7 +2502,7 @@
 				omnidirectional=	"true"
 				damage=				"ion:11d6"
 				fireRate=			"24"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"2000"
 
 				effect=				"&efEIBlasterBeam;"
@@ -2546,7 +2611,7 @@
 				type=				"beam"
 				damage=				"ion:6d6"
 				fireRate=			"20"
-				lifetime=			"30"
+				range=				"60"
 
 				effect=				"&efIonBeamDefault;"
 				sound=				"&snLaserCannon;"

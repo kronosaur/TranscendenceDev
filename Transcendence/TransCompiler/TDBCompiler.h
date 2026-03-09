@@ -59,7 +59,7 @@ class CTDBCompiler
 			};
 
 		bool AddCoreEntityTables (const CString &sCoreTDB, CString *retsError);
-		bool ReadEntities (const CString &sFilespec, CExternalEntityTable **retpEntityTable) const;
+		bool ReadEntities (const CString &sFilespec, CExternalEntityTable **retpEntityTable, CString *retsError = NULL) const;
 
 		CString m_sInputFilespec;
 		CString m_sOutputFilespec;

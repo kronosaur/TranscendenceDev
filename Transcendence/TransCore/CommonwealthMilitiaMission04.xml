@@ -41,11 +41,17 @@
 					(vec1 (sysVectorDivide (objGetPos stationObj) (objGetDistance stationObj)))
 					;	position of freighter
 					(shipPos (sysVectorAdd (objGetPos stationObj) (sysVectorMultiply vec1 (random 450 500))))
+					;	shipclass to escort - eventually this should be a more extensible table
+					(shipClass (random (list
+						&scScarabFreighter;
+						&scAntaresVLogistics;
+						)))
 					shipObj
 					)
+					; (plyMessage gPlayer (cat "DBG: Freighter selected: " (unvEntity shipClass)))
 
 					; Create the freighter with orders to dock at fortress
-					(setq shipObj (sysCreateShip &scScarabFreighter; shipPos &svCommonwealth;))
+					(setq shipObj (sysCreateShip shipClass shipPos &svCommonwealth;))
 					(objSetData shipObj "noPiracyCheck" True)
 					(shpOrder shipObj 'dock stationObj)
 					(shpOrder shipObj 'wait (random 10 60))

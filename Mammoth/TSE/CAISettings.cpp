@@ -47,6 +47,7 @@
 #define STR_TRUE								CONSTLIT("True")
 
 static TStaticStringTable<TStaticStringEntry<AIReaction>, 9> REACTION_TABLE = {
+	//NOTE: keys must be alphabetical
 	"chase",				AIReaction::Chase,
 	"chaseFromBase",		AIReaction::ChaseFromBase,
 	"default",				AIReaction::Default,
@@ -74,7 +75,7 @@ AICombatStyle CAISettings::ConvertToAICombatStyle (const CString &sValue)
 	else if (strEquals(sValue, COMBAT_STYLE_NO_RETREAT))
 		return AICombatStyle::NoRetreat;
 	else if (strEquals(sValue, COMBAT_STYLE_STANDARD))
-		return AICombatStyle::StandOff;
+		return AICombatStyle::Standard;
 	else if (strEquals(sValue, COMBAT_STYLE_STAND_OFF))
 		return AICombatStyle::StandOff;
 	else

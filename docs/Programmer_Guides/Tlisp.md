@@ -49,10 +49,11 @@ the "false" state in any logical tests, with any other atom or non-empty list be
 "true". This means all integers (including 0) and strings (including empty string)
 are equivalent to "true".
 
-`Nil` and empty list `()` are interchangeable and can be considered identical except
-one specific case - if you perform an in-place list modification operation on a `Nil`
-value it will return a new actual list, while in-place modification of an empty list
-does not need to generate a new list
+`Nil` and empty lists `()` and structs `{}` are interchangeable and can be considered
+identical except one specific case - if you perform an in-place list modification
+operation on a `Nil` value it will return a new actual list, while in-place modification
+of an empty list does not need to generate a new list. Similarly sets can also be
+modified in-place like lists.
 
 **NOTE** if you need to generate an empty list then use the `(list)` function as the
 quote forms will return a Nil value
@@ -61,11 +62,62 @@ quote forms will return a Nil value
 ; Evaluating an empty list is equivalent to function call.
 ()                      ; Returns Nil
 Nil                     ; Returns Nil
-(list)                  ; Returns ()
+(list)                  ; Returns (), equal to Nil
+{}                      ; Returns {}, equal to Nil
 
 ; quote forms return Nil
 '()                     ; Returns Nil
 (quote ())              ; Returns Nil
+```
+
+## Boolean values and Conditionals
+
+Although Tlisp has a specific atom (non-mutable) for `True` it does not have the same
+concept of `True` and `False` as in other programming languages. Instead this is
+done with the concepts of `Nil` and `Non-Nil`.
+
+* If something is `Nil` it is treated as false
+* If something is not `Nil` it is treated as true
+
+Tlisp only treats specific values as `Nil` when evaluating conditional or boolean
+statements like `(if ...)` or `(and ...)`
+
+```lisp
+; The following values are treated as Nil and therefor false
+Nil
+(list)
+{}
+
+; They are also all treated as equal
+(= Nil (list) {}) -> True
+```
+
+Everything other than these two values is treated as being non-Nil:
+
+```lisp
+; The following are some examples of values that are not Nil and therefor are treated as True
+""
+0
+1
+(double 'Nan)
+{ a:1 }
+
+; Unlike Nil however they are not considered equal to True (the atom)
+(= 1 True) -> Nil
+```
+
+As a result the conditional statements are not actually checking if the conditional expression
+returns `True` but instead if it is `Non-Nil`
+
+```
+; Empty strings are considered Non-Nil
+(if "" "was true" "was false") -> "was true"
+
+; or returns the first Non-Nil value
+(or Nil {} 0) -> 0
+
+; and returns the first Nil value
+(and 0 1 2 3 4 {} 5 Nil) -> {}
 ```
 
 ## Data types
@@ -81,3 +133,5 @@ Nil                     ; Returns Nil
     * Primitive
     * Lambda
 * Lists
+* Structs
+* Vectors

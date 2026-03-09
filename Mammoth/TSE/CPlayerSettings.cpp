@@ -75,6 +75,7 @@
 #define ERR_WEAPON_DISPLAY_NEEDED				CONSTLIT("missing or invalid <WeaponDisplay> element")
 
 static TStaticStringTable<TStaticStringEntry<EUITypes>, 2> UI_TYPE_TABLE = {
+	//NOTE: keys must be alphabetical
 	"command",				uiCommand,
 	"pilot",				uiPilot,
 	};

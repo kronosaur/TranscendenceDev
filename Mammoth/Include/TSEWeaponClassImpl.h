@@ -335,7 +335,7 @@ class CWeaponClass : public CDeviceClass
 		void SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinuousCount, DWORD dwNextContinuousTick) const;
 		void SetCurrentVariant (CInstalledDevice *pDevice, int iVariant) const;
 
-		Metric m_rFireRate;						//	Internal simulation ticks between shots (translated from simulation seconds in the XML)
+		Metric m_rFireRate;						//	Internal simulation seconds between shots (needs to be converted to ticks on use)
 		int m_iPowerUse;						//	Power use to recharge capacitors (1/10 megawatt)
 		int m_iIdlePowerUse;					//	Power use when capacitors fully charged
 		int m_iRecoil;							//	0-7 (as per momentum damage)
@@ -355,7 +355,7 @@ class CWeaponClass : public CDeviceClass
 		CConfigurationDesc m_Configuration;		//	Shot configuration
 
 		int m_iContinuous = 0;					//	Repeat fire
-		Metric m_rContinuousFireDelay = 0;			//	Delay between shots
+		Metric m_rContinuousFireDelay = 0;		//	Delay between shots in simulation seconds
 		bool m_bContinuousConsumePerShot;		//	If a continuous weapon, consume ammunition for every shot in burst
 		bool m_bBurstTracksTargets;				//  If the weapon is continuous, whether or not to track the target during the entire burst
 

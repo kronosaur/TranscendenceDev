@@ -143,9 +143,12 @@ void CLoadingSession::OnUpdate (bool bTopMost)
 //	OnUpdate
 
 	{
+	m_iFrame++;
 	if (bTopMost)
 		{
-		m_iTick++;
+		if (!m_b60fps || (m_iFrame % 2 == 0))
+			m_iTick++;
+
 		HIInvalidate(m_rcStargate);
 		}
 	}

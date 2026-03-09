@@ -82,12 +82,18 @@
 					(cscObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
 					(gateObj (objGetObjByID (msnGetData gSource 'gateID)))
 					(variant (msnGetData gSource 'variant))
+					;	shipclass to escort - eventually this should be a more extensible table
+					(shipClass (random (list
+						&scScarabFreighter;
+						&scAntaresVLogistics;
+						)))
 					shipObj travelTime
 					)
+					; (plyMessage gPlayer (cat "DBG: Freighter selected: " (unvEntity shipClass)))
 					(plyMessage gPlayer "Freighter arrived!")
 
 					;	Create the superfreighter
-					(setq shipObj (sysCreateShip &scScarabFreighter; gateObj &svCommonwealth;))
+					(setq shipObj (sysCreateShip shipClass gateObj &svCommonwealth;))
 					(objSetData shipObj 'noPiracyCheck True)
 					(objSetIdentified shipObj)
 
