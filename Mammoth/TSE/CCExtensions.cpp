@@ -1399,23 +1399,34 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpOrder",						fnShipSet,		FN_SHIP_ORDER,
-			"(shpOrder ship order [target] [count]) -> True/Nil\n\n"
+			"(shpOrder ship order [orderArgs ...]) -> True/Nil\n\n"
+			
+			"orderArgs are specified by the specific order\n"
+			"   ang: (int) angle in degrees\n"
+			"   dist: (int) lightseconds\n"
+			"   event: (str) event name\n"
+			"   msg: (str) message text\n"
+			"   navID: (int) nav point id\n"
+			"   options: (struct) order-specific options\n"
+			"   pos: (vector) position in klicks\n"
+			"   time: (int) real world seconds\n"
+			"\n"
 
 			"order:\n\n"
 			"   'aim            obj               Aim, but do not fire\n"
 			"   'approach       obj [dist]        Approach target\n"
 			"   'attack         obj [time]        Attack target\n"
 			"   'attackArea     obj dist [time]   Attack around target\n"
-			"   'attackHold     obj [time]\n"
+			"   'attackHold     obj [time]        Attack with locked position\n"
 			"   'attackNearestEnemy               Attack nearest enemy\n"
 			"   'attackPlayerOnReturn             Wait and attack player\n"
-			"   'attackStation  obj [?]           Attack target station\n"
+			"   'attackStation  obj [time]        Attack target station\n"
 			"   'bombard        obj [time]        Hold and attack target\n"
 			"   'dock           obj               Dock with target\n"
 			"   'escort         obj [ang] [dist]  Escort target\n"
 			"   'fireEvent      obj event         Fire event on target\n"
 			"   'follow         obj               Follow without defending\n"
-			"   'followPlayerThroughGate\n"
+			"   'followPlayerThroughGate          Follow player ship, including through gates\n"
 			"   'gate           [obj]             Gate out of system\n"
 			"   'gateOnStationDestroyed           Flee if station destroyed\n"
 			"   'gateOnThreat                     Flee if threatened\n"
@@ -1423,13 +1434,18 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'gotoPos        pos               Goto position\n"
 			"   'guard          obj               Guard target\n"
 			"   'hold           [time]            Stay in place\n"
-			"   'holdAndAttack  obj [time]\n"
-			"   'holdCourse     course dist       Hold course\n"
+			"   'holdAndAttack  obj [time]        Attack while attempting to stay immobile\n"
+			"   'holdCourse     ang dist          Hold course\n"
 			"   'loot           obj               Loot target\n"
 			"   'mine           obj               Mine asteroids [base]\n"
 			"   'navPath        navID             Follow nav path ID\n"
 			"   'orbit          obj dist [time]   Orbit target\n"
 			"   'orbitExact     obj [options]     Orbit target\n"
+			"       radius: (int) patrol distance in lightseconds\n"
+			"       speed: (real) angular speed (degrees)\n"
+			"       eccentricity: (real) orbital eccentricity\n"
+			"       angle: (int) starting position. 0 = auto determine.\n"
+			"       timer: (int) time remaining in real world seconds\n"
 			"   'patrol         obj [dist]        Patrol around target\n"
 			"   'scavenge                         Scavenge for scraps\n"
 			"   'sendMessage    obj msg           Send message to target\n"
@@ -1440,14 +1456,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'waitForEnemy   [time]            Wait until enemy in LRS\n"
 			"   'waitForPlayer                    Wait for player to return\n"
 			"   'waitForTarget  obj [dist] [time] Wait until target in range\n"
-			"   'waitForThreat  [time]\n"
+			"   'waitForThreat  [time]            Wait until attacked\n"
 			"   'waitForUndock  obj [time]        Wait for target to undock\n"
 			"   'wander                           Wander, avoiding enemies\n",
 
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpOrderImmediate",			fnShipSet,		FN_SHIP_ORDER_IMMEDIATE,
-			"(shpOrderImmediate ship order [target] [count]) -> True/Nil",
+			"(shpOrderImmediate ship order [orderArgs ...]) -> True/Nil\n\n"
+			
+			"See (shpOrder ...) for details.\n",
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpRechargeShield",			fnShipSet,		FN_SHIP_RECHARGE_SHIELD,
