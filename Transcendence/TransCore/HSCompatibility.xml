@@ -443,6 +443,7 @@
 									(setq desc (cat desc " (" gMaxCount " for " (fmtCurrency currencyUsed (multiply gCost gMaxCount)) ")"))
 									)
 
+								(setq desc (cat desc "\nUnit size: " (fmtNumber 'CBM (itmGetVolume thisItem))))
 								(setq desc (cat desc "\nUnit mass: " (fmtNumber 'massKg (itmGetMass thisItem))))
 								(if (gr gMaxCount 1)
 									(setq desc (cat desc " (" gMaxCount " at " (fmtNumber 'massKg (multiply (itmGetMass thisItem) gMaxCount)) ")"))

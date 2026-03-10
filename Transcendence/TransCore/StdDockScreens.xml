@@ -497,9 +497,13 @@
 									(setq priceText (cat priceText " (" availCount " for " (fmtCurrency currencyUsed (multiply gCost availCount)) ")"))
 									)
 
-								(setq priceText (cat priceText "\nUnit mass: " (fmtNumber 'massKg (itmGetMass thisItem))))
+								(setq priceText (cat priceText "\nUnit size: " (fmtNumber 'CBM (itmGetVolume thisItem))))
 								(if (gr availCount 1)
-									(setq priceText (cat priceText " (" availCount " at " (fmtNumber 'massKg (multiply (itmGetMass thisItem) availCount)) ")"))
+									(setq priceText (cat priceText " (" availCount " at " (fmtNumber 'CBM (multiply (itmGetVolume thisItem) availCount)) ")"))
+									)
+								(setq priceText (cat priceText "\nUnit mass: " (fmtNumber 'massKg (itmGetMassKg thisItem))))
+								(if (gr availCount 1)
+									(setq priceText (cat priceText " (" availCount " at " (fmtNumber 'massKg (multiply (itmGetMassKg thisItem) availCount)) ")"))
 									)
 
 								(setq priceText (cat priceText "\n\n"))

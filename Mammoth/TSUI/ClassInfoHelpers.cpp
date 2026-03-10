@@ -61,28 +61,28 @@ void CUIHelper::CreateClassInfoArmor (const CShipClass &Class, int x, int y, int
 
 	CString sMaxArmor;
 
-	CString sMaxArmorLimit = CLanguage::ComposeNumber(CLanguage::numberMass, Hull.GetArmorLimits().GetMaxArmorMass());
-	const CString &sMaxMassClass = Hull.GetArmorLimits().GetMaxArmorClass();
-	if (!sMaxMassClass.IsBlank())
+	CString sMaxArmorLimit = CLanguage::ComposeNumber(CLanguage::numberCBMBasic, Hull.GetArmorLimits().GetMaxArmorSize());
+	const CString &sMaxArmorClass = Hull.GetArmorLimits().GetMaxArmorClass();
+	if (!sMaxArmorClass.IsBlank())
 		{
-		const CArmorMassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorMassDefinitions();
-		sMaxArmor = strPatternSubst(CONSTLIT("%s (%s)"), MassDef.GetMassClassLabel(sMaxMassClass), sMaxArmorLimit);
+		const CArmorClassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorClassDefinitions();
+		sMaxArmor = strPatternSubst(CONSTLIT("%s"), MassDef.GetArmorClassLabel(sMaxArmorClass));
 		}
-	else if (Hull.GetArmorLimits().GetMaxArmorMass() > 0) 
+	else if (Hull.GetArmorLimits().GetMaxArmorSize() > 0) 
 		sMaxArmor = sMaxArmorLimit;
 	else
 		sMaxArmor = "unlimited";
 
 	CString sStdArmor;
 
-	CString sStdArmorLimit = CLanguage::ComposeNumber(CLanguage::numberMass, Hull.GetArmorLimits().GetStdArmorMass());
-	const CString &sStdMassClass = Hull.GetArmorLimits().GetStdArmorClass();
-	if (!sStdMassClass.IsBlank())
+	CString sStdArmorLimit = CLanguage::ComposeNumber(CLanguage::numberCBMBasic, Hull.GetArmorLimits().GetStdArmorSize());
+	const CString &sStdArmorClass = Hull.GetArmorLimits().GetStdArmorClass();
+	if (!sStdArmorClass.IsBlank())
 		{
-		const CArmorMassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorMassDefinitions();
-		sStdArmor = strPatternSubst(CONSTLIT("%s (%s)"), MassDef.GetMassClassLabel(sStdMassClass), sStdArmorLimit);
+		const CArmorClassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorClassDefinitions();
+		sStdArmor = strPatternSubst(CONSTLIT("%s"), MassDef.GetArmorClassLabel(sStdArmorClass));
 		}
-	else if (Hull.GetArmorLimits().GetStdArmorMass() > 0) 
+	else if (Hull.GetArmorLimits().GetStdArmorSize() > 0) 
 		sStdArmor = sStdArmorLimit;
 	else
 		sStdArmor = "unlimited";
@@ -123,9 +123,9 @@ void CUIHelper::CreateClassInfoCargo (const CShipClass &Class, const CDeviceDesc
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
 			strFromInt(CargoDesc.GetCargoSpace()),
 			(COLORREF)VI.GetColor(colorTextDialogInput),
-			(pCargoExpansion ? strPatternSubst(CONSTLIT("ton %s"), CTextBlock::Escape(pCargoExpansion->GetType()->GetNounPhrase(nounActual))) : CONSTLIT("ton cargo hold")),
+			(pCargoExpansion ? strPatternSubst(CONSTLIT("CBM %s"), CTextBlock::Escape(pCargoExpansion->GetType()->GetNounPhrase(nounActual))) : CONSTLIT("CBM cargo hold")),
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
-			(CargoDesc.GetCargoSpace() < Class.GetHullDesc().GetMaxCargoSpace() ? strPatternSubst(CONSTLIT("optional expansion up to %d tons"), Class.GetHullDesc().GetMaxCargoSpace()) : CONSTLIT("cargo space cannot be expanded")));
+			(CargoDesc.GetCargoSpace() < Class.GetHullDesc().GetMaxCargoSpace() ? strPatternSubst(CONSTLIT("optional expansion up to %d CBM"), Class.GetHullDesc().GetMaxCargoSpace()) : CONSTLIT("cargo space cannot be expanded")));
 
 	CreateClassInfoSpecialItem(pItemIcon, sText, x, y, cxWidth, dwOptions, retcyHeight, retpInfo);
 	}

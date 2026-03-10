@@ -4,7 +4,7 @@
 
 	<MissionType UNID="&msCMVolunteer03;"
 			name=				"Commonwealth Volunteer 03: Rescue Freighter"
-			attributes=			"commonwealthMilitia, commonwealthVolunteer, eridaniScript, metropolisMilitia, rank0"
+			attributes=			"commonwealthMilitia, commonwealthVolunteer, eridaniScript, metropolisMilitia, rank0, questItem"
 
 			level=						"1-4"
 			maxAppearing=				"2-4"
@@ -312,6 +312,13 @@
 					)
 				
 			</OnObjDestroyed>
+
+			<CheckQuestItem>
+				(and
+					(itmMatches gData "* +unid:&itRejuvTankPatient;;")
+					(= (itm@ gData 'missionID) (objGetID gSource))
+					)
+			</CheckQuestItem>
 
 			<OnObjDocked>
 

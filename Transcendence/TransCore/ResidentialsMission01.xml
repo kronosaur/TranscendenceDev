@@ -4,7 +4,7 @@
 
 	<MissionType UNID="&msResidentials01;"
 			name=				"Commonwealth Residentials 01: Retrieve CO2 Scrubbers from Enemy Station"
-			attributes=			"commonwealthResidentials, eridaniScript"
+			attributes=			"commonwealthResidentials, eridaniScript, questItem"
 			inherit=			"&baRetrieveFromStationMission;"
 
 			level=				"1-5"

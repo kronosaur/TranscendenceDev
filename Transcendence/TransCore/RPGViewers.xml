@@ -101,7 +101,7 @@
 					{/f:MediumBold;/c:#79828c; thrust//mass:} %thrust%\n
 					{/f:MediumBold;/c:#79828c; maneuverability:} %maneuver%\n
 
-					{/f:MediumBold;/c:#79828c; cargo space:} %cargoSpace% tons
+					{/f:MediumBold;/c:#79828c; cargo space:} %cargoSpace% CBM
 				}
 			</RTF>
 			<RTF id="rtfArmor">

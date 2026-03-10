@@ -52,6 +52,7 @@
 			attributes=			"shipSystems"
 			virtual=			"true"
 			level=				"1"
+			installedItemUsesObjectImage="true"
 			>
 
 		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
@@ -73,6 +74,7 @@
 			attributes=			"shipSystems"
 			virtual=			"true"
 			level=				"1"
+			installedItemUsesObjectImage="true"
 			>
 
 		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
@@ -94,6 +96,7 @@
 			attributes=			"shipSystems"
 			virtual=			"true"
 			level=				"1"
+			installedItemUsesObjectImage="true"
 			>
 
 		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
@@ -115,6 +118,7 @@
 			attributes=			"shipSystems"
 			virtual=			"true"
 			level=				"1"
+			installedItemUsesObjectImage="true"
 			>
 
 		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
@@ -136,6 +140,7 @@
 			attributes=			"shipSystems"
 			virtual=			"true"
 			level=				"1"
+			installedItemUsesObjectImage="true"
 			>
 
 		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
@@ -157,6 +162,7 @@
 			attributes=			"shipSystems"
 			virtual=			"true"
 			level=				"1"
+			installedItemUsesObjectImage="true"
 			>
 
 		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
@@ -178,6 +184,7 @@
 			attributes=			"shipSystems"
 			virtual=			"true"
 			level=				"1"
+			installedItemUsesObjectImage="true"
 			>
 
 		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>

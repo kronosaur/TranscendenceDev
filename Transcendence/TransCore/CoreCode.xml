@@ -973,15 +973,14 @@
 					)
 				))
 
-			(setq sysGetStargateLeadingToNode (lambda (nodeID)
-			
-			; Returns the stargate object that leads to the given nodeID from 
-			; the current system. Nil if the node is unreachable.
-			; ------------------------------------------------------------------
-
-				(sysGetObjectByName
-					(map (sysGetStargates) '(excludeNil reduceMin original) gateID
-						(sysGetTopologyDistance (sysGetStargateDestinationNode gateID) nodeID)
+			(setq sysGetStargateLeadingToNode (lambda (nodeID options)
+				"Returns the stargate object that leads to the given nodeID. Nil if the node is unreachable."
+				(block (
+					(nextNodeID (sysGetNextNodeTo (sysGetNode) nodeID options))
+					(nextGateID (match (sysGetStargates) theGate (= (sysGetStargateDestinationNode theGate) nextNodeID)))
+					)
+					(if nextGateID
+						(sysFindObject Nil (cat "NG:" nextGateID))
 						)
 					)
 				))

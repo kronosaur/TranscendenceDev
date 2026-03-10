@@ -489,8 +489,18 @@
 								(capacityLeft
 									(if (ls (objGetCargoSpaceLeft sourceObj) 200000)
 										(scrTranslate gScreen 'capacityLeftString {
-											capacity: (fmtNumber 'massKg (objGetCargoSpaceLeft sourceObj))
+											capacity: (fmtNumber 'CBM (obj@ sourceObj 'cargoSpaceFree))
 											})
+										)
+									)
+
+								(totalSizeString 
+									(if (gr maxCount 1)
+										(scrTranslate gScreen 'totalSizeString {
+											quantity:maxCount
+											size:(fmtNumber 'CBM (* (itmGetVolume thisItem) maxCount))
+											})
+										""
 										)
 									)
 
@@ -498,7 +508,7 @@
 									(if (gr maxCount 1)
 										(scrTranslate gScreen 'totalMassString {
 											quantity:maxCount
-											mass:(fmtNumber 'massKg (* (itmGetMass thisItem) maxCount))
+											mass:(fmtNumber 'massKg (* (itmGetMassKg thisItem) maxCount))
 											})
 										""
 										)
@@ -506,7 +516,9 @@
 
 								(itemText
 									(scrTranslate gScreen 'descJettisonDefault {
-										unitMass:(fmtNumber 'massKg (itmGetMass thisItem))
+										unitSize:(fmtNumber 'CBM (itmGetVolume thisItem))
+										totalSizeString:totalSizeString
+										unitMass:(fmtNumber 'massKg (itmGetMassKg thisItem))
 										totalMassString:totalMassString
 										})
 									)
@@ -617,9 +629,11 @@
 			<Text id="actionJettison">[J]ettison</Text>
 
 			<Text id="descJettisonDefault">
+				Unit size: %unitSize% %totalSizeString%
 				Unit mass: %unitMass% %totalMassString%
 			</Text>
 			<String id="totalMassString">(%quantity% at %mass%)</String>
+			<String id="totalSizeString">(%quantity% at %size%)</String>
 			<Text id="capacityLeftString">Capacity Left: %capacity%</Text>
 
 			<Text id="rpg.jettisonQuantity">How many items do you wish to jettison?</Text>
@@ -706,7 +720,17 @@
 									(if (gr maxCount 1)
 										(scrTranslate gScreen 'totalMassString {
 											quantity:maxCount
-											mass:(fmtNumber 'massKg (* (itmGetMass thisItem) maxCount))
+											mass:(fmtNumber 'massKg (* (itmGetMassKg thisItem) maxCount))
+											})
+										""
+										)
+									)
+
+								(totalSizeString 
+									(if (gr maxCount 1)
+										(scrTranslate gScreen 'totalSizeString {
+											quantity:maxCount
+											size:(fmtNumber 'CBM (* (itmGetVolume thisItem) maxCount))
 											})
 										""
 										)
@@ -724,8 +748,10 @@
 
 								(itemText
 									(scrTranslate gScreen 'descLootDefault {
-										unitMass:(fmtNumber 'massKg (itmGetMass thisItem))
+										unitSize:(fmtNumber 'CBM (itmGetVolume thisItem))
+										unitMass:(fmtNumber 'massKg (itmGetMassKg thisItem))
 										unitPrice:(fmtCurrency itemCurrency itemPrice)
+										totalSizeString:totalSizeString
 										totalMassString:totalMassString
 										totalPriceString:totalPriceString
 										})
@@ -770,6 +796,9 @@
 								(setq itemsToLoot (scrRemoveItem gScreen 1))
 								(objAddItem gPlayerShip itemsToLoot)
 
+								;	TODO: properly compute mass of ore for adventures and
+								;	extensions like VotG and Chronicles which have ore in non-ton
+								;	amounts e.g. krels or ore chunks respectively
 								(if (objHasAttribute gSource 'minedOre)
 									(plyIncItemStat gPlayer 'itemsMinedCount itemsToLoot 1)
 									)
@@ -830,6 +859,9 @@
 									(setq itemsToLoot (scrRemoveItem gScreen count))
 									(objAddItem gPlayerShip itemsToLoot)
 
+									;	TODO: properly compute mass of ore for adventures and
+									;	extensions like VotG and Chronicles which have ore in non-ton
+									;	amounts e.g. krels or ore chunks respectively
 									(if (objHasAttribute gSource 'minedOre)
 										(plyIncItemStat gPlayer 'itemsMinedCount itemsToLoot count)
 										)
@@ -849,9 +881,11 @@
 		
 		<Language>
 			<Text id="descLootDefault">
+				Unit size: %unitSize% %totalSizeString%\n
 				Unit mass: %unitMass% %totalMassString%\n
 				Unit price: %unitPrice% %totalPriceString%
 			</Text>
+			<String id="totalSizeString">(%quantity% at %size%)</String>
 			<String id="totalMassString">(%quantity% at %mass%)</String>
 			<String id="totalPriceString">(%count% for %price%)</String>
 			<Text id="capacityLeftString">Capacity Left: %capacity%</Text>

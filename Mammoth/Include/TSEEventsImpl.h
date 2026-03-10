@@ -48,6 +48,10 @@ class CTimedEncounterEvent : public CSystemEvent
 			CSpaceObject *pGate = NULL;			//	Gate to exit from
 			CVector vPos;						//	Position to create at (if pGate is NULL)
 			Metric rDistance = 0.0;				//	Create a distance from target
+			CSovereign *pSovereign = NULL;		//	Override ship sovereign
+			CDesignType *pOverride = NULL;		//	Override to apply to ships (may be NULL)
+			int iLevel = 0;						//	Override to apply to level tables (only if > 0)
+			bool bIgnoreLimits = false;			//	If TRUE, create even if we exceed limits
 			};
 
 		CTimedEncounterEvent (int iTick, DWORD dwEncounterTableUNID, const SOptions &Options);
@@ -73,6 +77,10 @@ class CTimedEncounterEvent : public CSystemEvent
 		CSpaceObject *m_pGate;
 		CVector m_vPos;
 		Metric m_rDistance;
+		CSovereign *m_pSovereign = NULL;	//	Override ship sovereign
+		CDesignType *m_pOverride = NULL;	//	Override to apply to ships (may be NULL)
+		int m_iLevel = 0;					//	Override to apply to level tables (only if > 0)
+		bool m_bIgnoreLimits = false;		//	If TRUE, create even if we exceed limits
 	};
 
 class CTimedCustomEvent : public CSystemEvent

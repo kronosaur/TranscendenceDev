@@ -55,7 +55,7 @@ void CRandomEncounterDesc::Create (CSystem &System, CSpaceObject *pTarget, CSpac
 		SShipCreateCtx Ctx;
 		Ctx.pSystem = &System;
 		Ctx.pBase = m_pBase;
-		Ctx.pBaseSovereign = m_pBaseSovereign;
+		Ctx.pSovereign = m_pBaseSovereign;
 		Ctx.pTarget = pTarget;
 
 		//	Figure out where the encounter will come from

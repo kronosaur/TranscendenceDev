@@ -100,7 +100,8 @@
 #define RANGE_ATTRIB							CONSTLIT("range")
 #define RELATIVISTIC_SPEED_ATTRIB				CONSTLIT("relativisticSpeed")
 #define BEAM_CONTINUOUS_ATTRIB					CONSTLIT("repeating")
-#define CONTINUOUS_FIRE_DELAY_ATTRIB			CONSTLIT("repeatingDelay")
+#define REPEATING_DELAY_LEGACY_ATTRIB			CONSTLIT("repeatingDelay")
+#define REPEATING_SHOT_DELAY_ATTRIB				CONSTLIT("repeatingShotDelay")
 #define SOUND_ATTRIB							CONSTLIT("sound")
 #define FIRE_SOUND_FALLOFF_ATTRIB				CONSTLIT("soundFalloffFactor")
 #define FIRE_SOUND_FALLOFF_START_ATTRIB			CONSTLIT("soundFalloffStart")
@@ -367,23 +368,24 @@ int CWeaponFireDesc::CalcDefaultHitPoints (void) const
 	else if (m_iFireType == ftBeam)
 		return 0;
 
-	//	Ammo items get hit points proportional to level and mass.
+	//	Ammo items get hit points proportional to level and volume.
+	//	TODO: consider density when rebalancing for 2.0
 
 	else if (m_pAmmoType)
 		{
 		CItem AmmoItem(m_pAmmoType, 1);
 		Metric rStdHP = CWeaponClass::HP_ARMOR_RATIO * CArmorClass::GetStdHP(AmmoItem.GetLevel());
-		Metric rMassAdj = AmmoItem.GetMassKg() / CWeaponClass::STD_AMMO_MASS;
+		Metric rSizeAdj = AmmoItem.GetVolume() / CWeaponClass::STD_AMMO_VOLUME;
 
 		//	Compute how many of these shots are created by one ammo item.
 
 		Metric rShotsPerAmmoItem = CalcShotsPerAmmoItem();
 		if (rShotsPerAmmoItem > 0.0)
-			rMassAdj /= rShotsPerAmmoItem;
+			rSizeAdj /= rShotsPerAmmoItem;
 
 		//	Return hit points
 
-		return mathRound(rMassAdj * rStdHP);
+		return mathRound(rSizeAdj * rStdHP);
 		}
 
 	//	Otherwise, compute based on damage ratio.
@@ -2413,7 +2415,22 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	//	Load continuous and passthrough
 
 	m_iContinuous = pDesc->GetAttributeIntegerBounded(BEAM_CONTINUOUS_ATTRIB, 0, -1, -1);
-	m_rContinuousFireDelay = pDesc->GetAttributeDoubleBounded(CONTINUOUS_FIRE_DELAY_ATTRIB, 0.0, -1.0, -1.0);
+	m_rContinuousFireDelay = pDesc->GetAttributeDoubleBounded(REPEATING_SHOT_DELAY_ATTRIB, 0.0, -1.0, -1.0);
+
+	//	If someone is instead using the legacy version of repeating delay:
+	//	It cannot be less than 2 simulation seconds, and it adds the specified number as additional simulation seconds
+	//	Note to future maintainers: This is not a bug or an incorrect default, this is actually how the legacy version worked
+
+	if (m_rContinuousFireDelay < 0.0)
+		{
+		Metric rLegacyContinuousFireDelay = pDesc->GetAttributeDoubleBounded(REPEATING_DELAY_LEGACY_ATTRIB, 0.0, -1.0, -1.0);
+		if (Ctx.GetAPIVersion() > 58 && rLegacyContinuousFireDelay >= 0)
+			kernelDebugLogString(CONSTLIT("WARNING: repeatingDelay is deprecated in API versions above 58, because it is delay = repeatingDelay + 2. Use repeatingShotDelay (specify exact delay in simulation seconds) instead."));
+		else if (rLegacyContinuousFireDelay < 0)
+			rLegacyContinuousFireDelay = 0;
+		m_rContinuousFireDelay = STD_SECONDS_PER_UPDATE + rLegacyContinuousFireDelay;
+		}
+
 	m_iChargeTime = pDesc->GetAttributeIntegerBounded(CHARGE_TIME_ATTRIB, 0, -1, -1);
 
 	if (pDesc->FindAttributeInteger(PASSTHROUGH_ATTRIB, &m_iPassthrough))

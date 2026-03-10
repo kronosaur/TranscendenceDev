@@ -3,7 +3,21 @@
 ;	Regression tests for comparison operations
 ;	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved
 
+;	Variables used for some of the comparisons
+
+(setq testLambdaA (lambda (a b) "" (!= a b)))
+(setq testLambdaB (lambda (a b) "" (!= a b)))
+(setq testLambdaC (lambda (a b) "" (= a b)))
+(setq testLambdaD (lambda (a) "" (= a Nil)))
+(setq testLambdaE testLambdaA)
+
 (setq TEST_SUITE (list
+
+	;	For consistency, incompatible comparisons always return Nil.
+	
+	;;;;;;;;;;;;;;;;;;;;;;
+	;	Legacy comparisons (partial coercion)
+	;;;;;;;;;;;;;;;;;;;;;;
 
 	;	For backwards compatibility, we don't coerce strings to numbers
 
@@ -30,6 +44,29 @@
 	{	code: '(eq "asdf" "asdf")			result: True }
 	{	code: '(eq "ASDF" "asdf")			result: True }
 
+	{	code: '(?==)				result: True }
+	{	code: '(?== 1)			result: True }
+	{	code: '(?== 1 1)			result: True }
+	{	code: '(?== 1 2)			result: True }
+	{	code: '(?== 1 1 1 1)		result: True }
+	{	code: '(?== 0 1 1 1)		result: True }
+	{	code: '(?== 1 1 1 0)			result: True }
+	{	code: '(?== 1.0 1)			result: True }
+	{	code: '(?== 2.0 2)			result: True }
+	{	code: '(?== "a" "a")			result: True }
+	{	code: '(?== "A" "a")			result: True }
+	{	code: '(?== "a" "A")			result: True }
+	{	code: '(?== "b" "A")			result: True }
+	{	code: '(?== "a" "A" "a")			result: True }
+	{	code: '(?== "1" 1)			result: Nil }
+	{	code: '(?== "0.1" 0.1)			result: Nil }
+	{	code: '(?== "0.100" 0.1)			result: Nil }
+	{	code: '(?== "1e-1" 0.1)			result: Nil }
+	{	code: '(?== 1 "1")			result: Nil }
+	{	code: '(?== "asdf" 0)			result: Nil }
+	{	code: '(?== "asdf" "asdf")			result: True }
+	{	code: '(?== "ASDF" "asdf")			result: True }
+
 	;	For backwards compatibility, for all comparisons, anything less
 	;	than two arguments always returns True.
 
@@ -40,16 +77,25 @@
 	{	code: '(ls 1 1)			result: Nil }
 	{	code: '(ls 1 2)			result: True }
 	{	code: '(ls -1 2)			result: True }
+	{	code: '(ls -1 "2.0")			result: Nil }
+	{	code: '(ls "2.0" -1)			result: Nil }
 	{	code: '(ls 1 2 3 4 5.0 6 7)			result: True }
 	{	code: '(ls 1 1 2 3 4 5 6 7)			result: Nil }
 	{	code: '(ls 1 2 3.0 4 5 6 7 0)		result: Nil }
 	{	code: '(ls 8 1 2 3 4 5 6 7)			result: Nil }
+	{	code: '(ls 1 "2" 3.0 4 5 6 7)		result: Nil }
+	{	code: '(ls 1 "2.0" 3.0 4 5 6 7)		result: Nil }
+	{	code: '(ls 1 "2" "3.0" 4 5 6 7)		result: Nil }
 	{	code: '(ls "")			result: True }
 	{	code: '(ls "a")			result: True }
 	{	code: '(ls "a" "a")			result: Nil }
 	{	code: '(ls "a" "b")			result: True }
 	{	code: '(ls "a" "B")			result: True }
 	{	code: '(ls "a" "B" "c")			result: True }
+	{	code: '(ls 2 "a" 2)				result: Nil }
+	{	code: '(ls "a" 2 "a")			result: Nil }
+	{	code: '(ls 2 "a")				result: Nil }
+	{	code: '(ls "a" 2)				result: Nil }
 
 	{	code: '(gr)			result: True }
 	{	code: '(gr 1)			result: True }
@@ -58,6 +104,8 @@
 	{	code: '(gr 1 1)			result: Nil }
 	{	code: '(gr 2 1)			result: True }
 	{	code: '(gr 2 -1)			result: True }
+	{	code: '(gr -1 "2.0")			result: Nil }
+	{	code: '(gr "2.0" -1)			result: Nil }
 	{	code: '(gr 7 6 5 4 3 2.5 1)			result: True }
 	{	code: '(gr 7 6 5 5 4 3 2 1)			result: Nil }
 	{	code: '(gr 0 7.5 6 5 4 3 2 1)		result: Nil }
@@ -68,6 +116,10 @@
 	{	code: '(gr "b" "a")			result: True }
 	{	code: '(gr "B" "a")			result: True }
 	{	code: '(gr "c" "B" "a")			result: True }
+	{	code: '(gr 2 "a" 2)				result: Nil }
+	{	code: '(gr "a" 2 "a")			result: Nil }
+	{	code: '(gr 2 "a")				result: Nil }
+	{	code: '(gr "a" 2)				result: Nil }
 
 	{	code: '(leq)			result: True }
 	{	code: '(leq 1)			result: True }
@@ -120,9 +172,15 @@
 	{	code: '(eq '(1 3 3) '(1 2 3))			result: Nil }
 	{	code: '(eq nil '(1 2 3))			result: Nil }
 	{	code: '(neq nil '(1 2 3))			result: True }
+	{	code: '(eq 1 1 1 0)				result: Nil }
+	{	code: '(neq 1 1 1 0)			result: True }
+	
+	;;;;;;;;;;;;;;;;;;;;;;
+	;	New comparisons (full coercion)
+	;;;;;;;;;;;;;;;;;;;;;;
 
 	;	When comparing less than two arguments, we always compare to
-	;	Nil. Nil is equal to an empty list and it is equal to a blank string
+	;	Nil. Nil is equal to an empty list or empty struct
 	;	but it is less than everything else.
 
 	{	code: '(=)				result: True }
@@ -140,6 +198,8 @@
 	{	code: '(= "b" "A")			result: Nil }
 	{	code: '(= "a" "A" "a")			result: True }
 	{	code: '(= "1" 1)			result: True }
+	{	code: '(= "1.0" 1)			result: True }
+	{	code: '(= "1" 1.0)			result: True }
 	{	code: '(= "0.1" 0.1)			result: True }
 	{	code: '(= "0.100" 0.1)			result: True }
 	{	code: '(= "1e-1" 0.1)			result: True }
@@ -149,6 +209,48 @@
 	{	code: '(= "asdf" 0)			result: Nil }
 	{	code: '(= "asdf" "asdf")			result: True }
 	{	code: '(= "ASDF" "asdf")			result: True }
+	{	code: '(= 1 1 1 0)				result: Nil }
+	{	code: '(!= 1 1 1 0)			result: True }
+
+	{	code: '(?=)								result: True }
+	{	code: '(?= 1)							result: True }
+	{	code: '(?= 1 1)							result: True }
+	{	code: '(?= 1 2)							result: True }
+	{	code: '(?= 1 1 1 1)						result: True }
+	{	code: '(?= 0 1 1 1)						result: True }
+	{	code: '(?= 1 1 1 0)						result: True }
+	{	code: '(?= 1.0 1)						result: True }
+	{	code: '(?= 2.0 2)						result: True }
+	{	code: '(?= "a" "a")						result: True }
+	{	code: '(?= "A" "a")						result: True }
+	{	code: '(?= "a" "A")						result: True }
+	{	code: '(?= "b" "A")						result: True }
+	{	code: '(?= "a" "A" "a")					result: True }
+	{	code: '(?= "1" 1)						result: True }
+	{	code: '(?= "1.0" 1)						result: True }
+	{	code: '(?= "1" 1.0)						result: True }
+	{	code: '(?= "0.1" 0.1)					result: True }
+	{	code: '(?= "0.100" 0.1)					result: True }
+	{	code: '(?= "1e-1" 0.1)					result: True }
+	{	code: '(?= 1 "1")						result: True }
+	{	code: '(?= "" nil)						result: True }
+	{	code: '(?= "" (list))					result: True }
+	{	code: '(?= "asdf" 0)					result: True }
+	{	code: '(?= "asdf" "asdf")				result: True }
+	{	code: '(?= "ASDF" "asdf")				result: True }
+	{	code: '(?= 1 1 1 0)						result: True }
+	{	code: '(?= nil nil)						result: True }
+	{	code: '(?= nil "")						result: True }
+	{	code: '(?= nil (list))					result: True }
+	{	code: '(?= (list) nil)					result: True }
+	{	code: '(?= (list) "")					result: True }
+	{	code: '(?= nil '())						result: True }
+	{	code: '(?= '() nil)						result: True }
+	{	code: '(?= { } nil)						result: True }
+	{	code: '(?= nil { })						result: True }
+	{	code: '(?= '(1 2 3) '(1 2 3))			result: True }
+	{	code: '(?= '(1 3 3) '(1 2 3))			result: True }
+	{	code: '(?= nil '(1 2 3))				result: True }
 
 	{	code: '(<)			result: Nil }
 	{	code: '(< 1)			result: True }
@@ -160,13 +262,22 @@
 	{	code: '(< 1 2 3 4 5.0 6 7)			result: True }
 	{	code: '(< 1 1 2 3 4 5 6 7)			result: Nil }
 	{	code: '(< 1 2 3.0 4 5 6 7 0)		result: Nil }
+	{	code: '(< 1 "2" 3.0 4 5 6 7)		result: True }
+	{	code: '(< 1 "2.0" 3.0 4 5 6 7)		result: True }
+	{	code: '(< 1 "2" "3.0" 4 5 6 7)		result: True }
 	{	code: '(< 8 1 2 3 4 5 6 7)			result: Nil }
+	{	code: '(< Nil 1)					result: True }
+	{	code: '(< 1 Nil)					result: Nil }
 	{	code: '(< "")			result: True }
 	{	code: '(< "a")			result: True }
 	{	code: '(< "a" "a")			result: Nil }
 	{	code: '(< "a" "b")			result: True }
 	{	code: '(< "a" "B")			result: True }
 	{	code: '(< "a" "B" "c")			result: True }
+	{	code: '(< 2 "a" 2)				result: Nil }
+	{	code: '(< "a" 2 "a")			result: Nil }
+	{	code: '(< 2 "a")				result: True }
+	{	code: '(< "a" 2)				result: Nil }
 
 	{	code: '(>)			result: Nil }
 	{	code: '(> 1)			result: Nil }
@@ -179,12 +290,18 @@
 	{	code: '(> 7 6 5 5 4 3 2 1)			result: Nil }
 	{	code: '(> 0 7.5 6 5 4 3 2 1)		result: Nil }
 	{	code: '(> 7 6 5 4 3 2 1 8)			result: Nil }
+	{	code: '(> Nil 1)					result: Nil }
+	{	code: '(> 1 Nil)					result: True }
 	{	code: '(> "")			result: Nil }
 	{	code: '(> "a")			result: Nil }
 	{	code: '(> "a" "a")			result: Nil }
 	{	code: '(> "b" "a")			result: True }
 	{	code: '(> "B" "a")			result: True }
 	{	code: '(> "c" "B" "a")			result: True }
+	{	code: '(> 2 "a" 2)				result: Nil }
+	{	code: '(> "a" 2 "a")			result: Nil }
+	{	code: '(> 2 "a")				result: Nil }
+	{	code: '(> "a" 2)				result: True }
 
 	{	code: '(<=)			result: True }
 	{	code: '(<= 1)			result: True }
@@ -262,6 +379,143 @@
 	{	code: '(if "" 1)					result: 1 }
 	{	code: '(if (list) 1)				result: Nil }
 	{	code: '(if nil 1)					result: Nil }
+	
+	;;;;;;;;;;;;;;;;;;;;;;
+	;	Exact comparisons (no coercion)
+	;;;;;;;;;;;;;;;;;;;;;;
+
+	;	When comparing less than two arguments, we always compare to
+	;	Atomic Nil. Atomic Nil is NOT exactly equal to an empty list
+	;	or struct, as they are mutable.
+
+	;	Exact Comparability
+
+	{	code: '(?=== Nil)			result: True	}
+	{	code: '(?=== Nil Nil)		result: True	}
+	{	code: '(?=== 0)				result: Nil		}
+	{	code: '(?=== 1)				result: Nil		}
+	{	code: '(?=== 1.0)			result: Nil		}
+	{	code: '(?=== 0.0)			result: Nil		}
+	{	code: '(?=== "")			result: Nil		}
+	{	code: '(?=== (list))		result: Nil		}
+	{	code: '(?=== +)				result: Nil		}
+	{	code: '(?=== 1 0)			result: True	}
+	{	code: '(?=== 1 1)			result: True	}
+	{	code: '(?=== 1 1 1 1)		result: True	}
+	{	code: '(?=== 1 1 1 0)		result: True	}
+	{	code: '(?=== (list) Nil)	result: Nil		}
+	{	code: '(?=== (list) "")		result: Nil		}
+	{	code: '(?=== (list) (list))	result: True	}
+	{	code: '(?=== "" "")			result: True	}
+	{	code: '(?=== "a" "A")		result: True	}
+	{	code: '(?=== Nil "")		result: Nil		}
+	{	code: '(?=== 1.0 1)			result: Nil		}
+	{	code: '(?=== objGetProperty obj@)			result: True}
+	{	code: '(?=== objGetData obj@)				result: True}
+	{	code: '(?=== objGetData testLambdaA)		result: Nil}
+	{	code: '(?=== testLambdaA testLambdaA)		result: True}
+	{	code: '(?=== testLambdaA testLambdaB)		result: True}
+	{	code: '(?=== testLambdaB testLambdaA)		result: True}
+	{	code: '(?=== testLambdaA testLambdaC)		result: True}
+	{	code: '(?=== testLambdaC testLambdaA)		result: True}
+	{	code: '(?=== testLambdaA testLambdaD)		result: True}
+	{	code: '(?=== testLambdaD testLambdaA)		result: True}
+	{	code: '(?=== testLambdaA testLambdaE)		result: True}
+	{	code: '(?=== testLambdaE testLambdaA)		result: True}
+	{	code: '(?=== (vector (list 1 2)) (vector (list 1 2)))							result: True}
+	{	code: '(?=== (vector (list 1 2)) (vector (list 1 2 3)))							result: True}
+	{	code: '(?=== (vector (list 1 2.0)) (vector (list 1 2)))							result: True}
+	{	code: '(?=== (vector (list (list 1 1) (list 1 1))) (vfilled 1.0 (list 2 2)))	result: True}
+	{	code: '(?=== (vector (list (list 1 2) (list 3 4))) (vfilled -1.0 (list 2 2)))	result: True}
+	{	code: '(?=== (vector (list 1 2)) (list 1 2))									result: Nil}
+	{	code: '(?=== (vector (list 1 2)) 1)												result: Nil}
+	{	code: '(?=== (vector (list 1 2)) 1.0)											result: Nil}
+	{	code: '(?=== (vector (list 1 2)) "")											result: Nil}
+
+	;	Exact (Type + Case) Equality
+
+	{	code: '(=== Nil)			result: True	}
+	{	code: '(=== Nil Nil)		result: True	}
+	{	code: '(=== 0)				result: Nil		}
+	{	code: '(=== 1)				result: Nil		}
+	{	code: '(=== 1.0)			result: Nil		}
+	{	code: '(=== 0.0)			result: Nil		}
+	{	code: '(=== "")				result: Nil		}
+	{	code: '(=== (list))			result: Nil		}
+	{	code: '(=== +)				result: Nil		}
+	{	code: '(=== 1 0)			result: Nil		}
+	{	code: '(=== 1 1)			result: True	}
+	{	code: '(=== 1 1 1 1)		result: True	}
+	{	code: '(=== 1 1 1 0)		result: Nil		}
+	{	code: '(=== (list) Nil)		result: Nil		}
+	{	code: '(=== (list) "")		result: Nil		}
+	{	code: '(=== (list) (list))	result: True	}
+	{	code: '(=== "" "")			result: True	}
+	{	code: '(=== "a" "A")		result: Nil		}
+	{	code: '(=== Nil "")			result: Nil		}
+	{	code: '(=== 1.0 1)			result: Nil		}
+	{	code: '(=== objGetProperty obj@)			result: True}
+	{	code: '(=== objGetData obj@)				result: Nil}
+	{	code: '(=== testLambdaA testLambdaA)		result: True}
+	{	code: '(=== testLambdaA testLambdaB)		result: Nil}
+	{	code: '(=== testLambdaB testLambdaA)		result: Nil}
+	{	code: '(=== testLambdaA testLambdaC)		result: Nil}
+	{	code: '(=== testLambdaC testLambdaA)		result: Nil}
+	{	code: '(=== testLambdaA testLambdaD)		result: Nil}
+	{	code: '(=== testLambdaD testLambdaA)		result: Nil}
+	{	code: '(=== testLambdaA testLambdaE)		result: True}
+	{	code: '(=== testLambdaE testLambdaA)		result: True}
+	{	code: '(=== (vector (list 1 2)) (vector (list 1 2)))							result: True}
+	{	code: '(=== (vector (list 1 2)) (vector (list 1 2 3)))							result: Nil}
+	{	code: '(=== (vector (list 1 2.0)) (vector (list 1 2)))							result: True}
+	{	code: '(=== (vector (list (list 1 1) (list 1 1))) (vfilled 1.0 (list 2 2)))		result: True}
+	{	code: '(=== (vector (list (list 1 2) (list 3 4))) (vfilled -1.0 (list 2 2)))	result: Nil}
+	{	code: '(=== (vector (list 1 2)) (list 1 2))										result: Nil}
+	{	code: '(=== (vector (list 1 2)) 1)												result: Nil}
+	{	code: '(=== (vector (list 1 2)) 1.0)											result: Nil}
+	{	code: '(=== (vector (list 1 2)) "")												result: Nil}
+
+	{	code: '(!=== Nil)			result: Nil		}
+	{	code: '(!=== Nil Nil)		result: Nil		}
+	{	code: '(!=== 0)				result: True	}
+	{	code: '(!=== 1)				result: True	}
+	{	code: '(!=== 1.0)			result: True	}
+	{	code: '(!=== 0.0)			result: True	}
+	{	code: '(!=== "")			result: True	}
+	{	code: '(!=== (list))		result: True	}
+	{	code: '(!=== +)				result: True	}
+	{	code: '(!=== 1 0)			result: True	}
+	{	code: '(!=== 1 1)			result: Nil		}
+	{	code: '(!=== 1 1 1 1)		result: Nil		}
+	{	code: '(!=== 1 1 1 0)		result: True	}
+	{	code: '(!=== (list) Nil)	result: True	}
+	{	code: '(!=== (list) "")		result: True	}
+	{	code: '(!=== (list) (list))	result: Nil		}
+	{	code: '(!=== "" "")			result: Nil		}
+	{	code: '(!=== "a" "A")		result: True	}
+	{	code: '(!=== Nil "")		result: True	}
+	{	code: '(!=== 1.0 1)			result: True	}
+	{	code: '(!=== objGetProperty obj@)			result: Nil}
+	{	code: '(!=== objGetData obj@)				result: True}
+	{	code: '(!=== testLambdaA testLambdaA)		result: Nil}
+	{	code: '(!=== testLambdaA testLambdaB)		result: True}
+	{	code: '(!=== testLambdaB testLambdaA)		result: True}
+	{	code: '(!=== testLambdaA testLambdaC)		result: True}
+	{	code: '(!=== testLambdaC testLambdaA)		result: True}
+	{	code: '(!=== testLambdaA testLambdaD)		result: True}
+	{	code: '(!=== testLambdaD testLambdaA)		result: True}
+	{	code: '(!=== testLambdaA testLambdaE)		result: Nil}
+	{	code: '(!=== testLambdaE testLambdaA)		result: Nil}
+	{	code: '(!=== (vector (list 1 2)) (vector (list 1 2)))							result: Nil}
+	{	code: '(!=== (vector (list 1 2)) (vector (list 1 2 3)))							result: True}
+	{	code: '(!=== (vector (list 1 2.0)) (vector (list 1 2)))							result: Nil}
+	{	code: '(!=== (vector (list (list 1 1) (list 1 1))) (vfilled 1.0 (list 2 2)))	result: Nil}
+	{	code: '(!=== (vector (list (list 1 2) (list 3 4))) (vfilled -1.0 (list 2 2)))	result: True}
+	{	code: '(!=== (vector (list 1 2)) (list 1 2))									result: True}
+	{	code: '(!=== (vector (list 1 2)) 1)												result: True}
+	{	code: '(!=== (vector (list 1 2)) 1.0)											result: True}
+	{	code: '(!=== (vector (list 1 2)) "")											result: True}
+
 	))
 
 (debugUnitTest "Comparison Unit Test" TEST_SUITE)

@@ -22,6 +22,8 @@
 #define TYPE_POSITIVE							CONSTLIT("advantage")
 #define TYPE_NEGATIVE							CONSTLIT("disadvantage")
 #define TYPE_NEUTRAL							CONSTLIT("neutral")
+#define TYPE_WARNING							CONSTLIT("warning")
+#define TYPE_QUEST								CONSTLIT("quest")
 
 const int DEFAULT_LOCATION_FREQUENCY =			20;
 const CDisplayAttributeDefinitions CDisplayAttributeDefinitions::Null;
@@ -260,6 +262,10 @@ bool CDisplayAttributeDefinitions::InitFromCCItem (ICCItem *pEntry, SDisplayAttr
 			iType = attribPositive;
 		else if (strEquals(sType, TYPE_NEGATIVE))
 			iType = attribNegative;
+		else if (strEquals(sType, TYPE_WARNING))
+			iType = attribWarning;
+		else if(strEquals(sType, TYPE_QUEST))
+			iType = attribQuest;
 		else
 			return false;
 		}
@@ -316,6 +322,10 @@ ALERROR CDisplayAttributeDefinitions::InitFromXML (SDesignLoadCtx &Ctx, CXMLElem
 					pEntry->iType = attribNegative;
 				else if (strEquals(sType, TYPE_NEUTRAL))
 					pEntry->iType = attribNeutral;
+				else if (strEquals(sType, TYPE_WARNING))
+					pEntry->iType = attribWarning;
+				else if (strEquals(sType, TYPE_QUEST))
+					pEntry->iType = attribQuest;
 				else
 					{
 					Ctx.sError = strPatternSubst(CONSTLIT("Invalid label type: %s."), sType);

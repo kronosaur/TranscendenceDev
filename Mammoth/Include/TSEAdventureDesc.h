@@ -38,9 +38,13 @@ class CEngineOptions
 		Metric GetDamageMethodAdjStationHullArmor (EDamageMethod iMethod) const { return GetDamageMethodAdj(m_DamageMethodStationAdj.Hull.Armor, iMethod); };
 		Metric GetDamageMethodMinDamage ()	const { return m_rDamageMethodAdjMinDamage; }
 		EDamageMethodSystem GetDamageMethodSystem () const { return m_iDamageMethodSystem; }
+		Metric GetItemDefaultDensity () const { return m_rDefaultItemDensity; }
+		Metric GetItemXMLMassToVolumeRatio () const { return m_rDefaultItemMassToVolume; }
 		const CMiningDamageLevelDesc* GetMiningMaxOreLevels () const { return &m_MiningDamageMaxOreLevels; }
 		const CDamageAdjDesc* GetShieldDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ShieldDamageAdj[iLevel - 1]; }
 		Metric GetShieldIdlePowerRatio () const { return m_rDefaultShieldIdlePowerRatio; }
+		Metric GetShipDrivePowerFactor () const { return m_rShipDrivePowerFactor; }
+		Metric GetShipDrivePowerExp () const { return m_rShipDrivePowerExp; }
 		bool HidesArmorImmunity (SpecialDamageTypes iSpecial) const;
 		bool InitArmorDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomArmorDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ArmorDamageAdj); }
 		bool InitExternalDeviceDamageMaxLevelsFromXML (SDesignLoadCtx& Ctx, const CXMLElement& XMLDesc);
@@ -169,9 +173,19 @@ class CEngineOptions
 		int m_iDefaultInteraction = -1;
 		int m_iDefaultShotHP = -1;
 
-		//	Default power consumption
+		//	Default item legacy mass-volume conversions
+
+		Metric m_rDefaultItemDensity = 1.0;
+		Metric m_rDefaultItemMassToVolume = 1.0;
+
+		//	Default item power consumption
 
 		Metric m_rDefaultShieldIdlePowerRatio = 0.125;
+
+		//	Default ship power consumption
+
+		Metric m_rShipDrivePowerFactor = 13.0;
+		Metric m_rShipDrivePowerExp = 1.2;
 
 		//	Default Damage Method behavior
 

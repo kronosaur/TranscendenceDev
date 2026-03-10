@@ -89,11 +89,13 @@ struct SShipCreateCtx
 	DiceRange PosSpread;						//	Distance from vPos (in light-seconds)
 	CSquadronID SquadronID;						//	Set squadron ID (for principals only)
 	CSpaceObject *pBase = NULL;					//	Base for this ship (may be NULL)
-	CSovereign *pBaseSovereign = NULL;			//	Only if pBase is NULL
+	CSovereign *pSovereign = NULL;				//	Override ship sovereign
 	IShipController::OrderTypes iDefaultOrder = IShipController::orderNone;
 	CSpaceObject *pTarget = NULL;				//	Target for ship orders (may be NULL)
 	CStationType *pEncounterInfo = NULL;		//	Encounter info (may be NULL)
 	CDesignType *pOverride = NULL;				//	Override to apply to ships (may be NULL)
+	int iLevel = 0;								//	Override to apply to level tables (only if > 0)
+	bool bIgnoreLimits = false;					//	If TRUE, create even if we exceed limits
 
 	DWORD dwFlags = 0;							//	Flags
 

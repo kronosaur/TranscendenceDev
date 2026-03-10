@@ -1,3 +1,4 @@
+#include "TSEItems.h"
 //	TSEItemInlines.h
 //
 //	Inline functions for various item classes.
@@ -22,9 +23,14 @@ inline CDeviceClass *CItem::GetDeviceClass (void) const
 	return (IsDevice() ? m_pItemType->GetDeviceClass() : NULL);
 	}
 
-inline const CObjectImageArray &CItem::GetImage (void) const
+//	GetVolume
+//
+//	Get the volume in cubic meters for a single instance of this item
+//
+inline Metric CItem::GetVolume() const
 	{
-	return (m_pItemType ? m_pItemType->GetImage() : CObjectImageArray::Null());
+	CItemCtx ItemCtx(*this);
+	return m_pItemType->GetVolume(ItemCtx);
 	}
 
 inline bool CItem::HasAttribute (const CString &sAttrib) const
@@ -71,12 +77,12 @@ inline bool CDifferentiatedItem::AccumulateEnhancementDisplayAttributes (TArray<
 	return m_Item.AccumulateEnhancementDisplayAttributes(retList);
 	}
 
-inline ItemCategories CDifferentiatedItem::GetCategory (void) const
+inline ItemCategories CDifferentiatedItem::GetCategory () const
 	{
 	return m_Item.GetCategory();
 	}
 
-inline int CDifferentiatedItem::GetCharges (void) const
+inline int CDifferentiatedItem::GetCharges () const
 	{
 	return m_Item.GetCharges();
 	}
@@ -87,7 +93,7 @@ inline CCurrencyAndValue CDifferentiatedItem::GetCurrencyAndValue (bool bActual)
 	return GetType().GetCurrencyAndValue(ItemCtx, bActual);
 	}
 
-inline const CEconomyType &CDifferentiatedItem::GetCurrencyType (void) const
+inline const CEconomyType &CDifferentiatedItem::GetCurrencyType () const
 	{
 	const CEconomyType *pCurrency = GetType().GetCurrencyType();
 	if (pCurrency)
@@ -96,22 +102,27 @@ inline const CEconomyType &CDifferentiatedItem::GetCurrencyType (void) const
 		return GetType().GetUniverse().GetCreditCurrency();
 	}
 
-inline const CObjectImageArray &CDifferentiatedItem::GetImage (void) const
+inline const CObjectImageArray &CDifferentiatedItem::GetImage () const
 	{
 	return m_Item.GetImage();
 	}
 
-inline int CDifferentiatedItem::GetLevel (void) const
+inline int CDifferentiatedItem::GetLevel () const
 	{
 	return m_Item.GetLevel();
 	}
 
-inline int CDifferentiatedItem::GetMassKg (void) const
+inline int CDifferentiatedItem::GetMassKg () const
 	{
 	return m_Item.GetMassKg();
 	}
 
-inline int CDifferentiatedItem::GetMinLevel (void) const
+inline Metric CDifferentiatedItem::GetVolume () const
+	{
+	return m_Item.GetVolume();
+	}
+
+inline int CDifferentiatedItem::GetMinLevel () const
 	{
 	return GetType().GetMinLevel();
 	}
@@ -139,17 +150,17 @@ inline ICCItemPtr CDifferentiatedItem::GetPropertyKeys () const
 	return m_Item.GetItemPropertyKeys(CCX, ItemCtx, false);
 	}
 
-inline int CDifferentiatedItem::GetVariantNumber (void) const
+inline int CDifferentiatedItem::GetVariantNumber () const
 	{
 	return m_Item.GetVariantNumber();
 	}
 
-inline const CItemType &CDifferentiatedItem::GetType (void) const
+inline const CItemType &CDifferentiatedItem::GetType () const
 	{
 	return *m_Item.GetType();
 	}
 
-inline CItemType &CDifferentiatedItem::GetType (void)
+inline CItemType &CDifferentiatedItem::GetType ()
 	{
 	return *m_Item.GetType();
 	}
@@ -159,22 +170,22 @@ inline bool CDifferentiatedItem::IsDamaged (int *retiDamagedHP) const
 	return m_Item.IsDamaged(retiDamagedHP);
 	}
 
-inline bool CDifferentiatedItem::IsDisrupted (void) const
+inline bool CDifferentiatedItem::IsDisrupted () const
 	{
 	return m_Item.IsDisrupted();
 	}
 
-inline bool CDifferentiatedItem::IsEnhanced (void) const
+inline bool CDifferentiatedItem::IsEnhanced () const
 	{
 	return m_Item.IsEnhanced();
 	}
 
-inline bool CDifferentiatedItem::IsLauncher (void) const
+inline bool CDifferentiatedItem::IsLauncher () const
 	{
 	return m_Item.IsLauncher();
 	}
 
-inline bool CDifferentiatedItem::IsWeapon (void) const
+inline bool CDifferentiatedItem::IsWeapon () const
 	{
 	return m_Item.IsWeapon();
 	}
@@ -191,12 +202,12 @@ inline int CArmorClass::GetInstallCost (const CArmorItem &ArmorItem) const
 	const SScalableStats &Stats = GetScaledStats(ArmorItem); return (int)m_pItemType->GetCurrencyType()->Exchange(Stats.InstallCost);
 	}
 
-inline CString CArmorClass::GetName (void) const
+inline CString CArmorClass::GetName () const
 	{
 	return m_pItemType->GetNounPhrase();
 	}
 
-inline DWORD CArmorClass::GetUNID (void)
+inline DWORD CArmorClass::GetUNID ()
 	{
 	return m_pItemType->GetUNID();
 	}

@@ -422,13 +422,24 @@ void CLevelTableOfShipGenerators::CreateShips (SShipCreateCtx &Ctx) const
 
 	//	Compute probabilities
 
-	int iLevel = Ctx.pSystem->GetLevel();
+	int iLevel = (Ctx.iLevel > 0 ? Ctx.iLevel : Ctx.pSystem->GetLevel());
 	if (iLevel != m_iComputedLevel)
 		{
 		m_iTotalChance = 0;
 		for (i = 0; i < m_Table.GetCount(); i++)
 			{
-			m_Table[i].iChance = GetFrequencyByLevel(m_Table[i].sLevelFrequency, iLevel);
+			if (Ctx.iLevel > 0)
+				{
+
+				//	If we are looking up with a level override then the lookup should be limited to
+				//	the length of the table (i.e. return the last entry rather than not random)
+
+				int iTableLength = m_Table[i].sLevelFrequency.GetLength();
+				int iMaxLevel = 5 * (iTableLength / 6) + (iTableLength % 6);
+				m_Table[i].iChance = GetFrequencyByLevel(m_Table[i].sLevelFrequency, min(iLevel, iMaxLevel));
+				}
+			else
+				m_Table[i].iChance = GetFrequencyByLevel(m_Table[i].sLevelFrequency, iLevel);
 			m_iTotalChance += m_Table[i].iChance;
 			}
 
@@ -737,7 +748,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 
 	//	See if we've exceeded maximum counts
 
-	if (m_iMaxCountForBase > 0)
+	if (!Ctx.bIgnoreLimits && m_iMaxCountForBase > 0)
 		{
 		int iShipsLeft = m_iMaxCountForBase;
 		for (i = 0; i < Ctx.pSystem->GetObjectCount(); i++)
@@ -760,7 +771,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 	//	If we've got a maximum, then see if we've already got too many ships of this
 	//	ship class.
 
-	if (m_iMaxCountInSystem > 0)
+	if (!Ctx.bIgnoreLimits && m_iMaxCountInSystem > 0)
 		{
 		int iMaxShips = m_iMaxCountInSystem;
 		for (i = 0; i < Ctx.pSystem->GetObjectCount(); i++)
@@ -854,7 +865,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 	CShip *pShip;
 	if (Ctx.pSystem->CreateShip(dwClass,
 			pController,
-			(m_pOverride ? m_pOverride : Ctx.pOverride),
+			(Ctx.pOverride ? Ctx.pOverride : m_pOverride),
 			pSovereign,
 			vPos,
 			NullVector,
@@ -950,12 +961,12 @@ void CSingleShip::CreateShips (SShipCreateCtx &Ctx) const
 	//	Figure out the sovereign
 
 	CSovereign *pSovereign;
-	if (m_pSovereign)
+	if (Ctx.pSovereign)
+		pSovereign = Ctx.pSovereign;
+	else if (m_pSovereign)
 		pSovereign = m_pSovereign;
 	else if (Ctx.pBase)
 		pSovereign = Ctx.pBase->GetSovereign();
-	else if (Ctx.pBaseSovereign)
-		pSovereign = Ctx.pBaseSovereign;
 	else
 		{
 		ASSERT(false);
@@ -965,9 +976,7 @@ void CSingleShip::CreateShips (SShipCreateCtx &Ctx) const
 
 	//	Figure out override
 
-	CDesignType *pOverride = Ctx.pOverride;
-	if (m_pOverride)
-		pOverride = m_pOverride;
+	CDesignType *pOverride = (Ctx.pOverride ? Ctx.pOverride : m_pOverride);
 
 	//	Figure out the creation position of the ship
 

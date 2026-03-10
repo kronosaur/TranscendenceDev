@@ -13,9 +13,14 @@
 #define PROPERTY_AVAILABLE_NON_WEAPON_SLOTS		CONSTLIT("availableNonWeaponSlots")
 #define PROPERTY_AVAILABLE_WEAPON_SLOTS			CONSTLIT("availableWeaponSlots")
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
+#define PROPERTY_CARGO_KG						CONSTLIT("cargoKg")						//	Returns the actual cargo mass in kg
 #define PROPERTY_CARGO_SPACE					CONSTLIT("cargoSpace")
-#define PROPERTY_CARGO_SPACE_FREE_KG			CONSTLIT("cargoSpaceFreeKg")
-#define PROPERTY_CARGO_SPACE_USED_KG			CONSTLIT("cargoSpaceUsedKg")
+#define PROPERTY_CARGO_SPACE_FREE_KG			CONSTLIT("cargoSpaceFreeKg")			//	Deprecated, returns cargo space in liters, use cargoSpaceFreeLiters
+#define PROPERTY_CARGO_SPACE_USED_KG			CONSTLIT("cargoSpaceUsedKg")			//	Deprecated, returns cargo space in liters, use cargoSpaceUsedLiters - For actual cargo mass use cargoKg instead.
+#define PROPERTY_CARGO_SPACE_FREE_VOL			CONSTLIT("cargoSpaceFree")
+#define PROPERTY_CARGO_SPACE_USED_VOL			CONSTLIT("cargoSpaceUsed")
+#define PROPERTY_CARGO_SPACE_FREE_LITERS		CONSTLIT("cargoSpaceFreeLiters")		//	For compatibility math
+#define PROPERTY_CARGO_SPACE_USED_LITERS		CONSTLIT("cargoSpaceUsedLiters")		//	For compatibility math
 #define PROPERTY_CONTAMINATION_TIMER			CONSTLIT("contaminationTimer")
 #define PROPERTY_COUNTER_INCREMENT_RATE			CONSTLIT("counterIncrementRate")
 #define PROPERTY_COUNTER_VALUE					CONSTLIT("counterValue")
@@ -315,10 +320,25 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_CARGO_SPACE))
 		return CC.CreateInteger(CalcMaxCargoSpace());
 
-	else if (strEquals(sName, PROPERTY_CARGO_SPACE_FREE_KG))
-		return CC.CreateInteger(mathRound(GetCargoSpaceLeft() * 1000.0));
+	else if (strEquals(sName, PROPERTY_CARGO_SPACE_FREE_VOL))
+		return CC.CreateDouble(mathRound(GetCargoSpaceLeft()));
 
-	else if (strEquals(sName, PROPERTY_CARGO_SPACE_USED_KG))
+	else if (strEquals(sName, PROPERTY_CARGO_SPACE_FREE_LITERS) || strEquals(sName, PROPERTY_CARGO_SPACE_FREE_KG))
+		return CC.CreateInteger(mathRound(GetCargoSpaceLeft() * 1000));
+
+	else if (strEquals(sName, PROPERTY_CARGO_SPACE_USED_VOL))
+		{
+		InvalidateItemVolume();
+		return CC.CreateDouble(mathRound(GetCargoVolume()));
+		}
+
+	else if (strEquals(sName, PROPERTY_CARGO_SPACE_USED_LITERS) || strEquals(sName, PROPERTY_CARGO_SPACE_USED_KG))
+	{
+		InvalidateItemVolume();
+		return CC.CreateInteger(mathRound(GetCargoVolume() * 1000));
+	}
+
+	else if (strEquals(sName, PROPERTY_CARGO_KG))
 		{
 		InvalidateItemMass();
 		return CC.CreateInteger(mathRound(GetCargoMass() * 1000.0));

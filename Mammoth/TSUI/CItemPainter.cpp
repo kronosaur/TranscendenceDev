@@ -136,6 +136,16 @@ void CItemPainter::FormatDisplayAttributes (const CVisualPalette &VI, TArray<SDi
 					rgbTextColor = bNeedTextColor ? VI.GetColor(colorTextDisadvantage) : rgbTextColor;
 					break;
 
+				case attribWarning:
+					rgbBackColor = bNeedBackColor ? VI.GetColor(colorAreaWarning) : rgbBackColor;
+					rgbTextColor = bNeedTextColor ? VI.GetColor(colorTextWarning) : rgbTextColor;
+					break;
+
+				case attribQuest:
+					rgbBackColor = bNeedBackColor ? VI.GetColor(colorAreaQuest) : rgbBackColor;
+					rgbTextColor = bNeedTextColor ? VI.GetColor(colorTextQuest) : rgbTextColor;
+					break;
+
 				default:
 					rgbBackColor = bNeedBackColor ? RGB_MODIFIER_NORMAL_BACKGROUND : rgbBackColor;
 					rgbTextColor = bNeedTextColor ? RGB_MODIFIER_NORMAL_TEXT : rgbTextColor;
@@ -324,7 +334,7 @@ void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText
 	if (!m_Options.bNoIcon)
 		{
 		int xIcon = (m_Options.bNoPadding ? x : x + ITEM_LEFT_PADDING);
-		DrawItemTypeIcon(Dest, xIcon, y, &ItemType, cxIcon, cyIcon, bDisabled, m_Options.bDisplayAsKnown);
+		DrawItemIcon(Dest, xIcon, y, m_pItem, cxIcon, cyIcon, bDisabled, m_Options.bDisplayAsKnown);
 		rcDrawRect.left = xIcon + cxIcon + ITEM_TEXT_MARGIN_X;
 		}
 
@@ -577,7 +587,98 @@ void CItemPainter::PaintItemEnhancement (const CVisualPalette &VI, CG32bitImage 
 			return;
 		}
 
-	DrawItemTypeIcon(Dest, rcRect.left, rcRect.top, pEnhancer, ENHANCEMENT_ICON_WIDTH, ENHANCEMENT_ICON_HEIGHT, bDisabled);
+	//	Check if this type always uses the object image when
+	//	used as an enhancement type
+	//
+	//	This option does not care if the enhancement type is
+	//	actually installed as an enhancer
+	//	Usecase: slot enhancements
+
+	else if (pEnhancer && pEnhancer->UsesObjectImageIfEnhancement())
+		{
+		//	Anything virtual has no image, and anything with no image is virtual
+		//	Just render the item icon for these instead
+
+		if (pSource->IsVirtual())
+			DrawItemTypeIcon(Dest, rcRect.left, rcRect.top, pEnhancer, ENHANCEMENT_ICON_WIDTH, ENHANCEMENT_ICON_HEIGHT, bDisabled);
+		
+		//	Otherwise we can draw the icon
+		
+		else
+			DrawObjAsItemIcon(Dest, rcRect.left, rcRect.top, pSource, ENHANCEMENT_ICON_WIDTH, ENHANCEMENT_ICON_HEIGHT, bDisabled);
+		}
+
+	//	Check if this type is installed on the ship and uses
+	//	the image of the object its installed on
+	//
+	//	This option requires that the enhancer be installed
+	//	Usecase: ship system, avionics, or sensor components
+
+	else if (pEnhancer && pEnhancer->UsesObjectImageIfInstalled())
+		{
+		CItem* pInstalledItem = NULL;
+
+		if (pEnhancer->IsArmor())
+			{
+			//	Check if this is installed on the object
+			//	Only ships actually have real armor installed on them
+
+			CShip* pSourceShip = pSource->AsShip();
+			
+			if (pSourceShip)
+				{
+				for (int i = 0; i < pSourceShip->GetArmorSectionCount(); i++)
+					{
+					if (pSourceShip->GetArmorSection(i)->AsArmorItem().GetType().GetUNID() == pEnhancer->GetUNID())
+						{
+						pInstalledItem = &(pSourceShip->GetArmorSection(i)->AsArmorItem().GetUndifferentiatedItem());
+						break;
+						}
+					}
+				}
+
+			//	TODO: handle stations using the correct armor armor
+
+			}
+		else if (pEnhancer->IsDevice())
+			{
+			//	Check if this is installed on the object
+			//	Only ships actually have real armor installed on them
+
+			CShip* pSourceShip = pSource->AsShip();
+			CStation* pSourceStation = pSource->AsStation();
+
+			if (pSourceShip)
+				{
+				for (int i = 0; i < pSourceShip->GetDeviceCount(); i++)
+					{
+					if (pSourceShip->GetDeviceItem(i).GetUndifferentiatedItem().GetType()->GetUNID() == pEnhancer->GetUNID())
+						{
+						pInstalledItem = &(pSourceShip->GetDeviceItem(i).GetUndifferentiatedItem());
+						break;
+						}
+					}
+				}
+			else if (pSourceStation)
+				{
+				for (int i = 0; i < pSourceStation->GetDeviceCount(); i++)
+					{
+					if (pSourceStation->GetDeviceItem(i).GetUndifferentiatedItem().GetType()->GetUNID() == pEnhancer->GetUNID())
+						{
+						pInstalledItem = &(pSourceStation->GetDeviceItem(i).GetUndifferentiatedItem());
+						break;
+						}
+					}
+				}
+			}
+
+		if (pInstalledItem)
+			DrawItemIcon(Dest, rcRect.left, rcRect.top, pInstalledItem, ENHANCEMENT_ICON_WIDTH, ENHANCEMENT_ICON_HEIGHT, bDisabled);
+		else
+			DrawItemTypeIcon(Dest, rcRect.left, rcRect.top, pEnhancer, ENHANCEMENT_ICON_WIDTH, ENHANCEMENT_ICON_HEIGHT, bDisabled);
+		}
+	else
+		DrawItemTypeIcon(Dest, rcRect.left, rcRect.top, pEnhancer, ENHANCEMENT_ICON_WIDTH, ENHANCEMENT_ICON_HEIGHT, bDisabled);
 
 	//	Figure out the description and attributes
 

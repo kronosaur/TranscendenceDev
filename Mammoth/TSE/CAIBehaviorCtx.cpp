@@ -208,6 +208,12 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 	for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
 		{
 		CInstalledDevice &Weapon = *DeviceItem.GetInstalledDevice();
+		
+		//	Skip weapons that the AI needs to ignore
+		
+		CWeaponClass* pWeaponType = Weapon.GetClass()->AsWeaponClass();
+		if (pWeaponType && pWeaponType->IsIgnoredByAI())
+			continue;
 
 		//	We still consider broken weapons, but only as a
 		//	last resort
@@ -455,6 +461,12 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 	for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
 		{
 		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+
+		//	Skip weapons that the AI needs to ignore
+
+		CWeaponClass* pWeaponType = Device.GetClass()->AsWeaponClass();
+		if (pWeaponType && pWeaponType->IsIgnoredByAI())
+			continue;
 
 		if (!Device.IsWorking())
 			continue;

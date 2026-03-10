@@ -1374,11 +1374,14 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		int FindNextDevice (int iStart, ItemCategories Category, int iDir = 1);
 		int FindRandomDevice (bool bEnabledOnly = false);
 		void FinishCreation (SShipGeneratorCtx *pCtx = NULL, SSystemCreateCtx *pSysCreateCtx = NULL);
-		Metric GetCargoMass (void) const;
+		Metric GetCargoMass () const;
+		Metric GetCargoVolume () const;
 		CCurrencyAndValue GetHullValue (void) const;
-		Metric GetItemMass (void) const;
+		Metric GetItemMass () const;
+		Metric GetItemVolume () const;
 		int GetTotalArmorHP (int *retiMaxHP = NULL) const;
-		void InvalidateItemMass (void) const { m_fRecalcItemMass = true; }
+		void InvalidateItemMass () const { m_fRecalcItemMass = true; }
+		void InvalidateItemVolume () const { m_fRecalcItemVolume = true; }
 		bool IsSingletonDevice (ItemCategories iItemCat);
 		void PaintMapShipCompartments (CG32bitImage &Dest, int x, int y, CMapViewportCtx &Ctx);
 		void PaintShipCompartments (CG32bitImage &Dest, SViewportPaintCtx &Ctx);
@@ -1438,6 +1441,8 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 
 		mutable Metric m_rItemMass = 0.0;			//	Total mass of all items (including installed)
 		mutable Metric m_rCargoMass = 0.0;			//	Mass of cargo items (not including installed)
+		mutable Metric m_rItemVolume = 0.0;			//	Total volume of all items (including installed)
+		mutable Metric m_rCargoVolume = 0.0;		//	Volume of cargo items (not including installed)
 		int m_iCounterValue = 0;					//	Heat/capacitor counter value
 
 		CSpaceObject *m_pDocked = NULL;				//	If not NULL, object we are docked to.
@@ -1457,7 +1462,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		DWORD m_fIdentified:1 = false;				//	TRUE if player can see ship class, etc.
 
 		DWORD m_fManualSuspended:1 = false;			//	TRUE if ship is suspended
-		mutable DWORD m_fRecalcItemMass:1 = true;	//	TRUE if we need to recalculate m_rImageMass
+		mutable DWORD m_fRecalcItemMass:1 = true;	//	TRUE if we need to recalculate m_rItemMass
 		DWORD m_fDockingDisabled:1 = false;			//	TRUE if docking is disabled
 		DWORD m_fControllerDisabled:1 = false;		//	TRUE if we want to disable controller
 		DWORD m_fRecalcRotationAccel:1 = false;		//	TRUE if we need to recalc rotation acceleration
@@ -1470,7 +1475,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		DWORD m_fHasShipCompartments:1 = false;		//	TRUE if we have ship compartment objects attached
 		DWORD m_fNameBlanked:1 = false;				//	TRUE if name has been blanked; show generic name
 		DWORD m_fShowMapLabel:1 = false;			//	TRUE if we should show a map label
-		DWORD m_fSpare6:1;
+		mutable DWORD m_fRecalcItemVolume:1 = false;//	TRUE if we need to recalculate m_rItemVolume		
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 

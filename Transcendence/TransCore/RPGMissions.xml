@@ -1372,7 +1372,10 @@
 				))
 
 			(setq rpgSetTarget (lambda (missionObj reasonCode targetObj command)
-				(block (newTargetObj)
+				(block (
+					(nodeID (or (msn@ missionObj 'rpg.targetNode) (msn@ missionObj 'nodeID)))
+					newTargetObj
+					)
 					(switch
 						; If we just got debriefed then we clear our targets.
 
@@ -1396,16 +1399,35 @@
 										(shpCancelOrders gPlayerShip)
 										(shpOrder gPlayerShip 'dock newTargetObj)
 										)
+
+								;	If we are out-system then try to point back
+
+								(and	(!= (sysGetNode) nodeID)
+										(setq newTargetObj (sysGetStargateLeadingToNode nodeID {knownOnly:True}))
+										(objIsKnown newTargetObj))
+									(block Nil
+										(shpCancelOrders gPlayerShip)
+										(shpOrder gPlayerShip 'gate newTargetObj)
+										)
 								)
 
-						; Otherwise, we point towards the target
+						; If we have a valid target, we point towards the target
 
-						(if targetObj
+						targetObj
 							(block Nil
 								(shpCancelOrders gPlayerShip)
 								(shpOrder gPlayerShip (if command command 'attack) targetObj)
 								)
-							)
+
+						; Otherwise, check if we are out-of-system
+
+						(and	(!= (sysGetNode) nodeID)
+								(setq newTargetObj (sysGetStargateLeadingToNode nodeID {knownOnly:True}))
+								(objIsKnown newTargetObj))
+							(block Nil
+								(shpCancelOrders gPlayerShip)
+								(shpOrder gPlayerShip 'gate newTargetObj)
+								)
 						)
 					)
 				))

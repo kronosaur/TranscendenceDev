@@ -123,7 +123,7 @@
 
 	<Type UNID="&unidComponentReminder;">
 		<AttributeDesc>
-			<ItemAttribute	label="Component"	labelType="advantage"	criteria="*">
+			<ItemAttribute	label="component"	labelType="quest"	criteria="*">
 				<OnShow>
 					(block (
 						(theType (itmGetType gItem))
@@ -134,6 +134,19 @@
 								)
 							True
 							)
+						)
+				</OnShow>
+			</ItemAttribute>
+
+			<!-- Quest Items for active missions -->
+
+			<ItemAttribute	label="mission"	labelType="quest"	criteria="*">
+				<OnShow>
+					(if
+						(map (msnFind "a +questItem;") 'excludeNil theMission
+							(msnFireEvent theMission 'CheckQuestItem gItem)
+							)
+						True
 						)
 				</OnShow>
 			</ItemAttribute>

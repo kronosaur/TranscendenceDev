@@ -211,6 +211,13 @@ void CGaianProcessorAI::CalcDevices (void)
 		for (CDeviceItem DeviceItem : m_pShip->GetDeviceSystem())
 			{
 			CInstalledDevice &Weapon = *DeviceItem.GetInstalledDevice();
+
+			//	Skip weapons that the AI needs to ignore
+
+			CWeaponClass* pWeaponType = Weapon.GetClass()->AsWeaponClass();
+			if (pWeaponType && pWeaponType->IsIgnoredByAI())
+				continue;
+
 			CItemCtx Ctx(m_pShip, &Weapon);
 
 			if (Weapon.IsSecondaryWeapon())
