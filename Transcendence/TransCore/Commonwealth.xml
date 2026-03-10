@@ -2097,12 +2097,7 @@
 						)
 						
 					; If we were docked at an object that we just looted, then destroy the object
-					(if (and (objGetData dockedAt lootedVar)
-							(ls (objGetProperty dockedAt 'mass) 2000)
-							(not (objGetProperty dockedAt 'immutable))
-							)
-						(objDestroy dockedAt gSource)
-						)
+					(rpgImplementScuttleSalvagedWreck gSource dockedAt lootedVar)
 					)
 			</OnOrdersCompleted>
 		</Events>

@@ -1760,6 +1760,30 @@
 					)
 				))
 
+			;	rpgImplementScuttleSalvagedWreck
+			;
+			;	Returns true if wreck was scuttled
+
+			(setq rpgImplementScuttleSalvagedWreck (lambda (salvagerObj wreckObj lootedVar massLimit)
+				"Returns true if wreck was scuttled"
+				(if (and (objGetData wreckObj lootedVar)
+						(ls (obj@ wreckObj 'mass) (or massLimit 2000))
+						(not (obj@ wreckObj 'immutable))
+						(not (obj@ wreckObj 'core.noScuttle))
+						)
+					
+					;	destroy the wreck and return true
+					
+					(block ()
+						(objDestroy wreckObj salvagerObj)
+						True
+						)
+
+					;	otherwise we return Nil by default
+
+					)
+				))
+
 			;	rpgInitSalvageAndScuttleOperation
 			;
 			;	Configures a ship and wreck for salvaging and scuttling

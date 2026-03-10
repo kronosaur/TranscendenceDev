@@ -660,7 +660,7 @@
 											)
 											
 									; If there are wrecks in the area, loot them
-									(and (rpgFilterSalvager gSource lootedVar)
+									(and (rpgFilterSalvager gSource)
 											
 											; Compose a list of all wrecks in the area
 											
@@ -694,7 +694,7 @@
 											)
 											
 									; If there are wrecks in the area, loot them
-									(and (rpgFilterSalvager gSource lootedVar)
+									(and (rpgFilterSalvager gSource)
 											
 											; Compose a list of all wrecks in the area
 											
@@ -727,12 +727,7 @@
 						)
 						
 					; If we were docked at an object that we just looted, then destroy the object
-					(if (and (objGetData dockedAt lootedVar)
-							(ls (objGetProperty dockedAt 'mass) 2000)
-							(not (objGetProperty dockedAt 'immutable))
-							)
-						(objDestroy dockedAt gSource)
-						)
+					(rpgImplementScuttleSalvagedWreck gSource dockedAt lootedVar)
 					)
 			</OnOrdersCompleted>
 		</Events>
