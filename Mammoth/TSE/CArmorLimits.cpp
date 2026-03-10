@@ -929,19 +929,20 @@ ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int 
 		//	NOTE: If we specify an ID then we have to wait until Bind to resolve
 		//	it, because all types are not loaded yet.
 
-		bool bParsed = false;
+		bool bFailed = false;
 		bool bMassStrAPI = Ctx.GetAPIVersion() >= 59;
 		bool bGameDoesntUseMassClasses = Ctx.GetUniverse().GetDesignCollection().GetArmorClassDefinitions().IsEmpty();
 		CString sValue;
 		if (pDesc->FindAttribute(MAX_ARMOR_ATTRIB, &sValue))
 			{
 			if (bMassStrAPI)
-				m_rMaxArmorSize = strMassToDoubleTons(sValue, -1.0, &bParsed);
-			if (!bParsed)
+				m_rMaxArmorSize = strMassToDoubleTons(sValue, -1.0, &bFailed);
+			if (bFailed)
 				m_rMaxArmorSize = strToDouble(sValue, -1.0) / 1000.0;
+
 			if (m_rMaxArmorSize < 0 || IS_NAN(m_rMaxArmorSize))
 				m_sMaxArmorClass = sValue;
-			else if (bMassStrAPI && !bParsed)
+			else if (bMassStrAPI && bFailed)
 				{
 				DWORD dwErrType = Ctx.pType->GetUNID();
 				CString sBaseError = strPatternSubst(CONSTLIT("WARNING: Type %08x (&%s;) specified maxArmor with a unitless number, which is deprecated in API59+."), dwErrType, Ctx.GetUniverse().GetExtensionCollection().GetEntityName(dwErrType));
@@ -954,16 +955,17 @@ ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int 
 		else
 			m_rMaxArmorSize = 0;
 
-		bParsed = false;
+		bFailed = false;
 		if (pDesc->FindAttribute(STD_ARMOR_ATTRIB, &sValue))
 			{
 			if (bMassStrAPI)
-				m_rStdArmorSize = strMassToDoubleTons(sValue, -1.0, &bParsed);
-			if (!bParsed)
+				m_rStdArmorSize = strMassToDoubleTons(sValue, -1.0, &bFailed);
+			if (bFailed)
 				m_rStdArmorSize = strToDouble(sValue, -1.0) / 1000.0;
+
 			if (m_rStdArmorSize < 0 || IS_NAN(m_rMaxArmorSize))
 				m_sStdArmorClass = sValue;
-			else if (bMassStrAPI && !bParsed)
+			else if (bMassStrAPI && bFailed)
 				{
 				DWORD dwErrType = Ctx.pType->GetUNID();
 				CString sBaseError = strPatternSubst(CONSTLIT("WARNING: Type %08x (&%s;) specified stdArmor with a unitless number, which is deprecated in API59+."), dwErrType, Ctx.GetUniverse().GetExtensionCollection().GetEntityName(dwErrType));
