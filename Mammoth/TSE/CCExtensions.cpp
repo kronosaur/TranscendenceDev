@@ -269,6 +269,7 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_REMOVE				151
 #define FN_OBJ_GET_OVERLAY_DATA_KEYS	152
 #define FN_OBJ_GET_ITEM_PROPERTY_KEYS	153
+#define FN_OBJ_DESTINY_ROLL				154
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -2564,6 +2565,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objResume",					fnObjSet,		FN_OBJ_RESUME,
 			"(objResume obj [gateObj]) -> True/Nil",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objRollDestiny",				fnObjGet,		FN_OBJ_DESTINY_ROLL,
+			"(objRollDestiny obj chance [offset]) -> True/Nil",
+			NULL,	0,	},
 
 		{	"objSendMessage",				fnObjSendMessage,		FN_OBJ_MESSAGE,
 			"(objSendMessage obj sender text) -> True/Nil",
@@ -7466,6 +7471,38 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_DEFAULT_CURRENCY:
 			return pCC->CreateInteger(pObj->GetDefaultEconomy()->GetUNID());
+
+		case FN_OBJ_DESTINY_ROLL:
+			{
+			if (pArgs->GetCount() < 2)
+				return pCC->CreateError(CONSTLIT("objRollDestiny requires at least the chance argument"));
+
+			//	Read chance arg
+
+			Metric rChance;
+			if (pArgs->GetElement(1)->IsInteger())
+				rChance = pArgs->GetElement(1)->GetIntegerValue() * 0.01;
+			else
+				rChance = pArgs->GetElement(1)->GetDoubleValue();
+			if (rChance >= 1.0)
+				return pCC->CreateTrue();
+			if (rChance <= 0.0)
+				return pCC->CreateNil();
+
+			//	Read offset arg
+
+			int iOffset;
+			if (pArgs->GetCount() >= 3)
+				iOffset = pArgs->GetElement(2)->GetIntegerValue();
+			else
+				iOffset = 0;
+
+			int iDestiny = pObj->GetDestiny() + iOffset;
+
+			Metric rDestiny = iDestiny / g_DestinyRange;
+			
+			return pCC->CreateBool(rDestiny < rChance);
+			}
 
 		case FN_OBJ_DEVICE_FIRE_ARC:
 			{
