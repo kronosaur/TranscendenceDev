@@ -1039,6 +1039,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					221;
 //					'stdArmorMass			DEPRECATED: use stdArmorClassName instead (or stdArmorClass if you need to support legacy ships)
 //			(objGetCargoSpaceLeft obj)
 //				DEPRECATED: returns cargo space in liters, for compatibility math. Name implies returning in cubic meters though.
+//			(objRollDestiny obj chance [offset])
+//				Returns true or Nil depending if the object's destiny (with optional integer offset) is within the chance value (either 0.0-1.0 or 0-100%)
 //			(randomGaussian low [mid] high)
 //				Returns double if any argument is a double
 //				Now has a 2-arg form which uses the midpoint of low and high
