@@ -7499,7 +7499,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			int iDestiny = pObj->GetDestiny() + iOffset;
 
-			Metric rDestiny = iDestiny / g_DestinyRange;
+			Metric rDestiny = (Metric)(iDestiny % g_DestinyRange) / g_DestinyRange;
 			
 			return pCC->CreateBool(rDestiny < rChance);
 			}
