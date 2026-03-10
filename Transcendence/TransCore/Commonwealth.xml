@@ -2021,7 +2021,16 @@
 			</OrderBeginTraffic>
 			
 			<OnOrdersCompleted>
-				(block (behavior newBehavior allDests dockedAt allWrecks allLoot)
+				(block
+					(
+						(lootedVar '0010300c_marked)
+						behavior
+						newBehavior
+						allDests
+						dockedAt
+						allWrecks
+						allLoot
+					)
 					(setq behavior (objGetData gSource "behavior"))
 					(setq dockedAt (shpGetDockObj gSource))
 					
@@ -2046,18 +2055,14 @@
 					(switch
 
 						; Check for wrecks in the area; if we find some, then loot them
-						(and (leq (objGetDestiny gSource) 180)
-								(not (objHasAttribute gSource "freighter"))
-								(leq (random 1 100) 50)
+						(and (rpgFilterSalvager gSource)
 								
 								; Compose a list of all wrecks in the area
 								
-								(setq allWrecks (rpgFindWrecksToSalvage gSource '0010300c_marked))
+								(setq allWrecks (rpgFindWrecksToSalvage gSource lootedVar))
 								)
-							(block (destObj)
-								(setq destObj (random allWrecks))
-								(shpOrder gSource 'loot destObj)
-								(objSetData destObj "0010300c_marked" True)
+							(block ()
+								(rpgInitSalvageAndScuttleOperation gSource allWrecks lootedVar)
 								(objSetData gSource "behavior" 'looting)
 								)
 					
@@ -2092,12 +2097,7 @@
 						)
 						
 					; If we were docked at an object that we just looted, then destroy the object
-					(if (and (objGetData dockedAt "0010300c_marked")
-							(ls (objGetProperty dockedAt 'mass) 2000)
-							(not (objGetProperty dockedAt 'immutable))
-							)
-						(objDestroy dockedAt gSource)
-						)
+					(rpgImplementScuttleSalvagedWreck gSource dockedAt lootedVar)
 					)
 			</OnOrdersCompleted>
 		</Events>

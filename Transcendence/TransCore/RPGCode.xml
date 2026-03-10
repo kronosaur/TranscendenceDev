@@ -1693,19 +1693,124 @@
 					)
 				))
 
+			;	rpgFilterWreckForSalvage
+			;
+			;	Returns true if a wreck can be salvaged
+
+			(setq rpgFilterWreckForSalvage (lambda (wreckObj lootedVar allowContaminated)
+				"Returns true if a wreck can be salvaged"
+				(and
+					(or allowContaminated
+						;	Need to make sure that its not contaminated
+						(and (not (objIsRadioactive wreckObj))
+							
+							;	Since we dont have forward knowledge of the overlay types
+							;	we just skip any overlays
+
+							;	This stops ships from docking at ships that have things like
+							;	scourge or metalplague overlays and spreading it around
+
+							;	TODO: add a system where contamination overlays can be
+							;	cached or registered in advance, preferably dynamically
+
+							(not (objGetOverlays wreckObj))
+							)
+						)
+					(not (objGetData wreckObj (or lootedVar 'core.salvaged)))
+					(not (objGetData wreckObj 'core.noSalvage))
+					(not (obj@ wreckObj 'core.noSalvage))
+					)
+				))
+
 			;	rpgFindWrecksToSalvage
 			;
 			;	Returns a list of wrecks within 100 ls of centerObj that can be 
 			;	salvaged.
 
-			(setq rpgFindWrecksToSalvage (lambda (centerObj lootedVar)
+			(setq rpgFindWrecksToSalvage (lambda (centerObj lootedVar allowContaminated)
+				"Returns a list of wrecks within 100 ls of centerObj that can be salvaged"
 				(filter (sysFindObject centerObj "TK N:100; +shipwreck; -noSalvage; -uncharted; -locked;") theObj
-					(and
-						(not (objIsRadioactive theObj))
-						(not (objGetData theObj (or lootedVar 'core.salvaged)))
-						(not (objGetData theObj 'core.noSalvage))
-						(not (obj@ theObj 'core.noSalvage))
+					(rpgFilterWreckForSalvage theObj lootedVar allowContaminated)
+					)
+				))
+
+			;	rpgFilterSalvager
+			;
+			;	Returns true if a ship is valid for a salvage job
+
+			(setq rpgFilterSalvager (lambda (salvagerObj salvagerFraction)
+				(cat "Returns true if a ship is valid for a salvage job.\n"
+					"Defaults to 0.25 salvager fraction\n\n"
+					"Expects to be run inside of OnOrdersCompleted event, since\n"
+					"this function randomizes chance based on current tick and obj destiny."
+					)
+				(and (ls (mod
+						(+ (objGetDestiny salvagerObj) (unvGetTick)) 360)
+						(if salvagerFraction (* salvagerFraction 360) 90))
+
+					;	Only relatively small non-freighter ships should bother looting
+
+					(ls (obj@ salvagerObj 'mass) 2000)
+					(not (objHasAttribute salvagerObj "freighter"))
+
+					;	Make sure no enemies are within standard LRS distance of us
+					;	otherwise it is too risky to run off and try to salvage stuff
+
+					(not (sysFindObject salvagerObj "sTEA NN:100"))
+					)
+				))
+
+			;	rpgImplementScuttleSalvagedWreck
+			;
+			;	Returns true if wreck was scuttled
+
+			(setq rpgImplementScuttleSalvagedWreck (lambda (salvagerObj wreckObj lootedVar massLimit)
+				"Returns true if wreck was scuttled"
+				(if (and (objGetData wreckObj lootedVar)
+						(ls (obj@ wreckObj 'mass) (or massLimit 2000))
+						(not (obj@ wreckObj 'immutable))
+						(not (obj@ wreckObj 'core.noScuttle))
 						)
+					
+					;	destroy the wreck and return true
+					
+					(block ()
+						(objDestroy wreckObj salvagerObj)
+						True
+						)
+
+					;	otherwise we return Nil by default
+
+					)
+				))
+
+			;	rpgInitSalvageAndScuttleOperation
+			;
+			;	Configures a ship and wreck for salvaging and scuttling
+
+			(setq rpgInitSalvageAndScuttleOperation (lambda (salvagerObj wreckObjs lootedVar)
+				(cat "Configures a ship and wreck for salvaging and scuttling\n"
+					"Returns specific wreck selected for salvage"
+					)
+				(block
+					(
+						(wreckObj (random wreckObjs))
+					)
+
+					;	We wait a little bit before rushing off to destroy the wreck just in case
+					;	its a fresh wreck, so that the player has enough time to go and attempt
+					;	salvaging it themselves when its a fresh kill
+
+					(shpOrder salvagerObj 'wait (random 10 20))
+					(shpOrder salvagerObj 'loot wreckObj)
+
+					;	We set lootedVar now so that we dont dispatch multiple ships to loot the same ship
+
+					(objSetData wreckObj lootedVar True)
+
+					;	Return wreck
+
+					wreckObj
 					)
 				))
 

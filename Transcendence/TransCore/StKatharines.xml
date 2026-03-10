@@ -606,11 +606,16 @@
 			</OrderEnterSystem>
 			
 			<OnOrdersCompleted>
-				(block (status dockedAt allLoot)
-					; Different order depending on our current state
-					(setq status (objGetData gSource "0010201F_status"))
-					(setq dockedAt (shpGetDockObj gSource))
-					
+				(block
+					(
+						(lootedVar '0010201F_marked)
+						(statusVar '0010201F_status)
+						(status (objGetData gSource statusVar))
+						allLoot
+
+						; Different order depending on our current state
+						(dockedAt (shpGetDockObj gSource))
+					)					
 					; If we're docked at an object, dump any loot that we found
 					(if (and dockedAt
 							(objHasAttribute dockedAt "populated")
@@ -636,7 +641,7 @@
 								(shpOrder gSource 'orbit (sysFindObject Nil "TNV +stKatsArcology;") 35 (random 20 40))
 								(shpOrder gSource 'dock theTarget)
 								(shpOrder gSource 'waitForThreat (random 10 60))
-								(objSetData gSource "0010201F_status" 'dockedAtNewVictoria)
+								(objSetData gSource statusVar 'dockedAtNewVictoria)
 								)
 								
 						(eq status 'dockedAtNewVictoria)
@@ -651,23 +656,19 @@
 									(leq roll 30)
 										(block Nil
 											(shpOrder gSource 'gate)
-											(objSetData gSource "0010201F_status" 'leavingSystem)
+											(objSetData gSource statusVar 'leavingSystem)
 											)
 											
 									; If there are wrecks in the area, loot them
-									(and (leq (objGetDestiny gSource) 180)
-											(not (objHasAttribute gSource "freighter"))
-											(leq (random 1 100) 50)
+									(and (rpgFilterSalvager gSource)
 											
 											; Compose a list of all wrecks in the area
 											
-											(setq allWrecks (rpgFindWrecksToSalvage gSource '0010201F_marked))
+											(setq allWrecks (rpgFindWrecksToSalvage gSource lootedVar))
 											)
-										(block (destObj)
-											(setq destObj (random allWrecks))
-											(shpOrder gSource 'loot destObj)
-											(objSetData destObj "0010201F_marked" True)
-											(objSetData gSource "0010201F_status" 'dockedAtStation)
+										(block ()
+											(rpgInitSalvageAndScuttleOperation gSource allWrecks lootedVar)
+											(objSetData gSource statusVar 'dockedAtStation)
 											)
 											
 									; Dock at a random station in the system
@@ -675,7 +676,7 @@
 										(setq theTarget (random (sysFindObject gSource "TAF +populated; -arcology; -occupation;")))
 										(shpOrder gSource 'dock theTarget)
 										(shpOrder gSource 'waitForThreat (random 10 20))
-										(objSetData gSource "0010201F_status" 'dockedAtStation)
+										(objSetData gSource statusVar 'dockedAtStation)
 										)
 									)
 								)
@@ -689,23 +690,19 @@
 									(leq roll 30)
 										(block Nil
 											(shpOrder gSource 'gate)
-											(objSetData gSource "0010201F_status" 'leavingSystem)
+											(objSetData gSource statusVar 'leavingSystem)
 											)
 											
 									; If there are wrecks in the area, loot them
-									(and (leq (objGetDestiny gSource) 180)
-											(not (objHasAttribute gSource "freighter"))
-											(leq (random 1 100) 50)
+									(and (rpgFilterSalvager gSource)
 											
 											; Compose a list of all wrecks in the area
 											
-											(setq allWrecks (rpgFindWrecksToSalvage gSource '0010201F_marked))
+											(setq allWrecks (rpgFindWrecksToSalvage gSource lootedVar))
 											)
-										(block (destObj)
-											(setq destObj (random allWrecks))
-											(shpOrder gSource 'loot destObj)
-											(objSetData destObj "0010201F_marked" True)
-											(objSetData gSource "0010201F_status" 'dockedAtStation)
+										(block ()
+											(rpgInitSalvageAndScuttleOperation gSource allWrecks lootedVar)
+											(objSetData gSource statusVar 'dockedAtStation)
 											)
 											
 									; Dock at new victoria
@@ -715,7 +712,7 @@
 											(shpOrder gSource 'orbit (sysFindObject Nil "TNV +stKatsArcology;") 35 (random 20 40))
 											(shpOrder gSource 'dock theTarget)
 											(shpOrder gSource 'waitForThreat (random 10 60))
-											(objSetData gSource "0010201F_status" 'dockedAtNewVictoria)
+											(objSetData gSource statusVar 'dockedAtNewVictoria)
 											)
 											
 									; Dock at a random station in the system
@@ -723,19 +720,14 @@
 										(setq theTarget (random (sysFindObject gSource "TAF +populated; -arcology; -occupation;")))
 										(shpOrder gSource 'dock theTarget)
 										(shpOrder gSource 'waitForThreat (random 10 20))
-										(objSetData gSource "0010201F_status" 'dockedAtStation)
+										(objSetData gSource statusVar 'dockedAtStation)
 										)
 									)
 								)
 						)
 						
 					; If we were docked at an object that we just looted, then destroy the object
-					(if (and (objGetData dockedAt "0010201F_marked")
-							(ls (objGetProperty dockedAt 'mass) 2000)
-							(not (objGetProperty dockedAt 'immutable))
-							)
-						(objDestroy dockedAt gSource)
-						)
+					(rpgImplementScuttleSalvagedWreck gSource dockedAt lootedVar)
 					)
 			</OnOrdersCompleted>
 		</Events>
