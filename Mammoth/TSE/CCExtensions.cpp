@@ -2568,7 +2568,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"objRollDestiny",				fnObjGet,		FN_OBJ_DESTINY_ROLL,
 			"(objRollDestiny obj chance [offset]) -> True/Nil",
-			NULL,	0,	},
+			"in*",	0,},
 
 		{	"objSendMessage",				fnObjSendMessage,		FN_OBJ_MESSAGE,
 			"(objSendMessage obj sender text) -> True/Nil",
