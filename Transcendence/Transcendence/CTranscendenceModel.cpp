@@ -2672,14 +2672,14 @@ void CTranscendenceModel::StartNewGameAbort (void)
 	m_GameFile.Close();
 	}
 
-ALERROR CTranscendenceModel::StartNewGameBackground (const SNewGameSettings &NewGame, CString *retsError)
-
 //	StartNewGameBackground
 //
 //	Starts a new game.
 //
 //	NOTE: We need to be very careful about what we do in the main thread while
 //	this is running.
+//
+ALERROR CTranscendenceModel::StartNewGameBackground (const SNewGameSettings &NewGame, CString *retsError)
 
 	{
 	ALERROR error;
@@ -2722,7 +2722,7 @@ ALERROR CTranscendenceModel::StartNewGameBackground (const SNewGameSettings &New
 	//	Get the starting system
 
 	CSystem *pStartingSystem;
-	if (NewGame.bFullCreate)
+	if (NewGame.bFullCreate || m_Universe.GetEngineOptions().GetForceFullCreate())
 		{
 		if (error = CreateAllSystems(sStartNode, &pStartingSystem, retsError))
 			return error;

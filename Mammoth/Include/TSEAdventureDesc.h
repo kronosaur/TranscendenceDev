@@ -38,6 +38,7 @@ class CEngineOptions
 		Metric GetDamageMethodAdjStationHullArmor (EDamageMethod iMethod) const { return GetDamageMethodAdj(m_DamageMethodStationAdj.Hull.Armor, iMethod); };
 		Metric GetDamageMethodMinDamage ()	const { return m_rDamageMethodAdjMinDamage; }
 		EDamageMethodSystem GetDamageMethodSystem () const { return m_iDamageMethodSystem; }
+		bool GetForceFullCreate () const { return m_bForceFullCreate; }
 		Metric GetItemDefaultDensity () const { return m_rDefaultItemDensity; }
 		Metric GetItemXMLMassToVolumeRatio () const { return m_rDefaultItemMassToVolume; }
 		const CMiningDamageLevelDesc* GetMiningMaxOreLevels () const { return &m_MiningDamageMaxOreLevels; }
@@ -145,6 +146,10 @@ class CEngineOptions
 		static CDamageMethodDesc GetDefaultWMDAdj (int apiVersion);
 
 		int m_iDefaultForAPIVersion = -1;
+
+		//	Default game creation options
+
+		bool m_bForceFullCreate = false;
 
 		//	Default damage adj curves
 

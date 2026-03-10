@@ -44,13 +44,17 @@
 			>
 
 		<Properties>
-			<!--
+			<!-- Defaults for system creation -->
+
+			<Constant id="core.forceFullCreate">				Nil</Constant>
+
+				<!--
 				This is needed by trnCreateAllStargates (which is used by all 
 				standard systems) to figure out which node is closest to the
 				Galactic Core. This allows us to create inbound vs. outbound
 				stargates.
-			-->
-			<Constant id="core.defaultCorewardNode">		'G2</Constant>
+				-->
+			<Constant id="core.defaultCorewardNode">			'G2</Constant>
 
 			<!-- Defaults for Damage Method system (WMD) -->
 

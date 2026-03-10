@@ -905,6 +905,10 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 	m_bHideRadiationImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_RADIATION_IMMUNE)->IsNil();
 	m_bHideShatterImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_SHATTER_IMMUNE)->IsNil();
 
+	//	Handle full create
+
+	m_bForceFullCreate = Ctx.GetAPIVersion() >= 59 && !Type.GetProperty(CCX, PROPERTY_CORE_FORCE_FULL_CREATE)->IsNil();
+
 	//	Handle item mass-volume conversion
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_ITEM_DEFAULT_DENSITY);

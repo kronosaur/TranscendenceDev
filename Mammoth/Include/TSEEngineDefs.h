@@ -96,6 +96,13 @@
 //
 #define PROPERTY_CORE_ENHANCEMENT				CONSTLIT("core.enhancement")
 
+//	core.forceFullCreate
+//
+//	Adventure Property: Evaluated at bind time. Forces full create, even if
+//	no full create is selected. Used for adventures like Chronicles that require
+//	all systems to be generated before gameplay begins.
+#define PROPERTY_CORE_FORCE_FULL_CREATE			CONSTLIT("core.forceFullCreate")
+
 //	core.gameStats
 //
 //	Type Property: Evaluated to generate stats. Return a gameStat struct or a 

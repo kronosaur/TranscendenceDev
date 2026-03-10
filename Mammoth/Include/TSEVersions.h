@@ -1071,6 +1071,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					221;
 //					XML built-in entities: https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references
 //		<AdventureDesc>
 //			<Properties>
+//				<Constant id="core.forceFullCreate>				Nil</Constant>
+//					If non-Nil, forces full topology creation regardless of noFullCreate setting
+//					Default: Nil
 //				<Constant id="core.item.xmlMassToRealVolume">	1.0</Constant>
 //					Conversion ratio of tons->cubic meters for legacy items that specify only mass
 //					accepts a double
