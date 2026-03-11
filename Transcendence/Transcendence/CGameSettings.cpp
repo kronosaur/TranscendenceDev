@@ -58,7 +58,6 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"dockPortIndicator",		optionString,	"enabled",	0	},
 		{	"invokeLetterHotKeys",		optionBoolean,	"false",	0	},
 		{	"noAutoSave",				optionBoolean,	"false",	0	},
-		{	"noFullCreate",				optionBoolean,	"false",	0	},
 		{	"showManeuverEffects",		optionBoolean,	"false",	0	},
 		{	"noMissionCheckpoint",		optionBoolean,	"false",	0	},
 		{	"defaultBuyTab",			optionString,	"filterGeneral",	0	},
