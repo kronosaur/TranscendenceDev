@@ -679,22 +679,55 @@ enum class EDamageMethod
 	{
 	methodError =							-100,	//	Uninitialized or error state
 
+	//	WMD
 	methodWMD =								0,		//	original WMD
-	methodCrush =							1,		//	Physicalized: crush
-	methodPierce =							2,		//	Physicalized: pierce
-	methodShred =							3,		//	Physicalized: shred
+
+	//	Physicalized
+	methodCrush =							1,		//	analog of WMD+mining, defeats bulk solids
+	methodPierce =							2,		//	defeats heavy armor
+	methodShred =							3,		//	analog of WMD, defeats large ship/station internals
+	methodScour =							4,		//	analog of non-WMD, defeats small targets
+	methodOverwhelm =						5,		//	hard-to-resist type for things like core mind powers and superweapons
+	methodDirect =							6,		//	analog of generic damage, but for damage methods
 	};
 
-constexpr BYTE PHYSICALIZED_DAMAGE_METHOD_COUNT = 3;
-constexpr EDamageMethod PHYSICALIZED_DAMAGE_METHODS[3] = {EDamageMethod::methodCrush, EDamageMethod::methodPierce, EDamageMethod::methodShred};
+constexpr BYTE PHYSICALIZED_DAMAGE_METHOD_COUNT = 6;
+constexpr EDamageMethod PHYSICALIZED_DAMAGE_METHODS[6] = {
+	EDamageMethod::methodCrush,
+	EDamageMethod::methodPierce,
+	EDamageMethod::methodShred,
+	EDamageMethod::methodScour,
+	EDamageMethod::methodOverwhelm,
+	EDamageMethod::methodDirect,
+	};
 
-struct SDamageMethodAdj
+struct SDamageMethod
 	{
 	public:
+		//	Flags for indicating type of data stored
+		static const DWORD FLAG_FORTIFICATION =			0x00000001;
+		static const DWORD FLAG_ADJ =					0x00000002;
+		static const DWORD FLAG_METHOD_RATIO =			0x00000004;
+
+		bool InitFromString (const CString sDmgMethods, CString* retsError = NULL, EDamageMethod eWMDMapping = EDamageMethod::methodShred);
 
 		Metric GetCrush () const { return rAdj[0]; }
 		Metric GetPierce () const { return rAdj[1]; }
 		Metric GetShred () const { return rAdj[2]; }
+		Metric GetScour () const { return rAdj[3]; }
+		Metric GetOverwhelm () const { return rAdj[4]; }
+		Metric GetDirect () const
+			{
+			switch (dwFlags & FLAGS_STRUCT_TYPE)
+				{
+				case FLAG_FORTIFICATION:
+					return 0.0;
+				case FLAG_ADJ:
+					return 1.0;
+				default:
+					return rAdj[5];
+				}
+			}
 		Metric GetWMD () const { return rAdj[0]; }
 		Metric Get (EDamageMethod iMethod) const
 			{
@@ -703,22 +736,35 @@ struct SDamageMethodAdj
 				case EDamageMethod::methodCrush:
 				case EDamageMethod::methodWMD:
 					return rAdj[0];
-					break;
 				case EDamageMethod::methodPierce:
 					return rAdj[1];
-					break;
 				case EDamageMethod::methodShred:
 					return rAdj[2];
-					break;
+				case EDamageMethod::methodScour:
+					return rAdj[3];
+				case EDamageMethod::methodOverwhelm:
+					return rAdj[4];
+				case EDamageMethod::methodDirect:
+					return GetDirect();
 				default:
 					ASSERT(false);
 					return R_NAN;
 				}
 			}
 
+		//	we use true : false because our output might get used
+		//	in a bitwise operator. true sets all bits to 1.
+
+		bool isFortification () { return dwFlags & FLAG_FORTIFICATION ? true : false; }
+		bool isAdj () { return dwFlags & FLAG_ADJ ? true : false; }
+		bool isMethodRatio () { return dwFlags & FLAG_METHOD_RATIO ? true : false; }
+
 		void SetCrush (Metric rNew) { rAdj[0] = rNew; }
 		void SetPierce (Metric rNew) { rAdj[1] = rNew; }
 		void SetShred (Metric rNew) { rAdj[2] = rNew; }
+		void SetScour (Metric rNew) { rAdj[3] = rNew; }
+		void SetOverwhelm (Metric rNew) { rAdj[4] = rNew; }
+		void SetDirect (Metric rNew) { if (dwFlags & FLAG_METHOD_RATIO) { rAdj[5] = rNew; } }
 		void SetWMD (Metric rNew) { rAdj[0] = rNew; }
 		void Set (EDamageMethod iMethod, Metric rNew)
 			{
@@ -734,21 +780,62 @@ struct SDamageMethodAdj
 				case EDamageMethod::methodShred:
 					rAdj[2] = rNew;
 					break;
+				case EDamageMethod::methodScour:
+					rAdj[3] = rNew;
+					break;
+				case EDamageMethod::methodOverwhelm:
+					rAdj[4] = rNew;
+					break;
+				case EDamageMethod::methodDirect:
+					rAdj[5] = rNew;
+					break;
 				default:
 					ASSERT(false);
 				}
 			}
+		void SetFlag(DWORD dwFlag)
+			{
+			if (dwFlag & FLAGS_STRUCT_TYPE)
+				{
+				ASSERT(false);
+				return;
+				}
+			else
+				dwFlags |= dwFlag;
+			}
 
 		void Reset ()
 			{
-			rAdj[0] = 0.0;
-			rAdj[1] = 0.0;
-			rAdj[2] = 0.0;
+			for (DWORD i = 0; i < NUM_METHODS; i++)
+				rAdj[i] = 0.0;
 			}
 
 	private:
+		static const DWORD NUM_METHODS =	6;
+		static const DWORD FLAGS_STRUCT_TYPE = 0x00000007;
 
-		Metric rAdj[3] = { 0.0, 0.0, 0.0 };
+		Metric rAdj[6] =					{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+
+		//	flags
+		DWORD dwFlags =						0x0;
+	};
+
+struct SDamageMethodAdj :SDamageMethod
+	{
+	private:
+		DWORD dwFlags =						FLAG_ADJ;
+	};
+
+struct SDamageMethodFortification :SDamageMethod
+	{
+	private:
+		DWORD dwFlags =						FLAG_FORTIFICATION;
+	};
+
+struct SDamageMethodRatio :SDamageMethod
+	{
+	private:
+		DWORD dwFlags =						FLAG_METHOD_RATIO;
 	};
 
 enum class EDamageMethodTarget

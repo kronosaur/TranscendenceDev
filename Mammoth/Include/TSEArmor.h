@@ -173,7 +173,7 @@ class CArmorClass
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
 		CString m_sArmorClass;					//	Armor class (provided in xml or computed in bind)
 		int m_iBalanceAdj;						//	Manual adjustment to balance calculation
-		SDamageMethodAdj m_Fortification;		//	Fortification Adj for Damage Method curves on this armor
+		SDamageMethodFortification m_Fortification;		//	Fortification Adj for Damage Method curves on this armor
 
 		DWORD m_fPhotoRecharge:1;				//	TRUE if refuels when near a star
 		DWORD m_fShieldInterference:1;			//	TRUE if armor interferes with shields
@@ -222,7 +222,7 @@ class CShipArmorSegmentDesc
 			DWORD dwArmorUNID,
 			int iLevel,
 			const CRandomEnhancementGenerator &Enhancement,
-			SDamageMethodAdj rFortification);
+			SDamageMethodFortification rFortification);
 		ALERROR InitFromXML (
 			SDesignLoadCtx &Ctx,
 			const CXMLElement &Desc,
@@ -230,7 +230,7 @@ class CShipArmorSegmentDesc
 			int iDefaultLevel,
 			int iDefaultAngle,
 			const CRandomEnhancementGenerator &DefaultEnhancement,
-			SDamageMethodAdj rDefaultFortification,
+			SDamageMethodFortification rDefaultFortification,
 			int *retiSpan = NULL);
 
 		static const CShipArmorSegmentDesc m_Null;
@@ -244,7 +244,7 @@ class CShipArmorSegmentDesc
 		int m_iLevel = 1;					//  For scalable armor
 		CRandomEnhancementGenerator m_Enhanced;//	Mods
 		DWORD m_dwAreaSet = 0;				//	Areas that this section protects
-		SDamageMethodAdj m_Fortification;			//	Adjusts WMD adj curve from the WMD0 end
+		SDamageMethodFortification m_Fortification;			//	Adjusts WMD adj curve from the WMD0 end
 	};
 
 class CShipArmorDesc

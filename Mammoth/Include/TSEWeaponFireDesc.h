@@ -416,7 +416,7 @@ struct SDamageCtx
 		int iShieldDamage = 0;						//	Damage taken by shields
 		int iOriginalAbsorb = 0;					//	Computed absorb value, if shot had not been reflected
 		int iOriginalShieldDamage = 0;				//	Computed shield damage value, if shot had not been reflected
-		SDamageMethodAdj ArmorExternFortification;		//	External armor fortification (Ex, from a segment slot)
+		SDamageMethodFortification ArmorExternFortification;		//	External armor fortification (Ex, from a segment slot)
 		int iArmorAbsorb = 0;						//	Damage absorbed by armor
 		int iArmorDamage = 0;						//	Damage taken by armor
 

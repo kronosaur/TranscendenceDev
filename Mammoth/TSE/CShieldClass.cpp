@@ -177,7 +177,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 			//	Stacked fortification modifiers are multiplied together
 
 			if (IS_NAN(m_Fortification.Get(iMethod)))
-				rMethodFortificationAdj = g_pUniverse->GetEngineOptions().GetDamageMethodAdjItemArmor(iMethod);
+				rMethodFortificationAdj = g_pUniverse->GetEngineOptions().GetDmgMethodFortificationItemShield(iMethod);
 			else
 				rMethodFortificationAdj = m_Fortification.Get(iMethod);
 
@@ -195,7 +195,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 		//	Stacked fortification modifiers are multiplied together
 
 		if (IS_NAN(m_Fortification.GetWMD()))
-			rFortificationAdj = g_pUniverse->GetEngineOptions().GetDamageMethodAdjItemArmor(iMethod);
+			rFortificationAdj = g_pUniverse->GetEngineOptions().GetDmgMethodFortificationItemShield(iMethod);
 		else
 			rFortificationAdj = m_Fortification.GetWMD();
 

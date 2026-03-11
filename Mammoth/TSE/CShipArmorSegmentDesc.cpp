@@ -139,7 +139,7 @@ ALERROR CShipArmorSegmentDesc::Init (
 	DWORD dwArmorUNID,
 	int iLevel,
 	const CRandomEnhancementGenerator &Enhancement,
-	SDamageMethodAdj Fortification)
+	SDamageMethodFortification Fortification)
 
     {
     m_iStartAt = AngleMod(iStartAt);
@@ -164,7 +164,7 @@ ALERROR CShipArmorSegmentDesc::InitFromXML (
 	int iDefaultLevel, 
 	int iDefaultAngle, 
 	const CRandomEnhancementGenerator &DefaultEnhancement,
-	SDamageMethodAdj DefaultFortification,
+	SDamageMethodFortification DefaultFortification,
 	int *retiSpan)
 
     {

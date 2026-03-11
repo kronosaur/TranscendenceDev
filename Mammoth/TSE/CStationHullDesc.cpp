@@ -218,18 +218,18 @@ Metric CStationHullDesc::GetFortificationAdj(EDamageMethod iMethod) const
 		switch (m_iType)
 			{
 			case EHullTypes::hullMultiple:
-				return Options.GetDamageMethodAdjStationHullMulti(iMethod);
+				return Options.GetDmgMethodFortificationStationHullMulti(iMethod);
 			case EHullTypes::hullAsteroid:
-				return Options.GetDamageMethodAdjStationHullAsteroid(iMethod);
+				return Options.GetDmgMethodFortificationStationHullAsteroid(iMethod);
 			case EHullTypes::hullUnderground:
-				return Options.GetDamageMethodAdjStationHullUnderground(iMethod);
+				return Options.GetDmgMethodFortificationStationHullUnderground(iMethod);
 			case EHullTypes::hullArmor:
-				return Options.GetDamageMethodAdjStationHullArmor(iMethod);
+				return Options.GetDmgMethodFortificationStationHullArmor(iMethod);
 			case EHullTypes::hullUncrewed:
-				return Options.GetDamageMethodAdjStationHullUncrewed(iMethod);
+				return Options.GetDmgMethodFortificationStationHullUncrewed(iMethod);
 			case EHullTypes::hullSingle:
 			default:
-				return Options.GetDamageMethodAdjStationHullSingle(iMethod);
+				return Options.GetDmgMethodFortificationStationHullSingle(iMethod);
 			}
 		}
 	else
