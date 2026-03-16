@@ -137,6 +137,7 @@ class CAIBehaviorCtx
 		CVector CalcManeuverFormation (CShip *pShip, const CVector vDest, const CVector vDestVel, int iDestFacing, Metric rCheatThrustFactor = 0.0) const;
 		CVector CalcManeuverSpiralIn (CShip *pShip, const CVector &vTarget, int iTrajectory = 30);
 		CVector CalcManeuverSpiralOut (CShip *pShip, const CVector &vTarget, int iTrajectory = 30);
+		CVector CalcManeuverSpiralOutEvasive (CShip *pShip, const CVector &vTarget, int iTrajectory = 30);
 		void ImplementAttackNearestTarget (CShip *pShip, Metric rMaxRange, CSpaceObject **iopTarget, CSpaceObject *pExcludeObj = NULL, bool bTurn = false);
 		void ImplementAttackTarget (CShip *pShip, CSpaceObject *pTarget, bool bMaintainCourse = false, bool bDoNotShoot = false);
 		void ImplementCloseOnImmobileTarget (CShip *pShip, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2, Metric rTargetSpeed = 0.0);
@@ -190,6 +191,7 @@ class CAIBehaviorCtx
 
 	private:
 		void DebugAIOutput (CShip *pShip, LPCSTR pText);
+		void DebugAIOutput (CShip *pShip, CString sText);
 		void CalcEscortFormation (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing);
 		bool CalcFlockingFormationCloud (CShip *pShip, CSpaceObject *pLeader, Metric rFOVRange, Metric rSeparationRange, CVector *retvPos, CVector *retvVel, int *retiFacing);
 		bool CalcFlockingFormationRandom (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing);
@@ -245,7 +247,7 @@ class CAIBehaviorCtx
 		DWORD m_fHasAvoidPotential:1 = false;		//	TRUE if there is something to avoid
 		DWORD m_fShootTargetableMissiles:1 = false;	//	TRUE if we try to hit targetable missiles with secondaries
 		DWORD m_fShootAllMissiles:1 = false;		//	TRUE if we try to hit all missiles with secondaries
-		DWORD m_fLowManeuverability:1 = false;		//	TRUE if we maneuver at less than or equal to 12 degrees per second
+		DWORD m_fLowManeuverability:1 = false;		//	TRUE if we maneuver <=12 degrees per second or rotation accel*2 < maneuver
 		DWORD m_fSpare7:1 = false;
 		DWORD m_fSpare8:1 = false;
 

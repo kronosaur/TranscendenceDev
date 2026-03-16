@@ -2856,40 +2856,72 @@ CString Kernel::strRomanNumeral (int i)
 		}
 	}
 
-double Kernel::strToDouble (const CString &sString, double rFailResult, bool *retbFailed)
-
 //	strToDouble
 //
 //	Converts a string to a double
+//	Handles Hexadecimal ints as well
+// 
+//	Special cases:
+//		Invalid conversion:
+//			returns: rFailResult
+//			retbFailed: true
+//		Overflow: (ex, 1e500)
+//			returns: R_INF or R_NINF
+//			retbFailed: true
+//		Underflow: (ex, 1e-500)
+//			returns: 0
+//			retbFailed: true
+//		Explicity infinity: (Ex, "-infinity")
+//			returns: R_INF or R_NINF
+//			retbFailed: false
+//		Explicit NaN: (Ex, "nan" or "nan(\"SpecificNaN\")")
+//			returns: R_NAN
+//			retbFailed: false
+// 
+//	See strtod for more information
+//
+double Kernel::strToDouble (const CString &sString, double rFailResult, bool *retbFailed)
 
 	{
-	//	Check to see if this is a hex integer
+	//	strtod handles hexadecimal natively as well
 
 	char *pPos = sString.GetASCIIZPointer();
-	if (sString.GetLength() > 2
-			&& pPos[0] == '0'
-			&& (pPos[1] == 'x' || pPos[1] == 'X'))
-		{
-		bool bFailed;
-		DWORD dwValue = strToInt(sString, 0, &bFailed);
-		if (retbFailed) *retbFailed = bFailed;
-		return (bFailed ? rFailResult : (double)dwValue);
-		}
 
-	//	Assume a float
+	char *pStop = NULL;
+	errno = 0;
 
-	double rResult = ::atof(sString.GetASCIIZPointer());
-	if (_isnan(rResult))
+	double rResult = ::strtod(pPos, &pStop);
+
+	//	Handle fail case: invalid conversion
+
+	if (pPos == pStop || *pStop != '\0')
 		{
 		if (retbFailed)
 			*retbFailed = true;
 		return rFailResult;
 		}
 
-	if (retbFailed)
-		*retbFailed = false;
+	//	It correctly handles underflows by returning INFINITIES or 0
+	//	We return these but set retbFailed because it was NOT an explicit
+	//	infinity or 0
 
-	return rResult;
+	else if (errno == ERANGE)
+		{
+		if (retbFailed)
+			*retbFailed = true;
+		return rResult;
+		}
+
+	//	Otherwise we succeeded. If we get a nan or infinity
+	//	its because someone explicitly set that in the string.
+
+	else
+		{
+		if (retbFailed)
+			*retbFailed = false;
+
+		return rResult;
+		}
 	}
 
 CString Kernel::strToFilename (const CString &sString)

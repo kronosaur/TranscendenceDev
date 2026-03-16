@@ -5,7 +5,7 @@
 
 #include "PreComp.h"
 
-static Metric g_rViewAngle =					0.4636448f;		//	26.56 degrees (z=12 x=6)
+static Metric g_rViewAngle =					0.4636448;		//	26.56 degrees (z=12 x=6)
 static Metric g_rK1 =							sin(g_rViewAngle);
 static Metric g_rK2 =							cos(g_rViewAngle);
 static Metric g_MinZg =							0.1;
@@ -39,9 +39,9 @@ void C3DConversion::CalcCoord (int iScale, int iAngle, int iRadius, int iZ, int 
 	Metric rYg = rY * g_rK2 - rZ * g_rK1;
 	Metric rZg = rY * g_rK1 + rZ * g_rK2;
 
-	rZg = Max(g_MinZg, rZg + 2.0f);
+	rZg = Max(g_MinZg, rZg + 2.0);
 
-	Metric rD = rScale * 2.0f;
+	Metric rD = rScale * 2.0;
 
 	//	Now convert to projection coordinates
 
@@ -76,9 +76,9 @@ void C3DConversion::CalcCoord (int iScale, int iAngle, int iRadius, int iZ, CVec
 	Metric rYg = rY * g_rK2 - rZ * g_rK1;
 	Metric rZg = rY * g_rK1 + rZ * g_rK2;
 
-	rZg = Max(g_MinZg, rZg + 2.0f);
+	rZg = Max(g_MinZg, rZg + 2.0);
 
-	Metric rD = rScale * 2.0f;
+	Metric rD = rScale * 2.0;
 
 	//	Now convert to projection coordinates
 
@@ -110,9 +110,9 @@ void C3DConversion::CalcCoord (Metric rScale, const CVector &vPos, Metric rPosZ,
 	Metric rYg = rY * g_rK2 - rZ * g_rK1;
 	Metric rZg = rY * g_rK1 + rZ * g_rK2;
 
-	rZg = Max(g_MinZg, rZg + 2.0f);
+	rZg = Max(g_MinZg, rZg + 2.0);
 
-	Metric rD = rScale * 2.0f;
+	Metric rD = rScale * 2.0;
 
 	//	Now convert to projection coordinates
 
@@ -151,7 +151,7 @@ void C3DConversion::CalcPolar (int iScale, const CVector &vPos, int iZ, Metric *
 	{
 	Metric rScale = (Metric)iScale;
 	Metric rZ = -(Metric)iZ / rScale;
-	Metric rD = rScale * 2.0f;
+	Metric rD = rScale * 2.0;
 
 	Metric rXp = vPos.GetX() / g_KlicksPerPixel;
 	Metric rYp = vPos.GetY() / g_KlicksPerPixel;

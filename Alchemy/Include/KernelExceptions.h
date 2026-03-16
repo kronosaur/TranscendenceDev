@@ -191,14 +191,14 @@ class CException
 						//	Just manually look it up on this page:
 						//	https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
 						//
-						//	If the code doesnt exist there, it may be customer defined.
+						//	If the code doesnt exist there, it may be customer defined. (Customer = non-microsoft code, usually drivers)
 						//	We can output some basic metadata about the code too based on the code structure.
 						//  https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/87fba13e-bf06-450e-83b1-9241dc81e781
 						//
 						//	(Note that this doesnt care about endianness, it is always in this exact bit order
 						//  Field masks:
 						//  0b 1100 0000 0000 0000 0000 0000 0000 0000 - severity 00 = success, 01 = info, 10 = warning, 11 = error
-						//  0b 0010 0000 0000 0000 0000 0000 0000 0000 - 0 = microsoft 1 = customer
+						//  0b 0010 0000 0000 0000 0000 0000 0000 0000 - 0 = microsoft 1 = customer (3rd party, usually drivers)
 						//  0b 0001 0000 0000 0000 0000 0000 0000 0000 - reserved (should always be 0!)
 						//  0b 0000 1111 1111 1111 0000 0000 0000 0000 - facility - indicates numbering space for the code field
 						//  0b 0000 0000 0000 0000 1111 1111 1111 1111 - code
@@ -209,7 +209,7 @@ class CException
 						else if (i == 2)
 							{
 							BYTE bySeverity = dwInfo >> 30 & 0x03;
-							BYTE byCustomer = dwInfo >> 29 & 0x01;
+							BYTE byCustomer = dwInfo >> 29 & 0x01;	//	False if microsoft code, True if 3rd party code (ex, drivers)
 							BYTE byReserved = dwInfo >> 28 & 0x01;	//	we check this bit in case of invalid customer-set codes or memory corruption
 							WORD wFacility = dwInfo >> 16 & 0x0FFF;
 							WORD wCode = dwInfo & 0x0000FFFF;
@@ -219,30 +219,30 @@ class CException
 								{
 								case (0b00):
 									{
-									CONSTLIT("SUCCESS");
+									sSeverity = CONSTLIT("SUCCESS");
 									break;
 									}
 								case (0b01):
 									{
-									CONSTLIT("INFO");
+									sSeverity = CONSTLIT("INFO");
 									break;
 									}
 								case (0b10):
 									{
-									CONSTLIT("WARNING");
+									sSeverity = CONSTLIT("WARNING");
 									break;
 									}
 								case (0b11):
 									{
-									CONSTLIT("ERROR");
+									sSeverity = CONSTLIT("ERROR");
 									break;
 									}
 								default:
-									CONSTLIT("INVALID");
+									sSeverity = CONSTLIT("INVALID");
 								}
-							CString sCustomer = byCustomer ? CONSTLIT("Customer") : CONSTLIT("Microsoft");
+							CString sSource = byCustomer ? CONSTLIT("3rd-Party") : CONSTLIT("Microsoft");
 							CString sBad = byReserved ? CONSTLIT("Invalid") : CONSTLIT("");
-							m_sMsg = strCat(m_sMsg, strPatternSubst(CONSTLIT(" - NTSTATUS: %x %s (Code by: %s Severity: %s Facility: %x Code: %x)"), dwInfo));
+							m_sMsg = strCat(m_sMsg, strPatternSubst(CONSTLIT(" - NTSTATUS: %x (Code by: %s Severity: %s Facility: %x Code: %x)"), dwInfo, sSource, sSeverity, wFacility, wCode));
 							}
 
 						//	everything after this if in the array is junk
