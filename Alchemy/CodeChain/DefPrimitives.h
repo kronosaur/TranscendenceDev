@@ -349,7 +349,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			
 			"options is either one of the option strings below, or a quoted expr of options strings, e.g. '(original excludeNil):\n"
 			"   'excludeNil - if expr evaluates to nil, it is not added to the returned list\n"
-			"   'original - expr result is placed with var instead in the final output, but expr result is still used to calculate other options\n"
+			"   'original - expr result is replaced with var instead in the final output, but expr result is still used to calculate other options\n"
 			"   'reduceMax - returns the greatest of values returned by expr instead of a list\n"
 			"   'reduceMin - returns the minimum of values returned by expr instead of a list\n"
 			"   'reduceAverage - returns the average of values returned by expr instead of a list (ignores original)\n"
