@@ -905,6 +905,29 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 	m_bHideRadiationImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_RADIATION_IMMUNE)->IsNil();
 	m_bHideShatterImmune = !Type.GetProperty(CCX, PROPERTY_CORE_HIDE_SHATTER_IMMUNE)->IsNil();
 
+	//	Handle hud numeric scale options
+
+	pValue = Type.GetProperty(CCX, PROPERTY_CORE_HUD_SCALE_HP);
+	if (!pValue->IsNil())
+	{
+		CString sScale = pValue->GetStringValue();
+		if (strEquals(sScale, VALUE_CORE_HUD_SCALE_RAW))
+			m_eHPScale = CLanguage::EHPDisplay::HitPoints;
+		else if (strEquals(sScale, VALUE_CORE_HUD_SCALE_METRIC))
+			m_eHPScale = CLanguage::EHPDisplay::Metric;
+		else if (strEquals(sScale, VALUE_CORE_HUD_SCALE_PERCENT))
+			m_eHPScale = CLanguage::EHPDisplay::Percent;
+		else if (strEquals(sScale, VALUE_CORE_HUD_SCALE_DEFAULT))
+			m_eHPScale = CLanguage::EHPDisplay::None;
+		else
+		{
+			Ctx.sError = strPatternSubst(CONSTLIT("%s is not a valid value for adventure property %s"), sScale, PROPERTY_CORE_HUD_SCALE_HP);
+			return false;
+		}
+	}
+	else
+		m_eHPScale = CLanguage::EHPDisplay::None;
+
 	//	Handle item mass-volume conversion
 
 	pValue = Type.GetProperty(CCX, PROPERTY_CORE_ITEM_DEFAULT_DENSITY);
