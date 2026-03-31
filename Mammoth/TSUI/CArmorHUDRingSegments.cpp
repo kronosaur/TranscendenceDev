@@ -36,13 +36,15 @@ ALERROR CArmorHUDRingSegments::Bind (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-void CArmorHUDRingSegments::CalcHPLabelBox (int iAngle, int iRadius, SSegment &Seg)
-
 //	CalcHPLabelBox
 //
 //	Compose the position of the HP label.
+//	iAngle 0 is to the right
+//
+void CArmorHUDRingSegments::CalcHPLabelBox (int iAngle, int iRadius, SSegment &Seg)
 
 	{
+	iAngle = AngleMod(iAngle);
 	Metric rCenterAngle = ::mathDegreesToRadians(iAngle);
 
 	//	Figure out if we're drawing the text radially or along the arc.
@@ -106,7 +108,7 @@ void CArmorHUDRingSegments::CalcHPLabelBox (int iAngle, int iRadius, SSegment &S
 			{
 			int iTextRadius = Seg.iArcRadius + ((Seg.iArcWidth - m_cyMaxValue) / 2) - 1;
 			Seg.vHPText = CVector::FromPolarInv(rCenterAngle, iTextRadius);
-			Seg.rHPTextRotation = rCenterAngle + (HALF_PI);
+			Seg.rHPTextRotation = rCenterAngle - (HALF_PI * 3);
 			}
 		}
 	}
@@ -185,11 +187,12 @@ void CArmorHUDRingSegments::DrawIntegrityBox (CG32bitImage &Dest, const SSegment
 	DEBUG_CATCH
 	}
 
-void CArmorHUDRingSegments::DrawIntegrityBoxText (CG32bitImage &Dest, const SSegment &Seg, CG32bitPixel rgbColor) const
-
 //	DrawIntegrityBoxText
 //
 //	Draws the armor integrity value on an arc background.
+//	Note: Seg.rHPTextRotation should be within -pi/2 to +pi/2
+//
+void CArmorHUDRingSegments::DrawIntegrityBoxText (CG32bitImage &Dest, const SSegment &Seg, CG32bitPixel rgbColor) const
 
 	{
 	DEBUG_TRY
@@ -202,7 +205,7 @@ void CArmorHUDRingSegments::DrawIntegrityBoxText (CG32bitImage &Dest, const SSeg
 	CVector vCenter(m_xCenter, m_yCenter);
 	CVector vText = vCenter + Seg.vHPText;
 
-	if (Seg.rHPTextRotation == 0.0)
+	if (abs(Seg.rHPTextRotation) < g_Epsilon)
 		MediumFont.DrawText(Dest, (int)vText.GetX(), (int)vText.GetY(), rgbColor, Seg.sHP, CG16bitFont::AlignCenter);
 	else
 		CGDraw::Text(Dest,
