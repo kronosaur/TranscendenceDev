@@ -278,11 +278,11 @@ CShipClass::~CShipClass (void)
 		delete m_pTrade;
 	}
 
-Metric CShipClass::GetStdCombatStrength (int iLevel)
-
 //	GetStdCombatStrength
 //
 //	Returns the standard combat strength for a ship of the given level.
+//
+Metric CShipClass::GetStdCombatStrength (int iLevel)
 
 	{
 	const Metric k0 = 1.4;

@@ -41,10 +41,12 @@ class CShipChallengeDesc
 			countScore,						//	Use m_Count as desired total score
 			countProperty,					//	Count comes from property
 
-			countChallengeEasy,				//	1.5x ships of system level (by score)
-			countChallengeStandard,			//	2.5x
-			countChallengeHard,				//	4x ships
-			countChallengeDeadly,			//	6x ships
+			countChallengeEasy,				//	1-2x ships of system level (by score)
+			countChallengeStandard,			//	2-3x
+			countChallengeHard,				//	3-5x ships
+			countChallengeDeadly,			//	5-7x ships
+
+			countChallengeRange,			//	Custom range
 			};
 
 		CShipChallengeDesc (void) :
@@ -61,15 +63,21 @@ class CShipChallengeDesc
 		bool InitFromChallengeRating (const CString &sChallenge);
 		bool InitFromXML (const CString &sValue);
 		bool IsEmpty (void) const { return m_iType == countNone; }
-		bool NeedsMoreShips (CSpaceObject &Base, const CShipChallengeCtx &Ctx) const;
-		bool NeedsMoreReinforcements (CSpaceObject &Base, const CSpaceObjectList &Current, const CShipChallengeDesc &Reinforce) const;
+		bool NeedsMoreShips (CSpaceObject& Base, const CShipChallengeCtx& Ctx) const;
+		Metric CanHaveMoreShips (CSpaceObject& Base, const CShipChallengeCtx& Ctx) const;
+		bool NeedsMoreReinforcements (CSpaceObject& Base, const CSpaceObjectList& Current, const CShipChallengeDesc& Reinforce) const;
 		bool NeedsMoreReinforcements (CSpaceObject &Base, const CShipChallengeCtx &Ctx, const CShipChallengeDesc &Reinforce) const;
+		Metric CanHaveMoreReinforcements (CSpaceObject &Base, const CShipChallengeCtx &Ctx, const CShipChallengeDesc &Reinforce) const;
 
 	private:
-		static Metric CalcChallengeStrength (ECountTypes iType, int iLevel);
-		static ECountTypes ParseChallengeType (const CString &sValue);
+		Metric CalcChallengeStrength (ECountTypes iType, int iLevel) const;
+		Metric CalcMinChallengeStrength (ECountTypes iType, int iLevel) const;
+		Metric CalcMaxChallengeStrength (ECountTypes iType, int iLevel) const;
+		ECountTypes ParseChallengeType (const CString &sValue);
 
-		ECountTypes m_iType;				//	Method for determining ships numbers
+		ECountTypes m_iType	=	countNone;	//	Method for determining ships numbers
+		Metric m_rLower =		0.0;
+		Metric m_rUpper =		0.0;
 		DiceRange m_Count;
 		CString m_sValue;					//	Used for property-based reinforce
 	};

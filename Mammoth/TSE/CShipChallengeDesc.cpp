@@ -18,31 +18,76 @@ static TStaticStringTable<TStaticStringEntry<CShipChallengeDesc::ECountTypes>, 4
 	"standard",				CShipChallengeDesc::countChallengeStandard,
 	};
 
-Metric CShipChallengeDesc::CalcChallengeStrength (ECountTypes iType, int iLevel)
+Metric CShipChallengeDesc::CalcMinChallengeStrength (ECountTypes iType, int iLevel) const
 
 //	CalcChallengeStrength
 //
-//	Computes the desired combat strength.
+//	Computes the min desired combat strength
+//
+	{
+	Metric rCombat = CShipClass::GetStdCombatStrength(iLevel);
+	switch (iType)
+		{
+		case countChallengeEasy:
+			return 1.0 * rCombat;
+
+		case countChallengeStandard:
+			return 2.0 * rCombat;
+
+		case countChallengeHard:
+			return 3.0 * rCombat;
+
+		case countChallengeDeadly:
+			return 5.0 * rCombat;
+
+		case countChallengeRange:
+			return m_rLower * rCombat;
+
+		default:
+			return 0.0;
+		}
+	}
+
+//	CalcChallengeStrength
+//
+//	Computes the max allowed combat strength
+//
+Metric CShipChallengeDesc::CalcMaxChallengeStrength (ECountTypes iType, int iLevel) const
 
 	{
 	Metric rCombat = CShipClass::GetStdCombatStrength(iLevel);
 	switch (iType)
 		{
 		case countChallengeEasy:
-			return 1.5 * rCombat;
+			return 2.0 * rCombat;
 
 		case countChallengeStandard:
-			return 2.5 * rCombat;
+			return 3.0 * rCombat;
 
 		case countChallengeHard:
-			return 4.0 * rCombat;
+			return 5.0 * rCombat;
 
 		case countChallengeDeadly:
-			return 6.0 * rCombat;
+			return 7.0 * rCombat;
+
+		case countChallengeRange:
+			return m_rUpper * rCombat;
 
 		default:
 			return 0.0;
 		}
+	}
+
+Metric CShipChallengeDesc::CalcChallengeStrength (ECountTypes iType, int iLevel) const
+
+//	CalcChallengeStrength
+//
+//	Computes the median desired combat strength.
+//
+	{
+	Metric rMin = CalcMinChallengeStrength(iType, iLevel);
+	Metric rMax = CalcMaxChallengeStrength(iType, iLevel);
+	return (rMax - rMin) / 2 + rMin;
 	}
 
 ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase) const
@@ -94,7 +139,11 @@ ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase) const
 			break;
 			
 		case countChallengeDeadly:
-			sType = CONSTLIT("challengeDealy");
+			sType = CONSTLIT("challengeDeadly");
+			break;
+
+		case countChallengeRange:
+			sType = CONSTLIT("challengeRange");
 			break;
 
 		default:
@@ -145,6 +194,12 @@ ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase) const
 
 				Metric rStrength = CalcChallengeStrength(m_iType, pBase->GetSystem()->GetLevel());
 				pResult->SetDoubleAt(CONSTLIT("strength"), rStrength);
+
+				rStrength = CalcMinChallengeStrength(m_iType, pBase->GetSystem()->GetLevel());
+				pResult->SetDoubleAt(CONSTLIT("strengthMin"), rStrength);
+
+				rStrength = CalcMaxChallengeStrength(m_iType, pBase->GetSystem()->GetLevel());
+				pResult->SetDoubleAt(CONSTLIT("strengthMax"), rStrength);
 
 				return pResult;
 				}
@@ -214,15 +269,15 @@ bool CShipChallengeDesc::Init (ECountTypes iType, const CString &sCount)
 	return true;
 	}
 
-bool CShipChallengeDesc::InitFromChallengeRating (const CString &sChallenge)
-
 //	InitFromChallengeRating
 //
 //	If sChallenge is a challenge level, then we set m_iType to that. Otherwise,
-//	if it is a number, we assume it is a value score.
+//	if it is a single number, we assume it is a value score.
+//
+bool CShipChallengeDesc::InitFromChallengeRating (const CString &sChallenge)
 
 	{
-	//	See if it is a standard challenge level.
+	//	See if it is a standard challenge level or a challenge range.
 
 	ECountTypes iType = ParseChallengeType(sChallenge);
 	if (iType != countNone)
@@ -302,11 +357,11 @@ bool CShipChallengeDesc::InitFromXML (const CString &sValue)
 	return true;
 	}
 
-bool CShipChallengeDesc::NeedsMoreShips (CSpaceObject &Base, const CShipChallengeCtx &Ctx) const
-
-//	NeedsMoreInitialShips
+//	NeedsMoreShips
 //
 //	Returns TRUE if there are not enough ships in the context.
+//
+bool CShipChallengeDesc::NeedsMoreShips (CSpaceObject &Base, const CShipChallengeCtx &Ctx) const
 
 	{
 	switch (m_iType)
@@ -341,7 +396,8 @@ bool CShipChallengeDesc::NeedsMoreShips (CSpaceObject &Base, const CShipChalleng
 		case countChallengeStandard:
 		case countChallengeHard:
 		case countChallengeDeadly:
-			return (Ctx.GetTotalCombat() < CalcChallengeStrength(m_iType, Base.GetSystem()->GetLevel()));
+		case countChallengeRange:
+			return (Ctx.GetTotalCombat() < CalcMinChallengeStrength(m_iType, Base.GetSystem()->GetLevel()));
 
 		default:
 			ASSERT(false);
@@ -349,12 +405,46 @@ bool CShipChallengeDesc::NeedsMoreShips (CSpaceObject &Base, const CShipChalleng
 		}
 	}
 
-bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CSpaceObjectList &Current, const CShipChallengeDesc &Reinforce) const
+//	CanHaveMoreShips
+//
+//	Returns a floating point representing how many more ships
+//	a challenge-type desc is allowed to have relative to the size of
+//  the specified challenge range.
+//  1.0 means that the entire challenge range from min to max is available.
+//  0.0 means that no more ships can fit in the challenge range.
+//  A negative value means that the maximum value was exceeded.
+// 
+//	All other types return either 0.0 or 1.0 in alignment with NeedsMoreShips
+//
+Metric CShipChallengeDesc::CanHaveMoreShips (CSpaceObject& Base, const CShipChallengeCtx& Ctx) const
+	{
+	switch (m_iType)
+		{
+		case countChallengeEasy:
+		case countChallengeStandard:
+		case countChallengeHard:
+		case countChallengeDeadly:
+		case countChallengeRange:
+			{
+			Metric rMin = CalcMinChallengeStrength(m_iType, Base.GetSystem()->GetLevel());
+			Metric rCombatStr = Ctx.GetTotalCombat();
+			if (rMin > rCombatStr)
+				return 1.0;
+			Metric rMax = CalcMaxChallengeStrength(m_iType, Base.GetSystem()->GetLevel());
+			return (rMax - rCombatStr) / (rMax - rMin);
+			}
+
+		default:
+			return NeedsMoreShips(Base, Ctx) ? 1.0 : 0.0;
+		}
+	}
 
 //	NeedsMoreReinforcements
 //
 //	Returns TRUE if pBase needs more defenders, as specified by our challenge
 //	rating.
+//
+bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CSpaceObjectList &Current, const CShipChallengeDesc &Reinforce) const
 
 	{
 	DEBUG_TRY
@@ -384,6 +474,7 @@ bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CSpa
 		case countChallengeStandard:
 		case countChallengeHard:
 		case countChallengeDeadly:
+		case countChallengeRange:
 			{
 			CShipChallengeCtx Ctx(Current);
 			return NeedsMoreReinforcements(Base, Ctx, Reinforce);
@@ -396,11 +487,11 @@ bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CSpa
 	DEBUG_CATCH
 	}
 
-bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CShipChallengeCtx &Ctx, const CShipChallengeDesc &Reinforce) const
-
 //	NeedsMoreReinforcements
 //
 //	Returns TRUE if we need more reinforcements.
+//
+bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CShipChallengeCtx &Ctx, const CShipChallengeDesc &Reinforce) const
 
 	{
 	switch (Reinforce.m_iType)
@@ -448,6 +539,7 @@ bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CShi
 		case countChallengeStandard:
 		case countChallengeHard:
 		case countChallengeDeadly:
+		case countChallengeRange:
 			{
 			if (Reinforce.NeedsMoreShips(Base, Ctx))
 				return true;
@@ -462,16 +554,45 @@ bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CShi
 		}
 	}
 
-CShipChallengeDesc::ECountTypes CShipChallengeDesc::ParseChallengeType (const CString &sValue)
-
 //	ParseChallengeType
 //
 //	Parses a string
+//
+CShipChallengeDesc::ECountTypes CShipChallengeDesc::ParseChallengeType (const CString &sValue)
 
 	{
 	const TStaticStringEntry<CShipChallengeDesc::ECountTypes> *pEntry = CHALLENGE_TYPE_TABLE.GetAt(sValue);
+
 	if (pEntry == NULL)
-		return countNone;
+		{
+		//	Check if we have a valid range instead
+		//	Values must be 2 positive floats separated by a -
+		if (int iDelimPos = strFind(sValue, CONSTLIT("-")) > 0)
+			{
+			bool bFailed = false;
+			//	Try to parse the count and set our min and max
+			CString sLower = strSlice(sValue, 0, iDelimPos - 1);
+			CString sUpper = strSlice(sValue, iDelimPos + 1);
+			m_rLower = strToDouble(sLower, 0.0, &bFailed);
+			if (bFailed)
+				return countNone;
+			m_rUpper = strToDouble(sUpper, 0.0, &bFailed);
+			if (bFailed)
+				{
+				m_rLower = 0.0;
+				return countNone;
+				}
+			if (m_rLower < 0.0 || m_rUpper < m_rLower || m_rUpper < 0.0)
+				{
+				m_rLower = 0.0;
+				m_rUpper = 0.0;
+				return countNone;
+				}
+			return countChallengeRange;
+			}
+		else
+			return countNone;
+		}
 
 	return pEntry->Value;
 	}
