@@ -141,8 +141,6 @@
 	<OverlayType UNID="&ovMiningCalibrationCounter;"
 			attributes=			"miningCalibrationCounter"
 			>
-
-		<!-- This overlay exists purely for the immersion-feel of the calibration ROMs -->
 		
 		<Counter style=	"progress"
 				color=	"#5ff12a"
@@ -151,7 +149,9 @@
 
 		<Properties>
 			<Data id="scanner.calibrationProgress">0</Data>
-			<Data id="scanner.calibrationPerUpdate">25</Data>
+			<Data id="scanner.calibrationPerUpdatePerAsteroid">1</Data>
+			<Data id="scanner.maxCalibrationPerUpdate">25</Data>
+			<Data id="scanner.maxCalibrationRange">50</Data>
 
 			<!-- These must be set when creating the overlay -->
 			<Data id="scanner.calibrationROM"></Data>
@@ -166,7 +166,11 @@
 				(block
 					(
 						(lastProgress (ovr@ gSource aOverlayID 'scanner.calibrationProgress))
-						(updateProgress (ovr@ gSource aOverlayID 'scanner.calibrationPerUpdate))
+						(maxUpdateProgress (ovr@ gSource aOverlayID 'scanner.maxCalibrationPerUpdate))
+						(updatePerAsteroid (ovr@ gSource aOverlayID 'scanner.calibrationPerUpdatePerAsteroid))
+						(calibrationRange (ovr@ gSource aOverlayID 'scanner.maxCalibrationRange))
+						(nearbyAsteroids (sysFindObject gSource (cat "t +asteroid N:" calibrationRange)))
+						(updateProgress (min (* (count nearbyAsteroids) updatePerAsteroid) maxUpdateProgress))
 						(curProgress (+ lastProgress updateProgress))
 						(calibrationROM (ovr@ gSource aOverlayID 'scanner.calibrationROM))
 						(targetSystem (ovr@ gSource aOverlayID 'scanner.targetSystem))
@@ -180,6 +184,11 @@
 								(objSendMessage gSource () (typTranslate gType 'msgWrongSystem))
 								(objRemoveOverlay gSource aOverlayID)
 								)
+
+						;	see if we are still calibrating but cant make any progress
+
+						(and (ls curProgress 100) (ls updateProgress 1))
+							(objSendMessage gSource () (typTranslate gType 'msgNoAsteroidsNearby))
 
 						;	see if we are still calibrating
 
@@ -210,6 +219,9 @@
 			</Text>
 			<Text id="msgCalibrationComplete">
 				Calibration complete
+			</Text>
+			<Text id="msgNoAsteroidsNearby">
+				Calibration paused: no asteroids within scanning range.
 			</Text>
 		</Language>
 	</OverlayType>
