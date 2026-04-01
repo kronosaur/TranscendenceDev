@@ -3771,12 +3771,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"nn",	0,	},
 
 		{	"sysVectorRandom",				fnSystemVectorMath,		FN_VECTOR_RANDOM,
-			"(sysVectorRandom center radius minSeparation [filter]) -> vector\n\n"
+			"(sysVectorRandom center radius [minSeparation] [filter]) -> vector\n\n"
 
 			"center is either Nil, an object, or a vector\n"
 			"radius in light-seconds from center (or a function)\n"
 			"minSeparation is the min distance from other objects (in light-seconds)\n"
-			"filter defines the set of objects to be away from\n",
+			"filter defines the set of objects to be away from. Must provide minSeparation if filter is defined\n",
 
 			"vv*",	0,	},
 
