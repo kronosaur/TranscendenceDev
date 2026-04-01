@@ -59,7 +59,7 @@
 		</ImageVariants>
 
 		<Ships>
-			<Ship	count="1"	class="&scSalvagerNomad;" orders="scavenge"		sovereign="&svSalvagers;"/>
+			<Ship	count="1"	class="&scSalvagerNomad;" orders="wait:time=1"		sovereign="&svSalvagers;"	eventHandler="&evSalvagerBehavior;"/>
 		</Ships>
 
 		<Items>
@@ -211,6 +211,249 @@
 			perception=			"4"
 			/>
 
+	</ShipClass>
+	
+<!-- BEHAVIORS -->
+
+	<ShipClass UNID="&evSalvagerBehavior;"
+			class=				"(Salvager Nomad behavior)"
+			virtual=			"true"
+			
+			attributes=			"behaviorClass"
+			>
+
+		<Properties>
+			<Variant id="lootedVar">
+				(cat '001000C4_ sourceID '_marked)
+			</Variant>
+			<Data id="001000C4_status">
+				'search
+			</Data>
+		</Properties>
+
+		<Events>			
+			<OnOrdersCompleted>
+				(block
+					(
+						(statusVar '001000C4_status)
+						(sourceID (objGetID gSource))
+
+						;	salvager nomad clans dont coordinate so they
+						;	will waste time looking at wrecks other nomads
+						;	have looked at
+
+						(lootedVar (@obj gSource 'lootedVar))
+
+						;	This is the number of wares at which they will set up shop
+						
+						(maxWares 50)
+
+						;	state tracking vars
+
+						(state (obj@ gSource statusVar))
+						(setState (lambda (newState) (objSet@ gSource statusVar newState)))
+						(startNewSearch (lambda () (block () (setState 'initSearch) (shpOrder gSource '))))
+						(dockedAt (shpGetDockObj gSource))
+
+						;	our loot for sale - we calculate this later if needed
+
+						allLoot
+					)
+					(switch
+
+						;	if we are searching for lootable wrecks...
+						(eq status 'search)
+							(block
+								(
+									(allWrecks (rpgFindWrecksToSalvage gSource lootedVar))
+								)
+								(if allWrecks
+									;	Begin salvaging nearby wrecks
+									(block
+										(
+											(theWreck (random allWrecks))
+										)
+										;	Cancel current oreders
+										(shpCancelOrders gSource)
+
+										;	We are now in the salvage state
+										;	Need to set the correct state and order
+										(obj@ gSource statusVar 'salvage)
+										(shpOrder gSource 'dock theWreck)
+										)
+									;	Otherwise keep searching
+									(block
+										(
+											(thePos (sysVectorRandom ))
+										)
+										)
+									)
+								)
+						
+						;	if we are actively salvaging something
+						(eq status 'salvage)
+							(switch
+								;	If we are docked with something that is lootable, loot it
+								(and dockedAt
+									(not (objMatches dockedAt gSource "sTA"))
+									(setq allLoot (objGetItems gSource "*~mf U"))
+									)
+									(block ()
+										(enum allLoot theItem (block () (objRemoveItem dockedAt theItem) (objAddItem gSource theItem)))
+										(setState 'search)
+										)
+								;	If we are docked at an empty wreck or something that
+								;	we shouldnt be - this can potentially happen due to
+								;	other scripts or mods - we need to undock and go back to searching
+								dockedAt
+								)
+							(block
+								(
+									;	Get all item stacks
+									(currentWares (objGetItems gSource "U"))
+									(numWares (count currentWares))
+									remainingWrecks
+								)
+								(if (gr numWares maxWares))
+								)
+
+						;	If we dont have a valid status, we need to re-initialize
+						(block ()
+							(setState 'search)
+							(shp)
+							(shpOrderImmediate gSource 'wait 1)
+							)
+						)
+
+					;	If we're docked at an object...
+					(if (and dockedAt
+							(objMatches dockedAt gSource "sTA +populated +salvagerBazaar")
+							
+							; Compose a list of all loot on board that the station
+							; might want to buy from us.
+							)
+
+						;	To do - implement shop code
+						
+						;	We loot wrecks and process the goods
+						(if (and (not (objMatches dockedAt "sTA"))
+							
+							; Compose a list of all loot on board that the station
+							; might want to buy from us.
+							
+							(setq allLoot (filter (objGetItems gSource "*~mf U") theItem
+								(objGetBuyPrice dockedAt theItem)
+								))
+							)
+							(block Nil
+								(enum allLoot theItem (objRemoveItem gSource theItem))
+								(enum allLoot theItem (objAddItem dockedAt theItem))
+								)
+
+							;	Otherwise we docked at something random
+							;	we dont loot non-wreck objects
+							()
+							)
+						)
+					
+					; Figure out what to do next
+					(switch
+						(eq status 'enteredSystem)
+							(block Nil
+								(setq theTarget (random (sysFindObject gSource "T +arcology")))
+								(shpOrder gSource 'orbit (sysFindObject Nil "TNV +stKatsArcology;") 35 (random 20 40))
+								(shpOrder gSource 'dock theTarget)
+								(shpOrder gSource 'waitForThreat (random 10 60))
+								(objSetData gSource statusVar 'dockedAtNewVictoria)
+								)
+								
+						(eq status 'dockedAtNewVictoria)
+							(block (roll allWrecks)
+								; When leaving new victoria, orbit around for a bit
+								(shpOrder gSource 'orbit (sysFindObject Nil "TNV +stKatsArcology;") 35 (random 20 40))
+								
+								; Randomly choose a path
+								(setq roll (random 1 100))
+								(switch
+									; Gate out
+									(leq roll 30)
+										(block Nil
+											(shpOrder gSource 'gate)
+											(objSetData gSource statusVar 'leavingSystem)
+											)
+											
+									; If there are wrecks in the area, loot them
+									(and (rpgFilterSalvager gSource)
+											
+											; Compose a list of all wrecks in the area
+											
+											(setq allWrecks (rpgFindWrecksToSalvage gSource lootedVar))
+											)
+										(block ()
+											(rpgInitSalvageAndScuttleOperation gSource allWrecks lootedVar)
+											(objSetData gSource statusVar 'dockedAtStation)
+											)
+											
+									; Dock at a random station in the system
+									(block (theTarget)
+										(setq theTarget (random (sysFindObject gSource "TAF +populated; -arcology; -occupation;")))
+										(shpOrder gSource 'dock theTarget)
+										(shpOrder gSource 'waitForThreat (random 10 20))
+										(objSetData gSource statusVar 'dockedAtStation)
+										)
+									)
+								)
+								
+						(eq status 'dockedAtStation)
+							(block (roll allWrecks)
+								; Randomly choose a path
+								(setq roll (random 1 100))
+								(switch
+									; Gate out
+									(leq roll 30)
+										(block Nil
+											(shpOrder gSource 'gate)
+											(objSetData gSource statusVar 'leavingSystem)
+											)
+											
+									; If there are wrecks in the area, loot them
+									(and (rpgFilterSalvager gSource)
+											
+											; Compose a list of all wrecks in the area
+											
+											(setq allWrecks (rpgFindWrecksToSalvage gSource lootedVar))
+											)
+										(block ()
+											(rpgInitSalvageAndScuttleOperation gSource allWrecks lootedVar)
+											(objSetData gSource statusVar 'dockedAtStation)
+											)
+											
+									; Dock at new victoria
+									(leq roll 80)
+										(block (theTarget)
+											(setq theTarget (random (sysFindObject gSource "T +arcology")))
+											(shpOrder gSource 'orbit (sysFindObject Nil "TNV +stKatsArcology;") 35 (random 20 40))
+											(shpOrder gSource 'dock theTarget)
+											(shpOrder gSource 'waitForThreat (random 10 60))
+											(objSetData gSource statusVar 'dockedAtNewVictoria)
+											)
+											
+									; Dock at a random station in the system
+									(block (theTarget)
+										(setq theTarget (random (sysFindObject gSource "TAF +populated; -arcology; -occupation;")))
+										(shpOrder gSource 'dock theTarget)
+										(shpOrder gSource 'waitForThreat (random 10 20))
+										(objSetData gSource statusVar 'dockedAtStation)
+										)
+									)
+								)
+						)
+						
+					; If we were docked at an object that we just looted, then destroy the object
+					(rpgImplementScuttleSalvagedWreck gSource dockedAt lootedVar)
+					)
+			</OnOrdersCompleted>
+		</Events>
 	</ShipClass>
 
 <!-- RESOURCES -->
