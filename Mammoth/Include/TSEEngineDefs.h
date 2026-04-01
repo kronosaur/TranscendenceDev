@@ -330,6 +330,18 @@
 #define PROPERTY_CORE_HIDE_RADIATION_IMMUNE		CONSTLIT("core.hideRadiationImmune")
 #define PROPERTY_CORE_HIDE_SHATTER_IMMUNE		CONSTLIT("core.hideShatterImmune")
 
+//	core.hud.scale.???
+//
+//	Adventure Property: Evaluated at bind time.
+//	These options control how numbers in the HUD are presented
+//
+#define PROPERTY_CORE_HUD_SCALE_HP				CONSTLIT("core.hud.scale.hp")
+
+#define VALUE_CORE_HUD_SCALE_DEFAULT			CONSTLIT("default")
+#define VALUE_CORE_HUD_SCALE_RAW				CONSTLIT("raw")
+#define VALUE_CORE_HUD_SCALE_METRIC				CONSTLIT("metric")
+#define VALUE_CORE_HUD_SCALE_PERCENT			CONSTLIT("percent")
+
 //	core.item.xmlMassToRealVolume
 //
 //	Adventure Property: Evaluated at bind time. This property exists for adventures
