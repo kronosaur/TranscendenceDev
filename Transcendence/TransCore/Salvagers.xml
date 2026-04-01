@@ -229,6 +229,19 @@
 			<Data id="001000C4_status">
 				'search
 			</Data>
+			<Data id="timeSetupShop">
+			</Data>
+			<DynamicData id="searchRadius">
+				(block
+					(
+						(centerMarker (sysCreateMarker 'tempMeasuringMarker ()))
+						(farthestObject (sysFindObject centerMarker "t R"))
+						(farthestDistance (sysVectorDistance (objGetPos farthestObject) (objGetPos centerMarker)))
+					)
+					(objRemove centerMarker)
+					farthestDistance
+				)
+			</DynamicData>
 		</Properties>
 
 		<Events>			
@@ -284,8 +297,9 @@
 									;	Otherwise keep searching
 									(block
 										(
-											(thePos (sysVectorRandom ))
+											(thePos (sysVectorRandom () (obj@ gSource 'farthestDistance)))
 										)
+										(shpOrder gSource 'gotoPos thePos)
 										)
 									)
 								)
@@ -314,13 +328,38 @@
 									(numWares (count currentWares))
 									remainingWrecks
 								)
-								(if (gr numWares maxWares))
+								(if (gr numWares maxWares)
+									;	If we have enough wares, we setup shop
+									)
+								)
+
+						;	if we are currently a shop
+						(eq status 'shop)
+							(block
+								(
+									(currentWares (objGetItems gSource "U"))
+									(numWares (count currentWares))
+									(timeAsShop (- (unvGetTick) (obj@ gSource 'timeSetupShop)))
+								)
+								(if (or (ls timeAsShop 0) (gr timeAsShop 1800) (= numWares 0))
+									(if (gr numWares 0)
+										;	Send ships to cleanup
+										(block ()
+											)
+										;	otherwise just resume searching
+										(block ()
+											)
+										)
+									;	otherwise we remain a shop
+									(block ()
+										)
+									)
 								)
 
 						;	If we dont have a valid status, we need to re-initialize
 						(block ()
 							(setState 'search)
-							(shp)
+							(shpCancelOrders gSource)
 							(shpOrderImmediate gSource 'wait 1)
 							)
 						)
