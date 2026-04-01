@@ -303,8 +303,8 @@
 											asteroidsWithOre: asteroidsWithOre
 											asteroidsTotal: (count asteroids)
 
-											;	asteroidsPercent is a float rounded to 0.1 percent
-											asteroidsPercent: (* (int (/ (* 1000 asteroidsWithOre) (count asteroids))) 0.1)
+											;	asteroidsPercent is rounded down to the nearest percent
+											asteroidsPercent: (int (/ (* 100 asteroidsWithOre) (count asteroids)))
 										}))
 									)
 
