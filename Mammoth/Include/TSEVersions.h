@@ -1091,6 +1091,13 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					221;
 //					to determine the power use of a ship's built-in thrusters
 //					accepts a double
 //					Default: 1.2
+//				<Constant id="core.hud.scale.hp">				'default</Constant>
+//					Sets a consistent hp display style for the hud in the adventure.
+//					Options are:
+//						'default (default):		uses the hp scale set in the xml
+//						'raw:					uses the raw number
+//						'metric:				rounds to 3 digits, uses metric prefixes
+//						'percent:				rounds to a 2 digit %
 //		<Type>
 //			<ArmorClassDesc>
 //				<ArmorClass>

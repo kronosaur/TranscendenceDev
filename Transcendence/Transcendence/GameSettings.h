@@ -221,7 +221,6 @@ class CGameSettings
 			dockPortIndicator,				//	Options for dock port indicator
 			allowInvokeLetterHotKeys,		//	Allow invoke entries to have letter hot keys
 			noAutoSave,						//	NOT YET IMPLEMENTED
-			noFullCreate,					//	If TRUE, we don't create all systems in the topology
 			showManeuverEffects,			//	Shows maneuvering effects
 			noMissionCheckpoint,			//	Do not save on mission accept
 			defaultBuyTab,					//	Default tab when buying items

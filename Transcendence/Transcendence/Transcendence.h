@@ -106,7 +106,6 @@ struct SNewGameSettings
 	CDifficultyOptions::ELevel iDifficulty = CDifficultyOptions::ELevel::Unknown;
 	DWORD dwPlayerShip = 0;						//	Starting ship class
 
-	bool bFullCreate = false;					//	If TRUE, create all systems
 	bool bDefaultPlayerName = false;			//	If TRUE, this is a default player name
 	bool bDifficultyLocked = false;				//	If TRUE, player cannot change difficulty
 	};

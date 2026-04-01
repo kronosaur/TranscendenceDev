@@ -393,7 +393,10 @@ bool CArmorHUDRingSegments::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsErr
 	m_rgbHullTextBack = CG32bitPixel::Darken(m_rgbHull, 128);
 
 	CString sScale = CreateCtx.Desc.GetAttribute(SCALE_ATTRIB);
-	if (sScale.IsBlank() || strEquals(sScale, SCALE_PERCENT))
+	CLanguage::EHPDisplay eAdventureHPDisplay = g_pUniverse->GetEngineOptions().GetHPScale();
+	if (eAdventureHPDisplay != CLanguage::EHPDisplay::None)
+		m_HPDisplay = eAdventureHPDisplay;
+	else if (sScale.IsBlank() || strEquals(sScale, SCALE_PERCENT))
 		m_HPDisplay = CLanguage::SHPDisplayOptions(CLanguage::EHPDisplay::Percent);
 	else if (strEquals(sScale, SCALE_HP))
 		m_HPDisplay = CLanguage::SHPDisplayOptions(CLanguage::EHPDisplay::HitPoints);

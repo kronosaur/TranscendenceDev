@@ -2722,16 +2722,8 @@ ALERROR CTranscendenceModel::StartNewGameBackground (const SNewGameSettings &New
 	//	Get the starting system
 
 	CSystem *pStartingSystem;
-	if (NewGame.bFullCreate)
-		{
-		if (error = CreateAllSystems(sStartNode, &pStartingSystem, retsError))
-			return error;
-		}
-	else
-		{
-		if (error = m_Universe.CreateStarSystem(sStartNode, &pStartingSystem, retsError))
-			return error;
-		}
+	if (error = CreateAllSystems(sStartNode, &pStartingSystem, retsError))
+		return error;
 
 	//	Set the current system because we need it to be set when we create the
 	//	player ship.

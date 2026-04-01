@@ -927,7 +927,6 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 	else if (strEquals(sCmd, CMD_GAME_CREATE))
 		{
 		SNewGameSettings *pNewGame = (SNewGameSettings *)pData;
-		pNewGame->bFullCreate = !m_Model.GetUniverse().InDebugMode() || !m_Settings.GetBoolean(CGameSettings::noFullCreate);
 
 		//	Let the model begin the creation
 

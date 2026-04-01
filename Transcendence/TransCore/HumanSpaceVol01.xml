@@ -1887,6 +1887,14 @@
 	<!ENTITY rsMiningPod				"0x00100170">
 	<!ENTITY itMagmaCutter				"0x00100171">
 	<!ENTITY itProtonDrill				"0x00100172">
+	<!ENTITY baMiningScanner			"0x00100173">
+	<!ENTITY itOreCalibrationROML2		"0x00100174">
+	<!ENTITY itOreCalibrationROML4		"0x00100175">
+	<!ENTITY itOreCalibrationROML6		"0x00100176">
+	<!ENTITY itOreCalibrationROML8		"0x00100177">
+	<!ENTITY itOreCalibrationROML10		"0x00100178">
+	<!ENTITY baOreCalibrationROM		"0x00100179">
+	<!ENTITY ovMiningCalibrationCounter	"0x0010017A">
 	
 	<!-- 0180-018F OUTLAWS -->
 	
@@ -2266,6 +2274,7 @@
 	<!ENTITY rsHimalInterceptor			"0x00100496">
 	<!ENTITY rsHimalInterceptorHero		"0x00100497">
 	<!ENTITY smHimalSpace				"0x00100498">
+	<!ENTITY stHimalEnclave				"0x00100499">
 
 	<!-- 04B0-04CF COMMONWEALTH FLEET II -->
 
@@ -2775,6 +2784,7 @@
 	<Module filename="Barricades.xml"/>
 	<Module filename="HaloGems.xml"/>
 	<Module filename="MiningPods.xml"/>
+	<Module filename="MiningScanners.xml"/>
 	<Module filename="MiscItems.xml"/>
 	<Module filename="QuantumCPU.xml"/>
 	<Module filename="RejuvTank.xml"/>

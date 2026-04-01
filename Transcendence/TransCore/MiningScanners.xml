@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- INVOKABLE ITEMS -->
+	
+	<!-- Mining calibration roms -->
+
+	<ItemType UNID="&itOreCalibrationROML2;"
+			name=				"AST-2 Calibration ROM"
+			attributes=			"consumable, oreScannerRom, humanTech"
+			inherit=			"&baOreCalibrationROM;"
+
+			level=				"2"
+			frequency=			"uncommon"
+			numberAppearing=	"1"
+
+			value=				"500"
+			mass=				"1"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
+
+			description=		"This ROM is loaded with scanner calibration software that will tune a ship's sensors to ignore asteroids without ore in a specific star system."
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="core.reference">
+				Can calibration sensors in up to level 2 systems.
+			</Text>
+		</Language>
+
+	</ItemType>
+
+	<ItemType UNID="&itOreCalibrationROML4;"
+			name=				"AST-4 Calibration ROM"
+			attributes=			"consumable, oreScannerRom, humanTech"
+			inherit=			"&baOreCalibrationROM;"
+
+			level=				"4"
+			frequency=			"uncommon"
+			numberAppearing=	"1"
+
+			value=				"2000"
+			mass=				"1"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
+
+			description=		"This ROM is loaded with scanner calibration software that will tune a ship's sensors to ignore asteroids without ore in a specific star system."
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="core.reference">
+				Can calibration sensors in up to level 4 systems.
+			</Text>
+		</Language>
+
+	</ItemType>
+
+	<ItemType UNID="&itOreCalibrationROML6;"
+			name=				"AST-6 Calibration ROM"
+			attributes=			"consumable, oreScannerRom, humanTech"
+			inherit=			"&baOreCalibrationROM;"
+
+			level=				"6"
+			frequency=			"uncommon"
+			numberAppearing=	"1"
+
+			value=				"8000"
+			mass=				"1"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
+
+			description=		"This ROM is loaded with scanner calibration software that will tune a ship's sensors to ignore asteroids without ore in a specific star system."
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="core.reference">
+				Can calibration sensors in up to level 6 systems.
+			</Text>
+		</Language>
+
+	</ItemType>
+
+	<ItemType UNID="&itOreCalibrationROML8;"
+			name=				"AST-8 Calibration ROM"
+			attributes=			"consumable, oreScannerRom, humanTech"
+			inherit=			"&baOreCalibrationROM;"
+
+			level=				"8"
+			frequency=			"uncommon"
+			numberAppearing=	"1"
+
+			value=				"32000"
+			mass=				"1"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
+
+			description=		"This ROM is loaded with scanner calibration software that will tune a ship's sensors to ignore asteroids without ore in a specific star system."
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="core.reference">
+				Can calibration sensors in up to level 8 systems.
+			</Text>
+		</Language>
+
+	</ItemType>
+
+	<ItemType UNID="&itOreCalibrationROML10;"
+			name=				"AST-10 Calibration ROM"
+			attributes=			"consumable, oreScannerRom, humanTech"
+			inherit=			"&baOreCalibrationROM;"
+
+			level=				"10"
+			frequency=			"uncommon"
+			numberAppearing=	"1"
+
+			value=				"128000"
+			mass=				"1"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
+
+			description=		"This ROM is loaded with scanner calibration software that will tune a ship's sensors to ignore asteroids without ore in a specific star system."
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="core.reference">
+				Can calibration sensors in up to level 10 systems.
+			</Text>
+		</Language>
+
+	</ItemType>
+
+	<!-- OVERLAYS -->
+	
+	<OverlayType UNID="&ovMiningCalibrationCounter;"
+			attributes=			"miningCalibrationCounter"
+			>
+		
+		<Counter style=	"progress"
+				color=	"#5ff12a"
+				max=	"100"
+				/>
+
+		<Properties>
+			<Data id="scanner.calibrationProgress">0</Data>
+			<Data id="scanner.calibrationPerUpdatePerAsteroid">1</Data>
+			<Data id="scanner.maxCalibrationPerUpdate">25</Data>
+			<Data id="scanner.maxCalibrationRange">50</Data>
+
+			<!-- These must be set when creating the overlay -->
+			<Data id="scanner.calibrationROM"></Data>
+			<Data id="scanner.targetSystem"></Data>
+		</Properties>
+		
+		<Events>
+			<OnCreate>
+				(ovrSet@ gSource aOverlayID 'counterLabel "Calibrating...")
+			</OnCreate>	
+			<onUpdate>
+				(block
+					(
+						(lastProgress (ovr@ gSource aOverlayID 'scanner.calibrationProgress))
+						(maxUpdateProgress (ovr@ gSource aOverlayID 'scanner.maxCalibrationPerUpdate))
+						(updatePerAsteroid (ovr@ gSource aOverlayID 'scanner.calibrationPerUpdatePerAsteroid))
+						(calibrationRange (ovr@ gSource aOverlayID 'scanner.maxCalibrationRange))
+						(nearbyAsteroids (sysFindObject gSource (cat "t +asteroid N:" calibrationRange)))
+						(updateProgress (min (* (count nearbyAsteroids) updatePerAsteroid) maxUpdateProgress))
+						(curProgress (+ lastProgress updateProgress))
+						(calibrationROM (ovr@ gSource aOverlayID 'scanner.calibrationROM))
+						(targetSystem (ovr@ gSource aOverlayID 'scanner.targetSystem))
+					)
+					(switch
+						;	We must still be in the correct system
+
+						(!= (sysGetNode) targetSystem)
+							(block ()
+								(objAddItem gSource calibrationROM 1)
+								(objSendMessage gSource () (typTranslate gType 'msgWrongSystem))
+								(objRemoveOverlay gSource aOverlayID)
+								)
+
+						;	see if we are still calibrating but cant make any progress
+
+						(and (ls curProgress 100) (ls updateProgress 1))
+							(objSendMessage gSource () (typTranslate gType 'msgNoAsteroidsNearby))
+
+						;	see if we are still calibrating
+
+						(ls curProgress 100)
+							(block ()
+								(ovrInc@ gSource aOverlayID 'scanner.calibrationProgress updateProgress)
+								(objSetOverlayProperty gSource aOverlayID 'counter
+									(ovr@ gSource aOverlayID 'scanner.calibrationProgress)
+									)
+								)
+
+						;	otherwise handle the outcome
+
+						(block ()
+							(objSendMessage gSource () (typTranslate gType 'msgCalibrationComplete))
+							(objAddItem gSource calibrationROM 1)
+							(objFireItemEvent gSource calibrationROM 'scanner.finishCalibration)
+							(objRemoveOverlay gSource aOverlayID)
+							)
+					)
+				)
+			</onUpdate>
+		</Events>
+
+		<Language>
+			<Text id="msgWrongSystem">
+				Calibration cancelled
+			</Text>
+			<Text id="msgCalibrationComplete">
+				Calibration complete
+			</Text>
+			<Text id="msgNoAsteroidsNearby">
+				Calibration paused: no asteroids within scanning range.
+			</Text>
+		</Language>
+	</OverlayType>
+	
+	<!-- BASE TYPES -->
+
+	<ItemType unid="&baMiningScanner;"
+			name=			"(mining scanner)"
+			virtual=		"true"
+			level=			"1"
+			>
+		<Properties>
+			<!-- If true, this is a disposable scanning device -->
+			<Data id="scanner.disposable">		True</Data>
+
+			<!-- If non-Nil, this should be the UNID of scanning
+			weapon that can be used for doing scanning damage to
+			asteroids
+			
+			We do this so we can handle the logic behind different
+			miningScan:#/mining:# levels
+			-->
+			<Data id="scanner.fullScanWeapon">	</Data>
+
+			<!-- Scanner Power (in levels)
+
+			If this number is >= system level, we can scan in this system
+			 -->
+			<Data id="scanner.level">			</Data>
+
+			<!-- Scanner Radius (in ls)
+			
+			If <=0 (or Nil) we have unlimited range
+			-->
+			<Data id="scanner.range">			</Data>
+
+			<!-- If messages should be displayed to the user -->
+			<Data id="scanner.enableMessages">	True</Data>
+		</Properties>
+
+		<Events>
+			<scanner.Scan>
+				(if (geq (or (itm@ gItem 'scanner.level) (itm@ gItem 'level)) (sysGetLevel))
+					;	We can only scan up to systems of our item level
+					(block
+						(
+							(range (itm@ gItem 'scanner.range))
+							(asteroids
+								(if (gr range 0)
+									;	We need to use a special filter
+									(sysFindObject gSource (cat "t +asteroid N:" range))
+									;	Otherwise we scan all asteroids
+									(sysFindObject gSource "t +asteroid")
+									)
+								)
+							(fullScanWeapon (itm@ gItem 'scanner.fullScanWeapon))
+							(asteroidsWithOre 0)
+						)
+
+						(if asteroids
+							(block ()
+								;	Mark all unexplored asteroids with no ore
+								;	as explored, so that we dont waste time on them
+								(enum asteroids theAsteroid
+									(if (objGetItems theAsteroid "* +ore|* +minable")
+
+										;	If we have ore items then we need to see if we unveil full details about them
+										;
+										;	we go through the full scanning logic here so that we can make use of different
+										;	scanner powers
+
+										(block ()
+											(if fullScanWeapon (objDamage theAsteroid fullScanWeapon))
+											(setq asteroidsWithOre (+ asteroidsWithOre 1))
+											)
+
+										;	We always set asteroids that have nothing in them to explored
+										;
+										;	This mitigates the player wasting time on extremely un-fun shooting
+										;	empty rocks with nothing in them
+
+										(objSet@ theAsteroid 'explored True)
+										)
+									)
+
+								;	Notify the user we were successful
+
+								(if (itm@ gItem 'scanner.enableMessages)
+									(objSendMessage gSource () (typTranslate gType 'msgSuccess
+										{
+											asteroidsWithOre: asteroidsWithOre
+											asteroidsTotal: (count asteroids)
+
+											;	asteroidsPercent is rounded down to the nearest percent
+											asteroidsPercent: (int (/ (* 100 asteroidsWithOre) (count asteroids)))
+										}))
+									)
+
+								;	Identify the item and remove it if its disposable
+
+								(itmSetKnown gItem)
+
+								(if (itm@ gItem 'scanner.disposable)
+									(objRemoveItem gSource gItem 1)
+									)
+								)
+
+							;	If there are no asteroids...
+
+							(block ()
+								;	Notify the user we have nothing to scan
+
+								(if (itm@ gItem 'scanner.enableMessages)
+									(objSendMessage gSource () (typTranslate gType 'msgNoAsteroids))
+									)
+
+								;	Identify the item if necessary
+
+								(itmSetKnown gItem)
+								)
+							)
+						)
+
+					;	Otherwise we cant scan in this system
+
+					(block ()
+
+						;	Notify the user we were unsuccessful
+
+						(if (itm@ gItem 'scanner.enableMessages)
+							(objSendMessage gSource () (typTranslate gType 'msgLevelTooLow))
+							)
+
+						;	Now we know what the item is
+
+						(itmSetKnown gItem)
+						)
+					)
+			</scanner.Scan>
+		</Events>
+
+		<Language>
+			<Text id="msgSuccess">
+				Asteroids in system successfully scanned. %asteroidsWithOre% out of %asteroidsTotal% scanned asteroids contain minable materials.
+			</Text>
+			<Text id="msgLevelTooLow">
+				The contents of this star system are too difficult to scan with this item.
+			</Text>
+			<Text id="msgNoAsteroids">
+				There are no asteroids to scan.
+			</Text>
+		</Language>
+	</ItemType>
+	
+	<!-- Mining calibration roms -->
+
+	<ItemType UNID="&baOreCalibrationROM;"
+			name=			"(mining calibration rom)"
+			virtual=		"true"
+			level=			"1"
+			inherit=		"&baMiningScanner;"
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Events>
+			<scanner.startCalibration>
+				(block
+					(
+						(theOverlay (objAddOverlay gSource &ovMiningCalibrationCounter;))
+					)
+					(ovrSet@ gSource theOverlay 'scanner.calibrationROM gItem)
+					(ovrSet@ gSource theOverlay 'scanner.targetSystem (sysGetNode))
+					(objRemoveItem gSource gItem 1)
+					)
+			</scanner.startCalibration>
+			<scanner.finishCalibration>
+				(objFireItemEvent gSource gItem 'scanner.Scan)
+			</scanner.finishCalibration>
+		</Events>
+
+		<Invoke>
+			(objFireItemEvent gSource gItem 'scanner.startCalibration)
+		</Invoke>
+
+		<Language>
+			<Text id="msgSuccess">
+				Calibrated sensors detect %asteroidsPercent%% of asteroids in this system contain minable materials.
+			</Text>
+		</Language>
+
+	</ItemType>
+
+</TranscendenceModule>
