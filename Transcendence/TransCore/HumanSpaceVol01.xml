@@ -2266,6 +2266,7 @@
 	<!ENTITY rsHimalInterceptor			"0x00100496">
 	<!ENTITY rsHimalInterceptorHero		"0x00100497">
 	<!ENTITY smHimalSpace				"0x00100498">
+	<!ENTITY stHimalEnclave				"0x00100499">
 
 	<!-- 04B0-04CF COMMONWEALTH FLEET II -->
 
