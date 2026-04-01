@@ -184,7 +184,12 @@
 						;	see if we are still calibrating
 
 						(ls curProgress 100)
-							(ovrInc@ gSource aOverlayID 'scanner.calibrationProgress updateProgress)
+							(block ()
+								(ovrInc@ gSource aOverlayID 'scanner.calibrationProgress updateProgress)
+								(objSetOverlayProperty gSource aOverlayID 'counter
+									(ovr@ gSource aOverlayID 'scanner.calibrationProgress)
+									)
+								)
 
 						;	otherwise handle the outcome
 
@@ -297,7 +302,9 @@
 										{
 											asteroidsWithOre: asteroidsWithOre
 											asteroidsTotal: (count asteroids)
-											asteroidsPercent: (/ (* 100 asteroidsWithOre) (count asteroids))
+
+											;	asteroidsPercent is a float rounded to 0.1 percent
+											asteroidsPercent: (* (int (/ (* 1000 asteroidsWithOre) (count asteroids))) 0.1)
 										}))
 									)
 
