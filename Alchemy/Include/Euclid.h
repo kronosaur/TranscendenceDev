@@ -15,6 +15,9 @@ constexpr Metric PI = 3.14159265358979;
 constexpr Metric HALF_PI = 0.5 * PI;
 constexpr Metric TAU = 2.0 * PI;
 
+constexpr Metric RAD_EPSILON = 0.0000001;
+constexpr Metric DEG_EPSILON = RAD_EPSILON * 180.0 / PI;
+
 const Metric SQRT_3 = sqrt(3.0);
 
 constexpr Metric DBL_INFINITY = 1.7976931348623158e+308;	//	DBL_MAX
@@ -61,9 +64,13 @@ inline int AngleMiddle (int iLowAngle, int iHighAngle)
 inline int AngleToDegrees (Metric rAngle) { return AngleMod(mathRound(rAngle * 180.0 / PI)); }
 
 inline Metric mathAngleMod (double rAngle) { if (rAngle >= 0.0) return fmod(rAngle, TAU); else return TAU - fmod(-rAngle, TAU); }
+inline Metric mathAngleMod180 (double rAngle) { return mathAngleMod(rAngle + PI) - PI; }
 inline Metric mathAngleModDegrees (double rAngle) { if (rAngle >= 0.0) return fmod(rAngle, 360.0); else return 360.0 - fmod(-rAngle, 360.0); }
+inline Metric mathAngleMod180Degrees (double rAngle) { return mathAngleModDegrees(rAngle + 180.0) - 180.0; }
 inline Metric mathAngleBearing (Metric rAngle, Metric rOrigin) { Metric rDiff = mathAngleMod(rAngle - rOrigin); return (rDiff > PI ? rDiff - TAU : rDiff); }
 inline Metric mathAngleDiff (double rFrom, double rTo) { return mathAngleMod(rTo - rFrom); }
+inline Metric mathAngleIsZero (double rAngle) { return abs(mathAngleMod180(rAngle)) < RAD_EPSILON; }
+inline Metric mathAngleIsZeroDegrees (double rAngle) { return abs(mathAngleMod180Degrees(rAngle)) < DEG_EPSILON; }
 inline constexpr Metric mathDegreesToRadians (int iAngle) { return iAngle * PI / 180.0; }
 inline constexpr Metric mathDegreesToRadians (Metric rDegrees) { return PI * rDegrees / 180.0; }
 inline constexpr Metric mathInterpolate (Metric rFrom, Metric rTo, Metric rInterpolate) { return rFrom + (rInterpolate * (rTo - rFrom)); }
