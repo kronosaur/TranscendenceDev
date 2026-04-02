@@ -8,7 +8,7 @@
 
 	<ItemType UNID="&itOreCalibrationROML2;"
 			name=				"AST-2 Calibration ROM"
-			attributes=			"consumable, oreScannerRom, humanTech"
+			attributes=			"consumable, oreScannerRom, essentialMiningEquipment, humanTech"
 			inherit=			"&baOreCalibrationROM;"
 
 			level=				"2"
@@ -34,7 +34,7 @@
 
 	<ItemType UNID="&itOreCalibrationROML4;"
 			name=				"AST-4 Calibration ROM"
-			attributes=			"consumable, oreScannerRom, humanTech"
+			attributes=			"consumable, oreScannerRom, essentialMiningEquipment, humanTech"
 			inherit=			"&baOreCalibrationROM;"
 
 			level=				"4"
@@ -60,7 +60,7 @@
 
 	<ItemType UNID="&itOreCalibrationROML6;"
 			name=				"AST-6 Calibration ROM"
-			attributes=			"consumable, oreScannerRom, humanTech"
+			attributes=			"consumable, oreScannerRom, essentialMiningEquipment, humanTech"
 			inherit=			"&baOreCalibrationROM;"
 
 			level=				"6"
@@ -86,7 +86,7 @@
 
 	<ItemType UNID="&itOreCalibrationROML8;"
 			name=				"AST-8 Calibration ROM"
-			attributes=			"consumable, oreScannerRom, humanTech"
+			attributes=			"consumable, oreScannerRom, essentialMiningEquipment, humanTech"
 			inherit=			"&baOreCalibrationROM;"
 
 			level=				"8"
@@ -112,7 +112,7 @@
 
 	<ItemType UNID="&itOreCalibrationROML10;"
 			name=				"AST-10 Calibration ROM"
-			attributes=			"consumable, oreScannerRom, humanTech"
+			attributes=			"consumable, oreScannerRom, essentialMiningEquipment, humanTech"
 			inherit=			"&baOreCalibrationROM;"
 
 			level=				"10"
