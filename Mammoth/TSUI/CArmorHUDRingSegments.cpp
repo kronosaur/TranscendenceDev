@@ -190,7 +190,6 @@ void CArmorHUDRingSegments::DrawIntegrityBox (CG32bitImage &Dest, const SSegment
 //	DrawIntegrityBoxText
 //
 //	Draws the armor integrity value on an arc background.
-//	Note: Seg.rHPTextRotation should be within -pi/2 to +pi/2
 //
 void CArmorHUDRingSegments::DrawIntegrityBoxText (CG32bitImage &Dest, const SSegment &Seg, CG32bitPixel rgbColor) const
 
@@ -205,7 +204,7 @@ void CArmorHUDRingSegments::DrawIntegrityBoxText (CG32bitImage &Dest, const SSeg
 	CVector vCenter(m_xCenter, m_yCenter);
 	CVector vText = vCenter + Seg.vHPText;
 
-	if (abs(Seg.rHPTextRotation) < g_Epsilon)
+	if (mathAngleIsZero(Seg.rHPTextRotation))
 		MediumFont.DrawText(Dest, (int)vText.GetX(), (int)vText.GetY(), rgbColor, Seg.sHP, CG16bitFont::AlignCenter);
 	else
 		CGDraw::Text(Dest,
