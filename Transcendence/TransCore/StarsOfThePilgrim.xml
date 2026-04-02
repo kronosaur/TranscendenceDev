@@ -194,10 +194,16 @@
 
 			<!-- Defaults for UI -->
 
+				<!-- Defaults for item stat cards -->
+
 			<Constant id="core.hideDisintegrationImmune">	Nil</Constant>
 			<Constant id="core.hideIonizeImmune">			Nil</Constant>
 			<Constant id="core.hideRadiationImmune">		Nil</Constant>
 			<Constant id="core.hideShatterImmune">			Nil</Constant>
+
+				<!-- Defaults for HUD -->
+				
+			<Constant id="core.hud.scale.hp">				'metric</Constant>
 		</Properties>
 		
 		<EncounterOverrides>

@@ -136,6 +136,7 @@ class CLanguage
 			HitPoints,
 			Percent,
 			Scaled,
+			Metric,
 			};
 
 		struct SHPDisplayOptions
