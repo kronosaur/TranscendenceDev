@@ -2752,6 +2752,8 @@
 				missileSpeed=	"60"
 				hitPoints=		"20"
 
+				proximityDistanceAutoTrigger="0.1"
+
 				effect=			"&efMissileNAMI;"
 				sound=			"&snMissileLauncher;"
 				>
@@ -2953,6 +2955,8 @@
 				lifetime=		"120"
 
 				maneuverRate=	"9"
+				
+				proximityDistanceAutoTrigger="0.05"
 
 				effect=			"&efMissileNAMI;"
 				hitEffect=		"&efThermoFragmentExplosion;"
@@ -3068,6 +3072,8 @@
 						
 				hitPoints=		"40"
 				failsafe=		"6"
+
+				proximityDistanceAutoTrigger="0.1"
 						 
 				effect=			"&efMissileMAG;"
 				sound=			"&snMissileLauncher;"
@@ -3145,6 +3151,8 @@
 						
 				hitPoints=		"60"
 				failsafe=		"6"
+
+				proximityDistanceAutoTrigger="0.2"
 						 
 				effect=			"&efMissileMAG;"
 				sound=			"&snMissileLauncher;"
@@ -3221,6 +3229,8 @@
 				missileSpeed=	"30"
 						
 				hitPoints=		"100"
+
+				proximityDistanceAutoTrigger="0.25"
 						 
 				effect=			"&efMissileMAG;"
 				hitEffect=		"&efThermoFragmentExplosion;"
@@ -3357,6 +3367,8 @@
 				lifetime=		"60"
 				missileSpeed=	"60"
 
+				proximityDistanceAutoTrigger="0.1"
+
 				effect=			"&efMissileStrelka;"
 				hitEffect=		"&efThermoFragmentExplosion;"
 				sound=			"&snRecoillessCannon;"
@@ -3405,6 +3417,7 @@
 
 				failSafe=		"10"
 				noDetonationOnEndOfLife="true"
+				proximityDistanceAutoTrigger="0.25"
 
 				hitEffect=		"&efBlastHitDefault;"
 				sound=			"&snMissileLauncher;"
@@ -3457,6 +3470,7 @@
 
 				failSafe=		"10"
 				noDetonationOnEndOfLife="true"
+				proximityDistanceAutoTrigger="0.25"
 
 				sound=			"&snMissileLauncher;"
 				hitEffect=		"&efBlastHitDefault;"
@@ -3572,6 +3586,8 @@
 				missileSpeed=	"55"
 				hitPoints=		"150"
 
+				proximityDistanceAutoTrigger="0.0"
+
 				effect=			"&efMissileNAMIHeavy;"
 				hitEffect=		"&efThermoFragmentExplosion;"
 				sound=			"&snMissileLauncher;"
@@ -3645,6 +3661,8 @@
 				hitPoints=		"150"
 
 				failsafe=		"5"
+
+				fragmentVelocityInheritance="none"
 
 				effect=			"&efMissileNAMIHeavy;"
 				sound=			"&snMissileLauncher;"
