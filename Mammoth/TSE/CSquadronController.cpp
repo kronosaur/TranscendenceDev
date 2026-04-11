@@ -44,9 +44,14 @@ void CSquadronController::CreateInitialShips (CSpaceObject &SourceObj, const CSq
 	Ctx.dwFlags = SShipCreateCtx::SHIPS_FOR_STATION | SShipCreateCtx::RETURN_RESULT;
 
 	CShipChallengeCtx CreatedSoFar;
+	CShipChallengeCtx NewlyCreated;
+	
+	Metric rRandomLimit = 1.0 - mathRandomDouble();
+	ASSERT(rRandomLimit <= 1.0 && rRandomLimit >= 0.0);
 
-	int iMaxLoops = 20;
-	while (iMaxLoops-- > 0 && SquadronDesc.GetChallengeDesc().NeedsMoreShips(SourceObj, CreatedSoFar))
+	Metric rCreatedCombatStrength = 0.0;
+	int iRemainingFailures = 4;
+	while (iRemainingFailures >= 0)
 		{
 		//	These accumulate, so we need to clear it each time.
 
@@ -57,6 +62,19 @@ void CSquadronController::CreateInitialShips (CSpaceObject &SourceObj, const CSq
 		pGenerator->CreateShips(Ctx);
 
 		//	Keep track of the ships we created.
+
+		NewlyCreated.AddShips(Ctx.Result);
+		Metric rNewCombatStrength = NewlyCreated.GetTotalCombat();
+
+		if (rNewCombatStrength < g_Epsilon)
+			iRemainingFailures--;
+
+		//	Check if we overshot or not
+		if (SquadronDesc.GetChallengeDesc().CanHaveMoreShips(SourceObj, CreatedSoFar) > rRandomLimit)
+			{
+			iRemainingFailures--;
+			CreatedSoFar.
+			}
 
 		CreatedSoFar.AddShips(Ctx.Result);
 
