@@ -544,6 +544,9 @@ CString CLanguage::ComposeHitPointValue (int iHP, const SHPDisplayOptions &Optio
 
 		case EHPDisplay::Scaled:
 			return strFormatInteger(mathRound((double)iHP / (Options.iReference ? Options.iReference : 1)), -1, FORMAT_THOUSAND_SEPARATOR);
+
+		case EHPDisplay::Metric:
+			return ComposeNumber(ENumberFormatTypes::numberMetricUnitless, iHP);
 			
 		default:
 			return NULL_STR;
