@@ -159,6 +159,157 @@
 					/>
 		</Interior>
 
+		<!-- Station functionality -->
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"98"
+				maxDist=		"3"
+				/>
+		
+		<Trade currency="credit">
+			<Sell	criteria="*U -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Buy	criteria="*DU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Buy	criteria="*DU -Illegal; -ID;"				priceAdj="50"/>
+			
+			<Refuel			criteria="f +BasicFuel; L:1-8;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-8;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a L:1-8;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-8;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-8;" priceAdj="100"/>
+		</Trade>
+		
+		<!-- Dock Screens -->
+		
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionBuyScrap" default="1">
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
+							</Action>
+
+							<Action id="actionSellScrap">
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
+							</Action>
+
+							<!-- To be implemented later
+							<Action id="actionCustomWork">
+								(if (objGetData gSource 'customIntroDone)
+									(scrShowScreen gScreen &dsTinkerCustomWork; {
+										criteria: "* +hasComponents:true; +tinkers;"
+										})
+									(scrShowPane gScreen "CustomWorkIntro")
+									)
+							</Action>-->
+
+							<Action id="actionDockServices">
+								(rpgDockServices gPlayerShip)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+						
+					<CustomWorkIntro descID="descCustomWorkIntro">
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(block Nil
+									(objSetData gSource 'customIntroDone True)
+									(scrShowPane gScreen "Default")
+									(scrShowScreen gScreen &dsTinkerCustomWork; {
+										criteria: "* +hasComponents:true; +tinkers;"
+										})
+									)
+							</Action>
+						</Actions>
+					</CustomWorkIntro>
+				</Panes>
+			</Main>
+
+			<Decon>
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(block (
+								; Figure out how much it would cost to make the ship immune to radiation
+								(cost (* 400 (shpGetArmorCount gPlayerShip)))
+								)
+
+								(if (geq (plyGetCredits gPlayer) cost)
+									(scrSetDescTranslate gScreen 'descDecon { cost:(fmtCurrency 'credit cost) })
+									(scrSetDescTranslate gScreen 'descDeconCantAfford)
+									)
+								(scrSetData gScreen 'deconCost cost)
+								(scrEnableAction gScreen 'actionDecon (geq (plyGetCredits gPlayer) cost))
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionDecon" default="1">
+								(block (
+									(cost (scrGetData gScreen 'deconCost))
+									(armorEnhanced 0)
+									)
+									;	Decontaminate
+									(plyCharge gPlayer cost)
+									(shpDecontaminate gPlayerShip)
+
+									;	Make immune
+									(objEnumItems gPlayerShip "aI" theItem
+										(block (result)
+											(setq result (shpEnhanceItem gPlayerShip theItem {
+												enhancement: "+immunity:radiation"
+												type: &itRadiationImmuneCoating;
+												}))
+
+											(switch
+												(or (eq result 0) (eq result 2) (eq result 6) (eq result 7))
+													(setq armorEnhanced (add armorEnhanced 1))
+												)
+											)
+										)
+
+									;	Compose the result
+									(switch
+										(= armorEnhanced (shpGetArmorCount gPlayerShip))
+											(scrSetData gScreen 'deconResult 'descDeconImmune)
+
+										(= armorEnhanced 0)
+											(scrSetData gScreen 'deconResult 'descDeconNotImmune)
+
+										(scrSetData gScreen 'deconResult 'descDeconPartialImmune)
+										)
+
+									(scrShowPane gScreen "DeconDone")
+									)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								(scrExitScreen gScreen 'forceUndock)
+							</Action>
+						</Actions>
+
+					</Default>
+
+					<DeconDone>
+						<OnPaneInit>
+							(scrSetDescTranslate gScreen (scrGetData gScreen 'deconResult))
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(scrShowScreen gScreen "Main")
+							</Action>
+						</Actions>
+					</DeconDone>
+				</Panes>
+			</Decon>
+		</DockScreens>
+
 		<!-- Image and Effects -->
 
 		<Image imageID="&rsSalvagerNomadHD;" imageWidth="184" imageHeight="184" rotationCount="120" rotationColumns="12" viewportRatio="0.02"/>
@@ -231,6 +382,8 @@
 			</Data>
 			<Data id="timeSetupShop">
 			</Data>
+			<Data id="customers">
+			</Data>
 			<DynamicData id="searchRadius">
 				(block
 					(
@@ -242,10 +395,45 @@
 					farthestDistance
 				)
 			</DynamicData>
+			<DynamicGlobal id="customerPurchaseQuantity">
+				(random 5 15)
+			</DynamicGlobal>
 		</Properties>
 
-		<Events>			
-			<OnOrdersCompleted>
+		<Events>
+			<onCreate>
+				(objFireEvent gSource 'ev.behavior)
+			</onCreate>
+			<onOrdersCompleted>
+				(objFireEvent gSource 'ev.behavior)
+			</onOrdersCompleted>
+			<onObjDocked>
+				(if (and (objGetData aObjDocked '001000C4_customer) (= aDockTarget gSource))
+					(block
+						(
+							(currentWares (objGetItems gSource "U"))
+							(numWares (count currentWares))
+							(itemsMoved 0)
+							(targetPurchaseAmount (typ@ gType 'customerPurchaseQuantity))
+						)
+						(if currentWares
+							(enum currentWares (ls itemsMoved targetPurchaseAmount) theItem
+								(block
+									(
+										(quantity (min (itmGetCount theItem) targetPurchaseAmount))
+									)
+									(objAddItem aObjDocked theItem quantity)
+									(objRemoveItem gSource theItem quantity)
+									(setq itemsMoved (+ itemsMoved quantity))
+									)
+								)
+							)
+						(shpOrder aObjDocked 'wait 180)
+						(shpOrder aObjDocked 'gate)
+						)
+					)
+			</onObjDocked>
+			<ev.behavior>
 				(block
 					(
 						(statusVar '001000C4_status)
@@ -265,7 +453,7 @@
 
 						(state (obj@ gSource statusVar))
 						(setState (lambda (newState) (objSet@ gSource statusVar newState)))
-						(startNewSearch (lambda () (block () (setState 'initSearch) (shpOrder gSource '))))
+						(checkBehaviorIn (lambda (ticks) (sysAddObjTimerEvent ticks gSource 'ev.behavior)))
 						(dockedAt (shpGetDockObj gSource))
 
 						;	our loot for sale - we calculate this later if needed
@@ -330,6 +518,20 @@
 								)
 								(if (gr numWares maxWares)
 									;	If we have enough wares, we setup shop
+									(block ()
+										;	Prepare for shop state
+
+										(setState 'shop)
+										(checkBehaviorIn 1800)
+
+										;	Clear any existing orders
+
+										(shpCancelOrders gSource)
+
+										;	Hold position to be a shop
+
+										(shpOrder gSource 'hold )
+										)
 									)
 								)
 
@@ -341,17 +543,68 @@
 									(numWares (count currentWares))
 									(timeAsShop (- (unvGetTick) (obj@ gSource 'timeSetupShop)))
 								)
-								(if (or (ls timeAsShop 0) (gr timeAsShop 1800) (= numWares 0))
+								(if (or (ls timeAsShop 0) (gr timeAsShop 18000) (= numWares 0))
 									(if (gr numWares 0)
-										;	Send ships to cleanup
-										(block ()
+
+										;	Send ships to cleanup inventory
+
+										(block
+											(
+												(customerIds (obj@ gSource 'customers))
+												(customers (map customerIds 'excludeNil customerId (objGetObjectByID customerId)))
+												(customersAlive (map customers 'excludeNil customer (if (objMatches customer "SA") customer)))
 											)
-										;	otherwise just resume searching
+											(if customersAlive
+												;	we wait until they have been destroyed or left the system or bought all our goods
+												(checkBehaviorIn 1800)
+												;	Otherwise we need to create customers to buy our wares
+												(block
+													(
+														(nearestGate (sysFindObject gSource "G N"))
+														(newCustomers (map (make 'sequence 5) 'excludeNil i (sysCreateShip &tbCommPrivateCrafts; nearestGate &svIndependent;)))
+														(newCustomerIds (map newCustomers newCustomer (objGetID newCustomer)))
+													)
+
+													;	Register for events so we can tell when they dock
+
+													(objRegisterForEvents gSource newCustomers)
+
+													;	setup the customers
+
+													(enum newCustomers newCustomer
+														(block ()
+															;	Clear any existing orders
+															(shpCancelOrders newCustomer)
+
+															;	Tag them as a customer
+
+															(objSetData newCustomer '001000C4_customer 1)
+
+															;	First have them spread out a little bit
+
+															(shpOrder newCustomer 'approach (sysVectorRandom (objGetPos newCustomer) 100 20))
+
+															;	Then have them go shop
+
+															(shpOrder newCustomer 'dock gSource)
+															)
+														)
+													(objSet@ gSource 'customers newCustomerIds)
+													)
+												)
+											)
+
+										;	otherwise resume searching for new wares
+
 										(block ()
+											(setState 'search)
+											(shpCancelOrders gSource)
+											(shpOrder gSource 'wait 1)
 											)
 										)
 									;	otherwise we remain a shop
 									(block ()
+										(checkBehaviorIn 1800)
 										)
 									)
 								)
@@ -360,7 +613,8 @@
 						(block ()
 							(setState 'search)
 							(shpCancelOrders gSource)
-							(shpOrderImmediate gSource 'wait 1)
+							(shpOrder gSource 'wait 1)
+							(objSet@ gSource 'timeSetupShop ())
 							)
 						)
 
@@ -394,104 +648,11 @@
 							()
 							)
 						)
-					
-					; Figure out what to do next
-					(switch
-						(eq status 'enteredSystem)
-							(block Nil
-								(setq theTarget (random (sysFindObject gSource "T +arcology")))
-								(shpOrder gSource 'orbit (sysFindObject Nil "TNV +stKatsArcology;") 35 (random 20 40))
-								(shpOrder gSource 'dock theTarget)
-								(shpOrder gSource 'waitForThreat (random 10 60))
-								(objSetData gSource statusVar 'dockedAtNewVictoria)
-								)
-								
-						(eq status 'dockedAtNewVictoria)
-							(block (roll allWrecks)
-								; When leaving new victoria, orbit around for a bit
-								(shpOrder gSource 'orbit (sysFindObject Nil "TNV +stKatsArcology;") 35 (random 20 40))
-								
-								; Randomly choose a path
-								(setq roll (random 1 100))
-								(switch
-									; Gate out
-									(leq roll 30)
-										(block Nil
-											(shpOrder gSource 'gate)
-											(objSetData gSource statusVar 'leavingSystem)
-											)
-											
-									; If there are wrecks in the area, loot them
-									(and (rpgFilterSalvager gSource)
-											
-											; Compose a list of all wrecks in the area
-											
-											(setq allWrecks (rpgFindWrecksToSalvage gSource lootedVar))
-											)
-										(block ()
-											(rpgInitSalvageAndScuttleOperation gSource allWrecks lootedVar)
-											(objSetData gSource statusVar 'dockedAtStation)
-											)
-											
-									; Dock at a random station in the system
-									(block (theTarget)
-										(setq theTarget (random (sysFindObject gSource "TAF +populated; -arcology; -occupation;")))
-										(shpOrder gSource 'dock theTarget)
-										(shpOrder gSource 'waitForThreat (random 10 20))
-										(objSetData gSource statusVar 'dockedAtStation)
-										)
-									)
-								)
-								
-						(eq status 'dockedAtStation)
-							(block (roll allWrecks)
-								; Randomly choose a path
-								(setq roll (random 1 100))
-								(switch
-									; Gate out
-									(leq roll 30)
-										(block Nil
-											(shpOrder gSource 'gate)
-											(objSetData gSource statusVar 'leavingSystem)
-											)
-											
-									; If there are wrecks in the area, loot them
-									(and (rpgFilterSalvager gSource)
-											
-											; Compose a list of all wrecks in the area
-											
-											(setq allWrecks (rpgFindWrecksToSalvage gSource lootedVar))
-											)
-										(block ()
-											(rpgInitSalvageAndScuttleOperation gSource allWrecks lootedVar)
-											(objSetData gSource statusVar 'dockedAtStation)
-											)
-											
-									; Dock at new victoria
-									(leq roll 80)
-										(block (theTarget)
-											(setq theTarget (random (sysFindObject gSource "T +arcology")))
-											(shpOrder gSource 'orbit (sysFindObject Nil "TNV +stKatsArcology;") 35 (random 20 40))
-											(shpOrder gSource 'dock theTarget)
-											(shpOrder gSource 'waitForThreat (random 10 60))
-											(objSetData gSource statusVar 'dockedAtNewVictoria)
-											)
-											
-									; Dock at a random station in the system
-									(block (theTarget)
-										(setq theTarget (random (sysFindObject gSource "TAF +populated; -arcology; -occupation;")))
-										(shpOrder gSource 'dock theTarget)
-										(shpOrder gSource 'waitForThreat (random 10 20))
-										(objSetData gSource statusVar 'dockedAtStation)
-										)
-									)
-								)
-						)
 						
 					; If we were docked at an object that we just looted, then destroy the object
 					(rpgImplementScuttleSalvagedWreck gSource dockedAt lootedVar)
 					)
-			</OnOrdersCompleted>
+			</ev.behavior>
 		</Events>
 	</ShipClass>
 
