@@ -46,10 +46,6 @@ void CSquadronController::CreateInitialShips (CSpaceObject &SourceObj, const CSq
 	CShipChallengeCtx CreatedSoFar;
 	CShipChallengeDesc ChallengeDesc = SquadronDesc.GetChallengeDesc();
 	
-	//	The random limit is only used for challenge ratings
-	//	Other challengeDesc types ignore this, but we still get
-	//	and pass the value so that we dont need separate code paths
-
 	Metric rRandomLimit = ChallengeDesc.GetRandomChallengeStrength(Ctx.pSystem->GetLevel());
 
 	int iRemainingFailures = 4;
@@ -126,10 +122,6 @@ void CSquadronController::CreateReinforcements (CSpaceObject &SourceObj, const C
 	CShipChallengeCtx CreatedSoFar(Entry.Squadron);
 	CShipChallengeDesc ChallengeDesc = SquadronDesc.GetChallengeDesc();
 	CShipChallengeDesc ReinforceDesc = SquadronDesc.GetReinforceDesc();
-
-	//	The random limit is only used for challenge ratings
-	//	Other challengeDesc types ignore this, but we still get
-	//	and pass the value so that we dont need separate code paths
 
 	Metric rRandomLimit = SquadronDesc.GetChallengeDesc().GetRandomChallengeStrength(CreateCtx.pSystem->GetLevel());
 
