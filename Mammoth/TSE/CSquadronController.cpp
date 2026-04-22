@@ -73,7 +73,7 @@ void CSquadronController::CreateInitialShips (CSpaceObject &SourceObj, const CSq
 
 		//	Check if we overshot or not. If we overshot try again.
 
-		if (ChallengeDesc.CanHaveMoreShips(SourceObj, CreatedSoFar, NewlyCreated, rRandomLimit))
+		if (!ChallengeDesc.CanHaveMoreShips(SourceObj, CreatedSoFar, NewlyCreated, rRandomLimit))
 			{
 			iRemainingFailures--;
 
@@ -150,7 +150,7 @@ void CSquadronController::CreateReinforcements (CSpaceObject &SourceObj, const C
 
 		//	Check if we overshot or not. If we overshot try again.
 
-		if (ChallengeDesc.CanHaveMoreReinforcements(SourceObj, CreatedSoFar, ReinforceDesc, NewlyCreated, rRandomLimit))
+		if (!ChallengeDesc.CanHaveMoreReinforcements(SourceObj, CreatedSoFar, ReinforceDesc, NewlyCreated, rRandomLimit))
 			{
 			iRemainingFailures--;
 
