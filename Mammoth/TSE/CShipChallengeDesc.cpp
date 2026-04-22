@@ -18,31 +18,75 @@ static TStaticStringTable<TStaticStringEntry<CShipChallengeDesc::ECountTypes>, 4
 	"standard",				CShipChallengeDesc::countChallengeStandard,
 	};
 
-Metric CShipChallengeDesc::CalcChallengeStrength (ECountTypes iType, int iLevel)
+Metric CShipChallengeDesc::CalcMinChallengeStrength (ECountTypes iType, int iLevel) const
 
 //	CalcChallengeStrength
 //
-//	Computes the desired combat strength.
+//	Computes the min desired combat strength
+//
+	{
+	Metric rCombat = CShipClass::GetStdCombatStrength(iLevel);
+	switch (iType)
+		{
+		case countChallengeEasy:
+			return 1.0 * rCombat;
+
+		case countChallengeStandard:
+			return 2.0 * rCombat;
+
+		case countChallengeHard:
+			return 3.0 * rCombat;
+
+		case countChallengeDeadly:
+			return 5.0 * rCombat;
+
+		case countChallengeRange:
+			return m_rLower * rCombat;
+
+		default:
+			return 0.0;
+		}
+	}
+
+//	CalcChallengeStrength
+//
+//	Computes the max allowed combat strength
+//
+Metric CShipChallengeDesc::CalcMaxChallengeStrength (ECountTypes iType, int iLevel) const
 
 	{
 	Metric rCombat = CShipClass::GetStdCombatStrength(iLevel);
 	switch (iType)
 		{
 		case countChallengeEasy:
-			return 1.5 * rCombat;
+			return 2.0 * rCombat;
 
 		case countChallengeStandard:
-			return 2.5 * rCombat;
+			return 3.0 * rCombat;
 
 		case countChallengeHard:
-			return 4.0 * rCombat;
+			return 5.0 * rCombat;
 
 		case countChallengeDeadly:
-			return 6.0 * rCombat;
+			return 7.0 * rCombat;
+
+		case countChallengeRange:
+			return m_rUpper * rCombat;
 
 		default:
 			return 0.0;
 		}
+	}
+
+//	CalcChallengeStrength
+//
+//	Computes the median desired combat strength.
+//
+Metric CShipChallengeDesc::CalcChallengeStrength (ECountTypes iType, int iLevel) const
+	{
+	Metric rMin = CalcMinChallengeStrength(iType, iLevel);
+	Metric rMax = CalcMaxChallengeStrength(iType, iLevel);
+	return (rMax - rMin) / 2 + rMin;
 	}
 
 ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase) const
@@ -94,7 +138,11 @@ ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase) const
 			break;
 			
 		case countChallengeDeadly:
-			sType = CONSTLIT("challengeDealy");
+			sType = CONSTLIT("challengeDeadly");
+			break;
+
+		case countChallengeRange:
+			sType = CONSTLIT("challengeRange");
 			break;
 
 		default:
@@ -146,6 +194,12 @@ ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase) const
 				Metric rStrength = CalcChallengeStrength(m_iType, pBase->GetSystem()->GetLevel());
 				pResult->SetDoubleAt(CONSTLIT("strength"), rStrength);
 
+				rStrength = CalcMinChallengeStrength(m_iType, pBase->GetSystem()->GetLevel());
+				pResult->SetDoubleAt(CONSTLIT("strengthMin"), rStrength);
+
+				rStrength = CalcMaxChallengeStrength(m_iType, pBase->GetSystem()->GetLevel());
+				pResult->SetDoubleAt(CONSTLIT("strengthMax"), rStrength);
+
 				return pResult;
 				}
 			else
@@ -159,6 +213,29 @@ ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase) const
 		default:
 			return ICCItemPtr(sType);
 		}
+	}
+
+//	GetRandomChallengeStrength
+//
+//	Computes a random desired combat strength between min and max.
+//
+Metric CShipChallengeDesc::GetRandomChallengeStrength(int iLevel) const
+	{
+	Metric rMin = CalcMinChallengeStrength(m_iType, iLevel);
+	Metric rMax = CalcMaxChallengeStrength(m_iType, iLevel);
+	return (rMax - rMin) * mathRandomDouble() + rMin;
+	}
+
+//	GetCustomChallengeStrength
+//
+//	Computes a relative desired combat strength between min and max.
+//
+Metric CShipChallengeDesc::GetCustomChallengeStrength(int iLevel, Metric rRangePos) const
+	{
+	rRangePos = min(max(rRangePos, 0.0), 1.0);
+	Metric rMin = CalcMinChallengeStrength(m_iType, iLevel);
+	Metric rMax = CalcMaxChallengeStrength(m_iType, iLevel);
+	return (rMax - rMin) * rRangePos + rMin;
 	}
 
 bool CShipChallengeDesc::Init (ECountTypes iType, int iCount)
@@ -214,15 +291,15 @@ bool CShipChallengeDesc::Init (ECountTypes iType, const CString &sCount)
 	return true;
 	}
 
-bool CShipChallengeDesc::InitFromChallengeRating (const CString &sChallenge)
-
 //	InitFromChallengeRating
 //
 //	If sChallenge is a challenge level, then we set m_iType to that. Otherwise,
-//	if it is a number, we assume it is a value score.
+//	if it is a single number, we assume it is a value score.
+//
+bool CShipChallengeDesc::InitFromChallengeRating (const CString &sChallenge)
 
 	{
-	//	See if it is a standard challenge level.
+	//	See if it is a standard challenge level or a challenge range.
 
 	ECountTypes iType = ParseChallengeType(sChallenge);
 	if (iType != countNone)
@@ -302,11 +379,33 @@ bool CShipChallengeDesc::InitFromXML (const CString &sValue)
 	return true;
 	}
 
-bool CShipChallengeDesc::NeedsMoreShips (CSpaceObject &Base, const CShipChallengeCtx &Ctx) const
+//	CanHaveMoreShips
+//
+//	Returns TRUE if this desc targets a score or
+//	combat challenge rating
+//
+bool CShipChallengeDesc::IsChallengeRating() const
+{
+	switch (m_iType)
+	{
+	case countScore:
+	case countChallengeEasy:
+	case countChallengeStandard:
+	case countChallengeHard:
+	case countChallengeDeadly:
+	case countChallengeRange:
+		return true;
 
-//	NeedsMoreInitialShips
+	default:
+		return false;
+	}
+}
+
+//	NeedsMoreShips
 //
 //	Returns TRUE if there are not enough ships in the context.
+//
+bool CShipChallengeDesc::NeedsMoreShips (CSpaceObject &Base, const CShipChallengeCtx &Ctx) const
 
 	{
 	switch (m_iType)
@@ -341,7 +440,8 @@ bool CShipChallengeDesc::NeedsMoreShips (CSpaceObject &Base, const CShipChalleng
 		case countChallengeStandard:
 		case countChallengeHard:
 		case countChallengeDeadly:
-			return (Ctx.GetTotalCombat() < CalcChallengeStrength(m_iType, Base.GetSystem()->GetLevel()));
+		case countChallengeRange:
+			return (Ctx.GetTotalCombat() < CalcMinChallengeStrength(m_iType, Base.GetSystem()->GetLevel()));
 
 		default:
 			ASSERT(false);
@@ -349,12 +449,64 @@ bool CShipChallengeDesc::NeedsMoreShips (CSpaceObject &Base, const CShipChalleng
 		}
 	}
 
-bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CSpaceObjectList &Current, const CShipChallengeDesc &Reinforce) const
+//	CanHaveMoreShips
+//
+//	Returns TRUE if the additional ships in the new context can be accepted.
+//
+bool CShipChallengeDesc::CanHaveMoreShips (CSpaceObject& Base, const CShipChallengeCtx& Ctx, const CShipChallengeCtx& PossibleNewShipCtx, Metric rTargetChallenge) const
+	{
+	switch (m_iType)
+		{
+		case countNone:
+			return false;
+
+		case countAuto:
+			return (Ctx.GetTotalCount() == 0);
+
+		case countShips:
+			return (Ctx.GetTotalCount() + PossibleNewShipCtx.GetTotalCount() < m_Count.RollSeeded(Base.GetDestiny()));
+
+		case countOnce:
+			return (Ctx.GetTotalRolls() == 0);
+
+		case countProperty:
+			{
+			ICCItemPtr pResult = Base.GetProperty(m_sValue);
+			if (!pResult || pResult->IsNil())
+				return false;
+			else if (pResult->IsNumber())
+				return (Ctx.GetTotalCount() + PossibleNewShipCtx.GetTotalCount() < pResult->GetIntegerValue());
+			else
+				return (Ctx.GetTotalCount() == 0);
+			}
+
+		case countScore:
+			return (Ctx.GetTotalScore() + PossibleNewShipCtx.GetTotalScore() < m_Count.RollSeeded(Base.GetDestiny()));
+
+		case countChallengeEasy:
+		case countChallengeStandard:
+		case countChallengeHard:
+		case countChallengeDeadly:
+		case countChallengeRange:
+			{
+			int iSysLevel = Base.GetSystem()->GetLevel();
+			rTargetChallenge = rTargetChallenge < 0 ? GetChallengeStrength(iSysLevel) : rTargetChallenge;
+			Metric rCurrentCombatStr = Ctx.GetTotalCombat();
+			Metric rNewCombatStr = PossibleNewShipCtx.GetTotalCombat();
+			return rCurrentCombatStr + rNewCombatStr <= rTargetChallenge;
+			}
+
+		default:
+			return false;
+		}
+	}
 
 //	NeedsMoreReinforcements
 //
 //	Returns TRUE if pBase needs more defenders, as specified by our challenge
 //	rating.
+//
+bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CSpaceObjectList &Current, const CShipChallengeDesc &Reinforce) const
 
 	{
 	DEBUG_TRY
@@ -384,6 +536,7 @@ bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CSpa
 		case countChallengeStandard:
 		case countChallengeHard:
 		case countChallengeDeadly:
+		case countChallengeRange:
 			{
 			CShipChallengeCtx Ctx(Current);
 			return NeedsMoreReinforcements(Base, Ctx, Reinforce);
@@ -396,11 +549,11 @@ bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CSpa
 	DEBUG_CATCH
 	}
 
-bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CShipChallengeCtx &Ctx, const CShipChallengeDesc &Reinforce) const
-
 //	NeedsMoreReinforcements
 //
 //	Returns TRUE if we need more reinforcements.
+//
+bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CShipChallengeCtx &Ctx, const CShipChallengeDesc &Reinforce) const
 
 	{
 	switch (Reinforce.m_iType)
@@ -448,6 +601,7 @@ bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CShi
 		case countChallengeStandard:
 		case countChallengeHard:
 		case countChallengeDeadly:
+		case countChallengeRange:
 			{
 			if (Reinforce.NeedsMoreShips(Base, Ctx))
 				return true;
@@ -462,16 +616,117 @@ bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CShi
 		}
 	}
 
-CShipChallengeDesc::ECountTypes CShipChallengeDesc::ParseChallengeType (const CString &sValue)
+//	CanHaveMoreReinforcements
+//
+//	Returns TRUE if we need more reinforcements.
+//
+bool CShipChallengeDesc::CanHaveMoreReinforcements (
+	CSpaceObject &Base,
+	const CShipChallengeCtx &Ctx,
+	const CShipChallengeDesc &Reinforce,
+	const CShipChallengeCtx& PossibleNewShipCtx,
+	Metric rTargetChallenge) const
+
+	{
+	switch (Reinforce.m_iType)
+		{
+		case countNone:
+			return false;
+
+		case countAuto:
+			{
+			//	Can't both be auto
+
+			if (m_iType == countAuto)
+				return false;
+			else
+				{
+				return CanHaveMoreShips(Base, Ctx, PossibleNewShipCtx);
+				}
+			}
+
+		case countProperty:
+			{
+			ICCItemPtr pResult = Base.GetProperty(Reinforce.m_sValue);
+
+			//	If the value of the property is Nil, then we never reinforce
+			//	(treat it as none).
+
+			if (!pResult || pResult->IsNil())
+				return false;
+
+			//	If we return a number, then we assume this is the minimum number
+			//	of ships that we want.
+
+			else if (pResult->IsNumber())
+				return (Ctx.GetTotalCount() + PossibleNewShipCtx.GetTotalCount() < pResult->GetIntegerValue());
+
+			//	Otherwise, we treat it as auto.
+
+			else
+				return CanHaveMoreShips(Base, Ctx, PossibleNewShipCtx);
+			}
+
+		case countShips:
+		case countScore:
+		case countChallengeEasy:
+		case countChallengeStandard:
+		case countChallengeHard:
+		case countChallengeDeadly:
+		case countChallengeRange:
+			{
+			if (Reinforce.CanHaveMoreShips(Base, Ctx, PossibleNewShipCtx))
+				return true;
+			else if (m_iType != countAuto && CanHaveMoreShips(Base, Ctx, PossibleNewShipCtx))
+				return true;
+			else
+				return false;
+			}
+
+		default:
+			throw CException(ERR_FAIL);
+		}
+	}
 
 //	ParseChallengeType
 //
 //	Parses a string
+//
+CShipChallengeDesc::ECountTypes CShipChallengeDesc::ParseChallengeType (const CString &sValue)
 
 	{
 	const TStaticStringEntry<CShipChallengeDesc::ECountTypes> *pEntry = CHALLENGE_TYPE_TABLE.GetAt(sValue);
+
 	if (pEntry == NULL)
-		return countNone;
+		{
+		//	Check if we have a valid range instead
+		//	Values must be 2 positive floats separated by a -
+		if (int iDelimPos = strFind(sValue, CONSTLIT("-")) > 0)
+			{
+			bool bFailed = false;
+			//	Try to parse the count and set our min and max
+			CString sLower = strSlice(sValue, 0, iDelimPos - 1);
+			CString sUpper = strSlice(sValue, iDelimPos + 1);
+			m_rLower = strToDouble(sLower, 0.0, &bFailed);
+			if (bFailed)
+				return countNone;
+			m_rUpper = strToDouble(sUpper, 0.0, &bFailed);
+			if (bFailed)
+				{
+				m_rLower = 0.0;
+				return countNone;
+				}
+			if (m_rLower < 0.0 || m_rUpper < m_rLower || m_rUpper < 0.0)
+				{
+				m_rLower = 0.0;
+				m_rUpper = 0.0;
+				return countNone;
+				}
+			return countChallengeRange;
+			}
+		else
+			return countNone;
+		}
 
 	return pEntry->Value;
 	}

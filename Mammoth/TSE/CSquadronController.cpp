@@ -44,9 +44,16 @@ void CSquadronController::CreateInitialShips (CSpaceObject &SourceObj, const CSq
 	Ctx.dwFlags = SShipCreateCtx::SHIPS_FOR_STATION | SShipCreateCtx::RETURN_RESULT;
 
 	CShipChallengeCtx CreatedSoFar;
+	CShipChallengeDesc ChallengeDesc = SquadronDesc.GetChallengeDesc();
+	
+	//	The random limit is only used for challenge ratings
+	//	Other challengeDesc types ignore this, but we still get
+	//	and pass the value so that we dont need separate code paths
 
-	int iMaxLoops = 20;
-	while (iMaxLoops-- > 0 && SquadronDesc.GetChallengeDesc().NeedsMoreShips(SourceObj, CreatedSoFar))
+	Metric rRandomLimit = ChallengeDesc.GetRandomChallengeStrength(Ctx.pSystem->GetLevel());
+
+	int iRemainingFailures = 4;
+	while (iRemainingFailures >= 0 && (ChallengeDesc.IsChallengeRating() || ChallengeDesc.NeedsMoreShips(SourceObj, CreatedSoFar)))
 		{
 		//	These accumulate, so we need to clear it each time.
 
@@ -57,6 +64,32 @@ void CSquadronController::CreateInitialShips (CSpaceObject &SourceObj, const CSq
 		pGenerator->CreateShips(Ctx);
 
 		//	Keep track of the ships we created.
+
+		CShipChallengeCtx NewlyCreated;
+		NewlyCreated.AddShips(Ctx.Result);
+
+		//	If the ships have no combat strength we still add them,
+		//	but mark this as a failure so we dont get into an infinite
+		//	loop if a table only has 0 strength ships
+
+		if (ChallengeDesc.NewShipsCountAsFailure(NewlyCreated))
+			iRemainingFailures--;
+
+		//	Check if we overshot or not. If we overshot try again.
+
+		if (!ChallengeDesc.CanHaveMoreShips(SourceObj, CreatedSoFar, NewlyCreated, rRandomLimit))
+			{
+			iRemainingFailures--;
+
+			//	Cleanup the ships we tried to make
+			
+			CDamageSource nullSource = CDamageSource();
+
+			for (int i = 0; i < Ctx.Result.GetCount(); i++)
+				Ctx.Result.GetObj(i)->Remove(DestructionTypes::removedFromSystem, nullSource);
+
+			continue;
+			}
 
 		CreatedSoFar.AddShips(Ctx.Result);
 
@@ -91,9 +124,17 @@ void CSquadronController::CreateReinforcements (CSpaceObject &SourceObj, const C
 	CreateCtx.dwFlags = SShipCreateCtx::RETURN_RESULT;
 
 	CShipChallengeCtx CreatedSoFar(Entry.Squadron);
+	CShipChallengeDesc ChallengeDesc = SquadronDesc.GetChallengeDesc();
+	CShipChallengeDesc ReinforceDesc = SquadronDesc.GetReinforceDesc();
 
-	int iMaxLoops = 20;
-	do
+	//	The random limit is only used for challenge ratings
+	//	Other challengeDesc types ignore this, but we still get
+	//	and pass the value so that we dont need separate code paths
+
+	Metric rRandomLimit = SquadronDesc.GetChallengeDesc().GetRandomChallengeStrength(CreateCtx.pSystem->GetLevel());
+
+	int iRemainingFailures = 4;
+	while (iRemainingFailures >= 0 && (ChallengeDesc.IsChallengeRating() || ChallengeDesc.NeedsMoreReinforcements(SourceObj, CreatedSoFar, ReinforceDesc)))
 		{
 		//	These accumulate, so we need to clear it each time.
 
@@ -104,6 +145,32 @@ void CSquadronController::CreateReinforcements (CSpaceObject &SourceObj, const C
 		ShipTable.CreateShips(CreateCtx);
 
 		//	Keep track of the ships we created.
+
+		CShipChallengeCtx NewlyCreated;
+		NewlyCreated.AddShips(CreateCtx.Result);
+
+		//	If the ships have no combat strength we still add them,
+		//	but mark this as a failure so we dont get into an infinite
+		//	loop if a table only has 0 strength ships
+
+		if (ChallengeDesc.NewShipsCountAsFailure(NewlyCreated) || ReinforceDesc.NewShipsCountAsFailure(NewlyCreated))
+			iRemainingFailures--;
+
+		//	Check if we overshot or not. If we overshot try again.
+
+		if (!ChallengeDesc.CanHaveMoreReinforcements(SourceObj, CreatedSoFar, ReinforceDesc, NewlyCreated, rRandomLimit))
+			{
+			iRemainingFailures--;
+
+			//	Cleanup the ships we tried to make
+
+			CDamageSource nullSource = CDamageSource();
+
+			for (int i = 0; i < CreateCtx.Result.GetCount(); i++)
+				CreateCtx.Result.GetObj(i)->Remove(DestructionTypes::removedFromSystem, nullSource);
+
+			continue;
+			}
 
 		CreatedSoFar.AddShips(CreateCtx.Result);
 
@@ -121,7 +188,6 @@ void CSquadronController::CreateReinforcements (CSpaceObject &SourceObj, const C
 				}
 			}
 		}
-	while (--iMaxLoops > 0 && SquadronDesc.GetChallengeDesc().NeedsMoreReinforcements(SourceObj, CreatedSoFar, SquadronDesc.GetReinforceDesc()));
 
 	//	Increment counters
 
