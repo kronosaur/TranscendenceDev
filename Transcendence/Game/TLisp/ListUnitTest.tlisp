@@ -37,6 +37,17 @@
 	{	code: '(map (list 1 2 3) 'reduceMin theEntry theEntry)			result: '1	}
 	{	code: '(map (list 1 2 3) 'reduceAverage theEntry theEntry)		result: '2	}
 	{	code: '(map (list 1 2 3) 'reduceSum theEntry theEntry)			result: '6	}
+	{	code: '(map (list 1 2 3.0) 'reduceSum theEntry theEntry)		result: '6.0	}
+	{	code: '(map (list 1.0 2 3) 'reduceSum theEntry theEntry)		result: '6.0	}
+	{	code: '(map (list 1.0 2.0 3.0) 'reduceSum theEntry theEntry)	result: '6.0	}
+	{	code: '(map (list 1.5 2 3) 'reduceSum theEntry theEntry)		result: '6.5	}
+	{	code: '(map (list 0) 'reduceSum theEntry theEntry)				result: '0	}
+	{	code: '(map (list 1 2 3.0) 'reduceAverage theEntry theEntry)	result: '2.0	}
+	{	code: '(map (list 1.0 2 3) 'reduceAverage theEntry theEntry)	result: '2.0	}
+	{	code: '(map (list 1.0 2.0 3.0) 'reduceAverage theEntry theEntry)	result: '2.0	}
+	{	code: '(map (list 1.5 2) 'reduceAverage theEntry theEntry)		result: '1.75	}
+	{	code: '(map (list 0) 'reduceAverage theEntry theEntry)			result: '0	}
+	{	code: '(isDouble (map (list 1 2 3.0) 'reduceAverage theEntry theEntry))	result: 'True	}
 
 	;	Reduce but return original
 

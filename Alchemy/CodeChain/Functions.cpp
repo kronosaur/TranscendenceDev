@@ -2961,6 +2961,10 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			}
 		}
 
+	//	We use this to track if reduceSum needs to return a double or not.
+
+	bool bRetDouble = false;
+
 	//	Var and body
 	
 	ICCItem *pVar = pArgs->GetElement(iOptionalArg++);
@@ -3054,6 +3058,7 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			}
 		else if (bReduceAverage || bReduceSum)
 			{
+			bRetDouble |= pMapped->IsDouble();
 			rAccumulate += pMapped->GetDoubleValue();
 			iCount++;
 			}
@@ -3125,10 +3130,10 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		if (iCount == 0)
 			return pCC->CreateNil();
 
-		else if (rAccumulate == floor(rAccumulate))
-			return pCC->CreateInteger((int)rAccumulate);
-		else
+		else if (bRetDouble)
 			return pCC->CreateDouble(rAccumulate);
+		else
+			return pCC->CreateInteger((int)rAccumulate);
 		}
 	else if (bReduceAverage)
 		{
