@@ -443,7 +443,7 @@
 						;	will waste time looking at wrecks other nomads
 						;	have looked at
 
-						(lootedVar (@obj gSource 'lootedVar))
+						(lootedVar (obj@ gSource 'lootedVar))
 
 						;	This is the number of wares at which they will set up shop
 						
@@ -463,7 +463,7 @@
 					(switch
 
 						;	if we are searching for lootable wrecks...
-						(eq status 'search)
+						(eq state 'search)
 							(block
 								(
 									(allWrecks (rpgFindWrecksToSalvage gSource lootedVar))
@@ -493,7 +493,7 @@
 								)
 						
 						;	if we are actively salvaging something
-						(eq status 'salvage)
+						(eq state 'salvage)
 							(switch
 								;	If we are docked with something that is lootable, loot it
 								(and dockedAt
@@ -536,7 +536,7 @@
 								)
 
 						;	if we are currently a shop
-						(eq status 'shop)
+						(eq state 'shop)
 							(block
 								(
 									(currentWares (objGetItems gSource "U"))
