@@ -54,20 +54,24 @@ class CShipChallengeDesc
 			{ }
 
 		CShipChallengeDesc (ECountTypes iType, int iCount = 0) { if (!Init(iType, iCount)) throw CException(ERR_FAIL); }
-
+		
+		bool CanHaveMoreShips (CSpaceObject& Base, const CShipChallengeCtx& CurrentShipCtx, const CShipChallengeCtx& PossibleNewShipCtx, Metric rTargetChallenge = -1.0) const;
+		bool CanHaveMoreReinforcements (CSpaceObject &Base, const CShipChallengeCtx &Ctx, const CShipChallengeDesc &Reinforce, const CShipChallengeCtx& PossibleNewShipCtx, Metric rTargetChallenge = -1.0) const;
 		ECountTypes GetCountType (void) const { return m_iType; }
 		Metric GetChallengeStrength (int iLevel) const { return CalcChallengeStrength(m_iType, iLevel); }
+		Metric GetCustomChallengeStrength(int iLevel, Metric rRangePos) const;
 		ICCItemPtr GetDesc (const CSpaceObject *pBase = NULL) const;
+		Metric GetRandomChallengeStrength (int iLevel) const;
 		bool Init (ECountTypes iType, int iCount = 0);
 		bool Init (ECountTypes iType, const CString &sCount);
 		bool InitFromChallengeRating (const CString &sChallenge);
 		bool InitFromXML (const CString &sValue);
-		bool IsEmpty (void) const { return m_iType == countNone; }
+		bool IsEmpty () const { return m_iType == countNone; }
+		bool IsChallengeRating() const;
 		bool NeedsMoreShips (CSpaceObject& Base, const CShipChallengeCtx& Ctx) const;
-		Metric CanHaveMoreShips (CSpaceObject& Base, const CShipChallengeCtx& Ctx) const;
 		bool NeedsMoreReinforcements (CSpaceObject& Base, const CSpaceObjectList& Current, const CShipChallengeDesc& Reinforce) const;
-		bool NeedsMoreReinforcements (CSpaceObject &Base, const CShipChallengeCtx &Ctx, const CShipChallengeDesc &Reinforce) const;
-		Metric CanHaveMoreReinforcements (CSpaceObject &Base, const CShipChallengeCtx &Ctx, const CShipChallengeDesc &Reinforce) const;
+		bool NeedsMoreReinforcements (CSpaceObject& Base, const CShipChallengeCtx& Ctx, const CShipChallengeDesc& Reinforce) const;
+		bool NewShipsCountAsFailure (const CShipChallengeCtx& Ctx) const { return IsChallengeRating() ? Ctx.GetTotalCombat() < g_Epsilon : Ctx.GetTotalCount() == 0; }
 
 	private:
 		Metric CalcChallengeStrength (ECountTypes iType, int iLevel) const;

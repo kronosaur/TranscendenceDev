@@ -78,12 +78,11 @@ Metric CShipChallengeDesc::CalcMaxChallengeStrength (ECountTypes iType, int iLev
 		}
 	}
 
-Metric CShipChallengeDesc::CalcChallengeStrength (ECountTypes iType, int iLevel) const
-
 //	CalcChallengeStrength
 //
 //	Computes the median desired combat strength.
 //
+Metric CShipChallengeDesc::CalcChallengeStrength (ECountTypes iType, int iLevel) const
 	{
 	Metric rMin = CalcMinChallengeStrength(iType, iLevel);
 	Metric rMax = CalcMaxChallengeStrength(iType, iLevel);
@@ -214,6 +213,29 @@ ICCItemPtr CShipChallengeDesc::GetDesc (const CSpaceObject *pBase) const
 		default:
 			return ICCItemPtr(sType);
 		}
+	}
+
+//	GetRandomChallengeStrength
+//
+//	Computes a random desired combat strength between min and max.
+//
+Metric CShipChallengeDesc::GetRandomChallengeStrength(int iLevel) const
+	{
+	Metric rMin = CalcMinChallengeStrength(m_iType, iLevel);
+	Metric rMax = CalcMaxChallengeStrength(m_iType, iLevel);
+	return (rMax - rMin) * mathRandomDouble() + rMin;
+	}
+
+//	GetCustomChallengeStrength
+//
+//	Computes a relative desired combat strength between min and max.
+//
+Metric CShipChallengeDesc::GetCustomChallengeStrength(int iLevel, Metric rRangePos) const
+	{
+	rRangePos = min(max(rRangePos, 0.0), 1.0);
+	Metric rMin = CalcMinChallengeStrength(m_iType, iLevel);
+	Metric rMax = CalcMaxChallengeStrength(m_iType, iLevel);
+	return (rMax - rMin) * rRangePos + rMin;
 	}
 
 bool CShipChallengeDesc::Init (ECountTypes iType, int iCount)
@@ -357,6 +379,28 @@ bool CShipChallengeDesc::InitFromXML (const CString &sValue)
 	return true;
 	}
 
+//	CanHaveMoreShips
+//
+//	Returns TRUE if this desc targets a score or
+//	combat challenge rating
+//
+bool CShipChallengeDesc::IsChallengeRating() const
+{
+	switch (m_iType)
+	{
+	case countScore:
+	case countChallengeEasy:
+	case countChallengeStandard:
+	case countChallengeHard:
+	case countChallengeDeadly:
+	case countChallengeRange:
+		return true;
+
+	default:
+		return false;
+	}
+}
+
 //	NeedsMoreShips
 //
 //	Returns TRUE if there are not enough ships in the context.
@@ -407,35 +451,53 @@ bool CShipChallengeDesc::NeedsMoreShips (CSpaceObject &Base, const CShipChalleng
 
 //	CanHaveMoreShips
 //
-//	Returns a floating point representing how many more ships
-//	a challenge-type desc is allowed to have relative to the size of
-//  the specified challenge range.
-//  1.0 means that the entire challenge range from min to max is available.
-//  0.0 means that no more ships can fit in the challenge range.
-//  A negative value means that the maximum value was exceeded.
-// 
-//	All other types return either 0.0 or 1.0 in alignment with NeedsMoreShips
+//	Returns TRUE if the additional ships in the new context can be accepted.
 //
-Metric CShipChallengeDesc::CanHaveMoreShips (CSpaceObject& Base, const CShipChallengeCtx& Ctx) const
+bool CShipChallengeDesc::CanHaveMoreShips (CSpaceObject& Base, const CShipChallengeCtx& Ctx, const CShipChallengeCtx& PossibleNewShipCtx, Metric rTargetChallenge) const
 	{
 	switch (m_iType)
 		{
+		case countNone:
+			return false;
+
+		case countAuto:
+			return (Ctx.GetTotalCount() == 0);
+
+		case countShips:
+			return (Ctx.GetTotalCount() + PossibleNewShipCtx.GetTotalCount() < m_Count.RollSeeded(Base.GetDestiny()));
+
+		case countOnce:
+			return (Ctx.GetTotalRolls() == 0);
+
+		case countProperty:
+			{
+			ICCItemPtr pResult = Base.GetProperty(m_sValue);
+			if (!pResult || pResult->IsNil())
+				return false;
+			else if (pResult->IsNumber())
+				return (Ctx.GetTotalCount() + PossibleNewShipCtx.GetTotalCount() < pResult->GetIntegerValue());
+			else
+				return (Ctx.GetTotalCount() == 0);
+			}
+
+		case countScore:
+			return (Ctx.GetTotalScore() + PossibleNewShipCtx.GetTotalScore() < m_Count.RollSeeded(Base.GetDestiny()));
+
 		case countChallengeEasy:
 		case countChallengeStandard:
 		case countChallengeHard:
 		case countChallengeDeadly:
 		case countChallengeRange:
 			{
-			Metric rMin = CalcMinChallengeStrength(m_iType, Base.GetSystem()->GetLevel());
-			Metric rCombatStr = Ctx.GetTotalCombat();
-			if (rMin > rCombatStr)
-				return 1.0;
-			Metric rMax = CalcMaxChallengeStrength(m_iType, Base.GetSystem()->GetLevel());
-			return (rMax - rCombatStr) / (rMax - rMin);
+			int iSysLevel = Base.GetSystem()->GetLevel();
+			rTargetChallenge = rTargetChallenge < 0 ? GetChallengeStrength(iSysLevel) : rTargetChallenge;
+			Metric rCurrentCombatStr = Ctx.GetTotalCombat();
+			Metric rNewCombatStr = PossibleNewShipCtx.GetTotalCombat();
+			return rCurrentCombatStr + rNewCombatStr <= rTargetChallenge;
 			}
 
 		default:
-			return NeedsMoreShips(Base, Ctx) ? 1.0 : 0.0;
+			return false;
 		}
 	}
 
@@ -544,6 +606,78 @@ bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject &Base, const CShi
 			if (Reinforce.NeedsMoreShips(Base, Ctx))
 				return true;
 			else if (m_iType != countAuto && NeedsMoreShips(Base, Ctx))
+				return true;
+			else
+				return false;
+			}
+
+		default:
+			throw CException(ERR_FAIL);
+		}
+	}
+
+//	CanHaveMoreReinforcements
+//
+//	Returns TRUE if we need more reinforcements.
+//
+bool CShipChallengeDesc::CanHaveMoreReinforcements (
+	CSpaceObject &Base,
+	const CShipChallengeCtx &Ctx,
+	const CShipChallengeDesc &Reinforce,
+	const CShipChallengeCtx& PossibleNewShipCtx,
+	Metric rTargetChallenge) const
+
+	{
+	switch (Reinforce.m_iType)
+		{
+		case countNone:
+			return false;
+
+		case countAuto:
+			{
+			//	Can't both be auto
+
+			if (m_iType == countAuto)
+				return false;
+			else
+				{
+				return CanHaveMoreShips(Base, Ctx, PossibleNewShipCtx);
+				}
+			}
+
+		case countProperty:
+			{
+			ICCItemPtr pResult = Base.GetProperty(Reinforce.m_sValue);
+
+			//	If the value of the property is Nil, then we never reinforce
+			//	(treat it as none).
+
+			if (!pResult || pResult->IsNil())
+				return false;
+
+			//	If we return a number, then we assume this is the minimum number
+			//	of ships that we want.
+
+			else if (pResult->IsNumber())
+				return (Ctx.GetTotalCount() + PossibleNewShipCtx.GetTotalCount() < pResult->GetIntegerValue());
+
+			//	Otherwise, we treat it as auto.
+
+			else
+				return CanHaveMoreShips(Base, Ctx, PossibleNewShipCtx);
+			}
+
+		case countShips:
+		case countScore:
+		case countChallengeEasy:
+		case countChallengeStandard:
+		case countChallengeHard:
+		case countChallengeDeadly:
+		case countChallengeRange:
+			{
+			if (Reinforce.CanHaveMoreShips(Base, Ctx, PossibleNewShipCtx))
+				return true;
+			else if (m_iType != countAuto && CanHaveMoreShips(Base, Ctx, PossibleNewShipCtx))
 				return true;
 			else
 				return false;
