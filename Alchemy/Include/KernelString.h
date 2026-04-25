@@ -248,8 +248,32 @@ inline char strLowerCaseAbsolute (char chChar) { if (!Kernel::g_bLowerCaseAbsolu
 bool strNeedsEscapeCodes (const Kernel::CString &sString);
 
 #define PARSE_THOUSAND_SEPARATOR				0x00000001
+#define PARSE_ALLOW_OVERFLOW					0x00000002
 double strParseDouble (const char *pStart, double rNullResult, const char **retpEnd, bool *retbNullValue);
+UINT64 strParseUInt64 (const char* pStart, UINT64 u64NullResult, UINT32 uFlags = 0, const char** retpEnd = NULL, bool* retbNullValue = NULL, bool* retbOverflowed = NULL, bool* retbNegativeCharDetected = NULL);
+inline UINT64 strParseUInt64(const char* pStart, UINT64 u64NullResult, const char** retpEnd = NULL, bool* retbNullValue = NULL, bool* retbOverflowed = NULL, bool* retbNegativeCharDetected = NULL)
+	{
+	return Kernel::strParseUInt64(pStart, u64NullResult, 0, retpEnd, retbNullValue, retbOverflowed, retbNegativeCharDetected);
+	}
+INT64 strParseInt64 (const char* pStart, INT64 i64NullResult, UINT32 uFlags = 0, const char** retpEnd = NULL, bool* retbNullValue = NULL, bool* retbOverflowed = NULL, bool* retbNegativeCharDetected = NULL);
+inline INT64 strParseInt64(const char* pStart, INT64 i64NullResult, const char** retpEnd = NULL, bool* retbNullValue = NULL, bool* retbOverflowed = NULL, bool* retbNegativeCharDetected = NULL)
+	{
+	return Kernel::strParseInt64(pStart, i64NullResult, 0, retpEnd, retbNullValue, retbOverflowed, retbNegativeCharDetected);
+	}
+UINT32 strParseUInt32 (const char* pStart, UINT32 uNullResult, UINT32 uFlags = 0, const char** retpEnd = NULL, bool* retbNullValue = NULL, bool* retbOverflowed = NULL, bool* retbNegativeCharDetected = NULL);
+inline UINT32 strParseUInt32(const char* pStart, UINT32 uNullResult, const char** retpEnd = NULL, bool* retbNullValue = NULL, bool* retbOverflowed = NULL, bool* retbNegativeCharDetected = NULL)
+	{
+	return Kernel::strParseUInt32(pStart, uNullResult, 0, retpEnd, retbNullValue, retbOverflowed, retbNegativeCharDetected);
+	}
+INT32 strParseInt32 (const char* pStart, INT32 iNullResult, UINT32 uFlags = 0, const char** retpEnd = NULL, bool* retbNullValue = NULL, bool* retbOverflowed = NULL, bool* retbNegativeCharDetected = NULL);
+inline INT32 strParseInt32(const char* pStart, INT32 iNullResult, const char** retpEnd = NULL, bool* retbNullValue = NULL, bool* retbOverflowed = NULL, bool* retbNegativeCharDetected = NULL)
+	{
+	return Kernel::strParseInt32(pStart, iNullResult, 0, retpEnd, retbNullValue, retbOverflowed, retbNegativeCharDetected);
+	}
+
+//	Deprecated - use strParseInt32/strParseUInt32 instead
 int strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, const char **retpEnd = NULL, bool *retbNullValue = NULL);
+//	Deprecated - use strParseInt32/strParseUInt32 instead
 inline int strParseInt (const char *pStart, int iNullResult, const char **retpEnd = NULL, bool *retbNullValue = NULL) { return Kernel::strParseInt(pStart, iNullResult, 0, retpEnd, retbNullValue); }
 int strParseIntOfBase (const char *pStart, int iBase, int iNullResult, const char **retpEnd = NULL, bool *retbNullValue = NULL);
 

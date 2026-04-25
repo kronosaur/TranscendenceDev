@@ -2455,34 +2455,416 @@ double Kernel::strParseDouble (const char *pStart, double rNullResult, const cha
 	return atof(szBuffer);
 	}
 
-int Kernel::strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, const char **retpEnd, bool *retbNullValue)
 
-//	strParseInt
+//	strParseUInt64
 //
 //	pStart: Start parsing. Skips any leading whitespace
 //	iNullResult: If there are no valid numbers, returns this value
 //	retpEnd: Returns the character at which we stopped parsing
 //	retbNullValue: Returns TRUE if there are no valid numbers.
+// 	retbNegativeChatDetected: Returns TRUE if a '-' was detected immediately preceding the number.
+// 
+// 	Flags:
+// 	   PARSE_ALLOW_OVERFLOWL: continue shifting bits after exceeding 0xFFFF'FFFF'FFFF'FFFF
+// 	   PARSE_THOUSAND_SEPARATOR: allow
+//
+UINT64 Kernel::strParseUInt64 (
+	const char *pStart,
+	UINT64 u64NullResult,
+	UINT32 uFlags,
+	const char **retpEnd,
+	bool *retbNullValue,
+	bool *retbOverflowed,
+	bool *retbNegativeCharDetected)
 
 	{
-	const char *pPos;
-	BOOL bNegative;
-	BOOL bFoundNumber;
-	BOOL bHex;
-	int iInt;
+	const char *pPos = pStart;
+	BOOL bNegative = false;
+	BOOL bFoundNumber = false;
+	BOOL bHex = false;
+	UINT64 u64Int = 0;
 
-	bool bExpectSeparators = ((dwFlags & PARSE_THOUSAND_SEPARATOR) ? true : false);
+	//	Parse flags
+
+	bool bExpectSeparators = uFlags & PARSE_THOUSAND_SEPARATOR;
+	bool bAllowOverflow = uFlags & PARSE_ALLOW_OVERFLOW;
 
 	//	Preset
 
 	if (retbNullValue)
 		*retbNullValue = false;
+	if (retbOverflowed)
+		*retbOverflowed = false;
+	if (retbNegativeCharDetected)
+		*retbNegativeCharDetected = false;
 
-	pPos = pStart;
-	bNegative = FALSE;
-	bFoundNumber = FALSE;
-	bHex = FALSE;
-	iInt = 0;
+	//	Skip whitespace
+
+	while (*pPos == ' ' || *pPos == '\t' || *pPos == '\n' || *pPos == '\r')
+		pPos++;
+
+	//	If NULL, then we're done
+
+	if (*pPos == '\0')
+		{
+		if (retbNullValue)
+			*retbNullValue = true;
+
+		if (retpEnd)
+			*retpEnd = pPos;
+
+		return u64NullResult;
+		}
+
+	//	If negative, remember it
+
+	if (*pPos == '-')
+		{
+		bNegative = TRUE;
+		pPos++;
+		}
+	else if (*pPos == '+')
+		pPos++;
+
+	//	See if this is a hex number
+
+	if (*pPos == '0')
+		{
+		pPos++;
+		bFoundNumber = TRUE;
+
+		//	If the next character is x (or X) then we've got
+		//	a Hex number
+
+		if (*pPos == 'x' || *pPos == 'X')
+			{
+			pPos++;
+			bHex = TRUE;
+			}
+		}
+
+	//	Keep parsing
+
+	if (bHex)
+		{
+		while (*pPos != '\0' 
+				&& ((*pPos >= '0' && *pPos <= '9') 
+					|| (*pPos >= 'a' && *pPos <='f')
+					|| (*pPos >= 'A' && *pPos <= 'F')))
+			{
+			if (u64Int <= 0x0FFF'FFFF'FFFF'FFFF || bAllowOverflow)
+				{
+				if (u64Int > 0x0FFF'FFFF'FFFF'FFFF && retbOverflowed)
+					*retbOverflowed = true;
+
+				u64Int <<= 4;
+
+				if (*pPos >= '0' && *pPos <= '9')
+					u64Int += (*pPos - '0');
+				else if (*pPos >= 'A' && *pPos <= 'F')
+					u64Int += (10 + (*pPos - 'A'));
+				else
+					u64Int += (10 + (*pPos - 'a'));
+				}
+
+			//	If we overflowed and dont allow overflow
+			//	we cap to tha maximum unsigned int
+
+			else
+				{
+				u64Int = 0xFFFF'FFFF'FFFF'FFFF;
+				if (retbOverflowed)
+					*retbOverflowed = true;
+				}
+
+			pPos++;
+			}
+		}
+	else
+		{
+		while (*pPos != '\0' && *pPos >= '0' && *pPos <= '9')
+			{
+			bFoundNumber = TRUE;
+			if (u64Int < 0x1999'9999'9999'9999 || (u64Int == 0x1999'9999'9999'9999 && *pPos <= '5'))
+				u64Int = 10 * u64Int + (*pPos - '0');
+			else if (bAllowOverflow)
+				{
+				u64Int = 10 * u64Int + (*pPos - '0');
+				if (retbOverflowed)
+					*retbOverflowed = true;
+				}
+			else
+				{
+				u64Int = 0xFFFF'FFFF'FFFF'FFFF;
+				if (retbOverflowed)
+					*retbOverflowed = true;
+				}
+			pPos++;
+
+			if (bExpectSeparators && *pPos == ',')
+				pPos++;
+			}
+		}
+
+	//	Done?
+
+	if (!bFoundNumber)
+		{
+		if (retbNullValue)
+			*retbNullValue = true;
+
+		if (retpEnd)
+			*retpEnd = pPos;
+
+		return u64NullResult;
+		}
+
+	//	Done!
+
+	if (retbNegativeCharDetected)
+		*retbNegativeCharDetected = bNegative;
+
+	if (retpEnd)
+		*retpEnd = pPos;
+
+	return u64Int;
+	}
+
+//	strParseUInt64
+//
+//	pStart: Start parsing. Skips any leading whitespace
+//	iNullResult: If there are no valid numbers, returns this value
+//	retpEnd: Returns the character at which we stopped parsing
+//	retbNullValue: Returns TRUE if there are no valid numbers.
+// 	retbNegativeChatDetected: Returns TRUE if a '-' was detected immediately preceding the number.
+// 
+// 	Flags:
+// 	   PARSE_ALLOW_OVERFLOWL: continue shifting bits after exceeding 0xFFFF'FFFF'FFFF'FFFF
+// 	   PARSE_THOUSAND_SEPARATOR: allow
+//
+INT64 Kernel::strParseInt64 (
+	const char *pStart,
+	INT64 i64NullResult,
+	UINT32 uFlags,
+	const char **retpEnd,
+	bool *retbNullValue,
+	bool *retbOverflowed,
+	bool *retbNegativeCharDetected)
+	{
+	bool bInnerNullValue = false;
+	bool bInnerOverflow = false;
+	bool bNegativeChar = false;
+
+	if (retbNullValue)
+		*retbNullValue = false;
+	if (retbOverflowed)
+		*retbOverflowed = false;
+	if (retbNegativeCharDetected)
+		*retbNegativeCharDetected = false;
+
+	bool bAllowOverflow = uFlags & PARSE_ALLOW_OVERFLOW;
+
+	UINT64 u64Raw = strParseUInt64(pStart, 0, uFlags, retpEnd, &bInnerNullValue, &bInnerOverflow, &bNegativeChar);
+
+	//	If we were null, we continue
+
+	if (bInnerNullValue)
+		{
+		if (retbNullValue)
+			*retbNullValue = true;
+		return i64NullResult;
+		}
+
+	//	Set overflow bool as appropriate for a signed int64
+
+	bool bOverflowed = bInnerOverflow || u64Raw > 0x7FFF'FFFF'FFFF'FFFF;
+
+	if (retbOverflowed)
+		*retbOverflowed = bOverflowed;
+
+	//	Handle truncation and sign as necessary
+
+	if (bOverflowed && !bAllowOverflow)
+		u64Raw = 0x7FFF'FFFF'FFFF'FFFF;
+
+	INT64 i64Int = (INT64)u64Raw;
+
+	if (bNegativeChar)
+		{
+		i64Int *= -1;
+		if (retbNegativeCharDetected)
+			*retbNegativeCharDetected = true;
+		}
+
+	//	done
+
+	return i64Int;
+	}
+
+//	strParseInt32
+//
+//	pStart: Start parsing. Skips any leading whitespace
+//	iNullResult: If there are no valid numbers, returns this value
+//	retpEnd: Returns the character at which we stopped parsing
+//	retbNullValue: Returns TRUE if there are no valid numbers.
+// 	retbNegativeChatDetected: Returns TRUE if a '-' was detected immediately preceding the number.
+// 
+// 	Flags:
+// 	   PARSE_ALLOW_OVERFLOWL: continue shifting bits after exceeding 0xFFFF'FFFF'FFFF'FFFF
+// 	   PARSE_THOUSAND_SEPARATOR: allow
+//
+INT32 Kernel::strParseInt32 (
+	const char *pStart,
+	INT32 iNullResult,
+	UINT32 uFlags,
+	const char **retpEnd,
+	bool *retbNullValue,
+	bool *retbOverflowed,
+	bool *retbNegativeCharDetected)
+	{
+	bool bInnerNullValue = false;
+	bool bInnerOverflow = false;
+	bool bNegativeChar = false;
+
+	if (retbNullValue)
+		*retbNullValue = false;
+	if (retbOverflowed)
+		*retbOverflowed = false;
+	if (retbNegativeCharDetected)
+		*retbNegativeCharDetected = false;
+
+	bool bAllowOverflow = uFlags & PARSE_ALLOW_OVERFLOW;
+
+	UINT64 u64Raw = strParseUInt64(pStart, 0, uFlags, retpEnd, &bInnerNullValue, &bInnerOverflow, &bNegativeChar);
+
+	//	If we were null, we continue
+
+	if (bInnerNullValue)
+		{
+		if (retbNullValue)
+			*retbNullValue = true;
+		return iNullResult;
+		}
+
+	//	Set overflow bool as appropriate for a signed int32
+
+	bool bOverflowed = bInnerOverflow || u64Raw > 0x7FFF'FFFF;
+
+	if (retbOverflowed)
+		*retbOverflowed = bOverflowed;
+
+	//	Handle truncation and sign as necessary
+
+	if (bOverflowed && !bAllowOverflow)
+		u64Raw = 0x7FFF'FFFF;
+
+	int iInt = (int)u64Raw;
+
+	if (bNegativeChar)
+		{
+		iInt *= -1;
+		if (retbNegativeCharDetected)
+			*retbNegativeCharDetected = true;
+		}
+
+	//	done
+
+	return iInt;
+	}
+
+//	strParseUInt32
+//
+//	pStart: Start parsing. Skips any leading whitespace
+//	iNullResult: If there are no valid numbers, returns this value
+//	retpEnd: Returns the character at which we stopped parsing
+//	retbNullValue: Returns TRUE if there are no valid numbers.
+// 	retbNegativeChatDetected: Returns TRUE if a '-' was detected immediately preceding the number.
+// 
+// 	Flags:
+// 	   PARSE_ALLOW_OVERFLOWL: continue shifting bits after exceeding 0xFFFF'FFFF'FFFF'FFFF
+// 	   PARSE_THOUSAND_SEPARATOR: allow
+//
+UINT32 Kernel::strParseUInt32 (
+	const char *pStart,
+	UINT32 uNullResult,
+	UINT32 uFlags,
+	const char **retpEnd,
+	bool *retbNullValue,
+	bool *retbOverflowed,
+	bool *retbNegativeCharDetected)
+	{
+	bool bInnerNullValue = false;
+	bool bInnerOverflow = false;
+
+	if (retbNullValue)
+		*retbNullValue = false;
+	if (retbOverflowed)
+		*retbOverflowed = false;
+
+	bool bAllowOverflow = uFlags & PARSE_ALLOW_OVERFLOW;
+
+	UINT64 u64Raw = strParseUInt64(pStart, 0, uFlags, retpEnd, &bInnerNullValue, &bInnerOverflow, retbNegativeCharDetected);
+
+	//	If we were null, we continue
+
+	if (bInnerNullValue)
+		{
+		if (retbNullValue)
+			*retbNullValue = true;
+		return uNullResult;
+		}
+
+	//	Set overflow bool as appropriate for a signed int32
+
+	bool bOverflowed = bInnerOverflow || u64Raw > 0xFFFF'FFFF;
+
+	if (retbOverflowed)
+		*retbOverflowed = bOverflowed;
+
+	//	Handle truncation and sign as necessary
+
+	if (bOverflowed && !bAllowOverflow)
+		u64Raw = 0xFFFF'FFFF;
+
+	UINT32 uInt = (UINT32)u64Raw;
+
+	//	done
+
+	return uInt;
+	}
+
+//	strParseInt
+// 
+//	DEPRECATED - use strParseInt32 or strParseUInt32 instead
+//
+//	pStart: Start parsing. Skips any leading whitespace
+//	iNullResult: If there are no valid numbers, returns this value
+//	retpEnd: Returns the character at which we stopped parsing
+//	retbNullValue: Returns TRUE if there are no valid numbers.
+// 
+// 	Flags:
+// 	   PARSE_ALLOW_OVERFLOWL: continue shifting bits after exceeding 0xFFFFFFFF
+//			Note - even if not set, may overflow to a negative number. This is intended for supporting UNID/DWORD loading.
+// 	   PARSE_THOUSAND_SEPARATOR: allow
+//
+int Kernel::strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, const char **retpEnd, bool *retbNullValue)
+
+	{
+	const char *pPos = pStart;
+	BOOL bNegative = false;
+	BOOL bFoundNumber = false;
+	BOOL bHex = false;
+	DWORD dwInt = 0;
+
+	//	Parse flags
+
+	bool bExpectSeparators = dwFlags & PARSE_THOUSAND_SEPARATOR;
+	bool bAllowOverflow = dwFlags & PARSE_ALLOW_OVERFLOW;
+
+	//	Preset
+
+	if (retbNullValue)
+		*retbNullValue = false;
 
 	//	Skip whitespace
 
@@ -2540,25 +2922,37 @@ int Kernel::strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, con
 					|| (*pPos >= 'a' && *pPos <='f')
 					|| (*pPos >= 'A' && *pPos <= 'F')))
 			{
-			if (*pPos >= '0' && *pPos <= '9')
-				dwInt = 16 * dwInt + (*pPos - '0');
-			else if (*pPos >= 'A' && *pPos <= 'F')
-				dwInt = 16 * dwInt + (10 + (*pPos - 'A'));
+			if (dwInt < 0x0FFFFFFF || bAllowOverflow)
+				{
+				dwInt *= 16;
+
+				if (*pPos >= '0' && *pPos <= '9')
+					dwInt += (*pPos - '0');
+				else if (*pPos >= 'A' && *pPos <= 'F')
+					dwInt += (10 + (*pPos - 'A'));
+				else
+					dwInt += (10 + (*pPos - 'a'));
+				}
+
+			//	If we overflowed and dont allow overflow
+			//	we cap to tha maximum unsigned int
+
 			else
-				dwInt = 16 * dwInt + (10 + (*pPos - 'a'));
+				dwInt = 0xFFFFFFFF;
 
 			pPos++;
 			}
-
-		iInt = (int)dwInt;
 		}
 	else
 		{
 		while (*pPos != '\0' && *pPos >= '0' && *pPos <= '9')
 			{
-			iInt = 10 * iInt + (*pPos - '0');
-			pPos++;
 			bFoundNumber = TRUE;
+			if (dwInt < 0x19999999 || (dwInt == 0x19999999 && *pPos <= '5') || bAllowOverflow)
+				dwInt = 10 * dwInt + (*pPos - '0');
+			else
+				dwInt = 0xFFFFFFFF;
+			pPos++;
 
 			if (bExpectSeparators && *pPos == ',')
 				pPos++;
@@ -2579,6 +2973,7 @@ int Kernel::strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, con
 		}
 
 	//	Done!
+	int iInt = (int)dwInt;
 
 	if (bNegative)
 		iInt = -iInt;
