@@ -390,17 +390,9 @@ double CXMLElement::GetAttributeFloat (const CString &sName) const
 	return strToDouble(GetAttribute(sName), 0.0);
 	}
 
-//	GetAttributeInteger
-//
-//	Returns an integer attribute
-//
-int CXMLElement::GetAttributeInteger (const CString &sName) const
-
-	{
-	return strToInt(GetAttribute(sName), 0, NULL);
-	}
-
 //	GetAttributeIntegerDefault
+// 
+//	DEPRECATED: use GetAttributeInt32/64Default or GetAttributeUInt32/64Default
 //
 //	Returns an integer attribute
 //  Return iNull if not found
@@ -423,6 +415,8 @@ int CXMLElement::GetAttributeIntegerDefault (const CString &sName, int iNull) co
 	}
 
 //	GetAttributeIntegerBounded
+// 
+//	DEPRECATED: use GetAttributeInt32/64Bounded or GetAttributeUInt32/64Bounded
 //
 //	Returns an integer, insuring that it is in range
 //
@@ -456,32 +450,14 @@ int CXMLElement::GetAttributeIntegerBounded (const CString &sName, int iMin, int
 		return iNull;
 	}
 
-ALERROR CXMLElement::GetAttributeIntegerList (const CString &sName, TArray<int> *pList) const
-
-//	GetAttributeIntegerList
-//
-//	Appends a list of integers separated by commas
-
-	{
-	return ParseAttributeIntegerList(GetAttribute(sName), pList);
-	}
-
-ALERROR CXMLElement::GetAttributeIntegerList (const CString &sName, TArray<DWORD> *pList) const
-
-//	GetAttributeIntegerList
-//
-//	Appends a list of integers separated by commas
-
-	{
-	return ParseAttributeIntegerList(GetAttribute(sName), pList);
-	}
-
-bool CXMLElement::GetAttributeIntegerRange (const CString &sName, int *retiLow, int *retiHigh, int iMin, int iMax, int iNullLow, int iNullHigh, bool bAllowInverted) const
-
 //  GetAttributeIntegerRange
+// 
+//	DEPRECATED: use GetAttributeInt32/64Range or GetAttributeUInt32/64Range
 //
 //  Parses two numbers separated by a hyphen. We return TRUE if we have a range.
 //  Otherwise, we return FALSE and retiLow is the number.
+//
+bool CXMLElement::GetAttributeIntegerRange (const CString &sName, int *retiLow, int *retiHigh, int iMin, int iMax, int iNullLow, int iNullHigh, bool bAllowInverted) const
 
     {
 	CString sValue;
@@ -553,6 +529,558 @@ bool CXMLElement::GetAttributeIntegerRange (const CString &sName, int *retiLow, 
     *retiHigh = iHigh;
     return (iLow != iHigh);
     }
+
+//	GetAttributeInt32Default
+//
+//	Returns an integer attribute (Truncates overflow)
+//  Return iNull if not found
+//
+int CXMLElement::GetAttributeInt32Default (const CString &sName, int iNull) const
+
+	{
+	CString sValue;
+	if (FindAttribute(sName, &sValue))
+		{
+		bool bFailed;
+		int iValue = strToInt32(sValue, iNull, &bFailed);
+		if (bFailed)
+			return iNull;
+		else
+			return iValue;
+		}
+	else
+		return iNull;
+	}
+
+//	GetAttributeInt32Bounded
+//
+//	Returns an integer, insuring that it is in range
+//		Truncates overflow is iMax is unbounded
+//		iMin is never unbounded
+//
+int CXMLElement::GetAttributeInt32Bounded (const CString &sName, int iMin, int iMax, int iNull) const
+
+	{
+	CString sValue;
+	if (FindAttribute(sName, &sValue))
+		{
+		bool bFailed;
+		int iValue = strToInt32(sValue, iNull, &bFailed);
+		if (bFailed)
+			return iNull;
+
+		//	The null value is always valid
+
+		if (iValue == iNull)
+			return iValue;
+
+		//	If iMax is less than iMin, then there is no maximum
+
+		else if (iMax < iMin)
+			return Max(iValue, iMin);
+
+		//	Bounded
+
+		else
+			return Max(Min(iValue, iMax), iMin);
+		}
+	else
+		return iNull;
+	}
+
+//  GetAttributeInt32Range
+//
+//  Parses two numbers separated by a hyphen. We return TRUE if we have a range.
+//  Otherwise, we return FALSE and retiLow is the number.
+//		Truncates overflow is iMax is unbounded
+//		iMin is never unbounded
+//
+bool CXMLElement::GetAttributeInt32Range (const CString &sName, int *retiLow, int *retiHigh, int iMin, int iMax, int iNullLow, int iNullHigh, bool bAllowInverted) const
+
+    {
+	CString sValue;
+    if (!FindAttribute(sName, &sValue))
+        {
+        *retiLow = iNullLow;
+        *retiHigh = iNullHigh;
+        return (iNullLow != iNullHigh);
+        }
+
+    //  Parse the first number
+
+    const char *pPos = sValue.GetASCIIZPointer();
+    bool bNullValue;
+	int iValue = strParseInt32(pPos, 0, &pPos, &bNullValue);
+    if (bNullValue)
+        {
+        *retiLow = iNullLow;
+        *retiHigh = iNullHigh;
+        return (iNullLow != iNullHigh);
+        }
+
+    //  Make sure we're in range
+
+    int iLow;
+    if (iValue == iNullLow)
+        iLow = iValue;
+    else if (iMax < iMin)
+        iLow = Max(iMin, iValue);
+    else
+        iLow = Min(Max(iMin, iValue), iMax);
+
+    //  If there is no high value, then we just have a single number
+
+    if (*pPos != '-')
+        {
+        *retiLow = iLow;
+        *retiHigh = iLow;
+        return false;
+        }
+
+    pPos++;
+
+    //  Parse the next number
+
+    int iHigh;
+    iValue = strParseInt32(pPos, 0, &pPos, &bNullValue);
+    if (bNullValue)
+        iHigh = iNullHigh;
+    else if (iValue == iNullHigh)
+        iHigh = iValue;
+    else if (iMax < iMin)
+        iHigh = Max(iMin, iValue);
+    else
+        iHigh = Min(Max(iMin, iValue), iMax);
+
+    //  If low > high, then we fail, unless we allow an inverted range.
+
+    if (iLow > iHigh && !bAllowInverted)
+        {
+        *retiLow = iNullLow;
+        *retiHigh = iNullHigh;
+        return (iNullLow != iNullHigh);
+        }
+
+    //  Otherwise, we're done
+
+    *retiLow = iLow;
+    *retiHigh = iHigh;
+    return (iLow != iHigh);
+    }
+
+//	GetAttributeInt32Default
+//
+//	Returns an integer attribute (Truncates overflow)
+//  Return iNull if not found
+//
+UINT32 CXMLElement::GetAttributeUInt32Default(const CString& sName, UINT32 iNull) const
+
+	{
+	CString sValue;
+	if (FindAttribute(sName, &sValue))
+		{
+		bool bFailed;
+		UINT32 iValue = strToUInt32(sValue, iNull, &bFailed);
+		if (bFailed)
+			return iNull;
+		else
+			return iValue;
+		}
+	else
+		return iNull;
+	}
+
+//	GetAttributeInt32Bounded
+//
+//	Returns an integer, insuring that it is in range
+//		Truncates overflow is iMax is unbounded
+//		iMin is never unbounded
+//
+UINT32 CXMLElement::GetAttributeUInt32Bounded(const CString& sName, UINT32 iMin, UINT32 iMax, UINT32 iNull) const
+
+	{
+	CString sValue;
+	if (FindAttribute(sName, &sValue))
+		{
+		bool bFailed;
+		UINT32 iValue = strToUInt32(sValue, iNull, &bFailed);
+		if (bFailed)
+			return iNull;
+
+		//	The null value is always valid
+
+		if (iValue == iNull)
+			return iValue;
+
+		//	If iMax is less than iMin, then there is no maximum
+
+		else if (iMax < iMin)
+			return Max(iValue, iMin);
+
+		//	Bounded
+
+		else
+			return Max(Min(iValue, iMax), iMin);
+		}
+	else
+		return iNull;
+	}
+
+//  GetAttributeUInt32Range
+//
+//  Parses two numbers separated by a hyphen. We return TRUE if we have a range.
+//  Otherwise, we return FALSE and retiLow is the number.
+//		Truncates overflow is iMax is unbounded
+//		iMin is never unbounded
+//
+bool CXMLElement::GetAttributeUInt32Range(const CString& sName, UINT32* retuLow, UINT32* retuHigh, UINT32 uMin, UINT32 uMax, UINT32 uNullLow, UINT32 uNullHigh, bool bAllowInverted) const
+
+	{
+	CString sValue;
+	if (!FindAttribute(sName, &sValue))
+		{
+		*retuLow = uNullLow;
+		*retuHigh = uNullHigh;
+		return (uNullLow != uNullHigh);
+		}
+
+	//  Parse the first number
+
+	const char* pPos = sValue.GetASCIIZPointer();
+	bool bNullValue;
+	UINT32 iValue = strParseUInt32(pPos, 0, &pPos, &bNullValue);
+	if (bNullValue)
+		{
+		*retuLow = uNullLow;
+		*retuHigh = uNullHigh;
+		return (uNullLow != uNullHigh);
+		}
+
+	//  Make sure we're in range
+
+	UINT32 uLow;
+	if (iValue == uNullLow)
+		uLow = iValue;
+	else if (uMax < uMin)
+		uLow = Max(uMin, iValue);
+	else
+		uLow = Min(Max(uMin, iValue), uMax);
+
+	//  If there is no high value, then we just have a single number
+
+	if (*pPos != '-')
+		{
+		*retuLow = uLow;
+		*retuHigh = uLow;
+		return false;
+		}
+
+	pPos++;
+
+	//  Parse the next number
+
+	UINT32 uHigh;
+	iValue = strParseUInt32(pPos, 0, &pPos, &bNullValue);
+	if (bNullValue)
+		uHigh = uNullHigh;
+	else if (iValue == uNullHigh)
+		uHigh = iValue;
+	else if (uMax < uMin)
+		uHigh = Max(uMin, iValue);
+	else
+		uHigh = Min(Max(uMin, iValue), uMax);
+
+	//  If low > high, then we fail, unless we allow an inverted range.
+
+	if (uLow > uHigh && !bAllowInverted)
+		{
+		*retuLow = uNullLow;
+		*retuHigh = uNullHigh;
+		return (uNullLow != uNullHigh);
+		}
+
+	//  Otherwise, we're done
+
+	*retuLow = uLow;
+	*retuHigh = uHigh;
+	return (uLow != uHigh);
+	}
+
+//	GetAttributeInt64Default
+//
+//	Returns an integer attribute (Truncates overflow)
+//  Return iNull if not found
+//
+INT64 CXMLElement::GetAttributeInt64Default (const CString &sName, INT64 iNull) const
+
+	{
+	CString sValue;
+	if (FindAttribute(sName, &sValue))
+		{
+		bool bFailed;
+		INT64 iValue = strToInt64(sValue, iNull, &bFailed);
+		if (bFailed)
+			return iNull;
+		else
+			return iValue;
+		}
+	else
+		return iNull;
+	}
+
+//	GetAttributeInt64Bounded
+//
+//	Returns an integer, insuring that it is in range
+//		Truncates overflow is iMax is unbounded
+//		iMin is never unbounded
+//
+INT64 CXMLElement::GetAttributeInt64Bounded (const CString &sName, INT64 iMin, INT64 iMax, INT64 iNull) const
+
+	{
+	CString sValue;
+	if (FindAttribute(sName, &sValue))
+		{
+		bool bFailed;
+		INT64 iValue = strToInt64(sValue, iNull, &bFailed);
+		if (bFailed)
+			return iNull;
+
+		//	The null value is always valid
+
+		if (iValue == iNull)
+			return iValue;
+
+		//	If iMax is less than iMin, then there is no maximum
+
+		else if (iMax < iMin)
+			return Max(iValue, iMin);
+
+		//	Bounded
+
+		else
+			return Max(Min(iValue, iMax), iMin);
+		}
+	else
+		return iNull;
+	}
+
+//  GetAttributeInt64Range
+//
+//  Parses two numbers separated by a hyphen. We return TRUE if we have a range.
+//  Otherwise, we return FALSE and retiLow is the number.
+//		Truncates overflow is iMax is unbounded
+//		iMin is never unbounded
+//
+bool CXMLElement::GetAttributeInt64Range (const CString &sName, INT64 *retiLow, INT64 *retiHigh, INT64 iMin, INT64 iMax, INT64 iNullLow, INT64 iNullHigh, bool bAllowInverted) const
+
+    {
+	CString sValue;
+    if (!FindAttribute(sName, &sValue))
+        {
+        *retiLow = iNullLow;
+        *retiHigh = iNullHigh;
+        return (iNullLow != iNullHigh);
+        }
+
+    //  Parse the first number
+
+    const char *pPos = sValue.GetASCIIZPointer();
+    bool bNullValue;
+	INT64 iValue = strParseInt64(pPos, 0, &pPos, &bNullValue);
+    if (bNullValue)
+        {
+        *retiLow = iNullLow;
+        *retiHigh = iNullHigh;
+        return (iNullLow != iNullHigh);
+        }
+
+    //  Make sure we're in range
+
+    int iLow;
+    if (iValue == iNullLow)
+        iLow = iValue;
+    else if (iMax < iMin)
+        iLow = Max(iMin, iValue);
+    else
+        iLow = Min(Max(iMin, iValue), iMax);
+
+    //  If there is no high value, then we just have a single number
+
+    if (*pPos != '-')
+        {
+        *retiLow = iLow;
+        *retiHigh = iLow;
+        return false;
+        }
+
+    pPos++;
+
+    //  Parse the next number
+
+    int iHigh;
+    iValue = strParseInt64(pPos, 0, &pPos, &bNullValue);
+    if (bNullValue)
+        iHigh = iNullHigh;
+    else if (iValue == iNullHigh)
+        iHigh = iValue;
+    else if (iMax < iMin)
+        iHigh = Max(iMin, iValue);
+    else
+        iHigh = Min(Max(iMin, iValue), iMax);
+
+    //  If low > high, then we fail, unless we allow an inverted range.
+
+    if (iLow > iHigh && !bAllowInverted)
+        {
+        *retiLow = iNullLow;
+        *retiHigh = iNullHigh;
+        return (iNullLow != iNullHigh);
+        }
+
+    //  Otherwise, we're done
+
+    *retiLow = iLow;
+    *retiHigh = iHigh;
+    return (iLow != iHigh);
+    }
+
+//	GetAttributeInt64Default
+//
+//	Returns an integer attribute (Truncates overflow)
+//  Return iNull if not found
+//
+UINT64 CXMLElement::GetAttributeUInt64Default(const CString& sName, UINT64 iNull) const
+
+	{
+	CString sValue;
+	if (FindAttribute(sName, &sValue))
+		{
+		bool bFailed;
+		UINT64 iValue = strToUInt64(sValue, iNull, &bFailed);
+		if (bFailed)
+			return iNull;
+		else
+			return iValue;
+		}
+	else
+		return iNull;
+	}
+
+//	GetAttributeInt64Bounded
+//
+//	Returns an integer, insuring that it is in range
+//		Truncates overflow is iMax is unbounded
+//		iMin is never unbounded
+//
+UINT64 CXMLElement::GetAttributeUInt64Bounded(const CString& sName, UINT64 iMin, UINT64 iMax, UINT64 iNull) const
+
+	{
+	CString sValue;
+	if (FindAttribute(sName, &sValue))
+		{
+		bool bFailed;
+		UINT64 uValue = strToUInt64(sValue, iNull, &bFailed);
+		if (bFailed)
+			return iNull;
+
+		//	The null value is always valid
+
+		if (uValue == iNull)
+			return uValue;
+
+		//	If iMax is less than iMin, then there is no maximum
+
+		else if (iMax < iMin)
+			return Max(uValue, iMin);
+
+		//	Bounded
+
+		else
+			return Max(Min(uValue, iMax), iMin);
+		}
+	else
+		return iNull;
+	}
+
+//  GetAttributeUInt64Range
+//
+//  Parses two numbers separated by a hyphen. We return TRUE if we have a range.
+//  Otherwise, we return FALSE and retiLow is the number.
+//		Truncates overflow is iMax is unbounded
+//		iMin is never unbounded
+//
+bool CXMLElement::GetAttributeUInt64Range(const CString& sName, UINT64* retuLow, UINT64* retuHigh, UINT64 uMin, UINT64 uMax, UINT64 uNullLow, UINT64 uNullHigh, bool bAllowInverted) const
+
+	{
+	CString sValue;
+	if (!FindAttribute(sName, &sValue))
+		{
+		*retuLow = uNullLow;
+		*retuHigh = uNullHigh;
+		return (uNullLow != uNullHigh);
+		}
+
+	//  Parse the first number
+
+	const char* pPos = sValue.GetASCIIZPointer();
+	bool bNullValue;
+	UINT64 uValue = strParseUInt64(pPos, 0, &pPos, &bNullValue);
+	if (bNullValue)
+		{
+		*retuLow = uNullLow;
+		*retuHigh = uNullHigh;
+		return (uNullLow != uNullHigh);
+		}
+
+	//  Make sure we're in range
+
+	UINT64 uLow;
+	if (uValue == uNullLow)
+		uLow = uValue;
+	else if (uMax < uMin)
+		uLow = Max(uMin, uValue);
+	else
+		uLow = Min(Max(uMin, uValue), uMax);
+
+	//  If there is no high value, then we just have a single number
+
+	if (*pPos != '-')
+		{
+		*retuLow = uLow;
+		*retuHigh = uLow;
+		return false;
+		}
+
+	pPos++;
+
+	//  Parse the next number
+
+	UINT64 uHigh;
+	uValue = strParseUInt64(pPos, 0, &pPos, &bNullValue);
+	if (bNullValue)
+		uHigh = uNullHigh;
+	else if (uValue == uNullHigh)
+		uHigh = uValue;
+	else if (uMax < uMin)
+		uHigh = Max(uMin, uValue);
+	else
+		uHigh = Min(Max(uMin, uValue), uMax);
+
+	//  If low > high, then we fail, unless we allow an inverted range.
+
+	if (uLow > uHigh && !bAllowInverted)
+		{
+		*retuLow = uNullLow;
+		*retuHigh = uNullHigh;
+		return (uNullLow != uNullHigh);
+		}
+
+	//  Otherwise, we're done
+
+	*retuLow = uLow;
+	*retuHigh = uHigh;
+	return (uLow != uHigh);
+	}
 
 int CXMLElement::GetAttributeTriState (const CString &sName) const
 

@@ -3484,14 +3484,56 @@ CString Kernel::strToFilename (const CString &sString)
 	return sResult;
 	}
 
-int Kernel::strToInt (const CString &sString, int iFailResult, bool *retbFailed)
-
-//	CStringToInt
+//	strToInt
+// 
+//  Deprecated
 //
 //	Converts a string to an integer
+//
+int Kernel::strToInt (const CString &sString, int iFailResult, bool *retbFailed)
 
 	{
 	return strParseInt(sString.GetASCIIZPointer(), iFailResult, NULL, retbFailed);
+	}
+
+//	strToInt32
+//
+//	Converts a string to an integer
+//
+int Kernel::strToInt32 (const CString &sString, int iFailResult, bool *retbFailed)
+
+	{
+	return strParseInt32(sString.GetASCIIZPointer(), iFailResult, NULL, retbFailed);
+	}
+
+//	strToUInt32
+//
+//	Converts a string to an integer
+//
+UINT32 Kernel::strToUInt32(const CString& sString, UINT32 iFailResult, bool* retbFailed)
+
+	{
+	return strParseUInt32(sString.GetASCIIZPointer(), iFailResult, NULL, retbFailed);
+	}
+
+//	strToInt64
+//
+//	Converts a string to an integer
+//
+INT64 Kernel::strToInt64 (const CString &sString, INT64 iFailResult, bool *retbFailed)
+
+	{
+	return strParseInt64(sString.GetASCIIZPointer(), iFailResult, NULL, retbFailed);
+	}
+
+//	strToUInt64
+//
+//	Converts a string to an integer
+//
+UINT64 Kernel::strToUInt64(const CString& sString, UINT64 iFailResult, bool* retbFailed)
+
+	{
+	return strParseUInt64(sString.GetASCIIZPointer(), iFailResult, NULL, retbFailed);
 	}
 
 CString Kernel::strToLower (const CString &sString)

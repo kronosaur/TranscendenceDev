@@ -103,12 +103,31 @@ class CXMLElement
 		double GetAttributeDouble (const CString &sName) const;
 		double GetAttributeDoubleDefault (const CString &sName, double rNull) const;
 		double GetAttributeDoubleBounded (const CString &sName, double rMin, double rMax = -1.0, double rNull = 0.0) const;
-		int GetAttributeInteger (const CString &sName) const;
+		//	DEPRECATED: use GetAttributeInt32/64 or GetAttributeUInt32/64
+		int GetAttributeInteger (const CString& sName) const { return strToInt(GetAttribute(sName), 0, NULL); }
 		int GetAttributeIntegerDefault (const CString &sName, int iNull) const;
 		int GetAttributeIntegerBounded (const CString &sName, int iMin, int iMax = -1, int iNull = 0) const;
-		bool GetAttributeIntegerRange (const CString &sName, int *retiLow, int *retiHigh, int iMin = 0, int iMax = -1, int iNullLow = 0, int iNullHigh = 0, bool bAllowInverted = false) const;
-		ALERROR GetAttributeIntegerList (const CString &sName, TArray<int> *pList) const;
-		ALERROR GetAttributeIntegerList (const CString &sName, TArray<DWORD> *pList) const;
+		bool GetAttributeIntegerRange(const CString& sName, int* retiLow, int* retiHigh, int iMin = 0, int iMax = -1, int iNullLow = 0, int iNullHigh = 0, bool bAllowInverted = false) const;
+		int GetAttributeInt32 (const CString& sName) const { return strToInt32(GetAttribute(sName), 0, NULL); }
+		int GetAttributeInt32Default (const CString& sName, int iNull) const;
+		int GetAttributeInt32Bounded (const CString& sName, int iMin, int iMax = -1, int iNull = 0) const;
+		bool GetAttributeInt32Range (const CString& sName, int* retiLow, int* retiHigh, int iMin = 0, int iMax = -1, int iNullLow = 0, int iNullHigh = 0, bool bAllowInverted = false) const;
+		UINT32 GetAttributeUInt32 (const CString& sName) const { return strToUInt32(GetAttribute(sName), 0, NULL); }
+		UINT32 GetAttributeUInt32Default (const CString& sName, UINT32 uNull) const;
+		UINT32 GetAttributeUInt32Bounded (const CString& sName, UINT32 uMin, UINT32 uMax = 0xFFFF'FFFF, UINT32 iNull = 0) const;
+		bool GetAttributeUInt32Range (const CString &sName, UINT32 *retiLow, UINT32 *retiHigh, UINT32 iMin = 0, UINT32 iMax = 0xFFFF'FFFF'FFFF'FFFF, UINT32 iNullLow = 0, UINT32 iNullHigh = 0, bool bAllowInverted = false) const;
+		INT64 GetAttributeInt64 (const CString& sName) const { return strToInt64(GetAttribute(sName), 0, NULL); }
+		INT64 GetAttributeInt64Default (const CString& sName, INT64 iNull) const;
+		INT64 GetAttributeInt64Bounded (const CString& sName, INT64 iMin, INT64 iMax = -1, INT64 iNull = 0) const;
+		bool GetAttributeInt64Range (const CString &sName, INT64 *retiLow, INT64 *retiHigh, INT64 iMin = 0, INT64 iMax = -1, INT64 iNullLow = 0, INT64 iNullHigh = 0, bool bAllowInverted = false) const;
+		UINT64 GetAttributeUInt64 (const CString& sName) const { return strToUInt64(GetAttribute(sName), 0, NULL); }
+		UINT64 GetAttributeUInt64Default (const CString& sName, UINT64 uNull) const;
+		UINT64 GetAttributeUInt64Bounded (const CString& sName, UINT64 uMin, UINT64 uMax = 0xFFFF'FFFF'FFFF'FFFF, UINT64 uNull = 0) const;
+		bool GetAttributeUInt64Range (const CString &sName, UINT64 *retiLow, UINT64 *retiHigh, UINT64 iMin = 0, UINT64 iMax = 0xFFFF'FFFF'FFFF'FFFF, UINT64 iNullLow = 0, UINT64 iNullHigh = 0, bool bAllowInverted = false) const;
+		ALERROR GetAttributeIntegerList (const CString &sName, TArray<int> *pList) const { return ParseAttributeIntegerList(GetAttribute(sName), pList); }
+		ALERROR GetAttributeIntegerList (const CString &sName, TArray<DWORD> *pList) const { return ParseAttributeIntegerList(GetAttribute(sName), pList); }
+		ALERROR GetAttributeIntegerList (const CString& sName, TArray<INT64>* pList) const { return ParseAttributeIntegerList(GetAttribute(sName), pList); }
+		ALERROR GetAttributeIntegerList (const CString& sName, TArray<UINT64>* pList) const { return ParseAttributeIntegerList(GetAttribute(sName), pList); }
 		double GetAttributeFloat (const CString &sName) const;
 		const CString &GetAttributeName (int iIndex) const { return m_Keywords.GetIdentifier(m_Attributes.GetKey(iIndex)); }
 		int GetAttributeTriState (const CString &sName) const;
@@ -189,3 +208,5 @@ class CEntityResolverList : public IXMLParserController
 ALERROR CreateXMLElementFromCommandLine (int argc, const char *argv[], CXMLElement **retpElement);
 ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<int> *pList);
 ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<DWORD> *pList);
+ALERROR ParseAttributeIntegerList (const CString& sValue, TArray<INT64>* pList);
+ALERROR ParseAttributeIntegerList (const CString& sValue, TArray<UINT64>* pList);
