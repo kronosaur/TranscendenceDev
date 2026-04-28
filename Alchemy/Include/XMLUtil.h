@@ -115,7 +115,7 @@ class CXMLElement
 		UINT32 GetAttributeUInt32 (const CString& sName) const { return strToUInt32(GetAttribute(sName), 0, NULL); }
 		UINT32 GetAttributeUInt32Default (const CString& sName, UINT32 uNull) const;
 		UINT32 GetAttributeUInt32Bounded (const CString& sName, UINT32 uMin, UINT32 uMax = 0xFFFF'FFFF, UINT32 iNull = 0) const;
-		bool GetAttributeUInt32Range (const CString &sName, UINT32 *retiLow, UINT32 *retiHigh, UINT32 iMin = 0, UINT32 iMax = 0xFFFF'FFFF'FFFF'FFFF, UINT32 iNullLow = 0, UINT32 iNullHigh = 0, bool bAllowInverted = false) const;
+		bool GetAttributeUInt32Range (const CString &sName, UINT32 *retiLow, UINT32 *retiHigh, UINT32 iMin = 0, UINT32 iMax = 0xFFFF'FFFF, UINT32 iNullLow = 0, UINT32 iNullHigh = 0, bool bAllowInverted = false) const;
 		INT64 GetAttributeInt64 (const CString& sName) const { return strToInt64(GetAttribute(sName), 0, NULL); }
 		INT64 GetAttributeInt64Default (const CString& sName, INT64 iNull) const;
 		INT64 GetAttributeInt64Bounded (const CString& sName, INT64 iMin, INT64 iMax = -1, INT64 iNull = 0) const;
@@ -124,10 +124,10 @@ class CXMLElement
 		UINT64 GetAttributeUInt64Default (const CString& sName, UINT64 uNull) const;
 		UINT64 GetAttributeUInt64Bounded (const CString& sName, UINT64 uMin, UINT64 uMax = 0xFFFF'FFFF'FFFF'FFFF, UINT64 uNull = 0) const;
 		bool GetAttributeUInt64Range (const CString &sName, UINT64 *retiLow, UINT64 *retiHigh, UINT64 iMin = 0, UINT64 iMax = 0xFFFF'FFFF'FFFF'FFFF, UINT64 iNullLow = 0, UINT64 iNullHigh = 0, bool bAllowInverted = false) const;
-		ALERROR GetAttributeIntegerList (const CString &sName, TArray<int> *pList) const { return ParseAttributeIntegerList(GetAttribute(sName), pList); }
-		ALERROR GetAttributeIntegerList (const CString &sName, TArray<DWORD> *pList) const { return ParseAttributeIntegerList(GetAttribute(sName), pList); }
-		ALERROR GetAttributeIntegerList (const CString& sName, TArray<INT64>* pList) const { return ParseAttributeIntegerList(GetAttribute(sName), pList); }
-		ALERROR GetAttributeIntegerList (const CString& sName, TArray<UINT64>* pList) const { return ParseAttributeIntegerList(GetAttribute(sName), pList); }
+		ALERROR GetAttributeIntegerList (const CString &sName, TArray<int> *pList) const;
+		ALERROR GetAttributeIntegerList (const CString &sName, TArray<DWORD> *pList) const;
+		ALERROR GetAttributeIntegerList (const CString& sName, TArray<INT64>* pList) const;
+		ALERROR GetAttributeIntegerList (const CString& sName, TArray<UINT64>* pList) const;
 		double GetAttributeFloat (const CString &sName) const;
 		const CString &GetAttributeName (int iIndex) const { return m_Keywords.GetIdentifier(m_Attributes.GetKey(iIndex)); }
 		int GetAttributeTriState (const CString &sName) const;

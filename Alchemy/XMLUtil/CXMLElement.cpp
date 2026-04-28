@@ -896,7 +896,7 @@ bool CXMLElement::GetAttributeInt64Range (const CString &sName, INT64 *retiLow, 
 
     //  Make sure we're in range
 
-    int iLow;
+    INT64 iLow;
     if (iValue == iNullLow)
         iLow = iValue;
     else if (iMax < iMin)
@@ -917,7 +917,7 @@ bool CXMLElement::GetAttributeInt64Range (const CString &sName, INT64 *retiLow, 
 
     //  Parse the next number
 
-    int iHigh;
+    INT64 iHigh;
     iValue = strParseInt64(pPos, 0, &pPos, &bNullValue);
     if (bNullValue)
         iHigh = iNullHigh;
@@ -1081,6 +1081,42 @@ bool CXMLElement::GetAttributeUInt64Range(const CString& sName, UINT64* retuLow,
 	*retuHigh = uHigh;
 	return (uLow != uHigh);
 	}
+
+//	GetAttributeIntegerList
+// 
+//	Appends a list of integers separated by commas
+//
+ALERROR CXMLElement::GetAttributeIntegerList(const CString& sName, TArray<int>* pList) const
+	{
+	return ParseAttributeIntegerList(GetAttribute(sName), pList);
+	}
+
+//	GetAttributeIntegerList
+// 
+//	Appends a list of integers separated by commas
+//
+ALERROR CXMLElement::GetAttributeIntegerList(const CString& sName, TArray<DWORD>* pList) const
+{
+	return ParseAttributeIntegerList(GetAttribute(sName), pList);
+}
+
+//	GetAttributeIntegerList
+// 
+//	Appends a list of integers separated by commas
+//
+ALERROR CXMLElement::GetAttributeIntegerList(const CString& sName, TArray<INT64>* pList) const
+{
+	return ParseAttributeIntegerList(GetAttribute(sName), pList);
+}
+
+//	GetAttributeIntegerList
+// 
+//	Appends a list of integers separated by commas
+//
+ALERROR CXMLElement::GetAttributeIntegerList(const CString& sName, TArray<UINT64>* pList) const
+{
+	return ParseAttributeIntegerList(GetAttribute(sName), pList);
+}
 
 int CXMLElement::GetAttributeTriState (const CString &sName) const
 

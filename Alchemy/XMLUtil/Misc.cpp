@@ -271,11 +271,11 @@ ALERROR CreateXMLElementFromCommandLine (int argc, const char *argv[], CXMLEleme
 	return NOERROR;
 	}
 
-ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<int> *pList)
-
 //	ParseAttributeIntegerList
 //
 //	Parses a string into an integer list
+//
+ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<int> *pList)
 
 	{
 	const char *pPos = sValue.GetPointer();
@@ -292,8 +292,7 @@ ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<int> *pList)
 		if (*pPos != '\0')
 			{
 			bool bNull;
-			int iInt;
-			iInt = strParseInt(pPos, 0, &pPos, &bNull);
+			int iInt = strParseInt32(pPos, 0, &pPos, &bNull);
 
 			//	If we have a valid integer then add it
 
@@ -307,11 +306,11 @@ ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<int> *pList)
 	return NOERROR;
 	}
 
-ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<DWORD> *pList)
-
 //	ParseAttributeIntegerList
 //
 //	Parses a string into an integer list
+//
+ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<DWORD> *pList)
 
 	{
 	const char *pPos = sValue.GetPointer();
@@ -328,8 +327,77 @@ ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<DWORD> *pList)
 		if (*pPos != '\0')
 			{
 			bool bNull;
-			DWORD dwInt;
-			dwInt = (DWORD)strParseInt(pPos, 0, &pPos, &bNull);
+			DWORD dwInt = strParseInt32(pPos, 0, &pPos, &bNull);
+
+			//	If we have a valid integer then add it
+
+			if (!bNull)
+				pList->Insert(dwInt);
+			else
+				break;
+			}
+		}
+
+	return NOERROR;
+	}
+
+//	ParseAttributeIntegerList
+//
+//	Parses a string into an integer list
+//
+ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<INT64> *pList)
+
+	{
+	const char *pPos = sValue.GetPointer();
+
+	while (*pPos != '\0')
+		{
+		//	Skip non-numbers
+
+		while (*pPos != '\0' && (*pPos < '0' || *pPos > '9') && *pPos != '-' && *pPos != '+')
+			pPos++;
+
+		//	Parse an integer
+
+		if (*pPos != '\0')
+			{
+			bool bNull;
+			INT64 iInt = strParseInt64(pPos, 0, &pPos, &bNull);
+
+			//	If we have a valid integer then add it
+
+			if (!bNull)
+				pList->Insert(iInt);
+			else
+				break;
+			}
+		}
+
+	return NOERROR;
+	}
+
+//	ParseAttributeIntegerList
+//
+//	Parses a string into an integer list
+//
+ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<UINT64> *pList)
+
+	{
+	const char *pPos = sValue.GetPointer();
+
+	while (*pPos != '\0')
+		{
+		//	Skip non-numbers
+
+		while (*pPos != '\0' && (*pPos < '0' || *pPos > '9') && *pPos != '-' && *pPos != '+')
+			pPos++;
+
+		//	Parse an integer
+
+		if (*pPos != '\0')
+			{
+			bool bNull;
+			UINT64 dwInt = strParseInt64(pPos, 0, &pPos, &bNull);
 
 			//	If we have a valid integer then add it
 

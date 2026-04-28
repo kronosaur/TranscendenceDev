@@ -310,12 +310,12 @@ Kernel::CString strToUpper (const Kernel::CString &sString);
 Kernel::CString strToXMLText (const Kernel::CString &sString, bool bInBody = false);
 Kernel::CString strTrimWhitespace (const Kernel::CString &sString, bool bLeading = true, bool bTrailing = true);
 Kernel::CString strWord (const Kernel::CString &sString, int iWordPos);
-int strToInt32(const Kernel::CString& sString, int iFailResult, bool* retbFailed = NULL);
-UINT32 strToUInt32(const Kernel::CString& sString, UINT32 iFailResult, bool* retbFailed = NULL);
-INT64 strToInt64(const Kernel::CString& sString, INT64 iFailResult, bool* retbFailed = NULL);
-UINT64 strToUInt64(const Kernel::CString& sString, UINT64 iFailResult, bool* retbFailed = NULL);
+int strToInt32 (const Kernel::CString& sString, int iFailResult, bool* retbFailed = NULL);
+UINT32 strToUInt32 (const Kernel::CString& sString, UINT32 iFailResult, bool* retbFailed = NULL);
+INT64 strToInt64 (const Kernel::CString& sString, INT64 iFailResult, bool* retbFailed = NULL);
+UINT64 strToUInt64 (const Kernel::CString& sString, UINT64 iFailResult, bool* retbFailed = NULL);
 
 //	DEPRECATED: use strToInt32 or strToUInt32 instead
-int strToInt(const Kernel::CString& sString, int iFailResult, bool* retbFailed = NULL);
+int strToInt (const Kernel::CString& sString, int iFailResult, bool* retbFailed = NULL);
 
 

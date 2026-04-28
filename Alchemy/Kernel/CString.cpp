@@ -2915,8 +2915,6 @@ int Kernel::strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, con
 
 	if (bHex)
 		{
-		DWORD dwInt = 0;
-
 		while (*pPos != '\0' 
 				&& ((*pPos >= '0' && *pPos <= '9') 
 					|| (*pPos >= 'a' && *pPos <='f')
