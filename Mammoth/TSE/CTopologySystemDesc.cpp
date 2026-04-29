@@ -158,7 +158,7 @@ ALERROR CTopologySystemDesc::InitFromXML (SDesignLoadCtx &LoadCtx, CXMLElement *
 
 	//	Initialize from the root element
 
-	m_dwSystemUNID = pDesc->GetAttributeInteger(UNID_ATTRIB);
+	m_dwSystemUNID = pDesc->GetAttributeUInt32(UNID_ATTRIB);
 	m_sName = pDesc->GetAttribute(NAME_ATTRIB);
 	m_iLevel = pDesc->GetAttributeIntegerBounded(LEVEL_ATTRIB, 1, MAX_SYSTEM_LEVEL, 0);
 	m_sAttributes = pDesc->GetAttribute(ATTRIBUTES_ATTRIB);

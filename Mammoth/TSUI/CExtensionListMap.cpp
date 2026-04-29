@@ -106,7 +106,7 @@ ALERROR CExtensionListMap::ReadDefault (CXMLElement *pEntry)
 //	Reads the adventure defaults from XML.
 
 	{
-	DWORD dwAdventure = (DWORD)pEntry->GetAttributeInteger(UNID_ATTRIB);
+	DWORD dwAdventure = (DWORD)pEntry->GetAttributeUInt32(UNID_ATTRIB);
 	bool bDebugMode = pEntry->GetAttributeBool(DEBUG_MODE_ATTRIB);
 
 	SEntry *pNewEntry = m_Map.SetAt(dwAdventure);
@@ -220,7 +220,7 @@ ALERROR CExtensionListMap::ReadOption (CXMLElement *pEntry)
 //	Reads the given XML element as an option.
 
 	{
-	DWORD dwExtension = (DWORD)pEntry->GetAttributeInteger(UNID_ATTRIB);
+	DWORD dwExtension = (DWORD)pEntry->GetAttributeUInt32(UNID_ATTRIB);
 	CString sOption = pEntry->GetAttribute(NAME_ATTRIB);
 	CString sValue = pEntry->GetAttribute(VALUE_ATTRIB);
 

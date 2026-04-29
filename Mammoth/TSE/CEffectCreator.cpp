@@ -214,7 +214,7 @@ ALERROR CEffectCreator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 	CString sEffectUNID = sUNID;
 	if (sEffectUNID.IsBlank())
 		{
-		DWORD dwUNID = pDesc->GetAttributeInteger(UNID_ATTRIB);
+		DWORD dwUNID = pDesc->GetAttributeUInt32(UNID_ATTRIB);
 		if (dwUNID)
 			sEffectUNID = strFromInt(dwUNID, false);
 		else

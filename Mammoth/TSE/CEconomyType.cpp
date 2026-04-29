@@ -401,7 +401,7 @@ ALERROR CCurrencyValueDesc::Parse (SDesignLoadCtx &Ctx, const CString &sDesc, co
 	if ((*pPos == '+' || *pPos == '-') && !Default.IsEmpty())
 		{
 		bool bFailed;
-		int iBonus = strToInt(sDesc, 0, &bFailed);
+		int iBonus = strToInt32(sDesc, 0, &bFailed);
 		if (bFailed || iBonus < -100)
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("Invalid currency adjustment: %s"), sDesc);
@@ -564,7 +564,7 @@ ALERROR CCurrencyValueDesc::Parse (SDesignLoadCtx &Ctx, const CString &sDesc, co
 		//	Load the value
 
 		bool bFailed;
-		retValue.SetValue(strToInt(sValue, 0, &bFailed));
+		retValue.SetValue(strToInt64(sValue, 0, &bFailed));
 		if (bFailed)
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("Invalid currency value: %s"), sValue);

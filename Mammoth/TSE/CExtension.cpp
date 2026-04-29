@@ -583,7 +583,7 @@ ALERROR CExtension::CreateExtensionFromRoot (const CString &sFilespec, CXMLEleme
 
 	CExtension *pExtension = new CExtension;
 	pExtension->m_sFilespec = sFilespec;
-	pExtension->m_dwUNID = pDesc->GetAttributeInteger(UNID_ATTRIB);
+	pExtension->m_dwUNID = pDesc->GetAttributeUInt32(UNID_ATTRIB);
 	if (pExtension->m_dwUNID == 0)
 		{
 		delete pExtension;

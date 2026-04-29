@@ -2457,8 +2457,8 @@ ALERROR CLibraryResolver::OnOpenTag (CXMLElement *pElement, CString *retsError)
 	{
 	if (strEquals(pElement->GetTag(), LIBRARY_TAG))
 		{
-		DWORD dwUNID = pElement->GetAttributeInteger(UNID_ATTRIB);
-		DWORD dwRelease = pElement->GetAttributeInteger(RELEASE_ATTRIB);
+		DWORD dwUNID = pElement->GetAttributeUInt32(UNID_ATTRIB);
+		DWORD dwRelease = pElement->GetAttributeUInt32(RELEASE_ATTRIB);
 		bool bOptional = pElement->GetAttributeBool(OPTIONAL_ATTRIB);
 
 		return AddLibrary(dwUNID, dwRelease, bOptional, retsError);
