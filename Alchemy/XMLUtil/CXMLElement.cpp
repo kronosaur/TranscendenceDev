@@ -265,12 +265,14 @@ bool CXMLElement::FindAttributeDouble (const CString &sName, double *retrValue) 
 	return true;
 	}
 
-bool CXMLElement::FindAttributeInteger (const CString &sName, int *retiValue) const
-
 //	FindAttributeInteger
 //
+//	Deprecated: use FindAttributeInt32/FindAttributeUInt32 instead
+// 
 //	If the attribute exists, returns TRUE and the attribute value.
 //	Otherwise, returns FALSE
+//
+bool CXMLElement::FindAttributeInteger (const CString &sName, int *retiValue) const
 
 	{
 	const CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
@@ -279,6 +281,74 @@ bool CXMLElement::FindAttributeInteger (const CString &sName, int *retiValue) co
 
 	if (retiValue)
 		*retiValue = strToInt(*pValue, 0, NULL);
+	return true;
+	}
+
+//	FindAttributeInt32
+// 
+//	If the attribute exists, returns TRUE and the attribute value.
+//	Otherwise, returns FALSE
+//
+bool CXMLElement::FindAttributeInt32 (const CString &sName, int* retiValue) const
+
+	{
+	const CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	if (pValue == NULL)
+		return false;
+
+	if (retiValue)
+		*retiValue = strToInt32(*pValue, 0, NULL);
+	return true;
+	}
+
+//	FindAttributeUInt32
+// 
+//	If the attribute exists, returns TRUE and the attribute value.
+//	Otherwise, returns FALSE
+//
+bool CXMLElement::FindAttributeUInt32 (const CString &sName, UINT32* retiValue) const
+
+	{
+	const CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	if (pValue == NULL)
+		return false;
+
+	if (retiValue)
+		*retiValue = strToUInt32(*pValue, 0, NULL);
+	return true;
+	}
+
+//	FindAttributeInt64
+// 
+//	If the attribute exists, returns TRUE and the attribute value.
+//	Otherwise, returns FALSE
+//
+bool CXMLElement::FindAttributeInt64(const CString& sName, INT64* retiValue) const
+
+	{
+	const CString* pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	if (pValue == NULL)
+		return false;
+
+	if (retiValue)
+		*retiValue = strToInt64(*pValue, 0, NULL);
+	return true;
+	}
+
+//	FindAttributeUInt64
+// 
+//	If the attribute exists, returns TRUE and the attribute value.
+//	Otherwise, returns FALSE
+//
+bool CXMLElement::FindAttributeUInt64 (const CString &sName, UINT64* retiValue) const
+
+	{
+	const CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	if (pValue == NULL)
+		return false;
+
+	if (retiValue)
+		*retiValue = strToUInt64(*pValue, 0, NULL);
 	return true;
 	}
 

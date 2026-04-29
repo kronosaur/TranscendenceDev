@@ -96,6 +96,10 @@ class CXMLElement
 		bool FindAttributeBool (const CString &sName, bool *retbValue = NULL) const;
 		bool FindAttributeDouble (const CString &sName, double *retrValue = NULL) const;
 		bool FindAttributeInteger (const CString &sName, int *retiValue = NULL) const;
+		bool FindAttributeInt32 (const CString &sName, INT32 *retiValue = NULL) const;
+		bool FindAttributeUInt32 (const CString &sName, UINT32 *retiValue = NULL) const;
+		bool FindAttributeInt64 (const CString &sName, INT64 *retiValue = NULL) const;
+		bool FindAttributeUInt64 (const CString &sName, UINT64 *retiValue = NULL) const;
 		CString GetAttribute (const CString &sName) const;
 		CString GetAttribute (int iIndex) const { return m_Attributes[iIndex]; }
 		bool GetAttributeBool (const CString &sName) const;
