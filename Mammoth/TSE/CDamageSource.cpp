@@ -463,6 +463,8 @@ void CDamageSource::OnObjDestroyed (CSpaceObject &ObjDestroyed)
 		if (!m_pSource->CanHitFriends())
 			m_dwFlags |= FLAG_CANNOT_HIT_FRIENDS;
 
+		//	LATER: Don't be so cheap and just add a DWORD member to store
+		//	the ID instead of converting the pointer to an ID and back again.
 		m_pSource = (CSpaceObject *)m_pSource->GetID();
 		m_dwFlags |= FLAG_OBJ_ID;
 		}

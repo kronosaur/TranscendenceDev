@@ -572,7 +572,7 @@ void CBaseShipAI::DebugPaintAnnotations (CG32bitImage &Dest, int x, int y, SView
 					int iFireAngle;
 					int iFacingAngle;
 					bool bAligned = m_pShip->IsWeaponAligned(devPrimaryWeapon,
-						(CSpaceObject *)pTarget,
+						const_cast<CSpaceObject*>(pTarget),
 						&iAimAngle,
 						&iFireAngle,
 						&iFacingAngle);

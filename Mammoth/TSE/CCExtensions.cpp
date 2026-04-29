@@ -12859,7 +12859,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 		case FN_ADD_TIMER_RECURRING:
 			{
 			int iTime = pArgs->GetElement(0)->GetIntegerValue();
-			CSpaceObject *pTarget = (CSpaceObject *)CreateObjFromItem(pArgs->GetElement(1));
+			CSpaceObject *pTarget = CreateObjFromItem(pArgs->GetElement(1));
 			if (pTarget == NULL)
 				return pCC->CreateNil();
 			CString sEvent = pArgs->GetElement(2)->GetStringValue();
@@ -12958,7 +12958,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 
 		case FN_CANCEL_TIMER:
 			{
-			CSpaceObject *pTarget = (CSpaceObject *)CreateObjFromItem(pArgs->GetElement(0));
+			CSpaceObject *pTarget = CreateObjFromItem(pArgs->GetElement(0));
 			if (pTarget == NULL)
 				return pCC->CreateNil();
 			CString sEvent = pArgs->GetElement(1)->GetStringValue();

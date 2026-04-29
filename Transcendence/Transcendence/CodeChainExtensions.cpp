@@ -720,10 +720,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 #define EXTENSIONS_COUNT		(sizeof(g_Extensions) / sizeof(g_Extensions[0]))
 
-inline CShip *GetShipArg (ICCItem *pArg) { return ((CSpaceObject *)(pArg->GetIntegerValue()))->AsShip(); }
-inline CStation *GetStationArg (ICCItem *pArg) { return (CStation *)pArg->GetIntegerValue(); }
+
 inline CDockScreen *GetDockScreenArg (CCodeChainCtx &CCX, ICCItem *pArg) { return (CCX.GetScreen() ? (CDockScreen *)CCX.GetScreen() : (CDockScreen *)pArg->GetIntegerValue()); }
-inline CArmorClass *GetArmorClassArg (ICCItem *pArg) { return (CArmorClass *)pArg->GetIntegerValue(); }
 inline CPlayerShipController *GetPlayerArg (ICCItem *pArg) { return (CPlayerShipController *)pArg->GetIntegerValue(); }
 
 CG32bitImage *GetCanvasArg (CEvalContext *pEvalCtx, ICCItem *pArgs, int iArg)
