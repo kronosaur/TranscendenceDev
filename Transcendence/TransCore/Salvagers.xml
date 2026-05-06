@@ -59,7 +59,7 @@
 		</ImageVariants>
 
 		<Ships>
-			<Ship	count="1"	class="&scSalvagerNomad;" orders="scavenge"		sovereign="&svSalvagers;"/>
+			<Ship	count="1"	class="&scSalvagerNomad;" orders="wait:time=1"		sovereign="&svSalvagers;"	eventHandler="&evSalvagerBehavior;"/>
 		</Ships>
 
 		<Items>
@@ -159,6 +159,157 @@
 					/>
 		</Interior>
 
+		<!-- Station functionality -->
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"98"
+				maxDist=		"3"
+				/>
+		
+		<Trade currency="credit">
+			<Sell	criteria="*U -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Buy	criteria="*DU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Buy	criteria="*DU -Illegal; -ID;"				priceAdj="50"/>
+			
+			<Refuel			criteria="f +BasicFuel; L:1-8;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-8;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a L:1-8;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-8;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-8;" priceAdj="100"/>
+		</Trade>
+		
+		<!-- Dock Screens -->
+		
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionBuyScrap" default="1">
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
+							</Action>
+
+							<Action id="actionSellScrap">
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
+							</Action>
+
+							<!-- To be implemented later
+							<Action id="actionCustomWork">
+								(if (objGetData gSource 'customIntroDone)
+									(scrShowScreen gScreen &dsTinkerCustomWork; {
+										criteria: "* +hasComponents:true; +tinkers;"
+										})
+									(scrShowPane gScreen "CustomWorkIntro")
+									)
+							</Action>-->
+
+							<Action id="actionDockServices">
+								(rpgDockServices gPlayerShip)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+						
+					<CustomWorkIntro descID="descCustomWorkIntro">
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(block Nil
+									(objSetData gSource 'customIntroDone True)
+									(scrShowPane gScreen "Default")
+									(scrShowScreen gScreen &dsTinkerCustomWork; {
+										criteria: "* +hasComponents:true; +tinkers;"
+										})
+									)
+							</Action>
+						</Actions>
+					</CustomWorkIntro>
+				</Panes>
+			</Main>
+
+			<Decon>
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(block (
+								; Figure out how much it would cost to make the ship immune to radiation
+								(cost (* 400 (shpGetArmorCount gPlayerShip)))
+								)
+
+								(if (geq (plyGetCredits gPlayer) cost)
+									(scrSetDescTranslate gScreen 'descDecon { cost:(fmtCurrency 'credit cost) })
+									(scrSetDescTranslate gScreen 'descDeconCantAfford)
+									)
+								(scrSetData gScreen 'deconCost cost)
+								(scrEnableAction gScreen 'actionDecon (geq (plyGetCredits gPlayer) cost))
+								)
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionDecon" default="1">
+								(block (
+									(cost (scrGetData gScreen 'deconCost))
+									(armorEnhanced 0)
+									)
+									;	Decontaminate
+									(plyCharge gPlayer cost)
+									(shpDecontaminate gPlayerShip)
+
+									;	Make immune
+									(objEnumItems gPlayerShip "aI" theItem
+										(block (result)
+											(setq result (shpEnhanceItem gPlayerShip theItem {
+												enhancement: "+immunity:radiation"
+												type: &itRadiationImmuneCoating;
+												}))
+
+											(switch
+												(or (eq result 0) (eq result 2) (eq result 6) (eq result 7))
+													(setq armorEnhanced (add armorEnhanced 1))
+												)
+											)
+										)
+
+									;	Compose the result
+									(switch
+										(= armorEnhanced (shpGetArmorCount gPlayerShip))
+											(scrSetData gScreen 'deconResult 'descDeconImmune)
+
+										(= armorEnhanced 0)
+											(scrSetData gScreen 'deconResult 'descDeconNotImmune)
+
+										(scrSetData gScreen 'deconResult 'descDeconPartialImmune)
+										)
+
+									(scrShowPane gScreen "DeconDone")
+									)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								(scrExitScreen gScreen 'forceUndock)
+							</Action>
+						</Actions>
+
+					</Default>
+
+					<DeconDone>
+						<OnPaneInit>
+							(scrSetDescTranslate gScreen (scrGetData gScreen 'deconResult))
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionContinue" default="1" cancel="1">
+								(scrShowScreen gScreen "Main")
+							</Action>
+						</Actions>
+					</DeconDone>
+				</Panes>
+			</Decon>
+		</DockScreens>
+
 		<!-- Image and Effects -->
 
 		<Image imageID="&rsSalvagerNomadHD;" imageWidth="184" imageHeight="184" rotationCount="120" rotationColumns="12" viewportRatio="0.02"/>
@@ -211,6 +362,298 @@
 			perception=			"4"
 			/>
 
+	</ShipClass>
+	
+<!-- BEHAVIORS -->
+
+	<ShipClass UNID="&evSalvagerBehavior;"
+			class=				"(Salvager Nomad behavior)"
+			virtual=			"true"
+			
+			attributes=			"behaviorClass"
+			>
+
+		<Properties>
+			<Variant id="lootedVar">
+				(cat '001000C4_ sourceID '_marked)
+			</Variant>
+			<Data id="001000C4_status">
+				'search
+			</Data>
+			<Data id="timeSetupShop">
+			</Data>
+			<Data id="customers">
+			</Data>
+			<DynamicData id="searchRadius">
+				(block
+					(
+						(centerMarker (sysCreateMarker 'tempMeasuringMarker ()))
+						(farthestObject (sysFindObject centerMarker "t R"))
+						(farthestDistance (sysVectorDistance (objGetPos farthestObject) (objGetPos centerMarker)))
+					)
+					(objRemove centerMarker)
+					farthestDistance
+				)
+			</DynamicData>
+			<DynamicGlobal id="customerPurchaseQuantity">
+				(random 5 15)
+			</DynamicGlobal>
+		</Properties>
+
+		<Events>
+			<onCreate>
+				(objFireEvent gSource 'ev.behavior)
+			</onCreate>
+			<onOrdersCompleted>
+				(objFireEvent gSource 'ev.behavior)
+			</onOrdersCompleted>
+			<onObjDocked>
+				(if (and (objGetData aObjDocked '001000C4_customer) (= aDockTarget gSource))
+					(block
+						(
+							(currentWares (objGetItems gSource "U"))
+							(numWares (count currentWares))
+							(itemsMoved 0)
+							(targetPurchaseAmount (typ@ gType 'customerPurchaseQuantity))
+						)
+						(if currentWares
+							(enum currentWares (ls itemsMoved targetPurchaseAmount) theItem
+								(block
+									(
+										(quantity (min (itmGetCount theItem) targetPurchaseAmount))
+									)
+									(objAddItem aObjDocked theItem quantity)
+									(objRemoveItem gSource theItem quantity)
+									(setq itemsMoved (+ itemsMoved quantity))
+									)
+								)
+							)
+						(shpOrder aObjDocked 'wait 180)
+						(shpOrder aObjDocked 'gate)
+						)
+					)
+			</onObjDocked>
+			<ev.behavior>
+				(block
+					(
+						(statusVar '001000C4_status)
+						(sourceID (objGetID gSource))
+
+						;	salvager nomad clans dont coordinate so they
+						;	will waste time looking at wrecks other nomads
+						;	have looked at
+
+						(lootedVar (obj@ gSource 'lootedVar))
+
+						;	This is the number of wares at which they will set up shop
+						
+						(maxWares 50)
+
+						;	state tracking vars
+
+						(state (obj@ gSource statusVar))
+						(setState (lambda (newState) (objSet@ gSource statusVar newState)))
+						(checkBehaviorIn (lambda (ticks) (sysAddObjTimerEvent ticks gSource 'ev.behavior)))
+						(dockedAt (shpGetDockObj gSource))
+
+						;	our loot for sale - we calculate this later if needed
+
+						allLoot
+					)
+					(switch
+
+						;	if we are searching for lootable wrecks...
+						(eq state 'search)
+							(block
+								(
+									(allWrecks (rpgFindWrecksToSalvage gSource lootedVar))
+								)
+								(if allWrecks
+									;	Begin salvaging nearby wrecks
+									(block
+										(
+											(theWreck (random allWrecks))
+										)
+										;	Cancel current oreders
+										(shpCancelOrders gSource)
+
+										;	We are now in the salvage state
+										;	Need to set the correct state and order
+										(obj@ gSource statusVar 'salvage)
+										(shpOrder gSource 'dock theWreck)
+										)
+									;	Otherwise keep searching
+									(block
+										(
+											(thePos (sysVectorRandom () (obj@ gSource 'farthestDistance)))
+										)
+										(shpOrder gSource 'gotoPos thePos)
+										)
+									)
+								)
+						
+						;	if we are actively salvaging something
+						(eq state 'salvage)
+							(switch
+								;	If we are docked with something that is lootable, loot it
+								(and dockedAt
+									(not (objMatches dockedAt gSource "sTA"))
+									(setq allLoot (objGetItems gSource "*~mf U"))
+									)
+									(block ()
+										(enum allLoot theItem (block () (objRemoveItem dockedAt theItem) (objAddItem gSource theItem)))
+										(setState 'search)
+										)
+								;	If we are docked at an empty wreck or something that
+								;	we shouldnt be - this can potentially happen due to
+								;	other scripts or mods - we need to undock and go back to searching
+								dockedAt
+								)
+							(block
+								(
+									;	Get all item stacks
+									(currentWares (objGetItems gSource "U"))
+									(numWares (count currentWares))
+									remainingWrecks
+								)
+								(if (gr numWares maxWares)
+									;	If we have enough wares, we setup shop
+									(block ()
+										;	Prepare for shop state
+
+										(setState 'shop)
+										(checkBehaviorIn 1800)
+
+										;	Clear any existing orders
+
+										(shpCancelOrders gSource)
+
+										;	Hold position to be a shop
+
+										(shpOrder gSource 'hold )
+										)
+									)
+								)
+
+						;	if we are currently a shop
+						(eq state 'shop)
+							(block
+								(
+									(currentWares (objGetItems gSource "U"))
+									(numWares (count currentWares))
+									(timeAsShop (- (unvGetTick) (obj@ gSource 'timeSetupShop)))
+								)
+								(if (or (ls timeAsShop 0) (gr timeAsShop 18000) (= numWares 0))
+									(if (gr numWares 0)
+
+										;	Send ships to cleanup inventory
+
+										(block
+											(
+												(customerIds (obj@ gSource 'customers))
+												(customers (map customerIds 'excludeNil customerId (objGetObjectByID customerId)))
+												(customersAlive (map customers 'excludeNil customer (if (objMatches customer "SA") customer)))
+											)
+											(if customersAlive
+												;	we wait until they have been destroyed or left the system or bought all our goods
+												(checkBehaviorIn 1800)
+												;	Otherwise we need to create customers to buy our wares
+												(block
+													(
+														(nearestGate (sysFindObject gSource "G N"))
+														(newCustomers (map (make 'sequence 5) 'excludeNil i (sysCreateShip &tbCommPrivateCrafts; nearestGate &svIndependent;)))
+														(newCustomerIds (map newCustomers newCustomer (objGetID newCustomer)))
+													)
+
+													;	Register for events so we can tell when they dock
+
+													(objRegisterForEvents gSource newCustomers)
+
+													;	setup the customers
+
+													(enum newCustomers newCustomer
+														(block ()
+															;	Clear any existing orders
+															(shpCancelOrders newCustomer)
+
+															;	Tag them as a customer
+
+															(objSetData newCustomer '001000C4_customer 1)
+
+															;	First have them spread out a little bit
+
+															(shpOrder newCustomer 'approach (sysVectorRandom (objGetPos newCustomer) 100 20))
+
+															;	Then have them go shop
+
+															(shpOrder newCustomer 'dock gSource)
+															)
+														)
+													(objSet@ gSource 'customers newCustomerIds)
+													)
+												)
+											)
+
+										;	otherwise resume searching for new wares
+
+										(block ()
+											(setState 'search)
+											(shpCancelOrders gSource)
+											(shpOrder gSource 'wait 1)
+											)
+										)
+									;	otherwise we remain a shop
+									(block ()
+										(checkBehaviorIn 1800)
+										)
+									)
+								)
+
+						;	If we dont have a valid status, we need to re-initialize
+						(block ()
+							(setState 'search)
+							(shpCancelOrders gSource)
+							(shpOrder gSource 'wait 1)
+							(objSet@ gSource 'timeSetupShop ())
+							)
+						)
+
+					;	If we're docked at an object...
+					(if (and dockedAt
+							(objMatches dockedAt gSource "sTA +populated +salvagerBazaar")
+							
+							; Compose a list of all loot on board that the station
+							; might want to buy from us.
+							)
+
+						;	To do - implement shop code
+						
+						;	We loot wrecks and process the goods
+						(if (and (not (objMatches dockedAt "sTA"))
+							
+							; Compose a list of all loot on board that the station
+							; might want to buy from us.
+							
+							(setq allLoot (filter (objGetItems gSource "*~mf U") theItem
+								(objGetBuyPrice dockedAt theItem)
+								))
+							)
+							(block Nil
+								(enum allLoot theItem (objRemoveItem gSource theItem))
+								(enum allLoot theItem (objAddItem dockedAt theItem))
+								)
+
+							;	Otherwise we docked at something random
+							;	we dont loot non-wreck objects
+							()
+							)
+						)
+						
+					; If we were docked at an object that we just looted, then destroy the object
+					(rpgImplementScuttleSalvagedWreck gSource dockedAt lootedVar)
+					)
+			</ev.behavior>
+		</Events>
 	</ShipClass>
 
 <!-- RESOURCES -->
