@@ -46,7 +46,9 @@ void GenerateTypeTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		//	Get the name
 
-		CString sName = pType->GetDataField(FIELD_NAME);
+		CCodeChainCtx CCCtx = CCodeChainCtx(*g_pUniverse);
+
+		CString sName = pType->GetProperty(CCCtx, FIELD_NAME)->GetStringValue();
 		if (*sName.GetASCIIZPointer() == '(')
 			sName = strSubString(sName, 1, -1);
 

@@ -53,7 +53,9 @@ void GenerateTradeTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		//	Get the name
 
-		CString sName = pType->GetDataField(FIELD_NAME);
+		CCodeChainCtx CCCtx = CCodeChainCtx(*g_pUniverse);
+
+		CString sName = pType->GetProperty(CCCtx, FIELD_NAME)->GetStringValue();
 		if (*sName.GetASCIIZPointer() == '(')
 			sName = strSubString(sName, 1, -1);
 
@@ -103,9 +105,11 @@ void PrintTradeDesc (CDesignType *pType, CTradingDesc *pTrade)
 
 		//	Print line
 
+		CCodeChainCtx CCCtx = CCodeChainCtx(*g_pUniverse);
+
 		printf("%d\t%s\t%s\t%s\t%d\n",
 			pType->GetLevel(),
-			(LPSTR)pType->GetDataField(FIELD_NAME),
+			(LPSTR)pType->GetProperty(CCCtx, FIELD_NAME)->GetStringValue(),
 			(LPSTR)CTradingDesc::ServiceToString(Info.iService),
 			(LPSTR)sCriteria,
 			Info.iPriceAdj

@@ -272,6 +272,8 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 			CItem NULL_ITEM;
 			CItemCtx ItemCtx(NULL_ITEM);
 
+			CCodeChainCtx CCCtx = CCodeChainCtx(*g_pUniverse);
+
 			for (int i = 0; i < Sorted.GetCount(); i++)
 				{
 				const SSystemInfo &SystemEntry = AllSystems[Sorted[i]];
@@ -284,7 +286,7 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 					printf("%d\t%s\t%s\t%.2f\t%.2f\n",
 							SystemEntry.iLevel,
 							SystemEntry.sName.GetASCIIZPointer(),
-							ItemType.GetDataField(FIELD_NAME).GetASCIIZPointer(),
+							ItemType.GetProperty(CCCtx, FIELD_NAME)->GetStringValue().GetASCIIZPointer(),
 							(double)iItemCount / (double)iSystemSample,
 							(double)ItemType.GetValue(ItemCtx, true) * iItemCount / (double)iSystemSample);
 					}

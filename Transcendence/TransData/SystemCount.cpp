@@ -130,6 +130,8 @@ void GenerateSystemCount (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	//	Output all rows
 
+	CCodeChainCtx CCCtx = CCodeChainCtx(*g_pUniverse);
+
 	for (i = 0; i < NodeTable.GetCount(); i++)
 		{
 		for (j = 0; j < NodeTable[i].Table.GetCount(); j++)
@@ -156,7 +158,7 @@ void GenerateSystemCount (CUniverse &Universe, CXMLElement *pCmdLine)
 						}
 					else
 						{
-						CString sValue = pSystemType->GetDataField(Cols[k]);
+						CString sValue = pSystemType->GetProperty(CCCtx, Cols[k])->GetStringValue();
 						printf("\t%s", sValue.GetASCIIZPointer());
 						}
 					}

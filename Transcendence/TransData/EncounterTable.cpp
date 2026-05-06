@@ -86,8 +86,10 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		//	Get the category and name
 
-		CString sCategory = pType->GetDataField(FIELD_CATEGORY);
-		CString sName = pType->GetDataField(FIELD_NAME);
+		CCodeChainCtx CCCtx = CCodeChainCtx(*g_pUniverse);
+
+		CString sCategory = pType->GetProperty(CCCtx, FIELD_CATEGORY)->GetStringValue();
+		CString sName = pType->GetProperty(CCCtx, FIELD_NAME)->GetStringValue();
 		if (*sName.GetASCIIZPointer() == '(')
 			sName = strSubString(sName, 1, -1);
 

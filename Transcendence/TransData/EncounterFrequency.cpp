@@ -224,25 +224,27 @@ void OutputFreq (const CSystemCreateStats &Stats, const SOptions &Options)
 		printf("\t%s", Options.Cols[i].GetASCIIZPointer());
 	printf("\n");
 
+	CCodeChainCtx CCCtx = CCodeChainCtx(*g_pUniverse);
+
 	for (int i = 0; i < EncounterFreq.GetCount(); i++)
 		{
 		CStationType *pEncounterType = EncounterFreq.GetKey(i);
 		int iAveWhole = EncounterFreq[i].iTotalChance / EncounterFreq[i].iCount;
 		int iAveFrac = 1000 * (EncounterFreq[i].iTotalChance % EncounterFreq[i].iCount) / EncounterFreq[i].iCount;
-
-		printf("%d\t%s\t%s\t%d\t%d.%03d\t%d\t%d",
+		
+			printf("%d\t%s\t%s\t%d\t%d.%03d\t%d\t%d",
 				pEncounterType->GetLevel(),
-				pEncounterType->GetDataField(CONSTLIT("category")).GetASCIIZPointer(),
+				pEncounterType->GetProperty(CCCtx, CONSTLIT("category"))->GetStringValue().GetASCIIZPointer(),
 				pEncounterType->GetNounPhrase().GetASCIIZPointer(),
 				EncounterFreq[i].iCount,
 				iAveWhole,
 				iAveFrac,
 				EncounterFreq[i].iMinChance,
 				EncounterFreq[i].iMaxChance);
-
+		
 		for (int j = 0; j < Options.Cols.GetCount(); j++)
 			{
-			CString sValue = pEncounterType->GetDataField(Options.Cols[j]);
+			CString sValue = pEncounterType->GetProperty(CCCtx, Options.Cols[j])->GetStringValue();
 			printf("\t%s", sValue.GetASCIIZPointer());
 			}
 
