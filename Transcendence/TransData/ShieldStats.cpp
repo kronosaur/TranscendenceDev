@@ -39,11 +39,13 @@ void GenerateShieldStats (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	//	Get the stats for the shield
 
-	Metric rHP = (Metric)pItem->GetDataFieldInteger(FIELD_HP);
-	Metric rHPRegenPerTick = pItem->GetDataFieldInteger(FIELD_REGEN) / 1000.0;
+	CCodeChainCtx CCCtx = CCodeChainCtx(*g_pUniverse);
+
+	Metric rHP = pItem->GetProperty(CCCtx, FIELD_HP)->GetDoubleValue();
+	Metric rHPRegenPerTick = pItem->GetProperty(CCCtx, FIELD_REGEN)->GetDoubleValue() / 1000.0;
 
 	int iDamageAdj[damageCount];
-	CString sDamageAdj = pItem->GetDataField(CONSTLIT("damageAdj"));
+	CString sDamageAdj = pItem->GetProperty(CCCtx, CONSTLIT("damageAdj"))->GetStringValue();
 	const char *pPos = sDamageAdj.GetASCIIZPointer();
 	int iCount = 0;
 	while (iCount < damageCount)
@@ -80,9 +82,11 @@ void GenerateShieldStats (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		//	Get the data for the weapon
 
-		int iFireDelay = pWeapon->GetDataFieldInteger(CONSTLIT("fireDelay"));
-		Metric rAverageDamage = pWeapon->GetDataFieldInteger(CONSTLIT("averageDamage")) / 1000.0;
-		int iDamageType = pWeapon->GetDataFieldInteger(CONSTLIT("damageType"));
+		CCodeChainCtx CCCtx = CCodeChainCtx(*g_pUniverse);
+
+		int iFireDelay = pWeapon->GetProperty(CCCtx, CONSTLIT("fireDelay"))->GetIntegerValue();
+		Metric rAverageDamage = pWeapon->GetProperty(CCCtx, CONSTLIT("averageDamage"))->GetDoubleValue() / 1000.0;
+		int iDamageType = pWeapon->GetProperty(CCCtx, CONSTLIT("damageType"))->GetIntegerValue();
 		if (iDamageType < 0 || iDamageType >= damageCount)
 			iDamageType = 0;
 

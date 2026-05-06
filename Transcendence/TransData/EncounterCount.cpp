@@ -115,6 +115,8 @@ void GenerateEncounterCount (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	//	Output all rows
 
+	CCodeChainCtx CCCtx = CCodeChainCtx(*g_pUniverse);
+
 	for (i = 0; i < NodeTable.GetCount(); i++)
 		{
 		for (j = 0; j < NodeTable[i].Table.GetCount(); j++)
@@ -131,12 +133,11 @@ void GenerateEncounterCount (CUniverse &Universe, CXMLElement *pCmdLine)
 
 				CSovereign *pSovereign = pEncounterType->GetControllingSovereign();
 				CString sSovereign = (pSovereign ? pSovereign->GetNounPhrase() : CONSTLIT("(Unknown)"));
-
 				printf("%d\t%s\t0x%08x\t%s\t%s\t%s\t%d.%03d",
 						NodeTable[i].iLevel,
 						NodeTable[i].sNodeID.GetASCIIZPointer(),
 						NodeTable[i].Table.GetKey(j),
-						pEncounterType->GetDataField(CONSTLIT("category")).GetASCIIZPointer(),
+						pEncounterType->GetProperty(CCCtx, CONSTLIT("category"))->GetStringValue().GetASCIIZPointer(),
 						sSovereign.GetASCIIZPointer(),
 						pEncounterType->GetNounPhrase().GetASCIIZPointer(),
 						iCount,
@@ -144,7 +145,7 @@ void GenerateEncounterCount (CUniverse &Universe, CXMLElement *pCmdLine)
 
 				for (l = 0; l < Cols.GetCount(); l++)
 					{
-					CString sValue = pEncounterType->GetDataField(Cols[l]);
+					CString sValue = pEncounterType->GetProperty(CCCtx, Cols[l])->GetStringValue();
 					printf("\t%s", sValue.GetASCIIZPointer());
 					}
 

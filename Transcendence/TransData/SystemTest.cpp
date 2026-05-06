@@ -346,6 +346,8 @@ void CSystemTestGenerator::PrintSystemItemStats (const TSortMap<CString, SSystem
 	{
 	printf("Level\tSystem\tItem\tCount\n");
 
+	CCodeChainCtx CCCtx = CCodeChainCtx(*g_pUniverse);
+
 	for (int i = 0; i < AllSystems.GetCount(); i++)
 		{
 		const SSystemInfo SystemEntry = AllSystems[i];
@@ -357,7 +359,7 @@ void CSystemTestGenerator::PrintSystemItemStats (const TSortMap<CString, SSystem
 			printf("%d\t%s\t%s\t%.2f\n",
 					SystemEntry.iLevel,
 					SystemEntry.sName.GetASCIIZPointer(),
-					Entry.pType->GetDataField(FIELD_NAME).GetASCIIZPointer(),
+					Entry.pType->GetProperty(CCCtx, FIELD_NAME)->GetStringValue().GetASCIIZPointer(),
 					(double)Entry.iTotalCount / (double)iSampleCount);
 			}
 		}
