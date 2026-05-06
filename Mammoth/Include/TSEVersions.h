@@ -1010,7 +1010,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					221;
 //			(itmFind ...)
 //				See criteria update in (itmMatches)
 //			(itmGetMassKg item)
-//				Returns item mass in kg
+//				Returns item mass in kg (real)
 //			(itmGetMass item)
 //				DEPRECATED: (synonym for itemGetVolume, for actually getting the mass use itmGetMassKg instead)
 //			(itmGetVolume item)

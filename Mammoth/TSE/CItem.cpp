@@ -1602,13 +1602,13 @@ int CItem::GetLevel (void) const
 
 //	GetMass
 //
-//	Returns the mass of a single unit of the item type.
+//	Returns the mass in tons of a single unit of the item type.
 //
-int CItem::GetMassKg (void) const
+Metric CItem::GetMass () const
 
 	{
 	CItemCtx ItemCtx(*this);
-	return m_pItemType->GetMassKg(ItemCtx);
+	return m_pItemType->GetMass(ItemCtx);
 	}
 
 int CItem::GetMaxCharges (void) const

@@ -112,7 +112,7 @@ inline int CDifferentiatedItem::GetLevel () const
 	return m_Item.GetLevel();
 	}
 
-inline int CDifferentiatedItem::GetMassKg () const
+inline Metric CDifferentiatedItem::GetMassKg () const
 	{
 	return m_Item.GetMassKg();
 	}
