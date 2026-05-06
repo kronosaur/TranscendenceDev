@@ -199,7 +199,7 @@ bool IDockScreenDisplay::GetDisplayOptions (SInitCtx &Ctx, SDisplayOptions *retO
 		else
 			{
 			retOptions->BackgroundDesc.iType = EDockScreenBackground::image;
-			retOptions->BackgroundDesc.dwImageID = strToInt(sBackgroundID, 0);
+			retOptions->BackgroundDesc.dwImageID = strToDWORD(sBackgroundID, 0);
 			}
 		}
 

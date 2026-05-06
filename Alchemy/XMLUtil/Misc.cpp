@@ -292,8 +292,11 @@ ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<int> *pList)
 		if (*pPos != '\0')
 			{
 			bool bNull;
+			bool bOverflowed;
 			int iInt;
-			iInt = strParseInt(pPos, 0, &pPos, &bNull);
+			iInt = strParseInt(pPos, 0, &pPos, &bNull, &bOverflowed);
+			if (bOverflowed)
+				kernelDebugLogPattern(CONSTLIT("WARNING: %n numeral in Integer list \"%s\" overflowed"), pList->GetCount(), sValue);
 
 			//	If we have a valid integer then add it
 
@@ -328,8 +331,11 @@ ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<DWORD> *pList)
 		if (*pPos != '\0')
 			{
 			bool bNull;
-			DWORD dwInt;
-			dwInt = (DWORD)strParseInt(pPos, 0, &pPos, &bNull);
+			bool bOverflowed;
+			int dwInt;
+			dwInt = strParseDWORD(pPos, 0, &pPos, &bNull, &bOverflowed);
+			if (bOverflowed)
+				kernelDebugLogPattern(CONSTLIT("WARNING: %n numeral in DWORD list \"%s\" overflowed"), pList->GetCount(), sValue);
 
 			//	If we have a valid integer then add it
 

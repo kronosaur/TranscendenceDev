@@ -265,20 +265,44 @@ bool CXMLElement::FindAttributeDouble (const CString &sName, double *retrValue) 
 	return true;
 	}
 
-bool CXMLElement::FindAttributeInteger (const CString &sName, int *retiValue) const
-
 //	FindAttributeInteger
 //
 //	If the attribute exists, returns TRUE and the attribute value.
 //	Otherwise, returns FALSE
+//
+bool CXMLElement::FindAttributeInteger (const CString &sName, int *retiValue) const
 
 	{
 	const CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
 	if (pValue == NULL)
 		return false;
 
+	bool bOverflowed;
+
 	if (retiValue)
-		*retiValue = strToInt(*pValue, 0, NULL);
+		*retiValue = strToInt(*pValue, 0, NULL, &bOverflowed);
+
+	if (bOverflowed)
+		kernelDebugLogPattern("WARNING: attribute \"%s\" integer value \"%s\" is out of range", sName, *pValue);
+
+	return true;
+	}
+
+//	FindAttributeDWORD
+//
+//	If the attribute exists, returns TRUE and the attribute value.
+//	Otherwise, returns FALSE
+//
+bool CXMLElement::FindAttributeDWORD (const CString &sName, DWORD *retdwValue) const
+
+	{
+	const CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	if (pValue == NULL)
+		return false;
+
+	if (retdwValue)
+		*retdwValue = strToDWORD(*pValue, 0, NULL);
+
 	return true;
 	}
 
@@ -390,6 +414,72 @@ double CXMLElement::GetAttributeFloat (const CString &sName) const
 	return strToDouble(GetAttribute(sName), 0.0);
 	}
 
+//	GetAttributeDWORD
+//
+//	Returns a dword attribute
+//
+DWORD CXMLElement::GetAttributeDWORD (const CString &sName) const
+
+	{
+	return strToDWORD(GetAttribute(sName), 0, NULL);
+	}
+
+//	GetAttributeDWORDDefault
+//
+//	Returns an integer attribute
+//  Return iNull if not found
+//
+DWORD CXMLElement::GetAttributeDWORDDefault (const CString &sName, DWORD dwNull) const
+
+	{
+	CString sValue;
+	if (FindAttribute(sName, &sValue))
+		{
+		bool bFailed;
+		DWORD dwValue = strToDWORD(sValue, dwNull, &bFailed);
+		if (bFailed)
+			return dwNull;
+		else
+			return dwValue;
+		}
+	else
+		return dwNull;
+	}
+
+//	GetAttributeIntegerBounded
+//
+//	Returns an integer, insuring that it is in range
+//
+DWORD CXMLElement::GetAttributeDWORDBounded (const CString &sName, DWORD dwMin, DWORD dwMax, DWORD dwNull) const
+
+	{
+	CString sValue;
+	if (FindAttribute(sName, &sValue))
+		{
+		bool bFailed;
+		DWORD dwValue = strToDWORD(sValue, dwNull, &bFailed);
+		if (bFailed)
+			return dwNull;
+
+		//	The null value is always valid
+
+		if (dwValue == dwNull)
+			return dwValue;
+
+		//	If iMax is less than iMin, then there is no maximum
+
+		else if (dwMax < dwMin)
+			return Max(dwValue, dwMin);
+
+		//	Bounded
+
+		else
+			return Max(Min(dwValue, dwMax), dwMin);
+		}
+	else
+		return dwNull;
+	}
+
 //	GetAttributeInteger
 //
 //	Returns an integer attribute
@@ -397,7 +487,12 @@ double CXMLElement::GetAttributeFloat (const CString &sName) const
 int CXMLElement::GetAttributeInteger (const CString &sName) const
 
 	{
-	return strToInt(GetAttribute(sName), 0, NULL);
+	bool bOverflowed;
+	CString sValue = GetAttribute(sName);
+	int iValue = strToInt(sValue, 0, NULL, &bOverflowed);
+	if (bOverflowed)
+		kernelDebugLogPattern(CONSTLIT("Integer attribute \"%s\" value \"%s\" is out of range."), sName, sValue);
+	return iValue;
 	}
 
 //	GetAttributeIntegerDefault
@@ -412,7 +507,12 @@ int CXMLElement::GetAttributeIntegerDefault (const CString &sName, int iNull) co
 	if (FindAttribute(sName, &sValue))
 		{
 		bool bFailed;
-		int iValue = strToInt(sValue, iNull, &bFailed);
+		bool bOverflowed;
+		int iValue = strToInt(sValue, iNull, &bFailed, &bOverflowed);
+
+		if (bOverflowed)
+			kernelDebugLogPattern(CONSTLIT("Integer attribute \"%s\" value \"%s\" is out of range."), sName, sValue);
+
 		if (bFailed)
 			return iNull;
 		else
@@ -496,7 +596,10 @@ bool CXMLElement::GetAttributeIntegerRange (const CString &sName, int *retiLow, 
 
     const char *pPos = sValue.GetASCIIZPointer();
     bool bNullValue;
-	int iValue = strParseInt(pPos, 0, &pPos, &bNullValue);
+	bool bOverflowed;
+	int iValue = strParseInt(pPos, 0, &pPos, &bNullValue, &bOverflowed);
+	if (bOverflowed)
+		kernelDebugLogPattern(CONSTLIT("WARNING: Integer range \"%s\" first value overflowed"), sValue);
     if (bNullValue)
         {
         *retiLow = iNullLow;
@@ -528,7 +631,9 @@ bool CXMLElement::GetAttributeIntegerRange (const CString &sName, int *retiLow, 
     //  Parse the next number
 
     int iHigh;
-    iValue = strParseInt(pPos, 0, &pPos, &bNullValue);
+    iValue = strParseInt(pPos, 0, &pPos, &bNullValue, &bOverflowed);
+	if (bOverflowed)
+		kernelDebugLogPattern(CONSTLIT("WARNING: Integer range \"%s\" second value overflowed"), sValue);
     if (bNullValue)
         iHigh = iNullHigh;
     else if (iValue == iNullHigh)

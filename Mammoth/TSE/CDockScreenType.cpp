@@ -104,7 +104,7 @@ ALERROR CDockScreenTypeRef::Bind (SDesignLoadCtx &Ctx, CXMLElement *pLocalScreen
 	if (!m_sUNID.IsBlank())
 		{
 		bool bNotANumber;
-		DWORD dwUNID = (DWORD)strToInt(m_sUNID, 0, &bNotANumber);
+		DWORD dwUNID = strToDWORD(m_sUNID, 0, &bNotANumber);
 
 		//	If the UNID is not a number, then we're looking for a local screen
 

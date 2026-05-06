@@ -330,7 +330,7 @@ void CSpaceObjectCriteria::ParseSubExpression (const char *pPos)
 			case 'J':
 				sParam = ParseCriteriaParam(&pPos);
 				if (!sParam.IsBlank())
-					m_dwSovereignUNID = strToInt(sParam, 0);
+					m_dwSovereignUNID = strToDWORD(sParam, 0);
 				else
 					{
 					m_bSourceSovereignOnly = true;

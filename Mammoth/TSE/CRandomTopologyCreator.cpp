@@ -427,10 +427,10 @@ ALERROR CRandomTopologyCreator::Create (STopologyCreateCtx &Ctx, CTopology &Topo
 	Template.sFromLocationCriteria = pXML->GetAttribute(GATE_LOCATION_CRITERIA_ATTRIB);
 	Template.sToLocationCriteria = Template.sFromLocationCriteria;
 
-	Template.dwFromGateType = pXML->GetAttributeInteger(GATE_TYPE_ATTRIB);
+	Template.dwFromGateType = pXML->GetAttributeDWORD(GATE_TYPE_ATTRIB);
 	Template.dwToGateType = Template.dwFromGateType;
 	
-	Template.dwFromBeaconType = pXML->GetAttributeInteger(BEACON_TYPE_ATTRIB);
+	Template.dwFromBeaconType = pXML->GetAttributeDWORD(BEACON_TYPE_ATTRIB);
 	Template.dwToBeaconType = Template.dwFromBeaconType;
 
 	Template.rgbColor = LoadARGBColor(pXML->GetAttribute(LINK_COLOR_ATTRIB));

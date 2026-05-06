@@ -1137,7 +1137,7 @@ CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDescFromFullUNID (const CString 
 
 	//	Get the UNID of the type
 
-	DWORD dwUNID = (DWORD)strParseInt(pPos, 0, &pPos);
+	DWORD dwUNID = strParseDWORD(pPos, 0, &pPos);
 	if (dwUNID == 0)
 		return NULL;
 
@@ -1861,7 +1861,7 @@ CItemType *CWeaponFireDesc::GetWeaponType (CItemType **retpLauncher) const
 
 	//	Get the weapon UNID and the ordinal
 
-	DWORD dwUNID = (DWORD)strParseInt(pPos, 0, &pPos);
+	DWORD dwUNID = strParseDWORD(pPos, 0, &pPos);
 
 	//	Get the type
 

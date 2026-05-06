@@ -1361,7 +1361,7 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 			&& strEquals(pChild->GetTag(), STATION_TAG)
 			&& rExclusionRadius < 0.0)
 		{
-		pStationToPlace = pCtx->GetUniverse().FindStationType((DWORD)pChild->GetAttributeInteger(TYPE_ATTRIB));
+		pStationToPlace = pCtx->GetUniverse().FindStationType(pChild->GetAttributeDWORD(TYPE_ATTRIB));
 		}
 
 	//	Generate a list of all locations that match the given criteria.
@@ -2080,7 +2080,7 @@ ALERROR CreateRandomStationFromTable (SSystemCreateCtx &Ctx, const CXMLElement &
 
 		//	Parse the station type
 
-		const CStationType *pStationType = Ctx.GetUniverse().FindStationType((DWORD)Entry.GetAttributeInteger(TYPE_ATTRIB));
+		const CStationType *pStationType = Ctx.GetUniverse().FindStationType(Entry.GetAttributeDWORD(TYPE_ATTRIB));
 		if (!pStationType)
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("Unknown station type: %s"), Entry.GetAttribute(TYPE_ATTRIB));
@@ -2609,7 +2609,7 @@ ALERROR CreateSpaceEnvironment (SSystemCreateCtx *pCtx, CXMLElement *pDesc, cons
 
 	//	Figure out what tile we need here
 
-	CSpaceEnvironmentType *pEnvType = pCtx->GetUniverse().FindSpaceEnvironment(pDesc->GetAttributeInteger(TYPE_ATTRIB));
+	CSpaceEnvironmentType *pEnvType = pCtx->GetUniverse().FindSpaceEnvironment(pDesc->GetAttributeDWORD(TYPE_ATTRIB));
 	if (pEnvType == NULL)
 		{
 		pCtx->sError = CONSTLIT("Invalid space environment type");
@@ -4814,7 +4814,7 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, const CXMLElement *pDe
 
 	//	Get the type of the station
 
-	pStationType = pCtx->GetUniverse().FindStationType((DWORD)pDesc->GetAttributeInteger(TYPE_ATTRIB));
+	pStationType = pCtx->GetUniverse().FindStationType(pDesc->GetAttributeDWORD(TYPE_ATTRIB));
 	if (pStationType == NULL)
 		{
 		pCtx->sError = strPatternSubst(CONSTLIT("Unknown station type: %s"), pDesc->GetAttribute(TYPE_ATTRIB));

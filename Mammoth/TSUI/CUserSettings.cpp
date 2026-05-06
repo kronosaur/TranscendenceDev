@@ -244,7 +244,8 @@ void CUserSettings::SetValue (SOption *pOption, const CString &sValue, bool bSet
 			break;
 
 		case optionInteger:
-			pOption->iValue = strToInt(sValue, 0);
+			//	We must handle both DWORD (UNID) and signed int options at this time
+			pOption->iValue = strToCCInt(sValue, 0);
 			break;
 
 		case optionString:

@@ -144,11 +144,12 @@ ALERROR CHTTPMessage::InitFromStream (IReadStream &Stream, CString *retsError, b
 		return NOERROR;
 
 	//	If we have a content length, then see if it is 0
+	//	Content length is not permitted to be below 0 (RFC 9110)
 
 	CString sLength;
 	DWORD dwLength = 0;
 	if (FindHeader(CONSTLIT("Content-Length"), &sLength) 
-			&& (dwLength = strToInt(sLength, 0)) == 0)
+			&& (dwLength = strToDWORD(sLength, 0)) == 0)
 		return NOERROR;
 
 	//	Chunked encoding?
@@ -359,7 +360,7 @@ bool CHTTPMessage::ParseHTTPStartLine (IReadStream &Stream, CString *retsError)
 		if (*pPos == '\0')
 			return false;
 
-		m_dwStatusCode = strToInt(CString(pStart, (pPos - pStart)), 0);
+		m_dwStatusCode = strToDWORD(CString(pStart, (pPos - pStart)), 0);
 
 		//	Next is the status message
 

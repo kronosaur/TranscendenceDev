@@ -2274,7 +2274,7 @@ ICCItem *fnItemInfo (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			else if (pValue->IsIdentifier())
 				{
 				bool bFailed;
-				int iResult = strToInt(pValue->GetStringValue(), 0, &bFailed);
+				int iResult = strToCCInt(pValue->GetStringValue(), 0, &bFailed);
 				if (!bFailed)
 					pResult = pCC->CreateInteger(iResult);
 				else
