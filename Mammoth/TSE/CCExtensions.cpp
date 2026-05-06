@@ -6004,7 +6004,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			break;
 
 		case FN_ITEM_MASS:
-			pResult = pCC->CreateInteger(Item.GetMassKg());
+			pResult = pCC->CreateDouble(Item.GetMassKg());
 			break;
 
 		case FN_ITEM_VOLUME:

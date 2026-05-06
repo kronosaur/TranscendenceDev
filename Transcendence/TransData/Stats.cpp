@@ -29,7 +29,7 @@ void GenerateArmorTable (CUniverse &Universe, CXMLElement *pCmdLine)
 				pItem->GetLevel(), 
 				sName.GetASCIIZPointer(), 
 				Item.GetTradePrice(NULL, true), 
-				Item.GetMassKg(),
+				mathRound(Item.GetMassKg()),
 				iHP);
 
 		//	For each damage type, compute the adjusted hit points of the armor
