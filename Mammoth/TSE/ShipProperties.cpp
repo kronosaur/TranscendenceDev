@@ -46,6 +46,8 @@
 #define PROPERTY_MAX_COUNTER					CONSTLIT("maxCounter")
 #define PROPERTY_MAX_FUEL						CONSTLIT("maxFuel")
 #define PROPERTY_MAX_FUEL_EXACT					CONSTLIT("maxFuelExact")
+#define PROPERTY_MAX_REACTOR_POWER				CONSTLIT("maxReactorPower")
+#define PROPERTY_MAX_REACTOR_POWER_DISPLAY		CONSTLIT("maxReactorPowerDisplay")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 #define PROPERTY_MAX_INTERIOR_HP				CONSTLIT("maxInteriorHP")
 #define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
@@ -430,6 +432,19 @@ ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName)
 		int iMaxHP;
 		m_Interior.GetHitPoints(*this, m_pClass->GetInteriorDesc(), &iHP, &iMaxHP);
 		return CC.CreateInteger(iMaxHP);
+		}
+
+	else if (strEquals(sName, PROPERTY_MAX_REACTOR_POWER))
+		return CC.CreateDouble(GetClass().GetHullDesc().GetMaxReactorPower() * 100.0);
+
+	else if (strEquals(sName, PROPERTY_MAX_REACTOR_POWER_DISPLAY))
+		{
+		Metric rMaxReactorPower = GetClass().GetHullDesc().GetMaxReactorPower();
+		if (rMaxReactorPower <= 0)
+			return CC.CreateDouble(-1.0);
+		if (rMaxReactorPower >= GetUniverse().GetDesignTypeStatsCache().rMaxReactorPower)
+			return CC.CreateDouble(-1.0);
+		return CC.CreateDouble(rMaxReactorPower * 100.0);
 		}
 
 	else if (strEquals(sName, PROPERTY_OPEN_DOCKING_PORT_COUNT))

@@ -353,6 +353,10 @@ ALERROR CReactorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWOR
 		m_fNoFuel = pDesc->GetAttributeBool(NO_FUEL_ATTRIB);
 		}
 
+	//	Update the universe cache
+
+	g_pUniverse->GetDesignTypeStatsCacheMutable()->UpdateMaxReactorPower(m_iMaxPower);
+
 	//	Load the fuel criteria
 
 	CString sCriteria;

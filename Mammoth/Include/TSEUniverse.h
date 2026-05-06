@@ -358,6 +358,13 @@ class CUniverse
 			TArray<CExtension *> Extensions;
 			};
 
+		struct SDesignStatsCache
+			{
+			Metric rMaxReactorPower = 0.0;				//	Largest reactor in 100kWs
+
+			void UpdateMaxReactorPower(Metric rPower) { rMaxReactorPower = rPower > rMaxReactorPower ? rPower : rMaxReactorPower; }
+			};
+
 		enum ENamedFonts
 			{
 			fontMapLabel =				0,	//	Font for map labels
@@ -435,6 +442,8 @@ class CUniverse
 		const CEconomyType &GetCreditCurrency (void) const;
 		const CDebugOptions &GetDebugOptions (void) const { return m_DebugOptions; }
 		ICCItemPtr GetDebugProperty (const CString &sProperty) const;
+		const SDesignStatsCache GetDesignTypeStatsCache() { return m_DesignTypeStatsCache; }
+		SDesignStatsCache* GetDesignTypeStatsCacheMutable() { return &m_DesignTypeStatsCache; }
 		const CEconomyType &GetDefaultCurrency (void) const { return GetCurrentAdventureDesc().GetDefaultCurrency(); }
 		CEffectCreator &GetDefaultFireEffect (DamageTypes iDamage);
 		CEffectCreator &GetDefaultHitEffect (DamageTypes iDamage);
@@ -698,6 +707,7 @@ class CUniverse
 		CPerformanceCounters m_PerformanceCounters;
 		CFractalTextureLibrary m_FractalTextureLibrary;
 		CGImageCache m_DynamicImageLibrary;
+		SDesignStatsCache m_DesignTypeStatsCache;
 		SViewportAnnotations m_ViewportAnnotations;
 		EUpdateSpeeds m_iLastUpdateSpeed = updateNone;
 		DWORD m_dwFrame = 0;

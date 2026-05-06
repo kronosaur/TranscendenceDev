@@ -1034,6 +1034,8 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					221;
 //					'maxArmorClassName		Name of the maximum armor class
 //					'maxArmorMass			DEPRECATED: use maxArmorClassName instead (or maxArmorClass if you need to support legacy ships)
 //					'maxCargoSpace			Total cargo space in cubic meters (previously tons)
+//					'maxReactorPower		Largest reactor that can be fit on this ship (in kW)
+//					'maxReactorPowerDisplay Largest reactor that can be fit on this ship (in kW), or <0.0 if larger than the biggest reactor type bound
 //					'stdArmorClass			LEGACY SUPPORT: Standard armor class in "compatibility tons" (double)
 //					'stdArmorClassName		Name of the standard armor class
 //					'stdArmorMass			DEPRECATED: use stdArmorClassName instead (or stdArmorClass if you need to support legacy ships)
