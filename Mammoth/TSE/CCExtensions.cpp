@@ -2247,6 +2247,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'maxFuel -> in He3 fuel rods\n"
 			"   'maxFuelExact -> 2500 = 1 He3 fuel rod\n"
 			"   'maxSpeed -> in % c\n"
+			"   'maxReactorPower -> ship reactor limit in kW\n"
+			"   'maxReactorPowerDisplay -> ship reactor limit in kW (or negative, if higher than the largest reactor item)\n"
 			"   'openDockingPortCount\n"
 			"   'operatingSpeed -> 'emergency | 'full | 'half | 'quarter\n"
 			"   'playerBlacklisted\n"
