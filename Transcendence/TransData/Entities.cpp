@@ -164,7 +164,7 @@ bool NextEntity (const char **ioPos, const char *pEnd, CString *retsName, DWORD 
 			return false;
 
 		pPos++;
-		*retdwValue = strParseInt(pPos, 0, &pPos);
+		*retdwValue = strParseDWORD(pPos, 0, &pPos);
 		if (*retdwValue != 0)
 			{
 			*ioPos = pPos;

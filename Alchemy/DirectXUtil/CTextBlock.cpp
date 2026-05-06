@@ -608,7 +608,7 @@ bool CRTFParser::ParseBlock (const STextFormatDesc &InitFormat, CString *retsErr
 							if (*sParam.GetASCIIZPointer() == '#')
 								dwRGB = (DWORD)strToCOLORREF(sParam);
 							else
-								dwRGB = (DWORD)strToInt(sParam, 0);
+								dwRGB = strToDWORD(sParam, 0);
 
 							Format.rgbColor = CG32bitPixel(GetRValue(dwRGB), GetGValue(dwRGB), GetBValue(dwRGB));
 							}

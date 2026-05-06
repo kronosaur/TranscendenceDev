@@ -425,7 +425,8 @@ ICCItem *CreateResultFromDataField (CCodeChain &CC, const CString &sValue)
 		const char *pPos = sValue.GetASCIIZPointer();
 		const char *pEnd;
 		bool bNull;
-		int iResult = strParseInt(pPos, 0, &pEnd, &bNull);
+		//	We allow overflow because the datafield may contain an UNID
+		int iResult = strParseInt(pPos, 0, PARSE_ALLOW_OVERFLOW, &pEnd, &bNull);
 		if (!bNull && *pEnd == '\0')
 			return CC.CreateInteger(iResult);
 		else
@@ -637,7 +638,7 @@ const CEconomyType *GetEconomyTypeFromString (const CString &sCurrency)
 	{
 	//	If we have an UNID, then look up
 
-	DWORD dwUNID = strToInt(sCurrency, 0);
+	DWORD dwUNID = strToDWORD(sCurrency, 0);
 	if (dwUNID)
 		return CEconomyType::AsType(g_pUniverse->FindDesignType(dwUNID));
 

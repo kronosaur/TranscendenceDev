@@ -602,10 +602,10 @@ void CMultiverseModel::SetUpgradeVersion (const CJSONValue &Entry)
 		return;
 		}
 
-	m_UpgradeVersion.dwProductVersion = (((ULONG64)strToInt(Parts[0], 0)) << 48)
-			| (((ULONG64)strToInt(Parts[1], 0)) << 32)
-			| (((ULONG64)strToInt(Parts[2], 0)) << 16)
-			| (((ULONG64)strToInt(Parts[3], 0)));
+	m_UpgradeVersion.dwProductVersion = (((ULONG64)strToDWORD(Parts[0], 0)) << 48)
+			| (((ULONG64)strToDWORD(Parts[1], 0)) << 32)
+			| (((ULONG64)strToDWORD(Parts[2], 0)) << 16)
+			| (((ULONG64)strToDWORD(Parts[3], 0)));
 	}
 
 void CMultiverseModel::SetUsername (const CString &sUsername)

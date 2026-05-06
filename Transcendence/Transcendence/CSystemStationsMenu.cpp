@@ -113,7 +113,7 @@ void CSystemStationsMenu::OnAniCommand (const CString &sID, const CString &sEven
 
 		//	Highlight the selected object on the map.
 
-		HighlightObject(*pSystem, strToInt(sObjID, 0));
+		HighlightObject(*pSystem, strToDWORD(sObjID, 0));
 		}
 	}
 
@@ -140,7 +140,7 @@ void CSystemStationsMenu::SetAsDestination (void)
 
 	//	Get the object
 
-	CSpaceObject *pObj = pSystem->FindObject(strToInt(sObjID, 0));
+	CSpaceObject *pObj = pSystem->FindObject(strToDWORD(sObjID, 0));
 	if (!pObj)
 		return;
 
@@ -212,7 +212,7 @@ bool CSystemStationsMenu::Show (const RECT &rcRect, const CString &sID)
 	CString sObjID = m_pList->GetPropertyString(PROP_SELECTION_ID);
 	if (!sObjID.IsBlank())
 		{
-		HighlightObject(*pSystem, strToInt(sObjID, 0));
+		HighlightObject(*pSystem, strToDWORD(sObjID, 0));
 		}
 
 	return true;

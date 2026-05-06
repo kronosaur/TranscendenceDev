@@ -221,7 +221,7 @@ ALERROR DiceRange::LoadFromXML (const CString &sAttrib, int iDefault, CString *r
 		//	Now parse the sides
 
 		m_iFaces = strParseInt(pPos, -1, &pPos, NULL);
-		if (m_iFaces == -1)
+		if (m_iFaces < 0)
 			return ERR_FAIL;
 
 		//	Finally, add any bonus
@@ -317,7 +317,7 @@ bool DiceRange::LoadIfValid (const CString &sAttrib, DiceRange *retValue)
 		//	Now parse the sides
 
 		iFaces = strParseInt(pPos, -1, &pPos, NULL);
-		if (iFaces == -1)
+		if (iFaces < 0)
 			return false;
 
 		//	Finally, add any bonus
@@ -1784,7 +1784,7 @@ CG32bitPixel LoadRGBColor (const CString &sString, CG32bitPixel rgbDefault)
 
 	else
 		{
-		DWORD dwValue1 = strParseInt(pPos, 0, &pPos);
+		DWORD dwValue1 = strParseDWORD(pPos, 0, &pPos);
 
 		//	Skip delimiter, if any
 
@@ -1797,7 +1797,7 @@ CG32bitPixel LoadRGBColor (const CString &sString, CG32bitPixel rgbDefault)
 		//	See if we have more.
 
 		bool bNotFound;
-		DWORD dwValue2 = strParseInt(pPos, 0, &pPos, &bNotFound);
+		DWORD dwValue2 = strParseDWORD(pPos, 0, &pPos, &bNotFound);
 
 		//	If not, then we've only got a single value, so we split it into bytes.
 
@@ -1816,7 +1816,7 @@ CG32bitPixel LoadRGBColor (const CString &sString, CG32bitPixel rgbDefault)
 
 		//	Last value
 
-		DWORD dwValue3 = strParseInt(pPos, 0, &pPos);
+		DWORD dwValue3 = strParseDWORD(pPos, 0, &pPos);
 
 		//	Compose
 
@@ -1854,7 +1854,7 @@ CG32bitPixel LoadARGBColor (const CString &sString, CG32bitPixel rgbDefault)
 		{
 		//	Alpha or entire ARGB DWORD
 
-		DWORD dwValue1 = strParseInt(pPos, 0, &pPos);
+		DWORD dwValue1 = strParseDWORD(pPos, 0, &pPos);
 
 		//	Skip delimiter, if any
 
@@ -1867,7 +1867,7 @@ CG32bitPixel LoadARGBColor (const CString &sString, CG32bitPixel rgbDefault)
 		//	See if we have more. (red)
 
 		bool bNotFound;
-		DWORD dwValue2 = strParseInt(pPos, 0, &pPos, &bNotFound);
+		DWORD dwValue2 = strParseDWORD(pPos, 0, &pPos, &bNotFound);
 
 		//	If not, then we've only got a single value, so we split it into bytes.
 
@@ -1886,7 +1886,7 @@ CG32bitPixel LoadARGBColor (const CString &sString, CG32bitPixel rgbDefault)
 
 		//	Next value (green)
 
-		DWORD dwValue3 = strParseInt(pPos, 0, &pPos);
+		DWORD dwValue3 = strParseDWORD(pPos, 0, &pPos);
 
 		//	Skip delimiter, if any
 
@@ -1898,7 +1898,7 @@ CG32bitPixel LoadARGBColor (const CString &sString, CG32bitPixel rgbDefault)
 
 		//	Last value (blue)
 
-		DWORD dwValue4 = strParseInt(pPos, 0, &pPos);
+		DWORD dwValue4 = strParseDWORD(pPos, 0, &pPos);
 
 		//	Compose
 
@@ -1944,7 +1944,7 @@ ALERROR LoadUNID (SDesignLoadCtx &Ctx, const CString &sString, DWORD *retdwUNID,
 
 	else
 		{
-		*retdwUNID = strToInt(sString, 0);
+		*retdwUNID = strToDWORD(sString, 0);
 
 		//	Must be a valid non-zero number
 
@@ -2293,8 +2293,8 @@ Metric ParseDistance (const CString &sValue, Metric rDefaultScale)
 	//	First parse the number
 
 	const char *pPos = sValue.GetASCIIZPointer();
-	int iValue = strParseInt(pPos, 0, &pPos);
-	if (iValue <= 0)
+	Metric rValue = strParseDouble(pPos, 0, &pPos, NULL);
+	if (rValue <= 0)
 		return 0.0;
 
 	//	See if we have units
@@ -2303,7 +2303,7 @@ Metric ParseDistance (const CString &sValue, Metric rDefaultScale)
 		pPos++;
 
 	if (*pPos == '\0')
-		return iValue * rDefaultScale;
+		return rValue * rDefaultScale;
 
 	const char *pStart = pPos;
 	while (*pPos != '\0' && !strIsWhitespace(pPos))
@@ -2311,17 +2311,17 @@ Metric ParseDistance (const CString &sValue, Metric rDefaultScale)
 
 	CString sUnits(pStart, (int)(pPos - pStart));
 	if (strEquals(sUnits, CONSTLIT("px")))
-		return iValue * g_KlicksPerPixel;
+		return rValue * g_KlicksPerPixel;
 	else if (strEquals(sUnits, CONSTLIT("ls"))
 			|| strEquals(sUnits, CONSTLIT("light-second"))
 			|| strEquals(sUnits, CONSTLIT("light-seconds")))
-		return iValue * LIGHT_SECOND;
+		return rValue * LIGHT_SECOND;
 	else if (strEquals(sUnits, CONSTLIT("lm"))
 			|| strEquals(sUnits, CONSTLIT("light-minute"))
 			|| strEquals(sUnits, CONSTLIT("light-minutes")))
-		return iValue * LIGHT_MINUTE;
+		return rValue * LIGHT_MINUTE;
 	else if (strEquals(sUnits, CONSTLIT("au")))
-		return iValue * g_AU;
+		return rValue * g_AU;
 	else
 		return 0.0;
 	}
@@ -2551,7 +2551,7 @@ void ParseUNIDList (const CString &sList, DWORD dwFlags, TArray<DWORD> *retList)
 		if (dwFlags & PUL_FLAG_HEX)
 			dwUNID = (DWORD)strParseIntOfBase(List[i].GetASCIIZPointer(), 16, 0);
 		else
-			dwUNID = (DWORD)strToInt(List[i], 0);
+			dwUNID = strToDWORD(List[i], 0);
 
 		if (dwUNID != 0)
 			retList->Insert(dwUNID);

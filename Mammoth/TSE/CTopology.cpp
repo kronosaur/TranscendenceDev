@@ -660,19 +660,19 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 
 	//	Get bi-directional gate overrides
 	
-	DWORD dwGateType = pGateDesc->GetAttributeInteger(TYPE_GATE_ATTRIB);
-	DWORD dwBeaconType = pGateDesc->GetAttributeInteger(TYPE_BEACON_ATTRIB);
+	DWORD dwGateType = pGateDesc->GetAttributeDWORD(TYPE_GATE_ATTRIB);
+	DWORD dwBeaconType = pGateDesc->GetAttributeDWORD(TYPE_BEACON_ATTRIB);
 
 	//	Populate the From and To overrides if present
 
 	CXMLElement *pFromDesc = pGateDesc->GetContentElementByTag(STARGATE_FROM_TAG);
 	if (pFromDesc)
 		{
-		GateDesc.dwFromGateType = pFromDesc->GetAttributeInteger(TYPE_GATE_ATTRIB);
+		GateDesc.dwFromGateType = pFromDesc->GetAttributeDWORD(TYPE_GATE_ATTRIB);
 		if (GateDesc.dwFromGateType == 0)
 			GateDesc.dwFromGateType = dwGateType;
 
-		GateDesc.dwFromBeaconType = pFromDesc->GetAttributeInteger(TYPE_BEACON_ATTRIB);
+		GateDesc.dwFromBeaconType = pFromDesc->GetAttributeDWORD(TYPE_BEACON_ATTRIB);
 		if (GateDesc.dwFromBeaconType == 0)
 			GateDesc.dwFromBeaconType = dwBeaconType;
 
@@ -695,11 +695,11 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 	CXMLElement* pToDesc = pGateDesc->GetContentElementByTag(STARGATE_TO_TAG);
 	if (pToDesc)
 		{
-		GateDesc.dwToGateType = pToDesc->GetAttributeInteger(TYPE_GATE_ATTRIB);
+		GateDesc.dwToGateType = pToDesc->GetAttributeDWORD(TYPE_GATE_ATTRIB);
 		if (GateDesc.dwToGateType == 0)
 			GateDesc.dwToGateType = dwGateType;
 
-		GateDesc.dwToBeaconType = pToDesc->GetAttributeInteger(TYPE_BEACON_ATTRIB);
+		GateDesc.dwToBeaconType = pToDesc->GetAttributeDWORD(TYPE_BEACON_ATTRIB);
 		if (GateDesc.dwToBeaconType == 0)
 			GateDesc.dwToBeaconType = dwBeaconType;
 

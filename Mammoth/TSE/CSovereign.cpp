@@ -623,7 +623,7 @@ void CSovereign::InitRelationships (void)
 
 			else if (pRelDesc->FindAttribute(SOVEREIGN_ATTRIB, &sTarget))
 				{
-				CSovereign *pTarget = GetUniverse().FindSovereignUnbound(strToInt(sTarget, 0));
+				CSovereign *pTarget = GetUniverse().FindSovereignUnbound(strToDWORD(sTarget, 0));
 				if (pTarget == NULL)
 					{
 					::kernelDebugLogPattern("[%08x]: Unknown sovereign: %s.", GetUNID(), sTarget);
@@ -697,7 +697,7 @@ void CSovereign::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 		for (i = 0; i < m_pInitialRelationships->GetContentElementCount(); i++)
 			{
 			CXMLElement *pRelDesc = m_pInitialRelationships->GetContentElement(i);
-			CSovereign *pTarget = GetUniverse().FindSovereign(pRelDesc->GetAttributeInteger(SOVEREIGN_ATTRIB));
+			CSovereign *pTarget = GetUniverse().FindSovereign(pRelDesc->GetAttributeDWORD(SOVEREIGN_ATTRIB));
 			if (pTarget)
 				retTypesUsed->SetAt(pTarget->GetUNID(), true);
 			}

@@ -787,7 +787,7 @@ bool CTopologyNode::HasSpecialAttribute (const CString &sAttrib) const
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_SYSTEM_TYPE))
 		{
-		DWORD dwUNID = strToInt(strSubString(sAttrib, SPECIAL_SYSTEM_TYPE.GetLength()), 0xffffffff);
+		DWORD dwUNID = strToDWORD(strSubString(sAttrib, SPECIAL_SYSTEM_TYPE.GetLength()), 0xffffffff);
 		return (dwUNID == m_SystemUNID);
 		}
 	else

@@ -313,7 +313,7 @@ class CDeviceClass
 		Metric GetAmmoItemPropertyDouble (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty);
 		ItemCategories GetCategory (void) const { return (m_iSlotCategory == itemcatNone ? GetImplCategory() : m_iSlotCategory); }
 		CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
-		int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
+		int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToCCInt(sValue, 0, NULL); else return 0; }
 		int GetInstallCost (CItemCtx &ItemCtx);
 		CItemType *GetItemType (void) const { return m_pItemType; }
 		inline int GetLevel (void) const;

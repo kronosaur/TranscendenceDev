@@ -340,7 +340,7 @@ DWORD CVirtualKeyData::GetKey (const CString &sKey)
 
 	//	See if this is a hex code
 
-	DWORD dwVirtKey = ::strToInt(sKey, INVALID_VIRT_KEY);
+	DWORD dwVirtKey = ::strToDWORD(sKey, INVALID_VIRT_KEY);
 	if (dwVirtKey != INVALID_VIRT_KEY)
 		return dwVirtKey;
 

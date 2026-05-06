@@ -770,7 +770,8 @@ COrderDesc COrderDesc::ParseFromString (const CString &sValue)
 
 		else if (strIsDigit(pPos))
 			{
-			DWORD dwData1 = strParseInt(pPos, 0, &pPos);
+			//	This value is never negative
+			DWORD dwData1 = strParseDWORD(pPos, 0, &pPos);
 
 			while (*pPos != '\0' && *pPos != ':')
 				pPos++;
@@ -778,7 +779,8 @@ COrderDesc COrderDesc::ParseFromString (const CString &sValue)
 			if (*pPos == ':')
 				{
 				pPos++;
-				DWORD dwData2 = strParseInt(pPos, 0);
+				//	This value could potentially be negative
+				DWORD dwData2 = strParseDWORD(pPos, 0, PARSE_ALLOW_OVERFLOW);
 				return COrderDesc(iOrder, NULL, dwData1, dwData2);
 				}
 			else

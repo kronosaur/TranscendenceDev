@@ -891,7 +891,7 @@ void SelectByCriteria (SItemTableCtx &Ctx, const CString &sCriteria, TArray<CIte
 
 bool SelectByItemTable (SItemTableCtx &Ctx, const CString &sTable, int iLevel, TArray<CItemType *> *retList)
 	{
-	DWORD dwUNID = strToInt(sTable, 0);
+	DWORD dwUNID = strToDWORD(sTable, 0);
 	if (dwUNID == 0)
 		{
 		dwUNID = Ctx.pUniverse->GetExtensionCollection().GetEntityValue(sTable);

@@ -2455,34 +2455,41 @@ double Kernel::strParseDouble (const char *pStart, double rNullResult, const cha
 	return atof(szBuffer);
 	}
 
-int Kernel::strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, const char **retpEnd, bool *retbNullValue)
-
-//	strParseInt
+//	strParseWholeNumber
+// 
+// 	Function that parses any int safely (handles overflow)
+// 	and returns it within any appropriate type
+// 
+// 	Returns a bool expressing if a valid Int was found
 //
-//	pStart: Start parsing. Skips any leading whitespace
-//	iNullResult: If there are no valid numbers, returns this value
-//	retpEnd: Returns the character at which we stopped parsing
-//	retbNullValue: Returns TRUE if there are no valid numbers.
-
+bool Kernel::strParseWholeNumber (
+	const char* pStart,
+	DWORD dwFlags,
+	const char** retpEnd,
+	int* retiInt,
+	bool* retbIntOverflowed,
+	DWORD* retdwInt,
+	bool* retbDWORDOverflowed)
 	{
-	const char *pPos;
-	BOOL bNegative;
-	BOOL bFoundNumber;
-	BOOL bHex;
-	int iInt;
+	const char* pPos = pStart;
+	bool bNegative = false;
+	bool bFoundNumber = false;
+	bool bHex = dwFlags & PARSE_RAW_HEX;
+	bool bExpectSeparators = dwFlags & PARSE_THOUSAND_SEPARATOR;
+	bool bAllowOverflow = dwFlags & PARSE_ALLOW_OVERFLOW;
+	bool bOverflowed = false;
+	DWORD64 qwInt = 0;
 
-	bool bExpectSeparators = ((dwFlags & PARSE_THOUSAND_SEPARATOR) ? true : false);
+	//	Zero out any returns in case we shortcircuit
 
-	//	Preset
-
-	if (retbNullValue)
-		*retbNullValue = false;
-
-	pPos = pStart;
-	bNegative = FALSE;
-	bFoundNumber = FALSE;
-	bHex = FALSE;
-	iInt = 0;
+	if (retiInt)
+		*retiInt = 0;
+	if (retbIntOverflowed)
+		*retbIntOverflowed = false;
+	if (retdwInt)
+		*retdwInt = 0;
+	if (retbDWORDOverflowed)
+		*retbDWORDOverflowed = false;
 
 	//	Skip whitespace
 
@@ -2493,13 +2500,10 @@ int Kernel::strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, con
 
 	if (*pPos == '\0')
 		{
-		if (retbNullValue)
-			*retbNullValue = true;
-
 		if (retpEnd)
 			*retpEnd = pPos;
 
-		return iNullResult;
+		return false;
 		}
 
 	//	If negative, remember it
@@ -2513,8 +2517,10 @@ int Kernel::strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, con
 		pPos++;
 
 	//	See if this is a hex number
+	//		We skip this check if we are parsing raw hex
+	//		This happens with things like ARGB color codes, eg #FF7FA0FF
 
-	if (*pPos == '0')
+	if (!bHex && *pPos == '0')
 		{
 		pPos++;
 		bFoundNumber = TRUE;
@@ -2533,30 +2539,34 @@ int Kernel::strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, con
 
 	if (bHex)
 		{
-		DWORD dwInt = 0;
-
 		while (*pPos != '\0' 
-				&& ((*pPos >= '0' && *pPos <= '9') 
-					|| (*pPos >= 'a' && *pPos <='f')
-					|| (*pPos >= 'A' && *pPos <= 'F')))
+			&& ((*pPos >= '0' && *pPos <= '9') 
+				|| (*pPos >= 'a' && *pPos <='f')
+				|| (*pPos >= 'A' && *pPos <= 'F')))
 			{
+			if (qwInt > 0x0fff'ffff'ffff'ffff)
+				bOverflowed = true;
+
+			qwInt *= 16;
 			if (*pPos >= '0' && *pPos <= '9')
-				dwInt = 16 * dwInt + (*pPos - '0');
+				qwInt += *pPos - '0';
 			else if (*pPos >= 'A' && *pPos <= 'F')
-				dwInt = 16 * dwInt + (10 + (*pPos - 'A'));
+				qwInt += 10 + *pPos - 'A';
 			else
-				dwInt = 16 * dwInt + (10 + (*pPos - 'a'));
+				qwInt += 10 + *pPos - 'a';
 
 			pPos++;
 			}
-
-		iInt = (int)dwInt;
 		}
 	else
 		{
 		while (*pPos != '\0' && *pPos >= '0' && *pPos <= '9')
 			{
-			iInt = 10 * iInt + (*pPos - '0');
+			if (qwInt > 0x1999'9999'9999'9999 || (qwInt == 0x1999'9999'9999'9999 && *pPos > '5'))
+				bOverflowed = true;
+
+			qwInt *= 10;
+			qwInt += *pPos - '0';
 			pPos++;
 			bFoundNumber = TRUE;
 
@@ -2565,28 +2575,100 @@ int Kernel::strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, con
 			}
 		}
 
-	//	Done?
+	//	Short circuit if nothing found
 
 	if (!bFoundNumber)
 		{
-		if (retbNullValue)
-			*retbNullValue = true;
-
 		if (retpEnd)
 			*retpEnd = pPos;
 
-		return iNullResult;
+		return false;
+		}
+
+	//	Return the appropriate types
+
+	if (retiInt || retbIntOverflowed)
+		{
+		bool bIntOverflowed = bOverflowed || qwInt > INT_MAX || (bNegative && qwInt > ((DWORD)INT_MAX + 1));
+
+		if (retbIntOverflowed)
+			*retbIntOverflowed = bIntOverflowed;
+
+		if (retiInt && bNegative)
+			*retiInt = bIntOverflowed && !bAllowOverflow ? INT_MIN : -1 * (int)qwInt;
+		else if (retiInt)
+			*retiInt = bIntOverflowed && !bAllowOverflow ? INT_MAX : (int)qwInt;
+		}
+
+	if (retdwInt || retbDWORDOverflowed)
+		{
+		bool bDWORDOverflowed = bOverflowed || qwInt > UINT_MAX || (bNegative && qwInt);
+
+		if (retbDWORDOverflowed)
+			*retbDWORDOverflowed = bDWORDOverflowed;
+
+		if (retdwInt && bNegative && !bAllowOverflow)
+			*retdwInt = 0;
+		else if (retdwInt)
+			*retdwInt = bDWORDOverflowed && !bAllowOverflow ? UINT_MAX : (DWORD)qwInt;
 		}
 
 	//	Done!
 
-	if (bNegative)
-		iInt = -iInt;
-
 	if (retpEnd)
 		*retpEnd = pPos;
 
+	return true;
+	}
+
+//	strParseInt
+//
+// 	Parses an int from a string.
+//  Bounded within INT_MIN to INT_MAX unless overflow is allowed.
+// 
+//	pStart: Start parsing. Skips any leading whitespace
+//	iNullResult: If there are no valid numbers, returns this value
+//	retpEnd: Returns the character at which we stopped parsing
+//	retbNullValue: Returns TRUE if there are no valid numbers.
+//
+int Kernel::strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, const char **retpEnd, bool *retbNullValue, bool *retbOverflowed)
+
+	{
+	int iInt;
+	bool bFoundNumber = strParseWholeNumber(pStart, dwFlags, retpEnd, &iInt, retbOverflowed);
+
+	if (retbNullValue)
+		*retbNullValue = !bFoundNumber;
+
+	if (!bFoundNumber)
+		return iNullResult;
+
 	return iInt;
+	}
+
+//	strParseDWORD
+//
+// 	Parses an DWORD from a string.
+//  Bounded within 0 to UINT_MAX unless overflow is allowed.
+// 
+//	pStart: Start parsing. Skips any leading whitespace
+//	dwNullResult: If there are no valid numbers, returns this value
+//	retpEnd: Returns the character at which we stopped parsing
+//	retbNullValue: Returns TRUE if there are no valid numbers.
+//
+DWORD Kernel::strParseDWORD (const char *pStart, DWORD dwNullResult, DWORD dwFlags, const char **retpEnd, bool *retbNullValue, bool *retbOverflowed)
+
+	{
+	DWORD dwInt;
+	bool bFoundNumber = strParseWholeNumber(pStart, dwFlags, retpEnd, NULL, NULL, &dwInt, retbOverflowed);
+
+	if (retbNullValue)
+		*retbNullValue = !bFoundNumber;
+
+	if (!bFoundNumber)
+		return dwNullResult;
+
+	return dwInt;
 	}
 
 int Kernel::strParseIntOfBase (const char *pStart, int iBase, int iNullResult, const char **retpEnd, bool *retbNullValue)
@@ -3089,14 +3171,37 @@ CString Kernel::strToFilename (const CString &sString)
 	return sResult;
 	}
 
-int Kernel::strToInt (const CString &sString, int iFailResult, bool *retbFailed)
+//	CStringToInt
+//
+//	Converts a string to an integer
+//	Bounded from INT_MIN to INT_MAX
+//
+int Kernel::strToInt (const CString &sString, int iFailResult, bool *retbFailed, bool *retbOverflowed)
+
+	{
+	return strParseInt(sString.GetASCIIZPointer(), iFailResult, NULL, retbFailed, retbOverflowed);
+	}
+
+//	CStringToCCInt
+//
+//	Converts a string to an integer for codechain
+//	Allows overflow, because codechain only uses signed ints but needs to store DWORDs in ints
+//
+int Kernel::strToCCInt (const CString &sString, int iFailResult, bool *retbFailed)
+
+	{
+	return strParseInt(sString.GetASCIIZPointer(), iFailResult, PARSE_ALLOW_OVERFLOW, NULL, retbFailed);
+	}
 
 //	CStringToInt
 //
 //	Converts a string to an integer
+//	Bounded from 0 to UINT_MAX
+//
+DWORD Kernel::strToDWORD (const CString &sString, DWORD dwFailResult, bool *retbFailed, bool *retbOverflowed)
 
 	{
-	return strParseInt(sString.GetASCIIZPointer(), iFailResult, NULL, retbFailed);
+	return strParseDWORD(sString.GetASCIIZPointer(), dwFailResult, NULL, retbFailed, retbOverflowed);
 	}
 
 CString Kernel::strToLower (const CString &sString)

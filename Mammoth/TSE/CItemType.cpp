@@ -1475,7 +1475,7 @@ void CItemType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	for (int i = 0; i < m_UnknownTypes.GetCount(); i++)
 		retTypesUsed->SetAt(m_UnknownTypes[i].pUnknownType.GetUNID(), true);
 
-	retTypesUsed->SetAt(strToInt(m_pUseScreen.GetUNID(), 0), true);
+	retTypesUsed->SetAt(strToDWORD(m_pUseScreen.GetUNID(), 0), true);
 
 	if (m_pComponents)
 		m_pComponents->AddTypesUsed(retTypesUsed);
@@ -2075,7 +2075,7 @@ bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 	else if (strStartsWith(sAttrib, SPECIAL_UNKNOWN_TYPE))
 		{
 		CString sType = strSubString(sAttrib, SPECIAL_UNKNOWN_TYPE.GetLength());
-		DWORD dwType = strToInt(sType, 0);
+		DWORD dwType = strToDWORD(sType, 0);
 		return IsUnknownType(dwType);
 		}
 	else
