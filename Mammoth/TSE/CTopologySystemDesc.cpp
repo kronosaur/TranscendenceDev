@@ -100,7 +100,7 @@ void CTopologySystemDesc::Apply (CTopology &Topology, CTopologyNode *pNode) cons
 			CXMLElement *pSystemXML = Results[0];
 
 			DWORD dwUNID;
-			if (pSystemXML->FindAttributeInteger(UNID_ATTRIB, (int *)&dwUNID))
+			if (pSystemXML->FindAttributeDWORD(UNID_ATTRIB, &dwUNID))
 				{
 				pNode->SetSystemUNID(dwUNID);
 				bAddSystemAttributes = true;
@@ -158,7 +158,7 @@ ALERROR CTopologySystemDesc::InitFromXML (SDesignLoadCtx &LoadCtx, CXMLElement *
 
 	//	Initialize from the root element
 
-	m_dwSystemUNID = pDesc->GetAttributeInteger(UNID_ATTRIB);
+	m_dwSystemUNID = pDesc->GetAttributeDWORD(UNID_ATTRIB);
 	m_sName = pDesc->GetAttribute(NAME_ATTRIB);
 	m_iLevel = pDesc->GetAttributeIntegerBounded(LEVEL_ATTRIB, 1, MAX_SYSTEM_LEVEL, 0);
 	m_sAttributes = pDesc->GetAttribute(ATTRIBUTES_ATTRIB);
@@ -176,7 +176,7 @@ ALERROR CTopologySystemDesc::InitFromXML (SDesignLoadCtx &LoadCtx, CXMLElement *
 
 		if (strEquals(sTag, SYSTEM_TAG))
 			{
-			pSub->FindAttributeInteger(UNID_ATTRIB, (int *)&m_dwSystemUNID);
+			pSub->FindAttributeDWORD(UNID_ATTRIB, &m_dwSystemUNID);
 			pSub->FindAttribute(NAME_ATTRIB, &m_sName);
 			pSub->FindAttributeInteger(LEVEL_ATTRIB, &m_iLevel);
 

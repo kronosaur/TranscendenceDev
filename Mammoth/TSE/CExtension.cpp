@@ -198,7 +198,7 @@ void CExtension::AddEntityNames (CExternalEntityTable *pEntities, TSortMap<DWORD
 
 		//	Add to the list
 
-		DWORD dwUNID = strToInt(sValue, 0);
+		DWORD dwUNID = strToDWORD(sValue, 0);
 		retMap->SetAt(dwUNID, sEntity);
 		}
 	}
@@ -428,7 +428,7 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, EGameTypes iGame, CXMLE
 	CString sAPIVersion;
 	if (pDesc->FindAttribute(API_VERSION_ATTRIB, &sAPIVersion))
 		{
-		pExtension->m_dwAPIVersion = (DWORD)strToInt(sAPIVersion, 0);
+		pExtension->m_dwAPIVersion = strToDWORD(sAPIVersion, 0);
 		if (pExtension->m_dwAPIVersion < 12)
 			pExtension->m_dwAPIVersion = 0;
 		}
@@ -583,7 +583,7 @@ ALERROR CExtension::CreateExtensionFromRoot (const CString &sFilespec, CXMLEleme
 
 	CExtension *pExtension = new CExtension;
 	pExtension->m_sFilespec = sFilespec;
-	pExtension->m_dwUNID = pDesc->GetAttributeInteger(UNID_ATTRIB);
+	pExtension->m_dwUNID = pDesc->GetAttributeDWORD(UNID_ATTRIB);
 	if (pExtension->m_dwUNID == 0)
 		{
 		delete pExtension;
@@ -637,7 +637,7 @@ ALERROR CExtension::CreateExtensionFromRoot (const CString &sFilespec, CXMLEleme
 	CString sAPIVersion;
 	if (pDesc->FindAttribute(API_VERSION_ATTRIB, &sAPIVersion))
 		{
-		pExtension->m_dwAPIVersion = (DWORD)strToInt(sAPIVersion, 0);
+		pExtension->m_dwAPIVersion = strToDWORD(sAPIVersion, 0);
 		if (pExtension->m_dwAPIVersion < 12)
 			pExtension->m_dwAPIVersion = 0;
 		pExtension->m_sVersion = pDesc->GetAttribute(VERSION_ATTRIB);
@@ -685,7 +685,7 @@ ALERROR CExtension::CreateExtensionFromRoot (const CString &sFilespec, CXMLEleme
 
 	//	Image
 
-	pExtension->m_dwCoverUNID = (DWORD)pDesc->GetAttributeInteger(COVER_IMAGE_UNID_ATTRIB);
+	pExtension->m_dwCoverUNID = pDesc->GetAttributeDWORD(COVER_IMAGE_UNID_ATTRIB);
 
 	//	Load credits (we parse them into a string array)
 

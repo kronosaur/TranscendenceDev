@@ -360,7 +360,7 @@ class CDesignType
 		const CString &GetAttributes (void) const { return m_sAttributes; }
 		TArray<CString> GetDataKeys (const EDesignDataTypes iDataType );
 		CString GetDataField (const CString &sField) const { CString sValue; FindDataField(sField, &sValue); return sValue; }
-		int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
+		int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToCCInt(sValue, 0, NULL); else return 0; }
 		const CEconomyType &GetDefaultCurrency (void) const { return OnGetDefaultCurrency(); }
 		const CDisplayAttributeDefinitions &GetDisplayAttributes (void) const { return (m_pExtra ? m_pExtra->DisplayAttribs : CDisplayAttributeDefinitions::Null); }
 		CString GetEntityName (void) const;

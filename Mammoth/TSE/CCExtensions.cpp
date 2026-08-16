@@ -11085,7 +11085,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else
 				{
 				bool bFailed;
-				int iValue = strToInt(sValue, 0, &bFailed);
+				int iValue = strToCCInt(sValue, 0, &bFailed);
 				if (!bFailed)
 					return pCC->CreateInteger(iValue);
 				else
@@ -11382,7 +11382,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				else
 					{
 					bool bFailed;
-					int iValue = strToInt(sNewValue, 0, &bFailed);
+					int iValue = strToCCInt(sNewValue, 0, &bFailed);
 					if (!bFailed)
 						return pCC->CreateInteger(iValue);
 					else

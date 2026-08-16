@@ -2740,12 +2740,12 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_EXTENSION))
 		{
-		DWORD dwUNID = strToInt(strSubString(sAttrib, SPECIAL_EXTENSION.GetLength()), 0);
+		DWORD dwUNID = strToDWORD(strSubString(sAttrib, SPECIAL_EXTENSION.GetLength()), 0);
 		return (m_pExtension && (m_pExtension->GetUNID() == dwUNID));
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_INHERIT))
 		{
-		DWORD dwUNID = strToInt(strSubString(sAttrib, SPECIAL_INHERIT.GetLength()), 0);
+		DWORD dwUNID = strToDWORD(strSubString(sAttrib, SPECIAL_INHERIT.GetLength()), 0);
 		return InheritsFrom(dwUNID);
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_PROPERTY))

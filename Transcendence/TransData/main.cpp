@@ -506,7 +506,7 @@ ALERROR CreateXMLElementFromDataFile (const CString &sFilespec, CXMLElement **re
 		CXMLElement *pItem = pFile->GetContentElement(i);
 		if (strEquals(pItem->GetTag(), CONSTLIT("Extension")))
 			{
-			DWORD dwUNID = pItem->GetAttributeInteger(CONSTLIT("unid"));
+			DWORD dwUNID = pItem->GetAttributeDWORD(CONSTLIT("unid"));
 			if (dwUNID == 0)
 				{
 				printf("Warning: Invalid extension UNID: %x.\n", dwUNID);

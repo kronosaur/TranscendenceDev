@@ -31,7 +31,7 @@ ICCItemPtr CDockScreenStack::AsCCItem (const SDockFrame &Frame)
 	else
 		{
 		bool bNotUNID;
-		DWORD dwScreen = strToInt(sScreen, 0, &bNotUNID);
+		DWORD dwScreen = strToDWORD(sScreen, 0, &bNotUNID);
 		if (bNotUNID)
 			{
 			pResult->SetStringAt(CONSTLIT("screen"), sScreen);

@@ -10,7 +10,7 @@
 
 void DoEffectPerformanceTest (CUniverse &Universe, CXMLElement *pCmdLine)
     {
-    DWORD dwEffectUNID = pCmdLine->GetAttributeInteger(UNID_ATTRIB);
+    DWORD dwEffectUNID = pCmdLine->GetAttributeDWORD(UNID_ATTRIB);
     CDesignType *pType = Universe.FindDesignType(dwEffectUNID);
     if (pType == NULL)
         {

@@ -307,7 +307,7 @@ ICCItemPtr CCodeChain::CreateDoubleIfPossible (const CString &sString)
 ICCItemPtr CCodeChain::CreateIntegerIfPossible (const CString &sString)
 	{
 	bool bFailed;
-	int iValue = strToInt(sString, 0, &bFailed);
+	int iValue = strToCCInt(sString, 0, &bFailed);
 	if (bFailed)
 		return ICCItemPtr(CreateString(sString));
 	else
@@ -1047,7 +1047,7 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 					if (*pValidation == 'i')
 						{
 						bool bFailed;
-						int iValue = strToInt(pResult->GetStringValue(), 0, &bFailed);
+						int iValue = strToCCInt(pResult->GetStringValue(), 0, &bFailed);
 						if (bFailed)
 							{
 							pError = CreateError(LITERAL("Numeral expected"), pResult);

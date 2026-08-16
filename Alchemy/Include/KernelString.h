@@ -248,9 +248,21 @@ inline char strLowerCaseAbsolute (char chChar) { if (!Kernel::g_bLowerCaseAbsolu
 bool strNeedsEscapeCodes (const Kernel::CString &sString);
 
 #define PARSE_THOUSAND_SEPARATOR				0x00000001
-double strParseDouble (const char *pStart, double rNullResult, const char **retpEnd, bool *retbNullValue);
-int strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, const char **retpEnd = NULL, bool *retbNullValue = NULL);
-inline int strParseInt (const char *pStart, int iNullResult, const char **retpEnd = NULL, bool *retbNullValue = NULL) { return Kernel::strParseInt(pStart, iNullResult, 0, retpEnd, retbNullValue); }
+#define PARSE_ALLOW_OVERFLOW					0x00000002
+#define PARSE_RAW_HEX							0x00000004
+double strParseDouble (const char* pStart, double rNullResult, const char** retpEnd = NULL, bool* retbNullValue = NULL);
+bool strParseWholeNumber (
+	const char* pStart,
+	DWORD dwFlags,
+	const char** retpEnd = NULL,
+	int* retiInt = NULL,
+	bool* retbIntOverflowed = NULL,
+	DWORD* retdwInt = NULL,
+	bool* retbDWORDOverflowed = NULL);
+DWORD strParseDWORD (const char* pStart, DWORD dwNullResult, DWORD dwFlags, const char** retpEnd = NULL, bool* retbNullValue = NULL, bool* retbOverflowed = NULL);
+inline DWORD strParseDWORD (const char* pStart, DWORD dwNullResult, const char** retpEnd = NULL, bool* retbNullValue = NULL, bool* retbOverflowed = NULL) { return Kernel::strParseDWORD(pStart, dwNullResult, 0, retpEnd, retbNullValue, retbOverflowed); }
+int strParseInt (const char* pStart, int iNullResult, DWORD dwFlags, const char** retpEnd = NULL, bool* retbNullValue = NULL, bool* retbOverflowed = NULL);
+inline int strParseInt (const char* pStart, int iNullResult, const char** retpEnd = NULL, bool* retbNullValue = NULL, bool* retbOverflowed = NULL) { return Kernel::strParseInt(pStart, iNullResult, 0, retpEnd, retbNullValue, retbOverflowed); }
 int strParseIntOfBase (const char *pStart, int iBase, int iNullResult, const char **retpEnd = NULL, bool *retbNullValue = NULL);
 
 void strParseWhitespace (const char *pPos, const char **retpPos);
@@ -281,7 +293,9 @@ double strToDouble (const Kernel::CString &sString, double rFailResult, bool *re
 #define UNIT_STR_MASS_TONS							CONSTLIT("t")
 double strMassToDoubleTons (const Kernel::CString &sString, double rFailResult, bool *retbFailed = NULL);
 Kernel::CString strToFilename (const Kernel::CString &sString);
-int strToInt (const Kernel::CString &sString, int iFailResult, bool *retbFailed = NULL);
+int strToInt (const Kernel::CString &sString, int iFailResult, bool *retbFailed = NULL, bool *retbOverflowed = NULL);
+int strToCCInt (const Kernel::CString &sString, int iFailResult, bool *retbFailed = NULL);
+DWORD strToDWORD (const Kernel::CString &sString, DWORD dwFailResult, bool *retbFailed = NULL, bool *retbOverflowed = NULL);
 Kernel::CString strToLower (const Kernel::CString &sString);
 Kernel::CString strToUpper (const Kernel::CString &sString);
 Kernel::CString strToXMLText (const Kernel::CString &sString, bool bInBody = false);

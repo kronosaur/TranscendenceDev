@@ -325,7 +325,7 @@ void CStationType::AddTypesUsedByXML (CXMLElement *pElement, TSortMap<DWORD, boo
 	int i;
 
 	if (strEquals(pElement->GetTag(), STATION_TAG))
-		retTypesUsed->SetAt(pElement->GetAttributeInteger(TYPE_ATTRIB), true);
+		retTypesUsed->SetAt(pElement->GetAttributeDWORD(TYPE_ATTRIB), true);
 
 	for (i = 0; i < pElement->GetContentElementCount(); i++)
 		AddTypesUsedByXML(pElement->GetContentElement(i), retTypesUsed);
@@ -459,7 +459,7 @@ Metric CStationType::CalcSatelliteHitsToDestroy (CXMLElement *pSatellites, int i
 		}
 	else if (strEquals(sTag, STATION_TAG))
 		{
-		CStationType *pStationType = g_pUniverse->FindStationType((DWORD)pSatellites->GetAttributeInteger(TYPE_ATTRIB));
+		CStationType *pStationType = g_pUniverse->FindStationType(pSatellites->GetAttributeDWORD(TYPE_ATTRIB));
 		if (pStationType == NULL || (!pStationType->CanAttack() && !pSatellites->GetAttributeBool(SEGMENT_ATTRIB)))
 			return 0.0;
 
@@ -542,7 +542,7 @@ Metric CStationType::CalcSatelliteStrength (CXMLElement *pSatellites, int iLevel
 		}
 	else if (strEquals(sTag, STATION_TAG))
 		{
-		CStationType *pStationType = g_pUniverse->FindStationType((DWORD)pSatellites->GetAttributeInteger(TYPE_ATTRIB));
+		CStationType *pStationType = g_pUniverse->FindStationType(pSatellites->GetAttributeDWORD(TYPE_ATTRIB));
 		if (pStationType == NULL)
 			return 0.0;
 
@@ -609,7 +609,7 @@ Metric CStationType::CalcSatelliteTreasureValue (CXMLElement *pSatellites, int i
 		}
 	else if (strEquals(sTag, STATION_TAG))
 		{
-		CStationType *pStationType = g_pUniverse->FindStationType((DWORD)pSatellites->GetAttributeInteger(TYPE_ATTRIB));
+		CStationType *pStationType = g_pUniverse->FindStationType(pSatellites->GetAttributeDWORD(TYPE_ATTRIB));
 		if (pStationType == NULL)
 			return 0.0;
 
@@ -683,7 +683,7 @@ TArray<CStationType::SSatImageDesc> CStationType::CalcSegmentDesc (void) const
 
 			//	Get the type of the satellite
 
-			CStationType *pSatType = GetUniverse().FindStationType(pSatDesc->GetAttributeInteger(TYPE_ATTRIB));
+			CStationType *pSatType = GetUniverse().FindStationType(pSatDesc->GetAttributeDWORD(TYPE_ATTRIB));
 			if (pSatType == NULL)
 				continue;
 
@@ -975,7 +975,7 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
 		{
 		if (m_pExplosionType)
 			{
-			CDeviceClass *pClass = GetUniverse().FindDeviceClass((DWORD)strToInt(m_pExplosionType->GetUNID(), 0));
+			CDeviceClass *pClass = GetUniverse().FindDeviceClass(strToDWORD(m_pExplosionType->GetUNID(), 0));
 			CWeaponClass *pWeapon = (pClass ? pClass->AsWeaponClass() : NULL);
 			if (pWeapon)
 				{
@@ -1344,8 +1344,8 @@ void CStationType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	for (i = 0; i < m_iAnimationsCount; i++)
 		retTypesUsed->SetAt(m_pAnimations[i].m_Image.GetBitmapUNID(), true);
 
-	retTypesUsed->SetAt(strToInt(m_pFirstDockScreen.GetUNID(), 0), true);
-	retTypesUsed->SetAt(strToInt(m_pAbandonedDockScreen.GetUNID(), 0), true);
+	retTypesUsed->SetAt(strToDWORD(m_pFirstDockScreen.GetUNID(), 0), true);
+	retTypesUsed->SetAt(strToDWORD(m_pAbandonedDockScreen.GetUNID(), 0), true);
 	retTypesUsed->SetAt(m_dwDefaultBkgnd, true);
 
 	m_Squadrons.AddTypesUsed(*retTypesUsed);
@@ -2174,7 +2174,7 @@ bool CStationType::OnHasSpecialAttribute (const CString &sAttrib) const
 	if (strStartsWith(sAttrib, SPECIAL_IS_ENEMY_OF))
 		{
 		CString sValue = strSubString(sAttrib, SPECIAL_IS_ENEMY_OF.GetLength());
-		DWORD dwSovereign = (DWORD)strToInt(sValue, 0);
+		DWORD dwSovereign = strToDWORD(sValue, 0);
 		CSovereign *pSovereign = GetUniverse().FindSovereign(dwSovereign);
 		if (pSovereign == NULL)
 			return false;

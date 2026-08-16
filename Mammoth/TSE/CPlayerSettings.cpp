@@ -108,9 +108,9 @@ void CPlayerSettings::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const
 
 	{
 	retTypesUsed->SetAt(m_dwLargeImage, true);
-	retTypesUsed->SetAt(strToInt(m_pShipScreen.GetUNID(), 0), true);
-	retTypesUsed->SetAt(strToInt(m_pDockServicesScreen.GetUNID(), 0), true);
-	retTypesUsed->SetAt(strToInt(m_pShipConfigScreen.GetUNID(), 0), true);
+	retTypesUsed->SetAt(strToDWORD(m_pShipScreen.GetUNID(), 0), true);
+	retTypesUsed->SetAt(strToDWORD(m_pDockServicesScreen.GetUNID(), 0), true);
+	retTypesUsed->SetAt(strToDWORD(m_pShipConfigScreen.GetUNID(), 0), true);
 
     //GetDockScreenVisuals().AddTypesUsed(retTypesUsed);
 

@@ -79,7 +79,12 @@ bool CDockSession::FindScreenRoot (const CString &sScreen, CDesignType **retpRoo
 	//	If the screen is an UNID, then expect a stand-alone screen
 
 	bool bNotANumber;
-	DWORD dwUNID = (DWORD)strToInt(sScreen, 0, &bNotANumber);
+
+	//	sScreen may be a string set from a tlisp argument, and thus may
+	//	actually be a negative int expression of a DWORD UNID
+
+	DWORD dwUNID = (DWORD)strToCCInt(sScreen, 0, &bNotANumber);
+	
 	if (!bNotANumber)
 		{
 		CDesignType *pRoot = GetUniverse().GetDesignCollection().FindDockScreen(dwUNID);

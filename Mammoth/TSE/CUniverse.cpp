@@ -692,7 +692,7 @@ CShipClass *CUniverse::FindShipClassByName (const CString &sName)
 
 	CShipClass *pFound = NULL;
 	if (strFind(sName, CONSTLIT("0x")) == 0
-			&& (pFound = FindShipClass(strToInt(sName, 0))))
+			&& (pFound = FindShipClass(strToDWORD(sName, 0))))
 		return pFound;
 
 	//	Otherwise look for a name match

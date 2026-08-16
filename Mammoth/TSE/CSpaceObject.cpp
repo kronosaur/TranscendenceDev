@@ -4802,7 +4802,7 @@ bool CSpaceObject::HasSpecialAttribute (const CString &sAttrib) const
 	if (strStartsWith(sAttrib, SPECIAL_CHARACTER))
 		{
 		CString sCharacter = strSubString(sAttrib, SPECIAL_CHARACTER.GetLength());
-		DWORD dwUNID = (DWORD)strToInt(sCharacter, 0);
+		DWORD dwUNID = strToDWORD(sCharacter, 0);
 		if (dwUNID == 0)
 			return false;
 

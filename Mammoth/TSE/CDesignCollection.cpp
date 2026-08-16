@@ -1740,7 +1740,7 @@ bool CDesignCollection::ParseUNID (const CString &sType, DWORD *retdwUNID) const
 //	Parses an UNID as either a number or an entity.
 
 	{
-	DWORD dwUNID = strParseInt(sType.GetASCIIZPointer(), 0);
+	DWORD dwUNID = strParseDWORD(sType.GetASCIIZPointer(), 0);
 	if (dwUNID)
 		{
 		if (retdwUNID)
@@ -1756,7 +1756,7 @@ bool CDesignCollection::ParseUNID (const CString &sType, DWORD *retdwUNID) const
 			CString sValue = m_BoundExtensions[i]->GetEntities()->ResolveExternalEntity(sType, &bFound);
 			if (bFound)
 				{
-				DWORD dwUNID = strParseInt(sValue.GetASCIIZPointer(), 0);
+				DWORD dwUNID = strParseDWORD(sValue.GetASCIIZPointer(), 0);
 				if (dwUNID)
 					{
 					if (retdwUNID)
@@ -2075,7 +2075,7 @@ CDesignType *CDesignCollection::ResolveDockScreen (CDesignType *pLocalScreen, co
 
 	{
 	bool bNotANumber;
-	DWORD dwUNID = (DWORD)strToInt(sScreen, 0, &bNotANumber);
+	DWORD dwUNID = strToDWORD(sScreen, 0, &bNotANumber);
 
 	if (bNotANumber)
 		{

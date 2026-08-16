@@ -13,7 +13,7 @@ void GenerateShieldStats (CUniverse &Universe, CXMLElement *pCmdLine)
 	int i;
 
 	CString sUNID = pCmdLine->GetAttribute(CONSTLIT("unid"));
-	DWORD dwUNID = strToInt(sUNID, 0, NULL);
+	DWORD dwUNID = strToDWORD(sUNID, 0, NULL);
 	CItemType *pItem = Universe.FindItemType(dwUNID);
 	if (pItem == NULL)
 		{

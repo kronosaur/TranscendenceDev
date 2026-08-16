@@ -468,7 +468,7 @@ class CCString : public ICCString
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual bool GetBinding (int *retiFrame, int *retiOffset) override;
 		virtual double GetDoubleValue (void) const override { return strToDouble(m_sValue, 0.0); }
-		virtual int GetIntegerValue (void) const override { return strToInt(m_sValue, 0); }
+		virtual int GetIntegerValue (void) const override { return strToCCInt(m_sValue, 0); }
 		virtual ICCItem *GetFunctionBinding (void) override { if (m_pBinding) return m_pBinding->Reference(); else return NULL; }
 		virtual CString GetStringValue (void) const override { return m_sValue; }
 		virtual CString Print (DWORD dwFlags = 0) const override;

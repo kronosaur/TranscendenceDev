@@ -214,7 +214,7 @@ ALERROR CEffectCreator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 	CString sEffectUNID = sUNID;
 	if (sEffectUNID.IsBlank())
 		{
-		DWORD dwUNID = pDesc->GetAttributeInteger(UNID_ATTRIB);
+		DWORD dwUNID = pDesc->GetAttributeDWORD(UNID_ATTRIB);
 		if (dwUNID)
 			sEffectUNID = strFromInt(dwUNID, false);
 		else
@@ -661,7 +661,7 @@ CEffectCreator *CEffectCreator::FindEffectCreator (const CString &sUNID)
 	//	First we parse the UNID
 
 	const char *pPos = sUNID.GetASCIIZPointer();
-	DWORD dwUNID = strParseInt(pPos, 0, &pPos);
+	DWORD dwUNID = strParseDWORD(pPos, 0, &pPos);
 
 	//	Look for the design type
 

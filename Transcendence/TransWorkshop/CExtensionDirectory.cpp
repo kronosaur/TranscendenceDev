@@ -297,7 +297,7 @@ bool CExtensionDirectory::InitCore (const CString &sRootPath, CString *retsError
 
             //  Add more details about the core library
 
-            pCoreLibrary->dwUNID = pRoot->GetAttributeInteger(ATTRIB_UNID);
+            pCoreLibrary->dwUNID = pRoot->GetAttributeDWORD(ATTRIB_UNID);
             pCoreLibrary->sName = pRoot->GetAttribute(ATTRIB_NAME);
             pCoreLibrary->bCore = true;
 
@@ -520,7 +520,7 @@ bool CExtensionDirectory::LoadExtensionDefinitions (SExtensionDesc *pExtension, 
 
 		if (strEquals(pDesc->GetTag(), IMAGE_TAG))
 			{
-			DWORD dwUNID = pDesc->GetAttributeInteger(ATTRIB_UNID);
+			DWORD dwUNID = pDesc->GetAttributeDWORD(ATTRIB_UNID);
 			if (dwUNID == 0)
 				{
 				*retsError = strPatternSubst(CONSTLIT("Invalid UNID for %s."), pDesc->GetTag());
@@ -574,7 +574,7 @@ bool CExtensionDirectory::LoadExtensionStub (const CString &sFilespec, SExtensio
         return false;
         }
 
-    pExtension->dwUNID = pRoot->GetAttributeInteger(ATTRIB_UNID);
+    pExtension->dwUNID = pRoot->GetAttributeDWORD(ATTRIB_UNID);
     pExtension->sFilespec = sFilespec;
     pExtension->sName = pRoot->GetAttribute(ATTRIB_NAME);
     pExtension->sVersion = pRoot->GetAttribute(ATTRIB_VERSION);
@@ -593,7 +593,7 @@ bool CExtensionDirectory::LoadExtensionStub (const CString &sFilespec, SExtensio
         return false;
         }
 
-	pExtension->dwCoverImage = pRoot->GetAttributeInteger(ATTRIB_COVER_IMAGE_ID);
+	pExtension->dwCoverImage = pRoot->GetAttributeDWORD(ATTRIB_COVER_IMAGE_ID);
 
 	//	Done
 
@@ -616,7 +616,7 @@ bool CExtensionDirectory::MarkLibraries (SExtensionDesc *pExtension, CResourceDb
         CXMLElement *pType = pRoot->GetContentElement(i);
         if (strEquals(pType->GetTag(), LIBRARY_TAG))
             {
-            DWORD dwUNID = pType->GetAttributeInteger(ATTRIB_UNID);
+            DWORD dwUNID = pType->GetAttributeDWORD(ATTRIB_UNID);
 
             if (!LoadExtension(dwUNID, retsError))
                 return false;

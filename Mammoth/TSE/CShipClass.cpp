@@ -1773,7 +1773,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		}
 	else if (strEquals(sField, FIELD_PRIMARY_ARMOR))
 		{
-		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_PRIMARY_ARMOR_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToDWORD(GetDataField(FIELD_PRIMARY_ARMOR_UNID), 0));
 		if (pItem)
 			*retsValue = pItem->GetNounPhrase(0x80);
 		else
@@ -1799,7 +1799,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		}
 	else if (strEquals(sField, FIELD_SHIELD))
 		{
-		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_SHIELD_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToDWORD(GetDataField(FIELD_SHIELD_UNID), 0));
 		if (pItem)
 			*retsValue = pItem->GetNounPhrase(0x80);
 		else
@@ -1843,7 +1843,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		}
 	else if (strEquals(sField, FIELD_LAUNCHER))
 		{
-		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_LAUNCHER_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToDWORD(GetDataField(FIELD_LAUNCHER_UNID), 0));
 		if (pItem)
 			*retsValue = pItem->GetNounPhrase(0x80);
 		else
@@ -1859,7 +1859,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		}
 	else if (strEquals(sField, FIELD_PRIMARY_WEAPON))
 		{
-		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToDWORD(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
 		if (pItem)
 			*retsValue = pItem->GetNounPhrase(0x80);
 		else
@@ -1878,7 +1878,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		CWeaponFireDesc *pExplosionType;
 		if (pExplosionType = GetExplosionType(NULL))
 			{
-			CDeviceClass *pClass = GetUniverse().FindDeviceClass((DWORD)strToInt(pExplosionType->GetUNID(), 0));
+			CDeviceClass *pClass = GetUniverse().FindDeviceClass(strToDWORD(pExplosionType->GetUNID(), 0));
 			CWeaponClass *pWeapon = (pClass ? pClass->AsWeaponClass() : NULL);
 			if (pWeapon)
 				{
@@ -1925,7 +1925,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	else if (strEquals(sField, FIELD_PRIMARY_WEAPON_RANGE))
 		{
 		int iRange = 0;
-		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToDWORD(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
 		if (pItem)
 			{
 			CDeviceClass *pDevice = pItem->GetDeviceClass();
@@ -1941,7 +1941,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	else if (strEquals(sField, FIELD_PRIMARY_WEAPON_RANGE_ADJ))
 		{
 		int iRange = 0;
-		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToDWORD(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
 		if (pItem)
 			{
 			CDeviceClass *pDevice = pItem->GetDeviceClass();
@@ -3253,7 +3253,7 @@ void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	if (m_pEscorts)
 		m_pEscorts->AddTypesUsed(retTypesUsed);
 
-	retTypesUsed->SetAt(strToInt(m_pDefaultScreen.GetUNID(), 0), true);
+	retTypesUsed->SetAt(strToDWORD(m_pDefaultScreen.GetUNID(), 0), true);
 	retTypesUsed->SetAt(m_dwDefaultBkgnd, true);
 	retTypesUsed->SetAt(m_HeroImage.GetBitmapUNID(), true);
 	retTypesUsed->SetAt(m_ExhaustImage.GetBitmapUNID(), true);

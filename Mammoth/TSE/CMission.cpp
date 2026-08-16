@@ -496,7 +496,7 @@ bool CMission::HasSpecialAttribute (const CString &sAttrib) const
 	{
 	if (strStartsWith(sAttrib, SPECIAL_OWNER_ID))
 		{
-		DWORD dwOwnerID = strToInt(strSubString(sAttrib, SPECIAL_OWNER_ID.GetLength()), 0);
+		DWORD dwOwnerID = strToDWORD(strSubString(sAttrib, SPECIAL_OWNER_ID.GetLength()), 0);
 		return (dwOwnerID == m_pOwner.GetID());
 		}
 	else

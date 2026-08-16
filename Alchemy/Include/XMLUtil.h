@@ -96,6 +96,7 @@ class CXMLElement
 		bool FindAttributeBool (const CString &sName, bool *retbValue = NULL) const;
 		bool FindAttributeDouble (const CString &sName, double *retrValue = NULL) const;
 		bool FindAttributeInteger (const CString &sName, int *retiValue = NULL) const;
+		bool FindAttributeDWORD (const CString &sName, DWORD *retdwValue = NULL) const;
 		CString GetAttribute (const CString &sName) const;
 		CString GetAttribute (int iIndex) const { return m_Attributes[iIndex]; }
 		bool GetAttributeBool (const CString &sName) const;
@@ -106,6 +107,9 @@ class CXMLElement
 		int GetAttributeInteger (const CString &sName) const;
 		int GetAttributeIntegerDefault (const CString &sName, int iNull) const;
 		int GetAttributeIntegerBounded (const CString &sName, int iMin, int iMax = -1, int iNull = 0) const;
+		DWORD GetAttributeDWORD (const CString &sName) const;
+		DWORD GetAttributeDWORDDefault (const CString &sName, DWORD dwNull) const;
+		DWORD GetAttributeDWORDBounded (const CString &sName, DWORD dwMin, DWORD dwMax = 0xFFFF'FFFF, DWORD dwNull = 0) const;
 		bool GetAttributeIntegerRange (const CString &sName, int *retiLow, int *retiHigh, int iMin = 0, int iMax = -1, int iNullLow = 0, int iNullHigh = 0, bool bAllowInverted = false) const;
 		ALERROR GetAttributeIntegerList (const CString &sName, TArray<int> *pList) const;
 		ALERROR GetAttributeIntegerList (const CString &sName, TArray<DWORD> *pList) const;

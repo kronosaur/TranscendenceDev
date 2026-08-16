@@ -317,7 +317,7 @@ bool CModExchangeSession::GetCurrentSelection (CMultiverseCatalogEntry &Entry) c
 		return false;
 
 	CString sUNID = pList->GetPropertyString(PROP_SELECTION_ID);
-	DWORD dwUNID = strToInt(sUNID, 0);
+	DWORD dwUNID = strToDWORD(sUNID, 0);
 	if (dwUNID == 0)
 		return false;
 
@@ -354,7 +354,7 @@ DWORD CModExchangeSession::GetCurrentSelectionUNID (void) const
 		return 0;
 
 	CString sUNID = pList->GetPropertyString(PROP_SELECTION_ID);
-	return strToInt(sUNID, 0);
+	return strToDWORD(sUNID, 0);
 	}
 
 void CModExchangeSession::OnCollectionUpdated (void)

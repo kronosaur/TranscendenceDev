@@ -1440,7 +1440,7 @@ DWORD CExtensionCollection::GetEntityValue (const CString &sName)
 
 	for (int i = 0; i < m_Extensions.GetCount(); i++)
 		{
-		dwUNID = strToInt(m_Extensions[i]->GetEntities()->ResolveExternalEntity(sName), 0);
+		dwUNID = strToDWORD(m_Extensions[i]->GetEntities()->ResolveExternalEntity(sName), 0);
 		if (dwUNID)
 			return dwUNID;
 		}
@@ -2457,8 +2457,8 @@ ALERROR CLibraryResolver::OnOpenTag (CXMLElement *pElement, CString *retsError)
 	{
 	if (strEquals(pElement->GetTag(), LIBRARY_TAG))
 		{
-		DWORD dwUNID = pElement->GetAttributeInteger(UNID_ATTRIB);
-		DWORD dwRelease = pElement->GetAttributeInteger(RELEASE_ATTRIB);
+		DWORD dwUNID = pElement->GetAttributeDWORD(UNID_ATTRIB);
+		DWORD dwRelease = pElement->GetAttributeDWORD(RELEASE_ATTRIB);
 		bool bOptional = pElement->GetAttributeBool(OPTIONAL_ATTRIB);
 
 		return AddLibrary(dwUNID, dwRelease, bOptional, retsError);

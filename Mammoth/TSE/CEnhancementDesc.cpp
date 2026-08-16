@@ -70,7 +70,7 @@ ALERROR CEnhancementDesc::Bind (SDesignLoadCtx &Ctx)
 
 		//	Bind the type in case it is an item type.
 
-		if (DWORD dwEnhancementType = strToInt(Enhance.sType, 0))
+		if (DWORD dwEnhancementType = strToDWORD(Enhance.sType, 0))
 			{
 			CItemType *pEnhancementType = Ctx.GetUniverse().FindItemTypeBound(Ctx, dwEnhancementType);
 			if (pEnhancementType == NULL)
@@ -132,7 +132,7 @@ ALERROR CEnhancementDesc::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *
 	//	look up the UNID in Bind.
 
 	Enhance.sType = pDesc->GetAttribute(TYPE_ATTRIB);
-	DWORD dwEnhancementType = strToInt(Enhance.sType, 0);
+	DWORD dwEnhancementType = strToDWORD(Enhance.sType, 0);
 	if (dwEnhancementType)
 		Enhance.sType = strPatternSubst(CONSTLIT("0x%08x"), dwEnhancementType);
 

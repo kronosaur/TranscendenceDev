@@ -1230,6 +1230,7 @@ TokenTypes ParseToken (ParserCtx *pCtx, StateTypes iInitialState)
 							{
 							pCtx->iToken = tkError;
 							pCtx->sError = strPatternSubst(CONSTLIT("Invalid entity: %s"), sEntity);
+							pCtx->sToken.Append(ResolveEntity(pCtx, sEntity, &bFound));
 							bDone = true;
 							break;
 							}
@@ -1346,7 +1347,7 @@ CString ResolveEntity (ParserCtx *pCtx, const CString &sName, bool *retbFound)
 			}
 		else
 			{
-			char chChar = (char)strParseInt(pPos, 0x20);
+			char chChar = (char)strParseDWORD(pPos, 0x20);
 			return CString(&chChar, 1);
 			}
 		}

@@ -228,7 +228,7 @@ ALERROR CAdventureDesc::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 	if (Ctx.pExtension == NULL)
 		{
-		m_dwExtensionUNID = pDesc->GetAttributeInteger(ADVENTURE_UNID_ATTRIB);
+		m_dwExtensionUNID = pDesc->GetAttributeDWORD(ADVENTURE_UNID_ATTRIB);
 		m_fInDefaultResource = true;
 		}
 

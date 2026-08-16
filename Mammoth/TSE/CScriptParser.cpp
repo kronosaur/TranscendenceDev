@@ -480,7 +480,7 @@ void CScriptParser::WriteLanguageEntryToBuffer (const CString &sID)
 		CString sTypeUNID(pStart, pPos - pStart);
 		sLanguageID = CString(pPos + 1);
 
-		pType = m_Design.FindEntry(strToInt(sTypeUNID, 0));
+		pType = m_Design.FindEntry(strToDWORD(sTypeUNID, 0));
 		if (!pType)
 			{
 			CString sError = strPatternSubst(CONSTLIT("Unknown type: %s"), sTypeUNID);

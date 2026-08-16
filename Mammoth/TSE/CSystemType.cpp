@@ -281,7 +281,7 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pDesc->FindAttribute(BACKGROUND_ID_ATTRIB, &sAttrib))
 		{
 		if (strEquals(sAttrib, STR_NONE)
-				|| strToInt(sAttrib, -1) == 0)
+				|| strToDWORD(sAttrib, -1) == 0)
 			m_dwBackgroundUNID = 0;
 		else
 			{

@@ -1925,7 +1925,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 	//	If the string is a number then we interpret it as a mod code.
 
 	bool bFailed;
-	DWORD dwCode = strToInt(sDesc, 0, &bFailed);
+	DWORD dwCode = strToDWORD(sDesc, 0, &bFailed);
 	if (!bFailed)
 		{
 		m_dwMods = dwCode;

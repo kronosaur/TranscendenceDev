@@ -136,10 +136,17 @@ bool CLargeSet::InitFromString (const CString &sValue, DWORD dwMaxValue, CString
 			{
 			const char *pEnd;
 			bool bFailed;
-			DWORD dwStartValue = (DWORD)strParseInt(pPos, 0, &pEnd, &bFailed);
+			bool bOverflowed;
+			DWORD dwStartValue = strParseDWORD(pPos, 0, &pEnd, &bFailed, &bOverflowed);
 			if (bFailed)
 				{
 				if (retsError) *retsError = strPatternSubst(CONSTLIT("Invalid number set format: %s"), sValue);
+				return false;
+				}
+
+			if (bOverflowed)
+				{
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("Number set overflowed: %s"), sValue);
 				return false;
 				}
 
@@ -151,10 +158,16 @@ bool CLargeSet::InitFromString (const CString &sValue, DWORD dwMaxValue, CString
 			if (*pPos == '-')
 				{
 				pPos++;
-				dwEndValue = (DWORD)strParseInt(pPos, 0, &pEnd, &bFailed);
+				dwEndValue = strParseDWORD(pPos, 0, &pEnd, &bFailed, &bOverflowed);
 				if (bFailed)
 					{
 					if (retsError) *retsError = strPatternSubst(CONSTLIT("Invalid number set format: %s"), sValue);
+					return false;
+					}
+
+				if (bOverflowed)
+					{
+					if (retsError) *retsError = strPatternSubst(CONSTLIT("Number set overflowed: %s"), sValue);
 					return false;
 					}
 
