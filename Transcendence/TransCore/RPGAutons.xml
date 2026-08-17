@@ -931,7 +931,7 @@
 							(cargoSize (map cargoItems 'reduceSum theItem (itmGetVolume theItem)))
 							(totalSize (+ autonSize cargoSize))
 
-							(spaceAvail obj@ gPlayerShip 'cargoSpaceFree)
+							(spaceAvail (obj@ gPlayerShip 'cargoSpaceFree))
 							(spaceNeeded (- totalSize spaceAvail))
 							)
 							(switch
