@@ -753,6 +753,8 @@ void CItemCriteria::ParseSubExpression (const char *pPos, DWORD dwFlags)
 						{
 						if (chModifier == '@')
 							m_SizeRange = RRange;
+						else if (chModifier == '#')
+							m_MassRange = RRange;
 						else
 							{
 							CIntegerRangeCriteria Range;
@@ -769,10 +771,6 @@ void CItemCriteria::ParseSubExpression (const char *pPos, DWORD dwFlags)
 
 									case '$':
 										m_PriceRange = Range;
-										break;
-
-									case '#':
-										m_MassRange = Range;
 										break;
 
 									case 'R':

@@ -96,9 +96,10 @@ class CItemType : public CDesignType
 		int GetFrequencyByLevel (int iLevel);
 		const CObjectImageArray &GetImage (bool bActual = false) const;
 		const TArray<CDeviceClass *> &GetLaunchWeapons () const { return m_Weapons; }
-		Metric GetMass (CItemCtx &Ctx) const { return GetMassKg(Ctx) / 1000.0; }
-		int GetMassBonusPerCharge () const { return m_iExtraMassPerCharge; }
-		int GetMassKg (CItemCtx &Ctx) const;
+		Metric GetMass (CItemCtx& Ctx) const;
+		Metric GetMassBonusPerCharge () const { return m_rExtraMassPerCharge; }
+		int GetMassBonusPerChargeKg () const { return mathRound(m_rExtraMassPerCharge * 1000); }
+		int GetMassKg (CItemCtx& Ctx) const { return mathRound(GetMass(Ctx) * 1000); }
 		int GetMaxCharges () const { return (m_iMaxCharges == -1 ? GetMaxInitialCharges() : m_iMaxCharges); }
 		int GetMaxHPBonus () const;
 		int GetMaxInitialCharges () const { return (m_fInstanceData ? m_InitDataValue.GetMaxValue() : 0); }
@@ -197,7 +198,7 @@ class CItemType : public CDesignType
 		int m_iLevel;							//	Level of item
 		int m_iMaxLevel;                        //  Max level, for scalable items
 		CCurrencyAndValue m_iValue;				//	Value in some currency
-		int m_iMass;							//	Mass in kilograms
+		Metric m_rMass;							//	Mass in tons (we display in units like kg as needed, this keeps the engine math consistent)
 		Metric m_rVolume;						//	Volume in Cubic meters
 		FrequencyTypes m_Frequency;				//	Frequency
 		DiceRange m_NumberAppearing;			//	Number appearing
@@ -209,7 +210,7 @@ class CItemType : public CDesignType
 		DiceRange m_InitDataValue;				//	Initial data value
 		int m_iMaxCharges;						//	Do not allow charges above this level (-1 = no limit)
 
-		int m_iExtraMassPerCharge;				//	Extra mass per charge (in kilos)
+		Metric m_rExtraMassPerCharge;			//	Extra mass per charge (in tons)
 		int m_iExtraValuePerCharge;				//	Extra value per charge (may be negative)
 		Metric m_rExtraVolumePerCharge;			//	Extra volume per charge (in cubic meters)
 

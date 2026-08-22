@@ -59,7 +59,7 @@ class CDifferentiatedItem
 		inline const CEconomyType &GetCurrencyType () const;
 		inline const CObjectImageArray &GetImage () const;
 		inline int GetLevel () const;
-		inline int GetMassKg () const;
+		inline Metric GetMassKg () const;
 		inline Metric GetVolume () const;
 		inline int GetMinLevel () const;
 		inline CString GetNounPhrase (DWORD dwFlags = 0) const;
@@ -358,8 +358,8 @@ class CItem
 		int GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		CString GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		int GetLevel (void) const;
-		Metric GetMass () const { return GetMassKg() / 1000.0; }
-		int GetMassKg () const;
+		Metric GetMass () const;
+		Metric GetMassKg () const { return GetMass() * 1000; }
 		int GetMaxCharges (void) const;
 		const CItemEnhancement &GetMods (void) const { return (m_pExtra ? m_pExtra->m_Mods : m_NullMod); }
 		static const CItem &GetNullItem (void) { return m_NullItem; }
