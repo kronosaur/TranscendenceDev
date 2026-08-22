@@ -2,6 +2,8 @@
 
 <TranscendenceModule>
 
+	<!-- STATIONS -->
+
 	<!-- Commonwealth Metropolis -->
 
 	<StationType UNID="&stCommonwealthStation;"
@@ -25,19 +27,6 @@
 			explosionType=		"&vtBlastExplosion4;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
-
-		<!-- Encounter Info -->
-
-		<Encounter
-				systemCriteria=			"+commonwealthSpace;"
-				systemAffinity=			"+commonwealthCore;"
-				levelFrequency=			"rurrv ----- ----- ----- -----"
-
-				locationCriteria=		"+planetary"
-				enemyExclusionRadius=	"100"
-
-				unique=					"inSystem"
-				/>
 		
 		<Names noArticle="true">
 			Starton %s
@@ -159,19 +148,6 @@
 			explosionType=		"&vtThermoExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
-
-		<!-- Encounter Info -->
-
-		<Encounter
-				systemCriteria=			"+commonwealthSpace;"
-				systemAffinity=			"+commonwealthCore;"
-				levelFrequency=			"---ru urv-- ----- ----- -----"
-
-				locationCriteria=		"+planetary"
-				enemyExclusionRadius=	"100"
-
-				unique=					"inSystem"
-				/>
 		
 		<Names noArticle="true">
 			Starton %s
@@ -284,6 +260,628 @@
 			</OnTrafficControl>
 		</Events>
 	</StationType>
+
+	<!-- ENCOUNTERS -->
+
+	<StationType UNID="&stCommonwealthStationEncounter;"
+			name=				"(Commonwealth metropolis encounter)"
+			sovereign=			"&svCommonwealth;"
+			inherit=			"&baCommonwealthStation;"
+			virtual=			"true"
+				 
+			attributes=			"commonwealth, commonwealthCustoms, friendly, generic, human, majorStation, primary, populated"
+			
+			explosionType=		"&vtBlastExplosion4;"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+commonwealthSpace;"
+				systemAffinity=			"+commonwealthCore;"
+				levelFrequency=			"rurrv ----- ----- ----- -----"
+
+				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"150"
+				exclusionRadius="100"
+
+				unique=					"inSystem"
+				/>
+
+		<!-- Satellites -->
+		
+		<Satellites>
+			<Table>
+				<!-- Starton Eridani Template -->
+				<Group chance="20">
+
+					<!-- Commonwealth Station -->
+
+					<Siblings radiusInc="+12" arcInc="0">
+						<Station type="&stCommonwealthStation;"/>
+					</Siblings>
+
+
+					<!-- Residential Center -->
+
+					<Siblings radiusInc="+12" arcInc="+22">
+						<RandomStationTable>
+							<Station chance="50" type="&stCommonwealthResidentials;" noMapLabel="true"/>
+							<Station chance="20" type="&stCorporateEnclave;"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Dry Dock -->
+
+					<Siblings radiusInc="+12" arcInc="-22">
+						<Station type="&stCommonwealthDryDock;"/>
+					</Siblings>
+
+					<!-- Commercial Station -->
+
+					<Siblings radiusInc="+34">
+						<RandomStationTable>
+							<Station chance="15" type="&stFuelDepot;"/>
+							<Station chance="5"  type="&stArmsDealerRasiermesser;"/>
+							<Station chance="2"  type="&stInsuranceCompany;"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Metropolis Station -->
+
+					<Siblings radiusInc="-10">
+						<RandomStationTable>
+							<Station chance="10" type="&stFuelDepot;"/>
+							<Station chance="5" type="&stHotel;"/>
+							<Station chance="5"  type="&stArmsDealerMakayev;"/>
+							<Station chance="2"  type="&stArmsDealerBushido;"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Central Nav beacons -->
+
+					<Siblings arcInc="+12" radiusInc="24">
+						<Station type="&stNavBeacon;" imageVariant="0"/>
+					</Siblings>
+
+					<Siblings arcInc="-12" radiusInc="0">
+						<Station type="&stNavBeacon;" imageVariant="1"/>
+					</Siblings>
+
+					<!-- Metropolis Stations -->
+
+					<Table>
+						<Group chance="50">
+							<Siblings radiusInc="12" arcInc="+39">
+								<RandomStationTable>
+									<Station chance="15" type="&stFuelDepot;"/>
+									<Station chance="15" type="&stIceFarm;"/>
+									<Station chance="10" type="&stArmorDealer;"/>
+									<Station chance="10" type="&stArmsDealer;"/>
+									<Station chance="10" type="&stSistersOfDomina;"/>
+									<Station chance="5"  type="&stTinkerGathering;"/>
+									<Station chance="5"  type="&stHotel;"/>
+									<Station chance="5"  type="&stSistersOfDomina;"/>
+									<Station chance="2" type="&stContainerHabitat;" noMapLabel="true"/>
+									<Station chance="2" type="&stCommonwealthSlums;" noMapLabel="true"/>
+								</RandomStationTable>
+							</Siblings>
+
+							<!-- Metropolis Station -->
+							<Siblings radiusInc="12" arcInc="-39">
+								<RandomStationTable>
+									<Station chance="15" type="&stFuelDepot;"/>
+									<Station chance="15" type="&stHotel;"/>
+									<Station chance="5"  type="&stArmsDealerRasiermesser;"/>
+									<Station chance="5"  type="&stArmsDealerMakayev;"/>
+									<Station chance="5"  type="&stInsuranceCompany;"/>
+									<Station chance="2"  type="&stArmsDealerBushido;"/>
+								</RandomStationTable>
+							</Siblings>
+						</Group>
+
+						<Group chance="50">
+							<Siblings radiusInc="12" arcInc="+39">
+								<RandomStationTable>
+									<Station chance="15" type="&stFuelDepot;"/>
+									<Station chance="15" type="&stIceFarm;"/>
+									<Station chance="10" type="&stArmorDealer;"/>
+									<Station chance="10" type="&stArmsDealer;"/>
+									<Station chance="10" type="&stSistersOfDomina;"/>
+									<Station chance="5"  type="&stTinkerGathering;"/>
+									<Station chance="5"  type="&stHotel;"/>
+									<Station chance="5"  type="&stSistersOfDomina;"/>
+									<Station chance="2" type="&stContainerHabitat;" noMapLabel="true"/>
+									<Station chance="2" type="&stCommonwealthSlums;" noMapLabel="true"/>
+								</RandomStationTable>
+							</Siblings>
+
+							<!-- Metropolis Station -->
+							<Siblings radiusInc="12" arcInc="-39">
+								<RandomStationTable>
+									<Station chance="15" type="&stFuelDepot;"/>
+									<Station chance="15" type="&stHotel;"/>
+									<Station chance="5"  type="&stArmsDealerRasiermesser;"/>
+									<Station chance="5"  type="&stArmsDealerMakayev;"/>
+									<Station chance="5"  type="&stInsuranceCompany;"/>
+									<Station chance="2"  type="&stArmsDealerBushido;"/>
+								</RandomStationTable>
+							</Siblings>
+						</Group>
+					</Table>
+
+					<!-- Slums -->
+
+					<Siblings radiusInc="12" arcInc="+55">
+						<RandomStationTable>
+							<Station chance="15" type="&stFuelDepot;"/>
+							<Station chance="15" type="&stIceFarm;"/>
+							<Station chance="5"  type="&stHotel;"/>
+							<Station chance="5"  type="&stSistersOfDomina;"/>
+							<Station chance="2" type="&stContainerHabitat;" noMapLabel="true"/>
+							<Station chance="2" type="&stCommonwealthSlums;" noMapLabel="true"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Slums -->
+
+					<Siblings radiusInc="12" arcInc="-55">
+						<RandomStationTable>
+							<Station chance="15" type="&stFuelDepot;"/>
+							<Station chance="15" type="&stIceFarm;"/>
+							<Station chance="5"  type="&stHotel;"/>
+							<Station chance="5"  type="&stSistersOfDomina;"/>
+							<Station chance="2" type="&stContainerHabitat;" noMapLabel="true"/>
+							<Station chance="2" type="&stCommonwealthSlums;" noMapLabel="true"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Peripheral nav beacons -->
+
+					<Siblings radiusInc="12" arcInc="+68">
+						<Station type="&stNavBeacon;" imageVariant="0"/>
+					</Siblings>
+
+					<Siblings radiusInc="12" arcInc="-68">
+						<Station type="&stNavBeacon;" imageVariant="0"/>
+					</Siblings>
+
+					<!-- Slums -->
+
+					<Siblings radiusInc="12" arcInc="+78">
+						<RandomStationTable>
+							<Station chance="25" type="&stContainerHabitat;" noMapLabel="true"/>
+							<Station chance="25" type="&stCommonwealthSlums;" noMapLabel="true"/>
+							<Station chance="5" type="&stManufacturingPlant;"	ignoreLimits="true"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Slums -->
+
+					<Siblings radiusInc="12" arcInc="-78">
+						<RandomStationTable>
+							<Station chance="25" type="&stContainerHabitat;" noMapLabel="true"/>
+							<Station chance="25" type="&stCommonwealthSlums;" noMapLabel="true"/>
+							<Station chance="5" type="&stManufacturingPlant;"	ignoreLimits="true"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Container Habitat -->
+
+					<Siblings radiusInc="12" arcInc="90-101">
+						<RandomStationTable>
+							<Station chance="50" type="&stContainerHabitat;" noMapLabel="true"/>
+							<Station chance="20" type="&stCommonwealthSlums;" noMapLabel="true"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Container Habitat -->
+
+					<Siblings radiusInc="12" arcInc="-90--101">
+						<RandomStationTable>
+							<Station chance="50" type="&stContainerHabitat;" noMapLabel="true"/>
+							<Station chance="20" type="&stCommonwealthSlums;" noMapLabel="true"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Container Habitat -->
+
+					<Siblings radiusInc="-2-1" arcInc="11-14">
+						<RandomStationTable>
+							<Station chance="30" type="&stContainerHabitat;" noMapLabel="true"/>
+							<Station chance="20" type="&stCommonwealthSlums;" noMapLabel="true"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Container Habitat -->
+
+					<Siblings radiusInc="23-26" arcInc="-11--14">
+						<RandomStationTable>
+							<Station chance="30" type="&stContainerHabitat;" noMapLabel="true"/>
+							<Station chance="20" type="&stCommonwealthSlums;" noMapLabel="true"/>
+						</RandomStationTable>
+					</Siblings>
+
+				</Group>
+
+				<!-- Radial Template -->
+				<Group chance="20">
+
+					<Siblings radiusInc="+12" arcInc="0">
+						<Group>
+
+							<!-- Commonwealth Station -->
+
+							<Primary>
+								<Station type="&stCommonwealthStation;"/>
+							</Primary>
+
+							<!-- Nav beacons -->
+							
+							<Orbitals count="3-4" distance="12" angle="equidistant">
+								<Station type="&stNavBeacon;" imageVariant="0"/>
+							</Orbitals>
+
+							<!-- Core Stations -->
+							
+							<Orbitals count="4" distance="22" angle="equidistant">
+								<Station type="&stCommonwealthDryDock;"/>
+								<RandomStationTable>
+									<Station chance="10" type="&stArmorDealer;"/>
+									<Station chance="10" type="&stArmsDealer;"/>
+									<Station chance="20" type="&stCommonwealthResidentials;" noMapLabel="true"/>
+									<Station chance="5"  type="&stInsuranceCompany;"/>
+									<Station chance="10" type="&stArmsDealerRasiermesser;"/>
+									<Station chance="5"  type="&stArmsDealerBushido;"/>
+									<Station chance="5"  type="&stArmsDealerMakayev;"/>
+								</RandomStationTable>
+								<RandomStationTable>
+									<Station chance="15" type="&stCorporateEnclave;"/>
+									<Station chance="40" type="&stCommonwealthResidentials;" noMapLabel="true"/>
+									<Station chance="10" type="&stContainerHabitat;" noMapLabel="true"/>
+								</RandomStationTable>
+								<RandomStationTable>
+									<Station chance="10" type="&stArmorDealer;"/>
+									<Station chance="10" type="&stArmsDealer;"/>
+									<Station chance="5"  type="&stSistersOfDomina;"/>
+									<Station chance="5"  type="&stHotel;"/>
+									<Station chance="15" type="&stCorporateEnclave;"/>
+									<Station chance="10" type="&stFuelDepot;"/>
+									<Station chance="20" type="&stCommonwealthResidentials;" noMapLabel="true"/>
+									<Station chance="5"  type="&stAutonDealer;"/>
+								</RandomStationTable>
+							</Orbitals>
+
+							<!-- Slums -->
+							
+							<Orbitals count="9" distance="44" angle="equidistant">
+								<RandomStationTable>
+									<Station chance="40" type="&stContainerHabitat;" noMapLabel="true"/>
+									<Station chance="30" type="&stCommonwealthSlums;" noMapLabel="true"/>
+									<Station chance="5" type="&stManufacturingPlant;" ignoreLimits="true"/>
+									<Station chance="5" type="&stIceFarm;"/>
+									<Station chance="2"  type="&stTinkerGathering;"/>
+								</RandomStationTable>
+							</Orbitals>
+						</Group>
+					</Siblings>
+
+				</Group>
+			</Table>
+		</Satellites>
+	</StationType>
+
+	<StationType UNID="&stCommonwealthStationArmoredEncounter;"
+			name=				"(Commonwealth metropolis encounter, armored)"
+			sovereign=			"&svCommonwealth;"
+			inherit=			"&baCommonwealthStation;"
+			virtual=			"true"
+				 
+			attributes=			"commonwealth, commonwealthCustoms, friendly, generic, human, majorStation, primary, populated"
+			
+			explosionType=		"&vtBlastExplosion4;"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Encounter Info -->
+
+		<Encounter
+				systemCriteria=			"+commonwealthSpace;"
+				systemAffinity=			"+commonwealthCore;"
+				levelFrequency=			"---ru urv-- ----- ----- -----"
+
+				locationCriteria=		"+planetary"
+				enemyExclusionRadius=	"150"
+				exclusionRadius=		"100"
+
+				unique=					"inSystem"
+				/>
+
+		<!-- Satellites -->
+		
+		<Satellites>
+			<Table>
+				<!-- Starton Eridani Template -->
+				<Group chance="20">
+
+					<!-- Commonwealth Station -->
+
+					<Siblings radiusInc="+12" arcInc="0">
+						<Station type="&stCommonwealthStationArmored;"/>
+					</Siblings>
+
+
+					<!-- Residential Center -->
+
+					<Siblings radiusInc="+12" arcInc="+22">
+						<RandomStationTable>
+							<Station chance="50" type="&stCommonwealthResidentials;" noMapLabel="true"/>
+							<Station chance="20" type="&stCorporateEnclave;"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Dry Dock -->
+
+					<Siblings radiusInc="+12" arcInc="-22">
+						<Station type="&stCommonwealthDryDock;"/>
+					</Siblings>
+
+					<!-- Commercial Station -->
+
+					<Siblings radiusInc="+34">
+						<RandomStationTable>
+							<Station chance="15" type="&stFuelDepot;"/>
+							<Station chance="5"  type="&stArmsDealerRasiermesser;"/>
+							<Station chance="2"  type="&stInsuranceCompany;"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Metropolis Station -->
+
+					<Siblings radiusInc="-10">
+						<RandomStationTable>
+							<Station chance="10" type="&stFuelDepot;"/>
+							<Station chance="5" type="&stHotel;"/>
+							<Station chance="5"  type="&stArmsDealerMakayev;"/>
+							<Station chance="2"  type="&stArmsDealerBushido;"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Central Nav beacons -->
+
+					<Siblings arcInc="+12" radiusInc="24">
+						<Station type="&stNavBeacon;" imageVariant="0"/>
+					</Siblings>
+
+					<Siblings arcInc="-12" radiusInc="0">
+						<Station type="&stNavBeacon;" imageVariant="1"/>
+					</Siblings>
+
+					<!-- Metropolis Stations -->
+
+					<Table>
+						<Group chance="50">
+							<Siblings radiusInc="12" arcInc="+39">
+								<RandomStationTable>
+									<Station chance="15" type="&stFuelDepot;"/>
+									<Station chance="15" type="&stIceFarm;"/>
+									<Station chance="10" type="&stArmorDealer;"/>
+									<Station chance="10" type="&stArmsDealer;"/>
+									<Station chance="10" type="&stSistersOfDomina;"/>
+									<Station chance="5"  type="&stTinkerGathering;"/>
+									<Station chance="5"  type="&stHotel;"/>
+									<Station chance="5"  type="&stSistersOfDomina;"/>
+									<Station chance="2" type="&stContainerHabitat;" noMapLabel="true"/>
+									<Station chance="2" type="&stCommonwealthSlums;" noMapLabel="true"/>
+								</RandomStationTable>
+							</Siblings>
+
+							<!-- Metropolis Station -->
+							<Siblings radiusInc="12" arcInc="-39">
+								<RandomStationTable>
+									<Station chance="15" type="&stFuelDepot;"/>
+									<Station chance="15" type="&stHotel;"/>
+									<Station chance="5"  type="&stArmsDealerRasiermesser;"/>
+									<Station chance="5"  type="&stArmsDealerMakayev;"/>
+									<Station chance="5"  type="&stInsuranceCompany;"/>
+									<Station chance="2"  type="&stArmsDealerBushido;"/>
+								</RandomStationTable>
+							</Siblings>
+						</Group>
+
+						<Group chance="50">
+							<Siblings radiusInc="12" arcInc="+39">
+								<RandomStationTable>
+									<Station chance="15" type="&stFuelDepot;"/>
+									<Station chance="15" type="&stIceFarm;"/>
+									<Station chance="10" type="&stArmorDealer;"/>
+									<Station chance="10" type="&stArmsDealer;"/>
+									<Station chance="10" type="&stSistersOfDomina;"/>
+									<Station chance="5"  type="&stTinkerGathering;"/>
+									<Station chance="5"  type="&stHotel;"/>
+									<Station chance="5"  type="&stSistersOfDomina;"/>
+									<Station chance="2" type="&stContainerHabitat;" noMapLabel="true"/>
+									<Station chance="2" type="&stCommonwealthSlums;" noMapLabel="true"/>
+								</RandomStationTable>
+							</Siblings>
+
+							<!-- Metropolis Station -->
+							<Siblings radiusInc="12" arcInc="-39">
+								<RandomStationTable>
+									<Station chance="15" type="&stFuelDepot;"/>
+									<Station chance="15" type="&stHotel;"/>
+									<Station chance="5"  type="&stArmsDealerRasiermesser;"/>
+									<Station chance="5"  type="&stArmsDealerMakayev;"/>
+									<Station chance="5"  type="&stInsuranceCompany;"/>
+									<Station chance="2"  type="&stArmsDealerBushido;"/>
+								</RandomStationTable>
+							</Siblings>
+						</Group>
+					</Table>
+
+					<!-- Slums -->
+
+					<Siblings radiusInc="12" arcInc="+55">
+						<RandomStationTable>
+							<Station chance="15" type="&stFuelDepot;"/>
+							<Station chance="15" type="&stIceFarm;"/>
+							<Station chance="5"  type="&stHotel;"/>
+							<Station chance="5"  type="&stSistersOfDomina;"/>
+							<Station chance="2" type="&stContainerHabitat;" noMapLabel="true"/>
+							<Station chance="2" type="&stCommonwealthSlums;" noMapLabel="true"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Slums -->
+
+					<Siblings radiusInc="12" arcInc="-55">
+						<RandomStationTable>
+							<Station chance="15" type="&stFuelDepot;"/>
+							<Station chance="15" type="&stIceFarm;"/>
+							<Station chance="5"  type="&stHotel;"/>
+							<Station chance="5"  type="&stSistersOfDomina;"/>
+							<Station chance="2" type="&stContainerHabitat;" noMapLabel="true"/>
+							<Station chance="2" type="&stCommonwealthSlums;" noMapLabel="true"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Peripheral nav beacons -->
+
+					<Siblings radiusInc="12" arcInc="+68">
+						<Station type="&stNavBeacon;" imageVariant="0"/>
+					</Siblings>
+
+					<Siblings radiusInc="12" arcInc="-68">
+						<Station type="&stNavBeacon;" imageVariant="0"/>
+					</Siblings>
+
+					<!-- Slums -->
+
+					<Siblings radiusInc="12" arcInc="+78">
+						<RandomStationTable>
+							<Station chance="25" type="&stContainerHabitat;" noMapLabel="true"/>
+							<Station chance="25" type="&stCommonwealthSlums;" noMapLabel="true"/>
+							<Station chance="5" type="&stManufacturingPlant;"	ignoreLimits="true"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Slums -->
+
+					<Siblings radiusInc="12" arcInc="-78">
+						<RandomStationTable>
+							<Station chance="25" type="&stContainerHabitat;" noMapLabel="true"/>
+							<Station chance="25" type="&stCommonwealthSlums;" noMapLabel="true"/>
+							<Station chance="5" type="&stManufacturingPlant;"	ignoreLimits="true"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Container Habitat -->
+
+					<Siblings radiusInc="12" arcInc="90-101">
+						<RandomStationTable>
+							<Station chance="50" type="&stContainerHabitat;" noMapLabel="true"/>
+							<Station chance="20" type="&stCommonwealthSlums;" noMapLabel="true"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Container Habitat -->
+
+					<Siblings radiusInc="12" arcInc="-90--101">
+						<RandomStationTable>
+							<Station chance="50" type="&stContainerHabitat;" noMapLabel="true"/>
+							<Station chance="20" type="&stCommonwealthSlums;" noMapLabel="true"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Container Habitat -->
+
+					<Siblings radiusInc="-2-1" arcInc="11-14">
+						<RandomStationTable>
+							<Station chance="30" type="&stContainerHabitat;" noMapLabel="true"/>
+							<Station chance="20" type="&stCommonwealthSlums;" noMapLabel="true"/>
+						</RandomStationTable>
+					</Siblings>
+
+					<!-- Container Habitat -->
+
+					<Siblings radiusInc="23-26" arcInc="-11--14">
+						<RandomStationTable>
+							<Station chance="30" type="&stContainerHabitat;" noMapLabel="true"/>
+							<Station chance="20" type="&stCommonwealthSlums;" noMapLabel="true"/>
+						</RandomStationTable>
+					</Siblings>
+
+				</Group>
+
+				<!-- Radial Template -->
+				<Group chance="20">
+
+					<Siblings radiusInc="+12" arcInc="0">
+						<Group>
+
+							<!-- Commonwealth Station -->
+
+							<Primary>
+								<Station type="&stCommonwealthStationArmored;"/>
+							</Primary>
+
+							<!-- Nav beacons -->
+							
+							<Orbitals count="3-4" distance="12" angle="equidistant">
+								<Station type="&stNavBeacon;" imageVariant="0"/>
+							</Orbitals>
+
+							<!-- Core Stations -->
+							
+							<Orbitals count="4" distance="22" angle="equidistant">
+								<Station type="&stCommonwealthDryDock;"/>
+								<RandomStationTable>
+									<Station chance="10" type="&stWondrousDevices;"/>
+									<Station chance="10" type="&stAdventurerOutfitters;"/>
+									<Station chance="20" type="&stCommonwealthResidentials;" noMapLabel="true"/>
+									<Station chance="5"  type="&stInsuranceCompany;"/>
+									<Station chance="10" type="&stArmsDealerRasiermesser;"/>
+									<Station chance="5"  type="&stArmsDealerBushido;"/>
+									<Station chance="5"  type="&stArmsDealerMakayev;"/>
+								</RandomStationTable>
+								<RandomStationTable>
+									<Station chance="15" type="&stCorporateEnclave;"/>
+									<Station chance="40" type="&stCommonwealthResidentials;" noMapLabel="true"/>
+									<Station chance="10" type="&stContainerHabitat;" noMapLabel="true"/>
+								</RandomStationTable>
+								<RandomStationTable>
+									<Station chance="10" type="&stWondrousDevices;"/>
+									<Station chance="10" type="&stAdventurerOutfitters;"/>
+									<Station chance="5"  type="&stSistersOfDomina;"/>
+									<Station chance="5"  type="&stHotel;"/>
+									<Station chance="15" type="&stCorporateEnclave;"/>
+									<Station chance="10" type="&stFuelDepot;"/>
+									<Station chance="20" type="&stCommonwealthResidentials;" noMapLabel="true"/>
+									<Station chance="5"  type="&stAutonDealer;"/>
+								</RandomStationTable>
+							</Orbitals>
+
+							<!-- Slums -->
+							
+							<Orbitals count="9" distance="44" angle="equidistant">
+								<RandomStationTable>
+									<Station chance="40" type="&stContainerHabitat;" noMapLabel="true"/>
+									<Station chance="30" type="&stCommonwealthSlums;" noMapLabel="true"/>
+									<Station chance="5" type="&stManufacturingPlant;" ignoreLimits="true"/>
+									<Station chance="5" type="&stIceFarm;"/>
+									<Station chance="2"  type="&stTinkerGathering;"/>
+								</RandomStationTable>
+							</Orbitals>
+						</Group>
+					</Siblings>
+
+				</Group>
+			</Table>
+		</Satellites>
+	</StationType>
+
+	<!-- DOCKSCREENS -->
 
 	<!-- Commonwealth Pub -->
 

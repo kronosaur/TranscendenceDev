@@ -789,6 +789,8 @@
 	<!ENTITY stCommonwealthNavSign		"0x00102024">
 	<!ENTITY ovNavSignText				"0x00102025">
 	<!ENTITY baCommonwealthStationObsolete	"0x00102026">
+	<!ENTITY stCommonwealthStationEncounter	"0x00102027">
+	<!ENTITY stCommonwealthStationArmoredEncounter	"0x00102028">
 
 	<!ENTITY scCenturionBlock2			"0x00103001">	<!-- Replaces scCenturion -->
 	<!ENTITY scScarabFreighter			"0x00103002">
