@@ -3039,6 +3039,40 @@
 			<Ship levelFrequency="----r ccvvv" count="1" class="&scManticore;" orders="guard"/>
 		</LevelTable>
 	</ShipTable>
+
+	<ShipTable unid="&tbCommPatrols;">
+		<LevelTable>
+			<Ship levelFrequency="uv--- -----" count="1"	 class="&scRoninB;" eventHandler="&evStdPatrolBehavior;">
+				<Escorts>
+					<Ship					   count="1d4-1" class="&scIAVLight;" orders="escort"/>
+				</Escorts>
+			</Ship>
+
+			<Ship levelFrequency="rccv- -----" count="1"	 class="&scRoninC;" eventHandler="&evStdPatrolBehavior;">
+				<Escorts>
+					<Ship					   count="1d4-1" class="&scRoninB;" orders="escort"/>
+				</Escorts>
+			</Ship>
+			
+			<Ship levelFrequency="-vrcc v----" count="1"	 class="&scCenturionBlock1;" eventHandler="&evStdPatrolBehavior;">
+				<Escorts>
+					<Ship					   count="1d4"	 class="&scRoninC;" orders="escort"/>
+				</Escorts>
+			</Ship>
+			
+			<Ship levelFrequency="----r ccv--" count="1"	 class="&scWolfenC;" eventHandler="&evStdPatrolBehavior;">
+				<Escorts>
+					<Ship					   count="1d3-1" class="&scWolfenC;" orders="escort"/>
+				</Escorts>
+			</Ship>
+			
+			<Ship levelFrequency="----r ccvvv" count="1"	 class="&scManticore;" eventHandler="&evStdPatrolBehavior;">
+				<Escorts>
+					<Ship					   count="1d3-1" class="&scIAVHeavy;" orders="escort"/>
+				</Escorts>
+			</Ship>
+		</LevelTable>
+	</ShipTable>
 	
 	<!-- Commonwealth defenders for large/important stations -->
 
@@ -3051,6 +3085,35 @@
 			<Ship levelFrequency="----r ccv--" count="1" class="&scMinotaur;" orders="guard"/>
 			<Ship levelFrequency="----- rccvv" count="1" class="&scMinotaurM;" orders="guard"/>
 			<Ship levelFrequency="----- --vuu" count="1" class="&scAquilaCruiser;" orders="patrol:8"/>
+		</LevelTable>
+	</ShipTable>
+
+	<ShipTable unid="&tbCommElitePatrols;">
+		<LevelTable>
+
+			<Ship levelFrequency="rccv- -----" count="1"	 class="&scCenturionBlock2;" eventHandler="&evStdPatrolBehavior;">
+				<Escorts>
+					<Ship					   count="1d4-1" class="&scCenturionBlock1;" orders="escort"/>
+				</Escorts>
+			</Ship>
+			
+			<Ship levelFrequency="vvvrc cv---" count="1"	 class="&scBritannia;" eventHandler="&evStdPatrolBehavior;">
+				<Escorts>
+					<Ship					   count="1d4"	 class="&scCenturionBlock1;" orders="escort"/>
+				</Escorts>
+			</Ship>
+			
+			<Ship levelFrequency="----- ccur-" count="1"	 class="&scMinotaur;" eventHandler="&evStdPatrolBehavior;">
+				<Escorts>
+					<Ship					   count="1d3-1" class="&scCenturionBlock2;" orders="escort"/>
+				</Escorts>
+			</Ship>
+			
+			<Ship levelFrequency="----- --vuu" count="1"	 class="&scMinotaurM;" eventHandler="&evStdPatrolBehavior;">
+				<Escorts>
+					<Ship					   count="1d3-1" class="&scBritannia;" orders="escort"/>
+				</Escorts>
+			</Ship>
 		</LevelTable>
 	</ShipTable>
 

@@ -494,6 +494,30 @@
 						)
 					)
 				))
+				
+            (setq intFindNearestObj (lambda (obj objList maxDist)
+                "Find the nearest object in a list of objects to the source object within an optional maximum distance"
+                (if obj
+                    (block
+                        (
+                            (srcPos (objGetPos obj))
+                            (closestObj 
+                                (map objList '(reduceMin original) targetObj (sysVectorDistance srcPos (objGetPos targetObj)))
+                                )
+                            (dist (sysVectorDistance srcPos (objGetPos closestObj)))
+                            )
+                        ;(dbgLog (cat "closest to " obj " at " srcPos " is " closestObj " at " dist " units"))
+                        (if (or (leq dist maxDist) (not maxDist))
+                            ;	Return the obj
+                            closestObj
+                            ;	otherwise nil
+                            ()
+                            )
+                        )
+                    ;	If obj is nil we return nil
+                    ()
+                    )
+                ))
 
 			(setq intIsGateToSystem (lambda (nodeID gateID destSystem nodesChecked)
 				(block (destNode)

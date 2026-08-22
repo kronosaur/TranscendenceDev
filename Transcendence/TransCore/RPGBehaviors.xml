@@ -216,12 +216,16 @@
 		</Events>
 	</ShipClass>
 	
-	<!-- Patrol Behavior
+	<!-- Patrol Encounter Behavior
 	
 		USAGE NOTES
 		
 		This simulates the behavior of a ship on patrol that detects the
 		player in a random encounter.
+
+		This is not a real cyclic patrol - it attacks hostiles nearby to its path
+		on the way to attempt intercepting the player. If it fails to intercept
+		the player in time it leaves via a gate.
 		
 		EXTRA DATA
 		
@@ -314,6 +318,644 @@
 			</OnOrdersCompleted>
 		</Events>
 	</ShipClass>
+	
+	<!-- Patrol Behavior
+	
+		USAGE NOTES
+		
+		This is a highly configurable patrol behavior class for ships on a cyclic patrol.
+
+		See Properties for configuration details.
+
+		Notes:
+			To use a static patrol path, set "rpg.patrol.List" to a list of object IDs in
+			the patrol sequence. Then set "rpg.patrol.regenerateOnCycle" to Nil.
+	-->
+	
+	<Type UNID="&evStdPatrolBehavior;">
+		<Properties>
+			<!-- Config -->
+			<Data id="rpg.patrol.maxClusterDistance">
+				;	Max distance from a higher priority object that we will search
+				;	for lower or equal priority objects to patrol from
+				200
+			</Data>
+			<Data id="rpg.patrol.maxClusterDistRatio">
+				;	ratio by which we decrease the max cluster distance for lower
+				;	priority objects we treat as being in one cluster
+				;	eg:
+				;		maxClusterDistance = 200
+				;		maxClusterDistRatio = 0.5
+				;		maxClusterDistanceP1 = 100
+				;		maxClusterDistanceP2 = 50
+				;		maxClusterDistanceP3 = 25
+				0.5
+			</Data>
+			<Data id="rpg.patrol.hubPriorityLevel">
+				;	At and above this priority level, we treat these objects as
+				;	hubs and will return to them after patrolling each lower-priority sub-cluster
+				;	Lower-priority clusters are patrolled in a round-robin manner
+				1
+			</Data>
+			<Data id="rpg.patrol.randomOrder">
+				;	If non-nil, shuffle the order of objects
+				1
+			</Data>
+			<Data id="rpg.patrol.skipClusteredChildren">
+				;	If non-nil, we skip any patrol targets with a parent and no children
+				1
+			</Data>
+			<Data id="rpg.patrol.maxAggroRange">
+				;	Max distance we will scan for hostiles from our patrol route
+				60
+			</Data>
+			<Data id="rpg.patrol.aggroScanRate">
+				;	Rate at which we scan for hostiles (in ticks)
+				60
+			</Data>
+			<Data id="rpg.patrol.minHealth">
+				;	If we are below this health fraction we flee to a friendly station to repair if one exists
+				0.2
+			</Data>
+			<Data id="rpg.patrol.ignorePlayer">
+				;	If non-nil, we ignore player aggression
+				1
+			</Data>
+			<Data id="rpg.patrol.regenerateOnCycle">
+				;	If non-nil, we dynamically regenerate our patrol
+				;	list when completing a patrol cycle
+				;
+				;	This is useful for patrols that need to adjust to
+				;	situations like new stations spawning or existing
+				;	stations being destroyed
+				;
+				;	However it doesnt work with patrols that use
+				;	static object lists
+				1
+			</Data>
+			<Data id="rpg.patrol.criteriaP0">
+				;	Priority 0 (highest) patrol criteria
+				"G"
+			</Data>
+			<Data id="rpg.patrol.criteriaP1">
+				"TAF +primary"
+			</Data>
+			<Data id="rpg.patrol.criteriaP2">
+				"TAF -primary +majorStation"
+			</Data>
+			<Data id="rpg.patrol.criteriaP3">
+				"TAF -primary -majorStation"
+			</Data>
+			<Data id="rpg.patrol.criteriaP4">
+			</Data>
+
+			<!-- Internal state -->
+
+			<Data id="rpg.patrol.ownedMarkers">
+			</Data>
+			<Data id="rpg.patrol.Idx">
+			</Data>
+			<Data id="rpg.patrol.State">
+			</Data>
+			<DynamicData id="rpg.patrol.health">
+				(max (/ (obj@ gSource 'hp) (obj@ gSource 'maxHp)) (/ (obj@ gSource 'interiorHP) (obj@ gSource 'maxInteriorHP)))
+			</DynamicData>
+			<DynamicData id="rpg.patrol.debug">
+				(block
+					(
+						(myVarMutable (list ()))
+						myHelper
+						myVar
+					)
+					(setq myHelper (lambda (val) (lnkReplace myVarMutable 0 val)))
+					(setq myVar (lambda () (@ myVarMutable 0)))
+					(myHelper 1)
+					(dbgLog (cat "rpg.patrol.debug test value is: " (myVar)))
+					(myVar)
+				    )
+			</DynamicData>
+			<DynamicData id="rpg.patrol.List.generate">
+				(block
+					(
+						;	print debug stats
+						(printDebugStats ())
+
+						;	Init vars
+						(patrolTargetList (list ))
+						(criteriaP0 (obj@ gSource "rpg.patrol.criteriaP0"))
+						(criteriaP1 (obj@ gSource "rpg.patrol.criteriaP1"))
+						(criteriaP2 (obj@ gSource "rpg.patrol.criteriaP2"))
+						(criteriaP3 (obj@ gSource "rpg.patrol.criteriaP3"))
+						(criteriaP4 (obj@ gSource "rpg.patrol.criteriaP4"))
+						(shuffleOrder (obj@ gSource "rpg.patrol.randomOrder"))
+
+						;	Mutable nil override of sysFindObject
+						(fnSysFindObjectMutable (lambda (src criteria shuffle)
+							(block
+								(
+									(result (sysFindObject src criteria))
+								)
+								(if (=== result)
+									; if the result is atomic nil return a mutable nil list instead
+									(list )
+									; otherwise return as normal
+									(if shuffle
+										(shuffle result)
+										result
+									    )
+								    )
+							    )
+						    ))
+						
+						;	Priority 0 locations include:
+						;	stargates
+						(patrolTargetListP0
+							(fnSysFindObjectMutable gSource criteriaP0)
+						    )
+
+						;	Priority 1 locations include:
+						(patrolTargetListP1
+							(fnSysFindObjectMutable gSource criteriaP1)
+						    )
+
+						;	Priority 2 locations include:
+						(patrolTargetListP2
+							(fnSysFindObjectMutable gSource criteriaP2)
+						    )
+
+						;	Priority 3 locations include:
+						(patrolTargetListP3
+							(fnSysFindObjectMutable gSource criteriaP3)
+						    )
+
+						;	Priority 4 locations include:
+						;	random position markers in the system
+						(patrolTargetListP4
+							(fnSysFindObjectMutable gSource criteriaP4)
+						    )
+
+						(patrolList (list ))
+						(markerList (list ))
+						;	these are fallbacks if we dont have enough stuff in the system
+						(origin (vector '(0 0)))
+						(randomInnerSystemLocation (sysVectorPolarOffset origin (random 0 360) (random 150 300)))
+						(randomOuterSystemLocation (sysVectorPolarOffset origin (random 0 360) (random 450 700)))
+
+						;	Compute clusters
+						(maxClusterDist (max (obj@ gSource "rpg.patrol.maxClusterDistance") 0.0))
+						(maxClusterDistRatio (min (max (obj@ gSource "rpg.patrol.maxClusterDistRatio") 0.0) 1.0))
+						(hubPriorityThreshold (obj@ gSource "rpg.patrol.hubPriorityLevel"))
+						
+						;	Cluster helpers
+						(fnPriorityClusterSize (lambda (priority)
+							(switch
+								; P0 is always the specified max
+								(= priority 0)
+									maxClusterDist
+								; P1 and beyond we compute
+								(ls priority 5)
+									(* maxClusterDist (pow maxClusterDistRatio priority))
+								; error
+								(error (cat "Priority cannot be higher than 4. Got: " priority))
+							    )
+						    ))
+						(fnIsHubPriority (lambda (priority)
+							(ls priority (+ 1 hubPriorityThreshold))
+						    ))
+						(fnFindBestParent (lambda (obj objPriority)
+							(switch
+								;	P0 objects never have parents
+								(= objPriority 0)
+									()
+								(block
+									(
+										(bestParentP0 (intFindNearestObj obj patrolTargetListP0 (fnPriorityClusterSize 0)))
+										(bestParentP1 (if (and (gr objPriority 1) (fnIsHubPriority 1)) (intFindNearestObj obj patrolTargetListP1 (fnPriorityClusterSize 1)) ()))
+										(bestParentP2 (if (and (gr objPriority 2) (fnIsHubPriority 2)) (intFindNearestObj obj patrolTargetListP2 (fnPriorityClusterSize 2)) ()))
+										(bestParentP3 (if (and (gr objPriority 3) (fnIsHubPriority 3)) (intFindNearestObj obj patrolTargetListP3 (fnPriorityClusterSize 3)) ()))
+									)
+									(if printDebugStats (dbgLog (cat
+										"finding best parent for: " obj
+										"\n\tobjPriority: " objPriority
+										"\n\tbestParent:"
+										"\n\t\tP0: " bestParentP0
+										"\n\t\tP1: " bestParentP1
+										"\n\t\tP2: " bestParentP2
+										"\n\t\tP3: " bestParentP3
+										"\n\tIsHubPriority:"
+										"\n\t\tP0: " (fnIsHubPriority 0)
+										"\n\t\tP1: " (fnIsHubPriority 1)
+										"\n\t\tP2: " (fnIsHubPriority 2)
+										"\n\t\tP3: " (fnIsHubPriority 3)
+										"\n\t\tP4: " (fnIsHubPriority 4)
+										"\n\tPriorityClusterSize:"
+										"\n\t\tP0: " (fnPriorityClusterSize 0)
+										"\n\t\tP1: " (fnPriorityClusterSize 1)
+										"\n\t\tP2: " (fnPriorityClusterSize 2)
+										"\n\t\tP3: " (fnPriorityClusterSize 3)
+										"\n\t\tP4: " (fnPriorityClusterSize 4)
+									    )))
+									;	we always try to pick the lowest parent
+									(switch
+										bestParentP3
+											bestParentP3
+										bestParentP2
+											bestParentP2
+										bestParentP1
+											bestParentP1
+										bestParentP0
+											bestParentP0
+										()
+									    )
+								    )
+							    )
+						    ))
+						(fnObjKey (lambda (obj) (cat "" (objGetID obj))))
+						(fnObjFromKey (lambda (key) (objGetObjByID (int key))))
+						(parentMap (block
+							(
+								(parentMap { })
+							)
+							;	Priority 0 keys are always nil
+							(enum patrolTargetListP1 patrolObj (set@ parentMap (fnObjKey patrolObj) (fnFindBestParent patrolObj 1)))
+							(enum patrolTargetListP2 patrolObj (set@ parentMap (fnObjKey patrolObj) (fnFindBestParent patrolObj 2)))
+							(enum patrolTargetListP3 patrolObj (set@ parentMap (fnObjKey patrolObj) (fnFindBestParent patrolObj 3)))
+							(enum patrolTargetListP4 patrolObj (set@ parentMap (fnObjKey patrolObj) (fnFindBestParent patrolObj 4)))
+							parentMap
+						    ))
+						(parentMapKeys (map
+							(append
+								patrolTargetListP0
+								patrolTargetListP1
+								patrolTargetListP2
+								patrolTargetListP3
+								patrolTargetListP4
+							)
+							patrolObj
+							(fnObjKey patrolObj)
+						    ))
+						(priorityMap (block
+							(
+								(priorityMap { })
+							)
+							(enum patrolTargetListP0 patrolObj (set@ priorityMap (fnObjKey patrolObj) 0))
+							(enum patrolTargetListP1 patrolObj (set@ priorityMap (fnObjKey patrolObj) 1))
+							(enum patrolTargetListP2 patrolObj (set@ priorityMap (fnObjKey patrolObj) 2))
+							(enum patrolTargetListP3 patrolObj (set@ priorityMap (fnObjKey patrolObj) 3))
+							(enum patrolTargetListP4 patrolObj (set@ priorityMap (fnObjKey patrolObj) 4))
+							priorityMap
+						    ))
+						(patrolHubs (map parentMapKeys 'excludeNil objKey (if (@ parentMap objKey) () (fnObjFromKey objKey))))
+						(fnFindClosestHigherHub (lambda (obj objPriority)
+							(switch
+								(= objPriority 0)
+									()
+								(intFindNearestObj obj
+									(map (@ patrolHubs) 'excludeNil objKey
+										(if (gr (@ priorityMap key) objPriority)
+											;;	Ignore all objects with worse priority
+											()
+											;;	Otherwise the object is a candidate
+											(fnObjFromKey key)
+										    )
+									    )
+								    )
+							    )
+						    ))
+						(unparentedHubs (list ))
+						(patrolHubMap (block
+							(
+								(patrolHubMap { })
+								(skipChildOnly (obj@ gSource "rpg.patrol.skipClusteredChildren"))
+								(hubKey (fnObjKey hubObj))
+							)
+							;	populate keys and empty lists
+							
+							(enum patrolHubs hubObj (set@ patrolHubMap hubKey (list )))
+							(if printDebugStats (dbgLog (cat "patrolHubMap initial: " patrolHubMap)))
+
+							;	populate hubs that are parented to other hubs in the lists of the parent hub
+							
+							(enum patrolHubs hubObj
+								(block
+									(
+										(higherObj (fnFindClosestHigherHub hubObj (@ priorityMap hubKey)))
+										(objKey (fnObjKey higherObj))
+										(childList (@ patrolHubMap objKey))
+									)
+									(if higherObj
+										(if childList
+											(lnkAppend childList hubObj)
+											;	we need to use this workaround because set@ doesnt add nils to structs...
+											(set@ patrolHubMap (list hubObj))
+										    )
+										;	Record any hubs that have no parent
+										(lnkAppend unparentedHubs hubObj)
+									    )
+								    )
+							    )
+							(if printDebugStats (dbgLog (cat "patrolHubMap parented: " patrolHubMap)))
+							
+							;	if we dont skip them add parented objects with no children
+							
+							(if skipChildOnly
+								;	skip
+								()
+								;	otherwise add them to their immediate parent
+								(enum
+									(map parentMapKeys '(excludeNil original) objKey (@ parentMap key))
+									childObjectKey
+									(if (@ patrolHubs childObjectKey)
+										;	If this has children it was already added
+										()
+										;	If it has no children we need to add it
+										(block
+											(
+												(objKey (fnObjKey (@ parentMap childObjectKey)))
+												(childObj (fnObjFromKey childObjectKey))
+												(childList (@ patrolHubMap objKey))
+											)
+											(if childList
+												(lnkAppend childList childObj)
+												;	we need to use this workaround because set@ doesnt add nils to structs...
+												(set@ patrolHubMap (list childObj))
+											    )
+										    )
+									    )
+								    )
+							    )
+							(if printDebugStats (dbgLog (cat "patrolHubMap final: " patrolHubMap)))
+							
+							;	return the final map
+							
+							patrolHubMap
+						    ))
+
+						;	init patrol path
+						(patrolPath (list ))
+
+						;	helper fn
+						(fnGreedySortFrom (lambda (startObj destObjList)
+							(block
+								(
+									;	Copy the list since we will mutate it and also remove startobj if present
+									(destObjs (map destObjList 'excludeNil destObj (if (= destObj startObj) () destObj)))
+									(sortedObjs (list ))
+									(curObj startObj)
+								)
+								(while destObjs
+									(block
+										(
+											(nearestObj (intFindNearestObj curObj destObjs))
+										)
+										(lnkAppend sortedObjs nearestObj)
+										(lnkRemove destObjs (find destObjs nearestObj))
+										(setq curObj nearestObj)
+									    )
+								    )
+								sortedObjs
+							    )
+						    ))
+						(fnAddToPatrolPath (lambda (hubObj)
+							(block
+								(
+									(childObjsToAdd (@ patrolHubMap (objKey hubObj)))
+									(sortedChildObjsToAdd (fnGreedySortFrom (if shuffleOrder (random childObjsToAdd) hubObj) childObjsToAdd))
+								)
+								(lnkAppend patrolPath hubObj)
+								(if childObjsToAdd
+									(block ()
+										;	Go to each child object as a hub
+										(enum childObjsToAdd childObj
+											(fnAddToPatrolPath childObj)
+										    )
+										;	Return to the hub object
+										(lnkAppend patrolPath hubObj)
+									    )
+								    )
+							    )
+						    ))
+
+						;	get root hubs to start from
+						(rootHubs (fnGreedySortFrom (random unparentedHubs) unparentedHubs))
+					    )
+
+					;	Generate patrol path
+					(enum rootHubs rootHub (fnAddToPatrolPath rootHub))
+
+					;	Debug print
+					(if printDebugStats
+						(dbgLog (cat
+							"parent map:\t" parentMap
+							"\npriority map:\t" priorityMap
+							"\npatrol hubs:\t" patrolHubs
+							"\npatrol hub map:\t" patrolHubMap
+							"\npatrol path:\t" patrolPath
+							"\nunparented hubs:\t" unparentedHubs
+							"\nroot hubs:\t" rootHubs
+						    ))
+					    )
+
+					;	Convert from pointers to spaceObj IDs
+
+					(map patrolPath patrolObj (objGetID patrolObj))
+				    )
+			</DynamicData>
+
+			<!-- Patrol list -->
+
+			<Data id="rpg.patrol.List">
+				(obj@ gSource "rpg.patrol.List.generate")
+			</Data>
+		</Properties>
+		<Events>
+			<OnEventHandlerInit>
+				(block
+					(
+						(posList (obj@ gSource "rpg.patrol.List"))
+						(nextObjID (@ posList 0))
+						(navObj (objGetObjByID nextObjID))
+					)
+					(objSet@ gSource "rpg.patrol.Idx" 0)
+					(objSet@ gSource "rpg.patrol.State" 'patrol)
+					(shpOrder gSource 'approach navObj 10)
+					(sysAddObjRecurringTimerEvent (obj@ gSource "rpg.patrol.aggroScanRate") gSource "rpg.patrolScan")
+				    )
+			</OnEventHandlerInit>
+			<rpg.patrolScan>
+				(block
+					(
+						(state (obj@ gSource "rpg.patrol.State"))
+						(scanRange (obj@ gSource "rpg.patrol.maxAggroRange"))
+					)
+					(switch
+						;	We only scan and attack hostiles while on patrol
+
+						(= state "patrol")
+							(block
+								(
+									(ignorePlayer (obj@ gSource "rpg.patrol.ignorePlayer"))
+									;	Note that we only look for ships we can actually see
+									(baseHostileCriteria (if ignorePlayer "sAEZP" "sAEP"))
+									(rangedHostileCriteria (if (gr scanRange 0) (cat baseHostileCriteria " NN:" scanRange) (cat baseHostileCriteria " N")))
+									(nearestHostileShip (sysFindObject gSource rangedHostileCriteria))
+								)
+								(if nearestHostileShip
+									(block ()
+										(shpCancelOrders gSource)
+										(objSet@ gSource "rpg.patrol.State" "attacking")
+										(shpOrder gSource 'attack nearestHostileShip)
+									    )
+								    )
+							    )
+
+						;	Ensure our target hasnt escaped
+
+						(= state "attacking")
+							(if
+								(gr
+									(sysVectorDistance (objGetPos gSource) (objGetPos (objGetTarget gSource)))
+									(* scanRange 1.5)
+								    )
+								;	Break off our attack if it got away
+								;	we let onOrdersCompleted run to resume course
+								(shpCancelOrders gSource)
+							    )
+
+						;	Otherwise we continue on as normal
+						
+						()
+					    )
+				    )
+			</rpg.patrolScan>
+			<OnOrdersCompleted>
+				(block
+					(
+						(state (obj@ gSource "rpg.patrol.State"))
+					)
+					(switch
+						;	If we are patrolling, we continue to the next location
+						(= state "patrol")
+							(block
+								(
+									(idx (obj@ gSource "rpg.patrol.Idx"))
+									(posList (obj@ gSource "rpg.patrol.List"))
+									(nextIdx (if (geq (+ 1 idx) (count posList)) 0 (+ 1 idx)))
+									(regenerateOnCycle (obj@ gSource "rpg.patrol.regenerateOnCycle"))
+									(setNewPosList (if (and (= nextIdx 0) regenerateOnCycle) (objSet@ gSource "rpg.patrol.List" (obj@ gSource "rpg.patrol.List.generate"))))
+									(finalPosList (obj@ gSource "rpg.patrol.List"))
+									(nextObjID (@ finalPosList nextIdx))
+									(navObj (objGetObjByID nextObjID))
+								)
+								(objSet@ gSource "rpg.patrol.State" 'patrol)
+								(objSet@ gSource "rpg.patrol.Idx" nextIdx)
+								(shpOrder gSource 'approach navObj 10)
+							    )
+						;	If we fled to repair, we complete repairs then continue to the next location
+						(= state "flee")
+							(block
+								(
+									(idx (obj@ gSource "rpg.patrol.Idx"))
+									(posList (obj@ gSource "rpg.patrol.List"))
+									(objID (@ posList idx))
+									(navObj (objGetObjByID objID))
+								)
+								(shpFullRestore gSource)
+								(objSet@ gSource "rpg.patrol.State" 'patrol)
+								(shpOrder gSource 'approach navObj 10)
+							    )
+						;	If we were interrupted we resume course
+						(block
+							(
+								(idx (obj@ gSource "rpg.patrol.Idx"))
+								(posList (obj@ gSource "rpg.patrol.List"))
+								(objID (@ posList idx))
+								(navObj (objGetObjByID objID))
+							)
+							(objSet@ gSource "rpg.patrol.State" 'patrol)
+							(shpOrder gSource 'approach navObj 10)
+						    )
+					    )
+				    )
+			</OnOrdersCompleted>
+			<OnAttacked>
+				(block
+					(
+						(state (obj@ gSource "rpg.patrol.State"))
+						(ignorePlayer (obj@ gSource "rpg.patrol.ignorePlayer"))
+						(wasTargeted (= gSource (objGetTarget aOrderGiver)))
+					)
+					(switch
+						;	Keep fleeing if already fleeing
+						(or (= state "flee") (= state "fleeGate"))
+							()
+						
+						;	If our health is too low we flee
+						(ls (obj@ gSource "rpg.patrol.health") (obj@ gSource "rpg.patrol.minHealth"))
+							(block
+								(
+									(safeHarbor (srvFindRepairArmor gSource 60 (itmGetLevel (shpGetArmor gSource 0))))
+								)
+								(if safeHarbor
+									;	Find a safe location to repair
+									(block ()
+										(objSet@ gSource "rpg.patrol.State" "flee")
+										(shpCancelOrders gSource)
+										(shpOrder gSource 'dock safeHarbor)
+										(shpOrder gSource 'wait (random 3 8))
+									    )
+									;	Otherwise flee for a gate if one exists
+									(block ()
+										(objSet@ gSource "rpg.patrol.State" "fleeGate")
+										(shpCancelOrders gSource)
+										(shpOrder gSource 'gate)
+									    )
+								    )
+							    )
+						
+						;	If we are configured to ignore the player we do so
+						(and ignorePlayer (= aOrderGiver gPlayerShip))
+							()
+
+						;	If we are fighting already then keep fighting
+						(or (= state "retaliating") (= state "attacking"))
+							()
+
+						;	If no one is reponsible, then nothing to do
+
+						(not (objCanAttack aOrderGiver))
+							()
+
+						;	If we were deliberately targeted, retaliate even if they are friendly
+
+						wasTargeted
+							(block ()
+								(objSet@ gSource "rpg.patrol.State" "retaliating")
+								(shpCancelOrders gSource)
+								(shpOrder gSource 'attack aOrderGiver)
+							    )
+
+						;	If this is a friend, then ignore since it was just friendly fire probably
+
+						(= (objGetDisposition gSource aOrderGiver) 'friend)
+							()
+
+						;	Otherwise we retaliate
+
+						(block ()
+							(objSet@ gSource "rpg.patrol.State" "retaliating")
+							(shpCancelOrders gSource)
+							(shpOrder gSource 'attack aOrderGiver)
+						    )
+					    )
+				    )
+			</OnAttacked>
+			<OnDestroy>
+				;	Cleanup any nav markers
+				(enum (obj@ gSource "rpg.patrol.ownedMarkers") ownedMarker (objRemove (objGetObjByID ownedMarker)))
+			</OnDestroy>
+		</Events>
+	</Type>
 
 	<!-- Resupply Behavior
 	

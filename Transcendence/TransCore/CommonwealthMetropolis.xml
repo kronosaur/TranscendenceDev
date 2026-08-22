@@ -111,6 +111,8 @@
 		<Squadrons>
 			<Squadron table="&tbCommEliteDefenders;"	count="2-4"/>
 			<Squadron table="&tbCommPrivateCrafts;"		count="1-4"/>
+			<Squadron table="&tbCommPatrols;"			count="2"/>
+			<Squadron table="&tbCommElitePatrols;"		count="1"/>
 		</Squadrons>
 		
 		<!-- Image and Effects -->
@@ -260,6 +262,8 @@
 		<Squadrons>
 			<Squadron table="&tbCommEliteDefenders;"	count="3-4"/>
 			<Squadron table="&tbCommPrivateCrafts;"		count="1-4"/>
+			<Squadron table="&tbCommPatrols;"			count="2"/>
+			<Squadron table="&tbCommElitePatrols;"		count="1"/>
 		</Squadrons>
 		
 		<!-- Image and Effects -->

@@ -816,6 +816,8 @@
 	<!ENTITY tbCommPrivateCrafts		"0x00108003">
 	<!ENTITY tbCommTraffic				"0x00108004">
 	<!ENTITY tbStKatsTraffic			"0x00108005">
+	<!ENTITY tbCommPatrols				"0x00108006">
+	<!ENTITY tbCommElitePatrols			"0x00108007">
 
 	<!ENTITY dsCommonwealthStation		"0x0010A001">
 	<!ENTITY dsCommonwealthDecon		"0x0010A002">
