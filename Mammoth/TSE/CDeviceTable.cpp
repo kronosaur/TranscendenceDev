@@ -22,6 +22,7 @@
 #define CHARGES_ATTRIB							CONSTLIT("charges")
 #define COUNT_ATTRIB							CONSTLIT("count")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
+#define CYCLE_FIRE_ATTRIB						CONSTLIT("cycleFire")
 #define DAMAGED_ATTRIB							CONSTLIT("damaged")
 #define DEVICE_ID_ATTRIB						CONSTLIT("deviceID")
 #define ENHANCED_ATTRIB							CONSTLIT("enhanced")
@@ -49,6 +50,7 @@
 #define SLOT_ID_ATTRIB							CONSTLIT("slotID")
 #define TABLE_ATTRIB							CONSTLIT("table")
 #define UNID_ATTRIB								CONSTLIT("unid")
+#define VARIANT_ATTRIB							CONSTLIT("variant")
 
 class CNullDevice : public IDeviceGenerator
 	{
@@ -104,6 +106,7 @@ class CSingleDevice : public IDeviceGenerator
 		DWORD m_dwLinkedFireOptions = 0;		//	This slot has linked-fire properties
 		bool m_bDefaultLinkedFire = false;		//	This slot does not define linked-fire
 		bool m_bSecondary = false;				//	Secondary weapon (for AI)
+		bool m_bCycleFire = false;				//	Weapon uses cycle fire
 		bool m_bOnSegment = false;				//	Device is (logically) on segment (m_sSlotID)
 		bool m_bExternal = false;				//	This slot is external
 		bool m_bCannotBeEmpty = false;			//	This slot cannot be empty
@@ -113,6 +116,7 @@ class CSingleDevice : public IDeviceGenerator
 		int m_iSlotBonus = 0;					//	HP bonus to devices in this slot
 		bool m_bDefaultSlotBonus = false;		//	This slot does not define a bonus
 		double m_rShotSeparationScale = 1.;		//	Governs scaling of shot separation for dual etc weapons
+		int m_iVariant = 0;						//	Variant to use if the item uses counter variant
 
 	};
 
@@ -493,6 +497,8 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 			Desc.dwLinkedFireOptions = 0;
 
 		Desc.bSecondary = m_bSecondary || (bUseSlotDesc && SlotDesc.bSecondary);
+		Desc.bCycleFire = m_bCycleFire;
+		Desc.iVariant = m_iVariant;
 
 		//	Enhancements
 
@@ -768,6 +774,9 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		}
 
 	m_bSecondary = pDesc->GetAttributeBool(SECONDARY_WEAPON_ATTRIB);
+	m_bCycleFire = pDesc->GetAttributeBool(CYCLE_FIRE_ATTRIB);
+	m_iVariant = pDesc->GetAttributeInteger(VARIANT_ATTRIB);
+	m_iCharges = pDesc->GetAttributeIntegerBounded(CHARGES_ATTRIB, 0, -1, 0);
 
 	//	Slot enhancements
 
